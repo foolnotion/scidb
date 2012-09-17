@@ -137,10 +137,8 @@ proc build {parent} {
 	bind $lt <<TableOptions>>	[namespace code [list names::TableOptions $top]]
 	bind $lt <<TableSelected>>	[namespace code [list names::TableSelected $top %d]]
 
-	$top add $lt
-	$top add $rt
-	$top paneconfigure $lt -sticky nsew -stretch middle
-	$top paneconfigure $rt -sticky nsew -stretch always
+	$top add $lt -sticky nsew -stretch middle -width 260 ;# XXX
+	$top add $rt -sticky nsew -stretch always
 
 	set tbFind [::toolbar::toolbar $lt \
 		-id annotators-find \
@@ -236,7 +234,8 @@ proc InitBase {path base} {
 		set Vars($base:after:games) {}
 		set Vars($base:after:names) {}
 		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
-		set Vars($base:lastId) -1
+		set Vars($base:names:lastId) -1
+		set Vars($base:games:lastId) -1
 		::scidb::view::search $base $Vars($base:view) null none
 	}
 }
@@ -259,8 +258,8 @@ proc TableUpdate {path id base {view -1} {index -1}} {
 proc GameTableUpdate2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
-	if {$id <= $Vars($base:lastId)} { return }
-	set Vars($base:lastId) $id
+	if {$id <= $Vars($base:games:lastId)} { return }
+	set Vars($base:games:lastId) $id
 	set lastChange $Vars($base:lastChange)
 	set Vars($base:lastChange) [::scidb::db::get lastChange $base]
 	set view $Vars($base:view)
@@ -314,7 +313,7 @@ proc UpdateTable {path base} {
 		if {$Vars($base:update)} {
 			set n [::scidb::db::count annotators $base]
 			after idle [list ::scrolledtable::update $path.names $base $n]
-			after idle [list [namespace parent]::games::GameTableUpdate2 $Vars($base:lastId) $path $base]
+			after idle [list [namespace parent]::games::GameTableUpdate2 $Vars($base:names:lastId) $path $base]
 			set Vars($base:update) 0
 		}
 	}
@@ -333,8 +332,8 @@ proc TableUpdate {path id base {view -1} {index -1}} {
 proc TableUpdate2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
-	if {$id <= $Vars($base:lastId)} { return }
-	set Vars($base:lastId) $id
+	if {$id <= $Vars($base:names:lastId)} { return }
+	set Vars($base:names:lastId) $id
 	set Vars($base:update) 1
 	UpdateTable $path $base
 }

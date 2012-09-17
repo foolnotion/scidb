@@ -26,6 +26,7 @@
 
 #include "tcl_progress.h"
 #include "tcl_application.h"
+#include "tcl_exception.h"
 #include "tcl_log.h"
 #include "tcl_obj.h"
 #include "tcl_base.h"
@@ -60,6 +61,7 @@ using namespace tcl;
 using namespace tcl::app;
 
 static char const* CmdClose			= "::scidb::view::close";
+static char const* CmdCopy				= "::scidb::view::copy";
 static char const* CmdCount			= "::scidb::view::count";
 static char const* CmdExport			= "::scidb::view::export";
 static char const* CmdFind				= "::scidb::view::find";
@@ -234,6 +236,41 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 	}
 
 	return search;
+}
+
+
+static bool
+buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, View::TagBits& tagBits)
+{
+	Tcl_Obj**	tags;
+	int			tagCount;
+	bool			extraTags	= false;
+
+	if (Tcl_ListObjGetElements(ti, allowedTags, &tagCount, &tags) != TCL_OK)
+		error(cmd, 0, 0, "invalid tag list");
+
+	if (tagCount == 0)
+	{
+		tagBits.set();
+		extraTags = true;
+	}
+	else
+	{
+		for (int i = 0; i < tagCount; ++i)
+		{
+			if (*Tcl_GetString(tags[i]))
+			{
+				tag::ID tag = tag::fromName(Tcl_GetString(tags[i]));
+
+				if (tag == tag::ExtraTag)
+					extraTags = true;
+				else
+					tagBits.set(tag);
+			}
+		}
+	}
+
+	return extraTags;
 }
 
 
@@ -443,6 +480,32 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	View::TagBits	tagBits;
+	mstl::string	source(stringFromObj(objc, objv, 1));
+	unsigned			viewNo(unsignedFromObj(objc, objv, 2));
+	mstl::string	destination(stringFromObj(objc, objv, 3));
+	bool				extraTags(buildTagSet(ti, CmdExport, objv[4], tagBits));
+	Progress			progress(objectFromObj(objc, objv, 5), objectFromObj(objc, objv, 6));
+	tcl::Log			log(objectFromObj(objc, objv, 7), objectFromObj(objc, objv, 8));
+	View&				view(scidb->cursor(source).view(viewNo));
+
+	unsigned n = view.copyGames(	scidb->cursor(destination),
+											tagBits,
+											extraTags,
+											log,
+											progress);
+
+	if (progress.interrupted())
+		throw InterruptException(n);
+
+	setResult(n);
+	return TCL_OK;
+}
+
+
+static int
 cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (objc != 13)
@@ -454,6 +517,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
+	View::TagBits	tagBits;
 	char const*		database			= stringFromObj(objc, objv, 1);
 	unsigned			view				= unsignedFromObj(objc, objv, 2);
 	char const*		filename			= stringFromObj(objc, objv, 3);
@@ -461,8 +525,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	View::FileMode	mode				= boolFromObj(objc, objv, 5) ? View::Append : View::Create;
 	mstl::string	encoding			= stringFromObj(objc, objv, 6);
 	bool				excludeIllegal	= boolFromObj(objc, objv, 7);
-	Tcl_Obj*			allowedTags		= objv[8];
-	bool				extraTags		= false;
+	bool				extraTags		= buildTagSet(ti, CmdExport, objv[8], tagBits);
 
 	Progress			progress(objv[9], objv[10]);
 	tcl::Log			log(objv[11], objv[12]);
@@ -470,48 +533,26 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Database&		db(cursor.database());
 	View&				v(cursor.view(view));
 	type::ID			type(db.type());
-	View::TagBits	tagBits;
-	Tcl_Obj**		tags;
 
 	if (type == type::Temporary)
 		type = type::Unspecific;
 
-	if (Tcl_ListObjGetElements(ti, allowedTags, &objc, &tags) != TCL_OK)
-		error(CmdExport, 0, 0, "invalid tag list");
+	unsigned n = v.exportGames(sys::file::internalName(filename),
+										encoding,
+										db.description(),
+										type,
+										flags,
+										excludeIllegal ? ::db::copy::ExcludeIllegal : ::db::copy::AllGames,
+										tagBits,
+										extraTags,
+										log,
+										progress,
+										mode);
 
-	if (objc == 0)
-	{
-		tagBits.set();
-		extraTags = true;
-	}
-	else
-	{
-		for (int i = 0; i < objc; ++i)
-		{
-			if (*Tcl_GetString(tags[i]))
-			{
-				tag::ID tag = tag::fromName(Tcl_GetString(tags[i]));
+	if (progress.interrupted())
+		throw InterruptException(n);
 
-				if (tag == tag::ExtraTag)
-					extraTags = true;
-				else
-					tagBits.set(tag);
-			}
-		}
-	}
-
-	setResult(v.exportGames(sys::file::internalName(filename),
-									encoding,
-									db.description(),
-									type,
-									flags,
-									excludeIllegal ? View::ExcludeIllegal : View::AllGames,
-									tagBits,
-									extraTags,
-									log,
-									progress,
-									mode));
-
+	setResult(n);
 	return TCL_OK;
 }
 
@@ -525,7 +566,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	if (objc != 16)
+	if (objc != 17)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
@@ -545,9 +586,10 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 9);
 	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 10);
 	unsigned			significant		= unsignedFromObj(objc, objv, 11);
+	char const*		trace				= stringFromObj(objc, objv, 12);
 
-	Progress				progress(objv[12], objv[13]);
-	tcl::Log				log(objv[14], objv[15]);
+	Progress				progress(objv[13], objv[14]);
+	tcl::Log				log(objv[15], objv[16]);
 	Cursor&				cursor(scidb->cursor(database));
 	View&					v(cursor.view(view));
 	Tcl_Obj**			objs;
@@ -609,14 +651,14 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									log,
 									progress));
 
-//	{
-//		mstl::string log(out.str());
-//
-//		if (!log.empty() && log.back() == '\n')
-//			log.set_size(log.size() - 1);
-//
-//		setResult(Tcl_NewStringObj(log, log.size()));
-//	}
+	{
+		mstl::string log(out.str());
+
+		if (!log.empty() && log.back() == '\n')
+			log.set_size(log.size() - 1);
+
+		Tcl_SetVar2Ex(ti, trace, 0, Tcl_NewStringObj(log, log.size()), TCL_GLOBAL_ONLY);
+	}
 
 	return TCL_OK;
 }
@@ -698,6 +740,7 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdClose,			cmdClose);
+	createCommand(ti, CmdCopy,				cmdCopy);
 	createCommand(ti, CmdCount,			cmdCount);
 	createCommand(ti, CmdExport,			cmdExport);
 	createCommand(ti, CmdFind,				cmdFind);

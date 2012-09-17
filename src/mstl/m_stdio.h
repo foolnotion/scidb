@@ -23,7 +23,7 @@
 #endif // __unix__
 
 
-#if defined(IO_NOT_MTSAFE)
+#if defined(IO_NO_THREADS)
 
 # ifdef getc
 #  undef getc

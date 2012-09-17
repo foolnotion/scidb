@@ -351,7 +351,7 @@ DatabaseCodec::removeAllFiles(mstl::string const& rootname)
 
 
 void
-DatabaseCodec::writeNamebases(mstl::ostream&, util::Progress*)
+DatabaseCodec::writeNamebases(mstl::ostream&, util::Progress&)
 {
 	M_RAISE("should not be used");
 }
@@ -413,8 +413,22 @@ DatabaseCodec::doOpen(mstl::string const&, mstl::string const&)
 }
 
 
+unsigned
+DatabaseCodec::doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding)
+{
+	M_RAISE("should not be used");
+}
+
+
 void
 DatabaseCodec::doClear(mstl::string const&)
+{
+	M_RAISE("should not be used");
+}
+
+
+void
+DatabaseCodec::readIndexProgressive(unsigned index)
 {
 	M_RAISE("should not be used");
 }
@@ -605,6 +619,18 @@ DatabaseCodec::open(	DatabaseContent* db,
 }
 
 
+unsigned
+DatabaseCodec::openProgressive(	DatabaseContent* db,
+											mstl::string const& rootname,
+											mstl::string const& encoding)
+{
+	M_REQUIRE(db);
+
+	m_db = db;
+	return doOpenProgressive(rootname, encoding);
+}
+
+
 void
 DatabaseCodec::clear(mstl::string const& rootname)
 {
@@ -634,7 +660,7 @@ DatabaseCodec::produce(Producer& producer, Consumer& consumer, util::Progress& p
 
 
 void
-DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFile& reader, util::ByteStream& src)
+DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFileReader& reader, util::ByteStream& src)
 {
 	switch (reader.get(src, info.gameOffset(), info.gameRecordLength()))
 	{

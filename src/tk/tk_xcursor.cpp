@@ -33,7 +33,7 @@
 //		image file. Save this text file in the same directory and with the same name as
 //		your cursor, but with a ".cursor" file extension instead of a ".png" extension.
 //
-// 3.	Type "xcursorgen click.cursor default" where "click.cursor" is the name of the
+// 3.	Type "xcursorgen click.cursor click.xcur" where "click.cursor" is the name of the
 //		configuration file you created. Xcursorgen will automatically create an X11 cursor
 //		file.
 // =====================================================================================

@@ -173,7 +173,7 @@ private:
 	void init();
 
 	node* create_node(T const& x);
-	void erase(node* n);
+	void erase(bits::node_base* n);
 
 	node			m_node;
 	size_type	m_size;

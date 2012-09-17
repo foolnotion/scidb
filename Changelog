@@ -1,6 +1,30 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #427)
+------------------------------------------------------------------------------
+* Asynchronous read revision withdrawn.
+
+* Drag operation in file selection dialog finished.
+
+* Severe bug while writing .si4 namebase data fixed.
+
+* Import/Export of games revised.
+
+* Import of databases implemented.
+
+* Threading problem in u_block_file.cpp fixxed.
+
+* Setup dialog for engines finished.
+
+* Bug in update-scidb-player-photos fixed.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #422)
+------------------------------------------------------------------------------
+* Asynchronous read revised.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #420)
 ------------------------------------------------------------------------------
 * Spanish translation files updated.

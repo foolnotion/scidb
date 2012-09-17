@@ -62,7 +62,7 @@ proc open {callee {show 1}} {
 	set Priv(show) $show
 	set Priv(delay) 0
 	set Priv(force) 0
-	set Priv(newline) 0
+	set Priv(newline) 1
 	set t $Log.top.text
 
 	if {[$t count -chars 1.0 2.0] > 1} {
@@ -70,7 +70,6 @@ proc open {callee {show 1}} {
 		$t insert end "\n"
 		$t configure -state disabled
 		$t yview moveto 1.0
-		set Priv(newline) 1
 	}
 }
 

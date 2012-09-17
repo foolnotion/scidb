@@ -55,6 +55,8 @@ static Tcl_Obj* m_value_1		= 0;
 static Tcl_Obj* m_blocked		= 0;
 static Tcl_Obj* m_postponed	= 0;
 
+static unsigned m_level = 0;
+
 static char const* TooManyArguments = "Too many arguments (> 10) to tcl::invoke()";
 
 
@@ -70,6 +72,9 @@ union Cast
 };
 
 } // namespace
+
+
+bool tcl::updateTreeIsBlocked() { return m_level > 1; }
 
 
 int
@@ -298,7 +303,7 @@ invocationError(char const* callee, int argc, char const* argv[])
 	}
 
 	Tcl_AddErrorInfo(interp(), msg.c_str());
-	M_THROW(Error());
+	Tcl_BackgroundError(interp());
 }
 
 
@@ -321,7 +326,7 @@ invocationError(char const* callee, int objc, Tcl_Obj* const objv[])
 	}
 
 	Tcl_AddErrorInfo(interp(), msg.c_str());
-	M_THROW(Error());
+	Tcl_BackgroundError(interp());
 }
 
 
@@ -586,9 +591,10 @@ tcl::call(char const* callee, Tcl_Obj* cmd, ...)
 }
 
 
-Tcl_Obj* call(	char const* callee,
-					Tcl_Obj* cmd,
-					int objc, Tcl_Obj* const objv[])
+Tcl_Obj*
+tcl::call(	char const* callee,
+				Tcl_Obj* cmd,
+				int objc, Tcl_Obj* const objv[])
 {
 	M_REQUIRE(callee);
 	M_REQUIRE(cmd);
@@ -740,6 +746,8 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	int rc;
 
+	++m_level;
+
 	Tcl_Obj* blocked = Tcl_ObjGetVar2(interp(), m_blocked, 0, TCL_GLOBAL_ONLY);
 
 	if (blocked)
@@ -811,6 +819,7 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 	}
 
+	--m_level;
 	return rc;
 }
 

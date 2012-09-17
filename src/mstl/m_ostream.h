@@ -50,6 +50,7 @@ public:
 	ostream& write(unsigned char const* buffer, size_t size);
 	ostream& write(string const& str);
 	ostream& writenl(string const& str);
+	ostream& seek_and_write(size_t pos, unsigned char const* buffer, size_t size);
 	ostream& flush() throw();
 
 	int vformat(char const* fmt, va_list args);

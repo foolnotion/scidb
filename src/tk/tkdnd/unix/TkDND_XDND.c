@@ -291,11 +291,11 @@ Tk_Window TkDND_GetToplevelFromWrapper(Tk_Window tkwin) {
 #endif
 }
 
-void TkDND_Dict_PutLong(Tcl_Interp* interp, Tcl_Obj* dict, char const* key, long value) {
-  Tcl_DictObjPut(interp, dict, Tcl_NewStringObj(key, -1), Tcl_NewLongObj(value));
+void TkDND_Dict_PutLong(Tcl_Interp* interp, Tcl_Obj* dict, char const* key, long long value) {
+  Tcl_DictObjPut(interp, dict, Tcl_NewStringObj(key, -1), Tcl_NewWideIntObj(value));
 }
 
-void TkDND_Dict_PutInt(Tcl_Interp* interp, Tcl_Obj* dict, char const* key, int value) {
+void TkDND_Dict_PutInt(Tcl_Interp* interp, Tcl_Obj* dict, char const* key, long value) {
   Tcl_DictObjPut(interp, dict, Tcl_NewStringObj(key, -1), Tcl_NewLongObj(value));
 }
 
@@ -618,6 +618,10 @@ int TkDND_HandleXdndFinished(Tk_Window tkwin, XClientMessageEvent *cm) {
   if (action == Tk_InternAtom(tkwin, "XdndActionCopy")) {
     TkDND_Dict_Put(interp, objv[1], "action", "copy");
   } else if (action == Tk_InternAtom(tkwin, "XdndActionMove")) {
+    /* In general, XdndActionMove is implemented by first requesting the data and then
+     * the special target DELETE defined in the X Selection protocol. (File managers will
+     * obviously just use mv or its equivalent.) DELETE should be sent before XdndFinished.
+     */
     TkDND_Dict_Put(interp, objv[1], "action", "move");
   } else if (action == Tk_InternAtom(tkwin, "XdndActionLink")) {
     TkDND_Dict_Put(interp, objv[1], "action", "link");

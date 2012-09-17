@@ -1335,6 +1335,15 @@ namespace order
 	};
 }
 
+namespace copy
+{
+	enum Mode
+	{
+		AllGames,
+		ExcludeIllegal,
+	};
+};
+
 namespace country
 {
 	enum Code

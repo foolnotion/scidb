@@ -85,11 +85,8 @@ proc build {parent} {
 	bind $rt <<TableMinSize>> [namespace code [list TableMinSize $rt %d]]
 	bind $lt <<TableMinSize>> [namespace code [list TableMinSize $lt %d]]
 
-	$top add $lt
-	$top add $rt
-
-	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 580
-	$top paneconfigure $rt -sticky nsew -stretch always
+	$top add $lt -sticky nsew -stretch middle -width 320
+	$top add $rt -sticky nsew -stretch always
 
 	return $top
 }

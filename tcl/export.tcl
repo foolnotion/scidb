@@ -29,112 +29,115 @@
 namespace eval export {
 namespace eval mc {
 
-set FileSelection			"&File Selection"
-set OptionsSetup			"&Options"
-set PageSetup				"&Page Setup"
-set DiagramSetup			"&Diagram Setup"
-set StyleSetup				"Sty&le"
-set EncodingSetup			"&Encoding"
-set TagsSetup				"&Tags"
-set NotationSetup			"&Notation"
-set AnnotationSetup		"&Annotation"
-set CommentsSetup			"&Comments"
+set FileSelection				"&File Selection"
+set OptionsSetup				"&Options"
+set PageSetup					"&Page Setup"
+set DiagramSetup				"&Diagram Setup"
+set StyleSetup					"Sty&le"
+set EncodingSetup				"&Encoding"
+set TagsSetup					"&Tags"
+set NotationSetup				"&Notation"
+set AnnotationSetup			"&Annotation"
+set CommentsSetup				"&Comments"
 
-set Visibility				"Visibility"
-set HideDiagrams			"Hide Diagrams"
-set AllFromWhitePersp	"All From White's Perspective"
-set AllFromBlackPersp	"All From Black's Perspective"
-set ShowCoordinates		"Show Coordinates"
-set ShowSideToMove		"Show Side to Move"
-set ShowArrows				"Show Arrows"
-set ShowMarkers			"Show Markers"
-set Layout					"Layout"
-set PostscriptSpecials	"Postscript Specialities"
-set BoardSize				"Board Size"
+set Visibility					"Visibility"
+set HideDiagrams				"Hide Diagrams"
+set AllFromWhitePersp		"All From White's Perspective"
+set AllFromBlackPersp		"All From Black's Perspective"
+set ShowCoordinates			"Show Coordinates"
+set ShowSideToMove			"Show Side to Move"
+set ShowArrows					"Show Arrows"
+set ShowMarkers				"Show Markers"
+set Layout						"Layout"
+set PostscriptSpecials		"Postscript Specialities"
+set BoardSize					"Board Size"
 
-set Hyphenation			"Hyphenation"
-set None						"(none)"
-set Graphic					"Graphic"
-set Short					"Short"
-set Long						"Long"
-set Algebraic				"Algebraic"
-set Correspondence		"Correspondence"
-set Telegraphic			"Telegraphic"
-set FontHandling			"Font handling"
-set DiagramStyle			"Diagram Style"
-set UseImagesForDiagram	"Use images for diagram generation"
-set EmebedTruetypeFonts	"Embed TrueType fonts"
-set UseBuiltinFonts		"Use built-in fonts"
-set SelectExportedTags	"Selection of exported tags"
-set ExcludeAllTags		"Exclude all tags"
-set IncludeAllTags		"Include all tags"
-set ExtraTags				"All other extra tags"
-set NoComments				"No comments"
-set AllLanguages			"All languages"
-set Significant			"Significant"
-set LanguageSelection	"Language selection"
-set MapTo					"Map to"
-set MapNagsToComment		"Map annotations to comments"
-set UnusualAnnotation	"Unusual annotations"
-set AllAnnotation			"All annotations"
-set UseColumnStyle		"Use column style"
-set MainlineStyle			"Main Line Style"
-set HideVariations		"Hide variations"
+set Hyphenation				"Hyphenation"
+set None							"(none)"
+set Graphic						"Graphic"
+set Short						"Short"
+set Long							"Long"
+set Algebraic					"Algebraic"
+set Correspondence			"Correspondence"
+set Telegraphic				"Telegraphic"
+set FontHandling				"Font handling"
+set DiagramStyle				"Diagram Style"
+set UseImagesForDiagram		"Use images for diagram generation"
+set EmebedTruetypeFonts		"Embed TrueType fonts"
+set UseBuiltinFonts			"Use built-in fonts"
+set SelectExportedTags		"Selection of exported tags"
+set ExcludeAllTags			"Exclude all tags"
+set IncludeAllTags			"Include all tags"
+set ExtraTags					"All other extra tags"
+set NoComments					"No comments"
+set AllLanguages				"All languages"
+set Significant				"Significant"
+set LanguageSelection		"Language selection"
+set MapTo						"Map to"
+set MapNagsToComment			"Map annotations to comments"
+set UnusualAnnotation		"Unusual annotations"
+set AllAnnotation				"All annotations"
+set UseColumnStyle			"Use column style"
+set MainlineStyle				"Main Line Style"
+set HideVariations			"Hide variations"
 
-set PdfFiles				"PDF Files"
-set HtmlFiles				"HTML Files"
-set TeXFiles				"LaTeX Files"
+set PdfFiles					"PDF Files"
+set HtmlFiles					"HTML Files"
+set TeXFiles					"LaTeX Files"
 
-set ExportDatabase		"Export %s Database"
-set ExportDatabaseTitle	"Export Database '%s'"
-set ExportingDatabase	"Exporting %s to file %s"
-set Export					"Export"
-set ExportedGames			"%s game(s) exported"
-set NoGamesForExport		"No games for export."
-set ResetDefaults			"Reset to defaults"
-set UnsupportedEncoding	"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
-set DatabaseIsOpen		"Database '%s' is open. You have to close it first."
+set ExportDatabase			"Export %s Database"
+set ExportDatabaseTitle		"Export Database '%s'"
+set ExportingDatabase		"Exporting %s to file %s"
+set Export						"Export"
+set NoGamesExported			"No games exported."
+set ExportedGames				"%s game(s) exported"
+set NoGamesForExport			"No games for export."
+set ResetDefaults				"Reset to defaults"
+set UnsupportedEncoding		"Cannot use encoding %s for PDF documents. You have to choose an alternative encoding."
+set DatabaseIsOpen			"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?"
+set DatabaseIsOpenDetail	"If you want to append instead you should use a Drag&Drop operation inside the database switcher."
+set ExportGamesFromTo		"Export games from '%src' to '%dst'"
 
-set BasicStyle				"Basic Style"
-set GameInfo				"Game Info"
-set GameText				"Game Text"
-set Moves					"Moves"
-set MainLine				"Main Line"
-set Variation				"Variation"
-set Figurines				"Figurines"
-set Subvariation			"Subvariation"
-set Symbols					"Symbols"
-set Comments				"Comments"
-set Result					"Result"
-set Diagram					"Diagram"
-set ColumnStyle			"Column Style"
+set BasicStyle					"Basic Style"
+set GameInfo					"Game Info"
+set GameText					"Game Text"
+set Moves						"Moves"
+set MainLine					"Main Line"
+set Variation					"Variation"
+set Figurines					"Figurines"
+set Subvariation				"Subvariation"
+set Symbols						"Symbols"
+set Comments					"Comments"
+set Result						"Result"
+set Diagram						"Diagram"
+set ColumnStyle				"Column Style"
 
-set Paper					"Paper"
-set Orientation			"Orientation"
-set Margin					"Margin"
-set Format					"Format"
-set Size						"Size"
-set Custom					"Custom"
-set Potrait					"Potrait"
-set Landscape				"Landscape"
-set Justification			"Justification"
-set Even						"Even"
-set Columns					"Columns"
-set One						"One"
-set Two						"Two"
+set Paper						"Paper"
+set Orientation				"Orientation"
+set Margin						"Margin"
+set Format						"Format"
+set Size							"Size"
+set Custom						"Custom"
+set Potrait						"Potrait"
+set Landscape					"Landscape"
+set Justification				"Justification"
+set Even							"Even"
+set Columns						"Columns"
+set One							"One"
+set Two							"Two"
 
-set DocumentStyle			"Document Style"
-set Article					"Article"
-set Report					"Report"
-set Book						"Book"
+set DocumentStyle				"Document Style"
+set Article						"Article"
+set Report						"Report"
+set Book							"Book"
 
-set FormatName(scidb)	"Scidb"
-set FormatName(scid)		"Scid"
-set FormatName(pgn)		"PGN"
-set FormatName(pdf)		"PDF"
-set FormatName(html)		"HTML"
-set FormatName(tex)		"LaTeX"
-set FormatName(ps)		"Postscript"
+set FormatName(scidb)		"Scidb"
+set FormatName(scid)			"Scid"
+set FormatName(pgn)			"PGN"
+set FormatName(pdf)			"PDF"
+set FormatName(html)			"HTML"
+set FormatName(tex)			"LaTeX"
+set FormatName(ps)			"Postscript"
 
 set Option(pgn,include_varations)						"Export variations"
 set Option(pgn,include_comments)							"Export comments"
@@ -2946,19 +2949,29 @@ proc DoExport {parent dlg file} {
 	variable Styles
 	variable Info
 	variable Values
+	variable Trace_
 
 	set file [string trim $file]
 	if {[string length $file] == 0} { return }
-	set file [encoding convertto utf-8 $file]
 	set file [file normalize $file]
+	set useCopyOperation 0
 
-	if {[::scidb::db::get open? $file]} {
-		::dialog::error \
-			-parent $parent \
-			-message [format $mc::DatabaseIsOpen $file] \
-			-title $mc::Export \
-			;
-		return
+	switch $Values(Type) {
+		scid - scidb {
+			if {[::scidb::db::get open? $file]} {
+				set reply [::dialog::question \
+					-parent $dlg \
+					-message [format $mc::DatabaseIsOpen [::util::databaseName $file]] \
+					-detail $mc::DatabaseIsOpenDetail \
+					-title $mc::Export \
+					-buttons {cancel continue} \
+					-default continue \
+				]
+				if {$reply eq "cancel"} { return }
+				set useCopyOperation 1
+				update idletasks
+			}
+		}
 	}
 
 	switch $Values(Type) {
@@ -2997,6 +3010,7 @@ proc DoExport {parent dlg file} {
 	switch $Values(Type) {
 		scid - scidb {
 			if {$Values(Type) eq "scid"} { variable si3::Tags } else { variable sci::Tags }
+			set incomplete 0
 			foreach tag [array names Tags] {
 				if {$Tags($tag)} {
 					lappend tagList $tag
@@ -3007,9 +3021,15 @@ proc DoExport {parent dlg file} {
 					} else {
 						lappend tagList $tag
 					}
+				} else {
+					set incomplete 1
 				}
 			}
-			if {[llength $tagList] == 0} { set tagList {{}} }
+			if {!$incomplete} {
+				set tagList {}
+			} elseif {[llength $tagList] == 0} {
+				set tagList {{}}
+			}
 		}
 
 		html { return [::beta::notYetImplemented $dlg html] }
@@ -3116,6 +3136,8 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	}
 
 	destroy $dlg
+	set Trace_ {}
+	set close 1
 
 	switch $Values(Type) {
 		scid - scidb - pgn {
@@ -3124,16 +3146,27 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 				overwrite	{ set append 0 }
 			}
 
-			set cmd [list ::scidb::view::export \
-				$Info(base) \
-				$Info(view) \
-				$file \
-				$Info($Values(Type),flags) \
-				$append \
-				$encoding \
-				$excludeGamesWithIllegalMoves \
-				$tagList \
-			]
+			if {$useCopyOperation} {
+				set close 0
+				set cmd [list ::scidb::view::copy \
+					$Info(base) \
+					$Info(view) \
+					$file \
+					$tagList \
+				]
+				::scidb::db::clear $file
+			} else {
+				set cmd [list ::scidb::view::export \
+					$Info(base) \
+					$Info(view) \
+					$file \
+					$Info($Values(Type),flags) \
+					$append \
+					$encoding \
+					$excludeGamesWithIllegalMoves \
+					$tagList \
+				]
+			}
 		}
 
 		html - pdf - tex {
@@ -3149,11 +3182,12 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 				$nags \
 				$languages \
 				$significant \
+				[namespace current]::Trace_ \
 			]
 		}
 	}
 
-	set options [list -message $mc::ExportDatabase -log 0]
+	set options [list -message $mc::ExportDatabase -interrupt yes]
 	lappend args [namespace current]::Log {}
 
 	# XXX text widget may overflow (too many messages)
@@ -3164,15 +3198,56 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	}
 	::log::open "$formatName $mc::Export"
 	::log::delay
-	::log::info [format $mc::ExportingDatabase $Info(name) $file]
-	set result [::progress::start $parent $cmd $args $options]
-	set trace [lindex $result 1]
-	set count [lindex $result 0]
-	update idletasks ;# be sure the following will be appended
-	::log::info [format $mc::ExportedGames [::locale::formatNumber $count]]
+
+	if {$useCopyOperation} {
+		set dst [::util::databaseName $file]
+		set msg [string map [list %src $Info(name) %dst $dst] $mc::ExportGamesFromTo]
+	} else {
+		set msg [format $mc::ExportingDatabase $Info(name) $file]
+	}
+	::log::info $msg
+
+	set cmd [list ::progress::start $parent $cmd $args $options $close]
+	if {[catch { ::util::catchException $cmd count } rc opts]} {
+		::log::error $::import::mc::AbortedDueToInternalError
+		::progress::close
+		::log::close
+		return {*}$opts -rethrow 1 0
+	}
+
+	if {$rc == 1} {
+		::log::error $::import::mc::AbortedDueToIoError
+		::progress::close
+		::log::close
+		# show error dialog
+		return 0
+	}
+
+	if {$rc < 0} {
+		::log::warning $::import::mc::UserHasInterrupted
+		set count [expr {-$rc - 2}]
+		set rc -1
+	}
+
+	update idletasks	;# be sure the following will be appended
+
+	if {$count == 0} {
+		::log::info $mc::NoGamesExported
+	} else {
+		::log::info	[format $mc::ExportedGames [::locale::formatNumber $count]]
+	}
+
+	if {$useCopyOperation} {
+		set cmd [list ::scidb::db::save $file 0]
+		set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
+		if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
+	}
+
+	::progress::close
 	::log::close
 
-	if {[string length $trace]} { ShowTrace $parent $trace }
+	if {[string length $Trace_]} { ShowTrace $parent $Trace_ }
+	unset Trace_
 }
 
 

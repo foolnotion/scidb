@@ -86,6 +86,7 @@ public:
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& encoding,
 					util::Progress& progress) override;
+	unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding) override;
 	void doClear(mstl::string const& rootname) override;
 
 	unsigned putGame(util::ByteStream const& strm) override;
@@ -102,9 +103,10 @@ public:
 	void close() override;
 	void sync() override;
 	void removeAllFiles(mstl::string const& rootname) override;
-	void writeNamebases(mstl::ostream& stream, util::Progress* progress) override;
+	void writeNamebases(mstl::ostream& stream, util::Progress& progress) override;
 	void writeIndex(mstl::ostream& strm, util::Progress& progress);
 	void writeGames(mstl::ostream& strm, util::Progress& progress);
+	void readIndexProgressive(unsigned index);
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
@@ -163,20 +165,21 @@ private:
 	void writeSitebase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writeEventbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
 	void writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* progress);
-	void writeNamebases(mstl::ostream& stream);
+	void writeNamebases(mstl::ostream& stream, util::Progress* progress = 0);
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
-	uint16_t readIndexHeader(mstl::fstream& fstrm);
+	uint16_t readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames = 0);
 	void checkFileVersion(mstl::fstream& fstrm, mstl::string const& magic, uint16_t fileVersion);
 
-	mstl::fstream		m_gameStream;
-	util::BlockFile*	m_gameData;
-	util::BlockFile*	m_asyncReader;
-	mstl::string		m_magicGameFile;
-	Lookup				m_lookup[4];
-	unsigned				m_progressFrequency;
-	unsigned				m_progressReportAfter;
-	unsigned				m_progressCount;
+	mstl::fstream				m_gameStream;
+	mstl::fstream*				m_progressiveStream;
+	util::BlockFile*			m_gameData;
+	util::BlockFileReader*	m_asyncReader;
+	mstl::string				m_magicGameFile;
+	Lookup						m_lookup[4];
+	unsigned						m_progressFrequency;
+	unsigned						m_progressReportAfter;
+	unsigned						m_progressCount;
 };
 
 } // namespace sci

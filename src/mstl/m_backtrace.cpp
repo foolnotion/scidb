@@ -32,6 +32,35 @@
 
 using namespace mstl;
 
+
+#define M_HAVE_THREADS
+
+#ifndef M_HAVE_THREADS
+
+static bool isMainThread() { return true; }
+
+#elif defined(__WIN32__)
+
+static bool isMainThread() { return false; } // backtrace not needed under windows
+
+#elif defined(__MacOSX__)
+
+# include <pthread.h>
+static bool isMainThread() { return pthread_main_np(); }
+
+#elif defined(__linux__)
+
+# include <sys/syscall.h>
+# include <unistd.h>
+static bool isMainThread() { return syscall(SYS_gettid) == getpid(); }
+
+#else // don't know how this should be determined
+
+static bool isMainThread() { return true; }
+
+#endif
+
+
 #ifdef __OPTIMIZE__
 
 backtrace::backtrace() {}
@@ -429,8 +458,8 @@ extract_abi_name(char const* isym, char* nmbuf)
 mstl::backtrace::backtrace()
 	:m_nframes(0)
 	,m_allocator(new allocator(512))
-	,m_refCount(new unsigned)
 	,m_skip(0)
+	,m_refCount(new unsigned)
 {
 	*m_refCount += 1;
 	symbols();
@@ -440,8 +469,8 @@ mstl::backtrace::backtrace()
 mstl::backtrace::backtrace(backtrace const& v)
 	:m_nframes(0)
 	,m_allocator(0)
-	,m_refCount(0)
 	,m_skip(0)
+	,m_refCount(0)
 {
 	operator=(v);
 }
@@ -654,7 +683,7 @@ mstl::backtrace::empty() const
 void
 mstl::backtrace::symbols()
 {
-	if (!m_allocator->empty())
+	if (!::isMainThread() || !empty())
 		return;
 
 # ifdef __unix__
@@ -707,6 +736,9 @@ mstl::backtrace::symbols()
 void
 mstl::backtrace::text_write(ostringstream& os, unsigned skip) const
 {
+	if (empty())
+		return;
+
 	unsigned i = 0;
 
 	skip += m_skip;
@@ -746,5 +778,12 @@ mstl::backtrace::text_write(ostringstream& os, unsigned skip) const
 }
 
 #endif // __OPTIMIZE__
+
+
+void
+mstl::backtrace::clear()
+{
+	m_allocator->clear();
+}
 
 // vi:set ts=3 sw=3:

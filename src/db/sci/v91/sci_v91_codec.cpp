@@ -374,8 +374,10 @@ Codec::Codec()
 
 Codec::~Codec() throw()
 {
+	if (m_asyncReader)
+		m_gameData->closeAsyncReader(m_asyncReader);
+
 	delete m_gameData;
-	delete m_asyncReader;
 }
 
 
@@ -437,7 +439,7 @@ Codec::getGame(GameInfo const& info)
 	M_ASSERT(m_gameData);
 
 	ByteStream src;
-	getGameRecord(info, *m_gameData, src);
+	getGameRecord(info, m_gameData->reader(), src);
 	return src;
 }
 
@@ -626,7 +628,7 @@ save::State
 Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	return decoder.doDecoding(consumer, tags);
 }
@@ -644,7 +646,7 @@ void
 Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 {
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	decoder.doDecoding(data);
 }
@@ -1753,14 +1755,11 @@ Codec::useAsyncReader(bool flag)
 	if (flag)
 	{
 		if (m_asyncReader == 0)
-		{
-			M_ASSERT(m_gameStream.is_open());
-			m_asyncReader = new BlockFile(&m_gameStream, Block_Size, BlockFile::RequireLength);
-		}
+			m_asyncReader = m_gameData->openAsyncReader();
 	}
 	else if (m_asyncReader)
 	{
-		delete m_asyncReader;
+		m_gameData->closeAsyncReader(m_asyncReader);
 		m_asyncReader = 0;
 	}
 }
@@ -1773,7 +1772,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 
 	ByteStream src;
 	getGameRecord(info, *m_asyncReader, src);
-	Decoder decoder(src, m_asyncReader->blockSize() - info.gameOffset());
+	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
 	return decoder.findExactPosition(position, skipVariations);
 }
 

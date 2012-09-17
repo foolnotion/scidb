@@ -460,10 +460,10 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 			}
 		}
 		set Leave 0
-		variable _trigger 0
-		bind $board.popup_promotion <<MenuUnpost>> [list set [namespace current]::_trigger 1]
+		variable trigger_ 0
+		bind $board.popup_promotion <<MenuUnpost>> [list set [namespace current]::trigger_ 1]
 		tk_popup $board.popup_promotion {*}[winfo pointerxy $board]
-		vwait [namespace current]::_trigger
+		vwait [namespace current]::trigger_
 		if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
 		set Leave 1
 		if {$_promoted == 0} { return [::board::stuff::setDragSquare $board] }

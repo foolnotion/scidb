@@ -24,6 +24,9 @@ inline bool ios_base::good() const					{ return m_state == 0; }
 inline bool ios_base::eof() const					{ return m_state & eofbit; }
 inline bool ios_base::fail() const					{ return m_state & (badbit | failbit); }
 inline bool ios_base::bad() const					{ return m_state & badbit; }
+inline bool ios_base::is_readable() const			{ return m_openmode & mstl::ios_base::in; }
+inline bool ios_base::is_writable() const			{ return m_openmode & mstl::ios_base::out; }
+inline bool ios_base::is_binary() const			{ return m_openmode & mstl::ios_base::binary; }
 inline bool ios_base::operator!() const			{ return fail(); }
 inline void ios_base::setstate(iostate state)	{ clear(m_state | state); }
 inline void ios_base::setmode(openmode mode)		{ m_openmode = mode; }
@@ -34,6 +37,13 @@ inline ios_base::iostate ios_base::exceptions() const	{ return m_except; }
 inline ios_base::openmode ios_base::mode() const		{ return m_openmode; }
 
 inline ios_base::operator void*() const { return fail() ? 0 : const_cast<ios_base*>(this); }
+
+inline
+bool
+ios_base::is_readonly() const
+{
+	return (m_openmode & (mstl::ios_base::in | mstl::ios_base::out)) == mstl::ios_base::in;
+}
 
 } // namespace mstl
 

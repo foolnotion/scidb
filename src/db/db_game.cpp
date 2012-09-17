@@ -78,6 +78,9 @@ struct UndoApplyWatcher
 } // namespace
 
 
+unsigned Game::m_gameId = 0;
+
+
 Game::Subscriber::~Subscriber() throw() {}
 bool Game::Subscriber::mainlineOnly() { return false; }
 
@@ -149,6 +152,7 @@ Game::Undo::clear()
 Game::Game()
 	:Provider(format::Scidb)
 	,GameData()
+	,m_id(m_gameId++)
 	,m_currentNode(m_startNode)
 	,m_editNode(0)
 	,m_currentBoard(m_startBoard)

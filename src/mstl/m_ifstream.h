@@ -34,33 +34,31 @@ public:
 	explicit ifstream(struct _IO_FILE* fp, openmode mode = in);
 	~ifstream() throw();
 
-	bool is_open() const;
-	bool is_buffered() const;
-	bool is_unbuffered() const;
+	using file::is_open;
+	using file::is_buffered;
+	using file::is_unbuffered;
 
-	int64_t size() const override;
-	unsigned bufsize() const;
-	char* buffer() const;
-	uint64_t mtime();
-	mstl::string const& filename() const;
+	using file::size;
+	using file::bufsize;
+	using file::buffer;
+	using file::mtime;
+	using file::filename;
 
 	virtual void open(char const* filename);
 	virtual void open(char const* filename, openmode mode);
 	void open(int fd, openmode mode = in);
 	void open(struct _IO_FILE* fp, openmode mode = in);
-	void close();
+	using file::close;
 
-	void set_unbuffered();
-	void set_binary();
-	void set_text();
-	void set_bufsize(unsigned size);
+	using file::set_unbuffered;
+	using file::set_binary;
+	using file::set_text;
+	using file::set_bufsize;
 };
 
 extern ifstream cin;
 
 } // namespace mstl
-
-#include "m_ifstream.ipp"
 
 #endif // _mstl_ifstream_included
 

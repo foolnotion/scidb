@@ -47,6 +47,8 @@ public:
 	void open(struct _IO_FILE* fp);
 	void close();
 
+	void truncate(unsigned length);
+
 	void set_unbuffered();
 	void set_binary();
 	void set_text();

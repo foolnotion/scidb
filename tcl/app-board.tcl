@@ -31,6 +31,8 @@ namespace eval board {
 namespace eval mc {
 
 set ShowCrosstable			"Show tournament table for this game"
+set StartEngine				"Start chess analysis engine"
+set StopEngine					"Stop chess analysis engine"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -150,12 +152,12 @@ proc build {w width height} {
 		-command [namespace code [list ShowCrossTable [winfo toplevel $board]]] \
 		-tooltipvar [namespace current]::mc::ShowCrosstable \
 	]
-if {[::process::testOption use-analysis]} {
 	::toolbar::add $tbTools button \
 		-image $::icon::toolbarEngine \
-		-command [namespace code StartAnalysis] \
+		-command [namespace code StartEngine] \
+		-tooltipvar [namespace current]::mc::StartEngine \
+		-state disabled \
 		;
-}
 
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarRotateBoard \
@@ -1004,6 +1006,31 @@ proc LanguageChanged {} {
 		set tip "[set mc::$tipvar] ($::mc::Key($key))"
 		::toolbar::childconfigure $Vars([string tolower $action 0]) -tooltip $tip
 	}
+}
+
+
+proc StartEngine {} {
+	set dlg .application.analysis
+	if {[winfo exists $dlg]} { return [StopEngine] }
+	tk::toplevel $dlg -class Scidb
+	wm withdraw $dlg
+	set top [ttk::frame $dlg.top -width 340 -borderwidth 0]
+	::application::analysis::build $dlg.top 340 0
+	pack $top -fill both
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code StopEngine]
+	wm resizable $dlg true false
+	wm transient $dlg .application
+	wm minsize $dlg 340 100
+	wm title $dlg $::application::database::mc::T_Analysis
+	::util::place $dlg center .application
+	wm deiconify $dlg
+	::update idletasks
+	::application::analysis::startAnalysis
+}
+
+
+proc StopEngine {} {
+	catch { destroy .application.analysis }
 }
 
 

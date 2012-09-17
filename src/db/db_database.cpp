@@ -37,11 +37,16 @@
 #include "db_tournament_table.h"
 #include "db_player_stats.h"
 #include "db_filter.h"
+#include "db_selector.h"
 #include "db_query.h"
 #include "db_search.h"
 #include "db_log.h"
 
 #include "si3_codec.h"
+#include "si3_consumer.h"
+
+#include "sci_codec.h"
+#include "sci_consumer.h"
 
 #include "u_block_file.h"
 #include "u_progress.h"
@@ -77,6 +82,24 @@ struct SingleProgress : public util::Progress
 
 
 static unsigned Counter = 0;
+
+
+template
+unsigned
+Database::exportGames<Database>(	Database& destination,
+											Filter const& gameFilter,
+											Selector const& gameSelector,
+											copy::Mode copyMode,
+											Log& log,
+											util::Progress& progress);
+template
+unsigned
+Database::exportGames<Consumer>(	Consumer& destination,
+											Filter const& gameFilter,
+											Selector const& gameSelector,
+											copy::Mode copyMode,
+											Log& log,
+											util::Progress& progress);
 
 
 Database::Database(Database const& db, mstl::string const& name)
@@ -116,17 +139,27 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 
 	m_type = type;
 	m_memoryOnly = storage == MemoryOnly;
+	m_temporary = storage == Temporary;
 	m_created = sys::time::time();
+	m_readOnly = m_temporary;
 
-	if (!m_codec->isWriteable())
+	if (m_temporary || !m_codec->isWriteable())
 		m_writeable = false;
 
-	if (m_memoryOnly)
-		m_codec->open(this, encoding);
+	if (m_temporary)
+	{
+		m_size = m_codec->openProgressive(this, m_rootname, encoding);
+	}
 	else
-		m_codec->open(this, m_rootname, encoding);
+	{
+		if (m_memoryOnly)
+			m_codec->open(this, encoding);
+		else
+			m_codec->open(this, m_rootname, encoding);
 
-	m_size = m_gameInfoList.size();
+		m_size = m_gameInfoList.size();
+	}
+
 	m_namebases.setModified(true);
 }
 
@@ -228,16 +261,26 @@ Database::save(util::Progress& progress, unsigned start)
 	M_REQUIRE(start <= countGames());
 	M_REQUIRE(!usingAsyncReader());
 
-	m_namebases.update();
-
-	if (isMemoryOnly())
+	if (m_size == m_gameInfoList.size())
 		return;
 
-	m_codec->reset();
-	m_codec->save(m_rootname, start, progress);
-	m_codec->updateHeader(m_rootname);
+	m_namebases.update();
 	m_size = m_gameInfoList.size();
-	setEncodingFailed(m_codec->encodingFailed());
+
+	if (!isMemoryOnly())
+	{
+		m_codec->reset();
+		m_codec->save(m_rootname, start, progress);
+		m_codec->updateHeader(m_rootname);
+		setEncodingFailed(m_codec->encodingFailed());
+	}
+
+	m_lastChange = sys::time::timestamp();
+	m_treeCache.setIncomplete(start);
+
+	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + start,
+								const_cast<GameInfoList const&>(m_gameInfoList).end(),
+								Statistic::Reset);
 }
 
 
@@ -245,6 +288,8 @@ void
 Database::writeIndex(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
 	m_codec->reset();
@@ -258,10 +303,12 @@ void
 Database::writeNamebases(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
 	m_codec->reset();
-	m_codec->writeNamebases(os, &progress);
+	m_codec->writeNamebases(os, progress);
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -271,6 +318,8 @@ void
 Database::writeGames(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
 	m_codec->reset();
@@ -283,8 +332,13 @@ Database::writeGames(mstl::ostream& os, util::Progress& progress)
 void
 Database::sync(util::Progress& progress)
 {
-	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable && m_size != m_gameInfoList.size())
-		save(progress, m_size);
+	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable)
+	{
+		if (m_size != m_gameInfoList.size())
+			save(progress, m_size);
+
+		m_codec->sync();
+	}
 }
 
 
@@ -370,6 +424,7 @@ Database::clear()
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(!isReadOnly());
 
 	m_gameInfoList.clear();
 	m_statistic.clear();
@@ -395,6 +450,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	M_REQUIRE(file::hasSuffix(name()));
 	M_REQUIRE(!isMemoryOnly());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(!hasTemporaryStorage());
 
 	m_gameInfoList.clear();
 	m_namebases.clear();
@@ -745,6 +801,159 @@ Database::exportGame(unsigned index, Database& destination)
 
 
 unsigned
+Database::copyGames(	Database& destination,
+							Filter const& gameFilter,
+							Selector const& gameSelector,
+							TagBits const& allowedTags,
+							bool allowExtraTags,
+							Log& log,
+							util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(destination.isOpen());
+	M_REQUIRE(destination.isWriteable());
+	M_REQUIRE(	destination.format() == format::Scidb
+				|| destination.format() == format::Scid3
+				|| destination.format() == format::Scid4);
+
+	if (size() == 0)
+		return 0;
+
+	format::Type	dstFormat	= destination.format();
+	format::Type	srcFormat	= format();
+	bool				useConsumer	= true;
+	copy::Mode		copyMode		= copy::AllGames;
+
+	switch (int(dstFormat))
+	{
+		case format::Scid3:
+		case format::Scid4:
+			useConsumer = !format::isScidFormat(srcFormat);
+			copyMode = copy::ExcludeIllegal;
+			break;
+
+		case format::Scidb:
+			useConsumer = srcFormat != format::Scidb;
+			copyMode = copy::AllGames;
+			break;
+	}
+
+	unsigned count;
+
+	if (!useConsumer && allowedTags.complete() && allowExtraTags)
+	{
+		count = exportGames(destination, gameFilter, gameSelector, copyMode, log, progress);
+	}
+	else
+	{
+		if (dstFormat == format::Scidb)
+		{
+			// XXX do we need the source encoding?
+			sci::Consumer consumer(	srcFormat,
+											dynamic_cast<sci::Codec&>(destination.codec()),
+											allowedTags,
+											allowExtraTags);
+			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
+		}
+		else // dstFormat == format::Scid3 || dstFormat == format::Scid4
+		{
+			si3::Consumer consumer(	srcFormat,
+											dynamic_cast<si3::Codec&>(destination.codec()),
+											encoding(), // XXX do we need the source encoding?
+											allowedTags,
+											allowExtraTags);
+			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
+		}
+	}
+
+	return count;
+}
+
+
+template <class Destination>
+unsigned
+Database::exportGames(	Destination& destination,
+								Filter const& gameFilter,
+								Selector const& gameSelector,
+								copy::Mode copyMode,
+								Log& log,
+								util::Progress& progress)
+{
+	M_REQUIRE(gameFilter.size() == size());
+
+	enum { MaxWarning = 40 };
+
+	if (size() == 0)
+		return 0;
+
+	unsigned frequency = progress.frequency(gameFilter.count());
+
+	if (frequency == 0)
+		frequency = mstl::min(1000u, mstl::max(gameFilter.count()/100, 1u));
+
+	unsigned reportAfter = frequency;
+
+	util::ProgressWatcher watcher(progress, gameFilter.count());
+
+	unsigned count		= 0;
+	unsigned numGames	= 0;
+	unsigned warnings	= 0;
+
+	for (	int index = gameFilter.next(Filter::Invalid);
+			index != Filter::Invalid;
+			index = gameFilter.next(index))
+	{
+		if (reportAfter == count++)
+		{
+			progress.update(count);
+
+			if (progress.interrupted())
+				return numGames;
+
+			reportAfter += frequency;
+		}
+
+		int infoIndex;
+
+		if (m_temporary)
+		{
+			m_codec->readIndexProgressive(index);
+			infoIndex = 0;
+		}
+		else
+		{
+			infoIndex = index;
+		}
+
+		if (copyMode == copy::AllGames || !m_gameInfoList[infoIndex]->containsIllegalMoves())
+		{
+			save::State state = exportGame(infoIndex, destination);
+
+			if (destination.format() == format::Scidb && ::format::isScidFormat(format()))
+			{
+				unsigned unused;
+				mstl::string const& round = static_cast<si3::Codec&>(codec()).getRoundEntry(index);
+
+				if (!PgnReader::parseRound(round, unused, unused))
+				{
+					log.warning(
+						warnings++ >= MaxWarning ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
+						gameSelector.map(infoIndex));
+				}
+			}
+
+			if (save::isOk(state))
+				++numGames;
+			else if (!log.error(state, gameSelector.map(infoIndex)))
+				return numGames;
+		}
+	}
+
+	return numGames;
+}
+
+
+unsigned
 Database::importGame(Producer& producer, unsigned index)
 {
 	M_REQUIRE(isOpen());
@@ -793,6 +1002,38 @@ Database::importGames(Producer& producer, util::Progress& progress)
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								Statistic::Continue);
 
+	if (n)
+		m_treeCache.setIncomplete();
+
+	return n;
+}
+
+
+unsigned
+Database::importGames(Database& db, Log& log, util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!usingAsyncReader());
+
+	unsigned oldSize = m_gameInfoList.size();
+
+	m_codec->reset();
+
+	Filter	filter(db.size());
+	Selector	selector;
+	TagBits	allowedTags(true);
+
+	filter.set();
+
+	unsigned n = db.copyGames(*this, filter, selector, allowedTags, true, log, progress);
+
+	m_lastChange = sys::time::timestamp();
+	m_namebases.update();
+	setEncodingFailed(db.encodingFailed() || m_codec->encodingFailed());
+	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + oldSize,
+								const_cast<GameInfoList const&>(m_gameInfoList).end(),
+								Statistic::Continue);
 
 	if (n)
 		m_treeCache.setIncomplete();

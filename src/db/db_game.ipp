@@ -26,6 +26,7 @@
 
 namespace db {
 
+inline unsigned Game::id() const							{ return m_id; }
 inline Board const& Game::currentBoard() const		{ return m_currentBoard; }
 inline Board const& Game::startBoard() const			{ return m_startBoard; }
 inline Line const& Game::openingLine() const			{ return m_line; }

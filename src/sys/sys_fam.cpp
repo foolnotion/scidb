@@ -268,7 +268,6 @@ static bool
 monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned states, mstl::string&)
 {
 	M_ASSERT(libfamConnection);
-	M_ASSERT(req.m_data == 0);
 	M_ASSERT(type == file::RegularFile || type == file::Directory);
 
 	if (req.m_data == 0)
@@ -558,15 +557,17 @@ cancelMonitorFAM(Request& req)
 #elif defined(__linux__) && defined(F_NOTIFY)
 
 #include <stdio.h>
+#include <unistd.h>
+#include <errno.h>
 #include <signal.h>
 
 namespace {
 
-enum { FcntlSignal = SIGRTMIN; };
+static int fcntlSignal = -1;
 
 struct FcntlRequest
 {
-	FcntlRequest(int fd) :m_fd(wd), m_ref(0) {}
+	FcntlRequest(int fd) :m_fd(fd), m_ref(0) {}
 
 	int		m_fd;
 	unsigned	m_ref;
@@ -593,9 +594,9 @@ fcntlSignalHandler(int signum, siginfo_t* info, void*)
 
 		for (unsigned i = 0; i < mlist.size(); ++i)
 		{
+#if 0	// TODO
 			Monitor const& m = mlist[i];
 
-#if 0
 			if (event->mask & (IN_IGNORED | IN_UNMOUNT))
 			{
 				m.signalDeleted(event->name);
@@ -627,22 +628,27 @@ fcntlSignalHandler(int signum, siginfo_t* info, void*)
 static bool
 initFAM(mstl::string& error)
 {
-	if (FcntlSignal > SIGRTMAX)
+	if (fcntlSignal == -1)
 	{
-		error.assign("no more real-time signals available");
-		return false;
+		fcntlSignal = SIGRTMIN;
+
+		if (fcntlSignal > SIGRTMAX)
+		{
+			error.assign("no more real-time signals available");
+			return false;
+		}
 	}
 
 	if (signalRefCount++ == 0)
 	{
 		struct sigaction action;
 
+		sigemptyset(&action.sa_mask);
 		action.sa_sigaction = fcntlSignalHandler;
 		action.sa_flags = SA_SIGINFO;
-		action.sa_mask = 0;
 		action.sa_restorer = 0;
 
-		sigaction(FcntlSignal, &action, &signalAction);
+		sigaction(fcntlSignal, &action, &signalAction);
 	}
 
 	return true;
@@ -664,7 +670,7 @@ closeFAM()
 		}
 
 		fcntlMap.clear();
-		sigaction(FcntlSignal, &signalAction, 0);
+		sigaction(fcntlSignal, &signalAction, 0);
 	}
 }
 
@@ -707,7 +713,7 @@ monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned sta
 		if (states & FileAlterationMonitor::StateCreated)
 			mask |= DN_CREATE;
 
-		if (fcntl(fd, mask | DN_MULTISHOT) == -1 || fctnl(fd, F_SETSIG, long(FcntlSignal)) == -1)
+		if (fcntl(fd, mask | DN_MULTISHOT) == -1 || fcntl(fd, F_SETSIG, long(fcntlSignal)) == -1)
 		{
 			error.format("fcntl(): unexpected error %d\n", errno);
 			return false;

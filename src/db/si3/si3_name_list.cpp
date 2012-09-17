@@ -85,7 +85,7 @@ operator<(NameList::Node* lhs, mstl::string const& rhs)
 
 NameList::NameList()
 	:m_maxFrequency(0)
-	,m_size(0)
+	,m_maxId(0)
 	,m_nextId(0)
 	,m_first(0)
 	,m_last(0)
@@ -111,7 +111,6 @@ void
 NameList::reserve(unsigned size)
 {
 	m_usedIdSet.resize(size);
-	m_list.reserve(size);
 	m_lookup.resize(size);
 	m_access.resize(size);
 }
@@ -158,7 +157,7 @@ NameList::renumber()
 
 	if (count == 0)
 	{
-		m_size = 0;
+		m_maxId = 0;
 		m_nextId = 0;
 		m_list.clear();
 		m_usedIdSet.clear();
@@ -169,7 +168,7 @@ NameList::renumber()
 	{
 		unsigned expectedMaxId = m_usedIdSet.find_last();
 
-		m_size = expectedMaxId + 1;
+		m_maxId = expectedMaxId + 1;
 
 		if (expectedMaxId < count)
 			return;
@@ -193,7 +192,7 @@ NameList::renumber()
 			wantedId	= m_usedIdSet.find_next_not(wantedId);
 		}
 
-		m_size = m_usedIdSet.find_last() + 1;
+		m_maxId = m_usedIdSet.find_last() + 1;
 	}
 }
 
@@ -203,25 +202,27 @@ NameList::adjustListSize()
 {
 	unsigned count = m_usedIdSet.count();
 
-	if (m_list.size() == m_size && count == m_size)
+	if (m_list.size() == m_maxId && count == m_maxId)
 		return;
 
 	List::reverse_iterator e = m_list.rend();
 
 	unsigned id = mstl::bitset::npos;
 
+	// How can this happen: m_maxId > m_list.size()
+
 	for (List::reverse_iterator i = m_list.rbegin(); i != e; ++i)
 	{
 		if ((*i)->entry == 0)
 		{
-			if (m_list.size() > m_size)
+			if (m_list.size() > m_maxId)
 			{
 				m_list.erase(i.base());
 
-				if (m_list.size() == m_size && count == m_size)
+				if (m_list.size() == m_maxId && count == m_maxId)
 					return;
 			}
-			else if (count < m_size)
+			else if (count < m_maxId)
 			{
 				if (id == mstl::bitset::npos)
 					id = m_usedIdSet.find_first_not();
@@ -233,7 +234,7 @@ NameList::adjustListSize()
 				(*i)->id = id;
 				m_usedIdSet.set(id);
 
-				if (++count == m_size)
+				if (++count == m_maxId)
 					return;
 			}
 		}
@@ -310,17 +311,10 @@ NameList::addEntry(unsigned originalId, NamebaseEntry* entry)
 {
 	M_ASSERT(m_lookup[originalId]);
 
-	unsigned id = m_usedIdSet.find_first_not();
-
-	if (id == m_usedIdSet.npos)
-	{
-		id = m_usedIdSet.size();
-		m_usedIdSet.resize(id + mstl::max(50u, (id*9)/10));
-		m_usedIdSet.set(id);
-	}
+	unsigned id = entry->id();
 
 	if (id >= m_lookup.size())
-		reserve(id + 1);
+		m_lookup.resize(id + mstl::max(50u, (id*9)/10));
 
 	m_lookup[id] = m_lookup[originalId];
 }
@@ -347,7 +341,7 @@ NameList::append(	mstl::string const& originalName,
 	m_usedIdSet.set(id);
 	m_list.push_back(newNode(entry, str, id));
 	m_lookup[id] = m_list.back();
-	m_size = mstl::max(m_size, id + 1);
+	m_maxId = mstl::max(m_maxId, id + 1);
 }
 
 

@@ -287,6 +287,9 @@ Codec::Codec(CustomFlags* customFlags)
 
 Codec::~Codec() throw()
 {
+	if (m_asyncReader)
+		m_gameData->closeAsyncReader(m_asyncReader);
+
 	delete m_gameData;
 	delete m_asyncReader;
 	delete m_codec;
@@ -446,7 +449,7 @@ Codec::getGame(GameInfo const& info)
 	M_ASSERT(m_gameData);
 
 	ByteStream src;
-	getGameRecord(info, *m_gameData, src);
+	getGameRecord(info, m_gameData->reader(), src);
 	return src;
 }
 
@@ -473,7 +476,7 @@ Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, *m_codec);
 	return decoder.doDecoding(consumer, tags);
 }
@@ -495,7 +498,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string* encoding)
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 
 	Decoder decoder(strm, *m_codec);
 
@@ -664,7 +667,7 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 	m_gameData->sync();
 	m_hasMagic = true;
 
-	writeAllNamebases(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -682,16 +685,17 @@ Codec::doClear(mstl::string const& rootname)
 	mstl::fstream indexStream;
 	mstl::fstream namebaseStream;
 
-	openFile(m_gameStream, gameFilename, Truncate);
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
 
 	m_gameData->close();
 	delete m_gameData;
+	m_gameStream.truncate(0);
+	m_gameStream.flush();
 	m_gameData = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength, m_magicGameFile);
 	m_hasMagic = true;
 
-	writeAllNamebases(namebaseStream);
+	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 }
 
@@ -723,7 +727,7 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	mstl::fstream indexStream;
 	openFile(indexStream, indexFilename, MagicIndexFile, attach ? Truncate : 0);
 
-	writeAllNamebases(namebaseFilename);
+	writeNamebases(namebaseFilename);
 	writeIndexEntries(indexStream, start, progress);
 }
 
@@ -778,13 +782,13 @@ Codec::update(mstl::string const& rootname)
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
-	writeAllNamebases(namebaseFilename);
+	writeNamebases(namebaseFilename);
 	updateIndex(indexStream);
 }
 
 
 void
-Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebase*/)
+Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
 
@@ -803,10 +807,12 @@ Codec::update(mstl::string const& rootname, unsigned index, bool /*updateNamebas
 	indexStream.open(	sys::file::internalName(indexFilename),
 							mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
 
-	// We cannot use flag updateNamebase, because the frequency may have changed!
-	mstl::string namebaseFilename(rootname + m_extNamebase);
-	checkPermissions(namebaseFilename);
-	writeAllNamebases(namebaseFilename);
+	if (updateNamebase)
+	{
+		mstl::string namebaseFilename(rootname + m_extNamebase);
+		checkPermissions(namebaseFilename);
+		writeNamebases(namebaseFilename);
+	}
 
 	GameInfo* info = gameInfoList()[index];
 
@@ -1903,7 +1909,7 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 void
-Codec::writeAllNamebases(mstl::string const& filename)
+Codec::writeNamebases(mstl::string const& filename)
 {
 	mstl::string namebaseTempFilename(filename + ".temp.38583276");
 
@@ -1911,7 +1917,7 @@ Codec::writeAllNamebases(mstl::string const& filename)
 	{
 		mstl::fstream namebaseStream;
 		openFile(namebaseStream, namebaseTempFilename, MagicNamebase, Truncate);
-		writeAllNamebases(namebaseStream);
+		writeNamebases(namebaseStream);
 		sys::file::rename(namebaseTempFilename, filename, true);
 	}
 	catch (...)
@@ -1923,11 +1929,16 @@ Codec::writeAllNamebases(mstl::string const& filename)
 
 
 void
-Codec::writeAllNamebases(mstl::fstream& stream)
+Codec::writeNamebases(mstl::ostream& stream, util::Progress& progress)
+{
+	writeNamebases(stream, &progress);
+}
+
+
+void
+Codec::writeNamebases(mstl::ostream& stream, util::Progress* progress)
 {
 	M_ASSERT(m_codec && m_codec->hasEncoding());
-
-	stream.set_unbuffered();
 
 	unsigned char buf[28];
 	ByteStream bstrm(buf, sizeof(buf));
@@ -1936,6 +1947,24 @@ Codec::writeAllNamebases(mstl::fstream& stream)
 	m_eventList ->update(namebase(Namebase::Event ), *m_codec);
 	m_siteList  ->update(namebase(Namebase::Site  ), *m_codec);
 	m_roundList ->update(namebase(Namebase::Round ), *m_codec);
+
+	unsigned total =
+		m_playerList->size() + m_eventList->size() + m_siteList->size() + m_roundList->size();
+
+	ProgressWatcher watcher(progress, total);
+
+	if (progress)
+	{
+		progress->message("write-namebase");
+
+		m_progressFrequency		= progress->frequency(total, 1000);
+		m_progressReportAfter	= m_progressFrequency;
+		m_progressCount			= 0;
+	}
+	else
+	{
+		m_progressReportAfter = unsigned(-1);
+	}
 
 	// we have to recomnpute frequency values of site base
 	// Scidb: one ref for each event with this site
@@ -1970,17 +1999,17 @@ Codec::writeAllNamebases(mstl::fstream& stream)
 
 	stream.write(buf, sizeof(buf));
 
-	writeNamebase(stream, *m_playerList);
-	writeNamebase(stream, *m_eventList );
-	writeNamebase(stream, *m_siteList  );
-	writeNamebase(stream, *m_roundList );
+	writeNamebase(stream, *m_playerList, progress);
+	writeNamebase(stream, *m_eventList, progress );
+	writeNamebase(stream, *m_siteList, progress);
+	writeNamebase(stream, *m_roundList, progress);
 
 	namebases().setModified(false);
 }
 
 
 void
-Codec::writeNamebase(mstl::fstream& stream, NameList& base)
+Codec::writeNamebase(mstl::ostream& stream, NameList& base, util::Progress* progress)
 {
 	if (base.isEmpty())
 		return;
@@ -1989,6 +2018,7 @@ Codec::writeNamebase(mstl::fstream& stream, NameList& base)
 
 	unsigned char	buf[32768];
 	ByteOStream		bstrm(stream, buf, sizeof(buf));
+	unsigned			i = 0;
 
 	NameList::Node const* node = base.first();
 	NameList::Node const* prev = node;
@@ -2002,8 +2032,15 @@ Codec::writeNamebase(mstl::fstream& stream, NameList& base)
 	bstrm.put(node->encoded.size());
 	bstrm.put(node->encoded.c_str(), node->encoded.size());
 
-	for (node = base.next(); node; node = base.next())
+	for (node = base.next(); node; node = base.next(), ++i)
 	{
+		if (m_progressReportAfter <= i)
+		{
+			M_ASSERT(progress);
+			progress->update(i + m_progressCount);
+			m_progressReportAfter += m_progressFrequency;
+		}
+
 		unsigned length = node->encoded.size();
 		unsigned prefix = ::prefix(node->encoded, prev->encoded);
 
@@ -2133,14 +2170,11 @@ Codec::useAsyncReader(bool flag)
 	if (flag)
 	{
 		if (m_asyncReader == 0)
-		{
-			M_ASSERT(m_gameStream.is_open());
-			m_asyncReader = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength);
-		}
+			m_asyncReader = m_gameData->openAsyncReader();
 	}
 	else if (m_asyncReader)
 	{
-		delete m_asyncReader;
+		m_gameData->closeAsyncReader(m_asyncReader);
 		m_asyncReader = 0;
 	}
 }

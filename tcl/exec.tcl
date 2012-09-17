@@ -252,6 +252,11 @@ array set Vars {
 }
 
 
+proc blocked? {} {
+	return [set [namespace current]::blocked]
+}
+
+
 proc pending? {} {
 	variable blocked
 	variable postponed

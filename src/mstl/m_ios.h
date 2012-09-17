@@ -88,6 +88,11 @@ public:
 	iostate rdstate() const;
 	openmode mode() const;
 
+	bool is_readonly() const;
+	bool is_readable() const;
+	bool is_writable() const;
+	bool is_binary() const;
+
 	void clear(iostate state = goodbit);
 	void setstate(iostate state);
 

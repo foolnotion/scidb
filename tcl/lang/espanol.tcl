@@ -58,7 +58,7 @@
 ::mc::Close				"Cerrar"
 ::mc::Color				"Color"
 ::mc::Colors			"Colores"
-::mc::Configuration	"Configuration" ;# NEW
+::mc::Configuration	"Configuración"
 ::mc::Copy				"Copiar"
 ::mc::Cut				"Cortar"
 ::mc::Dark				"Oscuras"
@@ -66,7 +66,7 @@
 ::mc::Delete			"Eliminar"
 ::mc::Edit				"Editar"
 ::mc::Escape			"Esc"
-::mc::File				"File" ;# NEW
+::mc::File				"Archivo"
 ::mc::From				"De"
 ::mc::Game				"Partida"
 ::mc::Layout			"Disposición"
@@ -137,7 +137,7 @@
 ::widget::mc::Last		"Últi&mo" 
 ::widget::mc::Help		"Ayuda" 
 
-::widget::mc::New			"&New" ;# NEW
+::widget::mc::New			"&Nuevo"
 ::widget::mc::Save		"&Guardar"
 ::widget::mc::Delete		"&Eliminar"
 
@@ -185,6 +185,9 @@
 ::progress::mc::Message(write-game)				"Escribiendo datos de la partida"
 ::progress::mc::Message(write-namebase)		"Escribiendo datos de nombres"
 
+::progress::mc::Message(print-game)				"Print %s game(s)" ;# NEW
+::progress::mc::Message(copy-game)				"Copy %s game(s)" ;# NEW
+
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
 
@@ -208,17 +211,16 @@
 ::menu::mc::Contact						"&Contenidos (navegador web)"
 ::menu::mc::Quit							"&Salir"
 ::menu::mc::Extras						"E&xtras" 
-::menu::mc::Setup							"Setu&p" ;# NEW
-::menu::mc::Engines						"&Engines" ;# NEW
+::menu::mc::Setup							"Configu&rar"
+::menu::mc::Engines						"Motor&es"
 
 ::menu::mc::ContactBugReport			"&Reporte de errores"
 ::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
 ::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
-::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
+::menu::mc::OpenEngineLog				"Abrir bitácora d&el Motor"
 
 ::menu::mc::OpenFile						"Abrir un archivo Scidb"
 ::menu::mc::NewFile						"Crear un archivo Scidb"
-::menu::mc::ImportFiles					"Importar archivos PGN"
 ::menu::mc::Archiving					"Archivando" 
 ::menu::mc::CreateArchive				"Crear Archivo" 
 ::menu::mc::BuildArchive				"Crear archivo %s" 
@@ -234,7 +236,7 @@
 ::load::mc::SystemEncoding			"La codificación del sistema es '%s'"
 
 ::load::mc::ReadingFile(options)	"Leer archivo de opciones"
-::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
+::load::mc::ReadingFile(engines)	"Leer archivo de Motores"
 
 ::load::mc::ECOFile					"archivo ECO"
 ::load::mc::EngineFile				"archivo de motor"
@@ -266,54 +268,54 @@
 ::archive::mc::UnpackFile					"Descomprimir %s" ;
 
 ### player photos ######################################################
-::util::photos::mc::InstallPlayerPhotos		"Install/Update Player Photos" ;# NEW
-::util::photos::mc::TimeOut						"Timeout occurred." ;# NEW
-::util::photos::mc::EnterPassword				"Personal Password" ;# NEW
-::util::photos::mc::Download						"Download" ;# NEW
-::util::photos::mc::SharedInstallation			"Shared installation" ;# NEW
-::util::photos::mc::LocalInstallation			"Private installation" ;# NEW
-::util::photos::mc::RetryLater					"Please retry later." ;# NEW
-::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
-::util::photos::mc::PhotoFiles					"Photo Files" ;# NEW
+::util::photos::mc::InstallPlayerPhotos		"Instalar/Actualizar fotos de los jugadores"
+::util::photos::mc::TimeOut						"Se acabó el tiempo de espera."
+::util::photos::mc::EnterPassword				"Contraseña personal"
+::util::photos::mc::Download						"Descarga"
+::util::photos::mc::SharedInstallation			"Instalación compartida"
+::util::photos::mc::LocalInstallation			"Instalación privada"
+::util::photos::mc::RetryLater					"Por favor, inténtelo de nuevo más tarde."
+::util::photos::mc::DownloadStillInProgress	"La descarga de los archivos de fotos aún está en curso."
+::util::photos::mc::PhotoFiles					"Archivos de fotos"
 
-::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
-::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
-::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%." ;# NEW
-::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
+::util::photos::mc::RequiresSuperuserRights	"La instalación/actualización requiere derechos de superusuario.\n\nAdvierta que la contraseña no se aceptará si el usuario no figura en el archivo sudoers."
+::util::photos::mc::RequiresInternetAccess	"La instalación/actualización de los archivos de fotos de los jugadores requiere una conexión a Internet."
+::util::photos::mc::AlternativelyDownload(0)	"Como alternativa usted puede descargar los archivos de fotos desde %link%. Instale estos archivos en el directorio %local%."
+::util::photos::mc::AlternativelyDownload(1)	"Como alternativa usted puede descargar los archivos de fotos desde %link%. Instale estos archivos en el directorio compartido %shared%, o en su directorio privado %local%."
 
-::util::photos::mc::Error(nohttp)				"Cannot open an internet connection because package TclHttp is not installed." ;# NEW
-::util::photos::mc::Error(busy)					"The installation/update is already running." ;# NEW
-::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed." ;# NEW
-::util::photos::mc::Error(passwd)				"The password is wrong." ;# NEW
-::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
-::util::photos::mc::Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
+::util::photos::mc::Error(nohttp)				"No se puede establecer una conexión a Internet debido a que no está instalado el paquete TclHttp."
+::util::photos::mc::Error(busy)					"La instalación/actualización ya está en curso."
+::util::photos::mc::Error(failed)				"Error inesperado: falló la llamada al sub-proceso."
+::util::photos::mc::Error(passwd)				"La contraseña es incorrecta."
+::util::photos::mc::Error(nosudo)				"No puede invocar el comando 'sudo' debido a que el usuario no figura en el archivo sudoers."
+::util::photos::mc::Detail(nosudo)				"Usted puede realizar una instalación privada como solución alternativa, o iniciar esta aplicación como superusuario."
 
-::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date." ;# NEW
-::util::photos::mc::Message(finished)			"The installation/update of photo files has finished." ;# NEW
-::util::photos::mc::Message(broken)				"Broken Tcl library version." ;# NEW
-::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'." ;# NEW
-::util::photos::mc::Message(missing)			"Cannot find directory '%s'." ;# NEW
-::util::photos::mc::Message(httperr)			"HTTP error: %s" ;# NEW
-::util::photos::mc::Message(httpcode)			"Unexpected HTTP code %s." ;# NEW
-::util::photos::mc::Message(noconnect)			"HTTP connection failed." ;# NEW
-::util::photos::mc::Message(timeout)			"HTTP timeout occurred." ;# NEW
-::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
-::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(notfound)			"Download aborted because photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(aborted)			"User has aborted download." ;# NEW
-::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died." ;# NEW
+::util::photos::mc::Message(uptodate)			"Los archivos de fotos ya están actualizados." ;# NEW changed from "The photo files are already up-to-date." to "The photo files are still up-to-date."
+::util::photos::mc::Message(finished)			"La instalación/actualización de los archivos de fotos ha finalizado."
+::util::photos::mc::Message(broken)				"Versión corrupta de la biblioteca Tcl."
+::util::photos::mc::Message(noperm)				"Usted no tiene permisos de escritura para el directorio '%s'."
+::util::photos::mc::Message(missing)			"No se encuentra el directorio '%s'."
+::util::photos::mc::Message(httperr)			"Error HTTP: %s"
+::util::photos::mc::Message(httpcode)			"Código HTTP %s inesperado."
+::util::photos::mc::Message(noconnect)			"Falló la conexión HTTP."
+::util::photos::mc::Message(timeout)			"Se acabó el tiempo HTTP de espera."
+::util::photos::mc::Message(crcerror)			"Error de suma de chequeo. Probablemente el servidor de archivos se encuentra actualmente en modo mantenimiento."
+::util::photos::mc::Message(maintenance)		"Actualmente se encuentra en curso un mantenimiento del servidor de archivos de fotos."
+::util::photos::mc::Message(notfound)			"Descarga abortada debido a que se encuentra en curso actualmente un mantenimiento del servidor de archivos de fotos."
+::util::photos::mc::Message(aborted)			"El usuario abortó la descarga."
+::util::photos::mc::Message(killed)				"Cese inesperado de la descarga. Terminó el sub-proceso."
 
-::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s." ;# NEW
-::util::photos::mc::Detail(noconnect)			"Probably you don't have an internet connection." ;# NEW
-::util::photos::mc::Detail(badhost)				"Another possibility is a bad host, or a bad port." ;# NEW
+::util::photos::mc::Detail(nohttp)				"Por favor, instale el paquete TclHttp, por ejemplo %s."
+::util::photos::mc::Detail(noconnect)			"Probablemente usted no tiene  una conexión a Internet."
+::util::photos::mc::Detail(badhost)				"Otra posibilidad es un servidor o un puerto anómalos."
 
-::util::photos::mc::Log(started)					"Installation/update of photo files started at %s." ;# NEW
-::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s." ;# NEW
-::util::photos::mc::Log(destination)			"Destination directory for photo file download is '%s'." ;# NEW
-::util::photos::mc::Log(created)					"%s file(s) created." ;# NEW
-::util::photos::mc::Log(deleted)					"%s file(s) deleted." ;# NEW
-::util::photos::mc::Log(skipped)					"%s file(s) skipped." ;# NEW
-::util::photos::mc::Log(updated)					"%s file(s) updated." ;# NEW
+::util::photos::mc::Log(started)					"Instalación/actualización de los archivos de fotos iniciada a las %s."
+::util::photos::mc::Log(finished)				"Instalación/actualización de los archivos de fotos finalizada a las %s."
+::util::photos::mc::Log(destination)			"El directorio de destino de los archivos de fotos descargados es '%s'."
+::util::photos::mc::Log(created)					"%s archivo(s) creado(s)."
+::util::photos::mc::Log(deleted)					"%s archivo(s) eliminado(s)."
+::util::photos::mc::Log(skipped)					"%s archivo(s) mantenido(s)."
+::util::photos::mc::Log(updated)					"%s archivo(s) actualizado(s)."
 
 ### application ########################################################
 ::application::mc::Database				"&Base"
@@ -324,15 +326,17 @@
 ::application::mc::UndockWindow			"Ventana desacoplada"
 ::application::mc::ChessInfoDatabase	"Base de Datos Ajedrecística"
 ::application::mc::Shutdown				"Cierre..."
-::application::mc::QuitAnyway				"Quit anyway?" ;# NEW
+::application::mc::QuitAnyway				"¿Desea cerrar de todos modos?"
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable		"Mostrar tabla de torneo para esta partida"
+::application::board::mc::ShowCrosstable	"Mostrar tabla de torneo para esta partida"
+::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
+::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
 
-::application::board::mc::Tools					"Herramientas"
-::application::board::mc::Control				"Control"
-::application::board::mc::GoIntoNextVar		"Ir a la próxima variante"
-::application::board::mc::GoIntPrevVar			"Ir a la variante previa"
+::application::board::mc::Tools				"Herramientas"
+::application::board::mc::Control			"Control"
+::application::board::mc::GoIntoNextVar	"Ir a la próxima variante"
+::application::board::mc::GoIntPrevVar		"Ir a la variante previa"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -343,121 +347,135 @@
 ::application::board::mc::Accel(trial-mode)			"T" 
 
 ### application::database ##############################################
-::application::database::mc::FileOpen						"Abrir Base..."
-::application::database::mc::FileOpenRecent				"Abrir Recientes"
-::application::database::mc::FileNew						"Nueva Base..."
-::application::database::mc::FileExport					"Exportar..."
-::application::database::mc::FileImport					"Importar archivos PGN..."
-::application::database::mc::FileCreate					"Crear Archivo..."
-::application::database::mc::FileClose						"Cerrar"
-::application::database::mc::FileCompact					"Compactar"
-::application::database::mc::HelpSwitcher					"Ayuda con el Cambiador de Bases de Datos"
+::application::database::mc::FileOpen							"Abrir Base..."
+::application::database::mc::FileOpenRecent					"Abrir Recientes"
+::application::database::mc::FileNew							"Nueva Base..."
+::application::database::mc::FileExport						"Exportar..."
+::application::database::mc::FileImport(pgn)					"Importar archivos PGN..."
+::application::database::mc::FileImport(db)					"Import Databases..." ;# NEW
+::application::database::mc::FileCreate						"Crear Archivo..."
+::application::database::mc::FileClose							"Cerrar"
+::application::database::mc::FileCompact						"Compactar"
+::application::database::mc::HelpSwitcher						"Ayuda con el Cambiador de Bases de Datos"
 
-::application::database::mc::Games							"&Partidas"
-::application::database::mc::Players						"&Jugadores"
-::application::database::mc::Events							"Even&tos"
-::application::database::mc::Sites							"Lugare&s"
-::application::database::mc::Annotators					"&Comentaristas"
+::application::database::mc::Games								"&Partidas"
+::application::database::mc::Players							"&Jugadores"
+::application::database::mc::Events								"Even&tos"
+::application::database::mc::Sites								"Lugare&s"
+::application::database::mc::Annotators						"&Comentaristas"
 
-::application::database::mc::File							"Archivo"
-::application::database::mc::SymbolSize					"Tamaño del símbolo"
-::application::database::mc::Large							"Grande"
-::application::database::mc::Medium							"Mediano"
-::application::database::mc::Small							"Pequeño"
-::application::database::mc::Tiny							"Diminuto"
-::application::database::mc::Empty							"vacío"
-::application::database::mc::None							"ninguno"
-::application::database::mc::Failed							"fallido"
-::application::database::mc::LoadMessage					"Abrir Base %s"
-::application::database::mc::UpgradeMessage				"Actualizando Database %s"
-::application::database::mc::CompactMessage				"Compactando base de datos %s" 
-::application::database::mc::CannotOpenFile				"No se puede abrir el archivo '%s'."
-::application::database::mc::EncodingFailed				"Fallo en la codificación de %s."
-::application::database::mc::DatabaseAlreadyOpen		"La Base '%s' ya está abierta."
-::application::database::mc::Properties					"Propiedades"
-::application::database::mc::Preload						"Precarga"
-::application::database::mc::MissingEncoding				"Codificación %s perdida (usar %s en su lugar)"
-::application::database::mc::DescriptionTooLarge		"Descripción demasiado grande."
-::application::database::mc::DescrTooLargeDetail		"La entrada contiene %d caracteres, pero sólo se permiten %d."
-::application::database::mc::ClipbaseDescription		"Base temporal, no se guarda al disco."
-::application::database::mc::HardLinkDetected			"No se puede cargar el archivo '%file1' porque ya está cargado como '%file2'. Esto sucede cuando se usan hard links."
-::application::database::mc::HardLinkDetectedDetail	 "Si se carga la misma base de datos nuevamente, la aplicació puede terminar debido a los hilos usados."
-::application::database::mc::UriRejectedDetail			"Solamente pueden abrirse bases de datos Scidb:"
-::application::database::mc::EmptyUriList					"Descartar contenido está vacóo."
-::application::database::mc::OverwriteExistingFiles	"Sobrescribir archivos existentes en el directorio '%s'?"
-::application::database::mc::SelectDatabases				"Seleccione las bases de datos que se abrirán"
-::application::database::mc::ExtractArchive				"Extracer archivo %s"
-::application::database::mc::CompactDetail				"Todos los juegos deben cerrarse para poder compactar."
-::application::database::mc::ReallyCompact				"¿Realmente desea compactar la base de datos '%s'?" 
-::application::database::mc::ReallyCompactDetail(1)	"Solamente se borrará una partida." 
-::application::database::mc::ReallyCompactDetail(N)	"Se borrarán %s partidas."
+::application::database::mc::File								"Archivo"
+::application::database::mc::SymbolSize						"Tamaño del símbolo"
+::application::database::mc::Large								"Grande"
+::application::database::mc::Medium								"Mediano"
+::application::database::mc::Small								"Pequeño"
+::application::database::mc::Tiny								"Diminuto"
+::application::database::mc::Empty								"vacío"
+::application::database::mc::None								"ninguno"
+::application::database::mc::Failed								"fallido"
+::application::database::mc::LoadMessage						"Abrir Base %s"
+::application::database::mc::UpgradeMessage					"Actualizando Database %s"
+::application::database::mc::CompactMessage					"Compactando base de datos %s" 
+::application::database::mc::CannotOpenFile					"No se puede abrir el archivo '%s'."
+::application::database::mc::EncodingFailed					"Fallo en la codificación de %s."
+::application::database::mc::DatabaseAlreadyOpen			"La Base '%s' ya está abierta."
+::application::database::mc::Properties						"Propiedades"
+::application::database::mc::Preload							"Precarga"
+::application::database::mc::MissingEncoding					"Codificación %s perdida (usar %s en su lugar)"
+::application::database::mc::DescriptionTooLarge			"Descripción demasiado grande."
+::application::database::mc::DescrTooLargeDetail			"La entrada contiene %d caracteres, pero sólo se permiten %d."
+::application::database::mc::ClipbaseDescription			"Base temporal, no se guarda al disco."
+::application::database::mc::HardLinkDetected				"No se puede cargar el archivo '%file1' porque ya está cargado como '%file2'. Esto sucede cuando se usan hard links."
+::application::database::mc::HardLinkDetectedDetail		 "Si se carga la misma base de datos nuevamente, la aplicació puede terminar debido a los hilos usados."
+::application::database::mc::UriRejectedDetail(open)		"Solamente pueden abrirse bases de datos Scidb:"
+::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::application::database::mc::EmptyUriList						"Descartar contenido está vacóo."
+::application::database::mc::OverwriteExistingFiles		"Sobrescribir archivos existentes en el directorio '%s'?"
+::application::database::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
+::application::database::mc::ExtractArchive					"Extracer archivo %s"
+::application::database::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
+::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
+::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida." 
+::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
+::application::database::mc::CopyGames							"Copy games" ;# NEW
+::application::database::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
+::application::database::mc::CopiedGames						"%s game(s) copied" ;# NEW
+::application::database::mc::NoGamesCopied					"No games copied" ;# NEW
+::application::database::mc::CopyAllGames						"Copy all games (%num) from '%src'"
+::application::database::mc::CopyFilteredGames				"Copy only filtered games (%num) from '%src'"
+::application::database::mc::ImportGames						"Import games" ;# NEW
+::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
+::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportFiles						"Import Files:" ;# NEW
 
-::application::database::mc::RecodingDatabase			"Recodificar %base de %from a %to"
-::application::database::mc::RecodedGames					"%s partida(s) recodificadas"
+::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
+::application::database::mc::RecodedGames						"%s partida(s) recodificadas"
 
-::application::database::mc::GameCount						"Partidas"
-::application::database::mc::DatabasePath					"ruta a la Base"
-::application::database::mc::DeletedGames					"Partidas eliminadas"
-::application::database::mc::Description					"Descripción"
-::application::database::mc::Created						"Creada"
-::application::database::mc::LastModified					"Última modificación"
-::application::database::mc::Encoding						"Codificar"
-::application::database::mc::YearRange						"Rango de años"
-::application::database::mc::RatingRange					"Rango de ratings"
-::application::database::mc::Result							"Resultado"
-::application::database::mc::Score							"puntuación"
-::application::database::mc::Type							"Tipo"
-::application::database::mc::ReadOnly						"Sólo lectura"
+::application::database::mc::GameCount							"Partidas"
+::application::database::mc::DatabasePath						"ruta a la Base"
+::application::database::mc::DeletedGames						"Partidas eliminadas"
+::application::database::mc::Description						"Descripción"
+::application::database::mc::Created							"Creada"
+::application::database::mc::LastModified						"Última modificación"
+::application::database::mc::Encoding							"Codificar"
+::application::database::mc::YearRange							"Rango de años"
+::application::database::mc::RatingRange						"Rango de ratings"
+::application::database::mc::Result								"Resultado"
+::application::database::mc::Score								"puntuación"
+::application::database::mc::Type								"Tipo"
+::application::database::mc::ReadOnly							"Sólo lectura"
 
-::application::database::mc::ChangeIcon					"Cambiar ícono"
-::application::database::mc::Recode							"Recodificar"
-::application::database::mc::EditDescription				"Editar Descripción"
-::application::database::mc::EmptyClipbase				"Vaciar Base temporal"
+::application::database::mc::ChangeIcon						"Cambiar ícono"
+::application::database::mc::Recode								"Recodificar"
+::application::database::mc::EditDescription					"Editar Descripción"
+::application::database::mc::EmptyClipbase					"Vaciar Base temporal"
 
-::application::database::mc::T_Unspecific					"Inespecífico"
-::application::database::mc::T_Temporary					"Temporal"
-::application::database::mc::T_Work							"Trabajo"
-::application::database::mc::T_Clipbase					"Base temporal"
-::application::database::mc::T_MyGames						"Mis partidas"
-::application::database::mc::T_Informant					"Informador"
-::application::database::mc::T_LargeDatabase				"Gran Base"
-::application::database::mc::T_CorrespondenceChess		"Ajedrez por Correspondencia"  
-::application::database::mc::T_EmailChess					"Ajedrez por email"
-::application::database::mc::T_InternetChess				"Ajedrez por Internet"
-::application::database::mc::T_ComputerChess				"Ajedrez por computadora"
-::application::database::mc::T_Chess960					"Ajedrez 960"
-::application::database::mc::T_PlayerCollection			"Colección de jugadores"
-::application::database::mc::T_Tournament					"Torneo"
-::application::database::mc::T_TournamentSwiss			"Torneo suizo"
-::application::database::mc::T_GMGames						"Partidas de GM"
-::application::database::mc::T_IMGames						"Partidas de MI"
-::application::database::mc::T_BlitzGames					"Partidas rápidas"
-::application::database::mc::T_Tactics						"Táctica"
-::application::database::mc::T_Endgames					"Finales"
-::application::database::mc::T_Analysis					"Análisis"
-::application::database::mc::T_Training					"Entrenamiento"
-::application::database::mc::T_Match						"Competencia"
-::application::database::mc::T_Studies						"Estudios"
-::application::database::mc::T_Jewels						"Joyas"
-::application::database::mc::T_Problems					"Problemas"
-::application::database::mc::T_Patzer						"Novato"
-::application::database::mc::T_Gambit						"Gambito"
-::application::database::mc::T_Important					"Importante"
-::application::database::mc::T_Openings					"Aperturas"
-::application::database::mc::T_OpeningsWhite				"Aperturas de las Blancas"
-::application::database::mc::T_OpeningsBlack				"Aperturas de las Negras"
+::application::database::mc::T_Unspecific						"Inespecífico"
+::application::database::mc::T_Temporary						"Temporal"
+::application::database::mc::T_Work								"Trabajo"
+::application::database::mc::T_Clipbase						"Base temporal"
+::application::database::mc::T_MyGames							"Mis partidas"
+::application::database::mc::T_Informant						"Informador"
+::application::database::mc::T_LargeDatabase					"Gran Base"
+::application::database::mc::T_CorrespondenceChess			"Ajedrez por Correspondencia"  
+::application::database::mc::T_EmailChess						"Ajedrez por email"
+::application::database::mc::T_InternetChess					"Ajedrez por Internet"
+::application::database::mc::T_ComputerChess					"Ajedrez por computadora"
+::application::database::mc::T_Chess960						"Ajedrez 960"
+::application::database::mc::T_PlayerCollection				"Colección de jugadores"
+::application::database::mc::T_Tournament						"Torneo"
+::application::database::mc::T_TournamentSwiss				"Torneo suizo"
+::application::database::mc::T_GMGames							"Partidas de GM"
+::application::database::mc::T_IMGames							"Partidas de MI"
+::application::database::mc::T_BlitzGames						"Partidas rápidas"
+::application::database::mc::T_Tactics							"Táctica"
+::application::database::mc::T_Endgames						"Finales"
+::application::database::mc::T_Analysis						"Análisis"
+::application::database::mc::T_Training						"Entrenamiento"
+::application::database::mc::T_Match							"Competencia"
+::application::database::mc::T_Studies							"Estudios"
+::application::database::mc::T_Jewels							"Joyas"
+::application::database::mc::T_Problems						"Problemas"
+::application::database::mc::T_Patzer							"Novato"
+::application::database::mc::T_Gambit							"Gambito"
+::application::database::mc::T_Important						"Importante"
+::application::database::mc::T_Openings						"Aperturas"
+::application::database::mc::T_OpeningsWhite					"Aperturas de las Blancas"
+::application::database::mc::T_OpeningsBlack					"Aperturas de las Negras"
 
-::application::database::mc::OpenDatabase					"Abrir Base"
-::application::database::mc::NewDatabase					"Nueva Base"
-::application::database::mc::CloseDatabase				"Cerrar Base '%s'"
-::application::database::mc::SetReadonly					"Marcar Base de Datos '%s' como solo lectura"
-::application::database::mc::SetWriteable					"Marcar Base de Datos '%s' para escritura"
+::application::database::mc::OpenDatabase						"Abrir Base"
+::application::database::mc::NewDatabase						"Nueva Base"
+::application::database::mc::CloseDatabase					"Cerrar Base '%s'"
+::application::database::mc::SetReadonly						"Marcar Base de Datos '%s' como solo lectura"
+::application::database::mc::SetWriteable						"Marcar Base de Datos '%s' para escritura"
 
-::application::database::mc::OpenReadonly					"Abrir como solo lectura"
-::application::database::mc::OpenWriteable				"Abrir con permiso de escritura"
+::application::database::mc::OpenReadonly						"Abrir como solo lectura"
+::application::database::mc::OpenWriteable					"Abrir con permiso de escritura"
 
-::application::database::mc::UpgradeDatabase				"%s es un formato antiguo de base de datos que solo puede abrirse como solo lectura.\n\nActualizarla creará una nueva versión de la base de datos y luego removerá los archivos originales.\n\nEsto puede demorar un poco pero solo debe hacerse una vez.\n\nDesea actualizar esta base de datos ahora?"
-::application::database::mc::UpgradeDatabaseDetail		"\"No\" abrirá la base de datos como solo lectura y no puede marcarse para escritura."
+::application::database::mc::UpgradeDatabase					"%s es un formato antiguo de base de datos que solo puede abrirse como solo lectura.\n\nActualizarla creará una nueva versión de la base de datos y luego removerá los archivos originales.\n\nEsto puede demorar un poco pero solo debe hacerse una vez.\n\nDesea actualizar esta base de datos ahora?"
+::application::database::mc::UpgradeDatabaseDetail			"\"No\" abrirá la base de datos como solo lectura y no puede marcarse para escritura."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -688,107 +706,107 @@
 ::board::texture::mc::PreselectedOnly "Sólo preseleccionados"
 
 ### pgn-setup ##########################################################
-::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
-::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
-::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser" ;# NEW
-::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor" ;# NEW
-::pgn::setup::mc::Pixel								"pixel" ;# NEW
-::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
-::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
-::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
+::pgn::setup::mc::Configure(editor)				"Personalizar Editor"
+::pgn::setup::mc::Configure(browser)			"Personalizar Salida de texto"
+::pgn::setup::mc::TakeOver(editor)				"Adoptar la configuración del Explorador de partidas"
+::pgn::setup::mc::TakeOver(browser)				"Adoptar la configuración del Editor de partidas"
+::pgn::setup::mc::Pixel								"Píxel"
+::pgn::setup::mc::RevertSettings					"Volver a la configuración inicial"
+::pgn::setup::mc::ResetSettings					"Volver a la configuración original"
+::pgn::setup::mc::DiscardAllChanges				"¿Desea descartar todos los cambios realizados?"
 
-::pgn::setup::mc::Setup(Appearance)				"Appearance" ;# NEW
-::pgn::setup::mc::Setup(Layout)					"Layout" ;# NEW
-::pgn::setup::mc::Setup(Diagrams)				"Diagrams" ;# NEW
-::pgn::setup::mc::Setup(MoveStyle)				"Move Style" ;# NEW
+::pgn::setup::mc::Setup(Appearance)				"Apariencia"
+::pgn::setup::mc::Setup(Layout)					"Disposición"
+::pgn::setup::mc::Setup(Diagrams)				"Diagramas"
+::pgn::setup::mc::Setup(MoveStyle)				"Estilo de las jugadas"
 
-::pgn::setup::mc::Setup(Fonts)					"Fonts" ;# NEW
-::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
-::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
-::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
-::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+::pgn::setup::mc::Setup(Fonts)					"Fuentes"
+::pgn::setup::mc::Setup(font-and-size)			"Fuente y tamaño del texto"
+::pgn::setup::mc::Setup(figurine-font)			"Figurines (normal)"
+::pgn::setup::mc::Setup(figurine-bold)			"Figurines (negritas)"
+::pgn::setup::mc::Setup(symbol-font)			"Símbolos"
 
-::pgn::setup::mc::Setup(Colors)					"Colors" ;# NEW
-::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
-::pgn::setup::mc::Setup(start-position)		"Start Position" ;# NEW
-::pgn::setup::mc::Setup(variations)				"Variations" ;# NEW
-::pgn::setup::mc::Setup(numbering)				"Numbering" ;# NEW
-::pgn::setup::mc::Setup(brackets)				"Brackets" ;# NEW
-::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
-::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
-::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
-::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
-::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
-::pgn::setup::mc::Setup(result)					"Result" ;# NEW
-::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
-::pgn::setup::mc::Setup(next-moves)				"Next Moves" ;# NEW
-::pgn::setup::mc::Setup(empty-game)				"Empty Game" ;# NEW
+::pgn::setup::mc::Setup(Colors)					"Colores"
+::pgn::setup::mc::Setup(Highlighting)			"Resaltado"
+::pgn::setup::mc::Setup(start-position)		"Posición inicial"
+::pgn::setup::mc::Setup(variations)				"Variantes"
+::pgn::setup::mc::Setup(numbering)				"Numeración"
+::pgn::setup::mc::Setup(brackets)				"Paréntesis"
+::pgn::setup::mc::Setup(illegal-move)			"Jugada ilegal"
+::pgn::setup::mc::Setup(comments)				"Comentarios"
+::pgn::setup::mc::Setup(annotation)				"Anotación"
+::pgn::setup::mc::Setup(marks)					"Marcadores"
+::pgn::setup::mc::Setup(move-info)				"Información de la jugada"
+::pgn::setup::mc::Setup(result)					"Resultado"
+::pgn::setup::mc::Setup(current-move)			"Jugada actual"
+::pgn::setup::mc::Setup(next-moves)				"Jugadas siguientes"
+::pgn::setup::mc::Setup(empty-game)				"Partida vacía"
 
-::pgn::setup::mc::Setup(Hovers)					"Hovers" ;# NEW
-::pgn::setup::mc::Setup(hover-move)				"Move" ;# NEW
-::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
-::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+::pgn::setup::mc::Setup(Hovers)					"Flotantes"
+::pgn::setup::mc::Setup(hover-move)				"Jugada"
+::pgn::setup::mc::Setup(hover-comment)			"Comentario"
+::pgn::setup::mc::Setup(hover-move-info)		"Información de la jugada"
 
-::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::Section(ParLayout)			"Disposición de párrafo"
 ::pgn::setup::mc::ParLayout(use-spacing)		"Usar espaciado en los párrafos"
 ::pgn::setup::mc::ParLayout(column-style)		"Estilo columna"
-::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
-::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-1)			"Sangrar la jugada de las Blancas"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Sangrar la jugada de las Negras"
 ::pgn::setup::mc::ParLayout(mainline-bold)	"Negrita para las jugadas de la Línea principal"
 
-::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
-::pgn::setup::mc::Variations(width)				"Indent Width" ;# NEW
-::pgn::setup::mc::Variations(level)				"Indent Level" ;# NEW
+::pgn::setup::mc::Section(Variations)			"Disposición de las Variantes"
+::pgn::setup::mc::Variations(width)				"Sangrar el ancho"
+::pgn::setup::mc::Variations(level)				"Sangrar nivel"
 
-::pgn::setup::mc::Section(Display)				"Display" ;# NEW
-::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
-::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+::pgn::setup::mc::Section(Display)				"Presentación"
+::pgn::setup::mc::Display(numbering)			"Mostrar numeración en las Variantes"
+::pgn::setup::mc::Display(moveinfo)				"Mostrar Información de la jugada"
 
-::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Section(Diagrams)				"Diagramas"
 ::pgn::setup::mc::Diagrams(show)					"Mostrar diagramas"
-::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
-::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
+::pgn::setup::mc::Diagrams(square-size)		"Tamaño de los escaques"
+::pgn::setup::mc::Diagrams(indentation)		"Sangrar el ancho"
 
 ### engine #############################################################
-::engine::mc::Information				"Information" ;# NEW
-::engine::mc::Options					"Options" ;# NEW
+::engine::mc::Information				"Información"
+::engine::mc::Options					"Opciones"
 
-::engine::mc::Name						"Name" ;# NEW
-::engine::mc::Identifier				"Identifier" ;# NEW
-::engine::mc::Author						"Author" ;# NEW
-::engine::mc::Country					"Country" ;# NEW
-::engine::mc::Rating						"Rating" ;# NEW
-::engine::mc::Logo						"Logo" ;# NEW
-::engine::mc::Protocol					"Protocol" ;# NEW
-::engine::mc::Parameters				"Parameters" ;# NEW
-::engine::mc::Command					"Command" ;# NEW
-::engine::mc::Variants					"Variants" ;# NEW
-::engine::mc::LastUsed					"Last used" ;# NEW
-::engine::mc::Frequency					"Frequency" ;# NEW
+::engine::mc::Name						"Nombre"
+::engine::mc::Identifier				"Identificador"
+::engine::mc::Author						"Autor"
+::engine::mc::Country					"País"
+::engine::mc::Rating						"Rating"
+::engine::mc::Logo						"Logotipo"
+::engine::mc::Protocol					"Protocolo"
+::engine::mc::Parameters				"Parámetros"
+::engine::mc::Command					"Comandos"
+::engine::mc::Variants					"Variantes"
+::engine::mc::LastUsed					"Último uso"
+::engine::mc::Frequency					"Frecuencia"
 
-::engine::mc::Variant(standard)		"Standard Chess" ;# NEW
-::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
-::engine::mc::Variant(shuffle)		"Shuffle Chess" ;# NEW
+::engine::mc::Variant(standard)		"Ajedrez estándar"
+::engine::mc::Variant(chess960)		"Ajedrez 960"
+::engine::mc::Variant(shuffle)		"Ajedrez Shuffle"
 
-::engine::mc::SetupEngines				"Setup Engines" ;# NEW
-::engine::mc::ImageFiles				"Image files" ;# NEW
-::engine::mc::SelectEngine				"Select Engine" ;# NEW
-::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
-::engine::mc::Executables				"Executables" ;# NEW
-::engine::mc::EngineLog					"Engine Log" ;# NEW
-::engine::mc::Probing					"Probing" ;# NEW
-::engine::mc::NeverUsed					"never used" ;# NEW
-::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
-::engine::mc::DefaultValue				"Default value" ;# NEW
+::engine::mc::SetupEngines				"Configurar Motores"
+::engine::mc::ImageFiles				"Archivos de Imagen"
+::engine::mc::SelectEngine				"Seleccionar Motor"
+::engine::mc::SelectEngineLogo		"Elegir un logotipo para el Motor"
+::engine::mc::Executables				"Ejecutables"
+::engine::mc::EngineLog					"Bitácora del Motor"
+::engine::mc::Probing					"Penetrante"
+::engine::mc::NeverUsed					"Nunca utilizado"
+::engine::mc::OpenFsbox					"Abrir el diálogo Seleccionar archivo"
+::engine::mc::ResetToDefault			"Valor predeterminado" ;# NEW change to "Reset to default"
 
-::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
-::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
-::engine::mc::CopyFromEngine			"Make a copy of entry" ;# NEW
-::engine::mc::CannotOpenProcess		"Cannot start process." ;# NEW
-::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
-::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?" ;# NEW
-::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
-::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
+::engine::mc::ConfirmNewEngine		"Confirmar el nuevo Motor"
+::engine::mc::EngineAlreadyExists	"Ya existe una entrada con este Motor."
+::engine::mc::CopyFromEngine			"Hacer una copia de la entrada"
+::engine::mc::CannotOpenProcess		"No se puede iniciar el proceso."
+::engine::mc::DoesNotRespond			"Este Motor no responde ni al protocolo UCI ni al protocolo XBoard/WinBoard."
+::engine::mc::DiscardChanges			"El ítem actual ha cambiado.\n\n¿Desea realmente descartar los cambios?"
+::engine::mc::ReallyDelete				"¿Realmente desea eliminar el Motor '%s'?"
+::engine::mc::EntryAlreadyExists		"Ya existe una entrada con el nombre '%s'."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Marcar partida como eliminada"
@@ -1006,10 +1024,10 @@
 ::font::mc::CopyFile									"Copiar archivo %s"
 ::font::mc::UpdateFontCache						"Actualizando caché de fuentes"
 
-::font::mc::ChooseFigurineFont					"Choose figurine font" ;# NEW
-::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
-::font::mc::IncreaseFontSize						"Increase Font Size" ;# NEW
-::font::mc::DecreaseFontSize						"Decrease Font Size" ;# NEW
+::font::mc::ChooseFigurineFont					"Seleccione la fuente de figurines"
+::font::mc::ChooseSymbolFont						"Selecciones la fuente de símbolos"
+::font::mc::IncreaseFontSize						"Aumentar el tamaño de la fuente"
+::font::mc::DecreaseFontSize						"Disminuir el tamaño de la fuente"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Iniciar posición"
@@ -1066,12 +1084,12 @@
 ::overview::mc::AcceleratorRotate	"R"
 
 ### encoding ###########################################################
-::encoding::mc::AutoDetect				"auto-detection"
+::encoding::mc::AutoDetect				"auto-detección"
 
 ::encoding::mc::Encoding				"Codificar"
 ::encoding::mc::Description			"Descripción"
 ::encoding::mc::Languages				"Idiomas (Fuentes)"
-::encoding::mc::UseAutoDetection		"Use Auto-Detection"
+::encoding::mc::UseAutoDetection		"Use Auto-Detection" ;# NEW
 
 ::encoding::mc::ChooseEncodingTitle	"Elegir Código"
 
@@ -1134,7 +1152,7 @@
 ::import::mc::ImportedGames						"%s partida(s) importada(s)"
 ::import::mc::NoGamesImported						"Ninguna partida importada"
 ::import::mc::FileIsEmpty							"el archivo probablemente está vacío"
-::import::mc::PgnImport								"Importar PGN"
+::import::mc::DatabaseImport						"Importar base"
 ::import::mc::ImportPgnGame						"Importar partida PGN"
 ::import::mc::ImportPgnVariation					"Importar variante PGN"
 ::import::mc::ImportOK								"Texto PGN importado sin errores o advertencias."
@@ -1168,7 +1186,7 @@
 ::import::mc::InvalidRating						"Número de rating no válido"
 ::import::mc::InvalidNag							"NAG no válido"
 ::import::mc::BraceSeenOutsideComment			"\"\}\" fuera de un comentario en la partida (se ignorarán)" 
-::import::mc::MissingFen							"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
+::import::mc::MissingFen							"Partida de Ajedrez Shuffle/960 sin posición de inicio especificada; se interpretará como Ajedrez estándar"
 ::import::mc::UnknownEventType					"Tipo de evento desconocido"
 ::import::mc::UnknownTitle							"Título desconocido (ignored)"
 ::import::mc::UnknownPlayerType					"Tipo de jugador desconocido (ignorado)"
@@ -1209,8 +1227,8 @@
 ::import::mc::TooManySourceNames					"Demasiados nombres de orígenes en la base (abortado)"
 ::import::mc::SeemsNotToBePgnText				"No parece ser un texto PGN"
 ::import::mc::AbortedDueToInternalError		"Abortado debido a un error interno"
-::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
-::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
+::import::mc::AbortedDueToIoError				"Abortado debido a un error de lectura/escritura"
+::import::mc::UserHasInterrupted					"Interrumpido por el usuario"
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selección de archivo"
@@ -1270,11 +1288,14 @@
 ::export::mc::ExportDatabaseTitle		"Exportar base '%s'"
 ::export::mc::ExportingDatabase			"Exportando '%s' al archivo '%s'"
 ::export::mc::Export							"Exportar"
+::export::mc::NoGamesCopied				"No games exported." ;# NEW
 ::export::mc::ExportedGames				"%s partida(s) exportada(s)"
 ::export::mc::NoGamesForExport			"No hay partidas para exportar."
 ::export::mc::ResetDefaults				"Volver a los parámetros predeterminados"
 ::export::mc::UnsupportedEncoding		"No use la codificación %s para documentos PDF. Debe elegir una codificación alternativa."
-::export::mc::DatabaseIsOpen				"La base '%s' está abierta. Debe cerrarla primero."
+::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
+::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
+::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
 
 ::export::mc::BasicStyle					"Estilo básico"
 ::export::mc::GameInfo						"Información de la partida"
@@ -1346,7 +1367,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Agregar modo tras el tipo de evento"
 ::export::mc::Option(pgn,comment_to_html)							"Escribir comentario en estilo HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Excluir partidas con jugadas ilegales"
-::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
+::export::mc::Option(pgn,use_utf8_encoding)						"Utilizar codificación UTF-8"
 
 ### notation ###########################################################
 ::notation::mc::Notation		"Notación"
@@ -1361,7 +1382,7 @@
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Piezas"
 ::figurines::mc::Graphic	"Gráficos"
-::figurines::mc::User		"User" ;# NEW meaning is "user defined"
+::figurines::mc::User		"Personalizado"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Guardar partida"
@@ -1650,9 +1671,9 @@
 ::info::mc::BoardThemeDesign	"Diseño de tema de tablero"
 ::info::mc::FlagsDesign			"Diseño de las banderas en miniatura"
 ::info::mc::IconDesign			"Diseño de iconos"
-::info::mc::Development			"Development" ;# NEW
-::info::mc::Programming			"Programming" ;# NEW
-::info::mc::Leader				"Leader" ;# NEW
+::info::mc::Development			"Desarrollo"
+::info::mc::Programming			"Programación"
+::info::mc::Head					"Líder"
 
 ::info::mc::Version				"Versión"
 ::info::mc::Distributed			"Este programa se distribuye bajo los términos de la Licencia Pública General GNU."
@@ -1788,6 +1809,7 @@
 ::table::mc::OptimizeColumns			"Optimizar todas las columnas"
 ::table::mc::FitColumnWidth			"Ajustar el ancho de columna"
 ::table::mc::FitColumns					"Ajustar todas las columnas"
+::table::mc::ExpandColumn				"Expand column width" ;# NEW
 ::table::mc::SqueezeColumns			"Comprimir todas las columnas"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."
@@ -1803,7 +1825,7 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Archivo PDF" 
 ::dialog::fsbox::mc::HypertextFile			"Archivo HTML"
 ::dialog::fsbox::mc::TypesettingFile		"Archivo LATEX"
-::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
+::dialog::fsbox::mc::ImageFile				"Archivo de Imagen"
 ::dialog::fsbox::mc::LinkTo					"Vúnculo a %s" 
 ::dialog::fsbox::mc::LinkTarget				"Destino del vúnculo" 
 ::dialog::fsbox::mc::Directory				"Directorio" 
@@ -1820,7 +1842,7 @@
 ::dialog::choosecolor::mc::RecentColors	"Colores recientes"
 ::dialog::choosecolor::mc::Old				"Antiguo"
 ::dialog::choosecolor::mc::Current			"Actual"
-::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
+::dialog::choosecolor::mc::HexCode			"Hexadecimal"
 ::dialog::choosecolor::mc::ColorSelection	"Elección del color"
 ::dialog::choosecolor::mc::Red				"Rojo"
 ::dialog::choosecolor::mc::Green				"Verde"
@@ -1862,7 +1884,7 @@
 ### choosedir ##########################################################
 ::choosedir::mc::ShowPredecessor	"Mostrar Predecesor"
 ::choosedir::mc::ShowTail			"Mostrar Atrasados"
-::choosedir::mc::Folder				"Folder"
+::choosedir::mc::Folder				"Carpeta"
 
 ### fsbox ##############################################################
 ::fsbox::mc::Name								"Nombre"
@@ -1872,7 +1894,7 @@
 ::fsbox::mc::Forward							"Continuar a '%s'"
 ::fsbox::mc::Backward						"Retroceder a '%s'"
 ::fsbox::mc::Delete							"Eliminar"
-::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
+::fsbox::mc::MoveToTrash					"Mover a la Papelera"
 ::fsbox::mc::Restore							"Restaurar"
 ::fsbox::mc::Duplicate						"Duplicar"
 ::fsbox::mc::CopyOf							"Copia de %s"
@@ -1886,9 +1908,9 @@
 ::fsbox::mc::Cancel							"&Cancelar"
 ::fsbox::mc::Save								"&Guardar"
 ::fsbox::mc::Open								"&Abrir"
-::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Overwrite						"S&obreescribir"
 ::fsbox::mc::Rename							"&Renombrar"
-::fsbox::mc::Move								"Move" ;# NEW
+::fsbox::mc::Move								"Mover"
 
 ::fsbox::mc::AddBookmark					"Agregar Marcador '%s'"
 ::fsbox::mc::RemoveBookmark				"Quitar Marcador '%s'"
@@ -1933,7 +1955,7 @@
 ::fsbox::mc::FilenameTooLong				"Un nombre de archivo debe tener menos de 256 caracteres."
 ::fsbox::mc::InvalidFileExtension		"Extensión de archivo inválida en '%s'."
 ::fsbox::mc::MissingFileExtension		"El archivo '%s' no tiene extensión."
-::fsbox::mc::FileAlreadyExists			"El archivo '%s' ya existe.\n¿Quiere sobreescribirlo?"
+::fsbox::mc::FileAlreadyExists			"El archivo '%s' ya existe.\n\n¿Quiere sobreescribirlo?"
 ::fsbox::mc::CannotOverwriteDirectory	"No se puede sobrescribir el directorio '%s'."
 ::fsbox::mc::FileDoesNotExist				"El archivo '%s' no existe."
 ::fsbox::mc::DirectoryDoesNotExist		"El directorio '%s' no existe."
@@ -1945,13 +1967,15 @@
 ::fsbox::mc::CannotOpenUri					"No se puede abrir la siguiente URI:"
 ::fsbox::mc::InvalidUri						"Descartar contenido no es una lista URI válida."
 ::fsbox::mc::UriRejected					"Los siguientes archivos fueron rechazados:"
-::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
-::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
-::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
-::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
-::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
-::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
-::fsbox::mc::NewName							"New name" ;# NEW
+::fsbox::mc::UriRejectedDetail			"Sólo pueden manejarse los tipos de archivo listados."
+::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:" ;# NEW
+::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:" ;# NEW (http://*)
+::fsbox::mc::OperationAborted				"Operación abortada."
+::fsbox::mc::ApplyOnDirectories			"¿Está seguro que desea aplicar la operación seleccionada sobre los (siguientes) directorios?"
+::fsbox::mc::EntryAlreadyExists			"La entrada ya existe"
+::fsbox::mc::AnEntryAlreadyExists		"Una entrada '%s' ya existe."
+::fsbox::mc::SourceDirectoryIs			"El directorio raíz es '%s'."
+::fsbox::mc::NewName							"Nuevo nombre"
 
 ::fsbox::mc::ReallyMove(file,w)			"¿Realmente desea mover el archivo '%s' a la papelera?"
 ::fsbox::mc::ReallyMove(file,r)			"¿Realmente desea mover el archivo de solo lectura '%s' a la papelera?"
@@ -1969,12 +1993,12 @@
 
 ::fsbox::mc::Cannot(delete)				"No se puede borrar el archivo '%s'."
 ::fsbox::mc::Cannot(rename)				"No se puede renombrar el archivo '%s'."
-::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(move)					"No se puede mover el archivo '%s'."
 ::fsbox::mc::Cannot(overwrite)			"No se puede sobrescribir el archivo '%s'." 
 
-::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
-::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
-::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
+::fsbox::mc::DropAction(move)				"Mover aquí"
+::fsbox::mc::DropAction(copy)				"Copiar aquí"
+::fsbox::mc::DropAction(link)				"Enlazar aquí"
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"

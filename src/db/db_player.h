@@ -133,6 +133,8 @@ public:
 	mstl::string const& asciiName() const;
 	/// Return region code of player name.
 	unsigned region() const;
+	//// Return URL of given player (chess engine).
+	mstl::string const& url() const;
 
 	void setSex(sex::ID id);
 	void setType(species::ID id);

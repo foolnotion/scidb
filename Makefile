@@ -13,13 +13,14 @@
 MAKEFLAGS += --no-print-directory
 
 all: Makefile.in check-mtime
+	@$(MAKE) -C man
+	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C engines
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
 	@if [ $$? != 0 ]; then exit 1; fi
-	@$(MAKE) -C man
 	@echo ""
 	@echo "Now it is recommended to use \"make check-build\"."
 

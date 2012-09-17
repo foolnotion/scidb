@@ -53,12 +53,6 @@
 
 #include <string.h>
 
-//#define USE_LZO
-
-#ifdef USE_LZO
-# include "u_lzo_byte_stream.h"
-#endif
-
 using namespace db;
 using namespace db::sci;
 using namespace util;
@@ -369,7 +363,6 @@ prefix(char const* s, char const* t)
 	return count;
 }
 
-#ifndef USE_LZO
 
 namespace {
 
@@ -440,8 +433,6 @@ ByteOStream::flush()
 
 } // namespace
 
-#endif // !USE_LZO
-
 
 unsigned Codec::maxGameRecordLength() const	{ return (1 << 20) - 1; }
 unsigned Codec::maxGameLength() const			{ return (1 << 12) - 1; }
@@ -487,7 +478,8 @@ Codec::gameFlags() const
 
 
 Codec::Codec()
-	:m_gameData(0)
+	:m_progressiveStream(0)
+	,m_gameData(0)
 	,m_asyncReader(0)
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
@@ -505,8 +497,12 @@ Codec::Codec()
 
 Codec::~Codec() throw()
 {
+	if (m_asyncReader)
+		m_gameData->closeAsyncReader(m_asyncReader);
+
 	delete m_gameData;
 	delete m_asyncReader;
+	delete m_progressiveStream;
 }
 
 
@@ -575,7 +571,7 @@ Codec::getGame(GameInfo const& info)
 	M_ASSERT(m_gameData);
 
 	ByteStream src;
-	getGameRecord(info, *m_gameData, src);
+	getGameRecord(info, m_gameData->reader(), src);
 	return src;
 }
 
@@ -595,13 +591,6 @@ Codec::putGame(ByteStream const& strm, unsigned prevOffset, unsigned prevRecordL
 	M_ASSERT(prevRecordLength == 0);
 
 	return m_gameData->put(strm, prevOffset, prevRecordLength);
-}
-
-
-void
-Codec::writeNamebases(mstl::ostream& stream)
-{
-	writeNamebases(stream, 0);
 }
 
 
@@ -774,7 +763,7 @@ save::State
 Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	return decoder.doDecoding(consumer, tags);
 }
@@ -792,7 +781,7 @@ void
 Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 {
 	ByteStream strm;
-	getGameRecord(info, *m_gameData, strm);
+	getGameRecord(info, m_gameData->reader(), strm);
 	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
 	decoder.doDecoding(data);
 }
@@ -943,6 +932,40 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 }
 
 
+unsigned
+Codec::doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding)
+{
+	M_ASSERT(m_progressiveStream == 0);
+
+	mstl::string indexFilename(rootname + ".sci");
+	mstl::string gameFilename(rootname + ".scg");
+	mstl::string namebaseFilename(rootname + ".scn");
+
+	mstl::fstream namebaseStream;
+
+	m_progressiveStream = new mstl::fstream;
+
+	m_gameStream.set_unbuffered();
+
+	openFile(m_gameStream, gameFilename, MagicGameFile, Readonly);
+	openFile(*m_progressiveStream, indexFilename, MagicIndexFile, Readonly);
+	openFile(namebaseStream, namebaseFilename, MagicNamebase, Readonly);
+
+	unsigned numGames;
+	uint16_t fileVersion = readIndexHeader(*m_progressiveStream, &numGames);
+
+	checkFileVersion(m_gameStream, MagicGameFile, fileVersion);
+	checkFileVersion(namebaseStream, MagicNamebase, fileVersion);
+
+	::util::Progress progress;
+	readNamebases(namebaseStream, progress);
+	namebaseStream.close();
+	m_gameData = new BlockFile(&m_gameStream, Block_Size, BlockFile::ReadWriteLength, m_magicGameFile);
+
+	return numGames;
+}
+
+
 void
 Codec::doClear(mstl::string const& rootname)
 {
@@ -953,19 +976,21 @@ Codec::doClear(mstl::string const& rootname)
 	mstl::fstream indexStream;
 	mstl::fstream namebaseStream;
 
-	openFile(m_gameStream, gameFilename, Truncate);
+	m_gameData->clear();
+
 	openFile(indexStream, indexFilename, MagicIndexFile, Truncate);
 	openFile(namebaseStream, namebaseFilename, MagicNamebase, Truncate);
+
 	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
 
-	doOpen(sys::utf8::Codec::utf8());
-	m_gameData->attach(&m_gameStream);
+	indexStream.close();
+	namebaseStream.close();
 }
 
 
 uint16_t
-Codec::readIndexHeader(mstl::fstream& fstrm)
+Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 {
 	char header[120];
 
@@ -996,9 +1021,18 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 
 	GameInfoList& infoList = gameInfoList();
 
-	infoList.resize(numGames);
-	for (unsigned i = 0; i < numGames; ++i)
-		infoList[i] = allocGameInfo();
+	if (retNumGames)
+	{
+		infoList.resize(1);
+		infoList[0] = allocGameInfo();
+		*retNumGames = numGames;
+	}
+	else
+	{
+		infoList.resize(numGames);
+		for (unsigned i = 0; i < numGames; ++i)
+			infoList[i] = allocGameInfo();
+	}
 
 	// go to first index
 	if (!fstrm.seekg(sizeof(header) + 8, mstl::ios_base::beg))
@@ -1009,7 +1043,25 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 
 
 void
-Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
+Codec::readIndexProgressive(unsigned index)
+{
+	M_ASSERT(m_progressiveStream);
+
+	char buf[sizeof(IndexEntry)];
+
+	if (!m_progressiveStream->seekg(index*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+		IO_RAISE(Index, Corrupted, "seek failed");
+
+	if (__builtin_expect(!m_progressiveStream->read(buf, sizeof(IndexEntry)), 0))
+		IO_RAISE(Index, Corrupted, "unexpected end of index file");
+
+	ByteStream bstrm(buf, sizeof(IndexEntry));
+	decodeIndex(bstrm, gameInfo(0));
+}
+
+
+void
+Codec::decodeIndex(mstl::fstream& fstrm, util::Progress& progress)
 {
 	GameInfoList& infoList = gameInfoList();
 
@@ -1185,7 +1237,7 @@ Codec::writeIndexHeader(mstl::ostream& strm)
 					mstl::min(	description().size(),
 									mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
 
-	if (!strm.seekp(0, mstl::ios_base::beg))	// skip magic
+	if (!strm.seekp(0, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "seek failed");
 
 	if (!strm.write(header, sizeof(header)))
@@ -1205,6 +1257,9 @@ Codec::writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress)
 
 	ProgressWatcher watcher(progress, infoList.size());
 	progress.message("write-index");
+
+	if (start > 0 && !strm.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
 
 	for (unsigned i = start; i < infoList.size(); ++i)
 	{
@@ -1404,12 +1459,8 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 void
 Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 {
-#ifdef USE_LZO
-	LzoByteStream bstrm(stream);
-#else
 	stream.set_bufsize(65536);
 	ByteIStream bstrm(stream);
-#endif
 
 	unsigned total = bstrm.uint32();
 
@@ -1853,20 +1904,26 @@ Codec::writeNamebases(mstl::string const& filename)
 
 
 void
+Codec::writeNamebases(mstl::ostream& stream, util::Progress& progress)
+{
+	writeNamebases(stream, &progress);
+}
+
+
+void
 Codec::writeNamebases(mstl::ostream& stream, util::Progress* progress)
 {
-	if (!namebases().isModified())
-		return;
+	if (progress == 0)
+	{
+		if (!namebases().isModified())
+			return;
 
-	if (!stream.seekp(0, mstl::ios_base::beg))
-		IO_RAISE(Namebase, Corrupted, "seek failed");
+		if (!stream.seekp(0, mstl::ios_base::beg))
+			IO_RAISE(Namebase, Corrupted, "seek failed");
+	}
 
-#ifdef USE_LZO
-	LzoByteStream bstrm(stream);
-#else
 	unsigned char	buf[32768];
 	ByteOStream		bstrm(stream, buf, sizeof(buf));
-#endif
 
 	unsigned total = 0;
 
@@ -1876,10 +1933,9 @@ Codec::writeNamebases(mstl::ostream& stream, util::Progress* progress)
 	ProgressWatcher watcher(progress, total);
 
 	if (progress)
+	{
 		progress->message("write-namebase");
 
-	if (progress)
-	{
 		m_progressFrequency		= progress->frequency(total, 1000);
 		m_progressReportAfter	= m_progressFrequency;
 		m_progressCount			= 0;
@@ -2176,14 +2232,11 @@ Codec::useAsyncReader(bool flag)
 	if (flag)
 	{
 		if (m_asyncReader == 0)
-		{
-			M_ASSERT(m_gameStream.is_open());
-			m_asyncReader = new BlockFile(&m_gameStream, Block_Size, BlockFile::ReadWriteLength);
-		}
+			m_asyncReader = m_gameData->openAsyncReader();
 	}
 	else if (m_asyncReader)
 	{
-		delete m_asyncReader;
+		m_gameData->closeAsyncReader(m_asyncReader);
 		m_asyncReader = 0;
 	}
 }
@@ -2196,7 +2249,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 
 	ByteStream src;
 	getGameRecord(info, *m_asyncReader, src);
-	Decoder decoder(src, m_asyncReader->blockSize() - info.gameOffset());
+	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
 	return decoder.findExactPosition(position, skipVariations);
 }
 

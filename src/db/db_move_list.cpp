@@ -113,6 +113,40 @@ MoveList::sort(unsigned startIndex, int scores[])
 
 
 void
+MoveList::print(mstl::string& result, unsigned halfMoveNo) const
+{
+	if (isEmpty())
+		return;
+
+	Move const& move = m_buffer[0];
+
+	halfMoveNo += 2;
+	result.format("%u", mstl::div2(halfMoveNo));
+	result.append('.');
+
+	if (mstl::is_odd(halfMoveNo))
+		result.append("..", 2);
+
+	move.printSan(result);
+	++halfMoveNo;
+
+	for (unsigned i = 1; i < m_size; ++i, ++halfMoveNo)
+	{
+		Move const& move = m_buffer[i];
+
+		if (mstl::is_even(halfMoveNo))
+		{
+			result.format("%u", mstl::div2(halfMoveNo));
+			result.append('.');
+		}
+
+		result.append(' ');
+		move.printSan(result);
+	}
+}
+
+
+void
 MoveList::dump()
 {
 	::printf("Moves(%u)\n", m_size);

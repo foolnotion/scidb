@@ -99,12 +99,15 @@ Engine::Concrete::maxVariations() const
 
 Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
 	:m_engine(0)
+	,m_game(0)
+	,m_gameId(unsigned(-1))
 	,m_command(command)
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
 	,m_maxMultiPV(1)
 	,m_variations(1, MoveList())
 	,m_numVariations(1)
+	,m_hashSize(0)
 	,m_searchMate(0)
 	,m_limitedStrength(0)
 	,m_features(0)
@@ -117,11 +120,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_analyzing(false)
 	,m_probe(false)
 	,m_protocol(false)
-	,m_startAnalysisIsPending(false)
 	,m_process(0)
 	,m_logStream(0)
-	,m_board(0)
-	,m_game(0)
 {
 	switch (protocol)
 	{
@@ -142,8 +142,6 @@ Engine::~Engine() throw()
 	}
 
 	delete m_engine;
-	delete m_board;
-	delete m_game;
 }
 
 
@@ -200,11 +198,12 @@ Engine::isProbing() const
 void
 Engine::activate()
 {
-	if (!m_active)
-	{
+	if (!m_process)
 		m_process = new Process(this, m_command, m_directory);
-		m_active = true;
-	}
+	else if (!m_active)
+		m_engine->protocolStart(false);
+
+	m_active = true;
 }
 
 
@@ -213,6 +212,8 @@ Engine::deactivate()
 {
 	if (m_active)
 		m_engine->protocolEnd();
+
+	m_active = false;
 }
 
 
@@ -336,7 +337,6 @@ Engine::probe(unsigned timeout)
 	catch (mstl::exception const& exc)
 	{
 		deactivate();
-		m_active = false;
 		m_probe = false;
 		throw exc;
 	}
@@ -365,14 +365,12 @@ Engine::probe(unsigned timeout)
 		catch (mstl::exception const& exc)
 		{
 			deactivate();
-			m_active = false;
 			m_probe = false;
 			throw exc;
 		}
 	}
 
 	deactivate();
-	m_active = false;
 	m_probe = false;
 
 	return result;
@@ -380,72 +378,20 @@ Engine::probe(unsigned timeout)
 
 
 bool
-Engine::startAnalysis(db::Board const& board)
+Engine::startAnalysis(db::Game const* game)
 {
-	bool result = false;
+	M_REQUIRE(game);
 
-	if (isActive())
+	bool result	= false;
+	bool isNew	= m_game ? game->id() != m_game->id() : false;
+
+	m_game = game;
+	m_gameId = game->id();
+
+	if (m_engine->isReady())
 	{
-		if (m_engine->isReady())
-		{
-			if ((result = m_engine->startAnalysis(board)))
-				m_analyzing = true;
-		}
-		else
-		{
-			// With wb engines, we don't know when the startup phase is over and when the
-			// engine is ready: so wait until it is ready.
-			if (m_game)
-			{
-				delete m_game;
-				m_game = 0;
-			}
-
-			if (m_board)
-				*m_board = board;
-			else
-				m_board = new db::Board(board);
-
-			m_startAnalysisIsPending = true;
-			result = true;
-		}
-	}
-
-	return result;
-}
-
-
-bool
-Engine::startAnalysis(db::Game const& game, bool isNewGame)
-{
-	bool result = false;
-
-	if (isActive())
-	{
-		if (m_engine->isReady())
-		{
-			if ((result = m_engine->startAnalysis(game, isNewGame)))
-				m_analyzing = true;
-		}
-		else
-		{
-			// With wb engines, we don't know when the startup phase is over and when the
-			// engine is ready: so wait until it is ready.
-			if (m_board)
-			{
-				delete m_board;
-				m_board = 0;
-			}
-
-			if (m_game)
-				*m_game = game;
-			else
-				m_game = new db::Game(game);
-
-			m_isNewGame = isNewGame;
-			m_startAnalysisIsPending = true;
-			result = true;
-		}
+		if ((result = m_engine->startAnalysis(isNew)))
+			result = m_analyzing = true;
 	}
 
 	return result;
@@ -462,36 +408,24 @@ Engine::stopAnalysis()
 		result = m_engine->stopAnalysis();
 		m_analyzing = false;
 	}
-	else if (m_startAnalysisIsPending)
-	{
-		delete m_board;
-		delete m_game;
-		m_board = 0,
-		m_game = 0;
-		m_startAnalysisIsPending = false;
-	}
 
 	return result;
 }
 
 
-void
-Engine::engineIsReady()
+bool
+Engine::doMove(db::Move const& lastMove)
 {
-	if (m_startAnalysisIsPending)
-	{
-		m_startAnalysisIsPending = false;
+	if (!m_engine->isReady())
+		return false;
 
-		if (m_board)
-			m_engine->startAnalysis(*m_board);
-		else if (m_game)
-			m_engine->startAnalysis(*m_game, m_isNewGame);
-	}
+	m_engine->doMove(lastMove);
+	return true;
 }
 
 
 unsigned
-Engine::setNumberOfVariations(unsigned n)
+Engine::changeNumberOfVariations(unsigned n)
 {
 	if (!isActive())
 		return 0;
@@ -500,11 +434,39 @@ Engine::setNumberOfVariations(unsigned n)
 
 	if (n != m_numVariations)
 	{
-		m_engine->sendNumberOfVariations();
 		m_numVariations = n;
+		m_engine->sendNumberOfVariations();
 	}
 
 	return n;
+}
+
+
+unsigned
+Engine::changeHashSize(unsigned size)
+{
+	if (!isActive())
+		return 0;
+
+	size = mstl::max(4u, size);
+
+	if (size != m_hashSize)
+	{
+		m_hashSize = size;
+
+		if (hasFeature(Feature_Hash_Size))
+			m_engine->sendHashSize();
+	}
+
+	return size;
+}
+
+
+void
+Engine::setBestMove(db::Move const& move)
+{
+	m_bestMove = move;
+	updateBestMove();
 }
 
 
@@ -545,9 +507,26 @@ Engine::addOption(mstl::string const& name,
 
 	opt.name	= name;
 	opt.type	= type;
+	opt.val  = dflt;
 	opt.dflt	= dflt;
 	opt.var	= var;
 	opt.max	= max;
+}
+
+
+void
+Engine::changeOptions(Options const& options)
+{
+	m_options = options;
+	m_engine->sendOptions();
+}
+
+
+void
+Engine::clearHash()
+{
+	if (hasFeature(Feature_Clear_Hash))
+		m_engine->clearHash();
 }
 
 // vi:set ts=3 sw=3:

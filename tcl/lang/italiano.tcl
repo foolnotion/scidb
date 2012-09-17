@@ -184,6 +184,9 @@
 ::progress::mc::Message(write-game)				"Scrivendo dati partite"
 ::progress::mc::Message(write-namebase)		"Scrivendo dati namebase"
 
+::progress::mc::Message(print-game)				"Print %s game(s)" ;# NEW
+::progress::mc::Message(copy-game)				"Copy %s game(s)" ;# NEW
+
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
 
@@ -213,11 +216,10 @@
 ::menu::mc::ContactBugReport			"&Segnala Bug"
 ::menu::mc::ContactFeatureRequest	"&Richiesta Funzione"
 ::menu::mc::InstallChessBaseFonts	"Installa Caratteri ChessBase"
-::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
+::menu::mc::OpenEngineLog				"Open &Engine Console" ;# NEW
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
-::menu::mc::ImportFiles					"Importa file PGN"
 ::menu::mc::Archiving					"Archiviazione"
 ::menu::mc::CreateArchive				"Crea Archivio"
 ::menu::mc::BuildArchive				"Crea Archivio %s"
@@ -288,7 +290,7 @@
 ::util::photos::mc::Error(nosudo)				"Impossibile invocare il comando 'sudo' perché il tuo utente non è nel gruppo wheel."
 ::util::photos::mc::Detail(nosudo)				"Per aggirare il problema puoi fare un'installazione privata, o lanciare il programma come super-user."
 
-::util::photos::mc::Message(uptodate)			"Le foto sono già aggiornate."
+::util::photos::mc::Message(uptodate)			"Le foto sono già aggiornate." ;# NEW changed from "The photo files are already up-to-date." to "The photo files are still up-to-date."
 ::util::photos::mc::Message(finished)			"L'installazione/aggiornamento delle foto è finito."
 ::util::photos::mc::Message(broken)				"La versione della libreria Tcl è corrotta."
 ::util::photos::mc::Message(noperm)				"Non hai diritti di scittura nella cartella '%s'."
@@ -328,6 +330,8 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"
+::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
+::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
 
 ::application::board::mc::Tools				"Strumenti"
 ::application::board::mc::Control			"Controllo"
@@ -343,121 +347,135 @@
 ::application::board::mc::Accel(trial-mode)			"T"
 
 ### application::database ##############################################
-::application::database::mc::FileOpen						"Apri Database..."
-::application::database::mc::FileOpenRecent				"Apri Recente"
-::application::database::mc::FileNew						"Nuovo Database..."
-::application::database::mc::FileExport					"Esporta..."
-::application::database::mc::FileImport					"Importa file PGN..."
-::application::database::mc::FileCreate					"Crea Archivio..."
-::application::database::mc::FileClose						"Chiudi"
-::application::database::mc::FileCompact					"Compresso"
-::application::database::mc::HelpSwitcher					"Aiuto per il Selezionatore di Database"
+::application::database::mc::FileOpen							"Apri Database..."
+::application::database::mc::FileOpenRecent					"Apri Recente"
+::application::database::mc::FileNew							"Nuovo Database..."
+::application::database::mc::FileExport						"Esporta..."
+::application::database::mc::FileImport(pgn)					"Importa file PGN..."
+::application::database::mc::FileImport(db)					"Import Databases..." ;# NEW
+::application::database::mc::FileCreate						"Crea Archivio..."
+::application::database::mc::FileClose							"Chiudi"
+::application::database::mc::FileCompact						"Compresso"
+::application::database::mc::HelpSwitcher						"Aiuto per il Selezionatore di Database"
 
-::application::database::mc::Games							"&Partite"
-::application::database::mc::Players						"&Giocatori"
-::application::database::mc::Events							"&Eventi"
-::application::database::mc::Sites							"&Luoghi"
-::application::database::mc::Annotators					"&Commentatori"
+::application::database::mc::Games								"&Partite"
+::application::database::mc::Players							"&Giocatori"
+::application::database::mc::Events								"&Eventi"
+::application::database::mc::Sites								"&Luoghi"
+::application::database::mc::Annotators						"&Commentatori"
 
-::application::database::mc::File							"File"
-::application::database::mc::SymbolSize					"Grandezza simbolo"
-::application::database::mc::Large							"Grande"
-::application::database::mc::Medium							"Medio"
-::application::database::mc::Small							"Piccolo"
-::application::database::mc::Tiny							"Minuscolo"
-::application::database::mc::Empty							"vuoto"
-::application::database::mc::None							"nessuno"
-::application::database::mc::Failed							"fallito"
-::application::database::mc::LoadMessage					"Sto aprendo il database %s"
-::application::database::mc::UpgradeMessage				"Aggiornamento database %s"
-::application::database::mc::CompactMessage				"Comprimendo il database %s"
-::application::database::mc::CannotOpenFile				"Non è possibile aprire il file '%s'."
-::application::database::mc::EncodingFailed				"Codifica di %s fallita."
-::application::database::mc::DatabaseAlreadyOpen		"Il database '%s' è già aperto."
-::application::database::mc::Properties					"Proprietà"
-::application::database::mc::Preload						"Preload"
-::application::database::mc::MissingEncoding				"Codifica %s mancante (uso %s)"
-::application::database::mc::DescriptionTooLarge		"La descrizione è troppo lunga."
-::application::database::mc::DescrTooLargeDetail		"Il campo contiene %d caratteri, ma solo %d sono permessi."
-::application::database::mc::ClipbaseDescription		"Database temporaneo, non è salvato sul disco"
-::application::database::mc::HardLinkDetected			"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
-::application::database::mc::HardLinkDetectedDetail	"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
-::application::database::mc::UriRejectedDetail			"Solo database Scidb possono essere aperti:"
-::application::database::mc::EmptyUriList					"Gli archivi trascinati sono vuoti."
-::application::database::mc::OverwriteExistingFiles	"Sovrascrivi i file esistenti nella cartella '%s'?"
-::application::database::mc::SelectDatabases				"Selezione il database da aprire"
-::application::database::mc::ExtractArchive				"Estrai l'archivio %s"
-::application::database::mc::CompactDetail				"Tutte le partite devono essere chiuse per permettere la compressione."
-::application::database::mc::ReallyCompact				"Vuoi davvero comprimere il database '%s'?"
-::application::database::mc::ReallyCompactDetail(1)	"Solo una partita sarà eliminata."
-::application::database::mc::ReallyCompactDetail(N)	"%s partite saranno eliminate."
+::application::database::mc::File								"File"
+::application::database::mc::SymbolSize						"Grandezza simbolo"
+::application::database::mc::Large								"Grande"
+::application::database::mc::Medium								"Medio"
+::application::database::mc::Small								"Piccolo"
+::application::database::mc::Tiny								"Minuscolo"
+::application::database::mc::Empty								"vuoto"
+::application::database::mc::None								"nessuno"
+::application::database::mc::Failed								"fallito"
+::application::database::mc::LoadMessage						"Sto aprendo il database %s"
+::application::database::mc::UpgradeMessage					"Aggiornamento database %s"
+::application::database::mc::CompactMessage					"Comprimendo il database %s"
+::application::database::mc::CannotOpenFile					"Non è possibile aprire il file '%s'."
+::application::database::mc::EncodingFailed					"Codifica di %s fallita."
+::application::database::mc::DatabaseAlreadyOpen			"Il database '%s' è già aperto."
+::application::database::mc::Properties						"Proprietà"
+::application::database::mc::Preload							"Preload"
+::application::database::mc::MissingEncoding					"Codifica %s mancante (uso %s)"
+::application::database::mc::DescriptionTooLarge			"La descrizione è troppo lunga."
+::application::database::mc::DescrTooLargeDetail			"Il campo contiene %d caratteri, ma solo %d sono permessi."
+::application::database::mc::ClipbaseDescription			"Database temporaneo, non è salvato sul disco"
+::application::database::mc::HardLinkDetected				"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
+::application::database::mc::HardLinkDetectedDetail		"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
+::application::database::mc::UriRejectedDetail(open)		"Solo database Scidb possono essere aperti:"
+::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::application::database::mc::EmptyUriList						"Gli archivi trascinati sono vuoti."
+::application::database::mc::OverwriteExistingFiles		"Sovrascrivi i file esistenti nella cartella '%s'?"
+::application::database::mc::SelectDatabases					"Selezione il database da aprire"
+::application::database::mc::ExtractArchive					"Estrai l'archivio %s"
+::application::database::mc::CompactDetail					"Tutte le partite devono essere chiuse per permettere la compressione."
+::application::database::mc::ReallyCompact					"Vuoi davvero comprimere il database '%s'?"
+::application::database::mc::ReallyCompactDetail(1)		"Solo una partita sarà eliminata."
+::application::database::mc::ReallyCompactDetail(N)		"%s partite saranno eliminate."
+::application::database::mc::CopyGames							"Copy games" ;# NEW
+::application::database::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
+::application::database::mc::CopiedGames						"%s game(s) copied"
+::application::database::mc::NoGamesCopied					"No games copied"
+::application::database::mc::CopyAllGames						"Copy all games (%num) from '%src'"
+::application::database::mc::CopyFilteredGames				"Copy only filtered games (%num) from '%src'"
+::application::database::mc::ImportGames						"Import games" ;# NEW
+::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
+::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportFiles						"Import Files:" ;# NEW
 
-::application::database::mc::RecodingDatabase			"Registro %base da %from a %to"
-::application::database::mc::RecodedGames					"%s partite registrate"
+::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
+::application::database::mc::RecodedGames						"%s partite registrate"
 
-::application::database::mc::GameCount						"Partite"
-::application::database::mc::DatabasePath					"Indirizzo Database"
-::application::database::mc::DeletedGames					"Partite Eliminate"
-::application::database::mc::Description					"Descrizione"
-::application::database::mc::Created						"Creata"
-::application::database::mc::LastModified					"Ultima Modifica"
-::application::database::mc::Encoding						"Codifica"
-::application::database::mc::YearRange						"Range Anni"
-::application::database::mc::RatingRange					"Range Punteggio"
-::application::database::mc::Result							"Risultato"
-::application::database::mc::Score							"Score"
-::application::database::mc::Type							"Tipo"
-::application::database::mc::ReadOnly						"Sola Lettura"
+::application::database::mc::GameCount							"Partite"
+::application::database::mc::DatabasePath						"Indirizzo Database"
+::application::database::mc::DeletedGames						"Partite Eliminate"
+::application::database::mc::Description						"Descrizione"
+::application::database::mc::Created							"Creata"
+::application::database::mc::LastModified						"Ultima Modifica"
+::application::database::mc::Encoding							"Codifica"
+::application::database::mc::YearRange							"Range Anni"
+::application::database::mc::RatingRange						"Range Punteggio"
+::application::database::mc::Result								"Risultato"
+::application::database::mc::Score								"Score"
+::application::database::mc::Type								"Tipo"
+::application::database::mc::ReadOnly							"Sola Lettura"
 
-::application::database::mc::ChangeIcon					"Cambia Icona"
-::application::database::mc::Recode							"Ricodifica"
-::application::database::mc::EditDescription				"Modifica Descrizione"
-::application::database::mc::EmptyClipbase				"Svuota Clipbase"
+::application::database::mc::ChangeIcon						"Cambia Icona"
+::application::database::mc::Recode								"Ricodifica"
+::application::database::mc::EditDescription					"Modifica Descrizione"
+::application::database::mc::EmptyClipbase					"Svuota Clipbase"
 
-::application::database::mc::T_Unspecific					"Non specificato"
-::application::database::mc::T_Temporary					"Temporaneo"
-::application::database::mc::T_Work							"Lavoro"
-::application::database::mc::T_Clipbase					"Clipbase"
-::application::database::mc::T_MyGames						"Mie partite"
-::application::database::mc::T_Informant					"Informatore"
-::application::database::mc::T_LargeDatabase				"Grande Database"
-::application::database::mc::T_CorrespondenceChess		"Scacchi per corrispondenza"  
-::application::database::mc::T_EmailChess					"Scacchi per email"
-::application::database::mc::T_InternetChess				"Scacchi su internet"
-::application::database::mc::T_ComputerChess				"Partite tra computer"
-::application::database::mc::T_Chess960					"Scacchi 960"
-::application::database::mc::T_PlayerCollection			"Monografia per giocatore"
-::application::database::mc::T_Tournament					"Torneo"
-::application::database::mc::T_TournamentSwiss			"Torneo Svizzero"
-::application::database::mc::T_GMGames						"Partite di GM"
-::application::database::mc::T_IMGames						"Partite di IM"
-::application::database::mc::T_BlitzGames					"Partite lampi"
-::application::database::mc::T_Tactics						"Tattica"
-::application::database::mc::T_Endgames					"Finali"
-::application::database::mc::T_Analysis					"Analisi"
-::application::database::mc::T_Training					"Allenamento"
-::application::database::mc::T_Match						"Match"
-::application::database::mc::T_Studies						"Studi"
-::application::database::mc::T_Jewels						"Gemme"
-::application::database::mc::T_Problems					"Problemi"
-::application::database::mc::T_Patzer						"Brocchi"
-::application::database::mc::T_Gambit						"Gambetti"
-::application::database::mc::T_Important					"Importanti"
-::application::database::mc::T_Openings					"Aperture"
-::application::database::mc::T_OpeningsWhite				"Aperture bianco"
-::application::database::mc::T_OpeningsBlack				"Aperture nero"
+::application::database::mc::T_Unspecific						"Non specificato"
+::application::database::mc::T_Temporary						"Temporaneo"
+::application::database::mc::T_Work								"Lavoro"
+::application::database::mc::T_Clipbase						"Clipbase"
+::application::database::mc::T_MyGames							"Mie partite"
+::application::database::mc::T_Informant						"Informatore"
+::application::database::mc::T_LargeDatabase					"Grande Database"
+::application::database::mc::T_CorrespondenceChess			"Scacchi per corrispondenza"  
+::application::database::mc::T_EmailChess						"Scacchi per email"
+::application::database::mc::T_InternetChess					"Scacchi su internet"
+::application::database::mc::T_ComputerChess					"Partite tra computer"
+::application::database::mc::T_Chess960						"Scacchi 960"
+::application::database::mc::T_PlayerCollection				"Monografia per giocatore"
+::application::database::mc::T_Tournament						"Torneo"
+::application::database::mc::T_TournamentSwiss				"Torneo Svizzero"
+::application::database::mc::T_GMGames							"Partite di GM"
+::application::database::mc::T_IMGames							"Partite di IM"
+::application::database::mc::T_BlitzGames						"Partite lampi"
+::application::database::mc::T_Tactics							"Tattica"
+::application::database::mc::T_Endgames						"Finali"
+::application::database::mc::T_Analysis						"Analisi"
+::application::database::mc::T_Training						"Allenamento"
+::application::database::mc::T_Match							"Match"
+::application::database::mc::T_Studies							"Studi"
+::application::database::mc::T_Jewels							"Gemme"
+::application::database::mc::T_Problems						"Problemi"
+::application::database::mc::T_Patzer							"Brocchi"
+::application::database::mc::T_Gambit							"Gambetti"
+::application::database::mc::T_Important						"Importanti"
+::application::database::mc::T_Openings						"Aperture"
+::application::database::mc::T_OpeningsWhite					"Aperture bianco"
+::application::database::mc::T_OpeningsBlack					"Aperture nero"
 
-::application::database::mc::OpenDatabase					"Apri Database"
-::application::database::mc::NewDatabase					"Nuovo Database"
-::application::database::mc::CloseDatabase				"Chiudi Database '%s'"
-::application::database::mc::SetReadonly					"Imposta Database '%s' in sola lettura"
-::application::database::mc::SetWriteable					"Imposta Database '%s' in scrittura"
+::application::database::mc::OpenDatabase						"Apri Database"
+::application::database::mc::NewDatabase						"Nuovo Database"
+::application::database::mc::CloseDatabase					"Chiudi Database '%s'"
+::application::database::mc::SetReadonly						"Imposta Database '%s' in sola lettura"
+::application::database::mc::SetWriteable						"Imposta Database '%s' in scrittura"
 
-::application::database::mc::OpenReadonly					"Apri sola lettura"
-::application::database::mc::OpenWriteable				"Apri in scrittura"
+::application::database::mc::OpenReadonly						"Apri sola lettura"
+::application::database::mc::OpenWriteable					"Apri in scrittura"
 
-::application::database::mc::UpgradeDatabase				"%s è un database in un vecchio formato che non può essere aperto per la scrittura.\n\nL'aggiornamento creerà una nuova versione del database e rimuoverà i file originali.\n\nQuesta operazione può richiedere del tempo, ma è necessario eseguirla una volta sola.\n\nVuoi aggiornare il database ora?"
-::application::database::mc::UpgradeDatabaseDetail		"\"No\" aprirà il database per la sola lettura, non puoi settarlo come scrivibile."
+::application::database::mc::UpgradeDatabase					"%s è un database in un vecchio formato che non può essere aperto per la scrittura.\n\nL'aggiornamento creerà una nuova versione del database e rimuoverà i file originali.\n\nQuesta operazione può richiedere del tempo, ma è necessario eseguirla una volta sola.\n\nVuoi aggiornare il database ora?"
+::application::database::mc::UpgradeDatabaseDetail			"\"No\" aprirà il database per la sola lettura, non puoi settarlo come scrivibile."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Controllo"
@@ -775,7 +793,7 @@
 ::engine::mc::SelectEngine				"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
 ::engine::mc::Executables				"Executables" ;# NEW
-::engine::mc::EngineLog					"Engine Log" ;# NEW
+::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"never used" ;# NEW
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
@@ -1134,7 +1152,7 @@
 ::import::mc::ImportedGames						"%s partite importate"
 ::import::mc::NoGamesImported						"Nessuna partita importata"
 ::import::mc::FileIsEmpty							"Il file è probabilmente vuoto"
-::import::mc::PgnImport								"Importa PGN"
+::import::mc::DatabaseImport						"Importa Database"
 ::import::mc::ImportPgnGame						"Importa partita in PGN"
 ::import::mc::ImportPgnVariation					"Importa variante in PGN"
 ::import::mc::ImportOK								"Testo PGN importato senza errori o avvertimenti."
@@ -1270,11 +1288,14 @@
 ::export::mc::ExportDatabaseTitle		"Esporta Database '%s'"
 ::export::mc::ExportingDatabase			"Sto esportando '%s' nel file '%s'"
 ::export::mc::Export							"Esporta"
+::export::mc::NoGamesCopied				"No games exported." ;# NEW
 ::export::mc::ExportedGames				"%s partite esportate"
 ::export::mc::NoGamesForExport			"Nessuna partita da esportare."
 ::export::mc::ResetDefaults				"Torna a valori di default"
 ::export::mc::UnsupportedEncoding		"Impossibile usare codifica %s per documenti PDF. Devi usare una codifica alternativa."
-::export::mc::DatabaseIsOpen				"Il database '%s' è aperto. Devi prima chiuderlo."
+::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
+::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
+::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
 
 ::export::mc::BasicStyle					"Stile base"
 ::export::mc::GameInfo						"Informazioni della partita"
@@ -1652,7 +1673,7 @@
 ::info::mc::IconDesign			"Design icone"
 ::info::mc::Development			"Development" ;# NEW
 ::info::mc::Programming			"Programming" ;# NEW
-::info::mc::Leader				"Leader" ;# NEW
+::info::mc::Head					"Head" ;# NEW
 
 ::info::mc::Version				"Versione"
 ::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."
@@ -1788,6 +1809,7 @@
 ::table::mc::OptimizeColumns			"Ottimizza tutte le colonne"
 ::table::mc::FitColumnWidth			"Regola larghezza colonna"
 ::table::mc::FitColumns					"Regola tutte le colonne"
+::table::mc::ExpandColumn				"Expand column width" ;# NEW
 ::table::mc::SqueezeColumns			"Stringi tutte le colonne"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."
@@ -1934,7 +1956,7 @@
 ::fsbox::mc::FilenameTooLong				"Il nome del file deve avere meno di 256 caratteri."
 ::fsbox::mc::InvalidFileExtension		"Estensione file '%s' non valida."
 ::fsbox::mc::MissingFileExtension		"Manca estensione del file in '%s'."
-::fsbox::mc::FileAlreadyExists			"Il file '%s' esiste già.\nVuoi sovrascriverlo?"
+::fsbox::mc::FileAlreadyExists			"Il file '%s' esiste già.\n\nVuoi sovrascriverlo?"
 ::fsbox::mc::CannotOverwriteDirectory	"Impossibile rinominare la cartella '%s'."
 ::fsbox::mc::FileDoesNotExist				"Il file '%s' non esiste."
 ::fsbox::mc::DirectoryDoesNotExist		"La cartella '%s' non esiste."
@@ -1947,6 +1969,8 @@
 ::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
 ::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
 ::fsbox::mc::UriRejectedDetail			"Solo i seguenti tipi di file possono essere gestiti."
+::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:" ;# NEW
+::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:" ;# NEW (http://*)
 ::fsbox::mc::OperationAborted				"Operazione interrotta."
 ::fsbox::mc::ApplyOnDirectories			"Sei sicuro di voler appllicare l'operazione selezionata sulle (seguenti) cartelle?"
 ::fsbox::mc::EntryAlreadyExists			"Valore già esistente"

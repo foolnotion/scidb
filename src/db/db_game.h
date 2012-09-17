@@ -221,6 +221,8 @@ public:
 
 	// Accessing game information
 
+	/// Return game identifier
+	unsigned id() const;
 	/// Return current position
 	Board const& currentBoard() const;
 	/// Return position at given key
@@ -618,6 +620,7 @@ private:
 
 	mutable SubscriberP m_subscriber;
 
+	unsigned			m_id;
 	MoveNode*		m_currentNode;
 	edit::Root*		m_editNode;
 	Board				m_currentBoard;
@@ -646,6 +649,8 @@ private:
 	unsigned			m_linebreakMinCommentLength;
 	unsigned			m_displayStyle;
 	move::Notation	m_moveStyle;
+
+	static unsigned m_gameId;
 };
 
 } // namebase db

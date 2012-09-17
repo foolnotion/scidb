@@ -336,7 +336,7 @@ proc shutdown {} {
 	if {[::util::photos::busy?]} {
 		append msg $::util::photos::mc::DownloadStillInProgress "\n\n"
 		append msg $mc::QuitAnyway
-		set reply [::dialog::question -parent .application -message $msg]
+		set reply [::dialog::question -parent .application -message $msg -default no]
 		if {$reply ne "yes"} { return }
 		::util::photos::terminateUpdate
 	}

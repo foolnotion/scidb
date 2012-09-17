@@ -77,7 +77,7 @@ set Columns {
 	{ rating1		center	 0		0		 6			0			1			1			darkblue		}
 	{ rating2		center	 0		0		 6			0			1			1			darkblue		}
 	{ ratingType	left      0    0      7       0        1        0        darkblue		}
-	{ federation	center	 0		0		 5			0			1			0			darkgreen	}
+	{ federation	center	 4		5		 5			0			1			0			darkgreen	}
 	{ title			left		 0		0		 5			0			1			1			darkred		}
 	{ playerInfo	center	 0		0		14px		0			1			0			red			}
 	{ frequency		right		 4		8		 5			0			0			1			{}				}

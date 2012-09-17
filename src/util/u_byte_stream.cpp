@@ -115,7 +115,7 @@ ByteStream::ByteStream()
 	,m_getp(0)
 	,m_putp(0)
 	,m_endp(0)
-	,m_owner(true)
+	,m_owner(false)
 {
 }
 

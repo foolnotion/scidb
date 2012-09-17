@@ -53,7 +53,7 @@ array set Options {
 	font					TkTextFont
 	engine:nlines		2
 	engine:multipv		1
-	engine:current		Fruit
+	engine:current		Stockfish
 }
 
 variable Vars
@@ -80,59 +80,64 @@ proc build {parent width height} {
 	set Vars(linespace) [font metrics $Options(font) -linespace]
 	set Vars(engine:pause) 0
 	set Vars(engine:lock) 0
+	set Vars(engine:id) -1
 
 	set w [ttk::frame $parent.f]
 
-	set info		[tk::frame $w.info \
-						-background $Options(background) \
-						-borderwidth 0 \
-					]
-	set move		[tk::frame $info.move \
-						-background $Options(info:background) \
-						-borderwidth 1 \
-						-relief raised \
-					]
-	set lmove	[tk::label $info.move.l \
-						-font $Vars(font:bold) \
-						-background $Options(info:background) \
-						-borderwidth 0 \
-					]
-	set tmove	[tk::text $info.move.t \
-						-background $Options(info:background) \
-						-borderwidth 0 \
-						-foreground $Options(info:background) \
-						-state disabled \
-						-width 0 \
-						-height 1 \
-						-cursor {} \
-					]
+	set info [tk::frame $w.info \
+		-background $Options(background) \
+		-borderwidth 0 \
+	]
+	set move [tk::frame $info.move \
+		-background $Options(info:background) \
+		-borderwidth 1 \
+		-relief raised \
+	]
+	set lmove [tk::label $info.move.l \
+		-font $Vars(font:bold) \
+		-background $Options(info:background) \
+		-borderwidth 0 \
+	]
+	set tmove [tk::text $info.move.t \
+		-background $Options(info:background) \
+		-borderwidth 0 \
+		-foreground $Options(info:background) \
+		-state disabled \
+		-width 0 \
+		-height 1 \
+		-cursor {} \
+	]
 	$tmove tag configure figurine -font $Vars(font:figurine)
 
 	set dpth  [tk::frame $info.dpth -background $Options(info:background) -borderwidth 1 -relief raised]
 	set ldpth [tk::label $info.dpth.l \
-					-font $Vars(font:bold) \
-					-background $Options(info:background) \
-					-borderwidth 0 \
-					]
+		-font $Vars(font:bold) \
+		-background $Options(info:background) \
+		-borderwidth 0 \
+	]
 	set tdpth [tk::label $info.dpth.t \
-						-background $Options(info:background) \
-						-borderwidth 0 \
-						-foreground $Options(info:background) \
-						-width 0 \
-					]
+		-background $Options(info:background) \
+		-borderwidth 0 \
+		-foreground $Options(info:background) \
+		-width 0 \
+	]
 
-	set time  [tk::frame $info.time -background $Options(info:background) -borderwidth 1 -relief raised]
+	set time [tk::frame $info.time \
+		-background $Options(info:background) \
+		-borderwidth 1 \
+		-relief raised \
+	]
 	set ltime [tk::label $info.time.l \
-					-font $Vars(font:bold) \
-					-background $Options(info:background) \
-					-borderwidth 0 \
-					]
+		-font $Vars(font:bold) \
+		-background $Options(info:background) \
+		-borderwidth 0 \
+	]
 	set ttime [tk::label $info.time.t \
-						-background $Options(info:background) \
-						-borderwidth 0 \
-						-foreground $Options(info:background) \
-						-width 0 \
-					]
+		-background $Options(info:background) \
+		-borderwidth 0 \
+		-foreground $Options(info:background) \
+		-width 0 \
+	]
 
 	set col 1
 	foreach type {move dpth time} {
@@ -274,6 +279,29 @@ proc build {parent width height} {
 }
 
 
+proc startAnalysis {} {
+	variable Vars
+	variable Options
+
+	set isReadyCmd [namespace current]::IsReady
+	set updateCmd [namespace current]::UpdateInfo
+	set bestMoveCmd [namespace current]::BestMove
+	set name $Options(engine:current)
+
+	if {[string length $name]} {
+		set Vars(engine:id) [::engine::startAnalysis $name $isReadyCmd $updateCmd $bestMoveCmd]
+	}
+}
+
+
+proc stopAnalysis {} {
+	variable Vars
+
+	::engine::stopAnalysis $$Vars(engineId)
+	set Vars(engineId) -1
+}
+
+
 proc activate {w flag} {
 	::toolbar::activate $w $flag
 }
@@ -352,7 +380,7 @@ proc DisplayLines {move depth time vars} {
 	$Vars(move) configure -state disabled
 
 	$Vars(depth) configure -text $depth
-	$Vars(time) configure -text $time)
+	$Vars(time) configure -text $time
 
 	if {$Options(engine:multipv)} { set lines {1 2 3 4} } else { set lines 1 }
 
@@ -375,6 +403,22 @@ proc FillSwitcher {w} {
 	}
 
 	$w resize
+}
+
+
+proc IsReady {id} {
+	after idle [list ::scidb::engine::log send "### IsReady $id"]
+#	after idle [list ::scidb::engine::analyze start $id]
+}
+
+
+proc UpdateInfo {id score mate depth time nodes vars} {
+	DisplayLines "" $depth $time $vars
+}
+
+
+proc BestMove {id move} {
+	# TODO
 }
 
 

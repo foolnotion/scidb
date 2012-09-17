@@ -55,9 +55,9 @@ istream::get(char& c)
 
 
 istream&
-istream::getline(char* buf, size_t n)
+istream::getline(char* buf, size_t size)
 {
-	switch (n)
+	switch (size)
 	{
 		case 0:
 			setstate(failbit);
@@ -66,7 +66,7 @@ istream::getline(char* buf, size_t n)
 		case 1:
 			buf[0] = '\0';
 
-			if (!fgets(buf, n, m_fp))
+			if (!fgets(buf, size, m_fp))
 				setstate(feof(m_fp) ? failbit | eofbit : badbit);
 			else if (buf[0] == '\n')
 				buf[0] = '\0';
@@ -76,13 +76,13 @@ istream::getline(char* buf, size_t n)
 
 		default:
 			buf[0] = '\0';
-			buf[n - 1] = '\n';
+			buf[size - 1] = '\n';
 
-			if (!fgets(buf, n, m_fp))
+			if (!fgets(buf, size, m_fp))
 				setstate(feof(m_fp) ? failbit | eofbit : badbit);
 			else if (buf[0] == '\n')
 				buf[0] = '\0';
-			else if (buf[n - 1] == '\0' && buf[n - 2] != '\n')
+			else if (buf[size - 1] == '\0' && buf[size - 2] != '\n')
 				setstate(failbit);
 			break;
 	}
@@ -160,26 +160,53 @@ istream::eof()
 
 
 istream&
-istream::read(char* buf, size_t n)
+istream::read(char* buf, size_t size)
 {
-	size_t bytes_read = fread(buf, 1, n, m_fp);
+	if (size > 0)
+	{
+		size_t bytes_read = fread(buf, 1, size, m_fp);
 
-	if (bytes_read < n)
-		setstate(feof(m_fp) ? failbit | eofbit : badbit);
+		if (bytes_read < size)
+			setstate(feof(m_fp) ? failbit | eofbit : badbit);
+	}
+
+	return *this;
+}
+
+
+istream&
+istream::seek_and_read(uint64_t pos, unsigned char* buf, size_t size)
+{
+	if (size > 0)
+	{
+		flockfile(m_fp);
+		size_t n = fseek(m_fp, pos, SEEK_SET) ? 0 : fread_unlocked(buf, 1, size, m_fp);
+		funlockfile(m_fp);
+
+		if (n < size)
+		{
+			if (ferror(m_fp))
+				setstate(badbit);
+			else if (feof(m_fp))
+				setstate(eofbit | failbit);
+			else
+				setstate(failbit);
+		}
+	}
 
 	return *this;
 }
 
 
 size_t
-istream::readsome(char* buf, size_t n)
+istream::readsome(char* buf, size_t size)
 {
 	if (eof())
 		return 0;
 
-	size_t bytes_read = fread(buf, 1, n, m_fp);
+	size_t bytes_read = fread(buf, 1, size, m_fp);
 
-	if (bytes_read < n && !feof(m_fp))
+	if (bytes_read < size && !feof(m_fp))
 		setstate(badbit);
 
 	return bytes_read;

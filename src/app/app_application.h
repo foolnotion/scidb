@@ -41,6 +41,8 @@
 namespace util { class Progress; }
 namespace util { class PipedProgress; }
 
+namespace mstl { class ostream; }
+
 namespace db {
 
 class Board;
@@ -58,6 +60,7 @@ class Log;
 namespace app {
 
 class Cursor;
+class Engine;
 
 class Application
 {
@@ -78,23 +81,38 @@ public:
 
 		virtual void updateGameList(unsigned id, mstl::string const& filename) = 0;
 		virtual void updateGameList(unsigned id, mstl::string const& filename, unsigned view) = 0;
-		virtual void updateGameList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) = 0;
+		virtual void updateGameList(	unsigned id,
+												mstl::string const&
+												filename, unsigned view,
+												unsigned index) = 0;
 
 		virtual void updatePlayerList(unsigned id, mstl::string const& filename) = 0;
 		virtual void updatePlayerList(unsigned id, mstl::string const& filename, unsigned view) = 0;
-		virtual void updatePlayerList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) = 0;
+		virtual void updatePlayerList(unsigned id,
+												mstl::string const& filename,
+												unsigned view,
+												unsigned index) = 0;
 
 		virtual void updateEventList(unsigned id, mstl::string const& filename) = 0;
 		virtual void updateEventList(unsigned id, mstl::string const& filename, unsigned view) = 0;
-		virtual void updateEventList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) = 0;
+		virtual void updateEventList(	unsigned id,
+												mstl::string const& filename,
+												unsigned view,
+												unsigned index) = 0;
 
 		virtual void updateSiteList(unsigned id, mstl::string const& filename) = 0;
 		virtual void updateSiteList(unsigned id, mstl::string const& filename, unsigned view) = 0;
-		virtual void updateSiteList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) = 0;
+		virtual void updateSiteList(	unsigned id,
+												mstl::string const& filename,
+												unsigned view,
+												unsigned index) = 0;
 
 		virtual void updateAnnotatorList(unsigned id, mstl::string const& filename) = 0;
 		virtual void updateAnnotatorList(unsigned id, mstl::string const& filename, unsigned view) = 0;
-		virtual void updateAnnotatorList(unsigned id, mstl::string const& filename, unsigned view, unsigned index) = 0;
+		virtual void updateAnnotatorList(unsigned id,
+													mstl::string const& filename,
+													unsigned view,
+													unsigned index) = 0;
 
 		virtual void updateDatabaseInfo( mstl::string const& filename) = 0;
 
@@ -130,10 +148,13 @@ public:
 	bool hasTrialMode(unsigned position = InvalidPosition) const;
 	bool switchReferenceBase() const;
 	bool treeIsUpToDate(db::Tree::Key const& key) const;
+	bool engineExists(unsigned id) const;
 
 	unsigned countBases() const;
 	unsigned countGames() const;
 	unsigned countModifiedGames() const;
+	unsigned countEngines() const;
+	unsigned maxEngineId() const;
 
 	void enumCursors(CursorList& list) const;
 
@@ -214,6 +235,16 @@ public:
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
+	void save(Cursor& cursor, util::Progress& progress, unsigned start = 0);
+	void startUpdateTree(Cursor& cursor);
+
+	unsigned addEngine(Engine* engine);
+	void removeEngine(unsigned id);
+	Engine* engine(unsigned id) const;
+	mstl::ostream* setEngineLog(mstl::ostream* strm = 0);
+	mstl::ostream* engineLog() const;
+	bool startAnalysis(unsigned engineId);
+	bool stopAnalysis(unsigned engineId);
 
 	void clearBase(Cursor& cursor);
 	void compactBase(Cursor& cursor, ::util::Progress& progress);
@@ -300,22 +331,26 @@ private:
 	typedef mstl::map<unsigned,EditGame>		GameMap;
 	typedef mstl::map<unsigned,unsigned> 		IndexMap;
 	typedef mstl::map<mstl::string,Cursor*>	CursorMap;
+	typedef mstl::vector<Engine*>					EngineList;
 
-	Cursor*		m_current;
-	Cursor*		m_clipBase;
-	Cursor*		m_scratchBase;
-	Cursor*		m_referenceBase;
-	bool			m_switchReference;
-	bool			m_isUserSet;
-	unsigned		m_position;
-	unsigned		m_fallbackPosition;
-	unsigned		m_updateCount;
-	GameMap		m_gameMap;
-	CursorMap	m_cursorMap;
-	IndexMap		m_indexMap;
-	TreeP			m_currentTree;
-	bool			m_isClosed;
-	bool			m_treeIsFrozen;
+	Cursor*			m_current;
+	Cursor*			m_clipBase;
+	Cursor*			m_scratchBase;
+	Cursor*			m_referenceBase;
+	bool				m_switchReference;
+	bool				m_isUserSet;
+	unsigned			m_position;
+	unsigned			m_fallbackPosition;
+	unsigned			m_updateCount;
+	GameMap			m_gameMap;
+	CursorMap		m_cursorMap;
+	IndexMap			m_indexMap;
+	TreeP				m_currentTree;
+	EngineList		m_engineList;
+	unsigned			m_numEngines;
+	mstl::ostream*	m_engineLog;
+	bool				m_isClosed;
+	bool				m_treeIsFrozen;
 
 	mutable SubscriberP m_subscriber;
 

@@ -47,7 +47,7 @@ set FlagsDesign			"Miniature flags design"
 set IconDesign				"Icon design"
 set Development			"Development"
 set Programming			"Programming"
-set Leader					"Leader"
+set Head						"Head"
 
 set Version					"Version"
 set Distributed			"This program is distributed under the terms of the GNU General Public License."
@@ -253,7 +253,7 @@ proc DisplayContributions {t} {
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::Programming]:\n"] caption
-	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Leader]), "]
+	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Head]), "]
 	$t insert end [Enc "Giovanni Ornaghi"]
 
 	$t insert end [Enc "\n\n"]

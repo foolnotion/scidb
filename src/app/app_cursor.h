@@ -141,13 +141,10 @@ public:
 	/// Return tree view.
 	View& treeView();
 
-	/// Import one game.
-	unsigned importGame(db::Producer& producer, unsigned index);
 	/// Import whole database.
 	unsigned importGames(db::Producer& producer, util::Progress& progress);
-
-	/// Update underlying database.
-	void save(util::Progress& progress, unsigned start = 0);
+	/// Import whole database.
+	unsigned importGames(db::Database& src, db::Log& log, util::Progress& progress);
 	/// Close underlying database
 	void close();
 	/// Set whether this database is a reference database

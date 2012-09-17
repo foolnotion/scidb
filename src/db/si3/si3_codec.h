@@ -117,6 +117,7 @@ public:
 	void close() override;
 	void sync() override;
 	void removeAllFiles(mstl::string const& rootname) override;
+	void writeNamebases(mstl::ostream& stream, util::Progress& progress) override;
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
@@ -189,9 +190,9 @@ private:
 								unsigned maxFreq,
 								unsigned count,
 								util::Progress& progress);
-	void writeAllNamebases(mstl::string const& filename);
-	void writeAllNamebases(mstl::fstream& stream);
-	void writeNamebase(mstl::fstream& stream, NameList& base);
+	void writeNamebase(mstl::ostream& stream, NameList& base, util::Progress* progress);
+	void writeNamebases(mstl::string const& filename);
+	void writeNamebases(mstl::ostream& stream, util::Progress* progress = 0);
 
 	void save(mstl::string const& rootname, unsigned start, util::Progress& progress, bool attach);
 
@@ -201,31 +202,31 @@ private:
 													mstl::string& result,
 													sys::utf8::Codec& codec);
 
-	unsigned				m_headerSize;
-	unsigned				m_indexEntrySize;
-	unsigned				m_fileVersion;
-	unsigned				m_autoLoad;
-	mstl::string		m_extIndex;
-	mstl::string		m_extGame;
-	mstl::string		m_extNamebase;
-	unsigned				m_blockSize;
-	mstl::fstream		m_gameStream;
-	Lookup				m_roundLookup;
-	sys::utf8::Codec*	m_codec;
-	mstl::string		m_encoding;
-	CustomFlags*		m_customFlags;
-	util::BlockFile*	m_gameData;
-	util::BlockFile*	m_asyncReader;
-	mstl::string		m_magicGameFile;
-	bool					m_hasMagic;
-	NameList*			m_playerList;
-	NameList*			m_eventList;
-	NameList*			m_siteList;
-	NameList*			m_roundList;
-	NamebaseEntry*		m_roundEntry;
-	unsigned				m_progressFrequency;
-	unsigned				m_progressReportAfter;
-	unsigned				m_progressCount;
+	unsigned						m_headerSize;
+	unsigned						m_indexEntrySize;
+	unsigned						m_fileVersion;
+	unsigned						m_autoLoad;
+	mstl::string				m_extIndex;
+	mstl::string				m_extGame;
+	mstl::string				m_extNamebase;
+	unsigned						m_blockSize;
+	mstl::fstream				m_gameStream;
+	Lookup						m_roundLookup;
+	sys::utf8::Codec*			m_codec;
+	mstl::string				m_encoding;
+	CustomFlags*				m_customFlags;
+	util::BlockFile*			m_gameData;
+	util::BlockFileReader*	m_asyncReader;
+	mstl::string				m_magicGameFile;
+	bool							m_hasMagic;
+	NameList*					m_playerList;
+	NameList*					m_eventList;
+	NameList*					m_siteList;
+	NameList*					m_roundList;
+	NamebaseEntry*				m_roundEntry;
+	unsigned						m_progressFrequency;
+	unsigned						m_progressReportAfter;
+	unsigned						m_progressCount;
 };
 
 } // namespace si3

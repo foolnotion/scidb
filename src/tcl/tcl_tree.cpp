@@ -209,6 +209,12 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	M_ASSERT(m_progress);
 
+	if (updateTreeIsBlocked())
+	{
+		setResult(false);
+		return TCL_OK;
+	}
+
 	rating::Type ratingType;
 	::db::tree::Mode mode;
 

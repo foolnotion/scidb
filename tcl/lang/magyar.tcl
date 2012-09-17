@@ -163,26 +163,29 @@
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
 ### progress ###########################################################
-::progress::mc::Progress							"Állapot"
+::progress::mc::Progress			"Állapot"
 
-::progress::mc::Message(preload-namebase)		"Pre-loading namebase data" ;# NEW
+::progress::mc::Message(preload-namebase)	"Pre-loading namebase data" ;# NEW
 ::progress::mc::Message(preload-tournament)	"Pre-loading tournament index" ;# NEW
 ::progress::mc::Message(preload-player)		"Pre-loading player index" ;# NEW
 ::progress::mc::Message(preload-annotator)	"Pre-loading annotator index" ;# NEW
 
-::progress::mc::Message(read-index)				"Loading index data" ;# NEW
-::progress::mc::Message(read-game)				"Loading game data" ;# NEW
-::progress::mc::Message(read-namebase)			"Loading namebase data" ;# NEW
-::progress::mc::Message(read-tournament)		"Loading tournament index" ;# NEW
-::progress::mc::Message(read-player)			"Loading player index" ;# NEW
+::progress::mc::Message(read-index)		"Loading index data" ;# NEW
+::progress::mc::Message(read-game)		"Loading game data" ;# NEW
+::progress::mc::Message(read-namebase)		"Loading namebase data" ;# NEW
+::progress::mc::Message(read-tournament)	"Loading tournament index" ;# NEW
+::progress::mc::Message(read-player)		"Loading player index" ;# NEW
 ::progress::mc::Message(read-annotator)		"Loading annotator index" ;# NEW
-::progress::mc::Message(read-source)			"Loading source index" ;# NEW
-::progress::mc::Message(read-team)				"Loading team index" ;# NEW
-::progress::mc::Message(read-init)				"Loading initialization data" ;# NEW
+::progress::mc::Message(read-source)		"Loading source index" ;# NEW
+::progress::mc::Message(read-team)		"Loading team index" ;# NEW
+::progress::mc::Message(read-init)		"Loading initialization data" ;# NEW
 
-::progress::mc::Message(write-index)			"Writing index data" ;# NEW
-::progress::mc::Message(write-game)				"Writing game data" ;# NEW
+::progress::mc::Message(write-index)		"Writing index data" ;# NEW
+::progress::mc::Message(write-game)		"Writing game data" ;# NEW
 ::progress::mc::Message(write-namebase)		"Writing namebase data" ;# NEW
+
+::progress::mc::Message(print-game)		"Print %s game(s)" ;# NEW
+::progress::mc::Message(copy-game)		"Copy %s game(s)" ;# NEW
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Téma"
@@ -213,11 +216,10 @@
 ::menu::mc::ContactBugReport			"&Hiba jelentés"
 ::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
 ::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
-::menu::mc::OpenEngineLog		"Open &Engine Log" ;# NEW
+::menu::mc::OpenEngineLog		"Open &Engine Console" ;# NEW
 
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
-::menu::mc::ImportFiles					"PGN fájlok importálása"
 ::menu::mc::Archiving					"Archiving" ;# NEW
 ::menu::mc::CreateArchive				"Create Archive" ;# NEW
 ::menu::mc::BuildArchive				"Create archive %s" ;# NEW
@@ -287,7 +289,7 @@
 ::util::photos::mc::Error(nosudo)		"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
 ::util::photos::mc::Detail(nosudo)		"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
 
-::util::photos::mc::Message(uptodate)		"The photo files are already up-to-date." ;# NEW
+::util::photos::mc::Message(uptodate)		"The photo files are still up-to-date." ;# NEW
 ::util::photos::mc::Message(finished)		"The installation/update of photo files has finished." ;# NEW
 ::util::photos::mc::Message(broken)		"Broken Tcl library version." ;# NEW
 ::util::photos::mc::Message(noperm)		"You dont have write permissions for directory '%s'." ;# NEW
@@ -327,10 +329,12 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mutasd a verseny kereszttábláját"
+::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
+::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
 
-::application::board::mc::Tools				"Eszközök"
-::application::board::mc::Control			"Kezelés"
-::application::board::mc::GoIntoNextVar	"Következő variáció"
+::application::board::mc::Tools			"Eszközök"
+::application::board::mc::Control		"Kezelés"
+::application::board::mc::GoIntoNextVar		"Következő variáció"
 ::application::board::mc::GoIntPrevVar		"Előző variáció"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
@@ -346,7 +350,8 @@
 ::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
 ::application::database::mc::FileNew						"Új"
 ::application::database::mc::FileExport					"Export..."
-::application::database::mc::FileImport					"PGN fájlok importálás..."
+::application::database::mc::FileImport(pgn)				"PGN fájlok importálás..."
+::application::database::mc::FileImport(db)				"Import Databases..." ;# NEW
 ::application::database::mc::FileCreate					"Create Archive..." ;# NEW
 ::application::database::mc::FileClose						"Bezárás"
 ::application::database::mc::FileCompact					"Compact" ;# NEW
@@ -381,7 +386,8 @@
 ::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
 ::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::UriRejectedDetail			"Only Scidb databases can be opened:" ;# NEW
+::application::database::mc::UriRejectedDetail(open)		"Only Scidb databases can be opened:" ;# NEW
+::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
 ::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
 ::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
 ::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
@@ -390,6 +396,18 @@
 ::application::database::mc::ReallyCompact				"Really compact database '%s'?" ;# NEW
 ::application::database::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
 ::application::database::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
+::application::database::mc::CopyGames				"Copy games" ;# NEW
+::application::database::mc::CopyGamesFromTo			"Copy games from '%src' to '%dst'" ;# NEW
+::application::database::mc::CopiedGames					"%s game(s) copied"
+::application::database::mc::NoGamesCopied				"No games copied"
+::application::database::mc::CopyAllGames					"Copy all games (%num) from '%src'"
+::application::database::mc::CopyFilteredGames			"Copy only filtered games (%num) from '%src'"
+::application::database::mc::ImportGames						"Import games" ;# NEW
+::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
+::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportFiles						"Import Files:" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -773,7 +791,7 @@
 ::engine::mc::SelectEngine		"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
 ::engine::mc::Executables		"Executables" ;# NEW
-::engine::mc::EngineLog			"Engine Log" ;# NEW
+::engine::mc::EngineLog			"Engine Console" ;# NEW
 ::engine::mc::Probing			"Probing" ;# NEW
 ::engine::mc::NeverUsed			"never used" ;# NEW
 ::engine::mc::OpenFsbox			"Open File Selection Dialog" ;# NEW
@@ -1133,7 +1151,7 @@
 ::import::mc::ImportedGames			"játszma %s  betöltve"
 ::import::mc::NoGamesImported			"Nem került játszma importálásra"
 ::import::mc::FileIsEmpty			"A fájl valószínűleg üres"
-::import::mc::PgnImport				"PGN Importálás"
+::import::mc::DatabaseImport			"Adatbázis Importálás"
 ::import::mc::ImportPgnGame			"PGN játszma importálása"
 ::import::mc::ImportPgnVariation		"PGN Változat importálása"
 ::import::mc::ImportOK				"A PGN szöveg hiba és figyelmeztetés nélkül került betöltésre."
@@ -1269,11 +1287,14 @@
 ::export::mc::ExportDatabaseTitle		"'%s' adatbézis exportálása"
 ::export::mc::ExportingDatabase			"'%s' exportálása '%s'fájlba"
 ::export::mc::Export				"Exportálás"
+::export::mc::NoGamesCopied			"No games exported." ;# NEW
 ::export::mc::ExportedGames			"%s játszmá(k) exportálva"
 ::export::mc::NoGamesForExport			"Nincs kiválasztva exportálható játszma."
 ::export::mc::ResetDefaults			"Alapbeállítások visszaállítása"
 ::export::mc::UnsupportedEncoding		"%s kódolás nem használható PDF documentumokhoz. Kérem válaszzon másik kódolást."
-::export::mc::DatabaseIsOpen			"'%s' adatbázis jelenleg meg van nyitva. A művelet végrehajtása előtt be kell zárnia."
+::export::mc::DatabaseIsOpen			"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
+::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
+::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
 
 ::export::mc::BasicStyle			"Alap stílus"
 ::export::mc::GameInfo				"Játszma információ"
@@ -1650,7 +1671,7 @@
 ::info::mc::IconDesign		"Ikon terv"
 ::info::mc::Development		"Development" ;# NEW
 ::info::mc::Programming		"Programming" ;# NEW
-::info::mc::Leader		"Leader" ;# NEW
+::info::mc::Head		"Head" ;# NEW
 
 ::info::mc::Version		"Verzió"
 ::info::mc::Distributed		"This program is distributed under the terms of the GNU General Public License."
@@ -1786,6 +1807,7 @@
 ::table::mc::OptimizeColumns			"Minden oszlop optimalizálása"
 ::table::mc::FitColumnWidth			"Fit column width"
 ::table::mc::FitColumns				"Fit all columns"
+::table::mc::ExpandColumn			"Expand column width" ;# NEW
 ::table::mc::SqueezeColumns			"Squeeze all columns"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns		"Ctrl+."
@@ -1944,6 +1966,8 @@
 ::fsbox::mc::InvalidUri			"Drop content is not a valid URI list." ;# NEW
 ::fsbox::mc::UriRejected		"The following files are rejected:" ;# NEW
 ::fsbox::mc::UriRejectedDetail		"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::CannotOpenTrashFiles	"Cannot open files from trash:" ;# NEW
+::fsbox::mc::CannotOpenRemoteFiles	"Cannot open remote files:" ;# NEW (http://*)
 ::fsbox::mc::OperationAborted		"Operation aborted." ;# NEW
 ::fsbox::mc::ApplyOnDirectories		"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
 ::fsbox::mc::EntryAlreadyExists		"Entry already exists" ;# NEW

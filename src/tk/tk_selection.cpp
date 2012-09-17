@@ -190,8 +190,15 @@ quoteChars(char* src, char const* end, char* dst)
 		switch (unsigned char c = *src)
 		{
 			case '\r':
+				break;
+
 			case '\n':
-				*dst ++= c;
+				if (dst > buf && dst[-1] != '\n')
+				{
+					if (dst[-1] != '\r')
+						*dst++ = '\r';
+					*dst++ = '\n';
+				}
 				break;
 
 			default:
@@ -441,7 +448,7 @@ selectionSend(	Tcl_Interp* ti,
 						Tcl_DString buf;
 
 						Tcl_UtfToExternalDString(0, src, srcLen, &buf);
-						Tcl_DStringSetLength(&ds, 3*Tcl_DStringLength(&buf));
+						Tcl_DStringSetLength(&ds, 4*Tcl_DStringLength(&buf));
 						Tcl_DStringSetLength(
 							&ds,
 							quoteChars(

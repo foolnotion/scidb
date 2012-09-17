@@ -244,34 +244,6 @@ uninstall-localizations:
 install-lang: install-localizations
 uninstall-lang: uninstall-localizations
 
-install-photos:
-	@install -m 755 -d $(SHAREDIR)/photos
-
-uninstall-photos:
-	@if [ -d $(SHAREDIR)/photos ]; then                                          \
-		photodir=$(SHAREDIR)/photos;                                              \
-		if [ -f $$photodir/FILES ]; then                                          \
-			echo -n "Uninstall player photos:";                                    \
-			for file in `cat $$photodir/FILES`; do                                 \
-				if [ -f $$photodir/$file ]; then                                    \
-					rm -f $$photodir/$file;                                          \
-				fi;                                                                 \
-			done;                                                                  \
-			for i in a b c d e f g h i j k l m n o p q r s t u v w x y z; do       \
-				dir=$$photodir/$$i;                                                 \
-				if [ "`find $$dir -type d -empty`" = "`ls -d $$dir`" ]; then        \
-					rmdir $$dir;                                                     \
-				fi;                                                                 \
-			done;                                                                  \
-			if [ "`find $$photodir -type d -empty`" = "`ls -d $$photodir`" ]; then \
-				rmdir $$photodir;                                                   \
-			fi;                                                                    \
-		fi;                                                                       \
-	fi
-	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
-		rmdir $(SHAREDIR);                                                     \
-	fi
-
 install-textures:
 	@echo "Install textures"
 	@install -m 755 -d $(SHAREDIR)/textures
@@ -517,11 +489,9 @@ uninstall-fonts:
 		fi;                                                          \
 	fi
 
-install-no-photos: install-scripts install-pieces install-cursors install-flags \
+install: install-scripts install-pieces install-cursors install-flags \
 	install-localizations install-textures install-themes install-text-scripts  \
 	install-pdf-images install-help install-fonts
-
-install: install-no-photos install-photos
 
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
 	uninstall-themes uninstall-text-scripts uninstall-textures uninstall-pdf-images    \

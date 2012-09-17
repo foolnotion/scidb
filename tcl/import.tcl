@@ -36,7 +36,7 @@ set GameNumber								"Game"
 set ImportedGames							"%s game(s) imported"
 set NoGamesImported						"No games imported"
 set FileIsEmpty							"file is possibly empty"
-set PgnImport								"PGN Import"
+set DatabaseImport						"PGN Import"
 set ImportPgnGame							"Import PGN Game"
 set ImportPgnVariation					"Import PGN Variation"
 set ImportOK								"PGN text imported with no errors or warnings."
@@ -123,6 +123,8 @@ variable HiliteBackground	linen
 
 
 proc open {parent base files msg {encoding {}} {type {}} {useLog 1}} {
+Open $parent $base $files $msg $encoding $type $useLog
+return
 	::remote::busyOperation { Open $parent $base $files $msg $encoding $type $useLog }
 }
 
@@ -330,18 +332,17 @@ proc Open {parent base files msg encoding type useLog} {
 		set codec sci
 	}
 
-	::log::open $mc::PgnImport
-
+	::log::open $mc::DatabaseImport
 	set ngames [::scidb::db::count games $base]
 
 	switch $codec {
 		si3 - si4 {
 			set fileEncoding [::scidb::db::get encoding]
 			if {$encoding ne $::encoding::autoEncoding && $encoding ne $fileEncoding} {
-				set msg [string map [list %src $encoding %dst $fileEncoding] $mc::DifferentEncoding]
+				set ask [string map [list %src $encoding %dst $fileEncoding] $mc::DifferentEncoding]
 				set reply [::dialog::warning \
 					-parent $parent \
-					-message $msg \
+					-message $ask \
 					-detail $mc::DifferentEncodingDetails \
 					-buttons {cancel continue} \
 				]
@@ -352,15 +353,19 @@ proc Open {parent base files msg encoding type useLog} {
 
 	foreach file $files {
 		::log::info [format $mc::ImportingPgnFile $file]
-		set info "$::mc::File: [file tail $file]"
+		append info "$::mc::File: [file tail $file]"
 		set options [list -message $msg -log $useLog -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
+		switch [file extension $file] {
+			.sci - .si3 - .si4	{ set encoding utf-8 }
+			default					{ set encoding auto }
+		}
 		set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
 		if {[catch { ::util::catchException $cmd count } rc opts]} {
 			::log::error $mc::AbortedDueToInternalError
 			::progress::close
 			::log::close
-			return {*}$opts -rethrow 1 $count
+			return {*}$opts -rethrow 1 "internal error"
 		}
 		if {$rc == 1} {
 			::log::error $mc::AbortedDueToIoError
@@ -380,11 +385,11 @@ proc Open {parent base files msg encoding type useLog} {
 		if {$count == 0} {
 			set msg $mc::NoGamesImported
 			if {$Priv(ok)} { append msg " ($mc::FileIsEmpty)" }
-			::log::info $msg
 		} else {
-			::log::info	[format $mc::ImportedGames [::locale::formatNumber $count]]
+			set msg [format $mc::ImportedGames [::locale::formatNumber $count]]
 		}
 
+		::log::info $msg
 		if {$rc == -1} { break }
 	}
 
@@ -398,22 +403,6 @@ proc Open {parent base files msg encoding type useLog} {
 	::log::close
 
 	return $Priv(ok)
-}
-
-
-proc DoImport {parent base file encoding options} {
-	set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
-	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
-	set rc [::util::catchException $cmd count]
-	if {$rc == 1} {
-		::log::error $mc::AbortedDueToIoError
-		return -1
-	}
-	if {$rc < 0} {
-		::log::warning $mc::UserHasInterrupted
-		set count [expr {-$rc - 2}]
-	}
-	return $count
 }
 
 

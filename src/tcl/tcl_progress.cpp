@@ -79,7 +79,7 @@ Progress::Progress(Tcl_Obj* cmd, Tcl_Obj* arg)
 	,m_maximum(0)
 	,m_numTicks(-1)
 	,m_sendFinish(false)
-	,m_firstStart(true)
+	,m_sendMessage(false)
 	,m_checkInterruption(false)
 {
 	invoke(__func__, m_cmd, m_open, m_arg, nullptr);
@@ -130,29 +130,35 @@ Progress::interrupted()
 {
 	Tcl_Obj* result = call(__func__, m_cmd, m_interrupted, m_arg, 0);
 
-	int rc;
-	bool ok = result && (Tcl_GetIntFromObj(interp(), result, &rc) == TCL_OK) && rc;
-	Tcl_DecrRefCount(result);
+	if (!result)
+		return false;
 
-	return ok;
+	int rc;
+
+	if (Tcl_GetIntFromObj(interp(), result, &rc) != TCL_OK)
+		rc = 0;
+
+	Tcl_DecrRefCount(result);
+	return rc != 0;
 }
 
 
 void
 Progress::start(unsigned total)
 {
-	if (!m_firstStart)
-	{
-		sendFinish();
-		m_firstStart = false;
-	}
-
 	Tcl_Obj* maximum = Tcl_NewLongObj(m_maximum = total);
 	Tcl_IncrRefCount(maximum);
 	int rc = invoke(__func__, m_cmd, m_start, m_arg, maximum, nullptr);
 	Tcl_DecrRefCount(maximum);
 	m_sendFinish = rc == TCL_OK;
+	m_sendMessage = true;
 	checkResult(rc, m_cmd, m_start, m_arg);
+
+	if (!m_msg.empty())
+	{
+		message(m_msg);
+		m_msg.clear();
+	}
 
 	if (m_checkInterruption && interrupted())
 		throw InterruptException();
@@ -162,14 +168,21 @@ Progress::start(unsigned total)
 void
 Progress::message(mstl::string const& msg)
 {
-	Tcl_Obj* message = Tcl_NewStringObj(msg, msg.size());
-	Tcl_IncrRefCount(message);
-	int rc = invoke(__func__, m_cmd, m_message, m_arg, message, nullptr);
-	Tcl_DecrRefCount(message);
-	checkResult(rc, m_cmd, m_update, m_arg);
+	if (m_sendMessage)
+	{
+		Tcl_Obj* message = Tcl_NewStringObj(msg, msg.size());
+		Tcl_IncrRefCount(message);
+		int rc = invoke(__func__, m_cmd, m_message, m_arg, message, nullptr);
+		Tcl_DecrRefCount(message);
+		checkResult(rc, m_cmd, m_update, m_arg);
 
-	if (m_checkInterruption && interrupted())
-		throw InterruptException();
+		if (m_checkInterruption && interrupted())
+			throw InterruptException();
+	}
+	else
+	{
+		m_msg.assign(msg);
+	}
 }
 
 
@@ -217,6 +230,7 @@ Progress::finish() throw()
 {
 	int rc = sendFinish();
 	m_sendFinish = rc != TCL_OK;
+	m_sendMessage = false;
 	checkResult(rc, m_cmd, m_finish, m_arg);
 }
 

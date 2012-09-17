@@ -110,7 +110,7 @@ private:
 	List					m_lookup;
 	List					m_access;
 	unsigned				m_maxFrequency;
-	unsigned				m_size;
+	unsigned				m_maxId;
 	unsigned				m_nextId;
 	mutable Iterator	m_first;
 	mutable Iterator	m_last;

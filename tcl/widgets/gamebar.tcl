@@ -1078,7 +1078,7 @@ proc PrepareAsHeader {gamebar id} {
 	$gamebar raise close$id
 
 	if {$id eq $Specs(selected:$gamebar)} {
-		::tooltip::tooltip exclude $gamebar input$id
+		::tooltip::tooltip exclude $gamebar -item input$id
 #		::tooltip::tooltip exclude $gamebar close:input$id
 		after 10 { ::tooltip::hide }
 	}

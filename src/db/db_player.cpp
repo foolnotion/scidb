@@ -119,12 +119,12 @@ PndID::set(char const* id)
 } // namespace
 
 
-typedef Player::StringList StringList;
-typedef mstl::pair<mstl::string,Player const*> Entry;
 typedef mstl::vector<Player*> Players;
 
+typedef Player::StringList StringList;
+typedef mstl::pair<mstl::string,Player const*> Entry;
+
 typedef mstl::hash<mstl::string,Players> PlayerLookup;
-typedef mstl::hash<mstl::string,Player*> ConflictMap;
 typedef mstl::hash<Player*,StringList> AliasDict;
 typedef mstl::map<Player*,PndID> PndDict;
 typedef mstl::map<Player*,ViafID> ViafDict;
@@ -141,6 +141,7 @@ static AliasDict aliasDict(unsigned(150000*(100/AliasDict::Load)));
 static PlayerDict playerDict(unsigned(120000*(100/PlayerDict::Load)));
 static Lookup asciiDict(8192);
 static Lookup chessgamesDict(8192);
+static Lookup urlDict(512);
 static CAllocator charAllocator(1024);
 static PAllocator playerAllocator(32768);
 static PlayerList playerList;
@@ -148,8 +149,10 @@ static mstl::string exclude;
 static LangMap langMap;
 static PndDict pndMap(250);
 static ViafDict viafMap(250);
-static StringList emptyList;
+static StringList emptyList(0);
+
 #ifdef USE_CONFLICT_MAP
+typedef mstl::hash<mstl::string,Player*> ConflictMap;
 static ConflictMap conflictMap;
 #endif
 
@@ -530,7 +533,7 @@ insertAlias(Player::StringList& sl, mstl::string const& alias)
 	for (unsigned i = 0; i < sl.size(); ++i)
 	{
 		if (sl[i] == alias)
-			sl[i];
+			return sl[i];
 	}
 
 	sl.push_back();
@@ -599,7 +602,7 @@ findPlayer(mstl::string const& name, Players const& players)
 
 	for (unsigned i = 0; i < players.size(); ++i)
 	{
-		::StringList const* sl = ::aliasDict.find(players[i]);
+		StringList const* sl = ::aliasDict.find(players[i]);
 
 		if (sl)
 		{
@@ -1023,7 +1026,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 	normalize(ascii, key);
 	::alloc(key2, key);
 
-	::Players& players = ::playerLookup.find_or_insert(key2, Players());
+	::Players& players = ::playerLookup.find_or_insert(key2, ::Players());
 
 	if (!players.empty())
 	{
@@ -1150,7 +1153,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 	normalize(ascii, key);
 	::alloc(key2, key);
 
-	::Players& players = ::playerLookup.find_or_insert(key2, Players());
+	::Players& players = ::playerLookup.find_or_insert(key2, ::Players());
 
 	if (!players.empty())
 	{
@@ -1425,6 +1428,14 @@ Player::chessgamesID() const
 }
 
 
+mstl::string const&
+Player::url() const
+{
+	::Lookup::const_iterator i = ::urlDict.find(this);
+	return i == ::urlDict.end() ? mstl::string::empty_string : i->second;
+}
+
+
 unsigned
 Player::wikipediaLinks(AssocList& result) const
 {
@@ -1573,7 +1584,7 @@ Player::findMatches(mstl::string const& name, Matches& result, unsigned maxMatch
 
 	::qsort(	result.begin(),
 				result.size(),
-				sizeof(Matches::value_type),
+					sizeof(Matches::value_type),
 				reinterpret_cast<Compare>(cmpMatch));
 
 	return result.size() - n;
@@ -2604,6 +2615,7 @@ Player::parseComputerList(mstl::istream& stream)
 						++t;
 
 					country::Code federation = country::Unknown;
+					char const* url = 0;
 
 					bool winboard		= false;
 					bool uci				= false;
@@ -2647,7 +2659,7 @@ Player::parseComputerList(mstl::istream& stream)
 						while (::isspace(*s))
 							++s;
 
-						while (*s != '\0')
+						while (*s != '\0' && !::isspace(*s))
 						{
 							switch (::toupper(*s))
 							{
@@ -2662,11 +2674,17 @@ Player::parseComputerList(mstl::istream& stream)
 							if (*s != '\0')
 								++s;
 						}
+
+						while (::isspace(*s))
+							++s;
+
+						if (*s != '\0')
+							url = s;
 					}
 
 					codec.toUtf8(str, name);
 
-					if (Player* player = insertPlayer(name, 1, federation))
+					if ((player = insertPlayer(name, 1, federation)))
 					{
 						DEBUG(++countEngines);
 
@@ -2681,6 +2699,9 @@ Player::parseComputerList(mstl::istream& stream)
 						player->setHighestRating(rating::Rating, ccrl);
 						player->setFederation(federation);
 						player->setUnique(isUnique);
+
+						if (url)
+							urlDict[player].assign(url);
 					}
 				}
 			}

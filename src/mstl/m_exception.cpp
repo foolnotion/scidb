@@ -25,7 +25,6 @@
 
 using namespace mstl;
 
-
 basic_exception::basic_exception() throw() : m_msg(new string) {}
 basic_exception::basic_exception(string const& msg) : m_msg(new string(msg)) {}
 basic_exception::basic_exception(basic_exception const& exc) : m_msg(new mstl::string(*exc.m_msg)) {}

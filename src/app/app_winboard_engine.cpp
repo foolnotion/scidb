@@ -28,11 +28,13 @@
 #include "app_exception.h"
 
 #include "db_game.h"
+#include "db_player.h"
 
 #include "sys_signal.h"
 #include "sys_timer.h"
 
 #include "m_stdio.h"
+#include "m_vector.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -40,6 +42,22 @@
 using namespace app;
 using namespace app::winboard;
 using namespace db;
+
+
+struct Range
+{
+	Range(char const* s, char const* e) :start(s), end(e) {}
+	Range() :start(0), end(0) {}
+
+	operator bool() const { return start < end; }
+
+	char const* start;
+	char const* end;
+};
+
+typedef mstl::vector<Range> Ranges;
+
+static Range findIdentifier(Range const& range);
 
 
 static bool
@@ -168,6 +186,139 @@ nextAlgebraic(char const* s)
 }
 
 
+static unsigned
+split(Ranges& result, Range range, char delim)
+{
+	result.clear();
+
+	while (range)
+	{
+		char const* p = strchr(range.start + 1, delim);
+
+		if (p == 0 || p >= range.end)
+		{
+			result.push_back(range);
+			return result.size();
+		}
+
+		result.push_back(Range(range.start, p));
+		range.start = p + 1;
+
+		while (range && *range.start == delim)
+			++range.start;
+	}
+
+	return result.size();
+}
+
+
+static Range
+findIdentifier(Ranges::const_iterator s, Ranges::const_iterator e)
+{
+	for (Ranges::const_iterator i = s; i != e; ++i)
+	{
+		for (Ranges::const_iterator k = e - 1; k >= i; --k)
+		{
+			Range r(i->start, k->end);
+
+			if (db::Player::findEngine(mstl::string(r.start, r.end)))
+				return r;
+		}
+
+		if (Range r = findIdentifier(*i))
+			return r;
+	}
+
+	return Range();
+}
+
+
+static Range
+findIdentifier(Range const& range)
+{
+	if (!range)
+		return range;
+
+	Ranges ranges;
+
+	if (split(ranges, range, ',') == 1)
+	{
+		if (db::Player::findEngine(mstl::string(range.start, range.end)))
+			return range;
+
+		if (split(ranges, range, '.') == 1)
+		{
+			if (db::Player::findEngine(mstl::string(range.start, range.end)))
+				return range;
+
+			if (split(ranges, range, ' ') == 1)
+			{
+				if (db::Player::findEngine(mstl::string(range.start, range.end)))
+					return range;
+			}
+			else
+			{
+				if (Range r = findIdentifier(ranges.begin(), ranges.end()))
+					return r;
+			}
+		}
+		else
+		{
+			if (Range r = findIdentifier(ranges.begin(), ranges.end()))
+				return r;
+		}
+	}
+	else
+	{
+		if (Range r = findIdentifier(ranges.begin(), ranges.end()))
+			return r;
+	}
+
+	if (range.start[0] == '(' && range.end[-1] == ')')
+		return findIdentifier(Range(range.start + 1, range.end - 1));
+
+	return Range();
+}
+
+
+static char const*
+findVersionNumber(char const* s)
+{
+	if (*s == 'v' || *s == '.')
+		++s;
+
+	if (!isdigit(*s))
+		return 0;
+
+	++s;
+
+	while (isdigit(*s) || *s == '.')
+		++s;
+
+	while (s[-1] == '.')
+		--s;
+
+	return s;
+}
+
+
+static char const*
+findRomanNumber(char const* s)
+{
+	if (*s != 'X' && *s != 'V' && *s != 'I')
+		return 0;
+
+	++s;
+
+	while (*s == 'X' || *s == 'V' || *s == 'I')
+		++s;
+
+	if (isalnum(*s))
+		return 0;
+
+	return s;
+}
+
 
 struct winboard::Engine::Timer : public sys::Timer
 {
@@ -182,6 +333,7 @@ struct winboard::Engine::Timer : public sys::Timer
 winboard::Engine::Engine()
 	:m_response(false)
 	,m_detected(false)
+	,m_hasIdentifier(false)
 	,m_mustUseChess960(false)
 	,m_mustUseNoCastle(false)
 	,m_editSent(false)
@@ -202,6 +354,13 @@ winboard::Engine::Engine()
 
 
 winboard::Engine::~Engine() throw() {}
+
+
+db::Board const&
+winboard::Engine::currentBoard() const
+{
+	return m_board;
+}
 
 
 winboard::Engine::Result
@@ -226,6 +385,27 @@ winboard::Engine::sendNumberOfVariations()
 
 
 void
+winboard::Engine::sendHashSize()
+{
+	// nothing to do
+}
+
+
+void
+winboard::Engine::sendOptions()
+{
+	// TODO
+}
+
+
+void
+winboard::Engine::clearHash()
+{
+	// TODO
+}
+
+
+void
 winboard::Engine::doMove(Move const& move)
 {
 	mstl::string s(m_featureUsermove ? "usermove " : "");
@@ -244,13 +424,6 @@ winboard::Engine::doMove(Move const& move)
 		s.append(color::isWhite(move.color()) ? "e1c1" : "e8c8", 4);
 
 	send(s);
-}
-
-
-void
-winboard::Engine::doMove(db::Game const&, db::Move const& lastMove)
-{
-	doMove(lastMove);
 }
 
 
@@ -311,62 +484,52 @@ winboard::Engine::reset()
 
 
 bool
-winboard::Engine::startAnalysis(Board const& board)
+winboard::Engine::startAnalysis(bool isNewGame)
 {
-	if (!isActive())
-		return false;
+	M_ASSERT(currentGame());
+	M_ASSERT(isActive());
 
-	startAnalysis(board, board, History(), true);
-	return true;
-}
-
-
-bool
-winboard::Engine::startAnalysis(db::Game const& game, bool isNew)
-{
-	if (!isActive())
-		return false;
+	db::Game const* game = currentGame();
 
 	History moves;
-	game.getHistory(moves);
+	game->getHistory(moves);
 
-	startAnalysis(game.startBoard(), game.currentBoard(), moves, isNew);
-	return true;
-}
-
-
-void
-winboard::Engine::startAnalysis(	Board const& startBoard,
-											Board const& currentBoard,
-											History const& moves,
-											bool isNew)
-{
 	stopAnalysis();
 //	checkVariant(startBoard);
 
-	if (startBoard.notDerivableFromChess960())
+	if (game->startBoard().notDerivableFromChess960())
 	{
-		// what should we do?
+		error("Shuffle chess not supported");
+		return false;
 	}
 
-	m_board = currentBoard;
+	Board const& startBoard = game->startBoard();
+
 	m_mustUseChess960 = startBoard.notDerivableFromStandardChess();
 	m_mustUseNoCastle = m_mustUseChess960 && startBoard.castlingRights() == castling::NoRights;
 
 	if (m_mustUseNoCastle)
 	{
 		if (!m_variantNoCastle || !m_featureSetboard)
-			APP_RAISE("Shuffle Chess not supported");
+		{
+			error("Shuffle chess not supported");
+			return false;
+		}
 
 		send("variant nocastle");
 	}
 	else if (m_mustUseChess960)
 	{
 		if (!m_variantChess960 || !m_featureSetboard)
-			APP_RAISE("Chess 960 not supported");
+		{
+			error("Chess 960 not supported");
+			return false;
+		}
 
 		send("variant " + m_variant);
 	}
+
+	m_board = game->currentBoard();
 
 	if (m_featureSigint)
 		::sys::signal::sendInterrupt(pid());
@@ -376,8 +539,8 @@ winboard::Engine::startAnalysis(	Board const& startBoard,
 
 	if (moves.empty())
 	{
-		if (!currentBoard.isStandardPosition())
-			setupBoard(currentBoard);
+		if (!m_board.isStandardPosition())
+			setupBoard(m_board);
 	}
 	else
 	{
@@ -398,6 +561,7 @@ winboard::Engine::startAnalysis(	Board const& startBoard,
 	{
 		send("sd 50");
 		send("depth 50");				// some engines are expecting "depth" instead of "sd"
+		send("st 120000");			// not all engines do understand "level"
 		send("level 1 120000 0");	// better than "st 120000"
 		send("go");
 
@@ -405,6 +569,8 @@ winboard::Engine::startAnalysis(	Board const& startBoard,
 	}
 
 //	setAnalyzing(true);
+
+	return true;
 }
 
 
@@ -440,7 +606,6 @@ void
 winboard::Engine::protocolStart(bool isProbing)
 {
 	send("xboard");
-	send("protover 2");
 	send("ponder off");
 
 	if (isProbing)
@@ -501,6 +666,7 @@ winboard::Engine::featureDone(bool done)
 		if (done)
 		{
 			m_response = true;
+			send("protover 2");
 			engineIsReady();
 		}
 		else
@@ -516,7 +682,12 @@ winboard::Engine::timeout()
 {
 	send("hard");
 	send("easy");	// turn off pondering
-	deactivate();
+
+	if (m_response)
+		engineIsReady();
+	else
+		deactivate();
+
 	m_timer.reset();
 }
 
@@ -561,7 +732,7 @@ winboard::Engine::processMessage(mstl::string const& message)
 				// fallthru
 
 			case 'M':
-				if (::strncmp(msg + 1, "y move is", 9) == 0)
+				if (::strncmp(msg, "my move is", 10) == 0)
 				{
 					if (isProbing())
 					{
@@ -606,6 +777,9 @@ winboard::Engine::processMessage(mstl::string const& message)
 		}
 
 		detectFeatures(msg);
+
+		if (isProbing() && !m_hasIdentifier)
+			detectIdentifier(message);
 	}
 }
 
@@ -661,6 +835,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				{
 					setIdentifier(mstl::string(val + 1, end - 1));
 					detectFeatures(mstl::string(val + 1, end - val));
+					m_hasIdentifier = true;
 					reject = false;
 				}
 				break;
@@ -691,7 +866,7 @@ winboard::Engine::parseFeatures(char const* msg)
 							accept = true;
 
 							if (isProbing())
-								addFeature(app::Engine::Feature_PlayOther);
+								addFeature(app::Engine::Feature_Play_Other);
 						}
 						break;
 				}
@@ -875,6 +1050,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 		if (move.isLegal())
 		{
+			board.prepareForPrint(move);
 			board.doMove(move);
 			moves.append(move);
 		}
@@ -1037,6 +1213,7 @@ winboard::Engine::detectFeatures(char const* identifier)
 		{ "Jester",						true,		____,		____ },
 		{ "King of Kings",			true,		true,		____ },
 		{ "LordKing",					true,		____,		____ },
+		{ "micro-Max 4",				____,		____,		____ },
 		{ "NEJMET",						true,		true,		____ },
 		{ "Nejmet",						true,		true,		____ },
 		{ "Phalanx",					true,		true,		____ },
@@ -1084,6 +1261,26 @@ winboard::Engine::detectFeatures(char const* identifier)
 				return;
 			}
 		}
+	}
+}
+
+
+void
+winboard::Engine::detectIdentifier(mstl::string const& s)
+{
+	if (Range range = ::findIdentifier(Range(s.begin(), s.end())))
+	{
+		char const* q = range.end + 1;
+		char const* p = ::findVersionNumber(q);
+
+		if (!p)
+			p = ::findRomanNumber(q);
+
+		if (!p)
+			p = range.end;
+
+		setIdentifier(mstl::string(range.start, p));
+		m_hasIdentifier = true;
 	}
 }
 

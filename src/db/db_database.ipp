@@ -38,6 +38,8 @@ inline bool Database::isMemoryOnly() const					{ return m_memoryOnly; }
 inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }
 inline bool Database::encodingFailed() const					{ return m_encodingFailed; }
 inline bool Database::usingAsyncReader() const				{ return m_usingAsyncReader; }
+inline bool Database::hasTemporaryStorage() const			{ return m_temporary; }
+
 inline unsigned Database::id() const							{ return m_id; }
 inline unsigned Database::countGames() const					{ return m_gameInfoList.size(); }
 inline unsigned Database::countPlayers() const				{ return m_namebases(Namebase::Player).used(); }
@@ -54,6 +56,7 @@ inline TreeCache& Database::treeCache()						{ return m_treeCache; }
 inline Namebases& Database::namebases()						{ return m_namebases; }
 inline Time Database::created() const							{ return m_created; }
 inline uint32_t Database::creationTimestamp() const		{ return m_created; }
+inline unsigned Database::size() const							{ return m_size; }
 
 
 inline

@@ -162,11 +162,9 @@ Hyphenator.o: ../../mstl/m_ios.ipp
 Hyphenator.o: ../../mstl/m_istream.ipp
 Hyphenator.o: ../../mstl/m_file.h
 Hyphenator.o: ../../mstl/m_file.ipp
-Hyphenator.o: ../../mstl/m_ifstream.ipp
 Hyphenator.o: ../../mstl/m_ofstream.h
 Hyphenator.o: ../../mstl/m_ostream.h
 Hyphenator.o: ../../mstl/m_ostream.ipp
-Hyphenator.o: ../../mstl/m_ofstream.ipp
 Language.o: Language.h
 Language.o: ../../mstl/m_list.h
 Language.o: ../../mstl/m_vector.h

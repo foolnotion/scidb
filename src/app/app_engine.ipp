@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "m_utility.h"
+#include "m_assert.h"
 
 namespace app {
 
@@ -26,6 +27,7 @@ inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing
 
 inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
+inline unsigned Engine::Concrete::hashSize() const				{ return m_engine->hashSize(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
@@ -55,10 +57,26 @@ inline Engine::Options const& Engine::options() const	{ return m_options; }
 
 
 inline
-void
-Engine::doMove(db::Game const& game, db::Move const& lastMove)
+Engine::Options const&
+Engine::Concrete::options() const
 {
-	m_engine->doMove(game, lastMove);
+	return m_engine->options();
+}
+
+
+inline
+db::Game const*
+Engine::Concrete::currentGame() const
+{
+	return m_engine->currentGame();
+}
+
+
+inline
+db::Game const*
+Engine::currentGame() const
+{
+	return m_game;
 }
 
 
@@ -79,23 +97,34 @@ Engine::Concrete::setVariation(db::MoveList const& moves, unsigned no)
 
 
 inline
-void Engine::Concrete::setIdentifier(mstl::string const& name)
+void
+Engine::Concrete::setIdentifier(mstl::string const& name)
 {
 	m_engine->setIdentifier(name);
 }
 
 
 inline
-void Engine::Concrete::setAuthor(mstl::string const& name)
+void
+Engine::Concrete::setAuthor(mstl::string const& name)
 {
 	m_engine->setAuthor(name);
 }
 
 
 inline
-void Engine::Concrete::setMaxMultiPV(unsigned n)
+void
+Engine::Concrete::setMaxMultiPV(unsigned n)
 {
 	m_engine->setMaxMultiPV(n);
+}
+
+
+inline
+void
+Engine::Concrete::setHashSize(unsigned size)
+{
+	m_engine->setHashSize(size);
 }
 
 
@@ -113,11 +142,20 @@ Engine::Concrete::addOption(	mstl::string const& name,
 
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
 
+inline int Engine::score() const										{ return m_score; }
+inline int Engine::mate() const										{ return m_mate; }
+inline unsigned Engine::depth()										{ return m_depth; }
+inline double Engine::time() const									{ return m_time; }
+inline unsigned Engine::nodes() const								{ return m_nodes; }
+inline db::Board const& Engine::currentBoard() const			{ return m_engine->currentBoard(); }
+inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
+
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
 inline mstl::string const& Engine::author() const				{ return m_author; }
 inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
 inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
 inline unsigned Engine::numVariations() const					{ return m_numVariations; }
+inline unsigned Engine::hashSize() const							{ return m_hashSize; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 
@@ -128,10 +166,19 @@ inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
 inline void Engine::setIdentifier(mstl::string const& name)	{ m_identifier = name; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
 inline void Engine::setMaxMultiPV(unsigned n)					{ m_maxMultiPV = n; }
-inline void Engine::setBestMove(db::Move const& move)			{ m_bestMove = move; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
+inline void Engine::setHashSize(unsigned size)					{ m_hashSize = size; }
 inline void Engine::setLimitedStrength(unsigned elo)			{ m_limitedStrength = elo; }
 inline void Engine::addFeature(unsigned feature)				{ m_features |= feature; }
+
+
+inline
+db::MoveList const&
+Engine::variation(unsigned no)
+{
+	M_REQUIRE(no < numVariations());
+	return m_variations[no];
+}
 
 
 inline

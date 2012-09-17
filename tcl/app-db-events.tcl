@@ -98,7 +98,7 @@ proc build {parent} {
 	$rt add $gl
 	$rt add $pl
 
-	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 580	;# XXX
+	$top paneconfigure $lt -sticky nsew -stretch middle -minsize 380	;# XXX
 	$top paneconfigure $rt -sticky nsew -stretch always
 
 	$rt paneconfigure $gl -sticky nsew -stretch always

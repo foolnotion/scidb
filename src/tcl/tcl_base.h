@@ -47,6 +47,7 @@ Tcl_Interp* interp();
 void init(Tcl_Interp* ti);
 
 bool equal(char const* lhs, char const* rhs);
+bool updateTreeIsBlocked();
 
 int uniqueMatch(char const* option, char const** options);
 int uniqueMatchObj(Tcl_Obj* obj, char const** options);

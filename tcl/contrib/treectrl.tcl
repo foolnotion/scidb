@@ -1336,7 +1336,7 @@ proc ::TreeCtrl::ColumnDragScrollCheck {w x y} {
 		    $w column dragconfigure -indicatorcolumn ""
 		}
 	    }
-	    set Priv(autoscan,afterId,$w) [after 50 [list TreeCtrl::ColumnDragScrollCheckAux $w]]
+	    set Priv(autoscan,afterId,$w) [after 10 [list TreeCtrl::ColumnDragScrollCheckAux $w]]
 	}
 	return
     }

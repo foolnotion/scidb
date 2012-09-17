@@ -57,11 +57,10 @@ set Engines						"&Engines"
 set ContactBugReport			"&Bug Report"
 set ContactFeatureRequest	"&Feature Request"
 set InstallChessBaseFonts	"Install ChessBase Fonts"
-set OpenEngineLog				"Open &Engine Log"
+set OpenEngineLog				"Open &Engine Console"
 
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
-set ImportFiles				"Import PGN files"
 set Archiving					"Archiving"
 set CreateArchive				"Create Archive"
 set BuildArchive				"Create archive %s"
@@ -345,7 +344,7 @@ proc dbNew {parent} {
 	set FileSelBoxInUse 1
 
 	set filetypes [list                             \
-		[list $mc::ScidbBases		.sci]             \
+		[list $mc::ScidbBases		{.sci}]           \
 		[list $mc::ScidBases			{.si4 .si3}]      \
 		[list $mc::AllScidbBases	{.sci .si4 .si3}] \
 	]
@@ -380,9 +379,9 @@ proc dbOpen {parent} {
 	set filetypes [list                                                            \
 		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .zip}] \
 		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                   \
-		[list $mc::ScidbBases			.sci]                                         \
+		[list $mc::ScidbBases			{.sci}]                                       \
 		[list $mc::ScidBases				{.si4 .si3}]                                  \
-		[list $mc::ChessBaseBases		.cbh]                                         \
+		[list $mc::ChessBaseBases		{.cbh}]                                       \
 		[list $mc::ScidbArchives		{.scv}]                                       \
 		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                          \
 		[list $mc::PGNFiles				{.pgn .pgn.gz}]                               \
@@ -478,17 +477,30 @@ proc dbCreateArchive {parent {base ""}} {
 }
 
 
-proc dbImport {parent {base ""}} {
+proc dbImport {parent base fileTypes} {
 	variable FileSelBoxInUse
 
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	set filetypes [list	[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
-								[list $mc::PGNFiles				{.pgn .pgn.gz}] \
-								[list $mc::PGNArchives			{.zip}] \
-	]
-	set title $mc::ImportFiles
+	switch $fileTypes {
+		db {
+			set filetypes [list                                \
+				[list $mc::AllScidbBases		{.sci .si4 .si3}] \
+				[list $mc::ScidbBases			{.sci}]           \
+				[list $mc::ScidBases				{.si4 .si3}]      \
+			]
+		}
+		pgn {
+			set filetypes [list                                   \
+				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
+				[list $mc::PGNFiles				{.pgn .pgn.gz}]      \
+				[list $mc::PGNArchives			{.zip}]              \
+			]
+		}
+	}
+	set title $::application::database::mc::FileImport($fileTypes)
+	if {[string match *... $title]} { set title [string range $title 0 end-3] }
 	set result [::dialog::openFile \
 		-parent $parent \
 		-class pgn \
@@ -501,7 +513,6 @@ proc dbImport {parent {base ""}} {
 	]
 	set FileSelBoxInUse 0
 	if {[llength $result]} {
-		if {[string length $base] == 0} { set base [::scidb::db::get name] }
 		lassign $result files encoding
 		::import::open $parent $base $files $title $encoding
 		::application::database::refreshBase $base

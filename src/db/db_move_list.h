@@ -75,6 +75,7 @@ public:
 	void sort(int scores[]);
 	void sort(unsigned startIndex, int scores[]);
 
+	void print(mstl::string& result, unsigned halfMoveNo) const;
 	void dump();
 
 private:

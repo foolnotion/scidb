@@ -55,6 +55,7 @@ namespace eval tkdnd {
   variable _platform_namespace
   variable _drop_file_temp_dir
   variable _auto_update 1
+  array set _drag_cursors {}
 
   variable _windowingsystem
 
@@ -300,11 +301,12 @@ proc tkdnd::_init_drag { button source state rootX rootY } {
     set info [uplevel \#0 $cmd]
     if { $info != "" } {
       variable _windowingsystem
-      foreach { actions types data } $info { break }
+      lassign $info actions types data
       set types [platform_specific_types $types]
       set action refuse_drop
       switch $_windowingsystem {
         x11 {
+          # NOTE: too early, we don't know the action at this time
           set action [xdnd::_dodragdrop $source $actions $types $data $button]
         }
         win32 -
@@ -337,32 +339,25 @@ proc tkdnd::_end_drag { button source target action type data result
   if {[string length $cmd]} {
     set cmd [string map [list %W $source %X $rootX %Y $rootY \
                               %S $state %e <<DragEndCmd>> %A \{$action\}] $cmd]
-    set info [uplevel \#0 $cmd]
-#   if { $info != "" } {
-#     variable _windowingsystem
-#     foreach { actions types data } $info { break }
-#     set types [platform_specific_types $types]
-#     switch $_windowingsystem {
-#       x11 {
-#         set action [xdnd::_dodragdrop $source $actions $types $data $button]
-#       }
-#       win32 -
-#       windows {
-#         set action [_DoDragDrop $source $actions $types $data $button]
-#       }
-#       aqua {
-#         set action [macdnd::dodragdrop $source $actions $types $data]
-#       }
-#       default {
-#         error "unknown Tk windowing system"
-#       }
-#     }
-#     ## Call _end_drag to notify the widget of the result of the drag
-#     ## operation...
-#     _end_drag $button $source {} $action {} $data {} $state $rootX $rootY
-#   }
+    uplevel \#0 $cmd
   }
 };# tkdnd::_end_drag
+
+# ----------------------------------------------------------------------------
+#  Command tkdnd::set_drag_cursors
+# ----------------------------------------------------------------------------
+proc tkdnd::set_drag_cursors { w args } {
+  if {[llength $args] % 2 == 1} {
+    error "Even number of arguments expected"
+  }
+  variable _drag_cursors
+  array unset _drag_cursors $w:*
+  foreach {actions cursor} $args {
+    foreach action $actions {
+      set _drag_cursors($w:$action) $cursor
+    }
+  }
+}
 
 # ----------------------------------------------------------------------------
 #  Command tkdnd::platform_specific_types

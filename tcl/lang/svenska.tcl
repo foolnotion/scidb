@@ -184,6 +184,9 @@
 ::progress::mc::Message(write-game)				"Skriver partidata"
 ::progress::mc::Message(write-namebase)		"Skriver namndatabas"
 
+::progress::mc::Message(print-game)				"Print %s game(s)" ;# NEW
+::progress::mc::Message(copy-game)				"Copy %s game(s)" ;# NEW
+
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
 
@@ -213,11 +216,10 @@
 ::menu::mc::ContactBugReport			"&Felrapport"
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
-::menu::mc::OpenEngineLog				"Open &Engine Log" ;# NEW
+::menu::mc::OpenEngineLog				"Open &Engine Console" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
-::menu::mc::ImportFiles					"Importera PGN fil"
 ::menu::mc::Archiving					"Arkiverar"
 ::menu::mc::CreateArchive				"Skapa arkiv"
 ::menu::mc::BuildArchive				"Skapa arkiver %s"
@@ -287,7 +289,7 @@
 ::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
 ::util::photos::mc::Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
 
-::util::photos::mc::Message(uptodate)			"The photo files are already up-to-date." ;# NEW
+::util::photos::mc::Message(uptodate)			"The photo files are still up-to-date." ;# NEW
 ::util::photos::mc::Message(finished)			"The installation/update of photo files has finished." ;# NEW
 ::util::photos::mc::Message(broken)				"Broken Tcl library version." ;# NEW
 ::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'." ;# NEW
@@ -327,6 +329,8 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Visa turneringstabell för partiet"
+::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
+::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
 
 ::application::board::mc::Tools				"Verktyg"
 ::application::board::mc::Control			"Kontroll"
@@ -342,121 +346,135 @@
 ::application::board::mc::Accel(trial-mode)			"T" ;# NEW
 
 ### application::database ##############################################
-::application::database::mc::FileOpen						"Öppna databas..."
-::application::database::mc::FileOpenRecent				"Öppna senaste"
-::application::database::mc::FileNew						"Ny databas..."
-::application::database::mc::FileExport					"Exportera..."
-::application::database::mc::FileImport					"Importera PGN fil..."
-::application::database::mc::FileCreate					"Skapa arkiv..."
-::application::database::mc::FileClose						"Stäng"
-::application::database::mc::FileCompact					"Komprimera"
-::application::database::mc::HelpSwitcher					"Hjälp om databasväljare"
+::application::database::mc::FileOpen							"Öppna databas..."
+::application::database::mc::FileOpenRecent					"Öppna senaste"
+::application::database::mc::FileNew							"Ny databas..."
+::application::database::mc::FileExport						"Exportera..."
+::application::database::mc::FileImport(pgn)					"Importera PGN fil..."
+::application::database::mc::FileImport(db)					"Import Databases..." ;# NEW
+::application::database::mc::FileCreate						"Skapa arkiv..."
+::application::database::mc::FileClose							"Stäng"
+::application::database::mc::FileCompact						"Komprimera"
+::application::database::mc::HelpSwitcher						"Hjälp om databasväljare"
 
-::application::database::mc::Games							"&Partier"
-::application::database::mc::Players						"&Spelare"
-::application::database::mc::Events							"&Tävlingar"
-::application::database::mc::Sites							"&Platser"
-::application::database::mc::Annotators					"&Kommentatorer"
+::application::database::mc::Games								"&Partier"
+::application::database::mc::Players							"&Spelare"
+::application::database::mc::Events								"&Tävlingar"
+::application::database::mc::Sites								"&Platser"
+::application::database::mc::Annotators						"&Kommentatorer"
 
-::application::database::mc::File							"Fil"
-::application::database::mc::SymbolSize					"Symbol storlek"
-::application::database::mc::Large							"Stor"
-::application::database::mc::Medium							"Mellan"
-::application::database::mc::Small							"Liten"
-::application::database::mc::Tiny							"Mycket liten"
-::application::database::mc::Empty							"tom"
-::application::database::mc::None							"ingen"
-::application::database::mc::Failed							"misslyckades"
-::application::database::mc::LoadMessage					"Öppnar databas %s"
-::application::database::mc::UpgradeMessage				"Upgraderar databas %s"
-::application::database::mc::CompactMessage				"Komprimerar databas %s"
-::application::database::mc::CannotOpenFile				"Kan inte öppna fil '%s'."
-::application::database::mc::EncodingFailed				"Kodning %s misslyckades."
-::application::database::mc::DatabaseAlreadyOpen		"Databasen '%s' är redan öppen."
-::application::database::mc::Properties					"Egenskaper"
-::application::database::mc::Preload						"Förinläsning"
-::application::database::mc::MissingEncoding				"Saknar kodning %s (använder %s istället)"
-::application::database::mc::DescriptionTooLarge		"Beskrivningen är för stor."
-::application::database::mc::DescrTooLargeDetail		"Posten innehåller %d tecken, men bara %d tecken är tillåtet."
-::application::database::mc::ClipbaseDescription		"Temporär databas, lagras inte på disk."
-::application::database::mc::HardLinkDetected			"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
-::application::database::mc::HardLinkDetectedDetail	"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
-::application::database::mc::UriRejectedDetail			"Bara Scidb databaser kan öppnas:"
-::application::database::mc::EmptyUriList					"Innehåll som släpps är tomt."
-::application::database::mc::OverwriteExistingFiles	"Skriver över existerande filer i folder '%s'?"
-::application::database::mc::SelectDatabases				"Välj databaser som ska öppnas"
-::application::database::mc::ExtractArchive				"Packa upp arkiv %s"
-::application::database::mc::CompactDetail				"Alla partier måste stängas in komprimeringen kan börjas."
-::application::database::mc::ReallyCompact				"Är du säker att databasen '%s' ska komprimeras?"
-::application::database::mc::ReallyCompactDetail(1)	"Endast ett parti kommer bli raderade."
-::application::database::mc::ReallyCompactDetail(N)	"%s partier kommer bli raderade."
+::application::database::mc::File								"Fil"
+::application::database::mc::SymbolSize						"Symbol storlek"
+::application::database::mc::Large								"Stor"
+::application::database::mc::Medium								"Mellan"
+::application::database::mc::Small								"Liten"
+::application::database::mc::Tiny								"Mycket liten"
+::application::database::mc::Empty								"tom"
+::application::database::mc::None								"ingen"
+::application::database::mc::Failed								"misslyckades"
+::application::database::mc::LoadMessage						"Öppnar databas %s"
+::application::database::mc::UpgradeMessage					"Upgraderar databas %s"
+::application::database::mc::CompactMessage					"Komprimerar databas %s"
+::application::database::mc::CannotOpenFile					"Kan inte öppna fil '%s'."
+::application::database::mc::EncodingFailed					"Kodning %s misslyckades."
+::application::database::mc::DatabaseAlreadyOpen			"Databasen '%s' är redan öppen."
+::application::database::mc::Properties						"Egenskaper"
+::application::database::mc::Preload							"Förinläsning"
+::application::database::mc::MissingEncoding					"Saknar kodning %s (använder %s istället)"
+::application::database::mc::DescriptionTooLarge			"Beskrivningen är för stor."
+::application::database::mc::DescrTooLargeDetail			"Posten innehåller %d tecken, men bara %d tecken är tillåtet."
+::application::database::mc::ClipbaseDescription			"Temporär databas, lagras inte på disk."
+::application::database::mc::HardLinkDetected				"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
+::application::database::mc::HardLinkDetectedDetail		"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
+::application::database::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
+::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::application::database::mc::EmptyUriList						"Innehåll som släpps är tomt."
+::application::database::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
+::application::database::mc::SelectDatabases					"Välj databaser som ska öppnas"
+::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
+::application::database::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
+::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
+::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
+::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
+::application::database::mc::CopyGames							"Copy games" ;# NEW
+::application::database::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
+::application::database::mc::CopiedGames						"%s game(s) copied"
+::application::database::mc::NoGamesCopied					"No games copied"
+::application::database::mc::CopyAllGames						"Copy all games (%num) from '%src'"
+::application::database::mc::CopyFilteredGames				"Copy only filtered games (%num) from '%src'"
+::application::database::mc::ImportGames						"Import games" ;# NEW
+::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
+::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
+::application::database::mc::ImportFiles						"Import Files:" ;# NEW
 
-::application::database::mc::RecodingDatabase			"Omkodar %base från %from till %to"
-::application::database::mc::RecodedGames					"%s parti(er) omkodade"
+::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
+::application::database::mc::RecodedGames						"%s parti(er) omkodade"
 
-::application::database::mc::GameCount						"Partier"
-::application::database::mc::DatabasePath					"Databaskatalog"
-::application::database::mc::DeletedGames					"Raderade partier"
-::application::database::mc::Description					"Beskrivning"
-::application::database::mc::Created						"Skapad"
-::application::database::mc::LastModified					"Senast ändrad"
-::application::database::mc::Encoding						"Kodning"
-::application::database::mc::YearRange						"Årtalsintervall"
-::application::database::mc::RatingRange					"Ratingintervall"
-::application::database::mc::Result							"Resultat"
-::application::database::mc::Score							"Poäng"
-::application::database::mc::Type							"Typ"
-::application::database::mc::ReadOnly						"Skrivskydda"
+::application::database::mc::GameCount							"Partier"
+::application::database::mc::DatabasePath						"Databaskatalog"
+::application::database::mc::DeletedGames						"Raderade partier"
+::application::database::mc::Description						"Beskrivning"
+::application::database::mc::Created							"Skapad"
+::application::database::mc::LastModified						"Senast ändrad"
+::application::database::mc::Encoding							"Kodning"
+::application::database::mc::YearRange							"Årtalsintervall"
+::application::database::mc::RatingRange						"Ratingintervall"
+::application::database::mc::Result								"Resultat"
+::application::database::mc::Score								"Poäng"
+::application::database::mc::Type								"Typ"
+::application::database::mc::ReadOnly							"Skrivskydda"
 
-::application::database::mc::ChangeIcon					"Byt ikon"
-::application::database::mc::Recode							"Omkoda"
-::application::database::mc::EditDescription				"Redigera beskrivning"
-::application::database::mc::EmptyClipbase				"Töm Clipbase"
+::application::database::mc::ChangeIcon						"Byt ikon"
+::application::database::mc::Recode								"Omkoda"
+::application::database::mc::EditDescription					"Redigera beskrivning"
+::application::database::mc::EmptyClipbase					"Töm Clipbase"
 
-::application::database::mc::T_Unspecific					"Ospecifik"
-::application::database::mc::T_Temporary					"Temporär"
-::application::database::mc::T_Work							"Arbete"
-::application::database::mc::T_Clipbase					"Clipbase"
-::application::database::mc::T_MyGames						"Mina partier"
-::application::database::mc::T_Informant					"Informant"
-::application::database::mc::T_LargeDatabase				"Stordatabas"
-::application::database::mc::T_CorrespondenceChess		"Korrschack"  
-::application::database::mc::T_EmailChess					"E-post schack"
-::application::database::mc::T_InternetChess				"Internetschack"
-::application::database::mc::T_ComputerChess				"Datorschack"
-::application::database::mc::T_Chess960					"Schack960"
-::application::database::mc::T_PlayerCollection			"Spelarsamling"
-::application::database::mc::T_Tournament					"Turnering"
-::application::database::mc::T_TournamentSwiss			"Schweizer-turnering"
-::application::database::mc::T_GMGames						"GM partier"
-::application::database::mc::T_IMGames						"IM partier"
-::application::database::mc::T_BlitzGames					"Blixtpartier"
-::application::database::mc::T_Tactics						"Taktik"
-::application::database::mc::T_Endgames					"Slutspel"
-::application::database::mc::T_Analysis					"Analyser"
-::application::database::mc::T_Training					"Träning"
-::application::database::mc::T_Match						"Matcher"
-::application::database::mc::T_Studies						"Studier"
-::application::database::mc::T_Jewels						"Juveler"
-::application::database::mc::T_Problems					"Problem"
-::application::database::mc::T_Patzer						"Träflyttning"
-::application::database::mc::T_Gambit						"Gambit"
-::application::database::mc::T_Important					"Viktigt"
-::application::database::mc::T_Openings					"Öppningar"
-::application::database::mc::T_OpeningsWhite				"Vita öppningar"
-::application::database::mc::T_OpeningsBlack				"Svarta öppningar"
+::application::database::mc::T_Unspecific						"Ospecifik"
+::application::database::mc::T_Temporary						"Temporär"
+::application::database::mc::T_Work								"Arbete"
+::application::database::mc::T_Clipbase						"Clipbase"
+::application::database::mc::T_MyGames							"Mina partier"
+::application::database::mc::T_Informant						"Informant"
+::application::database::mc::T_LargeDatabase					"Stordatabas"
+::application::database::mc::T_CorrespondenceChess			"Korrschack"  
+::application::database::mc::T_EmailChess						"E-post schack"
+::application::database::mc::T_InternetChess					"Internetschack"
+::application::database::mc::T_ComputerChess					"Datorschack"
+::application::database::mc::T_Chess960						"Schack960"
+::application::database::mc::T_PlayerCollection				"Spelarsamling"
+::application::database::mc::T_Tournament						"Turnering"
+::application::database::mc::T_TournamentSwiss				"Schweizer-turnering"
+::application::database::mc::T_GMGames							"GM partier"
+::application::database::mc::T_IMGames							"IM partier"
+::application::database::mc::T_BlitzGames						"Blixtpartier"
+::application::database::mc::T_Tactics							"Taktik"
+::application::database::mc::T_Endgames						"Slutspel"
+::application::database::mc::T_Analysis						"Analyser"
+::application::database::mc::T_Training						"Träning"
+::application::database::mc::T_Match							"Matcher"
+::application::database::mc::T_Studies							"Studier"
+::application::database::mc::T_Jewels							"Juveler"
+::application::database::mc::T_Problems						"Problem"
+::application::database::mc::T_Patzer							"Träflyttning"
+::application::database::mc::T_Gambit							"Gambit"
+::application::database::mc::T_Important						"Viktigt"
+::application::database::mc::T_Openings						"Öppningar"
+::application::database::mc::T_OpeningsWhite					"Vita öppningar"
+::application::database::mc::T_OpeningsBlack					"Svarta öppningar"
 
-::application::database::mc::OpenDatabase					"Öppna databas"
-::application::database::mc::NewDatabase					"Ny databas"
-::application::database::mc::CloseDatabase				"Stäng databas '%s'"
-::application::database::mc::SetReadonly					"Sätt databasen '%s' skrivskyddad"
-::application::database::mc::SetWriteable					"Sätt databasen '%s' skrivbar"
+::application::database::mc::OpenDatabase						"Öppna databas"
+::application::database::mc::NewDatabase						"Ny databas"
+::application::database::mc::CloseDatabase					"Stäng databas '%s'"
+::application::database::mc::SetReadonly						"Sätt databasen '%s' skrivskyddad"
+::application::database::mc::SetWriteable						"Sätt databasen '%s' skrivbar"
 
-::application::database::mc::OpenReadonly					"Öppna skrivskyddat"
-::application::database::mc::OpenWriteable				"Öppna skrivbart"
+::application::database::mc::OpenReadonly						"Öppna skrivskyddat"
+::application::database::mc::OpenWriteable					"Öppna skrivbart"
 
-::application::database::mc::UpgradeDatabase				"%s är ett gammalt databasformat som inte kan öppnas skrivbart.\n\nEn uppgradering kommer skapa en ny version av databasen och efter det radera orginalfilerna.\n\nDet här kan ta en tid, men behöver bara göras en gång.\n\nVill du uppgradera databasen nu?"
-::application::database::mc::UpgradeDatabaseDetail		"\"Nej\" kommer öppna databasen skrivskyddat och kan inte göras skrivbar."
+::application::database::mc::UpgradeDatabase					"%s är ett gammalt databasformat som inte kan öppnas skrivbart.\n\nEn uppgradering kommer skapa en ny version av databasen och efter det radera orginalfilerna.\n\nDet här kan ta en tid, men behöver bara göras en gång.\n\nVill du uppgradera databasen nu?"
+::application::database::mc::UpgradeDatabaseDetail			"\"Nej\" kommer öppna databasen skrivskyddat och kan inte göras skrivbar."
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Kontroll"
@@ -773,7 +791,7 @@
 ::engine::mc::SelectEngine				"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
 ::engine::mc::Executables				"Executables" ;# NEW
-::engine::mc::EngineLog					"Engine Log" ;# NEW
+::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"never used" ;# NEW
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
@@ -1133,7 +1151,7 @@
 ::import::mc::ImportedGames						"%s partier importerade"
 ::import::mc::NoGamesImported						"Inga partier importerade"
 ::import::mc::FileIsEmpty							"Filen är kanske tom"
-::import::mc::PgnImport								"PGN-import"
+::import::mc::DatabaseImport						"Databas-import"
 ::import::mc::ImportPgnGame						"Import PGN-parti"
 ::import::mc::ImportPgnVariation					"Import PGN-variation"
 ::import::mc::ImportOK								"PGN-text importerad utan fel eller varningar."
@@ -1269,11 +1287,14 @@
 ::export::mc::ExportDatabaseTitle		"Exportera databas '%s'"
 ::export::mc::ExportingDatabase			"Exporterar '%s' till filen '%s'"
 ::export::mc::Export							"Export"
+::export::mc::NoGamesCopied				"No games exported." ;# NEW
 ::export::mc::ExportedGames				"%s partier exporterade"
 ::export::mc::NoGamesForExport			"Inga partier att exportera."
 ::export::mc::ResetDefaults				"Återställ till standardvärden"
 ::export::mc::UnsupportedEncoding		"Kan inte använda kodning %s för PDF-dokument. Välj en alternativ kodning."
-::export::mc::DatabaseIsOpen				"Databasen '%s' är öppen. Den måste stängas först."
+::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
+::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
+::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
 
 ::export::mc::BasicStyle					"Grundstil"
 ::export::mc::GameInfo						"Partiinfo"
@@ -1651,7 +1672,7 @@
 ::info::mc::IconDesign			"Design av ikoner"
 ::info::mc::Development			"Development" ;# NEW
 ::info::mc::Programming			"Programming" ;# NEW
-::info::mc::Leader				"Leader" ;# NEW
+::info::mc::Head					"Head" ;# NEW
 
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."
@@ -1787,6 +1808,7 @@
 ::table::mc::OptimizeColumns			"Optimera alla spalter"
 ::table::mc::FitColumnWidth			"Anpassa spaltbredden"
 ::table::mc::FitColumns					"Anpassa alla spalter"
+::table::mc::ExpandColumn				"Expand column width" ;# NEW
 ::table::mc::SqueezeColumns			"Tryck ihop alla spalter"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."
@@ -1945,6 +1967,8 @@
 ::fsbox::mc::InvalidUri						"Innehåll som släpps är inte en giltig URI-lista."
 ::fsbox::mc::UriRejected					"Följande filer är förkastade:"
 ::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
+::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:" ;# NEW
+::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:" ;# NEW (http://*)
 ::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
 ::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
 ::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW

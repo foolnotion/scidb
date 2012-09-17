@@ -24,6 +24,10 @@
 
 #ifdef __WIN32__
 # include <fcntl.h>
+# include <io.h>
+# define ftruncate _chsize
+#else
+# include <unistd.h>
 #endif
 
 using namespace mstl;
@@ -173,6 +177,16 @@ file::close()
 	m_bufsize = 0;
 
 	if (rc)
+		setstate(failbit);
+}
+
+
+void
+file::truncate(unsigned length)
+{
+	M_REQUIRE(is_open() && is_writable());
+
+	if (ftruncate(fildes(), length) == -1)
 		setstate(failbit);
 }
 

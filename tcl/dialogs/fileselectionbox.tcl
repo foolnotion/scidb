@@ -180,8 +180,51 @@ proc saveMode {w} {
 }
 
 
+proc dragCursors {{ext ""}} {
+	variable DragCursor
+
+	if {![info exists DragCursor]} {
+		set DragCursor {}
+
+		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .pgn .gz .zip} db
+											{.pdf .html .htm .tex .ltx} document
+											{.ppm .png .gif .jpg .jpeg} image } {
+			if {[tk windowingsystem] eq "x11"} {
+				set accept [file join $::scidb::dir::share cursor drag-$name-accept-32x32.xcur]
+				set deny   [file join $::scidb::dir::share cursor drag-$name-deny-32x32.xcur]
+
+				if {[file readable $accept] && [file readable $deny]} {
+					if {	![catch { ::xcursor::loadCursor $accept } acceptCursor]
+						&&	![catch { ::xcursor::loadCursor $deny } denyCursor]} {
+						lappend DragCursor $filetypes [list $acceptCursor $denyCursor]
+					}
+				}
+			}
+		}
+	}
+
+	if {[string length $ext] == 0} { return $DragCursor }
+
+	foreach {extList cursors} $DragCursor {
+		if {$ext in $extList} { return $cursors }
+	}
+
+	return {}
+}
+
+
+proc estimateNumberOfGames {filename} {
+	set count [NumGames $filename]
+	if {[file extension $filename] in {.pgn .gz .zip}} {
+		set count [expr {-[RoundNumGames $count]}]
+	}
+	return $count
+}
+
+
 proc Open {type args} {
 	variable LastFolders
+	variable DragCursor
 	variable Priv
 
 	if {$type eq "dir"} {
@@ -299,6 +342,7 @@ proc Open {type args} {
 	}
 
 	lappend options -fileicons [fileIcons]
+	lappend options -filecursors [dragCursors]
 	if {$scidbFileType} {
 		lappend options \
 			-sizecommand [namespace code GetNumGames] \
@@ -519,19 +563,25 @@ proc NumGames {filename {mtime 0}} {
 }
 
 
+proc RoundNumGames {count} {
+	if {$count > 10000} {
+		set count [expr {(($count + 500)/1000)*1000}]
+	} elseif {$count > 1000} {
+		set count [expr {(($count + 50)/100)*100}]
+	} elseif {$count > 10} {
+		set count [expr {(($count + 5)/10)*10}]
+	}
+	return $count
+}
+
+
 proc FormatNumGames {filename count} {
 	set result ""
 	if {$count > 0} {
 		switch [file extension $filename] {
 			.pgn - .gz - .zip {
+				set count [RoundNumGames $count]
 				append result "~ "
-				if {$count > 10000} {
-					set count [expr {(($count + 500)/1000)*1000}]
-				} elseif {$count > 1000} {
-					set count [expr {(($count + 50)/100)*100}]
-				} elseif {$count > 10} {
-					set count [expr {(($count + 5)/10)*10}]
-				}
 			}
 
 			.cbh { append result "\u2264 " }

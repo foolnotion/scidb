@@ -99,6 +99,7 @@ proc open {w args} {
 		-text $opts(-message) \
 		-compound left \
 		-wraplength [expr {$ticks - 50}] \
+		-justify left \
 		;
 
 	set options {}
@@ -181,6 +182,11 @@ proc open {w args} {
 	ttk::releaseGrab $w
 	if {[llength $opts(-command)]} { busyCursor $w off }
 	update idletasks
+}
+
+
+proc maximum {w} {
+	return [$w.p cget -maximum]
 }
 
 

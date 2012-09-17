@@ -24,7 +24,6 @@ TITLE Piano di Sviluppo
   <li>Finestra Analisi: lancia un motore di scacchi esterno</li>
   <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
   <li>Funzioni di Filtro: filtro partita, giocatore</li>
-  <li>Drag &amp; Drop di partite in diversi database</li>
   <li>Layout flessibile per le finestre</li>
   <li>Generazione documenti: esportazione in LaTeX</li>
   <li>Supporto per il sistema operativo Windows</li>
@@ -42,6 +41,9 @@ TITLE Piano di Sviluppo
   <li>Generazione documenti: esportazione in PDF e HTML</li>
   <li>Interfaccia per controllare l'ortografia dei giocatori</li>
   <li>Finestra del "Consiglio del Giorno"</li>
+<NEW>
+  <li>Generating opening reports</li>
+</NEW>
   <li>Uso di tavole dei finali</li>
   <li>Scacchiera 3D</li>
 </ul>

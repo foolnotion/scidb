@@ -65,6 +65,7 @@ public:
 	bool				m_readOnly;
 	bool				m_writeable;
 	bool				m_memoryOnly;
+	bool				m_temporary;
 	mstl::string	m_description;
 	mstl::string	m_encoding;
 	Allocator 		m_allocator;

@@ -54,6 +54,7 @@ namespace util
 {
 	class Progress;
 	class BlockFile;
+	class BlockFileReader;
 	class ByteStream;
 }
 
@@ -150,10 +151,13 @@ public:
 					mstl::string const& encoding,
 					Producer& producer,
 					util::Progress& progress);
+	unsigned openProgressive(	DatabaseContent* db,
+										mstl::string const& rootname,
+										mstl::string const& encoding);
 	void clear(mstl::string const& rootname = mstl::string::empty_string);
 	void rename(mstl::string const& oldName, mstl::string const& newName);
 	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
-	virtual void writeNamebases(mstl::ostream& os, util::Progress* progress);
+	virtual void writeNamebases(mstl::ostream& os, util::Progress& progress);
 	virtual void writeIndex(mstl::ostream& os, util::Progress& progress);
 	virtual void writeGames(mstl::ostream& os, util::Progress& progress);
 	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
@@ -162,6 +166,7 @@ public:
 	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
 	virtual void close() = 0;
 	virtual void removeAllFiles(mstl::string const& rootname);
+	virtual void readIndexProgressive(unsigned index);
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
@@ -219,6 +224,7 @@ protected:
 	virtual void doOpen(	mstl::string const& rootname,
 								mstl::string const& encoding,
 								util::Progress& progress) = 0;
+	virtual unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doClear(mstl::string const& rootname);
 
 	virtual void doDecoding(GameData& data, GameInfo& info, mstl::string* encoding) = 0;
@@ -255,7 +261,7 @@ protected:
 						mstl::string const& magic,
 						unsigned mode = 0);
 
-	static void getGameRecord(GameInfo const& info, util::BlockFile& reader, util::ByteStream& src);
+	static void getGameRecord(GameInfo const& info, util::BlockFileReader& reader, util::ByteStream& src);
 
 private:
 

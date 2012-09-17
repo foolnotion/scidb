@@ -31,11 +31,11 @@
 #include "db_selector.h"
 #include "db_log.h"
 #include "db_common.h"
+#include "db_consumer.h"
 
 #include "m_pvector.h"
 #include "m_vector.h"
 #include "m_pair.h"
-#include "m_bitfield.h"
 #include "m_string.h"
 
 namespace util { class Progress; }
@@ -54,6 +54,7 @@ class Log;
 namespace app {
 
 class Application;
+class Cursor;
 
 class View
 {
@@ -61,11 +62,10 @@ public:
 
 	enum FileMode		{ Create, Append, Upgrade };
 	enum UpdateMode	{ AddNewGames, LeaveEmpty };
-	enum GameMode		{ AllGames, ExcludeIllegal };
 
 	typedef mstl::pvector<mstl::string>	StringList;
-	typedef mstl::vector<unsigned>	LengthList;
-	typedef mstl::bitfield<uint64_t>	TagBits;
+	typedef mstl::vector<unsigned> LengthList;
+	typedef db::Consumer::TagBits TagBits;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
 	typedef mstl::string Languages[4];
 
@@ -191,18 +191,25 @@ public:
 	/// Build tournament table for all games in current view.
 	db::TournamentTable* makeTournamentTable() const;
 
+	/// Copy games from database to database.
+	unsigned copyGames(	Cursor& destination,
+								TagBits const& allowedTags,
+								bool allowExtraTags,
+								db::Log& log,
+								util::Progress& progress);
+
 	/// Export games in view.
 	unsigned exportGames(	mstl::string const& filename,
 									mstl::string const& encoding,
 									mstl::string const& description,
 									db::type::ID type,
 									unsigned flags,
-									GameMode gameMode,
+									db::copy::Mode copyMode,
 									TagBits const& allowedTags,
 									bool allowExtraTags,
 									db::Log& log,
 									util::Progress& progress,
-									FileMode fmode = Create);
+									FileMode fmode = Create) const;
 
 	/// Print games in view.
 	unsigned printGames(	TeXt::Environment& environment,
@@ -213,15 +220,18 @@ public:
 								Languages const& languages,
 								unsigned significantLanguages,
 								db::Log& log,
-								util::Progress& progress);
+								util::Progress& progress) const;
 
 private:
 
-	template <class Destination>
-	unsigned exportGames(Destination& destination,
-								GameMode gameMode,
+	unsigned exportGames(db::Consumer& destination,
+								db::copy::Mode copyMode,
 								db::Log& log,
-								util::Progress& progress);
+								util::Progress& progress) const;
+	unsigned exportGames(db::Database& destination,
+								db::copy::Mode copyMode,
+								db::Log& log,
+								util::Progress& progress) const;
 
 	void initialize();
 

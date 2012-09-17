@@ -29,6 +29,7 @@
 
 #include "db_database_content.h"
 #include "db_tree_cache.h"
+#include "db_consumer.h"
 #include "db_time.h"
 #include "db_move.h"
 
@@ -57,6 +58,7 @@ class NamebasePlayer;
 class PlayerStats;
 class TournamentTable;
 class Filter;
+class Selector;
 class Log;
 
 class Database : private DatabaseContent
@@ -65,8 +67,9 @@ public:
 
 	typedef type::ID Type;
 	typedef format::Type Format;
+	typedef Consumer::TagBits TagBits;
 
-	enum Storage	{ MemoryOnly, OnDisk };
+	enum Storage	{ MemoryOnly, OnDisk, Temporary };
 	enum Mode		{ ReadOnly, ReadWrite };
 	enum Access		{ GameIndex, MyIndex };
 
@@ -103,6 +106,8 @@ public:
 	bool shouldUpgrade() const;
 	/// Returns whether this database should be compressed.
 	bool shouldCompress() const;
+	/// Return whether this database is opened with temporary storage.
+	bool hasTemporaryStorage() const;
 
 	/// Returns an unique database id.
 	unsigned id() const;
@@ -144,6 +149,8 @@ public:
 	uint64_t lastChange() const;
 	/// Compute CRC for given game index.
 	util::crc::checksum_t computeChecksum(unsigned index) const;
+	/// Return the number of saved games in the database.
+	unsigned size() const;
 
 	/// Returns game information at given index.
 	GameInfo const& gameInfo(unsigned index) const;
@@ -189,6 +196,23 @@ public:
 	save::State exportGame(unsigned index, Consumer& consumer);
 	/// Export one game at the given position.
 	save::State exportGame(unsigned index, Database& destination);
+	/// Export games into an open database.
+	// The destination may be either a producer or a database.
+	template <class Destination>
+	unsigned exportGames(Destination& destination,
+								Filter const& gameFilter,
+								Selector const& gameSelector,
+								copy::Mode copyMode,
+								Log& log,
+								util::Progress& progress);
+	// Copy games from this database to the destination database.
+	unsigned copyGames(	Database& destination,
+								Filter const& gameFilter,
+								Selector const& gameSelector,
+								TagBits const& allowedTags,
+								bool allowExtraTags,
+								Log& log,
+								util::Progress& progress);
 	/// Add new game to database.
 	save::State addGame(Game& game);
 	/// Replace game in database.
@@ -251,6 +275,8 @@ public:
 	unsigned importGame(Producer& producer, unsigned index);
 	/// Import whole database.
 	unsigned importGames(Producer& producer, util::Progress& progress);
+	/// Import whole database.
+	unsigned importGames(Database& src, Log& log, util::Progress& progress);
 
 	Namebases& namebases();
 	using DatabaseContent::namebase;

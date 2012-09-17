@@ -40,7 +40,7 @@ set F_Country	"\u2691"
 #	----------------------------------------------------------------------------------
 set Columns {
 	{ site			left		20		 0		24			1			0			1			{}				}
-	{ country		center	 0		 0		 5			0			1			0			darkgreen	}
+	{ country		center	 4		 5		 4			0			1			0			darkgreen	}
 	{ frequency		right		 4		 8		 5			0			1			1			{}				}
 }
 

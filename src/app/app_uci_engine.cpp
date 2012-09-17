@@ -176,18 +176,22 @@ uci::Engine::Engine()
 	,m_hasLimitStrength(false)
 	,m_hasOwnBook(false)
 	,m_hasShowCurrLine(false)
+	,m_hasShowRefutations(false)
 	,m_hasPonder(false)
+	,m_hasHashSize(false)
 	,m_stopAnalyizeIsPending(false)
+	,m_continueAnalysis(false)
 {
 }
 
 
 void
-uci::Engine::doMove(db::Game const& game, db::Move const&)
+uci::Engine::doMove(db::Move const& lastMove)
 {
 	if (isAnalyzing())
 	{
-		startAnalysis(game, false);
+		stopAnalysis();
+		startAnalysis(false);
 	}
 	else
 	{
@@ -200,6 +204,13 @@ bool
 uci::Engine::whiteToMove() const
 {
 	return m_board.whiteToMove();
+}
+
+
+db::Board const&
+uci::Engine::currentBoard() const
+{
+	return m_board;
 }
 
 
@@ -224,33 +235,22 @@ uci::Engine::maxVariations() const
 }
 
 
-void
-uci::Engine::sendNumberOfVariations()
-{
-	if (isActive() && m_hasMultiPV)
-	{
-		m_waitingOn = "multiPV";
-		send("stop");
-		send("isready");
-	}
-}
-
-
 bool
 uci::Engine::prepareStartAnalysis(Board const& board)
 {
-	if (!isActive())
-		return false;
-
 	if (board.notDerivableFromChess960())
 	{
-		// what should we do?
+		error("Shuffle chess not supported");
+		return false;
 	}
 
 	if ((m_needChess960 = board.notDerivableFromStandardChess()))
 	{
 		if (!hasFeature(app::Engine::Feature_Chess_960))
-			APP_RAISE("Chess 960 not supported");
+		{
+			error("Chess 960 not supported");
+			return false;
+		}
 	}
 
 	return true;
@@ -260,13 +260,14 @@ uci::Engine::prepareStartAnalysis(Board const& board)
 void
 uci::Engine::setupPosition(Board const& board)
 {
+	m_position.assign("position ", 9);
+
 	if (board.isStandardPosition())
 	{
-		m_position = "startpos";
+		m_position.append("startpos", 8);
 	}
 	else
 	{
-		m_position = "fen";
 		m_position.append(board.toFen(
 			hasFeature(app::Engine::Feature_Chess_960) ? Board::Shredder : Board::XFen));
 	}
@@ -274,38 +275,27 @@ uci::Engine::setupPosition(Board const& board)
 
 
 bool
-uci::Engine::startAnalysis(Board const& board)
+uci::Engine::startAnalysis(bool isNewGame)
 {
-	if (!prepareStartAnalysis(board))
+	M_ASSERT(currentGame());
+	M_ASSERT(isActive());
+
+	db::Game const* game = currentGame();
+
+	if (!prepareStartAnalysis(game->startBoard()))
 		return false;
 
-	m_board = board;
+	setupPosition(game->startBoard());
+	m_position.append(" moves ", 7);
+	game->dumpHistory(m_position);
+	m_board = game->currentBoard();
+
 	m_waitingOn = "position";
-	setupPosition(board);
-
 	send("stop");
-	send("ucinewgame"); // clear's all states
-	send("isready");
 
-	return true;
-}
+	if (isNewGame)
+		send("ucinewgame"); // clear's all states
 
-
-bool
-uci::Engine::startAnalysis(Game const& game, bool /*isNewGame*/)
-{
-	if (!prepareStartAnalysis(game.startBoard()))
-		return false;
-
-	setupPosition(game.startBoard());
-	m_position.append(" moves");
-	game.dumpHistory(m_position);
-
-	m_board = game.currentBoard();
-	m_waitingOn = "position";
-
-	send("stop");
-	send("ucinewgame"); // clear's all states
 	send("isready");
 
 	return true;
@@ -319,11 +309,23 @@ uci::Engine::stopAnalysis()
 	{
 		send("stop");
 		m_stopAnalyizeIsPending = true;
-
 		// the engine should now send final info and bestmove
 	}
 
 	return true;
+}
+
+
+void
+uci::Engine::continueAnalysis()
+{
+	if (m_continueAnalysis)
+	{
+		if (currentGame())
+			startAnalysis(false);
+
+		m_continueAnalysis = false;
+	}
 }
 
 
@@ -351,6 +353,7 @@ uci::Engine::protocolEnd()
 	stopAnalysis();
 	m_stopAnalyizeIsPending = false;
 	send("quit");
+	m_isReady = false;
 }
 
 
@@ -395,6 +398,8 @@ uci::Engine::processMessage(mstl::string const& message)
 						send("setoption name UCI_ShowRefutations value false");
 					if (m_hasPonder)
 						send("setoption name Ponder value true");
+					if (m_hasHashSize && hashSize())
+						send("setoption name Hash value " + ::toStr(hashSize()));
 
 					if (m_hasLimitStrength)
 					{
@@ -419,9 +424,11 @@ uci::Engine::processMessage(mstl::string const& message)
 				{
 					// engine is now ready to analyse a new position
 					m_waitingOn = "";
+
 					if (m_hasAnalyseMode)
 						send("setoption name UCI_AnalyseMode value true");
-					send("position " + m_position);
+
+					send(m_position);
 
 					if (searchMate() > 0)
 						send("go mate=" + ::toStr(searchMate()));
@@ -434,6 +441,12 @@ uci::Engine::processMessage(mstl::string const& message)
 				else if (m_waitingOn == "multiPV")
 				{
 					send("setoption name MultiPV value " + ::toStr(numVariations()));
+					continueAnalysis();
+				}
+				else if (m_waitingOn == "hashSize")
+				{
+					send("setoption name Hash value " + ::toStr(hashSize()));
+					continueAnalysis();
 				}
 
 				m_waitingOn = "";
@@ -498,7 +511,10 @@ uci::Engine::parseBestMove(char const* msg)
 		s = ::skipNonSpaces(s);
 
 		if (move.isLegal())
+		{
+			m_board.prepareForPrint(move);
 			setBestMove(move);
+		}
 
 		if (::strncmp(s, "ponder ", 6) == 0)
 		{
@@ -589,6 +605,7 @@ uci::Engine::parseInfo(char const* msg)
 
 							if (move.isLegal() && moves.notFull())
 							{
+								board.prepareForPrint(move);
 								board.doMove(move);
 								moves.append(move);
 							}
@@ -737,6 +754,14 @@ uci::Engine::parseOption(char const* msg)
 			setMaxMultiPV(m_maxMultiPV);
 			return;
 		}
+		else if (name == "Hash")
+		{
+			m_hasHashSize = true;
+			addFeature(app::Engine::Feature_Hash_Size);
+
+			if (!vars.empty())
+				setHashSize(::atoi(vars.front()));
+		}
 
 		addOption(name, type, dflt, min, max);
 	}
@@ -769,6 +794,9 @@ uci::Engine::parseOption(char const* msg)
 	}
 	else if (type == "button")
 	{
+		if (name == "Clear Hash")
+			addFeature(app::Engine::Feature_Clear_Hash);
+
 		addOption(name, type);
 	}
 	else if (type == "string")
@@ -780,6 +808,89 @@ uci::Engine::parseOption(char const* msg)
 		else
 			addOption(name, type, dflt);
 	}
+}
+
+
+void
+uci::Engine::sendOptions()
+{
+	bool isAnalyzing = this->isAnalyzing();
+
+	app::Engine::Options const& opts = options();
+	mstl::string msg;
+
+	if (isAnalyzing)
+		stopAnalysis();
+
+	for (app::Engine::Options::const_iterator i = opts.begin(); i != opts.end(); ++i)
+	{
+		app::Engine::Option const& opt = *i;
+
+		msg.assign("setoption name ", 15);
+		msg.append(opt.name);
+		msg.append(" value ", 7);
+		msg.append(opt.val);
+
+		if (opt.name == "Hash")
+			setHashSize(::atoi(opt.val));
+
+		send(msg);
+	}
+
+	if (isAnalyzing)
+	{
+		m_waitingOn = "readyok";
+		send("isready");
+		m_continueAnalysis = true;
+	}
+}
+
+
+void
+uci::Engine::sendHashSize()
+{
+	if (m_hasHashSize)
+	{
+		if (isAnalyzing())
+		{
+			stopAnalysis();
+			m_waitingOn = "hashSize";
+			send("isready");
+			m_continueAnalysis = true;
+		}
+		else
+		{
+			send("setoption name Hash value " + ::toStr(hashSize()));
+		}
+	}
+}
+
+
+void
+uci::Engine::sendNumberOfVariations()
+{
+	if (m_hasMultiPV)
+	{
+		if (isAnalyzing())
+		{
+			stopAnalysis();
+			m_waitingOn = "multiPV";
+			send("isready");
+			m_continueAnalysis = true;
+		}
+		else
+		{
+			send("setoption name MultiPV value " + ::toStr(numVariations()));
+		}
+	}
+}
+
+
+void
+uci::Engine::clearHash()
+{
+	// XXX should we stop analysis?
+	send("setoption name Clear Hash");
 }
 
 // vi:set ts=3 sw=3:

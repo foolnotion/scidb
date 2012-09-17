@@ -652,9 +652,7 @@ T_Controller.o: ../../mstl/m_ostream.ipp
 T_Controller.o: ../../mstl/m_ofstream.h
 T_Controller.o: ../../mstl/m_file.h
 T_Controller.o: ../../mstl/m_file.ipp
-T_Controller.o: ../../mstl/m_ofstream.ipp
 T_Controller.o: ../../mstl/m_ifstream.h
-T_Controller.o: ../../mstl/m_ifstream.ipp
 T_Controller.o: ../../mstl/m_stdio.h
 T_Controller.o: T_Alignment.h
 T_Controller.o: T_Arithmetic.h
@@ -888,10 +886,10 @@ T_Environment.o: ../../mstl/m_make_type_list.ipp
 T_Environment.o: ../../mstl/m_member_list.h
 T_Environment.o: ../../mstl/m_member_list.ipp
 T_Environment.o: ../../mstl/m_tuple.ipp
-T_Environment.o: ../../mstl/m_list.h
-T_Environment.o: ../../mstl/m_list_node.h
-T_Environment.o: ../../mstl/m_list_node.ipp
-T_Environment.o: ../../mstl/m_list.ipp
+T_Environment.o: ../../mstl/m_pvector.h
+T_Environment.o: ../../mstl/m_pointer_iterator.h
+T_Environment.o: ../../mstl/m_pointer_iterator.ipp
+T_Environment.o: ../../mstl/m_pvector.ipp
 T_Environment.o: ../../mstl/m_hash.h
 T_Environment.o: ../../mstl/m_pair.h
 T_Environment.o: ../../mstl/m_pair.ipp
@@ -1697,7 +1695,6 @@ T_InputOutput.o: ../../mstl/m_ios.ipp
 T_InputOutput.o: ../../mstl/m_istream.ipp
 T_InputOutput.o: ../../mstl/m_file.h
 T_InputOutput.o: ../../mstl/m_file.ipp
-T_InputOutput.o: ../../mstl/m_ifstream.ipp
 T_InvalidToken.o: T_InvalidToken.h
 T_InvalidToken.o: T_ExpandableToken.h
 T_InvalidToken.o: T_Token.h
@@ -3038,10 +3035,10 @@ T_TokenBuffer.o: ../../mstl/m_algobase.h
 T_TokenBuffer.o: ../../mstl/m_algobase.ipp
 T_TokenBuffer.o: ../../mstl/m_construct.h
 T_TokenBuffer.o: ../../mstl/m_construct.ipp
-T_TokenBuffer.o: ../../mstl/m_list.h
-T_TokenBuffer.o: ../../mstl/m_list_node.h
-T_TokenBuffer.o: ../../mstl/m_list_node.ipp
-T_TokenBuffer.o: ../../mstl/m_list.ipp
+T_TokenBuffer.o: ../../mstl/m_pvector.h
+T_TokenBuffer.o: ../../mstl/m_pointer_iterator.h
+T_TokenBuffer.o: ../../mstl/m_pointer_iterator.ipp
+T_TokenBuffer.o: ../../mstl/m_pvector.ipp
 T_TokenBuffer.o: ../../mstl/m_hash.h
 T_TokenBuffer.o: ../../mstl/m_pair.h
 T_TokenBuffer.o: ../../mstl/m_pair.ipp

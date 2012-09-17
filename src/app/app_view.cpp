@@ -25,13 +25,13 @@
 // ======================================================================
 
 #include "app_view.h"
+#include "app_cursor.h"
 #include "app_application.h"
 
 #include "db_database.h"
 #include "db_filter.h"
 #include "db_game.h"
 #include "db_pgn_writer.h"
-#include "db_pgn_reader.h"
 #include "db_latex_writer.h"
 #include "db_log.h"
 
@@ -66,20 +66,6 @@ map(View::UpdateMode mode)
 }
 
 
-template
-unsigned
-View::exportGames<Database>(	Database& destination,
-										GameMode gameMode,
-										db::Log& log,
-										util::Progress& progress);
-template
-unsigned
-View::exportGames<Consumer>(	Consumer& destination,
-										GameMode gameMode,
-										db::Log& log,
-										util::Progress& progress);
-
-
 View::View(Application& app, Database& db)
 	:m_app(app)
 	,m_db(db)
@@ -93,7 +79,7 @@ View::View(Application& app, Database& db)
 }
 
 
-View::View(View& view, db::Database& db)
+View::View(View& view, Database& db)
 	:m_app(view.m_app)
 	,m_db(db)
 	,m_gameUpdateMode(view.m_gameUpdateMode)
@@ -318,7 +304,7 @@ View::sort(attribute::player::ID attr, order::ID order, rating::Type ratingType)
 
 
 void
-View::sort(db::attribute::event::ID attr, db::order::ID order)
+View::sort(attribute::event::ID attr, order::ID order)
 {
 	m_eventSelector.sort(m_db, attr, order);
 	m_eventSelector.update(m_eventFilter);
@@ -326,7 +312,7 @@ View::sort(db::attribute::event::ID attr, db::order::ID order)
 
 
 void
-View::sort(db::attribute::site::ID attr, db::order::ID order)
+View::sort(attribute::site::ID attr, order::ID order)
 {
 	m_siteSelector.sort(m_db, attr, order);
 	m_siteSelector.update(m_siteFilter);
@@ -462,7 +448,7 @@ View::setGameFilter(Filter const& filter)
 }
 
 
-db::TournamentTable*
+TournamentTable*
 View::makeTournamentTable() const
 {
 	return m_db.makeTournamentTable(m_gameFilter);
@@ -563,59 +549,40 @@ View::dumpGame(unsigned index,
 }
 
 
-template <class Destination>
 unsigned
-View::exportGames(Destination& destination, GameMode gameMode, Log& log, util::Progress& progress)
+View::copyGames(	Cursor& destination,
+						TagBits const& allowedTags,
+						bool allowExtraTags,
+						Log& log,
+						util::Progress& progress)
 {
-	enum { MaxWarning = 40 };
+	progress.message("copy-game");
 
-	unsigned frequency = progress.frequency(m_gameFilter.count());
+	unsigned count = m_db.copyGames(
+		destination.database(), m_gameFilter, m_gameSelector, allowedTags, allowExtraTags, log, progress);
 
-	if (frequency == 0)
-		frequency = mstl::min(10000u, mstl::max(m_gameFilter.count()/100, 1u));
+	m_app.startUpdateTree(destination);
+	return count;
+}
 
-	unsigned reportAfter = frequency;
 
-	util::ProgressWatcher watcher(progress, m_gameFilter.count());
-	progress.message("write-game");
+unsigned
+View::exportGames(Database& destination,
+						copy::Mode copyMode,
+						Log& log,
+						util::Progress& progress) const
+{
+	return m_db.exportGames(destination, m_gameFilter, m_gameSelector, copyMode, log, progress);
+}
 
-	unsigned count		= 0;
-	unsigned numGames	= 0;
-	unsigned warnings	= 0;
 
-	for (int i = m_gameFilter.next(Filter::Invalid); i != Filter::Invalid; i = m_gameFilter.next(i))
-	{
-		if (reportAfter == count++)
-		{
-			progress.update(count);
-			reportAfter += frequency;
-		}
-
-		if (gameMode == AllGames || !m_db.gameInfo(i).containsIllegalMoves())
-		{
-			save::State state = m_db.exportGame(i, destination);
-
-			if (::format::isScidFormat(m_db.format()) && destination.format() == format::Scidb)
-			{
-				unsigned unused;
-				mstl::string const& round = static_cast<si3::Codec&>(m_db.codec()).getRoundEntry(i);
-
-				if (!PgnReader::parseRound(round, unused, unused))
-				{
-					log.warning(
-						warnings++ >= MaxWarning ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
-						m_gameSelector.map(i));
-				}
-			}
-
-			if (save::isOk(state))
-				++numGames;
-			else if (!log.error(state, m_gameSelector.map(i)))
-				return numGames;
-		}
-	}
-
-	return numGames;
+unsigned
+View::exportGames(Consumer& destination,
+						copy::Mode copyMode,
+						Log& log,
+						util::Progress& progress) const
+{
+	return m_db.exportGames(destination, m_gameFilter, m_gameSelector, copyMode, log, progress);
 }
 
 
@@ -625,16 +592,19 @@ View::exportGames(mstl::string const& filename,
 						mstl::string const& description,
 						type::ID type,
 						unsigned flags,
-						GameMode gameMode,
+						copy::Mode copyMode,
 						TagBits const& allowedTags,
 						bool allowExtraTags,
 						Log& log,
 						util::Progress& progress,
-						FileMode fmode)
+						FileMode fmode) const
 {
 	M_REQUIRE(!application().contains(filename));
 
 	typedef DatabaseCodec::Format Format;
+
+	if (m_db.size() == 0)
+		return 0;
 
 	mstl::string	ext	= util::misc::file::suffix(filename);
 	unsigned			count	= 0;
@@ -644,13 +614,14 @@ View::exportGames(mstl::string const& filename,
 		Database destination(filename, sys::utf8::Codec::utf8(), Database::OnDisk);
 		destination.setDescription(description);
 		destination.setType(type);
+		progress.message("write-game");
 
 		if (	m_db.format() == format::Scidb
 			&& fmode != Upgrade
 			&& allowExtraTags
 			&& (allowedTags | sci::Encoder::extraTags()).any())
 		{
-			count = exportGames(destination, gameMode, log, progress);
+			count = exportGames(destination, copyMode, log, progress);
 		}
 		else
 		{
@@ -658,9 +629,10 @@ View::exportGames(mstl::string const& filename,
 											dynamic_cast<sci::Codec&>(destination.codec()),
 											allowedTags,
 											allowExtraTags);
-			count = exportGames(consumer, gameMode, log, progress);
+			count = exportGames(consumer, copyMode, log, progress);
 		}
 
+		progress.message("write-index");
 		destination.save(progress);
 		destination.close();
 	}
@@ -675,7 +647,7 @@ View::exportGames(mstl::string const& filename,
 //		if (	m_db.format() == format::Scid
 //			&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_db.codec()).isFormat3()))
 //		{
-//			count = exportGames(destination, gameMode, log, progress);
+//			count = exportGames(destination, copyMode, log, progress, "write-game");
 //		}
 //		else
 		{
@@ -685,9 +657,11 @@ View::exportGames(mstl::string const& filename,
 											encoding,
 											allowedTags,
 											allowExtraTags);
-			count = exportGames(consumer, gameMode, log, progress);
+			progress.message("write-game");
+			count = exportGames(consumer, copyMode, log, progress);
 		}
 
+		progress.message("write-index");
 		destination.save(progress);
 		destination.close();
 	}
@@ -713,7 +687,8 @@ View::exportGames(mstl::string const& filename,
 
 		util::ZStream strm(sys::file::internalName(filename), type, mode);
 		PgnWriter writer(format::Pgn, strm, encoding, flags);
-		count = exportGames(writer, gameMode, log, progress);
+		progress.message("write-game");
+		count = exportGames(writer, copyMode, log, progress);
 	}
 	else
 	{
@@ -732,8 +707,8 @@ View::printGames(	TeXt::Environment& environment,
 						NagMap const& nagMap,
 						Languages const& languages,
 						unsigned significantLanguages,
-						db::Log& log,
-						util::Progress& progress)
+						Log& log,
+						util::Progress& progress) const
 {
 	unsigned count = 0;
 
@@ -749,7 +724,8 @@ View::printGames(	TeXt::Environment& environment,
 											significantLanguages,
 											environment);
 
-				count = exportGames(writer, AllGames, log, progress);
+				progress.message("print-game");
+				count = exportGames(writer, copy::AllGames, log, progress);
 			}
 			break;
 

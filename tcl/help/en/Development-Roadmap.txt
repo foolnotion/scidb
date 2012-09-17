@@ -24,7 +24,6 @@ TITLE Development roadmap
   <li>Analysis window: launch external chess engines</li>
   <li>Search functions: search by header, position search, etc.</li>
   <li>Filter functions: game filter, player filter</li>
-  <li>Drag &amp; Drop of games into different databases</li>
   <li>Flexible window layout</li>
   <li>Document generation:: LaTeX export</li>
   <li>Windows support</li>
@@ -42,6 +41,7 @@ TITLE Development roadmap
   <li>Document generation: PDF export and HTML export</li>
   <li>Dialog for spell checking player names</li>
   <li>Tip of the Day window</li>
+  <li>Generating opening reports</li>
   <li>Usage of end-game tables</li>
   <li>3D chessboard</li>
 </ul>

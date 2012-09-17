@@ -27,6 +27,7 @@
 #include "app_application.h"
 #include "app_cursor.h"
 #include "app_view.h"
+#include "app_engine.h"
 
 #include "db_database.h"
 #include "db_database_codec.h"
@@ -175,6 +176,8 @@ Application::Application()
 	,m_position(InvalidPosition)
 	,m_fallbackPosition(InvalidPosition)
 	,m_updateCount(0)
+	,m_numEngines(0)
+	,m_engineLog(0)
 	,m_isClosed(false)
 	,m_treeIsFrozen(false)
 	,m_subscriber(0)
@@ -220,6 +223,9 @@ Application::~Application() throw()
 		delete i->second.game;
 		delete i->second.backup;
 	}
+
+	for (EngineList::iterator i = m_engineList.begin(); i != m_engineList.end(); ++i)
+		delete *i;
 }
 
 
@@ -897,7 +903,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 			if (!base.isMemoryOnly())
 				return;
 			if (cursor.isReferenceBase())
-				Application::stopUpdateTree();
+				stopUpdateTree();
 			// we have to use PGN reader
 			base.reopen(encoding, progress);
 			break;
@@ -906,7 +912,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scid4:
 		case format::ChessBase:
 			if (cursor.isReferenceBase())
-				Application::stopUpdateTree();
+				stopUpdateTree();
 			if (base.namebases().isOriginal())
 				base.recode(encoding, progress);
 			else
@@ -1559,6 +1565,14 @@ Application::cancelUpdateTree()
 
 
 void
+Application::startUpdateTree(Cursor& cursor)
+{
+	if (m_subscriber && cursor.isReferenceBase() && !m_treeIsFrozen)
+		m_subscriber->updateTree(m_referenceBase->name());
+}
+
+
+void
 Application::enumCursors(CursorList& list) const
 {
 	list.clear();
@@ -1838,18 +1852,13 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 		mstl::swap(myGame->backup, game.backup);
 	}
 
-	unsigned count = m_scratchBase->importGame(producer, myGame->index);
+	unsigned count = m_scratchBase->base().importGame(producer, myGame->index);
 	db::load::State state = count ? db::load::Ok : db::load::None;
 
 	if (count > 0 && !trialMode)
 	{
 		state = loadGame(position);
 		myGame->game->setIsModified(true);
-
-		game.game->updateSubscriber(Game::UpdateAll);
-
-		if (m_subscriber)
-			m_subscriber->updateGameInfo(rememberPosition);
 	}
 
 	if (game.cursor != m_scratchBase)
@@ -1860,6 +1869,12 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 		m_scratchBase->database().deleteGame(myGame->index, true);
 		releaseGame(position);
 		// TODO: compress scratch base
+	}
+
+	if (count > 0 && !trialMode && m_subscriber)
+	{
+		game.game->updateSubscriber(Game::UpdateAll);
+		m_subscriber->updateGameInfo(rememberPosition);
 	}
 
 	return state;
@@ -1955,6 +1970,117 @@ Application::finalize()
 	m_subscriber.release();
 	m_gameMap.clear();
 	m_cursorMap.clear();
+}
+
+
+bool
+Application::engineExists(unsigned id) const
+{
+	M_REQUIRE(id < maxEngineId());
+	return m_engineList[id];
+}
+
+
+unsigned
+Application::addEngine(Engine* engine)
+{
+	M_REQUIRE(engine);
+
+	EngineList::iterator i = mstl::find(m_engineList.begin(),
+													m_engineList.end(),
+													static_cast<Engine const*>(0));
+
+	if (i == m_engineList.end())
+		i = m_engineList.insert(i, 0);
+
+	++m_numEngines;
+	*i = engine;
+
+	if (m_engineLog)
+		engine->setLog(m_engineLog);
+
+	return mstl::distance(i, m_engineList.begin());
+}
+
+
+void
+Application::removeEngine(unsigned id)
+{
+	M_REQUIRE(id < maxEngineId());
+
+	if (m_engineList[id])
+	{
+		delete m_engineList[id];
+		m_engineList[id] = 0;
+		M_ASSERT(m_numEngines > 0);
+		--m_numEngines;
+	}
+}
+
+
+mstl::ostream*
+Application::setEngineLog(mstl::ostream* strm)
+{
+	mstl::ostream* old = m_engineLog;
+
+	m_engineLog = strm;
+
+	for (unsigned i = 0; i < m_engineList.size(); ++i)
+	{
+		if (m_engineList[i])
+			m_engineList[i]->setLog(strm);
+	}
+
+	return old;
+}
+
+
+bool
+Application::startAnalysis(unsigned engineId)
+{
+	M_REQUIRE(engineExists(engineId));
+	return engine(engineId)->startAnalysis(&game());
+}
+
+
+bool
+Application::stopAnalysis(unsigned engineId)
+{
+	M_REQUIRE(engineExists(engineId));
+	return engine(engineId)->stopAnalysis();
+}
+
+
+void
+Application::save(Cursor& cursor, util::Progress& progress, unsigned start)
+{
+	M_REQUIRE(cursor.isOpen());
+	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(start <= cursor.countGames());
+
+	Database& dst(cursor.database());	// is calling stopUpdateTree()
+
+	dst.save(progress, start);
+	cursor.updateViews();
+
+	if (m_subscriber && m_referenceBase && !m_treeIsFrozen)
+		m_subscriber->updateTree(m_referenceBase->name());
+
+	if (m_subscriber)
+	{
+		m_subscriber->updateDatabaseInfo(dst.name());
+
+		if (m_current == &cursor)
+		{
+			for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
+			{
+				if (cursor.isViewOpen(i))
+					m_subscriber->updateList(m_updateCount, dst.name(), i);
+			}
+		}
+
+		++m_updateCount;
+	}
 }
 
 // vi:set ts=3 sw=3:

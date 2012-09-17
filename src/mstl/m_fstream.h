@@ -44,6 +44,7 @@ public:
 	void open(char const* filename) override;
 	void open(char const* filename, openmode mode) override;
 	using ifstream::close;
+	using ofstream::truncate;
 
 	using ifstream::set_unbuffered;
 	using ifstream::set_binary;

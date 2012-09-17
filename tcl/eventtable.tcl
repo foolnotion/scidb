@@ -41,7 +41,7 @@ set Columns {
 	{ eventDate		left		 5		10		10			0			1			0			darkred	}
 	{ eventMode		center	 0		 0		14px		0			1			1			{}			}
 	{ timeMode		center	 0		 0		14px		0			1			1			{}			}
-	{ eventCountry	center	 0		 0		 5			0			1			0			{}			}
+	{ eventCountry	center	 4		 5		 5			0			1			0			{}			}
 	{ site			left		10		 0		14			1			1			1			{}			}
 	{ frequency		right		 4		 8		 5			0			1			1			{}			}
 }

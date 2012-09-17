@@ -622,7 +622,7 @@ list<T>::insert(iterator pos, const_iterator first, const_iterator last)
 template <typename T>
 inline
 void
-list<T>::erase(node* n)
+list<T>::erase(bits::node_base* n)
 {
 	--m_size;
 	n->unhook();
@@ -637,7 +637,7 @@ inline
 typename list<T>::iterator
 list<T>::erase(iterator i)
 {
-	iterator ret = iterator(i.m_next->m_next);
+	iterator ret = iterator(i.base()->m_next);
 	erase(i.base());
 	return ret;
 }

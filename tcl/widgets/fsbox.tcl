@@ -115,6 +115,8 @@ set CannotOpenUri					"Cannot open the following URI:"
 set InvalidUri						"Drop content is not a valid URI list."
 set UriRejected					"The following files are rejected:"
 set UriRejectedDetail			"Only the listed file types can be handled."
+set CannotOpenTrashFiles		"Cannot open files from trash:"
+set CannotOpenRemoteFiles		"Cannot open remote files:"
 set OperationAborted				"Operation aborted."
 set ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?"
 set EntryAlreadyExists			"Entry already exists"
@@ -198,6 +200,7 @@ proc fsbox {w type args} {
 		-defaultencoding			{}
 		-filetypes					{}
 		-fileicons					{}
+		-filecursors				{}
 		-sizecommand				{}
 		-validatecommand			{}
 		-selectencodingcommand	{}
@@ -227,10 +230,10 @@ proc fsbox {w type args} {
 	foreach option {	selectionbackground selectionforeground font multiple savemode
 							activebackground activeforeground defaultextension defaultencoding
 							inactivebackground inactiveforeground filetypes fileencodings
-							fileicons showhidden sizecommand selectencodingcommand validatecommand
-							deletecommand renamecommand duplicatecommand okcommand cancelcommand
-							inspectcommand initialfile bookmarkswidth customcommand customicon
-							customtooltip customfiletypes helpcommand helpicon helplabel
+							fileicons filecursors showhidden sizecommand selectencodingcommand
+							validatecommand deletecommand renamecommand duplicatecommand okcommand
+							cancelcommand inspectcommand initialfile bookmarkswidth customcommand
+							customicon customtooltip customfiletypes helpcommand helpicon helplabel
 							isusedcommand actions mapextcommand formattimecmd} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
@@ -286,6 +289,7 @@ proc fsbox {w type args} {
 	array unset opts -initialdir
 	set Vars(folder) $initialdir
 	set Vars(prevFolder) ""
+	set Vars(prevGlob) ""
 	if {[string length $Vars(folder)] == 0 || ![file isdirectory $Vars(folder)]} {
 		set Vars(folder) [pwd]
 		set Vars(lastFolder) ""
@@ -464,6 +468,7 @@ proc fsbox {w type args} {
 
 	CheckInitialFile $w
 	ChangeDir $w $initialdir
+	DirChanged $w 1
 	SelectInitialFile $w
 	focus $top.ent_filename
 	return $w
@@ -480,6 +485,7 @@ proc reset {w type args} {
 		-initialfile				""
 		-filetypes					{}
 		-fileicons					{}
+		-filecursors				{}
 		-defaultextension			{}
 		-defaultencoding			{}
 		-sizecommand				{}
@@ -501,9 +507,10 @@ proc reset {w type args} {
 	set Vars(fileencodings) {}
 	set Vars(initialfile) ""
 	set Vars(prevFolder) ""
+	set Vars(prevGlob) ""
 
 	foreach option {	multiple defaultextension defaultencoding filetypes fileicons
-							fileencodings showhidden sizecommand validatecommand
+							filecursors fileencodings showhidden sizecommand validatecommand
 							selectencodingcommand deletecommand renamecommand duplicatecommand
 							okcommand cancelcommand inspectcommand mapextcommand initialfile} {
 		if {[info exists opts(-$option)]} {
@@ -559,7 +566,7 @@ proc reset {w type args} {
 	if {[string length $opts(-initialdir)] && $opts(-initialdir) ne $Vars(folder)} {
 		ChangeDir $w $opts(-initialdir)
 	} else {
-		DirChanged $w 0
+		DirChanged $w 1
 	}
 	SelectInitialFile $w
 	changeFileDialogType $w $type
@@ -847,9 +854,12 @@ proc parseUriList {uriFiles} {
 					# no slash after "file:" - what is that for a crappy program?
 					set file [string range $file 5 end]
 				}
+				set file [file normalize $file]
+			} elseif {[string equal -length 7 $file "trash:/"] && [checkIsKDE]} {
+				set file [string range $file 7 end]
+				set file [file join [file nativename ~] .local share Trash files $file]
 			}
-
-			lappend result $uri [file normalize $file]
+			lappend result $uri $file
 		}
 	}
 
@@ -1127,6 +1137,7 @@ proc ConfigurePane {width} {
 proc VisitItem {w t mode item} {
 	variable ${w}::Vars
 
+	if {![winfo exists $w]} { return }
 	if {$Vars(edit:active)} { return }
 
 	# Note: this function may be invoked with non-existing items
@@ -1332,12 +1343,11 @@ proc DirChanged {w {useHistory 1}} {
 		set Vars(undo:current) [llength $Vars(undo:history)]
 		lappend Vars(undo:history) $folder
 		if {[llength $Vars(undo:history)] > 1} {
-			filelist::SetTooltip $w Backward $Vars(prevFolder)
+			filelist::SetTooltip $w Backward [lindex $Vars(undo:history) [expr {$Vars(undo:current) - 1}]]
 			::toolbar::childconfigure $Vars(button:backward) -state normal -tooltip $Vars(tip:backward)
 		}
 		::toolbar::childconfigure $Vars(button:forward) -state disabled
 		set Vars(tip:forward) ""
-
 		if {$Vars(glob) eq "Files" && $folder ne [fileSeparator]} {
 			set Vars(history:folder) $folder
 		}
@@ -1397,6 +1407,7 @@ proc FAMHandler {w id action path} {
 
 	# deletion events are triggered twice (bug in libfam?)
 
+	if {![winfo exists $w]} { return }
 	set Vars(fam:currentid) $id
 
 	if {$id ne $Vars(fam:lastid)} {
@@ -1443,6 +1454,7 @@ proc ChangeDir {w path {useHistory 1}} {
 	}
 
 	set Vars(prevFolder) $Vars(folder)
+	set Vars(prevGlob) $Vars(glob)
 
 	switch $path {
 		Favorites - LastVisited {
@@ -1489,7 +1501,7 @@ proc ChangeDir {w path {useHistory 1}} {
 
 	$Vars(widget:list:file) item delete all
 	filelist::Glob $w yes
-	if {$Vars(prevFolder) ne $Vars(folder)} {
+	if {$Vars(prevFolder) ne $Vars(folder) || $Vars(prevGlob) ne $Vars(glob)} {
 		DirChanged $w $useHistory
 	}
 }
@@ -1743,6 +1755,7 @@ proc CheckPath {w path} {
 proc Stimulate {w} {
 	variable ${w}::Vars
 
+	if {![winfo exists $w]} { return }
 	set Vars(edit:active) 0
 
 	foreach type {bookmark file} {
@@ -1822,9 +1835,8 @@ proc RegisterDndEvents {w} {
 	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
 	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
 	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
-	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %t %X %Y]]
-	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %A]]
-	bind $t <<DragPosition>> [namespace code [list DragPosition $w %V %X %Y]]
+	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %W %t %X %Y]]
+	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %W %A]]
 }
 
 
@@ -1858,13 +1870,14 @@ proc HandleDropEvent {w action types actions} {
 }
 
 
-proc HandleDragEvent {w types x y} {
+proc HandleDragEvent {w src types x y} {
 	variable ${w}::Vars
 
 	set Vars(dragging) 1
 	lassign [filelist::GetCurrentSelection $w] type _ file
 	if {$type eq "folder"} { return {} }
 	set files {}
+	set ext [file extension $file]
 
 	if {[string length $Vars(deletecommand)]} {
 		foreach f [{*}$Vars(deletecommand) $file] {
@@ -1874,20 +1887,26 @@ proc HandleDragEvent {w types x y} {
 		lappend files $file
 	}
 
+	foreach {extensionList cursors} $Vars(filecursors) {
+		if {$ext in $extensionList} {
+			::tkdnd::set_drag_cursors $src \
+				{copy move link ask private} [lindex $cursors 0] \
+				refuse_drop [lindex $cursors 1] \
+				;
+			break;
+		}
+	}
+
 	return [list {copy move link ask private} DND_Files $files]
 }
 
 
-proc DragPosition {w dst x y} {
-	# TODO: we like to move a database icon
-}
-
-
-proc FinishDragEvent {w currentAction} {
+proc FinishDragEvent {w src currentAction} {
 	variable ${w}::Vars
-	set Vars(dragging) 0
-}
 
+	set Vars(dragging) 0
+	::tkdnd::set_drag_cursors $src
+}
 
 
 proc AskAboutAction {w uriFiles actions} {
@@ -1931,13 +1950,19 @@ proc AskAboutAction {w uriFiles actions} {
 proc DoFileOperations {w action uriFiles} {
 	variable ${w}::Vars
 
+	if {![winfo exists $w]} { return }
+
 	set errorList {}
 	set rejectList {}
+	set remoteList {}
+	set trashList {}
 	set dirList {}
 	set databaseList {}
 
 	foreach {uri file} [parseUriList $uriFiles] {
-		if {[file isdirectory $file]} {
+		if {[string equal -length 6 $uri "trash:"]} {
+			lappend trashList $file
+		} elseif {[file isdirectory $file]} {
 			lappend dirList $file
 		} elseif {[file exists $file]} {
 			set origExt [file extension $file]
@@ -1973,6 +1998,8 @@ proc DoFileOperations {w action uriFiles} {
 			} elseif {$file ni $rejectList} {
 				lappend rejectList $file
 			}
+		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
+			lappend remoteList $uri
 		} elseif {$uri ni $errorList} {
 			# This shouldn't happen.
 			lappend errorList $uri
@@ -1993,6 +2020,17 @@ proc DoFileOperations {w action uriFiles} {
 		return [::dialog::error -parent $w -message $message {*}$options]
 	}
 
+	if {[llength $trashList]} {
+		set message [Tr CannotOpenTrashFiles]
+		append message <embed>
+		append message [Tr OperationAborted]
+		return [::dialog::error \
+			-parent $w \
+			-message $message \
+			-embed [namespace code [list EmbedFileList $trashList no]]
+		]
+	}
+
 	if {[llength $rejectList]} {
 		set message [Tr UriRejected]
 		append message <embed>
@@ -2002,6 +2040,18 @@ proc DoFileOperations {w action uriFiles} {
 			-message $message \
 			-detail [Tr UriRejectedDetail] \
 			-embed [namespace code [list EmbedFileList $rejectList no]]
+		]
+	}
+
+	if {[llength $remoteList]} {
+		set message [Tr UriRejected]
+		append message <embed>
+		append message [Tr OperationAborted]
+		return [::dialog::error \
+			-parent $w \
+			-message $message \
+			-detail [Tr CannotOpenRemoteFiles] \
+			-embed [namespace code [list EmbedFileList $remoteList no]]
 		]
 	}
 
@@ -3676,7 +3726,8 @@ proc InvokeFile {w args} {
 proc RefreshFileList {w} {
 	variable [namespace parent]::${w}::Vars
 
-	if {$Vars(lock:refresh)} { return } ;# may happen due to FAM service
+	if {![winfo exists $w]} { return }	;# may happen due to FAM service
+	if {$Vars(lock:refresh)} { return }	;# may happen due to FAM service
 	set Vars(lock:refresh) 1
 	set Vars(lock:selection) 1
 	set t $Vars(widget:list:file)

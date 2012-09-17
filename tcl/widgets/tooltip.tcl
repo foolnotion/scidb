@@ -305,7 +305,9 @@ proc tooltip {w {args {}}} {
 
 		include {
 			set w [lindex $args 0]
-			if {[llength $args] > 1} {
+			if {$w eq "all"} {
+				set G(exclude) {}
+			} elseif {[llength $args] > 1} {
 				if {[info exists G(exclude,$w)]} {
 					set namedItem [lindex $args 1]
 					if {![catch { $w find withtag $namedItem } item]} {

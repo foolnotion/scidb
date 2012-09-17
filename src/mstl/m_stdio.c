@@ -11,7 +11,7 @@ NOT IMPLEMENTED: pclose, popen
 
 #ifndef __unix__
 
-#ifdef IO_NOT_MTSAFE
+#ifdef IO_NO_THREADS
 # define __SINGLE_THREAD__
 #endif
 

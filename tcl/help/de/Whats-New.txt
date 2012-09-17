@@ -20,7 +20,7 @@ TITLE Was ist neu?
 
 <ul style="padding: 5px;">
   <li class="space">Mehr Hilfeseiten</li>
-  <li class="space">Zugeingabe: Drücken der mittleren Maustaste (oder der Taste '.') zeigt einen alternativen Zugvorschlag</li>
+  <li class="space">Zugeingabe: Drücken der mittleren Maustaste (oder der Taste '.') wechselt zu einem alternativen Zugvorschlag</li>
   <li class="space">Neuer Datenbankreiter: Orte-Liste</li>
   <li class="space">Vollbild-Modus verbessert</li>
   <li class="space">Kommandozeilen-Hilfsprogramm cdb2sci zur Konvertierung von Datenbanken ins Scidb-Format (.sci)</li>
@@ -35,8 +35,8 @@ TITLE Was ist neu?
   <li class="space">Spieler-Karteikarten implementiert</li>
   <li class="space">Datenbankarchivierung integriert</li>
   <li class="space">Setup-Dialog für Partie-Editor/Browser</li>
-  <li class="space">Drag&amp;Drop von Dateien integriert: der Datenbankumschalter ist Drop-Zielbereich</li>
   <li class="space">Drag&amp;Drop im Dateiauswahldialog implementiert</li>
+  <li class="space">Drag&amp;Drop im Datenbankumschalter implementiert: auf diese Weise können Partien zwischen Datenbanken kopiert werden</li>
   <li class="space">Datenbankfenster: Andocken/Abkopplen der Listen-Reiter integriert</li>
   <li class="space">Zugeingabe mit der Maus überarbeitet (wenn Zugvorschlag abgeschaltet ist)</li>
   <li class="space">Menüleiste entfernt, stattdessen exisitiert ein simples Hauptmenü;

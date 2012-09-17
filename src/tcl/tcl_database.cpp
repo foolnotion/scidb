@@ -39,7 +39,6 @@
 #include "app_application.h"
 #include "app_cursor.h"
 #include "app_view.h"
-#include "db_exception.h"
 
 #include "db_database.h"
 #include "db_database_codec.h"
@@ -71,6 +70,7 @@
 #include "m_limits.h"
 #include "m_tuple.h"
 #include "m_sstream.h"
+#include "m_auto_ptr.h"
 
 #include <tcl.h>
 #include <string.h>
@@ -906,18 +906,24 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> ?-encoding <string>?");
+			"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> "
+			"?-encoding <string>? ?-description <flag>");
 		return TCL_ERROR;
 	}
 
-	mstl::string	encoding	= sys::utf8::Codec::utf8();
-	char const*		option	= stringFromObj(objc, objv, objc - 2);
+	mstl::string	encoding		= sys::utf8::Codec::utf8();
+	char const*		option		= stringFromObj(objc, objv, objc - 2);
+	bool				description	= false;
 
 	if (*option == '-')
 	{
 		if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-description") == 0)
+		{
+			description = boolFromObj(objc, objv, objc - 1);
 		}
 		else
 		{
@@ -928,20 +934,48 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		objc -= 2;
 	}
 
-	char const*		file(stringFromObj(objc, objv, 2));
-	util::ZStream	stream(sys::file::internalName(file), ios_base::in);
+	mstl::string	dst(stringFromObj(objc, objv, 1));
+	mstl::string	src(stringFromObj(objc, objv, 2));
+	mstl::string	ext(::util::misc::file::suffix(src));
+	Cursor&			cursor(scidb->cursor(dst));
+	Progress			progress(objv[5], objv[6]);
+	unsigned			n;
 
-	if (!stream)
+	if (ext == "sci" || ext == "si3" || ext == "si4")
 	{
-		appendResult("cannot open file '%s'", file);
-		return TCL_ERROR;
+		tcl::Log log(objv[3], objv[4]);
+
+		if (scidb->contains(src))
+		{
+			n = cursor.importGames(
+				const_cast< ::db::Database&>(Scidb->cursor(src).database()), log, progress);
+		}
+		else
+		{
+			mstl::auto_ptr< ::db::Database> db;
+
+			try
+			{
+				db = new ::db::Database(src, encoding, ::db::Database::Temporary);
+			}
+			catch (...)
+			{
+				appendResult("cannot open file '%s'", src.c_str());
+				return TCL_ERROR;
+			}
+
+			n = cursor.importGames(*db, log, progress);
+		}
 	}
-
-	unsigned n;
-
+	else if (ext == "pgn" || ext == "gz" || ext == "zip")
 	{
-		char const*		db(stringFromObj(objc, objv, 1));
-		Cursor&			cursor(scidb->cursor(db));
+		util::ZStream stream(sys::file::internalName(src), ios_base::in);
+
+		if (!stream)
+		{
+			appendResult("cannot open file '%s'", src.c_str());
+			return TCL_ERROR;
+		}
 
 		tcl::PgnReader	reader(	stream,
 										encoding,
@@ -949,15 +983,20 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										objv[4],
 										tcl::PgnReader::Normalize,
 										cursor.countGames());
-		Progress			progress(objv[5], objv[6]);
 
 		n = cursor.importGames(reader, progress);
-		cursor.setDescription(reader.description());
+		if (description)
+			cursor.setDescription(reader.description());
 		stream.close();
-
-		if (progress.interrupted())
-			throw InterruptException(n);
 	}
+	else
+	{
+		appendResult("unsupported extension '%s'", ext.c_str());
+		return TCL_ERROR;
+	}
+
+	if (progress.interrupted())
+		throw InterruptException(n);
 
 	setResult(n);
 	return TCL_OK;
@@ -3625,9 +3664,9 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	db(stringFromObj(objc, objv, 1));
 	Cursor&		cursor(scidb->cursor(db));
 	Progress		progress(objv[3], objv[4]);
+	unsigned		start(unsignedFromObj(objc, objv, 2));
 
-	cursor.save(progress, unsignedFromObj(objc, objv, 2));
-
+	scidb->save(cursor, progress, start);
 	return TCL_OK;
 }
 
@@ -3683,7 +3722,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										db.description(),
 										type,
 										0,
-										View::AllGames,
+										::db::copy::AllGames,
 										View::TagBits(true),
 										true,
 										log,

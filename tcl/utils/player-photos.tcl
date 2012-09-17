@@ -89,7 +89,6 @@ proc openDialog {parent} {
 	variable Sourceforge
 	variable Shared
 
-	set Shared 0
 	set haveShared 0
 	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
 		set haveShared 1
@@ -133,10 +132,22 @@ proc openDialog {parent} {
 	set content "<p>$msg1</p><p>$msg2</p>"
 	$top.info parse $content
 
-	if {$::tcl_platform(platform) eq "unix" && ![string match /home* $::scidb::dir::share]} {
+	if {$haveShared} {
 		ttk::separator $top.sep -orient horizontal
 		set f [ttk::frame $top.f -borderwidth 0 -takefocus 0]
-		if {![file readable [file join $::scidb::dir::user photos TIMESTAMP]]} { set Shared 1 }
+		set timestamp(local)  [file join $::scidb::dir::user photos TIMESTAMP]
+		set timestamp(shared) [file join $::scidb::dir::photos TIMESTAMP]
+
+		# Determine the last update folder: local or shared
+		if {![file readable $timestamp(local)]} {
+			set Shared 1
+		} elseif {![file readable $timestamp(shared)]} {
+			set Shared 0
+		} elseif {[file mtime $shared] >= [file mtime $local]} {
+			set Shared 1
+		} else {
+			set Shared 0
+		}
 	
 		ttk::radiobutton $f.local \
 			-text $mc::LocalInstallation \
@@ -411,7 +422,7 @@ proc ProcessUpdate {parent} {
 
 		deleted - created - skipped - updated {
 			incr Count($reason)
-			::dialog::progressbar::setInformation $parent.downloadPlayerPhotos $arg
+			::dialog::progressbar::setInformation $parent.downloadPlayerPhotos [file tail $arg]
 		}
 
 		total {
@@ -424,6 +435,7 @@ proc ProcessUpdate {parent} {
 			::dialog::progressBar $parent.downloadPlayerPhotos \
 				-title $::progress::mc::Progress \
 				-maximum $arg \
+				-transient no \
 				-message $mc::InstallPlayerPhotos \
 				;
 			bind $parent.downloadPlayerPhotos <<LanguageChanged>> \

@@ -106,11 +106,9 @@ u_block_file.o: ../mstl/m_ios.ipp
 u_block_file.o: ../mstl/m_istream.ipp
 u_block_file.o: ../mstl/m_file.h
 u_block_file.o: ../mstl/m_file.ipp
-u_block_file.o: ../mstl/m_ifstream.ipp
 u_block_file.o: ../mstl/m_ofstream.h
 u_block_file.o: ../mstl/m_ostream.h
 u_block_file.o: ../mstl/m_ostream.ipp
-u_block_file.o: ../mstl/m_ofstream.ipp
 u_bit_stream.o: u_bit_stream.h
 u_bit_stream.o: u_base.h
 u_bit_stream.o: ../mstl/m_types.h
@@ -335,7 +333,6 @@ u_zstream.o: u_misc.h
 u_zstream.o: ../mstl/m_ifstream.h
 u_zstream.o: ../mstl/m_file.h
 u_zstream.o: ../mstl/m_file.ipp
-u_zstream.o: ../mstl/m_ifstream.ipp
 u_zstream.o: ../mstl/m_stdio.h
 u_zstream.o: ./zzip/zzip.h
 u_zstream.o: ./zzip/plugin.h

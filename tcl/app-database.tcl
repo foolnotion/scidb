@@ -30,121 +30,135 @@ namespace eval application {
 namespace eval database {
 namespace eval mc {
 
-set FileOpen					"Open..."
-set FileOpenRecent			"Open Recent"
-set FileNew						"New..."
-set FileExport					"Export..."
-set FileImport					"Import PGN files..."
-set FileCreate					"Create Archive..."
-set FileClose					"Close"
-set FileCompact				"Compact"
-set HelpSwitcher				"Help for Database Switcher"
+set FileOpen						"Open..."
+set FileOpenRecent				"Open Recent"
+set FileNew							"New..."
+set FileExport						"Export..."
+set FileImport(pgn)				"Import PGN files..."
+set FileImport(db)				"Import Databases..."
+set FileCreate						"Create Archive..."
+set FileClose						"Close"
+set FileCompact					"Compact"
+set HelpSwitcher					"Help for Database Switcher"
 
-set Games						"&Games"
-set Players						"&Players"
-set Events						"&Events"
-set Sites						"&Sites"
-set Annotators					"&Annotators"
+set Games							"&Games"
+set Players							"&Players"
+set Events							"&Events"
+set Sites							"&Sites"
+set Annotators						"&Annotators"
 
-set File							"File"
-set SymbolSize					"Symbol Size"
-set Large						"Large"
-set Medium						"Medium"
-set Small						"Small"
-set Tiny							"Tiny"
-set Empty						"empty"
-set None							"none"
-set Failed						"failed"
-set LoadMessage				"Opening database %s"
-set UpgradeMessage			"Upgrading database %s"
-set CompactMessage			"Compacting database %s"
-set CannotOpenFile			"Cannot open file '%s'."
-set EncodingFailed			"Encoding %s failed."
-set DatabaseAlreadyOpen		"Database '%s' is already open."
-set Properties					"Properties"
-set Preload						"Preload"
-set MissingEncoding			"Missing encoding %s (using %s instead)"
-set DescriptionTooLarge		"Description is too large."
-set DescrTooLargeDetail		"The entry contains %d characters, but only %d characters are allowed."
-set ClipbaseDescription		"Temporary database, not kept on disk."
-set HardLinkDetected			"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
-set HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."
-set UriRejectedDetail		"Only Scidb databases can be opened:"
-set EmptyUriList				"Drop content is empty."
-set OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?"
-set SelectDatabases			"Select the databases to be opened"
-set ExtractArchive			"Extract archive %s"
-set CompactDetail				"All games must be closed before a compaction can be done."
-set ReallyCompact				"Really compact database '%s'?"
-set ReallyCompactDetail(1)	"Only one game will be deleted."
-set ReallyCompactDetail(N)	"%s games will be deleted."
+set File								"File"
+set SymbolSize						"Symbol Size"
+set Large							"Large"
+set Medium							"Medium"
+set Small							"Small"
+set Tiny								"Tiny"
+set Empty							"empty"
+set None								"none"
+set Failed							"failed"
+set LoadMessage					"Opening database %s"
+set UpgradeMessage				"Upgrading database %s"
+set CompactMessage				"Compacting database %s"
+set CannotOpenFile				"Cannot open file '%s'."
+set EncodingFailed				"Encoding %s failed."
+set DatabaseAlreadyOpen			"Database '%s' is already open."
+set Properties						"Properties"
+set Preload							"Preload"
+set MissingEncoding				"Missing encoding %s (using %s instead)"
+set DescriptionTooLarge			"Description is too large."
+set DescrTooLargeDetail			"The entry contains %d characters, but only %d characters are allowed."
+set ClipbaseDescription			"Temporary database, not kept on disk."
+set HardLinkDetected				"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
+set HardLinkDetectedDetail		"If we load this database twice the application may crash due to the usage of threads."
+set UriRejectedDetail(open)	"Only Scidb databases can be opened:"
+set UriRejectedDetail(import)	"Only Scidb databases can be imported:"
+set EmptyUriList					"Drop content is empty."
+set OverwriteExistingFiles		"Overwrite exisiting files in directory '%s'?"
+set SelectDatabases				"Select the databases to be opened"
+set ExtractArchive				"Extract archive %s"
+set CompactDetail					"All games must be closed before a compaction can be done."
+set ReallyCompact					"Really compact database '%s'?"
+set ReallyCompactDetail(1)		"Only one game will be deleted."
+set ReallyCompactDetail(N)		"%s games will be deleted."
+set CopyGames						"Copy games"
+set CopyGamesFromTo				"Copy games from '%src' to '%dst'"
+set CopiedGames					"%s game(s) copied"
+set NoGamesCopied					"No games copied"
+set CopyAllGames					"Copy all games (%num) from '%src'"
+set CopyFilteredGames			"Copy only filtered games (%num) from '%src'"
+set ImportGames					"Import games"
+set ImportOneGameTo(0)			"Import one game to '%dst'?"
+set ImportOneGameTo(1)			"Import about one game to '%dst'?"
+set ImportGamesTo(0)				"Import %num games to '%dst'?"
+set ImportGamesTo(1)				"Import about %num games to '%dst'?"
+set ImportFiles					"Import Files:"
 
-set RecodingDatabase			"Recoding %base from %from to %to"
-set RecodedGames				"%s game(s) recoded"
+set RecodingDatabase				"Recoding %base from %from to %to"
+set RecodedGames					"%s game(s) recoded"
 
-set GameCount					"Games"
-set DatabasePath				"Database path"
-set DeletedGames				"Deleted Games"
-set Description				"Description"
-set Created						"Created"
-set LastModified				"Last modified"
-set Encoding					"Encoding"
-set YearRange					"Year range"
-set RatingRange				"Rating range"
-set Result						"Result"
-set Score						"Score"
-set Type							"Type"
-set ReadOnly					"Read only"
+set GameCount						"Games"
+set DatabasePath					"Database path"
+set DeletedGames					"Deleted Games"
+set Description					"Description"
+set Created							"Created"
+set LastModified					"Last modified"
+set Encoding						"Encoding"
+set YearRange						"Year range"
+set RatingRange					"Rating range"
+set Result							"Result"
+set Score							"Score"
+set Type								"Type"
+set ReadOnly						"Read only"
 
-set ChangeIcon					"Change Icon"
-set Recode						"Recode"
-set EditDescription			"Edit Description"
-set EmptyClipbase				"Empty Clipbase"
+set ChangeIcon						"Change Icon"
+set Recode							"Recode"
+set EditDescription				"Edit Description"
+set EmptyClipbase					"Empty Clipbase"
 
-set T_Unspecific				"Unspecific"
-set T_Temporary				"Temporary"
-set T_Work						"Work"
-set T_Clipbase					"Clipbase"
-set T_MyGames					"My Games"
-set T_Informant				"Informant"
-set T_LargeDatabase			"Large Database"
-set T_CorrespondenceChess	"Correspondence Chess"
-set T_EmailChess				"Email Chess"
-set T_InternetChess			"Internet Chess"
-set T_ComputerChess			"Computer Chess"
-set T_Chess960					"Chess 960"
-set T_PlayerCollection		"Player Collection"
-set T_Tournament				"Tournament"
-set T_TournamentSwiss		"Tournament Swiss"
-set T_GMGames					"GM Games"
-set T_IMGames					"IM Games"
-set T_BlitzGames				"Blitz Games"
-set T_Tactics					"Tactics"
-set T_Endgames					"Endgames"
-set T_Analysis					"Analysis"
-set T_Training					"Training"
-set T_Match						"Match"
-set T_Studies					"Studies"
-set T_Jewels					"Jewels"
-set T_Problems					"Problems"
-set T_Patzer					"Patzer"
-set T_Gambit					"Gambit"
-set T_Important				"Important"
-set T_Openings					"Openings"
-set T_OpeningsWhite			"Openings White"
-set T_OpeningsBlack			"Openings Black"
+set T_Unspecific					"Unspecific"
+set T_Temporary					"Temporary"
+set T_Work							"Work"
+set T_Clipbase						"Clipbase"
+set T_MyGames						"My Games"
+set T_Informant					"Informant"
+set T_LargeDatabase				"Large Database"
+set T_CorrespondenceChess		"Correspondence Chess"
+set T_EmailChess					"Email Chess"
+set T_InternetChess				"Internet Chess"
+set T_ComputerChess				"Computer Chess"
+set T_Chess960						"Chess 960"
+set T_PlayerCollection			"Player Collection"
+set T_Tournament					"Tournament"
+set T_TournamentSwiss			"Tournament Swiss"
+set T_GMGames						"GM Games"
+set T_IMGames						"IM Games"
+set T_BlitzGames					"Blitz Games"
+set T_Tactics						"Tactics"
+set T_Endgames						"Endgames"
+set T_Analysis						"Analysis"
+set T_Training						"Training"
+set T_Match							"Match"
+set T_Studies						"Studies"
+set T_Jewels						"Jewels"
+set T_Problems						"Problems"
+set T_Patzer						"Patzer"
+set T_Gambit						"Gambit"
+set T_Important					"Important"
+set T_Openings						"Openings"
+set T_OpeningsWhite				"Openings White"
+set T_OpeningsBlack				"Openings Black"
 
-set OpenDatabase				"Open Database"
-set NewDatabase				"New Database"
-set CloseDatabase				"Close Database '%s'"
-set SetReadonly				"Set Database '%s' readonly"
-set SetWriteable				"Set Database '%s' writeable"
+set OpenDatabase					"Open Database"
+set NewDatabase					"New Database"
+set CloseDatabase					"Close Database '%s'"
+set SetReadonly					"Set Database '%s' readonly"
+set SetWriteable					"Set Database '%s' writeable"
 
-set OpenReadonly				"Open readonly"
-set OpenWriteable				"Open writeable"
+set OpenReadonly					"Open readonly"
+set OpenWriteable					"Open writeable"
 
-set UpgradeDatabase			"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
-set UpgradeDatabaseDetail	"\"No\" will open the database readonly, and you cannot set it writeable."
+set UpgradeDatabase				"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
+set UpgradeDatabaseDetail		"\"No\" will open the database readonly, and you cannot set it writeable."
 
 }
 
@@ -159,6 +173,11 @@ array set Vars {
 	afterid			{}
 	showDisabled	0
 	pressed			0
+	ignore-button1	0
+	dragging			0
+	drag-item		-1
+	drop-item		-1
+	curr-item		-1
 	taborder			{games players events sites annotators}
 }
 
@@ -317,7 +336,7 @@ proc finish {app} {
 	array set Positions {}
 
 	# must be done after the toplevel window has been mapped
-	after idle [namespace code RegisterDropEvents]
+	after idle [namespace code RegisterDragDropEvents]
 }
 
 
@@ -875,6 +894,8 @@ proc BuildSwitcher {pane} {
 	bind $canv <Configure> [namespace code [list LayoutSwitcher %w %h]]
 	bind $canv <ButtonPress-3> [namespace code [list PopupMenu $canv %X %Y]]
 	bind $canv <ButtonPress-1> [list focus $canv]
+	bind $canv <ButtonPress-1> +[list set [namespace current]::Vars(ignore-button1) 0]
+	bind $canv <ButtonPress-1> +[list ::tooltip::tooltip hide]
 	bind $canv <FocusIn> [namespace code { ActivateSwitcher normal }]
 	bind $canv <FocusOut> [namespace code { ActivateSwitcher hidden }]
 	bind $canv <Left> [namespace code { Traverse -unit }]
@@ -933,31 +954,111 @@ proc Traverse {move} {
 }
 
 
-proc RegisterDropEvents {} {
+proc RegisterDragDropEvents {} {
 	variable Vars
 
-	::tkdnd::drop_target register $Vars(canvas) DND_Files
-	bind $Vars(canvas) <<DropEnter>> [namespace code { HandleDropEvent enter %t }]
-	bind $Vars(canvas) <<DropLeave>> [namespace code { HandleDropEvent leave %t }]
-	bind $Vars(canvas) <<Drop>> [namespace code { HandleDropEvent %D %t }]
+	set canv $Vars(canvas)
+	::tkdnd::drop_target register $canv DND_Files
+	::tkdnd::drag_source register $canv DND_Files
+	bind $canv <<DropEnter>> [namespace code { HandleDropEvent enter %t %X %Y }]
+	bind $canv <<DropLeave>> [namespace code { HandleDropEvent leave %t %X %Y }]
+	bind $canv <<DropPosition>> [namespace code { HandleDropPosition %X %Y }]
+	bind $canv <<Drop>> [namespace code { HandleDropEvent %D %t %X %Y }]
+	bind $canv <<DragInitCmd>> [namespace code [list HandleDragEvent %W %t %X %Y]]
+	bind $canv <<DragEndCmd>> [namespace code [list FinishDragEvent %W %A]]
+	bind $canv <<DragPosition>> [namespace code [list HandleDragPositon %W %X %Y]]
 }
 
 
-proc HandleDropEvent {action types} {
+proc HandleDragEvent {src types x y} {
 	variable Vars
-	variable Defaults
+
+	set num [FindDragItem $x $y]
+	if {$num < 0} { return {} }
+	set i [lsearch -index 0 -integer $Vars(bases) $num]
+	set base [lindex $Vars(bases) $i 2]
+
+	set Vars(drag-item) $num
+	array set Vars { drop-item -1 curr-item -1 dragging 1 ignore-button1 1 }
+
+	set ext [file extension $base]
+	if {[string length $ext] == 0} { set ext .sci }
+	set dragCursors [::dialog::fsbox::dragCursors $ext]
+	if {[llength $dragCursors]} {
+		::tkdnd::set_drag_cursors $src \
+			{copy move link ask private} [lindex $dragCursors 0] \
+			refuse_drop [lindex $dragCursors 1] \
+			;
+	}
+
+	set actionList {copy}
+	if {[::scidb::db::get memoryOnly? $base] || $::tcl_platform(platform) ne "windows"} {
+		lappend actionList move
+	}
+	lappend actionList link ask private
+
+	set files {}
+	set file [file rootname $base]
+
+	if {$file eq $base} {
+		lappend files $file
+	} else {
+		foreach ext [::scidb::misc::suffixes $base] {
+			set f "$file.$ext"
+			if {[file exists $f]} { lappend files $f }
+		}
+	}
+
+	return [list $actionList DND_Files $files]
+}
+
+
+proc HandleDragPositon {src x y} {
+	variable Vars
+
+	set w [winfo containing $x $y]
+	if {$Vars(drag-item) == 0 && $w ne $Vars(canvas)} { return refuse_drop }
+	return ""
+}
+
+
+proc FinishDragEvent {src currentAction} {
+	variable Vars
+
+	::tkdnd::set_drag_cursors $src
+	set Vars(dragging) 0
+}
+
+
+proc HandleDropEvent {action types x y} {
+	variable Vars
 
 	switch $action {
 		enter {
-			$Vars(canvas) configure -background $Defaults(drop:background)
+			if {!$Vars(dragging)} {
+				array set Vars { drop-item -1 drag-item -1 curr-item -1 }
+			}
+			HighlightDropRegion $x $y enter
+			::tooltip::tooltip exclude $Vars(canvas)
 		}
 		leave {
-			$Vars(canvas) configure -background white
+			HighlightDropRegion $x $y leave
 		}
 		default {
-			$Vars(canvas) configure -background white
-			# It is important that HandleDropEvent is returning as fast as possible.
-			after idle [namespace code [list OpenUri $action]]
+			if {$Vars(drop-item) >= 0} {
+				if {$Vars(drop-item) != $Vars(drag-item)} {
+					if {$Vars(dragging)} {
+						set cmd [list CopyDatabase $Vars(drag-item) $Vars(drop-item) $x $y]
+					} else {
+						set cmd [list ImportDatabases $action $Vars(drop-item) $x $y]
+					}
+					after idle [namespace code $cmd]
+				}
+			} elseif {!$Vars(dragging)} {
+				HighlightDropRegion $x $y leave
+				after idle [namespace code [list OpenUri $action]]
+			}
+			::tooltip::tooltip include all
 		}
 	}
 
@@ -965,16 +1066,101 @@ proc HandleDropEvent {action types} {
 }
 
 
-proc OpenUri {uriFiles} {
+proc FindDragItem {x y} {
 	variable Vars
 
+	set canv $Vars(canvas)
+	set x [expr {$x - [winfo rootx $canv]}]
+	set y [expr {$y - [winfo rooty $canv]}]
+
+	if {0 <= $x && $x < [winfo width $canv] && 0 <= $y && $y < [winfo height $canv]} {
+		foreach tag [$canv gettags [$canv find closest $x $y]] {
+			if {[string match input* $tag]} {
+				return [string range $tag 5 end]
+			}
+		}
+	}
+
+	return -1
+}
+
+
+proc HighlightDropRegion {x y action} {
+	variable Vars
+	variable Defaults
+
+	set num [FindDragItem $x $y]
+	set canv $Vars(canvas)
+
+	if {!$Vars(dragging)} {
+		switch $action {
+			enter {
+				if {$num == -1} {
+					$canv configure -background $Defaults(drop:background)
+				}
+			}
+			leave {
+				if {$Vars(drop-item) == -1} {
+					$canv configure -background white
+				}
+			}
+			position {
+				if {$Vars(curr-item) != $num} {
+					if {$num == -1} { set color $Defaults(drop:background) } else { set color white }
+					$canv configure -background $color
+				}
+			}
+		}
+	}
+
+	if {$Vars(drop-item) >= 0 && ($action eq "leave" || $Vars(drop-item) ne $num)} {
+		$canv itemconfigure content$Vars(drop-item) -fill $Vars(background:item)
+		set Vars(drop-item) -1
+	}
+
+	if {$action ne "leave"} {
+		set i [lsearch -index 0 -integer $Vars(bases) $num]
+		if {	$num >= 0
+			&& $num != $Vars(drop-item)
+			&& $num != $Vars(drag-item)
+			&& ![lindex $Vars(bases) $i 5]} {
+
+			set Vars(background:item) [$canv itemcget content$num -fill]
+			$canv itemconfigure content$num -fill $Defaults(drop:background)
+			set Vars(drop-item) $num
+		}
+	}
+
+	set Vars(curr-item) $num
+	return $num
+}
+
+
+proc HandleDropPosition {x y} {
+	variable Vars
+
+	HighlightDropRegion $x $y position
+	if {$Vars(curr-item) != $Vars(drop-item) && $Vars(curr-item) != $Vars(drag-item)} {
+		return refuse_drop
+	}
+	return copy
+}
+
+
+proc ParseUriFiles {parent files allowedExtensions action} {
 	set errorList {}
 	set rejectList {}
+	set remoteList {}
+	set trashList {}
 	set databaseList {}
 
-	foreach {uri file} [::fsbox::parseUriList $uriFiles] {
-		if {[file exists $file]} {
-			if {[string match *.pgn.gz $file]} {
+	foreach {uri file} [::fsbox::parseUriList $files] {
+		if {[string equal -length 6 $uri "trash:"]} {
+			lappend trashList $uri
+		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
+			lappend remoteList $uri
+		} elseif {[file exists $file]} {
+			if {[string match *.pgn.gz $file] && ".pgn.gz" in $allowedExtensions} {
 				if {$file ni $databaseList} { lappend databaseList $file }
 			} else {
 				set origExt [file extension $file]
@@ -992,29 +1178,22 @@ proc OpenUri {uriFiles} {
 					}
 				}
 
-				switch [file extension $file] {
-					.sci - .scv - .si3 - .si4 - .cbh - .pgn - .zip {
-						if {$file ni $databaseList} { lappend databaseList $file }
-					}
-					default {
-						if {$file ni $rejectList} { lappend rejectList $file }
-					}
+				if {[file extension $file] in $allowedExtensions} {
+					if {$file ni $databaseList} { lappend databaseList $file }
+				} else {
+					if {$file ni $rejectList} { lappend rejectList $file }
 				}
 			}
+		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
+			# TODO: support .scv and .pgn files in successor versions
+			lappend rejectList $uri
 		} elseif {$uri ni $errorList} {
-			# This shouldn't happen.
 			lappend errorList $uri
 		}
 	}
 
-	# take into account that the application is currently loading a database
-	::remote::requestOpenBases $databaseList
-#	foreach file $databaseList {
-#		openBase $Vars(canvas) $file no -switchToBase [expr {[llength $databaseList] == 1}]
-#	}
-
 	if {[llength $errorList]} {
-		if {[string match file:* $uriFiles] && [llength $databaseList] == 0} {
+		if {[string match file:* $files] && [llength $databaseList] == 0} {
 			set message $::fsbox::mc::CannotOpenUri
 			if {[llength $errorList] > 10} {
 				append message \n\n [join [lrange $errorList 0 9] \n]
@@ -1025,7 +1204,29 @@ proc OpenUri {uriFiles} {
 		} else {
 			set message $::fsbox::mc::InvalidUri
 		}
-		dialog::error -parent $Vars(canvas) -message $message
+		dialog::error -parent $parent -message $message
+	}
+
+	if {[llength $trashList]} {
+		set message $::fsbox::mc::CannotOpenTrashFiles
+		if {[llength $trashList] > 10} {
+			append message \n\n [join [lrange $trashList 0 9] \n]
+			append message \n...
+		} else {
+			append message \n\n [join $trashList \n]
+		}
+		dialog::info -parent $parent -message $message
+	}
+
+	if {[llength $remoteList]} {
+		set message $::fsbox::mc::CannotOpenRemoteFiles
+		if {[llength $remoteList] > 10} {
+			append message \n\n [join [lrange $remoteList 0 9] \n]
+			append message \n...
+		} else {
+			append message \n\n [join $remoteList \n]
+		}
+		dialog::info -parent $parent -message $message
 	}
 
 	if {[llength $rejectList]} {
@@ -1036,15 +1237,216 @@ proc OpenUri {uriFiles} {
 		} else {
 			append message \n\n [join $rejectList \n]
 		}
-		set detail $mc::UriRejectedDetail
-		append detail " .sci, .scv, .si4, .si3, .cbh, .pgn, .pgn.gz, .zip"
-		dialog::info -parent $Vars(canvas) -message $message -detail $detail
+		append detail $mc::UriRejectedDetail($action)
+		append detail " "
+		append detail [join $allowedExtensions ", "]
+		dialog::info -parent $parent -message $message -detail $detail
 	}
 	
-	if {[llength $databaseList] + [llength $rejectList] + [llength $errorList] == 0} {
+	if {	[llength $databaseList] +
+			[llength $rejectList] +
+			[llength $trashList] +
+			[llength $errorList] == 0} {
 		set message $mc::EmptyUriList
-		dialog::info -parent $Vars(canvas) -message $message
+		dialog::info -parent $parent -message $message
 	}
+
+	return $databaseList
+}
+
+
+proc OpenUri {uriFiles} {
+	variable Vars
+
+	set parent $Vars(canvas)
+	set allowedExtensions {.sci .scv .si3 .si4 .cbh .pgn .pgn.gz .zip}
+	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions open]
+
+	# take into account that the application is currently loading a database
+	if {[::remote::blocked?]} {
+		::remote::requestOpenBases $databaseList
+	} else {
+		foreach file $databaseList {
+			openBase $parent $file no -switchToBase [expr {[llength $databaseList] == 1}]
+		}
+	}
+}
+
+
+proc ImportDatabases {uriFiles to x y} {
+	variable Vars
+
+	set to [lsearch -index 0 -integer $Vars(bases) $to]
+	set parent $Vars(canvas)
+	set allowedExtensions {.sci .si3 .si4 .pgn .pgn.gz .zip}
+	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions import]
+	set reply no
+
+	if {[llength $databaseList] > 0} {
+		set dst [lindex $Vars(bases) $to 2]
+		set ngames 0
+		set estimated 0
+
+		foreach file $databaseList {
+			set n [::dialog::fsbox::estimateNumberOfGames $file]
+			if {$n < 0} { set estimated 1 }
+			set ngames [expr {$ngames + abs($n)}]
+		}
+
+		if {$ngames == 1} {
+			set msg $mc::ImportOneGameTo($estimated)
+		} else {
+			set msg $mc::ImportGamesTo($estimated)
+		}
+		set ngames [::locale::formatNumber $ngames]
+		set msg [string map [list %dst [::util::databaseName $dst] %num $ngames] $msg]
+		append msg "\n\n"
+		append msg $mc::ImportFiles
+		set detail [join $databaseList "\n"]
+		set reply [::dialog::question \
+			-parent $parent \
+			-title "$::scidb::app: $mc::ImportGames" \
+			-message $msg \
+			-detail $detail \
+			-buttons {yes no} \
+			-default yes \
+		]
+	}
+
+	HighlightDropRegion $x $y leave
+
+	if {$reply eq "yes"} {
+		::import::open $parent $dst $databaseList $mc::ImportGames
+	}
+}
+
+
+proc CopyDatabase {from to x y} {
+	variable Vars
+
+	set parent $Vars(canvas)
+
+	set from	[lsearch -index 0 -integer $Vars(bases) $from]
+	set to	[lsearch -index 0 -integer $Vars(bases) $to]
+	set src  [lindex $Vars(bases) $from 2]
+	set dst  [lindex $Vars(bases) $to 2]
+	set cmd  [list ::scidb::view::copy $src 0 $dst {}]
+	set srcN [::util::databaseName $src]
+	set dstN [::util::databaseName $dst]
+	set msg  [string map [list %src $srcN %dst $dstN] $mc::CopyGamesFromTo]
+	set opts [list -message $msg. -interrupt yes]
+	set args [list [namespace current]::LogCopyDb {}]
+
+	set m [menu $parent.selection_ -tearoff 0]
+	set ngames [::locale::formatNumber [::scidb::view::count games $src 0]]
+	if {$ngames eq "0"} {
+		set state disabled
+		set ngames $::application::database::mc::None
+	} else {
+		set state normal
+	}
+	set txt [string map [list %src $srcN %dst $dstN %num $ngames] $mc::CopyAllGames]
+	$m add command \
+		-label " $txt" \
+		-image $::icon::16x16::piechart(complete) \
+		-compound left \
+		-command [list set [namespace current]::trigger_ all] \
+		-state $state \
+		;
+	set ngames [::locale::formatNumber 0] ;# TODO get number of games from active filter
+	if {$ngames eq "0"} {
+		set state disabled
+		set ngames $::application::database::mc::None
+	} else {
+		set state normal
+	}
+	set txt [string map [list %src $srcN %dst $dstN %num $ngames] $mc::CopyFilteredGames]
+	$m add command \
+		-label " $txt" \
+		-image $::icon::16x16::piechart(filter) \
+		-compound left \
+		-command [list set [namespace current]::trigger_ filter] \
+		-state $state \
+		;
+	$m add separator
+	$m add command \
+		-label " $::mc::Cancel" \
+		-image $::icon::16x16::crossHand \
+		-compound left \
+		-command [list set [namespace current]::trigger_ cancel] \
+		;
+	variable trigger_ none
+	bind $m <<MenuUnpost>> [list set [namespace current]::trigger_ cancel]
+	tk_popup $m {*}[winfo pointerxy $parent]
+	vwait [namespace current]::trigger_
+	destroy $m
+	HighlightDropRegion $x $y leave
+	if {$trigger_ eq "cancel"} { return }
+
+	::log::open $mc::CopyGames
+	::log::delay
+	::log::info $msg
+
+	set ngames [::scidb::db::count games $dst]
+	set cmd [list ::progress::start $parent $cmd $args $opts 0]
+
+	if {[catch { ::util::catchException $cmd count } rc opts]} {
+		::log::error $::import::mc::AbortedDueToInternalError
+		::progress::close
+		::log::close
+		return {*}$opts -rethrow 1 $ngames
+	}
+
+	if {$rc == 1} {
+		::log::error $::import::mc::AbortedDueToIoError
+		::progress::close
+		::log::close
+		# show error dialog
+		return 0
+	}
+
+	if {$rc < 0} {
+		::log::warning $::import::mc::UserHasInterrupted
+		set count [expr {-$rc - 2}]
+		set rc -1
+	}
+
+	update idletasks	;# be sure the following will be appended
+
+	if {$count == 0} {
+		::log::info $mc::NoGamesCopied
+	} else {
+		::log::info	[format $mc::CopiedGames [::locale::formatNumber $count]]
+	}
+
+	set cmd [list ::scidb::db::save $dst $ngames]
+	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
+	if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
+	::progress::close
+	::log::close
+}
+
+
+proc LogCopyDb {unused arguments} {
+	lassign $arguments type code gameNo
+	set line ""
+
+	append line $::import::mc::GameNumber " " [::locale::formatNumber $gameNo]
+	append line ": "
+
+	if {[info exists import::mc::$code]} {
+		append line [set ::import::mc::$code]
+	} else {
+		append line $code
+	}
+
+	::log::$type $line
+	update idletasks
+}
+
+
+proc LogCopyDb {args} {
+	puts "LogCopyDb: $args"
 }
 
 
@@ -1178,6 +1580,7 @@ proc SeeSymbol {number} {
 proc DoSwitch {filename number x y} {
 	variable Vars
 
+	if {$Vars(ignore-button1)} { return }
 	lassign [$Vars(canvas) bbox input$number] x1 y1 x2 y2
 	if {$x < $x1 || $x2 < $x || $y < $y1 || $y2 < $y} { return }
 
@@ -1569,7 +1972,10 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {} {}
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {} {}
-		lappend specs command $mc::FileImport [list ::menu::dbImport $top $file] 1 0 filetypePGN {} {}
+		lappend specs command $mc::FileImport(pgn) \
+			[list ::menu::dbImport $top $file pgn] 1 0 filetypePGN {} {}
+		lappend specs command $mc::FileImport(db) \
+			[list ::menu::dbImport $top $file db] 1 0 databaseImport {} {}
 		if {$isClipbase || $ext eq "sci"} {
 			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
 			lappend specs command \
@@ -1598,13 +2004,12 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		}
 		switch $ext {
 			si3 - si4 - cbh - pgn {
-				if {[file readable $file]} {
-					lappend specs command \
-						"$mc::Recode..." \
-						[namespace code [list Recode $i $top]] \
-						0 1 {} {} {} \
-						;
-				}
+				if {[file readable $file]} { set state normal } else { set state disabled }
+				lappend specs command \
+					"$mc::Recode..." \
+					[namespace code [list Recode $i $top]] \
+					0 1 {} {} $state \
+					;
 			}
 		}
 
@@ -1846,6 +2251,7 @@ proc Recode {number parent} {
 
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
 	lassign [lindex $Vars(bases) $i] index type file ext enc
+
 	set enc [::scidb::db::get encoding $file]
 	if {$ext eq "cbh"} {
 		set defaultEncoding $::encoding::windowsEncoding
@@ -1998,12 +2404,7 @@ proc Properties {index popup} {
 		set dlg $canv.properties
 	} else {
 		set dlg $canv.prop_[regsub -all {[^[:alnum:]]} $file _]
-		if {[winfo exists $dlg]} {
-			wm deiconify $dlg
-			raise $dlg
-			focus $dlg
-			return
-		}
+		if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
 	}
 
 	if {$popup} {

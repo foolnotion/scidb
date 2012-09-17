@@ -201,7 +201,7 @@ variable Columns {
 	{ whiteRating1		white		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ whiteRating2		white		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ whiteRatingType	white		left		 0		 0		 7			0			1			0			darkgreen	}
-	{ whiteCountry		white		center	 0		 0		 5			0			1			0			darkgreen	}
+	{ whiteCountry		white		center	 4		 5		 5			0			1			0			darkgreen	}
 	{ whiteTitle		white		left		 0		 0		 5			0			1			1			darkred		}
 	{ whiteType			white		center	 0		 0		14px		0			1			0			{}				}
 	{ whiteSex			white		center	 0		 0		14px		0			1			0			{}				}
@@ -210,7 +210,7 @@ variable Columns {
 	{ blackRating1		black		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ blackRating2		black		center	 0		 0		 6			0			1			1			darkgreen	}
 	{ blackRatingType	black		left		 0		 0		 7			0			1			0			darkgreen	}
-	{ blackCountry		black		center	 0		 0		 5			0			1			0			darkgreen	}
+	{ blackCountry		black		center	 4		 5		 5			0			1			0			darkgreen	}
 	{ blackTitle		black		left		 0		 0		 5			0			1			1			darkred		}
 	{ blackType			black		center	 0		 0		14px		0			1			0			{}				}
 	{ blackSex			black		center	 0		 0		14px		0			1			0			{}				}
@@ -218,7 +218,7 @@ variable Columns {
 	{ eventType			event		left		 2		 8		 6			0			1			0			{}				}
 	{ eventDate			event		left		 5		10		10			0			1			0			darkred		}
 	{ result				{}			center	 5		 5		 5			0			1			1			blue			}
-	{ eventCountry		event		center	 0		 0		 5			0			1			0			{}				}
+	{ eventCountry		event		center	 4		 5		 5			0			1			0			{}				}
 	{ site				event		left		10		 0		16			1			1			1			{}				}
 	{ date				{}			left		 5		10		10			0			1			0			darkred		}
 	{ round				{}			right		 2		 0		 5			0			1			1			{}				}
@@ -767,6 +767,7 @@ proc deleteGame {base index {view -1}} {
 
 proc addGameFlagsMenuEntry {menu base view index} {
 	variable Columns
+	variable _Flags
 
 	set item  [::scidb::db::get gameInfo $index $view $base [lsearch -exact -index 0 $Columns flags]]
 	set flags [::scidb::db::get gameFlags $base]

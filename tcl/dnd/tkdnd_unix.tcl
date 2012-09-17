@@ -57,6 +57,7 @@ namespace eval xdnd {
   variable _drop_target {}
   variable _prev_drop_target {}
   variable _dragging 0
+  variable _drag_source_cursor {}
 
   proc debug {msg} {
     puts $msg
@@ -260,8 +261,6 @@ proc xdnd::_HandleXdndDrop { time } {
   variable _common_drop_target_types
   variable _drag_source
   variable _drop_target
-  set rootX 0
-  set rootY 0
 
   # puts "xdnd::_HandleXdndDrop: $time"
 
@@ -272,6 +271,7 @@ proc xdnd::_HandleXdndDrop { time } {
     return refuse_drop
   }
   if {![llength $_common_drag_source_types]} {return refuse_drop}
+  lassign [winfo pointerxy .] rootX rootY
   ## Get the dropped data.
   set data [_GetDroppedData $time]
   ## Try to select the most specific <<Drop>> event.
@@ -347,8 +347,9 @@ proc xdnd::_HandleDragPosition { window rootX rootY } {
       %t   \{$_typelist\}    %T  \{[lindex $_common_drag_source_types 0]\} \
       %c   \{$_codelist\}    %C  \{[lindex $_codelist 0]\} \
       ] $cmd]
-    uplevel \#0 $cmd
+    return [uplevel \#0 $cmd]
   }
+  return ""
 }
 
 # ----------------------------------------------------------------------------
@@ -532,6 +533,7 @@ proc xdnd::_dodragdrop { source actions types data button } {
   variable _dodragdrop_drop_occured               0
   variable _dodragdrop_selection_requestor        0
   variable _dodragdrop_action                     {}
+  variable _drag_source_cursor                    {}
 
   ##
   ## If we have more than 3 types, the property XdndTypeList must be set on
@@ -559,6 +561,7 @@ proc xdnd::_dodragdrop { source actions types data button } {
   selection own -command ::tkdnd::xdnd::_selection_ownership_lost \
                 -selection XdndSelection $source
   set _dragging 1
+  catch { set _drag_source_cursor [$_dodragdrop_drag_source cget -cursor] }
 
   ## Grab the mouse pointer...
   # NOTE: _grab_pointer cannot work because it is not interacting with ttk::grab.
@@ -583,7 +586,7 @@ proc xdnd::_dodragdrop { source actions types data button } {
   _unregister_generic_event_handler
   catch {selection clear -selection XdndSelection}
 # unregisterSelectionHandler $source $types
-# return $_dodragdrop_action
+  return $_dodragdrop_action
 };# xdnd::_dodragdrop
 
 # ----------------------------------------------------------------------------
@@ -614,7 +617,8 @@ proc xdnd::_process_drag_events {event} {
       set rootx  [dict get $event x_root]
       set rooty  [dict get $event y_root]
       set window [_find_drop_target_window $_dodragdrop_drag_source $rootx $rooty]
-      if {[string length $window]} {
+      set action [_HandleDragPosition $window $rootx $rooty]
+      if {[string length $window] && $action ne "refuse_drop"} {
         ## Examine the modifiers to suggest an action...
         set _dodragdrop_default_action [_default_action $event]
         ## Is it a Tk widget?
@@ -638,7 +642,6 @@ proc xdnd::_process_drag_events {event} {
         ## No window under the mouse. Send XdndLeave to $_dodragdrop_drop_target
         _SendXdndLeave
       }
-      _HandleDragPosition $window $rootx $rooty
     }
     ButtonPress {
     }
@@ -668,7 +671,6 @@ proc xdnd::_process_drag_events {event} {
       variable _dodragdrop_selection_selection
       variable _dodragdrop_selection_target
       variable _dodragdrop_selection_time
-      variable _dodragdrop_action
       set _dodragdrop_selection_requestor [dict get $event requestor]
       set _dodragdrop_selection_property  [dict get $event property]
       set _dodragdrop_selection_selection [dict get $event selection]
@@ -765,9 +767,14 @@ proc xdnd::_HandleXdndStatus {event} {
 # ----------------------------------------------------------------------------
 proc xdnd::_HandleXdndFinished {event} {
   variable _dodragdrop_drop_target
+  variable _dodragdrop_drag_source
+  variable _drag_source_cursor
   set _dodragdrop_drop_target 0
   variable _dragging
-  if {$_dragging} {set _dragging 0}
+  if {$_dragging} {
+    set _dragging 0
+    catch { $_dodragdrop_drag_source configure -cursor $_drag_source_cursor }
+  }
   # puts "XdndFinished: $event"
 };# xdnd::_HandleXdndFinished
 
@@ -812,7 +819,7 @@ proc xdnd::_SendXdndDrop {} {
 
   set _dodragdrop_drop_occured 1
 #puts "_SendXdndDrop(clock): [set [namespace current]::_dodragdrop_current_cursor]"
-  _update_cursor clock
+  _update_cursor watch
 
   if {!$_dodragdrop_drop_target_accepts_drop} {
     _SendXdndLeave
@@ -847,7 +854,12 @@ proc xdnd::_update_cursor { {cursor {}}} {
     }
   }
   if {![string equal $cursor $_dodragdrop_current_cursor]} {
-    _set_pointer_cursor $_dodragdrop_drag_source $cursor
+    variable [namespace parent]::_drag_cursors
+    if {[info exists _drag_cursors($_dodragdrop_drag_source:$cursor)]} {
+      xcursor::setCursor $_dodragdrop_drag_source $_drag_cursors($_dodragdrop_drag_source:$cursor)
+    } else {
+      _set_pointer_cursor $_dodragdrop_drag_source $cursor
+    }
     set _dodragdrop_current_cursor $cursor
   }
 };# xdnd::_update_cursor

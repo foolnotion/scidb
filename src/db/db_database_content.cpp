@@ -39,6 +39,7 @@ DatabaseContent::DatabaseContent(mstl::string const& encoding, Type type)
 	,m_readOnly(false)
 	,m_writeable(true)
 	,m_memoryOnly(false)
+	,m_temporary(false)
 	,m_encoding(encoding)
 	,m_allocator(32768)
 {

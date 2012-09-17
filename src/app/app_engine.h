@@ -69,6 +69,7 @@ public:
 	{
 		mstl::string name;
 		mstl::string type;
+		mstl::string val;
 		mstl::string dflt;
 		mstl::string var;
 		mstl::string max;
@@ -86,8 +87,7 @@ public:
 
 		virtual bool isReady() const = 0;
 
-		virtual bool startAnalysis(db::Board const& board) = 0;
-		virtual bool startAnalysis(db::Game const& game, bool isNewGame) = 0;
+		virtual bool startAnalysis(bool isNewGame) = 0;
 		virtual bool stopAnalysis() = 0;
 
 		virtual void protocolStart(bool isProbing) = 0;
@@ -95,11 +95,15 @@ public:
 
 		virtual void processMessage(mstl::string const& message) = 0;
 		virtual void sendNumberOfVariations() = 0;
-		virtual void doMove(db::Game const& game, db::Move const& lastMove) = 0;
+		virtual void sendHashSize() = 0;
+		virtual void sendOptions() = 0;
+		virtual void doMove(db::Move const& lastMove) = 0;
+		virtual void clearHash() = 0;
 
 		virtual Result probeResult() const = 0;
 		virtual unsigned probeTimeout() const = 0;
 		virtual unsigned maxVariations() const;
+		virtual db::Board const& currentBoard() const = 0;
 
 		friend class Engine;
 
@@ -112,8 +116,11 @@ public:
 
 		unsigned maxMultiPV() const;
 		unsigned numVariations() const;
+		unsigned hashSize() const;
 		unsigned searchMate() const;
 		unsigned limitedStrength() const;
+		db::Game const* currentGame() const;
+		Options const& options() const;
 
 		long pid() const;
 
@@ -141,6 +148,7 @@ public:
 		void setIdentifier(mstl::string const& name);
 		void setAuthor(mstl::string const& name);
 		void setMaxMultiPV(unsigned n);
+		void setHashSize(unsigned size);
 
 		void updateInfo();
 		void resetInfo();
@@ -153,10 +161,12 @@ public:
 		Engine* m_engine;
 	};
 
-	static unsigned const Feature_Chess_960		= 1 << 0;
-	static unsigned const Feature_Shuffle_Chess	= 1 << 1;
-	static unsigned const Feature_Pause				= 1 << 2;
-	static unsigned const Feature_PlayOther		= 1 << 3;
+	static unsigned const Feature_Hash_Size		= 1 << 0;
+	static unsigned const Feature_Clear_Hash		= 1 << 1;
+	static unsigned const Feature_Chess_960		= 1 << 2;
+	static unsigned const Feature_Shuffle_Chess	= 1 << 3;
+	static unsigned const Feature_Pause				= 1 << 4;
+	static unsigned const Feature_Play_Other		= 1 << 5;
 
 	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
 	virtual ~Engine() throw();
@@ -175,22 +185,38 @@ public:
 	bool isProbing() const;
 	bool hasFeature(unsigned feature) const;
 
+	int score() const;
+	int mate() const;
+	unsigned depth();
+	double time() const;
+	unsigned nodes() const;
+	db::MoveList const& variation(unsigned no);
+	db::Board const& currentBoard() const;
+	db::Move const& bestMove() const;
+
 	mstl::string const& identifier() const;
 	mstl::string const& author() const;
 	unsigned maxMultiPV() const;
 	unsigned numVariations() const;
+	unsigned hashSize() const;
 	unsigned searchMate() const;
 	unsigned limitedStrength() const;
+	db::Game const* currentGame() const;
 	Options const& options() const;
 
 	Result probe(unsigned timeout);
 
-	bool startAnalysis(db::Board const& board);
-	bool startAnalysis(db::Game const& game, bool isNewGame);
+	virtual void engineIsReady() = 0;
+
+	bool startAnalysis(db::Game const* game);
 	bool stopAnalysis();
 
-	unsigned setNumberOfVariations(unsigned n);
-	void doMove(db::Game const& game, db::Move const& lastMove);
+	unsigned changeNumberOfVariations(unsigned n);
+	unsigned changeHashSize(unsigned size);
+	void changeOptions(Options const& options);
+	void clearHash();
+
+	bool doMove(db::Move const& lastMove);
 
 	friend class uci::Engine;
 	friend class winboard::Engine;
@@ -200,9 +226,9 @@ protected:
 	Engine();
 
 	virtual void updateInfo() = 0;
+	virtual void updateBestMove() = 0;
 
 	bool protocolAlreadyStarted() const;
-	void engineIsReady();
 
 	long pid() const;
 	void kill();
@@ -231,6 +257,7 @@ protected:
 	void setIdentifier(mstl::string const& name);
 	void setAuthor(mstl::string const& name);
 	void setMaxMultiPV(unsigned n);
+	void setHashSize(unsigned size);
 	void resetInfo();
 
 	void log(mstl::string const& msg);
@@ -246,37 +273,37 @@ private:
 	void readyRead();
 	void exited();
 
-	Concrete*		m_engine;
-	mstl::string	m_name;
-	mstl::string	m_command;
-	mstl::string	m_directory;
-	mstl::string	m_identifier;
-	mstl::string	m_author;
-	unsigned			m_maxMultiPV;
-	Variations		m_variations;
-	unsigned			m_numVariations;
-	unsigned			m_searchMate;
-	unsigned			m_limitedStrength;
-	unsigned			m_features;
-	db::Move			m_bestMove;
-	db::Move			m_ponder;
-	int				m_score;
-	int				m_mate;
-	unsigned			m_depth;
-	double			m_time;
-	unsigned			m_nodes;
-	bool				m_active;
-	bool				m_analyzing;
-	bool				m_probe;
-	bool				m_protocol;
-	bool				m_startAnalysisIsPending;
-	bool				m_isNewGame;
-	Process*			m_process;
-	mstl::ostream*	m_logStream;
-	Options			m_options;
-	mstl::string	m_buffer;
-	db::Board*		m_board;
-	db::Game*		m_game;
+	Concrete*			m_engine;
+	db::Game const*	m_game;
+	unsigned				m_gameId;
+	mstl::string		m_name;
+	mstl::string		m_command;
+	mstl::string		m_directory;
+	mstl::string		m_identifier;
+	mstl::string		m_author;
+	unsigned				m_maxMultiPV;
+	Variations			m_variations;
+	unsigned				m_numVariations;
+	unsigned				m_hashSize;
+	unsigned				m_searchMate;
+	unsigned				m_limitedStrength;
+	unsigned				m_features;
+	db::Move				m_bestMove;
+	db::Move				m_ponder;
+	int					m_score;
+	int					m_mate;
+	unsigned				m_depth;
+	double				m_time;
+	unsigned				m_nodes;
+	bool					m_active;
+	bool					m_analyzing;
+	bool					m_probe;
+	bool					m_protocol;
+	bool					m_isNewGame;
+	Process*				m_process;
+	mstl::ostream*		m_logStream;
+	Options				m_options;
+	mstl::string		m_buffer;
 };
 
 } // namespace app

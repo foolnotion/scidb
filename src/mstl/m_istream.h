@@ -36,14 +36,15 @@ public:
 
 	istream& get(char& c);
 	istream& get(string& buf);
-	istream& getline(char* buf, size_t n);
+	istream& getline(char* buf, size_t size);
 	istream& getline(string& buf);
-	istream& read(char* buf, size_t n);
-	istream& read(unsigned char* buf, size_t n);
+	istream& read(char* buf, size_t size);
+	istream& read(unsigned char* buf, size_t size);
+	istream& seek_and_read(uint64_t pos, unsigned char* buf, size_t size);
 	istream& ignore(unsigned long n, int delim = traits::eof);
 
-	size_t readsome(char* buf, size_t n);
-	size_t readsome(unsigned char* buf, size_t n);
+	size_t readsome(char* buf, size_t size);
+	size_t readsome(unsigned char* buf, size_t size);
 
 	virtual int64_t size() const;
 	virtual uint64_t goffset();

@@ -54,7 +54,7 @@ set ImageFiles				"Image files"
 set SelectEngine			"Select Engine"
 set SelectEngineLogo		"Select Engine Logo"
 set Executables			"Executables"
-set EngineLog				"Engine Log"
+set EngineLog				"Engine Console"
 set Probing					"Probing"
 set NeverUsed				"never used"
 set OpenFsbox				"Open File Selection Dialog"
@@ -229,14 +229,14 @@ proc openSetup {parent} {
 	grid columnconfigure $setup.fprotocol {2} -minsize $::theme::padX
 
 	grid $setup.lname			-row  1 -column 1 -sticky w
-	grid $setup.ename			-row  1 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.ename			-row  1 -column 3 -sticky we
 	grid $setup.lauthor		-row  3 -column 1 -sticky w
-	grid $setup.eauthor		-row  3 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.eauthor		-row  3 -column 3 -sticky we
 
 	grid $setup.lidentifier	-row  5 -column 1 -sticky w
-	grid $setup.tidentifier	-row  5 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.tidentifier	-row  5 -column 3 -sticky we
 	grid $setup.lvariants   -row  7 -column 1 -sticky w
-	grid $setup.tvariants   -row  7 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.tvariants   -row  7 -column 3 -sticky we
 	grid $setup.llastused	-row  9 -column 1 -sticky w
 	grid $setup.tlastused	-row  9 -column 3 -sticky we
 	grid $setup.blastused	-row  9 -column 5 -sticky we
@@ -245,11 +245,11 @@ proc openSetup {parent} {
 	grid $setup.bused			-row 11 -column 5 -sticky we
 
 	grid $setup.lcountry		-row 13 -column 1 -sticky w
-	grid $setup.ccountry		-row 13 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.ccountry		-row 13 -column 3 -sticky we
 	grid $setup.lrating		-row 15 -column 1 -sticky w
 	grid $setup.frating		-row 15 -column 3 -sticky w
 	grid $setup.lprotocol	-row 17 -column 1 -sticky w
-	grid $setup.fprotocol	-row 17 -column 3 -sticky w  ;# -columnspan 3
+	grid $setup.fprotocol	-row 17 -column 3 -sticky w
 
 	grid $setup.lurl			-row 19 -column 1 -sticky w
 	grid $setup.eurl			-row 19 -column 3 -sticky we
@@ -259,9 +259,9 @@ proc openSetup {parent} {
 	grid $setup.blogo			-row 21 -column 5 -sticky we
 
 	grid $setup.lcommand		-row 23 -column 1 -sticky w
-	grid $setup.tcommand		-row 23 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.tcommand		-row 23 -column 3 -sticky we
 	grid $setup.lparams		-row 25 -column 1 -sticky w
-	grid $setup.eparams		-row 25 -column 3 -sticky we ;# -columnspan 3
+	grid $setup.eparams		-row 25 -column 3 -sticky we
 
 	grid columnconfigure $setup {0 2 4 6} -minsize $::theme::padx
 	grid columnconfigure $setup {3} -weight 1
@@ -413,7 +413,7 @@ proc engines {} {
 # 
 # 	foreach entry $Priv(engines) {
 # 		set result [::scidb::engine::info $entry]
-# 		lassign {0 0 "" ""} elo ccrl chess960 shuffle
+# 		lassign {0 0 "" ""} elo ccrl chess960 shuffle url aliases
 # 		if {[llength $result]} {
 # 			lassign $result _ _ elo ccrl _ _ chess960Flag shuffleFlag
 # 			if {$shuffleFlag} { set shuffle $::icon::16x16::checkGreen }
@@ -512,7 +512,7 @@ proc setup {} {
 				Variant			chess960
 				LastUsed			0
 				Frequency		0
-				Features:UCI	{multiPV 500}
+				Features:UCI	{multiPV 500 hashSize true clearHash true}
 				Features:WB		{}
 				Options:UCI		{
 					{{Use Debug Log} check false false {} {}}
@@ -555,7 +555,7 @@ proc setup {} {
 				Command			crafty-32.2
 				Parameters		{}
 				Logo				""
-				Url				ftp://ftp.cis.uab.edu/pub/hyatt
+				Url				http://www.craftychess.com/
 				Protocol			WB
 				Variant			standard
 				LastUsed			0
@@ -583,7 +583,7 @@ proc setup {} {
 				Variant			standard
 				LastUsed			0
 				Frequency		0
-				Features:UCI	{multiPV 10}
+				Features:UCI	{multiPV 10 hashSize true}
 				Features:WB		{}
 				Options:UCI		{
 					{Hash spin 16 16 4 1024}
@@ -673,32 +673,39 @@ proc setup {} {
 			set arr(Command) "[file join $::scidb::dir::engines $arr(Command)]"
 
 			if {[file executable $arr(Command)]} {
-				set result [::scidb::engine::info $arr(ShortId)]
-				if {[llength $result]} {
-					lassign $result _ arr(Country) arr(Elo) arr(CCRL) uci wb chess960 shuffle
-#					if {$uci && $wb} {
-#						set arr(Protocol) UCI/WB
-#						set arr(protocol) UCI
-#					} elseif {$uci} {
-#						set arr(Protocol) UCI
-#						set arr(protocol) UCI
-#					} elseif {$wb} {
-#						set arr(Protocol) WB
-#						set arr(protocol) WB
-#					}
-#					if {$shuffle} {
-#						set arr(Variant) shuffle
-#					} elseif {$chess960} {
-#						set arr(Variant) chess960
-#					}
-				}
-
 				file stat $arr(Command) st
 				set arr(FileTime) $st(mtime)
 				set arr(Timestamp) [clock seconds]
 				lappend Engines [array get arr]
 			}
 		}
+	}
+}
+
+
+proc startAnalysis {name isReadyCmd updateCmd bestMoveCmd} {
+	variable Engines
+
+	foreach entry $Engines {
+		array set engine $entry
+		if {$engine(Name) eq $name} {
+			if {[string match UCI* $engine(Protocol)]} {
+				set protocol UCI
+			} else {
+				set protocl WB
+			}
+			return [::scidb::engine::start \
+				$engine(Command) $::scidb::dir::log $protocol $isReadyCmd $updateCmd $bestMoveCmd]
+		}
+	}
+
+	return -1
+}
+
+
+proc stopAnaylsis {engineId} {
+	if {$engineId != -1} {
+		::scidb::engine::stop $engineId
 	}
 }
 
@@ -725,14 +732,14 @@ proc ClearLog {text} {
 
 proc Log {text msg} {
 	switch -- [string index $msg 0] {
-		> { set tag out } 
-		< { set tag in } 
-		! { set tag error } 
+		> { set tag out }
+		< { set tag in; set msg [string range $msg 2 end] } 
+		! { set tag error; set msg [string range $msg 2 end] } 
 		default { set tag out }
 	}
 
 	$text configure -state normal
-	$text insert end [string range $msg 2 end] $tag
+	$text insert end $msg $tag
 	$text configure -state disabled
 	$text see end
 }
@@ -1142,10 +1149,12 @@ proc ProbeEngine {parent entry} {
 				set prot $protocol($i)
 				lappend protocols $prot
 				lassign $result _ engine(Identifier) engine(Author) \
-					multiPV chess960 shuffle pause playOther engine(Options:$prot)
+					multiPV chess960 shuffle pause playOther hashSize clearHash engine(Options:$prot)
 				if {$multiPV > 1} { set features_${prot}(multiPV) $multiPV }
 				if {$pause} { set features_${prot}(pause) $pause }
 				if {$playOther} { set features_${prot}(playOther) $playOther }
+				if {$hashSize} { set features_${prot}(hashSize) $hashSize }
+				if {$clearHash} { set features_${prot}(clearHash) $clearHash }
 			}
 		}
 	}
@@ -1165,10 +1174,8 @@ proc ProbeEngine {parent entry} {
 
 	if {[llength $protocols] == 2} {
 		set engine(Protocol) UCI/WB
-		set engine(protocol) UCI
 	} else {
 		set engine(Protocol) [lindex $protocols 0]
-		set engine(protocol) [lindex $protocols 0]
 	}
 
 	lassign $result _ engine(Identifier) engine(Author) multiPV chess960 shuffle pause playOther
@@ -1190,14 +1197,22 @@ proc ProbeEngine {parent entry} {
 		set parts [lreplace $parts end end]
 	}
 	if {[llength $result]} {
-		set engine(ShortId) $name
-		if {[string length $engine(Name)] == 0} {
-			set engine(Name) $engine(ShortId)
+		lassign $result _ country elo ccrl _ _ _ _ url aliases
+		set shortId $name
+		set n [string length $name]
+		foreach alias $aliases {
+			set a [string length $alias]
+			if {$a + 3 < $n} {
+				set shortId $alias
+				set n $a
+			}
 		}
-		lassign $result _ country elo ccrl _ _ _ _
+		set engine(ShortId) $shortId
+		if {[string length $engine(Name)] == 0} { set engine(Name) $shortId }
 		if {$engine(Elo) == 0} { set engine(Elo) $elo }
 		if {$engine(CCRL) == 0} { set engine(CCRL) $ccrl }
 		if {[string length $engine(Country)] == 0} { set engine(Country) $country }
+		if {[string length $engine(Url)] == 0} { set engine(Url) $url }
 	} elseif {[string length $engine(Name)] == 0} {
 		set engine(Name) $engine(Identifier)
 	}
@@ -1244,8 +1259,7 @@ proc SaveEngine {list} {
 					}
 				}
 				Country {
-					# OK?
-					set engine(Country) $Priv(countrybox)
+					set engine(Country) [$Priv(countrybox) get]
 				}
 				LastUsed - Frequency - Variant - Options:UCI - Options:WB {
 					;# alreay set
@@ -1272,6 +1286,11 @@ proc SaveEngine {list} {
 		}
 	}
 
+	SaveEngineList
+}
+
+
+proc SaveEngineList {} {
 	set filename $::scidb::file::engines
 	set f [open $filename.tmp "w"]
 	fconfigure $f -encoding utf-8
@@ -1324,6 +1343,7 @@ proc DeleteEngine {list} {
 		SetInfoPaneState disabled
 	}
 
+	SaveEngineList
 	return 1
 }
 

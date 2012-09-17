@@ -34,9 +34,45 @@ class BlockFile;
 class Progress;
 
 
+class BlockFileReader
+{
+public:
+
+	BlockFile const& blockFile() const;
+
+	unsigned get(ByteStream& result, unsigned offset, unsigned length = 0);
+
+private:
+
+	struct Buffer
+	{
+		Buffer();
+
+		unsigned	m_capacity;
+		unsigned	m_size;
+		unsigned	m_number;
+		unsigned m_span;
+
+		unsigned char* m_data;
+
+		void reset();
+	};
+
+	friend class BlockFile;
+
+	BlockFileReader(BlockFile& blockFile);
+
+	BlockFile&	m_blockFile;
+	Buffer		m_buffer;
+	unsigned		m_countReads;
+};
+
+
 class BlockFile : public mstl::noncopyable
 {
 public:
+
+	typedef BlockFileReader Reader;
 
 	enum Mode { ReadWriteLength, RequireLength };
 
@@ -61,6 +97,8 @@ public:
 	bool isMemoryOnly() const;
 	bool isReadOnly() const;
 	bool isReadWrite() const;
+	bool isInSyncMode() const;
+	bool isInAsyncMode() const;
 
 	Mode mode() const;
 
@@ -74,6 +112,7 @@ public:
 
 	bool save(mstl::ostream& stream, Progress* progress = 0);
 	bool attach(mstl::fstream* stream, Progress* progress = 0);
+	void clear();
 	bool close();
 	bool sync();
 
@@ -81,26 +120,29 @@ public:
 	unsigned put(ByteStream const& buf, unsigned offset, unsigned minLength = 0);
 	unsigned get(ByteStream& result, unsigned offset, unsigned length = 0);
 
+	Reader& reader();
+
+	Reader* openAsyncReader();
+	void closeAsyncReader(Reader*& reader);
+	bool viewIsActive(Reader* reader) const;
+
 private:
 
-	struct Buffer
-	{
-		Buffer();
+	friend class BlockFileReader;
+	friend class BlockFileReader::Buffer;
 
-		unsigned	m_capacity;
-		unsigned	m_size;
-		unsigned	m_number;
-		unsigned m_span;
-
-		unsigned char* m_data;
-	};
-
-	typedef unsigned char Byte;
+	typedef unsigned char	Byte;
+	typedef BlockFileReader	View;
 
 	typedef mstl::vector<Byte*>		Cache;
 	typedef mstl::vector<unsigned>	SizeInfo;
+	typedef mstl::vector<View*>		AsyncViews;
 
 	static unsigned const InvalidBlock = unsigned(-1);
+
+	unsigned put(View& view, ByteStream const& buf);
+	unsigned put(View& view, ByteStream const& buf, unsigned offset, unsigned minLength);
+	unsigned get(View& view, ByteStream& result, unsigned offset, unsigned length);
 
 	unsigned lastBlockSize() const;
 	unsigned blockNumber(unsigned fileOffset) const;
@@ -108,28 +150,29 @@ private:
 	unsigned fileOffset(unsigned blockNumber) const;
 
 	void computeBlockCount();
-	unsigned fetch(unsigned blockNumber, unsigned span = 1);
-	unsigned retrieve(unsigned blockNumber, unsigned offset);
-	bool resize(unsigned span);
+	unsigned fetch(View& view, unsigned blockNumber, unsigned span = 1);
+	unsigned retrieve(View& view, unsigned blockNumber, unsigned offset);
+	void resize(View& view, unsigned span);
 	void deallocate() throw();
-	void putMagic(mstl::string const& magic);
+	void putMagic();
 
 	void copy(ByteStream const& buf, unsigned offset, unsigned nbytes);
 
 	mstl::fstream*	m_stream;
 
-	Mode			m_mode;
-	unsigned		m_blockSize;
-	unsigned		m_shift;
-	unsigned		m_mask;
-	unsigned		m_mtime;
-	bool			m_isDirty;
-	bool			m_isClosed;
-	unsigned		m_countWrites;
-	unsigned		m_countReads;
-	SizeInfo		m_sizeInfo;
-	Cache			m_cache;
-	Buffer		m_buffer;
+	View				m_view;
+	Mode				m_mode;
+	unsigned			m_blockSize;
+	unsigned			m_shift;
+	unsigned			m_mask;
+	unsigned			m_mtime;
+	bool				m_isDirty;
+	bool				m_isClosed;
+	unsigned			m_countWrites;
+	SizeInfo			m_sizeInfo;
+	Cache				m_cache;
+	AsyncViews		m_asyncViews;
+	mstl::string	m_magic;
 };
 
 } // namespace util
