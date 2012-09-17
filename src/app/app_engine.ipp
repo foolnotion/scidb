@@ -57,6 +57,22 @@ inline Engine::Options const& Engine::options() const	{ return m_options; }
 
 
 inline
+bool
+Engine::Concrete::detectShortName(mstl::string const& s)
+{
+	return m_engine->detectShortName(s);
+}
+
+
+inline
+bool
+Engine::Concrete::detectIdentifier(mstl::string const& s)
+{
+	return m_engine->detectIdentifier(s);
+}
+
+
+inline
 Engine::Options const&
 Engine::Concrete::options() const
 {
@@ -94,6 +110,15 @@ Engine::Concrete::setVariation(db::MoveList const& moves, unsigned no)
 {
 	m_engine->setVariation(moves, no);
 }
+
+
+inline
+void
+Engine::Concrete::setShortName(mstl::string const& name)
+{
+	m_engine->setShortName(name);
+}
+
 
 
 inline
@@ -151,6 +176,7 @@ inline db::Board const& Engine::currentBoard() const			{ return m_engine->curren
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
 
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
+inline mstl::string const& Engine::shortName() const			{ return m_shortName; }
 inline mstl::string const& Engine::author() const				{ return m_author; }
 inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
 inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
@@ -163,7 +189,6 @@ inline void Engine::setScore(int score)							{ m_score = score; }
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
-inline void Engine::setIdentifier(mstl::string const& name)	{ m_identifier = name; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
 inline void Engine::setMaxMultiPV(unsigned n)					{ m_maxMultiPV = n; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
@@ -187,6 +212,22 @@ Engine::setMate(int numHalfMoves)
 {
 	if ((m_mate = numHalfMoves))
 		m_score = mstl::signum(numHalfMoves)*32000;
+}
+
+
+inline
+bool
+Engine::detectShortName(mstl::string const& s)
+{
+	return detectShortName(s, false);
+}
+
+
+inline
+bool
+Engine::detectIdentifier(mstl::string const& s)
+{
+	return detectShortName(s, true);
 }
 
 } // namespace app

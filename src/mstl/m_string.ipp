@@ -86,7 +86,7 @@ inline
 void
 string::set_size(size_type n)
 {
-	M_REQUIRE(capacity() == 0 || n < capacity());
+	M_REQUIRE(capacity() == 0 || n <= capacity());
 	// require: n < #m_data
 
 	m_data[m_size = n] = '\0';

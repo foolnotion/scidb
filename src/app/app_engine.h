@@ -130,6 +130,8 @@ public:
 		void deactivate();
 
 		void addFeature(unsigned feature);
+		bool detectShortName(mstl::string const& s);
+		bool detectIdentifier(mstl::string const& s);
 
 		void addOption(mstl::string const& name,
 							mstl::string const& type,
@@ -146,6 +148,7 @@ public:
 		void setNodes(unsigned nodes);
 		void setVariation(db::MoveList const& moves, unsigned no = 1);
 		void setIdentifier(mstl::string const& name);
+		void setShortName(mstl::string const& name);
 		void setAuthor(mstl::string const& name);
 		void setMaxMultiPV(unsigned n);
 		void setHashSize(unsigned size);
@@ -195,6 +198,7 @@ public:
 	db::Move const& bestMove() const;
 
 	mstl::string const& identifier() const;
+	mstl::string const& shortName() const;
 	mstl::string const& author() const;
 	unsigned maxMultiPV() const;
 	unsigned numVariations() const;
@@ -238,6 +242,8 @@ protected:
 	void send(mstl::string const& message);
 
 	void addFeature(unsigned feature);
+	bool detectShortName(mstl::string const& s);
+	bool detectIdentifier(mstl::string const& s);
 
 	void addOption(mstl::string const& name,
 						mstl::string const& type,
@@ -255,6 +261,7 @@ protected:
 	void setPonder(db::Move const& move);
 	void setVariation(db::MoveList const& moves, unsigned no);
 	void setIdentifier(mstl::string const& name);
+	void setShortName(mstl::string const& name);
 	void setAuthor(mstl::string const& name);
 	void setMaxMultiPV(unsigned n);
 	void setHashSize(unsigned size);
@@ -270,6 +277,7 @@ private:
 	class Process;
 	friend class Process;
 
+	bool detectShortName(mstl::string const& s, bool setId);
 	void readyRead();
 	void exited();
 
@@ -280,6 +288,7 @@ private:
 	mstl::string		m_command;
 	mstl::string		m_directory;
 	mstl::string		m_identifier;
+	mstl::string		m_shortName;
 	mstl::string		m_author;
 	unsigned				m_maxMultiPV;
 	Variations			m_variations;
@@ -299,7 +308,7 @@ private:
 	bool					m_analyzing;
 	bool					m_probe;
 	bool					m_protocol;
-	bool					m_isNewGame;
+	bool					m_identifierSet;
 	Process*				m_process;
 	mstl::ostream*		m_logStream;
 	Options				m_options;

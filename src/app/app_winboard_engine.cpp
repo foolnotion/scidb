@@ -28,13 +28,11 @@
 #include "app_exception.h"
 
 #include "db_game.h"
-#include "db_player.h"
 
 #include "sys_signal.h"
 #include "sys_timer.h"
 
 #include "m_stdio.h"
-#include "m_vector.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -42,22 +40,6 @@
 using namespace app;
 using namespace app::winboard;
 using namespace db;
-
-
-struct Range
-{
-	Range(char const* s, char const* e) :start(s), end(e) {}
-	Range() :start(0), end(0) {}
-
-	operator bool() const { return start < end; }
-
-	char const* start;
-	char const* end;
-};
-
-typedef mstl::vector<Range> Ranges;
-
-static Range findIdentifier(Range const& range);
 
 
 static bool
@@ -186,140 +168,6 @@ nextAlgebraic(char const* s)
 }
 
 
-static unsigned
-split(Ranges& result, Range range, char delim)
-{
-	result.clear();
-
-	while (range)
-	{
-		char const* p = strchr(range.start + 1, delim);
-
-		if (p == 0 || p >= range.end)
-		{
-			result.push_back(range);
-			return result.size();
-		}
-
-		result.push_back(Range(range.start, p));
-		range.start = p + 1;
-
-		while (range && *range.start == delim)
-			++range.start;
-	}
-
-	return result.size();
-}
-
-
-static Range
-findIdentifier(Ranges::const_iterator s, Ranges::const_iterator e)
-{
-	for (Ranges::const_iterator i = s; i != e; ++i)
-	{
-		for (Ranges::const_iterator k = e - 1; k >= i; --k)
-		{
-			Range r(i->start, k->end);
-
-			if (db::Player::findEngine(mstl::string(r.start, r.end)))
-				return r;
-		}
-
-		if (Range r = findIdentifier(*i))
-			return r;
-	}
-
-	return Range();
-}
-
-
-static Range
-findIdentifier(Range const& range)
-{
-	if (!range)
-		return range;
-
-	Ranges ranges;
-
-	if (split(ranges, range, ',') == 1)
-	{
-		if (db::Player::findEngine(mstl::string(range.start, range.end)))
-			return range;
-
-		if (split(ranges, range, '.') == 1)
-		{
-			if (db::Player::findEngine(mstl::string(range.start, range.end)))
-				return range;
-
-			if (split(ranges, range, ' ') == 1)
-			{
-				if (db::Player::findEngine(mstl::string(range.start, range.end)))
-					return range;
-			}
-			else
-			{
-				if (Range r = findIdentifier(ranges.begin(), ranges.end()))
-					return r;
-			}
-		}
-		else
-		{
-			if (Range r = findIdentifier(ranges.begin(), ranges.end()))
-				return r;
-		}
-	}
-	else
-	{
-		if (Range r = findIdentifier(ranges.begin(), ranges.end()))
-			return r;
-	}
-
-	if (range.start[0] == '(' && range.end[-1] == ')')
-		return findIdentifier(Range(range.start + 1, range.end - 1));
-
-	return Range();
-}
-
-
-static char const*
-findVersionNumber(char const* s)
-{
-	if (*s == 'v' || *s == '.')
-		++s;
-
-	if (!isdigit(*s))
-		return 0;
-
-	++s;
-
-	while (isdigit(*s) || *s == '.')
-		++s;
-
-	while (s[-1] == '.')
-		--s;
-
-	return s;
-}
-
-
-static char const*
-findRomanNumber(char const* s)
-{
-	if (*s != 'X' && *s != 'V' && *s != 'I')
-		return 0;
-
-	++s;
-
-	while (*s == 'X' || *s == 'V' || *s == 'I')
-		++s;
-
-	if (isalnum(*s))
-		return 0;
-
-	return s;
-}
-
-
 struct winboard::Engine::Timer : public sys::Timer
 {
 	Timer(winboard::Engine* engine, unsigned timeout) :sys::Timer(timeout), m_engine(engine) {}
@@ -333,7 +181,8 @@ struct winboard::Engine::Timer : public sys::Timer
 winboard::Engine::Engine()
 	:m_response(false)
 	,m_detected(false)
-	,m_hasIdentifier(false)
+	,m_identifierDetected(false)
+	,m_shortNameDetected(false)
 	,m_mustUseChess960(false)
 	,m_mustUseNoCastle(false)
 	,m_editSent(false)
@@ -778,8 +627,13 @@ winboard::Engine::processMessage(mstl::string const& message)
 
 		detectFeatures(msg);
 
-		if (isProbing() && !m_hasIdentifier)
-			detectIdentifier(message);
+		if (isProbing())
+		{
+			if (!m_identifierDetected)
+				m_identifierDetected = m_shortNameDetected = detectIdentifier(message);
+			else if (!m_shortNameDetected)
+				m_shortNameDetected = detectShortName(message);
+		}
 	}
 }
 
@@ -833,10 +687,14 @@ winboard::Engine::parseFeatures(char const* msg)
 			case 'm':
 				if (::strncmp(key, "myname=", 7) == 0 && val[0] == '"' && end[-1] == '"')
 				{
-					setIdentifier(mstl::string(val + 1, end - 1));
+					mstl::string identifier(val + 1, end - 1);
+					setIdentifier(identifier);
+					m_identifierDetected = true;
 					detectFeatures(mstl::string(val + 1, end - val));
-					m_hasIdentifier = true;
 					reject = false;
+
+					if (isProbing() && detectShortName(identifier))
+						m_shortNameDetected = true;
 				}
 				break;
 
@@ -1261,26 +1119,6 @@ winboard::Engine::detectFeatures(char const* identifier)
 				return;
 			}
 		}
-	}
-}
-
-
-void
-winboard::Engine::detectIdentifier(mstl::string const& s)
-{
-	if (Range range = ::findIdentifier(Range(s.begin(), s.end())))
-	{
-		char const* q = range.end + 1;
-		char const* p = ::findVersionNumber(q);
-
-		if (!p)
-			p = ::findRomanNumber(q);
-
-		if (!p)
-			p = range.end;
-
-		setIdentifier(mstl::string(range.start, p));
-		m_hasIdentifier = true;
 	}
 }
 

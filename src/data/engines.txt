@@ -476,7 +476,7 @@
 	Jester								1626	----	USA	WB				http://www.eiganic.com/
 	Joana									1648	----	MEX	WB
 	Joanna								----	----	POL	WB
-	Joker									2186	2405	NED	WB				http://home.hccnet.nl/h.g.muller/dwnldpage.html
+	Joker									2186	2405	NED	WB				http://home.hccnet.nl/h.g.muller/max-src2.html
 	Jonny									2751	2680	GER	WB/FRC
 *	JsBaM									1805	----	NED	WB/UCI		http://members.chello.nl/b.bosch8/
 	Junior								2758	2846	ISR	UCI

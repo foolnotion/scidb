@@ -345,20 +345,21 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case ::app::Engine::Probe_Successfull:
 		{
-			Tcl_Obj* objs[11];
+			Tcl_Obj* objs[12];
 			ProbeEngine::Options const& options = engine.options();
 
 			objs[ 0] = Tcl_NewStringObj("ok", -1);
 			objs[ 1] = Tcl_NewStringObj(engine.identifier(), engine.identifier().size());
 			objs[ 2] = Tcl_NewStringObj(engine.author(), engine.author().size());
-			objs[ 3] = Tcl_NewIntObj(engine.maxMultiPV());
-			objs[ 4] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Chess_960));
-			objs[ 5] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Shuffle_Chess));
-			objs[ 6] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Pause));
-			objs[ 7] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Play_Other));
-			objs[ 8] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Hash_Size));
-			objs[ 9] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Clear_Hash));
-			objs[10] = Tcl_NewListObj(0, 0);
+			objs[ 3] = Tcl_NewStringObj(engine.shortName(), engine.shortName().size());
+			objs[ 4] = Tcl_NewIntObj(engine.maxMultiPV());
+			objs[ 5] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Chess_960));
+			objs[ 6] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Shuffle_Chess));
+			objs[ 7] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Pause));
+			objs[ 8] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Play_Other));
+			objs[ 9] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Hash_Size));
+			objs[10] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Clear_Hash));
+			objs[11] = Tcl_NewListObj(0, 0);
 
 			for (ProbeEngine::Options::const_iterator i = options.begin(); i != options.end(); ++i)
 			{
@@ -371,7 +372,7 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				v[4] = Tcl_NewStringObj(i->var,  i->var.size());
 				v[5] = Tcl_NewStringObj(i->max,  i->max.size());
 
-				Tcl_ListObjAppendElement(ti, objs[10], Tcl_NewListObj(U_NUMBER_OF(v), v));
+				Tcl_ListObjAppendElement(ti, objs[11], Tcl_NewListObj(U_NUMBER_OF(v), v));
 			}
 
 			setResult(U_NUMBER_OF(objs), objs);

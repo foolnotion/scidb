@@ -88,14 +88,14 @@ private:
 	void parseOption(mstl::string const& option);
 	void parseFeatures(char const* msg);
 	void detectFeatures(char const* identifier);
-	void detectIdentifier(mstl::string const& s);
 
 	db::Board		m_board;
 	TimerP			m_timer;
 	mstl::string	m_variant;
 	bool				m_response;
 	bool				m_detected;
-	bool				m_hasIdentifier;
+	bool				m_identifierDetected;
+	bool				m_shortNameDetected;
 	bool				m_mustUseChess960;
 	bool				m_mustUseNoCastle;
 	bool				m_editSent;

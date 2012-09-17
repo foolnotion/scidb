@@ -29,6 +29,7 @@
 #include "app_winboard_engine.h"
 
 #include "db_game.h"
+#include "db_player.h"
 
 #include "sys_process.h"
 #include "sys_timer.h"
@@ -36,10 +37,224 @@
 #include "u_misc.h"
 
 #include "m_ostream.h"
+#include "m_vector.h"
+
+#include <string.h>
+#include <ctype.h>
 
 using namespace app;
 using namespace db;
 using namespace util::misc::file;
+
+
+namespace {
+
+struct Range
+{
+	Range(char const* s, char const* e) :start(s), end(e) {}
+	Range() :start(0), end(0) {}
+
+	operator bool() const { return start < end; }
+
+
+	bool set(char const* s, char const* e)
+	{
+		while (e > s && e[-1] == ' ')
+			--e;
+		while (s < e && s[0] == ' ')
+			++s;
+
+		start = s;
+		end = e;
+
+		return start < end;
+	}
+
+	char const* start;
+	char const* end;
+};
+
+typedef mstl::vector<Range> Ranges;
+
+} // namespace
+
+static Range findShortName(Range const& range);
+
+
+static void
+compactSpaces(mstl::string& str)
+{
+	str.trim();
+
+	M_ASSERT(str.empty() || !::isspace(str.front()));
+
+	char const* s = str.begin();
+	char const* e = str.end();
+
+	char* p = str.begin();
+
+	for ( ; s < e; s++)
+	{
+		if (!::isspace(*s))
+			*p++ = *s;
+		else if (p[-1] != ' ')
+			*p++ = ' ';
+	}
+
+	str.set_size(p - str.begin());
+}
+
+
+static unsigned
+split(Ranges& result, Range range, char delim)
+{
+	result.clear();
+
+	while (range)
+	{
+		Range r;
+
+		char const* p = strchr(range.start + 1, delim);
+
+		if (p == 0 || p >= range.end)
+		{
+			if (r.set(range.start, range.end))
+				result.push_back(r);
+			return result.size();
+		}
+
+		if (delim == '(')
+		{
+			char const* q = strchr(p + 1, ')');
+
+			if (q == 0 || q >= range.end)
+			{
+				if (r.set(range.start, range.end))
+					result.push_back(r);
+				return result.size();
+			}
+
+			Range r;
+			
+			if (r.set(range.start, p))
+				result.push_back(r);
+
+			if (r.set(p + 1, q))
+				result.push_back(r);
+
+			range.set(q + 1, range.end);
+		}
+		else
+		{
+			Range r;
+
+			if (r.set(range.start, p))
+				result.push_back(Range(range.start, p));
+
+			range.start = p + 1;
+
+			while (range && *range.start == delim)
+				++range.start;
+
+			range.set(range.start, range.end);
+		}
+	}
+
+	return result.size();
+}
+
+
+static Range
+findShortName(Ranges::const_iterator s, Ranges::const_iterator e)
+{
+	for (Ranges::const_iterator i = s; i != e; ++i)
+	{
+		for (Ranges::const_iterator k = e - 1; k >= i; --k)
+		{
+			Range r(i->start, k->end);
+
+			if (db::Player::findEngine(mstl::string(r.start, r.end)))
+				return r;
+		}
+
+		if (Range r = findShortName(*i))
+			return r;
+	}
+
+	return Range();
+}
+
+
+static Range
+findShortName(Range const& range, char const* delim)
+{
+	if (!range)
+		return range;
+
+	Ranges ranges;
+
+	if (split(ranges, range, *delim) == 1)
+	{
+		if (db::Player::findEngine(mstl::string(range.start, range.end)))
+			return range;
+	}
+	else
+	{
+		if (Range r = findShortName(ranges.begin(), ranges.end()))
+			return r;
+	}
+
+	if (*++delim == '\0')
+		return Range();
+
+	return findShortName(range, delim);
+}
+
+
+static Range
+findShortName(Range const& range)
+{
+	return findShortName(range, "(,. -");
+}
+
+
+static char const*
+findVersionNumber(char const* s)
+{
+	if (*s == 'v' || *s == '.')
+		++s;
+
+	if (!isdigit(*s))
+		return 0;
+
+	++s;
+
+	while (isdigit(*s) || *s == '.')
+		++s;
+
+	while (s[-1] == '.')
+		--s;
+
+	return s;
+}
+
+
+static char const*
+findRomanNumber(char const* s)
+{
+	if (*s != 'X' && *s != 'V' && *s != 'I')
+		return 0;
+
+	++s;
+
+	while (*s == 'X' || *s == 'V' || *s == 'I')
+		++s;
+
+	if (isalnum(*s))
+		return 0;
+
+	return s;
+}
 
 
 struct Engine::Process : public sys::Process
@@ -120,6 +335,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_analyzing(false)
 	,m_probe(false)
 	,m_protocol(false)
+	,m_identifierSet(false)
 	,m_process(0)
 	,m_logStream(0)
 {
@@ -527,6 +743,58 @@ Engine::clearHash()
 {
 	if (hasFeature(Feature_Clear_Hash))
 		m_engine->clearHash();
+}
+
+
+void
+Engine::setIdentifier(mstl::string const& name)
+{
+	m_identifierSet = true;
+	m_identifier = name;
+	::compactSpaces(m_identifier);
+}
+
+
+void
+Engine::setShortName(mstl::string const& name)
+{
+	m_shortName = name;
+	::compactSpaces(m_shortName);
+
+	if (!m_identifierSet)
+		m_identifier = m_shortName;
+}
+
+
+bool
+Engine::detectShortName(mstl::string const& s, bool setId)
+{
+	mstl::string str(s);
+	::compactSpaces(str);
+
+	bool detected = false;
+
+	if (::Range range = ::findShortName(Range(str.begin(), str.end())))
+	{
+		setShortName(mstl::string(range.start, range.end));
+		detected = true;
+
+		if (setId)
+		{
+			char const* q = range.end + 1;
+			char const* p = ::findVersionNumber(q);
+
+			if (!p)
+				p = ::findRomanNumber(q);
+
+			if (!p)
+				p = range.end;
+
+			setIdentifier(mstl::string(range.start, p));
+		}
+	}
+
+	return detected;
 }
 
 // vi:set ts=3 sw=3:

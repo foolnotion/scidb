@@ -83,6 +83,8 @@ proc openSetup {parent} {
 	variable Engines
 	variable Logo
 	variable Priv
+	variable Option
+	variable Option_
 	variable Var
 	variable Var_
 
@@ -99,6 +101,8 @@ proc openSetup {parent} {
 	set Priv(rows) {0}
 	array set Var {}
 	array set Var_ {}
+	array set Option {}
+	array set Option_ {}
 
 	### left frame ########################################################
 	set list [::tlistbox $top.list \
@@ -507,7 +511,7 @@ proc setup {} {
 				Command			stockfish-120903
 				Parameters		{}
 				Logo				""
-				Url				http://www.stockfishchess.com
+				Url				""
 				Protocol			UCI
 				Variant			chess960
 				LastUsed			0
@@ -555,7 +559,7 @@ proc setup {} {
 				Command			crafty-32.2
 				Parameters		{}
 				Logo				""
-				Url				http://www.craftychess.com/
+				Url				""
 				Protocol			WB
 				Variant			standard
 				LastUsed			0
@@ -578,7 +582,7 @@ proc setup {} {
 				Command			fruit
 				Parameters		{}
 				Logo				""
-				Url				http://www.superchessengine.com/toga_ii.htm
+				Url				""
 				Protocol			UCI
 				Variant			standard
 				LastUsed			0
@@ -628,7 +632,7 @@ proc setup {} {
 				Command			phalanx
 				Parameters		-l-
 				Logo				""
-				Url				http://phalanx.sourceforge.net
+				Url				""
 				Protocol			WB
 				Variant			standard
 				LastUsed			0
@@ -651,7 +655,7 @@ proc setup {} {
 				Command			micromax
 				Parameters		{}
 				Logo				""
-				Url				http://home.hccnet.nl/h.g.muller/max-src2.html
+				Url				""
 				Protocol			WB
 				Variant			standard
 				LastUsed			0
@@ -669,14 +673,21 @@ proc setup {} {
 		set Engines {}
 
 		foreach entry $list {
-			array set arr $entry
-			set arr(Command) "[file join $::scidb::dir::engines $arr(Command)]"
+			array set engine $entry
+			set engine(Command) "[file join $::scidb::dir::engines $engine(Command)]"
 
-			if {[file executable $arr(Command)]} {
-				file stat $arr(Command) st
-				set arr(FileTime) $st(mtime)
-				set arr(Timestamp) [clock seconds]
-				lappend Engines [array get arr]
+			if {[file executable $engine(Command)]} {
+				set result [::scidb::engine::info $engine(Name)]
+				if {[llength $result]} {
+					lassign $result _ Country Elo CCRL _ _ _ _ Url _
+					foreach attr {Country Elo CCRL Url} {
+						set engine($attr) [set $attr]
+					}
+				}
+				file stat $engine(Command) st
+				set engine(FileTime) $st(mtime)
+				set engine(Timestamp) [clock seconds]
+				lappend Engines [array get engine]
 			}
 		}
 	}
@@ -1092,10 +1103,11 @@ proc RebuildEngineList {list} {
 			}
 
 			if {[string length $photoFile] && $photoFile ni $PhotoFiles} {
-				lappend PhotoFiles [list $i $logo $photoFile]
+				lappend PhotoFiles [list $i $logo $photoFile $opts(Name)]
+				$list insert {}
+			} else {
+				$list insert [list $opts(Name)] -font TkCaptionFont
 			}
-
-			$list insert [list $opts(Name)] -font TkCaptionFont
 		}
 
 		incr i
@@ -1148,7 +1160,7 @@ proc ProbeEngine {parent entry} {
 				set result $res
 				set prot $protocol($i)
 				lappend protocols $prot
-				lassign $result _ engine(Identifier) engine(Author) \
+				lassign $result _ engine(Identifier) engine(Author) engine(Name) \
 					multiPV chess960 shuffle pause playOther hashSize clearHash engine(Options:$prot)
 				if {$multiPV > 1} { set features_${prot}(multiPV) $multiPV }
 				if {$pause} { set features_${prot}(pause) $pause }
@@ -1178,7 +1190,8 @@ proc ProbeEngine {parent entry} {
 		set engine(Protocol) [lindex $protocols 0]
 	}
 
-	lassign $result _ engine(Identifier) engine(Author) multiPV chess960 shuffle pause playOther
+	lassign $result _ engine(Identifier) engine(Author) engine(Name) \
+		multiPV chess960 shuffle pause playOther
 	set engine(Author) [string map [list " and " " & "] $engine(Author)]
 	set engine(Features:UCI) [array get features_UCI]
 	set engine(Features:WB) [array get features_WB]
@@ -1189,32 +1202,31 @@ proc ProbeEngine {parent entry} {
 	} else {
 		set engine(Variant) standard
 	}
-	set parts [split $engine(Identifier) " -"]
 	set result {}
-	while {[llength $result] == 0 && [llength $parts] > 0} {
-		set name [string trim [join $parts " "]]
-		set result [::scidb::engine::info $name]
-		set parts [lreplace $parts end end]
+	if {[string length $engine(Name)]} {
+		set result [::scidb::engine::info $engine(Name)]
+	} else {
+		set engine(Name) $engine(Identifier)
 	}
 	if {[llength $result]} {
 		lassign $result _ country elo ccrl _ _ _ _ url aliases
-		set shortId $name
-		set n [string length $name]
+		set shortName $engine(Name)
+		set n [string length $shortName]
 		foreach alias $aliases {
 			set a [string length $alias]
 			if {$a + 3 < $n} {
-				set shortId $alias
+				set shortName $alias
 				set n $a
 			}
 		}
-		set engine(ShortId) $shortId
-		if {[string length $engine(Name)] == 0} { set engine(Name) $shortId }
+		set engine(Name) $shortName
 		if {$engine(Elo) == 0} { set engine(Elo) $elo }
 		if {$engine(CCRL) == 0} { set engine(CCRL) $ccrl }
 		if {[string length $engine(Country)] == 0} { set engine(Country) $country }
 		if {[string length $engine(Url)] == 0} { set engine(Url) $url }
-	} elseif {[string length $engine(Name)] == 0} {
-		set engine(Name) $engine(Identifier)
+	}
+	if {[string length $engine(ShortId)] == 0} {
+		set engine(ShortId) $engine(Name)
 	}
 
 	return [array get engine]
@@ -1493,13 +1505,15 @@ proc LoadPhotoFiles {list} {
 
 	if {![winfo exists $list]} { return }
 
-	lassign [lindex $PhotoFiles 0] item logo file
+	lassign [lindex $PhotoFiles 0] item logo file name
 	set PhotoFiles [lreplace $PhotoFiles 0 0]
 	MakePhotos $logo $file
 
 	if {[info exists Photo($logo)]} {
 		if {$item == $Priv(selection)} { set index 2 } else { set index 1 }
 		$list set $item [lindex $Photo($logo) $index]
+	} else {
+		$list set $item [list $name] -font TkCaptionFont
 	}
 
 	if {[llength $PhotoFiles]} {
