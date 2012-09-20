@@ -793,6 +793,8 @@ proc ShiftScroll {table action} {
 proc Scroll {table action args} {
 	variable ${table}::Vars
 
+	if {![winfo exists $Vars(scrollbar)]} { return }
+
 	set force no
 
 	switch $action {

@@ -1252,7 +1252,7 @@ proc PopupMenu {parent} {
 			-compound left \
 			-image [set ::icon::12x12::text-$fmt] \
 			-label [set mc::$format] \
-			-command [namespace code [list ChangeFormat $fmt]] \
+			-command [namespace code [list ChangeFormat $fmt yes]] \
 			;
 	}
 	if {[llength $Vars(langSet)] && [string length $Vars(content:$lang)]} {
@@ -1684,12 +1684,12 @@ proc CopyText {fromLang toLang} {
 }
 
 
-proc ChangeFormat {format} {
+proc ChangeFormat {format {toggle no}} {
 	variable Vars
 
 	set w $Vars(widget:text)
 	set selrange [$w tag ranges sel]
-	ToggleFormat $format
+	ToggleFormat $format $toggle
 	if {[llength $selrange] == 0} { return }
 
 	lassign $selrange prevIndex lastIndex
@@ -1745,10 +1745,12 @@ proc ChangeFormat {format} {
 }
 
 
-proc ToggleFormat {format} {
+proc ToggleFormat {format {toggle yes}} {
 	variable Vars
 
-	set Vars(format:$format) [expr {!$Vars(format:$format)}]
+	if {$toggle} {
+		set Vars(format:$format) [expr {!$Vars(format:$format)}]
+	}
 
 	if {$Vars(format:bold) && $Vars(format:italic)} {
 		set Vars(format) bold-italic

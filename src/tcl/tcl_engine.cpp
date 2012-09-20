@@ -49,9 +49,12 @@ static char const* CmdAnalyize	= "::scidb::engine::analyze";
 static char const* CmdClearHash	= "::scidb::engine::clearHash";
 static char const* CmdGet			= "::scidb::engine::get";
 static char const* CmdInfo			= "::scidb::engine::info";
+static char const* CmdKill			= "::scidb::engine::kill";
 static char const* CmdList			= "::scidb::engine::list";
 static char const* CmdLog			= "::scidb::engine::log";
+static char const* CmdPause		= "::scidb::engine::pause";
 static char const* CmdProbe		= "::scidb::engine::probe";
+static char const* CmdResume		= "::scidb::engine::resume";
 static char const* CmdSet			= "::scidb::engine::set";
 static char const* CmdStart		= "::scidb::engine::start";
 static char const* CmdStop			= "::scidb::engine::stop";
@@ -109,8 +112,7 @@ public:
 	{
 	}
 
-	void updateInfo() override {}
-	void updateBestMove() override {}
+	void updatePvInfo() override {}
 	void engineIsReady() override {}
 };
 
@@ -123,34 +125,47 @@ public:
 				mstl::string const& command,
 				mstl::string const& directory,
 				Tcl_Obj* isReadyCmd,
-				Tcl_Obj* updateInfoCmd,
-				Tcl_Obj* updateBestMoveCmd)
+				Tcl_Obj* updateInfoCmd)
 		: ::app::Engine(protocol, command, directory)
 		,m_isReadyCmd(isReadyCmd)
 		,m_updateInfoCmd(updateInfoCmd)
-		,m_updateBestMoveCmd(updateBestMoveCmd)
 		,m_id(0)
 	{
 		M_ASSERT(isReadyCmd);
 		M_ASSERT(updateInfoCmd);
-		M_ASSERT(updateBestMoveCmd);
 
 		Tcl_IncrRefCount(m_isReadyCmd);
 		Tcl_IncrRefCount(m_updateInfoCmd);
-		Tcl_IncrRefCount(m_updateBestMoveCmd);
+
+		if (m_pv == 0)
+		{
+			Tcl_IncrRefCount(m_pv = Tcl_NewStringObj("pv", -1));
+			Tcl_IncrRefCount(m_move = Tcl_NewStringObj("move", -1));
+			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
+			Tcl_IncrRefCount(m_best = Tcl_NewStringObj("best", -1));
+			Tcl_IncrRefCount(m_depth = Tcl_NewStringObj("depth", -1));
+			Tcl_IncrRefCount(m_time = Tcl_NewStringObj("time", -1));
+			Tcl_IncrRefCount(m_hash = Tcl_NewStringObj("hash", -1));
+		}
 	}
 
 	~Engine() throw()
 	{
 		Tcl_DecrRefCount(m_isReadyCmd);
 		Tcl_DecrRefCount(m_updateInfoCmd);
-		Tcl_DecrRefCount(m_updateBestMoveCmd);
 
 		if (m_id)
 			Tcl_DecrRefCount(m_id);
 	}
 
-	void updateInfo() override
+	void sendInfo(Tcl_Obj* cmd, Tcl_Obj* args)
+	{
+		Tcl_IncrRefCount(args);
+		tcl::invoke(__func__, m_updateInfoCmd, m_id, cmd, args, nullptr);
+		Tcl_DecrRefCount(args);
+	}
+
+	void updatePvInfo() override
 	{
 		Tcl_Obj* vars[numVariations()];
 		unsigned halfMoveNo = currentBoard().plyNumber();
@@ -162,48 +177,63 @@ public:
 			vars[i] = Tcl_NewStringObj(s, s.size());
 		}
 
-		Tcl_Obj* objScore	= Tcl_NewIntObj(score());
-		Tcl_Obj* objMate	= Tcl_NewIntObj(mate());
-		Tcl_Obj* objDepth	= Tcl_NewIntObj(depth());
-		Tcl_Obj* objTime	= Tcl_NewDoubleObj(time());
-		Tcl_Obj* objNodes	= Tcl_NewIntObj(nodes());
-		Tcl_Obj* objVars	= Tcl_NewListObj(numVariations(), vars);
+		Tcl_Obj* objs[6];
 
-		Tcl_IncrRefCount(objScore);
-		Tcl_IncrRefCount(objMate);
-		Tcl_IncrRefCount(objDepth);
-		Tcl_IncrRefCount(objTime);
-		Tcl_IncrRefCount(objNodes);
-		Tcl_IncrRefCount(objVars);
+		objs[0] = Tcl_NewIntObj(score());
+		objs[1] = Tcl_NewIntObj(mate());
+		objs[2] = Tcl_NewIntObj(depth());
+		objs[3] = Tcl_NewDoubleObj(time());
+		objs[4] = Tcl_NewIntObj(nodes());
+		objs[5] = Tcl_NewListObj(numVariations(), vars);
 
-		tcl::invoke(__func__,
-						m_updateInfoCmd,
-						m_id,
-						objScore,
-						objMate,
-						objDepth,
-						objTime,
-						objNodes,
-						objVars,
-						nullptr);
+		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
 
-		Tcl_DecrRefCount(objScore);
-		Tcl_DecrRefCount(objMate);
-		Tcl_DecrRefCount(objDepth);
-		Tcl_DecrRefCount(objTime);
-		Tcl_DecrRefCount(objNodes);
-		Tcl_DecrRefCount(objVars);
+	void updateCurrMove() override
+	{
+		Tcl_Obj* objs[2];
+		mstl::string move;
+
+		currentMove().printSan(move, encoding::Utf8);
+		objs[0] = Tcl_NewIntObj(currentMoveNumber());
+		objs[1] = Tcl_NewStringObj(move, move.size());
+		sendInfo(m_move, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
+
+	void updateCurrLine() override
+	{
 	}
 
 	void updateBestMove() override
 	{
-		mstl::string s;
-		bestMove().printSan(s);
+		mstl::string move;
+		bestMove().printSan(move, encoding::Utf8);
+		sendInfo(m_best, Tcl_NewStringObj(move, move.size()));
+	}
 
-		Tcl_Obj* move = Tcl_NewStringObj(s, s.size());
-		Tcl_IncrRefCount(move);
-		tcl::invoke(__func__, m_updateBestMoveCmd, m_id, move, nullptr);
-		Tcl_DecrRefCount(move);
+	void updateDepthInfo() override
+	{
+		Tcl_Obj* objs[2];
+
+		objs[0] = Tcl_NewIntObj(depth());
+		objs[1] = Tcl_NewIntObj(nodes());
+		sendInfo(m_depth, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
+
+	void updateTimeInfo() override
+	{
+		Tcl_Obj* objs[3];
+
+		objs[0] = Tcl_NewDoubleObj(time());
+		objs[1] = Tcl_NewIntObj(depth());
+		objs[2] = Tcl_NewIntObj(nodes());
+
+		sendInfo(m_time, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
+
+	void updateHashFullInfo() override
+	{
+//		sendInfo(m_hash, Tcl_NewIntObj(hashFullness()));
 	}
 
 	void engineIsReady() override
@@ -220,9 +250,24 @@ private:
 
 	Tcl_Obj* m_isReadyCmd;
 	Tcl_Obj* m_updateInfoCmd;
-	Tcl_Obj* m_updateBestMoveCmd;
 	Tcl_Obj* m_id;
+
+	static Tcl_Obj* m_pv;
+	static Tcl_Obj* m_move;
+	static Tcl_Obj* m_line;
+	static Tcl_Obj* m_best;
+	static Tcl_Obj* m_depth;
+	static Tcl_Obj* m_time;
+	static Tcl_Obj* m_hash;
 };
+
+Tcl_Obj* Engine::m_pv		= 0;
+Tcl_Obj* Engine::m_move		= 0;
+Tcl_Obj* Engine::m_line		= 0;
+Tcl_Obj* Engine::m_best		= 0;
+Tcl_Obj* Engine::m_depth	= 0;
+Tcl_Obj* Engine::m_time		= 0;
+Tcl_Obj* Engine::m_hash		= 0;
 
 }
 
@@ -345,35 +390,149 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case ::app::Engine::Probe_Successfull:
 		{
-			Tcl_Obj* objs[12];
 			ProbeEngine::Options const& options = engine.options();
 
-			objs[ 0] = Tcl_NewStringObj("ok", -1);
-			objs[ 1] = Tcl_NewStringObj(engine.identifier(), engine.identifier().size());
-			objs[ 2] = Tcl_NewStringObj(engine.author(), engine.author().size());
-			objs[ 3] = Tcl_NewStringObj(engine.shortName(), engine.shortName().size());
-			objs[ 4] = Tcl_NewIntObj(engine.maxMultiPV());
-			objs[ 5] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Chess_960));
-			objs[ 6] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Shuffle_Chess));
-			objs[ 7] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Pause));
-			objs[ 8] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Play_Other));
-			objs[ 9] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Hash_Size));
-			objs[10] = Tcl_NewBooleanObj(engine.hasFeature(::app::Engine::Feature_Clear_Hash));
-			objs[11] = Tcl_NewListObj(0, 0);
+			Tcl_Obj* objs[4];
+			Tcl_Obj* v[mstl::max(unsigned(options.size()), 100u)];
+			unsigned n = 0;
+
+			objs[0] = Tcl_NewStringObj("ok", -1);
+
+			if (!engine.identifier().empty())
+			{
+				v[n++] = Tcl_NewStringObj("Identifier", -1);
+				v[n++] = Tcl_NewStringObj(engine.identifier(), engine.identifier().size());
+			}
+			if (!engine.author().empty())
+			{
+				v[n++] = Tcl_NewStringObj("Author", -1);
+				v[n++] = Tcl_NewStringObj(engine.author(), engine.author().size());
+			}
+			if (!engine.email().empty())
+			{
+				v[n++] = Tcl_NewStringObj("Email", -1);
+				v[n++] = Tcl_NewStringObj(engine.email(), engine.email().size());
+			}
+			if (!engine.url().empty())
+			{
+				v[n++] = Tcl_NewStringObj("Url", -1);
+				v[n++] = Tcl_NewStringObj(engine.url(), engine.url().size());
+			}
+			if (!engine.shortName().empty())
+			{
+				v[n++] = Tcl_NewStringObj("Name", -1);
+				v[n++] = Tcl_NewStringObj(engine.shortName(), engine.shortName().size());
+			}
+			if (engine.elo())
+			{
+				v[n++] = Tcl_NewStringObj("Elo", -1);
+				v[n++] = Tcl_NewIntObj(engine.elo());
+			}
+
+			objs[1] = Tcl_NewListObj(n, v);
+			n = 0;
+
+			if (engine.hasFeature(::app::Engine::Feature_Multi_PV))
+			{
+				v[n++] = Tcl_NewStringObj("multiPV", -1);
+				v[n++] = Tcl_NewIntObj(engine.maxMultiPV());
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Chess_960))
+			{
+				v[n++] = Tcl_NewStringObj("chess960", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Shuffle_Chess))
+			{
+				v[n++] = Tcl_NewStringObj("shuffle", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Pause))
+			{
+				v[n++] = Tcl_NewStringObj("pause", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Ponder))
+			{
+				v[n++] = Tcl_NewStringObj("ponder", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Pause))
+			{
+				v[n++] = Tcl_NewStringObj("playOther", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Hash_Size))
+			{
+				Tcl_Obj* range[2] =
+				{
+					Tcl_NewIntObj(engine.minHashSize()), Tcl_NewIntObj(engine.maxHashSize())
+				};
+				v[n++] = Tcl_NewStringObj("hashSize", -1);
+				v[n++] = Tcl_NewListObj(2, range);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Threads))
+			{
+				Tcl_Obj* range[2] =
+				{
+					Tcl_NewIntObj(engine.minThreads()), Tcl_NewIntObj(engine.maxThreads())
+				};
+				v[n++] = Tcl_NewStringObj("threads", -1);
+				v[n++] = Tcl_NewListObj(2, range);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Clear_Hash))
+			{
+				v[n++] = Tcl_NewStringObj("clearHash", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Limit_Strength))
+			{
+				Tcl_Obj* range[2] = { Tcl_NewIntObj(engine.minElo()), Tcl_NewIntObj(engine.maxElo()) };
+				v[n++] = Tcl_NewStringObj("eloRange", -1);
+				v[n++] = Tcl_NewListObj(2, range);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Skill_Level))
+			{
+				Tcl_Obj* range[2] = { Tcl_NewIntObj(1), Tcl_NewIntObj(engine.maxSkillLevel()) };
+				v[n++] = Tcl_NewStringObj("skillLevel", -1);
+				v[n++] = Tcl_NewListObj(2, range);
+			}
+			if (engine.hasFeature(::app::Engine::Feature_Playing_Styles))
+			{
+				mstl::string const& playingStyles = engine.playingStyles();
+				char const* s = playingStyles.begin();
+				char const* e = playingStyles.end();
+				char const* p = ::strchr(s, ',');
+
+				Tcl_Obj* styles[100];
+				int k = 0;
+
+				for (	; p && s < e && k < 100; p = ::strchr(s = p + 1, ','))
+					styles[k++] = Tcl_NewStringObj(mstl::string(s, p), p - s);
+				styles[k++] = Tcl_NewStringObj(mstl::string(s, e), e - s);
+
+				v[n++] = Tcl_NewStringObj("styles", -1);
+				v[n++] = Tcl_NewListObj(k, styles);
+			}
+
+			objs[2] = Tcl_NewListObj(n, v);
+			n = 0;
 
 			for (ProbeEngine::Options::const_iterator i = options.begin(); i != options.end(); ++i)
 			{
-				Tcl_Obj* v[6];
+				Tcl_Obj* u[6];
 
-				v[0] = Tcl_NewStringObj(i->name, i->name.size());
-				v[1] = Tcl_NewStringObj(i->type, i->type.size());
-				v[2] = Tcl_NewStringObj(i->val,  i->val.size());
-				v[3] = Tcl_NewStringObj(i->dflt, i->dflt.size());
-				v[4] = Tcl_NewStringObj(i->var,  i->var.size());
-				v[5] = Tcl_NewStringObj(i->max,  i->max.size());
+				u[0] = Tcl_NewStringObj(i->name, i->name.size());
+				u[1] = Tcl_NewStringObj(i->type, i->type.size());
+				u[2] = Tcl_NewStringObj(i->val,  i->val.size());
+				u[3] = Tcl_NewStringObj(i->dflt, i->dflt.size());
+				u[4] = Tcl_NewStringObj(i->var,  i->var.size());
+				u[5] = Tcl_NewStringObj(i->max,  i->max.size());
 
-				Tcl_ListObjAppendElement(ti, objs[11], Tcl_NewListObj(U_NUMBER_OF(v), v));
+				v[n++] = Tcl_NewListObj(U_NUMBER_OF(u), u);
 			}
+
+			objs[3] = Tcl_NewListObj(n, v);
 
 			setResult(U_NUMBER_OF(objs), objs);
 			break;
@@ -392,7 +551,6 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	protocol		= stringFromObj(objc, objv, 3);
 	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
 	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 5);
-	Tcl_Obj*		bestMoveCmd	= objectFromObj(objc, objv, 6);
 
 	Engine::Protocol prot;
 
@@ -403,7 +561,10 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
 
-	Engine* engine = new Engine(prot, command, directory, isReadyCmd, updateCmd, bestMoveCmd);
+	Engine* engine = new Engine(prot, command, directory, isReadyCmd, updateCmd);
+
+	// TODO
+	// set options before activating
 	engine->activate();
 
 	unsigned id = tcl::app::scidb->addEngine(engine);
@@ -419,7 +580,10 @@ static int
 cmdStop(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned id = unsignedFromObj(objc, objv, 1);
-	tcl::app::scidb->removeEngine(id);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->removeEngine(id);
+
 	return TCL_OK;
 }
 
@@ -430,12 +594,15 @@ cmdAnalyze(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	cmd	= stringFromObj(objc, objv, 1);
 	unsigned		id		= unsignedFromObj(objc, objv, 2);
 
-	if (strcmp(cmd, "start") == 0)
-		setResult(tcl::app::scidb->startAnalysis(id));
-	else if (strcmp(cmd, "stop") == 0)
-		setResult(tcl::app::scidb->stopAnalysis(id));
-	else
-		return error(CmdAnalyize, 0, 0, "unknown command '%s'", cmd);
+	if (tcl::app::scidb->engineExists(id))
+	{
+		if (strcmp(cmd, "start") == 0)
+			setResult(tcl::app::scidb->startAnalysis(id));
+		else if (strcmp(cmd, "stop") == 0)
+			setResult(tcl::app::scidb->stopAnalysis(id));
+		else
+			return error(CmdAnalyize, 0, 0, "unknown command '%s'", cmd);
+	}
 
 	return TCL_OK;
 }
@@ -534,49 +701,52 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned 	id		= unsignedFromObj(objc, objv, 1);
 	char const*	attr	= stringFromObj(objc, objv, 2);
 
-	if (strcmp(attr, "multiPV") == 0)
+	if (tcl::app::scidb->engineExists(id))
 	{
-		tcl::app::scidb->engine(id)->changeNumberOfVariations(unsignedFromObj(objc, objv, 3));
-	}
-	else if (strcmp(attr, "hashSize") == 0)
-	{
-		tcl::app::scidb->engine(id)->changeHashSize(unsignedFromObj(objc, objv, 3));
-	}
-	else if (strcmp(attr, "options") == 0)
-	{
-		::app::Engine::Options options;
-
-		Tcl_Obj** objs;
-		int numObjs;
-
-		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 3), &numObjs, &objs) != TCL_OK)
-			return error(CmdSet, 0, 0, "invalid option list");
-
-		int n;
-		Tcl_Obj** v;
-
-		for (int i = 0; i < numObjs; ++i)
+		if (strcmp(attr, "multiPV") == 0)
 		{
-			if (Tcl_ListObjGetElements(ti, objs[i], &n, &v) != TCL_OK || n != 6)
+			tcl::app::scidb->engine(id)->changeNumberOfVariations(unsignedFromObj(objc, objv, 3));
+		}
+		else if (strcmp(attr, "hashSize") == 0)
+		{
+			tcl::app::scidb->engine(id)->changeHashSize(unsignedFromObj(objc, objv, 3));
+		}
+		else if (strcmp(attr, "options") == 0)
+		{
+			::app::Engine::Options options;
+
+			Tcl_Obj** objs;
+			int numObjs;
+
+			if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 3), &numObjs, &objs) != TCL_OK)
 				return error(CmdSet, 0, 0, "invalid option list");
 
-			::app::Engine::Option opt;
+			int n;
+			Tcl_Obj** v;
 
-			opt.name = Tcl_GetString(v[0]);
-			opt.type = Tcl_GetString(v[1]);
-			opt.val  = Tcl_GetString(v[2]);
-			opt.dflt = Tcl_GetString(v[3]);
-			opt.var  = Tcl_GetString(v[4]);
-			opt.max  = Tcl_GetString(v[5]);
+			for (int i = 0; i < numObjs; ++i)
+			{
+				if (Tcl_ListObjGetElements(ti, objs[i], &n, &v) != TCL_OK || n != 6)
+					return error(CmdSet, 0, 0, "invalid option list");
 
-			options.push_back(opt);
+				::app::Engine::Option opt;
+
+				opt.name = Tcl_GetString(v[0]);
+				opt.type = Tcl_GetString(v[1]);
+				opt.val  = Tcl_GetString(v[2]);
+				opt.dflt = Tcl_GetString(v[3]);
+				opt.var  = Tcl_GetString(v[4]);
+				opt.max  = Tcl_GetString(v[5]);
+
+				options.push_back(opt);
+			}
+
+			tcl::app::scidb->engine(id)->changeOptions(options);
 		}
-
-		tcl::app::scidb->engine(id)->changeOptions(options);
-	}
-	else
-	{
-		return error(CmdSet, 0, 0, "unknown attribute '%s'", attr);
+		else
+		{
+			return error(CmdSet, 0, 0, "unknown attribute '%s'", attr);
+		}
 	}
 
 	return TCL_OK;
@@ -586,7 +756,47 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdClearHash(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	tcl::app::scidb->engine(unsignedFromObj(objc, objv, 1))->clearHash();
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->engine(id)->clearHash();
+
+	return TCL_OK;
+}
+
+
+static int
+cmdKill(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->removeEngine(id);
+
+	return TCL_OK;
+}
+
+
+static int
+cmdPause(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->engine(id)->pause();
+
+	return TCL_OK;
+}
+
+
+static int
+cmdResume(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->engine(id)->resume();
+
 	return TCL_OK;
 }
 
@@ -601,9 +811,12 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdClearHash,	cmdClearHash);
 	createCommand(ti, CmdGet,			cmdGet);
 	createCommand(ti, CmdInfo,			cmdInfo);
+	createCommand(ti, CmdKill,			cmdKill);
 	createCommand(ti, CmdList,			cmdList);
 	createCommand(ti, CmdLog,			cmdLog);
+	createCommand(ti, CmdPause,		cmdPause);
 	createCommand(ti, CmdProbe,		cmdProbe);
+	createCommand(ti, CmdResume,		cmdResume);
 	createCommand(ti, CmdSet,			cmdSet);
 	createCommand(ti, CmdStart,		cmdStart);
 	createCommand(ti, CmdStop,			cmdStop);

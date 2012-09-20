@@ -72,6 +72,9 @@ protected:
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 
+	void pause() override;
+	void resume() override;
+
 	Result probeResult() const override;
 	unsigned probeTimeout() const override;
 

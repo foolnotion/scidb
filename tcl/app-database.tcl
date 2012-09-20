@@ -289,7 +289,7 @@ proc build {tab width height} {
 		-image $::icon::toolbarLock \
 		-tooltipvar [namespace current]::_Readonly \
 		-variable [namespace current]::Vars(flag:readonly) \
-		-command [namespace code [list ToggleReadOnly 1]] \
+		-command [namespace code ToggleReadOnly] \
 	]
 #	::toolbar::add $tbFile button \
 #		-image $::icon::toolbarHelp \
@@ -1972,10 +1972,10 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {} {}
 		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
 			0 0 fileExport {} {}
-		lappend specs command $mc::FileImport(pgn) \
-			[list ::menu::dbImport $top $file pgn] 1 0 filetypePGN {} {}
 		lappend specs command $mc::FileImport(db) \
 			[list ::menu::dbImport $top $file db] 1 0 databaseImport {} {}
+		lappend specs command $mc::FileImport(pgn) \
+			[list ::menu::dbImport $top $file pgn] 1 0 filetypePGN {} {}
 		if {$isClipbase || $ext eq "sci"} {
 			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
 			lappend specs command \
@@ -2025,7 +2025,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			lappend specs \
 				checkbutton \
 				$mc::ReadOnly \
-				[namespace code [list ToggleReadOnly 0]] \
+				[namespace code ToggleReadOnly] \
 				[expr {![::scidb::db::get writeable? $file]}] \
 				0 lock \
 				[namespace current]::Vars(flag:readonly) \
@@ -2111,11 +2111,9 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 }
 
 
-proc ToggleReadOnly {toggle} {
+proc ToggleReadOnly {} {
 	variable Vars
 	variable RecentFiles
-
-	if {$toggle} { set Vars(flag:readonly) [expr {!$Vars(flag:readonly)}] }
 
 	set file [::scidb::db::get name]
 	::scidb::db::set readonly $Vars(flag:readonly)

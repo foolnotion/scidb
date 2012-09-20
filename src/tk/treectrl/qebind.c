@@ -41,8 +41,8 @@
 #include <tk.h>
 #include "qebind.h"
 
-#define dbwin TreeCtrl_dbwin
-MODULE_SCOPE void dbwin(char *fmt, ...);
+#define dbwin printf // TreeCtrl_dbwin
+//MODULE_SCOPE void dbwin(char *fmt, ...);
 
 /*
  * The macro below is used to modify a "char" value (e.g. by casting

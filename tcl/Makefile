@@ -327,8 +327,10 @@ uninstall-text-scripts:
 		fi;                                                                                      \
 	fi
 
-install-pdf-images:
-	@echo "Install PDF images"
+install-images:
+	@echo "Install images"
+	@install -m 755 -d $(SHAREDIR)/images
+	@install -m 644 -p images/*.png $(SHAREDIR)/images
 	@install -m 755 -d $(SHAREDIR)/pdf
 	@install -m 755 -d $(SHAREDIR)/pdf/sets
 	@for i in `ls pdf/sets/`; do                                       \
@@ -346,8 +348,16 @@ install-pdf-images:
 		done;                                                           \
 	done
 
-uninstall-pdf-images:
-	@echo "Uninstall PDF images"
+uninstall-images:
+	@echo "Uninstall images"
+	@if [ -d $(SHAREDIR)/images ]; then                                                       \
+		for i in `ls images/*.*`; do                                                           \
+			rm -f $(SHAREDIR)/$$i;                                                              \
+		done;                                                                                  \
+		if [ "`find $(SHAREDIR)/images -type d -empty`" = "`ls -d $(SHAREDIR)/images`" ]; then \
+			rmdir $(SHAREDIR)/images;                                                           \
+		fi;                                                                                    \
+	fi
 	@if [ -d $(SHAREDIR)/pdf ]; then                                                                  \
 		if [ -d $(SHAREDIR)/pdf/sets ]; then                                                           \
 			for i in `ls pdf/sets/`; do                                                                 \
@@ -491,10 +501,10 @@ uninstall-fonts:
 
 install: install-scripts install-pieces install-cursors install-flags \
 	install-localizations install-textures install-themes install-text-scripts  \
-	install-pdf-images install-help install-fonts
+	install-images install-help install-fonts
 
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
-	uninstall-themes uninstall-text-scripts uninstall-textures uninstall-pdf-images    \
+	uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
 	uninstall-help uninstall-fonts
 	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
 		rmdir $(SHAREDIR);                                                     \

@@ -44,6 +44,7 @@ switch [tk windowingsystem] {
 }
 
 if {[tk windowingsystem] eq "x11"} {
+
 namespace eval fsbox {
 namespace eval mc {
 
@@ -57,12 +58,26 @@ set PortableDocumentFile	"Portable Document File"
 set HypertextFile				"Hypertext File"
 set TypesettingFile			"Typesetting File"
 set ImageFile					"Image File"
+set TextFile					"Text File"
+set BinaryFile					"Binary File"
+set ShellScript				"Shell Script"
+set Executable					"Executable"
+
 set LinkTo						"Link to %s"
 set LinkTarget					"Link target"
 set Directory					"Directory"
 
+set Title(open)				"Select File"
+set Title(save)				"Save File"
+set Title(dir)					"Choose Directory"
+
 set Content						"Content"
 set Open							"Open"
+
+set FileType(exe)				"Executables"
+set FileType(txt)				"Text files"
+set FileType(bin)				"Binary files"
+set FileType(log)				"Log files"
 
 }
 
@@ -119,6 +134,11 @@ array set FileType [list      \
 	.gif	ImageFile            \
 	.jpg	ImageFile            \
 	.jpeg	ImageFile            \
+	.txt	TextFile             \
+	.log	TextFile             \
+	.bin	BinaryFile           \
+	.exe	Executable           \
+	.sh	ShellScript          \
 ]
 
 
@@ -187,7 +207,7 @@ proc dragCursors {{ext ""}} {
 		set DragCursor {}
 
 		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .pgn .gz .zip} db
-											{.pdf .html .htm .tex .ltx} document
+											{.pdf .html .htm .tex .ltx .bin .txt} document
 											{.ppm .png .gif .jpg .jpeg} image } {
 			if {[tk windowingsystem] eq "x11"} {
 				set accept [file join $::scidb::dir::share cursor drag-$name-accept-32x32.xcur]
@@ -247,6 +267,7 @@ proc Open {type args} {
 		-class			{}
 		-databases		1
 		-filetypes		{}
+		-title			""
 	}
 
 	set opts(-initialdir) {}
@@ -255,20 +276,16 @@ proc Open {type args} {
 	array set data $args
 	array set opts $args
 
-	if {[info exists LastFolders($class:$data(-class))]} {
+	if {[string length $data(-class)] && [info exists LastFolders($class:$data(-class))]} {
 		set opts(-initialdir) $LastFolders($class:$data(-class))
 	}
 
 	set scidbFileType 0
-	set knownFileType 0
+	set knownFileType 1
 	foreach entry $data(-filetypes) {
 		set ft [lindex $entry 1]
-		if {".sci" in $ft || ".pgn" in $ft} {
+		if {".sci" in $ft || ".si4" in $ft || ".pgn" in $ft} {
 			set scidbFileType 1
-			set knownFileType 1
-			break;
-		} elseif {".png" in $ft} {
-			set knownFileType 1
 			break;
 		}
 	}
@@ -353,7 +370,7 @@ proc Open {type args} {
 			-inspectcommand [namespace code Inspect] \
 			-mapextcommand [namespace code MapExtension] \
 			-isusedcommand [namespace code IsUsed] \
-	} elseif  {$knownFileType} {
+	} elseif {$knownFileType} {
 		lappend options -inspectcommand [namespace code Inspect]
 	}
 
@@ -379,6 +396,7 @@ proc Open {type args} {
 	}
 
 	wm protocol $w WM_DELETE_WINDOW [list set [namespace current]::Priv($type:$w:result) {}]
+	if {[string length $data(-title)] == 0} { set data(-title) $mc::Title($type) }
 	wm title $w $data(-title)
 
 	if {$create} {
@@ -450,7 +468,9 @@ proc Open {type args} {
 	::ttk::releaseGrab $w
 	wm withdraw $w
 	set Priv(dialog) {}
-	set LastFolders($class:$data(-class)) [::fsbox::lastFolder $w.fsbox]
+	if {[string length $data(-class)]} {
+		set LastFolders($class:$data(-class)) [::fsbox::lastFolder $w.fsbox]
+	}
 	::fsbox::cleanup $w.fsbox
 
 	lassign $Priv($type:$w:result) path encoding
@@ -656,7 +676,10 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				tk::label $f.tmodified -text $mtime
 			} else {
 				set ext [file extension $filename]
-				if {![info exists FileType($ext)]} { return }
+				if {![info exists FileType($ext)]} {
+					if {[string length $ext] > 0 || ![file executable $filename]} { return }
+					set ext .exe
+				}
 				set ctime [::locale::formatTime [clock format $stat(ctime) -format {%Y.%m.%d %H:%M:%S}]]
 				# TODO: should we sum the sizes of all related files?
 				set size [::locale::formatFileSize $stat(size)]

@@ -225,7 +225,7 @@ Board::countPieces(color::ID color) const
 
 inline
 Move
-Board::parseMove(mstl::string const& algebraic, move::Constraint flag) const
+Board::parseMove(char const* algebraic, move::Constraint flag) const
 {
 	Move m;
 	return parseMove(algebraic, m, flag) ? m : Move::empty();

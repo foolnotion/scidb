@@ -291,6 +291,7 @@ proc WidgetProc {w command args} {
 				-squeeze		no
 				-steady		yes
 				-header		""
+				-minwidth	0
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -339,12 +340,21 @@ proc WidgetProc {w command args} {
 				set width [expr {$width + 2*$Priv(padx) + $Priv(padding)}]
 				$t column configure $id -width $width
 			}
+			if {$opts(-minwidth)} {
+				if {$type eq "image"} {
+					set width $opts(-minwidth)
+				} else {
+					set width [expr {$opts(-minwidth)*$charwidth}]
+				}
+				set opts(-minwidth) [expr {$width + 2*$Priv(padx) + $Priv(padding)}]
+			}
 			lappend Priv(colwidth) $width
 			lappend Priv(columns) $id
 			lappend Priv(types) $type
 			set Priv(foreground:$id) $opts(-foreground)
 			set Priv(font:$id) $opts(-font)
 			set Priv(font2:$id) $opts(-font2)
+			set Priv(minwidth:$id) $opts(-minwidth)
 			switch -- $type {
 				image		{ set Priv(type:$id) elemImg }
 				text		{ set Priv(type:$id) elemTxt }
@@ -454,7 +464,6 @@ proc WidgetProc {w command args} {
 			foreach id $Priv(columns) {
 				set item [lindex $args [incr col]]
 				set style [lindex $styles $col]
-				set textOpts {}
 				if {[llength $style] == 0} { set style $Priv(type:$id) }
 				if {[string length $Priv(foreground:$id)] && [llength $opts(-span)] == 0} {
 					set fill [list $Priv(foreground:$id) enabled]
@@ -467,6 +476,7 @@ proc WidgetProc {w command args} {
 				} else {
 					set font $opts(-font)
 				}
+				set textOpts [list -fill $fill -font $font]
 				if {[llength $opts(-font2)]} {
 					lappend textOpts -font2 $opts(-font2)
 				} elseif {[llength $Priv(font2:$id)]} {
@@ -478,22 +488,21 @@ proc WidgetProc {w command args} {
 							set isImage 0
 							catch { set isImage [expr {[image width $item] != -9999999}] }
 							if {$isImage} {
-								$t item element configure $index $id elemTxt -text ""
+								$t item element configure $index $id elemTxt -text "" {*}$textOpts
 								$t item element configure $index $id elemImg -image $item
 							} else {
 								$t item element configure $index $id elemImg -image ""
-								$t item element configure $index $id elemTxt \
-									-text $item -fill $fill -font $font {*}$textOpts
+								$t item element configure $index $id elemTxt -text $item {*}$textOpts
 							}
 						} else {
+							$t item element configure $index $id elemTxt -text "" {*}$textOpts
 							$t item element configure $index $id elemImg -image ""
-							$t item element configure $index $id elemTxt -text ""
 						}
 					}
 					elemCom {
 						$t item element configure $index $id \
 							elemImg -image [lindex $item 0] + \
-							elemTxt -text [lindex $item 1] -fill $fill -font $font {*}$textOpts \
+							elemTxt -text [lindex $item 1] {*}$textOpts \
 							;
 					}
 				}
@@ -508,7 +517,9 @@ proc WidgetProc {w command args} {
 		}
 
 		resize {
-			foreach arg $args { if {$arg ni {-width -height -force}} { error "unknown option \"$arg\"" } }
+			foreach arg $args {
+				if {$arg ni {-width -height -force -minwidth}} { error "unknown option \"$arg\"" }
+			}
 			set checkScrollbar 0
 			if {"-height" in $args && "-width" ni $args} {
 				ComputeHeight $w
@@ -599,6 +610,7 @@ proc WidgetProc {w command args} {
 						if {[string length $item]} {
 							set isImage 0
 							catch { set isImage [expr {[image width $item] != -9999999}] }
+							lassign {"" ""} txt img
 							if {$isImage} {
 								$t item element configure $index $id elemTxt -text ""
 								$t item element configure $index $id elemImg -image $item
@@ -614,7 +626,7 @@ proc WidgetProc {w command args} {
 					elemCom {
 						$t item element configure $index $id \
 							elemImg -image [lindex $item 0] + \
-							elemTxt -text [lindex $item 1] -fill $fill -font $font {*}$textOpts \
+							elemTxt -text [lindex $item 1]
 							;
 					}
 				}
@@ -991,6 +1003,7 @@ proc ComputeWidth {cb} {
 	if {[llength $Priv(expand)] == 0} {
 		set Priv(expand) [lindex $Priv(columns) end]
 	}
+
 	$t column squeeze $Priv(expand)
 	$t column fit $Priv(expand)
 
@@ -999,7 +1012,7 @@ proc ComputeWidth {cb} {
 		foreach id $Priv(columns) {
 			set w [$t column cget $id -width]
 			if {[llength $w] == 0} { set w [$t column width $id] }
-			incr width $w
+			incr width [max $w $Priv(minwidth:$id)]
 		}
 		set maxwidth $Priv(maxwidth)
 		set minwidth $Priv(minwidth)

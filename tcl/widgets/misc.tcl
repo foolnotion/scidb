@@ -218,10 +218,13 @@ proc dialogRaise {dlg} {
 
 proc dialogButtons {dlg buttons args} {
 	variable ButtonOrder
+	variable Specs
 
 	array set opts {
-		-default {}
-		-icons	yes
+		-default 	{}
+		-icons		yes
+		-alignment	center
+		-justify		center
 	}
 	array set opts $args
 
@@ -236,7 +239,7 @@ proc dialogButtons {dlg buttons args} {
 		} else {
 			pack $dlg.__sep -fill x -side bottom
 		}
-		pack $dlg.__buttons -anchor center -side bottom -before $dlg.__sep
+		pack $dlg.__buttons -anchor center -side bottom -before $dlg.__sep -fill x -expand 0
 	}
 
 	set entries {}
@@ -246,6 +249,7 @@ proc dialogButtons {dlg buttons args} {
 		lappend entries [list $type $var $icon [lsearch -exact $ButtonOrder $type]]
 	}
 	set entries [lsort -index 3 -integer $entries]
+	set Specs(alignment:$dlg) $opts(-alignment)
 
 	foreach entry $entries {
 		lassign $entry type var icon
@@ -256,7 +260,8 @@ proc dialogButtons {dlg buttons args} {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} {
 					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
-					pack $sep -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+					PackDialogButton $dlg $sep left
+					set Specs(justify:$sep) $opts(-justify)
 				}
 				set var [namespace current]::mc::Ok
 			}
@@ -281,7 +286,8 @@ proc dialogButtons {dlg buttons args} {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} {
 					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
-					pack $sep -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+					PackDialogButton $dlg $sep left
+					set Specs(justify:$sep) $opts(-justify)
 				}
 				set var [namespace current]::mc::Help
 			}
@@ -295,9 +301,11 @@ proc dialogButtons {dlg buttons args} {
 
 		dialogButtonsSetup $dlg $type $var $opts(-default)
 		bind $w <Return> "event generate $w <Key-space>; break"
-		pack $w -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+		set Specs(justify:$w) $opts(-justify)
+		PackDialogButton $dlg $w left
 	}
 
+	DoAlignment $dlg
 	if {$opts(-icons)} { dialogButtonSetIcons $dlg }
 }
 
@@ -334,15 +342,44 @@ proc dialogButtonSetIcons {dlg} {
 }
 
 
-proc dialogButtonAdd {dlg type labelvar {icon {}}} {
+proc dialogButtonAdd {dlg type labelvar icon args} {
+	variable Specs
+
+	array set opts {
+		-justify		center
+		-side			left
+		-position	end
+	}
+	array set opts $args
+
 	if {![winfo exists $dlg.__buttons]} { dialogButtons $dlg {} }
 	set w [::ttk::button $dlg.$type -class TButton]
 	if {[llength $icon]} {
 		$w configure -compound left -image $icon
 	}
+	set Specs(justify:$w) $opts(-justify)
 	dialogButtonsSetup $dlg $type $labelvar
 	bind $w <Return> "event generate $w <Key-space>; break"
-	pack $w -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side left
+	PackDialogButton $dlg $w $opts(-side) $opts(-position)
+	DoAlignment $dlg
+}
+
+
+proc dialogButtonsPack {w args} {
+	variable Specs
+
+	array set opts {
+		-justify		center
+		-side			left
+		-position	end
+	}
+	array set opts $args
+
+	set dlg [winfo parent $w]
+	if {![winfo exists $dlg.__buttons]} { dialogButtons $dlg {} }
+	set Specs(justify:$w) $opts(-justify)
+	PackDialogButton $dlg $w $opts(-side) $opts(-position)
+	DoAlignment $dlg
 }
 
 
@@ -441,6 +478,13 @@ proc buttonSetText {w var args} {
 }
 
 
+proc setBoldFont {w} {
+	set font [$w cget -font]
+	set bold [list [font configure $font -family]  [font configure $font -size] bold]
+	$w configure -font $font
+}
+
+
 proc busyCursor {w {state on}} {
 	variable BusyCmd
 	variable Priv
@@ -520,6 +564,68 @@ proc menuItemHighlightSecond {menu} {
 		$menu entryconfigure $index \
 			-background [option get $menu activeBackground Menu] \
 			-foreground [option get $menu activeForeground Menu]
+	}
+}
+
+
+proc PackDialogButton {dlg btn side {position {}}} {
+	set slaves [pack slaves $dlg.__buttons]
+	set options {}
+	switch $position {
+		start	{ lappend options -before [lindex $slaves 0] }
+		end	{ lappend options -after [lindex $slaves end] }
+	}
+	pack $btn -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side $side {*}$options
+}
+
+
+proc DoAlignment {dlg} {
+	variable Specs
+
+	set slaves [pack slaves $dlg.__buttons]
+	if {[llength $slaves] == 0} { return }
+
+	switch $Specs(alignment:$dlg) {
+		left {
+			pack configure {*}$slaves -expand 0 -anchor w
+			set i 0
+			while {$i < [llength $slaves] && $Specs(justify:[lindex $slaves $i]) eq "right"} {
+				incr i
+			}
+			if {$i < [llength $slaves]} {
+				pack configure [lindex $slaves $i] -expand 1
+			}
+		}
+		right {
+			pack configure {*}$slaves -expand 0 -anchor e
+			set i 0
+			while {$i < [llength $slaves] && $Specs(justify:[lindex $slaves $i]) eq "left"} {
+				incr i
+			}
+			if {$i < [llength $slaves]} {
+				pack configure [lindex $slaves $i] -expand 1
+			}
+		}
+		center {
+			if {[llength $slaves] == 1} {
+				pack configure {*}$slaves -expand 1 -anchor center
+			} else {
+				pack configure {*}$slaves -expand 0 -anchor w
+				set i 0
+				while {$i < [llength $slaves] && $Specs(justify:[lindex $slaves $i]) eq "right"} {
+					incr i
+				}
+				if {$i < [llength $slaves]} {
+					pack configure [lindex $slaves $i] -expand 1 -anchor e
+				}
+				set i [expr {[llength $slaves] - 1}]
+				while {$i >= 0 && $Specs(justify:[lindex $slaves $i]) ne "right"} {
+					incr i -1
+				}
+				if {$i < 0} { set i end }
+				pack configure [lindex $slaves $i] -expand 1 -anchor w
+			}
+		}
 	}
 }
 

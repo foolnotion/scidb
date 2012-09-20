@@ -2741,7 +2741,21 @@ Game::dumpHistory(mstl::string& result) const
 	{
 		if (!result.empty())
 			result.append(' ');
-		hist[i].printAlgebraic(result);
+
+		Move const& move = hist[i];
+
+		if (m_idn == chess960::StandardIdn && move.isCastling())
+		{
+			sq::Fyle fyle = move.isShortCastling() ? sq::FyleG : sq::FyleC;
+
+			// UCI requires "e1g1" instead of our notation "e1h1"
+			result += sq::printAlgebraic(move.from());
+			result += sq::printAlgebraic(sq::make(fyle, sq::rank(move.to())));
+		}
+		else
+		{
+			move.printAlgebraic(result);
+		}
 	}
 
 	return hist.size();

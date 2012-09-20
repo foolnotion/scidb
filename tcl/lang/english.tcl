@@ -766,20 +766,23 @@
 
 ### engine #############################################################
 ::engine::mc::Information				"Information"
+::engine::mc::Features					"Features"
 ::engine::mc::Options					"Options"
 
 ::engine::mc::Name						"Name"
 ::engine::mc::Identifier				"Identifier"
 ::engine::mc::Author						"Author"
+::engine::mc::Webpage					"Webpage"
+::engine::mc::Email						"Email"
 ::engine::mc::Country					"Country"
 ::engine::mc::Rating						"Rating"
 ::engine::mc::Logo						"Logo"
 ::engine::mc::Protocol					"Protocol"
 ::engine::mc::Parameters				"Parameters"
 ::engine::mc::Command					"Command"
+::engine::mc::Directory					"Directory"
 ::engine::mc::Variants					"Variants"
 ::engine::mc::LastUsed					"Last used"
-::engine::mc::Frequency					"Frequency"
 
 ::engine::mc::Variant(standard)		"Standard Chess"
 ::engine::mc::Variant(chess960)		"Chess 960"
@@ -789,12 +792,13 @@
 ::engine::mc::ImageFiles				"Image files"
 ::engine::mc::SelectEngine				"Select Engine"
 ::engine::mc::SelectEngineLogo		"Select Engine Logo"
-::engine::mc::Executables				"Executables"
 ::engine::mc::EngineLog					"Engine Console"
 ::engine::mc::Probing					"Probing"
 ::engine::mc::NeverUsed					"never used"
 ::engine::mc::OpenFsbox					"Open File Selection Dialog"
 ::engine::mc::ResetToDefault			"Reset to default"
+::engine::mc::ShowInfo					"Show \"Info\""
+::engine::mc::TotalUsage				"%s times in total"
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine"
 ::engine::mc::EngineAlreadyExists	"An entry with this engine already exists."
@@ -804,6 +808,20 @@
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?"
 ::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists."
+::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature."
+
+::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
+::engine::mc::FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
+::engine::mc::FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
+::engine::mc::FeatureDetail(hashSize)		"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
+::engine::mc::FeatureDetail(clearHash)		"The user may clear the hash tables whlle the engine is running."
+::engine::mc::FeatureDetail(threads)		"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
+::engine::mc::FeatureDetail(eloRange)		"The engine is able to limit its strength to a specific Elo number between %min-%max."
+::engine::mc::FeatureDetail(skillLevel)	"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
+::engine::mc::FeatureDetail(ponder)			"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
+::engine::mc::FeatureDetail(chess960)		"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
+::engine::mc::FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when current position is a Chess960 position."
+::engine::mc::FeatureDetail(styles)			"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"
@@ -1823,12 +1841,26 @@
 ::dialog::fsbox::mc::HypertextFile			"Hypertext File"
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
 ::dialog::fsbox::mc::ImageFile				"Image File"
+::dialog::fsbox::mc::TextFile					"Text File"
+::dialog::fsbox::mc::BinaryFile				"Binäry File"
+::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
+::dialog::fsbox::mc::Executable				"Executable" ;# NEW
+
 ::dialog::fsbox::mc::LinkTo					"Link to %s"
 ::dialog::fsbox::mc::LinkTarget				"Link target"
 ::dialog::fsbox::mc::Directory				"Directory"
 
+::dialog::fsbox::mc::Title(open)				"Select File"
+::dialog::fsbox::mc::Title(save)				"Save File"
+::dialog::fsbox::mc::Title(dir)				"Choose Directory"
+
 ::dialog::fsbox::mc::Content					"Content"
 ::dialog::fsbox::mc::Open						"Open"
+
+::dialog::fsbox::mc::FileType(exe)			"Executables"
+::dialog::fsbox::mc::FileType(txt)			"Text files"
+::dialog::fsbox::mc::FileType(log)			"Log files"
+::dialog::fsbox::mc::FileType(bin)			"Binary files"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"

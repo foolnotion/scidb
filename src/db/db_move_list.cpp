@@ -127,12 +127,14 @@ MoveList::print(mstl::string& result, unsigned halfMoveNo) const
 	if (mstl::is_odd(halfMoveNo))
 		result.append("..", 2);
 
-	move.printSan(result);
+	move.printSan(result, encoding::Utf8);
 	++halfMoveNo;
 
 	for (unsigned i = 1; i < m_size; ++i, ++halfMoveNo)
 	{
 		Move const& move = m_buffer[i];
+
+		result.append(' ');
 
 		if (mstl::is_even(halfMoveNo))
 		{
@@ -140,8 +142,7 @@ MoveList::print(mstl::string& result, unsigned halfMoveNo) const
 			result.append('.');
 		}
 
-		result.append(' ');
-		move.printSan(result);
+		move.printSan(result, encoding::Utf8);
 	}
 }
 

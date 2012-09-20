@@ -193,6 +193,7 @@ proc fsbox {w type args} {
 		-doublebuffer				window
 		-savemode					0
 		-multiple					0
+		-checkexistence			1
 		-initialdir					{}
 		-initialfile				{}
 		-showhidden					{}
@@ -234,7 +235,7 @@ proc fsbox {w type args} {
 							validatecommand deletecommand renamecommand duplicatecommand okcommand
 							cancelcommand inspectcommand initialfile bookmarkswidth customcommand
 							customicon customtooltip customfiletypes helpcommand helpicon helplabel
-							isusedcommand actions mapextcommand formattimecmd} {
+							isusedcommand actions mapextcommand formattimecmd checkexistence} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -481,6 +482,7 @@ proc reset {w type args} {
 
 	array set opts {
 		-multiple					0 
+		-checkexistence			1
 		-initialdir					""
 		-initialfile				""
 		-filetypes					{}
@@ -512,7 +514,8 @@ proc reset {w type args} {
 	foreach option {	multiple defaultextension defaultencoding filetypes fileicons
 							filecursors fileencodings showhidden sizecommand validatecommand
 							selectencodingcommand deletecommand renamecommand duplicatecommand
-							okcommand cancelcommand inspectcommand mapextcommand initialfile} {
+							okcommand cancelcommand inspectcommand mapextcommand initialfile
+							checkexistence} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
@@ -561,6 +564,7 @@ proc reset {w type args} {
 	set Vars(tip:forward) ""
 	set Vars(tip:backward) ""
 	set Vars(startup) 1
+	if {$type eq "dir"} { set Vars(initialfile) $Vars(folder) }
 
 	CheckInitialFile $w
 	if {[string length $opts(-initialdir)] && $opts(-initialdir) ne $Vars(folder)} {
@@ -1622,22 +1626,26 @@ proc Activate {w {exit no}} {
 
 	switch $Vars(type) {
 		dir {
-			foreach dir $files {
-				if {![file isdirectory $dir]} {
-					set msg [format [Tr DirectoryDoesNotExist] $file]
-					::dialog::error -parent $Vars(widget:main) -message $msg
-					return
+			if {$Vars(checkexistence)} {
+				foreach dir $files {
+					if {![file isdirectory $dir]} {
+						set msg [format [Tr DirectoryDoesNotExist] [file tail $file]]
+						::dialog::error -parent $Vars(widget:main) -message $msg
+						return
+					}
 				}
 			}
 		}
 
 		open {
-			foreach file $files {
-				if {![file exists $file]} {
-					set msg [format [Tr FileDoesNotExist] $file]
-					::dialog::error -parent $Vars(widget:main) -message $msg
-					filelist::RefreshFileList $w
-					return
+			if {$Vars(checkexistence)} {
+				foreach file $files {
+					if {![file exists $file]} {
+						set msg [format [Tr FileDoesNotExist] [file tail $file]]
+						::dialog::error -parent $Vars(widget:main) -message $msg
+						filelist::RefreshFileList $w
+						return
+					}
 				}
 			}
 		}
@@ -1650,10 +1658,12 @@ proc Activate {w {exit no}} {
 					return
 				}
 				if {[CheckIfInUse $w $file overwrite]} { return }
-				if {[file exists $file]} {
-					set msg [format [Tr FileAlreadyExists] [file tail $file]]
-					set reply [::dialog::question -parent $Vars(widget:main) -message $msg]
-					if {$reply ne "yes"} { return }
+				if {$Vars(checkexistence)} {
+					if {[file exists $file]} {
+						set msg [format [Tr FileAlreadyExists] [file tail $file]]
+						set reply [::dialog::question -parent $Vars(widget:main) -message $msg]
+						if {$reply ne "yes"} { return }
+					}
 				}
 			}
 		}
@@ -3066,7 +3076,6 @@ proc SwitchHidden {w} {
 	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
-	set Options(show:hidden) [expr {!$Options(show:hidden)}]
 	if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
 	toolbar::childconfigure $Vars(widget:hidden) -image [set icon::16x16::${ipref}locked]
 	$Vars(choosedir) showhidden $Options(show:hidden)

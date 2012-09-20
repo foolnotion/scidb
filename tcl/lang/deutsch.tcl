@@ -767,20 +767,23 @@
 
 ### engine #############################################################
 ::engine::mc::Information				"Informationen"
+::engine::mc::Features					"Besonderheiten"
 ::engine::mc::Options					"Einstellungen"
 
 ::engine::mc::Name						"Name"
 ::engine::mc::Identifier				"Kennung"
 ::engine::mc::Author						"Autor"
+::engine::mc::Webpage					"Internetseite"
+::engine::mc::Email						"E-Mail"
 ::engine::mc::Country					"Land"
 ::engine::mc::Rating						"Wertungszahl"
 ::engine::mc::Logo						"Logo"
 ::engine::mc::Protocol					"Protokoll"
 ::engine::mc::Parameters				"Parameter"
 ::engine::mc::Command					"Befehl"
+::engine::mc::Directory					"Verzeichnis"
 ::engine::mc::Variants					"Schachvarianten"
 ::engine::mc::LastUsed					"Zuletzt benutzt"
-::engine::mc::Frequency					"Häufigkeit"
 
 ::engine::mc::Variant(standard)		"Standardschach"
 ::engine::mc::Variant(chess960)		"Schach-960"
@@ -790,12 +793,13 @@
 ::engine::mc::ImageFiles				"Bilddateien"
 ::engine::mc::SelectEngine				"Programm auswählen"
 ::engine::mc::SelectEngineLogo		"Logo auswählen"
-::engine::mc::Executables				"Ausführbare Dateien"
 ::engine::mc::EngineLog					"Schachprogramm-Konsole"
 ::engine::mc::Probing					"Erprobung"
 ::engine::mc::NeverUsed					"nie benutzt"
 ::engine::mc::OpenFsbox					"Dateiauswahldialog öffnen"
 ::engine::mc::ResetToDefault			"Auf Standardwert setzen"
+::engine::mc::ShowInfo					"Zeige \"Info\""
+::engine::mc::TotalUsage				"%s mal insgesamt"
 
 ::engine::mc::ConfirmNewEngine		"Neuen Eintrag bestätigen"
 ::engine::mc::EngineAlreadyExists	"Ein Eintrag mit diesem Programm existiert bereits."
@@ -805,6 +809,20 @@
 ::engine::mc::DiscardChanges			"Der aktuelle Posten wurde verändert.\n\nDie Änderungen tatsächlich verwerfen?"
 ::engine::mc::ReallyDelete				"Den Eintrag für das Programm '%s' tatsächlich löschen?"
 ::engine::mc::EntryAlreadyExists		"Ein Eintrag mit dem Namen '%s' existiert bereits."
+::engine::mc::NoFeaturesAvailable	"Dieses Schachprogramm bietet keinerlei Besonderheiten."
+
+::engine::mc::FeatureDetail(multiPV)		"Dies erlaubt Auswertungen und die wichtigsten Varianten (PVs) von den höchstbewerteten Zugkandidaten zu sehen. Dieses Schachprogramm kann bis zu %s Varianten zeigen."
+::engine::mc::FeatureDetail(pause)			"Dieses Kennzeichen erlaubt eine korrekte Behandlung von Pause/Wiederaufnahme: das Schachprogramm vebraucht während einer Pause keine signifikante Prozessorzeit. Die aktuelle Berechnung (auch Pondering) ist ausgesetzt, und die Uhren beider Spieler sind angehalten."
+::engine::mc::FeatureDetail(playOther)		"Das Schachprogramm kann deinen Zug spielen. Deine Uhr tickt während das Schachprogramm den Zug berechnet."
+::engine::mc::FeatureDetail(hashSize)		"Dieses Kennzeichen erlaubt dem Schachprogramm mitzuteilen wieviel Speicher maximal für die Hashtabellen benutzt werden darf. Das vorliegende Schachprogramm erlaubt eine Zuteilung zwischen %min und %max MB."
+::engine::mc::FeatureDetail(clearHash)		"Der Anwender kann die Hastabellen leeren während das Schachprogramm läuft."
+::engine::mc::FeatureDetail(threads)		"Dies erlaubt die Anzahl der Threads (Unterprozesse) zu konfigurieren. Das vorliegende Schachprogramm erlaubt zwischen %min und %max Threads."
+::engine::mc::FeatureDetail(eloRange)		"Die Schachprogramm kann auf eine bestimmte Elo-Zahl im Bereich %min-%max gesetzt werden."
+::engine::mc::FeatureDetail(skillLevel)	"Der Spielniveau des Schachprogramms kann verringert werden um es leichter schlagen zu können."
+::engine::mc::FeatureDetail(ponder)			"Pondering bedeutet, daß das Schachprogramm seinen nächsten Zug berechnet während der Anwender am Zug ist. Damit hat es einen gewissen Vorausberechnungsvorteil."
+::engine::mc::FeatureDetail(chess960)		"Schach-960 (oder \"Fischer Random Chess\") ist eine Schachvariante. Das Spiel startet mit dem gleichen Brett und den gleichen Figuren wie im Standardschach, aber die Startposition der Figuren auf der Grundreihe ist zufällig, mit ein paar Einschränkungen die die vollständige Rochaderechte garantieren. Diese Einschränkung resultiert zu 960 verschiedenen Startpositionen."
+::engine::mc::FeatureDetail(shuffle)		"Dies ist die übergeordenete Variante von Schach-960. Es exisitieren keine Einschränkungen bzgl. der Anordnung auf den Grundreihen. Die Rochade ist nur möglich wenn eine Schach-960-Position vorhanden ist."
+::engine::mc::FeatureDetail(styles)			"Dieses Schachprogramm bietet verschiedene Spielweisen an, nämlich %s. Siehe im Handbuch für eine Erklärung der verschiedenen Weisen."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"
@@ -1824,12 +1842,26 @@
 ::dialog::fsbox::mc::HypertextFile			"Hypertext-Datei"
 ::dialog::fsbox::mc::TypesettingFile		"Textsatz-Datei"
 ::dialog::fsbox::mc::ImageFile				"Bild-Datei"
+::dialog::fsbox::mc::TextFile					"Text-Datei"
+::dialog::fsbox::mc::BinaryFile				"Binärdatei"
+::dialog::fsbox::mc::ShellScript				"Shellskript"
+::dialog::fsbox::mc::Executable				"Ausführbare Datei"
+
 ::dialog::fsbox::mc::LinkTo					"Link auf %s"
 ::dialog::fsbox::mc::LinkTarget				"Linkziel"
 ::dialog::fsbox::mc::Directory				"Verzeichnis"
 
+::dialog::fsbox::mc::Title(open)				"Datei auswählen"
+::dialog::fsbox::mc::Title(save)				"Datei speichern"
+::dialog::fsbox::mc::Title(dir)				"Verzeichnis wählen"
+
 ::dialog::fsbox::mc::Content					"Inhalt"
 ::dialog::fsbox::mc::Open						"Geöffnet"
+
+::dialog::fsbox::mc::FileType(exe)			"Ausführbare Dateien"
+::dialog::fsbox::mc::FileType(txt)			"Textdateien"
+::dialog::fsbox::mc::FileType(log)			"Log-Dateien"
+::dialog::fsbox::mc::FileType(bin)			"Binärdateien"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"

@@ -819,6 +819,23 @@ namespace eval 16x16 {
 		A9gXN7VZqEzfnkv8+s3nn6a8xmZKuV0A/gNVe7YzwxQQ1QAAAABJRU5ErkJggg==
 	}]
 
+	set resume [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABdFBMVEUAAACHu6WJvKYMNCMM
+		NSMNOCWNvqmVw7Ciy7mmzbwdbEo/iWlGjm+YxbGkzLu82s1RlnhUmHthooZopoumzbyx1MVO
+		lHZzrZR+tZ2x1MW62cyaxrOoz75jo4dmpYq62cy82s2oz7621shhooZ8s5uNvqmLvaigyriv
+		08NlpIlrqY5tqpBzrZSEuKF+tZ2RwayCt6CVw7CJvKagyriYxbGgyrimzbxlpIlmpYpxrJN0
+		r5V0r5WNvqlcnoJfoYR6spqLvahen4NxrJNjo4d+tZ1zrZR8s5sselgvfFswfVwxfl0zf140
+		gF81gWA3gmI4g2M5hGQ8h2Y+iGg/iWlCi2tDjG1FjW5Gjm9Ij3BJkXJLknNMk3ROlHZPlXdR
+		lnhSl3lWmnxZnH9anYBcnoJen4NhooZlpIlopotrqY5vq5FxrJN0r5V2sJd8s5t+tZ2Ct6CH
+		u6WLvajI4dbK4tjN49rP5dvR5t3U59/n8u7q9O/s9fHv9vPGH1a0AAAAR3RSTlMAAQEGBgYI
+		CAkJHh4eIiIoWFhZWWVlZ2lpaWlwcHV2fX2Ghqaqqq+vvsTIyMnJy8vNzdLS2dnc8PDw8Pb2
+		9/f39/j4+vr8/CLGo6sAAADXSURBVBgZBcHLToNAAAXQOzOUUmhRrI/EbpSYuGji/3+LC2M0
+		atJqawAHKDP3eo4BYFdVVqLpfxsBBlhUm+pukns7fhwHOMxv620xhTBkVyl9dLi4f4gkSIbC
+		dN6V9VN0Z/PRrMswnrNLyuqkfDk6FEn/N1SlLWpSEGko6aaw+cQoQBBAjHlCMQKgASSJ1idB
+		gkRAijNv2xdEAaSMiF1ru32m3ocQht5zse8M1o+bCYQoprvng8MkXI4iqfzr81sO9E1vr+2s
+		+Hl/PUQYAMiXqxSntvMA/gHR84pKgbMM0AAAAABJRU5ErkJggg==
+	}]
+
 	set search [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QAAAAAAAD5Q7t/AAAA
 		CXBIWXMAAABIAAAASABGyWs+AAADPElEQVQ4y4XS329TdRjH8c/39HRde360w/5gG2vLTjc0
@@ -1761,38 +1778,38 @@ namespace eval 16x16 {
 		JI4AAAAASUVORK5CYII=
 	}]
 
-	set folder [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-		CXBIWXMAAG6BAABugQGE0alBAAAAB3RJTUUH0wsDCgMTnx/NFQAAAqZJREFUeNqlks1rXVUU
-		xX/7nHuT+/JekheSVhAUOlBKRB2oEwsSRCdKBqJ/gKIUB5aCDpyXShE6ctKJ4MBRUEcWBxJQ
-		8IOCdmCloI3xqzEvfR/Ju++++3XOPec4eG3BYXGNNnvDWuy1liwvL/N/EAE89uqnoWkaRMcA
-		BGd5640P9XoGG5vbHuDrz59T5xdfUWfPn3QAm9sbAUCePvNl+O6D5zmqa3wAjQDw4rvfzCSC
-		J4oirKkRpUEUL792KXo2I2xsbvsIYFwZFuOYzDqGRU0/K3j79MMcpAWHmWFUWvJpCQacOC69
-		/oQ9t/v+POAjRM2ECHjvCbi7/219dhMA1wgEP1uK4vipJ+X4qU/MzIPbh8tX9ri4dQMdCyrM
-		SC+cfpT1E13wICI4H/5j4Ln3LhMF7/h7OObi1g3ueHEH13sp3/85ZFwbpqWhrC1F2XCUWepb
-		Obu7QyJEcW1/wvqDHSa1ISst/bJiWnv2swqAcWaYFIaiNtQ20Btasus9fr7607eK4Lk5rnn8
-		oZV7yj9Pc8r0hwtKlCY1lheeuh8tgiDMqYi6sajgGWUlk7Jh6jxWBOsCusxJB1llzc4VpeNZ
-		7vettTgsDEe1pZflHBWWwbRmWjRMmwbnHKbypKOayW99/rj28ZuAKGfDPdf3r50BcbXzO4Cc
-		eKB1TC+dOUB1lPcNGodDI8rdLuJsDl7fJfgn/eil1X4xyFvNL7KwdLIdS2+tSuxKUsWqSqwk
-		VexLaSuApABp5SGpYgGkXp0wZxZ0QRhry69Ru/1IZYoeUnXjZq5YSIyeB6SdazqdA3VrreXX
-		bEWzZPTkcLGMTLssW67QTqfaeqJnvjjrv3rnav/Yj51pd7lM9kYqdJeM7JskdKtVpFpknoxx
-		6KJWB6yMWn4crxhV7OUA/wIOd2og81JiEgAAAABJRU5ErkJggg==
-	}]
+#	set folder [image create photo -data {
+#		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+#		CXBIWXMAAG6BAABugQGE0alBAAAAB3RJTUUH0wsDCgMTnx/NFQAAAqZJREFUeNqlks1rXVUU
+#		xX/7nHuT+/JekheSVhAUOlBKRB2oEwsSRCdKBqJ/gKIUB5aCDpyXShE6ctKJ4MBRUEcWBxJQ
+#		8IOCdmCloI3xqzEvfR/Ju++++3XOPec4eG3BYXGNNnvDWuy1liwvL/N/EAE89uqnoWkaRMcA
+#		BGd5640P9XoGG5vbHuDrz59T5xdfUWfPn3QAm9sbAUCePvNl+O6D5zmqa3wAjQDw4rvfzCSC
+#		J4oirKkRpUEUL792KXo2I2xsbvsIYFwZFuOYzDqGRU0/K3j79MMcpAWHmWFUWvJpCQacOC69
+#		/oQ9t/v+POAjRM2ECHjvCbi7/219dhMA1wgEP1uK4vipJ+X4qU/MzIPbh8tX9ri4dQMdCyrM
+#		SC+cfpT1E13wICI4H/5j4Ln3LhMF7/h7OObi1g3ueHEH13sp3/85ZFwbpqWhrC1F2XCUWepb
+#		Obu7QyJEcW1/wvqDHSa1ISst/bJiWnv2swqAcWaYFIaiNtQ20Btasus9fr7607eK4Lk5rnn8
+#		oZV7yj9Pc8r0hwtKlCY1lheeuh8tgiDMqYi6sajgGWUlk7Jh6jxWBOsCusxJB1llzc4VpeNZ
+#		7vettTgsDEe1pZflHBWWwbRmWjRMmwbnHKbypKOayW99/rj28ZuAKGfDPdf3r50BcbXzO4Cc
+#		eKB1TC+dOUB1lPcNGodDI8rdLuJsDl7fJfgn/eil1X4xyFvNL7KwdLIdS2+tSuxKUsWqSqwk
+#		VexLaSuApABp5SGpYgGkXp0wZxZ0QRhry69Ru/1IZYoeUnXjZq5YSIyeB6SdazqdA3VrreXX
+#		bEWzZPTkcLGMTLssW67QTqfaeqJnvjjrv3rnav/Yj51pd7lM9kYqdJeM7JskdKtVpFpknoxx
+#		6KJWB6yMWn4crxhV7OUA/wIOd2og81JiEgAAAABJRU5ErkJggg==
+#	}]
 
-	set folderOpen [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
-		CXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH1QUJEjQAn0djLwAAAgxJREFUeNq1kl1IU3EY
-		xn87Hre1HCSxCIuhGX0txsAMw3B01VVgCBF0ERXofUcI6UtYHwR2EUGBV0JRXVW0sk8wK8Oa
-		llCzqGF+DFpzbaedeTw7nu3fhRgFlWD0XD+/5+F9eeAftKmu3bNAVBELwjbXh8pBEZ3Pxvrn
-		QqT5m2aNNXXHl73sU9Op7Mmb6zyutwB+v9Io/w1eeWBrJB/XXJP3FTHYnyOVPX19IpNTX41m
-		0gCShCb/6aYNoZ1Tbldp7Qu7in17Ta5ln//zpGaoD94kRu88H0nP+WRQxNVIa8FXUVYynjZ4
-		Hc8SSxvEkvriaHIKTAgdrCvrHv5ave3Qw+lVy0vfde5fu2XjqR5kmUkZoGFNeclE2kAzLPKW
-		QNMtMoaFOpBkz+4AfeMavU/iEomcv+dYfai60usEKBRwSwCmVUQzC7OQbpHRLYZHVEhN4V3i
-		4NbjMeyVbtR7jVRXep12exs+Hy1Ctg1IwabVVVVLj5K3iqiGRcaYIZrQYDwL2EjpRdp2rSd3
-		pgGnw8EcHI2e7RyKdOQBCNS2ukARR8KxYsXhXkHTDUHwiiB4TXz8ogvTNIWmaQIU4fMpzT8/
-		WwIYinTogVqbdGLHRduiEmkGswBmga5mByvcNt5/iAm3u/1H87wzde4Nf6OmS4S7n4rbdx9N
-		/6553hCP7/zguQuXPy0A/nXGXq9yif+p7376/FcaF2gRAAAAAElFTkSuQmCC
-	}]
+#	set folderOpen [image create photo -data {
+#		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAA
+#		CXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH1QUJEjQAn0djLwAAAgxJREFUeNq1kl1IU3EY
+#		xn87Hre1HCSxCIuhGX0txsAMw3B01VVgCBF0ERXofUcI6UtYHwR2EUGBV0JRXVW0sk8wK8Oa
+#		llCzqGF+DFpzbaedeTw7nu3fhRgFlWD0XD+/5+F9eeAftKmu3bNAVBELwjbXh8pBEZ3Pxvrn
+#		QqT5m2aNNXXHl73sU9Op7Mmb6zyutwB+v9Io/w1eeWBrJB/XXJP3FTHYnyOVPX19IpNTX41m
+#		0gCShCb/6aYNoZ1Tbldp7Qu7in17Ta5ln//zpGaoD94kRu88H0nP+WRQxNVIa8FXUVYynjZ4
+#		Hc8SSxvEkvriaHIKTAgdrCvrHv5ave3Qw+lVy0vfde5fu2XjqR5kmUkZoGFNeclE2kAzLPKW
+#		QNMtMoaFOpBkz+4AfeMavU/iEomcv+dYfai60usEKBRwSwCmVUQzC7OQbpHRLYZHVEhN4V3i
+#		4NbjMeyVbtR7jVRXep12exs+Hy1Ctg1IwabVVVVLj5K3iqiGRcaYIZrQYDwL2EjpRdp2rSd3
+#		pgGnw8EcHI2e7RyKdOQBCNS2ukARR8KxYsXhXkHTDUHwiiB4TXz8ogvTNIWmaQIU4fMpzT8/
+#		WwIYinTogVqbdGLHRduiEmkGswBmga5mByvcNt5/iAm3u/1H87wzde4Nf6OmS4S7n4rbdx9N
+#		/6553hCP7/zguQuXPy0A/nXGXq9yif+p7376/FcaF2gRAAAAAElFTkSuQmCC
+#	}]
 
 #	set help [image create photo -data {
 #		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw
@@ -3093,6 +3110,29 @@ namespace eval 22x22 {
 		auWnH0/OPZrmz6/A0NCgbvuOT+ufr69/tzzH9HJuzFdiCo0a5WiIgQDNkkPTtuL4lLlwdDg4
 		fbGzs/P7I4f2d86vqNCGBgeffualr9Vr1uL2rb8tGza+7nS6albZCwtdFpOxCACi0/Fxn9/f
 		3dPd9eeZX0/dW1a3PNp2+dIcxr//EuzpmSvUeAAAAABJRU5ErkJggg==
+	}]
+
+	set resume [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAMAAADzapwJAAACE1BMVEUAAAADDgkDDglLknNU
+		mHuEuKGHu6UEEw0EFA0FFg5OlHZWmnwLLh8LMSAMNCOeyLagyriEuKGPwKuTwq6axrMVXT5D
+		jG1LknMicE4+iGhFjW6EuKGNvqmaxrOmzby62cyz1ce62cw5hGRvq5F6sppMk3RPlXdZnH9e
+		n4OPwKugyrioz7621shen4Nhooaz1ce62czB3dHD3tNRlnhen4NfoYR0r5WEuKGEuKGRwayv
+		08O62cyTwq6iy7miy7mx1MVen4O42Mq82s2Lvaicx7SRwayiy7nB3dG82s14sZh6spp8s5uC
+		t6CEuKGVw7CAtp6PwKuTwq6mzbyaxrOt0cGmzbyr0MCiy7mt0cF8s5t+tZ2EuKGHu6V0r5V2
+		sJd0r5WJvKZ4sZiLvaiPwKuRwayeyLZopotqqI1tqpCJvKaPwKsselgue1kvfFswfVwxfl0z
+		f140gF81gWA3gmI4g2M5hGQ7hmU8h2Y+iGg/iWlAimpCi2tDjG1FjW5Gjm9Ij3BJkXJLknNM
+		k3ROlHZPlXdRlnhSl3lUmHtWmnxXm31ZnH9en4NhooZjo4dlpIlmpYpopotrqY5tqpBvq5Fx
+		rJNzrZR0r5V2sJd4sZh6spp8s5t+tZ2Atp6Ct6CEuKGFuqOHu6WJvKaLvaiNvqmPwKuRwayT
+		wq6Vw7Cmzbyoz76r0MCt0cG62czB3dHv9vP3+vn5/PscwemHAAAAa3RSTlMAAwQEBAYGCAgK
+		CgoNDQ0ODhEREhI0NTU6Ojo7O0VFSE1NbHBwcnJzc3d3hoaIiIuLi4uXmZmdnZ+foKCkpKqq
+		rba2uLi6urrQ3d3h4eHh4+Po6O7u8PDx8fX19fX39/r6/Pz8/Pz+/v7+/gUar04AAAFjSURB
+		VBgZBcFdaxNBGIbhe2anwTVtvnbTgyZSRMGiBYuI4rk/wZ8sCJ4IrQcFFZFWtE2amN1s051m
+		3sfrcgAw6Bdjh64X/1YAOIDO5HFZnkSF0/n85+97wAHl9Oj9cpvMsE7/4/nlDWQwOjp5VUmS
+		xH09faj1HYFw8PxZiwAkqCdaVSlj+vJ1JJlMQpK241RVWffFhwrtHo5o3P6TcWpoj//O/LBY
+		ylJ/p9PDRjudrqR5MQy9URQyICGQpM2g54u3yUwCSQJJ2HER8mhOAgAAIaU8GBIGSAIkJFlo
+		QnKYQIYAIYXGzz55yQCZAZLkT2e+XjxISQIQIJl1F7VfXQ2QGrNbszpZlFx5tXIcvHm3IARt
+		W0JGG2385fOfjDVhcpdiTNK2jckGP85+kUFs/WEjhIT58vvXi5YM2qa+zYtoMoV+dX52sQYH
+		4Pcfjcv8Kd8289nltQEOAPLdveEe9bJebwD4D6aO8Y/XM0XDAAAAAElFTkSuQmCC
 	}]
 
 	set fast [image create photo -data {
@@ -4509,6 +4549,40 @@ namespace eval 32x32 {
 		5izripUr61avXvO4u6ZmZfH04mq7xVSkcmbhQucAILgkEjrFIvHE0ODgYGdXh6e9ra3l5On2
 		9msAov/X1/EkS7XZbM758xdUuqurZxcWFblsNrsDACKRcGh4aKivq7PzxpUrl29HIpEBwCgb
 		91n/BU7zITiEtmD8AAAAAElFTkSuQmCC
+	}]
+
+	set resume [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAAC4lBMVEUAAAADDgk6hGQ+iGgD
+		DgkDDgl8s5sDDgkDDgkodVQtelgDDglLknNTl3kDDglvq5FzrZR+tZ2Atp4DDgltqpB2sJcN
+		OicOPik+iGhGjm8EEw2iy7kTUDYUVTkMNCMMNSMebEojcU8NOieEuKGOvqkNNiQzf144g2N8
+		s5uGuaOiy7mpz75lpIhvq5Gt0cGx1MUaaUccakgpdlUteliz1ccXYUFWmXxgoIR1r5WEuKGc
+		x7Spz74wfVwzf143gmI7hWWpz76z1ccjcU8wfVxcnoJmpYpsqY54sZg7hWU8hmYtelh+tZ2M
+		vai82s1ZnH9jo4ez1cepz7621siYxbGmzbyv0sN6spqIu6V+tZ2Ovqmiy7mz1ce82s3B3dG/
+		3M+82s3B3dFen4NgoITD3tOGuaOSwaxtqpBvq5F6spqGuaOkzLuz1cd6spp+tZ2KvKaYxbHD
+		3tPG39Sz1cfB3dGGuaOMvaiKvKaUwq6YxbGpz7682s3G39SOvqmWw6+pz76t0cG42Mq82s2M
+		vai/3M/B3dHB3dGz1ce82s2/3M+axrOt0cG42MrB3dGQwKugyriz1ceQwKuSwayUwq621siU
+		wq6YxbHB3dGWw6+kzLupz76Ww6+YxbGmzbyv0sOz1ce21sgtelgue1kvfFswfVwyfl0zf140
+		gF82gWA3gmI4g2M6hGQ7hWU8hmY+iGg/iWlBimpCi2tDjG1FjW5Gjm9Ij3BJkHJLknNMk3RO
+		lHVPlXdRlnhTl3lUmHtWmXxXm31bnYBcnoJen4NgoIRhooZjo4dmpYpopotqp41sqY5vq5Fx
+		rJNzrZR1r5V2sJd4sZh6spp8s5t+tZ2Atp6Ct6CEuKGGuaOIu6WKvKaOvqmQwKuSwayUwq6W
+		w6+YxbGaxrOeyLagyrikzLupz76r0MCt0cGv0sOx1MWz1ce42Mq82s2/3M/B3dHD3tPG39TP
+		5dvR5t3U59/n8u7q9O/0+ff3+vn8/f0qhekUAAAAoHRSTlMAAgICAwYGBwgICAkJCQoLCwwM
+		DRAQGBgbGxwoKiorKzMzNDY2PD09Pj4+PkNDTExTU1NUWl9lZWtra2tsbG1tcnJ4eH5+hISF
+		hYaIiImKiouMjo+Pj5SUlpahoaOjqbCwtra5wMDGxsnJzMzX3N3d3d3g4OPj5OXl5efn7Ozs
+		7Ozs7/Pz9fb29vf39/f4+fn6+vr6+/v7/f39/v7+/v7+UXSI/QAAAohJREFUGBkFwUtvVHUA
+		B9Bz51EI06FFWisabdRCDBiDCzY+AokFF/oJXBkXbvwSfgyXGpdudOVCVoImxojEB0FtYgWk
+		QIsznelz7tz/z3MqAGYWT5060VUPNjY2JwAqgCeefWVhaelyUX3z8OHWL3cHgApov3Rh5f2d
+		nYM6tI72+5+t/Xi7gArMv/raR4+HdZOSaNKemV/65Puft6ENi5feeu/eqCQCSj0evenooz20
+		0b94+cqDWkIQlMPh+Va5N6GNC5feedQgCQoRzejl/e27tFlZ/WCjIUEiKZIo49c3Hw20HVv9
+		+N8JqZOEpGpXhGb/3T/Wph3LZwb7ojmxXFWDO7WZlb5m/X6S8YPTy7db1bkPB0mK/uxs73iV
+		pprr9XpHIsrm++eqzlNLeweFSCpSQCLY215a6iwsjhqkAElAkmi2FxY6s3P7IQISIEiyOz/b
+		OXm8LlUAEJAEh/2Trf7bTUoSgaJAJZKkvtTvlFIQQFIFCEJpDb9uN6WU0gRJipCUJEn36rAz
+		3O4GApEEFYk4Mhq2hoNjSRIgCRBKMjsYdoZbs50pAhKBEqEztzVsPV7/tldKKSUVklKAJGXu
+		h/X/WtO1XxdaSRxOJpNJkrJX13VJku6Tv61NO+6vXz+7ic0d1bSOye0u4yQ5+dP6ho7DG0+v
+		7u6yuyMkZUskSf+5L28cajMuw4s7kxCJIJLMnv782p+0MSrjN/YPSUQkEnMrX3x3c0ob9c7u
+		1pWy34RIJOmeeuHT67fGaMP+4+1/WudNm0SRamZx+eZX137fhgroPHP2xTOro72DWvdIr3/1
+		r7Vb96egAji+8Pxyb7HX1uxu7tz5e2sEqADoLvbm+0cdjIe7mzWA/wGlBLzt+YNzZgAAAABJ
+		RU5ErkJggg==
 	}]
 
 	set search [image create photo -data {
@@ -6231,8 +6305,6 @@ set iconReset		[makeStateSpecificIcons [set [namespace current]::16x16::reset]]
 set iconUpdate		[makeStateSpecificIcons [set [namespace current]::16x16::refresh]]
 set iconGoNext		[makeStateSpecificIcons [set [namespace current]::16x16::goNext]]
 set iconSave		[makeStateSpecificIcons [set [namespace current]::16x16::disk]]
-set iconOpen		[makeStateSpecificIcons [set [namespace current]::16x16::folderOpen]]
-set iconFolder		[makeStateSpecificIcons [set [namespace current]::16x16::folder]]
 set iconAdd			[makeStateSpecificIcons [set [namespace current]::16x16::plus]]
 set iconRemove		[makeStateSpecificIcons [set [namespace current]::16x16::minus]]
 set iconClear		[makeStateSpecificIcons [set [namespace current]::16x16::clear]]
@@ -6288,6 +6360,7 @@ set toolbarExact					[makeToolbarIcon slow]
 set toolbarFast					[makeToolbarIcon fast]
 set toolbarQuick					[makeToolbarIcon quick]
 set toolbarPause					[makeToolbarIcon pause]
+set toolbarResume					[makeToolbarIcon resume]
 set toolbarLock					[makeToolbarIcon lock]
 set toolbarLines					[makeToolbarIcon lines]
 set toolbarPlus					[makeToolbarIcon add]

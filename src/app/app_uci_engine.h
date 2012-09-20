@@ -30,8 +30,11 @@
 #include "app_engine.h"
 
 #include "db_board.h"
+#include "db_move.h"
 
 #include "m_string.h"
+
+namespace db { class MoveList; }
 
 namespace app {
 namespace uci {
@@ -57,6 +60,9 @@ protected:
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 
+	void pause() override;
+	void resume() override;
+
 	Result probeResult() const override;
 	unsigned probeTimeout() const override;
 	unsigned maxVariations() const override;
@@ -66,29 +72,29 @@ private:
 
 	bool whiteToMove() const;
 
+	bool prepareAnalysis(db::Board const& board);
 	void parseBestMove(char const* msg);
 	void parseInfo(char const* msg);
 	void parseOption(char const* msg);
-	bool prepareStartAnalysis(db::Board const& board);
+	bool parseMoveList(char const* s, db::MoveList& moves);
 	void setupPosition(db::Board const& board);
 	void continueAnalysis();
+
+	db::Move parseCurrentMove(char const* s);
 
 	db::Board		m_board;
 	mstl::string	m_position;
 	mstl::string	m_waitingOn;
 	unsigned			m_maxMultiPV;
 	bool				m_needChess960;
+	bool				m_needShuffleChess;
 	bool				m_uciok;
 	bool				m_isReady;
 	bool				m_hasMultiPV;
 	bool				m_hasAnalyseMode;
-	bool				m_hasChess960;
-	bool				m_hasLimitStrength;
 	bool				m_hasOwnBook;
 	bool				m_hasShowCurrLine;
 	bool				m_hasShowRefutations;
-	bool				m_hasPonder;
-	bool				m_hasHashSize;
 	bool				m_stopAnalyizeIsPending;
 	bool				m_continueAnalysis;
 };

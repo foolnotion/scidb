@@ -148,37 +148,41 @@ isNumeric(char const* s)
 static bool
 endsWithPath(mstl::string const& s)
 {
-	if (s.size() < 4)
-		return false;
-
-	return strncmp(s.c_str() + s.size() - 4, "Path", 4) == 0;
+	return	(s.size() >= 4 && strncmp(s.c_str() + s.size() - 4, "Path", 4) == 0)
+			|| (s.size() >= 8 && strncmp(s.c_str() + s.size() - 8, "Pathname", 8) == 0);
 }
 
 
 static bool
 endsWithFile(mstl::string const& s)
 {
-	if (s.size() < 4)
-		return false;
+	return	(s.size() >= 4 && strncmp(s.c_str() + s.size() - 4, "File", 4) == 0)
+			|| (s.size() >= 8 && strncmp(s.c_str() + s.size() - 8, "Filename", 8) == 0);
+}
 
-	return strncmp(s.c_str() + s.size() - 4, "File", 4) == 0;
+
+static void
+setNonZeroValue(mstl::string& s, unsigned value)
+{
+	if (value)
+	{
+		s.clear();
+		s.format("%u", value);
+	}
 }
 
 
 uci::Engine::Engine()
 	:m_maxMultiPV(1)
 	,m_needChess960(false)
+	,m_needShuffleChess(false)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
 	,m_hasAnalyseMode(false)
-	,m_hasChess960(false)
-	,m_hasLimitStrength(false)
 	,m_hasOwnBook(false)
 	,m_hasShowCurrLine(false)
 	,m_hasShowRefutations(false)
-	,m_hasPonder(false)
-	,m_hasHashSize(false)
 	,m_stopAnalyizeIsPending(false)
 	,m_continueAnalysis(false)
 {
@@ -235,28 +239,6 @@ uci::Engine::maxVariations() const
 }
 
 
-bool
-uci::Engine::prepareStartAnalysis(Board const& board)
-{
-	if (board.notDerivableFromChess960())
-	{
-		error("Shuffle chess not supported");
-		return false;
-	}
-
-	if ((m_needChess960 = board.notDerivableFromStandardChess()))
-	{
-		if (!hasFeature(app::Engine::Feature_Chess_960))
-		{
-			error("Chess 960 not supported");
-			return false;
-		}
-	}
-
-	return true;
-}
-
-
 void
 uci::Engine::setupPosition(Board const& board)
 {
@@ -268,9 +250,52 @@ uci::Engine::setupPosition(Board const& board)
 	}
 	else
 	{
-		m_position.append(board.toFen(
-			hasFeature(app::Engine::Feature_Chess_960) ? Board::Shredder : Board::XFen));
+		db::Board::Format	fmt(m_needShuffleChess || m_needChess960 ? Board::Shredder : Board::XFen);
+		mstl::string		fen(board.toFen(fmt));
+
+		m_position.append("fen ", 4);
+		m_position.append(fen);
 	}
+}
+
+
+bool
+uci::Engine::prepareAnalysis(db::Board const& board)
+{
+	db::Game const* game = currentGame();
+
+	m_needChess960 = m_needShuffleChess = false;
+
+	if (!variant::isStandardChess(game->idn()))
+	{
+		if (variant::isShuffleChess(game->idn()))
+			m_needShuffleChess = true;
+		else if (variant::isChess960(game->idn()))
+			m_needChess960 = true;
+		else if (board.notDerivableFromChess960())
+			m_needShuffleChess = true;
+		else if (board.notDerivableFromStandardChess())
+			m_needChess960 = true;
+
+		if (m_needShuffleChess)
+		{
+			if (!hasFeature(app::Engine::Feature_Shuffle_Chess))
+			{
+				error("Shuffle chess not supported");
+				return false;
+			}
+		}
+		else if (m_needChess960)
+		{
+			if (!hasFeature(app::Engine::Feature_Chess_960))
+			{
+				error("Chess 960 not supported");
+				return false;
+			}
+		}
+	}
+
+	return true;
 }
 
 
@@ -282,20 +307,23 @@ uci::Engine::startAnalysis(bool isNewGame)
 
 	db::Game const* game = currentGame();
 
-	if (!prepareStartAnalysis(game->startBoard()))
+	if (isNewGame && !prepareAnalysis(game->startBoard()))
 		return false;
 
 	setupPosition(game->startBoard());
-	m_position.append(" moves ", 7);
-	game->dumpHistory(m_position);
-	m_board = game->currentBoard();
 
-	m_waitingOn = "position";
-	send("stop");
+	if (game->startBoard().plyNumber() != game->currentBoard().plyNumber())
+	{
+		m_position.append(" moves", 6);
+		game->dumpHistory(m_position);
+	}
+
+	m_board = game->currentBoard();
 
 	if (isNewGame)
 		send("ucinewgame"); // clear's all states
 
+	m_waitingOn = "position";
 	send("isready");
 
 	return true;
@@ -305,12 +333,9 @@ uci::Engine::startAnalysis(bool isNewGame)
 bool
 uci::Engine::stopAnalysis()
 {
-	if (isAnalyzing())
-	{
-		send("stop");
-		m_stopAnalyizeIsPending = true;
-		// the engine should now send final info and bestmove
-	}
+	send("stop");
+	m_stopAnalyizeIsPending = true;
+	// the engine should now send final info and bestmove
 
 	return true;
 }
@@ -326,6 +351,21 @@ uci::Engine::continueAnalysis()
 
 		m_continueAnalysis = false;
 	}
+}
+
+
+void
+uci::Engine::pause()
+{
+	send("stop");
+	m_stopAnalyizeIsPending = true;
+}
+
+
+void
+uci::Engine::resume()
+{
+	send("go infinite");
 }
 
 
@@ -370,9 +410,10 @@ uci::Engine::processMessage(mstl::string const& message)
 
 				if (!isProbing())
 				{
+					// now we can send our options
+					sendOptions();
+					send("isready");
 					m_waitingOn = "uciok";
-					send("isready");	// is required once to finish initialising
-					// now we wait for "readyok"
 				}
 			}
 			break;
@@ -384,49 +425,21 @@ uci::Engine::processMessage(mstl::string const& message)
 				{
 					// engine is now initialised and ready to go
 					m_isReady = true;
-
-					// now we can send our options
-					if (m_hasMultiPV)
-						send("setoption name MultiPV value " + ::toStr(numVariations()));
-					if (m_hasOwnBook)
-						send("setoption name OwnBook value false");
-					if (m_hasChess960)
-						send("setoption name UCI_Chess960 value " + ::toStr(m_needChess960));
-					if (m_hasShowCurrLine)
-						send("setoption name UCI_ShowCurrLine value false");
-					if (m_hasShowRefutations)
-						send("setoption name UCI_ShowRefutations value false");
-					if (m_hasPonder)
-						send("setoption name Ponder value true");
-					if (m_hasHashSize && hashSize())
-						send("setoption name Hash value " + ::toStr(hashSize()));
-
-					if (m_hasLimitStrength)
-					{
-						if (limitedStrength())
-						{
-							send("setoption name UCI_LimitStrength value true");
-							send("setoption name UCI_Elo value " + ::toStr(limitedStrength()));
-						}
-						else
-						{
-							send("setoption name UCI_LimitStrength value false");
-						}
-					}
-
-#if 0
-					send("setoption name NalimovCache value true");
-					send("setoption name NalimovPath value d:\tb;c\tb");
-#endif
 					engineIsReady();
 				}
 				else if (m_waitingOn == "position")
 				{
 					// engine is now ready to analyse a new position
-					m_waitingOn = "";
-
 					if (m_hasAnalyseMode)
 						send("setoption name UCI_AnalyseMode value true");
+
+					if (hasFeature(app::Engine::Feature_Chess_960))
+					{
+						if (m_needChess960 || m_needShuffleChess)
+							send("setoption name UCI_Chess960 value true");
+						else
+							send("setoption name UCI_Chess960 value false");
+					}
 
 					send(m_position);
 
@@ -449,7 +462,7 @@ uci::Engine::processMessage(mstl::string const& message)
 					continueAnalysis();
 				}
 
-				m_waitingOn = "";
+				m_waitingOn.clear();
 			}
 			else if (::strcmp(message, "registration checking") == 0)
 			{
@@ -486,7 +499,7 @@ uci::Engine::processMessage(mstl::string const& message)
 			break;
 
 		case 'o':
-			if (isProbing() && ::strncmp(message, "option name ", 12) == 0)
+			if (::strncmp(message, "option name ", 12) == 0)
 				parseOption(::skipSpaces(message.c_str() + 7));
 			break;
 
@@ -531,45 +544,112 @@ uci::Engine::parseBestMove(char const* msg)
 			Move ponder = m_board.parseMove(s);
 			m_board.undoMove(move);
 
-			if (ponder.isLegal())
+			if (move)
+			{
 				setPonder(ponder);
+				updateBestMove();
+			}
 		}
 	}
 }
 
 
 void
-uci::Engine::parseInfo(char const* msg)
+uci::Engine::parseInfo(char const* s)
 {
-	int	multiPv		= 1;
-	bool	havePv		= false;
-	bool	haveScore	= false;
+	unsigned	multiPv					= 0;
+	unsigned	currMoveNumber			= 0;
+	bool		haveScore				= false;
+	bool		haveDepth				= false;
+	bool		haveTime					= false;
+	bool		haveCurrMove			= false;
+	bool		haveCurrMoveNumber	= false;
+	bool		haveHashFull			= false;
+	Move		currMove;
 
 	resetInfo();
 
-	while (true)
+	while (*s)
 	{
-		unsigned numWords = 2;
 		unsigned value;
 
-		switch (msg[0])
+		switch (s[0])
 		{
+			case 'c':
+				switch (s[1])
+				{
+//					case 'p':
+//						if (::sscanf(s, "cpuload %u", &value) == 1)
+//							setCPULoad(value);
+//						break;
+
+					case 'u':
+						if (::strncmp(s, "currline ", 9) == 0)
+						{
+							MoveList moves;
+
+							if (parseMoveList(::skipWords(s, 1), moves))
+							{
+								setVariation(moves);
+								updateCurrLine();
+							}
+						}
+						else if (::strncmp(s, "currmove ", 9) == 0)
+						{
+							if ((currMove = parseCurrentMove(::skipWords(s, 1))))
+								haveCurrMove = true;
+						}
+						else if (::sscanf(s, "currmovenumber %u", &currMoveNumber) == 1)
+						{
+							haveCurrMoveNumber = true;
+						}
+						if (haveCurrMoveNumber && haveCurrMove)
+						{
+							setCurrentMove(currMoveNumber, currMove);
+							updateCurrMove();
+						}
+						break;
+				}
+				break;
+
+			case 'h':
+				if (::sscanf(s, "hashfull %u", &value) == 1)
+				{
+//					setHashFullness(value);
+					haveHashFull = true;
+				}
+				break;
+
+			case 'r':
+				if (::strncmp(s, "refutation ", 11) == 0)
+				{
+					// If UCI_ShowRefutations is set:
+					// ------------------------------------------------------
+					// "info refutation d1h5 g6h5"	Qd1-h5 is refuted
+					// "info refutation d1h5"			Qd1-h5 has no refutation
+				}
+				break;
+
 			case 'd':
-				if (::sscanf(msg, "depth %u ", &value) == 1)
+				if (::sscanf(s, "depth %u", &value) == 1)
+				{
 					setDepth(value);
+					haveDepth = true;
+				}
 				break;
 
 			case 's':
-				if (::strncmp(msg, "score ", 6) == 0)
+				// we are skipping "seldepth"
+				if (::strncmp(s, "score ", 6) == 0)
 				{
 					int value;
 
-					msg = skipSpaces(msg);
+					s = skipWords(s, 1);
 
-					switch (msg[0])
+					switch (s[0])
 					{
 						case 'c':
-							if (::sscanf(msg, "cp %d ", &value) == 1)
+							if (::sscanf(s, "cp %d", &value) == 1)
 							{
 								setScore(whiteToMove() ? value : -value);
 								haveScore = true;
@@ -577,7 +657,7 @@ uci::Engine::parseInfo(char const* msg)
 							break;
 
 						case 'm':
-							if (::sscanf(msg, "mate %d ", &value) == 1)
+							if (::sscanf(s, "mate %d", &value) == 1)
 							{
 								setMate(whiteToMove() ? value : -value);
 								haveScore = true;
@@ -585,65 +665,106 @@ uci::Engine::parseInfo(char const* msg)
 							break;
 					}
 				}
+				else if (::strncmp(s, "string ", 7) == 0)
+				{
+					return; // ignore rest of message
+				}
 				break;
 
 			case 't':
-				if (::sscanf(msg, "time %u ", &value) == 1)
+				if (::sscanf(s, "time %u", &value) == 1)
 					setTime(value/1000.0);
 				break;
 
 			case 'n':
-				if (::sscanf(msg, "nodes %u ", &value) == 1)
+				// skip "nps"
+				if (::sscanf(s, "nodes %u", &value) == 1)
 					setNodes(value);
 				break;
 
 			case 'p':
-				if (::strncmp(msg, "pv ", 3) == 0)
+				if (strncmp(s, "pv ", 3) == 0)
 				{
-					bool		okSoFar(true);
-					Board		board(m_board);
-					MoveList	moves;
-
-					for ( ; ::isLan(msg); msg = ::skipWords(msg, 1))
+					if (haveScore)
 					{
-						if (okSoFar)
-						{
-							Move move = board.parseMove(msg);
+						MoveList moves;
 
-							if (move.isLegal() && moves.notFull())
-							{
-								board.prepareForPrint(move);
-								board.doMove(move);
-								moves.append(move);
-							}
-							else
-							{
-								okSoFar = false;
-							}
+						if (parseMoveList(skipWords(s, 1), moves))
+						{
+							setVariation(moves, multiPv);
+							updatePvInfo();
+							haveTime = false;
+							haveDepth = false;
 						}
 					}
 
-					setVariation(moves, multiPv);
-					havePv = true;
-					numWords = 0;
+					s = "";
 				}
 				break;
 
 			case 'm':
-				if (	::sscanf(msg, "multipv %u ", &value) == 1
-					&& 1 <= value
-					&& value <= numVariations())
+				if (::sscanf(s, "mate %u", &value) == 1)
 				{
-					multiPv = value;
+					setMate(value);
+				}
+				else if (::sscanf(s, "multipv %u", &value) == 1)
+				{
+					if (value == 0 || value > numVariations())
+						return;
+					multiPv = value - 1;
 				}
 				break;
 		}
 
-		msg = ::skipWords(msg, numWords);
+		s = ::skipWords(s, 2);
 	}
 
-	if (haveScore && havePv)
-		updateInfo();
+	if (haveHashFull)
+		updateHashFullInfo();	// "info hashfull <promille>"
+	if (haveTime)
+		updateTimeInfo(); 		// "info time 1008 nodes 1010000 nps 1002409 cpuload 925"
+	if (haveDepth)
+		updateDepthInfo();
+}
+
+
+Move
+uci::Engine::parseCurrentMove(char const* s)
+{
+	if (!::isLan(s))
+		return Move();
+
+	Move move = m_board.parseMove(s);
+
+	if (!move.isLegal())
+		return Move();
+
+	m_board.prepareForPrint(move);
+	return move;
+}
+
+
+bool
+uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
+{
+	Board board(m_board);
+
+	for ( ; ::isLan(s); s = ::skipWords(s, 1))
+	{
+		Move move = board.parseMove(s);
+
+		if (!move.isLegal())
+			return !moves.isEmpty();
+
+		board.prepareForPrint(move);
+		board.doMove(move);
+		moves.append(move);
+
+		if (moves.isFull())
+			return true;
+	}
+
+	return !moves.isEmpty();
 }
 
 
@@ -682,47 +803,44 @@ uci::Engine::parseOption(char const* msg)
 		{
 			case 'A':
 				if (name == "UCI_AnalyseMode")
-				{
 					m_hasAnalyseMode = true;
-					break;
-				}
-				// fallthru
+				break;
+
 			case 'C':
 				if (name == "UCI_Chess960")
-				{
 					addFeature(app::Engine::Feature_Chess_960);
-					m_hasChess960 = true;
-					break;
-				}
-				// fallthru
+				break;
+
 			case 'L':
 				if (name == "UCI_LimitStrength")
-				{
-					m_hasLimitStrength = true;
-					break;
-				}
-				// fallthru
+					addFeature(app::Engine::Feature_Limit_Strength);
+				break;
+
 			case 'E':
-				if (name == "UCI_Elo")
-					break;
-				else if (name == "UCI_EngineAbout")
-					break;
-				// fallthru
+				if (name == "UCI_EngineAbout")
+				{
+					if (isProbing())
+						detectUrl(dflt);
+				}
+				else if (name == "UCI_Elo")
+				{
+					if (type == "spin")
+					{
+						setEloRange(::atoi(min), ::atoi(max));
+						setElo(::atoi(max));
+					}
+				}
+				break;
+
 			case 'S':
-				if (name == "UCI_ShredderbasesPath")
-				{
-					break;
-				}
-				else if (name == "UCI_ShowCurrLine")
-				{
+				if (name == "UCI_ShowCurrLine")
 					m_hasShowCurrLine = true;
-					break;
-				}
 				else if (name == "UCI_ShowRefutations")
-				{
 					m_hasShowRefutations = true;
-					break;
-				}
+				else if (name == "UCI_ShredderbasesPath")
+					; // we do not use
+				else if (name == "UCI_SetPositionValue")
+					; // we do not use
 				break;
 		}
 	}
@@ -735,7 +853,7 @@ uci::Engine::parseOption(char const* msg)
 		{
 			// this means that the engine is able to ponder
 			// should be enabled by default?
-			m_hasPonder = true;
+			addFeature(app::Engine::Feature_Ponder);
 			return;
 		}
 		if (name == "OwnBook")
@@ -763,11 +881,18 @@ uci::Engine::parseOption(char const* msg)
 		}
 		else if (name == "Hash")
 		{
-			m_hasHashSize = true;
-			addFeature(app::Engine::Feature_Hash_Size);
-
-			if (!vars.empty())
-				setHashSize(::atoi(vars.front()));
+			setHashRange(::atoi(min), ::atoi(max));
+			setHashSize(::atoi(dflt));
+		}
+		else if (name == "Threads")
+		{
+			setThreadRange(::atoi(min), ::atoi(max));
+			setThreads(::atoi(dflt));
+		}
+		else if (name == "Skill Level")
+		{
+			setMaxSkillLevel(::atoi(max) - ::atoi(min));
+			setSkillLevel(::atoi(dflt));
 		}
 
 		addOption(name, type, dflt, min, max);
@@ -797,7 +922,12 @@ uci::Engine::parseOption(char const* msg)
 		}
 
 		if (found)
+		{
 			addOption(name, type, dflt, var);
+
+			if (name == "Playing Style")
+				setPlayingStyles(var);
+		}
 	}
 	else if (type == "button")
 	{
@@ -833,13 +963,55 @@ uci::Engine::sendOptions()
 	{
 		app::Engine::Option const& opt = *i;
 
+		mstl::string val = opt.val;
+
+		switch (opt.name[0])
+		{
+			case 'H':
+				if (opt.name == "Hash")
+					::setNonZeroValue(val, hashSize());
+				break;
+
+			case 'E':
+				if (opt.name == "Elo")
+				{
+					if (hasFeature(app::Engine::Feature_Limit_Strength))
+						::setNonZeroValue(val, limitedStrength());
+				}
+				break;
+
+			case 'M':
+				if (opt.name == "MultiPV")
+					::setNonZeroValue(val, numVariations());
+				break;
+
+			case 'O':
+				if (opt.name == "OwnBook")
+				{
+//					if (m_hasOwnBook)
+					val = "false";
+				}
+				break;
+
+			case 'P':
+				if (opt.name == "Ponder")
+					val = "false";
+				break;
+
+			case 'U':
+				if (opt.name == "UCI_LimitStrength")
+					val = limitedStrength() ? "true" : "false";
+				else if (opt.name == "UCI_ShowCurrLine")
+					val = "false";
+				else if (opt.name == "UCI_ShowRefutations")
+					val = "false";
+				break;
+		}
+
 		msg.assign("setoption name ", 15);
 		msg.append(opt.name);
 		msg.append(" value ", 7);
-		msg.append(opt.val);
-
-		if (opt.name == "Hash")
-			setHashSize(::atoi(opt.val));
+		msg.append(val);
 
 		send(msg);
 	}
@@ -856,11 +1028,12 @@ uci::Engine::sendOptions()
 void
 uci::Engine::sendHashSize()
 {
-	if (m_hasHashSize)
+	if (hasFeature(app::Engine::Feature_Hash_Size))
 	{
 		if (isAnalyzing())
 		{
 			stopAnalysis();
+			// XXX probably "ucinewgame" is required
 			m_waitingOn = "hashSize";
 			send("isready");
 			m_continueAnalysis = true;

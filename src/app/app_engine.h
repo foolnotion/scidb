@@ -93,6 +93,9 @@ public:
 		virtual void protocolStart(bool isProbing) = 0;
 		virtual void protocolEnd() = 0;
 
+		virtual void pause() = 0;
+		virtual void resume() = 0;
+
 		virtual void processMessage(mstl::string const& message) = 0;
 		virtual void sendNumberOfVariations() = 0;
 		virtual void sendHashSize() = 0;
@@ -117,6 +120,7 @@ public:
 		unsigned maxMultiPV() const;
 		unsigned numVariations() const;
 		unsigned hashSize() const;
+		unsigned numThreads() const;
 		unsigned searchMate() const;
 		unsigned limitedStrength() const;
 		db::Game const* currentGame() const;
@@ -130,8 +134,10 @@ public:
 		void deactivate();
 
 		void addFeature(unsigned feature);
-		bool detectShortName(mstl::string const& s);
-		bool detectIdentifier(mstl::string const& s);
+		bool detectShortName(mstl::string const& str);
+		bool detectIdentifier(mstl::string const& str);
+		bool detectUrl(mstl::string const& str);
+		bool detectEmail(mstl::string const& str);
 
 		void addOption(mstl::string const& name,
 							mstl::string const& type,
@@ -141,19 +147,38 @@ public:
 
 		void setBestMove(db::Move const& move);
 		void setPonder(db::Move const& move);
+
 		void setScore(int score);
 		void setMate(int numHalfMoves);
 		void setDepth(unsigned depth);
 		void setTime(double time);
 		void setNodes(unsigned nodes);
-		void setVariation(db::MoveList const& moves, unsigned no = 1);
+		void setVariation(db::MoveList const& moves, unsigned no = 0);
+		void setCurrentMove(unsigned number, db::Move const& move);
+
 		void setIdentifier(mstl::string const& name);
 		void setShortName(mstl::string const& name);
 		void setAuthor(mstl::string const& name);
+		void setUrl(mstl::string const& address);
+		void setEmail(mstl::string const& address);
+		void setElo(unsigned elo);
+		void setEloRange(unsigned minElo, unsigned maxElo);
+		void setSkillLevel(unsigned level);
+		void setMaxSkillLevel(unsigned maxLevel);
 		void setMaxMultiPV(unsigned n);
 		void setHashSize(unsigned size);
+		void setHashRange(unsigned minSize, unsigned maxSize);
+		void setThreads(unsigned num);
+		void setThreadRange(unsigned minThreads, unsigned maxThreads);
+		void setPlayingStyles(mstl::string const& styles);
 
-		void updateInfo();
+		void updatePvInfo();
+		void updateCurrMove();
+		void updateCurrLine();
+		void updateBestMove();
+		void updateDepthInfo();
+		void updateTimeInfo();
+		void updateHashFullInfo();
 		void resetInfo();
 
 		void log(mstl::string const& msg);
@@ -170,6 +195,12 @@ public:
 	static unsigned const Feature_Shuffle_Chess	= 1 << 3;
 	static unsigned const Feature_Pause				= 1 << 4;
 	static unsigned const Feature_Play_Other		= 1 << 5;
+	static unsigned const Feature_Ponder			= 1 << 6;
+	static unsigned const Feature_Limit_Strength	= 1 << 7;
+	static unsigned const Feature_Skill_Level		= 1 << 8;
+	static unsigned const Feature_Multi_PV			= 1 << 9;
+	static unsigned const Feature_Threads			= 1 << 10;
+	static unsigned const Feature_Playing_Styles	= 1 << 11;
 
 	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
 	virtual ~Engine() throw();
@@ -196,15 +227,30 @@ public:
 	db::MoveList const& variation(unsigned no);
 	db::Board const& currentBoard() const;
 	db::Move const& bestMove() const;
+	unsigned currentMoveNumber() const;
+	db::Move const& currentMove() const;
 
 	mstl::string const& identifier() const;
 	mstl::string const& shortName() const;
 	mstl::string const& author() const;
+	mstl::string const& email() const;
+	mstl::string const& url() const;
+	unsigned elo() const;
+	unsigned minElo() const;
+	unsigned maxElo() const;
+	unsigned skillLevel() const;
+	unsigned maxSkillLevel() const;
 	unsigned maxMultiPV() const;
 	unsigned numVariations() const;
 	unsigned hashSize() const;
+	unsigned minHashSize() const;
+	unsigned maxHashSize() const;
+	unsigned numThreads() const;
+	unsigned minThreads() const;
+	unsigned maxThreads() const;
 	unsigned searchMate() const;
 	unsigned limitedStrength() const;
+	mstl::string const& playingStyles() const;
 	db::Game const* currentGame() const;
 	Options const& options() const;
 
@@ -214,6 +260,9 @@ public:
 
 	bool startAnalysis(db::Game const* game);
 	bool stopAnalysis();
+
+	void pause();
+	void resume();
 
 	unsigned changeNumberOfVariations(unsigned n);
 	unsigned changeHashSize(unsigned size);
@@ -229,8 +278,13 @@ protected:
 
 	Engine();
 
-	virtual void updateInfo() = 0;
-	virtual void updateBestMove() = 0;
+	virtual void updatePvInfo() = 0;
+	virtual void updateCurrMove();
+	virtual void updateCurrLine();
+	virtual void updateBestMove();
+	virtual void updateDepthInfo();
+	virtual void updateTimeInfo();
+	virtual void updateHashFullInfo();
 
 	bool protocolAlreadyStarted() const;
 
@@ -242,8 +296,10 @@ protected:
 	void send(mstl::string const& message);
 
 	void addFeature(unsigned feature);
-	bool detectShortName(mstl::string const& s);
-	bool detectIdentifier(mstl::string const& s);
+	bool detectShortName(mstl::string const& str);
+	bool detectIdentifier(mstl::string const& str);
+	bool detectUrl(mstl::string const& str);
+	bool detectEmail(mstl::string const& str);
 
 	void addOption(mstl::string const& name,
 						mstl::string const& type,
@@ -251,20 +307,32 @@ protected:
 						mstl::string const& var,
 						mstl::string const& max);
 
+	void setBestMove(db::Move const& move);
+	void setPonder(db::Move const& move);
+
 	void setScore(int score);			// centi-pawns from white's perspective
 	void setMate(int numHalfMoves);	// number of half moves from white's prespective
 	void setDepth(unsigned depth);	// search depth
 	void setTime(double time);			// search time in seconds (.e.g. 10.28 seconds)
 	void setNodes(unsigned nodes);	// nodes searched
-
-	void setBestMove(db::Move const& move);
-	void setPonder(db::Move const& move);
 	void setVariation(db::MoveList const& moves, unsigned no);
+	void setCurrentMove(unsigned number, db::Move const& move);
+
 	void setIdentifier(mstl::string const& name);
 	void setShortName(mstl::string const& name);
 	void setAuthor(mstl::string const& name);
+	void setUrl(mstl::string const& address);
+	void setEmail(mstl::string const& address);
+	void setElo(unsigned elo);
+	void setEloRange(unsigned minElo, unsigned maxElo);
+	void setSkillLevel(unsigned level);
+	void setMaxSkillLevel(unsigned maxLevel);
 	void setMaxMultiPV(unsigned n);
 	void setHashSize(unsigned size);
+	void setHashRange(unsigned minSize, unsigned maxSize);
+	void setThreads(unsigned num);
+	void setThreadRange(unsigned minThreads, unsigned maxThreads);
+	void setPlayingStyles(mstl::string const& styles);
 	void resetInfo();
 
 	void log(mstl::string const& msg);
@@ -290,13 +358,28 @@ private:
 	mstl::string		m_identifier;
 	mstl::string		m_shortName;
 	mstl::string		m_author;
+	mstl::string		m_url;
+	mstl::string		m_email;
+	mstl::string		m_playingStyles;
+	unsigned				m_elo;
+	unsigned				m_minElo;
+	unsigned				m_maxElo;
+	unsigned				m_skillLevel;
+	unsigned				m_maxSkillLevel;
 	unsigned				m_maxMultiPV;
 	Variations			m_variations;
 	unsigned				m_numVariations;
 	unsigned				m_hashSize;
+	unsigned				m_minHashSize;
+	unsigned				m_maxHashSize;
+	unsigned				m_numThreads;
+	unsigned				m_minThreads;
+	unsigned				m_maxThreads;
 	unsigned				m_searchMate;
 	unsigned				m_limitedStrength;
 	unsigned				m_features;
+	unsigned				m_currMoveNumber;
+	db::Move				m_currMove;
 	db::Move				m_bestMove;
 	db::Move				m_ponder;
 	int					m_score;
@@ -309,6 +392,7 @@ private:
 	bool					m_probe;
 	bool					m_protocol;
 	bool					m_identifierSet;
+	bool					m_useLimitedStrength;
 	Process*				m_process;
 	mstl::ostream*		m_logStream;
 	Options				m_options;

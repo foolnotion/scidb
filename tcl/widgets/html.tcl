@@ -166,11 +166,22 @@ proc Build {w args} {
 			-usehorzscroll - -usevertscroll - -keephorzscroll - -keepvertscroll {}
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
-			-selectbackground - -selectforeground - -showhyphens -
-			-inactiveselectbackground - -inactiveselectforeground - 
-			-width - -height {
+			-selectbackground - -selectforeground - -inactiveselectbackground -
+			-inactiveselectforeground - -width - -height {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
+			}
+
+			-showhyphens {
+				set value $opts($name)
+				if {[llength $value]} {
+					if {$value in {no false}} {
+						set value 0
+					} elseif {$value in {yes true}} {
+						set value 1
+					}
+					lappend htmlOptions $name $value
+				}
 			}
 
 			default {
@@ -338,6 +349,7 @@ proc WidgetProc {w command args} {
 			array unset [namespace current]::ActiveNodes2
 			array unset [namespace current]::ActiveNodes3
 			set Priv(nodeList) {}
+
 			$w.sub.html reset
 			$w.sub.html xview moveto 0
 			$w.sub.html yview moveto 0

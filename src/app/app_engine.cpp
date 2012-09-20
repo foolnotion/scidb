@@ -135,7 +135,7 @@ split(Ranges& result, Range range, char delim)
 			}
 
 			Range r;
-			
+
 			if (r.set(range.start, p))
 				result.push_back(r);
 
@@ -242,12 +242,14 @@ findVersionNumber(char const* s)
 static char const*
 findRomanNumber(char const* s)
 {
-	if (*s != 'X' && *s != 'V' && *s != 'I')
+	if (::strchr("XIV", ::toupper(*s)) == 0)
 		return 0;
 
 	++s;
 
-	while (*s == 'X' || *s == 'V' || *s == 'I')
+	char const* numbers = ::strchr("XIV", *s) ? "XIV" : "xiv";
+
+	while (::strchr(numbers, *s))
 		++s;
 
 	if (isalnum(*s))
@@ -319,13 +321,24 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_command(command)
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
+	,m_elo(0)
+	,m_minElo(0)
+	,m_maxElo(0)
+	,m_skillLevel(0)
+	,m_maxSkillLevel(0)
 	,m_maxMultiPV(1)
 	,m_variations(1, MoveList())
 	,m_numVariations(1)
 	,m_hashSize(0)
+	,m_minHashSize(0)
+	,m_maxHashSize(0)
+	,m_numThreads(0)
+	,m_minThreads(0)
+	,m_maxThreads(0)
 	,m_searchMate(0)
 	,m_limitedStrength(0)
 	,m_features(0)
+	,m_currMoveNumber(0)
 	,m_score(0)
 	,m_mate(0)
 	,m_depth(0)
@@ -336,6 +349,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_probe(false)
 	,m_protocol(false)
 	,m_identifierSet(false)
+	,m_useLimitedStrength(false)
 	,m_process(0)
 	,m_logStream(0)
 {
@@ -354,11 +368,20 @@ Engine::~Engine() throw()
 	if (m_process)
 	{
 		deactivate();
+		m_process->kill();
 		delete m_process;
 	}
 
 	delete m_engine;
 }
+
+
+void Engine::updateCurrMove()			{}
+void Engine::updateCurrLine()			{}
+void Engine::updateBestMove()			{}
+void Engine::updateDepthInfo()		{}
+void Engine::updateTimeInfo()			{}
+void Engine::updateHashFullInfo()	{}
 
 
 long
@@ -377,9 +400,97 @@ Engine::kill()
 
 
 void
-Engine::setLog(mstl::ostream* stream)
+Engine::setHashRange(unsigned minSize, unsigned maxSize)
 {
-	m_logStream = stream;
+	minSize = mstl::max(4u, minSize);
+
+	if (maxSize > minSize)
+	{
+		m_minHashSize = minSize;
+		m_maxHashSize = maxSize;
+		addFeature(Feature_Hash_Size);
+	}
+}
+
+
+void
+Engine::setThreadRange(unsigned minThreads, unsigned maxThreads)
+{
+	minThreads = mstl::max(4u, minThreads);
+
+	if (maxThreads > minThreads)
+	{
+		m_minThreads = minThreads;
+		m_maxThreads = maxThreads;
+		addFeature(Feature_Threads);
+	}
+}
+
+
+void
+Engine::setPlayingStyles(mstl::string const& styles)
+{
+	if (styles.find(',') != mstl::string::npos)
+	{
+		m_playingStyles = styles;
+		addFeature(Feature_Playing_Styles);
+	}
+}
+
+
+void
+Engine::setMaxMultiPV(unsigned n)
+{
+	m_maxMultiPV = mstl::max(n, 1u);
+
+	if (m_maxMultiPV > 1)
+		addFeature(Feature_Multi_PV);
+}
+
+
+void
+Engine::setLimitedStrength(unsigned elo)
+{
+	m_limitedStrength = mstl::max(m_maxElo, mstl::max(m_minElo, elo));
+}
+
+
+void
+Engine::setEloRange(unsigned minElo, unsigned maxElo)
+{
+	if (minElo < maxElo)
+	{
+		if (m_useLimitedStrength)
+			addFeature(Feature_Limit_Strength);
+
+		m_minElo = minElo;
+		m_maxElo = maxElo;
+	}
+}
+
+
+void
+Engine::setSkillLevel(unsigned level)
+{
+	m_skillLevel = mstl::min(m_maxSkillLevel, level);
+}
+
+
+void
+Engine::setMaxSkillLevel(unsigned maxLevel)
+{
+	if ((m_maxSkillLevel = maxLevel) > 0)
+		addFeature(Feature_Skill_Level);
+}
+
+
+void
+Engine::addFeature(unsigned feature)
+{
+	if (feature == Feature_Limit_Strength && m_maxElo > 0)
+		m_useLimitedStrength = true;
+	else
+		m_features |= feature;
 }
 
 
@@ -482,8 +593,8 @@ Engine::readyRead()
 
 			if (!line.empty())
 			{
-				m_engine->processMessage(line);
 				log(line);
+				m_engine->processMessage(line);
 			}
 
 			s = p + 1;
@@ -598,19 +709,27 @@ Engine::startAnalysis(db::Game const* game)
 {
 	M_REQUIRE(game);
 
-	bool result	= false;
-	bool isNew	= m_game ? game->id() != m_game->id() : false;
+	bool isNew = m_game ? game->id() != m_game->id() : true;
 
 	m_game = game;
 	m_gameId = game->id();
 
 	if (m_engine->isReady())
 	{
-		if ((result = m_engine->startAnalysis(isNew)))
-			result = m_analyzing = true;
+		if (m_analyzing)
+		{
+			m_analyzing = false;
+
+			if (!m_engine->stopAnalysis())
+				return false;
+		}
+
+		if (!m_engine->startAnalysis(isNew))
+			return false;
+		m_analyzing = true;
 	}
 
-	return result;
+	return true;
 }
 
 
@@ -654,6 +773,7 @@ Engine::changeNumberOfVariations(unsigned n)
 		m_engine->sendNumberOfVariations();
 	}
 
+	m_variations.resize(n);
 	return n;
 }
 
@@ -664,7 +784,10 @@ Engine::changeHashSize(unsigned size)
 	if (!isActive())
 		return 0;
 
-	size = mstl::max(4u, size);
+	if (m_minHashSize > 0)
+		size = mstl::min(m_maxHashSize, mstl::max(m_minHashSize, size));
+	else
+		size = mstl::max(4u, size);
 
 	if (size != m_hashSize)
 	{
@@ -689,9 +812,7 @@ Engine::setBestMove(db::Move const& move)
 void
 Engine::setVariation(db::MoveList const& moves, unsigned no)
 {
-	M_REQUIRE(no >= 1);
-	M_REQUIRE(no <= numVariations());
-
+	M_REQUIRE(no < numVariations());
 	m_variations[no] = moves;
 }
 
@@ -766,6 +887,59 @@ Engine::setShortName(mstl::string const& name)
 }
 
 
+void
+Engine::setEmail(mstl::string const& address)
+{
+	for (mstl::string::const_iterator i = address.begin(); i != address.end(); ++i)
+	{
+		if (!::isalnum(*i) && ::strchr("_-.@", *i) == 0)
+			return; // invalid character in Email address
+	}
+
+	mstl::string::size_type i = address.find_first_of('@');
+	mstl::string::size_type k = address.find_last_of('.');
+
+	if (	i != mstl::string::npos
+		&& k != mstl::string::npos
+		&& k > i + 2
+		&& i > 5
+		&& (k + 2 == address.size() || k + 3 == address.size()))
+	{
+		m_email.assign(address); // ok, seems to be a plausible Email address
+	}
+}
+
+
+void
+Engine::setUrl(mstl::string const& address)
+{
+	mstl::string url;
+
+	if (::strncmp(address, "www.", 4) == 0)
+		url.append("http://");
+
+	url.append(address);
+
+	if ((::strncmp(url, "http://", 7) == 0 || ::strncmp(url, "ftp://", 6)))
+	{
+		for (mstl::string::const_iterator i = url.begin(); i != url.end(); ++i)
+		{
+			if (!::isalnum(*i) && ::strchr("_/-.", *i) == 0)
+				return; // invalid character in URL
+		}
+
+		mstl::string::size_type k = url.find_last_of('.');
+
+		if (	k != mstl::string::npos
+			&& k > 5
+			&& (k + 2 == url.size() || k + 3 == url.size()))
+		{
+			m_url.swap(url); // ok, seems to be a plausible URL
+		}
+	}
+}
+
+
 bool
 Engine::detectShortName(mstl::string const& s, bool setId)
 {
@@ -795,6 +969,64 @@ Engine::detectShortName(mstl::string const& s, bool setId)
 	}
 
 	return detected;
+}
+
+
+bool
+Engine::detectUrl(mstl::string const& str)
+{
+	mstl::string::size_type n = str.find("http://");
+
+	if (n == mstl::string::npos)
+		n = str.find("ftp://");
+	if (n == mstl::string::npos)
+		n = str.find("www.");
+
+	if (n != mstl::string::npos)
+	{
+		char const* t = str.begin() + n;
+		char const* u = str;
+		char const* e = str.end();
+
+		while (u < e && (::isalnum(*u) || ::strchr("_/-.", *u)))
+			++u;
+
+		mstl::string url(m_url);
+		setUrl(mstl::string(t, u));
+
+		if (url != m_url)
+			return true;
+	}
+
+	return false;
+}
+
+
+bool
+Engine::detectEmail(mstl::string const& str)
+{
+	mstl::string::size_type n = str.find("@");
+
+	char const* s = str.begin();
+	char const* t = s + n;
+	char const* u = s + n;
+	char const* e = str.end();
+
+	while (t > s && (::isalnum(*t) || ::strchr("_-.", *t)))
+		--t;
+	while (u < e && (::isalnum(*u) || ::strchr("_-.", *u)))
+		++u;
+
+	if (s + n <= u - 5 && t + 4 <= s + n)
+	{
+		mstl::string email(m_email);
+		setEmail(mstl::string(t, u));
+
+		if (email != m_email)
+			return true;
+	}
+
+	return false;
 }
 
 // vi:set ts=3 sw=3:

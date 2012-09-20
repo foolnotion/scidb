@@ -45,12 +45,21 @@ inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(d
 inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
 inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
 
-inline void Engine::Concrete::updateInfo()								{ m_engine->updateInfo(); }
+inline void Engine::Concrete::updatePvInfo()								{ m_engine->updatePvInfo(); }
+inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
+inline void Engine::Concrete::updateCurrLine()							{ m_engine->updateCurrLine(); }
+inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(); }
+inline void Engine::Concrete::updateDepthInfo()							{ m_engine->updateDepthInfo(); }
+inline void Engine::Concrete::updateTimeInfo()							{ m_engine->updateTimeInfo(); }
+inline void Engine::Concrete::updateHashFullInfo()						{ m_engine->updateHashFullInfo(); }
 inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
 
 inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
 
+
+inline void Engine::pause()	{ m_engine->pause(); }
+inline void Engine::resume()	{ m_engine->resume(); }
 
 inline bool Engine::protocolAlreadyStarted() const		{ return m_protocol; }
 inline Engine::Options const& Engine::options() const	{ return m_options; }
@@ -58,17 +67,33 @@ inline Engine::Options const& Engine::options() const	{ return m_options; }
 
 inline
 bool
-Engine::Concrete::detectShortName(mstl::string const& s)
+Engine::Concrete::detectShortName(mstl::string const& str)
 {
-	return m_engine->detectShortName(s);
+	return m_engine->detectShortName(str);
 }
 
 
 inline
 bool
-Engine::Concrete::detectIdentifier(mstl::string const& s)
+Engine::Concrete::detectIdentifier(mstl::string const& str)
 {
-	return m_engine->detectIdentifier(s);
+	return m_engine->detectIdentifier(str);
+}
+
+
+inline
+bool
+Engine::Concrete::detectUrl(mstl::string const& str)
+{
+	return m_engine->detectUrl(str);
+}
+
+
+inline
+bool
+Engine::Concrete::detectEmail(mstl::string const& str)
+{
+	return m_engine->detectEmail(str);
 }
 
 
@@ -114,6 +139,14 @@ Engine::Concrete::setVariation(db::MoveList const& moves, unsigned no)
 
 inline
 void
+Engine::Concrete::setCurrentMove(unsigned number, db::Move const& move)
+{
+	m_engine->setCurrentMove(number, move);
+}
+
+
+inline
+void
 Engine::Concrete::setShortName(mstl::string const& name)
 {
 	m_engine->setShortName(name);
@@ -139,9 +172,57 @@ Engine::Concrete::setAuthor(mstl::string const& name)
 
 inline
 void
-Engine::Concrete::setMaxMultiPV(unsigned n)
+Engine::Concrete::setUrl(mstl::string const& address)
 {
-	m_engine->setMaxMultiPV(n);
+	m_engine->setUrl(address);
+}
+
+
+inline
+void
+Engine::Concrete::setEmail(mstl::string const& address)
+{
+	m_engine->setEmail(address);
+}
+
+
+inline
+void
+Engine::Concrete::setElo(unsigned n)
+{
+	m_engine->setElo(n);
+}
+
+
+inline
+void
+Engine::Concrete::setEloRange(unsigned minElo, unsigned maxElo)
+{
+	m_engine->setEloRange(minElo, maxElo);
+}
+
+
+inline
+void
+Engine::Concrete::setSkillLevel(unsigned level)
+{
+	m_engine->setSkillLevel(level);
+}
+
+
+inline
+void
+Engine::Concrete::setMaxSkillLevel(unsigned maxLevel)
+{
+	m_engine->setMaxSkillLevel(maxLevel);
+}
+
+
+inline
+void
+Engine::Concrete::setMaxMultiPV(unsigned size)
+{
+	m_engine->setMaxMultiPV(size);
 }
 
 
@@ -150,6 +231,38 @@ void
 Engine::Concrete::setHashSize(unsigned size)
 {
 	m_engine->setHashSize(size);
+}
+
+
+inline
+void
+Engine::Concrete::setHashRange(unsigned minSize, unsigned maxSize)
+{
+	m_engine->setHashRange(minSize, maxSize);
+}
+
+
+inline
+void
+Engine::Concrete::setThreads(unsigned num)
+{
+	m_engine->setThreads(num);
+}
+
+
+inline
+void
+Engine::Concrete::setThreadRange(unsigned minThreads, unsigned maxThreads)
+{
+	m_engine->setThreadRange(minThreads, maxThreads);
+}
+
+
+inline
+void
+Engine::Concrete::setPlayingStyles(mstl::string const& styles)
+{
+	m_engine->setPlayingStyles(styles);
 }
 
 
@@ -174,14 +287,29 @@ inline double Engine::time() const									{ return m_time; }
 inline unsigned Engine::nodes() const								{ return m_nodes; }
 inline db::Board const& Engine::currentBoard() const			{ return m_engine->currentBoard(); }
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
+inline unsigned Engine::currentMoveNumber() const				{ return m_currMoveNumber; }
+inline db::Move const& Engine::currentMove() const				{ return m_currMove; }
 
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
 inline mstl::string const& Engine::shortName() const			{ return m_shortName; }
 inline mstl::string const& Engine::author() const				{ return m_author; }
+inline mstl::string const& Engine::email() const				{ return m_email; }
+inline mstl::string const& Engine::url() const					{ return m_url; }
+inline unsigned Engine::elo() const									{ return m_elo; }
+inline unsigned Engine::minElo() const								{ return m_minElo; }
+inline unsigned Engine::maxElo() const								{ return m_maxElo; }
+inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
+inline unsigned Engine::maxSkillLevel() const					{ return m_maxSkillLevel; }
 inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
+inline mstl::string const& Engine::playingStyles() const		{ return m_playingStyles; }
 inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
 inline unsigned Engine::numVariations() const					{ return m_numVariations; }
 inline unsigned Engine::hashSize() const							{ return m_hashSize; }
+inline unsigned Engine::minHashSize() const						{ return m_minHashSize; }
+inline unsigned Engine::maxHashSize() const						{ return m_maxHashSize; }
+inline unsigned Engine::numThreads() const						{ return m_numThreads; }
+inline unsigned Engine::minThreads() const						{ return m_minThreads; }
+inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 
@@ -190,11 +318,20 @@ inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
-inline void Engine::setMaxMultiPV(unsigned n)					{ m_maxMultiPV = n; }
+inline void Engine::setElo(unsigned elo)							{ m_elo = elo; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
+inline void Engine::setLog(mstl::ostream* stream)				{ m_logStream = stream; }
 inline void Engine::setHashSize(unsigned size)					{ m_hashSize = size; }
-inline void Engine::setLimitedStrength(unsigned elo)			{ m_limitedStrength = elo; }
-inline void Engine::addFeature(unsigned feature)				{ m_features |= feature; }
+inline void Engine::setThreads(unsigned num)						{ m_numThreads = num; }
+
+
+inline
+void
+Engine::setCurrentMove(unsigned number, db::Move const& move)
+{
+	m_currMoveNumber = number;
+	m_currMove = move;
+}
 
 
 inline
@@ -217,17 +354,17 @@ Engine::setMate(int numHalfMoves)
 
 inline
 bool
-Engine::detectShortName(mstl::string const& s)
+Engine::detectShortName(mstl::string const& str)
 {
-	return detectShortName(s, false);
+	return detectShortName(str, false);
 }
 
 
 inline
 bool
-Engine::detectIdentifier(mstl::string const& s)
+Engine::detectIdentifier(mstl::string const& str)
 {
-	return detectShortName(s, true);
+	return detectShortName(str, true);
 }
 
 } // namespace app

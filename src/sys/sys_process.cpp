@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C)2011-2012 Gregor Cramer
+// Copyright: (C) 2011-2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -26,6 +26,16 @@
 
 #include <tcl.h>
 #include <stdlib.h>
+
+#define DEBUG
+
+#ifdef DEBUG
+# include <stdio.h>
+# undef DEBUG
+# define DEBUG(x) x
+#else
+# define DEBUG(x)
+#endif
 
 using namespace sys;
 
@@ -260,6 +270,13 @@ Process::gets(mstl::string& result)
 		Tcl_AppendResult(::sys::tcl::interp(), "read error occured: ");
 		Tcl_AppendResult(::sys::tcl::interp(), Tcl_PosixError(::sys::tcl::interp()));
 		Tcl_BackgroundError(::sys::tcl::interp());
+
+		DEBUG(fprintf(	stderr,
+							"%s: read error occurred (%s)",
+							__func__,
+							Tcl_PosixError(::sys::tcl::interp())));
+
+		kill();
 	}
 
 	result.assign(static_cast<char const*>(buf), bytesRead);
@@ -319,6 +336,13 @@ Process::write(char const* msg, int size)
 			Tcl_AppendResult(::sys::tcl::interp(), "write error occured: ");
 			Tcl_AppendResult(::sys::tcl::interp(), Tcl_PosixError(::sys::tcl::interp()));
 			Tcl_BackgroundError(::sys::tcl::interp());
+
+			DEBUG(fprintf(	stderr,
+								"%s: write error occurred (%s)",
+								__func__,
+								Tcl_PosixError(::sys::tcl::interp())));
+
+			kill();
 		}
 
 		return -1;

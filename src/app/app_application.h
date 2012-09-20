@@ -74,8 +74,6 @@ public:
 	{
 		virtual ~Subscriber() = 0;
 
-		virtual void setBoard(mstl::string const& position) = 0;
-
 		void updateList(unsigned id, mstl::string const& filename);
 		void updateList(unsigned id, mstl::string const& filename, unsigned view);
 

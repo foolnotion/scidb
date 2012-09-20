@@ -761,6 +761,10 @@ namespace variant
 {
 	enum Type { Unknown, Standard, Chess960, Shuffle, Other };
 
+	bool isChess960(unsigned idn);
+	bool isShuffleChess(unsigned idn);
+	bool isStandardChess(unsigned idn);
+
 	Type fromIdn(unsigned idn);
 }
 

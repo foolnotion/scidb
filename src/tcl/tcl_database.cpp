@@ -413,8 +413,6 @@ struct Subscriber : public Application::Subscriber
 		unsetCmd(Tree, updateCmd, closeCmd, arg);
 	}
 
-	void setBoard(string const& position) override {}
-
 	void closeDatabase(mstl::string const& filename) override
 	{
 		Tcl_Obj* file = Tcl_NewStringObj(filename, filename.size());

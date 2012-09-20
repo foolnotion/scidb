@@ -217,21 +217,21 @@ proc build {parent width height} {
 	]
 	::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarColumnLayout \
-		-command [namespace code [list ToggleOption style:column]] \
+		-command [namespace code [list Refresh style:column]] \
 		-tooltipvar ::pgn::setup::mc::ParLayout(column-style) \
 		-variable ::pgn::editor::Options(style:column) \
 		-padx 1 \
 		;
 	::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarParagraphSpacing \
-		-command [namespace code [list ToggleOption spacing:paragraph]] \
+		-command [namespace code [list Refresh spacing:paragraph]] \
 		-tooltipvar ::pgn::setup::mc::ParLayout(use-spacing) \
 		-variable ::pgn::editor::Options(spacing:paragraph) \
 		-padx 1 \
 		;
 	set Vars(button:show:moveinfo) [::toolbar::add $tbDisplay checkbutton \
 		-image $::icon::toolbarClock \
-		-command [namespace code [list ToggleOption show:moveinfo]] \
+		-command [namespace code [list Refresh show:moveinfo]] \
 		-tooltipvar ::pgn::setup::mc::Display(moveinfo) \
 		-variable ::pgn::editor::Options(show:moveinfo) \
 		-padx 1 \
@@ -710,14 +710,6 @@ proc GameBarEvent {action position} {
 }
 
 
-proc ToggleOption {var} {
-	variable ::pgn::editor::Options
-
-	set Options($var) [expr {!$Options($var)}]
-	Refresh $var
-}
-
-
 proc ToggleLanguage {lang} {
 	variable Vars
 
@@ -1081,7 +1073,11 @@ proc UpdateHeader {position w data} {
 		foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
 			set tags {}
 			lassign $line content tags
-			lappend tags opening
+			if {$tags eq "figurine"} {
+				set tags figurineb
+			} else {
+				lappend tags opening
+			}
 			$w insert current $content $tags
 		}
 		$w insert current "\n"
@@ -1791,6 +1787,7 @@ proc ResetGame {position tags} {
 	::scidb::game::subscribe pgn $position [namespace current]::DoLayout
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
+	::scidb::game::subscribe tree $position [namespace parent]::analysis::update
 	::scidb::game::subscribe state $position [namespace current]::StateChanged
 }
 

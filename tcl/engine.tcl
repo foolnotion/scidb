@@ -29,21 +29,24 @@
 namespace eval engine {
 namespace eval mc {
 
-set Informationen			"Information"
+set Information			"Information"
+set Features				"Features"
 set Options					"Options"
 
 set Name						"Name"
 set Identifier				"Identifier"
 set Author					"Author"
+set Webpage					"Webpage"
+set Email					"Email"
 set Country					"Country"
 set Rating					"Rating"
 set Logo						"Logo"
 set Protocol				"Protocol"
 set Parameters				"Parameters"
 set Command					"Command"
+set Directory				"Directory"
 set Variants				"Variants"
 set LastUsed				"Last used"
-set Frequency				"Frequency"
 
 set Variant(standard)	"Standard Chess"
 set Variant(chess960)	"Chess 960"
@@ -53,12 +56,13 @@ set SetupEngines			"Setup Egines"
 set ImageFiles				"Image files"
 set SelectEngine			"Select Engine"
 set SelectEngineLogo		"Select Engine Logo"
-set Executables			"Executables"
 set EngineLog				"Engine Console"
 set Probing					"Probing"
 set NeverUsed				"never used"
 set OpenFsbox				"Open File Selection Dialog"
 set ResetToDefault		"Reset to default"
+set ShowInfo				"Show \"Info\""
+set TotalUsage				"%s times in total"
 
 set ConfirmNewEngine		"Confirm new engine"
 set EngineAlreadyExists	"An entry with this engine already exists."
@@ -68,13 +72,41 @@ set DoesNotRespond		"This engine does not respond either to UCI nor to XBoard/Wi
 set DiscardChanges		"The current item has changed.\n\nReally discard changes?"
 set ReallyDelete			"Really delete engine '%s'?"
 set EntryAlreadyExists	"An entry with name '%s' already exists."
+set NoFeaturesAvailable	"This engine does not provide any feature."
+
+# don't translate
+set Feature(multiPV)		"Multiple Best Lines"
+set Feature(pause)		"Pause"
+set Feature(playOther)	"Play Other"
+set Feature(hashSize)	"Hash Size"
+set Feature(clearHash)	"Clear Hash"
+set Feature(threads)		"Threads"
+set Feature(eloRange)	"Limit Strength"
+set Feature(skillLevel)	"Skill Level"
+set Feature(ponder)		"Pondering"
+set Feature(chess960)	"Chess960"
+set Feature(shuffle)		"Shuffle Chess"
+set Feature(styles)		"Playing Styles"
+
+set FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
+set FeatureDetail(pause)		"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
+set FeatureDetail(playOther)	"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
+set FeatureDetail(hashSize)	"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
+set FeatureDetail(clearHash)	"The user may clear the hash tables whlle the engine is running."
+set FeatureDetail(threads)		"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
+set FeatureDetail(eloRange)	"The engine is able to limit its strength to a specific Elo number between %min-%max."
+set FeatureDetail(skillLevel)	"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
+set FeatureDetail(ponder)		"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
+set FeatureDetail(chess960)	"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
+set FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when king and rook are on their traditional starting squares."
+set FeatureDetail(styles)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
 
 } ;# namespace mc
 
 variable Engines {}
 variable PhotoFiles {}
+variable EmptyEngine {}
 
-array set Engine {}
 array set Priv { after {} }
 array set Logo { width 100 height 54 }
 
@@ -99,6 +131,9 @@ proc openSetup {parent} {
 	set Priv(selection) -1
 	set Priv(initialise) 1
 	set Priv(rows) {0}
+	set Priv(uniform) {1}
+	set Priv(html) ""
+
 	array set Var {}
 	array set Var_ {}
 	array set Option {}
@@ -118,11 +153,11 @@ proc openSetup {parent} {
 	### right frame #######################################################
 	set nb [::ttk::notebook $top.nb -takefocus 1]
 	::ttk::notebook::enableTraversal $nb
+	bind $nb <<NotebookTabChanged>> [namespace code TabChanged]
 
 	### Tab: Setup ########################################################
 	set setup [ttk::frame $nb.setup -takefocus 0 -borderwidth 0]
 	$nb add $setup -sticky nsew -text $mc::Information -padding {5 5}
-	set bg [::theme::getBackgroundColor]
 #	lappend labelOptions -borderwidth 1 -relief raised -background [::theme::getToplevelBackground]
 	lappend labelOptions -borderwidth 1 -relief raised -background #f2f2f2
 
@@ -136,28 +171,21 @@ proc openSetup {parent} {
 #								;
 	ttk::label			$setup.lauthor -text $mc::Author
 	ttk::entry			$setup.eauthor -textvar [namespace current]::Var(Author)
+	ttk::label			$setup.lemail -text $mc::Email
+	ttk::entry			$setup.eemail -textvar [namespace current]::Var(Email)
+
 	ttk::label			$setup.lidentifier -text $mc::Identifier
 	ttk::label			$setup.tidentifier -textvar [namespace current]::Var(Identifier) {*}$labelOptions
 	ttk::label			$setup.lvariants -text $mc::Variants
-	ttk::label			$setup.tvariants -textvar [namespace current]::Var(Variant) {*}$labelOptions
+	ttk::label			$setup.tvariants -textvar [namespace current]::Var(variant) {*}$labelOptions
 	ttk::label			$setup.llastused -text $mc::LastUsed
-	ttk::label			$setup.tlastused -textvar [namespace current]::Var(LastUsed) {*}$labelOptions
-	tk::button			$setup.blastused \
+	ttk::label			$setup.tlastused -textvar [namespace current]::Var(lastused) {*}$labelOptions
+	ttk::button			$setup.blastused \
+								-style icon.TButton \
 								-image $::icon::12x12::eraser \
-								-background $bg \
 								-command [namespace code [list ClearLastUsed $list]] \
 								;
-	ttk::label			$setup.lused -text $mc::Frequency
-	ttk::label			$setup.tused -textvar [namespace current]::Var(Frequency) {*}$labelOptions
-	tk::button			$setup.bused \
-								-image $::icon::12x12::eraser \
-								-background $bg \
-								-command [namespace code [list ClearFrequency $list]] \
-								;
-	ttk::label			$setup.lcommand -text $mc::Command
-	ttk::label			$setup.tcommand -textvar [namespace current]::Var(Command) {*}$labelOptions
-	ttk::label			$setup.lparams -text $mc::Parameters
-	ttk::entry			$setup.eparams -textvar [namespace current]::Var(Parameters)
+
 	ttk::label			$setup.lcountry -text $mc::Country
 	::countrybox		$setup.ccountry -textvar [namespace current]::Var(Country)
 	ttk::label			$setup.lrating -text $mc::Rating
@@ -190,27 +218,38 @@ proc openSetup {parent} {
 								-variable [namespace current]::Var(protocol) \
 								-value "WB" \
 								;
-	ttk::label			$setup.lurl -text "URL"
+
+	ttk::label			$setup.lurl -text $mc::Webpage
 	ttk::entry			$setup.eurl -textvar [namespace current]::Var(Url)
-	tk::button			$setup.burl \
+	ttk::button			$setup.burl \
+								-style icon.TButton \
 								-image $::icon::16x16::internet \
-								-background $bg \
 								-command [namespace code [list WebOpen $dlg]] \
 								;
 	ttk::label			$setup.llogo -text $mc::Logo
 	ttk::entry			$setup.elogo -textvar [namespace current]::Var(Logo)
-	tk::button			$setup.blogo \
-								-text "..." \
-								-background $bg \
-								-padx 2 \
-								-pady 0 \
+	ttk::button			$setup.blogo \
+								-style icon.TButton \
+								-image $::fsbox::icon::16x16::folder \
 								-command [namespace code [list GetLogo $dlg $list]] \
 								;
 
+	ttk::label			$setup.lcommand -text $mc::Command
+	ttk::label			$setup.tcommand -textvar [namespace current]::Var(Command) {*}$labelOptions
+	ttk::label			$setup.ldirectory -text $mc::Directory
+	ttk::entry			$setup.edirectory -textvar [namespace current]::Var(Directory)
+	ttk::button			$setup.bdirectory \
+								-style icon.TButton \
+								-image $::fsbox::icon::16x16::folder \
+								-command [namespace code [list GetDirectory $dlg $list]] \
+								;
+	ttk::label			$setup.lparams -text $mc::Parameters
+	ttk::entry			$setup.eparams -textvar [namespace current]::Var(Parameters)
+
 	::tooltip::tooltip $setup.burl ::playercard::mc::OpenInWebBrowser
 	::tooltip::tooltip $setup.blastused $::mc::Clear
-	::tooltip::tooltip $setup.bused $::mc::Clear
 	::tooltip::tooltip $setup.blogo $mc::OpenFsbox
+	::tooltip::tooltip $setup.bdirectory $::dialog::fsbox::mc::Title(dir)
 	::theme::configureSpinbox $setup.frating.selo
 	::theme::configureSpinbox $setup.frating.sccrl
 	::validate::spinboxInt $setup.frating.selo
@@ -236,17 +275,16 @@ proc openSetup {parent} {
 	grid $setup.ename			-row  1 -column 3 -sticky we
 	grid $setup.lauthor		-row  3 -column 1 -sticky w
 	grid $setup.eauthor		-row  3 -column 3 -sticky we
+	grid $setup.lemail		-row  5 -column 1 -sticky w
+	grid $setup.eemail		-row  5 -column 3 -sticky we
 
-	grid $setup.lidentifier	-row  5 -column 1 -sticky w
-	grid $setup.tidentifier	-row  5 -column 3 -sticky we
-	grid $setup.lvariants   -row  7 -column 1 -sticky w
-	grid $setup.tvariants   -row  7 -column 3 -sticky we
-	grid $setup.llastused	-row  9 -column 1 -sticky w
-	grid $setup.tlastused	-row  9 -column 3 -sticky we
-	grid $setup.blastused	-row  9 -column 5 -sticky we
-	grid $setup.lused			-row 11 -column 1 -sticky w
-	grid $setup.tused			-row 11 -column 3 -sticky we
-	grid $setup.bused			-row 11 -column 5 -sticky we
+	grid $setup.lidentifier	-row  7 -column 1 -sticky w
+	grid $setup.tidentifier	-row  7 -column 3 -sticky we
+	grid $setup.lvariants   -row  9 -column 1 -sticky w
+	grid $setup.tvariants   -row  9 -column 3 -sticky we
+	grid $setup.llastused	-row 11 -column 1 -sticky w
+	grid $setup.tlastused	-row 11 -column 3 -sticky we
+	grid $setup.blastused	-row 11 -column 5 -sticky we
 
 	grid $setup.lcountry		-row 13 -column 1 -sticky w
 	grid $setup.ccountry		-row 13 -column 3 -sticky we
@@ -264,15 +302,40 @@ proc openSetup {parent} {
 
 	grid $setup.lcommand		-row 23 -column 1 -sticky w
 	grid $setup.tcommand		-row 23 -column 3 -sticky we
-	grid $setup.lparams		-row 25 -column 1 -sticky w
-	grid $setup.eparams		-row 25 -column 3 -sticky we
+	grid $setup.ldirectory	-row 25 -column 1 -sticky w
+	grid $setup.edirectory	-row 25 -column 3 -sticky we
+	grid $setup.bdirectory	-row 25 -column 5 -sticky we
+	grid $setup.lparams		-row 27 -column 1 -sticky w
+	grid $setup.eparams		-row 27 -column 3 -sticky we
 
 	grid columnconfigure $setup {0 2 4 6} -minsize $::theme::padx
 	grid columnconfigure $setup {3} -weight 1
-	grid rowconfigure $setup {0 2 6 8 10 14 16 20 24 26} -minsize $::theme::pady
-	grid rowconfigure $setup {4 12 18 22} -minsize [expr {3*$::theme::pady}] -weight 1
+	grid rowconfigure $setup {0 2 4 8 10 14 16 16 20 24 26 28} -minsize $::theme::pady
+	grid rowconfigure $setup {6 12 18 22} -minsize [expr {3*$::theme::pady}] -weight 1
 
 	bind $list <<ListboxSelect>> [namespace code [list Select $list %d]]
+
+	### Tab: Features #####################################################
+	set features $nb.features
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	::html $nb.features \
+		-imagecmd [namespace code GetImage] \
+		-center no \
+		-fittowidth yes \
+		-width 0 \
+		-height 0 \
+		-borderwidth 1 \
+		-relief sunken \
+		-doublebuffer no \
+		-exportselection yes \
+		-cursor left_ptr \
+		-showhyphens no \
+		-css $css \
+		-usehorzscroll no \
+		-usevertscroll yes \
+		-takefocus 0 \
+		;
+	$nb add $features -sticky nsew -text $mc::Features -padding {5 5}
 
 	### Tab: Options ######################################################
 	set options $nb.options
@@ -282,14 +345,18 @@ proc openSetup {parent} {
 		-relief sunken \
 	]
 	$nb add $options -sticky nsew -text $mc::Options -padding {5 5}
-	set f [ttk::frame $scrolled.f -borderwidth 0]
-	grid $f -sticky nsew
-	set Priv(tab:options) $options
-	set Priv(scrolled:options) $scrolled
-	set Priv(pane:options) $f
-	set Priv(pane:setup) $setup
+	ttk::frame $scrolled.f -borderwidth 0
+	grid $scrolled.f -sticky nsew
 
-	### geoemetry #########################################################
+	### Variables ########################################################ä
+	set Priv(tab:options) $options
+	set Priv(pane:features) $features
+	set Priv(scrolled:options) $scrolled
+	set Priv(pane:options) $scrolled.f
+	set Priv(pane:setup) $setup
+	set Priv(notebook) $nb
+
+	### Geoemetry #########################################################
 	grid $list -row 1 -column 1
 	grid $nb	  -row 1 -column 3 -sticky nswe
 	grid rowconfigure $top {0 2} -minsize $::theme::pady
@@ -313,14 +380,21 @@ proc openSetup {parent} {
 	wm minsize $dlg [winfo reqwidth $dlg] [winfo reqheight $dlg]
 	wm resizable $dlg true false
 	wm title $dlg $mc::SetupEngines
-#	wm transient $dlg [winfo toplevel $parent]
+	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg center $parent
 	wm deiconify $dlg
 	focus $list
+	::ttk::grabWindow $dlg
+	tkwait visibility $dlg
+	wm geometry $dlg [winfo width $dlg]x[winfo height $dlg]
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
 }
 
 
 proc openEngineLog {parent} {
+	variable ShowInfo 0
+
 	if {[logIsOpen? $parent]} { return }
 	if {$parent eq "."} { set dlg .engineLog } else { set dlg $parent.engineLog }
 	tk::toplevel $dlg -class Scidb
@@ -346,7 +420,12 @@ proc openEngineLog {parent} {
 	grid $top.vsb  -row 1 -column 2 -sticky ns
 	grid rowconfigure $top 1 -weight 1
 	grid columnconfigure $top 1 -weight 1
-	::widget::dialogButtons $dlg {close clear} -default clear
+	::widget::dialogButtons $dlg {close clear} -default clear -justify right -alignment left
+	ttk::checkbutton $dlg.info \
+		-textvar [namespace current]::mc::ShowInfo \
+		-variable [namespace current]::ShowInfo \
+		;
+	::widget::dialogButtonsPack $dlg.info -justify left -position start
 	$dlg.close configure -command [namespace code [list CloseLog $dlg]]
 	$dlg.clear configure -command [namespace code [list ClearLog $top.text]]
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
@@ -362,13 +441,15 @@ proc logIsOpen? {parent} {
 
 
 proc engines {} {
+	variable EmptyEngine
 	variable Engines
 
 	set list {}
 
 	foreach entry $Engines {
-		array set opts $entry
-		lappend list [list $opts(Name) $opts(LastUsed)]
+		array set engine $EmptyEngine
+		array set engine $entry
+		lappend list [list $engine(Name) $engine(LastUsed)]
 	}
 
 	# TODO
@@ -470,18 +551,20 @@ proc engines {} {
 
 proc setup {} {
 	variable Engines
-	variable Engine
+	variable EmptyEngine
 
-	set Engine(empty) {
+	set EmptyEngine {
 		Name				""
 		ShortId			""
 		Identifier		""
 		Author			""
+		Email				""
 		Country			""
 		Elo				0
 		CCRL				0
 		Command			""
-		Parameters		{}
+		Directory		""
+		Parameters		""
 		Logo				""
 		Url				""
 		Protocol			""
@@ -505,24 +588,20 @@ proc setup {} {
 				ShortId			Stockfish
 				Identifier		"Stockfish 120903"
 				Author			"Tord Romstad, Marco Costalba & Joona Kiiski"
-				Country			""
-				Elo				0
-				CCRL				0
 				Command			stockfish-120903
-				Parameters		{}
-				Logo				""
-				Url				""
 				Protocol			UCI
 				Variant			chess960
-				LastUsed			0
-				Frequency		0
-				Features:UCI	{multiPV 500 hashSize true clearHash true}
-				Features:WB		{}
+				Features:UCI	{	multiPV 500
+										ponder true
+										hashSize {4 8192}
+										threads {4 32}
+										skillLevel {0 20}
+										clearHash true}
 				Options:UCI		{
 					{{Use Debug Log} check false false {} {}}
 					{{Use Search Log} check false false {} {}}
-					{{Search Log Filename} string SearchLog.txt SearchLog.txt {} {}}
-					{{Book File} string book.bin book.bin {} {}}
+					{{Search Log Filename} file SearchLog.txt SearchLog.txt {} {}}
+					{{Book File} file book.bin book.bin {} {}}
 					{{Best Book Move} check false false {} {}}
 					{{Mobility (Middle Game)} spin 100 100 0 200}
 					{{Mobility (Endgame)} spin 100 100 0 200}
@@ -544,56 +623,28 @@ proc setup {} {
 					{{Minimum Thinking Time} spin 20 20 0 5000}
 					{{Slow Mover} spin 100 100 10 1000}
 				}
-				Options:WB		{}
-				Timestamp		0
-				FileTime			0
 			}
 			{
 				Name				Crafty
 				ShortId			Crafty
 				Identifier		Crafty-23.2a
 				Author			"Dr. Robert M. Hyatt"
-				Country			""
-				Elo				0
-				CCRL				0
 				Command			crafty-32.2
-				Parameters		{}
-				Logo				""
-				Url				""
 				Protocol			WB
-				Variant			standard
-				LastUsed			0
-				Frequency		0
-				Features:UCI	{}
-				Features:WB		{}
-				Options:UCI		{}
-				Options:WB		{}
-				Timestamp		0
-				FileTime			0
 			}
 			{
 				Name				"Toga II"
 				ShortId			"Toga II"
 				Identifier		"Toga II 1.3.1"
 				Author			"Thomas Gaksch & Fabien Letouzey"
-				Country			""
-				Elo				0
-				CCRL				0
 				Command			fruit
-				Parameters		{}
-				Logo				""
-				Url				""
 				Protocol			UCI
-				Variant			standard
-				LastUsed			0
-				Frequency		0
-				Features:UCI	{multiPV 10 hashSize true}
-				Features:WB		{}
+				Features:UCI	{multiPV 10 ponder true hashSize {4 1024}}
 				Options:UCI		{
 					{Hash spin 16 16 4 1024}
 					{{Search Time} spin 0 0 0 3600}
 					{{Search Depth} spin 0 0 0 20}
-					{BookFile string performance.bin performance.bin {} {}}
+					{BookFile file performance.bin performance.bin {} {}}
 					{{NullMove Pruning} combo Always Always {Always;Fail High;Never} {}}
 					{{NullMove Reduction} spin 3 3 1 4}
 					{{Verification Search} combo Always Always {Always;Endgame;Never} {}}
@@ -617,55 +668,23 @@ proc setup {} {
 					{{Toga King Safety Margin} spin 1700 1700 500 3000}
 					{{Toga Extended History Pruning} check false false {} {}}
 				}
-				Options:WB		{}
-				Timestamp		0
-				FileTime			0
 			}
 			{
 				Name				Phalanx
 				ShortId			Phalanx
 				Identifier		Phalanx
 				Author			"Dusan Dobes"
-				Country			""
-				Elo				0
-				CCRL				0
 				Command			phalanx
 				Parameters		-l-
-				Logo				""
-				Url				""
 				Protocol			WB
-				Variant			standard
-				LastUsed			0
-				Frequency		0
-				Features:UCI	{}
-				Features:WB		{}
-				Options:UCI		{}
-				Options:WB		{}
-				Timestamp		0
-				FileTime			0
 			}
 			{
 				Name				Micro-Max
 				ShortId			Micro-Max
 				Identifier		"micro-Max 4.8 (m)"
 				Author			"H.G. Muller"
-				Country			""
-				Elo				0
-				CCRL				0
 				Command			micromax
-				Parameters		{}
-				Logo				""
-				Url				""
 				Protocol			WB
-				Variant			standard
-				LastUsed			0
-				Frequency		0
-				Features:UCI	{}
-				Features:WB		{}
-				Options:UCI		{}
-				Options:WB		{}
-				Timestamp		0
-				FileTime			0
 			}
 		}
 
@@ -673,14 +692,16 @@ proc setup {} {
 		set Engines {}
 
 		foreach entry $list {
+			array unset engine
 			array set engine $entry
 			set engine(Command) "[file join $::scidb::dir::engines $engine(Command)]"
 
 			if {[file executable $engine(Command)]} {
 				set result [::scidb::engine::info $engine(Name)]
 				if {[llength $result]} {
-					lassign $result _ Country Elo CCRL _ _ _ _ Url _
-					foreach attr {Country Elo CCRL Url} {
+					lassign $result _ Country _ CCRL _ _ _ _ Url _
+					# We don't like to set the ELO value
+					foreach attr {Country CCRL Url} {
 						set engine($attr) [set $attr]
 					}
 				}
@@ -694,29 +715,70 @@ proc setup {} {
 }
 
 
-proc startAnalysis {name isReadyCmd updateCmd bestMoveCmd} {
+proc startEngine {name isReadyCmd updateCmd} {
+	variable EmptyEngine
 	variable Engines
+	variable Priv
+
+	set index 0
 
 	foreach entry $Engines {
+		array set engine $EmptyEngine
 		array set engine $entry
+
 		if {$engine(Name) eq $name} {
-			if {[string match UCI* $engine(Protocol)]} {
-				set protocol UCI
+			set protocol [lindex $engine(Protocol) 0]
+			if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
+				set dir $engine(Directory)
 			} else {
-				set protocl WB
+				set dir $::scidb::dir::log
 			}
-			return [::scidb::engine::start \
-				$engine(Command) $::scidb::dir::log $protocol $isReadyCmd $updateCmd $bestMoveCmd]
+			set engine(LastUsed) [clock seconds]
+			incr engine(Frequency)
+			lset Engines $index [array get engine]
+			::options::hookWriter [namespace current]::WriteOptions engines
+			set id [::scidb::engine::start $engine(Command) $dir $protocol $isReadyCmd $updateCmd]
+			return $id
 		}
+
+		incr index
 	}
 
 	return -1
 }
 
 
+proc startAnalysis {engineId} {
+	if {$engineId != -1} {
+		::scidb::engine::analyze start $engineId
+	}
+}
+
+
 proc stopAnaylsis {engineId} {
 	if {$engineId != -1} {
-		::scidb::engine::stop $engineId
+		::scidb::engine::analyze stop $engineId
+	}
+}
+
+
+proc pause {engineId} {
+	if {$engineId != -1} {
+		::scidb::engine::pause $engineId
+	}
+}
+
+
+proc resume {engineId} {
+	if {$engineId != -1} {
+		::scidb::engine::resume $engineId
+	}
+}
+
+
+proc kill {engineId} {
+	if {$engineId != -1} {
+		::scidb::engine::kill $engineId
 	}
 }
 
@@ -742,11 +804,24 @@ proc ClearLog {text} {
 
 
 proc Log {text msg} {
+	variable ShowInfo
+
 	switch -- [string index $msg 0] {
-		> { set tag out }
-		< { set tag in; set msg [string range $msg 2 end] } 
-		! { set tag error; set msg [string range $msg 2 end] } 
-		default { set tag out }
+		"<" {
+			if {!$ShowInfo && [string match {< info *} $msg]} { return }
+			set tag in
+			set msg [string range $msg 2 end]
+		} 
+		"!" {
+			set tag error
+			set msg [string range $msg 2 end]
+		} 
+		">" {
+			set tag out
+		}
+		default {
+			set tag out
+		}
 	}
 
 	$text configure -state normal
@@ -758,11 +833,15 @@ proc Log {text msg} {
 
 proc Select {list item} {
 	variable Engines
+	variable EmptyEngine
 	variable Priv
 	variable Photo
 	variable Var
 
+	if {[llength $item] == 0} { return }
+
 	if {$Priv(selection) >= 0} {
+		array set engine $EmptyEngine
 		array set engine [lindex $Engines $item]
 		if {$Var(Name) eq $engine(Name)} { return }
 
@@ -771,6 +850,7 @@ proc Select {list item} {
 			return
 		}
 
+		array set engine $EmptyEngine
 		array set engine [lindex $Engines $Priv(selection)]
 		set logo $engine(ShortId)
 		if {[info exists Photo($logo)]} {
@@ -779,7 +859,16 @@ proc Select {list item} {
 	}
 
 	set Priv(selection) $item
-	Fill $list [lindex $Engines $item]
+	set entry [lindex $Engines $item]
+	array set engine $EmptyEngine
+	array set engine $entry
+	FillInfo $list $entry
+	set features $engine(Features:[lindex $engine(Protocol) 0])
+	if {$engine(Variant) ne "standard"} {
+		lappend features $engine(Variant) true
+	}
+	ShowFeatures $list $features
+	TabChanged
 	UpdateVars
 }
 
@@ -803,67 +892,116 @@ proc DiscardChanges {list} {
 }
 
 
-proc Fill {list entry} {
+proc ShowFeatures {list features} {
+	variable Priv
+
+	if {"shuffle" in $features} { lappend features chess960 true }
+
+	append html "<html>"
+	append html "<head><style type='text/css'>body { background-color: yellow; }</style></head>"
+	append html "<body>"
+
+	if {[llength $features] == 0} {
+		append html "<h2 align='center'>$mc::NoFeaturesAvailable</h2>"
+		append html "<p align='center'><img src='Smiley-Cry-128x128.png' style='padding-top: 50px;' /></p>"
+	} else {
+		append html "<table cellpadding='5'>"
+
+		foreach {name value} $features {
+			append html "<tr><td style='white-space:nowrap;' valign='top'><b>$mc::Feature($name)</b></td>"
+
+			switch $name {
+				pause - playOther - clearHash - ponder - chess960 - shuffle - skillLevel {
+					append html "<td>$mc::FeatureDetail($name)</td>"
+				}
+				multiPV {
+					append html "<td>[format $mc::FeatureDetail($name) $value]</td>"
+				}
+				hashSize - eloRange - threads {
+					set map [list %min [lindex $value 0] %max [lindex $value 1]]
+					append html "<td>[string map $map $mc::FeatureDetail($name)]</td>"
+				}
+				styles {
+					set styles {}
+					foreach entry $value { lappend styles "\"$entry\"" }
+					set values [join $styles ", "]
+					append html "<td>[format $mc::FeatureDetail($name) $values]</td>"
+				}
+			}
+
+			append html "</tr>"
+		}
+
+		append html "</table>"
+	}
+
+	append html "</body>"
+	append html "</html>"
+	set Priv(html) $html
+}
+
+
+proc TabChanged {} {
+	variable Priv
+
+	if {[string length $Priv(html)] && [$Priv(notebook) select] eq $Priv(pane:features)} {
+		$Priv(pane:features) parse $Priv(html)
+		set Priv(html) ""
+	}
+}
+
+
+proc GetImage {file} {
+	set img ""
+	catch { set img [image create photo -file [file join $::scidb::dir::images $file]] }
+	return $img
+}
+
+
+proc FillInfo {list entry} {
+	variable EmptyEngine
 	variable Photo
 	variable Priv
 	variable Var
 
+	array set engine $EmptyEngine
 	array set engine $entry
 
 	foreach attr [array names engine] {
 		switch $attr {
 			Protocol {
-				switch -glob $engine(Protocol) {
-					WB*	{ set Var(protocol) WB }
-					UCI*	{ set Var(protocol) UCI }
-				}
-				switch $engine(Protocol) {
-					WB {
-						$Priv(button:UCI) configure -state disabled
-						$Priv(button:WB) configure -state normal
-					}
-					UCI {
-						$Priv(button:UCI) configure -state normal
-						$Priv(button:WB) configure -state disabled
-					}
-					default {
-						$Priv(button:UCI) configure -state normal
-						$Priv(button:WB) configure -state normal
-					}
-				}
+				set Var(protocol) [lindex $engine(Protocol) 0]
+				$Priv(button:UCI) configure -state normal
+				$Priv(button:WB) configure -state normal
+				foreach prot $engine(Protocol) { $Priv(button:UCI) configure -state disabled }
 			}
 			LastUsed {
-				set t $engine(LastUsed)
-				if {$t == 0} {
-					set Var(LastUsed) $mc::NeverUsed
+				set time $engine(LastUsed)
+				set freq $engine(Frequency)
+				if {$time == 0} {
+					set str $mc::NeverUsed
 				} else {
-					set Var(LastUsed) [::locale::formatNormalDate [::locale::timestampToTime $t]]
+					set str [::locale::formatTime [::locale::timestampToTime $time]]
 				}
-			}
-			Frequency {
-				if {$engine(Frequency) == 0} {
-					set Var(Frequency) $mc::NeverUsed
-				} else {
-					set Var(Frequency) $engine(Frequency)
+				if {$freq > 1} {
+					append str " (" [format $mc::TotalUsage $freq] ")"
 				}
+				set Var(lastused) $str
 			}
 			Country {
 				$Priv(countrybox) set $engine(Country)
 			}
 			Variant {
 				switch $engine(Variant) {
-					standard	{ set Var(Variant) $mc::Variant(standard) }
-					chess960	{ set Var(Variant) $mc::Variant(chess960) }
-					shuffle	{ set Var(Variant) "$mc::Variant(chess960) / $mc::Variant(shuffle)" }
+					standard	{ set Var(variant) $mc::Variant(standard) }
+					chess960	{ set Var(variant) $mc::Variant(chess960) }
+					shuffle	{ set Var(variant) "$mc::Variant(chess960) / $mc::Variant(shuffle)" }
 				}
 			}
 			Options:UCI - Options:WB {
-				switch -glob $engine(Protocol) {
-					WB*	{ set protocol WB }
-					UCI*	{ set protocol UCI }
-				}
+				set protocol [lindex $engine(Protocol) 0]
 				if {"Options:$protocol" eq $attr} {
-					BuildOptionFrame $protocol $engine(Name) $engine(Options:$protocol)
+					BuildOptionFrame $protocol $engine(Name) $engine(Options:$protocol) $engine(Directory)
 				}
 			}
 			default {
@@ -904,13 +1042,15 @@ proc VarChanged {args} {
 }
 
 
-proc BuildOptionFrame {protocol engineName options} {
+proc BuildOptionFrame {protocol engineName options directory} {
 	variable Option
 	variable Priv
 
 	set f $Priv(pane:options)
 	grid rowconfigure $f $Priv(rows) -minsize 0
+	grid rowconfigure $f $Priv(uniform) -uniform {}
 	set Priv(rows) {0}
+	set Priv(uniform) {1}
 	set slaves [grid slaves $f]
 	if {[llength $slaves]} { destroy {*}$slaves }
 	set row 1
@@ -957,20 +1097,24 @@ proc BuildOptionFrame {protocol engineName options} {
 				}
 			}
 			button {
-				ttk::button $val \
-					-text $name \
-					-takefocus 1 \
-					-command [namespace code [list SendAction $engineName $name]] \
-					;
+#				ttk::button $val \
+#					-text $name \
+#					-takefocus 1 \
+#					-command [namespace code [list SendAction $engineName $name]] \
+#					;
 			}
 			check {
+				ttk::label $lbl -text $name
 				ttk::checkbutton $val \
-					-text $name \
 					-takefocus 1 \
 					-variable [namespace current]::Option($name) \
 					-offvalue false \
 					-onvalue true \
 					;
+#				set args [list variable [namespace current]::Option($name) \
+#					write [namespace code [list SetOnOff $val]]]
+#				trace add {*}$args
+#				bind $val <Destroy> [list trace remove {*}$args]
 			}
 			combo {
 				ttk::label $lbl -text $name
@@ -990,16 +1134,15 @@ proc BuildOptionFrame {protocol engineName options} {
 				ttk::label $lbl -text $name
 				ttk::frame $val -borderwidth 0 -takefocus 0
 				ttk::entry $val.e -textvar [namespace current]::Option($name) -takefocus 1
-				tk::button $val.b \
-					-text "..." \
-					-background [::theme::getBackgroundColor] \
-					-padx 2 \
-					-pady 0 \
-					-command [namespace code [list GetPath $type $name]] \
+				ttk::button $val.b \
+					-style icon.TButton \
+					-image $::fsbox::icon::16x16::folder \
+					-command [namespace code [list GetPath $type $name $dflt $directory]] \
 					;
-				grid $val.e -column 0 -row 0
+				grid $val.e -column 0 -row 0 -sticky we
 				grid $val.b -column 2 -row 0
 				grid columnconfigure $val {1} -minsize $::theme::padx
+				grid columnconfigure $val {0} -weight 1
 				set sticky ew
 			}
 		}
@@ -1014,22 +1157,24 @@ proc BuildOptionFrame {protocol engineName options} {
 				::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
 				grid $btn -row $row -column 1
 				set args [list variable [namespace current]::Option($name) write \
-								[namespace code [list SetOptionState $name $dflt $btn]]]
+								[namespace code [list SetOptionState $val $name $dflt $btn]]]
 				trace add {*}$args
 				bind $btn <Destroy> [list trace remove {*}$args]
 			}
 
-			set Option($name) $value
 			if {[winfo exists $lbl]} { $lbl configure -wraplength 200 }
 			bind $val <FocusIn> [namespace code [list $Priv(scrolled:options) see %W]]
 			bind $val <FocusIn> {+ ::tooltip::tooltip hide }
 			if {[winfo exists $lbl]} { grid $lbl -row $row -column 3 -sticky w }
 			lappend Priv(rows)
 			grid $val -row $row -column 5 -sticky $sticky
+			if {$row ni $Priv(uniform)} { lappend Priv(uniform) $row }
 			incr row
 			if {$row ni $Priv(rows)} { lappend Priv(rows) $row }
 			incr row
 		}
+
+		set Option($name) $value
 	}
 
 	if {[llength [grid slaves $f]]} {
@@ -1039,7 +1184,8 @@ proc BuildOptionFrame {protocol engineName options} {
 		set state disabled
 	}
 	set rows $Priv(rows)
-	grid rowconfigure $f $Priv(rows) -minsize 15
+	grid rowconfigure $f $Priv(rows) -minsize 10
+	grid rowconfigure $f $Priv(uniform) -uniform all
 	if {[llength $rows] > 2} {
 		grid rowconfigure $f [list [lindex $rows 0] [lindex $rows end]] -minsize $::theme::pady
 	}
@@ -1048,12 +1194,55 @@ proc BuildOptionFrame {protocol engineName options} {
 }
 
 
-proc SetOptionState {name dflt btn args} {
+proc GetPath {type name dflt dir} {
+	variable Option
+	variable Priv
+
+	set ext [file extension $dflt]
+	set suf [string range $ext 1 end]
+	set ft  ""
+
+	if {[info exists ::dialog::fsbox::mc::FileType($suf)]} {
+		set ft $::dialog::fsbox::mc::FileType($suf)
+	}
+
+	if {$ext eq ".bin"} { set checkexistence yes } else { set checkexistence no }
+	if {[string length $dir] == 0} { set dir $::scidb::dir::home }
+
+	set result [::dialog::openFile \
+		-parent $Priv(pane:options) \
+		-initialdir $dir \
+		-initialfile $dflt \
+		-filetypes [list [list $ft $ext]] \
+		-needencoding no \
+		-checkexistence $checkexistence \
+		-geometry last \
+	]
+
+	if {[llength $result]} {
+		if {[string length $dir] == 0} { set dir $::scidb::dir::user }
+		set file [lindex $result 0]
+		set path [file dirname $file]
+		if {[string match $dir* $path]} {
+			set file [string range $file [string length $dir] end]
+			if {[string index $file 0] eq [file separator]} {
+				set file [string range $file 1 end]
+			}
+		}
+		set Option($name) $file
+	}
+}
+
+
+proc SetOptionState {val name dflt btn args} {
 	variable Option
 
 	VarChanged
 	if {$Option($name) eq $dflt} { set state disabled } else { set state normal }
 	$btn configure -state $state
+	if {[winfo class $val] eq "TCheckbutton"} {
+		$val configure -text [expr {$Option($name) ? "true" : "false"}]
+	}
 }
 
 
@@ -1073,50 +1262,47 @@ proc Split {s} {
 
 proc RebuildEngineList {list} {
 	variable Engines
+	variable EmptyEngine
 	variable Photo
 	variable PhotoFiles
 	variable Logo
 	variable Priv
 
-	set resize 0
 	if {[llength [$list columns]] == 0} {
-		$list addcol image -id icon -width $Logo(width)
-		set resize 1
+		$list addcol image -id icon -minwidth $Logo(width) -font TkCaptionFont
 	}
 
 	$list clear
 
 	set i 0
 	foreach entry $Engines {
-		array set opts $entry
-		set logo $opts(ShortId)
+		array set engine $EmptyEngine
+		array set engine $entry
+		set logo $engine(ShortId)
 
 		if {[info exists Photo($logo)]} {
 			$list insert [list [lindex $Photo($logo) 1]]
 		} else {
-			set photoFile $opts(Logo)
+			set photoFile $engine(Logo)
 			if {![file readable $photoFile]} {
-				set photoFile [::util::photos::findPhotoFile $opts(ShortId)]
+				set photoFile [::util::photos::findPhotoFile $engine(ShortId)]
 				if {[string length $photoFile] == 0} {
-					set photoFile [::util::photos::findPhotoFile [file tail $opts(Command)]]
+					set photoFile [::util::photos::findPhotoFile [file tail $engine(Command)]]
 				}
 			}
 
 			if {[string length $photoFile] && $photoFile ni $PhotoFiles} {
-				lappend PhotoFiles [list $i $logo $photoFile $opts(Name)]
+				lappend PhotoFiles [list $i $logo $photoFile $engine(Name)]
 				$list insert {}
 			} else {
-				$list insert [list $opts(Name)] -font TkCaptionFont
+				$list insert [list $engine(Name)] -font TkCaptionFont
 			}
 		}
 
 		incr i
 	}
 
-#	if {$resize} {
-		$list resize
-#	}
-
+	$list resize
 	set Priv(selection) -1
 
 	if {[llength $PhotoFiles]} {
@@ -1132,8 +1318,6 @@ proc ProbeEngine {parent entry} {
 	set protocol(0) WB
 	set protocol(1) UCI
 	set protocols {}
-	array set features_UCI {}
-	array set features_WB {}
 
 	set wait [tk::toplevel $parent.wait -class Scidb]
 	wm withdraw $wait
@@ -1157,16 +1341,9 @@ proc ProbeEngine {parent entry} {
 			failed - undecidable {}
 
 			ok {
-				set result $res
 				set prot $protocol($i)
+				set result($prot) $res
 				lappend protocols $prot
-				lassign $result _ engine(Identifier) engine(Author) engine(Name) \
-					multiPV chess960 shuffle pause playOther hashSize clearHash engine(Options:$prot)
-				if {$multiPV > 1} { set features_${prot}(multiPV) $multiPV }
-				if {$pause} { set features_${prot}(pause) $pause }
-				if {$playOther} { set features_${prot}(playOther) $playOther }
-				if {$hashSize} { set features_${prot}(hashSize) $hashSize }
-				if {$clearHash} { set features_${prot}(clearHash) $clearHash }
 			}
 		}
 	}
@@ -1185,23 +1362,34 @@ proc ProbeEngine {parent entry} {
 	}
 
 	if {[llength $protocols] == 2} {
-		set engine(Protocol) UCI/WB
+		set engine(Protocol) {UCI WB}
 	} else {
 		set engine(Protocol) [lindex $protocols 0]
 	}
 
-	lassign $result _ engine(Identifier) engine(Author) engine(Name) \
-		multiPV chess960 shuffle pause playOther
-	set engine(Author) [string map [list " and " " & "] $engine(Author)]
-	set engine(Features:UCI) [array get features_UCI]
-	set engine(Features:WB) [array get features_WB]
-	if {$shuffle} {
-		set engine(Variant) shuffle
-	} elseif {$chess960} {
-		set engine(Variant) chess960
-	} else {
-		set engine(Variant) standard
+	foreach prot $protocols {
+		lassign $result($prot) ok info features options
+
+		# setup information
+		array set engine $info
+		set engine(Author) [string map [list " and " " & "] $engine(Author)]
+		set engine(Options:$prot) $options
+
+		if {"shuffle" in $features} {
+			set engine(Variant) shuffle
+		} elseif {"chess960" in $features} {
+			set engine(Variant) chess960
+		} else {
+			set engine(Variant) standard
+		}
+
+		array set fts $features
+		array unset fts chess960
+		array unset fts shuffle
+		set engine(Features:$prot) [array get fts]
 	}
+
+	array unset result
 	set result {}
 	if {[string length $engine(Name)]} {
 		set result [::scidb::engine::info $engine(Name)]
@@ -1209,18 +1397,17 @@ proc ProbeEngine {parent entry} {
 		set engine(Name) $engine(Identifier)
 	}
 	if {[llength $result]} {
-		lassign $result _ country elo ccrl _ _ _ _ url aliases
+		lassign $result _ country _ ccrl _ _ _ _ url aliases
 		set shortName $engine(Name)
 		set n [string length $shortName]
 		foreach alias $aliases {
 			set a [string length $alias]
-			if {$a + 3 < $n} {
+			if {$a + 3 < $n && $n > 14} {
 				set shortName $alias
 				set n $a
 			}
 		}
 		set engine(Name) $shortName
-		if {$engine(Elo) == 0} { set engine(Elo) $elo }
 		if {$engine(CCRL) == 0} { set engine(CCRL) $ccrl }
 		if {[string length $engine(Country)] == 0} { set engine(Country) $country }
 		if {[string length $engine(Url)] == 0} { set engine(Url) $url }
@@ -1261,10 +1448,10 @@ proc SaveEngine {list} {
 		foreach attr [array names engine] {
 			switch $attr {
 				Protocol {
-					if {$engine(Protocol) eq "WB/UCI" || $engine(Protocol) eq "UCI/WB"} {
+					if {[llength $engine(Protocol)] == 2} {
 						switch $Var(protocol) {
-							WB		{ set engine(Protocol) "WB/UCI" }
-							UCI	{ set engine(Protocol) "UCI/WB" }
+							WB		{ set engine(Protocol) {WB UCI} }
+							UCI	{ set engine(Protocol) {UCI WB} }
 						}
 					} else {
 						set engine(Protocol) $Var(protocol)
@@ -1273,11 +1460,13 @@ proc SaveEngine {list} {
 				Country {
 					set engine(Country) [$Priv(countrybox) get]
 				}
-				LastUsed - Frequency - Variant - Options:UCI - Options:WB {
+				Variant - Options:UCI - Options:WB {
 					;# alreay set
 				}
 				default {
-					set engine($attr) $Var($attr)
+					if {[info exists Var($attr)]} {
+						set engine($attr) $Var($attr)
+					}
 				}
 			}
 		}
@@ -1303,6 +1492,8 @@ proc SaveEngine {list} {
 
 
 proc SaveEngineList {} {
+	variable Priv
+
 	set filename $::scidb::file::engines
 	set f [open $filename.tmp "w"]
 	fconfigure $f -encoding utf-8
@@ -1310,6 +1501,7 @@ proc SaveEngineList {} {
 	::options::writeItem $f [namespace current]::Engines
 	close $f
 	file rename -force $filename.tmp $filename
+	::options::unhookWriter [namespace current]::WriteOptions engines
 	UpdateVars
 }
 
@@ -1389,7 +1581,7 @@ proc SetInfoPaneState {state} {
 
 proc NewEngine {list} {
 	variable Engines
-	variable Engine
+	variable EmptyEngine
 	variable Index_
 	variable Button_
 	variable Priv
@@ -1403,11 +1595,11 @@ proc NewEngine {list} {
 		-geometry last \
 		-title $mc::SelectEngine \
 		-initialdir $::scidb::dir::engines \
-		-filetypes [list [list $mc::Executables {x}]] \
+		-filetypes [list [list $::dialog::fsbox::mc::FileType(exe) {x}]] \
 	]
 	if {[llength $result] == 0} { return }
 	set file [lindex $result 0]
-	set newEntry $Engine(empty)
+	set newEntry $EmptyEngine
 
 	set entries {}
 	set numbers {}
@@ -1513,11 +1705,13 @@ proc LoadPhotoFiles {list} {
 		if {$item == $Priv(selection)} { set index 2 } else { set index 1 }
 		$list set $item [lindex $Photo($logo) $index]
 	} else {
-		$list set $item [list $name] -font TkCaptionFont
+		$list set $item [list $name]
 	}
 
 	if {[llength $PhotoFiles]} {
 		set Priv(after) [after 50 [namespace code [list LoadPhotoFiles $list]]]
+	} else {
+		$list resize -width
 	}
 }
 
@@ -1561,37 +1755,26 @@ proc WebOpen {parent} {
 
 
 proc ClearLastUsed {list} {
-	variable Var
 	variable Engines
+	variable Var
 
-	set sel [$list curselection]
-	array set engine [lindex $Engines $sel]
-	set Var(LastUsed) 0
+	array set engine [lindex $Engines [$list curselection]]
 	set engine(LastUsed) 0
-	lset Engines $sel [array get engine]
-	Fill $list [lindex $Engines $sel]
-}
-
-
-proc ClearFrequency {list} {
-	variable Var
-	variable Engines
-
-	set sel [$list curselection]
-	array set engine [lindex $Engines $sel]
-	set Var(Frequency) 0
 	set engine(Frequency) 0
-	lset Engines $sel [array get engine]
-	Fill $list [lindex $Engines $sel]
+	set Var(LastUsed) 0
+	set Var(Frequency) 0
+	FillInfo $list [array get engine]
 }
 
 
 proc SetLogo {list} {
 	variable Engines
+	variable EmptyEngine
 	variable Photo
 	variable Priv
 	variable Var
 
+	array set engine $EmptyEngine
 	array set engine [lindex $Engines $Priv(selection)]
 	set logo $engine(ShortId)
 	set file $Var(Logo)
@@ -1619,6 +1802,22 @@ proc SetLogo {list} {
 	set engine(Logo) $Var(Logo)
 	lset Engines $Priv(selection) [array get engine]
 	$list set $Priv(selection) $content
+	$list resize -width
+}
+
+
+proc GetDirectory {parent list} {
+	variable Var
+
+	set result [::dialog::chooseDir \
+		-parent $parent \
+		-initialdir $::scidb::dir::home \
+		-geometry last \
+	]
+
+	if {[llength $result]} {
+		set Var(Directory) [lindex $result 0]
+	}
 }
 
 
@@ -1640,23 +1839,9 @@ proc GetLogo {parent list} {
 }
 
 
-proc GetCommand {parent} {
-	set result [::dialog::openFile \
-		-parent $parent \
-		-class engine \
-		-geometry last \
-		-title $mc::SelectEngine \
-		-initialdir $::scidb::dir::engines \
-		-filetypes [list [list $mc::Executables {x}]] \
-	]
-}
-
-
 proc WriteOptions {chan} {
-	options::writeList $chan [namespace current]::Engines
+	::options::writeItem $chan [namespace current]::Engines
 }
-
-#::options::hookWriter [namespace current]::WriteOptions engines
 
 } ;# namespace engine
 

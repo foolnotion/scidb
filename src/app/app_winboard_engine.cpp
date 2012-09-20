@@ -444,6 +444,28 @@ winboard::Engine::stopAnalysis()
 }
 
 
+void
+winboard::Engine::pause()
+{
+	if (hasFeature(app::Engine::Feature_Pause))
+		send("pause");
+	else
+		send("force"); // XXX working?
+}
+
+
+void
+winboard::Engine::resume()
+{
+	if (hasFeature(app::Engine::Feature_Pause))
+		send("resume");
+	else if (m_featureAnalyze)
+		send("analyze");	// XXX working?
+	else
+		send("go");			// XXX working?
+}
+
+
 bool
 winboard::Engine::isReady() const
 {
@@ -685,16 +707,19 @@ winboard::Engine::parseFeatures(char const* msg)
 				break;
 
 			case 'm':
-				if (::strncmp(key, "myname=", 7) == 0 && val[0] == '"' && end[-1] == '"')
+				if (::strncmp(key, "myname=", 7) == 0)
 				{
-					mstl::string identifier(val + 1, end - 1);
-					setIdentifier(identifier);
-					m_identifierDetected = true;
-					detectFeatures(mstl::string(val + 1, end - val));
-					reject = false;
+					if (val[0] == '"' && end[-1] == '"')
+					{
+						mstl::string identifier(val + 1, end - 1);
+						setIdentifier(identifier);
+						m_identifierDetected = true;
+						detectFeatures(mstl::string(val + 1, end - val));
+						reject = false;
 
-					if (isProbing() && detectShortName(identifier))
-						m_shortNameDetected = true;
+						if (isProbing() && detectShortName(identifier))
+							m_shortNameDetected = true;
+					}
 				}
 				break;
 
@@ -898,28 +923,26 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 	setTime(m_wholeSeconds ? double(time) : time/100.0);
 	setNodes(nodes);
 
-	bool		okSoFar(true);
 	Board 	board(m_board);
 	MoveList moves;
 
-	for ( ; *s && okSoFar && !moves.isFull(); s = ::nextAlgebraic(s))
+	for ( ; *s; s = ::nextAlgebraic(s))
 	{
 		Move move = board.parseMove(s);
 
-		if (move.isLegal())
-		{
-			board.prepareForPrint(move);
-			board.doMove(move);
-			moves.append(move);
-		}
-		else
-		{
-			okSoFar = false;
-		}
+		if (!move.isLegal())
+			break;
+
+		board.prepareForPrint(move);
+		board.doMove(move);
+		moves.append(move);
+
+		if (moves.isFull())
+			break;
 	}
 
 	setVariation(moves);
-	updateInfo();
+	updatePvInfo();
 }
 
 
@@ -949,8 +972,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 
 	if (type == "button")
 	{
-		//	ignore buttons, not usable for configuration
-//		addOption(name, type);
+		addOption(name, type);
 	}
 	else if (type == "save")
 	{
@@ -963,10 +985,23 @@ winboard::Engine::parseOption(mstl::string const& option)
 	else if (type == "check")
 	{
 		addOption(name, type, args == "0" ? "true" : "false");
+
+		if (name == "pause" && args == "0")
+			addFeature(app::Engine::Feature_Pause);
 	}
 	else if (type == "string")
 	{
 		addOption(name, type, args);
+
+		if (name == "variants")
+		{
+			if (option.find("fischerandom") != mstl::string::npos)
+				addFeature(app::Engine::Feature_Chess_960);
+
+			// NOTE:
+			// WinBoard support variants like "wildcastle" and "nocastle",
+			// but this is not Shuffle Chess!
+		}
 	}
 	else if (type == "spin" || type == "slider")
 	{
@@ -994,6 +1029,17 @@ winboard::Engine::parseOption(mstl::string const& option)
 			return;
 
 		addOption(name, type, val, min, max);
+
+		if (name == "memory")
+		{
+			setHashRange(::atoi(min), ::atoi(max));
+			setHashSize(::atoi(val));
+		}
+		else if (name == "smp")
+		{
+			setThreadRange(::atoi(min), ::atoi(max));
+			setThreads(::atoi(val));
+		}
 	}
 	else if (type == "combo")
 	{

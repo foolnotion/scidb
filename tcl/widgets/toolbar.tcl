@@ -786,16 +786,18 @@ proc Add {toolbar widgetCommand args} {
 
 	if {$widgetCommand eq "separator"} { return [addSeparator $toolbar] }
 
-	set options(-takefocus) 0
 	set w $toolbar.__tbw__[incr Counter]
 	set variable ""
 	set value ""
 	set state normal
 	set widgetType $widgetCommand
+	array set options { -takefocus 0 }
 
 	array set Specs [list                                       \
 		float:$w:$toolbar				1                             \
 		padx:$w:$toolbar				0                             \
+		onvalue:$w:$toolbar			1                             \
+		offvalue:$w:$toolbar			0                             \
 		tooltip:$w:$toolbar			{}                            \
 		tooltipvar:$w:$toolbar		{}                            \
 		default:$w:$toolbar			{}                            \
@@ -819,6 +821,8 @@ proc Add {toolbar widgetCommand args} {
 			-variable	{ set variable $val }
 			-float		{ set Specs(float:$w:$toolbar) $val }
 			-padx			{ set Specs(padx:$w:$toolbar) $val }
+			-onvalue		{ set Specs(onvalue:$w:$toolbar) $val }
+			-offvalue	{ set Specs(offvalue:$w:$toolbar) $val }
 			default		{ set options($arg) $val }
 		}
 	}
@@ -857,6 +861,7 @@ proc Add {toolbar widgetCommand args} {
 			trace add variable $variable write $traceCmd
 			bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 			ConfigureCheckButton $toolbar $w $w $variable
+			bind $w <ButtonRelease-1> +[namespace code [list CheckButtonPressed $toolbar $w $variable]]
 		} else {
 			if {[llength $value]} {
 				set Specs(value:$variable:$w:$toolbar) $value
@@ -1468,12 +1473,17 @@ proc DoAlignment {tbf} {
 	set slaves [pack slaves $tbf.frame.scrolled]
 	if {[llength $slaves] == 0} { return }
 
+	switch $Specs(orientation:$tbf) {
+		horz { lassign {w e} w e }
+		vert { lassign {n s} w e }
+	}
+
 	switch $Specs(alignment:$tbf) {
 		left {
-			pack configure {*}$slaves -expand 0 -anchor nw
+			pack configure {*}$slaves -expand 0 -anchor $w
 		}
 		right {
-			pack configure {*}$slaves -expand 0 -anchor se
+			pack configure {*}$slaves -expand 0 -anchor $e
 			set i 0
 			while {$i < [llength $slaves] && $Specs(justify:[lindex $slaves $i]) eq "right"} {
 				incr i
@@ -1486,20 +1496,20 @@ proc DoAlignment {tbf} {
 			if {[llength $slaves] == 1} {
 				pack configure {*}$slaves -expand 1 -anchor center
 			} else {
-				pack configure {*}$slaves -expand 0 -anchor nw
+				pack configure {*}$slaves -expand 0 -anchor $w
 				set i 0
 				while {$i < [llength $slaves] && $Specs(justify:[lindex $slaves $i]) eq "right"} {
 					incr i
 				}
 				if {$i < [llength $slaves]} {
-					pack configure [lindex $slaves $i] -expand 1 -anchor se
+					pack configure [lindex $slaves $i] -expand 1 -anchor $e
 				}
 				set i [expr {[llength $slaves] - 1}]
 				while {$i >= 0 && $Specs(justify:[lindex $slaves $i]) ne "right"} {
 					incr i -1
 				}
 				if {$i < 0} { set i end }
-				pack configure [lindex $slaves $i] -expand 1 -anchor nw
+				pack configure [lindex $slaves $i] -expand 1 -anchor $w
 			}
 		}
 	}
@@ -1609,11 +1619,22 @@ proc Tracer4 {toolbar w var args} {
 }
 
 
+proc CheckButtonPressed {toolbar w var} {
+	variable Specs
+
+	if {[set $var] eq $Specs(onvalue:$w:$toolbar)} {
+		set $var $Specs(offvalue:$w:$toolbar)
+	} else {
+		set $var $Specs(onvalue:$w:$toolbar)
+	}
+}
+
+
 proc ConfigureCheckButton {toolbar v w var args} {
 	variable Specs
 	variable Defaults
 
-	if {[set $var]} {
+	if {[set $var] eq $Specs(onvalue:$w:$toolbar)} {
 		set relief sunken
 		set overrelief sunken
 		set color $Defaults(button:selectcolor)

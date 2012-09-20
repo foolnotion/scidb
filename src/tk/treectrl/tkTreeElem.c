@@ -2368,11 +2368,12 @@ struct ElementText
 #define DOID_TEXT_DRAW 1002
 #define DOID_TEXT_FILL 1003
 #define DOID_TEXT_FONT 1004
-#define DOID_TEXT_LAYOUT 1005
-#define DOID_TEXT_DATA 1006
-#define DOID_TEXT_LAYOUT2 1007
-#define DOID_TEXT_STYLE 1008
-#define DOID_TEXT_LAYOUT3 1009
+#define DOID_TEXT_FONT_2 1005
+#define DOID_TEXT_LAYOUT 1006
+#define DOID_TEXT_DATA 1007
+#define DOID_TEXT_LAYOUT2 1008
+#define DOID_TEXT_STYLE 1009
+#define DOID_TEXT_LAYOUT3 1010
 
 typedef struct ElementTextData {
 	Tcl_Obj *dataObj;					/* -data */
@@ -2812,7 +2813,7 @@ TextUpdateLayout(
 	tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
 	if (tkfont == NULL)
 		tkfont = tree->tkfont;
-	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_LAYOUT3, state);
+	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
 
 	if (etl != NULL && etl->wrap != TEXT_WRAP_NULL)
 		wrap = etl->wrap;
@@ -3175,7 +3176,7 @@ static void DisplayProcText(TreeElementArgs *args)
 
 	color = DO_ColorForState(tree, elem, DOID_TEXT_FILL, state);
 	tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
-	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_LAYOUT3, state);
+	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
 
 	/* FIXME: -font {"" {state...}}*/
 	if ((color != NULL) || (tkfont != NULL)) {
@@ -3380,7 +3381,7 @@ static void NeededProcText(TreeElementArgs *args)
 			tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
 			if (tkfont == NULL)
 				tkfont = tree->tkfont;
-			tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_LAYOUT3, state);
+			tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
 
 			width = Tree_TextWidth(tkfont, tkfont2, text, textLen);
 			if (etl != NULL && etl->widthObj != NULL)
@@ -3536,6 +3537,11 @@ static int StateProcText(TreeElementArgs *args)
 	if (tkfont1 != tkfont2)
 		return CS_DISPLAY | CS_LAYOUT;
 
+	tkfont1 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, args->states.state1);
+	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, args->states.state2);
+	if (tkfont1 != tkfont2)
+		return CS_DISPLAY | CS_LAYOUT;
+
 	if (!args->states.draw2)
 		return 0;
 #ifdef DEPRECATED
@@ -3568,6 +3574,8 @@ static int UndefProcText(TreeElementArgs *args)
 		modified |= PerStateInfo_Undefine(tree, &pstColor, psi, args->state);
 	if ((psi = DynamicOption_FindData(args->elem->options, DOID_TEXT_FONT)) != NULL)
 		modified |= PerStateInfo_Undefine(tree, &pstFont, psi, args->state);
+	if ((psi = DynamicOption_FindData(args->elem->options, DOID_TEXT_FONT_2)) != NULL)
+		modified |= PerStateInfo_Undefine(tree, &pstFont2, psi, args->state);
 
 	return modified;
 }
@@ -3605,7 +3613,7 @@ static int ActualProcText(TreeElementArgs *args)
 			break;
 		}
 		case 3: {
-			obj = DO_ObjectForState(tree, &pstFont, args->elem, DOID_TEXT_LAYOUT3, args->state);
+			obj = DO_ObjectForState(tree, &pstFont2, args->elem, DOID_TEXT_FONT_2, args->state);
 			break;
 		}
 #else
@@ -3615,6 +3623,10 @@ static int ActualProcText(TreeElementArgs *args)
 		}
 		case 1: {
 			obj = DO_ObjectForState(tree, &pstFont, args->elem, DOID_TEXT_FONT, args->state);
+			break;
+		}
+		case 2: {
+			obj = DO_ObjectForState(tree, &pstFont2, args->elem, DOID_TEXT_FONT_2, args->state);
 			break;
 		}
 #endif
@@ -4523,9 +4535,9 @@ int TreeElement_Init(Tcl_Interp *interp)
 		0, PerStateCO_Alloc("-font", &pstFont, TreeStateFromObj),
 		(DynamicOptionInitProc *) NULL);
 	DynamicCO_Init(treeElemTypeText.optionSpecs, "-font2",
-		DOID_TEXT_LAYOUT3, sizeof(PerStateInfo),
+		DOID_TEXT_FONT_2, sizeof(PerStateInfo),
 		Tk_Offset(PerStateInfo, obj),
-		0, PerStateCO_Alloc("-font2", &pstFont, TreeStateFromObj),
+		0, PerStateCO_Alloc("-font2", &pstFont2, TreeStateFromObj),
 		(DynamicOptionInitProc *) NULL);
 	DynamicCO_Init(treeElemTypeText.optionSpecs, "-textvariable",
 		DOID_TEXT_VAR, sizeof(ElementTextVar),

@@ -54,6 +54,7 @@
 #include "sys_utf8_codec.h"
 
 #include "m_sstream.h"
+#include "m_vector.h"
 
 #include <tcl.h>
 
@@ -698,12 +699,14 @@ Tcl_Obj* Visitor::m_s				= 0;
 
 struct Subscriber : public Game::Subscriber
 {
-	Tcl_Obj*		m_board;
-	Tcl_Obj*		m_tree;
-	Tcl_Obj*		m_pgn;
-	Tcl_Obj*		m_state;
-	Tcl_Obj*		m_position;
-	bool			m_mainlineOnly;
+	typedef mstl::vector<Tcl_Obj*> CmdList;
+
+	CmdList		m_board;
+	CmdList		m_tree;
+	Tcl_Obj*	m_pgn;
+	Tcl_Obj*	m_state;
+	Tcl_Obj*	m_position;
+	bool		m_mainlineOnly;
 
 	static Tcl_Obj* m_action;
 	static Tcl_Obj* m_set;
@@ -714,9 +717,7 @@ struct Subscriber : public Game::Subscriber
 	static Tcl_Obj* m_false;
 
 	Subscriber(Tcl_Obj* position)
-		:m_board(0)
-		,m_tree(0)
-		,m_pgn(0)
+		:m_pgn(0)
 		,m_state(0)
 		,m_position(position)
 		,m_mainlineOnly(false)
@@ -740,10 +741,10 @@ struct Subscriber : public Game::Subscriber
 
 	~Subscriber() throw()
 	{
-		if (m_board)
-			Tcl_DecrRefCount(m_board);
-		if (m_tree)
-			Tcl_DecrRefCount(m_tree);
+		for (unsigned i = 0; i < m_board.size(); ++i)
+			Tcl_DecrRefCount(m_board[i]);
+		for (unsigned i = 0; i < m_tree.size(); ++i)
+			Tcl_DecrRefCount(m_tree[i]);
 		if (m_pgn)
 			Tcl_DecrRefCount(m_pgn);
 		if (m_state)
@@ -752,14 +753,14 @@ struct Subscriber : public Game::Subscriber
 
 	void setBoardCmd(Tcl_Obj* obj)
 	{
-		if (!m_board)
-			Tcl_IncrRefCount(m_board = obj);
+		m_board.push_back(obj);
+		Tcl_IncrRefCount(obj);
 	}
 
 	void setTreeCmd(Tcl_Obj* obj)
 	{
-		if (!m_tree)
-			Tcl_IncrRefCount(m_tree = obj);
+		m_tree.push_back(obj);
+		Tcl_IncrRefCount(obj);
 	}
 
 	void setPgnCmd(Tcl_Obj* obj, bool mainlineOnly = false)
@@ -809,22 +810,27 @@ struct Subscriber : public Game::Subscriber
 
 	void boardSetup(Board const& board) override
 	{
-		if (m_board)
+		if (!m_board.empty())
 		{
 			mstl::string pos;
 			pos::dumpBoard(board, pos);
 
 			Tcl_Obj* b = Tcl_NewStringObj(pos, pos.size());
-			invoke(__func__, m_board, m_position, m_set, b, nullptr);
+			Tcl_IncrRefCount(b);
+
+			for (unsigned i = 0; i < m_board.size(); ++i)
+				invoke(__func__, m_board[i], m_position, m_set, b, nullptr);
+
+			Tcl_DecrRefCount(b);
 		}
 
-		if (m_tree)
-			invoke(__func__, m_tree, m_position, nullptr);
+		for (unsigned i = 0; i < m_tree.size(); ++i)
+			invoke(__func__, m_tree[i], m_position, nullptr);
 	}
 
 	void boardMove(Board const& board, Move const& move, bool forward) override
 	{
-		if (m_board)
+		if (!m_board.empty())
 		{
 			char pieceFrom	= piece::print(move.piece());
 			char pieceTo	= piece::print(move.isPromotion() ? move.promotedPiece() : move.piece());
@@ -892,13 +898,19 @@ struct Subscriber : public Game::Subscriber
 				mstl::swap(objv[7], objv[8]);
 			}
 
-			invoke(__func__, m_board, m_position, m_move, U_NUMBER_OF(objv), objv);
+			Tcl_Obj* list = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+			Tcl_IncrRefCount(list);
+
+			for (unsigned i = 0; i < m_board.size(); ++i)
+				invoke(__func__, m_board[i], m_position, m_move, list, nullptr);
+
+			Tcl_DecrRefCount(list);
 		}
 
 		pos::resetMoveCache();
 
-		if (m_tree)
-			invoke(__func__, m_tree, m_position, nullptr);
+		for (unsigned i = 0; i < m_tree.size(); ++i)
+			invoke(__func__, m_tree[i], m_position, nullptr);
 	}
 
 	void updateMarks(mstl::string const& marks) override

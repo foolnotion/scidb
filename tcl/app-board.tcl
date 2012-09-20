@@ -156,7 +156,6 @@ proc build {w width height} {
 		-image $::icon::toolbarEngine \
 		-command [namespace code StartEngine] \
 		-tooltipvar [namespace current]::mc::StartEngine \
-		-state disabled \
 		;
 
 	::toolbar::add $tbLayout button \
@@ -168,7 +167,7 @@ proc build {w width height} {
 		-image $::icon::toolbarSideToMove \
 		-variable ::board::layout(side-to-move) \
 		-tooltipvar ::board::options::mc::ShowSideToMove \
-		-command [namespace code [list ToggleSideToMove $canv] \
+		-command [namespace code [list Apply $canv] \
 	]
 
 	foreach {action key} {	GotoStart Home
@@ -892,14 +891,6 @@ proc SetStartBoard {canv} {
 
 proc SetStartPosition {canv} {
 	::setup::position::open [winfo toplevel $canv]
-}
-
-
-proc ToggleSideToMove {canv} {
-	variable ::board::layout
-
-	set layout(side-to-move) [expr {!$layout(side-to-move)}]
-	Apply $canv
 }
 
 

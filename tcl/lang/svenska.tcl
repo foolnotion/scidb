@@ -767,20 +767,23 @@
 
 ### engine #############################################################
 ::engine::mc::Information				"Information" ;# NEW
+::engine::mc::Features					"Features" ;# NEW
 ::engine::mc::Options					"Options" ;# NEW
 
 ::engine::mc::Name						"Name" ;# NEW
 ::engine::mc::Identifier				"Identifier" ;# NEW
 ::engine::mc::Author						"Author" ;# NEW
+::engine::mc::Webpage					"Webpage" ;# NEW
+::engine::mc::Email						"Email" ;# NEW
 ::engine::mc::Country					"Country" ;# NEW
 ::engine::mc::Rating						"Rating" ;# NEW
 ::engine::mc::Logo						"Logo" ;# NEW
 ::engine::mc::Protocol					"Protocol" ;# NEW
 ::engine::mc::Parameters				"Parameters" ;# NEW
 ::engine::mc::Command					"Command" ;# NEW
+::engine::mc::Directory					"Directory" ;# NEW
 ::engine::mc::Variants					"Variants" ;# NEW
 ::engine::mc::LastUsed					"Last used" ;# NEW
-::engine::mc::Frequency					"Frequency" ;# NEW
 
 ::engine::mc::Variant(standard)		"Standard Chess" ;# NEW
 ::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
@@ -790,13 +793,14 @@
 ::engine::mc::ImageFiles				"Image files" ;# NEW
 ::engine::mc::SelectEngine				"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
-::engine::mc::Executables				"Executables" ;# NEW
 ::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"never used" ;# NEW
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
 ::engine::mc::DefaultValue				"Default value" ;# NEW
 ::engine::mc::ResetToDefault			"Reset to default" ;# NEW
+::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"!
+::engine::mc::TotalUsage				"%s times in total" ;# NEW
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
 ::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
@@ -806,6 +810,20 @@
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
 ::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
+::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature." ;# NEW
+
+::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
+::engine::mc::FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
+::engine::mc::FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
+::engine::mc::FeatureDetail(hashSize)		"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB." ;# NEW
+::engine::mc::FeatureDetail(clearHash)		"The user may clear the hash tables whlle the engine is running." ;# NEW
+::engine::mc::FeatureDetail(threads)		"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads." ;# NEW
+::engine::mc::FeatureDetail(eloRange)		"The engine is able to limit its strength to a specific Elo number between %min-%max." ;# NEW
+::engine::mc::FeatureDetail(skillLevel)	"The engine provides the possibility to lower the skill down, where it can be beaten quite easier." ;# NEW
+::engine::mc::FeatureDetail(ponder)			"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain." ;# NEW
+::engine::mc::FeatureDetail(chess960)		"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions." ;# NEW
+::engine::mc::FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when current position is a Chess960 position." ;# NEW
+::engine::mc::FeatureDetail(styles)			"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
@@ -1825,12 +1843,26 @@
 ::dialog::fsbox::mc::HypertextFile			"Hypertext fil"
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
 ::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
+::dialog::fsbox::mc::TextFile					"Text File" ;# NEW
+::dialog::fsbox::mc::BinaryFile				"Bin�ry File" ;# NEW
+::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
+::dialog::fsbox::mc::Executable				"Executable" ;# NEW
+
 ::dialog::fsbox::mc::LinkTo					"Länka till %s"
 ::dialog::fsbox::mc::LinkTarget				"Länkmål"
 ::dialog::fsbox::mc::Directory				"Folder"
 
+::dialog::fsbox::mc::Title(open)				"Select File" ;# NEW
+::dialog::fsbox::mc::Title(save)				"Save File" ;# NEW
+::dialog::fsbox::mc::Title(dir)				"Choose Directory" ;# NEW
+
 ::dialog::fsbox::mc::Content					"Innehåll"
 ::dialog::fsbox::mc::Open						"Öppna"
+
+::dialog::fsbox::mc::FileType(exe)			"Executables" ;# NEW
+::dialog::fsbox::mc::FileType(txt)			"Textdateien" ;# NEW
+::dialog::fsbox::mc::FileType(log)			"Log files" ;# NEW
+::dialog::fsbox::mc::FileType(bin)			"Bin�rdateien" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"

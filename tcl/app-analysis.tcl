@@ -37,7 +37,8 @@ set Time						"Time"
 set Control					"Control"
 set Switcher				"Switcher"
 set Pause					"Pause"
-set Lock						"Lock"
+set Resume					"Resume"
+set LockPosition			"Lock current position"
 set MultipleVariations	"Multiple Variations"
 set Lines					"Lines:"
 
@@ -51,15 +52,24 @@ array set Options {
 	info:background	#f5f5e4
 	info:foreground	darkgreen
 	font					TkTextFont
-	engine:nlines		2
-	engine:multipv		1
 	engine:current		Stockfish
+	engine:nlines		2
 }
 
-variable Vars
+array set EngineOptions {
+	multipv	true
+	hash		0
+}
+
+array set Vars {
+	engine:id		-1
+	engine:locked	0
+	engine:pause	0
+}
 
 
 proc build {parent width height} {
+	variable EngineOptions
 	variable Options
 	variable Vars
 
@@ -74,13 +84,10 @@ proc build {parent width height} {
 
 	array set fopt [font configure $Options(font)]
 	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
-	set Vars(font:figurine) [list $::font::figurine(text:normal) $fopt(-size)]
+	set Vars(font:figurine) $::font::figurine(text:normal)
 	set Vars(charwidth) [font measure $Options(font) "0"]
 	set Vars(minsize) [expr {11*$Vars(charwidth)}]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
-	set Vars(engine:pause) 0
-	set Vars(engine:lock) 0
-	set Vars(engine:id) -1
 
 	set w [ttk::frame $parent.f]
 
@@ -88,79 +95,62 @@ proc build {parent width height} {
 		-background $Options(background) \
 		-borderwidth 0 \
 	]
+
+	set score [tk::frame $info.score \
+		-background $Options(info:background) \
+		-borderwidth 1 \
+		-relief raised \
+	]
+	set tscore [tk::text $info.score.t \
+		-background $Options(info:background) \
+		-foreground $Options(info:foreground) \
+		-borderwidth 0 \
+		-state disabled \
+		-width 0 \
+		-height 1 \
+		-cursor {} \
+	]
+	$tscore tag configure center -justify center
+	pack $tscore -padx 2 -pady 2
+
 	set move [tk::frame $info.move \
 		-background $Options(info:background) \
 		-borderwidth 1 \
 		-relief raised \
 	]
-	set lmove [tk::label $info.move.l \
-		-font $Vars(font:bold) \
-		-background $Options(info:background) \
-		-borderwidth 0 \
-	]
 	set tmove [tk::text $info.move.t \
 		-background $Options(info:background) \
+		-foreground $Options(info:foreground) \
 		-borderwidth 0 \
-		-foreground $Options(info:background) \
 		-state disabled \
 		-width 0 \
 		-height 1 \
 		-cursor {} \
 	]
 	$tmove tag configure figurine -font $Vars(font:figurine)
+	$tmove tag configure center -justify center
+	pack $tmove -padx 2 -pady 2
 
-	set dpth  [tk::frame $info.dpth -background $Options(info:background) -borderwidth 1 -relief raised]
-	set ldpth [tk::label $info.dpth.l \
-		-font $Vars(font:bold) \
+	set depth  [tk::frame $info.depth -background $Options(info:background) -borderwidth 1 -relief raised]
+	set tdepth [tk::label $info.depth.t \
 		-background $Options(info:background) \
+		-foreground $Options(info:foreground) \
 		-borderwidth 0 \
-	]
-	set tdpth [tk::label $info.dpth.t \
-		-background $Options(info:background) \
-		-borderwidth 0 \
-		-foreground $Options(info:background) \
 		-width 0 \
 	]
-
-	set time [tk::frame $info.time \
-		-background $Options(info:background) \
-		-borderwidth 1 \
-		-relief raised \
-	]
-	set ltime [tk::label $info.time.l \
-		-font $Vars(font:bold) \
-		-background $Options(info:background) \
-		-borderwidth 0 \
-	]
-	set ttime [tk::label $info.time.t \
-		-background $Options(info:background) \
-		-borderwidth 0 \
-		-foreground $Options(info:background) \
-		-width 0 \
-	]
+	pack $tdepth -padx 2 -pady 2
 
 	set col 1
-	foreach type {move dpth time} {
+	foreach type {score move depth} {
 		grid [set $type] -column $col -row 0 -sticky ew -pady 2
 		grid columnconfigure [set $type] 0 -weight 1
-		grid [set l$type] -column 0 -row 0 -padx 2 -sticky w
-		grid [set t$type] -column 0 -row 1 -padx 2 -sticky w
+		grid [set t$type] -column 0 -row 1 -padx 2 -sticky ew
 		incr col 2
 	}
-	grid $tmove -column 0 -row 1 -padx 2 -sticky ew
-	grid columnconfigure $move 0 -minsize $Vars(minsize)
-	grid columnconfigure $dpth 0 -minsize $Vars(minsize)
-	grid columnconfigure $time 0 -minsize $Vars(minsize)
 
-#	if {$Options(engine:multipv)} {
-#		set pvcount 4
-#		set nlines $Options(engine:nlines)
-#	} else {
-#		set pvcount 1
-#		set nlines 4
-#	}
-#	set theight [expr {$nlines*$pvcount*$Vars(linespace) + $pvcount*4}]
-#	set lheight [expr {$nlines*$Vars(linespace)}]
+	grid columnconfigure $score 0 -minsize $Vars(minsize)
+	grid columnconfigure $move  0 -minsize $Vars(minsize)
+	grid columnconfigure $depth 0 -minsize $Vars(minsize)
 
 	set tree $w.tree
 	treectrl $tree \
@@ -177,17 +167,18 @@ proc build {parent width height} {
 		;
 
 	$tree element create elemRect rect -open nw -outline gray -outlinewidth 1
-	$tree element create elemText text -lines $Options(engine:nlines) -wrap word
+	$tree element create elemText text -lines $Options(engine:nlines) \
+		-wrap word -font2 $Vars(font:figurine)
 
 	$tree style create style
 	$tree style elements style {elemRect elemText}
 	$tree style layout style elemRect -detach yes -iexpand xy
 	$tree style layout style elemText -padx {4 4} -pady {2 2} -squeeze x -sticky ne
 
-	$tree column create -steady yes -tags Value -width [expr {7*$Vars(charwidth)}] -itemjustify right
+	$tree column create -steady yes -tags Value -width [expr {10*$Vars(charwidth)}] -itemjustify right
 	$tree column create -steady yes -tags Moves -expand yes -squeeze yes -weight 1 -itemjustify left
 
-	foreach i {1 2 3 4} {
+	foreach i {0 1 2 3} {
 		set item [$tree item create]
 		$tree item lastchild root $item
 		$tree item configure $item -tag Line$i
@@ -201,21 +192,18 @@ proc build {parent width height} {
 	grid columnconfigure $info {1 3 5} -weight 1
 	grid columnconfigure $info {0 2 4 6} -minsize 2
 
-	$lmove configure -text "$mc::Move: "
-	$ldpth configure -text "$mc::Depth: "
-	$ltime configure -text "$mc::Time: "
-
 	pack $w -fill both -expand yes
+	bind $tmove <Destroy> [namespace code Destroy]
 
 	set Vars(tree) $tree
+	set Vars(score) $info.score.t
 	set Vars(move) $info.move.t
-	set Vars(depth) $info.dpth.t
-	set Vars(time) $info.time.t
+	set Vars(depth) $info.depth.t
 
 	set tbControl [::toolbar::toolbar $parent \
 		-id analysis-control \
 		-hide 0 \
-		-side bottom \
+		-side top \
 		-alignment left \
 		-allow {top bottom} \
 		-tooltipvar [namespace current]::mc::Control \
@@ -223,28 +211,29 @@ proc build {parent width height} {
 	set tbSwitcher [::toolbar::toolbar $parent \
 		-id analysis-switch \
 		-hide 0 \
-		-side bottom \
+		-side top \
 		-alignment left \
 		-allow {top bottom} \
 		-tooltipvar [namespace current]::mc::Switcher \
 		]
-	::toolbar::add $tbControl checkbutton \
+	set Vars(button:pause) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarPause \
 		-variable [namespace current]::Vars(engine:pause) \
 		-tooltipvar [namespace current]::mc::Pause \
 		-command [namespace code [list Pause $tree]] \
-		;
+	]
 	::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLock \
-		-variable [namespace current]::Vars(engine:lock) \
-		-tooltipvar [namespace current]::mc::Lock \
-		-command [namespace code [list Lock $tree]] \
+		-variable [namespace current]::Vars(engine:locked) \
+		-tooltipvar [namespace current]::mc::LockPosition \
 		;
 	::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
-		-variable [namespace current]::Options(engine:multipv) \
+		-variable [namespace current]::EngineOptions(multipv) \
+		-onvalue 4 \
+		-offvalue 1 \
 		-tooltipvar [namespace current]::mc::MultipleVariations \
-		-command [namespace code [list MultipleVariations $tree]] \
+		-command [namespace code [list Layout $tree]] \
 		;
 	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbControl label -textvar [namespace current]::mc::Lines
@@ -279,17 +268,26 @@ proc build {parent width height} {
 }
 
 
+proc update {position} {
+	variable Vars
+	variable Options
+
+	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
+		after idle [list :::engine::startAnalysis $Vars(engine:id)]
+	}
+}
+
+
 proc startAnalysis {} {
 	variable Vars
 	variable Options
 
 	set isReadyCmd [namespace current]::IsReady
 	set updateCmd [namespace current]::UpdateInfo
-	set bestMoveCmd [namespace current]::BestMove
 	set name $Options(engine:current)
 
 	if {[string length $name]} {
-		set Vars(engine:id) [::engine::startAnalysis $name $isReadyCmd $updateCmd $bestMoveCmd]
+		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $updateCmd] 
 	}
 }
 
@@ -297,8 +295,8 @@ proc startAnalysis {} {
 proc stopAnalysis {} {
 	variable Vars
 
-	::engine::stopAnalysis $$Vars(engineId)
-	set Vars(engineId) -1
+	::engine::stopAnalysis $Vars(engine:id)
+	set Vars(engine:id) -1
 }
 
 
@@ -310,25 +308,19 @@ proc activate {w flag} {
 proc Pause {tree} {
 	variable Vars
 
-	set Vars(engine:pause) [expr {!$Vars(engine:pause)}]
-	# TODO
-}
-
-
-proc Lock {tree} {
-	variable Vars
-
-	set Vars(engine:lock) [expr {!$Vars(engine:lock)}]
-	# TODO
-}
-
-
-proc MultipleVariations {tree} {
-	variable Options
-	variable Vars
-
-	set Options(engine:multipv) [expr {!$Options(engine:multipv)}]
-	Layout $tree
+	if {$Vars(engine:pause)} {
+		::engine::pause $Vars(engine:id)
+		::toolbar::childconfigure $Vars(button:pause) \
+			-image $::icon::toolbarResume \
+			-tooltipvar [namespace current]::mc::Resume \
+			;
+	} else {
+		::engine::resume $Vars(engine:id)
+		::toolbar::childconfigure $Vars(button:pause) \
+			-image $::icon::toolbarPause \
+			-tooltipvar [namespace current]::mc::Pause \
+			;
+	}
 }
 
 
@@ -342,10 +334,11 @@ proc LinesPerPV {tree} {
 
 
 proc Layout {tree} {
+	variable EngineOptions
 	variable Options
 	variable Vars
 
-	if {$Options(engine:multipv)} {
+	if {$EngineOptions(multipv) == 4} {
 		set pvcount 4
 		set visible 1
 		set nlines $Options(engine:nlines)
@@ -357,8 +350,8 @@ proc Layout {tree} {
 		set state disabled
 	}
 
-	foreach i {2 3 4} {
-		$tree item configure $i -visible $visible
+	foreach i {1 2 3} {
+		$tree item configure Line$i -visible $visible
 	}
 
 	set theight [expr {$nlines*$pvcount*$Vars(linespace) + $pvcount*4}]
@@ -367,27 +360,66 @@ proc Layout {tree} {
 #	$tree style layout style elemText -padx {4 4} -pady {2 2} -squeeze x -sticky ne -minheight $lheight
 	$tree style layout style elemText -minheight $lheight
 	::toolbar::childconfigure $Vars(widget:linesPerPV) -state $state
+
+	if {$nlines == 1} {
+		set lines 0
+		set wrap none
+	} else {
+		set lines $nlines
+		set wrap word
+	}
+	foreach i {0 1 2 3} {
+		$tree item element configure Line$i Moves elemText -lines $lines -wrap $wrap
+	}
 }
 
 
-proc DisplayLines {move depth time vars} {
+proc DisplayPvLines {score mate depth time nodes vars} {
+	variable EngineOptions
 	variable Vars
 	variable Options
 
-	$Vars(move) configure -state normal
-	$Vars(move) delete 1.0 end
-	$Vars(move) insert end $move figurine
-	$Vars(move) configure -state disabled
+	$Vars(score) configure -state normal
+	$Vars(score) delete 1.0 end
+	$Vars(score) insert end "(0.$score)" center
+	$Vars(score) configure -state disabled
 
-	$Vars(depth) configure -text $depth
-	$Vars(time) configure -text $time
+	if {$depth} { $Vars(depth) configure -text $depth }
 
-	if {$Options(engine:multipv)} { set lines {1 2 3 4} } else { set lines 1 }
+	if {$EngineOptions(multipv)} { set lines {0 1 2 3} } else { set lines 0 }
 
 	foreach i $lines {
-		lassign [lindex $vars [expr {$i - 1}]] value line
-		$Vars(tree) item element configure Line$i Value elemText -text $value
-		$Vars(tree) item element configure Line$i Moves elemText -font2 $Vars(font:figurine) -text $line
+		set line [lindex $vars $i]
+		$Vars(tree) item element configure Line$i Value elemText -text [lindex $line 0]
+		$Vars(tree) item element configure Line$i Moves elemText -text [lrange $line 1 end]
+	}
+}
+
+
+proc DisplayCurrentMove {number move} {
+	variable Vars
+
+	$Vars(move) configure -state normal
+	$Vars(move) delete 1.0 end
+	$Vars(move) insert end $move {figurine center}
+	$Vars(move) configure -state disabled
+}
+
+
+proc DisplayTime {time depth nodes} {
+	variable Vars
+}
+
+
+proc UpdateInfo {id type info} {
+	switch $type {
+		pv		{ DisplayPvLines {*}$info }
+		move	{ DisplayCurrentMove {*}$info }
+		line	{}
+		best	{}
+		depth	{ DisplayTime 0.0 {*}$info }
+		time	{ DisplayTime {*}$info }
+		hash	{}
 	}
 }
 
@@ -406,19 +438,16 @@ proc FillSwitcher {w} {
 }
 
 
+proc Destroy {} {
+	variable Vars
+
+	::engine::kill $Vars(engine:id)
+	set Vars(engine:id) -1
+}
+
+
 proc IsReady {id} {
-	after idle [list ::scidb::engine::log send "### IsReady $id"]
-#	after idle [list ::scidb::engine::analyze start $id]
-}
-
-
-proc UpdateInfo {id score mate depth time nodes vars} {
-	DisplayLines "" $depth $time $vars
-}
-
-
-proc BestMove {id move} {
-	# TODO
+	after idle [list :::engine::startAnalysis $id]
 }
 
 
