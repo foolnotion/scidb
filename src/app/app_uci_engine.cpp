@@ -185,6 +185,9 @@ uci::Engine::Engine()
 	,m_hasShowRefutations(false)
 	,m_stopAnalyizeIsPending(false)
 	,m_continueAnalysis(false)
+	,m_sendChess960(false)
+	,m_sendAnalyseMode(false)
+	,m_usedAnalyseModeBefore(false)
 {
 }
 
@@ -264,20 +267,21 @@ uci::Engine::prepareAnalysis(db::Board const& board)
 {
 	db::Game const* game = currentGame();
 
-	m_needChess960 = m_needShuffleChess = false;
+	bool needChess960			= false;
+	bool needShuffleChess	= false;
 
 	if (!variant::isStandardChess(game->idn()))
 	{
 		if (variant::isShuffleChess(game->idn()))
-			m_needShuffleChess = true;
+			needShuffleChess = true;
 		else if (variant::isChess960(game->idn()))
-			m_needChess960 = true;
+			needChess960 = true;
 		else if (board.notDerivableFromChess960())
-			m_needShuffleChess = true;
+			needShuffleChess = true;
 		else if (board.notDerivableFromStandardChess())
-			m_needChess960 = true;
+			needChess960 = true;
 
-		if (m_needShuffleChess)
+		if (needShuffleChess)
 		{
 			if (!hasFeature(app::Engine::Feature_Shuffle_Chess))
 			{
@@ -285,7 +289,7 @@ uci::Engine::prepareAnalysis(db::Board const& board)
 				return false;
 			}
 		}
-		else if (m_needChess960)
+		else if (needChess960)
 		{
 			if (!hasFeature(app::Engine::Feature_Chess_960))
 			{
@@ -293,6 +297,13 @@ uci::Engine::prepareAnalysis(db::Board const& board)
 				return false;
 			}
 		}
+	}
+
+	if (needChess960 != m_needChess960 || needShuffleChess != m_needShuffleChess)
+	{
+		m_needChess960 = needChess960;
+		m_needShuffleChess = needShuffleChess;
+		m_sendChess960 = true;
 	}
 
 	return true;
@@ -307,8 +318,20 @@ uci::Engine::startAnalysis(bool isNewGame)
 
 	db::Game const* game = currentGame();
 
-	if (isNewGame && !prepareAnalysis(game->startBoard()))
-		return false;
+	if (isNewGame)
+	{
+		if (!prepareAnalysis(game->startBoard()))
+			return false;
+
+		if (hasFeature(app::Engine::Feature_Chess_960))
+			m_sendChess960 = true;
+	}
+
+	if (m_hasAnalyseMode && !m_usedAnalyseModeBefore)
+	{
+		m_sendAnalyseMode = true;
+		m_usedAnalyseModeBefore = true;
+	}
 
 	setupPosition(game->startBoard());
 
@@ -430,15 +453,20 @@ uci::Engine::processMessage(mstl::string const& message)
 				else if (m_waitingOn == "position")
 				{
 					// engine is now ready to analyse a new position
-					if (m_hasAnalyseMode)
+					if (m_sendAnalyseMode)
+					{
 						send("setoption name UCI_AnalyseMode value true");
+						m_sendAnalyseMode = false;
+					}
 
-					if (hasFeature(app::Engine::Feature_Chess_960))
+					if (m_sendChess960)
 					{
 						if (m_needChess960 || m_needShuffleChess)
 							send("setoption name UCI_Chess960 value true");
 						else
 							send("setoption name UCI_Chess960 value false");
+						
+						m_sendChess960 = false;
 					}
 
 					send(m_position);
@@ -891,7 +919,7 @@ uci::Engine::parseOption(char const* msg)
 		}
 		else if (name == "Skill Level")
 		{
-			setMaxSkillLevel(::atoi(max) - ::atoi(min));
+			setSkillLevelRange(::atoi(min), ::atoi(max));
 			setSkillLevel(::atoi(dflt));
 		}
 
@@ -982,7 +1010,7 @@ uci::Engine::sendOptions()
 
 			case 'M':
 				if (opt.name == "MultiPV")
-					::setNonZeroValue(val, numVariations());
+					continue; // // should not be sent
 				break;
 
 			case 'O':
@@ -995,7 +1023,7 @@ uci::Engine::sendOptions()
 
 			case 'P':
 				if (opt.name == "Ponder")
-					val = "false";
+					continue; // should not be sent
 				break;
 
 			case 'U':
@@ -1015,6 +1043,12 @@ uci::Engine::sendOptions()
 
 		send(msg);
 	}
+
+	if (hasFeature(app::Engine::Feature_Ponder))
+		send("setoption name Ponder value false"); // XXX
+
+	if (hasFeature(app::Engine::Feature_Multi_PV))
+		send("setoption name MultiPV value " + toStr(numVariations()));
 
 	if (isAnalyzing)
 	{

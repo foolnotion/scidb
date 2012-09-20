@@ -164,7 +164,7 @@ public:
 		void setElo(unsigned elo);
 		void setEloRange(unsigned minElo, unsigned maxElo);
 		void setSkillLevel(unsigned level);
-		void setMaxSkillLevel(unsigned maxLevel);
+		void setSkillLevelRange(unsigned ninLevel, unsigned maxLevel);
 		void setMaxMultiPV(unsigned n);
 		void setHashSize(unsigned size);
 		void setHashRange(unsigned minSize, unsigned maxSize);
@@ -239,6 +239,7 @@ public:
 	unsigned minElo() const;
 	unsigned maxElo() const;
 	unsigned skillLevel() const;
+	unsigned minSkillLevel() const;
 	unsigned maxSkillLevel() const;
 	unsigned maxMultiPV() const;
 	unsigned numVariations() const;
@@ -326,7 +327,7 @@ protected:
 	void setElo(unsigned elo);
 	void setEloRange(unsigned minElo, unsigned maxElo);
 	void setSkillLevel(unsigned level);
-	void setMaxSkillLevel(unsigned maxLevel);
+	void setSkillLevelRange(unsigned minLevel, unsigned maxLevel);
 	void setMaxMultiPV(unsigned n);
 	void setHashSize(unsigned size);
 	void setHashRange(unsigned minSize, unsigned maxSize);
@@ -365,6 +366,7 @@ private:
 	unsigned				m_minElo;
 	unsigned				m_maxElo;
 	unsigned				m_skillLevel;
+	unsigned				m_minSkillLevel;
 	unsigned				m_maxSkillLevel;
 	unsigned				m_maxMultiPV;
 	Variations			m_variations;

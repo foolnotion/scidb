@@ -97,6 +97,9 @@ private:
 	bool				m_hasShowRefutations;
 	bool				m_stopAnalyizeIsPending;
 	bool				m_continueAnalysis;
+	bool				m_sendChess960;
+	bool				m_sendAnalyseMode;
+	bool				m_usedAnalyseModeBefore;
 };
 
 } // namespace uci

@@ -465,18 +465,14 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (engine.hasFeature(::app::Engine::Feature_Hash_Size))
 			{
 				Tcl_Obj* range[2] =
-				{
-					Tcl_NewIntObj(engine.minHashSize()), Tcl_NewIntObj(engine.maxHashSize())
-				};
+					{ Tcl_NewIntObj(engine.minHashSize()), Tcl_NewIntObj(engine.maxHashSize()) };
 				v[n++] = Tcl_NewStringObj("hashSize", -1);
 				v[n++] = Tcl_NewListObj(2, range);
 			}
 			if (engine.hasFeature(::app::Engine::Feature_Threads))
 			{
 				Tcl_Obj* range[2] =
-				{
-					Tcl_NewIntObj(engine.minThreads()), Tcl_NewIntObj(engine.maxThreads())
-				};
+					{ Tcl_NewIntObj(engine.minThreads()), Tcl_NewIntObj(engine.maxThreads()) };
 				v[n++] = Tcl_NewStringObj("threads", -1);
 				v[n++] = Tcl_NewListObj(2, range);
 			}
@@ -493,7 +489,8 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			}
 			if (engine.hasFeature(::app::Engine::Feature_Skill_Level))
 			{
-				Tcl_Obj* range[2] = { Tcl_NewIntObj(1), Tcl_NewIntObj(engine.maxSkillLevel()) };
+				Tcl_Obj* range[2] =
+					{ Tcl_NewIntObj(engine.minSkillLevel()), Tcl_NewIntObj(engine.maxSkillLevel()) };
 				v[n++] = Tcl_NewStringObj("skillLevel", -1);
 				v[n++] = Tcl_NewListObj(2, range);
 			}

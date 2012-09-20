@@ -971,9 +971,9 @@ proc FillInfo {list entry} {
 		switch $attr {
 			Protocol {
 				set Var(protocol) [lindex $engine(Protocol) 0]
-				$Priv(button:UCI) configure -state normal
-				$Priv(button:WB) configure -state normal
-				foreach prot $engine(Protocol) { $Priv(button:UCI) configure -state disabled }
+				$Priv(button:UCI) configure -state disabled
+				$Priv(button:WB) configure -state disabled
+				foreach prot $engine(Protocol) { $Priv(button:$prot) configure -state normal }
 			}
 			LastUsed {
 				set time $engine(LastUsed)

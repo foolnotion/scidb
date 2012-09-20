@@ -325,6 +325,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_minElo(0)
 	,m_maxElo(0)
 	,m_skillLevel(0)
+	,m_minSkillLevel(0)
 	,m_maxSkillLevel(0)
 	,m_maxMultiPV(1)
 	,m_variations(1, MoveList())
@@ -472,15 +473,19 @@ Engine::setEloRange(unsigned minElo, unsigned maxElo)
 void
 Engine::setSkillLevel(unsigned level)
 {
-	m_skillLevel = mstl::min(m_maxSkillLevel, level);
+	m_skillLevel = mstl::max(m_minSkillLevel, mstl::min(m_maxSkillLevel, level));
 }
 
 
 void
-Engine::setMaxSkillLevel(unsigned maxLevel)
+Engine::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 {
-	if ((m_maxSkillLevel = maxLevel) > 0)
+	if (minLevel < maxLevel)
+	{
+		m_minSkillLevel = minLevel;
+		m_maxSkillLevel = maxLevel;
 		addFeature(Feature_Skill_Level);
+	}
 }
 
 

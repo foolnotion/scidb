@@ -2721,9 +2721,11 @@ Game::getHistory(History& result) const
 	result.clear();
 	result.reserve(100);
 
-	for (MoveNode* node = m_currentNode; node; node = node->prev())
+	MoveNode* succ = m_currentNode->next();
+
+	for (MoveNode* node = m_currentNode; node; succ = node, node = node->prev())
 	{
-		if (!node->atLineStart() && !node->atLineEnd())
+		if (!node->atLineStart() && !node->atLineEnd() && node->next() == succ)
 			result.push_back(node->move());
 	}
 }

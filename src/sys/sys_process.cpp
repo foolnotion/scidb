@@ -172,7 +172,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	if (!m_chan)
 		TCL_RAISE("cannot create process: %s", Tcl_PosixError(::sys::tcl::interp()));
 
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "none"); // XXX instead of "line"
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-encoding", "binary");
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary binary");

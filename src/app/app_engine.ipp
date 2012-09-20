@@ -212,9 +212,9 @@ Engine::Concrete::setSkillLevel(unsigned level)
 
 inline
 void
-Engine::Concrete::setMaxSkillLevel(unsigned maxLevel)
+Engine::Concrete::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 {
-	m_engine->setMaxSkillLevel(maxLevel);
+	m_engine->setSkillLevelRange(minLevel, maxLevel);
 }
 
 
@@ -299,6 +299,7 @@ inline unsigned Engine::elo() const									{ return m_elo; }
 inline unsigned Engine::minElo() const								{ return m_minElo; }
 inline unsigned Engine::maxElo() const								{ return m_maxElo; }
 inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
+inline unsigned Engine::minSkillLevel() const					{ return m_minSkillLevel; }
 inline unsigned Engine::maxSkillLevel() const					{ return m_maxSkillLevel; }
 inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
 inline mstl::string const& Engine::playingStyles() const		{ return m_playingStyles; }
