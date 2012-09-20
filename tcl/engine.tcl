@@ -898,7 +898,7 @@ proc ShowFeatures {list features} {
 	if {"shuffle" in $features} { lappend features chess960 true }
 
 	append html "<html>"
-	append html "<head><style type='text/css'>body { background-color: yellow; }</style></head>"
+	append html "<head><style type='text/css'>body { background-color: #ffdd76; }</style></head>"
 	append html "<body>"
 
 	if {[llength $features] == 0} {

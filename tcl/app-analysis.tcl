@@ -78,7 +78,7 @@ proc build {parent width height} {
 		if {[llength $engines] == 0} {
 			set Options(engine:current) ""
 		} else {
-			set Options(engine:current) [lindex $Options(engine:current) 0]
+			set Options(engine:current) [lindex $engines 0]
 		}
 	}
 
