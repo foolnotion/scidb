@@ -265,8 +265,8 @@ struct Engine::Process : public sys::Process
 
 	bool isConnected() const { return m_connected; }
 
-	void readyRead();
-	void exited();
+	void readyRead() override;
+	void exited() override;
 
 	Engine*	m_engine;
 	bool		m_connected;
@@ -304,7 +304,7 @@ Engine::Process::exited()
 }
 
 
-Engine::Concrete::~Concrete() throw() {}
+Engine::Concrete::~Concrete() {}
 
 
 unsigned
@@ -364,12 +364,11 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 }
 
 
-Engine::~Engine() throw()
+Engine::~Engine()
 {
 	if (m_process)
 	{
 		deactivate();
-		m_process->kill();
 		delete m_process;
 	}
 
@@ -396,7 +395,7 @@ void
 Engine::kill()
 {
 	m_active = m_analyzing = false;
-	m_process->kill();
+	m_process->close();
 }
 
 
@@ -576,6 +575,21 @@ Engine::error(mstl::string const& msg)
 
 
 void
+Engine::fatal(mstl::string const& msg)
+{
+	if (m_logStream)
+	{
+		m_buffer.assign("@ ", 2);
+		m_buffer.append(msg);
+		m_buffer.append('\n');
+		m_logStream->write(m_buffer);
+	}
+
+	engineTerminated(msg);
+}
+
+
+void
 Engine::readyRead()
 {
 	mstl::string lines;
@@ -611,17 +625,27 @@ Engine::readyRead()
 void
 Engine::exited()
 {
-	if (m_active)
+	if (m_process->wasCrashed())
 	{
-		if (m_analyzing)
-		{
-			m_analyzing = false;
-			stopAnalysis();
-		}
-
-		m_active = false;
+		fatal("Engine crashed");
+	}
+	else if (m_process->wasKilled())
+	{
+		fatal("Engine killed");
+	}
+	else if (m_process->pipeWasClosed())
+	{
+		fatal("Engine closed pipe");
+	}
+	else
+	{
+		mstl::string msg;
+		msg.format("Engine terminated with exit status %d", m_process->exitStatus());
+		fatal(msg);
 	}
 
+	m_analyzing = false;
+	m_active = false;
 	delete m_process;
 	m_process = 0;
 }

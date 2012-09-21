@@ -1999,7 +1999,7 @@ Application::addEngine(Engine* engine)
 	if (m_engineLog)
 		engine->setLog(m_engineLog);
 
-	return mstl::distance(i, m_engineList.begin());
+	return mstl::distance(m_engineList.begin(), i);
 }
 
 

@@ -38,21 +38,34 @@ public:
 	};
 
 	Process(mstl::string const& command, mstl::string const& directory);
-	virtual ~Process() throw();
+	virtual ~Process();
 
 	bool isAlive() const;
+	bool isRunning() const;
+	bool isStopped() const;
+
+	bool wasCrashed() const;
+	bool wasKilled() const;
+	bool pipeWasClosed() const;
 
 	Priority priority() const;
 	long pid() const;
+	int exitStatus() const;
 
 	int gets(mstl::string& result);
 	int puts(mstl::string const& msg);
 
-	void kill() throw();
+	void close();
 	void setPriority(Priority priority);
 
 	virtual void readyRead() = 0;
 	virtual void exited() = 0;
+
+	void signalExited(int status);
+	void signalKilled(char const* signal);
+	void signalCrashed();
+	void signalStopped();
+	void signalResumed();
 
 private:
 
@@ -60,8 +73,17 @@ private:
 
 	int write(char const* msg, int size);
 
+	static void closeHandler(void* clientData);
+
 	Channel	m_chan;
 	long		m_pid;
+	int		m_exitStatus;
+	bool		m_signalCrashed;
+	bool		m_signalKilled;
+	bool		m_pipeClosed;
+	bool		m_running;
+	bool		m_stopped;
+	bool		m_calledExited;
 };
 
 } // namespace sys

@@ -495,6 +495,8 @@ proc Place {w} {
 	variable [winfo parent $w]::Priv
 	variable MaxWidth
 
+	if {![winfo exists $w]} { return }
+
 	set width [winfo width $w]
 	set height [winfo height $w]
 	if {$width == 1} { return }
@@ -1076,32 +1078,73 @@ proc WordEnd {str index} {
 }
 
 
-bind Html <Motion>				[namespace code { Motion %W %x %y %s }]
-bind Html <Leave>					[namespace code { Leave %W }]
-bind Html <ButtonPress-1>		[namespace code { ButtonPress %W %x %y 1 %s }]
-bind Html <ButtonRelease-1>	[namespace code { ButtonRelease %W %x %y 1 }]
-bind Html <ButtonPress-2>		[namespace code { ButtonPress %W %x %y 2 }]
-bind Html <ButtonRelease-2>	[namespace code { ButtonRelease %W %x %y 2 }]
-bind Html <ButtonPress-3>		[namespace code { ButtonPress %W %x %y 3 }]
-bind Html <ButtonRelease-3>	[namespace code { ButtonRelease %W %x %y 3 }]
-bind Html <Unmap>					[namespace code { Leave %W }]
-bind Html <Map>					[namespace code { Mapped %W }]
+proc WrapMotion {w x y args} {
+	incr x [winfo x $w]
+	incr y [winfo y $w]
+	Motion [winfo parent $w] $x $y {*}$args
+}
 
-bind Html <Double-ButtonPress-1>			[namespace code { Select %W %x %y word }]
-bind Html <Triple-ButtonPress-1>			[namespace code { Select %W %x %y block }]
-bind Html <Shift-Double-ButtonPress-1>	[namespace code { ExtendSelection %W %x %y word }]
-bind Html <Shift-Triple-ButtonPress-1>	[namespace code { ExtendSelection %W %x %y block }]
+
+proc WrapButtonPress {w x y args} {
+	incr x [winfo x $w]
+	incr y [winfo y $w]
+	ButtonPress [winfo parent $w] $x $y {*}$args
+}
+
+
+proc WrapButtonRelease {w x y args} {
+	incr x [winfo x $w]
+	incr y [winfo y $w]
+	ButtonRelease [winfo parent $w] $x $y {*}$args
+}
+
+
+proc WrapSelect {w x y args} {
+	incr x [winfo x $w]
+	incr y [winfo y $w]
+	Select [winfo parent $w] $x $y {*}$args
+}
+
+
+proc WrapExtendSelection {w x y args} {
+	incr x [winfo x $w]
+	incr y [winfo y $w]
+	ExtendSelect [winfo parent $w] $x $y {*}$args
+}
+
+
+proc WrapLeave {w}	{ Leave [winfo parent $w] }
+proc WrapMapped {w}	{ Mapped [winfo parent $w] }
+
+
+# IMPORTANT NOTE: we have to wrap all events to the parent window.
+
+bind Html <Motion>				[namespace code { WrapMotion %W %x %y %s }]
+bind Html <Leave>					[namespace code { WrapLeave %W }]
+bind Html <ButtonPress-1>		[namespace code { WrapButtonPress %W %x %y 1 %s }]
+bind Html <ButtonRelease-1>	[namespace code { WrapButtonRelease %W %x %y 1 }]
+bind Html <ButtonPress-2>		[namespace code { WrapButtonPress %W %x %y 2 }]
+bind Html <ButtonRelease-2>	[namespace code { WrapButtonRelease %W %x %y 2 }]
+bind Html <ButtonPress-3>		[namespace code { WrapButtonPress %W %x %y 3 }]
+bind Html <ButtonRelease-3>	[namespace code { WrapButtonRelease %W %x %y 3 }]
+bind Html <Unmap>					[namespace code { WrapLeave %W }]
+bind Html <Map>					[namespace code { WrapMapped %W }]
+
+bind Html <Double-ButtonPress-1>			[namespace code { WrapSelect %W %x %y word }]
+bind Html <Triple-ButtonPress-1>			[namespace code { WrapSelect %W %x %y block }]
+bind Html <Shift-Double-ButtonPress-1>	[namespace code { WrapExtendSelection %W %x %y word }]
+bind Html <Shift-Triple-ButtonPress-1>	[namespace code { WrapExtendSelection %W %x %y block }]
 
 switch [tk windowingsystem] {
 	win32 {
-		bind Html <MouseWheel> { %W yview scroll [expr %D/-60] units; break }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-60] units; break }
 	}
 	aqua {
-		bind Html <MouseWheel> { %W yview scroll [expr %D*-2] units; break }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-2] units; break }
 	}
 	x11 {
-		bind Html <ButtonPress-4> { %W yview scroll -2 units; break }
-		bind Html <ButtonPress-5> { %W yview scroll +2 units; break }
+		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -2 units; break }
+		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +2 units; break }
 	}
 }
 

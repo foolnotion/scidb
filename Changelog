@@ -1,6 +1,18 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #433)
+------------------------------------------------------------------------------
+* Work around implemented for a severe bug in library tkhtml (look for
+FIX_EVENT_HANDLING).
+
+* Signal handling implemented in sys::Process. Now all unexpected terminations
+of the sub-process will be catched.
+
+* Update of Stockfish with newest version, but without luck - Stockfish is
+crashing constantly.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #427)
 ------------------------------------------------------------------------------
 * Asynchronous read revision withdrawn.

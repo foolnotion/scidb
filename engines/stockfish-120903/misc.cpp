@@ -33,7 +33,7 @@ using namespace std;
 /// Version number. If Version is left empty, then Tag plus current
 /// date (in the format YYMMDD) is used as a version number.
 
-static const string Version = "";
+static const string Version = "2.3";
 static const string Tag = "";
 
 
@@ -65,6 +65,13 @@ const string engine_info(bool to_uci) {
     << "Tord Romstad, Marco Costalba and Joona Kiiski";
 
   return s.str();
+}
+
+
+/// Convert system time to milliseconds. That's all we need.
+
+Time::point Time::now() {
+  sys_time_t t; system_time(&t); return time_to_msec(t);
 }
 
 
@@ -201,7 +208,7 @@ void timed_wait(WaitCondition& sleepCond, Lock& sleepLock, int msec) {
   int tm = msec;
 #else
   timespec ts, *tm = &ts;
-  uint64_t ms = Time::now().msec() + msec;
+  uint64_t ms = Time::now() + msec;
 
   ts.tv_sec = ms / 1000;
   ts.tv_nsec = (ms % 1000) * 1000000LL;

@@ -143,7 +143,7 @@ MaterialEntry* MaterialTable::probe(const Position& pos) {
   //
   // We face problems when there are several conflicting applicable
   // scaling functions and we need to decide which one to use.
-  EndgameBase<ScaleFactor>* sf = 0;
+  EndgameBase<ScaleFactor>* sf;
 
   if (endgames.probe(key, sf))
   {

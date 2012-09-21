@@ -18,12 +18,13 @@
 
 namespace sys {
 
-inline
-long
-Process::pid() const
-{
-	return m_pid;
-}
+inline bool Process::isRunning() const			{ return m_running; }
+inline bool Process::isStopped() const			{ return m_stopped; }
+inline bool Process::wasCrashed() const		{ return m_signalCrashed; }
+inline bool Process::wasKilled() const			{ return m_signalKilled; }
+inline bool Process::pipeWasClosed() const	{ return m_pipeClosed; }
+inline int  Process::exitStatus() const		{ return m_exitStatus; }
+inline long Process::pid() const					{ return m_pid; }
 
 } // namespace sys
 

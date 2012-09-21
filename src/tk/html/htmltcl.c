@@ -61,6 +61,8 @@
 # include <fontconfig/fontconfig.h>
 #endif
 
+#define FIX_EVENT_HANDLING
+
 #include "htmldefaultstyle.c"
 
 #define LOG if (pTree->options.logcmd)
@@ -1272,6 +1274,7 @@ docwinEventHandler(ClientData clientData, XEvent *pEvent)
             break;
         }
 
+#ifndef FIX_EVENT_HANDLING
         case ButtonPress:
         case ButtonRelease:
         case MotionNotify:
@@ -1288,10 +1291,9 @@ docwinEventHandler(ClientData clientData, XEvent *pEvent)
             pEvent->xmotion.x += Tk_X(pTree->docwin);
             pEvent->xmotion.y += Tk_Y(pTree->docwin);
             Tk_HandleEvent(pEvent);
-
             pEvent->type = EnterNotify;
             pEvent->xcrossing.detail = NotifyInferior;
-            break;
+#endif
     }
 }
 
@@ -2827,9 +2829,14 @@ newWidget(
         HtmlFree(pTree);
         return TCL_ERROR;
     }
+#ifndef FIX_EVENT_HANDLING
     Tk_SetClass(pTree->tkwin, "Html");
+#endif
 
     pTree->docwin = Tk_CreateWindow(interp, pTree->tkwin, "document", NULL);
+#ifdef FIX_EVENT_HANDLING
+    Tk_SetClass(pTree->docwin, "Html");
+#endif
     if (!pTree->docwin) {
         Tk_DestroyWindow(pTree->tkwin);
         HtmlFree(pTree);
@@ -2837,7 +2844,9 @@ newWidget(
     }
     Tk_MakeWindowExist(pTree->docwin);
     Tk_ResizeWindow(pTree->docwin, 12000, 30000);
+#ifndef FIX_EVENT_HANDLING
     Tk_MapWindow(pTree->docwin);
+#endif
 
     pTree->interp = interp;
     Tcl_InitHashTable(&pTree->aParseHandler, TCL_ONE_WORD_KEYS);
@@ -2859,6 +2868,9 @@ newWidget(
             eventHandler, (ClientData)pTree
     );
 
+#ifdef FIX_EVENT_HANDLING
+    Tk_CreateEventHandler(pTree->docwin, ExposureMask, docwinEventHandler, (ClientData)pTree);
+#else
     Tk_CreateEventHandler(pTree->docwin,
         ExposureMask|ButtonMotionMask|ButtonPressMask|
         ButtonReleaseMask|PointerMotionMask|PointerMotionHintMask|
@@ -2866,6 +2878,7 @@ newWidget(
         Button4MotionMask|Button5MotionMask|ButtonMotionMask,
         docwinEventHandler, (ClientData)pTree
     );
+#endif
 
     /* Create the image-server */
     HtmlImageServerInit(pTree);
@@ -2900,6 +2913,10 @@ newWidget(
         Tcl_GetCommandInfo(interp, "::tkhtml::instrument", &cmdinfo);
         pTree->pInstrumentData = cmdinfo.objClientData;
     }
+#endif
+
+#ifdef FIX_EVENT_HANDLING
+    Tk_MapWindow(pTree->docwin);
 #endif
 
     /* Return the name of the widget just created. */

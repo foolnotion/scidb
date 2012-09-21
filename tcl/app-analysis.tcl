@@ -283,11 +283,12 @@ proc startAnalysis {} {
 	variable Options
 
 	set isReadyCmd [namespace current]::IsReady
+	set terminatedCmd [namespace current]::Terminated
 	set updateCmd [namespace current]::UpdateInfo
 	set name $Options(engine:current)
 
 	if {[string length $name]} {
-		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $updateCmd] 
+		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $terminatedCmd $updateCmd] 
 	}
 }
 
@@ -448,6 +449,16 @@ proc Destroy {} {
 
 proc IsReady {id} {
 	after idle [list :::engine::startAnalysis $id]
+}
+
+
+proc Terminated {id msg} {
+	variable Vars
+
+	set parent [winfo toplevel $Vars(tree)]
+	after idle [list ::dialog::error -parent $parent -message $msg]
+	after idle [list ::engine::kill $Vars(engine:id)]
+	set Vars(engine:id) -1
 }
 
 

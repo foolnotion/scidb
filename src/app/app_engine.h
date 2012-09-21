@@ -83,7 +83,7 @@ public:
 
 		typedef app::Engine::Result Result;
 
-		virtual ~Concrete() throw();
+		virtual ~Concrete();
 
 		virtual bool isReady() const = 0;
 
@@ -203,7 +203,7 @@ public:
 	static unsigned const Feature_Playing_Styles	= 1 << 11;
 
 	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
-	virtual ~Engine() throw();
+	virtual ~Engine();
 
 	Concrete* concrete();
 
@@ -258,6 +258,7 @@ public:
 	Result probe(unsigned timeout);
 
 	virtual void engineIsReady() = 0;
+	virtual void engineTerminated(mstl::string const& msg) = 0;
 
 	bool startAnalysis(db::Game const* game);
 	bool stopAnalysis();
@@ -338,6 +339,7 @@ protected:
 
 	void log(mstl::string const& msg);
 	void error(mstl::string const& msg);
+	void fatal(mstl::string const& msg);
 
 private:
 

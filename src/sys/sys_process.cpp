@@ -23,6 +23,7 @@
 #include "tcl_base.h"
 
 #include "m_string.h"
+#include "m_map.h"
 
 #include <tcl.h>
 #include <stdlib.h>
@@ -38,6 +39,79 @@
 #endif
 
 using namespace sys;
+
+
+typedef mstl::map<int, ::sys::Process*> ProcessMap;
+static ProcessMap m_processMap;
+
+
+#ifndef __WIN32__
+
+# include <signal.h>
+# include <sys/types.h>
+# include <sys/wait.h>
+# include <unistd.h>
+# include <errno.h>
+
+static bool m_childHandlerHooked = false;
+
+
+static void
+trapChildEvent(int signum)
+{
+	int	status;
+	pid_t pid		= waitpid(-1, &status, WNOHANG | WUNTRACED | WCONTINUED);
+
+	if (pid >= 0)
+	{
+		ProcessMap::const_iterator i = m_processMap.find(pid);
+		Process* process = i == m_processMap.end() ? 0 : i->second;
+
+		if (process)
+		{
+			if (WIFEXITED(status))
+			{
+				process->signalExited(WEXITSTATUS(status));
+			}
+			else if (WIFSTOPPED(status))
+			{
+				process->signalStopped();
+			}
+			else if (WIFCONTINUED(status))
+			{
+				process->signalResumed();
+			}
+			else if (WIFSIGNALED(status))
+			{
+				if (WCOREDUMP(status) || WTERMSIG(status) == SIGABRT)
+				{
+					process->signalCrashed();
+				}
+				else
+				{
+					char const* signal = 0;
+					char buf[100];
+
+					switch (WTERMSIG(status))
+					{
+						case SIGQUIT: signal = "QUIT"; break;
+						case SIGKILL: signal = "KILL"; break;
+						case SIGTERM: signal = "TERM"; break;
+
+						default:
+							sprintf(buf, "%d", int(pid));
+							signal = buf;
+							break;
+					}
+
+					process->signalKilled(signal);
+				}
+			}
+		}
+	}
+}
+
+#endif
 
 
 namespace {
@@ -135,23 +209,42 @@ struct DString
 
 
 static void
-closeHandler(ClientData clientData)
-{
-	reinterpret_cast<Process*>(clientData)->exited();
-}
-
-
-static void
 readHandler(ClientData clientData, int)
 {
-	reinterpret_cast<Process*>(clientData)->readyRead();
+	Process* process = reinterpret_cast<Process*>(clientData);
+
+#if 0
+	if (kill(process->pid(), 0) != 0)
+		process->close(); // process died
+#endif
+
+	if (process->isRunning())
+		process->readyRead();
+	else
+		process->close();
 }
 
 
 Process::Process(mstl::string const& command, mstl::string const& directory)
 	:m_chan(0)
 	,m_pid(-1)
+	,m_exitStatus(0)
+	,m_signalCrashed(false)
+	,m_signalKilled(false)
+	,m_pipeClosed(false)
+	,m_running(false)
+	,m_stopped(false)
+	,m_calledExited(false)
 {
+#ifndef __WIN32__
+	// trap child events like crashes
+	if (!::m_childHandlerHooked)
+	{
+		signal(SIGCHLD, ::trapChildEvent);
+		m_childHandlerHooked = true;
+	}
+#endif
+
 	DString cmd, dir, cwd;
 
 	Tcl_TranslateFileName(::sys::tcl::interp(), command, cmd);
@@ -164,7 +257,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 	m_chan = Tcl_OpenCommandChannel(	::sys::tcl::interp(),
 												1, argv,
-												TCL_STDIN | TCL_STDOUT | TCL_STDERR | TCL_ENFORCE_MODE);
+												TCL_STDIN | TCL_STDOUT | TCL_ENFORCE_MODE);
 
 	if (cwd)
 		Tcl_Chdir(cwd);
@@ -172,10 +265,9 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	if (!m_chan)
 		TCL_RAISE("cannot create process: %s", Tcl_PosixError(::sys::tcl::interp()));
 
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "none"); // XXX instead of "line"
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-encoding", "binary");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary binary");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary");
 	Tcl_RegisterChannel(::sys::tcl::interp(), m_chan);
 
 #ifdef Tcl_PidObjCmd__is_not_hidden
@@ -213,13 +305,18 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 #endif
 
 	Tcl_CreateChannelHandler(m_chan, TCL_READABLE, ::readHandler, this);
-	Tcl_CreateCloseHandler(m_chan, ::closeHandler, this);
+	Tcl_CreateCloseHandler(m_chan, closeHandler, this);
+
+	m_processMap[m_pid] = this;
+	m_running = true;
 }
 
 
-Process::~Process() throw()
+Process::~Process()
 {
-	kill();
+	m_processMap.erase(m_pid);
+	m_calledExited = true; // process is destroyed by user
+	close();
 }
 
 
@@ -254,16 +351,17 @@ Process::setPriority(Priority priority)
 int
 Process::gets(mstl::string& result)
 {
-	if (!isAlive())
-		return -1;
-
 	char buf[2048];
 
 	int bytesRead = Tcl_Read(m_chan, buf, sizeof(buf));
 
-	if (bytesRead == -1)
+	if (bytesRead >= 0)
 	{
-		if (!isAlive())
+		result.assign(static_cast<char const*>(buf), bytesRead);
+	}
+	else if (!Tcl_Eof(m_chan) && !Tcl_InputBlocked(m_chan))
+	{
+		if (!isAlive() || isStopped())
 			return -1;
 
 		Tcl_ResetResult(::sys::tcl::interp());
@@ -276,10 +374,8 @@ Process::gets(mstl::string& result)
 							__func__,
 							Tcl_PosixError(::sys::tcl::interp())));
 
-		kill();
+		close();
 	}
-
-	result.assign(static_cast<char const*>(buf), bytesRead);
 
 	return bytesRead;
 }
@@ -288,7 +384,7 @@ Process::gets(mstl::string& result)
 int
 Process::puts(mstl::string const& msg)
 {
-	if (!isAlive())
+	if (!isAlive() || isStopped())
 		return -1;
 
 	if (msg.empty())
@@ -311,14 +407,20 @@ Process::puts(mstl::string const& msg)
 
 
 void
-Process::kill() throw()
+Process::close()
 {
 	if (m_chan)
 	{
 		Tcl_DeleteChannelHandler(m_chan, ::readHandler, this);
-		Tcl_DeleteCloseHandler(m_chan, ::closeHandler, this);
+		Tcl_DeleteCloseHandler(m_chan, closeHandler, this);
 		Tcl_UnregisterChannel(::sys::tcl::interp(), m_chan);
 		m_chan = 0;
+	}
+
+	if (!m_calledExited)
+	{
+		m_calledExited = true;
+		exited();
 	}
 }
 
@@ -342,13 +444,67 @@ Process::write(char const* msg, int size)
 								__func__,
 								Tcl_PosixError(::sys::tcl::interp())));
 
-			kill();
+			close();
 		}
 
 		return -1;
 	}
 
 	return bytesWritten;
+}
+
+
+void
+Process::closeHandler(void* clientData)
+{
+	Process* process = reinterpret_cast<Process*>(clientData);
+
+	process->m_calledExited = true;
+	process->m_pipeClosed = true;
+	process->exited();
+}
+
+
+void
+Process::signalExited(int status)
+{
+	DEBUG(fprintf(stderr, "engine exited with error status %d\n", status));
+	m_running = false;
+	m_exitStatus = status;
+}
+
+
+void
+Process::signalCrashed()
+{
+	DEBUG(fprintf(stderr, "engine core dumped\n"));
+	m_running = false;
+	m_signalCrashed = true;
+}
+
+
+void
+Process::signalKilled(char const* signal)
+{
+	DEBUG(fprintf(stderr, "engine is killed by signal %s\n", signal));
+	m_running = false;
+	m_signalKilled = true;
+}
+
+
+void
+Process::signalStopped()
+{
+	DEBUG(fprintf(stderr, "engine stopped\n"));
+	m_stopped = true;
+}
+
+
+void
+Process::signalResumed()
+{
+	DEBUG(fprintf(stderr, "engine resumed\n"));
+	m_stopped = true;
 }
 
 // vi:set ts=3 sw=3:

@@ -42,7 +42,7 @@ namespace Search {
   LimitsType Limits;
   std::vector<RootMove> RootMoves;
   Position RootPosition;
-  Time SearchTime;
+  Time::point SearchTime;
   StateStackPtr SetupStates;
 }
 
@@ -290,11 +290,11 @@ void Search::think() {
 
   if (Options["Use Search Log"])
   {
-      int e = SearchTime.elapsed();
+      Time::point elapsed = Time::now() - SearchTime + 1;
 
       Log log(Options["Search Log Filename"]);
       log << "Nodes: "          << pos.nodes_searched()
-          << "\nNodes/second: " << (e > 0 ? pos.nodes_searched() * 1000 / e : 0)
+          << "\nNodes/second: " << pos.nodes_searched() * 1000 / elapsed
           << "\nBest move: "    << move_to_san(pos, RootMoves[0].pv[0]);
 
       StateInfo st;
@@ -365,7 +365,8 @@ namespace {
 
             // Start with a small aspiration window and, in case of fail high/low,
             // research with bigger window until not failing high/low anymore.
-            do {
+            while (true)
+            {
                 // Search starts from ss+1 to allow referencing (ss-1). This is
                 // needed by update gains and ss copy when splitting at Root.
                 bestValue = search<Root>(pos, ss+1, alpha, beta, depth * ONE_PLY);
@@ -398,7 +399,7 @@ namespace {
 
                 // Send full PV info to GUI if we are going to leave the loop or
                 // if we have a fail high/low and we are deep in the search.
-                if ((bestValue > alpha && bestValue < beta) || SearchTime.elapsed() > 2000)
+                if ((bestValue > alpha && bestValue < beta) || Time::now() - SearchTime > 2000)
                     sync_cout << uci_pv(pos, depth, alpha, beta) << sync_endl;
 
                 // In case of failing high/low increase aspiration window and
@@ -419,9 +420,15 @@ namespace {
                 else
                     break;
 
-                assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
+                // Search with full window in case we have a win/mate score
+                if (abs(bestValue) >= VALUE_KNOWN_WIN)
+                {
+                    alpha = -VALUE_INFINITE;
+                    beta  =  VALUE_INFINITE;
+                }
 
-            } while (abs(bestValue) < VALUE_KNOWN_WIN);
+                assert(alpha >= -VALUE_INFINITE && beta <= VALUE_INFINITE);
+            }
         }
 
         // Skills: Do we need to pick now the best move ?
@@ -431,7 +438,7 @@ namespace {
         if (!Signals.stop && Options["Use Search Log"])
         {
             Log log(Options["Search Log Filename"]);
-            log << pretty_pv(pos, depth, bestValue, SearchTime.elapsed(), &RootMoves[0].pv[0])
+            log << pretty_pv(pos, depth, bestValue, Time::now() - SearchTime, &RootMoves[0].pv[0])
                 << std::endl;
         }
 
@@ -451,14 +458,14 @@ namespace {
             // Stop search if most of available time is already consumed. We
             // probably don't have enough time to search the first move at the
             // next iteration anyway.
-            if (SearchTime.elapsed() > (TimeMgr.available_time() * 62) / 100)
+            if (Time::now() - SearchTime > (TimeMgr.available_time() * 62) / 100)
                 stop = true;
 
             // Stop search early if one move seems to be much better than others
             if (    depth >= 12
                 && !stop
                 && (   (bestMoveNeverChanged &&  pos.captured_piece_type())
-                    || SearchTime.elapsed() > (TimeMgr.available_time() * 40) / 100))
+                    || Time::now() - SearchTime > (TimeMgr.available_time() * 40) / 100))
             {
                 Value rBeta = bestValue - EasyMoveMargin;
                 (ss+1)->excludedMove = RootMoves[0].pv[0];
@@ -827,7 +834,7 @@ split_point_start: // At split points actual search starts from here
       {
           Signals.firstRootMove = (moveCount == 1);
 
-          if (thisThread == Threads.main_thread() && SearchTime.elapsed() > 2000)
+          if (thisThread == Threads.main_thread() && Time::now() - SearchTime > 2000)
               sync_cout << "info depth " << depth / ONE_PLY
                         << " currmove " << move_to_uci(move, Chess960)
                         << " currmovenumber " << moveCount + PVIdx << sync_endl;
@@ -1494,7 +1501,7 @@ split_point_start: // At split points actual search starts from here
     static RKISS rk;
 
     // PRNG sequence should be not deterministic
-    for (int i = Time::now().msec() % 50; i > 0; i--)
+    for (int i = Time::now() % 50; i > 0; i--)
         rk.rand<unsigned>();
 
     // RootMoves are already sorted by score in descending order
@@ -1536,7 +1543,7 @@ split_point_start: // At split points actual search starts from here
   string uci_pv(const Position& pos, int depth, Value alpha, Value beta) {
 
     std::stringstream s;
-    int t = SearchTime.elapsed();
+    Time::point elaspsed = Time::now() - SearchTime + 1;
     int selDepth = 0;
 
     for (size_t i = 0; i < Threads.size(); i++)
@@ -1557,12 +1564,12 @@ split_point_start: // At split points actual search starts from here
             s << "\n";
 
         s << "info depth " << d
-          << " seldepth " << selDepth
-          << " score " << (i == PVIdx ? score_to_uci(v, alpha, beta) : score_to_uci(v))
-          << " nodes " << pos.nodes_searched()
-          << " nps " << (t > 0 ? pos.nodes_searched() * 1000 / t : 0)
-          << " time " << t
-          << " multipv " << i + 1
+          << " seldepth "  << selDepth
+          << " score "     << (i == PVIdx ? score_to_uci(v, alpha, beta) : score_to_uci(v))
+          << " nodes "     << pos.nodes_searched()
+          << " nps "       << pos.nodes_searched() * 1000 / elaspsed
+          << " time "      << elaspsed
+          << " multipv "   << i + 1
           << " pv";
 
         for (size_t j = 0; RootMoves[i].pv[j] != MOVE_NONE; j++)
@@ -1749,9 +1756,9 @@ void Thread::idle_loop() {
 
 void check_time() {
 
-  static Time lastInfoTime = Time::now();
+  static Time::point lastInfoTime = Time::now();
 
-  if (lastInfoTime.elapsed() >= 1000)
+  if (Time::now() - lastInfoTime >= 1000)
   {
       lastInfoTime = Time::now();
       dbg_print();
@@ -1760,15 +1767,15 @@ void check_time() {
   if (Limits.ponder)
       return;
 
-  int e = SearchTime.elapsed();
+  Time::point elapsed = Time::now() - SearchTime;
   bool stillAtFirstMove =    Signals.firstRootMove
                          && !Signals.failedLowAtRoot
-                         &&  e > TimeMgr.available_time();
+                         &&  elapsed > TimeMgr.available_time();
 
-  bool noMoreTime =   e > TimeMgr.maximum_time() - 2 * TimerResolution
+  bool noMoreTime =   elapsed > TimeMgr.maximum_time() - 2 * TimerResolution
                    || stillAtFirstMove;
 
   if (   (Limits.use_time_management() && noMoreTime)
-      || (Limits.movetime && e >= Limits.movetime))
+      || (Limits.movetime && elapsed >= Limits.movetime))
       Signals.stop = true;
 }
