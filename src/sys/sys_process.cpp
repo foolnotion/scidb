@@ -211,17 +211,7 @@ struct DString
 static void
 readHandler(ClientData clientData, int)
 {
-	Process* process = reinterpret_cast<Process*>(clientData);
-
-#if 0
-	if (kill(process->pid(), 0) != 0)
-		process->close(); // process died
-#endif
-
-	if (process->isRunning())
-		process->readyRead();
-	else
-		process->close();
+	reinterpret_cast<Process*>(clientData)->readyRead();
 }
 
 
@@ -471,6 +461,7 @@ Process::signalExited(int status)
 	DEBUG(fprintf(stderr, "engine exited with error status %d\n", status));
 	m_running = false;
 	m_exitStatus = status;
+	Tcl_DoWhenIdle(callClose, this);
 }
 
 
@@ -480,6 +471,7 @@ Process::signalCrashed()
 	DEBUG(fprintf(stderr, "engine core dumped\n"));
 	m_running = false;
 	m_signalCrashed = true;
+	Tcl_DoWhenIdle(callClose, this);
 }
 
 
@@ -489,6 +481,7 @@ Process::signalKilled(char const* signal)
 	DEBUG(fprintf(stderr, "engine is killed by signal %s\n", signal));
 	m_running = false;
 	m_signalKilled = true;
+	Tcl_DoWhenIdle(callClose, this);
 }
 
 
@@ -507,6 +500,13 @@ Process::signalResumed()
 	DEBUG(fprintf(stderr, "engine resumed\n"));
 	m_stopped = false;
 	Tcl_DoWhenIdle(callResumed, this);
+}
+
+
+void
+Process::callClose(void* clientData)
+{
+	static_cast<Process*>(clientData)->close();
 }
 
 

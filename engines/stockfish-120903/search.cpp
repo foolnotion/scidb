@@ -624,9 +624,16 @@ namespace {
     // Step 5. Evaluate the position statically and update parent's gain statistics
     if (inCheck)
         ss->eval = ss->evalMargin = VALUE_NONE;
+#if 1 // FIX by Gregor Cramer
+// Very often the enine is crashing with:
+// stockfish-120903: search.cpp:629: Value<unnamed>::qsearch(Position&, Search::Stack*, Value, Value, Depth) [with <unnamed>::NodeType NT = NonPV]: Assertion `tte->static_value() != VALUE_NONE' failed.
+    else if (tte && tte->static_value() != VALUE_NONE)
+    {
+#else
     else if (tte)
     {
         assert(tte->static_value() != VALUE_NONE);
+#endif
 
         ss->eval = tte->static_value();
         ss->evalMargin = tte->static_value_margin();
@@ -1160,12 +1167,15 @@ split_point_start: // At split points actual search starts from here
     else
     {
 #if 1 // FIX by Gregor Cramer
+// Very often the enine is crashing with:
+// stockfish-120903: search.cpp:1164: Value<unnamed>::qsearch(Position&, Search::Stack*, Value, Value, Depth) [with <unnamed>::NodeType NT = NonPV]: Assertion `tte->static_value() != VALUE_NONE' failed.
         if (tte && tte->static_value() != VALUE_NONE)
+        {
 #else
         if (tte)
-#endif
         {
             assert(tte->static_value() != VALUE_NONE);
+#endif
 
             evalMargin = tte->static_value_margin();
             ss->eval = bestValue = tte->static_value();

@@ -78,6 +78,7 @@ private:
 	static void closeHandler(void* clientData);
 	static void callStopped(void* clientData);
 	static void callResumed(void* clientData);
+	static void callClose(void* clientData);
 
 	Channel	m_chan;
 	long		m_pid;

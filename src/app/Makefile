@@ -446,6 +446,10 @@ app_engine.o: ../mstl/m_cast.ipp
 app_engine.o: ../mstl/m_ref_counter.h
 app_engine.o: ../mstl/m_ref_counter.ipp
 app_engine.o: ../db/db_game.ipp
+app_engine.o: ../db/db_player.h
+app_engine.o: ../db/db_date.h
+app_engine.o: ../db/db_date.ipp
+app_engine.o: ../db/db_player.ipp
 app_engine.o: ../sys/sys_process.h
 app_engine.o: ../sys/sys_process.ipp
 app_engine.o: ../sys/sys_timer.h
@@ -823,10 +827,6 @@ app_winboard_engine.o: ../mstl/m_cast.ipp
 app_winboard_engine.o: ../mstl/m_ref_counter.h
 app_winboard_engine.o: ../mstl/m_ref_counter.ipp
 app_winboard_engine.o: ../db/db_game.ipp
-app_winboard_engine.o: ../db/db_player.h
-app_winboard_engine.o: ../db/db_date.h
-app_winboard_engine.o: ../db/db_date.ipp
-app_winboard_engine.o: ../db/db_player.ipp
 app_winboard_engine.o: ../sys/sys_signal.h
 app_winboard_engine.o: ../sys/sys_timer.h
 app_winboard_engine.o: ../mstl/m_stdio.h
