@@ -289,7 +289,7 @@ inline db::Board const& Engine::currentBoard() const			{ return m_engine->curren
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
 inline unsigned Engine::currentMoveNumber() const				{ return m_currMoveNumber; }
 inline db::Move const& Engine::currentMove() const				{ return m_currMove; }
-
+inline int Engine::exitStatus() const								{ return m_exitStatus; }
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
 inline mstl::string const& Engine::shortName() const			{ return m_shortName; }
 inline mstl::string const& Engine::author() const				{ return m_author; }

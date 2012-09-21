@@ -1159,7 +1159,11 @@ split_point_start: // At split points actual search starts from here
     }
     else
     {
+#if 1 // FIX by Gregor Cramer
+        if (tte && tte->static_value() != VALUE_NONE)
+#else
         if (tte)
+#endif
         {
             assert(tte->static_value() != VALUE_NONE);
 

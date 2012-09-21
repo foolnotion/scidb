@@ -114,7 +114,7 @@ public:
 
 	void updatePvInfo() override {}
 	void engineIsReady() override {}
-	void engineTerminated(mstl::string const&) override {}
+	void engineSignal(Signal) override {}
 };
 
 
@@ -126,20 +126,20 @@ public:
 				mstl::string const& command,
 				mstl::string const& directory,
 				Tcl_Obj* isReadyCmd,
-				Tcl_Obj* terminatedCmd,
+				Tcl_Obj* signalCmd,
 				Tcl_Obj* updateInfoCmd)
 		: ::app::Engine(protocol, command, directory)
 		,m_isReadyCmd(isReadyCmd)
-		,m_terminatedCmd(terminatedCmd)
+		,m_signalCmd(signalCmd)
 		,m_updateInfoCmd(updateInfoCmd)
 		,m_id(0)
 	{
 		M_ASSERT(isReadyCmd);
-		M_ASSERT(terminatedCmd);
+		M_ASSERT(signalCmd);
 		M_ASSERT(updateInfoCmd);
 
 		Tcl_IncrRefCount(m_isReadyCmd);
-		Tcl_IncrRefCount(m_terminatedCmd);
+		Tcl_IncrRefCount(m_signalCmd);
 		Tcl_IncrRefCount(m_updateInfoCmd);
 
 		if (m_pv == 0)
@@ -157,7 +157,7 @@ public:
 	~Engine() throw()
 	{
 		Tcl_DecrRefCount(m_isReadyCmd);
-		Tcl_DecrRefCount(m_terminatedCmd);
+		Tcl_DecrRefCount(m_signalCmd);
 		Tcl_DecrRefCount(m_updateInfoCmd);
 
 		if (m_id)
@@ -247,9 +247,26 @@ public:
 		tcl::invoke(__func__, m_isReadyCmd, m_id, nullptr);
 	}
 
-	void engineTerminated(mstl::string const& msg) override
+	void engineSignal(Signal signal) override
 	{
-		tcl::invoke(__func__, m_terminatedCmd, m_id, Tcl_NewStringObj(msg, -1), nullptr);
+		char const* msg;
+		char buf[100];
+
+		switch (signal)
+		{
+			case Stopped:		msg = "stopped"; break;
+			case Resumed:		msg = "resumed"; break;
+			case Crashed:		msg = "crashed"; break;
+			case Killed:		msg = "killed"; break;
+			case PipeClosed:	msg = "closed"; break;
+
+			case Terminated:
+				sprintf(buf, "%d", exitStatus());
+				msg = buf;
+				break;
+		}
+
+		tcl::invoke(__func__, m_signalCmd, m_id, Tcl_NewStringObj(msg, -1), nullptr);
 	}
 
 	void setId(unsigned id)
@@ -260,7 +277,7 @@ public:
 private:
 
 	Tcl_Obj* m_isReadyCmd;
-	Tcl_Obj* m_terminatedCmd;
+	Tcl_Obj* m_signalCmd;
 	Tcl_Obj* m_updateInfoCmd;
 	Tcl_Obj* m_id;
 
@@ -555,12 +572,12 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	command			= stringFromObj(objc, objv, 1);
-	char const*	directory		= stringFromObj(objc, objv, 2);
-	char const*	protocol			= stringFromObj(objc, objv, 3);
-	Tcl_Obj*		isReadyCmd		= objectFromObj(objc, objv, 4);
-	Tcl_Obj*		terminatedCmd	= objectFromObj(objc, objv, 5);
-	Tcl_Obj*		updateCmd		= objectFromObj(objc, objv, 6);
+	char const*	command		= stringFromObj(objc, objv, 1);
+	char const*	directory	= stringFromObj(objc, objv, 2);
+	char const*	protocol		= stringFromObj(objc, objv, 3);
+	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
+	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 5);
+	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 6);
 
 	Engine::Protocol prot;
 
@@ -571,7 +588,7 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
 
-	Engine* engine = new Engine(prot, command, directory, isReadyCmd, terminatedCmd, updateCmd);
+	Engine* engine = new Engine(prot, command, directory, isReadyCmd, signalCmd, updateCmd);
 
 	// TODO
 	// set options before activating

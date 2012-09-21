@@ -60,6 +60,8 @@ public:
 
 	virtual void readyRead() = 0;
 	virtual void exited() = 0;
+	virtual void stopped() = 0;
+	virtual void resumed() = 0;
 
 	void signalExited(int status);
 	void signalKilled(char const* signal);
@@ -74,6 +76,8 @@ private:
 	int write(char const* msg, int size);
 
 	static void closeHandler(void* clientData);
+	static void callStopped(void* clientData);
+	static void callResumed(void* clientData);
 
 	Channel	m_chan;
 	long		m_pid;

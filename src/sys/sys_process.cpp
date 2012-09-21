@@ -497,6 +497,7 @@ Process::signalStopped()
 {
 	DEBUG(fprintf(stderr, "engine stopped\n"));
 	m_stopped = true;
+	Tcl_DoWhenIdle(callStopped, this);
 }
 
 
@@ -504,7 +505,22 @@ void
 Process::signalResumed()
 {
 	DEBUG(fprintf(stderr, "engine resumed\n"));
-	m_stopped = true;
+	m_stopped = false;
+	Tcl_DoWhenIdle(callResumed, this);
+}
+
+
+void
+Process::callStopped(void* clientData)
+{
+	static_cast<Process*>(clientData)->stopped();
+}
+
+
+void
+Process::callResumed(void* clientData)
+{
+	static_cast<Process*>(clientData)->resumed();
 }
 
 // vi:set ts=3 sw=3:

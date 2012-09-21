@@ -65,6 +65,16 @@ public:
 		WinBoard,
 	};
 
+	enum Signal
+	{
+		Stopped,
+		Resumed,
+		Terminated,
+		Crashed,
+		Killed,
+		PipeClosed,
+	};
+
 	struct Option
 	{
 		mstl::string name;
@@ -219,6 +229,8 @@ public:
 	bool isProbing() const;
 	bool hasFeature(unsigned feature) const;
 
+	int exitStatus() const;
+
 	int score() const;
 	int mate() const;
 	unsigned depth();
@@ -258,7 +270,7 @@ public:
 	Result probe(unsigned timeout);
 
 	virtual void engineIsReady() = 0;
-	virtual void engineTerminated(mstl::string const& msg) = 0;
+	virtual void engineSignal(Signal signal) = 0;
 
 	bool startAnalysis(db::Game const* game);
 	bool stopAnalysis();
@@ -351,6 +363,8 @@ private:
 	bool detectShortName(mstl::string const& s, bool setId);
 	void readyRead();
 	void exited();
+	void stopped();
+	void resumed();
 
 	Concrete*			m_engine;
 	db::Game const*	m_game;
@@ -398,6 +412,7 @@ private:
 	bool					m_identifierSet;
 	bool					m_useLimitedStrength;
 	Process*				m_process;
+	int					m_exitStatus;
 	mstl::ostream*		m_logStream;
 	Options				m_options;
 	mstl::string		m_buffer;

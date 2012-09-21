@@ -1,13 +1,18 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #434)
+------------------------------------------------------------------------------
+* Small fix in Stockfish engine, probably the engine will work now.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #433)
 ------------------------------------------------------------------------------
 * Work around implemented for a severe bug in library tkhtml (look for
 FIX_EVENT_HANDLING).
 
 * Signal handling implemented in sys::Process. Now all unexpected terminations
-of the sub-process will be catched.
+of the sub-process will be caught.
 
 * Update of Stockfish with newest version, but without luck - Stockfish is
 crashing constantly.

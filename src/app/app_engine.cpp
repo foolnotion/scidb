@@ -267,6 +267,8 @@ struct Engine::Process : public sys::Process
 
 	void readyRead() override;
 	void exited() override;
+	void stopped() override;
+	void resumed() override;
 
 	Engine*	m_engine;
 	bool		m_connected;
@@ -301,6 +303,20 @@ Engine::Process::exited()
 {
 	m_engine->exited();
 	m_connected = false;
+}
+
+
+void
+Engine::Process::stopped()
+{
+	m_engine->stopped();
+}
+
+
+void
+Engine::Process::resumed()
+{
+	m_engine->resumed();
 }
 
 
@@ -352,6 +368,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
 	,m_process(0)
+	,m_exitStatus(0)
 	,m_logStream(0)
 {
 	switch (protocol)
@@ -584,8 +601,6 @@ Engine::fatal(mstl::string const& msg)
 		m_buffer.append('\n');
 		m_logStream->write(m_buffer);
 	}
-
-	engineTerminated(msg);
 }
 
 
@@ -625,29 +640,50 @@ Engine::readyRead()
 void
 Engine::exited()
 {
+	m_analyzing = false;
+	m_active = false;
+
 	if (m_process->wasCrashed())
 	{
 		fatal("Engine crashed");
+		engineSignal(Crashed);
 	}
 	else if (m_process->wasKilled())
 	{
 		fatal("Engine killed");
+		engineSignal(Killed);
 	}
 	else if (m_process->pipeWasClosed())
 	{
 		fatal("Engine closed pipe");
+		engineSignal(PipeClosed);
 	}
 	else
 	{
 		mstl::string msg;
-		msg.format("Engine terminated with exit status %d", m_process->exitStatus());
+		msg.format("Engine terminated with exit status %d", m_exitStatus = m_process->exitStatus());
 		fatal(msg);
+		engineSignal(Terminated);
 	}
 
-	m_analyzing = false;
-	m_active = false;
 	delete m_process;
 	m_process = 0;
+}
+
+
+void
+Engine::stopped()
+{
+	fatal("Engine stopped");
+	engineSignal(Stopped);
+}
+
+
+void
+Engine::resumed()
+{
+	fatal("Engine resumed");
+	engineSignal(Resumed);
 }
 
 

@@ -715,7 +715,7 @@ proc setup {} {
 }
 
 
-proc startEngine {name isReadyCmd terminatedCmd updateCmd} {
+proc startEngine {name isReadyCmd signalCmd updateCmd} {
 	variable EmptyEngine
 	variable Engines
 	variable Priv
@@ -742,7 +742,7 @@ proc startEngine {name isReadyCmd terminatedCmd updateCmd} {
 				$dir \
 				$protocol \
 				$isReadyCmd \
-				$terminatedCmd \
+				$signalCmd \
 				$updateCmd \
 			]
 			return $id
@@ -826,7 +826,7 @@ proc Log {text msg} {
 			set tag error
 			set msg [string range $msg 2 end]
 		} 
-		"@ " {
+		"@" {
 			set tag error
 			set msg "FATAL: [string range $msg 2 end]"
 		}
