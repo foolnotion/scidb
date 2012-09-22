@@ -352,7 +352,7 @@
 ::application::database::mc::FileNew							"Nueva Base..."
 ::application::database::mc::FileExport						"Exportar..."
 ::application::database::mc::FileImport(pgn)					"Importar archivos PGN..."
-::application::database::mc::FileImport(db)					"Import Databases..." ;# NEW
+::application::database::mc::FileImport(db)					"Importar Bases de Datos..."
 ::application::database::mc::FileCreate						"Crear Archivo..."
 ::application::database::mc::FileClose							"Cerrar"
 ::application::database::mc::FileCompact						"Compactar"
@@ -799,7 +799,7 @@
 ::engine::mc::Probing					"Penetrante"
 ::engine::mc::NeverUsed					"Nunca utilizado"
 ::engine::mc::OpenFsbox					"Abrir el diálogo Seleccionar archivo"
-::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"!
+::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"
 ::engine::mc::TotalUsage				"%s times in total" ;# NEW
 
 ::engine::mc::ConfirmNewEngine		"Confirmar el nuevo Motor"
@@ -810,8 +810,9 @@
 ::engine::mc::DiscardChanges			"El ítem actual ha cambiado.\n\n¿Desea realmente descartar los cambios?"
 ::engine::mc::ReallyDelete				"¿Realmente desea eliminar el Motor '%s'?"
 ::engine::mc::EntryAlreadyExists		"Ya existe una entrada con el nombre '%s'."
-::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature." ;# NEW
+::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
 
+::engine::mc::FeatureDetail(analyze)		"This engine provides an analyze mode." ;# NEW
 ::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
 ::engine::mc::FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
 ::engine::mc::FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
@@ -1139,6 +1140,9 @@
 ::setup::board::mc::InvalidFen					"FEN no válido"
 ::setup::board::mc::CastlingWithoutRook		"Se han fijado derechos de enroque pero al menos una de las torres no está. Esto sólo sucede en partidas con ventaja. ¿Está seguro que los derechos de enroque son correctos?"
 ::setup::board::mc::UnsupportedVariant			"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
+
+::setup::board::mc::ChangeToFormat(xfen)				"Change to X-Fen format" ;# NEW
+::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format" ;# NEW
 
 ::setup::board::mc::Error(InvalidFen)					"FEN no válido."
 ::setup::board::mc::Error(NoWhiteKing)					"Sin rey blanco."

@@ -31,6 +31,7 @@
 
 #include "sys_signal.h"
 #include "sys_timer.h"
+#include "sys_time.h"
 
 #include "m_stdio.h"
 
@@ -115,54 +116,39 @@ skipSpaces(char const* s)
 
 
 static char const*
+skipWord(char const* s)
+{
+	while (*s && !isspace(*s))
+		++s;
+
+	return skipSpaces(s);
+}
+
+
+static char const*
 skipWords(char const* s, unsigned n)
 {
 	while (n--)
-	{
-		while (*s && !isspace(*s))
-			++s;
-		s = skipSpaces(s);
-	}
+		s = skipWord(s);
 
 	return s;
 }
 
 
-static bool
-isAlgebraic(char const* s)
-{
-	if (s[0] == '0' || s[0] == 'O')
-		return s[1] == '-';
-
-	if (::isalpha(s[0]))
-	{
-		if (*++s == 'x')
-			++s;
-	}
-
-	return ::isdigit(s[0]) && ::isalpha(s[1]);
-}
-
-
 static char const*
-nextAlgebraic(char const* s)
+skipMoveNumber(char const* s)
 {
-	// Note: Yace puts ".", "t", "t-" or "t+" at the start of its moves text; skip it.
-	// Note: Gullydeckel puts "T" followed by a number at the start of its moves text; skip it.
-	// Note: Some engines (Crafty, Gullydeckel) adds "<HT>" for a hash table comment; skip it.
-	// Note: Skip move numbers.
-	// Note: Skip '(' at start of line.
-
-	do
+	if (isdigit(*s))
 	{
-		if (*s == '(')
+		do
 			++s;
-		else
-			s = skipWords(s, 1);
+		while (isdigit(*s));
+
+		if (*s == '.')
+			++s;
 
 		s = skipSpaces(s);
 	}
-	while (*s && !isAlgebraic(s));
 
 	return s;
 }
@@ -172,15 +158,16 @@ struct winboard::Engine::Timer : public sys::Timer
 {
 	Timer(winboard::Engine* engine, unsigned timeout) :sys::Timer(timeout), m_engine(engine) {}
 
-	void timeout() { timeout(); }
+	void timeout() { m_engine->timeout(); }
 
 	winboard::Engine* m_engine;
 };
 
 
 winboard::Engine::Engine()
-	:m_response(false)
-	,m_detected(false)
+	:m_isAnalyzing(false)
+	,m_response(false)
+	,m_analyzeResponse(false)
 	,m_identifierDetected(false)
 	,m_shortNameDetected(false)
 	,m_mustUseChess960(false)
@@ -188,16 +175,13 @@ winboard::Engine::Engine()
 	,m_editSent(false)
 	,m_dontInvertScore(false)
 	,m_wholeSeconds(false)
+	,m_wholeSecondsDetected(false)
 	,m_featureUsermove(false)
 	,m_featureColors(false)
 	,m_featureSetboard(false)
 	,m_featureSigint(false)
-	,m_featureAnalyze(false)
-	,m_featurePause(false)
-	,m_featurePlayOther(false)
 	,m_featureSan(false)
-	,m_variantChess960(false)
-	,m_variantNoCastle(false)
+	,m_isCrafty(false)
 {
 }
 
@@ -216,6 +200,16 @@ winboard::Engine::Result
 winboard::Engine::probeResult() const
 {
 	return m_response ? app::Engine::Probe_Successfull : app::Engine::Probe_Undecidable;
+}
+
+
+winboard::Engine::Result
+winboard::Engine::probeAnalyzeFeature() const
+{
+	if (m_analyzeResponse || hasFeature(app::Engine::Feature_Analyze))
+		return app::Engine::Probe_Successfull;
+
+	return app::Engine::Probe_Failed;
 }
 
 
@@ -259,10 +253,10 @@ winboard::Engine::doMove(Move const& move)
 {
 	mstl::string s(m_featureUsermove ? "usermove " : "");
 
-	if (m_featureSan)
-		move.printSan(s);
-	else if (move.isNull())
+	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
+	else if (m_featureSan)
+		move.printSan(s);
 	else if (!move.isCastling())
 		move.printAlgebraic(s);
 	else if (m_mustUseChess960)
@@ -289,6 +283,13 @@ winboard::Engine::setupBoard(Board const& board)
 		// The "setboard" command might not be appropriate,
 		// because it will clear the hash tables.
 		send("setboard " + board.toFen());
+
+		if (m_isCrafty)
+		{
+			mstl::string msg;
+			msg.format("mn %u", board.moveNumber());
+			send(msg);
+		}
 	}
 	else
 	{
@@ -328,7 +329,13 @@ void
 winboard::Engine::reset()
 {
 	m_editSent = false;
-	m_timer.reset();
+}
+
+
+bool
+winboard::Engine::isAnalyzing() const
+{
+	return m_isAnalyzing;
 }
 
 
@@ -352,72 +359,84 @@ winboard::Engine::startAnalysis(bool isNewGame)
 		return false;
 	}
 
-	Board const& startBoard = game->startBoard();
+	m_board = game->currentBoard();
 
-	m_mustUseChess960 = startBoard.notDerivableFromStandardChess();
-	m_mustUseNoCastle = m_mustUseChess960 && startBoard.castlingRights() == castling::NoRights;
+	unsigned state = m_board.checkState();
 
-	if (m_mustUseNoCastle)
+	if (state & Board::CheckMate)
 	{
-		if (!m_variantNoCastle || !m_featureSetboard)
+		updateCheckMateInfo();
+	}
+	else if (state & Board::StaleMate)
+	{
+		updateStaleMateInfo();
+	}
+	else
+	{
+		Board const& startBoard = game->startBoard();
+
+		m_mustUseChess960 = startBoard.notDerivableFromStandardChess();
+		m_mustUseNoCastle = m_mustUseChess960 && startBoard.castlingRights() == castling::NoRights;
+
+		if (m_mustUseNoCastle)
 		{
 			error("Shuffle chess not supported");
 			return false;
 		}
-
-		send("variant nocastle");
-	}
-	else if (m_mustUseChess960)
-	{
-		if (!m_variantChess960 || !m_featureSetboard)
+		else if (m_mustUseChess960)
 		{
-			error("Chess 960 not supported");
-			return false;
+			if (!hasFeature(app::Engine::Feature_Chess_960) || !m_featureSetboard)
+			{
+				error("Chess 960 not supported");
+				return false;
+			}
+
+			send("variant " + m_variant);
 		}
 
-		send("variant " + m_variant);
+		if (m_featureSigint)
+			::sys::signal::sendInterrupt(pid());
+
+		send("new");
+		send("force");
+
+		if (moves.empty())
+		{
+			if (!m_board.isStandardPosition())
+				setupBoard(m_board);
+		}
+		else
+		{
+			if (!startBoard.isStandardPosition())
+				setupBoard(startBoard);
+
+			for (int i = moves.size() - 1; i >= 0; --i)
+				doMove(moves[i]);
+		}
+
+		send("post");	// turn on thinking output
+
+		if (hasFeature(app::Engine::Feature_Analyze))
+		{
+			send("analyze");
+		}
+		else
+		{
+			send("sd 50");
+			send("depth 50");				// some engines are expecting "depth" instead of "sd"
+			send("st 120000");			// not all engines do understand "level"
+			send("level 1 120000 0");	// better than "st 120000"
+			send("go");
+
+			// NOTE: GNU Chess 4 might expect "depth\n50" !!
+		}
+
+		if (!m_wholeSecondsDetected)
+			m_startTime = ::sys::time::timestamp();
+
+		m_isAnalyzing = true;
+		m_firstMove.clear();
 	}
-
-	m_board = game->currentBoard();
-
-	if (m_featureSigint)
-		::sys::signal::sendInterrupt(pid());
-
-	send("new");
-	send("force");
-
-	if (moves.empty())
-	{
-		if (!m_board.isStandardPosition())
-			setupBoard(m_board);
-	}
-	else
-	{
-		if (!startBoard.isStandardPosition())
-			setupBoard(startBoard);
-
-		for (int i = moves.size() - 1; i >= 0; ++i)
-			doMove(moves[i]);
-	}
-
-	send("post");	// turn on thinking output
-
-	if (m_featureAnalyze)
-	{
-		send("analyze");
-	}
-	else
-	{
-		send("sd 50");
-		send("depth 50");				// some engines are expecting "depth" instead of "sd"
-		send("st 120000");			// not all engines do understand "level"
-		send("level 1 120000 0");	// better than "st 120000"
-		send("go");
-
-      // NOTE: GNU Chess 4 might expect "depth\n50" !!
-	}
-
-//	setAnalyzing(true);
 
 	return true;
 }
@@ -428,13 +447,13 @@ winboard::Engine::stopAnalysis()
 {
 	if (isAnalyzing())
 	{
-		send("force");		// Stop engine replying to moves.
-
-		if (m_featureAnalyze)
+		if (hasFeature(app::Engine::Feature_Analyze))
 			send("exit");	// leave analyze mode
 
+		send("force");		// Stop engine replying to moves.
+
 		reset();
-//		setAnalyzing(false);
+		m_isAnalyzing = false;
 
 		// TODO: we should send now the best move so far
 		// because the UCI protocol is doing this
@@ -450,7 +469,7 @@ winboard::Engine::pause()
 	if (hasFeature(app::Engine::Feature_Pause))
 		send("pause");
 	else
-		send("force"); // XXX working?
+		stopAnalysis();
 }
 
 
@@ -459,10 +478,8 @@ winboard::Engine::resume()
 {
 	if (hasFeature(app::Engine::Feature_Pause))
 		send("resume");
-	else if (m_featureAnalyze)
-		send("analyze");	// XXX working?
 	else
-		send("go");			// XXX working?
+		startAnalysis(false);
 }
 
 
@@ -477,12 +494,14 @@ void
 winboard::Engine::protocolStart(bool isProbing)
 {
 	send("xboard");
-	send("ponder off");
+	send("protover 2");
+//	send("ponder off");
+	send("easy");
 
 	if (isProbing)
 	{
 		send("log off");		// turn off crafty logging, to reduce number of junk files
-		send("ping");			// probably the engine will send 'pong'
+//		send("ping");			// probably the engine will send 'pong'
 		send("new");
 		send("sd 1");
 		send("depth 1");		// some engines are expecting "depth" instead of "sd"
@@ -537,7 +556,6 @@ winboard::Engine::featureDone(bool done)
 		if (done)
 		{
 			m_response = true;
-			send("protover 2");
 			engineIsReady();
 		}
 		else
@@ -583,7 +601,10 @@ winboard::Engine::processMessage(mstl::string const& message)
 		{
 			case 'f':
 				if (::strncmp(msg, "feature ", 8) == 0)
+				{
+					m_response = true;
 					return parseFeatures(::skipSpaces(msg + 8));
+				}
 				break;
 
 			case 'p':
@@ -592,6 +613,11 @@ winboard::Engine::processMessage(mstl::string const& message)
 					m_response = true;
 					return;
 				}
+				break;
+
+			case 't':
+				if (!isProbing() && ::strncmp(msg, "tellics", 7) == 0)
+					m_response = true;
 				break;
 
 			case 'm':
@@ -603,7 +629,7 @@ winboard::Engine::processMessage(mstl::string const& message)
 				// fallthru
 
 			case 'M':
-				if (::strncmp(msg, "my move is", 10) == 0)
+				if (::strncasecmp(msg, "my move is", 10) == 0)
 				{
 					if (isProbing())
 					{
@@ -675,7 +701,7 @@ winboard::Engine::parseFeatures(char const* msg)
 		char const* end	= ::endOfKey(val);
 
 		bool accept	= false;
-		bool reject	= true;
+//		bool reject	= false;
 
 		switch (msg[0])
 		{
@@ -685,7 +711,8 @@ winboard::Engine::parseFeatures(char const* msg)
 			case 'a':
 				if (::strncmp(key, "analyze=", 8) == 0)
 				{
-					m_featureAnalyze = *val == '1';
+					if (*val == '1')
+						addFeature(app::Engine::Feature_Analyze);
 					accept = true;
 				}
 				break;
@@ -715,7 +742,6 @@ winboard::Engine::parseFeatures(char const* msg)
 						setIdentifier(identifier);
 						m_identifierDetected = true;
 						detectFeatures(mstl::string(val + 1, end - val));
-						reject = false;
 
 						if (isProbing() && detectShortName(identifier))
 							m_shortNameDetected = true;
@@ -734,22 +760,18 @@ winboard::Engine::parseFeatures(char const* msg)
 					case 'u':
 						if (::strncmp(key, "pause=", 6) == 0)
 						{
-							m_featurePause= *val == '1';
-							accept = true;
-
-							if (isProbing())
+							if (*val == '1')
 								addFeature(app::Engine::Feature_Pause);
+							accept = true;
 						}
 						break;
 
 					case 'l':
 						if (::strncmp(key, "playother=", 10) == 0)
 						{
-							m_featurePlayOther= *val == '1';
-							accept = true;
-
-							if (isProbing())
+							if (*val == '1')
 								addFeature(app::Engine::Feature_Play_Other);
+							accept = true;
 						}
 						break;
 				}
@@ -796,11 +818,12 @@ winboard::Engine::parseFeatures(char const* msg)
 				if (::strncmp(key, "variants=", 9) == 0)
 				{
 					char const* p = ::strstr(val + 1, "chess960");
+					bool chess960 = false;
 
 					if (p)
 					{
 						m_variant = "chess960";
-						m_variantChess960 = true;
+						chess960 = true;
 					}
 					else
 					{
@@ -808,38 +831,24 @@ winboard::Engine::parseFeatures(char const* msg)
 
 						if (p)
 						{
-							m_variantChess960 = true;
+							chess960 = true;
 							m_variant = "fischerandom";
 							accept = true;
 						}
 					}
 
-					p = ::strstr(val + 1, "nocastle");
-
-					if (p)
-					{
-						m_variantNoCastle = true;
-						accept = true;
-					}
-
-					if (isProbing())
-					{
-						if (m_variantChess960)
-						{
-							addFeature(app::Engine::Feature_Chess_960);
-
-							if (m_variantNoCastle)
-								addFeature(app::Engine::Feature_Shuffle_Chess);
-						}
-					}
+					if (chess960)
+						addFeature(app::Engine::Feature_Chess_960);
 				}
 				break;
 		}
 
+#if 0
 		if (accept)
 			send("accepted " + mstl::string(key, sep));
 		else if (reject)
 			send("rejected " + mstl::string(key, sep));
+#endif
 
 		msg = ::skipSpaces(end);
 	}
@@ -875,6 +884,11 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 			}
 			break;
 
+		case 'a':
+			if (::strncmp(msg, "analyze mode", 12) == 0)
+				addFeature(app::Engine::Feature_Analyze);
+			break;
+
 		case 't':
 			if (::strncmp(msg, "telluser", 8) == 0)
 			{
@@ -887,6 +901,7 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 				else
 				{
 					log(msg.substr(1));
+					return;
 				}
 			}
 			break;
@@ -894,8 +909,6 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 
 	if (::isdigit(msg[0]))
 		parseInfo(msg);
-	else
-		log(msg);
 
 	m_editSent = false;
 }
@@ -904,45 +917,94 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 void
 winboard::Engine::parseInfo(mstl::string const& msg)
 {
-	int		score;
-	unsigned	depth, nodes, time;
+	int		score, depth;
+	unsigned	nodes, time;
 	char		dummy;
 
-	if (::sscanf(msg, "%u%c %d %u %u ", &depth, &dummy, &score, &time, &nodes) != 5)
+	if (::sscanf(msg, "%d%c %d %u %u ", &depth, &dummy, &score, &time, &nodes) != 5)
 		return;
 
 	char const* s = ::skipWords(msg, 4);
 
-	if (!isAlgebraic(s) && !*(s = ::nextAlgebraic(s)))
-		return;
+	if (!m_wholeSecondsDetected)
+	{
+		uint64_t elapsedTime = ::sys::time::timestamp() - m_startTime;
+		if (time*uint64_t(100) > elapsedTime)
+			m_wholeSeconds = true;
+		m_wholeSecondsDetected = true;
+	}
 
-//	resetInfo();	not neccessary
+	resetInfo();
 	setDepth(depth);
-	// NOTE: most engines do use >= 32767 as mating score
 	setScore(m_dontInvertScore || m_board.whiteToMove() ? score : -score);
 	setTime(m_wholeSeconds ? double(time) : time/100.0);
 	setNodes(nodes);
 
+	int		illegal(-1);
 	Board 	board(m_board);
 	MoveList moves;
 
-	for ( ; *s; s = ::nextAlgebraic(s))
+	while (*s)
 	{
-		Move move = board.parseMove(s);
+		Move move;
+		char const* t = board.parseMove(::skipMoveNumber(s), move);
 
-		if (!move.isLegal())
-			break;
+		if (t)
+		{
+			if (move.isLegal())
+			{
+				board.prepareForPrint(move);
+				board.doMove(move);
+				moves.append(move);
+				illegal = -1;
+				s = ::skipSpaces(t);
 
-		board.prepareForPrint(move);
-		board.doMove(move);
-		moves.append(move);
-
-		if (moves.isFull())
-			break;
+				if (moves.isFull())
+				{
+					log("WARNING: Pv is too long (truncated)");
+					break;
+				}
+			}
+			else
+			{
+				illegal = moves.size();
+				s = ::skipWord(s);
+			}
+		}
+		else
+		{
+			s = ::skipWord(s);
+		}
 	}
 
-	setVariation(moves);
-	updatePvInfo();
+	if (0 <= illegal && illegal < int(moves.size()))
+	{
+		error("Illegal move in pv");
+		return;
+	}
+
+	if (moves.size() == 0 || (moves.size() == 1 && moves[0] == m_firstMove))
+	{
+		updateTimeInfo();
+	}
+	else if (moves.size() > 0)
+	{
+		if (board.checkState() & Board::CheckMate)
+		{
+			int n = board.moveNumber() - m_board.moveNumber();
+			setMate(board.whiteToMove() ? -n : +n);
+
+#if 0 // we cannot terminate, the engine might find a "better" pv
+			if (isAnalyzing())
+				stopAnalysis(); // we don't need further computation if mate
+#endif
+		}
+
+		m_firstMove = moves[0];
+		setVariation(moves);
+		updatePvInfo();
+		m_analyzeResponse = true;
+	}
 }
 
 
@@ -1088,51 +1150,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 void
 winboard::Engine::detectFeatures(char const* identifier)
 {
-	struct Attrs
-	{
-		char const*	identifier;
-		bool			hasAnalyze;
-		bool			hasSetboard;
-		bool			hasWholeSeconds;
-	};
-
-#define ____ false
-	static Attrs const EngineList[] =
-	{
-		// from scid-3.6.26/tcl/tools/wbdetect.tcl:
-		// Thanks to Allen Lake for testing many WinBoard engines.
-
-		// identifier					analyze	setboard	seconds
-		{ "Amy version",				true,		____,		____ },
-		{ "Baron",						true,		true,		true },
-		{ "Calzerano",					true,		____,		____ },
-		{ "D U K E",					true,		____,		____ },
-		{ "ESCbook.bin",				true,		____,		____ },
-		{ "EXchess",					true,		true,		____ },
-		{ "EngineControl-TCB",		true,		____,		____ },
-		{ "FORTRESS",					true,		____,		____ },
-		{ "GNU Chess v5",				____,		true,		____ },
-		{ "Gromit3",					true,		____,		____ },
-		{ "Gullydeckel 2",			true,		true,		____ },
-		{ "Jester",						true,		____,		____ },
-		{ "King of Kings",			true,		true,		____ },
-		{ "LordKing",					true,		____,		____ },
-		{ "micro-Max 4",				____,		____,		____ },
-		{ "NEJMET",						true,		true,		____ },
-		{ "Nejmet",						true,		true,		____ },
-		{ "Phalanx",					true,		true,		____ },
-		{ "Pharaon",					true,		true,		true },
-		{ "Scorpio",					true,		____,		____ },
-		{ "Skaki",						true,		____,		____ },
-		{ "WildCat version 2.61",	true,		____,		____ },
-		{ "ZChess",						true,		____,		true },
-	};
-#undef ____
-
-	if (m_detected)
-		return;
-
-	if (::strncmp(identifier, "Crafty", 5) == 0)
+	if (!m_isCrafty && ::strncmp(identifier, "Crafty", 5) == 0)
 	{
 		int major;
 
@@ -1144,27 +1162,9 @@ winboard::Engine::detectFeatures(char const* identifier)
 //		send("egtb off");		// turn off end game table book
 		send("resign 0");		// turn off alarm
 
+		addFeature(app::Engine::Feature_Analyze);
 		m_featureSetboard = true;
-		m_featureAnalyze = true;
-		m_detected = true;
-	}
-	else
-	{
-		static Attrs const* first	= EngineList;
-		static Attrs const* last	= EngineList + U_NUMBER_OF(EngineList);
-
-		for (Attrs const* attrs = first; attrs < last; ++attrs)
-		{
-			if (::strstr(identifier, attrs->identifier))
-			{
-				if (attrs->hasAnalyze)			m_featureAnalyze = true;
-				if (attrs->hasSetboard)			m_featureSetboard = true;
-				if (attrs->hasWholeSeconds)	m_wholeSeconds = true;
-
-				m_detected = true;
-				return;
-			}
-		}
+		m_isCrafty = true;
 	}
 }
 

@@ -1,6 +1,15 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #436)
+------------------------------------------------------------------------------
+* Support for XBoard/WinBoard protocol integrated.
+
+* Probing of new chess engines enhanced. In case of XBoard protocol Scidb will
+probe for "analyze" mode, even if the engine does not inform about this
+feature.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #434)
 ------------------------------------------------------------------------------
 * Small fix in Stockfish engine, probably the engine will work now.

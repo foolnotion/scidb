@@ -93,6 +93,9 @@ set InvalidFen					"Invalid FEN"
 set CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
 set UnsupportedVariant		"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
+set ChangeToFormat(xfen)				"Change to X-Fen format"
+set ChangeToFormat(shredder)			"Change to Shredder format"
+
 set Error(InvalidFen)					"FEN is invalid."
 set Error(NoWhiteKing)					"Missing white king."
 set Error(NoBlackKing)					"Missing black king."
@@ -126,12 +129,17 @@ variable History				{}
 variable BorderThickness	2
 variable Vars
 
+array set Options {
+	fen:format xfen
+}
+
 
 proc open {parent} {
 	variable BorderThickness
 	variable Vars
 	variable Memo
 	variable History
+	variable Options
 
 	set dlg $parent.setup_board
 	if {[winfo exists $dlg]} { return }
@@ -145,7 +153,7 @@ proc open {parent} {
 	set Vars(pos) [::scidb::pos::board]
 	set Vars(positionId) 0
 	set Vars(castling) 1
-	set Vars(fen) [::scidb::pos::fen]
+	set Vars(fen) [::scidb::board::normalizeFen [::scidb::pos::fen] $Options(fen:format)]
 	AnalyseFen $Vars(fen) init
 	array set Memo [array get Vars]
 	set Vars(fen:memo) ""
@@ -379,6 +387,10 @@ proc open {parent} {
 	bind $fen.text <FocusOut> [namespace code ResetFen]
 	bind $fen.text <FocusIn> [list set [namespace current]::Vars(field) fen]
 	bind $fen.text <<ComboboxSelected>> [namespace code ResetFen]
+	::ttk::button $fen.format \
+		-style icon.TButton \
+		-command [namespace code [list SwitchFormat $fen.format]] \
+		;
 	::ttk::button $fen.clear \
 		-style icon.TButton \
 		-image $::icon::16x16::clear \
@@ -392,11 +404,13 @@ proc open {parent} {
 	::tooltip::tooltip $fen.clear [namespace current]::mc::Clear
 	::tooltip::tooltip $fen.copy [namespace current]::mc::CopyFen
 	set Vars(combo) $fen.text
+	SetupFormat $fen.format
 	
 	grid $fen.text		-row 1 -column 1 -sticky ew
-	grid $fen.clear	-row 1 -column 3 -sticky ew
-	grid $fen.copy		-row 1 -column 5 -sticky ew
-	grid columnconfigure $fen {0 2 4 6} -minsize $::theme::padding
+	grid $fen.format	-row 1 -column 3 -sticky ew
+	grid $fen.clear	-row 1 -column 5 -sticky ew
+	grid $fen.copy		-row 1 -column 7 -sticky ew
+	grid columnconfigure $fen {0 2 4 6 8} -minsize $::theme::padding
 	grid columnconfigure $fen 1 -weight 1
 	grid rowconfigure $fen {0 2} -minsize $::theme::padding
 
@@ -696,6 +710,7 @@ proc SetPiece {square} {
 
 proc SetupBoard {cmd} {
 	variable Vars
+	variable Options
 
 	switch $cmd {
 		empty {
@@ -712,7 +727,7 @@ proc SetupBoard {cmd} {
 		}
 
 		mirror {
-			set Vars(fen) [::scidb::board::transposeFen $Vars(fen)]
+			set Vars(fen) [::scidb::board::transposeFen $Vars(fen) $Options(fen:format)]
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 			::board::stuff::update $Vars(board) $Vars(pos)
 			AnalyseFen $Vars(fen) init
@@ -779,6 +794,7 @@ proc AnalyseCastlingRights {fen castling positionId} {
 		set Vars($type) [expr {$vars($type) ne "--"}]
 		set vars($type) [string index $vars($type) 0]
 	}
+	set fen [::scidb::board::normalizeFen $fen xfen]
 	foreach fyle [split [lindex $fen 2] {}] {
 		switch -- $fyle {
 			A - B - C - D - E - F - G - H {
@@ -804,6 +820,7 @@ proc AnalyseCastlingRights {fen castling positionId} {
 
 proc SetCastlingRights {} {
 	variable Vars
+	variable Options
 
 	if {$Vars(freeze)} { return }
 	set idn $Vars(positionId)
@@ -815,7 +832,7 @@ proc SetCastlingRights {} {
 		set idn [expr {$idn + 2880}]
 	}
 
-	lassign [::scidb::board::idnToFen $idn] Vars(fen) castlingRights
+	lassign [::scidb::board::idnToFen $idn $Options(fen:format)] Vars(fen) castlingRights
 	set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 	AnalyseFen $Vars(fen) init
 }
@@ -866,6 +883,7 @@ proc ValidateIdn {value} {
 
 proc Update {} {
 	variable Vars
+	variable Options
 
 	set Vars(skip) 0
 
@@ -880,7 +898,8 @@ proc Update {} {
 		}
 	}
 
-	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno)]
+	set Vars(fen) [::scidb::board::makeFen \
+		$Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) $Options(fen:format)]
 
 	if {[string length $castling]} {
 		lset Vars(fen) 2 $castling
@@ -905,6 +924,44 @@ proc ClearFen {cb} {
 
 	set Vars(fen) ""
 	focus $cb
+}
+
+
+proc SetupFormat {w} {
+	variable Options
+
+	if {$Options(fen:format) eq "xfen"} { set other shredder } else { set other xfen }
+	$w configure -image [set icon::16x16::$Options(fen:format)]
+	::tooltip::tooltip $w [namespace current]::mc::ChangeToFormat($other)
+}
+
+
+proc SwitchFormat {w} {
+	variable Options
+	variable History
+	variable Vars
+
+	if {$Options(fen:format) eq "xfen"} {
+		set Options(fen:format) shredder
+	} else {
+		set Options(fen:format) xfen
+	}
+
+	SetupFormat $w
+
+	set values {}
+	foreach fen $History {
+		lappend values [::scidb::board::normalizeFen $fen $Options(fen:format)]
+	}
+	set History $values
+	set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
+
+	set cb $Vars(combo)
+	set current [$cb current]
+	bind $cb <<ComboboxSelected>> {#}
+	$cb configure -values $History
+	if {$current >= 0} { $cb current $current }
+	bind $cb <<ComboboxSelected>> [namespace code ResetFen]
 }
 
 
@@ -937,6 +994,7 @@ proc Reset {} {
 proc Accept {} {
 	variable Vars
 	variable History
+	variable Options
 
 	update idletasks
 	set Vars(fen) [string trim $Vars(fen)]
@@ -948,7 +1006,7 @@ proc Accept {} {
 	}
 
 	if {[AnalyseFen $Vars(fen) check]} {
-		set Vars(fen) [::scidb::board::normalizeFen $Vars(fen)]
+		set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
 		::scidb::game::clear $Vars(fen)
 		destroy [winfo toplevel $Vars(combo)]
 		set i [lsearch -exact $History $Vars(fen)]
@@ -1046,10 +1104,36 @@ proc SetupCursors {} {
 
 proc WriteOptions {chan} {
 	options::writeList $chan [namespace current]::History
+	options::writeItem $chan [namespace current]::Options
 }
 
 ::options::hookWriter [namespace current]::WriteOptions
 
+
+namespace eval icon {
+namespace eval 16x16 {
+
+set xfen [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAnNCSVQICFXsRgQAAAEsSURB
+	VCjPY+hfdegNCO5/sVr9PwMUsm+7ARGdtI5BRab725L/IDj39H9GiILpCyAi3d+05YBcp4yJ
+	/6eAYV8hSHqS09RfIN6E/04p/xnAOkL3tPwHwbZ386Xvc7TegfCCt4DkwAr4hBLflf4HwYpt
+	5dMhrLgXDLxwBf8Z9IIT/6eC4L+0XyA67q+WE0QG5m4G8+Wh/xHQeAJMHK6Agcfyiet/CDS/
+	wsCCoeA/o9Ues/8QaHqKgRFDgUGK2n8IFP/P9J8hF02Bppz4e7H/Iv95/0PN/sqgiqKAZScz
+	SN9/htkMe6FCRxmY4AoYsqCCjxn4GJQZvkF5pVAFDKpAAyFCHmChUijvB4MWkMfAzHACKjAf
+	aiszw1moyGkGFgaGGijnKYMA3OUGDL+hzFoADl4EDlJ56u4AAAAASUVORK5CYII=
+}]
+
+set shredder [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAA/0lEQVQYGQXBv4vOcQDA8bfF
+	cFJXdos6N9n8Bc9mtNmY3a4YbFcmk4lJskmhZHwmJiULxWJwyq8nHnfd3ffzfXm9qmq3L2k0
+	N5qaOm7V63aqqpZJtjzy1bFflm5qbtX9qt0kF/wBAEn77dQqyUtw2ykXfUKS3pYka3Bact6h
+	JE0lyRrclSRJmmpO8gLwypYkSWpOsu03YPLQWUkaNZJk2xsA352TNNeUJMklS8BTSaOOkiRJ
+	boB/ko7qb5K1y5JsgB+SPtSzJMOB6zZtugMeSKN7tehnTgIA3jsjfWxRda29E/MVj3126MA7
+	t2xI37paVbXoSXuNRhrNTe33vEXVf56uMWyFqlWhAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 16x16
+} ;# namespace icon
 } ;# namespace board
 } ;# namespace setup
 

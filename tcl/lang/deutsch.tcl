@@ -809,8 +809,9 @@
 ::engine::mc::DiscardChanges			"Der aktuelle Posten wurde verändert.\n\nDie Änderungen tatsächlich verwerfen?"
 ::engine::mc::ReallyDelete				"Den Eintrag für das Programm '%s' tatsächlich löschen?"
 ::engine::mc::EntryAlreadyExists		"Ein Eintrag mit dem Namen '%s' existiert bereits."
-::engine::mc::NoFeaturesAvailable	"Dieses Schachprogramm bietet keinerlei Besonderheiten."
+::engine::mc::NoFeaturesAvailable	"Dieses Schachprogramm bietet keinerlei Besonderheiten, noch nicht einmal einen Analysemodus, deshalb kann es nicht für die Positionsanalyse eingesetzt werden."
 
+::engine::mc::FeatureDetail(analyze)		"Diese Schachprogramm verfügt über einen Analysemodus."
 ::engine::mc::FeatureDetail(multiPV)		"Dies erlaubt Auswertungen und die wichtigsten Varianten (PVs) von den höchstbewerteten Zugkandidaten zu sehen. Dieses Schachprogramm kann bis zu %s Varianten zeigen."
 ::engine::mc::FeatureDetail(pause)			"Dieses Kennzeichen erlaubt eine korrekte Behandlung von Pause/Wiederaufnahme: das Schachprogramm vebraucht während einer Pause keine signifikante Prozessorzeit. Die aktuelle Berechnung (auch Pondering) ist ausgesetzt, und die Uhren beider Spieler sind angehalten."
 ::engine::mc::FeatureDetail(playOther)		"Das Schachprogramm kann deinen Zug spielen. Deine Uhr tickt während das Schachprogramm den Zug berechnet."
@@ -1138,6 +1139,9 @@
 ::setup::board::mc::InvalidFen					"Ungültige FEN"
 ::setup::board::mc::CastlingWithoutRook		"Ein Rochaderecht wurde gesetzt, aber ein entsprechender Roachadeturm wird vermisst. Sollen die vergebenen Rochaderechte trotzdem akzeptiert werden?"
 ::setup::board::mc::UnsupportedVariant			"Diese Position ist zwar eine Startposition, jedoch keine Shuffle-Schach-Startposition. Trotzdem akzeptieren?"
+
+::setup::board::mc::ChangeToFormat(xfen)				"Zum X-Fen-Format wechseln"
+::setup::board::mc::ChangeToFormat(shredder)			"Zum Shredder-Format wechseln"
 
 ::setup::board::mc::Error(InvalidFen)					"Die FEN ist ungültig."
 ::setup::board::mc::Error(NoWhiteKing)					"Ein weißer König wird vermisst."

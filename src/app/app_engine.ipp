@@ -42,10 +42,13 @@ inline void Engine::Concrete::setPonder(db::Move const& move)		{ m_engine->setPo
 inline void Engine::Concrete::setScore(int score)						{ m_engine->setScore(score); }
 inline void Engine::Concrete::setMate(int numHalfMoves)				{ m_engine->setMate(numHalfMoves); }
 inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(depth); }
+inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setSelectiveDepth(depth); }
 inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
 inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
 
 inline void Engine::Concrete::updatePvInfo()								{ m_engine->updatePvInfo(); }
+inline void Engine::Concrete::updateCheckMateInfo()					{ m_engine->updateCheckMateInfo(); }
+inline void Engine::Concrete::updateStaleMateInfo()					{ m_engine->updateStaleMateInfo(); }
 inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
 inline void Engine::Concrete::updateCurrLine()							{ m_engine->updateCurrLine(); }
 inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(); }
@@ -278,11 +281,15 @@ Engine::Concrete::addOption(	mstl::string const& name,
 }
 
 
+inline bool Engine::isAnalyzing() const							{ return m_engine->isAnalyzing(); }
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
+inline bool Engine::isProbing() const								{ return m_probe; }
+inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
 
 inline int Engine::score() const										{ return m_score; }
 inline int Engine::mate() const										{ return m_mate; }
-inline unsigned Engine::depth()										{ return m_depth; }
+inline unsigned Engine::depth() const								{ return m_depth; }
+inline unsigned Engine::selectiveDepth() const					{ return m_selDepth; }
 inline double Engine::time() const									{ return m_time; }
 inline unsigned Engine::nodes() const								{ return m_nodes; }
 inline db::Board const& Engine::currentBoard() const			{ return m_engine->currentBoard(); }
@@ -316,6 +323,7 @@ inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 
 inline void Engine::setScore(int score)							{ m_score = score; }
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
+inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
 inline void Engine::setNodes(unsigned nodes)						{ m_nodes = nodes; }
 inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
@@ -337,7 +345,7 @@ Engine::setCurrentMove(unsigned number, db::Move const& move)
 
 inline
 db::MoveList const&
-Engine::variation(unsigned no)
+Engine::variation(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
 	return m_variations[no];

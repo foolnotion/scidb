@@ -96,6 +96,7 @@ public:
 		virtual ~Concrete();
 
 		virtual bool isReady() const = 0;
+		virtual bool isAnalyzing() const = 0;
 
 		virtual bool startAnalysis(bool isNewGame) = 0;
 		virtual bool stopAnalysis() = 0;
@@ -114,6 +115,7 @@ public:
 		virtual void clearHash() = 0;
 
 		virtual Result probeResult() const = 0;
+		virtual Result probeAnalyzeFeature() const;
 		virtual unsigned probeTimeout() const = 0;
 		virtual unsigned maxVariations() const;
 		virtual db::Board const& currentBoard() const = 0;
@@ -123,8 +125,8 @@ public:
 	protected:
 
 		bool isActive() const;
-		bool isAnalyzing() const;
 		bool isProbing() const;
+		bool isProbingAnalyze() const;
 		bool hasFeature(unsigned feature) const;
 
 		unsigned maxMultiPV() const;
@@ -161,6 +163,7 @@ public:
 		void setScore(int score);
 		void setMate(int numHalfMoves);
 		void setDepth(unsigned depth);
+		void setSelectiveDepth(unsigned depth);
 		void setTime(double time);
 		void setNodes(unsigned nodes);
 		void setVariation(db::MoveList const& moves, unsigned no = 0);
@@ -183,6 +186,8 @@ public:
 		void setPlayingStyles(mstl::string const& styles);
 
 		void updatePvInfo();
+		void updateCheckMateInfo();
+		void updateStaleMateInfo();
 		void updateCurrMove();
 		void updateCurrLine();
 		void updateBestMove();
@@ -199,18 +204,19 @@ public:
 		Engine* m_engine;
 	};
 
-	static unsigned const Feature_Hash_Size		= 1 << 0;
-	static unsigned const Feature_Clear_Hash		= 1 << 1;
-	static unsigned const Feature_Chess_960		= 1 << 2;
-	static unsigned const Feature_Shuffle_Chess	= 1 << 3;
-	static unsigned const Feature_Pause				= 1 << 4;
-	static unsigned const Feature_Play_Other		= 1 << 5;
-	static unsigned const Feature_Ponder			= 1 << 6;
-	static unsigned const Feature_Limit_Strength	= 1 << 7;
+	static unsigned const Feature_Analyze			= 1 << 0;
+	static unsigned const Feature_Hash_Size		= 1 << 1;
+	static unsigned const Feature_Clear_Hash		= 1 << 2;
+	static unsigned const Feature_Chess_960		= 1 << 3;
+	static unsigned const Feature_Shuffle_Chess	= 1 << 4;
+	static unsigned const Feature_Pause				= 1 << 5;
+	static unsigned const Feature_Play_Other		= 1 << 6;
+	static unsigned const Feature_Ponder			= 1 << 7;
+	static unsigned const Feature_Limit_Strength	= 1 << 8;
 	static unsigned const Feature_Skill_Level		= 1 << 8;
-	static unsigned const Feature_Multi_PV			= 1 << 9;
-	static unsigned const Feature_Threads			= 1 << 10;
-	static unsigned const Feature_Playing_Styles	= 1 << 11;
+	static unsigned const Feature_Multi_PV			= 1 << 10;
+	static unsigned const Feature_Threads			= 1 << 11;
+	static unsigned const Feature_Playing_Styles	= 1 << 12;
 
 	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
 	virtual ~Engine();
@@ -227,16 +233,18 @@ public:
 	bool isActive() const;
 	bool isAnalyzing() const;
 	bool isProbing() const;
+	bool isProbingAnalyze() const;
 	bool hasFeature(unsigned feature) const;
 
 	int exitStatus() const;
 
 	int score() const;
 	int mate() const;
-	unsigned depth();
+	unsigned depth() const;
+	unsigned selectiveDepth() const;
 	double time() const;
 	unsigned nodes() const;
-	db::MoveList const& variation(unsigned no);
+	db::MoveList const& variation(unsigned no) const;
 	db::Board const& currentBoard() const;
 	db::Move const& bestMove() const;
 	unsigned currentMoveNumber() const;
@@ -283,6 +291,9 @@ public:
 	void changeOptions(Options const& options);
 	void clearHash();
 
+	void addFeature(unsigned feature);
+	void removeFeature(unsigned feature);
+
 	bool doMove(db::Move const& lastMove);
 
 	friend class uci::Engine;
@@ -293,6 +304,8 @@ protected:
 	Engine();
 
 	virtual void updatePvInfo() = 0;
+	virtual void updateCheckMateInfo() = 0;
+	virtual void updateStaleMateInfo() = 0;
 	virtual void updateCurrMove();
 	virtual void updateCurrLine();
 	virtual void updateBestMove();
@@ -309,7 +322,6 @@ protected:
 	void send(char const* message);
 	void send(mstl::string const& message);
 
-	void addFeature(unsigned feature);
 	bool detectShortName(mstl::string const& str);
 	bool detectIdentifier(mstl::string const& str);
 	bool detectUrl(mstl::string const& str);
@@ -324,11 +336,12 @@ protected:
 	void setBestMove(db::Move const& move);
 	void setPonder(db::Move const& move);
 
-	void setScore(int score);			// centi-pawns from white's perspective
-	void setMate(int numHalfMoves);	// number of half moves from white's prespective
-	void setDepth(unsigned depth);	// search depth
-	void setTime(double time);			// search time in seconds (.e.g. 10.28 seconds)
-	void setNodes(unsigned nodes);	// nodes searched
+	void setScore(int score);						// centi-pawns from white's perspective
+	void setMate(int numHalfMoves);				// number of half moves from white's prespective
+	void setDepth(unsigned depth);				// search depth
+	void setSelectiveDepth(unsigned depth);	// selective search depth
+	void setTime(double time);						// search time in seconds (.e.g. 10.28 seconds)
+	void setNodes(unsigned nodes);				// nodes searched
 	void setVariation(db::MoveList const& moves, unsigned no);
 	void setCurrentMove(unsigned number, db::Move const& move);
 
@@ -403,11 +416,12 @@ private:
 	int					m_score;
 	int					m_mate;
 	unsigned				m_depth;
+	unsigned				m_selDepth;
 	double				m_time;
 	unsigned				m_nodes;
 	bool					m_active;
-	bool					m_analyzing;
 	bool					m_probe;
+	bool					m_probeAnalyze;
 	bool					m_protocol;
 	bool					m_identifierSet;
 	bool					m_useLimitedStrength;

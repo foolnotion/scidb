@@ -62,11 +62,19 @@ in andere Datenbankformate oder in ein Dokumentenformat.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileImport%</menuitem>
+<menuitem>%::application::database::mc::FileImport(pgn)%</menuitem>
 Öffnet den <a href="File-Selection-Dialog.html">Dateiauswahldialog</a>, um die zu
 importierenden <abbr>PGN</abbr>-Dateien auszuwählen. Es können mehrere
 <abbr>PGN</abbr>-Dateien gleichzeitig gewählt werden. Die Partien werden an die
 bestehende Datenbank angehängt.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileImport(db)%</menuitem>
+Die zu importierenden Datenbanken werden über den
+<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> ausgewählt.
+Die Partien werden an die bestehende Datenbank angehängt. Es können
+mehrere Datenbanken gleichzeitig ausgewählt werden.
 </p>
 
 <p>

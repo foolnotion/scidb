@@ -72,22 +72,9 @@ set DoesNotRespond		"This engine does not respond either to UCI nor to XBoard/Wi
 set DiscardChanges		"The current item has changed.\n\nReally discard changes?"
 set ReallyDelete			"Really delete engine '%s'?"
 set EntryAlreadyExists	"An entry with name '%s' already exists."
-set NoFeaturesAvailable	"This engine does not provide any feature."
+set NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions."
 
-# don't translate
-set Feature(multiPV)		"Multiple Best Lines"
-set Feature(pause)		"Pause"
-set Feature(playOther)	"Play Other"
-set Feature(hashSize)	"Hash Size"
-set Feature(clearHash)	"Clear Hash"
-set Feature(threads)		"Threads"
-set Feature(eloRange)	"Limit Strength"
-set Feature(skillLevel)	"Skill Level"
-set Feature(ponder)		"Pondering"
-set Feature(chess960)	"Chess960"
-set Feature(shuffle)		"Shuffle Chess"
-set Feature(styles)		"Playing Styles"
-
+set FeatureDetail(analyze)		"This engine provides an analyze mode."
 set FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
 set FeatureDetail(pause)		"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
 set FeatureDetail(playOther)	"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
@@ -100,6 +87,21 @@ set FeatureDetail(ponder)		"Pondering is simply using the user's move time to co
 set FeatureDetail(chess960)	"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
 set FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when king and rook are on their traditional starting squares."
 set FeatureDetail(styles)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
+
+# don't translate
+set Feature(analyze)		"Analyze"
+set Feature(multiPV)		"Multiple Best Lines"
+set Feature(pause)		"Pause"
+set Feature(playOther)	"Play Other"
+set Feature(hashSize)	"Hash Size"
+set Feature(clearHash)	"Clear Hash"
+set Feature(threads)		"Threads"
+set Feature(eloRange)	"Limit Strength"
+set Feature(skillLevel)	"Skill Level"
+set Feature(ponder)		"Pondering"
+set Feature(chess960)	"Chess960"
+set Feature(shuffle)		"Shuffle Chess"
+set Feature(styles)		"Playing Styles"
 
 } ;# namespace mc
 
@@ -591,7 +593,8 @@ proc setup {} {
 				Command			stockfish-120903
 				Protocol			UCI
 				Variant			chess960
-				Features:UCI	{	multiPV 500
+				Features:UCI	{	analyze true
+										multiPV 500
 										ponder true
 										hashSize {4 8192}
 										threads {4 32}
@@ -631,6 +634,7 @@ proc setup {} {
 				Author			"Dr. Robert M. Hyatt"
 				Command			crafty-32.2
 				Protocol			WB
+				Features:WB		{analyze true playOther true}
 			}
 			{
 				Name				"Toga II"
@@ -639,7 +643,7 @@ proc setup {} {
 				Author			"Thomas Gaksch & Fabien Letouzey"
 				Command			fruit
 				Protocol			UCI
-				Features:UCI	{multiPV 10 ponder true hashSize {4 1024}}
+				Features:UCI	{analyze true multiPV 10 ponder true hashSize {4 1024}}
 				Options:UCI		{
 					{Hash spin 16 16 4 1024}
 					{{Search Time} spin 0 0 0 3600}
@@ -677,6 +681,7 @@ proc setup {} {
 				Command			phalanx
 				Parameters		-l-
 				Protocol			WB
+				Features:WB		{analyze true}
 			}
 			{
 				Name				Micro-Max
@@ -728,6 +733,9 @@ proc startEngine {name isReadyCmd signalCmd updateCmd} {
 
 		if {$engine(Name) eq $name} {
 			set protocol [lindex $engine(Protocol) 0]
+			array set features { analyze false }
+			array set features $engine(Features:$protocol)
+			if {$features(analyze)} { set analyze 1 } else { set analyze 0 }
 			if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
 				set dir $engine(Directory)
 			} else {
@@ -741,6 +749,7 @@ proc startEngine {name isReadyCmd signalCmd updateCmd} {
 				$engine(Command) \
 				$dir \
 				$protocol \
+				$analyze \
 				$isReadyCmd \
 				$signalCmd \
 				$updateCmd \
@@ -815,20 +824,25 @@ proc Log {text msg} {
 
 	switch -- [string index $msg 0] {
 		"<" {
-			if {!$ShowInfo && [string match {< info *} $msg]} { return }
-			set tag in
+			if {!$ShowInfo && [string match {< info *} $msg]} {
+				return
+			}
 			set msg [string range $msg 2 end]
+			if {!$ShowInfo && [string is integer -strict [string index [string trimleft $msg] 0]]} {
+				return
+			}
+			set tag in
 		} 
 		">" {
 			set tag out
 		}
 		"!" {
-			set tag error
 			set msg [string range $msg 2 end]
+			set tag error
 		} 
 		"@" {
-			set tag error
 			set msg "FATAL: [string range $msg 2 end]"
+			set tag error
 		}
 		default {
 			set tag out
@@ -913,7 +927,7 @@ proc ShowFeatures {list features} {
 	append html "<body>"
 
 	if {[llength $features] == 0} {
-		append html "<h2 align='center'>$mc::NoFeaturesAvailable</h2>"
+		append html "<h3>$mc::NoFeaturesAvailable</h3>"
 		append html "<p align='center'><img src='Smiley-Cry-128x128.png' style='padding-top: 50px;' /></p>"
 	} else {
 		append html "<table cellpadding='5'>"
@@ -922,7 +936,7 @@ proc ShowFeatures {list features} {
 			append html "<tr><td style='white-space:nowrap;' valign='top'><b>$mc::Feature($name)</b></td>"
 
 			switch $name {
-				pause - playOther - clearHash - ponder - chess960 - shuffle - skillLevel {
+				analyze - pause - playOther - clearHash - ponder - chess960 - shuffle - skillLevel {
 					append html "<td>$mc::FeatureDetail($name)</td>"
 				}
 				multiPV {
@@ -1380,6 +1394,7 @@ proc ProbeEngine {parent entry} {
 
 	foreach prot $protocols {
 		lassign $result($prot) ok info features options
+puts $features
 
 		# setup information
 		array set engine $info

@@ -113,6 +113,8 @@ public:
 	}
 
 	void updatePvInfo() override {}
+	void updateCheckMateInfo() override {}
+	void updateStaleMateInfo() override {}
 	void engineIsReady() override {}
 	void engineSignal(Signal) override {}
 };
@@ -145,10 +147,13 @@ public:
 		if (m_pv == 0)
 		{
 			Tcl_IncrRefCount(m_pv = Tcl_NewStringObj("pv", -1));
+			Tcl_IncrRefCount(m_checkmate = Tcl_NewStringObj("checkmate", -1));
+			Tcl_IncrRefCount(m_stalemate = Tcl_NewStringObj("stalemate", -1));
 			Tcl_IncrRefCount(m_move = Tcl_NewStringObj("move", -1));
 			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
 			Tcl_IncrRefCount(m_best = Tcl_NewStringObj("best", -1));
 			Tcl_IncrRefCount(m_depth = Tcl_NewStringObj("depth", -1));
+			Tcl_IncrRefCount(m_seldepth = Tcl_NewStringObj("seldepth", -1));
 			Tcl_IncrRefCount(m_time = Tcl_NewStringObj("time", -1));
 			Tcl_IncrRefCount(m_hash = Tcl_NewStringObj("hash", -1));
 		}
@@ -183,16 +188,27 @@ public:
 			vars[i] = Tcl_NewStringObj(s, s.size());
 		}
 
-		Tcl_Obj* objs[6];
+		Tcl_Obj* objs[7];
 
 		objs[0] = Tcl_NewIntObj(score());
 		objs[1] = Tcl_NewIntObj(mate());
 		objs[2] = Tcl_NewIntObj(depth());
-		objs[3] = Tcl_NewDoubleObj(time());
-		objs[4] = Tcl_NewIntObj(nodes());
-		objs[5] = Tcl_NewListObj(numVariations(), vars);
+		objs[3] = Tcl_NewIntObj(selectiveDepth());
+		objs[4] = Tcl_NewDoubleObj(time());
+		objs[5] = Tcl_NewIntObj(nodes());
+		objs[6] = Tcl_NewListObj(numVariations(), vars);
 
 		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+	}
+
+	void updateCheckMateInfo() override
+	{
+		sendInfo(m_checkmate, Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1));
+	}
+
+	void updateStaleMateInfo() override
+	{
+		sendInfo(m_stalemate, Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1));
 	}
 
 	void updateCurrMove() override
@@ -219,20 +235,22 @@ public:
 
 	void updateDepthInfo() override
 	{
-		Tcl_Obj* objs[2];
+		Tcl_Obj* objs[3];
 
 		objs[0] = Tcl_NewIntObj(depth());
-		objs[1] = Tcl_NewIntObj(nodes());
+		objs[1] = Tcl_NewIntObj(selectiveDepth());
+		objs[2] = Tcl_NewIntObj(nodes());
 		sendInfo(m_depth, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
 	void updateTimeInfo() override
 	{
-		Tcl_Obj* objs[3];
+		Tcl_Obj* objs[4];
 
 		objs[0] = Tcl_NewDoubleObj(time());
 		objs[1] = Tcl_NewIntObj(depth());
-		objs[2] = Tcl_NewIntObj(nodes());
+		objs[2] = Tcl_NewIntObj(selectiveDepth());
+		objs[3] = Tcl_NewIntObj(nodes());
 
 		sendInfo(m_time, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
@@ -282,21 +300,27 @@ private:
 	Tcl_Obj* m_id;
 
 	static Tcl_Obj* m_pv;
+	static Tcl_Obj* m_checkmate;
+	static Tcl_Obj* m_stalemate;
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_line;
 	static Tcl_Obj* m_best;
 	static Tcl_Obj* m_depth;
+	static Tcl_Obj* m_seldepth;
 	static Tcl_Obj* m_time;
 	static Tcl_Obj* m_hash;
 };
 
-Tcl_Obj* Engine::m_pv		= 0;
-Tcl_Obj* Engine::m_move		= 0;
-Tcl_Obj* Engine::m_line		= 0;
-Tcl_Obj* Engine::m_best		= 0;
-Tcl_Obj* Engine::m_depth	= 0;
-Tcl_Obj* Engine::m_time		= 0;
-Tcl_Obj* Engine::m_hash		= 0;
+Tcl_Obj* Engine::m_pv			= 0;
+Tcl_Obj* Engine::m_checkmate	= 0;
+Tcl_Obj* Engine::m_stalemate	= 0;
+Tcl_Obj* Engine::m_move			= 0;
+Tcl_Obj* Engine::m_line			= 0;
+Tcl_Obj* Engine::m_best			= 0;
+Tcl_Obj* Engine::m_depth		= 0;
+Tcl_Obj* Engine::m_seldepth	= 0;
+Tcl_Obj* Engine::m_time			= 0;
+Tcl_Obj* Engine::m_hash			= 0;
 
 }
 
@@ -461,6 +485,11 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			objs[1] = Tcl_NewListObj(n, v);
 			n = 0;
 
+			if (engine.hasFeature(::app::Engine::Feature_Analyze))
+			{
+				v[n++] = Tcl_NewStringObj("analyze", -1);
+				v[n++] = Tcl_NewStringObj("true", 4);
+			}
 			if (engine.hasFeature(::app::Engine::Feature_Multi_PV))
 			{
 				v[n++] = Tcl_NewStringObj("multiPV", -1);
@@ -486,7 +515,7 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				v[n++] = Tcl_NewStringObj("ponder", -1);
 				v[n++] = Tcl_NewStringObj("true", 4);
 			}
-			if (engine.hasFeature(::app::Engine::Feature_Pause))
+			if (engine.hasFeature(::app::Engine::Feature_Play_Other))
 			{
 				v[n++] = Tcl_NewStringObj("playOther", -1);
 				v[n++] = Tcl_NewStringObj("true", 4);
@@ -575,9 +604,10 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	command		= stringFromObj(objc, objv, 1);
 	char const*	directory	= stringFromObj(objc, objv, 2);
 	char const*	protocol		= stringFromObj(objc, objv, 3);
-	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
-	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 5);
-	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 6);
+	bool			hasAnalyze	= boolFromObj(objc, objv, 4);
+	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 5);
+	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 6);
+	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 7);
 
 	Engine::Protocol prot;
 
@@ -593,6 +623,8 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	// TODO
 	// set options before activating
 	engine->activate();
+	if (hasAnalyze)
+		engine->addFeature(Engine::Feature_Analyze);
 
 	unsigned id = tcl::app::scidb->addEngine(engine);
 
@@ -623,7 +655,9 @@ cmdAnalyze(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (tcl::app::scidb->engineExists(id))
 	{
-		if (strcmp(cmd, "start") == 0)
+		if (!tcl::app::scidb->engine(id)->isActive())
+			setResult(false);
+		else if (strcmp(cmd, "start") == 0)
 			setResult(tcl::app::scidb->startAnalysis(id));
 		else if (strcmp(cmd, "stop") == 0)
 			setResult(tcl::app::scidb->stopAnalysis(id));

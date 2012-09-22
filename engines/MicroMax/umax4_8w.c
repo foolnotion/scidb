@@ -378,7 +378,7 @@ int main(int argc, char **argv)
                         continue;
 		}
 		if (!fgets(line, 256, stdin))
-			return;
+			return 1;
 		if (line[0] == '\n')
 			continue;
 		sscanf(line, "%s", command);
@@ -399,7 +399,7 @@ int main(int argc, char **argv)
 		}
 		if (!strcmp(command, "quit"))
                         /* exit engine */
-			return;
+			return 0;
 		if (!strcmp(command, "force")) {
                         /* computer plays neither */
                         Computer = EMPTY;

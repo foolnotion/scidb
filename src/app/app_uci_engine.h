@@ -48,6 +48,7 @@ public:
 	bool startAnalysis(bool isNew) override;
 	bool stopAnalysis() override;
 	bool isReady() const override;
+	bool isAnalyzing() const override;
 
 protected:
 
@@ -76,7 +77,7 @@ private:
 	void parseBestMove(char const* msg);
 	void parseInfo(char const* msg);
 	void parseOption(char const* msg);
-	bool parseMoveList(char const* s, db::MoveList& moves);
+	char const* parseMoveList(char const* s, db::MoveList& moves);
 	void setupPosition(db::Board const& board);
 	void continueAnalysis();
 
@@ -95,6 +96,7 @@ private:
 	bool				m_hasOwnBook;
 	bool				m_hasShowCurrLine;
 	bool				m_hasShowRefutations;
+	bool				m_isAnalyzing;
 	bool				m_stopAnalyizeIsPending;
 	bool				m_continueAnalysis;
 	bool				m_sendChess960;

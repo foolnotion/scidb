@@ -70,7 +70,7 @@ Move::printAlgebraic(mstl::string& s) const
 	{
 		s += "0000";	// conforms to UCI protocol
 	}
-	else
+	else if (!isEmpty())
 	{
 		s += sq::printAlgebraic(from());
 		s += sq::printAlgebraic(to());
@@ -87,13 +87,13 @@ mstl::string&
 Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
-	M_REQUIRE(isPrintable());
+	M_REQUIRE(isPrintable() || isEmpty());
 
 	if (isNull())
 	{
 		s += "--";	// used in ChessBase
 	}
-	else
+	else if (!isEmpty())
 	{
 		if (isCastling())
 		{
@@ -157,7 +157,7 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 	{
 		s += "----";
 	}
-	else
+	else if (!isEmpty())
 	{
 		if (pieceMoved() != piece::Pawn)
 		{
@@ -203,7 +203,7 @@ Move::printDescriptive(mstl::string& s) const
 		else
 			s += "O-O-O";
 	}
-	else
+	else if (!isEmpty())
 	{
 		if (captured() == piece::None)
 		{
@@ -268,7 +268,7 @@ Move::printNumeric(mstl::string& s) const
 	{
 		s += "0000";	// arbitrarely choosen
 	}
-	else
+	else if (!isEmpty())
 	{
 		s += sq::printNumeric(from());
 		s += sq::printNumeric(to());
@@ -288,7 +288,7 @@ Move::printAlphabetic(mstl::string& s) const
 	{
 		s += "XXXX";	// arbitrarely choosen
 	}
-	else
+	else if (!isEmpty())
 	{
 		s += sq::printAlphabetic(from());
 		s += sq::printAlphabetic(to());

@@ -330,6 +330,13 @@ Engine::Concrete::maxVariations() const
 }
 
 
+Engine::Result
+Engine::Concrete::probeAnalyzeFeature() const
+{
+	return Probe_Successfull;
+}
+
+
 Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
 	:m_engine(0)
 	,m_game(0)
@@ -359,11 +366,12 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_score(0)
 	,m_mate(0)
 	,m_depth(0)
+	,m_selDepth(0)
 	,m_time(0.0)
 	,m_nodes(0)
 	,m_active(false)
-	,m_analyzing(false)
 	,m_probe(false)
+	,m_probeAnalyze(false)
 	,m_protocol(false)
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
@@ -411,7 +419,7 @@ Engine::pid() const
 void
 Engine::kill()
 {
-	m_active = m_analyzing = false;
+	m_active = false;
 	m_process->close();
 }
 
@@ -515,6 +523,16 @@ Engine::addFeature(unsigned feature)
 }
 
 
+void
+Engine::removeFeature(unsigned feature)
+{
+	if (feature & Feature_Limit_Strength)
+		m_useLimitedStrength = false;
+
+	m_features &= ~feature;
+}
+
+
 bool
 Engine::isAlive()
 {
@@ -526,20 +544,6 @@ bool
 Engine::isActive() const
 {
 	return m_active;
-}
-
-
-bool
-Engine::isAnalyzing() const
-{
-	return m_analyzing;
-}
-
-
-bool
-Engine::isProbing() const
-{
-	return m_probe;
 }
 
 
@@ -640,7 +644,6 @@ Engine::readyRead()
 void
 Engine::exited()
 {
-	m_analyzing = false;
 	m_active = false;
 
 	if (m_process->wasCrashed())
@@ -762,8 +765,43 @@ Engine::probe(unsigned timeout)
 		}
 	}
 
-	deactivate();
 	m_probe = false;
+
+	if (result == Probe_Successfull && !hasFeature(Feature_Analyze))
+	{
+		Result analyzeResult = Probe_Failed;
+		Game game;
+
+		m_probeAnalyze = true;
+		m_game = &game;
+		addFeature(Feature_Analyze);
+		m_engine->startAnalysis(true);
+		removeFeature(Feature_Analyze);
+		timer.restart(1000);
+
+		try
+		{
+			while (!hasFeature(Feature_Analyze) && !timer.expired())
+			{
+				timer.doNextEvent();
+				analyzeResult = m_engine->probeAnalyzeFeature();
+			}
+		}
+		catch (mstl::exception const& exc)
+		{
+			deactivate();
+			m_probe = false;
+			throw exc;
+		}
+
+		m_probeAnalyze = false;
+		m_game = 0;
+
+		if (analyzeResult)
+			addFeature(Feature_Analyze);
+	}
+
+	deactivate();
 
 	return result;
 }
@@ -773,6 +811,7 @@ bool
 Engine::startAnalysis(db::Game const* game)
 {
 	M_REQUIRE(game);
+	M_REQUIRE(isActive());
 
 	bool isNew = m_game ? game->id() != m_game->id() : true;
 
@@ -781,17 +820,24 @@ Engine::startAnalysis(db::Game const* game)
 
 	if (m_engine->isReady())
 	{
-		if (m_analyzing)
-		{
-			m_analyzing = false;
+		if (isAnalyzing() && !m_engine->stopAnalysis())
+			return false;
 
-			if (!m_engine->stopAnalysis())
-				return false;
-		}
+		resetInfo();
+		m_currMove.clear();
+		m_bestMove.clear();
+		m_ponder.clear();
+		// clear currline
+
+		updatePvInfo();
+		updateCurrMove();
+		updateCurrLine();
+//		updateBestMove();
+//		updateDepthInfo();
+//		updateTimeInfo();
 
 		if (!m_engine->startAnalysis(isNew))
 			return false;
-		m_analyzing = true;
 	}
 
 	return true;
@@ -801,15 +847,7 @@ Engine::startAnalysis(db::Game const* game)
 bool
 Engine::stopAnalysis()
 {
-	bool result = true;
-
-	if (m_analyzing)
-	{
-		result = m_engine->stopAnalysis();
-		m_analyzing = false;
-	}
-
-	return result;
+	return isAnalyzing() ? m_engine->stopAnalysis() : true;
 }
 
 
@@ -888,6 +926,7 @@ Engine::resetInfo()
 	m_score = 0;
 	m_mate = 0;
 	m_depth = 0;
+	m_selDepth = 0;
 	m_time = 0.0;
 	m_nodes = 0;
 

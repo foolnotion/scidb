@@ -62,10 +62,19 @@ into other database formats or document formats.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileImport%</menuitem>
+<menuitem>%::application::database::mc::FileImport(pgn)%</menuitem>
 Opens the <a href="File-Selection-Dialog.html">file selection dialog</a> for
 the selection of <abbr>PGN</abbr> files for import. It is possible  to select multiple
-<abbr>PGN</abbr> files simultaneously. The games will be appended at the end of the database.
+<abbr>PGN</abbr> files simultaneously. The games will be appended at the end of the
+database.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileImport(db)%</menuitem>
+The databases for import will be selected with the
+<a href="File-Selection-Dialog.html">file selection dialog</a>.
+All games will be appended at the end of the database. You may
+select multiple databases simultaneously.
 </p>
 
 <p>

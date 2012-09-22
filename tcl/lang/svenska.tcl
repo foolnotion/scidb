@@ -799,7 +799,7 @@
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
 ::engine::mc::DefaultValue				"Default value" ;# NEW
 ::engine::mc::ResetToDefault			"Reset to default" ;# NEW
-::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"!
+::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"
 ::engine::mc::TotalUsage				"%s times in total" ;# NEW
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
@@ -810,8 +810,9 @@
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
 ::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
-::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature." ;# NEW
+::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
 
+::engine::mc::FeatureDetail(analyze)		"This engine provides an analyze mode." ;# NEW
 ::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
 ::engine::mc::FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
 ::engine::mc::FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
@@ -1115,7 +1116,7 @@
 ::encoding::mc::SystemEncoding		"Systemkodning:"
 
 ### setup ##############################################################
-::setup::mc::Chess960Position		"Chess 960 position"
+::setup::mc::Chess960Position			"Chess 960 position"
 ::setup::mc::SymmChess960Position	"Symmetrisk chess 960 position"
 ::setup::mc::ShuffleChessPosition	"Shuffle chess position"
 
@@ -1139,6 +1140,9 @@
 ::setup::board::mc::InvalidFen					"Ogiltigt FEN"
 ::setup::board::mc::CastlingWithoutRook		"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
 ::setup::board::mc::UnsupportedVariant			"Positionen är en startposition men ingen Shuffle Chess position. Är du säker?"
+
+::setup::board::mc::ChangeToFormat(xfen)				"Change to X-Fen format" ;# NEW
+::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format" ;# NEW
 
 ::setup::board::mc::Error(InvalidFen)					"FEN är ogiltigt."
 ::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."

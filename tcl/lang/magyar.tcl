@@ -799,7 +799,7 @@
 ::engine::mc::OpenFsbox			"Open File Selection Dialog" ;# NEW
 ::engine::mc::DefaultValue		"Default value" ;# NEW
 ::engine::mc::ResetToDefault		"Reset to default" ;# NEW
-::engine::mc::ShowInfo			"Show \"Info\"" ;# NEW don't translate "Info"!
+::engine::mc::ShowInfo			"Show \"Info\"" ;# NEW don't translate "Info"
 ::engine::mc::TotalUsage		"%s times in total" ;# NEW
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
@@ -810,8 +810,9 @@
 ::engine::mc::DiscardChanges		"The current item has changed.\n\nReally discard changes?"
 ::engine::mc::ReallyDelete		"Really delete engine '%s'?" ;# NEW
 ::engine::mc::EntryAlreadyExists	"An entry with name '%s' already exists." ;# NEW
-::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature." ;# NEW
+::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
 
+::engine::mc::FeatureDetail(analyze)	"This engine provides an analyze mode." ;# NEW
 ::engine::mc::FeatureDetail(multiPV)	"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
 ::engine::mc::FeatureDetail(pause)	"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
 ::engine::mc::FeatureDetail(playOther)	"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
@@ -1139,6 +1140,9 @@
 ::setup::board::mc::InvalidFen			"Érvénytelen FEN"
 ::setup::board::mc::CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
 ::setup::board::mc::UnsupportedVariant		"Position is a start position but not a Shuffle Chess position. Are you sure?"
+
+::setup::board::mc::ChangeToFormat(xfen)	"Change to X-Fen format" ;# NEW
+::setup::board::mc::ChangeToFormat(shredder)	"Change to Shredder format" ;# NEW
 
 ::setup::board::mc::Error(InvalidFen)		"Érvénytelen FEN."
 ::setup::board::mc::Error(NoWhiteKing)		"Világos király hiányzik."

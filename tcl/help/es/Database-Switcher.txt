@@ -56,17 +56,27 @@ Abre una caja que muestra información variada sobre la base de datos.
 
 <p>
 <menuitem>%::export::mc::Export%</menuitem>
-Abre el diálogo <a href="Database-Export-Dialog.html">Exportar...</a> para exportar la base
+Abre el diálogo <a href="Database-Export-Dialog.html">exportar base</a> para exportar la base
 a otros formatos de base de datos o formatos de documento.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileImport%</menuitem>
-Abre <a href="File-Selection-Dialog.html">Importar archivos PGN...</a> para
+<menuitem>%::application::database::mc::FileImport(pgn)%</menuitem>
+Abre <a href="File-Selection-Dialog.html">elegir archivo</a> para
 la selección de archivos <abbr>PGN</abbr> para importar. Es posible seleccionar múltiples
 archivos <abbr>PGN</abbr> simultáneamente. Las partidas se agregarán al final de la base
 de datos.
 </p>
+
+<NEW>
+<p>
+<menuitem>%::application::database::mc::FileImport(db)%</menuitem>
+The databases for import will be selected with the
+<a href="File-Selection-Dialog.html">file selection dialog</a>.
+All games will be appended at the end of the database. You may
+select multiple databases simultaneously.
+</p>
+</NEW>
 
 <p>
 <menuitem>%::application::database::mc::FileCreate%</menuitem>
