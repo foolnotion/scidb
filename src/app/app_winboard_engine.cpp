@@ -560,7 +560,7 @@ winboard::Engine::featureDone(bool done)
 		}
 		else
 		{
-			timeout();
+			deactivate();
 		}
 	}
 }
@@ -569,13 +569,16 @@ winboard::Engine::featureDone(bool done)
 void
 winboard::Engine::timeout()
 {
-	send("hard");
-	send("easy");	// turn off pondering
-
-	if (m_response)
-		engineIsReady();
-	else
+	if (isProbing())
+	{
 		deactivate();
+	}
+	else
+	{
+		send("hard");
+		send("easy");	// turn off pondering
+		engineIsReady();
+	}
 
 	m_timer.reset();
 }
@@ -700,7 +703,7 @@ winboard::Engine::parseFeatures(char const* msg)
 		char const* val	= sep + 1;
 		char const* end	= ::endOfKey(val);
 
-		bool accept	= false;
+//		bool accept	= false;
 //		bool reject	= false;
 
 		switch (msg[0])
@@ -713,7 +716,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				{
 					if (*val == '1')
 						addFeature(app::Engine::Feature_Analyze);
-					accept = true;
+//					accept = true;
 				}
 				break;
 
@@ -721,7 +724,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				if (::strncmp(key, "colors=", 7) == 0)
 				{
 					m_featureColors = *val == '1';
-					accept = true;
+//					accept = true;
 				}
 				break;
 
@@ -729,7 +732,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				if (::strncmp(key, "done=", 5) == 0)
 				{
 					featureDone(*val == '1');
-					accept = true;
+//					accept = true;
 				}
 				break;
 
@@ -762,7 +765,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						{
 							if (*val == '1')
 								addFeature(app::Engine::Feature_Pause);
-							accept = true;
+//							accept = true;
 						}
 						break;
 
@@ -771,7 +774,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						{
 							if (*val == '1')
 								addFeature(app::Engine::Feature_Play_Other);
-							accept = true;
+//							accept = true;
 						}
 						break;
 				}
@@ -781,7 +784,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				if (::strncmp(key, "usermove=", 9) == 0)
 				{
 					m_featureUsermove = *val == '1';
-					accept = true;
+//					accept = true;
 				}
 				break;
 
@@ -792,7 +795,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						if (::strncmp(key, "san=", 4) == 0)
 						{
 							m_featureSan = *val == '1';
-							accept = true;
+//							accept = true;
 						}
 						break;
 
@@ -800,7 +803,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						if (::strncmp(key, "setboard=", 9) == 0)
 						{
 							m_featureSetboard = *val == '1';
-							accept = true;
+//							accept = true;
 						}
 						break;
 
@@ -808,7 +811,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						if (::strncmp(key, "sigint=", 7) == 0)
 						{
 							 m_featureSigint= *val == '1';
-							accept = true;
+//							accept = true;
 						}
 						break;
 				}
@@ -833,7 +836,7 @@ winboard::Engine::parseFeatures(char const* msg)
 						{
 							chess960 = true;
 							m_variant = "fischerandom";
-							accept = true;
+//							accept = true;
 						}
 					}
 
