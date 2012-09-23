@@ -398,7 +398,7 @@ proc DisplayPvLines {score mate depth seldepth time nodes vars} {
 		if {$mate < 0} { set txt w } else { set txt b }
 		append txt " mate in [abs $mate]"
 	} else {
-		set p [expr {$score/1000}]
+		set p [expr {$score/100}]
 		set cp [expr {abs($score) % 100}]
 		set txt [format "%d.%02d" $p $cp]
 	}
