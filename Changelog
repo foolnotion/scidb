@@ -1,6 +1,19 @@
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #439)
+------------------------------------------------------------------------------
+* Makefile of stockfish engine fixed.
+
+* Stockfish engine: std::auto_ptr replaced with mstl::auto_ptr. In newer GNU
+stl versions auto_ptr (and shared_ptr) has a severe error: it is requiring
+runtime type information.
+1. This is a conflict to optimizations with -fno-rtti.
+2. It's a runtime performance lack.
+3. The clang compiler is not compiling with this conflict.
+4. The GNU compiler is silentry ignoring this rpoblem.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #436)
 ------------------------------------------------------------------------------
 * Support for XBoard/WinBoard protocol integrated.

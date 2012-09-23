@@ -160,11 +160,17 @@ public:
 
 	/// Return a null move (side to move will be set)
 	Move makeNullMove() const;
-	/// Parse SAN or LAN representation of move, and return proper Move() object
+	/// Parse any (LAN, SAN, or algebraic) representation of move, and return proper Move() object
 	Move parseMove(char const* algebraic, move::Constraint flag = move::DontAllowIllegalMove) const;
-	/// Parse SAN or LAN representation of move, and return position after move
+	/// Parse any (LAN, SAN, or algebraic) representation of move, and return string position after move
 	char const* parseMove(	char const* algebraic,
-									Move& m,
+									Move& move,
+									move::Constraint flag = move::DontAllowIllegalMove) const;
+	/// Parse LAN representation of move, and return string position after move
+	Move parseLAN(char const* algebraic, move::Constraint flag = move::DontAllowIllegalMove) const;
+	/// Parse LAN representation of move, and return string position after move
+	char const* parseLAN(	char const* algebraic,
+									Move& move,
 									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Return a proper Move() object given only a from-to move specification
 	Move prepareMove(Square from, Square to, move::Constraint flag = move::DontAllowIllegalMove) const;

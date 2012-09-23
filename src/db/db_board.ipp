@@ -234,6 +234,15 @@ Board::parseMove(char const* algebraic, move::Constraint flag) const
 
 inline
 Move
+Board::parseLAN(char const* algebraic, move::Constraint flag) const
+{
+	Move m;
+	return parseLAN(algebraic, m, flag) ? m : Move::empty();
+}
+
+
+inline
+Move
 Board::setMoveColor(Move move) const
 {
 	move.setColor(m_stm);

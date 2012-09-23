@@ -3413,6 +3413,59 @@ Board::parseMove(char const* algebraic, Move& move, move::Constraint flag) const
 }
 
 
+char const*
+Board::parseLAN(char const* s, Move& move, move::Constraint flag) const
+{
+	M_REQUIRE(s);
+
+	if (*s == '0')
+	{
+		// "0000" null move used in UCI protocol
+		if (s[1] != '0' || s[2] != '0' || s[3] != '0')
+			return 0;
+		move = makeNullMove();
+		return s + 4;
+	}
+
+	if (!isFyle(*s))
+		return 0;
+
+	int fromFyle = ::toFyle(*s++);
+
+	if (!isRank(*s))
+		return 0;
+
+	int fromRank = ::toRank(*s++);
+
+	if (!isFyle(*s))
+		return 0;
+
+	int toFyle = ::toFyle(*s++);
+
+	if (!isRank(*s))
+		return 0;
+
+	int toRank = ::toRank(*s++);
+
+	if (!(move = prepareMove(sq::make(fromFyle, fromRank), sq::make(toFyle, toRank), flag)))
+		return 0;
+
+	if (move.isPromotion())
+	{
+		switch (*s++)
+		{
+			case 'Q': case 'q':	move.setPromoted(piece::Queen);  break;
+			case 'R': case 'r':	move.setPromoted(piece::Rook);   break;
+			case 'B': case 'b':	move.setPromoted(piece::Bishop); break;
+			case 'N': case 'n':	move.setPromoted(piece::Knight); break;
+			default:					return 0;
+		}
+	}
+
+	return s;
+}
+
+
 void
 Board::doMove(Move const& m)
 {

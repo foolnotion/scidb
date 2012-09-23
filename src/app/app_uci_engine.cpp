@@ -586,32 +586,42 @@ void
 uci::Engine::parseBestMove(char const* msg)
 {
 	char const* s = ::skipSpaces(msg);
+	Move move(m_board.parseLAN(s));
 
 	m_stopAnalyizeIsPending = false;
 
-	if (Move move = m_board.parseMove(s))
+	if (move.isLegal())
 	{
-		s = ::skipNonSpaces(s);
+		m_board.prepareForPrint(move);
+		setBestMove(move);
+	}
+	else
+	{
+		mstl::string msg("Illegal best move: ");
+		msg.append(s, ::skipNonSpaces(s));
+		error(msg);
+	}
+
+	s = ::skipNonSpaces(s);
+
+	if (::strncmp(s, "ponder ", 6) == 0)
+	{
+		s = ::skipSpaces(s + 6);
+
+		m_board.doMove(move);
+		Move ponder(m_board.parseLAN(s));
+		m_board.undoMove(move);
 
 		if (move.isLegal())
 		{
-			m_board.prepareForPrint(move);
-			setBestMove(move);
+			setPonder(ponder);
+			updateBestMove();
 		}
-
-		if (::strncmp(s, "ponder ", 6) == 0)
+		else
 		{
-			s = ::skipSpaces(s + 6);
-
-			m_board.doMove(move);
-			Move ponder = m_board.parseMove(s);
-			m_board.undoMove(move);
-
-			if (move)
-			{
-				setPonder(ponder);
-				updateBestMove();
-			}
+			mstl::string msg("Illegal ponder move: ");
+			msg.append(s, ::skipNonSpaces(s));
+			error(msg);
 		}
 	}
 }
@@ -820,13 +830,15 @@ uci::Engine::parseInfo(char const* s)
 Move
 uci::Engine::parseCurrentMove(char const* s)
 {
-	if (!::isLan(s))
-		return Move();
-
-	Move move = m_board.parseMove(s);
+	Move move = m_board.parseLAN(s);
 
 	if (!move.isLegal())
+	{
+		mstl::string msg("Illegal current move: ");
+		msg.append(s, ::skipNonSpaces(s));
+		error(msg);
 		return Move();
+	}
 
 	m_board.prepareForPrint(move);
 	return move;
@@ -838,13 +850,15 @@ uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
 {
 	Board board(m_board);
 
-	for ( ; ::isLan(s); s = ::skipWords(s, 1))
+	while (::isLan(s))
 	{
-		Move move = board.parseMove(s);
+		Move move;
 
-		if (!move.isLegal())
+		if ((s = board.parseLAN(s, move)) == 0)
 		{
-			error("Illegal move in pv");
+			mstl::string msg("Illegal move in pv: ");
+			msg.append(s, ::skipNonSpaces(s));
+			error(msg);
 			return 0;
 		}
 
@@ -852,9 +866,10 @@ uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
 		board.doMove(move);
 		moves.append(move);
 
+		s = ::skipSpaces(s);
+
 		if (moves.isFull())
 		{
-			s = ::skipWords(s, 1);
 			while (::isLan(s))
 				s = ::skipWords(s, 1);
 			log("WARNING: Pv is too long (truncated)");

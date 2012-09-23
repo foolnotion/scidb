@@ -1394,7 +1394,6 @@ proc ProbeEngine {parent entry} {
 
 	foreach prot $protocols {
 		lassign $result($prot) ok info features options
-puts $features
 
 		# setup information
 		array set engine $info

@@ -541,27 +541,13 @@ winboard::Engine::featureDone(bool done)
 	// We've received a "done" feature offer from engine,
 	// so it supports version 2 or better of the xboard protocol.
 
-	if (isProbing())
-	{
-		if (done)
-			m_response = true;
-	}
-	else
+	m_response = true;
+
+	if (done && !isProbing())
 	{
 		// No need to wait any longer wondering if we're talking to a version 1 engine
 		m_timer.reset();
-
-		// The engine will send done=1, when its ready to go,
-		//  and done=0 if it needs more than 2 seconds to start.
-		if (done)
-		{
-			m_response = true;
-			engineIsReady();
-		}
-		else
-		{
-			deactivate();
-		}
+		engineIsReady();
 	}
 }
 
@@ -943,9 +929,10 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 	setTime(m_wholeSeconds ? double(time) : time/100.0);
 	setNodes(nodes);
 
-	int		illegal(-1);
-	Board 	board(m_board);
-	MoveList moves;
+	char const*	illegal(0);
+	char const*	e(0);
+	Board 		board(m_board);
+	MoveList 	moves;
 
 	while (*s)
 	{
@@ -959,7 +946,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 				board.prepareForPrint(move);
 				board.doMove(move);
 				moves.append(move);
-				illegal = -1;
+				illegal = 0;
 				s = ::skipSpaces(t);
 
 				if (moves.isFull())
@@ -970,8 +957,8 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 			}
 			else
 			{
-				illegal = moves.size();
-				s = ::skipWord(s);
+				illegal = s;
+				e = s = ::skipWord(s);
 			}
 		}
 		else
@@ -980,9 +967,12 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		}
 	}
 
-	if (0 <= illegal && illegal < int(moves.size()))
+	if (illegal)
 	{
-		error("Illegal move in pv");
+		mstl::string msg("Illegal move in pv: ");
+		msg.append(illegal, e - illegal);
+		msg.trim();
+		error(msg);
 		return;
 	}
 
