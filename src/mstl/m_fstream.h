@@ -47,6 +47,7 @@ public:
 	using ofstream::truncate;
 
 	using ifstream::set_unbuffered;
+	using ifstream::set_line_buffered;
 	using ifstream::set_binary;
 	using ifstream::set_text;
 	using ifstream::set_bufsize;

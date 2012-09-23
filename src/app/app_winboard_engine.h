@@ -66,9 +66,6 @@ protected:
 
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
-	void sendNumberOfVariations() override;
-	void clearHash() override;
-	void sendHashSize() override;
 	void sendOptions() override;
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;

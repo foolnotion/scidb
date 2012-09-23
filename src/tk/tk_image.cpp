@@ -2598,13 +2598,13 @@ tk_recolor_image(	char const* subcmd,
 static int
 tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] =
+	static char const* Subcommands[] =
 	{
 		"border", "copy", "create", "recolor", "disable",
 		"alpha", "diffuse", "boost", "colorize", "paintover",
 		"grayscale", "blur", "shadow", "darken", 0
 	};
-	struct { char const* usage; int min_args; } const definitions[] =
+	struct { char const* usage; int min_args; } const Definitions[] =
 	{
 		{ "border <photo>", 2 },
 		{ "copy <in-photo> <out-photo>", 3 },
@@ -2635,14 +2635,14 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	int index;
-	int result = Tcl_GetIndexFromObj(ti, objv[1], subcommands, "subcommand", TCL_EXACT, &index);
+	int result = Tcl_GetIndexFromObj(ti, objv[1], Subcommands, "subcommand", TCL_EXACT, &index);
 
 	if (result != TCL_OK)
 		return TCL_ERROR;
 
-	if (objc < definitions[index].min_args)
+	if (objc < Definitions[index].min_args)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, definitions[index].usage);
+		Tcl_WrongNumArgs(ti, 1, objv, Definitions[index].usage);
 		return TCL_ERROR;
 	}
 
@@ -2654,20 +2654,20 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Border:
 			{
 				char const* str = Tcl_GetString(objv[0]);
-				return tk_make_border(subcommands[index], ti, str, objc - 1, objv + 1);
+				return tk_make_border(Subcommands[index], ti, str, objc - 1, objv + 1);
 			}
 
 		case Cmd_GrayScale:
 			{
 				char const* str = Tcl_GetString(objv[0]);
-				return tk_grayscale(subcommands[index], ti, str, objc - 1, objv + 1);
+				return tk_grayscale(Subcommands[index], ti, str, objc - 1, objv + 1);
 			}
 
 		case Cmd_Copy:
 			{
 				char const* str0 = Tcl_GetString(objv[0]);
 				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_copy_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+				return tk_copy_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Create:
@@ -2676,7 +2676,7 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (!svg_obj)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: cannot find '%s'",
 											Tcl_GetString(objv[0]));
 				}
@@ -2684,28 +2684,28 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				int svg_len;
 				char const* svg_data = Tcl_GetStringFromObj(svg_obj, &svg_len);
 				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_create_image(subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
+				return tk_create_image(Subcommands[index], ti, svg_data, svg_len, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Darken:
 			{
 				char const* str0 = Tcl_GetString(objv[0]);
 				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_darken_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+				return tk_darken_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Recolor:
 			{
 				char const* str0 = Tcl_GetString(objv[0]);
 				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_recolor_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+				return tk_recolor_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Disable:
 			{
 				char const* str0 = Tcl_GetString(objv[0]);
 				char const* str1 = Tcl_GetString(objv[1]);
-				return tk_disable_image(subcommands[index], ti, str0, str1, objc - 2, objv + 2);
+				return tk_disable_image(Subcommands[index], ti, str0, str1, objc - 2, objv + 2);
 			}
 
 		case Cmd_Alpha:
@@ -2713,11 +2713,11 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				double value;
 				if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
 				char const* str0 = Tcl_GetString(objv[1]);
-				return tk_set_alpha(subcommands[index], ti, value, str0, objc - 2, objv + 2);
+				return tk_set_alpha(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
 			}
 
 		case Cmd_Diffuse:
@@ -2725,11 +2725,11 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				double value;
 				if (Tcl_GetDoubleFromObj(ti, objv[0], &value) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
 				char const* str0 = Tcl_GetString(objv[1]);
-				return tk_diffuse(subcommands[index], ti, value, str0, objc - 2, objv + 2);
+				return tk_diffuse(Subcommands[index], ti, value, str0, objc - 2, objv + 2);
 			}
 
 		case Cmd_Boost:
@@ -2737,16 +2737,16 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				double min, max;
 				if (Tcl_GetDoubleFromObj(ti, objv[0], &min) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
 				if (Tcl_GetDoubleFromObj(ti, objv[1], &max) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for alpha value expected");
 				}
 				char const* str0 = Tcl_GetString(objv[2]);
-				return tk_boost(subcommands[index], ti, min, max, str0, objc - 3, objv + 3);
+				return tk_boost(Subcommands[index], ti, min, max, str0, objc - 3, objv + 3);
 			}
 
 		case Cmd_Colorize:
@@ -2756,10 +2756,10 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				char const* str1 = Tcl_GetString(objv[2]);
 				if (Tcl_GetDoubleFromObj(ti, objv[1], &brighten) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for brighten value expected");
 				}
-				return tk_colorize(subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
+				return tk_colorize(Subcommands[index], ti, str0, str1, brighten, objc - 3, objv + 3);
 			}
 
 		case Cmd_PaintOver:
@@ -2769,10 +2769,10 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				char const* str1 = Tcl_GetString(objv[2]);
 				if (Tcl_GetDoubleFromObj(ti, objv[1], &opacity) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for opacity value expected");
 				}
-				return tk_paint_over(subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+				return tk_paint_over(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
 			}
 
 		case Cmd_Blur:
@@ -2780,14 +2780,14 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				double radius;
 				if (Tcl_GetDoubleFromObj(ti, objv[0], &radius) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for radius expected");
 				}
 				if (radius < 0.0)
-					return tcl_error(	subcommands[index], "invalid argument: radius is negative");
+					return tcl_error(	Subcommands[index], "invalid argument: radius is negative");
 				char const* str0 = Tcl_GetString(objv[1]);
 				char const* str1 = Tcl_GetString(objv[2]);
-				return tk_blur(subcommands[index], ti, str0, str1, radius, objc - 3, objv + 3);
+				return tk_blur(Subcommands[index], ti, str0, str1, radius, objc - 3, objv + 3);
 			}
 
 		case Cmd_Shadow:
@@ -2795,12 +2795,12 @@ tk_image(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				double opacity;
 				if (Tcl_GetDoubleFromObj(ti, objv[0], &opacity) != TCL_OK)
 				{
-					return tcl_error(	subcommands[index],
+					return tcl_error(	Subcommands[index],
 											"invalid argument: type 'double' for opacity value expected");
 				}
 				char const* str0 = Tcl_GetString(objv[1]);
 				char const* str1 = Tcl_GetString(objv[2]);
-				return tk_shadow(subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
+				return tk_shadow(Subcommands[index], ti, str0, str1, opacity, objc - 3, objv + 3);
 			}
 	}
 

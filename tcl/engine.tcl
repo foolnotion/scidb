@@ -74,34 +74,34 @@ set ReallyDelete			"Really delete engine '%s'?"
 set EntryAlreadyExists	"An entry with name '%s' already exists."
 set NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions."
 
-set FeatureDetail(analyze)		"This engine provides an analyze mode."
-set FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
-set FeatureDetail(pause)		"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
-set FeatureDetail(playOther)	"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
-set FeatureDetail(hashSize)	"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
-set FeatureDetail(clearHash)	"The user may clear the hash tables whlle the engine is running."
-set FeatureDetail(threads)		"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
-set FeatureDetail(eloRange)	"The engine is able to limit its strength to a specific Elo number between %min-%max."
-set FeatureDetail(skillLevel)	"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
-set FeatureDetail(ponder)		"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
-set FeatureDetail(chess960)	"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
-set FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when king and rook are on their traditional starting squares."
-set FeatureDetail(styles)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
+set FeatureDetail(analyze)			"This engine provides an analyze mode."
+set FeatureDetail(multiPV)			"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
+set FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
+set FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
+set FeatureDetail(hashSize)		"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
+set FeatureDetail(clearHash)		"The user may clear the hash tables whlle the engine is running."
+set FeatureDetail(threads)			"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
+set FeatureDetail(limitStrength)	"The engine is able to limit its strength to a specific Elo number between %min-%max."
+set FeatureDetail(skillLevel)		"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
+set FeatureDetail(ponder)			"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
+set FeatureDetail(chess960)		"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
+set FeatureDetail(shuffle)			"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when king and rook are on their traditional starting squares."
+set FeatureDetail(playingStyle)	"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
 
 # don't translate
-set Feature(analyze)		"Analyze"
-set Feature(multiPV)		"Multiple Best Lines"
-set Feature(pause)		"Pause"
-set Feature(playOther)	"Play Other"
-set Feature(hashSize)	"Hash Size"
-set Feature(clearHash)	"Clear Hash"
-set Feature(threads)		"Threads"
-set Feature(eloRange)	"Limit Strength"
-set Feature(skillLevel)	"Skill Level"
-set Feature(ponder)		"Pondering"
-set Feature(chess960)	"Chess960"
-set Feature(shuffle)		"Shuffle Chess"
-set Feature(styles)		"Playing Styles"
+set Feature(analyze)			"Analyze"
+set Feature(multiPV)			"Multiple Best Lines"
+set Feature(pause)			"Pause"
+set Feature(playOther)		"Play Other"
+set Feature(hashSize)		"Hash Size"
+set Feature(clearHash)		"Clear Hash"
+set Feature(threads)			"Threads"
+set Feature(limitStrength)	"Limit Strength"
+set Feature(skillLevel)		"Skill Level"
+set Feature(ponder)			"Pondering"
+set Feature(chess960)		"Chess960"
+set Feature(shuffle)			"Shuffle Chess"
+set Feature(playingStyle)	"Playing Styles"
 
 } ;# namespace mc
 
@@ -109,7 +109,7 @@ variable Engines {}
 variable PhotoFiles {}
 variable EmptyEngine {}
 
-array set Priv { after {} }
+array set Priv { after {}  }
 array set Logo { width 100 height 54 }
 
 
@@ -720,47 +720,59 @@ proc setup {} {
 }
 
 
-proc startEngine {name isReadyCmd signalCmd updateCmd} {
+proc startEngine {name isReadyCmd signalCmd updateCmd options} {
 	variable EmptyEngine
 	variable Engines
 	variable Priv
 
-	set index 0
+	set index [FindIndex $name]
+	if {$index == -1} { return -1 }
 
-	foreach entry $Engines {
-		array set engine $EmptyEngine
-		array set engine $entry
+	set entry [lindex $Engines $index]
+	array set engine $EmptyEngine
+	array set engine $entry
 
-		if {$engine(Name) eq $name} {
-			set protocol [lindex $engine(Protocol) 0]
-			array set features { analyze false }
-			array set features $engine(Features:$protocol)
-			if {$features(analyze)} { set analyze 1 } else { set analyze 0 }
-			if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
-				set dir $engine(Directory)
-			} else {
-				set dir $::scidb::dir::log
-			}
-			set engine(LastUsed) [clock seconds]
-			incr engine(Frequency)
-			lset Engines $index [array get engine]
-			::options::hookWriter [namespace current]::WriteOptions engines
-			set id [::scidb::engine::start \
-				$engine(Command) \
-				$dir \
-				$protocol \
-				$analyze \
-				$isReadyCmd \
-				$signalCmd \
-				$updateCmd \
-			]
-			return $id
-		}
-
-		incr index
+	set protocol [lindex $engine(Protocol) 0]
+	if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
+		set dir $engine(Directory)
+	} else {
+		set dir $::scidb::dir::log
 	}
+	set engine(LastUsed) [clock seconds]
+	incr engine(Frequency)
+	lset Engines $index [array get engine]
+	::options::hookWriter [namespace current]::WriteOptions engines
+	set id [::scidb::engine::start \
+		$engine(Command) \
+		$dir \
+		$protocol \
+		$isReadyCmd \
+		$signalCmd \
+		$updateCmd \
+	]
+	set Priv(engine:$id) $engine(Name)
+	return $id
+}
 
-	return -1
+
+proc activateEngine {engineId features} {
+	variable EmptyEngine
+	variable Engines
+	variable Priv
+
+	if {$engineId == -1} { return }
+	set index [FindIndex $Priv(engine:$engineId)]
+	if {$index == -1} { return }
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $index]
+	array set featureArr { analyze false }
+	array set featureArr $features
+	set protocol [lindex $engine(Protocol) 0]
+	array set engineFeatures $engine(Features:$protocol)
+	if {[info exists engineFeatures(analyze)]} { set featureArr(analyze) true }
+	::scidb::engine::setOptions $engineId $engine(Options:$protocol)
+	::scidb::engine::setFeatures $engineId [array get featureArr]
+	::scidb::engine::activate $engineId
 }
 
 
@@ -821,6 +833,7 @@ proc ClearLog {text} {
 
 proc Log {text msg} {
 	variable ShowInfo
+	variable Priv
 
 	switch -- [string index $msg 0] {
 		"<" {
@@ -942,11 +955,11 @@ proc ShowFeatures {list features} {
 				multiPV {
 					append html "<td>[format $mc::FeatureDetail($name) $value]</td>"
 				}
-				hashSize - eloRange - threads {
+				hashSize - limitStrength - threads {
 					set map [list %min [lindex $value 0] %max [lindex $value 1]]
 					append html "<td>[string map $map $mc::FeatureDetail($name)]</td>"
 				}
-				styles {
+				playingStyle {
 					set styles {}
 					foreach entry $value { lappend styles "\"$entry\"" }
 					set values [join $styles ", "]
@@ -1861,6 +1874,21 @@ proc GetLogo {parent list} {
 		set Var(Logo) [lindex $result 0]
 		SetLogo $list
 	}
+}
+
+
+proc FindIndex {name} {
+	variable EmptyEngine
+	variable Engines
+
+	set index 0
+	foreach entry $Engines {
+		array set engine $entry
+		if {$engine(Name) eq $name} { return $index }
+		incr index
+	}
+
+	return -1
 }
 
 

@@ -37,6 +37,7 @@
 #include "m_assert.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <tcl.h>
@@ -45,19 +46,21 @@ using namespace db;
 using namespace tcl;
 
 
-static char const* CmdAnalyize	= "::scidb::engine::analyze";
-static char const* CmdClearHash	= "::scidb::engine::clearHash";
-static char const* CmdGet			= "::scidb::engine::get";
-static char const* CmdInfo			= "::scidb::engine::info";
-static char const* CmdKill			= "::scidb::engine::kill";
-static char const* CmdList			= "::scidb::engine::list";
-static char const* CmdLog			= "::scidb::engine::log";
-static char const* CmdPause		= "::scidb::engine::pause";
-static char const* CmdProbe		= "::scidb::engine::probe";
-static char const* CmdResume		= "::scidb::engine::resume";
-static char const* CmdSet			= "::scidb::engine::set";
-static char const* CmdStart		= "::scidb::engine::start";
-static char const* CmdStop			= "::scidb::engine::stop";
+static char const* CmdActivate		= "::scidb::engine::activate";
+static char const* CmdAnalyize		= "::scidb::engine::analyze";
+static char const* CmdClearHash		= "::scidb::engine::clearHash";
+static char const* CmdGet				= "::scidb::engine::get";
+static char const* CmdInfo				= "::scidb::engine::info";
+static char const* CmdKill				= "::scidb::engine::kill";
+static char const* CmdList				= "::scidb::engine::list";
+static char const* CmdLog				= "::scidb::engine::log";
+static char const* CmdPause			= "::scidb::engine::pause";
+static char const* CmdProbe			= "::scidb::engine::probe";
+static char const* CmdResume			= "::scidb::engine::resume";
+static char const* CmdSetFeatures	= "::scidb::engine::setFeatures";
+static char const* CmdSetOptions		= "::scidb::engine::setOptions";
+static char const* CmdStart			= "::scidb::engine::start";
+static char const* CmdStop				= "::scidb::engine::stop";
 
 
 namespace {
@@ -71,7 +74,7 @@ public:
 		,m_cmd(cmd)
 		,m_arg(arg)
 	{
-		m_stream.set_unbuffered();
+		m_stream.set_line_buffered();
 		m_stream.set_text();
 
 		Tcl_IncrRefCount(m_cmd);
@@ -112,7 +115,7 @@ public:
 	{
 	}
 
-	void updatePvInfo() override {}
+	void updatePvInfo(unsigned) override {}
 	void updateCheckMateInfo() override {}
 	void updateStaleMateInfo() override {}
 	void engineIsReady() override {}
@@ -176,19 +179,14 @@ public:
 		Tcl_DecrRefCount(args);
 	}
 
-	void updatePvInfo() override
+	void updatePvInfo(unsigned line) override
 	{
-		Tcl_Obj* vars[numVariations()];
 		unsigned halfMoveNo = currentBoard().plyNumber();
 
-		for (unsigned i = 0; i < numVariations(); ++i)
-		{
-			mstl::string s;
-			variation(i).print(s, halfMoveNo);
-			vars[i] = Tcl_NewStringObj(s, s.size());
-		}
+		mstl::string s;
+		variation(line).print(s, halfMoveNo);
 
-		Tcl_Obj* objs[7];
+		Tcl_Obj* objs[8];
 
 		objs[0] = Tcl_NewIntObj(score());
 		objs[1] = Tcl_NewIntObj(mate());
@@ -196,7 +194,8 @@ public:
 		objs[3] = Tcl_NewIntObj(selectiveDepth());
 		objs[4] = Tcl_NewDoubleObj(time());
 		objs[5] = Tcl_NewIntObj(nodes());
-		objs[6] = Tcl_NewListObj(numVariations(), vars);
+		objs[6] = Tcl_NewIntObj(line);
+		objs[7] = Tcl_NewStringObj(s, s.size());
 
 		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
@@ -373,7 +372,7 @@ cmdLog(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (m_log)
 			return error(CmdLog, subcmd, 0, "log is already open");
 
-		m_log = new EngineLog(	fopencookie(0, "wb", Cookie),
+		m_log = new EngineLog(	fopencookie(0, "w", Cookie),
 										objectFromObj(objc, objv, 2),
 										objectFromObj(objc, objv, 3));
 
@@ -604,10 +603,9 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	command		= stringFromObj(objc, objv, 1);
 	char const*	directory	= stringFromObj(objc, objv, 2);
 	char const*	protocol		= stringFromObj(objc, objv, 3);
-	bool			hasAnalyze	= boolFromObj(objc, objv, 4);
-	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 5);
-	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 6);
-	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 7);
+	Tcl_Obj*		isReadyCmd	= objectFromObj(objc, objv, 4);
+	Tcl_Obj*		signalCmd	= objectFromObj(objc, objv, 5);
+	Tcl_Obj*		updateCmd	= objectFromObj(objc, objv, 6);
 
 	Engine::Protocol prot;
 
@@ -619,17 +617,143 @@ cmdStart(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdProbe, 0, 0, "unknown protocol '%s'", protocol);
 
 	Engine* engine = new Engine(prot, command, directory, isReadyCmd, signalCmd, updateCmd);
-
-	// TODO
-	// set options before activating
-	engine->activate();
-	if (hasAnalyze)
-		engine->addFeature(Engine::Feature_Analyze);
-
 	unsigned id = tcl::app::scidb->addEngine(engine);
 
 	engine->setId(id);
 	setResult(id);
+
+	return TCL_OK;
+}
+
+
+static int
+cmdActivate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		::tcl::app::scidb->engine(id)->activate();
+
+	return TCL_OK;
+}
+
+
+static int
+cmdSetFeatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		static char const* Features[] =
+		{
+			"analyze", "multipv", "ponder", "hashSize", "threads",
+			"skillLevel", "playOther", "limitStrength", "playingStyle",
+			nullptr,
+		};
+		enum
+		{
+			Feature_Analyze,
+			Feature_Multi_PV,
+			Feature_Ponder,
+			Feature_Hash_Size,
+			Feature_Threads,
+			Feature_Skill_Level,
+			Feature_Play_Other,
+			Feature_Limit_Strength,
+			Feature_Playing_Styles,
+		};
+
+		::app::Engine* engine = tcl::app::scidb->engine(id);
+
+		int size;
+		Tcl_Obj** objs;
+
+		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 2), &size, &objs) != TCL_OK)
+			return error(CmdActivate, 0, 0, "list obj expected");
+
+		if (size & 2 == 1)
+			return error(CmdActivate, 0, 0, "feature list must have even size");
+
+		for (int i = 0; i < size; i += 2)
+		{
+			int index;
+
+			if (Tcl_GetIndexFromObj(ti, objs[i], Features, "feature", TCL_EXACT, &index) != TCL_OK)
+				return error(CmdActivate, 0, 0, "unknown feature: %s", Tcl_GetString(objs[i]));
+
+			char const* value = Tcl_GetString(objs[i + 1]);
+
+			switch (index)
+			{
+				case Feature_Analyze:
+					if (*value == 't')
+						engine->addFeature(Engine::Feature_Analyze);
+					break;
+
+				case Feature_Multi_PV:
+					engine->changeNumberOfVariations(atoi(value));
+					break;
+
+				case Feature_Ponder:
+					engine->pondering(*value == 't');
+					break;
+
+				case Feature_Hash_Size:
+					engine->changeHashSize(atoi(value));
+					break;
+
+				case Feature_Threads:
+					engine->changeThreads(atoi(value));
+					break;
+
+				case Feature_Skill_Level:
+					engine->changeSkillLevel(atoi(value));
+					break;
+
+				case Feature_Play_Other:
+					engine->playOther(*value == 't');
+					break;
+
+				case Feature_Limit_Strength:
+					engine->changeStrength(atoi(value));
+					break;
+
+				case Feature_Playing_Styles:
+					engine->changePlayingStyle(value);
+					break;
+			}
+		}
+	}
+
+	return TCL_OK;
+}
+
+
+static int
+cmdSetOptions(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		::app::Engine* engine = tcl::app::scidb->engine(id);
+		::app::Engine::Options opts;
+
+		int size;
+		Tcl_Obj** objs;
+
+		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 2), &size, &objs) != TCL_OK)
+			return error(CmdActivate, 0, 0, "list obj expected");
+
+		if (size & 2 == 1)
+			return error(CmdActivate, 0, 0, "options list must have even size");
+
+		for (int i = 0; i < size; i += 2)
+			engine->setOption(Tcl_GetString(objs[i]), Tcl_GetString(objs[i + 1]));
+
+		engine->updateOptions();
+	}
 
 	return TCL_OK;
 }
@@ -757,64 +881,6 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
-{
-	unsigned 	id		= unsignedFromObj(objc, objv, 1);
-	char const*	attr	= stringFromObj(objc, objv, 2);
-
-	if (tcl::app::scidb->engineExists(id))
-	{
-		if (strcmp(attr, "multiPV") == 0)
-		{
-			tcl::app::scidb->engine(id)->changeNumberOfVariations(unsignedFromObj(objc, objv, 3));
-		}
-		else if (strcmp(attr, "hashSize") == 0)
-		{
-			tcl::app::scidb->engine(id)->changeHashSize(unsignedFromObj(objc, objv, 3));
-		}
-		else if (strcmp(attr, "options") == 0)
-		{
-			::app::Engine::Options options;
-
-			Tcl_Obj** objs;
-			int numObjs;
-
-			if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 3), &numObjs, &objs) != TCL_OK)
-				return error(CmdSet, 0, 0, "invalid option list");
-
-			int n;
-			Tcl_Obj** v;
-
-			for (int i = 0; i < numObjs; ++i)
-			{
-				if (Tcl_ListObjGetElements(ti, objs[i], &n, &v) != TCL_OK || n != 6)
-					return error(CmdSet, 0, 0, "invalid option list");
-
-				::app::Engine::Option opt;
-
-				opt.name = Tcl_GetString(v[0]);
-				opt.type = Tcl_GetString(v[1]);
-				opt.val  = Tcl_GetString(v[2]);
-				opt.dflt = Tcl_GetString(v[3]);
-				opt.var  = Tcl_GetString(v[4]);
-				opt.max  = Tcl_GetString(v[5]);
-
-				options.push_back(opt);
-			}
-
-			tcl::app::scidb->engine(id)->changeOptions(options);
-		}
-		else
-		{
-			return error(CmdSet, 0, 0, "unknown attribute '%s'", attr);
-		}
-	}
-
-	return TCL_OK;
-}
-
-
-static int
 cmdClearHash(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned id = unsignedFromObj(objc, objv, 1);
@@ -868,19 +934,21 @@ namespace engine {
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdAnalyize,	cmdAnalyze);
-	createCommand(ti, CmdClearHash,	cmdClearHash);
-	createCommand(ti, CmdGet,			cmdGet);
-	createCommand(ti, CmdInfo,			cmdInfo);
-	createCommand(ti, CmdKill,			cmdKill);
-	createCommand(ti, CmdList,			cmdList);
-	createCommand(ti, CmdLog,			cmdLog);
-	createCommand(ti, CmdPause,		cmdPause);
-	createCommand(ti, CmdProbe,		cmdProbe);
-	createCommand(ti, CmdResume,		cmdResume);
-	createCommand(ti, CmdSet,			cmdSet);
-	createCommand(ti, CmdStart,		cmdStart);
-	createCommand(ti, CmdStop,			cmdStop);
+	createCommand(ti, CmdActivate,		cmdActivate);
+	createCommand(ti, CmdAnalyize,		cmdAnalyze);
+	createCommand(ti, CmdClearHash,		cmdClearHash);
+	createCommand(ti, CmdGet,				cmdGet);
+	createCommand(ti, CmdInfo,				cmdInfo);
+	createCommand(ti, CmdKill,				cmdKill);
+	createCommand(ti, CmdList,				cmdList);
+	createCommand(ti, CmdLog,				cmdLog);
+	createCommand(ti, CmdPause,			cmdPause);
+	createCommand(ti, CmdProbe,			cmdProbe);
+	createCommand(ti, CmdResume,			cmdResume);
+	createCommand(ti, CmdStart,			cmdStart);
+	createCommand(ti, CmdSetFeatures,	cmdSetFeatures);
+	createCommand(ti, CmdSetOptions,		cmdSetOptions);
+	createCommand(ti, CmdStop,				cmdStop);
 }
 
 } // namespace engine

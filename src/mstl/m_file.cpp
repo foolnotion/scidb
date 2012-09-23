@@ -34,7 +34,15 @@ using namespace mstl;
 using namespace mstl::bits;
 
 
-file::file() : m_open(false), m_unbuffered(false), m_binary(false), m_bufsize(0), m_buffer(0) {}
+file::file()
+	:m_open(false)
+	,m_buffered(true)
+	,m_line_buffered(false)
+	,m_binary(false)
+	,m_bufsize(0)
+	,m_buffer(0)
+{
+}
 
 
 file::~file() throw()
@@ -80,6 +88,32 @@ file::mtime()
 
 
 void
+file::init()
+{
+	if (m_fp == 0)
+		setstate(failbit);
+	else
+		m_open = true;
+
+	if (m_line_buffered)
+	{
+		m_line_buffered = false;
+		set_line_buffered();
+	}
+	else if (!m_buffered)
+	{
+		m_buffered = true;
+		set_unbuffered();
+	}
+
+	if (m_binary)
+		set_binary();
+	if (m_bufsize)
+		set_bufsize(m_bufsize);
+}
+
+
+void
 file::open(char const* filename, char const* mode)
 {
 	M_ASSERT(filename);
@@ -89,19 +123,7 @@ file::open(char const* filename, char const* mode)
 	m_filename = filename;
 	m_fp = ::fopen(filename, mode);
 
-	if (m_fp == 0)
-		setstate(failbit);
-	else
-		m_open = true;
-
-	if (m_unbuffered)
-	{
-		m_unbuffered = false;
-		set_unbuffered();
-	}
-
-	if (m_binary)			set_binary();
-	if (m_bufsize)			set_bufsize(m_bufsize);
+	init();
 }
 
 
@@ -115,21 +137,7 @@ file::open(int fd, char const* mode)
 	m_filename.clear();
 	m_fp = ::fdopen(fd, mode);
 
-	if (m_fp == 0)
-		setstate(failbit);
-	else
-		m_open = true;
-
-	if (m_unbuffered)
-	{
-		m_unbuffered = false;
-		set_unbuffered();
-	}
-
-	if (m_binary)
-		set_binary();
-	if (m_bufsize)
-		set_bufsize(m_bufsize);
+	init();
 }
 
 
@@ -143,16 +151,7 @@ file::open(FILE* fp)
 	m_fp = fp;
 	m_open = true;
 
-	if (m_unbuffered)
-	{
-		m_unbuffered = false;
-		set_unbuffered();
-	}
-
-	if (m_binary)
-		set_binary();
-	if (m_bufsize)
-		set_bufsize(m_bufsize);
+	init();
 }
 
 
@@ -213,7 +212,8 @@ file::set_bufsize(unsigned size)
 		}
 
 		m_bufsize = size;
-		m_unbuffered = false;
+		m_buffered = true;
+		m_line_buffered = false;
 	}
 }
 
@@ -221,7 +221,7 @@ file::set_bufsize(unsigned size)
 void
 file::set_unbuffered()
 {
-	if (m_unbuffered)
+	if (!m_buffered && !m_line_buffered)
 		return;
 
 	if (m_open)
@@ -230,9 +230,34 @@ file::set_unbuffered()
 			M_RAISE("setvbuf() can't be honoured (fd=%d)", fileno(m_fp));
 	}
 
-	m_unbuffered = true;
+	m_buffered = false;
+	m_line_buffered = false;
 	delete [] m_buffer;
 	m_buffer = 0;
+	m_bufsize = 0;
+}
+
+
+void
+file::set_line_buffered()
+{
+	if (m_line_buffered)
+		return;
+
+	if (m_open)
+	{
+		if (::setvbuf(m_fp, 0, _IOLBF, 0))
+			M_RAISE("setvbuf() can't be honoured (fd=%d)", fileno(m_fp));
+	}
+
+	if (m_buffered)
+	{
+		delete [] m_buffer;
+		m_buffer = 0;
+	}
+
+	m_buffered = false;
+	m_line_buffered = true;
 	m_bufsize = 0;
 }
 

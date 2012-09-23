@@ -337,6 +337,17 @@ Engine::Concrete::probeAnalyzeFeature() const
 }
 
 
+void Engine::Concrete::sendNumberOfVariations() {}
+void Engine::Concrete::sendHashSize() {}
+void Engine::Concrete::sendThreads() {}
+void Engine::Concrete::sendStrength() {}
+void Engine::Concrete::sendSkillLevel() {}
+void Engine::Concrete::sendPlayOther() {}
+void Engine::Concrete::sendPondering() {}
+void Engine::Concrete::sendPlayingStyle() {}
+void Engine::Concrete::clearHash() {}
+
+
 Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory)
 	:m_engine(0)
 	,m_game(0)
@@ -359,8 +370,10 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_numThreads(0)
 	,m_minThreads(0)
 	,m_maxThreads(0)
+	,m_playOther(false)
+	,m_pondering(false)
 	,m_searchMate(0)
-	,m_limitedStrength(0)
+	,m_strength(0)
 	,m_features(0)
 	,m_currMoveNumber(0)
 	,m_score(0)
@@ -470,13 +483,6 @@ Engine::setMaxMultiPV(unsigned n)
 
 	if (m_maxMultiPV > 1)
 		addFeature(Feature_Multi_PV);
-}
-
-
-void
-Engine::setLimitedStrength(unsigned elo)
-{
-	m_limitedStrength = mstl::max(m_maxElo, mstl::max(m_minElo, elo));
 }
 
 
@@ -829,7 +835,9 @@ Engine::startAnalysis(db::Game const* game)
 		m_ponder.clear();
 		// clear currline
 
-		updatePvInfo();
+		for (unsigned i = 0; i < m_numVariations; ++i)
+			updatePvInfo(i);
+
 		updateCurrMove();
 		updateCurrLine();
 //		updateBestMove();
@@ -865,18 +873,15 @@ Engine::doMove(db::Move const& lastMove)
 unsigned
 Engine::changeNumberOfVariations(unsigned n)
 {
-	if (!isActive())
-		return 0;
-
-	n = mstl::max(1u, mstl::min(n, m_engine->maxVariations()));
-
 	if (n != m_numVariations)
 	{
+		m_variations.resize(n);
 		m_numVariations = n;
-		m_engine->sendNumberOfVariations();
+
+		if (isActive())
+			m_engine->sendNumberOfVariations();
 	}
 
-	m_variations.resize(n);
 	return n;
 }
 
@@ -884,23 +889,98 @@ Engine::changeNumberOfVariations(unsigned n)
 unsigned
 Engine::changeHashSize(unsigned size)
 {
-	if (!isActive())
-		return 0;
-
-	if (m_minHashSize > 0)
-		size = mstl::min(m_maxHashSize, mstl::max(m_minHashSize, size));
-	else
-		size = mstl::max(4u, size);
+	size = mstl::max(4u, size);
 
 	if (size != m_hashSize)
 	{
 		m_hashSize = size;
 
-		if (hasFeature(Feature_Hash_Size))
+		if (isActive() && hasFeature(Feature_Hash_Size))
 			m_engine->sendHashSize();
 	}
 
 	return size;
+}
+
+
+unsigned
+Engine::changeThreads(unsigned n)
+{
+	if (n != m_numThreads)
+	{
+		m_numThreads = n;
+
+		if (isActive() && hasFeature(Feature_Threads))
+			m_engine->sendThreads();
+	}
+
+	return n;
+}
+
+
+unsigned
+Engine::changeStrength(unsigned elo)
+{
+	if (elo != m_strength)
+	{
+		m_strength = elo;
+
+		if (isActive() && hasFeature(Feature_Limit_Strength))
+			m_engine->sendStrength();
+	}
+
+	return elo;
+}
+
+
+unsigned
+Engine::changeSkillLevel(unsigned level)
+{
+	if (level != m_skillLevel)
+	{
+		m_skillLevel = level;
+
+		if (isActive() && hasFeature(Feature_Skill_Level))
+			m_engine->sendSkillLevel();
+	}
+
+	return level;
+}
+
+
+mstl::string const&
+Engine::changePlayingStyle(mstl::string const& style)
+{
+	m_playingStyle = style;
+
+	if (isActive() && hasFeature(Feature_Playing_Styles))
+		m_engine->sendPlayingStyle();
+
+	return m_playingStyle;
+}
+
+
+bool
+Engine::playOther(bool flag)
+{
+	m_playOther = flag;
+
+	if (isActive())
+		m_engine->sendPlayOther();
+
+	return flag;
+}
+
+
+bool
+Engine::pondering(bool flag)
+{
+	m_pondering = flag;
+
+	if (isActive())
+		m_engine->sendPondering();
+
+	return flag;
 }
 
 
@@ -956,17 +1036,31 @@ Engine::addOption(mstl::string const& name,
 
 
 void
-Engine::changeOptions(Options const& options)
+Engine::setOption(mstl::string const& name, mstl::string const& value)
 {
-	m_options = options;
-	m_engine->sendOptions();
+	for (Options::iterator i = m_options.begin(); i != m_options.end(); ++i)
+	{
+		if (i->name == name)
+		{
+			i->val = value;
+			return;
+		}
+	}
+}
+
+
+void
+Engine::updateOptions()
+{
+	if (isActive())
+		m_engine->sendOptions();
 }
 
 
 void
 Engine::clearHash()
 {
-	if (hasFeature(Feature_Clear_Hash))
+	if (isActive() && hasFeature(Feature_Clear_Hash))
 		m_engine->clearHash();
 }
 

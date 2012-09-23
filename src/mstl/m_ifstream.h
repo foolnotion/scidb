@@ -51,6 +51,7 @@ public:
 	using file::close;
 
 	using file::set_unbuffered;
+	using file::set_line_buffered;
 	using file::set_binary;
 	using file::set_text;
 	using file::set_bufsize;

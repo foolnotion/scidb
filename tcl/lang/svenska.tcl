@@ -812,19 +812,19 @@
 ::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
 ::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
 
-::engine::mc::FeatureDetail(analyze)		"This engine provides an analyze mode." ;# NEW
-::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
-::engine::mc::FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
-::engine::mc::FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
-::engine::mc::FeatureDetail(hashSize)		"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB." ;# NEW
-::engine::mc::FeatureDetail(clearHash)		"The user may clear the hash tables whlle the engine is running." ;# NEW
-::engine::mc::FeatureDetail(threads)		"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads." ;# NEW
-::engine::mc::FeatureDetail(eloRange)		"The engine is able to limit its strength to a specific Elo number between %min-%max." ;# NEW
-::engine::mc::FeatureDetail(skillLevel)	"The engine provides the possibility to lower the skill down, where it can be beaten quite easier." ;# NEW
-::engine::mc::FeatureDetail(ponder)			"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain." ;# NEW
-::engine::mc::FeatureDetail(chess960)		"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions." ;# NEW
-::engine::mc::FeatureDetail(shuffle)		"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when current position is a Chess960 position." ;# NEW
-::engine::mc::FeatureDetail(styles)			"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
+::engine::mc::FeatureDetail(analyze)			"This engine provides an analyze mode." ;# NEW
+::engine::mc::FeatureDetail(multiPV)			"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
+::engine::mc::FeatureDetail(pause)				"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
+::engine::mc::FeatureDetail(playOther)			"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
+::engine::mc::FeatureDetail(hashSize)			"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB." ;# NEW
+::engine::mc::FeatureDetail(clearHash)			"The user may clear the hash tables whlle the engine is running." ;# NEW
+::engine::mc::FeatureDetail(threads)			"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads." ;# NEW
+::engine::mc::FeatureDetail(limitStrength)	"The engine is able to limit its strength to a specific Elo number between %min-%max." ;# NEW
+::engine::mc::FeatureDetail(skillLevel)		"The engine provides the possibility to lower the skill down, where it can be beaten quite easier." ;# NEW
+::engine::mc::FeatureDetail(ponder)				"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain." ;# NEW
+::engine::mc::FeatureDetail(chess960)			"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions." ;# NEW
+::engine::mc::FeatureDetail(shuffle)			"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when current position is a Chess960 position." ;# NEW
+::engine::mc::FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"

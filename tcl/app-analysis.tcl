@@ -66,8 +66,13 @@ array set Options {
 }
 
 array set EngineOptions {
-	multipv	true
-	hash		0
+	multipv			4
+	hash				0
+	threads			0
+	ponder			0
+	limitStrength	0
+	skillLevel		-1
+	playingStyle	""
 }
 
 array set Vars {
@@ -291,6 +296,7 @@ proc update {position} {
 proc startAnalysis {} {
 	variable Vars
 	variable Options
+	variable EngineOptions
 
 	::engine::kill $Vars(engine:id)
 
@@ -298,9 +304,23 @@ proc startAnalysis {} {
 	set signalCmd [namespace current]::Signal
 	set updateCmd [namespace current]::UpdateInfo
 	set name $Options(engine:current)
+	set features {}
 
 	if {[string length $name]} {
-		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $signalCmd $updateCmd] 
+		foreach opt [array names EngineOptions] {
+			set use 0
+			switch $opt {
+				skillLevel		{ if {$EngineOptions($opt) >= 0} { set use 1 } }
+				playingStyle	{ if {[llength $EngineOptions($opt)] > 0} { set use 1 } }
+				default			{ if {$EngineOptions($opt)} { set use 1 } }
+			}
+			if {$use} {
+				lappend features $opt $EngineOptions($opt)
+			}
+		}
+		set opts [array get EngineOptions]
+		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $signalCmd $updateCmd $opts]
+		::engine::activateEngine $Vars(engine:id) $features
 	}
 }
 
@@ -387,7 +407,7 @@ proc Layout {tree} {
 }
 
 
-proc DisplayPvLines {score mate depth seldepth time nodes vars} {
+proc DisplayPvLines {score mate depth seldepth time nodes line pv} {
 	variable EngineOptions
 	variable Vars
 	variable Options
@@ -412,13 +432,8 @@ proc DisplayPvLines {score mate depth seldepth time nodes vars} {
 	}
 	$Vars(depth) configure -text $txt
 
-	if {$EngineOptions(multipv)} { set lines {0 1 2 3} } else { set lines 0 }
-
-	foreach i $lines {
-		set line [lindex $vars $i]
-		$Vars(tree) item element configure Line$i Value elemText -text [lindex $line 0]
-		$Vars(tree) item element configure Line$i Moves elemText -text [lrange $line 1 end]
-	}
+	$Vars(tree) item element configure Line$line Value elemText -text [lindex $pv 0]
+	$Vars(tree) item element configure Line$line Moves elemText -text [lrange $pv 1 end]
 }
 
 

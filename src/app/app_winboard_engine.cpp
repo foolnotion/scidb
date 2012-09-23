@@ -221,28 +221,7 @@ winboard::Engine::probeTimeout() const
 
 
 void
-winboard::Engine::sendNumberOfVariations()
-{
-	// nothing to do
-}
-
-
-void
-winboard::Engine::sendHashSize()
-{
-	// nothing to do
-}
-
-
-void
 winboard::Engine::sendOptions()
-{
-	// TODO
-}
-
-
-void
-winboard::Engine::clearHash()
 {
 	// TODO
 }
@@ -995,7 +974,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 		m_firstMove = moves[0];
 		setVariation(moves);
-		updatePvInfo();
+		updatePvInfo(0);
 		m_analyzeResponse = true;
 	}
 }

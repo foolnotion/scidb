@@ -223,6 +223,7 @@ readHandler(ClientData clientData, int)
 Process::Process(mstl::string const& command, mstl::string const& directory)
 	:m_chan(0)
 	,m_pid(-1)
+	,m_buffer(new Tcl_DString)
 	,m_exitStatus(0)
 	,m_signalCrashed(false)
 	,m_signalKilled(false)
@@ -239,6 +240,8 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 		m_childHandlerHooked = true;
 	}
 #endif
+
+	Tcl_DStringInit(m_buffer);
 
 	DString cmd, dir, cwd;
 
@@ -309,6 +312,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 Process::~Process()
 {
+	Tcl_DStringFree(m_buffer);
 	m_processMap.erase(m_pid);
 	m_calledExited = true; // process is destroyed by user
 	close();
@@ -346,15 +350,15 @@ Process::setPriority(Priority priority)
 int
 Process::gets(mstl::string& result)
 {
-	char buf[2048];
+	Tcl_DStringTrunc(m_buffer, 0);
 
-	int bytesRead = Tcl_Read(m_chan, buf, sizeof(buf));
+	int bytesRead = Tcl_Gets(m_chan, m_buffer);
 
 	if (bytesRead >= 0)
 	{
-		result.assign(static_cast<char const*>(buf), bytesRead);
+		result.assign(static_cast<char const*>(Tcl_DStringValue(m_buffer)), Tcl_DStringLength(m_buffer));
 	}
-	else if (!Tcl_Eof(m_chan) && !Tcl_InputBlocked(m_chan))
+	else if (!Tcl_InputBlocked(m_chan) && !Tcl_Eof(m_chan))
 	{
 		if (!isAlive() || isStopped())
 			return -1;
@@ -379,7 +383,7 @@ Process::gets(mstl::string& result)
 int
 Process::puts(mstl::string const& msg)
 {
-	if (!isAlive() || isStopped())
+	if (!isRunning() || !isAlive() || isStopped())
 		return -1;
 
 	if (msg.empty())

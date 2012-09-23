@@ -108,11 +108,18 @@ public:
 		virtual void resume() = 0;
 
 		virtual void processMessage(mstl::string const& message) = 0;
-		virtual void sendNumberOfVariations() = 0;
-		virtual void sendHashSize() = 0;
-		virtual void sendOptions() = 0;
 		virtual void doMove(db::Move const& lastMove) = 0;
-		virtual void clearHash() = 0;
+
+		virtual void sendNumberOfVariations();
+		virtual void sendHashSize();
+		virtual void sendThreads();
+		virtual void sendStrength();
+		virtual void sendSkillLevel();
+		virtual void sendPlayOther();
+		virtual void sendPondering();
+		virtual void sendPlayingStyle();
+		virtual void clearHash();
+		virtual void sendOptions() = 0;
 
 		virtual Result probeResult() const = 0;
 		virtual Result probeAnalyzeFeature() const;
@@ -135,6 +142,9 @@ public:
 		unsigned numThreads() const;
 		unsigned searchMate() const;
 		unsigned limitedStrength() const;
+		unsigned skillLevel() const;
+		bool playOther() const;
+		bool pondering() const;
 		db::Game const* currentGame() const;
 		Options const& options() const;
 
@@ -185,7 +195,7 @@ public:
 		void setThreadRange(unsigned minThreads, unsigned maxThreads);
 		void setPlayingStyles(mstl::string const& styles);
 
-		void updatePvInfo();
+		void updatePvInfo(unsigned line);
 		void updateCheckMateInfo();
 		void updateStaleMateInfo();
 		void updateCurrMove();
@@ -224,7 +234,6 @@ public:
 	Concrete* concrete();
 
 	void setLog(mstl::ostream* stream = 0);
-	void setLimitedStrength(unsigned elo = 0);
 
 	void activate();
 	void deactivate();
@@ -235,6 +244,8 @@ public:
 	bool isProbing() const;
 	bool isProbingAnalyze() const;
 	bool hasFeature(unsigned feature) const;
+	bool playOther() const;
+	bool pondering() const;
 
 	int exitStatus() const;
 
@@ -288,8 +299,15 @@ public:
 
 	unsigned changeNumberOfVariations(unsigned n);
 	unsigned changeHashSize(unsigned size);
-	void changeOptions(Options const& options);
+	unsigned changeThreads(unsigned n);
+	unsigned changeStrength(unsigned elo);
+	unsigned changeSkillLevel(unsigned level);
+	mstl::string const& changePlayingStyle(mstl::string const& style);
+	bool playOther(bool flag);
+	bool pondering(bool flag);
 	void clearHash();
+	void setOption(mstl::string const& name, mstl::string const& value);
+	void updateOptions();
 
 	void addFeature(unsigned feature);
 	void removeFeature(unsigned feature);
@@ -303,7 +321,7 @@ protected:
 
 	Engine();
 
-	virtual void updatePvInfo() = 0;
+	virtual void updatePvInfo(unsigned line) = 0;
 	virtual void updateCheckMateInfo() = 0;
 	virtual void updateStaleMateInfo() = 0;
 	virtual void updateCurrMove();
@@ -391,6 +409,7 @@ private:
 	mstl::string		m_url;
 	mstl::string		m_email;
 	mstl::string		m_playingStyles;
+	mstl::string		m_playingStyle;
 	unsigned				m_elo;
 	unsigned				m_minElo;
 	unsigned				m_maxElo;
@@ -406,8 +425,10 @@ private:
 	unsigned				m_numThreads;
 	unsigned				m_minThreads;
 	unsigned				m_maxThreads;
+	bool					m_playOther;
+	bool					m_pondering;
 	unsigned				m_searchMate;
-	unsigned				m_limitedStrength;
+	unsigned				m_strength;
 	unsigned				m_features;
 	unsigned				m_currMoveNumber;
 	db::Move				m_currMove;

@@ -21,15 +21,33 @@
 
 namespace app {
 
+inline bool Engine::isAnalyzing() const							{ return m_engine->isAnalyzing(); }
+inline bool Engine::isProbing() const								{ return m_probe; }
+inline bool Engine::playOther() const								{ return m_playOther; }
+inline bool Engine::pondering() const								{ return m_pondering; }
+
+inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
+inline unsigned Engine::numVariations() const					{ return m_numVariations; }
+inline unsigned Engine::hashSize() const							{ return m_hashSize; }
+inline unsigned Engine::searchMate() const						{ return m_searchMate; }
+inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
+inline unsigned Engine::limitedStrength() const					{ return m_strength; }
+inline unsigned Engine::numThreads() const						{ return m_numThreads; }
+
+
 inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive(); }
 inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyzing(); }
 inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
+inline bool Engine::Concrete::playOther() const					{ return m_engine->playOther(); }
+inline bool Engine::Concrete::pondering() const					{ return m_engine->pondering(); }
 
 inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
 inline unsigned Engine::Concrete::hashSize() const				{ return m_engine->hashSize(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
+inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
+inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 
 inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
@@ -46,7 +64,7 @@ inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setS
 inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
 inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
 
-inline void Engine::Concrete::updatePvInfo()								{ m_engine->updatePvInfo(); }
+inline void Engine::Concrete::updatePvInfo(unsigned line)			{ m_engine->updatePvInfo(line); }
 inline void Engine::Concrete::updateCheckMateInfo()					{ m_engine->updateCheckMateInfo(); }
 inline void Engine::Concrete::updateStaleMateInfo()					{ m_engine->updateStaleMateInfo(); }
 inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
@@ -281,9 +299,7 @@ Engine::Concrete::addOption(	mstl::string const& name,
 }
 
 
-inline bool Engine::isAnalyzing() const							{ return m_engine->isAnalyzing(); }
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
-inline bool Engine::isProbing() const								{ return m_probe; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
 
 inline int Engine::score() const										{ return m_score; }
@@ -305,20 +321,13 @@ inline mstl::string const& Engine::url() const					{ return m_url; }
 inline unsigned Engine::elo() const									{ return m_elo; }
 inline unsigned Engine::minElo() const								{ return m_minElo; }
 inline unsigned Engine::maxElo() const								{ return m_maxElo; }
-inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
 inline unsigned Engine::minSkillLevel() const					{ return m_minSkillLevel; }
 inline unsigned Engine::maxSkillLevel() const					{ return m_maxSkillLevel; }
-inline unsigned Engine::limitedStrength() const					{ return m_limitedStrength; }
 inline mstl::string const& Engine::playingStyles() const		{ return m_playingStyles; }
-inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
-inline unsigned Engine::numVariations() const					{ return m_numVariations; }
-inline unsigned Engine::hashSize() const							{ return m_hashSize; }
 inline unsigned Engine::minHashSize() const						{ return m_minHashSize; }
 inline unsigned Engine::maxHashSize() const						{ return m_maxHashSize; }
-inline unsigned Engine::numThreads() const						{ return m_numThreads; }
 inline unsigned Engine::minThreads() const						{ return m_minThreads; }
 inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
-inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 
 inline void Engine::setScore(int score)							{ m_score = score; }

@@ -514,14 +514,9 @@ uci::Engine::processMessage(mstl::string const& message)
 					// NOTE: probably we like to use something like
 					// "go wtime 55857 btime 58611 winc 1000 binc 1000"
 				}
-				else if (m_waitingOn == "multiPV")
+				else if (m_waitingOn == "setoption")
 				{
-					send("setoption name MultiPV value " + ::toStr(numVariations()));
-					continueAnalysis();
-				}
-				else if (m_waitingOn == "hashSize")
-				{
-					send("setoption name Hash value " + ::toStr(hashSize()));
+					send("setoption name " + m_name + " value " + m_value);
 					continueAnalysis();
 				}
 
@@ -819,7 +814,7 @@ uci::Engine::parseInfo(char const* s)
 		updateHashFullInfo();	// "info hashfull <promille>"
 
 	if (haveScore && havePv)
-		updatePvInfo();
+		updatePvInfo(multiPv);
 	else if (haveTime)
 		updateTimeInfo(); 		// "info time 1008 nodes 1010000 nps 1002409 cpuload 925"
 	else if (haveDepth)
@@ -854,7 +849,9 @@ uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
 	{
 		Move move;
 
-		if ((s = board.parseLAN(s, move)) == 0)
+		char const *next = board.parseLAN(s, move);
+
+		if (next == 0)
 		{
 			mstl::string msg("Illegal move in pv: ");
 			msg.append(s, ::skipNonSpaces(s));
@@ -866,7 +863,7 @@ uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
 		board.doMove(move);
 		moves.append(move);
 
-		s = ::skipSpaces(s);
+		s = ::skipSpaces(next);
 
 		if (moves.isFull())
 		{
@@ -1157,43 +1154,64 @@ uci::Engine::sendOptions()
 
 
 void
+uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
+{
+	if (isAnalyzing())
+	{
+		stopAnalysis();
+		// XXX probably "ucinewgame" is required
+		m_waitingOn = "setoption";
+		send("isready");
+		m_continueAnalysis = true;
+		m_name = name;
+		m_value = value;
+	}
+	else
+	{
+		send("setoption name " + name + " value " + value);
+	}
+}
+
+
+void
 uci::Engine::sendHashSize()
 {
-	if (hasFeature(app::Engine::Feature_Hash_Size))
-	{
-		if (isAnalyzing())
-		{
-			stopAnalysis();
-			// XXX probably "ucinewgame" is required
-			m_waitingOn = "hashSize";
-			send("isready");
-			m_continueAnalysis = true;
-		}
-		else
-		{
-			send("setoption name Hash value " + ::toStr(hashSize()));
-		}
-	}
+	sendOption("Hash", ::toStr(hashSize()));
 }
 
 
 void
 uci::Engine::sendNumberOfVariations()
 {
-	if (m_hasMultiPV)
-	{
-		if (isAnalyzing())
-		{
-			stopAnalysis();
-			m_waitingOn = "multiPV";
-			send("isready");
-			m_continueAnalysis = true;
-		}
-		else
-		{
-			send("setoption name MultiPV value " + ::toStr(numVariations()));
-		}
-	}
+	sendOption("MultiPV", ::toStr(numVariations()));
+}
+
+
+void
+uci::Engine::sendThreads()
+{
+	sendOption("Threads", ::toStr(numThreads()));
+}
+
+
+void
+uci::Engine::sendSkillLevel()
+{
+	sendOption("Skill Level", ::toStr(skillLevel()));
+}
+
+
+void
+uci::Engine::sendPondering()
+{
+	sendOption("Ponder", pondering() ? "true" : "false");
+}
+
+
+void
+uci::Engine::sendStrength()
+{
+	sendOption("UCI_Elo", ::toStr(limitedStrength()));
 }
 
 

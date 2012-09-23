@@ -50,16 +50,20 @@ public:
 	void truncate(unsigned length);
 
 	void set_unbuffered();
+	void set_line_buffered();
 	void set_binary();
 	void set_text();
 	void set_bufsize(unsigned size);
 
 private:
 
+	void init();
+
 	mstl::string m_filename;
 
 	bool		m_open;
-	bool		m_unbuffered;
+	bool		m_buffered;
+	bool		m_line_buffered;
 	bool		m_binary;
 	unsigned	m_bufsize;
 	char*		m_buffer;
