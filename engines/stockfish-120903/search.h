@@ -21,9 +21,15 @@
 #define SEARCH_H_INCLUDED
 
 #include <cstring>
+#if 1 // Fix By Gregor Cramer (conflict with -fno-rtti)
 #include <memory>
+#endif
 #include <stack>
 #include <vector>
+
+#if 1 // Fix By Gregor Cramer
+#include "m_auto_ptr.h"
+#endif
 
 #include "misc.h"
 #include "position.h"
@@ -93,7 +99,7 @@ struct SignalsType {
   bool stopOnPonderhit, firstRootMove, stop, failedLowAtRoot;
 };
 
-typedef std::auto_ptr<std::stack<StateInfo> > StateStackPtr;
+typedef mstl::auto_ptr<std::stack<StateInfo> > StateStackPtr;
 
 extern volatile SignalsType Signals;
 extern LimitsType Limits;

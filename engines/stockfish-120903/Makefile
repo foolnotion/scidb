@@ -6,9 +6,11 @@ include ../../Makefile.in
 
 EXE = stockfish-120903
 
-OBJS = benchmark.o bitbase.o bitboard.o book.o endgame.o evaluate.o main.o  \
-       material.o misc.o movegen.o movepick.o notation.o pawns.o position.o \
-       search.o thread.o timeman.o tt.o uci.o ucioption.o
+SRC = benchmark.cpp bitbase.cpp bitboard.cpp book.cpp endgame.cpp evaluate.cpp main.cpp  \
+       material.cpp misc.cpp movegen.cpp movepick.cpp notation.cpp pawns.cpp position.cpp \
+       search.cpp thread.cpp timeman.cpp tt.cpp uci.cpp ucioption.cpp
+
+OBJS = $(SRC:.cpp=.o)
 
 .SUFFIXES: .cpp
 .PRECIOUS:
@@ -216,4 +218,248 @@ $(EXE): $(OBJS)
 	@echo "Building $(EXE)"
 	@$(CXX) $(LDFLAGS) -o $@ $(OBJS) -lpthread
 
+depend:
+	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null
+	@if [ -h Makefile.bak ]; then \
+		cp Makefile Makefile.bak; \
+		mv Makefile.bak Makefile; \
+	fi
+
 # vi:set ts=3 sw=3:
+# DO NOT DELETE
+
+benchmark.o: misc.h
+benchmark.o: types.h
+benchmark.o: platform.h
+benchmark.o: position.h
+benchmark.o: bitboard.h
+benchmark.o: search.h
+benchmark.o: m_auto_ptr.h
+benchmark.o: m_auto_ptr.ipp
+benchmark.o: thread.h
+benchmark.o: material.h
+benchmark.o: endgame.h
+benchmark.o: movepick.h
+benchmark.o: history.h
+benchmark.o: pawns.h
+benchmark.o: tt.h
+benchmark.o: ucioption.h
+bitbase.o: bitboard.h
+bitbase.o: types.h
+bitbase.o: platform.h
+bitboard.o: bitboard.h
+bitboard.o: types.h
+bitboard.o: platform.h
+bitboard.o: bitcount.h
+bitboard.o: misc.h
+bitboard.o: rkiss.h
+book.o: book.h
+book.o: position.h
+book.o: bitboard.h
+book.o: types.h
+book.o: platform.h
+book.o: rkiss.h
+book.o: misc.h
+book.o: movegen.h
+endgame.o: bitboard.h
+endgame.o: types.h
+endgame.o: platform.h
+endgame.o: bitcount.h
+endgame.o: endgame.h
+endgame.o: position.h
+endgame.o: movegen.h
+evaluate.o: bitcount.h
+evaluate.o: types.h
+evaluate.o: platform.h
+evaluate.o: evaluate.h
+evaluate.o: material.h
+evaluate.o: endgame.h
+evaluate.o: position.h
+evaluate.o: bitboard.h
+evaluate.o: misc.h
+evaluate.o: pawns.h
+evaluate.o: thread.h
+evaluate.o: movepick.h
+evaluate.o: history.h
+evaluate.o: search.h
+evaluate.o: m_auto_ptr.h
+evaluate.o: m_auto_ptr.ipp
+evaluate.o: ucioption.h
+main.o: bitboard.h
+main.o: types.h
+main.o: platform.h
+main.o: evaluate.h
+main.o: position.h
+main.o: search.h
+main.o: m_auto_ptr.h
+main.o: m_auto_ptr.ipp
+main.o: misc.h
+main.o: thread.h
+main.o: material.h
+main.o: endgame.h
+main.o: movepick.h
+main.o: history.h
+main.o: pawns.h
+main.o: tt.h
+main.o: ucioption.h
+material.o: material.h
+material.o: endgame.h
+material.o: position.h
+material.o: bitboard.h
+material.o: types.h
+material.o: platform.h
+material.o: misc.h
+misc.o: misc.h
+misc.o: types.h
+misc.o: platform.h
+misc.o: thread.h
+misc.o: material.h
+misc.o: endgame.h
+misc.o: position.h
+misc.o: bitboard.h
+misc.o: movepick.h
+misc.o: history.h
+misc.o: search.h
+misc.o: m_auto_ptr.h
+misc.o: m_auto_ptr.ipp
+misc.o: pawns.h
+movegen.o: movegen.h
+movegen.o: types.h
+movegen.o: platform.h
+movegen.o: position.h
+movegen.o: bitboard.h
+movepick.o: movegen.h
+movepick.o: types.h
+movepick.o: platform.h
+movepick.o: movepick.h
+movepick.o: history.h
+movepick.o: position.h
+movepick.o: bitboard.h
+movepick.o: search.h
+movepick.o: m_auto_ptr.h
+movepick.o: m_auto_ptr.ipp
+movepick.o: misc.h
+movepick.o: thread.h
+movepick.o: material.h
+movepick.o: endgame.h
+movepick.o: pawns.h
+notation.o: movegen.h
+notation.o: types.h
+notation.o: platform.h
+notation.o: notation.h
+notation.o: position.h
+notation.o: bitboard.h
+pawns.o: bitboard.h
+pawns.o: types.h
+pawns.o: platform.h
+pawns.o: bitcount.h
+pawns.o: pawns.h
+pawns.o: misc.h
+pawns.o: position.h
+position.o: bitcount.h
+position.o: types.h
+position.o: platform.h
+position.o: movegen.h
+position.o: notation.h
+position.o: position.h
+position.o: bitboard.h
+position.o: psqtab.h
+position.o: rkiss.h
+position.o: thread.h
+position.o: material.h
+position.o: endgame.h
+position.o: misc.h
+position.o: movepick.h
+position.o: history.h
+position.o: search.h
+position.o: m_auto_ptr.h
+position.o: m_auto_ptr.ipp
+position.o: pawns.h
+position.o: tt.h
+search.o: book.h
+search.o: position.h
+search.o: bitboard.h
+search.o: types.h
+search.o: platform.h
+search.o: rkiss.h
+search.o: evaluate.h
+search.o: history.h
+search.o: movegen.h
+search.o: movepick.h
+search.o: search.h
+search.o: m_auto_ptr.h
+search.o: m_auto_ptr.ipp
+search.o: misc.h
+search.o: notation.h
+search.o: timeman.h
+search.o: thread.h
+search.o: material.h
+search.o: endgame.h
+search.o: pawns.h
+search.o: tt.h
+search.o: ucioption.h
+thread.o: movegen.h
+thread.o: types.h
+thread.o: platform.h
+thread.o: search.h
+thread.o: m_auto_ptr.h
+thread.o: m_auto_ptr.ipp
+thread.o: misc.h
+thread.o: position.h
+thread.o: bitboard.h
+thread.o: thread.h
+thread.o: material.h
+thread.o: endgame.h
+thread.o: movepick.h
+thread.o: history.h
+thread.o: pawns.h
+thread.o: ucioption.h
+timeman.o: search.h
+timeman.o: m_auto_ptr.h
+timeman.o: m_auto_ptr.ipp
+timeman.o: misc.h
+timeman.o: types.h
+timeman.o: platform.h
+timeman.o: position.h
+timeman.o: bitboard.h
+timeman.o: timeman.h
+timeman.o: ucioption.h
+tt.o: bitboard.h
+tt.o: types.h
+tt.o: platform.h
+tt.o: tt.h
+tt.o: misc.h
+uci.o: evaluate.h
+uci.o: types.h
+uci.o: platform.h
+uci.o: notation.h
+uci.o: position.h
+uci.o: bitboard.h
+uci.o: search.h
+uci.o: m_auto_ptr.h
+uci.o: m_auto_ptr.ipp
+uci.o: misc.h
+uci.o: thread.h
+uci.o: material.h
+uci.o: endgame.h
+uci.o: movepick.h
+uci.o: history.h
+uci.o: pawns.h
+uci.o: ucioption.h
+ucioption.o: evaluate.h
+ucioption.o: types.h
+ucioption.o: platform.h
+ucioption.o: misc.h
+ucioption.o: thread.h
+ucioption.o: material.h
+ucioption.o: endgame.h
+ucioption.o: position.h
+ucioption.o: bitboard.h
+ucioption.o: movepick.h
+ucioption.o: history.h
+ucioption.o: search.h
+ucioption.o: m_auto_ptr.h
+ucioption.o: m_auto_ptr.ipp
+ucioption.o: pawns.h
+ucioption.o: tt.h
+ucioption.o: ucioption.h
