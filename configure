@@ -1491,12 +1491,12 @@ proc checkEngines {path} {
     set list {}
 
     foreach e $engines {
-        set exe [file join $path [lindex $e 0]]
-        if {[file exists $exe]} {
-            puts "    Engine $exe already exists (skipped)"
-        } else {
+#       set exe [file join $path [lindex $e 0]]
+#       if {[file exists $exe]} {
+#           puts "    Engine $exe already exists (skipped)"
+#       } else {
             lappend list [lindex $e 1]
-        }
+#       }
     }
 
     return $list
