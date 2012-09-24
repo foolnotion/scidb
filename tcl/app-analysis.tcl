@@ -60,7 +60,9 @@ array set Options {
 	background			#ffffee
 	info:background	#f5f5e4
 	info:foreground	darkgreen
+	best:foreground	darkgreen
 	font					TkTextFont
+	ordering				bestFirst
 	engine:current		Stockfish
 	engine:nlines		2
 }
@@ -68,7 +70,7 @@ array set Options {
 array set EngineOptions {
 	multipv			4
 	hash				0
-	threads			0
+	threads			2
 	ponder			0
 	limitStrength	0
 	skillLevel		-1
@@ -96,12 +98,17 @@ proc build {parent width height} {
 		}
 	}
 
+	set Vars(best:0) black
+	if {$Options(ordering) eq "bestFirst"} {
+		set Vars(best:1) black
+	} else {
+		set Vars(best:1) $Options(best:foreground)
+	}
 	array set fopt [font configure $Options(font)]
-	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
-	set Vars(font:figurine) $::font::figurine(text:normal)
-	set Vars(charwidth) [font measure $Options(font) "0"]
-	set Vars(minsize) [expr {11*$Vars(charwidth)}]
+#	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
+	set charwidth [font measure $Options(font) "0"]
+	set minsize [expr {11*$charwidth}]
 
 	set w [ttk::frame $parent.f]
 
@@ -141,7 +148,7 @@ proc build {parent width height} {
 		-height 1 \
 		-cursor {} \
 	]
-	$tmove tag configure figurine -font $Vars(font:figurine)
+	$tmove tag configure figurine -font $::font::figurine(text:normal)
 	$tmove tag configure center -justify center
 	pack $tmove -padx 2 -pady 2
 
@@ -162,9 +169,9 @@ proc build {parent width height} {
 		incr col 2
 	}
 
-	grid columnconfigure $score 0 -minsize $Vars(minsize)
-	grid columnconfigure $move  0 -minsize $Vars(minsize)
-	grid columnconfigure $depth 0 -minsize $Vars(minsize)
+	grid columnconfigure $score 0 -minsize $minsize
+	grid columnconfigure $move  0 -minsize $minsize
+	grid columnconfigure $depth 0 -minsize $minsize
 
 	set tree $w.tree
 	treectrl $tree \
@@ -182,14 +189,14 @@ proc build {parent width height} {
 
 	$tree element create elemRect rect -open nw -outline gray -outlinewidth 1
 	$tree element create elemText text -lines $Options(engine:nlines) \
-		-wrap word -font2 $Vars(font:figurine)
+		-wrap word -font2 $::font::figurine(text:normal)
 
 	$tree style create style
 	$tree style elements style {elemRect elemText}
 	$tree style layout style elemRect -detach yes -iexpand xy
 	$tree style layout style elemText -padx {4 4} -pady {2 2} -squeeze x -sticky ne
 
-	$tree column create -steady yes -tags Value -width [expr {10*$Vars(charwidth)}] -itemjustify right
+	$tree column create -steady yes -tags Value -width [expr {7*$charwidth}] -itemjustify right
 	$tree column create -steady yes -tags Moves -expand yes -squeeze yes -weight 1 -itemjustify left
 
 	foreach i {0 1 2 3} {
@@ -307,6 +314,7 @@ proc startAnalysis {} {
 	set features {}
 
 	if {[string length $name]} {
+		set options {}
 		foreach opt [array names EngineOptions] {
 			set use 0
 			switch $opt {
@@ -318,8 +326,8 @@ proc startAnalysis {} {
 				lappend features $opt $EngineOptions($opt)
 			}
 		}
-		set opts [array get EngineOptions]
-		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $signalCmd $updateCmd $opts]
+		set Vars(engine:id) [::engine::startEngine $name $isReadyCmd $signalCmd $updateCmd]
+		::scidb::engine::ordering $Vars(engine:id) $Options(ordering)
 		::engine::activateEngine $Vars(engine:id) $features
 	}
 }
@@ -407,10 +415,55 @@ proc Layout {tree} {
 }
 
 
-proc DisplayPvLines {score mate depth seldepth time nodes line pv} {
-	variable EngineOptions
-	variable Vars
+proc Display(clear) {} {
 	variable Options
+	variable Vars
+
+	$Vars(score) configure -state normal
+	$Vars(score) delete 1.0 end
+	$Vars(score) configure -state disabled
+
+	$Vars(move) configure -state normal
+	$Vars(move) delete 1.0 end
+	$Vars(move) configure -state disabled
+
+	$Vars(depth) configure -text ""
+
+	set bg $Options(background)
+
+	foreach i {0 1 2 3} {
+		$Vars(tree) item element configure Line$i Value elemText -text "" -fill black
+		$Vars(tree) item element configure Line$i Moves elemText -text ""
+	}
+}
+
+
+proc Display(pv) {score mate depth seldepth time nodes line pv} {
+	variable Vars
+
+	if {$mate} {
+		if {$mate < 0} { set score "-" } else { set score "+" }
+		append score "#[abs $mate]"
+	} else {
+		set p [expr {$score/100}]
+		set cp [expr {abs($score) % 100}]
+		set score [format "%+d.%02d" $p $cp]
+	}
+
+	set txt ""
+	if {$depth} {
+		set txt $depth
+		if {$seldepth} { append txt " (" $seldepth ")" }
+	}
+	$Vars(depth) configure -text $txt
+
+	$Vars(tree) item element configure Line$line Value elemText -text $score
+	$Vars(tree) item element configure Line$line Moves elemText -text $pv
+}
+
+
+proc Display(bestscore) {score mate bestLines} {
+	variable Vars
 
 	$Vars(score) configure -state normal
 	$Vars(score) delete 1.0 end
@@ -420,24 +473,20 @@ proc DisplayPvLines {score mate depth seldepth time nodes line pv} {
 	} else {
 		set p [expr {$score/100}]
 		set cp [expr {abs($score) % 100}]
-		set txt [format "%d.%02d" $p $cp]
+		set txt [format "%+d.%02d" $p $cp]
 	}
 	$Vars(score) insert end $txt center
 	$Vars(score) configure -state disabled
 
-	set txt ""
-	if {$depth} {
-		set txt $depth
-		if {$seldepth} { append txt " (" $seldepth ")" }
+	set line 0
+	foreach best $bestLines {
+		$Vars(tree) item element configure Line$line Value elemText -fill $Vars(best:$best)
+		incr line
 	}
-	$Vars(depth) configure -text $txt
-
-	$Vars(tree) item element configure Line$line Value elemText -text [lindex $pv 0]
-	$Vars(tree) item element configure Line$line Moves elemText -text [lrange $pv 1 end]
 }
 
 
-proc DisplayCheckMateInfo {color} {
+proc Display(checkmate) {color} {
 	variable Vars
 
 	$Vars(score) configure -state normal
@@ -447,7 +496,7 @@ proc DisplayCheckMateInfo {color} {
 }
 
 
-proc DisplayStaleMateInfo {color} {
+proc Display(stalemate) {color} {
 	variable Vars
 
 	$Vars(score) configure -state normal
@@ -457,7 +506,7 @@ proc DisplayStaleMateInfo {color} {
 }
 
 
-proc DisplayCurrentMove {number move} {
+proc Display(move) {number move} {
 	variable Vars
 
 	$Vars(move) configure -state normal
@@ -467,22 +516,21 @@ proc DisplayCurrentMove {number move} {
 }
 
 
-proc DisplayTime {time depth seldepth nodes} {
-	variable Vars
+proc Display(depth) {depth seldepth nodes} {
+	Display(time) 0.0 $depth $seldepth $nodes
+}
+
+
+proc Display(time) {time depth seldepth nodes} {
+}
+
+
+proc Display(bestmove) {move} {
 }
 
 
 proc UpdateInfo {id type info} {
-	switch $type {
-		pv				{ DisplayPvLines {*}$info }
-		checkmate	{ DisplayCheckMateInfo {*}$info }
-		stalemate	{ DisplayStaleMateInfo {*}$info }
-		move			{ DisplayCurrentMove {*}$info }
-		line			{}
-		depth			{ DisplayTime 0.0 {*}$info }
-		time			{ DisplayTime {*}$info }
-		hash			{}
-	}
+	Display($type) {*}$info
 }
 
 

@@ -38,6 +38,7 @@
 
 #include "m_ostream.h"
 #include "m_vector.h"
+#include "m_algorithm.h"
 
 #include <string.h>
 #include <ctype.h>
@@ -355,6 +356,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_command(command)
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
+	,m_ordering(Unordered)
 	,m_elo(0)
 	,m_minElo(0)
 	,m_maxElo(0)
@@ -376,8 +378,9 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_strength(0)
 	,m_features(0)
 	,m_currMoveNumber(0)
-	,m_score(0)
-	,m_mate(0)
+	,m_bestIndex(0)
+	,m_bestScore(0)
+	,m_shortestMate(0)
 	,m_depth(0)
 	,m_selDepth(0)
 	,m_time(0.0)
@@ -388,6 +391,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_protocol(false)
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
+	,m_bestInfoHasChanged(false)
 	,m_process(0)
 	,m_exitStatus(0)
 	,m_logStream(0)
@@ -454,8 +458,6 @@ Engine::setHashRange(unsigned minSize, unsigned maxSize)
 void
 Engine::setThreadRange(unsigned minThreads, unsigned maxThreads)
 {
-	minThreads = mstl::max(4u, minThreads);
-
 	if (maxThreads > minThreads)
 	{
 		m_minThreads = minThreads;
@@ -501,13 +503,6 @@ Engine::setEloRange(unsigned minElo, unsigned maxElo)
 
 
 void
-Engine::setSkillLevel(unsigned level)
-{
-	m_skillLevel = mstl::max(m_minSkillLevel, mstl::min(m_maxSkillLevel, level));
-}
-
-
-void
 Engine::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 {
 	if (minLevel < maxLevel)
@@ -515,6 +510,149 @@ Engine::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 		m_minSkillLevel = minLevel;
 		m_maxSkillLevel = maxLevel;
 		addFeature(Feature_Skill_Level);
+	}
+}
+
+
+void
+Engine::setScore(unsigned no, int score)
+{
+	M_ASSERT(no < numVariations());
+
+	int bestScore = m_bestScore;
+
+	m_scores[no] = score;
+	m_mates[no] = 0;
+
+	if (color::isWhite(currentBoard().sideToMove()))
+	{
+		m_bestScore = *mstl::max_element(m_scores, m_scores + m_numVariations);
+
+		if (m_shortestMate < 0)
+			m_shortestMate = 0;
+
+		m_sortScores[no] = score;
+	}
+	else
+	{
+		m_bestScore = *mstl::min_element(m_scores, m_scores + m_numVariations);
+
+		if (m_shortestMate > 0)
+			m_shortestMate = 0;
+
+		m_sortScores[no] = -score;
+	}
+
+	if (bestScore != m_bestScore)
+	{
+		m_bestInfoHasChanged = true;
+
+		if (m_ordering == BestFirst)
+			reorderBestFirst(no);
+	}
+
+	if (m_shortestMate == 0)
+	{
+		Selection selection = m_selection;
+
+		m_selection.reset();
+
+		for (unsigned i = 0; i < m_numVariations; ++i)
+		{
+			if (m_scores[i] == m_bestScore)
+				m_selection.set(i);
+		}
+
+		if (m_selection != selection)
+			m_bestInfoHasChanged = true;
+	}
+}
+
+
+void
+Engine::setMate(unsigned no, int numMoves)
+{
+	M_ASSERT(no < numVariations());
+
+	int shortestMate = m_shortestMate;
+
+	m_mates[no] = numMoves;
+
+	int maxNegative	= INT_MIN;
+	int minPositive	= INT_MAX;
+	int zeroIndex		= -1;
+
+	for (unsigned i = 0; i < m_numVariations; ++i)
+	{
+		int mate		= m_mates[i];
+		int score	= m_scores[i];
+
+		if (i == no || (score != INT_MIN && score != INT_MAX))
+		{
+			if (mate < 0)
+				maxNegative = mstl::max(maxNegative, mate);
+			else if (mate > 0)
+				minPositive = mstl::min(minPositive, mate);
+			else
+				zeroIndex = i;
+		}
+	}
+
+	if (color::isWhite(currentBoard().sideToMove()))
+	{
+		m_scores[no] = INT_MIN;
+
+		if (minPositive != INT_MAX)
+			m_shortestMate = minPositive;
+		else if (zeroIndex >= 0)
+			m_shortestMate = 0;
+		else // if (maxNegative != INT_MIN)
+			m_shortestMate = maxNegative;
+
+		if (numMoves > 0)
+			m_sortScores[no] = INT_MAX - numMoves;
+		else
+			m_sortScores[no] = INT_MIN - numMoves;
+	}
+	else
+	{
+		m_scores[no] = INT_MAX;
+
+		if (maxNegative != INT_MIN)
+			m_shortestMate = maxNegative;
+		else if (zeroIndex >= 0)
+			m_shortestMate = 0;
+		else // if (minPositive != INT_MAX)
+			m_shortestMate = minPositive;
+
+		if (numMoves < 0)
+			m_sortScores[no] = INT_MAX + numMoves;
+		else
+			m_sortScores[no] = INT_MIN + numMoves;
+	}
+
+	if (shortestMate != m_shortestMate)
+	{
+		m_bestInfoHasChanged = true;
+
+		if (m_ordering == BestFirst)
+			reorderBestFirst(no);
+	}
+
+	if (m_shortestMate != 0)
+	{
+		Selection selection = m_selection;
+
+		m_selection.reset();
+
+		for (unsigned i = 0; i < m_numVariations; ++i)
+		{
+			if (m_mates[i] == m_shortestMate)
+				m_selection.set(i);
+		}
+
+		if (m_selection != selection)
+			m_bestInfoHasChanged = true;
 	}
 }
 
@@ -829,20 +967,27 @@ Engine::startAnalysis(db::Game const* game)
 		if (isAnalyzing() && !m_engine->stopAnalysis())
 			return false;
 
+		int score = color::isWhite(game->currentBoard().sideToMove()) ? INT_MIN : INT_MAX;
+
+		for (unsigned i = 0; i < m_numVariations; ++i)
+		{
+			m_variations[i].clear();
+			m_sortScores[i] = INT_MIN;
+			m_scores[i] = score;
+			m_mates[i] = 0;
+			m_map[i] = i;
+		}
+
 		resetInfo();
+		m_bestIndex = 0;
+		m_bestInfoHasChanged = false;
+		m_selection.reset();
 		m_currMove.clear();
 		m_bestMove.clear();
 		m_ponder.clear();
 		// clear currline
 
-		for (unsigned i = 0; i < m_numVariations; ++i)
-			updatePvInfo(i);
-
-		updateCurrMove();
-		updateCurrLine();
-//		updateBestMove();
-//		updateDepthInfo();
-//		updateTimeInfo();
+		clearInfo();
 
 		if (!m_engine->startAnalysis(isNew))
 			return false;
@@ -873,8 +1018,36 @@ Engine::doMove(db::Move const& lastMove)
 unsigned
 Engine::changeNumberOfVariations(unsigned n)
 {
+	n = mstl::min(n, MaxNumVariations);
+
 	if (n != m_numVariations)
 	{
+		if (n < m_numVariations)
+		{
+			Selection used;
+
+			for (unsigned i = 0; i < n; ++i)
+			{
+				if (m_map[i] < n)
+					used.set(i);
+			}
+
+			for (unsigned i = 0; i < n; ++i)
+			{
+				if (m_map[i] >= n)
+				{
+					unsigned firstFree = used.find_first_not();
+					used.set(firstFree);
+					m_map[i] = firstFree;
+				}
+			}
+		}
+		else
+		{
+			for (unsigned i = m_numVariations; i < n; ++i)
+				m_map[i] = i;
+		}
+
 		m_variations.resize(n);
 		m_numVariations = n;
 
@@ -993,25 +1166,93 @@ Engine::setBestMove(db::Move const& move)
 
 
 void
-Engine::setVariation(db::MoveList const& moves, unsigned no)
+Engine::reorderBestFirst(unsigned currentNo)
+{
+	if (m_numVariations == 1)
+		return;
+
+	Map old;
+	::memcpy(old, m_map, sizeof(old[0])*m_numVariations);
+
+	for (unsigned k = 0; k < m_numVariations; ++k)
+		m_map[k] = k;
+
+	for (unsigned k = 0, n = m_numVariations - 1; k < n; ++k)
+	{
+		unsigned index = k;
+
+		int score = m_sortScores[m_map[index]];
+
+		for (unsigned i = k + 1; i < m_numVariations; ++i)
+		{
+			unsigned idx = m_map[i];
+
+			if (score < m_sortScores[idx])
+			{
+				score = m_sortScores[idx];
+				index = i;
+			}
+		}
+
+		if (index > k)
+			mstl::swap(m_map[index], m_map[k]);
+	}
+
+	for (unsigned i = 0; i < m_numVariations; ++i)
+	{
+		if (i != currentNo && m_map[i] != old[i])
+			updatePvInfo(i);
+	}
+}
+
+
+void
+Engine::setOrdering(Ordering method)
+{
+	m_ordering = method;
+}
+
+
+void
+Engine::setVariation(unsigned no, db::MoveList const& moves)
 {
 	M_REQUIRE(no < numVariations());
+
+	int matchIndex = -1;
+
+	if (m_numVariations > 1 && m_ordering == KeepStable && !isBestLine(no))
+	{
+		unsigned matchLength = 0;
+
+		for (unsigned i = 0; i < m_numVariations; ++i)
+		{
+			unsigned length = moves.match(m_variations[i]);
+
+			if (length > matchLength)
+			{
+				matchIndex = i;
+				matchLength = length;
+			}
+		}
+
+		if (matchIndex >= 0 && matchIndex != int(no) && isBestLine(matchIndex))
+			mstl::swap(m_map[no], m_map[matchIndex]);
+	}
+
 	m_variations[no] = moves;
+
+	if (matchIndex >= 0)
+		updatePvInfo(matchIndex);
 }
 
 
 void
 Engine::resetInfo()
 {
-	m_score = 0;
-	m_mate = 0;
 	m_depth = 0;
 	m_selDepth = 0;
 	m_time = 0.0;
 	m_nodes = 0;
-
-	for (unsigned i = 0; i < m_variations.size(); ++i)
-		m_variations[i].clear();
 }
 
 

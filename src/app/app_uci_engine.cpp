@@ -625,16 +625,21 @@ uci::Engine::parseBestMove(char const* msg)
 void
 uci::Engine::parseInfo(char const* s)
 {
-	unsigned	multiPv					= 0;
-	unsigned	currMoveNumber			= 0;
-	bool		haveScore				= false;
-	bool		haveDepth				= false;
-	bool		haveTime					= false;
-	bool		havePv					= false;
-	bool		haveCurrMove			= false;
-	bool		haveCurrMoveNumber	= false;
-	bool		haveHashFull			= false;
-	Move		currMove;
+	unsigned multiPv			= 0;
+	unsigned currMoveNumber	= 0;
+	unsigned score				= 0;
+	unsigned mate				= 0;
+
+	bool haveScore				= false;
+	bool haveMate				= false;
+	bool haveDepth				= false;
+	bool haveTime				= false;
+	bool havePv					= false;
+	bool haveCurrMove			= false;
+	bool haveCurrMoveNumber	= false;
+	bool haveHashFull			= false;
+
+	Move currMove;
 
 	resetInfo();
 
@@ -723,7 +728,7 @@ uci::Engine::parseInfo(char const* s)
 								case 'c':
 									if (::sscanf(s, "cp %d", &value) == 1)
 									{
-										setScore(whiteToMove() ? value : -value);
+										score = whiteToMove() ? value : -value;
 										haveScore = true;
 									}
 									break;
@@ -731,8 +736,8 @@ uci::Engine::parseInfo(char const* s)
 								case 'm':
 									if (::sscanf(s, "mate %d", &value) == 1)
 									{
-										setMate(whiteToMove() ? value : -value);
-										haveScore = true;
+										mate = whiteToMove() ? value : -value;
+										haveMate = true;
 
 #if 0 // we cannot terminate, the engine might find a "better" pv
 										if (isAnalyzing())
@@ -777,7 +782,7 @@ uci::Engine::parseInfo(char const* s)
 					if (!(s = parseMoveList(skipWords(s, 1), moves)))
 						return;
 
-					setVariation(moves, multiPv);
+					setVariation(multiPv, moves);
 					havePv = true;
 					continue;
 				}
@@ -786,7 +791,8 @@ uci::Engine::parseInfo(char const* s)
 			case 'm':
 				if (::sscanf(s, "mate %u", &value) == 1)
 				{
-					setMate(value);
+					mate = whiteToMove() ? value : -value;
+					havePv = haveMate = true;
 				}
 				else if (::sscanf(s, "multipv %u", &value) == 1)
 				{
@@ -813,12 +819,23 @@ uci::Engine::parseInfo(char const* s)
 	if (haveHashFull)
 		updateHashFullInfo();	// "info hashfull <promille>"
 
-	if (haveScore && havePv)
+	if (havePv && (haveScore || haveMate))
+	{
+		if (haveMate)
+			setMate(multiPv, mate);
+		else
+			setScore(multiPv, score);
+
 		updatePvInfo(multiPv);
+	}
 	else if (haveTime)
+	{
 		updateTimeInfo(); 		// "info time 1008 nodes 1010000 nps 1002409 cpuload 925"
+	}
 	else if (haveDepth)
+	{
 		updateDepthInfo();
+	}
 }
 
 
@@ -992,17 +1009,14 @@ uci::Engine::parseOption(char const* msg)
 		else if (name == "Hash")
 		{
 			setHashRange(::atoi(min), ::atoi(max));
-			setHashSize(::atoi(dflt));
 		}
 		else if (name == "Threads")
 		{
 			setThreadRange(::atoi(min), ::atoi(max));
-			setThreads(::atoi(dflt));
 		}
 		else if (name == "Skill Level")
 		{
 			setSkillLevelRange(::atoi(min), ::atoi(max));
-			setSkillLevel(::atoi(dflt));
 		}
 
 		addOption(name, type, dflt, min, max);
@@ -1116,6 +1130,11 @@ uci::Engine::sendOptions()
 					continue; // should not be sent here
 				break;
 
+			case 'T':
+				if (opt.name == "Threads")
+					continue; // should not be sent here
+				break;
+
 			case 'U':
 				if (opt.name == "UCI_LimitStrength")
 					val = limitedStrength() ? "true" : "false";
@@ -1143,6 +1162,9 @@ uci::Engine::sendOptions()
 
 	if (hasFeature(app::Engine::Feature_Multi_PV))
 		send("setoption name MultiPV value " + toStr(numVariations()));
+
+	if (hasFeature(app::Engine::Feature_Threads))
+		send("setoption name Threads value " + toStr(numThreads()));
 
 	if (isAnalyzing)
 	{

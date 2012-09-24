@@ -105,9 +105,34 @@ set Feature(playingStyle)	"Playing Styles"
 
 } ;# namespace mc
 
+set EmptyEngine {
+	Name				""
+	ShortId			""
+	Identifier		""
+	Author			""
+	Email				""
+	Country			""
+	Elo				0
+	CCRL				0
+	Command			""
+	Directory		""
+	Parameters		""
+	Logo				""
+	Url				""
+	Protocol			""
+	Variant			standard
+	LastUsed			0
+	Frequency		0
+	Features:UCI	{}
+	Features:WB		{}
+	Options:UCI		{}
+	Options:WB		{}
+	Timestamp		0
+	FileTime			0
+}
+
 variable Engines {}
 variable PhotoFiles {}
-variable EmptyEngine {}
 
 array set Priv { after {}  }
 array set Logo { width 100 height 54 }
@@ -553,33 +578,6 @@ proc engines {} {
 
 proc setup {} {
 	variable Engines
-	variable EmptyEngine
-
-	set EmptyEngine {
-		Name				""
-		ShortId			""
-		Identifier		""
-		Author			""
-		Email				""
-		Country			""
-		Elo				0
-		CCRL				0
-		Command			""
-		Directory		""
-		Parameters		""
-		Logo				""
-		Url				""
-		Protocol			""
-		Variant			standard
-		LastUsed			0
-		Frequency		0
-		Features:UCI	{}
-		Features:WB		{}
-		Options:UCI		{}
-		Options:WB		{}
-		Timestamp		0
-		FileTime			0
-	}
 
 	if {[file readable $::scidb::file::engines]} {
 		::load::source $::scidb::file::engines -message $::load::mc::ReadingFile(engines) -encoding utf-8
@@ -593,13 +591,15 @@ proc setup {} {
 				Command			stockfish-120903
 				Protocol			UCI
 				Variant			chess960
-				Features:UCI	{	analyze true
-										multiPV 500
-										ponder true
-										hashSize {4 8192}
-										threads {4 32}
-										skillLevel {0 20}
-										clearHash true}
+				Features:UCI	{
+					analyze true
+					multiPV 500
+					ponder true
+					hashSize {4 8192}
+					threads {4 32}
+					skillLevel {0 20}
+					clearHash true
+				}
 				Options:UCI		{
 					{{Use Debug Log} check false false {} {}}
 					{{Use Search Log} check false false {} {}}
@@ -720,7 +720,7 @@ proc setup {} {
 }
 
 
-proc startEngine {name isReadyCmd signalCmd updateCmd options} {
+proc startEngine {name isReadyCmd signalCmd updateCmd} {
 	variable EmptyEngine
 	variable Engines
 	variable Priv

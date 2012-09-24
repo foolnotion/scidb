@@ -59,6 +59,7 @@ public:
 
 	unsigned size() const;
 	int find(uint16_t move) const;
+	unsigned match(MoveList const& list) const;
 
 	Move const* begin() const;
 	Move const* end() const;

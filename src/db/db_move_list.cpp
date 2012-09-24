@@ -59,6 +59,21 @@ MoveList::find(uint16_t move) const
 }
 
 
+unsigned
+MoveList::match(MoveList const& list) const
+{
+	unsigned n = mstl::min(list.size(), size());
+
+	for (unsigned i = 0; i < n; ++i)
+	{
+		if (m_buffer[i] != list.m_buffer[i])
+			return i;
+	}
+
+	return 0;
+}
+
+
 void
 MoveList::sort(int scores[])
 {

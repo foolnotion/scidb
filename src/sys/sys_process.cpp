@@ -313,6 +313,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 Process::~Process()
 {
 	Tcl_DStringFree(m_buffer);
+	delete m_buffer;
 	m_processMap.erase(m_pid);
 	m_calledExited = true; // process is destroyed by user
 	close();

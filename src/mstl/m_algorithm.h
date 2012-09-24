@@ -42,6 +42,18 @@ binary_search(ForwardIterator first, ForwardIterator last, LessThanComparable co
 template <typename ForwardIterator>
 ForwardIterator rotate(ForwardIterator first, ForwardIterator middle, ForwardIterator last);
 
+template <typename ForwardIterator>
+ForwardIterator min_element(ForwardIterator first, ForwardIterator last);
+
+template <typename ForwardIterator, typename LessThanCompare>
+ForwardIterator min_element(ForwardIterator first, ForwardIterator last, LessThanCompare comp);
+
+template <typename ForwardIterator>
+ForwardIterator max_element(ForwardIterator first, ForwardIterator last);
+
+template <typename ForwardIterator, typename LessThanCompare>
+ForwardIterator max_element(ForwardIterator first, ForwardIterator last, LessThanCompare comp);
+
 } // namespace mstl
 
 #include "m_algorithm.ipp"

@@ -32,6 +32,7 @@
 #include "m_string.h"
 #include "m_pvector.h"
 #include "m_list.h"
+#include "m_bitfield.h"
 
 namespace mstl	{ class ostream; }
 
@@ -51,6 +52,15 @@ namespace winboard { class Engine; }
 class Engine
 {
 public:
+
+	static unsigned const MaxNumVariations = 32;
+
+	enum Ordering
+	{
+		Unordered,
+		BestFirst,
+		KeepStable,
+	};
 
 	enum Result
 	{
@@ -170,13 +180,13 @@ public:
 		void setBestMove(db::Move const& move);
 		void setPonder(db::Move const& move);
 
-		void setScore(int score);
-		void setMate(int numHalfMoves);
+		void setScore(unsigned no, int score);
+		void setMate(unsigned no, int numMoves);
 		void setDepth(unsigned depth);
 		void setSelectiveDepth(unsigned depth);
 		void setTime(double time);
 		void setNodes(unsigned nodes);
-		void setVariation(db::MoveList const& moves, unsigned no = 0);
+		void setVariation(unsigned no, db::MoveList const& moves);
 		void setCurrentMove(unsigned number, db::Move const& move);
 
 		void setIdentifier(mstl::string const& name);
@@ -186,12 +196,9 @@ public:
 		void setEmail(mstl::string const& address);
 		void setElo(unsigned elo);
 		void setEloRange(unsigned minElo, unsigned maxElo);
-		void setSkillLevel(unsigned level);
 		void setSkillLevelRange(unsigned ninLevel, unsigned maxLevel);
 		void setMaxMultiPV(unsigned n);
-		void setHashSize(unsigned size);
 		void setHashRange(unsigned minSize, unsigned maxSize);
-		void setThreads(unsigned num);
 		void setThreadRange(unsigned minThreads, unsigned maxThreads);
 		void setPlayingStyles(mstl::string const& styles);
 
@@ -234,6 +241,7 @@ public:
 	Concrete* concrete();
 
 	void setLog(mstl::ostream* stream = 0);
+	void setOrdering(Ordering method);
 
 	void activate();
 	void deactivate();
@@ -246,11 +254,15 @@ public:
 	bool hasFeature(unsigned feature) const;
 	bool playOther() const;
 	bool pondering() const;
+	bool isBestLine(unsigned no) const;
+	bool bestInfoHasChanged() const;
 
 	int exitStatus() const;
 
-	int score() const;
-	int mate() const;
+	int score(unsigned no) const;
+	int mate(unsigned no) const;
+	int bestScore() const;
+	int shortestMate() const;
 	unsigned depth() const;
 	unsigned selectiveDepth() const;
 	double time() const;
@@ -303,6 +315,7 @@ public:
 	unsigned changeStrength(unsigned elo);
 	unsigned changeSkillLevel(unsigned level);
 	mstl::string const& changePlayingStyle(mstl::string const& style);
+	void resetBestInfoHasChanged();
 	bool playOther(bool flag);
 	bool pondering(bool flag);
 	void clearHash();
@@ -321,6 +334,7 @@ protected:
 
 	Engine();
 
+	virtual void clearInfo() = 0;
 	virtual void updatePvInfo(unsigned line) = 0;
 	virtual void updateCheckMateInfo() = 0;
 	virtual void updateStaleMateInfo() = 0;
@@ -354,13 +368,13 @@ protected:
 	void setBestMove(db::Move const& move);
 	void setPonder(db::Move const& move);
 
-	void setScore(int score);						// centi-pawns from white's perspective
-	void setMate(int numHalfMoves);				// number of half moves from white's prespective
+	void setScore(unsigned no, int score);		// centi-pawns from white's perspective
+	void setMate(unsigned no, int numMoves);	// number of moves
 	void setDepth(unsigned depth);				// search depth
 	void setSelectiveDepth(unsigned depth);	// selective search depth
 	void setTime(double time);						// search time in seconds (.e.g. 10.28 seconds)
 	void setNodes(unsigned nodes);				// nodes searched
-	void setVariation(db::MoveList const& moves, unsigned no);
+	void setVariation(unsigned no, db::MoveList const& moves);
 	void setCurrentMove(unsigned number, db::Move const& move);
 
 	void setIdentifier(mstl::string const& name);
@@ -370,12 +384,9 @@ protected:
 	void setEmail(mstl::string const& address);
 	void setElo(unsigned elo);
 	void setEloRange(unsigned minElo, unsigned maxElo);
-	void setSkillLevel(unsigned level);
 	void setSkillLevelRange(unsigned minLevel, unsigned maxLevel);
 	void setMaxMultiPV(unsigned n);
-	void setHashSize(unsigned size);
 	void setHashRange(unsigned minSize, unsigned maxSize);
-	void setThreads(unsigned num);
 	void setThreadRange(unsigned minThreads, unsigned maxThreads);
 	void setPlayingStyles(mstl::string const& styles);
 	void resetInfo();
@@ -386,11 +397,15 @@ protected:
 
 private:
 
+	typedef mstl::bitfield<unsigned> Selection;
 	typedef mstl::pvector<db::MoveList> Variations;
+	typedef int Scores[MaxNumVariations];
+	typedef unsigned Map[MaxNumVariations];
 
 	class Process;
 	friend class Process;
 
+	void reorderBestFirst(unsigned currentNo);
 	bool detectShortName(mstl::string const& s, bool setId);
 	void readyRead();
 	void exited();
@@ -410,6 +425,7 @@ private:
 	mstl::string		m_email;
 	mstl::string		m_playingStyles;
 	mstl::string		m_playingStyle;
+	Ordering				m_ordering;
 	unsigned				m_elo;
 	unsigned				m_minElo;
 	unsigned				m_maxElo;
@@ -417,8 +433,12 @@ private:
 	unsigned				m_minSkillLevel;
 	unsigned				m_maxSkillLevel;
 	unsigned				m_maxMultiPV;
+	Map					m_map;
 	Variations			m_variations;
 	unsigned				m_numVariations;
+	Scores				m_scores;
+	Scores				m_mates;
+	Scores				m_sortScores;
 	unsigned				m_hashSize;
 	unsigned				m_minHashSize;
 	unsigned				m_maxHashSize;
@@ -434,8 +454,10 @@ private:
 	db::Move				m_currMove;
 	db::Move				m_bestMove;
 	db::Move				m_ponder;
-	int					m_score;
-	int					m_mate;
+	Selection			m_selection;
+	unsigned				m_bestIndex;
+	int					m_bestScore;
+	int					m_shortestMate;
 	unsigned				m_depth;
 	unsigned				m_selDepth;
 	double				m_time;
@@ -446,6 +468,7 @@ private:
 	bool					m_protocol;
 	bool					m_identifierSet;
 	bool					m_useLimitedStrength;
+	bool					m_bestInfoHasChanged;
 	Process*				m_process;
 	int					m_exitStatus;
 	mstl::ostream*		m_logStream;

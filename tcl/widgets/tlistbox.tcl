@@ -210,7 +210,7 @@ proc Build {w args} {
 		$opts(-highlightbackground) {highlight} \
 		$opts(-disabledbackground) {!enabled} \
 		;
-#		$opts(-background) {enabled !highlight}
+#	$opts(-background) {enabled !highlight}
 	$t element create sel.e  rect -fill $fill -open e  -showfocus $opts(-showfocus)
 	$t element create sel.w  rect -fill $fill -open w  -showfocus $opts(-showfocus)
 	$t element create sel.we rect -fill $fill -open we -showfocus $opts(-showfocus)

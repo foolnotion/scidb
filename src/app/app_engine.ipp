@@ -57,8 +57,8 @@ inline void Engine::Concrete::engineIsReady()							{ m_engine->engineIsReady();
 
 inline void Engine::Concrete::setBestMove(db::Move const& move)	{ m_engine->setBestMove(move); }
 inline void Engine::Concrete::setPonder(db::Move const& move)		{ m_engine->setPonder(move); }
-inline void Engine::Concrete::setScore(int score)						{ m_engine->setScore(score); }
-inline void Engine::Concrete::setMate(int numHalfMoves)				{ m_engine->setMate(numHalfMoves); }
+inline void Engine::Concrete::setScore(unsigned no, int score)		{ m_engine->setScore(no, score); }
+inline void Engine::Concrete::setMate(unsigned no, int numMoves)	{ m_engine->setMate(no, numMoves); }
 inline void Engine::Concrete::setDepth(unsigned depth)				{ m_engine->setDepth(depth); }
 inline void Engine::Concrete::setSelectiveDepth(unsigned depth)	{ m_engine->setSelectiveDepth(depth); }
 inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time); }
@@ -152,9 +152,9 @@ Engine::Concrete::hasFeature(unsigned feature) const
 
 inline
 void
-Engine::Concrete::setVariation(db::MoveList const& moves, unsigned no)
+Engine::Concrete::setVariation(unsigned no, db::MoveList const& moves)
 {
-	m_engine->setVariation(moves, no);
+	m_engine->setVariation(no, moves);
 }
 
 
@@ -225,14 +225,6 @@ Engine::Concrete::setEloRange(unsigned minElo, unsigned maxElo)
 
 inline
 void
-Engine::Concrete::setSkillLevel(unsigned level)
-{
-	m_engine->setSkillLevel(level);
-}
-
-
-inline
-void
 Engine::Concrete::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 {
 	m_engine->setSkillLevelRange(minLevel, maxLevel);
@@ -249,25 +241,9 @@ Engine::Concrete::setMaxMultiPV(unsigned size)
 
 inline
 void
-Engine::Concrete::setHashSize(unsigned size)
-{
-	m_engine->setHashSize(size);
-}
-
-
-inline
-void
 Engine::Concrete::setHashRange(unsigned minSize, unsigned maxSize)
 {
 	m_engine->setHashRange(minSize, maxSize);
-}
-
-
-inline
-void
-Engine::Concrete::setThreads(unsigned num)
-{
-	m_engine->setThreads(num);
 }
 
 
@@ -301,9 +277,10 @@ Engine::Concrete::addOption(	mstl::string const& name,
 
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
+inline bool Engine::bestInfoHasChanged() const					{ return m_bestInfoHasChanged; }
 
-inline int Engine::score() const										{ return m_score; }
-inline int Engine::mate() const										{ return m_mate; }
+inline int Engine::bestScore() const								{ return m_bestScore; }
+inline int Engine::shortestMate() const							{ return m_shortestMate; }
 inline unsigned Engine::depth() const								{ return m_depth; }
 inline unsigned Engine::selectiveDepth() const					{ return m_selDepth; }
 inline double Engine::time() const									{ return m_time; }
@@ -330,7 +307,6 @@ inline unsigned Engine::minThreads() const						{ return m_minThreads; }
 inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 
-inline void Engine::setScore(int score)							{ m_score = score; }
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
 inline void Engine::setTime(double time)							{ m_time = time; }
@@ -339,8 +315,16 @@ inline void Engine::setAuthor(mstl::string const& name)		{ m_author = name; }
 inline void Engine::setElo(unsigned elo)							{ m_elo = elo; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
 inline void Engine::setLog(mstl::ostream* stream)				{ m_logStream = stream; }
-inline void Engine::setHashSize(unsigned size)					{ m_hashSize = size; }
-inline void Engine::setThreads(unsigned num)						{ m_numThreads = num; }
+inline void Engine::resetBestInfoHasChanged()					{ m_bestInfoHasChanged = false; }
+
+
+inline
+bool
+Engine::isBestLine(unsigned no) const
+{
+	M_REQUIRE(no < numVariations());
+	return m_selection.test(m_map[no]);
+}
 
 
 inline
@@ -353,20 +337,29 @@ Engine::setCurrentMove(unsigned number, db::Move const& move)
 
 
 inline
-db::MoveList const&
-Engine::variation(unsigned no) const
+int
+Engine::score(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_variations[no];
+	return m_scores[m_map[no]];
 }
 
 
 inline
-void
-Engine::setMate(int numHalfMoves)
+int
+Engine::mate(unsigned no) const
 {
-	if ((m_mate = numHalfMoves))
-		m_score = mstl::signum(numHalfMoves)*32000;
+	M_REQUIRE(no < numVariations());
+	return m_mates[m_map[no]];
+}
+
+
+inline
+db::MoveList const&
+Engine::variation(unsigned no) const
+{
+	M_REQUIRE(no < numVariations());
+	return m_variations[m_map[no]];
 }
 
 

@@ -54,6 +54,7 @@ static char const* CmdInfo				= "::scidb::engine::info";
 static char const* CmdKill				= "::scidb::engine::kill";
 static char const* CmdList				= "::scidb::engine::list";
 static char const* CmdLog				= "::scidb::engine::log";
+static char const* CmdOrdering		= "::scidb::engine::ordering";
 static char const* CmdPause			= "::scidb::engine::pause";
 static char const* CmdProbe			= "::scidb::engine::probe";
 static char const* CmdResume			= "::scidb::engine::resume";
@@ -115,6 +116,7 @@ public:
 	{
 	}
 
+	void clearInfo() override {}
 	void updatePvInfo(unsigned) override {}
 	void updateCheckMateInfo() override {}
 	void updateStaleMateInfo() override {}
@@ -149,12 +151,14 @@ public:
 
 		if (m_pv == 0)
 		{
+			Tcl_IncrRefCount(m_clear = Tcl_NewStringObj("clear", -1));
 			Tcl_IncrRefCount(m_pv = Tcl_NewStringObj("pv", -1));
 			Tcl_IncrRefCount(m_checkmate = Tcl_NewStringObj("checkmate", -1));
 			Tcl_IncrRefCount(m_stalemate = Tcl_NewStringObj("stalemate", -1));
 			Tcl_IncrRefCount(m_move = Tcl_NewStringObj("move", -1));
 			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
-			Tcl_IncrRefCount(m_best = Tcl_NewStringObj("best", -1));
+			Tcl_IncrRefCount(m_bestmove = Tcl_NewStringObj("bestmove", -1));
+			Tcl_IncrRefCount(m_bestscore = Tcl_NewStringObj("bestscore", -1));
 			Tcl_IncrRefCount(m_depth = Tcl_NewStringObj("depth", -1));
 			Tcl_IncrRefCount(m_seldepth = Tcl_NewStringObj("seldepth", -1));
 			Tcl_IncrRefCount(m_time = Tcl_NewStringObj("time", -1));
@@ -179,6 +183,11 @@ public:
 		Tcl_DecrRefCount(args);
 	}
 
+	void clearInfo() override
+	{
+		sendInfo(m_clear, Tcl_NewListObj(0, 0));
+	}
+
 	void updatePvInfo(unsigned line) override
 	{
 		unsigned halfMoveNo = currentBoard().plyNumber();
@@ -188,8 +197,8 @@ public:
 
 		Tcl_Obj* objs[8];
 
-		objs[0] = Tcl_NewIntObj(score());
-		objs[1] = Tcl_NewIntObj(mate());
+		objs[0] = Tcl_NewIntObj(score(line));
+		objs[1] = Tcl_NewIntObj(mate(line));
 		objs[2] = Tcl_NewIntObj(depth());
 		objs[3] = Tcl_NewIntObj(selectiveDepth());
 		objs[4] = Tcl_NewDoubleObj(time());
@@ -198,6 +207,22 @@ public:
 		objs[7] = Tcl_NewStringObj(s, s.size());
 
 		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
+
+		if (bestInfoHasChanged())
+		{
+			Tcl_Obj* v[::app::Engine::MaxNumVariations];
+			unsigned n = numVariations();
+
+			for (unsigned i = 0; i < n; ++i)
+				v[i] = Tcl_NewBooleanObj(isBestLine(i));
+
+			objs[0] = Tcl_NewIntObj(bestScore());
+			objs[1] = Tcl_NewIntObj(shortestMate());
+			objs[2] = Tcl_NewListObj(n, v);
+
+			sendInfo(m_bestscore, Tcl_NewListObj(3, objs));
+			resetBestInfoHasChanged();
+		}
 	}
 
 	void updateCheckMateInfo() override
@@ -229,7 +254,7 @@ public:
 	{
 		mstl::string move;
 		bestMove().printSan(move, encoding::Utf8);
-		sendInfo(m_best, Tcl_NewStringObj(move, move.size()));
+		sendInfo(m_bestmove, Tcl_NewStringObj(move, move.size()));
 	}
 
 	void updateDepthInfo() override
@@ -298,24 +323,28 @@ private:
 	Tcl_Obj* m_updateInfoCmd;
 	Tcl_Obj* m_id;
 
+	static Tcl_Obj* m_clear;
 	static Tcl_Obj* m_pv;
 	static Tcl_Obj* m_checkmate;
 	static Tcl_Obj* m_stalemate;
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_line;
-	static Tcl_Obj* m_best;
+	static Tcl_Obj* m_bestmove;
+	static Tcl_Obj* m_bestscore;
 	static Tcl_Obj* m_depth;
 	static Tcl_Obj* m_seldepth;
 	static Tcl_Obj* m_time;
 	static Tcl_Obj* m_hash;
 };
 
+Tcl_Obj* Engine::m_clear		= 0;
 Tcl_Obj* Engine::m_pv			= 0;
 Tcl_Obj* Engine::m_checkmate	= 0;
 Tcl_Obj* Engine::m_stalemate	= 0;
 Tcl_Obj* Engine::m_move			= 0;
 Tcl_Obj* Engine::m_line			= 0;
-Tcl_Obj* Engine::m_best			= 0;
+Tcl_Obj* Engine::m_bestmove	= 0;
+Tcl_Obj* Engine::m_bestscore	= 0;
 Tcl_Obj* Engine::m_depth		= 0;
 Tcl_Obj* Engine::m_seldepth	= 0;
 Tcl_Obj* Engine::m_time			= 0;
@@ -928,6 +957,30 @@ cmdResume(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdOrdering(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+	char const* ordering = stringFromObj(objc, objv, 2);
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		::app::Engine::Ordering method = ::app::Engine::Unordered;
+
+		switch (::tolower(*ordering))
+		{
+			case 'k': method = ::app::Engine::KeepStable; break;
+			case 'b': method = ::app::Engine::BestFirst; break;
+			case 'u': method = ::app::Engine::Unordered; break;
+		}
+
+		tcl::app::scidb->engine(id)->setOrdering(method);
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace engine {
 
@@ -942,6 +995,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdKill,				cmdKill);
 	createCommand(ti, CmdList,				cmdList);
 	createCommand(ti, CmdLog,				cmdLog);
+	createCommand(ti, CmdOrdering,		cmdOrdering);
 	createCommand(ti, CmdPause,			cmdPause);
 	createCommand(ti, CmdProbe,			cmdProbe);
 	createCommand(ti, CmdResume,			cmdResume);

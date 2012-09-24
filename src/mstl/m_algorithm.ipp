@@ -129,6 +129,86 @@ rotate(T* first, T* middle, T* last)
     return first;
 }
 
+
+template <typename ForwardIterator>
+inline
+ForwardIterator
+min_element(ForwardIterator first, ForwardIterator last)
+{
+	if (first == last)
+		return first;
+
+	ForwardIterator result(first);
+
+	while (++first != last)
+	{
+		if (*first < *result)
+			result = first;
+	}
+
+	return result;
+}
+
+
+template <typename ForwardIterator, typename LessThanCompare>
+inline
+ForwardIterator
+min_element(ForwardIterator first, ForwardIterator last, LessThanCompare comp)
+{
+	if (first == last)
+		return first;
+
+	ForwardIterator result(first);
+
+	while (++first != last)
+	{
+		if (comp(*first, *result))
+			result = first;
+	}
+
+	return result;
+}
+
+
+template <typename ForwardIterator>
+inline
+ForwardIterator
+max_element(ForwardIterator first, ForwardIterator last)
+{
+	if (first == last)
+		return first;
+
+	ForwardIterator result(first);
+
+	while (++first != last)
+	{
+		if (*result < *first)
+			result = first;
+	}
+
+	return result;
+}
+
+
+template <typename ForwardIterator, typename LessThanCompare>
+inline
+ForwardIterator
+max_element(ForwardIterator first, ForwardIterator last, LessThanCompare comp)
+{
+	if (first == last)
+		return first;
+
+	ForwardIterator result(first);
+
+	while (++first != last)
+	{
+		if (comp(*result, *first))
+			result = first;
+	}
+
+	return result;
+}
+
 } // namespace mstl
 
 // vi:set ts=3 sw=3:
