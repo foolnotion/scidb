@@ -701,7 +701,7 @@ cmdSetFeatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 2), &size, &objs) != TCL_OK)
 			return error(CmdActivate, 0, 0, "list obj expected");
 
-		if (size & 2 == 1)
+		if ((size & 2) == 1)
 			return error(CmdActivate, 0, 0, "feature list must have even size");
 
 		for (int i = 0; i < size; i += 2)
@@ -775,7 +775,7 @@ cmdSetOptions(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 2), &size, &objs) != TCL_OK)
 			return error(CmdActivate, 0, 0, "list obj expected");
 
-		if (size & 2 == 1)
+		if ((size & 2) == 1)
 			return error(CmdActivate, 0, 0, "options list must have even size");
 
 		for (int i = 0; i < size; i += 2)
