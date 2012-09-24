@@ -98,6 +98,7 @@ private:
 	db::Move			m_firstMove;
 	bool				m_isAnalyzing;
 	bool				m_response;
+	bool				m_waitForDone;
 	bool				m_analyzeResponse;
 	bool				m_identifierDetected;
 	bool				m_shortNameDetected;

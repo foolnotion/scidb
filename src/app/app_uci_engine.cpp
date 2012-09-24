@@ -146,18 +146,39 @@ isNumeric(char const* s)
 
 
 static bool
-endsWithPath(mstl::string const& s)
+isPathOrFile(mstl::string const& s, char const* upper, char const* lower)
 {
-	return	(s.size() >= 4 && strncmp(s.c_str() + s.size() - 4, "Path", 4) == 0)
-			|| (s.size() >= 8 && strncmp(s.c_str() + s.size() - 8, "Pathname", 8) == 0);
+	mstl::string::size_type i = s.find(upper);
+
+	if (i != mstl::string::npos)
+	{
+		char const* e = s.begin() + i + 4;
+		return *e == '\0' || *e == ' ' || strncmp(s, "name", 4) == 0;
+	}
+
+	i = s.find(lower);
+
+	if (i == mstl::string::npos)
+		return false;
+
+	char const* p = s.begin() + i;
+	char const* e = p + 4;
+
+	return (i == 0 || p[-1] == ' ') && ((*e == '\0' || *e == ' ' || strncmp(s, "name", 4) == 0));
 }
 
 
 static bool
-endsWithFile(mstl::string const& s)
+isPath(mstl::string const& s)
 {
-	return	(s.size() >= 4 && strncmp(s.c_str() + s.size() - 4, "File", 4) == 0)
-			|| (s.size() >= 8 && strncmp(s.c_str() + s.size() - 8, "Filename", 8) == 0);
+	return isPathOrFile(s, "Path", "path");
+}
+
+
+static bool
+isFile(mstl::string const& s)
+{
+	return isPathOrFile(s, "File", "file");
 }
 
 
@@ -1062,9 +1083,9 @@ uci::Engine::parseOption(char const* msg)
 	}
 	else if (type == "string")
 	{
-		if (::endsWithPath(name))
+		if (::isPath(name))
 			addOption(name, "path", dflt);
-		else if (::endsWithFile(name))
+		else if (::isFile(name))
 			addOption(name, "file", dflt);
 		else
 			addOption(name, type, dflt);

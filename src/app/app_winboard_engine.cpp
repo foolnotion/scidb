@@ -55,23 +55,6 @@ isNumeric(char const* s)
 }
 
 
-static void
-subst(mstl::string& str, char c)
-{
-	mstl::string clone;
-
-	for (unsigned i = 0; i < str.size(); ++i)
-	{
-		clone += str[i];
-
-		if (str[i] == c)
-			clone += c;
-	}
-
-	str.swap(clone);
-}
-
-
 static char const*
 endOfWord(char const* s)
 {
@@ -167,6 +150,7 @@ struct winboard::Engine::Timer : public sys::Timer
 winboard::Engine::Engine()
 	:m_isAnalyzing(false)
 	,m_response(false)
+	,m_waitForDone(false)
 	,m_analyzeResponse(false)
 	,m_identifierDetected(false)
 	,m_shortNameDetected(false)
@@ -199,6 +183,9 @@ winboard::Engine::currentBoard() const
 winboard::Engine::Result
 winboard::Engine::probeResult() const
 {
+	if (m_waitForDone)
+		return app::Engine::Probe_Failed;
+
 	return m_response ? app::Engine::Probe_Successfull : app::Engine::Probe_Undecidable;
 }
 
@@ -522,11 +509,20 @@ winboard::Engine::featureDone(bool done)
 
 	m_response = true;
 
-	if (done && !isProbing())
+	if (!done)
 	{
-		// No need to wait any longer wondering if we're talking to a version 1 engine
-		m_timer.reset();
-		engineIsReady();
+		m_waitForDone = true;
+	}
+	else
+	{
+		m_waitForDone = false;
+
+		if (!isProbing())
+		{
+			// No need to wait any longer wondering if we're talking to a version 1 engine
+			m_timer.reset();
+			engineIsReady();
+		}
 	}
 }
 
@@ -719,7 +715,7 @@ winboard::Engine::parseFeatures(char const* msg)
 
 			case 'o':
 				if (::strncmp(key, "option=", 7) == 0)
-					parseOption(key + 8);
+					parseOption(key + 7);
 				break;
 
 			case 'p':
@@ -985,21 +981,24 @@ winboard::Engine::parseOption(mstl::string const& option)
 {
 	// SYNTAX: "NAME -TYPE ARGS"
 
-	mstl::string::size_type i = option.find_first_not_of('-');
+	if (option.size() < 8 || option.front() != '"' || option.back() != '"')
+		return;
+
+	mstl::string::size_type i = option.find('-');
 
 	if (i == mstl::string::npos)
 		return;
 
+	mstl::string name(option.substr(1, i - 1));
 	mstl::string::size_type k = option.find(' ', i);
 
 	if (k == mstl::string::npos)
-		k = option.size();
+		return;
 
-	mstl::string name(option.substr(0, i));
-	mstl::string type(option.substr(i + 1, option.size() - k));
-	mstl::string args(option.substr(k));
+	mstl::string type(option.substr(i + 1, k - i - 1));
+	mstl::string args(option.substr(k, option.size() - k - 1));
 
-	name.trim(); type.trim(); args.trim();
+	name.trim(); args.trim();
 
 	if (name.empty() || type.empty())
 		return;
@@ -1018,10 +1017,7 @@ winboard::Engine::parseOption(mstl::string const& option)
 	}
 	else if (type == "check")
 	{
-		addOption(name, type, args == "0" ? "true" : "false");
-
-		if (name == "pause" && args == "0")
-			addFeature(app::Engine::Feature_Pause);
+		addOption(name, type, args == "1" ? "true" : "false");
 	}
 	else if (type == "string")
 	{
@@ -1040,22 +1036,19 @@ winboard::Engine::parseOption(mstl::string const& option)
 	else if (type == "spin" || type == "slider")
 	{
 		// feature option="NAME -spin VALUE MIN MAX"
-		i = args.find(' ');
+		char const* s1 = ::skipSpaces(args.begin());
+		char const* s2 = ::skipWord(s1);
+		char const* s3 = ::skipSpaces(s2);
+		char const* s4 = ::skipWord(s3);
+		char const* s5 = ::skipSpaces(s4);
+		char const* s6 = ::skipWord(s5);
 
-		if (i == mstl::string::npos)
+		if (s6 != args.end())
 			return;
 
-		while (::isspace(args[i]))
-			++i;
-
-		k = args.find(' ', i);
-
-		if (k == mstl::string::npos)
-			++k;
-
-		mstl::string val(args.substr(0, args.size() - i));
-		mstl::string min(args.substr(i, args.size() - k));
-		mstl::string max(args.substr(k));
+		mstl::string val(s1, s2);
+		mstl::string min(s3, s4);
+		mstl::string max(s5, s6);
 
 		val.trim(); min.trim(); max.trim();
 
@@ -1071,40 +1064,45 @@ winboard::Engine::parseOption(mstl::string const& option)
 	}
 	else if (type == "combo")
 	{
-		mstl::string args;
-		mstl::string val;
+		mstl::string values;
+		mstl::string dflt;
 
 		char const* s = skipSpaces(args);
-		char const* t = endOfWord(s);
 
 		while (*s)
 		{
+			char const* t = strchr(s, '/');
+
+			while (t && *t && ::strncmp(t, "///", 3) != 0)
+				t = strchr(t + 1, '/');
+
+			if (t == 0)
+				t = args.end();
+
 			mstl::string choice(s, t);
 			choice.trim();
-			::subst(choice, ';');
 
 			if (!choice.empty())
 			{
 				if (choice.front() == '*')
 				{
-					choice.erase(choice.begin(), choice.begin() + 1);
-					val = choice;
+					choice.erase(choice.begin());
+					dflt = choice;
 				}
 
 				if (!choice.empty())
 				{
-					if (!args.empty())
-						args += ';';
-					args += choice;
+					if (!values.empty())
+						values += ';';
+					values += choice;
 				}
 			}
 
-			s = skipSpaces(t);
-			t = endOfWord(s);
+			s = *t ? skipSpaces(t + 3) : t;
 		}
 
-		if (!val.empty() && !args.empty())
-			addOption(name, type, val, args);
+		if (!dflt.empty() && !values.empty())
+			addOption(name, type, dflt, values);
 	}
 	else if (type == "file" || type == "path")
 	{

@@ -237,13 +237,15 @@ proc openSetup {parent} {
 	ttk::frame			$setup.fprotocol -takefocus 0 -borderwidth 0
 	ttk::radiobutton	$setup.fprotocol.buci \
 								-text "UCI" \
-								-variable [namespace current]::Var(protocol) \
 								-value "UCI" \
+								-variable [namespace current]::Var(protocol) \
+								-command [namespace code [list SwitchOptions $list]] \
 								;
 	ttk::radiobutton	$setup.fprotocol.bwb \
 								-text "XBoard/WinBoard" \
-								-variable [namespace current]::Var(protocol) \
 								-value "WB" \
+								-variable [namespace current]::Var(protocol) \
+								-command [namespace code [list SwitchOptions $list]] \
 								;
 
 	ttk::label			$setup.lurl -text $mc::Webpage
@@ -999,6 +1001,7 @@ proc GetImage {file} {
 proc FillInfo {list entry} {
 	variable EmptyEngine
 	variable Photo
+	variable Option
 	variable Priv
 	variable Var
 
@@ -1037,9 +1040,14 @@ proc FillInfo {list entry} {
 				}
 			}
 			Options:UCI - Options:WB {
-				set protocol [lindex $engine(Protocol) 0]
-				if {"Options:$protocol" eq $attr} {
-					BuildOptionFrame $protocol $engine(Name) $engine(Options:$protocol) $engine(Directory)
+				set protocol [lindex [split $attr :] 1]
+				if {$protocol eq [lindex $engine(Protocol) 0]} {
+					BuildOptionFrame $protocol $engine(Name) $engine($attr) $engine(Directory)
+				} else {
+					foreach opt $engine($attr) {
+						lassign $opt name _ value _ _ _
+						set Option($protocol:$name) $value
+					}
 				}
 			}
 			default {
@@ -1080,6 +1088,19 @@ proc VarChanged {args} {
 }
 
 
+proc SwitchOptions {list} {
+	variable EmptyEngine
+	variable Engines
+	variable Priv
+	variable Var
+
+	set sel [$list curselection]
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $sel]
+	BuildOptionFrame $Var(protocol) $engine(Name) $engine(Options:$Var(protocol)) $engine(Directory)
+}
+
+
 proc BuildOptionFrame {protocol engineName options directory} {
 	variable Option
 	variable Priv
@@ -1095,6 +1116,7 @@ proc BuildOptionFrame {protocol engineName options directory} {
 
 	foreach opt $options {
 		lassign $opt name type value dflt var max
+		set key $protocol:$name
 		set lbl $f.lbl_$row
 		set val $f.val_$row
 		set sticky w
@@ -1108,7 +1130,7 @@ proc BuildOptionFrame {protocol engineName options directory} {
 				set width [expr {int(log10($n)) + 2}]
 				ttk::frame $val -borderwidth 0 -takefocus 0
 				ttk::spinbox $val.s -from $var -to $max -width $width -takefocus 1
-				$val.s configure -textvar [namespace current]::Option($name)
+				$val.s configure -textvar [namespace current]::Option($key)
 				::validate::spinboxInt $val.s
 				ttk::label $val.r -text "($var..$max)"
 				grid $val.s -column 0 -row 0
@@ -1124,7 +1146,7 @@ proc BuildOptionFrame {protocol engineName options directory} {
 					-showvalue yes \
 					-takefocus 1 \
 					-width 10 \
-					-variable [namespace current]::Option($name) \
+					-variable [namespace current]::Option($key) \
 					-font TkTooltipFont \
 					;
 				::theme::enableScale $val
@@ -1145,11 +1167,11 @@ proc BuildOptionFrame {protocol engineName options directory} {
 				ttk::label $lbl -text $name
 				ttk::checkbutton $val \
 					-takefocus 1 \
-					-variable [namespace current]::Option($name) \
+					-variable [namespace current]::Option($key) \
 					-offvalue false \
 					-onvalue true \
 					;
-#				set args [list variable [namespace current]::Option($name) \
+#				set args [list variable [namespace current]::Option($key) \
 #					write [namespace code [list SetOnOff $val]]]
 #				trace add {*}$args
 #				bind $val <Destroy> [list trace remove {*}$args]
@@ -1160,22 +1182,22 @@ proc BuildOptionFrame {protocol engineName options directory} {
 					-values [Split $var] \
 					-state readonly \
 					-takefocus 1 \
-					-textvar [namespace current]::Option($name)
+					-textvar [namespace current]::Option($key)
 					;
 			}
 			string {
 				ttk::label $lbl -text $name
-				ttk::entry $val -textvar [namespace current]::Option($name) -takefocus 1
+				ttk::entry $val -textvar [namespace current]::Option($key) -takefocus 1
 				set sticky ew
 			}
 			file - path {
 				ttk::label $lbl -text $name
 				ttk::frame $val -borderwidth 0 -takefocus 0
-				ttk::entry $val.e -textvar [namespace current]::Option($name) -takefocus 1
+				ttk::entry $val.e -textvar [namespace current]::Option($key) -takefocus 1
 				ttk::button $val.b \
 					-style icon.TButton \
 					-image $::fsbox::icon::16x16::folder \
-					-command [namespace code [list GetPath $type $name $dflt $directory]] \
+					-command [namespace code [list GetPath $type $key $dflt $directory]] \
 					;
 				grid $val.e -column 0 -row 0 -sticky we
 				grid $val.b -column 2 -row 0
@@ -1190,12 +1212,12 @@ proc BuildOptionFrame {protocol engineName options directory} {
 				set btn $f.btn_$row
 				ttk::button $btn \
 					-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
-					-command [list set [namespace current]::Option($name) $dflt] \
+					-command [list set [namespace current]::Option($key) $dflt] \
 					;
 				::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
 				grid $btn -row $row -column 1
-				set args [list variable [namespace current]::Option($name) write \
-								[namespace code [list SetOptionState $val $name $dflt $btn]]]
+				set args [list variable [namespace current]::Option($key) write \
+								[namespace code [list SetOptionState $val $key $dflt $btn]]]
 				trace add {*}$args
 				bind $btn <Destroy> [list trace remove {*}$args]
 			}
@@ -1212,7 +1234,7 @@ proc BuildOptionFrame {protocol engineName options directory} {
 			incr row
 		}
 
-		set Option($name) $value
+		set Option($key) $value
 	}
 
 	if {[llength [grid slaves $f]]} {
@@ -1232,7 +1254,7 @@ proc BuildOptionFrame {protocol engineName options directory} {
 }
 
 
-proc GetPath {type name dflt dir} {
+proc GetPath {type key dflt dir} {
 	variable Option
 	variable Priv
 
@@ -1267,19 +1289,19 @@ proc GetPath {type name dflt dir} {
 				set file [string range $file 1 end]
 			}
 		}
-		set Option($name) $file
+		set Option($key) $file
 	}
 }
 
 
-proc SetOptionState {val name dflt btn args} {
+proc SetOptionState {val key dflt btn args} {
 	variable Option
 
 	VarChanged
-	if {$Option($name) eq $dflt} { set state disabled } else { set state normal }
+	if {$Option($key) eq $dflt} { set state disabled } else { set state normal }
 	$btn configure -state $state
 	if {[winfo class $val] eq "TCheckbutton"} {
-		$val configure -text [expr {$Option($name) ? "true" : "false"}]
+		$val configure -text [expr {$Option($key) ? "true" : "false"}]
 	}
 }
 
@@ -1509,20 +1531,16 @@ proc SaveEngine {list} {
 			}
 		}
 
-		set protocol ""
-		switch -glob $engine(Protocol) {
-			WB*	{ set protocol WB }
-			UCI*	{ set protocol UCI }
-		}
-		if {[string length $protocol]} {
+		foreach protocol $engine(Protocol) {
 			set newOptions {}
 			foreach opt $engine(Options:$protocol) {
-				lset opt 2 $Option([lindex $opt 0])
+				lset opt 2 $Option($protocol:[lindex $opt 0])
 				lappend newOptions $opt
 			}
-			set engine(Options:UCI) $newOptions
-			lset Engines $sel [array get engine]
+			set engine(Options:$protocol) $newOptions
 		}
+
+		lset Engines $sel [array get engine]
 	}
 
 	SaveEngineList
