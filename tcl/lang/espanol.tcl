@@ -312,10 +312,14 @@
 ::util::photos::mc::Log(started)					"Instalación/actualización de los archivos de fotos iniciada a las %s."
 ::util::photos::mc::Log(finished)				"Instalación/actualización de los archivos de fotos finalizada a las %s."
 ::util::photos::mc::Log(destination)			"El directorio de destino de los archivos de fotos descargados es '%s'."
-::util::photos::mc::Log(created)					"%s archivo(s) creado(s)."
-::util::photos::mc::Log(deleted)					"%s archivo(s) eliminado(s)."
-::util::photos::mc::Log(skipped)					"%s archivo(s) mantenido(s)."
-::util::photos::mc::Log(updated)					"%s archivo(s) actualizado(s)."
+::util::photos::mc::Log(created:1)				"%s archivo) creado."
+::util::photos::mc::Log(created:N)				"%s archivos creados."
+::util::photos::mc::Log(deleted:1)				"%s archivo eliminado."
+::util::photos::mc::Log(deleted:N)				"%s archivos eliminados."
+::util::photos::mc::Log(skipped:1)				"%s archivo mantenido."
+::util::photos::mc::Log(skipped:N)				"%s archivos mantenidos."
+::util::photos::mc::Log(updated:1)				"%s archivo actualizado."
+::util::photos::mc::Log(updated:N)				"%s archivos actualizados."
 
 ### application ########################################################
 ::application::mc::Database				"&Base"

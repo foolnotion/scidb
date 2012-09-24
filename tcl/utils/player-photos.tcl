@@ -73,10 +73,14 @@ set Detail(badhost)				"Another possibility is a bad host, or a bad port."
 set Log(started)					"Installation/update of photo files started at %s."
 set Log(finished)					"Installation/update of photo files finished at %s."
 set Log(destination)				"Destination directory for photo file download is '%s'."
-set Log(created)					"%s file(s) created."
-set Log(deleted)					"%s file(s) deleted."
-set Log(skipped)					"%s file(s) skipped."
-set Log(updated)					"%s file(s) updated."
+set Log(created:1)				"%s file created."
+set Log(created:N)				"%s file(s) created."
+set Log(deleted:1)				"%s file deleted."
+set Log(deleted:N)				"%s file(s) deleted."
+set Log(skipped:1)				"%s file skipped."
+set Log(skipped:N)				"%s file(s) skipped."
+set Log(updated:1)				"%s file updated."
+set Log(updated:N)				"%s file(s) updated."
 
 }
 
@@ -353,7 +357,11 @@ proc LogProgress {type msg} {
 	::log::open $mc::PhotoFiles
 	::log::$type $msg
 	foreach attr {created deleted skipped updated} {
-		if {$Count($attr) > 0} { ::log::info [format $mc::Log($attr) $Count($attr)] }
+		switch $Count($attr) {
+			0			{}
+			1			{ ::log::info [format $mc::Log($attr:1) $Count($attr)] }
+			default	{ ::log::info [format $mc::Log($attr:N) $Count($attr)] }
+		}
 	}
 	if {$type eq "error"} { ::log::info $mc::DownloadAborted }
 	::log::close

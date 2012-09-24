@@ -310,10 +310,14 @@
 ::util::photos::mc::Log(started)					"Installation/update of photo files started at %s."
 ::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s."
 ::util::photos::mc::Log(destination)			"Destination directory for photo file download is '%s'."
-::util::photos::mc::Log(created)					"%s file(s) created."
-::util::photos::mc::Log(deleted)					"%s file(s) deleted."
-::util::photos::mc::Log(skipped)					"%s file(s) skipped."
-::util::photos::mc::Log(updated)					"%s file(s) updated."
+::util::photos::mc::Log(created:1)				"%s file created."
+::util::photos::mc::Log(created:N)				"%s files created."
+::util::photos::mc::Log(deleted:1)				"%s file deleted."
+::util::photos::mc::Log(deleted:N)				"%s files deleted."
+::util::photos::mc::Log(skipped:1)				"%s file skipped."
+::util::photos::mc::Log(skipped:N)				"%s files skipped."
+::util::photos::mc::Log(updated:1)				"%s file updated."
+::util::photos::mc::Log(updated:N)				"%s files updated."
 
 ### application ########################################################
 ::application::mc::Database				"&Database"

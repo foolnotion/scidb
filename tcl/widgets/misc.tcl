@@ -571,9 +571,11 @@ proc menuItemHighlightSecond {menu} {
 proc PackDialogButton {dlg btn side {position {}}} {
 	set slaves [pack slaves $dlg.__buttons]
 	set options {}
-	switch $position {
-		start	{ lappend options -before [lindex $slaves 0] }
-		end	{ lappend options -after [lindex $slaves end] }
+	if {[llength $slaves]} {
+		switch $position {
+			start	{ lappend options -before [lindex $slaves 0] }
+			end	{ lappend options -after [lindex $slaves end] }
+		}
 	}
 	pack $btn -in $dlg.__buttons -pady $::theme::pady -padx $::theme::padx -side $side {*}$options
 }

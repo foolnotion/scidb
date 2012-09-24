@@ -311,10 +311,14 @@
 ::util::photos::mc::Log(started)		"Installation/update of photo files started at %s." ;# NEW
 ::util::photos::mc::Log(finished)		"Installation/update of photo files finished at %s." ;# NEW
 ::util::photos::mc::Log(destination)		"Destination directory for photo file download is '%s'." ;# NEW
-::util::photos::mc::Log(created)		"%s file(s) created." ;# NEW
-::util::photos::mc::Log(deleted)		"%s file(s) deleted." ;# NEW
-::util::photos::mc::Log(skipped)		"%s file(s) skipped." ;# NEW
-::util::photos::mc::Log(updated)		"%s file(s) updated." ;# NEW
+::util::photos::mc::Log(created:1)		"%s file created." ;# NEW
+::util::photos::mc::Log(created:N)		"%s file(s) created." ;# NEW
+::util::photos::mc::Log(deleted:1)		"%s file deleted." ;# NEW
+::util::photos::mc::Log(deleted:N)		"%s file(s) deleted." ;# NEW
+::util::photos::mc::Log(skipped:1)		"%s file skipped." ;# NEW
+::util::photos::mc::Log(skipped:N)		"%s file(s) skipped." ;# NEW
+::util::photos::mc::Log(updated:1)		"%s file updated." ;# NEW
+::util::photos::mc::Log(updated:N)		"%s file(s) updated." ;# NEW
 
 ### application ########################################################
 ::application::mc::Database				"&Adatbázis"
