@@ -714,7 +714,6 @@ proc setup {} {
 				set engine(FileTime) $st(mtime)
 				set engine(Timestamp) [clock seconds]
 				lappend Engines [array get engine]
-return
 			}
 		}
 	}
@@ -1408,7 +1407,6 @@ proc ProbeEngine {parent entry} {
 
 	foreach prot $protocols {
 		lassign $result($prot) ok info features options
-if {$prot == "WB"} { puts "$prot: $options" }
 
 		# setup information
 		array set engine $info
