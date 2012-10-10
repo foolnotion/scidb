@@ -58,8 +58,15 @@ inline uint16_t TreeInfo::bestRating() const								{ return m_bestRating; }
 inline uint16_t TreeInfo::lastYear() const								{ return m_lastYear; }
 inline NamebasePlayer const& TreeInfo::bestPlayer() const			{ return *m_bestPlayer; }
 inline NamebasePlayer const& TreeInfo::mostFrequentPlayer() const	{ return *m_mostFrequentPlayer; }
+#ifndef SUPPORT_TREE_INFO_FILTER
+inline unsigned TreeInfo::firstGameIndex() const						{ return m_firstGameIndex; }
+#endif
 
 inline void TreeInfo::setEco(Eco code) { m_eco = code; }
+
+#ifdef SUPPORT_TREE_INFO_FILTER
+inline void TreeInfo::addGame(unsigned index) { m_filter.add(index); }
+#endif
 
 
 inline

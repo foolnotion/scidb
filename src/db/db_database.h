@@ -183,7 +183,7 @@ public:
 	/// Loads a game from the given position.
 	load::State loadGame(unsigned index, Game& game);
 	/// Loads a game from the given position.
-	load::State loadGame(unsigned index, Game& game, mstl::string& encoding);
+	load::State loadGame(unsigned index, Game& game, mstl::string& encoding, mstl::string const* fen = 0);
 	/// Saves a game at the given position.
 	void replaceGame(unsigned index, Game const& game);
 	/// Adds a game to the database.
@@ -289,7 +289,7 @@ private:
 	bool open(mstl::string const& name, mstl::fstream& stream);
 
 	void setEncodingFailed(bool flag);
-	load::State loadGame(unsigned index, Game& game, mstl::string* encoding);
+	load::State loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::string const* fen);
 
 	NamebaseEntry const* insertPlayer(mstl::string const& name);
 	NamebaseEntry const* insertEvent(mstl::string const& name);

@@ -619,38 +619,42 @@ tcl::db::lookupType(type::ID type)
 {
 	switch (type)
 	{
-		case type::Unspecific:				return "Unspecific";
-		case type::Temporary:				return "Temporary";
-		case type::Work:						return "Work";
-		case type::Clipbase:					return "Clipbase";
-		case type::My_Games:					return "MyGames";
-		case type::Informant:				return "Informant";
-		case type::Large_Database:			return "LargeDatabase";
-		case type::Correspondence_Chess:	return "CorrespondenceChess";
-		case type::Email_Chess:				return "EmailChess";
-		case type::Internet_Chess:			return "InternetChess";
-		case type::Computer_Chess:			return "ComputerChess";
-		case type::Chess_960:				return "Chess960";
-		case type::Player_Collection:		return "PlayerCollection";
-		case type::Tournament:				return "Tournament";
-		case type::Tournament_Swiss:		return "TournamentSwiss";
-		case type::GM_Games:					return "GMGames";
-		case type::IM_Games:					return "IMGames";
-		case type::Blitz_Games:				return "BlitzGames";
-		case type::Tactics:					return "Tactics";
-		case type::Endgames:					return "Endgames";
-		case type::Analysis:					return "Analysis";
-		case type::Training:					return "Training";
-		case type::Match:						return "Match";
-		case type::Studies:					return "Studies";
-		case type::Jewels:					return "Jewels";
-		case type::Problems:					return "Problems";
-		case type::Patzer:					return "Patzer";
-		case type::Gambit:					return "Gambit";
-		case type::Important:				return "Important";
-		case type::Openings_White:			return "OpeningsWhite";
-		case type::Openings_Black:			return "OpeningsBlack";
-		case type::Openings:					return "Openings";
+		case type::Unspecific:					return "Unspecific";
+		case type::Temporary:					return "Temporary";
+		case type::Work:							return "Work";
+		case type::Clipbase:						return "Clipbase";
+		case type::My_Games:						return "MyGames";
+		case type::Informant:					return "Informant";
+		case type::Large_Database:				return "LargeDatabase";
+		case type::Correspondence_Chess:		return "CorrespondenceChess";
+		case type::Email_Chess:					return "EmailChess";
+		case type::Internet_Chess:				return "InternetChess";
+		case type::Computer_Chess:				return "ComputerChess";
+		case type::Chess_960:					return "Chess960";
+		case type::Player_Collection:			return "PlayerCollection";
+		case type::Tournament:					return "Tournament";
+		case type::Tournament_Swiss:			return "TournamentSwiss";
+		case type::GM_Games:						return "GMGames";
+		case type::IM_Games:						return "IMGames";
+		case type::Blitz_Games:					return "BlitzGames";
+		case type::Tactics:						return "Tactics";
+		case type::Endgames:						return "Endgames";
+		case type::Analysis:						return "Analysis";
+		case type::Training:						return "Training";
+		case type::Match:							return "Match";
+		case type::Studies:						return "Studies";
+		case type::Jewels:						return "Jewels";
+		case type::Problems:						return "Problems";
+		case type::Patzer:						return "Patzer";
+		case type::Gambit:						return "Gambit";
+		case type::Important:					return "Important";
+		case type::Openings_White:				return "OpeningsWhite";
+		case type::Openings_Black:				return "OpeningsBlack";
+		case type::Openings:						return "Openings";
+		case type::Bughouse:						return "Bughouse";
+		case type::Antichess:					return "Antichess";
+		case type::PlayerCollectionFemale:	return "PlayerCollectionFemale";
+		case type::PGNFile:						return "PGNFile";
 	}
 
 	return 0;	// not reached
@@ -809,8 +813,8 @@ convToType(char const* cmd, Tcl_Obj* typeObj, int* type)
 							Tcl_GetString(typeObj));
 	}
 
-	if (*type < 0 || *type >= 32)
-		return error(cmd, nullptr, nullptr, "given type exceeds range 0-31");
+	if (0 > *type || *type > ::db::type::LAST)
+		return error(cmd, nullptr, nullptr, "given type exceeds range 0-%d", int(::db::type::LAST));
 
 	return TCL_OK;
 }
@@ -1248,12 +1252,12 @@ getTypes(Tcl_Interp* ti, char const* suffix)
 
 	if (::strcmp(suffix, "sci") == 0)
 	{
-		for (int i = 0; i < 32; ++i)
+		for (int i = 0; i <= type::LAST; ++i)
 			Tcl_ListObjAppendElement(ti, list, Tcl_NewStringObj(lookupType(type::ID(i)), -1));
 	}
 	else	// si3, si4
 	{
-		for (int i = 0; i < 32; ++i)
+		for (int i = 0; i <= type::LAST; ++i)
 		{
 			type::ID type = type::ID(i);
 
@@ -1586,7 +1590,7 @@ getGameInfo(int index, int view, char const* database, unsigned which)
 				else
 					eco = info.ecoKey();
 
-				if (info.idn() == chess960::StandardIdn && eco)
+				if (info.idn() == variant::StandardIdn && eco)
 				{
 					EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvar);
 
@@ -1700,7 +1704,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	mstl::string openingLong, openingShort, variation, subvariation, round;
 
 	Eco eco = info.eco();
-	Eco eop = info.idn() == chess960::StandardIdn ? info.ecoKey() : Eco();
+	Eco eop = info.idn() == variant::StandardIdn ? info.ecoKey() : Eco();
 
 	if (db.format() == format::Scidb)
 	{
@@ -1716,7 +1720,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 		round.assign(tags.value(tag::Round));
 	}
 
-	if (info.idn() == chess960::StandardIdn && eco)
+	if (info.idn() == variant::StandardIdn && eco)
 	{
 		EcoTable::specimen().getOpening(eco, openingLong, openingShort, variation, subvariation);
 
@@ -1740,7 +1744,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	if (db.format() == format::Scid4)
 		::mapScid4Flags(flags);
 
-	if (info.idn() == chess960::StandardIdn)
+	if (info.idn() == variant::StandardIdn)
 	{
 		if (eop)
 			EcoTable::specimen().getLine(eop).print(overview, encoding::Utf8);
@@ -1811,7 +1815,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(Changed,              Tcl_NewIntObj(info.isDirty() || info.isChanged()));
 	SET(Promotion,            Tcl_NewBooleanObj(info.hasPromotion()));
 	SET(UnderPromotion,       Tcl_NewBooleanObj(info.hasUnderPromotion()));
-	SET(StandardPosition,     Tcl_NewBooleanObj(info.idn() == chess960::StandardIdn));
+	SET(StandardPosition,     Tcl_NewBooleanObj(info.idn() == variant::StandardIdn));
 	SET(Chess960Position,     Tcl_NewBooleanObj(info.idn() <= 960));
 	SET(Termination,          Tcl_NewStringObj(termination::toString(info.terminationReason()), -1));
 	SET(Mode,                 Tcl_NewStringObj(event::toString(info.eventMode()), -1));

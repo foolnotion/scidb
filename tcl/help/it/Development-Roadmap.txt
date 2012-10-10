@@ -21,10 +21,12 @@ TITLE Piano di Sviluppo
 <h2>Funzioni per le prossime release</h2>
 
 <ul>
-  <li>Finestra Analisi: lancia un motore di scacchi esterno</li>
   <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
   <li>Funzioni di Filtro: filtro partita, giocatore</li>
   <li>Layout flessibile per le finestre</li>
+<NEW>
+  <li>Support of more chess variants: Bughouse, Crazyhouse, Antichess</li>
+</NEW>
   <li>Generazione documenti: esportazione in LaTeX</li>
   <li>Supporto per il sistema operativo Windows</li>
   <li>Compressione Database (eliminazione partite cancellate)</li>

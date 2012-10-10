@@ -365,7 +365,6 @@ proc popup {parent args} {
 		set sum [expr {$sum + [set $v]}]
 		set row [expr {2*(($sum + 5)/6) + 2}]
 		if {0 <= $row && $row < $lastrow} { grid rowconfigure $top.f $row -minsize 8 }
-if {0 <= $row && $row < $lastrow} { puts "--> $row" }
 	}
 	grid columnconfigure $top.f 6 -minsize 1
 

@@ -22,10 +22,12 @@ CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	tk_busy.cpp \
+	tk_clock.cpp \
 	tk_fixes.cpp \
 	tk_image.cpp \
 	tk_init.cpp \
 	tk_jpeg.cpp \
+	tk_misc.cpp \
 	tk_multiwindow.cpp \
 	tk_notebook.cpp \
 	tk_png.cpp \
@@ -72,6 +74,41 @@ tk_busy.o: tk8.5/tkPort.h
 tk_busy.o: tk8.5/tkUnixPort.h
 tk_busy.o: tk8.5/tkIntDecls.h
 tk_busy.o: ../mstl/m_types.h
+tk_clock.o: tk_init.h
+tk_clock.o: ../tcl/tcl_base.h
+tk_clock.o: ../tcl/tcl_base.ipp
+tk_clock.o: ../mstl/m_assert.h
+tk_clock.o: ../mstl/m_exception.h
+tk_clock.o: ../mstl/m_backtrace.h
+tk_clock.o: ../mstl/m_types.h
+tk_clock.o: ../mstl/m_exception.ipp
+tk_clock.o: svg/agg/agg_path_storage.h
+tk_clock.o: svg/agg/agg_math.h
+tk_clock.o: svg/agg/agg_basics.h
+tk_clock.o: svg/agg/agg_config.h
+tk_clock.o: svg/agg/agg_array.h
+tk_clock.o: svg/agg/agg_bezier_arc.h
+tk_clock.o: svg/agg/agg_conv_transform.h
+tk_clock.o: svg/agg/agg_trans_affine.h
+tk_clock.o: svg/agg/agg_color_rgba.h
+tk_clock.o: svg/agg/agg_pixfmt_rgba.h
+tk_clock.o: svg/agg/agg_rendering_buffer.h
+tk_clock.o: svg/agg/agg_ellipse.h
+tk_clock.o: svg/agg/agg_rasterizer_scanline_aa.h
+tk_clock.o: svg/agg/agg_rasterizer_cells_aa.h
+tk_clock.o: svg/agg/agg_rasterizer_sl_clip.h
+tk_clock.o: svg/agg/agg_clip_liang_barsky.h
+tk_clock.o: svg/agg/agg_gamma_functions.h
+tk_clock.o: svg/agg/agg_conv_curve.h
+tk_clock.o: svg/agg/agg_curves.h
+tk_clock.o: svg/agg/agg_conv_stroke.h
+tk_clock.o: svg/agg/agg_vcgen_stroke.h
+tk_clock.o: svg/agg/agg_math_stroke.h
+tk_clock.o: svg/agg/agg_vertex_sequence.h
+tk_clock.o: svg/agg/agg_conv_adaptor_vcgen.h
+tk_clock.o: svg/agg/agg_scanline_u.h
+tk_clock.o: svg/agg/agg_renderer_scanline.h
+tk_clock.o: svg/agg/agg_renderer_base.h
 tk_fixes.o: tk_init.h
 tk_fixes.o: tk8.5/tkInt.h
 tk_fixes.o: tk8.5/tkPort.h
@@ -169,6 +206,7 @@ tk_jpeg.o: ../util/u_exception.h
 tk_jpeg.o: ../mstl/m_exception.h
 tk_jpeg.o: ../mstl/m_backtrace.h
 tk_jpeg.o: ../mstl/m_exception.ipp
+tk_misc.o: tk_init.h
 tk_multiwindow.o: tk_init.h
 tk_multiwindow.o: ../tcl/tcl_base.h
 tk_multiwindow.o: ../tcl/tcl_base.ipp

@@ -18,10 +18,11 @@ include ../../Makefile.in
 INCLUDE		= -I. -I../util -I../tcl -I../mstl
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE)
 CXXFLAGS		+= $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) $(THR_SUPPORT)
-CXXFLAGS		+= $(HAVE_INOTIFY) $(SYS_INOTIFY) $(HAVE_LIBFAM)
+CXXFLAGS		+= $(HAVE_INOTIFY) $(SYS_INOTIFY) $(HAVE_LIBFAM) $(HAVE_STATVFS)
 
 SRC_CXX = \
 	sys_dl.cpp \
+	sys_info.cpp \
 	sys_fam.cpp \
 	sys_file.cpp \
 	sys_pipe.cpp \
@@ -32,6 +33,7 @@ SRC_CXX = \
 	sys_timer.cpp \
 	sys_utf8.cpp \
 	sys_utf8_codec.cpp \
+	sys_vfs.cpp \
 
 SRC	= $(SRC_CXX)
 OBJS	= $(SRC_CXX:.cpp=.o)
@@ -84,6 +86,7 @@ sys_dl.o: ../mstl/m_assert.h
 sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
 sys_dl.o: ../mstl/m_exception.ipp
+sys_info.o: sys_info.h
 sys_fam.o: sys_fam.h
 sys_fam.o: ../mstl/m_string.h
 sys_fam.o: ../mstl/m_types.h
@@ -269,3 +272,18 @@ sys_utf8_codec.o: sys_base.ipp
 sys_utf8_codec.o: ../tcl/tcl_base.h
 sys_utf8_codec.o: ../tcl/tcl_base.ipp
 sys_utf8_codec.o: ../util/u_base.h
+sys_vfs.o: sys_vfs.h
+sys_vfs.o: ../mstl/m_string.h
+sys_vfs.o: ../mstl/m_types.h
+sys_vfs.o: ../mstl/m_string.ipp
+sys_vfs.o: ../mstl/m_utility.h
+sys_vfs.o: ../mstl/m_type_traits.h
+sys_vfs.o: ../mstl/m_type_traits.ipp
+sys_vfs.o: ../mstl/m_utility.ipp
+sys_vfs.o: ../mstl/m_limits.h
+sys_vfs.o: ../mstl/m_bit_functions.h
+sys_vfs.o: ../mstl/m_bit_functions.ipp
+sys_vfs.o: ../mstl/m_assert.h
+sys_vfs.o: ../mstl/m_exception.h
+sys_vfs.o: ../mstl/m_backtrace.h
+sys_vfs.o: ../mstl/m_exception.ipp

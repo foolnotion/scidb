@@ -406,6 +406,8 @@ app_engine.o: ../mstl/m_list.h
 app_engine.o: ../mstl/m_list_node.h
 app_engine.o: ../mstl/m_list_node.ipp
 app_engine.o: ../mstl/m_list.ipp
+app_engine.o: ../mstl/m_bitfield.h
+app_engine.o: ../mstl/m_bitfield.ipp
 app_engine.o: app_engine.ipp
 app_engine.o: app_uci_engine.h
 app_engine.o: ../db/db_board.h
@@ -420,8 +422,6 @@ app_engine.o: ../db/db_provider.h
 app_engine.o: ../db/db_provider.ipp
 app_engine.o: ../db/db_game_data.h
 app_engine.o: ../db/db_tag_set.h
-app_engine.o: ../mstl/m_bitfield.h
-app_engine.o: ../mstl/m_bitfield.ipp
 app_engine.o: ../db/db_tag_set.ipp
 app_engine.o: ../db/db_engine_list.h
 app_engine.o: ../mstl/m_map.h
@@ -458,6 +458,8 @@ app_engine.o: ../mstl/m_ostream.h
 app_engine.o: ../mstl/m_ios.h
 app_engine.o: ../mstl/m_ios.ipp
 app_engine.o: ../mstl/m_ostream.ipp
+app_engine.o: ../mstl/m_algorithm.h
+app_engine.o: ../mstl/m_algorithm.ipp
 app_exception.o: app_exception.h
 app_exception.o: ../util/u_exception.h
 app_exception.o: ../mstl/m_exception.h
@@ -509,6 +511,8 @@ app_uci_engine.o: ../mstl/m_list.h
 app_uci_engine.o: ../mstl/m_list_node.h
 app_uci_engine.o: ../mstl/m_list_node.ipp
 app_uci_engine.o: ../mstl/m_list.ipp
+app_uci_engine.o: ../mstl/m_bitfield.h
+app_uci_engine.o: ../mstl/m_bitfield.ipp
 app_uci_engine.o: app_engine.ipp
 app_uci_engine.o: ../db/db_board.h
 app_uci_engine.o: ../db/db_signature.h
@@ -521,8 +525,6 @@ app_uci_engine.o: ../db/db_provider.h
 app_uci_engine.o: ../db/db_provider.ipp
 app_uci_engine.o: ../db/db_game_data.h
 app_uci_engine.o: ../db/db_tag_set.h
-app_uci_engine.o: ../mstl/m_bitfield.h
-app_uci_engine.o: ../mstl/m_bitfield.ipp
 app_uci_engine.o: ../db/db_tag_set.ipp
 app_uci_engine.o: ../db/db_engine_list.h
 app_uci_engine.o: ../mstl/m_map.h
@@ -787,6 +789,8 @@ app_winboard_engine.o: ../mstl/m_list.h
 app_winboard_engine.o: ../mstl/m_list_node.h
 app_winboard_engine.o: ../mstl/m_list_node.ipp
 app_winboard_engine.o: ../mstl/m_list.ipp
+app_winboard_engine.o: ../mstl/m_bitfield.h
+app_winboard_engine.o: ../mstl/m_bitfield.ipp
 app_winboard_engine.o: app_engine.ipp
 app_winboard_engine.o: ../db/db_board.h
 app_winboard_engine.o: ../db/db_signature.h
@@ -801,8 +805,6 @@ app_winboard_engine.o: ../db/db_provider.h
 app_winboard_engine.o: ../db/db_provider.ipp
 app_winboard_engine.o: ../db/db_game_data.h
 app_winboard_engine.o: ../db/db_tag_set.h
-app_winboard_engine.o: ../mstl/m_bitfield.h
-app_winboard_engine.o: ../mstl/m_bitfield.ipp
 app_winboard_engine.o: ../db/db_tag_set.ipp
 app_winboard_engine.o: ../db/db_engine_list.h
 app_winboard_engine.o: ../mstl/m_map.h
@@ -829,4 +831,5 @@ app_winboard_engine.o: ../mstl/m_ref_counter.ipp
 app_winboard_engine.o: ../db/db_game.ipp
 app_winboard_engine.o: ../sys/sys_signal.h
 app_winboard_engine.o: ../sys/sys_timer.h
+app_winboard_engine.o: ../sys/sys_time.h
 app_winboard_engine.o: ../mstl/m_stdio.h

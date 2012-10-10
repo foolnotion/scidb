@@ -32,7 +32,7 @@ inline unsigned Engine::hashSize() const							{ return m_hashSize; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
 inline unsigned Engine::limitedStrength() const					{ return m_strength; }
-inline unsigned Engine::numThreads() const						{ return m_numThreads; }
+inline unsigned Engine::numCores() const							{ return m_numCores; }
 
 
 inline bool Engine::Concrete::isActive() const					{ return m_engine->isActive(); }
@@ -48,11 +48,16 @@ inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->search
 inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
+inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
+inline unsigned Engine::Concrete::currentVariant() const		{ return m_engine->m_currentVariant; }
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 
 inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
 inline void Engine::Concrete::deactivate()								{ m_engine->deactivate(); }
 inline void Engine::Concrete::addFeature(unsigned feature)			{ m_engine->addFeature(feature); }
+inline void Engine::Concrete::removeFeature(unsigned feature)		{ m_engine->removeFeature(feature); }
+inline void Engine::Concrete::addVariant(unsigned variant)			{ m_engine->addVariant(variant); }
+inline void Engine::Concrete::removeVariant(unsigned variant)		{ m_engine->removeVariant(variant); }
 inline void Engine::Concrete::engineIsReady()							{ m_engine->engineIsReady(); }
 
 inline void Engine::Concrete::setBestMove(db::Move const& move)	{ m_engine->setBestMove(move); }
@@ -73,14 +78,14 @@ inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(
 inline void Engine::Concrete::updateDepthInfo()							{ m_engine->updateDepthInfo(); }
 inline void Engine::Concrete::updateTimeInfo()							{ m_engine->updateTimeInfo(); }
 inline void Engine::Concrete::updateHashFullInfo()						{ m_engine->updateHashFullInfo(); }
+inline void Engine::Concrete::updateError(Error code)					{ m_engine->updateError(code); }
+inline void Engine::Concrete::updateState(State state)				{ m_engine->updateState(state); }
 inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
+inline void Engine::Concrete::error(Error code)							{ m_engine->error(code); }
 
 inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
 
-
-inline void Engine::pause()	{ m_engine->pause(); }
-inline void Engine::resume()	{ m_engine->resume(); }
 
 inline bool Engine::protocolAlreadyStarted() const		{ return m_protocol; }
 inline Engine::Options const& Engine::options() const	{ return m_options; }
@@ -151,6 +156,14 @@ Engine::Concrete::hasFeature(unsigned feature) const
 
 
 inline
+bool
+Engine::Concrete::hasVariant(unsigned variant) const
+{
+	return m_engine->hasVariant(variant);
+}
+
+
+inline
 void
 Engine::Concrete::setVariation(unsigned no, db::MoveList const& moves)
 {
@@ -163,6 +176,14 @@ void
 Engine::Concrete::setCurrentMove(unsigned number, db::Move const& move)
 {
 	m_engine->setCurrentMove(number, move);
+}
+
+
+inline
+void
+Engine::Concrete::setHashFullness(unsigned fullness)
+{
+	m_engine->setHashFullness(fullness);
 }
 
 
@@ -276,6 +297,7 @@ Engine::Concrete::addOption(	mstl::string const& name,
 
 
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
+inline bool Engine::hasVariant(unsigned variant) const 		{ return m_variants & variant; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
 inline bool Engine::bestInfoHasChanged() const					{ return m_bestInfoHasChanged; }
 
@@ -289,6 +311,7 @@ inline db::Board const& Engine::currentBoard() const			{ return m_engine->curren
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
 inline unsigned Engine::currentMoveNumber() const				{ return m_currMoveNumber; }
 inline db::Move const& Engine::currentMove() const				{ return m_currMove; }
+inline unsigned Engine::hashFullness() const						{ return m_hashFullness; }
 inline int Engine::exitStatus() const								{ return m_exitStatus; }
 inline mstl::string const& Engine::identifier() const			{ return m_identifier; }
 inline mstl::string const& Engine::shortName() const			{ return m_shortName; }
@@ -306,6 +329,8 @@ inline unsigned Engine::maxHashSize() const						{ return m_maxHashSize; }
 inline unsigned Engine::minThreads() const						{ return m_minThreads; }
 inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
+inline unsigned Engine::supportedVariants() const				{ return m_variants; }
+inline mstl::string const& Engine::command() const				{ return m_command; }
 
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
@@ -316,6 +341,9 @@ inline void Engine::setElo(unsigned elo)							{ m_elo = elo; }
 inline void Engine::setPonder(db::Move const& move)			{ m_ponder = move; }
 inline void Engine::setLog(mstl::ostream* stream)				{ m_logStream = stream; }
 inline void Engine::resetBestInfoHasChanged()					{ m_bestInfoHasChanged = false; }
+inline void Engine::addVariant(unsigned variant)				{ m_variants |= variant; }
+inline void Engine::removeVariant(unsigned variant)			{ m_variants &= ~variant; }
+
 
 
 inline
@@ -333,6 +361,14 @@ Engine::setCurrentMove(unsigned number, db::Move const& move)
 {
 	m_currMoveNumber = number;
 	m_currMove = move;
+}
+
+
+inline
+void
+Engine::setHashFullness(unsigned fullness)
+{
+	m_hashFullness = fullness;
 }
 
 

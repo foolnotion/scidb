@@ -55,6 +55,8 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <limits.h>
 
 using namespace db;
 using namespace db::cbh;
@@ -366,10 +368,10 @@ static type::ID const TypeMap[] =
 	Unspecific,					// Tutorial
 	Unspecific,					// Elite Chess
 	Jewels,						// Brilliance
-	Unspecific,					// Woman Chess
+	PlayerCollectionFemale,	// Woman Chess
 	Unspecific,					// Junior Chess
 	Unspecific,					// Simultaneous
-	Unspecific,					// Team Tournaments
+	Tournament,					// Team Tournaments
 };
 
 
@@ -435,6 +437,66 @@ strippedLen(char const* s)
 		--len;
 
 	return len;
+}
+
+
+static int
+compTournament(void const* lhs, void const* rhs)
+{
+	typedef mstl::pair<db::NamebaseEvent const*,Codec::Tournament> const ValueType;
+
+	ValueType* l = static_cast<ValueType*>(lhs);
+	ValueType* r = static_cast<ValueType*>(rhs);
+
+#if UINTPTR_MAX == UINT_MAX
+	return l->first - r->first;
+#else
+	if (l->first < r->first) return -1;
+	if (r->first < l->first) return +1;
+	return 0;
+#endif
+}
+
+
+static int
+compIndexLookup(void const* lhs, void const* rhs)
+{
+	typedef mstl::pair<db::GameInfo const*,unsigned> const ValueType;
+
+	ValueType* l = static_cast<ValueType*>(lhs);
+	ValueType* r = static_cast<ValueType*>(rhs);
+
+#if UINTPTR_MAX == UINT_MAX
+	return l->first - r->first;
+#else
+	if (l->first < r->first) return -1;
+	if (r->first < l->first) return +1;
+	return 0;
+#endif
+}
+
+
+static int
+compBase(void const* lhs, void const* rhs)
+{
+	typedef mstl::pair<uint32_t,void*> const ValueType;
+
+	ValueType* l = static_cast<ValueType*>(lhs);
+	ValueType* r = static_cast<ValueType*>(rhs);
+
+	return int(l->first) - int(r->first);
+}
+
+
+static int
+compAnnotation(void const* lhs, void const* rhs)
+{
+	typedef mstl::pair<uint32_t,uint32_t> const ValueType;
+
+	ValueType* l = static_cast<ValueType*>(lhs);
+	ValueType* r = static_cast<ValueType*>(rhs);
+
+	return int(l->first) - int(r->first);
 }
 
 
@@ -859,8 +921,10 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 												nrecs,
 												site);
 
-			m_eventMap[i] = event;
-			m_tournamentMap[event] = Tournament(category, rounds);
+			m_eventMap.container().push_back(BaseMap::value_type(i, event));
+
+			m_tournamentMap.container().push_back(
+				TournamentMap::value_type(event, Tournament(category, rounds)));
 
 			strm.seekg(RecordSize - 89, mstl::ios_base::cur);
 		}
@@ -869,6 +933,15 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 	siteBase.setNextId(nrecs);
 	eventBase.setNextId(nrecs);
 	strm.close();
+
+	::qsort(	m_tournamentMap.container().begin(),
+				m_tournamentMap.container().size(),
+				sizeof(TournamentMap::value_type),
+				::compTournament);
+	::qsort(	m_eventMap.container().begin(),
+				m_eventMap.container().size(),
+				sizeof(BaseMap::value_type),
+				compBase);
 }
 
 
@@ -944,13 +1017,19 @@ Codec::readPlayerData(mstl::string const& rootname, util::Progress& progress)
 				}
 			}
 
-			m_playerMap[i] = base.insertPlayer(str, fideID, nrecs);
+			m_playerMap.container().push_back(
+				BaseMap::value_type(i, base.insertPlayer(str, fideID, nrecs)));
 			strm.seekg(RecordSize - 59, mstl::ios_base::cur);
 		}
 	}
 
 	base.setNextId(nrecs);
 	strm.close();
+
+	::qsort(	m_playerMap.container().begin(),
+				m_playerMap.container().size(),
+				sizeof(BaseMap::value_type),
+				compBase);
 }
 
 
@@ -1005,7 +1084,7 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 			if (!str.empty())
 			{
 				toUtf8(str);
-				m_annotatorMap[i] = base.insert(str, nrecs);
+				m_annotatorMap.container().push_back(BaseMap::value_type(i, base.insert(str, nrecs)));
 			}
 
 			strm.seekg(RecordSize - 54, mstl::ios_base::cur);
@@ -1014,6 +1093,11 @@ Codec::readAnnotatorData(mstl::string const& rootname, util::Progress& progress)
 
 	base.setNextId(nrecs);
 	strm.close();
+
+	::qsort(	m_annotatorMap.container().begin(),
+				m_annotatorMap.container().size(),
+				sizeof(BaseMap::value_type),
+				compBase);
 }
 
 
@@ -1077,7 +1161,7 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 			{
 				toUtf8(str);
 				::setDate(sourceDate, ByteStream::uint24LE(buf));
-				m_sourceMap2[i] = new Source(str, sourceDate);
+				m_sourceMap2.container().push_back(BaseMap::value_type(i, new Source(str, sourceDate)));
 			}
 
 			strm.seekg(4, mstl::ios_base::cur); // skip date and version
@@ -1090,6 +1174,11 @@ Codec::readSourceData(mstl::string const& rootname, util::Progress& progress)
 	}
 
 	strm.close();
+
+	::qsort(	m_sourceMap2.container().begin(),
+				m_sourceMap2.container().size(),
+				sizeof(BaseMap::value_type),
+				compBase);
 }
 
 
@@ -1858,7 +1947,7 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 			decodeIndex(bstrm, *infoList.back());
 
 			if (m_teamRecords)
-				m_gameIndexLookup[infoList.back()] = i;
+				m_gameIndexLookup.container().push_back(GameIndexLookup::value_type(infoList.back(), i));
 		}
 		else
 		{
@@ -1867,6 +1956,15 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	}
 
 	strm.close();
+
+	::qsort(	m_gameIndexLookup.container().begin(),
+				m_gameIndexLookup.container().size(),
+				sizeof(GameIndexLookup::value_type),
+				::compIndexLookup);
+	::qsort(	m_annotationMap.container().begin(),
+				m_annotationMap.container().size(),
+				sizeof(AnnotationMap::value_type),
+				::compAnnotation);
 }
 
 
@@ -2252,7 +2350,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 	info.m_gameOffset = strm.uint32();
 
 	if (unsigned offset = strm.uint32())
-		m_annotationMap[info.m_gameOffset] = offset;
+		m_annotationMap.container().push_back(AnnotationMap::value_type(info.m_gameOffset, offset));
 
 	NamebasePlayer* white = getPlayer(strm.uint24());
 	NamebasePlayer* black = getPlayer(strm.uint24());
@@ -2321,7 +2419,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 
 	strm.skip(3);
 	flags = strm.get();
-	info.m_positionId = flags & (1 << 0) ? 0 : chess960::StandardIdn;
+	info.m_positionId = flags & (1 << 0) ? 0 : variant::StandardIdn;
 
 	if (flags & (1 << 1)) info.m_variationCount = 5;
 	if (flags & (1 << 2)) info.m_commentCount = 5;

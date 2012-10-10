@@ -62,6 +62,7 @@ public:
 		UnterminatedVariation,
 		InvalidMove,
 		UnsupportedVariant,
+		UnsupportedCrazyhouseVariant,
 		TooManyGames,
 		FileSizeExeeded,
 		GameTooLong,
@@ -257,7 +258,7 @@ private:
 	void putLastMove();
 	void setNullMove();
 	void handleError(Error code, mstl::string const& message);
-	void finishGame();
+	void finishGame(bool skip = false);
 	void checkSite();
 	void checkMode();
 	void convertToUtf(mstl::string& s);

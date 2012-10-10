@@ -212,7 +212,11 @@ proc scrollbar {path args} {
 
 proc Map {w} {
 	# Due to a bug (inside the Tk library?) we have to force window mapping
-	grid remove $w.__vs__
+#	if {[winfo exists $w.__vs__]} {
+#		grid remove $w.__vs__
+#	} elseif [winfo exists $w.__hs__] {
+#		grid remove $w.__hs__
+#	}
 	MapWindow $w.__scrolledframe__
 	bind $w <Map> {#}
 }
@@ -237,6 +241,7 @@ proc Dispatch {w cmd args} {
 		see			{ See $w {*}$args }
 		viewbox		{ return [ViewBox $w] }
 		vsbwidth		{ return [VsbWidth $w] }
+		hsbheight	{ return [HsbHeight $w] }
 		configure   { uplevel 1 [linsert $args 0 ::scrolledframe::Config $w] }
 		xview       { uplevel 1 [linsert $args 0 ::scrolledframe::Xview $w] }
 		yview       { uplevel 1 [linsert $args 0 ::scrolledframe::Yview $w] }
@@ -389,6 +394,8 @@ proc Fit {w} {
 	set ht [winfo height $parent]
 
 	if {$wd > 1 && $ht > 1} {
+		set ht [expr {max(1, $ht - [HsbHeight $w])}]
+		set wd [expr {max(1, $wd - [VsbWidth $w])}]
 		$w configure -width $wd -height $ht
 		Resize $w 0 force
 	}
@@ -644,16 +651,33 @@ proc VsbWidth {w} {
 }
 
 
+proc HsbHeight {w} {
+	set parent [winfo parent $w]
+
+	set hs $parent.__hs__
+	if {![winfo exists $hs]} { return 0 }
+	if {$hs ni [grid slaves $parent]} { return 0 }
+	set h [winfo height $hs]
+	if {$h == 1} { set h 0 }
+	return $h
+}
+
+
 proc See {w args} {
 	set hs [winfo parent $w].__hs__
 	set vs [winfo parent $w].__vs__
 
 	if {[llength $args] == 1} {
 		set child [lindex $args 0]
-		set xc [winfo x $child]
-		set yc [winfo y $child]
 		set wc [winfo width $child]
 		set hc [winfo height $child]
+		set xc 0
+		set yc 0
+		while {$child ne "$w.scrolled"} {
+			incr xc [winfo x $child]
+			incr yc [winfo y $child]
+			set child [winfo parent $child]
+		}
 	} elseif {[llength $args] == 4} {
 		lassign $args xc yc x2 y2
 		set wc [expr {$x2 - $xc}]

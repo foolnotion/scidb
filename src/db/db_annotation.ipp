@@ -31,9 +31,21 @@ namespace db {
 
 inline Annotation::Annotation() : m_count(0) {}
 
-inline bool Annotation::isEmpty() const			{ return m_count == 0; }
-inline unsigned Annotation::count() const			{ return m_count; }
-inline uint8_t const* Annotation::data() const	{ return m_annotation; }
+inline unsigned Annotation::count() const					{ return m_count; }
+inline unsigned Annotation::countUsualNags() const		{ return m_count - countUnusualNags(); }
+
+inline bool Annotation::isEmpty() const					{ return m_count == 0; }
+inline bool Annotation::containsUsualNags() const		{ return countUsualNags() > 0; }
+inline bool Annotation::containsUnusualNags() const	{ return countUnusualNags() > 0; }
+
+inline bool Annotation::unusualNagExists()				{ return m_unusualNags.any(); }
+inline bool Annotation::isUnusualNag(nag::ID nag)		{ return m_unusualNags.test(nag); }
+inline void Annotation::setUnusualNag(nag::ID nag)		{ m_unusualNags.set(nag); }
+inline void Annotation::unsetUnusualNag(nag::ID nag)	{ m_unusualNags.reset(nag); }
+inline void Annotation::unsetUnusualNags()				{ m_unusualNags.reset(); }
+inline void Annotation::flipUnusualNags()					{ m_unusualNags.flip(); }
+
+inline uint8_t const* Annotation::Annotation::data() const { return m_annotation; }
 
 
 inline

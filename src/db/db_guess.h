@@ -42,7 +42,7 @@ class Guess : public Board
 public:
 
 	enum { MaxDepth = 7, DefaultDepth = 3 };
-	enum { IdnStandard = chess960::StandardIdn };
+	enum { IdnStandard = variant::StandardIdn };
 
 	Guess(Board const& board, unsigned idn);
 	~Guess() throw();

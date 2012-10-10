@@ -31,6 +31,8 @@
 
 #include "u_crc.h"
 
+#include "m_bitset.h"
+
 namespace mstl { class string; }
 
 namespace db {
@@ -57,8 +59,12 @@ public:
 	bool hasTrailingAnnotation() const;
 	bool contains(nag::ID nag) const;
 	bool isDefaultSet() const;
+	bool containsUsualNags() const;
+	bool containsUnusualNags() const;
 
 	unsigned count() const;
+	unsigned countUsualNags() const;
+	unsigned countUnusualNags() const;
 
 	uint8_t const* data() const;
 	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
@@ -67,7 +73,10 @@ public:
 	bool add(char const* str);
 	unsigned add(Annotation const& set);
 	void set(nag::ID nag);
+	void setUsualNags(Annotation const& set);
+	void setUnusualNags(Annotation const& set);
 	void remove(nag::ID nag);
+	void removeDiagramNags();
 	void sort();
 	void clear();
 
@@ -75,9 +84,16 @@ public:
 	mstl::string& infix(mstl::string& result) const;
 	mstl::string& suffix(mstl::string& result) const;
 	mstl::string& print(mstl::string& result, unsigned flags = 0) const;
-	mstl::string dump() const;
+	void dump() const;
 
 	static Annotation const* defaultSet(nag::ID nag);
+
+	static bool unusualNagExists();
+	static bool isUnusualNag(nag::ID nag);
+	static void setUnusualNag(nag::ID nag);
+	static void unsetUnusualNag(nag::ID nag);
+	static void unsetUnusualNags();
+	static void flipUnusualNags();
 
 	class Default;
 	friend class Default;
@@ -86,6 +102,8 @@ private:
 
 	uint8_t m_count;
 	uint8_t m_annotation[Max_Nags];
+
+	static mstl::bitset m_unusualNags;
 };
 
 } // namespace db

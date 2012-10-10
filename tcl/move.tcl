@@ -29,11 +29,19 @@
 namespace eval move {
 namespace eval mc {
 
-set ReplaceMove		"Replace Move"
-set AddNewVariation	"Add New Variation"
-set NewMainLine		"New Main Line"
-set TryVariation		"Try Variation"
-set ExchangeMove		"Exchange Move"
+set Action(replace)		"Replace Move"
+set Action(variation)	"Add New Variation"
+set Action(mainline)		"New Main Line"
+set Action(trial)			"Try Variation"
+set Action(exchange)		"Exchange Move"
+set Action(append)		"Append move"
+set Action(load)			"Load first game with this continuation"
+
+set Accel(trial)			"T" ;# should coincide with ::application::board::mc::Accel(trial-mode)
+set Accel(replace)		"R"
+set Accel(variation)		"V"
+set Accel(append)			"A"
+set Accel(load)			"L"
 
 set GameWillBeTruncated	"Game will be truncated. Continue with '%s'?"
 
@@ -328,12 +336,12 @@ proc dragPiece {x y} {
 }
 
 
-proc addMove {san noMoveCmd {force no}} {
+proc addMove {san noMoveCmd {myActions {}} {force no}} {
 	variable ::application::board::board
 
 	if {[::scidb::game::position atEnd?]} {
 		application::pgn::ensureScratchGame
-		set action "add"
+		set action "append"
 	} else {
 		if {!$force} {
 			set moves [::scidb::game::next moves -ascii]
@@ -342,33 +350,43 @@ proc addMove {san noMoveCmd {force no}} {
 				if {[lindex $moves $i] eq $san} {
 					::scidb::game::go variation [expr {$i - 1}]
 					::application::board::goto 1
-					return
+					return ""
 				}
 			}
 		}
 		::board::stuff::finishDrag $board
 		update idletasks
-		set action [ConfirmReplaceMove]
+		set action [ConfirmReplaceMove $myActions]
 	}
 
+	if {![doAction $action $san $noMoveCmd]} {
+		if {$action in $myActions} { return $action }
+		if {[llength $noMoveCmd]} { eval $noMoveCmd }
+	}
+
+	return ""
+}
+
+
+proc doAction {action san {noMoveCmd {}}} {
 	switch $action {
 		mainline {
-			::widget::busyOperation { ::scidb::game::variation mainline $san }
+			::scidb::game::variation mainline $san
 			::scidb::game::go 1
 		}
 
 		variation {
 			set varno [::scidb::game::variation new $san]
-			::widget::busyOperation { EnterVariation $varno }
+			EnterVariation $varno
 		}
 
 		replace {
-			::widget::busyOperation { ::scidb::game::replace $san }
+			::scidb::game::replace $san
 			::scidb::game::go 1
 		}
 
 		trial {
-			::widget::busyOperation { ::scidb::game::trial $san }
+			::scidb::game::trial $san
 			::scidb::game::go 1
 		}
 
@@ -376,33 +394,80 @@ proc addMove {san noMoveCmd {force no}} {
 			variable ::application::board::board
 			doDestructiveCommand \
 				$board \
-				$mc::ExchangeMove \
+				$mc::Action(exchange) \
 				[list ::scidb::game::exchange $san] \
 				[list ::scidb::game::go 1] \
 				$noMoveCmd \
 				;
 		}
 
-		add {
+		append {
 			::scidb::game::move $san
 			::scidb::game::go 1
 		}
 
 		default {
-			if {[llength $noMoveCmd]} { eval $noMoveCmd }
+			return 0
 		}
 	}
+
+	return 1
+}
+
+
+proc addActionsToMenu {m command {extraActions {}}} {
+	set i 0
+	set atEnd [::scidb::game::position atEnd?]
+
+	set actionList {}
+	if {$atEnd} {
+		if {"append" in $extraActions} { lappend actionList append }
+	} else {
+		lappend actionList replace variation mainline
+	}
+	if {![::scidb::game::query trial]} {
+		lappend actionList trial
+	}
+	if {!$atEnd} {
+		lappend actionList exchange
+	}
+	foreach action $extraActions {
+		if {$action ni $actionList && ($action ne "append" || $atEnd)} {
+			lappend actionList $action
+		}
+	}
+
+	foreach action $actionList {
+		set accel {}
+		if {[info exists mc::Accel($action)]} {
+			set key $mc::Accel($action)
+			lappend accel -accelerator $key
+			set cmd [namespace code [list InvokeAction $m $command $action]]
+			bind $m <Key-$key> $cmd
+			bind $m <Key-[string tolower $key]> $cmd
+		}
+		$m add command \
+			-command [list eval $command $action] \
+			-image $icon::16x16::Action($action) \
+			-compound left \
+			{*}$accel \
+			;
+		::widget::menuTextvarHook $m $i [namespace current]::mc::Action($action)
+		incr i
+	}
+
+	return $i
 }
 
 
 proc doDestructiveCommand {parent action cmd yesAction noAction} {
-	if {![eval [list ::widget::busyOperation $cmd]]} {
+	if {![eval $cmd]} {
 		set rc [;;dialog::question -parent $parent -message [format $mc::GameWillBeTruncated $action]]
 		if {$rc eq "no"} {
 			eval $noAction
 			return
 		}
-		eval ::widget::busyOperation [list [list {*}$cmd -force]]
+		eval {*}$cmd -force
 	}
 
 	eval $yesAction
@@ -471,13 +536,33 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 
 	addMove \
 		[::scidb::pos::san $sq1 $sq2 $_promoted] \
-		[list ::board::stuff::setDragSquare $board] \
+		[namespace code AfterAddMove] \
+		{} \
 		$allowIllegalMove \
 		;
 }
 
 
-proc ConfirmReplaceMove {} {
+proc AfterAddMove {} {
+	variable ::application::board::board
+
+	::board::stuff::setDragSquare $board
+	reset
+}
+
+
+proc InvokeAction {m command action} {
+	::tk::MenuUnpost $m
+	eval $command $action
+}
+
+
+proc SetAction {action} {
+	set [namespace current]::action_ $action
+}
+
+
+proc ConfirmReplaceMove {extraActions} {
 	variable ::application::board::board
 	variable Options
 	variable Disabled
@@ -488,25 +573,20 @@ proc ConfirmReplaceMove {} {
 	if {[::game::trialMode?]}				{ return "replace" }
 	if {!$Options(askToReplaceMoves)}	{ return "replace" }
 
-	set i 0
 	set m $board.popup_confirm
 	catch { destroy $m }
-	variable _action cancel
+	variable action_ cancel
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
-	foreach {label action} [list	[namespace current]::mc::ReplaceMove		replace   \
-											[namespace current]::mc::AddNewVariation	variation \
-											[namespace current]::mc::NewMainLine		mainline  \
-											[namespace current]::mc::TryVariation		trial     \
-											[namespace current]::mc::ExchangeMove		exchange  \
-											::mc::Cancel										cancel] {
-		if {$action ne "trial" || ![::scidb::game::query trial]} {
-			$m add command -command [namespace code [list set _action $action]]
-			::widget::menuTextvarHook $m $i $label
-			incr i
-		}
-	}
-	$m entryconfigure 5 -accelerator $::mc::Escape
+	set i [addActionsToMenu $m [namespace current]::SetAction $extraActions]
+	$m add separator; incr i
+	$m add command \
+		-image $::icon::16x16::crossHand \
+		-compound left \
+		-command [namespace code [list set action_ cancel]] \
+		-accelerator $::mc::Key(Esc) \
+		;
+	::widget::menuTextvarHook $m $i ::mc::Cancel
 	set entry [lsearch -exact {replace variation} $Options(defaultAction)]
 	set Leave 0
 	set Disabled 1
@@ -517,27 +597,82 @@ proc ConfirmReplaceMove {} {
 	tkwait variable [namespace current]::_wait
 	if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
 	set Leave 1
-	after idle [namespace code Unlock]
+	after idle [namespace code [list Unlock $action_]]
 
-	if {$_action eq "trial"} {
+	if {$action_ eq "trial"} {
 		::game::flipTrialMode
 	}
 
-	return $_action
+	return $action_
 }
 
 
-proc Unlock {} {
+proc Unlock {action} {
 	variable Lock
 	variable Disabled
 
 	set Lock 0
-	set Disabled 0
+
+	if {$action eq "cancel"} {
+		enable {*}[winfo pointerxy .]
+	} else {
+		set Disabled 0
+	}
 }
 
 
 ::board::pieceset::registerFigurines $Options(figurineSize) 1
 
+namespace eval icon {
+namespace eval 16x16 {
+
+set Action(trial)		$::icon::16x16::trial
+set Action(exchange)	$::icon::16x16::exchange
+set Action(append)	$::icon::16x16::plus
+set Action(load)		$::icon::16x16::document
+
+set Action(replace) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABaUlEQVQ4y82SQU7bUBCGv/fe
+	GOPUejJNRKQoUffcwCx6C7gHQarECegG5R45CHt2SGxQUyWADIvGYI+TNF0grBQkCCsYaTYz
+	8+v/55+Bjw7z1sBhp9MFOBmPfz+rfweQNUhS4ADYXS0mcTwEsOvI/Op9+qPbPX1SAyAibRFp
+	y2GnM3wN7Kzt+jjmSxSlV1k2fK5ENkT2mknCZhThnMOY/22ZqWJF2Gq3ieI4PTLmtJrP95/6
+	1lhLEAQYY2rwTPXRYWspVJmpMisKklaLb71euiFSqxZrDE4E51zNulgsmN7d4ZwjDAKMtagq
+	DWC710PLMn0oCmoTV8EAQRjivcd7/8gSBCTNJpuNBqOLCyY3N4N6hb/LJfd5Tj6d1lmWJapK
+	pUo1n+OTBCvC5fk5vyaT/s/RqF+voFW1P8my166QNlutg9vra66ybHAyHg/e+4l7URgOC9X+
+	Kvh4Z2e57idSqL5g/pPnZ3yK+AfVGIHeAU/ChAAAAABJRU5ErkJggg==
+}]
+
+set Action(variation) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGXRFWHRTb2Z0d2FyZQBBZG9i
+	ZSBJbWFnZVJlYWR5ccllPAAAAh1JREFUeNqkU81rE0EUfzszu2uDpK2yFlqoICK2IhameKhX
+	b3qznhQ8FvGS/8F/IKAiUZAe9qQXjz14sBQ8SFdKvAixRWJADNmmqXE/Z3Z8s001XYwKDrzd
+	x5vf+/6NoZSC/zls6XETDMP4K9C0LI2robohhXCFEIB/YP+aSaQpEEI4qnxgcvMKQKma+mUc
+	eXSrWZbBzauz/MWrZgUOWneZECm/de0MD0M5ABYdj+rtdgTXr0zzl68/VdDUYWmcgJQKokiC
+	DhIEEjMBOI6tXXKnwyC6iv193YoC7Ze3IJLEe/a8DrbFqHNyrHR2dvIUATbh7waq1ek1Gzvd
+	znBFi/OTfN3rejjQKmVszbhw/x0oTCmlHMcUC5jl3vlzzlJfwczxkik+b/sfvvfjB+jwBO82
+	dRDtzCzLZaYJZCh4DwHruJq79fetN6Zt7m3HjI1PlZ0kjmdQIMVqUaqIc3/yoDjtOAx9rORR
+	a+frpXh+bqKf2eU0+jiXZ6Z0RWc9QiT9+dbtQhQEkEQRGIRo0mztfvEDa3EMfGnbuoJMSt0m
+	HCuVIEUcYUzzAlir0SjurYZlchSJKUFSSlDXK9nEOy/s91eG4UQOKHkoyLiNFPudurPMeylW
+	h1K+vcy1Td8V8dS6eKPIuDpeBHtvt06fuLwwbeGY/dqqh/YqtucW3w0bQVtXR28/fFqBg73p
+	nbu/fY1/IL+LQ8tJRCldGwX7IcAAni09bHQU/ZAAAAAASUVORK5CYII=
+}]
+
+set Action(mainline) [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAB+ElEQVQ4y72Sz2sTQRiG3/2R
+	jUQ2alKDGOgeAi1FiME9pV7Eeoj/Quitx1zqvSJCwYvgQg8lhd5CD3oQQfCkSGsOSkJDD0WE
+	hWpVSNqkDUsm2dnJfB40paat0YvfaZh53of5vhngf9ZyOl1cTqdnj++p/yIQQWCLIJhfmpo6
+	kihPUqmioqr230puzs3Z5dXVKknp3HPdkvLYsiq3CgW7126fGiApf1uzVgvnx8bwfm2tCmBB
+	55xDCoGAMXQPD+F7HkhKXLKso9BAQlKCNZvQdB2c858tPIzHiwBsPRTSYolE5MrERALARUVV
+	aX9n58s3190/fqNUJmO7tVoVgPOg2Swpg4P70egFIsoAKFiTk9OC8+Q50xTfXfdjt9NZWvS8
+	lQXTrPzCnUXPKwGANhCs+76/zvnnaU1702o0rl9OJpOs3Y5ETJNae3ufykK8zaqqLaV8+oix
+	0iCnDQ/tnRDdG5rWkIzdjsZicd0wtK/1+sGHfv9ZWYiXZSG2Rv6DDlGt7nksFA4DQLhDlDzr
+	WU8I8oZR7AGvD4j6A6YHhPOGUckbRnGkICDa4ETIZbM273YR+D7u2LbNiRAQbQzzJ2awLeVW
+	StPY9u6udW18/KqqqnixuVntA87zICgN88pZvd0NhWYl0TwAqIrivDolPLJmdD03o+u5PzE/
+	AHBq6kpnPytDAAAAAElFTkSuQmCC
+}]
+
+} ;# namespace 16x16
+} ;# namespace icon
 } ;# namespace move
 
 # vi:set ts=3 sw=3:

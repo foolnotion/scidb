@@ -39,6 +39,8 @@ void x11_init(Tcl_Interp*);
 void busy_init(Tcl_Interp*);
 void multiwindow_init(Tcl_Interp*);
 void notebook_init(Tcl_Interp*);
+void clockInit(Tcl_Interp*);
+void miscInit(Tcl_Interp*);
 
 }
 

@@ -50,6 +50,7 @@ Cursor::Cursor(Application& app, Database* database)
 	,m_treeView(-1)
 	,m_isRefBase(false)
 	,m_isScratchBase(false)
+	,m_isActive(false)
 {
 	M_REQUIRE(database);
 
@@ -372,7 +373,6 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 
 	return res;
 }
-
 
 
 unsigned

@@ -33,6 +33,7 @@
 
 #include "sys_process.h"
 #include "sys_timer.h"
+#include "sys_info.h"
 
 #include "u_misc.h"
 
@@ -291,8 +292,8 @@ Engine::Process::readyRead()
 
 	if (!m_connected)
 	{
-		if (!m_engine->protocolAlreadyStarted())
-			m_engine->concrete()->protocolStart(m_engine->isProbing());
+		if (!m_engine->isActive())
+			m_engine->activate();
 
 		m_connected = true;
 	}
@@ -340,6 +341,7 @@ Engine::Concrete::probeAnalyzeFeature() const
 
 void Engine::Concrete::sendNumberOfVariations() {}
 void Engine::Concrete::sendHashSize() {}
+void Engine::Concrete::sendCores() {}
 void Engine::Concrete::sendThreads() {}
 void Engine::Concrete::sendStrength() {}
 void Engine::Concrete::sendSkillLevel() {}
@@ -357,6 +359,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
 	,m_ordering(Unordered)
+	,m_currentVariant(Variant_Standard)
 	,m_elo(0)
 	,m_minElo(0)
 	,m_maxElo(0)
@@ -366,9 +369,11 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_maxMultiPV(1)
 	,m_variations(1, MoveList())
 	,m_numVariations(1)
+	,m_hashFullness(0)
 	,m_hashSize(0)
 	,m_minHashSize(0)
 	,m_maxHashSize(0)
+	,m_numCores(1)
 	,m_numThreads(0)
 	,m_minThreads(0)
 	,m_maxThreads(0)
@@ -377,6 +382,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_searchMate(0)
 	,m_strength(0)
 	,m_features(0)
+	,m_variants(0)
 	,m_currMoveNumber(0)
 	,m_bestIndex(0)
 	,m_bestScore(0)
@@ -410,7 +416,7 @@ Engine::~Engine()
 {
 	if (m_process)
 	{
-		deactivate();
+		// deactivate(); cannot call in destructor
 		delete m_process;
 	}
 
@@ -424,6 +430,20 @@ void Engine::updateBestMove()			{}
 void Engine::updateDepthInfo()		{}
 void Engine::updateTimeInfo()			{}
 void Engine::updateHashFullInfo()	{}
+
+
+Engine::Protocol
+Engine::protocol() const
+{
+	return dynamic_cast<uci::Engine const*>(m_engine) ? Uci : WinBoard;
+}
+
+
+::sys::Process&
+Engine::process()
+{
+	return *m_process;
+}
 
 
 long
@@ -528,7 +548,7 @@ Engine::setScore(unsigned no, int score)
 	{
 		m_bestScore = *mstl::max_element(m_scores, m_scores + m_numVariations);
 
-		if (m_shortestMate < 0)
+		if (m_shortestMate < 0 || *mstl::max_element(m_mates, m_mates + m_numVariations) == 0)
 			m_shortestMate = 0;
 
 		m_sortScores[no] = score;
@@ -537,19 +557,17 @@ Engine::setScore(unsigned no, int score)
 	{
 		m_bestScore = *mstl::min_element(m_scores, m_scores + m_numVariations);
 
-		if (m_shortestMate > 0)
+		if (m_shortestMate > 0 || *mstl::min_element(m_mates, m_mates + m_numVariations) == 0)
 			m_shortestMate = 0;
 
 		m_sortScores[no] = -score;
 	}
 
 	if (bestScore != m_bestScore)
-	{
 		m_bestInfoHasChanged = true;
 
-		if (m_ordering == BestFirst)
-			reorderBestFirst(no);
-	}
+	if (m_ordering == BestFirst)
+		reorderBestFirst(no);
 
 	if (m_shortestMate == 0)
 	{
@@ -579,6 +597,8 @@ Engine::setMate(unsigned no, int numMoves)
 	m_mates[no] = numMoves;
 
 	int maxNegative	= INT_MIN;
+	int minNegative	= INT_MAX;
+	int maxPositive	= INT_MIN;
 	int minPositive	= INT_MAX;
 	int zeroIndex		= -1;
 
@@ -590,40 +610,46 @@ Engine::setMate(unsigned no, int numMoves)
 		if (i == no || (score != INT_MIN && score != INT_MAX))
 		{
 			if (mate < 0)
+			{
 				maxNegative = mstl::max(maxNegative, mate);
+				minNegative = mstl::min(minNegative, mate);
+			}
 			else if (mate > 0)
+			{
+				maxPositive = mstl::max(maxPositive, mate);
 				minPositive = mstl::min(minPositive, mate);
+			}
 			else
+			{
 				zeroIndex = i;
+			}
 		}
 	}
 
 	if (color::isWhite(currentBoard().sideToMove()))
 	{
-		m_scores[no] = INT_MIN;
-
 		if (minPositive != INT_MAX)
 			m_shortestMate = minPositive;
 		else if (zeroIndex >= 0)
 			m_shortestMate = 0;
-		else // if (maxNegative != INT_MIN)
-			m_shortestMate = maxNegative;
+		else if (minNegative != INT_MAX)
+			m_shortestMate = minNegative;
 
 		if (numMoves > 0)
 			m_sortScores[no] = INT_MAX - numMoves;
 		else
 			m_sortScores[no] = INT_MIN - numMoves;
+
+		m_scores[no] = m_sortScores[no];
 	}
 	else
 	{
-		m_scores[no] = INT_MAX;
-
 		if (maxNegative != INT_MIN)
 			m_shortestMate = maxNegative;
 		else if (zeroIndex >= 0)
 			m_shortestMate = 0;
-		else // if (minPositive != INT_MAX)
-			m_shortestMate = minPositive;
+		else if (maxPositive != INT_MIN)
+			m_shortestMate = maxPositive;
 
 		if (numMoves < 0)
 			m_sortScores[no] = INT_MAX + numMoves;
@@ -631,13 +657,16 @@ Engine::setMate(unsigned no, int numMoves)
 			m_sortScores[no] = INT_MIN + numMoves;
 	}
 
+	if (numMoves < 0)
+		m_scores[no] = INT_MIN - numMoves;
+	else
+		m_scores[no] = INT_MAX - numMoves;
+
 	if (shortestMate != m_shortestMate)
-	{
 		m_bestInfoHasChanged = true;
 
-		if (m_ordering == BestFirst)
-			reorderBestFirst(no);
-	}
+	if (m_ordering == BestFirst)
+		reorderBestFirst(no);
 
 	if (m_shortestMate != 0)
 	{
@@ -691,15 +720,32 @@ Engine::isActive() const
 }
 
 
+unsigned
+Engine::numThreads() const
+{
+	return mstl::min(m_maxThreads, mstl::max(m_minThreads, m_numThreads));
+}
+
+
 void
 Engine::activate()
 {
 	if (!m_process)
+	{
 		m_process = new Process(this, m_command, m_directory);
+	}
 	else if (!m_active)
+	{
 		m_engine->protocolStart(false);
 
-	m_active = true;
+		if (!m_script.empty())
+		{
+			dynamic_cast<winboard::Engine*>(m_engine)->sendConfiguration(m_script);
+			m_script.clear();
+		}
+
+		m_active = true;
+	}
 }
 
 
@@ -710,6 +756,25 @@ Engine::deactivate()
 		m_engine->protocolEnd();
 
 	m_active = false;
+	m_script.clear();
+}
+
+
+void
+Engine::error(Error code)
+{
+	char const* msg;
+
+	switch (code)
+	{
+		case Engine_Requires_Registration:	msg = "Engine requires registration"; break;
+		case Engins_Has_Copy_Protection:		msg = "Engine has copy protection"; break;
+		case Standard_Chess_Not_Supported:	msg = "Standard chess not supported"; break;
+		case Chess_960_Not_Supported:			msg = "Chess 960 not supported"; break;
+		case No_Analyze_Mode:					msg = "No analyze mode available"; break;
+	}
+
+	m_engine->updateError(code);
 }
 
 
@@ -857,6 +922,32 @@ Engine::send(char const* message)
 }
 
 
+bool
+Engine::pause()
+{
+	M_REQUIRE(isActive());
+
+	if (!isAnalyzing())
+		return false;
+
+	m_engine->pause();
+	return true;
+}
+
+
+bool
+Engine::resume()
+{
+	M_REQUIRE(isActive());
+
+	if (currentGame() == 0)
+		return false;
+
+	m_engine->resume();
+	return true;
+}
+
+
 Engine::Result
 Engine::probe(unsigned timeout)
 {
@@ -957,7 +1048,45 @@ Engine::startAnalysis(db::Game const* game)
 	M_REQUIRE(game);
 	M_REQUIRE(isActive());
 
+	if (!hasFeature(Feature_Analyze))
+	{
+		error(No_Analyze_Mode);
+		return false;
+	}
+
 	bool isNew = m_game ? game->id() != m_game->id() : true;
+
+	if (isNew)
+	{
+		m_currentVariant = Variant_Standard;
+
+		if (!variant::isStandardChess(game->idn()))
+		{
+			if (	variant::isShuffleChess(game->idn())
+				|| variant::isChess960(game->idn())
+				|| game->startBoard().notDerivableFromStandardChess())
+			{
+				if (!hasVariant(Variant_Chess_960))
+				{
+					error(Chess_960_Not_Supported);
+					return false;
+				}
+
+				m_currentVariant = Variant_Chess_960;
+			}
+		}
+
+		if (m_currentVariant == Variant_Standard && !hasVariant(Variant_Standard))
+		{
+			error(Standard_Chess_Not_Supported);
+			return false;
+		}
+	}
+	else if (isAnalyzing())
+	{
+		if (m_engine->currentBoard().isEqualPosition(game->currentBoard()))
+			return true;
+	}
 
 	m_game = game;
 	m_gameId = game->id();
@@ -1000,7 +1129,11 @@ Engine::startAnalysis(db::Game const* game)
 bool
 Engine::stopAnalysis()
 {
-	return isAnalyzing() ? m_engine->stopAnalysis() : true;
+	if (!isAnalyzing())
+		return false;
+
+	m_engine->stopAnalysis();
+	return true;
 }
 
 
@@ -1077,14 +1210,41 @@ Engine::changeHashSize(unsigned size)
 
 
 unsigned
+Engine::changeCores(unsigned n)
+{
+	if (n != m_numCores)
+	{
+		m_numCores = n;
+		m_numThreads = n - 1;
+
+		if (isActive())
+		{
+			if (hasFeature(Feature_SMP))
+				m_engine->sendCores();
+			else if (hasFeature(Feature_Threads))
+				m_engine->sendThreads();
+		}
+	}
+
+	return n;
+}
+
+
+unsigned
 Engine::changeThreads(unsigned n)
 {
 	if (n != m_numThreads)
 	{
 		m_numThreads = n;
+		m_numCores = mstl::min(n + 1, sys::info::numberOfProcessors());
 
-		if (isActive() && hasFeature(Feature_Threads))
-			m_engine->sendThreads();
+		if (isActive())
+		{
+			if (hasFeature(Feature_Threads))
+				m_engine->sendThreads();
+			else if (hasFeature(Feature_SMP))
+				m_engine->sendCores();
+		}
 	}
 
 	return n;
@@ -1185,11 +1345,11 @@ Engine::reorderBestFirst(unsigned currentNo)
 
 		for (unsigned i = k + 1; i < m_numVariations; ++i)
 		{
-			unsigned idx = m_map[i];
+			int score2 = m_sortScores[m_map[i]];
 
-			if (score < m_sortScores[idx])
+			if (score < score2)
 			{
-				score = m_sortScores[idx];
+				score = score2;
 				index = i;
 			}
 		}
@@ -1295,6 +1455,18 @@ Engine::updateOptions()
 {
 	if (isActive())
 		m_engine->sendOptions();
+}
+
+
+void
+Engine::updateConfiguration(mstl::string const& script)
+{
+	M_REQUIRE(protocol() == WinBoard);
+
+	if (isActive())
+		dynamic_cast<winboard::Engine*>(m_engine)->sendConfiguration(script);
+	else
+		m_script.assign(script);
 }
 
 

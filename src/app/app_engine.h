@@ -35,6 +35,7 @@
 #include "m_bitfield.h"
 
 namespace mstl	{ class ostream; }
+namespace sys  { class Process; }
 
 namespace db
 {
@@ -73,6 +74,23 @@ public:
 	{
 		Uci,
 		WinBoard,
+	};
+
+	enum State
+	{
+		Start,
+		Stop,
+		Pause,
+		Resume,
+	};
+
+	enum Error
+	{
+		Engine_Requires_Registration,
+		Engins_Has_Copy_Protection,
+		Standard_Chess_Not_Supported,
+		Chess_960_Not_Supported,
+		No_Analyze_Mode,
 	};
 
 	enum Signal
@@ -122,6 +140,7 @@ public:
 
 		virtual void sendNumberOfVariations();
 		virtual void sendHashSize();
+		virtual void sendCores();
 		virtual void sendThreads();
 		virtual void sendStrength();
 		virtual void sendSkillLevel();
@@ -145,11 +164,13 @@ public:
 		bool isProbing() const;
 		bool isProbingAnalyze() const;
 		bool hasFeature(unsigned feature) const;
+		bool hasVariant(unsigned variant) const;
 
 		unsigned maxMultiPV() const;
 		unsigned numVariations() const;
 		unsigned hashSize() const;
 		unsigned numThreads() const;
+		unsigned numCores() const;
 		unsigned searchMate() const;
 		unsigned limitedStrength() const;
 		unsigned skillLevel() const;
@@ -157,15 +178,20 @@ public:
 		bool pondering() const;
 		db::Game const* currentGame() const;
 		Options const& options() const;
+		unsigned currentVariant() const;
 
 		long pid() const;
 
 		void engineIsReady();
+		void error(Error code);
 
 		void send(mstl::string const& message);
 		void deactivate();
 
 		void addFeature(unsigned feature);
+		void removeFeature(unsigned feature);
+		void addVariant(unsigned variant);
+		void removeVariant(unsigned variant);
 		bool detectShortName(mstl::string const& str);
 		bool detectIdentifier(mstl::string const& str);
 		bool detectUrl(mstl::string const& str);
@@ -188,6 +214,7 @@ public:
 		void setNodes(unsigned nodes);
 		void setVariation(unsigned no, db::MoveList const& moves);
 		void setCurrentMove(unsigned number, db::Move const& move);
+		void setHashFullness(unsigned fullness);
 
 		void setIdentifier(mstl::string const& name);
 		void setShortName(mstl::string const& name);
@@ -199,6 +226,7 @@ public:
 		void setSkillLevelRange(unsigned ninLevel, unsigned maxLevel);
 		void setMaxMultiPV(unsigned n);
 		void setHashRange(unsigned minSize, unsigned maxSize);
+		void setCoresRange(unsigned minCores, unsigned maxCores);
 		void setThreadRange(unsigned minThreads, unsigned maxThreads);
 		void setPlayingStyles(mstl::string const& styles);
 
@@ -211,6 +239,8 @@ public:
 		void updateDepthInfo();
 		void updateTimeInfo();
 		void updateHashFullInfo();
+		void updateError(Error code);
+		void updateState(State state);
 		void resetInfo();
 
 		void log(mstl::string const& msg);
@@ -224,16 +254,24 @@ public:
 	static unsigned const Feature_Analyze			= 1 << 0;
 	static unsigned const Feature_Hash_Size		= 1 << 1;
 	static unsigned const Feature_Clear_Hash		= 1 << 2;
-	static unsigned const Feature_Chess_960		= 1 << 3;
-	static unsigned const Feature_Shuffle_Chess	= 1 << 4;
-	static unsigned const Feature_Pause				= 1 << 5;
-	static unsigned const Feature_Play_Other		= 1 << 6;
-	static unsigned const Feature_Ponder			= 1 << 7;
-	static unsigned const Feature_Limit_Strength	= 1 << 8;
-	static unsigned const Feature_Skill_Level		= 1 << 8;
-	static unsigned const Feature_Multi_PV			= 1 << 10;
-	static unsigned const Feature_Threads			= 1 << 11;
-	static unsigned const Feature_Playing_Styles	= 1 << 12;
+	static unsigned const Feature_Pause				= 1 << 3;
+	static unsigned const Feature_Play_Other		= 1 << 4;
+	static unsigned const Feature_Ponder			= 1 << 5;
+	static unsigned const Feature_Limit_Strength	= 1 << 6;
+	static unsigned const Feature_Skill_Level		= 1 << 7;
+	static unsigned const Feature_Multi_PV			= 1 << 8;
+	static unsigned const Feature_SMP				= 1 << 9;
+	static unsigned const Feature_Threads			= 1 << 10;
+	static unsigned const Feature_Playing_Styles	= 1 << 11;
+
+	static unsigned const Variant_Standard			= 1 << 0;
+	static unsigned const Variant_Chess_960		= 1 << 1;
+	static unsigned const Variant_Bughouse			= 1 << 2;
+	static unsigned const Variant_Crazyhouse		= 1 << 3;
+	static unsigned const Variant_Losers			= 1 << 4;
+	static unsigned const Variant_Suicide			= 1 << 5;
+	static unsigned const Variant_Give_Away		= 1 << 6;
+	static unsigned const Variant_Three_Check		= 1 << 7;
 
 	Engine(Protocol protocol, mstl::string const& command, mstl::string const& directory);
 	virtual ~Engine();
@@ -252,12 +290,16 @@ public:
 	bool isProbing() const;
 	bool isProbingAnalyze() const;
 	bool hasFeature(unsigned feature) const;
+	bool hasVariant(unsigned variant) const;
 	bool playOther() const;
 	bool pondering() const;
 	bool isBestLine(unsigned no) const;
 	bool bestInfoHasChanged() const;
 
 	int exitStatus() const;
+	::sys::Process& process();
+	Protocol protocol() const;
+	mstl::string const& command() const;
 
 	int score(unsigned no) const;
 	int mate(unsigned no) const;
@@ -272,6 +314,7 @@ public:
 	db::Move const& bestMove() const;
 	unsigned currentMoveNumber() const;
 	db::Move const& currentMove() const;
+	unsigned hashFullness() const;
 
 	mstl::string const& identifier() const;
 	mstl::string const& shortName() const;
@@ -290,6 +333,7 @@ public:
 	unsigned minHashSize() const;
 	unsigned maxHashSize() const;
 	unsigned numThreads() const;
+	unsigned numCores() const;
 	unsigned minThreads() const;
 	unsigned maxThreads() const;
 	unsigned searchMate() const;
@@ -297,6 +341,7 @@ public:
 	mstl::string const& playingStyles() const;
 	db::Game const* currentGame() const;
 	Options const& options() const;
+	unsigned supportedVariants() const;
 
 	Result probe(unsigned timeout);
 
@@ -306,12 +351,13 @@ public:
 	bool startAnalysis(db::Game const* game);
 	bool stopAnalysis();
 
-	void pause();
-	void resume();
+	bool pause();
+	bool resume();
 
 	unsigned changeNumberOfVariations(unsigned n);
 	unsigned changeHashSize(unsigned size);
 	unsigned changeThreads(unsigned n);
+	unsigned changeCores(unsigned n);
 	unsigned changeStrength(unsigned elo);
 	unsigned changeSkillLevel(unsigned level);
 	mstl::string const& changePlayingStyle(mstl::string const& style);
@@ -321,9 +367,12 @@ public:
 	void clearHash();
 	void setOption(mstl::string const& name, mstl::string const& value);
 	void updateOptions();
+	void updateConfiguration(mstl::string const& script);
 
 	void addFeature(unsigned feature);
 	void removeFeature(unsigned feature);
+	void addVariant(unsigned variant);
+	void removeVariant(unsigned variant);
 
 	bool doMove(db::Move const& lastMove);
 
@@ -335,6 +384,8 @@ protected:
 	Engine();
 
 	virtual void clearInfo() = 0;
+	virtual void updateState(State state) = 0;
+	virtual void updateError(Error code) = 0;
 	virtual void updatePvInfo(unsigned line) = 0;
 	virtual void updateCheckMateInfo() = 0;
 	virtual void updateStaleMateInfo() = 0;
@@ -376,6 +427,7 @@ protected:
 	void setNodes(unsigned nodes);				// nodes searched
 	void setVariation(unsigned no, db::MoveList const& moves);
 	void setCurrentMove(unsigned number, db::Move const& move);
+	void setHashFullness(unsigned fullness);
 
 	void setIdentifier(mstl::string const& name);
 	void setShortName(mstl::string const& name);
@@ -394,6 +446,8 @@ protected:
 	void log(mstl::string const& msg);
 	void error(mstl::string const& msg);
 	void fatal(mstl::string const& msg);
+
+	void error(Error code);
 
 private:
 
@@ -426,6 +480,7 @@ private:
 	mstl::string		m_playingStyles;
 	mstl::string		m_playingStyle;
 	Ordering				m_ordering;
+	unsigned				m_currentVariant;
 	unsigned				m_elo;
 	unsigned				m_minElo;
 	unsigned				m_maxElo;
@@ -439,9 +494,11 @@ private:
 	Scores				m_scores;
 	Scores				m_mates;
 	Scores				m_sortScores;
+	unsigned				m_hashFullness;
 	unsigned				m_hashSize;
 	unsigned				m_minHashSize;
 	unsigned				m_maxHashSize;
+	unsigned				m_numCores;
 	unsigned				m_numThreads;
 	unsigned				m_minThreads;
 	unsigned				m_maxThreads;
@@ -450,6 +507,7 @@ private:
 	unsigned				m_searchMate;
 	unsigned				m_strength;
 	unsigned				m_features;
+	unsigned				m_variants;
 	unsigned				m_currMoveNumber;
 	db::Move				m_currMove;
 	db::Move				m_bestMove;
@@ -473,6 +531,7 @@ private:
 	int					m_exitStatus;
 	mstl::ostream*		m_logStream;
 	Options				m_options;
+	mstl::string		m_script;
 	mstl::string		m_buffer;
 };
 

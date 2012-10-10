@@ -72,6 +72,7 @@ public:
 	bool isClosed() const;
 	bool isReadOnly() const;
 	bool isWriteable() const;
+	bool isActive() const;
 	bool isViewOpen(unsigned view) const;
 	bool isValidView(unsigned view) const;
 	bool isReferenceBase() const;
@@ -157,6 +158,8 @@ public:
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
 	/// Update the database description.
 	void setDescription(mstl::string const& description);
+	/// Set flag whether this cursor is the currently active cursor.
+	void setActive(bool flag);
 
 	// Compress the database.
 	bool compact(::util::Progress& progress);
@@ -182,6 +185,7 @@ private:
 	int				m_treeView;
 	bool				m_isRefBase;
 	bool				m_isScratchBase;
+	bool				m_isActive;
 	SubscriberP		m_subscriber;
 };
 

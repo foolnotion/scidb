@@ -56,6 +56,7 @@ public:
 	bool isAnalyzing() const override;
 
 	void timeout();
+	void sendConfiguration(mstl::string const& script);
 
 protected:
 
@@ -67,6 +68,9 @@ protected:
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
 	void sendOptions() override;
+	void sendHashSize() override;
+	void sendCores() override;
+	void sendPondering() override;
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 
@@ -84,6 +88,8 @@ private:
 	typedef mstl::auto_ptr<Timer>		TimerP;
 	typedef mstl::vector<db::Move>	History;
 
+	void sendStartAnalysis();
+	void sendStopAnalysis();
 	void featureDone(bool done);
 	void parseAnalysis(mstl::string const& msg);
 	void parseInfo(mstl::string const& msg);
@@ -93,7 +99,8 @@ private:
 
 	db::Board		m_board;
 	TimerP			m_timer;
-	mstl::string	m_variant;
+	mstl::string	m_chess960Variant;
+	mstl::string	m_currentVariant;
 	uint64_t			m_startTime;
 	db::Move			m_firstMove;
 	bool				m_isAnalyzing;

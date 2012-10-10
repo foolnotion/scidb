@@ -87,26 +87,27 @@ array set Options {
 }
 
 
-proc new {parent {base {}} {index -1} {fen {}}} {
+proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 	variable ::scidb::scratchbaseName
 	variable MaxPosition
 	variable List
 	variable Options
 	variable Count
+	variable Vars
 
 	set init [expr {[llength $List] == 0}]
 
-	# TODO: check whether base is open or exisiting!
+	# TODO: check whether base is open or existing!
 
-	if {$index == -1} {
-		set index [incr Count]
+	if {$number == -1} {
+		set number [incr Count]
 		set lock 1
 	} else {
 		set lock 0
 	}
 	if {[llength $base] == 0} { set base $scratchbaseName }
 	set codec [::scidb::db::get codec $base]
-	set id [list $base $codec $index]
+	set id [list $base $codec $number]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
 	set entry [list $time 0 0 $id]
 	set tags {}
@@ -121,12 +122,12 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 	if {$pos >= 0} {
 		set loadPos [expr {$MaxPosition + 1}]
 		::scidb::game::release $loadPos
-		if {![load $parent $loadPos $base $index yes]} { return -1 }
+		if {![load $parent $loadPos $base $view $number yes $fen]} { return -1 }
 		set crc [::scidb::game::query $loadPos checksum]
 
 		if {$crc ne [lindex $List $pos 4]} {
 			# TODO: open new slot iff only crc-index differs
-			set msg [format $mc::GameHasChanged [expr {$index + 1}]]
+			set msg [format $mc::GameHasChanged [expr {$number + 1}]]
 			set det $mc::GameHasChangedDetail
 			::dialog::warning -buttons {ok} -parent $parent -message $msg -detail $det
 			set pos -1
@@ -148,7 +149,9 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 
 	if {$pos >= 0 && [string length $cmd] == 0} {
 		::scidb::game::release $loadPos
+		set Vars(lookup:$pos) $Vars(lookup:$loadPos)
 		::application::pgn::select $pos
+		::scidb::game::switch $pos
 	} else {
 		if {[string length $cmd] == 0} {
 			set pos -1
@@ -177,10 +180,11 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 
 		if {$loadPos == -1} {
 			::scidb::game::release $pos ;# release scratch game
-			if {![load $parent $pos $base $index yes]} { return -1 }
+			if {![load $parent $pos $base $view $number yes $fen]} { return -1 }
 			set crc [::scidb::game::query $pos checksum]
 		} else {
 			::scidb::game::swap $pos $loadPos
+			set Vars(lookup:$pos) $Vars(lookup:$loadPos)
 			::scidb::game::release $loadPos
 		}
 
@@ -201,13 +205,17 @@ proc new {parent {base {}} {index -1} {fen {}}} {
 		::scidb::db::subscribe gameHistory [namespace current]::UpdateHistory
 	}
 
-	if {[llength $fen]} {
-		::scidb::game::go $pos position $fen
-	}
-
 	UpdateHistoryEntry $pos $base $tags
 
 	return $pos
+}
+
+
+proc getSourceInfo {position} {
+	variable Vars
+
+	if {![info exists Vars(lookup:$position)]} { return {} }
+	return $Vars(lookup:$position)
 }
 
 
@@ -266,30 +274,36 @@ proc lockChanged {position locked} {
 }
 
 
-proc load {parent position base index {checkEncoding 0}} {
+proc load {parent position base view number {checkEncoding 0} {fen ""}} {
 	variable ::scidb::scratchbaseName
+	variable Vars
 
 	set rc 0
 
 	if {$base eq $scratchbaseName} {
+		set Vars(lookup:$position) {}
 		::scidb::game::new $position [::scidb::pos::fen]
 		set rc 1
 	} else {
-		switch [::scidb::game::load $position $base $index] {
+		switch [::scidb::game::load $position $base $number $fen] {
 			 1 { set rc 1 }
 			-1 { ::dialog::info  -parent [winfo toplevel $parent] -message $mc::GameDecodingFailed }
 			-2 { ::dialog::error -parent [winfo toplevel $parent] -message $mc::GameDataCorrupted }
 		}
 
-		if {$checkEncoding} {
-			set baseEncoding [::scidb::db::get encoding $base]
-			set gameEncoding [::scidb::game::query $position encoding]
+		if {$rc == 1} {
+			set Vars(lookup:$position) [list $base $view $number]
 
-			if {$baseEncoding != $gameEncoding} {
-				set fmt [list %base% $baseEncoding %game% $gameEncoding]
-				set msg [string map $fmt $mc::GameDecodingChanged]
-				set dtl $mc::GameDecodingChangedDetail
-				::dialog::info -parent [winfo toplevel $parent] -message $msg -detail $dtl
+			if {$checkEncoding} {
+				set baseEncoding [::scidb::db::get encoding $base]
+				set gameEncoding [::scidb::game::query $position encoding]
+
+				if {$baseEncoding != $gameEncoding} {
+					set fmt [list %base% $baseEncoding %game% $gameEncoding]
+					set msg [string map $fmt $mc::GameDecodingChanged]
+					set dtl $mc::GameDecodingChangedDetail
+					::dialog::info -parent [winfo toplevel $parent] -message $msg -detail $dtl
+				}
 			}
 		}
 	}
@@ -315,10 +329,12 @@ proc setFirst {base tags} {
 
 proc release {position} {
 	variable List
+	variable Vars
 
 	update ;# fire dangling events
 	::scidb::game::release $position
 	lset List $position {{} 0 0 {{} {} {} {}} {0 0} {}}
+	set Vars(lookup:$position) {}
 }
 
 
@@ -723,6 +739,7 @@ proc recover {} {
 		}
 		::dialog::info -parent .application -message $msg
 		::application::pgn::select 0
+		::process::setOption "show-board"
 	}
 }
 
@@ -770,7 +787,7 @@ proc openGame {parent index} {
 	set parent [winfo toplevel $parent]
 
 	if {[::application::database::openBase $parent $base no -encoding $encoding]} {
-		set pos [new $parent $base $number]
+		set pos [new $parent $base -1 $number]
 		if {$pos >= 0} {
 			set crcLoad [lindex $List $pos 4]
 			if {$crcLoad ne $crcHist} {
@@ -924,14 +941,22 @@ proc Update {_ position} {
 			}
 		}
 
+		if {[::scidb::db::get open? $base]} {
+			set codec [::scidb::db::get codec $base]
+		} else {
+			set codec sci
+		}
+
 		lset List $position 3 0 $base
-		lset List $position 3 1 [::scidb::db::get codec $base]
+		lset List $position 3 1 $codec
 		lset List $position 3 2 $number
 		lset List $position 1 [::scidb::game::query $position modified?]
 		lset List $position 4 [::scidb::game::query $position checksum]
 		lset List $position 5 $tags
 
-		UpdateHistoryEntry $position $base $tags
+		if {[::scidb::db::get open? $base]} {
+			UpdateHistoryEntry $position $base $tags
+		}
 	}
 }
 

@@ -183,6 +183,13 @@ Consumer::finishGame(TagSet const& tags)
 }
 
 
+save::State
+Consumer::skipGame(TagSet const& tags)
+{
+	return finishGame(tags);
+}
+
+
 void
 Consumer::finishMoveSection(result::ID result)
 {

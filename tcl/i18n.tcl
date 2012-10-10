@@ -32,6 +32,7 @@ set Key(Alt)		"Alt"
 set Key(Ctrl)		"Ctrl"
 set Key(Down)		"\u2193"
 set Key(End)		"End"
+set Key(Esc)		"Esc"
 set Key(Home)		"Home"
 set Key(Left)		"\u2190"
 set Key(Next)		"Page\u2193"	;# Page Down
@@ -56,17 +57,19 @@ set Copy				"Copy"
 set Cut				"Cut"
 set Dark				"Dark"
 set Database		"Database"
+set Default			"Default"
 set Delete			"Delete"
 set Edit				"Edit"
-set Escape			"Esc"
 set File				"File"
 set From				"From"
 set Game				"Game"
 set Layout			"Layout"
 set Left				"Left"
 set Lite				"Light"
+set Low				"Low"
 set Modify			"Modify"
 set No				"No"
+set Normal			"Normal"
 set NotAvailable	"n/a"
 set Number			"Number"
 set OK				"OK"
@@ -279,22 +282,6 @@ array set encoding2Region {
 }
 
 
-set languages {}
-if {[info exists ::i18n::languages]} {
-	foreach entry $::i18n::languages {
-		lassign $entry lang code encoding file
-		set f [file join $::scidb::dir::share lang $file]
-
-		if [file readable $f] {
-			set lang$lang $code
-			set encoding$lang $encoding
-			set input($lang) $file
-			lappend languages $code
-		}
-	}
-}
-
-
 proc currentLanguage {} { return [set [namespace current]::Language] }
 
 
@@ -348,6 +335,28 @@ proc stripAmpersand {str} {
 
 proc translate {str} {
 	return [set $str]
+}
+
+
+proc setup {} {
+	variable languages
+
+	set languages {}
+	if {[info exists ::i18n::languages]} {
+		foreach entry $::i18n::languages {
+			lassign $entry lang code encoding file
+			set f [file join $::scidb::dir::share lang $file]
+
+			if [file readable $f] {
+				set [namespace current]::lang$lang $code
+				set [namespace current]::encoding$lang $encoding
+				set [namespace current]::input($lang) $file
+				lappend languages $code
+			}
+		}
+	}
+
+	selectLang
 }
 
 

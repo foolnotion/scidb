@@ -1419,8 +1419,26 @@ proc BuildMenu {gamebar id side menu} {
 		eval $addsep
 		set addsep {}
 	
+		if {$current} {
+			lassign [::scidb::game::link? $id] base index
+			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+				set flag [::scidb::db::get deleted? $index -1 $base]
+				if {$flag} { set var UndeleteGame } else { set var DeleteGame }
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::remove \
+					-label " [set ::gametable::mc::$var]" \
+					-command [namespace code [list ::gametable::deleteGame $base $index]] \
+					;
+				::gametable::addGameFlagsMenuEntry $menu $base -1 $index
+				set addsep [list $menu add separator]
+			}
+		}
+
 		if {$id == -1} { set lid $sid } else { set lid $id }
 		if {!$Specs(modified:$lid:$gamebar) && $Specs(state:$lid:$gamebar) ne "modified"} {
+			eval $addsep
+			set addsep {}
 			if {$Specs(locked:$lid:$gamebar)} {
 				set count 0
 				foreach key [array names Specs -glob locked:*:$gamebar] {
@@ -1443,24 +1461,6 @@ proc BuildMenu {gamebar id side menu} {
 					-command [namespace code [list SetState $gamebar $lid locked]] \
 					;
 					set addsep [list $menu add separator]
-			}
-		}
-
-		if {$current} {
-			eval $addsep
-			set addsep {}
-			lassign [::scidb::game::link? $id] base index
-			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-				set flag [::scidb::db::get deleted? $index -1 $base]
-				if {$flag} { set var UndeleteGame } else { set var DeleteGame }
-				$menu add command \
-					-compound left \
-					-image $::icon::16x16::remove \
-					-label " [set ::gametable::mc::$var]" \
-					-command [namespace code [list ::gametable::deleteGame $base $index]] \
-					;
-				::gametable::addGameFlagsMenuEntry $menu $base -1 $index
-				$menu add separator
 			}
 		}
 
@@ -2405,17 +2405,13 @@ set digit(9) [image create photo -data {
 }]
 
 set close(locked) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABmJLR0QA/wD/AP+gvaeTAAAA
-	CXBIWXMAAAsTAAALEwEAmpwYAAAByElEQVQoz5XTvUtcURAF8N/bj6wKQbYQDJHYbCNpA4Kk
-	SquvC1ppIQr5DwRJaWGxpYV/hE0gKVIGydYpQliD7Aq6iSESWY0f+96uN4XPjZBEyMDhcpk5
-	c86dy0R+x0M8QOTfEfAVLYhm8J7pZ6w9ZmwIAxhEEZc4v4UdDt7x8ilvoPyc7c+En4Q24Qfh
-	iHBI2CfsEj4RPhDeEmbYRrmA4SeMjmee8ujhCgXcy1yEzMUlxhnFcAFyRN3ssfmpKbko0qvV
-	RCEQRXJTU6IQDNVqvqGbzSUnU0rQiSJhcVFha8tVHLtEL46v74uLOlEkzeplzvrkEIK0WnV/
-	YsLAxoZoclJpfl7SaDitVvVCkNwi95XTrMFFve5oaUm33Ta0uqrbbjtaWnJRr+tkNX+QE/rJ
-	fKUiXy7rnp/Ll8vylUo/n95FLsWxkc1NZ82mxtycs2bTyOamUhxL7lJOikWDCwtO9vY0l5ed
-	vn6tubzsZG/P4MKCpFiUZN94e2AhRZKmdldWhE6HVkuEpF63MzsrVyrppemNcrght/c5bFMp
-	IW00XGVu+mi1+u6+X+MQ7cILjl+xXmDtEWM3hO5fzi6+cPCR9WmOb2/Qf2/VL+zs2wNNv5A4
-	AAAAAElFTkSuQmCC
+	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAQAAACR313BAAABG0lEQVQY033RvUpcYRDG8d+7
+	ewhRWDQi+BHBJhC1j1iky6YKWOca0tmKIgQrwTI3YRnwDoT0AS2sspATNWJgw/FEN553UngK
+	bTJPM8Mzf2aGSeC5OcnDCGdK0oxf76Z3ewtdHV1J1mg0qu9XW1OHybO5z0uvnwqBkFvd+nZ0
+	sV6YmJwdF1JrJ922aWzWRIGUJcuSE0myjGO3ItEhhOytTauyVzb1RTusgIwDCz546Y0fDjSy
+	0NJZNrCv8l5l30B+aIcszOu50TPf1o/oNRtKO0ob1h7TWdJX2vPFnlJfR+Z+tYis8clfV5KB
+	bU+MZBEUhn/O7150nLXHRJuNjM4Nu4s3lz/vVkbFdX2vqr6uq7qqh6e/P05/Tf//2D9rCZCi
+	edz4QQAAAABJRU5ErkJggg==
 }]
 
 set close(unlocked) [image create photo -data {
@@ -2431,15 +2427,30 @@ set close(unlocked) [image create photo -data {
 	ap4u53FwMVz788fAbbCqYz90W/eln+3/+VU/AUFMEbC3rnm9AAAAAElFTkSuQmCC
 }]
 
-#set close(modified) [image create photo -data {
-#	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAQAAACR313BAAABCklEQVQYGQXBwUpUARgG0HPv
-#	XIWInKIEJ51ghmgRtKuNzBsIvUt7l75CLxK4iFbC0Au4qlWUMkJFXiNKx/v9ndOAXRMNACgr
-#	5zTPfDuYHW3vbehsaN1aW1v7efbl8Mlx48Hzd28WdxBEGURce7v8/LozfrxzF0CjjDAY3N8x
-#	7miawjZ+gEf47p80tJSImYWJwcTCTETQEVFO3fPKQ3NXTg2i0FIiLi3deOHG0qVBBC0REVs2
-#	rW3aEhGFlhKDqX29D3r7piKClgjmeie+OtGbIwodVREfDf7il/dGbkUVnb6/WD8duVJKKddK
-#	XPtzoW9e+nQwOxrvlYgSEfH7bHU4PW7ArokGAJSVc/4DwzmFHWb6YYoAAAAASUVORK5CYII=
-#}]
-set close(modified) $close(locked)
+# set close(modified) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAQAAACR313BAAABCklEQVQYGQXBwUpUARgG0HPv
+# 	XIWInKIEJ51ghmgRtKuNzBsIvUt7l75CLxK4iFbC0Au4qlWUMkJFXiNKx/v9ndOAXRMNACgr
+# 	5zTPfDuYHW3vbehsaN1aW1v7efbl8Mlx48Hzd28WdxBEGURce7v8/LozfrxzF0CjjDAY3N8x
+# 	7miawjZ+gEf47p80tJSImYWJwcTCTETQEVFO3fPKQ3NXTg2i0FIiLi3deOHG0qVBBC0REVs2
+# 	rW3aEhGFlhKDqX29D3r7piKClgjmeie+OtGbIwodVREfDf7il/dGbkUVnb6/WD8duVJKKddK
+# 	XPtzoW9e+nQwOxrvlYgSEfH7bHU4PW7ArokGAJSVc/4DwzmFHWb6YYoAAAAASUVORK5CYII=
+# }]
+
+# set close(modified) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABmJLR0QA/wD/AP+gvaeTAAAA
+# 	CXBIWXMAAAsTAAALEwEAmpwYAAAByElEQVQoz5XTvUtcURAF8N/bj6wKQbYQDJHYbCNpA4Kk
+# 	SquvC1ppIQr5DwRJaWGxpYV/hE0gKVIGydYpQliD7Aq6iSESWY0f+96uN4XPjZBEyMDhcpk5
+# 	c86dy0R+x0M8QOTfEfAVLYhm8J7pZ6w9ZmwIAxhEEZc4v4UdDt7x8ilvoPyc7c+En4Q24Qfh
+# 	iHBI2CfsEj4RPhDeEmbYRrmA4SeMjmee8ujhCgXcy1yEzMUlxhnFcAFyRN3ssfmpKbko0qvV
+# 	RCEQRXJTU6IQDNVqvqGbzSUnU0rQiSJhcVFha8tVHLtEL46v74uLOlEkzeplzvrkEIK0WnV/
+# 	YsLAxoZoclJpfl7SaDitVvVCkNwi95XTrMFFve5oaUm33Ta0uqrbbjtaWnJRr+tkNX+QE/rJ
+# 	fKUiXy7rnp/Ll8vylUo/n95FLsWxkc1NZ82mxtycs2bTyOamUhxL7lJOikWDCwtO9vY0l5ed
+# 	vn6tubzsZG/P4MKCpFiUZN94e2AhRZKmdldWhE6HVkuEpF63MzsrVyrppemNcrght/c5bFMp
+# 	IW00XGVu+mi1+u6+X+MQ7cILjl+xXmDtEWM3hO5fzi6+cPCR9WmOb2/Qf2/VL+zs2wNNv5A4
+# 	AAAAAElFTkSuQmCC
+# }]
+
+set close(modified) $::icon::15x15::close
 
 } ;# namespace 15x15
 } ;# namespace icon

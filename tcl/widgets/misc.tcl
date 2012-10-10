@@ -35,6 +35,7 @@ set Next			"&Next"
 set Last			"Las&t"
 set First		"&First"
 set Help			"&Help"
+set Start		"&Start"
 
 set New			"&New"
 set Save			"&Save"
@@ -49,7 +50,7 @@ set Control(close)		"Close"
 set Priv(busy:state) 0
 
 
-set ButtonOrder { new delete save previous next update clear close ok apply cancel revert reset help }
+set ButtonOrder { new delete save previous next clear update close ok apply cancel revert reset help }
 	
 
 proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
@@ -281,6 +282,7 @@ proc dialogButtons {dlg buttons args} {
 			new		{ set var [namespace current]::mc::New }
 			save		{ set var [namespace current]::mc::Save }
 			delete	{ set var [namespace current]::mc::Delete }
+			start		{ set var [namespace current]::mc::Start }
 
 			help		{
 				set n [llength [pack slaves $dlg.__buttons]]
@@ -332,6 +334,7 @@ proc dialogButtonSetIcons {dlg} {
 				save		{ set icon $::icon::iconSave }
 				delete	{ set icon $::icon::16x16::delete }
 				help		{ set icon $::icon::16x16::help }
+				start		{ set icon $::icon::16x16::run }
 			}
 
 			if {[llength $icon]} {

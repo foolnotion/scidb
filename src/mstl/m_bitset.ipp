@@ -589,6 +589,14 @@ bitset::word(size_type n) const
 
 
 inline
+bitset::bitfield const*
+bitset::content() const
+{
+	return m_bits;
+}
+
+
+inline
 bitset::reference
 bitset::front()
 {

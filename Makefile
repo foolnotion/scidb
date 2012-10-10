@@ -15,9 +15,9 @@ MAKEFLAGS += --no-print-directory
 all: Makefile.in check-mtime
 	@$(MAKE) -C man
 	@if [ $$? != 0 ]; then exit 1; fi
-	@$(MAKE) -C engines
-	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C src
+	@if [ $$? != 0 ]; then exit 1; fi
+	@$(MAKE) -C engines
 	@if [ $$? != 0 ]; then exit 1; fi
 	@$(MAKE) -C tcl
 	@if [ $$? != 0 ]; then exit 1; fi
@@ -36,35 +36,38 @@ check-mtime:
 	fi
 
 depend:
-	@$(MAKE) -C engines depend
 	@$(MAKE) -C src depend
+	@$(MAKE) -C engines depend
 	@$(MAKE) -C tcl depend
 
 clean:
-	@$(MAKE) -C engines clean
-	@$(MAKE) -C src clean
-	@$(MAKE) -C tcl clean
 	@$(MAKE) -C man clean
+	@$(MAKE) -C src clean
+	@$(MAKE) -C engines clean
+	@$(MAKE) -C tcl clean
 	@echo ""
 	@echo "Now you may use \"make\" to build the program."
 
 install: check-mtime install-subdirs install-engines # update-etc-magic
 
 uninstall:
-	@$(MAKE) -C engines uninstall
+	@$(MAKE) -C man uninstall
 	@$(MAKE) -C src uninstall
+	@$(MAKE) -C engines uninstall
 	@$(MAKE) -C tcl uninstall
-	@$(MAKE) -C man install
+
+uninstall-photos:
+	@$(MAKE) -C tcl uninstall-photos
 
 Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"
 	@exit 1
 
 install-subdirs:
-	@$(MAKE) -C engines install
-	@$(MAKE) -C src install
-	@$(MAKE) -C tcl install
 	@$(MAKE) -C man install
+	@$(MAKE) -C src install
+	@$(MAKE) -C engines install
+	@$(MAKE) -C tcl install
 
 install-engines: 
 	@$(MAKE) -C engines install

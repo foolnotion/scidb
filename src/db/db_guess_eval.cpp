@@ -1032,7 +1032,7 @@ db::Guess::evaluateDevelopment(color::ID side)
 
 	// First, some "thematic" things, which includes don't
 	// block the c-pawn in queen-pawn openings.
-	if (m_idn == chess960::StandardIdn)
+	if (m_idn == variant::StandardIdn)
 	{
 		if (isWhite(side))
 		{
@@ -1821,7 +1821,7 @@ db::Guess::evaluatePawns(color::ID side)
 	pawnEval.defects[FyleD] = evaluateKingsFyle(side, FyleD);
 	pawnEval.defects[FyleE] = evaluateKingsFyle(side, FyleE);
 
-	if (m_idn != chess960::StandardIdn)
+	if (m_idn != variant::StandardIdn)
 	{
 		int fyle = ::fyle(m_ksq[side]);
 

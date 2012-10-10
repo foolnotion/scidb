@@ -369,9 +369,13 @@ class Annotation : public Node
 {
 public:
 
-	Annotation(db::Annotation const& annotation, bool deleteDiagram = false);
+	enum DisplayType { All, Numerical, Textual };
+
+	Annotation(db::Annotation const& annotation, DisplayType type = All, bool skipDiagram = false);
 
 	bool operator==(Node const* node) const override;
+
+	bool isEmpty() const;
 
 	Type type() const override;
 
@@ -379,7 +383,8 @@ public:
 
 private:
 
-	db::Annotation m_annotation;
+	DisplayType		m_type;
+	db::Annotation	m_annotation;
 };
 
 
@@ -447,7 +452,7 @@ public:
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
 	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
-	virtual void annotation(db::Annotation const& annotation) = 0;
+	virtual void annotation(db::Annotation const& annotation, bool isTexual) = 0;
 	virtual void marks(bool hasMarks) = 0;
 	virtual void number(mstl::string const& number, bool isFirstVar) = 0;
 	virtual void space(Bracket bracket, bool isFirstOrLastVar) = 0;

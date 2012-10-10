@@ -298,7 +298,7 @@ Position::setup(uint16_t idn)
 	while (m_stack.size() > 1)
 		m_stack.pop();
 
-	if (idn == chess960::StandardIdn)
+	if (idn == variant::StandardIdn)
 	{
 		static Squares const StandardSquares =
 		{

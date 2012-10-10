@@ -119,6 +119,13 @@ Consumer::endGame(TagSet const& tags)
 }
 
 
+save::State
+Consumer::skipGame(TagSet const&)
+{
+	return save::Ok;
+}
+
+
 void Consumer::start() {}
 void Consumer::finish() {}
 void Consumer::beginMoveSection() {}

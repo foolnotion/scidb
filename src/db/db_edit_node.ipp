@@ -105,6 +105,7 @@ Opening::Opening(Board const& startBoard, uint16_t idn, Eco eco)
 }
 
 
+inline bool Annotation::isEmpty() const							{ return m_annotation.isEmpty(); }
 inline Key const& KeyNode::key() const								{ return m_key; }
 inline bool Variation::empty() const								{ return m_list.empty(); }
 inline Key const& Variation::successor() const					{ return m_succ; }

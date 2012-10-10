@@ -397,9 +397,14 @@ containsFemaleTtile(unsigned titles)
 
 namespace variant {
 
-inline bool isStandardChess(unsigned idn)	{ return idn == 518; }
-inline bool isChess960(unsigned idn)		{ return 0 < idn && idn <= 960; }
-inline bool isShuffleChess(unsigned idn)	{ return 960 < idn; }
+inline bool isStandardChess(unsigned idn)		{ return idn == 518; }
+inline bool isChess960(unsigned idn)			{ return 0 < idn && idn <= 960; }
+inline bool isShuffleChess(unsigned idn)		{ return 960 < idn && idn <= 3840; }
+inline bool isBughouseChess(unsigned idn)		{ return idn == BughouseIdn; }
+inline bool isCrazyhouseChess(unsigned idn)	{ return idn == CrazyhouseIdn; }
+inline bool isLosersChess(unsigned idn)		{ return idn == LosersIdn; }
+inline bool isSuicideChess(unsigned idn)		{ return idn == SuicideIdn; }
+inline bool isGiveawayChess(unsigned idn)		{ return idn == GiveawayIdn; }
 
 } // namespace variant
 

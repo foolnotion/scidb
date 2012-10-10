@@ -1065,7 +1065,7 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 
 	uint8_t storedLineIndex;
 
-	if (item.idn() == chess960::StandardIdn)
+	if (item.idn() == variant::StandardIdn)
 		storedLineIndex = StoredLine::lookup(Eco(item.m_ecoKey)).index();
 	else
 		storedLineIndex = 0;
@@ -1205,7 +1205,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	item.setGameRecordLength(gameRecordLength);
 
 	item.m_gameFlags			= flags >> 3;
-	item.m_positionId			= flags & flags::Non_Standard_Start ? 0 : chess960::StandardIdn;
+	item.m_positionId			= flags & flags::Non_Standard_Start ? 0 : variant::StandardIdn;
 
 	// White and Black player names
 	uint32_t whiteBlackHigh	= strm.get();
@@ -1356,7 +1356,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 			item.m_pd[color::Black].rating = mstl::min(int(rating::Max_Value), blackRating & 0x0fff));
 	}
 
-	if (item.m_positionId == chess960::StandardIdn)
+	if (item.m_positionId == variant::StandardIdn)
 	{
 		uint8_t index = strm.get();
 

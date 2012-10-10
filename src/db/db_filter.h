@@ -100,6 +100,8 @@ public:
 	void compress();
 	/// uncompress filter
 	void uncompress();
+	/// minimize filter - left shift to first non-zero - cut right after last non-zero
+	int minimize();
 
 	/// dump filter
 	void dump() const;

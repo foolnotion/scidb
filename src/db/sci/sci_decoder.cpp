@@ -62,16 +62,16 @@ throwCorruptData()
 
 Decoder::Decoder(ByteStream& strm)
 	:m_strm(strm)
-	,m_ensuredStreamSize(strm.size())
+	,m_guaranteedStreamSize(strm.size())
 	,m_currentNode(0)
 {
 }
 
 
-Decoder::Decoder(ByteStream& strm, unsigned ensuredStreamSize)
+Decoder::Decoder(ByteStream& strm, unsigned guaranteedStreamSize)
 	:m_strm(strm)
-	,m_ensuredStreamSize(ensuredStreamSize)
-	, m_currentNode(0)
+	,m_guaranteedStreamSize(guaranteedStreamSize)
+	,m_currentNode(0)
 {
 }
 
@@ -79,7 +79,18 @@ inline
 Move
 Decoder::decodeKing(sq::ID from, Byte nybble)
 {
-	static int const Offset[] = { 0, 0, 0, 0, 0, 0, -9, -8, -7, -1, 1, 7, 8, 9, 0, 0 };
+	static int const Offset[] =
+	{
+		0,	// reserved for token::Mark
+		0,	// reserved for token::Nag
+		0,	// reserved for token::Comment
+		0,	// reserved for token::Start_Marker
+		0,	// reserved for token::End_Marker
+		0,	// null move OR move with piece number > 32 (Bughouse/Crazyhouse)
+		-9, -8, -7, -1, 1, 7, 8, 9,
+		0,	// short castling
+		0,	// long castling
+	};
 
 	M_ASSERT(nybble < U_NUMBER_OF(Offset));
 
@@ -89,7 +100,15 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 	{
 		switch (nybble)
 		{
-			case 5:	return Move::null();
+			case 5:
+				// TODO:
+				// If variant is Bughouse or Crazyhouse we will use this
+				// code for moves with piece number > 32, otherwise it
+				// is a null move.
+				// However if next piece number is 32, then it's a null
+				// move in Bughouse/Crazyhouse.
+				return Move::null();
+
 			case 14:	return m_position.makeShortCastlingMove(from);
 			case 15:	return m_position.makeLongCastlingMove(from);
 		}
@@ -213,6 +232,14 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 }
 
 
+Move
+Decoder::decodeDroppedPiece(sq::ID to, Byte nybble)
+{
+	// Crazyhouse/Bughouse feature
+	::throwCorruptData();
+}
+
+
 unsigned
 Decoder::decodeMove(Byte value, Move& move)
 {
@@ -223,17 +250,17 @@ Decoder::decodeMove(Byte value, Move& move)
 	if (m_position.blackToMove())
 		pieceNum |= 0x10;
 
-	sq::ID from = sq::ID(m_position[pieceNum]);
+	sq::ID square = sq::ID(m_position[pieceNum]);
 
-	switch (m_position.piece(from))
+	switch (m_position.piece(square))
 	{
-		case piece::King:		move = decodeKing(from, value & 15); break;
-		case piece::Queen:	move = decodeQueen(from, value & 15); break;
-		case piece::Rook:		move = decodeRook(from, value & 15); break;
-		case piece::Bishop:	move = decodeBishop(from, value & 15); break;
-		case piece::Knight:	move = decodeKnight(from, value & 15); break;
-		case piece::Pawn:		move = decodePawn(from, value & 15); break;
-		case piece::None:		::throwCorruptData();
+		case piece::King:		move = decodeKing(square, value & 15); break;
+		case piece::Queen:	move = decodeQueen(square, value & 15); break;
+		case piece::Rook:		move = decodeRook(square, value & 15); break;
+		case piece::Bishop:	move = decodeBishop(square, value & 15); break;
+		case piece::Knight:	move = decodeKnight(square, value & 15); break;
+		case piece::Pawn:		move = decodePawn(square, value & 15); break;
+		case piece::None:		move = decodeDroppedPiece(square, value & 15); break;
 	}
 
 	Board& board = m_position.board();

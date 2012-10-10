@@ -29,64 +29,107 @@
 namespace eval engine {
 namespace eval mc {
 
-set Information			"Information"
-set Features				"Features"
-set Options					"Options"
+set Information				"Information"
+set Features					"Features"
+set Options						"Options"
 
-set Name						"Name"
-set Identifier				"Identifier"
-set Author					"Author"
-set Webpage					"Webpage"
-set Email					"Email"
-set Country					"Country"
-set Rating					"Rating"
-set Logo						"Logo"
-set Protocol				"Protocol"
-set Parameters				"Parameters"
-set Command					"Command"
-set Directory				"Directory"
-set Variants				"Variants"
-set LastUsed				"Last used"
+set Name							"Name"
+set Identifier					"Identifier"
+set Author						"Author"
+set Webpage						"Webpage"
+set Email						"Email"
+set Country						"Country"
+set Rating						"Rating"
+set Logo							"Logo"
+set Protocol					"Protocol"
+set Parameters					"Parameters"
+set Command						"Command"
+set Directory					"Directory"
+set Variants					"Variants"
+set LastUsed					"Last used"
 
-set Variant(standard)	"Standard Chess"
-set Variant(chess960)	"Chess 960"
-set Variant(shuffle)		"Shuffle Chess"
+set Variant(standard)		"Standard"
+set Variant(chess960)		"Chess 960"
+set Variant(bughouse)		"Bughouse"
+set Variant(crazyhouse)		"Crazyhouse"
+set Variant(suicide)			"Antichess"
+set Variant(giveaway)		"Antichess"
+set Variant(losers)			"Antichess"
+set Variant(3check)			"Three-check"
 
-set SetupEngines			"Setup Egines"
-set ImageFiles				"Image files"
-set SelectEngine			"Select Engine"
-set SelectEngineLogo		"Select Engine Logo"
-set EngineLog				"Engine Console"
-set Probing					"Probing"
-set NeverUsed				"never used"
-set OpenFsbox				"Open File Selection Dialog"
-set ResetToDefault		"Reset to default"
-set ShowInfo				"Show \"Info\""
-set TotalUsage				"%s times in total"
+set Edit							"Edit"
+set View							"View"
+set New							"New"
+set Rename						"Rename"
+set Delete						"Delete"
+set Select(engine)			"Select engine"
+set Select(profile)			"Select profile"
+set ProfileName				"Profile name"
+set NewProfileName			"New profile name"
+set OldProfileName			"Old profile name"
+set CopyFrom					"Copy from"
+set NewProfile					"New Profile"
+set RenameProfile				"Rename Profile"
+set EditProfile				"Edit Profile '%s'"
+set ProfileAlreadyExists	"A profile with name '%s' already exists."
+set ChooseDifferentName		"Please choose a different name."
+set ReservedName				"Name '%s' is reserved and cannot be used."
+set ReallyDeleteProfile		"Really delete profile '%s'?"
 
-set ConfirmNewEngine		"Confirm new engine"
-set EngineAlreadyExists	"An entry with this engine already exists."
-set CopyFromEngine		"Make a copy of entry"
-set CannotOpenProcess	"Cannot start process."
-set DoesNotRespond		"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."
-set DiscardChanges		"The current item has changed.\n\nReally discard changes?"
-set ReallyDelete			"Really delete engine '%s'?"
-set EntryAlreadyExists	"An entry with name '%s' already exists."
-set NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions."
+set AdminEngines				"Manage Engines"
+set SetupEngine				"Setup engine %s"
+set ImageFiles					"Image files"
+set SelectEngine				"Select Engine"
+set SelectEngineLogo			"Select Engine Logo"
+set EngineLog					"Engine Console"
+set Probing						"Probing"
+set NeverUsed					"Never used"
+set OpenFsbox					"Open File Selection Dialog"
+set ResetToDefault			"Reset to default"
+set ShowInfo					"Show \"Info\""
+set TotalUsage					"%s times in total"
+set Memory						"Memory (MB)"
+set CPUs							"CPUs"
+set Priority					"CPU Priority"
+set ClearHash					"Clear hash tables"
 
-set FeatureDetail(analyze)			"This engine provides an analyze mode."
-set FeatureDetail(multiPV)			"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
-set FeatureDetail(pause)			"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
-set FeatureDetail(playOther)		"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
-set FeatureDetail(hashSize)		"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
-set FeatureDetail(clearHash)		"The user may clear the hash tables whlle the engine is running."
-set FeatureDetail(threads)			"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
-set FeatureDetail(limitStrength)	"The engine is able to limit its strength to a specific Elo number between %min-%max."
-set FeatureDetail(skillLevel)		"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
-set FeatureDetail(ponder)			"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
-set FeatureDetail(chess960)		"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
-set FeatureDetail(shuffle)			"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when king and rook are on their traditional starting squares."
-set FeatureDetail(playingStyle)	"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
+set ConfirmNewEngine			"Confirm new engine"
+set EngineAlreadyExists		"An entry with this engine already exists."
+set CopyFromEngine			"Make a copy of entry"
+set CannotOpenProcess		"Cannot start process."
+set DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."
+set DiscardChanges			"The current item has changed.\n\nReally discard changes?"
+set ReallyDelete				"Really delete engine '%s'?"
+set EntryAlreadyExists		"An entry with name '%s' already exists."
+set NoFeaturesAvailable		"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions."
+set NoStandardChess			"This engine does not support standard chess."
+set NoEngineAvailable		"No engine available."
+set FailedToCreateDir		"Failed to create directory '%s'."
+set ScriptErrors				"Any errors while saving will be displayed here."
+set CommandNotAllowed		"Usage of command '%s' is not allowed here."
+
+set ProbeError(registration)			"This engine requires a registration."
+set ProbeError(copyprotection)		"This engine is copy-protected."
+
+set FeatureDetail(analyze)				"This engine provides an analyze mode."
+set FeatureDetail(multiPV)				"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations."
+set FeatureDetail(pause)				"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped."
+set FeatureDetail(playOther)			"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move."
+set FeatureDetail(hashSize)			"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB."
+set FeatureDetail(clearHash)			"The user may clear the hash tables whlle the engine is running."
+set FeatureDetail(threads)				"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads."
+set FeatureDetail(smp)					"More than one CPU (core) can be used by this engine."
+set FeatureDetail(limitStrength)		"The engine is able to limit its strength to a specific Elo number between %min-%max."
+set FeatureDetail(skillLevel)			"The engine provides the possibility to lower the skill down, where it can be beaten quite easier."
+set FeatureDetail(ponder)				"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain."
+set FeatureDetail(chess960)			"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions."
+set FeatureDetail(bughouse)			"Bughouse chess (also called Exchange chess, Siamese chess, Tandem chess, Transfer chess, or Double Bughouse) is a chess variant played on two chessboards by four players in teams of two. Normal chess rules apply, except that captured pieces on one board are passed on to the players of the other board, who then have the option of putting these pieces on their board."
+set FeatureDetail(crazyhouse)			"Crazyhouse (also known as Drop Chess) is a chess variant similar to bughouse chess, but with only two players. It effectively incorporates a rule in shogi (Japanese chess), in which a player can introduce a captured piece back to the board as his own."
+set FeatureDetail(suicide)				"Suicide Chess (also called Antichess, Take Me Chess, Must Kill, Reverse Chess) has simple rules: capturing moves are mandatory and the object is to lose all pieces. There is no check, the king is captured like an ordinary piece. In case of stalemate the side with fewer pieces will win (according to FICS rules)."
+set FeatureDetail(giveaway)			"Giveaway Chess (a variant of Antichess) is like Suicide Chess, but in case of stalemate the side which is stalemate wins (according to international rules)."
+set FeatureDetail(losers)				"Losing Chess is a variant of Antichess, where the goal is to lose the chess game, but with several conditions attached to the rules. The goal is to lose all of your pieces (except the king), although in Losers Chess, you can also win by getting checkmated (according to ICC rules)."
+set FeatureDetail(3check)				"The characteristic of this chess variant: a player wins if he checks his opponent three times."
+set FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles."
 
 # don't translate
 set Feature(analyze)			"Analyze"
@@ -96,12 +139,19 @@ set Feature(playOther)		"Play Other"
 set Feature(hashSize)		"Hash Size"
 set Feature(clearHash)		"Clear Hash"
 set Feature(threads)			"Threads"
+set Feature(smp)				"SMP"
 set Feature(limitStrength)	"Limit Strength"
 set Feature(skillLevel)		"Skill Level"
 set Feature(ponder)			"Pondering"
-set Feature(chess960)		"Chess960"
-set Feature(shuffle)			"Shuffle Chess"
 set Feature(playingStyle)	"Playing Styles"
+
+set Feature(chess960)		"Chess960"
+set Feature(bughouse)		"Bughouse"
+set Feature(crazyhouse)		"Crazyhouse"
+set Feature(suicide)			"Suicide"
+set Feature(giveaway)		"Giveaway"
+set Feature(losers)			"Losers"
+set Feature(3check)			"Three-check"
 
 } ;# namespace mc
 
@@ -120,34 +170,40 @@ set EmptyEngine {
 	Logo				""
 	Url				""
 	Protocol			""
-	Variant			standard
+	Variants			{}
 	LastUsed			0
 	Frequency		0
 	Features:UCI	{}
 	Features:WB		{}
-	Options:UCI		{}
-	Options:WB		{}
+	Profiles:UCI	{}
+	Profiles:WB		{}
+	ProfileType		Options
 	Timestamp		0
 	FileTime			0
+	UserDefined		1
 }
 
-variable Engines {}
+array set Options {
+	memory	32
+	cores		1
+}
+
 variable PhotoFiles {}
+variable Engines {}
 
 array set Priv { after {}  }
 array set Logo { width 100 height 54 }
 
 
-proc openSetup {parent} {
+proc openAdmininstration {parent} {
 	variable Engines
-	variable Logo
 	variable Priv
 	variable Option
 	variable Option_
 	variable Var
 	variable Var_
 
-	set dlg $parent.chooseEngine
+	set dlg $parent.adminEngines
 	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
@@ -167,15 +223,7 @@ proc openSetup {parent} {
 	array set Option_ {}
 
 	### left frame ########################################################
-	set list [::tlistbox $top.list \
-		-usescroll yes \
-		-padx 5 \
-		-pady 7 \
-		-linespace $Logo(height) \
-		-height 6 \
-		-selectmode browse \
-	]
-	RebuildEngineList $list
+	set list [MakeEngineList $top.list 6]
 
 	### right frame #######################################################
 	set nb [::ttk::notebook $top.nb -takefocus 1]
@@ -190,12 +238,6 @@ proc openSetup {parent} {
 
 	ttk::label			$setup.lname -text $mc::Name
 	ttk::entry			$setup.ename -textvar [namespace current]::Var(Name)
-#	ttk::combobox		$setup.cname \
-#								-textvar [namespace current]::Var(Name) \
-#								-height 15 \
-#								-exportselection no \
-#								-postcommand [namespace code [list FillCombobox $setup.cname]] \
-#								;
 	ttk::label			$setup.lauthor -text $mc::Author
 	ttk::entry			$setup.eauthor -textvar [namespace current]::Var(Author)
 	ttk::label			$setup.lemail -text $mc::Email
@@ -204,7 +246,7 @@ proc openSetup {parent} {
 	ttk::label			$setup.lidentifier -text $mc::Identifier
 	ttk::label			$setup.tidentifier -textvar [namespace current]::Var(Identifier) {*}$labelOptions
 	ttk::label			$setup.lvariants -text $mc::Variants
-	ttk::label			$setup.tvariants -textvar [namespace current]::Var(variant) {*}$labelOptions
+	ttk::label			$setup.tvariants -textvar [namespace current]::Var(variants) {*}$labelOptions
 	ttk::label			$setup.llastused -text $mc::LastUsed
 	ttk::label			$setup.tlastused -textvar [namespace current]::Var(lastused) {*}$labelOptions
 	ttk::button			$setup.blastused \
@@ -233,20 +275,6 @@ proc openSetup {parent} {
 								-exportselection no \
 								-textvar [namespace current]::Var(CCRL) \
 								;
-	ttk::label			$setup.lprotocol -text $mc::Protocol
-	ttk::frame			$setup.fprotocol -takefocus 0 -borderwidth 0
-	ttk::radiobutton	$setup.fprotocol.buci \
-								-text "UCI" \
-								-value "UCI" \
-								-variable [namespace current]::Var(protocol) \
-								-command [namespace code [list SwitchOptions $list]] \
-								;
-	ttk::radiobutton	$setup.fprotocol.bwb \
-								-text "XBoard/WinBoard" \
-								-value "WB" \
-								-variable [namespace current]::Var(protocol) \
-								-command [namespace code [list SwitchOptions $list]] \
-								;
 
 	ttk::label			$setup.lurl -text $mc::Webpage
 	ttk::entry			$setup.eurl -textvar [namespace current]::Var(Url)
@@ -265,6 +293,8 @@ proc openSetup {parent} {
 
 	ttk::label			$setup.lcommand -text $mc::Command
 	ttk::label			$setup.tcommand -textvar [namespace current]::Var(Command) {*}$labelOptions
+	ttk::label			$setup.lprotocol -text $mc::Protocol
+	ttk::label			$setup.tprotocol -textvar [namespace current]::Var(protocol) {*}$labelOptions
 	ttk::label			$setup.ldirectory -text $mc::Directory
 	ttk::entry			$setup.edirectory -textvar [namespace current]::Var(Directory)
 	ttk::button			$setup.bdirectory \
@@ -286,8 +316,6 @@ proc openSetup {parent} {
 	bind $setup.elogo <FocusOut> [namespace code [list SetLogo $list]]
 
 	set Priv(countrybox) $setup.ccountry
-	set Priv(button:UCI) $setup.fprotocol.buci
-	set Priv(button:WB) $setup.fprotocol.bwb
 
 	grid $setup.frating.lelo	-row 1 -column 1
 	grid $setup.frating.selo	-row 1 -column 3
@@ -295,10 +323,6 @@ proc openSetup {parent} {
 	grid $setup.frating.sccrl	-row 1 -column 7
 	grid columnconfigure $setup.frating {2 6} -minsize $::theme::padx
 	grid columnconfigure $setup.frating {4} -minsize $::theme::padX
-
-	grid $setup.fprotocol.buci		-row 1 -column 1
-	grid $setup.fprotocol.bwb		-row 1 -column 3
-	grid columnconfigure $setup.fprotocol {2} -minsize $::theme::padX
 
 	grid $setup.lname			-row  1 -column 1 -sticky w
 	grid $setup.ename			-row  1 -column 3 -sticky we
@@ -319,18 +343,17 @@ proc openSetup {parent} {
 	grid $setup.ccountry		-row 13 -column 3 -sticky we
 	grid $setup.lrating		-row 15 -column 1 -sticky w
 	grid $setup.frating		-row 15 -column 3 -sticky w
-	grid $setup.lprotocol	-row 17 -column 1 -sticky w
-	grid $setup.fprotocol	-row 17 -column 3 -sticky w
+	grid $setup.lurl			-row 17 -column 1 -sticky w
+	grid $setup.eurl			-row 17 -column 3 -sticky we
+	grid $setup.burl			-row 17 -column 5 -sticky we
+	grid $setup.llogo			-row 19 -column 1 -sticky w
+	grid $setup.elogo			-row 19 -column 3 -sticky we
+	grid $setup.blogo			-row 19 -column 5 -sticky we
 
-	grid $setup.lurl			-row 19 -column 1 -sticky w
-	grid $setup.eurl			-row 19 -column 3 -sticky we
-	grid $setup.burl			-row 19 -column 5 -sticky we
-	grid $setup.llogo			-row 21 -column 1 -sticky w
-	grid $setup.elogo			-row 21 -column 3 -sticky we
-	grid $setup.blogo			-row 21 -column 5 -sticky we
-
-	grid $setup.lcommand		-row 23 -column 1 -sticky w
-	grid $setup.tcommand		-row 23 -column 3 -sticky we
+	grid $setup.lcommand		-row 21 -column 1 -sticky w
+	grid $setup.tcommand		-row 21 -column 3 -sticky we
+	grid $setup.lprotocol	-row 23 -column 1 -sticky w
+	grid $setup.tprotocol	-row 23 -column 3 -sticky we
 	grid $setup.ldirectory	-row 25 -column 1 -sticky w
 	grid $setup.edirectory	-row 25 -column 3 -sticky we
 	grid $setup.bdirectory	-row 25 -column 5 -sticky we
@@ -339,8 +362,8 @@ proc openSetup {parent} {
 
 	grid columnconfigure $setup {0 2 4 6} -minsize $::theme::padx
 	grid columnconfigure $setup {3} -weight 1
-	grid rowconfigure $setup {0 2 4 8 10 14 16 16 20 24 26 28} -minsize $::theme::pady
-	grid rowconfigure $setup {6 12 18 22} -minsize [expr {3*$::theme::pady}] -weight 1
+	grid rowconfigure $setup {0 2 4 8 10 14 16 18 22 24 26 28} -minsize $::theme::pady
+	grid rowconfigure $setup {6 12 20} -minsize [expr {3*$::theme::pady}] -weight 1
 
 	bind $list <<ListboxSelect>> [namespace code [list Select $list %d]]
 
@@ -366,22 +389,8 @@ proc openSetup {parent} {
 		;
 	$nb add $features -sticky nsew -text $mc::Features -padding {5 5}
 
-	### Tab: Options ######################################################
-	set options $nb.options
-	set scrolled [::scrolledframe $options \
-		-background [::theme::getBackgroundColor] \
-		-borderwidth 1 \
-		-relief sunken \
-	]
-	$nb add $options -sticky nsew -text $mc::Options -padding {5 5}
-	ttk::frame $scrolled.f -borderwidth 0
-	grid $scrolled.f -sticky nsew
-
 	### Variables ########################################################ä
-	set Priv(tab:options) $options
 	set Priv(pane:features) $features
-	set Priv(scrolled:options) $scrolled
-	set Priv(pane:options) $scrolled.f
 	set Priv(pane:setup) $setup
 	set Priv(notebook) $nb
 
@@ -408,7 +417,7 @@ proc openSetup {parent} {
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
 	wm minsize $dlg [winfo reqwidth $dlg] [winfo reqheight $dlg]
 	wm resizable $dlg true false
-	wm title $dlg $mc::SetupEngines
+	wm title $dlg $mc::AdminEngines
 	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg center $parent
 	wm deiconify $dlg
@@ -418,6 +427,220 @@ proc openSetup {parent} {
 	wm geometry $dlg [winfo width $dlg]x[winfo height $dlg]
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
+}
+
+
+proc openSetup {parent} {
+	variable Engines
+	variable Vars
+
+	if {[llength $Engines] == 0} {
+		return [::dialog::info -parent $parent -message $mc::NoEngineAvailable]
+	}
+
+	set dlg .setupEngine
+
+	if {[winfo exists $dlg]} {
+		SetupClearHash $Vars(active:name)
+		::widget::dialogRaise $dlg
+		return
+	}
+
+	tk::toplevel $dlg -class Scidb
+	wm withdraw $dlg
+	set top [ttk::frame $dlg.top -takefocus 0]
+	pack $top -fill both -expand yes
+	set lf [ttk::labelframe $top.engine -text $mc::Select(engine)]
+	set rf [ttk::labelframe $top.profile -text $mc::Select(profile)]
+
+	set memory [::system::memAvailable]
+	if {$memory == -1} {
+		set memory 256
+	} else {
+		set memory [expr {min(256, [::scidb::misc::predPow2 [expr {$memory/1048576}]])}]
+	}
+
+	set Vars(selection) -1
+	set Vars(priority) $mc::Normal
+	set Vars(list:profiles) $rf.profiles
+	set Vars(list:engines) $lf.list
+
+	set Vars(current:name) ""
+	set Vars(current:protocol) UCI
+	set Vars(current:memory) $memory
+	set Vars(current:cores) [expr {[::system::ncpus] - 1}]
+	set Vars(current:priority) normal
+	set Vars(current:profile) Default
+
+	set Vars(active:name) ""
+	set Vars(active:protocol) UCI
+	set Vars(active:memory) 0
+	set Vars(active:cores) 1
+	set Vars(active:priority) normal
+	set Vars(active:profile) Default
+	set Vars(active:id) -1
+
+	set listheight 7
+
+	### fst panel  ########################################################
+	set list [::tlistbox $lf.list -usescroll yes -height $listheight -minwidth 70]
+ 	bind $list <<ListboxSelect>> [namespace code [list UseEngine $list %d $Vars(list:profiles)]]
+	SetupEngineList
+
+	### snd panel #########################################################
+	set lt [::ttk::frame $lf.lt -takefocus 0]
+	ttk::label $lt.lpriority -textvar [namespace current]::mc::Priority
+	ttk::label $lt.lmemory -textvar [namespace current]::mc::Memory
+	ttk::label $lt.lcpus -textvar [namespace current]::mc::CPUs
+	ttk::label $lt.lprotocol	-textvar [namespace current]::mc::Protocol
+
+	ttk::combobox $lt.priority \
+		-width 7 \
+		-state readonly \
+		-values [list $::mc::Normal $::mc::Low] \
+		-textvariable [namespace current]::Vars(priority) \
+		;
+	ttk::tcombobox $lt.memory \
+		-width 7 \
+		-height 12 \
+		-listjustify right \
+		-state readonly \
+		-textvariable [namespace current]::Vars(current:memory) \
+		;
+	$lt.memory addcol text -d mb -justify right
+	ttk::spinbox $lt.cores \
+		-width 7 \
+		-state readonly \
+		-textvariable [namespace current]::Vars(current:cores) \
+		;
+	ttk::frame $lt.protocol -takefocus 0 -borderwidth 0
+	ttk::radiobutton $lt.protocol.buci \
+								-text "UCI" \
+								-value "UCI" \
+								-variable [namespace current]::Vars(current:protocol) \
+								-command [namespace code SetupProfiles] \
+								;
+	if {[tk windowingsystem] eq "x11"} { set prot XBoard } else { set prot WinBoard }
+	ttk::radiobutton $lt.protocol.bwb \
+								-text $prot \
+								-value "WB" \
+								-variable [namespace current]::Vars(current:protocol) \
+								-command [namespace code SetupProfiles] \
+								;
+	ttk::button $lt.clearHash \
+		-textvar [namespace current]::mc::ClearHash \
+		-command [namespace code ClearHash] \
+		-state disabled \
+		;
+
+	grid $lt.protocol.buci	-row 1 -column 1
+	grid $lt.protocol.bwb	-row 1 -column 3
+	grid columnconfigure $lt.protocol {2} -minsize 3
+
+	set Vars(widget:memory) $lt.memory
+	set Vars(widget:cores) $lt.cores
+	set Vars(widget:priority) $lt.priority
+	set Vars(widget:clearHash) $lt.clearHash
+	set Vars(widget:uci) $lt.protocol.buci
+	set Vars(widget:wb) $lt.protocol.bwb
+
+	bind $lt.priority <<LanguageChanged>> [namespace code [list LanguageChanged $list]]
+	bind $lt.priority <<ComboboxSelected>> [namespace code SetPriority]
+
+	### thd panel #########################################################
+	set prof [::tlistbox $rf.profiles -usescroll yes -height $listheight -minwidth 70]
+	bind $prof <<ListboxSelect>> [namespace code [list UseProfile %d]]
+
+	### fth panel #########################################################
+	set rt [::ttk::frame $rf.rt -takefocus 0]
+	ttk::button $rt.edit \
+		-style aligned.TButton \
+		-text " $mc::Edit" \
+		-image $::icon::16x16::edit \
+		-compound left \
+		-command [namespace code [list OpenSetupEngineDialog $dlg]] \
+		;
+	ttk::button $rt.rename \
+		-style aligned.TButton \
+		-text " $mc::Rename" \
+		-image $::fsbox::bookmarks::icon::16x16::modify \
+		-compound left \
+		-command [namespace code [list RenameProfile $dlg]] \
+		;
+	ttk::button $rt.new \
+		-style aligned.TButton \
+		-text " $mc::New" \
+		-image $::icon::16x16::plus \
+		-compound left \
+		-command [namespace code [list NewProfile $dlg]] \
+		;
+	ttk::button $rt.delete \
+		-style aligned.TButton \
+		-text " $mc::Delete" \
+		-image $::fsbox::filelist::icon::16x16::delete \
+		-compound left \
+		-command [namespace code [list DeleteProfile $dlg]] \
+		;
+
+	set Vars(widget:edit) $rt.edit
+	set Vars(widget:rename) $rt.rename
+	set Vars(widget:new) $rt.new
+	set Vars(widget:delete) $rt.delete
+
+	### gemoetry ##########################################################
+	grid $lf		-row 1 -column 1 -sticky ns
+	grid $rf		-row 1 -column 3 -sticky ns
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+
+	grid $list	-row 1 -column 1 -sticky ns
+	grid $lt		-row 1 -column 3 -sticky ns
+	grid columnconfigure $lf {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $lf {0 2} -minsize $::theme::pady
+
+	grid $prof	-row 1 -column 1 -sticky ns
+	grid $rt		-row 1 -column 3 -sticky ns
+	grid columnconfigure $rf {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $rf {0 2} -minsize $::theme::pady
+
+	grid $lt.lpriority	-row 1 -column 1 -sticky w
+	grid $lt.lmemory		-row 3 -column 1 -sticky w
+	grid $lt.lcpus			-row 5 -column 1 -sticky w
+	grid $lt.lprotocol	-row 7 -column 1 -sticky w
+	grid $lt.priority		-row 1 -column 3 -sticky we
+	grid $lt.memory		-row 3 -column 3 -sticky we
+	grid $lt.cores			-row 5 -column 3 -sticky we
+	grid $lt.protocol		-row 7 -column 3 -sticky we
+	grid $lt.clearHash	-row 9 -column 1 -columnspan 3 -sticky we
+
+	grid columnconfigure $lt {2} -minsize $::theme::padx
+	grid rowconfigure $lt {1 3 5} -uniform u
+	grid rowconfigure $lt {2 4 6} -minsize $::theme::pady
+	grid rowconfigure $lt {8} -minsize $::theme::padY -weight 1
+
+	grid $rt.edit		-row 1 -column 1 -sticky we
+	grid $rt.rename	-row 3 -column 1 -sticky we
+	grid $rt.new		-row 5 -column 1 -sticky we
+	grid $rt.delete	-row 7 -column 1 -sticky we
+	grid rowconfigure $rt {2 4 6} -minsize $::theme::pady -weight 1
+
+	### finish dialog #####################################################
+	set var [namespace current]::mc::AdminEngines
+	::widget::dialogButtons $dlg {start close} -default start
+	::widget::dialogButtonAdd $dlg admin $var $::icon::16x16::setup -position end
+	$dlg.start configure -command [namespace code [list StartEngine $list]]
+	$dlg.close configure -command [list wm withdraw $dlg]
+	$dlg.admin configure -command [namespace code [list OpenAdministration $dlg]]
+
+	$list select 0
+	LanguageChanged $list
+
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
+	wm resizable $dlg false false
+	wm transient $dlg [winfo toplevel $parent]
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $list
 }
 
 
@@ -469,29 +692,6 @@ proc logIsOpen? {parent} {
 }
 
 
-proc engines {} {
-	variable EmptyEngine
-	variable Engines
-
-	set list {}
-
-	foreach entry $Engines {
-		array set engine $EmptyEngine
-		array set engine $entry
-		lappend list [list $engine(Name) $engine(LastUsed)]
-	}
-
-	# TODO
-	# write own sorting routine because we have to take
-	# unicode characters into account.
-	set entries [lsort  -dictionary -index 0 $list]
-	set entries [lsort -integer -index 1 $entries]
-	set list {}
-	foreach entry $entries { lappend list [lindex $entry 0] }
-	return $list
-}
-
-
 # proc EngineDictionary {list} {
 # 	variable Priv
 # 	variable _Name
@@ -514,7 +714,6 @@ proc engines {} {
 # 	$lb addcol text  -id elo -justify right -foreground darkgreen -header "Elo"
 # 	$lb addcol text  -id ccrl -justify right -foreground darkgreen -header "CCRL"
 # 	$lb addcol image -id chess960 -header "960"
-# 	$lb addcol image -id shuffle -header "Shuffle"
 # 
 # 	set en [ttk::entry $top.name -textvar [namespace current]::_Name]
 # 
@@ -527,15 +726,14 @@ proc engines {} {
 # 
 # 	foreach entry $Priv(engines) {
 # 		set result [::scidb::engine::info $entry]
-# 		lassign {0 0 "" ""} elo ccrl chess960 shuffle url aliases
+# 		lassign {0 0 "" ""} elo ccrl chess960 url aliases
 # 		if {[llength $result]} {
-# 			lassign $result _ _ elo ccrl _ _ chess960Flag shuffleFlag
-# 			if {$shuffleFlag} { set shuffle $::icon::16x16::checkGreen }
-# 			if {$chess960Flag} { set chess960 $::icon::16x16::checkBlue }
+# 			lassign $result _ _ elo ccrl _ _ chess960Flag
+# 			if {$chess960Flag} { set chess960 $::icon::16x16::checkGreen }
 # 		}
 # 		if {$elo == 0} { set elo "" }
 # 		if {$ccrl == 0} { set ccrl "" }
-# 		$lb insert [list $entry $elo $ccrl $chess960 $shuffle]
+# 		$lb insert [list $entry $elo $ccrl $chess960]
 # 	}
 # 
 # 	$lb resize
@@ -579,155 +777,94 @@ proc engines {} {
 
 
 proc setup {} {
+	variable EmptyEngine
 	variable Engines
 
-	if {[file readable $::scidb::file::engines]} {
-		::load::source $::scidb::file::engines -message $::load::mc::ReadingFile(engines) -encoding utf-8
-	} else {
-		set Engines {
-			{
-				Name				Stockfish
-				ShortId			Stockfish
-				Identifier		"Stockfish 2.3"
-				Author			"Tord Romstad, Marco Costalba & Joona Kiiski"
-				Command			stockfish-120903
-				Protocol			UCI
-				Variant			chess960
-				Features:UCI	{
-					analyze true
-					multiPV 500
-					ponder true
-					hashSize {4 8192}
-					threads {4 32}
-					skillLevel {0 20}
-					clearHash true
-				}
-				Options:UCI		{
-					{{Use Debug Log} check false false {} {}}
-					{{Use Search Log} check false false {} {}}
-					{{Search Log Filename} file SearchLog.txt SearchLog.txt {} {}}
-					{{Book File} file book.bin book.bin {} {}}
-					{{Best Book Move} check false false {} {}}
-					{{Mobility (Middle Game)} spin 100 100 0 200}
-					{{Mobility (Endgame)} spin 100 100 0 200}
-					{{Passed Pawns (Middle Game)} spin 100 100 0 200}
-					{{Passed Pawns (Endgame)} spin 100 100 0 200}
-					{Space spin 100 100 0 200}
-					{Aggressiveness spin 100 100 0 200}
-					{Cowardice spin 100 100 0 200}
-					{{Min Split Depth} spin 4 4 4 7}
-					{{Max Threads per Split Point} spin 5 5 4 8}
-					{Threads spin 4 4 1 32}
-					{{Use Sleeping Threads} check true true {} {}}
-					{Hash spin 32 32 4 8192}
-					{{Clear Hash} button {} {} {} {}}
-					{{Skill Level} spin 20 20 0 20}
-					{{Emergency Move Horizon} spin 40 40 0 50}
-					{{Emergency Base Time} spin 200 200 0 30000}
-					{{Emergency Move Time} spin 70 70 0 5000}
-					{{Minimum Thinking Time} spin 20 20 0 5000}
-					{{Slow Mover} spin 100 100 10 1000}
-				}
-			}
-			{
-				Name				Crafty
-				ShortId			Crafty
-				Identifier		Crafty-23.2a
-				Author			"Dr. Robert M. Hyatt"
-				Command			crafty-32.2
-				Protocol			WB
-				Features:WB		{analyze true playOther true}
-			}
-			{
-				Name				"Toga II"
-				ShortId			"Toga II"
-				Identifier		"Toga II 1.3.1"
-				Author			"Thomas Gaksch & Fabien Letouzey"
-				Command			fruit
-				Protocol			UCI
-				Features:UCI	{analyze true multiPV 10 ponder true hashSize {4 1024}}
-				Options:UCI		{
-					{Hash spin 16 16 4 1024}
-					{{Search Time} spin 0 0 0 3600}
-					{{Search Depth} spin 0 0 0 20}
-					{BookFile file performance.bin performance.bin {} {}}
-					{{NullMove Pruning} combo Always Always {Always;Fail High;Never} {}}
-					{{NullMove Reduction} spin 3 3 1 4}
-					{{Verification Search} combo Always Always {Always;Endgame;Never} {}}
-					{{Verification Reduction} spin 5 5 1 6}
-					{{History Pruning} check true true {} {}}
-					{{History Threshold} spin 70 70 0 100}
-					{{Futility Pruning} check true true {} {}}
-					{{Futility Margin} spin 100 100 0 500}
-					{{Extended Futility Margin} spin 300 300 0 900}
-					{{Delta Pruning} check true true {} {}}
-					{{Delta Margin} spin 50 50 0 500}
-					{{Quiescence Check Plies} spin 1 1 0 2}
-					{Material spin 100 100 0 400}
-					{{Piece Activity} spin 100 100 0 400}
-					{{King Safety} spin 100 100 0 400}
-					{{Pawn Structure} spin 100 100 0 400}
-					{{Passed Pawns} spin 100 100 0 400}
-					{{Toga Lazy Eval} check true true {} {}}
-					{{Toga Lazy Eval Margin} spin 200 200 0 900}
-					{{Toga King Safety} check false false {} {}}
-					{{Toga King Safety Margin} spin 1700 1700 500 3000}
-					{{Toga Extended History Pruning} check false false {} {}}
-				}
-			}
-			{
-				Name				Phalanx
-				ShortId			Phalanx
-				Identifier		Phalanx
-				Author			"Dusan Dobes"
-				Command			phalanx
-				Parameters		-l-
-				Protocol			WB
-				Features:WB		{analyze true}
-			}
-			{
-				Name				Micro-Max
-				ShortId			Micro-Max
-				Identifier		"micro-Max 4.8 (m)"
-				Author			"H.G. Muller"
-				Command			micromax
-				Protocol			WB
-			}
-		}
+	set localFile $::scidb::file::engines
+	set shareFile [file join $::scidb::dir::share engines [file tail $localFile]]
+	set localFiletime 0
+	set shareFiletime 0
 
-		set list $Engines
-		set Engines {}
+	if {[file readable $localFile]} { file stat $localFile st; set localFiletime $st(mtime) }
+	if {[file readable $shareFile]} { file stat $shareFile st; set shareFiletime $st(mtime) }
 
-		foreach entry $list {
-			array unset engine
-			array set engine $entry
-			set engine(Command) "[file join $::scidb::dir::engines $engine(Command)]"
+	if {$localFiletime > 0} {
+		if {$shareFiletime > $localFiletime} {
+			# update local configuration file
+			set engines [LoadSharedConfiguration $shareFile]
+			::load::source $localFile -message $::load::mc::ReadingFile(engines) -encoding utf-8
+			set changed 0
 
-			if {[file executable $engine(Command)]} {
-				set result [::scidb::engine::info $engine(Name)]
-				if {[llength $result]} {
-					lassign $result _ Country _ CCRL _ _ _ _ Url _
-					# We don't like to set the ELO value
-					foreach attr {Country CCRL Url} {
-						set engine($attr) [set $attr]
+			foreach newEntry $engines {
+				array set newEngine $EmptyEngine
+				array set newEngine $newEntry
+
+				if {$newEngine(ProfileType) eq "Options" && [file exists $newEngine(Command)]} {
+					set changed 1
+					set index [FindIndex $newEngine(Name)]
+					if {$index >= 0} {
+						array set oldEngine $EmptyEngine
+						array set oldEngine [lindex $Engines $index]
+						if {$oldEngine(ProfileType) eq "Options"} {
+							foreach prot {UCI WB} {
+								set oldProfiles $oldEngine(Profiles:$prot)
+								set newProfiles $newEngine(Profiles:$prot)
+								if {[llength $oldProfiles] >= 2 && [llength $newProfiles] == 2} {
+									set newOptions [lindex $newProfiles 1]
+									array set valueMap {}
+									foreach {profile oldOptions} $oldProfiles {
+										array unset valueMap
+										foreach opt $oldOptions { set valueMap([lindex $opt 0]) [lindex $opt 2] }
+										set options {}
+										foreach opt $newOptions {
+											lassign $opt name type value dflt var max
+											if [info exists valueMap($name)] {
+												set oldValue $valueMap($name)
+												switch $type {
+													spin - slider {
+														set oldValue [expr {min($max, max($var, $oldValue))}]
+													}
+													combo {
+														if {$oldValue ni [SplitComboEntries $var]} {
+															set oldValue $value
+														}
+													}
+												}
+												lset opt 2 $oldValue
+											}
+											lappend options $opt
+										}
+										lappend optionList $profile $options
+									}
+									set newEngine(Profiles:$prot) $optionList
+								}
+							}
+							set newEntry [array get newEngine]
+							lset Engines $index $newEntry
+						}
+					} else {
+						lappend Engines $newEntry
 					}
 				}
-				file stat $engine(Command) st
-				set engine(FileTime) $st(mtime)
-				set engine(Timestamp) [clock seconds]
-				lappend Engines [array get engine]
 			}
+
+			if {$changed} { ::options::hookWriter [namespace current]::WriteOptions engines }
+		} else {
+			::load::source $localFile -message $::load::mc::ReadingFile(engines) -encoding utf-8
 		}
+	} elseif {$shareFiletime > 0} {
+		LoadSharedConfiguration $shareFile
+		::options::hookWriter [namespace current]::WriteOptions engines
 	}
 }
 
 
-proc startEngine {name isReadyCmd signalCmd updateCmd} {
+proc startEngine {isReadyCmd signalCmd updateCmd} {
 	variable EmptyEngine
 	variable Engines
-	variable Priv
+	variable Vars
 
-	set index [FindIndex $name]
+	set index [FindIndex $Vars(current:name)]
 	if {$index == -1} { return -1 }
 
 	set entry [lindex $Engines $index]
@@ -752,18 +889,36 @@ proc startEngine {name isReadyCmd signalCmd updateCmd} {
 		$signalCmd \
 		$updateCmd \
 	]
-	set Priv(engine:$id) $engine(Name)
 	return $id
 }
 
 
 proc activateEngine {engineId features} {
-	variable EmptyEngine
 	variable Engines
-	variable Priv
+	variable Vars
 
 	if {$engineId == -1} { return }
-	set index [FindIndex $Priv(engine:$engineId)]
+	set Vars(active:name) $Vars(current:name)
+	set Vars(active:id) $engineId
+	set Vars(active:priority) $Vars(current:priority)
+	sendOptions $engineId
+	sendFeatures $engineId $features
+	::scidb::engine::activate $engineId
+	if {$Vars(current:priority) ne "normal"} {
+		::scidb::engine::priority $engineId $Vars(current:priority)
+	}
+}
+
+
+proc sendFeatures {engineId features} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	if {$engineId == -1} { return }
+	set Vars(active:cores) $Vars(current:cores)
+	set Vars(active:memory) $Vars(current:memory)
+	set index [FindIndex $Vars(current:name)]
 	if {$index == -1} { return }
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $index]
@@ -772,9 +927,66 @@ proc activateEngine {engineId features} {
 	set protocol [lindex $engine(Protocol) 0]
 	array set engineFeatures $engine(Features:$protocol)
 	if {[info exists engineFeatures(analyze)]} { set featureArr(analyze) true }
-	::scidb::engine::setOptions $engineId $engine(Options:$protocol)
+	if {[info exists engineFeatures(threads)]} { set featureArr(smp) $Vars(current:cores) }
+	if {[info exists engineFeatures(smp)]} { set featureArr(smp) $Vars(current:cores) }
+	if {[info exists engineFeatures(hashSize)]} { set featureArr(hashSize) $Vars(current:memory) }
 	::scidb::engine::setFeatures $engineId [array get featureArr]
-	::scidb::engine::activate $engineId
+}
+
+
+proc sendOptions {engineId} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	if {$engineId == -1} { return }
+	set index [FindIndex $Vars(current:name)]
+	if {$index == -1} { return }
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $index]
+	set protocol [lindex $engine(Protocol) 0]
+	array set profiles $engine(Profiles:$protocol)
+	if {[llength profiles($Vars(current:profile))]} {
+		set Vars(active:profile) $Vars(current:profile)
+		switch $engine(ProfileType) {
+			Options {
+				set pairs {}
+				foreach opt $profiles($Vars(current:profile)) {
+					lassign $opt name _ value _ _ _
+					lappend pairs $name $value
+				}
+				::scidb::engine::setOptions $engineId options $pairs
+			}
+			Script {
+				set script ""
+				foreach line $profiles($Vars(current:profile)) {
+					set n [string first "#" $line]
+					if {$n >= 0} { set line [string range $line 0 [expr {$n - 1}]] }
+					set line [string trim $line]
+					if {[string length $line]} {
+						append script $line "\n"
+					}
+				}
+				::scidb::engine::setOptions $engineId script $script
+			}
+		}
+	}
+}
+
+
+proc restartAnalysis {engineId features} {
+	variable Vars
+
+	if {$engineId != -1} {
+		::scidb::engine::analyze stop $engineId
+		if {$Vars(current:profile) ne $Vars(active:profile)} {
+			sendOptions $engineId
+		}
+		if {$Vars(current:cores) != $Vars(active:cores) || $Vars(current:memory) != $Vars(active:memory)} {
+			sendFeatures $engineId $features
+		}
+		::scidb::engine::analyze start $engineId
+	}
 }
 
 
@@ -807,9 +1019,19 @@ proc resume {engineId} {
 
 
 proc kill {engineId} {
+	variable Vars
+
 	if {$engineId != -1} {
 		::scidb::engine::kill $engineId
+		set Vars(active:name) ""
+		set Vars(active:profile) ""
+		set Vars(active:id) -1
 	}
+}
+
+
+proc engineName {engineId} {
+	return [set [namespace current]::Vars(current:name)]
 }
 
 
@@ -817,6 +1039,177 @@ proc CloseSetup {list} {
 	if {[DiscardChanges $list]} {
 		destroy [winfo toplevel $list]
 	}
+}
+
+
+proc StartEngine {list} {
+	variable Engines
+	variable Vars
+
+	wm withdraw [winfo toplevel $list]
+	update idletasks
+
+	if {$Vars(active:id) >= 0 && [::scidb::engine::active? $Vars(active:id)]} {
+		if {$Vars(current:protocol) ne $Vars(active:protocol)} {
+			::application::analysis::startAnalysis [::application::board::anaylsisWindow]
+		} else {
+			if {$Vars(current:name) ne $Vars(active:name)} {
+				::application::analysis::startAnalysis [::application::board::anaylsisWindow]
+			} elseif {$Vars(current:profile) ne $Vars(active:profile)} {
+				::application::analysis::restartAnalysis
+			}
+			if {$Vars(current:priority) ne $Vars(active:priority)} {
+				set Vars(active:priority) $Vars(current:priority)
+				::scidb::engine::priority $engineId $Vars(current:priority)
+			}
+		}
+	} else {
+		::application::board::openAnalysis force
+		::application::analysis::startAnalysis [::application::board::anaylsisWindow]
+	}
+}
+
+
+proc LanguageChanged {list} {
+	variable Vars
+
+	set w $Vars(widget:priority)
+	set current [$w current]
+	$w configure -values [list $::mc::Normal $::mc::Low]
+	$w current $current
+
+	SetTitle $list
+}
+
+
+proc SetPriority {} {
+	variable Vars
+
+	if {[$Vars(widget:priority) current] == 0} {
+		set Vars(current:priority) normal
+	} else {
+		set Vars(current:priority) low
+	}
+}
+
+
+proc MemTotal {} {
+	set mem [::system::memTotal]
+	if {$mem <= 0} { return 2048 }
+	return [::scidb::misc::predPow2 [expr {$mem/1048576}]]
+}
+
+
+proc UseEngine {list item profileList} {
+	variable Vars
+	variable EmptyEngine
+	variable Engines
+
+	if {[llength $item] == 0} { return }
+	set Vars(selection) $item
+	set i [FindIndex [$list get name]]
+
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $i]
+	set prot [lindex $engine(Protocol) 0]
+	array set features $engine(Features:$prot)
+	set Vars(current:name) $engine(Name)
+
+	if {[info exists features(hashSize)]} {
+		$Vars(widget:memory) clear
+		if {[llength $features(hashSize)] == 0} {
+			set min 4
+			set max [MemTotal]
+		} else {
+			lassign $features(hashSize) min max
+			set min2 [expr {max(4, [::scidb::misc::succPow2 $min])}]
+			set nmin [expr {$min2 + $min2/2}]
+			if {$nmin <= $min} { set min $nmin } else { set min $min2 }
+			set avail [::system::memAvailable]
+			if {$avail >= 0} {
+				set avail [expr {$avail/1048576}]
+				if {$max > 0 } { set avail [expr {min($avail, $max)}] }
+				set max [::scidb::misc::predPow2 $avail]
+				set nmax [expr {$max + $max/2}]
+				if {$nmax <= $max} { set max $nmax }
+			}
+		}
+		while {$min <= $max} {
+			$Vars(widget:memory) listinsert $min
+			set incr [expr {[::scidb::misc::predPow2 $min]/2}]
+			incr min $incr
+		}
+		$Vars(widget:memory) resize
+		$Vars(widget:memory) configure -height 0 -state readonly
+		set Vars(current:memory) [expr {min($Vars(current:memory), $max)}]
+	} else {
+		$Vars(widget:memory) configure -state disabled
+	}
+
+	if {[info exists features(smp)]} {
+		$Vars(widget:cores) configure -state readonly -from 1 -to [::system::ncpus]
+	} elseif {[info exists features(threads)]} {
+		lassign $features(threads) min max
+		set max [expr {min($max, [::system::ncpus])}]
+		$Vars(widget:cores) configure -state readonly -from 1 -to [::system::ncpus]
+		set Vars(current:cores) [expr {min($Vars(current:cores), $max)}]
+	} else {
+		$Vars(widget:cores) configure -state disabled
+	}
+
+	set Vars(current:protocol) $prot
+	if {[llength $engine(Protocol)] < 2} {
+		if {$prot eq "WB"} {
+			set state(UCI) disabled
+			set state(WB) normal
+		} else {
+			set state(UCI) normal
+			set state(WB) disabled
+		}
+	} else {
+		set state(UCI) normal
+		set state(WB) normal
+	}
+	$Vars(widget:uci) configure -state $state(UCI)
+	$Vars(widget:wb) configure -state $state(WB)
+
+	SetTitle $list
+	SetupClearHash $Vars(current:name)
+	SetupProfiles
+}
+
+
+proc SetupClearHash {engineName} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	if {$Vars(current:name) ne $Vars(active:name)} {
+		set state disabled
+	} else {
+		set i [FindIndex $engineName]
+		array set engine $EmptyEngine
+		array set engine [lindex $Engines $i]
+		set prot [lindex $engine(Protocol) 0]
+		array set features $engine(Features:$prot)
+
+		if {$Vars(active:id) == -1 || ![::scidb::engine::active? $Vars(active:id)]} {
+			set state disabled
+		} elseif {[info exists features(clearHash)]} {
+			set state normal
+		} else {
+			set state disabled
+		}
+	}
+	$Vars(widget:clearHash) configure -state $state
+}
+
+
+proc SetTitle {list} {
+	variable Engines
+
+	array set engine [lindex $Engines [$list curselection]]
+	wm title [winfo toplevel $list] [format $mc::SetupEngine $engine(Name)]
 }
 
 
@@ -836,6 +1229,8 @@ proc ClearLog {text} {
 proc Log {text msg} {
 	variable ShowInfo
 	variable Priv
+
+	if {![winfo exists $text]} { return }
 
 	switch -- [string index $msg 0] {
 		"<" {
@@ -881,7 +1276,6 @@ proc Select {list item} {
 	if {[llength $item] == 0} { return }
 
 	if {$Priv(selection) >= 0} {
-		array set engine $EmptyEngine
 		array set engine [lindex $Engines $item]
 		if {$Var(Name) eq $engine(Name)} { return }
 
@@ -890,6 +1284,7 @@ proc Select {list item} {
 			return
 		}
 
+		array unset engine
 		array set engine $EmptyEngine
 		array set engine [lindex $Engines $Priv(selection)]
 		set logo $engine(ShortId)
@@ -900,14 +1295,12 @@ proc Select {list item} {
 
 	set Priv(selection) $item
 	set entry [lindex $Engines $item]
+	array unset engine
 	array set engine $EmptyEngine
 	array set engine $entry
 	FillInfo $list $entry
 	set features $engine(Features:[lindex $engine(Protocol) 0])
-	if {$engine(Variant) ne "standard"} {
-		lappend features $engine(Variant) true
-	}
-	ShowFeatures $list $features
+	ShowFeatures $list $features $engine(Variants)
 	TabChanged
 	UpdateVars
 }
@@ -923,7 +1316,7 @@ proc DiscardChanges {list} {
 
 	if {[llength $Engines] == 0} { return 1 }
 
-	if {![arrayCompare Var Var_] || ![arrayCompare Option Option_]} {
+	if {![arrayEqual Var Var_] || ![arrayEqual Option Option_]} {
 		set rc [::dialog::question -parent [winfo toplevel $list] -message $mc::DiscardChanges]
 		if {$rc eq "no"} { return 0 }
 	}
@@ -932,32 +1325,60 @@ proc DiscardChanges {list} {
 }
 
 
-proc ShowFeatures {list features} {
+proc ShowFeatures {list features variants} {
 	variable Priv
-
-	if {"shuffle" in $features} { lappend features chess960 true }
 
 	append html "<html>"
 	append html "<head><style type='text/css'>body { background-color: #ffdd76; }</style></head>"
 	append html "<body>"
 
+	if {"standard" ni $variants} {
+		append html "<h3>$mc::NoStandardChess</h3>"
+	}
+
+	set count 0
+	foreach variant $variants {
+		if {$variant ne "standard"} {
+			if {[incr count] == 1} { append html "<table cellpadding='5'>" }
+			append html "<tr><td style='white-space:nowrap;' valign='top'>"
+			append html "<b>$mc::Feature($variant)</b></td>"
+			append html "<td>$mc::FeatureDetail($variant)</td>"
+			append html "</tr>"
+		}
+	}
+
 	if {[llength $features] == 0} {
+		if {$count} { append html "</table>" }
 		append html "<h3>$mc::NoFeaturesAvailable</h3>"
-		append html "<p align='center'><img src='Smiley-Cry-128x128.png' style='padding-top: 50px;' /></p>"
+		if {"standard" in $variants && [llength $variants] == 1} {
+			append html "<p align='center'>"
+			append html "<img src='Smiley-Cry-128x128.png' style='padding-top: 50px;' /></p>"
+		}
 	} else {
-		append html "<table cellpadding='5'>"
+		if {$count == 0} { append html "<table cellpadding='5'>" }
 
 		foreach {name value} $features {
-			append html "<tr><td style='white-space:nowrap;' valign='top'><b>$mc::Feature($name)</b></td>"
+			append html "<tr><td style='white-space:nowrap;' valign='top'>"
+			append html "<b>$mc::Feature($name)</b></td>"
 
 			switch $name {
-				analyze - pause - playOther - clearHash - ponder - chess960 - shuffle - skillLevel {
+				analyze - pause - playOther - clearHash - ponder -  skillLevel - smp {
 					append html "<td>$mc::FeatureDetail($name)</td>"
 				}
 				multiPV {
 					append html "<td>[format $mc::FeatureDetail($name) $value]</td>"
 				}
-				hashSize - limitStrength - threads {
+				hashSize {
+					if {[llength $value] == 0} {
+						set min 4
+						set max [MemTotal]
+					} else {
+						lassign $value min max
+					}
+					set map [list %min $min %max $max]
+					append html "<td>[string map $map $mc::FeatureDetail($name)]</td>"
+				}
+				limitStrength - threads {
 					set map [list %min [lindex $value 0] %max [lindex $value 1]]
 					append html "<td>[string map $map $mc::FeatureDetail($name)]</td>"
 				}
@@ -1001,7 +1422,6 @@ proc GetImage {file} {
 proc FillInfo {list entry} {
 	variable EmptyEngine
 	variable Photo
-	variable Option
 	variable Priv
 	variable Var
 
@@ -1011,10 +1431,14 @@ proc FillInfo {list entry} {
 	foreach attr [array names engine] {
 		switch $attr {
 			Protocol {
-				set Var(protocol) [lindex $engine(Protocol) 0]
-				$Priv(button:UCI) configure -state disabled
-				$Priv(button:WB) configure -state disabled
-				foreach prot $engine(Protocol) { $Priv(button:$prot) configure -state normal }
+				if {[tk windowingsystem] eq "x11"} { set prot XBoard } else { set prot WinBoard }
+				if {[llength $engine(Protocol)] == 2} {
+					set Var(protocol) "UCI, $prot"
+				} elseif {"UCI" in $engine(Protocol) } {
+					set Var(protocol) "Universal Chess Interface (UCI)"
+				} else {
+					set Var(protocol) "Chess Engine Communication Protocol ($prot)"
+				}
 			}
 			LastUsed {
 				set time $engine(LastUsed)
@@ -1032,29 +1456,39 @@ proc FillInfo {list entry} {
 			Country {
 				$Priv(countrybox) set $engine(Country)
 			}
-			Variant {
-				switch $engine(Variant) {
-					standard	{ set Var(variant) $mc::Variant(standard) }
-					chess960	{ set Var(variant) $mc::Variant(chess960) }
-					shuffle	{ set Var(variant) "$mc::Variant(chess960) / $mc::Variant(shuffle)" }
-				}
-			}
-			Options:UCI - Options:WB {
-				set protocol [lindex [split $attr :] 1]
-				if {$protocol eq [lindex $engine(Protocol) 0]} {
-					BuildOptionFrame $protocol $engine(Name) $engine($attr) $engine(Directory)
-				} else {
-					foreach opt $engine($attr) {
-						lassign $opt name _ value _ _ _
-						set Option($protocol:$name) $value
+			Variants {
+				set variants {}
+				foreach variant $engine(Variants) {
+					switch $variant {
+						suicide - giveaway - losers {}
+						default { lappend variants $mc::Variant($variant) }
 					}
 				}
+				array set used {}
+				foreach variant $engine(Variants) {
+					switch $variant {
+						suicide - giveaway - losers {
+							set name $mc::Variant($variant)
+							if {![info exists used($name)]} {
+								lappend variants $name
+								set used($name) 1
+							}
+						}
+					}
+				}
+				set Var(variants) [join $variants  ", "]
+			}
+			Profiles:UCI - Profiles:WB {
+				;# skip
 			}
 			default {
 				set Var($attr) $engine($attr)
 			}
 		}
 	}
+
+	if {$engine(UserDefined)} { set state normal } else { set state disabled }
+	$Priv(button:delete) configure -state $state
 
 	set logo $engine(ShortId)
 	if {[info exists Photo($logo)]} {
@@ -1073,52 +1507,528 @@ proc FillInfo {list entry} {
 
 
 proc VarChanged {args} {
-	variable Option
-	variable Option_
 	variable Var
 	variable Var_
 	variable Priv
 
-	if {[arrayCompare Var Var_] && [arrayCompare Option Option_]} {
-		set state disabled
-	} else {
-		set state normal
-	}
+	if {[arrayEqual Var Var_]} { set state disabled } else { set state normal }
 	$Priv(button:save) configure -state $state
 }
 
 
-proc SwitchOptions {list} {
-	variable EmptyEngine
-	variable Engines
-	variable Priv
-	variable Var
-
-	set sel [$list curselection]
-	array set engine $EmptyEngine
-	array set engine [lindex $Engines $sel]
-	BuildOptionFrame $Var(protocol) $engine(Name) $engine(Options:$Var(protocol)) $engine(Directory)
-}
-
-
-proc BuildOptionFrame {protocol engineName options directory} {
-	variable Option
-	variable Priv
-
-	set f $Priv(pane:options)
-	grid rowconfigure $f $Priv(rows) -minsize 0
-	grid rowconfigure $f $Priv(uniform) -uniform {}
-	set Priv(rows) {0}
-	set Priv(uniform) {1}
-	set slaves [grid slaves $f]
-	if {[llength $slaves]} { destroy {*}$slaves }
-	set row 1
+proc FilterOptions {protocol options} {
+	if {$protocol eq "WB"} { return $options }
+	set optionList {}
 
 	foreach opt $options {
 		lassign $opt name type value dflt var max
-		set key $protocol:$name
-		set lbl $f.lbl_$row
-		set val $f.val_$row
+		switch $type {
+			spin {
+				switch $name {
+					Hash - Threads - MultiPV - {Skill Level} {}
+					default { lappend optionList $opt }
+				}
+			}
+			check {
+				switch $name {
+					Ponder {}
+					default { lappend optionList $opt }
+				}
+			}
+			combo {
+				switch $name {
+					{Playing Style} {}
+					default { lappend optionList $opt }
+				}
+			}
+			button  {}
+			default { lappend optionList $opt }
+		}
+	}
+
+	return $optionList
+}
+
+
+proc OpenAdministration {dlg} {
+	variable Vars
+
+	openAdmininstration $dlg
+	SetupEngineList
+	set i [FindIndex $Vars(current:name)]
+	if {$i == -1} { set i 0 }
+	$Vars(list:engines) select $i
+}
+
+
+proc DeleteProfile {parent} {
+	variable Engines
+	variable Vars
+
+	set msg [format $mc::ReallyDeleteProfile $Vars(current:profile)]
+	set reply [::dialog::question -parent $parent -message $msg]
+	if {$reply eq "no"} { return }
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	set profiles $engine(Profiles:$protocol)
+	set k [FindProfileIndex $profiles]
+	set profiles [lreplace $profiles $k [expr {$k + 1}]]
+	set engine(Profiles:$protocol) $profiles
+	lset Engines $i [array get engine]
+	set Vars(current:profile) Default
+	SaveEngineList
+	SetupProfiles
+	$Vars(list:profiles) select 0
+}
+
+
+proc RenameProfile {parent} {
+	variable NewProfile_ ""
+	variable OldProfile_
+	variable Vars
+
+	set profileName $Vars(current:profile)
+	if {$profileName eq "Default"} { set profileName $::mc::Default }
+	set OldProfile_ $profileName
+
+	set dlg [tk::toplevel $parent.renameProfile -class Scidb]
+	pack [set top [ttk::frame $dlg.top -takefocus 0]]
+	wm withdraw $dlg
+
+	ttk::label $top.old -text "$mc::OldProfileName:"
+	ttk::label $top.oldEntry -text $profileName
+	ttk::label $top.new -text "$mc::NewProfileName:"
+	ttk::entry $top.newEntry -width 20 -textvar [namespace current]::NewProfile_
+	grid $top.old -row 1 -column 1 -sticky w
+	grid $top.oldEntry -row 1 -column 3 -sticky we
+	grid $top.new -row 3 -column 1 -sticky w
+	grid $top.newEntry -row 3 -column 3 -sticky we
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2 4} -minsize $::theme::pady
+	set Vars(entry:name) $top.newEntry
+	::widget::dialogButtons $dlg {ok cancel} -default ok
+	$dlg.ok configure -command [namespace code [list DoRenameProfile $dlg]]
+	$dlg.cancel configure -command [list destroy $dlg]
+	::util::place $dlg center $parent
+	wm resizable $dlg no no
+	wm transient $dlg $parent
+	wm title $dlg $mc::RenameProfile
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus $top.newEntry
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc DoRenameProfile {dlg} {
+	variable NewProfile_
+	variable OldProfile_
+	variable Engines
+	variable Vars
+
+	set NewProfile_ [string trim $NewProfile_]
+	if {[string length $NewProfile_] == 0} { return }
+	if {![CheckProfileName $dlg $NewProfile_]} { return }
+	if {$NewProfile_ eq $OldProfile_} { return }
+
+	lappend Vars(profiles) $NewProfile_
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	set profiles $engine(Profiles:$protocol)
+	set k [FindProfileIndex $profiles]
+	set profiles [lreplace $profiles $k $k $NewProfile_]
+	set engine(Profiles:$protocol) $profiles
+	lset Engines $i [array get engine]
+	SaveEngineList
+	SetupProfiles
+	set Vars(current:profile) $NewProfile_
+	set k [lsearch -exact $Vars(profiles) $NewProfile_]
+	$Vars(list:profiles) select $k
+	destroy $dlg
+}
+
+
+proc NewProfile {parent} {
+	variable NewProfile_ ""
+	variable CopyFrom_ ""
+	variable Vars
+
+	set dlg [tk::toplevel $parent.newProfile -class Scidb]
+	pack [set top [ttk::frame $dlg.top -takefocus 0]]
+	wm withdraw $dlg
+
+	ttk::label $top.new -text "$mc::ProfileName:"
+	ttk::entry $top.name -width 20 -textvar [namespace current]::NewProfile_
+	grid $top.new -row 1 -column 1 -sticky w
+	grid $top.name -row 1 -column 3 -sticky we
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+	set Vars(entry:name) $top.name
+	set CopyFrom_ [lindex $Vars(profiles) 0]
+
+	if {[llength $Vars(profiles)] > 1} {
+		ttk::label $top.copy -text "$mc::CopyFrom:"
+		ttk::combobox $top.profiles \
+			-values $Vars(profiles) \
+			-textvar [namespace current]::CopyFrom_ \
+			-state readonly \
+			;
+		grid $top.copy -row 3 -column 1 -sticky w
+		grid $top.profiles -row 3 -column 3 -sticky we
+		grid rowconfigure $top {4} -minsize $::theme::pady
+	}
+
+	::widget::dialogButtons $dlg {ok cancel} -default ok
+	$dlg.ok configure -command [namespace code [list MakeProfile $dlg]]
+	$dlg.cancel configure -command [list destroy $dlg]
+
+	::util::place $dlg center $parent
+	wm resizable $dlg no no
+	wm transient $dlg $parent
+	wm title $dlg $mc::NewProfile
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus $top.name
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc MakeProfile {dlg} {
+	variable NewProfile_
+	variable CopyFrom_
+	variable Engines
+	variable Vars
+
+	set NewProfile_ [string trim $NewProfile_]
+	if {[string length $NewProfile_] == 0} { return }
+	if {![CheckProfileName $dlg $NewProfile_]} { return }
+
+	set copy $CopyFrom_
+	if {$copy eq $::mc::Default} { set copy Default }
+	lappend Vars(profiles) $NewProfile_
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	array set profiles $engine(Profiles:$protocol)
+	set options $profiles($copy)
+	unset profiles
+	set profiles $engine(Profiles:$protocol)
+	lappend profiles $NewProfile_ $options
+	set engine(Profiles:$protocol) $profiles
+	lset Engines $i [array get engine]
+	set Vars(current:profile) $NewProfile_
+	SaveEngineList
+	SetupProfiles
+	$Vars(list:profiles) select end
+	destroy $dlg
+}
+
+
+proc CheckProfileName {parent name} {
+	variable Vars
+
+	if {$name in $Vars(profiles)} {
+		set msg [format $mc::ProfileAlreadyExists $name]
+		::dialog::error -parent $parent -message $msg -detail $mc::ChooseDifferentName
+		focus $Vars(entry:name)
+		$Vars(entry:name) selection range 0 end
+		return 0
+	}
+	if {$name eq "Default"} {
+		set msg [format $mc::ReservedName $name]
+		::dialog::error -parent $parent -message $msg -detail $mc::ChooseDifferentName
+		focus $Vars(entry:name)
+		$Vars(entry:name) selection range 0 end
+		return 0
+	}
+
+	return 1
+}
+
+
+proc OpenSetupEngineDialog {parent} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	OpenSetupDialog($engine(ProfileType)) $parent
+}
+
+
+proc OpenSetupDialog(Script) {parent} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	array set profiles $engine(Profiles:$protocol)
+	set script $profiles($Vars(current:profile))
+
+	set dlg [tk::toplevel $parent.confOptions -class Scidb]
+#	pack [set top [ttk::frame $dlg.top -takefocus 0]] -fill both -expand yes
+	pack [set main [tk::panedwindow $dlg.main -orient vertical -opaqueresize true]] -fill both -expand yes
+	wm withdraw $dlg
+	set width 60
+
+	### text pane ###########################################################
+	set edit [ttk::frame $main.edit]
+	tk::text $edit.txt \
+		-width $width \
+		-height 10 \
+		-background white \
+		-foreground black \
+		-borderwidth 1 \
+		-relief sunken \
+		-setgrid on \
+		-xscrollcommand [list ::scrolledframe::sbset $edit.hsb] \
+		-yscrollcommand [list $edit.vsb set] \
+		-wrap none \
+		-undo no \
+		-font TkFixedFont \
+		;
+	::scidb::tk::misc setClass $edit.txt Script
+	ttk::scrollbar $edit.hsb -orient horizontal -command [list $edit.txt xview]
+	ttk::scrollbar $edit.vsb -orient vertical -command [list $edit.txt yview]
+	grid $edit.txt -row 1 -column 1 -sticky nsew
+	grid $edit.hsb -row 2 -column 1 -sticky we
+	grid $edit.vsb -row 1 -column 2 -sticky ns
+	grid columnconfigure $edit {1} -weight 1
+	grid rowconfigure $edit {1} -weight 1
+	$main paneconfigure $edit -sticky nswe -stretch always
+	$main add $edit
+
+	$edit.txt tag configure comment -foreground darkgreen
+	$edit.txt tag configure error -foreground darkred
+	foreach line $script {
+		ScriptInsertLine $edit.txt $line
+		$edit.txt insert end \n
+	}
+	$edit.txt mark set insert 1.0
+	set Vars(script:content) [split [$edit.txt get 1.0 end] \n]
+	set Vars(script:original) $Vars(script:content)
+	bind $edit.txt <<Modified>> [namespace code [list ScriptUpdate $edit.txt]]
+#	bind $edit.txt <<Undo>> [namespace code [list ScriptUndo $edit.txt]]
+#	bind $edit.txt <<Redo>> [namespace code [list ScriptRedo $edit.txt]]
+
+	### log pane ############################################################
+	set log [ttk::frame $main.log]
+	tk::text $log.txt \
+		-width $width \
+		-background #ebf4f5 \
+		-height 4 \
+		-yscrollcommand [list $log.vsb set] \
+		-takefocus 0 \
+		-wrap word \
+		-undo no \
+		-font TkFixedFont \
+		-cursor left_ptr \
+		;
+	ttk::scrollbar $log.vsb -orient vertical -command [list ::widget::textLineScroll $log.txt]
+	grid $log.txt -row 1 -column 1 -sticky nsew
+	grid $log.vsb -row 1 -column 2 -sticky ns
+	grid columnconfigure $log {1} -weight 1
+	grid rowconfigure $log {1} -weight 1
+	$main paneconfigure $log -sticky nswe -stretch never
+	$main add $log
+
+	$log.txt tag configure error -foreground darkred
+	$log.txt insert end $mc::ScriptErrors hint
+	$log.txt configure -state disabled
+
+	### buttons ##############################################################
+	::widget::dialogButtons $dlg {save cancel help} -default save
+	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
+
+	### popup ################################################################
+	::util::place $dlg center .
+	wm resizable $dlg yes yes
+	wm transient $dlg $parent
+	wm title $dlg "$engine(Name) - [format $mc::EditProfile $Vars(current:profile)]"
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus $edit.txt
+	update idletasks
+	$main paneconfigure $log -minsize [winfo height $main.log]
+	$main paneconfigure $edit -minsize [winfo height $main.log]
+	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
+		wm minsize $dlg $w $h
+	}
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+# proc ShowExample {txt} {
+# 	ScriptInsertLine $txt "# $mc::ScriptExample"
+# 	$txt insert end \n
+# 	ScriptInsertLine $txt "log off    # disable logging"
+# 	$txt insert end \n
+# 	ScriptInsertLine $txt "noise 1000 # fairly noise level"
+# 	$txt insert end \n
+# 	ScriptUpdate $txt
+# }
+
+
+proc SaveScript {txt log} {
+	variable Engines
+	variable Option
+	variable Vars
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	set profiles $engine(Profiles:$protocol)
+	set script {}
+	$log configure -state normal
+	$log delete 1.0 end
+	set cur [$txt index insert]
+	set row 1
+	set errCount 0
+
+	foreach line $Vars(script:content) {
+		set line [string trim $line]
+		if {[string length $line]} {
+			# smpmt mt cores memory
+			if {[regexp {^([a-z]+)[= \t]} $line _ cmd]} {
+				if {$cmd in {smpmt mt cores memory}} {
+					$log insert end [format $mc::CommandNotAllowed $cmd] error
+					$txt delete $row.0 $row.end
+					$txt insert $row.0 $line error
+					incr errCount
+				}
+			}
+			incr row
+			lappend script $line
+		}
+	}
+	$txt mark set insert $cur
+	$log configure -state disabled
+
+	if {$errCount == 0} {
+		set k [expr {[FindProfileIndex $profiles] + 1}]
+		lset profiles $k $script
+		set engine(Profiles:$protocol) $profiles
+		lset Engines $i [array get engine]
+
+		SaveEngineList
+		destroy [winfo toplevel $txt]
+	}
+}
+
+
+proc ScriptUpdate {txt} {
+	variable Vars
+
+	set content [split [$txt get 1.0 end] \n]
+
+	set row 1
+	set cur [$txt index insert]
+
+	foreach old $Vars(script:content) new $content {
+		if {$old ne $new} {
+			$txt delete $row.0 $row.end
+			$txt mark set insert $row.0
+			ScriptInsertLine $txt $new
+		}
+		incr row
+	}
+
+	$txt mark set insert $cur
+	if {$Vars(script:original) eq $content} { set state disabled } else { set state normal }
+	[winfo toplevel $txt].save configure -state $state
+	set Vars(script:content) $content
+}
+
+
+proc ScriptInsertLine {txt line} {
+	set n [string first "#" $line]
+	if {$n == -1} {
+		$txt insert insert $line
+	} else {
+		$txt insert insert [string range $line 0 [expr {$n - 1}]]
+		$txt insert insert [string range $line $n end] comment
+	}
+}
+
+
+proc OpenSetupDialog(Options) {parent} {
+	variable EmptyEngine
+	variable Engines
+	variable Option
+	variable Option_
+	variable Vars
+
+	if {[winfo screenwidth $parent] >= 1500} { set vertical 0 } else { set vertical 1 }
+
+	set dlg [tk::toplevel $parent.confOptions -class Scidb]
+#	if {$vertical} { set expand x } else { set expand y }
+#	set scrolled [::scrolledframe $dlg.top -expand $expand]
+	set scrolled [::scrolledframe $dlg.top]
+	pack $dlg.top
+	set top [ttk::frame $scrolled.f -borderwidth 0 -takefocus 0]
+	grid $scrolled.f -sticky nsew
+	wm withdraw $dlg
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	set directory $engine(Directory)
+	array set profiles $engine(Profiles:$protocol)
+	set options [FilterOptions $protocol $profiles($Vars(current:profile))]
+
+	array unset Option
+	array unset Option_
+	array set Option {}
+	array set Option_ {}
+	set n [llength $options]
+
+	if {$vertical} {
+		if {$n > 12} { set numCols 2 } else { set numCols 1 }
+		set wrapLength [expr {([winfo screenwidth $parent] - 760)/$numCols}]
+	} else {
+		set maxRows [expr {[winfo screenheight $parent]/45}]
+		set numCols [expr {($n + $maxRows - 1)/$maxRows}]
+		if {$n > 12} { set numCols [expr {max(2, $numCols)}] }
+	}
+	set numRows [expr {($n + $numCols  - 1)/$numCols}]
+
+	for {set i 0} {$i < $numCols} {incr i} {
+		set pane [ttk::frame $top.pane$i -takefocus 0]
+		grid columnconfigure $pane {0 2 4 6} -minsize $::theme::padx
+		grid $pane -row 1 -column [expr {2*$i + 1}] -sticky n
+		if {$i > 0} {
+			set sep [ttk::separator $top.sep$i -orient vertical]
+			grid $sep -row 1 -column [expr {2*$i}] -sticky ns
+			grid columnconfigure $top [expr {2*$i}] -minsize 10
+		}
+	}
+	set pane $top.pane0
+	set nrows 0
+	set ncols 0
+	set row 1
+	set uniform {1}
+	set rows {0}
+	set focus ""
+
+	foreach opt $options {
+		lassign $opt name type value dflt var max
+		set lbl $pane.lbl_$row
+		set val $pane.val_$row
+		set see $val
 		set sticky w
 
 		if {$protocol eq "UCI" && $type eq "spin" && $max - $var <= 400} { set type slider }
@@ -1129,8 +2039,8 @@ proc BuildOptionFrame {protocol engineName options directory} {
 				set n [expr {max(1, max(abs($var), abs($max)))}]
 				set width [expr {int(log10($n)) + 2}]
 				ttk::frame $val -borderwidth 0 -takefocus 0
-				ttk::spinbox $val.s -from $var -to $max -width $width -takefocus 1
-				$val.s configure -textvar [namespace current]::Option($key)
+				set see [ttk::spinbox $val.s -from $var -to $max -width $width -takefocus 1]
+				$val.s configure -textvar [namespace current]::Option($name)
 				::validate::spinboxInt $val.s
 				ttk::label $val.r -text "($var..$max)"
 				grid $val.s -column 0 -row 0
@@ -1146,9 +2056,10 @@ proc BuildOptionFrame {protocol engineName options directory} {
 					-showvalue yes \
 					-takefocus 1 \
 					-width 10 \
-					-variable [namespace current]::Option($key) \
+					-variable [namespace current]::Option($name) \
 					-font TkTooltipFont \
 					;
+				set see $val
 				::theme::enableScale $val
 				if {$max - $var > 200} {
 					$val configure -length 300
@@ -1156,49 +2067,39 @@ proc BuildOptionFrame {protocol engineName options directory} {
 					$val configure -length 200
 				}
 			}
-			button {
-#				ttk::button $val \
-#					-text $name \
-#					-takefocus 1 \
-#					-command [namespace code [list SendAction $engineName $name]] \
-#					;
-			}
 			check {
 				ttk::label $lbl -text $name
 				ttk::checkbutton $val \
 					-takefocus 1 \
-					-variable [namespace current]::Option($key) \
+					-variable [namespace current]::Option($name) \
 					-offvalue false \
 					-onvalue true \
 					;
-#				set args [list variable [namespace current]::Option($key) \
-#					write [namespace code [list SetOnOff $val]]]
-#				trace add {*}$args
-#				bind $val <Destroy> [list trace remove {*}$args]
 			}
 			combo {
 				ttk::label $lbl -text $name
 				ttk::combobox $val \
-					-values [Split $var] \
+					-values [SplitComboEntries $var] \
 					-state readonly \
 					-takefocus 1 \
-					-textvar [namespace current]::Option($key)
+					-textvar [namespace current]::Option($name)
 					;
 			}
 			string {
 				ttk::label $lbl -text $name
-				ttk::entry $val -textvar [namespace current]::Option($key) -takefocus 1
+				ttk::entry $val -textvar [namespace current]::Option($name) -takefocus 1
 				set sticky ew
 			}
 			file - path {
 				ttk::label $lbl -text $name
 				ttk::frame $val -borderwidth 0 -takefocus 0
-				ttk::entry $val.e -textvar [namespace current]::Option($key) -takefocus 1
+				set see [ttk::entry $val.e -textvar [namespace current]::Option($name) -takefocus 1]
 				ttk::button $val.b \
 					-style icon.TButton \
 					-image $::fsbox::icon::16x16::folder \
-					-command [namespace code [list GetPath $type $key $dflt $directory]] \
+					-command [namespace code [list GetPath $dlg $type $name $dflt $directory]] \
 					;
+				::tooltip::tooltip $val.b $mc::OpenFsbox
 				grid $val.e -column 0 -row 0 -sticky we
 				grid $val.b -column 2 -row 0
 				grid columnconfigure $val {1} -minsize $::theme::padx
@@ -1207,54 +2108,122 @@ proc BuildOptionFrame {protocol engineName options directory} {
 			}
 		}
 
-		if {[winfo exists $val]} {
-			if {$type ne "button"} {
-				set btn $f.btn_$row
-				ttk::button $btn \
-					-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
-					-command [list set [namespace current]::Option($key) $dflt] \
-					;
-				::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
-				grid $btn -row $row -column 1
-				set args [list variable [namespace current]::Option($key) write \
-								[namespace code [list SetOptionState $val $key $dflt $btn]]]
-				trace add {*}$args
-				bind $btn <Destroy> [list trace remove {*}$args]
-			}
+		set btn $pane.btn_$row
+		ttk::button $btn \
+			-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
+			-command [list set [namespace current]::Option($name) $dflt] \
+			;
+		::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
+		grid $btn -row $row -column 1
+		set args [list variable [namespace current]::Option($name) write \
+						[namespace code [list SetOptionState $dlg $val $name $dflt $btn]]]
+		trace add {*}$args
+		bind $btn <Destroy> [list trace remove {*}$args]
 
-			if {[winfo exists $lbl]} { $lbl configure -wraplength 200 }
-			bind $val <FocusIn> [namespace code [list $Priv(scrolled:options) see %W]]
-			bind $val <FocusIn> {+ ::tooltip::tooltip hide }
-			if {[winfo exists $lbl]} { grid $lbl -row $row -column 3 -sticky w }
-			lappend Priv(rows)
-			grid $val -row $row -column 5 -sticky $sticky
-			if {$row ni $Priv(uniform)} { lappend Priv(uniform) $row }
-			incr row
-			if {$row ni $Priv(rows)} { lappend Priv(rows) $row }
-			incr row
+		if {$vertical} { $lbl configure -wraplength $wrapLength }
+		bind $see <<TraverseIn>> [namespace code [list $scrolled see %W]]
+		if {!$vertical} { bind $see <<TraverseIn>> +[namespace code [list $scrolled see $btn]] }
+		bind $see <FocusIn> {+ ::tooltip::tooltip hide }
+		if {[winfo exists $lbl]} { grid $lbl -row $row -column 3 -sticky w }
+		if {[string length $focus] == 0} { set focus $see }
+
+		grid $val -row $row -column 5 -sticky $sticky
+		lappend uniform $row
+		lappend rows [incr row]
+		incr row
+
+		if {[incr nrows] == $numRows} {
+			grid rowconfigure $pane $rows -minsize 8
+			grid rowconfigure $pane $uniform -uniform all
+			set pane $top.pane[incr ncols]
+			set uniform {1}
+			set rows {0}
+			set nrows 0
+			set row 1
 		}
 
-		set Option($key) $value
+		set Option($name) $value
+		set Option_($name) $value
 	}
 
-	if {[llength [grid slaves $f]]} {
-		grid columnconfigure $f {0 2 4 6} -minsize $::theme::padx
-		set state normal
-	} else {
-		set state disabled
+	if {[winfo exists $pane]} {
+		grid rowconfigure $pane $rows -minsize 8
+		grid rowconfigure $pane $uniform -uniform all
 	}
-	set rows $Priv(rows)
-	grid rowconfigure $f $Priv(rows) -minsize 10
-	grid rowconfigure $f $Priv(uniform) -uniform all
-	if {[llength $rows] > 2} {
-		grid rowconfigure $f [list [lindex $rows 0] [lindex $rows end]] -minsize $::theme::pady
-	}
-	[winfo parent $Priv(tab:options)] tab $Priv(tab:options) -state $state
-	$Priv(scrolled:options) yview moveto 0
+
+	::widget::dialogButtons $dlg {save cancel} -default save
+	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.save configure -state disabled -command [namespace code [list SaveOptions $dlg]]
+
+	update idletasks
+	$scrolled configure -height [expr {min([winfo reqheight $top], [winfo screenheight $top] - 120)}]
+	$scrolled configure -width [expr {min([winfo reqwidth $top], [winfo screenwidth $top] - 20)}]
+
+	set profileName $Vars(current:profile)
+	if {$Vars(current:profile) eq "Default"} { set profileName $::mc::Default }
+
+	::util::place $dlg center .
+	wm resizable $dlg no no
+	wm transient $dlg $parent
+	wm title $dlg "$engine(Name) - [format $mc::EditProfile $Vars(current:profile)]"
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus $focus
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
 }
 
 
-proc GetPath {type key dflt dir} {
+proc FindProfileIndex {profileList} {
+	variable Vars
+
+	set k 0
+	foreach {profile _} $profileList {
+		if {$profile eq $Vars(current:profile)} { return $k }
+		incr k 2
+	}
+	return -1
+}
+
+
+proc SaveOptions {dlg} {
+	variable Engines
+	variable Option
+	variable Vars
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $engine(Protocol)
+	set profiles $engine(Profiles:$protocol)
+	set k [expr {[FindProfileIndex $profiles] + 1}]
+	set options [lindex $profiles $k]
+	set newOptions {}
+
+	foreach opt $options {
+		lassign $opt name type value dflt var max
+		if {[info exists Option($name)]} { lset opt 2 $Option($name) }
+		lappend newOptions $opt
+	}
+
+	lset profiles $k $newOptions
+	set engine(Profiles:$protocol) $profiles
+	lset Engines $i [array get engine]
+
+	SaveEngineList
+	destroy $dlg
+}
+
+
+proc ClearHash {} {
+	variable Vars
+
+	if {$Vars(active:id) == -1} { return }
+	if {![::scidb::engine::active? $Vars(active:id)]} { return }
+	::scidb::engine::clearHash $Vars(active:id)
+}
+
+
+proc GetPath {parent type key dflt dir} {
 	variable Option
 	variable Priv
 
@@ -1270,7 +2239,7 @@ proc GetPath {type key dflt dir} {
 	if {[string length $dir] == 0} { set dir $::scidb::dir::home }
 
 	set result [::dialog::openFile \
-		-parent $Priv(pane:options) \
+		-parent $parent \
 		-initialdir $dir \
 		-initialfile $dflt \
 		-filetypes [list [list $ft $ext]] \
@@ -1294,10 +2263,14 @@ proc GetPath {type key dflt dir} {
 }
 
 
-proc SetOptionState {val key dflt btn args} {
+proc SetOptionState {dlg val key dflt btn args} {
 	variable Option
+	variable Option_
 
-	VarChanged
+	if {[winfo exists $dlg.save]} {
+		if {[arrayEqual Option Option_]} { set state disabled } else { set state normal }
+		$dlg.save configure -state $state
+	}
 	if {$Option($key) eq $dflt} { set state disabled } else { set state normal }
 	$btn configure -state $state
 	if {[winfo class $val] eq "TCheckbutton"} {
@@ -1306,7 +2279,7 @@ proc SetOptionState {val key dflt btn args} {
 }
 
 
-proc Split {s} {
+proc SplitComboEntries {s} {
 	set k 0
 	set n [string first ";" $s]
 	set result {}
@@ -1317,6 +2290,116 @@ proc Split {s} {
 	}
 	lappend result [string range $s $k end]
 	return $result
+}
+
+
+proc UseProfile {item} {
+	variable Vars
+
+	if {[llength $item] == 0} { return }
+	set Vars(selection) $item
+
+	if {$item == 0} {
+		set Vars(current:profile) Default
+		set state disabled
+	} else {
+		set Vars(current:profile) [$Vars(list:profiles) get name]
+		set state normal
+	}
+
+	foreach op {rename delete} {
+		$Vars(widget:$op) configure -state $state
+	}
+
+	foreach op {edit new} {
+		$Vars(widget:$op) configure -state normal
+	}
+}
+
+
+proc SetupProfiles {} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	set w $Vars(list:profiles)
+	set i [FindIndex $Vars(current:name)]
+	array set engine $EmptyEngine
+	array set engine [lindex $Engines $i]
+	set prot [lindex $engine(Protocol) 0]
+	set profiles $engine(Profiles:$prot)
+	set Vars(profiles) {}
+
+	$w clear
+	if {[llength [$w columns]] == 0} {
+		$w addcol text -id name
+	}
+
+	set i 0
+	foreach {profile _} $profiles {
+		if {$i == 0} { set profile $::mc::Default }
+		lappend Vars(profiles) $profile
+		$w insert [list $profile]
+		incr i
+	}
+	$w resize
+
+	if {$i > 0} {
+		$w configure -background white
+		$w select 0
+	} else {
+		$w configure -background lightgray
+		foreach op {edit new rename delete} {
+			$Vars(widget:$op) configure -state disabled
+		}
+	}
+}
+
+
+proc SetupEngineList {} {
+	variable EmptyEngine
+	variable Engines
+	variable Vars
+
+	set w $Vars(list:engines)
+
+	if {[llength [$w columns]] == 0} {
+		$w addcol text -id name
+	}
+
+	$w clear
+
+	foreach entry $Engines {
+		array unset engine
+		array unset features
+		array set engine $EmptyEngine
+		array set engine $entry
+		set protocol [lindex $engine(Protocol) 0]
+		array set features $engine(Features:$protocol)
+		if {[info exists features(analyze)]} {
+			$w insert [list $engine(Name)]
+		}
+	}
+
+	$w resize
+	set Vars(selection) -1
+}
+
+
+proc MakeEngineList {w height} {
+	variable Logo
+
+	::tlistbox $w \
+		-usescroll yes \
+		-padx 5 \
+		-pady 7 \
+		-linespace $Logo(height) \
+		-height $height \
+		-selectmode browse \
+		;
+	RebuildEngineList $w
+
+	return $w
 }
 
 
@@ -1355,7 +2438,7 @@ proc RebuildEngineList {list} {
 				lappend PhotoFiles [list $i $logo $photoFile $engine(Name)]
 				$list insert {}
 			} else {
-				$list insert [list $engine(Name)] -font TkCaptionFont
+				$list insert [list $engine(Name)]
 			}
 		}
 
@@ -1391,10 +2474,10 @@ proc ProbeEngine {parent entry} {
 	wm deiconify $wait
 	::ttk::grabWindow $wait
 	::widget::busyCursor on
+	set error ""
 	update idletasks
 
 	for {set i 0} {$i < 2} {incr i} {
-		# TODO: take parameters into account
 		set res [::scidb::engine::probe $engine(Command) $::scidb::dir::log $protocol($i) 2000]
 
 		switch [lindex $res 0] {
@@ -1405,6 +2488,8 @@ proc ProbeEngine {parent entry} {
 				set result($prot) $res
 				lappend protocols $prot
 			}
+
+			default { set error $res }
 		}
 	}
 
@@ -1416,9 +2501,66 @@ proc ProbeEngine {parent entry} {
 		::dialog::error -parent $parent -message $mc::CannotOpenProcess
 		return {}
 	}
+
+	if {[string length $error]} {
+		::dialog::error -parent $parent -message $mc::ProbeError($error)
+		if {[llength $protocols] == 0} { return {} }
+	}
+
 	if {[llength $protocols] == 0} {
 		::dialog::error -parent $parent -message $mc::DoesNotRespond
 		return {}
+	}
+
+	foreach prot $protocols {
+		lassign $result($prot) ok info variants features options
+
+		# setup information
+		array set engine $info
+		if {[info exists engine(Author)]} {
+			set engine(Author) [string map [list " and " " & "] $engine(Author)]
+		}
+		if {[llength $options]} {
+			set engine(Profiles:$prot) [list Default $options]
+		}
+		set engine(Variants) $variants
+		array set fts $features
+
+		if {[info exists fts(hashSize)]} {
+			lassign $fts(hashSize) min max
+			if {$max == 0} {
+				set fts(hashSize) {}
+			} else {
+				set min [expr {max(4, $min)}]
+				if {$max > 0 && $min >= $max} {
+					array unset fts hashSize
+				} else {
+					set min [::scidb::misc::succPow2 $min]
+					if {$max > 0} { set max [::scidb::misc::predPow2 $max] }
+					set fts(hashSize) [list $min $max]
+				}
+			}
+		}
+		if {[info exists fts(threads)]} {
+			lassign $fts(threads) min max
+			set min [expr {max(1, $min)}]
+			if {$min >= $max} {
+				array unset fts threads
+			} else {
+				set fts(threads) [list $min $max]
+			}
+		}
+		set engine(Features:$prot) [array get fts]
+		set hasAnalyze($prot) [info exists fts(analyze)]
+	}
+
+	if {[llength $protocols] == 2} {
+		# Ignore WinBoard protocol if UCI protocol is supported and:
+		# 1. WinBoard don't has an analyze feature or
+		# 2. does not have options
+		if {!$hasAnalyze(WB) || [llength $engine(Profiles:WB)] == 0} {
+			set protocols {UCI}
+		}
 	}
 
 	if {[llength $protocols] == 2} {
@@ -1427,37 +2569,15 @@ proc ProbeEngine {parent entry} {
 		set engine(Protocol) [lindex $protocols 0]
 	}
 
-	foreach prot $protocols {
-		lassign $result($prot) ok info features options
-
-		# setup information
-		array set engine $info
-		set engine(Author) [string map [list " and " " & "] $engine(Author)]
-		set engine(Options:$prot) $options
-
-		if {"shuffle" in $features} {
-			set engine(Variant) shuffle
-		} elseif {"chess960" in $features} {
-			set engine(Variant) chess960
-		} else {
-			set engine(Variant) standard
-		}
-
-		array set fts $features
-		array unset fts chess960
-		array unset fts shuffle
-		set engine(Features:$prot) [array get fts]
-	}
-
 	array unset result
 	set result {}
-	if {[string length $engine(Name)]} {
+	if {[info exists engine(Name)] && [string length $engine(Name)]} {
 		set result [::scidb::engine::info $engine(Name)]
 	} else {
 		set engine(Name) $engine(Identifier)
 	}
 	if {[llength $result]} {
-		lassign $result _ country _ ccrl _ _ _ _ url aliases
+		lassign $result _ country _ ccrl _ _ _ url aliases
 		set shortName $engine(Name)
 		set n [string length $shortName]
 		foreach alias $aliases {
@@ -1468,13 +2588,16 @@ proc ProbeEngine {parent entry} {
 			}
 		}
 		set engine(Name) $shortName
-		if {$engine(CCRL) == 0} { set engine(CCRL) $ccrl }
-		if {[string length $engine(Country)] == 0} { set engine(Country) $country }
-		if {[string length $engine(Url)] == 0} { set engine(Url) $url }
+		if {![info exists engine(CCRL)]} { set engine(CCRL) $ccrl }
+		if {![info exists engine(Country)]} { set engine(Country) $country }
+		if {![info exists engine(Url)]} { set engine(Url) $url }
 	}
-	if {[string length $engine(ShortId)] == 0} {
+	if {![info exists engine(ShortId)]} {
 		set engine(ShortId) $engine(Name)
 	}
+
+	set dir [string map {" " "-"} $engine(ShortId)]
+	set engine(Directory) [file join $::scidb::dir::user engines $dir]
 
 	return [array get engine]
 }
@@ -1503,25 +2626,39 @@ proc SaveEngine {list} {
 			incr i
 		}
 
+		array unset engine
 		array set engine [lindex $Engines $sel]
 
 		foreach attr [array names engine] {
 			switch $attr {
-				Protocol {
-					if {[llength $engine(Protocol)] == 2} {
-						switch $Var(protocol) {
-							WB		{ set engine(Protocol) {WB UCI} }
-							UCI	{ set engine(Protocol) {UCI WB} }
-						}
-					} else {
-						set engine(Protocol) $Var(protocol)
-					}
-				}
 				Country {
-					set engine(Country) [$Priv(countrybox) get]
+					set engine(Country) [$Priv(countrybox) value]
 				}
-				Variant - Options:UCI - Options:WB {
+				Variant - Profiles:UCI - Profiles:WB {
 					;# alreay set
+				}
+				Directory {
+					if {[info exists Var(Directory)] && [string length $Var(Directory)] > 0} {
+						set failed 0
+						set Var(Directory) [file normalize $Var(Directory)]
+						if {	[string length $engine(Directory)] > 0
+							&& [file isdirectory $engine(Directory)]
+							&& ![file isdirectory $Var(Directory)]} {
+							if {[catch { file rename $engine(Directory) $Var(Directory) }]} {
+								set failed 1
+							}
+						}
+						if {![file isdirectory $Var(Directory)]} {
+							if {[catch { file mkdir $Var(Directory) }]} {
+								set failed 1
+							}
+						}
+					}
+					if {$failed} {
+						set msg [format $mc::FailedToCreateDir $Var(Directory)]
+						return [::dialog::error -parent [winfo toplevel $list] -message $msg]
+					}
+					set engine(Directory) $Var(Directory)
 				}
 				default {
 					if {[info exists Var($attr)]} {
@@ -1531,46 +2668,47 @@ proc SaveEngine {list} {
 			}
 		}
 
-		foreach protocol $engine(Protocol) {
-			set newOptions {}
-			foreach opt $engine(Options:$protocol) {
-				lset opt 2 $Option($protocol:[lindex $opt 0])
-				lappend newOptions $opt
-			}
-			set engine(Options:$protocol) $newOptions
-		}
-
+		set engine(Timestamp) [clock seconds]
 		lset Engines $sel [array get engine]
 	}
 
 	SaveEngineList
+	UpdateVars
 }
 
 
 proc SaveEngineList {} {
-	variable Priv
-
 	set filename $::scidb::file::engines
 	set f [open $filename.tmp "w"]
 	fconfigure $f -encoding utf-8
-	::options::writeHeader $f engines
-	::options::writeList $f [namespace current]::Engines
-	close $f
-	file rename -force $filename.tmp $filename
+
+	if {[catch {
+		::options::writeHeader $f engines
+		::options::writeList $f [namespace current]::Engines
+	}]} {
+		close $f
+		file delete -force $filename.tmp
+		append msg $::util::mc::IOErrorOccurred
+		append msg ": "
+		append msg $::util::mc::IOError(WriteFailed)
+		append msg "."
+		append detail [format $::fsbox::mc::PermissionDenied [file dirname $filename.tmp]]
+		::dialog::error -parent .application -topmost yes -message $msg -detail $detail
+	} else {
+		close $f
+		file rename -force $filename.tmp $filename
+	}
+
 	::options::unhookWriter [namespace current]::WriteOptions engines
-	UpdateVars
 }
 
 
 proc UpdateVars {} {
 	variable Var
 	variable Var_
-	variable Option
-	variable Option_
 	variable Priv
 
 	array set Var_ [array get Var]
-	array set Option_ [array get Option]
 	$Priv(button:save) configure -state disabled
 }
 
@@ -1604,6 +2742,7 @@ proc DeleteEngine {list} {
 	}
 
 	SaveEngineList
+	UpdateVars
 	return 1
 }
 
@@ -1619,20 +2758,6 @@ proc SetInfoPaneState {state} {
 		}
 	}
 }
-
-
-# proc FillCombobox {cb} {
-# 	variable Priv
-# 
-# 	if {[llength $Priv(engines)] == 0} {
-# 		# TODO
-# 		# write own sorting routine because we have to take
-# 		# unicode characters into account.
-# 		set Priv(engines) [lsort -dictionary -unique [::scidb::engine::list]]
-# 	}
-# 
-# 	$cb configure -values $Priv(engines)
-# }
 
 
 proc NewEngine {list} {
@@ -1655,8 +2780,7 @@ proc NewEngine {list} {
 	]
 	if {[llength $result] == 0} { return }
 	set file [lindex $result 0]
-	set newEntry $EmptyEngine
-
+	set newEntry {}
 	set entries {}
 	set numbers {}
 	foreach entry $Engines {
@@ -1677,6 +2801,7 @@ proc NewEngine {list} {
 		set Index_ -1
 		set i 0
 		foreach entry $entries {
+			array unset engine
 			array set engine $entry
 			ttk::radiobutton $cpy.rb$i \
 				-text $engine(Name) \
@@ -1690,7 +2815,7 @@ proc NewEngine {list} {
 		}
 		grid rowconfigure $cpy {0} -minsize $::theme::pady
 		grid columnconfigure $cpy {0 3} -minsize $::theme::padx
-		::widget::dialogButtons $dlg {ok cancel}
+		::widget::dialogButtons $dlg {ok cancel} -default ok
 		$dlg.ok configure -command [list set [namespace current]::Button_ ok]
 		$dlg.cancel configure -command [list set [namespace current]::Button_ cancel]
 		wm resizable $dlg false false
@@ -1708,10 +2833,12 @@ proc NewEngine {list} {
 		if {$Index_ >= 0} { set newEntry [lindex $entries $Index_] }
 	}
 
+	array unset engine
 	array set engine $newEntry
 	set engine(Command) $file
 	set newEntry [ProbeEngine $parent [array get engine]]
 	if {[llength $newEntry] == 0} { return }
+	array unset engine
 	array set engine $newEntry
 
 	set numbers {}
@@ -1896,7 +3023,6 @@ proc GetLogo {parent list} {
 
 
 proc FindIndex {name} {
-	variable EmptyEngine
 	variable Engines
 
 	set index 0
@@ -1910,10 +3036,184 @@ proc FindIndex {name} {
 }
 
 
+proc LoadSharedConfiguration {file} {
+	variable Engines
+
+	::load::source $file -message $::load::mc::ReadingFile(engines) -encoding utf-8
+	set engines {}
+
+	foreach entry $Engines {
+		array unset engine
+		array set engine $entry
+
+		set engine(Command) "[file join $::scidb::dir::engines $engine(Command)]"
+
+		if {[file executable $engine(Command)]} {
+			set result [::scidb::engine::info $engine(Name)]
+			if {[llength $result]} {
+				lassign $result _ Country _ CCRL _ _ _ Url _
+				# We don't like to set the ELO value
+				foreach attr {Country CCRL Url} {
+					set engine($attr) [set $attr]
+				}
+			}
+			if {![info exists engine(ShortId)]} {
+				set engine(ShortId) $engine(Name)
+			}
+			file stat $engine(Command) st
+			set engine(FileTime) $st(mtime)
+			set engine(Timestamp) 0
+			if {![info exists engine(Directory)]} {
+				set dir [file tail $engine(Command)]
+				set engine(Directory) [file normalize [file join $::scidb::dir::user engines $dir]]
+			}
+			if {![file isdirectory $engine(Directory)]} {
+				file mkdir $engine(Directory)
+				set sharedir [file join $::scidb::dir::share engines [file tail $engine(Command)]]
+				set sharedir [file normal $sharedir]
+				if {$sharedir ne $engine(Directory) && [file isdirectory $sharedir]} {
+					set files [glob -directory $sharedir -nocomplain *]
+					if {[llength $files]} {
+						file copy {*}$files $engine(Directory)
+					}
+				}
+			}
+			set engine(UserDefined) 0
+			lappend engines [array get engine]
+		}
+	}
+
+	set Engines $engines
+	return $engines
+}
+
+
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::Engines
 }
 
 } ;# namespace engine
+
+
+ttk::copyBindings Text Script
+
+bind Script <Delete> {
+	if {[%W tag nextrange sel 1.0 end] ne ""} {
+		%W delete sel.first sel.last
+		event generate %W <<Modified>>
+	} else {
+		%W delete insert
+		event generate %W <<Modified>>
+		%W see insert
+	}
+}
+
+bind Script <BackSpace> {
+	if {[%W tag nextrange sel 1.0 end] ne ""} {
+		%W delete sel.first sel.last
+		event generate %W <<Modified>>
+	} elseif {[%W compare insert != 1.0]} {
+		%W delete insert-1c
+		event generate %W <<Modified>>
+		%W see insert
+	}
+}
+
+bind Script <<Cut>> {
+	tk_textCut %W
+	event generate %W <<Modified>>
+}
+
+bind Script <<Copy>> {
+	tk_textCopy %W
+	event generate %W <<Modified>>
+}
+
+bind Script <<Paste>> {
+	tk_textPaste %W
+	event generate %W <<Modified>>
+}
+
+bind Script <<Clear>> {
+	catch {%W delete sel.first sel.last}
+	event generate %W <<Modified>>
+}
+
+bind Script <<PasteSelection>> {
+	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
+		tk::TextPasteSelection %W %x %y
+		event generate %W <<Modified>>
+	}
+}
+
+bind Script <Insert> {
+	catch {tk::TextInsert %W [::tk::GetSelection %W PRIMARY]}
+	event generate %W <<Modified>>
+}
+
+bind Script <KeyPress> {
+	tk::TextInsert %W %A
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-d> {
+	%W delete insert
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-k> {
+	if {[%W compare insert == {insert lineend}]} {
+		%W delete insert
+	} else {
+		%W delete insert {insert lineend}
+	}
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-o> {
+	%W insert insert \n
+	%W mark set insert insert-1c
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-t> {
+	tk::TextTranspose %W
+	event generate %W <<Modified>>
+}
+
+bind Script <Return> {+ break }
+
+bind Script <<Undo>> {
+	catch { %W edit undo }
+	event generate %W <<Modified>>
+}
+
+bind Script <<Redo>> {
+	catch { %W edit redo }
+	event generate %W <<Modified>>
+}
+
+bind Script <Meta-d> {
+	%W delete insert [tk::TextNextWord %W insert]
+	event generate %W <<Modified>>
+}
+
+bind Script <Meta-BackSpace> {
+	%W delete [tk::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+	event generate %W <<Modified>>
+}
+
+bind Script <Meta-Delete> {
+	%W delete [tk::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-h> {
+	if {[%W compare insert != 1.0]} {
+		%W delete insert-1c
+		event generate %W <<Modified>>
+		%W see insert
+	}
+}
 
 # vi:set ts=3 sw=3:

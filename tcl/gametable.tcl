@@ -542,6 +542,11 @@ proc column {info name} {
 }
 
 
+proc base {path} {
+	return [::scrolledtable::base $path]
+}
+
+
 proc clear {path} {
 	::scrolledtable::clear $path
 }
@@ -822,7 +827,7 @@ proc TableSelected {path index} {
 	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 
 	set pos [::widget::busyOperation \
-					{ ::game::new $path $base [expr {[column $info number] - 1}] $fen }]
+					{ ::game::new $path $base $view [expr {[column $info number] - 1}] $fen }]
 }
 
 
@@ -1572,13 +1577,13 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::browse \
-				-label " $::browser::mc::BrowseGame" \
+				-label " $::browser::mc::BrowseGame..." \
 				-command [namespace code [list OpenBrowser $path $index]] \
 				;
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::overview \
-				-label " $::overview::mc::Overview" \
+				-label " $::overview::mc::Overview..." \
 				-command [namespace code [list OpenOverview $path $index]] \
 				;
 			$menu add command \
@@ -1590,21 +1595,21 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::crossTable \
-				-label " $mc::ShowTournamentTable" \
+				-label " $mc::ShowTournamentTable..." \
 				-command [namespace code [list OpenCrosstable $path $index]] \
 				;
 		} else {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::filetypeScidbBase \
-				-label " $::browser::mc::BrowseGame" \
+				-label " $::browser::mc::BrowseGame..." \
 				-accelerator $mc::AccelBrowse \
 				-command [namespace code [list OpenBrowser $path $index]] \
 				;
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::overview \
-				-label " $::overview::mc::Overview" \
+				-label " $::overview::mc::Overview..." \
 				-accelerator $mc::AccelOverview \
 				-command [namespace code [list OpenOverview $path $index]] \
 				;
@@ -1618,7 +1623,7 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::crossTable \
-				-label " $mc::ShowTournamentTable" \
+				-label " $mc::ShowTournamentTable..." \
 				-accelerator $mc::AccelTournTable \
 				-command [namespace code [list OpenCrosstable $path $index]] \
 				;
@@ -1642,7 +1647,7 @@ proc PopupMenu {path menu base index} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::setup \
-				-label " $::dialog::save::mc::EditCharacteristics" \
+				-label " $::dialog::save::mc::EditCharacteristics..." \
 				-command [list ::dialog::save::open $path $base {} [column $info number]] \
 				;
 		}

@@ -266,6 +266,30 @@ Filter::swap(Filter& filter)
 }
 
 
+int
+Filter::minimize()
+{
+	unsigned firstIndex = m_set.find_first();
+
+	if (firstIndex == mstl::bitset::npos)
+	{
+		m_set = mstl::bitset();
+		return Invalid;
+	}
+
+	unsigned lastIndex = m_set.find_last();
+
+	m_set <<= firstIndex;
+	m_set.resize(lastIndex - firstIndex + 1);
+
+	mstl::bitset set(m_set.size());
+	set.assign(m_set.content(), m_set.count_words());
+	m_set.swap(set);
+
+	return firstIndex;
+}
+
+
 void
 Filter::dump() const
 {

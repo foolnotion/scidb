@@ -192,7 +192,7 @@ proc Setup {w} {
 	variable ${w}::Width
 	variable modes
 
-	$w.__w__ configure -width [expr {max([minWidth], $Width)}]
+	$w.__w__ configure -minwidth [expr {max([minWidth], $Width)}]
 	$w.__w__ listinsert [list "" "\u2014"] -index 0
 	set index 0
 	foreach mode $modes {

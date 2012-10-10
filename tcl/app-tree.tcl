@@ -143,15 +143,10 @@ proc build {parent width height} {
 	set sb $top.scrollbar
 	set sq $top.square
 
-	foreach size {16 22 32} {
-		set scale [expr {double($size)/double([image width $::application::board::stmWhite])}]
-		set whiteKnob$size [image create photo -width $size -height $size]
-		set blackKnob$size [image create photo -width $size -height $size]
-		::scidb::tk::image copy $::application::board::stmWhite [set whiteKnob$size] -scale $scale
-		::scidb::tk::image copy $::application::board::stmBlack [set blackKnob$size] -scale $scale
-	}
-	set Vars(whiteKnob) [list $whiteKnob22 $whiteKnob16 $whiteKnob32]
-	set Vars(blackKnob) [list $blackKnob22 $blackKnob16 $blackKnob32]
+	set Vars(whiteKnob) \
+		[list $::icon::22x22::whiteKnob $::icon::16x16::whiteKnob $::icon::32x32::whiteKnob]
+	set Vars(blackKnob) \
+		[list $::icon::22x22::blackKnob $::icon::16x16::blackKnob $::icon::32x32::blackKnob]
 
 	::table::table $tb \
 		-listmode 1 \
@@ -373,12 +368,12 @@ proc build {parent width height} {
 		-tooltipvar [namespace current]::mc::AutomaticSearch \
 		-command [namespace code [list AutomaticSearch $tb]] \
 		;
-	::toolbar::addSeparator $tbControl
 	set search [::toolbar::add $tbControl button \
 		-image $::icon::toolbarStart \
 		-tooltipvar [namespace current]::mc::StartSearch \
 		-command [namespace code [list StartSearch $tb]] \
-		]
+	]
+	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbSwitcher checkbutton \
 		-image $::icon::toolbarLock \
 		-variable [namespace current]::Options(base:lock) \
@@ -1029,6 +1024,18 @@ proc ComputeValue {id value total} {
 }
 
 
+proc FindIndex {table x y} {
+	variable Vars
+
+	set x [expr {$x - [winfo rootx $table]}]
+	set y [expr {$y - [winfo rooty $table]}]
+	lassign [::table::identify $table $x $y] row column
+	set nrows [llength $Vars(data)]
+	if {0 <= $row && ($nrows == 1 || $row < $nrows - 1)} { return $row }
+	return -1
+}
+
+
 proc Select {table x y} {
 	variable Vars
 
@@ -1156,13 +1163,30 @@ proc Activate {table} {
 	
 	if {$Vars(selected) == [::table::selection $table]} {
 		set move [::scidb::tree::move $Vars(selected)]
-		::move::addMove $move [list set [namespace current]::Vars(activated) 0]
+		if {[string length $move]} {
+			set action [::move::addMove $move [list set [namespace current]::Vars(activated) 0] {load}]
+			if {$action eq "load"} { LoadFirstGame $table $Vars(selected) $move }
+		}
 	} else {
 		set Vars(activated) 0
 	}
 
 	set Vars(selected) -1
 	::table::select $table none
+	DoSelection $table
+}
+
+
+proc LoadFirstGame {table row move} {
+	variable Vars
+
+	set index [::scidb::tree::gameIndex $row]
+	set fen [::scidb::tree::position $move]
+	set base [::scidb::tree::get]
+	set view [::scidb::tree::view]
+
+	set position [::game::new $table $base -1 $index $fen]
+	[namespace parent]::board::bindGameControls $position $base $view $index
 }
 
 
@@ -1241,6 +1265,15 @@ proc LockBase {} {
 }
 
 
+proc DoAction {table row move action} {
+	if {$action eq "load"} {
+		LoadFirstGame $table $row $move
+	} else {
+		::move::doAction $action $move
+	}
+}
+
+
 proc PopupMenu {table x y} {
 	variable ::scidb::clipbaseName
 	variable Vars
@@ -1251,30 +1284,49 @@ proc PopupMenu {table x y} {
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
+	set row [FindIndex $table $x $y]
+
+	if {$row >= 0} {
+		::table::activate $table $row true
+		after idle [list ::table::activate $table $row true]
+		set move [::scidb::tree::move $row]
+		if {[string length $move] && $move ne [::scidb::game::next move]} {
+			::move::addActionsToMenu $m [namespace code [list DoAction $table $row $move]] {append load}
+			$m add separator
+		}
+	}
 
 	$m add command \
-		-label $mc::StartSearch \
+		-label " $mc::StartSearch" \
 		-command [namespace code [list StartSearch $table]] \
+		-image $::icon::16x16::start \
+		-compound left \
 		;
 	$m add separator
-	foreach mode {exact fast} {
-		set text [set mc::Use[string toupper $mode 0 0]Mode]
+	foreach {mode icon} {exact slow fast fast} {
+		set text " [set mc::Use[string toupper $mode 0 0]Mode]"
 		$m add radiobutton \
 			-label $text \
 			-variable [namespace current]::Options(search:mode) \
+			-image [set ::icon::16x16::$icon] \
+			-compound left \
 			-value $mode \
 			;
 		::theme::configureRadioEntry $m $text
 	}
 	$m add separator
 	$m add checkbutton \
-		-label $mc::AutomaticSearch \
+		-label " $mc::AutomaticSearch" \
 		-variable [namespace current]::Options(search:automatic) \
+		-image $::icon::16x16::search \
+		-compound left \
 		;
 	$m add separator
 	$m add checkbutton \
-		-label $mc::LockReferenceBase \
+		-label " $mc::LockReferenceBase" \
 		-variable [namespace current]::Options(base:lock) \
+		-image $::icon::16x16::lock \
+		-compound left \
 		;
 	$m add separator
 

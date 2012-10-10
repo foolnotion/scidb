@@ -37,6 +37,11 @@ inline void Player::setSex(sex::ID id)									{ m_sex = id; }
 inline void Player::setType(species::ID id)							{ m_species = id; }
 inline void Player::setChess960Flag(bool flag)						{ m_chess960 = flag; }
 inline void Player::setShuffleChessFlag(bool flag)					{ m_shuffle = flag; }
+inline void Player::setBughouseChessFlag(bool flag)				{ m_bughouse = flag; }
+inline void Player::setCrazyhouseChessFlag(bool flag)				{ m_crazyhouse = flag; }
+inline void Player::setLosersChessFlag(bool flag)					{ m_losers = flag; }
+inline void Player::setSuicideChessFlag(bool flag)					{ m_suicide = flag; }
+inline void Player::setGiveawayChessFlag(bool flag)				{ m_giveaway = flag; }
 inline void Player::setWinboardProtocol(bool flag)					{ m_winboard = flag; }
 inline void Player::setUciProtocol(bool flag)						{ m_uci = flag; }
 inline void Player::setUnique(bool flag)								{ m_notUnique = !flag; }
@@ -45,6 +50,11 @@ inline bool Player::supportsUciProtocol() const						{ return m_uci; }
 inline bool Player::supportsWinboardProtocol() const				{ return m_winboard; }
 inline bool Player::supportsChess960() const							{ return m_chess960; }
 inline bool Player::supportsShuffleChess() const					{ return m_shuffle; }
+inline bool Player::supportsBughouseChess() const					{ return m_bughouse; }
+inline bool Player::supportsCrazyhouseChess() const				{ return m_crazyhouse; }
+inline bool Player::supportsLosersChess() const						{ return m_losers; }
+inline bool Player::supportsSuicideChess() const					{ return m_suicide; }
+inline bool Player::supportsGiveawayChess() const					{ return m_giveaway; }
 
 inline sex::ID Player::sex() const						{ return sex::ID(m_sex); }
 inline species::ID Player::type() const				{ return species::ID(m_species); }

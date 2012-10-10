@@ -23,6 +23,7 @@ SOURCES = \
 	utils/tcl_bugs.tcl \
 	utils/place.tcl \
 	splash.tcl \
+	utils/system.tcl \
 	utils/archive.tcl \
 	dialogs/messagebox.tcl \
 	dialogs/progressbar.tcl \
@@ -32,9 +33,10 @@ SOURCES = \
 	widgets/theme.tcl \
 	widgets/misc.tcl \
 	options.tcl \
-	log.tcl \
 	board-basic.tcl \
+	log.tcl \
 	load.tcl \
+	i18n.tcl \
 	fonts.tcl \
 	icons.tcl \
 	encoding.tcl \
@@ -130,7 +132,6 @@ SOURCES = \
 	info.tcl \
 	move.tcl \
 	game.tcl \
-	i18n.tcl \
 	utils/shadow.tcl \
 	menu.tcl \
 	end.tcl \
@@ -153,6 +154,20 @@ build-help:
 	@for lang in `ls -d help/[a-z][a-z]`; do           \
 		(cd $$lang; if [ -f Makefile ]; then make; fi); \
 	done
+
+install-config:
+	@echo "Install configuration files"
+	@install -m 755 -d $(SHAREDIR)/engines
+	@install -m 644 -p engines/engines.dat $(SHAREDIR)/engines
+
+uninstall-config:
+	@echo "Uninstall configuration files"
+	@if [ -d $(SHAREDIR)/engines ]; then                                                        \
+		rm -f $(SHAREDIR)/engines/engines.dat;                                                   \
+		if [ "`find $(SHAREDIR)/engines -type d -empty`" = "`ls -d $(SHAREDIR)/engines`" ]; then \
+			rmdir $(SHAREDIR)/engines;                                                            \
+		fi;                                                                                      \
+	fi
 
 install-scripts: $(SCRIPTS)
 	@echo "Install Tcl scripts"
@@ -453,8 +468,8 @@ uninstall-help:
 	fi
 
 install-fonts:
-	@echo "Install fonts"
 	@if [ 1 ]; then                                                                   \
+		echo "Install fonts";                                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                   \
 			fontdir="$(FONTDIR)";                                                       \
 		else                                                                           \
@@ -477,8 +492,8 @@ install-fonts:
 	fi
 
 uninstall-fonts:
-	@echo "Uninstall fonts"
 	@if [ 1 ]; then                                                 \
+		echo "Uninstall fonts";                                      \
 		if [ "`id -u`" -eq 0 ]; then                                 \
 			fontdir="$(FONTDIR)";                                     \
 		else                                                         \
@@ -488,26 +503,49 @@ uninstall-fonts:
 				fontdir="$(HOME)/.fonts";                              \
 			fi;                                                       \
 		fi;                                                          \
+		recache=0;                                                   \
 		for f in `ls fonts/*.ttf`; do                                \
-			rm -f $$fontdir/`basename $$f`;                           \
+			if [ -f $$fontdir/`basename $$f` ]; then                  \
+				recache=1;                                             \
+				rm -f $$fontdir/`basename $$f`;                        \
+			fi;                                                       \
 		done;                                                        \
-		if [ ! -z "`which fc-cache`" ]; then                         \
-			fc-cache -f $$fontdir;                                    \
+		if [ $$recache == 1 ]; then                                  \
+			if [ ! -z "`which fc-cache`" ]; then                      \
+				fc-cache -f $$fontdir;                                 \
+			fi;                                                       \
 		fi;                                                          \
 		if [ "`find $$fontdir -type d -empty`" = "$$fontdir" ]; then \
 			rmdir $$fontdir;                                          \
 		fi;                                                          \
 	fi
 
+uninstall-photos:
+	@echo "Uninstall player photos"
+	@if [ -d $(SHAREDIR) ]; then                                                         \
+		if [ -d $(SHAREDIR)/photos ]; then                                                \
+			rm -rf $(SHAREDIR)/photos;                                                     \
+		fi;                                                                               \
+		if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then          \
+			rmdir $(SHAREDIR);                                                             \
+		fi;                                                                               \
+	fi
+
 install: install-scripts install-pieces install-cursors install-flags \
-	install-localizations install-textures install-themes install-text-scripts  \
-	install-images install-help install-fonts
+				install-localizations install-textures install-themes install-text-scripts  \
+				install-images install-help install-config install-fonts
 
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
-	uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
-	uninstall-help uninstall-fonts
-	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
-		rmdir $(SHAREDIR);                                                     \
+				uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
+				uninstall-help uninstall-config uninstall-fonts
+	@if [ -d $(SHAREDIR) ]; then                                                          \
+		if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then           \
+			rmdir $(SHAREDIR);                                                              \
+		fi;                                                                                \
+		if [ -d $(SHAREDIR)/photos ]; then                                                 \
+			echo "";                                                                        \
+			echo "Type 'make uninstall-photos' if you want to uninstall all player photos"; \
+		fi;                                                                                \
 	fi
 
 $(SCRIPT): $(SOURCES)

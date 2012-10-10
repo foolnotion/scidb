@@ -100,6 +100,7 @@ public:
 	bool startGame(TagSet const& tags);
 	bool startGame(TagSet const& tags, Board const& board);
 	save::State finishGame(TagSet const& tags);
+	virtual save::State skipGame(TagSet const& tags);
 
 	void putPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks);
 	void putTrailingComment(Comment const& comment);

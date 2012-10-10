@@ -77,7 +77,6 @@ private:
 
 	bool whiteToMove() const;
 
-	bool prepareAnalysis(db::Board const& board);
 	void parseBestMove(char const* msg);
 	void parseInfo(char const* msg);
 	void parseOption(char const* msg);
@@ -95,7 +94,6 @@ private:
 	mstl::string	m_value;
 	unsigned			m_maxMultiPV;
 	bool				m_needChess960;
-	bool				m_needShuffleChess;
 	bool				m_uciok;
 	bool				m_isReady;
 	bool				m_hasMultiPV;
@@ -104,6 +102,8 @@ private:
 	bool				m_hasShowCurrLine;
 	bool				m_hasShowRefutations;
 	bool				m_isAnalyzing;
+	bool				m_isNewGame;
+	bool				m_startAnalyzeIsPending;
 	bool				m_stopAnalyizeIsPending;
 	bool				m_continueAnalysis;
 	bool				m_sendChess960;

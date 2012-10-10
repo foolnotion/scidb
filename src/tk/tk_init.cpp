@@ -37,6 +37,7 @@ tk::init(Tcl_Interp* ti)
 	fixes_init(ti);
 	selection_init(ti);
 	x11_init(ti);
+	miscInit(ti);
 	window_manager_init(ti);
 	twm_init(ti);
 	png_init(ti);

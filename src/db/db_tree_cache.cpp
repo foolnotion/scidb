@@ -40,6 +40,16 @@ static bool const useCache = getenv("SCIDB_NO_CACHE") == 0;
 TreeCache::TreeCache() : m_inUse(0), m_mostRecentIndex(CacheSize - 1), m_lastIndex(0) {}
 
 
+TreeCache::~TreeCache()
+{
+	for (unsigned i = 0; i < m_inUse; ++i)
+	{
+		if (m_cache[i]->release())
+			delete m_cache[i];
+	}
+}
+
+
 Tree*
 TreeCache::lookup(uint64_t hash,
 						Position const& position,

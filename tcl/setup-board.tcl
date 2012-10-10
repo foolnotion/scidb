@@ -433,9 +433,11 @@ proc open {parent} {
 	# board ###################################################
 	update idletasks
 	set squareSize [expr {[winfo reqheight $right]/8}]
-	::board::registerSize $squareSize
-	if {[info exists Vars(BoardSize)]} { ::board::unregisterSize $Vars(BoardSize) }
-	set Vars(BoardSize) $squareSize
+	if {![info exists Vars(BoardSize)] || $Vars(BoardSize) != $squareSize} {
+		if {[info exists Vars(BoardSize)]} { ::board::unregisterSize $Vars(BoardSize) }
+		after idle [list ::board::registerSize $squareSize]
+		set Vars(BoardSize) $squareSize
+	}
 	set size [expr {$squareSize*8 + 2*$BorderThickness + $edge}]
 	set canv [tk::canvas $top.board -width $size -height $size -takefocus 0]
 	::theme::configureCanvas $canv

@@ -22,10 +22,10 @@ TITLE Development roadmap
 <h2>Features for next releases</h2>
 
 <ul>
-  <li>Analysis window: launch external chess engines</li>
   <li>Search functions: search by header, position search, etc.</li>
   <li>Filter functions: game filter, player filter</li>
   <li>Flexible window layout</li>
+  <li>Support of more chess variants: Bughouse, Crazyhouse, Antichess</li>
   <li>Document generation:: LaTeX export</li>
   <li>Windows support</li>
   <li>Database compression (elimination of deleted games)</li>

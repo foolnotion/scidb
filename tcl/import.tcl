@@ -29,7 +29,8 @@
 namespace eval import {
 namespace eval mc {
 
-set ImportingPgnFile						"Importing PGN file %s"
+set ImportingPgnFile						"Importing PGN file '%s'"
+set ImportingDatabase					"Importing database '%s'"
 set Line										"Line"
 set Column									"Column"
 set GameNumber								"Game"
@@ -84,6 +85,7 @@ set IllegalCastling						"Illegal castling"
 set IllegalMove							"Illegal move"
 set CastlingCorrection					"Castling correction"
 set UnsupportedVariant					"Unsupported chess variant"
+set UnsupportedCrazyhouseVariant		"Variant Crazyhouse is not yet supported (game skipped)"
 set DecodingFailed						"Decoding of this game was not possible"
 set ResultDidNotMatchHeaderResult	"Result did not match header result"
 set ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
@@ -350,7 +352,12 @@ proc Open {parent base files msg encoding type useLog} {
 	}
 
 	foreach file $files {
-		::log::info [format $mc::ImportingPgnFile $file]
+		switch [file extension $file] {
+			.pgn - .gz - .zip	{ set msg $mc::ImportingPgnFile }
+			default				{ set msg $mc::ImportingDatabase }
+		}
+		set msg [format $msg [file tail $file]]
+		::log::info $msg
 		append info "$::mc::File: [file tail $file]"
 		set options [list -message $msg -log $useLog -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]

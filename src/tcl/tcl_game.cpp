@@ -101,7 +101,8 @@ static char const* CmdRefresh			= "::scidb::game::refresh";
 static char const* CmdRelease			= "::scidb::game::release";
 static char const* CmdReplace			= "::scidb::game::replace";
 static char const* CmdSave				= "::scidb::game::save";
-static char const* CmdSetup			= "::scidb::game::setup";
+static char const* CmdSetupNags		= "::scidb::game::setupNags";
+static char const* CmdSetupStyle		= "::scidb::game::setupStyle";
 static char const* CmdSink				= "::scidb::game::sink";
 static char const* CmdSink_			= "::scidb::game::sink?";
 static char const* CmdStrip			= "::scidb::game::strip";
@@ -473,7 +474,7 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void annotation(Annotation const& annotation) override
+	void annotation(Annotation const& annotation, bool isTexual) override
 	{
 		mstl::string prefix, infix, suffix;
 
@@ -481,12 +482,13 @@ public:
 		annotation.infix(infix);
 		annotation.suffix(suffix);
 
-		Tcl_Obj* objv[4];
+		Tcl_Obj* objv[5];
 
 		objv[0] = m_annotation;
-		objv[1] = Tcl_NewStringObj(prefix, prefix.size());
-		objv[2] = Tcl_NewStringObj(infix, infix.size());
-		objv[3] = Tcl_NewStringObj(suffix, suffix.size());
+		objv[1] = Tcl_NewBooleanObj(isTexual);
+		objv[2] = Tcl_NewStringObj(prefix, prefix.size());
+		objv[3] = Tcl_NewStringObj(infix, infix.size());
+		objv[4] = Tcl_NewStringObj(suffix, suffix.size());
 
 		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
@@ -706,6 +708,7 @@ struct Subscriber : public Game::Subscriber
 	Tcl_Obj*	m_pgn;
 	Tcl_Obj*	m_state;
 	Tcl_Obj*	m_position;
+	Tcl_Obj*	m_onlyThis;
 	bool		m_mainlineOnly;
 
 	static Tcl_Obj* m_action;
@@ -1127,12 +1130,21 @@ cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned		position	= unsignedFromObj(objc, objv, 1);
-	char const*	database	= stringFromObj(objc, objv, 2);
-	unsigned		number	= unsignedFromObj(objc, objv, 3);
+	unsigned			position	= unsignedFromObj(objc, objv, 1);
+	char const*		database	= stringFromObj(objc, objv, 2);
+	unsigned			number	= unsignedFromObj(objc, objv, 3);
+	mstl::string	fen;
 
-	setResult(::stateToInt(scidb->loadGame(position, scidb->cursor(database), number)));
+	mstl::string const* pfen = 0;
 
+	if (objc >= 5)
+	{
+		fen.assign(stringFromObj(objc, objv, 4));
+		if (!fen.empty())
+			pfen = &fen;
+	}
+
+	setResult(::stateToInt(scidb->loadGame(position, scidb->cursor(database), number, pfen)));
 	return TCL_OK;
 }
 
@@ -2304,30 +2316,22 @@ cmdUndoSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	int position = -1;
-	int arg = 1;
+	int			position							= intFromObj(objc, objv, 1);
+	unsigned 	linebreakThreshold			= unsignedFromObj(objc, objv, 2);
+	unsigned 	linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, 3);
+	unsigned 	linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, 4);
+	unsigned 	linebreakMinCommentLength	= unsignedFromObj(objc, objv, 5);
+	bool			columnStyle						= boolFromObj(objc, objv, 6);
+	char const*	moveStyle						= stringFromObj(objc, objv, 7);
+	bool			paragraphSpacing				= boolFromObj(objc, objv, 8);
+	bool			showDiagram						= boolFromObj(objc, objv, 9);
+	bool			showMoveInfo					= boolFromObj(objc, objv, 10);
+	bool			showVariationNumbers			= boolFromObj(objc, objv, 11);
+	unsigned		displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
 
-	if (objc == 12)
-		position = intFromObj(objc, objv, arg++);
-
-	unsigned linebreakThreshold			= unsignedFromObj(objc, objv, arg++);
-	unsigned linebreakMaxLineLengthMain	= unsignedFromObj(objc, objv, arg++);
-	unsigned linebreakMaxLineLengthVar	= unsignedFromObj(objc, objv, arg++);
-	unsigned linebreakMinCommentLength	= unsignedFromObj(objc, objv, arg++);
-
-	bool columnStyle				= boolFromObj(objc, objv, arg++);
-
-	char const* moveStyle		= stringFromObj(objc, objv, arg++);
-
-	bool paragraphSpacing		= boolFromObj(objc, objv, arg++);
-	bool showDiagram				= boolFromObj(objc, objv, arg++);
-	bool showMoveInfo				= boolFromObj(objc, objv, arg++);
-	bool showVariationNumbers	= boolFromObj(objc, objv, arg++);
-
-	unsigned			displayStyle = columnStyle ? display::ColumnStyle : display::CompactStyle;
-	move::Notation	moveForm;
+	move::Notation moveForm;
 
 	if (showDiagram)
 		displayStyle |= display::ShowDiagrams;
@@ -2351,7 +2355,7 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (strcmp(moveStyle, "tel") == 0)
 		moveForm = move::Telegraphic;
 	else
-		return error(::CmdSetup, nullptr, nullptr, "unexpected move style '%s'", moveStyle);
+		return error(::CmdSetupStyle, nullptr, nullptr, "unexpected move style '%s'", moveStyle);
 
 	if (position >= 0)
 	{
@@ -2371,6 +2375,34 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								displayStyle,
 								moveForm);
 	}
+
+	return TCL_OK;
+}
+
+
+static int
+cmdSetupNags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Tcl_Obj** nags;
+	int numNags;
+
+	if (Tcl_ListObjGetElements(ti, objectFromObj(objc, objv, 1), &numNags, &nags) != TCL_OK)
+		return error(::CmdSetupNags, nullptr, nullptr, "list of NAGs expected");
+
+	::db::Annotation::unsetUnusualNags();
+
+	for (int i = 0; i < numNags; ++i)
+	{
+		int nag;
+
+		if (Tcl_GetIntFromObj(ti, nags[i], &nag) != TCL_OK || nag >= ::db::nag::Scidb_Last)
+			return error(::CmdSetupNags, nullptr, nullptr, "invalid NAG '%s'", Tcl_GetString(nags[i]));
+
+		::db::Annotation::setUnusualNag(nag::ID(nag));
+	}
+
+	if (numNags > 0)
+		::db::Annotation::flipUnusualNags();
 
 	return TCL_OK;
 }
@@ -2844,7 +2876,8 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdRelease,			cmdRelease);
 	createCommand(ti, CmdReplace,			cmdReplace);
 	createCommand(ti, CmdSave,				cmdSave);
-	createCommand(ti, CmdSetup,			cmdSetup);
+	createCommand(ti, CmdSetupNags,		cmdSetupNags);
+	createCommand(ti, CmdSetupStyle,		cmdSetupStyle);
 	createCommand(ti, CmdSink,				cmdSink);
 	createCommand(ti, CmdSink_,			cmdSink_);
 	createCommand(ti, CmdStrip,			cmdStrip);

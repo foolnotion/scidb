@@ -337,10 +337,10 @@ proc WriteOptions {chan} {
 	variable Tables
 
 	foreach table $Tables {
-		puts $chan "::eventtable::setOptions $table.sites {"
+		puts $chan "::sitetable::setOptions $table.sites {"
 		::options::writeArray $chan [::sitetable::getOptions $table.sites]
 		puts $chan "}"
-		puts $chan "::gametable::setOptions $table.events {"
+		puts $chan "::eventtable::setOptions $table.events {"
 		::options::writeArray $chan [::eventtable::getOptions $table.events]
 		puts $chan "}"
 	}

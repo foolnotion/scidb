@@ -43,6 +43,15 @@ using namespace app::winboard;
 using namespace db;
 
 
+static mstl::string
+toStr(unsigned value)
+{
+	char buf[20];
+	snprintf(buf, sizeof(buf), "%u", value);
+	return buf;
+}
+
+
 static bool
 isNumeric(char const* s)
 {
@@ -210,7 +219,101 @@ winboard::Engine::probeTimeout() const
 void
 winboard::Engine::sendOptions()
 {
-	// TODO
+	bool isAnalyzing = this->isAnalyzing();
+
+	if (isAnalyzing)
+		sendStopAnalysis();
+
+	app::Engine::Options const& opts = options();
+	mstl::string msg;
+
+	for (app::Engine::Options::const_iterator i = opts.begin(); i != opts.end(); ++i)
+	{
+		app::Engine::Option const& opt = *i;
+
+		msg.assign("option ", 7);
+		msg.append(opt.name);
+		msg.append('=');
+
+		if (opt.type == "check")
+			msg.append(opt.val == "true" ? "1" : "0"); // according to WB
+		else
+			msg.append(opt.val);
+
+		send(msg);
+	}
+
+	if (hasFeature(app::Engine::Feature_Hash_Size))
+		send("memory " + ::toStr(hashSize()));
+
+	if (hasFeature(app::Engine::Feature_SMP))
+		send("cores " + toStr(numCores()));
+
+#if 0
+	if (hasFeature(app::Engine::Feature_Ponder))
+		send("setoption name Ponder value false"); // XXX
+
+	if (hasFeature(app::Engine::Feature_Multi_PV))
+		send("setoption name MultiPV value " + toStr(numVariations()));
+#endif
+
+	if (isAnalyzing)
+		sendStartAnalysis();
+}
+
+
+void
+winboard::Engine::sendConfiguration(mstl::string const& script)
+{
+	bool isAnalyzing = this->isAnalyzing();
+
+	if (isAnalyzing)
+		sendStopAnalysis();
+
+	mstl::string::size_type sol = 0;
+
+	while (sol < script.size())
+	{
+		mstl::string::size_type eol = script.find('\n', sol);
+		if (eol == mstl::string::npos)
+			eol = script.size();
+		send(script.substr(sol, eol - sol));
+		sol = eol + 1;
+		if (sol < script.size() && ::isspace(script[sol])) // skip LF on windows
+			++sol;
+	}
+
+	if (isAnalyzing)
+		sendStartAnalysis();
+}
+
+
+void
+winboard::Engine::sendHashSize()
+{
+	send("memory " + toStr(hashSize()));
+}
+
+
+void
+winboard::Engine::sendCores()
+{
+	send("cores " + ::toStr(numCores()));
+}
+
+
+void
+winboard::Engine::sendPondering()
+{
+	if (pondering())
+	{
+		send("hard");
+	}
+	else
+	{
+		send("hard");
+		send("easy");
+	}
 }
 
 
@@ -317,13 +420,6 @@ winboard::Engine::startAnalysis(bool isNewGame)
 	game->getHistory(moves);
 
 	stopAnalysis();
-//	checkVariant(startBoard);
-
-	if (game->startBoard().notDerivableFromChess960())
-	{
-		error("Shuffle chess not supported");
-		return false;
-	}
 
 	m_board = game->currentBoard();
 
@@ -340,24 +436,21 @@ winboard::Engine::startAnalysis(bool isNewGame)
 	else
 	{
 		Board const& startBoard = game->startBoard();
+		mstl::string v;
 
-		m_mustUseChess960 = startBoard.notDerivableFromStandardChess();
-		m_mustUseNoCastle = m_mustUseChess960 && startBoard.castlingRights() == castling::NoRights;
-
-		if (m_mustUseNoCastle)
+		switch (currentVariant())
 		{
-			error("Shuffle chess not supported");
-			return false;
+			case app::Engine::Variant_Standard:		v = "standard"; break;
+			case app::Engine::Variant_Chess_960:	v = m_chess960Variant; break;
+			case app::Engine::Variant_Losers:		v = "losers"; break;
+			case app::Engine::Variant_Bughouse:		v = "bughouse"; break;
+			case app::Engine::Variant_Crazyhouse:	v = "crazyhouse"; break;
 		}
-		else if (m_mustUseChess960)
-		{
-			if (!hasFeature(app::Engine::Feature_Chess_960) || !m_featureSetboard)
-			{
-				error("Chess 960 not supported");
-				return false;
-			}
 
-			send("variant " + m_variant);
+		if (m_currentVariant != v)
+		{
+			send("variant " + v);
+			m_currentVariant.swap(v);
 		}
 
 		if (m_featureSigint)
@@ -381,30 +474,37 @@ winboard::Engine::startAnalysis(bool isNewGame)
 		}
 
 		send("post");	// turn on thinking output
-
-		if (hasFeature(app::Engine::Feature_Analyze))
-		{
-			send("analyze");
-		}
-		else
-		{
-			send("sd 50");
-			send("depth 50");				// some engines are expecting "depth" instead of "sd"
-			send("st 120000");			// not all engines do understand "level"
-			send("level 1 120000 0");	// better than "st 120000"
-			send("go");
-
-			// NOTE: GNU Chess 4 might expect "depth\n50" !!
-		}
+		sendStartAnalysis();
 
 		if (!m_wholeSecondsDetected)
 			m_startTime = ::sys::time::timestamp();
 
 		m_isAnalyzing = true;
 		m_firstMove.clear();
+		updateState(app::Engine::Start);
 	}
 
 	return true;
+}
+
+
+void
+winboard::Engine::sendStartAnalysis()
+{
+	if (hasFeature(app::Engine::Feature_Analyze))
+	{
+		send("analyze");
+	}
+	else
+	{
+		send("sd 50");
+		send("depth 50");				// some engines are expecting "depth" instead of "sd"
+		send("st 120000");			// not all engines do understand "level"
+		send("level 1 120000 0");	// better than "st 120000"
+		send("go");
+
+		// NOTE: GNU Chess 4 might expect "depth\n50" !!
+	}
 }
 
 
@@ -413,13 +513,10 @@ winboard::Engine::stopAnalysis()
 {
 	if (isAnalyzing())
 	{
-		if (hasFeature(app::Engine::Feature_Analyze))
-			send("exit");	// leave analyze mode
-
-		send("force");		// Stop engine replying to moves.
-
+		sendStopAnalysis();
 		reset();
 		m_isAnalyzing = false;
+		updateState(app::Engine::Stop);
 
 		// TODO: we should send now the best move so far
 		// because the UCI protocol is doing this
@@ -430,12 +527,24 @@ winboard::Engine::stopAnalysis()
 
 
 void
+winboard::Engine::sendStopAnalysis()
+{
+	if (hasFeature(app::Engine::Feature_Analyze))
+		send("exit");	// leave analyze mode
+
+	send("force");		// Stop engine replying to moves.
+}
+
+
+void
 winboard::Engine::pause()
 {
 	if (hasFeature(app::Engine::Feature_Pause))
 		send("pause");
 	else
-		stopAnalysis();
+		sendStopAnalysis();
+
+	updateState(app::Engine::Pause);
 }
 
 
@@ -445,7 +554,9 @@ winboard::Engine::resume()
 	if (hasFeature(app::Engine::Feature_Pause))
 		send("resume");
 	else
-		startAnalysis(false);
+		sendStartAnalysis();
+
+	updateState(app::Engine::Resume);
 }
 
 
@@ -459,6 +570,8 @@ winboard::Engine::isReady() const
 void
 winboard::Engine::protocolStart(bool isProbing)
 {
+	addVariant(app::Engine::Variant_Standard);
+
 	send("xboard");
 	send("protover 2");
 //	send("ponder off");
@@ -521,6 +634,7 @@ winboard::Engine::featureDone(bool done)
 		{
 			// No need to wait any longer wondering if we're talking to a version 1 engine
 			m_timer.reset();
+			sendOptions();
 			engineIsReady();
 		}
 	}
@@ -711,6 +825,11 @@ winboard::Engine::parseFeatures(char const* msg)
 							m_shortNameDetected = true;
 					}
 				}
+				else if (::strncmp(key, "memory=", 7) == 0)
+				{
+					if (*val == '1')
+						addFeature(app::Engine::Feature_Hash_Size);
+				}
 				break;
 
 			case 'o':
@@ -741,14 +860,6 @@ winboard::Engine::parseFeatures(char const* msg)
 				}
 				break;
 
-			case 'u':
-				if (::strncmp(key, "usermove=", 9) == 0)
-				{
-					m_featureUsermove = *val == '1';
-//					accept = true;
-				}
-				break;
-
 			case 's':
 				switch (key[1])
 				{
@@ -775,34 +886,99 @@ winboard::Engine::parseFeatures(char const* msg)
 //							accept = true;
 						}
 						break;
+
+					case 'm':
+						if (::strncmp(key, "smp=", 4) == 0)
+						{
+							if (*val == '1')
+								addFeature(app::Engine::Feature_SMP);
+						}
+						break;
+				}
+				break;
+
+			case 'u':
+				if (::strncmp(key, "usermove=", 9) == 0)
+				{
+					m_featureUsermove = *val == '1';
+//					accept = true;
 				}
 				break;
 
 			case 'v':
 				if (::strncmp(key, "variants=", 9) == 0)
 				{
-					char const* p = ::strstr(val + 1, "chess960");
-					bool chess960 = false;
+					removeVariant(app::Engine::Variant_Standard);
+					++val;
 
-					if (p)
+					do
 					{
-						m_variant = "chess960";
-						chess960 = true;
-					}
-					else
-					{
-						p = ::strstr(val + 1, "fischerandom");
+						char const* p = ::strchr(val, ',');
 
-						if (p)
+						if (p == 0)
+							p = val + ::strlen(val) - 1;
+
+						mstl::string variant(val, p);
+						variant.trim();
+
+						switch (variant[0])
 						{
-							chess960 = true;
-							m_variant = "fischerandom";
-//							accept = true;
-						}
-					}
+							case 'b':
+								if (::strcmp(variant, "bughouse") == 0)
+									addVariant(app::Engine::Variant_Bughouse);
+								break;
 
-					if (chess960)
-						addFeature(app::Engine::Feature_Chess_960);
+							case 'c':
+								if (::strcmp(variant, "chess960") == 0)
+								{
+									addVariant(app::Engine::Variant_Chess_960);
+									m_chess960Variant = variant;
+								}
+								else if (::strcmp(variant, "crazyhouse") == 0)
+								{
+									addVariant(app::Engine::Variant_Crazyhouse);
+								}
+								break;
+
+							case 'f':
+								if (::strcmp(variant, "fischerandom") == 0)
+								{
+									addVariant(app::Engine::Variant_Chess_960);
+									m_chess960Variant = variant;
+								}
+								break;
+
+							case 'g':
+								if (::strcmp(variant, "giveaway") == 0)
+									addVariant(app::Engine::Variant_Give_Away);
+								break;
+
+							case 'l':
+								if (::strcmp(variant, "losers") == 0)
+									addVariant(app::Engine::Variant_Losers);
+								break;
+
+							case 'n':
+								if (::strcmp(variant, "normal") == 0)
+									addVariant(app::Engine::Variant_Standard);
+								break;
+
+							case 's':
+								if (::strcmp(variant, "standard") == 0)
+									addVariant(app::Engine::Variant_Standard);
+								else if (::strcmp(variant, "suicide") == 0)
+									addVariant(app::Engine::Variant_Suicide);
+								break;
+
+							case '3':
+								if (::strcmp(variant, "3check") == 0)
+									addVariant(app::Engine::Variant_Three_Check);
+								break;
+						}
+
+						val = ::skipSpaces(p + 1);
+					}
+					while (*val);
 				}
 				break;
 		}
@@ -838,7 +1014,7 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 				else if (isAnalyzing() && m_editSent && ::strstr(msg, "edit"))
 				{
 					stopAnalysis();
-					error("analyzing mode not available");
+					error(app::Engine::No_Analyze_Mode);
 				}
 				else
 				{
@@ -881,14 +1057,17 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 void
 winboard::Engine::parseInfo(mstl::string const& msg)
 {
-	int		score, depth;
-	unsigned	nodes, time;
-	char		dummy;
+	int			score;
+	int			depth;
+	unsigned		nodes;
+	unsigned		time;
+	char const	*d = ::skipSpaces(msg);
+	char const	*s	= ::skipWord(d);
 
-	if (::sscanf(msg, "%d%c %d %u %u ", &depth, &dummy, &score, &time, &nodes) != 5)
+	if (::sscanf(d, "%d", &depth) != 1 || ::sscanf(s, "%d %u %u ", &score, &time, &nodes) != 3)
 		return;
 
-	char const* s = ::skipWords(msg, 4);
+	s = ::skipWords(msg, 3);
 
 	if (!m_wholeSecondsDetected)
 	{
@@ -1017,21 +1196,11 @@ winboard::Engine::parseOption(mstl::string const& option)
 	}
 	else if (type == "check")
 	{
-		addOption(name, type, args == "1" ? "true" : "false");
+		addOption(name, type, args == "1" ? "true" : "false"); // according to UCI
 	}
 	else if (type == "string")
 	{
 		addOption(name, type, args);
-
-		if (name == "variants")
-		{
-			if (option.find("fischerandom") != mstl::string::npos)
-				addFeature(app::Engine::Feature_Chess_960);
-
-			// NOTE:
-			// WinBoard support variants like "wildcastle" and "nocastle",
-			// but this is not Shuffle Chess!
-		}
 	}
 	else if (type == "spin" || type == "slider")
 	{
@@ -1057,10 +1226,10 @@ winboard::Engine::parseOption(mstl::string const& option)
 
 		addOption(name, type, val, min, max);
 
-		if (name == "memory")
-			setHashRange(::atoi(min), ::atoi(max));
-		else if (name == "smp")
-			setThreadRange(::atoi(min), ::atoi(max));
+//		if (name == "memory")
+//			setHashRange(::atoi(min), ::atoi(max));
+//		else if (name == "smp")
+//			setThreadRange(::atoi(min), ::atoi(max));
 	}
 	else if (type == "combo")
 	{
@@ -1121,10 +1290,11 @@ winboard::Engine::detectFeatures(char const* identifier)
 		if (::sscanf(identifier, "Crafty v%d.", &major) == 1 && major >= 18)
 			m_dontInvertScore = true;
 
-		send("log off");		// turn off crafty logging, to reduce number of junk files
-		send("noise 1000");	// set a fairly low noise value
-//		send("egtb off");		// turn off end game table book
-		send("resign 0");		// turn off alarm
+		if (isProbing())
+		{
+			send("log off");		// turn off crafty logging, to reduce number of junk files
+			send("noise 1000");	// set a fairly low noise value
+		}
 
 		addFeature(app::Engine::Feature_Analyze);
 		m_featureSetboard = true;

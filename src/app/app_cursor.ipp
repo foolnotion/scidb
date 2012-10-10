@@ -30,6 +30,7 @@ namespace app {
 
 inline bool Cursor::isOpen() const					{ return m_db; }
 inline bool Cursor::isClosed() const				{ return m_db == 0; }
+inline bool Cursor::isActive() const				{ return m_isActive; }
 inline bool Cursor::isReferenceBase() const		{ return m_isRefBase; }
 inline bool Cursor::isScratchBase() const			{ return m_isScratchBase; }
 inline bool Cursor::hasTreeView() const			{ return m_treeView != -1; }
@@ -42,6 +43,7 @@ inline Cursor::SubscriberP Cursor::subscriber() const	{ return m_subscriber; }
 
 inline void Cursor::setReferenceBase(bool flag)	{ m_isRefBase = flag; }
 inline void Cursor::setScratchBase(bool flag)	{ m_isScratchBase = flag; }
+inline void Cursor::setActive(bool flag)			{ m_isActive = flag; }
 
 
 inline

@@ -70,6 +70,7 @@ public:
 
 	size_type size() const;
 	size_type capacity() const;
+	container_type& container(); // Use with care!
 	container_type const& container() const;
 
 	iterator begin();

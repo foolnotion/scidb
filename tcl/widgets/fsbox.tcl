@@ -243,8 +243,8 @@ proc fsbox {w type args} {
 	if {$Options(pane:favorites) == 0} {
 		set Options(pane:favorites) $Vars(bookmarkswidth)
 	}
-	if {[llength $Vars(showhidden)]} {
-		set Options(show:hidden) $Vars(showhidden)
+	if {[llength $Vars(showhidden)] == 0} {
+		set Vars(showhidden) $Options(show:hidden)
 	}
 	if {[llength $Vars(sizecommand)] == 0} {
 		set Vars(sizecommand) [namespace code GetFileSize]
@@ -303,7 +303,7 @@ proc fsbox {w type args} {
 	set top [ttk::frame $w.top -takefocus 0]
 	pack $top -fill both -expand yes
 	set Vars(choosedir) \
-		[choosedir $top.folder -initialdir $Vars(folder) -showlabel 1 -showhidden $Options(show:hidden)]
+		[choosedir $top.folder -initialdir $Vars(folder) -showlabel 1 -showhidden $Vars(showhidden)]
 	bind $Vars(choosedir) <<SetDirectory>> [namespace code [list ChangeDir $w %d]]
 	bind $Vars(choosedir) <<SetFolder>>    [namespace code [list ChangeDir $w %d]]
 	bind $Vars(choosedir) <<GetStartMenu>> [namespace code [list GetStartMenu $w]]
@@ -500,6 +500,10 @@ proc reset {w type args} {
 		-cancelcommand				{}
 		-inspectcommand			{}
 		-mapextcommand				{}
+		-customcommand				{}
+		-customfiletypes			{}
+		-customicon					{}
+		-customtooltip				{}
 	}
 	array set opts $args
 
@@ -515,7 +519,7 @@ proc reset {w type args} {
 							filecursors fileencodings showhidden sizecommand validatecommand
 							selectencodingcommand deletecommand renamecommand duplicatecommand
 							okcommand cancelcommand inspectcommand mapextcommand initialfile
-							checkexistence} {
+							checkexistence customcommand customfiletypes customicon customtooltip} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
@@ -566,6 +570,7 @@ proc reset {w type args} {
 	set Vars(startup) 1
 	if {$type eq "dir"} { set Vars(initialfile) $Vars(folder) }
 
+	filelist::Rebuild $w
 	CheckInitialFile $w
 	if {[string length $opts(-initialdir)] && $opts(-initialdir) ne $Vars(folder)} {
 		ChangeDir $w $opts(-initialdir)
@@ -2008,7 +2013,9 @@ proc DoFileOperations {w action uriFiles} {
 			} elseif {$file ni $rejectList} {
 				lappend rejectList $file
 			}
-		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
+		} elseif {	[string equal -length 5 $uri "http:"]
+					|| [string equal -length 4 $uri "https:"]
+					|| [string equal -length 4 $uri "ftp:"]} {
 			lappend remoteList $uri
 		} elseif {$uri ni $errorList} {
 			# This shouldn't happen.
@@ -2883,6 +2890,8 @@ proc Build {w path args} {
 	set t  $path.f.files
 	set tb [::toolbar::toolbar $path -id toolbar -hide 0 -side left]
 
+	set Vars(toolbar:filelist) $tb
+
 	set Vars(button:backward) [::toolbar::add $tb button \
 		-image $icon::16x16::iconBackward                 \
 		-command [namespace code [list Undo $w]]          \
@@ -2961,12 +2970,13 @@ proc Build {w path args} {
 		-variable [namespace parent]::${w}::Vars(layout:list) \
 	]
 	if {$::tcl_platform(platform) eq "unix"} {
-		if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
+		if {$Vars(showhidden)} { set ipref "" } else { set ipref "un" }
+		if {$Vars(type) eq "dir"} { set var ShowHiddenDirs } else { set var ShowHiddenFiles }
 		set Vars(widget:hidden) [::toolbar::add $tb checkbutton \
 			-image [set icon::16x16::${ipref}locked]             \
+			-tooltip [Tr $var]                                   \
 			-command [namespace code [list SwitchHidden $w]]     \
-			-tooltip [Tr ShowHiddenFiles]                        \
-			-variable [namespace parent]::Options(show:hidden)   \
+			-variable [namespace parent]::${w}::Vars(showhidden) \
 			-padx 1                                              \
 		]
 	}
@@ -3072,13 +3082,36 @@ proc Build {w path args} {
 }
 
 
+proc Rebuild {w} {
+	variable [namespace parent]::${w}::Vars
+
+	set tb $Vars(toolbar:filelist)
+
+	if {[llength $Vars(customcommand)] && [llength $Vars(customicon)]} {
+		if {![info exists Vars(button:custom)]} {
+			set Vars(customicon) [list [[namespace parent]::makeStateSpecificIcons $Vars(customicon)]]
+
+			set Vars(button:custom) [::toolbar::add $tb button       \
+				-image $Vars(customicon)                              \
+				-command [namespace code [list CallCustomCommand $w]] \
+				-tooltip $Vars(customtooltip)                         \
+				-state disabled                                       \
+				-after $Vars(button:copy)                             \
+			]
+		}
+	} elseif {[info exists Vars(button:custom)]} {
+		::toolbar::remove $Vars(button:custom)
+		array unset Vars button:custom
+	}
+}
+
+
 proc SwitchHidden {w} {
 	variable [namespace parent]::${w}::Vars
-	variable [namespace parent]::Options
 
-	if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
+	if {$Vars(showhidden)} { set ipref "" } else { set ipref "un" }
 	toolbar::childconfigure $Vars(widget:hidden) -image [set icon::16x16::${ipref}locked]
-	$Vars(choosedir) showhidden $Options(show:hidden)
+	$Vars(choosedir) showhidden $Vars(showhidden)
 	RefreshFileList $w
 }
 
@@ -3447,6 +3480,10 @@ proc ColumnResized {w col} {
 proc GetFileIcon {w filename} {
 	variable [namespace parent]::${w}::Vars
 
+	if {$Vars(onlyexecutables)} {
+		return [set [namespace parent]::icon::16x16::executable]
+	}
+
 	foreach {ext icon} $Vars(fileicons) {
 		if {[string match *$ext $filename]} {
 			return $icon
@@ -3569,7 +3606,6 @@ proc SetColumnBackground {t id stripes background} {
 
 proc Glob {w refresh} {
 	variable [namespace parent]::${w}::Vars
-	variable [namespace parent]::Options
 
 	if {$Vars(startup) && !$refresh} { return }
 	set Vars(startup) 0
@@ -3586,7 +3622,7 @@ proc Glob {w refresh} {
 				}
 				set state normal
 				set filter *
-				if {$Options(show:hidden)} { lappend filter .* }
+				if {$Vars(showhidden)} { lappend filter .* }
 				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
 				set folders [lsort -nocase $folders]
 			}
@@ -3609,7 +3645,7 @@ proc Glob {w refresh} {
 				set folders {}
 				foreach entry $Bookmarks($attr) {
 					if {$attr eq "favorites"} { set folder [lindex $entry 0] } else { set folder $entry }
-					if {[string index $folder 0] ne "." || $Options(show:hidden)} { 
+					if {[string index $folder 0] ne "." || $Vars(showhidden)} { 
 						lappend folders $folder
 					}
 				}
@@ -3633,7 +3669,7 @@ proc Glob {w refresh} {
 
 		if {$Vars(glob) eq "Files" && $Vars(type) ne "dir"} {
 			set filter *
-			if {$Options(show:hidden)} { lappend filter .* }
+			if {$Vars(showhidden)} { lappend filter .* }
 			if {$Vars(onlyexecutables)} { set types {f x} } else { set types f }
 			set files [glob -nocomplain -directory $Vars(folder) -types $types {*}$filter]
 
@@ -4664,14 +4700,14 @@ proc PopupMenu {w x y} {
 		;
 	[namespace parent]::configureRadioEntry $sub $text
 	if {$::tcl_platform(platform) eq "unix"} {
-		if {$Options(show:hidden)} { set ipref "" } else { set ipref "un" }
-		variable _ShowHidden $Options(show:hidden)
-		$m add checkbutton                                  \
-			-compound left                                   \
-			-image [set icon::16x16::${ipref}locked]         \
-			-label " [Tr ShowHiddenFiles]"                   \
-			-command [namespace code [list SwitchHidden $w]] \
-			-variable [namespace current]::_ShowHidden       \
+		if {$Vars(showhidden)} { set ipref "" } else { set ipref "un" }
+		if {$Vars(type) eq "dir"} { set var ShowHiddenDirs } else { set var ShowHiddenFiles }
+		$m add checkbutton                                      \
+			-compound left                                       \
+			-image [set icon::16x16::${ipref}locked]             \
+			-label " [Tr $var]"                                  \
+			-command [namespace code [list SwitchHidden $w]]     \
+			-variable [namespace parent]::${w}::Vars(showhidden) \
 			;
 	}
 
@@ -4964,6 +5000,28 @@ set document [image create photo -data {
 	mGAGgGzBhUHyMNeFh4czBAYGMuzfv39SREQEB0AAsaD7CRtA9v/r168Z8vLyWoGZsA7kK4AA
 	ghvAwcGBN9fx8fGB6bCwsJwDBw5MhYkDBBAjqdkZ6AVG5NgACDAA4TMV4APib38AAAAASUVO
 	RK5CYII=
+}]
+
+set executable [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAD
+	mUlEQVQYGW3BW0xbBQAG4P/ceg690EILpaUMLBuuwARCHEYgk0VNBgszuoc9CGrUZKBO37xF
+	mNmDJiaOxPGExmxsDwtkiU4IS7oLg4QxGEM2dgFKb1xGoaf308vp6ZEm25vfR+C5s0NxqLQc
+	iizA2e97sO9AO1iFZAIoV4h/9iSwdvOTmKidmRkfRIRfwQskdg1clZEW01hemFPfsT/6JcSv
+	dxWbKFC04lWaVSoycubA1OSN03pzNSLBTTQf7cXJHjss1kOgsUsiAbUuBxRdcRkE03ro7Q9h
+	ztfUa1S6JkEQEKZpIiu49RRt7/ftCe649YlE6n5NcycI7Fr2irg+LyMaCX1TbDL8FNraxN2p
+	cbCcCvqCEnA5Gvi2NtZlirjCB6OdvM8FUvbXrXu8Tqq79wIKjfuhySFRatG0Ls5NNA/0n4GQ
+	BChGDaVKC7PlJWi1ebnbvu2GdEbm0mmRm50YovMKSkfJytpG00aY/Csup0fWPa5vzw/8ClZl
+	QTweh9v5FD6fH4yCQX2DAeXlFsSC25i59ftkKsH/vLwwBppi8vpSEtuuVAIjl4YRjkogFRH4
+	fQ5IkgxWVSqbihVEVTkgxApxyx7GM89Cf9m+19Y0eSUguUxwLOp3DYqCmHA4VpCrMyIa9iEW
+	8mLbc+PrEx+31NjKJDmPAixFFLR6M2x17Sf22hqKrZWHQZqMJX/qVbpOSMQ9RqECx6mhYNXg
+	VEaA1MXebbFa9+gpZCWFJGQwqDr43rEcrXVp2n7ub/qhMwFTvgIyQTOFRWWICF4YzRVQa4tR
+	19h17uGKiDdrGWT9+4hHMimCZEgEdrzKDedknCakSOmKVx4w6KiDtfVvYXNzEJayKrCcBi/b
+	amEwMBABPHAJuD2+jCfzw97Kmqb+4M6qDpAv0gQhxjNpsmJ9wwsWMhpeP4JAIIBSawXM5gIE
+	AjKuOnlMjLvwYHZUXrx7oWvLc29k7yvtyKIdK16fJMa/WJy79hklRcZaWr9qZHPyj6eSAtxu
+	N+7P+cHzQYiSBIplCYJSFiRSaSzODiOL6vjyD5zpLl862WO/mGsov7PN75BpmTweEwRM3x5C
+	dZXpR89GQAeSKqIpFpHgGne47dNLjsfTSMV5kKfeIZD1XYcSkXAQkCVbMpXKuFcXcHO0b2rV
+	7TqdTEQ7eJ/DubTwT9/+6prOx/PX8b/aOn7DqR8uW499NHC+/o3uKEB/DtBoOtqLXTo8V9Xw
+	AV74D3W7lEsP0gBPAAAAAElFTkSuQmCC
 }]
 
 # set ok [image create photo -data {

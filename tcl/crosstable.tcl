@@ -860,11 +860,11 @@ proc Open {dlg which gameIndex} {
 
 	set base $Vars(base)
 	set path $Vars(html)
+	set viewId $Vars(viewId)
 
 	if {$which eq "pgn"} {
-		::widget::busyOperation { ::game::new $path $base $gameIndex }
+		::widget::busyOperation { ::game::new $path $base $viewId $gameIndex }
 	} else {
-		set viewId $Vars(viewId)
 		set index [::scidb::view::map game $base $viewId $gameIndex]
 		set info [::scidb::db::get gameInfo $index $viewId $base]
 		set Vars(${which}Id) [::widget::busyOperation \

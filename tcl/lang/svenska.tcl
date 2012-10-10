@@ -38,6 +38,7 @@
 ::mc::Key(Ctrl)		"Ctrl" ;# NEW
 ::mc::Key(Down)		"\u2193"
 ::mc::Key(End)			"End" ;# NEW
+::mc::Key(Esc)			"Esc"
 ::mc::Key(Home)		"Home" ;# NEW
 ::mc::Key(Left)		"\u2190"	;# "Vänster"
 ::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
@@ -62,17 +63,19 @@
 ::mc::Cut				"Klipp ut"
 ::mc::Dark				"Mörk"
 ::mc::Database			"Databas"
+::mc::Default			"Standard"
 ::mc::Delete			"Radera"
 ::mc::Edit				"Redigera"
-::mc::Escape			"Esc"
 ::mc::File				"File" ;# NEW
 ::mc::From				"Från"
 ::mc::Game				"Parti"
 ::mc::Layout			"Layout"
 ::mc::Left				"Vänster"
 ::mc::Lite				"Ljus"
+::mc::Low				"Low" ;# NEW
 ::mc::Modify			"Ändra"
 ::mc::No					"nej"
+::mc::Normal			"Normal" ;# NEW
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Nummer"
 ::mc::OK					"OK"
@@ -135,6 +138,7 @@
 ::widget::mc::First		"&Första"
 ::widget::mc::Last		"&Sista"
 ::widget::mc::Help		"&Hjälp"
+::widget::mc::Start		"&Start" ;# NEW
 
 ::widget::mc::New			"&New" ;# NEW
 ::widget::mc::Save		"&Spara"
@@ -338,8 +342,13 @@
 
 ::application::board::mc::Tools				"Verktyg"
 ::application::board::mc::Control			"Kontroll"
+::application::board::mc::Game				"Parti"
 ::application::board::mc::GoIntoNextVar	"Gå in i nästa variant"
 ::application::board::mc::GoIntPrevVar		"Gå in i föregående variant"
+::application::board::mc::LoadGame(next)	"Load next game" ;# NEW
+::application::board::mc::LoadGame(prev)	"Load previous game" ;# NEW
+::application::board::mc::LoadGame(first)	"Load first game" ;# NEW
+::application::board::mc::LoadGame(last)	"Load last game" ;# NEW
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -448,6 +457,9 @@
 ::application::database::mc::T_ComputerChess					"Datorschack"
 ::application::database::mc::T_Chess960						"Schack960"
 ::application::database::mc::T_PlayerCollection				"Spelarsamling"
+# Female version of "Player Collection"
+# Be sure that the translation starts with same term as the translation above.
+::application::database::mc::T_PlayerCollectionFemale		"Player Collection" ;# NEW
 ::application::database::mc::T_Tournament						"Turnering"
 ::application::database::mc::T_TournamentSwiss				"Schweizer-turnering"
 ::application::database::mc::T_GMGames							"GM partier"
@@ -467,6 +479,9 @@
 ::application::database::mc::T_Openings						"Öppningar"
 ::application::database::mc::T_OpeningsWhite					"Vita öppningar"
 ::application::database::mc::T_OpeningsBlack					"Svarta öppningar"
+::application::database::mc::T_Bughouse						"Bughouse Chess" ;# NEW
+::application::database::mc::T_Antichess						"Antichess" ;# NEW
+::application::database::mc::T_PGNFile							"PGN fil"
 
 ::application::database::mc::OpenDatabase						"Öppna databas"
 ::application::database::mc::NewDatabase						"Ny databas"
@@ -619,7 +634,6 @@
 ::board::mc::ThemeManagement		"Temahantering"
 ::board::mc::Setup					"Inställningar"
 
-::board::mc::Default					"Standard"
 ::board::mc::WorkingSet				"Arbetsuppsättning"
 
 ### board::options #####################################################
@@ -713,6 +727,7 @@
 ::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser" ;# NEW
 ::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor" ;# NEW
 ::pgn::setup::mc::Pixel								"pixel" ;# NEW
+::pgn::setup::mc::Spaces							"spaces" ;# NEW
 ::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
 ::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
 ::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
@@ -737,6 +752,7 @@
 ::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
 ::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
 ::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
+::pgn::setup::mc::Setup(nagtext)					"NAG-Text" ;# NEW
 ::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
 ::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
 ::pgn::setup::mc::Setup(result)					"Result" ;# NEW
@@ -763,6 +779,7 @@
 ::pgn::setup::mc::Section(Display)				"Display" ;# NEW
 ::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
 ::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
+::pgn::setup::mc::Display(nagtext)				"Show text for unusual NAG comments" ;# NEW
 
 ::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
 ::pgn::setup::mc::Diagrams(show)					"Visa diagram"
@@ -789,22 +806,55 @@
 ::engine::mc::Variants					"Variants" ;# NEW
 ::engine::mc::LastUsed					"Last used" ;# NEW
 
-::engine::mc::Variant(standard)		"Standard Chess" ;# NEW
+::engine::mc::Variant(standard)		"Standard" ;# NEW
 ::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
-::engine::mc::Variant(shuffle)		"Shuffle Chess" ;# NEW
+::engine::mc::Variant(bughouse)		"Bughouse" ;# NEW
+::engine::mc::Variant(crazyhouse)	"Crazyhouse" ;# NEW
+# NOTE: Suicide is Antichess according to FICS rules
+# NOTE: "Giveaway" is Antichess according to internatianal rules.
+# NOTE: "Losers" is Antichess according to ICC rules
+# NOTE: You may tarnslate "Suicide", "Giveaway", anmd "Losers" with the same term.
+::engine::mc::Variant(suicide)		"Antichess" ;# NEW
+::engine::mc::Variant(giveaway)		"Antichess" ;# NEW
+::engine::mc::Variant(losers)			"Antichess" ;# NEW
+::engine::mc::Variant(3check)			"Three-check" ;# NEW
 
-::engine::mc::SetupEngines				"Setup Engines" ;# NEW
+::engine::mc::Edit						"Edit" ;# NEW
+::engine::mc::View						"View" ;# NEW
+::engine::mc::New							"New" ;# NEW
+::engine::mc::Rename						"Rename" ;# NEW
+::engine::mc::Delete						"Delete" ;# NEW
+::engine::mc::Select(engine)			"Select engine" ;# NEW
+::engine::mc::Select(profile)			"Select profile" ;# NEW
+::engine::mc::ProfileName				"Profile name" ;# NEW
+::engine::mc::NewProfileName			"New profile name" ;# NEW
+::engine::mc::OldProfileName			"Old profile name" ;# NEW
+::engine::mc::CopyFrom					"Copy from" ;# NEW
+::engine::mc::NewProfile				"New Profile" ;# NEW
+::engine::mc::RenameProfile			"Rename Profile" ;# NEW
+::engine::mc::EditProfile				"Edit Profile '%s'" ;# NEW
+::engine::mc::ProfileAlreadyExists	"A profile with name '%s' already exists." ;# NEW
+::engine::mc::ChooseDifferentName	"Please choose a different name." ;# NEW
+::engine::mc::ReservedName				"Name '%s' is reserved and cannot be used." ;# NEW
+::engine::mc::ReallyDeleteProfile	"Really delete profile '%s'?" ;# NEW
+
+::engine::mc::AdminEngines				"Manage Engines" ;# NEW
+::engine::mc::SetupEngine				"Setup engine %s" ;# NEW
 ::engine::mc::ImageFiles				"Image files" ;# NEW
 ::engine::mc::SelectEngine				"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
 ::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
-::engine::mc::NeverUsed					"never used" ;# NEW
+::engine::mc::NeverUsed					"Never used" ;# NEW
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
 ::engine::mc::DefaultValue				"Default value" ;# NEW
 ::engine::mc::ResetToDefault			"Reset to default" ;# NEW
 ::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"
 ::engine::mc::TotalUsage				"%s times in total" ;# NEW
+::engine::mc::Memory						"Memory (MB)" ;# NEW
+::engine::mc::CPUs						"CPUs" ;# NEW
+::engine::mc::Priority					"CPU Priority" ;# NEW
+::engine::mc::ClearHash					"Clear hash tables" ;# NEW
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
 ::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
@@ -815,6 +865,14 @@
 ::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
 ::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
 ::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
+::engine::mc::NoStandardChess			"This engine does not support standard chess." ;# NEW
+::engine::mc::NoEngineAvailable		"No engine available." ;# NEW
+::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
+::engine::mc::ScriptErrors				"Any errors while saving will be displayed here." ;# NEW
+::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
+
+::engine::mc::ProbeError(registration)			"This engine requires a registration." ;# NEW
+::engine::mc::ProbeError(copyprotection)		"This engine is copy-protected." ;# NEW
 
 ::engine::mc::FeatureDetail(analyze)			"This engine provides an analyze mode." ;# NEW
 ::engine::mc::FeatureDetail(multiPV)			"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
@@ -823,12 +881,53 @@
 ::engine::mc::FeatureDetail(hashSize)			"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB." ;# NEW
 ::engine::mc::FeatureDetail(clearHash)			"The user may clear the hash tables whlle the engine is running." ;# NEW
 ::engine::mc::FeatureDetail(threads)			"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads." ;# NEW
+::engine::mc::FeatureDetail(smp)					"More than one CPU (core) can be used by this engine." ;# NEW
 ::engine::mc::FeatureDetail(limitStrength)	"The engine is able to limit its strength to a specific Elo number between %min-%max." ;# NEW
 ::engine::mc::FeatureDetail(skillLevel)		"The engine provides the possibility to lower the skill down, where it can be beaten quite easier." ;# NEW
 ::engine::mc::FeatureDetail(ponder)				"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain." ;# NEW
 ::engine::mc::FeatureDetail(chess960)			"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions." ;# NEW
-::engine::mc::FeatureDetail(shuffle)			"This is the parent variant of Chess960. No additional rules on the back rank shuffles, castling only possible when current position is a Chess960 position." ;# NEW
+::engine::mc::FeatureDetail(bughouse)			"Bughouse chess (also called Exchange chess, Siamese chess, Tandem chess, Transfer chess, or Double Bughouse) is a chess variant played on two chessboards by four players in teams of two. Normal chess rules apply, except that captured pieces on one board are passed on to the players of the other board, who then have the option of putting these pieces on their board." ;# NEW
+::engine::mc::FeatureDetail(crazyhouse)		"Crazyhouse (also known as Drop Chess) is a chess variant similar to bughouse chess, but with only two players. It effectively incorporates a rule in shogi (Japanese chess), in which a player can introduce a captured piece back to the board as his own." ;# NEW
+::engine::mc::FeatureDetail(suicide)			"Suicide Chess (also called Antichess, Take Me Chess, Must Kill, Reverse Chess) has simple rules: capturing moves are mandatory and the object is to lose all pieces. There is no check, the king is captured like an ordinary piece. In case of stalemate the side with fewer pieces will win (according to FICS rules)." ;# NEW
+::engine::mc::FeatureDetail(giveaway)			"Giveaway Chess (a variant of Antichess) is like Suicide Chess, but in case of stalemate the side which is stalemate wins (according to international rules)." ;# NEW
+::engine::mc::FeatureDetail(losers)				"Losing Chess is a variant of Antichess, where the goal is to lose the chess game, but with several conditions attached to the rules. The goal is to lose all of your pieces (except the king), although in Losers Chess, you can also win by getting checkmated (according to ICC rules)." ;# NEW
+::engine::mc::FeatureDetail(3check)				"The characteristic of this chess variant: a player wins if he checks his opponent three times." ;# NEW
 ::engine::mc::FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
+
+### analysis ###########################################################
+::application::analysis::mc::Control						"Control" ;# NEW
+::application::analysis::mc::Information					"Information" ;# NEW
+::application::analysis::mc::Setup							"Setup" ;# NEW
+::application::analysis::mc::Pause							"Pause" ;# NEW
+::application::analysis::mc::Resume							"Resume" ;# NEW
+::application::analysis::mc::LockEngine					"Lock engine to current position" ;# NEW
+::application::analysis::mc::MultipleVariations			"Multiple variations" ;# NEW
+::application::analysis::mc::HashFullness					"Hash fullness" ;# NEW
+::application::analysis::mc::Hash							"Hash:" ;# NEW
+::application::analysis::mc::Lines							"Lines:" ;# NEW
+::application::analysis::mc::MateIn							"%color mate in %n" ;# NEW
+::application::analysis::mc::BestScore						"Best score (of current lines)" ;# NEW
+::application::analysis::mc::CurrentMove					"Currently searching this move" ;# NEW
+::application::analysis::mc::TimeSearched					"Time searched" ;# NEW
+::application::analysis::mc::SearchDepth					"Search depth in plies (Selective search depth)" ;# NEW
+
+::application::analysis::mc::LinesPerVariation			"Lines per variation" ;# NEW
+::application::analysis::mc::BestFirstOrder				"Use \"best first\" order" ;# NEW
+::application::analysis::mc::Engine							"Engine" ;# NEW
+
+::application::analysis::mc::Seconds						"s" ;# NEW
+::application::analysis::mc::Minutes						"m" ;# NEW
+
+::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
+::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
+::application::analysis::mc::NotSupported(analyze)		"This engine does not have an analysis mode." ;# NEW
+
+::application::analysis::mc::Signal(stopped)				"Engine stopped by signal." ;# NEW
+::application::analysis::mc::Signal(resumed)				"Engine resumed by signal." ;# NEW
+::application::analysis::mc::Signal(killed)				"Engine killed by signal." ;# NEW
+::application::analysis::mc::Signal(crashed)				"Engine crashed." ;# NEW
+::application::analysis::mc::Signal(closed)				"Engine has closed connection." ;# NEW
+::application::analysis::mc::Signal(terminated)			"Engine terminated with exit code %s." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
@@ -1091,8 +1190,11 @@
 ::browser::mc::DecreaseBoardSize	"Förminska brädet"
 ::browser::mc::MaximizeBoardSize	"Maximera brädet"
 ::browser::mc::MinimizeBoardSize	"Minimera brädet"
-::browser::mc::GotoFirstGame		"Gå till första partiet"
-::browser::mc::GotoLastGame		"Gå till sista partiet"
+
+::browser::mc::GotoGame(first)	"Gå till första partiet"
+::browser::mc::GotoGame(last)		"Gå till sista partiet"
+::browser::mc::GotoGame(next)		"Goto next game" ;# NEW
+::browser::mc::GotoGame(prev)		"Goto previous game" ;# NEW
 
 ::browser::mc::LoadGame				"Ladda parti"
 ::browser::mc::MergeGame			"Sammanfoga parti"
@@ -1171,6 +1273,7 @@
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importerar PGN-fil '%s'"
+::import::mc::ImportingDatabase					"Importing database '%s'" ;# NEW
 ::import::mc::Line									"Rad"
 ::import::mc::Column									"Spalt"
 ::import::mc::GameNumber							"Parti"
@@ -1224,6 +1327,7 @@
 ::import::mc::IllegalMove							"Ogiltigt drag"
 ::import::mc::CastlingCorrection					"Rockad korrigering"
 ::import::mc::UnsupportedVariant					"Unsupported chess variant"
+::import::mc::UnsupportedCrazyhouseVariant	"Variant Crazyhouse is not yet supported (game skipped)" ;# NEW
 ::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
 ::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte resultatrubrik"
 ::import::mc::ValueTooLong							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
@@ -1745,11 +1849,13 @@
 ::marks::mc::MarksPalette			"Markeringar - Palett"
 
 ### move ###############################################################
-::move::mc::ReplaceMove				"Ersätt drag"
-::move::mc::AddNewVariation		"Lägg till ny variant"
-::move::mc::NewMainLine				"Ny huvudvariant"
-::move::mc::TryVariation			"Försöksvariant"
-::move::mc::ExchangeMove			"Byt drag"
+::move::mc::Action(replace)		"Ersätt drag"
+::move::mc::Action(variation)		"Lägg till ny variant"
+::move::mc::Action(mainline)		"Ny huvudvariant"
+::move::mc::Action(trial)			"Försöksvariant"
+::move::mc::Action(exchange)		"Byt drag"
+::move::mc::Action(append)			"Append move" ;# NEW
+::move::mc::Action(load)			"Load first game with this continuation" ;# NEW
 
 ::move::mc::GameWillBeTruncated	"Partiet kommer att avkortas. Fortsätta med '%s'?"
 

@@ -52,6 +52,8 @@ public:
 	Selector& operator=(Selector&& sel);
 #endif
 
+	bool isUnsorted() const;
+
 	unsigned size() const;
 
 	unsigned map(unsigned index) const;

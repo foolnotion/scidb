@@ -36,8 +36,13 @@ set StopEngine					"Stop chess analysis engine"
 
 set Tools						"Tools"
 set Control						"Control"
+set Game							"Game"
 set GoIntoNextVar				"Go into next variation"
 set GoIntPrevVar				"Go into previous variation"
+set LoadGame(next)			"Load next game"
+set LoadGame(prev)			"Load previous game"
+set LoadGame(first)			"Load first game"
+set LoadGame(last)			"Load last game"
 
 set Accel(edit-annotation)	"A"
 set Accel(edit-comment)		"C"
@@ -89,6 +94,9 @@ proc build {w width height} {
 	set Vars(active) 0
 	set Vars(material) {}
 	set Vars(registered) {}
+	set Vars(subscribe:list) {}
+	set Vars(current:game) {}
+
 	$board configure -cursor crosshair
 	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
 	::bind $canv <Destroy> [namespace code [list activate $w 0]]
@@ -138,6 +146,12 @@ proc build {w width height} {
 							-tooltipvar [namespace current]::mc::Control \
 							-orientation bottom \
 							-alignment center]
+	set tbGame		[::toolbar::toolbar $w \
+							-hide 1 \
+							-id board-game \
+							-tooltipvar [namespace current]::mc::Game \
+							-orientation top \
+						]
 
 	set main [winfo parent $w]
 
@@ -154,20 +168,47 @@ proc build {w width height} {
 	]
 	::toolbar::add $tbTools button \
 		-image $::icon::toolbarEngine \
-		-command [namespace code StartEngine] \
+		-command [namespace code [list ::engine::openSetup .application]] \
 		-tooltipvar [namespace current]::mc::StartEngine \
 		;
 
 	::toolbar::add $tbLayout button \
 		-image $::icon::toolbarRotateBoard \
 		-tooltipvar ::overview::mc::RotateBoard \
-		-command [namespace code [list Rotate $canv] \
-	]
+		-command [namespace code [list Rotate $canv]]
+		;
+	::toolbar::add $tbLayout checkbutton \
+		-image $::icon::toolbarSuggestion \
+		-variable ::board::hilite(show-suggested) \
+		-tooltipvar ::board::options::mc::ShowSuggestedMove \
+		;
 	::toolbar::add $tbLayout checkbutton \
 		-image $::icon::toolbarSideToMove \
 		-variable ::board::layout(side-to-move) \
 		-tooltipvar ::board::options::mc::ShowSideToMove \
-		-command [namespace code [list Apply $canv] \
+		-command [namespace code [list Apply $canv]] \
+		;
+
+	set Vars(game:next) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarNext \
+		-command [namespace code LoadNext] \
+		-state disabled \
+	]
+	set Vars(game:prev) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarPrev \
+		-command [namespace code LoadPrevious] \
+		-state disabled \
+	]
+	::toolbar::add $tbGame separator
+	set Vars(game:last) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarBack \
+		-command [namespace code LoadLast] \
+		-state disabled \
+	]
+	set Vars(game:first) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarFront \
+		-command [namespace code LoadFirst] \
+		-state disabled \
 	]
 
 	foreach {action key} {	GotoStart Home
@@ -176,7 +217,7 @@ proc build {w width height} {
 									Fwd       Right
 									FastFwd   Next
 									GotoEnd   End} {
-		set Vars([string tolower $action 0]) \
+		set Vars(control:[string tolower $action 0]) \
 			[::toolbar::add $tbControl button \
 				-state disabled \
 				-image [set ::icon::toolbarCtrl${action}] \
@@ -184,15 +225,16 @@ proc build {w width height} {
 	}
 
 	::toolbar::addSeparator $tbControl
-	set Vars(enterVar) [::toolbar::add $tbControl button \
+	set Vars(control:enterVar) [::toolbar::add $tbControl button \
 		-state disabled \
 		-image [set ::icon::toolbarCtrlEnterVar] \
 		-command [namespace code GoDown]]
-	set Vars(leaveVar) [::toolbar::add $tbControl button \
+	set Vars(control:leaveVar) [::toolbar::add $tbControl button \
 		-state disabled \
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code GoUp]]
 	
+	bind <Key-space>		::move::nextGuess
 	bind <Left>				[namespace code GoLeft]
 	bind <Right>			[namespace code GoRight]
 	bind <Prior>			[namespace code GoPrior]
@@ -201,9 +243,10 @@ proc build {w width height} {
 	bind <End>				[namespace code GoEnd]
 	bind <Down>				[namespace code GoDown]
 	bind <Up>				[namespace code GoUp]
-	bind <Key-period>		[namespace code NextGuess]
 	bind <Control-Down>	[namespace code LoadNext]
 	bind <Control-Up>		[namespace code LoadPrevious]
+	bind <Control-Home>	[namespace code LoadFirst]
+	bind <Control-End>	[namespace code LoadLast]
 	bind <<Undo>>			[namespace parent]::pgn::undo
 	bind <<Redo>>			[namespace parent]::pgn::redo
 	bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
@@ -274,6 +317,37 @@ proc active? {} {
 }
 
 
+proc anaylsisWindow {} {
+	return .application.analysis
+}
+
+
+proc openAnalysis {{force {}}} {
+	set dlg .application.analysis
+	if {[winfo exists $dlg]} {
+		if {[llength $force] == 0} { closeAnalysis }
+		return
+	}
+	tk::toplevel $dlg -class Scidb
+	wm withdraw $dlg
+	set top [ttk::frame $dlg.top -width 350 -borderwidth 0]
+	::application::analysis::build $dlg.top 350 0
+	pack $top -fill both
+	wm protocol $dlg WM_DELETE_WINDOW [namespace code closeAnalysis]
+	wm resizable $dlg true false
+	wm transient $dlg .application
+	wm minsize $dlg 350 100
+	wm title $dlg $::application::database::mc::T_Analysis
+	::util::place $dlg center .application
+	wm deiconify $dlg
+}
+
+
+proc closeAnalysis {} {
+	catch { destroy .application.analysis }
+}
+
+
 proc goto {step} {
 	variable ::browser::Options
 	variable Vars
@@ -337,6 +411,25 @@ proc bind {key cmd} {
 }
 
 
+proc bindGameControls {position base view number} {
+	variable Vars
+
+	set Vars(current:game) [list $position $base $view $number]
+
+	if {[llength $Vars(subscribe:list)]} {
+		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+		set Vars(subscribe:list) {}
+		foreach action {next prev first last} {
+			::toolbar::childconfigure $Vars(game:$action) -state disabled
+		}
+	}
+
+	set cmd [list [namespace current]::UpdateGameList [namespace current]::CloseGameList $position]
+	::scidb::db::subscribe gameList {*}$cmd
+	set Vars(subscribe:list) $cmd
+}
+
+
 proc GoLeft 	{} { goto -1 }
 proc GoRight	{} { goto +1 }
 proc GoPrior	{} { goto -10 }
@@ -346,10 +439,51 @@ proc GoEnd		{} { goto end }
 proc GoDown		{} { goto down }
 proc GoUp		{} { goto up }
 
-proc NextGuess	{} { ::move::nextGuess }
 
-proc LoadNext		{} { ;# TODO load next game from last used view }
-proc LoadPrevious	{} { ;# TODO }
+proc LoadNext		{} { LoadGame next }
+proc LoadPrevious	{} { LoadGame prev }
+proc LoadFirst		{} { LoadGame first }
+proc LoadLast		{} { LoadGame last }
+
+
+proc LoadGame {incr} {
+	variable Vars
+
+	if {[llength $Vars(current:game)] == 0} { return }
+	lassign $Vars(current:game) position base view number
+	set numGames [scidb::view::count games $base $view]
+	if {$numGames <= 1} { return }
+	set index [::scidb::db::get gameIndex $number $view $base]
+	if {$index == -1} { return }
+
+	switch $incr {
+		next	{
+			if {$index + 1 == $numGames} { return }
+			incr index +1
+		}
+		prev	{
+			if {$index == 0} { return }
+			incr index -1
+		}
+		first {
+			set index 0
+		}
+		last {
+			set index [expr {$numGames - 1}]
+		}
+	}
+
+	set number [::scidb::db::get gameNumber $base $index $view]
+	lset Vars(current:game) 3 $number
+	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
+		set fen [::scidb::tree::position]
+	} else {
+		set fen ""
+	}
+
+	::game::new .application $base $view $number $fen
+	UpdateGameButtonState
+}
 
 
 proc GotFocus {w} {
@@ -913,36 +1047,28 @@ proc UpdateControls {} {
 	set level [::scidb::game::level]
 
 	if {[::scidb::game::position -1 atStart?]} { set state disabled } else { set state normal }
-	::toolbar::childconfigure $Vars(back) -state $state
-	::toolbar::childconfigure $Vars(fastBack) -state $state
+	::toolbar::childconfigure $Vars(control:back) -state $state
+	::toolbar::childconfigure $Vars(control:fastBack) -state $state
 	if {$level} { set state normal }
-	::toolbar::childconfigure $Vars(gotoStart) -state $state
+	::toolbar::childconfigure $Vars(control:gotoStart) -state $state
 
 	if {[::scidb::game::position -1 atEnd?]} { set state disabled } else { set state normal }
-	::toolbar::childconfigure $Vars(fwd) -state $state
-	::toolbar::childconfigure $Vars(fastFwd) -state $state
+	::toolbar::childconfigure $Vars(control:fwd) -state $state
+	::toolbar::childconfigure $Vars(control:fastFwd) -state $state
 	if {$level} { set state normal }
-	::toolbar::childconfigure $Vars(gotoEnd) -state $state
+	::toolbar::childconfigure $Vars(control:gotoEnd) -state $state
 
 	if {$level == 0} { set state disabled } else { set state normal }
-	::toolbar::childconfigure $Vars(leaveVar) -state $state
+	::toolbar::childconfigure $Vars(control:leaveVar) -state $state
 
 	if {[::scidb::game::variation count]} { set state normal } else { set state disabled }
-	::toolbar::childconfigure $Vars(enterVar) -state $state
-}
-
-
-proc StartAnalysis {} {
-	variable Vars
-
-	set engine [::engine::choose [winfo toplevel $Vars(widget:frame)]]
-	# TODO
+	::toolbar::childconfigure $Vars(control:enterVar) -state $state
 }
 
 
 proc GameSwitched {position} {
-	variable Vars
 	variable ::scidb::scratchbaseName
+	variable Vars
 
 	if {[lindex [::scidb::game::link?] 0] eq $scratchbaseName} {
 		set state disabled
@@ -951,6 +1077,94 @@ proc GameSwitched {position} {
 	}
 
 	::toolbar::childconfigure $Vars(crossTable) -state $state
+	UpdateGameControls $position
+}
+
+
+proc UpdateGameControls {position} {
+	variable Vars
+
+	if {[llength $Vars(subscribe:list)]} {
+		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+		set Vars(subscribe:list) {}
+	}
+
+	set Vars(current:game) {}
+
+	if {$position != 9} {
+		set Vars(current:game) [list $position {*}[::game::getSourceInfo $position]]
+		set view [lindex $Vars(current:game) 2]
+		if {$view >= 0} {
+			UpdateGameButtonState
+			set cmd [list [namespace current]::UpdateGameList [namespace current]::CloseGameList $position]
+			::scidb::db::subscribe gameList {*}$cmd
+			set Vars(subscribe:list) $cmd
+		}
+	}
+
+	if {[llength $Vars(current:game)] == 0} {
+		foreach action {next prev first last} {
+			::toolbar::childconfigure $Vars(game:$action) -state disabled
+		}
+	}
+}
+
+
+proc UpdateGameButtonState {} {
+	variable Vars
+
+	lassign $Vars(current:game) position base view number
+	set numGames [scidb::view::count games $base $view]
+
+	if {$numGames > 1} {
+		set index [::scidb::db::get gameIndex $number $view $base]
+		if {$index >= 0} {
+			if {$index == 0} { set state disabled } else { set state normal }
+			::toolbar::childconfigure $Vars(game:prev) -state $state
+			::toolbar::childconfigure $Vars(game:first) -state $state
+			if {$index + 1 == $numGames} { set state disabled } else { set state normal }
+			::toolbar::childconfigure $Vars(game:next) -state $state
+			::toolbar::childconfigure $Vars(game:last) -state $state
+			return
+		}
+	}
+
+	foreach action {next prev first last} {
+		::toolbar::childconfigure $Vars(game:$action) -state disabled
+	}
+}
+
+
+proc UpdateGameList {position id base {view -1} {index -1}} {
+	variable Vars
+
+	if {[llength $Vars(current:game)] == 0} { return }
+	lassign $Vars(current:game) currPos currBase currView currNumber
+
+	if {$currBase eq $base && ($currView == $view || $currView == 0)} {
+		UpdateGameButtonState
+	}
+}
+
+
+proc CloseGameList {position base {view {}}} {
+	variable Vars
+
+	if {[llength $Vars(current:game)] == 0} { return }
+	lassign $Vars(current:game) currPos currBase currView currNumber
+
+	if {$base eq $currBase && ([llength $view] == 0 || $view == $currView)} {
+		if {[llength $Vars(subscribe:list)]} {
+			::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+			set Vars(subscribe:list) {}
+		}
+
+		set Vars(current:game) {}
+
+		foreach action {next prev first last} {
+			::toolbar::childconfigure $Vars(game:$action) -state disabled
+		}
+	}
 }
 
 
@@ -989,39 +1203,20 @@ proc LanguageChanged {} {
 											FastFwd		Next	GoForwardFast
 											GotoEnd		End	GotoEndOfGame} {
 		set tip "[set ::browser::mc::$tipvar] ($::mc::Key($key))"
-		::toolbar::childconfigure $Vars([string tolower $action 0]) -tooltip $tip
+		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
 	}
 
 	foreach {action key tipvar} {	EnterVar		Down	GoIntoNextVar
 											LeaveVar		Up		GoIntPrevVar} {
 		set tip "[set mc::$tipvar] ($::mc::Key($key))"
-		::toolbar::childconfigure $Vars([string tolower $action 0]) -tooltip $tip
+		::toolbar::childconfigure $Vars(control:[string tolower $action 0]) -tooltip $tip
 	}
-}
 
-
-proc StartEngine {} {
-	set dlg .application.analysis
-	if {[winfo exists $dlg]} { return [StopEngine] }
-	tk::toplevel $dlg -class Scidb
-	wm withdraw $dlg
-	set top [ttk::frame $dlg.top -width 340 -borderwidth 0]
-	::application::analysis::build $dlg.top 340 0
-	pack $top -fill both
-	wm protocol $dlg WM_DELETE_WINDOW [namespace code StopEngine]
-	wm resizable $dlg true false
-	wm transient $dlg .application
-	wm minsize $dlg 340 100
-	wm title $dlg $::application::database::mc::T_Analysis
-	::util::place $dlg center .application
-	wm deiconify $dlg
-	::update idletasks
-	::application::analysis::startAnalysis
-}
-
-
-proc StopEngine {} {
-	catch { destroy .application.analysis }
+	foreach {action key} {next Down prev Up first Home last End} {
+		set tip $mc::LoadGame($action)
+		append tip " (" $::mc::Key(Ctrl) "-" $::mc::Key($key) ")"
+		::toolbar::childconfigure $Vars(game:$action) -tooltip $tip
+	}
 }
 
 
@@ -1140,6 +1335,14 @@ set stmBlack [image create photo -data {
 	Tsgd0sbP5Ran35t6Y+7k2AUkw1eqXntA//oKGHUd8U4ag1m1/qZebhJO2OE/GEvENpfnBhem
 	82tOVvj6PzoZkRdVHOXfAAAAAElFTkSuQmCC
 }]
+
+foreach size {16 22 32} {
+	set ::icon::${size}x${size}::whiteKnob [image create photo -width $size -height $size]
+	set ::icon::${size}x${size}::blackKnob [image create photo -width $size -height $size]
+	::scidb::tk::image copy $stmWhite [set ::icon::${size}x${size}::whiteKnob]
+	::scidb::tk::image copy $stmBlack [set ::icon::${size}x${size}::blackKnob]
+}
+unset size
 
 } ;# namespace board
 } ;# namespace application

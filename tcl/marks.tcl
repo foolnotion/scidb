@@ -91,7 +91,7 @@ proc open {parent} {
 		pack $decor -fill x -expand yes
 		tk::button $decor.close \
 			-command [namespace code [list Close $dlg]] \
-			-image $::gamebar::icon::15x15::close(locked) \
+			-image $::icon::15x15::close \
 			;
 		Focus $dlg out
 		pack $decor.close -side right

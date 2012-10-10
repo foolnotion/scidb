@@ -34,6 +34,8 @@ inline unsigned View::countSites() const		{ return m_siteFilter.count(); }
 inline unsigned View::totalPlayers() const	{ return m_playerFilter.size(); }
 inline unsigned View::totalEvents() const		{ return m_eventFilter.size(); }
 
+inline db::Filter const& View::gameFilter() const		{ return m_gameFilter; }
+inline db::Selector const& View::gameSelector() const	{ return m_gameSelector; }
 inline Application const& View::application() const	{ return m_app; }
 inline db::Database const& View::database() const		{ return m_db; }
 

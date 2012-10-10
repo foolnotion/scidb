@@ -135,6 +135,7 @@ namespace sq
 		a7, b7, c7, d7, e7, f7, g7, h7,
 		a8, b8, c8, d8, e8, f8, g8, h8,
 		Null = 65,
+		Invalid = 66,
 	};
 
 	enum Fyle { FyleA, FyleB, FyleC, FyleD, FyleE, FyleF, FyleG, FyleH };
@@ -725,14 +726,47 @@ namespace event
 	mstl::string const& toString(Mode mode);
 }
 
-namespace chess960
+namespace variant
 {
 	enum
 	{
 		StandardIdn		= 518,
 		TransposedIdn	= 534,
+		BughouseIdn		= 3841,
+		CrazyhouseIdn	= 3842,
+		LosersIdn		= 3843,
+		SuicideIdn		= 3844,
+		GiveawayIdn		= 3845,
 	};
 
+	enum Type
+	{
+		Unknown,
+		Standard,
+		Chess960,
+		Shuffle,
+		Bughouse,
+		Crazyhouse,
+		Losers,
+		Suicide,
+		Giveaway,
+		Other,
+	};
+
+	bool isStandardChess(unsigned idn);
+	bool isChess960(unsigned idn);
+	bool isShuffleChess(unsigned idn);
+	bool isBughouseChess(unsigned idn);
+	bool isCrazyhouseChess(unsigned idn);
+	bool isLosersChess(unsigned idn);
+	bool isSuicideChess(unsigned idn);
+	bool isGiveawayChess(unsigned idn);
+
+	Type fromIdn(unsigned idn);
+}
+
+namespace chess960
+{
 	unsigned twin(unsigned idn);
 	unsigned lookup(mstl::string const& position);
 
@@ -742,7 +776,6 @@ namespace chess960
 
 	namespace utf8 { mstl::string& position(unsigned idn, mstl::string& result); }
 }
-
 
 namespace shuffle
 {
@@ -754,18 +787,6 @@ namespace shuffle
 	mstl::string const& identifier();
 
 	namespace utf8 { mstl::string& position(unsigned idn, mstl::string& result); }
-}
-
-
-namespace variant
-{
-	enum Type { Unknown, Standard, Chess960, Shuffle, Other };
-
-	bool isChess960(unsigned idn);
-	bool isShuffleChess(unsigned idn);
-	bool isStandardChess(unsigned idn);
-
-	Type fromIdn(unsigned idn);
 }
 
 namespace mark
@@ -1148,6 +1169,12 @@ namespace type
 		Openings_White,			///< Openings for White
 		Openings_Black,			///< Openings for Black
 		Openings,					///< Openings for either color
+		Bughouse,					///< Bughouse Chess (Crazyhouse Chess)
+		Antichess,					///< Antichess (and other variants)
+		PlayerCollectionFemale,	///< Player collection (female)
+		PGNFile,						///< PGN file
+
+		LAST = PGNFile,
 	};
 }
 

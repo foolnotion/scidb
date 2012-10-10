@@ -70,9 +70,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		find-current	{}
 	}
 
-	if {[array size Options] < [array size Defaults]} {
-		array set Options [array get Defaults]
-	}
+	array set options [array get Defaults]
+	array set options [array get Options]
+	array set Options [array get options]
 
 	if {[llength $visibleColumns] == 0} { set visibleColumns $columns }
 
@@ -220,6 +220,11 @@ proc columnIndex {name} {
 proc column {info name} {
 	variable columns
 	return [lindex $info [lsearch -exact $columns $name]]
+}
+
+
+proc base {path} {
+	return [::scrolledtable::base $path]
 }
 
 

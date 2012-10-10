@@ -274,7 +274,7 @@ set Annotations(b) {
   {   1    2    7    140  141     14   15   10   11   37     51    174  147  146  152    158 }
   {   3    4    8    142  143     16   17   12   13   41     57    173  149  155  153    157 }
   {   5    6  176    144  145     18   19   45  133   33     63    148  150  156  154    159 }
- }
+}
 
 array set Vars {
 	dialog	{}
@@ -290,8 +290,17 @@ array set Vars {
 	force		0
 }
 
+set UnusualNags {}
 foreach line $Annotations(w) {
-	foreach nag $line { set Value($nag) 0 }
+	foreach nag $line {
+		set Value($nag) 0
+		if {$nag ni $UnusualNags} { lappend UnusualNags $nag }
+	}
+}
+foreach line $Annotations(b) {
+	foreach nag $line {
+		if {$nag ni $UnusualNags} { lappend UnusualNags $nag }
+	}
 }
 unset nag
 unset line
@@ -365,7 +374,7 @@ proc open {parent} {
 		pack $decor -fill x -expand yes
 		tk::button $decor.close \
 			-command [namespace code [list Close $dlg]] \
-			-image $::gamebar::icon::15x15::close(locked) \
+			-image $::icon::15x15::close \
 			-relief flat \
 			-overrelief raised \
 			;
@@ -578,6 +587,11 @@ proc deactivate {} {
 proc close {} {
 	variable Vars
 	catch { Close $Vars(dialog) }
+}
+
+
+proc unusualNags {} {
+	return [set [namespace current]::UnusualNags]
 }
 
 

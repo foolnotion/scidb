@@ -74,10 +74,20 @@ public:
 	bool supportsUciProtocol() const;
 	/// Returns whether Winboard protocol is supported.
 	bool supportsWinboardProtocol() const;
-	/// Return whether chess 960 is supported.
+	/// Return whether Chess 960 is supported.
 	bool supportsChess960() const;
-	/// Return whether shuffle chess is supported.
+	/// Return whether Shuffle Chess is supported.
 	bool supportsShuffleChess() const;
+	/// Return whether Bughouse Chess is supported.
+	bool supportsBughouseChess() const;
+	/// Return whether Crazyhouse Chess is supported.
+	bool supportsCrazyhouseChess() const;
+	/// Return whether Losers Chess is supported.
+	bool supportsLosersChess() const;
+	/// Return whether Suicide Chess is supported.
+	bool supportsSuicideChess() const;
+	/// Return whether Giveaway Chesss is supported.
+	bool supportsGiveawayChess() const;
 
 	/// Returns players name.
 	mstl::string const& name() const;
@@ -156,6 +166,11 @@ public:
 	void setPndID(char const* id);
 	void setChess960Flag(bool flag);
 	void setShuffleChessFlag(bool flag);
+	void setBughouseChessFlag(bool flag);
+	void setCrazyhouseChessFlag(bool flag);
+	void setLosersChessFlag(bool flag);
+	void setSuicideChessFlag(bool flag);
+	void setGiveawayChessFlag(bool flag);
 	void setWinboardProtocol(bool flag);
 	void setUciProtocol(bool flag);
 	void setUnique(bool flag);
@@ -258,7 +273,12 @@ private:
 	uint32_t m_ecfSuffix		:4;	// A-L
 	uint32_t m_region			:3;
 	uint32_t m_shuffle		:1;
-	uint32_t m_unused			:10;
+	uint32_t m_bughouse		:1;
+	uint32_t m_crazyhouse	:1;
+	uint32_t m_losers			:1;
+	uint32_t m_suicide		:1;
+	uint32_t m_giveaway		:1;
+	uint32_t m_unused			:5;
 
 	static unsigned m_minELO;
 	static unsigned m_minDWZ;

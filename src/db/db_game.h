@@ -527,7 +527,7 @@ public:
 	unsigned dumpHistory(mstl::string& result) const;
 	void getHistory(History& result) const;
 
-	bool finishLoad();
+	bool finishLoad(mstl::string const* fen = 0);
 
 	friend class Database;
 

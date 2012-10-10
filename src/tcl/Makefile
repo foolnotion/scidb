@@ -710,6 +710,8 @@ tcl_engine.o: ../mstl/m_list.h
 tcl_engine.o: ../mstl/m_list_node.h
 tcl_engine.o: ../mstl/m_list_node.ipp
 tcl_engine.o: ../mstl/m_list.ipp
+tcl_engine.o: ../mstl/m_bitfield.h
+tcl_engine.o: ../mstl/m_bitfield.ipp
 tcl_engine.o: ../app/app_engine.ipp
 tcl_engine.o: ../app/app_application.h
 tcl_engine.o: ../db/db_tree.h
@@ -720,8 +722,6 @@ tcl_engine.o: ../db/db_tree_info.ipp
 tcl_engine.o: ../db/db_filter.h
 tcl_engine.o: ../mstl/m_bitset.h
 tcl_engine.o: ../mstl/m_bitset_iterator.h
-tcl_engine.o: ../mstl/m_bitfield.h
-tcl_engine.o: ../mstl/m_bitfield.ipp
 tcl_engine.o: ../mstl/m_bitset_iterator.ipp
 tcl_engine.o: ../mstl/m_bitset.ipp
 tcl_engine.o: ../db/db_filter.ipp
@@ -787,6 +787,8 @@ tcl_engine.o: ../db/db_database.ipp
 tcl_engine.o: ../db/db_database_codec.h
 tcl_engine.o: ../db/db_database_codec.ipp
 tcl_engine.o: ../app/app_application.ipp
+tcl_engine.o: ../sys/sys_process.h
+tcl_engine.o: ../sys/sys_process.ipp
 tcl_engine.o: ../mstl/m_ofstream.h
 tcl_engine.o: ../mstl/m_ostream.h
 tcl_engine.o: ../mstl/m_ios.h

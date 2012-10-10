@@ -43,6 +43,7 @@ public:
 	enum { CacheSize = 256 };
 
 	TreeCache();
+	~TreeCache();
 
 	bool isCached(Board const& position, tree::Mode mode, rating::Type ratingType) const;
 	bool isCached(	uint64_t hash,

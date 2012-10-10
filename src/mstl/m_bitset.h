@@ -201,6 +201,7 @@ public:
 	// accessors
 	unsigned char byte(size_type n) const;
 	bitfield word(size_type n) const;
+	bitfield const* content() const;
 
 	iterator begin();
 	const_iterator begin() const;

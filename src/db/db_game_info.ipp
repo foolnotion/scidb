@@ -51,7 +51,7 @@ inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag
 inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLength & 1; }
 inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId; }
 inline bool GameInfo::hasChess960Position() const			{ return m_positionId <= 960; }
-inline bool GameInfo::hasStandardPosition() const			{ return m_positionId == chess960::StandardIdn;}
+inline bool GameInfo::hasStandardPosition() const			{ return m_positionId == variant::StandardIdn;}
 inline bool GameInfo::containsEnglishLanguage() const		{ return m_pd[0].langFlag; }
 inline bool GameInfo::containsOtherLanguage() const		{ return m_pd[1].langFlag; }
 
@@ -128,7 +128,7 @@ inline
 Eco
 GameInfo::eco() const
 {
-	return m_positionId == chess960::StandardIdn ? Eco::fromShort(m_eco) : Eco();
+	return m_positionId == variant::StandardIdn ? Eco::fromShort(m_eco) : Eco();
 }
 
 
@@ -144,7 +144,7 @@ inline
 Eco
 GameInfo::ecoKey() const
 {
-	M_REQUIRE(m_positionId == chess960::StandardIdn);
+	M_REQUIRE(m_positionId == variant::StandardIdn);
 	return Eco(m_ecoKey);
 }
 

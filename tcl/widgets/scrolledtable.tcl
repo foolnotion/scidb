@@ -493,6 +493,7 @@ proc updateColumn {path selection {see 0}} {
 	if {$see} {
 		SetStart $table [expr {max(0, $Vars(selection) - $Vars(height)/2)}]
 		ConfigureScale $table
+		SetHighlighting $table
 	} else {
 		TableFill $table
 	}

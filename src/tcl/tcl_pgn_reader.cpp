@@ -185,28 +185,29 @@ PgnReader::error(	Error code,
 
 	switch (code)
 	{
-		case InvalidToken:				msg = "InvalidToken"; break;
-		case UnexpectedSymbol:			msg = "UnexpectedSymbol"; break;
-		case UnexpectedEndOfInput:		msg = "UnexpectedEndOfInput"; break;
-		case UnexpectedTag:				msg = "UnexpectedTag"; break;
-		case UnexpectedEndOfGame:		msg = "UnexpectedEndOfGame"; break;
-		case TagNameExpected:			msg = "TagNameExpected"; break;
-		case TagValueExpected:			msg = "TagValueExpected"; break;
-		case InvalidFen:					msg = "InvalidFen"; break;
-		case UnterminatedString:		msg = "UnterminatedString"; break;
-		case UnterminatedVariation:	msg = "UnterminatedVariation"; break;
-		case InvalidMove:					msg = "InvalidMove"; break;
-		case UnsupportedVariant:		msg = "UnsupportedVariant"; break;
-		case TooManyGames:				msg = "TooManyGames"; break;
-		case FileSizeExeeded:			msg = "FileSizeExeeded"; break;
-		case GameTooLong:					msg = "GameTooLong"; break;
-		case TooManyPlayerNames:		msg = "TooManyPlayerNames"; break;
-		case TooManyEventNames:			msg = "TooManyEventNames"; break;
-		case TooManySiteNames:			msg = "TooManySiteNames"; break;
-		case TooManyAnnotatorNames:	msg = "TooManyAnnotatorNames"; break;
-		case TooManySourceNames:		msg = "TooManySourceNames"; break;
-		case SeemsNotToBePgnText:		msg = "SeemsNotToBePgnText"; break;
-		case UnexpectedResultToken:	msg = "UnexpectedResultToken"; break;
+		case InvalidToken:						msg = "InvalidToken"; break;
+		case UnexpectedSymbol:					msg = "UnexpectedSymbol"; break;
+		case UnexpectedEndOfInput:				msg = "UnexpectedEndOfInput"; break;
+		case UnexpectedTag:						msg = "UnexpectedTag"; break;
+		case UnexpectedEndOfGame:				msg = "UnexpectedEndOfGame"; break;
+		case TagNameExpected:					msg = "TagNameExpected"; break;
+		case TagValueExpected:					msg = "TagValueExpected"; break;
+		case InvalidFen:							msg = "InvalidFen"; break;
+		case UnterminatedString:				msg = "UnterminatedString"; break;
+		case UnterminatedVariation:			msg = "UnterminatedVariation"; break;
+		case InvalidMove:							msg = "InvalidMove"; break;
+		case UnsupportedVariant:				msg = "UnsupportedVariant"; break;
+		case UnsupportedCrazyhouseVariant:	msg = "UnsupportedCrazyhouseVariant"; break;
+		case TooManyGames:						msg = "TooManyGames"; break;
+		case FileSizeExeeded:					msg = "FileSizeExeeded"; break;
+		case GameTooLong:							msg = "GameTooLong"; break;
+		case TooManyPlayerNames:				msg = "TooManyPlayerNames"; break;
+		case TooManyEventNames:					msg = "TooManyEventNames"; break;
+		case TooManySiteNames:					msg = "TooManySiteNames"; break;
+		case TooManyAnnotatorNames:			msg = "TooManyAnnotatorNames"; break;
+		case TooManySourceNames:				msg = "TooManySourceNames"; break;
+		case SeemsNotToBePgnText:				msg = "SeemsNotToBePgnText"; break;
+		case UnexpectedResultToken:			msg = "UnexpectedResultToken"; break;
 
 		case TooManyRoundNames:
 			if (m_tooManyRoundNames)

@@ -128,6 +128,7 @@ set T_InternetChess				"Internet Chess"
 set T_ComputerChess				"Computer Chess"
 set T_Chess960						"Chess 960"
 set T_PlayerCollection			"Player Collection"
+set T_PlayerCollectionFemale	"Player Collection"
 set T_Tournament					"Tournament"
 set T_TournamentSwiss			"Tournament Swiss"
 set T_GMGames						"GM Games"
@@ -147,6 +148,9 @@ set T_Important					"Important"
 set T_Openings						"Openings"
 set T_OpeningsWhite				"Openings White"
 set T_OpeningsBlack				"Openings Black"
+set T_Bughouse						"Bughouse Chess"
+set T_Antichess					"Antichess"
+set T_PGNFile						"PGN file"
 
 set OpenDatabase					"Open Database"
 set NewDatabase					"New Database"
@@ -454,7 +458,7 @@ proc openBase {parent file byUser args} {
 				if {$rc != 0} { return 0 }
 			}
 			pgn - gz - zip {
-				set type [lsearch -exact $Types(sci) Temporary]
+				set type [lsearch -exact $Types(sci) PGNFile]
 				set cmd [list ::import::open $parent $file [list $file] $msg $opts(-encoding) $type]
 				set rc [::util::catchException $cmd]
 				if {$rc != 0} {
@@ -1157,7 +1161,9 @@ proc ParseUriFiles {parent files allowedExtensions action} {
 	foreach {uri file} [::fsbox::parseUriList $files] {
 		if {[string equal -length 6 $uri "trash:"]} {
 			lappend trashList $uri
-		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
+		} elseif {	[string equal -length 5 $uri "http:"]
+						[string equal -length 6 $uri "https:"]
+					|| [string equal -length 4 $uri "ftp:"]} {
 			lappend remoteList $uri
 		} elseif {[file exists $file]} {
 			if {[string match *.pgn.gz $file] && ".pgn.gz" in $allowedExtensions} {
@@ -1374,6 +1380,7 @@ proc CopyDatabase {from to x y} {
 		-image $::icon::16x16::crossHand \
 		-compound left \
 		-command [list set [namespace current]::trigger_ cancel] \
+		-accelerator $::mc::Key(Esc) \
 		;
 	variable trigger_ none
 	bind $m <<MenuUnpost>> [list set [namespace current]::trigger_ cancel]
@@ -2303,7 +2310,7 @@ proc ChangeIcon {number parent} {
 	set cols 2
 	do {
 		set rows [expr {([llength $Types($ext)] + [incr cols] - 1)/$cols}]
-	} while {$rows > $cols*$cols}
+	} while {$rows > $cols*$cols && $cols < 3}
 	set list [::tlistbox $dlg.list \
 		-visible $Options(visible) \
 		-linespace 48 \
@@ -2316,24 +2323,29 @@ proc ChangeIcon {number parent} {
 	$list addcol image -id image
 	$list addcol text -id text
 
-	foreach t $Types($ext) {
-		$list insert [list [set [namespace current]::icons::${t}(48x48)] [set mc::T_$t]]
+	set typeList {}
+	foreach t $Types($ext) { lappend typeList [list $t [set mc::T_$t]] }
+	set typeList [lsort -index 1 $typeList]
+
+	foreach entry $typeList {
+		lassign $entry t text
+		$list insert [list [set [namespace current]::icons::${t}(48x48)] $text]
 	}
 	$list resize
 
-	set Vars(icon) [lsearch -exact $Types($ext) $type]
+	set Vars(icon) [lsearch -exact -index 0 $typeList $type]
 	bind $list <Configure> [namespace code { ConfigureIconList %W }]
 	bind $list <Escape> [list $dlg.cancel invoke]
-	bind $list <<ListboxSelect>> [namespace code [list SelectIcon %W %d $index]]
+	bind $list <<ListboxSelect>> [namespace code [list SelectIcon %W %d $typeList $index]]
 	$list select $Vars(icon)
 	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.ok configure -command [namespace code [list SetIcon $dlg $index]]
+	$dlg.ok configure -command [namespace code [list SetIcon $dlg $typeList $index]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
 	wm title $dlg "$mc::ChangeIcon ([::util::databaseName $file])"
-	wm resizable $dlg false true
+	wm resizable $dlg false false
 	::util::place $dlg center $parent
 	wm deiconify $dlg
 	focus $dlg.list
@@ -2343,18 +2355,18 @@ proc ChangeIcon {number parent} {
 }
 
 
-proc SelectIcon {w data number} {
+proc SelectIcon {w data typeList number} {
 	variable Vars
 
 	if {$data eq ""} {
-		SetIcon $w $number
+		SetIcon $w $typeList $number
 	} else {
 		set Vars(icon) $data
 	}
 }
 
 
-proc SetIcon {w number} {
+proc SetIcon {w typeList number} {
 	variable Vars
 	variable Types
 	variable Defaults
@@ -2362,7 +2374,8 @@ proc SetIcon {w number} {
 	
 	set i [lsearch -integer -index 0 $Vars(bases) $number]
 	lassign [lindex $Vars(bases) $i] index type file ext
-	set selection [lsearch -exact $Types(sci) [lindex $Types($ext) $Vars(icon)]]
+	set type [lindex $typeList $Vars(icon) 0]
+	set selection [lsearch -exact $Types(sci) $type]
 	set type [lindex $Types(sci) $selection]
 	lset Vars(bases) $i 1 $type
 	::scidb::db::set type [lindex $Vars(bases) $i 2] $selection

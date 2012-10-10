@@ -30,9 +30,17 @@
 #include "db_move.h"
 #include "db_eco.h"
 
+#ifdef SUPPORT_TREE_INFO_FILTER
+# include "db_filter.h"
+#endif
+
 #include "m_type_traits.h"
 
 namespace db {
+
+#ifdef SUPPORT_TREE_INFO_FILTER
+class Selector;
+#endif
 
 class GameInfo;
 class NamebasePlayer;
@@ -42,7 +50,11 @@ class TreeInfo
 public:
 
 	TreeInfo();
-	TreeInfo(Eco eco, Move const& move);
+#ifdef SUPPORT_TREE_INFO_FILTER
+	TreeInfo(Eco eco, Move const& move, unsigned filterSize);
+#else
+	TreeInfo(Eco eco, Move const& move, unsigned firstGameIndex);
+#endif
 
 	struct Pair
 	{
@@ -75,12 +87,24 @@ public:
 	uint16_t lastYear() const;
 	NamebasePlayer const& bestPlayer() const;
 	NamebasePlayer const& mostFrequentPlayer() const;
+	unsigned firstGameIndex() const;
+#ifdef SUPPORT_TREE_INFO_FILTER
+	unsigned firstGameIndex(Selector const& selector) const;
+#endif
 
 	Move& move();
 	void setEco(Eco code);
 
 	void add(GameInfo const& info, color::ID sideToMove, rating::Type ratingType);
 	void add(TreeInfo const& info, rating::Type ratingType);
+#ifdef SUPPORT_TREE_INFO_FILTER
+	void addGame(unsigned index);
+#endif
+
+#ifdef SUPPORT_TREE_INFO_FILTER
+	void compressFilter();
+	void uncompressFilter();
+#endif
 
 private:
 
@@ -95,6 +119,10 @@ private:
 	Pair			m_averageYear;		// average year (if not zero)
 	uint16_t		m_lastYear;			// year last played (if not zero)
 	uint16_t		m_bestRating;		// best rating of side to move
+	unsigned		m_firstGameIndex;	// first game index with this move
+#ifdef SUPPORT_TREE_INFO_FILTER
+	Filter		m_filter;			// all game indices with this move
+#endif
 
 	NamebasePlayer const* m_bestPlayer;
 	NamebasePlayer const* m_mostFrequentPlayer;

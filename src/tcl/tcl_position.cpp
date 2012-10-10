@@ -61,7 +61,8 @@ static char const* CmdSetup			= "::scidb::pos::setup";
 static char const* CmdStm				= "::scidb::pos::stm";
 static char const* CmdValid			= "::scidb::pos::valid?";
 
-static Square		m_bestMoveCache[64];
+static Square		m_bestSquareCache[64];
+static Move			m_bestMoveCache[64];
 static unsigned	m_searchDepth	= 3;
 static MoveList	m_bestMoveList;
 static unsigned	m_bestMoveIndex = 0;
@@ -112,7 +113,7 @@ pieceFromObj(int objc, Tcl_Obj* const objv[], unsigned index)
 void
 pos::resetMoveCache()
 {
-	memset(m_bestMoveCache, sq::Null, sizeof(m_bestMoveCache));
+	memset(m_bestSquareCache, sq::Null, sizeof(m_bestSquareCache));
 	m_bestMoveList.clear();
 }
 
@@ -153,9 +154,16 @@ cmdGuess(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Board const& currentBoard = Scidb->game().currentBoard();
 
-	if (m_bestMoveCache[square] != sq::Null)
+	m_bestMoveList.clear();
+
+	if (m_bestSquareCache[square] == sq::Invalid)
 	{
-		setResult(m_bestMoveCache[square]);
+		setResult(-1);
+	}
+	else if (m_bestSquareCache[square] != sq::Null)
+	{
+		m_bestMoveList.append(m_bestMoveCache[square]);
+		setResult(m_bestSquareCache[square]);
 	}
 	else
 	{
@@ -164,15 +172,21 @@ cmdGuess(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Guess board(currentBoard, Scidb->gameInfoAt().idn());
 		Move bestMove(board.bestMove(square, m_searchDepth));
 		int bestSquare = -1;
-		
+
 		if (bestMove)
 		{
 			m_bestMoveList.clear();
 			m_bestMoveList.append(bestMove);
+			m_bestMoveIndex = 0;
 			bestSquare = bestMove.from() == square ? bestMove.to() : bestMove.from();
+			m_bestSquareCache[square] = sq::ID(bestSquare);
+			m_bestMoveCache[square] = bestMove;
+		}
+		else
+		{
+			m_bestSquareCache[square] = sq::Invalid;
 		}
 
-		m_bestMoveCache[square] = bestSquare;
 		setResult(bestSquare);
 	}
 
@@ -188,7 +202,9 @@ cmdGuessNext(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (square == sq::Null)
 		return error(::CmdGuess, nullptr, nullptr, "invalid square %s", Tcl_GetString(objv[1]));
 
-	if (m_bestMoveCache[square] == sq::Null || m_bestMoveList.isEmpty())
+	if (	m_bestSquareCache[square] == sq::Null
+		|| m_bestSquareCache[square] == sq::Invalid
+		|| m_bestMoveList.isEmpty())
 	{
 		setResult(-1);
 	}

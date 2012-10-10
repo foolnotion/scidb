@@ -71,7 +71,7 @@ namespace agg
     }
 
     //------------------------------------------------------------------------
-    ellipse::ellipse(double x, double y, double rx, double ry,
+    inline ellipse::ellipse(double x, double y, double rx, double ry,
                 unsigned num_steps, bool cw) :
             m_x(x), m_y(y), m_rx(rx), m_ry(ry), m_scale(1.0),
             m_num(num_steps), m_step(0), m_cw(cw)

@@ -3996,11 +3996,12 @@ sex::toString(ID sex)
 variant::Type
 variant::fromIdn(unsigned idn)
 {
-	if (idn == 0)								return Unknown;
-	if (idn == chess960::StandardIdn)	return Standard;
-	if (idn <= 960)							return Chess960;
+	if (idn == 0)							return Unknown;
+	if (idn == variant::StandardIdn)	return Standard;
+	if (idn <= 960)						return Chess960;
+	if (idn <= 3840)						return Shuffle;
 
-	return Shuffle;
+	return Other;
 }
 
 // vi:set ts=3 sw=3:

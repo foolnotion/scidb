@@ -52,15 +52,15 @@ inline Square Move::castlingRookFrom() const	{ return to(); }
 inline Square Move::enPassantSquare() const	{ return from() > 31 ? to() - 8 : to() + 8; }
 
 inline uint16_t Move::prevHalfMoves() const	{ return u; }
-inline Square Move::prevEpSquare() const		{ return u >> 16; }
-inline Byte Move::prevCastlingRights() const	{ return Square((u >> 24) & 0x0f); }
-inline bool Move::prevEpSquareExists() const	{ return u & (1 << 28); }
+inline Square Move::prevEpSquare() const		{ return u >> Shift_EpSquare; }
+inline Byte Move::prevCastlingRights() const	{ return Square((u >> Shift_CastlingRights) & 0x0f); }
+inline bool Move::prevEpSquareExists() const	{ return u & (Bit_EpSquareExists); }
 
 inline uint32_t Move::action() const			{ return (m >> Shift_Action) & Mask_Action; }
 inline uint32_t Move::capturedType() const	{ return  (m >> Shift_Capture) & Mask_PieceType; }
 inline uint32_t Move::removal() const			{ return (m >> Shift_Removal) & Mask_Removal; }
 inline uint32_t Move::data() const				{ return m; }
-inline unsigned Move::index() const				{ return m & 0x3fff; }
+inline unsigned Move::index() const				{ return m & Mask_Index; }
 
 inline bool Move::givesCheck() const					{ return m & Bit_Check; }
 inline bool Move::givesMate() const						{ return m & Bit_Mate; }
@@ -70,7 +70,7 @@ inline bool Move::isEmpty() const						{ return m == 0; }
 inline bool Move::isEnPassant() const					{ return m & Bit_EnPassant; }
 inline bool Move::isLegal() const						{ return m & Bit_Legality; }
 inline bool Move::isIllegal() const						{ return (m & Bit_Legality) == 0; }
-inline bool Move::isNull() const							{ return isLegal() && index() == 0; }
+inline bool Move::isNull() const							{ return (m & Mask_Null) == Bit_Legality; }
 inline bool Move::isInvalid() const						{ return index() == Invalid; }
 inline bool Move::isPromotion() const					{ return m & Bit_Promote; }
 inline bool Move::isSpecial() const						{ return m & Bits_Special; }
@@ -80,7 +80,7 @@ inline bool Move::needsRank() const						{ return m & Bit_Rank; }
 inline bool Move::needsDestinationSquare() const	{ return m & Bit_Destination; }
 
 inline void Move::clear()							{ m = 0; }
-inline bool Move::preparedForUndo() const		{ return u & 0x80000000; }
+inline bool Move::preparedForUndo() const		{ return u & Bit_Prepared; }
 
 inline piece::Type Move::captured() const { return piece::Type((m >> Shift_Capture) & Mask_PieceType); }
 inline piece::Type Move::pieceMoved() const { return piece::Type(Mask_PieceType & (m >> Shift_Piece)); }
@@ -391,6 +391,8 @@ inline
 Move
 Move::genCastling(Square from, Square to)
 {
+	M_REQUIRE(from != to);
+
 	return Move(	uint32_t(from)
 					 | uint32_t(to) << 6
 					 | (uint32_t(piece::King) << Shift_Piece)
@@ -422,7 +424,11 @@ inline
 void
 Move::setUndo(uint32_t halfMoves, uint32_t epSquare, bool epSquareExists, uint32_t castlingRights)
 {
-	u = halfMoves | epSquare << 16 | epSquareExists << 28 | castlingRights << 24 | 0x80000000;
+	u = halfMoves
+     | epSquare << Shift_EpSquare
+     | epSquareExists << Shift_EpSquareExists
+     | castlingRights << Shift_CastlingRights
+     | Bit_Prepared;
 }
 
 

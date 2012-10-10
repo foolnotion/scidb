@@ -89,6 +89,7 @@ array set Defaults {
 	dialog:snapping:x				35
 	dialog:snapping:y				35
 }
+# button:selectcolor #d1dbe0
 
 array set Options {
 	icons:size						medium
@@ -379,6 +380,11 @@ proc forget {widget} {
 }
 
 
+proc children {toolbar} {
+	return [pack slaves $toolbar.widgets]
+}
+
+
 proc childconfigure {w args} {
 	variable Specs
 	variable HaveTooltips
@@ -582,9 +588,23 @@ proc setOptions {parent options} {
 }
 
 
-proc show {toolbar} { Show $toolbar "" }
+proc show {toolbar} {
+	Show $toolbar ""
+}
 
-proc getState {toolbar} { return [set [namespace current]::Specs(state:$toolbar)] }
+
+proc getState {toolbar} {
+	return [set [namespace current]::Specs(state:$toolbar)]
+}
+
+
+proc getIconSize {toolbar}	{
+	variable Specs
+
+	set size $Specs(iconsize:$toolbar)
+	if {$size eq "default"} { set size $Specs(default:$toolbar) }
+	return $size
+}
 
 
 proc setState {toolbar state} {
@@ -791,6 +811,7 @@ proc Add {toolbar widgetCommand args} {
 	set value ""
 	set state normal
 	set widgetType $widgetCommand
+	set packOpts {}
 	array set options { -takefocus 0 }
 
 	array set Specs [list                                       \
@@ -811,6 +832,9 @@ proc Add {toolbar widgetCommand args} {
 
 	foreach {arg val} $args {
 		switch -- $arg {
+			-after		{ lappend packOpts -after $val }
+			-before		{ lappend packOpts -before $val }
+			-before		{ set beforeWidget $val }
 			-image		{ set options(-image) [SetupIcons $toolbar $w $val] }
 			-state		{ set state $val }
 			-overrelief	{ set Specs(overrelief:$w:$toolbar) $val }
@@ -918,7 +942,7 @@ proc Add {toolbar widgetCommand args} {
 		}
 	}
 
-	PackWidget $toolbar $w
+	PackWidget $toolbar $w {*}$packOpts
 	if {[winfo exists $toolbar.floating.frame]} { CloneWidget $toolbar $w }
 
 	set parent [winfo parent $toolbar]
@@ -1023,7 +1047,7 @@ proc Cleanup {toolbar} {
 }
 
 
-proc PackWidget {toolbar w} {
+proc PackWidget {toolbar w args} {
 	variable Specs
 
 	if {$Specs(orientation:$toolbar) eq "horz"} {
@@ -1053,7 +1077,7 @@ proc PackWidget {toolbar w} {
 		set pady 1; set padx 0
 	}
 
-	pack $w -in $toolbar.widgets -pady $pady -padx $padx {*}$options
+	pack $w -in $toolbar.widgets -pady $pady -padx $padx {*}$options {*}$args
 }
 
 
@@ -1273,7 +1297,7 @@ proc PlaceToolbarFrame {tbf dir incr} {
 			set larrow $parent.__tba__${side}_l
 
 			if {$width < $rwidth} {
-				incr width -26 ;# XXX real width required
+				incr width -26 ;# XXX real width of arrow button required
 				set offset [max $offset [expr {$width - $rwidth}]]
 				if {$rarrow ni [grid slaves $tbf]} {
 					MakeArrow $tbf r +1
@@ -1338,7 +1362,7 @@ proc PlaceToolbarFrame {tbf dir incr} {
 			set barrow $parent.__tba__${side}_b
 
 			if {$height < $rheight} {
-				incr height -26 ;# XXX real height required
+				incr height -26 ;# XXX real height of arrow button required
 				set offset [max $offset [expr {$height - $rheight}]]
 				if {$barrow ni [grid slaves $tbf]} {
 					MakeArrow $tbf b +1
@@ -1615,12 +1639,15 @@ proc Tracer4 {toolbar w var args} {
 
 	if {[winfo containing {*}[winfo pointerxy .]] eq $v} {
 		EnterButton $toolbar $w
+		if {[set $var]} { after idle [list $w configure -relief sunken -overrelief sunken] }
 	}
 }
 
 
 proc CheckButtonPressed {toolbar w var} {
 	variable Specs
+
+	if {$Specs(state:$w:$toolbar) eq "disabled"} { return }
 
 	if {[set $var] eq $Specs(onvalue:$w:$toolbar)} {
 		set $var $Specs(offvalue:$w:$toolbar)
@@ -1809,10 +1836,7 @@ proc ReplaceIcons {toolbar} {
 		}
 	}
 
-	if {$resize} {
-		# workaround: in some cases the toolbar frame doesn't resize
-		[winfo parent $toolbar] configure -height [expr {[$toolbar cget -height] + 2}]
-	}
+	if {$resize} { Resize $Specs(frame:$toolbar) }
 
 	set win $toolbar.floating.frame
 	if [winfo exists $win] {
@@ -1824,7 +1848,7 @@ proc ReplaceIcons {toolbar} {
 	}
 
 	if {$resize && $Specs(enabled:$toolbar) && $Specs(state:$toolbar) eq "show"} {
-		event generate $toolbar <<ToolbarIcon>>
+		event generate $toolbar <<ToolbarIcon>> -data $size
 	}
 }
 
@@ -2246,12 +2270,12 @@ proc Tooltip {mode w} {
 		return
 	}
 
-	if {![string match *floating.frame $toolbar]} {
-		set focus [focus]
-		if {[llength $focus] == 0 || [winfo toplevel $w] ne [winfo toplevel $focus]} {
-			set mode hide
-		}
-	}
+#	if {![string match *floating.frame $toolbar]} {
+#		set focus [focus]
+#		if {[llength $focus] == 0 || [winfo toplevel $w] ne [winfo toplevel $focus]} {
+#			set mode hide
+#		}
+#	}
 
 	lassign [winfo pointerxy $w] mx my
 	if {$mx < 0 || $my < 0} { set mode hide }

@@ -1243,7 +1243,7 @@ Decoder::decodeType(unsigned type)
 		case  0: return type::Unspecific;				// Unspecific
 		case  1: return type::Temporary;					// Temporary Database
 		case  2: return type::Clipbase;					// Clipbase
-		case  3: return type::Unspecific;				// PGN format file
+		case  3: return type::PGNFile;					// PGN format file
 		case  4: return type::My_Games;					// My games
 		case  5: return type::Large_Database;			// Large database
 		case  6: return type::Correspondence_Chess;	// Correspondence chess

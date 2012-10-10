@@ -189,8 +189,10 @@ uninstall-hyphen:
 install: install-executables install-scripts install-data install-hyphen
 
 uninstall: uninstall-executables uninstall-scripts uninstall-data uninstall-hyphen
-	@if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
-		rmdir $(SHAREDIR);                                                     \
+	@if [ -d $(SHAREDIR) ]; then                                                \
+		if [ "`find $(SHAREDIR) -type d -empty`" = "`ls -d $(SHAREDIR)`" ]; then \
+			rmdir $(SHAREDIR);                                                    \
+		fi;                                                                      \
 	fi
 
 clean:

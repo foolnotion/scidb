@@ -62,6 +62,7 @@ private:
 
 	bool beginGame(TagSet const& tags) override;
 	save::State endGame(TagSet const& tags) override;
+	save::State skipGame(TagSet const& tags) override;
 
 	void sendPrecedingComment(	Comment const& comment,
 										Annotation const& annotation,

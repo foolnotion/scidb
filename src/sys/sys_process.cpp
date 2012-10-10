@@ -28,7 +28,7 @@
 #include <tcl.h>
 #include <stdlib.h>
 
-#define DEBUG
+//#define DEBUG
 
 #ifdef DEBUG
 # include <stdio.h>
@@ -340,6 +340,8 @@ Process::priority() const
 void
 Process::setPriority(Priority priority)
 {
+	M_REQUIRE(priority != Unknown);
+
 	if (isAlive())
 	{
 		if (!::setPriority(m_pid, priority))

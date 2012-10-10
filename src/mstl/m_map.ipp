@@ -59,6 +59,9 @@ inline typename map<K,V>::iterator map<K,V>::erase(iterator ep) { return m_v.era
 template <typename K, typename V>
 inline typename map<K,V>::container_type const& map<K,V>::container() const { return m_v; }
 
+template <typename K, typename V>
+inline typename map<K,V>::container_type& map<K,V>::container() { return m_v; }
+
 
 template <typename K, typename V>
 inline

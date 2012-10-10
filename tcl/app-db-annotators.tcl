@@ -114,14 +114,14 @@ proc build {parent} {
 	}
 	set table [::scrolledtable::build $lt $columns]
 	::scidb::db::subscribe annotatorList \
-		[namespace current]::names::TableUpdate \
+		[namespace current]::names::Update \
 		[namespace current]::Close \
 		$top
 
 	set columns {white whiteElo black blackElo event result date acv}
 	::gametable::build $rt [namespace code [list View $rt]] $columns
 	::scidb::db::subscribe gameList \
-		[namespace current]::games::TableUpdate \
+		[namespace current]::games::Update \
 		[namespace current]::Close \
 		$top
 	bind $rt <<TableMinSize>> [namespace code [list TableMinSize $rt %d]]
@@ -243,19 +243,19 @@ proc InitBase {path base} {
 
 namespace eval games {
 
-proc TableUpdate {path id base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 	
 	[namespace parent]::InitBase $path $base
 
 	if {$view == $Vars($base:view)} {
 		after cancel $Vars($base:after:games)
-		set Vars($base:after:games) [after idle [namespace code [list GameTableUpdate2 $id $path $base]]]
+		set Vars($base:after:games) [after idle [namespace code [list Update2 $id $path $base]]]
 	}
 }
 
 
-proc GameTableUpdate2 {id path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
 	if {$id <= $Vars($base:games:lastId)} { return }
@@ -313,23 +313,23 @@ proc UpdateTable {path base} {
 		if {$Vars($base:update)} {
 			set n [::scidb::db::count annotators $base]
 			after idle [list ::scrolledtable::update $path.names $base $n]
-			after idle [list [namespace parent]::games::GameTableUpdate2 $Vars($base:names:lastId) $path $base]
+			after idle [list [namespace parent]::games::Update2 $Vars($base:names:lastId) $path $base]
 			set Vars($base:update) 0
 		}
 	}
 }
 
 
-proc TableUpdate {path id base {view -1} {index -1}} {
+proc Update {path id base {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	[namespace parent]::InitBase $path $base
 	after cancel $Vars($base:after:names)
-	set Vars($base:after:names) [after idle [namespace code [list TableUpdate2 $id $path $base]]]
+	set Vars($base:after:names) [after idle [namespace code [list Update2 $id $path $base]]]
 }
 
 
-proc TableUpdate2 {id path base} {
+proc Update2 {id path base} {
 	variable [namespace parent]::${path}::Vars
 
 	if {$id <= $Vars($base:names:lastId)} { return }

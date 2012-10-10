@@ -55,37 +55,45 @@ private:
 
 	enum
 	{
-		Shift_Promotion	= 12,
-		Shift_Destination	= 14,
-		Shift_Piece			= 15,	Shift_Action = Shift_Piece,
-		Shift_Castling		= 18,
-		Shift_TwoForward	= 19,
-		Shift_Promote		= 20,
-		Shift_Capture		= 21,	Shift_Removal = Shift_Capture,
-		Shift_EnPassant	= 24,
-		Shift_SideToMove	= 25,
-		Shift_Fyle			= 26,
-		Shift_Rank			= 27,
-		Shift_Mate			= 28,
-		Shift_Check			= 29,
-		Shift_Printable	= 30,
-		Shift_Legality		= 31,
+		Shift_Promotion		= 12,
+		Shift_Destination		= 14,
+		Shift_Piece				= 15,	Shift_Action = Shift_Piece,
+		Shift_Castling			= 18,
+		Shift_TwoForward		= 19,
+		Shift_Promote			= 20,
+		Shift_Capture			= 21,	Shift_Removal = Shift_Capture,
+		Shift_EnPassant		= 24,
+		Shift_SideToMove		= 25,
+		Shift_Fyle				= 26,
+		Shift_Rank				= 27,
+		Shift_Mate				= 28,
+		Shift_Check				= 29,
+		Shift_Printable		= 30,
+		Shift_Legality			= 31,
+
+		Shift_EpSquare			= 16,
+		Shift_CastlingRights	= 24,
+		Shift_EpSquareExists	= 28,
+		Shift_Prepared			= 31,
 	};
 
 	enum
 	{
-		Bit_Castling		= 1 << Shift_Castling,
-		Bit_TwoForward		= 1 << Shift_TwoForward,
-		Bit_Promote			= 1 << Shift_Promote,
-		Bit_Destination	= 1 << Shift_Destination,
-		Bit_EnPassant		= 1 << Shift_EnPassant,
-		Bit_BlackToMove	= 1 << Shift_SideToMove,
-		Bit_Fyle				= 1 << Shift_Fyle,
-		Bit_Rank				= 1 << Shift_Rank,
-		Bit_Mate				= 1 << Shift_Mate,
-		Bit_Check			= 1 << Shift_Check,
-		Bit_Printable		= 1 << Shift_Printable,
-		Bit_Legality		= 1 << Shift_Legality,
+		Bit_Castling			= 1u << Shift_Castling,
+		Bit_TwoForward			= 1u << Shift_TwoForward,
+		Bit_Promote				= 1u << Shift_Promote,
+		Bit_Destination		= 1u << Shift_Destination,
+		Bit_EnPassant			= 1u << Shift_EnPassant,
+		Bit_BlackToMove		= 1u << Shift_SideToMove,
+		Bit_Fyle					= 1u << Shift_Fyle,
+		Bit_Rank					= 1u << Shift_Rank,
+		Bit_Mate					= 1u << Shift_Mate,
+		Bit_Check				= 1u << Shift_Check,
+		Bit_Printable			= 1u << Shift_Printable,
+		Bit_Legality			= 1u << Shift_Legality,
+
+		Bit_EpSquareExists	= 1u << Shift_EpSquareExists,
+		Bit_Prepared			= 1u << Shift_Prepared,
 	};
 
 	static uint32_t const Mask_PieceType		= (1u << 3) - 1;
@@ -93,6 +101,9 @@ private:
 	static uint32_t const Mask_Removal			= (1u << 4) - 1;
 	static uint32_t const Mask_Action			= (1u << 6) - 1;
 	static uint32_t const Mask_Compare			= uint32_t(~0) >> (31 - Shift_SideToMove);
+
+	static uint32_t const Mask_Index				= (1u << 14) - 1;
+	static uint32_t const Mask_Null				= Bit_Legality | Mask_Index;
 
 	static uint32_t const Clear_PieceType		= ~(Mask_PieceType << Shift_Piece);
 	static uint32_t const Clear_CaptureType	= ~(Mask_PieceType << Shift_Capture);
@@ -104,7 +115,7 @@ public:
 
 	static uint16_t const Null		= 0;
 	static uint16_t const Empty	= 0;
-	static uint16_t const Invalid	= piece::King << Shift_Promotion;
+	static uint16_t const Invalid	= 1 << Shift_Promotion;
 
 	// action
 	static unsigned const One_Forward	= piece::Pawn;
@@ -271,7 +282,7 @@ public:
 	static Move genQueenMove(uint32_t from, uint32_t to, uint32_t captured);
 	/// Returns a king move, capturing piece type.
 	static Move genKingMove(uint32_t from, uint32_t to, uint32_t captured);
-	/// Returns a castling move.
+	/// Returns a castling move - we are expecting KXR notation for the arguments.
 	static Move genCastling(Square from, Square to);
 
 	// Convert to string.

@@ -905,7 +905,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 		consumer().putTrailingComment(comment);
 	}
 
-	finishGame();
+	finishGame(code == UnsupportedCrazyhouseVariant);
 
 	if (code == UnexpectedTag)
 	{
@@ -1111,7 +1111,7 @@ PgnReader::checkMode()
 
 
 void
-PgnReader::finishGame()
+PgnReader::finishGame(bool skip)
 {
 	consumer().finishMoveSection(m_result);
 
@@ -1121,7 +1121,14 @@ PgnReader::finishGame()
 		checkMode();
 	}
 
-	switch (consumer().finishGame(m_tags))
+	save::State state;
+
+	if (skip)
+		state = consumer().skipGame(m_tags);
+	else
+		state = consumer().finishGame(m_tags);
+
+	switch (state)
 	{
 		case save::Ok:								break;
 		case save::UnsupportedVariant:		return; // already handled
@@ -3616,6 +3623,19 @@ PgnReader::parseMove(Token prevToken, int c)
 					return prevToken;
 				}
 				break;
+
+			case 'P': case 'N': case 'B': case 'R': case 'Q':
+			{
+				// check whether this is a crazyhous/bughouse game:
+				int d = get(true);
+				if (d == '@')
+				{
+					putback(d);
+					putback(c);
+					error(UnsupportedCrazyhouseVariant, m_prevPos);
+				}
+				break;
+			}
 		}
 
 		error(InvalidToken,
@@ -4136,13 +4156,10 @@ PgnReader::parseUppercaseN(Token prevToken, int c)
 {
 	// Move prefix: "N"
 
-	if (partOfMove(prevToken))
+	if (partOfMove(prevToken) && !::isalnum(m_linePos[0]) && m_linePos[0] != '@')
 	{
-		if (!::isalnum(m_linePos[0]))
-		{
-			putNag(nag::Novelty);
-			return kNag;
-		}
+		putNag(nag::Novelty);
+		return kNag;
 	}
 
 	return parseMove(prevToken, c);
@@ -4154,7 +4171,7 @@ PgnReader::parseUppercaseR(Token prevToken, int c)
 {
 	// Move prefix: "RR"
 
-	if (partOfMove(prevToken))
+	if (partOfMove(prevToken) && m_linePos[0] != '@')
 	{
 		if (m_linePos[0] == 'R')
 		{

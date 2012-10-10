@@ -128,6 +128,8 @@ array set package {
     zziplib-lib  -lzzip
     expat-inc    {}
     expat-lib    -lexpat
+    gdbm-inc     {}
+    gdbm-lib     -lgdbm
     tcl-inc      {}
     tcl-lib      {}
     x-inc        {}
@@ -157,6 +159,11 @@ array set environment {
     ARFLAGS     rc
     RANLIB      ranlib
     STRIP       strip
+    CPUS        1
+}
+
+foreach name [array names environment] {
+    set haveEnvironment($name) 0
 }
 
 array set compiler {
@@ -175,6 +182,8 @@ array set option {
     HAVE_LIBFAM     {}
     HAVE_INOTIFY    {}
     SYS_INOTIFY     {}
+    HAVE_STATVFS    {}
+    ENGINES         {stockfish Sjeng crafty}
 }
 
 array set defaults {
@@ -191,6 +200,7 @@ array set subdir {
     zlib    {}
     zziplib {}
     expat   {}
+    gdbm    {}
 }
 
 array set distribution {
@@ -235,7 +245,6 @@ array set release {
     yellowdog       "Yellow Dog"
 }
 
-set engines {{stockfish-120903 stockfish-120903}}
 
 set instableTkLibrary ""
 set MinGCCVersion "3.4"
@@ -794,6 +803,17 @@ proc findFreetype {} {
 }
 
 
+# checkStatVFS
+#   Check if your system provides the statvfs() function.
+proc checkStatVFS {} {
+    variable option
+
+    if {[file readable /usr/include/sys/statvfs.h]} {
+        set option(HAVE_STATVFS) "-DHAVE_STATVFS=1"
+    }
+}
+
+
 # TestInotify.sh:
 #    Script used to test if the kernel has inotify.
 #
@@ -1103,7 +1123,7 @@ proc checkZlib {} {
     } else {
         puts "no.\n      Using bundled library."
         set subdir(zlib) "util/zlib"
-        set package(zlib-lib) "util/zlib/libz.a"
+        set package(zlib-lib) "[pwd]/src/util/zlib/libz.a"
         set package(zlib-inc) "-I[pwd]/src/util/zlib"
     }
 }
@@ -1174,8 +1194,80 @@ proc checkZziplib {} {
     } else {
         puts "no.\n      Using bundled library."
         set subdir(zziplib) "util/zzip"
-        set package(zziplib-lib) "util/zzip/libzzip.a"
+        set package(zziplib-lib) "[pwd]/src/util/zzip/libzzip.a"
         set package(zziplib-inc) "-I[pwd]/src/util/zzip"
+    }
+}
+
+
+# TestGdbm.sh:
+#    Script used to test if the system has gdbm installed.
+#
+set TestGdbm {#!/bin/sh
+cat <<EOF > testgdbm.c
+#include <gdbm.h>
+int main()
+{
+    char const* s = gdbm_version;
+    char const* t = s;
+    if (*t) ;
+    return 0;
+}
+EOF
+
+__CC__ -o testgdbm testgdbm.c __gdbm-inc__ __gdbm-lib__
+if [ -f testgdbm ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
+# SystemHasGdbm:
+#    Determines if the system has gdbm installed. If not,
+#    the gdbm version that comes with Scidb will be used.
+#
+proc SystemHasGdbm {} {
+    global TestGdbm
+    global environment
+    global package
+
+    set testGdbm [regsub -all __CC__ $TestGdbm $environment(CC)]
+    set testGdbm [regsub -all __gdbm-inc__ $testGdbm $package(gdbm-inc)]
+    set testGdbm [regsub -all __gdbm-lib__ $testGdbm $package(gdbm-lib)]
+
+    flush stdout
+    if {[catch {open testgdbm.sh w} f]} { return 0 }
+    puts $f [regsub -all __CC__ $testGdbm $environment(CC)]
+    close $f
+    set result 0
+    if {![catch {exec sh testgdbm.sh} err]} { set result 1 }
+    catch { file delete -force testgdbm.sh }
+    catch { file delete -force testgdbm.c }
+    catch { file delete -force testgdbm }
+    return $result
+}
+
+
+# checGdbm:
+#    Checks whether the system has the gdbm library installed,
+#
+proc checkGdbm {} {
+    global environment subdir package
+
+    if {[string first "libgdbm." $environment(LDFLAGS)] >= 0} {
+        return
+    }
+    puts -nonewline "    Checking if your system already has gdbm installed: "
+    flush stdout
+    if {[SystemHasGdbm]} {
+        puts "yes."
+    } else {
+        puts "no.\n      Using bundled library."
+        set subdir(gdbm) "util/gdbm"
+        set package(gdbm-lib) "[pwd]/src/util/gdbm/libgdbm.a"
+        set package(gdbm-inc) "-I[pwd]/src/util/gdbm"
     }
 }
 
@@ -1231,7 +1323,6 @@ proc SystemHasExpat {} {
 
 # checExpat:
 #    Checks whether the system has the expat XML library installed,
-#    if necessary. 
 #
 proc checkExpat {} {
     global environment subdir package
@@ -1246,7 +1337,7 @@ proc checkExpat {} {
     } else {
         puts "no.\n      Using bundled library."
         set subdir(expat) "util/expat"
-        set package(expat-lib) "util/expat/libexpat.a"
+        set package(expat-lib) "[pwd]/src/util/expat/libexpat.a"
         set package(expat-inc) "-I[pwd]/src/util/expat"
     }
 }
@@ -1572,6 +1663,46 @@ proc checkFontConfig {} {
 }
 
 
+proc detectCores {} {
+    variable environment
+    variable haveEnvironment
+
+    if {$haveEnvironment(CPUS)} { return }
+
+    puts -nonewline "    Determining number of CPUs (cores): "
+    set cores 1
+
+    if {[file readable /proc/cpuinfo]} { ;# this should work on Linux
+        set info {}
+        catch { set info [exec cat /proc/cpuinfo] }
+        set n [string last "processor" $info]
+        if {$n >= 0} {
+            set n [string first ":" $info $n]
+            if {$n >= 0} {
+                set info [string range $info [expr {$n + 1}] end]
+                if {[scan [string trim $info] "%u" n] == 1} {
+                    if {[string is integer -strict $n]} { set cores [expr {$n + 1}] }
+                }
+            }
+        }
+    } elseif {![catch { set info [exec uname -X ] }]} { ;# this should work on SunOS
+        set n [string last "NumCPU" $info]
+        if {$n >= 0} {
+            set n [string first "=" $info $n]
+            if {$n >= 0} {
+                set info [string range $info [expr {$n + 1}] end]
+                if {[scan [string trim $info] "%u" n] == 1} {
+                    if {[string is integer -strict $n]} { set cores [expr {$n + 1}] }
+                }
+            }
+        }
+    }
+
+    puts $cores
+    set environment(CPUS) $cores
+}
+
+
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
@@ -1639,8 +1770,6 @@ proc writeMakefile {{type ""}} {
         }
         set option([string toupper $d]DIR) $dir
     }
-
-    set option(ENGINES) [checkEngines $option(ENGINESDIR)]
 
     if {[info exists configure(mandir)]} {
         set dir $configure(mandir)
@@ -1845,6 +1974,7 @@ proc usage {rc} {
     puts "  ARFLAGS     Flags for AR \[$environment(ARFLAGS)\]"
     puts "  RANLIB      RANLIB for the host \[$environment(RANLIB)\]"
     puts "  STRIP       STRIP for the host \[$environment(STRIP)\]"
+    puts "  CPUS        Number of CPUs (cores) available \[$environment(CPUS)\]"
     puts ""
     puts "Use these variables to override the choices made by \`configure' or to help"
     puts "it to find libraries and programs with nonstandard names/locations."
@@ -1891,6 +2021,7 @@ foreach arg $argv {
             set package([string range $arg0 7 end]) $arg1
         } elseif {[info exists environment($arg0)]} {
             set environment($arg0) $arg1
+            set haveEnvironment($arg0) 1
         } elseif {[string match --* $arg0]} {
             set configure([string range $arg0 2 end]) $arg1
         } else {
@@ -1945,10 +2076,12 @@ if {[string length $gxxVer]} {
     if {![checkFontConfig]} { exit 1 }
 
     checkInotify
+    checkStatVFS
     checkFAM
     checkZlib
     checkZziplib
     checkExpat
+    checkGdbm
 
     if {[isInsaneUnixRelease]} {
         if {![string match Debian* $insaneRelease]} {
@@ -1959,6 +2092,7 @@ if {[string length $gxxVer]} {
     if {$::tcl_platform(platform) eq "unix"} {
         findFontconfig
         findFreetype
+        detectCores
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {

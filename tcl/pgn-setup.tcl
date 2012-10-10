@@ -35,6 +35,7 @@ set Configure(browser)			"Customize Text Output"
 set TakeOver(editor)				"Adopt settings from Game Browser"
 set TakeOver(browser)			"Adopt settings from Game Editor"
 set Pixel							"pixel"
+set Spaces							"spaces"
 set RevertSettings				"Revert to initial settings"
 set ResetSettings					"Reset to factory settings"
 set DiscardAllChanges			"Discard all applied changes?"
@@ -59,6 +60,7 @@ set Setup(brackets)				"Brackets"
 set Setup(illegal-move)			"Illegal Move"
 set Setup(comments)				"Comments"
 set Setup(annotation)			"Annotation"
+set Setup(nagtext)				"NAG-Text"
 set Setup(marks)					"Marks"
 set Setup(move-info)				"Move Information"
 set Setup(result)					"Result"
@@ -85,6 +87,7 @@ set Variations(level)			"Indent Level"
 set Section(Display)				"Display"
 set Display(numbering)			"Show Variation Numbering"
 set Display(moveinfo)			"Show Move Information"
+set Display(nagtext)				"Text for unusual NAG comments"
 
 set Section(Diagrams)			"Diagrams"
 set Diagrams(show)				"Show Diagrams"
@@ -111,6 +114,7 @@ set StyleLayout {
 		{ 1 0 illegal-move }
 		{ 1 1 comments }
 		{ 1 1 annotation }
+		{ 1 1 nagtext }
 		{ 1 1 marks }
 		{ 1 1 move-info }
 		{ 1 0 result }
@@ -130,6 +134,7 @@ array set DefaultColors {
 	foreground:bracket	#0000ee
 	foreground:numbering	#aa0acd
 	foreground:nag			#ee0000
+	foreground:nagtext	#912a2a
 	foreground:comment	#006300
 	foreground:info		#8b4513
 	foreground:result		#000000
@@ -161,11 +166,12 @@ array set DefaultOptions {
 	style:column		0
 	style:move			san
 	spacing:paragraph	0
+	weight:mainline	bold
 	show:moveinfo		1
 	show:varnumbers	0
-	weight:mainline	bold
 	show:diagram		1
 	show:opening		1
+	show:nagtext		1
 	indent:amount		25
 	indent:max			2
 	diagram:size		30
@@ -177,7 +183,7 @@ array set DefaultOptions {
 	tabstop:4			4.0
 }
 
-array set Timestamp {}
+array set Timestamp { editor 0 browser 0 }
 
 set Attributes(Appearance)		{ style:column style:move tabstop:1 tabstop:3 }
 set Attributes(Colors)			{ foreground:illegal foreground:result foreground:empty }
@@ -208,10 +214,16 @@ proc buildText {path context {forceSbSet 0}} {
 	::font::registerSymbolFonts $context
 	set complex [expr {$context eq "editor"}]
 
-	if {![info exists Options]} {
-		array set Options [array get [namespace current]::DefaultOptions]
-		array set Colors [array get [namespace current]::DefaultColors]
-	}
+	array set options [array get [namespace current]::DefaultOptions]
+	array set colors [array get [namespace current]::DefaultColors]
+
+	if {[info exists Options]} { array set options [array get Options] }
+	if {[info exists Colors]} { array set colors [array get Colors] }
+
+	array set Options [array get options]
+	array set Colors [array get colors]
+
+	array unset options colors
 
 	set f [::tk::frame $path -takefocus 0]
 	set sb [::ttk::scrollbar $f.sb -command [list ::widget::textLineScroll $f.pgn] -takefocus 0]
@@ -285,6 +297,7 @@ proc configureText {path {fontContext ""}} {
 
 		$w tag configure variation -foreground $Colors(foreground:variation)
 		$w tag configure nag -foreground $Colors(foreground:nag)
+		$w tag configure nagtext -foreground $Colors(foreground:nagtext)
 		$w tag configure bracket -foreground $Colors(foreground:bracket)
 		$w tag configure numbering -foreground $Colors(foreground:numbering)
 		$w tag configure marks -foreground $Colors(foreground:marks)
@@ -313,7 +326,7 @@ proc configureText {path {fontContext ""}} {
 }
 
 
-proc setupStyle {context {position {}}} {
+proc setupStyle {context {position -1}} {
 	variable [namespace parent]::${context}::Options
 
 	if {$Options(style:column)} { set thresholds {0 0 0 0} } else { set thresholds {240 80 60 0} }
@@ -330,8 +343,8 @@ proc setupStyle {context {position {}}} {
 		set showVariationNumbers no
 	}
 
-	::scidb::game::setup \
-		{*}$position \
+	::scidb::game::setupStyle \
+		$position \
 		{*}$thresholds \
 		$Options(style:column) \
 		$Options(style:move) \
@@ -343,11 +356,17 @@ proc setupStyle {context {position {}}} {
 }
 
 
+proc setupNags {context} {
+	variable [namespace parent]::${context}::Options
+	if {$Options(show:nagtext)} { set nags [::annotation::unusualNags] } else { set nags {} }
+	::scidb::game::setupNags $nags
+}
+
+
 proc openSetupDialog {parent context position args} {
 	variable [namespace parent]::${context}::Options
 	variable [namespace parent]::${context}::Colors
 	variable StyleLayout
-	variable Timestamp
 	variable Circle
 	variable Revert_Options
 	variable Revert_Colors
@@ -423,6 +442,7 @@ proc openSetupDialog {parent context position args} {
 	foreach pane [array names Priv pane:*] { $options add $Priv($pane) -sticky nsew }
 	$options paneconfigure $Priv(pane:colors) -sticky new
 	setupStyle $context $position
+	setupNags $context
 
 	set sample [::ttk::labelframe $top.sample -text $::mc::Preview]
 	set Priv(pgn) [buildText $sample.text $context yes]
@@ -486,7 +506,6 @@ proc openSetupDialog {parent context position args} {
 	array unset Revert_Fonts
 
 	::font::deleteFonts setup
-	set Timestamp($context) [clock microseconds]
 }
 
 
@@ -524,10 +543,21 @@ proc ApplyOptions {context position close} {
 	foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
 
 	if {$close} {
-		destroy [winfo toplevel $Priv(path)]
+		variable Timestamp
+		set Timestamp($context) [clock microseconds]
+		DoClose $context $position
 	} elseif {[llength $Priv(refresh:cmd)]} {
 		$Priv(refresh:cmd)
 	}
+}
+
+
+proc DoClose {context position} {
+	variable Priv
+
+	setupStyle $context $position
+	setupNags $context
+	destroy [winfo toplevel $Priv(path)]
 }
 
 
@@ -554,7 +584,7 @@ proc RevertOptions {context position close} {
 
 	if {$close} {
 		foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
-		destroy [winfo toplevel $Priv(path)]
+		DoClose $context $position
 	} else {
 		set styles [::font::unregisterTextFonts setup]
 		::font::unregisterFigurineFonts setup
@@ -605,6 +635,7 @@ proc FinishReset {context position} {
 	}
 
 	setupStyle $context $position
+	setupNags $context
 	configureText $Priv(path) setup
 	::scidb::game::refresh $position -immediate
 }
@@ -663,6 +694,7 @@ proc DoUpdateDisplay {context position data} {
 
 proc BuildFrame(topics) {w topic context position tree} {
 	variable StyleLayout
+	variable Timestamp
 	variable Priv
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
@@ -729,17 +761,17 @@ proc BuildFrame(topics) {w topic context position tree} {
 		}
 	}
 
-	if {$context eq "editor"} { set other browser } else { set other editor }
-	if {	[info exists Timestamp(editor)]
-		&& [info exists Timestamp(browser)]
-		&& $Timestamp($context) < Timestamp($other)} {
-		ttk::button $w.takeover \
-			-text $mc::TakeOver($context) \
-			-command [namespace code [list TakeOver $context $position $topic]] \
-			;
-		grid $w.takeover -row [expr {2*$nrows + 1}] -column 1 -columnspan [expr {2*($ncols - 1) + 1}]
-		grid rowconfigure $w [expr {2*$nrows}] -weight 1
-		grid rowconfigure $w [expr {2*$nrows + 2}] -minsize 40
+	if {[info exists ::pgn::editor::Options] && [info exists ::pgn::browser::Options]} {
+		if {$context eq "editor"} { set other browser } else { set other editor }
+		if {$Timestamp($context) < $Timestamp($other)} {
+			ttk::button $w.takeover \
+				-text $mc::TakeOver($context) \
+				-command [namespace code [list TakeOver $context $position $topic]] \
+				;
+			grid $w.takeover -row [expr {2*$nrows + 1}] -column 1 -columnspan [expr {2*($ncols - 1) + 1}]
+			grid rowconfigure $w [expr {2*$nrows}] -weight 1
+			grid rowconfigure $w [expr {2*$nrows + 2}] -minsize 40
+		}
 	}
 
 	for {set i 1} {$i <= $nrows} {incr i} {
@@ -771,7 +803,7 @@ proc BuildFrame(Layout) {w position context} {
 			-command [namespace code [list RefreshOptions $context $position spacing:paragraph]] \
 			;
 		grid $m.useSpacing	-row 1 -column 1 -sticky w -columnspan 4
-		grid rowconfigure $m {2} -minsize $::theme::padY
+		grid rowconfigure $m {2} -minsize $::theme::pady
 	}
 	ttk::checkbutton $m.columnStyle \
 		-text $mc::ParLayout(column-style) \
@@ -791,7 +823,7 @@ proc BuildFrame(Layout) {w position context} {
 		;
 	::theme::configureSpinbox $m.stabstop1
 	::validate::spinboxFloat $m.stabstop1
-	ttk::label $m.pixel1 -text $mc::Pixel
+	ttk::label $m.pixel1 -text $mc::Spaces
 	ttk::label $m.ltabstop2 -text $mc::ParLayout(tabstop-2)
 	ttk::spinbox $m.stabstop2 \
 		-from 8.0 \
@@ -803,7 +835,7 @@ proc BuildFrame(Layout) {w position context} {
 		-exportselection no \
 		-state $state \
 		;
-	ttk::label $m.pixel2 -text $mc::Pixel
+	ttk::label $m.pixel2 -text $mc::Spaces
 	::theme::configureSpinbox $m.stabstop2
 	::validate::spinboxFloat $m.stabstop2
 
@@ -815,7 +847,7 @@ proc BuildFrame(Layout) {w position context} {
 	grid $m.stabstop2    -row 7 -column 4 -sticky ew
 	grid $m.pixel2       -row 7 -column 6 -sticky w
 	grid rowconfigure $m {0 6 10} -minsize $::theme::pady
-	grid rowconfigure $m {4 8} -minsize $::theme::padY
+	grid rowconfigure $m {4 8} -minsize $::theme::pady
 	grid rowconfigure $m {0 10} -weight 1
 	grid columnconfigure $m {5 7} -minsize $::theme::padx
 	grid columnconfigure $m 3 -minsize $::theme::padX
@@ -888,11 +920,17 @@ proc BuildFrame(Layout) {w position context} {
 			-variable [namespace current]::New_Options(show:moveinfo) \
 			-command [namespace code [list RefreshOptions $context $position show:moveinfo]] \
 			;
+		ttk::checkbutton $d.nagtext \
+			-text $mc::Display(nagtext) \
+			-variable [namespace current]::New_Options(show:nagtext) \
+			-command [namespace code [list RefreshOptions $context $position show:nagtext]] \
+			;
 
 		grid $d.varnumbers	-row 1 -column 1 -sticky w
 		grid $d.moveinfo		-row 3 -column 1 -sticky w
-		grid rowconfigure $d {0 2 4} -minsize $::theme::pady
-		grid rowconfigure $d {0 4} -weight 1
+		grid $d.nagtext		-row 5 -column 1 -sticky w
+		grid rowconfigure $d {0 2 4 6} -minsize $::theme::pady
+		grid rowconfigure $d {0 6} -weight 1
 		grid columnconfigure $d 2 -minsize $::theme::padx
 		grid columnconfigure $d 0 -minsize 40
 
@@ -1191,6 +1229,7 @@ proc RefreshOptions {context position attr} {
 	if {$Options($attr) eq $New_Options($attr)} { return }
 	set Options($attr) $New_Options($attr)
 	setupStyle $context $position
+	setupNags $context
 	configureText $Priv(path) setup
 	::scidb::game::refresh $position -immediate
 }
@@ -1392,7 +1431,6 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				variations			{ set Priv(color:attr) foreground:variation }
 				illegal-move		{ set Priv(color:attr) foreground:illegal }
 				comments				{ set Priv(color:attr) foreground:comment }
-				annotation			{ set Priv(color:attr) foreground:nag }
 				marks					{ set Priv(color:attr) foreground:marks }
 				move-info			{ set Priv(color:attr) foreground:info }
 				result				{ set Priv(color:attr) foreground:result }
@@ -1404,13 +1442,23 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				hover-move-info	{ set Priv(color:attr) hilite:info }
 
 				brackets {
-					set Options(show:varnumbers) 0;
+					set Options(show:varnumbers) 0
 					set Priv(color:attr) foreground:bracket
 				}
 
 				numbering {
-					set Options(show:varnumbers) 1;
+					set Options(show:varnumbers) 1
 					set Priv(color:attr) foreground:numbering
+				}
+
+				annotation {
+					set Options(show:nagtext) 0
+					set Priv(color:attr) foreground:nag
+				}
+
+				nagtext {
+					set Options(show:nagtext) 1
+					set Priv(color:attr) foreground:nagtext
 				}
 
 				empty-game {
@@ -1420,6 +1468,8 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			}
 		}
 	}
+
+	setupNags $context
 
 	if {[llength $Priv(color:attr)]} {
 		variable Recent
@@ -1624,6 +1674,7 @@ proc Trash {args} {}
 
 
 proc WriteOptions {chan} {
+	variable Timestamp
 	variable Context
 
 	set context {}
@@ -1633,9 +1684,15 @@ proc WriteOptions {chan} {
 		if {$cxt ni $context} { lappend context $cxt }
 	}
 
-	foreach cxt $context {
-		::options::writeItem $chan [namespace parent]::${cxt}::Options
-		::options::writeItem $chan [namespace parent]::${cxt}::Colors
+	foreach cxt {browser editor} {
+		if {[info exists [namespace parent]::${cxt}::Options]} {
+			::options::writeItem $chan [namespace parent]::${cxt}::Options
+			::options::writeItem $chan [namespace parent]::${cxt}::Colors
+		}
+	}
+
+	if {[array names Timestamp] > 0} {
+		::options::writeItem $chan [namespace current]::Timestamp
 	}
 }
 
@@ -1657,6 +1714,8 @@ set Games(layout) {
 2.Nf3 Nc6
 3.Bc4 Nf6
 4.Ng5 Bc5
+5.Nxf7 Bxf2+ $70
+6.Kf1
 *
 }
 
@@ -1677,7 +1736,7 @@ set Games(colors) {
 3.Nh3 d6 4.Bc4?
 %	({$213} 4.Nf2)
 Qh4+? {[%draw full,e1,red]}
-	(4...Bxh3 5.gxh3 Qh4+ $19)
+	(4...Bxh3 5.gxh3 Qh4+ $18 $108)
 5.O-O Nf6 {-0.37|11} {$232}
 1/2-1/2
 }

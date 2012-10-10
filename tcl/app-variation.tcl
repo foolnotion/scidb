@@ -553,7 +553,7 @@ proc Activate {table} {
 	
 	if {$Vars(selected) == [::table::selection $table]} {
 		set move [::scidb::vars::move $Vars(selected)]
-		::move::addMove $move [list set [namespace current]::Vars(activated) 0]
+		::move::addMove $move [list set [namespace current]::Vars(activated)]
 	} else {
 		set Vars(activated) 0
 	}

@@ -29,6 +29,10 @@
 #include "db_namebase_entry.h"
 #include "db_tournament_table.h"
 
+#ifdef SUPPORT_TREE_INFO_FILTER
+# include "db_selector.h"
+#endif
+
 #include "m_utility.h"
 
 #include <string.h>
@@ -37,6 +41,10 @@ using namespace db;
 
 
 static NamebasePlayer g_player;
+
+#ifdef SUPPORT_TREE_INFO_FILTER
+static unsigned Invalid = unsigned(-1);
+#endif
 
 
 void
@@ -51,25 +59,96 @@ TreeInfo::TreeInfo()
 	:m_frequency(0)
 	,m_lastYear(0)
 	,m_bestRating(0)
+#ifdef SUPPORT_TREE_INFO_FILTER
+	,m_firstGameIndex(::Invalid)
+#else
+	,m_firstGameIndex(0)
+#endif
 	,m_bestPlayer(&g_player)
 	,m_mostFrequentPlayer(&g_player)
 {
 	::memset(m_scoreCount, 0, sizeof(m_scoreCount));
 }
 
+#ifdef SUPPORT_TREE_INFO_FILTER
 
-TreeInfo::TreeInfo(Eco eco, Move const& move)
+TreeInfo::TreeInfo(Eco eco, Move const& move, unsigned filterSize)
 	:m_move(move)
 	,m_eco(eco)
 	,m_frequency(0)
 	,m_lastYear(0)
 	,m_bestRating(0)
+	,m_firstGameIndex(::Invalid)
+	,m_filter(filterSize)
 	,m_bestPlayer(&g_player)
 	,m_mostFrequentPlayer(&g_player)
 {
 	::memset(m_scoreCount, 0, sizeof(m_scoreCount));
 }
 
+unsigned
+TreeInfo::firstGameIndex() const
+{
+	return m_firstGameIndex == ::Invalid ? m_filter.next() : m_firstGameIndex;
+}
+
+
+unsigned
+TreeInfo::firstGameIndex(Selector const& selector) const
+{
+	if (selector.isUnsorted())
+		return firstGameIndex();
+
+	unsigned firstIndex		= unsigned(-1);
+	unsigned firstGameIndex	= m_firstGameIndex == ::Invalid ? 0 : m_firstGameIndex;
+
+	for (int i = m_filter.next(); i != Filter::Invalid; i = m_filter.next(i))
+	{
+		unsigned index = selector.map(i + firstGameIndex);
+
+		if (index < firstIndex)
+			firstIndex = index;
+	}
+
+	return firstIndex;
+}
+
+
+void
+TreeInfo::compressFilter()
+{
+	if (m_firstGameIndex == ::Invalid)
+	{
+		m_firstGameIndex = m_filter.minimize();
+		M_ASSERT(int(m_firstGameIndex) != Filter::Invalid);
+	}
+
+	m_filter.compress();
+}
+
+
+void
+TreeInfo::uncompressFilter()
+{
+	m_filter.uncompress();
+}
+
+#else
+
+TreeInfo::TreeInfo(Eco eco, Move const& move, unsigned firstGameIndex)
+	:m_move(move)
+	,m_eco(eco)
+	,m_frequency(0)
+	,m_lastYear(0)
+	,m_bestRating(0)
+	,m_firstGameIndex(firstGameIndex)
+	,m_bestPlayer(&g_player)
+	,m_mostFrequentPlayer(&g_player)
+{
+	::memset(m_scoreCount, 0, sizeof(m_scoreCount));
+}
+
+#endif
 
 void
 TreeInfo::add(GameInfo const& info, color::ID sideToMove, rating::Type ratingType)

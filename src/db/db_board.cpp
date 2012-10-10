@@ -690,7 +690,7 @@ Board::prepareForPrint(Move& move) const
 							move.setNeedsDestinationSquare();
 					}
 				}
-				else if (m_piece[to] != piece::Empty || move.isEnPassant())
+				else if (m_piece[to] != piece::None || move.isEnPassant())
 				{
 					// we may need disambiguation of pawn captures
 					if (pawnCapturesTo(to) ^ setBit(from))
@@ -888,7 +888,7 @@ Board::removeAt(Square s)
 			break; // error
 	}
 
-	m_piece[s] = piece::Empty;
+	m_piece[s] = piece::None;
 	m_occupied ^= bit;
 	m_occupiedBy[color] ^= bit;
 	m_occupiedL90 ^= MaskL90[s];
@@ -956,17 +956,14 @@ Board::shortCastlingWhiteIsLegal() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
+	uint64_t base = (B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1); // king...G1
 
-	if (m_occupied & RankMask1 & (rook - 1) & ~(king - 1) & ~king)	// (king+1)...(rook-1)
+	// king...G1 and F1 must be free
+	if (m_occupied & (base | F1) & ~king & ~rook)
 		return false;
 
-	if (m_ksq[White] >= g1)
-		return !isAttackedBy(Black, (G1 | H1) & (king | (king - 1)));	// G1...king
-
-	if (m_occupied & (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(rook | (rook - 1)) & ~king)	// rook...G1
-		return false;
-
-	return !isAttackedBy(Black, (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1));	// king...G1
+	// king...G1 not attacked
+	return !isAttackedBy(Black, base | king);
 }
 
 
@@ -977,17 +974,14 @@ Board::shortCastlingBlackIsLegal() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
+	uint64_t base = (B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1); // king...G8
 
-	if (m_occupied & RankMask8 & (rook - 1) & ~(king - 1) & ~king)	// (king+1)...(rook-1)
+	// king...G8 and F8 must be free
+	if (m_occupied & (base | F8) & ~king & ~rook)
 		return false;
 
-	if (m_ksq[Black] >= g8)
-		return !isAttackedBy(White, (G8 | H8) & (king | (king - 1)));	// G8...king
-
-	if (m_occupied & (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(rook | (rook - 1)) & ~king)	// rook...G8
-		return false;
-
-	return !isAttackedBy(White, (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1));	// king...G8
+	// king...G8 not attacked
+	return !isAttackedBy(White, base | king);
 }
 
 
@@ -998,19 +992,17 @@ Board::longCastlingWhiteIsLegal() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
+	uint64_t base = king <= C1 ? C1 | D1 : (C1 | D1 | E1 | F1 | G1) & (king - 1);
 
-	if (m_occupied & RankMask1 & (king - 1) & ~(rook - 1) & ~rook)	// (rook+1)...(king-1)
+	// king...C1...king not attacked
+	if (isAttackedBy(Black, base | king))
 		return false;
 
-	if (m_ksq[White] <= c1)
-	{
-		if (m_occupied & (A1 | B1 | C1 | D1) & ~(king - 1) & ~king)	// (king+1)...D1
-			return false;
+	if (rook <= C1)
+		base |= (A1 | B1 | C1) & ~rook; // rook...C1
 
-		return !isAttackedBy(Black, (A1 | B1 | C1) & ~(king - 1));	// king...C1
-	}
-
-	return !isAttackedBy(Black, (C1 | D1 | E1 | F1 | G1 | H1) & (king | (king - 1)));	// C8...king
+	// king...C1...king and rook..C1 must be free
+	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
 
@@ -1021,19 +1013,17 @@ Board::longCastlingBlackIsLegal() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
+	uint64_t base = king <= C8 ? C8 | D8 : (C8 | D8 | E8 | F8 | G8) & (king - 1);
 
-	if (m_occupied & RankMask8 & (king - 1) & ~(rook - 1) & ~rook)	// (rook+1)...(king-1)
+	// king...C8...king not attacked
+	if (isAttackedBy(White, base | king))
 		return false;
 
-	if (m_ksq[Black] <= c8)
-	{
-		if (m_occupied & (A8 | B8 | C8 | D8) & ~(king - 1) & ~king)	// (king+1)...D8
-			return false;
+	if (rook <= C8)
+		base |= (A8 | B8 | C8) & ~rook; // rook...C8
 
-		return !isAttackedBy(White, (A8 | B8 | C8) & ~(king - 1));	// king...C8
-	}
-
-	return !isAttackedBy(White, (C8 | D8 | E8 | F8 | G8 | H8) & (king | (king - 1)));	// C8...king
+	// king...C1...king and rook..C1 must be free
+	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
 
@@ -1044,11 +1034,10 @@ Board::shortCastlingWhiteIsPossible() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteKS]);
+	uint64_t base = (B1 | C1 | D1 | E1 | F1 | G1) & ~(king - 1); // king...G1
 
-	if (m_occupied & (A1 | B1 | C1 | D1 | E1 | F1 | G1) & ~(rook | (rook - 1)) & ~king)	// rook...G1
-		return false;
-
-	return !(m_occupied & RankMask1 & (rook - 1) & ~(king - 1) & ~king);	// (king+1)...(rook-1)
+	// king...G1 and F1 must be free
+	return (m_occupied & (base | F1) & ~king & ~rook) == 0;
 }
 
 
@@ -1059,11 +1048,10 @@ Board::shortCastlingBlackIsPossible() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackKS]);
+	uint64_t base = (B8 | C8 | D8 | E8 | F8 | G8) & ~(king - 1);	// king...G8
 
-	if (m_occupied & (A8 | B8 | C8 | D8 | E8 | F8 | G8) & ~(rook | (rook - 1)) & ~king)	// rook...G8
-		return false;
-
-	return !(m_occupied & RankMask8 & (rook - 1) & ~(king - 1) & ~king);	// (king+1)...(rook-1)
+	// king...G8 and F8 must be free
+	return (m_occupied & (base | F8) & ~king & ~rook) == 0;
 }
 
 
@@ -1074,11 +1062,13 @@ Board::longCastlingWhiteIsPossible() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
+	uint64_t base = king <= C1 ? C1 | D1 : (C1 | D1 | E1 | F1 | G1) & (king - 1);
 
-	if (m_occupied & (A1 | B1 | C1 | D1) & ~(king - 1) & ~king)	// (king+1)...D1
-		return false;
+	if (rook <= C1)
+		base |= (A1 | B1 | C1) & ~rook; // rook...C1
 
-	return !(m_occupied & RankMask1 & (king - 1) & ~(rook - 1) & ~rook);	// (rook+1)...(king-1)
+	// king...C1...king must be free
+	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
 
@@ -1089,11 +1079,13 @@ Board::longCastlingBlackIsPossible() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
+	uint64_t base = king <= C8 ? C8 | D8 : (C8 | D8 | E8 | F8 | G8) & (king - 1);
 
-	if (m_occupied & (A8 | B8 | C8 | D8) & ~(king - 1) & ~king)	// (king+1)...D8
-		return false;
+	if (rook <= C8)
+		base |= (A8 | B8 | C8) & ~rook; // rook...C8
 
-	return !(m_occupied & RankMask8 & (king - 1) & ~(rook - 1) & ~rook);	// (rook+1)...(king-1)
+	// king...C8...king must be free
+	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
 
@@ -2152,7 +2144,7 @@ Board::computeIdn() const
 
 	// firstly handle the most common case
 	if (isStandardPosition())
-		return chess960::StandardIdn;
+		return variant::StandardIdn;
 
 	if (!isShuffleChessPosition())
 		return 0;
@@ -2212,7 +2204,7 @@ Board::setup(unsigned idn)
 	M_REQUIRE(idn <= 4*960);
 
 	// firstly handle the most common case
-	if (idn == chess960::StandardIdn)
+	if (idn == variant::StandardIdn)
 		return setStandardPosition();
 
 	bool frcCastling;
@@ -3594,7 +3586,7 @@ Board::doMove(Move const& m)
 						bothMask = fromMask ^ setBit(to);
 						m_ksq[m_stm] = to;
 						m_kings ^= bothMask;
-						m_piece[from] = piece::Empty;
+						m_piece[from] = piece::None;
 						hashPiece(from, to, ::toPiece(piece::King, m_stm));
 
 						m_occupiedBy[m_stm] ^= bothMask;
@@ -3604,13 +3596,13 @@ Board::doMove(Move const& m)
 					}
 
 					// in handicap games the rook field is possibly empty
-					if (m_piece[rookFrom] != piece::Empty)
+					if (m_piece[rookFrom] != piece::None)
 					{
 						M_ASSERT(m_piece[rookFrom] == piece::Rook);
 
 						uint64_t rookMask = setBit(rookFrom) ^ setBit(rookTo);
 
-						m_piece[rookFrom] = piece::Empty;
+						m_piece[rookFrom] = piece::None;
 						m_piece[rookTo] = piece::Rook;
 						m_rooks ^= rookMask;
 						m_occupiedBy[m_stm] ^= rookMask;
@@ -3737,7 +3729,7 @@ Board::doMove(Move const& m)
 				m_halfMoveClock = 0;
 				// annoying move, the capture is not on the 'to' square
 				unsigned epsq = PrevRank[m_stm][to];
-				m_piece[epsq] = piece::Empty;
+				m_piece[epsq] = piece::None;
 				m_pawns ^= setBit(epsq);
 				m_occupiedBy[sntm] ^= setBit(epsq);
 				m_occupiedL90 ^= MaskL90[to] ^ MaskL90[epsq];
@@ -3750,7 +3742,7 @@ Board::doMove(Move const& m)
 		}
 		// ...no we did not forget the king!
 
-		m_piece[from] = piece::Empty;
+		m_piece[from] = piece::None;
 		m_occupiedBy[m_stm] ^= bothMask;
 		m_occupiedL90 ^= MaskL90[from];
 		m_occupiedL45 ^= MaskL45[from];
@@ -3866,7 +3858,7 @@ Board::undoMove(Move const& m)
 					{
 						bothMask = fromMask ^ setBit(to);
 						m_kings ^= bothMask;
-						m_piece[to] = piece::Empty;
+						m_piece[to] = piece::None;
 						m_ksq[sntm] = from;
 						hashPiece(from, to, ::toPiece(piece::King, sntm));
 
@@ -3877,11 +3869,11 @@ Board::undoMove(Move const& m)
 					}
 
 					// in handicap games the rook field is possibly empty
-					if (m_piece[rookTo] != piece::Empty)
+					if (m_piece[rookTo] != piece::None)
 					{
 						uint64_t rookMask = setBit(rookFrom) ^ setBit(rookTo);
 
-						m_piece[rookTo] = piece::Empty;
+						m_piece[rookTo] = piece::None;
 						m_piece[rookFrom] = piece::Rook;
 						m_rooks ^= rookMask;
 						m_occupiedBy[sntm] ^= rookMask;
@@ -3967,7 +3959,7 @@ Board::undoMove(Move const& m)
 
 		switch (m.removal())
 		{
-			case piece::Empty:
+			case piece::None:
 				// extra cleanup needed for non-captures
 				m_occupiedL90 ^= MaskL90[to];
 				m_occupiedL45 ^= MaskL45[to];
@@ -4011,7 +4003,7 @@ Board::undoMove(Move const& m)
 				break;
 
 			case Move::En_Passant:
-				replace = piece::Empty;
+				replace = piece::None;
 				// annoying move, the capture is not on the 'to' square
 				unsigned epsq = PrevRank[sntm][to];
 				m_piece[epsq] = piece::Pawn;
@@ -4169,7 +4161,7 @@ Board::checkMove(Move const& move, move::Constraint flag) const
 		return canCastleLong(sideToMove()) && longCastlingIsLegal();
 	}
 
-	if ((move.capturedType() != piece::Empty) == !(m_occupiedBy[m_stm ^ 1] & dst))
+	if ((move.capturedType() != piece::None) == !(m_occupiedBy[m_stm ^ 1] & dst))
 		return to == m_epSquare && (pawns(color::ID(m_stm)) & src);
 
 	switch (move.action())
@@ -4295,6 +4287,35 @@ Board::prepareMove(Square from, Square to, move::Constraint flag) const
 						return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
 				}
 			}
+
+			// Possibly it's something like "g1g1". Some engines - for example Stockfish -
+			// are sending such weird notation for castling while analyzing Chess 960 games.
+			if (to == (whiteToMove() ? sq::g1 : sq::g8))
+			{
+				if (canCastleShort(color::ID(m_stm)))
+				{
+					to = m_castleRookCurrent[::kingSideIndex(m_stm)];
+
+					if (shortCastlingIsLegal())
+						return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
+
+					if (flag == move::AllowIllegalMove && shortCastlingIsPossible())
+						return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
+				}
+			}
+			else if (to == (whiteToMove() ? sq::c1 : sq::c8))
+			{
+				if (canCastleLong(color::ID(m_stm)))
+				{
+					to = m_castleRookCurrent[::queenSideIndex(m_stm)];
+
+					if (longCastlingIsLegal())
+						return setMoveColor(setLegalMove(Move::genCastling(m_ksq[m_stm], to)));
+
+					if (flag == move::AllowIllegalMove && longCastlingIsPossible())
+						return setMoveColor(Move::genCastling(m_ksq[m_stm], to));
+				}
+			}
 		}
 
 		return Move::empty();
@@ -4302,6 +4323,10 @@ Board::prepareMove(Square from, Square to, move::Constraint flag) const
 
 	Byte piece		= m_piece[from];
 	Byte captured	= m_piece[to];
+
+	if (captured == piece::King)
+		return Move::empty();
+
 	Move move;
 
 	switch (piece)
@@ -4318,7 +4343,7 @@ Board::prepareMove(Square from, Square to, move::Constraint flag) const
 			{
 				move = Move::genTwoForward(from, to);
 			}
-			else if (captured == piece::Empty)
+			else if (captured == piece::None)
 			{
 				if (dst & HomeRankMask[m_stm ^ 1])
 					move = Move::genPromote(from, to, piece::Queen);
@@ -4515,13 +4540,13 @@ Board::makeMove(Square from, Square to, piece::Type promoted) const
 
 			if (::rank(to) == HomeRank[m_stm ^ 1])
 			{
-				if (captured == piece::Empty)
+				if (captured == piece::None)
 					return setMoveColor(Move::genPromote(from, to, promoted));
 
 				return setMoveColor(Move::genCapturePromote(from, to, promoted, captured));
 			}
 
-			if (captured == piece::Empty)
+			if (captured == piece::None)
 				return setMoveColor(Move::genOneForward(from, to));
 
 			return setMoveColor(Move::genPawnCapture(from, to, captured));

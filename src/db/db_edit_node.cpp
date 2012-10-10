@@ -58,7 +58,7 @@ deleteList(List& list)
 struct Node::Spacing
 {
 	enum Type		{ Zero, Space, Open, Close, Break, Para };
-	enum Context	{ None, Comment, PreComment, Diagram, StartVariation, EndVariation };
+	enum Context	{ None, Comment, Annotation, PreComment, Diagram, StartVariation, EndVariation };
 
 	struct Token
 	{
@@ -350,7 +350,6 @@ void Opening::visit(Visitor& visitor) const		{ visitor.opening(m_board, m_idn, m
 void Languages::visit(Visitor& visitor) const	{ visitor.languages(m_langSet); }
 void Ply::visit(Visitor& visitor) const			{ visitor.move(m_moveNo, m_move); }
 void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_position, m_varPos, m_comment); }
-void Annotation::visit(Visitor& visitor) const	{ visitor.annotation(m_annotation); }
 void Marks::visit(Visitor& visitor) const			{ visitor.marks(m_hasMarks); }
 
 
@@ -434,14 +433,18 @@ Comment::operator==(Node const* node) const
 }
 
 
-Annotation::Annotation(db::Annotation const& annotation, bool deleteDiagram)
-	:m_annotation(annotation)
+Annotation::Annotation(db::Annotation const& annotation, DisplayType type, bool skipDiagram)
+	:m_type(type)
 {
-	if (deleteDiagram)
+	switch (type)
 	{
-		m_annotation.remove(nag::Diagram);
-		m_annotation.remove(nag::DiagramFromBlack);
+		case Numerical:	m_annotation.setUsualNags(annotation); break;
+		case Textual:		m_annotation.setUnusualNags(annotation); break;
+		case All:			m_annotation = annotation; break;
 	}
+
+	if (skipDiagram)
+		m_annotation.removeDiagramNags();
 }
 
 
@@ -451,7 +454,15 @@ Annotation::operator==(Node const* node) const
 	M_ASSERT(node);
 	M_ASSERT(dynamic_cast<Annotation const*>(node));
 
-	return m_annotation == static_cast<Annotation const*>(node)->m_annotation;
+	return	m_type == static_cast<Annotation const*>(node)->m_type
+			&& m_annotation == static_cast<Annotation const*>(node)->m_annotation;
+}
+
+
+void
+Annotation::visit(Visitor& visitor) const
+{
+	visitor.annotation(m_annotation, m_type == Textual);
 }
 
 
@@ -927,17 +938,52 @@ Move::Move(Work& work, MoveNode const* move)
 
 	work.pop(m_list);
 
-	if (!work.isFolded && move->hasAnnotation())
+	if (!work.isFolded && move->annotation().containsUsualNags())
 	{
-		m_list.push_back(new Annotation(
-			move->annotation(),
-			bool(work.m_displayStyle & display::ShowDiagrams)));
+		Annotation* annotation = new Annotation(
+											move->annotation(),
+											Annotation::Numerical,
+											bool(work.m_displayStyle & display::ShowDiagrams));
+
+		if (annotation->isEmpty())
+			delete annotation;
+		else
+			m_list.push_back(annotation);
 	}
 
 	m_ply = work.needMoveNo ? new Ply(move, work.board.moveNumber()) : new Ply(move);
 	m_list.push_back(m_ply);
 	work.incrPlyCount();
 	work.needMoveNo = false;
+
+	if (!work.isFolded && move->annotation().containsUnusualNags())
+	{
+		Annotation* annotation = new Annotation(
+											move->annotation(),
+											Annotation::Textual,
+											bool(work.m_displayStyle & display::ShowDiagrams));
+
+		if (annotation->isEmpty())
+		{
+			delete annotation;
+		}
+		else
+		{
+			if (work.m_level == 0 && (work.m_displayStyle & display::ColumnStyle))
+				work.pushParagraph(Spacing::Annotation);
+			else
+				work.pushSpace();
+
+			work.pop(m_list);
+			m_list.push_back(annotation);
+
+			if (work.m_level == 0 && (work.m_displayStyle & display::ColumnStyle))
+				work.pushParagraph(Spacing::Annotation);
+
+			work.needMoveNo = true;
+		}
+	}
+
 	work.pushSpace();
 
 	if (work.isFolded)
@@ -1097,9 +1143,7 @@ Root::~Root() throw()
 	delete m_opening;
 	delete m_languages;
 	delete m_variation;
-
-	for (unsigned i = 0; i < m_nodes.size(); ++i)
-		delete m_nodes[i];
+	::deleteList(m_nodes);
 }
 
 

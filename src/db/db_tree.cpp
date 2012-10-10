@@ -141,9 +141,13 @@ Tree::add(GameInfo const& info, Eco eco, uint16_t move, Board const& myPosition)
 	{
 		Move m = ::move(myPosition, move);
 
-		m_list.reserve_exact(m_list.size() + 1);
-		m_list.push_back(TreeInfo(eco, m));
-		::moveCache[move] = tinfo = &m_list.back();
+		m_infoList.reserve_exact(m_infoList.size() + 1);
+#ifdef SUPPORT_TREE_INFO_FILTER
+		m_infoList.push_back(TreeInfo(eco, m, m_filter.size()));
+#else
+		m_infoList.push_back(TreeInfo(eco, m, m_index));
+#endif
+		::moveCache[move] = tinfo = &m_infoList.back();
 	}
 	else
 	{
@@ -153,11 +157,39 @@ Tree::add(GameInfo const& info, Eco eco, uint16_t move, Board const& myPosition)
 
 	tinfo->add(info, myPosition.sideToMove(), m_key.ratingType());
 
+#ifdef SUPPORT_TREE_INFO_FILTER
+	tinfo->addGame(m_index);
+#endif
+
 #ifdef BUILD_VARIATION_LIST
 	if (m_buildVariationList && eco.ecoKey())
 		addToVariation(eco, info.ecoKey());
 #endif
 }
+
+
+#ifdef SUPPORT_TREE_INFO_FILTER
+
+void
+Tree::compressFilter()
+{
+	m_filter.compress();
+
+	for (unsigned i = 0; i < m_infoList.size(); ++i)
+		m_infoList[i].uncompressFilter();
+}
+
+
+void
+Tree::uncompressFilter()
+{
+	m_filter.uncompress();
+
+	for (unsigned i = 0; i < m_infoList.size(); ++i)
+		m_infoList[i].uncompressFilter();
+}
+
+#endif
 
 
 void
@@ -218,7 +250,7 @@ Tree::buildTree0(	unsigned myIdn,
 
 			if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
 			{
-				if (info.idn() == chess960::StandardIdn)
+				if (info.idn() == variant::StandardIdn)
 				{
 					if (mode == tree::Exact)
 					{
@@ -289,7 +321,7 @@ Tree::buildTree518(	unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn == chess960::StandardIdn);
+	M_ASSERT(myIdn == variant::StandardIdn);
 	M_ASSERT(!myPosition.isStandardPosition());
 
 	unsigned				reportAfter = m_index + frequency;
@@ -334,7 +366,7 @@ Tree::buildTree518(	unsigned myIdn,
 //		}
 //		else
 		{
-			if (info.idn() != chess960::StandardIdn)
+			if (info.idn() != variant::StandardIdn)
 			{
 				if (info.idn() == 0 || mode == tree::Exact)
 					possiblyAdd(base, info, Eco(), myPosition);
@@ -386,7 +418,7 @@ Tree::buildTree960(	unsigned myIdn,
 	typedef EcoTable::EcoSet EcoSet;
 
 	M_ASSERT(myIdn != 0);
-	M_ASSERT(myIdn != chess960::StandardIdn);
+	M_ASSERT(myIdn != variant::StandardIdn);
 	M_ASSERT(!myPosition.isStandardPosition());
 
 	unsigned reportAfter = m_index + frequency;
@@ -489,7 +521,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn == chess960::StandardIdn);
+	M_ASSERT(myIdn == variant::StandardIdn);
 	M_ASSERT(myPosition.isStandardPosition());
 
 	unsigned		reportAfter = m_index + frequency;
@@ -511,7 +543,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		if (info.idn() == chess960::StandardIdn)
+		if (info.idn() == variant::StandardIdn)
 		{
 			if (info.plyCount() == 0)
 			{
@@ -555,7 +587,7 @@ Tree::buildTreeStart(unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn != chess960::StandardIdn);
+	M_ASSERT(myIdn != variant::StandardIdn);
 	M_ASSERT(myPosition.isStartPosition());
 
 	unsigned reportAfter = m_index + mstl::max(frequency, 1000u);
@@ -628,7 +660,7 @@ Tree::makeTree(TreeP tree,
 		buildMeth = &Tree::buildTreeStandard;
 	else if (myPosition.isStartPosition())
 		buildMeth = &Tree::buildTreeStart;
-	else if (myIdn == chess960::StandardIdn)
+	else if (myIdn == variant::StandardIdn)
 		buildMeth = &Tree::buildTree518;
 	else
 		buildMeth = &Tree::buildTree960;
@@ -652,9 +684,9 @@ Tree::makeTree(TreeP tree,
 	if (tree)
 	{
 		// we have to rebuild the move cache
-		for (unsigned i = 0; i < tree->m_list.size(); ++i)
+		for (unsigned i = 0; i < tree->m_infoList.size(); ++i)
 		{
-			TreeInfo& info = tree->m_list[i];
+			TreeInfo& info = tree->m_infoList[i];
 			::moveCache[::index(info.move())] = &info;
 		}
 
@@ -695,9 +727,9 @@ Tree::makeTree(TreeP tree,
 		line.copy(myLine);
 		line.length++;
 
-		for (unsigned i = 0; i < tree->m_list.size(); ++i)
+		for (unsigned i = 0; i < tree->m_infoList.size(); ++i)
 		{
-			TreeInfo& info = tree->m_list[i];
+			TreeInfo& info = tree->m_infoList[i];
 
 			if (info.move())
 			{
@@ -707,7 +739,7 @@ Tree::makeTree(TreeP tree,
 
 			if (	line.length <= opening::Max_Line_Length
 				&& !info.eco()
-				&& (	myIdn == chess960::StandardIdn
+				&& (	myIdn == variant::StandardIdn
 					|| (myIdn == 0 && !myPosition.notDerivableFromStandardChess())))
 			{
 				buf[line.length - 1] = ::index(info.move());
@@ -784,23 +816,23 @@ Tree::isTreeFor(	Database const& base,
 void
 Tree::sort(attribute::tree::ID column)
 {
-	if (m_list.size() <= 1)
+	if (m_infoList.size() <= 1)
 		return;
 
-	for (unsigned k = 0, n = m_list.size() - 1; k < n; ++k)
+	for (unsigned k = 0, n = m_infoList.size() - 1; k < n; ++k)
 	{
 		unsigned index = k;
 
-		TreeInfo* info = &m_list[index];
+		TreeInfo* info = &m_infoList[index];
 
 		for (unsigned i = k + 1; i <= n; ++i)
 		{
-			if (m_list[i].isLessThan(*info, m_key.ratingType(), column))
-				info = &m_list[index = i];
+			if (m_infoList[i].isLessThan(*info, m_key.ratingType(), column))
+				info = &m_infoList[index = i];
 		}
 
 		if (index > k)
-			mstl::swap(m_list[k], m_list[index]);
+			mstl::swap(m_infoList[k], m_infoList[index]);
 	}
 }
 

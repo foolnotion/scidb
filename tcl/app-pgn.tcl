@@ -276,6 +276,7 @@ proc build {parent width height} {
 	set Vars(edit:comment) 0
 
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
+	::pgn::setup::setupNags editor
 	InitScratchGame
 	Raise history
 }
@@ -571,6 +572,7 @@ proc InitScratchGame {} {
 	set Vars(last:9) {}
 
 	::scidb::game::subscribe board 9 [namespace parent]::board::update
+	::scidb::game::subscribe board 9 [namespace parent]::analysis::update
 	::scidb::game::switch 9
 	set Vars(position) -1
 }
@@ -589,6 +591,7 @@ proc See {position w key succKey} { ;# NOTE: we do not use succKey
 	variable CharLimit
 
 	if {!$Vars(see:$position)} { return }
+	if {[string length $key] == 0} { return }
 
 	if {$Vars(start:$position)} {
 		if {$key eq "m-0.0"} { return }
@@ -711,10 +714,7 @@ proc GameBarEvent {action position} {
 
 
 proc ToggleLanguage {lang} {
-	variable Vars
-
-	set Vars(lang:active:$lang) [expr {!$Vars(lang:active:$lang)}]
-	SetLanguages $Vars(position)
+	SetLanguages [set [namespace current]::Vars(position)]
 }
 
 
@@ -852,6 +852,7 @@ proc ConfigureEditor {} {
 	::scidb::game::release 10
 	::scidb::game::switch $position
 	::scidb::tree::freeze 0
+	refresh
 }
 
 
@@ -1186,15 +1187,21 @@ proc InsertMove {position w level key data} {
 			ply {
 				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
 				if {[llength $suffixAnnotation]} {
-					PrintAnnotation $w $position $level $key $suffixAnnotation 0
+					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
 				}
 				set havePly 1
 			}
 
 			annotation {
-				set prefixAnnotation [lindex $node 1]
-				set suffixAnnotation [lindex $node 2]
-				lappend suffixAnnotation {*}[lindex $node 3]
+				lassign $node _ isTextual prefix infix suffix
+				lappend infix {*}$suffix
+				if {$isTextual} {
+					lappend prefix {*}$infix
+					PrintTextualAnnotation $position $w $level $key $prefix
+				} else {
+					set prefixAnnotation $prefix
+					set suffixAnnotation $infix
+				}
 			}
 
 			marks {
@@ -1298,12 +1305,12 @@ proc PrintMove {position w level key data annotation} {
 		} 
 
 		if {[llength $annotation]} {
-			PrintAnnotation $w $position $level $key $annotation 1
+			PrintNumericalAnnotation $position $w $level $key $annotation 1
 			$w insert current "\u2006"
 		}
 	} else {
 		if {[llength $annotation]} {
-			PrintAnnotation $w $position $level $key $annotation 1
+			PrintNumericalAnnotation $position $w $level $key $annotation 1
 			$w insert current "\u2006"
 		}
 
@@ -1483,7 +1490,7 @@ proc PrintMoveInfo {position w level key data} {
 }
 
 
-proc PrintAnnotation {w position level key nags isPrefix} {
+proc PrintNumericalAnnotation {position w level key nags isPrefix} {
 	variable ::pgn::editor::Options
 
 	set annotation [::font::splitAnnotation $nags]
@@ -1491,13 +1498,13 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 	set keyTag nag:$key
 	set prevSym -1
 	set count 0
-	set nag ""
 
 	foreach {value nag tag} $annotation {
-		set sym [expr {$tag eq "symbol"}]
-		if {$level == 0} {
-			if {$sym} { set tag symbolb }
-			lappend tag main
+		if {$tag eq "symbol"} {
+			if {$level == 0} { set tag symbolb }
+			set sym 1
+		} else {
+			set sym 0
 		}
 		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
@@ -1512,18 +1519,16 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 			if {$count > 1} { $w insert current "\u2005" }
 			set prevSym 1
 		} elseif {$value == 155 || $value == 156} {
-			if {$Options(show:diagram)} {
-				set nag ""
-			} else {
-				if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current "\u2005" }
-				set prevSym $sym
-			}
+			if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current "\u2005" }
+			set prevSym $sym
 		} elseif {!$sym && !$isPrefix} {
 			$w insert current "\u2005"
 			set prevSym $sym
 		}
 		if {[string length $nag]} {
-			$w insert current $nag [list nag$value {*}$tag $nagTag]
+			if {$level == 0 && [string index $nag 0] ne "$"} { lappend tag main }
+			lappend tag nag$value
+			$w insert current $nag [list {*}$tag $nagTag]
 			if {$position < 9} {
 				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
@@ -1532,10 +1537,39 @@ proc PrintAnnotation {w position level key nags isPrefix} {
 		set prefix 0
 	}
 
-	set keyTag annotation:$key
+	set keyTag numerical:$key
 	$w tag add nag $pos current
 	$w tag raise symbol
 	$w tag raise symbolb
+	$w tag add $keyTag $pos current
+
+	if {$position < 9} {
+		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
+	}
+}
+
+
+proc PrintTextualAnnotation {position w level key nags} {
+	set pos [$w index current]
+	set keyTag nagtext:$key
+	set count 0
+
+#	set pos [$w index current]
+#	if {![string match *.0 $pos]} { $w insert current " " }
+
+	foreach nag $nags {
+		if {$count > 0} { $w insert current " \u2726 " nagtext }
+		set nagTag $keyTag:[incr count]
+		set txt $::annotation::mc::Nag([string range $nag 1 end])
+		$w insert current $txt [list $nagTag nagtext]
+		if {$position < 9} {
+			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
+			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+		}
+	}
+
+	set keyTag textual:$key
+	$w tag add nag $pos current
 	$w tag add $keyTag $pos current
 
 	if {$position < 9} {
@@ -1787,7 +1821,7 @@ proc ResetGame {position tags} {
 	::scidb::game::subscribe pgn $position [namespace current]::DoLayout
 	::scidb::game::subscribe board $position [namespace parent]::board::update
 	::scidb::game::subscribe tree $position [namespace parent]::tree::update
-	::scidb::game::subscribe tree $position [namespace parent]::analysis::update
+	::scidb::game::subscribe board $position [namespace parent]::analysis::update
 	::scidb::game::subscribe state $position [namespace current]::StateChanged
 }
 
@@ -2207,6 +2241,7 @@ proc PopupMenu {parent position} {
 								ParLayout(use-spacing) spacing:paragraph
 								Display(numbering) show:varnumbers
 								Display(moveinfo) show:moveinfo
+								Display(nagtext) show:nagtext
 								Diagrams(show) show:diagram} {
 		$menu.display add checkbutton \
 			-label [set ::pgn::setup::mc::$label] \
@@ -2605,10 +2640,15 @@ proc VerifyNumberOfMoves {dlg length} {
 proc Refresh {var} {
 	variable Vars
 
-	if {$var eq "weight:mainline"} {
-		variable _BoldTextForMainlineMoves
-		variable ::pgn::editor::Options
-		set Options(weight:mainline) [expr {$_BoldTextForMainlineMoves ? "bold" : "normal"}]
+	switch $var {
+		weight:mainline {
+			variable _BoldTextForMainlineMoves
+			variable ::pgn::editor::Options
+			set Options(weight:mainline) [expr {$_BoldTextForMainlineMoves ? "bold" : "normal"}]
+		}
+		show:nagtext {
+			::pgn::setup::setupNags editor
+		}
 	}
 
 	set Vars(current:$Vars(position)) {}

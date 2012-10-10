@@ -145,7 +145,7 @@ public:
 private:
 
 	typedef bool (*ReachableFunc)(Signature const&, Signature const&, uint16_t);
-	typedef mstl::pvector<TreeInfo> List;
+	typedef mstl::pvector<TreeInfo> InfoList;
 
 	bool buildTree0(			unsigned myIdn,
 									Board const& startPosition,
@@ -212,14 +212,14 @@ private:
 	static bool isCached(TreeCache& cache, uint64_t hash, Position const& position);
 	static Tree* lookup(TreeCache& cache, uint64_t hash, Position const& position);
 
-	Database*	m_base;
-	Key			m_key;
-	unsigned		m_index;
-	unsigned		m_last;
-	bool			m_complete;
-	List			m_list;
-	TreeInfo		m_total;
-	Filter		m_filter;
+	Database*		m_base;
+	Key				m_key;
+	unsigned			m_index;
+	unsigned			m_last;
+	bool				m_complete;
+	InfoList			m_infoList;
+	TreeInfo			m_total;
+	Filter			m_filter;
 
 #ifdef SHOW_TREE_INFO
 	unsigned		m_numGamesParsed;

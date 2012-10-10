@@ -1,3 +1,32 @@
+[Oktober 2012] ===============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #450)
+------------------------------------------------------------------------------
+* New theme "Arena" designed (it's the "Light Blue" theme of Arena).
+
+* New feature in editor: unusual NAG's will be displayed as text (optional).
+
+* Update of Stockfish engine.
+
+* Engine Sjeng added.
+
+* Board tab: new buttons for "load next game", "load previous game", "load
+first game", and "load last game".
+
+* New database types: "Antichess" (for Suicide, etc.), "PGN file", "Player
+Collection" with female icon, and "Bughouse" (may include Crazyhouse).
+
+* Some icons replaced for database types: "Player Collection", "Training",
+"Tournament", "IM Games", and "GM Games".
+
+* Opening tree window: new menu item "Load first game with this continuation"
+added.
+
+* Huge performance problem while opening ChessBase database solved.
+
+* Engine configuration dialog finished.
+
 [September 2012] =============================================================
 
 ------------------------------------------------------------------------------
@@ -11,7 +40,7 @@ runtime type information.
 1. This is a conflict to optimizations with -fno-rtti.
 2. It's a runtime performance lack.
 3. The clang compiler is not compiling with this conflict.
-4. The GNU compiler is silentry ignoring this rpoblem.
+4. The GNU compiler is silentry ignoring this problem.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #436)

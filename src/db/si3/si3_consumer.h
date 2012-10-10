@@ -72,6 +72,7 @@ private:
 
 	bool beginGame(TagSet const& tags) override;
 	save::State endGame(TagSet const& tags) override;
+	save::State skipGame(TagSet const& tags) override;
 
 	void sendTrailingComment(Comment const& comment, bool variationIsEmpty) override;
 	void sendComment(Comment const& comment) override;

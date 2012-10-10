@@ -2617,11 +2617,6 @@ Player::parseComputerList(mstl::istream& stream)
 					country::Code federation = country::Unknown;
 					char const* url = 0;
 
-					bool winboard		= false;
-					bool uci				= false;
-					bool chess960		= false;
-					bool shuffleChess	= false;
-
 					*const_cast<char*>(t) = '\0';
 					str.hook(const_cast<char*>(s), t++ - s);
 					s = t;
@@ -2658,28 +2653,6 @@ Player::parseComputerList(mstl::istream& stream)
 							++s;
 						while (::isspace(*s))
 							++s;
-
-						while (*s != '\0' && !::isspace(*s))
-						{
-							switch (::toupper(*s))
-							{
-								case 'W': winboard = true; break;
-								case 'U': uci = true; break;
-								case 'F': chess960 = true; break;
-								case 'S': shuffleChess = chess960 = true; break;
-							}
-
-							while (::isalpha(*s))
-								++s;
-							if (*s != '\0')
-								++s;
-						}
-
-						while (::isspace(*s))
-							++s;
-
-						if (*s != '\0')
-							url = s;
 					}
 
 					codec.toUtf8(str, name);
@@ -2688,10 +2661,47 @@ Player::parseComputerList(mstl::istream& stream)
 					{
 						DEBUG(++countEngines);
 
-						player->setChess960Flag(chess960);
-						player->setShuffleChessFlag(shuffleChess);
-						player->setWinboardProtocol(winboard);
-						player->setUciProtocol(uci);
+						while (*s != '\0' && !::isspace(*s))
+						{
+							switch (::toupper(*s))
+							{
+								case 'W': player->setWinboardProtocol(true); break;
+								case 'U': player->setUciProtocol(true); break;
+							}
+
+							while (::isalpha(*s))
+								++s;
+							if (*s == '/' || *s == '?' || *s == '-')
+								++s;
+						}
+
+						while (::isspace(*s))
+							++s;
+
+						while (*s != '\0' && !::isspace(*s))
+						{
+							switch (*s)
+							{
+								case 'F': player->setChess960Flag(true); break;
+								case 'B': player->setBughouseChessFlag(true); break;
+								case 'C': player->setCrazyhouseChessFlag(true); break;
+								case 'L': player->setLosersChessFlag(true); break;
+								case 'G': player->setGiveawayChessFlag(true); break;
+								case 'S': player->setSuicideChessFlag(true); break;
+							}
+							
+							while (::isalpha(*s))
+								++s;
+							if (*s == '/' || *s == '?' || *s == '-')
+								++s;
+						}
+
+						while (::isspace(*s))
+							++s;
+
+						if (*s != '\0')
+							url = s;
+
 						player->setType(species::Program);
 						player->setLatestElo(elo);
 						player->setHighestElo(elo);

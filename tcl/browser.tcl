@@ -46,8 +46,10 @@ set MinimizeBoardSize	"Minimize board size"
 set IllegalMove			"Illegal move"
 set NoCastlingRights		"no castling rights"
 
-set GotoFirstGame			"Goto first game"
-set GotoLastGame			"Goto last game"
+set GotoGame(first)		"Goto first game"
+set GotoGame(last)		"Goto last game"
+set GotoGame(next)		"Goto next game"
+set GotoGame(prev)		"Goto previous game"
 
 set LoadGame				"Load Game"
 set MergeGame				"Merge Game"
@@ -88,8 +90,11 @@ proc open {parent base info view index {fen {}}} {
 	set number [::gametable::column $info number]
 	set name [::util::databaseName $base]
 	if {[info exists Priv($base:$number:$view)]} {
-		::widget::dialogRaise [lindex $Priv($base:$number:$view) 0]
-		return
+		set dlg [lindex $Priv($base:$number:$view) 0]
+		if {[winfo exists $dlg]} { ;# prevent raise conditions
+			::widget::dialogRaise $dlg
+			return
+		}
 	}
 	set position [incr Priv(count)]
 	set dlg $parent.browser$position
@@ -270,6 +275,10 @@ proc open {parent base info view index {fen {}}} {
 	bind $dlg <Next>						[namespace code [list Goto $position +10]]
 	bind $dlg <Home>						[namespace code [list Goto $position -9999]]
 	bind $dlg <End>						[namespace code [list Goto $position +9999]]
+	bind $dlg <Control-Home>			[namespace code [list GotoGame(first) $board $position]]
+	bind $dlg <Control-End>				[namespace code [list GotoGame(last) $board $position]]
+	bind $dlg <Control-Down>			[namespace code [list GotoGame(next) $board $position]]
+	bind $dlg <Control-Up>				[namespace code [list GotoGame(prev) $board $position]]
 	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $board $position]]
 	bind $dlg <Key-plus>					[namespace code [list ChangeBoardSize $position $lt.board +5]]
 	bind $dlg <Key-KP_Add>				[namespace code [list ChangeBoardSize $position $lt.board +5]]
@@ -568,7 +577,7 @@ proc UpdateTreeBase {position base} {
 }
 
 
-proc GotoFirstGame {parent position} {
+proc GotoGame(first) {parent position} {
 	variable ${position}::Vars
 
 	if {$Vars(index) > 0} {
@@ -578,7 +587,7 @@ proc GotoFirstGame {parent position} {
 }
 
 
-proc GotoLastGame {parent position} {
+proc GotoGame(last) {parent position} {
 	variable ${position}::Vars
 
 	set index [expr {[scidb::view::count games $Vars(base) $Vars(view)] - 1}]
@@ -590,14 +599,27 @@ proc GotoLastGame {parent position} {
 }
 
 
+proc GotoGame(next) {parent position} {
+	NextGame $parent $position +1
+}
+
+
+proc GotoGame(prev) {parent position} {
+	NextGame $parent $position -1
+}
+
+
 proc NextGame {parent position {step 0}} {
 	variable ${position}::Vars
 	variable Priv
 
 	if {$Vars(index) == -1} { return }
+	set count [scidb::view::count games $Vars(base) $Vars(view)]
 	set number $Vars(number)
-	incr Vars(index) $step
-	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
+	set index [expr {$Vars(index) + $step}]
+	if {$index < 0 || $index == $count} { return }
+	set Vars(index) $index
+	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base)]
 	set Vars(result) [::util::formatResult [::gametable::column $Vars(info) result]]
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set key $Vars(base):$number:$Vars(view)
@@ -608,8 +630,8 @@ proc NextGame {parent position {step 0}} {
 	lappend Priv($key) [winfo toplevel $parent]
 	ConfigureButtons $position
 	SetTitle $position
-	set number [::scidb::db::get gameNumber $Vars(base) $Vars(index) $Vars(view)]
-	::widget::busyOperation { ::game::load $parent $position $Vars(base) $number }
+	set number [::scidb::db::get gameNumber $Vars(base) $index $Vars(view)]
+	::widget::busyOperation { ::game::load $parent $position $Vars(base) -1 $number }
 	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position
 }
@@ -1067,6 +1089,7 @@ proc Destroy {dlg w position base} {
 	variable ${position}::Vars
 	variable Priv
 
+#	XXX
 #	::scidb::game::unsubscribe board {*}$Vars(subscribe:board)
 #	::scidb::game::unsubscribe pgn {*}$Vars(subscribe:pgn)
 	::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
@@ -1160,8 +1183,9 @@ proc PopupMenu {parent board position {what ""}} {
 		$menu add separator
 	}
 
-	if {$Vars(index) == -1} { set state disabled } else { set state normal }
+	set count [scidb::view::count games $Vars(base) $Vars(view)]
 
+	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 	$menu add command \
 		-label " $mc::LoadGame" \
 		-image $::icon::16x16::document \
@@ -1175,18 +1199,40 @@ proc PopupMenu {parent board position {what ""}} {
 #		-state $state \
 #		;
 	$menu add separator
+	if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 	$menu add command \
-		-label " $mc::GotoFirstGame" \
-		-image $::icon::16x16::first \
+		-label " $mc::GotoGame(next)" \
+		-image $::icon::16x16::forward \
 		-compound left \
-		-command [namespace code [list GotoFirstGame $parent $position]] \
+		-command [namespace code [list GotoGame(next) $parent $position]] \
+		-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 		-state $state \
 		;
+	if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
 	$menu add command \
-		-label " $mc::GotoLastGame" \
+		-label " $mc::GotoGame(prev)" \
+		-image $::icon::16x16::backward \
+		-compound left \
+		-command [namespace code [list GotoGame(prev) $parent $position]] \
+		-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
+		-state $state \
+		;
+	if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+	$menu add command \
+		-label " $mc::GotoGame(last)" \
 		-image $::icon::16x16::last \
 		-compound left \
-		-command [namespace code [list GotoLastGame $parent $position]] \
+		-command [namespace code [list GotoGame(last) $parent $position]] \
+		-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
+		-state $state \
+		;
+	if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
+	$menu add command \
+		-label " $mc::GotoGame(first)" \
+		-image $::icon::16x16::first \
+		-compound left \
+		-command [namespace code [list GotoGame(first) $parent $position]] \
+		-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
 		-state $state \
 		;
 	$menu add separator
@@ -1308,7 +1354,9 @@ proc ViewFullscreen {position board} {
 
 proc LoadGame {parent position fen} {
 	variable ${position}::Vars
-	::widget::busyOperation { ::game::new $parent $Vars(base) [expr {$Vars(number) - 1}] $fen }
+	::widget::busyOperation {
+		::game::new $parent $Vars(base) $Vars(view) [expr {$Vars(number) - 1}] $fen
+	}
 }	
 
 

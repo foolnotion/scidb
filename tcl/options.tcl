@@ -67,23 +67,25 @@ proc write {} {
 	variable Callbacks
 
 	foreach file [array names Callbacks] {
-		set filename [set ::scidb::file::$file]
-		set chan [open $filename.tmp w]
-		fconfigure $chan -encoding utf-8
-		writeHeader $chan $file
+		if {$file eq "options" || [llength $Callbacks($file)] > 0} {
+			set filename [set ::scidb::file::$file]
+			set chan [open $filename.tmp w]
+			fconfigure $chan -encoding utf-8
+			writeHeader $chan $file
 
-		foreach callback $Callbacks($file) { $callback $chan }
+			foreach callback $Callbacks($file) { $callback $chan }
 
-		if {$file eq "options"} {
-			foreach dialog [::toolbar::toolbarDialogs] {
-				puts $chan "::toolbar::setOptions $dialog {"
-				::options::writeArray $chan [::toolbar::getOptions $dialog]
-				puts $chan "}"
+			if {$file eq "options"} {
+				foreach dialog [::toolbar::toolbarDialogs] {
+					puts $chan "::toolbar::setOptions $dialog {"
+					::options::writeArray $chan [::toolbar::getOptions $dialog]
+					puts $chan "}"
+				}
 			}
-		}
 
-		close $chan
-		file rename -force $filename.tmp $filename
+			close $chan
+			file rename -force $filename.tmp $filename
+		}
 	}
 }
 

@@ -150,7 +150,7 @@ GameInfo::GameInfo(Initializer const&)
 	,m_gameOffset(0)
 	,m_gameFlags(0)
 	,m_plyCount(0)
-	,m_positionId(chess960::StandardIdn)
+	,m_positionId(variant::StandardIdn)
 	,m_dateYear(Date::Zero10Bits)
 	,m_dateMonth(0)
 	,m_ecoKey(1)
@@ -179,7 +179,7 @@ bool GameInfo::isEmpty() const { return m_event == &g_event; }
 Eco
 GameInfo::userEco() const
 {
-	if (m_positionId != chess960::StandardIdn)
+	if (m_positionId != variant::StandardIdn)
 		return Eco();
 
 	return m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
@@ -197,7 +197,7 @@ GameInfo::setupOpening(unsigned idn, Line const& line)
 			m_ecoKey = 0;
 			break;
 
-		case chess960::StandardIdn:
+		case variant::StandardIdn:
 			m_ecoKey = EcoTable::specimen().lookup(line);
 			break;
 
@@ -586,7 +586,7 @@ GameInfo::setup(	uint32_t gameOffset,
 
 	setupOpening(provider.getStartBoard().computeIdn(), provider.openingLine());
 
-	if (m_positionId == chess960::StandardIdn)
+	if (m_positionId == variant::StandardIdn)
 	{
 		if (tags.contains(tag::Eco))
 			m_eco = Eco::toShort(tags.value(tag::Eco));
@@ -790,7 +790,7 @@ GameInfo::setupIdn(TagSet& tags, uint16_t idn)
 	if (idn == 0)
 		return;
 
-	if (idn != chess960::StandardIdn)
+	if (idn != variant::StandardIdn)
 	{
 		tags.set(tag::SetUp, 1);
 #ifdef GAME_INFO_IDN
@@ -901,7 +901,7 @@ GameInfo::setupTags(TagSet& tags) const
 
 	setupIdn(tags, m_positionId);
 
-	if (m_positionId == chess960::StandardIdn)
+	if (m_positionId == variant::StandardIdn)
 	{
 		tags.set(tag::Eco, Eco::fromShort(m_eco).asShortString());
 
@@ -943,7 +943,7 @@ GameInfo::setupTags(TagSet& tags, Provider const& provider)
 
 	setupIdn(tags, idn);
 
-	if (idn == chess960::StandardIdn)
+	if (idn == variant::StandardIdn)
 	{
 		Eco eco = EcoTable::specimen().getEco(provider.openingLine());
 		EcoTable::specimen().getOpening(eco, opening, variation, subvariation);
@@ -1344,7 +1344,7 @@ GameInfo::debug() const
 	::printf(	"Time Mode:        %s\n", time::toString(timeMode()).c_str());
 	::printf(   "IDN:              %u\n", unsigned(idn()));
 	::printf(   "Eco:              %s\n", eco().asString().c_str());
-	if (idn() == chess960::StandardIdn)
+	if (idn() == variant::StandardIdn)
 	{
 		::printf("Eco Key:          %s\n", Eco(m_ecoKey).asString().c_str());
 	}

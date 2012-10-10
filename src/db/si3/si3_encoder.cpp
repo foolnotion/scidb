@@ -711,38 +711,42 @@ Encoder::encodeType(type::ID type)
 {
 	switch (type)
 	{
-		case type::Unspecific:				return 0;
-		case type::Temporary:				return 1;
-		case type::Work:						return 0;	// Unknown
-		case type::Clipbase:					return 2;
-		case type::My_Games:					return 4;
-		case type::Large_Database:			return 5;
-		case type::Informant:				return 0;	// Unknown
-		case type::Correspondence_Chess:	return 6;
-		case type::Email_Chess:				return 0;	// Unknown
-		case type::Internet_Chess:			return 6;	// Correspondence chess
-		case type::Computer_Chess:			return 7;
-		case type::Chess_960:				return 0;	// Unknown
-		case type::Player_Collection:		return 9;
-		case type::Tournament:				return 10;
-		case type::Tournament_Swiss:		return 11;
-		case type::GM_Games:					return 12;
-		case type::IM_Games:					return 13;
-		case type::Blitz_Games:				return 14;
-		case type::Tactics:					return 15;
-		case type::Endgames:					return 16;
-		case type::Analysis:					return 0;	// Unknown
-		case type::Training:					return 0;	// Unknown
-		case type::Match:						return 0;	// Unknown
-		case type::Studies:					return 0;	// Unknown
-		case type::Jewels:					return 0;	// Unknown
-		case type::Problems:					return 0;	// Unknown
-		case type::Patzer:					return 0;	// Unknown
-		case type::Gambit:					return 0;	// Unknown
-		case type::Important:				return 0;	// Unknown
-		case type::Openings_White:			return 17;
-		case type::Openings_Black:			return 18;
-		case type::Openings:					return 19;
+		case type::Unspecific:					return 0;
+		case type::Temporary:					return 1;
+		case type::Work:							return 0;	// Unknown
+		case type::Clipbase:						return 2;
+		case type::My_Games:						return 4;
+		case type::Large_Database:				return 5;
+		case type::Informant:					return 0;	// Unknown
+		case type::Correspondence_Chess:		return 6;
+		case type::Email_Chess:					return 0;	// Unknown
+		case type::Internet_Chess:				return 6;	// Correspondence chess
+		case type::Computer_Chess:				return 7;
+		case type::Chess_960:					return 0;	// Unknown
+		case type::Player_Collection:			return 9;
+		case type::Tournament:					return 10;
+		case type::Tournament_Swiss:			return 11;
+		case type::GM_Games:						return 12;
+		case type::IM_Games:						return 13;
+		case type::Blitz_Games:					return 14;
+		case type::Tactics:						return 15;
+		case type::Endgames:						return 16;
+		case type::Analysis:						return 0;	// Unknown
+		case type::Training:						return 0;	// Unknown
+		case type::Match:							return 0;	// Unknown
+		case type::Studies:						return 0;	// Unknown
+		case type::Jewels:						return 0;	// Unknown
+		case type::Problems:						return 0;	// Unknown
+		case type::Patzer:						return 0;	// Unknown
+		case type::Gambit:						return 0;	// Unknown
+		case type::Important:					return 0;	// Unknown
+		case type::Openings_White:				return 17;
+		case type::Openings_Black:				return 18;
+		case type::Openings:						return 19;
+		case type::Bughouse:						return 0;	// Unknown
+		case type::Antichess:					return 0;	// Unknown
+		case type::PlayerCollectionFemale:	return 9;	// Player collection
+		case type::PGNFile:						return 3;	// PGN format file
 	}
 
 	return 0;	// satisfies the compiler

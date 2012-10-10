@@ -6432,10 +6432,10 @@ if {[::scidb::misc::debug?]} {
 		foreach item [set region($r)] {
 			set code [lindex $item 0]
 			if {[lsearch -exact $countries $code] == -1} {
-				error "Invalid country code $code"
+				puts stderr "Invalid country code $code"
 			}
 			if {![info exists icon::flag($code)]} {
-				error "Missing flag for country code $code"
+				puts stderr "Missing tiny flag for country code $code"
 			}
 			set file [file join $::scidb::dir::share flags $code.png]
 			if {![file readable $file]} {
@@ -6446,7 +6446,7 @@ if {[::scidb::misc::debug?]} {
 	}
 	foreach code $countries {
 		if {![info exists exists($code)]} {
-			error "Country code $code is not yet known"
+			puts stderr "Country code $code is not yet known"
 		}
 	}
 }

@@ -231,10 +231,10 @@ set ::scidb::revision [::scidb::misc::revision]
 # --- Initalization ----------------------------------------------------
 
 ::theme::setTheme $menu::Theme
+::mc::setup
 ::menu::setup
-::board::setupTheme
+::board::setup
 ::tooltip::init
-::mc::selectLang
 ::font::useLanguage $mc::langID
 ::font::setupChessFonts
 ::engine::setup

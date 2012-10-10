@@ -1,0 +1,28 @@
+::board::addStyle square {
+  borderline,gap        {1}
+  borderline,opacity    {80}
+  borderline,width      {0.006666666666666667}
+  dark,rotation         {0}
+  dark,solid            {#70b8de}
+  dark,texture          {}
+  dark,x1               {0}
+  dark,x2               {0}
+  dark,y1               {0}
+  dark,y2               {0}
+  hilite,selected       {#b3e088}
+  hilite,suggested      {#ffff00}
+  hint,background-color {}
+  hint,background-tile  {marble BlueTexture5.jpg}
+  hint,border-color     {#77b5de}
+  hint,border-tile      {}
+  hint,coordinates      {#000000}
+  identifier            {Arena|1348599714170|yellow.color|gregor}
+  lite,rotation         {0}
+  lite,solid            {#e0e0e0}
+  lite,texture          {}
+  lite,x1               {0}
+  lite,x2               {0}
+  lite,y1               {0}
+  lite,y2               {0}
+  version               {1.0}
+}

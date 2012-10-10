@@ -142,6 +142,11 @@ public:
 	/// Return index of first matching annotator.
 	int findAnnotator(mstl::string const& name) const;
 
+	/// Return current game filter.
+	db::Filter const& gameFilter() const;
+	/// Return current game selector.
+	db::Selector const& gameSelector() const;
+
 	/// Get PGN (without variations) of given game index.
 	Result dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const;
 	Result dumpGame(	unsigned index,

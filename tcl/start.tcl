@@ -76,6 +76,7 @@ if {![file isdirectory $user]} {
 	file mkdir [file join $user log]
 	file mkdir [file join $user photos]
 	file mkdir [file join $user backup]
+	file mkdir [file join $user engines sjeng]
 	file copy  [file join $share themes] $user
 } else {
 	set setup 0
@@ -101,6 +102,7 @@ proc updateThemes {} {
 		{} {
 			{Alpha|1295711284602|yellow.color|gregor}
 			{Antique|1263914483272|yellow.color|gregor}
+			{Arena|1348599577049|yellow.color|gregor}
 			{Apollo|1296050637190|yellow.color|gregor}
 			{Black & White|1322146556616|yellow.color|gregor}
 			{Blue|1262882648418|yellow.color|gregor}
@@ -129,6 +131,7 @@ proc updateThemes {} {
 			{Woodgrain|1296150310528|yellow.color|gregor}
 		}
 		piece {
+			{Arena|1348599563208|yellow.color|gregor}
 			{Burly|1262881395698|yellow.color|gregor}
 			{Condal|1263914065014|yellow.color|gregor}
 			{Contrast|1322146529013|yellow.color|gregor}
@@ -148,6 +151,7 @@ proc updateThemes {} {
 			{Yellow - Blue|1243787883127|yellow.color|gregor}
 		}
 		square {
+			{Arena|1348599714170|yellow.color|gregor}
 			{Apollo|1243715687066|yellow.color|gregor}
 			{Black & White|1322146381433|yellow.color|gregor}
 			{Blue|1262882896027|yellow.color|gregor}
@@ -176,6 +180,8 @@ proc updateThemes {} {
 		}
 	}
 
+	array set found { {} {} piece {} square {} }
+
 	foreach dir {{} piece square} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
@@ -185,9 +191,11 @@ proc updateThemes {} {
 				set f [open $path r]
 				while {[gets $f line] >= 0} {
 					if {[string match *identifier* $line]} {
-						foreach id $identifiers($dir) {
-							if {[string match *$id* $line]} { set exisiting 1 }
+						regexp {[{](.*)[}]} $line identifier
+						if {[llength $identifier] == 1} {
+							set identifier [lindex $identifier 0]
 						}
+						if {$identifier in $identifiers($dir)} { set exisiting 1 }
 					}
 				}
 				if {!$exisiting} {
@@ -266,7 +274,7 @@ proc do {cmds while expr} {
 proc decr {w} { uplevel [list incr $w -1] }
 
 
-proc arrayCompare {lhs rhs} {
+proc arrayEqual {lhs rhs} {
 	upvar 1 $lhs foo $rhs bar
 
 	if {![array exists foo]} {
@@ -411,12 +419,13 @@ proc catchException {cmd {resultVar {}}} {
 			if {[info exists mc::IOError($error)]} {
 				set descr $mc::IOError($error)
 			} else {
-				set descr "???"
+				set descr "Unexpected I/O Error ($error)"
 			}
 			set msg $mc::IOErrorOccurred
 			if {[string length $descr]} {
 				append msg ": "
 				append msg $descr
+				append msg "."
 			}
 			set what [string toupper $what 0 0]
 			set i [string first "=== Backtrace" $what]

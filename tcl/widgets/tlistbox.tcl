@@ -99,7 +99,7 @@ proc Build {w args} {
 		-relief					sunken
 		-focusmodel				click
 		-selectmode				single
-		-borderwidth			2
+		-borderwidth			1
 		-takefocus				{}
 		-showfocus				1
 		-setgrid					0
@@ -424,6 +424,7 @@ proc WidgetProc {w command args} {
 				set Priv(last) 0
 			}
 			incr index 1
+			set Priv(insert:$index) [array get opts]
 			set Priv(resized) 0
 			MakeItems $w [expr {$Priv(last) + 1}] $index
 			set Priv(last) [expr {max($Priv(last), $index)}]
@@ -854,29 +855,35 @@ proc WidgetProc {w command args} {
 				if {$Priv(width) == 0} {
 					ComputeWidth $w
 				}
-				unset opts(-maxwidth)
+				array unset opts -maxwidth
 			}
 			if {[info exists opts(-minwidth)]} {
 				set Priv(minwidth) [expr {max(0, $opts(-minwidth) - 2*[$t cget -borderwidth])}]
 				if {$Priv(width) == 0} {
 					ComputeWidth $w
 				}
-				unset opts(-minwidth)
+				array unset opts -minwidth
 			}
 			if {[info exists opts(-width)]} {
-				set Priv(width) $width
-#				unset opts(-width)
+				set Priv(width) $opts(-width)
 			}
 			if {[info exists opts(-state)]} {
 				set state $opts(-state)
-				unset opts(-state)
+				array unset opts -state
 				$t configure -state $state
 			}
 			if {[info exists opts(-height)]} {
+				if {$opts(-height) == 0} {
+					set opts(-height) $Priv(last)
+				}
 				set Priv(height) $opts(-height)
 				set Priv(minheight) $Priv(height)
 				$w resize -force -height
-				unset opts(-height)
+				array unset opts -height
+			}
+			if {[info exists opts(-background)]} {
+				$t configure -background $opts(-background)
+				array unset opts -background
 			}
 			set args [array get opts]
 			if {[llength $args]} {
@@ -933,17 +940,36 @@ proc WidgetProc {w command args} {
 			if {[winfo class $lb] ne [winfo class $w]} {
 				error "wrong arg: given window $lb is not of type [winfo class $w]"
 			}
-			foreach name [array names [namespace current]::${lb}::Priv] {
-				set Priv($name) [set [namespace current]::${lb}::Priv($name)]
+			foreach name [array names ${lb}::Priv] {
+				set Priv($name) [set ${lb}::Priv($name)]
 			}
 			set Priv(last) -1
 			set Priv(index) 0
 			set Priv(addcol) {}
 			set Priv(columns) {}
 			set Priv(expand) ""
-			foreach options [set [namespace current]::${lb}::Priv(addcol)] {
+			set Priv(types) {}
+			foreach options [set ${lb}::Priv(addcol)] {
 				$w addcol {*}$options
 			}
+			set size [set ${lb}::Priv(last)]
+			for {set index 1} {$index <= $size} {incr index} {
+				set values {}
+				set column 0
+				foreach type $Priv(types) {
+					set result {}
+					if {$type ne "text"} {
+						set result [$lb.__tlistbox__ item image $index $column]
+					}
+					if {[string length $result] == 0} {
+						set result [$lb.__tlistbox__ item text $index $column]
+					}
+					lappend values $result
+					incr column
+				}
+				$w insert $values {*}[set ${lb}::Priv(insert:$index)]
+			}
+			$w resize -force
 		}
 
 		default {
@@ -1016,15 +1042,12 @@ proc ComputeWidth {cb} {
 		}
 		set maxwidth $Priv(maxwidth)
 		set minwidth $Priv(minwidth)
-		if {"$cb.vsb" in [grid slaves $cb]} {
+		if {"$cb.vsb" in [grid slaves $cb] && [winfo width $cb.vsb] > 1} {
 			if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo width $cb.vsb]}] }
 			if {$minwidth} { set minwidth [expr {$minwidth - [winfo width $cb.vsb]}] }
 		}
-		if {$maxwidth && $maxwidth < $width} {
-			set width $maxwidth
-		} else {
-			set width [max $width $minwidth]
-		}
+		if {$maxwidth && $maxwidth < $width} { set width $maxwidth }
+		set width [max $width $minwidth]
 		set width [expr {$Priv(numcolumns)*$width}]
 		$t configure -width $width
 		if {$Priv(expand) eq [lindex $Priv(columns) end] && $Priv(numcolumns) == 1} {

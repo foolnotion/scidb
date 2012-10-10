@@ -51,6 +51,8 @@ proc Build {w args} {
 	array set opts {
 		-background			white
 		-state				normal
+		-justify				left
+		-listjustify		{}
 		-showcolumns		{}
 		-column				{}
 		-format				"%1"
@@ -76,7 +78,13 @@ proc Build {w args} {
 	if {[llength $listopts(-textvariable)] == 0} {
 		set listopts(-textvariable) [namespace current]::Priv($w:textvar)
 	}
-	unset listopts(-textvar)
+	if {[llength $opts(-listjustify)] == 0} {
+		array unset listopts -justify
+	} else {
+		set listopts(-justify) $opts(-listjustify)
+	}
+	array unset listopts -textvar
+	array unset listopts -listjustify
 
 	set keys [array names opts]
 	foreach key [array names listopts] {
@@ -130,6 +138,7 @@ proc Build {w args} {
 		}
 	}
 
+	set Priv($w:cbopts) $cbopts
 	::ttk::combobox $w -class TTCombobox {*}$cbopts
 	bind $w <<PasteSelection>> {+ %W forgeticon }	;# global binding is not working
 
@@ -291,6 +300,14 @@ proc WidgetProc {w command args} {
 			if {[info exists opts(-background)]} {
 				$w.__image__ configure -background $opts(-background)
 			}
+			foreach opt {-maxwidth -minwidth -width -height} {
+				if {[info exists opts($opt)]} {
+					$w.popdown.l configure $opt $opts($opt)
+					array unset opts $opt
+				}
+			}
+			if {[array size opts] == 0} { return }
+			set args [array get opts]
 		}
 
 		showcolumns {
@@ -377,7 +394,15 @@ proc WidgetProc {w command args} {
 			foreach name {mapping1 mapping2 showcolumns format empty searchcommand scrollcolumn} {
 				set Priv($w:$name) $Priv($cb:$name)
 			}
+			foreach {name value} $Priv($cb:cbopts) {
+				switch -- $name {
+					-height - -minwidth - -minheight {}
+					-width	{ $w.__combobox__ configure -width $value }
+					default	{ $w configure $name $value }
+				}
+			}
 			$w.popdown.l clone $cb.popdown.l
+			$w resize
 			return $w
 		}
 

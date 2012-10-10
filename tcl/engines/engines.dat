@@ -1,0 +1,83 @@
+# Scidb engines file
+# Version: 1.0 BETA
+# Syntax: Tcl language format
+
+set ::engine::Engines {
+	{
+		Name Stockfish
+		Identifier "Stockfish 2.3"
+		Author "Tord Romstad, Marco Costalba & Joona Kiiski"
+		Command stockfish-scidb
+		Protocol UCI
+		Variants {standard chess960}
+		Features:UCI {
+			analyze true
+			multiPV 500
+			ponder true
+			hashSize {4 8192}
+			threads {1 32}
+			skillLevel {0 20}
+			clearHash true
+		}
+		Profiles:UCI {
+			Default {
+				{{Use Debug Log} check false false {} {}}
+				{{Use Search Log} check false false {} {}}
+				{{Search Log Filename} file SearchLog.txt SearchLog.txt {} {}}
+				{{Book File} file book.bin book.bin {} {}}
+				{{Best Book Move} check false false {} {}}
+				{{Mobility (Middle Game)} spin 100 100 0 200}
+				{{Mobility (Endgame)} spin 100 100 0 200}
+				{{Passed Pawns (Middle Game)} spin 100 100 0 200}
+				{{Passed Pawns (Endgame)} spin 100 100 0 200}
+				{Space spin 100 100 0 200}
+				{Aggressiveness spin 100 100 0 200}
+				{Cowardice spin 100 100 0 200}
+				{{Min Split Depth} spin 4 4 4 7}
+				{{Max Threads per Split Point} spin 5 5 4 8}
+				{Threads spin 4 4 1 32}
+				{{Use Sleeping Threads} check true true {} {}}
+				{Hash spin 32 32 4 8192}
+				{{Clear Hash} button {} {} {} {}}
+				{{Skill Level} spin 20 20 0 20}
+				{{Emergency Move Horizon} spin 40 40 0 50}
+				{{Emergency Base Time} spin 200 200 0 30000}
+				{{Emergency Move Time} spin 70 70 0 5000}
+				{{Minimum Thinking Time} spin 20 20 0 5000}
+				{{Slow Mover} spin 100 100 10 1000}
+			}
+		}
+	}
+	{
+		Name Sjeng
+		Identifier "Sjeng 11.2"
+		Author "Gian-Carlo Pascutto"
+		Url http://sjeng.org/index.html
+		Elo 2450
+		Command /usr/local/games/sjeng-scidb
+		Protocol WB
+		Variants {standard bughouse crazyhouse suicide giveaway losers}
+		Features:WB {analyze true}
+		ProfileType Script
+		Profiles:WB { Default {{# Sjeng does not have specific options}} }
+	}
+	{
+		Name Crafty
+		Identifier Crafty-23.2a
+		Author "Dr. Robert M. Hyatt"
+		Command crafty-scidb
+		Protocol WB
+		Variants standard
+		Features:WB {smp true playOther true analyze true hashSize {}}
+		ProfileType Script
+		Profiles:WB {
+			Default {
+				"log off          # disable logging"
+				"noise 1000       # fairly noise level"
+				"# resign 6       # don't resign too late"
+				"# drawscore -50  # avoid draws"
+				"# swindle on     # Crafty will try to win"
+			}
+		}
+	}
+}

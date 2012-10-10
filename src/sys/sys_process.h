@@ -32,10 +32,10 @@ public:
 
 	enum Priority
 	{
-		Unknown	= -1,
-		Idle		= 20,	// XXX OK?
+		Unknown	= -9999,
+		Idle		= 18,
 		Normal	= 0,
-		High		= 15,
+		High		= -15,
 	};
 
 	Process(mstl::string const& command, mstl::string const& directory);

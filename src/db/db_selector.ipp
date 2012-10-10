@@ -28,6 +28,8 @@
 
 namespace db {
 
+inline bool Selector::isUnsorted() const { return m_map.empty(); }
+
 inline unsigned Selector::size() const { return m_map.size(); }
 
 

@@ -206,7 +206,7 @@ Application::Application()
 	m_cursorMap[m_clipbaseName] = m_clipBase;
 	m_cursorMap[m_scratchbaseName] = m_scratchBase;
 
-	m_current = m_clipBase;
+	setActiveBase(m_clipBase);
 	setReferenceBase(m_current, false);
 }
 
@@ -226,6 +226,18 @@ Application::~Application() throw()
 
 	for (EngineList::iterator i = m_engineList.begin(); i != m_engineList.end(); ++i)
 		delete *i;
+}
+
+
+void
+Application::setActiveBase(Cursor* cursor)
+{
+	M_ASSERT(cursor);
+
+	if (m_current)
+		m_current->setActive(false);
+
+	(m_current = cursor)->setActive(true);
 }
 
 
@@ -463,7 +475,7 @@ Application::close(Cursor& cursor)
 	moveGamesToScratchbase(cursor);
 
 	if (m_current == &cursor)
-		m_current = m_clipBase;
+		setActiveBase(m_clipBase);
 
 	if (m_referenceBase == &cursor)
 		setReferenceBase(0, false);
@@ -477,6 +489,7 @@ Application::close(Cursor& cursor)
 void
 Application::close()
 {
+	m_subscriber.reset(0);
 	closeAll(Including_Clipbase);
 	m_isClosed = true;
 }
@@ -723,7 +736,7 @@ Application::switchBase(Cursor& cursor)
 	M_REQUIRE(contains(cursor));
 	M_REQUIRE(!cursor.isScratchBase());
 
-	m_current = &cursor;
+	setActiveBase(&cursor);
 
 	if (	(m_switchReference || (!m_isUserSet && m_referenceBase == m_clipBase))
 		&& cursor.base().format() != format::ChessBase)
@@ -931,7 +944,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 
 
 load::State
-Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
+Application::loadGame(unsigned position, Cursor& cursor, unsigned index, mstl::string const* fen)
 {
 	M_REQUIRE(position != InvalidPosition);
 
@@ -952,7 +965,7 @@ Application::loadGame(unsigned position, Cursor& cursor, unsigned index)
 	game.cursor = &cursor;
 	game.index = index;
 
-	load::State state = base.loadGame(index, *game.game, game.encoding);
+	load::State state = base.loadGame(index, *game.game, game.encoding, fen);
 
 	game.crcIndex = base.computeChecksum(index);
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
@@ -1382,7 +1395,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 {
 	if (m_referenceBase == 0 || !haveCurrentGame())
 		return true;
-	
+
 	if (m_treeIsFrozen)
 		return false;
 
@@ -2010,6 +2023,7 @@ Application::removeEngine(unsigned id)
 
 	if (m_engineList[id])
 	{
+		m_engineList[id]->deactivate();
 		delete m_engineList[id];
 		m_engineList[id] = 0;
 		M_ASSERT(m_numEngines > 0);

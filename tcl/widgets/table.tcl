@@ -1062,6 +1062,7 @@ proc Activate {table row force send} {
 	variable ${table}::Options
 	variable ${table}::Vars
 
+	if {$Vars(keep)} { return }
 	if {$Vars(active) == $row} { return }
 	set Vars(active) $row
 
@@ -1350,6 +1351,7 @@ proc PopupMenu {table x y X Y} {
 		}
 	}
 
+	keepFocus $table true
 	set menu $table.__menu__${id}__
 	catch { destroy $menu }
 	menu $menu -tearoff 0 -disabledforeground black

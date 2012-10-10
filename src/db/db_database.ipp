@@ -239,15 +239,15 @@ inline
 load::State
 Database::loadGame(unsigned index, Game& game)
 {
-	return loadGame(index, game, 0);
+	return loadGame(index, game, 0, 0);
 }
 
 
 inline
 load::State
-Database::loadGame(unsigned index, Game& game, mstl::string& encoding)
+Database::loadGame(unsigned index, Game& game, mstl::string& encoding, mstl::string const* fen)
 {
-	return loadGame(index, game, &encoding);
+	return loadGame(index, game, &encoding, fen);
 }
 
 } // namespace db

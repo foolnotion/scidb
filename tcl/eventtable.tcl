@@ -246,6 +246,11 @@ proc column {info name} {
 }
 
 
+proc base {path} {
+	return [::scrolledtable::base $path]
+}
+
+
 proc clear {path} {
 	::scrolledtable::clear $path
 }
