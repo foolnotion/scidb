@@ -68,6 +68,7 @@ protected:
 	void protocolStart(bool isProbing) override;
 	void protocolEnd() override;
 	void sendOptions() override;
+	void invokeOption(mstl::string const& name) override;
 	void sendHashSize() override;
 	void sendCores() override;
 	void sendPondering() override;

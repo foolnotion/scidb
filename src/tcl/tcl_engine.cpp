@@ -52,6 +52,7 @@ static char const* CmdActivate		= "::scidb::engine::activate";
 static char const* CmdAnalyize		= "::scidb::engine::analyze";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
 static char const* CmdInfo				= "::scidb::engine::info";
+static char const* CmdInvoke			= "::scidb::engine::invoke";
 static char const* CmdActive			= "::scidb::engine::active?";
 static char const* CmdKill				= "::scidb::engine::kill";
 static char const* CmdList				= "::scidb::engine::list";
@@ -1004,6 +1005,18 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdInvoke(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		tcl::app::scidb->engine(id)->invokeOption(stringFromObj(objc, objv, 2));
+
+	return TCL_OK;
+}
+
+
+static int
 cmdClearHash(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned id = unsignedFromObj(objc, objv, 1);
@@ -1137,6 +1150,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdAnalyize,		cmdAnalyze);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
 	createCommand(ti, CmdInfo,				cmdInfo);
+	createCommand(ti, CmdInvoke,			cmdInvoke);
 	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdKill,				cmdKill);
 	createCommand(ti, CmdList,				cmdList);

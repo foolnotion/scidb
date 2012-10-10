@@ -871,7 +871,7 @@ proc startEngine {isReadyCmd signalCmd updateCmd} {
 	array set engine $EmptyEngine
 	array set engine $entry
 
-	set protocol [lindex $engine(Protocol) 0]
+	set protocol $Vars(current:protocol)
 	if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
 		set dir $engine(Directory)
 	} else {
@@ -924,7 +924,7 @@ proc sendFeatures {engineId features} {
 	array set engine [lindex $Engines $index]
 	array set featureArr { analyze false }
 	array set featureArr $features
-	set protocol [lindex $engine(Protocol) 0]
+	set protocol $Vars(current:protocol)
 	array set engineFeatures $engine(Features:$protocol)
 	if {[info exists engineFeatures(analyze)]} { set featureArr(analyze) true }
 	if {[info exists engineFeatures(threads)]} { set featureArr(smp) $Vars(current:cores) }
@@ -944,7 +944,7 @@ proc sendOptions {engineId} {
 	if {$index == -1} { return }
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $index]
-	set protocol [lindex $engine(Protocol) 0]
+	set protocol $Vars(current:protocol)
 	array set profiles $engine(Profiles:$protocol)
 	if {[llength profiles($Vars(current:profile))]} {
 		set Vars(active:profile) $Vars(current:profile)
@@ -1111,8 +1111,8 @@ proc UseEngine {list item profileList} {
 
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set prot [lindex $engine(Protocol) 0]
-	array set features $engine(Features:$prot)
+	set protocol $Vars(current:protocol)
+	array set features $engine(Features:$protocol)
 	set Vars(current:name) $engine(Name)
 
 	if {[info exists features(hashSize)]} {
@@ -1157,9 +1157,8 @@ proc UseEngine {list item profileList} {
 		$Vars(widget:cores) configure -state disabled
 	}
 
-	set Vars(current:protocol) $prot
 	if {[llength $engine(Protocol)] < 2} {
-		if {$prot eq "WB"} {
+		if {$protocol eq "WB"} {
 			set state(UCI) disabled
 			set state(WB) normal
 		} else {
@@ -1190,8 +1189,8 @@ proc SetupClearHash {engineName} {
 		set i [FindIndex $engineName]
 		array set engine $EmptyEngine
 		array set engine [lindex $Engines $i]
-		set prot [lindex $engine(Protocol) 0]
-		array set features $engine(Features:$prot)
+		set protocol $Vars(current:protocol)
+		array set features $engine(Features:$protocol)
 
 		if {$Vars(active:id) == -1 || ![::scidb::engine::active? $Vars(active:id)]} {
 			set state disabled
@@ -1299,7 +1298,9 @@ proc Select {list item} {
 	array set engine $EmptyEngine
 	array set engine $entry
 	FillInfo $list $entry
-	set features $engine(Features:[lindex $engine(Protocol) 0])
+	foreach protocol $engine(Protocol) {
+		set features $engine(Features:$protocol)
+	}
 	ShowFeatures $list $features $engine(Variants)
 	TabChanged
 	UpdateVars
@@ -1571,7 +1572,7 @@ proc DeleteProfile {parent} {
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
 	set k [FindProfileIndex $profiles]
 	set profiles [lreplace $profiles $k [expr {$k + 1}]]
@@ -1637,7 +1638,7 @@ proc DoRenameProfile {dlg} {
 	lappend Vars(profiles) $NewProfile_
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
 	set k [FindProfileIndex $profiles]
 	set profiles [lreplace $profiles $k $k $NewProfile_]
@@ -1713,7 +1714,7 @@ proc MakeProfile {dlg} {
 	lappend Vars(profiles) $NewProfile_
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	array set profiles $engine(Profiles:$protocol)
 	set options $profiles($copy)
 	unset profiles
@@ -1759,7 +1760,7 @@ proc OpenSetupEngineDialog {parent} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	OpenSetupDialog($engine(ProfileType)) $parent
 }
 
@@ -1772,11 +1773,11 @@ proc OpenSetupDialog(Script) {parent} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	array set profiles $engine(Profiles:$protocol)
 	set script $profiles($Vars(current:profile))
 
-	set dlg [tk::toplevel $parent.confOptions -class Scidb]
+	set dlg [tk::toplevel $parent.confScript -class Scidb]
 #	pack [set top [ttk::frame $dlg.top -takefocus 0]] -fill both -expand yes
 	pack [set main [tk::panedwindow $dlg.main -orient vertical -opaqueresize true]] -fill both -expand yes
 	wm withdraw $dlg
@@ -1853,6 +1854,7 @@ proc OpenSetupDialog(Script) {parent} {
 	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
 
 	### popup ################################################################
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	::util::place $dlg center .
 	wm resizable $dlg yes yes
 	wm transient $dlg $parent
@@ -1889,7 +1891,7 @@ proc SaveScript {txt log} {
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
 	set script {}
 	$log configure -state normal
@@ -1985,7 +1987,7 @@ proc OpenSetupDialog(Options) {parent} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	set directory $engine(Directory)
 	array set profiles $engine(Profiles:$protocol)
 	set options [FilterOptions $protocol $profiles($Vars(current:profile))]
@@ -2106,23 +2108,41 @@ proc OpenSetupDialog(Options) {parent} {
 				grid columnconfigure $val {0} -weight 1
 				set sticky ew
 			}
+			button {
+				ttk::label $lbl -text ""
+				ttk::button $val \
+					-text $name \
+					-takefocus 1 \
+					-command [namespace code [list InvokeButton $name]] \
+					;
+				if {	$Vars(active:name) ne $Vars(current:name)
+					|| $Vars(active:id) == -1
+					|| ![::scidb::engine::active? $Vars(active:id)]} {
+					$val configure -state disabled
+				}
+			}
 		}
 
-		set btn $pane.btn_$row
-		ttk::button $btn \
-			-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
-			-command [list set [namespace current]::Option($name) $dflt] \
-			;
-		::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
-		grid $btn -row $row -column 1
-		set args [list variable [namespace current]::Option($name) write \
-						[namespace code [list SetOptionState $dlg $val $name $dflt $btn]]]
-		trace add {*}$args
-		bind $btn <Destroy> [list trace remove {*}$args]
+		if {$type ne "button"} {
+			set btn $pane.btn_$row
+			ttk::button $btn \
+				-image [::icon::makeStateSpecificIcons $::icon::12x12::reset] \
+				-command [list set [namespace current]::Option($name) $dflt] \
+				;
+			::tooltip::tooltip $btn "$mc::ResetToDefault: $dflt"
+			grid $btn -row $row -column 1
+			set args [list variable [namespace current]::Option($name) write \
+							[namespace code [list SetOptionState $dlg $val $name $dflt $btn]]]
+			trace add {*}$args
+			bind $btn <Destroy> [list trace remove {*}$args]
+		}
 
 		if {$vertical} { $lbl configure -wraplength $wrapLength }
 		bind $see <<TraverseIn>> [namespace code [list $scrolled see %W]]
-		if {!$vertical} { bind $see <<TraverseIn>> +[namespace code [list $scrolled see $btn]] }
+		if {!$vertical} {
+			if {type eq "button"} { set w $val } else { set w $btn }
+			bind $see <<TraverseIn>> +[namespace code [list $scrolled see $w]]
+		}
 		bind $see <FocusIn> {+ ::tooltip::tooltip hide }
 		if {[winfo exists $lbl]} { grid $lbl -row $row -column 3 -sticky w }
 		if {[string length $focus] == 0} { set focus $see }
@@ -2162,6 +2182,7 @@ proc OpenSetupDialog(Options) {parent} {
 	set profileName $Vars(current:profile)
 	if {$Vars(current:profile) eq "Default"} { set profileName $::mc::Default }
 
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	::util::place $dlg center .
 	wm resizable $dlg no no
 	wm transient $dlg $parent
@@ -2171,6 +2192,12 @@ proc OpenSetupDialog(Options) {parent} {
 	focus $focus
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
+}
+
+
+proc InvokeButton {name} {
+	variable Vars
+	::scidb::engine::invoke $Vars(active:id) $name
 }
 
 
@@ -2193,7 +2220,7 @@ proc SaveOptions {dlg} {
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
-	set protocol $engine(Protocol)
+	set protocol $Vars(current:protocol)
 	set profiles $engine(Profiles:$protocol)
 	set k [expr {[FindProfileIndex $profiles] + 1}]
 	set options [lindex $profiles $k]
@@ -2326,8 +2353,8 @@ proc SetupProfiles {} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set prot [lindex $engine(Protocol) 0]
-	set profiles $engine(Profiles:$prot)
+	set protocol $Vars(current:protocol)
+	set profiles $engine(Profiles:$protocol)
 	set Vars(profiles) {}
 
 	$w clear
@@ -2374,8 +2401,9 @@ proc SetupEngineList {} {
 		array unset features
 		array set engine $EmptyEngine
 		array set engine $entry
-		set protocol [lindex $engine(Protocol) 0]
-		array set features $engine(Features:$protocol)
+		foreach protocol $engine(Protocol) {
+			array set features $engine(Features:$protocol)
+		}
 		if {[info exists features(analyze)]} {
 			$w insert [list $engine(Name)]
 		}

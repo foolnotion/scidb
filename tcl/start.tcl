@@ -191,11 +191,13 @@ proc updateThemes {} {
 				set f [open $path r]
 				while {[gets $f line] >= 0} {
 					if {[string match *identifier* $line]} {
-						regexp {[{](.*)[}]} $line identifier
-						if {[llength $identifier] == 1} {
-							set identifier [lindex $identifier 0]
+						if {	[regexp {[{](.*)[}]} $line _ identifier]
+							|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
+							if {[llength $identifier] == 1} {
+								set identifier [lindex $identifier 0]
+							}
+							if {$identifier in $identifiers($dir)} { set exisiting 1 }
 						}
-						if {$identifier in $identifiers($dir)} { set exisiting 1 }
 					}
 				}
 				if {!$exisiting} {

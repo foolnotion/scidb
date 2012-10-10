@@ -462,6 +462,14 @@ Engine::kill()
 
 
 void
+Engine::invokeOption(mstl::string const& name)
+{
+	if (isActive())
+		m_engine->invokeOption(name);
+}
+
+
+void
 Engine::setHashRange(unsigned minSize, unsigned maxSize)
 {
 	minSize = mstl::max(4u, minSize);
@@ -761,24 +769,6 @@ Engine::deactivate()
 
 
 void
-Engine::error(Error code)
-{
-	char const* msg;
-
-	switch (code)
-	{
-		case Engine_Requires_Registration:	msg = "Engine requires registration"; break;
-		case Engins_Has_Copy_Protection:		msg = "Engine has copy protection"; break;
-		case Standard_Chess_Not_Supported:	msg = "Standard chess not supported"; break;
-		case Chess_960_Not_Supported:			msg = "Chess 960 not supported"; break;
-		case No_Analyze_Mode:					msg = "No analyze mode available"; break;
-	}
-
-	m_engine->updateError(code);
-}
-
-
-void
 Engine::log(mstl::string const& msg)
 {
 	if (m_logStream && !msg.empty())
@@ -961,8 +951,9 @@ Engine::probe(unsigned timeout)
 	{
 		activate();
 
-		while (m_process->isConnected() && !timer.expired())
+		do
 			timer.doNextEvent();
+		while (m_process->isConnected() && !timer.expired());
 	}
 	catch (mstl::exception const& exc)
 	{
@@ -979,6 +970,7 @@ Engine::probe(unsigned timeout)
 		{
 			// Seems to be a quiet engine. Start the protocol.
 			m_protocol = true;
+			m_options.clear(); // to be sure
 			m_engine->protocolStart(true);
 		}
 

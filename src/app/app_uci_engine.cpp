@@ -1208,8 +1208,22 @@ uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
 	}
 	else
 	{
-		send("setoption name " + name + " value " + value);
+		mstl::string msg("setoption name ");
+		msg.append(name);
+		if (!value.empty())
+		{
+			msg.append(" value ");
+			msg.append(value);
+		}
+		send(msg);
 	}
+}
+
+
+void
+uci::Engine::invokeOption(mstl::string const& name)
+{
+	sendOption(name, "");
 }
 
 

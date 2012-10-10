@@ -62,6 +62,7 @@ protected:
 	void sendPondering() override;
 	void sendStrength() override;
 	void sendOptions() override;
+	void invokeOption(mstl::string const& name) override;
 	void processMessage(mstl::string const& message) override;
 	void doMove(db::Move const& lastMove) override;
 

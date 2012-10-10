@@ -54,7 +54,7 @@ uninstall:
 
 $(EXE): $(OBJS)
 	@echo "Building $(EXE)"
-	@$(CC) $(LDFLAGS) -o $@ $(OBJS) $(GDBM_LIB)
+	@$(CC) $(LDFLAGS) -o $@ $(OBJS) $(GDBM_LIB) -lm
 
 depend:
 	makedepend -fMakefile -Y -- $(INCLUDE) -- -w1 $(SRC) 2>/dev/null

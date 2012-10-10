@@ -217,6 +217,13 @@ winboard::Engine::probeTimeout() const
 
 
 void
+winboard::Engine::invokeOption(mstl::string const& name)
+{
+	send(name);
+}
+
+
+void
 winboard::Engine::sendOptions()
 {
 	bool isAnalyzing = this->isAnalyzing();

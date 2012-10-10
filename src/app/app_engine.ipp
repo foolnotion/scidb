@@ -343,6 +343,7 @@ inline void Engine::setLog(mstl::ostream* stream)				{ m_logStream = stream; }
 inline void Engine::resetBestInfoHasChanged()					{ m_bestInfoHasChanged = false; }
 inline void Engine::addVariant(unsigned variant)				{ m_variants |= variant; }
 inline void Engine::removeVariant(unsigned variant)			{ m_variants &= ~variant; }
+inline void Engine::error(Error code)								{ m_engine->updateError(code); }
 
 
 
