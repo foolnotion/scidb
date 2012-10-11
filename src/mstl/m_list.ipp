@@ -734,7 +734,7 @@ inline
 void
 list<T>::swap(list& v)
 {
-	bits::node_base::swap(m_node, v.m_node);
+	m_node.swap(v.m_node);
 }
 
 

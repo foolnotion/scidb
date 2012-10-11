@@ -19,6 +19,8 @@
 #include "m_uint128.h"
 #include "m_assert.h"
 
+#if __WORDSIZE == 32
+
 using namespace mstl;
 
 
@@ -172,5 +174,7 @@ uint128::operator>>=(unsigned n)
 
 	return *this;
 }
+
+#endif // _WORDSIZE == 32
 
 // vi:set ts=3 sw=3:

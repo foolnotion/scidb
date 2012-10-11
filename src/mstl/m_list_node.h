@@ -27,8 +27,8 @@ struct node_base
 	node_base();
 
 	void hook(node_base* succ);
+	void swap(node_base& node);
 	void unhook();
-	void swap(node_base& lhs, node_base& rhs);
 
 	node_base* m_next;
 	node_base* m_prev;

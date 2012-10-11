@@ -840,12 +840,14 @@ bool f_in_check(move_s moves[], int m)
 	  /* possible left diag check */
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+13; board[l] == npiece; l +=13);
+	  	for (l = wking_loc+13; board[l] == npiece; l +=13)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  	for (l = wking_loc-13; board[l] == npiece; l -=13);
+	  	for (l = wking_loc-13; board[l] == npiece; l -=13)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -853,12 +855,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+11; board[l] == npiece; l +=11);
+	  	for (l = wking_loc+11; board[l] == npiece; l +=11)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-		for (l = wking_loc-11; board[l] == npiece; l -=11);
+		for (l = wking_loc-11; board[l] == npiece; l -=11)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -868,12 +872,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+12; board[l] == npiece; l +=12);
+	  	for (l = wking_loc+12; board[l] == npiece; l +=12)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-		for (l = wking_loc-12; board[l] == npiece; l -=12);
+		for (l = wking_loc-12; board[l] == npiece; l -=12)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -881,12 +887,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+1; board[l] == npiece; l++);
+	  	for (l = wking_loc+1; board[l] == npiece; l++)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  	for (l = wking_loc-1; board[l] == npiece; l--);
+	  	for (l = wking_loc-1; board[l] == npiece; l--)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -900,12 +908,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+12; board[l] == npiece; l +=12);
+	  	for (l = wking_loc+12; board[l] == npiece; l +=12)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  	for (l = wking_loc-12; board[l] == npiece; l -=12);
+	  	for (l = wking_loc-12; board[l] == npiece; l -=12)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -913,12 +923,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+1; board[l] == npiece; l +=1);
+	  	for (l = wking_loc+1; board[l] == npiece; l +=1)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  	for (l = wking_loc-1; board[l] == npiece; l -=1);
+	  	for (l = wking_loc-1; board[l] == npiece; l -=1)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -926,12 +938,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+13; board[l] == npiece; l +=13);
+	  	for (l = wking_loc+13; board[l] == npiece; l +=13)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  	for (l = wking_loc-13; board[l] == npiece; l -=13);
+	  	for (l = wking_loc-13; board[l] == npiece; l -=13)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -939,12 +953,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (wking_loc < target)
 	  {
-	  	for (l = wking_loc+11; board[l] == npiece; l +=11);
+	  	for (l = wking_loc+11; board[l] == npiece; l +=11)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	  else
 	  {  
-	  	for (l = wking_loc-11; board[l] == npiece; l -=11);
+	  	for (l = wking_loc-11; board[l] == npiece; l -=11)
+		   ;
 	  	if (l == target) return TRUE;
 	  }
 	}
@@ -970,12 +986,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (wking_loc > from)
       {
-    	for (l = wking_loc-1; board[l] == npiece; l--);    
+    	for (l = wking_loc-1; board[l] == npiece; l--)
+	   ;    
 	if (board[l] == brook || board[l] == bqueen) return TRUE;
       }
       else
       {
-	for (l = wking_loc+1; board[l] == npiece; l++);
+	for (l = wking_loc+1; board[l] == npiece; l++)
+	   ;
 	if (board[l] == brook || board[l] == bqueen) return TRUE;
       }
     }
@@ -983,12 +1001,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (wking_loc > from)
       {
-        for (l = wking_loc-12; board[l] == npiece; l-=12);    
+        for (l = wking_loc-12; board[l] == npiece; l-=12)
+	   ;    
 	if (board[l] == brook || board[l] == bqueen) return TRUE;
       }
       else
       {
-	for (l = wking_loc+12; board[l] == npiece; l+=12);
+	for (l = wking_loc+12; board[l] == npiece; l+=12)
+	   ;
 	if (board[l] == brook || board[l] == bqueen) return TRUE;
 	}
     }
@@ -996,12 +1016,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (wking_loc > from)
       {
-       for (l = wking_loc-13; board[l] == npiece; l-=13);    
+       for (l = wking_loc-13; board[l] == npiece; l-=13)
+	  ;    
        if (board[l] == bbishop || board[l] == bqueen) return TRUE;
       }
       else
       {
-       for (l = wking_loc+13; board[l] == npiece; l+=13);
+       for (l = wking_loc+13; board[l] == npiece; l+=13)
+	  ;
        if (board[l] == bbishop || board[l] == bqueen) return TRUE;
       }
     }
@@ -1009,12 +1031,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (wking_loc > from)
       {
-       for (l = wking_loc-11; board[l] == npiece; l-=11);    
+       for (l = wking_loc-11; board[l] == npiece; l-=11)
+	  ;    
        if (board[l] == bbishop || board[l] == bqueen) return TRUE;
       }
       else
       {
-       for (l = wking_loc+11; board[l] == npiece; l+=11);
+       for (l = wking_loc+11; board[l] == npiece; l+=11)
+	  ;
        if (board[l] == bbishop || board[l] == bqueen) return TRUE;
       }
      }    
@@ -1038,12 +1062,14 @@ bool f_in_check(move_s moves[], int m)
 	  /* possible left diag check */
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+13; board[l] == npiece; l +=13);
+	  for (l = bking_loc+13; board[l] == npiece; l +=13)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-13; board[l] == npiece; l -=13);
+	  for (l = bking_loc-13; board[l] == npiece; l -=13)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1051,12 +1077,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+11; board[l] == npiece; l +=11);
+	  for (l = bking_loc+11; board[l] == npiece; l +=11)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-11; board[l] == npiece; l -=11);
+	  for (l = bking_loc-11; board[l] == npiece; l -=11)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1066,12 +1094,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+12; board[l] == npiece; l +=12);
+	  for (l = bking_loc+12; board[l] == npiece; l +=12)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-12; board[l] == npiece; l -=12);
+	  for (l = bking_loc-12; board[l] == npiece; l -=12)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1079,12 +1109,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+1; board[l] == npiece; l++);
+	  for (l = bking_loc+1; board[l] == npiece; l++)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-1; board[l] == npiece; l--);
+	  for (l = bking_loc-1; board[l] == npiece; l--)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1098,12 +1130,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+12; board[l] == npiece; l +=12);
+	  for (l = bking_loc+12; board[l] == npiece; l +=12)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-12; board[l] == npiece; l -=12);
+	  for (l = bking_loc-12; board[l] == npiece; l -=12)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1111,12 +1145,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+1; board[l] == npiece; l +=1);
+	  for (l = bking_loc+1; board[l] == npiece; l +=1)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-1; board[l] == npiece; l -=1);
+	  for (l = bking_loc-1; board[l] == npiece; l -=1)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1124,12 +1160,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+13; board[l] == npiece; l +=13);
+	  for (l = bking_loc+13; board[l] == npiece; l +=13)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-13; board[l] == npiece; l -=13);
+	  for (l = bking_loc-13; board[l] == npiece; l -=13)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1137,12 +1175,14 @@ bool f_in_check(move_s moves[], int m)
 	{
 	  if (bking_loc < target)
 	  {
-	  for (l = bking_loc+11; board[l] == npiece; l +=11);
+	  for (l = bking_loc+11; board[l] == npiece; l +=11)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	  else
 	  {
-	  for (l = bking_loc-11; board[l] == npiece; l -=11);
+	  for (l = bking_loc-11; board[l] == npiece; l -=11)
+	     ;
 	  if (l == target) return TRUE;
 	  }
 	}
@@ -1166,12 +1206,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (bking_loc > from)
       {
-    	for (l = bking_loc-1; board[l] == npiece; l--);    
+    	for (l = bking_loc-1; board[l] == npiece; l--)
+	   ;    
 	if (board[l] == wrook || board[l] == wqueen) return TRUE;
       }
       else
       {
-	for (l = bking_loc+1; board[l] == npiece; l++);
+	for (l = bking_loc+1; board[l] == npiece; l++)
+	   ;
 	if (board[l] == wrook || board[l] == wqueen) return TRUE;
       }
     }
@@ -1179,12 +1221,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (bking_loc > from)
       {
-	for (l = bking_loc-12; board[l] == npiece; l-=12);    
+	for (l = bking_loc-12; board[l] == npiece; l-=12)
+	   ;    
 	if (board[l] == wrook || board[l] == wqueen) return TRUE;
       }
       else
       {
-	for (l = bking_loc+12; board[l] == npiece; l+=12);
+	for (l = bking_loc+12; board[l] == npiece; l+=12)
+	   ;
 	if (board[l] == wrook || board[l] == wqueen) return TRUE;
       }
     }
@@ -1192,12 +1236,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (bking_loc > from)
       {
-	for (l = bking_loc-13; board[l] == npiece; l-=13);    
+	for (l = bking_loc-13; board[l] == npiece; l-=13)
+	   ;    
        if (board[l] == wbishop || board[l] == wqueen) return TRUE;
       }
       else
       {
-       for (l = bking_loc+13; board[l] == npiece; l+=13);
+       for (l = bking_loc+13; board[l] == npiece; l+=13)
+	  ;
        if (board[l] == wbishop || board[l] == wqueen) return TRUE;
       }
     }
@@ -1205,12 +1251,14 @@ bool f_in_check(move_s moves[], int m)
     {
       if (bking_loc > from)
       {
-	for (l = bking_loc-11; board[l] == npiece; l-=11);    
+	for (l = bking_loc-11; board[l] == npiece; l-=11)
+	   ;    
        if (board[l] == wbishop || board[l] == wqueen) return TRUE;
       }
       else
       {
-       for (l = bking_loc+11; board[l] == npiece; l+=11);
+       for (l = bking_loc+11; board[l] == npiece; l+=11)
+	  ;
        if (board[l] == wbishop || board[l] == wqueen) return TRUE;
       }
     }

@@ -1753,10 +1753,10 @@ int Option(TREE * RESTRICT tree) {
     pmemory = (1ULL) << MSB(size);
     if (pmemory < 1024 * 1024)
       pmemory = 0;
-    sprintf(buffer, "hash %lld\n", hmemory);
+    sprintf(buffer, "hash %lu\n", (unsigned long)hmemory);
     (void) Option(tree);
     if (pmemory) {
-      sprintf(buffer, "hashp %lld\n", pmemory);
+      sprintf(buffer, "hashp %lu\n", (unsigned long)pmemory);
       (void) Option(tree);
     }
   }

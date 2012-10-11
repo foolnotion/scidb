@@ -44,10 +44,10 @@ node_base::node_base()
 
 inline
 void
-node_base::swap(node_base& lhs, node_base& rhs)
+node_base::swap(node_base& node)
 {
-	mstl::swap(lhs.m_prev, rhs.m_prev);
-	mstl::swap(lhs.m_next, rhs.m_next);
+	mstl::swap(m_prev, node.m_prev);
+	mstl::swap(m_next, node.m_next);
 }
 
 
