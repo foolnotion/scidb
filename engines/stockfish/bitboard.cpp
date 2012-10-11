@@ -77,8 +77,6 @@ namespace {
 /// lsb()/msb() finds the least/most significant bit in a nonzero bitboard.
 /// pop_lsb() finds and clears the least significant bit in a nonzero bitboard.
 
-#if !defined(USE_BSFQ)
-
 FORCE_INLINE unsigned bsf_index(Bitboard b) {
 
   if (Is64Bit)
@@ -88,6 +86,8 @@ FORCE_INLINE unsigned bsf_index(Bitboard b) {
   b ^= (b - 1);
   return ((unsigned(b) ^ unsigned(b >> 32)) * DeBruijn_32) >> 26;
 }
+
+#if !defined(USE_BSFQ)
 
 Square lsb(Bitboard b) { return BSFTable[bsf_index(b)]; }
 

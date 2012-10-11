@@ -1678,7 +1678,9 @@ Board::setup(char const* fen)
 	{
 		if (*fen == '/')
 		{
-			s -= 16;
+			// Some guys are ending the first part with a superfluous '/'.
+			if (s != 8) // not finished
+				s -= 16;
 		}
 		else if (::isdigit(*fen))
 		{
