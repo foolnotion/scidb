@@ -118,6 +118,10 @@ int temp_key;
 
 int SEGTB;
 
+int load_2piece();
+int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t);
+
+
 int valid_2piece(int w, int b, int w_man, int b_man)
 {
   /* white piece on the wrong half-board? */
@@ -509,12 +513,12 @@ int save_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
   
   /* generate the filename */
   
-  strcpy(fname, THREE_PIECE_FILE);
+  strcpy((char*)fname, THREE_PIECE_FILE);
   fname[4] = xpiece_char[w1_man];
   fname[5] = xpiece_char[b1_man];
   fname[6] = xpiece_char[b2_man];
   
-  if(!(f = fopen(fname,"w"))) return 0;
+  if(!(f = fopen((char*)fname,"w"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {
@@ -970,12 +974,12 @@ int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
 
   /* generate the filename */
   
-  strcpy(fname, THREE_PIECE_FILE);
+  strcpy((char*)fname, THREE_PIECE_FILE);
   fname[4]= xpiece_char[w1_man];
   fname[5]= xpiece_char[b1_man];
   fname[6]= xpiece_char[b2_man];
   
-  if(!(f = fopen(fname,"r"))) return 0;
+  if(!(f = fopen((char*)fname,"r"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {

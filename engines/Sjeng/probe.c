@@ -121,6 +121,7 @@ void init_egtb(void)
 #endif
 }
 
+#if 0 /* unused */
 const static int EGTranslate(int sqidx)
 {
   int r;
@@ -129,6 +130,7 @@ const static int EGTranslate(int sqidx)
   
   return r;
 }
+#endif
 
 int probe_egtb(void)
 {

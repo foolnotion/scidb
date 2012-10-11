@@ -275,7 +275,7 @@ long int qsearch (int alpha, int beta, int depth) {
     move_ordering[MOVE_BUFF],
     see_values[MOVE_BUFF];
   bool legal_move, no_moves = TRUE;
-  int sbest, best_score, best, delta, bound;
+  int best_score, best, delta, bound;
   int originalalpha;
   int oldtime;
   int seev;
@@ -301,7 +301,7 @@ long int qsearch (int alpha, int beta, int depth) {
 	      extendedtime = 1;
 	      oldtime = time_for_move;
 	      time_for_move += allocate_time();
-	      printf("Extended from %d to %d, time left %d\n", oldtime,
+	      printf("Extended from %d to %ld, time left %ld\n", oldtime,
 		     time_for_move, 
 		     time_left);
 	    }
@@ -360,7 +360,6 @@ long int qsearch (int alpha, int beta, int depth) {
     alpha = standpat;
   }
   
-  sbest = -1;
   best_score = -INF;
   num_moves = 0;
   
@@ -512,7 +511,7 @@ long int search (int alpha, int beta, int depth, int is_null) {
 	    extendedtime = 1;
 	    oldtime = time_for_move;
 	    time_for_move += allocate_time();
-	    printf("Extended from %d to %d, time left %d\n", oldtime,
+	    printf("Extended from %d to %ld, time left %ld\n", oldtime,
 		   time_for_move, 
 		   time_left);
 	  }
@@ -829,8 +828,8 @@ long int search (int alpha, int beta, int depth, int is_null) {
 	  if (!afterincheck && ((Variant == Normal) 
 		             || (Variant == Suicide) 
 			     || (Variant == Losers)) && (depth < 3) &&
-	      (((board[moves[i].target] == wpawn) && (rank(moves[i].target) >= 6)
-		|| ((board[moves[i].target] == bpawn) && (rank(moves[i].target) <= 3)))))
+	      (((board[moves[i].target] == wpawn) && (rank(moves[i].target) >= 6))
+		|| ((board[moves[i].target] == bpawn) && (rank(moves[i].target) <= 3))))
 	    {
 	      extend++;
 	    };
@@ -1447,7 +1446,7 @@ move_s think (void) {
   
   move_s comp_move, temp_move, old_move;
   int i, j, k;
-  long int elapsed, temp_score, true_score;
+  long int elapsed, temp_score;
   char postmove[STR_BUFF];
   clock_t cpu_start, cpu_end; 
   float et = 0;
@@ -1632,7 +1631,7 @@ restart:
 
    if (pn_restart) time_for_move = (float)time_for_move * (float)2/((float)pn_restart+1.0);
    
-   printf("Time for move : %d\n", time_for_move);
+   printf("Time for move : %ld\n", time_for_move);
    
    if (time_for_move > 50)
      LoadLearn();
@@ -1686,7 +1685,6 @@ restart:
        
        temp_score = 0;
        cur_score = 0;
-       true_score = 0;
        
        for (i_depth = 1; i_depth <= maxdepth; i_depth++) {
 	 
@@ -1861,6 +1859,7 @@ restart:
 	    break;
 	  }
 	}
+	k = 0;
 	for (j = 0; j < num_moves; j++)
 	{
 	    if (rootlosers[j]) k++;  
@@ -1883,7 +1882,7 @@ restart:
   }
   elapsed = rdifftime (rtime (), start_time);
   
-  printf("Used time : %d\n", elapsed);
+  printf("Used time : %ld\n", elapsed);
   
   /* update our elapsed time_cushion: */
   if (moves_to_tc && !is_pondering) {
@@ -1937,7 +1936,7 @@ restart:
 
       if ((et > 0) && (Variant != Bughouse))
 	{
-	  printf("tellics whisper d%d %+.2f %sn: %ld qp: %.0f%% fh: %.0f%% c-x: %d r-x: %d 1-x: %d egtb: %d time: %.2f nps: %ld\n",
+	  printf("tellics whisper d%d %+.2f %sn: %ld qp: %.0f%% fh: %.0f%% c-x: %ld r-x: %ld 1-x: %ld egtb: %d time: %.2f nps: %ld\n",
 		 true_i_depth, (float)temp_score/100.0, postpv, nodes, 
 		 (((float)qnodes*100)/((float)nodes+1)),
 		 ((float)FHF*100)/((float)(FH+1)),

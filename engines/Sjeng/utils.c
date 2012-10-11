@@ -1342,7 +1342,7 @@ void speed_test(void)
     {
       eval();
       /* invalidate the ecache */
-      hash = (++hash) % ULONG_MAX; 
+      hash = (hash + 1) % ULONG_MAX; 
     }
   
   cpu_end = clock ();

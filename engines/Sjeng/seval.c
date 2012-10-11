@@ -121,8 +121,6 @@ static int s_king_mobility(int square)
 
 static int black_saccers(int square)
 {
-  register int ndir, a_sq;
-  register int basq, i;
   register int f = FALSE;
 
   /* for white pawn on square, any black
@@ -148,8 +146,9 @@ static int black_saccers(int square)
       f = TRUE;
     }
   else if (rank(square) == 4 &&
-	   board[square + 35] == bpawn ||
-	   board[square + 37] == bpawn)
+	   (board[square + 35] == bpawn
+	   ||
+	   board[square + 37] == bpawn))
     {
       f = TRUE;
     }
@@ -205,8 +204,6 @@ static int white_saccers(int square)
   /* for black pawn on square, any black
    * pieces that can sac themselves to it? */
   
-  register int ndir, a_sq;
-  register int basq, i;
   register int f = FALSE;
 
   /* for white pawn on square, any black
@@ -232,8 +229,9 @@ static int white_saccers(int square)
       f = TRUE;
     }
   else if (rank(square) == 5 &&
-	   board[square - 35] == wpawn ||
-	   board[square - 37] == wpawn)
+	   (board[square - 35] == wpawn
+	   ||
+	   board[square - 37] == wpawn))
     {
       f = TRUE;
     }

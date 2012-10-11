@@ -70,7 +70,7 @@ void checkECache(long int *score, int *in_cache)
 
 void reset_ecache(void)
 {
-  memset(ECache, 0, sizeof(ECache));
+  memset(ECache, 0, sizeof(*ECache));
   return;
 }
 
@@ -84,7 +84,7 @@ void alloc_ecache(void)
     exit(EXIT_FAILURE);
   }
   
-  printf("Allocated %lu eval cache entries, totalling %lu bytes.\n",
+  printf("Allocated %u eval cache entries, totalling %u bytes.\n",
           ECacheSize, sizeof(ECacheType)*ECacheSize);
   return;
 }

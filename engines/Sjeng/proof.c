@@ -506,7 +506,6 @@ void set_proof_and_disproof_numbers (node_t * node)
   int i;
   move_s moves[MOVE_BUFF];
   int l, num_moves;
-  int reploop;
   int ic;
 
   if (node->expanded)
@@ -982,7 +981,6 @@ pn2_eval (node_t * root)
 #ifdef PN2
   node_t *newroot;
 #endif
-  node_t *currentnode;
   node_t *oldparent;
 
   nodecount2 = 0;
@@ -994,8 +992,6 @@ pn2_eval (node_t * root)
   pn_eval (root);
   
   set_proof_and_disproof_numbers (root);
-
-  currentnode = root;
 
   while (root->proof != 0 && root->disproof != 0 && nodecount2 < nodecount )
     {
@@ -1415,7 +1411,7 @@ proofnumbersearch (void)
 	}
     };
   
-  printf ("P: %d D: %d N: %d S: %d Mem: %2.2fM Iters: %d MaxDepth: %d\n", root->proof, root->disproof, nodecount, frees, (((nodecount) * sizeof (node_t) / (float) (1024 * 1024))), iters,maxply);
+  printf ("P: %d D: %d N: %d S: %ld Mem: %2.2fM Iters: %d MaxDepth: %d\n", root->proof, root->disproof, nodecount, frees, (((nodecount) * sizeof (node_t) / (float) (1024 * 1024))), iters,maxply);
 
   if (xb_mode && post)
     printf ("tellics whisper proof %d, disproof %d, %d nodes, %d forwards, %d iters, highest depth %d\n", root->proof, root->disproof, nodecount, forwards, iters, maxply);
@@ -1608,7 +1604,7 @@ move_s proofnumbercheck(move_s compmove)
 	}
     };
 
-  printf("P: %d D: %d N: %d S: %d Mem: %2.2fM Iters: %d\n", root->proof, root->disproof, nodecount, frees, (((nodecount) * sizeof(node_t) / (float)(1024*1024))), iters);
+  printf("P: %d D: %d N: %d S: %ld Mem: %2.2fM Iters: %d\n", root->proof, root->disproof, nodecount, frees, (((nodecount) * sizeof(node_t) / (float)(1024*1024))), iters);
 
   while(currentnode != root)
   {
