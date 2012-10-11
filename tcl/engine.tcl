@@ -2144,7 +2144,7 @@ proc OpenSetupDialog(Options) {parent} {
 		if {$vertical} { $lbl configure -wraplength $wrapLength }
 		bind $see <<TraverseIn>> [namespace code [list $scrolled see %W]]
 		if {!$vertical} {
-			if {type eq "button"} { set w $val } else { set w $btn }
+			if {$type eq "button"} { set w $val } else { set w $btn }
 			bind $see <<TraverseIn>> +[namespace code [list $scrolled see $w]]
 		}
 		bind $see <FocusIn> {+ ::tooltip::tooltip hide }
