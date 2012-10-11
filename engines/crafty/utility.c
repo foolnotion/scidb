@@ -19,12 +19,12 @@
 #  include <sys/times.h>
 #  include <sys/time.h>
 #endif
-#if defined(UNIX)
+#if defined(__unix__)
 #  include <unistd.h>
 #  include <sys/types.h>
-#  if !defined(LINUX) && !defined(HP) && \
-   !defined(FreeBSD) && !defined(NetBSD) && !defined(__EMX__)
-#    if defined(AIX)
+#  if !defined(__linux__) && !defined(__HPUX__) && \
+   !defined(__FreeBSD__) && !defined(__FreeBSD__) && !defined(__EMX__)
+#    if defined(_AIX)
 #      include <sys/termio.h>
 #      include <sys/select.h>
 #    else
