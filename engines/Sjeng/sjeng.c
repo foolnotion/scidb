@@ -32,8 +32,6 @@
 #include "extvars.h"
 #include "config.h"
 
-extern int init_segtb();
-
 char divider[50] = "-------------------------------------------------";
 move_s dummy = {0,0,0,0,0};
 
@@ -336,10 +334,10 @@ int main (int argc, char *argv[]) {
 	    
 	    printf("Move ordering : %f%%\n", (((float)FHF*100)/(float)(FH+1)));
 	    
-	    printf("Material score: %d   Eval : %ld  White hand: %d  Black hand : %d\n", 
+	    printf("Material score: %d   Eval : %d  White hand: %d  Black hand : %d\n", 
 		Material, eval(), white_hand_eval, black_hand_eval);
 	    
-	    printf("Hash : %lX  HoldHash : %lX\n", hash, hold_hash);
+	    printf("Hash : %X  HoldHash : %X\n", hash, hold_hash);
 
 	    /* check to see if we mate our opponent with our current move: */
 	    if (!result) {
@@ -637,7 +635,7 @@ int main (int argc, char *argv[]) {
       }
       else if (!strcmp (input, "eval")) {
 	check_phase();
-	printf("Eval: %ld\n", eval());
+	printf("Eval: %d\n", eval());
       }
       else if (!strcmp (input, "go")) {
 	comp_color = white_to_move;
@@ -669,7 +667,7 @@ int main (int argc, char *argv[]) {
 	 time_cushion = 0; 
       }
       else if (!strncmp (input, "rating", 6)) {
-	sscanf (input+7, "%d %d", &my_rating, &opp_rating);
+	sscanf (input+7, "%ld %ld", &my_rating, &opp_rating);
 	if (my_rating == 0) my_rating = 2000;
 	if (opp_rating == 0) opp_rating = 2000;
       }
@@ -791,7 +789,7 @@ int main (int argc, char *argv[]) {
 	run_epd_testsuite();
       }
       else if (!strncmp (input, "st", 2)) {
-	sscanf(input+3, "%ld", &fixed_time);
+	sscanf(input+3, "%d", &fixed_time);
 	fixed_time = fixed_time * 100;
       }
       else if (!strncmp (input, "book", 4)) {

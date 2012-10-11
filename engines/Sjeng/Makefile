@@ -6,7 +6,7 @@ include ../../Makefile.in
 
 EXE = sjeng-scidb
 
-CFLAGS = -O2 # -DHAVE_GETTIMEOFDAY -DHAVE_SELECT -DHAVE_SYS_TIMEB_H -DHAVE_LIBGDBM -DVERSION=\"11.2\"
+CFLAGS = -O2 # -Wall -Wno-uninitialized -Wno-unused # -DHAVE_GETTIMEOFDAY -DHAVE_SELECT -DHAVE_SYS_TIMEB_H -DHAVE_LIBGDBM -DVERSION=\"11.2\"
 
 SRC = attacks.c crazy.c epd.c learn.c partner.c seval.c ttable.c book.c ecache.c eval.c \
 	moves.c search.c sjeng.c utils.c newbook.c proof.c neval.c rcfile.c leval.c draw.c see.c \

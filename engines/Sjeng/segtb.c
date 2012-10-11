@@ -112,9 +112,6 @@ signed char *two_piece_data;
 signed char *three_piece_data;
 signed char *temp_table; /* used when generating new tables */
 
-int load_2piece();
-int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t);
-
 int cache_counter;
 cache_data table_cache[CACHE_SIZE];
 int temp_key;
@@ -512,12 +509,12 @@ int save_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
   
   /* generate the filename */
   
-  strcpy((char*)fname, THREE_PIECE_FILE);
+  strcpy(fname, THREE_PIECE_FILE);
   fname[4] = xpiece_char[w1_man];
   fname[5] = xpiece_char[b1_man];
   fname[6] = xpiece_char[b2_man];
   
-  if(!(f = fopen((char*)fname,"w"))) return 0;
+  if(!(f = fopen(fname,"w"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {
@@ -973,12 +970,12 @@ int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
 
   /* generate the filename */
   
-  strcpy((char*)fname, THREE_PIECE_FILE);
+  strcpy(fname, THREE_PIECE_FILE);
   fname[4]= xpiece_char[w1_man];
   fname[5]= xpiece_char[b1_man];
   fname[6]= xpiece_char[b2_man];
   
-  if(!(f = fopen((char*)fname,"r"))) return 0;
+  if(!(f = fopen(fname,"r"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {

@@ -39,8 +39,7 @@
 #define NDEBUG 
 #include <assert.h>
 
-//#define DIE (*(int *)(NULL) = 0)
-#define DIE exit(1)
+#define DIE (*(int *)(NULL) = 0)
 
 /* GCP : my code uses WHITE=0 and BLACK=1 so reverse this */
 
