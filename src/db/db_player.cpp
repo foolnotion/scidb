@@ -699,6 +699,13 @@ Player::Player()
 	,m_zpsPrefix(0)
 	,m_ecfSuffix(0)
 	,m_region(0)
+	,m_shuffle(0)
+	,m_bughouse(0)
+	,m_crazyhouse(0)
+	,m_losers(0)
+	,m_suicide(0)
+	,m_giveaway(0)
+	,m_threeCheck(0)
 {
 	::memset(m_latestRating, 0, sizeof(m_latestRating));
 	::memset(m_highestRating, 0, sizeof(m_highestRating));
@@ -2678,9 +2685,9 @@ Player::parseComputerList(mstl::istream& stream)
 						while (::isspace(*s))
 							++s;
 
-						while (*s != '\0' && !::isspace(*s))
+						while (::isalpha(*s))
 						{
-							switch (*s)
+							switch (*s++)
 							{
 								case 'F': player->setChess960Flag(true); break;
 								case 'B': player->setBughouseChessFlag(true); break;
@@ -2688,12 +2695,9 @@ Player::parseComputerList(mstl::istream& stream)
 								case 'L': player->setLosersChessFlag(true); break;
 								case 'G': player->setGiveawayChessFlag(true); break;
 								case 'S': player->setSuicideChessFlag(true); break;
+								case 'T': // fallthru
+								case '3': player->setThreeCheckChessFlag(true); break;
 							}
-							
-							while (::isalpha(*s))
-								++s;
-							if (*s == '/' || *s == '?' || *s == '-')
-								++s;
 						}
 
 						while (::isspace(*s))

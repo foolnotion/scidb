@@ -42,6 +42,7 @@ inline void Player::setCrazyhouseChessFlag(bool flag)				{ m_crazyhouse = flag; 
 inline void Player::setLosersChessFlag(bool flag)					{ m_losers = flag; }
 inline void Player::setSuicideChessFlag(bool flag)					{ m_suicide = flag; }
 inline void Player::setGiveawayChessFlag(bool flag)				{ m_giveaway = flag; }
+inline void Player::setThreeCheckChessFlag(bool flag)				{ m_threeCheck = flag; }
 inline void Player::setWinboardProtocol(bool flag)					{ m_winboard = flag; }
 inline void Player::setUciProtocol(bool flag)						{ m_uci = flag; }
 inline void Player::setUnique(bool flag)								{ m_notUnique = !flag; }
@@ -55,6 +56,7 @@ inline bool Player::supportsCrazyhouseChess() const				{ return m_crazyhouse; }
 inline bool Player::supportsLosersChess() const						{ return m_losers; }
 inline bool Player::supportsSuicideChess() const					{ return m_suicide; }
 inline bool Player::supportsGiveawayChess() const					{ return m_giveaway; }
+inline bool Player::supportsThreeCheckChess() const				{ return m_threeCheck; }
 
 inline sex::ID Player::sex() const						{ return sex::ID(m_sex); }
 inline species::ID Player::type() const				{ return species::ID(m_species); }

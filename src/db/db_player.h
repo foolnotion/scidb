@@ -88,6 +88,8 @@ public:
 	bool supportsSuicideChess() const;
 	/// Return whether Giveaway Chesss is supported.
 	bool supportsGiveawayChess() const;
+	/// Return whether Three-Check Chesss is supported.
+	bool supportsThreeCheckChess() const;
 
 	/// Returns players name.
 	mstl::string const& name() const;
@@ -171,6 +173,7 @@ public:
 	void setLosersChessFlag(bool flag);
 	void setSuicideChessFlag(bool flag);
 	void setGiveawayChessFlag(bool flag);
+	void setThreeCheckChessFlag(bool flag);
 	void setWinboardProtocol(bool flag);
 	void setUciProtocol(bool flag);
 	void setUnique(bool flag);
@@ -278,7 +281,8 @@ private:
 	uint32_t m_losers			:1;
 	uint32_t m_suicide		:1;
 	uint32_t m_giveaway		:1;
-	uint32_t m_unused			:5;
+	uint32_t m_threeCheck	:1;
+	uint32_t m_unused			:4;
 
 	static unsigned m_minELO;
 	static unsigned m_minDWZ;
