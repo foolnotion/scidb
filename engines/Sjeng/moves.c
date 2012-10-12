@@ -1385,7 +1385,6 @@ void make (move_s moves[], int i) {
       /* add to piece array, set piece-square pointer */
       pieces[find_slot] = target;
 
-      path_x[ply].was_promoted = is_promoted[find_slot];
       is_promoted[find_slot] = 0;
       
       /* set square->piece pointer */
@@ -1415,11 +1414,11 @@ void make (move_s moves[], int i) {
   else
     {
 
-      path_x[ply].was_promoted = is_promoted[squares[target]];
 
       /* update the "general" pieces[] / squares[] info (special moves need
 	 special handling later): */
       path_x[ply].cap_num = squares[target];
+      path_x[ply].was_promoted = is_promoted[squares[target]];
       pieces[squares[target]] = 0;
       pieces[squares[from]] = target;
       squares[target] = squares[from];
@@ -1503,6 +1502,7 @@ void make (move_s moves[], int i) {
 	  moved[target-12]++;
 	  white_to_move ^= 1;
 	  path_x[ply].cap_num = squares[target-12];
+          path_x[ply].was_promoted = 0;
 
 	  pieces[squares[target-12]] = 0;
 	  squares[target-12] = 0;
@@ -1581,6 +1581,7 @@ void make (move_s moves[], int i) {
 	  moved[target+12]++;
 	  white_to_move ^= 1;
 	  path_x[ply].cap_num = squares[target+12];
+          path_x[ply].was_promoted = 0;
 	  pieces[squares[target+12]] = 0;
 	  squares[target+12] = 0;
 	  
@@ -2005,7 +2006,7 @@ void unmake (move_s moves[], int i) {
        /* remove from piece array, unset piece-square pointer */
 
        pieces[squares[target]] = 0;
-       is_promoted[squares[target]] = path_x[ply].was_promoted;
+       assert(is_promoted[squares[target]] == 0);
        
        /* unset square->piece pointer */
        squares[target] = 0;
@@ -2036,10 +2037,9 @@ void unmake (move_s moves[], int i) {
       
       squares[from] = squares[target];
       squares[target] = path_x[ply].cap_num;
+      is_promoted[squares[target]] = path_x[ply].was_promoted;
       pieces[squares[target]] = target;
       pieces[squares[from]] = from;
-
-      is_promoted[squares[target]] = path_x[ply].was_promoted;
       
       /* update the piece count for determining opening/middlegame/endgame stage */
       if (!ep)
@@ -2092,6 +2092,7 @@ void unmake (move_s moves[], int i) {
 	  moved[target-12]--;
 	  white_to_move ^= 1;
 	  squares[target-12] = path_x[ply].cap_num;
+          is_promoted[path_x[ply].cap_num] = path_x[ply].was_promoted;
 	  pieces[path_x[ply].cap_num] = target-12;
 	  squares[target] = 0;
 	  return;
@@ -2133,6 +2134,7 @@ void unmake (move_s moves[], int i) {
 	  moved[target+12]--;
 	  white_to_move ^= 1;
 	  squares[target+12] = path_x[ply].cap_num;
+          is_promoted[path_x[ply].cap_num] = path_x[ply].was_promoted;
 	  pieces[path_x[ply].cap_num] = target+12;
 	  squares[target] = 0;
 	  return;
@@ -2175,6 +2177,8 @@ void unmake (move_s moves[], int i) {
 	  moved[from]--;
 	  white_to_move ^= 1;
 
+          is_promoted[squares[from]] = 0;
+
 	  Hash(wpawn, from);
 	  Hash(promoted, target);
 
@@ -2190,6 +2194,8 @@ void unmake (move_s moves[], int i) {
 	moved[target]--;
 	moved[from]--;
 	white_to_move ^= 1;
+
+        is_promoted[squares[from]] = 0;
 
 	Hash(bpawn, from);
 	Hash(promoted, target);

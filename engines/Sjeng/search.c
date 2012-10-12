@@ -277,7 +277,7 @@ long int qsearch (int alpha, int beta, int depth) {
   bool legal_move, no_moves = TRUE;
   int best_score, best, delta, bound;
   int originalalpha;
-  int oldtime;
+  long int oldtime;
   int seev;
   
   pv_length[ply] = ply;
@@ -301,7 +301,7 @@ long int qsearch (int alpha, int beta, int depth) {
 	      extendedtime = 1;
 	      oldtime = time_for_move;
 	      time_for_move += allocate_time();
-	      printf("Extended from %d to %ld, time left %ld\n", oldtime,
+	      printf("Extended from %ld to %ld, time left %ld\n", oldtime,
 		     time_for_move, 
 		     time_left);
 	    }
@@ -380,7 +380,7 @@ long int qsearch (int alpha, int beta, int depth) {
     
     seev = see_values[i];
  
-    if (((seev < delta) || (seev < 0)) && !moves[i].promoted)
+    if (!moves[i].promoted && ((seev < delta) || (seev < 0)))
 	continue;
   
     make (&moves[0], i);
@@ -489,7 +489,7 @@ long int search (int alpha, int beta, int depth, int is_null) {
   int afterincheck;
   int legalmoves;
   int dropcut;
-  int oldtime;
+  long int oldtime;
   int egscore;
   static const int rc_index[14] = {0,1,1,2,2,5,5,3,3,4,4,2,2,0};
   
@@ -511,7 +511,7 @@ long int search (int alpha, int beta, int depth, int is_null) {
 	    extendedtime = 1;
 	    oldtime = time_for_move;
 	    time_for_move += allocate_time();
-	    printf("Extended from %d to %ld, time left %ld\n", oldtime,
+	    printf("Extended from %ld to %ld, time left %ld\n", oldtime,
 		   time_for_move, 
 		   time_left);
 	  }
@@ -538,13 +538,7 @@ long int search (int alpha, int beta, int depth, int is_null) {
   
   if ((path[ply-1].captured != npiece || ply == 2))
   {
-    if (piece_count <= EGTBPieces && (Variant == Normal))
-    {
-      egscore = probe_egtb();
-      if (egscore != KINGCAP)
-	return egscore;
-    }
-    else if (piece_count <= 3 && (Variant == Suicide) && SEGTB)
+    if (piece_count <= 3 && (Variant == Suicide) && SEGTB)
     {
       EGTBProbes++;
       
@@ -1859,6 +1853,7 @@ restart:
 	    break;
 	  }
 	}
+
 	k = 0;
 	for (j = 0; j < num_moves; j++)
 	{
