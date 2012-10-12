@@ -157,7 +157,9 @@ struct winboard::Engine::Timer : public sys::Timer
 
 
 winboard::Engine::Engine()
-	:m_isAnalyzing(false)
+	:m_currentVariant("standard")
+	,m_startTime(0)
+	,m_isAnalyzing(false)
 	,m_response(false)
 	,m_waitForDone(false)
 	,m_analyzeResponse(false)

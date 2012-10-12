@@ -394,7 +394,6 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_active(false)
 	,m_probe(false)
 	,m_probeAnalyze(false)
-	,m_protocol(false)
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
 	,m_bestInfoHasChanged(false)
@@ -442,6 +441,7 @@ Engine::protocol() const
 ::sys::Process&
 Engine::process()
 {
+	M_REQUIRE(isConnected());
 	return *m_process;
 }
 
@@ -449,6 +449,7 @@ Engine::process()
 long
 Engine::pid() const
 {
+	M_REQUIRE(isConnected());
 	return m_process->pid();
 }
 
@@ -456,8 +457,11 @@ Engine::pid() const
 void
 Engine::kill()
 {
-	m_active = false;
-	m_process->close();
+	if (m_process)
+	{
+		m_active = false;
+		m_process->close();
+	}
 }
 
 
@@ -810,6 +814,8 @@ Engine::fatal(mstl::string const& msg)
 void
 Engine::readyRead()
 {
+	M_REQUIRE(isConnected());
+
 	mstl::string lines;
 	mstl::string line;
 
@@ -892,6 +898,8 @@ Engine::resumed()
 void
 Engine::send(mstl::string const& msg)
 {
+	M_REQUIRE(isConnected());
+
 	if (m_logStream)
 	{
 		m_buffer.assign("> ", 2);
@@ -950,46 +958,29 @@ Engine::probe(unsigned timeout)
 	try
 	{
 		activate();
+		m_active = true;
 
-		do
+		while (m_process && !m_process->isConnected() && !timer.expired())
 			timer.doNextEvent();
-		while (m_process->isConnected() && !timer.expired());
+
+		if (!m_process)
+			return Probe_Failed;
+
+		m_engine->protocolStart(true);
+
+		timer.restart(m_engine->probeTimeout());
+
+		while (result != Probe_Successfull && !timer.expired())
+		{
+			timer.doNextEvent();
+			result = m_engine->probeResult();
+		}
 	}
 	catch (mstl::exception const& exc)
 	{
 		deactivate();
 		m_probe = false;
 		throw exc;
-	}
-
-	result = m_engine->probeResult();
-
-	if (result != Probe_Successfull)
-	{
-		if (!m_process->isConnected())
-		{
-			// Seems to be a quiet engine. Start the protocol.
-			m_protocol = true;
-			m_options.clear(); // to be sure
-			m_engine->protocolStart(true);
-		}
-
-		timer.restart(mstl::max(timeout, m_engine->probeTimeout()));
-
-		try
-		{
-			while (result != Probe_Successfull && !timer.expired())
-			{
-				timer.doNextEvent();
-				result = m_engine->probeResult();
-			}
-		}
-		catch (mstl::exception const& exc)
-		{
-			deactivate();
-			m_probe = false;
-			throw exc;
-		}
 	}
 
 	m_probe = false;

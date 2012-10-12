@@ -87,7 +87,6 @@ inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
 
 
-inline bool Engine::protocolAlreadyStarted() const		{ return m_protocol; }
 inline Engine::Options const& Engine::options() const	{ return m_options; }
 
 
@@ -300,6 +299,7 @@ inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & f
 inline bool Engine::hasVariant(unsigned variant) const 		{ return m_variants & variant; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
 inline bool Engine::bestInfoHasChanged() const					{ return m_bestInfoHasChanged; }
+inline bool Engine::isConnected() const							{ return m_process != 0; }
 
 inline int Engine::bestScore() const								{ return m_bestScore; }
 inline int Engine::shortestMate() const							{ return m_shortestMate; }

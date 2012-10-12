@@ -287,6 +287,7 @@ public:
 
 	bool isAlive();
 	bool isActive() const;
+	bool isConnected() const;
 	bool isAnalyzing() const;
 	bool isProbing() const;
 	bool isProbingAnalyze() const;
@@ -397,8 +398,6 @@ protected:
 	virtual void updateDepthInfo();
 	virtual void updateTimeInfo();
 	virtual void updateHashFullInfo();
-
-	bool protocolAlreadyStarted() const;
 
 	long pid() const;
 	void kill();
@@ -525,7 +524,6 @@ private:
 	bool					m_active;
 	bool					m_probe;
 	bool					m_probeAnalyze;
-	bool					m_protocol;
 	bool					m_identifierSet;
 	bool					m_useLimitedStrength;
 	bool					m_bestInfoHasChanged;
