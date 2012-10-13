@@ -953,7 +953,9 @@ proc UpdatePGN {position data {w {}}} {
 						$w tag configure $Vars(next) -background $Colors(background)
 					}
 					set Vars(next:move) [::scidb::game::next keys $position]
-					if {$Options(style:column)} { set Vars(next) $Vars(next:move) }
+					if {$Options(style:column)} {
+						set Vars(next) $Vars(next:move)
+					}
 					if {$Vars(active) eq $key} { $w configure -cursor {} }
 					set previous $Vars(current)
 					if {[llength $previous]} {

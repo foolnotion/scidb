@@ -870,6 +870,7 @@
 ::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
 ::engine::mc::ScriptErrors		"Any errors while saving will be displayed here." ;# NEW
 ::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
+::engine::mc::ThrowAwayChanges		"Throw away all changes?" ;# NEW
 
 ::engine::mc::ProbeError(registration)		"This engine requires a registration." ;# NEW
 ::engine::mc::ProbeError(copyprotection)	"This engine is copy-protected." ;# NEW
@@ -895,39 +896,39 @@
 ::engine::mc::FeatureDetail(playingStyle)	"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
 
 ### analysis ###########################################################
-::application::analysis::mc::Control						"Control" ;# NEW
-::application::analysis::mc::Information					"Information" ;# NEW
-::application::analysis::mc::Setup							"Setup" ;# NEW
-::application::analysis::mc::Pause							"Pause" ;# NEW
-::application::analysis::mc::Resume							"Resume" ;# NEW
-::application::analysis::mc::LockEngine					"Lock engine to current position" ;# NEW
-::application::analysis::mc::MultipleVariations			"Multiple variations" ;# NEW
-::application::analysis::mc::HashFullness					"Hash fullness" ;# NEW
-::application::analysis::mc::Hash							"Hash:" ;# NEW
-::application::analysis::mc::Lines							"Lines:" ;# NEW
-::application::analysis::mc::MateIn							"%color mate in %n" ;# NEW
-::application::analysis::mc::BestScore						"Best score (of current lines)" ;# NEW
-::application::analysis::mc::CurrentMove					"Currently searching this move" ;# NEW
-::application::analysis::mc::TimeSearched					"Time searched" ;# NEW
-::application::analysis::mc::SearchDepth					"Search depth in plies (Selective search depth)" ;# NEW
+::application::analysis::mc::Control			"Control" ;# NEW
+::application::analysis::mc::Information		"Information" ;# NEW
+::application::analysis::mc::Setup			"Setup" ;# NEW
+::application::analysis::mc::Pause			"Pause" ;# NEW
+::application::analysis::mc::Resume			"Resume" ;# NEW
+::application::analysis::mc::LockEngine			"Lock engine to current position" ;# NEW
+::application::analysis::mc::MultipleVariations		"Multiple variations (multi-pv)" ;# NEW
+::application::analysis::mc::HashFullness		"Hash fullness" ;# NEW
+::application::analysis::mc::Hash			"Hash:" ;# NEW
+::application::analysis::mc::Lines			"Lines:" ;# NEW
+::application::analysis::mc::MateIn			"%color mate in %n" ;# NEW
+::application::analysis::mc::BestScore			"Best score (of current lines)" ;# NEW
+::application::analysis::mc::CurrentMove		"Currently searching this move" ;# NEW
+::application::analysis::mc::TimeSearched		"Time searched" ;# NEW
+::application::analysis::mc::SearchDepth		"Search depth in plies (Selective search depth)" ;# NEW
 
-::application::analysis::mc::LinesPerVariation			"Lines per variation" ;# NEW
-::application::analysis::mc::BestFirstOrder				"Use \"best first\" order" ;# NEW
-::application::analysis::mc::Engine							"Engine" ;# NEW
+::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
+::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
+::application::analysis::mc::Engine			"Engine" ;# NEW
 
-::application::analysis::mc::Seconds						"s" ;# NEW
-::application::analysis::mc::Minutes						"m" ;# NEW
+::application::analysis::mc::Seconds			"s" ;# NEW
+::application::analysis::mc::Minutes			"m" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
 ::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
-::application::analysis::mc::NotSupported(analyze)		"This engine does not have an analysis mode." ;# NEW
+::application::analysis::mc::NotSupported(analyze)	"This engine does not have an analysis mode." ;# NEW
 
-::application::analysis::mc::Signal(stopped)				"Engine stopped by signal." ;# NEW
-::application::analysis::mc::Signal(resumed)				"Engine resumed by signal." ;# NEW
-::application::analysis::mc::Signal(killed)				"Engine killed by signal." ;# NEW
-::application::analysis::mc::Signal(crashed)				"Engine crashed." ;# NEW
-::application::analysis::mc::Signal(closed)				"Engine has closed connection." ;# NEW
-::application::analysis::mc::Signal(terminated)			"Engine terminated with exit code %s." ;# NEW
+::application::analysis::mc::Signal(stopped)		"Engine stopped by signal." ;# NEW
+::application::analysis::mc::Signal(resumed)		"Engine resumed by signal." ;# NEW
+::application::analysis::mc::Signal(killed)		"Engine killed by signal." ;# NEW
+::application::analysis::mc::Signal(crashed)		"Engine crashed." ;# NEW
+::application::analysis::mc::Signal(closed)		"Engine has closed connection." ;# NEW
+::application::analysis::mc::Signal(terminated)		"Engine terminated with exit code %s." ;# NEW
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Játszma megjelölése töröltként"

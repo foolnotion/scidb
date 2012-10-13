@@ -871,6 +871,7 @@
 ::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
 ::engine::mc::ScriptErrors				"Any errors while saving will be displayed here." ;# NEW
 ::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
+::engine::mc::ThrowAwayChanges		"Throw away all changes?" ;# NEW
 
 ::engine::mc::ProbeError(registration)			"This engine requires a registration." ;# NEW
 ::engine::mc::ProbeError(copyprotection)		"This engine is copy-protected." ;# NEW
@@ -902,7 +903,7 @@
 ::application::analysis::mc::Pause							"Pause" ;# NEW
 ::application::analysis::mc::Resume							"Resume" ;# NEW
 ::application::analysis::mc::LockEngine					"Lock engine to current position" ;# NEW
-::application::analysis::mc::MultipleVariations			"Multiple variations" ;# NEW
+::application::analysis::mc::MultipleVariations			"Multiple variations (multi-pv)" ;# NEW
 ::application::analysis::mc::HashFullness					"Hash fullness" ;# NEW
 ::application::analysis::mc::Hash							"Hash:" ;# NEW
 ::application::analysis::mc::Lines							"Lines:" ;# NEW
@@ -913,7 +914,7 @@
 ::application::analysis::mc::SearchDepth					"Search depth in plies (Selective search depth)" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation			"Lines per variation" ;# NEW
-::application::analysis::mc::BestFirstOrder				"Use \"best first\" order" ;# NEW
+::application::analysis::mc::BestFirstOrder				"Sort by evaluation" ;# NEW
 ::application::analysis::mc::Engine							"Engine" ;# NEW
 
 ::application::analysis::mc::Seconds						"s" ;# NEW

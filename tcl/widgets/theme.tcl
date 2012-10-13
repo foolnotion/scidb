@@ -705,9 +705,9 @@ proc AltKeyInDialog {path key} {
 
 
 # fix tk::spinbox::AutoScan
-rename tk::spinbox::AutoScan tk::spinbox::AutoScan_buggy_
+rename ::tk::spinbox::AutoScan ::tk::spinbox::AutoScan_buggy_
 
-proc tk::spinbox::AutoScan {w} {
+proc spinbox::AutoScan {w} {
 	if {[winfo exists $w]} { return [AutoScan_buggy_ $w] }
 }
 

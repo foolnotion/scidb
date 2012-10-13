@@ -594,11 +594,11 @@ proc See {position w key succKey} { ;# NOTE: we do not use succKey
 	if {[string length $key] == 0} { return }
 
 	if {$Vars(start:$position)} {
-		if {$key eq "m-0.0"} { return }
+		if {$key eq [::scidb::game::position startKey]} { return }
 		set Vars(start:$position) 0
 	}
 
-	if {$key eq "m-0.0"} {
+	if {$key eq [::scidb::game::position startKey]} {
 		$w see 1.0
 		return
 	}

@@ -1614,8 +1614,8 @@ proc Blink {context position compl} {
 						$w tag configure $key -foreground $Colors($Priv(color:attr))
 					}
 					nextmove {
-						set key [::scidb::game::next keys $position] 
-						$w tag configure $key -foreground $Colors($Priv(color:attr))
+						set keys [::scidb::game::next keys $position] 
+						foreach key $keys { $w tag configure $key -foreground $Colors($Priv(color:attr)) }
 					}
 					default {
 						$w configure -selectborderwidth 1
@@ -1642,8 +1642,8 @@ proc Blink {context position compl} {
 					$w tag configure $key -foreground black
 				}
 				nextmove {
-					set key [::scidb::game::next keys $position] 
-					$w tag configure $key -foreground black
+					set keys [::scidb::game::next keys $position] 
+					foreach key $keys { $w tag configure $key -foreground black }
 				}
 				default {
 					$w configure -inactiveselectbackground white
@@ -1701,7 +1701,7 @@ proc WriteOptions {chan} {
 
 set Games(layout) {
 [Result "*"]
-[LastMoves "4.Ng5 Bc5"]
+[LastMoves "5...Bxf2 6.Kf1"]
 1.e4 e5
 	(1...c5 {+0.25|16})
 	(1...c5 {+0.09|16}
@@ -1732,7 +1732,8 @@ set Games(colors) {
 [LastMoves "5.O-O Nf6"]
 1.f3 e5 2.e4 Nc6
 	(2...Bc5 {[%draw full,g1,red]} {-0.74})
-	(2...Nf6 3.Nh3 Bc5 4.Qe2 0-0 5.d3 d5 6.Bg5 Bxh3 7.gxh3 Nc6 {-1.41|11} {Juhl-Karlsson/SVE-chT corr/1978})
+	(2...Nf6 3.Nh3 Bc5 4.Qe2 0-0 5.d3 d5 6.Bg5 Bxh3 7.gxh3 Nc6
+	{-1.41|11} {Juhl-Karlsson/SVE-chT corr/1978})
 3.Nh3 d6 4.Bc4?
 %	({$213} 4.Nf2)
 Qh4+? {[%draw full,e1,red]}

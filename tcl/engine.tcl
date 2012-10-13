@@ -107,6 +107,7 @@ set NoEngineAvailable		"No engine available."
 set FailedToCreateDir		"Failed to create directory '%s'."
 set ScriptErrors				"Any errors while saving will be displayed here."
 set CommandNotAllowed		"Usage of command '%s' is not allowed here."
+set ThrowAwayChanges			"Throw away all changes?"
 
 set ProbeError(registration)			"This engine requires a registration."
 set ProbeError(copyprotection)		"This engine is copy-protected."
@@ -1854,7 +1855,7 @@ proc OpenSetupDialog(Script) {parent} {
 
 	### buttons ##############################################################
 	::widget::dialogButtons $dlg {save cancel help} -default save
-	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
 	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
 
 	### popup ################################################################
@@ -1874,6 +1875,18 @@ proc OpenSetupDialog(Script) {parent} {
 	}
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
+}
+
+
+proc AskCloseSetup {saveBtn} {
+	set dlg [winfo toplevel $saveBtn]
+
+	if {[$saveBtn cget -state] == "normal"} {
+		set reply [::dialog::question -message $mc::ThrowAwayChanges -parent $dlg]
+		if {$reply eq "no"} { return }
+	}
+
+	destroy $dlg
 }
 
 
@@ -2176,7 +2189,7 @@ proc OpenSetupDialog(Options) {parent} {
 	}
 
 	::widget::dialogButtons $dlg {save cancel} -default save
-	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
 	$dlg.save configure -state disabled -command [namespace code [list SaveOptions $dlg]]
 
 	update idletasks
@@ -3027,6 +3040,7 @@ proc GetDirectory {parent list} {
 	set result [::dialog::chooseDir \
 		-parent $parent \
 		-initialdir $::scidb::dir::home \
+		-showhidden yes \
 		-geometry last \
 	]
 

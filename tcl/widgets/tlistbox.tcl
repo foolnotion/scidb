@@ -526,11 +526,9 @@ proc WidgetProc {w command args} {
 				ComputeHeight $w
 				set checkScrollbar 1
 			} elseif {"-width" in $args && "-height" ni $args} {
-				ComputeWidth $w
 			} elseif {!$Priv(resized) || "-force" in $args} {
-				ComputeGeometry $w
+				ComputeHeight $w
 				set checkScrollbar 1
-				set Priv(resized) 1
 			}
 			if {$checkScrollbar} {
 				if {[winfo exists $w.vsb]} {
@@ -540,6 +538,13 @@ proc WidgetProc {w command args} {
 						grid $w.vsb
 					}
 				}
+			}
+			if {"-height" in $args && "-width" ni $args} {
+			} elseif {"-width" in $args && "-height" ni $args} {
+				ComputeWidth $w
+			} elseif {!$Priv(resized) || "-force" in $args} {
+				ComputeWidth $w
+				set Priv(resized) 1
 			}
 		}
 
@@ -1014,12 +1019,6 @@ proc FindMatch {w column code mapping} {
 }
 
 
-proc ComputeGeometry {cb} {
-	ComputeWidth $cb
-	ComputeHeight $cb
-}
-
-
 proc ComputeWidth {cb} {
 	variable [namespace current]::${cb}::Priv
 
@@ -1042,9 +1041,9 @@ proc ComputeWidth {cb} {
 		}
 		set maxwidth $Priv(maxwidth)
 		set minwidth $Priv(minwidth)
-		if {"$cb.vsb" in [grid slaves $cb] && [winfo width $cb.vsb] > 1} {
-			if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo width $cb.vsb]}] }
-			if {$minwidth} { set minwidth [expr {$minwidth - [winfo width $cb.vsb]}] }
+		if {"$cb.vsb" in [grid slaves $cb]} {
+			if {$maxwidth} { set maxwidth [expr {$maxwidth - [winfo reqwidth $cb.vsb]}] }
+			if {$minwidth} { set minwidth [expr {$minwidth - [winfo reqwidth $cb.vsb]}] }
 		}
 		if {$maxwidth && $maxwidth < $width} { set width $maxwidth }
 		set width [max $width $minwidth]
