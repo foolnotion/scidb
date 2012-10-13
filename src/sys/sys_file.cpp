@@ -49,7 +49,9 @@ sys::file::internalName(char const* externalName)
 	if (pathObj)
 	{
 		Tcl_IncrRefCount(pathObj);
-		result.assign(Tcl_FSGetNativePath(pathObj));
+		// Tcl version 8.6 is returning "void const*".
+		// Tcl version 8.5 is returning "char const*".
+		result.assign(static_cast<char const*>(Tcl_FSGetNativePath(pathObj)));
 		Tcl_DecrRefCount(pathObj);
 	}
 	else
