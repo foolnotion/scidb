@@ -1426,13 +1426,14 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] =
 	{
-		"atStart?", "atEnd?", "isMainline?", "key", "forward", "backward", 0
+		"atStart?", "atEnd?", "isMainline?", "key", "startKey", "forward", "backward", 0
 	};
 	static char const* args[] =
 	{
-		"?<position>?", "?<position>?", "?<position>?", "?<position>?", "?<position>?", "?<position>?", 0
+		"?<position>?", "?<position>?", "?<position>?", "?<position>?",
+		"?<position>?", "?<position>?", "?<position>?", 0
 	};
-	enum { Cmd_AtStart, Cmd_AtEnd, Cmd_IsMainline, Cmd_Key, Cmd_Forward, Cmd_Backward };
+	enum { Cmd_AtStart, Cmd_AtEnd, Cmd_IsMainline, Cmd_Key, Cmd_StartKey, Cmd_Forward, Cmd_Backward };
 
 	if (objc < 2)
 		return usage(::CmdPosition, nullptr, nullptr, subcommands, args);
@@ -1456,6 +1457,10 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Key:
 			setResult(Scidb->game(position).currentKey().id());
+			break;
+
+		case Cmd_StartKey:
+			setResult(Scidb->game(position).startKey());
 			break;
 
 		case Cmd_Forward:
