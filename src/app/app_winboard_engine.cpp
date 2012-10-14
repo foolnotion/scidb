@@ -489,7 +489,6 @@ winboard::Engine::startAnalysis(bool isNewGame)
 			m_startTime = ::sys::time::timestamp();
 
 		m_isAnalyzing = true;
-		m_firstMove.clear();
 		updateState(app::Engine::Start);
 	}
 
@@ -1067,14 +1066,13 @@ void
 winboard::Engine::parseInfo(mstl::string const& msg)
 {
 	int			score;
-	int			depth;
+	unsigned		depth;
 	unsigned		nodes;
 	unsigned		time;
-	char const	*d = ::skipSpaces(msg);
-	char const	*s	= ::skipWord(d);
+	char const	*s;
 
-	if (::sscanf(d, "%d", &depth) != 1 || ::sscanf(s, "%d %u %u ", &score, &time, &nodes) != 3)
-		return;
+	if (::sscanf(msg, "%u", &depth) != 1 || ::sscanf(s = ::skipWord(msg), "%d %u %u ", &score, &time, &nodes) != 3)
+		return parseCurrentMove(s);
 
 	s = ::skipWords(msg, 3);
 
@@ -1139,27 +1137,72 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		return;
 	}
 
-	if (moves.size() == 0 || (moves.size() == 1 && moves[0] == m_firstMove))
+	if (moves.size() == 0)
 	{
 		updateTimeInfo();
 	}
-	else if (moves.size() > 0)
+	else
 	{
-		if (board.checkState() & Board::CheckMate)
+		if (moves.size() == 1 && s[-1] == '!')
 		{
-			int n = board.moveNumber() - m_board.moveNumber();
-			setMate(0, board.whiteToMove() ? -n : +n);
+			setCurrentMove(0, 0, moves[0]);
+			updateCurrMove();
+		}
+		else
+		{
+			m_analyzeResponse = true;
+			setVariation(0, moves);
+
+			if (board.checkState() & Board::CheckMate)
+			{
+				int n = board.moveNumber() - m_board.moveNumber();
+				setMate(0, board.whiteToMove() ? -n : +n);
 
 #if 0 // we cannot terminate, the engine might find a "better" pv
-			if (isAnalyzing())
-				stopAnalysis(); // we don't need further computation if mate
+				if (isAnalyzing())
+					stopAnalysis(); // we don't need further computation if mate
 #endif
+			}
+
+			updatePvInfo(0);
 		}
 
-		m_firstMove = moves[0];
-		setVariation(0, moves);
-		updatePvInfo(0);
 		m_analyzeResponse = true;
+	}
+}
+
+
+void
+winboard::Engine::parseCurrentMove(char const* s)
+{
+	float		time;
+	unsigned	depth;
+	unsigned	moveNo;
+	unsigned	moveCount;
+
+	if (::sscanf(s, "%u %f %u/%u?", &depth, &time, &moveNo, &moveCount) != 4)
+		return;
+
+	s = ::skipMoveNumber(::skipWords(s, 3));
+
+	Move move;
+	char const* t = m_board.parseMove(s, move);
+
+	if (t == 0)
+		return;
+
+	if (move.isLegal())
+	{
+		m_board.prepareForPrint(move);
+		setCurrentMove(moveNo, moveCount, move);
+		updateCurrMove();
+	}
+	else
+	{
+		mstl::string msg("Illegal current move: ");
+		msg.append(s, t - s);
+		msg.trim();
+		error(msg);
 	}
 }
 

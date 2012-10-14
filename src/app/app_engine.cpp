@@ -384,6 +384,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_features(0)
 	,m_variants(0)
 	,m_currMoveNumber(0)
+	,m_currMoveCount(0)
 	,m_bestIndex(0)
 	,m_bestScore(0)
 	,m_shortestMate(0)
@@ -816,31 +817,16 @@ Engine::readyRead()
 {
 	M_REQUIRE(isConnected());
 
-	mstl::string lines;
 	mstl::string line;
 
-	while (m_process->gets(lines) > 0)
+	while (m_process->gets(line) > 0)
 	{
-		char const* s = lines.begin();
-		char const* e = lines.end();
+		line.trim();
 
-		while (s < e)
+		if (!line.empty())
 		{
-			char const *p = s;
-
-			while (p < e && *p != '\n')
-				++p;
-
-			line.assign(s, p - s);
-			line.trim();
-
-			if (!line.empty())
-			{
-				log(line);
-				m_engine->processMessage(line);
-			}
-
-			s = p + 1;
+			log(line);
+			m_engine->processMessage(line);
 		}
 	}
 }

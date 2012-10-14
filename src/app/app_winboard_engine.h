@@ -94,6 +94,7 @@ private:
 	void featureDone(bool done);
 	void parseAnalysis(mstl::string const& msg);
 	void parseInfo(mstl::string const& msg);
+	void parseCurrentMove(char const* s);
 	void parseOption(mstl::string const& option);
 	void parseFeatures(char const* msg);
 	void detectFeatures(char const* identifier);
@@ -103,7 +104,6 @@ private:
 	mstl::string	m_chess960Variant;
 	mstl::string	m_currentVariant;
 	uint64_t			m_startTime;
-	db::Move			m_firstMove;
 	bool				m_isAnalyzing;
 	bool				m_response;
 	bool				m_waitForDone;

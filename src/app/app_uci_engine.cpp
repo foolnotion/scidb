@@ -688,7 +688,7 @@ uci::Engine::parseInfo(char const* s)
 						}
 						if (haveCurrMoveNumber && haveCurrMove)
 						{
-							setCurrentMove(currMoveNumber, currMove);
+							setCurrentMove(currMoveNumber, 0, currMove);
 							updateCurrMove();
 						}
 						break;

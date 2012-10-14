@@ -73,7 +73,7 @@ set ::engine::Engines {
 		Profiles:WB {
 			Default {
 				"log off          # disable logging"
-				"noise 1000       # fairly noise level"
+				"display moves    # display current move"
 				"# resign 6       # don't resign too late"
 				"# drawscore -50  # avoid draws"
 				"# swindle on     # Crafty will try to win"

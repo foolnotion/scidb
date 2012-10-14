@@ -981,7 +981,6 @@ pn2_eval (node_t * root)
 #ifdef PN2
   node_t *newroot;
 #endif
-  node_t *currentnode;
   node_t *oldparent;
 
   nodecount2 = 0;
@@ -993,7 +992,6 @@ pn2_eval (node_t * root)
   pn_eval (root);
   
   set_proof_and_disproof_numbers (root);
-  currentnode = root;
 
   while (root->proof != 0 && root->disproof != 0 && nodecount2 < nodecount )
     {

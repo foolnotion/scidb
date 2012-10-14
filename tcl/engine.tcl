@@ -2567,6 +2567,9 @@ proc ProbeEngine {parent entry} {
 		}
 		if {[llength $options]} {
 			set engine(Profiles:$prot) [list Default $options]
+		} else {
+			set engine(Profiles:$prot) [list Default {}]
+			if {$prot eq "WB"} { set engine(ProfileType) Script }
 		}
 		set engine(Variants) $variants
 		array set fts $features

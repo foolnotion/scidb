@@ -172,9 +172,9 @@ Engine::Concrete::setVariation(unsigned no, db::MoveList const& moves)
 
 inline
 void
-Engine::Concrete::setCurrentMove(unsigned number, db::Move const& move)
+Engine::Concrete::setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move)
 {
-	m_engine->setCurrentMove(number, move);
+	m_engine->setCurrentMove(number, moveCount, move);
 }
 
 
@@ -310,6 +310,7 @@ inline unsigned Engine::nodes() const								{ return m_nodes; }
 inline db::Board const& Engine::currentBoard() const			{ return m_engine->currentBoard(); }
 inline db::Move const& Engine::bestMove() const					{ return m_bestMove; }
 inline unsigned Engine::currentMoveNumber() const				{ return m_currMoveNumber; }
+inline unsigned Engine::currentMoveCount() const				{ return m_currMoveCount; }
 inline db::Move const& Engine::currentMove() const				{ return m_currMove; }
 inline unsigned Engine::hashFullness() const						{ return m_hashFullness; }
 inline int Engine::exitStatus() const								{ return m_exitStatus; }
@@ -358,9 +359,10 @@ Engine::isBestLine(unsigned no) const
 
 inline
 void
-Engine::setCurrentMove(unsigned number, db::Move const& move)
+Engine::setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move)
 {
 	m_currMoveNumber = number;
+	m_currMoveCount = moveCount;
 	m_currMove = move;
 }
 

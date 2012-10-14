@@ -296,12 +296,13 @@ public:
 
 	void updateCurrMove() override
 	{
-		Tcl_Obj* objs[2];
+		Tcl_Obj* objs[3];
 		mstl::string move;
 
 		currentMove().printSan(move, encoding::Utf8);
 		objs[0] = Tcl_NewIntObj(currentMoveNumber());
-		objs[1] = Tcl_NewStringObj(move, move.size());
+		objs[1] = Tcl_NewIntObj(currentMoveCount());
+		objs[2] = Tcl_NewStringObj(move, move.size());
 		sendInfo(m_move, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 

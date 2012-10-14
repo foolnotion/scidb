@@ -265,7 +265,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-buffering", "line");
 	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-blocking", "no");
-	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "binary");
+	Tcl_SetChannelOption(::sys::tcl::interp(), m_chan, "-translation", "auto");
 	Tcl_RegisterChannel(::sys::tcl::interp(), m_chan);
 
 #ifdef Tcl_PidObjCmd__is_not_hidden

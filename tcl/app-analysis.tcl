@@ -670,10 +670,14 @@ proc Display(stalemate) {color} {
 }
 
 
-proc Display(move) {number move} {
+proc Display(move) {number count move} {
 	variable Vars
 
-	if {$Vars(maxMoves) < $number} { set Vars(maxMoves) $number }
+	if {$count > 0} {
+		set Vars(maxMoves) $count
+	} elseif {$Vars(maxMoves) < $number} {
+		set Vars(maxMoves) $number
+	}
 
 	$Vars(move) configure -state normal
 	$Vars(move) delete 1.0 end
