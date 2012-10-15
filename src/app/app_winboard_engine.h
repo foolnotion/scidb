@@ -94,7 +94,7 @@ private:
 	void featureDone(bool done);
 	void parseAnalysis(mstl::string const& msg);
 	void parseInfo(mstl::string const& msg);
-	void parseCurrentMove(char const* s);
+	bool parseCurrentMove(char const* s);
 	void parseOption(mstl::string const& option);
 	void parseFeatures(char const* msg);
 	void detectFeatures(char const* identifier);

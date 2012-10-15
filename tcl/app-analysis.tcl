@@ -540,6 +540,20 @@ proc GetEvaluation {score mate} {
 }
 
 
+proc FormatScore {score} {
+	set p [expr {abs($score)/100}]
+	set cp [expr {abs($score) % 100}]
+	if {$score < 0} {
+		set sign -
+	} elseif {$score > 0} {
+		set sign +
+	} else {
+		set sign ""
+	}
+	return [format "$sign%d.%02d" $p $cp]
+}
+
+
 proc Display(state) {state} {
 	switch $state {
 		start		{ SetState normal }
@@ -582,35 +596,14 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 	variable Options
 	variable Vars
 
+	Display(time) $time $depth $seldepth $nodes
+
 	if {$mate} {
 		if {$mate < 0} { set scoreTxt "-" } else { set scoreTxt "+" }
-		append scoreTxt "#[abs $mate]"
+		set scoreTxt "#[abs $mate]"
 	} else {
-		set p [expr {$score/100}]
-		set cp [expr {abs($score) % 100}]
-		set scoreTxt [format "%+d.%02d" $p $cp]
+		set scoreTxt [FormatScore $score]
 	}
-
-	set txt ""
-	if {$depth} {
-		set txt $depth
-		if {$seldepth} { append txt " (" $seldepth ")" }
-	}
-	$Vars(depth) configure -text $txt
-
-	set txt ""
-	if {$time} {
-		set seconds [lindex [split $time .] 0]
-		set minutes [expr {$seconds/60}]
-		if {$minutes} {
-			append txt $minutes " " $mc::Minutes " "
-			set seconds [expr {$seconds % 60}]
-		}
-		if {$seconds} {
-			append txt $seconds " " $mc::Seconds
-		}
-	}
-	$Vars(time) configure -text $txt
 
 	set evalTxt [GetEvaluation $score $mate]
 
@@ -631,9 +624,8 @@ proc Display(bestscore) {score mate bestLines} {
 		set txt [string map [list %color $color %n [abs $mate]] $mc::MateIn]
 		set evalTxt ""
 	} else {
-		set p [expr {$score/100}]
-		set cp [expr {abs($score) % 100}]
-		set txt [format "  %+d.%02d" $p $cp]
+		set txt "  "
+		append txt [FormatScore $score]
 		lassign [::font::splitAnnotation [GetEvaluation $score $mate]] value sym tags
 		lappend tags center
 		$Vars(score) insert end $sym $tags
@@ -682,17 +674,40 @@ proc Display(move) {number count move} {
 	$Vars(move) configure -state normal
 	$Vars(move) delete 1.0 end
 	$Vars(move) insert end $move {figurine center}
-	$Vars(move) insert end " ($number/$Vars(maxMoves))"
+	if {$number > 0} {
+		$Vars(move) insert end " ($number/$Vars(maxMoves))"
+	}
 	$Vars(move) configure -state disabled
 }
 
 
 proc Display(depth) {depth seldepth nodes} {
-#	Display(time) 0.0 $depth $seldepth $nodes
+	Display(time) 0 $depth $seldepth $nodes
 }
 
 
 proc Display(time) {time depth seldepth nodes} {
+	variable Vars
+
+	if {$depth} {
+		set txt $depth
+		if {$seldepth} { append txt " (" $seldepth ")" }
+		$Vars(depth) configure -text $txt
+	}
+
+	if {$time > 0.0} {
+		set txt ""
+		set seconds [lindex [split $time .] 0]
+		set minutes [expr {$seconds/60}]
+		if {$minutes} {
+			append txt $minutes " " $mc::Minutes " "
+			set seconds [expr {$seconds % 60}]
+		}
+		if {$seconds} {
+			append txt $seconds " " $mc::Seconds
+		}
+		$Vars(time) configure -text $txt
+	}
 }
 
 

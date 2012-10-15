@@ -1067,28 +1067,50 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 {
 	int			score;
 	unsigned		depth;
-	unsigned		nodes;
-	unsigned		time;
 	char const	*s;
 
-	if (::sscanf(msg, "%u", &depth) != 1 || ::sscanf(s = ::skipWord(msg), "%d %u %u ", &score, &time, &nodes) != 3)
-		return parseCurrentMove(s);
-
-	s = ::skipWords(msg, 3);
-
-	if (!m_wholeSecondsDetected)
-	{
-		uint64_t elapsedTime = ::sys::time::timestamp() - m_startTime;
-		if (time*uint64_t(100) > elapsedTime)
-			m_wholeSeconds = true;
-		m_wholeSecondsDetected = true;
-	}
+	if (::sscanf(msg, "%u", &depth) != 1)
+		return;
 
 	resetInfo();
 	setDepth(depth);
-	setScore(0, m_dontInvertScore || m_board.whiteToMove() ? score : -score);
-	setTime(m_wholeSeconds ? double(time) : time/100.0);
-	setNodes(nodes);
+
+	unsigned hours(0);
+	unsigned minutes(0);
+	unsigned seconds;
+	unsigned time;
+	unsigned nodes;
+	unsigned unused;
+	float		fscore;
+
+	s = ::skipWord(msg);
+
+	if (::sscanf(s, "%d %u %u ", &score, &time, &nodes) == 3)
+	{
+		setTime(m_wholeSeconds ? double(time) : time/100.0);
+		setNodes(nodes);
+		s = ::skipWords(msg, 3);
+
+		if (!m_wholeSecondsDetected)
+		{
+			uint64_t elapsedTime = ::sys::time::timestamp() - m_startTime;
+			if (time*uint64_t(100) > elapsedTime)
+				m_wholeSeconds = true;
+			m_wholeSecondsDetected = true;
+		}
+	}
+	else if (parseCurrentMove(s))
+	{
+		return;
+	}
+	else if (	::sscanf(s, "%u.%u %f", &seconds, &unused, &fscore) == 3
+				|| ::sscanf(s, "%u:%u %f", &minutes, &seconds, &fscore) == 3
+				|| ::sscanf(s, "%u:%u:%u %f", &hours, &minutes, &seconds, &fscore) == 3)
+	{
+		setTime((hours*60 + minutes)*60 + seconds);
+		score = int(fscore*1000.0 + 0.5);
+		s = ::skipWords(msg, 2);
+	}
 
 	char const*	illegal(0);
 	char const*	e(0);
@@ -1143,28 +1165,37 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 	}
 	else
 	{
-		if (moves.size() == 1 && s[-1] == '!')
+		int varno;
+
+		if (moves.size() == 1)
 		{
+			varno = findVariation(moves.front());
+
 			setCurrentMove(0, 0, moves[0]);
 			updateCurrMove();
 		}
 		else
 		{
-			m_analyzeResponse = true;
-			setVariation(0, moves);
+			varno = setVariation(0, moves);
+		}
 
+		if (varno >= 0)
+		{
 			if (board.checkState() & Board::CheckMate)
 			{
 				int n = board.moveNumber() - m_board.moveNumber();
-				setMate(0, board.whiteToMove() ? -n : +n);
-
-#if 0 // we cannot terminate, the engine might find a "better" pv
-				if (isAnalyzing())
-					stopAnalysis(); // we don't need further computation if mate
-#endif
+				setMate(varno, board.whiteToMove() ? -n : +n);
+			}
+			else
+			{
+				setScore(varno, m_dontInvertScore || m_board.whiteToMove() ? score : -score);
 			}
 
-			updatePvInfo(0);
+			updatePvInfo(varno);
+		}
+		else
+		{
+			updateTimeInfo();
 		}
 
 		m_analyzeResponse = true;
@@ -1172,38 +1203,48 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 }
 
 
-void
+bool
 winboard::Engine::parseCurrentMove(char const* s)
 {
-	float		time;
-	unsigned	depth;
+	unsigned	hours(0);
+	unsigned	minutes(0);
+	unsigned	seconds;
 	unsigned	moveNo;
 	unsigned	moveCount;
+	unsigned	unused;
 
-	if (::sscanf(s, "%u %f %u/%u?", &depth, &time, &moveNo, &moveCount) != 4)
-		return;
-
-	s = ::skipMoveNumber(::skipWords(s, 3));
-
-	Move move;
-	char const* t = m_board.parseMove(s, move);
-
-	if (t == 0)
-		return;
-
-	if (move.isLegal())
+	if (	::sscanf(s, "%u.%u %u/%u?", &seconds, &unused, &moveNo, &moveCount) == 4
+		|| ::sscanf(s, "%u:%u %u/%u?", &minutes, &seconds, &moveNo, &moveCount) == 4
+		|| ::sscanf(s, "%u:%u:%u %u/%u?", &hours, &minutes, &seconds, &moveNo, &moveCount) == 5)
 	{
-		m_board.prepareForPrint(move);
-		setCurrentMove(moveNo, moveCount, move);
-		updateCurrMove();
+		s = ::skipMoveNumber(::skipWords(s, 3));
+
+		Move move;
+		char const* t = m_board.parseMove(s, move);
+
+		if (t == 0)
+			return false;
+
+		if (move.isLegal())
+		{
+			m_board.prepareForPrint(move);
+			setCurrentMove(moveNo, moveCount, move);
+			updateCurrMove();
+			setTime((hours*60 + minutes)*60 + seconds);
+			updateTimeInfo();
+		}
+		else
+		{
+			mstl::string msg("Illegal current move: ");
+			msg.append(s, t - s);
+			msg.trim();
+			error(msg);
+		}
+
+		return true;
 	}
-	else
-	{
-		mstl::string msg("Illegal current move: ");
-		msg.append(s, t - s);
-		msg.trim();
-		error(msg);
-	}
+
+	return false;
 }
 
 

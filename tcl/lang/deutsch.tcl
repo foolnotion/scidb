@@ -864,6 +864,7 @@
 ::engine::mc::ScriptErrors				"Alle Fehler beim Speichern werden hier angezeigt."
 ::engine::mc::CommandNotAllowed		"Der Gebrauch des Kommandos '%s' ist hier nicht erlaubt."
 ::engine::mc::ThrowAwayChanges		"Alle Änderungen verwerfen?"
+::engine::mc::ResetToDefaultContent	"Auf Standardinhalt zurücksetzen"
 
 ::engine::mc::ProbeError(registration)			"Dieses Programm benötight eine Registrierung."
 ::engine::mc::ProbeError(copyprotection)		"Dieses Programm hat eine Kopiersperre."

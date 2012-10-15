@@ -154,7 +154,6 @@ public:
 		virtual Result probeResult() const = 0;
 		virtual Result probeAnalyzeFeature() const;
 		virtual unsigned probeTimeout() const = 0;
-		virtual unsigned maxVariations() const;
 		virtual db::Board const& currentBoard() const = 0;
 
 		friend class Engine;
@@ -180,6 +179,7 @@ public:
 		db::Game const* currentGame() const;
 		Options const& options() const;
 		unsigned currentVariant() const;
+		int findVariation(db::Move const& move) const;
 
 		long pid() const;
 
@@ -213,7 +213,7 @@ public:
 		void setSelectiveDepth(unsigned depth);
 		void setTime(double time);
 		void setNodes(unsigned nodes);
-		void setVariation(unsigned no, db::MoveList const& moves);
+		unsigned setVariation(unsigned no, db::MoveList const& moves);
 		void setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move);
 		void setHashFullness(unsigned fullness);
 
@@ -427,9 +427,11 @@ protected:
 	void setSelectiveDepth(unsigned depth);	// selective search depth
 	void setTime(double time);						// search time in seconds (.e.g. 10.28 seconds)
 	void setNodes(unsigned nodes);				// nodes searched
-	void setVariation(unsigned no, db::MoveList const& moves);
+	unsigned setVariation(unsigned no, db::MoveList const& moves);
 	void setCurrentMove(unsigned number, unsigned moveCount, db::Move const& move);
 	void setHashFullness(unsigned fullness);
+
+	int findVariation(db::Move const& move) const;
 
 	void setIdentifier(mstl::string const& name);
 	void setShortName(mstl::string const& name);
@@ -461,7 +463,10 @@ private:
 	class Process;
 	friend class Process;
 
+	unsigned insertPV(db::MoveList const& move);
 	void reorderBestFirst(unsigned currentNo);
+	void reorderKeepStable(unsigned currentNo);
+	void reorderVariations(unsigned currentNo);
 	bool detectShortName(mstl::string const& s, bool setId);
 	void readyRead();
 	void exited();
@@ -490,6 +495,7 @@ private:
 	unsigned				m_minSkillLevel;
 	unsigned				m_maxSkillLevel;
 	unsigned				m_maxMultiPV;
+	unsigned				m_wantedMultiPV;
 	Map					m_map;
 	Variations			m_variations;
 	unsigned				m_numVariations;

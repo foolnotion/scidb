@@ -27,7 +27,7 @@ inline bool Engine::playOther() const								{ return m_playOther; }
 inline bool Engine::pondering() const								{ return m_pondering; }
 
 inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
-inline unsigned Engine::numVariations() const					{ return m_numVariations; }
+inline unsigned Engine::numVariations() const					{ return m_wantedMultiPV; }
 inline unsigned Engine::hashSize() const							{ return m_hashSize; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
 inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
@@ -50,6 +50,7 @@ inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->lim
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
 inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
 inline unsigned Engine::Concrete::currentVariant() const		{ return m_engine->m_currentVariant; }
+
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 
 inline void Engine::Concrete::send(mstl::string const& message)	{ m_engine->send(message); }
@@ -87,7 +88,12 @@ inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
 
 
-inline Engine::Options const& Engine::options() const	{ return m_options; }
+inline
+int
+Engine::Concrete::findVariation(db::Move const& move) const
+{
+	return m_engine->findVariation(move);
+}
 
 
 inline
@@ -163,10 +169,10 @@ Engine::Concrete::hasVariant(unsigned variant) const
 
 
 inline
-void
+unsigned
 Engine::Concrete::setVariation(unsigned no, db::MoveList const& moves)
 {
-	m_engine->setVariation(no, moves);
+	return m_engine->setVariation(no, moves);
 }
 
 
@@ -332,6 +338,7 @@ inline unsigned Engine::maxThreads() const						{ return m_maxThreads; }
 inline Engine::Concrete* Engine::concrete()						{ return m_engine; }
 inline unsigned Engine::supportedVariants() const				{ return m_variants; }
 inline mstl::string const& Engine::command() const				{ return m_command; }
+inline Engine::Options const& Engine::options() const			{ return m_options; }
 
 inline void Engine::setDepth(unsigned depth)						{ m_depth = depth; }
 inline void Engine::setSelectiveDepth(unsigned depth)			{ m_selDepth = depth; }
@@ -345,7 +352,6 @@ inline void Engine::resetBestInfoHasChanged()					{ m_bestInfoHasChanged = false
 inline void Engine::addVariant(unsigned variant)				{ m_variants |= variant; }
 inline void Engine::removeVariant(unsigned variant)			{ m_variants &= ~variant; }
 inline void Engine::error(Error code)								{ m_engine->updateError(code); }
-
 
 
 inline

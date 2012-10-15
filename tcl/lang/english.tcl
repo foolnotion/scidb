@@ -863,6 +863,7 @@
 ::engine::mc::ScriptErrors				"Any errors while saving will be displayed here."
 ::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here."
 ::engine::mc::ThrowAwayChanges		"Throw away all changes?"
+::engine::mc::ResetToDefaultContent	"Reset to default content"
 
 ::engine::mc::ProbeError(registration)			"This engine requires a registration."
 ::engine::mc::ProbeError(copyprotection)		"This engine is copy-protected."

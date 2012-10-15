@@ -201,8 +201,7 @@ setNonZeroValue(mstl::string& s, unsigned value)
 
 
 uci::Engine::Engine()
-	:m_maxMultiPV(1)
-	,m_needChess960(false)
+	:m_needChess960(false)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
@@ -262,13 +261,6 @@ unsigned
 uci::Engine::probeTimeout() const
 {
 	return 1000;
-}
-
-
-unsigned
-uci::Engine::maxVariations() const
-{
-	return m_maxMultiPV;
 }
 
 
@@ -630,7 +622,7 @@ uci::Engine::parseBestMove(char const* msg)
 void
 uci::Engine::parseInfo(char const* s)
 {
-	unsigned multiPv			= 0;
+	unsigned varno				= 0;
 	unsigned currMoveNumber	= 0;
 	unsigned score				= 0;
 	unsigned mate				= 0;
@@ -666,18 +658,18 @@ uci::Engine::parseInfo(char const* s)
 						break;
 
 					case 'u':
-						if (::strncmp(s, "currline ", 9) == 0)
+/*						if (::strncmp(s, "currline ", 9) == 0)
 						{
 							MoveList moves;
 
 							if (!(s = parseMoveList(::skipWords(s, 1), moves)))
 								return;
 
-//							setVariation(moves);
+							setCurrLine(moves);
 							updateCurrLine();
 							continue;
 						}
-						else if (::strncmp(s, "currmove ", 9) == 0)
+						else*/ if (::strncmp(s, "currmove ", 9) == 0)
 						{
 							if ((currMove = parseCurrentMove(::skipWords(s, 1))))
 								haveCurrMove = true;
@@ -746,11 +738,6 @@ uci::Engine::parseInfo(char const* s)
 									{
 										mate = whiteToMove() ? value : -value;
 										haveMate = true;
-
-#if 0 // we cannot terminate, the engine might find a "better" pv
-										if (isAnalyzing())
-											stopAnalysis(); // we don't need further computation if mate
-#endif
 									}
 									break;
 							}
@@ -785,13 +772,21 @@ uci::Engine::parseInfo(char const* s)
 			case 'p':
 				if (strncmp(s, "pv ", 3) == 0)
 				{
+					Board board(m_board);
 					MoveList moves;
 
-					if (!(s = parseMoveList(skipWords(s, 1), moves)))
+					if (!(s = parseMoveList(skipWords(s, 1), board, moves)))
 						return;
 
-					setVariation(multiPv, moves);
+					varno = setVariation(varno, moves);
 					havePv = true;
+
+					if (!haveMate && (board.checkState() & Board::CheckMate))
+					{
+						int n = board.moveNumber() - m_board.moveNumber();
+						mate = board.whiteToMove() ? -n : +n;
+						haveMate = true;
+					}
 					continue;
 				}
 				break;
@@ -801,7 +796,7 @@ uci::Engine::parseInfo(char const* s)
 				{
 					if (value == 0 || value > numVariations())
 						return;
-					multiPv = value - 1;
+					varno = value - 1;
 				}
 				else if (::sscanf(s, "mate %u", &value) == 1)
 				{
@@ -832,11 +827,11 @@ uci::Engine::parseInfo(char const* s)
 	if (havePv && (haveScore || haveMate))
 	{
 		if (haveMate)
-			setMate(multiPv, mate);
+			setMate(varno, mate);
 		else
-			setScore(multiPv, score);
+			setScore(varno, score);
 
-		updatePvInfo(multiPv);
+		updatePvInfo(varno);
 	}
 	else if (haveTime)
 	{
@@ -868,10 +863,8 @@ uci::Engine::parseCurrentMove(char const* s)
 
 
 char const*
-uci::Engine::parseMoveList(char const* s, db::MoveList& moves)
+uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 {
-	Board board(m_board);
-
 	while (::isLan(s))
 	{
 		Move move;
@@ -1012,8 +1005,7 @@ uci::Engine::parseOption(char const* msg)
 		if (name == "MultiPV")
 		{
 			m_hasMultiPV = true;
-			m_maxMultiPV = mstl::max(1ul, ::strtoul(max, nullptr, 10));
-			setMaxMultiPV(m_maxMultiPV);
+			setMaxMultiPV(mstl::max(1ul, ::strtoul(max, nullptr, 10)));
 			return;
 		}
 		else if (name == "Hash")

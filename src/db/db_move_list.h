@@ -50,8 +50,8 @@ public:
 	Move const& operator[](unsigned n) const;
 	Move& operator[](unsigned n);
 
+	Move const& front() const;
 	Move const& back() const;
-	Move back();
 
 	bool isEmpty() const;
 	bool isFull() const;

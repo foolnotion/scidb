@@ -78,19 +78,10 @@ MoveList::operator[](unsigned n)
 
 inline
 Move const&
-MoveList::back() const
+MoveList::front() const
 {
 	M_REQUIRE(!isEmpty());
-	return m_buffer[m_size - 1];
-}
-
-
-inline
-Move
-MoveList::back()
-{
-	M_REQUIRE(!isEmpty());
-	return m_buffer[m_size - 1];
+	return m_buffer[0];
 }
 
 

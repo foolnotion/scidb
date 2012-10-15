@@ -108,6 +108,7 @@ set FailedToCreateDir		"Failed to create directory '%s'."
 set ScriptErrors				"Any errors while saving will be displayed here."
 set CommandNotAllowed		"Usage of command '%s' is not allowed here."
 set ThrowAwayChanges			"Throw away all changes?"
+set ResetToDefaultContent	"Reset to default content"
 
 set ProbeError(registration)			"This engine requires a registration."
 set ProbeError(copyprotection)		"This engine is copy-protected."
@@ -800,7 +801,7 @@ proc setup {} {
 				array set newEngine $EmptyEngine
 				array set newEngine $newEntry
 
-				if {$newEngine(ProfileType) eq "Options" && [file exists $newEngine(Command)]} {
+				if {[file exists $newEngine(Command)]} {
 					set changed 1
 					set index [FindIndex $newEngine(Name)]
 					if {$index >= 0} {
@@ -840,12 +841,16 @@ proc setup {} {
 									set newEngine(Profiles:$prot) $optionList
 								}
 							}
-							foreach {profile options} $engine(Profiles:WB) {
-								if {$profile eq "Default"} { set newEngine(Options:Default) $options }
-							}
 							set newEntry [array get newEngine]
 							lset Engines $index $newEntry
+						} else {
+							foreach {profile options} $newEngine(Profiles:WB) {
+								if {$profile eq "Default"} { set newEngine(Script:Default) $options }
+							}
+							set newEngine(Profiles:WB) $oldEngine(Profiles:WB)
 						}
+						set newEntry [array get newEngine]
+						lset Engines $index $newEntry
 					} else {
 						lappend Engines $newEntry
 					}
@@ -1781,8 +1786,7 @@ proc OpenSetupDialog(Script) {parent} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
-	set protocol $Vars(current:protocol)
-	array set profiles $engine(Profiles:$protocol)
+	array set profiles $engine(Profiles:WB)
 	set script $profiles($Vars(current:profile))
 
 	set dlg [tk::toplevel $parent.confScript -class Scidb]
@@ -1857,9 +1861,11 @@ proc OpenSetupDialog(Script) {parent} {
 	$log.txt configure -state disabled
 
 	### buttons ##############################################################
-	::widget::dialogButtons $dlg {save cancel help} -default save
+	::widget::dialogButtons $dlg {save cancel reset help} -default save
 	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
 	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
+	$dlg.reset configure -command [namespace code [list ResetScript $edit.txt]]
+	::tooltip::tooltip $dlg.reset [namespace current]::mc::ResetToDefaultContent
 
 	### popup ################################################################
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -1893,15 +1899,29 @@ proc AskCloseSetup {saveBtn} {
 }
 
 
-# proc ShowExample {txt} {
-# 	ScriptInsertLine $txt "# $mc::ScriptExample"
-# 	$txt insert end \n
-# 	ScriptInsertLine $txt "log off    # disable logging"
-# 	$txt insert end \n
-# 	ScriptInsertLine $txt "noise 1000 # fairly noise level"
-# 	$txt insert end \n
-# 	ScriptUpdate $txt
-# }
+proc ResetScript {txt} {
+	variable Engines
+	variable Vars
+
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	array set profiles $engine(Profiles:WB)
+	set script $engine(Script:Default)
+	$txt delete 1.0 end
+
+	foreach line $engine(Script:Default) {
+		ScriptInsertLine $txt $line
+		$txt insert end \n
+	}
+
+	$txt mark set insert 1.0
+	$txt see 1.0
+
+	set content [split [$txt get 1.0 end] \n]
+	if {$Vars(script:original) eq $content} { set state disabled } else { set state normal }
+	[winfo toplevel $txt].save configure -state $state
+	set Vars(script:content) $content
+}
 
 
 proc SaveScript {txt log} {
@@ -3133,7 +3153,7 @@ proc LoadSharedConfiguration {file} {
 			set engine(UserDefined) 0
 			if {[info exists engine(Profiles:WB)]} {
 				foreach {profile options} $engine(Profiles:WB) {
-					if {$profile eq "Default"} { set engine(Options:Default) $options }
+					if {$profile eq "Default"} { set engine(Script:Default) $options }
 				}
 			}
 			lappend engines [array get engine]
