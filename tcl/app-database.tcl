@@ -472,10 +472,10 @@ proc openBase {parent file byUser args} {
 		if {[::scidb::db::get upgrade? $file]} {
 			set opts(-readonly) 1
 			set rc [::dialog::question \
-						-parent $parent \
-						-message [format $mc::UpgradeDatabase $name] \
-						-detail $mc::UpgradeDatabaseDetail \
-					 ]
+				-parent $parent \
+				-message [format $mc::UpgradeDatabase $name] \
+				-detail $mc::UpgradeDatabaseDetail \
+			]
 			if {$rc eq "yes"} {
 				set cmd [list ::scidb::db::upgrade $file]
 				set options [list -message [format $mc::UpgradeMessage $name]]

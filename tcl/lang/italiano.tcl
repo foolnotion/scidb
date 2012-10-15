@@ -1976,9 +1976,9 @@
 ::dialog::fsbox::mc::Open						"Apri"
 
 ::dialog::fsbox::mc::FileType(exe)			"Executables" ;# NEW
-::dialog::fsbox::mc::FileType(txt)			"Textdateien" ;# NEW
+::dialog::fsbox::mc::FileType(txt)			"Text files" ;# NEW
 ::dialog::fsbox::mc::FileType(log)			"Log files" ;# NEW
-::dialog::fsbox::mc::FileType(bin)			"Binärdateien" ;# NEW
+::dialog::fsbox::mc::FileType(bin)			"Binary files" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"

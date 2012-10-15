@@ -840,6 +840,9 @@ proc setup {} {
 									set newEngine(Profiles:$prot) $optionList
 								}
 							}
+							foreach {profile options} $engine(Profiles:WB) {
+								if {$profile eq "Default"} { set newEngine(Options:Default) $options }
+							}
 							set newEntry [array get newEngine]
 							lset Engines $index $newEntry
 						}
@@ -3128,6 +3131,11 @@ proc LoadSharedConfiguration {file} {
 				}
 			}
 			set engine(UserDefined) 0
+			if {[info exists engine(Profiles:WB)]} {
+				foreach {profile options} $engine(Profiles:WB) {
+					if {$profile eq "Default"} { set engine(Options:Default) $options }
+				}
+			}
 			lappend engines [array get engine]
 		}
 	}
