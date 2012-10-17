@@ -66,16 +66,16 @@
 ::mc::Default			"Default"
 ::mc::Delete			"Elimina"
 ::mc::Edit				"Modifica"
-::mc::File				"File" ;# NEW
+::mc::File				"File"
 ::mc::From				"Da"
 ::mc::Game				"Partita"
 ::mc::Layout			"Layout"
 ::mc::Left				"Sinistra"
 ::mc::Lite				"Chiara"
-::mc::Low				"Low" ;# NEW
+::mc::Low				"Basso"
 ::mc::Modify			"Cambia"
 ::mc::No					"no"
-::mc::Normal			"Normal" ;# NEW
+::mc::Normal			"Normale"
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Numero"
 ::mc::OK					"OK"
@@ -138,9 +138,9 @@
 ::widget::mc::First		"Pri&ma"
 ::widget::mc::Last		"&Ultima"
 ::widget::mc::Help		"&Aiuto"
-::widget::mc::Start		"&Start" ;# NEW
+::widget::mc::Start		"&Inizia"
 
-::widget::mc::New			"&New" ;# NEW
+::widget::mc::New			"&Nuovo"
 ::widget::mc::Save		"&Salva"
 ::widget::mc::Delete		"&Elimina"
 
@@ -188,8 +188,8 @@
 ::progress::mc::Message(write-game)				"Scrivendo dati partite"
 ::progress::mc::Message(write-namebase)		"Scrivendo dati namebase"
 
-::progress::mc::Message(print-game)				"Print %s game(s)" ;# NEW
-::progress::mc::Message(copy-game)				"Copy %s game(s)" ;# NEW
+::progress::mc::Message(print-game)				"Stampa %s partite"
+::progress::mc::Message(copy-game)				"Copia %s partite"
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
@@ -214,13 +214,13 @@
 ::menu::mc::Contact						"&Contenuti (browser)"
 ::menu::mc::Quit							"&Esci"
 ::menu::mc::Extras						"E&xtras"
-::menu::mc::Setup							"Setu&p" ;# NEW
-::menu::mc::Engines						"&Engines" ;# NEW
+::menu::mc::Setup							"Impos&ta"
+::menu::mc::Engines						"&Motori"
 
 ::menu::mc::ContactBugReport			"&Segnala Bug"
 ::menu::mc::ContactFeatureRequest	"&Richiesta Funzione"
 ::menu::mc::InstallChessBaseFonts	"Installa Caratteri ChessBase"
-::menu::mc::OpenEngineLog				"Open &Engine Console" ;# NEW
+::menu::mc::OpenEngineLog				"Apri Console &Motori"
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
@@ -240,7 +240,7 @@
 ::load::mc::SystemEncoding			"La codifica di sistema è '%s'"
 
 ::load::mc::ReadingFile(options)	"Permessi di lettura del file"
-::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
+::load::mc::ReadingFile(engines)	"Lettura file dei motori"
 
 ::load::mc::ECOFile					"File ECO"
 ::load::mc::EngineFile				"File motore"
@@ -294,7 +294,7 @@
 ::util::photos::mc::Error(nosudo)				"Impossibile invocare il comando 'sudo' perché il tuo utente non è nel gruppo wheel."
 ::util::photos::mc::Detail(nosudo)				"Per aggirare il problema puoi fare un'installazione privata, o lanciare il programma come super-user."
 
-::util::photos::mc::Message(uptodate)			"Le foto sono già aggiornate." ;# NEW changed from "The photo files are already up-to-date." to "The photo files are still up-to-date."
+::util::photos::mc::Message(uptodate)			"Le foto sono già aggiornate."
 ::util::photos::mc::Message(finished)			"L'installazione/aggiornamento delle foto è finito."
 ::util::photos::mc::Message(broken)				"La versione della libreria Tcl è corrotta."
 ::util::photos::mc::Message(noperm)				"Non hai diritti di scittura nella cartella '%s'."
@@ -338,18 +338,18 @@
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"
-::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
-::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
+::application::board::mc::StartEngine		"Fai partire il motore di analisi"
+::application::board::mc::StopEngine		"Ferma il motore di analisi"
 
 ::application::board::mc::Tools				"Strumenti"
 ::application::board::mc::Control			"Controllo"
 ::application::board::mc::Game				"Partita"
 ::application::board::mc::GoIntoNextVar	"Vai alla prossima variante"
 ::application::board::mc::GoIntPrevVar		"Vai alla precedente variante"
-::application::board::mc::LoadGame(next)	"Load next game" ;# NEW
-::application::board::mc::LoadGame(prev)	"Load previous game" ;# NEW
-::application::board::mc::LoadGame(first)	"Load first game" ;# NEW
-::application::board::mc::LoadGame(last)	"Load last game" ;# NEW
+::application::board::mc::LoadGame(next)	"Carica la prossima partita"
+::application::board::mc::LoadGame(prev)	"Carica la partita precedente"
+::application::board::mc::LoadGame(first)	"Carica la prima partita"
+::application::board::mc::LoadGame(last)	"Carica l'ultima partita"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -365,7 +365,7 @@
 ::application::database::mc::FileNew							"Nuovo Database..."
 ::application::database::mc::FileExport						"Esporta..."
 ::application::database::mc::FileImport(pgn)					"Importa file PGN..."
-::application::database::mc::FileImport(db)					"Importa Database..." ;# NEW ok?
+::application::database::mc::FileImport(db)					"Importa Database..."
 ::application::database::mc::FileCreate						"Crea Archivio..."
 ::application::database::mc::FileClose							"Chiudi"
 ::application::database::mc::FileCompact						"Compresso"
@@ -401,7 +401,7 @@
 ::application::database::mc::HardLinkDetected				"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
 ::application::database::mc::HardLinkDetectedDetail		"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
 ::application::database::mc::UriRejectedDetail(open)		"Solo database Scidb possono essere aperti:"
-::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::application::database::mc::UriRejectedDetail(import)	"Solo database Scidb possono essere importati:"
 ::application::database::mc::EmptyUriList						"Gli archivi trascinati sono vuoti."
 ::application::database::mc::OverwriteExistingFiles		"Sovrascrivi i file esistenti nella cartella '%s'?"
 ::application::database::mc::SelectDatabases					"Selezione il database da aprire"
@@ -410,18 +410,18 @@
 ::application::database::mc::ReallyCompact					"Vuoi davvero comprimere il database '%s'?"
 ::application::database::mc::ReallyCompactDetail(1)		"Solo una partita sarà eliminata."
 ::application::database::mc::ReallyCompactDetail(N)		"%s partite saranno eliminate."
-::application::database::mc::CopyGames							"Copy games" ;# NEW
-::application::database::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
+::application::database::mc::CopyGames							"Copia partite"
+::application::database::mc::CopyGamesFromTo					"Copia partite da '%src' a '%dst'"
 ::application::database::mc::CopiedGames						"%s game(s) copied"
 ::application::database::mc::NoGamesCopied					"No games copied"
 ::application::database::mc::CopyAllGames						"Copy all games (%num) from '%src'"
 ::application::database::mc::CopyFilteredGames				"Copy only filtered games (%num) from '%src'"
-::application::database::mc::ImportGames						"Import games" ;# NEW
-::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
-::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportFiles						"Import Files:" ;# NEW
+::application::database::mc::ImportGames						"Importa partite"
+::application::database::mc::ImportOneGameTo(0)				"Copiare una partita in '%dst'?"
+::application::database::mc::ImportOneGameTo(1)				"Copiare circa una partita in '%dst'?"
+::application::database::mc::ImportGamesTo(0)				"Copiare %num partite in '%dst'?"
+::application::database::mc::ImportGamesTo(1)				"Copiare circa %num partite in '%dst'?"
+::application::database::mc::ImportFiles						"Importa i file:"
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"
@@ -460,7 +460,7 @@
 ::application::database::mc::T_PlayerCollection				"Monografia per giocatore"
 # Female version of "Player Collection"
 # Be sure that the translation starts with same term as the translation above.
-::application::database::mc::T_PlayerCollectionFemale		"Player Collection" ;# NEW
+::application::database::mc::T_PlayerCollectionFemale		"Monografia per giocatrice"
 ::application::database::mc::T_Tournament						"Torneo"
 ::application::database::mc::T_TournamentSwiss				"Torneo Svizzero"
 ::application::database::mc::T_GMGames							"Partite di GM"
@@ -480,8 +480,8 @@
 ::application::database::mc::T_Openings						"Aperture"
 ::application::database::mc::T_OpeningsWhite					"Aperture bianco"
 ::application::database::mc::T_OpeningsBlack					"Aperture nero"
-::application::database::mc::T_Bughouse						"Bughouse Chess" ;# NEW
-::application::database::mc::T_Antichess						"Antichess" ;# NEW
+::application::database::mc::T_Bughouse						"Mangia e passa"
+::application::database::mc::T_Antichess						"Antiscacchi"
 ::application::database::mc::T_PGNFile							"File PGN"
 
 ::application::database::mc::OpenDatabase						"Apri Database"
@@ -728,7 +728,7 @@
 ::pgn::setup::mc::TakeOver(editor)				"Imposta configurazione dallo Sfoglia Partite"
 ::pgn::setup::mc::TakeOver(browser)				"Imposta configurazione dall'Editor Partite"
 ::pgn::setup::mc::Pixel								"pixel"
-::pgn::setup::mc::Spaces							"spaces" ;# NEW
+::pgn::setup::mc::Spaces							"spazi"
 ::pgn::setup::mc::RevertSettings					"Torna alla configurazione iniziale"
 ::pgn::setup::mc::ResetSettings					"Torna alla configurazione di produzione"
 ::pgn::setup::mc::DiscardAllChanges				"Annulla tutte le modifiche applicate?"
@@ -753,7 +753,7 @@
 ::pgn::setup::mc::Setup(illegal-move)			"Mosse Illegali"
 ::pgn::setup::mc::Setup(comments)				"Commenti"
 ::pgn::setup::mc::Setup(annotation)				"Annotazioni"
-::pgn::setup::mc::Setup(nagtext)					"NAG-Text" ;# NEW
+::pgn::setup::mc::Setup(nagtext)					"NAG-Testo"
 ::pgn::setup::mc::Setup(marks)					"Codici"
 ::pgn::setup::mc::Setup(move-info)				"Informazioni Mossa"
 ::pgn::setup::mc::Setup(result)					"Risultato"
@@ -780,7 +780,7 @@
 ::pgn::setup::mc::Section(Display)				"Visualizzazione"
 ::pgn::setup::mc::Display(numbering)			"Mostra Numerazione Varianti"
 ::pgn::setup::mc::Display(moveinfo)				"Mostra Informazioni Mossa"
-::pgn::setup::mc::Display(nagtext)				"Show text for unusual NAG comments" ;# NEW
+::pgn::setup::mc::Display(nagtext)				"Mostra testo per commenti NAG inusitati"
 
 ::pgn::setup::mc::Section(Diagrams)				"Diagrammi"
 ::pgn::setup::mc::Diagrams(show)					"Mostra diagrammi"
@@ -789,148 +789,147 @@
 
 
 ### engine #############################################################
-::engine::mc::Information				"Information" ;# NEW
-::engine::mc::Features					"Features" ;# NEW
-::engine::mc::Options					"Options" ;# NEW
+::engine::mc::Information				"Informazioni"
+::engine::mc::Features					"Funzioni"
+::engine::mc::Options					"Opzioni"
 
-::engine::mc::Name						"Name" ;# NEW
-::engine::mc::Identifier				"Identifier" ;# NEW
-::engine::mc::Author						"Author" ;# NEW
-::engine::mc::Webpage					"Webpage" ;# NEW
-::engine::mc::Email						"Email" ;# NEW
-::engine::mc::Country					"Country" ;# NEW
-::engine::mc::Rating						"Rating" ;# NEW
-::engine::mc::Logo						"Logo" ;# NEW
-::engine::mc::Protocol					"Protocol" ;# NEW
-::engine::mc::Parameters				"Parameters" ;# NEW
-::engine::mc::Command					"Command" ;# NEW
-::engine::mc::Directory					"Directory" ;# NEW
-::engine::mc::Variants					"Variants" ;# NEW
-::engine::mc::LastUsed					"Last used" ;# NEW
+::engine::mc::Name						"Nome"
+::engine::mc::Identifier				"Identificativo"
+::engine::mc::Author						"Autore"
+::engine::mc::Webpage					"Pagina web"
+::engine::mc::Email						"Email"
+::engine::mc::Country					"Paese"
+::engine::mc::Rating						"Punteggio"
+::engine::mc::Logo						"Logo"
+::engine::mc::Protocol					"Protocollo"
+::engine::mc::Parameters				"Parametri"
+::engine::mc::Command					"Comando"
+::engine::mc::Directory					"Directory"
+::engine::mc::Variants					"Varianti"
+::engine::mc::LastUsed					"Ultimo utilizzo"
 
-::engine::mc::Variant(standard)		"Standard" ;# NEW
-::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
-::engine::mc::Variant(bughouse)		"Bughouse" ;# NEW
-::engine::mc::Variant(crazyhouse)	"Crazyhouse" ;# NEW
+::engine::mc::Variant(standard)		"Standard"
+::engine::mc::Variant(chess960)		"Scacchi 960"
+::engine::mc::Variant(bughouse)		"Mangia e passa"
+::engine::mc::Variant(crazyhouse)	"Crazyhouse"
 # NOTE: Suicide is Antichess according to FICS rules
 # NOTE: "Giveaway" is Antichess according to internatianal rules.
 # NOTE: "Losers" is Antichess according to ICC rules
 # NOTE: You may tarnslate "Suicide", "Giveaway", anmd "Losers" with the same term.
-::engine::mc::Variant(suicide)		"Antichess" ;# NEW
-::engine::mc::Variant(giveaway)		"Antichess" ;# NEW
-::engine::mc::Variant(losers)			"Antichess" ;# NEW
-::engine::mc::Variant(3check)			"Three-check" ;# NEW
+::engine::mc::Variant(suicide)		"Antiscacchi"
+::engine::mc::Variant(giveaway)		"Antiscacchi"
+::engine::mc::Variant(losers)			"Antiscacchi"
+::engine::mc::Variant(3check)			"Tre scacchi"
 
-::engine::mc::Edit						"Edit" ;# NEW
-::engine::mc::View						"View" ;# NEW
-::engine::mc::New							"New" ;# NEW
-::engine::mc::Rename						"Rename" ;# NEW
-::engine::mc::Delete						"Delete" ;# NEW
-::engine::mc::Select(engine)			"Select engine" ;# NEW
-::engine::mc::Select(profile)			"Select profile" ;# NEW
-::engine::mc::ProfileName				"Profile name" ;# NEW
-::engine::mc::NewProfileName			"New profile name" ;# NEW
-::engine::mc::OldProfileName			"Old profile name" ;# NEW
-::engine::mc::CopyFrom					"Copy from" ;# NEW
-::engine::mc::NewProfile				"New Profile" ;# NEW
-::engine::mc::RenameProfile			"Rename Profile" ;# NEW
-::engine::mc::EditProfile				"Edit Profile '%s'" ;# NEW
-::engine::mc::ProfileAlreadyExists	"A profile with name '%s' already exists." ;# NEW
-::engine::mc::ChooseDifferentName	"Please choose a different name." ;# NEW
-::engine::mc::ReservedName				"Name '%s' is reserved and cannot be used." ;# NEW
-::engine::mc::ReallyDeleteProfile	"Really delete profile '%s'?" ;# NEW
+::engine::mc::Edit						"Modifica"
+::engine::mc::View						"Mostra"
+::engine::mc::New							"Nuovo"
+::engine::mc::Rename						"Rinomina"
+::engine::mc::Delete						"Elimina"
+::engine::mc::Select(engine)			"Seleziona motore"
+::engine::mc::Select(profile)			"Seleziona profilo"
+::engine::mc::ProfileName				"Nome profilo"
+::engine::mc::NewProfileName			"Nuovo nome profilo"
+::engine::mc::OldProfileName			"Vecchio nome profilo"
+::engine::mc::CopyFrom					"Copia da"
+::engine::mc::NewProfile				"Nuovo profilo"
+::engine::mc::RenameProfile			"Rinomina profilo"
+::engine::mc::EditProfile				"Modifica profilo '%s'"
+::engine::mc::ProfileAlreadyExists	"Un profilo col nome '%s' esiste già."
+::engine::mc::ChooseDifferentName	"Per favore scegli un nome diverso."
+::engine::mc::ReservedName				"Il nome '%s' è riservato e non può essere usato."
+::engine::mc::ReallyDeleteProfile	"Vuoi davvero eliminare il profilo '%s'?"
 
-::engine::mc::AdminEngines				"Manage Engines" ;# NEW
-::engine::mc::SetupEngine				"Setup engine %s" ;# NEW
-::engine::mc::ImageFiles				"Image files" ;# NEW
-::engine::mc::SelectEngine				"Select Engine" ;# NEW
-::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
-::engine::mc::EngineLog					"Engine Console" ;# NEW
-::engine::mc::Probing					"Probing" ;# NEW
-::engine::mc::NeverUsed					"Never used" ;# NEW
-::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
-::engine::mc::ResetToDefault			"Reset to default" ;# NEW
-::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"
-::engine::mc::TotalUsage				"%s times in total" ;# NEW
-::engine::mc::Memory						"Memory (MB)" ;# NEW
-::engine::mc::CPUs						"CPUs" ;# NEW
-::engine::mc::Priority					"CPU Priority" ;# NEW
-::engine::mc::ClearHash					"Clear hash tables" ;# NEW
+::engine::mc::AdminEngines				"Configura Motori"
+::engine::mc::SetupEngine				"Imposta motore %s"
+::engine::mc::ImageFiles				"File di immagine"
+::engine::mc::SelectEngine				"Seleziona Motore"
+::engine::mc::SelectEngineLogo		"Seleziona Logo Motore"
+::engine::mc::EngineLog					"Console del motore"
+::engine::mc::Probing					"Sondaggio" ;# Probing?
+::engine::mc::NeverUsed					"Mai usato"
+::engine::mc::OpenFsbox					"Apri interfaccia di selezione file"
+::engine::mc::ResetToDefault			"Riporta a valori di default"
+::engine::mc::ShowInfo					"Mostra \"Info\""
+::engine::mc::TotalUsage				"%s volte in totale"
+::engine::mc::Memory						"Memoria (MB)"
+::engine::mc::CPUs						"CPUs"
+::engine::mc::Priority					"Priorità CPU"
+::engine::mc::ClearHash					"Pulisci tabelle hash"
 
-::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
-::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
-::engine::mc::CopyFromEngine			"Make a copy of entry" ;# NEW
-::engine::mc::CannotOpenProcess		"Cannot start process." ;# NEW
-::engine::mc::DoesNotRespond			"This engine does not respond either to UCI nor to XBoard/WinBoard protocol." ;# NEW
+::engine::mc::ConfirmNewEngine		"Conferma nuovo motore"
+::engine::mc::EngineAlreadyExists	"Un inserimento con questo motore esiste già."
+::engine::mc::CopyFromEngine			"Fai una copia di questo inserimento"
+::engine::mc::CannotOpenProcess		"Impossibile iniziare il processo."
+::engine::mc::DoesNotRespond			"Questo motore non risponde al protocollo UCI né al protocollo XBoard/WinBoard."
 ::engine::mc::DiscardChanges			"The current item has changed.\n\nReally discard changes?"
-::engine::mc::ReallyDelete				"Really delete engine '%s'?" ;# NEW
-::engine::mc::EntryAlreadyExists		"An entry with name '%s' already exists." ;# NEW
-::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
-::engine::mc::NoStandardChess			"This engine does not support standard chess." ;# NEW
-::engine::mc::NoEngineAvailable		"No engine available." ;# NEW
-::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
-::engine::mc::ScriptErrors				"Any errors while saving will be displayed here." ;# NEW
-::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
-::engine::mc::ThrowAwayChanges		"Throw away all changes?" ;# NEW
-::engine::mc::ResetToDefaultContent	"Reset to default content" ;# NEW
+::engine::mc::ReallyDelete				"Vuoi davvero eliminare il motore '%s'?"
+::engine::mc::EntryAlreadyExists		"Un inserimento con il nome '%s' esiste già."
+::engine::mc::NoFeaturesAvailable	"Questo motore non fornisce alcuna funzione, neanche la modalità di analisi è disponibile. Impossibile usare questo motore per analizzare posizioni."
+::engine::mc::NoStandardChess			"Questo motore non supporta gli scacchi standard."
+::engine::mc::NoEngineAvailable		"Nessun motore disponibile."
+::engine::mc::FailedToCreateDir		"Impossibile creare directory '%s'."
+::engine::mc::ScriptErrors				"Qualsiasi errore durante il salvataggio sarà mostrato qui."
+::engine::mc::CommandNotAllowed		"L'uso del comando '%s' non è permesso."
+::engine::mc::ThrowAwayChanges		"Elimina tutti i cambiamenti?"
 
-::engine::mc::ProbeError(registration)			"This engine requires a registration." ;# NEW
-::engine::mc::ProbeError(copyprotection)		"This engine is copy-protected." ;# NEW
+::engine::mc::ProbeError(registration)			"Questo motore richiede una registrazione."
+::engine::mc::ProbeError(copyprotection)		"Questo motore ha una protezione anti-copia."
 
-::engine::mc::FeatureDetail(analyze)			"This engine provides an analyze mode." ;# NEW
-::engine::mc::FeatureDetail(multiPV)			"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
-::engine::mc::FeatureDetail(pause)				"This provides a proper handling of pause/resume: the engine does not think, ponder, or otherwise consume significant CPU time. The current thinking or pondering (if any) is suspended and both player's clocks are stopped." ;# NEW
-::engine::mc::FeatureDetail(playOther)			"The engine is capable to play your move. Your clock wiil run while the engine is thinking about your move." ;# NEW
-::engine::mc::FeatureDetail(hashSize)			"This feature allows to inform the engine on how much memory it is allowed to use maximally for the hash tables. This engine allows a range between %min and %max MB." ;# NEW
-::engine::mc::FeatureDetail(clearHash)			"The user may clear the hash tables whlle the engine is running." ;# NEW
-::engine::mc::FeatureDetail(threads)			"It allows you to configure the number of threads the chess engine will use during its thinking. This engine is using between %min and %max threads." ;# NEW
-::engine::mc::FeatureDetail(smp)					"More than one CPU (core) can be used by this engine." ;# NEW
-::engine::mc::FeatureDetail(limitStrength)	"The engine is able to limit its strength to a specific Elo number between %min-%max." ;# NEW
-::engine::mc::FeatureDetail(skillLevel)		"The engine provides the possibility to lower the skill down, where it can be beaten quite easier." ;# NEW
-::engine::mc::FeatureDetail(ponder)				"Pondering is simply using the user's move time to consider likely user moves and thus gain a pre-processing advantage when it is our turn to move, also referred as Permanent brain." ;# NEW
-::engine::mc::FeatureDetail(chess960)			"Chess960 (or Fischer Random Chess) is a variant of chess. The game employs the same board and pieces as standard chess, but the starting position of the pieces along the players' home ranks is randomized, with a few restrictions which preserves full castling options in all starting positions, resulting in 960 unique positions." ;# NEW
-::engine::mc::FeatureDetail(bughouse)			"Bughouse chess (also called Exchange chess, Siamese chess, Tandem chess, Transfer chess, or Double Bughouse) is a chess variant played on two chessboards by four players in teams of two. Normal chess rules apply, except that captured pieces on one board are passed on to the players of the other board, who then have the option of putting these pieces on their board." ;# NEW
-::engine::mc::FeatureDetail(crazyhouse)		"Crazyhouse (also known as Drop Chess) is a chess variant similar to bughouse chess, but with only two players. It effectively incorporates a rule in shogi (Japanese chess), in which a player can introduce a captured piece back to the board as his own." ;# NEW
-::engine::mc::FeatureDetail(suicide)			"Suicide Chess (also called Antichess, Take Me Chess, Must Kill, Reverse Chess) has simple rules: capturing moves are mandatory and the object is to lose all pieces. There is no check, the king is captured like an ordinary piece. In case of stalemate the side with fewer pieces will win (according to FICS rules)." ;# NEW
-::engine::mc::FeatureDetail(giveaway)			"Giveaway Chess (a variant of Antichess) is like Suicide Chess, but in case of stalemate the side which is stalemate wins (according to international rules)." ;# NEW
-::engine::mc::FeatureDetail(losers)				"Losing Chess is a variant of Antichess, where the goal is to lose the chess game, but with several conditions attached to the rules. The goal is to lose all of your pieces (except the king), although in Losers Chess, you can also win by getting checkmated (according to ICC rules)." ;# NEW
-::engine::mc::FeatureDetail(3check)				"The characteristic of this chess variant: a player wins if he checks his opponent three times." ;# NEW
-::engine::mc::FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
+::engine::mc::FeatureDetail(analyze)			"Questo motore dispone di una modalità di analisi."
+::engine::mc::FeatureDetail(multiPV)			"Ti permette di vedere le valutazioni del motore e le principali varianti (PVs) a partire da quella ritenuta migliore. Questo motore può mostrare al massimo %s varianti principali."
+::engine::mc::FeatureDetail(pause)				"Questo permette una corretta gestione della pausa/riavvio: il motore non pensa, o consuma altrimenti risorse e tempo della CPU. L'analisi corrente è sospesa e gli orologi sono fermati per entrambi i giocatori."
+::engine::mc::FeatureDetail(playOther)			"Questo motore è in grado di giocare la tua mossa. Il tuo orologio sarà in azione mentre il motore pensa alla mossa da te inserita."
+::engine::mc::FeatureDetail(hashSize)			"Questa funzione permette di informare su quanta memoria (al massimo) è possibile utilizzare per le hash tables. Questo motore permette un intervallo da %min a %max MB."
+::engine::mc::FeatureDetail(clearHash)			"L'utente può pulire le hash tables mentre il motore è attivo."
+::engine::mc::FeatureDetail(threads)			"Permette di configurare il numero di thread che il motore userà durante la sua analisi. Il motore sta usando da %min a %max threads."
+::engine::mc::FeatureDetail(smp)					"Con questo motore più di una CPU (core) può essere usata."
+::engine::mc::FeatureDetail(limitStrength)	"Il motore è in grado di limitare la propria forza di gioco a uno specifico equivalente ELO tra %min-%max."
+::engine::mc::FeatureDetail(skillLevel)		"Il motore dà la possibilità di diminuire la propria forza di gioco, al punto in cui può essere battuto piuttosto facilmente."
+::engine::mc::FeatureDetail(ponder)				"Pensare significa semplicemente usare il tempo dell'utente per considerare le sue mosse e quindi avere un vantaggio di pre-processing quando è il turno di muovere del motore. Si chiama anche Mente Permanente."
+::engine::mc::FeatureDetail(chess960)			"Scacchi 960 (o Scacchi Fischer) è una variante degli scacchi. Si utilizza la stessa scacchiera e gli stessi pezzi, ma la posizione iniziale dei pezzi è randomica pur rimanendo sulle stesse linee con alcune restrizioni che preservano il diritto di arrocco, risultando in 960 posizioni uniche."
+::engine::mc::FeatureDetail(bughouse)			"Mangia e Passa è una variante degli scacchi giocata su due scacchiere da quattro giocatori in squadre di due. Si applicano le regole degli scacchi ortodossi, eccetto che i pezzi catturati su una scacchiera passano all'altra, i giocatori di quest'altra scacchiera hanno l'opzione di reintrodurre il pezzo."
+::engine::mc::FeatureDetail(crazyhouse)		"Crazyhouse è una variante degli scacchi simile a Mangia e Passa con solo due giocatori. Di fatto implementa una regola degli shogi (scacchi giapponesi), per cui un giocatore può reintrodurre nel gioco un pezzo catturato come proprio."
+::engine::mc::FeatureDetail(suicide)			"Scacchi Suicidio (chiamato anche Antiscacchi, Prendimi, Scacchi alla rovescia...) ha una semplice regola: le mosse di cattura sono obbligatorie e l'obiettivo è di perdere tutti i pezzi. Non ci sono scacchi, il re è catturato come un pezzo normale. In caso di stallo vince il lato con meno pezzi (in accordo alle regole di FICS)."
+::engine::mc::FeatureDetail(giveaway)			"Scacchi 'Giveaway' (una variante di Antiscacchi) è come Scacchi Suicidio, ma in caso di stallo il difensore vince (in accordo alle regole internazionali)."
+::engine::mc::FeatureDetail(losers)				"Vinciperdi è una variante di Antiscacchi dove l'obiettivo è di vincere la partita, ma con diverse condizioni. L'obiettivo è di perdere tutti i tuoi pezzi (tranne il re) ma in Vinciperdi puoi anche vincere prendendo matto (in accordo alle regole di ICC)."
+::engine::mc::FeatureDetail(3check)				"Caratteristiche di questa variante degli scacchi: un giocatore vince se dà scacco al suo avversario tre volte."
+::engine::mc::FeatureDetail(playingStyle)		"Questo motore disponde di diversi stili di gioco, ad esempio %s. Leggi il manuale del motore per una spiegazione sui diversi stili."
 
 ### analysis ###########################################################
-::application::analysis::mc::Control						"Control" ;# NEW
-::application::analysis::mc::Information					"Information" ;# NEW
-::application::analysis::mc::Setup							"Setup" ;# NEW
-::application::analysis::mc::Pause							"Pause" ;# NEW
-::application::analysis::mc::Resume							"Resume" ;# NEW
-::application::analysis::mc::LockEngine					"Lock engine to current position" ;# NEW
-::application::analysis::mc::MultipleVariations			"Multiple variations (multi-pv)" ;# NEW
-::application::analysis::mc::HashFullness					"Hash fullness" ;# NEW
-::application::analysis::mc::Hash							"Hash:" ;# NEW
-::application::analysis::mc::Lines							"Lines:" ;# NEW
-::application::analysis::mc::MateIn							"%color mate in %n" ;# NEW
-::application::analysis::mc::BestScore						"Best score (of current lines)" ;# NEW
-::application::analysis::mc::CurrentMove					"Currently searching this move" ;# NEW
-::application::analysis::mc::TimeSearched					"Time searched" ;# NEW
-::application::analysis::mc::SearchDepth					"Search depth in plies (Selective search depth)" ;# NEW
+::application::analysis::mc::Control						"Controllo"
+::application::analysis::mc::Information					"Informazioni"
+::application::analysis::mc::Setup							"Impostazioni"
+::application::analysis::mc::Pause							"Pausa"
+::application::analysis::mc::Resume							"Riattiva"
+::application::analysis::mc::LockEngine					"Blocca motore sulla posizione attuale"
+::application::analysis::mc::MultipleVariations			"Varianti multiple (multi-pv)"
+::application::analysis::mc::HashFullness					"Completezza Hash"
+::application::analysis::mc::Hash							"Hash:"
+::application::analysis::mc::Lines							"Varianti:"
+::application::analysis::mc::MateIn							"%color matto in %n"
+::application::analysis::mc::BestScore						"Miglior punteggio (delle varianti attuali)"
+::application::analysis::mc::CurrentMove					"In ricerca di questa mossa"
+::application::analysis::mc::TimeSearched					"Tempo di ricerca"
+::application::analysis::mc::SearchDepth					"Profondità di ricerca in semimosse (profondità di ricerca selettiva)"
 
-::application::analysis::mc::LinesPerVariation			"Lines per variation" ;# NEW
-::application::analysis::mc::BestFirstOrder				"Sort by evaluation" ;# NEW
-::application::analysis::mc::Engine							"Engine" ;# NEW
+::application::analysis::mc::LinesPerVariation			"Varianti per valutazione"
+::application::analysis::mc::BestFirstOrder				"Ordina per valutazione"
+::application::analysis::mc::Engine							"Motore"
 
-::application::analysis::mc::Seconds						"s" ;# NEW
-::application::analysis::mc::Minutes						"m" ;# NEW
+::application::analysis::mc::Seconds						"s"
+::application::analysis::mc::Minutes						"m"
 
-::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
-::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
-::application::analysis::mc::NotSupported(analyze)		"This engine does not have an analysis mode." ;# NEW
+::application::analysis::mc::NotSupported(standard)	"Questo motore non supporta scacchi standard."
+::application::analysis::mc::NotSupported(chess960)	"Questo motore non supporta scacchi 960."
+::application::analysis::mc::NotSupported(analyze)		"Questo motore non ha una modalità di analisi."
 
-::application::analysis::mc::Signal(stopped)				"Engine stopped by signal." ;# NEW
-::application::analysis::mc::Signal(resumed)				"Engine resumed by signal." ;# NEW
-::application::analysis::mc::Signal(killed)				"Engine killed by signal." ;# NEW
-::application::analysis::mc::Signal(crashed)				"Engine crashed." ;# NEW
-::application::analysis::mc::Signal(closed)				"Engine has closed connection." ;# NEW
-::application::analysis::mc::Signal(terminated)			"Engine terminated with exit code %s." ;# NEW
+::application::analysis::mc::Signal(stopped)				"Motore interrotto da segnale."
+::application::analysis::mc::Signal(resumed)				"Motore riattivato da segnale."
+::application::analysis::mc::Signal(killed)				"Motore terminato da segnale."
+::application::analysis::mc::Signal(crashed)				"Il motore è crashato."
+::application::analysis::mc::Signal(closed)				"Il motore ha terminato la connessione."
+::application::analysis::mc::Signal(terminated)			"Motore interrotto con codice di errore %s."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Segna partita come eliminata"
@@ -1196,8 +1195,8 @@
 
 ::browser::mc::GotoGame(first)  	"Vai alla prima partita"
 ::browser::mc::GotoGame(last)   	"Vai all'ultima partita"
-::browser::mc::GotoGame(next)		"Goto next game" ;# NEW
-::browser::mc::GotoGame(prev)		"Goto previous game" ;# NEW
+::browser::mc::GotoGame(next)		"Vai alla prossima partita"
+::browser::mc::GotoGame(prev)		"Vai alla partita precedente"
 
 ::browser::mc::LoadGame				"Carica partita"
 ::browser::mc::MergeGame			"Unisci partita"
@@ -1250,8 +1249,8 @@
 ::setup::board::mc::CastlingWithoutRook		"Hai segnato il diritto di arroccare, ma almeno una torre di arrocco manca. Questo può succedere solo in partite con handicap. Sei sicuro che ci sia la possibilità di arroccare?"
 ::setup::board::mc::UnsupportedVariant			"La posizione è una posizione iniziale ma non di Scacchi Mischiati - Shuffle Chess. Sei sicuro?"
 
-::setup::board::mc::ChangeToFormat(xfen)				"Change to X-Fen format" ;# NEW
-::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format" ;# NEW
+::setup::board::mc::ChangeToFormat(xfen)				"Converti a formato X-Fen"
+::setup::board::mc::ChangeToFormat(shredder)			"Converti a formato Shredder"
 
 ::setup::board::mc::Error(InvalidFen)					"FEN non valido."
 ::setup::board::mc::Error(NoWhiteKing)					"Manca il re bianco."
@@ -1276,7 +1275,7 @@
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importando file PGN '%s'"
-::import::mc::ImportingDatabase					"Importing database '%s'" ;# NEW
+::import::mc::ImportingDatabase					"Importando database '%s'"
 ::import::mc::Line									"Linea"
 ::import::mc::Column									"Colonna"
 ::import::mc::GameNumber							"Partita"
@@ -1330,7 +1329,7 @@
 ::import::mc::IllegalMove							"Mossa illegale"
 ::import::mc::CastlingCorrection					"Correzione arrocco"
 ::import::mc::UnsupportedVariant					"Variante di scacchi non supportata"
-::import::mc::UnsupportedCrazyhouseVariant	"Variant Crazyhouse is not yet supported (game skipped)" ;# NEW
+::import::mc::UnsupportedCrazyhouseVariant	"Variante Crazyhouse non ancora supportata (partita saltata"
 ::import::mc::DecodingFailed						"La decodifica di questa partita non è stata possibile"
 ::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"
 ::import::mc::ValueTooLong							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
@@ -1359,8 +1358,8 @@
 ::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
 ::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"
 ::import::mc::AbortedDueToInternalError		"Annullato per errore interno"
-::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
-::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
+::import::mc::AbortedDueToIoError				"Annullato per errore di lettura/scrittura"
+::import::mc::UserHasInterrupted					"L'utente ha interrotto" ;#User has interrupted?
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selezione File"
@@ -1420,14 +1419,14 @@
 ::export::mc::ExportDatabaseTitle		"Esporta Database '%s'"
 ::export::mc::ExportingDatabase			"Sto esportando '%s' nel file '%s'"
 ::export::mc::Export							"Esporta"
-::export::mc::NoGamesCopied				"No games exported." ;# NEW
+::export::mc::NoGamesCopied				"Nessuna partita esportata."
 ::export::mc::ExportedGames				"%s partite esportate"
 ::export::mc::NoGamesForExport			"Nessuna partita da esportare."
 ::export::mc::ResetDefaults				"Torna a valori di default"
 ::export::mc::UnsupportedEncoding		"Impossibile usare codifica %s per documenti PDF. Devi usare una codifica alternativa."
-::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
-::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
-::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
+::export::mc::DatabaseIsOpen				"Il database di destinazione '%s' è aperto, questo vuol dire che il database di destinazione sarà svuotato prima dell'inizio dell'esportazione. Esportare comunque?"
+::export::mc::DatabaseIsOpenDetail		"Se invece vuoi aggiungere devi fare un Drag&Drop dentro il selezionatore di database."
+::export::mc::ExportGamesFromTo			"Esporta partite da '%src' a '%dst'"
 
 ::export::mc::BasicStyle					"Stile base"
 ::export::mc::GameInfo						"Informazioni della partita"
@@ -1803,9 +1802,9 @@
 ::info::mc::BoardThemeDesign	"Design della scacchiera"
 ::info::mc::FlagsDesign			"Design identificatori miniaturizzati"
 ::info::mc::IconDesign			"Design icone"
-::info::mc::Development			"Development" ;# NEW
-::info::mc::Programming			"Programming" ;# NEW
-::info::mc::Head					"Head" ;# NEW
+::info::mc::Development			"Sviluppo"
+::info::mc::Programming			"Programmazione"
+::info::mc::Head					"Intestazione"
 
 ::info::mc::Version				"Versione"
 ::info::mc::Distributed			"Questo programma è distribuito secondo i termini della GNU General Public License."
@@ -1857,8 +1856,8 @@
 ::move::mc::Action(mainline)		"Nuova linea principale"
 ::move::mc::Action(trial)			"Prova variante"
 ::move::mc::Action(exchange)		"Cambia mossa"
-::move::mc::Action(append)			"Append move" ;# NEW
-::move::mc::Action(load)			"Load first game with this continuation" ;# NEW
+::move::mc::Action(append)			"Aggiungi mossa in cosa"
+::move::mc::Action(load)			"Carica la prima partita con questa continuazione"
 
 ::move::mc::GameWillBeTruncated	"La partita sarà interrotta. Continuare con '%s'?"
 
@@ -1943,7 +1942,7 @@
 ::table::mc::OptimizeColumns			"Ottimizza tutte le colonne"
 ::table::mc::FitColumnWidth			"Regola larghezza colonna"
 ::table::mc::FitColumns					"Regola tutte le colonne"
-::table::mc::ExpandColumn				"Expand column width" ;# NEW
+::table::mc::ExpandColumn				"Espandi larghezza colonna"
 ::table::mc::SqueezeColumns			"Stringi tutte le colonne"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."
@@ -1959,27 +1958,27 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Documento Portatile"
 ::dialog::fsbox::mc::HypertextFile			"File Ipertestuale"
 ::dialog::fsbox::mc::TypesettingFile		"File di Typesetting"
-::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
-::dialog::fsbox::mc::TextFile					"Text File" ;# NEW
-::dialog::fsbox::mc::BinaryFile				"Bin�ry File" ;# NEW
-::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
-::dialog::fsbox::mc::Executable				"Executable" ;# NEW
+::dialog::fsbox::mc::ImageFile				"File di immagine"
+::dialog::fsbox::mc::TextFile					"File di testo"
+::dialog::fsbox::mc::BinaryFile				"File binario"
+::dialog::fsbox::mc::ShellScript				"Script Shell"
+::dialog::fsbox::mc::Executable				"Eseguibile"
 
 ::dialog::fsbox::mc::LinkTo					"Collegamento a %s"
 ::dialog::fsbox::mc::LinkTarget				"Obiettivo collegamento"
 ::dialog::fsbox::mc::Directory				"Cartella"
 
-::dialog::fsbox::mc::Title(open)				"Select File" ;# NEW
-::dialog::fsbox::mc::Title(save)				"Save File" ;# NEW
-::dialog::fsbox::mc::Title(dir)				"Choose Directory" ;# NEW
+::dialog::fsbox::mc::Title(open)				"Seleziona File"
+::dialog::fsbox::mc::Title(save)				"Salva File"
+::dialog::fsbox::mc::Title(dir)				"Scegli Directory"
 
 ::dialog::fsbox::mc::Content					"Contenuto"
 ::dialog::fsbox::mc::Open						"Apri"
 
-::dialog::fsbox::mc::FileType(exe)			"Executables" ;# NEW
-::dialog::fsbox::mc::FileType(txt)			"Text files" ;# NEW
-::dialog::fsbox::mc::FileType(log)			"Log files" ;# NEW
-::dialog::fsbox::mc::FileType(bin)			"Binary files" ;# NEW
+::dialog::fsbox::mc::FileType(exe)			"Eseguibili"
+::dialog::fsbox::mc::FileType(txt)			"Files di testo"
+::dialog::fsbox::mc::FileType(log)			"Files di log"
+::dialog::fsbox::mc::FileType(bin)			"Files binari"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"
@@ -2118,8 +2117,8 @@
 ::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
 ::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
 ::fsbox::mc::UriRejectedDetail			"Solo i seguenti tipi di file possono essere gestiti."
-::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:" ;# NEW
-::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:" ;# NEW (http://*)
+::fsbox::mc::CannotOpenTrashFiles		"Impossibile aprire file dal cestino:"
+::fsbox::mc::CannotOpenRemoteFiles		"Impossibile aprire file remoti:"
 ::fsbox::mc::OperationAborted				"Operazione interrotta."
 ::fsbox::mc::ApplyOnDirectories			"Sei sicuro di voler appllicare l'operazione selezionata sulle (seguenti) cartelle?"
 ::fsbox::mc::EntryAlreadyExists			"Valore già esistente"
@@ -2143,7 +2142,7 @@
 
 ::fsbox::mc::Cannot(delete)				"Impossibile eliminare il file '%s'."
 ::fsbox::mc::Cannot(rename)				"Impossibile rinominare il file '%s'."
-::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(move)					"Impossibile spostare il file '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Impossibile sovrascrivere il file '%s'."
 
 ::fsbox::mc::DropAction(move)				"Sposta qui"
