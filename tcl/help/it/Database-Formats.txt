@@ -18,10 +18,9 @@
 
 INDEX Formati Database
 INDEX Formati File
-<!-- NEW
-INDEX Database archive#Database-Archive
-INDEX Archive#Database-Archive
--->
+INDEX Archivio Database#Archivio-Database
+INDEX Archivio#Archivio-Database
+
 TITLE Formati Database
 
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
@@ -99,11 +98,9 @@ Questo formato ricorda per struttura il formato Scidb:
   </table>
 </box>
 
-<NEW>
-<note>The files with suffixes <code>.sso</code> (Scid Search Option File),
-and <code>.sor</code> (Scid Repertoire File) do not belong explicitely to
-a database and will not be regarded by Scidb.</note>
-</NEW>
+<note>I file con estensione <code>.sso</code> (Scid Search Option File),
+e <code>.sor</code> (Scid Repertoire File) non appartengono esplicitamente al database
+e non saranno considerati da Scidb.</note>
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
@@ -150,11 +147,9 @@ Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per 
 Secondo lo
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">standard PGN</a>
 un file PGN ha codifica <nobr>Latin-1</nobr> (ISO-<nobr>8859-1</nobr>).
-<NEW>
-But if a PGN file is starting with an <nobr>UTF-8</nobr> mark
-(<nobr>UTF-8</nobr>-BOM: byte sequence EF BB BF) an <nobr>UTF-8</nobr> encoding will be expected
-(according to <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
-</NEW>
+Ma se un file PGN comincia con un marcatore <nobr>UTF-8</nobr>
+(<nobr>UTF-8</nobr>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <nobr>UTF-8</nobr>
+(in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
 
 <p>

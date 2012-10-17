@@ -126,25 +126,22 @@ Nella linea di comando sono disponibili le seguenti opzioni:
       salvate dall'ultima sessione saranno scartati.
     </td>
   </tr>
-<!-- NEW -->
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <code>--update-player-photos</code>
     </td>
     <td class="standard">
-      Update or install player photos. Afterwards the program will be terminated.
+      Aggiorna o installa le foto dei giocatori. Successivamente il programma sarà terminato.
       <br/><br/>
-      The basic recommendation is to use the update or install functionality via
-      the graphical user interface.
+      La raccomandazione basilare è di usare la funzionalità di aggiornamento o installazione dall'interfaccia grafica.
       <br/><br/>
       Unix:
-      If called with super-user rights the update will be done in the shared
-      directory (normally <url>/usr/local/share/%scidb%</url>).
-      Otherwise the update will be done in user directory
+      Se chiamato da un utente con diritti di super-user l'aggiornamento sarà fatto nella cartella condivisa
+      generalmente (generalmente <url>/usr/local/share/%scidb%</url>).
+      Altrimenti l'aggiornamento sarà eseguito nella cartella utente
       <url>~/.%scidb%</url>.
     </td>
   </tr>
-<!-- END -->
   <tr>
     <td class="standard" style="white-space:nowrap;" valign="top">
         <tt>--single-process</tt>

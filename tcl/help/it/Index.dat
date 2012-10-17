@@ -1,18 +1,16 @@
 set Index {
   { A
     {
-      {{Archive} {Database-Formats.html} {Database-Archive}}
+      {{Archivio} {Database-Formats.html} {Archivio-Database}}
+      {{Archivio Database} {Database-Formats.html} {Archivio-Database}}
     }
   }
   { C
     {
       {{Clipbase} {Clipbase.html} {}}
+      {{Codici} {Game-Flags.html} {}}
+      {{Codici Partita} {Game-Flags.html} {}}
       {{Contatti} {Contact-Information.html} {}}
-    }
-  }
-  { D
-    {
-      {{Database archive} {Database-Formats.html} {Database-Archive}}
     }
   }
   { F
@@ -26,10 +24,20 @@ set Index {
       {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
+  { O
+    {
+      {{Opzioni nella linea di comando} {Command-Line-Options.html} {}}
+    }
+  }
   { S
     {
       {{Selezionatore di Database} {Database-Switcher.html} {}}
       {{Sito Internet} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { V
+    {
+      {{Valori delle annotazioni NAG} {NAG-Comments.html} {}}
     }
   }
 }
