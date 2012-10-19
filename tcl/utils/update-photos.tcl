@@ -274,6 +274,7 @@ while {$retry > 0} {
 			if {[incr retry] > $::MaxRetry} { Return timeout [MakeFile $url] }
 			ResetConnection $url.
 			after [expr {($retry - 1)*$::Wait}] ;# wait a bit
+			::http::cleanup $token
 		}
 	}
 }
