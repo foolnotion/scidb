@@ -53,6 +53,7 @@ proc build {parent width height} {
 
 	set Vars(after) {}
 	set Vars(button) 0
+	set Vars(base) ""
 
 	::scidb::db::subscribe gameList \
 		[namespace current]::TableUpdate \

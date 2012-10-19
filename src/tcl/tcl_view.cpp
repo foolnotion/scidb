@@ -67,6 +67,7 @@ static char const* CmdExport			= "::scidb::view::export";
 static char const* CmdFind				= "::scidb::view::find";
 static char const* CmdMap				= "::scidb::view::map";
 static char const* CmdNew				= "::scidb::view::new";
+static char const* CmdOpen				= "::scidb::view::open?";
 static char const* CmdPrint			= "::scidb::view::print";
 static char const* CmdSearch			= "::scidb::view::search";
 static char const* CmdSubscribe		= "::scidb::view::subscribe";
@@ -292,7 +293,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			error(CmdNew, 0, 0, "unknown resize mode '%s'", arg);
 	}
 
-	appendResult("%u", scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
+	setResult(scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
 	return TCL_OK;
 }
 
@@ -317,6 +318,48 @@ cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
+	static char const* args[] = { "<database> <view>" };
+	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites };
+
+	if (objc != 4)
+		return usage(CmdCount, nullptr, nullptr, subcommands, args);
+
+	char const* database = stringFromObj(objc, objv, 2);
+
+	int index	= tcl::uniqueMatchObj(objv[1], subcommands);
+	int view		= intFromObj(objc, objv, 3);
+
+	switch (index)
+	{
+		case Cmd_Games:
+			setResult(Scidb->cursor(database).isViewOpen(view));
+			return TCL_OK;
+
+		case Cmd_Players:
+			setResult(Scidb->cursor(database).isViewOpen(view));
+			return TCL_OK;
+
+		case Cmd_Annotators:
+			setResult(Scidb->cursor(database).isViewOpen(view));
+			return TCL_OK;
+
+		case Cmd_Events:
+			setResult(Scidb->cursor(database).isViewOpen(view));
+			return TCL_OK;
+
+		case Cmd_Sites:
+			setResult(Scidb->cursor(database).isViewOpen(view));
+			return TCL_OK;
+	}
+
+	return usage(CmdCount, nullptr, nullptr, subcommands, args);
+}
+
+
+static int
 cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
@@ -334,23 +377,23 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_Games:
-			appendResult("%u", Scidb->cursor(database).view(view).countGames());
+			setResult(Scidb->cursor(database).view(view).countGames());
 			return TCL_OK;
 
 		case Cmd_Players:
-			appendResult("%u", Scidb->cursor(database).view(view).countPlayers());
+			setResult(Scidb->cursor(database).view(view).countPlayers());
 			return TCL_OK;
 
 		case Cmd_Annotators:
-			appendResult("%u", Scidb->cursor(database).view(view).countAnnotators());
+			setResult(Scidb->cursor(database).view(view).countAnnotators());
 			return TCL_OK;
 
 		case Cmd_Events:
-			appendResult("%u", Scidb->cursor(database).view(view).countEvents());
+			setResult(Scidb->cursor(database).view(view).countEvents());
 			return TCL_OK;
 
 		case Cmd_Sites:
-			appendResult("%u", Scidb->cursor(database).view(view).countSites());
+			setResult(Scidb->cursor(database).view(view).countSites());
 			return TCL_OK;
 	}
 
@@ -386,19 +429,19 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_Player:
-			appendResult("%d", v.findPlayer(name));
+			setResult(v.findPlayer(name));
 			break;
 
 		case Cmd_Event:
-			appendResult("%d", v.findEvent(name));
+			setResult(v.findEvent(name));
 			break;
 
 		case Cmd_Site:
-			appendResult("%d", v.findSite(name));
+			setResult(v.findSite(name));
 			break;
 
 		case Cmd_Annotator:
-			appendResult("%d", v.findAnnotator(name));
+			setResult(v.findAnnotator(name));
 			break;
 
 		default:
@@ -746,6 +789,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdFind,				cmdFind);
 	createCommand(ti, CmdMap,				cmdMap);
 	createCommand(ti, CmdNew,				cmdNew);
+	createCommand(ti, CmdOpen,				cmdOpen);
 	createCommand(ti, CmdPrint,			cmdPrint);
 	createCommand(ti, CmdSearch,			cmdSearch);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);

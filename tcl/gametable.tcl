@@ -973,6 +973,13 @@ proc TableFill {path args} {
 	set codec [::scidb::db::get codec $base]
 	set used [::table::used $table acv]
 	set view [{*}$Vars(viewcmd) $base]
+
+	if {![::scidb::view::open? games $base $view]} {
+		# may happen due to pending updates
+		clear $path
+		return
+	}
+
 	set last [expr {min($last, [scidb::view::count games $base $view] - $start)}]
 	set ratings [list $Defaults(rating:1) $Defaults(rating:2)]
 	set gray [::scrolledtable::visible? $path deleted]

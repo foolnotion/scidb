@@ -251,10 +251,10 @@ proc DisplayContributions {t} {
 	$t insert end [Enc "[set [namespace current]::mc::Development]:\n"] caption
 	$t insert end [Enc "Gregor Cramer"]
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "[set [namespace current]::mc::Programming]:\n"] caption
-	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Head]), "]
-	$t insert end [Enc "Giovanni Ornaghi"]
+#	$t insert end [Enc "\n\n"]
+#	$t insert end [Enc "[set [namespace current]::mc::Programming]:\n"] caption
+#	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Head]), "]
+#	$t insert end [Enc "Giovanni Ornaghi"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
