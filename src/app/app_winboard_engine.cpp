@@ -108,6 +108,15 @@ skipSpaces(char const* s)
 
 
 static char const*
+skipDots(char const* s)
+{
+	while (*s == '.')
+		++s;
+	return skipSpaces(s);
+}
+
+
+static char const*
 skipWord(char const* s)
 {
 	while (*s && !isspace(*s))
@@ -1220,10 +1229,10 @@ winboard::Engine::parseCurrentMove(char const* s)
 		s = ::skipMoveNumber(::skipWords(s, 3));
 
 		Move move;
-		char const* t = m_board.parseMove(s, move);
+		char const* t = m_board.parseMove(::skipDots(s), move);
 
 		if (t == 0)
-			return false;
+			return true; // skip it anayway
 
 		if (move.isLegal())
 		{
