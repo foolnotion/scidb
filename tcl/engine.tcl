@@ -186,8 +186,7 @@ set EmptyEngine {
 }
 
 array set Options {
-	memory	32
-	cores		1
+	engine Stockfish
 }
 
 variable PhotoFiles {}
@@ -434,6 +433,7 @@ proc openAdmininstration {parent} {
 
 proc openSetup {parent} {
 	variable Engines
+	variable Options
 	variable Vars
 
 	if {[llength $Engines] == 0} {
@@ -494,7 +494,7 @@ proc openSetup {parent} {
 	ttk::label $lt.lpriority -textvar [namespace current]::mc::Priority
 	ttk::label $lt.lmemory -textvar [namespace current]::mc::Memory
 	ttk::label $lt.lcpus -textvar [namespace current]::mc::CPUs
-	ttk::label $lt.lprotocol	-textvar [namespace current]::mc::Protocol
+	ttk::label $lt.lprotocol -textvar [namespace current]::mc::Protocol
 
 	ttk::combobox $lt.priority \
 		-width 7 \
@@ -510,10 +510,12 @@ proc openSetup {parent} {
 		-textvariable [namespace current]::Vars(current:memory) \
 		;
 	$lt.memory addcol text -d mb -justify right
+	bind $lt.memory <<ComboboxSelected>> [namespace code SetMemory]
 	ttk::spinbox $lt.cores \
 		-width 7 \
 		-state readonly \
 		-textvariable [namespace current]::Vars(current:cores) \
+		-command [namespace code SetCores] \
 		;
 	ttk::frame $lt.protocol -takefocus 0 -borderwidth 0
 	ttk::radiobutton $lt.protocol.buci \
@@ -634,7 +636,9 @@ proc openSetup {parent} {
 	$dlg.close configure -command [list wm withdraw $dlg]
 	$dlg.admin configure -command [namespace code [list OpenAdministration $dlg]]
 
-	$list select 0
+	set i [FindIndex $Options(engine)]
+	if {$i == -1} { set i 0 }
+	$list select $i
 	LanguageChanged $list
 
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
@@ -857,13 +861,13 @@ proc setup {} {
 				}
 			}
 
-			if {$changed} { ::options::hookWriter [namespace current]::WriteOptions engines }
+			if {$changed} { ::options::hookWriter [namespace current]::WriteEngineOptions engines }
 		} else {
 			::load::source $localFile -message $::load::mc::ReadingFile(engines) -encoding utf-8
 		}
 	} elseif {$shareFiletime > 0} {
 		LoadSharedConfiguration $shareFile
-		::options::hookWriter [namespace current]::WriteOptions engines
+		::options::hookWriter [namespace current]::WriteEngineOptions engines
 	}
 }
 
@@ -889,7 +893,7 @@ proc startEngine {isReadyCmd signalCmd updateCmd} {
 	set engine(LastUsed) [clock seconds]
 	incr engine(Frequency)
 	lset Engines $index [array get engine]
-	::options::hookWriter [namespace current]::WriteOptions engines
+	::options::hookWriter [namespace current]::WriteEngineOptions engines
 	set id [::scidb::engine::start \
 		$engine(Command) \
 		$dir \
@@ -1091,6 +1095,22 @@ proc LanguageChanged {list} {
 }
 
 
+proc SetMemory {} {
+	variable Options
+	variable Vars
+
+	set Options($Vars(current:name):memory) $Vars(current:memory)
+}
+
+
+proc SetCores {} {
+	variable Options
+	variable Vars
+
+	set Options($Vars(current:name):cores) $Vars(current:cores)
+}
+
+
 proc SetPriority {} {
 	variable Vars
 
@@ -1110,16 +1130,22 @@ proc MemTotal {} {
 
 
 proc UseEngine {list item profileList} {
-	variable Vars
 	variable EmptyEngine
 	variable Engines
+	variable Options
+	variable Vars
 
 	if {[llength $item] == 0} { return }
 	set Vars(selection) $item
+	set name [$list get name]
 	set i [FindIndex [$list get name]]
 
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
+
+	set name $engine(Name)
+	set Options(engine) $name
+	set Vars(current:name) $name
 
 	if {[llength $engine(Protocol)] < 2} {
 		set protocol [lindex $engine(Protocol) 0]
@@ -1138,10 +1164,15 @@ proc UseEngine {list item profileList} {
 	}
 	$Vars(widget:uci) configure -state $state(UCI)
 	$Vars(widget:wb) configure -state $state(WB)
-	set Vars(current:protocol) $protocol
+	if {[info exists Options($name:protocol)] && $Options($name:protocol) in $engine(Protocol)} {
+		set Vars(current:protocol) $Options($name:protocol)
+		set protocol $Options($name:protocol)
+	} else {
+		set Vars(current:protocol) $protocol
+		set Options($name:protocol) $protocol
+	}
 
 	array set features $engine(Features:$protocol)
-	set Vars(current:name) $engine(Name)
 
 	if {[info exists features(hashSize)]} {
 		$Vars(widget:memory) clear
@@ -1170,17 +1201,25 @@ proc UseEngine {list item profileList} {
 		$Vars(widget:memory) resize
 		$Vars(widget:memory) configure -height 0 -state readonly
 		set Vars(current:memory) [expr {min($Vars(current:memory), $max)}]
+		if {[info exists Options($name:memory)]} {
+			set Vars(current:memory) [expr {min($Options($name:memory), $Vars(current:memory))}]
+		}
 	} else {
 		$Vars(widget:memory) configure -state disabled
 	}
 
-	if {[info exists features(smp)]} {
-		$Vars(widget:cores) configure -state readonly -from 1 -to [::system::ncpus]
-	} elseif {[info exists features(threads)]} {
-		lassign $features(threads) min max
-		set max [expr {min($max, [::system::ncpus])}]
-		$Vars(widget:cores) configure -state readonly -from 1 -to [::system::ncpus]
-		set Vars(current:cores) [expr {min($Vars(current:cores), $max)}]
+	if {[info exists features(smp)] || [info exists features(threads)]} {
+		set ncpus [::system::ncpus]
+		if {[info exists features(threads)]} {
+			lassign $features(threads) min max
+			set ncpus [expr {min($max, $ncpus)}]
+		}
+		$Vars(widget:cores) configure -state readonly -from 1 -to $ncpus
+		if {[info exists Options($name:cores)]} {
+			set Vars(current:cores) [expr {min($Options($name:cores), $ncpus)}]
+		} else {
+			set Vars(current:cores) [expr {min($Vars(current:cores), $ncpus)}]
+		}
 	} else {
 		$Vars(widget:cores) configure -state disabled
 	}
@@ -2361,6 +2400,7 @@ proc SplitComboEntries {s} {
 
 
 proc UseProfile {item} {
+	variable Options
 	variable Vars
 
 	if {[llength $item] == 0} { return }
@@ -2373,6 +2413,8 @@ proc UseProfile {item} {
 		set Vars(current:profile) [$Vars(list:profiles) get name]
 		set state normal
 	}
+
+	set Options($Vars(current:name):profile) $Vars(current:profile)
 
 	foreach op {rename delete} {
 		$Vars(widget:$op) configure -state $state
@@ -2387,6 +2429,7 @@ proc UseProfile {item} {
 proc SetupProfiles {} {
 	variable EmptyEngine
 	variable Engines
+	variable Options
 	variable Vars
 
 	set w $Vars(list:profiles)
@@ -2394,6 +2437,7 @@ proc SetupProfiles {} {
 	array set engine $EmptyEngine
 	array set engine [lindex $Engines $i]
 	set protocol $Vars(current:protocol)
+	set Options($engine(Name):protocol) $protocol
 	set profiles $engine(Profiles:$protocol)
 	set Vars(profiles) {}
 
@@ -2413,7 +2457,12 @@ proc SetupProfiles {} {
 
 	if {$i > 0} {
 		$w configure -background white
-		$w select 0
+		set i 0
+		if {[info exists Options($Vars(current:name):profile)]} {
+			set k [lsearch -exact $Vars(profiles) $Options($Vars(current:name):profile)]
+			if {$k >= 0} { set i $k }
+		}
+		$w select $i
 	} else {
 		$w configure -background lightgray
 		foreach op {edit new rename delete} {
@@ -2770,7 +2819,7 @@ proc SaveEngineList {} {
 		file rename -force $filename.tmp $filename
 	}
 
-	::options::unhookWriter [namespace current]::WriteOptions engines
+	::options::unhookWriter [namespace current]::WriteEngineOptions engines
 }
 
 
@@ -3165,9 +3214,23 @@ proc LoadSharedConfiguration {file} {
 }
 
 
-proc WriteOptions {chan} {
+proc WriteEngineOptions {chan} {
 	::options::writeList $chan [namespace current]::Engines
 }
+
+
+proc WriteOptions {chan} {
+	variable Options
+
+	foreach attr [array names Options *:profile] {
+		set name [lindex [split $attr :] 0]
+		if {[FindIndex $name] == -1} { array unset Options $name:* }
+	}
+
+	::options::writeItem $chan [namespace current]::Options no
+}
+
+::options::hookWriter [namespace current]::WriteOptions
 
 } ;# namespace engine
 
