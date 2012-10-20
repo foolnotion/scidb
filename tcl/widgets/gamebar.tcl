@@ -405,7 +405,7 @@ proc replace {gamebar id tags} {
 	Reset $gamebar $id
 	Setup $gamebar [getIndex $gamebar $id] $id $tags [MakeData $gamebar $id $tags]
 	$gamebar itemconfigure close:icon$id -image $icon::15x15::close(unlocked)
-	Update $gamebar $id
+	Update $gamebar $id no
 }
 
 
@@ -637,7 +637,7 @@ proc UseSeparateColumn {gamebar} {
 
 proc LanguageChanged {gamebar} {
 	foreach id [getIdList $gamebar] {
-		Update $gamebar $id
+		Update $gamebar $id no
 	}
 }
 
@@ -895,7 +895,7 @@ proc Setup {gamebar at id tags data} {
 			SetSelected $gamebar $id
 		} else {
 			PrepareAsHeader $gamebar $Specs(selected:$gamebar)
-			Update $gamebar $id
+			Update $gamebar $id no
 		}
 	}
 }
@@ -1658,12 +1658,12 @@ proc MakeData {gamebar id tags {update no}} {
 }
 
 
-proc Update {gamebar id} {
+proc Update {gamebar id {update yes}} {
 	variable Specs
 	variable Options
 
 	set tags [::scidb::game::tags $id]
-	set data [MakeData $gamebar $id $tags yes]
+	set data [MakeData $gamebar $id $tags $update]
 
 	set Specs(data:$id:$gamebar) $data
 	set Specs(tags:$id:$gamebar) $tags

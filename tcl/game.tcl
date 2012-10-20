@@ -198,6 +198,7 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 
 	if {$lock} {
 		::application::pgn::lock $pos
+		lockChanged $pos $lock
 	}
 
 	if {$init} {
