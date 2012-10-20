@@ -56,14 +56,13 @@ proc minWidth {} {
 		set len [max $len [string length $mc::Mode($mode)]]
 	}
 
-	return [expr {$len + 2}]
+	return [expr {$len + 3}]
 }
 
 
 proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content
-	variable ${w}::Width
 
 	array set opts {
 		-textvar			{}
@@ -82,17 +81,18 @@ proc Build {w args} {
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
 	bind $w <FocusIn> { focus [tk_focusNext %W] }
+	set width [expr {max([minWidth], $opts(-width))}]
 	ttk::tcombobox $w.__w__ \
 		-textvariable $opts(-textvariable) \
 		-exportselection no \
 		-column mode \
 		-state $opts(-state) \
+		-width $width \
 		;
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id mode
 	pack $w.__w__ -anchor w
 
-	set Width $opts(-width)
 	Setup $w
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
@@ -189,10 +189,8 @@ proc LanguageChanged {w} {
 
 
 proc Setup {w} {
-	variable ${w}::Width
 	variable modes
 
-	$w.__w__ configure -minwidth [expr {max([minWidth], $Width)}]
 	$w.__w__ listinsert [list "" "\u2014"] -index 0
 	set index 0
 	foreach mode $modes {

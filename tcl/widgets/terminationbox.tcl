@@ -38,7 +38,7 @@ set Normal				"Normal"
 set Unplayed			"Unplayed"
 set Abandoned			"Abandoned"
 set Adjudication		"Adjudication"
-set Death				"Death"
+set Death		"Death"
 set Emergency			"Emergency"
 set RulesInfraction	"Rules infraction"
 set TimeForfeit		"Time forfeit"
@@ -68,7 +68,6 @@ proc minWidth {} {
 proc Build {w args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Content
-	variable ${w}::Width
 
 	array set opts {
 		-textvar			{}
@@ -87,6 +86,7 @@ proc Build {w args} {
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
 	bind $w <FocusIn> { focus [tk_focusNext %W] }
+	set width [expr {max([minWidth], $opts(-width))}]
 	ttk::tcombobox $w.__w__ \
 		-textvariable $opts(-textvariable) \
 		-exportselection no \
@@ -94,12 +94,12 @@ proc Build {w args} {
 		-validate key \
 		-validatecommand { return [string is alpha %P] || [regexp {[-]*} %P] } \
 		-state $opts(-state) \
+		-width $width \
 		;
 	$w.__w__ addcol image -id icon -justify center
 	$w.__w__ addcol text -id reason
 	pack $w.__w__ -anchor w
 
-	set Width $opts(-width)
 	Setup $w
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
@@ -192,11 +192,9 @@ proc LanguageChanged {w} {
 
 
 proc Setup {w} {
-	variable ${w}::Width
 	variable reasons
 
 	$w.__w__ forgeticon
-	$w.__w__ configure -minwidth [expr {max([minWidth], $Width)}]
 	$w.__w__ listinsert [list "" "\u2014"] -index 0
 	set index 0
 	foreach reason $reasons {
@@ -343,18 +341,17 @@ set Adjudication [image create photo -data {
 }]
 
 set Death [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QAAAAAAAD5Q7t/AAAC
-	H0lEQVQYGTXBW0hTYRwA8P93O1OHGzbbvNAybwQLhSAlNIOCfIiil6LCpJ7SgijowR6iXnqL
-	MEIieumxsgtRKWkgaGUglIpRMvNyNLW1qXC2821n33f+ZejvR2BDWmm4eqEd6pv2t1LAm47G
-	RUXFpa47d78Mj3yAXM5gHdn73oThhSQcrfDvmrD0weaMebxjd7ihf2DQfekW9q+U1QxW5dF3
-	NyJbRqNJR/Pmojw+b6tTAzF53tKQnVbo50JAVmVJVKriaEIemLHIsV9Sdbdsz7/Hn84nz604
-	7hWp8ScgsQhiAQACIhKqFKC048sSklK5ZxeksnjCcS/rrBM/4klVlObQvFKkfo/HA5Gd1dCe
-	kGVaJArNWRMmYtT7ORhp42mNgUKS/XO9NlRZUxwQhDLkhgFNjQ2wz9U+AuDredsLq5++AhRU
-	RriXU0c6jD0anxsNRhd50KCBlrrItvGxMdI3E0tZvqBcmEqgyfwCGJ/mgNjliJzW+3LrdzcF
-	mUa9XHW4ei08GZ2CZ0ts+ls4MElCdcIooSUuZZ1cUNKpXFj15YgztgsplmECNnAhQHhErp9x
-	kC4+sBW+4Iu2ymTXMg+LSrzjIcFOBjTxAgAiAgkaJL3kYUNaqVep3+kfRoEB/yEilL+ZAawH
-	ePy693Q8Hs886X6uO27dbvt4ogn29JmwicM/hBBYNzc7C7W2PeTLz79YtqPcsNK6x4xcg5FD
-	Ydj0F/aAASKHDsEtAAAAAElFTkSuQmCC
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAB
+	7ElEQVQYGV3BPWhTQRwA8P/duzQxqTG1UVpFgtHJoYtgK4qLBWcdFUTBQRxE0FmrXZ1FRAeL
+	CkXHCp1UiuAHgpIoKX4QFJKmyfvMfby7e/fuqYMQ/P0Q/OfhCxcQwiS15khizAGlzQ6p9SyX
+	eqYfiBsERtxb7QLBFnSazuYceEAw1FGWAcosmCSFiPGbGEaQE9Pwbn8ZWKzPZ2myTymFQsqR
+	T2PkRQKGEW848MfzKIODiQ+FQViaaLypR3gKQq5nhNQTEZfgRxyCgEOvEz52nrz2QHspdmpz
+	xwnYq5MluOzQdutDJ/esM2B7rUl2G5uCNxiC1w2eEspiwFidGiP4dpqr1BgPQevB+nj70bV1
+	e/j6Jhq/tbVEDvm9qCcC9pWkljgq0UfzBNcsKWa/4qrt+lztnNpzt8Rb39da5UXPVE6nqVlW
+	XL4i3pCWHJRVHMAQcYkMzmNcKJ8FXMV5o39M2rfL792T5/ykrqE5D7jnDStUiGkaS/CHAjYD
+	hoyzBX8LtsHnn2jF8vanuV2rGprz8BehXJ4p5MaOMWFASQ2SxcC5gv4AGq5bXULFi6q5cgX+
+	ISpJLlGWFjZoLH2PrYlIbMRUBjGNX8Yi+4gdBKNIGLIFt6sWYq7uRO5wyXBJWd8TnS+Lprj9
+	Agj/Poz6DaBMKz4YZgLXAAAAAElFTkSuQmCC
 }]
 
 set Emergency $::icon::12x12::gameflag(~)
