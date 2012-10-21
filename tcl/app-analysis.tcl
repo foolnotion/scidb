@@ -621,22 +621,26 @@ proc Display(bestscore) {score mate bestLines} {
 	if {$mate} {
 		if {$mate < 0} { set stm White } else { set stm Black }
 		set color [string index [set ::mc::$stm] 0]
-		set txt [string map [list %color $color %n [abs $mate]] $mc::MateIn]
-		set evalTxt ""
+		set scoreTxt [string map [list %color $color %n [abs $mate]] $mc::MateIn]
 	} else {
-		set txt "  "
-		append txt [FormatScore $score]
+		set scoreTxt "  "
+		append scoreTxt [FormatScore $score]
 		lassign [::font::splitAnnotation [GetEvaluation $score $mate]] value sym tags
 		lappend tags center
 		$Vars(score) insert end $sym $tags
 	}
-	$Vars(score) insert end $txt center
+	$Vars(score) insert end $scoreTxt center
 	$Vars(score) configure -state disabled
 
 	set line 0
 	foreach best $bestLines {
 		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $Vars(best:$best)
 		$Vars(tree) item element configure Line$line Value elemTextFig -fill $Vars(best:$best)
+		if {$best} {
+			set evalTxt [GetEvaluation $score $mate]
+			$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
+			$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
+		}
 		incr line
 	}
 }

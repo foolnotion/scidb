@@ -345,8 +345,11 @@ union InotifyEvent
 
 	bool operator<=(InotifyEvent const& ev) { return p <= ev.p; }
 
-	struct inotify_event* e;
-	char* p;
+	union
+	{
+		struct inotify_event* e;
+		char* p;
+	};
 
 	InotifyEvent next() { return InotifyEvent(p + sizeof(struct inotify_event) + e->len); }
 };
