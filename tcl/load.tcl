@@ -32,6 +32,7 @@ namespace eval mc {
 set SevereError				"Severe error during load of ECO file"
 set FileIsCorrupt 			"File %s is corrupt:"
 set ProgramAborting			"Program is aborting."
+set EngineSetupFailed		"Loading engine configuration failed"
 
 set Loading						"Loading %s"
 set StartupFinished			"Startup finished"

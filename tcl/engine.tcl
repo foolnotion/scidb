@@ -3356,4 +3356,13 @@ bind Script <Control-h> {
 	}
 }
 
+
+# --- Setup engines ----------------------------------------------------
+if {![catch {::engine::setup} err]} {
+	set msg $::load::mc::EngineSetupFailed
+	lappend ::load::Log error "$msg: $err"
+	puts "$msg -- $err"
+	unset msg err
+}
+
 # vi:set ts=3 sw=3:

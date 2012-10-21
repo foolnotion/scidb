@@ -232,6 +232,7 @@
 ::load::mc::SevereError				"Severe error during load of ECO file"
 ::load::mc::FileIsCorrupt			"File %s is corrupt:"
 ::load::mc::ProgramAborting		"Program is aborting."
+::load::mc::EngineSetupFailed		"Loading engine configuration failed"
 
 ::load::mc::Loading					"Loading %s"
 ::load::mc::StartupFinished		"Startup finished"

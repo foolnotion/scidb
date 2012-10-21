@@ -232,6 +232,7 @@
 ::load::mc::SevereError				"Schwerwiegender Fehler beim Laden der ECO-Datei"
 ::load::mc::FileIsCorrupt			"Die Datei %s ist beschädigt:"
 ::load::mc::ProgramAborting		"Das Programmausführung wird abgebrochen."
+::load::mc::EngineSetupFailed		"Das Laden der Motorenkonfiguration schlug fehl"
 
 ::load::mc::Loading					"Lade %s"
 ::load::mc::StartupFinished		"Programmstart beendet"

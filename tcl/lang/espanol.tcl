@@ -234,6 +234,7 @@
 ::load::mc::SevereError				"Error severo al cargar archivo ECO" 
 ::load::mc::FileIsCorrupt			"El archivo %s está corrupto:"
 ::load::mc::ProgramAborting		"Abortando programa."
+::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
 
 ::load::mc::Loading					"Cargando %s"
 ::load::mc::StartupFinished		"Inicio del programa completado"

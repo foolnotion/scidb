@@ -233,6 +233,7 @@
 ::load::mc::SevereError				"Grave errore durante caricamento file ECO"
 ::load::mc::FileIsCorrupt			"Il file %s è corrotto:"
 ::load::mc::ProgramAborting		"Il programma si sta chiudendo."
+::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
 
 ::load::mc::Loading					"Carico %s"
 ::load::mc::ReadingOptionsFile	"Permessi di lettura del file"
@@ -872,6 +873,7 @@
 ::engine::mc::ScriptErrors				"Qualsiasi errore durante il salvataggio sarà mostrato qui."
 ::engine::mc::CommandNotAllowed		"L'uso del comando '%s' non è permesso."
 ::engine::mc::ThrowAwayChanges		"Elimina tutti i cambiamenti?"
+::engine::mc::ResetToDefaultContent	"Reset to default content" ;# NEW
 
 ::engine::mc::ProbeError(registration)			"Questo motore richiede una registrazione."
 ::engine::mc::ProbeError(copyprotection)		"Questo motore ha una protezione anti-copia."

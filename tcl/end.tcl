@@ -237,7 +237,6 @@ set ::scidb::revision [::scidb::misc::revision]
 ::tooltip::init
 ::font::useLanguage $mc::langID
 ::font::setupChessFonts
-::engine::setup
 application::open
 
 # vi:set ts=3 sw=3:

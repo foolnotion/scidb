@@ -233,6 +233,7 @@
 ::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
 ::load::mc::FileIsCorrupt			"A %s fájl sérült:"
 ::load::mc::ProgramAborting		"Program is aborting." ;# NEW
+::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
 
 ::load::mc::Loading					"%s betöltése"
 ::load::mc::StartupFinished		"A betöltés befejeződött"

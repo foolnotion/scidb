@@ -233,6 +233,7 @@
 ::load::mc::SevereError				"Allvarlig fel vid laddning av ECO-fil"
 ::load::mc::FileIsCorrupt			"Filen %s är skadad:"
 ::load::mc::ProgramAborting		"Programmet avbryter."
+::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
 
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::StartupFinished		"Inläsning klar"
