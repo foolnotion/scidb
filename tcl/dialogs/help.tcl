@@ -230,9 +230,8 @@ proc open {parent {file {}} args} {
 	wm minsize $dlg 600 300
 	if {[string length $file] == 0} {
 		if {[llength $Geometry] == 0} {
-			::widget::dialogRaise $dlg
 			update idletasks
-			set Geometry [winfo width $dlg]x[winfo height $dlg]
+			set Geometry [winfo reqwidth $dlg]x[winfo reqheight $dlg]
 			focus $Priv($Priv(tab):tree)
 		}
 		wm geometry $dlg $Geometry
