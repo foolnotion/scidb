@@ -2178,7 +2178,7 @@ proc OpenSetupDialog(Options) {parent} {
 				ttk::button $val.b \
 					-style icon.TButton \
 					-image $::fsbox::icon::16x16::folder \
-					-command [namespace code [list GetPath $dlg $type $name $dflt $directory]] \
+					-command [namespace code [list GetPath($type) $dlg $name $dflt $directory]] \
 					;
 				::tooltip::tooltip $val.b $mc::OpenFsbox
 				grid $val.e -column 0 -row 0 -sticky we
@@ -2329,42 +2329,82 @@ proc ClearHash {} {
 }
 
 
-proc GetPath {parent type key dflt dir} {
+proc GetPath(file) {parent key dflt dir} {
 	variable Option
 	variable Priv
 
 	set ext [file extension $dflt]
-	set suf [string range $ext 1 end]
+	set checkexistence no
 	set ft  ""
 
-	if {[info exists ::dialog::fsbox::mc::FileType($suf)]} {
-		set ft $::dialog::fsbox::mc::FileType($suf)
+	if {[string length $ext] == 0} {
+		set filetypes {}
+	} else {
+		set filetypes [list [list $ft $ext]]
+		set suf [string range $ext 1 end]
+		if {[info exists ::dialog::fsbox::mc::FileType($suf)]} {
+			set ft $::dialog::fsbox::mc::FileType($suf)
+		}
+		if {$ext eq ".bin"} { set checkexistence yes }
 	}
 
-	if {$ext eq ".bin"} { set checkexistence yes } else { set checkexistence no }
-	if {[string length $dir] == 0} { set dir $::scidb::dir::home }
+	set initialdir $dir
+	if {[string length $initialdir] == 0} { set initialdir $::scidb::dir::home }
 
 	set result [::dialog::openFile \
 		-parent $parent \
-		-initialdir $dir \
+		-initialdir $initialdir \
 		-initialfile $dflt \
-		-filetypes [list [list $ft $ext]] \
+		-filetypes $filetypes \
 		-needencoding no \
 		-checkexistence $checkexistence \
 		-geometry last \
 	]
 
 	if {[llength $result]} {
-		if {[string length $dir] == 0} { set dir $::scidb::dir::user }
-		set file [lindex $result 0]
-		set path [file dirname $file]
-		if {[string match $dir* $path]} {
-			set file [string range $file [string length $dir] end]
-			if {[string index $file 0] eq [file separator]} {
-				set file [string range $file 1 end]
+		if {[string length $dir] > 0} {
+			set file [lindex $result 0]
+			set path [file dirname $file]
+			if {[string match $dir* $path]} {
+				set file [string range $file [string length $dir] end]
+				if {[string index $file 0] eq [file separator]} {
+					set file [string range $file 1 end]
+				}
 			}
 		}
 		set Option($key) $file
+	}
+}
+
+
+proc GetPath(path) {parent key dflt dir} {
+	variable Option
+	variable Priv
+
+	if {[string length $dflt] > 0 && [file isdirectory $dflt]} {
+		set initialdir $dflt
+	} elseif {[string length $dir] == 0} {
+		set initialdir $::scidb::dir::home
+	} else {
+		set initialdir $dir
+	}
+
+	set result [::dialog::chooseDir \
+		-parent $parent \
+		-initialdir $initialdir \
+		-checkexistence yes \
+		-geometry last \
+	]
+
+	if {[llength $result]} {
+		set path [lindex $result 0]
+		if {[string match $dir* $path]} {
+			set path [string range $path [string length $dir] end]
+			if {[string index $path 0] eq [file separator]} {
+				set path [string range $path 1 end]
+			}
+		}
+		set Option($key) $path
 	}
 }
 
