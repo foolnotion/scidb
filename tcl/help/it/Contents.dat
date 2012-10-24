@@ -39,7 +39,7 @@ set Contents {
   {
     {{{Ulteriori Informazioni} {Overview.html} {further-information}}}
     {{{Codici Partita} {Game-Flags.html}}}
-    {{{Specifiche sull'archivio database (English)} {../en/Database-Archive.html}}}
+    {{{Specifiche sull'archivio database (Inglese)} {../en/Database-Archive.html}}}
     {{{Opzioni nella Linea di Comando} {Command-Line-Options.html}}}
     {{{Valori delle annotazioni in NAG} {NAG-Comments.html}}}
     {{{Contatti} {Contact-Information.html}}}
