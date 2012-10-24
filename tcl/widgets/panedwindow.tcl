@@ -405,6 +405,7 @@ proc SetCursor {childs cursor} {
 	foreach child $childs {
 		catch {
 			set cur [$child cget -cursor]
+			if {$cur eq "sb_h_double_arrow" || $cur eq "sb_v_double_arrow"} { set cur "" }
 			$child configure -cursor $cursor
 			lappend Priv(cursorList) $child $cur
 		}
