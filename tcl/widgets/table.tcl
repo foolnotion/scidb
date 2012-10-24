@@ -1145,6 +1145,7 @@ proc SetSelection {table args} {
 	if {[llength $args] == 3} {
 		lassign $args x y state
 		set id [$table.t identify $x $y]
+		if {[llength $id] == 0} { return }
 		if {[lindex $id 0] eq "header"} { return }
 		set row [$table.t item order [lindex $id 1] -visible]
 		if {$row >= $Vars(rows)} { return }
