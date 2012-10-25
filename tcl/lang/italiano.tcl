@@ -482,7 +482,7 @@
 ::application::database::mc::T_OpeningsWhite					"Aperture bianco"
 ::application::database::mc::T_OpeningsBlack					"Aperture nero"
 ::application::database::mc::T_Bughouse						"Mangia e passa"
-::application::database::mc::T_Antichess						"Antiscacchi"
+::application::database::mc::T_Antichess						"Vinciperdi"
 ::application::database::mc::T_PGNFile							"File PGN"
 
 ::application::database::mc::OpenDatabase						"Apri Database"
@@ -817,9 +817,9 @@
 # NOTE: "Giveaway" is Antichess according to internatianal rules.
 # NOTE: "Losers" is Antichess according to ICC rules
 # NOTE: You may tarnslate "Suicide", "Giveaway", anmd "Losers" with the same term.
-::engine::mc::Variant(suicide)		"Antiscacchi"
-::engine::mc::Variant(giveaway)		"Antiscacchi"
-::engine::mc::Variant(losers)			"Antiscacchi"
+::engine::mc::Variant(suicide)		"Vinciperdi"
+::engine::mc::Variant(giveaway)		"Vinciperdi"
+::engine::mc::Variant(losers)			"Vinciperdi"
 ::engine::mc::Variant(3check)			"Tre scacchi"
 
 ::engine::mc::Edit						"Modifica"
@@ -892,9 +892,9 @@
 ::engine::mc::FeatureDetail(chess960)			"Scacchi 960 (o Scacchi Fischer) è una variante degli scacchi. Si utilizza la stessa scacchiera e gli stessi pezzi, ma la posizione iniziale dei pezzi è randomica pur rimanendo sulle stesse linee con alcune restrizioni che preservano il diritto di arrocco, risultando in 960 posizioni uniche."
 ::engine::mc::FeatureDetail(bughouse)			"Mangia e Passa è una variante degli scacchi giocata su due scacchiere da quattro giocatori in squadre di due. Si applicano le regole degli scacchi ortodossi, eccetto che i pezzi catturati su una scacchiera passano all'altra, i giocatori di quest'altra scacchiera hanno l'opzione di reintrodurre il pezzo."
 ::engine::mc::FeatureDetail(crazyhouse)		"Crazyhouse è una variante degli scacchi simile a Mangia e Passa con solo due giocatori. Di fatto implementa una regola degli shogi (scacchi giapponesi), per cui un giocatore può reintrodurre nel gioco un pezzo catturato come proprio."
-::engine::mc::FeatureDetail(suicide)			"Scacchi Suicidio (chiamato anche Antiscacchi, Prendimi, Scacchi alla rovescia...) ha una semplice regola: le mosse di cattura sono obbligatorie e l'obiettivo è di perdere tutti i pezzi. Non ci sono scacchi, il re è catturato come un pezzo normale. In caso di stallo vince il lato con meno pezzi (in accordo alle regole di FICS)."
-::engine::mc::FeatureDetail(giveaway)			"Scacchi 'Giveaway' (una variante di Antiscacchi) è come Scacchi Suicidio, ma in caso di stallo il difensore vince (in accordo alle regole internazionali)."
-::engine::mc::FeatureDetail(losers)				"Vinciperdi è una variante di Antiscacchi dove l'obiettivo è di vincere la partita, ma con diverse condizioni. L'obiettivo è di perdere tutti i tuoi pezzi (tranne il re) ma in Vinciperdi puoi anche vincere prendendo matto (in accordo alle regole di ICC)."
+::engine::mc::FeatureDetail(suicide)			"Scacchi Suicidio (chiamato anche Vinciperdi, Prendimi, Scacchi alla rovescia...) ha una semplice regola: le mosse di cattura sono obbligatorie e l'obiettivo è di perdere tutti i pezzi. Non ci sono scacchi, il re è catturato come un pezzo normale. In caso di stallo vince il lato con meno pezzi (in accordo alle regole di FICS)."
+::engine::mc::FeatureDetail(giveaway)			"Scacchi 'Giveaway' (una variante di Vinciperdi) è come Scacchi Suicidio, ma in caso di stallo il difensore vince (in accordo alle regole internazionali)."
+::engine::mc::FeatureDetail(losers)				"Vinciperdi è una variante di Vinciperdi dove l'obiettivo è di vincere la partita, ma con diverse condizioni. L'obiettivo è di perdere tutti i tuoi pezzi (tranne il re) ma in Vinciperdi puoi anche vincere prendendo matto (in accordo alle regole di ICC)."
 ::engine::mc::FeatureDetail(3check)				"Caratteristiche di questa variante degli scacchi: un giocatore vince se dà scacco al suo avversario tre volte."
 ::engine::mc::FeatureDetail(playingStyle)		"Questo motore disponde di diversi stili di gioco, ad esempio %s. Leggi il manuale del motore per una spiegazione sui diversi stili."
 
