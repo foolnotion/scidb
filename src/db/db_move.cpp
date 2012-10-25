@@ -294,7 +294,7 @@ Move::printAlphabetic(mstl::string& s) const
 		s += sq::printAlphabetic(to());
 
 		if (isPromotion())
-			s += piece::print(promoted());
+			s += ::tolower(piece::print(promoted()));
 	}
 
 	return s;

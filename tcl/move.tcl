@@ -513,16 +513,15 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 	variable _promoted 0
 
 	if {[scidb::pos::promotion? $sq1 $sq2 $allowIllegalMove]} {
-		if {![winfo exists $board.popup_promotion]} {
-			set color [string index [::board::stuff::piece $board $sq1] 0]
-			set m [menu $board.popup_promotion -tearoff false]
-			catch { wm attributes $m -type popup_menu }
-			foreach {p n} {q 2 r 3 b 4 n 5} {
-				$m add command \
-					-image photo_Piece(figurine,1,$color$p,$Options(figurineSize)) \
-					-command [namespace code [list set _promoted $n]] \
-					;
-			}
+		catch { destroy $board.popup_promotion }
+		set color [string index [::board::stuff::piece $board $sq1] 0]
+		set m [menu $board.popup_promotion -tearoff false]
+		catch { wm attributes $m -type popup_menu }
+		foreach {p n} {q 2 r 3 b 4 n 5} {
+			$m add command \
+				-image photo_Piece(figurine,1,$color$p,$Options(figurineSize)) \
+				-command [namespace code [list set _promoted $n]] \
+				;
 		}
 		set Leave 0
 		variable trigger_ 0
