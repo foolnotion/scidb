@@ -110,6 +110,19 @@
 ::mc::Knight			"Caballo"
 ::mc::Pawn				"Peón"
 
+::mc::Variant(Undetermined)	"Undetermined" ;# NEW
+::mc::Variant(Normal)			"Normal Chess" ;# NEW
+::mc::Variant(Bughouse)			"Bughouse Chess" ;# NEW
+::mc::Variant(Crazyhouse)		"Crazyhouse Chess" ;# NEW
+::mc::Variant(ThreeCheck)		"Three-check Chess" ;# NEW
+::mc::Variant(Antichess)		"Antichess" ;# NEW
+::mc::Variant(Suicide)			"Suicide" ;# NEW
+::mc::Variant(Giveaway)			"Giveaway" ;# NEW
+::mc::Variant(Losers)			"Losers" ;# NEW
+::mc::Variant(Chess960)			"Ajedrez 960"
+::mc::Variant(Symm960)			"Ajedrez 960 (sólo simétrico)"
+::mc::Variant(Shuffle)			"Ajedrez Shuffle"
+
 ### scidb ##############################################################
 ::scidb::mc::CannotOverwriteTheme	"No se puede anular el tema %s."
 
@@ -203,6 +216,8 @@
 ::menu::mc::ScidbArchives				"Archivos Scidb"
 ::menu::mc::PGNFilesArchives			"Archivos PGN"
 ::menu::mc::PGNFiles						"Archivos PGN"
+::menu::mc::PGNFilesArchives			"Archivos BPGN"
+::menu::mc::PGNFiles						"Archivos BPGN"
 ::menu::mc::PGNArchives					"Archivos PGN"
 
 ::menu::mc::Language						"&Idioma"
@@ -439,6 +454,7 @@
 ::application::database::mc::Result								"Resultado"
 ::application::database::mc::Score								"puntuación"
 ::application::database::mc::Type								"Tipo"
+::application::database::mc::Variant							"Variant" ;# NEW
 ::application::database::mc::ReadOnly							"Sólo lectura"
 
 ::application::database::mc::ChangeIcon						"Cambiar ícono"
@@ -484,6 +500,8 @@
 ::application::database::mc::T_Bughouse						"Bughouse Chess" ;# NEW
 ::application::database::mc::T_Antichess						"Antichess" ;# NEW
 ::application::database::mc::T_PGNFile							"Archivo PGN"
+::application::database::mc::T_ThreeCheck						"Three-check" ;# NEW
+::application::database::mc::T_Crazyhouse						"Crazyhouse" ;# NEW
 
 ::application::database::mc::OpenDatabase						"Abrir Base"
 ::application::database::mc::NewDatabase						"Nueva Base"
@@ -573,6 +591,7 @@
 ::application::pgn::mc::CannotOpenCursorFiles			"No se puede abrir el archivo: %s"
 ::application::pgn::mc::ReallyReplaceMoves				"¿Realmente desea reemplazar las jugadas de la partida actual?"
 ::application::pgn::mc::CurrentGameIsNotModified		"La partida actual no fue modificada."
+::application::pgn::mc::ShufflePosition					"Shuffle position..." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Editar nota"
 ::application::pgn::mc::EditMoveInformation				"Editar información de la jugada"
@@ -1171,9 +1190,6 @@
 ::gamebar::mc::CloseGame				"Cerrar Juego"
 
 ::gamebar::mc::GameNew					"Nueva partida"
-::gamebar::mc::GameNewChess960		"Nueva partida: Ajedrez 960"
-::gamebar::mc::GameNewChess960Sym	"Nueva partida: Ajedrez 960 (sólo simétrico)"
-::gamebar::mc::GameNewShuffle			"Nueva partida: Ajedrez Shuffle"
 
 ::gamebar::mc::AddNewGame				"Guardar: Agregar nueva partida a %s..."
 ::gamebar::mc::ReplaceGame				"Guardar: Reemplazar partida en %s..."
@@ -1225,9 +1241,9 @@
 ::encoding::mc::SystemEncoding		"Codificación del sistema:"
 
 ### setup ##############################################################
-::setup::mc::Chess960Position			"Posición de Chess 960"
-::setup::mc::SymmChess960Position	"Posición simétrica de chess 960"
-::setup::mc::ShuffleChessPosition	"Posición de ajedrez Shuffle"
+::setup::mc::Position(Chess960)	"Posición de Chess 960"
+::setup::mc::Position(Symm960)	"Posición simétrica de chess 960"
+::setup::mc::Position(Shuffle)	"Posición de ajedrez Shuffle"
 
 ### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Configurar una posición inicial"
@@ -1254,6 +1270,7 @@
 ::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format" ;# NEW
 
 ::setup::board::mc::Error(InvalidFen)					"FEN no válido."
+::setup::board::mc::Error(EmptyBoard)					"Board is empty." ;# NEW
 ::setup::board::mc::Error(NoWhiteKing)					"Sin rey blanco."
 ::setup::board::mc::Error(NoBlackKing)					"Sin rey negro."
 ::setup::board::mc::Error(DoubleCheck)					"Ambos reyes en jaque."
@@ -1638,6 +1655,7 @@
 ::game::mc::GameDecodingFailed			"No se pudo decodificar esta partida."
 ::game::mc::GameDecodingChanged			"La base de datos fue abierta usando el juego de caracteres '%base%', pero esta partida parece estar codificada usando '%game%', por ello, esta partida se cargará usando el juego de caracteres detectado."
 ::game::mc::GameDecodingChangedDetail	"Probablemente se abriá la base de datos con el juego de caracteres equivocado. Note que la detección automática del juego de caracteres es limitada."
+::game::mc::VariantHasChanged				"The variant of database '%base' has changed from %gamevariant to %basevariant. Due to this fact this cannot be the wanted game." ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Todos los idiomas"
@@ -1660,7 +1678,7 @@
 ::terminationbox::mc::Unplayed			"No jugado"
 ::terminationbox::mc::Abandoned			"Abandona"
 ::terminationbox::mc::Adjudication		"Adjudicación"
-::terminationbox::mc::Death				"Muerte"
+::terminationbox::mc::Disconnection		"Disconnection" ;# NEW
 ::terminationbox::mc::Emergency			"Emergencia"
 ::terminationbox::mc::RulesInfraction	"Infracción a las reglas"
 ::terminationbox::mc::TimeForfeit		"Pierde por tiempo"
@@ -1954,6 +1972,7 @@
 ::dialog::fsbox::mc::ScidDatabase			"Base de datos Scid"
 ::dialog::fsbox::mc::ChessBaseDatabase		"Base de datos ChessBase" 
 ::dialog::fsbox::mc::PortableGameFile		"Archivo PGN"
+::dialog::fsbox::mc::BughousePortableGameFile "Archivo BPGN"
 ::dialog::fsbox::mc::ZipArchive				"Archivo ZIP" 
 ::dialog::fsbox::mc::ScidbArchive			"Archivo Scidb" 
 ::dialog::fsbox::mc::PortableDocumentFile	"Archivo PDF" 
@@ -1961,7 +1980,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Archivo LATEX"
 ::dialog::fsbox::mc::ImageFile				"Archivo de Imagen"
 ::dialog::fsbox::mc::TextFile					"Text File" ;# NEW
-::dialog::fsbox::mc::BinaryFile				"Bin�ry File" ;# NEW
+::dialog::fsbox::mc::BinaryFile				"Binary File" ;# NEW
 ::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
 ::dialog::fsbox::mc::Executable				"Executable" ;# NEW
 
