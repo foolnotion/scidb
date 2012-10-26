@@ -57,7 +57,7 @@ sys::vfs::freeSize(mstl::string const& path)
 
 # else
 
-long sys::vfs::freeSize(mstl::string const&) { return -1; }
+int64_t sys::vfs::freeSize(mstl::string const&) { return -1; }
 
 # endif
 #endif
