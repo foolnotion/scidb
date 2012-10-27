@@ -887,6 +887,7 @@ proc Add {toolbar widgetCommand args} {
 			ConfigureCheckButton $toolbar $w $w $variable
 			bind $w <ButtonRelease-1> +[namespace code [list CheckButtonPressed $toolbar $w $variable]]
 		} else {
+			if {![info exists $variable]} { set $variable $value }
 			if {[llength $value]} {
 				set Specs(value:$variable:$w:$toolbar) $value
 			} else {
@@ -1649,7 +1650,7 @@ proc CheckButtonPressed {toolbar w var} {
 
 	if {$Specs(state:$w:$toolbar) eq "disabled"} { return }
 
-	if {[set $var] eq $Specs(onvalue:$w:$toolbar)} {
+	if {([set $var] ? 1 : 0) == ($Specs(onvalue:$w:$toolbar) ? 1 : 0)} {
 		set $var $Specs(offvalue:$w:$toolbar)
 	} else {
 		set $var $Specs(onvalue:$w:$toolbar)
@@ -1661,7 +1662,7 @@ proc ConfigureCheckButton {toolbar v w var args} {
 	variable Specs
 	variable Defaults
 
-	if {[set $var] eq $Specs(onvalue:$w:$toolbar)} {
+	if {([set $var] ? 1 : 0) == ($Specs(onvalue:$w:$toolbar) ? 1 : 0)} {
 		set relief sunken
 		set overrelief sunken
 		set color $Defaults(button:selectcolor)
