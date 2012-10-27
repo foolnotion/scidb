@@ -485,6 +485,7 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 	variable Options
 	variable Leave
 
+	if {[::scidb::game::query over?]} { return [::board::stuff::setDragSquare $board] }
 	if {$sq2 == -1} { return [::board::stuff::setDragSquare $board] }
 	set nullmove [expr {$sq1 eq "null" && $sq2 eq "null"}]
 
@@ -500,7 +501,7 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 	}
 
 	if {![::scidb::pos::valid? $sq1 $sq2 $allowIllegalMove]} {
-		if {$nullmove} {
+		if {!$nullmove} {
 			# illegal move, but if it is king takes king then treat it as entering a null move
 			set boardPos [::scidb::pos::board]
 			::board::stuff::setDragSquare $board
@@ -509,7 +510,7 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 			if {$k1 ne "k" || $k2 ne "k"} { return [::board::stuff::setDragSquare $board] }
 			set sq1 null
 			set sq2 null
-		} else {
+		} elseif {!$allowIllegalMove} {
 			return [::board::stuff::setDragSquare $board]
 		}
 	}

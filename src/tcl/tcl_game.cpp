@@ -1959,8 +1959,20 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 't': setResult(Scidb->hasTrialMode(pos)); break;							// trial
 		case 'i': setResult(Scidb->game(pos).idn()); break;							// idn
 		case 'f': setResult(Scidb->game(pos).startBoard().toFen()); break;		// fen
-		case 'o': setResult(Scidb->containsGameAt(pos)); break;						// open?
 		case 'v': setResult(Scidb->game(pos).hasVariations()); break;				// variations?
+
+		case 'o':
+			switch (cmd[1])
+			{
+				case 'p':
+					setResult(Scidb->containsGameAt(pos)); break;						// open?
+					break;
+
+				case 'v':																			// over?
+					setResult(bool(Scidb->game().currentBoard().checkState() & (Board::CheckMate | Board::StaleMate)));
+					break;
+			}
+			break;
 
 		case 'p':			// parent
 			{
