@@ -54,6 +54,7 @@ static char const* CmdFen				= "::scidb::pos::fen";
 static char const* CmdGuess			= "::scidb::pos::guess";
 static char const* CmdGuessNext		= "::scidb::pos::guessNext";
 static char const* CmdIdn				= "::scidb::pos::idn";
+static char const* CmdLegal			= "::scidb::pos::legal?";
 static char const* CmdPromotion		= "::scidb::pos::promotion?";
 static char const* CmdSan				= "::scidb::pos::san";
 static char const* CmdSearchDepth	= "::scidb::pos::searchDepth";
@@ -297,6 +298,35 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Square sq1 = squareFromObj(objc, objv, 1);
 	Square sq2 = squareFromObj(objc, objv, 2);
 
+	if (sq1 == sq::Null || sq2 == sq::Null)
+	{
+		if (Scidb->game().currentBoard().checkState() & (Board::CheckMate | Board::StaleMate))
+			setResult(0);	// null move not allowed
+		else
+			setResult(1);
+	}
+	else
+	{
+		Board	board	= Scidb->game().currentBoard();
+		Move	move	= board.prepareMove(sq1, sq2, move::AllowIllegalMove);
+
+#ifdef ALLOW_INVALID_MOVES
+		setResult(bool(move));
+#else
+		setResult(bool(move) && board.checkMove(move));
+#endif
+	}
+
+	return TCL_OK;
+}
+
+
+static int
+cmdLegal(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Square sq1 = squareFromObj(objc, objv, 1);
+	Square sq2 = squareFromObj(objc, objv, 2);
+
 	bool allowIllegalMove = boolFromObj(objc, objv, 3);
 
 	if (sq1 == sq::Null || sq2 == sq::Null)
@@ -309,9 +339,10 @@ cmdValid(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 	{
 		Board	board	= Scidb->game().currentBoard();
-		Move	move	= board.prepareMove(sq1, sq2);
+		Move	move	= board.prepareMove(
+			sq1, sq2, allowIllegalMove ? move::AllowIllegalMove : move::DontAllowIllegalMove);
 
-		if (!move.isLegal() && allowIllegalMove)
+		if (!move && !move.isLegal() && allowIllegalMove)
 		{
 			color::ID side = board.sideToMove();
 
@@ -443,6 +474,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdGuess,			cmdGuess);
 	createCommand(ti, CmdGuessNext,		cmdGuessNext);
 	createCommand(ti, CmdIdn,				cmdIdn);
+	createCommand(ti, CmdLegal,			cmdLegal);
 	createCommand(ti, CmdPromotion,		cmdPromotion);
 	createCommand(ti, CmdSan,				cmdSan);
 	createCommand(ti, CmdSearchDepth,	cmdSearchDepth);
