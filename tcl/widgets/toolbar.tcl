@@ -1650,7 +1650,13 @@ proc CheckButtonPressed {toolbar w var} {
 
 	if {$Specs(state:$w:$toolbar) eq "disabled"} { return }
 
-	if {([set $var] ? 1 : 0) == ($Specs(onvalue:$w:$toolbar) ? 1 : 0)} {
+	set x [set $var]
+	set y $Specs(onvalue:$w:$toolbar)
+
+	if {[string is boolean -strict $x]} { set x [expr {!!$x}] }
+	if {[string is boolean -strict $y]} { set y [expr {!!$y}] }
+
+	if {$x == $y} {
 		set $var $Specs(offvalue:$w:$toolbar)
 	} else {
 		set $var $Specs(onvalue:$w:$toolbar)
@@ -1662,7 +1668,13 @@ proc ConfigureCheckButton {toolbar v w var args} {
 	variable Specs
 	variable Defaults
 
-	if {([set $var] ? 1 : 0) == ($Specs(onvalue:$w:$toolbar) ? 1 : 0)} {
+	set x [set $var]
+	set y $Specs(onvalue:$w:$toolbar)
+
+	if {[string is boolean -strict $x]} { set x [expr {!!$x}] }
+	if {[string is boolean -strict $y]} { set y [expr {!!$y}] }
+
+	if {$x == $y} {
 		set relief sunken
 		set overrelief sunken
 		set color $Defaults(button:selectcolor)
