@@ -25,8 +25,13 @@
 #include "protos.h"
 #include "extvars.h"
 
+#if 0 // original values
 int hand_value[] = { 0, 100, -100, 210, -210, 0, 0, 250, -250, 450, -450, 230, -230 }; 
 int std_hand_value[] = { 0, 100, -100, 210, -210, 0, 0, 250, -250, 450, -450, 230, -230 };
+#else
+int hand_value[] = { 0, 100, -100, 250, -250, 0, 0, 300, -300, 450, -450, 240, -240 }; 
+int std_hand_value[] = { 0, 100, -100, 250, -250, 0, 0, 300, -300, 450, -450, 240, -240 };
+#endif
 
 bool piecedead;
 bool partnerdead;

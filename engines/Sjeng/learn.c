@@ -63,6 +63,9 @@ void Learn(int score, int best, int depth)
   else
     return;
 
+  if (*lrnfile == NULL)
+    return;
+
   fseek(*lrnfile, 0, SEEK_SET);
   fread(&number, sizeof(int), 1, *lrnfile);
   fread(&next, sizeof(int), 1, *lrnfile);
