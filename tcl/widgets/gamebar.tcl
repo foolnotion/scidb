@@ -1364,9 +1364,13 @@ proc PopupEventMenu {gamebar id} {
 
 	if {[::scidb::db::get open? $base]} {
 		set Specs(event:locked) 1
-		lassign [::scidb::game::sink? $id] base index
-		::eventtable::popupMenu $gamebar $menu $base 0 $index game
-		$menu add separator
+		set name [GetEventName $gamebar $id]
+		if {$name eq "?" || $name eq "-"} { set name "" }
+		if {[string length $name]} {
+			lassign [::scidb::game::sink? $id] base index
+			::eventtable::popupMenu $gamebar $menu $base 0 $index game
+			$menu add separator
+		}
 	}
 
 	BuildMenu $gamebar $id {} $menu
