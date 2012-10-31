@@ -1386,8 +1386,12 @@ proc PopupPlayerMenu {gamebar id side} {
 		set Specs(player:locked) 1
 		lassign [::scidb::game::sink? $id] base gameIndex
 		set info [GetPlayerInfo $gamebar $id $side]
-		::playertable::popupMenu $menu $base $info [list $gameIndex $side]
-		$menu add separator
+		set name [lindex $info 0]
+		if {$name eq "?" || $name eq "-"} { set name "" }
+		if {[string length $name]} {
+			::playertable::popupMenu $menu $base $info [list $gameIndex $side]
+			$menu add separator
+		}
 	}
 
 	BuildMenu $gamebar $id $side $menu
@@ -1419,7 +1423,7 @@ proc BuildMenu {gamebar id side menu} {
 		eval $addsep
 		set addsep {}
 	
-		if {$current} {
+		if {$current && [lindex [::scidb::game::sink? $id] 0] ne $::scidb::scratchbaseName} {
 			lassign [::scidb::game::link? $id] base index
 			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
 				set flag [::scidb::db::get deleted? $index -1 $base]
