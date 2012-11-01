@@ -476,10 +476,6 @@ proc dragPiece {w x y} {
 	}
 
 	$w.c coords piece:$sq $x $y
-	$w.c raise piece:$sq
-	$w.c raise text
-	$w.c raise arrow
-	$w.c raise input
 }
 
 
