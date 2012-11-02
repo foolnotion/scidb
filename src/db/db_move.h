@@ -223,17 +223,17 @@ public:
 	bool needsDestinationSquare() const;
 
 	/// Print algebraic form.
-	mstl::string& printAlgebraic(mstl::string& s) const;
+	mstl::string& printAlgebraic(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print LAN (long algebraic noatation).
 	mstl::string& printLan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print SAN (short algebraic noatation).
 	mstl::string& printSan(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print descriptive (english) form.
-	mstl::string& printDescriptive(mstl::string& s) const;
+	mstl::string& printDescriptive(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print correspondence form.
 	mstl::string& printNumeric(mstl::string& s) const;
 	/// Print telegraphic form.
-	mstl::string& printAlphabetic(mstl::string& s) const;
+	mstl::string& printAlphabetic(mstl::string& s, encoding::CharSet charSet = encoding::Latin1) const;
 	/// Print in given notation style.
 	mstl::string& print(	mstl::string& s,
 								move::Notation style,

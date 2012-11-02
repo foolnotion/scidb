@@ -62,7 +62,7 @@ Move::transpose()
 
 
 mstl::string&
-Move::printAlgebraic(mstl::string& s) const
+Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 
@@ -76,7 +76,12 @@ Move::printAlgebraic(mstl::string& s) const
 		s += sq::printAlgebraic(to());
 
 		if (isPromotion())
-			s += char(::tolower(piece::print(promoted())));	// the UCI protocoll requires lower case
+		{
+			if (charSet == encoding::Utf8)
+				s += piece::utf8::asString(promoted());
+			else
+				s += char(::tolower(piece::print(promoted())));	// the UCI protocoll requires lower case
+		}
 	}
 
 	return s;
@@ -133,7 +138,11 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 			if (isPromotion())
 			{
 				s += '=';
-				s += piece::print(promoted());
+
+				if (charSet == encoding::Utf8)
+					s += piece::utf8::asString(promoted());
+				else
+					s += piece::print(promoted());
 			}
 		}
 
@@ -176,7 +185,11 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 		if (isPromotion())
 		{
 			s += '=';
-			s += piece::print(promoted());
+
+			if (charSet == encoding::Utf8)
+				s += piece::utf8::asString(promoted());
+			else
+				s += piece::print(promoted());
 		}
 
 		if (givesMate())
@@ -190,7 +203,7 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
-Move::printDescriptive(mstl::string& s) const
+Move::printDescriptive(mstl::string& s, encoding::CharSet charSet) const
 {
 	if (isNull())
 	{
@@ -244,7 +257,10 @@ Move::printDescriptive(mstl::string& s) const
 		if (isPromotion())
 		{
 			s += '(';
-			s += piece::print(promoted());
+			if (charSet == encoding::Utf8)
+				s += piece::utf8::asString(promoted());
+			else
+				s += piece::print(promoted());
 			s += ')';
 		}
 
@@ -282,7 +298,7 @@ Move::printNumeric(mstl::string& s) const
 
 
 mstl::string&
-Move::printAlphabetic(mstl::string& s) const
+Move::printAlphabetic(mstl::string& s, encoding::CharSet charSet) const
 {
 	if (isNull())
 	{
@@ -294,7 +310,12 @@ Move::printAlphabetic(mstl::string& s) const
 		s += sq::printAlphabetic(to());
 
 		if (isPromotion())
-			s += ::tolower(piece::print(promoted()));
+		{
+			if (charSet == encoding::Utf8)
+				s += piece::utf8::asString(promoted());
+			else
+				s += ::tolower(piece::print(promoted()));
+		}
 	}
 
 	return s;
@@ -306,12 +327,12 @@ Move::print(mstl::string& s, move::Notation form, encoding::CharSet charSet) con
 {
 	switch (form)
 	{
-		case move::Algebraic:		printAlgebraic(s); break;
+		case move::Algebraic:		printAlgebraic(s, charSet); break;
 		case move::ShortAlgebraic:	printSan(s, charSet); break;
 		case move::LongAlgebraic:	printLan(s, charSet); break;
-		case move::Descriptive:		printDescriptive(s); break;
+		case move::Descriptive:		printDescriptive(s, charSet); break;
 		case move::Correspondence:	printNumeric(s); break;
-		case move::Telegraphic:		printAlphabetic(s); break;
+		case move::Telegraphic:		printAlphabetic(s, charSet); break;
 	}
 
 	return s;
