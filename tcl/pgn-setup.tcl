@@ -1737,7 +1737,7 @@ set Games(colors) {
 3.Nh3 d6 4.Bc4?
 %	({$213} 4.Nf2)
 Qh4+? {[%draw full,e1,red]}
-	(4...Bxh3 5.gxh3 Qh4+ $18 $108)
+	(4...Bxh3 5.gxh3 Qh4+ $19 $108)
 5.O-O Nf6 {-0.37|11} {$232}
 1/2-1/2
 }
