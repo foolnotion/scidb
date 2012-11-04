@@ -27,7 +27,7 @@ again:
    make install
 
 This "broken linker hack" is required on many modern Linux/Unix distributions
-because the GNU linker is broken.
+because the newer version of GNU linker is broken.
 
 You probably need to be root when doing the last command. An alternative is to
 use the "sudo" command for the installation:
@@ -38,7 +38,7 @@ Get a full listing of all available configure options by invoking it like:
 
    ./configure --help
 
-If you want to install curl in a different file hierarchy than /usr/local,
+If you want to install scidb in a different file hierarchy than /usr/local,
 you need to specify that already when running configure:
 
    ./configure --prefix=/path/to/scidb/tree
@@ -65,7 +65,7 @@ configure like:
                --tk-libraries=/opt/mytcltk/lib
 
 Note that the PATH variable has to contain the path of the Tcl shell (for
-example '/opt/mytcltk/bin/tclsh8.5'), otherwise the Tcl shell will not be
-found.
+example '/opt/mytcltk/bin' which contains tclsh8.5), otherwise the Tcl shell
+will not be found.
 
 = vi:set et sw=3 ts=3: =
