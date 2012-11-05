@@ -524,7 +524,7 @@ proc SetState {state} {
 	variable Vars
 
 	after cancel $Vars(after)
-	if {![winfo exists $Vars(toolbar:childs)]} { return }
+	if {![winfo exists $Vars(tree)]} { return }
 	if {$Vars(state) eq $state} { return }
 	set Vars(state) $state
 
@@ -789,7 +789,6 @@ proc Signal {id code} {
 	variable Vars
 
 	set parent [winfo toplevel $Vars(tree)]
-	SetState disabled
 
 	if {[string is integer $code]} {
 		set msg [format $mc::Signal(terminated) $code]
@@ -807,6 +806,7 @@ proc Signal {id code} {
 		}
 	}
 
+	SetState disabled
 	set Vars(engine:id) -1
 }
 
