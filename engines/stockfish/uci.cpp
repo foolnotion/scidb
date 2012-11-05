@@ -65,6 +65,9 @@ void UCI::loop(const string& args) {
       else if (!getline(cin, cmd)) // Block here waiting for input
           cmd = "quit";
 
+      // FIX: we have to reset the state (Gregor Cramer)
+		pos.resetState();
+
       istringstream is(cmd);
 
       is >> skipws >> token;
