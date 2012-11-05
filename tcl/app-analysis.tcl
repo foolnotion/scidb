@@ -789,6 +789,7 @@ proc Signal {id code} {
 	variable Vars
 
 	set parent [winfo toplevel $Vars(tree)]
+	SetState disabled
 
 	if {[string is integer $code]} {
 		set msg [format $mc::Signal(terminated) $code]
@@ -801,12 +802,11 @@ proc Signal {id code} {
 			after idle [list ::dialog::info -parent $parent -message $msg]
 		}
 		default {
-			after idle [list ::engine::kill $Vars(engine:id)]
 			after idle [list ::dialog::error -parent $parent -message $msg]
+			after idle [list ::engine::kill $Vars(engine:id)]
 		}
 	}
 
-	SetState disabled
 	set Vars(engine:id) -1
 }
 
