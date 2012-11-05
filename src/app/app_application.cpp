@@ -1027,6 +1027,8 @@ Application::releaseGame(unsigned position)
 
 	EditGame& game = m_gameMap[position];
 
+	stopAnalysis(game.game);
+
 	delete game.game;
 	delete game.backup;
 
@@ -2060,6 +2062,17 @@ Application::stopAnalysis(unsigned engineId)
 {
 	M_REQUIRE(engineExists(engineId));
 	return engine(engineId)->stopAnalysis();
+}
+
+
+void
+Application::stopAnalysis(Game const* game)
+{
+	for (unsigned i = 0; i < m_engineList.size(); ++i)
+	{
+		if (m_engineList[i] && m_engineList[i]->currentGame() == game)
+			m_engineList[i]->removeGame();
+	}
 }
 
 

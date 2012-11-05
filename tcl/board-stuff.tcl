@@ -406,11 +406,8 @@ proc finishDrag {w} {
 	variable squareIndex
 
 	if {$Board(drag:active) && $Board(drag:square) != -1} {
-		lassign [$w.c coords square:$Board(drag:square)] x y
-		set x [expr {$Board(pointer:x) - $Board(drag:x)}]
-		set y [expr {$Board(pointer:y) - $Board(drag:y)}]
-		lassign [$w.c coords square:[getSquare $w $x $y]] x y
-		$w.c coords piece:$Board(drag:square) $x $y
+		set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
+		$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
 	}
 }
 

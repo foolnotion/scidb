@@ -391,6 +391,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
 	,m_bestInfoHasChanged(false)
+	,m_pause(false)
+	,m_restart(false)
 	,m_process(0)
 	,m_exitStatus(0)
 	,m_logStream(0)
@@ -921,6 +923,7 @@ Engine::pause()
 		return false;
 
 	m_engine->pause();
+	m_pause = true;
 	return true;
 }
 
@@ -930,8 +933,16 @@ Engine::resume()
 {
 	M_REQUIRE(isActive());
 
+	if (!m_pause)
+		return false;
+
+	m_pause = false;
+
 	if (currentGame() == 0)
 		return false;
+
+	if (m_restart)
+		return startAnalysis(m_game);
 
 	m_engine->resume();
 	return true;
@@ -1029,7 +1040,18 @@ Engine::startAnalysis(db::Game const* game)
 		return false;
 	}
 
-	bool isNew = m_game ? game->id() != m_game->id() : true;
+	m_game = game;
+
+	if (m_pause)
+	{
+		m_restart = true;
+		return true;
+	}
+
+	bool isNew = m_game ? game->id() != m_gameId : true;
+
+	m_restart = false;
+	m_gameId = game->id();
 
 	if (isNew)
 	{
@@ -1063,12 +1085,9 @@ Engine::startAnalysis(db::Game const* game)
 			return true;
 	}
 
-	m_game = game;
-	m_gameId = game->id();
-
 	if (m_engine->isReady())
 	{
-		if (isAnalyzing() && !m_engine->stopAnalysis())
+		if (isAnalyzing() && !m_engine->stopAnalysis(true))
 			return false;
 
 		int score = color::isWhite(game->currentBoard().sideToMove()) ? INT_MIN : INT_MAX;
@@ -1104,11 +1123,27 @@ Engine::startAnalysis(db::Game const* game)
 bool
 Engine::stopAnalysis()
 {
-	if (!isAnalyzing())
-		return false;
+	bool rc;
 
-	m_engine->stopAnalysis();
-	return true;
+	if (!isAnalyzing())
+	{
+		rc = false;
+	}
+	else
+	{
+		m_engine->stopAnalysis(false);
+		rc = true;
+	}
+
+	m_game = 0;
+	return rc;
+}
+
+
+void
+Engine::removeGame()
+{
+	m_game = 0;
 }
 
 

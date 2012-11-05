@@ -51,7 +51,7 @@ public:
 	~Engine() throw();	// gcc complains w/o explicit destructor
 
 	bool startAnalysis(bool isNewGame) override;
-	bool stopAnalysis() override;
+	bool stopAnalysis(bool restartIsPending) override;
 	bool isReady() const override;
 	bool isAnalyzing() const override;
 

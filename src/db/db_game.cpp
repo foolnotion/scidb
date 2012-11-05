@@ -1665,24 +1665,37 @@ Game::goIntoNextVariation()
 	}
 	else
 	{
-		forward();
+		unsigned n = 0;
 
-		MoveNode*	node	= m_currentNode;
-		unsigned		n		= 0;
-
-		if (node->variationCount() == 0)
+		if (m_currentNode->isOneBeforeLineEnd())
 		{
 			if (m_currentKey.level() > 0)
+			{
+				MoveNode* node = m_currentNode;
+
 				exitVariation();
 
-			node = node->getLineStart();
+				node = node->getLineStart();
 
-			if (node->prev() == m_currentNode)
+				if (node->getLineStart()->prev() == m_currentNode)
+					n = m_currentNode->variationNumber(node) + 1;
+			}
+		}
+		else
+		{
+			forward();
+
+			MoveNode* node = m_currentNode;
+
+			if (node->variationCount() == 0)
 			{
-				n = m_currentNode->variationNumber(node) + 1;
+				if (m_currentKey.level() > 0)
+					exitVariation();
 
-				while (n < m_currentNode->variationCount())
-					++n;
+				node = node->getLineStart();
+
+				if (node->prev() == m_currentNode)
+					n = m_currentNode->variationNumber(node) + 1;
 			}
 		}
 

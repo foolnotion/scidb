@@ -46,9 +46,11 @@ public:
 	Engine();
 
 	bool startAnalysis(bool isNew) override;
-	bool stopAnalysis() override;
+	bool stopAnalysis(bool restartIsPending) override;
 	bool isReady() const override;
 	bool isAnalyzing() const override;
+
+	using Concrete::stopAnalysis;
 
 protected:
 
@@ -75,6 +77,8 @@ protected:
 
 private:
 
+	enum State { None, Start, Stop, Pause };
+
 	bool whiteToMove() const;
 
 	void parseBestMove(char const* msg);
@@ -92,6 +96,7 @@ private:
 	mstl::string	m_waitingOn;
 	mstl::string	m_name;
 	mstl::string	m_value;
+	State				m_state;
 	bool				m_needChess960;
 	bool				m_uciok;
 	bool				m_isReady;
@@ -103,7 +108,7 @@ private:
 	bool				m_isAnalyzing;
 	bool				m_isNewGame;
 	bool				m_startAnalyzeIsPending;
-	bool				m_stopAnalyizeIsPending;
+	bool				m_stopAnalyzeIsPending;
 	bool				m_continueAnalysis;
 	bool				m_sendChess960;
 	bool				m_sendAnalyseMode;

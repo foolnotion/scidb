@@ -201,7 +201,8 @@ setNonZeroValue(mstl::string& s, unsigned value)
 
 
 uci::Engine::Engine()
-	:m_needChess960(false)
+	:m_state(None)
+	,m_needChess960(false)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
@@ -212,7 +213,7 @@ uci::Engine::Engine()
 	,m_isAnalyzing(false)
 	,m_isNewGame(false)
 	,m_startAnalyzeIsPending(false)
-	,m_stopAnalyizeIsPending(false)
+	,m_stopAnalyzeIsPending(false)
 	,m_continueAnalysis(false)
 	,m_sendChess960(false)
 	,m_sendAnalyseMode(false)
@@ -226,7 +227,7 @@ uci::Engine::doMove(db::Move const& lastMove)
 {
 	if (isAnalyzing())
 	{
-		stopAnalysis();
+		stopAnalysis(true);
 		startAnalysis(false);
 	}
 	else
@@ -297,9 +298,10 @@ uci::Engine::startAnalysis(bool isNewGame)
 	M_ASSERT(currentGame());
 	M_ASSERT(isActive());
 
+	m_state = Start;
 	m_isNewGame = isNewGame;
 
-	if (m_stopAnalyizeIsPending)
+	if (m_stopAnalyzeIsPending)
 	{
 		m_startAnalyzeIsPending = true; // wait on "bestmove"
 		return true;
@@ -370,20 +372,25 @@ uci::Engine::startAnalysis(bool isNewGame)
 
 
 bool
-uci::Engine::stopAnalysis()
+uci::Engine::stopAnalysis(bool restartIsPending)
 {
+	State oldState = m_state;
+
 	m_startAnalyzeIsPending = false;
+	m_state = Stop;
 
 	if (!m_isAnalyzing)
 		return false;
 
 	m_isAnalyzing = false;
 
-	if (!m_stopAnalyizeIsPending)
+	if (!m_stopAnalyzeIsPending)
 	{
 		send("stop");
-		m_stopAnalyizeIsPending = true;
-		updateState(app::Engine::Stop);
+		if (oldState != Pause)
+			m_stopAnalyzeIsPending = true;
+		if (!restartIsPending)
+			updateState(app::Engine::Stop);
 		// the engine should now send final info and bestmove
 	}
 
@@ -409,7 +416,8 @@ uci::Engine::pause()
 {
 	// XXX only working for analyzing mode
 	send("stop");
-	m_stopAnalyizeIsPending = true;
+	m_state = Pause;
+	m_stopAnalyzeIsPending = true;
 	updateState(app::Engine::Pause);
 }
 
@@ -418,6 +426,7 @@ void
 uci::Engine::resume()
 {
 	send("go infinite");
+	m_state = Start;
 	updateState(app::Engine::Resume);
 }
 
@@ -445,8 +454,8 @@ uci::Engine::protocolEnd()
 {
 	// Some engines in analyze mode may not react as expected
 	// to "quit" so ensure the engine exits analyze mode first:
-	stopAnalysis();
-	m_stopAnalyizeIsPending = false;
+	stopAnalysis(false);
+	m_stopAnalyzeIsPending = false;
 	send("quit");
 	m_isReady = false;
 }
@@ -544,7 +553,7 @@ uci::Engine::processMessage(mstl::string const& message)
 					break;
 
 				case 'n':
-					if ((isAnalyzing() || m_stopAnalyizeIsPending) && ::strncmp(message, "info ", 5) == 0)
+					if ((isAnalyzing() || m_stopAnalyzeIsPending) && ::strncmp(message, "info ", 5) == 0)
 						parseInfo(::skipSpaces(message.c_str() + 5));
 					break;
 			}
@@ -556,7 +565,7 @@ uci::Engine::processMessage(mstl::string const& message)
 			break;
 
 		case 'b':
-			if (m_stopAnalyizeIsPending && ::strncmp(message, "bestmove ", 9) == 0)
+			if (m_stopAnalyzeIsPending && ::strncmp(message, "bestmove ", 9) == 0)
 				parseBestMove(message.c_str() + 9);
 			break;
 
@@ -574,7 +583,7 @@ uci::Engine::processMessage(mstl::string const& message)
 void
 uci::Engine::parseBestMove(char const* msg)
 {
-	m_stopAnalyizeIsPending = false;
+	m_stopAnalyzeIsPending = false;
 
 	char const* s = ::skipSpaces(msg);
 	Move move(m_board.parseLAN(s));
@@ -1083,7 +1092,7 @@ uci::Engine::sendOptions()
 	mstl::string msg;
 
 	if (isAnalyzing)
-		stopAnalysis();
+		stopAnalysis(true);
 
 	for (app::Engine::Options::const_iterator i = opts.begin(); i != opts.end(); ++i)
 	{

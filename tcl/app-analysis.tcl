@@ -83,9 +83,9 @@ array set Options {
 }
 
 array set Vars {
-	engine:id			-1
-	engine:locked		0
-	engine:pause		0
+	engine:id		-1
+	engine:locked	0
+	engine:pause	0
 }
 
 # from Scid
@@ -109,6 +109,8 @@ proc build {parent width height} {
 		set Vars(best:1) $Defaults(best:foreground)
 	}
 	set Vars(maxMoves) 0
+	set Vars(after) {}
+	set Vars(state) normal
 	array set fopt [font configure $Options(font)]
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
@@ -288,6 +290,7 @@ proc build {parent width height} {
 		-image $::icon::toolbarLock \
 		-variable [namespace current]::Vars(engine:locked) \
 		-tooltipvar [namespace current]::mc::LockEngine \
+		-command [namespace code EngineLock] \
 		;
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
@@ -388,7 +391,7 @@ proc startAnalysis {dialog} {
 proc restartAnalysis {} {
 	variable Options
 	variable Vars
-
+	
 	::engine::restartAnalysis $Vars(engine:id) [list multiPV $Options(engine:multiPV)]
 }
 
@@ -445,6 +448,15 @@ proc SetOrdering {tree} {
 		set order unordered
 	}
 	::scidb::engine::ordering $Vars(engine:id) $order
+}
+
+
+proc EngineLock {args} {
+	variable Vars
+
+	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
+		after idle [list :::engine::startAnalysis $Vars(engine:id)]
+	}
 }
 
 
@@ -511,6 +523,11 @@ proc Layout {tree} {
 proc SetState {state} {
 	variable Vars
 
+	after cancel $Vars(after)
+	if {![winfo exists $Vars(toolbar:childs)]} { return }
+	if {$Vars(state) eq $state} { return }
+	set Vars(state) $state
+
 	foreach child $Vars(toolbar:childs) {
 		::toolbar::childconfigure $child -state $state
 	}
@@ -555,9 +572,11 @@ proc FormatScore {score} {
 
 
 proc Display(state) {state} {
+	variable Vars
+
 	switch $state {
+		stop		{ set Vars(after) [after idle [namespace code [list SetState disabled]]] }
 		start		{ SetState normal }
-		stop		{ SetState disabled }
 		pause		{}
 		resume	{}
 	}

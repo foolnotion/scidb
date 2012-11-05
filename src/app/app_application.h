@@ -329,6 +329,7 @@ private:
 	EditGame* findGame(Cursor* cursor, unsigned index, unsigned* position = 0);
 	unsigned findUnusedPosition() const;
 	void setActiveBase(Cursor* cursor);
+	void stopAnalysis(db::Game const* game);
 
 	typedef mstl::map<unsigned,EditGame>		GameMap;
 	typedef mstl::map<unsigned,unsigned> 		IndexMap;
