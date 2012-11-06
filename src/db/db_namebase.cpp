@@ -448,7 +448,19 @@ Namebase::insertPlayer(	mstl::string const& name,
 		p = Player::findPlayer(fideID);
 
 		if (p == 0)
+		{
 			p = Player::insertPlayer(fideID, name);
+		}
+		else
+		{
+			type = species::Unspecified;
+			sex = sex::Unspecified;
+
+			if (title == title::best(p->titles()))
+				title = title::None;
+			if (federation == p->federation())
+				federation = country::Unknown;
+		}
 	}
 	else
 	{

@@ -594,6 +594,7 @@ GameInfo::setup(	uint32_t gameOffset,
 			m_eco = EcoTable::specimen().getEco(provider.openingLine()).toShort();
 	}
 
+#if 0
 	M_REQUIRE(
 			!tags.contains(tag::WhiteCountry)
 		|| playerEntry(color::White)->federation() == country::fromString(tags.value(tag::WhiteCountry)));
@@ -618,6 +619,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	M_REQUIRE(
 			!tags.contains(tag::BlackSex)
 		|| playerEntry(color::Black)->sex() == sex::fromString(tags.value(tag::BlackSex)));
+#endif
 
 	if (tags.contains(tag::Date))
 	{
