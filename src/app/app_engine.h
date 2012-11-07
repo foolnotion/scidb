@@ -91,6 +91,7 @@ public:
 		Standard_Chess_Not_Supported,
 		Chess_960_Not_Supported,
 		No_Analyze_Mode,
+		Illegal_Position,
 	};
 
 	enum Signal

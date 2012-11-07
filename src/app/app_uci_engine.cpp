@@ -342,20 +342,24 @@ uci::Engine::startAnalysis(bool isNewGame)
 			m_usedAnalyseModeBefore = true;
 		}
 
-#if 0
-		setupPosition(m_board);
-#else
-		// We prefer to use the "position moves" setup because (due to Steve):
-		// The problem is that mots engines will reset their analysis with "position fen".
-		// Only a few will check to see if the new position is in their search tree.
-		setupPosition(game->startBoard());
-
-		if (game->startBoard().plyNumber() != m_board.plyNumber())
+		if (game->historyIsLegal())
 		{
-			m_position.append(" moves", 6);
-			game->dumpHistory(m_position);
+			// We prefer to use the "position moves" setup because (due to Steve):
+			// The problem is that lots engines will reset their analysis with "position fen".
+			// Only a few will check to see if the new position is in their search tree.
+			setupPosition(game->startBoard());
+
+			if (game->startBoard().plyNumber() != m_board.plyNumber())
+			{
+				m_position.append(" moves", 6);
+				game->dumpHistory(m_position);
+			}
 		}
-#endif
+		else
+		{
+			// "position moves" cannot be used because the move history contains illegal moves.
+			setupPosition(m_board);
+		}
 
 		if (isNewGame)
 			send("ucinewgame"); // clear's all states

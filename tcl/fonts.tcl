@@ -1127,6 +1127,7 @@ proc setupChessFonts {} {
 		set UseFigurines 0
 		catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set UseFigurines 1 } }
 	}
+
 	useFigurines [expr {$UseFigurines && $Options(figurine:use)}] yes
 }
 
@@ -1179,6 +1180,16 @@ proc useFigurines? {} {
 	variable Options
 
 	return [expr {$UseFigurines && $Options(figurine:use)}]
+}
+
+
+proc haveFigurines? {} {
+	return [set [namespace current]::UseFigurines]
+}
+
+
+proc haveSymbols? {} {
+	return [set [namespace current]::UseSymbols]
 }
 
 

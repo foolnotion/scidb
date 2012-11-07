@@ -1112,6 +1112,12 @@ Engine::startAnalysis(db::Game const* game)
 
 		clearInfo();
 
+		if (game->currentBoard().givesCheck())
+		{
+			error(Illegal_Position);
+			return false;
+		}
+
 		if (!m_engine->startAnalysis(isNew))
 			return false;
 	}

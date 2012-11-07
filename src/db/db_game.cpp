@@ -2721,6 +2721,24 @@ Game::dumpMoves(mstl::string& result, unsigned length, unsigned flags)
 }
 
 
+bool
+Game::historyIsLegal() const
+{
+	MoveNode* succ = m_currentNode->next();
+
+	for (MoveNode* node = m_currentNode; node; succ = node, node = node->prev())
+	{
+		if (!node->atLineStart() && !node->atLineEnd() && node->next() == succ)
+		{
+			if (!node->move().isLegal())
+				return false;
+		}
+	}
+
+	return true;
+}
+
+
 unsigned
 Game::dumpMoves(mstl::string& result, unsigned flags)
 {

@@ -218,6 +218,8 @@ public:
 	bool containsIllegalMoves() const;
 	/// Return whether the game contains illegal castlings.
 	bool containsIllegalCastlings() const;
+	/// Returns whether all preceding moves are legal.
+	bool historyIsLegal() const;
 
 	// Accessing game information
 

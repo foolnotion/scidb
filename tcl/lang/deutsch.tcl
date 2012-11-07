@@ -906,6 +906,7 @@
 ::application::analysis::mc::CurrentMove			"Momentan untersuchter Zug"
 ::application::analysis::mc::TimeSearched			"Berechnungszeit"
 ::application::analysis::mc::SearchDepth			"Berechnungstiefe in Halbzügen (Selektive Berechnungstiefe)"
+::application::analysis::mc::IllegalPosition		"Illegale Stellung - keine Analyse möglich"
 
 ::application::analysis::mc::LinesPerVariation	"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder		"Sortiere nach Bewertung"
@@ -918,12 +919,12 @@
 ::application::analysis::mc::NotSupported(chess960)	"Dieser Motor unterstützt kein Schach-960."
 ::application::analysis::mc::NotSupported(analyze)		"Dieser Motor hat keinen Analysemodus."
 
-::application::analysis::mc::Signal(stopped)				"Der Motor wurde durch ein Signal angehalten."
-::application::analysis::mc::Signal(resumed)				"Der Motor wurde durch ein Signal wieder fortgesetzt."
-::application::analysis::mc::Signal(killed)				"Der Motor wurde durch ein Signal beendet."
-::application::analysis::mc::Signal(crashed)				"Der Motor stürzte ab."
-::application::analysis::mc::Signal(closed)				"Der Motor hat die Verbindung abgebrochen."
-::application::analysis::mc::Signal(terminated)			"Der Motor beendete mit Rückgabewert %s."
+::application::analysis::mc::Signal(stopped)		"Der Motor wurde durch ein Signal angehalten."
+::application::analysis::mc::Signal(resumed)		"Der Motor wurde durch ein Signal wieder fortgesetzt."
+::application::analysis::mc::Signal(killed)		"Der Motor wurde durch ein Signal beendet."
+::application::analysis::mc::Signal(crashed)		"Der Motor stürzte ab."
+::application::analysis::mc::Signal(closed)		"Der Motor hat die Verbindung abgebrochen."
+::application::analysis::mc::Signal(terminated)	"Der Motor beendete mit Rückgabewert %s."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"

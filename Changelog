@@ -1,6 +1,14 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #514)
+------------------------------------------------------------------------------
+* Font handling fixed in case of missing truetype fonts.
+
+* Engine support fixed: do not analyze illegal positions, some engines will
+crash.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #511)
 ------------------------------------------------------------------------------
 * Bug in namebase fixed. Unfortunately this requires a database upgrade. This

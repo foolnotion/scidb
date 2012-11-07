@@ -227,6 +227,7 @@ public:
 			case Standard_Chess_Not_Supported:	msg = "standard"; break;
 			case Chess_960_Not_Supported:			msg = "chess960"; break;
 			case No_Analyze_Mode:					msg = "analyze"; break;
+			case Illegal_Position:					msg = "illegal"; break;
 		}
 
 		sendInfo(m_error, Tcl_NewStringObj(msg, -1));

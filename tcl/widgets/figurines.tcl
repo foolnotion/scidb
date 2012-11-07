@@ -242,7 +242,9 @@ proc WidgetProc {w command args} {
 			if {[llength $args] != 1} {
 				error "wrong # args: should be \"[namespace current] select <set>\""
 			}
-			set index [lsearch -exact -index 0 $Figurines [lindex $args 0]]
+			set lang [lindex $args 0]
+			if {[string length $lang] == 0} { set lang $::mc::langID }
+			set index [lsearch -exact -index 0 $Figurines $lang]
 			return [$w.list.selection select $index]
 		}
 

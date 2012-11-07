@@ -45,6 +45,7 @@ set BestScore					"Best score (of current lines)"
 set CurrentMove				"Currently searching this move"
 set TimeSearched				"Time searched"
 set SearchDepth				"Search depth in plies (Selective search depth)"
+set IllegalPosition			"Illegal position - Cannot analyze"
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -628,7 +629,7 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 
 	$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
 	$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
-	$Vars(tree) item element configure Line$line Moves elemTextFig -text $pv
+	$Vars(tree) item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
 }
 
 
@@ -696,7 +697,7 @@ proc Display(move) {number count move} {
 
 	$Vars(move) configure -state normal
 	$Vars(move) delete 1.0 end
-	$Vars(move) insert end $move {figurine center}
+	$Vars(move) insert end [::font::translate $move] {figurine center}
 	if {$number > 0} {
 		$Vars(move) insert end " ($number/$Vars(maxMoves))"
 	}
@@ -759,6 +760,9 @@ proc Display(error) {code} {
 		}
 		standard - chess960 - analyze {
 			set msg $mc::NotSupported($code)
+		}
+		illegal {
+			set msg $mc::IllegalPosition
 		}
 	}
 

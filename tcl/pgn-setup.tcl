@@ -415,6 +415,14 @@ proc openSetupDialog {parent context position args} {
 	}
 	$style resize
 
+	if {![::font::haveSymbols?]} {
+		$style disable symbol-font
+	}
+	if {![::font::haveFigurines?]} {
+		$style disable figurine-font
+		$style disable figurine-bold
+	}
+
 	set options [::tk::multiwindow $top.options \
 		-borderwidth 1 \
 		-relief raised \
@@ -731,33 +739,35 @@ proc BuildFrame(topics) {w topic context position tree} {
 	set col 1
 
 	foreach {tag item} $entries {
-		set t $w.text-$tag
-		tk::text $t \
-			-borderwidth 0 \
-			-width $maxwidth \
-			-height 1 \
-			-background [::theme::getBackgroundColor] \
-			-exportselection no \
-			-cursor {} \
-			-takefocus 0 \
-			;
-		bind $t <Any-Button> { break }
-		bind $t <Any-Key> { break }
-		$t tag configure link -foreground blue2
-		$t tag bind link <Enter> [list $t tag configure link -underline 1]
-		$t tag bind link <Leave> [list $t tag configure link -underline 0]
-		$t tag bind link <ButtonPress-1> [namespace code [list $tree select $item]]
-		$t insert end $mc::Setup($tag) link
-		$t configure -state disabled
-		set Priv(link:text:$tag) $t
-		set Priv(link:item:$tag) $item
-		grid $t -row $row -column $col -sticky w
-		incr row 2
+		if {[$Priv(tree) item enabled $tag]} {
+			set t $w.text-$tag
+			tk::text $t \
+				-borderwidth 0 \
+				-width $maxwidth \
+				-height 1 \
+				-background [::theme::getBackgroundColor] \
+				-exportselection no \
+				-cursor {} \
+				-takefocus 0 \
+				;
+			bind $t <Any-Button> { break }
+			bind $t <Any-Key> { break }
+			$t tag configure link -foreground blue2
+			$t tag bind link <Enter> [list $t tag configure link -underline 1]
+			$t tag bind link <Leave> [list $t tag configure link -underline 0]
+			$t tag bind link <ButtonPress-1> [namespace code [list $tree select $item]]
+			$t insert end $mc::Setup($tag) link
+			$t configure -state disabled
+			set Priv(link:text:$tag) $t
+			set Priv(link:item:$tag) $item
+			grid $t -row $row -column $col -sticky w
+			incr row 2
 
-		if {[incr count]  == $nrows} {
-			set row 1
-			incr col 2
-			set count 0
+			if {[incr count]  == $nrows} {
+				set row 1
+				incr col 2
+				set count 0
+			}
 		}
 	}
 
@@ -1151,6 +1161,7 @@ proc RefreshFigurineFont {context position lang} {
 	variable New_Fonts
 	variable Priv
 
+	if {![::font::haveFigurines?]} { return }
 	::font::unregisterFigurineFonts setup
 
 	if {$lang eq "graphic"} {
