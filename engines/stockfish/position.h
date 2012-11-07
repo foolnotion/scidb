@@ -186,7 +186,8 @@ public:
   template<bool SkipRepetition> bool is_draw() const;
 
   // (FIX Gregor Cramer)
-  void resetState();
+  void resetState(StateInfo* state);
+  StateInfo* state() const;
 
   // Position consistency check, for debugging
   bool pos_is_ok(int* failedStep = NULL) const;
@@ -233,7 +234,8 @@ private:
 };
 
 // (FIX Gregor Cramer)
-inline void Position::resetState() { st = &startState; }
+inline StateInfo* Position::state() const { return st; }
+inline void Position::resetState(StateInfo* state) { st = state; }
 
 inline int64_t Position::nodes_searched() const {
   return nodes;
