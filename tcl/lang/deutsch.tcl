@@ -282,7 +282,7 @@
 ::util::photos::mc::LocalInstallation			"Private Installation"
 ::util::photos::mc::RetryLater					"Bitts später wieder probieren."
 ::util::photos::mc::DownloadStillInProgress	"Der Download der Photodateien ist noch im Fortgang."
-::util::photos::mc::PhotoFiles					"Photodateien"
+::util::photos::mc::PhotoFiles					"Spielerphotodateien"
 
 ::util::photos::mc::RequiresSuperuserRights	"Die Installation bzw. der Update erfordert Superuser-Berechtigung.\n\nBeachte: das Passwort wird nicht akzeptiert wenn der momentane Benutzer nicht in der sudoers-Datei eingetragen ist."
 ::util::photos::mc::RequiresInternetAccess	"Die Installation bzw. der Update der Photodateien erfordert eine Internetverbindung."
@@ -338,6 +338,8 @@
 ::application::mc::ChessInfoDatabase	"Schach-Informations-Datenbank"
 ::application::mc::Shutdown				"Schließung..."
 ::application::mc::QuitAnyway				"Trotzdem schliessen?"
+
+::application::mc::UpdatesAvailable		"Updates verfügbar"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Zeige Turniertabelle zur aktuellen Partie"
@@ -947,7 +949,7 @@
 ::gametable::mc::SortOnAverageElo		"Sortieren nach Durchschnitts-Elo (absteigend)"
 ::gametable::mc::SortOnAverageRating	"Sortieren nach Durchschnitts-Wertung (absteigend)"
 ::gametable::mc::SortOnDate				"Sortieren nach Datum (absteigend)"
-::gametable::mc::SortOnNumber				"Sortieren nach Partienummer (aufsteigend)"
+::gametable::mc::SortOnNumber				"Sortieren nach Partiennummer (aufsteigend)"
 ::gametable::mc::ReverseOrder				"Sortierung umdrehen"
 ::gametable::mc::NoMoves					"Keine Züge"
 ::gametable::mc::NoMoreMoves				"Keine weiteren Züge"

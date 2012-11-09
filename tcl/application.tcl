@@ -39,6 +39,8 @@ set ChessInfoDatabase	"Chess Information Data Base"
 set Shutdown				"Shutdown..."
 set QuitAnyway				"Quit anyway?"
 
+set UpdatesAvailable		"Updates available"
+
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::abs
@@ -129,13 +131,12 @@ array set Attr {
 array set Vars {
 	tabs:changed 0
 
-	settings:locked				0
-	settings:state					normal
-	settings:background			#c3c3c3
-	settings:activebackground	{}
+	menu:locked					0
+	menu:state					normal
+	menu:background			#c3c3c3
+	menu:activebackground	{}
 
-	visibility:state	{}
-	visibility:item	{}
+	updates {}
 }
 
 
@@ -149,6 +150,8 @@ proc open {} {
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus
 	set Vars(control) [::widget::dialogFullscreenButtons $nb]
+	bind $nb <Configure> [namespace code PlaceMenues]
+	bind $Vars(control) <Configure> +[namespace code PlaceMenues]
 	::theme::configureBackground $Vars(control).minimize
 	::theme::configureBackground $Vars(control).restore
 	::theme::configureBackground $Vars(control).close
@@ -158,30 +161,29 @@ proc open {} {
 
 	set m ".__m__[clock milliseconds]"
 	menu $m
-	set Vars(settings:activebackground) [$m cget -activebackground]
+	set Vars(menu:activebackground) [$m cget -activebackground]
 	destroy $m
-	tk::menubutton $nb.l \
+	set m [tk::menubutton $nb.menu_main \
 		-borderwidth 1 \
 		-relief raised \
 		-padx 2 \
 		-pady 2 \
-		-background $Vars(settings:background) \
-		-activebackground $Vars(settings:activebackground) \
+		-background $Vars(menu:background) \
+		-activebackground $Vars(menu:activebackground) \
 		-foreground black \
 		-activeforeground white \
 		-image $icon::16x12::downArrow(black) \
 		-compound right \
-		;
-	SetSettingsText $nb.l
-	bind $nb.l <<LanguageChanged>> [namespace code [list SetSettingsText $nb.l]]
-	bind $nb.l <Enter> [namespace code [list EnterSettings $nb.l]]
-	bind $nb.l <Leave> [namespace code [list LeaveSettings $nb.l]]
-	bind $nb.l <<MenuWillPost>> [namespace code [list BuildSettingsMenu $nb.l]]
-	bind $nb.l <<MenuWillUnpost>> [namespace code [list FinishSettings $nb.l]]
-	bind $nb <Configure> [namespace code [list PlaceMainMenu $nb.l]]
-	bind $nb.l <Configure> [namespace code [list PlaceMainMenu $nb.l]]
-	bind $Vars(control) <Configure> +[namespace code [list PlaceMainMenu $nb.l]]
-	set Vars(menu) $nb.l
+	]
+	SetSettingsText $m
+	bind $m <<LanguageChanged>> [namespace code [list SetSettingsText $m]]
+	bind $m <Enter> [namespace code [list EnterSettings $m]]
+	bind $m <Leave> [namespace code [list LeaveSettings $m]]
+	bind $m <<MenuWillPost>> [namespace code [list BuildSettingsMenu $m]]
+	bind $m <<MenuWillUnpost>> [namespace code [list FinishSettings $m]]
+	bind $m <Configure> [namespace code PlaceMenues]
+	set Vars(menu:main) $m
+	set Vars(menu:updates) $nb.menu_updates
 
 	::ttk::notebook::enableTraversal $nb
 	set db [::ttk::frame $nb.database]
@@ -323,10 +325,7 @@ if {[::process::testOption use-analysis]} {
 	}
 
 	after idle [list ::beta::welcomeToScidb $app]
-
-	if {[::util::photos::checkForUpdate [namespace code InformUpdate]]} {
-		bind $app <Visibility> [namespace code [list Visibility %s]]
-	}
+	::util::photos::checkForUpdate [namespace current]::InformAboutUpdates
 }
 
 
@@ -390,42 +389,20 @@ proc switchTab {which} {
 }
 
 
-proc Visibility {state} {
+proc InformAboutUpdates {item} {
 	variable Vars
 
-	set Vars(visibility:state) $state
-
-	if {[llength $Vars(visibility:item)] && $state eq "VisibilityUnobscured"} {
-		InformUpdate $Vars(visibility:item)
-	}
-}
-
-
-proc InformUpdate {item} {
-	variable Vars
-
-puts "InformUpdate: $item"
-	if {[llength $item] == 0} {
-		bind .application <Visibility> {#}
-	} else if {$Vars(visibility:state) eq "VisibilityUnobscured"} {
-		InformUser $item
-	} else {
-		set Vars(visibility:item) $item
-	}
-}
-
-
-proc InformUser {item} {
-	puts "inform about player photos update"
+	lappend Vars(updates) $item
+	BuildUpdatesButton
 }
 
 
 proc EnterSettings {w} {
 	variable Vars
 
-	set Vars(settings:state) active
+	set Vars(menu:state) active
 
-	if {!$Vars(settings:locked)} {
+	if {!$Vars(menu:locked)} {
 		$w configure -state active -image $icon::16x12::downArrow(white)
 	}
 }
@@ -434,9 +411,9 @@ proc EnterSettings {w} {
 proc LeaveSettings {w} {
 	variable Vars
 
-	set Vars(settings:state) normal
+	set Vars(menu:state) normal
 
-	if {!$Vars(settings:locked)} {
+	if {!$Vars(menu:locked)} {
 		$w configure -state normal -image $icon::16x12::downArrow(black)
 	}
 }
@@ -446,15 +423,15 @@ proc FinishSettings {m} {
 	variable Vars
 
 	$m configure \
-		-background $Vars(settings:background) \
-		-activebackground $Vars(settings:activebackground) \
+		-background $Vars(menu:background) \
+		-activebackground $Vars(menu:activebackground) \
 		-foreground black \
 		-activeforeground white \
 		-image $icon::16x12::downArrow(black) \
 		;
-	set Vars(settings:locked) 0
+	set Vars(menu:locked) 0
 
-	if {$Vars(settings:state) eq "normal"} {
+	if {$Vars(menu:state) eq "normal"} {
 		LeaveSettings $m
 	} else {
 		EnterSettings $m
@@ -462,7 +439,102 @@ proc FinishSettings {m} {
 }
 
 
-proc PlaceMainMenu {m} {
+proc MakeUpdateInfo {} {
+	variable Vars
+
+	if {[llength $Vars(updates)]} {
+		set Vars(updates:tooltip) "${mc::UpdatesAvailable}:"
+		foreach item $Vars(updates) {
+			switch $item {
+				photos { append Vars(updates:tooltip) \n $::util::photos::mc::PhotoFiles }
+			}
+		}
+	}
+}
+
+
+proc BuildUpdatesButton {} {
+	variable Vars
+
+	set m $Vars(menu:updates)
+	if {[winfo exists $m]} { return }
+
+	tk::menubutton $m \
+		-borderwidth 1 \
+		-relief raised \
+		-padx 2 \
+		-pady 2 \
+		-background $Vars(menu:background) \
+		-activebackground $Vars(menu:activebackground) \
+		-foreground black \
+		-activeforeground white \
+		-image $icon::16x16::softwareUpdate \
+		;
+	bind $m <<LanguageChanged>> [namespace code MakeUpdateInfo]
+	bind $m <Enter> [list set [namespace current]::Vars(menu:state) active]
+	bind $m <Leave> [list set [namespace current]::Vars(menu:state) normal]
+	bind $m <<MenuWillPost>> [namespace code [list BuildUpdatesMenu $m]]
+	bind $m <<MenuWillUnpost>> [namespace code [list FinishUpdates $m]]
+	bind $m <Configure> [namespace code PlaceMenues]
+
+	PlaceMenues
+	MakeUpdateInfo
+	tooltip::tooltip $m [namespace current]::Vars(updates:tooltip)
+}
+
+
+proc BuildUpdatesMenu {m} {
+	variable Vars
+
+	catch { destroy $m.updates }
+	::menu $m.updates
+
+	foreach item $Vars(updates) {
+		switch $item {
+			photos { set txt $::util::photos::mc::PhotoFiles }
+		}
+		$m.updates add command -label $txt -command [namespace code [list InstallUpdate $item]]
+	}
+
+	$m configure \
+		-background $Vars(menu:activebackground) \
+		-activebackground $Vars(menu:activebackground) \
+		-foreground white \
+		-activeforeground white \
+		-menu $m.updates \
+		-direction below \
+		;
+	set Vars(menu:locked) 1
+}
+
+
+proc FinishUpdates {m} {
+	variable Vars
+
+	$m configure \
+		-background $Vars(menu:background) \
+		-activebackground $Vars(menu:activebackground) \
+		-foreground black \
+		-activeforeground white \
+		;
+	set Vars(menu:locked) 0
+}
+
+
+proc InstallUpdate {item} {
+	variable Vars
+
+	::util::photos::openDialog .application
+	set i [lsearch $Vars(updates) $item]
+	set Vars(updates) [lreplace $Vars(updates) $i $i]
+
+	if {[llength $Vars(updates)] == 0} {
+		destroy $Vars(menu:updates)
+	}
+}
+
+
+proc PlaceMenues {} {
 	variable Vars
 
 	# place controls
@@ -470,18 +542,27 @@ proc PlaceMainMenu {m} {
 	set parent [winfo parent $w]
 	if {[::menu::fullscreen?]} {
 		set x [expr {[winfo width $parent] - [winfo width $w]}]
-		place $w -x $x -y 0 -height [winfo height $Vars(menu)]
+		place $w -x $x -y 0 -height [winfo height $Vars(menu:main)]
 	} else {
 		place forget $w
 	}
 
-	# place menu
+	# place main menu
+	set m $Vars(menu:main)
 	set parent [winfo parent $m]
 	set x [expr {[winfo width $parent] - [winfo width $m]}]
 	if {$Vars(control) in [place slaves $parent]} {
 		set x [expr {$x - [winfo width $Vars(control)]}]
 	}
 	place $m -x $x -y 0
+
+	# place update menu
+	set m $Vars(menu:updates)
+	if {[winfo exists $m]} {
+		$m configure -height [expr {[winfo height $Vars(menu:main)] - 2}]
+		set x [expr {$x - [winfo width $m] - 5}]
+		place $m -x $x -y 0
+	}
 }
 
 
@@ -496,20 +577,20 @@ proc SetSettingsText {w} {
 proc BuildSettingsMenu {m} {
 	variable Vars
 
-	catch { destroy $m.settings }
-	::menu $m.settings
-	::menu::build $m.settings
+	catch { destroy $m.entries }
+	::menu $m.entries
+	::menu::build $m.entries
 
 	$m configure \
-		-background $Vars(settings:activebackground) \
-		-activebackground $Vars(settings:activebackground) \
+		-background $Vars(menu:activebackground) \
+		-activebackground $Vars(menu:activebackground) \
 		-foreground white \
 		-activeforeground white \
 		-image $icon::16x12::downArrow(white) \
-		-menu $m.settings \
+		-menu $m.entries \
 		-direction below \
 		;
-	set Vars(settings:locked) 1
+	set Vars(menu:locked) 1
 }
 
 
@@ -762,7 +843,7 @@ set shutdown [image create photo -data {
 rename ::tk::PostOverPoint ::tk::_PostOverPoint_application
 
 proc ::tk::PostOverPoint {menu x y {entry {}}} {
-	if {$menu eq ".application.nb.l.settings"} {
+	if {[string match ".application.nb.menu_*.entries" $menu]} {
 		set rx [winfo rootx .application]
 		set mw [winfo reqwidth $menu]
 		set x [expr {min($rx + [winfo width .application] - $mw, $x)}]

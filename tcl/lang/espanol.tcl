@@ -299,7 +299,7 @@
 ::util::photos::mc::LocalInstallation			"Instalación privada"
 ::util::photos::mc::RetryLater					"Por favor, inténtelo de nuevo más tarde."
 ::util::photos::mc::DownloadStillInProgress	"La descarga de los archivos de fotos aún está en curso."
-::util::photos::mc::PhotoFiles					"Archivos de fotos"
+::util::photos::mc::PhotoFiles					"Archivos de fotos" ;# NEW change to "Player Photo Files"
 
 ::util::photos::mc::RequiresSuperuserRights	"La instalación/actualización requiere derechos de superusuario.\n\nAdvierta que la contraseña no se aceptará si el usuario no figura en el archivo sudoers."
 ::util::photos::mc::RequiresInternetAccess	"La instalación/actualización de los archivos de fotos de los jugadores requiere una conexión a Internet."
@@ -354,6 +354,8 @@
 ::application::mc::ChessInfoDatabase	"Base de Datos Ajedrecística"
 ::application::mc::Shutdown				"Cierre..."
 ::application::mc::QuitAnyway				"¿Desea cerrar de todos modos?"
+
+::application::mc::UpdatesAvailable		"Updates available" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostrar tabla de torneo para esta partida"

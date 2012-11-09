@@ -36,7 +36,7 @@ set SharedInstallation			"Shared installation"
 set LocalInstallation			"Private installation"
 set RetryLater						"Please retry later."
 set DownloadStillInProgress	"Download of photo files is still in progress."
-set PhotoFiles						"Photo Files"
+set PhotoFiles						"Player Photo Files"
 set DownloadAborted				"Download aborted."
 
 set RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
@@ -280,12 +280,12 @@ proc checkForUpdate {informProc} {
 		}
 	}
 	::http::config -urlencoding utf-8
-	return [expr {![catch {
+	catch {
 		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
 			-binary 1 \
-			-timeout 2000 \
+			-timeout 5000 \
 			-command [namespace code [list CheckForUpdateResponse $informProc]] \
-	}]}]
+	}
 }
 
 
@@ -296,20 +296,15 @@ proc CheckForUpdateResponse {informProc token} {
 	set state [::http::status $token]
 	set srvTimestamp [string trim [::http::data $token]]
 	::http::cleanup $token
-	set item ""
-
-	if {$state eq "ok" && $code == 200} {
-		set locTimestamp [ReadTimestamp [InstallDir 1]]
-		set timestamp [ReadTimestamp [InstallDir 0]]
-		if {[string length $timestamp]} {
-			if {[string length $locTimestamp] == 0 || [string compare $locTimestamp $timestamp] < 0} {
-				set locTimestamp $timestamp
-			}
+	if {$state ne "ok" || $code != 200} { return }
+	set locTimestamp [ReadTimestamp [InstallDir 1]] ;# shared
+	set timestamp [ReadTimestamp [InstallDir 0]] ;# private
+	if {[string length $timestamp]} {
+		if {[string length $locTimestamp] == 0 || [string compare $locTimestamp $timestamp] < 0} {
+			set locTimestamp $timestamp
 		}
-		if {$srvTimestamp ne $locTimestamp} { set item photos }
 	}
-
-	$informProc $item
+	if {$srvTimestamp ne $locTimestamp} { $informProc photos }
 }
 
 

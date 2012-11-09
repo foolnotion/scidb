@@ -284,7 +284,7 @@
 ::util::photos::mc::LocalInstallation			"Installazione privata"
 ::util::photos::mc::RetryLater					"Per favore riprova più tardi."
 ::util::photos::mc::DownloadStillInProgress	"Il download delle foto è ancora in corso."
-::util::photos::mc::PhotoFiles					"File di foto"
+::util::photos::mc::PhotoFiles					"File di foto" ;# NEW change to "Player Photo Files"
 
 ::util::photos::mc::RequiresSuperuserRights	"L'installazione/aggiornamento richiede diritti di super-user.\n\nNota che l apassword non sarà accettata se il tuo utente non è nel gruppo wheel." ;# sudoers file?
 ::util::photos::mc::RequiresInternetAccess	"L'installazione/aggiornamento delle foto dei giocatori richiede una connessione internet."
@@ -339,6 +339,8 @@
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Spegni..."
 ::application::mc::QuitAnyway				"Uscire comunque?"
+
+::application::mc::UpdatesAvailable		"Updates available" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"

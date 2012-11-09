@@ -283,7 +283,7 @@
 ::util::photos::mc::LocalInstallation			"Private installation" ;# NEW
 ::util::photos::mc::RetryLater					"Please retry later." ;# NEW
 ::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
-::util::photos::mc::PhotoFiles					"Photo Files" ;# NEW
+::util::photos::mc::PhotoFiles					"Player Photo Files" ;# NEW
 
 ::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
 ::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
@@ -338,6 +338,8 @@
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Avstängning..."
 ::application::mc::QuitAnyway				"Quit anyway?" ;# NEW
+
+::application::mc::UpdatesAvailable		"Updates available" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Visa turneringstabell för partiet"
