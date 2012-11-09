@@ -383,6 +383,10 @@ proc openBase {parent file byUser args} {
 	variable Defaults
 
 	set file [file normalize $file]
+	if {[string length [set ext [file extension $file]]]} {
+		set ext [::scidb::misc::mapExtension $ext]
+		set file "[file rootname $file].$ext"
+	}
 
 	if {![file readable $file]} {
 		set i [FindRecentFile $file]

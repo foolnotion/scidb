@@ -103,7 +103,7 @@ set HtmlMapping {
 }
 
 set KeyMapping {
-	<key>ESC</key>	{<kbd class="key">Esc</kbd>}
+	<key>ESC</key>	Esc
 }
 
 set f [open ../../../Makefile.in r]
@@ -293,7 +293,6 @@ proc formatUrl {url} {
 }
 
 proc readContents {chan file} {
-	variable KeyMapping
 	variable HtmlMapping
 	variable charset
 
@@ -332,8 +331,11 @@ proc readContents {chan file} {
 			set line $newline
 		}
 
-		set line [string map $KeyMapping $line]
 		set line [string map $HtmlMapping $line]
+
+		while {[regexp {<key>([a-zA-Z]*)</key>} $line _ key]} {
+			set line [regsub -all "<key>$key</key>" $line "<kbd class='key'>$::mc::Key($key)</kbd>"]
+		}
 
 		if {[string match CHARSET* $line]} {
 			set charset [getArg $line]

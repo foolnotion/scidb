@@ -34,9 +34,12 @@
 ::mc::SortOrder		{}
 
 ::mc::Key(Alt)			"Alt"
+::mc::Key(BS)			"\u232b"
 ::mc::Key(Ctrl)		"Ctrl"
+::mc::Key(Del)			"Delete"
 ::mc::Key(Down)		"\u2193"
 ::mc::Key(End)			"End"
+::mc::Key(Enter)		"Enter"
 ::mc::Key(Esc)			"Esc"
 ::mc::Key(Home)		"Home"
 ::mc::Key(Left)		"\u2190"

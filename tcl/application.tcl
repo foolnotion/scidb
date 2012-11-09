@@ -133,6 +133,9 @@ array set Vars {
 	settings:state					normal
 	settings:background			#c3c3c3
 	settings:activebackground	{}
+
+	visibility:state	{}
+	visibility:item	{}
 }
 
 
@@ -320,6 +323,10 @@ if {[::process::testOption use-analysis]} {
 	}
 
 	after idle [list ::beta::welcomeToScidb $app]
+
+	if {[::util::photos::checkForUpdate [namespace code InformUpdate]]} {
+		bind $app <Visibility> [namespace code [list Visibility %s]]
+	}
 }
 
 
@@ -380,6 +387,36 @@ proc switchTab {which} {
 	.application.nb select $tab
 	update idletasks
 	${which}::setFocus
+}
+
+
+proc Visibility {state} {
+	variable Vars
+
+	set Vars(visibility:state) $state
+
+	if {[llength $Vars(visibility:item)] && $state eq "VisibilityUnobscured"} {
+		InformUpdate $Vars(visibility:item)
+	}
+}
+
+
+proc InformUpdate {item} {
+	variable Vars
+
+puts "InformUpdate: $item"
+	if {[llength $item] == 0} {
+		bind .application <Visibility> {#}
+	} else if {$Vars(visibility:state) eq "VisibilityUnobscured"} {
+		InformUser $item
+	} else {
+		set Vars(visibility:item) $item
+	}
+}
+
+
+proc InformUser {item} {
+	puts "inform about player photos update"
 }
 
 

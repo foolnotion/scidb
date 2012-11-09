@@ -254,7 +254,6 @@ if {[string length locTimestamp] > 0} {
 		}
 	}
 	set code [::http::ncode $token]
-	set http [::http::code $token]
 	set srvTimestamp [string trim [::http::data $token]]
 	::http::cleanup $token
 	if {$code == 404} { Return maintenance }
@@ -279,7 +278,6 @@ while {$retry > 0} {
 	}
 }
 set code [::http::ncode $token]
-set http [::http::code $token]
 set content [::http::data $token]
 ::http::cleanup $token
 if {$code == 404} { Return maintenance }

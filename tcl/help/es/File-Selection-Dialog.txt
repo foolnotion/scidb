@@ -16,20 +16,20 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Di√°logo Selecci√≥n de archivos
-TITLE El di√°logo Selecci√≥n de archivos
+INDEX Di·logo SelecciÛn de archivos
+TITLE El di·logo SelecciÛn de archivos
 
 <p>
-El cuadro de di√°logo Selecci√≥n de archivos se compone de seis partes:
+El cuadro de di·logo SelecciÛn de archivos se compone de seis partes:
 </p>
 
 <ul>
-  <li><a href="#Navigation">Navegaci√≥n de directorios</a></li>
+  <li><a href="#Navigation">NavegaciÛn de directorios</a></li>
   <li><a href="#Bookmarks">Marcadores</a></li>
   <li><a href="#FileList">Listado de archivos</a></li>
   <li><a href="#FileName">Nombre de archivo</a></li>
-  <li><a href="#FilesType">Selecci√≥n del tipo de archivo</a></li>
-  <li><a href="#Encoding">Selecci√≥n de la codificaci√≥n</a></li>
+  <li><a href="#FilesType">SelecciÛn del tipo de archivo</a></li>
+  <li><a href="#Encoding">SelecciÛn de la codificaciÛn</a></li>
 </ul>
 
 <p>
@@ -39,11 +39,11 @@ Soporte de Arrastrar &amp; Soltar en el Listado de archivos:
 <ul><li><a href="#DND">Arrastrar &amp; Soltar</a></li></ul>
 </ul>
 
-<h3 id="Navigation">Navegaci√≥n de directorios</h3>
+<h3 id="Navigation">NavegaciÛn de directorios</h3>
 
 <p>
-Esta barra muestra la ruta de ubicaci√≥n del Directorio actual y permite un r√°pido cambio 
-al Directorio ra√≠z, as√≠ como a los directorios subordinados.
+Esta barra muestra la ruta de ubicaciÛn del Directorio actual y permite un r·pido cambio 
+al Directorio raÌz, asÌ como a los directorios subordinados.
 </p>
 
 <dir><img src="images/file-selection-box-navigation-folder.png" alt="folder" /></dir>
@@ -55,16 +55,16 @@ Se pueden seleccionar los directorios previos haciendo clic en sus botones.
 <dir><img src="images/file-selection-box-navigation-arrow.png" alt="arrow" /></dir>
 
 <p>
-Se puede acceder a los directorios subordinados haciendo clic en el bot√≥n de flecha 
+Se puede acceder a los directorios subordinados haciendo clic en el botÛn de flecha 
 correspondiente.
 </p>
 
 <h3 id="Bookmarks">Marcadores</h3>
 
 <p>
-Aqu√≠ el usuario puede crear o eliminar sus propias referencias a los directorios. Para 
-este fin se puede utilizar el men√∫ contextual o la Barra de herramientas. Manteniendo 
-pulsado el bot√≥n central del rat√≥n sobre un enlace se muestra la ruta correspondiente.
+AquÌ el usuario puede crear o eliminar sus propias referencias a los directorios. Para 
+este fin se puede utilizar el men˙ contextual o la Barra de herramientas. Manteniendo 
+pulsado el botÛn central del ratÛn sobre un enlace se muestra la ruta correspondiente.
 </p>
 
 <p>
@@ -74,19 +74,19 @@ Existen referencias internas que no se pueden eliminar:
 <h4><img src="../images/fsbox-favorites.png" alt="favorites" /> %::fsbox::mc::Favorites%</h4>
 
 <p>
-Esta carpeta contiene los Directorios m√°s visitados.
+Esta carpeta contiene los Directorios m·s visitados.
 </p>
 
 <h4><img src="../images/fsbox-visited.png" alt="visited" /> %::fsbox::mc::LastVisited%</h4>
 
 <p>
-En esta carpeta est√°n incluidos los Directorios visitados m√°s recientemente.
+En esta carpeta est·n incluidos los Directorios visitados m·s recientemente.
 </p>
 
 <h4><img src="../images/fsbox-filesystem.png" alt="filesystem" /> %::fsbox::mc::FileSystem%</h4>
 
 <p>
-Esta entrada permite la selecci√≥n directa de la ra√≠z del Directorio de archivos.
+Esta entrada permite la selecciÛn directa de la raÌz del Directorio de archivos.
 </p>
 
 <h4><img src="../images/fsbox-desktop.png" alt="desktop" /> %::fsbox::mc::Desktop%</h4>
@@ -94,28 +94,28 @@ Esta entrada permite la selecci√≥n directa de la ra√≠z del Directorio de archivo
 <p>
 Esta carpeta muestra todos los enlaces a Directorios creados en el <url>~/Escritorio</url>.
 Estos son, por lo general, los enlaces que se muestran en el Escritorio.
-<note/>Esta referencia s√≥lo existe cuando el Directorio <url>~/Desktop</url> est√° disponible.
+<note/>Esta referencia sÛlo existe cuando el Directorio <url>~/Desktop</url> est· disponible.
 </p>
 
 <h4><img src="../images/fsbox-trash.png" alt="trash" /> %::fsbox::mc::Trash%</h4>
 
 <p>
 Bajo esta referencia se listan los componentes de la Papelera.
-<note/>Esta referencia s√≥lo existe en KDE/Unix.
+<note/>Esta referencia sÛlo existe en KDE/Unix.
 </p>
 
 <h4><img src="../images/fsbox-home.png" alt="home" /> %::fsbox::mc::Home%</h4>
 
 <p>
-Esta entrada permite una selecci√≥n directa del Directorio de inicio del usuario.
+Esta entrada permite una selecciÛn directa del Directorio de inicio del usuario.
 </p>
 
 <!--
-<h4>Gesti√≥n de Marcadores</h4>
+<h4>GestiÛn de Marcadores</h4>
 
 <p>
-A trav√©s del men√∫ contextual o de la Barra de herramientas son posibles las siguientes
-acciones de gesti√≥n de Marcadores:
+A travÈs del men˙ contextual o de la Barra de herramientas son posibles las siguientes
+acciones de gestiÛn de Marcadores:
 </p>
 
 <h4><img src="../images/fsbox-add.png" alt="add" /> %::fsbox::mc::AddBookmark%</h4>
@@ -130,14 +130,14 @@ acciones de gesti√≥n de Marcadores:
 <h3 id="FileList">Listado de archivos</h3>
 
 <p>
-El Listado de archivos es una especializaci√≥n de los archivos Scidb. Es decir que toda operaci√≥n 
-relacionada con una base de datos se ejecuta en los archivos, aunque s√≥lo se enumerar√° en el archivo 
-principal (en general, el archivo √≠ndice). De este modo, el usuario no necesita preocuparse sobre 
+El Listado de archivos es una especializaciÛn de los archivos Scidb. Es decir que toda operaciÛn 
+relacionada con una base de datos se ejecuta en los archivos, aunque sÛlo se enumerar· en el archivo 
+principal (en general, el archivo Ìndice). De este modo, el usuario no necesita preocuparse sobre 
 los detalles de los <a href="Database-Formats.html">Formatos de bases de datos</a>.
 </p>
 
 <p>
-Mantener pulsado el bot√≥n central sobre los Archivos presentar√° su informaci√≥n.
+Mantener pulsado el botÛn central sobre los Archivos presentar· su informaciÛn.
 </p>
 
 <p>
@@ -147,17 +147,17 @@ Las operaciones de archivo en detalle:
 <h4><img src="../images/fsbox-delete.png" alt="delete" /> %::fsbox::mc::Delete%</h4>
 
 <p>
-Elimina la base de datos seleccionada. En KDE/Unix la enviar√° a la Papelera; de lo contrario 
-se efectuar√≠a una eliminaci√≥n f√≠sica, que no ser√≠a pasible de revertir. En cualquier caso, hay 
-que confirmar est√° operaci√≥n en un cuadro de di√°logo de seguridad.
+Elimina la base de datos seleccionada. En KDE/Unix la enviar· a la Papelera; de lo contrario 
+se efectuarÌa una eliminaciÛn fÌsica, que no serÌa pasible de revertir. En cualquier caso, hay 
+que confirmar est· operaciÛn en un cuadro de di·logo de seguridad.
 </p>
 
 <h4><img src="../images/fsbox-rename.png" alt="rename" /> %::fsbox::mc::Rename%</h4>
 
 <p>
-Renombra la base de datos seleccionada. La operaci√≥n se puede dejar sin efecto con la tecla
-<key>ESC</key>. Se comprueba si el nuevo nombre de archivo es v√°lido, considerando los detalles 
-de los sistemas operativos soportados, as√≠ como el intercambio entre los diferentes sistemas 
+Renombra la base de datos seleccionada. La operaciÛn se puede dejar sin efecto con la tecla
+<key>Esc</key>. Se comprueba si el nuevo nombre de archivo es v·lido, considerando los detalles 
+de los sistemas operativos soportados, asÌ como el intercambio entre los diferentes sistemas 
 operativos.
 </p>
 
@@ -165,7 +165,7 @@ operativos.
 
 <p>
 Se duplica la base de datos seleccionada luego de elegir un nuevo nombre de archivo. 
-Esta operaci√≥n se puede abortar con la tecla <key>ESC</key>. Ninguna base de datos existente 
+Esta operaciÛn se puede abortar con la tecla <key>Esc</key>. Ninguna base de datos existente 
 se sobreescribe; no es posible sobreescribir una base de datos existente.
 </p>
 
@@ -173,49 +173,49 @@ se sobreescribe; no es posible sobreescribir una base de datos existente.
 
 <p>
 Archiva la base de datos actualmente seleccionada. El nombre del Archivo se suministra mediante
-el cuadro de di√°logo Selecci√≥n de archivos.
+el cuadro de di·logo SelecciÛn de archivos.
 </p>
 
 <h4><img src="../images/fsbox-newfolder.png" alt="newfolder" /> %::fsbox::mc::NewFolder%</h4>
 
 <p>
-Se crea una nueva carpeta, pero s√≥lo tras introducir un nombre v√°lido. Apretando <key>ESC</key> 
-se puede dejar sin efecto esta operaci√≥n. No es posible sobreescribir una ya existente.
+Se crea una nueva carpeta, pero sÛlo tras introducir un nombre v·lido. Apretando <key>Esc</key> 
+se puede dejar sin efecto esta operaciÛn. No es posible sobreescribir una ya existente.
 </p>
 
 <h3 id="FileName">Nombrar archivo</h3>
 
 <p>
-Este campo le permite introducir directamente el nombre del archivo, con una extensi√≥n opcional
+Este campo le permite introducir directamente el nombre del archivo, con una extensiÛn opcional
 para seleccionar el formato deseado para la base de datos. Si no se define un formato para la base
-de datos, un formato predeterminado se seleccionar√° autom√°ticamente. √âste ser√° el primer formato 
+de datos, un formato predeterminado se seleccionar· autom·ticamente. …ste ser· el primer formato 
 que aparezca entre los archivos seleccionados.
 </p>
 
 <h3 id="FilesType">Seleccionar Tipo de archivo</h3>
 
 <p>
-Aqu√≠ puede seleccionar el tipo de archivo para su base de datos. Se puede ver un panorama general
+AquÌ puede seleccionar el tipo de archivo para su base de datos. Se puede ver un panorama general
 de los tipos de formatos de bases de datos en
 <a href="Database-Formats.html">Formatos de bases de datos</a>.
 </p>
 
-<h3 id="Encoding">Seleccionar codificaci√≥n</h3>
+<h3 id="Encoding">Seleccionar codificaciÛn</h3>
 
 <dir><img src="images/file-selection-box-encoding.png" alt="encoding" /></dir>
 
 <p>
-La selecci√≥n de la codificaci√≥n adecuada depende del Formato de la base de datos.
-Encontrar√° m√°s informaci√≥n disponible en <a href="Database-Formats.html">Formatos de bases de datos</a>. 
-En la mayor√≠a de los casos, sin embargo, ser√° suficiente la auto-detecci√≥n.
+La selecciÛn de la codificaciÛn adecuada depende del Formato de la base de datos.
+Encontrar· m·s informaciÛn disponible en <a href="Database-Formats.html">Formatos de bases de datos</a>. 
+En la mayorÌa de los casos, sin embargo, ser· suficiente la auto-detecciÛn.
 </p>
 
 <h3 id="DND">Arrastrar &amp; Soltar</h3>
 
 <p>
 El Visor de archivos soporta Arrastrar &amp; Soltar. De esta manera se pueden manejar 
-(copiar o enlazar) las bases de datos con gestores de archivos externos. Adem√°s, mediante
-este medio se pueden abrir m√∫ltiples bases de datos sin depender del Selector de archivos; 
+(copiar o enlazar) las bases de datos con gestores de archivos externos. Adem·s, mediante
+este medio se pueden abrir m˙ltiples bases de datos sin depender del Selector de archivos; 
 es decir, mediante el manejo de las bases de datos en el
 <a href="Database-Switcher.html">Intercambiador de bases de datos</a>.
 </p>

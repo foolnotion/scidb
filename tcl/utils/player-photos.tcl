@@ -268,6 +268,63 @@ proc findPhotoFile {name} {
 }
 
 
+proc checkForUpdate {informProc} {
+	if {[catch {package require http 2.7}]} { return 0 }
+	if {[info exists env(http_proxy)]} { set http_proxy $env(http_proxy) } else { set http_proxy "" }
+	set i [string last : $http_proxy]
+	if {$i >= 0} {
+		set host [string range $http_proxy 0 [expr {$i - 1}]]
+		set port [string range $http_proxy [expr {$i + 1}] end]
+		if {[string is integer -strict $port]} {
+			::http::config -proxyhost $host -proxyport $port
+		}
+	}
+	::http::config -urlencoding utf-8
+	return [expr {![catch {
+		::http::geturl http://scidb-player-photos.googlecode.com/svn/trunk/TIMESTAMP \
+			-binary 1 \
+			-timeout 2000 \
+			-command [namespace code [list CheckForUpdateResponse $informProc]] \
+	}]}]
+}
+
+
+proc CheckForUpdateResponse {informProc token} {
+	set shared [InstallDir 1]
+	set local [InstallDir 0]
+	set code [::http::ncode $token]
+	set state [::http::status $token]
+	set srvTimestamp [string trim [::http::data $token]]
+	::http::cleanup $token
+	set item ""
+
+	if {$state eq "ok" && $code == 200} {
+		set locTimestamp [ReadTimestamp [InstallDir 1]]
+		set timestamp [ReadTimestamp [InstallDir 0]]
+		if {[string length $timestamp]} {
+			if {[string length $locTimestamp] == 0 || [string compare $locTimestamp $timestamp] < 0} {
+				set locTimestamp $timestamp
+			}
+		}
+		if {$srvTimestamp ne $locTimestamp} { set item photos }
+	}
+
+	$informProc $item
+}
+
+
+proc ReadTimestamp {dir} {
+	set timestamp ""
+	set file [file join $dir TIMESTAMP]
+	if {[file readable $file]} {
+		set f [open $file r]
+		set timestamp [string trim [read $f]]
+		close $f
+	}
+	return $timestamp
+}
+
+
 proc NormalizeName {name} {
 	set key [string map {. "" " " "" - ""} [string tolower $name]]
 	set index [string last ",dr" $key]

@@ -29,9 +29,12 @@
 namespace eval mc {
 
 set Key(Alt)		"Alt"
+set Key(BS)			"\u232b"
 set Key(Ctrl)		"Ctrl"
+set Key(Del)		"Delete"
 set Key(Down)		"\u2193"
 set Key(End)		"End"
+set Key(Enter)		"Enter"
 set Key(Esc)		"Esc"
 set Key(Home)		"Home"
 set Key(Left)		"\u2190"
