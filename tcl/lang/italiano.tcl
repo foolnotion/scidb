@@ -928,6 +928,9 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
+::application::analysis::mc::Status(mate)			"%s is mate" ;# NEW
+::application::analysis::mc::Status(stalemate)	"%s is stalemate" ;# NEW
+
 ::application::analysis::mc::NotSupported(standard)	"Questo motore non supporta scacchi standard."
 ::application::analysis::mc::NotSupported(chess960)	"Questo motore non supporta scacchi 960."
 ::application::analysis::mc::NotSupported(analyze)		"Questo motore non ha una modalità di analisi."

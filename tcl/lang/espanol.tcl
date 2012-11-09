@@ -940,6 +940,9 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
+::application::analysis::mc::Status(mate)			"%s is mate" ;# NEW
+::application::analysis::mc::Status(stalemate)	"%s is stalemate" ;# NEW
+
 ::application::analysis::mc::NotSupported(standard)	"Este motor de análisis no tiene soporte para ajedrez normal."
 ::application::analysis::mc::NotSupported(chess960)	"Este motor de análisis no tiene soporte para chess 960."
 ::application::analysis::mc::NotSupported(analyze)		"Este motor no tiene un modo de análisis."

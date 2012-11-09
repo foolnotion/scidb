@@ -927,6 +927,9 @@
 ::application::analysis::mc::Seconds				"s" ;# NEW
 ::application::analysis::mc::Minutes				"m" ;# NEW
 
+::application::analysis::mc::Status(mate)			"%s is mate" ;# NEW
+::application::analysis::mc::Status(stalemate)	"%s is stalemate" ;# NEW
+
 ::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
 ::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
 ::application::analysis::mc::NotSupported(analyze)		"This engine does not have an analysis mode." ;# NEW

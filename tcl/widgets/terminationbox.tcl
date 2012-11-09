@@ -74,7 +74,6 @@ variable reasons {Normal Unplayed Abandoned Adjudication Death Emergency
 proc buildText {reason state result toMove} {
 	switch $state {
 		Mate - Stalemate {
-			if {$toMove eq "White"} { set toMove Black } else { set toMove White }
 			set side [set ::mc::[string toupper $toMove 0 0]]
 			return [format $mc::State($state) $side]
 		}
@@ -83,14 +82,14 @@ proc buildText {reason state result toMove} {
 	if {[string length $reason] == 0} { return ""  }
 
 	switch $reason {
-		case Normal {
+		Normal {
 			if {[info exists mc::Result($result)]} {
 				return $mc::Result($result)
 			}
 			return ""
 		}
 
-		case TimeForfeit {
+		TimeForfeit {
 			 switch $result {
 				 1-0		{ return [format $mc::Reason(TimeForfeit) $mc::White] }
 				 0-1		{ return [format $mc::Reason(TimeForfeit) $mc::Black] }
