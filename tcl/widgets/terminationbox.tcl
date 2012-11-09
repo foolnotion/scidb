@@ -91,8 +91,8 @@ proc buildText {reason state result toMove} {
 
 		TimeForfeit {
 			 switch $result {
-				 1-0		{ return [format $mc::Reason(TimeForfeit) $mc::White] }
-				 0-1		{ return [format $mc::Reason(TimeForfeit) $mc::Black] }
+				 1-0		{ return [format $mc::Reason(TimeForfeit) $mc::Black] }
+				 0-1		{ return [format $mc::Reason(TimeForfeit) $mc::White] }
 				 1/2-1/2	{ return $mc::Reason(TimeForfeit,both) }
 				 default	{ return "" }
 			 }

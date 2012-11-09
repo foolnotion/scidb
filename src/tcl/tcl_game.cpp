@@ -1974,7 +1974,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 
 				case 'e':	// termination
-					setResult(termination::toString(Scidb->gameInfoAt().terminationReason()));
+					setResult(termination::toString(Scidb->gameInfoAt(pos).terminationReason()));
 					break;
 			}
 			break;
@@ -1987,7 +1987,7 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 
 				case 'v':																			// over?
-					setResult(bool(Scidb->game().currentBoard().checkState() & (Board::CheckMate | Board::StaleMate)));
+					setResult(bool(Scidb->game(pos).currentBoard().checkState() & (Board::CheckMate | Board::StaleMate)));
 					break;
 			}
 			break;
@@ -2120,18 +2120,18 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				case 'a':	// langSet
 					if (objc >= 4)
 					{
-						char const* pos(stringFromObj(objc, objv, nextArg));
+						char const* position(stringFromObj(objc, objv, nextArg));
 						char const* lang(stringFromObj(objc, objv, nextArg + 2));
 						edit::Key	key(stringFromObj(objc, objv, nextArg + 1));
 
-						move::Position p = *pos == 'a' ? move::Ante : move::Post;
-						if (*pos == 't')
+						move::Position p = *position == 'a' ? move::Ante : move::Post;
+						if (*position == 't')
 							key.incrementPly();
-						setResult(Scidb->game().containsLanguage(key, p, lang));
+						setResult(Scidb->game(pos).containsLanguage(key, p, lang));
 					}
 					else
 					{
-						Game::LanguageSet const& langSet = Scidb->game().languageSet();
+						Game::LanguageSet const& langSet = Scidb->game(pos).languageSet();
 						mstl::string languages;
 
 						for (Game::LanguageSet::const_iterator i = langSet.begin(); i != langSet.end(); ++i)
