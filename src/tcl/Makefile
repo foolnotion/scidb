@@ -40,9 +40,6 @@ SRC_CXX = \
 	tcl_view.cpp \
 	tcl_zlib.cpp \
 
-#	tclcurl-multi.c \
-#	tclcurl.c \
-
 SRC	= $(SRC_CXX) #$(SRC_C)
 OBJS	= $(SRC_CXX:.cpp=.o) #$(SRC_C:.c=.o)
 LIB	= libtcl

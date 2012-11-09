@@ -1655,15 +1655,33 @@
 ::genderbox::mc::Gender(c) "Computer"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal				"Normal"
-::terminationbox::mc::Unplayed			"Nicht gespielt"
-::terminationbox::mc::Abandoned			"Abgebrochen"
-::terminationbox::mc::Adjudication		"Abgeschätzt"
-::terminationbox::mc::Death				"Tod"
-::terminationbox::mc::Emergency			"Notfall"
-::terminationbox::mc::RulesInfraction	"Regelübertretung"
-::terminationbox::mc::TimeForfeit		"Zeitüberschreitung"
-::terminationbox::mc::Unterminated		"Unvollendet"
+::terminationbox::mc::Normal							"Normal"
+::terminationbox::mc::Unplayed						"Nicht gespielt"
+::terminationbox::mc::Abandoned						"Abgebrochen"
+::terminationbox::mc::Adjudication					"Abgeschätzt"
+::terminationbox::mc::Death							"Tod"
+::terminationbox::mc::Emergency						"Notfall"
+::terminationbox::mc::RulesInfraction				"Regelübertretung"
+::terminationbox::mc::TimeForfeit					"Zeitüberschreitung"
+::terminationbox::mc::Unterminated					"Unvollendet"
+
+::terminationbox::mc::State(Mate)					"%s ist schachmatt"
+::terminationbox::mc::State(Stalemate)				"%s ist patt"
+
+::terminationbox::mc::Result(1-0)					"Weiß gab auf"
+::terminationbox::mc::Result(0-1)					"Schwarz gab auf"
+::terminationbox::mc::Result(0-0)					"Für beide Spieler als verloren eklärt"
+::terminationbox::mc::Result(1/2-1/2)				"Remis vereinbart"
+
+::terminationbox::mc::Reason(Unplayed)				"Die Partie wurde nicht gespielt"
+::terminationbox::mc::Reason(Abandoned)			"Die Partie wurde abgebrochen"
+::terminationbox::mc::Reason(Adjudication)		"Abschätzung"
+::terminationbox::mc::Reason(Death)					""
+::terminationbox::mc::Reason(Emergency)			"Aufgrund eines Ereignisses unvollendet"
+::terminationbox::mc::Reason(RulesInfraction)	"Entschieden aufgrund einer Regelübertretung"
+::terminationbox::mc::Reason(TimeForfeit)			"%s überschritt die Bedenkzeit"
+::terminationbox::mc::Reason(TimeForfeit,both)	"Beide Spieler überschritten die Bedenkzeit"
+::terminationbox::mc::Reason(Unterminated)		"Unvollendet"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Am Brett"

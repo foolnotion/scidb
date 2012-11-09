@@ -1108,7 +1108,6 @@ namespace save
 	bool isOk(State state);
 }
 
-
 namespace load
 {
 	enum State
@@ -1118,6 +1117,18 @@ namespace load
 		Failed,
 		Corrupted,
 	};
+};
+
+namespace board
+{
+	enum Status
+	{
+		None,
+		Mate,
+		Stalemate,
+	};
+
+	mstl::string toString(Status status);
 };
 
 namespace display

@@ -4004,4 +4004,18 @@ variant::fromIdn(unsigned idn)
 	return Other;
 }
 
+
+mstl::string
+board::toString(Status status)
+{
+	switch (status)
+	{
+		case None:			return mstl::string::empty_string;
+		case Mate:			return "Mate"; break;
+		case Stalemate:	return "Stalemate"; break;
+	}
+
+	return mstl::string::empty_string; // satisfies the compiler
+}
+
 // vi:set ts=3 sw=3:

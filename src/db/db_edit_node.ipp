@@ -29,7 +29,6 @@
 namespace db {
 namespace edit {
 
-inline Root::Root() :m_opening(0), m_languages(0), m_variation(0) {}
 inline KeyNode::KeyNode(Key const& key) :m_key(key) {}
 inline KeyNode::KeyNode(Key const& key, char prefix) :m_key(key, prefix) {}
 inline Variation::Variation(Key const& key) :KeyNode(key) {}

@@ -1663,15 +1663,33 @@
 ::genderbox::mc::Gender(c) "Computer"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal				"Normale"
-::terminationbox::mc::Unplayed			"Non Giocata"
-::terminationbox::mc::Abandoned			"Abbandonata"
-::terminationbox::mc::Adjudication		"Aggiudicata"
-::terminationbox::mc::Death				"Morte"
-::terminationbox::mc::Emergency			"Emergenza"
-::terminationbox::mc::RulesInfraction	"Infrazione regole"
-::terminationbox::mc::TimeForfeit		"Tempo scaduto"
-::terminationbox::mc::Unterminated		"Indeterminato"
+::terminationbox::mc::Normal							"Normale"
+::terminationbox::mc::Unplayed						"Non Giocata"
+::terminationbox::mc::Abandoned						"Abbandonata"
+::terminationbox::mc::Adjudication					"Aggiudicata"
+::terminationbox::mc::Death							"Morte"
+::terminationbox::mc::Emergency						"Emergenza"
+::terminationbox::mc::RulesInfraction				"Infrazione regole"
+::terminationbox::mc::TimeForfeit					"Tempo scaduto"
+::terminationbox::mc::Unterminated					"Indeterminato"
+
+::terminationbox::mc::State(Mate)					"%s is checkmate" ;# NEW
+::terminationbox::mc::State(Stalemate)				"%s is stalemate" ;# NEW
+
+::terminationbox::mc::Result(1-0)					"White resigned" ;# NEW
+::terminationbox::mc::Result(0-1)					"Black resigned" ;# NEW
+::terminationbox::mc::Result(0-0)					"Declared lost for both players" ;# NEW
+::terminationbox::mc::Result(1/2-1/2)				"Draw agreed" ;# NEW
+
+::terminationbox::mc::Reason(Unplayed)				"Game is unplayed" ;# NEW
+::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
+::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
+::terminationbox::mc::Reason(Death)					"" ;# NEW
+::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency" ;# NEW
+::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit)			"%s forfeits on time" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time" ;# NEW
+::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"A tavolino"

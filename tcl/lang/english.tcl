@@ -1654,15 +1654,33 @@
 ::genderbox::mc::Gender(c) "Computer"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal				"Normal"
-::terminationbox::mc::Unplayed			"Unplayed"
-::terminationbox::mc::Abandoned			"Abandoned"
-::terminationbox::mc::Adjudication		"Adjudication"
-::terminationbox::mc::Death				"Death"
-::terminationbox::mc::Emergency			"Emergency"
-::terminationbox::mc::RulesInfraction	"Rules infraction"
-::terminationbox::mc::TimeForfeit		"Time forfeit"
-::terminationbox::mc::Unterminated		"Unterminated"
+::terminationbox::mc::Normal							"Normal"
+::terminationbox::mc::Unplayed						"Unplayed"
+::terminationbox::mc::Abandoned						"Abandoned"
+::terminationbox::mc::Adjudication					"Adjudication"
+::terminationbox::mc::Death							"Death"
+::terminationbox::mc::Emergency						"Emergency"
+::terminationbox::mc::RulesInfraction				"Rules infraction"
+::terminationbox::mc::TimeForfeit					"Time forfeit"
+::terminationbox::mc::Unterminated					"Unterminated"
+
+::terminationbox::mc::State(Mate)					"%s is checkmate"
+::terminationbox::mc::State(Stalemate)				"%s is stalemate"
+
+::terminationbox::mc::Result(1-0)					"White resigned"
+::terminationbox::mc::Result(0-1)					"Black resigned"
+::terminationbox::mc::Result(0-0)					"Declared lost for both players"
+::terminationbox::mc::Result(1/2-1/2)				"Draw agreed"
+
+::terminationbox::mc::Reason(Unplayed)				"Game is unplayed"
+::terminationbox::mc::Reason(Abandoned)			"Game is abandoned"
+::terminationbox::mc::Reason(Adjudication)		"Adjudication"
+::terminationbox::mc::Reason(Death)					""
+::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency"
+::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction"
+::terminationbox::mc::Reason(TimeForfeit)			"%s forfeits on time"
+::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time"
+::terminationbox::mc::Reason(Unterminated)		"Unterminated"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Over the board"

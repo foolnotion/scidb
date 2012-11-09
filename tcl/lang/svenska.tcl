@@ -1662,15 +1662,33 @@
 ::genderbox::mc::Gender(c) "Dator"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal				"Normalt"
-::terminationbox::mc::Unplayed			"Inte spelat"
-::terminationbox::mc::Abandoned			"Avbrutet"
-::terminationbox::mc::Adjudication		"Avdömt"
-::terminationbox::mc::Death				"Död"
-::terminationbox::mc::Emergency			"Nödsituation"
-::terminationbox::mc::RulesInfraction	"Regelbrott"
-::terminationbox::mc::TimeForfeit		"Tidsöverskridning"
-::terminationbox::mc::Unterminated		"Ej färdigspelat"
+::terminationbox::mc::Normal							"Normalt"
+::terminationbox::mc::Unplayed						"Inte spelat"
+::terminationbox::mc::Abandoned						"Avbrutet"
+::terminationbox::mc::Adjudication					"Avdömt"
+::terminationbox::mc::Death							"Död"
+::terminationbox::mc::Emergency						"Nödsituation"
+::terminationbox::mc::RulesInfraction				"Regelbrott"
+::terminationbox::mc::TimeForfeit					"Tidsöverskridning"
+::terminationbox::mc::Unterminated					"Ej färdigspelat"
+
+::terminationbox::mc::State(Mate)					"%s is checkmate" ;# NEW
+::terminationbox::mc::State(Stalemate)				"%s is stalemate" ;# NEW
+
+::terminationbox::mc::Result(1-0)					"White resigned" ;# NEW
+::terminationbox::mc::Result(0-1)					"Black resigned" ;# NEW
+::terminationbox::mc::Result(0-0)					"Declared lost for both players" ;# NEW
+::terminationbox::mc::Result(1/2-1/2)				"Draw agreed" ;# NEW
+
+::terminationbox::mc::Reason(Unplayed)				"Game is unplayed" ;# NEW
+::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
+::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
+::terminationbox::mc::Reason(Death)					"" ;# NEW
+::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency" ;# NEW
+::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit)			"%s forfeits on time" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time" ;# NEW
+::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Vid bordet"

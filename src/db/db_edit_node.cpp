@@ -542,7 +542,7 @@ Node::operator==(Node const* node) const
 
 
 void
-Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags)
+Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags, board::Status status, color::ID toMove)
 {
 	result::ID result = result::fromString(tags.value(tag::Result));
 
@@ -551,7 +551,7 @@ Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags)
 	for (unsigned i = 0; i < nodes.size(); ++i)
 		nodes[i]->visit(visitor);
 
-	visitor.finish(result);
+	visitor.finish(result, status, toMove);
 }
 
 
@@ -1138,6 +1138,17 @@ Move::visit(Visitor& visitor) const
 }
 
 
+Root::Root()
+	:m_opening(0)
+	,m_languages(0)
+	,m_variation(0)
+	,m_result(result::Unknown)
+	,m_reason(board::None)
+	,m_toMove(color::White)
+{
+}
+
+
 Root::~Root() throw()
 {
 	delete m_opening;
@@ -1154,7 +1165,7 @@ Root::visit(Visitor& visitor) const
 	m_opening->visit(visitor);
 	m_languages->visit(visitor);
 	m_variation->visit(visitor);
-	visitor.finish(m_result);
+	visitor.finish(m_result, m_reason, m_toMove);
 }
 
 
@@ -1230,6 +1241,7 @@ Root::makeList(TagSet const& tags,
 					uint16_t idn,
 					Eco eco,
 					db::Board const& startBoard,
+					db::Board const& finalBoard,
 					MoveNode const* node,
 					unsigned linebreakThreshold,
 					unsigned linebreakMaxLineLength,
@@ -1254,6 +1266,8 @@ Root::makeList(TagSet const& tags,
 	root->m_languages = new Languages;
 	root->m_variation = new Variation(key);
 	root->m_result = result::fromString(tags.value(tag::Result));
+	root->m_reason = finalBoard.status();
+	root->m_toMove = finalBoard.sideToMove();
 
 	KeyNode::List& result = root->m_variation->m_list;
 
@@ -1317,6 +1331,7 @@ Root::makeList(TagSet const& tags,
 	root->m_result = result::fromString(tags.value(tag::Result));
 
 	makeList(work, var->m_list, node, 1, 1);
+	work.pushBreak();
 
 	return root;
 }

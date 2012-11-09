@@ -294,6 +294,8 @@ public:
 	Square kingSquare(color::ID color) const;
 	/// Return whether the move is valid
 	bool checkMove(Move const& move, move::Constraint flag = move::AllowIllegalMove) const;
+	/// Returns the current board status.
+	board::Status status() const;
 
 	// Query other formats
 

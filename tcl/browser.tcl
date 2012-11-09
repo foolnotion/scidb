@@ -429,6 +429,16 @@ proc showNext {w position flag} {
 }
 
 
+proc makeResult {result state toMove reason} {
+	set reasonText [::terminationbox::buildText $reason $state $result $toMove]
+	set result [::util::formatResult $result]
+	if {$result ne "*"} { set r1 $result } else { set r1 "" }
+	if {[string length $reasonText]} { set r2 $reasonText } else { set r2 "" }
+	if {[string length $r1] || [string length $r2]} { return [list $r1 $r2] }
+	return {}
+}
+
+
 proc makeOpeningLines {data} {
 	lassign $data idn position eco opening variation subvar
 	set opening1 ""
@@ -620,7 +630,7 @@ proc NextGame {parent position {step 0}} {
 	if {$index < 0 || $index == $count} { return }
 	set Vars(index) $index
 	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base)]
-	set Vars(result) [::util::formatResult [::gametable::column $Vars(info) result]]
+	set Vars(result) [list [::util::formatResult [::gametable::column $Vars(info) result]] ""]
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set key $Vars(base):$number:$Vars(view)
 	set i [lsearch -exact $Priv($key) $parent]
@@ -674,10 +684,7 @@ proc LanguageChanged {position} {
 		set w $Vars(pgn)
 		$w configure -state normal
 		$w delete 1.0 end
-		$w insert end "<$::application::pgn::mc::EmptyGame> " empty
-		if {[string length $Vars(result)] > 1} {
-			$w insert end $Vars(result) result
-		}
+		PrintResult $w $position
 		$w configure -state disabled
 	}
 
@@ -929,15 +936,9 @@ proc UpdatePGN {position data {w {}}} {
 			}
 
 			result {
-				set Vars(result) [::util::formatResult [lindex $node 1]]
-				if {[::scidb::game::query $position length] == 0} {
-					$w insert end "<$::application::pgn::mc::EmptyGame>" empty
-				}
-				if {[string length $Vars(result)] > 1} {
-					if {$Options(style:column)} { set space "\n" } else { set space " " }
-					$w insert end $space
-					$w insert end $Vars(result) result
-				}
+				set reason [::scidb::game::query $position termination]
+				set Vars(result) [makeResult {*}[lrange $node 1 3] $reason]
+				PrintResult $w $position
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Colors(background) }
 				}
@@ -972,6 +973,27 @@ proc UpdatePGN {position data {w {}}} {
 					}
 				}
 			}
+		}
+	}
+}
+
+
+proc PrintResult {w position} {
+	variable ${position}::Vars
+	variable ::pgn::browser::Options
+
+	if {[::scidb::game::query $position length] == 0} {
+		$w insert end "<$::application::pgn::mc::EmptyGame>" empty
+	}
+	if {[llength $Vars(result)]} {
+		lassign $Vars(result) result reason
+		$w insert end \n
+		if {[string length $result]} {
+			$w insert end $result result
+		}
+		if {[string length $reason]} {
+			if {[string length $result]} { $w insert current " " }
+			$w insert current "($reason)"
 		}
 	}
 }

@@ -129,6 +129,13 @@ public:
 		Transpose,
 	};
 
+	enum Finish
+	{
+		Unknown,
+		Mate,
+		Stalemate,
+	};
+
 	typedef mstl::list<mstl::string> StringList;
 	typedef mstl::vector<edit::Node const*> DiffList;
 	typedef mstl::vector<Move> History;
@@ -149,7 +156,11 @@ public:
 		virtual void boardMove(Board const& board, Move const& move, bool forward) = 0;
 
 		virtual void updateEditor(edit::Root const* node, move::Notation moveStyle) = 0;
-		virtual void updateEditor(DiffList const& nodes, TagSet const& tags, move::Notation moveStyle) = 0;
+		virtual void updateEditor(	DiffList const& nodes,
+											TagSet const& tags,
+											move::Notation moveStyle,
+											board::Status status,
+											color::ID toMove) = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;

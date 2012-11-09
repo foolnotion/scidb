@@ -34,15 +34,33 @@ proc terminationbox {w args} {
 namespace eval terminationbox {
 namespace eval mc {
 
-set Normal				"Normal"
-set Unplayed			"Unplayed"
-set Abandoned			"Abandoned"
-set Adjudication		"Adjudication"
-set Death		"Death"
-set Emergency			"Emergency"
-set RulesInfraction	"Rules infraction"
-set TimeForfeit		"Time forfeit"
-set Unterminated		"Unterminated"
+set Normal							"Normal"
+set Unplayed						"Unplayed"
+set Abandoned						"Abandoned"
+set Adjudication					"Adjudication"
+set Death							"Death"
+set Emergency						"Emergency"
+set RulesInfraction				"Rules infraction"
+set TimeForfeit					"Time forfeit"
+set Unterminated					"Unterminated"
+
+set State(Mate)					"%s is checkmate"
+set State(Stalemate)				"%s is stalemate"
+
+set Result(1-0)					"White resigned"
+set Result(0-1)					"Black resigned"
+set Result(0-0)					"Declared lost for both players"
+set Result(1/2-1/2)				"Draw agreed"
+
+set Reason(Unplayed)				"Game is unplayed"
+set Reason(Abandoned)			"Game is abandoned"
+set Reason(Adjudication)		"Adjudication"
+set Reason(Death)					""
+set Reason(Emergency)			"Abandoned due to an emergency"
+set Reason(RulesInfraction)	"Decided due to a rules infraction"
+set Reason(TimeForfeit)			"%s forfeits on time"
+set Reason(TimeForfeit,both)	"Both players forfeits on time"
+set Reason(Unterminated)		"Unterminated"
 
 } ;# namespace mc
 
@@ -51,6 +69,39 @@ namespace import ::tcl::mathfunc::max
 
 variable reasons {Normal Unplayed Abandoned Adjudication Death Emergency
 						RulesInfraction TimeForfeit Unterminated}
+
+
+proc buildText {reason state result toMove} {
+	switch $state {
+		Mate - Stalemate {
+			if {$toMove eq "White"} { set toMove Black } else { set toMove White }
+			set side [set ::mc::[string toupper $toMove 0 0]]
+			return [format $mc::State($state) $side]
+		}
+	}
+
+	if {[string length $reason] == 0} { return ""  }
+
+	switch $reason {
+		case Normal {
+			if {[info exists mc::Result($result)]} {
+				return $mc::Result($result)
+			}
+			return ""
+		}
+
+		case TimeForfeit {
+			 switch $result {
+				 1-0		{ return [format $mc::Reason(TimeForfeit) $mc::White] }
+				 0-1		{ return [format $mc::Reason(TimeForfeit) $mc::Black] }
+				 1/2-1/2	{ return $mc::Reason(TimeForfeit,both) }
+				 default	{ return "" }
+			 }
+		}
+	}
+
+	return $mc::Reason($reason)
+}
 
 
 proc minWidth {} {

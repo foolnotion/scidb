@@ -461,6 +461,20 @@ Board::checkState() const
 }
 
 
+board::Status
+Board::status() const
+{
+	unsigned state = checkState();
+
+	if (state & CheckMate)
+		return board::Mate;
+	if (state & StaleMate)
+		return board::Stalemate;
+
+	return board::None;
+}
+
+
 uint64_t
 Board::hashNoEP() const
 {

@@ -255,12 +255,14 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, m_start);
 	}
 
-	void finish(result::ID result) override
+	void finish(result::ID result, ::db::board::Status reason, color::ID toMove) override
 	{
-		Tcl_Obj* objv[2];
+		Tcl_Obj* objv[4];
 
 		objv[0] = m_result;
 		objv[1] = Tcl_NewStringObj(result::toString(result), -1);
+		objv[2] = Tcl_NewStringObj(::db::board::toString(reason), -1);
+		objv[3] = Tcl_NewStringObj(color::printColor(toMove), -1);
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
@@ -801,12 +803,16 @@ struct Subscriber : public Game::Subscriber
 		}
 	}
 
-	void updateEditor(Game::DiffList const& nodes, TagSet const& tags, move::Notation moveStyle) override
+	void updateEditor(Game::DiffList const& nodes,
+							TagSet const& tags,
+							move::Notation moveStyle,
+							::db::board::Status status,
+							color::ID toMove) override
 	{
 		if (m_pgn)
 		{
 			Visitor visitor(moveStyle);
-			edit::Node::visit(visitor, nodes, tags);
+			edit::Node::visit(visitor, nodes, tags, status, toMove);
 			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
 	}
@@ -1956,10 +1962,22 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (cmd[0])
 	{
 		case 'u': setResult(toString(Scidb->game(pos).undoCommand())); break;	// undo
-		case 't': setResult(Scidb->hasTrialMode(pos)); break;							// trial
 		case 'i': setResult(Scidb->game(pos).idn()); break;							// idn
 		case 'f': setResult(Scidb->game(pos).startBoard().toFen()); break;		// fen
 		case 'v': setResult(Scidb->game(pos).hasVariations()); break;				// variations?
+
+		case 't':
+			switch (cmd[1])
+			{
+				case 'r':	// trial
+					setResult(Scidb->hasTrialMode(pos));
+					break;
+
+				case 'e':	// termination
+					setResult(termination::toString(Scidb->gameInfoAt().terminationReason()));
+					break;
+			}
+			break;
 
 		case 'o':
 			switch (cmd[1])

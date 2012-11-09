@@ -948,9 +948,10 @@ proc DoLayout {position data {w {}}} {
 			}
 
 			result {
-				set result [lindex $node 1]
+				set reason [::scidb::game::query $position termination]
+				set resultList [list {*}[lrange $node 1 2] $reason]
 
-				if {$Vars(result:$position) != $result} {
+				if {$Vars(result:$position) != $resultList} {
 					if {[string length $Vars(last:$position)]} {
 						$w mark gravity $Vars(last:$position) left
 					}
@@ -958,25 +959,32 @@ proc DoLayout {position data {w {}}} {
 					$w mark set current m-0
 					set prevChar [$w get current-1c]
 					$w delete current end
-					set result [::util::formatResult $result]
-					if {$result eq "*"} {
+					set result [::browser::makeResult {*}[lrange $node 1 3] $reason]
+					if {[llength $result]} {
+						lassign $result result reason
+						if {$Options(spacing:paragraph)} { $w insert current \n }
+						if {[string length $result]} {
+							$w insert current $result result
+						}
+						if {[string length $reason]} {
+							if {[string length $result]} { $w insert current " " }
+							$w insert current "($reason)"
+						}
+					} else {
 						# NOTE: We need a blind character between the marks because
 						# the editor is permuting consecutive marks.
 						$w insert current "\u200b"
-					} else {
-						if {$Options(spacing:paragraph)} { $w insert current \n }
-						$w insert current $result result
 					}
 					$w mark gravity m-0 right
 					# NOTE: the text editor has a severe bug:
 					# If the char after <pos1> is a newline, the command
 					# '<text> delete <pos1> <pos2>' will also delete one
-					# newline before <pos1>. We should catch this case:
+					# newline before <pos1>. We have to catch this case:
 					if {$prevChar eq "\n"} { $w insert m-0 \n }
 					if {[string length $Vars(last:$position)]} {
 						$w mark gravity $Vars(last:$position) right
 					}
-					set Vars(result:$position) $result
+					set Vars(result:$position) $resultList
 				}
 				# NOTE: very slow!!
 #				foreach mark $Vars(marks) { $w mark gravity $mark right }
