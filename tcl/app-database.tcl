@@ -1696,7 +1696,6 @@ proc LanguageChanged {} {
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
 	UpdateSwitcher $Vars(canvas) $clipbaseName
-	MakeUpdateInfo
 
 	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
 
