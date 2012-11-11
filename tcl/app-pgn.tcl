@@ -1144,7 +1144,17 @@ proc InsertMove {position w level key data} {
 					")" { $w insert current " )" bracket }
 					"e" { $w insert current "\n"; $w insert current "<$mc::EmptyGame>" empty }
 					"s" { if {[$w index current] ne "1.1"} { $w insert current "\n" } }
-					"]" { if {$flag && $level > $Options(indent:max)} { $w insert current "\]" bracket } }
+
+					"]" {
+						if {$flag && $level > $Options(indent:max)} {
+							set txt "]"
+						} else {
+							# NOTE: We need a blind character between the marks because
+							# the editor is permuting consecutive marks.
+							set txt "\u200b"
+						}
+						$w insert current $txt bracket
+					}
 
 					default {
 						variable cursor::collapse
