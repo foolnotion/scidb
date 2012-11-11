@@ -306,6 +306,7 @@ proc releaseSquare {x y state} {
 			# else current square is the square user pressed the button on, so we do nothing
 		} else {
 			# user has dragged to another square, so try to add this as a move
+			set Square(current) -1
 			::board::stuff::hilite $board $selected off
 			set piece [::board::stuff::piece $board $square]
 			::board::stuff::animate $board 0
