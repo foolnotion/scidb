@@ -47,8 +47,8 @@ set Unterminated					"Unterminated"
 set State(Mate)					"%s is checkmate"
 set State(Stalemate)				"%s is stalemate"
 
-set Result(1-0)					"White resigned"
-set Result(0-1)					"Black resigned"
+set Result(1-0)					"Black resigned"
+set Result(0-1)					"White resigned"
 set Result(0-0)					"Declared lost for both players"
 set Result(1/2-1/2)				"Draw agreed"
 

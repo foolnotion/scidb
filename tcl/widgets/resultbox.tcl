@@ -162,7 +162,6 @@ proc WidgetProc {w command args} {
 
 
 proc Select {w key} {
-	if {[$w popdown?]} { return }
 	if {[string length [$w get]] != 1} { return }
 
 	set index -1
