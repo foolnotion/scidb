@@ -255,7 +255,7 @@ public:
 		mstl::string s;
 		variation(line).print(s, halfMoveNo);
 
-		int score = mstl::min(999, mstl::max(-999, this->score(line)));
+		int score = mstl::max(-9900, mstl::min(9900, this->score(line)));
 
 		Tcl_Obj* objs[8];
 
@@ -278,7 +278,9 @@ public:
 			for (unsigned i = 0; i < n; ++i)
 				v[i] = Tcl_NewBooleanObj(isBestLine(i));
 
-			objs[0] = Tcl_NewIntObj(bestScore());
+			int score = mstl::max(-9900, mstl::min(9900, bestScore()));
+
+			objs[0] = Tcl_NewIntObj(score);
 			objs[1] = Tcl_NewIntObj(shortestMate());
 			objs[2] = Tcl_NewListObj(n, v);
 

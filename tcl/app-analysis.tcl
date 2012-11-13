@@ -119,7 +119,7 @@ proc build {parent width height} {
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
 	set charwidth [font measure $Options(font) "0"]
-	set minsize [expr {11*$charwidth}]
+	set minsize [expr {12*$charwidth}]
 
 	set w [ttk::frame $parent.f]
 
