@@ -507,11 +507,15 @@ proc busyCursor {w {state on}} {
 
 	if {$action eq "hold"} { ::update }
 
-	::scidb::tk::busy $action .application
+	foreach toplevel {.application .setupEngine .help} {
+		if {[winfo exists $toplevel]} {
+			::scidb::tk::busy $action $toplevel
 
-	if {[tk windowingsystem] eq "x11"} {
-		foreach tlv [winfo children .application] {
-			BusyCursor $action $tlv $w
+			if {[tk windowingsystem] eq "x11"} {
+				foreach tlv [winfo children $toplevel] {
+					BusyCursor $action $tlv $w
+				}
+			}
 		}
 	}
 

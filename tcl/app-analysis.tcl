@@ -290,12 +290,13 @@ proc build {parent width height} {
 		-command [namespace code [list Pause $tree]] \
 	]
 	lappend Vars(toolbar:childs) $Vars(button:pause)
-	::toolbar::add $tbControl checkbutton \
+	set Vars(button:lock) [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLock \
 		-variable [namespace current]::Vars(engine:locked) \
 		-tooltipvar [namespace current]::mc::LockEngine \
 		-command [namespace code EngineLock] \
-		;
+	]
+	lappend Vars(toolbar:childs) $Vars(button:lock)
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
 		-variable [namespace current]::Options(engine:multiPV) \

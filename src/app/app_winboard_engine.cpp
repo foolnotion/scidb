@@ -1184,7 +1184,9 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 	}
 	else
 	{
-		int varno;
+		int varno = -1;
+
+		m_analyzeResponse = true;
 
 		if (moves.size() == 1)
 		{
@@ -1192,32 +1194,28 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 			setCurrentMove(0, 0, moves[0]);
 			updateCurrMove();
+
+			if (msg.back() == '!')
+			{
+				updateTimeInfo();
+				return;
+			}
 		}
-		else
-		{
+
+		if (varno == -1)
 			varno = setVariation(0, moves);
-		}
 
-		if (varno >= 0)
+		if (board.checkState() & Board::CheckMate)
 		{
-			if (board.checkState() & Board::CheckMate)
-			{
-				int n = board.moveNumber() - m_board.moveNumber();
-				setMate(varno, board.whiteToMove() ? -n : +n);
-			}
-			else
-			{
-				setScore(varno, m_dontInvertScore || m_board.whiteToMove() ? score : -score);
-			}
-
-			updatePvInfo(varno);
+			int n = mstl::div2(board.plyNumber() - m_board.plyNumber() + 1);
+			setMate(varno, board.whiteToMove() ? -n : +n);
 		}
 		else
 		{
-			updateTimeInfo();
+			setScore(varno, m_dontInvertScore || m_board.whiteToMove() ? score : -score);
 		}
 
-		m_analyzeResponse = true;
+		updatePvInfo(varno);
 	}
 }
 
