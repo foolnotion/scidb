@@ -538,7 +538,7 @@ proc SetState {state} {
 }
 
 
-proc GetEvaluation {score mate} {
+proc EvalText {score mate} {
 	variable ScoreToEval
 
 	if {$mate} {
@@ -558,6 +558,13 @@ proc GetEvaluation {score mate} {
 	}
 
 	return [::font::mapNagToSymbol $nag]
+}
+
+
+proc ScoreText {score mate} {
+	if {$mate == 0} { return [FormatScore $score] }
+	if {$mate < 0} { set sign "-" } else { set sign "+" }
+	return "$sign#[abs $mate]"
 }
 
 
@@ -621,14 +628,8 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 
 	Display(time) $time $depth $seldepth $nodes
 
-	if {$mate} {
-		if {$mate < 0} { set scoreTxt "-" } else { set scoreTxt "+" }
-		set scoreTxt "#[abs $mate]"
-	} else {
-		set scoreTxt [FormatScore $score]
-	}
-
-	set evalTxt [GetEvaluation $score $mate]
+	set evalTxt [EvalText $score $mate]
+	set scoreTxt [ScoreText $score $mate]
 
 	$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
 	$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
@@ -648,7 +649,7 @@ proc Display(bestscore) {score mate bestLines} {
 	} else {
 		set scoreTxt "  "
 		append scoreTxt [FormatScore $score]
-		lassign [::font::splitAnnotation [GetEvaluation $score $mate]] value sym tags
+		lassign [::font::splitAnnotation [EvalText $score $mate]] value sym tags
 		lappend tags center
 		$Vars(score) insert end $sym $tags
 	}
@@ -660,7 +661,8 @@ proc Display(bestscore) {score mate bestLines} {
 		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $Vars(best:$best)
 		$Vars(tree) item element configure Line$line Value elemTextFig -fill $Vars(best:$best)
 		if {$best} {
-			set evalTxt [GetEvaluation $score $mate]
+			set evalTxt [EvalText $score $mate]
+			set scoreTxt [ScoreText $score $mate]
 			$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
 			$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
 		}
