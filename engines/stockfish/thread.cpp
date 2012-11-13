@@ -424,6 +424,13 @@ void ThreadPool::start_searching(const Position& pos, const LimitsType& limits,
 
   RootPosition = pos;
   Limits = limits;
+
+#if 1 // This hack is fixing an invalid access to memory
+  static StateInfo current;
+  current = *pos.currentStateInfo();
+  const_cast<Position&>(pos).reset(&current);
+#endif
+
   SetupStates = states; // Ownership transfer here
   RootMoves.clear();
 

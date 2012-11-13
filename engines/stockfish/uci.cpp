@@ -55,7 +55,6 @@ namespace {
 void UCI::loop(const string& args) {
 
   Position pos(StartFEN, false, Threads.main_thread()); // The root position
-  StateInfo* state = pos.state();
   string cmd, token;
 
   while (token != "quit")
@@ -74,7 +73,6 @@ void UCI::loop(const string& args) {
       {
           Search::Signals.stop = true;
           Threads.wait_for_search_finished(); // Cannot quit while threads are running
-          pos.resetState(state); // FIX: we have to reset the state (Gregor Cramer)
       }
 
       else if (token == "ponderhit")

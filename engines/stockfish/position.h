@@ -185,13 +185,14 @@ public:
   void set_nodes_searched(int64_t n);
   template<bool SkipRepetition> bool is_draw() const;
 
-  // (FIX Gregor Cramer)
-  void resetState(StateInfo* state);
-  StateInfo* state() const;
-
   // Position consistency check, for debugging
   bool pos_is_ok(int* failedStep = NULL) const;
   void flip();
+
+#if 1 // required for a FIX in ThreadPool::start_searching() (Gregor Cramer)
+  StateInfo* currentStateInfo() const { return st; }
+  void reset(StateInfo* state) { st = state; }
+#endif
 
 private:
   // Initialization helpers (used while setting up a position)
@@ -232,10 +233,6 @@ private:
   StateInfo* st;
   int chess960;
 };
-
-// (FIX Gregor Cramer)
-inline StateInfo* Position::state() const { return st; }
-inline void Position::resetState(StateInfo* state) { st = state; }
 
 inline int64_t Position::nodes_searched() const {
   return nodes;

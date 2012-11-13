@@ -66,7 +66,7 @@ ifeq ($(ARCH),x86-32)
 	endif
 endif
 
-CXXFLAGS = -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti
+CXXFLAGS = -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DNDEBUG
 
 ifeq ($(ARCH),general-64)
 	arch = any
