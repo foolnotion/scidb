@@ -18,79 +18,7 @@
 
 namespace mstl {
 
-template <typename T> inline void swap(auto_ptr<T>& lhs, auto_ptr<T>& rhs) { lhs.swap(rhs); }
-
-template <class T> inline auto_ptr<T>::by_ref::by_ref(pointer p) :m_p(p) {}
-template <class T> inline auto_ptr<T>::auto_ptr(pointer p) : m_p(p) {}
-template <class T> inline auto_ptr<T>::auto_ptr(auto_ptr<T>& ap) : m_p(ap.release()) {}
-template <class T> inline auto_ptr<T>::auto_ptr(by_ref ref) : m_p(ref.m_p) {}
-template <class T> inline auto_ptr<T>::~auto_ptr() { delete m_p; }
-template <class T> inline bool auto_ptr<T>::operator!() const { return m_p == 0; }
-template <class T> inline typename auto_ptr<T>::pointer auto_ptr<T>::get() { return m_p; }
-template <class T> inline typename auto_ptr<T>::const_pointer auto_ptr<T>::get() const { return m_p; }
-template <class T> inline auto_ptr<T>::operator void const* () const { return m_p; }
-template <class T> inline void auto_ptr<T>::swap(auto_ptr<T>& ap) { mstl::swap(m_p, ap.m_p); }
-
-
-template <class T>
-inline
-auto_ptr<T>&
-auto_ptr<T>::operator=(auto_ptr<T>& ap)
-{
-	if (m_p != ap.m_p)
-		reset(ap.release());
-
-	return *this;
-}
-
-
-template <class T>
-inline
-auto_ptr<T>&
-auto_ptr<T>::operator=(by_ref ref)
-{
-	reset(ref.m_p);
-	return *this;
-}
-
-
-template <class T>
-inline
-typename auto_ptr<T>::reference
-auto_ptr<T>::operator*()
-{
-	return *m_p;
-}
-
-
-template <class T>
-inline
-typename auto_ptr<T>::const_reference
-auto_ptr<T>::operator*() const
-{
-	return *m_p;
-}
-
-
-template <class T>
-inline
-typename auto_ptr<T>::pointer
-auto_ptr<T>::operator->()
-{
-	return m_p;
-}
-
-
-template <class T>
-inline
-typename auto_ptr<T>::const_pointer
-auto_ptr<T>::operator->() const
-{
-	return m_p;
-}
-
-
-template <class T>
+template <typename T>
 inline
 typename auto_ptr<T>::pointer
 auto_ptr<T>::release()
@@ -101,7 +29,21 @@ auto_ptr<T>::release()
 }
 
 
-template <class T>
+template <typename T> inline void auto_ptr<T>::swap(auto_ptr<T>& ap) { mstl::swap(m_p, ap.m_p); }
+template <typename T> inline void swap(auto_ptr<T>& lhs, auto_ptr<T>& rhs) { lhs.swap(rhs); }
+
+template <typename T> inline auto_ptr<T>::by_ref::by_ref(pointer p) :m_p(p) {}
+template <typename T> inline auto_ptr<T>::auto_ptr(pointer p) : m_p(p) {}
+template <typename T> inline auto_ptr<T>::auto_ptr(auto_ptr<T>& ap) : m_p(ap.release()) {}
+template <typename T> inline auto_ptr<T>::auto_ptr(by_ref ref) : m_p(ref.m_p) {}
+template <typename T> inline auto_ptr<T>::~auto_ptr() { delete m_p; }
+template <typename T> inline bool auto_ptr<T>::operator!() const { return m_p == 0; }
+template <typename T> inline typename auto_ptr<T>::pointer auto_ptr<T>::get() { return m_p; }
+template <typename T> inline typename auto_ptr<T>::const_pointer auto_ptr<T>::get() const { return m_p; }
+template <typename T> inline auto_ptr<T>::operator void const* () const { return m_p; }
+
+
+template <typename T>
 inline
 void
 auto_ptr<T>::reset(pointer p)
@@ -114,7 +56,65 @@ auto_ptr<T>::reset(pointer p)
 }
 
 
-template <class T>
+template <typename T>
+inline
+auto_ptr<T>&
+auto_ptr<T>::operator=(auto_ptr<T>& ap)
+{
+	if (m_p != ap.m_p)
+		reset(ap.release());
+
+	return *this;
+}
+
+
+template <typename T>
+inline
+auto_ptr<T>&
+auto_ptr<T>::operator=(by_ref ref)
+{
+	reset(ref.m_p);
+	return *this;
+}
+
+
+template <typename T>
+inline
+typename auto_ptr<T>::reference
+auto_ptr<T>::operator*()
+{
+	return *m_p;
+}
+
+
+template <typename T>
+inline
+typename auto_ptr<T>::const_reference
+auto_ptr<T>::operator*() const
+{
+	return *m_p;
+}
+
+
+template <typename T>
+inline
+typename auto_ptr<T>::pointer
+auto_ptr<T>::operator->()
+{
+	return m_p;
+}
+
+
+template <typename T>
+inline
+typename auto_ptr<T>::const_pointer
+auto_ptr<T>::operator->() const
+{
+	return m_p;
+}
+
+
+template <typename T>
 inline
 auto_ptr<T>::operator by_ref()
 {
@@ -125,7 +125,7 @@ auto_ptr<T>::operator by_ref()
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
-template <class T>
+template <typename T>
 inline
 auto_ptr<T>::auto_ptr(auto_ptr&& p)
 	:m_p(p.m_p)
@@ -134,7 +134,7 @@ auto_ptr<T>::auto_ptr(auto_ptr&& p)
 }
 
 
-template <class T>
+template <typename T>
 inline
 auto_ptr<T>&
 auto_ptr<T>::operator=(auto_ptr&& p)

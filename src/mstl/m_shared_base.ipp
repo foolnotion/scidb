@@ -161,7 +161,7 @@ shared_base<T,Counter,Deleter>::class_invariant() const
 {
 #ifdef HAVE_WEAK_PTR
 	return m_count == 0 ?	m_p == 0
-							 :	m_p != 0 && m_count->m_shared > 0 && m_count->m_weak >= m_count->m_shared;
+							 	:	m_p != 0 && m_count->m_shared > 0 && m_count->m_weak >= m_count->m_shared;
 #else
 	return m_count == 0 ? m_p == 0 : m_p != 0 && m_count->m_shared > 0;
 #endif

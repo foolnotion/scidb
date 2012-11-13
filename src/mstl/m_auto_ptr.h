@@ -21,7 +21,7 @@
 
 namespace mstl {
 
-template <class T>
+template <typename T>
 class auto_ptr
 {
 public:

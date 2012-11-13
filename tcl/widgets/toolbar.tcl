@@ -1593,6 +1593,19 @@ proc PackFlatHandle {toolbar} {
 }
 
 
+proc CheckIfOn {toolbar w var} {
+	variable Specs
+
+	set x [set $var]
+	set y $Specs(onvalue:$w:$toolbar)
+
+	if {[string is boolean -strict $x]} { set x [expr {!!$x}] }
+	if {[string is boolean -strict $y]} { set y [expr {!!$y}] }
+
+	return [expr {$x == $y}]
+}
+
+
 proc Tracer1 {toolbar var bg activebg args} {
 	variable Specs
 
@@ -1640,7 +1653,9 @@ proc Tracer4 {toolbar w var args} {
 
 	if {[winfo containing {*}[winfo pointerxy .]] eq $v} {
 		EnterButton $toolbar $w
-		if {[set $var]} { after idle [list $w configure -relief sunken -overrelief sunken] }
+		if {[CheckIfOn $toolbar $w $var]} {
+			after idle [list $w configure -relief sunken -overrelief sunken]
+		}
 	}
 }
 
@@ -1650,13 +1665,7 @@ proc CheckButtonPressed {toolbar w var} {
 
 	if {$Specs(state:$w:$toolbar) eq "disabled"} { return }
 
-	set x [set $var]
-	set y $Specs(onvalue:$w:$toolbar)
-
-	if {[string is boolean -strict $x]} { set x [expr {!!$x}] }
-	if {[string is boolean -strict $y]} { set y [expr {!!$y}] }
-
-	if {$x == $y} {
+	if {[CheckIfOn $toolbar $w $var]} {
 		set $var $Specs(offvalue:$w:$toolbar)
 	} else {
 		set $var $Specs(onvalue:$w:$toolbar)
@@ -1668,13 +1677,7 @@ proc ConfigureCheckButton {toolbar v w var args} {
 	variable Specs
 	variable Defaults
 
-	set x [set $var]
-	set y $Specs(onvalue:$w:$toolbar)
-
-	if {[string is boolean -strict $x]} { set x [expr {!!$x}] }
-	if {[string is boolean -strict $y]} { set y [expr {!!$y}] }
-
-	if {$x == $y} {
+	if {[CheckIfOn $toolbar $w $var]} {
 		set relief sunken
 		set overrelief sunken
 		set color $Defaults(button:selectcolor)
