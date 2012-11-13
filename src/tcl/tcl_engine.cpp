@@ -255,9 +255,11 @@ public:
 		mstl::string s;
 		variation(line).print(s, halfMoveNo);
 
+		int score = mstl::min(999, mstl::max(-999, this->score(line)));
+
 		Tcl_Obj* objs[8];
 
-		objs[0] = Tcl_NewIntObj(score(line));
+		objs[0] = Tcl_NewIntObj(score);
 		objs[1] = Tcl_NewIntObj(mate(line));
 		objs[2] = Tcl_NewIntObj(depth());
 		objs[3] = Tcl_NewIntObj(selectiveDepth());

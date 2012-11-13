@@ -43,6 +43,16 @@ using namespace app::winboard;
 using namespace db;
 
 
+static void
+printCastling(Move const& move, mstl::string& s)
+{
+	s.append("0-0", 3);
+
+	if (move.isLongCastling())
+		s.append("-0", 2);
+}
+
+
 static mstl::string
 toStr(unsigned value)
 {
@@ -342,12 +352,12 @@ winboard::Engine::doMove(Move const& move)
 
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
-	else if (m_featureSan)
-		move.printSan(s);
+//	else if (m_featureSan)
+//		move.printSan(s);		// the engine may not understand check sign
 	else if (!move.isCastling())
 		move.printAlgebraic(s);
 	else if (m_mustUseChess960)
-		move.printSan(s);
+		::printCastling(move, s);
 	else if (move.isShortCastling())
 		s.append(color::isWhite(move.color()) ? "e1g1" : "e8g8", 4);
 	else
