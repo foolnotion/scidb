@@ -205,13 +205,16 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 			break;
 
 		case GameEvent:
+		{
 			if (objc != 2)
 			{
 				error(CmdSearch, "gameevent", 0, "invalid query");
 				return search;
 			}
-			search = new SearchEvent(db.gameInfo(unsignedFromObj(2, objv, 1)).eventEntry());
+			GameInfo const& info = db.gameInfo(unsignedFromObj(2, objv, 1));
+			search = new SearchGameEvent(info.eventEntry(), info.date());
 			break;
+		}
 
 		case Site:
 			if (objc != 2)

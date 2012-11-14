@@ -27,6 +27,8 @@
 #ifndef _db_search_included
 #define _db_search_included
 
+#include "db_date.h"
+
 #include "m_string.h"
 #include "m_ref_counter.h"
 #include "m_ref_counted_ptr.h"
@@ -108,6 +110,21 @@ public:
 private:
 
 	NamebaseEvent const* m_entry;
+};
+
+class SearchGameEvent : public Search
+{
+public:
+
+	SearchGameEvent(NamebaseEvent const* entry, Date const& gameDate);
+
+	bool match(GameInfo const& info) const override;
+
+private:
+
+	NamebaseEvent const* m_entry;
+	Date m_firstDate;
+	Date m_lastDate;
 };
 
 class SearchSite : public Search

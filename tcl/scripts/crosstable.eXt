@@ -325,6 +325,8 @@
 %%% output header %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \lassign\Header{\unused\event\site\country\startDate\endDate\avgElo\category\numGames\results}
+\ifx\length\event\1\let\event\empty\fi
+\ifx\length\site\1\let\site\empty\fi
 
 \xhtml-head\Lang\Title{crosstable.css}%
 <body><big>\cr

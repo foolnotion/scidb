@@ -112,6 +112,8 @@ public:
 
 	static int compare(Date const& lhs, Date const& rhs);
 
+	static unsigned lastDayInMonth(unsigned y, unsigned m);
+
 	static unsigned decodeYearFrom10Bits(unsigned year);
 	static unsigned encodeYearTo10Bits(unsigned year);
 

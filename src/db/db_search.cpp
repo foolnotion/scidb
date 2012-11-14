@@ -28,6 +28,7 @@
 #include "db_game_info.h"
 #include "db_namebase_entry.h"
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 using namespace db;
@@ -81,6 +82,55 @@ bool
 SearchEvent::match(GameInfo const& info) const
 {
 	return info.eventEntry() == m_entry;
+}
+
+
+SearchGameEvent::SearchGameEvent(NamebaseEvent const* entry, Date const& date)
+	:m_entry(entry)
+	,m_firstDate(date)
+	,m_lastDate(date)
+{
+	if (date.month())
+	{
+		int y1 = date.year();
+		int y2 = y1;
+		int m1 = int(date.month()) - 3;
+		int m2 = int(date.month()) + 3;
+
+		if (m1 <= 0)
+		{
+			m1 += 12;
+			--y1;
+		}
+
+		if (m2 > 12)
+		{
+			m2 -= 12;
+			--y2;
+		}
+
+		int d1 = mstl::min(date.day(), Date::lastDayInMonth(y1, m1));
+		int d2 = mstl::min(date.day(), Date::lastDayInMonth(y2, m2));
+
+		m_firstDate.setYMD(mstl::max(y1, int(Date::MinYear)), m1, d1);
+		m_lastDate .setYMD(mstl::min(y2, int(Date::MaxYear)), m2, d2);
+	}
+}
+
+
+bool
+SearchGameEvent::match(GameInfo const& info) const
+{
+	if (info.eventEntry() != m_entry)
+		return false;
+
+	if (m_entry->date())
+		return true;
+
+	if (!info.date())
+		return !m_firstDate;
+
+	return m_firstDate <= info.date() && info.date() <= m_lastDate;
 }
 
 

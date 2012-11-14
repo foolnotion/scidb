@@ -1,6 +1,12 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #531)
+------------------------------------------------------------------------------
+* Tournament table opened for a game: if the event of this game does not have
+an event date only games with date +/- 3 months will be considered.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #525)
 ------------------------------------------------------------------------------
 * Invalid access to memory in Stockfish fixed. Now it seems that Stockfish is
