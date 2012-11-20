@@ -1006,16 +1006,27 @@ Board::longCastlingWhiteIsLegal() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
-	uint64_t base = king <= C1 ? C1 | D1 : (C1 | D1 | E1 | F1 | G1) & (king - 1);
+	uint64_t base = 0;
 
-	// king...C1...king not attacked
-	if (isAttackedBy(Black, base | king))
-		return false;
+	if (king > C1)
+	{
+		base |= (C1 | D1 | E1 | F1 | G1) & (king - 1); // C1...king
 
-	if (rook <= C1)
-		base |= (A1 | B1 | C1) & ~rook; // rook...C1
+		// C1...king not attacked
+		if (isAttackedBy(Black, base | king))
+			return false;
+	}
+	else
+	{
+		// king...C1 not attacked
+		if (isAttackedBy(Black, king == B1 ? B1 | C1 : C1))
+			return false;
+	}
 
-	// king...C1...king and rook..C1 must be free
+	if (rook < D1)
+		base |= (A1 | B1 | C1 | D1) & ~(rook - 1); // rook...D1
+
+	// rook...D1 and C1...king must be free
 	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
@@ -1027,16 +1038,27 @@ Board::longCastlingBlackIsLegal() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
-	uint64_t base = king <= C8 ? C8 | D8 : (C8 | D8 | E8 | F8 | G8) & (king - 1);
+	uint64_t base = 0;
 
-	// king...C8...king not attacked
-	if (isAttackedBy(White, base | king))
-		return false;
+	if (king > C8)
+	{
+		base |= (C8 | D8 | E8 | F8 | G8) & (king - 1); // C8...king
 
-	if (rook <= C8)
-		base |= (A8 | B8 | C8) & ~rook; // rook...C8
+		// C8...king not attacked
+		if (isAttackedBy(White, base | king))
+			return false;
+	}
+	else
+	{
+		// king...C8 not attacked
+		if (isAttackedBy(White, king == B8 ? B8 | C8 : C8))
+			return false;
+	}
 
-	// king...C1...king and rook..C1 must be free
+	if (rook < D8)
+		base |= (A8 | B8 | C8 | D8) & ~(rook - 1); // rook...D8
+
+	// king...C8...king and rook..C8 must be free
 	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
@@ -1076,12 +1098,15 @@ Board::longCastlingWhiteIsPossible() const
 
 	uint64_t king = setBit(m_ksq[White]);
 	uint64_t rook = setBit(m_castleRookCurrent[WhiteQS]);
-	uint64_t base = king <= C1 ? C1 | D1 : (C1 | D1 | E1 | F1 | G1) & (king - 1);
+	uint64_t base = 0;
 
-	if (rook <= C1)
-		base |= (A1 | B1 | C1) & ~rook; // rook...C1
+	if (king > C1)
+		base |= (C1 | D1 | E1 | F1 | G1) & (king - 1); // C1...king
 
-	// king...C1...king must be free
+	if (rook < D1)
+		base |= (A1 | B1 | C1 | D1) & ~(rook - 1); // rook...D1
+
+	// rook...D1 and C1...king must be free
 	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
@@ -1093,12 +1118,15 @@ Board::longCastlingBlackIsPossible() const
 
 	uint64_t king = setBit(m_ksq[Black]);
 	uint64_t rook = setBit(m_castleRookCurrent[BlackQS]);
-	uint64_t base = king <= C8 ? C8 | D8 : (C8 | D8 | E8 | F8 | G8) & (king - 1);
+	uint64_t base = 0;
 
-	if (rook <= C8)
-		base |= (A8 | B8 | C8) & ~rook; // rook...C8
+	if (king > C8)
+		base |= (C8 | D8 | E8 | F8 | G8) & (king - 1); // C8...king
 
-	// king...C8...king must be free
+	if (rook < D8)
+		base |= (A8 | B8 | C8 | D8) & ~(rook - 1); // rook...D8
+
+	// rook...D8 and D8...king must be free
 	return (m_occupied & base & ~king & ~rook) == 0;
 }
 
