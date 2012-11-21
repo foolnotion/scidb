@@ -51,7 +51,6 @@ proc open {} {
 		}
 
 		win32 {
-			wm attributes .splash -topmost
 			wm overrideredirect .splash
 			wm transparentcolor 0.7
 		}
@@ -91,8 +90,9 @@ proc Close {} {
 
 	if {[winfo exists .splash]} {
 		destroy .splash
-#		image delete $Picture
 	}
+
+	after 1000 [list image delete $Picture]
 }
 
 
