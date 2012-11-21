@@ -2651,6 +2651,7 @@ PgnReader::doCastling(char const* castle)
 			msg.append(moves[0].asString());
 
 			m_move = moves[0];
+			m_move.setColor(side);
 			warning(CastlingCorrection, m_prevPos, msg);
 			return true;
 		}
