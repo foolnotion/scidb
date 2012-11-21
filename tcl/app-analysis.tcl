@@ -122,6 +122,7 @@ proc build {parent width height} {
 	set minsize [expr {12*$charwidth}]
 
 	set w [ttk::frame $parent.f]
+	set tree $w.tree
 
 	set info [tk::frame $w.info \
 		-background $Defaults(background) \
@@ -200,6 +201,8 @@ proc build {parent width height} {
 		grid columnconfigure [set $type] 0 -weight 1
 		grid [set t$type] -column 0 -row 1 -padx 2 -sticky ew
 		incr col 2
+		bind [set  $type] <ButtonPress-3> [namespace code [list PopupMenu $tree]]
+		bind [set t$type] <ButtonPress-3> [namespace code [list PopupMenu $tree]]
 	}
 
 	::tooltip::tooltip $score  [namespace current]::mc::BestScore
@@ -216,7 +219,6 @@ proc build {parent width height} {
 	grid columnconfigure $time  0 -minsize $minsize
 	grid columnconfigure $depth 0 -minsize $minsize
 
-	set tree $w.tree
 	treectrl $tree \
 		-takefocus 0 \
 		-borderwidth 1 \
@@ -229,6 +231,7 @@ proc build {parent width height} {
 		-background $Defaults(background) \
 		-font $Options(font) \
 		;
+	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree]]
 
 	$tree element create elemRect rect -open nw -outline gray -outlinewidth 1
 	$tree element create elemTextFig text -lines $Options(engine:nlines) \
@@ -818,6 +821,76 @@ proc Signal {id code} {
 	}
 
 	set Vars(engine:id) -1
+}
+
+
+proc PopupMenu {parent} {
+	variable Vars
+
+	set menu $parent.__menu__
+	catch { destroy $menu }
+	menu $menu -tearoff 0
+	catch { wm attributes $menu -type popup_menu }
+
+	$menu add command \
+		-label $mc::Setup \
+		-image $::icon::16x16::setup \
+		-compound left \
+		-command [namespace code Setup] \
+		;
+	if {$Vars(engine:pause)} {
+		set txt $mc::Resume
+		set img $::icon::16x16::start
+	} else {
+		set txt $mc::Pause
+		set img $::icon::16x16::pause
+	}
+	$menu add command \
+		-label $txt \
+		-image $img \
+		-compound left \
+		-command [namespace code [list Pause $parent]] \
+		;
+	$menu add separator
+	$menu add checkbutton \
+		-label $mc::LockEngine \
+		-image $::icon::16x16::lock \
+		-compound left \
+		-command [namespace code EngineLock] \
+		-variable [namespace current]::Vars(engine:locked) \
+		;
+	$menu add separator
+	$menu add checkbutton \
+		-label $mc::BestFirstOrder \
+		-image $::icon::16x16::sort(descending) \
+		-compound left \
+		-command [namespace code [list SetOrdering $parent]] \
+		-variable [namespace current]::Options(engine:bestFirst) \
+		;
+	$menu add checkbutton \
+		-label $mc::MultipleVariations \
+		-image $::icon::16x16::lines \
+		-compound left \
+		-command [namespace code [list SetMultiPV $parent]] \
+		-variable [namespace current]::Options(engine:multiPV) \
+		-onvalue 4 \
+		-offvalue 1 \
+		;
+	set sub [menu $menu.lines -tearoff 0]
+	$menu add cascade \
+		-menu $sub \
+		-label $mc::LinesPerVariation \
+		;
+	foreach i {1 2 3 4} {
+		$sub add radiobutton \
+			-label $i \
+			-variable [namespace current]::Options(engine:nlines) \
+			-value $i \
+			-command [namespace code [list SetLinesPerPV $parent]] \
+			;
+	}
+
+	tk_popup $menu {*}[winfo pointerxy $parent]
 }
 
 

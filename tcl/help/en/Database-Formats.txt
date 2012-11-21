@@ -104,8 +104,10 @@ This format resembles structurally Scidb's format:
 </box>
 
 <note>The files with suffixes <code>.sso</code> (Scid Search Option File),
-and <code>.sor</code> (Scid Repertoire File) do not belong explicitely to
-a database and will not be regarded by Scidb.</note>
+<code>.sor</code> (Scid Repertoire File), and <code>.stm</code>
+(Scid Tree Mask File), do not belong explicitely to a database and will
+not be regarded by Scidb. Likewise any saved game list (file suffix
+<code>.txt</code>) will be disregarded.</note>
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 

@@ -99,8 +99,11 @@ Questo formato ricorda per struttura il formato Scidb:
 </box>
 
 <note>I file con estensione <code>.sso</code> (Scid Search Option File),
-e <code>.sor</code> (Scid Repertoire File) non appartengono esplicitamente al database
-e non saranno considerati da Scidb.</note>
+<code>.sor</code> (Scid Repertoire File), e <code>.stm</code>
+(Scid Tree Mask File) non appartengono esplicitamente al database
+e non saranno considerati da Scidb.
+<NEW>Likewise any saved game list (file suffix <code>.txt</code>) will be
+disregarded.</NEW></note>
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
