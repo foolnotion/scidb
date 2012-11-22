@@ -164,7 +164,7 @@ proc GetUrl {url} {
 
 proc ResetConnection {url} {
 	# is there a more convenient way to reset the connection?
-	catch { ::http::geturl $url -binary 1 -keepalive 0 -timeout 1 }
+	catch { ::http::cleanup [::http::geturl $url -binary 1 -keepalive 0 -timeout 1] }
 }
 
 proc FetchFile {file srvCrc} {
