@@ -501,7 +501,6 @@ Codec::~Codec() throw()
 		m_gameData->closeAsyncReader(m_asyncReader);
 
 	delete m_gameData;
-	delete m_asyncReader;
 	delete m_progressiveStream;
 }
 
