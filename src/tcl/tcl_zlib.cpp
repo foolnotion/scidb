@@ -33,6 +33,12 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 {
 	enum { ChunkSize = 16384 };
 
+	if (objc < 6)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<source chan> <dest chan> <source file size> <progress-cmd> <arg>");
+		return TCL_ERROR;
+	}
+
 	Tcl_Channel srcChan = Tcl_GetChannel(ti, stringFromObj(objc, objv, 1), 0);
 	Tcl_Channel dstChan = Tcl_GetChannel(ti, stringFromObj(objc, objv, 2), 0);
 
@@ -50,20 +56,7 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 		return TCL_ERROR;
 	}
 
-	int remaining;
-
-	if (Tcl_GetIntFromObj(ti, objv[3], &remaining) != TCL_OK)
-	{
-		Tcl_ResetResult(ti);
-		Tcl_AppendResult(ti, "invalid file size given: '%s'", stringFromObj(objc, objv, 3), nullptr);
-		return TCL_ERROR;
-	}
-
-	if (objc < 6)
-	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<source chan> <dest chan> <progress-cmd> <arg>");
-		return TCL_ERROR;
-	}
+	int remaining = intFromObj(objc, objv, 3);
 
 	z_stream strm;
 
@@ -82,6 +75,7 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 	}
 
 	Tcl_Obj* objs[3];
+
 	int ret;
 	unsigned crc = 0;
 
@@ -105,6 +99,7 @@ cmdZlibInflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 		strm.avail_in = avail;
 		strm.next_in = reinterpret_cast<Bytef*>(inBuf);
 		crc = crc32(crc, reinterpret_cast<Bytef*>(inBuf), avail);
+
 		int total = 0;
 
 		do
@@ -170,6 +165,12 @@ cmdZlibDeflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 {
 	enum { ChunkSize = 16384 };
 
+	if (objc < 5)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<source chan> <dest chan> <progress-cmd> <arg>");
+		return TCL_ERROR;
+	}
+
 	Tcl_Channel srcChan = Tcl_GetChannel(ti, stringFromObj(objc, objv, 1), 0);
 	Tcl_Channel dstChan = Tcl_GetChannel(ti, stringFromObj(objc, objv, 2), 0);
 
@@ -184,12 +185,6 @@ cmdZlibDeflate(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 	{
 		Tcl_ResetResult(ti);
 		Tcl_AppendResult(ti, "invalid destination channel '%s'", stringFromObj(objc, objv, 2), nullptr);
-		return TCL_ERROR;
-	}
-
-	if (objc < 5)
-	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<source chan> <dest chan> <progress-cmd> <arg>");
 		return TCL_ERROR;
 	}
 
