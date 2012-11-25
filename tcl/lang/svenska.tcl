@@ -61,7 +61,7 @@
 ::mc::Close				"Stäng"
 ::mc::Color				"Färg"
 ::mc::Colors			"Färger"
-::mc::Configuration	"Configuration" ;# NEW
+::mc::Configuration	"Konfiguration"
 ::mc::Copy				"Kopiera"
 ::mc::Cut				"Klipp ut"
 ::mc::Dark				"Mörk"
@@ -69,20 +69,20 @@
 ::mc::Default			"Standard"
 ::mc::Delete			"Radera"
 ::mc::Edit				"Redigera"
-::mc::File				"File" ;# NEW
+::mc::File				"Arkiv"
 ::mc::From				"Från"
 ::mc::Game				"Parti"
 ::mc::Layout			"Layout"
 ::mc::Left				"Vänster"
 ::mc::Lite				"Ljus"
-::mc::Low				"Low" ;# NEW
+::mc::Low				"Låg"
 ::mc::Modify			"Ändra"
 ::mc::No					"nej"
 ::mc::Normal			"Normal" ;# NEW
 ::mc::NotAvailable	"n/a"
 ::mc::Number			"Nummer"
 ::mc::OK					"OK"
-::mc::Order				"Order" ;# NEW
+::mc::Order				"Ordning"
 ::mc::Paste				"Klistra in"
 ::mc::PieceSet			"Pjäser"
 ::mc::Preview			"Förhandsgranska"
@@ -143,7 +143,7 @@
 ::widget::mc::Help		"&Hjälp"
 ::widget::mc::Start		"&Start" ;# NEW
 
-::widget::mc::New			"&New" ;# NEW
+::widget::mc::New			"&Ny"
 ::widget::mc::Save		"&Spara"
 ::widget::mc::Delete		"&Radera"
 
@@ -191,8 +191,8 @@
 ::progress::mc::Message(write-game)				"Skriver partidata"
 ::progress::mc::Message(write-namebase)		"Skriver namndatabas"
 
-::progress::mc::Message(print-game)				"Print %s game(s)" ;# NEW
-::progress::mc::Message(copy-game)				"Copy %s game(s)" ;# NEW
+::progress::mc::Message(print-game)				"Skriv %s parti(er)"
+::progress::mc::Message(copy-game)				"Kopiera %s parti(er)"
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
@@ -217,13 +217,13 @@
 ::menu::mc::Contact						"&Kontakt (Webbläsare)"
 ::menu::mc::Quit							"&Avsluta"
 ::menu::mc::Extras						"&Tillägg"
-::menu::mc::Setup							"Setu&p" ;# NEW
-::menu::mc::Engines						"&Engines" ;# NEW
+::menu::mc::Setup							"&Inställningar"
+::menu::mc::Engines						"&Motorer"
 
 ::menu::mc::ContactBugReport			"&Felrapport"
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
-::menu::mc::OpenEngineLog				"Open &Engine Console" ;# NEW
+::menu::mc::OpenEngineLog				"Öppna &motor konsol"
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
@@ -236,14 +236,14 @@
 ::load::mc::SevereError				"Allvarlig fel vid laddning av ECO-fil"
 ::load::mc::FileIsCorrupt			"Filen %s är skadad:"
 ::load::mc::ProgramAborting		"Programmet avbryter."
-::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
+::load::mc::EngineSetupFailed		"Misslyckades att ladda motorkonfiguration"
 
 ::load::mc::Loading					"Laddar %s"
 ::load::mc::StartupFinished		"Inläsning klar"
 ::load::mc::SystemEncoding			"Systemkodning är '%s'"
 
 ::load::mc::ReadingFile(options)	"Läser alternativ"
-::load::mc::ReadingFile(engines)	"Reading engines file" ;# NEW
+::load::mc::ReadingFile(engines)	"Läser schackmotor"
 
 ::load::mc::ECOFile					"ECO-fil"
 ::load::mc::EngineFile				"schackmotor"
@@ -275,58 +275,58 @@
 ::archive::mc::UnpackFile					"Packa upp %s"
 
 ### player photos ######################################################
-::util::photos::mc::InstallPlayerPhotos		"Install/Update Player Photos" ;# NEW
-::util::photos::mc::TimeOut						"Timeout occurred." ;# NEW
-::util::photos::mc::EnterPassword				"Personal Password" ;# NEW
-::util::photos::mc::Download						"Download" ;# NEW
-::util::photos::mc::SharedInstallation			"Shared installation" ;# NEW
-::util::photos::mc::LocalInstallation			"Private installation" ;# NEW
-::util::photos::mc::RetryLater					"Please retry later." ;# NEW
-::util::photos::mc::DownloadStillInProgress	"Download of photo files is still in progress." ;# NEW
-::util::photos::mc::PhotoFiles					"Player Photo Files" ;# NEW
+::util::photos::mc::InstallPlayerPhotos		"Installera/Updatera spelarfoton"
+::util::photos::mc::TimeOut						"Timeout inträffade."
+::util::photos::mc::EnterPassword				"Personligt lösenord"
+::util::photos::mc::Download						"Hämta"
+::util::photos::mc::SharedInstallation			"Delad installation"
+::util::photos::mc::LocalInstallation			"Lokal installation"
+::util::photos::mc::RetryLater					"Vänligen försök senare."
+::util::photos::mc::DownloadStillInProgress	"Nerladdning av fotofiler pågår fortfarande."
+::util::photos::mc::PhotoFiles					"Spelarfoton"
 
-::util::photos::mc::RequiresSuperuserRights	"The installation/update requires super-user rights.\n\nNote that the password will not be accepted if your user is not in the sudoers file."
-::util::photos::mc::RequiresInternetAccess	"The installation/update of the player photo files requires an internet connection." ;# NEW
-::util::photos::mc::AlternativelyDownload(0)	"Alternatively you may download the photo files from %link%. Install these files into directory %local%." ;# NEW
-::util::photos::mc::AlternativelyDownload(1)	"Alternatively you may download the photo files from %link%. Install these files into the shared directory %shared%, or into the private directory %local%." ;# NEW
+::util::photos::mc::RequiresSuperuserRights	"Installationen/uppdateringen kräver super-user rättigheter.\n\nNotera att lösenordet inte kommer att accepteras om din användare inte är med i sudoers filen."
+::util::photos::mc::RequiresInternetAccess	"Installationen/uppdateringen av spelarfoton kräver en internetförbindelse."
+::util::photos::mc::AlternativelyDownload(0)	"Alternativt kan du ladda ner fotofilerna från %link%. Installera sedan filerna i foldern %local%."
+::util::photos::mc::AlternativelyDownload(1)	"Alternativt kan du ladda ner fotofilerna från %link%. Installera sedan filerna i den delade foldern %shared%, eller i den lokala foldern %local%."
 
-::util::photos::mc::Error(nohttp)				"Cannot open an internet connection because package TclHttp is not installed." ;# NEW
-::util::photos::mc::Error(busy)					"The installation/update is already running." ;# NEW
-::util::photos::mc::Error(failed)				"Unexpected error: The invocation of the sub-process has failed." ;# NEW
-::util::photos::mc::Error(passwd)				"The password is wrong." ;# NEW
-::util::photos::mc::Error(nosudo)				"Cannot invoke 'sudo' command because your user is not in the sudoers file." ;# NEW
-::util::photos::mc::Detail(nosudo)				"As a workaround you may do a private installation, or start this application as a super-user." ;# NEW
+::util::photos::mc::Error(nohttp)				"Kan inte öppna internetförbindelsen för att paketet TclHttp inte är installerat."
+::util::photos::mc::Error(busy)					"Installationen/uppdateringen körs redan."
+::util::photos::mc::Error(failed)				"Oväntat fel: Anropet av sub-processen misslyckades."
+::util::photos::mc::Error(passwd)				"Lösenordet är felaktigt."
+::util::photos::mc::Error(nosudo)				"Kan inte anropa 'sudo' kommandot därför  att din användare inte finns i sudoers filen."
+::util::photos::mc::Detail(nosudo)				"Som en väg runt problemet kan du göra en lokal installation, eller starta den här applikationen som en super-user."
 
-::util::photos::mc::Message(uptodate)			"The photo files are still up-to-date." ;# NEW
-::util::photos::mc::Message(finished)			"The installation/update of photo files has finished." ;# NEW
-::util::photos::mc::Message(broken)				"Broken Tcl library version." ;# NEW
-::util::photos::mc::Message(noperm)				"You dont have write permissions for directory '%s'." ;# NEW
-::util::photos::mc::Message(missing)			"Cannot find directory '%s'." ;# NEW
-::util::photos::mc::Message(httperr)			"HTTP error: %s" ;# NEW
-::util::photos::mc::Message(httpcode)			"Unexpected HTTP code %s." ;# NEW
-::util::photos::mc::Message(noconnect)			"HTTP connection failed." ;# NEW
-::util::photos::mc::Message(timeout)			"HTTP timeout occurred." ;# NEW
-::util::photos::mc::Message(crcerror)			"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
-::util::photos::mc::Message(maintenance)		"Photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(notfound)			"Download aborted because photo file server maintenance is currently in progress." ;# NEW
-::util::photos::mc::Message(aborted)			"User has aborted download." ;# NEW
-::util::photos::mc::Message(killed)				"Unexpected termination of download. The sub-process has died." ;# NEW
+::util::photos::mc::Message(uptodate)			"Fotofilerna är redan uppdaterade."
+::util::photos::mc::Message(finished)			"Installationen/uppdateringen av fotofiler har avslutas."
+::util::photos::mc::Message(broken)				"Trasig Tcl library version."
+::util::photos::mc::Message(noperm)				"Du har inte skrivrättigheter i foldern '%s'."
+::util::photos::mc::Message(missing)			"Kan inte hitta foldern '%s'."
+::util::photos::mc::Message(httperr)			"HTTP fel: %s"
+::util::photos::mc::Message(httpcode)			"Oväntad HTTP kod %s."
+::util::photos::mc::Message(noconnect)			"HTTP connection failed."
+::util::photos::mc::Message(timeout)			"HTTP timeout inträffade."
+::util::photos::mc::Message(crcerror)			"Checksummefel inträffade. Troligt pågående underhåll av filservern."
+::util::photos::mc::Message(maintenance)		"På servern med fotofiler pågår det underhåll för närvarande."
+::util::photos::mc::Message(notfound)			"Nerladdningen avbruten pga pågående underhåll av servern med fotofiler."
+::util::photos::mc::Message(aborted)			"Användaren har avbrutit nerladdningen."
+::util::photos::mc::Message(killed)				"Nerladdningen oväntad avbruten. Sub-processen har dött."
 
-::util::photos::mc::Detail(nohttp)				"Please install package TclHttp, for example %s." ;# NEW
-::util::photos::mc::Detail(noconnect)			"Probably you don't have an internet connection." ;# NEW
-::util::photos::mc::Detail(badhost)				"Another possibility is a bad host, or a bad port." ;# NEW
+::util::photos::mc::Detail(nohttp)				"Installera paketet TclHttp, till exempel %s."
+::util::photos::mc::Detail(noconnect)			"Troligen har du inte en internetförbindelse."
+::util::photos::mc::Detail(badhost)				"En annan möjlighet är en dålig 'host', eller en dålig 'port'."
 
-::util::photos::mc::Log(started)					"Installation/update of photo files started at %s." ;# NEW
-::util::photos::mc::Log(finished)				"Installation/update of photo files finished at %s." ;# NEW
-::util::photos::mc::Log(destination)			"Destination directory for photo file download is '%s'." ;# NEW
-::util::photos::mc::Log(created:1)			"%s file created." ;# NEW
-::util::photos::mc::Log(created:N)			"%s file(s) created." ;# NEW
-::util::photos::mc::Log(deleted:1)			"%s file deleted." ;# NEW
-::util::photos::mc::Log(deleted:N)			"%s file(s) deleted." ;# NEW
-::util::photos::mc::Log(skipped:1)			"%s file skipped." ;# NEW
-::util::photos::mc::Log(skipped:N)			"%s file(s) skipped." ;# NEW
-::util::photos::mc::Log(updated:1)			"%s file updated." ;# NEW
-::util::photos::mc::Log(updated:N)			"%s file(s) updated." ;# NEW
+::util::photos::mc::Log(started)					"Installationen/uppdateringen av fotfiler började %s."
+::util::photos::mc::Log(finished)				"Installationen/uppdateringen av fotofiler avslutade  %s."
+::util::photos::mc::Log(destination)			"Folder för nerladdade fotofiler är '%s'."
+::util::photos::mc::Log(created:1)				"%s fil skapad."
+::util::photos::mc::Log(created:N)				"%s fil(er) skapad."
+::util::photos::mc::Log(deleted:1)				"%s fil raderad."
+::util::photos::mc::Log(deleted:N)				"%s fil(er) raderad."
+::util::photos::mc::Log(skipped:1)				"%s fil överhoppad."
+::util::photos::mc::Log(skipped:N)				"%s fil(er) överhoppad."
+::util::photos::mc::Log(updated:1)				"%s fil updaterad."
+::util::photos::mc::Log(updated:N)				"%s fil(er) updaterad."
 
 ### application ########################################################
 ::application::mc::Database				"&Databas"
@@ -337,24 +337,24 @@
 ::application::mc::UndockWindow			"Avdocka fönster"
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Avstängning..."
-::application::mc::QuitAnyway				"Quit anyway?" ;# NEW
+::application::mc::QuitAnyway				"Vill du avsluta?"
 
-::application::mc::UpdatesAvailable		"Updates available" ;# NEW
+::application::mc::UpdatesAvailable		"Uppdateringar tillgängliga"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Visa turneringstabell för partiet"
-::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
-::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
+::application::board::mc::StartEngine		"Starta analysmotor"
+::application::board::mc::StopEngine		"Stoppa analysmotor"
 
 ::application::board::mc::Tools				"Verktyg"
 ::application::board::mc::Control			"Kontroll"
 ::application::board::mc::Game				"Parti"
 ::application::board::mc::GoIntoNextVar	"Gå in i nästa variant"
 ::application::board::mc::GoIntPrevVar		"Gå in i föregående variant"
-::application::board::mc::LoadGame(next)	"Load next game" ;# NEW
-::application::board::mc::LoadGame(prev)	"Load previous game" ;# NEW
-::application::board::mc::LoadGame(first)	"Load first game" ;# NEW
-::application::board::mc::LoadGame(last)	"Load last game" ;# NEW
+::application::board::mc::LoadGame(next)	"Ladda nästa parti"
+::application::board::mc::LoadGame(prev)	"Ladda föregående parti"
+::application::board::mc::LoadGame(first)	"Ladda första parti"
+::application::board::mc::LoadGame(last)	"Ladda sista parti"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -370,7 +370,7 @@
 ::application::database::mc::FileNew							"Ny databas..."
 ::application::database::mc::FileExport						"Exportera..."
 ::application::database::mc::FileImport(pgn)					"Importera PGN fil..."
-::application::database::mc::FileImport(db)					"Import Databases..." ;# NEW
+::application::database::mc::FileImport(db)					"Importera databas..."
 ::application::database::mc::FileCreate						"Skapa arkiv..."
 ::application::database::mc::FileClose							"Stäng"
 ::application::database::mc::FileCompact						"Komprimera"
@@ -406,7 +406,7 @@
 ::application::database::mc::HardLinkDetected				"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
 ::application::database::mc::HardLinkDetectedDetail		"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
 ::application::database::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
-::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::application::database::mc::UriRejectedDetail(import)	"Bara Scidb databases kan importeras:"
 ::application::database::mc::EmptyUriList						"Innehåll som släpps är tomt."
 ::application::database::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
 ::application::database::mc::SelectDatabases					"Välj databaser som ska öppnas"
@@ -415,18 +415,18 @@
 ::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
 ::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
 ::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
-::application::database::mc::CopyGames							"Copy games" ;# NEW
-::application::database::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
-::application::database::mc::CopiedGames						"%s game(s) copied"
-::application::database::mc::NoGamesCopied					"No games copied"
-::application::database::mc::CopyAllGames						"Copy all games (%num) from '%src'"
-::application::database::mc::CopyFilteredGames				"Copy only filtered games (%num) from '%src'"
-::application::database::mc::ImportGames						"Import games" ;# NEW
-::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
-::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportFiles						"Import Files:" ;# NEW
+::application::database::mc::CopyGames							"Kopiera partier"
+::application::database::mc::CopyGamesFromTo					"Kopiera partier från '%src' till '%dst'"
+::application::database::mc::CopiedGames						"%s parti(er) kopierade"
+::application::database::mc::NoGamesCopied					"Inga partier kopierade"
+::application::database::mc::CopyAllGames						"Kopiera alla partier (%num) från '%src'"
+::application::database::mc::CopyFilteredGames				"Kopiera bara filtrerade partier (%num) från '%src'"
+::application::database::mc::ImportGames						"Importera partier"
+::application::database::mc::ImportOneGameTo(0)				"Kopiera ett parti till '%dst'?"
+::application::database::mc::ImportOneGameTo(1)				"Kopiera cirka ett parti till '%dst'?"
+::application::database::mc::ImportGamesTo(0)				"Kopiera %num partier till '%dst'?"
+::application::database::mc::ImportGamesTo(1)				"Kopiera cirka %num partier till '%dst'?"
+::application::database::mc::ImportFiles						"Importer filer:"
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
@@ -465,7 +465,7 @@
 ::application::database::mc::T_PlayerCollection				"Spelarsamling"
 # Female version of "Player Collection"
 # Be sure that the translation starts with same term as the translation above.
-::application::database::mc::T_PlayerCollectionFemale		"Player Collection" ;# NEW
+::application::database::mc::T_PlayerCollectionFemale		"Spelarsamling"
 ::application::database::mc::T_Tournament						"Turnering"
 ::application::database::mc::T_TournamentSwiss				"Schweizer-turnering"
 ::application::database::mc::T_GMGames							"GM partier"
@@ -485,8 +485,8 @@
 ::application::database::mc::T_Openings						"Öppningar"
 ::application::database::mc::T_OpeningsWhite					"Vita öppningar"
 ::application::database::mc::T_OpeningsBlack					"Svarta öppningar"
-::application::database::mc::T_Bughouse						"Bughouse Chess" ;# NEW
-::application::database::mc::T_Antichess						"Antichess" ;# NEW
+::application::database::mc::T_Bughouse						"Chock"
+::application::database::mc::T_Antichess						"Slagschack"
 ::application::database::mc::T_PGNFile							"PGN fil"
 
 ::application::database::mc::OpenDatabase						"Öppna databas"
@@ -564,10 +564,10 @@
 ::application::pgn::mc::SuffixCommentaries				"Suffixed Commentaries"
 ::application::pgn::mc::StripOriginalComments			"Rensa original kommentarer"
 
-::application::pgn::mc::LanguageSelection					"Språk" ;# NEW change to "Language Selection"
+::application::pgn::mc::LanguageSelection					"Språkval" ;# NEW change to "Language Selection"
 ::application::pgn::mc::MoveNotation						"Notation"
-::application::pgn::mc::CollapseVariations				"Visa varianter"
-::application::pgn::mc::ExpandVariations					"Dölj varianter"
+::application::pgn::mc::CollapseVariations				"Dölj varianter"
+::application::pgn::mc::ExpandVariations					"Visa varianter"
 ::application::pgn::mc::EmptyGame							"Töm parti"
 
 ::application::pgn::mc::NumberOfMoves						"Antal halvdrag (i huvudlinje):"
@@ -728,139 +728,139 @@
 ::board::texture::mc::PreselectedOnly "Endast förvalda"
 
 ### pgn-setup ##########################################################
-::pgn::setup::mc::Configure(editor)				"Customize Editor" ;# NEW
-::pgn::setup::mc::Configure(browser)			"Customize Text Output" ;# NEW
-::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser" ;# NEW
-::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor" ;# NEW
-::pgn::setup::mc::Pixel								"pixel" ;# NEW
-::pgn::setup::mc::Spaces							"spaces" ;# NEW
-::pgn::setup::mc::RevertSettings					"Revert to initial settings" ;# NEW
-::pgn::setup::mc::ResetSettings					"Reset to factory settings" ;# NEW
-::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?" ;# NEW
+::pgn::setup::mc::Configure(editor)				"Anpassa"
+::pgn::setup::mc::Configure(browser)			"Anpassa utdata"
+::pgn::setup::mc::TakeOver(editor)				"Ta inställningar från partibrowser"
+::pgn::setup::mc::TakeOver(browser)				"Ta inställningar från partieditor"
+::pgn::setup::mc::Pixel								"pixlar"
+::pgn::setup::mc::Spaces							"blanksteg"
+::pgn::setup::mc::RevertSettings					"Återgå till starttillstånd"
+::pgn::setup::mc::ResetSettings					"Återställ till fabriksinställningar"
+::pgn::setup::mc::DiscardAllChanges				"Kasta bort alla ändringar?"
 
-::pgn::setup::mc::Setup(Appearance)				"Appearance" ;# NEW
-::pgn::setup::mc::Setup(Layout)					"Layout" ;# NEW
-::pgn::setup::mc::Setup(Diagrams)				"Diagrams" ;# NEW
-::pgn::setup::mc::Setup(MoveStyle)				"Move Style" ;# NEW
+::pgn::setup::mc::Setup(Appearance)				"Utseende"
+::pgn::setup::mc::Setup(Layout)					"Layout"
+::pgn::setup::mc::Setup(Diagrams)				"Diagram"
+::pgn::setup::mc::Setup(MoveStyle)				"Dragformat"
 
-::pgn::setup::mc::Setup(Fonts)					"Fonts" ;# NEW
-::pgn::setup::mc::Setup(font-and-size)			"Text font and size" ;# NEW
-::pgn::setup::mc::Setup(figurine-font)			"Figurine (normal)" ;# NEW
-::pgn::setup::mc::Setup(figurine-bold)			"Figurine (bold)" ;# NEW
-::pgn::setup::mc::Setup(symbol-font)			"Symbols" ;# NEW
+::pgn::setup::mc::Setup(Fonts)					"Fonter"
+::pgn::setup::mc::Setup(font-and-size)			"Textfonter och storlek"
+::pgn::setup::mc::Setup(figurine-font)			"Figurer (normal)"
+::pgn::setup::mc::Setup(figurine-bold)			"Figurer (fet)"
+::pgn::setup::mc::Setup(symbol-font)			"Symboler"
 
-::pgn::setup::mc::Setup(Colors)					"Colors" ;# NEW
-::pgn::setup::mc::Setup(Highlighting)			"Highlighting" ;# NEW
-::pgn::setup::mc::Setup(start-position)		"Start Position" ;# NEW
-::pgn::setup::mc::Setup(variations)				"Variations" ;# NEW
-::pgn::setup::mc::Setup(numbering)				"Numbering" ;# NEW
-::pgn::setup::mc::Setup(brackets)				"Brackets" ;# NEW
-::pgn::setup::mc::Setup(illegal-move)			"Illegal Move" ;# NEW
-::pgn::setup::mc::Setup(comments)				"Comments" ;# NEW
-::pgn::setup::mc::Setup(annotation)				"Annotation" ;# NEW
-::pgn::setup::mc::Setup(nagtext)					"NAG-Text" ;# NEW
-::pgn::setup::mc::Setup(marks)					"Marks" ;# NEW
-::pgn::setup::mc::Setup(move-info)				"Move Information" ;# NEW
-::pgn::setup::mc::Setup(result)					"Result" ;# NEW
-::pgn::setup::mc::Setup(current-move)			"Current Move" ;# NEW
-::pgn::setup::mc::Setup(next-moves)				"Next Moves" ;# NEW
-::pgn::setup::mc::Setup(empty-game)				"Empty Game" ;# NEW
+::pgn::setup::mc::Setup(Colors)					"Färger"
+::pgn::setup::mc::Setup(Highlighting)			"Markering"
+::pgn::setup::mc::Setup(start-position)		"Startposition"
+::pgn::setup::mc::Setup(variations)				"Varianter"
+::pgn::setup::mc::Setup(numbering)				"Numrering"
+::pgn::setup::mc::Setup(brackets)				"Parenteser"
+::pgn::setup::mc::Setup(illegal-move)			"Ogiltigt drag"
+::pgn::setup::mc::Setup(comments)				"Kommentarer"
+::pgn::setup::mc::Setup(annotation)				"Schacktecken"
+::pgn::setup::mc::Setup(nagtext)					"NAG-text"
+::pgn::setup::mc::Setup(marks)					"Markering"
+::pgn::setup::mc::Setup(move-info)				"Draginformation"
+::pgn::setup::mc::Setup(result)					"Resultat"
+::pgn::setup::mc::Setup(current-move)			"Aktuellt drag"
+::pgn::setup::mc::Setup(next-moves)				"Nästa drag"
+::pgn::setup::mc::Setup(empty-game)				"Tomt parti"
 
-::pgn::setup::mc::Setup(Hovers)					"Hovers" ;# NEW
-::pgn::setup::mc::Setup(hover-move)				"Move" ;# NEW
-::pgn::setup::mc::Setup(hover-comment)			"Comment" ;# NEW
-::pgn::setup::mc::Setup(hover-move-info)		"Move Information" ;# NEW
+::pgn::setup::mc::Setup(Hovers)					"Hovra"
+::pgn::setup::mc::Setup(hover-move)				"Drag"
+::pgn::setup::mc::Setup(hover-comment)			"Kommentar"
+::pgn::setup::mc::Setup(hover-move-info)		"Draginformation"
 
-::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
+::pgn::setup::mc::Section(ParLayout)			"Styckeformat"
 ::pgn::setup::mc::ParLayout(use-spacing)		"Använd styckeavstånd"
 ::pgn::setup::mc::ParLayout(column-style)		"Kolumnformat"
-::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
-::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-1)			"Indrag för vitt drag"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Indrag för svart drag"
 ::pgn::setup::mc::ParLayout(mainline-bold)	"Fet text för huvudlinjens drag"
 
-::pgn::setup::mc::Section(Variations)			"Variation Layout" ;# NEW
-::pgn::setup::mc::Variations(width)				"Indent Width" ;# NEW
-::pgn::setup::mc::Variations(level)				"Indent Level" ;# NEW
+::pgn::setup::mc::Section(Variations)			"Variantformat"
+::pgn::setup::mc::Variations(width)				"Indrag"
+::pgn::setup::mc::Variations(level)				"Indragsnivå"
 
-::pgn::setup::mc::Section(Display)				"Display" ;# NEW
-::pgn::setup::mc::Display(numbering)			"Show Variation Numbering" ;# NEW
-::pgn::setup::mc::Display(moveinfo)				"Show Move Information" ;# NEW
-::pgn::setup::mc::Display(nagtext)				"Show text for unusual NAG comments" ;# NEW
+::pgn::setup::mc::Section(Display)				"Display"
+::pgn::setup::mc::Display(numbering)			"Visa variantnumrering"
+::pgn::setup::mc::Display(moveinfo)				"Visa draginformation"
+::pgn::setup::mc::Display(nagtext)				"Visa text för ovanliga NAG kommentarer"
 
-::pgn::setup::mc::Section(Diagrams)				"Diagrams" ;# NEW
+::pgn::setup::mc::Section(Diagrams)				"Diagram" ;# NEW
 ::pgn::setup::mc::Diagrams(show)					"Visa diagram"
-::pgn::setup::mc::Diagrams(square-size)		"Square Size" ;# NEW
-::pgn::setup::mc::Diagrams(indentation)		"Indent Width" ;# NEW
+::pgn::setup::mc::Diagrams(square-size)		"Rutstorlek"
+::pgn::setup::mc::Diagrams(indentation)		"Indrag"
 
 ### engine #############################################################
-::engine::mc::Information				"Information" ;# NEW
-::engine::mc::Features					"Features" ;# NEW
-::engine::mc::Options					"Options" ;# NEW
+::engine::mc::Information				"Information"
+::engine::mc::Features					"Funktioner"
+::engine::mc::Options					"Alternativ"
 
-::engine::mc::Name						"Name" ;# NEW
-::engine::mc::Identifier				"Identifier" ;# NEW
-::engine::mc::Author						"Author" ;# NEW
-::engine::mc::Webpage					"Webpage" ;# NEW
-::engine::mc::Email						"Email" ;# NEW
-::engine::mc::Country					"Country" ;# NEW
-::engine::mc::Rating						"Rating" ;# NEW
-::engine::mc::Logo						"Logo" ;# NEW
-::engine::mc::Protocol					"Protocol" ;# NEW
-::engine::mc::Parameters				"Parameters" ;# NEW
-::engine::mc::Command					"Command" ;# NEW
-::engine::mc::Directory					"Directory" ;# NEW
-::engine::mc::Variants					"Variants" ;# NEW
-::engine::mc::LastUsed					"Last used" ;# NEW
+::engine::mc::Name						"Namn"
+::engine::mc::Identifier				"Identifierare"
+::engine::mc::Author						"Författare"
+::engine::mc::Webpage					"Webbsida"
+::engine::mc::Email						"Email"
+::engine::mc::Country					"Land"
+::engine::mc::Rating						"Rating"
+::engine::mc::Logo						"Logo"
+::engine::mc::Protocol					"Protokoll"
+::engine::mc::Parameters				"Parametrar"
+::engine::mc::Command					"Kommand"
+::engine::mc::Directory					"Folder"
+::engine::mc::Variants					"Varianter"
+::engine::mc::LastUsed					"Senast använd"
 
-::engine::mc::Variant(standard)		"Standard" ;# NEW
-::engine::mc::Variant(chess960)		"Chess 960" ;# NEW
-::engine::mc::Variant(bughouse)		"Bughouse" ;# NEW
-::engine::mc::Variant(crazyhouse)	"Crazyhouse" ;# NEW
+::engine::mc::Variant(standard)		"Standard"
+::engine::mc::Variant(chess960)		"Schack960"
+::engine::mc::Variant(bughouse)		"Chock"
+::engine::mc::Variant(crazyhouse)	"Crazyhouse"
 # NOTE: Suicide is Antichess according to FICS rules
 # NOTE: "Giveaway" is Antichess according to internatianal rules.
 # NOTE: "Losers" is Antichess according to ICC rules
-# NOTE: You may tarnslate "Suicide", "Giveaway", anmd "Losers" with the same term.
-::engine::mc::Variant(suicide)		"Antichess" ;# NEW
-::engine::mc::Variant(giveaway)		"Antichess" ;# NEW
-::engine::mc::Variant(losers)			"Antichess" ;# NEW
-::engine::mc::Variant(3check)			"Three-check" ;# NEW
+# NOTE: You may translate "Suicide", "Giveaway", anmd "Losers" with the same term.
+::engine::mc::Variant(suicide)		"Slagschack"
+::engine::mc::Variant(giveaway)		"Slagschack"
+::engine::mc::Variant(losers)			"Slagschack"
+::engine::mc::Variant(3check)			"Tre-schack"
 
-::engine::mc::Edit						"Edit" ;# NEW
-::engine::mc::View						"View" ;# NEW
-::engine::mc::New							"New" ;# NEW
-::engine::mc::Rename						"Rename" ;# NEW
-::engine::mc::Delete						"Delete" ;# NEW
-::engine::mc::Select(engine)			"Select engine" ;# NEW
-::engine::mc::Select(profile)			"Select profile" ;# NEW
-::engine::mc::ProfileName				"Profile name" ;# NEW
-::engine::mc::NewProfileName			"New profile name" ;# NEW
-::engine::mc::OldProfileName			"Old profile name" ;# NEW
-::engine::mc::CopyFrom					"Copy from" ;# NEW
-::engine::mc::NewProfile				"New Profile" ;# NEW
-::engine::mc::RenameProfile			"Rename Profile" ;# NEW
-::engine::mc::EditProfile				"Edit Profile '%s'" ;# NEW
-::engine::mc::ProfileAlreadyExists	"A profile with name '%s' already exists." ;# NEW
-::engine::mc::ChooseDifferentName	"Please choose a different name." ;# NEW
-::engine::mc::ReservedName				"Name '%s' is reserved and cannot be used." ;# NEW
-::engine::mc::ReallyDeleteProfile	"Really delete profile '%s'?" ;# NEW
+::engine::mc::Edit						"Redigera"
+::engine::mc::View						"Visa"
+::engine::mc::New							"Ny"
+::engine::mc::Rename						"Byt namn"
+::engine::mc::Delete						"Radera"
+::engine::mc::Select(engine)			"Välj motor"
+::engine::mc::Select(profile)			"Välj profil"
+::engine::mc::ProfileName				"Profilnamn"
+::engine::mc::NewProfileName			"Nytt profilnamn"
+::engine::mc::OldProfileName			"Gammalt profilnamn"
+::engine::mc::CopyFrom					"Kopiera från"
+::engine::mc::NewProfile				"Ny profil"
+::engine::mc::RenameProfile			"Byt namn på profil"
+::engine::mc::EditProfile				"Redigera profil '%s'"
+::engine::mc::ProfileAlreadyExists	"En profil med namn '%s' finns redan."
+::engine::mc::ChooseDifferentName	"Välj ett annat namn."
+::engine::mc::ReservedName				"Namnet '%s' är reserverat och kan inte användas."
+::engine::mc::ReallyDeleteProfile	"Ta bort profil '%s'?"
 
-::engine::mc::AdminEngines				"Manage Engines" ;# NEW
-::engine::mc::SetupEngine				"Setup engine %s" ;# NEW
-::engine::mc::ImageFiles				"Image files" ;# NEW
-::engine::mc::SelectEngine				"Select Engine" ;# NEW
-::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
+::engine::mc::AdminEngines				"Hantera motorer"
+::engine::mc::SetupEngine				"Installera motor %s"
+::engine::mc::ImageFiles				"Imagefiler"
+::engine::mc::SelectEngine				"Välj motor"
+::engine::mc::SelectEngineLogo		"Välj motor logo"
 ::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
-::engine::mc::NeverUsed					"Never used" ;# NEW
+::engine::mc::NeverUsed					"Aldrig använd"
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
-::engine::mc::DefaultValue				"Default value" ;# NEW
-::engine::mc::ResetToDefault			"Reset to default" ;# NEW
-::engine::mc::ShowInfo					"Show \"Info\"" ;# NEW don't translate "Info"
+::engine::mc::DefaultValue				"Standardvärde"
+::engine::mc::ResetToDefault			"Återställ till standard"
+::engine::mc::ShowInfo					"Visa \"Info\""
 ::engine::mc::TotalUsage				"%s times in total" ;# NEW
 ::engine::mc::Memory						"Memory (MB)" ;# NEW
 ::engine::mc::CPUs						"CPUs" ;# NEW
-::engine::mc::Priority					"CPU Priority" ;# NEW
-::engine::mc::ClearHash					"Clear hash tables" ;# NEW
+::engine::mc::Priority					"CPU prioritet"
+::engine::mc::ClearHash					"Rensa hashtabeller"
 
 ::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
 ::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
@@ -903,43 +903,43 @@
 ::engine::mc::FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
 
 ### analysis ###########################################################
-::application::analysis::mc::Control				"Control" ;# NEW
+::application::analysis::mc::Control				"Kontroll"
 ::application::analysis::mc::Information			"Information" ;# NEW
 ::application::analysis::mc::Setup					"Setup" ;# NEW
 ::application::analysis::mc::Pause					"Pause" ;# NEW
-::application::analysis::mc::Resume					"Resume" ;# NEW
-::application::analysis::mc::LockEngine			"Lock engine to current position" ;# NEW
-::application::analysis::mc::MultipleVariations	"Multiple variations (multi-pv)" ;# NEW
-::application::analysis::mc::HashFullness			"Hash fullness" ;# NEW
+::application::analysis::mc::Resume					"Återuppta"
+::application::analysis::mc::LockEngine			"Lås motor på aktuell position"
+::application::analysis::mc::MultipleVariations	"Flera varianter (multi-pv)"
+::application::analysis::mc::HashFullness			"Hash djup"
 ::application::analysis::mc::Hash					"Hash:" ;# NEW
-::application::analysis::mc::Lines					"Lines:" ;# NEW
-::application::analysis::mc::MateIn					"%color mate in %n" ;# NEW
-::application::analysis::mc::BestScore				"Best score (of current lines)" ;# NEW
-::application::analysis::mc::CurrentMove			"Currently searching this move" ;# NEW
-::application::analysis::mc::TimeSearched			"Time searched" ;# NEW
-::application::analysis::mc::SearchDepth			"Search depth in plies (Selective search depth)" ;# NEW
-::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
+::application::analysis::mc::Lines					"Rader:"
+::application::analysis::mc::MateIn					"%color matt i %n"
+::application::analysis::mc::BestScore				"Bästa poäng (av aktuella linjer)"
+::application::analysis::mc::CurrentMove			"Söker för närvarande draget"
+::application::analysis::mc::TimeSearched			"Söktid"
+::application::analysis::mc::SearchDepth			"Sökdjup i plys (Selektivt sökdjup)"
+::application::analysis::mc::IllegalPosition		"Ogiltig ställning - Kan inte analysera"
 
-::application::analysis::mc::LinesPerVariation	"Lines per variation" ;# NEW
-::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
-::application::analysis::mc::Engine					"Engine" ;# NEW
+::application::analysis::mc::LinesPerVariation	"Rader per variant"
+::application::analysis::mc::BestFirstOrder		"Sortera på  värdering"
+::application::analysis::mc::Engine					"Motor" ;# NEW
 
 ::application::analysis::mc::Seconds				"s" ;# NEW
 ::application::analysis::mc::Minutes				"m" ;# NEW
 
-::application::analysis::mc::Status(mate)			"%s is mate" ;# NEW
-::application::analysis::mc::Status(stalemate)	"%s is stalemate" ;# NEW
+::application::analysis::mc::Status(mate)			"%s är matt"
+::application::analysis::mc::Status(stalemate)	"%s är patt"
 
-::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
-::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
-::application::analysis::mc::NotSupported(analyze)		"This engine does not have an analysis mode." ;# NEW
+::application::analysis::mc::NotSupported(standard)	"Den här motorn har inte stöd för vanligt schack."
+::application::analysis::mc::NotSupported(chess960)	"Den här motorn har inte stöd för schack960."
+::application::analysis::mc::NotSupported(analyze)		"Den här motorn har inte ett analys läge."
 
-::application::analysis::mc::Signal(stopped)		"Engine stopped by signal." ;# NEW
-::application::analysis::mc::Signal(resumed)		"Engine resumed by signal." ;# NEW
-::application::analysis::mc::Signal(killed)		"Engine killed by signal." ;# NEW
-::application::analysis::mc::Signal(crashed)		"Engine crashed." ;# NEW
-::application::analysis::mc::Signal(closed)		"Engine has closed connection." ;# NEW
-::application::analysis::mc::Signal(terminated)	"Engine terminated with exit code %s." ;# NEW
+::application::analysis::mc::Signal(stopped)		"Motorn stoppad av signal."
+::application::analysis::mc::Signal(resumed)		"Motorn återupptagen av signal."
+::application::analysis::mc::Signal(killed)		"Motorn dödad av signal."
+::application::analysis::mc::Signal(crashed)		"Motorn kraschade."
+::application::analysis::mc::Signal(closed)		"Motorn har stängt anslutningen."
+::application::analysis::mc::Signal(terminated)	"Motorn avslutades med värde %s."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
@@ -1159,8 +1159,8 @@
 
 ::font::mc::ChooseFigurineFont					"Choose figurine font" ;# NEW
 ::font::mc::ChooseSymbolFont						"Choose symbol font" ;# NEW
-::font::mc::IncreaseFontSize						"Increase Font Size" ;# NEW
-::font::mc::DecreaseFontSize						"Decrease Font Size" ;# NEW
+::font::mc::IncreaseFontSize						"Öka fontstorlek"
+::font::mc::DecreaseFontSize						"Minska fontstorlek"
 
 ### gamebar ############################################################
 ::gamebar::mc::StartPosition			"Startposition"
@@ -1205,8 +1205,8 @@
 
 ::browser::mc::GotoGame(first)	"Gå till första partiet"
 ::browser::mc::GotoGame(last)		"Gå till sista partiet"
-::browser::mc::GotoGame(next)		"Goto next game" ;# NEW
-::browser::mc::GotoGame(prev)		"Goto previous game" ;# NEW
+::browser::mc::GotoGame(next)		"Gå till nästa parti"
+::browser::mc::GotoGame(prev)		"Gå till föregående parti"
 
 ::browser::mc::LoadGame				"Ladda parti"
 ::browser::mc::MergeGame			"Sammanfoga parti"
@@ -1259,8 +1259,8 @@
 ::setup::board::mc::CastlingWithoutRook		"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
 ::setup::board::mc::UnsupportedVariant			"Positionen är en startposition men ingen Shuffle Chess position. Är du säker?"
 
-::setup::board::mc::ChangeToFormat(xfen)				"Change to X-Fen format" ;# NEW
-::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format" ;# NEW
+::setup::board::mc::ChangeToFormat(xfen)				"Ändra till X-Fen format"
+::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"
 
 ::setup::board::mc::Error(InvalidFen)					"FEN är ogiltigt."
 ::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."
@@ -1285,7 +1285,7 @@
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importerar PGN-fil '%s'"
-::import::mc::ImportingDatabase					"Importing database '%s'" ;# NEW
+::import::mc::ImportingDatabase					"Importerar databas '%s'"
 ::import::mc::Line									"Rad"
 ::import::mc::Column									"Spalt"
 ::import::mc::GameNumber							"Parti"
@@ -1326,7 +1326,7 @@
 ::import::mc::InvalidRating						"Ogiltigt 'ratingtal'"
 ::import::mc::InvalidNag							"Ogiltig 'NAG'"
 ::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
-::import::mc::MissingFen							"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
+::import::mc::MissingFen							"Ingen startposition funnen för det schack960 partiet; det är kommer behandlas som vanligt schack"
 ::import::mc::UnknownEventType					"Okänd tävlingstyp"
 ::import::mc::UnknownTitle							"Okänd titel(ignorerad)"
 ::import::mc::UnknownPlayerType					"Okänd spelartyp (ignorerad)"
@@ -1338,8 +1338,8 @@
 ::import::mc::IllegalCastling						"Otillåten rockad"
 ::import::mc::IllegalMove							"Ogiltigt drag"
 ::import::mc::CastlingCorrection					"Rockad korrigering"
-::import::mc::UnsupportedVariant					"Unsupported chess variant"
-::import::mc::UnsupportedCrazyhouseVariant	"Variant Crazyhouse is not yet supported (game skipped)" ;# NEW
+::import::mc::UnsupportedVariant					"Inget stöd för schackvariant"
+::import::mc::UnsupportedCrazyhouseVariant	"Varianten Crazyhouse stöds inte än (partiet hoppas över)"
 ::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
 ::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte resultatrubrik"
 ::import::mc::ValueTooLong							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
@@ -1368,8 +1368,8 @@
 ::import::mc::TooManySourceNames					"För många källnamn i databasen (avbrott)"
 ::import::mc::SeemsNotToBePgnText				"Det här är ingen PGN-text."
 ::import::mc::AbortedDueToInternalError		"Avbrott på grund av internt fel."
-::import::mc::AbortedDueToIoError				"Aborted due to an read/write error" ;# NEW
-::import::mc::UserHasInterrupted					"User has interrupted" ;# NEW
+::import::mc::AbortedDueToIoError				"Avbrott på grund av läs/skrivfel"
+::import::mc::UserHasInterrupted					"Avbrutit av användare"
 
 ### export #############################################################
 ::export::mc::FileSelection				"&File Selection"
@@ -1429,14 +1429,14 @@
 ::export::mc::ExportDatabaseTitle		"Exportera databas '%s'"
 ::export::mc::ExportingDatabase			"Exporterar '%s' till filen '%s'"
 ::export::mc::Export							"Export"
-::export::mc::NoGamesCopied				"No games exported." ;# NEW
+::export::mc::NoGamesCopied				"Inga partier exporterade."
 ::export::mc::ExportedGames				"%s partier exporterade"
 ::export::mc::NoGamesForExport			"Inga partier att exportera."
 ::export::mc::ResetDefaults				"Återställ till standardvärden"
 ::export::mc::UnsupportedEncoding		"Kan inte använda kodning %s för PDF-dokument. Välj en alternativ kodning."
-::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
+::export::mc::DatabaseIsOpen				"Destinations databasen '%s' är öppen, this means that the destination database will be emptied before the export is starting. Export anyway?" ;# NEW
 ::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher." ;# NEW
-::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'" ;# NEW
+::export::mc::ExportGamesFromTo			"Exporta partier från '%src' till '%dst'"
 
 ::export::mc::BasicStyle					"Grundstil"
 ::export::mc::GameInfo						"Partiinfo"
@@ -1508,7 +1508,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Lägg till modus efter tävlingstyp"
 ::export::mc::Option(pgn,comment_to_html)							"Skriv kommentar i HTML-format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Uteslut partier med ogiltiga drag"
-::export::mc::Option(pgn,use_utf8_encoding)						"Use UTF-8 encoding" ;# NEW
+::export::mc::Option(pgn,use_utf8_encoding)						"Använd UTF-8 kodning"
 
 ### notation ###########################################################
 ::notation::mc::Notation		"Notation"
@@ -1523,7 +1523,7 @@
 ### figurine ###########################################################
 ::figurines::mc::Figurines	"Figuruppsättning"
 ::figurines::mc::Graphic	"Grafisk"
-::figurines::mc::User		"User" ;# NEW meaning is "user defined"
+::figurines::mc::User		"Användardefinierad"
 
 ### save/replace #######################################################
 ::dialog::save::mc::SaveGame						"Spara partiet"
@@ -1675,23 +1675,23 @@
 ::terminationbox::mc::TimeForfeit					"Tidsöverskridning"
 ::terminationbox::mc::Unterminated					"Ej färdigspelat"
 
-::terminationbox::mc::State(Mate)					"%s is checkmate" ;# NEW
-::terminationbox::mc::State(Stalemate)				"%s is stalemate" ;# NEW
+::terminationbox::mc::State(Mate)					"%s är matt"
+::terminationbox::mc::State(Stalemate)				"%s är matt"
 
-::terminationbox::mc::Result(1-0)					"Black resigned" ;# NEW
-::terminationbox::mc::Result(0-1)					"White resigned" ;# NEW
-::terminationbox::mc::Result(0-0)					"Declared lost for both players" ;# NEW
-::terminationbox::mc::Result(1/2-1/2)				"Draw agreed" ;# NEW
+::terminationbox::mc::Result(1-0)					"Svart gav upp"
+::terminationbox::mc::Result(0-1)					"Vit gav upp"
+::terminationbox::mc::Result(0-0)					"Förlust dömt för båda spelaren"
+::terminationbox::mc::Result(1/2-1/2)				"Remi"
 
-::terminationbox::mc::Reason(Unplayed)				"Game is unplayed" ;# NEW
-::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
-::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
-::terminationbox::mc::Reason(Death)					"" ;# NEW
-::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency" ;# NEW
-::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit)			"%s forfeits on time" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time" ;# NEW
-::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
+::terminationbox::mc::Reason(Unplayed)				"Parti är ospelat"
+::terminationbox::mc::Reason(Abandoned)			"Parti är avbrutit"
+::terminationbox::mc::Reason(Adjudication)		"Avdömt"
+::terminationbox::mc::Reason(Death)					"Death" ;# NEW
+::terminationbox::mc::Reason(Emergency)			"Avbrutit pga nödsituation"
+::terminationbox::mc::Reason(RulesInfraction)	"Avdömt pga regelbrott"
+::terminationbox::mc::Reason(TimeForfeit)			"%s tidsförlust"
+::terminationbox::mc::Reason(TimeForfeit,both)	"Båda spelarna överskred tiden"
+::terminationbox::mc::Reason(Unterminated)		"Ej färdigspelat"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Vid bordet"
@@ -1732,8 +1732,8 @@
 ::help::mc::GoBack					"Gå bakåt en sida"
 ::help::mc::GoForward				"Gå framåt en sida"
 ::help::mc::GotoPage					"Gå till sida '%s'"
-::help::mc::ExpandAllItems			"Expand all items"
-::help::mc::CollapseAllItems		"Collapse all items"
+::help::mc::ExpandAllItems			"Visa alla objekt"
+::help::mc::CollapseAllItems		"Dölj alla objekt"
 ::help::mc::SelectLanguage			"Välj språk"
 ::help::mc::NoHelpAvailable		"Det finns inga hjälpfiler på engelska.\nVälj ett annat språk\nför hjälpdialogen."
 ::help::mc::NoHelpAvailableAtAll	"Inga hjälpfiler finns för detta ämne."
@@ -1830,8 +1830,8 @@
 ::info::mc::BoardThemeDesign	"Design av schackbräden"
 ::info::mc::FlagsDesign			"Design av miniaturflaggor"
 ::info::mc::IconDesign			"Design av ikoner"
-::info::mc::Development			"Development" ;# NEW
-::info::mc::Programming			"Programming" ;# NEW
+::info::mc::Development			"Utveckling"
+::info::mc::Programming			"Programmering"
 ::info::mc::Head					"Head" ;# NEW
 
 ::info::mc::Version				"Version"
@@ -1884,8 +1884,8 @@
 ::move::mc::Action(mainline)		"Ny huvudvariant"
 ::move::mc::Action(trial)			"Försöksvariant"
 ::move::mc::Action(exchange)		"Byt drag"
-::move::mc::Action(append)			"Append move" ;# NEW
-::move::mc::Action(load)			"Load first game with this continuation" ;# NEW
+::move::mc::Action(append)			"Lägg till drag"
+::move::mc::Action(load)			"Ladda första parti med den här fortsättningen"
 
 ::move::mc::GameWillBeTruncated	"Partiet kommer att avkortas. Fortsätta med '%s'?"
 
@@ -1970,7 +1970,7 @@
 ::table::mc::OptimizeColumns			"Optimera alla spalter"
 ::table::mc::FitColumnWidth			"Anpassa spaltbredden"
 ::table::mc::FitColumns					"Anpassa alla spalter"
-::table::mc::ExpandColumn				"Expand column width" ;# NEW
+::table::mc::ExpandColumn				"Expandera kolumnbredd"
 ::table::mc::SqueezeColumns			"Tryck ihop alla spalter"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns	"Ctrl+."
@@ -1986,27 +1986,27 @@
 ::dialog::fsbox::mc::PortableDocumentFile	"Flyttbar dokumentfil"
 ::dialog::fsbox::mc::HypertextFile			"Hypertext fil"
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
-::dialog::fsbox::mc::ImageFile				"Image File" ;# NEW
-::dialog::fsbox::mc::TextFile					"Text File" ;# NEW
-::dialog::fsbox::mc::BinaryFile				"Bin�ry File" ;# NEW
-::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
-::dialog::fsbox::mc::Executable				"Executable" ;# NEW
+::dialog::fsbox::mc::ImageFile				"Bildfil" ;# NEW
+::dialog::fsbox::mc::TextFile					"Textfil"
+::dialog::fsbox::mc::BinaryFile				"Binärfil"
+::dialog::fsbox::mc::ShellScript				"Kommandoskript"
+::dialog::fsbox::mc::Executable				"Körbar fil"
 
 ::dialog::fsbox::mc::LinkTo					"Länka till %s"
 ::dialog::fsbox::mc::LinkTarget				"Länkmål"
 ::dialog::fsbox::mc::Directory				"Folder"
 
-::dialog::fsbox::mc::Title(open)				"Select File" ;# NEW
-::dialog::fsbox::mc::Title(save)				"Save File" ;# NEW
-::dialog::fsbox::mc::Title(dir)				"Choose Directory" ;# NEW
+::dialog::fsbox::mc::Title(open)				"Välj fil"
+::dialog::fsbox::mc::Title(save)				"Spara fil"
+::dialog::fsbox::mc::Title(dir)				"Välj folder"
 
 ::dialog::fsbox::mc::Content					"Innehåll"
 ::dialog::fsbox::mc::Open						"Öppna"
 
-::dialog::fsbox::mc::FileType(exe)			"Executables" ;# NEW
-::dialog::fsbox::mc::FileType(txt)			"Text files" ;# NEW
-::dialog::fsbox::mc::FileType(log)			"Log files" ;# NEW
-::dialog::fsbox::mc::FileType(bin)			"Binary files" ;# NEW
+::dialog::fsbox::mc::FileType(exe)			"Körbara filer"
+::dialog::fsbox::mc::FileType(txt)			"Textfiler"
+::dialog::fsbox::mc::FileType(log)			"Logfiler"
+::dialog::fsbox::mc::FileType(bin)			"Binärfiler"
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"
@@ -2017,7 +2017,7 @@
 ::dialog::choosecolor::mc::RecentColors	"Senaste färger"
 ::dialog::choosecolor::mc::Old				"Tidigare"
 ::dialog::choosecolor::mc::Current			"Aktuell"
-::dialog::choosecolor::mc::HexCode			"Hex Code" ;# NEW
+::dialog::choosecolor::mc::HexCode			"Hexkod"
 ::dialog::choosecolor::mc::ColorSelection	"Färgval"
 ::dialog::choosecolor::mc::Red				"Rött"
 ::dialog::choosecolor::mc::Green				"Grönt"
@@ -2069,7 +2069,7 @@
 ::fsbox::mc::Forward							"Framåt till '%s'"
 ::fsbox::mc::Backward						"Bakåt till '%s'"
 ::fsbox::mc::Delete							"Radera"
-::fsbox::mc::MoveToTrash					"Move to Trash" ;# NEW
+::fsbox::mc::MoveToTrash					"Flytta till papperskorgen"
 ::fsbox::mc::Restore							"Återställ"
 ::fsbox::mc::Duplicate						"Duplicera"
 ::fsbox::mc::CopyOf							"Kopia av %s"
@@ -2083,9 +2083,9 @@
 ::fsbox::mc::Cancel							"&Avbryt"
 ::fsbox::mc::Save								"&Spara"
 ::fsbox::mc::Open								"&Öppna"
-::fsbox::mc::Overwrite						"&Overwrite" ;# NEW
+::fsbox::mc::Overwrite						"&Skriv över"
 ::fsbox::mc::Rename							"&Byt namn"
-::fsbox::mc::Move								"Move" ;# NEW
+::fsbox::mc::Move								"Flytta"
 
 ::fsbox::mc::AddBookmark					"Lägg till bokmärke '%s'"
 ::fsbox::mc::RemoveBookmark				"Ta bort bokmärke '%s'"
@@ -2125,9 +2125,9 @@
 ::fsbox::mc::FilenameNotAllowed			"Filnamnet '%s' är inte tillåtet."
 ::fsbox::mc::ContainsTwoDots				"Innehåller två punkter efter varandra."
 ::fsbox::mc::ContainsReservedChars		"Innehåller reserverade tecken: %s, eller ett kontrolltecken (ASCII 0-31)."
-::fsbox::mc::InvalidFileName				"Ett filnamn kan inte börja med ett bindestreck och kan inte sluta med ett blanksteg eller en punkt." ;# NEW
+::fsbox::mc::InvalidFileName				"Ett filnamn kan inte börja med ett bindestreck och kan inte sluta med ett blanksteg eller en punkt."
 ::fsbox::mc::IsReservedName				"I somliga operativsystem är detta ett reserverad namn."
-::fsbox::mc::FilenameTooLong				"Ett filnamn ska ha mindre än 256 tecken." ;# NEW
+::fsbox::mc::FilenameTooLong				"Ett filnamn ska ha mindre än 256 tecken."
 ::fsbox::mc::InvalidFileExtension		"Ogiltigt filtillägg i '%s'."
 ::fsbox::mc::MissingFileExtension		"Inget filtillägg i '%s'."
 ::fsbox::mc::FileAlreadyExists			"Filen \"%s\" finns redan.\n\nVill du skriva över filen?"
@@ -2142,15 +2142,15 @@
 ::fsbox::mc::CannotOpenUri					"Kan inte öppna följande  URI:"
 ::fsbox::mc::InvalidUri						"Innehåll som släpps är inte en giltig URI-lista."
 ::fsbox::mc::UriRejected					"Följande filer är förkastade:"
-::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled." ;# NEW
-::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:" ;# NEW
-::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:" ;# NEW (http://*)
-::fsbox::mc::OperationAborted				"Operation aborted." ;# NEW
+::fsbox::mc::UriRejectedDetail			"Bara listade filtyper kan behandlas."
+::fsbox::mc::CannotOpenTrashFiles		"Kan inte öppna filer från papperskorgen:"
+::fsbox::mc::CannotOpenRemoteFiles		"Kan inte öppna fjärrfiler:"
+::fsbox::mc::OperationAborted				"Åtgärden avbröts."
 ::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
-::fsbox::mc::EntryAlreadyExists			"Entry already exists" ;# NEW
+::fsbox::mc::EntryAlreadyExists			"Post finns redan"
 ::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
 ::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
-::fsbox::mc::NewName							"New name" ;# NEW
+::fsbox::mc::NewName							"Nytt namn"
 
 ::fsbox::mc::ReallyMove(file,w)			"Är du säker att filen '%s' ska flyttas till papperskorgen?"
 ::fsbox::mc::ReallyMove(file,r)			"Är du säker att den skrivskyddade filen '%s' ska flyttas till papperskorgen?"
@@ -2168,12 +2168,12 @@
 
 ::fsbox::mc::Cannot(delete)				"Kan inte radera filen '%s'."
 ::fsbox::mc::Cannot(rename)				"Kan inte byta namn på filen '%s'."
-::fsbox::mc::Cannot(move)					"Cannot move file '%s'." ;# NEW
+::fsbox::mc::Cannot(move)					"Kan inte flytta filen '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Kan inte skriva över filen '%s'."
 
-::fsbox::mc::DropAction(move)				"Move Here" ;# NEW
-::fsbox::mc::DropAction(copy)				"Copy Here" ;# NEW
-::fsbox::mc::DropAction(link)				"Link Here" ;# NEW
+::fsbox::mc::DropAction(move)				"Flytta hit"
+::fsbox::mc::DropAction(copy)				"Kopiera hit"
+::fsbox::mc::DropAction(link)				"Länka hit"
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Verktygsfält"

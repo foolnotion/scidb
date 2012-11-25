@@ -590,6 +590,13 @@ proc RevertOptions {context position close} {
 	array set Options [array get Revert_Options]
 	array set Colors [array get Revert_Colors]
 
+	if {$Revert_Fonts(figurine:use)} {
+		set lang graphic
+	} else {
+		set lang $Revert_Options(figurine:lang)
+	}
+	::font::useLanguage $lang
+
 	if {$close} {
 		foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
 		DoClose $context $position
@@ -631,6 +638,7 @@ proc FinishReset {context position} {
 	variable [namespace parent]::${context}::Options
 	variable [namespace parent]::${context}::Colors
 	variable Priv
+	variable Recent
 
 	array set New_Options [array get Options]
 	array set New_Colors [array get Colors]
@@ -639,7 +647,9 @@ proc FinishReset {context position} {
 	if {[llength $Priv(refresh:cmd)]} { $Priv(refresh:cmd) }
 
 	foreach attr [array names Colors] {
-		addToList [namespace current]::Recent($attr) $Colors($attr)
+		if {[info exists Recent($attr)]} {
+			addToList [namespace current]::Recent($attr) $Colors($attr)
+		}
 	}
 
 	setupStyle $context $position

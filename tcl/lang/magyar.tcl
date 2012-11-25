@@ -1987,7 +1987,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
 ::dialog::fsbox::mc::ImageFile			"Image File" ;# NEW
 ::dialog::fsbox::mc::TextFile			"Text File" ;# NEW
-::dialog::fsbox::mc::BinaryFile			"Binäry File" ;# NEW
+::dialog::fsbox::mc::BinaryFile			"Binary File" ;# NEW
 ::dialog::fsbox::mc::ShellScript		"Shell Script" ;# NEW
 ::dialog::fsbox::mc::Executable			"Executable" ;# NEW
 
