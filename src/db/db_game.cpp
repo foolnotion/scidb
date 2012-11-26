@@ -2601,8 +2601,7 @@ Game::resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const&)
 	startNode->setFolded(false);
 	m_startNode = startNode;
 	m_startBoard = startBoard;
-	if (!node->isEmptyLine() && !board.isEqualPosition(m_startBoard))
-		insertUndo(Set_Start_Position, Clear, node, board);
+	insertUndo(Set_Start_Position, Clear, node, board);
 	moveToMainlineStart();
 	updateSubscriber(UpdateAll);
 }
@@ -2612,10 +2611,14 @@ void
 Game::clear(Board const* startPosition)
 {
 	moveToMainlineStart();
+
 	if (!m_startNode->isEmptyLine())
+	{
 		insertUndo(Set_Start_Position, Clear, m_startNode, m_startBoard);
-	m_startNode = m_currentNode = new MoveNode();
-	m_startNode->setNext(new MoveNode);
+		m_startNode = m_currentNode = new MoveNode();
+		m_startNode->setNext(new MoveNode);
+	}
+
 	if (startPosition)
 		m_startBoard = *startPosition;
 	m_currentBoard = m_startBoard;
