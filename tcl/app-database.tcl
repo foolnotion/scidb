@@ -401,7 +401,7 @@ proc openBase {parent file byUser args} {
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 
 	if {[file extension $file] eq ".scv"} {
-		return [::remote::busyOperation { OpenArchive $parent $file $byUser $args }]
+		return [::remote::busyOperation { OpenArchive $parent $file $byUser {*}$args }]
 	}
 
 	array set opts { -readonly -1 -encoding "" -switchToBase 1 }
