@@ -41,7 +41,6 @@
   color,w,fill       {}
   color,w,stroke     {}
   color,w,texture    {}
-  color,b,stop       #232323
   gradient,b,x1      0
   gradient,b,x2      1
   gradient,w,use     1

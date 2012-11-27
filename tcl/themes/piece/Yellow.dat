@@ -3,12 +3,10 @@
   color,b,contour    {#eeeeee}
   color,b,fill       {}
   color,b,start      {#d5d0af}
-  color,b,stop       {#928e77}
   color,b,stroke     {}
   color,b,texture    {}
   color,w,contour    {#fdf7d3}
   color,w,fill       {}
-  color,w,start      {#fdf7d3}
   color,w,stop       {#c7c2a3}
   color,w,stroke     {}
   color,w,texture    {}

@@ -8,7 +8,6 @@
   gradient,w,x2      1
   color,w,contour    #fdf7d3
   color,b,stroke     {}
-  color,w,start      #fdf7d3
   shadow             0.03333333333333333
   gradient,w,y1      0.34459459459459457
   texture,w,rotation 0
@@ -42,7 +41,6 @@
   color,w,fill       {}
   color,w,stroke     {}
   color,w,texture    {misc texture_etre.png}
-  color,b,stop       #7a7764
   gradient,b,x1      0.1554054054054054
   gradient,b,x2      1
   gradient,w,use     false

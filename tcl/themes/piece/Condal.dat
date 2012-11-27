@@ -9,7 +9,6 @@
   gradient,w,x2      1.0
   color,w,contour    #ffffff
   color,b,stroke     {}
-  color,w,start      #fefaf2
   shadow             0.04666666666666667
   gradient,w,y1      0.16891891891891891
   texture,w,rotation 0
@@ -43,7 +42,6 @@
   color,b,contour    #ffffff
   color,w,fill       {}
   color,w,stroke     {}
-  color,b,stop       #404240
   color,w,texture    {}
   gradient,b,x1      0
   gradient,w,use     true
