@@ -27,10 +27,8 @@ class ByteStream;
 
 struct Lzo
 {
-	Lzo();
-
-	bool compress(ByteStream const& src, ByteStream& dst);
-	void decompress(ByteStream const& src, ByteStream& dst);
+	static bool compress(ByteStream const& src, ByteStream& dst);
+	static void decompress(ByteStream const& src, ByteStream& dst);
 
 	static unsigned maxSizeAfterCompression(unsigned sizeBeforeCompression);
 };
