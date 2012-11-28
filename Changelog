@@ -1,6 +1,26 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #544)
+------------------------------------------------------------------------------
+* Update of theme styles:
+- renamed Blue -> Ocean (theme)
+- renamed Blue Mono -> Blue Theme (theme)
+- renamed Glassy & Red -> Kunterbunt (theme)
+- renamed Marble -> Marble - Brown (theme)
+- renamed Marmor -> Marble - Red (theme)
+- renamed Mayan -> Mayan - Marble (theme)
+- renamed Mayan (2) -> Mayan - Wood (theme)
+- replaced Phoenix (theme)
+- renamed Wood -> Motif (theme)
+- removed Stony Glass (theme)
+- renamed Blue -> Ocean (square)
+- renamed Blue Mono -> Blue Theme (square)
+- renamed Marble Classic -> Marble Red (square)
+- renamed Marble Red -> Marble Brown (square)
+- removed Yellow (piece)
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #531)
 ------------------------------------------------------------------------------
 * Tournament table opened for a game: if the event of this game does not have
