@@ -221,19 +221,22 @@ switch $::scidb::revision {
 		}
 		switch $::board::currentTheme {
 			Blue|1262882648418|yellow.color|gregor {
-				set $::board::currentTheme Ocean|1262882648418|yellow.color|gregor
+				set ::board::currentTheme Ocean|1262882648418|yellow.color|gregor
+			}
+			{Blue Mono|1354018040763|yellow.color|gregor} {
+				set ::board::currentTheme {Blue Theme|1354018040763|yellow.color|gregor}
 			}
 			Marble|1243532376507|yellow.color|gregor {
-				set $::board::currentTheme {Marble - Brown|1243532376507|yellow.color|gregor}
+				set ::board::currentTheme {Marble - Brown|1243532376507|yellow.color|gregor}
 			}
 			{Marble - Classic|1296049694406|yellow.color|gregor} {
-				set $::board::currentTheme {Marble - Red|1296049745744|yellow.color|gregor}
+				set ::board::currentTheme {Marble - Red|1296049745744|yellow.color|gregor}
 			}
 			Phoenix|1296049187980|yellow.color|gregor {
-				set $::board::currentTheme Phoenix|1354101318690|purple|gregor
+				set ::board::currentTheme Phoenix|1354101318690|purple|gregor
 			}
 			{Stony Glass|1243792200845|yellow.color|gregor} {
-				set $::board::currentTheme Default
+				set ::board::currentTheme Default
 			}
 		}
 	}
