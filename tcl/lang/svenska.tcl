@@ -112,8 +112,8 @@
 ::mc::Knight			"Springare"
 ::mc::Pawn				"Bonde"
 
-### scidb ##############################################################
-::scidb::mc::CannotOverwriteTheme	"Kan inte skriva över tema %s."
+### themes #############################################################
+::scidb::themes::mc::CannotOverwriteTheme	"Kan inte skriva över tema %s."
 
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	","
@@ -632,15 +632,18 @@
 ::application::tree::mc::T_FrequentPlayer					"Mest frekvent spelare"
 
 ### board ##############################################################
-::board::mc::CannotReadFile		"Kan inte läsa filen '%s':"
-::board::mc::CannotFindFile		"Kan inte hitta filen '%s'"
-::board::mc::FileWillBeIgnored	"'%s' kommer ignoreras (dubbla ID)"
-::board::mc::IsCorrupt				"'%s' är skadad (okänd %s stil '%s')"
+::board::mc::CannotReadFile			"Kan inte läsa filen '%s':"
+::board::mc::CannotFindFile			"Kan inte hitta filen '%s'"
+::board::mc::FileWillBeIgnored		"'%s' kommer ignoreras (dubbla ID)"
+::board::mc::IsCorrupt					"'%s' är skadad (okänd %s stil '%s')"
+::board::mc::SquareStyleIsUndefined	"Square style '%s' no longer exists" ;# NEW
+::board::mc::PieceStyleIsUndefined	"Piece style '%s' no longer exists" ;# NEW
+::board::mc::ThemeIsUndefined			"Board theme '%s' no longer exists" ;# NEW
 
-::board::mc::ThemeManagement		"Temahantering"
-::board::mc::Setup					"Inställningar"
+::board::mc::ThemeManagement			"Temahantering"
+::board::mc::Setup						"Inställningar"
 
-::board::mc::WorkingSet				"Arbetsuppsättning"
+::board::mc::WorkingSet					"Arbetsuppsättning"
 
 ### board::options #####################################################
 ::board::options::mc::Coordinates			"Kordinater"

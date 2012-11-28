@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Blue Theme|1354018040763|yellow.color|gregor}
+  piece-set    {Burnett}
+  piece-style  {Default}
+  square-style {Blue Theme|1354016677445|yellow.color|gregor}
+  version      {1.0}
+}

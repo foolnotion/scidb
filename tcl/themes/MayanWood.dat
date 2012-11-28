@@ -1,7 +1,7 @@
 ::board::addStyle theme {
   version		1.0
-  piece-style  {Mayan Red|1243775183896|yellow.color|gregor}
+  piece-style  {Mayan - Red|1243775183896|yellow.color|gregor}
   piece-set    Maya
   square-style {Wood - Green|1244309414202|yellow.color|gregor}
-  identifier   Mayan|1244309428838|yellow.color|gregor
+  identifier   {Mayan - Wood|1244309428838|yellow.color|gregor}
 }

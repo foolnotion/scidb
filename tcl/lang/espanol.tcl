@@ -126,8 +126,8 @@
 ::mc::Variant(Symm960)			"Ajedrez 960 (sólo simétrico)"
 ::mc::Variant(Shuffle)			"Ajedrez Shuffle"
 
-### scidb ##############################################################
-::scidb::mc::CannotOverwriteTheme	"No se puede anular el tema %s."
+### themes #############################################################
+::scidb::themes::mc::CannotOverwriteTheme	"No se puede anular el tema %s."
 
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
@@ -651,15 +651,18 @@
 ::application::tree::mc::T_FrequentPlayer					"Jugador más frecuente"
 
 ### board ##############################################################
-::board::mc::CannotReadFile		"No se puede leer el archivo '%s':"
-::board::mc::CannotFindFile		"No se encuentra el archivo '%s'"
-::board::mc::FileWillBeIgnored	"Se ignorará '%s' (ID duplicado)"
-::board::mc::IsCorrupt				"'%s' está dañado (estilo %s desconocido '%s')"
+::board::mc::CannotReadFile			"No se puede leer el archivo '%s':"
+::board::mc::CannotFindFile			"No se encuentra el archivo '%s'"
+::board::mc::FileWillBeIgnored		"Se ignorará '%s' (ID duplicado)"
+::board::mc::IsCorrupt					"'%s' está dañado (estilo %s desconocido '%s')"
+::board::mc::SquareStyleIsUndefined	"Square style '%s' no longer exists" ;# NEW
+::board::mc::PieceStyleIsUndefined	"Piece style '%s' no longer exists" ;# NEW
+::board::mc::ThemeIsUndefined			"Board theme '%s' no longer exists" ;# NEW
 
-::board::mc::ThemeManagement		"Manejo de temas"
-::board::mc::Setup					"Disposición"
+::board::mc::ThemeManagement			"Manejo de temas"
+::board::mc::Setup						"Disposición"
 
-::board::mc::WorkingSet				"Conjunto usado"
+::board::mc::WorkingSet					"Conjunto usado"
 
 ### board::options #####################################################
 ::board::options::mc::Coordinates			"Coordenadas"

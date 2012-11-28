@@ -1,7 +1,7 @@
 ::board::addStyle theme {
   version		1.0
-  piece-style  {Mayan Red|1243775183896|yellow.color|gregor}
+  piece-style  {Mayan - Red|1243775183896|yellow.color|gregor}
   piece-set    Maya
   square-style {Marble - Black&Beige|1243775151068|yellow.color|gregor}
-  identifier   Mayan|1243775222632|yellow.color|gregor
+  identifier   {Mayan - Marble|1243775222632|yellow.color|gregor}
 }

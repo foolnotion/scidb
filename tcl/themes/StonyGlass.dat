@@ -1,7 +1,0 @@
-::board::addStyle theme {
-  version		1.0
-  piece-style  Glass|1243791877212|yellow.color|gregor
-  piece-set    Merida
-  square-style Stone|1243792087778|yellow.color|gregor
-  identifier   {Stony Glass|1243792200845|yellow.color|gregor}
-}

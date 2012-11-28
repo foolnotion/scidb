@@ -16,7 +16,7 @@
   hint,border-color     {#32719d}
   hint,border-tile      {}
   hint,coordinates      {#ffffff}
-  identifier            {Blue Mono|1354016677445|yellow.color|gregor}
+  identifier            {Blue Theme|1354016677445|yellow.color|gregor}
   lite,rotation         {0}
   lite,solid            {#b0c4de}
   lite,texture          {}

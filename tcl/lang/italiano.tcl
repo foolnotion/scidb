@@ -112,8 +112,8 @@
 ::mc::Knight			"Cavallo"
 ::mc::Pawn				"Pedone"
 
-### scidb ##############################################################
-::scidb::mc::CannotOverwriteTheme	"Impossibile sovrascrivere il tema %s."
+### themes #############################################################
+::scidb::themes::mc::CannotOverwriteTheme	"Impossibile sovrascrivere il tema %s."
 
 ### locale #############################################################
 ::locale::Pattern(decimalPoint)	"."
@@ -633,15 +633,18 @@
 ::application::tree::mc::T_FrequentPlayer					"Giocata frequentemente da"
 
 ### board ##############################################################
-::board::mc::CannotReadFile		"Impossibile leggere file '%s':"
-::board::mc::CannotFindFile		"Impossibile trovare file '%s'"
-::board::mc::FileWillBeIgnored	"'%s' sarà ignorato (ID doppio)"
-::board::mc::IsCorrupt				"'%s' è corrotto (stile %s sconosciuto '%s')"
+::board::mc::CannotReadFile			"Impossibile leggere file '%s':"
+::board::mc::CannotFindFile			"Impossibile trovare file '%s'"
+::board::mc::FileWillBeIgnored		"'%s' sarà ignorato (ID doppio)"
+::board::mc::IsCorrupt					"'%s' è corrotto (stile %s sconosciuto '%s')"
+::board::mc::SquareStyleIsUndefined	"Square style '%s' no longer exists" ;# NEW
+::board::mc::PieceStyleIsUndefined	"Piece style '%s' no longer exists" ;# NEW
+::board::mc::ThemeIsUndefined			"Board theme '%s' no longer exists" ;# NEW
 
-::board::mc::ThemeManagement		"Gestore Temi"
-::board::mc::Setup					"Setup"
+::board::mc::ThemeManagement			"Gestore Temi"
+::board::mc::Setup						"Setup"
 
-::board::mc::WorkingSet				"Selezione di lavoro"
+::board::mc::WorkingSet					"Selezione di lavoro"
 
 ### board::options #####################################################
 ::board::options::mc::Coordinates			"Coordinate"

@@ -21,7 +21,7 @@
   dark,solid            {}
   hint,coordinates      #ffffff
   borderline,gap        0
-  identifier            Blue|1262882896027|yellow.color|gregor
+  identifier            Ocean|1262882896027|yellow.color|gregor
   borderline,opacity    175
   lite,y1               0
   lite,y2               90

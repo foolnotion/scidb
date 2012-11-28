@@ -245,6 +245,29 @@ foreach file [glob -directory [file join $::scidb::dir::share pieces] -nocomplai
 set msg [format $load::mc::Loading $load::mc::Theme]
 
 # --- Load themes ------------------------------------------------------
+### Upgrade #######################################
+if {[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]} {
+	catch { file delete [file join $::scidb::dir::user themes BlueMono.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Blue.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Glassy&Red.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Marble.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Marmor.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Mayan-1.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Mayan-2.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Phoenix.dat] }
+	catch { file delete [file join $::scidb::dir::user themes StonyGlass.dat] }
+	catch { file delete [file join $::scidb::dir::user themes Wood.dat] }
+	catch { file delete [file join $::scidb::dir::user themes square Blue.dat] }
+	catch { file delete [file join $::scidb::dir::user themes square BlueMono.dat] }
+	catch { file delete [file join $::scidb::dir::user themes square Marble-Classic.dat] }
+	catch { file delete [file join $::scidb::dir::user themes square Marble-Red.dat] }
+	catch { file delete [file join $::scidb::dir::user themes square Wood-Green.dat] }
+	catch { file delete [file join $::scidb::dir::user themes piece MayanRed.dat] }
+	catch { file delete [file join $::scidb::dir::user themes piece Yellow.dat] }
+	::scidb::themes::update
+}
+###################################################
+
 foreach subdir {piece square {}} {
 	foreach file [glob -directory [file join $::scidb::dir::user themes {*}$subdir] -nocomplain *.dat] {
 		load::source $file -message $msg

@@ -17,7 +17,7 @@
   hint,border-color     {}
   hint,border-tile      {marble marble_206.jpg}
   hint,coordinates      {#ffffff}
-  identifier            {Marble - Classic|1296049694406|yellow.color|gregor}
+  identifier            {Marble - Red|1296049694406|yellow.color|gregor}
   lite,rotation         {0}
   lite,solid            {}
   lite,texture          {marble marble_234.jpg}
