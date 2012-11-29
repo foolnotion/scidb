@@ -299,7 +299,7 @@
 ::util::photos::mc::LocalInstallation			"Instalación privada"
 ::util::photos::mc::RetryLater					"Por favor, inténtelo de nuevo más tarde."
 ::util::photos::mc::DownloadStillInProgress	"La descarga de los archivos de fotos aún está en curso."
-::util::photos::mc::PhotoFiles					"Archivos de fotos" ;# NEW change to "Player Photo Files"
+::util::photos::mc::PhotoFiles					"Archivos de fotos de jugadores"
 
 ::util::photos::mc::RequiresSuperuserRights	"La instalación/actualización requiere derechos de superusuario.\n\nAdvierta que la contraseña no se aceptará si el usuario no figura en el archivo sudoers."
 ::util::photos::mc::RequiresInternetAccess	"La instalación/actualización de los archivos de fotos de los jugadores requiere una conexión a Internet."
@@ -355,7 +355,7 @@
 ::application::mc::Shutdown				"Cierre..."
 ::application::mc::QuitAnyway				"¿Desea cerrar de todos modos?"
 
-::application::mc::UpdatesAvailable		"Updates available" ;# NEW
+::application::mc::UpdatesAvailable		"Actualizaciones disponibles"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable	"Mostrar tabla de torneo para esta partida"
@@ -655,9 +655,9 @@
 ::board::mc::CannotFindFile			"No se encuentra el archivo '%s'"
 ::board::mc::FileWillBeIgnored		"Se ignorará '%s' (ID duplicado)"
 ::board::mc::IsCorrupt					"'%s' está dañado (estilo %s desconocido '%s')"
-::board::mc::SquareStyleIsUndefined	"Square style '%s' no longer exists" ;# NEW
-::board::mc::PieceStyleIsUndefined	"Piece style '%s' no longer exists" ;# NEW
-::board::mc::ThemeIsUndefined			"Board theme '%s' no longer exists" ;# NEW
+::board::mc::SquareStyleIsUndefined	"El estilo de tablero '%s' ya no existe"
+::board::mc::PieceStyleIsUndefined	"El estilo de piezas '%s' ya no existe"
+::board::mc::ThemeIsUndefined			"El tema de tablero '%s' ya no existe"
 
 ::board::mc::ThemeManagement			"Manejo de temas"
 ::board::mc::Setup						"Disposición"
@@ -934,7 +934,7 @@
 ::application::analysis::mc::CurrentMove			"Actualmente buscando este movimiento"
 ::application::analysis::mc::TimeSearched			"Tiempo utilizado buscando"
 ::application::analysis::mc::SearchDepth			"Profundidad de búsqueda en medias-jugadas (Profundidad de búsqueda selectiva)"
-::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
+::application::analysis::mc::IllegalPosition		"Posición ilegal - No puede analizarse"
 
 ::application::analysis::mc::LinesPerVariation	"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder		"Ordenar por evaluación"
@@ -943,8 +943,8 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
-::application::analysis::mc::Status(mate)			"%s is mate" ;# NEW
-::application::analysis::mc::Status(stalemate)	"%s is stalemate" ;# NEW
+::application::analysis::mc::Status(mate)			"%s es mate"
+::application::analysis::mc::Status(stalemate)	"%s es ahogado"
 
 ::application::analysis::mc::NotSupported(standard)	"Este motor de análisis no tiene soporte para ajedrez normal."
 ::application::analysis::mc::NotSupported(chess960)	"Este motor de análisis no tiene soporte para chess 960."
@@ -1690,23 +1690,23 @@
 ::terminationbox::mc::TimeForfeit					"Pierde por tiempo"
 ::terminationbox::mc::Unterminated					"No terminada"
 
-::terminationbox::mc::State(Mate)					"%s is checkmate" ;# NEW
-::terminationbox::mc::State(Stalemate)				"%s is stalemate" ;# NEW
+::terminationbox::mc::State(Mate)					"%s es jaque mate"
+::terminationbox::mc::State(Stalemate)				"%s es ahogado"
 
-::terminationbox::mc::Result(1-0)					"Black resigned" ;# NEW
-::terminationbox::mc::Result(0-1)					"White resigned" ;# NEW
-::terminationbox::mc::Result(0-0)					"Declared lost for both players" ;# NEW
-::terminationbox::mc::Result(1/2-1/2)				"Draw agreed" ;# NEW
+::terminationbox::mc::Result(1-0)					"Las negras se rinden"
+::terminationbox::mc::Result(0-1)					"Las blancas se rinden"
+::terminationbox::mc::Result(0-0)					"Se declara perdida para ambos jugadores"
+::terminationbox::mc::Result(1/2-1/2)				"Se acordó tablas"
 
-::terminationbox::mc::Reason(Unplayed)				"Game is unplayed" ;# NEW
-::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
-::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
+::terminationbox::mc::Reason(Unplayed)				"La partida no se jugó"
+::terminationbox::mc::Reason(Abandoned)			"Se abandonó la partida"
+::terminationbox::mc::Reason(Adjudication)		"Adjudicado"
 ::terminationbox::mc::Reason(Death)					"" ;# NEW
-::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency" ;# NEW
-::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit)			"%s forfeits on time" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time" ;# NEW
-::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
+::terminationbox::mc::Reason(Emergency)			"Abandonado por una emergencia"
+::terminationbox::mc::Reason(RulesInfraction)	"Decidido debido a infracción de las reglas"
+::terminationbox::mc::Reason(TimeForfeit)			"%s pierde por tiempo"
+::terminationbox::mc::Reason(TimeForfeit,both)	"Ambos jugadores pierden por tiempo"
+::terminationbox::mc::Reason(Unterminated)		"No finalizado"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"En tablero"
