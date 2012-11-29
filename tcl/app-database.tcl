@@ -1456,11 +1456,6 @@ proc LogCopyDb {unused arguments} {
 }
 
 
-proc LogCopyDb {args} {
-	puts "LogCopyDb: $args"
-}
-
-
 proc ActivateBase {} {
 	variable Vars
 
