@@ -84,6 +84,8 @@ protected:
 
 private:
 
+	enum State { None, Start, Stop, Pause };
+
 	class Timer;
 
 	typedef mstl::auto_ptr<Timer>		TimerP;
@@ -98,15 +100,20 @@ private:
 	void parseOption(mstl::string const& option);
 	void parseFeatures(char const* msg);
 	void detectFeatures(char const* identifier);
+	void pongReceived();
 
 	db::Board		m_board;
 	TimerP			m_timer;
+	State				m_state;
 	mstl::string	m_chess960Variant;
 	mstl::string	m_currentVariant;
 	uint64_t			m_startTime;
+	unsigned			m_pingCount;
+	unsigned			m_pongCount;
 	bool				m_isAnalyzing;
 	bool				m_response;
 	bool				m_waitForDone;
+	bool				m_waitForPong;
 	bool				m_analyzeResponse;
 	bool				m_identifierDetected;
 	bool				m_shortNameDetected;
@@ -121,7 +128,10 @@ private:
 	bool				m_featureSetboard;
 	bool				m_featureSigint;
 	bool				m_featureSan;
+	bool				m_featurePing;
 	bool				m_isCrafty;
+	bool				m_startAnalyzeIsPending;
+	bool				m_stopAnalyzeIsPending;
 };
 
 } // namespace winboard

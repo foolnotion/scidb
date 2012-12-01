@@ -128,7 +128,7 @@ public:
 		switch (int(code))
 		{
 			case Engine_Requires_Registration:	m_error = "registration"; break;
-			case Engins_Has_Copy_Protection:		m_error = "copyprotection"; break;
+			case Engine_Has_Copy_Protection:		m_error = "copyprotection"; break;
 		}
 	}
 
@@ -223,11 +223,12 @@ public:
 		switch (code)
 		{
 			case Engine_Requires_Registration:	msg = "registration"; break;
-			case Engins_Has_Copy_Protection:		msg = "copyprotection"; break;
+			case Engine_Has_Copy_Protection:		msg = "copyprotection"; break;
 			case Standard_Chess_Not_Supported:	msg = "standard"; break;
 			case Chess_960_Not_Supported:			msg = "chess960"; break;
 			case No_Analyze_Mode:					msg = "analyze"; break;
 			case Illegal_Position:					msg = "illegal"; break;
+			case Did_Not_Receive_Pong:				msg = "pong"; break;
 		}
 
 		sendInfo(m_error, Tcl_NewStringObj(msg, -1));

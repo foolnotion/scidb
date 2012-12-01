@@ -935,6 +935,7 @@
 ::application::analysis::mc::TimeSearched			"Tiempo utilizado buscando"
 ::application::analysis::mc::SearchDepth			"Profundidad de búsqueda en medias-jugadas (Profundidad de búsqueda selectiva)"
 ::application::analysis::mc::IllegalPosition		"Posición ilegal - No puede analizarse"
+::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation	"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder		"Ordenar por evaluación"

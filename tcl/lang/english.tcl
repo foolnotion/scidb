@@ -914,6 +914,7 @@
 ::application::analysis::mc::TimeSearched			"Time searched"
 ::application::analysis::mc::SearchDepth			"Search depth in plies (Selective search depth)"
 ::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze"
+::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted"
 
 ::application::analysis::mc::LinesPerVariation	"Lines per variation"
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation"

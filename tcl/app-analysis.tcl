@@ -46,6 +46,7 @@ set CurrentMove				"Currently searching this move"
 set TimeSearched				"Time searched"
 set SearchDepth				"Search depth in plies (Selective search depth)"
 set IllegalPosition			"Illegal position - Cannot analyze"
+set DidNotReceivePong		"Engine is not responding to \"pong\" command - Analysis aborted"
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -772,6 +773,9 @@ proc Display(error) {code} {
 		}
 		illegal {
 			set msg $mc::IllegalPosition
+		}
+		pong {
+			set msg $mc::DidNotReceivePong
 		}
 	}
 

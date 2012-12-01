@@ -576,7 +576,7 @@ uci::Engine::processMessage(mstl::string const& message)
 		case 'c':
 			if (::strcmp(message, "copyprotection checking") == 0)
 			{
-				error(app::Engine::Engins_Has_Copy_Protection);
+				error(app::Engine::Engine_Has_Copy_Protection);
 				deactivate();
 			}
 			break;

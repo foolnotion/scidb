@@ -922,6 +922,7 @@
 ::application::analysis::mc::TimeSearched			"Söktid"
 ::application::analysis::mc::SearchDepth			"Sökdjup i plys (Selektivt sökdjup)"
 ::application::analysis::mc::IllegalPosition		"Ogiltig ställning - Kan inte analysera"
+::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation	"Rader per variant"
 ::application::analysis::mc::BestFirstOrder		"Sortera på  värdering"

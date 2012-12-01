@@ -36,6 +36,7 @@
 #include "m_stdio.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 using namespace app;
@@ -176,11 +177,15 @@ struct winboard::Engine::Timer : public sys::Timer
 
 
 winboard::Engine::Engine()
-	:m_currentVariant("standard")
+	:m_state(None)
+	,m_currentVariant("standard")
 	,m_startTime(0)
+	,m_pingCount(0)
+	,m_pongCount(0)
 	,m_isAnalyzing(false)
 	,m_response(false)
 	,m_waitForDone(false)
+	,m_waitForPong(false)
 	,m_analyzeResponse(false)
 	,m_identifierDetected(false)
 	,m_shortNameDetected(false)
@@ -195,7 +200,10 @@ winboard::Engine::Engine()
 	,m_featureSetboard(false)
 	,m_featureSigint(false)
 	,m_featureSan(false)
+	,m_featurePing(false)
 	,m_isCrafty(false)
+	,m_startAnalyzeIsPending(false)
+	,m_stopAnalyzeIsPending(false)
 {
 }
 
@@ -437,10 +445,20 @@ winboard::Engine::isAnalyzing() const
 
 
 bool
-winboard::Engine::startAnalysis(bool isNewGame)
+winboard::Engine::startAnalysis(bool)
 {
 	M_ASSERT(currentGame());
 	M_ASSERT(isActive());
+
+	m_state = Start;
+
+	if (m_stopAnalyzeIsPending)
+	{
+		m_startAnalyzeIsPending = true; // wait on "pong"
+		return true;
+	}
+
+	m_startAnalyzeIsPending = false;
 
 	db::Game const* game = currentGame();
 
@@ -536,20 +554,57 @@ winboard::Engine::sendStartAnalysis()
 bool
 winboard::Engine::stopAnalysis(bool restartIsPending)
 {
-	if (isAnalyzing())
+	State oldState = m_state;
+
+	m_startAnalyzeIsPending = false;
+	m_state = Stop;
+
+	if (!isAnalyzing())
+		return false;
+
+	m_isAnalyzing = false;
+
+	if (!m_stopAnalyzeIsPending)
 	{
 		sendStopAnalysis();
+		if (oldState != Pause)
+			m_stopAnalyzeIsPending = true;
 		reset();
-		m_isAnalyzing = false;
 
 		if (!restartIsPending)
 			updateState(app::Engine::Stop);
 
-		// TODO: we should send now the best move so far
-		// because the UCI protocol is doing this
+		if (m_stopAnalyzeIsPending)
+		{
+			mstl::string ping;
+			ping.format("ping %u", ++m_pingCount);
+			send(ping);
+
+			if (m_pingCount == 1)
+			{
+				// Catch possible problem: the engine is not respoding to "ping".
+				m_waitForPong = true;
+				m_timer = new Timer(this, 2000);
+			}
+
+			// the engine should now send "pong"
+		}
 	}
 
 	return true;
+}
+
+
+void
+winboard::Engine::pongReceived()
+{
+	m_stopAnalyzeIsPending = false;
+	m_timer.reset();
+	m_waitForPong = false;
+	m_pongCount = m_pingCount;
+
+	if (m_startAnalyzeIsPending)
+		startAnalysis(true);
 }
 
 
@@ -571,6 +626,7 @@ winboard::Engine::pause()
 	else
 		sendStopAnalysis();
 
+	m_state = Pause;
 	updateState(app::Engine::Pause);
 }
 
@@ -583,6 +639,7 @@ winboard::Engine::resume()
 	else
 		sendStartAnalysis();
 
+	m_state = Start;
 	updateState(app::Engine::Resume);
 }
 
@@ -607,7 +664,7 @@ winboard::Engine::protocolStart(bool isProbing)
 	if (isProbing)
 	{
 		send("log off");		// turn off crafty logging, to reduce number of junk files
-//		send("ping");			// probably the engine will send 'pong'
+//		send("ping 0");		// probably the engine will send 'pong 0'
 		send("new");
 		send("sd 1");
 		send("depth 1");		// some engines are expecting "depth" instead of "sd"
@@ -675,6 +732,11 @@ winboard::Engine::timeout()
 	{
 		deactivate();
 	}
+	else if (m_waitForPong)
+	{
+		error(app::Engine::Did_Not_Receive_Pong);
+		deactivate();
+	}
 	else
 	{
 		send("hard");
@@ -713,10 +775,20 @@ winboard::Engine::processMessage(mstl::string const& message)
 				break;
 
 			case 'p':
-				if (isProbing() && ::strncmp(msg, "pong ", 5) == 0)
+				if (::strncmp(msg, "pong ", 5) == 0)
 				{
-					m_response = true;
-					return;
+					if (isProbing())
+					{
+						m_response = true;
+						return;
+					}
+
+					if (	m_stopAnalyzeIsPending
+						&& m_pongCount < m_pingCount
+						&& ::atoi(::skipSpaces(msg + 5)) == int(m_pingCount))
+					{
+						pongReceived();
+					}
 				}
 				break;
 
@@ -867,11 +939,19 @@ winboard::Engine::parseFeatures(char const* msg)
 			case 'p':
 				switch (key[1])
 				{
-					case 'u':
+					case 'a':
 						if (::strncmp(key, "pause=", 6) == 0)
 						{
 							if (*val == '1')
 								addFeature(app::Engine::Feature_Pause);
+//							accept = true;
+						}
+						break;
+
+					case 'i':
+						if (::strncmp(key, "pong=", 5) == 0)
+						{
+							m_featurePing = *val == '1';
 //							accept = true;
 						}
 						break;
@@ -1042,6 +1122,11 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 				{
 					stopAnalysis(false);
 					error(app::Engine::No_Analyze_Mode);
+				}
+				else if (!m_featurePing && m_stopAnalyzeIsPending && m_pongCount < m_pingCount)
+				{
+					if (++m_pongCount == m_pingCount)
+						pongReceived();
 				}
 				else
 				{

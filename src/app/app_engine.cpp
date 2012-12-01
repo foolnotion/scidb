@@ -864,8 +864,12 @@ Engine::exited()
 	else
 	{
 		mstl::string msg;
-		msg.format("Engine terminated with exit status %d", m_exitStatus = m_process->exitStatus());
-		fatal(msg);
+		m_exitStatus = m_process->exitStatus();
+		msg.format("Engine terminated with exit status %d", m_exitStatus);
+		if (m_exitStatus)
+			fatal(msg);
+		else
+			log(msg);
 		engineSignal(Terminated);
 	}
 

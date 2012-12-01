@@ -915,6 +915,7 @@
 ::application::analysis::mc::TimeSearched			"Berechnungszeit"
 ::application::analysis::mc::SearchDepth			"Berechnungstiefe in Halbzügen (Selektive Berechnungstiefe)"
 ::application::analysis::mc::IllegalPosition		"Illegale Stellung - keine Analyse möglich"
+::application::analysis::mc::DidNotReceivePong	"Der Motor antwortet nicht auf das \"pong\"-Kommando - Analyse beendet"
 
 ::application::analysis::mc::LinesPerVariation	"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder		"Sortiere nach Bewertung"

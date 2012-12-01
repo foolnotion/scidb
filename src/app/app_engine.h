@@ -87,11 +87,12 @@ public:
 	enum Error
 	{
 		Engine_Requires_Registration,
-		Engins_Has_Copy_Protection,
+		Engine_Has_Copy_Protection,
 		Standard_Chess_Not_Supported,
 		Chess_960_Not_Supported,
 		No_Analyze_Mode,
 		Illegal_Position,
+		Did_Not_Receive_Pong,
 	};
 
 	enum Signal

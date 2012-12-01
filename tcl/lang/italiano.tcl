@@ -923,6 +923,7 @@
 ::application::analysis::mc::TimeSearched			"Tempo di ricerca"
 ::application::analysis::mc::SearchDepth			"Profondità di ricerca in semimosse (profondità di ricerca selettiva)"
 ::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
+::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation	"Varianti per valutazione"
 ::application::analysis::mc::BestFirstOrder		"Ordina per valutazione"

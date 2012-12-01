@@ -922,6 +922,7 @@
 ::application::analysis::mc::TimeSearched		"Time searched" ;# NEW
 ::application::analysis::mc::SearchDepth		"Search depth in plies (Selective search depth)" ;# NEW
 ::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
+::application::analysis::mc::DidNotReceivePong		"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
