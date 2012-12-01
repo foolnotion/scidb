@@ -42,6 +42,7 @@ inline color::ID Board::notToMove() const			{ return color::ID(m_stm ^ 1); }
 inline bool Board::isEmpty() const					{ return m_hash == 0; }
 inline bool Board::isStandardPosition() const	{ return isEqualPosition(m_standardBoard); }
 inline bool Board::isInCheck() const				{ return isAttackedBy(m_stm ^ 1, m_ksq[m_stm]); }
+inline bool Board::isMate() const					{ return checkState() & CheckMate; }
 inline bool Board::givesCheck() const				{ return isAttackedBy(m_stm, m_ksq[m_stm ^ 1]); }
 inline bool Board::isLegal() const					{ return !isAttackedBy(m_stm, m_ksq[m_stm ^ 1]); }
 inline bool Board::whiteToMove() const				{ return color::isWhite(sideToMove()); }

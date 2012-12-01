@@ -211,12 +211,20 @@ struct DString
 static void
 readHandler(ClientData clientData, int)
 {
-	Process* process = reinterpret_cast<Process*>(clientData);
+	try
+	{
+		Process* process = reinterpret_cast<Process*>(clientData);
 
-	if (process->isRunning())
-		process->readyRead();
-	else
-		process->close();
+		if (process->isRunning())
+			process->readyRead();
+		else
+			process->close();
+	}
+	catch (mstl::exception const& exc)
+	{
+		Tcl_SetObjResult(::tcl::interp(), Tcl_NewStringObj(exc.what(),  -1));
+		Tcl_BackgroundError(::tcl::interp());
+	}
 }
 
 

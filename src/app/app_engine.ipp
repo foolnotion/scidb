@@ -304,7 +304,6 @@ Engine::Concrete::addOption(	mstl::string const& name,
 inline bool Engine::hasFeature(unsigned feature) const 		{ return m_features & feature; }
 inline bool Engine::hasVariant(unsigned variant) const 		{ return m_variants & variant; }
 inline bool Engine::isProbingAnalyze() const						{ return m_probe; }
-inline bool Engine::bestInfoHasChanged() const					{ return m_bestInfoHasChanged; }
 inline bool Engine::isConnected() const							{ return m_process != 0; }
 
 inline int Engine::bestScore() const								{ return m_bestScore; }
@@ -356,10 +355,27 @@ inline void Engine::error(Error code)								{ m_engine->updateError(code); }
 
 inline
 bool
+Engine::bestInfoHasChanged() const
+{
+	return m_useBestInfo && m_bestInfoHasChanged;
+}
+
+
+inline
+unsigned
+Engine::ordering(unsigned line) const
+{
+	M_REQUIRE(line < numVariations());
+	return m_map[line];
+}
+
+
+inline
+bool
 Engine::isBestLine(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_selection.test(m_map[no]);
+	return m_selection.test(no);
 }
 
 
@@ -386,7 +402,7 @@ int
 Engine::score(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_scores[m_map[no]];
+	return m_scores[no];
 }
 
 
@@ -395,7 +411,7 @@ int
 Engine::mate(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_mates[m_map[no]];
+	return m_mates[no];
 }
 
 
@@ -404,7 +420,7 @@ db::MoveList const&
 Engine::variation(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_variations[m_map[no]];
+	return m_variations[no];
 }
 
 

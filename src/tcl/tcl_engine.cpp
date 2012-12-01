@@ -265,7 +265,7 @@ public:
 		objs[3] = Tcl_NewIntObj(selectiveDepth());
 		objs[4] = Tcl_NewDoubleObj(time());
 		objs[5] = Tcl_NewIntObj(nodes());
-		objs[6] = Tcl_NewIntObj(line);
+		objs[6] = Tcl_NewIntObj(ordering(line));
 		objs[7] = Tcl_NewStringObj(s, s.size());
 
 		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
@@ -276,7 +276,7 @@ public:
 			unsigned n = numVariations();
 
 			for (unsigned i = 0; i < n; ++i)
-				v[i] = Tcl_NewBooleanObj(isBestLine(i));
+				v[ordering(i)] = Tcl_NewBooleanObj(isBestLine(i));
 
 			int score = mstl::max(-9900, mstl::min(9900, bestScore()));
 

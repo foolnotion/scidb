@@ -391,6 +391,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_identifierSet(false)
 	,m_useLimitedStrength(false)
 	,m_bestInfoHasChanged(false)
+	,m_useBestInfo(true)
 	,m_pause(false)
 	,m_restart(false)
 	,m_process(0)
@@ -1348,7 +1349,7 @@ Engine::reorderKeepStable(unsigned currentNo)
 
 	int matchIndex = -1;
 
-	if (m_wantedMultiPV > 1 && m_ordering == KeepStable && !isBestLine(currentNo))
+	if (m_wantedMultiPV > 1 && !isBestLine(currentNo))
 	{
 		unsigned matchLength = 0;
 
@@ -1368,28 +1369,32 @@ Engine::reorderKeepStable(unsigned currentNo)
 	}
 
 	if (matchIndex >= 0)
+	{
+		m_useBestInfo = false;
 		updatePvInfo(matchIndex);
+		m_useBestInfo = true;
+	}
 }
 
 
 void
 Engine::reorderBestFirst(unsigned currentNo)
 {
-	Map old;
+	Map old, map;
 	::memcpy(old, m_map, sizeof(old[0])*m_wantedMultiPV);
 
 	for (unsigned k = 0; k < m_wantedMultiPV; ++k)
-		m_map[k] = k;
+		map[k] = k;
 
 	for (unsigned k = 0, n = m_wantedMultiPV - 1; k < n; ++k)
 	{
 		unsigned index = k;
 
-		int score = m_sortScores[m_map[index]];
+		int score = m_sortScores[map[index]];
 
 		for (unsigned i = k + 1; i < m_wantedMultiPV; ++i)
 		{
-			int score2 = m_sortScores[m_map[i]];
+			int score2 = m_sortScores[map[i]];
 
 			if (score < score2)
 			{
@@ -1399,13 +1404,23 @@ Engine::reorderBestFirst(unsigned currentNo)
 		}
 
 		if (index > k)
-			mstl::swap(m_map[index], m_map[k]);
+			mstl::swap(map[index], map[k]);
 	}
 
 	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		m_map[map[i]] = i;
+
+	if (memcmp(m_map, old, sizeof(old[0])*m_wantedMultiPV))
 	{
-		if (i != currentNo && m_map[i] != old[i])
-			updatePvInfo(i);
+		m_useBestInfo = false;
+
+		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		{
+			if (i != currentNo && m_map[i] != old[i])
+				updatePvInfo(i);
+		}
+
+		m_useBestInfo = true;
 	}
 }
 
