@@ -944,7 +944,7 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
-::application::analysis::mc::Status(mate)			"%s es mate"
+::application::analysis::mc::Status(checkmate)	"%s es jaque mate"
 ::application::analysis::mc::Status(stalemate)	"%s es ahogado"
 
 ::application::analysis::mc::NotSupported(standard)	"Este motor de análisis no tiene soporte para ajedrez normal."

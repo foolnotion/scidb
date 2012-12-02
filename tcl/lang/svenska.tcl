@@ -931,7 +931,7 @@
 ::application::analysis::mc::Seconds				"s" ;# NEW
 ::application::analysis::mc::Minutes				"m" ;# NEW
 
-::application::analysis::mc::Status(mate)			"%s är matt"
+::application::analysis::mc::Status(checkmate)	"%s är matt"
 ::application::analysis::mc::Status(stalemate)	"%s är patt"
 
 ::application::analysis::mc::NotSupported(standard)	"Den här motorn har inte stöd för vanligt schack."

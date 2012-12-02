@@ -923,7 +923,7 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
-::application::analysis::mc::Status(mate)			"%s is mate"
+::application::analysis::mc::Status(checkmate)	"%s is checkmate"
 ::application::analysis::mc::Status(stalemate)	"%s is stalemate"
 
 ::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess."

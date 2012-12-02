@@ -55,7 +55,7 @@ set Engine						"Engine"
 set Seconds						"s"
 set Minutes						"m"
 
-set Status(mate)				"%s is mate"
+set Status(checkmate)		"%s is checkmate"
 set Status(stalemate)		"%s is stalemate"
 
 set NotSupported(standard)	"This engine does not support standard chess."
@@ -122,14 +122,26 @@ proc build {parent width height} {
 	set charwidth [font measure $Options(font) "0"]
 	set minsize [expr {12*$charwidth}]
 
-	set w [ttk::frame $parent.f]
-	set tree $w.tree
+	set mw   [tk::multiwindow $parent.mw -borderwidth 0 -background $Defaults(info:background)]
+	set main [tk::frame $mw.main -borderwidth 0 -background $Defaults(info:background)]
+	set mesg [tk::label $mw.mesg \
+		-borderwidth 0 \
+		-background $Defaults(info:background) \
+		-foreground $Defaults(info:foreground) \
+	]
 
-	set info [tk::frame $w.info \
+	set Vars(mw) $mw
+	set Vars(mesg) $mesg
+	set Vars(main) $main
+
+	$mw add $main -sticky nsew
+	$mw add $mesg
+	set tree $main.tree
+
+	set info [tk::frame $main.info \
 		-background $Defaults(background) \
 		-borderwidth 0 \
 	]
-
 	set score [tk::frame $info.score \
 		-background $Defaults(info:background) \
 		-borderwidth 1 \
@@ -264,13 +276,15 @@ proc build {parent width height} {
 	}
 
 	grid $info -column 0 -row 0 -sticky ew
-	grid $tree -column 0 -row 1 -sticky ew
+	grid $tree -column 0 -row 1 -sticky ewns
 
-	grid columnconfigure $w 0 -weight 1
 	grid columnconfigure $info {1 3 5 7} -weight 1
 	grid columnconfigure $info {0 2 4 6} -minsize 2
 
-	pack $w -fill both -expand yes
+	grid columnconfigure $main 0 -weight 1
+	grid rowconfigure $main 1 -weight 1
+
+	pack $mw -fill both -expand yes
 	bind $tmove <Destroy> [namespace code Destroy]
 
 	set Vars(tree) $tree
@@ -379,6 +393,7 @@ proc startAnalysis {dialog} {
 	variable Vars
 	variable Options
 
+	$Vars(mesg) configure -text ""
 	::engine::kill $Vars(engine:id)
 
 	set isReadyCmd [namespace current]::IsReady
@@ -603,6 +618,9 @@ proc Display(clear) {} {
 	variable Defaults
 	variable Vars
 
+	$Vars(mesg) configure -text ""
+	$Vars(mw) raise $Vars(main)
+
 	$Vars(score) configure -state normal
 	$Vars(score) delete 1.0 end
 	$Vars(score) configure -state disabled
@@ -679,20 +697,16 @@ proc Display(bestscore) {score mate bestLines} {
 proc Display(checkmate) {color} {
 	variable Vars
 
-	$Vars(score) configure -state normal
-	$Vars(score) delete 1.0 end
-	$Vars(score) insert end [format $mc::Status(mate) [set ::mc::[string toupper $color 0 0]]] center
-	$Vars(score) configure -state disabled
+	$Vars(mesg) configure -text [format $mc::Status(mate) [set ::mc::[string toupper $color 0 0]]]
+	$Vars(mw) raise $Vars(mesg)
 }
 
 
 proc Display(stalemate) {color} {
 	variable Vars
 
-	$Vars(score) configure -state normal
-	$Vars(score) delete 1.0 end
-	$Vars(score) insert end [format $mc::Status(stalemate) [set ::mc::[string toupper $color 0 0]] center
-	$Vars(score) configure -state disabled
+	$Vars(mesg) configure -text [format $mc::Status(stalemate) [set ::mc::[string toupper $color 0 0]]]
+	$Vars(mw) raise $Vars(mesg)
 }
 
 
@@ -764,6 +778,8 @@ proc Display(cpuload) {load} {
 proc Display(error) {code} {
 	variable Vars
 
+	Display(clear)
+
 	switch $code {
 		registration - copyprotection {
 			set msg $::engine::mc::ProbeError($code)
@@ -779,8 +795,8 @@ proc Display(error) {code} {
 		}
 	}
 
-	Display(clear)
-	$Vars(tree) item element configure Line0 Moves elemTextFig -text $msg -fill darkred
+	$Vars(mesg) configure -text $msg
+	$Vars(mw) raise $Vars(mesg)
 }
 
 

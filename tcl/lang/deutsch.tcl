@@ -924,7 +924,7 @@
 ::application::analysis::mc::Seconds				"s"
 ::application::analysis::mc::Minutes				"m"
 
-::application::analysis::mc::Status(mate)			"%s ist matt"
+::application::analysis::mc::Status(checkmate)	"%s ist schachmatt"
 ::application::analysis::mc::Status(stalemate)	"%s ist patt"
 
 ::application::analysis::mc::NotSupported(standard)	"Dieser Motor unterstützt kein Standardschach."
