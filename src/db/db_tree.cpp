@@ -737,10 +737,7 @@ Tree::makeTree(TreeP tree,
 				myPosition.prepareForPrint(info.move());
 			}
 
-			if (	line.length <= opening::Max_Line_Length
-				&& !info.eco()
-				&& (	myIdn == variant::StandardIdn
-					|| (myIdn == 0 && !myPosition.notDerivableFromStandardChess())))
+			if (line.length <= opening::Max_Line_Length && !info.eco() && myIdn == variant::StandardIdn)
 			{
 				buf[line.length - 1] = ::index(info.move());
 				info.setEco(EcoTable::specimen().getEco(line));
