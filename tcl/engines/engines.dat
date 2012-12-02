@@ -5,7 +5,7 @@
 set ::engine::Engines {
 	{
 		Name Stockfish
-		Identifier "Stockfish 2.3"
+		Identifier "Stockfish 2.3.1 scidb"
 		Author "Tord Romstad, Marco Costalba & Joona Kiiski"
 		Command stockfish-scidb
 		Protocol UCI
@@ -50,7 +50,7 @@ set ::engine::Engines {
 	}
 	{
 		Name Sjeng
-		Identifier "Sjeng 11.2"
+		Identifier "Sjeng 11.2 scidb"
 		Author "Gian-Carlo Pascutto"
 		Url http://sjeng.org/index.html
 		Elo 2450
@@ -63,7 +63,7 @@ set ::engine::Engines {
 	}
 	{
 		Name Crafty
-		Identifier Crafty-23.2a
+		Identifier Crafty-23.4
 		Author "Dr. Robert M. Hyatt"
 		Command crafty-scidb
 		Protocol WB
