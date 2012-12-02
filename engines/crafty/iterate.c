@@ -19,10 +19,13 @@
 int Iterate(int wtm, int search_type, int root_list_done) {
   ROOT_MOVE temp;
   int i;
-  register int value = 0, twtm, used;
-  register int correct, correct_count, material = 0, sorted;
+  int value = 0, twtm;
+  int correct, correct_count, material = 0, sorted;
   char *fh_indicator, *fl_indicator;
   TREE *const tree = block[0];
+  int savevalue = 0;
+  PATH savepv;
+  int print_ok = 0;
 
 #if (CPUS > 1)
   pthread_t pt;
@@ -47,14 +50,13 @@ int Iterate(int wtm, int search_type, int root_list_done) {
 #if defined(NODES)
   temp_search_nodes = search_nodes;
 #endif
-  time_abort = 0;
+  abort_after_ply1 = 0;
   abort_search = 0;
   book_move = 0;
   program_start_time = ReadClock();
   start_time = ReadClock();
   elapsed_start = ReadClock();
   root_wtm = wtm;
-  PreEvaluate(tree);
   kibitz_depth = 0;
   tree->nodes_searched = 0;
   tree->fail_high = 0;
@@ -78,7 +80,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
 #endif
       correct_count = 0;
       burp = 15 * 100;
-      transposition_id = (transposition_id + 1) & 7;
+      transposition_age = (transposition_age + 1) & 0x1ff;
       next_time_check = nodes_between_time_checks;
       tree->evaluations = 0;
       tree->egtb_probes = 0;
@@ -136,7 +138,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
         iteration_depth = last_pv.pathd + 1;
       Print(6, "              depth   time  score   variation (%d)\n",
           iteration_depth);
-      time_abort = 0;
+      abort_after_ply1 = 0;
       abort_search = 0;
 /*
  ************************************************************
@@ -170,8 +172,9 @@ int Iterate(int wtm, int search_type, int root_list_done) {
         long proc;
 
         initialized_threads = 1;
+        Print(128, "starting thread");
         for (proc = smp_threads + 1; proc < smp_max_threads; proc++) {
-          Print(128, "starting thread %d\n", proc);
+          Print(128, " %d", proc);
           thread[proc] = 0;
 #  if defined(_WIN32) || defined(_WIN64)
           NumaStartThread(ThreadInit, (void *) proc);
@@ -182,6 +185,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
           smp_threads++;
           Unlock(lock_smp);
         }
+        Print(128, " <done>\n");
       }
       WaitForAllThreadsInitialized();
 #endif
@@ -198,7 +202,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
  ************************************************************
  */
         twtm = wtm;
-        for (i = 1; i <= (int) tree->pv[0].pathl; i++) {
+        for (i = 1; i < (int) tree->pv[0].pathl; i++) {
           if (!VerifyMove(tree, i, twtm, tree->pv[0].path[i])) {
             Print(4095, "ERROR, not installing bogus pv info at ply=%d\n", i);
             Print(4095, "not installing from=%d  to=%d  piece=%d\n",
@@ -232,18 +236,16 @@ int Iterate(int wtm, int search_type, int root_list_done) {
           printf("==================================\n");
         }
         if (tree->nodes_searched) {
-          nodes_between_time_checks = nodes_per_second;
-          nodes_between_time_checks = Max(nodes_between_time_checks, 50000);
+          nodes_between_time_checks = nodes_per_second / 10;
           if (!analyze_mode) {
             if (time_limit > 300);
-            else if (time_limit > 100)
-              nodes_between_time_checks /= 10;
             else if (time_limit > 50)
-              nodes_between_time_checks /= 20;
+              nodes_between_time_checks /= 10;
             else
               nodes_between_time_checks /= 100;
           } else
             nodes_between_time_checks = Min(nodes_per_second, 100000);
+          nodes_between_time_checks = Max(nodes_between_time_checks, 10000);
         }
         if (search_nodes)
           nodes_between_time_checks = search_nodes - tree->nodes_searched;
@@ -255,10 +257,11 @@ int Iterate(int wtm, int search_type, int root_list_done) {
             if (!(root_moves[i].status & 256))
               break;
           root_moves[i].status &= 4095 - 128;
+          tree->inchk[1] = Check(wtm);
           value =
-              SearchRoot(tree, root_alpha, root_beta, wtm, iteration_depth);
+              Search(tree, root_alpha, root_beta, wtm, iteration_depth, 1, 0);
           root_print_ok = tree->nodes_searched > noise_level;
-          if (abort_search || time_abort)
+          if (abort_search || abort_after_ply1)
             break;
 /*
  ************************************************************
@@ -341,7 +344,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
               root_moves[0].status &= 4095 - 256;
               root_moves[0].nodes = 0;
               easy_move = 0;
-              if (root_print_ok && !time_abort && !abort_search) {
+              if (root_print_ok && !abort_after_ply1 && !abort_search) {
                 if (wtm) {
                   fl_indicator = "-1";
                   if (root_moves[0].status & 2)
@@ -422,18 +425,23 @@ int Iterate(int wtm, int search_type, int root_list_done) {
  *                                                          *
  *   Notice if there are multiple moves that are producing  *
  *   large trees.  If so, don't search those in parallel by *
- *   setting the flag to avoid this.                        *
+ *   setting the flag to avoid this.  We also don't reduce  *
+ *   the first 1/4 of the root moves, period, since after   *
+ *   deep searches, several of them might have been best    *
+ *   moves in previous iterations and need a chance to pop  *
+ *   back to the top again.                                 *
  *                                                          *
  ************************************************************
  */
         for (i = 0; i < n_root_moves; i++)
-          root_moves[i].status &= 128;
-        if (root_moves[0].nodes > 1000)
+          root_moves[i].status = 0;
+        root_moves[0].status |= 64 + 128;
+        if (root_moves[0].nodes >= 3)
           for (i = 0; i < n_root_moves; i++) {
             if (i < Min(n_root_moves, 16) &&
                 root_moves[i].nodes > root_moves[0].nodes / 3)
               root_moves[i].status |= 64;
-            if (i > n_root_moves / 4)
+            if (i < n_root_moves / 4)
               root_moves[i].status |= 128;
           }
 /*
@@ -447,14 +455,13 @@ int Iterate(int wtm, int search_type, int root_list_done) {
         if (display_options & 256) {
           BITBOARD total_nodes = 0;
 
-          Print(128, "       move       nodes      hi/low   reduce\n");
+          Print(128, "       move       nodes     R/P\n");
           for (i = 0; i < n_root_moves; i++) {
             total_nodes += root_moves[i].nodes;
-            Print(128, " %10s  " BMF10 "       %d   %d     %d\n",
-                OutputMove(tree, root_moves[i].move, 1, wtm),
-                root_moves[i].nodes, (root_moves[i].status & 0x38) > 0,
-                (root_moves[i].status & 7) > 0,
-                (root_moves[i].status & 128) > 0);
+            Print(128, " %10s  " BMF10 "     %d %d\n", OutputMove(tree,
+                    root_moves[i].move, 1, wtm), root_moves[i].nodes,
+                (root_moves[i].status & 128) == 0,
+                (root_moves[i].status & 64) == 0);
           }
           Print(256, "      total  " BMF10 "\n", total_nodes);
         }
@@ -465,12 +472,15 @@ int Iterate(int wtm, int search_type, int root_list_done) {
               tree->nodes_searched * 100 / (BITBOARD) (end_time - start_time);
         else
           nodes_per_second = 1000000;
-        if (!time_abort && !abort_search && (root_print_ok ||
-                correct_count >= early_exit || value > MATE - 300 ||
-                tree->pv[0].pathh == 2)) {
-          if (value != -(MATE - 1))
+        if (!abort_after_ply1 && !abort_search && value != -(MATE - 1)) {
+          if (root_print_ok) {
             DisplayPV(tree, 5, wtm, end_time - start_time, value,
                 &tree->pv[0]);
+          } else {
+            savevalue = value;
+            savepv = tree->pv[0];
+            print_ok = 1;
+          }
         }
         root_alpha = value - 40;
         root_value = root_alpha;
@@ -480,7 +490,7 @@ int Iterate(int wtm, int search_type, int root_list_done) {
           break;
         if ((iteration_depth >= search_depth) && search_depth)
           break;
-        if (time_abort || abort_search)
+        if (abort_after_ply1 || abort_search)
           break;
         end_time = ReadClock() - start_time;
         if (thinking && (int) end_time >= time_limit)
@@ -503,14 +513,17 @@ int Iterate(int wtm, int search_type, int root_list_done) {
  *                                                          *
  ************************************************************
  */
-      used = 0;
       end_time = ReadClock();
       elapsed_end = ReadClock() - elapsed_start;
       if (elapsed_end > 10)
         nodes_per_second =
             (BITBOARD) tree->nodes_searched * 100 / (BITBOARD) elapsed_end;
+      if (!root_print_ok && print_ok) {
+        root_print_ok = 1;
+        DisplayPV(tree, 5, wtm, end_time - start_time, savevalue, &savepv);
+      }
       tree->evaluations = (tree->evaluations) ? tree->evaluations : 1;
-      if ((!abort_search || time_abort) && !puzzling) {
+      if ((!abort_search || abort_after_ply1) && !puzzling) {
         tree->fail_high++;
         tree->fail_high_first++;
         material = Material / PieceValues(white, pawn);

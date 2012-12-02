@@ -10,9 +10,9 @@ CFLAGS	= -O3 -fomit-frame-pointer -DNOEGTB -DCPUS=$(CPUS) -DSKILL
 OBJS = search.o thread.o repeat.o next.o killer.o quiesce.o evaluate.o        \
        movgen.o make.o unmake.o hash.o  attacks.o swap.o boolean.o utility.o  \
        book.o data.o drawn.o edit.o epd.o epdglue.o init.o input.o probe.o    \
-       interupt.o iterate.o main.o option.o output.o ponder.o preeval.o       \
-       resign.o root.o learn.o setboard.o test.o time.o validate.o annotate.o \
-       analyze.o evtest.o bench.o
+       interupt.o iterate.o main.o option.o output.o ponder.o resign.o root.o \
+		 learn.o setboard.o test.o time.o validate.o annotate.o analyze.o       \
+		 evtest.o bench.o
 
 machine	= $(shell uname -m)
 bits		= $(shell getconf LONG_BIT)

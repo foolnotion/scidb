@@ -19,11 +19,14 @@
  *                                                                             *
  *******************************************************************************
  */
-/* *INDENT-ON* */
+/* *INDENT-OFF* */
+
 #include <stdio.h>
 #include <assert.h>
 #include <stdlib.h>
-#include <malloc.h>
+#if !defined(IPHONE)
+#  include <malloc.h>
+#endif
 #include <string.h>
 #if !defined(TYPES_INCLUDED)
 #  include "lock.h"
@@ -64,7 +67,7 @@
 #    define UNIX        /* system is unix-based                       */
 #  endif
 #  if defined(LINUX)
-#    undef  HAS_64BITS  /* machine has 64-bit integers / operators    */
+#    define HAS_64BITS  /* machine has 64-bit integers / operators    */
 #    define UNIX        /* system is unix-based                       */
 #  endif
 #  if defined(MIPS)
@@ -118,11 +121,8 @@
 #  if !defined(RCDIR)
 #    define       RCDIR        "."
 #  endif
-#  if !defined(NOEGTB)
-#    define     EGTB_CACHE_DEFAULT               1024*1024
-#  endif
 #  define MAXPLY                                  65
-#  define MAX_TC_NODES                       3000000
+#  define MAX_TC_NODES                       1000000
 #  define MAX_BLOCKS_PER_CPU                      64
 #  define MAX_BLOCKS         MAX_BLOCKS_PER_CPU*CPUS
 #  define BOOK_CLUSTER_SIZE                     8000
@@ -206,7 +206,6 @@ typedef struct {
   int kingsq[2];
   signed char board[64];
   signed char pieces[2][7];
-  signed char pawns[2];
   signed char majors[2];
   signed char minors[2];
   signed char total_all_pieces;
@@ -237,6 +236,12 @@ typedef struct {
   unsigned char pathl;
   unsigned char pathd;
 } PATH;
+typedef struct {
+  BITBOARD path_sig;
+  int hash_pathl;
+  int  hash_path_age;
+  int hash_path[MAXPLY];
+} HPATH_ENTRY;
 typedef struct {
   int phase;
   int remaining;
@@ -288,15 +293,11 @@ struct tree {
   BITBOARD nodes_searched;
   BITBOARD save_pawn_hash_key[MAXPLY + 2];
   BITBOARD cache_n[64];
-  BITBOARD cache_r_friendly[64];
-  BITBOARD cache_r_enemy[64];
   PAWN_HASH_ENTRY pawn_score;
   SEARCH_POSITION position[MAXPLY + 2];
   NEXT_MOVE next_status[MAXPLY];
   PATH pv[MAXPLY];
   int cache_n_mobility[64];
-  int cache_r_mobility_mg[64];
-  int cache_r_mobility_eg[64];
   int rep_index[2];
   int curmv[MAXPLY];
   int hash_move[MAXPLY];
@@ -313,8 +314,8 @@ struct tree {
   KILLER killers[MAXPLY];
   int move_list[5120];
   int sort_value[256];
-  signed char inchk[MAXPLY];
-  signed char phase[MAXPLY];
+  unsigned char inchk[MAXPLY];
+  unsigned char phase[MAXPLY];
   int search_value;
   int tropism[2];
   int dangerous[2];
@@ -336,6 +337,7 @@ struct tree {
   int depth;
   int ply;
   int cutmove;
+  int moves_searched;
   volatile int used;
 };
 typedef struct tree TREE;
@@ -347,22 +349,22 @@ typedef struct tree TREE;
 #  define LOWER                     1
 #  define UPPER                     2
 #  define EXACT                     3
-#  define AVOID_NULL_MOVE           4
-#  define EXACTEGTB                 5
-#  define NULL_MOVE                 0
-#  define DO_NULL                   1
+#  define HASH_MISS                 0
+#  define HASH_HIT                  1
+#  define AVOID_NULL_MOVE           2
 #  define NO_NULL                   0
+#  define DO_NULL                   1
 #  define NONE                      0
-#  define EVALUATION               -1
-#  define HASH_MOVE                 1
-#  define GENERATE_CAPTURE_MOVES    2
-#  define CAPTURE_MOVES             3
-#  define KILLER_MOVE_1             4
-#  define KILLER_MOVE_2             5
-#  define GENERATE_ALL_MOVES        6
-#  define SORT_ALL_MOVES            7
-#  define REMAINING_MOVES           8
-#  define ROOT_MOVES                9
+#  define EVALUATION                0
+#  define NULL_MOVE                 1
+#  define HASH_MOVE                 2
+#  define GENERATE_CAPTURE_MOVES    3
+#  define CAPTURE_MOVES             4
+#  define KILLER_MOVE_1             5
+#  define KILLER_MOVE_2             6
+#  define GENERATE_ALL_MOVES        7
+#  define SORT_ALL_MOVES            8
+#  define REMAINING_MOVES           9
 #  if defined(VC_INLINE32)
 #    include "vcinline.h"
 #  else
@@ -390,13 +392,13 @@ void Bench(int);
 int Book(TREE * RESTRICT, int, int);
 void BookClusterIn(FILE *, int, BOOK_POSITION *);
 void BookClusterOut(FILE *, int, BOOK_POSITION *);
-int BookIn32(unsigned char *ch);
-float BookIn32f(unsigned char *ch);
-BITBOARD BookIn64(unsigned char *ch);
+int BookIn32(unsigned char *);
+float BookIn32f(unsigned char *);
+BITBOARD BookIn64(unsigned char *);
 int BookMask(char *);
-unsigned char *BookOut32(int val);
-unsigned char *BookOut32f(float val);
-unsigned char *BookOut64(BITBOARD val);
+unsigned char *BookOut32(int);
+unsigned char *BookOut32f(float);
+unsigned char *BookOut64(BITBOARD);
 int BookPonderMove(TREE * RESTRICT, int);
 void BookUp(TREE * RESTRICT, int, char **);
 void BookSort(BB_POSITION *, int, int);
@@ -464,7 +466,7 @@ int *GenerateCaptures(TREE * RESTRICT, int, int, int *);
 int *GenerateCheckEvasions(TREE * RESTRICT, int, int, int *);
 int *GenerateChecks(TREE * RESTRICT, int, int, int *);
 int *GenerateNoncaptures(TREE * RESTRICT, int, int, int *);
-int HashProbe(TREE * RESTRICT, int, int, int, int *, int);
+int HashProbe(TREE * RESTRICT, int, int, int, int, int, int*);
 void HashStore(TREE * RESTRICT, int, int, int, int, int, int);
 void HashStorePV(TREE * RESTRICT, int, int);
 int EvaluateHasOpposition(int, int, int);
@@ -507,17 +509,13 @@ int OptionMatch(char *, char *);
 void OptionPerft(TREE * RESTRICT, int, int, int);
 void Output(TREE * RESTRICT, int, int);
 char *OutputMove(TREE * RESTRICT, int, int, int);
-char *OutputMoveICS(int);
-int OutputGood(TREE * RESTRICT, char *, int, int);
 int ParseTime(char *);
 void Pass(void);
 int PinnedOnKing(TREE * RESTRICT, int, int);
 int Ponder(int);
-void PreEvaluate(TREE * RESTRICT);
 void Print(int, char *, ...);
 char *PrintKM(size_t, int);
-int Quiesce(TREE * RESTRICT, int, int, int, int);
-int QuiesceChecks(TREE * RESTRICT, int, int, int, int);
+int Quiesce(TREE * RESTRICT, int, int, int, int, int);
 int QuiesceEvasions(TREE * RESTRICT, int, int, int, int);
 unsigned int Random32(void);
 BITBOARD Random64(void);
@@ -531,14 +529,13 @@ int ReadParse(char *, char *args[], char *);
 int ReadInput(void);
 int RepetitionCheck(TREE * RESTRICT, int, int);
 int RepetitionCheckBook(TREE * RESTRICT, int, int);
-int RepetitionDraw(TREE * RESTRICT, int, int);
+int RepetitionDraw(TREE * RESTRICT, int);
 void ResignOrDraw(TREE * RESTRICT, int);
 void RestoreGame(void);
 void RootMoveList(int);
 int Search(TREE * RESTRICT, int, int, int, int, int, int);
-int SearchRoot(TREE * RESTRICT, int, int, int, int);
 int SearchParallel(TREE * RESTRICT, int, int, int, int, int, int);
-void Trace(TREE * RESTRICT, int, int, int, int, int, char *, int);
+void Trace(TREE * RESTRICT, int, int, int, int, int, const char *, int);
 void SetBoard(TREE *, int, char **, int);
 void SetChessBitBoards(TREE *);
 int SetRootAlpha(unsigned char, int);
@@ -546,6 +543,7 @@ int SetRootBeta(unsigned char, int);
 void SharedFree(void *address);
 int StrCnt(char *, char);
 int Swap(TREE * RESTRICT, int, int);
+int SwapO(TREE * RESTRICT, int, int);
 void Test(char *);
 void TestEPD(char *);
 int Thread(TREE * RESTRICT);
@@ -601,7 +599,7 @@ extern void WinFreeInterleaved(void *, size_t);
     *mptr++ = t | (to << 6) | (Abs(PcOnSq(to)) << 15);                     \
   }
 #  define Check(side) Attacks(tree, KingSQ(side), Flip(side))
-#  define Attack(from,to) (!(obstructed[from][to] & OccupiedSquares))
+#  define Attack(from,to) (!(intervening[from][to] & OccupiedSquares))
 #  define AttacksBishop(square, occ) *(magic_bishop_indices[square]+((((occ)&magic_bishop_mask[square])*magic_bishop[square])>>magic_bishop_shift[square]))
 #  define MobilityBishop(square, occ) *(magic_bishop_mobility_indices[square]+((((occ)&magic_bishop_mask[square])*magic_bishop[square])>>magic_bishop_shift[square]))
 #  define AttacksKnight(square) knight_attacks[square]
@@ -621,6 +619,7 @@ extern void WinFreeInterleaved(void *, size_t);
 #  define AttacksFile(a) (AttacksRook(a, OccupiedSquares) & file_mask[File(a)])
 #  define AttacksDiaga1(a) (AttacksBishop(a, OccupiedSquares) & (plus9dir[a] | minus9dir[a]))
 #  define AttacksDiagh1(a) (AttacksBishop(a, OccupiedSquares) & (plus7dir[a] | minus7dir[a]))
+#  define InterposeSquares(kingsq, checksq) intervening[kingsq][checksq]
 /*
    the following macros are used to extract the pieces of a move that are
    kept compressed into the rightmost 21 bits of a simple integer.
@@ -675,7 +674,7 @@ extern void WinFreeInterleaved(void *, size_t);
 #  define HashEP(stm)                (HashKey^=enpassant_random[stm])
 #  define SavePV(tree,ply,ph)   do {                                        \
         tree->pv[ply-1].path[ply-1]=tree->curmv[ply-1];                     \
-        tree->pv[ply-1].pathl=ply-1;                                        \
+        tree->pv[ply-1].pathl=ply;                                        \
         tree->pv[ply-1].pathh=ph;                                           \
         tree->pv[ply-1].pathd=iteration_depth;} while(0)
 #  if defined(INLINE64)
@@ -690,4 +689,4 @@ extern void WinFreeInterleaved(void *, size_t);
 #    define SPEAK ".\\Speak.exe "
 #  endif
 #endif                          /* if defined(TYPES_INCLUDED) */
-/* *INDENT-OFF* */
+/* *INDENT-ON* */

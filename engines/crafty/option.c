@@ -222,10 +222,14 @@ int Option(TREE * RESTRICT tree) {
     Bench(-1);
   } else if (OptionMatch("bench2", *args) || OptionMatch("bench-2", *args)) {
     Bench(-2);
+  } else if (OptionMatch("bench3", *args) || OptionMatch("bench-3", *args)) {
+    Bench(-3);
   } else if (OptionMatch("bench+1", *args)) {
     Bench(1);
   } else if (OptionMatch("bench+2", *args)) {
     Bench(2);
+  } else if (OptionMatch("bench+3", *args)) {
+    Bench(3);
   }
 /*
  ************************************************************
@@ -365,7 +369,7 @@ int Option(TREE * RESTRICT tree) {
     if (!EGTB_cache) {
       Print(2095,
           "ERROR:  unable to malloc specified cache size, using default\n");
-      EGTB_cache = malloc(EGTB_CACHE_DEFAULT);
+      EGTB_cache = malloc(4096 * 4096);
     }
     Print(128, "EGTB cache memory = %s bytes.\n", PrintKM(EGTB_cache_size,
             1));
@@ -390,6 +394,7 @@ int Option(TREE * RESTRICT tree) {
             (side) ? "white" : "black");
       printf("\n");
     }
+    Print(128, "\n");
     if (tc_sudden_death == 1)
       Print(128, "Sudden-death time control in effect\n");
   }
@@ -535,15 +540,20 @@ int Option(TREE * RESTRICT tree) {
  *                                                          *
  ************************************************************
  */
+/*
   else if (OptionMatch("debug", *args)) {
     Print(4095, "No debug code added to option.c\n");
-/*
+    int move, from, to, piece;
+    printf("from, to, piece: ");
+    scanf("%d %d %d", &from, &to, &piece);
+    move = from + (to << 6) + (piece << 12);
+    printf("swapo=%d\n", SwapO(tree, move, wtm));
     int *mv;
     tree->last[1] = GenerateCheckEvasions(tree, 1, wtm, tree->last[0]);
     for (mv = tree->last[0]; mv < tree->last[1]; mv++)
       printf("%s\n", OutputMove(tree, *mv, 1, wtm));
-*/
   }
+*/
 /*
  ************************************************************
  *                                                          *
@@ -660,7 +670,7 @@ int Option(TREE * RESTRICT tree) {
           EGTB_cache = malloc(EGTB_cache_size);
         if (!EGTB_cache) {
           Print(128, "ERROR  EGTB cache malloc failed\n");
-          EGTB_cache = malloc(EGTB_CACHE_DEFAULT);
+          EGTB_cache = malloc(4096 * 4096);
         } else
           FTbSetCacheSize(EGTB_cache, EGTB_cache_size);
         EGTB_setup = 1;
@@ -838,6 +848,7 @@ int Option(TREE * RESTRICT tree) {
       return (1);
     }
     ponder_move = 0;
+    presult = 0;
     last_pv.pathd = 0;
     last_pv.pathl = 0;
     save_move_number = move_number;
@@ -863,6 +874,7 @@ int Option(TREE * RESTRICT tree) {
       printf("illegal move.\n");
     wtm = Flip(wtm);
     move_number = save_move_number;
+    strcpy(hint, "none");
   }
 /*
  ************************************************************
@@ -934,7 +946,7 @@ int Option(TREE * RESTRICT tree) {
  ************************************************************
  *                                                          *
  *   "hash" command controls the transposition table size.  *
- *   the size can be entered in one of three ways:          *
+ *   The size can be entered in one of three ways:          *
  *                                                          *
  *      hash=nnn  where nnn is in bytes.                    *
  *      hash=nnnK where nnn is in K bytes.                  *
@@ -960,7 +972,7 @@ int Option(TREE * RESTRICT tree) {
         printf("ERROR.  Minimum hash table size is 64K bytes.\n");
         return (1);
       }
-      hash_table_size = ((1ULL) << MSB(new_hash_size)) / sizeof(HASH_ENTRY);
+      hash_table_size = ((1ull) << MSB(new_hash_size)) / sizeof(HASH_ENTRY);
       AlignedRemalloc((void **) &trans_ref, 64,
           sizeof(HASH_ENTRY) * hash_table_size);
       if (!trans_ref) {
@@ -968,11 +980,53 @@ int Option(TREE * RESTRICT tree) {
         hash_table_size = 0;
         trans_ref = 0;
       }
-      hash_mask = (1ULL << (MSB((BITBOARD) hash_table_size) - 2)) - 1;
+      hash_mask = (1ull << (MSB((BITBOARD) hash_table_size) - 2)) - 1;
       InitializeHashTables();
     }
-    Print(128, "hash table memory = %s bytes.\n",
+    Print(128, "hash table memory = %s bytes",
         PrintKM(hash_table_size * sizeof(HASH_ENTRY), 1));
+    Print(128, " (%s entries).\n", PrintKM(hash_table_size, 1));
+  }
+/*
+ ************************************************************
+ *                                                          *
+ *   "phash" command controls the path hash table size. The *
+ *   size can be entered in one of three ways:              *
+ *                                                          *
+ *      phash=nnn  where nnn is in bytes.                   *
+ *      phash=nnnK where nnn is in K bytes.                 *
+ *      phash=nnnM where nnn is in M bytes.                 *
+ *                                                          *
+ *   the only restriction is that the path hash table must  *
+ *   have a perfect power of 2 entries + 7.  The value      *
+ *   entered will be rounded down to meet that requirement. *
+ *                                                          *
+ ************************************************************
+ */
+  else if (OptionMatch("phash", *args)) {
+    size_t new_hash_size;
+
+    if (thinking || pondering)
+      return (2);
+    if (nargs > 1) {
+      new_hash_size = atoiKM(args[1]);
+      if (new_hash_size < 64 * 1024) {
+        printf("ERROR.  Minimum phash table size is 64K bytes.\n");
+        return (1);
+      }
+      hash_path_size = ((1ull) << MSB(new_hash_size / sizeof(HPATH_ENTRY)));
+      AlignedRemalloc((void **) &hash_path, 64,
+          sizeof(HPATH_ENTRY) * hash_path_size);
+      if (!hash_path) {
+        printf("AlignedRemalloc() failed, not enough memory.\n");
+        hash_path_size = 0;
+        hash_path = 0;
+      }
+      hash_path_mask = (1ull << MSB((BITBOARD) hash_path_size / 16)) - 1;
+    }
+    Print(128, "hash path table memory = %s bytes",
+        PrintKM(hash_path_size * sizeof(HPATH_ENTRY), 1));
+    Print(128, " (%s entries).\n", PrintKM(hash_path_size, 1));
   }
 /*
  ************************************************************
@@ -996,7 +1050,7 @@ int Option(TREE * RESTRICT tree) {
         return (1);
       }
       pawn_hash_table_size =
-          (1ULL << MSB(new_hash_size)) / sizeof(PAWN_HASH_ENTRY);
+          (1ull << MSB(new_hash_size)) / sizeof(PAWN_HASH_ENTRY);
       AlignedRemalloc((void **) &pawn_hash_table, 32,
           sizeof(PAWN_HASH_ENTRY) * pawn_hash_table_size);
       if (!pawn_hash_table) {
@@ -1004,7 +1058,7 @@ int Option(TREE * RESTRICT tree) {
         pawn_hash_table_size = 0;
         pawn_hash_table = 0;
       }
-      pawn_hash_mask = (1ULL << MSB((BITBOARD) pawn_hash_table_size)) - 1;
+      pawn_hash_mask = (1ull << MSB((BITBOARD) pawn_hash_table_size)) - 1;
       for (i = 0; i < pawn_hash_table_size; i++) {
         (pawn_hash_table + i)->key = 0;
         (pawn_hash_table + i)->score_mg = 0;
@@ -1023,8 +1077,9 @@ int Option(TREE * RESTRICT tree) {
         (pawn_hash_table + i)->candidates[black] = 0;
       }
     }
-    Print(128, "pawn hash table memory = %s bytes.\n",
+    Print(128, "pawn hash table memory = %s bytes",
         PrintKM(pawn_hash_table_size * sizeof(PAWN_HASH_ENTRY), 1));
+    Print(128, " (%s entries).\n", PrintKM(pawn_hash_table_size, 1));
   }
 /*
  ************************************************************
@@ -1121,13 +1176,13 @@ int Option(TREE * RESTRICT tree) {
  */
   else if (OptionMatch("info", *args)) {
     Print(128, "Crafty version %s\n", version);
-    Print(128, "hash table memory =      %s bytes.\n",
-        PrintKM(hash_table_size * 3 * sizeof(HASH_ENTRY), 1));
-    Print(128, "pawn hash table memory = %s bytes.\n",
+    Print(128, "number of threads =         %2d\n", smp_max_threads);
+    Print(128, "hash table memory =      %5s\n",
+        PrintKM(hash_table_size * sizeof(HASH_ENTRY), 1));
+    Print(128, "pawn hash table memory = %5s\n",
         PrintKM(pawn_hash_table_size * sizeof(PAWN_HASH_ENTRY), 1));
 #if !defined(NOEGTB)
-    Print(128, "EGTB cache memory =      %s bytes.\n",
-        PrintKM(EGTB_cache_size, 1));
+    Print(128, "EGTB cache memory =      %5s\n", PrintKM(EGTB_cache_size, 1));
 #endif
     if (!tc_sudden_death) {
       Print(128, "%d moves/%d minutes %d seconds primary time control\n",
@@ -1149,9 +1204,12 @@ int Option(TREE * RESTRICT tree) {
       if (tc_increment)
         Print(128, "increment %d seconds.\n", tc_increment / 100);
     }
-    Print(128, "frequency (freq)..............%4.2f\n", book_weight_freq);
-    Print(128, "static evaluation (eval)......%4.2f\n", book_weight_eval);
-    Print(128, "learning (learn)..............%4.2f\n", book_weight_learn);
+    Print(128, "book frequency (freq)..............%4.2f\n",
+        book_weight_freq);
+    Print(128, "book static evaluation (eval)......%4.2f\n",
+        book_weight_eval);
+    Print(128, "book learning (learn)..............%4.2f\n",
+        book_weight_learn);
   }
 /*
  ************************************************************
@@ -1555,6 +1613,7 @@ int Option(TREE * RESTRICT tree) {
  ************************************************************
  */
   else if (OptionMatch("log", *args)) {
+#if !defined(IPHONE)
     FILE *output_file;
     char filename[64], buffer[128];
 
@@ -1638,6 +1697,10 @@ int Option(TREE * RESTRICT tree) {
       if (output_file != stdout)
         fclose(output_file);
     }
+#else
+    history_file = 0;
+    log_file = 0;
+#endif
   }
 /*
  ************************************************************
@@ -1736,7 +1799,8 @@ int Option(TREE * RESTRICT tree) {
  ************************************************************
  *                                                          *
  *   "memory" command is used to set the max memory to use  *
- *   for hash and hashp combined.                           *
+ *   for hash and hashp combined.  This is an xboard        *
+ *   compatibility command, not normally used by players.   *
  *                                                          *
  ************************************************************
  */
@@ -1744,19 +1808,19 @@ int Option(TREE * RESTRICT tree) {
     BITBOARD size;
     size_t hmemory, pmemory;
     if (nargs < 2) {
-      printf("usage:  memory <size[KMG]>\n");
+      printf("usage:  memory <size>\n");
       return (1);
     }
     size = atoi(args[1]) * 1024 * 1024;
-    hmemory = (1ULL) << MSB(size);
+    hmemory = (1ull) << MSB(size);
     size &= ~hmemory;
-    pmemory = (1ULL) << MSB(size);
+    pmemory = (1ull) << MSB(size);
     if (pmemory < 1024 * 1024)
       pmemory = 0;
-    sprintf(buffer, "hash %lu\n", (unsigned long)hmemory);
+    sprintf(buffer, "hash %lld\n", (BITBOARD) hmemory);
     (void) Option(tree);
     if (pmemory) {
-      sprintf(buffer, "hashp %lu\n", (unsigned long)pmemory);
+      sprintf(buffer, "hashp %lld\n", (BITBOARD) pmemory);
       (void) Option(tree);
     }
   }
@@ -2114,7 +2178,6 @@ int Option(TREE * RESTRICT tree) {
     if (!strcmp(args[1], "load")) {
       FILE *file;
       char filename[256];
-      char *readstat;
 
       strcpy(filename, args[2]);
       if (!strstr(filename, ".cpf"))
@@ -2122,7 +2185,7 @@ int Option(TREE * RESTRICT tree) {
       Print(128, "Loading personality file %s\n", filename);
       if ((file = fopen(filename, "r+"))) {
         silent = 1;
-        while ((readstat = fgets(buffer, 4096, file))) {
+        while (fgets(buffer, 4096, file)) {
           char *delim;
 
           delim = strchr(buffer, '\n');
@@ -2217,7 +2280,7 @@ int Option(TREE * RESTRICT tree) {
         printf
             ("this eval term (%s [%d]) requires exactly %d values, found %d.\n",
             personality_packet[param].description, param,
-            abs(personality_packet[param].size), index);
+            Abs(personality_packet[param].size), index);
         return (1);
       }
       for (i = 0; i < index; i++)
@@ -3018,19 +3081,6 @@ int Option(TREE * RESTRICT tree) {
  */
   else if (!strcmp("scale", *args)) {
     scale = atoi(args[1]);
-/*
-    pruning_depth = atoi(args[1]);
-    int v = atoi(args[1]);
-    bishop_pair[mg] = v;
-    bishop_pair[eg] = v;
-    int v = atoi(args[1]);
-    development_losing_castle = v / 1000;
-    development_not_castled = v % 1000;
-    int scale = atoi(args[1]);
-    int orig = rook_open_file[mg];
-    rook_open_file[mg] = scale * rook_open_file[mg] / 100;
-    rook_open_file[eg] += orig - rook_open_file[mg];
-*/
   }
 /*
  ************************************************************
@@ -3157,7 +3207,6 @@ int Option(TREE * RESTRICT tree) {
     Print(128, "    comp     mg      eg   |\n");
     root_wtm = Flip(wtm);
     tree->position[1] = tree->position[0];
-    PreEvaluate(tree);
     s = Evaluate(tree, 1, wtm, -99999, 99999);
     if (!wtm)
       s = -s;
@@ -3396,7 +3445,8 @@ int Option(TREE * RESTRICT tree) {
       Print(128, "skill level set to %d%%\n", skill);
       null_depth = null_depth * skill / 100;
       check_depth = check_depth * skill / 100;
-      LMR_depth = LMR_depth * skill / 100;
+      LMR_min_reduction = LMR_min_reduction * skill / 100;
+      LMR_max_reduction = LMR_max_reduction * skill / 100;
     }
   }
 #endif
@@ -3957,17 +4007,18 @@ int OptionMatch(char *command, char *input) {
 }
 void OptionPerft(TREE * RESTRICT tree, int ply, int depth, int wtm) {
   int *mv;
-  static char line[256], *p[64];
-
+  static char line[256];
 #if defined(TRACE)
-  static char move[16];
+  static char move[16], *p[64];
 #endif
   tree->last[ply] = GenerateCaptures(tree, ply, wtm, tree->last[ply - 1]);
   for (mv = tree->last[ply - 1]; mv < tree->last[ply]; mv++)
     if (Captured(*mv) == king)
       return;
   tree->last[ply] = GenerateNoncaptures(tree, ply, wtm, tree->last[ply]);
+#if defined(TRACE)
   p[1] = line;
+#endif
   for (mv = tree->last[ply - 1]; mv < tree->last[ply]; mv++) {
 #if defined(TRACE)
     strcpy(move, OutputMove(tree, *mv, ply, wtm));
