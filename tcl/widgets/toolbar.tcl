@@ -1722,8 +1722,8 @@ proc SetState {toolbar v w state} {
 				set relief $Specs(relief:$v:$toolbar)
 				set activebackground $Specs(active:$v:$toolbar)
 				set command $Specs(command:$v:$toolbar)
-				bind $w <ButtonPress-1> $Specs(button1:$w:$toolbar)
-				bind $w <Enter> $Specs(entercmd:$w:$toolbar)
+				bind $w <ButtonPress-1> $Specs(button1:$v:$toolbar)
+				bind $w <Enter> $Specs(entercmd:$v:$toolbar)
 			} else {
 				set overrelief flat
 				set relief flat

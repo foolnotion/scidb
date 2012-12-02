@@ -78,6 +78,7 @@ array set Defaults {
 	info:background	#f5f5e4
 	info:foreground	darkgreen
 	best:foreground	darkgreen
+	error:foreground	darkred
 }
 
 array set Options {
@@ -124,11 +125,7 @@ proc build {parent width height} {
 
 	set mw   [tk::multiwindow $parent.mw -borderwidth 0 -background $Defaults(info:background)]
 	set main [tk::frame $mw.main -borderwidth 0 -background $Defaults(info:background)]
-	set mesg [tk::label $mw.mesg \
-		-borderwidth 0 \
-		-background $Defaults(info:background) \
-		-foreground $Defaults(info:foreground) \
-	]
+	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Defaults(info:background)]
 
 	set Vars(mw) $mw
 	set Vars(mesg) $mesg
@@ -602,6 +599,16 @@ proc FormatScore {score} {
 }
 
 
+proc ShowMessage {type txt} {
+	variable Defaults
+	variable Vars
+
+	set width [expr {[winfo width $Vars(mw)] - 50}]
+	$Vars(mesg) configure -text $txt -wraplength $width -foreground $Defaults($type:foreground)
+	$Vars(mw) raise $Vars(mesg)
+}
+
+
 proc Display(state) {state} {
 	variable Vars
 
@@ -695,18 +702,12 @@ proc Display(bestscore) {score mate bestLines} {
 
 
 proc Display(checkmate) {color} {
-	variable Vars
-
-	$Vars(mesg) configure -text [format $mc::Status(mate) [set ::mc::[string toupper $color 0 0]]]
-	$Vars(mw) raise $Vars(mesg)
+	ShowMessage info [format $mc::Status(mate) [set ::mc::[string toupper $color 0 0]]]
 }
 
 
 proc Display(stalemate) {color} {
-	variable Vars
-
-	$Vars(mesg) configure -text [format $mc::Status(stalemate) [set ::mc::[string toupper $color 0 0]]]
-	$Vars(mw) raise $Vars(mesg)
+	ShowMessage info [format $mc::Status(stalemate) [set ::mc::[string toupper $color 0 0]]]
 }
 
 
@@ -795,8 +796,7 @@ proc Display(error) {code} {
 		}
 	}
 
-	$Vars(mesg) configure -text $msg
-	$Vars(mw) raise $Vars(mesg)
+	ShowMessage error $msg
 }
 
 
