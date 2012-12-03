@@ -1427,7 +1427,7 @@ proc ::tk::PostOverPoint {menu x y {entry {}}}  {
 	    incr y [expr {-([$menu yposition $entry] \
 		    + [$menu yposition [expr {$entry+1}]])/2}]
 	}
-	incr x [expr {-[winfo reqwidth $menu]/2}]
+        incr x [expr {-[winfo reqwidth $menu]/2}]
     }
     if {$tcl_platform(platform) == "windows"} {
 	# We need to fix some problems with menu posting on Windows,
@@ -1541,7 +1541,7 @@ proc ::tk_popup {menu x y {entry {}}} {
         set Priv(activeindex) -1
         set Priv(menuActivated) $menu
     }
-    tk::PostOverPoint $menu $x $y $entry
+    tk::PostOverPoint $menu $x $y $entry 
     if {[tk windowingsystem] eq "x11" && [winfo viewable $menu]} {
         tk::SaveGrabInfo $menu
 	grab -global $menu
@@ -1550,9 +1550,35 @@ proc ::tk_popup {menu x y {entry {}}} {
     }
     ### FIX begin ####################################################################
     # tk_menuSetFocus is not always sufficient
-    tkwait visibility $menu
+    if {[catch { tkwait visibility $menu } ]} { return }
     focus -force $menu
     ### FIX end ######################################################################
+}
+
+proc ::tk_popdown {menu parent} {
+    variable ::tk::Priv
+    global tcl_platform
+    if {$Priv(popup) ne "" || $Priv(postedMb) ne ""} {
+	tk::MenuUnpost {}
+    }
+    set Priv(fix:active) ""
+    set Priv(fix:popup) 1
+    if {$::tk::MODERNIZE} { 
+        set Priv(activeindex) -1
+        set Priv(menuActivated) $menu
+    }
+    set x [winfo rootx $parent]
+    set y [expr {[winfo rooty $parent] + [winfo height $parent]}]
+    tk::PostOverPoint $menu $x $y
+    if {[tk windowingsystem] eq "x11" && [winfo viewable $menu]} {
+        tk::SaveGrabInfo $menu
+	grab -global $menu
+	set Priv(popup) $menu
+	tk_menuSetFocus $menu
+    }
+    # tk_menuSetFocus is not always sufficient
+    if {[catch { tkwait visibility $menu } ]} { return }
+    focus -force $menu
 }
 
 ### MODERNIZE begin ##########################################################
