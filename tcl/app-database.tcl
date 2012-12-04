@@ -1166,7 +1166,7 @@ proc ParseUriFiles {parent files allowedExtensions action} {
 		if {[string equal -length 6 $uri "trash:"]} {
 			lappend trashList $uri
 		} elseif {	[string equal -length 5 $uri "http:"]
-						[string equal -length 6 $uri "https:"]
+					|| [string equal -length 6 $uri "https:"]
 					|| [string equal -length 4 $uri "ftp:"]} {
 			lappend remoteList $uri
 		} elseif {[file exists $file]} {
