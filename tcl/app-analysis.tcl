@@ -702,7 +702,7 @@ proc Display(bestscore) {score mate bestLines} {
 
 
 proc Display(checkmate) {color} {
-	ShowMessage info [format $mc::Status(mate) [set ::mc::[string toupper $color 0 0]]]
+	ShowMessage info [format $mc::Status(checkmate) [set ::mc::[string toupper $color 0 0]]]
 }
 
 
