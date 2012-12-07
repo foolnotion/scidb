@@ -145,6 +145,7 @@ GetWmFrameChild(Tk_Window tkwin) {
 static Tk_Window
 CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
   Tk_Window mouse_tkwin;
+  int baseX, baseY;
   int childX, childY;
 
   tkwin = GetWmFrameChild(tkwin);
@@ -153,8 +154,8 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
     return NULL; /* something was going wrong */
 
   Tk_GetRootCoords(tkwin, &childX, &childY);
-  rootX -= childX;
-  rootY -= childY;
+  baseX = rootX - childX;
+  baseY = rootY - childY;
   mouse_tkwin = tkwin;
 
   while (tkwin != NULL) {
@@ -167,17 +168,34 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
         Tk_Window child = (Tk_Window)winPtr;
 
         if (Tk_IsMapped(winPtr)) {
-          int x = Tk_X(child);
-          int y = Tk_Y(child);
           int width = Tk_Width(child);
           int height = Tk_Height(child);
 
-          if (x <= rootX && y <= rootY && rootX < x + width && rootY < y + height) {
-            tkwin = child;
-            mouse_tkwin = child;
-            rootX -= x;
-            rootY -= y;
-            break;
+          if (Tk_IsTopLevel(child)) {
+            Tk_GetRootCoords(child, &childX, &childY);
+
+            if (   childX <= rootX
+                && childY <= rootY
+                && rootX < childX + width
+                && rootY < childY + height) {
+              tkwin = child;
+              mouse_tkwin = child;
+              break;
+            }
+          } else {
+            int x = Tk_X(child);
+            int y = Tk_Y(child);
+
+          	if (   x <= baseX
+                && y <= baseY
+                && baseX < x + width
+                && baseY < y + height) {
+              tkwin = child;
+              mouse_tkwin = child;
+              baseX -= x;
+              baseY -= y;
+              break;
+            }
           }
         }
       }
@@ -203,23 +221,39 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
       for (i = 0; i < length; ++i) {
         Tcl_Obj* path;
         Tk_Window child;
-        int x, y, width, height;
 
         if (Tcl_ListObjIndex(interp, result, i, &path) == TCL_OK) {
           child = Tk_NameToWindow(interp, Tcl_GetString(path), mouse_tkwin);
 
           if (child != NULL && Tk_IsMapped(child)) {
-            x = Tk_X(child);
-            y = Tk_Y(child);
-            width = Tk_Width(child);
-            height = Tk_Height(child);
+            int width = Tk_Width(child);
+            int height = Tk_Height(child);
 
-            if (x <= rootX && y <= rootY && rootX < x + width && rootY < y + height) {
-              tkwin = child;
-              mouse_tkwin = child;
-              rootX -= x;
-              rootY -= y;
-              break;
+            if (Tk_IsTopLevel(child)) {
+              Tk_GetRootCoords(child, &childX, &childY);
+
+              if (   childX <= rootX
+                  && childY <= rootY
+                  && rootX < childX + width
+                  && rootY < childY + height) {
+                tkwin = child;
+                mouse_tkwin = child;
+                break;
+              }
+            } else {
+              int x = Tk_X(child);
+              int y = Tk_Y(child);
+
+              if (   x <= baseX
+                  && y <= baseY
+                  && baseX < x + width
+                  && baseY < y + height) {
+                tkwin = child;
+                mouse_tkwin = child;
+                baseX -= x;
+                baseY -= y;
+                break;
+              }
             }
           }
         }
@@ -423,7 +457,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, XClientMessageEvent *cm) {
 
   rootX = (l[2] & 0xffff0000) >> 16;
   rootY =  l[2] & 0x0000ffff;
- 
+
 #ifdef GNOME_SUPPORT
   if (Tk_PathName(tkwin) == NULL) {
     /* The GNOME shape is confusing Tk_CoordsToWindow(), because this shape has
@@ -1127,7 +1161,7 @@ int TkDND_SendXdndEnterObjCmd(ClientData clientData,
     Tcl_WrongNumArgs(interp, 1, objv, "source target proxy types_len");
     return TCL_ERROR;
   }
-  
+
   source = TkDND_TkWin(objv[1]);
   if (!source)
     return TCL_ERROR;
@@ -1154,7 +1188,7 @@ int TkDND_SendXdndEnterObjCmd(ClientData clientData,
   if (tv) {
     if (*tv < target_version) target_version = *tv;
     XFree(tv);
-  } 
+  }
 
   memset (&event, 0, sizeof(event));
   event.type                    = ClientMessage;
@@ -1193,7 +1227,7 @@ int TkDND_SendXdndPositionObjCmd(ClientData clientData,
     Tcl_WrongNumArgs(interp, 1, objv, "source target proxy rootx rooty action");
     return TCL_ERROR;
   }
-  
+
   source = TkDND_TkWin(objv[1]);
   if (!source)
     return TCL_ERROR;
@@ -1232,7 +1266,7 @@ int TkDND_SendXdndPositionObjCmd(ClientData clientData,
       event.xclient.data.l[4] = Tk_InternAtom(source, "XdndActionLink");    break;
     case ActionAsk:
       event.xclient.data.l[4] = Tk_InternAtom(source, "XdndActionAsk");     break;
-    case ActionPrivate: 
+    case ActionPrivate:
       event.xclient.data.l[4] = Tk_InternAtom(source, "XdndActionPrivate"); break;
   }
 
@@ -1479,7 +1513,7 @@ int Tkdnd_Init(Tcl_Interp *interp) {
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }
-  
+
   if (Tcl_CreateObjCommand(interp, "_announce_type_list",
            (Tcl_ObjCmdProc*) TkDND_AnnounceTypeListObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
