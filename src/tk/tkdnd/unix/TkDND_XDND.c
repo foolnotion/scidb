@@ -180,6 +180,8 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
                 && rootY < childY + height) {
               tkwin = child;
               mouse_tkwin = child;
+              baseX = rootX - childX;
+              baseY = rootY - childY;
               break;
             }
           } else {
@@ -238,7 +240,9 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
                   && rootY < childY + height) {
                 tkwin = child;
                 mouse_tkwin = child;
-                break;
+                baseX = rootX - childX;
+                baseY = rootY - childY;
+					 break;
               }
             } else {
               int x = Tk_X(child);
