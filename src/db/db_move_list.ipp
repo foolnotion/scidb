@@ -86,6 +86,15 @@ MoveList::front() const
 
 
 inline
+Move const&
+MoveList::back() const
+{
+	M_REQUIRE(!isEmpty());
+	return m_buffer[m_size - 1];
+}
+
+
+inline
 void
 MoveList::append(Move const& m)
 {

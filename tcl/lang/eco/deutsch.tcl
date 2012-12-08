@@ -580,7 +580,7 @@
 "Lasker's"														"Laskers"
 "Levenfish"														"Löwenfisch"
 "Lipawski"														"Likavsky"
-"Mazukewitch"													"Mazukewitsch"
+"Mazukevich"													"Mazukewitsch"
 "Napoleon's"													"Napoleons"
 "Nimzovich"														"Nimzowitsch"
 "Osmolovsky"													"Osmolowski"
