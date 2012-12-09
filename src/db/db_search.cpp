@@ -106,7 +106,7 @@ SearchGameEvent::SearchGameEvent(NamebaseEvent const* entry, Date const& date)
 		if (m2 > 12)
 		{
 			m2 -= 12;
-			--y2;
+			++y2;
 		}
 
 		int d1 = mstl::min(date.day(), Date::lastDayInMonth(y1, m1));
