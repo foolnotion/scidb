@@ -602,6 +602,9 @@
 ::application::tree::mc::LockReferenceBase				"Referenzdatenbank sperren"
 ::application::tree::mc::SwitchReferenceBase				"Referenzdatenbank wechseln"
 ::application::tree::mc::TransparentBar					"Transparente Balken"
+::application::tree::mc::NoGamesFound						"Keine Partien gefunden"
+::application::tree::mc::NoGamesAvailable					"Keine Partien verfügbar"
+::application::tree::mc::Searching							"Suche"
 
 ::application::tree::mc::FromWhitesPerspective			"Aus weißer Sicht"
 ::application::tree::mc::FromBlacksPerspective			"Aus schwarzer Sicht"

@@ -604,6 +604,9 @@
 ::application::tree::mc::LockReferenceBase				"Lås referensdatabas"
 ::application::tree::mc::SwitchReferenceBase				"Växla referensdatabas"
 ::application::tree::mc::TransparentBar					"Transparent bar"
+::application::tree::mc::NoGamesFound						"No games found" ;# NEW
+::application::tree::mc::NoGamesAvailable					"No games available" ;# NEW
+::application::tree::mc::Searching							"Searching" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
 ::application::tree::mc::FromBlacksPerspective			"Från svarts sida"

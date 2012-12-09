@@ -604,6 +604,9 @@
 ::application::tree::mc::LockReferenceBase			"Referencia adatbázis zárolása"
 ::application::tree::mc::SwitchReferenceBase			"Switch reference database" ;# NEW
 ::application::tree::mc::TransparentBar				"Transparent bar"
+::application::tree::mc::NoGamesFound				"No games found" ;# NEW
+::application::tree::mc::NoGamesAvailable			"No games available" ;# NEW
+::application::tree::mc::Searching				"Searching" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"

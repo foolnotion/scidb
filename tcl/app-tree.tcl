@@ -46,6 +46,8 @@ set LockReferenceBase				"Lock reference database"
 set SwitchReferenceBase				"Switch reference database"
 set TransparentBar					"Transparent bar"
 set NoGamesFound						"No games found"
+set NoGamesAvailable					"No games available"
+set Searching							"Searching"
 
 set FromWhitesPerspective			"From whites perspective"
 set FromBlacksPerspective			"From blacks perspective"
@@ -136,12 +138,22 @@ proc build {parent width height} {
 	variable Defaults
 	variable Vars
 
-	set top [::ttk::frame $parent.tree]
-	pack $top -fill both -expand yes
+	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $Options(-background) -borderwidth 0]
+	pack $mw -fill both -expand yes
 
-	set tb $top.table
-	set sb $top.scrollbar
-	set sq $top.square
+	set info [tk::frame $mw.info -background $Options(-background) -borderwidth 0 -takefocus 0]
+	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Options(-background)]
+
+	$mw add $info
+	$mw add $mesg
+
+	set Vars(mw) $mw
+	set Vars(info) $info
+	set Vars(mesg) $mesg
+
+	set tb $info.table
+	set sb $info.scrollbar
+	set sq $info.square
 
 	set Vars(whiteKnob) \
 		[list $::icon::22x22::whiteKnob $::icon::16x16::whiteKnob $::icon::32x32::whiteKnob]
@@ -173,8 +185,8 @@ proc build {parent width height} {
 
 	grid $tb -row 0 -column 0 -rowspan 2 -sticky nsew
 	grid $sb -row 0 -column 1 -rowspan 2 -sticky ns
-	grid rowconfigure $top 0 -weight 1
-	grid columnconfigure $top 0 -weight 1
+	grid rowconfigure $info 0 -weight 1
+	grid columnconfigure $info 0 -weight 1
 
 	set Vars(styles) {}
 	$tb.t element create elemTotal rect -fill $Options(-emphasize)
@@ -436,6 +448,7 @@ proc build {parent width height} {
 	::scidb::tree::init [namespace current]::Tick $tb
 	::scidb::tree::switch [expr {!$Options(base:lock)}]
 
+	Message $mc::NoGamesAvailable
 	SetSwitcher [::scidb::tree::get]
 }
 
@@ -466,9 +479,14 @@ proc update {position} {
 	variable Options
 
 	if {$Options(search:automatic) && ![::scidb::tree::isUpToDate?] && [llength [::scidb::tree::get]]} {
-		after cancel $Vars(after)
-		set Vars(after) [after 250 [namespace code [list DoSearch $Vars(table)]]]
-		Enabled false
+		set n [::scidb::db::count games [::scidb::tree::get]]
+		if {$n == 0} {
+			Message $mc::NoGamesAvailable
+		} else {
+			after cancel $Vars(after)
+			set Vars(after) [after 250 [namespace code [list DoSearch $Vars(table)]]]
+			Enabled false
+		}
 	}
 }
 
@@ -540,6 +558,8 @@ proc Update {table base} {
 			after cancel $Vars(after)
 			set Vars(after) [after 250 [namespace code [list DoSearch $table]]]
 		}
+	} else {
+		Message $mc::NoGamesAvailable
 	}
 }
 
@@ -557,6 +577,7 @@ proc DoSearch {table} {
 		}
 		SearchResultAvailable $table
 	} else {
+		if {[llength $Vars(data)] == 0} { Message "$mc::Searching..." }
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
 		$Vars(progress) configure -background $Defaults(progress:color)
@@ -568,7 +589,9 @@ proc DoSearch {table} {
 proc StartSearch {table} {
 	variable Vars
 
-	if {[llength [::scidb::tree::get]] == 0} { return }
+	if {[llength [::scidb::tree::get]] == 0} {
+		return [Message $mc::NoGamesAvailable]
+	}
 
 	if {$Vars(searching)} {
 		set Vars(searching) 0
@@ -577,7 +600,12 @@ proc StartSearch {table} {
 		ConfigSearchButton $table Start
 		# show "interrupted by user"
 	} else {
-		DoSearch $table
+		set n [::scidb::db::count games [::scidb::tree::get]]
+		if {$n == 0} {
+			Message $mc::NoGamesAvailable
+		} else {
+			DoSearch $table
+		}
 	}
 }
 
@@ -790,7 +818,7 @@ proc RefreshHeader {table} {
 
 
 proc RefreshRatings {table} {
-	RefreshHeader table
+	rEfreshHeader table
 	FetchResult $table true
 	RefreshRatingLabel
 }
@@ -838,12 +866,18 @@ proc FetchResult {table {force false}} {
 		set Vars(data) [::scidb::tree::fetch]
 		set nrows [llength $Vars(data)]
 		if {$nrows == 2} { set nrows 1 } elseif {$nrows} { incr nrows }
-		set active [::table::active $table]
 
-		::table::clear $table
-		::table::setHeight $table 0
+		if {$nrows == 0} {
+			set n [::scidb::db::count games [::scidb::tree::get]]
+			if {$n == 0} { set msg $mc::NoGamesAvailable } else { set msg $mc::NoGamesFound }
+			Message $msg
+		} else {
+			$Vars(mw) raise $Vars(info)
+			set active [::table::active $table]
 
-		if {$nrows} {
+			::table::clear $table
+			::table::setHeight $table 0
+
 			::table::setHeight $table $nrows [namespace current]::SetItemStyle
 			FillTable $table
 
@@ -874,6 +908,14 @@ proc SetItemStyle {table item row} {
 	} else {
 		$table.t item style set $item {*}[::table::defaultStyles $table]
 	}
+}
+
+
+proc Message {msg} {
+	variable Vars
+
+	$Vars(mesg) configure -text $msg
+	$Vars(mw) raise $Vars(mesg)
 }
 
 

@@ -601,6 +601,9 @@
 ::application::tree::mc::LockReferenceBase				"Lock reference database"
 ::application::tree::mc::SwitchReferenceBase				"Switch reference database"
 ::application::tree::mc::TransparentBar					"Transparent bar"
+::application::tree::mc::NoGamesFound						"No games found"
+::application::tree::mc::NoGamesAvailable					"No games available"
+::application::tree::mc::Searching							"Searching"
 
 ::application::tree::mc::FromWhitesPerspective			"From whites perspective"
 ::application::tree::mc::FromBlacksPerspective			"From blacks perspective"

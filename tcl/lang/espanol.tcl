@@ -623,6 +623,9 @@
 ::application::tree::mc::LockReferenceBase				"Bloquear base de referencia"
 ::application::tree::mc::SwitchReferenceBase				"Cambiar base de datos de referencia"
 ::application::tree::mc::TransparentBar					"Barras transparentes"
+::application::tree::mc::NoGamesFound						"No games found" ;# NEW
+::application::tree::mc::NoGamesAvailable					"No games available" ;# NEW
+::application::tree::mc::Searching							"Searching" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
 ::application::tree::mc::FromBlacksPerspective			"Desde el lado de las Negras"

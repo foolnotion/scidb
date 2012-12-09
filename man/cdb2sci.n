@@ -29,7 +29,7 @@ might report error messages:
 .\" --------------------------------------------------------------------------
 .TP 9
 .B File size exeeded
-The input database is too large. The program is aborting (with a valid
+The output database is too large. The program is aborting (with a valid
 output database).
 .\" --------------------------------------------------------------------------
 .TP 9
