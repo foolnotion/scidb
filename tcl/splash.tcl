@@ -46,12 +46,21 @@ proc open {} {
 	switch [tk windowingsystem] {
 		x11 {
 			wm state .splash iconic
-			update idletasks
-			::scidb::tk::wm noDecor .splash
+#			set isKDE4 no
+#			if {[checkIsKDE]} {
+#				set kded4 [auto_execok kded4]
+#				if {[llength $kded4]} { set isKDE4 yes }
+#			}
+#			if {$isKDE4} {
+				wm overrideredirect .splash on
+#			} else {
+#				update idletasks
+#				::scidb::tk::wm splash .splash
+#			}
 		}
 
 		win32 {
-			wm overrideredirect .splash
+			wm overrideredirect .splash on
 			wm transparentcolor 0.7
 		}
 
@@ -63,6 +72,7 @@ proc open {} {
 	::util::place .splash center .
 	wm attributes .splash -topmost
 	wm deiconify .splash
+	raise .splash
 	update idletasks
 	tkwait visibility .splash
 	update idletasks
@@ -82,6 +92,15 @@ proc print {msg} {
 
 proc picture {} {
 	return [set [namespace current]::Picture]
+}
+
+
+if {[tk windowingsystem] eq "x11"} {
+	proc checkIsKDE {} {
+		set atoms {}
+		catch { set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"] }
+		return [expr {[string length $atoms] > 0}]
+	}
 }
 
 

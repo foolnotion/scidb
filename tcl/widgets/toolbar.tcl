@@ -2720,9 +2720,9 @@ proc UndockToolbar {toolbar x y} {
 
 	if {!$Specs(enabled:$toolbar)} { return }
 
-	set haveNoWindowDecor false
+	set haveMakeToolbar false
 	if {[tk windowingsystem] eq "x11"} {
-		set haveNoWindowDecor [llength [info procs x11NoWindowDecor]]
+		set haveMakeToolbar [llength [info procs x11MakeToolbar]]
 	}
 	set win $toolbar.floating
 	if [winfo exists $win] { return }
@@ -2743,7 +2743,7 @@ proc UndockToolbar {toolbar x y} {
 
 	if {	$Defaults(floating:overrideredirect)
 		|| [tk windowingsystem] eq "aqua"
-		|| $haveNoWindowDecor} {
+		|| $haveMakeToolbar} {
 
 		set decor [tk::label $floatingToolbar.decor \
 			-justify left \
@@ -2804,14 +2804,14 @@ proc UndockToolbar {toolbar x y} {
 		} else {
 			wm title $win $Specs(title:$toolbar)
 		}
-	} elseif {$haveNoWindowDecor} {
+	} elseif {$haveMakeToolbar} {
 		if {$Defaults(floating:overrideredirect)} {
 			wm overrideredirect $win true
 		} else {
 #			bind $win <FocusIn>  [namespace code [list Focus $win in]]
 #			bind $win <FocusOut> [namespace code [list Focus $win out]]
 		}
-		x11NoWindowDecor $win
+		x11MakeToolbar $win
 	} elseif {$Defaults(floating:overrideredirect)} {
 		wm overrideredirect $win true
 	} else {

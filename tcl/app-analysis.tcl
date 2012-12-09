@@ -779,8 +779,6 @@ proc Display(cpuload) {load} {
 proc Display(error) {code} {
 	variable Vars
 
-	Display(clear)
-
 	switch $code {
 		registration - copyprotection {
 			set msg $::engine::mc::ProbeError($code)

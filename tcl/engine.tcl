@@ -2627,7 +2627,7 @@ proc ProbeEngine {parent entry} {
 	wm transient $wait $parent
 	::util::place $wait center $parent
 	update idletasks
-	::scidb::tk::wm noDecor $wait
+	::scidb::tk::wm frameless $wait
 	wm deiconify $wait
 	::ttk::grabWindow $wait
 	::widget::busyCursor on

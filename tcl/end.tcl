@@ -85,15 +85,18 @@ proc WriteOptions {chan} {
 
 if {[tk windowingsystem] eq "x11"} {
 	namespace eval x11 {
-		proc noWindowDecor {w} {
+		proc makeFrameless {w} {
 			update idletasks
-			::scidb::tk::wm noDecor $w
+			::scidb::tk::wm menu $w
+		}
+		proc makeToolbar {w} {
+			update idletasks
+			::scidb::tk::wm toolbar $w
 		}
 	}
 
-	proc dialog::choosecolor::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
-	proc toolbar::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
-	proc fsbox::x11NoWindowDecor {w} { ::x11::noWindowDecor $w }
+	proc toolbar::x11MakeToolbar {w} { ::x11::makeToolbar $w }
+	proc fsbox::x11MakeFrameless {w} { ::x11::makeFrameless $w }
 	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 }
 

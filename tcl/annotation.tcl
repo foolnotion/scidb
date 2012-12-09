@@ -517,7 +517,7 @@ proc open {parent} {
 		wm attributes $dlg -toolwindow
 		wm title $dlg $title
 	} else {
-		::scidb::tk::wm noDecor $dlg
+		::scidb::tk::wm frameless $dlg
 	}
 	wm deiconify $dlg
 	update

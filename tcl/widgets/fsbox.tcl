@@ -905,14 +905,14 @@ proc checkIsKDE {} {
 }
 
 
-proc x11NoWindowDecor {w} { ;# how to do? }
+proc x11MakeFrameless {w} { ;# how to do? }
 
 
 proc noWindowDecor {w} {
 	switch [tk windowingsystem] {
 		aqua	{ ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
 		win32	{ wm attributes $w -toolwindow }
-		x11	{ x11NoWindowDecor $w }
+		x11	{ x11MakeFrameless $w }
 	}
 }
 

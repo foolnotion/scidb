@@ -361,7 +361,7 @@ proc shutdown {} {
 	wm transient $dlg .application
 	::util::place $dlg center .application
 	update idletasks
-	::scidb::tk::wm noDecor $dlg
+	::scidb::tk::wm frameless $dlg
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	::widget::busyCursor on
@@ -628,7 +628,7 @@ proc ChooseLanguage {parent} {
 	wm transient $dlg $parent
 	::util::place $dlg center $parent
 	update idletasks
-	::scidb::tk::wm noDecor $dlg
+	::scidb::tk::wm frameless $dlg
 	wm deiconify $dlg
 	focus $top.en
 	::ttk::grabWindow $dlg

@@ -88,11 +88,12 @@ static char const* XA_MOTIF_WM_HINTS						= "_MOTIF_WM_HINTS";
 static char const* XA_KWM_WIN_DECORATION					= "KWM_WIN_DECORATION";
 static char const* XA_WIN_HINTS								= "_WIN_HINTS";
 static char const* XA_NET_ACTIVE_WINDOW					= "_NET_ACTIVE_WINDOW";
-static char const* XA_NET_WM_WINDOW_TYPE					= "_NET_WM_WINDOW_TYPE";
+//static char const* XA_NET_WM_WINDOW_TYPE				= "_NET_WM_WINDOW_TYPE";
 static char const* XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE	= "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE";
 static char const* XA_NET_WM_WINDOW_TYPE_NORMAL			= "_NET_WM_WINDOW_TYPE_NORMAL";
-//static char const* XA_NET_WM_WINDOW_TYPE_TOOLBAR		= "_NET_WM_WINDOW_TYPE_TOOLBAR";
-//static char const* XA_NET_WM_WINDOW_TYPE_SPLASH			= "_NET_WM_WINDOW_TYPE_SPLASH";
+static char const* XA_NET_WM_WINDOW_TYPE_TOOLBAR		= "_NET_WM_WINDOW_TYPE_TOOLBAR";
+static char const* XA_NET_WM_WINDOW_TYPE_SPLASH			= "_NET_WM_WINDOW_TYPE_SPLASH";
+static char const* XA_NET_WM_WINDOW_TYPE_MENU			= "_NET_WM_WINDOW_TYPE_MENU";
 
 #if 0
 static char const* XA_NET_WM_ALLOWED_ACTIONS				= "_NET_WM_ALLOWED_ACTIONS";
@@ -107,12 +108,26 @@ static char const* XA_WM_CLIENT_LEADER = "WM_CLIENT_LEADER";
 
 
 static void
-changeProperty(Display* display, Window window, Atom which, void* data, int nelements)
+changeProperty1(Display* display, Window window, Atom which, void* data, int nelements)
 {
 	XChangeProperty(	display,
 							window,
 							which,
 							which,
+							32,
+							PropModeReplace,
+							static_cast<unsigned char*>(data),
+							nelements);
+}
+
+
+static void
+changeProperty2(Display* display, Window window, Atom prop, void* data, int nelements)
+{
+	XChangeProperty(	display,
+							window,
+							prop,
+							XA_ATOM,
 							32,
 							PropModeReplace,
 							static_cast<unsigned char*>(data),
@@ -130,45 +145,50 @@ checkAtom(Atom& wmHints, Tk_Window tkwin, char const* name)
 
 
 static int
-noDecor(Tk_Window tkwin, Window window)
+frameless(Tk_Window tkwin, Window window, char const* property)
 {
+	M_ASSERT(property);
+
 	Atom	wmHints;
 	int	rc = 0;
 
 	Display* display = Tk_Display(tkwin);
 
+	XLockDisplay(display);
+
 	// First try to set MWM hints (works!)
 	if ((rc = checkAtom(wmHints, tkwin, XA_MOTIF_WM_HINTS)))
 	{
 		MWM_Hints hints = { MWM_HINTS_DECORATIONS, 0, MWM_DECOR_NONE, 0, 0 };
-		changeProperty(display, window, wmHints, &hints, sizeof(hints)/4);
+		changeProperty1(display, window, wmHints, &hints, sizeof(hints)/4);
 	}
 
 	// Now try to set KWM hints (doesn't work for any reason)
 	if ((rc = checkAtom(wmHints, tkwin, XA_KWM_WIN_DECORATION)))
 	{
 		uint32_t KWMHints = KDE_tinyDecoration;
-		changeProperty(display, window, wmHints, &KWMHints, 1);
+		changeProperty1(display, window, wmHints, &KWMHints, 1);
 	}
 
 	// Now try to set GNOME hints (working?)
 	if ((rc = checkAtom(wmHints, tkwin, XA_WIN_HINTS)))
 	{
 		uint32_t GNOMEHints = 0;
-		changeProperty(display, window, wmHints, &GNOMEHints, 1);
+		changeProperty1(display, window, wmHints, &GNOMEHints, 1);
 	}
 
-	// Now try to set KDE NET_WM hints (doesn't work for any reason)
-	if ((rc = checkAtom(wmHints, tkwin, XA_NET_WM_WINDOW_TYPE)))
+	// Now try to set KDE NET_WM hints
+	if ((rc = checkAtom(wmHints, tkwin, XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE)))
 	{
 		Atom netWmHints[2] =
 		{
 			Tk_InternAtom(tkwin, XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE),
-			Tk_InternAtom(tkwin, XA_NET_WM_WINDOW_TYPE_NORMAL),
+			Tk_InternAtom(tkwin, property),
 		};
-		changeProperty(display, window, wmHints, &netWmHints, U_NUMBER_OF(netWmHints));
+		changeProperty2(display, window, wmHints, &netWmHints, U_NUMBER_OF(netWmHints));
 	}
 
+	XUnlockDisplay(display);
 	return rc;
 }
 
@@ -187,7 +207,7 @@ setClientLeader(Tk_Window tkwin, Window window)
 		leader = XCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0, 0);
 	}
 
-	changeProperty(display, window, clientLeader, &leader, 1);
+	changeProperty1(display, window, clientLeader, &leader, 1);
 }
 
 
@@ -274,7 +294,7 @@ tcl_error(Tcl_Interp* ti, char const* fmt, ...)
 static int
 cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* Usage =	"Usage: ::scidb::tk::wm (noDecor | grid "
+	char const* Usage =	"Usage: ::scidb::tk::wm (frameless | splash | toolbar | menu | grid "
 								"| setLeader | map | raise | sync) <window> ...";
 
 	if (objc < 2)
@@ -310,7 +330,10 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 		Tk_SetGrid(tkwin, baseWidth, baseHeight, widthIncr, heightIncr);
 	}
 #if !defined(__WIN32__) && !defined(__MacOSX__)
-	else if (strcasecmp(subcmd, "noDecor") == 0)
+	else if (	strcasecmp(subcmd, "frameless") == 0
+				|| strcasecmp(subcmd, "toolbar") == 0
+				|| strcasecmp(subcmd, "splash") == 0
+				|| strcasecmp(subcmd, "menu") == 0)
 	{
 		Window window = Tk_WindowId(tkwin);
 
@@ -337,7 +360,17 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 		if (children)
 			XFree(children);
 
-		rc = noDecor(tkmain, parent);
+		char const* prop = 0;
+
+		switch (*subcmd)
+		{
+			case 'f': prop = XA_NET_WM_WINDOW_TYPE_NORMAL; break;
+			case 'm': prop = XA_NET_WM_WINDOW_TYPE_MENU; break;
+			case 't': prop = XA_NET_WM_WINDOW_TYPE_TOOLBAR; break;
+			case 's': prop = XA_NET_WM_WINDOW_TYPE_SPLASH; break;
+		}
+
+		rc = frameless(tkmain, parent, prop);
 	}
 	else if (strcasecmp(subcmd, "setLeader") == 0)
 	{
