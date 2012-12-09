@@ -485,14 +485,16 @@ proc update {position} {
 		} else {
 			after cancel $Vars(after)
 			set Vars(after) [after 250 [namespace code [list DoSearch $Vars(table)]]]
-			Enabled false
 		}
+		Enabled false
 	}
 }
 
 
 proc Enabled {flag} {
 	variable Vars
+
+	if {$Vars(enabled) == $flag} { return }
 
 	set table $Vars(table)
 	set nrows [llength $Vars(data)]
@@ -561,6 +563,8 @@ proc Update {table base} {
 	} else {
 		Message $mc::NoGamesAvailable
 	}
+
+	Enabled false
 }
 
 
@@ -888,7 +892,7 @@ proc FetchResult {table {force false}} {
 	}
 
 	set Vars(activated) 0
-	Enabled true
+	if {[llength $Vars(data)]} { Enabled true }
 }
 
 
@@ -1275,8 +1279,9 @@ proc FillSwitcher {w} {
 
 	set list {}
 	foreach base [::scidb::tree::list] { lappend list [list [::util::databaseName $base] $base] }
+	set list [lsort -dictionary -index 0 $list]
 
-	foreach base [lsort -dictionary -index 0 $list] {
+	foreach base $list {
 		$w listinsert [list [lindex $base 0]]
 	}
 
