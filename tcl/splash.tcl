@@ -33,7 +33,6 @@ proc open {} {
 
 	tk::toplevel .splash -class Scidb
 	wm title .splash $::scidb::app
-	wm attributes .splash -alpha 0.8
 	catch { wm attributes .splash -type splash }
 	tk::frame .splash.f -relief raised -borderwidth 1
 	tk::canvas .splash.f.c -borderwidth 0 -width [image width $Picture] -height [image height $Picture]
@@ -45,29 +44,32 @@ proc open {} {
 	
 	switch [tk windowingsystem] {
 		x11 {
-			wm state .splash iconic
-#			set isKDE4 no
-#			if {[checkIsKDE]} {
-#				set kded4 [auto_execok kded4]
-#				if {[llength $kded4]} { set isKDE4 yes }
-#			}
-#			if {$isKDE4} {
-				wm overrideredirect .splash on
-#			} else {
-#				update idletasks
-#				::scidb::tk::wm splash .splash
-#			}
+			# We cannot use
+			# --------------------------------
+			#   wm withdraw .splash
+			#   update idletasks
+			#   ::scidb::tk::wm splash .splash
+			# --------------------------------
+			# because this does not work on KDE 4 if effects are enabled.
+			#
+			# NOTE: the "correct" way to implement a splash window
+			# is to use a sub-process, but our solution is light-weight.
+			wm overrideredirect .splash on
 		}
 
 		win32 {
 			wm overrideredirect .splash on
-			wm transparentcolor 0.7
+#			wm transparentcolor 0.7
 		}
 
 		aqua {
 			::tk::unsupported::MacWindowStyle style .splash plainDBox {}
 		}
 	}
+
+	# avoid flickering
+	wm withdraw .splash
+	update idletasks
 
 	::util::place .splash center .
 	wm attributes .splash -topmost
