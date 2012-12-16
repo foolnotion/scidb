@@ -102,7 +102,7 @@ HomePawns::move(Move const& move)
 	if (move.pieceMoved() == piece::Pawn)
 		update(::HomePawnMask[move.color()][move.from()]);
 
-	if (move.captured() == piece::Pawn)
+	if (move.isPawnCapture())
 		update(::HomePawnMask[color::opposite(move.color())][move.to()]);
 }
 

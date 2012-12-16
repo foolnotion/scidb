@@ -56,9 +56,13 @@ public:
 	virtual unsigned countMoveInfo() const = 0;
 	virtual unsigned countMarks() const = 0;
 	virtual unsigned plyCount() const = 0;
+	virtual variant::Type variant() const = 0;
+	virtual uint16_t idn() const = 0;
 	virtual uint32_t flags() const = 0;
 	virtual bool commentEngFlag() const = 0;
 	virtual bool commentOthFlag() const = 0;
+
+	bool setupBoard() const;
 
 	// data for receiver
 

@@ -49,6 +49,42 @@ using namespace db;
 using namespace util::misc::file;
 
 
+static unsigned
+toVariant(variant::Type variant)
+{
+	switch (int(variant))
+	{
+		case variant::Normal:		return Engine::Variant_Standard; break;
+		case variant::Losers:		return Engine::Variant_Losers; break;
+		case variant::Suicide:		return Engine::Variant_Suicide; break;
+		case variant::Giveaway:		return Engine::Variant_Giveaway; break;
+		case variant::Bughouse:		return Engine::Variant_Bughouse; break;
+		case variant::Crazyhouse:	return Engine::Variant_Crazyhouse; break;
+		case variant::ThreeCheck:	return Engine::Variant_Three_Check; break;
+	}
+
+	return Engine::Variant_Standard; // should never be reached
+}
+
+
+static Engine::Error
+toError(variant::Type variant)
+{
+	switch (int(variant))
+	{
+		case variant::Normal:		return Engine::Standard_Chess_Not_Supported; break;
+		case variant::Losers:		return Engine::Losers_Not_Supported; break;
+		case variant::Suicide:		return Engine::Suicide_Not_Supported; break;
+		case variant::Giveaway:		return Engine::Giveaway_Not_Supported; break;
+		case variant::Bughouse:		return Engine::Bughouse_Not_Supported; break;
+		case variant::Crazyhouse:	return Engine::Crazyhouse_Not_Supported; break;
+		case variant::ThreeCheck:	return Engine::Three_Check_Not_Supported; break;
+	}
+
+	return Engine::Standard_Chess_Not_Supported; // should never be reached
+}
+
+
 namespace {
 
 struct Range
@@ -448,6 +484,13 @@ Engine::pid() const
 {
 	M_REQUIRE(isConnected());
 	return m_process->pid();
+}
+
+
+variant::Type
+Engine::variant() const
+{
+	return m_game ? m_game->variant() : variant::Normal;
 }
 
 
@@ -1060,16 +1103,23 @@ Engine::startAnalysis(db::Game const* game)
 
 	if (isNew)
 	{
+		if (!(supportedVariants() & ::toVariant(game->variant())))
+		{
+			m_gameId = unsigned(-1);
+			error(::toError(game->variant()));
+			return false;
+		}
+
 		m_currentVariant = Variant_Standard;
 
-		if (!variant::isStandardChess(game->idn()))
+		if (!variant::isStandardChess(game->idn(), game->variant()))
 		{
 			if (	variant::isShuffleChess(game->idn())
-				|| variant::isChess960(game->idn())
 				|| game->startBoard().notDerivableFromStandardChess())
 			{
 				if (!hasVariant(Variant_Chess_960))
 				{
+					m_gameId = unsigned(-1);
 					error(Chess_960_Not_Supported);
 					return false;
 				}
@@ -1080,6 +1130,7 @@ Engine::startAnalysis(db::Game const* game)
 
 		if (m_currentVariant == Variant_Standard && !hasVariant(Variant_Standard))
 		{
+			m_gameId = unsigned(-1);
 			error(Standard_Chess_Not_Supported);
 			return false;
 		}
@@ -1117,7 +1168,7 @@ Engine::startAnalysis(db::Game const* game)
 
 		clearInfo();
 
-		if (game->currentBoard().givesCheck())
+		if (!variant::isAntichessExceptLosers(game->variant()) && game->currentBoard().givesCheck())
 		{
 			error(Illegal_Position);
 			return false;
@@ -1615,7 +1666,9 @@ Engine::setUrl(mstl::string const& address)
 
 	url.append(address);
 
-	if ((::strncmp(url, "http://", 7) == 0 || ::strncmp(url, "ftp://", 6)))
+	if (	::strncmp(url, "http://",  7) == 0
+		|| ::strncmp(url, "https://", 8) == 0
+		|| ::strncmp(url, "ftp://",   6) == 0)
 	{
 		for (mstl::string::const_iterator i = url.begin(); i != url.end(); ++i)
 		{
@@ -1672,6 +1725,8 @@ Engine::detectUrl(mstl::string const& str)
 {
 	mstl::string::size_type n = str.find("http://");
 
+	if (n == mstl::string::npos)
+		n = str.find("https://");
 	if (n == mstl::string::npos)
 		n = str.find("ftp://");
 	if (n == mstl::string::npos)

@@ -46,14 +46,13 @@ inline bool GameInfo::isDirty() const							{ return m_gameFlags & Flag_Dirty; }
 inline bool GameInfo::isChanged() const						{ return m_gameFlags & Flag_Changed; }
 inline bool GameInfo::hasPromotion() const					{ return m_signature.hasPromotion(); }
 inline bool GameInfo::hasUnderPromotion() const				{ return m_signature.hasUnderPromotion(); }
-inline bool GameInfo::containsIllegalCastlings() const	{ return m_gameFlags & Flag_Illegal_Castling; }
 inline bool GameInfo::containsIllegalMoves() const			{ return m_gameFlags & Flag_Illegal_Move; }
 inline bool GameInfo::hasGameRecordLength() const			{ return m_recordLength & 1; }
-inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId; }
+inline bool GameInfo::hasShuffleChessPosition() const		{ return m_positionId > 0; }
 inline bool GameInfo::hasChess960Position() const			{ return m_positionId <= 960; }
-inline bool GameInfo::hasStandardPosition() const			{ return m_positionId == variant::StandardIdn;}
 inline bool GameInfo::containsEnglishLanguage() const		{ return m_pd[0].langFlag; }
 inline bool GameInfo::containsOtherLanguage() const		{ return m_pd[1].langFlag; }
+inline bool GameInfo::setupBoard() const						{ return m_setup; }
 
 inline uint16_t GameInfo::idn() const							{ return m_positionId; }
 inline result::ID GameInfo::result() const					{ return result::ID(m_result); }
@@ -84,6 +83,32 @@ inline uint32_t GameInfo::fideID(color::ID color) const			{ return m_player[colo
 
 inline NamebasePlayer const* GameInfo::playerEntry(color::ID color) const { return m_player[color]; }
 inline NamebaseEvent const* GameInfo::eventEntry() const { return m_event; }
+
+
+inline
+bool
+GameInfo::containsIllegalCastlings() const
+{
+	// NOTE: should not be used for Suicide/Giveaway games
+	return m_gameFlags & Flag_Illegal_Castling;
+}
+
+
+inline
+bool
+GameInfo::isGiveaway() const
+{
+	// NOTE: should be used only for Suicide/Giveaway games
+	return m_gameFlags & Flag_Giveaway;
+}
+
+
+inline
+bool
+GameInfo::hasStandardPosition(variant::Type variant) const
+{
+	return variant::isStandardChess(m_positionId, variant);
+}
 
 
 inline
@@ -128,7 +153,7 @@ inline
 Eco
 GameInfo::eco() const
 {
-	return m_positionId == variant::StandardIdn ? Eco::fromShort(m_eco) : Eco();
+	return m_positionId == variant::Standard ? Eco::fromShort(m_eco) : Eco();
 }
 
 
@@ -144,7 +169,7 @@ inline
 Eco
 GameInfo::ecoKey() const
 {
-	M_REQUIRE(m_positionId == variant::StandardIdn);
+	M_REQUIRE(m_positionId == variant::Standard);
 	return Eco(m_ecoKey);
 }
 

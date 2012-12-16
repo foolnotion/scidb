@@ -125,6 +125,8 @@ T_ActiveToken.o: ../../mstl/m_utility.ipp
 T_ActiveToken.o: ../../mstl/m_limits.h
 T_ActiveToken.o: ../../mstl/m_bit_functions.h
 T_ActiveToken.o: ../../mstl/m_bit_functions.ipp
+T_ActiveToken.o: ../../mstl/m_uint128_t.h
+T_ActiveToken.o: ../../mstl/m_uint128.h
 T_ActiveToken.o: ../../mstl/m_assert.h
 T_ActiveToken.o: ../../mstl/m_exception.h
 T_ActiveToken.o: ../../mstl/m_backtrace.h
@@ -156,6 +158,8 @@ T_ActiveToken.o: T_Input.ipp
 T_ActiveToken.o: ../../mstl/m_stack.h
 T_ActiveToken.o: ../../mstl/m_memblock.h
 T_ActiveToken.o: ../../mstl/m_memblock.ipp
+T_ActiveToken.o: ../../mstl/m_iterator.h
+T_ActiveToken.o: ../../mstl/m_iterator.ipp
 T_ActiveToken.o: ../../mstl/m_stack.ipp
 T_ActiveToken.o: ../../mstl/m_uninitialized.h
 T_ActiveToken.o: ../../mstl/m_uninitialized.ipp
@@ -178,6 +182,8 @@ T_AhoCorasick.o: ../../mstl/m_utility.ipp
 T_AhoCorasick.o: ../../mstl/m_limits.h
 T_AhoCorasick.o: ../../mstl/m_bit_functions.h
 T_AhoCorasick.o: ../../mstl/m_bit_functions.ipp
+T_AhoCorasick.o: ../../mstl/m_uint128_t.h
+T_AhoCorasick.o: ../../mstl/m_uint128.h
 T_AhoCorasick.o: ../../mstl/m_assert.h
 T_AhoCorasick.o: ../../mstl/m_exception.h
 T_AhoCorasick.o: ../../mstl/m_backtrace.h
@@ -185,6 +191,8 @@ T_AhoCorasick.o: ../../mstl/m_exception.ipp
 T_AhoCorasick.o: ../../mstl/m_vector.h
 T_AhoCorasick.o: ../../mstl/m_memblock.h
 T_AhoCorasick.o: ../../mstl/m_memblock.ipp
+T_AhoCorasick.o: ../../mstl/m_iterator.h
+T_AhoCorasick.o: ../../mstl/m_iterator.ipp
 T_AhoCorasick.o: ../../mstl/m_vector.ipp
 T_AhoCorasick.o: ../../mstl/m_uninitialized.h
 T_AhoCorasick.o: ../../mstl/m_uninitialized.ipp
@@ -214,6 +222,8 @@ T_Alignment.o: ../../mstl/m_utility.ipp
 T_Alignment.o: ../../mstl/m_limits.h
 T_Alignment.o: ../../mstl/m_bit_functions.h
 T_Alignment.o: ../../mstl/m_bit_functions.ipp
+T_Alignment.o: ../../mstl/m_uint128_t.h
+T_Alignment.o: ../../mstl/m_uint128.h
 T_Alignment.o: ../../mstl/m_assert.h
 T_Alignment.o: ../../mstl/m_exception.h
 T_Alignment.o: ../../mstl/m_backtrace.h
@@ -243,6 +253,8 @@ T_Alignment.o: T_Producer.h
 T_Alignment.o: ../../mstl/m_vector.h
 T_Alignment.o: ../../mstl/m_memblock.h
 T_Alignment.o: ../../mstl/m_memblock.ipp
+T_Alignment.o: ../../mstl/m_iterator.h
+T_Alignment.o: ../../mstl/m_iterator.ipp
 T_Alignment.o: ../../mstl/m_vector.ipp
 T_Alignment.o: ../../mstl/m_uninitialized.h
 T_Alignment.o: ../../mstl/m_uninitialized.ipp
@@ -290,6 +302,8 @@ T_Arithmetic.o: ../../mstl/m_utility.ipp
 T_Arithmetic.o: ../../mstl/m_limits.h
 T_Arithmetic.o: ../../mstl/m_bit_functions.h
 T_Arithmetic.o: ../../mstl/m_bit_functions.ipp
+T_Arithmetic.o: ../../mstl/m_uint128_t.h
+T_Arithmetic.o: ../../mstl/m_uint128.h
 T_Arithmetic.o: ../../mstl/m_assert.h
 T_Arithmetic.o: ../../mstl/m_exception.h
 T_Arithmetic.o: ../../mstl/m_backtrace.h
@@ -321,6 +335,8 @@ T_Arithmetic.o: T_Input.ipp
 T_Arithmetic.o: ../../mstl/m_stack.h
 T_Arithmetic.o: ../../mstl/m_memblock.h
 T_Arithmetic.o: ../../mstl/m_memblock.ipp
+T_Arithmetic.o: ../../mstl/m_iterator.h
+T_Arithmetic.o: ../../mstl/m_iterator.ipp
 T_Arithmetic.o: ../../mstl/m_stack.ipp
 T_Arithmetic.o: ../../mstl/m_uninitialized.h
 T_Arithmetic.o: ../../mstl/m_uninitialized.ipp
@@ -356,6 +372,8 @@ T_AsciiToken.o: ../../mstl/m_utility.ipp
 T_AsciiToken.o: ../../mstl/m_limits.h
 T_AsciiToken.o: ../../mstl/m_bit_functions.h
 T_AsciiToken.o: ../../mstl/m_bit_functions.ipp
+T_AsciiToken.o: ../../mstl/m_uint128_t.h
+T_AsciiToken.o: ../../mstl/m_uint128.h
 T_AsciiToken.o: ../../mstl/m_assert.h
 T_AsciiToken.o: ../../mstl/m_exception.h
 T_AsciiToken.o: ../../mstl/m_backtrace.h
@@ -386,6 +404,8 @@ T_AsciiToken.o: T_Input.ipp
 T_AsciiToken.o: ../../mstl/m_stack.h
 T_AsciiToken.o: ../../mstl/m_memblock.h
 T_AsciiToken.o: ../../mstl/m_memblock.ipp
+T_AsciiToken.o: ../../mstl/m_iterator.h
+T_AsciiToken.o: ../../mstl/m_iterator.ipp
 T_AsciiToken.o: ../../mstl/m_stack.ipp
 T_AsciiToken.o: ../../mstl/m_uninitialized.h
 T_AsciiToken.o: ../../mstl/m_uninitialized.ipp
@@ -414,6 +434,8 @@ T_Char.o: ../../mstl/m_utility.ipp
 T_Char.o: ../../mstl/m_limits.h
 T_Char.o: ../../mstl/m_bit_functions.h
 T_Char.o: ../../mstl/m_bit_functions.ipp
+T_Char.o: ../../mstl/m_uint128_t.h
+T_Char.o: ../../mstl/m_uint128.h
 T_Char.o: ../../mstl/m_assert.h
 T_Char.o: ../../mstl/m_exception.h
 T_Char.o: ../../mstl/m_backtrace.h
@@ -447,6 +469,8 @@ T_Char.o: T_Input.ipp
 T_Char.o: ../../mstl/m_stack.h
 T_Char.o: ../../mstl/m_memblock.h
 T_Char.o: ../../mstl/m_memblock.ipp
+T_Char.o: ../../mstl/m_iterator.h
+T_Char.o: ../../mstl/m_iterator.ipp
 T_Char.o: ../../mstl/m_stack.ipp
 T_Char.o: ../../mstl/m_uninitialized.h
 T_Char.o: ../../mstl/m_uninitialized.ipp
@@ -476,6 +500,8 @@ T_Conditional.o: ../../mstl/m_utility.ipp
 T_Conditional.o: ../../mstl/m_limits.h
 T_Conditional.o: ../../mstl/m_bit_functions.h
 T_Conditional.o: ../../mstl/m_bit_functions.ipp
+T_Conditional.o: ../../mstl/m_uint128_t.h
+T_Conditional.o: ../../mstl/m_uint128.h
 T_Conditional.o: ../../mstl/m_assert.h
 T_Conditional.o: ../../mstl/m_exception.h
 T_Conditional.o: ../../mstl/m_backtrace.h
@@ -500,6 +526,8 @@ T_Conditional.o: T_Package.ipp
 T_Conditional.o: ../../mstl/m_stack.h
 T_Conditional.o: ../../mstl/m_memblock.h
 T_Conditional.o: ../../mstl/m_memblock.ipp
+T_Conditional.o: ../../mstl/m_iterator.h
+T_Conditional.o: ../../mstl/m_iterator.ipp
 T_Conditional.o: ../../mstl/m_stack.ipp
 T_Conditional.o: ../../mstl/m_uninitialized.h
 T_Conditional.o: ../../mstl/m_uninitialized.ipp
@@ -542,6 +570,8 @@ T_ConditionalToken.o: ../../mstl/m_utility.ipp
 T_ConditionalToken.o: ../../mstl/m_limits.h
 T_ConditionalToken.o: ../../mstl/m_bit_functions.h
 T_ConditionalToken.o: ../../mstl/m_bit_functions.ipp
+T_ConditionalToken.o: ../../mstl/m_uint128_t.h
+T_ConditionalToken.o: ../../mstl/m_uint128.h
 T_ConditionalToken.o: ../../mstl/m_assert.h
 T_ConditionalToken.o: ../../mstl/m_exception.h
 T_ConditionalToken.o: ../../mstl/m_backtrace.h
@@ -570,6 +600,8 @@ T_Consumer.o: ../../mstl/m_utility.ipp
 T_Consumer.o: ../../mstl/m_limits.h
 T_Consumer.o: ../../mstl/m_bit_functions.h
 T_Consumer.o: ../../mstl/m_bit_functions.ipp
+T_Consumer.o: ../../mstl/m_uint128_t.h
+T_Consumer.o: ../../mstl/m_uint128.h
 T_Consumer.o: ../../mstl/m_assert.h
 T_Consumer.o: ../../mstl/m_exception.h
 T_Consumer.o: ../../mstl/m_backtrace.h
@@ -596,6 +628,8 @@ T_Controller.o: ../../mstl/m_utility.ipp
 T_Controller.o: ../../mstl/m_limits.h
 T_Controller.o: ../../mstl/m_bit_functions.h
 T_Controller.o: ../../mstl/m_bit_functions.ipp
+T_Controller.o: ../../mstl/m_uint128_t.h
+T_Controller.o: ../../mstl/m_uint128.h
 T_Controller.o: ../../mstl/m_cast.h
 T_Controller.o: ../../mstl/m_cast.ipp
 T_Controller.o: T_Base.h
@@ -627,6 +661,8 @@ T_Controller.o: T_Input.ipp
 T_Controller.o: ../../mstl/m_stack.h
 T_Controller.o: ../../mstl/m_memblock.h
 T_Controller.o: ../../mstl/m_memblock.ipp
+T_Controller.o: ../../mstl/m_iterator.h
+T_Controller.o: ../../mstl/m_iterator.ipp
 T_Controller.o: ../../mstl/m_stack.ipp
 T_Controller.o: ../../mstl/m_uninitialized.h
 T_Controller.o: ../../mstl/m_uninitialized.ipp
@@ -689,6 +725,8 @@ T_DateTime.o: ../../mstl/m_utility.ipp
 T_DateTime.o: ../../mstl/m_limits.h
 T_DateTime.o: ../../mstl/m_bit_functions.h
 T_DateTime.o: ../../mstl/m_bit_functions.ipp
+T_DateTime.o: ../../mstl/m_uint128_t.h
+T_DateTime.o: ../../mstl/m_uint128.h
 T_DateTime.o: ../../mstl/m_assert.h
 T_DateTime.o: ../../mstl/m_exception.h
 T_DateTime.o: ../../mstl/m_backtrace.h
@@ -723,6 +761,8 @@ T_DateTime.o: T_Input.ipp
 T_DateTime.o: ../../mstl/m_stack.h
 T_DateTime.o: ../../mstl/m_memblock.h
 T_DateTime.o: ../../mstl/m_memblock.ipp
+T_DateTime.o: ../../mstl/m_iterator.h
+T_DateTime.o: ../../mstl/m_iterator.ipp
 T_DateTime.o: ../../mstl/m_stack.ipp
 T_DateTime.o: ../../mstl/m_uninitialized.h
 T_DateTime.o: ../../mstl/m_uninitialized.ipp
@@ -751,6 +791,8 @@ T_Diagnostic.o: ../../mstl/m_utility.ipp
 T_Diagnostic.o: ../../mstl/m_limits.h
 T_Diagnostic.o: ../../mstl/m_bit_functions.h
 T_Diagnostic.o: ../../mstl/m_bit_functions.ipp
+T_Diagnostic.o: ../../mstl/m_uint128_t.h
+T_Diagnostic.o: ../../mstl/m_uint128.h
 T_Diagnostic.o: ../../mstl/m_assert.h
 T_Diagnostic.o: ../../mstl/m_exception.h
 T_Diagnostic.o: ../../mstl/m_backtrace.h
@@ -782,6 +824,8 @@ T_Diagnostic.o: T_Input.ipp
 T_Diagnostic.o: ../../mstl/m_stack.h
 T_Diagnostic.o: ../../mstl/m_memblock.h
 T_Diagnostic.o: ../../mstl/m_memblock.ipp
+T_Diagnostic.o: ../../mstl/m_iterator.h
+T_Diagnostic.o: ../../mstl/m_iterator.ipp
 T_Diagnostic.o: ../../mstl/m_stack.ipp
 T_Diagnostic.o: ../../mstl/m_uninitialized.h
 T_Diagnostic.o: ../../mstl/m_uninitialized.ipp
@@ -814,6 +858,8 @@ T_Environment.o: ../../mstl/m_utility.ipp
 T_Environment.o: ../../mstl/m_limits.h
 T_Environment.o: ../../mstl/m_bit_functions.h
 T_Environment.o: ../../mstl/m_bit_functions.ipp
+T_Environment.o: ../../mstl/m_uint128_t.h
+T_Environment.o: ../../mstl/m_uint128.h
 T_Environment.o: ../../mstl/m_assert.h
 T_Environment.o: ../../mstl/m_exception.h
 T_Environment.o: ../../mstl/m_backtrace.h
@@ -842,6 +888,8 @@ T_Environment.o: T_Input.ipp
 T_Environment.o: ../../mstl/m_stack.h
 T_Environment.o: ../../mstl/m_memblock.h
 T_Environment.o: ../../mstl/m_memblock.ipp
+T_Environment.o: ../../mstl/m_iterator.h
+T_Environment.o: ../../mstl/m_iterator.ipp
 T_Environment.o: ../../mstl/m_stack.ipp
 T_Environment.o: ../../mstl/m_uninitialized.h
 T_Environment.o: ../../mstl/m_uninitialized.ipp
@@ -921,6 +969,8 @@ T_Errormode.o: ../../mstl/m_utility.ipp
 T_Errormode.o: ../../mstl/m_limits.h
 T_Errormode.o: ../../mstl/m_bit_functions.h
 T_Errormode.o: ../../mstl/m_bit_functions.ipp
+T_Errormode.o: ../../mstl/m_uint128_t.h
+T_Errormode.o: ../../mstl/m_uint128.h
 T_Errormode.o: ../../mstl/m_assert.h
 T_Errormode.o: ../../mstl/m_exception.h
 T_Errormode.o: ../../mstl/m_backtrace.h
@@ -952,6 +1002,8 @@ T_Errormode.o: T_Input.ipp
 T_Errormode.o: ../../mstl/m_stack.h
 T_Errormode.o: ../../mstl/m_memblock.h
 T_Errormode.o: ../../mstl/m_memblock.ipp
+T_Errormode.o: ../../mstl/m_iterator.h
+T_Errormode.o: ../../mstl/m_iterator.ipp
 T_Errormode.o: ../../mstl/m_stack.ipp
 T_Errormode.o: ../../mstl/m_uninitialized.h
 T_Errormode.o: ../../mstl/m_uninitialized.ipp
@@ -978,6 +1030,8 @@ T_ExpandableToken.o: ../../mstl/m_utility.ipp
 T_ExpandableToken.o: ../../mstl/m_limits.h
 T_ExpandableToken.o: ../../mstl/m_bit_functions.h
 T_ExpandableToken.o: ../../mstl/m_bit_functions.ipp
+T_ExpandableToken.o: ../../mstl/m_uint128_t.h
+T_ExpandableToken.o: ../../mstl/m_uint128.h
 T_ExpandableToken.o: ../../mstl/m_assert.h
 T_ExpandableToken.o: ../../mstl/m_exception.h
 T_ExpandableToken.o: ../../mstl/m_backtrace.h
@@ -1009,6 +1063,8 @@ T_ExpandableToken.o: T_Input.ipp
 T_ExpandableToken.o: ../../mstl/m_stack.h
 T_ExpandableToken.o: ../../mstl/m_memblock.h
 T_ExpandableToken.o: ../../mstl/m_memblock.ipp
+T_ExpandableToken.o: ../../mstl/m_iterator.h
+T_ExpandableToken.o: ../../mstl/m_iterator.ipp
 T_ExpandableToken.o: ../../mstl/m_stack.ipp
 T_ExpandableToken.o: ../../mstl/m_uninitialized.h
 T_ExpandableToken.o: ../../mstl/m_uninitialized.ipp
@@ -1037,6 +1093,8 @@ T_Expansion.o: ../../mstl/m_utility.ipp
 T_Expansion.o: ../../mstl/m_limits.h
 T_Expansion.o: ../../mstl/m_bit_functions.h
 T_Expansion.o: ../../mstl/m_bit_functions.ipp
+T_Expansion.o: ../../mstl/m_uint128_t.h
+T_Expansion.o: ../../mstl/m_uint128.h
 T_Expansion.o: ../../mstl/m_assert.h
 T_Expansion.o: ../../mstl/m_exception.h
 T_Expansion.o: ../../mstl/m_backtrace.h
@@ -1070,6 +1128,8 @@ T_Expansion.o: T_Input.ipp
 T_Expansion.o: ../../mstl/m_stack.h
 T_Expansion.o: ../../mstl/m_memblock.h
 T_Expansion.o: ../../mstl/m_memblock.ipp
+T_Expansion.o: ../../mstl/m_iterator.h
+T_Expansion.o: ../../mstl/m_iterator.ipp
 T_Expansion.o: ../../mstl/m_stack.ipp
 T_Expansion.o: ../../mstl/m_uninitialized.h
 T_Expansion.o: ../../mstl/m_uninitialized.ipp
@@ -1112,6 +1172,8 @@ T_FileInput.o: ../../mstl/m_utility.ipp
 T_FileInput.o: ../../mstl/m_limits.h
 T_FileInput.o: ../../mstl/m_bit_functions.h
 T_FileInput.o: ../../mstl/m_bit_functions.ipp
+T_FileInput.o: ../../mstl/m_uint128_t.h
+T_FileInput.o: ../../mstl/m_uint128.h
 T_FileInput.o: ../../mstl/m_cast.h
 T_FileInput.o: ../../mstl/m_cast.ipp
 T_FileInput.o: T_Object.h
@@ -1144,6 +1206,8 @@ T_FinalToken.o: ../../mstl/m_utility.ipp
 T_FinalToken.o: ../../mstl/m_limits.h
 T_FinalToken.o: ../../mstl/m_bit_functions.h
 T_FinalToken.o: ../../mstl/m_bit_functions.ipp
+T_FinalToken.o: ../../mstl/m_uint128_t.h
+T_FinalToken.o: ../../mstl/m_uint128.h
 T_FinalToken.o: ../../mstl/m_assert.h
 T_FinalToken.o: ../../mstl/m_exception.h
 T_FinalToken.o: ../../mstl/m_backtrace.h
@@ -1174,6 +1238,8 @@ T_FinalToken.o: T_Input.ipp
 T_FinalToken.o: ../../mstl/m_stack.h
 T_FinalToken.o: ../../mstl/m_memblock.h
 T_FinalToken.o: ../../mstl/m_memblock.ipp
+T_FinalToken.o: ../../mstl/m_iterator.h
+T_FinalToken.o: ../../mstl/m_iterator.ipp
 T_FinalToken.o: ../../mstl/m_stack.ipp
 T_FinalToken.o: ../../mstl/m_uninitialized.h
 T_FinalToken.o: ../../mstl/m_uninitialized.ipp
@@ -1202,6 +1268,8 @@ T_Format.o: ../../mstl/m_utility.ipp
 T_Format.o: ../../mstl/m_limits.h
 T_Format.o: ../../mstl/m_bit_functions.h
 T_Format.o: ../../mstl/m_bit_functions.ipp
+T_Format.o: ../../mstl/m_uint128_t.h
+T_Format.o: ../../mstl/m_uint128.h
 T_Format.o: ../../mstl/m_assert.h
 T_Format.o: ../../mstl/m_exception.h
 T_Format.o: ../../mstl/m_backtrace.h
@@ -1236,6 +1304,8 @@ T_Format.o: T_Input.ipp
 T_Format.o: ../../mstl/m_stack.h
 T_Format.o: ../../mstl/m_memblock.h
 T_Format.o: ../../mstl/m_memblock.ipp
+T_Format.o: ../../mstl/m_iterator.h
+T_Format.o: ../../mstl/m_iterator.ipp
 T_Format.o: ../../mstl/m_stack.ipp
 T_Format.o: ../../mstl/m_uninitialized.h
 T_Format.o: ../../mstl/m_uninitialized.ipp
@@ -1270,6 +1340,8 @@ T_Generic.o: ../../mstl/m_utility.ipp
 T_Generic.o: ../../mstl/m_limits.h
 T_Generic.o: ../../mstl/m_bit_functions.h
 T_Generic.o: ../../mstl/m_bit_functions.ipp
+T_Generic.o: ../../mstl/m_uint128_t.h
+T_Generic.o: ../../mstl/m_uint128.h
 T_Generic.o: ../../mstl/m_assert.h
 T_Generic.o: ../../mstl/m_exception.h
 T_Generic.o: ../../mstl/m_backtrace.h
@@ -1306,6 +1378,8 @@ T_GenericAssignmentToken.o: ../../mstl/m_utility.ipp
 T_GenericAssignmentToken.o: ../../mstl/m_limits.h
 T_GenericAssignmentToken.o: ../../mstl/m_bit_functions.h
 T_GenericAssignmentToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericAssignmentToken.o: ../../mstl/m_uint128_t.h
+T_GenericAssignmentToken.o: ../../mstl/m_uint128.h
 T_GenericAssignmentToken.o: ../../mstl/m_assert.h
 T_GenericAssignmentToken.o: ../../mstl/m_exception.h
 T_GenericAssignmentToken.o: ../../mstl/m_backtrace.h
@@ -1343,6 +1417,8 @@ T_GenericConditionalToken.o: ../../mstl/m_utility.ipp
 T_GenericConditionalToken.o: ../../mstl/m_limits.h
 T_GenericConditionalToken.o: ../../mstl/m_bit_functions.h
 T_GenericConditionalToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericConditionalToken.o: ../../mstl/m_uint128_t.h
+T_GenericConditionalToken.o: ../../mstl/m_uint128.h
 T_GenericConditionalToken.o: ../../mstl/m_assert.h
 T_GenericConditionalToken.o: ../../mstl/m_exception.h
 T_GenericConditionalToken.o: ../../mstl/m_backtrace.h
@@ -1379,6 +1455,8 @@ T_GenericExpandableToken.o: ../../mstl/m_utility.ipp
 T_GenericExpandableToken.o: ../../mstl/m_limits.h
 T_GenericExpandableToken.o: ../../mstl/m_bit_functions.h
 T_GenericExpandableToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericExpandableToken.o: ../../mstl/m_uint128_t.h
+T_GenericExpandableToken.o: ../../mstl/m_uint128.h
 T_GenericExpandableToken.o: ../../mstl/m_assert.h
 T_GenericExpandableToken.o: ../../mstl/m_exception.h
 T_GenericExpandableToken.o: ../../mstl/m_backtrace.h
@@ -1415,6 +1493,8 @@ T_GenericFinalToken.o: ../../mstl/m_utility.ipp
 T_GenericFinalToken.o: ../../mstl/m_limits.h
 T_GenericFinalToken.o: ../../mstl/m_bit_functions.h
 T_GenericFinalToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericFinalToken.o: ../../mstl/m_uint128_t.h
+T_GenericFinalToken.o: ../../mstl/m_uint128.h
 T_GenericFinalToken.o: ../../mstl/m_assert.h
 T_GenericFinalToken.o: ../../mstl/m_exception.h
 T_GenericFinalToken.o: ../../mstl/m_backtrace.h
@@ -1450,6 +1530,8 @@ T_GenericToken.o: ../../mstl/m_utility.ipp
 T_GenericToken.o: ../../mstl/m_limits.h
 T_GenericToken.o: ../../mstl/m_bit_functions.h
 T_GenericToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericToken.o: ../../mstl/m_uint128_t.h
+T_GenericToken.o: ../../mstl/m_uint128.h
 T_GenericToken.o: ../../mstl/m_assert.h
 T_GenericToken.o: ../../mstl/m_exception.h
 T_GenericToken.o: ../../mstl/m_backtrace.h
@@ -1485,6 +1567,8 @@ T_GenericValueToken.o: ../../mstl/m_utility.ipp
 T_GenericValueToken.o: ../../mstl/m_limits.h
 T_GenericValueToken.o: ../../mstl/m_bit_functions.h
 T_GenericValueToken.o: ../../mstl/m_bit_functions.ipp
+T_GenericValueToken.o: ../../mstl/m_uint128_t.h
+T_GenericValueToken.o: ../../mstl/m_uint128.h
 T_GenericValueToken.o: ../../mstl/m_assert.h
 T_GenericValueToken.o: ../../mstl/m_exception.h
 T_GenericValueToken.o: ../../mstl/m_backtrace.h
@@ -1515,6 +1599,8 @@ T_GenericValueToken.o: T_Input.ipp
 T_GenericValueToken.o: ../../mstl/m_stack.h
 T_GenericValueToken.o: ../../mstl/m_memblock.h
 T_GenericValueToken.o: ../../mstl/m_memblock.ipp
+T_GenericValueToken.o: ../../mstl/m_iterator.h
+T_GenericValueToken.o: ../../mstl/m_iterator.ipp
 T_GenericValueToken.o: ../../mstl/m_stack.ipp
 T_GenericValueToken.o: ../../mstl/m_uninitialized.h
 T_GenericValueToken.o: ../../mstl/m_uninitialized.ipp
@@ -1549,6 +1635,8 @@ T_Grouping.o: ../../mstl/m_utility.ipp
 T_Grouping.o: ../../mstl/m_limits.h
 T_Grouping.o: ../../mstl/m_bit_functions.h
 T_Grouping.o: ../../mstl/m_bit_functions.ipp
+T_Grouping.o: ../../mstl/m_uint128_t.h
+T_Grouping.o: ../../mstl/m_uint128.h
 T_Grouping.o: ../../mstl/m_assert.h
 T_Grouping.o: ../../mstl/m_exception.h
 T_Grouping.o: ../../mstl/m_backtrace.h
@@ -1580,6 +1668,8 @@ T_Grouping.o: T_Input.ipp
 T_Grouping.o: ../../mstl/m_stack.h
 T_Grouping.o: ../../mstl/m_memblock.h
 T_Grouping.o: ../../mstl/m_memblock.ipp
+T_Grouping.o: ../../mstl/m_iterator.h
+T_Grouping.o: ../../mstl/m_iterator.ipp
 T_Grouping.o: ../../mstl/m_stack.ipp
 T_Grouping.o: ../../mstl/m_uninitialized.h
 T_Grouping.o: ../../mstl/m_uninitialized.ipp
@@ -1612,6 +1702,8 @@ T_Input.o: ../../mstl/m_utility.ipp
 T_Input.o: ../../mstl/m_limits.h
 T_Input.o: ../../mstl/m_bit_functions.h
 T_Input.o: ../../mstl/m_bit_functions.ipp
+T_Input.o: ../../mstl/m_uint128_t.h
+T_Input.o: ../../mstl/m_uint128.h
 T_Input.o: ../../mstl/m_cast.h
 T_Input.o: ../../mstl/m_cast.ipp
 T_Input.o: T_Object.h
@@ -1639,6 +1731,8 @@ T_InputOutput.o: ../../mstl/m_utility.ipp
 T_InputOutput.o: ../../mstl/m_limits.h
 T_InputOutput.o: ../../mstl/m_bit_functions.h
 T_InputOutput.o: ../../mstl/m_bit_functions.ipp
+T_InputOutput.o: ../../mstl/m_uint128_t.h
+T_InputOutput.o: ../../mstl/m_uint128.h
 T_InputOutput.o: ../../mstl/m_assert.h
 T_InputOutput.o: ../../mstl/m_exception.h
 T_InputOutput.o: ../../mstl/m_backtrace.h
@@ -1672,6 +1766,8 @@ T_InputOutput.o: T_Input.ipp
 T_InputOutput.o: ../../mstl/m_stack.h
 T_InputOutput.o: ../../mstl/m_memblock.h
 T_InputOutput.o: ../../mstl/m_memblock.ipp
+T_InputOutput.o: ../../mstl/m_iterator.h
+T_InputOutput.o: ../../mstl/m_iterator.ipp
 T_InputOutput.o: ../../mstl/m_stack.ipp
 T_InputOutput.o: ../../mstl/m_uninitialized.h
 T_InputOutput.o: ../../mstl/m_uninitialized.ipp
@@ -1710,6 +1806,8 @@ T_InvalidToken.o: ../../mstl/m_utility.ipp
 T_InvalidToken.o: ../../mstl/m_limits.h
 T_InvalidToken.o: ../../mstl/m_bit_functions.h
 T_InvalidToken.o: ../../mstl/m_bit_functions.ipp
+T_InvalidToken.o: ../../mstl/m_uint128_t.h
+T_InvalidToken.o: ../../mstl/m_uint128.h
 T_InvalidToken.o: ../../mstl/m_assert.h
 T_InvalidToken.o: ../../mstl/m_exception.h
 T_InvalidToken.o: ../../mstl/m_backtrace.h
@@ -1749,6 +1847,8 @@ T_LeftBraceToken.o: ../../mstl/m_utility.ipp
 T_LeftBraceToken.o: ../../mstl/m_limits.h
 T_LeftBraceToken.o: ../../mstl/m_bit_functions.h
 T_LeftBraceToken.o: ../../mstl/m_bit_functions.ipp
+T_LeftBraceToken.o: ../../mstl/m_uint128_t.h
+T_LeftBraceToken.o: ../../mstl/m_uint128.h
 T_LeftBraceToken.o: ../../mstl/m_assert.h
 T_LeftBraceToken.o: ../../mstl/m_exception.h
 T_LeftBraceToken.o: ../../mstl/m_backtrace.h
@@ -1779,6 +1879,8 @@ T_LeftBraceToken.o: T_Input.ipp
 T_LeftBraceToken.o: ../../mstl/m_stack.h
 T_LeftBraceToken.o: ../../mstl/m_memblock.h
 T_LeftBraceToken.o: ../../mstl/m_memblock.ipp
+T_LeftBraceToken.o: ../../mstl/m_iterator.h
+T_LeftBraceToken.o: ../../mstl/m_iterator.ipp
 T_LeftBraceToken.o: ../../mstl/m_stack.ipp
 T_LeftBraceToken.o: ../../mstl/m_uninitialized.h
 T_LeftBraceToken.o: ../../mstl/m_uninitialized.ipp
@@ -1807,6 +1909,8 @@ T_List.o: ../../mstl/m_utility.ipp
 T_List.o: ../../mstl/m_limits.h
 T_List.o: ../../mstl/m_bit_functions.h
 T_List.o: ../../mstl/m_bit_functions.ipp
+T_List.o: ../../mstl/m_uint128_t.h
+T_List.o: ../../mstl/m_uint128.h
 T_List.o: ../../mstl/m_assert.h
 T_List.o: ../../mstl/m_exception.h
 T_List.o: ../../mstl/m_backtrace.h
@@ -1834,6 +1938,8 @@ T_List.o: T_Producer.h
 T_List.o: ../../mstl/m_vector.h
 T_List.o: ../../mstl/m_memblock.h
 T_List.o: ../../mstl/m_memblock.ipp
+T_List.o: ../../mstl/m_iterator.h
+T_List.o: ../../mstl/m_iterator.ipp
 T_List.o: ../../mstl/m_vector.ipp
 T_List.o: ../../mstl/m_uninitialized.h
 T_List.o: ../../mstl/m_uninitialized.ipp
@@ -1884,6 +1990,8 @@ T_ListToken.o: ../../mstl/m_utility.ipp
 T_ListToken.o: ../../mstl/m_limits.h
 T_ListToken.o: ../../mstl/m_bit_functions.h
 T_ListToken.o: ../../mstl/m_bit_functions.ipp
+T_ListToken.o: ../../mstl/m_uint128_t.h
+T_ListToken.o: ../../mstl/m_uint128.h
 T_ListToken.o: ../../mstl/m_assert.h
 T_ListToken.o: ../../mstl/m_exception.h
 T_ListToken.o: ../../mstl/m_backtrace.h
@@ -1904,6 +2012,8 @@ T_ListToken.o: T_Producer.h
 T_ListToken.o: ../../mstl/m_vector.h
 T_ListToken.o: ../../mstl/m_memblock.h
 T_ListToken.o: ../../mstl/m_memblock.ipp
+T_ListToken.o: ../../mstl/m_iterator.h
+T_ListToken.o: ../../mstl/m_iterator.ipp
 T_ListToken.o: ../../mstl/m_vector.ipp
 T_ListToken.o: ../../mstl/m_uninitialized.h
 T_ListToken.o: ../../mstl/m_uninitialized.ipp
@@ -1935,8 +2045,6 @@ T_ListToken.o: ../../mstl/m_scoped_ptr.ipp
 T_ListToken.o: T_Environment.ipp
 T_ListToken.o: ../../mstl/m_algorithm.h
 T_ListToken.o: ../../mstl/m_algorithm.ipp
-T_ListToken.o: ../../mstl/m_iterator.h
-T_ListToken.o: ../../mstl/m_iterator.ipp
 T_MacroToken.o: T_MacroToken.h
 T_MacroToken.o: T_ExpandableToken.h
 T_MacroToken.o: T_Token.h
@@ -1952,6 +2060,8 @@ T_MacroToken.o: ../../mstl/m_utility.ipp
 T_MacroToken.o: ../../mstl/m_limits.h
 T_MacroToken.o: ../../mstl/m_bit_functions.h
 T_MacroToken.o: ../../mstl/m_bit_functions.ipp
+T_MacroToken.o: ../../mstl/m_uint128_t.h
+T_MacroToken.o: ../../mstl/m_uint128.h
 T_MacroToken.o: ../../mstl/m_assert.h
 T_MacroToken.o: ../../mstl/m_exception.h
 T_MacroToken.o: ../../mstl/m_backtrace.h
@@ -1972,6 +2082,8 @@ T_MacroToken.o: T_Producer.h
 T_MacroToken.o: ../../mstl/m_vector.h
 T_MacroToken.o: ../../mstl/m_memblock.h
 T_MacroToken.o: ../../mstl/m_memblock.ipp
+T_MacroToken.o: ../../mstl/m_iterator.h
+T_MacroToken.o: ../../mstl/m_iterator.ipp
 T_MacroToken.o: ../../mstl/m_vector.ipp
 T_MacroToken.o: ../../mstl/m_uninitialized.h
 T_MacroToken.o: ../../mstl/m_uninitialized.ipp
@@ -2028,6 +2140,8 @@ T_Macros.o: ../../mstl/m_utility.ipp
 T_Macros.o: ../../mstl/m_limits.h
 T_Macros.o: ../../mstl/m_bit_functions.h
 T_Macros.o: ../../mstl/m_bit_functions.ipp
+T_Macros.o: ../../mstl/m_uint128_t.h
+T_Macros.o: ../../mstl/m_uint128.h
 T_Macros.o: ../../mstl/m_assert.h
 T_Macros.o: ../../mstl/m_exception.h
 T_Macros.o: ../../mstl/m_backtrace.h
@@ -2059,6 +2173,8 @@ T_Macros.o: T_Producer.h
 T_Macros.o: ../../mstl/m_vector.h
 T_Macros.o: ../../mstl/m_memblock.h
 T_Macros.o: ../../mstl/m_memblock.ipp
+T_Macros.o: ../../mstl/m_iterator.h
+T_Macros.o: ../../mstl/m_iterator.ipp
 T_Macros.o: ../../mstl/m_vector.ipp
 T_Macros.o: ../../mstl/m_uninitialized.h
 T_Macros.o: ../../mstl/m_uninitialized.ipp
@@ -2105,6 +2221,8 @@ T_Memory.o: ../../mstl/m_utility.ipp
 T_Memory.o: ../../mstl/m_limits.h
 T_Memory.o: ../../mstl/m_bit_functions.h
 T_Memory.o: ../../mstl/m_bit_functions.ipp
+T_Memory.o: ../../mstl/m_uint128_t.h
+T_Memory.o: ../../mstl/m_uint128.h
 T_Memory.o: ../../mstl/m_assert.h
 T_Memory.o: ../../mstl/m_exception.h
 T_Memory.o: ../../mstl/m_backtrace.h
@@ -2137,6 +2255,8 @@ T_Memory.o: T_Input.ipp
 T_Memory.o: ../../mstl/m_stack.h
 T_Memory.o: ../../mstl/m_memblock.h
 T_Memory.o: ../../mstl/m_memblock.ipp
+T_Memory.o: ../../mstl/m_iterator.h
+T_Memory.o: ../../mstl/m_iterator.ipp
 T_Memory.o: ../../mstl/m_stack.ipp
 T_Memory.o: ../../mstl/m_uninitialized.h
 T_Memory.o: ../../mstl/m_uninitialized.ipp
@@ -2204,6 +2324,8 @@ T_Messages.o: ../../mstl/m_utility.ipp
 T_Messages.o: ../../mstl/m_limits.h
 T_Messages.o: ../../mstl/m_bit_functions.h
 T_Messages.o: ../../mstl/m_bit_functions.ipp
+T_Messages.o: ../../mstl/m_uint128_t.h
+T_Messages.o: ../../mstl/m_uint128.h
 T_Messages.o: ../../mstl/m_assert.h
 T_Messages.o: ../../mstl/m_exception.h
 T_Messages.o: ../../mstl/m_backtrace.h
@@ -2236,6 +2358,8 @@ T_Messages.o: T_Input.ipp
 T_Messages.o: ../../mstl/m_stack.h
 T_Messages.o: ../../mstl/m_memblock.h
 T_Messages.o: ../../mstl/m_memblock.ipp
+T_Messages.o: ../../mstl/m_iterator.h
+T_Messages.o: ../../mstl/m_iterator.ipp
 T_Messages.o: ../../mstl/m_stack.ipp
 T_Messages.o: ../../mstl/m_uninitialized.h
 T_Messages.o: ../../mstl/m_uninitialized.ipp
@@ -2267,6 +2391,8 @@ T_Miscellaneous.o: ../../mstl/m_utility.ipp
 T_Miscellaneous.o: ../../mstl/m_limits.h
 T_Miscellaneous.o: ../../mstl/m_bit_functions.h
 T_Miscellaneous.o: ../../mstl/m_bit_functions.ipp
+T_Miscellaneous.o: ../../mstl/m_uint128_t.h
+T_Miscellaneous.o: ../../mstl/m_uint128.h
 T_Miscellaneous.o: ../../mstl/m_assert.h
 T_Miscellaneous.o: ../../mstl/m_exception.h
 T_Miscellaneous.o: ../../mstl/m_backtrace.h
@@ -2300,6 +2426,8 @@ T_Miscellaneous.o: T_Input.ipp
 T_Miscellaneous.o: ../../mstl/m_stack.h
 T_Miscellaneous.o: ../../mstl/m_memblock.h
 T_Miscellaneous.o: ../../mstl/m_memblock.ipp
+T_Miscellaneous.o: ../../mstl/m_iterator.h
+T_Miscellaneous.o: ../../mstl/m_iterator.ipp
 T_Miscellaneous.o: ../../mstl/m_stack.ipp
 T_Miscellaneous.o: ../../mstl/m_uninitialized.h
 T_Miscellaneous.o: ../../mstl/m_uninitialized.ipp
@@ -2341,6 +2469,8 @@ T_Nothing.o: ../../mstl/m_utility.ipp
 T_Nothing.o: ../../mstl/m_limits.h
 T_Nothing.o: ../../mstl/m_bit_functions.h
 T_Nothing.o: ../../mstl/m_bit_functions.ipp
+T_Nothing.o: ../../mstl/m_uint128_t.h
+T_Nothing.o: ../../mstl/m_uint128.h
 T_Nothing.o: ../../mstl/m_assert.h
 T_Nothing.o: ../../mstl/m_exception.h
 T_Nothing.o: ../../mstl/m_backtrace.h
@@ -2376,6 +2506,8 @@ T_Nothing.o: T_Input.ipp
 T_Nothing.o: ../../mstl/m_stack.h
 T_Nothing.o: ../../mstl/m_memblock.h
 T_Nothing.o: ../../mstl/m_memblock.ipp
+T_Nothing.o: ../../mstl/m_iterator.h
+T_Nothing.o: ../../mstl/m_iterator.ipp
 T_Nothing.o: ../../mstl/m_stack.ipp
 T_Nothing.o: ../../mstl/m_uninitialized.h
 T_Nothing.o: ../../mstl/m_uninitialized.ipp
@@ -2403,6 +2535,8 @@ T_NumberToken.o: ../../mstl/m_utility.ipp
 T_NumberToken.o: ../../mstl/m_limits.h
 T_NumberToken.o: ../../mstl/m_bit_functions.h
 T_NumberToken.o: ../../mstl/m_bit_functions.ipp
+T_NumberToken.o: ../../mstl/m_uint128_t.h
+T_NumberToken.o: ../../mstl/m_uint128.h
 T_NumberToken.o: ../../mstl/m_assert.h
 T_NumberToken.o: ../../mstl/m_exception.h
 T_NumberToken.o: ../../mstl/m_backtrace.h
@@ -2434,6 +2568,8 @@ T_NumberToken.o: T_Input.ipp
 T_NumberToken.o: ../../mstl/m_stack.h
 T_NumberToken.o: ../../mstl/m_memblock.h
 T_NumberToken.o: ../../mstl/m_memblock.ipp
+T_NumberToken.o: ../../mstl/m_iterator.h
+T_NumberToken.o: ../../mstl/m_iterator.ipp
 T_NumberToken.o: ../../mstl/m_stack.ipp
 T_NumberToken.o: ../../mstl/m_uninitialized.h
 T_NumberToken.o: ../../mstl/m_uninitialized.ipp
@@ -2464,6 +2600,8 @@ T_OutputFilter.o: ../../mstl/m_utility.ipp
 T_OutputFilter.o: ../../mstl/m_limits.h
 T_OutputFilter.o: ../../mstl/m_bit_functions.h
 T_OutputFilter.o: ../../mstl/m_bit_functions.ipp
+T_OutputFilter.o: ../../mstl/m_uint128_t.h
+T_OutputFilter.o: ../../mstl/m_uint128.h
 T_OutputFilter.o: ../../mstl/m_cast.h
 T_OutputFilter.o: ../../mstl/m_cast.ipp
 T_OutputFilter.o: ../../mstl/m_ref_counter.h
@@ -2491,6 +2629,8 @@ T_OutputFilter.o: T_Input.ipp
 T_OutputFilter.o: ../../mstl/m_stack.h
 T_OutputFilter.o: ../../mstl/m_memblock.h
 T_OutputFilter.o: ../../mstl/m_memblock.ipp
+T_OutputFilter.o: ../../mstl/m_iterator.h
+T_OutputFilter.o: ../../mstl/m_iterator.ipp
 T_OutputFilter.o: ../../mstl/m_stack.ipp
 T_OutputFilter.o: ../../mstl/m_uninitialized.h
 T_OutputFilter.o: ../../mstl/m_uninitialized.ipp
@@ -2517,6 +2657,8 @@ T_Package.o: ../../mstl/m_utility.ipp
 T_Package.o: ../../mstl/m_limits.h
 T_Package.o: ../../mstl/m_bit_functions.h
 T_Package.o: ../../mstl/m_bit_functions.ipp
+T_Package.o: ../../mstl/m_uint128_t.h
+T_Package.o: ../../mstl/m_uint128.h
 T_Package.o: ../../mstl/m_assert.h
 T_Package.o: ../../mstl/m_exception.h
 T_Package.o: ../../mstl/m_backtrace.h
@@ -2548,6 +2690,8 @@ T_Package.o: T_Input.ipp
 T_Package.o: ../../mstl/m_stack.h
 T_Package.o: ../../mstl/m_memblock.h
 T_Package.o: ../../mstl/m_memblock.ipp
+T_Package.o: ../../mstl/m_iterator.h
+T_Package.o: ../../mstl/m_iterator.ipp
 T_Package.o: ../../mstl/m_stack.ipp
 T_Package.o: ../../mstl/m_uninitialized.h
 T_Package.o: ../../mstl/m_uninitialized.ipp
@@ -2575,6 +2719,8 @@ T_ParameterToken.o: ../../mstl/m_utility.ipp
 T_ParameterToken.o: ../../mstl/m_limits.h
 T_ParameterToken.o: ../../mstl/m_bit_functions.h
 T_ParameterToken.o: ../../mstl/m_bit_functions.ipp
+T_ParameterToken.o: ../../mstl/m_uint128_t.h
+T_ParameterToken.o: ../../mstl/m_uint128.h
 T_ParameterToken.o: ../../mstl/m_assert.h
 T_ParameterToken.o: ../../mstl/m_exception.h
 T_ParameterToken.o: ../../mstl/m_backtrace.h
@@ -2608,6 +2754,8 @@ T_ParameterToken.o: T_Input.ipp
 T_ParameterToken.o: ../../mstl/m_stack.h
 T_ParameterToken.o: ../../mstl/m_memblock.h
 T_ParameterToken.o: ../../mstl/m_memblock.ipp
+T_ParameterToken.o: ../../mstl/m_iterator.h
+T_ParameterToken.o: ../../mstl/m_iterator.ipp
 T_ParameterToken.o: ../../mstl/m_stack.ipp
 T_ParameterToken.o: ../../mstl/m_uninitialized.h
 T_ParameterToken.o: ../../mstl/m_uninitialized.ipp
@@ -2647,6 +2795,8 @@ T_Producer.o: ../../mstl/m_utility.ipp
 T_Producer.o: ../../mstl/m_limits.h
 T_Producer.o: ../../mstl/m_bit_functions.h
 T_Producer.o: ../../mstl/m_bit_functions.ipp
+T_Producer.o: ../../mstl/m_uint128_t.h
+T_Producer.o: ../../mstl/m_uint128.h
 T_Producer.o: ../../mstl/m_cast.h
 T_Producer.o: ../../mstl/m_cast.ipp
 T_Producer.o: T_Object.h
@@ -2676,6 +2826,8 @@ T_ReadAgainProducer.o: ../../mstl/m_utility.ipp
 T_ReadAgainProducer.o: ../../mstl/m_limits.h
 T_ReadAgainProducer.o: ../../mstl/m_bit_functions.h
 T_ReadAgainProducer.o: ../../mstl/m_bit_functions.ipp
+T_ReadAgainProducer.o: ../../mstl/m_uint128_t.h
+T_ReadAgainProducer.o: ../../mstl/m_uint128.h
 T_ReadAgainProducer.o: ../../mstl/m_cast.h
 T_ReadAgainProducer.o: ../../mstl/m_cast.ipp
 T_ReadAgainProducer.o: T_Object.h
@@ -2706,6 +2858,8 @@ T_Receptacle.o: ../../mstl/m_utility.ipp
 T_Receptacle.o: ../../mstl/m_limits.h
 T_Receptacle.o: ../../mstl/m_bit_functions.h
 T_Receptacle.o: ../../mstl/m_bit_functions.ipp
+T_Receptacle.o: ../../mstl/m_uint128_t.h
+T_Receptacle.o: ../../mstl/m_uint128.h
 T_Receptacle.o: ../../mstl/m_cast.h
 T_Receptacle.o: ../../mstl/m_cast.ipp
 T_Receptacle.o: T_Base.h
@@ -2740,6 +2894,8 @@ T_RightBraceToken.o: ../../mstl/m_utility.ipp
 T_RightBraceToken.o: ../../mstl/m_limits.h
 T_RightBraceToken.o: ../../mstl/m_bit_functions.h
 T_RightBraceToken.o: ../../mstl/m_bit_functions.ipp
+T_RightBraceToken.o: ../../mstl/m_uint128_t.h
+T_RightBraceToken.o: ../../mstl/m_uint128.h
 T_RightBraceToken.o: ../../mstl/m_assert.h
 T_RightBraceToken.o: ../../mstl/m_exception.h
 T_RightBraceToken.o: ../../mstl/m_backtrace.h
@@ -2771,6 +2927,8 @@ T_RightBraceToken.o: T_Input.ipp
 T_RightBraceToken.o: ../../mstl/m_stack.h
 T_RightBraceToken.o: ../../mstl/m_memblock.h
 T_RightBraceToken.o: ../../mstl/m_memblock.ipp
+T_RightBraceToken.o: ../../mstl/m_iterator.h
+T_RightBraceToken.o: ../../mstl/m_iterator.ipp
 T_RightBraceToken.o: ../../mstl/m_stack.ipp
 T_RightBraceToken.o: ../../mstl/m_uninitialized.h
 T_RightBraceToken.o: ../../mstl/m_uninitialized.ipp
@@ -2799,6 +2957,8 @@ T_TextConsumer.o: ../../mstl/m_utility.ipp
 T_TextConsumer.o: ../../mstl/m_limits.h
 T_TextConsumer.o: ../../mstl/m_bit_functions.h
 T_TextConsumer.o: ../../mstl/m_bit_functions.ipp
+T_TextConsumer.o: ../../mstl/m_uint128_t.h
+T_TextConsumer.o: ../../mstl/m_uint128.h
 T_TextConsumer.o: ../../mstl/m_assert.h
 T_TextConsumer.o: ../../mstl/m_exception.h
 T_TextConsumer.o: ../../mstl/m_backtrace.h
@@ -2827,6 +2987,8 @@ T_TextProducer.o: ../../mstl/m_utility.ipp
 T_TextProducer.o: ../../mstl/m_limits.h
 T_TextProducer.o: ../../mstl/m_bit_functions.h
 T_TextProducer.o: ../../mstl/m_bit_functions.ipp
+T_TextProducer.o: ../../mstl/m_uint128_t.h
+T_TextProducer.o: ../../mstl/m_uint128.h
 T_TextProducer.o: ../../mstl/m_cast.h
 T_TextProducer.o: ../../mstl/m_cast.ipp
 T_TextProducer.o: T_Object.h
@@ -2853,6 +3015,8 @@ T_TextProducer.o: T_Input.ipp
 T_TextProducer.o: ../../mstl/m_stack.h
 T_TextProducer.o: ../../mstl/m_memblock.h
 T_TextProducer.o: ../../mstl/m_memblock.ipp
+T_TextProducer.o: ../../mstl/m_iterator.h
+T_TextProducer.o: ../../mstl/m_iterator.ipp
 T_TextProducer.o: ../../mstl/m_stack.ipp
 T_TextProducer.o: ../../mstl/m_uninitialized.h
 T_TextProducer.o: ../../mstl/m_uninitialized.ipp
@@ -2880,6 +3044,8 @@ T_TextToken.o: ../../mstl/m_utility.ipp
 T_TextToken.o: ../../mstl/m_limits.h
 T_TextToken.o: ../../mstl/m_bit_functions.h
 T_TextToken.o: ../../mstl/m_bit_functions.ipp
+T_TextToken.o: ../../mstl/m_uint128_t.h
+T_TextToken.o: ../../mstl/m_uint128.h
 T_TextToken.o: ../../mstl/m_assert.h
 T_TextToken.o: ../../mstl/m_exception.h
 T_TextToken.o: ../../mstl/m_backtrace.h
@@ -2902,6 +3068,8 @@ T_TextToken.o: T_Producer.h
 T_TextToken.o: ../../mstl/m_vector.h
 T_TextToken.o: ../../mstl/m_memblock.h
 T_TextToken.o: ../../mstl/m_memblock.ipp
+T_TextToken.o: ../../mstl/m_iterator.h
+T_TextToken.o: ../../mstl/m_iterator.ipp
 T_TextToken.o: ../../mstl/m_vector.ipp
 T_TextToken.o: ../../mstl/m_uninitialized.h
 T_TextToken.o: ../../mstl/m_uninitialized.ipp
@@ -2944,6 +3112,8 @@ T_Token.o: ../../mstl/m_utility.ipp
 T_Token.o: ../../mstl/m_limits.h
 T_Token.o: ../../mstl/m_bit_functions.h
 T_Token.o: ../../mstl/m_bit_functions.ipp
+T_Token.o: ../../mstl/m_uint128_t.h
+T_Token.o: ../../mstl/m_uint128.h
 T_Token.o: ../../mstl/m_assert.h
 T_Token.o: ../../mstl/m_exception.h
 T_Token.o: ../../mstl/m_backtrace.h
@@ -2975,6 +3145,8 @@ T_Token.o: T_Input.ipp
 T_Token.o: ../../mstl/m_stack.h
 T_Token.o: ../../mstl/m_memblock.h
 T_Token.o: ../../mstl/m_memblock.ipp
+T_Token.o: ../../mstl/m_iterator.h
+T_Token.o: ../../mstl/m_iterator.ipp
 T_Token.o: ../../mstl/m_stack.ipp
 T_Token.o: ../../mstl/m_uninitialized.h
 T_Token.o: ../../mstl/m_uninitialized.ipp
@@ -3009,6 +3181,8 @@ T_TokenBuffer.o: ../../mstl/m_utility.ipp
 T_TokenBuffer.o: ../../mstl/m_limits.h
 T_TokenBuffer.o: ../../mstl/m_bit_functions.h
 T_TokenBuffer.o: ../../mstl/m_bit_functions.ipp
+T_TokenBuffer.o: ../../mstl/m_uint128_t.h
+T_TokenBuffer.o: ../../mstl/m_uint128.h
 T_TokenBuffer.o: ../../mstl/m_cast.h
 T_TokenBuffer.o: ../../mstl/m_cast.ipp
 T_TokenBuffer.o: ../../mstl/m_shared_ptr.h
@@ -3028,6 +3202,8 @@ T_TokenBuffer.o: ../../mstl/m_string.ipp
 T_TokenBuffer.o: ../../mstl/m_vector.h
 T_TokenBuffer.o: ../../mstl/m_memblock.h
 T_TokenBuffer.o: ../../mstl/m_memblock.ipp
+T_TokenBuffer.o: ../../mstl/m_iterator.h
+T_TokenBuffer.o: ../../mstl/m_iterator.ipp
 T_TokenBuffer.o: ../../mstl/m_vector.ipp
 T_TokenBuffer.o: ../../mstl/m_uninitialized.h
 T_TokenBuffer.o: ../../mstl/m_uninitialized.ipp
@@ -3077,6 +3253,8 @@ T_Tokenizer.o: ../../mstl/m_utility.ipp
 T_Tokenizer.o: ../../mstl/m_limits.h
 T_Tokenizer.o: ../../mstl/m_bit_functions.h
 T_Tokenizer.o: ../../mstl/m_bit_functions.ipp
+T_Tokenizer.o: ../../mstl/m_uint128_t.h
+T_Tokenizer.o: ../../mstl/m_uint128.h
 T_Tokenizer.o: ../../mstl/m_cast.h
 T_Tokenizer.o: ../../mstl/m_cast.ipp
 T_Tokenizer.o: T_Object.h
@@ -3091,6 +3269,8 @@ T_Tokenizer.o: T_Input.ipp
 T_Tokenizer.o: ../../mstl/m_stack.h
 T_Tokenizer.o: ../../mstl/m_memblock.h
 T_Tokenizer.o: ../../mstl/m_memblock.ipp
+T_Tokenizer.o: ../../mstl/m_iterator.h
+T_Tokenizer.o: ../../mstl/m_iterator.ipp
 T_Tokenizer.o: ../../mstl/m_stack.ipp
 T_Tokenizer.o: ../../mstl/m_uninitialized.h
 T_Tokenizer.o: ../../mstl/m_uninitialized.ipp
@@ -3116,6 +3296,8 @@ T_Tracing.o: ../../mstl/m_utility.ipp
 T_Tracing.o: ../../mstl/m_limits.h
 T_Tracing.o: ../../mstl/m_bit_functions.h
 T_Tracing.o: ../../mstl/m_bit_functions.ipp
+T_Tracing.o: ../../mstl/m_uint128_t.h
+T_Tracing.o: ../../mstl/m_uint128.h
 T_Tracing.o: ../../mstl/m_assert.h
 T_Tracing.o: ../../mstl/m_exception.h
 T_Tracing.o: ../../mstl/m_backtrace.h
@@ -3148,6 +3330,8 @@ T_Tracing.o: T_Input.ipp
 T_Tracing.o: ../../mstl/m_stack.h
 T_Tracing.o: ../../mstl/m_memblock.h
 T_Tracing.o: ../../mstl/m_memblock.ipp
+T_Tracing.o: ../../mstl/m_iterator.h
+T_Tracing.o: ../../mstl/m_iterator.ipp
 T_Tracing.o: ../../mstl/m_stack.ipp
 T_Tracing.o: ../../mstl/m_uninitialized.h
 T_Tracing.o: ../../mstl/m_uninitialized.ipp
@@ -3174,6 +3358,8 @@ T_UnboundToken.o: ../../mstl/m_utility.ipp
 T_UnboundToken.o: ../../mstl/m_limits.h
 T_UnboundToken.o: ../../mstl/m_bit_functions.h
 T_UnboundToken.o: ../../mstl/m_bit_functions.ipp
+T_UnboundToken.o: ../../mstl/m_uint128_t.h
+T_UnboundToken.o: ../../mstl/m_uint128.h
 T_UnboundToken.o: ../../mstl/m_assert.h
 T_UnboundToken.o: ../../mstl/m_exception.h
 T_UnboundToken.o: ../../mstl/m_backtrace.h
@@ -3205,6 +3391,8 @@ T_UnboundToken.o: T_Input.ipp
 T_UnboundToken.o: ../../mstl/m_stack.h
 T_UnboundToken.o: ../../mstl/m_memblock.h
 T_UnboundToken.o: ../../mstl/m_memblock.ipp
+T_UnboundToken.o: ../../mstl/m_iterator.h
+T_UnboundToken.o: ../../mstl/m_iterator.ipp
 T_UnboundToken.o: ../../mstl/m_stack.ipp
 T_UnboundToken.o: ../../mstl/m_uninitialized.h
 T_UnboundToken.o: ../../mstl/m_uninitialized.ipp
@@ -3232,6 +3420,8 @@ T_UndefinedToken.o: ../../mstl/m_utility.ipp
 T_UndefinedToken.o: ../../mstl/m_limits.h
 T_UndefinedToken.o: ../../mstl/m_bit_functions.h
 T_UndefinedToken.o: ../../mstl/m_bit_functions.ipp
+T_UndefinedToken.o: ../../mstl/m_uint128_t.h
+T_UndefinedToken.o: ../../mstl/m_uint128.h
 T_UndefinedToken.o: ../../mstl/m_assert.h
 T_UndefinedToken.o: ../../mstl/m_exception.h
 T_UndefinedToken.o: ../../mstl/m_backtrace.h
@@ -3263,6 +3453,8 @@ T_UndefinedToken.o: T_Input.ipp
 T_UndefinedToken.o: ../../mstl/m_stack.h
 T_UndefinedToken.o: ../../mstl/m_memblock.h
 T_UndefinedToken.o: ../../mstl/m_memblock.ipp
+T_UndefinedToken.o: ../../mstl/m_iterator.h
+T_UndefinedToken.o: ../../mstl/m_iterator.ipp
 T_UndefinedToken.o: ../../mstl/m_stack.ipp
 T_UndefinedToken.o: ../../mstl/m_uninitialized.h
 T_UndefinedToken.o: ../../mstl/m_uninitialized.ipp
@@ -3294,6 +3486,8 @@ T_Unicode.o: ../../mstl/m_utility.ipp
 T_Unicode.o: ../../mstl/m_limits.h
 T_Unicode.o: ../../mstl/m_bit_functions.h
 T_Unicode.o: ../../mstl/m_bit_functions.ipp
+T_Unicode.o: ../../mstl/m_uint128_t.h
+T_Unicode.o: ../../mstl/m_uint128.h
 T_Unicode.o: ../../mstl/m_assert.h
 T_Unicode.o: ../../mstl/m_exception.h
 T_Unicode.o: ../../mstl/m_backtrace.h
@@ -3333,6 +3527,8 @@ T_Unicode.o: T_Input.ipp
 T_Unicode.o: ../../mstl/m_stack.h
 T_Unicode.o: ../../mstl/m_memblock.h
 T_Unicode.o: ../../mstl/m_memblock.ipp
+T_Unicode.o: ../../mstl/m_iterator.h
+T_Unicode.o: ../../mstl/m_iterator.ipp
 T_Unicode.o: ../../mstl/m_stack.ipp
 T_Unicode.o: ../../mstl/m_uninitialized.h
 T_Unicode.o: ../../mstl/m_uninitialized.ipp
@@ -3370,6 +3566,8 @@ T_UserInput.o: ../../mstl/m_utility.ipp
 T_UserInput.o: ../../mstl/m_limits.h
 T_UserInput.o: ../../mstl/m_bit_functions.h
 T_UserInput.o: ../../mstl/m_bit_functions.ipp
+T_UserInput.o: ../../mstl/m_uint128_t.h
+T_UserInput.o: ../../mstl/m_uint128.h
 T_UserInput.o: ../../mstl/m_cast.h
 T_UserInput.o: ../../mstl/m_cast.ipp
 T_UserInput.o: T_Object.h
@@ -3400,10 +3598,14 @@ T_ValueBuffer.o: ../../mstl/m_utility.ipp
 T_ValueBuffer.o: ../../mstl/m_limits.h
 T_ValueBuffer.o: ../../mstl/m_bit_functions.h
 T_ValueBuffer.o: ../../mstl/m_bit_functions.ipp
+T_ValueBuffer.o: ../../mstl/m_uint128_t.h
+T_ValueBuffer.o: ../../mstl/m_uint128.h
 T_ValueBuffer.o: ../../mstl/m_shared_ptr.ipp
 T_ValueBuffer.o: ../../mstl/m_vector.h
 T_ValueBuffer.o: ../../mstl/m_memblock.h
 T_ValueBuffer.o: ../../mstl/m_memblock.ipp
+T_ValueBuffer.o: ../../mstl/m_iterator.h
+T_ValueBuffer.o: ../../mstl/m_iterator.ipp
 T_ValueBuffer.o: ../../mstl/m_vector.ipp
 T_ValueBuffer.o: ../../mstl/m_uninitialized.h
 T_ValueBuffer.o: ../../mstl/m_uninitialized.ipp
@@ -3428,6 +3630,8 @@ T_Values.o: ../../mstl/m_utility.ipp
 T_Values.o: ../../mstl/m_limits.h
 T_Values.o: ../../mstl/m_bit_functions.h
 T_Values.o: ../../mstl/m_bit_functions.ipp
+T_Values.o: ../../mstl/m_uint128_t.h
+T_Values.o: ../../mstl/m_uint128.h
 T_Values.o: ../../mstl/m_assert.h
 T_Values.o: ../../mstl/m_exception.h
 T_Values.o: ../../mstl/m_backtrace.h
@@ -3462,6 +3666,8 @@ T_Values.o: T_Input.ipp
 T_Values.o: ../../mstl/m_stack.h
 T_Values.o: ../../mstl/m_memblock.h
 T_Values.o: ../../mstl/m_memblock.ipp
+T_Values.o: ../../mstl/m_iterator.h
+T_Values.o: ../../mstl/m_iterator.ipp
 T_Values.o: ../../mstl/m_stack.ipp
 T_Values.o: ../../mstl/m_uninitialized.h
 T_Values.o: ../../mstl/m_uninitialized.ipp
@@ -3492,6 +3698,8 @@ T_VariableToken.o: ../../mstl/m_utility.ipp
 T_VariableToken.o: ../../mstl/m_limits.h
 T_VariableToken.o: ../../mstl/m_bit_functions.h
 T_VariableToken.o: ../../mstl/m_bit_functions.ipp
+T_VariableToken.o: ../../mstl/m_uint128_t.h
+T_VariableToken.o: ../../mstl/m_uint128.h
 T_VariableToken.o: ../../mstl/m_assert.h
 T_VariableToken.o: ../../mstl/m_exception.h
 T_VariableToken.o: ../../mstl/m_backtrace.h
@@ -3523,6 +3731,8 @@ T_VariableToken.o: T_Input.ipp
 T_VariableToken.o: ../../mstl/m_stack.h
 T_VariableToken.o: ../../mstl/m_memblock.h
 T_VariableToken.o: ../../mstl/m_memblock.ipp
+T_VariableToken.o: ../../mstl/m_iterator.h
+T_VariableToken.o: ../../mstl/m_iterator.ipp
 T_VariableToken.o: ../../mstl/m_stack.ipp
 T_VariableToken.o: ../../mstl/m_uninitialized.h
 T_VariableToken.o: ../../mstl/m_uninitialized.ipp
@@ -3556,6 +3766,8 @@ T_Verify.o: ../../mstl/m_utility.ipp
 T_Verify.o: ../../mstl/m_limits.h
 T_Verify.o: ../../mstl/m_bit_functions.h
 T_Verify.o: ../../mstl/m_bit_functions.ipp
+T_Verify.o: ../../mstl/m_uint128_t.h
+T_Verify.o: ../../mstl/m_uint128.h
 T_Verify.o: ../../mstl/m_cast.h
 T_Verify.o: ../../mstl/m_cast.ipp
 T_Verify.o: T_Token.h
@@ -3583,6 +3795,8 @@ T_Verify.o: T_Input.ipp
 T_Verify.o: ../../mstl/m_stack.h
 T_Verify.o: ../../mstl/m_memblock.h
 T_Verify.o: ../../mstl/m_memblock.ipp
+T_Verify.o: ../../mstl/m_iterator.h
+T_Verify.o: ../../mstl/m_iterator.ipp
 T_Verify.o: ../../mstl/m_stack.ipp
 T_Verify.o: ../../mstl/m_uninitialized.h
 T_Verify.o: ../../mstl/m_uninitialized.ipp

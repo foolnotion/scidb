@@ -97,6 +97,7 @@
 ::mc::To					"A"
 ::mc::Top				"Superior"
 ::mc::Undo				"Deshacer"
+::mc::Variant			"Variant" ;# NEW
 ::mc::Variation		"Variante"
 ::mc::White				"Blancas"
 ::mc::Yes				"Sí"
@@ -113,18 +114,18 @@
 ::mc::Knight			"Caballo"
 ::mc::Pawn				"Peón"
 
-::mc::Variant(Undetermined)	"Indeterminado"
-::mc::Variant(Normal)			"Ajedrez Normal"
-::mc::Variant(Bughouse)			"Bughouse" ;# No spanish translation
-::mc::Variant(Crazyhouse)		"Crazyhouse"
-::mc::Variant(ThreeCheck)		"Three-check" ;# No spanish translation
-::mc::Variant(Antichess)		"Antichess" ;# No spanish translation
-::mc::Variant(Suicide)			"Suicidio"
-::mc::Variant(Giveaway)			"Giveaway" ;# No spanish translation
-::mc::Variant(Losers)			"Losers" ;# No spanish translation
-::mc::Variant(Chess960)			"Ajedrez 960"
-::mc::Variant(Symm960)			"Ajedrez 960 (sólo simétrico)"
-::mc::Variant(Shuffle)			"Ajedrez Shuffle"
+::mc::VariantName(Undetermined)	"Indeterminado"
+::mc::VariantName(Normal)			"Ajedrez Normal"
+::mc::VariantName(Bughouse)		"Bughouse" ;# No spanish translation
+::mc::VariantName(Crazyhouse)		"Crazyhouse"
+::mc::VariantName(ThreeCheck)		"Three-check" ;# No spanish translation
+::mc::VariantName(Antichess)		"Antichess" ;# No spanish translation
+::mc::VariantName(Suicide)			"Suicidio"
+::mc::VariantName(Giveaway)		"Giveaway" ;# No spanish translation
+::mc::VariantName(Losers)			"Losers" ;# No spanish translation
+::mc::VariantName(Chess960)		"Ajedrez 960"
+::mc::VariantName(Symm960)			"Ajedrez 960 (sólo simétrico)"
+::mc::VariantName(Shuffle)			"Ajedrez Shuffle"
 
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"No se puede anular el tema %s."
@@ -361,6 +362,7 @@
 ::application::board::mc::ShowCrosstable	"Mostrar tabla de torneo para esta partida"
 ::application::board::mc::StartEngine		"Iniciar motor de análisis"
 ::application::board::mc::StopEngine		"Detener motor de análisis"
+::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
 
 ::application::board::mc::Tools				"Herramientas"
 ::application::board::mc::Control			"Control"
@@ -381,15 +383,18 @@
 ::application::board::mc::Accel(trial-mode)			"T" 
 
 ### application::database ##############################################
-::application::database::mc::FileOpen							"Abrir Base..."
+::application::database::mc::FileOpen							"Abrir Base"
 ::application::database::mc::FileOpenRecent					"Abrir Recientes"
-::application::database::mc::FileNew							"Nueva Base..."
-::application::database::mc::FileExport						"Exportar..."
-::application::database::mc::FileImport(pgn)					"Importar archivos PGN..."
-::application::database::mc::FileImport(db)					"Importar Bases de Datos..."
-::application::database::mc::FileCreate						"Crear Archivo..."
+::application::database::mc::FileNew							"Nueva Base"
+::application::database::mc::FileExport						"Exportar"
+::application::database::mc::FileImport(pgn)					"Importar archivos PGN"
+::application::database::mc::FileImport(db)					"Importar Bases de Datos"
+::application::database::mc::FileCreate						"Crear Archivo"
 ::application::database::mc::FileClose							"Cerrar"
+::application::database::mc::FileMaintenance					"Maintenance" ;# NEW
 ::application::database::mc::FileCompact						"Compactar"
+::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
+::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher						"Ayuda con el Cambiador de Bases de Datos"
 
 ::application::database::mc::Games								"&Partidas"
@@ -404,12 +409,9 @@
 ::application::database::mc::Medium								"Mediano"
 ::application::database::mc::Small								"Pequeño"
 ::application::database::mc::Tiny								"Diminuto"
-::application::database::mc::Empty								"vacío"
-::application::database::mc::None								"ninguno"
-::application::database::mc::Failed								"fallido"
-::application::database::mc::LoadMessage						"Abrir Base %s"
-::application::database::mc::UpgradeMessage					"Actualizando Database %s"
-::application::database::mc::CompactMessage					"Compactando base de datos %s" 
+::application::database::mc::LoadMessage						"Abrir Base '%s'"
+::application::database::mc::UpgradeMessage					"Actualizando Database '%s'"
+::application::database::mc::CompactMessage					"Compactando base de datos '%s'" 
 ::application::database::mc::CannotOpenFile					"No se puede abrir el archivo '%s'."
 ::application::database::mc::EncodingFailed					"Fallo en la codificación de %s."
 ::application::database::mc::DatabaseAlreadyOpen			"La Base '%s' ya está abierta."
@@ -421,46 +423,10 @@
 ::application::database::mc::ClipbaseDescription			"Base temporal, no se guarda al disco."
 ::application::database::mc::HardLinkDetected				"No se puede cargar el archivo '%file1' porque ya está cargado como '%file2'. Esto sucede cuando se usan hard links."
 ::application::database::mc::HardLinkDetectedDetail		 "Si se carga la misma base de datos nuevamente, la aplicació puede terminar debido a los hilos usados."
-::application::database::mc::UriRejectedDetail(open)		"Solamente pueden abrirse bases de datos Scidb:"
-::application::database::mc::UriRejectedDetail(import)	"Solamente pueden importarse bases de datos de Scidb:"
-::application::database::mc::EmptyUriList						"Descartar contenido está vacóo."
-::application::database::mc::OverwriteExistingFiles		"¿Sobrescribir archivos existentes en el directorio '%s'?"
-::application::database::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
-::application::database::mc::ExtractArchive					"Extracer archivo %s"
-::application::database::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
-::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
-::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida." 
-::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
-::application::database::mc::CopyGames							"Copiar partidas"
-::application::database::mc::CopyGamesFromTo					"Copiar partidas de '%src' a '%dst'"
-::application::database::mc::CopiedGames						"%s partida(s) copiada"
-::application::database::mc::NoGamesCopied					"No se copiaron partidas"
-::application::database::mc::CopyAllGames						"Copiar todas las partidas de (%num) a '%src'"
-::application::database::mc::CopyFilteredGames				"Copiar solamente partidas filtradas (%num) de '%src'"
-::application::database::mc::ImportGames						"Importar partidas"
-::application::database::mc::ImportOneGameTo(0)				"¿Copiar una partida a '%dst'?"
-::application::database::mc::ImportOneGameTo(1)				"¿Copiar aproximadamente una partida a '%dst'?"
-::application::database::mc::ImportGamesTo(0)				"¿Copiar %num partidas a '%dst'?"
-::application::database::mc::ImportGamesTo(1)				"¿Copiar aproximadamente %num partidas a '%dst'?"
-::application::database::mc::ImportFiles						"Importar Archivos:"
+::application::database::mc::SelectVariant					"Select Variant"
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames						"%s partida(s) recodificadas"
-
-::application::database::mc::GameCount							"Partidas"
-::application::database::mc::DatabasePath						"ruta a la Base"
-::application::database::mc::DeletedGames						"Partidas eliminadas"
-::application::database::mc::Description						"Descripción"
-::application::database::mc::Created							"Creada"
-::application::database::mc::LastModified						"Última modificación"
-::application::database::mc::Encoding							"Codificar"
-::application::database::mc::YearRange							"Rango de años"
-::application::database::mc::RatingRange						"Rango de ratings"
-::application::database::mc::Result								"Resultado"
-::application::database::mc::Score								"puntuación"
-::application::database::mc::Type								"Tipo"
-::application::database::mc::Variant							"Variante"
-::application::database::mc::ReadOnly							"Sólo lectura"
 
 ::application::database::mc::ChangeIcon						"Cambiar ícono"
 ::application::database::mc::Recode								"Recodificar"
@@ -626,6 +592,7 @@
 ::application::tree::mc::NoGamesFound						"No games found" ;# NEW
 ::application::tree::mc::NoGamesAvailable					"No games available" ;# NEW
 ::application::tree::mc::Searching							"Searching" ;# NEW
+::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Desde el lado de las Blancas"
 ::application::tree::mc::FromBlacksPerspective			"Desde el lado de las Negras"
@@ -652,6 +619,59 @@
 ::application::tree::mc::T_Number							"Numeración"
 ::application::tree::mc::T_AverageYear						"Año promedio"
 ::application::tree::mc::T_FrequentPlayer					"Jugador más frecuente"
+
+### database::switcher #################################################
+::database::switcher::mc::Empty								"vacío"
+::database::switcher::mc::None								"ninguno"
+::database::switcher::mc::Failed								"fallido"
+
+::database::switcher::mc::UriRejectedDetail(open)		"Solamente pueden abrirse bases de datos Scidb:"
+::database::switcher::mc::UriRejectedDetail(import)	"Solamente pueden importarse bases de datos de Scidb:"
+::database::switcher::mc::EmptyUriList						"Descartar contenido está vacóo."
+::database::switcher::mc::OverwriteExistingFiles		"¿Sobrescribir archivos existentes en el directorio '%s'?"
+::database::switcher::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
+::database::switcher::mc::ExtractArchive					"Extracer archivo %s"
+::database::switcher::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
+::database::switcher::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
+::database::switcher::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida." 
+::database::switcher::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
+::database::switcher::mc::CopyGames							"Copiar partidas"
+::database::switcher::mc::CopyGamesFromTo					"Copiar partidas de '%src' a '%dst'"
+::database::switcher::mc::CopiedGames						"%s partida(s) copiada"
+::database::switcher::mc::NoGamesCopied					"No se copiaron partidas"
+::database::switcher::mc::CopyGamesFrom					"Copiar partidas de '%s'"
+::database::switcher::mc::ImportGames						"Importar partidas"
+::database::switcher::mc::ImportFiles						"Importar Archivos:"
+
+::database::switcher::mc::ImportOneGameTo(0)				"¿Copiar una partida a '%dst'?"
+::database::switcher::mc::ImportOneGameTo(1)				"¿Copiar aproximadamente una partida a '%dst'?"
+::database::switcher::mc::ImportGamesTo(0)				"¿Copiar %num partidas a '%dst'?"
+::database::switcher::mc::ImportGamesTo(1)				"¿Copiar aproximadamente %num partidas a '%dst'?"
+
+::database::switcher::mc::NumGames(0)						"ninguno"
+::database::switcher::mc::NumGames(1)						"una partida"
+::database::switcher::mc::NumGames(N)						"%s partidas"
+
+::database::switcher::mc::SelectGames(all)				"All games" ;# NEW
+::database::switcher::mc::SelectGames(filter)			"Only filtered games" ;# NEW
+::database::switcher::mc::SelectGames(all,variant)		"Only variant %s" ;# NEW
+::database::switcher::mc::SelectGames(filter,variant)	"Only filtered games of variant %s" ;# NEW
+::database::switcher::mc::SelectGames(complete)			"Complete database" ;# NEW
+
+::database::switcher::mc::GameCount							"Partidas"
+::database::switcher::mc::DatabasePath						"ruta a la Base"
+::database::switcher::mc::DeletedGames						"Partidas eliminadas"
+::database::switcher::mc::Description						"Descripción"
+::database::switcher::mc::Created							"Creada"
+::database::switcher::mc::LastModified						"Última modificación"
+::database::switcher::mc::Encoding							"Codificar"
+::database::switcher::mc::YearRange							"Rango de años"
+::database::switcher::mc::RatingRange						"Rango de ratings"
+::database::switcher::mc::Result								"Resultado"
+::database::switcher::mc::Score								"puntuación"
+::database::switcher::mc::Type								"Tipo"
+::database::switcher::mc::Variant							"Variante"
+::database::switcher::mc::ReadOnly							"Sólo lectura"
 
 ### board ##############################################################
 ::board::mc::CannotReadFile			"No se puede leer el archivo '%s':"
@@ -922,44 +942,48 @@
 ::engine::mc::FeatureDetail(playingStyle)		"El motor de análisis proporciona diferentes estilos de juego: %s. Vea el manual del motor de análisis para una explicación de los diferentes estilos."
 
 ### analysis ###########################################################
-::application::analysis::mc::Control				"Control"
-::application::analysis::mc::Information			"Información"
-::application::analysis::mc::Setup					"Configuración"
-::application::analysis::mc::Pause					"Pausa"
-::application::analysis::mc::Resume					"Continuar"
-::application::analysis::mc::LockEngine			"Fijar el motor de análisis a esta posición"
-::application::analysis::mc::MultipleVariations	"Multiples variantes"
-::application::analysis::mc::HashFullness			"Hash lleno"
-::application::analysis::mc::Hash					"Hash:"
-::application::analysis::mc::Lines					"Líneas:"
-::application::analysis::mc::MateIn					"%color da mate en %n"
-::application::analysis::mc::BestScore				"Mejor puntaje (de las líneas actuales)"
-::application::analysis::mc::CurrentMove			"Actualmente buscando este movimiento"
-::application::analysis::mc::TimeSearched			"Tiempo utilizado buscando"
-::application::analysis::mc::SearchDepth			"Profundidad de búsqueda en medias-jugadas (Profundidad de búsqueda selectiva)"
-::application::analysis::mc::IllegalPosition		"Posición ilegal - No puede analizarse"
-::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
+::application::analysis::mc::Control						"Control"
+::application::analysis::mc::Information					"Información"
+::application::analysis::mc::Setup							"Configuración"
+::application::analysis::mc::Pause							"Pausa"
+::application::analysis::mc::Resume							"Continuar"
+::application::analysis::mc::LockEngine					"Fijar el motor de análisis a esta posición"
+::application::analysis::mc::MultipleVariations			"Multiples variantes"
+::application::analysis::mc::HashFullness					"Hash lleno"
+::application::analysis::mc::Hash							"Hash:"
+::application::analysis::mc::Lines							"Líneas:"
+::application::analysis::mc::MateIn							"%color da mate en %n"
+::application::analysis::mc::BestScore						"Mejor puntaje (de las líneas actuales)"
+::application::analysis::mc::CurrentMove					"Actualmente buscando este movimiento"
+::application::analysis::mc::TimeSearched					"Tiempo utilizado buscando"
+::application::analysis::mc::SearchDepth					"Profundidad de búsqueda en medias-jugadas (Profundidad de búsqueda selectiva)"
+::application::analysis::mc::IllegalPosition				"Posición ilegal - No puede analizarse"
+::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze" ;# NEW
+::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 
-::application::analysis::mc::LinesPerVariation	"Líneas por variación"
-::application::analysis::mc::BestFirstOrder		"Ordenar por evaluación"
-::application::analysis::mc::Engine					"Motor de Análisis"
+::application::analysis::mc::LinesPerVariation			"Líneas por variación"
+::application::analysis::mc::BestFirstOrder				"Ordenar por evaluación"
+::application::analysis::mc::Engine							"Motor de Análisis"
 
-::application::analysis::mc::Seconds				"s"
-::application::analysis::mc::Minutes				"m"
+::application::analysis::mc::Seconds						"s"
+::application::analysis::mc::Minutes						"m"
 
-::application::analysis::mc::Status(checkmate)	"%s es jaque mate"
-::application::analysis::mc::Status(stalemate)	"%s es ahogado"
+::application::analysis::mc::Status(checkmate)			"%s es jaque mate"
+::application::analysis::mc::Status(stalemate)			"%s es ahogado"
+::application::analysis::mc::Status(threechecks)		"%s got three checks" ;# NEW
+::application::analysis::mc::Status(losing)				"%s lost all pieces" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"Este motor de análisis no tiene soporte para ajedrez normal."
 ::application::analysis::mc::NotSupported(chess960)	"Este motor de análisis no tiene soporte para chess 960."
+::application::analysis::mc::NotSupported(variant)		"This engine does not support variant '%s'." ;# NEW
 ::application::analysis::mc::NotSupported(analyze)		"Este motor no tiene un modo de análisis."
 
-::application::analysis::mc::Signal(stopped)		"Motor de análisis detenido por señal."
-::application::analysis::mc::Signal(resumed)		"Motor de análisis continúa por señal."
-::application::analysis::mc::Signal(killed)		"Motor de análisis eliminado por señal."
-::application::analysis::mc::Signal(crashed)		"El motor de análisis falló."
-::application::analysis::mc::Signal(closed)		"El motor de análisis cerró la conexión."
-::application::analysis::mc::Signal(terminated)	"El motor de análisis terminado con código %s."
+::application::analysis::mc::Signal(stopped)				"Motor de análisis detenido por señal."
+::application::analysis::mc::Signal(resumed)				"Motor de análisis continúa por señal."
+::application::analysis::mc::Signal(killed)				"Motor de análisis eliminado por señal."
+::application::analysis::mc::Signal(crashed)				"El motor de análisis falló."
+::application::analysis::mc::Signal(closed)				"El motor de análisis cerró la conexión."
+::application::analysis::mc::Signal(terminated)			"El motor de análisis terminado con código %s."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Marcar partida como eliminada"
@@ -1205,6 +1229,12 @@
 ::gamebar::mc::ReplaceGame				"Guardar: Reemplazar partida en %s..."
 ::gamebar::mc::ReplaceMoves			"Guardar: Reemplazar jugadas sólo en la partida"
 
+::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
+::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
+::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
+ ;# NEW
+::gamebar::mc::Tip(Losers)				"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Buscar partida"
 ::browser::mc::StartAutoplay		"Comenzar Autojuego"
@@ -1266,9 +1296,13 @@
 ::setup::board::mc::EnPassantFile				"Al paso"
 ::setup::board::mc::StartPosition				"Posición inicial"
 ::setup::board::mc::Fen								"FEN"
+::setup::board::mc::Promoted						"Promoted" ;# NEW
+::setup::board::mc::Holding						"Holding" ;# NEW
+::setup::board::mc::ChecksGiven					"Checks Given" ;# NEW
 ::setup::board::mc::Clear							"Vaciar"
 ::setup::board::mc::CopyFen						"Copiar FEN al portapapeles"
 ::setup::board::mc::Shuffle						"Shuffle..."
+::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
 
@@ -1297,6 +1331,10 @@
 ::setup::board::mc::Error(InvalidCastlingRights)	"Fila(s) de la torre irrazonable para el enroque."
 ::setup::board::mc::Error(InvalidCastlingFile)		"Fila no válida para el enroque."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"El enroque requiere filas con torre para no ser ambiguo (posiblemente estén mal configuradas)."
+::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
+::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)			"Fila al paso no razonable."
 ::setup::board::mc::Error(MultiPawnCheck)				"Dos o más peones dando jaque."
 ::setup::board::mc::Error(TripleCheck)					"Tres o más piezas dando jaque."
@@ -1317,6 +1355,9 @@
 ::import::mc::ImportAborted						"Importación abortada."
 ::import::mc::TextIsEmpty							"El texto PGN está vacío."
 ::import::mc::AbortImport							"¿Abortar importación de PGN?"
+::import::mc::UnsupportedVariant					"Unsuported variant '%s' rejected" ;# NEW
+::import::mc::Accepted								"accepted" ;# NEW
+::import::mc::Rejected								"rejected" ;# NEW
 
 ::import::mc::DifferentEncoding					"La codificación seleccinada %src no coincide con la codificación del archivo %dst."
 ::import::mc::DifferentEncodingDetails			"Recodificar la base de datos no funcionará más despué de esta acción."
@@ -1352,15 +1393,18 @@
 ::import::mc::UnknownTermination					"Motivo de la terminación desconocido"
 ::import::mc::UnknownMode							"Modo desconocido"
 ::import::mc::RatingTooHigh						"Número de valuación demasiado alto (ignorado)"
+::import::mc::EncodingFailed						"Encoding failed"
 ::import::mc::TooManyNags							"Demasiados NAG's (se ignorará el último)"
 ::import::mc::IllegalCastling						"Enroque ilegal"
 ::import::mc::IllegalMove							"Jugada ilegal"
 ::import::mc::CastlingCorrection					"Corrección del enroque"
-::import::mc::UnsupportedVariant					"Variante de ajedrez no soportada"
-::import::mc::UnsupportedCrazyhouseVariant	"La variante Crazyhouse aún no tiene soporte (partida ignorada)"
 ::import::mc::DecodingFailed						"No se pudo decodificar esta partida"
 ::import::mc::ResultDidNotMatchHeaderResult	"El resultado no es igual al resultado del encabezado"
 ::import::mc::ValueTooLong							"El encabezado es demasiado largo y se cortará a los 255 caracteres"
+::import::mc::NotSuicideNotGiveaway				"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
+::import::mc::VariantChangedToGiveaway			"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
+::import::mc::VariantChangedToSuicide			"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
+::import::mc::ResultCorrection					"Due to the final position of the game a correction of the result has been done" ;# NEW
 ::import::mc::MaximalErrorCountExceeded		"Máximo de errores excedido; no se informarán más errores (del tipo de error previo)"
 ::import::mc::MaximalWarningCountExceeded		"Máximo de advertencias excedido; no se informarán más advertencias (del tipo previo de advertencias)"
 ::import::mc::InvalidToken							"Símbolo no válido"
@@ -1370,6 +1414,8 @@
 ::import::mc::UnexpectedResultToken				"Símbolo de resultado inesperado"
 ::import::mc::UnexpectedTag						"Etiqueta inesperada dentro de la partida"
 ::import::mc::UnexpectedEndOfGame				"Final de la partida inesperado (resultado desconocido)"
+::import::mc::UnexpectedCastling					"Unexpected castling (not allowed in this chess variant)" ;# NEW
+::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
 ::import::mc::TagNameExpected						"Error de sintaxis: se esperaba un nombre en el encabezado"
 ::import::mc::TagValueExpected					"Error de sintaxis: Se esperaba un valor en el encabezado"
 ::import::mc::InvalidFen							"FEN no válido"
@@ -1665,7 +1711,8 @@
 ::game::mc::GameDecodingFailed			"No se pudo decodificar esta partida."
 ::game::mc::GameDecodingChanged			"La base de datos fue abierta usando el juego de caracteres '%base%', pero esta partida parece estar codificada usando '%game%', por ello, esta partida se cargará usando el juego de caracteres detectado."
 ::game::mc::GameDecodingChangedDetail	"Probablemente se abriá la base de datos con el juego de caracteres equivocado. Note que la detección automática del juego de caracteres es limitada."
-::game::mc::VariantHasChanged				"La variante de la base de datos '%base' ha cambiado de %gamevariant a %basevariant. Por ello este no puede ser la partida buscada."
+::game::mc::VariantHasChanged				"Game cannot be opened because the variant of the database has changed and is now different from the game variant." ;# NEW
+::game::mc::RemoveGameFromHistory		"Remove game from history?" ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Todos los idiomas"
@@ -1684,33 +1731,43 @@
 ::genderbox::mc::Gender(c) "Computadora"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal							"Normal"
-::terminationbox::mc::Unplayed						"No jugado"
-::terminationbox::mc::Abandoned						"Abandona"
-::terminationbox::mc::Adjudication					"Adjudicación"
-::terminationbox::mc::Disconnection					"Desconección"
-::terminationbox::mc::Emergency						"Emergencia"
-::terminationbox::mc::RulesInfraction				"Infracción a las reglas"
-::terminationbox::mc::TimeForfeit					"Pierde por tiempo"
-::terminationbox::mc::Unterminated					"No terminada"
+::terminationbox::mc::Normal								"Normal"
+::terminationbox::mc::Unplayed							"No jugado"
+::terminationbox::mc::Abandoned							"Abandona"
+::terminationbox::mc::Adjudication						"Adjudicación"
+::terminationbox::mc::Disconnection						"Desconección"
+::terminationbox::mc::Emergency							"Emergencia"
+::terminationbox::mc::RulesInfraction					"Infracción a las reglas"
+::terminationbox::mc::TimeForfeit						"Pierde por tiempo"
+::terminationbox::mc::Unterminated						"No terminada"
 
-::terminationbox::mc::State(Mate)					"%s es jaque mate"
-::terminationbox::mc::State(Stalemate)				"%s es ahogado"
+::terminationbox::mc::State(Checkmate)					"%s es jaque mate"
+::terminationbox::mc::State(Stalemate)					"%s es ahogado"
+::terminationbox::mc::State(ThreeChecks)				"%s got three checks" ;# NEW
+::terminationbox::mc::State(Losing)						"%s wins by losing all material" ;# NEW
 
-::terminationbox::mc::Result(1-0)					"Las negras se rinden"
-::terminationbox::mc::Result(0-1)					"Las blancas se rinden"
-::terminationbox::mc::Result(0-0)					"Se declara perdida para ambos jugadores"
-::terminationbox::mc::Result(1/2-1/2)				"Se acordó tablas"
+::terminationbox::mc::Result(1-0)						"Las negras se rinden"
+::terminationbox::mc::Result(0-1)						"Las blancas se rinden"
+::terminationbox::mc::Result(0-0)						"Se declara perdida para ambos jugadores"
+::terminationbox::mc::Result(1/2-1/2)					"Se acordó tablas"
 
-::terminationbox::mc::Reason(Unplayed)				"La partida no se jugó"
-::terminationbox::mc::Reason(Abandoned)			"Se abandonó la partida"
-::terminationbox::mc::Reason(Adjudication)		"Adjudicado"
-::terminationbox::mc::Reason(Death)					"" ;# NEW
-::terminationbox::mc::Reason(Emergency)			"Abandonado por una emergencia"
-::terminationbox::mc::Reason(RulesInfraction)	"Decidido debido a infracción de las reglas"
-::terminationbox::mc::Reason(TimeForfeit)			"%s pierde por tiempo"
-::terminationbox::mc::Reason(TimeForfeit,both)	"Ambos jugadores pierden por tiempo"
-::terminationbox::mc::Reason(Unterminated)		"No finalizado"
+::terminationbox::mc::Reason(Unplayed)					"La partida no se jugó"
+::terminationbox::mc::Reason(Abandoned)				"Se abandonó la partida"
+::terminationbox::mc::Reason(Adjudication)			"Adjudicado"
+::terminationbox::mc::Reason(Death)						""
+::terminationbox::mc::Reason(Emergency)				"Abandonado por una emergencia"
+::terminationbox::mc::Reason(RulesInfraction)		"Decidido debido a infracción de las reglas"
+::terminationbox::mc::Reason(TimeForfeit)				"%s pierde por tiempo"
+::terminationbox::mc::Reason(TimeForfeit,both)		"Ambos jugadores pierden por tiempo"
+::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
+::terminationbox::mc::Reason(Unterminated)			"No finalizado"
+
+::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
+::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
+::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)" ;# NEW
+::terminationbox::mc::Termination(fifty)				"Game drawn by the 50 move rule" ;# NEW
+::terminationbox::mc::Termination(threefold)			"Game drawn by threefold move repetition" ;# NEW
+::terminationbox::mc::Termination(mating)				"Neither player has mating material" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"En tablero"
@@ -1773,66 +1830,69 @@
 ::help::mc::Overview					"Resumen"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable		"Tabla del torneo"
-::crosstable::mc::AverageRating			"Rating promedio"
-::crosstable::mc::Category					"Categoría"
-::crosstable::mc::Games						"partidas"
-::crosstable::mc::Game						"partida"
+::crosstable::mc::TournamentTable			"Tabla del torneo"
+::crosstable::mc::AverageRating				"Rating promedio"
+::crosstable::mc::Category						"Categoría"
+::crosstable::mc::Games							"partidas"
+::crosstable::mc::Game							"partida"
 
-::crosstable::mc::ScoringSystem			"Sistema de Punteo"
-::crosstable::mc::Tiebreak					"Desempate"
-::crosstable::mc::Settings					"Configuraciones"
-::crosstable::mc::RevertToStart			"Volver a los valores iniciales"
-::crosstable::mc::UpdateDisplay			"Actualizar el visor"
+::crosstable::mc::ScoringSystem				"Sistema de Punteo"
+::crosstable::mc::Tiebreak						"Desempate"
+::crosstable::mc::Settings						"Configuraciones"
+::crosstable::mc::RevertToStart				"Volver a los valores iniciales"
+::crosstable::mc::UpdateDisplay				"Actualizar el visor"
+::crosstable::mc::SaveAsHTML					"Save as HTML file" ;# NEW
 
-::crosstable::mc::Traditional				"Tradicional"
-::crosstable::mc::Bilbao					"Bilbao"
+::crosstable::mc::Traditional					"Tradicional"
+::crosstable::mc::Bilbao						"Bilbao"
 
-::crosstable::mc::None						"Ninguno"
-::crosstable::mc::Buchholz					"Buchholz"
-::crosstable::mc::MedianBuchholz			"Buchholz-Mediano"
-::crosstable::mc::ModifiedMedianBuchholz "Buchholz-Mediano Mod."
-::crosstable::mc::RefinedBuchholz		"Buchholz perfeccionado"
-::crosstable::mc::SonnebornBerger		"Sonneborn-Berger"
-::crosstable::mc::Progressive				"Puntajes progresivos"
-::crosstable::mc::KoyaSystem				"Sistema Koya"
-::crosstable::mc::GamesWon					"Número de partidas ganadas"
-::crosstable::mc::GamesWonWithBlack		"Partidas Ganadas con Negras"
-::crosstable::mc::ParticularResult		"Resultado Particular"
-::crosstable::mc::TraditionalScoring	"Punteo Tradicional"
+::crosstable::mc::None							"Ninguno"
+::crosstable::mc::Buchholz						"Buchholz"
+::crosstable::mc::MedianBuchholz				"Buchholz-Mediano"
+::crosstable::mc::ModifiedMedianBuchholz	"Buchholz-Mediano Mod."
+::crosstable::mc::RefinedBuchholz			"Buchholz perfeccionado"
+::crosstable::mc::SonnebornBerger			"Sonneborn-Berger"
+::crosstable::mc::Progressive					"Puntajes progresivos"
+::crosstable::mc::KoyaSystem					"Sistema Koya"
+::crosstable::mc::GamesWon						"Número de partidas ganadas"
+::crosstable::mc::GamesWonWithBlack			"Partidas Ganadas con Negras"
+::crosstable::mc::ParticularResult			"Resultado Particular"
+::crosstable::mc::TraditionalScoring		"Punteo Tradicional"
 
-::crosstable::mc::Crosstable				"Cuadro cruzado"
-::crosstable::mc::Scheveningen			"Scheveningen"
-::crosstable::mc::Swiss						"Sistema suizo"
-::crosstable::mc::Match						"Match"
-::crosstable::mc::Knockout					"Knockout"
-::crosstable::mc::RankingList				"Lista de Ranking"
+::crosstable::mc::Crosstable					"Cuadro cruzado"
+::crosstable::mc::Scheveningen				"Scheveningen"
+::crosstable::mc::Swiss							"Sistema suizo"
+::crosstable::mc::Match							"Match"
+::crosstable::mc::Knockout						"Knockout"
+::crosstable::mc::RankingList					"Lista de Ranking"
 
-::crosstable::mc::Order						"Orden"
-::crosstable::mc::Type						"Tipo tabla"
-::crosstable::mc::Score						"Puntuación"
-::crosstable::mc::Alphabetical			"Alfabético"
-::crosstable::mc::Rating					"Rating"
-::crosstable::mc::Federation				"Federación"
+::crosstable::mc::Order							"Orden"
+::crosstable::mc::Type							"Tipo tabla"
+::crosstable::mc::Score							"Puntuación"
+::crosstable::mc::Alphabetical				"Alfabético"
+::crosstable::mc::Rating						"Rating"
+::crosstable::mc::Federation					"Federación"
 
-::crosstable::mc::Debugging				"Depuración"
-::crosstable::mc::Display					"Visor"
-::crosstable::mc::Style						"Estilo"
-::crosstable::mc::Spacing					"Espaciado"
-::crosstable::mc::Padding					"Relleno"
-::crosstable::mc::ShowLog					"Mostrar bitácora"
-::crosstable::mc::ShowHtml					"Mostrar HTML"
-::crosstable::mc::ShowRating				"Rating"
-::crosstable::mc::ShowPerformance		"Desempeño"
-::crosstable::mc::ShowWinDrawLoss		"Ganadas/Tablas/Perdidas"
-::crosstable::mc::ShowTiebreak			"Desempate"
-::crosstable::mc::ShowOpponent			"Oponente (como Tooltip)"
-::crosstable::mc::KnockoutStyle			"Estilo tabla de Knockout"
-::crosstable::mc::Pyramid					"Pirámide"
-::crosstable::mc::Triangle					"Triángulo"
+::crosstable::mc::Debugging					"Depuración"
+::crosstable::mc::Display						"Visor"
+::crosstable::mc::Style							"Estilo"
+::crosstable::mc::Spacing						"Espaciado"
+::crosstable::mc::Padding						"Relleno"
+::crosstable::mc::ShowLog						"Mostrar bitácora"
+::crosstable::mc::ShowHtml						"Mostrar HTML"
+::crosstable::mc::ShowRating					"Rating"
+::crosstable::mc::ShowPerformance			"Desempeño"
+::crosstable::mc::ShowWinDrawLoss			"Ganadas/Tablas/Perdidas"
+::crosstable::mc::ShowTiebreak				"Desempate"
+::crosstable::mc::ShowOpponent				"Oponente (como Tooltip)"
+::crosstable::mc::KnockoutStyle				"Estilo tabla de Knockout"
+::crosstable::mc::Pyramid						"Pirámide"
+::crosstable::mc::Triangle						"Triángulo"
 
-::crosstable::mc::CrosstableLimit		"Se excederá el límite del cuadro cruzado de %d jugadores."
-::crosstable::mc::CrosstableLimitDetail "'%s' está seleccionando otro modo de tabla."
+::crosstable::mc::CrosstableLimit			"Se excederá el límite del cuadro cruzado de %d jugadores."
+::crosstable::mc::CrosstableLimitDetail	"'%s' está seleccionando otro modo de tabla."
+::crosstable::mc::CannotOverwriteFile		"Cannot overwrite file '%s': permission denied." ;# NEW
+::crosstable::mc::CannotCreateFile			"Cannot create file '%s': permission denied." ;# NEW
 
 ### info ###############################################################
 ::info::mc::InfoTitle			"Acerca de %s"
@@ -2025,8 +2085,9 @@
 
 ::dialog::fsbox::mc::FileType(exe)			"Ejecutables"
 ::dialog::fsbox::mc::FileType(txt)			"Archivos de Texto"
-::dialog::fsbox::mc::FileType(log)			"Archivos de Registro"
 ::dialog::fsbox::mc::FileType(bin)			"Archivos Binarios"
+::dialog::fsbox::mc::FileType(log)			"Archivos de Registro"
+::dialog::fsbox::mc::FileType(html)			"HTML files" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&Aceptar"

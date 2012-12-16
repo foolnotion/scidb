@@ -44,6 +44,9 @@ int convertTags(	::db::TagSet& tags,
 						::db::tag::ID brt = ::db::tag::ExtraTag,
 						Ratings const* ratings = 0);
 
+::db::variant::Type variantFromObj(Tcl_Obj* obj);
+::db::variant::Type variantFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
+
 } // namespace game
 } // namespace tcl
 

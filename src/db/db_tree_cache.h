@@ -38,6 +38,7 @@ class TreeCache
 {
 public:
 
+	// XXX possibly we should use ExactZHPosition
 	typedef board::ExactPosition Position;
 
 	enum { CacheSize = 256 };

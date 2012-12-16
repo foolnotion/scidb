@@ -65,7 +65,7 @@ public:
 
 	typedef mstl::pvector<mstl::string>	StringList;
 	typedef mstl::vector<unsigned> LengthList;
-	typedef db::Consumer::TagBits TagBits;
+	typedef ::db::tag::TagSet TagBits;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
 	typedef mstl::string Languages[4];
 
@@ -87,6 +87,12 @@ public:
 	Application const& application() const;
 	/// Return database.
 	db::Database const& database() const;
+
+	UpdateMode gameUpdateMode() const;
+	UpdateMode playerUpdateMode() const;
+	UpdateMode eventUpdateMode() const;
+	UpdateMode siteUpdateMode() const;
+	UpdateMode annotatorUpdateMode() const;
 
 	/// Return number of games in filter.
 	unsigned countGames() const;

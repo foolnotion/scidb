@@ -37,11 +37,13 @@ inline
 bool
 HomePawns::isReachable(uint16_t currentSig, hp::Pawns targetData, unsigned count)
 {
+	// NOTE: only working if target is derived from start position
+
 	if (currentSig == Start)
 		return true;
 
 	if (count == 0)
-		return false;
+		return targetData.value == 0; // this means: we do not use home pawns
 
 	if (currentSig == 0)
 		return count == 16;

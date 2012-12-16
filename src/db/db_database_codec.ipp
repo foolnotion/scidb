@@ -30,10 +30,14 @@ namespace db {
 
 inline bool DatabaseCodec::isOpen() const								{ return m_db; }
 inline bool DatabaseCodec::isReadOnly() const						{ return m_db->m_readOnly; }
+inline bool DatabaseCodec::shouldCompress() const					{ return m_db->m_shouldCompress; }
 inline void DatabaseCodec::setType(DatabaseContent::Type type) { m_db->m_type = type; }
+inline void DatabaseCodec::setVariant(variant::Type variant)	{ m_db->m_variant = variant; }
 inline void DatabaseCodec::setCreated(uint32_t time)				{ m_db->m_created = time; }
+inline void DatabaseCodec::shouldCompress(bool flag)				{ m_db->m_shouldCompress = flag; }
 inline mstl::string const& DatabaseCodec::description() const	{ return m_db->m_description; }
 inline DatabaseContent::Type DatabaseCodec::type() const			{ return m_db->m_type; }
+inline variant::Type DatabaseCodec::variant() const				{ return m_db->m_variant; }
 inline uint32_t DatabaseCodec::created() const						{ return m_db->m_created; }
 inline Namebases& DatabaseCodec::namebases()							{ return m_db->m_namebases; }
 

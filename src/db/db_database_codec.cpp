@@ -735,6 +735,7 @@ DatabaseCodec::importGames(Producer& producer, Progress& progress, int startInde
 
 	mstl::auto_ptr<Consumer> consumer(getConsumer(producer.format()));
 	M_ASSERT(consumer);
+	consumer->setupVariant(variant());
 	producer.setConsumer(consumer.get());
 	producer.consumer().setIndex(startIndex);
 	return producer.process(progress);

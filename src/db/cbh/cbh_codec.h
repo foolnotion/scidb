@@ -80,7 +80,7 @@ public:
 
 	mstl::string const& extension() const override;
 	mstl::string const& encoding() const override;
-	void filterTag(TagSet& tags, tag::ID tag, Section section) const override;
+	void filterTags(TagSet& tags, Section section) const override;
 
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& encoding,

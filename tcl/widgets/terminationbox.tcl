@@ -34,48 +34,81 @@ proc terminationbox {w args} {
 namespace eval terminationbox {
 namespace eval mc {
 
-set Normal							"Normal"
-set Unplayed						"Unplayed"
-set Abandoned						"Abandoned"
-set Adjudication					"Adjudication"
-set Death							"Death"
-set Emergency						"Emergency"
-set RulesInfraction				"Rules infraction"
-set TimeForfeit					"Time forfeit"
-set Unterminated					"Unterminated"
+set Normal								"Normal"
+set Unplayed							"Unplayed"
+set Abandoned							"Abandoned"
+set Adjudication						"Adjudication"
+set Disconnection						"Disconnection"
+set Emergency							"Emergency"
+set RulesInfraction					"Rules infraction"
+set TimeForfeit						"Time forfeit"
+set Unterminated						"Unterminated"
 
-set State(Mate)					"%s is checkmate"
-set State(Stalemate)				"%s is stalemate"
+set State(Checkmate)					"%s is checkmate"
+set State(Stalemate)					"%s is stalemate"
+set State(ThreeChecks)				"%s got three checks"
+set State(Losing)						"%s wins by losing all material"
 
-set Result(1-0)					"Black resigned"
-set Result(0-1)					"White resigned"
-set Result(0-0)					"Declared lost for both players"
-set Result(1/2-1/2)				"Draw agreed"
+set Result(1-0)						"Black resigned"
+set Result(0-1)						"White resigned"
+set Result(0-0)						"Declared lost for both players"
+set Result(1/2-1/2)					"Draw agreed"
 
-set Reason(Unplayed)				"Game is unplayed"
-set Reason(Abandoned)			"Game is abandoned"
-set Reason(Adjudication)		"Adjudication"
-set Reason(Death)					""
-set Reason(Emergency)			"Abandoned due to an emergency"
-set Reason(RulesInfraction)	"Decided due to a rules infraction"
-set Reason(TimeForfeit)			"%s forfeits on time"
-set Reason(TimeForfeit,both)	"Both players forfeits on time"
-set Reason(Unterminated)		"Unterminated"
+set Reason(Unplayed)					"Game is unplayed"
+set Reason(Abandoned)				"Game is abandoned"
+set Reason(Adjudication)			"Adjudication"
+set Reason(Death)						""
+set Reason(Emergency)				"Abandoned due to an emergency"
+set Reason(RulesInfraction)		"Decided due to a rules infraction"
+set Reason(TimeForfeit)				"%s forfeits on time"
+set Reason(TimeForfeit,both)		"Both players forfeits on time"
+set Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win"
+set Reason(Unterminated)			"Unterminated"
+
+set Termination(equal-material)	"Game drawn by stalemate (equal material)"
+set Termination(less-material)	"%s wins by having less material (stalemate)"
+set Termination(bishops)			"Game drawn by stalemate (opposite color bishops)"
+set Termination(fifty)				"Game drawn by the 50 move rule"
+set Termination(threefold)			"Game drawn by threefold move repetition"
+set Termination(mating)				"Neither player has mating material"
 
 } ;# namespace mc
 
 
 namespace import ::tcl::mathfunc::max
 
-variable reasons {Normal Unplayed Abandoned Adjudication Death Emergency
+variable reasons {Normal Unplayed Abandoned Adjudication Disconnection Emergency
 						RulesInfraction TimeForfeit Unterminated}
 
 
-proc buildText {reason state result toMove} {
+proc buildText {reason state result toMove termination} {
 	switch $state {
-		Mate - Stalemate {
-			set side [set ::mc::[string toupper $toMove 0 0]]
-			return [format $mc::State($state) $side]
+		Stalemate {
+			switch $termination {
+				equal-material - bishops {
+					return $mc::Termination($termination)
+				}
+				less-material {
+					if {$toMove eq "white" && $result eq "1-0"} {
+						return [format $mc::Termination($termination) $mc::White]
+					}
+					if {$toMove eq "black" && $result eq "0-1"} {
+						return [format $mc::Termination($termination) $mc::Black]
+					}
+				}
+				default {
+					return [format $mc::State($state) [set ::mc::[string toupper $toMove 0 0]]]
+				}
+			}
+		}
+		Checkmate - ThreeChecks - Losing {
+			return [format $mc::State($state) [set ::mc::[string toupper $toMove 0 0]]]
+		}
+	}
+
+	if {([string length $reason] == 0 || $reason eq "Normal") && $result eq "1/2-1/2"} {
+		if {[info exists mc::Termination($termination)]} {
+			return $mc::Termination($termination)
 		}
 	}
 
@@ -90,12 +123,33 @@ proc buildText {reason state result toMove} {
 		}
 
 		TimeForfeit {
-			 switch $result {
-				 1-0		{ return [format $mc::Reason(TimeForfeit) $mc::Black] }
-				 0-1		{ return [format $mc::Reason(TimeForfeit) $mc::White] }
-				 1/2-1/2	{ return $mc::Reason(TimeForfeit,both) }
-				 default	{ return "" }
-			 }
+			switch $result {
+				1-0 {
+					return [format $mc::Reason(TimeForfeit) $mc::Black]
+				}
+				0-1 {
+					return [format $mc::Reason(TimeForfeit) $mc::White]
+				}
+				1/2-1/2	{
+					switch  $termination {
+						mating - nobody {
+							return $mc::NoMatingMaterial
+						}
+						white {
+							set mapping [list %causer $mc::Black %opponent $mc::White]
+							return [string map $mapping $mc::Reason(TimeForfeit,remis)]
+						}
+						black {
+							set mapping [list %causer $mc::White %opponent $mc::Black]
+							return [string map $mapping $mc::Reason(TimeForfeit,remis)]
+						}
+						default {
+							return $mc::Reason(TimeForfeit,both)
+						}
+					}
+				}
+				default { return "" }
+			}
 		}
 	}
 
@@ -390,7 +444,7 @@ set Adjudication [image create photo -data {
 	s0ndoWCY416Y4P110XXXfgO/yPUYX0KWdQAAAABJRU5ErkJggg==
 }]
 
-set Death [image create photo -data {
+set Disconnection [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAB
 	7ElEQVQYGV3BPWhTQRwA8P/duzQxqTG1UVpFgtHJoYtgK4qLBWcdFUTBQRxE0FmrXZ1FRAeL
 	CkXHCp1UiuAHgpIoKX4QFJKmyfvMfby7e/fuqYMQ/P0Q/OfhCxcQwiS15khizAGlzQ6p9SyX

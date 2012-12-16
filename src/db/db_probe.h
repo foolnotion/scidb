@@ -64,7 +64,7 @@ public:
 
 private:
 
-	int quiesce(material::SigPart white, material::SigPart black) const;
+	int quiesce(material::Count white, material::Count black) const;
 
 	Probe(Probe const&);
 	Probe& operator=(Probe const&);

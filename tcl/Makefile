@@ -90,6 +90,7 @@ SOURCES = \
 	widgets/figurines.tcl \
 	widgets/notation.tcl \
 	widgets/twm.tcl \
+	widgets/database-switcher.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \
@@ -100,6 +101,7 @@ SOURCES = \
 	board-piece.tcl \
 	board-square.tcl \
 	board-stuff.tcl \
+	board-holding.tcl \
 	board-options.tcl \
 	annotation.tcl \
 	comment.tcl \
@@ -549,7 +551,7 @@ uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags 
 	fi
 
 $(SCRIPT): $(SOURCES)
-	@echo "Build $(SCRIPT)"
+	@echo "Building $(SCRIPT)"
 	@if [ -e $(SCRIPT) ]; then rm -f $(SCRIPT); fi
 	@cat $(SOURCES) | sed                                  \
 		-e 's/# vi:set ts=3 sw=3:/update idletasks/'        \
@@ -563,7 +565,7 @@ $(SCRIPT): $(SOURCES)
 	@chmod 0555 $(SCRIPT)
 
 $(UPDATE_PHOTO_FILES): utils/update-photos.tcl
-	@echo "Build $(UPDATE_PHOTO_FILES)"
+	@echo "Building $(UPDATE_PHOTO_FILES)"
 	@if [ -e $(UPDATE_PHOTO_FILES) ]; then rm -f $(UPDATE_PHOTO_FILES); fi
 	@cat utils/update-photos.tcl | sed                     \
 		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g'                \
@@ -573,7 +575,7 @@ $(UPDATE_PHOTO_FILES): utils/update-photos.tcl
 	@chmod 0555 $(UPDATE_PHOTO_FILES)
 
 $(ARCH): utils/archive.tcl
-	@echo "Build $(ARCH)"
+	@echo "Building $(ARCH)"
 	@if [ -e $(ARCH) ]; then rm -f $(ARCH); fi
 	@cat utils/archive.tcl | sed            \
 		-e 's/%PROGRAM%/tclscidb$(SUFFIX)/g' \

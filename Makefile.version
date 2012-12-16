@@ -1,0 +1,8 @@
+##### Makefile.in for Scidb for Unix operating systems.
+
+# Scidb version:
+#-----------------------------------------------------------------------
+SCIDB_VERSION	= -DSCIDB_VERSION="\"1.0 BETA\""
+SCIDB_REVISION	= -DSCIDB_REVISION="\"569\""
+
+# End of Makefile

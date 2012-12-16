@@ -263,7 +263,8 @@ proc Open {} {
 		-setgrid 1 \
 		-yscrollcommand [list $top.ybar set] \
 		-xscrollcommand [list $top.xbar set] \
-		]
+		-tabs {2c 15c} \
+	]
 	bind $log <Visibility> [namespace code { Visibility %s }]
 	ttk::scrollbar $top.ybar -command [list $log yview] -takefocus 0 -orient vertical
 	ttk::scrollbar $top.xbar -command [list $log xview] -takefocus 0 -orient horizontal

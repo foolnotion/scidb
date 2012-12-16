@@ -87,7 +87,6 @@ private:
 
 	static bool checkIfReachable(uint16_t currentSig, hp::Pawns targetData, unsigned count);
 
-	unsigned		m_used;
 	hp::Pawns	m_data;
 	uint16_t		m_signature;	// remember last signature
 	unsigned		m_shift;

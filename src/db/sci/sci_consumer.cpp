@@ -56,18 +56,90 @@ namespace sci {
 typedef ByteStream::uint24_t uint24_t;
 
 
-Consumer::Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedTags, bool allowExtraTags)
-	:Encoder(m_stream)
+Consumer::Codecs::Codecs()
+	:m_codec(0)
+	,m_variant(variant::Undetermined)
+	,m_empty(true)
+{
+	::memset(m_codecs, 0, sizeof(m_codecs));
+}
+
+
+Consumer::Codecs::Codecs(Codec* codec)
+	:m_codec(codec)
+	,m_empty(false)
+{
+	M_REQUIRE(codec);
+
+	::memset(m_codecs, 0, sizeof(m_codecs));
+	m_variant = codec->variant();
+	M_ASSERT(variant::isMainVariant(m_variant));
+	m_codecs[variant::toIndex(m_variant)] = codec;
+}
+
+
+bool Consumer::Codecs::isEmpty() const	{ return m_empty; }
+
+
+bool
+Consumer::Codecs::supports(variant::Type variant) const
+{
+	M_ASSERT(variant::isMainVariant(variant));
+	return m_codecs[variant::toIndex(variant)];
+}
+
+
+Codec&
+Consumer::Codecs::operator[](db::variant::Type variant) const
+{
+	M_ASSERT(variant::isMainVariant(variant));
+	M_ASSERT(supports(variant));
+
+	if (m_variant == variant)
+		return *m_codec;
+
+	return *(m_codec = m_codecs[variant::toIndex(m_variant = variant)]);
+}
+
+
+void
+Consumer::Codecs::add(Codec* codec)
+{
+	M_REQUIRE(codec);
+	M_REQUIRE(codec->variant() != variant::Undetermined);
+
+	m_empty = false;
+	m_codecs[variant::toIndex(codec->variant())] = codec;
+
+	if (m_variant == variant::Undetermined)
+	{
+		m_variant = codec->variant();
+		m_codec = codec;
+	}
+}
+
+
+Consumer::Consumer(	format::Type srcFormat,
+							Codecs const& codecs,
+							TagBits const& allowedTags,
+							bool allowExtraTags)
+	:Encoder(m_stream, variant::Normal)
 	,db::InfoConsumer(srcFormat, sys::utf8::Codec::utf8(), allowedTags, allowExtraTags)
 	,m_stream(m_buffer, sizeof(m_buffer))
-	,m_codec(codec)
-	,m_streamPos(0)
-	,m_runLength(0)
+	,m_codecs(codecs)
 	,m_endOfRun(false)
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
 	,m_lastCommentPos(0)
 {
+//	M_REQUIRE(!codecs.isEmpty());
+}
+
+
+void
+Consumer::variantHasChanged(db::variant::Type variant)
+{
+	Encoder::changeVariant(variant);
 }
 
 
@@ -86,14 +158,12 @@ Consumer::beginGame(TagSet const& tags)
 
 	m_stream.reset(sizeof(m_buffer));
 	m_stream.resetp();
+	Encoder::setup(board(), variant());
+	Encoder::changeVariant(variant());
 	m_data.resetp();
 	m_text.resetp();
-	Encoder::setup(board());
-	m_streamPos = m_strm.tellp();
-	m_strm << uint24_t(0);			// place holder for offset to text section
-	m_strm << uint16_t(0);			// place holder for run length
+	prepareEncoding();
 	m_move = Move::empty();
-	m_runLength = 0;
 	m_endOfRun = false;
 	m_danglingPop = false;
 	m_danglingEndMarker = 1;
@@ -102,71 +172,18 @@ Consumer::beginGame(TagSet const& tags)
 	return true;
 }
 
-#if 0
 
 save::State
 Consumer::endGame(TagSet const& tags)
 {
-	TagSet const* tagSet = &tags;
-	TagSet* myTags = 0;
+	variant::Type variant = variant::toMainVariant(getVariant());
 
-	if (m_text.tellp() > 0 && m_lastCommentPos == plyCount() && !tags.contains(tag::Termination))
-	{
-		result::ID result = result::fromString(tags.value(tag::Result));
+	if (!m_codecs.supports(variant))
+		return save::UnsupportedVariant;
 
-		if (result == result::White || result == result::Black)
-		{
-			Byte const* s = m_text.data() + m_text.tellp() - 1;
-
-			while (s > m_text.base() && s[-1])
-				--s;
-
-			if (	::strcasecmp(reinterpret_cast<char const*>(s), "time") == 0
-				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time/") == 0
-				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time!") == 0
-				|| ::strcasecmp(reinterpret_cast<char const*>(s), "time forfeit") == 0)
-			{
-				myTags = new TagSet(tags);
-				myTags->set(tag::Termination, termination::toString(termination::TimeForfeit));
-				tagSet = myTags;
-			}
-		}
-	}
-
-	unsigned dataOffset = m_strm.tellp();
-
-	encodeTextSection();
-	encodeDataSection(engines());
-	encodeTags(*tagSet, allowedTags(), allowExtraTags());
-	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
-
-	m_stream.provide();
-	save::State state = m_codec.addGame(m_stream, *tagSet, *this);
-
-	if (myTags)
-		delete myTags;
-
-	return state;
+	encodeDataSection(tags, allowedTags(), allowExtraTags(), engines());
+	return m_codecs[variant].addGame(m_stream, tags, *this);
 }
-
-#else
-
-save::State
-Consumer::endGame(TagSet const& tags)
-{
-	unsigned dataOffset = m_strm.tellp();
-
-	encodeTextSection();
-	encodeDataSection(engines());
-	encodeTags(tags, allowedTags(), allowExtraTags());
-
-	ByteStream::set(m_strm.base() + m_streamPos, uint24_t(dataOffset));
-	m_stream.provide();
-
-	return m_codec.addGame(m_stream, tags, *this);
-}
-
-#endif
 
 
 save::State
@@ -189,8 +206,6 @@ Consumer::endMoveSection(result::ID)
 		m_strm.put(token::End_Marker);
 		m_strm.put(token::End_Marker);
 	}
-
-	ByteStream::set(m_stream.base() + m_streamPos + 3, uint16_t(m_runLength));
 }
 
 

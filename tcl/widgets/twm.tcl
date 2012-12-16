@@ -244,7 +244,7 @@ proc HeaderMotion {twm top x y} {
 		::scidb::tk::twm release $top
 		$top configure -borderwidth 1
 		wm geometry $top ${wd}x${ht}+${x}+${y}
-		::scidb::tk::wm noDecor $top
+		::scidb::tk::wm frameless $top
 		wm state $top normal
 		ttk::globalGrab $top
 		bind $top <Button1-Motion> [namespace code [list HeaderMotion $twm $top %X %Y]]

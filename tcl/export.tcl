@@ -362,9 +362,10 @@ namespace eval si3 {
 		Source				1
 		TimeControl			1
 		TimeMode				1
+		Variant				1
+		Termination			1
 		White/BlackClock	1
 		White/BlackFideId	1
-		White/BlackTeam	1
 		White/BlackTitle	1
 	}
 }
@@ -626,7 +627,7 @@ array set Fields {
 }
 
 
-proc open {parent base type name view {closeViewAfterExit 0}} {
+proc open {parent base variant type name view {closeViewAfterExit 0}} {
 	variable icon::32x32::IconPDF
 	variable icon::32x32::IconHtml
 	variable icon::32x32::IconPGN
@@ -638,12 +639,13 @@ proc open {parent base type name view {closeViewAfterExit 0}} {
 	variable Info
 	variable Values
 
-	if {[::scidb::view::count games $base $view] == 0} {
+	if {[::scidb::view::count games $base $variant $view] == 0} {
 		::dialog::info -parent $parent -message $mc::NoGamesForExport
 		return
 	}
 
 	set Info(base) $base
+	set Info(variant) $variant
 	set Info(name) $name
 	set Info(type) $type
 	set Info(view) $view
@@ -925,6 +927,7 @@ proc BuildFrame {w} {
 	grid $w.header -row 1 -column 1 -columnspan 5 -sticky w
 
 	set nrows [expr {([llength $tagList] + 2)/3}]
+	set lastRow [expr {2*$nrows + 3}]
 	set count 0
 
 	foreach tag $tagList {
@@ -932,20 +935,19 @@ proc BuildFrame {w} {
 		set btn $w.[string tolower $tag 0 0]
 		if {$tag eq "ExtraTag"} {
 			set text [set [namespace parent]::mc::ExtraTags]
-			incr count
+			set row [expr {$lastRow - 2}]
 		} else {
 			set text $tag
+			set row [expr {2*($count % $nrows) + 3}]
 		}
 		ttk::checkbutton $btn \
 			-text $text \
 			-variable [namespace parent]::${type}::Tags($tag) \
 			;
-		set row [expr {2*($count % $nrows) + 3}]
-		set col [expr {2*($count / $nrows) + 1}]
+		set col [expr {2*($count/$nrows) + 1}]
 		grid $btn -row $row -column $col -sticky w
 		incr count
 	}
-	set lastRow [expr {2*$nrows + 3}]
 
 	foreach tag [array names Tags] {
 		if {$tag ni $tagList} { array unset Tags $tag }
@@ -3148,16 +3150,19 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 
 			if {$useCopyOperation} {
 				set close 0
+				::scidb::db::clear $file
+				::scidb::db::set variant $file $Info(variant)
 				set cmd [list ::scidb::view::copy \
 					$Info(base) \
 					$Info(view) \
 					$file \
+					$Info(variant) \
 					$tagList \
 				]
-				::scidb::db::clear $file
 			} else {
 				set cmd [list ::scidb::view::export \
 					$Info(base) \
+					$Info(variant) \
 					$Info(view) \
 					$file \
 					$Info($Values(Type),flags) \
@@ -3172,6 +3177,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 		html - pdf - tex {
 			set cmd [list ::scidb::view::print \
 				$Info(base) \
+				$Info(variant) \
 				$Info(view) \
 				$file \
 				$searchPath \
@@ -3238,7 +3244,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	}
 
 	if {$useCopyOperation} {
-		set cmd [list ::scidb::db::save $file 0]
+		set cmd [list ::scidb::db::save $file]
 		set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
 		if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
 	}

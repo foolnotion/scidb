@@ -56,7 +56,7 @@
 using namespace db;
 using namespace util;
 
-db::EcoTable db::EcoTable::m_specimen;
+db::EcoTable db::EcoTable::m_specimen[variant::NumberOfVariants];
 
 
 namespace mstl {
@@ -178,11 +178,15 @@ struct EcoTable::Node
 
 	void printName(Codec& codec, Eco code, unsigned startLevel = 0) const;
 
-	void dump(Codec& codec, Board& board, unsigned ply) const;
-	void dump();
+	void dump(Codec& codec, Board& board, variant::Type variant, unsigned ply) const;
+	void dump(variant::Type variant);
 
-	void print(Board& board, Variations& variations, MoveList& moves, unsigned ply);
-	void print();
+	void print(	Board& board,
+					Variations& variations,
+					MoveList& moves,
+					variant::Type variant,
+					unsigned ply);
+	void print(variant::Type variant);
 };
 
 
@@ -285,7 +289,7 @@ EcoTable::Node::reset()
 void
 EcoTable::Node::printName(Codec& codec, Eco code, unsigned startLevel) const
 {
-	Name const&		name = EcoTable::m_specimen.getName(code);
+	Name const&		name = EcoTable::m_specimen[variant::Index_Normal].getName(code);
 	mstl::string	s;
 
 	for (unsigned i = startLevel; i < EcoTable::Num_Name_Parts && !name.part[i].empty(); ++i)
@@ -297,7 +301,7 @@ EcoTable::Node::printName(Codec& codec, Eco code, unsigned startLevel) const
 
 
 void
-EcoTable::Node::dump(Codec& codec, Board& board, unsigned ply) const
+EcoTable::Node::dump(Codec& codec, Board& board, variant::Type variant, unsigned ply) const
 {
 	if (flags)
 		return;
@@ -311,9 +315,9 @@ EcoTable::Node::dump(Codec& codec, Board& board, unsigned ply) const
 
 		Move move = board.makeMove(b.move);
 
-		board.prepareForPrint(move);
+		board.prepareForPrint(move, variant);
 		board.prepareUndo(move);
-		board.doMove(move);
+		board.doMove(move, variant);
 
 		for (unsigned k = 0; k < ply; ++k)
 			::printf("| ");
@@ -327,28 +331,32 @@ EcoTable::Node::dump(Codec& codec, Board& board, unsigned ply) const
 		::printf("\n");
 
 		if (!b.transposition)
-			b.node->dump(codec, board, ply + 1);
+			b.node->dump(codec, board, variant, ply + 1);
 
-		board.undoMove(move);
+		board.undoMove(move, variant);
 	}
 }
 
 
 void
-EcoTable::Node::dump()
+EcoTable::Node::dump(variant::Type variant)
 {
 	Codec codec(Codec::latin1());
 	Board board(Board::standardBoard());
 	::printf("(%s)", eco.asString().c_str());
 	printName(codec, eco, 1);
 	::printf("\n");
-	dump(codec, board, 0);
+	dump(codec, board, variant, 0);
 	reset();
 }
 
 
 void
-EcoTable::Node::print(Board& board, Variations& variations, MoveList& moves, unsigned ply)
+EcoTable::Node::print(	Board& board,
+								Variations& variations,
+								MoveList& moves,
+								variant::Type variant,
+								unsigned ply)
 {
 	if (flags)
 		return;
@@ -370,9 +378,9 @@ EcoTable::Node::print(Board& board, Variations& variations, MoveList& moves, uns
 		Branch const&	b		= branches[i];
 		Move				move	= board.makeMove(b.move);
 
-		board.prepareForPrint(move);
+		board.prepareForPrint(move, variant);
 		board.prepareUndo(move);
-		board.doMove(move);
+		board.doMove(move, variant);
 		moves.push(move);
 
 		if (length == ply)
@@ -383,16 +391,16 @@ EcoTable::Node::print(Board& board, Variations& variations, MoveList& moves, uns
 		}
 
 		if (!b.transposition)
-			b.node->print(board, variations, moves, ply + 1);
+			b.node->print(board, variations, moves, variant, ply + 1);
 
 		moves.pop();
-		board.undoMove(move);
+		board.undoMove(move, variant);
 	}
 }
 
 
 void
-EcoTable::Node::print()
+EcoTable::Node::print(variant::Type variant)
 {
 	Variations		variations;
 	MoveList			moves;
@@ -402,7 +410,7 @@ EcoTable::Node::print()
 	Codec				codec(Codec::latin1());
 
 	variations.reserve(8192);
-	print(board, variations, moves, 0);
+	print(board, variations, moves, variant, 0);
 	reset();
 
 	for (Variations::const_iterator i = variations.begin(); i != variations.end(); ++i)
@@ -475,6 +483,7 @@ struct EcoTable::Loader
 	NameRef				m_nameRef;
 	Board					m_board;
 	Codec					m_codec;
+	variant::Type		m_variant;
 
 	Loader(mstl::istream& strm, EcoTable& specimen);
 
@@ -494,6 +503,7 @@ EcoTable::Loader::Loader(mstl::istream& strm, EcoTable& specimen)
 	,m_ecoInfo(Eco::Max_Code + 1)
 	,m_board(Board::standardBoard())
 	,m_codec(Codec::latin1())
+	,m_variant(specimen.variant())
 {
 }
 
@@ -590,12 +600,12 @@ EcoTable::Loader::readNode(unsigned ply, Node* node, Eco storedLineKey, Entry co
 
 		Move move = m_board.makeMove(m);
 
-		if (move.isEmpty() || move.isNull() || !m_board.isValidMove(move))
+		if (move.isEmpty() || move.isNull() || !m_board.isValidMove(move, m_variant))
 			throwCorruptedData();
 
 		move.setLegalMove();
 		m_board.prepareUndo(move);
-		m_board.doMove(move);
+		m_board.doMove(move, m_variant);
 
 		uint64_t hash = m_board.hashNoEP();
 		Node*& n = m_specimen.m_map[hash];
@@ -630,7 +640,7 @@ EcoTable::Loader::readNode(unsigned ply, Node* node, Eco storedLineKey, Entry co
 			m = n;
 		}
 
-		m_board.undoMove(move);
+		m_board.undoMove(move, m_variant);
 	}
 }
 
@@ -850,19 +860,22 @@ EcoTable::isLoaded() const
 
 
 void
-EcoTable::load(mstl::istream& stream)
+EcoTable::load(mstl::istream& stream, variant::Type variant)
 {
+	M_REQUIRE(variant::isMainVariant(variant));
 	M_REQUIRE(stream.mode() & mstl::ios_base::binary);
-	M_REQUIRE(!specimen().isLoaded());
+	M_REQUIRE(!specimen(variant::Index_Normal).isLoaded());
 
 	char buf[8];
 
 	if (!stream.read(buf, 8) || ::memcmp(buf, "eco.bin", 8) != 0)
 		DB_RAISE("seems not to be a (binary) ECO file");
 
+	m_specimen[variant::toIndex(variant)].m_variant = variant;
+
 	stream.exceptions(mstl::ios_base::failbit);
 
-	Loader loader(stream, m_specimen);
+	Loader loader(stream, m_specimen[variant::toIndex(variant)]);
 	loader.load();
 	loader.loadStoredLines();
 }
@@ -878,6 +891,8 @@ EcoTable::isUsed(Eco code) const
 EcoTable::Name const&
 EcoTable::getName(Eco code) const
 {
+	if (!isLoaded()) { return specimen(variant::Index_Normal).getName(Eco(1)); }
+
 	M_REQUIRE(code <= Eco::Max_Code);
 	M_REQUIRE(isLoaded());
 	M_REQUIRE(isUsed(code));
@@ -943,7 +958,7 @@ EcoTable::getEco(Board const& board) const
 Eco
 EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) const
 {
-	M_REQUIRE(isLoaded());
+	if (!isLoaded()) { return Eco(); }
 
 	// IMPORTANT NOTE:
 	// If the line contains null moves this function will return zero.
@@ -962,12 +977,12 @@ EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) c
 		if (move.isNull())
 			return Eco();
 
-		if (move.isEmpty() || !board.isValidMove(move, move::DontAllowIllegalMove))
+		if (move.isEmpty() || !board.isValidMove(move, m_variant, move::DontAllowIllegalMove))
 			break;
 
 		board.prepareUndo(move);
+		board.doMove(move, m_variant);
 		moves.push(move);
-		board.doMove(move);
 	}
 
 	for ( ; i > 0; --i)
@@ -990,7 +1005,7 @@ EcoTable::getEco(Board const& startBoard, Line const& line, EcoSet* reachable) c
 			return k->second->eco;
 		}
 
-		board.undoMove(moves[i - 1]);
+		board.undoMove(moves[i - 1], m_variant);
 	}
 
 	return Eco::root();
@@ -1007,6 +1022,8 @@ EcoTable::getEco(Line const& line) const
 EcoTable::Entry const&
 EcoTable::getEntry(Eco code) const
 {
+	if (!isLoaded()) { return specimen(variant::Index_Normal).getEntry(Eco(1)); }
+
 	M_REQUIRE(code <= Eco::Max_Code);
 	M_REQUIRE(isLoaded());
 	M_REQUIRE(isUsed(code));
@@ -1054,7 +1071,8 @@ EcoTable::lookup(	Line const& line,
 						Successors* successors,
 						EcoSet* reachable) const
 {
-	M_REQUIRE(isLoaded());
+	if (!isLoaded()) return Eco();
+
 	M_REQUIRE(reachable == 0 || successors != 0);
 
 	if (reachable)
@@ -1133,7 +1151,7 @@ EcoTable::print() const
 {
 	if (m_root)
 	{
-		m_root->print();
+		m_root->print(m_variant);
 		fflush(stdout);
 	}
 }
@@ -1144,7 +1162,7 @@ EcoTable::dump() const
 {
 	if (m_root)
 	{
-		m_root->dump();
+		m_root->dump(m_variant);
 		fflush(stdout);
 	}
 }

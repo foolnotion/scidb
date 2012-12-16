@@ -81,7 +81,12 @@ public:
 
 	virtual void visit(Visitor& visitor) const = 0;
 
-	static void visit(Visitor& visitor, List const& nodes, TagSet const& tags, board::Status status, color::ID toMove);
+	static void visit(Visitor& visitor,
+							List const& nodes,
+							TagSet const& tags,
+							board::Status status,
+							termination::State termination,
+							color::ID toMove);
 
 protected:
 
@@ -160,6 +165,8 @@ public:
 									uint16_t idn,
 									Eco eco,
 									db::Board const& startBoard,
+									variant::Type variant,
+									termination::State termination,
 									db::Board const& finalBoard,
 									MoveNode const* node,
 									unsigned linebreakThreshold,
@@ -169,6 +176,8 @@ public:
 									uint16_t idn,
 									Eco eco,
 									db::Board const& startBoard,
+									variant::Type variant,
+									termination::State termination,
 									LanguageSet const& langSet,
 									LanguageSet const& wantedLanguages,
 									db::EngineList const& engines,
@@ -186,9 +195,12 @@ public:
 
 private:
 
+	typedef termination::State FinalState;
+
 	static void makeList(Work& work,
 								KeyNode::List& result,
 								MoveNode const* node,
+								variant::Type variant,
 								unsigned varNo,
 								unsigned varCount);
 
@@ -197,6 +209,7 @@ private:
 	Variation*		m_variation;
 	result::ID		m_result;
 	board::Status	m_reason;
+	FinalState		m_termination;
 	color::ID		m_toMove;
 	mutable List	m_nodes;
 };
@@ -206,7 +219,7 @@ class Opening : public Node
 {
 public:
 
-	Opening(Board const& startBoard, uint16_t idn, Eco eco);
+	Opening(Board const& startBoard, variant::Type variant, uint16_t idn, Eco eco);
 
 	bool operator==(Node const* node) const;
 
@@ -216,9 +229,10 @@ public:
 
 private:
 
-	Board		m_board;
-	uint16_t	m_idn;
-	db::Eco	m_eco;
+	Board				m_board;
+	variant::Type	m_variant;
+	uint16_t			m_idn;
+	db::Eco			m_eco;
 };
 
 
@@ -450,7 +464,10 @@ public:
 	virtual void remove(unsigned level, Key const& startKey, Key const& endKey) = 0;
 	virtual void finish(unsigned level) = 0;
 
-	virtual void opening(Board const& startBoard, uint16_t idn, Eco const& eco) = 0;
+	virtual void opening(Board const& startBoard,
+								variant::Type variant,
+								uint16_t idn,
+								Eco const& eco) = 0;
 	virtual void languages(LanguageSet const& languages) = 0;
 	virtual void move(unsigned moveNo, db::Move const& move) = 0;
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
@@ -462,7 +479,10 @@ public:
 	virtual void linebreak(unsigned level) = 0;
 
 	virtual void start(result::ID result) = 0;
-	virtual void finish(result::ID result, board::Status reason, color::ID toMove) = 0;
+	virtual void finish(	result::ID result,
+								board::Status reason,
+								termination::State termination,
+								color::ID toMove) = 0;
 
 	virtual void startVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;
 	virtual void endVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;

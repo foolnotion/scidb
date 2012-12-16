@@ -44,6 +44,9 @@ class MoveInfo
 {
 public:
 
+	static uint16_t const MinYear	= Date::MinYear;
+	static uint16_t const MaxYear = Date::MaxYear;
+
 	enum Type
 	{
 		None,
@@ -51,9 +54,10 @@ public:
 		PlayersClock,
 		ElapsedGameTime,
 		ElapsedMoveTime,
-		MechanicalClockTime,
-		DigitalClockTime,
+		ElapsedMilliSeconds,
+		ClockTime,
 		CorrespondenceChessSent,
+		VideoTime,
 	};
 
 	enum Format
@@ -77,6 +81,7 @@ public:
 	unsigned depth() const;
 	unsigned pawns() const;
 	unsigned centipawns() const;
+	unsigned centiSeconds() const;
 	float value() const;
 
 	::util::crc::checksum_t computeChecksum(EngineList const& engines, util::crc::checksum_t crc) const;
@@ -89,19 +94,18 @@ public:
 	void clear();
 
 	void decode(util::ByteStream& strm);
+	void decodeVersion92(util::ByteStream& strm);
 	void encode(util::ByteStream& strm) const;
 
 	char const* parseCorrespondenceChessSent(char const* s);
 	char const* parsePlayersClock(char const* s);
-	char const* parseDigitalClockTime(char const* s);
-	char const* parseMechanicalClockTime(char const* s);
+	char const* parseClockTime(char const* s);
 	char const* parseElapsedGameTime(char const* s);
 	char const* parseElapsedMoveTime(char const* s);
 	char const* parseEvaluation(char const* s);
+	char const* parseVideoTime(char const* s);
 
 private:
-
-	char const* parseTime(Type type, char const* s);
 
 	struct TimeInfo
 	{
@@ -119,6 +123,20 @@ private:
 		uint8_t m_centipawns;
 	};
 
+	struct ElapsedTime
+	{
+		ElapsedTime();
+
+		uint16_t	m_seconds;
+		uint16_t	m_milliSeconds;
+	};
+
+	char const* parseTime(Type type, char const* s);
+	char const* parseElapsedTime(char const* s);
+	char const* parseCentiSeconds(char const* s);
+
+	void printClock(char const* id, mstl::string& result, Format format) const;
+
 	Type		m_content;
 	uint8_t	m_engine;
 
@@ -128,7 +146,9 @@ private:
 #endif
 
 		TimeInfo			m_time;
+		ElapsedTime		m_elapsed;
 		AnalysisInfo	m_analysis;
+		uint32_t			m_centiSeconds;
 
 #if HAVE_0X_UNRESTRICTED_UNIONS
 	};

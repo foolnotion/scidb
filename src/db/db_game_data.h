@@ -44,10 +44,12 @@ public:
 	GameData();
 	virtual ~GameData() throw();
 
-	MoveNode*	m_startNode;	///< Keeps the starting node of the game
-	Board			m_startBoard;	///< Keeps the start position of the game
-	TagSet		m_tags;
-	EngineList	m_engines;
+	MoveNode*		m_startNode;	///< Keeps the starting node of the game
+	Board				m_startBoard;	///< Keeps the start position of the game
+	TagSet			m_tags;
+	variant::Type	m_variant;
+	uint16_t			m_idn;
+	EngineList		m_engines;
 };
 
 } // namespace db

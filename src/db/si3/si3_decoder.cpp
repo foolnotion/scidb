@@ -515,39 +515,7 @@ Decoder::decodeTags(TagSet& tags)
 						{
 							char const* s = reinterpret_cast<char const*>(m_strm.data());
 
-							switch (len)
-							{
-								case 3:	if (::strncasecmp(s, "FRC", 3) == 0)
-												tags.set(tag::Variant, chess960::identifier());
-											break;
-								case 4:	if (::strncasecmp(s, "SFRC", 4) == 0) // Symmetrical Fischerandom
-												tags.set(tag::Variant, chess960::identifier());
-											break;
-								case 7:	if (::strncasecmp(s, "Shuffle", 7) == 0)
-												tags.set(tag::Variant, shuffle::identifier());
-											break;
-								case 8:	if (::strncasecmp(s, "Chess960", 8) == 0)
-												tags.set(tag::Variant, chess960::identifier());
-											break;
-								case 9:	if (	::strncasecmp(s, "Chess 960", 9) == 0
-												|| ::strncasecmp(s, "Chess-960", 9) == 0)
-											{
-												tags.set(tag::Variant, chess960::identifier());
-											}
-											break;
-								case 12:	if (::strncasecmp(s, "Fischerandom", 12) == 0)
-												tags.set(tag::Variant, chess960::identifier());
-											else if (::strncasecmp(s, "ShuffleChess", 12) == 0)
-												tags.set(tag::Variant, shuffle::identifier());
-											break;
-								case 13:	if (::strncasecmp(s, "Fischerrandom", 13) == 0)
-												tags.set(tag::Variant, chess960::identifier());
-											else if (::strncasecmp(s, "Shuffle Chess", 13) == 0)
-												tags.set(tag::Variant, shuffle::identifier());
-											else if (::strncasecmp(s, "Shuffle-Chess", 13) == 0)
-												tags.set(tag::Variant, shuffle::identifier());
-											break;
-							}
+							tags.set(tag::Variant, variant::identifier(variant::fromString(s)));
 
 							if (tags.contains(tag::Variant))
 								m_hasVariantTag = true;
@@ -1090,13 +1058,14 @@ Decoder::skipVariation()
 	{
 		Byte b = m_strm.get();
 
-		if (__builtin_expect(b <= token::Last, 0))
+		// We don't need to check 'token::First <= b', it is working anyway.
+		if (__builtin_expect(b <= token::Last/* && token::First <= b*/, 0))
 		{
 			switch (b)
 			{
 				case token::End_Game:
 					::throwCorruptData();
-					// not reached
+					// never reached
 
 				case token::Start_Marker:
 					++count;
@@ -1121,9 +1090,9 @@ Decoder::nextMove()
 {
 	while (true)
 	{
-		Byte b;
+		Byte b = m_strm.get();
 
-		if (__builtin_expect((b = m_strm.get()) > token::Last, 1) || b < token::First)
+		if (__builtin_expect(b > token::Last, 1) || token::First > b)
 		{
 			m_position.doMove(m_move, decodeMove(b));
 			return m_move;

@@ -184,7 +184,7 @@ cmdX11(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 static int
 handleXErrorMessage(Display* dpy, XErrorEvent* event)
 {
-	// A BadWindow due to X_SendEvent is likely due to XDND,
+	// A BadWindow due to X_SendEvent is likely while XDND is active,
 	// for example if the source application is crashing.
 	if (	event->error_code == BadWindow
 		&& (event->request_code == X_SendEvent || event->request_code == X_GetProperty))

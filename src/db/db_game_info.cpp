@@ -46,8 +46,8 @@
 #include <stdlib.h>
 #include <ctype.h>
 
-
 #define GAME_INFO_VAR
+#define GAME_INFO_IDN
 
 using namespace db;
 using namespace db::color;
@@ -149,17 +149,18 @@ GameInfo::GameInfo(Initializer const&)
 	,m_termination(termination::Unknown)
 	,m_gameOffset(0)
 	,m_gameFlags(0)
+	,m_positionId(variant::Standard)
 	,m_plyCount(0)
-	,m_positionId(variant::StandardIdn)
 	,m_dateYear(Date::Zero10Bits)
-	,m_dateMonth(0)
+	,m_dateDay(0)
 	,m_ecoKey(1)
 	,m_eco(Eco::root())
 	,m_rest(0)
 	,m_round(0)
 	,m_subround(0)
-	,m_dateDay(0)
+	,m_dateMonth(0)
 	,m_result(result::Unknown)
+	,m_setup(false)
 {
 #if defined(__i386__)
 	static_assert(sizeof(GameInfo) == 64, "should be 64 bytes");
@@ -179,7 +180,7 @@ bool GameInfo::isEmpty() const { return m_event == &g_event; }
 Eco
 GameInfo::userEco() const
 {
-	if (m_positionId != variant::StandardIdn)
+	if (m_positionId != variant::Standard)
 		return Eco();
 
 	return m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
@@ -187,9 +188,10 @@ GameInfo::userEco() const
 
 
 void
-GameInfo::setupOpening(unsigned idn, Line const& line)
+GameInfo::setupOpening(bool startPosition, variant::Index variantIndex, unsigned idn, Line const& line)
 {
 	m_positionId = idn;
+	m_setup = !startPosition;
 
 	switch (idn)
 	{
@@ -197,8 +199,8 @@ GameInfo::setupOpening(unsigned idn, Line const& line)
 			m_ecoKey = 0;
 			break;
 
-		case variant::StandardIdn:
-			m_ecoKey = EcoTable::specimen().lookup(line);
+		case variant::Standard:
+			m_ecoKey = EcoTable::specimen(variantIndex).lookup(line);
 			break;
 
 		default:
@@ -532,7 +534,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_variationCount  = ::encodeCount(provider.countVariations());
 	m_commentCount    = ::encodeCount(provider.countComments());
 	m_annotationCount = ::encodeCount(	provider.countAnnotations()
-												 + provider.countMoveInfo()
+//												 + provider.countMoveInfo()
 												 + provider.countMarks());
 
 	{
@@ -584,14 +586,23 @@ GameInfo::setup(	uint32_t gameOffset,
 	if (tags.contains(tag::Termination))
 		m_termination = termination::fromString(tags.value(tag::Termination));
 
-	setupOpening(provider.getStartBoard().computeIdn(), provider.openingLine());
+	variant::Type	variant = provider.variant();
+	variant::Index	variantIndex = variant::toIndex(variant::toMainVariant(variant));
 
-	if (m_positionId == variant::StandardIdn)
+	setupOpening(	provider.getStartBoard().isStartPosition(),
+						variantIndex,
+						provider.idn(),
+						provider.openingLine());
+
+	if (variant == variant::Giveaway)
+		m_gameFlags |= Flag_Giveaway;
+
+	if (m_positionId == variant::Standard)
 	{
 		if (tags.contains(tag::Eco))
 			m_eco = Eco::toShort(tags.value(tag::Eco));
 		else
-			m_eco = EcoTable::specimen().getEco(provider.openingLine()).toShort();
+			m_eco = EcoTable::specimen(variantIndex).getEco(provider.openingLine()).toShort();
 	}
 
 #if 0
@@ -639,8 +650,17 @@ GameInfo::update(Provider const& provider)
 	m_commentCount		= ::encodeCount(provider.countComments());
 	m_annotationCount	= ::encodeCount(provider.countAnnotations() + provider.countMarks());
 
-	// XXX: m_eco = game.ecoCode() ???
-	setupOpening(provider.getStartBoard().computeIdn(), provider.openingLine());
+	variant::Type variant = provider.variant();
+
+	if (variant == variant::Giveaway)
+		m_gameFlags |= Flag_Giveaway;
+	else if (variant == variant::Suicide)
+		m_gameFlags &= ~Flag_Giveaway;
+
+	setupOpening(	provider.getStartBoard().isStartPosition(),
+						variant::toIndex(variant::toMainVariant(variant)),
+						provider.idn(),
+						provider.openingLine());
 }
 
 
@@ -781,45 +801,52 @@ GameInfo::reallocate(Namebases& namebases)
 
 
 void
-GameInfo::setupIdn(TagSet& tags, uint16_t idn)
+GameInfo::setupVariant(TagSet& tags, variant::Type variant, uint16_t idn)
 {
-	M_ASSERT(idn <= 4*960);
+	M_ASSERT(idn > 0);
 
 #ifdef GAME_INFO_IDN
 	tags.remove(tag::Idn);	// it's too dangerous to keep a user supplied value
 #endif
 
-	if (idn == 0)
-		return;
-
-	if (idn != variant::StandardIdn)
+	if (idn != variant::Standard)
 	{
 		tags.set(tag::SetUp, 1);
 #ifdef GAME_INFO_IDN
 		tags.add(tag::Idn, idn);
 #endif
 
-		if (idn > 960)
+		if (variant::isChess960(idn))
+		{
+			tags.set(tag::Fen, chess960::fen(idn));
+			tags.add(tag::Opening, chess960::position(idn));
+			tags.set(tag::Variant, chess960::identifier());
+		}
+		else if (variant::isShuffleChess(idn))
 		{
 			tags.set(tag::Fen, shuffle::fen(idn));
-			tags.set(tag::Variant, shuffle::identifier());
 			tags.add(tag::Opening, shuffle::position(idn));
+			tags.set(tag::Variant, shuffle::identifier());
 		}
 		else
 		{
-			tags.set(tag::Fen, chess960::fen(idn));
-			tags.set(tag::Variant, chess960::identifier());
-			tags.add(tag::Opening, chess960::position(idn));
+			tags.set(tag::Fen, variant::fen(idn));
 		}
 	}
+
+	// TODO what if we have a shuffle chess position?
+	if (variant != variant::Normal)
+		tags.set(tag::Variant, variant::identifier(variant));
 }
 
 
 void
-GameInfo::setupTags(TagSet& tags) const
+GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 {
-	tags.set(tag::Event,		m_event->name());
-	tags.set(tag::Site,		m_event->site()->name());
+	M_ASSERT(variant::isMainVariant(variant));
+
+	tags.set(tag::Event, m_event->name());
+	tags.set(tag::Site, m_event->site()->name());
 
 	if (m_dateYear == Date::Zero10Bits)
 	{
@@ -836,9 +863,9 @@ GameInfo::setupTags(TagSet& tags) const
 	else
 		tags.set(tag::Round, "?", 1);
 
-	tags.set(tag::White,		m_player[White]->name());
-	tags.set(tag::Black,		m_player[Black]->name());
-	tags.set(tag::Result,	result::toString(result::ID(m_result)));
+	tags.set(tag::White, m_player[White]->name());
+	tags.set(tag::Black, m_player[Black]->name());
+	tags.set(tag::Result, result::toString(result::ID(m_result)));
 
 	if (!hasGameRecordLength())
 		tags.set(tag::Annotator, m_annotator->name());
@@ -897,34 +924,41 @@ GameInfo::setupTags(TagSet& tags) const
 		tags.setSignificance(t, m_pd[Black].elo ? 2 : 1);
 	}
 
-	tags.set(tag::Termination,	termination::toString(termination::Reason(m_termination)));
-	tags.set(tag::Mode,			event::toString(m_event->eventMode()));
-	tags.set(tag::TimeMode,		time::toString(m_event->timeMode()));
+	tags.set(tag::Termination, termination::toString(termination::Reason(m_termination)));
+	tags.set(tag::Mode, event::toString(m_event->eventMode()));
+	tags.set(tag::TimeMode, time::toString(m_event->timeMode()));
 
-	setupIdn(tags, m_positionId);
-
-	if (m_positionId == variant::StandardIdn)
+	if (m_positionId)
 	{
-		tags.set(tag::Eco, Eco::fromShort(m_eco).asShortString());
+		setupVariant(
+			tags,
+			variant == variant::Antichess ? (isGiveaway() ? variant::Giveaway : variant::Suicide) : variant,
+			m_positionId);
 
-		Eco eco = m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
-
-		if (	eco
-			&& !tags.isUserSupplied(tag::Opening)
-			&& !tags.isUserSupplied(tag::Variation)
-			&& !tags.isUserSupplied(tag::SubVariation))
+		if (m_positionId == variant::Standard)
 		{
-			mstl::string opening, variation, subvariation;
-			EcoTable::specimen().getOpening(eco, opening, variation, subvariation);
-			tags.add(tag::Opening, opening);
+			tags.set(tag::Eco, Eco::fromShort(m_eco).asShortString());
+
+			Eco eco = m_eco ? Eco::fromShort(m_eco) : Eco(m_ecoKey);
+
+			if (	eco
+				&& !tags.isUserSupplied(tag::Opening)
+				&& !tags.isUserSupplied(tag::Variation)
+				&& !tags.isUserSupplied(tag::SubVariation))
+			{
+				mstl::string opening, variation, subvariation;
+				EcoTable::specimen(variant).
+					getOpening(eco, opening, variation, subvariation);
+				tags.add(tag::Opening, opening);
 
 #ifdef GAME_INFO_VAR
-			if (eco == Eco(m_ecoKey))
-			{
-				tags.add(tag::Variation,		variation);
-				tags.add(tag::SubVariation,	subvariation);
-			}
+				if (eco == Eco(m_ecoKey))
+				{
+					tags.add(tag::Variation, variation);
+					tags.add(tag::SubVariation, subvariation);
+				}
 #endif
+			}
 		}
 	}
 
@@ -942,25 +976,30 @@ GameInfo::setupTags(TagSet& tags, Provider const& provider)
 {
 	mstl::string opening, variation, subvariation;
 	unsigned idn = provider.getStartBoard().computeIdn();
+	variant::Type variant = provider.variant();
 
-	setupIdn(tags, idn);
-
-	if (idn == variant::StandardIdn)
+	if (idn)
 	{
-		Eco eco = EcoTable::specimen().getEco(provider.openingLine());
-		EcoTable::specimen().getOpening(eco, opening, variation, subvariation);
-		tags.add(tag::Eco, eco.asShortString());
-	}
+		setupVariant(tags, variant, idn);
 
-	if (	!tags.isUserSupplied(tag::Opening)
-		&& !tags.isUserSupplied(tag::Variation)
-		&& !tags.isUserSupplied(tag::SubVariation))
-	{
-		tags.add(tag::Opening,			opening);
+		if (idn == variant::Standard)
+		{
+			EcoTable const& ecoTable = EcoTable::specimen(variant);
+			Eco eco = ecoTable.getEco(provider.openingLine());
+			ecoTable.getOpening(eco, opening, variation, subvariation);
+			tags.add(tag::Eco, eco.asShortString());
+		}
+
+		if (	!tags.isUserSupplied(tag::Opening)
+			&& !tags.isUserSupplied(tag::Variation)
+			&& !tags.isUserSupplied(tag::SubVariation))
+		{
+			tags.add(tag::Opening,			opening);
 #ifdef GAME_INFO_VAR
-		tags.add(tag::Variation,		variation);
-		tags.add(tag::SubVariation,	subvariation);
+			tags.add(tag::Variation,		variation);
+			tags.add(tag::SubVariation,	subvariation);
 #endif
+		}
 	}
 
 #ifdef GAME_INFO_PLYCOUNT
@@ -1027,17 +1066,17 @@ GameInfo::material() const
 void
 GameInfo::setMaterial(material::si3::Signature sig)
 {
-	m_signature.m_material.part[White].queen   = (1 << sig.wq) - 1;
-	m_signature.m_material.part[White].rook    = (1 << sig.wr) - 1;
-	m_signature.m_material.part[White].bishop  = (1 << sig.wb) - 1;
-	m_signature.m_material.part[White].knight  = (1 << sig.wn) - 1;
-	m_signature.m_material.part[White].pawn    = (1 << sig.wp) - 1;
+	m_signature.m_matSig.part[White].queen   = (1 << sig.wq) - 1;
+	m_signature.m_matSig.part[White].rook    = (1 << sig.wr) - 1;
+	m_signature.m_matSig.part[White].bishop  = (1 << sig.wb) - 1;
+	m_signature.m_matSig.part[White].knight  = (1 << sig.wn) - 1;
+	m_signature.m_matSig.part[White].pawn    = (1 << sig.wp) - 1;
 
-	m_signature.m_material.part[Black].queen   = (1 << sig.bq) - 1;
-	m_signature.m_material.part[Black].rook    = (1 << sig.br) - 1;
-	m_signature.m_material.part[Black].bishop  = (1 << sig.bb) - 1;
-	m_signature.m_material.part[Black].knight  = (1 << sig.bn) - 1;
-	m_signature.m_material.part[Black].pawn    = (1 << sig.bp) - 1;
+	m_signature.m_matSig.part[Black].queen   = (1 << sig.bq) - 1;
+	m_signature.m_matSig.part[Black].rook    = (1 << sig.br) - 1;
+	m_signature.m_matSig.part[Black].bishop  = (1 << sig.bb) - 1;
+	m_signature.m_matSig.part[Black].knight  = (1 << sig.bn) - 1;
+	m_signature.m_matSig.part[Black].pawn    = (1 << sig.bp) - 1;
 
 	m_pd[0].matQ = ((1 << sig.wq) - 1) >> 2;
 	m_pd[0].matR = ((1 << sig.wr) - 1) >> 2;
@@ -1218,6 +1257,7 @@ GameInfo::computeChecksum(util::crc::checksum_t crc) const
 //	crc = ::computeCRC(crc, m_ecoKey);
 //	crc = ::computeCRC(crc, m_signature);
 //	crc = ::util::crc::compute(crc, uint16_t(m_positionId));
+//	crc = ::util::crc::compute(crc, uint16_t(m_setup));
 //	crc = ::util::crc::compute(crc, uint16_t(m_plyCount));
 //	crc = ::util::crc::compute(crc, uint8_t(m_annotationCount));
 //	crc = ::util::crc::compute(crc, uint8_t(m_commentCount));
@@ -1346,7 +1386,7 @@ GameInfo::debug() const
 	::printf(	"Time Mode:        %s\n", time::toString(timeMode()).c_str());
 	::printf(   "IDN:              %u\n", unsigned(idn()));
 	::printf(   "Eco:              %s\n", eco().asString().c_str());
-	if (idn() == variant::StandardIdn)
+	if (idn() == variant::Standard)
 	{
 		::printf("Eco Key:          %s\n", Eco(m_ecoKey).asString().c_str());
 	}

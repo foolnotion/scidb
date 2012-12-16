@@ -290,7 +290,9 @@ proc DisplayContributions {t} {
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "SVG [set [namespace current]::mc::ChessPieceDesign]:\n"] caption
 	$t insert end [Enc "Colin M.L. Burnett, "]
-	$t insert end [Enc "Maurizio Monge"]
+	$t insert end [Enc "Eran Karu, "]
+	$t insert end [Enc "Maurizio Monge, "]
+	$t insert end [Enc "Peter Wong"]
 
 	$t insert end [Enc "\n\n"]
 	$t insert end [Enc "[set [namespace current]::mc::BoardThemeDesign]:\n"] caption

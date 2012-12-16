@@ -348,8 +348,8 @@ BlockFile::save(mstl::ostream& stream, Progress* progress)
 
 	if (!m_cache.empty())
 	{
-		unsigned size = m_cache.size();
-		unsigned progressFrequency;
+		unsigned size						= m_cache.size();
+		unsigned progressFrequency		= 0; // satisifies the compiler
 		unsigned progressReportAfter	= unsigned(-1);
 
 		if (progress)

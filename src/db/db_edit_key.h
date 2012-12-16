@@ -27,6 +27,8 @@
 #ifndef _db_edit_key_included
 #define _db_edit_key_included
 
+#include "db_common.h"
+
 #include "m_string.h"
 
 namespace db {
@@ -87,7 +89,7 @@ public:
 	void reset(unsigned firstPly);
 
 	bool setPosition(Game& game) const;
-	bool setBoard(MoveNode const* root, Board& board) const;
+	bool setBoard(MoveNode const* root, Board& board, variant::Type variant) const;
 	Key successorKey(MoveNode const* current) const;
 	MoveNode* findPosition(MoveNode* root, unsigned startPly) const;
 

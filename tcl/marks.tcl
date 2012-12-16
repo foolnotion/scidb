@@ -292,19 +292,19 @@ proc pressSquare {x y} {
 	variable ::application::board::board
 	variable State
 
-	set square [::board::stuff::getSquare $board $x $y]
+	set square [::board::diagram::getSquare $board $x $y]
 
 	if {$State(square1) == -1} {
 		# first click: draw sign
 		set State(square1) $square
-		::board::stuff::setSign $board $square
+		::board::diagram::setSign $board $square
 	} else {
 		# second click: draw mark/arrow
 		if {$square eq $State(square1)} {
-			::board::stuff::eraseSign $board $square
+			::board::diagram::eraseSign $board $square
 			set type $State(markType)
 		} else {
-			::board::stuff::setSign $board $square
+			::board::diagram::setSign $board $square
 			set State(square2) $square
 			set State(erase) $State(square1)
 			set type arrow
@@ -321,11 +321,11 @@ proc unpressSquare {} {
 	variable State
 
 	if {$State(erase) >= 0} {
-		::board::stuff::eraseSign $board $State(erase)
+		::board::diagram::eraseSign $board $State(erase)
 		set State(erase) -1
 	}
 	if {$State(square2) >= 0} {
-		::board::stuff::eraseSign $board $State(square2)
+		::board::diagram::eraseSign $board $State(square2)
 		set State(square2) -1
 	}
 }
@@ -336,7 +336,7 @@ proc releaseSquare {} {
 	variable State
 
 	if {$State(square1) >= 0} {
-		::board::stuff::eraseSign $board $State(square1)
+		::board::diagram::eraseSign $board $State(square1)
 		set State(square1) -1
 	}
 }
@@ -380,12 +380,12 @@ proc SetMarkColor {colorButtons shapeButtons color} {
 	set y [expr {$Border + 1}]
 	foreach shapeList $ShapeList {
 		set x [expr {$Border + 1}]
-		foreach shape $shapeList {
-			switch $shape {
-				full		{ ::board::stuff::drawFull $shapeButtons $ShapeSize $State(markColor) $x $y }
-				disk		{ ::board::stuff::drawDisk $shapeButtons $ShapeSize $State(markColor) $x $y }
-				circle	{ ::board::stuff::drawCircle $shapeButtons $ShapeSize $State(markColor) $x $y }
-				default	{ ::board::stuff::drawText $shapeButtons $ShapeSize $State(markColor) $x $y $shape }
+		foreach shp $shapeList {
+			switch $shp {
+				full		{ ::board::diagram::drawFull $shapeButtons $ShapeSize $State(markColor) $x $y }
+				disk		{ ::board::diagram::drawDisk $shapeButtons $ShapeSize $State(markColor) $x $y }
+				circle	{ ::board::diagram::drawCircle $shapeButtons $ShapeSize $State(markColor) $x $y }
+				default	{ ::board::diagram::drawText $shapeButtons $ShapeSize $State(markColor) $x $y $shp }
 			}
 			incr x [expr {$ShapeSize + $Border + 2}]
 		}

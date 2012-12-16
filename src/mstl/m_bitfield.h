@@ -185,6 +185,8 @@ template <typename T> struct is_pod< ::mstl::bitfield<T> >		{ enum { value = 1 }
 
 #include "m_bitfield.ipp"
 
+#include "m_bitfield128.h"
+
 #endif // _mstl_bitfield_included
 
 // vi:set ts=3 sw=3:

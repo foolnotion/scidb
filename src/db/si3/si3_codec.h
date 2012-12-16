@@ -91,7 +91,7 @@ public:
 	unsigned gameFlags() const override;
 	unsigned blockSize() const;
 
-	void filterTag(TagSet& tags, tag::ID tag, Section section) const override;
+	void filterTags(TagSet& tags, Section section) const override;
 	mstl::string const& extension() const override;
 	mstl::string const& encoding() const override;
 
@@ -137,7 +137,7 @@ public:
 	bool saveRoundEntry(unsigned index, mstl::string const& value);
 	void restoreRoundEntry(unsigned index);
 	void useOverflowEntry(unsigned index);
-	mstl::string const& getRoundEntry(unsigned index);
+	mstl::string const& getRoundEntry(unsigned index) const;
 
 	sys::utf8::Codec& codec();
 

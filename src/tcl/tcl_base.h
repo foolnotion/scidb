@@ -72,7 +72,7 @@ int interrupt(int count);
 int
 error(
 	char const* cmd, char const* subcmd, char const* subsubcmd,
-	char const* format, va_list ap);
+	char const* format, va_list& ap);
 
 int
 __attribute__((__format__(__printf__, 4, 5)))

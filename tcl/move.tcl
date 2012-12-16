@@ -53,6 +53,12 @@ array set Square {
 	selected		-1
 	suggested	-1
 	origin		-1
+	hilited		-1
+}
+
+array set Drop {
+	piece		" "
+	takeBack	-1
 }
 
 array set Options {
@@ -88,7 +94,7 @@ proc enable {args} {
 	set Disabled 0
 
 	if {[llength $args]} {
-		set square [::board::stuff::getSquare $board {*}$args]
+		set square [::board::diagram::getSquare $board {*}$args]
 	
 		if {$square != -1} {
 			enterSquare $square
@@ -106,12 +112,12 @@ proc disable {} {
 	set Disabled 1
 
 	if {$Square(selected) != -1} {
-		::board::stuff::hilite $board $Square(selected) off
+		::board::diagram::hilite $board $Square(selected) off
 	}
 
 	if {$hilite(show-suggested)} {
-		::board::stuff::hilite $board $Square(suggested) off
-		::board::stuff::hilite $board $Square(current) off
+		::board::diagram::hilite $board $Square(suggested) off
+		::board::diagram::hilite $board $Square(current) off
 	}
 
 }
@@ -122,12 +128,12 @@ proc reset {} {
 	variable Square
 
 	if {$Square(selected) != -1} {
-		::board::stuff::hilite $board $Square(selected) off
+		::board::diagram::hilite $board $Square(selected) off
 		set Square(selected) -1
 	}
 
 	if {$Square(suggested) != -1} {
-		::board::stuff::hilite $board $Square(suggested) off
+		::board::diagram::hilite $board $Square(suggested) off
 		set Square(suggested) -1
 	}
 }
@@ -137,26 +143,37 @@ proc nextGuess {args} {
 	variable ::application::board::board
 	variable ::board::hilite
 	variable Square
+	variable Drop
 	variable Disabled
 
 	if {$Disabled} { return }
 	if {$Square(current) == -1} { return }
+	if {!$hilite(show-suggested)} { return }
+	if {$Square(selected) != -1} { return }
 
-	if {$hilite(show-suggested) && $Square(selected) == -1} {
-		if {[llength $args] == 2} {
-			set square [::board::stuff::getSquare $board {*}$args]
-			if {$square != $Square(current)} { return }
+	if {$Drop(piece) ne " "} {
+		set Drop(piece) " "
+		::application::board::deselectInHandPiece
+		::board::diagram::hilite $board $Square(origin) off
+		set meth guess
+	} else {
+		set meth guessNext
+	}
+
+	if {[llength $args] == 2} {
+		set square [::board::diagram::getSquare $board {*}$args]
+		if {$square != $Square(current)} { return }
+	}
+
+	set suggested [::scidb::pos::$meth $Square(current)]
+
+	if {$suggested != -1} {
+		if {$Square(suggested) != -1} {
+			::board::diagram::hilite $board $Square(suggested) off
 		}
-
-		set suggested [::scidb::pos::guessNext $Square(current)]
-
-		if {$suggested != -1} {
-			if {$Square(suggested) != -1} {
-				::board::stuff::hilite $board $Square(suggested) off
-			}
-			::board::stuff::hilite $board $suggested suggested
-			set Square(suggested) $suggested
-		}
+		::board::diagram::hilite $board $suggested suggested
+		::board::diagram::hilite $board $Square(current) suggested
+		set Square(suggested) $suggested
 	}
 }
 
@@ -166,6 +183,7 @@ proc enterSquare {{square {}}} {
 	variable ::board::hilite
 	variable Square
 	variable Disabled
+	variable Drop
 
 	if {$Disabled} { return }
 
@@ -179,32 +197,34 @@ proc enterSquare {{square {}}} {
 
 	set Square(suggested) -1
 
-	if {$Square(selected) == -1} {
+	if {$Drop(piece) ne " "} {
+		if {$hilite(show-suggested) && [::scidb::pos::legal? $square $square no $Drop(piece)]} {
+			set Square(origin) $square
+			set Square(suggested) $square
+			::board::diagram::hilite $board $Square(suggested) suggested
+		}
+	} elseif {$Square(selected) == -1} {
+		set Square(origin) -1
+
 		if {$hilite(show-suggested)} {
-			set Square(origin) -1
 			set suggested [::scidb::pos::guess $square]
 			if {$suggested != -1} { set Square(origin) $square }
 		} else {
-			set Square(origin) -1
 			set suggested -1
 		}
 	
-		if {$suggested == -1} {
-			::board::stuff::hilite $board $square off
-			::board::stuff::hilite $board $Square(suggested) off
-		} else {
-			::board::stuff::hilite $board $square suggested
-			::board::stuff::hilite $board $suggested suggested
+		if {$suggested != -1} {
+			::board::diagram::hilite $board $square suggested
+			::board::diagram::hilite $board $suggested suggested
 		}
 
 		if {$hilite(show-suggested)} {
 			set Square(suggested) $suggested
 		}
 	} elseif {$hilite(show-suggested)} {
-		::board::stuff::hilite $board $Square(selected) selected
+		::board::diagram::hilite $board $Square(selected) selected
 		if {$Square(origin) != -1} {
-			::board::stuff::hilite $board $Square(suggested) suggested
-			::board::stuff::hilite $board $Square(origin) suggested
+			::board::diagram::hilite $board $Square(origin) suggested
 		}
 	}
 }
@@ -216,24 +236,26 @@ proc leaveSquare {{square {}}} {
 	variable Square
 	variable Leave
 
+	if {[::board::diagram::isDragged? $board]} { return }
+
 	if {[string length $square] == 0} {
 		if {$Square(current) != -1} {
-			::board::stuff::hilite $board $Square(current) off
+			::board::diagram::hilite $board $Square(current) off
 		}
 		if {$Square(suggested) != -1} {
-			::board::stuff::hilite $board $Square(suggested) off
+			::board::diagram::hilite $board $Square(suggested) off
 			set Square(suggested) -1
 		}
 	} elseif {$Leave <= 0} {
 		set Leave [expr {-($square + 1)}]
 	} else {
 		if {$Square(selected) != -1 && $square != $Square(selected)} {
-			::board::stuff::hilite $board $square off
+			::board::diagram::hilite $board $square off
 		}
 
 		if {$hilite(show-suggested)} {
-			::board::stuff::hilite $board $Square(current) off
-			::board::stuff::hilite $board $Square(suggested) off
+			::board::diagram::hilite $board $Square(current) off
+			::board::diagram::hilite $board $Square(suggested) off
 		}
 
 		set Square(current) -1
@@ -251,21 +273,21 @@ proc pressSquare {square state} {
 
 	if {$Square(selected) == -1} {
 		set Square(selected) $square
-		::board::stuff::hilite $board $square selected
+		::board::diagram::hilite $board $square selected
 
 		# Drag this piece if it is the same color as the side to move:
 		set c [::scidb::pos::stm]
-		set p [string index [::board::stuff::piece $board $square] 0]
-		if {$c eq $p} { ::board::stuff::setDragSquare $board $square }
+		set p [string index [::board::diagram::piece $board $square] 0]
+		if {$c eq $p} { ::board::diagram::setDragSquare $board $square }
 	} elseif {$hilite(show-suggested)} {
-		::board::stuff::setDragSquare $board
-		::board::stuff::hilite $board $Square(selected) off
-		::board::stuff::hilite $board $Square(suggested) off
-		::board::stuff::hilite $board $square off
+		::board::diagram::setDragSquare $board
+		::board::diagram::hilite $board $Square(selected) off
+		::board::diagram::hilite $board $Square(suggested) off
+		::board::diagram::hilite $board $square off
 		set Square(selected) -1
 		enterSquare $square
 	} elseif {$square eq $Square(selected)} {
-		::board::stuff::hilite $board $Square(selected) off
+		::board::diagram::hilite $board $Square(selected) off
 		set Square(selected) -1
 	}
 }
@@ -275,69 +297,108 @@ proc releaseSquare {x y state} {
 	variable ::application::board::board
 	variable ::board::hilite
 	variable Square
+	variable Drop
 	variable Disabled
 
 	if {$Disabled} { return }
 
 	set suggested $Square(suggested)
 	set selected $Square(selected)
-	set dragged [::board::stuff::isDragged? $board]
-	set square [::board::stuff::getSquare $board $x $y]
+	set dragged [::board::diagram::isDragged? $board]
+	set square [::board::diagram::getSquare $board $x $y]
 
 	if {$hilite(show-suggested) || $square != $Square(selected)} {
 		set Square(selected) -1
 	}
 
 	if {$square >= 0} {
-		set allowIllegalMove [expr {$state & 1}] ;# detect whether Shift is held down
+		set allowIllegalMove [::util::shiftIsHeldDown? $state]
 
 		if {$square == $selected} {
-			::board::stuff::setDragSquare $board
+			::board::diagram::setDragSquare $board
 			if {$hilite(show-suggested)} {
 				# user pressed and released on same square, so make the suggested
 				# move if there is one and the piece was not dragged
+				set drop $Drop(piece)
 				set Square(current) -1
 				if {!$dragged} {
 					AddMove $square $Square(suggested) $allowIllegalMove
 				}
-				::board::stuff::hilite $board $selected off
+				if {$drop ne " "} {
+					::application::board::deselectInHandPiece
+					set suggested $Square(suggested)
+				}
+				::board::diagram::hilite $board $selected off
 				enterSquare $square
+			} elseif {$Drop(piece) ne " "} {
+				AddMove $square $selected $allowIllegalMove
+				::application::board::deselectInHandPiece
+				::board::diagram::hilite $board $selected off
+				set Drop(piece) " "
 			}
 			# else current square is the square user pressed the button on, so we do nothing
 		} else {
 			# user has dragged to another square, so try to add this as a move
 			set Square(current) -1
-			::board::stuff::hilite $board $selected off
-			set piece [::board::stuff::piece $board $square]
-			::board::stuff::animate $board 0
+			::board::diagram::hilite $board $selected off
+			::board::diagram::hilite $board $Square(hilited) off
+			set piece [::board::diagram::piece $board $square]
+			::board::diagram::animate $board 0
 			AddMove $square $selected $allowIllegalMove
-			::board::stuff::animate $board 1
+			::board::diagram::animate $board 1
 		}
 	}
 	
 	if {$hilite(show-suggested) && $suggested != $Square(suggested)} {
-		::board::stuff::hilite $board $suggested off
+		::board::diagram::hilite $board $suggested off
 	}
 
-	::board::stuff::setDragSquare $board
+	::board::diagram::setDragSquare $board
+
+	if {$Drop(piece) ne " "} {
+		::application::board::deselectInHandPiece
+		set Drop(piece) " "
+	}
 }
 
 
-proc dragPiece {x y} {
+proc dragPiece {x y state} {
 	variable ::application::board::board
+	variable ::board::hilite
 	variable Square
 
-	::board::stuff::dragPiece $board $x $y
+	if {[::board::diagram::dragSquare $board] == -1} { return }
+	set isDragging [::board::diagram::isDragged? $board]
+	::board::diagram::dragPiece $board $x $y
 
-	if {[::board::stuff::isDragged? $board]} {
-		::board::stuff::hilite $board $Square(suggested) off
-		::board::stuff::hilite $board $Square(selected) off
-		::board::stuff::hilite $board [::board::stuff::dragSquare $board] off
+	if {$hilite(show-suggested)} {
+		set from [::board::diagram::dragSquare $board]
+
+		if {!$isDragging} {
+			::board::diagram::hilite $board $Square(suggested) off
+			::board::diagram::hilite $board $Square(selected) off
+			set Square(hilited) -1
+		}
+
+		set square [::board::diagram::getSquare $board $x $y]
+		if {$square == $Square(hilited)} { return }
+		if {$Square(hilited) ne $from} {
+			::board::diagram::hilite $board $Square(hilited) off
+		}
+
+		set allowIllegalMove [::util::shiftIsHeldDown? $state]
+
+		if {$square != -1 && [::scidb::pos::legal? $from $square $allowIllegalMove]} {
+			::board::diagram::hilite $board $square suggested
+			::board::diagram::raisePiece $board $from
+		}
+
+		set Square(hilited) $square
 	}
 }
 
 
-proc addMove {san noMoveCmd {myActions {}} {force no}} {
+proc addMove {san {noMoveCmd {}} {myActions {}} {force no}} {
 	variable ::application::board::board
 
 	if {[::scidb::game::position atEnd?]} {
@@ -355,7 +416,7 @@ proc addMove {san noMoveCmd {myActions {}} {force no}} {
 				}
 			}
 		}
-		::board::stuff::finishDrag $board
+		::board::diagram::finishDrag $board
 		update idletasks
 		set action [ConfirmReplaceMove $myActions]
 	}
@@ -475,6 +536,68 @@ proc doDestructiveCommand {parent action cmd yesAction noAction} {
 }
 
 
+proc inHandSelected {w piece} {
+	variable Drop
+
+	set Drop(piece) $piece
+	set Drop(color) [::scidb::game::query stm]
+}
+
+
+proc inHandDropPosition {w x y state piece} {
+	variable ::application::board::board
+	variable ::board::hilite
+	variable Square
+
+	if {$hilite(show-suggested)} {
+		set square [::board::diagram::getSquare $board $x $y]
+		if {$square == $Square(hilited)} { return }
+		::board::diagram::hilite $board $Square(hilited) off
+
+		set allowIllegalMove [::util::shiftIsHeldDown? $state]
+
+		if {$square != -1 && [::scidb::pos::legal? $square $square $allowIllegalMove $piece]} {
+			::board::diagram::hilite $board $square suggested
+			[::board::diagram::canvas $board] raise drag-piece
+		}
+
+		set Square(hilited) $square
+		set Square(origin) $square
+	}
+}
+
+
+proc inHandPieceDrop {w x y state piece} {
+	variable ::application::board::board
+	variable ::board::hilite
+	variable Square
+	variable Drop
+
+	if {$hilite(show-suggested)} {
+		::board::diagram::hilite $board $Square(hilited) off
+		set Square(hilited) -1
+	}
+
+	set square [::board::diagram::getSquare $board $x $y]
+	set allowIllegalMove [::util::shiftIsHeldDown? $state]
+
+	if {$square != -1} {
+		::application::board::deselectInHandPiece
+		if {[::scidb::pos::legal? $square $square $allowIllegalMove $piece]} {
+			::board::diagram::setPiece $board $square $piece
+			set Drop(takeBack) $square
+			set Drop(piece) $piece
+			set Drop(color) [::scidb::game::query stm]
+			::board::diagram::animate $board 0
+			AddMove $square $square $allowIllegalMove
+			::board::diagram::animate $board 1
+			set Drop(takeBack) -1
+		}
+		set Drop(piece) " "
+	}
+}
+
+
 proc EnterVariation {varno} {
 	::scidb::game::go variation $varno
 	::scidb::game::go 1
@@ -482,18 +605,25 @@ proc EnterVariation {varno} {
 
 
 proc AddMove {sq1 sq2 allowIllegalMove} {
+	if {![DoAddMove $sq1 $sq2 $allowIllegalMove]} { AfterAddMove }
+}
+
+
+proc DoAddMove {sq1 sq2 allowIllegalMove} {
 	variable ::application::board::board
 	variable Options
 	variable Leave
+	variable Drop
 
-	if {[::scidb::game::query over?]} { return [::board::stuff::setDragSquare $board] }
-	if {$sq2 == -1} { return [::board::stuff::setDragSquare $board] }
+	if {$sq2 == -1} { return 0 }
+	if {[::scidb::game::query over?]} { return 0 }
+	if {$sq2 == -1} { return 0 }
 	set nullmove [expr {$sq1 eq "null" && $sq2 eq "null"}]
 
 	if {$sq1 ne "null"} {
 		set c [::scidb::pos::stm]
-		set s [string index [::board::stuff::piece $board $sq1] 0]
-		set f [string index [::board::stuff::piece $board $sq2] 1]
+		set s [string index [::board::diagram::piece $board $sq1] 0]
+		set f [string index [::board::diagram::piece $board $sq2] 1]
 		if {$s ne $c || $f eq "k"} {
 			set tmp $sq1
 			set sq1 $sq2
@@ -501,34 +631,30 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 		}
 	}
 
-	if {![::scidb::pos::valid? $sq1 $sq2]} { return [::board::stuff::setDragSquare $board] }
+	if {![::scidb::pos::valid? $sq1 $sq2]} { return 0 }
 
-	if {![::scidb::pos::legal? $sq1 $sq2 $allowIllegalMove]} {
-		if {!$nullmove} {
-			# illegal move, but if it is king takes king then treat it as entering a null move
-			set boardPos [::scidb::pos::board]
-			::board::stuff::setDragSquare $board
-			set k1 [string tolower [string index $boardPos $sq1]]
-			set k2 [string tolower [string index $boardPos $sq2]]
-			if {$k1 eq "k" && $k2 eq "k"} {
-				set sq1 null
-				set sq2 null
-			}
-		}
-		if {$sq1 ne "null" && !$allowIllegalMove} { return [::board::stuff::setDragSquare $board] }
+	if {!$allowIllegalMove && ![::scidb::pos::legal? $sq1 $sq2 $allowIllegalMove $Drop(piece)]} {
+		return 0
 	}
 
-	variable _promoted 0
+	variable _promoted $Drop(piece)
+	set Drop(piece) " "
 
 	if {[scidb::pos::promotion? $sq1 $sq2 $allowIllegalMove]} {
 		catch { destroy $board.popup_promotion }
-		set color [string index [::board::stuff::piece $board $sq1] 0]
+		set color [string index [::board::diagram::piece $board $sq1] 0]
+		set variant [::scidb::game::query Variant?]
 		set m [menu $board.popup_promotion -tearoff false]
 		catch { wm attributes $m -type popup_menu }
-		foreach {p n} {q 2 r 3 b 4 n 5} {
+		switch $variant {
+			Antichess	{ set pieces {k r n q b} }
+			Losers		{ set pieces {q r n b} }
+			default		{ set pieces {q r b n} }
+		}
+		foreach p $pieces {
 			$m add command \
 				-image photo_Piece(figurine,1,$color$p,$Options(figurineSize)) \
-				-command [namespace code [list set _promoted $n]] \
+				-command [namespace code [list set _promoted $p]] \
 				;
 		}
 		set Leave 0
@@ -538,7 +664,39 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 		vwait [namespace current]::trigger_
 		if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
 		set Leave 1
-		if {$_promoted == 0} { return [::board::stuff::setDragSquare $board] }
+		if {$_promoted == " "} { return 0 }
+#	} elseif {!$nullmove && $sq1 eq $sq2 && $Drop(piece) eq " "} {
+#		catch { destroy $board.popup_drop }
+#		set color [string range [::scidb::game::query stm] 0 0]
+#		set m [menu $board.popup_drop -tearoff false]
+#		catch { wm attributes $m -type popup_menu }
+#		set pieceCount [::scidb::pos::inHand? -destination $sq1 -stm]
+#		set havePieces 0
+#		foreach n $pieceCount p {q r b n p} {
+#			if {$n} {
+#				$m add command \
+#					-image photo_Piece(figurine,1,$color$p,$Options(figurineSize)) \
+#					-command [namespace code [list set _promoted $p]] \
+#					;
+#				incr havePieces 1
+#				set piece $p
+#			}
+#		}
+#		switch $havePieces {
+#			0 { return 0 }
+#			1 { set _promoted $piece }
+#
+#			default {
+#				set Leave 0
+#				variable trigger_ 0
+#				bind $board.popup_drop <<MenuUnpost>> [list set [namespace current]::trigger_ 1]
+#				tk_popup $board.popup_drop {*}[winfo pointerxy $board]
+#				vwait [namespace current]::trigger_
+#				if {$Leave < 0} { leaveSquare [expr {-($Leave - 1)}] }
+#				set Leave 1
+#				if {$_promoted == " "} { return 0 }
+#			}
+#		}
 	}
 
 	addMove \
@@ -547,13 +705,23 @@ proc AddMove {sq1 sq2 allowIllegalMove} {
 		{} \
 		$allowIllegalMove \
 		;
+
+	return 1
 }
 
 
 proc AfterAddMove {} {
 	variable ::application::board::board
+	variable Drop
 
-	::board::stuff::setDragSquare $board
+	::board::diagram::setDragSquare $board
+
+	if {$Drop(takeBack) != -1} {
+		::application::board::finishDrop $Drop(color)
+		::board::diagram::setPiece $board $Drop(takeBack) .
+		set Drop(takeBack) -1
+	}
+
 	reset
 }
 

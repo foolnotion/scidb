@@ -129,13 +129,6 @@ public:
 		Transpose,
 	};
 
-	enum Finish
-	{
-		Unknown,
-		Mate,
-		Stalemate,
-	};
-
 	typedef mstl::list<mstl::string> StringList;
 	typedef mstl::vector<edit::Node const*> DiffList;
 	typedef mstl::vector<Move> History;
@@ -155,11 +148,13 @@ public:
 		virtual void boardSetup(Board const& board) = 0;
 		virtual void boardMove(Board const& board, Move const& move, bool forward) = 0;
 
-		virtual void updateEditor(edit::Root const* node, move::Notation moveStyle) = 0;
+		virtual void updateEditor(	edit::Root const* node,
+											move::Notation moveStyle) = 0;
 		virtual void updateEditor(	DiffList const& nodes,
 											TagSet const& tags,
 											move::Notation moveStyle,
 											board::Status status,
+											termination::State termination,
 											color::ID toMove) = 0;
 	};
 
@@ -193,6 +188,10 @@ public:
 	bool containsLanguage(	edit::Key const& key,
 									move::Position position,
 									mstl::string const& lang) const;
+	/// Return the chess variant of this game.
+	variant::Type variant() const override;
+	/// Return the start position id.
+	uint16_t idn() const override;
 	/// Return whether any comment contains English language.
 	bool commentEngFlag() const override;
 	/// Return whether any comment contains any other language than English.
@@ -272,8 +271,6 @@ public:
 	mstl::string& printFen(mstl::string& result) const;
 	/// Print FEN at given position
 	mstl::string& printFen(mstl::string const& key, mstl::string& result) const;
-	/// Return unique position number of curent board.
-	uint16_t idn() const;
 	/// Return current opening line.
 	Line const& openingLine() const override;
 	/// Return current ECO code
@@ -483,8 +480,10 @@ public:
 	void undo();
 	/// Redo previous undo.
 	void redo();
-	/// Remove all moves; and possibly set new start position
+	/// Remove all moves; and possibly set new start position.
 	void clear(Board const* startPosition = 0);
+	/// Setup this game.
+	void setup(Board const& startPosition);
 	/// Transpose game.
 	bool transpose(Force flag = OnlyIfRemainsConsistent);
 	/// Clean up variations.
@@ -535,12 +534,18 @@ public:
 	Board const& getFinalBoard() const override;
 	Board const& getStartBoard() const override;
 
+	static void printMove(	Board const& board,
+									Move const& move,
+									mstl::string& result,
+									move::Notation form,
+									unsigned flags = ExportFormat);
+
 	unsigned dumpMoves(mstl::string& result, unsigned flags);
 	unsigned dumpMoves(mstl::string& result, unsigned length, unsigned flags);
 	unsigned dumpHistory(mstl::string& result) const;
 	void getHistory(History& result) const;
 
-	bool finishLoad(mstl::string const* fen = 0);
+	bool finishLoad(variant::Type variant, mstl::string const* fen = 0);
 
 	friend class Database;
 
@@ -572,6 +577,7 @@ private:
 	friend class CleanUp;
 
 	typedef mstl::vector<Undo*> UndoList;
+	typedef termination::State FinalState;
 
 	void doMove();
 	void undoMove();
@@ -619,17 +625,12 @@ private:
 	void promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber, bool update);
 	void removeMainline();
 	bool updateLine();
+	void updateFinalBoard();
 	bool updateLanguageSet();
 	void incrementChangeCounter();
+	bool checkConsistency(MoveNode* node, Board& board, Force flag) const;
 
 	Move parseMove(mstl::string const& san) const;
-
-	static bool checkConsistency(MoveNode* node, Board& board, Force flag);
-	static mstl::string& printMove(	Board const& board,
-												MoveNode* node,
-												mstl::string& result,
-												unsigned flags,
-												move::Notation form);
 
 	mutable SubscriberP m_subscriber;
 
@@ -639,7 +640,6 @@ private:
 	Board				m_currentBoard;
 	mutable Board	m_finalBoard;
 	edit::Key		m_currentKey;
-	unsigned			m_idn;
 	Eco				m_eco;
 	UndoList			m_undoList;
 	LanguageSet		m_languageSet;
@@ -653,7 +653,8 @@ private:
 	bool				m_isIrreversible;
 	bool				m_isModified;
 	bool				m_wasModified;
-	mutable bool	m_finalBoardIsValid;
+	mutable bool	m_threefoldRepetionDetected;
+	FinalState		m_termination;
 	uint16_t			m_lineBuf[opening::Max_Line_Length][2];
 	mutable Line	m_line;
 	unsigned			m_linebreakThreshold;

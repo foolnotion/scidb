@@ -313,12 +313,12 @@ compUserEco(unsigned const* lhs, unsigned const* rhs)
 
 	switch (il.idn())
 	{
-		case variant::StandardIdn:
+		case variant::Standard:
 			switch (ir.idn())
 			{
-				case 0:							return -1;
-				case variant::StandardIdn:	return compare(il.userEco(), ir.userEco());
-				default:							return int(variant::StandardIdn) - int(ir.idn());
+				case 0:						return -1;
+				case variant::Standard:	return compare(il.userEco(), ir.userEco());
+				default:						return int(variant::Standard) - int(ir.idn());
 			}
 			// not reached
 
@@ -341,7 +341,7 @@ compOverview(unsigned const* lhs, unsigned const* rhs)
 	if (rc)
 		return rc;
 
-	if (il.idn() != variant::StandardIdn)
+	if (il.idn() != variant::Standard)
 		return 0;
 
 	return int(il.ecoKey()) - int(ir.ecoKey());
@@ -364,6 +364,18 @@ compFlags(unsigned const* lhs, unsigned const* rhs)
 		return nl - nr;
 
 	return int(mstl::bf::lsb_index(fl)) - int(mstl::bf::lsb_index(fr));
+}
+
+
+static int
+compStandardPosition(unsigned const* lhs, unsigned const* rhs)
+{
+	variant::Type variant = database->variant();
+
+	bool lhsStandard = database->gameInfo(*lhs).hasStandardPosition(variant);
+	bool rhsStandard = database->gameInfo(*rhs).hasStandardPosition(variant);
+
+	return lhsStandard < rhsStandard;
 }
 
 
@@ -421,7 +433,6 @@ DEF_COMPARE(Mode, eventMode());
 DEF_COMPARE(TimeMode, timeMode());
 DEF_COMPARE(Deleted, isDeleted());
 DEF_COMPARE(Changed, isChanged());
-DEF_COMPARE(StandardPosition, hasStandardPosition());
 DEF_COMPARE(Chess960Position, hasChess960Position());
 DEF_COMPARE(Promotion, hasPromotion());
 DEF_COMPARE(UnderPromotion, hasUnderPromotion());

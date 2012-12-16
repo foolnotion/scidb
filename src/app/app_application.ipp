@@ -35,18 +35,17 @@ inline unsigned Application::maxEngineId() const		{ return m_engineList.size(); 
 
 inline bool Application::haveCurrentGame() const		{ return m_position != InvalidPosition; }
 inline bool Application::haveCurrentBase() const		{ return m_current; }
-inline bool Application::haveClipbase() const			{ return m_clipBase; }
 inline bool Application::haveReferenceBase() const		{ return m_referenceBase; }
 inline bool Application::switchReferenceBase() const	{ return m_switchReference; }
 inline bool Application::hasInstance()						{ return m_instance; }
 inline bool Application::isClosed() const					{ return m_isClosed; }
 
-inline Cursor const& Application::scratchBase() const	{ return *m_scratchBase; }
-inline Cursor& Application::scratchBase()					{ return *m_scratchBase; }
+inline Cursor const& Application::scratchBase() const	{ return cursor(scratchbaseName()); }
+inline Cursor& Application::scratchBase()					{ return cursor(scratchbaseName()); }
+inline Cursor const& Application::clipBase() const		{ return cursor(clipbaseName()); }
+inline Cursor& Application::clipBase()						{ return cursor(clipbaseName()); }
 
 inline Application::Subscriber* Application::subscriber() const	{ return m_subscriber.get(); }
-inline mstl::string const& Application::clipbaseName()				{ return m_clipbaseName; }
-inline mstl::string const& Application::scratchbaseName()			{ return m_scratchbaseName; }
 inline unsigned Application::currentPosition() const					{ return m_position; }
 inline db::Tree const* Application::currentTree() const				{ return m_currentTree.get(); }
 inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }
@@ -54,24 +53,6 @@ inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }
 inline void Application::setSwitchReferenceBase(bool flag)			{ m_switchReference = flag; }
 inline void Application::setReferenceBase(Cursor* cursor)			{ setReferenceBase(cursor, true); }
 inline void Application::freezeTree(bool flag)							{ m_treeIsFrozen = flag; }
-
-
-inline
-Cursor const&
-Application::clipBase() const
-{
-	M_REQUIRE(haveClipbase());
-	return *m_clipBase;
-}
-
-
-inline
-Cursor&
-Application::clipBase()
-{
-	M_REQUIRE(haveClipbase());
-	return *m_clipBase;
-}
 
 
 inline
@@ -120,6 +101,15 @@ Application::cursor(mstl::string const& name) const
 
 
 inline
+Cursor const&
+Application::cursor(mstl::string const& name, db::variant::Type variant) const
+{
+	M_REQUIRE(contains(name, variant));
+	return *findBase(name, variant);
+}
+
+
+inline
 Cursor&
 Application::cursor(mstl::string const& name)
 {
@@ -129,11 +119,20 @@ Application::cursor(mstl::string const& name)
 
 
 inline
+Cursor&
+Application::cursor(mstl::string const& name, db::variant::Type variant)
+{
+	M_REQUIRE(contains(name, variant));
+	return *findBase(name, variant);
+}
+
+
+inline
 Cursor const&
 Application::cursor(char const* name) const
 {
 	M_REQUIRE(name && *name ? contains(name) : haveCurrentBase());
-	return *(name == 0 || *name == '\0' ? m_current : findBase(name));
+	return *(!name || !*name ? m_current : findBase(name));
 }
 
 

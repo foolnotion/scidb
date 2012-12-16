@@ -30,15 +30,18 @@ namespace eval application {
 namespace eval database {
 namespace eval mc {
 
-set FileOpen						"Open..."
+set FileOpen						"Open"
 set FileOpenRecent				"Open Recent"
-set FileNew							"New..."
-set FileExport						"Export..."
-set FileImport(pgn)				"Import PGN files..."
-set FileImport(db)				"Import Databases..."
-set FileCreate						"Create Archive..."
+set FileNew							"New"
+set FileExport						"Export"
+set FileImport(pgn)				"Import PGN files"
+set FileImport(db)				"Import Databases"
+set FileCreate						"Create Archive"
 set FileClose						"Close"
+set FileMaintenance				"Maintenance"
 set FileCompact					"Compact"
+set FileStripMoveInfo			"Strip Move Information"
+set FileStripPGNTags				"Strip PGN Tags"
 set HelpSwitcher					"Help for Database Switcher"
 
 set Games							"&Games"
@@ -53,12 +56,9 @@ set Large							"Large"
 set Medium							"Medium"
 set Small							"Small"
 set Tiny								"Tiny"
-set Empty							"empty"
-set None								"none"
-set Failed							"failed"
-set LoadMessage					"Opening database %s"
-set UpgradeMessage				"Upgrading database %s"
-set CompactMessage				"Compacting database %s"
+set LoadMessage					"Opening database '%s'"
+set UpgradeMessage				"Upgrading database '%s'"
+set CompactMessage				"Compacting database '%s'"
 set CannotOpenFile				"Cannot open file '%s'."
 set EncodingFailed				"Encoding %s failed."
 set DatabaseAlreadyOpen			"Database '%s' is already open."
@@ -70,9 +70,6 @@ set DescrTooLargeDetail			"The entry contains %d characters, but only %d charact
 set ClipbaseDescription			"Temporary database, not kept on disk."
 set HardLinkDetected				"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
 set HardLinkDetectedDetail		"If we load this database twice the application may crash due to the usage of threads."
-set UriRejectedDetail(open)	"Only Scidb databases can be opened:"
-set UriRejectedDetail(import)	"Only Scidb databases can be imported:"
-set EmptyUriList					"Drop content is empty."
 set OverwriteExistingFiles		"Overwrite exisiting files in directory '%s'?"
 set SelectDatabases				"Select the databases to be opened"
 set ExtractArchive				"Extract archive %s"
@@ -80,35 +77,10 @@ set CompactDetail					"All games must be closed before a compaction can be done.
 set ReallyCompact					"Really compact database '%s'?"
 set ReallyCompactDetail(1)		"Only one game will be deleted."
 set ReallyCompactDetail(N)		"%s games will be deleted."
-set CopyGames						"Copy games"
-set CopyGamesFromTo				"Copy games from '%src' to '%dst'"
-set CopiedGames					"%s game(s) copied"
-set NoGamesCopied					"No games copied"
-set CopyAllGames					"Copy all games (%num) from '%src'"
-set CopyFilteredGames			"Copy only filtered games (%num) from '%src'"
-set ImportGames					"Import games"
-set ImportOneGameTo(0)			"Import one game to '%dst'?"
-set ImportOneGameTo(1)			"Import about one game to '%dst'?"
-set ImportGamesTo(0)				"Import %num games to '%dst'?"
-set ImportGamesTo(1)				"Import about %num games to '%dst'?"
-set ImportFiles					"Import Files:"
+set SelectVariant					"Select Variant"
 
 set RecodingDatabase				"Recoding %base from %from to %to"
 set RecodedGames					"%s game(s) recoded"
-
-set GameCount						"Games"
-set DatabasePath					"Database path"
-set DeletedGames					"Deleted Games"
-set Description					"Description"
-set Created							"Created"
-set LastModified					"Last modified"
-set Encoding						"Encoding"
-set YearRange						"Year range"
-set RatingRange					"Rating range"
-set Result							"Result"
-set Score							"Score"
-set Type								"Type"
-set ReadOnly						"Read only"
 
 set ChangeIcon						"Change Icon"
 set Recode							"Recode"
@@ -148,9 +120,11 @@ set T_Important					"Important"
 set T_Openings						"Openings"
 set T_OpeningsWhite				"Openings White"
 set T_OpeningsBlack				"Openings Black"
-set T_Bughouse						"Bughouse Chess"
-set T_Antichess					"Antichess"
 set T_PGNFile						"PGN file"
+set T_Bughouse						"Bughouse"
+set T_Antichess					"Antichess"
+set T_ThreeCheck					"Three-check"
+set T_Crazyhouse					"Crazyhouse"
 
 set OpenDatabase					"Open Database"
 set NewDatabase					"New Database"
@@ -166,6 +140,8 @@ set UpgradeDatabaseDetail		"\"No\" will open the database readonly, and you cann
 
 }
 
+set Variants {Normal ThreeCheck Bughouse Crazyhouse Antichess Losers}
+
 array set Vars {
 	pixels			0
 	selection		0
@@ -177,11 +153,7 @@ array set Vars {
 	afterid			{}
 	showDisabled	0
 	pressed			0
-	ignore-button1	0
 	dragging			0
-	drag-item		-1
-	drop-item		-1
-	curr-item		-1
 	taborder			{games players events sites annotators}
 }
 
@@ -200,10 +172,8 @@ array set Defaults {
 
 array set Options {
 	visible				10
-	prop:background	#aee239
 }
 
-variable ClipbaseType	[::scidb::db::get clipbase type]
 variable PreOpen			{}
 variable RecentFiles		{}
 variable MaxHistory		10
@@ -214,13 +184,10 @@ set Types(sci)				[::scidb::db::get types sci]
 set Types(si3)				[::scidb::db::get types si3]
 set Types(si4)				[::scidb::db::get types si4]
 
-namespace import ::tcl::mathfunc::max
-namespace import ::tcl::mathfunc::min
-
 
 proc build {tab width height} {
 	variable ::scidb::clipbaseName
-	variable ClipbaseType
+	variable Variants
 	variable Vars
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
@@ -233,11 +200,15 @@ proc build {tab width height} {
 	]
 	pack $main -fill both -expand yes
 
-	set switcher [::ttk::frame $main.switcher -borderwidth 1 -relief sunken]
 	set contents [::ttk::notebook $tab.contents -class UndockingNotebook -takefocus 1]
 	::ttk::notebook::enableTraversal $contents
 	::theme::configurePanedWindow $main
-	BuildSwitcher $switcher
+	set switcher [::database::::switcher $main.switcher \
+		-switchcmd [namespace current]::Switch \
+		-updatecmd [namespace current]::UpdateVariants \
+		-popupcmd [namespace current]::PopupMenu \
+		-opencmd [namespace current]::OpenBase \
+	]
 
 	$main add $switcher
 	$main add $contents
@@ -273,14 +244,19 @@ proc build {tab width height} {
 		bind $tbFile <<$event>> [namespace code [list ToolbarShow $switcher]]
 	}
 
-	::toolbar::add $tbFile button \
+	set Vars(button:new) [::toolbar::add $tbFile button \
 		-image $::icon::toolbarDocNew \
-		-tooltipvar [namespace current]::mc::NewDatabase \
-		-command [list ::menu::dbNew $main] \
-		;
+		-tooltip "$mc::NewDatabase ($::mc::VariantName(Normal))..." \
+		-command [list ::menu::dbNew $main Normal] \
+	]
+	set Vars(button:new...) [::toolbar::add $tbFile button \
+		-image $::icon::toolbarDocNewAlt \
+		-tooltipvar [::mc::var [namespace current]::mc::NewDatabase "..."] \
+		-command [namespace code PopdownFileNew] \
+	]
 	::toolbar::add $tbFile button \
 		-image $::icon::toolbarDocOpen \
-		-tooltipvar [namespace current]::mc::OpenDatabase \
+		-tooltipvar [::mc::var [namespace current]::mc::OpenDatabase "..."] \
 		-command [list ::menu::dbOpen $main] \
 		;
 	set Vars(button:close) [::toolbar::add $tbFile button \
@@ -301,28 +277,53 @@ proc build {tab width height} {
 #		-command [list ::help::open $sitcher Database-Switcher] \
 #		;
 
-	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
-	after idle [namespace code [list ToolbarShow $switcher]]
-
-	set Vars(bases) {}
 	set Vars(switcher) $switcher
 	set Vars(contents) $contents
 	set Vars(windows) [$contents tabs]
 #	set Vars(history) $history
 #	set Vars(blank) $blank
 	set Vars(current:tab) games
-	set Vars(selection) 0
 	set Vars(after) {}
 	set Vars(lock:minsize) 0
 	set Vars(minheight:switcher) 0
 
+	set tbClipbase [::toolbar::toolbar $switcher \
+		-id database-clipbase \
+		-tooltipvar [namespace current]::mc::SelectVariant \
+	]
+	foreach variant $Variants {
+		switch $variant {
+			Losers {
+				set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
+			}
+			Antichess {
+				set tip "$::mc::VariantName(Antichess) - "
+				append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
+			}
+			default {
+				set tip $::mc::VariantName($variant)
+			}
+		}
+		set Vars(widget:$variant) [::toolbar::add $tbClipbase button \
+			-image $::icon::toolbarVariant($variant) \
+			-command [namespace code [list SwitchVariant $variant]] \
+			-variable [namespace current]::Vars(variant) \
+			-value $variant \
+			-tooltip $tip \
+		]
+	}
+
+	::scidb::db::subscribe gameList [namespace current]::Update [namespace current]::Close {}
+	after idle [namespace code [list ToolbarShow $switcher]]
+
 	bind $contents <<NotebookTabChanged>> [namespace code TabChanged]
 	bind $contents <<LanguageChanged>> [namespace code LanguageChanged]
 
-	AddBase $ClipbaseType $::scidb::clipbaseName no
+	$Vars(switcher) add $::scidb::clipbaseName [::scidb::db::get clipbase type] no
+	$Vars(switcher) current $::scidb::clipbaseName
 	SetClipbaseDescription
 	bind $contents <<LanguageChanged>> +[namespace code SetClipbaseDescription]
-	Switch $clipbaseName
+	Switch $clipbaseName Normal
 }
 
 
@@ -340,7 +341,7 @@ proc finish {app} {
 	array set Positions {}
 
 	# must be done after the toplevel window has been mapped
-	after idle [namespace code RegisterDragDropEvents]
+	after idle [list $Vars(switcher) activate]
 }
 
 
@@ -373,6 +374,11 @@ proc activate {w flag} {
 	[namespace current]::${tab}::activate $Vars($tab) $flag
 	::annotation::hide $flag
 	::marks::hide $flag
+}
+
+
+proc currentVariant {} {
+	return [set [namespace current]::Vars(variant)]
 }
 
 
@@ -410,14 +416,12 @@ proc openBase {parent file byUser args} {
 	if {$opts(-encoding) eq $::encoding::mc::AutoDetect} {
 		set opts(-encoding) $::encoding::autoEncoding
 	}
-	set i [lsearch -exact -index 2 $Vars(bases) $file]
-	if {$i == -1} {
+	if {![$Vars(switcher) contains? $file]} {
 		set ext [string range [file extension $file] 1 end]
-		foreach entry $Vars(bases) {
-			if {$ext eq [lindex $entry 3]} {
-				set f [lindex $entry 2]
-				if {[::scidb::misc::hardLinked? $file $f]} {
-					set msg [string map [list "%file1" $file "%file2" $f] $mc::HardLinkDetected]
+		foreach base [$Vars(switcher) bases] {
+			if {$ext eq [$Vars(switcher) extension $base]} {
+				if {[::scidb::misc::hardLinked? $file $base]} {
+					set msg [string map [list "%file1" $file "%file2" $base] $mc::HardLinkDetected]
 					::dialog::error \
 						-parent .application \
 						-message $msg \
@@ -440,8 +444,8 @@ proc openBase {parent file byUser args} {
 		set msg [format $mc::LoadMessage $name]
 		if {[llength $opts(-encoding)] == 0} {
 			switch $ext {
-				sci - si3 - si4 - cbh	{ set opts(-encoding) auto }
-				pgn - gz - zip				{ set opts(-encoding) $::encoding::defaultEncoding }
+				sci - si3 - si4 - cbh					{ set opts(-encoding) auto }
+				pgn - pgn.gz - bpgn - bpgn.gz - zip	{ set opts(-encoding) $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
@@ -461,9 +465,12 @@ proc openBase {parent file byUser args} {
 				set rc [::util::catchException { ::progress::start $parent $cmd $args $options }]
 				if {$rc != 0} { return 0 }
 			}
-			pgn - gz - zip {
+			bpgn - bpgn.gz {
+				return -code error "BPGN is not yet supported"
+			}
+			pgn - pgn.gz - zip {
 				set type [lsearch -exact $Types(sci) PGNFile]
-				set cmd [list ::import::open $parent $file [list $file] $msg $opts(-encoding) $type]
+				set cmd [list ::import::open $parent $file $msg $opts(-encoding) $type]
 				set rc [::util::catchException $cmd]
 				if {$rc != 0} {
 					catch { ::scidb::db::close $file }
@@ -473,7 +480,7 @@ proc openBase {parent file byUser args} {
 			}
 		}
 		set readonly $opts(-readonly)
-		if {[::scidb::db::get upgrade? $file]} {
+		if {$ext == "sci" && [::scidb::db::get upgrade? $file]} {
 			set opts(-readonly) 1
 			set rc [::dialog::question \
 				-parent $parent \
@@ -496,11 +503,11 @@ proc openBase {parent file byUser args} {
 		if {![::scidb::db::get writeable? $file]} { set opts(-readonly) 1 }
 		::scidb::db::set readonly $file $opts(-readonly)
 		set type [::scidb::db::get type $file]
-		AddBase $type $file $opts(-readonly) $opts(-encoding) $opts(-switchToBase)
+		$Vars(switcher) add $file $type $opts(-readonly) $opts(-encoding)
 		AddRecentFile $type $file $opts(-encoding) $readonly
 		CheckEncoding $parent $file [::scidb::db::get encoding $file]
 	} else {
-		SeeSymbol [lindex $Vars(bases) $i 0]
+		$Vars(switcher) see $file
 		if {$byUser} {
 			set msg [format $mc::DatabaseAlreadyOpen [::util::databaseName $file]]
 			::dialog::info -parent $parent -message $msg
@@ -512,73 +519,68 @@ proc openBase {parent file byUser args} {
 }
 
 
-proc switchToBase {base} {
-	Switch $base
-}
-
-
 proc prepareClose {} {
 	variable Vars
 	variable PreOpen
-	variable ClipbaseType
 
 	set current [::scidb::db::get name]
 	set active ""
 
 	set PreOpen {}
-	foreach entry $Vars(bases) {
-		lassign $entry i type file ext encoding readonly
-		if {$type ne $ClipbaseType} {
-			if {$file eq $current} { set active 1 } else { set active 0 }
-			lappend PreOpen [list $type $file $encoding $readonly $active]
+
+	foreach base [$Vars(switcher) bases] {
+		set type [$Vars(switcher) type $base]
+		if {$type ne [::scidb::db::get clipbase type]} {
+			if {$base eq $current} { set active 1 } else { set active 0 }
+			set encoding [$Vars(switcher) encoding $base]
+			set readonly [$Vars(switcher) readonly? $base]
+			lappend PreOpen [list $type $base $encoding $readonly $active]
 		}
 	}
 }
 
 
-proc closeBase {parent {file {}} {number -1}} {
-	::remote::busyOperation { CloseBase $parent $file $number }
+proc closeBase {parent {file {}}} {
+	::remote::busyOperation { CloseBase $parent $file }
 }
 
 
-proc newBase {parent file {encoding ""}} {
+proc newBase {parent variant file {encoding ""}} {
 	variable Vars
 	variable Types
 
 	set file [file normalize $file]
-	if {[lsearch -exact -index 2 $Vars(bases) $file] == -1} {
+
+	if {[$Vars(switcher) contains? $file]} {
+		set msg [format $mc::DatabaseAlreadyOpen [::util::databaseName $file]]
+		::dialog::error -parent $parent -message $msg
+	} else {
 		set type Unspecific
 		::widget::busyCursor on
-		::scidb::db::new $file [lsearch -exact $Types(sci) $type] {*}$encoding
+		::scidb::db::new $file $variant [lsearch -exact $Types(sci) $type] {*}$encoding
 		::scidb::db::attach $file $file
 		set encoding [::scidb::db::get encoding $file]
-		AddBase $type $file no $encoding
+		$Vars(switcher) add $file $type no $encoding
 		AddRecentFile $type $file $encoding no
 		::widget::busyCursor off
-	} else {
-		set msg [format $mc::DatabaseAlreadyOpen  [::util::databaseName $file]]
-		::dialog::error -parent $parent -message $msg
 	}
-	Switch $file
+
+	Switch $file $variant
 }
 
 
 proc refreshBase {base} {
 	variable Vars
 
-	::scidb::db::switch $base
-	set index [lindex $Vars(bases) [lsearch -exact -index 2 $Vars(bases) $base] 0]
-	set count [::scidb::db::count games $base]
-	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
-	$Vars(canvas) itemconfigure size$index -text $count
-	LayoutSwitcher
+	::scidb::db::switch $base [$Vars(switcher) variant?]
+	$Vars(switcher) update $base
 }
 
 
-proc selectEvent {base index} {
+proc selectEvent {base variant index} {
 	variable Vars
 
-	events::select $Vars(events) $base $index
+	events::select $Vars(events) $base $variant $index
 
 	if {[winfo toplevel $Vars(events)] eq $Vars(events)} {
 		events::activate $Vars(events) 1
@@ -586,10 +588,10 @@ proc selectEvent {base index} {
 }
 
 
-proc selectSite {base index} {
+proc selectSite {base variant index} {
 	variable Vars
 
-	sites::select $Vars(sites) $base $index
+	sites::select $Vars(sites) $base $variant $index
 
 	if {[winfo toplevel $Vars(sites)] eq $Vars(sites)} {
 		sites::activate $Vars(sites) 1
@@ -597,10 +599,10 @@ proc selectSite {base index} {
 }
 
 
-proc selectPlayer {base index} {
+proc selectPlayer {base variant index} {
 	variable Vars
 
-	players::select $Vars(players) $base $index
+	players::select $Vars(players) $base $variant $index
 
 	if {[winfo toplevel $Vars(players)] eq $Vars(players)} {
 		players::activate $Vars(players) 1
@@ -619,7 +621,8 @@ proc addRecentlyUsedToMenu {parent m} {
 
 	set recentFiles {}
 	foreach entry $RecentFiles {
-		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} {
+		set file [lindex $entry 1]
+		if {![$Vars(switcher) contains? $file]} {
 			lappend recentFiles $entry
 		}
 	}
@@ -667,7 +670,7 @@ proc OpenArchive {parent file byUser args} {
 			lassign $pair attr value
 			if {$attr eq "FileName"} {
 				switch [file extension $value] {
-					.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+					.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 						lappend bases $value
 						if {[file exists $value]} { lappend overwrite "\u26ab [file tail $value]" }
 					}
@@ -761,23 +764,36 @@ proc ClearHistory {} {
 }
 
 
-proc CloseBase {parent file number} {
+proc OpenBase {file readonly} {
+	variable Vars
+	openBase $Vars(switcher) $file $readonly
+}
+
+
+proc CloseBase {parent file} {
 	variable Vars
 	variable ::scidb::clipbaseName
 
 	if {[llength $file] == 0} {
 		set file [::scidb::db::get name]
 		if {$file eq $clipbaseName} { return }
-		set i [lsearch -exact -index 2 $Vars(bases) $file]
-		set number [lindex $Vars(bases) $i 0]
 	}
 
 	if {[::game::releaseAll $parent $file]} {
 		::widget::busyCursor on
 		::scidb::db::close $file
-		DeleteBase $number
+		$Vars(switcher) remove $file
 		::widget::busyCursor off
 	}
+}
+
+
+proc SwitchVariant {variant} {
+	variable Vars
+
+	set Vars(variant) $variant
+	$Vars(switcher) variant $variant
+	::scidb::db::switch [$Vars(switcher) current?] $variant
 }
 
 
@@ -879,562 +895,7 @@ proc TableMinSize {main pane switcher sizeInfo} {
 		$main sash place 0 $x $y
 	}
 
-	after idle [namespace code [list LayoutSwitcher]]
-}
-
-
-proc BuildSwitcher {pane} {
-	variable Vars
-	variable Defaults
-
-	set height $Defaults(iconsize)
-	incr height 14
-	set canv [tk::canvas $pane.canv \
-		-takefocus 1 \
-		-background white \
-		-height $height \
-		-yscrollcommand [list $pane.sb set]] \
-		;
-	set Vars(canvas) $canv
-	set Vars(active) 0
-	set sb [::ttk::scrollbar $pane.sb -orient vertical -takefocus 0 -command [list $canv yview]]
-	pack $canv -fill both -expand yes -side left
-	bind $canv <Configure> [namespace code [list LayoutSwitcher %w %h]]
-	bind $canv <ButtonPress-3> [namespace code [list PopupMenu $canv %X %Y]]
-	bind $canv <ButtonPress-1> [list focus $canv]
-	bind $canv <ButtonPress-1> +[list set [namespace current]::Vars(ignore-button1) 0]
-	bind $canv <ButtonPress-1> +[list ::tooltip::tooltip hide]
-	bind $canv <FocusIn> [namespace code { ActivateSwitcher normal }]
-	bind $canv <FocusOut> [namespace code { ActivateSwitcher hidden }]
-	bind $canv <Left> [namespace code { Traverse -unit }]
-	bind $canv <Right> [namespace code { Traverse +unit }]
-	bind $canv <Down> [namespace code { Traverse +line }]
-	bind $canv <Up> [namespace code { Traverse -line }]
-	bind $canv <space> [namespace code ActivateBase]
-	::scidb::db::subscribe dbInfo [namespace current]::UpdateSwitcher {} $canv
-}
-
-
-proc ActivateSwitcher {state} {
-	variable Vars
-
-	if {$state eq "normal"} { set Vars(active) $Vars(selection) }
-	$Vars(canvas) itemconfigure active$Vars(active) -state $state
-}
-
-
-proc Traverse {move} {
-	variable Vars
-
-	$Vars(canvas) itemconfigure active$Vars(active) -state hidden
-	set n [lsearch -integer -index 0 $Vars(bases) $Vars(active)]
-	set nbases [llength $Vars(bases)]
-
-	switch -- $move {
-		+unit	{
-			if {[incr n] == $nbases} { set n 0 }
-		}
-		-unit	{
-			if {[incr n -1] < 0} { set n [expr {$nbases - 1}] }
-		}
-		+line	{
-			set ncols $Vars(unitsperline)
-			set nrows [expr {($nbases + $ncols - 1)/$ncols}]
-			incr n $ncols
-			if {$n >= $nrows*$ncols} { set n [expr {$n % $ncols}] }
-		}
-		-line	{
-			set ncols $Vars(unitsperline)
-			if {$n < $ncols} {
-				set nrows [expr {($nbases + $ncols - 1)/$ncols}]
-				set n [expr {($nrows - 1)*$ncols + $n}]
-			} else {
-				incr n -$ncols
-			}
-		}
-	}
-
-	if {$n >= 0 && $n < [llength $Vars(bases)]} {
-		set Vars(active) [lindex $Vars(bases) $n 0]
-	}
-	$Vars(canvas) itemconfigure active$Vars(active) -state normal
-	SeeSymbol $Vars(active)
-}
-
-
-proc RegisterDragDropEvents {} {
-	variable Vars
-
-	set canv $Vars(canvas)
-	::tkdnd::drop_target register $canv DND_Files
-	::tkdnd::drag_source register $canv DND_Files
-	bind $canv <<DropEnter>> [namespace code { HandleDropEvent enter %t %X %Y }]
-	bind $canv <<DropLeave>> [namespace code { HandleDropEvent leave %t %X %Y }]
-	bind $canv <<DropPosition>> [namespace code { HandleDropPosition %X %Y }]
-	bind $canv <<Drop>> [namespace code { HandleDropEvent %D %t %X %Y }]
-	bind $canv <<DragInitCmd>> [namespace code [list HandleDragEvent %W %t %X %Y]]
-	bind $canv <<DragEndCmd>> [namespace code [list FinishDragEvent %W %A]]
-	bind $canv <<DragPosition>> [namespace code [list HandleDragPositon %W %X %Y]]
-}
-
-
-proc HandleDragEvent {src types x y} {
-	variable Vars
-
-	set num [FindDragItem $x $y]
-	if {$num < 0} { return {} }
-	set i [lsearch -index 0 -integer $Vars(bases) $num]
-	set base [lindex $Vars(bases) $i 2]
-
-	set Vars(drag-item) $num
-	array set Vars { drop-item -1 curr-item -1 dragging 1 ignore-button1 1 }
-
-	set ext [file extension $base]
-	if {[string length $ext] == 0} { set ext .sci }
-	set dragCursors [::dialog::fsbox::dragCursors $ext]
-	if {[llength $dragCursors]} {
-		::tkdnd::set_drag_cursors $src \
-			{copy move link ask private} [lindex $dragCursors 0] \
-			refuse_drop [lindex $dragCursors 1] \
-			;
-	}
-
-	set actionList {copy}
-	if {[::scidb::db::get memoryOnly? $base] || $::tcl_platform(platform) ne "windows"} {
-		lappend actionList move
-	}
-	lappend actionList link ask private
-
-	set files {}
-	set file [file rootname $base]
-
-	if {$file eq $base} {
-		lappend files $file
-	} else {
-		foreach ext [::scidb::misc::suffixes $base] {
-			set f "$file.$ext"
-			if {[file exists $f]} { lappend files $f }
-		}
-	}
-
-	return [list $actionList DND_Files $files]
-}
-
-
-proc HandleDragPositon {src x y} {
-	variable Vars
-
-	set w [winfo containing $x $y]
-	if {$Vars(drag-item) == 0 && $w ne $Vars(canvas)} { return refuse_drop }
-	return ""
-}
-
-
-proc FinishDragEvent {src currentAction} {
-	variable Vars
-
-	::tkdnd::set_drag_cursors $src
-	set Vars(dragging) 0
-}
-
-
-proc HandleDropEvent {action types x y} {
-	variable Vars
-
-	switch $action {
-		enter {
-			if {!$Vars(dragging)} {
-				array set Vars { drop-item -1 drag-item -1 curr-item -1 }
-			}
-			HighlightDropRegion $x $y enter
-			::tooltip::tooltip exclude $Vars(canvas)
-		}
-		leave {
-			HighlightDropRegion $x $y leave
-		}
-		default {
-			if {$Vars(drop-item) >= 0} {
-				if {$Vars(drop-item) != $Vars(drag-item)} {
-					if {$Vars(dragging)} {
-						set cmd [list CopyDatabase $Vars(drag-item) $Vars(drop-item) $x $y]
-					} else {
-						set cmd [list ImportDatabases $action $Vars(drop-item) $x $y]
-					}
-					after idle [namespace code $cmd]
-				}
-			} elseif {!$Vars(dragging)} {
-				HighlightDropRegion $x $y leave
-				after idle [namespace code [list OpenUri $action]]
-			}
-			::tooltip::tooltip include all
-		}
-	}
-
-	return copy
-}
-
-
-proc FindDragItem {x y} {
-	variable Vars
-
-	set canv $Vars(canvas)
-	set x [expr {$x - [winfo rootx $canv]}]
-	set y [expr {$y - [winfo rooty $canv]}]
-
-	if {0 <= $x && $x < [winfo width $canv] && 0 <= $y && $y < [winfo height $canv]} {
-		foreach tag [$canv gettags [$canv find closest $x $y]] {
-			if {[string match input* $tag]} {
-				return [string range $tag 5 end]
-			}
-		}
-	}
-
-	return -1
-}
-
-
-proc HighlightDropRegion {x y action} {
-	variable Vars
-	variable Defaults
-
-	set num [FindDragItem $x $y]
-	set canv $Vars(canvas)
-
-	if {!$Vars(dragging)} {
-		switch $action {
-			enter {
-				if {$num == -1} {
-					$canv configure -background $Defaults(drop:background)
-				}
-			}
-			leave {
-				if {$Vars(drop-item) == -1} {
-					$canv configure -background white
-				}
-			}
-			position {
-				if {$Vars(curr-item) != $num} {
-					if {$num == -1} { set color $Defaults(drop:background) } else { set color white }
-					$canv configure -background $color
-				}
-			}
-		}
-	}
-
-	if {$Vars(drop-item) >= 0 && ($action eq "leave" || $Vars(drop-item) ne $num)} {
-		$canv itemconfigure content$Vars(drop-item) -fill $Vars(background:item)
-		set Vars(drop-item) -1
-	}
-
-	if {$action ne "leave"} {
-		set i [lsearch -index 0 -integer $Vars(bases) $num]
-		if {	$num >= 0
-			&& $num != $Vars(drop-item)
-			&& $num != $Vars(drag-item)
-			&& ![lindex $Vars(bases) $i 5]} {
-
-			set Vars(background:item) [$canv itemcget content$num -fill]
-			$canv itemconfigure content$num -fill $Defaults(drop:background)
-			set Vars(drop-item) $num
-		}
-	}
-
-	set Vars(curr-item) $num
-	return $num
-}
-
-
-proc HandleDropPosition {x y} {
-	variable Vars
-
-	HighlightDropRegion $x $y position
-	if {$Vars(curr-item) != $Vars(drop-item) && $Vars(curr-item) != $Vars(drag-item)} {
-		return refuse_drop
-	}
-	return copy
-}
-
-
-proc ParseUriFiles {parent files allowedExtensions action} {
-	set errorList {}
-	set rejectList {}
-	set remoteList {}
-	set trashList {}
-	set databaseList {}
-
-	foreach {uri file} [::fsbox::parseUriList $files] {
-		if {[string equal -length 6 $uri "trash:"]} {
-			lappend trashList $uri
-		} elseif {	[string equal -length 5 $uri "http:"]
-					|| [string equal -length 6 $uri "https:"]
-					|| [string equal -length 4 $uri "ftp:"]} {
-			lappend remoteList $uri
-		} elseif {[file exists $file]} {
-			if {[string match *.pgn.gz $file] && ".pgn.gz" in $allowedExtensions} {
-				if {$file ni $databaseList} { lappend databaseList $file }
-			} else {
-				set origExt [file extension $file]
-
-				if {[string length $origExt]} {
-					set origExt [string range $origExt 1 end]
-					set mappedExt [::scidb::misc::mapExtension $origExt]
-
-					if {$origExt ne $mappedExt} {
-						set f [file rootname $file]
-						append f . $mappedExt
-						if {[file exists $f]} {
-							set file $f
-						}
-					}
-				}
-
-				if {[file extension $file] in $allowedExtensions} {
-					if {$file ni $databaseList} { lappend databaseList $file }
-				} else {
-					if {$file ni $rejectList} { lappend rejectList $file }
-				}
-			}
-		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
-			# TODO: support .scv and .pgn files in successor versions
-			lappend rejectList $uri
-		} elseif {$uri ni $errorList} {
-			lappend errorList $uri
-		}
-	}
-
-	if {[llength $errorList]} {
-		if {[string match file:* $files] && [llength $databaseList] == 0} {
-			set message $::fsbox::mc::CannotOpenUri
-			if {[llength $errorList] > 10} {
-				append message \n\n [join [lrange $errorList 0 9] \n]
-				append message \n...
-			} else {
-				append message \n\n [join $errorList \n]
-			}
-		} else {
-			set message $::fsbox::mc::InvalidUri
-		}
-		dialog::error -parent $parent -message $message
-	}
-
-	if {[llength $trashList]} {
-		set message $::fsbox::mc::CannotOpenTrashFiles
-		if {[llength $trashList] > 10} {
-			append message \n\n [join [lrange $trashList 0 9] \n]
-			append message \n...
-		} else {
-			append message \n\n [join $trashList \n]
-		}
-		dialog::info -parent $parent -message $message
-	}
-
-	if {[llength $remoteList]} {
-		set message $::fsbox::mc::CannotOpenRemoteFiles
-		if {[llength $remoteList] > 10} {
-			append message \n\n [join [lrange $remoteList 0 9] \n]
-			append message \n...
-		} else {
-			append message \n\n [join $remoteList \n]
-		}
-		dialog::info -parent $parent -message $message
-	}
-
-	if {[llength $rejectList]} {
-		set message $::fsbox::mc::UriRejected
-		if {[llength $rejectList] > 10} {
-			append message \n\n [join [lrange $rejectList 0 9] \n]
-			append message \n...
-		} else {
-			append message \n\n [join $rejectList \n]
-		}
-		append detail $mc::UriRejectedDetail($action)
-		append detail " "
-		append detail [join $allowedExtensions ", "]
-		dialog::info -parent $parent -message $message -detail $detail
-	}
-	
-	if {	[llength $databaseList] +
-			[llength $rejectList] +
-			[llength $trashList] +
-			[llength $errorList] == 0} {
-		set message $mc::EmptyUriList
-		dialog::info -parent $parent -message $message
-	}
-
-	return $databaseList
-}
-
-
-proc OpenUri {uriFiles} {
-	variable Vars
-
-	set parent $Vars(canvas)
-	set allowedExtensions {.sci .scv .si3 .si4 .cbh .pgn .pgn.gz .zip}
-	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions open]
-
-	# take into account that the application is currently loading a database
-	if {[::remote::blocked?]} {
-		::remote::requestOpenBases $databaseList
-	} else {
-		foreach file $databaseList {
-			openBase $parent $file no -switchToBase [expr {[llength $databaseList] == 1}]
-		}
-	}
-}
-
-
-proc ImportDatabases {uriFiles to x y} {
-	variable Vars
-
-	set to [lsearch -index 0 -integer $Vars(bases) $to]
-	set parent $Vars(canvas)
-	set allowedExtensions {.sci .si3 .si4 .pgn .pgn.gz .zip}
-	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions import]
-	set reply no
-
-	if {[llength $databaseList] > 0} {
-		set dst [lindex $Vars(bases) $to 2]
-		set ngames 0
-		set estimated 0
-
-		foreach file $databaseList {
-			set n [::dialog::fsbox::estimateNumberOfGames $file]
-			if {$n < 0} { set estimated 1 }
-			set ngames [expr {$ngames + abs($n)}]
-		}
-
-		if {$ngames == 1} {
-			set msg $mc::ImportOneGameTo($estimated)
-		} else {
-			set msg $mc::ImportGamesTo($estimated)
-		}
-		set ngames [::locale::formatNumber $ngames]
-		set msg [string map [list %dst [::util::databaseName $dst] %num $ngames] $msg]
-		append msg "\n\n"
-		append msg $mc::ImportFiles
-		set detail [join $databaseList "\n"]
-		set reply [::dialog::question \
-			-parent $parent \
-			-title "$::scidb::app: $mc::ImportGames" \
-			-message $msg \
-			-detail $detail \
-			-buttons {yes no} \
-			-default yes \
-		]
-	}
-
-	HighlightDropRegion $x $y leave
-
-	if {$reply eq "yes"} {
-		::import::open $parent $dst $databaseList $mc::ImportGames
-	}
-}
-
-
-proc CopyDatabase {from to x y} {
-	variable Vars
-
-	set parent $Vars(canvas)
-
-	set from	[lsearch -index 0 -integer $Vars(bases) $from]
-	set to	[lsearch -index 0 -integer $Vars(bases) $to]
-	set src  [lindex $Vars(bases) $from 2]
-	set dst  [lindex $Vars(bases) $to 2]
-	set cmd  [list ::scidb::view::copy $src 0 $dst {}]
-	set srcN [::util::databaseName $src]
-	set dstN [::util::databaseName $dst]
-	set msg  [string map [list %src $srcN %dst $dstN] $mc::CopyGamesFromTo]
-	set opts [list -message $msg. -interrupt yes]
-	set args [list [namespace current]::LogCopyDb {}]
-
-	set m [menu $parent.selection_ -tearoff 0]
-	set ngames [::locale::formatNumber [::scidb::view::count games $src 0]]
-	if {$ngames eq "0"} {
-		set state disabled
-		set ngames $::application::database::mc::None
-	} else {
-		set state normal
-	}
-	set txt [string map [list %src $srcN %dst $dstN %num $ngames] $mc::CopyAllGames]
-	$m add command \
-		-label " $txt" \
-		-image $::icon::16x16::piechart(complete) \
-		-compound left \
-		-command [list set [namespace current]::trigger_ all] \
-		-state $state \
-		;
-	set ngames [::locale::formatNumber 0] ;# TODO get number of games from active filter
-	if {$ngames eq "0"} {
-		set state disabled
-		set ngames $::application::database::mc::None
-	} else {
-		set state normal
-	}
-	set txt [string map [list %src $srcN %dst $dstN %num $ngames] $mc::CopyFilteredGames]
-	$m add command \
-		-label " $txt" \
-		-image $::icon::16x16::piechart(filter) \
-		-compound left \
-		-command [list set [namespace current]::trigger_ filter] \
-		-state $state \
-		;
-	$m add separator
-	$m add command \
-		-label " $::mc::Cancel" \
-		-image $::icon::16x16::crossHand \
-		-compound left \
-		-command [list set [namespace current]::trigger_ cancel] \
-		-accelerator $::mc::Key(Esc) \
-		;
-	variable trigger_ none
-	bind $m <<MenuUnpost>> [list set [namespace current]::trigger_ cancel]
-	tk_popup $m {*}[winfo pointerxy $parent]
-	vwait [namespace current]::trigger_
-	destroy $m
-	HighlightDropRegion $x $y leave
-	if {$trigger_ eq "cancel"} { return }
-
-	::log::open $mc::CopyGames
-	::log::delay
-	::log::info $msg
-
-	set ngames [::scidb::db::count games $dst]
-	set cmd [list ::progress::start $parent $cmd $args $opts 0]
-
-	if {[catch { ::util::catchException $cmd count } rc opts]} {
-		::log::error $::import::mc::AbortedDueToInternalError
-		::progress::close
-		::log::close
-		return {*}$opts -rethrow 1 $ngames
-	}
-
-	if {$rc == 1} {
-		::log::error $::import::mc::AbortedDueToIoError
-		::progress::close
-		::log::close
-		# show error dialog
-		return 0
-	}
-
-	if {$rc < 0} {
-		::log::warning $::import::mc::UserHasInterrupted
-		set count [expr {-$rc - 2}]
-		set rc -1
-	}
-
-	update idletasks	;# be sure the following will be appended
-
-	if {$count == 0} {
-		::log::info $mc::NoGamesCopied
-	} else {
-		::log::info	[format $mc::CopiedGames [::locale::formatNumber $count]]
-	}
-
-	set cmd [list ::scidb::db::save $dst $ngames]
-	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
-	if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
-	::progress::close
-	::log::close
+	after idle [list $Vars(switcher) update]
 }
 
 
@@ -1456,156 +917,38 @@ proc LogCopyDb {unused arguments} {
 }
 
 
-proc ActivateBase {} {
+proc UpdateVariants {{variant ""}} {
+	variable Variants
 	variable Vars
 
-	set k [lsearch -integer -index 0 $Vars(bases) $Vars(active)]
-	Switch [lindex $Vars(bases) $k 2]
-}
+	if {[string length $variant]} { set Vars(variant) $variant }
 
-
-proc DeleteBase {number} {
-	variable Vars
-
-	set canv $Vars(canvas)
-	set k [lsearch -integer -index 0 $Vars(bases) $number]
-	set Vars(bases) [lreplace $Vars(bases) $k $k]
-	set tags {active filler border1 border2 border3 content name suff type size icon input}
-	foreach tag $tags { $canv delete $tag$number }
-	if {$Vars(selection) == $number} {
-		if {$k == [llength $Vars(bases)]} { incr k -1 }
-		Switch [lindex $Vars(bases) $k 2]
-	}
-	if {$Vars(active) == $number} { set Vars(active) $Vars(selection) }
-	LayoutSwitcher
-}
-
-
-proc AddBase {type file readonly {encoding ""} {selectBase yes}} {
-	variable Vars
-	variable Defaults
-
-	set canv $Vars(canvas)
-	set img [set [namespace current]::icons::${type}(${Defaults(iconsize)}x${Defaults(iconsize)})]
-	set i $Vars(counter); incr Vars(counter)
-	set ext [file extension $file]
-	switch $ext { .gz - .zip { set ext .pgn } }
-	if {[llength $ext] == 0} { set ext sci } else { set ext [string range $ext 1 end] }
-	set Vars(active) $i
-#	if {$selectBase} { set Vars(selection) $i }
-	if {[llength $encoding] == 0 || $encoding eq $::encoding::autoEncoding} {
-		set encoding [::scidb::db::get encoding $file]
-	}
-	lappend Vars(bases) [list $i $type $file $ext $encoding $readonly]
-	set count [::scidb::db::count games $file]
-	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
-	set count [::locale::formatNumber $count]
-	set name [::util::databaseName $file no]
-
-	switch $ext {
-		sci { set icon $::icon::16x16::filetypeScidbBase }
-		si3 { set icon $::icon::16x16::filetypeScid3Base }
-		si4 { set icon $::icon::16x16::filetypeScid4Base }
-		cbh { set icon $::icon::16x16::filetypeChessBase }
-		pgn { set icon $::icon::16x16::filetypePGN }
-	}
-
-	if {$Defaults(iconsize) <= 16} {
-		set symFont $Defaults(font-symbol-tiny)
-	} else {
-		set symFont $Defaults(font-symbol-normal)
-	}
-
-	tk::label .tmp; set Vars(background) [.tmp cget -background]; destroy .tmp
-	$canv create rectangle 0 0 0 0 -tag active$i -fill black -width 0
-	$canv create rectangle 0 0 0 0 -tag filler$i -fill white -width 0
-	$canv create rectangle 0 0 0 0 -tag border1$i -fill white -width 0
-	$canv create rectangle 0 0 0 0 -tag border2$i -fill gray56 -width 0
-	$canv create rectangle 0 0 0 0 -tag border3$i -fill white -width 0
-	$canv create rectangle 0 0 0 0 -tag content$i -fill $Vars(background) -width 0
-	$canv create text 0 0 -anchor nw -tag name$i -font $symFont -text $name
-	$canv create text 0 0 -anchor nw -tag suff$i -font $symFont -text $ext -fill darkgreen
-	$canv create text 0 0 -anchor ne -tag size$i -font $symFont -text $count
-	$canv create image 0 0 -anchor nw -tag type$i -image $icon
-	$canv create image 0 0 -tag icon$i -anchor nw -image $img
-	$canv create rectangle 0 0 0 0 -tag input$i -fill {} -width 0
-
-	set cmd [namespace code [list PopupMenu $canv %X %Y $i]]
-	$canv bind input$i <ButtonPress-3> "[namespace current]::PopdownProps; $cmd 1"
-	$canv bind input$i <ButtonRelease-1> [namespace code [list DoSwitch $file $i %x %y]]
-	$canv bind input$i <ButtonPress-2> [namespace code [list Properties $i true]]
-	$canv bind input$i <ButtonRelease-2> [namespace code PopdownProps]
-	$canv bind input$i <Enter> [namespace code [list ShowDescription $i]]
-	$canv bind input$i <Leave> [list ::tooltip::hide]
-
-	$canv yview moveto 1.0
-	LayoutSwitcher
-	SeeSymbol $i
-}
-
-
-proc UpdateSwitcher {canv base} {
-	variable ClipbaseType
-	variable Vars
-
-	foreach info $Vars(bases) {
-		lassign $info i type file
-		if {$file eq $base} {
-			set count [::scidb::db::count games $file]
-			if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
-			$canv itemconfigure size$i -text $count
-			if {$type eq $ClipbaseType} {
-				$canv itemconfigure name$i -text $::util::clipbaseName
-			}
+	set usedVariants [::scidb::app::activeVariants]
+	foreach variant $Variants {
+		if {$variant ni $usedVariants} {
+			::toolbar::remove $Vars(widget:$variant)
+		} else {
+			::toolbar::add $Vars(widget:$variant)
 		}
 	}
 
-	LayoutSwitcher
-}
-
-
-proc SeeSymbol {number} {
-	variable Vars
-	variable Defaults
-
-	if {![info exists Vars(canv-height)]} { return }
-	set pad $Defaults(symbol-padding)
-	set canv $Vars(canvas)
-	set topFraction [lindex [$canv yview] 0]
-	set y3 [expr {$topFraction*$Vars(canv-height)}]
-	set y4 [expr {$y3 + [winfo height $canv]}]
-	lassign [$canv bbox input$number] x1 y1 x2 y2
-	if {$y3 + $pad < $y1 || $y2 < $y4 + $pad} {
-		set fraction [expr {double($y1 - $pad)/$Vars(canv-height)}]
-		set fraction [min 1.0 [max 0.0 $fraction]]
-		$canv yview moveto $fraction
+	if {$Vars(variant) ni $usedVariants} {
+		SwitchVariant [lindex [::scidb::db::get variants [$Vars(switcher) current?]] 0]
 	}
 }
 
 
-proc DoSwitch {filename number x y} {
-	variable Vars
-
-	if {$Vars(ignore-button1)} { return }
-	lassign [$Vars(canvas) bbox input$number] x1 y1 x2 y2
-	if {$x < $x1 || $x2 < $x || $y < $y1 || $y2 < $y} { return }
-
-	$Vars(canvas) itemconfigure active$Vars(active) -state hidden
-	set Vars(active) [lindex $Vars(bases) [lsearch -exact -index 2 $Vars(bases) $filename] 0]
-	$Vars(canvas) itemconfigure active$Vars(active) -state normal
-	Switch $filename
-	focus $Vars(canvas)
-}
-
-
-proc Switch {filename} {
+proc Switch {filename {variant Undetermined}} {
 	variable Vars
 	variable Defaults
 	variable ::scidb::clipbaseName
 
-	games::prepareSwitch $Vars(games) [::scidb::db::get codec $filename]
-	::scidb::db::switch $filename
-	set canv $Vars(canvas)
+	if {$variant eq "Undetermined"} {
+		set variant $Vars(variant)
+	}
+
+	$Vars(switcher) current $filename
+	::scidb::db::switch $filename $Vars(variant)
 	set readonly [::scidb::db::get readonly? $filename]
 
 	if {$filename eq $clipbaseName} { set state disabled } else { set state normal }
@@ -1627,21 +970,13 @@ proc Switch {filename} {
 	set Vars(flag:readonly) $readonly
 	CheckTabState
 
-	foreach base $Vars(bases) {
-		lassign $base i type file
-
+	foreach file [$Vars(switcher) bases] {
 		if {$file eq $filename} {
-			set Vars(selection) $i
-			set background $Defaults(selected)
 			if {$readonly} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
 			set name [::util::databaseName $filename]
 			set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
 			set [namespace current]::_Readonly [format $str $name]
-		} else {
-			set background $Vars(background)
 		}
-
-		$canv itemconfigure content$i -fill $background
 	}
 
 	foreach tab {players events sites annotators} {
@@ -1663,7 +998,7 @@ proc CheckTabState {} {
 }
 
 
-proc Update {path id base {view 0} {index -1}} {
+proc Update {path id base variant {view 0} {index -1}} {
 	variable Vars
 
 	if {$index >= 0} {
@@ -1675,31 +1010,27 @@ proc Update {path id base {view 0} {index -1}} {
 
 proc RefreshSwitcher {} {
 	variable Vars
-
-	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
-	lassign [lindex $Vars(bases) $i] i type file
-	set count [::scidb::db::count games $file]
-	if {$count == 0} { set count $mc::Empty } else { set count [::locale::formatNumber $count] }
-	$Vars(canvas) itemconfigure size$i -text $count
-	LayoutSwitcher
+	$Vars(switcher) update [$Vars(switcher) current?]
 }
 
 
 proc LanguageChanged {} {
 	variable Vars
+	variable Variants
 	variable ::scidb::clipbaseName
 
 	set ::util::clipbaseName [set [namespace current]::mc::T_Clipbase]
-	UpdateSwitcher $Vars(canvas) $clipbaseName
+	$Vars(switcher) update $clipbaseName [::scidb::db::get variant? $clipbaseName]
+	set base [$Vars(switcher) current?]
 
-	set i [lsearch -integer -index 0 $Vars(bases) $Vars(selection)]
-
-	if {$i >= 0} {
-		if {[::scidb::db::get readonly?]} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
-		set name [::util::databaseName [lindex $Vars(bases) $i 2]]
-		set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
-		set [namespace current]::_Readonly [format $str $name]
+	if {[::scidb::db::get readonly? $base]} {
+		set str $mc::SetWriteable
+	} else {
+		set str $mc::SetReadonly
 	}
+	set name [::util::databaseName $base]
+	set [namespace current]::_CloseDatabase [format $mc::CloseDatabase $name]
+	set [namespace current]::_Readonly [format $str $name]
 
 	foreach t $Vars(windows) {
 		set var [namespace current]::mc::[string toupper [lindex [split $t .] end] 0 0]
@@ -1709,186 +1040,29 @@ proc LanguageChanged {} {
 			::widget::notebookSetLabel $Vars(contents) $t [set $var]
 		}
 	}
+
+	::toolbar::childconfigure $Vars(button:new) \
+		-tooltip "$mc::NewDatabase ($::mc::VariantName(Normal))..."
+
+	foreach variant $Variants {
+		switch $variant {
+			Losers {
+				set tip "$::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
+			}
+			Antichess {
+				set tip "$::mc::VariantName(Antichess) - "
+				append tip "$::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
+			}
+			default {
+				set tip $::mc::VariantName($variant)
+			}
+		}
+		::toolbar::childconfigure $Vars(widget:$variant) -tooltip $tip
+	}
 }
 
 
-proc Close {path base} {}
-
-
-proc LayoutSwitcher {{w -1} {h -1}} {
-	variable Vars
-	variable Defaults
-
-	if {[llength $Vars(bases)] == 0} { return }
-
-	set canv $Vars(canvas)
-	if {$w == -1} {
-		set w [winfo width $canv]
-		set h [winfo height $canv]
-	}
-	if {$w <= 1} { return }
-
-	set pane [winfo parent $canv]
-	set sbw [winfo width $pane.sb]
-	if {$sbw <= 1} { set sbw 15 }
-	if {"$pane.sb" in [pack slaves $pane]} { incr w $sbw }
-	$canv itemconfigure size0 -state normal
-	lassign [$canv bbox size0] x1 y1 x2 y2
-	set textHeight [expr {$y2 - $y1}]
-	set padType 3
-
-	set minwidth 0
-	foreach base $Vars(bases) {
-		set i [lindex $base 0]
-		lassign [$canv bbox name$i] x1 y1 x2 y2
-		set minwidth [max $minwidth [expr {$x2 - $x1}]]
-		if {$Defaults(iconsize) >= 32} { set state normal } else { set state hidden }
-		$canv itemconfigure size$i -state $state
-		$canv itemconfigure suff$i -state hidden
-		$canv itemconfigure type$i -state hidden
-		if {$Defaults(iconsize) >= 48} {
-			$canv itemconfigure suff$i -state normal
-			$canv itemconfigure type$i -state normal
-			lassign [$canv bbox size$i] x1 y1 x2 y2
-			lassign [$canv bbox suff$i] u1 v1 u2 v2
-			lassign [$canv bbox type$i] s1 t1 s2 t2
-			set minwidth [max	$minwidth [expr {$x2 - $x1 + $u2 - $u1 + $s2 - $s1 + 5 + $padType}]]
-		} elseif {$Defaults(iconsize) >= 32} {
-			$canv itemconfigure suff$i -state normal
-			lassign [$canv bbox size$i] x1 y1 x2 y2
-			lassign [$canv bbox suff$i] s1 t1 s2 t2
-			set minwidth [max	$minwidth [expr {$x2 - $x1 + $s2 - $s1 + 5}]]
-		} else {
-			incr minwidth 3
-		}
-	}
-	set pad $Defaults(symbol-padding)
-	set ipad 2
-	incr minwidth $Defaults(iconsize)
-	incr minwidth $pad
-	incr minwidth [expr {3*$ipad + 4}]
-	set minheight $Defaults(iconsize)
-	incr minheight $pad
-	incr minheight [expr {2*$ipad + 4}]
-	if {$Defaults(iconsize) < 32} {
-		set maxheight [expr {max($minheight, $textHeight + 4)}]
-	} else {
-		set maxheight [expr {max($minheight, 2*$textHeight + 6)}]
-	}
-	set shiftY [expr {($maxheight - $minheight)/2}]
-	set minheight $maxheight
-	set cols [expr {($w - $pad)/$minwidth}]
-	set rows [expr {([llength $Vars(bases)] + $cols - 1)/$cols}]
-	set minH [expr {$rows*$minheight + $pad}]
-	set includesPane [expr {"$pane.sb" in [pack slaves $pane]}]
-	if {$h < $minH && !$includesPane} {
-		pack $pane.sb -fill y -side left
-	} elseif {$minH <= $h && $includesPane} {
-		pack forget $pane.sb
-	}
-	if {$includesPane} { incr w -$sbw }
-	set haveFocus [expr {[focus] eq $canv}]
-	set cols [expr {($w - $pad)/$minwidth}]
-	set minH [expr {$rows*$minheight + $pad}]
-	set offsY [expr {($minheight - $pad - 2*$textHeight)/3}]
-	set x $pad
-	set y $pad
-	set r 0
-
-	foreach base $Vars(bases) {
-		lassign $base i type file
-		set x0 $x
-		set y0 $y
-		set x1 [expr {$x + $minwidth - $pad}]
-		set y1 [expr {$y + $minheight - $pad}]
-		$canv coords active$i [expr {$x0 - 1}] [expr {$y0 - 1}] [expr {$x1 + 2}] [expr {$y1 + 2}]
-		$canv coords filler$i [expr {$x0 - 0}] [expr {$y0 - 0}] [expr {$x1 + 1}] [expr {$y1 + 1}]
-		$canv coords input$i $x0 $y0 $x1 $y1
-		$canv coords border1$i $x0 $y0 $x1 $y1
-		$canv coords border2$i [incr x0] [incr y0] $x1 $y1
-		$canv coords border3$i [incr x0] [incr y0] [incr x1 -1] [incr y1 -1]
-		$canv coords content$i $x0 $y0 [incr x1 -1] [incr y1 -1]
-		$canv coords icon$i [expr {$x0 + $ipad}] [expr {$y0 + $ipad + $shiftY}]
-		switch $Defaults(iconsize) {
-			16 - 24 {
-				set x0 [expr {$x0 + 2*$ipad + $Defaults(iconsize) + 3}]
-				set y0 [expr {$y + ($minheight - $pad - $textHeight)/2}]
-				$canv coords name$i $x0 $y0
-			}
-
-			32 {
-				set x0 [expr {$x0 + 2*$ipad + $Defaults(iconsize)}]
-				set y0 [expr {$y + $ipad + $offsY}]
-				set x1 [expr {$x + $minwidth - $pad - 3*$ipad}]
-				set y1 [expr {$y + $minheight - $pad - $textHeight - $offsY}]
-				set y2 [expr {$y + $ipad + $shiftY + $Defaults(iconsize)}]
-				$canv coords name$i $x0 $y0
-				$canv coords suff$i $x0 $y1
-				$canv coords size$i $x1 $y1
-			}
-
-			48 {
-				lassign [$canv bbox suff$i] u1 v1 u2 v2
-				set x0 [expr {$x0 + 2*$ipad + $Defaults(iconsize)}]
-				set y0 [expr {$y + $ipad + $offsY}]
-				set x1 [expr {$x0 + $u2 - $u1 + $padType}]
-				set x2 [expr {$x + $minwidth - $pad - 3*$ipad}]
-				set y1 [expr {$y + $minheight - $pad - $textHeight - $offsY}]
-				set y2 [expr {$y + $ipad + $shiftY + $Defaults(iconsize)}]
-				$canv coords name$i $x0 $y0
-				$canv coords type$i $x1 $y1
-				$canv coords size$i $x2 $y1
-				$canv coords suff$i $x0 $y1
-			}
-		}
-		if {$Vars(selection) == $i} {
-			set background $Defaults(selected)
-		} else {
-			set background $Vars(background)
-		}
-		if {$Vars(active) == $i && $haveFocus} {
-			$canv itemconfigure active$i -state normal
-		} else {
-			$canv itemconfigure active$i -state hidden
-		}
-		$canv itemconfigure content$i -fill $background
-		if {[incr r] == $cols} {
-			incr y $minheight
-			set x $pad
-			set r 0
-		} else {
-			incr x $minwidth
-		}
-	}
-
-	$canv configure -scrollregion [list 0 0 $w [expr {$rows*$minheight + $pad}]]
-	set Vars(unitsperline) $cols
-	if {$r != $cols} { incr y $minheight }
-	set Vars(canv-height) $y
-}
-
-
-proc ComputeMinHeight {} {
-	variable Defaults
-	variable Vars
-
-	$Vars(canvas) itemconfigure size0 -state normal
-	lassign [$Vars(canvas) bbox size0] x1 y1 x2 y2
-	set textHeight [expr {$y2 - $y1}]
-
-	set ipad 2
-	set minheight $Defaults(iconsize)
-	incr minheight $Defaults(symbol-padding)
-	incr minheight [expr {2*$ipad + 6}]
-
-	if {$Defaults(iconsize) < 32} {
-		set minheight [expr {max($minheight, $textHeight + 4)}]
-	} else {
-		set minheight [expr {max($minheight, 2*$textHeight + 6)}]
-	}
-
-	return $minheight
-}
+proc Close {path base variant} {}
 
 
 proc ConfigureList {main contents switcher height} {
@@ -1926,7 +1100,7 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 		incr y $offset
 
 		if {$Vars(minheight:switcher) == 0} {
-			set minheight [expr {[ComputeMinHeight] + [::toolbar::totalHeight $switcher] + 2}]
+			set minheight [expr {[$Vars(switcher) minheight] + [::toolbar::totalHeight $switcher] + 2}]
 			set Vars(minheight:switcher) $minheight
 		}
 
@@ -1936,9 +1110,8 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 }
 
 
-proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
+proc PopupMenu {parent x y {base ""}} {
 	variable ::scidb::clipbaseName
-	variable ClipbaseType
 	variable Defaults
 	variable Vars
 	variable ::table::options
@@ -1947,23 +1120,24 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		set Vars(ignore-next) 0
 		return
 	}
-	if {$ignoreNext} { set Vars(ignore-next) 1 }
-	set menu $canv.__menu__
+
+	if {[string length $base] > 0} { set Vars(ignore-next) 1 }
+	set menu $parent.__menu__
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 	catch { wm attributes $menu -type popup_menu }
-	set top [winfo toplevel $canv]
-	set specs {}
+	set top [winfo toplevel $parent]
 	set readonly 0
 	set isSciFormat 1
 
-	if {$index >= 0} {
-		set k [lsearch -integer -index 0 $Vars(bases) $index]
-		lassign [lindex $Vars(bases) $k] i type file ext
-		set readonly [::scidb::db::get readonly? $file]
+	if {[string length $base] > 0 && [$Vars(switcher) active? $base]} {
+		set readonly [::scidb::db::get readonly? $base]
+		if {$readonly} { set readonlyState disabled } else { set readonlyState normal }
+		set ext [$Vars(switcher) extension $base]
+		set type [$Vars(switcher) type $base]
 		set isSciFormat [expr {$ext eq "sci"}]
-		set isClipbase [expr {$type eq $ClipbaseType}]
-		set name [::util::databaseName $file]
+		set isClipbase [expr {$base eq $clipbaseName}]
+		set name [::util::databaseName $base]
 		$menu add command                                    \
 			-label " $name"                                   \
 			-image $::icon::16x16::none                       \
@@ -1975,101 +1149,156 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-font $options(menu:headerfont)                   \
 			;
 		$menu add separator
-		lappend specs command $mc::Properties [namespace code [list Properties $i false]] 0 0 info {} {}
-		lappend specs command $mc::FileExport [list ::export::open $canv $file $type $name 0] \
-			0 0 fileExport {} {}
-		lappend specs command $mc::FileImport(db) \
-			[list ::menu::dbImport $top $file db] 1 0 databaseImport {} {}
-		lappend specs command $mc::FileImport(pgn) \
-			[list ::menu::dbImport $top $file pgn] 1 0 filetypePGN {} {}
-		if {$isClipbase || $ext eq "sci"} {
-			if {[::scidb::db::get compress? $file]} { set state normal } else { set state disabled }
-			lappend specs command \
-				"$mc::FileCompact..." \
-				[namespace code [list Compact $top $file]] \
-				1 0 {} {} $state \
+
+		$menu add command \
+			-label " $mc::Properties" \
+			-image $::icon::16x16::info \
+			-compound left \
+			-command [namespace code [list $Vars(switcher) show $base]] \
+			;
+		$menu add command \
+			-label " $mc::FileExport..." \
+			-image $::icon::16x16::fileExport \
+			-compound left \
+			-command [list ::export::open $parent $base $Vars(variant) $type $name 0] \
+			;
+		$menu add command \
+			-label " $mc::FileImport(db)..." \
+			-image $::icon::16x16::databaseImport \
+			-compound left \
+			-command [list ::menu::dbImport $top $base db] \
+			-state $readonlyState \
+			;
+		$menu add command \
+			-label " $mc::FileImport(pgn)..." \
+			-image $::icon::16x16::filetypePGN \
+			-compound left \
+			-command [list ::menu::dbImport $top $base pgn] \
+			-state $readonlyState \
+			;
+
+		set maint [menu $menu.maintenance -tearoff no]
+		$menu add cascade \
+			-menu $maint \
+			-label " $mc::FileMaintenance" \
+			-image $::icon::16x16::setup \
+			-compound left \
+			-state $readonlyState \
+			;
+
+		if {!$readonly} {
+			if {!$isClipbase} {
+				$maint add command \
+					-label " $mc::ChangeIcon..." \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [namespace code [list ChangeIcon $top $base]] \
+					-state $readonlyState \
+					;
+				$maint add command \
+					-label " $mc::EditDescription..." \
+					-image $::icon::16x16::edit \
+					-compound left \
+					-command [namespace code [list EditDescription $parent $base]] \
+					-state $readonlyState \
+					;
+			}
+
+			if {$isClipbase || $ext eq "sci"} {
+				set count [::scidb::db::count games $base $Vars(variant)]
+				if {$count} { set state $readonlyState } else { set state disabled }
+				$maint add command \
+					-label " $mc::FileStripMoveInfo" \
+					-image $::icon::16x16::delete \
+					-compound left \
+					-command [namespace code [list StripMoveInfo $parent $base]] \
+					-state $state \
+					;
+				$maint add command \
+					-label " $mc::FileStripPGNTags..." \
+					-image $::icon::16x16::delete \
+					-compound left \
+					-command [namespace code [list StripPGNTags $parent $base]] \
+					-state $state \
+					;
+				if {[::scidb::db::get compress? $base]} { set state normal } else { set state disabled }
+				$maint add command \
+					-label " $mc::FileCompact..." \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [namespace code [list Compact $top $base]] \
+					-state $state \
+			}
+
+			$maint add command \
+				-label " $mc::FileCreate..." \
+				-image $::icon::16x16::filetypeArchive \
+				-compound left \
+				-command [list ::menu::dbCreateArchive $top $base] \
 				;
 		}
-		lappend specs command "$mc::FileCreate" \
-				[list ::menu::dbCreateArchive $top $file] 0 0 filetypeArchive {} {}
-		lappend specs separator {} {} {} {} {} {} {}
-		if {$file ne $clipbaseName} {
-			lappend specs command $mc::FileClose \
-				[namespace code [list closeBase $canv $file $i]] 0 0 close {} {}
-			lappend specs command "$mc::ChangeIcon..." \
-				[list [namespace current]::ChangeIcon $i $top] 1 0 {} {} {}
-			lappend specs command "$mc::EditDescription..." \
-				[list [namespace current]::EditDescription $canv $i] 1 0 {} {} {}
+
+		if {!$isClipbase} {
+			$menu add command \
+				-label " $mc::FileClose" \
+				-image $::icon::16x16::close \
+				-compound left \
+				-command [namespace code [list closeBase $parent $base]] \
+				;
 		} else {
-			if {[::scidb::db::count games $file] == 0} { set state disabled } else { set state normal }
-			lappend specs command \
-				$mc::EmptyClipbase \
-				[list [namespace current]::EmptyClipbase $canv] \
-				0 0 trash {} $state \
+			set count [::scidb::db::count games $base $Vars(variant)]
+			if {$count} { set state normal } else { set state disabled }
+			$menu add command \
+				-label " $mc::EmptyClipbase" \
+				-image $::icon::16x16::trash \
+				-compound left \
+				-command [namespace code [list EmptyClipbase $parent]] \
+				-state $state \
 				;
 		}
 		switch $ext {
-			si3 - si4 - cbh - pgn {
-				if {[file readable $file]} { set state normal } else { set state disabled }
-				lappend specs command \
-					"$mc::Recode..." \
-					[namespace code [list Recode $i $top]] \
-					0 1 {} {} $state \
+			si3 - si4 - cbh - pgn - bpgn {
+				if {[file readable $base]} { set state normal } else { set state disabled }
+				$menu add command \
+					-label " $mc::Recode..." \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [namespace code [list Recode $base $top]] \
+					-state $state
 					;
 			}
 		}
 
-		# TODO:
-		#	if {	[::scidb::view::count games $file 0] == [::scidb::db::count games $file]
-		#		&& [::scidb::view::query sorted $file]} {
-		#		lappend specs command "Save current order" \
-		#			[namespace code [list SaveOrder $i $top]] 1 0 disk {} {}
-		#	}
-		lappend specs separator {} {} {} {} {} {} {}
+		$menu add separator
 
-		if {!$isClipbase && ($ext eq "sci" || $ext eq "si3" || $ext eq "si4")} {
-			lappend specs \
-				checkbutton \
-				$mc::ReadOnly \
-				[namespace code ToggleReadOnly] \
-				[expr {![::scidb::db::get writeable? $file]}] \
-				0 lock \
-				[namespace current]::Vars(flag:readonly) \
-				{} \
-				;
-			lappend specs separator {} {} {} {} {} {} {}
-		}
-	}
-	lappend specs command $mc::FileNew [list ::menu::dbNew $top] 0 0 docNew {} {}
-	lappend specs command $mc::FileOpen [list ::menu::dbOpen $top] 0 0 docOpen {} {}
-
-	foreach {type text cmd writableOnly notSci icon var state} $specs {
-		if {$type eq "separator"} {
-			$menu add separator
-		} else {
-			if {[llength $icon] == 0} { set icon none }
-			if {[llength $state] == 0} {
-				if {($writableOnly && $readonly) || ($notSci && $isSciFormat)} {
-					set state disabled
-				} else {
-					set state normal
+		if {!$isClipbase} {
+			switch $ext {
+				sci - si3 - si4 {
+					if {![::scidb::db::get writeable? $base]} { set state disabled } else { set state normal }
+					$menu add checkbutton \
+						-label " $::database::switcher::mc::ReadOnly" \
+						-image $::icon::16x16::lock \
+						-compound left \
+						-command [namespace code ToggleReadOnly] \
+						-variable [namespace current]::Vars(flag:readonly) \
+						-state $state \
+						;
+					$menu add separator
 				}
 			}
-			set entry {}
-			lappend entry $type
-			lappend entry -label " [::mc::stripAmpersand $text]"
-			lappend entry -image [set ::icon::16x16::$icon]
-			lappend entry -compound left
-			lappend entry -command [list {*}$cmd]
-			lappend entry -state $state
-			if {[llength $var]} { lappend entry -variable $var }
-			$menu add {*}$entry
 		}
 	}
+
+	$menu add command \
+		-label " $mc::FileOpen..." \
+		-image $::icon::16x16::docOpen \
+		-compound left \
+		-command [list ::menu::dbOpen $top] \
+		;
 
 	set m [menu $menu.mOpenRecent -tearoff false]
 	set state normal
-	if {[addRecentlyUsedToMenu [winfo parent [winfo parent $canv]] $m] == 0} { set state disabled }
+	if {[addRecentlyUsedToMenu [winfo parent [winfo parent $parent]] $m] == 0} { set state disabled }
 	$menu add cascade \
 		-menu $m \
 		-label " [::mc::stripAmpersand $mc::FileOpenRecent]" \
@@ -2078,11 +1307,27 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 		-state $state \
 		;
 
+	$menu add command \
+		-label " $mc::FileNew ($::mc::VariantName(Normal))..." \
+		-image $::icon::16x16::docNew \
+		-compound left \
+		-command [list ::menu::dbNew $top Normal] \
+		;
+
+	menu $menu.mFileNew -tearoff 0
+	$menu add cascade \
+		-menu $menu.mFileNew \
+		-label " $mc::FileNew..." \
+		-image $::icon::16x16::docNewAlt \
+		-compound left \
+		;
+	::menu::addVariantsToMenu $top $menu.mFileNew
+
 #	if {$index == -1 && [::scidb::db::get name] ne $clipbaseName} {
 #		$menu add separator
 #		set name [::util::databaseName [::scidb::db::get name]]
 #		set text [format [set [namespace current]::mc::Close] $name]
-#		set cmd [namespace code [list closeBase $canv]]
+#		set cmd [namespace code [list closeBase $parent]]
 #		$menu add command -label " $text" -image $::icon::16x16::close -compound left -command $cmd
 #	}
 
@@ -2099,8 +1344,7 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 			-label [set mc::$name]                            \
 			-onvalue $size                                    \
 			-offvalue $size                                   \
-			-variable [namespace current]::Defaults(iconsize) \
-			-command [namespace code [list ChangeIconSize $canv]] \
+			-variable ::database::switcher::Options(iconsize) \
 			;
 	}
 
@@ -2117,15 +1361,26 @@ proc PopupMenu {canv x y {index -1} {ignoreNext 0}} {
 }
 
 
+proc PopdownFileNew {} {
+	variable Vars
+
+	set parent $Vars(button:new...)
+	set m $parent.dbNew
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
+	::menu::addVariantsToMenu $parent $m
+	tk_popdown $m $parent
+}
+
+
 proc ToggleReadOnly {} {
 	variable Vars
 	variable RecentFiles
 
 	set file [::scidb::db::get name]
 	::scidb::db::set readonly $Vars(flag:readonly)
-
-	set k [lsearch -exact -index 2 $Vars(bases) $file]
-	lset Vars(bases) $k 5 $Vars(flag:readonly)
+	$Vars(switcher) readonly $file $Vars(flag:readonly)
 
 	set k [FindRecentFile $file]
 	if {$k >= 0} { lset RecentFiles $k 3 $Vars(flag:readonly) }
@@ -2137,23 +1392,21 @@ proc ToggleReadOnly {} {
 
 proc EmptyClipbase {parent} {
 	variable ::scidb::clipbaseName
+	variable Vars
 
-	if {[::game::releaseAll $parent $clipbaseName]} {
+	if {[::game::releaseAll $parent $clipbaseName $Vars(variant)]} {
 		::widget::busyCursor on
-		::scidb::db::clear $clipbaseName
+		::scidb::db::clear $clipbaseName $Vars(variant)
 		::widget::busyCursor off
 	}
 }
 
 
-proc EditDescription {canv index} {
+proc EditDescription {parent file} {
 	variable Vars
 
-	set i [lsearch -integer -index 0 $Vars(bases) $index]
-	set file [lindex $Vars(bases) $i 2]
 	set Vars(description) [::scidb::db::get description $file]
-
-	set dlg [tk::toplevel $canv.descr -class Dialog]
+	set dlg [tk::toplevel $parent.descr -class Dialog]
 	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
 	pack $top -fill both
 	::ttk::entry $top.entry -takefocus 1 -width 108 -textvar [namespace current]::Vars(description)
@@ -2161,14 +1414,14 @@ proc EditDescription {canv index} {
 	$top.entry icursor end
 	pack $top.entry -fill x -padx $::theme::padx -pady $::theme::pady
 	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.ok configure -command [namespace code [list SetDescription $dlg $index]]
+	$dlg.ok configure -command [namespace code [list SetDescription $dlg $file]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	wm transient $dlg [winfo toplevel $canv]
+	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
 	wm title $dlg "$mc::EditDescription ([::util::databaseName $file])"
 	wm resizable $dlg false false
-	::util::place $dlg below $canv
+	::util::place $dlg below $parent
 	wm deiconify $dlg
 	focus $top.entry
 	::ttk::grabWindow $dlg
@@ -2177,11 +1430,9 @@ proc EditDescription {canv index} {
 }
 
 
-proc SetDescription {dlg index} {
+proc SetDescription {dlg file} {
 	variable Vars
 
-	set i [lsearch -integer -index 0 $Vars(bases) $index]
-	set file [lindex $Vars(bases) $i 2]
 	set length [::scidb::db::set description $file $Vars(description)]
 
 	if {$length == 0} {
@@ -2196,28 +1447,13 @@ proc SetDescription {dlg index} {
 }
 
 
-proc ChangeIconSize {canv} {
-	variable Vars
-	variable Defaults
+proc StripMoveInfo {parent file} {
+	return [::beta::notYetImplemented $dlg strip-move-info]
+}
 
-	set size $Defaults(iconsize)
 
-	if {$size <= 16} {
-		set symFont $Defaults(font-symbol-tiny)
-	} else {
-		set symFont $Defaults(font-symbol-normal)
-	}
-
-	foreach base $Vars(bases) {
-		lassign $base i type
-		set img [set [namespace current]::icons::${type}(${size}x${size})]
-		$canv itemconfigure icon$i -image $img
-		$canv itemconfigure name$i -font $symFont
-		$canv itemconfigure size$i -font $symFont
-	}
-
-	update idletasks
-	LayoutSwitcher
+proc StripPGNTags {parent file} {
+	return [::beta::notYetImplemented $dlg strip-move-tags]
 }
 
 
@@ -2237,26 +1473,28 @@ proc Compact {parent file} {
 		-buttons {yes no} \
 		-default no \
 	]
-	if {$reply eq "yes" && [::game::closeAll $parent $file $mc::FileCompact $mc::CompactDetail]} {
-		::browser::closeAll $file
-		::overview::closeAll $file
-		set cmd [list ::scidb::db::compact $file]
-		set name [::util::databaseName $file]
-		set options [list -message [format $mc::CompactMessage $name]]
-		::util::catchException { ::progress::start $parent $cmd {} $options }
+	if {$reply eq "yes"} {
+		set variant [::scidb::app::variant]
+
+		if {[::game::closeAll $parent $file $variant $mc::FileCompact $mc::CompactDetail]} {
+			::browser::closeAll $file $variant
+			::overview::closeAll $file $variant
+			set cmd [list ::scidb::db::compact $file]
+			set name [::util::databaseName $file]
+			set options [list -message [format $mc::CompactMessage $name]]
+			::util::catchException { ::progress::start $parent $cmd {} $options }
+		}
 	}
 }
 
 
-proc Recode {number parent} {
+proc Recode {file parent} {
 	variable RecentFiles
 	variable Types
 	variable Vars
 
-	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file ext enc
-
 	set enc [::scidb::db::get encoding $file]
+	set ext [$Vars(switcher) extension $file]
 	if {$ext eq "cbh"} {
 		set defaultEncoding $::encoding::windowsEncoding
 	} else {
@@ -2270,9 +1508,9 @@ proc Recode {number parent} {
 	::log::info [string map [list "%base" $name "%from" $enc "%to" $encoding] $mc::RecodingDatabase]
 
 	switch $ext {
-		pgn {
+		pgn - bpgn {
 			::import::showOnlyEncodingWarnings true
-			closeBase $parent $file $index
+			closeBase $parent $file
 			openBase $parent $file no -encoding $encoding -readonly yes
 			::import::showOnlyEncodingWarnings false
 		}
@@ -2282,10 +1520,11 @@ proc Recode {number parent} {
 		}
 	}
 
-	::log::info [format $mc::RecodedGames [::locale::formatNumber [::scidb::db::count games $file]]]
+	set count [::scidb::db::count total $file]
+	::log::info [format $mc::RecodedGames [::locale::formatNumber $count]]
 	::log::close
 
-	lset Vars(bases) $i 4 $encoding
+	$Vars(switcher) encoding $file $encoding
 	set i [lsearch -exact -index 1 $RecentFiles $file]
 	if {$i >= 0} { lset RecentFiles $i 2 $encoding }
 }
@@ -2298,18 +1537,15 @@ proc CheckEncoding {parent file encoding} {
 }
 
 
-proc ChangeIcon {number parent} {
+proc ChangeIcon {parent file} {
 	variable Types
 	variable Options
 	variable Vars
 
 	set dlg [tk::toplevel $parent.changeIcon -class Dialog]
-	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file ext
-	set cols 2
-	do {
-		set rows [expr {([llength $Types($ext)] + [incr cols] - 1)/$cols}]
-	} while {$rows > $cols*$cols && $cols < 3}
+	set ext [$Vars(switcher) extension $file]
+	set rows 10
+	set cols [expr {([llength $Types($ext)] + $rows - 1)/$rows}]
 	set list [::tlistbox $dlg.list \
 		-visible $Options(visible) \
 		-linespace 48 \
@@ -2332,13 +1568,14 @@ proc ChangeIcon {number parent} {
 	}
 	$list resize
 
+	set type [$Vars(switcher) type $file]
 	set Vars(icon) [lsearch -exact -index 0 $typeList $type]
 	bind $list <Configure> [namespace code { ConfigureIconList %W }]
 	bind $list <Escape> [list $dlg.cancel invoke]
-	bind $list <<ListboxSelect>> [namespace code [list SelectIcon %W %d $typeList $index]]
+	bind $list <<ListboxSelect>> [namespace code [list SelectIcon %W %d $typeList $file]]
 	$list select $Vars(icon)
 	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.ok configure -command [namespace code [list SetIcon $dlg $typeList $index]]
+	$dlg.ok configure -command [namespace code [list SetIcon $dlg $typeList $file]]
 	$dlg.cancel configure -command [list destroy $dlg]
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $parent]
@@ -2354,33 +1591,29 @@ proc ChangeIcon {number parent} {
 }
 
 
-proc SelectIcon {w data typeList number} {
+proc SelectIcon {w data typeList file} {
 	variable Vars
 
 	if {$data eq ""} {
-		SetIcon $w $typeList $number
+		SetIcon $w $typeList $file
 	} else {
 		set Vars(icon) $data
 	}
 }
 
 
-proc SetIcon {w typeList number} {
+proc SetIcon {w typeList file} {
 	variable Vars
 	variable Types
 	variable Defaults
 	variable RecentFiles
 	
-	set i [lsearch -integer -index 0 $Vars(bases) $number]
-	lassign [lindex $Vars(bases) $i] index type file ext
 	set type [lindex $typeList $Vars(icon) 0]
 	set selection [lsearch -exact $Types(sci) $type]
 	set type [lindex $Types(sci) $selection]
-	lset Vars(bases) $i 1 $type
-	::scidb::db::set type [lindex $Vars(bases) $i 2] $selection
+	$Vars(switcher) type $file $type
+	::scidb::db::set type $file $selection
 	destroy [winfo toplevel $w]
-	set img [set [namespace current]::icons::${type}(${Defaults(iconsize)}x${Defaults(iconsize)})]
-	$Vars(canvas) itemconfigure icon$number -image $img
 	lset RecentFiles [FindRecentFile $file] 0 $type
 }
 
@@ -2388,210 +1621,6 @@ proc SetIcon {w typeList number} {
 proc ConfigureIconList {w} {
 	variable Options
 	set Options(visible) [$w cget -height]
-}
-
-
-proc ShowDescription {index} {
-	variable Vars
-
-	set i [lsearch -integer -index 0 $Vars(bases) $index]
-	lassign [lindex $Vars(bases) $i] i type file
-	set text [::scidb::db::get description $file]
-	if {[llength $text]} { ::tooltip::show $Vars(canvas) $text }
-}
-
-
-proc Properties {index popup} {
-	variable Vars
-	variable ClipbaseType
-	variable Options
-
-	set canv $Vars(canvas)
-	set i [lsearch -integer -index 0 $Vars(bases) $index]
-	lassign [lindex $Vars(bases) $i] i type file ext encoding
-
-	if {$popup} {
-		set dlg $canv.properties
-	} else {
-		set dlg $canv.prop_[regsub -all {[^[:alnum:]]} $file _]
-		if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
-	}
-
-	if {$popup} {
-		if {[winfo exists $dlg]} { destroy $dlg }
-		set f [::util::makePopup $dlg]
-		set label ::tk::label
-		set options [list -background [$f cget -background]]
-	} else {
-		tk::toplevel $dlg -class Scidb
-		set f $dlg.f
-		tk::frame $f -takefocus 0 -background $Options(prop:background)
-		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
-		wm resizable $dlg false false
-		set label ::ttk::label
-		set options {}
-		pack $f -fill x -expand yes
-	}
-
-	set row 1
-	foreach {name var} {	path DatabasePath descr Description type Type readonly ReadOnly
-								created Created lastModified LastModified encoding Encoding games
-								GameCount deleted DeletedGames yearRange YearRange ratingRange RatingRange
-								score Score resWhite {Result 1-0} resBlack {Result 0-1} resDraw {Result 1/2-1/2}
-								resLost {Result 0-0} resNone {Result *}} {
-
-		if {[llength $var] == 1} {
-			$label $f.l$name -text "[set mc::$var]:" {*}$options
-		} else {
-			lassign $var v extension
-			if {$v eq "Result"} { set extension [::util::formatResult $extension] }
-			$label $f.l$name -text "[set mc::$v] $extension:" {*}$options
-		}
-		$label $f.t$name -justify left {*}$options
-		if {!$popup} {
-			$f.l$name configure -background $Options(prop:background)
-			$f.t$name configure -background $Options(prop:background)
-		}
-		grid $f.l$name -row $row -column 1 -sticky wn
-		grid $f.t$name -row $row -column 3 -sticky wn
-		incr row 2
-	}
-
-	$f.tpath configure -wraplength 250 -justify left
-	$f.tdescr configure -wraplength 250 -justify left
-	grid columnconfigure $f {0 2 4} -minsize $::theme::padx
-	grid rowconfigure $f [list 0 [expr {$row - 1}]] -minsize $::theme::pady
-
-	set size [::scidb::db::count games $file]
-	set readOnly [::scidb::db::get readonly? $file]
-
-	set descr [::scidb::db::get description $file]
-	if {[llength $descr] == 0} { set descr "\u2014" }
-	grid $f.lpath $f.tpath $f.ldescr $f.tdescr
-	$f.tpath configure -text $file
-	$f.tdescr configure -text $descr
-
-	if {$type eq $ClipbaseType} {
-		foreach name {path readonly created lastModified} {
-			grid remove $f.l$name $f.t$name
-		}
-	} else {
-		set created [::scidb::db::get created? $file]
-		if {[string length $created] == 0} {
-			$f.tcreated configure -text $::mc::NotAvailable
-		} else {
-			$f.tcreated configure -text [::locale::formatTime $created]
-		}
-		set lastModified [::scidb::db::get modified? $file]
-		if {[string length $lastModified] == 0} {
-			$f.tlastModified configure -text $::mc::NotAvailable
-		} else {
-			$f.tlastModified configure -text [::locale::formatTime $lastModified]
-		}
-	}
-	if {$size == 0} {
-		set ngames $mc::None
-	} else {
-		set ngames [::locale::formatNumber $size]
-	}
-
-	$f.ttype			configure -text [set mc::T_$type]
-	$f.tgames		configure -text $ngames
-	$f.treadonly	configure -text [expr {$readOnly ? $::mc::Yes : $::mc::No}]
-
-	set txt [::scidb::db::get encoding $file]
-	if {[::scidb::db::get encodingState $file] ne "ok"} { append txt " ($mc::Failed)" }
-	$f.tencoding configure -text $txt
-
-	set slaves [grid slaves $f]
-
-	if {$size == 0} {
-		foreach name {deleted yearRange ratingRange score resWhite resBlack resDraw resLost resNone} {
-			if {"$f.l$name" in $slaves} { grid remove $f.l$name $f.t$name }
-		}
-	} else {
-		if {$ext eq "pgn"} {
-			if {"$f.ldeleted" in $slaves} { grid remove $f.ldeleted $f.tdeleted }
-		} else {
-			if {"$f.ldeleted" ni $slaves} { grid $f.ldeleted $f.tdeleted }
-		}
-		if {"$f.lyearRange" ni $slaves} {
-			foreach name {yearRange ratingRange score resWhite resBlack resDraw resLost resNone} {
-				grid $f.l$name $f.t$name
-			}
-		}
-
-		lassign [::scidb::db::get stats $file] \
-			deleted minYear maxYear avgYear minElo maxElo avgElo resNone resWhite resBlack resDraw resLost
-		set total [expr {double($resWhite + $resBlack + $resDraw + $resLost)}]
-		set size [expr {double($size)}]
-		set score 0
-
-		if {$total != 0.0} {
-			set score [expr {round((($resWhite + 0.5*$resDraw)/$total)*100)}]
-		}
-
-		set fmtDeleted		[::locale::formatNumber $deleted]
-		set fmtScore		[format "%d%%" $score]
-		set fmtWhite		[::locale::formatNumber $resWhite]
-		set fmtBlack		[::locale::formatNumber $resBlack]
-		set fmtDraw			[::locale::formatNumber $resDraw]
-		set fmtLost			[::locale::formatNumber $resLost]
-		set fmtNone			[::locale::formatNumber $resNone]
-		set fmtAvgDeleted	[format "%d" [expr {round((double($deleted)/$size)*100)}]]
-		set fmtAvgWhite	[format "%d" [expr {round(($resWhite/$size)*100)}]]
-		set fmtAvgBlack	[format "%d" [expr {round(($resBlack/$size)*100)}]]
-		set fmtAvgDraw		[format "%d" [expr {round(($resDraw/$size)*100)}]]
-		set fmtAvgLost		[format "%d" [expr {round(($resLost/$size)*100)}]]
-		set fmtAvgNone		[format "%d" [expr {round(($resNone/$size)*100)}]]
-
-		if {$minYear && $maxYear && $minYear != $maxYear} {
-			set yearRange "$minYear-$maxYear ($avgYear)"
-		} elseif {$minYear} {
-			set yearRange $minYear
-		} else {
-			set yearRange "\u2014"
-		}
-
-		if {$minElo && $maxElo && $minElo != $maxElo} {
-			set ratingRange "$minElo-$maxElo ($avgElo)"
-		} elseif {$minElo} {
-			set ratingRange $minElo
-		} else {
-			set ratingRange "\u2014"
-		}
-
-		$f.tdeleted			configure -text "$fmtDeleted ($fmtAvgDeleted%)"
-		$f.tyearRange		configure -text $yearRange
-		$f.tratingRange	configure -text $ratingRange
-		$f.tscore			configure -text $fmtScore
-		$f.tresWhite		configure -text "$fmtWhite ($fmtAvgWhite%)"
-		$f.tresBlack		configure -text "$fmtBlack ($fmtAvgBlack%)"
-		$f.tresDraw			configure -text "$fmtDraw ($fmtAvgDraw%)"
-		$f.tresLost			configure -text "$fmtLost ($fmtAvgLost%)"
-		$f.tresNone			configure -text "$fmtNone ($fmtAvgNone%)"
-	}
-
-	if {$popup} {
-		set Vars(properties) $dlg
-		::tooltip::popup $canv $dlg cursor
-	} elseif {![winfo exists $dlg.close]} {
-		::widget::dialogButtons $dlg close
-		$dlg.close configure -command [list destroy $dlg]
-		wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-		wm withdraw $dlg
-		::util::place $dlg center $canv
-		wm deiconify $dlg
-	}
-}
-
-
-proc PopdownProps {} {
-	variable Vars
-
-	if {[info exists Vars(properties)]} {
-		::tooltip::popdown $Vars(properties)
-	}
 }
 
 
@@ -2614,7 +1643,8 @@ proc GetRecentState {} {
 	set count 0
 
 	foreach entry $RecentFiles {
-		if {[lsearch -exact -index 2 $Vars(bases) [lindex $entry 1]] == -1} { incr count }
+		set file [lindex $entry 1]
+		if {![$Vars(switcher) contains? $file]} { incr count }
 	}
 
 	if {$count == 0} { return disabled }
@@ -2628,52 +1658,52 @@ proc FindRecentFile {file} {
 }
 
 
-#proc MakePhoto {path} {
-#	set parent [join [lrange [split $path .] 0 end-1] .]
-#	if {[winfo width $parent] <= 1} { return }
-#	pack [::tk::canvas $path -borderwidth 0]
-#	set src [image create photo -file "SunergosGreyWallpaper-0.0.1-full.jpg"]
-#	set dst [image create photo -width  [winfo width $parent] -height [winfo height $parent]]
-#	::scidb::tk::image copy $src $dst
-#	$path create image 0 0 -anchor nw -image $dst
-#	$path configure -width [image width $dst] -height [image height $dst]
-#	bind [winfo parent $path] <Configure> {#}
-#}
-#
-#
-#proc MakePhoto {path} {
-#	pack [::tk::canvas $path -borderwidth 0]
-#	set img [::splash::picture]
-#	$path create image 0 0 -anchor nw -image $img
-#	$path configure -width [image width $img] -height [image height $img]
-#	bind [winfo parent $path] <Configure> {#}
-#}
-#
-#
-#proc MakeBackground {path} {
-#	variable Vars
-#
-#	if {[winfo exists $path]} {
-#		set img $Vars(tile)
-#	} else {
-#		pack [::tk::canvas $path] -fill both -expand yes
-#		set img [image create photo -file "chessboard-tile.png"]
-#		set Vars(tile) $img
-#	}
-#
-#	set ih [image height $img]
-#	set iw [image width  $img]
-#	set ch [winfo height [winfo parent $path]]
-#	set cw [winfo width  [winfo parent $path]]
-#
-#	for {set x 0} {$x < $cw} {incr x $iw} {
-#		for {set y 0} {$y < $ch} {incr y $ih} {
-#			if {[llength [$path find withtag tile:$x:$y]] == 0} {
-#				$path create image $x $y -anchor nw -image $img -tags [list tile tile:$x:$y]
-#			}
-#		}
-#	}
-#}
+# proc MakePhoto {path} {
+# 	set parent [join [lrange [split $path .] 0 end-1] .]
+# 	if {[winfo width $parent] <= 1} { return }
+# 	pack [::tk::canvas $path -borderwidth 0]
+# 	set src [image create photo -file "SunergosGreyWallpaper-0.0.1-full.jpg"]
+# 	set dst [image create photo -width  [winfo width $parent] -height [winfo height $parent]]
+# 	::scidb::tk::image copy $src $dst
+# 	$path create image 0 0 -anchor nw -image $dst
+# 	$path configure -width [image width $dst] -height [image height $dst]
+# 	bind [winfo parent $path] <Configure> {#}
+# }
+# 
+# 
+# proc MakePhoto {path} {
+# 	pack [::tk::canvas $path -borderwidth 0]
+# 	set img [::splash::picture]
+# 	$path create image 0 0 -anchor nw -image $img
+# 	$path configure -width [image width $img] -height [image height $img]
+# 	bind [winfo parent $path] <Configure> {#}
+# }
+# 
+# 
+# proc MakeBackground {path} {
+# 	variable Vars
+# 
+# 	if {[winfo exists $path]} {
+# 		set img $Vars(tile)
+# 	} else {
+# 		pack [::tk::canvas $path] -fill both -expand yes
+# 		set img [image create photo -file "chessboard-tile.png"]
+# 		set Vars(tile) $img
+# 	}
+# 
+# 	set ih [image height $img]
+# 	set iw [image width  $img]
+# 	set ch [winfo height [winfo parent $path]]
+# 	set cw [winfo width  [winfo parent $path]]
+# 
+# 	for {set x 0} {$x < $cw} {incr x $iw} {
+# 		for {set y 0} {$y < $ch} {incr y $ih} {
+# 			if {[llength [$path find withtag tile:$x:$y]] == 0} {
+# 				$path create image $x $y -anchor nw -image $img -tags [list tile tile:$x:$y]
+# 			}
+# 		}
+# 	}
+# }
 
 
 proc WriteOptions {chan} {

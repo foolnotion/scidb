@@ -27,6 +27,7 @@
 #include "tcl_pgn_reader.h"
 
 #include "tcl_progress.h"
+#include "tcl_tree.h"
 #include "tcl_log.h"
 #include "tcl_base.h"
 
@@ -43,15 +44,19 @@ using namespace tcl;
 
 
 PgnReader::PgnReader(mstl::istream& strm,
+							db::variant::Type variant,
 							mstl::string const& encoding,
 							Tcl_Obj* cmd,
 							Tcl_Obj* arg,
 							Modification modification,
-							int firstGameNumber,
+							ReadMode readMode,
+							GameCount const* firstGameNumber,
 							unsigned lineOffset,
 							bool trialMode)
 	:db::PgnReader(strm,
+						variant,
 						encoding.empty() ? sys::utf8::Codec::automatic() : encoding,
+						readMode,
 						firstGameNumber,
 						modification,
 						lineOffset ? InMoveSection : UseResultTag)
@@ -90,6 +95,7 @@ PgnReader::warning(	Warning code,
 							unsigned lineNo,
 							unsigned column,
 							unsigned gameNo,
+							::db::variant::Type variant,
 							mstl::string const& info,
 							mstl::string const& item)
 {
@@ -133,6 +139,10 @@ PgnReader::warning(	Warning code,
 		case CastlingCorrection:				msg = "CastlingCorrection"; break;
 		case ResultDidNotMatchHeaderResult: msg = "ResultDidNotMatchHeaderResult"; break;
 		case ValueTooLong:						msg = "ValueTooLong"; break;
+		case NotSuicideNotGiveaway:			msg = "NotSuicideNotGiveaway"; break;
+		case VariantChangedToGiveaway:		msg = "VariantChangedToGiveaway"; break;
+		case VariantChangedToSuicide:			msg = "VariantChangedToSuicide"; break;
+		case ResultCorrection:					msg = "ResultCorrection"; break;
 		case MaximalErrorCountExceeded:		msg = "MaximalErrorCountExceeded"; break;
 		case MaximalWarningCountExceeded:	msg = "MaximalWarningCountExceeded"; break;
 	}
@@ -146,16 +156,17 @@ PgnReader::warning(	Warning code,
 		column = 0;
 	}
 
-	Tcl_Obj* objv[8];
+	Tcl_Obj* objv[9];
 
 	objv[0] = m_warning;
 	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
 	objv[3] = Tcl_NewIntObj(gameNo);
-	objv[4] = Tcl_NewStringObj(mstl::string::empty_string, 0);
-	objv[5] = Tcl_NewStringObj(msg, -1);
-	objv[6] = Tcl_NewStringObj(info, info.size());
-	objv[7] = Tcl_NewStringObj(item, item.size());
+	objv[4] = tree::variantToString(variant),
+	objv[5] = Tcl_NewStringObj(mstl::string::empty_string, 0);
+	objv[6] = Tcl_NewStringObj(msg, -1);
+	objv[7] = Tcl_NewStringObj(info, info.size());
+	objv[8] = Tcl_NewStringObj(item, item.size());
 
 	invoke(__func__, m_cmd, m_arg, nullptr, U_NUMBER_OF(objv), objv);
 }
@@ -165,7 +176,8 @@ void
 PgnReader::error(	Error code,
 						unsigned lineNo,
 						unsigned column,
-						int gameNo,
+						unsigned gameNo,
+						::db::variant::Type variant,
 						mstl::string const& message,
 						mstl::string const& info,
 						mstl::string const& item)
@@ -185,29 +197,30 @@ PgnReader::error(	Error code,
 
 	switch (code)
 	{
-		case InvalidToken:						msg = "InvalidToken"; break;
-		case UnexpectedSymbol:					msg = "UnexpectedSymbol"; break;
-		case UnexpectedEndOfInput:				msg = "UnexpectedEndOfInput"; break;
-		case UnexpectedTag:						msg = "UnexpectedTag"; break;
-		case UnexpectedEndOfGame:				msg = "UnexpectedEndOfGame"; break;
-		case TagNameExpected:					msg = "TagNameExpected"; break;
-		case TagValueExpected:					msg = "TagValueExpected"; break;
-		case InvalidFen:							msg = "InvalidFen"; break;
-		case UnterminatedString:				msg = "UnterminatedString"; break;
-		case UnterminatedVariation:			msg = "UnterminatedVariation"; break;
-		case InvalidMove:							msg = "InvalidMove"; break;
-		case UnsupportedVariant:				msg = "UnsupportedVariant"; break;
-		case UnsupportedCrazyhouseVariant:	msg = "UnsupportedCrazyhouseVariant"; break;
-		case TooManyGames:						msg = "TooManyGames"; break;
-		case FileSizeExeeded:					msg = "FileSizeExeeded"; break;
-		case GameTooLong:							msg = "GameTooLong"; break;
-		case TooManyPlayerNames:				msg = "TooManyPlayerNames"; break;
-		case TooManyEventNames:					msg = "TooManyEventNames"; break;
-		case TooManySiteNames:					msg = "TooManySiteNames"; break;
-		case TooManyAnnotatorNames:			msg = "TooManyAnnotatorNames"; break;
-		case TooManySourceNames:				msg = "TooManySourceNames"; break;
-		case SeemsNotToBePgnText:				msg = "SeemsNotToBePgnText"; break;
-		case UnexpectedResultToken:			msg = "UnexpectedResultToken"; break;
+		case InvalidToken:					msg = "InvalidToken"; break;
+		case UnexpectedSymbol:				msg = "UnexpectedSymbol"; break;
+		case UnexpectedEndOfInput:			msg = "UnexpectedEndOfInput"; break;
+		case UnexpectedTag:					msg = "UnexpectedTag"; break;
+		case UnexpectedEndOfGame:			msg = "UnexpectedEndOfGame"; break;
+		case TagNameExpected:				msg = "TagNameExpected"; break;
+		case TagValueExpected:				msg = "TagValueExpected"; break;
+		case InvalidFen:						msg = "InvalidFen"; break;
+		case UnterminatedString:			msg = "UnterminatedString"; break;
+		case UnterminatedVariation:		msg = "UnterminatedVariation"; break;
+		case InvalidMove:						msg = "InvalidMove"; break;
+		case UnsupportedVariant:			msg = "UnsupportedVariant"; break;
+		case TooManyGames:					msg = "TooManyGames"; break;
+		case FileSizeExeeded:				msg = "FileSizeExeeded"; break;
+		case GameTooLong:						msg = "GameTooLong"; break;
+		case TooManyPlayerNames:			msg = "TooManyPlayerNames"; break;
+		case TooManyEventNames:				msg = "TooManyEventNames"; break;
+		case TooManySiteNames:				msg = "TooManySiteNames"; break;
+		case TooManyAnnotatorNames:		msg = "TooManyAnnotatorNames"; break;
+		case TooManySourceNames:			msg = "TooManySourceNames"; break;
+		case SeemsNotToBePgnText:			msg = "SeemsNotToBePgnText"; break;
+		case UnexpectedResultToken:		msg = "UnexpectedResultToken"; break;
+		case UnexpectedCastling:			msg = "UnexpectedCastling"; break;
+		case ContinuationsNotSupported:	msg = "ContinuationsNotSupported"; break;
 
 		case TooManyRoundNames:
 			if (m_tooManyRoundNames)
@@ -226,18 +239,68 @@ PgnReader::error(	Error code,
 		column = 0;
 	}
 
-	Tcl_Obj* objv[8];
+	Tcl_Obj* objv[9];
 
 	objv[0] = m_error;
 	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
 	objv[3] = gameNo >= 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
-	objv[4] = Tcl_NewStringObj(message, message.size());
-	objv[5] = Tcl_NewStringObj(msg, -1);
-	objv[6] = Tcl_NewStringObj(info, info.size());
-	objv[7] = Tcl_NewStringObj(item, item.size());
+	objv[4] = tree::variantToString(variant),
+	objv[5] = Tcl_NewStringObj(message, message.size());
+	objv[6] = Tcl_NewStringObj(msg, -1);
+	objv[7] = Tcl_NewStringObj(info, info.size());
+	objv[8] = Tcl_NewStringObj(item, item.size());
 
 	invoke(__func__, m_cmd, m_arg, nullptr, U_NUMBER_OF(objv), objv);
+}
+
+
+void
+PgnReader::setResult(int n) const
+{
+	setResult(n, accepted(), rejected(), &unsupportedVariants());
+}
+
+
+void
+PgnReader::setResult(int n,
+							GameCount const& accepted,
+							GameCount const& rejected,
+							Variants const* unsupported)
+{
+	Tcl_Obj* objs[4];
+	Tcl_Obj* acc[db::variant::NumberOfVariants];
+	Tcl_Obj* rej[db::variant::NumberOfVariants];
+
+	for (unsigned v = 0; v < db::variant::NumberOfVariants; ++v)
+		acc[v] = Tcl_NewIntObj(accepted[v]);
+
+	for (unsigned v = 0; v < db::variant::NumberOfVariants; ++v)
+		rej[v] = Tcl_NewIntObj(rejected[v]);
+
+	objs[0] = Tcl_NewIntObj(n);
+	objs[1] = Tcl_NewListObj(db::variant::NumberOfVariants, acc);
+	objs[2] = Tcl_NewListObj(db::variant::NumberOfVariants, rej);
+
+	if (unsupported)
+	{
+		Tcl_Obj* uns[mstl::mul2(unsupported->size())];
+
+		for (unsigned i = 0; i < unsupported->size(); ++i)
+		{
+			::tcl::PgnReader::Variants::value_type item = unsupported->container()[i];
+			uns[mstl::mul2(i)] = Tcl_NewStringObj(item.first, item.first.size());
+			uns[mstl::mul2(i) + 1] = Tcl_NewIntObj(item.second);
+		}
+
+		objs[3] = Tcl_NewListObj(mstl::mul2(unsupported->size()), uns);
+	}
+	else
+	{
+		objs[3] = Tcl_NewListObj(0, 0);
+	}
+
+	::tcl::setResult(U_NUMBER_OF(objs), objs);
 }
 
 // vi:set ts=3 sw=3:

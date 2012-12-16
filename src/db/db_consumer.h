@@ -37,7 +37,6 @@
 
 #include "m_stack.h"
 #include "m_string.h"
-#include "m_bitfield.h"
 
 namespace sys { namespace utf8 { class Codec; } }
 
@@ -56,7 +55,7 @@ class Consumer : public Provider
 {
 public:
 
-	typedef mstl::bitfield<uint64_t> TagBits;
+	typedef tag::TagSet TagBits;
 
 	Consumer(format::Type srcFormat,
 				mstl::string const& encoding,
@@ -80,6 +79,8 @@ public:
 	unsigned countMoveInfo() const override;
 	unsigned countMarks() const override;
 	unsigned plyCount() const override;
+	variant::Type variant() const override;
+	uint16_t idn() const override;
 	uint32_t flags() const override;
 
 	Board const& board() const;
@@ -112,6 +113,9 @@ public:
 						Comment const& comment,
 						MarkSet const& marks);
 	void setFlags(uint32_t flags);
+	void setVariant(variant::Type variant);
+	void useVariant(variant::Type variant);
+	void setupVariant(variant::Type variant);
 
 	void startMoveSection();
 	void finishMoveSection(result::ID result0);
@@ -133,6 +137,7 @@ public:
 
 	Consumer* consumer() const;
 	void setConsumer(Consumer* consumer);
+	void setProducer(Producer* producer);
 
 #ifdef DEBUG_SI4
 	uint32_t m_index;
@@ -162,7 +167,10 @@ protected:
 	virtual void beginVariation() = 0;
 	virtual void endVariation(bool isEmpty) = 0;
 
+	virtual void variantHasChanged(variant::Type variant);
+
 	Board& getBoard();
+	variant::Type getVariant() const;
 	void setStartBoard(Board const& board);
 	void addMoveInfo(MoveInfo const& info);
 
@@ -196,6 +204,10 @@ private:
 	unsigned				m_moveInfoCount;
 	unsigned				m_markCount;
 	bool					m_terminated;
+	variant::Type		m_mainVariant;
+	variant::Type		m_variant;
+	variant::Type		m_useVariant;
+	uint16_t				m_idn;
 	uint32_t				m_flags;
 	Line					m_line;
 	HomePawns			m_homePawns;
@@ -203,6 +215,7 @@ private:
 	mstl::string		m_encoding;
 	sys::utf8::Codec*	m_codec;
 	Consumer*			m_consumer;
+	Producer*			m_producer;
 	bool					m_setupBoard;
 	bool					m_commentEngFlag;
 	bool					m_commentOthFlag;

@@ -29,9 +29,9 @@
 namespace eval setup {
 namespace eval mc {
 
-set Chess960Position			"Chess 960 position"
-set SymmChess960Position	"Symmetrical chess 960 position"
-set ShuffleChessPosition	"Shuffle chess position"
+set Position(Chess960)			"Chess 960 position"
+set Position(Symm960)			"Symmetrical chess 960 position"
+set Position(Shuffle)			"Shuffle chess position"
 
 }
 
@@ -41,10 +41,10 @@ proc shuffle {variant} {
 	variable SFRC
 
 	switch $variant {
-		std		{ set idn 518 }
-		frc		{ set idn [expr {int(rand()*960.0) + 1}] }
-		sfrc		{ set idn [lindex $SFRC [expr {int(rand()*[llength $SFRC])}]] }
-		shuffle	{ set idn [expr {int(rand()*2880.0) + 1}] }
+		Normal	{ set idn 518 }
+		Chess960	{ set idn [expr {int(rand()*960.0) + 1}] }
+		Symm960	{ set idn [lindex $SFRC [expr {int(rand()*[llength $SFRC]) + 1}]] }
+		Shuffle	{ set idn [expr {int(rand()*2880.0) + 1}] }
 	}
 
 	return $idn
@@ -52,25 +52,44 @@ proc shuffle {variant} {
 
 
 proc popupShuffleMenu {ns w} {
-	set m $w.spopup
+	set m $w.ficspopup
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
 
-	$m add command \
-		-label $mc::Chess960Position \
-		-command [list ${ns}::Shuffle frc] \
-		;
-	$m add command \
-		-label $mc::SymmChess960Position \
-		-command [list ${ns}::Shuffle sfrc] \
-		;
-	$m add command \
-		-label $mc::ShuffleChessPosition \
-		-command [list ${ns}::Shuffle shuffle] \
-		;
+	foreach variant {Chess960 Symm960 Shuffle} {
+		$m add command -label $mc::Position($variant) -command [list ${ns}::Shuffle $variant]
+	}
+
+	tk_popdown $m $w
+}
+
+
+proc popupPositionMenu {ns w} {
+	set m $w.shufflepopup
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
+
+	foreach {idn name} { 4001 wild/8
+								4002 wild/19
+								4004 pawns/pawns-only
+								4000 pawns/little-game
+								4010 pawns/wild-five
+								4003 misc/pyramid
+								4013 misc/runaway
+								4009 misc/no-queens
+								4014 misc/queen-rooks
+								4005 misc/knights-only
+								4006 misc/bishops-only
+								4007 misc/rooks-only
+								4008 misc/queens-only
+								4011 endings/kbnk
+								4012 endings/kbbk} {
+		$m add command -label $name -command [list ${ns}::Shuffle $idn]
+	}
 	
-	tk_popup $m [winfo rootx $w] [expr {[winfo rooty $w] + [winfo height $w]}]
+	tk_popdown $m $w
 }
 
 namespace eval board {
@@ -83,9 +102,13 @@ set MoveNumber					"Move number"
 set EnPassantFile				"En passant"
 set StartPosition				"Start position"
 set Fen							"FEN"
+set Promoted					"Promoted"
+set Holding						"Holding"
+set ChecksGiven				"Checks Given"
 set Clear						"Clear"
 set CopyFen						"Copy FEN to clipboard"
 set Shuffle						"Shuffle..."
+set FICSPosition				"FICS Start Position..."
 set StandardPosition			"Standard Position"
 set Chess960Castling			"Chess 960 castling"
 
@@ -97,6 +120,7 @@ set ChangeToFormat(xfen)				"Change to X-Fen format"
 set ChangeToFormat(shredder)			"Change to Shredder format"
 
 set Error(InvalidFen)					"FEN is invalid."
+set Error(EmptyBoard)					"Board is empty."
 set Error(NoWhiteKing)					"Missing white king."
 set Error(NoBlackKing)					"Missing black king."
 set Error(BothInCheck)					"Both kings are in check."
@@ -113,6 +137,10 @@ set Error(BadCastlingRights)			"Bad castling rights."
 set Error(InvalidCastlingRights)		"Unreasonable rook files for castling."
 set Error(InvalidCastlingFile)		"Invalid castling file."
 set Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
+set Error(TooManyPiecesInHolding)	"Too many pieces in holding."
+set Error(TooFewPiecesInHolding)		"Too few pieces in holding."
+set Error(TooManyPromotedPieces)		"Too many pieces marked as promoted."
+set Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 set Error(InvalidEnPassant)			"Unreasonable en passant file."
 set Error(MultiPawnCheck)				"Two or more pawns give check."
 set Error(TripleCheck)					"Three or more pieces give check."
@@ -120,14 +148,21 @@ set Error(InvalidStartPosition)		"Castling rights not allowed in start positions
 
 } ;# namespace mc
 
-array set NextPiece { wk wq wq wr wr wb wb wn wn wp wp wk bk bq bq br br bb bb bn bn bp bp bk }
+set FenPattern {^[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/[a-zA-Z0-9~]+/([a-zA-Z]+)}
+
+array set NextPiece {wk wq wq wr wr wb wb wn wn wp wp w. w. wk bk bq bq br br bb bb bn bn bp bp b. b. bk}
 foreach key [array names NextPiece] { set PrevPiece($NextPiece($key)) $key }
 unset key
 
 variable Padding5x5			[image create photo -width 5 -height 5]
-variable History				{}
 variable BorderThickness	2
 variable Vars
+
+array set History {
+	Normal		{}
+	Crazyhouse	{}
+	Antichess	{}
+}
 
 array set Options {
 	fen:format xfen
@@ -140,6 +175,7 @@ proc open {parent} {
 	variable Memo
 	variable History
 	variable Options
+	variable Marker
 
 	set dlg $parent.setup_board
 	if {[winfo exists $dlg]} { return }
@@ -150,6 +186,18 @@ proc open {parent} {
 	set top [ttk::frame $dlg.top]
 	pack $dlg.top
 
+	unset -nocomplain Vars
+	unset -nocomplain Marker
+
+	set variant [::scidb::game::query Variant?]
+	if {$variant eq "Antichess"} {
+		set normal disabled
+		set readonly disabled
+	} else {
+		set normal normal
+		set readonly readonly
+	}
+
 	set Vars(pos) [::scidb::pos::board]
 	set Vars(positionId) 0
 	set Vars(castling) 1
@@ -158,67 +206,78 @@ proc open {parent} {
 	array set Memo [array get Vars]
 	set Vars(fen:memo) ""
 	set Vars(piece) wk
+	set Vars(piece:memo) wk
 	set Vars(freeze) 0
 	set Vars(skip) 0
 	set Vars(field) ""
 	set Vars(popup) 0
+	set Vars(checks:w) 0
+	set Vars(checks:b) 0
+	set Vars(variant) $variant
 
 	set right [ttk::frame $top.right]
 	set bottom [ttk::frame $top.bottom]
 	set edge 20
 
+#	set selectbg $::board::square::style(hilite,selected)
+	set activebg [::theme::getActiveBackgroundColor]
+
 	# castling rights #########################################
-	set castling [ttk::labelframe $right.castling \
-		      -labelwidget [ttk::label $right.castlinglbl -textvar [namespace current]::mc::Castling]]
+	set castling [ttk::labelframe $right.castling -labelwidget [ \
+		ttk::label $right.castlinglbl -textvar [namespace current]::mc::Castling -state $normal]]
 
 	ttk::checkbutton $castling.wshort \
 		-variable [namespace current]::Vars(w:short) \
 		-command [namespace code UpdateCastlingRights] \
+		-state $normal \
 		;
 	ttk::combobox $castling.wshortsq \
 		-exportselection 0 \
-		-state readonly  \
+		-state $readonly  \
 		-values {- C D E F G H} \
 		-textvariable [namespace current]::Vars(w:short:fyle) \
 		-width 2 \
 		;
-	bind $castling.wshortsq <<ComboboxSelected>> [namespace code Update]
+	bind $castling.wshortsq <<ComboboxSelected>> [namespace code [list UpdateCastlingFlag w:short]]
 	ttk::checkbutton $castling.wlong \
 		-variable [namespace current]::Vars(w:long) \
 		-command [namespace code UpdateCastlingRights] \
+		-state $normal \
 		;
 	ttk::combobox $castling.wlongsq \
 		-exportselection 0 \
-		-state readonly  \
+		-state $readonly  \
 		-values {- A B C D E F} \
 		-textvariable [namespace current]::Vars(w:long:fyle) \
 		-width 2 \
 		;
-	bind $castling.wlongsq <<ComboboxSelected>> [namespace code Update]
+	bind $castling.wlongsq <<ComboboxSelected>> [namespace code [list UpdateCastlingFlag w:long]]
 	ttk::checkbutton $castling.bshort \
 		-variable [namespace current]::Vars(b:short) \
 		-command [namespace code UpdateCastlingRights] \
+		-state $normal \
 		;
 	ttk::combobox $castling.bshortsq \
 		-exportselection 0 \
-		-state readonly  \
+		-state $readonly  \
 		-values {- c d e f g h} \
 		-textvariable [namespace current]::Vars(b:short:fyle) \
 		-width 2 \
 		;
-	bind $castling.bshortsq <<ComboboxSelected>> [namespace code Update]
+	bind $castling.bshortsq <<ComboboxSelected>> [namespace code [list UpdateCastlingFlag b:short]]
 	ttk::checkbutton $castling.blong \
 		-variable [namespace current]::Vars(b:long) \
 		-command [namespace code UpdateCastlingRights] \
+		-state $normal \
 		;
 	ttk::combobox $castling.blongsq \
 		-exportselection 0 \
-		-state readonly  \
+		-state $readonly  \
 		-values {- a b c d e f} \
 		-textvariable [namespace current]::Vars(b:long:fyle) \
 		-width 2 \
 		;
-	bind $castling.blongsq <<ComboboxSelected>> [namespace code Update]
+	bind $castling.blongsq <<ComboboxSelected>> [namespace code [list UpdateCastlingFlag b:long]]
 	bind $castling.wshort <<LanguageChanged>> [namespace code [list SetupCastlingButtons $castling]]
 	SetupCastlingButtons $castling
 
@@ -312,7 +371,7 @@ proc open {parent} {
 	::ttk::button $idn.standard \
 		-style icon.TButton \
 		-image $::icon::16x16::home \
-		-command [namespace code { Shuffle std }] \
+		-command [namespace code { Shuffle Normal }] \
 		;
 	::ttk::button $idn.shuffle \
 		-style icon.TButton \
@@ -321,11 +380,20 @@ proc open {parent} {
 		;
 	::tooltip::tooltip $idn.standard [namespace current]::mc::StandardPosition
 	::tooltip::tooltip $idn.shuffle [namespace current]::mc::Shuffle
+	if {$variant eq "Normal"} {
+		::ttk::button $idn.nonstandard \
+			-style icon.TButton \
+			-image $icon::16x16::fics \
+			-command [list [namespace parent]::popupPositionMenu [namespace current] $idn.nonstandard] \
+			;
+		::tooltip::tooltip $idn.nonstandard [namespace current]::mc::FICSPosition
+	}
 
 	::ttk::checkbutton $idn.castling \
 		-textvar [namespace current]::mc::Chess960Castling \
 		-command [namespace code SetCastlingRights] \
 		-variable [namespace current]::Vars(castling) \
+		-state $normal \
 		;
 	set Vars(castling:widget) $idn.castling
 
@@ -334,6 +402,10 @@ proc open {parent} {
 	grid $idn.shuffle		-row 1 -column 5 -sticky ew
 	grid $idn.castling	-row 3 -column 1 -sticky ew -columnspan 5
 	grid columnconfigure $idn {0 2 4 6} -minsize $::theme::padding
+	if {$variant eq "Normal"} {
+		grid $idn.nonstandard -row 1 -column 7 -sticky ew
+		grid columnconfigure $idn {8} -minsize $::theme::padding
+	}
 	grid columnconfigure $idn 1 -weight 1
 	grid rowconfigure $idn {0 2 4} -minsize $::theme::padding
 
@@ -374,6 +446,58 @@ proc open {parent} {
 		-command [namespace code [list SetupBoard flip]]
 		;
 
+	# Holding #################################################
+	if {$variant eq "Crazyhouse"} {
+		set promo $bottom.promo
+		tk::radiobutton $promo \
+			-textvar [namespace current]::mc::Promoted \
+			-image $icon::16x16::marker \
+			-compound bottom \
+			-indicatoron no \
+			-value "." \
+			-variable [namespace current]::Vars(piece) \
+			-activebackground $activebg \
+			-takefocus 0 \
+			-command [namespace code [list SetCursor .]] \
+			;
+		::theme::configureBackground $promo
+
+		set hold [ttk::labelframe $bottom.hold \
+			-labelwidget [ttk::label $bottom.holdlbl -textvar [namespace current]::mc::Holding]]
+
+		set figfont $::font::figurine(text:normal)
+		set figfont [list [font configure $figfont -family] -18]
+
+		set col 1
+		foreach {piece fig} {Q "\u2655" R "\u2656" B "\u2657" N "\u2658" P "\u2659" 
+									q "\u265b" r "\u265c" b "\u265d" n "\u265e" p "\u265f"} {
+			set lbl $hold._$piece
+			set spb ${lbl}_s
+			ttk::label $lbl \
+				-text $fig \
+				-font $figfont \
+				;
+			tk::spinbox $spb \
+				-textvariable [namespace current]::Vars(holding:$piece) \
+				-command [namespace code Update] \
+				-width 2 \
+				-from 0 \
+				-to 8 \
+				;
+			::validate::spinboxInt $spb
+			::theme::configureSpinbox $spb
+			grid $lbl -column $col -row 1
+			grid $spb -column [expr {$col + 2}] -row 1
+			incr col 4
+		}
+
+		grid columnconfigure $hold {0 40} -minsize $::theme::padding
+		grid columnconfigure $hold {2 6 10 14 18 22 26 30 34 38} -minsize 3
+		grid columnconfigure $hold {4 8 12 16 20 24 28 32 36} -weight 1
+		grid columnconfigure $hold {20} -weight 3
+		grid rowconfigure $hold {0 2} -minsize $::theme::padding
+	}
+
 	# FEN #####################################################
 	set fen [ttk::labelframe $bottom.fen \
 		-labelwidget [ttk::label $bottom.fenlbl -textvar [namespace current]::mc::Fen]]
@@ -382,7 +506,7 @@ proc open {parent} {
 		-exportselection 0 \
 		-textvariable [namespace current]::Vars(fen) \
 		-width 0 \
-		-values $History \
+		-values $History([Variant?]) \
 		;
 	bind $fen.text <FocusOut> [namespace code ResetFen]
 	bind $fen.text <FocusIn> [list set [namespace current]::Vars(field) fen]
@@ -414,6 +538,40 @@ proc open {parent} {
 	grid columnconfigure $fen 1 -weight 1
 	grid rowconfigure $fen {0 2} -minsize $::theme::padding
 
+	# checks given ############################################
+	if {$variant eq "ThreeCheck"} {
+		set checks [ttk::labelframe $bottom.checks \
+			-labelwidget [ttk::label $bottom.checkslbl -textvar [namespace current]::mc::ChecksGiven]]
+
+		::ttk::label $checks.lblw -textvar ::mc::White
+		::ttk::label $checks.lblb -textvar ::mc::Black
+
+		foreach side {w b} {
+			::ttk::spinbox $checks.val$side \
+				-from 0 \
+				-to 3 \
+				-textvariable [namespace current]::Vars(checks:$side) \
+				-command [namespace code Update] \
+				-width 1 \
+				;
+			::validate::spinboxInt $checks.val$side
+			::theme::configureSpinbox $checks.val$side
+			bind $checks.val$side <FocusOut> +[namespace code Update]
+		}
+
+		grid $checks.lblw -row 1 -column 1 -sticky ew
+		grid $checks.valw -row 1 -column 3 -sticky ew
+		grid $checks.lblb -row 1 -column 5 -sticky ew
+		grid $checks.valb -row 1 -column 7 -sticky ew
+		grid columnconfigure $checks {0 2 6 8} -minsize $::theme::padding
+		grid columnconfigure $checks {4} -minsize $::theme::padX
+		grid columnconfigure $checks {4} -weight 1
+		grid rowconfigure $checks {0 2} -minsize $::theme::padding
+
+		set Vars(widget:checks:w) $checks.valw
+		set Vars(widget:checks:b) $checks.valb
+	}
+
 	# layout controls #########################################
 	grid $right.castling -column 0 -row  0 -sticky ew
 	grid $right.stm		-column 0 -row  2 -sticky ew
@@ -426,29 +584,48 @@ proc open {parent} {
 	grid rowconfigure $right 5 -minsize [expr {2*$::theme::padding}] -weight 1
 	grid rowconfigure $right 13 -minsize [expr {$edge + $BorderThickness}]
 
-	grid $bottom.fen -row 0 -column 1 -sticky ew
+	switch $variant {
+		Crazyhouse {
+			grid $bottom.promo -row 1 -column 1 -sticky ewns
+			grid $bottom.hold  -row 1 -column 3 -sticky ewns
+			grid $bottom.fen   -row 3 -column 1 -sticky ew -columnspan 3
+			grid columnconfigure $bottom 3 -weight 1
+			grid rowconfigure $bottom 2 -minsize 2
+			grid columnconfigure $bottom 2 -minsize 15
+		}
+		ThreeCheck {
+			grid $bottom.fen    -row 0 -column 1 -sticky ewns
+			grid $bottom.checks -row 0 -column 3 -sticky ewns
+			grid columnconfigure $bottom 2 -minsize $::theme::padding
+			grid columnconfigure $bottom 1 -weight 1
+		}
+		default {
+			grid $bottom.fen -row 0 -column 1 -sticky ew
+			grid columnconfigure $bottom 1 -weight 1
+		}
+	}
+
 	grid rowconfigure $bottom 1 -minsize $::theme::padding
-	grid columnconfigure $bottom 1 -weight 1
 
 	# board ###################################################
 	update idletasks
 	set squareSize [expr {[winfo reqheight $right]/8}]
-	if {![info exists Vars(BoardSize)] || $Vars(BoardSize) != $squareSize} {
-		if {[info exists Vars(BoardSize)]} { ::board::unregisterSize $Vars(BoardSize) }
-		after idle [list ::board::registerSize $squareSize]
-		set Vars(BoardSize) $squareSize
+	if {![info exists Vars(SquareSize)] || $Vars(SquareSize) != $squareSize} {
+		if {[info exists Vars(SquareSize)]} { ::board::unregisterSize $Vars(SquareSize) }
+		::board::registerSize $squareSize
+		set Vars(SquareSize) $squareSize
 	}
 	set size [expr {$squareSize*8 + 2*$BorderThickness + $edge}]
 	set canv [tk::canvas $top.board -width $size -height $size -takefocus 0]
 	::theme::configureCanvas $canv
-	set board [::board::stuff::new $canv.board $squareSize $BorderThickness]
-	::board::stuff::update $board $Vars(pos)
+	set board [::board::diagram::new $canv.board $squareSize $BorderThickness]
+	::board::diagram::update $board $Vars(pos)
 	$board configure -cursor crosshair
 	set Vars(board) $board
 	$canv create window $edge 0 -window $board -anchor nw -tag board
-	::board::stuff::bind $board all <ButtonPress-1> [namespace code [list SetPiece %q]]
-	::board::stuff::bind $board all <ButtonPress-3> [namespace code ChangeColor]
-	::board::stuff::bind $board all <ButtonPress-2> [namespace code [list NextPiece %s]]
+	::board::diagram::bind $board all <ButtonPress-1> [namespace code [list SetPiece %q]]
+	::board::diagram::bind $board all <ButtonPress-3> [namespace code ChangeColor]
+	::board::diagram::bind $board all <ButtonPress-2> [namespace code [list NextPiece %s]]
 	set Vars(board) $board
 
 	set x [expr {$edge/2}]
@@ -467,8 +644,6 @@ proc open {parent} {
 
 	# panel ###################################################
 	set panel [ttk::frame $top.panel]
-	set selectbg $::board::square::style(hilite,selected)
-	set activebg [::theme::getActiveBackgroundColor]
 	set row 1
 	foreach piece {k q r b n p} {
 		set col 1
@@ -480,10 +655,10 @@ proc open {parent} {
 				-value $fig \
 				-variable [namespace current]::Vars(piece) \
 				-activebackground $activebg \
-				-selectcolor $selectbg \
 				-takefocus 0 \
 				-command [namespace code [list SetCursor $side$piece]] \
 				;
+#				-selectcolor $selectbg
 			::theme::configureBackground $panel.$fig
 			grid $panel.$fig -row $row -column $col
 			incr col 2
@@ -499,10 +674,16 @@ proc open {parent} {
 
 	###########################################################
 
+	switch $variant {
+		Crazyhouse { bind $panel <Configure> +[namespace code [list FitBottom $bottom $panel 1]] }
+		ThreeCheck { bind $right <Configure> +[namespace code [list FitBottom $bottom $right 3]] }
+	}
+
 	grid $panel		-row 1 -column 1 -sticky ns
 	grid $canv		-row 1 -column 3
 	grid $right		-row 1 -column 5 -sticky ns
 	grid $bottom	-row 3 -column 1 -sticky ew -columnspan 5
+
 	grid columnconfigure $top {0 4 6} -minsize $::theme::padding
 	grid columnconfigure $top {2 4} -minsize 10
 	grid rowconfigure $top 0 -minsize $::theme::padding
@@ -512,7 +693,9 @@ proc open {parent} {
 	$dlg.revert configure -command [namespace code Reset]
 	$dlg.ok configure -command [namespace code Accept]
 
+	SetupPromoted
 	Update
+	if {$normal eq "normal"} { set focus $castling.wshort } else { set focus $stm.white }
 
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -522,7 +705,27 @@ proc open {parent} {
 	wm resizable $dlg false false
 	::util::place $dlg center $parent
 	wm deiconify $dlg
-	focus $castling.wshort
+	focus $focus
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc FitBottom {dst src cols} {
+	grid columnconfigure $dst $cols -minsize [winfo width $src]
+}
+
+
+proc Variant? {} {
+	set variant [::scidb::game::query Variant?]
+
+	switch [::scidb::game::query Variant?] {
+		Crazyhouse	{ return "Crazyhouse" }
+		Antichess	{ return "Antichess" }
+	}
+
+	return "Normal"
 }
 
 
@@ -536,7 +739,7 @@ proc SetCursor {piece} {
 	variable Vars
 	variable Cursor
 
-	if {[string match *32x32 $Cursor($piece)]} {
+	if {[string match *32x32 $Cursor($piece)] || [string match *16x16 $Cursor($piece)]} {
 		::xcursor::setCursor $Vars(board) $Cursor($piece)
 	} else {
 		$Vars(board) configure -cursor $Cursor($piece)
@@ -549,6 +752,33 @@ proc SetupCastlingButtons {f} {
 	$f.bshort configure -text "$::mc::Black 0-0"
 	$f.wlong  configure -text "$::mc::White 0-0-0"
 	$f.blong  configure -text "$::mc::Black 0-0-0"
+}
+
+
+proc SetupPromoted {} {
+	variable Vars
+	variable Marker
+
+	lassign [::scidb::board::analyseFen $Vars(fen)] \
+		error idn notStd not960 castling ep stm moveno checksGiven promoted
+	if {$idn > 4*960} { set idn 0 }
+
+	::board::diagram::removeAllMarkers $Vars(board)
+
+	for {set i 0} {$i < 64} {incr i} { set Marker($i) 0 }
+
+	foreach i $promoted {
+		set Marker($i) 1
+		::board::diagram::drawMarker $Vars(board) $i $icon::16x16::marker
+	}
+}
+
+
+proc UpdateCastlingFlag {right} {
+	variable Vars
+
+	if {$Vars($right:fyle) ne "-"} { set Vars($right) 1 }
+	Update
 }
 
 
@@ -580,16 +810,30 @@ proc UpdateChess960CastlingFlag {positionId} {
 
 
 proc AnalyseFen {fen {cmd none}} {
+	variable FenPattern
 	variable Vars
 
 	if {$cmd eq "init"} {
-		lassign [::scidb::board::analyseFen $fen] error idn notStd not960 castling ep stm moveno
+		lassign [::scidb::board::analyseFen $fen] \
+			error idn notStd not960 castling ep stm moveno checksGiven promoted
+
+		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
 
 		switch -- $error {
 			CastlingWithoutRook - UnsupportedVariant {
 				set error ""
 			}
+		}
+
+		set holding ""
+		regexp $FenPattern $fen _ holding
+
+		foreach piece {Q R B N P q r b n p} { set Vars(holding:$piece) 0 }
+
+		for {set i 0} {$i < [string length $holding]} {incr i} {
+			set piece [string index $holding $i]
+			incr Vars(holding:$piece)
 		}
 	} else {
 		set castling ""
@@ -602,7 +846,8 @@ proc AnalyseFen {fen {cmd none}} {
 		foreach right {w:short w:long b:short b:long} { append castlingFiles $Vars($right:fyle) }
 
 		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles] \
-			error idn notStd not960 unused ep stm moveno
+			error idn notStd not960 unused ep stm moveno checksGiven promoted
+		if {$idn > 4*960} { set idn 0 }
 	}
 
 	if {$cmd eq "check" && [string length $error]} {
@@ -632,13 +877,21 @@ proc AnalyseFen {fen {cmd none}} {
 	if {$idn == 0} {
 		set idn ""
 	} elseif {$idn <= 960} {
-		set Vars(castling) 1
+		if {[Variant?] ne "Antichess"} {
+			set Vars(castling) 1
+		}
 	} elseif {$idn > 2880} {
 		set idn [expr {$idn - 2880}]
 		set Vars(castling) 0
 	}
 	set Vars(idn) $idn
 	set Vars(freeze) 0
+
+	if {[info exists Vars(widget:checks:w)]} {
+		if {[llength $idn] == 0} { set state normal } else { set state disabled }
+		$Vars(widget:checks:w) configure -state $state
+		$Vars(widget:checks:b) configure -state $state
+	}
 
 	if {[string length $error] && $cmd ne "init"} { return 0 }
 
@@ -647,6 +900,12 @@ proc AnalyseFen {fen {cmd none}} {
 	set Vars(stm) $stm
 	set Vars(ep) [string index $ep 0]
 	set Vars(moveno) $moveno
+
+	if {[llength $idn] == 0} {
+		set Vars(checks:w) [lindex $checksGiven 0]
+		set Vars(checks:b) [lindex $checksGiven 1]
+	}
+
 	set Vars(freeze) 0
 
 	if {[string length $error]} { return 0 }
@@ -659,11 +918,32 @@ proc NextPiece {state} {
 	variable PrevPiece
 	variable Vars
 
-	if {$state == 1} {
+	if {$Vars(piece) eq "."} {
+		set Vars(piece) $Vars(piece:memo)
+	}
+
+	if {[::util::shiftIsHeldDown? $state]} {
 		set Vars(piece) $PrevPiece($Vars(piece))
+		set Vars(piece:memo) $Vars(piece)
+		if {[string match *. $Vars(piece)]} {
+			if {$Vars(variant) in {Crazyhouse Bughouse}} {
+				set Vars(piece) .
+			} else {
+				set Vars(piece) $PrevPiece($Vars(piece))
+			}
+		}
 	} else {
 		set Vars(piece) $NextPiece($Vars(piece))
+		set Vars(piece:memo) $Vars(piece)
+		if {[string match *. $Vars(piece)]} {
+			if {$Vars(variant) in {Crazyhouse Bughouse}} {
+				set Vars(piece) .
+			} else {
+				set Vars(piece) $NextPiece($Vars(piece))
+			}
+		}
 	}
+
 	SetCursor $Vars(piece)
 }
 
@@ -680,32 +960,45 @@ proc ChangeColor {} {
 
 proc SetPiece {square} {
 	variable Vars
+	variable Marker
 
-	if {$Vars(piece) eq [::board::stuff::piece $Vars(board) $square]} {
-		set piece "."
+	if {$Vars(piece) eq "."} {
+		set Marker($square) [expr {!$Marker($square)}]
+		if {$Marker($square)} {
+			::board::diagram::drawMarker $Vars(board) $square $icon::16x16::marker
+		} else {
+			::board::diagram::removeMarker $Vars(board) $square
+		}
 	} else {
-		set piece $::board::stuff::pieceToLetter($Vars(piece))
-	}
+		if {$Vars(piece) eq [::board::diagram::piece $Vars(board) $square]} {
+			set piece "."
+		} else {
+			set piece $::board::diagram::pieceToLetter($Vars(piece))
+		}
 
-	switch $Vars(piece) {
-		wk - bk {
-			set i [string first [expr {$Vars(piece) eq "wk" ? "K" : "k"}] $Vars(pos)]
+		switch $Vars(piece) {
+			wk - bk {
+				if {[Variant?] ne "Antichess"} {
+					set i [string first [expr {$Vars(piece) eq "wk" ? "K" : "k"}] $Vars(pos)]
+					if {$i >= 0} {
+						::board::diagram::setPiece $Vars(board) $i "."
+					}
+				}
+			}
 
-			if {$i >= 0} {
-				::board::stuff::setPiece $Vars(board) $i "."
+			wp - bp {
+				set rank [string index [lindex $::board::diagram::squareIndex $square] 1]
+				if {$rank == 1 || $rank == 8} {
+					bell -displayof . -nice
+					return
+				}
 			}
 		}
 
-		wp - bp {
-			set rank [string index [lindex $::board::stuff::squareIndex $square] 1]
-			if {$rank == 1 || $rank == 8} {
-				bell -displayof . -nice
-				return
-			}
-		}
+		set Vars(pos) [::board::diagram::setPiece $Vars(board) $square $piece]
+		::board::diagram::raiseMarker $Vars(board)
 	}
 
-	set Vars(pos) [::board::stuff::setPiece $Vars(board) $square $piece]
 	Update
 }
 
@@ -716,7 +1009,7 @@ proc SetupBoard {cmd} {
 
 	switch $cmd {
 		empty {
-			set Vars(pos) [::board::stuff::update $Vars(board) $cmd]
+			set Vars(pos) [::board::diagram::update $Vars(board) $cmd]
 			foreach type {w:short w:long b:short b:long} {
 				set Vars($type) 0
 				set Vars($type:fyle) "-"
@@ -725,13 +1018,13 @@ proc SetupBoard {cmd} {
 		}
 
 		flip {
-			set Vars(pos) [::board::stuff::update $Vars(board) $cmd]
+			set Vars(pos) [::board::diagram::update $Vars(board) $cmd]
 		}
 
 		mirror {
 			set Vars(fen) [::scidb::board::transposeFen $Vars(fen) $Options(fen:format)]
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
-			::board::stuff::update $Vars(board) $Vars(pos)
+			::board::diagram::update $Vars(board) $Vars(pos)
 			AnalyseFen $Vars(fen) init
 		}
 	}
@@ -739,19 +1032,31 @@ proc SetupBoard {cmd} {
 	Update
 }
 
+
 proc Shuffle {variant} {
 	variable Vars
+	variable Options
 
 	set castling $Vars(castling)
 
-	if {$variant eq "update"} {
+	if {[string is integer $variant]} {
+		lassign [::scidb::board::idnToFen $variant $Options(fen:format)] Vars(fen) castlingRights
+		set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
+		::board::diagram::update $Vars(board) $Vars(pos)
+		AnalyseFen $Vars(fen) init
+		set idn ""
+	} elseif {$variant eq "update"} {
 		set idn $Vars(idn)
 	} else {
 		set idn [[namespace parent]::shuffle $variant]
 
-		switch $variant {
-			std - frc - sfrc	{ set castling 1 }
-			shuffle				{ set castling 0 }
+		if {[Variant?] eq "Antichess"} {
+			set castling 0
+		} else {
+			switch $variant {
+				Normal - Chess960 - Symm960	{ set castling 1 }
+				Shuffle								{ set castling 0 }
+			}
 		}
 	}
 
@@ -777,7 +1082,8 @@ proc Shuffle {variant} {
 		set Vars(freeze) 0
 
 		SetCastlingRights
-		::board::stuff::update $Vars(board) $Vars(pos)
+		SetupPromoted
+		::board::diagram::update $Vars(board) $Vars(pos)
 	}
 
 	Update
@@ -886,6 +1192,7 @@ proc ValidateIdn {value} {
 proc Update {} {
 	variable Vars
 	variable Options
+	variable Marker
 
 	set Vars(skip) 0
 
@@ -900,8 +1207,26 @@ proc Update {} {
 		}
 	}
 
-	set Vars(fen) [::scidb::board::makeFen \
-		$Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) $Options(fen:format)]
+	if {[llength $Vars(idn)] == 0} {
+		set checksW $Vars(checks:w)
+		set checksB $Vars(checks:b)
+	} else {
+		set checksW 0
+		set checksB 0
+	}
+
+	set holding ""
+	foreach piece {Q R B N P q r b n p} {
+		append holding [string repeat $piece $Vars(holding:$piece)]
+	}
+
+	set promoted {}
+	for {set i 0} {$i < 64} {incr i} {
+		if {$Marker($i)} { lappend promoted $i }
+	}
+
+	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
+		$checksW $checksB $holding $promoted $Options(fen:format)]
 
 	if {[string length $castling]} {
 		lset Vars(fen) 2 $castling
@@ -913,10 +1238,22 @@ proc Update {} {
 		AnalyseFen $Vars(fen)
 	}
 
-	if {[llength $Vars(idn)] && $Vars(idn) <= 960} {
-		$Vars(castling:widget) configure -state normal
-	} else {
-		$Vars(castling:widget) configure -state disabled
+	if {[llength $Vars(idn)] == 0} {
+		set Vars(fen) [::scidb::board::makeFen \
+			$Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
+			$Vars(checks:w) $Vars(checks:b) $holding $promoted $Options(fen:format)] \
+			;
+		if {[string length $castling]} {
+			lset Vars(fen) 2 $castling
+		}
+	}
+
+	if {[Variant?] ne "Antichess"} {
+		if {[llength $Vars(idn)] && $Vars(idn) <= 960} {
+			$Vars(castling:widget) configure -state normal
+		} else {
+			$Vars(castling:widget) configure -state disabled
+		}
 	}
 }
 
@@ -950,18 +1287,19 @@ proc SwitchFormat {w} {
 	}
 
 	SetupFormat $w
+	set variant [Variant?]
 
 	set values {}
-	foreach fen $History {
+	foreach fen $History($variant) {
 		lappend values [::scidb::board::normalizeFen $fen $Options(fen:format)]
 	}
-	set History $values
+	set History($variant) $values
 	set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
 
 	set cb $Vars(combo)
 	set current [$cb current]
 	bind $cb <<ComboboxSelected>> {#}
-	$cb configure -values $History
+	$cb configure -values $History($variant)
 	if {$current >= 0} { $cb current $current }
 	bind $cb <<ComboboxSelected>> [namespace code ResetFen]
 }
@@ -972,11 +1310,16 @@ proc ResetFen {} {
 
 	set Vars(fen) [string trim $Vars(fen)]
 
+	if {[Variant?] eq "Antichess"} {
+		lset Vars(fen) 2 "-"
+	}
+
 	if {[string length $Vars(fen)]} {
 		if {[AnalyseFen $Vars(fen) init]} {
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
-			::board::stuff::update $Vars(board) $Vars(pos)
+			::board::diagram::update $Vars(board) $Vars(pos)
 			set Vars(field) ""
+			SetupPromoted
 			Update
 		}
 	}
@@ -988,7 +1331,7 @@ proc Reset {} {
 	variable Memo
 
 	array set Vars [array get Memo]
-	::board::stuff::update $Vars(board) $Vars(pos)
+	::board::diagram::update $Vars(board) $Vars(pos)
 	Update
 }
 
@@ -1011,11 +1354,12 @@ proc Accept {} {
 		set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
 		::scidb::game::clear $Vars(fen)
 		destroy [winfo toplevel $Vars(combo)]
-		set i [lsearch -exact $History $Vars(fen)]
+		set variant [Variant?]
+		set i [lsearch -exact $History($variant) $Vars(fen)]
 		if {$i != 0} {
-			if {$i == -1 && [llength $History] == 10} { set i 9 }
-			if {$i != -1} { set History [lreplace $History $i $i] }
-			set History [linsert $History 0 $Vars(fen)]
+			if {$i == -1 && [llength $History($variant)] == 10} { set i 9 }
+			if {$i != -1} { set History($variant) [lreplace $History($variant) $i $i] }
+			set History($variant) [linsert $History($variant) 0 $Vars(fen)]
 		}
 	}
 }
@@ -1061,6 +1405,13 @@ proc SetupCursors {} {
 						::log::info Setup $msg
 					}
 				}
+				set file [file join $::scidb::dir::share cursor circle-orange-16x16.xcur]
+				if {[file readable $file]} {
+					catch { set Cursor(.) [::xcursor::loadCursor $file] }
+				} else {
+					set msg [format $::application::pgn::mc::CannotOpenCursorFiles $file]
+					::log::info Setup $msg
+				}
 			} else {
 				foreach fig {k q r b n p} {
 					set wfile [file join $::scidb::dir::share cursor igor-w${fig}-32x32.xbm]
@@ -1075,6 +1426,7 @@ proc SetupCursors {} {
 						::log::info Setup $msg
 					}
 				}
+				set Cursor(.) circle
 			}
 		}
 
@@ -1088,6 +1440,13 @@ proc SetupCursors {} {
 				set Cursor(b$fig) [list @$bfile]
 			} else {
 				::log::info Setup [format $::application::pgn::mc::CannotOpenCursorFiles "$wfile $bfile"]
+			}
+
+			set file [file join $::scidb::dir::share cursor circle-orange-32x32.$ext]
+			if {[file readable $file]} {
+				set Cursor(.) [list @$file]
+			} else {
+				::log::info Setup [format $::application::pgn::mc::CannotOpenCursorFiles $file]
 			}
 		}
 	}
@@ -1105,7 +1464,7 @@ proc SetupCursors {} {
 
 
 proc WriteOptions {chan} {
-	options::writeList $chan [namespace current]::History
+	options::writeItem $chan [namespace current]::History no
 	options::writeItem $chan [namespace current]::Options
 }
 
@@ -1114,6 +1473,24 @@ proc WriteOptions {chan} {
 
 namespace eval icon {
 namespace eval 16x16 {
+
+set marker [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAABrVBMVEWCfXmCfXmCfXmCfXmC
+	fXmCfXmCfXmalJCalZGalpKblpKblpOCfXnBvLfCvLfCv7jCv7nDv7rDv7vFwb3Fwb7Fwr7F
+	wr/Gwr/k4uHoYgjoYgnpYgfpZgzpZw3qZAbqaA7qaQ/qbx3rdCHsaArsbhLseSztZgXtZwXt
+	bxPtdyPuchbucxbvdBfvgjTvk1TwdhjwhDfwkVHwlFfxagTxeBrxeRvxehvxkk7yexzzfB30
+	fB70fx/0lEv0lU70s4b1cQf1gSH1gyL1m1X2bwP2hST2k0b2lUv3hST3hyX3lkj4o1v49/f5
+	cwL5jCn5pV35uIT5+fn6jSr6l0X6zKr607X62sP7jyz7kCz7mET7mEX7mUf8ki78mkX9ji79
+	lC/9mUL9mkP9rWP9zqb+lzH+mDH+nEH+nUP+3Lz+9vD++PX/m0D/nDH/nD//nT7/njH/nz3/
+	nz//n0X/oC//oDv/oUH/ozn/ozv/pD3/piz/pyz/uG7/umv/unb/u3P/1J7/1J//1pf/2Zb/
+	2rf/4L3/4MH/4r//4sH/9+//+fL/+fP/+vL/+vP/+/j//Pr//flu8RMVAAAAGHRSTlMAIEaM
+	jaPH6+vr6+vw+fn5+fn5/f39/f3XsTcUAAAA70lEQVQY013Pu07DMBQA0HuvHdt1QqJKUGCp
+	ECtjB0AVYuhvsfJbgBh4DPmISpUQIi2pnLit4wc75w8OAgAQkQAXYwQABEBSms2gTuYQEyAg
+	L+5vgk06e381PiGw8mG7iy5YL64et4GRWoz3bjCbtvveTJeBUz5vnO1aM7jQXxeOExuC7Zuf
+	3qNMDREb3Z4c1stVC0pqEaYrDpCar7WVulQSRQBytfjtOq6ranw8Oa8djz7bmSTzvCo1n4TI
+	o/ks9iTF6KiU8sNEiv7p7oJxoZVQ5fMQEZCrxVljTy/l20vvEwIgZXk2gzp0LibA//0/DtN0
+	smnEFL8AAAAASUVORK5CYII=
+}]
 
 set xfen [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAnNCSVQICFXsRgQAAAEsSURB
@@ -1132,6 +1509,24 @@ set shredder [image create photo -data {
 	JE0lyRrclSRJmmpO8gLwypYkSWpOsu03YPLQWUkaNZJk2xsA352TNNeUJMklS8BTSaOOkiRJ
 	boB/ko7qb5K1y5JsgB+SPtSzJMOB6zZtugMeSKN7tehnTgIA3jsjfWxRda29E/MVj3126MA7
 	t2xI37paVbXoSXuNRhrNTe33vEXVf56uMWyFqlWhAAAAAElFTkSuQmCC
+}]
+
+set fics [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAC50lEQVQYGR3B22tTZwAA8O96
+	vpOTmJwkrU1rbdPaDuO1XlBwIOkQRJE5hohuA8dgUxBfFN/cHnwTX0TwD/BRGBNBxdvmppub
+	rVovc62sJmna9JKa9DTpyTn5zncR/f3g5F9na8X7EDOoueQuXtZH7cz8Owdh1JY03Zknyi/T
+	UFIqbVDwz4tZohqTweK/GEqBk0bvDzKSefhoyG5ZrbV4M1fNZk83Ctfc8cuUUklxYSpAxEBh
+	o4Fj/bLvTKJ/79CftzZvz36258sD3xyVCg4NP0+uO4L6TwGkrJA0GUSM+JiZzY7jWiw5pScY
+	NDMbPxWC+54fS2VKY7eF85+9YitcdRKpdwbV+Mfv01WyI977ueS10OzFYtWemW/Wl9zXr0Z+
+	//Xuhva3qbjrqUS0M6tqT3P5HNHU5tZWb/yCoJuNroNBsfHw3lWDGQgiIjhOfWG0tvvVaTF9
+	RSX2Qf0YcdJJWRRH+sNmgGq/rWrN9ySLg3uPZDYNpu3RtmUzevI8YG0mgyjcIxFGElAWihmo
+	TqilI9t71+5KdW/Zkd0da+1i0fQnA/tE8itCKZZlIZEEJsIwUDJgoQTngtTvlwt/KF7hXEAA
+	hDdfyd8B1Rt+w+E6hhEksIksUHadvCpeskyk24+RyBpqD4Qtku7pXuBdLL5epU6EkOt7XLgF
+	qgX+6bv2RhACVh+uXC9MLj548DS98VA+N+Z7bs0zRod+bl2eiMydc+OH2cKNiYkcrP39tZO/
+	iXeOTI9ef/7i/0i8O5DAcRYYY/G4HQSBUxreNngwGob22P5fhuPE55by6mr425fFnX0De4RU
+	zkIlFGuDEFJC0h0rnnnw2aPbuzrvKhD1fUQ4h24zacyN1Ce8QrhD81qTC6WkBkAKMTc1Xl1s
+	mlPXUEuwpKM84EQpU0lDQmu5FSg+CyCAKFBAAwAkElBw6E6vbLF4oADQSiqSz5devfQJNYEu
+	ld+ckxp+AD6CUCttMuLY4XsVSBHIzcj3v8J7zNxrjOMAAAAASUVORK5CYII=
 }]
 
 } ;# namespace 16x16

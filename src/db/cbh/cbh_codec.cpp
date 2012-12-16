@@ -68,7 +68,7 @@ using namespace util;
 enum { Deleted = -999 };
 
 
-static mstl::bitfield<uint64_t> m_lookup;
+static db::tag::TagSet m_infoTags;
 
 static country::Code NationMap[] =
 {
@@ -563,26 +563,24 @@ Codec::Codec()
 	,m_numGames(0)
 	,m_highQuality(false)
 {
-	if (::m_lookup.none())
+	if (::m_infoTags.none())
 	{
-		static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
-
-		::m_lookup.set(tag::Event);
-		::m_lookup.set(tag::Site);
-		::m_lookup.set(tag::Date);
-		::m_lookup.set(tag::Round);
-		::m_lookup.set(tag::White);
-		::m_lookup.set(tag::Black);
-		::m_lookup.set(tag::Result);
-		::m_lookup.set(tag::Annotator);
-		::m_lookup.set(tag::Eco);
-		::m_lookup.set(tag::WhiteElo);
-		::m_lookup.set(tag::BlackElo);
-		::m_lookup.set(tag::EventDate);
-		::m_lookup.set(tag::EventCountry);
-		::m_lookup.set(tag::EventType);
-		::m_lookup.set(tag::Mode);
-		::m_lookup.set(tag::TimeMode);
+		::m_infoTags.set(tag::Event);
+		::m_infoTags.set(tag::Site);
+		::m_infoTags.set(tag::Date);
+		::m_infoTags.set(tag::Round);
+		::m_infoTags.set(tag::White);
+		::m_infoTags.set(tag::Black);
+		::m_infoTags.set(tag::Result);
+		::m_infoTags.set(tag::Annotator);
+		::m_infoTags.set(tag::Eco);
+		::m_infoTags.set(tag::WhiteElo);
+		::m_infoTags.set(tag::BlackElo);
+		::m_infoTags.set(tag::EventDate);
+		::m_infoTags.set(tag::EventCountry);
+		::m_infoTags.set(tag::EventType);
+		::m_infoTags.set(tag::Mode);
+		::m_infoTags.set(tag::TimeMode);
 	}
 }
 
@@ -672,12 +670,14 @@ Codec::toUtf8(mstl::string& str)
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
+Codec::filterTags(TagSet& tags, Section section) const
 {
-	bool gameTagsOnly = section == GameTags;
+	tag::TagSet infoTags = m_infoTags;
 
-	if (::m_lookup.test(tag) == gameTagsOnly)
-		tags.remove(tag);
+	if (section == InfoTags)
+		infoTags.flip(0, tag::ExtraTag - 1);
+
+	tags.remove(infoTags);
 }
 
 
@@ -749,6 +749,7 @@ Codec::doOpen(	mstl::string const& rootname,
 	ProgressWatcher watcher(progress, 0);
 
 	setEncoding(encoding);
+	setVariant(variant::Normal);
 
 	m_numGames = readHeader(rootname);
 
@@ -2419,7 +2420,8 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 
 	strm.skip(3);
 	flags = strm.get();
-	info.m_positionId = flags & (1 << 0) ? 0 : variant::StandardIdn;
+	info.m_positionId = flags & (1 << 0) ? 0 : variant::Standard; // XXX possibly wrong
+	info.m_setup = bool(flags & (1 << 0));
 
 	if (flags & (1 << 1)) info.m_variationCount = 5;
 	if (flags & (1 << 2)) info.m_commentCount = 5;

@@ -96,8 +96,9 @@ Comment::Comment(db::Comment const& comment, move::Position position, VarPos var
 
 
 inline
-Opening::Opening(Board const& startBoard, uint16_t idn, Eco eco)
+Opening::Opening(Board const& startBoard, variant::Type variant, uint16_t idn, Eco eco)
 	:m_board(startBoard)
+	,m_variant(variant)
 	,m_idn(idn)
 	,m_eco(eco)
 {

@@ -142,33 +142,32 @@ inline static bool isGreaterOrEq(T start, T target) { return !(target & ~start);
 bool
 Signature::isReachableFinalMaterial(Signature const& target) const
 {
-	M_REQUIRE(!hasPromotion() || target.hasPromotion());
-	M_REQUIRE(!hasUnderPromotion() || target.hasUnderPromotion());
+//	M_REQUIRE(!hasPromotion() || target.hasPromotion());
+//	M_REQUIRE(!hasUnderPromotion() || target.hasUnderPromotion());
 
 	if (target.hasPromotion())
 	{
 		if (target.hasUnderPromotion())
 		{
 			// we can only check pawn counts
-			return	::isGreaterOrEq(m_material.part[White].pawn, target.m_material.part[White].pawn)
-					&& ::isGreaterOrEq(m_material.part[Black].pawn, target.m_material.part[Black].pawn);
+			return	::isGreaterOrEq(m_matSig.part[White].pawn, target.m_matSig.part[White].pawn)
+					&& ::isGreaterOrEq(m_matSig.part[Black].pawn, target.m_matSig.part[Black].pawn);
 		}
 
 		// we cannot check queen counts
 		return
-			::isGreaterOrEq(m_material.part[White].butNotQueen, target.m_material.part[White].butNotQueen)
-		&& ::isGreaterOrEq(m_material.part[Black].butNotQueen, target.m_material.part[Black].butNotQueen);
+			::isGreaterOrEq(m_matSig.part[White].butNotQueen, target.m_matSig.part[White].butNotQueen)
+		&& ::isGreaterOrEq(m_matSig.part[Black].butNotQueen, target.m_matSig.part[Black].butNotQueen);
 	}
 
 	// cannot reach target position if target has more material than we have
-	return ::isGreaterOrEq(m_material.value, target.m_material.value);
+	return ::isGreaterOrEq(m_matSig.value, target.m_matSig.value);
 }
 
 
 bool
 Signature::isReachableFinalPosition(Signature const& target, uint16_t currentHpSig) const
 {
-	// cannot reach target position if we have more promotions than target
 	if (hasPromotion() && !target.hasPromotion())
 		return false;
 
@@ -217,7 +216,7 @@ Signature::debug(unsigned spaces) const
 
 	pawns::print(m_progress, White, progress[White]);
 	pawns::print(m_progress, Black, progress[Black]);
-	material::print(m_material, material);
+	material::print(m_matSig, material);
 	castling::print(castling::Rights(m_castling), castling);
 	homePawns.print(s);
 

@@ -45,12 +45,21 @@ using namespace db;
 
 
 static void
+printPieceDrop(Move const& move, mstl::string& s)
+{
+	s += ::toupper(piece::print(move.dropped()));
+	s += '@';
+	s += sq::printAlgebraic(move.to());
+}
+
+
+static void
 printCastling(Move const& move, mstl::string& s)
 {
-	s.append("0-0", 3);
+	s.append("O-O", 3);
 
 	if (move.isLongCastling())
-		s.append("-0", 2);
+		s.append("-O", 2);
 }
 
 
@@ -178,7 +187,7 @@ struct winboard::Engine::Timer : public sys::Timer
 
 winboard::Engine::Engine()
 	:m_state(None)
-	,m_currentVariant("standard")
+	,m_variant(variant::Normal)
 	,m_startTime(0)
 	,m_pingCount(0)
 	,m_pongCount(0)
@@ -200,6 +209,7 @@ winboard::Engine::Engine()
 	,m_featureSetboard(false)
 	,m_featureSigint(false)
 	,m_featureSan(false)
+	,m_featureVariant(false)
 	,m_featurePing(false)
 	,m_isCrafty(false)
 	,m_startAnalyzeIsPending(false)
@@ -361,7 +371,9 @@ winboard::Engine::doMove(Move const& move)
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
 //	else if (m_featureSan)
-//		move.printSan(s);		// the engine may not understand check sign
+//		move.printSan(s);		// the engine may not understand check signs
+	else if (move.isPieceDrop())
+		::printPieceDrop(move, s);
 	else if (!move.isCastling())
 		move.printAlgebraic(s);
 	else if (m_mustUseChess960)
@@ -386,8 +398,8 @@ winboard::Engine::setupBoard(Board const& board)
 		// understanding X-Fen().
 		// IMPORTANT NOTE:
 		// The "setboard" command might not be appropriate,
-		// because it will clear the hash tables.
-		send("setboard " + board.toFen());
+		// because it might clear the hash tables.
+		send("setboard " + board.toFen(m_variant));
 
 		if (m_isCrafty)
 		{
@@ -466,36 +478,30 @@ winboard::Engine::startAnalysis(bool)
 	game->getHistory(moves);
 
 	m_board = game->currentBoard();
+	m_variant = game->variant();
 
-	unsigned state = m_board.checkState();
+	unsigned state = m_board.checkState(m_variant);
 
-	if (state & Board::CheckMate)
+	if (state & Board::Checkmate)
 	{
-		updateCheckMateInfo();
+		updateInfo(board::Checkmate);
 	}
-	else if (state & Board::StaleMate)
+	else if (state & Board::Stalemate)
 	{
-		updateStaleMateInfo();
+		updateInfo(board::Stalemate);
+	}
+	else if (state & Board::ThreeChecks)
+	{
+		updateInfo(board::ThreeChecks);
+	}
+	else if (state & Board::Losing)
+	{
+		updateInfo(board::Losing);
 	}
 	else
 	{
 		Board const& startBoard = game->startBoard();
 		mstl::string v;
-
-		switch (currentVariant())
-		{
-			case app::Engine::Variant_Standard:		v = "standard"; break;
-			case app::Engine::Variant_Chess_960:	v = m_chess960Variant; break;
-			case app::Engine::Variant_Losers:		v = "losers"; break;
-			case app::Engine::Variant_Bughouse:		v = "bughouse"; break;
-			case app::Engine::Variant_Crazyhouse:	v = "crazyhouse"; break;
-		}
-
-		if (m_currentVariant != v)
-		{
-			send("variant " + v);
-			m_currentVariant.swap(v);
-		}
 
 		if (m_featureSigint)
 			::sys::signal::sendInterrupt(pid());
@@ -503,18 +509,55 @@ winboard::Engine::startAnalysis(bool)
 		send("new");
 		send("force");
 
+		if (m_featureVariant)
+		{
+			switch (currentVariant())
+			{
+				case app::Engine::Variant_Standard:
+					switch (m_variant)
+					{
+						case variant::Normal:		v = "standard"; break;
+						case variant::Losers:		v = "losers"; break;
+						case variant::Suicide:		v = "suicide"; break;
+						case variant::Giveaway:		v = "giveaway"; break;
+						case variant::Bughouse:		v = "bughouse"; break;
+						case variant::Crazyhouse:	v = "crazyhouse"; break;
+						case variant::ThreeCheck:	v = "3check"; break;
+
+						default:
+							M_RAISE("unexpected variant %s", variant::identifier(game->variant()).c_str());
+					}
+					break;
+
+				case app::Engine::Variant_Chess_960:
+					v = m_chess960Variant;
+					break;
+			}
+
+			send("variant " + v);
+		}
+
 		if (moves.empty())
 		{
 			if (!m_board.isStandardPosition())
 				setupBoard(m_board);
 		}
-		else
+		else if (game->historyIsLegal())
 		{
 			if (!startBoard.isStandardPosition())
 				setupBoard(startBoard);
 
 			for (int i = moves.size() - 1; i >= 0; --i)
 				doMove(moves[i]);
+		}
+		else if (m_featureSetboard)
+		{
+			setupBoard(game->currentBoard());
+		}
+		else
+		{
+			error(app::Engine::Illegal_Moves);
+			return false;
 		}
 
 		send("post");	// turn on thinking output
@@ -582,7 +625,7 @@ winboard::Engine::stopAnalysis(bool restartIsPending)
 
 			if (m_pingCount == 1)
 			{
-				// Catch possible problem: the engine is not respoding to "ping".
+				// Catch possible problem: the engine may not respond to "ping".
 				m_waitForPong = true;
 				m_timer = new Timer(this, 2000);
 			}
@@ -614,7 +657,7 @@ winboard::Engine::sendStopAnalysis()
 	if (hasFeature(app::Engine::Feature_Analyze))
 		send("exit");	// leave analyze mode
 
-	send("force");		// Stop engine replying to moves.
+	send("force");		// stop engine replying to moves
 }
 
 
@@ -848,6 +891,28 @@ winboard::Engine::processMessage(mstl::string const& message)
 					return;
 				}
 				break;
+
+			case 'I':
+			case 'i':	// handle older versions of Crafty
+			case 'E':
+			case 'e':	// to be sure
+				if (::strncasecmp(msg, "Error", 5) == 0 || ::strncasecmp(msg, "Illegal move", 12) == 0)
+				{
+					if (	!m_featurePing
+						&& m_stopAnalyzeIsPending
+						&& m_pongCount < m_pingCount
+						&& ::strstr(msg, "ping"))
+					{
+						if (++m_pongCount == m_pingCount)
+							pongReceived();
+					}
+					else
+					{
+						error(msg);
+					}
+					return;
+				}
+				break;
 		}
 
 		detectFeatures(msg);
@@ -1016,6 +1081,7 @@ winboard::Engine::parseFeatures(char const* msg)
 				if (::strncmp(key, "variants=", 9) == 0)
 				{
 					removeVariant(app::Engine::Variant_Standard);
+					m_featureVariant = true;
 					++val;
 
 					do
@@ -1057,7 +1123,7 @@ winboard::Engine::parseFeatures(char const* msg)
 
 							case 'g':
 								if (::strcmp(variant, "giveaway") == 0)
-									addVariant(app::Engine::Variant_Give_Away);
+									addVariant(app::Engine::Variant_Giveaway);
 								break;
 
 							case 'l':
@@ -1111,8 +1177,7 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 		case 'i':	// handle older versions of Crafty
 		case 'E':
 		case 'e':	// to be sure
-			if (	::strncmp(msg.c_str() + 1, "rror", 4) == 0
-				|| ::strncmp(msg.c_str() + 1, "llegal move", 11) == 0)
+			if (::strncasecmp(msg, "Error", 5) == 0 || ::strncasecmp(msg, "Illegal move", 12) == 0)
 			{
 				if (msg == "illegal move: sd" || msg == "illegal move: st" || msg == "illegal move: depth")
 				{
@@ -1122,11 +1187,6 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 				{
 					stopAnalysis(false);
 					error(app::Engine::No_Analyze_Mode);
-				}
-				else if (!m_featurePing && m_stopAnalyzeIsPending && m_pongCount < m_pingCount)
-				{
-					if (++m_pongCount == m_pingCount)
-						pongReceived();
 				}
 				else
 				{
@@ -1144,17 +1204,17 @@ winboard::Engine::parseAnalysis(mstl::string const& msg)
 		case 't':
 			if (::strncmp(msg, "telluser", 8) == 0)
 			{
-				if (::strncmp(msg.c_str() + 8, "error ", 6) == 0)
+				if (::strncmp(msg.c_str() + 8, "error ", 6) != 0)
 				{
-					stopAnalysis(false);
-					error(msg.substr(15));
-					return;
+					log(msg.substr(1));
 				}
 				else
 				{
-					log(msg.substr(1));
-					return;
+					stopAnalysis(false);
+					error(msg.substr(15));
 				}
+
+				return;
 			}
 			break;
 	}
@@ -1224,21 +1284,21 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 	while (*s)
 	{
 		Move move;
-		char const* t = board.parseMove(::skipMoveNumber(s), move);
+		char const* t = board.parseMove(::skipMoveNumber(s), move, m_variant);
 
 		if (t)
 		{
 			if (move.isLegal())
 			{
-				board.prepareForPrint(move);
-				board.doMove(move);
+				board.prepareForPrint(move, m_variant);
+				board.doMove(move, m_variant);
 				moves.append(move);
 				illegal = 0;
 				s = ::skipSpaces(t);
 
 				if (moves.isFull())
 				{
-					log("WARNING: Pv is too long (truncated)");
+					log("WARNING: PV is too long (truncated)");
 					break;
 				}
 			}
@@ -1246,6 +1306,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 			{
 				illegal = s;
 				e = s = ::skipWord(s);
+				break;
 			}
 		}
 		else
@@ -1256,7 +1317,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 	if (illegal)
 	{
-		mstl::string msg("Illegal move in pv: ");
+		mstl::string msg("Illegal move in PV: ");
 		msg.append(illegal, e - illegal);
 		msg.trim();
 		error(msg);
@@ -1275,6 +1336,13 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 		if (moves.size() == 1)
 		{
+			if (msg.back() == '>')
+			{
+				// any garbage from Sjeng
+				updateTimeInfo();
+				return;
+			}
+
 			varno = findVariation(moves.front());
 
 			setCurrentMove(0, 0, moves[0]);
@@ -1290,7 +1358,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		if (varno == -1)
 			varno = setVariation(0, moves);
 
-		if (board.checkState() & Board::CheckMate)
+		if (board.checkState(m_variant) & Board::Checkmate)
 		{
 			int n = mstl::div2(board.plyNumber() - m_board.plyNumber() + 1);
 			setMate(varno, board.whiteToMove() ? -n : +n);
@@ -1322,14 +1390,14 @@ winboard::Engine::parseCurrentMove(char const* s)
 		s = ::skipMoveNumber(::skipWords(s, 3));
 
 		Move move;
-		char const* t = m_board.parseMove(::skipDots(s), move);
+		char const* t = m_board.parseMove(::skipDots(s), move, m_variant);
 
 		if (t == 0)
 			return true; // skip it anayway
 
 		if (move.isLegal())
 		{
-			m_board.prepareForPrint(move);
+			m_board.prepareForPrint(move, m_variant);
 			setCurrentMove(moveNo, moveCount, move);
 			updateCurrMove();
 			setTime((hours*60 + minutes)*60 + seconds);
@@ -1486,10 +1554,7 @@ winboard::Engine::detectFeatures(char const* identifier)
 			m_dontInvertScore = true;
 
 		if (isProbing())
-		{
 			send("log off");		// turn off crafty logging, to reduce number of junk files
-			send("noise 1000");	// set a fairly low noise value
-		}
 
 		addFeature(app::Engine::Feature_Analyze);
 		m_featureSetboard = true;

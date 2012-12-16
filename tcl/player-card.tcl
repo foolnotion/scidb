@@ -79,13 +79,13 @@ set Photo ""
 array set ImageCache {}
 
 
-proc show {base args} {
+proc show {base variant args} {
 	variable Vars
 	variable Options
 	variable Counter
 
-	set info [::scidb::db::playerInfo $base {*}$args]
-	set key [MakeKey $base $info]
+	set info [::scidb::db::playerInfo $base $variant {*}$args]
+	set key [MakeKey $base $variant $info]
 	if {[string length $key] == 0} { return }
 	set name [lindex $info 0]
 
@@ -94,7 +94,7 @@ proc show {base args} {
 			::widget::dialogRaise $Vars($key)
 		} else {
 			set Vars($key:open) 1
-			UpdateContent $Vars($key).content $key $base $name $args
+			UpdateContent $Vars($key).content $key $base $variant $name $args
 		}
 		return
 	}
@@ -131,15 +131,15 @@ proc show {base args} {
 	bind [winfo parent [$dlg.content drawable]] <ButtonPress-3> [namespace code [list PopupMenu $key]]
 	pack $dlg.content -fill both -expand yes
 	bind $dlg.content <Destroy> [list array unset [namespace current]::Vars $key*]
-	set id [::scidb::db::get playerKey $base {*}$args]
-	set updateCmd [list UpdatePlayer $dlg.content $id $key $base $name $args]
+	set id [::scidb::db::get playerKey $base $variant {*}$args]
+	set updateCmd [list UpdatePlayer $dlg.content $id $key $base $variant $name $args]
 	bind $dlg.content <<LanguageChanged>> [namespace code $updateCmd]
-	$dlg.content onmouseover [namespace code [list MouseEnter $dlg.content]]
+	$dlg.content onmouseover [namespace code [list MouseEnter $dlg.content $variant]]
 	$dlg.content onmouseout [namespace code [list MouseLeave $dlg.content]]
 	$dlg.content onmousedown3 [namespace code [list Mouse3Down $dlg.content $key $info]]
 	set Vars($dlg.content:tooltip) ""
 
-	set geometry [UpdateContent $dlg.content $key $base $name $args]
+	set geometry [UpdateContent $dlg.content $key $base $variant $name $args]
 	::widget::busyCursor off
 
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
@@ -369,9 +369,9 @@ proc buildWebMenu {parent m info} {
 }
 
 
-proc UpdatePlayer {w id key base name playerCardArgs} {
+proc UpdatePlayer {w id key base variant name playerCardArgs} {
 	if {[llength $playerCardArgs] == 1} {
-		set pos [::scidb::db::find player $base $id]
+		set pos [::scidb::db::find player $base $variant $id]
 		if {$pos == -1} {
 			destroy [winfo toplevel $w]
 			return
@@ -379,18 +379,18 @@ proc UpdatePlayer {w id key base name playerCardArgs} {
 		set playerCardArgs $pos
 	}
 
-	UpdateContent $w $key $base $name $playerCardArgs
+	UpdateContent $w $key $base $variant $name $playerCardArgs
 }
 
 
-proc MakeKey {base info} {
+proc MakeKey {base variant info} {
 	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth _
 	if {[string length $name] == 0} { return "" }
-	return card:$base:$name:$fideID:$type:$sex:$country:$titles:$dateOfBirth
+	return card:$base:$variant:$name:$fideID:$type:$sex:$country:$titles:$dateOfBirth
 }
 
 
-proc UpdateContent {w key base name playerCardArgs} {
+proc UpdateContent {w key base variant name playerCardArgs} {
 	variable Vars
 	variable Options
 
@@ -428,7 +428,7 @@ proc UpdateContent {w key base name playerCardArgs} {
 	"
 	set searchDir [file join $::scidb::dir::share scripts]
 	set script "player-card.eXt"
-	set result [::scidb::db::playerCard $searchDir $script $preamble $base {*}$playerCardArgs]
+	set result [::scidb::db::playerCard $searchDir $script $preamble $base $variant {*}$playerCardArgs]
 	lassign $result html log
 
 	set i [string first "%date%(" $html]
@@ -484,7 +484,7 @@ proc UpdateContent {w key base name playerCardArgs} {
 }
 
 
-proc MouseEnter {w node} {
+proc MouseEnter {w variant node} {
 	variable Vars
 
 	set titles [split [$node attribute -default {} title] ',']
@@ -503,7 +503,7 @@ proc MouseEnter {w node} {
 	set eco [$node attribute -default {} eco]
 	if {[string length $eco]} {
 		set Vars($w:tooltip) $node
-		lassign [::scidb::misc::lookup opening $eco] opening shortOpening variation subVariation
+		lassign [::scidb::misc::lookup opening $eco $variant] opening shortOpening variation subVariation
 		if {[string length $variation]} {
 			set opening [::mc::translateEco $shortOpening]
 			append opening ", "

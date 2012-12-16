@@ -311,6 +311,8 @@ StoredLine::initialize()
 
 	static_assert(U_NUMBER_OF(StoredLines) == U_NUMBER_OF(m_lines), "implementation error");
 
+	EcoTable const& ecoTable = EcoTable::specimen(variant::Index_Normal);
+
 	for (unsigned i = 0; i < U_NUMBER_OF(StoredLines); ++i)
 	{
 		Board			board	= Board::standardBoard();
@@ -321,18 +323,18 @@ StoredLine::initialize()
 		{
 			assert(line.m_line.length < Max_Length);
 
-			Move move = board.parseMove(text);
+			Move move = board.parseMove(text, variant::Normal);
 			assert(move.isLegal());
 
-			board.doMove(move);
+			board.doMove(move, variant::Normal);
 			line.m_buf[line.m_line.length++] = move.index();
 
 			while (*text && *text != ' ') ++text;
 			while (*text == ' ') ++text;
 		}
 
-		line.m_ecoKey = EcoTable::specimen().lookup(line.m_line);
-//		assert(EcoTable::specimen().getLine(line.m_eco).length == line.m_line.length);
+		line.m_ecoKey = ecoTable.lookup(line.m_line);
+//		assert(ecoTable.getLine(line.m_eco).length == line.m_line.length);
 	}
 }
 
@@ -381,7 +383,7 @@ StoredLine const&
 StoredLine::lookup(Eco const& key)
 {
 	// TODO: find a faster algorithm
-	return findLine(EcoTable::specimen().getLine(key));
+	return findLine(EcoTable::specimen(variant::Index_Normal).getLine(key));
 }
 
 

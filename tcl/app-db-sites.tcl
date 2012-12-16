@@ -98,8 +98,9 @@ proc activate {w flag} {
 
 	set Vars(active) $flag
 	set base [::scidb::db::get name]
-	set Vars($base:update:sites) 1
-	sites::DoUpdate $path $base
+	set variant [::scidb::app::variant]
+	set Vars($base:$variant:update:sites) 1
+	sites::DoUpdate $path $base $variant
 
 	if {[winfo toplevel $w] ne $w} {
 		::toolbar::activate $path.sites $flag
@@ -117,22 +118,22 @@ proc linespace {parent} {
 }
 
 
-proc select {parent base index} {
+proc select {parent base variant index} {
 	set path $parent.top
 	variable ${path}::Vars
 
 	if {$Vars(active)} {
-		Select $path $base $index
+		Select $path $base $variant $index
 	} else {
-		set Vars($base:select) $index
+		set Vars($base:$variant:select) $index
 	}
 }
 
 
-proc Select {path base index} {
+proc Select {path base variant index} {
 	variable ${path}::Vars
 
-	set position [::scidb::db::get lookupSite $index $Vars($base:view) $base]
+	set position [::scidb::db::get lookupSite $index $Vars($base:$variant:view) $base $variant]
 	::sitetable::see $path.sites $position
 	update idletasks
 	set row [::qsitetable::indexToRow $path.sites $position]
@@ -140,43 +141,43 @@ proc Select {path base index} {
 }
 
 
-proc View {path base} {
+proc View {path base variant} {
 	variable ${path}::Vars
-	return $Vars($base:view)
+	return $Vars($base:$variant:view)
 }
 
 
-proc Close {path base} {
+proc Close {path base variant} {
 	variable ${path}::Vars
 
-	array unset Vars $base:*
+	array unset Vars $base:$variant:*
 	::sitetable::clear $path.sites
-	::sitetable::forget $path.sites $base
+	::sitetable::forget $path.sites $base $variant
 	::eventtable::clear $path.events
-	::eventtable::forget $path.events $base
+	::eventtable::forget $path.events $base $variant
 }
 
 
-proc InitBase {path base} {
+proc InitBase {path base variant} {
 	variable ${path}::Vars
 	variable Defaults
 
-	if {[info exists Vars($base:initializing)]} { return }
+	if {[info exists Vars($base:$variant:initializing)]} { return }
 
-	if {![info exists Vars($base:view)]} {
-		set Vars($base:initializing) 1
-		set Vars($base:view) [::scidb::view::new $base slave slave slave master slave]
-		set Vars($base:update:sites) 1
-		set Vars($base:sort:sites) $Defaults(sort:sites)
-		set Vars($base:sort:events) $Defaults(sort:events)
-		set Vars($base:lastChange) [::scidb::db::get lastChange $base]
-		set Vars($base:sites:lastId) -1
-		set Vars($base:events:lastId) -1
-		set Vars($base:select) -1
-		set Vars($base:selected:key) {}
-		::sitetable::init $path.sites $base
-		::eventtable::init $path.events $base
-		::scidb::view::search $base $Vars($base:view) null events
+	if {![info exists Vars($base:$variant:view)]} {
+		set Vars($base:$variant:initializing) 1
+		set Vars($base:$variant:view) [::scidb::view::new $base $variant slave slave slave master slave]
+		set Vars($base:$variant:update:sites) 1
+		set Vars($base:$variant:sort:sites) $Defaults(sort:sites)
+		set Vars($base:$variant:sort:events) $Defaults(sort:events)
+		set Vars($base:$variant:lastChange) [::scidb::db::get lastChange $base $variant]
+		set Vars($base:$variant:sites:lastId) -1
+		set Vars($base:$variant:events:lastId) -1
+		set Vars($base:$variant:select) -1
+		set Vars($base:$variant:selected:key) {}
+		::sitetable::init $path.sites $base $variant
+		::eventtable::init $path.events $base $variant
+		::scidb::view::search $base $variant $Vars($base:$variant:view) null events
 	}
 }
 
@@ -186,24 +187,25 @@ proc TableMinSize {pane minsize} {
 }
 
 
-proc SelectEvent {path base view} {
-	[namespace parent]::selectEvent $base [::eventtable::selectedEvent $path.events $base]
+proc SelectEvent {path base variant view} {
+	set index [::eventtable::selectedEvent $path.events $base $variant]
+	[namespace parent]::selectEvent $base $variant $index
 }
 
 
 namespace eval sites {
 
-proc Reset {path base} {
+proc Reset {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
 	::eventtable::clear $path.events
 	::sitetable::select $path.sites none
 	::sitetable::activate $path.events none
-	set Vars($base:selected:key) {}
+	set Vars($base:$variant:selected:key) {}
 }
 
 
-proc Search {path base view {selected -1}} {
+proc Search {path base variant view {selected -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	::widget::busyCursor on
@@ -212,63 +214,65 @@ proc Search {path base view {selected -1}} {
 	set index -1
 
 	if {$selected == -1} {
-		set selected [::sitetable::selectedSite $path.sites $base]
+		set selected [::sitetable::selectedSite $path.sites $base $variant]
 		if {$selected >= 0} {
-			set index [::scidb::db::get siteIndex $selected $view $base]
-			set Vars($base:selected:key) [scidb::db::get siteKey $base site $index]
+			set index [::scidb::db::get siteIndex $selected $view $base $variant]
+			set Vars($base:$variant:selected:key) [scidb::db::get siteKey $base $variant site $index]
 		}
 	}
 
 	if {$selected >= 0} {
-		if {$index == -1} { set index [::scidb::db::get siteIndex $selected $view $base] }
-		::scidb::view::search $base $view null events [list site $index]
+		if {$index == -1} { set index [::scidb::db::get siteIndex $selected $view $base $variant] }
+		::scidb::view::search $base $variant $view null events [list site $index]
 		::eventtable::scroll $path.events home
 	} else {
-		Reset $path $base
+		Reset $path $base $variant
 	}
 
 	::widget::busyCursor off
 }
 
 
-proc Update {path id base {view -1} {index -1}} {
+proc Update {path id base variant {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	after cancel $Vars(after:sites)
-	set Vars(after:sites) [after idle [namespace code [list Update2 $id $path $base]]]
+	set Vars(after:sites) [after idle [namespace code [list Update2 $id $path $base $variant]]]
 }
 
 
-proc Update2 {id path base} {
+proc Update2 {id path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	[namespace parent]::InitBase $path $base
-	if {$id <= $Vars($base:sites:lastId)} { return }
-	set Vars($base:sites:lastId) $id
-	set Vars($base:update:sites) 1
-	DoUpdate $path $base
+	[namespace parent]::InitBase $path $base $variant
+	if {$id <= $Vars($base:$variant:sites:lastId)} { return }
+	set Vars($base:$variant:sites:lastId) $id
+	set Vars($base:$variant:update:sites) 1
+	DoUpdate $path $base $variant
 }
 
 
-proc DoUpdate {path base} {
+proc DoUpdate {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
 	if {$Vars(active)} {
-		if {[llength $Vars($base:sort:sites)]} {
+		if {[llength $Vars($base:$variant:sort:sites)]} {
 			::widget::busyCursor on
-			::scidb::db::sort site $base $Vars($base:sort:sites) $Vars($base:view)
+			set view $Vars($base:$variant:view)
+			::scidb::db::sort site $base $variant $Vars($base:$variant:sort:sites) $view
 			::widget::busyCursor off
-			set Vars($base:sort:sites) {}
+			set Vars($base:$variant:sort:sites) {}
 		}
-		if {$Vars($base:update:sites)} {
-			set n [::scidb::db::count sites $base]
-			after idle [list ::sitetable::update $path.sites $base $n]
-			after idle [namespace code \
-				[list [namespace parent]::events::Update2 $Vars($base:sites:lastId) $path $base]]
-			set Vars($base:update:sites) 0
-			if {$Vars($base:select) >= 0} {
-				after idle [list [namespace parent]::Select $path $base $Vars($base:select)]
-				set Vars($base:select) -1
+		if {$Vars($base:$variant:update:sites)} {
+			set n [::scidb::db::count sites $base $variant]
+			after idle [list ::sitetable::update $path.sites $base $variant $n]
+			after idle [namespace code [list [namespace parent]::events::Update2 \
+				$Vars($base:$variant:sites:lastId) $path $base $variant]]
+			set Vars($base:$variant:update:sites) 0
+			if {$Vars($base:$variant:select) >= 0} {
+				after idle \
+					[list [namespace parent]::Select $path $base $variant $Vars($base:$variant:select)]
+				set Vars($base:$variant:select) -1
 			}
 		}
 	}
@@ -278,15 +282,15 @@ proc DoUpdate {path base} {
 
 namespace eval games {
 
-proc Update {path id base {view -1} {index -1}} {
+proc Update {path id base variant {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
-	[namespace parent]::InitBase $path $base
+	[namespace parent]::InitBase $path $base $variant
 
-	if {$view == $Vars($base:view)} {
-		set n [::scidb::view::count events $base $view]
-		after idle [list ::eventtable::update $path.events $base $n]
-		set Vars($base:events:lastId) $id
+	if {$view == $Vars($base:$variant:view)} {
+		set n [::scidb::view::count events $base $variant $view]
+		after idle [list ::eventtable::update $path.events $base $variant $n]
+		set Vars($base:$variant:events:lastId) $id
 	}
 }
 
@@ -294,38 +298,39 @@ proc Update {path id base {view -1} {index -1}} {
 
 namespace eval events {
 
-proc Update {path id base {view -1} {index -1}} {
+proc Update {path id base variant {view -1} {index -1}} {
 	variable [namespace parent]::${path}::Vars
 
 	after cancel $Vars(after:events)
-	set Vars(after:events) [after idle [namespace code [list Update2 $id $path $base]]]
+	set Vars(after:events) [after idle [namespace code [list Update2 $id $path $base $variant]]]
 }
 
 
-proc Update2 {id path base} {
+proc Update2 {id path base variant} {
 	variable [namespace parent]::${path}::Vars
 
-	if {$id <= $Vars($base:events:lastId)} { return }
-	set Vars($base:events:lastId) $id
-	set Vars($base:update:events) 1
-	DoUpdate $path $base
+	if {$id <= $Vars($base:$variant:events:lastId)} { return }
+	set Vars($base:$variant:events:lastId) $id
+	set Vars($base:$variant:update:events) 1
+	DoUpdate $path $base $variant
 }
 
 
-proc DoUpdate {path base} {
+proc DoUpdate {path base variant} {
 	variable [namespace parent]::${path}::Vars
 
 	if {$Vars(active)} {
-		if {[llength $Vars($base:sort:events)]} {
+		if {[llength $Vars($base:$variant:sort:events)]} {
 			::widget::busyCursor on
-			::scidb::db::sort event $base $Vars($base:sort:events) $Vars($base:view)
+			set view $Vars($base:$variant:view)
+			::scidb::db::sort event $base $variant $Vars($base:$variant:sort:events) $view
 			::widget::busyCursor off
-			set Vars($base:sort:events) {}
+			set Vars($base:$variant:sort:events) {}
 		}
-		if {$Vars($base:update:events)} {
-			set n [::scidb::view::count events $base $Vars($base:view)]
-			after idle [list ::eventtable::update $path.events $base $n]
-			set Vars($base:update:events) 0
+		if {$Vars($base:$variant:update:events)} {
+			set n [::scidb::view::count events $base $variant $Vars($base:$variant:view)]
+			after idle [list ::eventtable::update $path.events $base $variant $n]
+			set Vars($base:$variant:update:events) 0
 		}
 	}
 }

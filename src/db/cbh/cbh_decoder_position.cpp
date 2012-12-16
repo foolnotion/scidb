@@ -75,15 +75,14 @@ Position::doMove(Move move)
 {
 	Board& board = m_stack.top().board;
 
-	move.setColor(board.sideToMove());
-
-	if (board.isValidMove(move, move::AllowIllegalMove))
+	if (board.isValidMove(move, variant::Normal, move::AllowIllegalMove))
 		move.setLegalMove();
-	else if (!board.checkMove(move, move::AllowIllegalMove))
+	else if (!board.checkMove(move, variant::Normal, move::AllowIllegalMove))
 		return Move::empty();
 
+	move.setColor(board.sideToMove());
 	board.prepareUndo(move);
-	board.doMove(move);
+	board.doMove(move, variant::Normal);
 
 	return move;
 }
@@ -389,7 +388,7 @@ Position::setup(BitStream& strm)
 
 			Square sq = ::mapSquare(i);
 
-			if (!board.setAt(sq, piece::ID(piece)))
+			if (!board.setAt(sq, piece::ID(piece), variant::Normal))
 				IO_RAISE(Game, Corrupted, "invalid start position");
 
 			pieces[count][piece] = sq;
@@ -412,12 +411,12 @@ Position::setup(BitStream& strm)
 	{
 		board.fixBadCastlingRights();
 
-		if (board.validate(variant::Standard) != Board::Valid)
+		if (board.validate(variant::Normal) != Board::Valid)
 			IO_RAISE(Game, Corrupted, "illegal start position");
 	}
 	else
 	{
-		if (board.validate(variant::Chess960) != Board::Valid)
+		if (board.validate(variant::Normal) != Board::Valid)
 			IO_RAISE(Game, Corrupted, "unsupported start position");
 	}
 }

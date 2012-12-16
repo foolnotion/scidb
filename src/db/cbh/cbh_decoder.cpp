@@ -1051,7 +1051,7 @@ Decoder::startDecoding(TagSet* tags)
 		if (tags)
 		{
 			tags->set(tag::SetUp, "1");	// bad PGN design
-			tags->set(tag::Fen, m_position.board().toFen(Board::Shredder));
+			tags->set(tag::Fen, m_position.board().toFen(variant::Normal, Board::Shredder));
 		}
 	}
 	else

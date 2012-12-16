@@ -241,20 +241,22 @@ extend()
 
 			for (unsigned k = 0; k < moves.size(); ++k)
 			{
-				board.prepareForPrint(moves[k]);
-				board.doMove(moves[k]);
+				board.prepareForPrint(moves[k], variant::Normal);
+				board.doMove(moves[k], variant::Normal);
 			}
 
 			printMoves(moves);
-			board.generateMoves(more);
+
+			if (!board.gameIsOver(variant::Normal))
+				board.generateMoves(variant::Normal, more);
 
 			for (unsigned k = 0; k < more.size(); ++k)
 			{
 				__attribute__((unused)) uint64_t h = board.hashNoEP();
 
 				board.prepareUndo(more[k]);
-				board.prepareForPrint(more[k]);
-				board.doMove(more[k]);
+				board.prepareForPrint(more[k], variant::Normal);
+				board.doMove(more[k], variant::Normal);
 
 				if (board.isLegal())
 				{
@@ -283,7 +285,7 @@ extend()
 					}
 				}
 
-				board.undoMove(more[k]);
+				board.undoMove(more[k], variant::Normal);
 				M_ASSERT(board.hashNoEP() == h);
 			}
 
@@ -312,11 +314,11 @@ prepare()
 			Board board(Board::standardBoard());
 			Line const& line = lines[i];
 
-			board.doMove(Move(line[0]));
+			board.doMove(Move(line[0]), variant::Normal);
 
 			for (unsigned k = 1; k < line.size(); ++k)
 			{
-				board.doMove(Move(line[k]));
+				board.doMove(Move(line[k]), variant::Normal);
 
 				uint64_t hash = board.hashNoEP();
 				LineMap::const_iterator p = position.find(hash);
@@ -372,8 +374,8 @@ prepare()
 				Move move = Move(line[k]);
 
 				moves.append(move);
-				board.prepareForPrint(move);
-				board.doMove(move);
+				board.prepareForPrint(move, variant::Normal);
+				board.doMove(move, variant::Normal);
 
 				if (k + 1 < line.size())
 				{
@@ -726,15 +728,15 @@ parse(char const* filename)
 						++movP;
 				}
 
-				Move m = board.parseMove(movP);
+				Move m = board.parseMove(movP, variant::Normal);
 
 				if (!m.isLegal())
 					error("illegal move in ECO file (line %u)", lineNo);
 
-				M_ASSERT(board.isValidMove(m));
+				M_ASSERT(board.isValidMove(m, variant::Normal));
 
 				++count;
-				board.doMove(m);
+				board.doMove(m, variant::Normal);
 				moves.append(m);
 				line.push_back(m.data());
 
@@ -854,7 +856,7 @@ parse(char const* filename)
 
 			for (unsigned i = 0; i < moves.size(); ++i)
 			{
-				board.doMove(moves[i]);
+				board.doMove(moves[i], variant::Normal);
 
 				NameMap::iterator np = nameLookup.find(board.hashNoEP());
 

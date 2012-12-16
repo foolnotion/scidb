@@ -48,36 +48,38 @@ if {[tk windowingsystem] eq "x11"} {
 namespace eval fsbox {
 namespace eval mc {
 
-set ScidbDatabase				"Scidb Database"
-set ScidDatabase				"Scid Database"
-set ChessBaseDatabase		"ChessBase Database"
-set PortableGameFile			"Portable Game File"
-set ZipArchive					"ZIP Archive"
-set ScidbArchive				"Scidb Arvchive"
-set PortableDocumentFile	"Portable Document File"
-set HypertextFile				"Hypertext File"
-set TypesettingFile			"Typesetting File"
-set ImageFile					"Image File"
-set TextFile					"Text File"
-set BinaryFile					"Binary File"
-set ShellScript				"Shell Script"
-set Executable					"Executable"
+set ScidbDatabase					"Scidb Database"
+set ScidDatabase					"Scid Database"
+set ChessBaseDatabase			"ChessBase Database"
+set PortableGameFile				"Portable Game File"
+set BughousePortableGameFile	"Bughouse Portable Game File"
+set ZipArchive						"ZIP Archive"
+set ScidbArchive					"Scidb Arvchive"
+set PortableDocumentFile		"Portable Document File"
+set HypertextFile					"Hypertext File"
+set TypesettingFile				"Typesetting File"
+set ImageFile						"Image File"
+set TextFile						"Text File"
+set BinaryFile						"Binary File"
+set ShellScript					"Shell Script"
+set Executable						"Executable"
 
-set LinkTo						"Link to %s"
-set LinkTarget					"Link target"
-set Directory					"Directory"
+set LinkTo							"Link to %s"
+set LinkTarget						"Link target"
+set Directory						"Directory"
 
-set Title(open)				"Select File"
-set Title(save)				"Save File"
-set Title(dir)					"Choose Directory"
+set Title(open)					"Select File"
+set Title(save)					"Save File"
+set Title(dir)						"Choose Directory"
 
-set Content						"Content"
-set Open							"Open"
+set Content							"Content"
+set Open								"Open"
 
-set FileType(exe)				"Executables"
-set FileType(txt)				"Text files"
-set FileType(bin)				"Binary files"
-set FileType(log)				"Log files"
+set FileType(exe)					"Executables"
+set FileType(txt)					"Text files"
+set FileType(bin)					"Binary files"
+set FileType(log)					"Log files"
+set FileType(html)				"HTML files"
 
 }
 
@@ -85,60 +87,66 @@ array set Priv { dialog {} }
 array set FileSizeCache {}
 array set LastFolders {}
 
-set FileIcons [list                        \
-	.sci	$::icon::16x16::filetypeScidbBase \
-	.si4	$::icon::16x16::filetypeScid4Base \
-	.si3	$::icon::16x16::filetypeScid3Base \
-	.scv  $::icon::16x16::filetypeArchive   \
-	.cbh	$::icon::16x16::filetypeChessBase \
-	.pgn	$::icon::16x16::filetypePGN       \
-	.gz	$::icon::16x16::filetypePGN       \
-	.zip	$::icon::16x16::filetypeZipFile   \
-	.pdf	$::icon::16x16::filetypePDF       \
-	.html	$::icon::16x16::filetypeHTML      \
-	.htm	$::icon::16x16::filetypeHTML      \
-	.tex	$::icon::16x16::filetypeTeX       \
-	.ltx	$::icon::16x16::filetypeTeX       \
+set FileIcons [list                           \
+	.sci		$::icon::16x16::filetypeScidbBase \
+	.si4		$::icon::16x16::filetypeScid4Base \
+	.si3		$::icon::16x16::filetypeScid3Base \
+	.scv 		$::icon::16x16::filetypeArchive   \
+	.cbh		$::icon::16x16::filetypeChessBase \
+	.pgn		$::icon::16x16::filetypePGN       \
+	.pgn.gz	$::icon::16x16::filetypePGN       \
+	.bpgn		$::icon::16x16::filetypeBPGN      \
+	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
+	.zip		$::icon::16x16::filetypeZipFile   \
+	.pdf		$::icon::16x16::filetypePDF       \
+	.html		$::icon::16x16::filetypeHTML      \
+	.htm		$::icon::16x16::filetypeHTML      \
+	.tex		$::icon::16x16::filetypeTeX       \
+	.ltx		$::icon::16x16::filetypeTeX       \
 ]
 
-set FileEncodings [list \
-	.sci 0 utf-8 \
-	.si4 1 utf-8 \
-	.si3 1 utf-8 \
-	.scv 0 utf-8 \
-	.cbh 1 $::encoding::windowsEncoding \
-	.pgn 1 $::encoding::defaultEncoding \
-	.gz  1 $::encoding::defaultEncoding \
-	.zip 1 $::encoding::defaultEncoding \
+set FileEncodings [list                    \
+	.sci  	0 utf-8                        \
+	.si4 		1 utf-8                        \
+	.si3 		1 utf-8                        \
+	.scv 		0 utf-8                        \
+	.cbh 		1 $::encoding::windowsEncoding \
+	.pgn 		1 $::encoding::defaultEncoding \
+	.bpgn 	1 $::encoding::defaultEncoding \
+	.pgn.gz  1 $::encoding::defaultEncoding \
+	.bpgn.gz 1 $::encoding::defaultEncoding \
+	.zip  	1 $::encoding::defaultEncoding \
 ]
 if {$tcl_platform(platform) eq "windows"} {
 	set FileEncodings(.cbh) [list 1 $::encoding::systemEncoding] ;# XXX ok?
 }
 
-array set FileType [list      \
-	.sci	ScidbDatabase        \
-	.si4	ScidDatabase         \
-	.si3	ScidDatabase         \
-	.scv  ScidbArchive         \
-	.cbh	ChessBaseDatabase    \
-	.pgn	PortableGameFile     \
-	.gz	PortableGameFile     \
-	.zip	ZipArchive           \
-	.pdf	PortableDocumentFile \
-	.html	HypertextFile        \
-	.htm	HypertextFile        \
-	.tex	TypesettingFile      \
-	.ltx	TypesettingFile      \
-	.ppm	ImageFile            \
-	.png	ImageFile            \
-	.gif	ImageFile            \
-	.jpg	ImageFile            \
-	.jpeg	ImageFile            \
-	.txt	TextFile             \
-	.log	TextFile             \
-	.bin	BinaryFile           \
-	.exe	Executable           \
-	.sh	ShellScript          \
+array set FileType [list             \
+	.sci		ScidbDatabase            \
+	.si4		ScidDatabase             \
+	.si3		ScidDatabase             \
+	.scv 		ScidbArchive             \
+	.cbh		ChessBaseDatabase        \
+	.pgn		PortableGameFile         \
+	.pgn.gz	PortableGameFile         \
+	.bpgn		BughousePortableGameFile \
+	.bpgn.gz	BughousePortableGameFile \
+	.zip		ZipArchive               \
+	.pdf		PortableDocumentFile     \
+	.html		HypertextFile            \
+	.htm		HypertextFile            \
+	.tex		TypesettingFile          \
+	.ltx		TypesettingFile          \
+	.ppm		ImageFile                \
+	.png		ImageFile                \
+	.gif		ImageFile                \
+	.jpg		ImageFile                \
+	.jpeg		ImageFile                \
+	.txt		TextFile                 \
+	.log		TextFile                 \
+	.bin		BinaryFile               \
+	.exe		Executable               \
+	.sh		ShellScript              \
 ]
 
 
@@ -175,6 +183,14 @@ proc currentDialog {} {
 }
 
 
+proc fileIcon {ext} {
+	variable FileIcons
+
+	set i [lsearch $FileIcons $ext]
+	return [lindex $FileIcons [expr {$i + 1}]]
+}
+
+
 proc fileIcons {} {
 	return [set [namespace current]::FileIcons]
 }
@@ -206,7 +222,7 @@ proc dragCursors {{ext ""}} {
 	if {![info exists DragCursor]} {
 		set DragCursor {}
 
-		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .pgn .gz .zip} db
+		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} db
 											{.pdf .html .htm .tex .ltx .bin .txt} document
 											{.ppm .png .gif .jpg .jpeg} image } {
 			if {[tk windowingsystem] eq "x11"} {
@@ -235,7 +251,7 @@ proc dragCursors {{ext ""}} {
 
 proc estimateNumberOfGames {filename} {
 	set count [NumGames $filename]
-	if {[file extension $filename] in {.pgn .gz .zip}} {
+	if {[file extension $filename] in {.pgn .pgn.gz .bpgn .bpgn.gz .zip}} {
 		set count [expr {-[RoundNumGames $count]}]
 	}
 	return $count
@@ -284,7 +300,7 @@ proc Open {type args} {
 	set knownFileType 1
 	foreach entry $data(-filetypes) {
 		set ft [lindex $entry 1]
-		if {".sci" in $ft || ".si4" in $ft || ".pgn" in $ft} {
+		if {".sci" in $ft || ".si4" in $ft || ".pgn" in $ft || ".bpgn" in $ft} {
 			set scidbFileType 1
 			break;
 		}
@@ -599,7 +615,7 @@ proc FormatNumGames {filename count} {
 	set result ""
 	if {$count > 0} {
 		switch [file extension $filename] {
-			.pgn - .gz - .zip {
+			.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 				set count [RoundNumGames $count]
 				append result "~ "
 			}
@@ -619,7 +635,7 @@ proc GetNumGames {filename mtime} {
 
 proc IsUsed {file} {
 	switch [file extension $file] {
-		.pgn - .gz - .zip {
+		.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 			# no action
 		}
 
@@ -641,7 +657,7 @@ proc MapExtension {extension} {
 	set result [::scidb::misc::mapExtension $extension]
 	if {[string length $result]} { set result ".$result" }
 	if {$result ne $extension} { return $result }
-	if {$result in {.sci .scv .si3 .si4 .cbh .pgn .gz .zip}} { return $result }
+	if {$result in {.sci .scv .si3 .si4 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip}} { return $result }
 	return ""
 }
 
@@ -700,7 +716,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				tk::label $f.tcreated -text $ctime
 
 				switch $ext {
-					.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+					.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 						lassign [::scidb::misc::attributes $filename] numGames type created descr
 						if {[string length $descr] == 0} { set descr "\u2014" }
 #						set type [set ::application::database::mc::T_$type]
@@ -739,7 +755,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 								lassign $pair attr value
 								if {$attr eq "FileName"} {
 									switch [file extension $value] {
-										.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+										.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 											if {[string length $bases] > 0} { append bases \n }
 											set file [file tail $value]
 											append bases $file
@@ -839,5 +855,33 @@ proc WriteOptions {chan} {
 } ;# namespace fsbox
 } ;# x11
 } ;# namespace dialog
+
+
+rename file file__fsbox__orig__
+
+proc file {args} {
+	if {[llength $args] == 2} {
+		switch -- [lindex $args 0] {
+			extension {
+				set file [lindex $args 1]
+				set result [uplevel [list file__fsbox__orig__ extension $file]]
+				if {$result eq ".gz"} {
+					set ext [uplevel [list file__fsbox__orig__ extension [string range $file 0 end-3]]]
+					if {[string length $ext]} { set result "$ext.gz" }
+				}
+				return $result
+			}
+
+			rootname {
+				set file [lindex $args 1]
+				if {[string match *.pgn.gz $file]} {
+					return [string range $file 0 end-7]
+				}
+			}
+		}
+	}
+
+	return [uplevel [list file__fsbox__orig__ {*}$args]]
+}
 
 # vi:set ts=3 sw=3:

@@ -196,8 +196,8 @@ array set SymbolDefaultEncoding {
 	 15 "\u00b4"
 	 16 "\u2264"
 	 17 "\u220f"
-	 18 "+-"
-	 19 "-+"
+	 18 "+\u2212"
+	 19 "\u2212+"
 	 22 "\u00e1"
 	 23 "\u00e1"
 	 36 "\u00cf"
@@ -346,8 +346,8 @@ array set ScidbSymbolOleEncoding {
 	 15 "2"
 	 16 "0"
 	 17 "4"
-	 18 "+-"
-	 19 "-+"
+	 18 "+\u2212"
+	 19 "\u2212+"
 	 22 "J"
 	 23 "J"
 	 32 "E"
@@ -394,8 +394,8 @@ array set FigurineSymbolChessBaseEncoding {
 	 15 " \u00b3"
 	 16 " \u00b1"
 	 17 " \u00b5"
-	 18 "+-"
-	 19 "-+"
+	 18 "+\u2212"
+	 19 "\u2212+"
 	 22 "\u2021"
 	 23 "\u2021"
 	 26 "\u2020"
@@ -1510,6 +1510,19 @@ proc splitMoves {text {tag figurine}} {
 
 
 proc mapNagToSymbol {nag} {
+	variable UseSymbols
+
+	if {$UseSymbols} {
+		variable symbolEncoding
+		upvar 0 [namespace current]::$symbolEncoding enc
+		if {[info exists enc($nag)]} { return $enc($nag) }
+	}
+
+	return [mapNagToUtfSymbol $nag]
+}
+
+
+proc mapNagToUtfSymbol {nag} {
 	variable SymbolUtfEncoding
 
 	if {![info exists SymbolUtfEncoding($nag)]} { return $nag }
@@ -1536,7 +1549,7 @@ proc splitAnnotation {text} {
 		if {[info exists enc($value)]} {
 			lappend result $value $enc($value) symbol
 		} else {
-			set sym [mapNagToSymbol $value]
+			set sym [mapNagToUtfSymbol $value]
 			if {$value eq $sym} {
 				lappend result $value $nag {}
 			} else {

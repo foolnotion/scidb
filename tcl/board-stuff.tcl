@@ -27,7 +27,7 @@
 ::util::source board-diagram
 
 namespace eval board {
-namespace eval stuff {
+namespace eval diagram {
 
 namespace export drawBorderlines
 
@@ -65,7 +65,7 @@ set emptyBoard		"...............................................................
 set standardBoard	"RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
 
 
-proc new {w size {borderSize 0} {flipped 0}} {
+proc new {w size {borderSize 0} {flipped 0} args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Board
 
@@ -82,6 +82,8 @@ proc new {w size {borderSize 0} {flipped 0}} {
 	set Board(afterid) [after 50 [namespace code [list [namespace parent]::setupPieces $size]]]
 	set Board(border) 0
 	set Board(animate) 1
+	set Board(animate,piece) ""
+	set Board(targets) {}
 
    set boardSize [expr {8*$size}]
    tk::frame $w -class Board
@@ -104,6 +106,12 @@ proc new {w size {borderSize 0} {flipped 0}} {
 	::bind $w.c <Destroy> [namespace code [list Destroy $w]]
 
    return $w
+}
+
+
+proc setTargets {w args} {
+	variable ${w}::Board
+	set Board(targets) $args
 }
 
 
@@ -243,7 +251,11 @@ proc move {w list} {
 	variable ${w}::Board
 
 	lassign $list color squareFrom squareTo squareCaptured pieceFrom pieceTo pieceCaptured rookFrom rookTo
-	if {$pieceFrom eq " "} { return }	;# null move
+
+	if {$pieceTo eq " "} {
+		if {$pieceFrom eq " "} { return }  ;# null move
+		set pieceTo "."
+	}
 
 	set Board(data) [string replace $Board(data) $squareFrom $squareFrom .]
 
@@ -262,6 +274,25 @@ proc move {w list} {
 
 	if {!$Board(animate) || $effects(animation) <= 0} {
 		DoMove $w $list
+	} elseif {$squareFrom eq $squareTo && $rookFrom == -1} {
+		variable LetterToPiece
+		# use fading effect because we cannot animate
+		set animation $effects(animation)
+		set after [max 5 [expr {round($animation/127.0)}]]
+		set Board(animate,start) [clock milliseconds]
+		set Board(animate,end) [expr {$Board(animate,start) + $animation} ]
+		set Board(animate,after) $after
+		set Board(animate,move) $list
+		set Board(animate,to) $squareTo
+		set Board(animate,time) $animation
+		set Board(animate,piece) ""
+		if {$pieceFrom eq " "} {
+			set Board(animate,opacity) 10
+			DrawFadingPiece $w $squareTo $LetterToPiece($pieceTo) +1
+		} else {
+			set Board(animate,opacity) 254
+			DrawFadingPiece $w $squareTo $LetterToPiece($pieceFrom) -1
+		}
 	} else {
 		if {$pieceFrom != $pieceTo && [string match {[Pp]} $pieceTo]} {
 			# take back a promotion; move a pawn, not the promoted piece
@@ -337,6 +368,11 @@ proc flipped? {w} {
 }
 
 
+proc canvas {w} {
+	return $w.c
+}
+
+
 proc hilite {w i which} {
 	variable [namespace parent]::hilite
 	variable ${w}::Board
@@ -372,10 +408,40 @@ proc updateMarks {w marks} {
 }
 
 
+proc drawMarker {w square marker} {
+	variable ${w}::Board
+
+	lassign [$w.c coords square:$square] x y
+	set x [expr {$x + 2}]
+	set y [expr {$y + $Board(size) - 2}]
+	set tags [list marker marker-$square]
+	$w.c create image $x $y -anchor sw -image $marker -tags $tags
+	raiseMarker $w
+}
+
+
+proc removeMarker {w square} {
+	$w.c delete marker-$square
+}
+
+
+proc removeAllMarkers {w} {
+	$w.c delete marker
+}
+
+
+proc raiseMarker {w} {
+	$w.c raise marker
+	$w.c raise input
+}
+
+
 proc piece {w sq} {
 	variable ${w}::Board
 	variable LetterToPiece
 
+	set p [string index $Board(data) $sq]
+	if {$p eq " "} { return "e" }
 	return $LetterToPiece([string index $Board(data) $sq])
 }
 
@@ -405,9 +471,13 @@ proc finishDrag {w} {
 	variable ${w}::Board
 	variable squareIndex
 
-	if {$Board(drag:active) && $Board(drag:square) != -1} {
-		set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
-		$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
+	if {$Board(drag:active)} {
+		if {$Board(drag:square) != -1} {
+			set sq [getSquare $w $Board(pointer:x) $Board(pointer:y)]
+			$w.c coords piece:$Board(drag:square) {*}[$w.c coords square:$sq]
+		}
+
+		foreach t $Board(targets) { $t delete drag-piece }
 	}
 }
 
@@ -433,6 +503,13 @@ proc setDragSquare {w {sq -1}} {
 
 	set Board(drag:square) $sq
 	set Board(drag:active) 0
+
+	foreach t $Board(targets) { $t delete drag-piece }
+}
+
+
+proc raisePiece {w square} {
+	$w.c raise piece:$square
 }
 
 
@@ -457,22 +534,44 @@ proc dragPiece {w x y} {
 	set Board(pointer:x) $x
 	set Board(pointer:y) $y
 
-	set x [expr {$x - [winfo rootx $w.c] - $Board(size)/2}]
-	set y [expr {$y - [winfo rooty $w.c] - $Board(size)/2}]
+	set xc [expr {$x - [winfo rootx $w.c] - $Board(size)/2}]
+	set yc [expr {$y - [winfo rooty $w.c] - $Board(size)/2}]
 
 	if {!$Board(drag:active)} {
 		lassign [$w.c coords square:$sq] x0 y0
-		if {abs($x0 - $x) > 5 || abs($y0 - $y) > 5} {
+		if {abs($x0 - $xc) > 5 || abs($y0 - $yc) > 5} {
 			set Board(drag:active) 1
+
+			if {[llength $Board(targets)]} {
+				set piece [piece $w $sq]
+				set img photo_Piece($piece,$Board(size))
+				foreach t $Board(targets) {
+					$t create image 0 0 -image $img -tag drag-piece -anchor center
+					$t raise drag-piece
+				}
+			}
 		}
 	}
 
 	if {$Board(drag:x) != -1 && $Board(drag:y) != -1} {
-		set x [expr {$x - $Board(drag:x)}]
-		set y [expr {$y - $Board(drag:y)}]
+		set dx $Board(drag:x)
+		set dy $Board(drag:y)
+	} else {
+		lassign {0 0} dx dy
 	}
 
-	$w.c coords piece:$sq $x $y
+	set x0 [expr {$xc - $dx}]
+	set y0 [expr {$yc - $dy}]
+
+	$w.c coords piece:$sq $x0 $y0
+
+	if {[llength $Board(targets)]} {
+		foreach t $Board(targets) {
+			set x1 [expr {$x - [winfo rootx $t] - $dx}]
+			set y1 [expr {$y - [winfo rooty $t] - $dy}]
+			$t coords drag-piece $x1 $y1
+		}
+	}
 }
 
 
@@ -490,7 +589,7 @@ proc setSign {w square} {
 	variable [namespace parent]::square::style
 	variable ${w}::Board
 
-	makeHiliteRect $w.c sign $square $Board(size) {*}[$w.c coords piece:$square] $style(hilite,selected)
+	makeHiliteRect $w.c sign $square $Board(size) {*}[$w.c coords square:$square] $style(hilite,selected)
 
 	$w.c raise rect
 	$w.c raise mark
@@ -555,6 +654,8 @@ proc makeHiliteRect {canv which tag size x1 y1 {color {}}} {
 		incr y2 $outline
 		$canv create rectangle $x1 $y1 $x2 $y2 -tags $tags -width 0 -fill $color -state $state
 	}
+
+	return $which:$tag
 }
 
 
@@ -639,15 +740,17 @@ proc DrawPiece {w sq piece} {
 	set piece $LetterToPiece($piece)
 	$w.c delete piece:$sq
 
-	$w.c create image {*}[$w.c coords square:$sq] \
-		-image photo_Piece($piece,$Board(size)) \
-		-anchor nw \
-		-tags [list piece piece:$sq] \
-		;
-	
-	$w.c raise text
-	$w.c raise arrow
-	$w.c raise input
+	if {$piece ne "e"} {
+		$w.c create image {*}[$w.c coords square:$sq] \
+			-image photo_Piece($piece,$Board(size)) \
+			-anchor nw \
+			-tags [list piece piece:$sq] \
+			;
+		
+		$w.c raise text
+		$w.c raise arrow
+		$w.c raise input
+	}
 }
 
 
@@ -694,6 +797,11 @@ proc Destroy {w} {
 proc DeleteImages {w} {
 	variable ${w}::Board
 
+	if {[string length $Board(animate,piece)]} {
+		image delete $Board(animate,piece)
+		set Board(animate,piece) ""
+	}
+
 	foreach name [array names Board -glob image,*] {
 		image delete $Board($name)
 	}
@@ -705,17 +813,75 @@ proc DeleteImages {w} {
 proc DoMove {w list} {
 	lassign $list color squareFrom squareTo squareCaptured pieceFrom pieceTo pieceCaptured rookFrom rookTo
 
-	DrawPiece $w $squareFrom .
+	if {$squareFrom != $squareTo} {
+		DrawPiece $w $squareFrom .
+	}
 
-	if {$rookFrom >= 0} {
+	if {$rookFrom != $rookTo} {
 		DrawPiece $w $rookFrom .
 		DrawPiece $w $rookTo [expr {$color eq "w" ? "R" : "r"}]
 	}
 
-	DrawPiece $w $squareTo $pieceTo
+	if {$pieceTo ne " "} {
+		DrawPiece $w $squareTo $pieceTo
+	}
 
 	if {$squareCaptured != -1 && $squareCaptured != $squareTo} {
 		DrawPiece $w $squareCaptured $pieceCaptured
+	}
+}
+
+
+proc DrawFadingPiece {w sq piece dir} {
+	variable ${w}::Board
+	variable pieceToLetter
+
+	if {![winfo exists $w.c]} { return }
+
+	set end $Board(animate,end)
+	set now [clock milliseconds]
+
+	if {$now >= $end || ($dir == 1 ? $Board(animate,opacity) >= 255 : $Board(animate,opacity) < 10)} {
+		if {$dir == 1} {
+			DrawPiece $w $sq $pieceToLetter($piece)
+		} else {
+			$w.c delete piece:$sq
+		}
+		unset Board(animate,afterid)
+	} else {
+		set to $Board(animate,to)
+		set start $Board(animate,start)
+
+		if {[string length $Board(animate,piece)] == 0} {
+			set img photo_Piece($piece,$Board(size))
+			set Board(animate,piece) \
+				[image create photo -width [image width $img] -height [image height $img]]
+			$w.c delete piece:$sq
+			$w.c create image {*}[$w.c coords square:$sq] \
+				-image $Board(animate,piece) -anchor nw -tag piece:$sq
+			$w.c raise piece:$sq
+			$w.c raise text
+			$w.c raise arrow
+			$w.c raise input
+		}
+
+		::scidb::tk::image disable \
+			photo_Piece($piece,$Board(size)) \
+			$Board(animate,piece) \
+			[expr {round($Board(animate,opacity))}] \
+			;
+
+		# Compute next alpha value:
+		set ratio [expr {double($now - $start)/double($end - $start)}]
+		if {$dir == 1} {
+			set Board(animate,opacity) [expr {10 + $ratio*244}]
+		} else {
+			set Board(animate,opacity) [expr {255 - $ratio*244}]
+		}
+
+		# Schedule another animation update in a few milliseconds:
+		set Board(animate,afterid) \
+			[after $Board(animate,after) [namespace code [list DrawFadingPiece $w $sq $piece $dir]]]
 	}
 }
 
@@ -772,6 +938,11 @@ proc AnimateMove {w} {
 proc CancelAnimation {w} {
 	variable ${w}::Board
 
+	if {[string length $Board(animate,piece)]} {
+		image delete $Board(animate,piece)
+		set Board(animate,piece) ""
+	}
+
 	if {[info exists Board(animate,afterid)]} {
 		after cancel $Board(animate,afterid)
 		unset Board(animate,afterid)
@@ -806,20 +977,20 @@ proc DrawAllMarks {w} {
 
 
 proc DrawText {w text square color} {
-	drawText $w.c [set ${w}::Board(size)] $color {*}[$w.c coords piece:$square] $text
+	drawText $w.c [set ${w}::Board(size)] $color {*}[$w.c coords square:$square] $text
 }
 
 
 proc DrawFull {w square color} {
-	drawFull $w.c [set ${w}::Board(size)] $color {*}[$w.c coords piece:$square] $square
+	drawFull $w.c [set ${w}::Board(size)] $color {*}[$w.c coords square:$square] $square
 }
 
 
-proc SetImage {canv squareSize x y img} {
+proc SetImage {canv squareSize x y img {tags {}}} {
 	set size [image width $img]
 	set x [expr {$x + ($squareSize - $size)/2}]
 	set y [expr {$y + ($squareSize - $size)/2}]
-	$canv create image $x $y -anchor nw -image $img -tag mark
+	$canv create image $x $y -anchor nw -image $img -tags [list mark {*}$tags]
 }
 
 
@@ -843,7 +1014,7 @@ proc DrawSquare {w square color} {
 		set Board(image,square,$color) [MakeSquare $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords piece:$square] $Board(image,square,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,square,$color)
 }
 
 
@@ -873,7 +1044,7 @@ proc DrawCircle {w square color} {
 		set Board(image,circle,$color) [MakeCircle $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords piece:$square] $Board(image,circle,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,circle,$color)
 }
 
 
@@ -891,7 +1062,7 @@ proc MakeDisk {squareSize color} {
 	}
 	set img [image create photo -width $size -height $size]
 	::scidb::tk::image copy $Marks(disk,$color) $img
-	::scidb::tk::image alpha 0.8 $img -composite overlay
+	::scidb::tk::image 0.8 $alpha $img -composite overlay
 	return $img
 }
 
@@ -901,10 +1072,10 @@ proc DrawDisk {w square color} {
 	variable Marks
 
 	if {![info exists Board(image,disk,$color)]} {
-		set Board(image,disk,$color) [MakeDisk  $Board(size) $color]
+		set Board(image,disk,$color) [MakeDisk $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords piece:$square] $Board(image,disk,$color)
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$color) $tags
 }
 
 
@@ -929,8 +1100,8 @@ proc DrawArrow {w from to color} {
 		set Board(image,arrow,$rows,$cols,$color) [MakeArrow $size $rows $cols $color]
 	}
 
-	lassign [$w.c coords piece:$from] x1 y1
-	lassign [$w.c coords piece:$to  ] x2 y2
+	lassign [$w.c coords square:$from] x1 y1
+	lassign [$w.c coords square:$to  ] x2 y2
 	set x0 [expr {int(min($x1, $x2))}]
 	set y0 [expr {int(min($y1, $y2))}]
 	if {$cols} { incr x0 $sizh }
@@ -1579,7 +1750,7 @@ set Rectangle "
 </svg>
 "
 
-} ;# namespace stuff
+} ;# namespace diagram
 } ;# namespace board
 
 # vi:set ts=3 sw=3:

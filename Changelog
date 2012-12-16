@@ -1,6 +1,19 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #569)
+------------------------------------------------------------------------------
+* Tournament table: print table to file.
+
+* Scidb is now supporting chess variants: Crazyhouse, Three-Check, Suicide,
+Giveaway, and Losers. Note that the opening tree is not yet working with
+variants.
+
+* New piece sets: "Free Staunton" and "Virtual".
+
+* New board themes: "Staunton" and "Virtual".
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #566)
 ------------------------------------------------------------------------------
 * Bug in Elo performance table fixed (thanks to Steve for testing)
@@ -24,6 +37,11 @@ Scidb 1.0 BETA (rev. #544)
 - renamed Marble Classic -> Marble Red (square)
 - renamed Marble Red -> Marble Brown (square)
 - removed Yellow (piece)
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #542)
+------------------------------------------------------------------------------
+* New theme "Blue Mono" added.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #531)
@@ -58,6 +76,11 @@ means that the planned public preview version will be postponed after the
 implementation of variants is finished.
 
 [Oktober 2012] ===============================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #464)
+------------------------------------------------------------------------------
+* Severe bug with [namespace code ...] handling in Tcl 8.6 fixed.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #450)

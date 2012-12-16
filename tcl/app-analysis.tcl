@@ -46,7 +46,8 @@ set CurrentMove				"Currently searching this move"
 set TimeSearched				"Time searched"
 set SearchDepth				"Search depth in plies (Selective search depth)"
 set IllegalPosition			"Illegal position - Cannot analyze"
-set DidNotReceivePong		"Engine is not responding to \"pong\" command - Analysis aborted"
+set IllegalMoves				"Illegal moves in game - Cannot analyze"
+set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -57,9 +58,12 @@ set Minutes						"m"
 
 set Status(checkmate)		"%s is checkmate"
 set Status(stalemate)		"%s is stalemate"
+set Status(threechecks)		"%s got three checks"
+set Status(losing)			"%s lost all pieces"
 
 set NotSupported(standard)	"This engine does not support standard chess."
 set NotSupported(chess960)	"This engine does not support chess 960."
+set NotSupported(variant)	"This engine does not support variant '%s'."
 set NotSupported(analyze)	"This engine does not have an analysis mode."
 
 set Signal(stopped)			"Engine stopped by signal."
@@ -117,6 +121,8 @@ proc build {parent width height} {
 	set Vars(maxMoves) 0
 	set Vars(after) {}
 	set Vars(state) normal
+	set Vars(mode) normal
+	set Vars(message) {}
 	array set fopt [font configure $Options(font)]
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
@@ -125,7 +131,9 @@ proc build {parent width height} {
 
 	set mw   [tk::multiwindow $parent.mw -borderwidth 0 -background $Defaults(info:background)]
 	set main [tk::frame $mw.main -borderwidth 0 -background $Defaults(info:background)]
-	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Defaults(info:background)]
+	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Defaults(background)]
+
+	bind $mesg <<LanguageChanged>> [namespace code LanguageChanged]
 
 	set Vars(mw) $mw
 	set Vars(mesg) $mesg
@@ -390,6 +398,7 @@ proc startAnalysis {dialog} {
 	variable Vars
 	variable Options
 
+	set Vars(message) {}
 	$Vars(mesg) configure -text ""
 	::engine::kill $Vars(engine:id)
 
@@ -469,6 +478,13 @@ proc SetOrdering {tree} {
 		set order unordered
 	}
 	::scidb::engine::ordering $Vars(engine:id) $order
+
+	if {$Options(engine:bestFirst)} {
+		foreach i {0 1 2 3} {
+			$Vars(tree) item element configure Line$i Eval  elemTextSym -fill black
+			$Vars(tree) item element configure Line$i Value elemTextFig -fill black
+		}
+	}
 }
 
 
@@ -574,7 +590,7 @@ proc EvalText {score mate} {
 		if {$score < 0 && $nag != 10} { incr nag }
 	}
 
-	return [::font::mapNagToSymbol $nag]
+	return $nag
 }
 
 
@@ -625,6 +641,7 @@ proc Display(clear) {} {
 	variable Defaults
 	variable Vars
 
+	set Vars(message) {}
 	$Vars(mesg) configure -text ""
 	$Vars(mw) raise $Vars(main)
 
@@ -658,7 +675,7 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 
 	Display(time) $time $depth $seldepth $nodes
 
-	set evalTxt [EvalText $score $mate]
+	set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 	set scoreTxt [ScoreText $score $mate]
 
 	$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
@@ -691,7 +708,7 @@ proc Display(bestscore) {score mate bestLines} {
 		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $Vars(best:$best)
 		$Vars(tree) item element configure Line$line Value elemTextFig -fill $Vars(best:$best)
 		if {$best} {
-			set evalTxt [EvalText $score $mate]
+			set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 			set scoreTxt [ScoreText $score $mate]
 			$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
 			$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
@@ -701,13 +718,11 @@ proc Display(bestscore) {score mate bestLines} {
 }
 
 
-proc Display(checkmate) {color} {
-	ShowMessage info [format $mc::Status(checkmate) [set ::mc::[string toupper $color 0 0]]]
-}
+proc Display(over) {state color} {
+	variable Vars
 
-
-proc Display(stalemate) {color} {
-	ShowMessage info [format $mc::Status(stalemate) [set ::mc::[string toupper $color 0 0]]]
+	set Vars(message) [list Display(over) $state $color]
+	ShowMessage info [format $mc::Status($state) [set ::mc::[string toupper $color 0 0]]]
 }
 
 
@@ -780,20 +795,20 @@ proc Display(error) {code} {
 	variable Vars
 
 	switch $code {
-		registration - copyprotection {
-			set msg $::engine::mc::ProbeError($code)
-		}
-		standard - chess960 - analyze {
-			set msg $mc::NotSupported($code)
-		}
-		illegal {
-			set msg $mc::IllegalPosition
+		registration - copyprotection	{ set msg $::engine::mc::ProbeError($code) }
+		standard - chess960 - analyze	{ set msg $mc::NotSupported($code) }
+		position								{ set msg $mc::IllegalPosition }
+		moves									{ set msg $mc::IllegalMoves }
+		variant {
+			set variant [::scidb::engine::variant $Vars(engine:id)]
+			set msg [format $mc::NotSupported($code) $::mc::VariantName($variant)]
 		}
 		pong {
 			set msg $mc::DidNotReceivePong
 		}
 	}
 
+	set Vars(message) [list Display(error) $code]
 	ShowMessage error $msg
 }
 
@@ -842,6 +857,12 @@ proc Signal {id code} {
 }
 
 
+proc LanguageChanged {} {
+	variable Vars
+	if {[llength $Vars(message)]} { {*}$Vars(message) }
+}
+
+
 proc PopupMenu {parent} {
 	variable Vars
 
@@ -851,7 +872,7 @@ proc PopupMenu {parent} {
 	catch { wm attributes $menu -type popup_menu }
 
 	$menu add command \
-		-label $mc::Setup \
+		-label "$mc::Setup..." \
 		-image $::icon::16x16::setup \
 		-compound left \
 		-command [namespace code Setup] \
@@ -871,7 +892,7 @@ proc PopupMenu {parent} {
 		;
 	$menu add separator
 	$menu add checkbutton \
-		-label $mc::LockEngine \
+		-label " $mc::LockEngine" \
 		-image $::icon::16x16::lock \
 		-compound left \
 		-command [namespace code EngineLock] \
@@ -879,14 +900,14 @@ proc PopupMenu {parent} {
 		;
 	$menu add separator
 	$menu add checkbutton \
-		-label $mc::BestFirstOrder \
+		-label " $mc::BestFirstOrder" \
 		-image $::icon::16x16::sort(descending) \
 		-compound left \
 		-command [namespace code [list SetOrdering $parent]] \
 		-variable [namespace current]::Options(engine:bestFirst) \
 		;
 	$menu add checkbutton \
-		-label $mc::MultipleVariations \
+		-label " $mc::MultipleVariations"  \
 		-image $::icon::16x16::lines \
 		-compound left \
 		-command [namespace code [list SetMultiPV $parent]] \

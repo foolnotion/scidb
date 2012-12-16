@@ -230,75 +230,22 @@ Tree::buildTree0(	unsigned myIdn,
 	unsigned	reportAfter = m_index + frequency;
 	EcoSet	reachable;
 
-	// TODO: we need successors
-	Eco myEco = EcoTable::specimen().getEco(startPosition, myLine, &reachable);
-
-	if (myEco)
+	for (unsigned n = base.countGames(); m_index < n; ++m_index)
 	{
-		for ( ; m_index < numGames; ++m_index)
+		if (reportAfter == m_index)
 		{
-			if (progress.interrupted())
-				return false;
-
-			if (reportAfter == m_index)
-			{
-				progress.update(m_index);
-				reportAfter += frequency;
-			}
-
-			GameInfo const& info = base.gameInfo(m_index);
-
-			if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-			{
-				if (info.idn() == variant::StandardIdn)
-				{
-					if (mode == tree::Exact)
-					{
-						Move m = base.findExactPositionAsync(m_index, myPosition, true);
-
-						if (m.isLegal())
-						{
-							Board board(myPosition);
-							board.doMove(m);
-							add(info, EcoTable::specimen().getEco(board), ::index(m), myPosition);
-						}
-					}
-					else
-					{
-						Eco otherEco = Eco(info.ecoKey());
-
-						if (reachable.test(otherEco))
-							possiblyAdd(base, info, otherEco, myPosition);
-					}
-				}
-				else
-				{
-					Move m = base.findExactPositionAsync(m_index, myPosition, true);
-
-					if (m.isLegal())
-					{
-						Board board(myPosition);
-						board.doMove(m);
-						add(info, EcoTable::specimen().getEco(board), ::index(m), myPosition);
-					}
-				}
-			}
+			progress.update(m_index);
+			reportAfter += frequency;
 		}
-	}
-	else
-	{
-		for (unsigned n = base.countGames(); m_index < n; ++m_index)
+
+		GameInfo const& info = base.gameInfo(m_index);
+
+		// XXX reachableFunc should not use home pawns
+		if (info.idn()
+				? reachableFunc(myPosition.signature(), info.signature(), hpSig)
+				: Signature::isReachable(myPosition.signature(), info.signature()))
 		{
-			if (reportAfter == m_index)
-			{
-				progress.update(m_index);
-				reportAfter += frequency;
-			}
-
-			GameInfo const& info = base.gameInfo(m_index);
-
-			if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-				possiblyAdd(base, info, Eco(), myPosition);
+			possiblyAdd(base, info, Eco(), myPosition);
 		}
 	}
 
@@ -321,7 +268,7 @@ Tree::buildTree518(	unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn == variant::StandardIdn);
+	M_ASSERT(myIdn == variant::Standard);
 	M_ASSERT(!myPosition.isStandardPosition());
 
 	unsigned				reportAfter = m_index + frequency;
@@ -331,7 +278,7 @@ Tree::buildTree518(	unsigned myIdn,
 	pawns::Progress	myProgress;
 
 //	Eco myEco = EcoTable::specimen().getEco(myLine);
-	Eco myKey = EcoTable::specimen().lookup(myLine, &myLength, &successors, &reachable);
+	Eco myKey = EcoTable::specimen(base.variant()).lookup(myLine, &myLength, &successors, &reachable);
 
 	myProgress.side[color::White] = myPosition.signature().progress(color::White);
 	myProgress.side[color::Black] = myPosition.signature().progress(color::Black);
@@ -349,29 +296,9 @@ Tree::buildTree518(	unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-//		if (mode == tree::Rapid)
-//		{
-//			Eco	otherKey		= Eco(info.ecoKey());
-//			bool	isReachable	= reachable.test(otherKey);
-//
-//			if (isReachable)
-//			{
-//				Successors::Successor const* succ = findSuccessor(successors, otherKey);
-//
-//				if (succ)
-//					add(info, succ->eco, succ->move, myPosition);
-//				else if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-//					possiblyAdd(base, info, Eco(), myPosition);
-//			}
-//		}
-//		else
+		if (info.idn() == variant::Standard)
 		{
-			if (info.idn() != variant::StandardIdn)
-			{
-				if (info.idn() == 0 || mode == tree::Exact)
-					possiblyAdd(base, info, Eco(), myPosition);
-			}
-			else if (info.plyCount() && reachableFunc(myPosition.signature(), info.signature(), hpSig))
+			if (info.plyCount() && reachableFunc(myPosition.signature(), info.signature(), hpSig))
 			{
 //				if (	myLength == info.plyCount()
 //					&& myLine.length == myLength
@@ -396,6 +323,17 @@ Tree::buildTree518(	unsigned myIdn,
 				}
 			}
 		}
+		else
+		{
+			// XXX reachableFunc should not use home pawns if info.idn() == 0
+			if (	mode == tree::Exact
+				&& info.idn()
+						? reachableFunc(myPosition.signature(), info.signature(), hpSig)
+						: Signature::isReachable(myPosition.signature(), info.signature()))
+			{
+				possiblyAdd(base, info, Eco(), myPosition);
+			}
+		}
 	}
 
 	return true;
@@ -418,7 +356,7 @@ Tree::buildTree960(	unsigned myIdn,
 	typedef EcoTable::EcoSet EcoSet;
 
 	M_ASSERT(myIdn != 0);
-	M_ASSERT(myIdn != variant::StandardIdn);
+	M_ASSERT(myIdn != variant::Standard);
 	M_ASSERT(!myPosition.isStandardPosition());
 
 	unsigned reportAfter = m_index + frequency;
@@ -436,66 +374,74 @@ Tree::buildTree960(	unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
+		if (info.idn() == myIdn)
 		{
-			if (info.idn() == myIdn)
+			switch (myLine.length)
 			{
-				switch (myLine.length)
-				{
-					case 0:
-						break;
+				case 0:
+					add(info, Eco(), info.plyCount() ? info.ply<0>() : ::Empty, myPosition);
+					break;
 
-					case 1:
-						switch (info.plyCount())
-						{
-							case 0: break;
+				case 1:
+					switch (info.plyCount())
+					{
+						case 0:
+							break;
 
-							case 1:
-								if (myLine[0] == info.ply<0>())
-									add(info, Eco(), ::Empty, myPosition);
-								break;
+						case 1:
+							if (myLine[0] == info.ply<0>())
+								add(info, Eco(), ::Empty, myPosition);
+							break;
 
-							case 2:
-								if (myLine[0] == info.ply<0>())
-									add(info, Eco(), info.ply<1>(), myPosition);
-								break;
+						case 2:
+							if (myLine[0] == info.ply<0>())
+								add(info, Eco(), info.ply<1>(), myPosition);
+							break;
 
-							default:
-									if (myLine[0] == info.ply<0>())
-									add(info, Eco(), info.ply<1>(), myPosition);
-								else
-									possiblyAdd(base, info, Eco(), myPosition);
-								break;
-						}
-						break;
-
-					case 2:
-						switch (info.plyCount())
-						{
-							case 0: break;
-							case 1: break;
-
-							case 2:
-								if (myLine[0] == info.ply<0>() && myLine[1] == info.ply<1>())
-								{
-									add(info, Eco(), ::Empty, myPosition);
-									break;
-								}
-								// fallthru
-
-							default:
+						default:
+							if (myLine[0] == info.ply<0>())
+								add(info, Eco(), info.ply<1>(), myPosition);
+							else if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
 								possiblyAdd(base, info, Eco(), myPosition);
-								break;
-						}
-						break;
+							break;
+					}
+					break;
 
-					default:
-						if (info.plyCount() > 2)
-							possiblyAdd(base, info, Eco(), myPosition);
-						break;
-				}
+				case 2:
+					switch (info.plyCount())
+					{
+						case 0: break;
+						case 1: break;
+
+						case 2:
+							if (myLine[0] == info.ply<0>() && myLine[1] == info.ply<1>())
+							{
+								add(info, Eco(), ::Empty, myPosition);
+								break;
+							}
+							// fallthru
+
+						default:
+							if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
+								possiblyAdd(base, info, Eco(), myPosition);
+							break;
+					}
+					break;
+
+				default:
+					if (	info.plyCount() > 2
+						&& reachableFunc(myPosition.signature(), info.signature(), hpSig))
+					{
+						possiblyAdd(base, info, Eco(), myPosition);
+					}
+					break;
 			}
-			else if (mode == tree::Exact)
+		}
+		else if (mode == tree::Exact)
+		{
+			if (info.idn()
+					? reachableFunc(myPosition.signature(), info.signature(), hpSig)
+					: Signature::isReachable(myPosition.signature(), info.signature()))
 			{
 				possiblyAdd(base, info, Eco(), myPosition);
 			}
@@ -521,14 +467,14 @@ Tree::buildTreeStandard(unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn == variant::StandardIdn);
+	M_ASSERT(myIdn == variant::Standard);
 	M_ASSERT(myPosition.isStandardPosition());
 
 	unsigned		reportAfter = m_index + frequency;
 	Successors	successors;
 	unsigned		myLength;	// unused
 
-	Eco myEco = EcoTable::specimen().lookup(myLine, &myLength, &successors);
+	Eco myEco = EcoTable::specimen(base.variant()).lookup(myLine, &myLength, &successors);
 
 	for ( ; m_index < numGames; ++m_index)
 	{
@@ -543,7 +489,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 
 		GameInfo const& info = base.gameInfo(m_index);
 
-		if (info.idn() == variant::StandardIdn)
+		if (info.idn() == variant::Standard)
 		{
 			if (info.plyCount() == 0)
 			{
@@ -563,8 +509,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 		{
 			// NOTE: In Scid it is possible that a standard position
 			// is declared as a non-standard position.
-			if (reachableFunc(myPosition.signature(), info.signature(), hpSig))
-				possiblyAdd(base, info, Eco(), myPosition);
+			possiblyAdd(base, info, Eco(), myPosition);
 		}
 	}
 
@@ -587,7 +532,7 @@ Tree::buildTreeStart(unsigned myIdn,
 {
 	typedef EcoTable::EcoSet EcoSet;
 
-	M_ASSERT(myIdn != variant::StandardIdn);
+	M_ASSERT(myIdn != variant::Standard);
 	M_ASSERT(myPosition.isStartPosition());
 
 	unsigned reportAfter = m_index + mstl::max(frequency, 1000u);
@@ -639,6 +584,7 @@ Tree::makeTree(TreeP tree,
 					util::Progress& progress)
 {
 	M_REQUIRE(base.format() != format::ChessBase);
+	M_REQUIRE(base.variant() == variant::Normal);
 
 	typedef bool (Tree::*BuildMeth)(	unsigned,
 												Board const&,
@@ -660,7 +606,7 @@ Tree::makeTree(TreeP tree,
 		buildMeth = &Tree::buildTreeStandard;
 	else if (myPosition.isStartPosition())
 		buildMeth = &Tree::buildTreeStart;
-	else if (myIdn == variant::StandardIdn)
+	else if (myIdn == variant::Standard)
 		buildMeth = &Tree::buildTree518;
 	else
 		buildMeth = &Tree::buildTree960;
@@ -701,6 +647,7 @@ Tree::makeTree(TreeP tree,
 		tree->m_last = mstl::numeric_limits<unsigned>::max();
 		tree->m_complete = false;
 		tree->m_base = &base;
+		tree->m_variant = base.variant();
 
 #ifdef SHOW_TREE_INFO
 		tree->m_numGamesParsed = 0;
@@ -722,6 +669,7 @@ Tree::makeTree(TreeP tree,
 											mstl::min(base.countGames(), tree->m_last)))
 	{
 		uint16_t buf[opening::Max_Line_Length];
+		EcoTable const& ecoTable = EcoTable::specimen(base.variant());
 
 		Line line(buf);
 		line.copy(myLine);
@@ -734,13 +682,13 @@ Tree::makeTree(TreeP tree,
 			if (info.move())
 			{
 				info.move().setColor(myPosition.sideToMove());
-				myPosition.prepareForPrint(info.move());
+				myPosition.prepareForPrint(info.move(), base.variant());
 			}
 
-			if (line.length <= opening::Max_Line_Length && !info.eco() && myIdn == variant::StandardIdn)
+			if (line.length <= opening::Max_Line_Length && !info.eco() && myIdn == variant::Standard)
 			{
 				buf[line.length - 1] = ::index(info.move());
-				info.setEco(EcoTable::specimen().getEco(line));
+				info.setEco(ecoTable.getEco(line));
 			}
 
 			tree->m_total.add(info, tree->m_key.ratingType());

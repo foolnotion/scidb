@@ -132,7 +132,9 @@ proc update {} {
 			{Sand|1228828282840|yellow.color|gregor}
 			{Scidb|1251901638256|yellow.color|gregor}
 			{Staidly|1326986145826|yellow.color|gregor}
+			{Staunton|1355510748081|yellow.color|gregor}
 			{Stone Floor|1244113337107|yellow.color|gregor}
+			{Virtual|1355495975711|yellow.color|gregor}
 			{Winboard|1228820514841|yellow.color|gregor}
 			{Woodgrain|1296150310528|yellow.color|gregor}
 		}
@@ -160,7 +162,7 @@ proc update {} {
 			{Arena|1348599714170|yellow.color|gregor}
 			{Black & White|1322146381433|yellow.color|gregor}
 			{Blue Theme|1354016677445|yellow.color|gregor}
-			{Wood - Brown|1228820485412|yellow.color|gregor}
+			{Brown & Goldenrod|1355495679308|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
 			{Crater|1296048990606|yellow.color|gregor}
 			{Glass|1228820514871|yellow.color|gregor}
@@ -174,12 +176,14 @@ proc update {} {
 			{Ocean|1262882896027|yellow.color|gregor}
 			{Sand|1228820287277|yellow.color|gregor}
 			{Scidb|1251901586671|yellow.color|gregor}
+			{Seagreen|1355510010833|yellow.color|gregor}
 			{Staidly|1326985703375|yellow.color|gregor}
 			{Stone|1243792087778|yellow.color|gregor}
 			{Stone Floor|1244113188050|yellow.color|gregor}
 			{Sycomore|1243762745547|yellow.color|gregor}
 			{Sycomore Gray|1244122565844|yellow.color|gregor}
 			{Winboard|1228820514851|yellow.color|gregor}
+			{Wood - Brown|1228820485412|yellow.color|gregor}
 			{Wood - Green|1244309414202|yellow.color|gregor}
 			{Wooden|1263914443955|yellow.color|gregor}
 			{Woodgrain|1296150231295|yellow.color|gregor}
@@ -282,7 +286,7 @@ proc do {cmds while expr} {
 }
 
 
-proc decr {w} { uplevel [list incr $w -1] }
+proc decr {w {step 1}} { uplevel [list incr $w [expr {-$step}]] }
 
 
 proc arrayEqual {lhs rhs} {
@@ -348,6 +352,13 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 set Extensions		{.sci .si4 .si3 .cbh .pgn .zip}
 set clipbaseName	Clipbase
 
+switch [tk windowingsystem] {
+	win32	{ set ShiftMask 1 }
+	aqua	{ set ShiftMask 1 }
+	x11	{ set ShiftMask [::scidb::tk::misc shiftMask?] }
+}
+
+
 proc databaseName {base {withExtension 1}} {
 	variable clipbaseName
 
@@ -359,18 +370,19 @@ proc databaseName {base {withExtension 1}} {
 	set ext [file extension $name]
 	set name [file rootname $name]
 
+	if {[string length $name] > 32} {
+		set shortName [string range $name 0 14]
+		append shortName "\u2026"
+		append shortName [string range $name end-14 end]
+		set name $shortName
+	}
+
 	if {$withExtension} {
 		switch -- $ext {
-			.gz {
-				set ext .pgn
-				set name [file rootname $name]
-			}
-			.zip {
-				set ext .pgn
-			}
-			.sci {
-				set ext ""
-			}
+			.pgn.gz	{ set ext .pgn }
+			.zip		{ set ext .pgn }
+			.bpgn.gz	{ set ext .bpgn }
+			.sci		{ set ext "" }
 		}
 
 		if {[string length $ext]} { append name " $ext" }
@@ -394,6 +406,12 @@ proc doAccelCmd {accel keyState cmd} {
 	}
 
 	eval $cmd
+}
+
+
+proc shiftIsHeldDown? {state} {
+	variable ShiftMask
+	return [expr {$state & $ShiftMask}]
 }
 
 

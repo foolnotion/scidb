@@ -34,6 +34,7 @@
 #include "m_vector.h"
 #include "m_ref_counted_ptr.h"
 #include "m_ref_counter.h"
+#include "m_bitset.h"
 
 namespace mstl { class string; }
 namespace util { class Progress; }
@@ -48,7 +49,7 @@ class TagSet;
 
 namespace app {
 
-class Application;
+class MultiCursor;
 class View;
 
 class Cursor
@@ -65,7 +66,7 @@ public:
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
 
-	Cursor(Application& app, db::Database* database);
+	Cursor(MultiCursor& cursor, db::Database* database);
 	~Cursor();
 
 	bool isOpen() const;
@@ -76,8 +77,12 @@ public:
 	bool isViewOpen(unsigned view) const;
 	bool isValidView(unsigned view) const;
 	bool isReferenceBase() const;
-	bool isScratchBase() const;
+	bool isScratchbase() const;
+	bool isClipbase() const;
 	bool hasTreeView() const;
+
+	db::format::Type format() const;
+	db::variant::Type variant() const;
 
 	/// Count number of loaded games.
 	unsigned countGames() const;
@@ -119,9 +124,11 @@ public:
 	/// Create new view for tree and return the identifier.
 	unsigned newTreeView();
 	/// Close an existing view.
-	void closeView(unsigned view);
+	void closeView(unsigned view, bool informUser = true);
 	/// Close an existing tree view.
 	void closeTreeView();
+	/// Close all existing views.
+	void closeAllViews();
 	/// Update all open views.
 	void updateViews();
 
@@ -145,13 +152,11 @@ public:
 	/// Import whole database.
 	unsigned importGames(db::Producer& producer, util::Progress& progress);
 	/// Import whole database.
-	unsigned importGames(db::Database& src, db::Log& log, util::Progress& progress);
+	unsigned importGames(db::Database const& src, db::Log& log, util::Progress& progress);
 	/// Close underlying database
 	void close();
 	/// Set whether this database is a reference database
 	void setReferenceBase(bool flag);
-	/// Set whether this database is a scratch database
-	void setScratchBase(bool flag);
 	/// Removes all games from the underlying database.
 	void clearBase();
 	/// Update the characteristics of a game.
@@ -170,21 +175,21 @@ public:
 private:
 
 	friend class Application;
+	friend class MultiCursor;
 
-	typedef mstl::vector<View*>		ViewList;
-	typedef mstl::vector<unsigned>	IndexSet;
+	typedef mstl::vector<View*>	ViewList;
+	typedef mstl::bitset				IndexSet;
 
 	db::Database& base();
 
 	void clear() throw();
 
-	Application&	m_app;
+	MultiCursor&	m_cursor;
 	db::Database*	m_db;
 	ViewList			m_viewList;
 	IndexSet			m_freeSet;
 	int				m_treeView;
 	bool				m_isRefBase;
-	bool				m_isScratchBase;
 	bool				m_isActive;
 	SubscriberP		m_subscriber;
 };

@@ -30,7 +30,7 @@
 # ======================================================================
 
 ### global #############################################################
-::mc::SortMapping		{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű u}
+::mc::SortMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű u}
 ::mc::AsciiMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
@@ -96,6 +96,7 @@
 ::mc::To		"To" ;# NEW
 ::mc::Top		"Felső"  ;# felül
 ::mc::Undo		"Visszavonás"
+::mc::Variant		"Variant" ;# NEW
 ::mc::Variation		"Variáció"
 ::mc::White		"Világos"
 ::mc::Yes		"igen"
@@ -111,6 +112,19 @@
 ::mc::Bishop		"Futó"
 ::mc::Knight		"Huszár"
 ::mc::Pawn		"Gyalog"
+
+::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
+::mc::VariantName(Normal)	"Normal Chess" ;# NEW
+::mc::VariantName(Bughouse)	"Bughouse Chess" ;# NEW
+::mc::VariantName(Crazyhouse)	"Crazyhouse Chess" ;# NEW
+::mc::VariantName(ThreeCheck)	"Three-check Chess" ;# NEW
+::mc::VariantName(Antichess)	"Antichess" ;# NEW
+::mc::VariantName(Suicide)	"Suicide" ;# NEW
+::mc::VariantName(Giveaway)	"Giveaway" ;# NEW
+::mc::VariantName(Losers)	"Losers" ;# NEW
+::mc::VariantName(Chess960)	"Chess 960" ;# NEW
+::mc::VariantName(Symm960)	"Chess 960 (symmetrical only)" ;# NEW
+::mc::VariantName(Shuffle)	"Shuffle Chess" ;# NEW
 
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"A %s témát nem lehet felülírni."
@@ -205,6 +219,8 @@
 ::menu::mc::ScidbArchives				"Scidb archives" ;# NEW
 ::menu::mc::PGNFilesArchives			"PGN fájlok/arhívumok"
 ::menu::mc::PGNFiles						"PGN fájlok"
+::menu::mc::PGNFilesArchives			"BPGN fájlok/arhívumok"
+::menu::mc::PGNFiles						"BPGN fájlok"
 ::menu::mc::PGNArchives					"PGN arhívumok"
 
 ::menu::mc::Language						"L&anguage" ;# NEW
@@ -345,6 +361,7 @@
 ::application::board::mc::ShowCrosstable	"Mutasd a verseny kereszttábláját"
 ::application::board::mc::StartEngine		"Start chess analysis engine" ;# NEW
 ::application::board::mc::StopEngine		"Stop chess analysis engine" ;# NEW
+::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
 
 ::application::board::mc::Tools			"Eszközök"
 ::application::board::mc::Control		"Kezelés"
@@ -368,12 +385,15 @@
 ::application::database::mc::FileOpen						"Fájl megnyitása"
 ::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
 ::application::database::mc::FileNew						"Új"
-::application::database::mc::FileExport					"Export..."
-::application::database::mc::FileImport(pgn)				"PGN fájlok importálás..."
-::application::database::mc::FileImport(db)				"Import Databases..." ;# NEW
-::application::database::mc::FileCreate					"Create Archive..." ;# NEW
+::application::database::mc::FileExport					"Export"
+::application::database::mc::FileImport(pgn)				"PGN fájlok importálás"
+::application::database::mc::FileImport(db)				"Import Databases" ;# NEW
+::application::database::mc::FileCreate					"Create Archive" ;# NEW
 ::application::database::mc::FileClose						"Bezárás"
+::application::database::mc::FileMaintenance					"Maintenance" ;# NEW
 ::application::database::mc::FileCompact					"Compact" ;# NEW
+::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
+::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher					"Help for Database Switcher" ;# NEW
 
 ::application::database::mc::Games							"&Játszmák"
@@ -388,12 +408,9 @@
 ::application::database::mc::Medium							"Közepes"
 ::application::database::mc::Small							"Kicsi"
 ::application::database::mc::Tiny							"Apró"
-::application::database::mc::Empty							"üres"
-::application::database::mc::None							"nincs"
-::application::database::mc::Failed							"meghiúsult"
 ::application::database::mc::LoadMessage					"Adatbázis megnyitása: %s"
-::application::database::mc::UpgradeMessage				"Adatbázis frissítése %s"
-::application::database::mc::CompactMessage				"Compacting database %s" ;# NEW
+::application::database::mc::UpgradeMessage				"Adatbázis frissítése '%s'"
+::application::database::mc::CompactMessage				"Compacting database '%s'" ;# NEW
 ::application::database::mc::CannotOpenFile				"A fájl nem nyitható meg olvasásra: '%s'."
 ::application::database::mc::EncodingFailed				"%s kódolása sikertelen."
 ::application::database::mc::DatabaseAlreadyOpen		"Az '%s' adatbázis már meg van nyitva."
@@ -405,45 +422,10 @@
 ::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
 ::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::UriRejectedDetail(open)		"Only Scidb databases can be opened:" ;# NEW
-::application::database::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
-::application::database::mc::EmptyUriList					"Drop content is empty." ;# NEW
-::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
-::application::database::mc::SelectDatabases				"Select the databases to be opened" ;# NEW
-::application::database::mc::ExtractArchive				"Extract archive %s" ;# NEW
-::application::database::mc::CompactDetail				"All games must been closed before a compaction can be done." ;# NEW
-::application::database::mc::ReallyCompact				"Really compact database '%s'?" ;# NEW
-::application::database::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
-::application::database::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
-::application::database::mc::CopyGames				"Copy games" ;# NEW
-::application::database::mc::CopyGamesFromTo			"Copy games from '%src' to '%dst'" ;# NEW
-::application::database::mc::CopiedGames					"%s game(s) copied"
-::application::database::mc::NoGamesCopied				"No games copied"
-::application::database::mc::CopyAllGames					"Copy all games (%num) from '%src'"
-::application::database::mc::CopyFilteredGames			"Copy only filtered games (%num) from '%src'"
-::application::database::mc::ImportGames						"Import games" ;# NEW
-::application::database::mc::ImportOneGameTo(0)				"Copy one game to '%dst'?" ;# NEW
-::application::database::mc::ImportOneGameTo(1)				"Copy about one game to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(0)				"Copy %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportGamesTo(1)				"Copy about %num games to '%dst'?" ;# NEW
-::application::database::mc::ImportFiles						"Import Files:" ;# NEW
+::application::database::mc::SelectVariant					"Select Variant"
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
-
-::application::database::mc::GameCount						"Játszmák"
-::application::database::mc::DatabasePath					"Adatbázis elérési útvonala"
-::application::database::mc::DeletedGames					"Törölt játszmák"
-::application::database::mc::Description					"Leírás"
-::application::database::mc::Created						"Létrehozva"
-::application::database::mc::LastModified					"Utoljára módosítva"
-::application::database::mc::Encoding						"Kódolás"
-::application::database::mc::YearRange						"Év tartomány" ;#?
-::application::database::mc::RatingRange					"Értékszám tartomány"
-::application::database::mc::Result							"Eredmény"
-::application::database::mc::Score							"Pontszám"
-::application::database::mc::Type							"Típus"
-::application::database::mc::ReadOnly						"Csak olvasható"
 
 ::application::database::mc::ChangeIcon					"Ikon cseréje"
 ::application::database::mc::Recode							"Újrakódolás"
@@ -488,6 +470,8 @@
 ::application::database::mc::T_Bughouse					"Bughouse Chess" ;# NEW
 ::application::database::mc::T_Antichess				"Antichess" ;# NEW
 ::application::database::mc::T_PGNFile					"PGN file" ;# NEW
+::application::database::mc::T_ThreeCheck				"Three-check" ;# NEW
+::application::database::mc::T_Crazyhouse				"Crazyhouse" ;# NEW
 
 ::application::database::mc::OpenDatabase					"Adatbázis megnyitása"
 ::application::database::mc::NewDatabase					"Új adatbázis"
@@ -577,6 +561,7 @@
 ::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
 ::application::pgn::mc::ReallyReplaceMoves			"Really replace moves of current game?" ;# NEW
 ::application::pgn::mc::CurrentGameIsNotModified		"Current game is not modified." ;# NEW
+::application::pgn::mc::ShufflePosition				"Shuffle position..." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Értékelés szerkesztése"
 ::application::pgn::mc::EditMoveInformation				"Lépés információ szerkesztése"
@@ -607,6 +592,7 @@
 ::application::tree::mc::NoGamesFound				"No games found" ;# NEW
 ::application::tree::mc::NoGamesAvailable			"No games available" ;# NEW
 ::application::tree::mc::Searching				"Searching" ;# NEW
+::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"
@@ -633,6 +619,59 @@
 ::application::tree::mc::T_Number					"Számozás"
 ::application::tree::mc::T_AverageYear					"Average Year"
 ::application::tree::mc::T_FrequentPlayer				"Leggyakoribb játékos"
+
+### database::switcher #################################################
+::database::switcher::mc::Empty				"üres"
+::database::switcher::mc::None				"nincs"
+::database::switcher::mc::Failed			"meghiúsult"
+
+::database::switcher::mc::UriRejectedDetail(open)	"Only Scidb databases can be opened:" ;# NEW
+::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::database::switcher::mc::EmptyUriList			"Drop content is empty." ;# NEW
+::database::switcher::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
+::database::switcher::mc::SelectDatabases		"Select the databases to be opened" ;# NEW
+::database::switcher::mc::ExtractArchive		"Extract archive %s" ;# NEW
+::database::switcher::mc::CompactDetail			"All games must been closed before a compaction can be done." ;# NEW
+::database::switcher::mc::ReallyCompact			"Really compact database '%s'?" ;# NEW
+::database::switcher::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
+::database::switcher::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
+::database::switcher::mc::CopyGames			"Copy games" ;# NEW
+::database::switcher::mc::CopyGamesFromTo		"Copy games from '%src' to '%dst'" ;# NEW
+::database::switcher::mc::CopiedGames			"%s game(s) copied"
+::database::switcher::mc::NoGamesCopied			"No games copied"
+::database::switcher::mc::CopyGamesFrom			"Copy games from '%s'" ;# NEW
+::database::switcher::mc::ImportGames			"Import games" ;# NEW
+::database::switcher::mc::ImportFiles			"Import Files:" ;# NEW
+
+::database::switcher::mc::ImportOneGameTo(0)		"Copy one game to '%dst'?" ;# NEW
+::database::switcher::mc::ImportOneGameTo(1)		"Copy about one game to '%dst'?" ;# NEW
+::database::switcher::mc::ImportGamesTo(0)		"Copy %num games to '%dst'?" ;# NEW
+::database::switcher::mc::ImportGamesTo(1)		"Copy about %num games to '%dst'?" ;# NEW
+
+::database::switcher::mc::NumGames(0)			"none" ;# NEW
+::database::switcher::mc::NumGames(1)			"one game" ;# NEW
+::database::switcher::mc::NumGames(N)			"%s games" ;# NEW
+
+::database::switcher::mc::SelectGames(all)		"All games" ;# NEW
+::database::switcher::mc::SelectGames(filter)		"Only filtered games" ;# NEW
+::database::switcher::mc::SelectGames(all,variant)	"Only variant %s" ;# NEW
+::database::switcher::mc::SelectGames(filter,variant)	"Only filtered games of variant %s" ;# NEW
+::database::switcher::mc::SelectGames(complete)		"Complete database" ;# NEW
+
+::database::switcher::mc::GameCount			"Játszmák"
+::database::switcher::mc::DatabasePath			"Adatbázis elérési útvonala"
+::database::switcher::mc::DeletedGames			"Törölt játszmák"
+::database::switcher::mc::Description			"Leírás"
+::database::switcher::mc::Created			"Létrehozva"
+::database::switcher::mc::LastModified			"Utoljára módosítva"
+::database::switcher::mc::Encoding			"Kódolás"
+::database::switcher::mc::YearRange			"Év tartomány" ;#?
+::database::switcher::mc::RatingRange			"Értékszám tartomány"
+::database::switcher::mc::Result			"Eredmény"
+::database::switcher::mc::Score				"Pontszám"
+::database::switcher::mc::Type				"Típus"
+::database::switcher::mc::Variant			"Variant" ;# NEW
+::database::switcher::mc::ReadOnly			"Csak olvasható"
 
 ### board ##############################################################
 ::board::mc::CannotReadFile		"Fájl '%s' nem olvasható"
@@ -925,7 +964,8 @@
 ::application::analysis::mc::TimeSearched		"Time searched" ;# NEW
 ::application::analysis::mc::SearchDepth		"Search depth in plies (Selective search depth)" ;# NEW
 ::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
-::application::analysis::mc::DidNotReceivePong		"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
+::application::analysis::mc::IllegalMoves		"Illegal moves in game - Cannot analyze" ;# NEW
+::application::analysis::mc::DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 
 ::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
@@ -936,9 +976,12 @@
 
 ::application::analysis::mc::Status(checkmate)		"%s is checkmate" ;# NEW
 ::application::analysis::mc::Status(stalemate)		"%s is stalemate" ;# NEW
+::application::analysis::mc::Status(threechecks)	"%s got three checks" ;# NEW
+::application::analysis::mc::Status(losing)		"%s lost all pieces" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"This engine does not support standard chess." ;# NEW
 ::application::analysis::mc::NotSupported(chess960)	"This engine does not support chess 960." ;# NEW
+::application::analysis::mc::NotSupported(variant)	"This engine does not support variant '%s'." ;# NEW
 ::application::analysis::mc::NotSupported(analyze)	"This engine does not have an analysis mode." ;# NEW
 
 ::application::analysis::mc::Signal(stopped)		"Engine stopped by signal." ;# NEW
@@ -1187,13 +1230,15 @@
 ::gamebar::mc::CloseGame			"Játszma bezárása"
 
 ::gamebar::mc::GameNew				"Új tábla"
-::gamebar::mc::GameNewChess960			"Új játszma: Chess 960" ;# NEW
-::gamebar::mc::GameNewChess960Sym		"Új játszma: Chess 960 (symmetrical only)" ;# NEW
-::gamebar::mc::GameNewShuffle			"Új játszma: Shuffle Chess" ;# NEW
-
 ::gamebar::mc::AddNewGame			"Mentés: új játszma hozzáadása %s-hez..."
 ::gamebar::mc::ReplaceGame			"Mentés: Játszma felülírása %s-ben..."
 ::gamebar::mc::ReplaceMoves			"Mentés: Replace Moves Only in Game..."
+
+::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
+::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
+::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
+ ;# NEW
+::gamebar::mc::Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame		"Játszma áttekintése"
@@ -1241,9 +1286,9 @@
 ::encoding::mc::SystemEncoding		"Rendszer kódolása:"
 
 ### setup ##############################################################
-::setup::mc::Chess960Position		"Chess 960 position"
-::setup::mc::SymmChess960Position	"Symmetrical chess 960 position"
-::setup::mc::ShuffleChessPosition	"Shuffle chess position"
+::setup::mc::Position(Chess960)	"Chess 960 position"
+::setup::mc::Position(Symm960)	"Symmetrical chess 960 position"
+::setup::mc::Position(Shuffle)	"Shuffle chess position"
 
 ### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Kezdő pozíció beállítása"
@@ -1256,9 +1301,13 @@
 ::setup::board::mc::EnPassantFile		"Menetközbeni ütés"
 ::setup::board::mc::StartPosition		"Kiinduló állás"
 ::setup::board::mc::Fen				"FEN"
+::setup::board::mc::Promoted			"Promoted" ;# NEW
+::setup::board::mc::Holding			"Holding" ;# NEW
+::setup::board::mc::ChecksGiven			"Checks Given" ;# NEW
 ::setup::board::mc::Clear			"Törlés"
 ::setup::board::mc::CopyFen			"FEN másolása a vágólapra"
 ::setup::board::mc::Shuffle			"Keverés..."
+::setup::board::mc::FICSPosition		"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition		"Standard Position"
 ::setup::board::mc::Chess960Castling		"Chess 960 castling"
 
@@ -1270,6 +1319,7 @@
 ::setup::board::mc::ChangeToFormat(shredder)	"Change to Shredder format" ;# NEW
 
 ::setup::board::mc::Error(InvalidFen)		"Érvénytelen FEN."
+::setup::board::mc::Error(EmptyBoard)		"Board is empty." ;# NEW
 ::setup::board::mc::Error(NoWhiteKing)		"Világos király hiányzik."
 ::setup::board::mc::Error(NoBlackKing)		"Sötét király hiányzik."
 ::setup::board::mc::Error(DoubleCheck)		"Mindkét király sakkban áll."
@@ -1286,6 +1336,10 @@
 ::setup::board::mc::Error(InvalidCastlingRights)	"Értelmetlen bástya vonal(ak) sáncoláshoz."
 ::setup::board::mc::Error(InvalidCastlingFile)		"Érvénytelen sáncolási vonal."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
+::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
+::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
@@ -1306,6 +1360,9 @@
 ::import::mc::ImportAborted			"Importálás megszakítva."
 ::import::mc::TextIsEmpty			"PGN szöveg üres."
 ::import::mc::AbortImport			"Meg akarja szakítani a PGN importálást?"
+::import::mc::UnsupportedVariant		"Unsuported variant '%s' rejected" ;# NEW
+::import::mc::Accepted				"accepted" ;# NEW
+::import::mc::Rejected				"rejected" ;# NEW
 
 ::import::mc::DifferentEncoding			"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
 ::import::mc::DifferentEncodingDetails		"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
@@ -1341,15 +1398,18 @@
 ::import::mc::UnknownTermination		"Ismeretlen megszakítási ok"
 ::import::mc::UnknownMode			"Ismeretlen mód"
 ::import::mc::RatingTooHigh			"Túl magas érétkszám (kihagyva))"
+::import::mc::EncodingFailed			"Encoding failed"
 ::import::mc::TooManyNags			"Túl sok NAG (a későbbiek kihagyva)"
 ::import::mc::IllegalCastling			"Szabálytalan sáncolás"
 ::import::mc::IllegalMove			"Szabálytalan lépés"
 ::import::mc::CastlingCorrection		"Castling correction" ;# NEW
-::import::mc::UnsupportedVariant		"Unsupported chess variant"
-::import::mc::UnsupportedCrazyhouseVariant	"Variant Crazyhouse is not yet supported (game skipped)" ;# NEW
 ::import::mc::DecodingFailed			"Sikertelen dekódolás"
 ::import::mc::ResultDidNotMatchHeaderResult	"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
 ::import::mc::ValueTooLong			"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
+::import::mc::NotSuicideNotGiveaway		"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
+::import::mc::VariantChangedToGiveaway		"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
+::import::mc::VariantChangedToSuicide		"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
+::import::mc::ResultCorrection			"Due to the final position of the game a correction of the result has been done" ;# NEW
 ::import::mc::MaximalErrorCountExceeded		"A maximális hibaszám túllépve; több hiba (az előző hibatípusból) nem lesz közölve"
 ::import::mc::MaximalWarningCountExceeded	"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
 ::import::mc::InvalidToken			"Érvénytelen token"
@@ -1359,6 +1419,8 @@
 ::import::mc::UnexpectedResultToken		"Váratlan eredmény token"
 ::import::mc::UnexpectedTag			"Váratlan cimke a játszmában"
 ::import::mc::UnexpectedEndOfGame		"A játszma váratlanul véget ért (hiényzó eredmény)"
+::import::mc::UnexpectedCastling		"Unexpected castling (not allowed in this chess variant)" ;# NEW
+::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
 ::import::mc::TagNameExpected			"Szintaktikai hiba: meg kell adni a cimke nevét"
 ::import::mc::TagValueExpected			"Szintaktikai hiba: meg kell adni a cimke értékét"
 ::import::mc::InvalidFen			"Érvénytelen FEN"
@@ -1654,6 +1716,8 @@
 ::game::mc::GameDecodingFailed		"Ennek a jástszmának a dekódolása nem lehetséges."
 ::game::mc::GameDecodingChanged		"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set." ;# NEW
 ::game::mc::GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited." ;# NEW
+::game::mc::VariantHasChanged		"Game cannot be opened because the variant of the database has changed and is now different from the game variant." ;# NEW
+::game::mc::RemoveGameFromHistory	"Remove game from history?" ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Összes nyelv"
@@ -1672,33 +1736,43 @@
 ::genderbox::mc::Gender(c) "Számítógép"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal			"Normál"
-::terminationbox::mc::Unplayed			"Unplayed"
-::terminationbox::mc::Abandoned			"Abandoned"
-::terminationbox::mc::Adjudication		"Adjudication"
-::terminationbox::mc::Death			"Death"
-::terminationbox::mc::Emergency			"Emergency"
-::terminationbox::mc::RulesInfraction		"Rules infraction"
-::terminationbox::mc::TimeForfeit		"Leesett"
-::terminationbox::mc::Unterminated		"Unterminated"
+::terminationbox::mc::Normal				"Normál"
+::terminationbox::mc::Unplayed				"Unplayed" ;# NEW
+::terminationbox::mc::Abandoned				"Abandoned" ;# NEW
+::terminationbox::mc::Adjudication			"Adjudication" ;# NEW
+::terminationbox::mc::Disconnection			"Disconnection" ;# NEW
+::terminationbox::mc::Emergency				"Emergency" ;# NEW
+::terminationbox::mc::RulesInfraction			"Rules infraction" ;# NEW
+::terminationbox::mc::TimeForfeit			"Leesett"
+::terminationbox::mc::Unterminated			"Unterminated" ;# NEW
 
-::terminationbox::mc::State(Mate)		"%s is checkmate" ;# NEW
-::terminationbox::mc::State(Stalemate)		"%s is stalemate" ;# NEW
+::terminationbox::mc::State(Checkmate)			"%s is checkmate" ;# NEW
+::terminationbox::mc::State(Stalemate)			"%s is stalemate" ;# NEW
+::terminationbox::mc::State(ThreeChecks)		"%s got three checks" ;# NEW
+::terminationbox::mc::State(Losing)			"%s wins by losing all material" ;# NEW
 
-::terminationbox::mc::Result(1-0)		"Black resigned" ;# NEW
-::terminationbox::mc::Result(0-1)		"White resigned" ;# NEW
-::terminationbox::mc::Result(0-0)		"Declared lost for both players" ;# NEW
-::terminationbox::mc::Result(1/2-1/2)		"Draw agreed" ;# NEW
+::terminationbox::mc::Result(1-0)			"Black resigned" ;# NEW
+::terminationbox::mc::Result(0-1)			"White resigned" ;# NEW
+::terminationbox::mc::Result(0-0)			"Declared lost for both players" ;# NEW
+::terminationbox::mc::Result(1/2-1/2)			"Draw agreed" ;# NEW
 
-::terminationbox::mc::Reason(Unplayed)		"Game is unplayed" ;# NEW
-::terminationbox::mc::Reason(Abandoned)		"Game is abandoned" ;# NEW
-::terminationbox::mc::Reason(Adjudication)	"Adjudication" ;# NEW
-::terminationbox::mc::Reason(Death)		"" ;# NEW
-::terminationbox::mc::Reason(Emergency)		"Abandoned due to an emergency" ;# NEW
-::terminationbox::mc::Reason(RulesInfraction)	"Decided due to a rules infraction" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit)	"%s forfeits on time" ;# NEW
-::terminationbox::mc::Reason(TimeForfeit,both)	"Both players forfeits on time" ;# NEW
-::terminationbox::mc::Reason(Unterminated)	"Unterminated" ;# NEW
+::terminationbox::mc::Reason(Unplayed)			"Game is unplayed" ;# NEW
+::terminationbox::mc::Reason(Abandoned)			"Game is abandoned" ;# NEW
+::terminationbox::mc::Reason(Adjudication)		"Adjudication" ;# NEW
+::terminationbox::mc::Reason(Death)			"" ;# NEW
+::terminationbox::mc::Reason(Emergency)			"Abandoned due to an emergency" ;# NEW
+::terminationbox::mc::Reason(RulesInfraction)		"Decided due to a rules infraction" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit)		"%s forfeits on time" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit,both)		"Both players forfeits on time" ;# NEW
+::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
+::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
+
+::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
+::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
+::terminationbox::mc::Termination(bishops)		"Game drawn by stalemate (opposite color bishops)" ;# NEW
+::terminationbox::mc::Termination(fifty)		"Game drawn by the 50 move rule" ;# NEW
+::terminationbox::mc::Termination(threefold)		"Game drawn by threefold move repetition" ;# NEW
+::terminationbox::mc::Termination(mating)				"Neither player has mating material" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Over the board"
@@ -1761,19 +1835,20 @@
 ::help::mc::Overview					"Áttekintés"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable	"Verseny tabella"
-::crosstable::mc::AverageRating		"Átlagos pontszám"
-::crosstable::mc::Category		"Kategória"
-::crosstable::mc::Games			"játszmák"
-::crosstable::mc::Game			"játszma"
+::crosstable::mc::TournamentTable		"Verseny tabella"
+::crosstable::mc::AverageRating			"Átlagos pontszám"
+::crosstable::mc::Category			"Kategória"
+::crosstable::mc::Games				"játszmák"
+::crosstable::mc::Game				"játszma"
 ::crosstable::mc::ScoringSystem			"Scoring System" ;# NEW
-::crosstable::mc::Tiebreak		"Rövidített játszma"
-::crosstable::mc::Settings		"Beállítások"
-::crosstable::mc::RevertToStart		"Kiinduló értékek visszaállítása"
-::crosstable::mc::UpdateDisplay		"Képernyő frissítése"
+::crosstable::mc::Tiebreak			"Rövidített játszma"
+::crosstable::mc::Settings			"Beállítások"
+::crosstable::mc::RevertToStart			"Kiinduló értékek visszaállítása"
+::crosstable::mc::UpdateDisplay			"Képernyő frissítése"
+::crosstable::mc::SaveAsHTML			"Save as HTML file" ;# NEW
 
-::crosstable::mc::Traditional				"Hagyományos"
-::crosstable::mc::Bilbao					"Bilbao" ;# NEW
+::crosstable::mc::Traditional			"Hagyományos"
+::crosstable::mc::Bilbao			"Bilbao" ;# NEW
 
 ::crosstable::mc::None				"nincs"
 ::crosstable::mc::Buchholz			"Buchholz"
@@ -1786,7 +1861,7 @@
 ::crosstable::mc::GamesWon			"Nyert játszmák"
 ::crosstable::mc::GamesWonWithBlack		"Sötéttel nyert játszmákGames Won with Black" ;# NEW
 ::crosstable::mc::ParticularResult		"Particular Result" ;# NEW
-::crosstable::mc::TraditionalScoring	"Traditional Scoring" ;# NEW
+::crosstable::mc::TraditionalScoring		"Traditional Scoring" ;# NEW
 
 ::crosstable::mc::Crosstable			"Kereszttábla"
 ::crosstable::mc::Scheveningen			"Scheveningeni"
@@ -1818,8 +1893,10 @@
 ::crosstable::mc::Pyramid			"Piramis"
 ::crosstable::mc::Triangle			"Háromszög"
 
-::crosstable::mc::CrosstableLimit	"Túl sok a játékos (>%d) a kereszttáblához."
-::crosstable::mc::CrosstableLimitDetail "'%s' is choosing another table mode."
+::crosstable::mc::CrosstableLimit		"Túl sok a játékos (>%d) a kereszttáblához."
+::crosstable::mc::CrosstableLimitDetail		"'%s' is choosing another table mode."
+::crosstable::mc::CannotOverwriteFile		"Cannot overwrite file '%s': permission denied." ;# NEW
+::crosstable::mc::CannotCreateFile		"Cannot create file '%s': permission denied." ;# NEW
 
 ### info ###############################################################
 ::info::mc::InfoTitle		"Névjegy %s"
@@ -1987,6 +2064,7 @@
 ::dialog::fsbox::mc::ScidDatabase		"Scid Database" ;# NEW
 ::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase Database" ;# NEW
 ::dialog::fsbox::mc::PortableGameFile		"Portable Game File" ;# NEW
+::dialog::fsbox::mc::BughousePortableGameFile "Bughouse Portable Game File" ;# NEW
 ::dialog::fsbox::mc::ZipArchive			"ZIP Archive" ;# NEW
 ::dialog::fsbox::mc::ScidbArchive		"Scidb Arvchive" ;# NEW
 ::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
@@ -2011,8 +2089,9 @@
 
 ::dialog::fsbox::mc::FileType(exe)		"Executables" ;# NEW
 ::dialog::fsbox::mc::FileType(txt)		"Text files" ;# NEW
-::dialog::fsbox::mc::FileType(log)		"Log files" ;# NEW
 ::dialog::fsbox::mc::FileType(bin)		"Binary files" ;# NEW
+::dialog::fsbox::mc::FileType(log)		"Log files" ;# NEW
+::dialog::fsbox::mc::FileType(html)		"HTML files" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok			"&OK"

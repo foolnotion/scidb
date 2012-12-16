@@ -1,3 +1,4 @@
+(cd db; make libdbstubs.a)
 make dump_eco
 make extend_eco
 ./extend_eco data/eco.orig > /tmp/eco.txt

@@ -80,7 +80,7 @@ variable Methods {}
 
 proc mc {tok} { return [::tk::msgcat::mc [set $tok]] }
 proc tooltip {args} {}
-#proc noWindowDecor {w} {}
+#proc noWindowFrame {w} {}
 
 if {![catch {package require tooltip}]} {
 	proc tooltip {args} { ::tooltip::tooltip {*}$args }

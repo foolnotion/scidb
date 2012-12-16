@@ -19,6 +19,8 @@
 #ifndef _m_exception_included
 #define _m_exception_included
 
+namespace std { bool uncaught_exception() throw(); }
+
 #ifndef __OPTIMIZE__
 
 #ifdef __clang__
@@ -26,8 +28,6 @@ class type_info; // because of a cyclic bug in gcc headers
 #endif
 
 #include <typeinfo>
-
-namespace std { bool uncaught_exception() throw(); }
 
 namespace mstl {
 
@@ -54,12 +54,12 @@ throw_exc(Exc const& exc, char const* file, int line, char const* func)
 
 } // namespace bits
 
-
-inline bool uncaught_exception() throw() { return ::std::uncaught_exception(); }
-
 } // namespace mstl
 
 #endif // __OPTIMIZE__
+
+namespace mstl { inline bool uncaught_exception() throw() { return ::std::uncaught_exception(); } }
+
 #endif // _m_exception_included
 
 // vi:set ts=3 sw=3:

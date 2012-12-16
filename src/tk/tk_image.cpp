@@ -1665,7 +1665,7 @@ tk_disable_image(	char const* subcmd,
 						char const* dstName,
 						int objc, Tcl_Obj* const objv[])
 {
-	enum { Disabled_Alpha = 100 };
+	enum { Disabled_Alpha = 130 };
 
 	int alpha = Disabled_Alpha;
 

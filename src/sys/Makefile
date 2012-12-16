@@ -82,6 +82,8 @@ sys_dl.o: ../mstl/m_utility.ipp
 sys_dl.o: ../mstl/m_limits.h
 sys_dl.o: ../mstl/m_bit_functions.h
 sys_dl.o: ../mstl/m_bit_functions.ipp
+sys_dl.o: ../mstl/m_uint128_t.h
+sys_dl.o: ../mstl/m_uint128.h
 sys_dl.o: ../mstl/m_assert.h
 sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
@@ -98,6 +100,8 @@ sys_fam.o: ../mstl/m_utility.ipp
 sys_fam.o: ../mstl/m_limits.h
 sys_fam.o: ../mstl/m_bit_functions.h
 sys_fam.o: ../mstl/m_bit_functions.ipp
+sys_fam.o: ../mstl/m_uint128_t.h
+sys_fam.o: ../mstl/m_uint128.h
 sys_fam.o: ../mstl/m_assert.h
 sys_fam.o: ../mstl/m_exception.h
 sys_fam.o: ../mstl/m_backtrace.h
@@ -110,6 +114,8 @@ sys_fam.o: ../mstl/m_hash.h
 sys_fam.o: ../mstl/m_vector.h
 sys_fam.o: ../mstl/m_memblock.h
 sys_fam.o: ../mstl/m_memblock.ipp
+sys_fam.o: ../mstl/m_iterator.h
+sys_fam.o: ../mstl/m_iterator.ipp
 sys_fam.o: ../mstl/m_vector.ipp
 sys_fam.o: ../mstl/m_uninitialized.h
 sys_fam.o: ../mstl/m_uninitialized.ipp
@@ -135,6 +141,8 @@ sys_file.o: ../mstl/m_utility.ipp
 sys_file.o: ../mstl/m_limits.h
 sys_file.o: ../mstl/m_bit_functions.h
 sys_file.o: ../mstl/m_bit_functions.ipp
+sys_file.o: ../mstl/m_uint128_t.h
+sys_file.o: ../mstl/m_uint128.h
 sys_file.o: ../mstl/m_assert.h
 sys_file.o: ../mstl/m_exception.h
 sys_file.o: ../mstl/m_backtrace.h
@@ -147,6 +155,8 @@ sys_file.o: ../mstl/m_map.h
 sys_file.o: ../mstl/m_vector.h
 sys_file.o: ../mstl/m_memblock.h
 sys_file.o: ../mstl/m_memblock.ipp
+sys_file.o: ../mstl/m_iterator.h
+sys_file.o: ../mstl/m_iterator.ipp
 sys_file.o: ../mstl/m_vector.ipp
 sys_file.o: ../mstl/m_uninitialized.h
 sys_file.o: ../mstl/m_uninitialized.ipp
@@ -184,11 +194,15 @@ sys_process.o: ../mstl/m_utility.ipp
 sys_process.o: ../mstl/m_limits.h
 sys_process.o: ../mstl/m_bit_functions.h
 sys_process.o: ../mstl/m_bit_functions.ipp
+sys_process.o: ../mstl/m_uint128_t.h
+sys_process.o: ../mstl/m_uint128.h
 sys_process.o: ../mstl/m_assert.h
 sys_process.o: ../mstl/m_map.h
 sys_process.o: ../mstl/m_vector.h
 sys_process.o: ../mstl/m_memblock.h
 sys_process.o: ../mstl/m_memblock.ipp
+sys_process.o: ../mstl/m_iterator.h
+sys_process.o: ../mstl/m_iterator.ipp
 sys_process.o: ../mstl/m_vector.ipp
 sys_process.o: ../mstl/m_uninitialized.h
 sys_process.o: ../mstl/m_uninitialized.ipp
@@ -231,6 +245,8 @@ sys_utf8.o: ../mstl/m_utility.ipp
 sys_utf8.o: ../mstl/m_limits.h
 sys_utf8.o: ../mstl/m_bit_functions.h
 sys_utf8.o: ../mstl/m_bit_functions.ipp
+sys_utf8.o: ../mstl/m_uint128_t.h
+sys_utf8.o: ../mstl/m_uint128.h
 sys_utf8.o: ../mstl/m_assert.h
 sys_utf8.o: ../mstl/m_exception.h
 sys_utf8.o: ../mstl/m_backtrace.h
@@ -246,6 +262,8 @@ sys_utf8_codec.o: ../mstl/m_utility.ipp
 sys_utf8_codec.o: ../mstl/m_limits.h
 sys_utf8_codec.o: ../mstl/m_bit_functions.h
 sys_utf8_codec.o: ../mstl/m_bit_functions.ipp
+sys_utf8_codec.o: ../mstl/m_uint128_t.h
+sys_utf8_codec.o: ../mstl/m_uint128.h
 sys_utf8_codec.o: ../mstl/m_assert.h
 sys_utf8_codec.o: ../mstl/m_exception.h
 sys_utf8_codec.o: ../mstl/m_backtrace.h
@@ -254,6 +272,8 @@ sys_utf8_codec.o: ../mstl/m_list.h
 sys_utf8_codec.o: ../mstl/m_vector.h
 sys_utf8_codec.o: ../mstl/m_memblock.h
 sys_utf8_codec.o: ../mstl/m_memblock.ipp
+sys_utf8_codec.o: ../mstl/m_iterator.h
+sys_utf8_codec.o: ../mstl/m_iterator.ipp
 sys_utf8_codec.o: ../mstl/m_vector.ipp
 sys_utf8_codec.o: ../mstl/m_uninitialized.h
 sys_utf8_codec.o: ../mstl/m_uninitialized.ipp
@@ -273,8 +293,8 @@ sys_utf8_codec.o: ../tcl/tcl_base.h
 sys_utf8_codec.o: ../tcl/tcl_base.ipp
 sys_utf8_codec.o: ../util/u_base.h
 sys_vfs.o: sys_vfs.h
-sys_vfs.o: ../mstl/m_string.h
 sys_vfs.o: ../mstl/m_types.h
+sys_vfs.o: ../mstl/m_string.h
 sys_vfs.o: ../mstl/m_string.ipp
 sys_vfs.o: ../mstl/m_utility.h
 sys_vfs.o: ../mstl/m_type_traits.h
@@ -283,6 +303,8 @@ sys_vfs.o: ../mstl/m_utility.ipp
 sys_vfs.o: ../mstl/m_limits.h
 sys_vfs.o: ../mstl/m_bit_functions.h
 sys_vfs.o: ../mstl/m_bit_functions.ipp
+sys_vfs.o: ../mstl/m_uint128_t.h
+sys_vfs.o: ../mstl/m_uint128.h
 sys_vfs.o: ../mstl/m_assert.h
 sys_vfs.o: ../mstl/m_exception.h
 sys_vfs.o: ../mstl/m_backtrace.h

@@ -16,7 +16,13 @@
 // (at your option) any later version.
 // ======================================================================
 
-#include "m_types.h"
+#define USE_UINT128
+
+#ifdef USE_UINT128
+# include "m_uint128_t.h"
+# else
+# include "m_types.h"
+#endif
 
 namespace mstl {
 namespace bf {
@@ -24,12 +30,17 @@ namespace bits {
 
 template <int> struct remove_sign;
 
-template <> struct remove_sign<1> { typedef uint8_t  type; };
-template <> struct remove_sign<2> { typedef uint16_t type; };
-template <> struct remove_sign<4> { typedef uint32_t type; };
-template <> struct remove_sign<8> { typedef uint64_t type; };
+template <> struct remove_sign< 1> { typedef uint8_t  type; };
+template <> struct remove_sign< 2> { typedef uint16_t type; };
+template <> struct remove_sign< 4> { typedef uint32_t type; };
+template <> struct remove_sign< 8> { typedef uint64_t type; };
+#ifdef USE_UINT128
+template <> struct remove_sign<16> { typedef uint128_t type; };
+#endif
 
-#if __GNUC_PREREQ(3,4)
+#if !__GNUC_PREREQ(3,4)
+# error "at least compiler version 3.4 required"
+#endif
 
 inline unsigned clz(unsigned short x)		{ return __builtin_clz(x); }
 inline unsigned clz(unsigned int x)			{ return __builtin_clz(x); }
@@ -61,38 +72,55 @@ inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
 inline unsigned popcount(uint32_t x)		{ return pc(x); }
 inline unsigned popcount(uint64_t x)		{ return pc(x); }
 
-#else
-
-extern uint8_t Msb[65536];
-extern uint8_t Lsb[65536];
-
-inline unsigned msb(uint8_t x)	{ return Msb[x]; }
-inline unsigned msb(uint16_t x)	{ return Msb[x]; }
-inline unsigned lsb(uint8_t x)	{ return Lsb[x]; }
-inline unsigned lsb(uint16_t x)	{ return Lsb[x]; }
-
-unsigned msb(uint64_t x);
-unsigned lsb(uint64_t x);
+#ifdef USE_UINT128
+# if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)
 
 inline
 unsigned
-lsb(uint32_t x)
+msb(uint128_t const& x)
 {
-	return x & 0xffff ? Lsb[x & 0xffff] : Lsb[x >> 16] + 16;
+	return x.hi() ? 127 - clz(x.hi()) : 63 - clz(x.lo());
 }
 
 inline
 unsigned
-msb(uint32_t x)
+lsb(uint128_t const& x)
 {
-	return x & 0xffff0000 ? Msb[(x >> 16) & 0xffff] + 16 : Msb[x & 0xffff];
+	return x.lo() ? ctz(x.lo()) : 64 + ctz(x.hi());
 }
 
-unsigned popcount(uint8_t x);
-unsigned popcount(uint16_t x);
-unsigned popcount(uint32_t x);
-unsigned popcount(uint64_t x);
+inline
+unsigned
+popcount(uint128_t const& x)
+{
+	return popcount(x.lo()) + popcount(x.hi());
+}
 
+# else // if __WORDSIZE == 64
+
+inline
+unsigned
+msb(uint128_t x)
+{
+	uint64_t hi = x >> 64;
+	return hi ? 127 - clz(hi) : 63 - clz(uint64_t(x));
+}
+
+inline
+unsigned
+lsb(uint128_t x)
+{
+	return uint64_t(x) ? ctz(uint64_t(x)) : 64 + ctz(uint64_t(x >> 64));
+}
+
+inline
+unsigned
+popcount(uint128_t x)
+{
+	return pc(uint64_t(x)) + pc(uint64_t(x >> 64));
+}
+
+# endif // __WORDSIZE
 #endif
 
 #define BF_USE_FLIP_ARR
@@ -130,6 +158,28 @@ reverse(uint16_t x)
 
 extern uint32_t reverse(uint32_t x);
 extern uint64_t reverse(uint64_t x);
+
+#ifdef USE_UINT128
+# if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)
+
+inline
+uint128_t
+reverse(uint128_t const& x)
+{
+	return uint128_t(reverse(x.lo()), reverse(x.hi()));
+}
+
+# else // if __WORDSIZE == 64
+
+inline
+uint128_t
+mstl::bf::bits::reverse(uint128_t a)
+{
+   return (reverse(uint64_t(a >> 64)) << 64) | reverse(uint64_t(a));
+}
+
+# endif // __WORDSIZE
+#endif
 
 } // namespace bits
 

@@ -32,18 +32,32 @@ inline bool Cursor::isOpen() const					{ return m_db; }
 inline bool Cursor::isClosed() const				{ return m_db == 0; }
 inline bool Cursor::isActive() const				{ return m_isActive; }
 inline bool Cursor::isReferenceBase() const		{ return m_isRefBase; }
-inline bool Cursor::isScratchBase() const			{ return m_isScratchBase; }
 inline bool Cursor::hasTreeView() const			{ return m_treeView != -1; }
 
-inline db::Database const& Cursor::database() const	{ return *m_db; }
-inline db::Database& Cursor::base()							{ return *m_db; }
 inline int Cursor::treeViewIdentifier() const			{ return m_treeView; }
 inline unsigned Cursor::maxViewNumber() const			{ return m_viewList.size() - 1; }
 inline Cursor::SubscriberP Cursor::subscriber() const	{ return m_subscriber; }
 
 inline void Cursor::setReferenceBase(bool flag)	{ m_isRefBase = flag; }
-inline void Cursor::setScratchBase(bool flag)	{ m_isScratchBase = flag; }
 inline void Cursor::setActive(bool flag)			{ m_isActive = flag; }
+
+
+inline
+db::Database const&
+Cursor::database() const
+{
+	M_REQUIRE(isOpen());
+	return *m_db;
+}
+
+
+inline
+db::Database&
+Cursor::base()
+{
+	M_REQUIRE(isOpen());
+	return *m_db;
+}
 
 
 inline

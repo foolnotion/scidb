@@ -95,6 +95,8 @@ Position::doMove(Move const& move)
 	}
 	else if (__builtin_expect(!move.isNull(), 1))
 	{
+		M_ASSERT(!move.isPieceDrop());
+
 		if (move.captured() != piece::None)
 		{
 			color::ID	opposite	= color::opposite(color);
@@ -136,6 +138,8 @@ Position::undoMove(Move const& move)
  	}
  	else if (__builtin_expect(!move.isNull(), 1))
  	{
+		M_ASSERT(!move.isPieceDrop());
+
  		unsigned	pieceNum	= lookup.numbers[move.to()];
 
 	 	if (move.captured() != piece::None)

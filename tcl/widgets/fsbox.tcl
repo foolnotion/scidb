@@ -504,6 +504,7 @@ proc reset {w type args} {
 		-customfiletypes			{}
 		-customicon					{}
 		-customtooltip				{}
+		-showhidden					{}
 	}
 	array set opts $args
 
@@ -523,6 +524,10 @@ proc reset {w type args} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
+	}
+
+	if {[llength $Vars(showhidden)] == 0} {
+		set Vars(showhidden) $Options(show:hidden)
 	}
 
 	set t $Vars(widget:list:file)
@@ -894,7 +899,7 @@ proc checkIsKDE {} {
 	if {![info exists _IsKDE]} {
 		if {[tk windowingsystem] eq "x11"} {
 			set atoms {}
-			catch {set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"]}
+			catch { set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"] }
 			set _IsKDE [expr {[string length $atoms] > 0}]
 		} else {
 			set _IsKDE 0
@@ -908,7 +913,7 @@ proc checkIsKDE {} {
 proc x11MakeFrameless {w} { ;# how to do? }
 
 
-proc noWindowDecor {w} {
+proc noWindowFrame {w} {
 	switch [tk windowingsystem] {
 		aqua	{ ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
 		win32	{ wm attributes $w -toolwindow }
@@ -4429,7 +4434,7 @@ proc FinishDuplicateFile {w sel name} {
 	wm transient $dlg [winfo toplevel $w]
 	::util::place $dlg center [winfo toplevel $w]
 	update idletasks
-	[namespace parent]::noWindowDecor $dlg
+	[namespace parent]::noWindowFrame $dlg
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	[namespace parent]::busy $dlg

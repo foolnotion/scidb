@@ -128,10 +128,10 @@ VarConsumer::sendMove(Move const& move)
 
 	Board const& board = this->board();
 
-	if (!board.isValidMove(move))
+	if (!board.isValidMove(move, variant())) // XXX
 		return false;
 
-	MoveNode* node = new MoveNode(board, move);
+	MoveNode* node = new MoveNode(board, move, variant());
 
 	m_current->setNext(node);
 	m_current = node;

@@ -182,70 +182,77 @@ if {[file readable $::scidb::file::options]} {
 	::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8
 }
 
-switch $::scidb::revision {
-	83 {
-		set ::export::RecentlyUsedHistory	{}
-		set ::export::RecentlyUsedTiebreaks	{}
-		set ::application::database::RecentFiles {}
-		set ::game::History {}
-		array unset ::export::Values
-		array set ::export::Values [array get ::export::Defaults]
-		set ::export::Values(Type) scidb
-		set ::export::Values(pgn,encoding) iso8859-1
-		set ::export::Values(scid,encoding) utf-8
-		set ::export::Values(scidb,encoding) utf-8
-		set ::export::Values(pdf,encoding) iso8859-1
-		set ::crosstable::RecentlyUsedHistory {}
-		set ::crosstable::MostRecentHistory {}
-	}
-
-	96 {
-		set ::crosstable::RecentlyUsedHistory {}
-		set ::crosstable::MostRecentHistory {}
-		array unset ::browser::Options font:bold
-		array unset ::application::pgn::Options board-size
-		array unset ::dialog::fsbox::Priv lastFolder
-		array unset ::browser::Options font
-		array unset ::browser::Options hilite
-		array unset ::browser::Options background:current
-		array unset ::browser::Options foreground:result
-		array unset ::browser::Options foreground:empty
-		array unset ::browser::Options style:*
-		array unset ::browser::Options tabstop-*
-		array unset ::load::mc::ChessgamesComLinks
-		set ::export::Values(html,moves,notation) san
-		set ::export::Values(pdf,moves,notation) san
-		set ::export::Values(tex,moves,notation) san
-		for {set i 0} {$i < [llength $::game::History]} {incr i} {
-			set crc [lindex $::game::History $i 2 0]
-			if {$crc < 0} { lset ::game::History $i 2 0 [expr {$crc + 4294967296}] }
-			set crc [lindex $::game::History $i 2 1]
-			if {$crc < 0} { lset ::game::History $i 2 1 [expr {$crc + 4294967296}] }
-		}
-		switch $::board::currentTheme {
-			Blue|1262882648418|yellow.color|gregor {
-				set ::board::currentTheme Ocean|1262882648418|yellow.color|gregor
-			}
-			{Blue Mono|1354018040763|yellow.color|gregor} {
-				set ::board::currentTheme {Blue Theme|1354018040763|yellow.color|gregor}
-			}
-			Marble|1243532376507|yellow.color|gregor {
-				set ::board::currentTheme {Marble - Brown|1243532376507|yellow.color|gregor}
-			}
-			{Marble - Classic|1296049694406|yellow.color|gregor} {
-				set ::board::currentTheme {Marble - Red|1296049745744|yellow.color|gregor}
-			}
-			Phoenix|1296049187980|yellow.color|gregor {
-				set ::board::currentTheme Phoenix|1354101318690|purple|gregor
-			}
-			{Stony Glass|1243792200845|yellow.color|gregor} {
-				set ::board::currentTheme Default
-			}
-		}
-	}
-}
-
 if {$::scidb::revision < [::scidb::misc::revision]} {
+	switch $::scidb::revision {
+		83 {
+			set ::export::RecentlyUsedHistory	{}
+			set ::export::RecentlyUsedTiebreaks	{}
+			set ::application::database::RecentFiles {}
+			set ::game::History {}
+			array unset ::export::Values
+			array set ::export::Values [array get ::export::Defaults]
+			set ::export::Values(Type) scidb
+			set ::export::Values(pgn,encoding) iso8859-1
+			set ::export::Values(scid,encoding) utf-8
+			set ::export::Values(scidb,encoding) utf-8
+			set ::export::Values(pdf,encoding) iso8859-1
+			set ::crosstable::RecentlyUsedHistory {}
+			set ::crosstable::MostRecentHistory {}
+		}
+
+		96 {
+			set ::crosstable::RecentlyUsedHistory {}
+			set ::crosstable::MostRecentHistory {}
+			array unset ::browser::Options font:bold
+			array unset ::application::pgn::Options board-size
+			array unset ::dialog::fsbox::Priv lastFolder
+			array unset ::browser::Options font
+			array unset ::browser::Options hilite
+			array unset ::browser::Options background:current
+			array unset ::browser::Options foreground:result
+			array unset ::browser::Options foreground:empty
+			array unset ::browser::Options style:*
+			array unset ::browser::Options tabstop-*
+			set ::browser::Options(board:size:ext) $::browser::Options(board:size)
+			array unset ::load::mc::ChessgamesComLinks
+			set ::export::Values(html,moves,notation) san
+			set ::export::Values(pdf,moves,notation) san
+			set ::export::Values(tex,moves,notation) san
+			set history $::setup::board::History
+			unset ::setup::board::History
+			array set History(Normal) $history
+			for {set i 0} {$i < [llength $::game::History]} {incr i} {
+				set crc [lindex $::game::History $i 2 0]
+				if {$crc < 0} { lset ::game::History $i 2 0 [expr {$crc + 4294967296}] }
+				set crc [lindex $::game::History $i 2 1]
+				if {$crc < 0} { lset ::game::History $i 2 1 [expr {$crc + 4294967296}] }
+				set key [lindex $::game::History $i 1]
+				lappend key Normal
+				lset ::game::History $i 1 $key
+			}
+			switch $::board::currentTheme {
+				Blue|1262882648418|yellow.color|gregor {
+					set ::board::currentTheme Ocean|1262882648418|yellow.color|gregor
+				}
+				{Blue Mono|1354018040763|yellow.color|gregor} {
+					set ::board::currentTheme {Blue Theme|1354018040763|yellow.color|gregor}
+				}
+				Marble|1243532376507|yellow.color|gregor {
+					set ::board::currentTheme {Marble - Brown|1243532376507|yellow.color|gregor}
+				}
+				{Marble - Classic|1296049694406|yellow.color|gregor} {
+					set ::board::currentTheme {Marble - Red|1296049745744|yellow.color|gregor}
+				}
+				Phoenix|1296049187980|yellow.color|gregor {
+					set ::board::currentTheme Phoenix|1354101318690|purple|gregor
+				}
+				{Stony Glass|1243792200845|yellow.color|gregor} {
+					set ::board::currentTheme Default
+				}
+			}
+		}
+	}
+
 	::scidb::themes::update
 	set ::beta::WhatsNew 1
 }

@@ -104,20 +104,23 @@ tcl::uniqueMatchObj(Tcl_Obj* obj, char const** options)
 int
 tcl::error(	char const* cmd, char const* subcmd, char const* subsubcmd,
 				char const* format,
-				va_list ap)
+				va_list& ap)
 {
 	char fmt[1024];
 
-	if (cmd && subcmd && subsubcmd)
-		::snprintf(fmt, sizeof(fmt), "%s %s %s: %s", cmd, subcmd, subsubcmd, format);
-	else if (cmd && subcmd)
-		::snprintf(fmt, sizeof(fmt), "%s %s: %s", cmd, subcmd, format);
-	else if (cmd)
-		::snprintf(fmt, sizeof(fmt), "%s: %s", cmd, format);
-	else
-		::snprintf(fmt, sizeof(fmt), "%s", format);
+	if (cmd)
+	{
+		if (!subcmd)
+			::snprintf(fmt, sizeof(fmt), "%s: %s", cmd, format);
+		else if (!subsubcmd)
+			::snprintf(fmt, sizeof(fmt), "%s %s: %s", cmd, subcmd, format);
+		else
+			::snprintf(fmt, sizeof(fmt), "%s %s %s: %s", cmd, subcmd, subsubcmd, format);
 
-	::vsnprintf(::m_buf, sizeof(::m_buf), fmt, ap);
+		format = fmt;
+	}
+
+	::vsnprintf(::m_buf, sizeof(::m_buf), format, ap);
 	Tcl_SetResult(interp(), ::m_buf, __tcl_static);
 
 	return TCL_ERROR;

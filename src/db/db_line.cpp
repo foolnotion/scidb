@@ -53,7 +53,7 @@ Line::transpose(Line& dst) const
 
 
 mstl::string&
-Line::print(mstl::string& result, encoding::CharSet charSet) const
+Line::print(mstl::string& result, variant::Type variant, encoding::CharSet charSet) const
 {
 	Board board = Board::standardBoard();
 
@@ -67,9 +67,9 @@ Line::print(mstl::string& result, encoding::CharSet charSet) const
 		if ((i & 1) == 0)
 			result.format("%u.", mstl::div2(i) + 1);
 
-		board.prepareForPrint(m);
+		board.prepareForPrint(m, variant);
 		m.printSan(result, charSet);
-		board.doMove(m);
+		board.doMove(m, variant);
 	}
 
 	return result;
@@ -80,7 +80,7 @@ void
 Line::dump() const
 {
 	mstl::string result;
-	::printf("%s\n", print(result).c_str());
+	::printf("%s\n", print(result, variant::Normal).c_str());
 }
 
 // vi:set ts=3 sw=3:

@@ -21,7 +21,7 @@
 
 #include "m_type_traits.h"
 #include "m_memblock.h"
-#include "m_vector.h"
+#include "m_iterator.h"
 
 #include <stddef.h>
 
@@ -43,77 +43,8 @@ public:
 	typedef ptrdiff_t				difference_type;
 	typedef bits::size_t			size_type;
 
-	class reverse_iterator
-	{
-	public:
-
-		explicit reverse_iterator(iterator i);
-
-		reverse_iterator& operator=(iterator i);
-
-		bool operator==(reverse_iterator const& iter) const;
-		bool operator!=(reverse_iterator const& iter) const;
-		bool operator<=(reverse_iterator const& iter) const;
-		bool operator< (reverse_iterator const& iter) const;
-
-		iterator base() const;
-
-		reference operator*() const;
-		pointer operator->() const;
-
-		reverse_iterator& operator++();
-		reverse_iterator& operator--();
-		reverse_iterator  operator++(int);
-		reverse_iterator  operator--(int);
-		reverse_iterator& operator+=(size_t n);
-		reverse_iterator& operator-=(size_t n);
-		reverse_iterator  operator+(size_t n) const;
-		reverse_iterator  operator-(size_t n) const;
-
-		reference operator[](difference_type n) const;
-		difference_type operator-(reverse_iterator const& i) const;
-
-	protected:
-
-		iterator m_i;
-	};
-
-	class const_reverse_iterator
-	{
-	public:
-
-		explicit const_reverse_iterator(const_iterator i);
-		explicit const_reverse_iterator(iterator i);
-
-		const_reverse_iterator& operator=(const_iterator i);
-		const_reverse_iterator& operator=(iterator i);
-
-		bool operator==(const_reverse_iterator const& iter) const;
-		bool operator!=(const_reverse_iterator const& iter) const;
-		bool operator<=(const_reverse_iterator const& iter) const;
-		bool operator< (const_reverse_iterator const& iter) const;
-
-		const_iterator base() const;
-
-		const_reference operator*() const;
-		const_pointer operator->() const;
-
-		const_reverse_iterator& operator++();
-		const_reverse_iterator& operator--();
-		const_reverse_iterator  operator++(int);
-		const_reverse_iterator  operator--(int);
-		const_reverse_iterator& operator+=(size_t n);
-		const_reverse_iterator& operator-=(size_t n);
-		const_reverse_iterator  operator+(size_t n) const;
-		const_reverse_iterator  operator-(size_t n) const;
-
-		reference operator[](difference_type n) const;
-		difference_type operator-(const_reverse_iterator const& i) const;
-
-	protected:
-
-		const_iterator m_i;
-	};
+	typedef mstl::reverse_iterator<T>			reverse_iterator;
+	typedef mstl::const_reverse_iterator<T>	const_reverse_iterator;
 
 	vector();
 	explicit vector(size_type n);

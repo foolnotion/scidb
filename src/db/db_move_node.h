@@ -89,7 +89,7 @@ public:
 	typedef Comment::LanguageSet LanguageSet;
 
 	MoveNode(Move const& move);
-	MoveNode(Board const& board, Move const& move);
+	MoveNode(Board const& board, Move const& move, variant::Type variant);
 	explicit MoveNode(MoveNode* node);
 	explicit MoveNode(Annotation* set = 0);
 	~MoveNode();
@@ -108,6 +108,7 @@ public:
 	bool hasNote() const;
 	bool hasSupplement() const;
 	bool hasMoveInfo() const;
+	bool threefoldRepetition() const;
 	bool containsIllegalCastlings() const;
 	bool containsIllegalMoves() const;
 	bool containsEnglishLang() const;
@@ -153,7 +154,7 @@ public:
 
 	void setFolded(bool flag);
 	void fold(bool flag);
-	void setMove(Board const& board, Move const& move);
+	void setMove(Board const& board, Move const& move, variant::Type variant);
 	void setNext(MoveNode* next);
 	void addVariation(MoveNode* variation);
 	void addAnnotation(nag::ID nag);
@@ -168,9 +169,10 @@ public:
 	void setComment(Comment const& comment, move::Position position);
 	void setInfoFlag(bool flag = true);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
-	void prepareForPrint(Board const& board);
+	void setThreefoldRepetition(bool flag);
+	void prepareForPrint(Board const& board, variant::Type variant);
 	void transpose();
-	void finish(Board const& board);
+	void finish(Board const& board, variant::Type variant);
 	void unfold();
 
 	void deleteNext();
@@ -200,16 +202,17 @@ private:
 
 	enum
 	{
-		HasPreComment	= 1 << move::Ante,
-		HasComment		= 1 << move::Post,
-		HasMark			= 1 << 2,
-		HasAnnotation	= 1 << 3,
-		HasVariation	= 1 << 4,
-		HasMoveInfo		= 1 << 5,
-		IsPrepared		= 1 << 6,
-		HasNote			= HasComment | HasPreComment | HasMark | HasAnnotation | HasMoveInfo,
-		HasSupplement	= HasNote | HasVariation | IsPrepared,
-		IsFolded			= 1 << 7,
+		HasPreComment			= 1 << move::Ante,
+		HasComment				= 1 << move::Post,
+		HasMark					= 1 << 2,
+		HasAnnotation			= 1 << 3,
+		HasVariation			= 1 << 4,
+		HasMoveInfo				= 1 << 5,
+		IsPrepared				= 1 << 6,
+		HasNote					= HasComment | HasPreComment | HasMark | HasAnnotation | HasMoveInfo,
+		HasSupplement			= HasNote | HasVariation | IsPrepared,
+		IsFolded					= 1 << 7,
+		ThreefoldRepetition	= 1 << 8,
 	};
 
 	MoveNode(MoveNode const&);

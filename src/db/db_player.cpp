@@ -1833,7 +1833,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 						unsigned titleMask = ::getTitles(titles);
 						unsigned region = 0;
 
-						if (title::containsFemaleTtile(titleMask))
+						if (title::containsFemaleTitle(titleMask))
 							sex = sex::Female;
 
 						if (nativeCountry != country::Unknown)
@@ -2880,13 +2880,15 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 	score->append(Value((stats.percentage(color::Black) + 0.005)*100.0));
 	score->append(Value((stats.percentage() + 0.005)*100.0));
 
+	EcoTable const& ecoTable = EcoTable::specimen(variant::Index_Normal);
 	List whiteEcoLines(new ListToken);
+
 	for (unsigned i = 0, n = mstl::min(5u, stats.countEcoLines(color::White)); i < n; ++i)
 	{
 		List ecoLine(new ListToken);
 		mstl::string line;
 		Eco code(stats.ecoLine(color::White, i));
-		EcoTable::specimen().getLine(code).print(line);
+		ecoTable.getLine(code).print(line, variant::Normal);
 		ecoLine->append(code.asString());
 		ecoLine->append(Value(stats.ecoCount(color::White, i)));
 		ecoLine->append(line);
@@ -2899,7 +2901,7 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 		List ecoLine(new ListToken);
 		mstl::string line;
 		Eco code(stats.ecoLine(color::Black, i));
-		EcoTable::specimen().getLine(code).print(line);
+		ecoTable.getLine(code).print(line, variant::Normal);
 		ecoLine->append(code.asString());
 		ecoLine->append(Value(stats.ecoCount(color::Black, i)));
 		ecoLine->append(line);

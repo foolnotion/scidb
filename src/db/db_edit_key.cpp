@@ -346,7 +346,7 @@ Key::findPosition(MoveNode* node, unsigned plyNumber) const
 
 
 bool
-Key::setBoard(MoveNode const* root, Board& board) const
+Key::setBoard(MoveNode const* root, Board& board, variant::Type variant) const
 {
 	M_REQUIRE(root);
 
@@ -367,7 +367,7 @@ Key::setBoard(MoveNode const* root, Board& board) const
 			for ( ; num > 0; --num)
 			{
 				if (!node->atLineStart())
-					board.doMove(node->move());
+					board.doMove(node->move(), variant);
 
 				if ((node = node->next()) == 0)
 					return false;
@@ -391,7 +391,7 @@ Key::setBoard(MoveNode const* root, Board& board) const
 	}
 
 	if (!node->atLineStart())
-		board.doMove(node->move());
+		board.doMove(node->move(), variant);
 
 	return true;
 }

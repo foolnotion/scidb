@@ -26,6 +26,7 @@
 
 #include "tcl_application.h"
 #include "tcl_database.h"
+#include "tcl_game.h"
 #include "tcl_base.h"
 
 #include "app_application.h"
@@ -63,16 +64,16 @@ namespace {
 
 struct Key
 {
-	Key() :databaseid(0), viewId(0) {}
-	Key(unsigned baseId, unsigned view) :databaseid(baseId), viewId(view) {}
-	Key(Database const& db, unsigned view) :databaseid(db.id()), viewId(view) {}
+	Key() :databaseId(0), viewId(0) {}
+	Key(unsigned baseId, unsigned view) :databaseId(baseId), viewId(view) {}
+	Key(Database const& db, unsigned view) :databaseId(db.id()), viewId(view) {}
 
 	bool operator==(Key const& key) const
 	{
-		return databaseid == key.databaseid && viewId == key.viewId;
+		return databaseId == key.databaseId && viewId == key.viewId;
 	}
 
-	unsigned	databaseid;
+	unsigned	databaseId;
 	unsigned	viewId;
 };
 
@@ -85,7 +86,7 @@ namespace mstl {
 template <>
 struct hash_key<Key>
 {
-	static size_t hash(Key const& key) { return key.databaseid ^ key.viewId; }
+	static size_t hash(Key const& key) { return key.databaseId ^ key.viewId; }
 };
 
 } // namespace mstl
@@ -107,8 +108,10 @@ getTable(char const* cmd, unsigned dbId, unsigned view)
 static int
 cmdMake(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Cursor const& cursor = Scidb->cursor(stringFromObj(objc, objv, 1));
-	unsigned view = unsignedFromObj(objc, objv, 2);
+	char const* database = stringFromObj(objc, objv, 1);
+	variant::Type variant(tcl::game::variantFromObj(objc, objv, 2));
+	unsigned view = unsignedFromObj(objc, objv, 3);
+	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	TableHash::reference ref = tableHash[Key(cursor.database(), view)];
 

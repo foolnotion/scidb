@@ -345,7 +345,7 @@ proc WidgetProc {w command args} {
 					set x1 [expr {$x + 12}]
 					set y1 [expr {$y + ($h - [image height $img])/2}]
 					set x2 [expr {$x1 + [image width $img] + 2}]
-					set y2 [expr {$y1 + [image height $img]}]
+					set y2 [expr {$y1 + [image height $img] - 2}]
 
 					if {$x2 <= [winfo width $w]} {
 						set area [$w identify $x2 $y2]

@@ -40,6 +40,16 @@ Move const Move::m_empty	= Move(uint32_t(0));
 Move const Move::m_invalid	= Move(uint32_t(Invalid));
 
 
+static void
+printPiece(mstl::string& s, piece::Type piece, encoding::CharSet charSet, int (*letterCase)(int))
+{
+	if (charSet == encoding::Utf8)
+		s += piece::utf8::asString(piece);
+	else
+		s += letterCase(piece::print(piece));
+}
+
+
 void
 Move::transpose()
 {
@@ -56,7 +66,8 @@ Move::transpose()
 		setUndo(	prevHalfMoves(),
 					epSquare,
 					prevEpSquareExists(),
-					castling::transpose(prevCastlingRights()));
+					castling::transpose(prevCastlingRights()),
+					prevCapturePromoted());
 	}
 }
 
@@ -68,7 +79,12 @@ Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
 
 	if (isNull())
 	{
-		s += "0000";	// conforms to UCI protocol
+		s.append("0000", 4);	// conforms to UCI protocol
+	}
+	else if (isPieceDrop())
+	{
+		s += sq::printAlgebraic(to());
+		::printPiece(s, dropped(), charSet, ::tolower);
 	}
 	else if (!isEmpty())
 	{
@@ -76,12 +92,7 @@ Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
 		s += sq::printAlgebraic(to());
 
 		if (isPromotion())
-		{
-			if (charSet == encoding::Utf8)
-				s += piece::utf8::asString(promoted());
-			else
-				s += char(::tolower(piece::print(promoted())));	// the UCI protocoll requires lower case
-		}
+			::printPiece(s, promoted(), charSet, ::tolower); // the UCI protocoll requires lower case
 	}
 
 	return s;
@@ -96,25 +107,30 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 
 	if (isNull())
 	{
-		s += "--";	// used in ChessBase
+		s.append("--", 2);	// used in ChessBase
 	}
 	else if (!isEmpty())
 	{
 		if (isCastling())
 		{
-			if (isShortCastling())
-				s += "O-O";
-			else
-				s += "O-O-O";
+			s.append("O-O", 3);
+			if (isLongCastling())
+				s.append("-O", 2);
+		}
+		else if (isPieceDrop())
+		{
+			if (charSet != encoding::Utf8 || dropped() != piece::Pawn)
+				::printPiece(s, dropped(), charSet, ::toupper);
+
+			s += '@';
+			s += sq::printFyle(to());
+			s += sq::printRank(to());
 		}
 		else
 		{
 			if (pieceMoved() != piece::Pawn)
 			{
-				if (charSet == encoding::Utf8)
-					s += piece::utf8::asString(pieceMoved());
-				else
-					s += piece::print(pieceMoved());
+				::printPiece(s, pieceMoved(), charSet, ::toupper);
 
 				if (needsFyle())
 					s += sq::printFyle(from());
@@ -122,9 +138,9 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 					s += sq::printRank(from());
 			}
 
-			M_ASSERT(!isEnPassant() || captured() != piece::None);
+			M_ASSERT(!isEnPassant() || isCapture());
 
-			if (captured() != piece::None)
+			if (isCapture())
 			{
 				if (pieceMoved() == piece::Pawn)
 					s += sq::printFyle(from());
@@ -138,11 +154,7 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 			if (isPromotion())
 			{
 				s += '=';
-
-				if (charSet == encoding::Utf8)
-					s += piece::utf8::asString(promoted());
-				else
-					s += piece::print(promoted());
+				::printPiece(s, promoted(), charSet, ::toupper);
 			}
 		}
 
@@ -164,32 +176,33 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 
 	if (isNull())
 	{
-		s += "----";
+		s.append("----", 4);
 	}
 	else if (!isEmpty())
 	{
-		if (pieceMoved() != piece::Pawn)
+		if (isPieceDrop())
 		{
-			if (charSet == encoding::Utf8)
-				s += piece::utf8::asString(pieceMoved());
-			else
-				s += piece::print(pieceMoved());
+			::printPiece(s, dropped(), charSet, ::toupper);
+			s += '@';
+			s += sq::printFyle(to());
+			s += sq::printRank(to());
 		}
-
-		s += sq::printFyle(from());
-		s += sq::printRank(from());
-		s += captured() == piece::None ? '-' : 'x';
-		s += sq::printFyle(to());
-		s += sq::printRank(to());
-
-		if (isPromotion())
+		else
 		{
-			s += '=';
+			if (pieceMoved() != piece::Pawn)
+				::printPiece(s, pieceMoved(), charSet, ::toupper);
 
-			if (charSet == encoding::Utf8)
-				s += piece::utf8::asString(promoted());
-			else
-				s += piece::print(promoted());
+			s += sq::printFyle(from());
+			s += sq::printRank(from());
+			s += isCapture() ? 'x' : '-';
+			s += sq::printFyle(to());
+			s += sq::printRank(to());
+
+			if (isPromotion())
+			{
+				s += '=';
+				::printPiece(s, promoted(), charSet, ::toupper);
+			}
 		}
 
 		if (givesMate())
@@ -207,67 +220,75 @@ Move::printDescriptive(mstl::string& s) const
 {
 	if (isNull())
 	{
-		s += "null";	// arbitrarely choosen
+		s.append("null");	// arbitrarely choosen
 	}
 	else if (isCastling())
 	{
-		if (isShortCastling())
-			s += "O-O";
-		else
-			s += "O-O-O";
+		s.append("O-O", 3);
+		if (isLongCastling())
+			s.append("-O", 2);
 	}
 	else if (!isEmpty())
 	{
-		if (captured() == piece::None)
+		if (isPieceDrop())
 		{
-			s += piece::print(pieceMoved());
-
-			if (needsFyle() || needsRank())
-			{
-				s += '(';
-				s += sq::printDescriptive(from(), color());
-				s += ')';
-			}
-
-			s += '-';
+			s += piece::print(dropped());
+			s += '@';
 			s += sq::printDescriptive(to(), color());
 		}
 		else
 		{
-			s += piece::print(pieceMoved());
-
-			if (needsFyle() || needsRank())
+			if (isCapture())
 			{
-				s += '(';
-				s += sq::printDescriptive(from(), color());
-				s += ')';
+				s += piece::print(pieceMoved());
+
+				if (needsFyle() || needsRank())
+				{
+					s += '(';
+					s += sq::printDescriptive(from(), color());
+					s += ')';
+				}
+
+				s += 'x';
+				s += piece::print(captured());
+
+				if (needsDestinationSquare())
+				{
+					s += '(';
+					s += sq::printDescriptive(to(), color());
+					s += ')';
+				}
 			}
-
-			s += 'x';
-			s += piece::print(captured());
-
-			if (needsDestinationSquare())
+			else
 			{
-				s += '(';
+				s += piece::print(pieceMoved());
+
+				if (needsFyle() || needsRank())
+				{
+					s += '(';
+					s += sq::printDescriptive(from(), color());
+					s += ')';
+				}
+
+				s += '-';
 				s += sq::printDescriptive(to(), color());
+			}
+
+			if (isPromotion())
+			{
+				s += '(';
+				s += piece::print(promoted());
 				s += ')';
 			}
-		}
-
-		if (isPromotion())
-		{
-			s += '(';
-			s += piece::print(promoted());
-			s += ')';
 		}
 
 		if (givesMate())
-			s += "++";
+			s.append("++", 2);
 		else if (givesCheck())
 			s += '+';
 
 		if (isEnPassant())
-			s += " e.p.";
+			s.append(" e.p.", 5);
 	}
 
 	return s;
@@ -279,7 +300,12 @@ Move::printNumeric(mstl::string& s) const
 {
 	if (isNull())
 	{
-		s += "0000";	// arbitrarely choosen
+		s.append("0000", 4);	// arbitrarely choosen
+	}
+	else if (isPieceDrop())
+	{
+		s += sq::printNumeric(to());
+		s += piece::printNumeric(dropped());
 	}
 	else if (!isEmpty())
 	{
@@ -299,7 +325,12 @@ Move::printAlphabetic(mstl::string& s, encoding::CharSet charSet) const
 {
 	if (isNull())
 	{
-		s += "XXXX";	// arbitrarely choosen
+		s.append("XXXX", 4);	// arbitrarely choosen
+	}
+	else if (isPieceDrop())
+	{
+		s += sq::printAlphabetic(to());
+		::printPiece(s, dropped(), charSet, ::tolower);
 	}
 	else if (!isEmpty())
 	{
@@ -307,12 +338,7 @@ Move::printAlphabetic(mstl::string& s, encoding::CharSet charSet) const
 		s += sq::printAlphabetic(to());
 
 		if (isPromotion())
-		{
-			if (charSet == encoding::Utf8)
-				s += piece::utf8::asString(promoted());
-			else
-				s += ::tolower(piece::print(promoted()));
-		}
+			::printPiece(s, promoted(), charSet, ::tolower);
 	}
 
 	return s;
@@ -320,9 +346,9 @@ Move::printAlphabetic(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
-Move::print(mstl::string& s, move::Notation form, encoding::CharSet charSet) const
+Move::print(mstl::string& s, move::Notation style, encoding::CharSet charSet) const
 {
-	switch (form)
+	switch (style)
 	{
 		case move::Algebraic:		printAlgebraic(s, charSet); break;
 		case move::ShortAlgebraic:	printSan(s, charSet); break;
@@ -330,6 +356,34 @@ Move::print(mstl::string& s, move::Notation form, encoding::CharSet charSet) con
 		case move::Descriptive:		printDescriptive(s); break;
 		case move::Correspondence:	printNumeric(s); break;
 		case move::Telegraphic:		printAlphabetic(s, charSet); break;
+	}
+
+	return s;
+}
+
+
+mstl::string&
+Move::printForDisplay(mstl::string& s, move::Notation style) const
+{
+	print(s, style, encoding::Utf8);
+
+	if (style == move::ShortAlgebraic || style == move::LongAlgebraic)
+	{
+		if (!givesMate())
+		{
+			if (givesDoubleCheck())
+				s += '+';
+
+			if (givesCheck())
+			{
+				switch (checksGiven())
+				{
+					case 1: s.append("\xc2\xb9", 2); break;
+					case 2: s.append("\xc2\xb2", 2); break;
+					case 3: s.append("\xc2\xb3", 2); break;
+				}
+			}
+		}
 	}
 
 	return s;
@@ -360,6 +414,13 @@ Move::dump(mstl::string& result) const
 			else
 				result = "O-O-O";
 		}
+		else if (isPieceDrop())
+		{
+			result += piece::print(dropped());
+			result += '@';
+			result += sq::printFyle(to());
+			result += sq::printRank(to());
+		}
 		else
 		{
 			if (pieceMoved() != piece::Pawn)
@@ -368,7 +429,7 @@ Move::dump(mstl::string& result) const
 			result += sq::printFyle(from());
 			result += sq::printRank(from());
 
-			result += captured() == piece::None ? "-" : "x";
+			result += isCapture() ? "x" : "-";
 
 			result += sq::printFyle(to());
 			result += sq::printRank(to());
@@ -379,7 +440,7 @@ Move::dump(mstl::string& result) const
 				result += piece::print(promoted());
 			}
 
-			if (captured() != piece::None)
+			if (isCapture())
 			{
 				result += " x ";
 				result += piece::print(captured());

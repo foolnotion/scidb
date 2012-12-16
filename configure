@@ -1507,6 +1507,10 @@ proc checkGCC {cc} {
     global compiler
     global option
 
+    # TODO: we want some more test:
+    # --with-fpmath=sse     SSE math enabled by default
+    # -mpopcnt              enables GCC to use the popcnt instructions on both AMD and Intel processors
+
     if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
@@ -1811,6 +1815,11 @@ proc writeMakefile {{type ""}} {
         }
     }
 
+    if {[catch {set ver [open "Makefile.version" r]}]} {
+       puts "Error opening file for reading: Makefile.version"
+       exit 1
+    }
+
     if {[catch {set from [open "Makefile.conf" r]}]} {
        puts "Error opening file for reading: Makefile.conf"
        exit 1
@@ -1839,6 +1848,12 @@ proc writeMakefile {{type ""}} {
                 }
                 set first [string first "@" $line]
             }
+            puts $to $line
+        }
+    }
+
+    while {[gets $ver line] >= 0} {
+        if {[string index $line 1] ne "#"} {
             puts $to $line
         }
     }

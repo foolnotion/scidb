@@ -27,12 +27,16 @@
 #ifndef _tcl_tree_included
 #define _tcl_tree_included
 
+#include "db_common.h"
+
 extern "C" { struct Tcl_Interp; }
+extern "C" { struct Tcl_Obj; }
 
 namespace tcl {
 namespace tree {
 
 void referenceBaseChanged();
+Tcl_Obj* variantToString(::db::variant::Type variant);
 
 } // namespace tree
 } // namespace tcl

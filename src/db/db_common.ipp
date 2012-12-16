@@ -31,6 +31,10 @@
 
 namespace db {
 namespace material {
+
+inline unsigned Count::minor() const { return bishop + knight; }
+inline unsigned Count::major() const { return queen + rook; }
+
 namespace si3 {
 
 inline Signature::Signature() :u32(0) {}
@@ -52,14 +56,6 @@ split(uint32_t signature, Signature& white, Signature& black)
 	white.value = signature;
 	black.value = signature >> 16;
 }
-
-inline
-unsigned
-count(Signature sig)
-{
-	return count(sig.part[0]) + count(sig.part[1]);
-}
-
 
 } // namespace material
 
@@ -144,11 +140,6 @@ inline bool isBlack(ID piece) { return color(piece); }
 
 inline ID piece(Type type, db::color::ID color)		{ return ID(type | (color << 3)); }
 
-inline bool canPromoteTo(Type type)
-{
-	return piece::Queen <= type && type <= piece::Knight;
-}
-
 inline
 char
 print(db::piece::ID piece)
@@ -230,6 +221,19 @@ value(ID result)
 
 	M_ASSERT(size_t(result) < U_NUMBER_OF(Value));
 	return Value[result];
+}
+
+
+inline
+color::ID
+color(ID result)
+{
+	M_REQUIRE(result == White || result == Black);
+	static_assert(color::White == 0, "reimplementation required");
+	static_assert(	int(result::Black) - int(result::White) == int(color::Black) - int(color::White),
+						"reimplementation required");
+
+	return color::ID(result - White);
 }
 
 } // namespace result
@@ -388,7 +392,7 @@ inline bool contains(unsigned titles, title::ID title) { return titles & (1 << (
 
 inline
 bool
-containsFemaleTtile(unsigned titles)
+containsFemaleTitle(unsigned titles)
 {
 	return titles & (Mask_WGM | Mask_WIM | Mask_WFM | Mask_WCM);
 }
@@ -397,14 +401,52 @@ containsFemaleTtile(unsigned titles)
 
 namespace variant {
 
-inline bool isStandardChess(unsigned idn)		{ return idn == 518; }
-inline bool isChess960(unsigned idn)			{ return 0 < idn && idn <= 960; }
-inline bool isShuffleChess(unsigned idn)		{ return 960 < idn && idn <= 3840; }
-inline bool isBughouseChess(unsigned idn)		{ return idn == BughouseIdn; }
-inline bool isCrazyhouseChess(unsigned idn)	{ return idn == CrazyhouseIdn; }
-inline bool isLosersChess(unsigned idn)		{ return idn == LosersIdn; }
-inline bool isSuicideChess(unsigned idn)		{ return idn == SuicideIdn; }
-inline bool isGiveawayChess(unsigned idn)		{ return idn == GiveawayIdn; }
+inline bool isZhouse(Type variant)		{ return variant & (Bughouse | Crazyhouse); }
+inline bool isAntichess(Type variant)	{ return variant >= Antichess; }
+inline bool isAntichessExceptLosers(Type variant) { return variant & Antichess; }
+
+inline bool isChess960(uint16_t idn)		{ return 0 < idn && idn <= 960; }
+inline bool isShuffleChess(uint16_t idn)	{ return 0 < idn && idn <= 4*960; }
+
+inline
+bool
+isStandardChess(uint16_t idn, variant::Type variant)
+{
+	return idn == (isAntichessExceptLosers(variant) ? NoCastling : Standard);
+}
+
+inline
+Type
+toMainVariant(Type variant)
+{
+	M_REQUIRE(variant != Undetermined);
+	return Type(variant & ((1 << NumberOfVariants) - 1));
+}
+
+inline
+bool
+isMainVariant(Type variant)
+{
+	return variant == toMainVariant(variant);
+}
+
+inline
+Type
+fromIndex(unsigned index)
+{
+	M_REQUIRE(index < NumberOfVariants);
+	return Type(1 << index);
+}
+
+inline
+variant::Index
+toIndex(Type variant)
+{
+	M_REQUIRE(variant != Undetermined);
+	M_REQUIRE(isMainVariant(variant));
+
+	return Index(mstl::log2_floor(unsigned(variant)));
+}
 
 } // namespace variant
 
@@ -436,6 +478,12 @@ namespace format {
 inline bool isScidFormat(Type type) { return type & (Scid3 | Scid4); }
 
 } // namespace format
+
+namespace hp {
+
+inline Pawns::Pawns() :value(0) {}
+
+} // namespace hp
 } // namespace db
 
 // vi:set ts=3 sw=3:

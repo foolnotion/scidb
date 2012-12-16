@@ -86,6 +86,8 @@ public:
 	bool isLoaded() const;
 	bool isUsed(Eco code) const;
 
+	variant::Type variant() const;
+
 	Eco lookup(	Line const& line,
 					unsigned* length = 0,
 					Successors* successors = 0,
@@ -107,8 +109,9 @@ public:
 	void print() const;
 	void dump() const;
 
-	static EcoTable const& specimen();
-	static void load(mstl::istream& stream);
+	static EcoTable const& specimen(variant::Type variant);
+	static EcoTable const& specimen(variant::Index variant);
+	static void load(mstl::istream& stream, variant::Type variant);
 
 private:
 
@@ -134,16 +137,17 @@ private:
 	Entry const& getEntry(Eco code) const;
 	void parse(mstl::istream& strm);
 
-	Branch*		m_branchBuffer;
-	Node*			m_nodeBuffer;
-	char*			m_nameBuffer;
-	uint16_t*	m_moveBuffer;
-	Node*			m_root;
-	Lookup		m_lookup;
-	Map			m_map;
-	Allocator	m_allocator;
+	variant::Type	m_variant;
+	Branch*			m_branchBuffer;
+	Node*				m_nodeBuffer;
+	char*				m_nameBuffer;
+	uint16_t*		m_moveBuffer;
+	Node*				m_root;
+	Lookup			m_lookup;
+	Map				m_map;
+	Allocator		m_allocator;
 
-	static EcoTable m_specimen;
+	static EcoTable m_specimen[variant::NumberOfVariants];
 };
 
 } // namespace db

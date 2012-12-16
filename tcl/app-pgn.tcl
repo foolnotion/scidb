@@ -68,6 +68,7 @@ set MustBeOdd							"Input must be an odd number."
 set CannotOpenCursorFiles			"Cannot open cursor files: %s"
 set ReallyReplaceMoves				"Really replace moves of current game?"
 set CurrentGameIsNotModified		"Current game is not modified."
+set ShufflePosition					"Shuffle position..." ;# currently unused
 
 set StartTrialMode					"Start Trial Mode"
 set StopTrialMode						"Stop Trial Mode"
@@ -180,19 +181,25 @@ proc build {parent width height} {
 		-tooltipvar ::mc::Game \
 	]
 	set Vars(button:new) [::toolbar::add $tbGame button \
-		-image $::icon::toolbarDocument \
-		-tooltip $::gamebar::mc::GameNew \
-		-command [list ::menu::gameNew $top] \
+		-image $::icon::toolbarDocumentNew \
+		-tooltip "$::gamebar::mc::GameNew ($::mc::VariantName(Normal))" \
+		-command [list ::menu::gameNew $tbGame] \
 	]
-	set Vars(button:shuffle) [::toolbar::add $tbGame button \
-		-image $::icon::toolbarDice \
-		-tooltip "${::gamebar::mc::GameNew}: $::setup::board::mc::Shuffle" \
+	set Vars(button:new...) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarDocumentNewAlt \
+		-tooltipvar [::mc::var ::gamebar::mc::GameNew "..."] \
 		-command [namespace code NewGame] \
 	]
+#	set Vars(button:shuffle) [::toolbar::add $tbGame button \
+#		-image $::icon::toolbarDice \
+#		-tooltipvar [namespace current]::mc::ShufflePosition \
+#		-command [namespace code ShufflePosition] \
+#		-state disabled \
+#	]
 	set Vars(button:import) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPGN \
-		-tooltip $::import::mc::ImportPgnGame \
-		-command [namespace code [list ::menu::importGame $Vars(main)]] \
+		-tooltipvar ::import::mc::ImportPgnGame \
+		-command [namespace code [list ImportGame $Vars(main)]] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id editor-history \
@@ -328,7 +335,7 @@ proc gamebar {} {
 }
 
 
-proc add {position base tags} {
+proc add {position base variant tags} {
 	variable Vars
 
 	::gamebar::add $Vars(gamebar) $position $tags
@@ -336,7 +343,7 @@ proc add {position base tags} {
 }
 
 
-proc replace {position base tags} {
+proc replace {position base variant tags} {
 	variable Vars
 
 	::gamebar::replace $Vars(gamebar) $position $tags
@@ -432,6 +439,34 @@ proc changeFontSize {incr} {
 }
 
 
+proc saveGame {mode} {
+	variable ::scidb::clipbaseName
+	variable Vars
+
+	set position [::gamebar::selected $Vars(gamebar)]
+	lassign [::scidb::game::link? $position] base variant_
+
+	if {$base eq $clipbaseName} { return }
+	if {[::scidb::db::get readonly? $base $variant]} { return }
+
+
+	switch $mode {
+		add {
+			::dialog::save::open $Vars(main) $base $variant $position
+		}
+
+		replace {
+			lassign [::scidb::game::link? $position] _ _ index
+			::dialog::save::open $Vars(main) $base $variant $position [expr {$index + 1}]
+		}
+
+		moves {
+			replaceMoves $Vars(main)
+		}
+	}
+}
+
+
 proc editAnnotation {{position -1} {key {}}} {
 	variable Vars
 
@@ -492,6 +527,12 @@ proc undo {} { Undo undo }
 proc redo {} { Undo redo }
 
 
+proc undoLastMove {} {
+	set cmd [::scidb::game::query undo]
+	if {$cmd eq "move:append" || $cmd eq "move:nappend"} { Undo undo }
+}
+
+
 proc replaceMoves {parent} {
 	if {[::scidb::game::query modified?]} {
 		set reply [::dialog::question -parent $parent -message $mc::ReallyReplaceMoves]
@@ -513,8 +554,8 @@ proc ensureScratchGame {} {
 		::scidb::game::switch 0
 		::scidb::pos::setup $fen
 		set tags [::scidb::game::tags 0]
-		::game::setFirst $scratchbaseName $tags
-		add 0 $scratchbaseName $tags
+		::game::setFirst $scratchbaseName Normal $tags
+		add 0 $scratchbaseName Normal $tags
 		select 0
 	}
 }
@@ -695,9 +736,14 @@ proc GameBarEvent {action position} {
 				Raise history
 				::widget::busyCursor off
 				::annotation::deactivate
+#				::toolbar::childconfigure $Vars(button:shuffle) -state disabled
 			}
 
 			$Vars(panes) unmap $Vars(frame:$position)
+		}
+
+		inserted {
+#			::toolbar::childconfigure $Vars(button:shuffle) -state normal
 		}
 
 		lock {
@@ -949,7 +995,7 @@ proc DoLayout {position data {w {}}} {
 
 			result {
 				set reason [::scidb::game::query $position termination]
-				set resultList [list {*}[lrange $node 1 2] $reason]
+				set resultList [list {*}[lrange $node 1 end] $reason]
 
 				if {$Vars(result:$position) != $resultList} {
 					if {[string length $Vars(last:$position)]} {
@@ -959,7 +1005,7 @@ proc DoLayout {position data {w {}}} {
 					$w mark set current m-0
 					set prevChar [$w get current-1c]
 					$w delete current end
-					set result [::browser::makeResult {*}[lrange $node 1 3] $reason]
+					set result [::browser::makeResult {*}$resultList]
 					if {[llength $result]} {
 						lassign $result result reason
 						if {$Options(spacing:paragraph)} { $w insert current \n }
@@ -1079,16 +1125,29 @@ proc UpdateHeader {position w data} {
 			}
 		}
 
-		foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
-			set tags {}
-			lassign $line content tags
-			if {$tags eq "figurine"} {
-				set tags figurineb
-			} else {
-				lappend tags opening
+		set variant [::scidb::game::query $position variant?]
+
+		switch $variant {
+			Normal {
+				foreach line [::browser::makeOpeningLines [list $idn $pos $eco {*}$opg]] {
+					set tags {}
+					lassign $line content tags
+					if {$tags eq "figurine"} {
+						set tags figurineb
+					} else {
+						lappend tags opening
+					}
+					$w insert current $content $tags
+				}
 			}
-			$w insert current $content $tags
+			Suicide - Giveaway - Losers {
+				$w insert current "$::mc::VariantName(Antichess) - $::mc::VariantName($variant)" opening
+			}
+			default {
+				$w insert current $::mc::VariantName($variant) opening
+			}
 		}
+
 		$w insert current "\n"
 	}
 	$w mark set m-start [$w index current]
@@ -1281,12 +1340,12 @@ proc InsertDiagram {position w level key data} {
 				set index 0
 				set key [string map {d m} $key]
 				set img $w.[string map {. :} $key]
-				board::stuff::new $img $size $borderSize
-				if {2*$pady < $alignment} {board::stuff::alignBoard $img $Colors(background)}
-				if {$color eq "black"} { ::board::stuff::rotate $img }
-				::board::stuff::update $img $board
-				::board::stuff::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
-				::board::stuff::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
+				board::diagram::new $img $size $borderSize
+				if {2*$pady < $alignment} {board::diagram::alignBoard $img $Colors(background)}
+				if {$color eq "black"} { ::board::diagram::rotate $img }
+				::board::diagram::update $img $board
+				::board::diagram::bind $img <Button-1> [namespace code [list editAnnotation $position $key]]
+				::board::diagram::bind $img <Button-3> [namespace code [list PopupMenu $w $position]]
 				$w window create current \
 					-align center \
 					-window $img \
@@ -2103,7 +2162,7 @@ proc PopupMenu {parent position} {
 					set nags {}
 					for {set nag $from} {$nag <= $to} {incr nag} {
 						if {!$isStmNag($nag)} {
-							set symbol [::font::mapNagToSymbol $nag]
+							set symbol [::font::mapNagToUtfSymbol $nag]
 							if {$symbol ne $nag} {
 								$sub add command -label $symbol -command "$cmd $type $nag"
 								lappend nags $nag
@@ -2676,16 +2735,48 @@ proc Refresh {var} {
 }
 
 
+proc ImportGame {parent} {
+	set pos [::game::new $parent]
+	if {$pos >= 0} { ::import::openEdit $parent $pos }
+}
+
+
 proc NewGame {} {
 	variable Vars
-	::setup::popupShuffleMenu [namespace current] $Vars(button:shuffle)
+
+	set parent $Vars(button:new...)
+	set m $parent.newGame
+	if {[winfo exists $m]} { destroy $m }
+	menu $m -tearoff false
+	catch { wm attributes $m -type popup_menu }
+	::gamebar::addVariantsToMenu $parent $m
+	tk_popdown $m $parent
 }
 
 
-proc Shuffle {variant} {
-	variable Vars
-	::menu::gameNew $Vars(main) $variant
-}
+# # NOTE: will be called from popupShuffleMenu
+# proc Shuffle {variant} {
+# 	variable Vars
+# 
+# 	set parent $Vars(button:shuffle)
+# 
+# 	if {[::scidb::game::query modified?]} {
+# 		set reply [::dialog::question -parent $parent -message $::gamebar::mc::DiscardNewGame]
+# 		if {$reply eq "no"} { return }
+# 	}
+# 
+# 	set oldIdn [::scidb::game::query idn]
+# 	set newIdn [::setup::shuffle $variant]
+# 	while {$oldIdn == $newIdn} { set newIdn [::setup:shuffle $variant] }
+# 	::scidb::game::clear $newIdn
+# 	::scidb::game::modified $Vars(position) no
+# }
+# 
+# 
+# proc ShufflePosition {} {
+# 	variable Vars
+# 	::setup::popupShuffleMenu [namespace current] $Vars(button:shuffle)
+# }
 
 
 proc LanguageChanged {} {
@@ -2702,37 +2793,8 @@ proc LanguageChanged {} {
 		}
 	}
 
-	::toolbar::childconfigure $Vars(button:new) -tooltip $::gamebar::mc::GameNew
-	::toolbar::childconfigure $Vars(button:shuffle) \
-		-tooltip "${::gamebar::mc::GameNew}: $::setup::board::mc::Shuffle"
-}
-
-
-proc SaveGame {mode} {
-	variable ::scidb::clipbaseName
-	variable Vars
-
-	set position [::gamebar::selected $Vars(gamebar)]
-	set base [::scidb::db::get name]
-
-	if {$base eq $clipbaseName} { return }
-	if {[::scidb::db::get readonly? $base]} { return }
-
-
-	switch $mode {
-		add {
-			::dialog::save::open $Vars(main) $base $position
-		}
-
-		replace {
-			lassign [::scidb::game::link? $position] _ index
-			::dialog::save::open $Vars(main) $base $position [expr {$index + 1}]
-		}
-
-		moves {
-			replaceMoves $Vars(main)
-		}
-	}
+	::toolbar::childconfigure $Vars(button:new) \
+		-tooltip "$::gamebar::mc::GameNew ($::mc::VariantName(Normal))"
 }
 
 

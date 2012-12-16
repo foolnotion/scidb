@@ -80,12 +80,16 @@ u_block_file.o: ../mstl/m_utility.ipp
 u_block_file.o: ../mstl/m_limits.h
 u_block_file.o: ../mstl/m_bit_functions.h
 u_block_file.o: ../mstl/m_bit_functions.ipp
+u_block_file.o: ../mstl/m_uint128_t.h
+u_block_file.o: ../mstl/m_uint128.h
 u_block_file.o: ../mstl/m_assert.h
 u_block_file.o: ../mstl/m_string.h
 u_block_file.o: ../mstl/m_string.ipp
 u_block_file.o: ../mstl/m_vector.h
 u_block_file.o: ../mstl/m_memblock.h
 u_block_file.o: ../mstl/m_memblock.ipp
+u_block_file.o: ../mstl/m_iterator.h
+u_block_file.o: ../mstl/m_iterator.ipp
 u_block_file.o: ../mstl/m_vector.ipp
 u_block_file.o: ../mstl/m_uninitialized.h
 u_block_file.o: ../mstl/m_uninitialized.ipp
@@ -120,6 +124,8 @@ u_bit_stream.o: ../mstl/m_utility.ipp
 u_bit_stream.o: ../mstl/m_limits.h
 u_bit_stream.o: ../mstl/m_bit_functions.h
 u_bit_stream.o: ../mstl/m_bit_functions.ipp
+u_bit_stream.o: ../mstl/m_uint128_t.h
+u_bit_stream.o: ../mstl/m_uint128.h
 u_bit_stream.o: ../mstl/m_assert.h
 u_bit_stream.o: ../mstl/m_exception.h
 u_bit_stream.o: ../mstl/m_backtrace.h
@@ -139,6 +145,8 @@ u_byte_stream.o: ../mstl/m_utility.ipp
 u_byte_stream.o: ../mstl/m_limits.h
 u_byte_stream.o: ../mstl/m_bit_functions.h
 u_byte_stream.o: ../mstl/m_bit_functions.ipp
+u_byte_stream.o: ../mstl/m_uint128_t.h
+u_byte_stream.o: ../mstl/m_uint128.h
 u_byte_stream.o: ../mstl/m_assert.h
 u_byte_stream.o: ../mstl/m_string.h
 u_byte_stream.o: ../mstl/m_string.ipp
@@ -159,6 +167,8 @@ u_html.o: ../mstl/m_utility.ipp
 u_html.o: ../mstl/m_limits.h
 u_html.o: ../mstl/m_bit_functions.h
 u_html.o: ../mstl/m_bit_functions.ipp
+u_html.o: ../mstl/m_uint128_t.h
+u_html.o: ../mstl/m_uint128.h
 u_html.o: ../mstl/m_assert.h
 u_html.o: ../mstl/m_exception.h
 u_html.o: ../mstl/m_backtrace.h
@@ -166,6 +176,8 @@ u_html.o: ../mstl/m_exception.ipp
 u_html.o: ../mstl/m_vector.h
 u_html.o: ../mstl/m_memblock.h
 u_html.o: ../mstl/m_memblock.ipp
+u_html.o: ../mstl/m_iterator.h
+u_html.o: ../mstl/m_iterator.ipp
 u_html.o: ../mstl/m_vector.ipp
 u_html.o: ../mstl/m_uninitialized.h
 u_html.o: ../mstl/m_uninitialized.ipp
@@ -200,6 +212,8 @@ u_http.o: ../mstl/m_utility.ipp
 u_http.o: ../mstl/m_limits.h
 u_http.o: ../mstl/m_bit_functions.h
 u_http.o: ../mstl/m_bit_functions.ipp
+u_http.o: ../mstl/m_uint128_t.h
+u_http.o: ../mstl/m_uint128.h
 u_http.o: ../mstl/m_assert.h
 u_http.o: ../mstl/m_exception.h
 u_http.o: ../mstl/m_backtrace.h
@@ -225,6 +239,8 @@ u_misc.o: ../mstl/m_utility.ipp
 u_misc.o: ../mstl/m_limits.h
 u_misc.o: ../mstl/m_bit_functions.h
 u_misc.o: ../mstl/m_bit_functions.ipp
+u_misc.o: ../mstl/m_uint128_t.h
+u_misc.o: ../mstl/m_uint128.h
 u_misc.o: ../mstl/m_assert.h
 u_misc.o: ../mstl/m_exception.h
 u_misc.o: ../mstl/m_backtrace.h
@@ -240,6 +256,8 @@ u_path.o: ../mstl/m_utility.ipp
 u_path.o: ../mstl/m_limits.h
 u_path.o: ../mstl/m_bit_functions.h
 u_path.o: ../mstl/m_bit_functions.ipp
+u_path.o: ../mstl/m_uint128_t.h
+u_path.o: ../mstl/m_uint128.h
 u_path.o: ../mstl/m_assert.h
 u_path.o: ../mstl/m_exception.h
 u_path.o: ../mstl/m_backtrace.h
@@ -264,6 +282,8 @@ u_piped_progress.o: ../mstl/m_utility.ipp
 u_piped_progress.o: ../mstl/m_limits.h
 u_piped_progress.o: ../mstl/m_bit_functions.h
 u_piped_progress.o: ../mstl/m_bit_functions.ipp
+u_piped_progress.o: ../mstl/m_uint128_t.h
+u_piped_progress.o: ../mstl/m_uint128.h
 u_piped_progress.o: ../mstl/m_assert.h
 u_progress.o: u_progress.h
 u_progress.o: u_progress.ipp
@@ -278,6 +298,8 @@ u_progress.o: ../mstl/m_utility.ipp
 u_progress.o: ../mstl/m_limits.h
 u_progress.o: ../mstl/m_bit_functions.h
 u_progress.o: ../mstl/m_bit_functions.ipp
+u_progress.o: ../mstl/m_uint128_t.h
+u_progress.o: ../mstl/m_uint128.h
 u_progress.o: ../mstl/m_assert.h
 u_zlib_ostream.o: u_zlib_ostream.h
 u_zlib_ostream.o: ../mstl/m_ostream.h
@@ -315,7 +337,11 @@ u_zstream.o: ../mstl/m_utility.ipp
 u_zstream.o: ../mstl/m_limits.h
 u_zstream.o: ../mstl/m_bit_functions.h
 u_zstream.o: ../mstl/m_bit_functions.ipp
+u_zstream.o: ../mstl/m_uint128_t.h
+u_zstream.o: ../mstl/m_uint128.h
 u_zstream.o: ../mstl/m_assert.h
+u_zstream.o: ../mstl/m_iterator.h
+u_zstream.o: ../mstl/m_iterator.ipp
 u_zstream.o: ../mstl/m_vector.ipp
 u_zstream.o: ../mstl/m_uninitialized.h
 u_zstream.o: ../mstl/m_uninitialized.ipp

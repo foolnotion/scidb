@@ -215,41 +215,42 @@ proc build {path columns args} {
 }
 
 
-proc update {path base size} {
+proc update {path base variant size} {
 	set table $path.top.table
 	variable ${table}::Vars
 
-	if {$Vars(base) ne $base}  {
+	if {$Vars(base) ne $base || $Vars(variant) ne $variant} {
 		::table::activate $table none
 		::table::select $table none
 
 		if {[llength $Vars(base)]} {
-			set Vars(start:$Vars(base)) $Vars(start)
-			set Vars(active:$Vars(base)) $Vars(active)
-			set Vars(selection:$Vars(base)) $Vars(selection)
+			set Vars(start:$Vars(base):$Vars(variant)) $Vars(start)
+			set Vars(active:$Vars(base):$Vars(variant)) $Vars(active)
+			set Vars(selection:$Vars(base):$Vars(variant)) $Vars(selection)
 		}
 	} else {
-		set Vars(start:$Vars(base)) $Vars(start)
-		set Vars(active:$Vars(base)) $Vars(active)
-		set Vars(selection:$Vars(base)) $Vars(selection)
+		set Vars(start:$Vars(base):$Vars(variant)) $Vars(start)
+		set Vars(active:$Vars(base):$Vars(variant)) $Vars(active)
+		set Vars(selection:$Vars(base):$Vars(variant)) $Vars(selection)
 	}
-	if {![info exists Vars(start:$base)]} {
-		set Vars(start:$base) 0
-		set Vars(active:$base) -1
-		set Vars(selection:$base) -1
+	if {![info exists Vars(start:$base:$variant)]} {
+		set Vars(start:$base:$variant) 0
+		set Vars(active:$base:$variant) -1
+		set Vars(selection:$base:$variant) -1
 	}
 	set oldSize $Vars(size)
 	set Vars(size) $size
 	::table::clear $table $Vars(size) $Vars(height)
 
-	set Vars(start) [expr {max(0, min($Vars(start:$base), $Vars(size) - $Vars(height)))}]
-	if {[string is integer -strict $Vars(active:$base)]} {
-		set Vars(active) [expr {min($size - 1, $Vars(active:$base))}]
+	set Vars(start) [expr {max(0, min($Vars(start:$base:$variant), $Vars(size) - $Vars(height)))}]
+	if {[string is integer -strict $Vars(active:$base:$variant)]} {
+		set Vars(active) [expr {min($size - 1, $Vars(active:$base:$variant))}]
 	}
-	if {[string is integer -strict $Vars(selection:$base)]} {
-		set Vars(selection) [expr {min($size - 1, $Vars(selection:$base))}]
+	if {[string is integer -strict $Vars(selection:$base:$variant)]} {
+		set Vars(selection) [expr {min($size - 1, $Vars(selection:$base:$variant))}]
 	}
 	set Vars(base) $base
+	set Vars(variant) $variant
 
 	set height [expr {min([::table::height $table], $Vars(height))}]
 	TableResized $table $height
@@ -263,6 +264,11 @@ proc base {path} {
 }
 
 
+proc variant {path} {
+	return [set [namespace current]::${path}.top.table::Vars(variant)]
+}
+
+
 proc tablePath {path} {
 	return [::table::tablePath $path.top.table]
 }
@@ -273,12 +279,13 @@ proc visibleColumns {path} {
 }
 
 
-proc forget {path base} {
+proc forget {path base variant} {
 	set table $path.top.table
 	variable ${table}::Vars
 
-	array unset Vars *:$base
+	array unset Vars *:$base:$variant
 	set Vars(base) {}
+	set Vars(variant) {}
 	set Vars(size) 0
 }
 
@@ -651,7 +658,7 @@ proc TableOptions {table} {
 proc TableVisit {table data} {
 	variable ${table}::Vars
 
-	set data [list $Vars(base) {*}$data]
+	set data [list $Vars(base) $Vars(variant) {*}$data]
 	event generate [winfo parent [winfo parent $table]] <<TableVisit>> -data $data
 }
 
@@ -855,7 +862,7 @@ proc TableFill {table {range {0 100000}} {hilite true}} {
 	if {$Vars(start) + $first >= $Vars(size)} { return }
 	set last [expr {min($last, $Vars(size))}]
 	event generate [winfo parent [winfo parent $table]] <<TableFill>> \
-		-data [list $table $Vars(base) $Vars(start) $first $last $Vars(columns)]
+		-data [list $table $Vars(base) $Vars(variant) $Vars(start) $first $last $Vars(columns)]
 	if {$hilite} { SetHighlighting $table }
 }
 
@@ -910,7 +917,8 @@ proc PopupMenu {table y} {
 	catch { destroy $menu }
 	menu $menu -tearoff false
 	set base $Vars(base)
-	{*}$Vars(popupcmd) [winfo parent [winfo parent $table]] $menu $base $index
+	set variant $Vars(variant)
+	{*}$Vars(popupcmd) [winfo parent [winfo parent $table]] $menu $base $variant $index
 
 	if {[$menu index 0] ne "none"} {
 		::table::keepFocus $table true

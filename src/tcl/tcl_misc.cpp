@@ -28,6 +28,7 @@
 #include "tcl_exception.h"
 #include "tcl_database.h"
 #include "tcl_file.h"
+#include "tcl_game.h"
 
 #include "db_comment.h"
 #include "db_database_codec.h"
@@ -55,9 +56,6 @@
 #include <string.h>
 
 using namespace tcl;
-
-static char const* ScidbVersion	= "1.0 BETA";
-static char const* ScidbRevision	= "96";
 
 static char const* CmdAttributes				= "::scidb::misc::attributes";
 static char const* CmdCrc32					= "::scidb::misc::crc32";
@@ -637,7 +635,7 @@ cmdCrc32(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdVersion(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(::ScidbVersion);
+	setResult(SCIDB_VERSION);
 	return TCL_OK;
 }
 
@@ -645,7 +643,7 @@ cmdVersion(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdRevision(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(::ScidbRevision);
+	setResult(SCIDB_REVISION);
 	return TCL_OK;
 }
 
@@ -690,8 +688,10 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else if (::strcmp(which, "opening") == 0)
 	{
 		::db::Eco eco(stringFromObj(objc, objv, 2));
+		::db::variant::Type variant = tcl::game::variantFromObj(objectFromObj(objc, objv, 3));
 		mstl::string opening, shortOpening, variation, subVariation;
-		::db::EcoTable::specimen().getOpening(eco, opening, shortOpening, variation, subVariation);
+		::db::EcoTable::specimen(variant).getOpening(
+			eco, opening, shortOpening, variation, subVariation);
 
 		Tcl_Obj* objs[4];
 		objs[0] = Tcl_NewStringObj(opening, opening.size());
@@ -809,10 +809,10 @@ cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		isExtraTagFunc = ::db::sci::Codec::isExtraTag;
 
-	Tcl_Obj* objs[::db::tag::ExtraTag];
+	Tcl_Obj* objs[::db::tag::BughouseTag];
 	unsigned count = 0;
 
-	for (unsigned i = 0; i < ::db::tag::ExtraTag; ++i)
+	for (unsigned i = 0; i < ::db::tag::BughouseTag; ++i)
 	{
 		if (isExtraTagFunc(::db::tag::ID(i)))
 			objs[count++] = Tcl_NewStringObj(::db::tag::toName(::db::tag::ID(i)), -1);

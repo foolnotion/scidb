@@ -50,14 +50,15 @@ struct Position
 	bool operator==(Position const& position) const;
 	bool operator!=(Position const& position) const;
 
-	uint64_t m_occupiedBy[2];	// square mask of those occupied by each color
+	uint64_t m_occupiedBy[2];			// square mask of those occupied by each color
 	uint64_t m_pawns;
 	uint64_t m_knights;
 	uint64_t m_bishops;
 	uint64_t m_rooks;
 	uint64_t m_queens;
 	uint64_t m_kings;
-};
+}
+__attribute__((packed));
 
 struct ExactPosition : public Position
 {
@@ -69,13 +70,27 @@ struct ExactPosition : public Position
 	Byte		m_castle;					// flags for castle legality (these can be merged)
 	Square	m_epSquare;					// square of a possible ep capture
 	Byte		__alignment;				// needed for alignment (otherwise memcmp() won't work)
-};
+}
+__attribute__((packed));
 
-struct UniquePosition : public ExactPosition
+struct ExactZHPosition : public ExactPosition
+{
+	typedef material::Count Material;
+
+	bool operator==(ExactZHPosition const& position) const;
+	bool operator!=(ExactZHPosition const& position) const;
+
+	Material m_holding[2];
+	uint64_t	m_promoted[2];				// positions of promoted pieces
+}
+__attribute__((packed));
+
+struct UniquePosition : public ExactZHPosition
 {
 	uint16_t	m_halfMoveClock;			// number of moves since last pawn move or capture
 	uint16_t	m_plyNumber;				// ply number in game (incremented after each half move)
-};
+}
+__attribute__((packed));
 
 } // namespace board
 
@@ -83,43 +98,60 @@ class Board : protected board::UniquePosition, protected Signature
 {
 public:
 
-	static unsigned const NoCheck			= 0;			///< side to move is not in check
-	static unsigned const Check			= 1 << 0;	///< side to move is in check
-	static unsigned const DoubleCheck	= 1 << 1;	///< side to move is in double check
-	static unsigned const CheckMate		= 1 << 2;	///< side to move is check mate
-	static unsigned const StaleMate		= 1 << 3;	///< side to move is stale mate
+	enum
+	{
+		NoCheck		= 0,			///< side to move is not in check
+		Check			= 1 << 0,	///< side to move is in check
+		DoubleCheck	= 1 << 1,	///< side to move is in double check
+		Checkmate	= 1 << 2,	///< side to move is check mate
+		Stalemate	= 1 << 3,	///< side to move is stale mate
+		Losing		= 1 << 4,	///< side to move has lost all pieces
+		ThreeChecks	= 1 << 5,	///< side to move got three checks
+	};
 
 	enum SetupStatus
 	{
-		Valid,						///< position seems to be valid (cannot detect all invalid cases)
-		NoWhiteKing,				///< white king is missing
-		NoBlackKing,				///< black king is missing
-		BothInCheck,				///< both kings are in check
-		OppositeCheck,				///< opposite king is in check
-		TooManyWhitePawns,		///< more than eight white pawns
-		TooManyBlackPawns,		///< more than eight black pawns
-		TooManyWhitePieces,		///< too many white queens, rooks, bishops, or knights
-		TooManyBlackPieces,		///< too many black queens, rooks, bishops, or knights
-		PawnsOn18,					///< pawn on 1st or 8th rank
-		TooManyKings,				///< more than 2 kings
-		TooManyWhite,				///< more than sixteen white pieces
-		TooManyBlack,				///< more than sixteen black pieces
-		BadCastlingRights,		///< can't castle
-		InvalidCastlingRights,	///< unreasonable rook fyles (or ranks)
-		AmbiguousCastlingFyles,	///< castling rook fyles are ambiguous
-		InvalidEnPassant,			///< unreasonable en passant square
-		MultiPawnCheck,			///< two or more pawns give check
-		TripleCheck,				///< three or more pieces give check
+		Valid,							///< position seems to be valid (cannot detect all invalid cases)
+		EmptyBoard,						///< board is empty (Anti-Chess)
+		NoWhiteKing,					///< white king is missing
+		NoBlackKing,					///< black king is missing
+		BothInCheck,					///< both kings are in check
+		OppositeCheck,					///< opposite king is in check
+		TooManyWhitePawns,			///< more than eight white pawns
+		TooManyBlackPawns,			///< more than eight black pawns
+		TooManyWhitePieces,			///< too many white queens, rooks, bishops, or knights
+		TooManyBlackPieces,			///< too many black queens, rooks, bishops, or knights
+		PawnsOn18,						///< pawn on 1st or 8th rank
+		TooManyKings,					///< more than 2 kings
+		TooManyWhite,					///< more than sixteen white pieces
+		TooManyBlack,					///< more than sixteen black pieces
+		BadCastlingRights,			///< can't castle
+		InvalidCastlingRights,		///< unreasonable rook fyles (or ranks)
+		AmbiguousCastlingFyles,		///< castling rook fyles are ambiguous
+		InvalidEnPassant,				///< unreasonable en passant square
+		MultiPawnCheck,				///< two or more pawns give check
+		TripleCheck,					///< three or more pieces give check
+		TooManyPiecesInHolding,		///< too many pieces in holding
+		TooFewPiecesInHolding,		///< too few pieces in holding
+		TooManyPromotedPieces,		///< too many pieces marked as promoted
+		TooFewPromotedPieces,		///< too many pieces marked as promoted
 	};
 
 	enum Format { XFen, Shredder };
 
+	typedef material::Count Material;
+
+	Board();
+	Board(Board const& board);
+
+	Board& operator=(Board const& board);
+
 	// Play moves on board
 
 	/// Play given move, updating board state appropriately
-	void doMove(Move const& m);
+	void doMove(Move const& m, variant::Type variant);
 	/// Play back given move, updating board state appropriately
-	void undoMove(Move const& m);
+	void undoMove(Move const& m, variant::Type variant);
 	/// Play given moves; returns whether the moves are valid
 	bool doMoves(char const* text);
 
@@ -128,15 +160,15 @@ public:
 	/// Remove all pieces and state from board
 	void clear();
 	/// Set the given piece on the board at the given square
-	bool setAt(Square s, piece::ID p);
+	bool setAt(Square s, piece::ID p, variant::Type variant);
 	/// Remove any piece sitting on given square
-	void removeAt(Square s);
+	void removeAt(Square s, variant::Type variant);
 	/// Set side to move as that of given color (NOTE: does bot affect the ply number)
 	void setToMove(color::ID color);
 	/// Set initial chess game position on the board
 	void setStandardPosition();
 	/// Parse given FEN, return true if loaded properly otherwise false
-	bool setup(char const* fen);
+	char const* setup(char const* fen, variant::Type variant);
 	/// Setup board from given IDN (unique IDentification Number)
 	void setup(unsigned idn);
 	/// Setup board from given position (only usable for standard chess).
@@ -153,18 +185,23 @@ public:
 	void setPlyNumber(unsigned number);
 	/// Set the move number (NOTE: side to move must be set before).
 	void setMoveNumber(unsigned number);
+	/// Set the number of checks given for both sides.
+	void setChecksGiven(unsigned white, unsigned black);
 	/// Transpose board position.
-	void transpose();
+	void transpose(variant::Type variant);
 
 	// Move factories
 
 	/// Return a null move (side to move will be set)
 	Move makeNullMove() const;
 	/// Parse any (LAN, SAN, or algebraic) representation of move, and return proper Move() object
-	Move parseMove(char const* algebraic, move::Constraint flag = move::DontAllowIllegalMove) const;
+	Move parseMove(char const* algebraic,
+						variant::Type variant,
+						move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Parse any (LAN, SAN, or algebraic) representation of move, and return string position after move
 	char const* parseMove(	char const* algebraic,
 									Move& move,
+									variant::Type variant,
 									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Parse LAN representation of move, and return string position after move
 	Move parseLAN(char const* algebraic, move::Constraint flag = move::DontAllowIllegalMove) const;
@@ -173,21 +210,28 @@ public:
 									Move& move,
 									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Return a proper Move() object given only a from-to move specification
-	Move prepareMove(Square from, Square to, move::Constraint flag = move::DontAllowIllegalMove) const;
+	Move prepareMove(	Square from,
+							Square to,
+							variant::Type variant,
+							move::Constraint flag = move::DontAllowIllegalMove) const;
+	/// Return a proper Move() object given only a to-piece move specification
+	Move preparePieceDrop(	Square to,
+									piece::Type piece,
+									move::Constraint flag = move::DontAllowIllegalMove) const;
 	/// Return a move object given only a from-to move specification (cannot handle promotions)
 	Move makeMove(uint16_t move) const;
 	/// Return a move object given only a from-to move specification (cannot handle promotions)
-	Move makeMove(Square from, Square to, piece::Type promoted = piece::Queen) const;
+	Move makeMove(Square from, Square to, piece::Type promotedOrDrop = piece::Queen) const;
 	/// Prepare a move for undo operation.
 	void prepareUndo(Move& move) const;
 	/// Generate all possible moves in a given position
-	void generateMoves(MoveList& result) const;
+	void generateMoves(variant::Type variant, MoveList& result) const;
 	/// Generate all possible capturing moves in a given position
-	void generateCapturingMoves(MoveList& result) const;
+	void generateCapturingMoves(variant::Type variant, MoveList& result) const;
 	/// Generate all possible castling moves in a given position.
 	void generateCastlingMoves(MoveList& result) const;
-	/// Remove all illegal moves from given move list
-	void filterLegalMoves(MoveList& result) const;
+	/// Remove all illegal moves from given move list (king remains in check).
+	void filterLegalMoves(MoveList& result, variant::Type variant) const;
 
 	// Query
 
@@ -197,14 +241,20 @@ public:
 	bool isSamePosition(Board const& target) const;
 	/// Return true if position is equal
 	bool isEqualPosition(Board const& target) const;
+	/// Return true if ZH position is equal
+	bool isEqualZHPosition(Board const& target) const;
 	/// Return true if side to move is in check
 	bool isInCheck() const;
-	/// Return true if side to move is in check
-	bool isMate() const;
-	/// Return true if side not to move is mate
+	/// Return true if given side is in check
+	bool isInCheck(color::ID color) const;
+	/// Return true if side not to move gives a contact check (cannot be blocked by a piece)
+	bool isContactCheck() const;
+	/// Return true if given move is a contact check (or double check)
+	bool isContactCheck(Move const& move, variant::Type variant) const;
+	/// Return true if side to move is mate
+	bool isMate(variant::Type variant) const;
+	/// Return true if side not to move is in check
 	bool givesCheck() const;
-	/// Return true if side not to move is mate
-	bool givesMate() const;
 	/// Return true if side to move is in double check
 	bool isDoubleCheck() const;
 	/// Test to see if given color has the right to castle on kingside
@@ -228,7 +278,9 @@ public:
 	/// Return whether opponent side is not in check (then last move is legal)
 	bool isLegal() const;
 	/// Return whether the move is valid (and legal)
-	bool isValidMove(Move const& move, move::Constraint flag = move::AllowIllegalMove) const;
+	bool isValidMove(	Move const& move,
+							variant::Type variant,
+							move::Constraint flag = move::AllowIllegalMove) const;
 	/// Return whether castling rook position is ambiguous
 	bool needCastlingFyles() const;
 	/// Return whether position cannot be derived from standard chess position
@@ -236,16 +288,26 @@ public:
 	/// return whether position cannot be derived from chess 960 start position
 	bool notDerivableFromChess960() const;
 	/// Return true if making move would put oneself into check
-	bool isIntoCheck(Move const& move) const;
-	/// Checker whether given castling is unambiguous
+	bool isIntoCheck(Move const& move, variant::Type variant) const;
+	/// Check whether given castling is unambiguous
 	bool isUnambiguous(castling::Index castling) const;
+	/// Check whether the kings are on board
+	bool kingOnBoard() const;
+	/// Check whether the king of given side is on board
+	bool kingOnBoard(color::ID color) const;
+	/// Check whether game is over for given color
+	bool gameIsOver(variant::Type variant) const;
+	/// Returns whether piece at given square is marked as promoted
+	bool hasPromoted(Square sq) const;
+	/// Returns whether given side has a bishop on dark squares
+	bool hasBishopOnDark(color::ID side) const;
+	/// Returns whether given side has a bishop on lite squares
+	bool hasBishopOnLite(color::ID side) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
-	unsigned checkState() const;
+	unsigned checkState(variant::Type variant) const;
 	/// Returns current board state after moving (check mate, stale mate, ...)
-	unsigned checkState(Move const& move) const;
-	/// Is piece sitting on given square moveable?
-	bool isMovable(Square s, move::Constraint flag = move::AllowIllegalMove) const;
+	unsigned checkState(Move const& move, variant::Type variant) const;
 	/// Return number of ply since a pawn move or capture
 	unsigned halfMoveClock() const;
 	/// Return the current ply number in the game
@@ -262,7 +324,7 @@ public:
 	castling::Rights castlingRights(color::ID color) const;
 	/// Return piece sitting at given square on the board
 	piece::ID pieceAt(Square s) const;
-	/// Return piece type sitting at given square on the board
+	/// Return piece type sitting at given square on the board (None if Null is given)
 	piece::Type piece(Square s) const;
 	/// Return square where en passant capture may occur, or null square
 	Square enPassantSquare() const;
@@ -276,7 +338,7 @@ public:
 	uint64_t pawnHash() const;
 	/// Returns the hash value w/o en passant hashing
 	uint64_t hashNoEP() const;
-	/// Return number of pieces of given color
+	/// Return number of pieces of given color (exluding pawns)
 	unsigned countPieces(color::ID color) const;
 	/// Return rook right from king (or null square)
 	Square shortCastlingRook(color::ID color) const;
@@ -286,6 +348,8 @@ public:
 	board::Position const& position() const;
 	/// Return exact board position (includes castling rights, en passant, side to move)
 	board::ExactPosition const& exactPosition() const;
+	/// Return exact board position for bughouse games
+	board::ExactZHPosition const& exactZHPosition() const;
 	/// Return unique board position(castling rights, en passant, side to move, ply number, e.p. fyle)
 	board::UniquePosition const& uniquePosition() const;
 	/// Return material count.
@@ -295,22 +359,30 @@ public:
 	/// Return square of king.
 	Square kingSquare(color::ID color) const;
 	/// Return whether the move is valid
-	bool checkMove(Move const& move, move::Constraint flag = move::AllowIllegalMove) const;
+	bool checkMove(Move const& move,
+						variant::Type variant,
+						move::Constraint flag = move::AllowIllegalMove) const;
+	/// Return the number of checks given for specified side.
+	unsigned checksGiven(color::ID color) const;
 	/// Returns the current board status.
-	board::Status status() const;
+	board::Status status(variant::Type variant) const;
 
 	// Query other formats
 
 	/// Return a FEN string based on current board position
-	mstl::string toFen(Format format = XFen) const;
+	mstl::string toFen(variant::Type variant, Format format = XFen) const;
 	/// Return a FEN string based on current board position
-	mstl::string& toFen(mstl::string& result, Format format = XFen) const;
+	mstl::string& toFen(mstl::string& result, variant::Type variant, Format format = XFen) const;
 	/// Return a position description based on current board position
 	mstl::string asString() const;
 	/// Prepare move for printing a SAN
-	Move& prepareForPrint(Move& move) const;
+	Move& prepareForPrint(Move& move, variant::Type variant) const;
 	/// Returns the IDN (chess 960 unique IDentification Number)
 	unsigned computeIdn() const;
+	/// Returns the material in hand for side to move.
+	Material holding() const;
+	/// Returns the material in hand for given color.
+	Material holding(color::ID color) const;
 
 	// Castling rights
 
@@ -334,6 +406,14 @@ public:
 	void removeCastlingRights(Square rook);
 	/// Fix bad castling rights (may happen in Scid or in PGN files)
 	void fixBadCastlingRights();
+	/// Mark piece at given position as promoted
+	void setPromoted(Square sq, variant::Type variant);
+	/// Setup the holding.
+	void setHolding(char const* pieces);
+	/// Setup castling rook for short castling from given fen
+	void setupShortCastlingRook(color::ID color, char const* fen);
+	/// Setup castling rook for short castling from given fen
+	void setupLongCastlingRook(color::ID color, char const* fen);
 
 	// Validation
 
@@ -363,9 +443,10 @@ private:
 
 	friend class Guess;
 
-	typedef material::Count Material;
+	typedef Byte (*ChangeSide)(Byte);
 
 	uint64_t king(color::ID color) const;
+	uint64_t kings(color::ID color) const;
 	uint64_t queens(color::ID color) const;
 	uint64_t rooks(color::ID color) const;
 	uint64_t bishops(color::ID color) const;
@@ -378,8 +459,6 @@ private:
 
 	sq::ID kingSq(color::ID side) const;
 
-	bool hasBishopOnDark(color::ID side) const;
-	bool hasBishopOnLite(color::ID side) const;
 	bool enPassantMoveExists(Byte color) const;
 	bool checkShuffleChessPosition() const;
 
@@ -389,6 +468,8 @@ private:
 	bool isAttackedBy(unsigned color, uint64_t square) const;
 	/// Return whether the move is legal; and sets move legal if it is legal
 	bool checkIfLegalMove(Move& move) const;
+	/// Return whether check cannot be blocked with a pawn
+	bool checkNotBlockableWithPawn() const;
 
 	uint64_t rankAttacks(Square square, uint64_t occupied) const;
 	uint64_t fyleAttacks(Square square, uint64_t occupied) const;
@@ -397,6 +478,8 @@ private:
 	uint64_t fyleAttacks(Square square) const;
 	uint64_t diagA1H8Attacks(Square square) const;
 	uint64_t diagH1A8Attacks(Square square) const;
+
+	unsigned countChecks() const;
 
 	/// Return all possible pawn moves from given square
 	uint64_t pawnMovesFrom(Square square) const;
@@ -417,19 +500,23 @@ private:
 	uint64_t attacks(unsigned color, Square square) const;
 
 	/// Remove impossible moves from given board to aid disambiguation
-	void removeIllegalTo(Move move, uint64_t& b) const;
+	void removeIllegalTo(Move move, uint64_t& b, variant::Type variant) const;
 	/// Remove impossible moves from given board to aid disambiguation
-	void removeIllegalFrom(Move move, uint64_t& b) const;
+	void removeIllegalFrom(Move move, uint64_t& b, variant::Type variant) const;
 	/// Return move with castling details, return empty move if no castle is possible
 	Move prepareCastle(Square from, Square to, move::Constraint flag) const;
 
-   void filterCheckMoves(Move move, uint64_t& movers) const;
-   void filterCheckMateMoves(Move move, uint64_t& movers) const;
+   void filterCheckMoves(Move move, uint64_t& movers, variant::Type variant) const;
+   void filterCheckmateMoves(Move move, uint64_t& movers, variant::Type variant) const;
 
 	/// Swap the side to move
 	void swapToMove();
 	/// Revoke all castling rights from the given color
 	void destroyCastle(color::ID color);
+	/// Restore castling rights after undo.
+	void restoreCastlingRights(uint8_t prevCastlingRights);
+	/// Restore half move clock and en passant after undo.
+	void restoreStates(Move const& m);
 
 	/// set move color
 	Move setMoveColor(Move move) const;
@@ -442,7 +529,10 @@ private:
 	void pawnProgressAdd(unsigned color, unsigned at);
 
 	// helpers
-	void generatePawnCapturingMoves(MoveList& result) const;
+	void generateNormalMoves(MoveList& result) const;
+	void generatePieceDropMoves(MoveList& result) const;
+	void generateNonCapturingMoves(variant::Type variant, MoveList& result) const;
+	void generatePawnCapturingMoves(variant::Type variant, MoveList& result) const;
 
 	void genCastleShort(MoveList& result, color::ID side) const;
 	void genCastleLong(MoveList& result, color::ID side) const;
@@ -464,11 +554,21 @@ private:
 	bool longCastlingWhiteIsPossible() const;
 	bool longCastlingBlackIsPossible() const;
 
-	Move* findMatchingMove(MoveList& list, unsigned state) const;
+	char const* parsePieceDrop(char const* s,
+										Move& move,
+										variant::Type variant,
+										piece::Type pieceType,
+										unsigned count,
+										move::Constraint flag) const;
+	Move prepareMove(Move& move, variant::Type variant, move::Constraint flag) const;
+	void filterMoves(MoveList& list, unsigned state, variant::Type variant) const;
+	char const* parseHolding(char const* s);
+	void hashHolding(Material white, Material black);
 
 	// hashing functions
 	void hashPiece(Square s, piece::ID piece);
 	void hashPiece(Square s, Square t, piece::ID piece);
+	void hashPromotedPiece(Square s, piece::ID piece, variant::Type variant);
 	void hashPawn(Square s, piece::ID piece);
 	void hashPawn(Square s, Square t, piece::ID piece);
 	void hashEnPassant();
@@ -477,29 +577,56 @@ private:
 	void hashCastlingQueenside(color::ID color);
 	void hashCastling(castling::Index right);
 	void hashCastling(color::ID color);
+	void hashChecksGiven(color::ID color, unsigned n);
+	void hashChecksGiven(unsigned white, unsigned black);
+	void hashHoldingAdd(piece::ID piece, Byte count);
+	void hashHoldingRemove(piece::ID piece, Byte count);
+	void hashHolding(piece::ID piece, Byte count);
 
 	// Additional board data
-	uint64_t	m_occupied;					// square is empty or holds a piece
-	uint64_t	m_occupiedL90;				// rotated counter clockwise 90 deg
-	uint64_t	m_occupiedL45;				// an odd transformation, to straighten out diagonals
-	uint64_t	m_occupiedR45;				// the opposite odd transformation, just as messy
+	uint64_t	m_occupied;						// square is empty or holds a piece
+	uint64_t	m_occupiedL90;					// rotated counter clockwise 90 deg
+	uint64_t	m_occupiedL45;					// an odd transformation, to straighten out diagonals
+	uint64_t	m_occupiedR45;					// the opposite odd transformation, just as messy
 
 	// Extra state data
-	Byte		m_piece[64];				// type of piece on this square
-	Byte		m_destroyCastle[64];		// inverted castle mask for each square
-	Byte		m_unambiguous[4];			// whether castling rook fyles are unambiguous
-	Square	m_ksq[2];					// square of the kings
-	Square	m_epSquareFen;				// square of a fictive ep capture
-	uint64_t	m_hash;						// hash value
-	uint64_t	m_pawnHash;					// pawn hash value
-	Material	m_matCount[2];				// material count (per side)
-	Square	m_castleRookAtStart[4];	// initial squares of the castling rooks
+	Byte			m_piece[64];				// type of piece on this square
+	Byte			m_destroyCastle[64];		// inverted castle mask for each square
+	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous
+	Square		m_ksq[2];					// square of the kings
+	Square		m_epSquareFen;				// square of a fictive ep capture
+	bool			m_capturePromoted;		// position after a pawn capture with promotion
+	uint64_t		m_hash;						// hash value
+	uint64_t		m_pawnHash;					// pawn hash value
+	Square		m_castleRookAtStart[4];	// initial squares of the castling rooks
+	Material		m_material[2];				// material count
+	unsigned		m_kingHasMoved[2];		// king has moved?
+
+	// IMPORTANT NOTE: (TODO)
+	// If the variant is three-check this data belongs to the exact position!
+	unsigned		m_checksGiven[2];			// number of checks given (per side)
 
 	// Class data
 	static Board m_emptyBoard;
 	static Board m_standardBoard;
 	static Board m_shuffleChessBoard;
-};
+	static Board m_littleGame;
+	static Board m_pawnsOn4thRank;
+	static Board m_pyramid;
+	static Board m_KNNvsKP;
+	static Board m_pawnsOnly;
+	static Board m_knightsOnly;
+	static Board m_bishopsOnly;
+	static Board m_rooksOnly;
+	static Board m_queensOnly;
+	static Board m_noQueens;
+	static Board m_wildFive;
+	static Board m_kbnk;
+	static Board m_kbbk;
+	static Board m_runaway;
+	static Board m_queenVsRooks;
+}
+__attribute__((packed));
 
 } // namespace db
 
@@ -507,10 +634,11 @@ namespace mstl {
 
 template <typename T> struct is_pod;
 
-template <> struct is_pod<db::Board> 						{ enum { value = 1 }; };
-template <> struct is_pod<db::board::Position>			{ enum { value = 1 }; };
-template <> struct is_pod<db::board::ExactPosition>	{ enum { value = 1 }; };
-template <> struct is_pod<db::board::UniquePosition>	{ enum { value = 1 }; };
+template <> struct is_pod<db::Board> 								{ enum { value = 1 }; };
+template <> struct is_pod<db::board::Position>					{ enum { value = 1 }; };
+template <> struct is_pod<db::board::ExactPosition>			{ enum { value = 1 }; };
+template <> struct is_pod<db::board::ExactZHPosition>	{ enum { value = 1 }; };
+template <> struct is_pod<db::board::UniquePosition>			{ enum { value = 1 }; };
 
 } // namespace mstl
 

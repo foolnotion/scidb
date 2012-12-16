@@ -36,6 +36,8 @@ class EngineList
 {
 public:
 
+	enum { MaxEngines = 8 };
+
 	bool isEmpty() const;
 
 	unsigned count() const;

@@ -29,6 +29,9 @@
 
 #include "u_base.h"
 
+#include "m_bitfield.h"
+#include "m_uint128_t.h"
+
 namespace mstl { class string; }
 
 namespace db {
@@ -50,77 +53,6 @@ namespace color
 	ID fromSide(char const* side);
 }
 
-namespace piece
-{
-	namespace value
-	{
-		enum
-		{
-			Queen		= 9,
-			Rook		= 5,
-			Bishop	= 3,
-			Knight	= 3,
-			Pawn		= 1,
-
-			Minor		= 3,
-		};
-	}
-
-	// coincides with Scid 3.x
-	enum Type
-	{
-		None,
-		King,		K = King,
-		Queen,	Q = Queen,
-		Rook,		R = Rook,
-		Bishop,	B = Bishop,
-		Knight,	N = Knight,
-		Pawn,		P = Pawn,
-	};
-
-	// coincides with Scid 3.x
-	enum ID
-	{
-		Empty			= 0,
-		WhiteKing	= King,					WK = WhiteKing,
-		WhiteQueen	= Queen,					WQ = WhiteQueen,
-		WhiteRook	= Rook,					WR = WhiteRook,
-		WhiteBishop	= Bishop,				WB = WhiteBishop,
-		WhiteKnight	= Knight,				WN = WhiteKnight,
-		WhitePawn	= Pawn,					WP = WhitePawn,
-		BlackKing	= King	| (1 << 3),	BK = BlackKing,
-		BlackQueen	= Queen	| (1 << 3),	BQ = BlackQueen,
-		BlackRook	= Rook	| (1 << 3),	BR = BlackRook,
-		BlackBishop	= Bishop	| (1 << 3),	BB = BlackBishop,
-		BlackKnight	= Knight	| (1 << 3),	BN = BlackKnight,
-		BlackPawn	= Pawn	| (1 << 3),	BP = BlackPawn,
-
-		Last = BlackPawn,
-	};
-
-	bool isWhite(ID piece);
-	bool isBlack(ID piece);
-	bool canPromoteTo(Type type);
-
-	Type type(ID piece);
-	color::ID color(ID piece);
-
-	ID piece(Type type, db::color::ID color);
-
-	/// Return ASCII character for given piece to be used in FEN.
-	char print(ID piece);
-	/// Return the ASCII character for a given piece type.
-	char print(Type type);
-
-	/// Return the numerical ASCII value for given piece type.
-	char printNumeric(Type type);
-
-	Type fromLetter(char piece);
-	ID pieceFromLetter(char piece);
-
-	namespace utf8 { mstl::string const& asString(Type type); }
-}
-
 namespace sq
 {
 	// coincides with Scid 3.x
@@ -134,8 +66,8 @@ namespace sq
 		a6, b6, c6, d6, e6, f6, g6, h6,
 		a7, b7, c7, d7, e7, f7, g7, h7,
 		a8, b8, c8, d8, e8, f8, g8, h8,
-		Null = 65,
-		Invalid = 66,
+		Null = 64,
+		Invalid = 65,
 	};
 
 	enum Fyle { FyleA, FyleB, FyleC, FyleD, FyleE, FyleF, FyleG, FyleH };
@@ -192,20 +124,27 @@ namespace material
 		{
 			struct
 			{
-				uint32_t pawn  :4;
-				uint32_t knight:4;
-				uint32_t bishop:4;
-				uint32_t rook  :4;
-				uint32_t queen :4;
-				uint32_t king  :4;
+				uint32_t pawn  :5;
+				uint32_t knight:5;
+				uint32_t bishop:5;
+				uint32_t rook  :5;
+				uint32_t queen :5;
+				uint32_t king  :5;
 			};
 
 			struct
 			{
-				uint32_t value:24;
-				uint32_t _rest: 8;
+				uint32_t value:30;
+				uint32_t _rest: 2;
 			};
 		};
+
+		unsigned minor() const;
+		unsigned major() const;
+		unsigned total() const;
+		unsigned pieces() const;
+
+		Count operator+(Count mat) const;
 	};
 
 	struct SigPart
@@ -230,12 +169,6 @@ namespace material
 
 			struct
 			{
-				uint16_t __skip_pawn_2_:8;
-				uint16_t piece:8;
-			};
-
-			struct
-			{
 				uint16_t butNotQueen:14;
 				uint16_t __skip_queen_1_:2;
 			};
@@ -253,11 +186,7 @@ namespace material
 		};
 	};
 
-	unsigned count(Signature sig);
-
-	unsigned count(SigPart sig);
 	unsigned minor(SigPart sig);
-	unsigned major(SigPart sig);
 
 	mstl::string& print(SigPart sig, mstl::string& result);
 	mstl::string& print(Signature signature, mstl::string& result);
@@ -309,9 +238,12 @@ namespace hp
 {
 	union Pawns
 	{
+		Pawns();
+
 		struct { unsigned char bytes[8]; };
 		uint64_t value;
-	};
+	}
+	__attribute__((packed));
 }
 
 namespace pawns
@@ -375,6 +307,7 @@ namespace result
 	ID opponent(ID result);
 	ID fromColor(color::ID color);
 	unsigned value(ID result);
+	color::ID color(ID result);
 }
 
 namespace castling
@@ -415,7 +348,7 @@ namespace castling
 
 	mstl::string& print(Rights rights, mstl::string& result);
 
-	void initialize();		// only a hack for corrupted systems like Deb ian Wheezy
+	void initialize();		// only a hack for corrupted systems like Debian Wheezy
 
 } // namespace castling
 
@@ -435,90 +368,119 @@ namespace tag
 {
 	enum ID
 	{
-//#define ORD(x) = x	// use this if the tags should be ordered alphabetically
-#define ORD(x)
 		// mandatory tags (seven tag roster)
-		Event				=  0,	///< Name of the tournament or match event
-		Site				=  1,	///< Location of the event
-		Date				=  2,	///< Starting date of the game
-		Round				=  3,	///< Playing round ordinal of the game
-		White				=  4,	///< Player of the White pieces
-		Black				=  5,	///< Player of the Black pieces
-		Result			=  6,	///< Result of the game
+		Event,				///< Name of the tournament or match event
+		Site,					///< Location of the event
+		Date,					///< Starting date of the game
+		Round,				///< Playing round ordinal of the game
+		White,				///< Player of the White pieces
+		Black,				///< Player of the Black pieces
+		Result,				///< Result of the game
 
 		// event related information
-		EventDate		ORD(29),	///< Starting date of the event
-		EventCountry	ORD(28),	///< Country of the event (.e.g. "GER")
-		EventType		ORD(31),	///< Type of the event (.e.g. "tourn")
-		EventRounds		ORD(30),	///< Number of rounds of the event
-		EventCategory	ORD(27),	///< Category of the event
+		EventDate,			///< Starting date of the event
+		EventCountry,		///< Country of the event (.e.g. "GER")
+		EventType,			///< Type of the event (.e.g. "tourn")
+		EventRounds,		///< Number of rounds of the event
+		EventCategory,		///< Category of the event
 
 		// opening information
-		Eco				ORD(26),
-		Opening			ORD(34),
-		Variation		ORD(46),
-		SubVariation	ORD(41),
+		Eco,
+		Opening,
+		Variation,
+		SubVariation,
 
 		// chess variants
-		Variant			ORD(45),
+		Variant,
 
 		// alternative starting positions
-		SetUp				ORD(38),	///< Denotes the "set-up" status of the game
-		Fen				ORD(32),	///< Position at the start of the game
-		Idn				ORD(36),	///< Unique position IDentification Number (chess 960 position number)
+		SetUp,			///< Denotes the "set-up" status of the game
+		Fen,				///< Position at the start of the game
+		Idn,				///< Unique position IDentification Number (chess 960 position number)
 
 		// game conclusion
-		Termination		ORD(42),	///< Describes the reason for the conclusion of the game
+		Termination,	///< Describes the reason for the conclusion of the game
 
 		// time information
-		TimeControl		ORD(43),	///< Describes the time control.
-		TimeMode			ORD(44),	///< Describes the time mode (normal, rapid, blitz, corr)
+		TimeControl,	///< Describes the time control.
+		TimeMode,		///< Describes the time mode (normal, rapid, blitz, corr)
 
 		// player related information
-		WhiteCountry	ORD(48),	BlackCountry	ORD( 9),
-		WhiteTitle		ORD(61),	BlackTitle		ORD(22),	///< Titles of the players
-		WhiteNA			ORD(55),	BlackNA			ORD(16),	///< E-mail or network addresses
-		WhiteType		ORD(62),	BlackType		ORD(23),	///< Player types ("human" or "program")
-		WhiteSex			ORD(58),	BlackSex			ORD(19),	///< Sex of the players ("m" or "f")
-		WhiteFideId		ORD(52),	BlackFideId		ORD(13),	///< Fide ID of the players
-		WhiteClock		ORD(47),	BlackClock		ORD( 8),	///< Time at end of game
+		WhiteCountry,	BlackCountry,
+		WhiteTitle,		BlackTitle,		///< Titles of the players
+		WhiteNA,			BlackNA,			///< E-mail or network addresses
+		WhiteType,		BlackType,		///< Player types ("human" or "program")
+		WhiteSex,		BlackSex,		///< Sex of the players ("m" or "f")
+		WhiteFideId,	BlackFideId,	///< Fide ID of the players
+		WhiteClock,		BlackClock,		///< Time at end of game
 
 		// rating types; should be ordered due to rating type order
-		WhiteElo			ORD(51),	///< FIDE Rating
-		WhiteRating		ORD(57),	///< CCRL Computer Rating
-		WhiteRapid		ORD(56),	///< English Chess Federation Rapid Rating
-		WhiteICCF		ORD(53),	///< International Correspondence Chess Federation
-		WhiteUSCF		ORD(63),	///< United States Chess Federation
-		WhiteDWZ			ORD(49),	///< Deutsche Wertungszahl
-		WhiteECF			ORD(50),	///< English Chess Federation
-		WhiteIPS			ORD(54),	///< Individual Player Strength (Chess 960 Rating)
+		WhiteElo,		///< FIDE Rating
+		WhiteRating,	///< CCRL Computer Rating
+		WhiteRapid,		///< English Chess Federation Rapid Rating
+		WhiteICCF,		///< International Correspondence Chess Federation
+		WhiteUSCF,		///< United States Chess Federation
+		WhiteDWZ,		///< Deutsche Wertungszahl
+		WhiteECF,		///< English Chess Federation
+		WhiteIPS,		///< Individual Player Strength (Chess 960 Rating)
 
-		BlackElo			ORD(12),	///< FIDE Rating
-		BlackRating		ORD(18),	///< CCRL Computer Rating
-		BlackRapid		ORD(17),	///< English Chess Federation Rapid Rating
-		BlackICCF		ORD(14),	///< International Correspondence Chess Federation
-		BlackUSCF		ORD(24),	///< United States Chess Federation
-		BlackDWZ			ORD(10),	///< Deutsche Wertungszahl
-		BlackECF			ORD(11),	///< English Chess Federation
-		BlackIPS			ORD(15),	///< Individual Player Strength (Chess 960 Rating)
+		BlackElo,		///< FIDE Rating
+		BlackRating,	///< CCRL Computer Rating
+		BlackRapid,		///< English Chess Federation Rapid Rating
+		BlackICCF,		///< International Correspondence Chess Federation
+		BlackUSCF,		///< United States Chess Federation
+		BlackDWZ,		///< Deutsche Wertungszahl
+		BlackECF,		///< English Chess Federation
+		BlackIPS,		///< Individual Player Strength (Chess 960 Rating)
 
 		// team related information
-		WhiteTeam			ORD(59),	BlackTeam			ORD(20),
-		WhiteTeamCountry	ORD(60),	BlackTeamCountry	ORD(21),
+		WhiteTeam,				BlackTeam,			///< ChessBase team information
+		WhiteTeamCountry,		BlackTeamCountry,	///< ChessBase team information
 
 		// miscellaneous
-		Annotator		ORD( 7),	///< Identifies the annotator or annotators of the game
-		Mode				ORD(33),	///< Playing mode of the game (e.g. "OTB" over the board)
-		Source			ORD(39),	///< The provider of the game annotation (e.g. "ChessBase")
-		SourceDate		ORD(40),	///< The date when the game is provided
-		PlyCount			ORD(35),	///< The number of ply (moves) in the game
-		Remark			ORD(37),	///< Any comment to this game
-		Board				ORD(25),	///< The board number
+		Annotator,				///< Identifies the annotator or annotators of the game
+		Mode,						///< Playing mode of the game (e.g. "OTB" over the board)
+		Source,					///< The provider of the game annotation (e.g. "ChessBase")
+		SourceDate,				///< The date when the game is provided
+		PlyCount,				///< The number of ply (moves) in the game
+		Remark,					///< Any comment to this game
+		Board,					///< The board number
+		FICSGamesDBGameNo,	///< FICS game identifier
+		BughouseDBNumber,		///< bughousedb.com game identifier
 
-		// # of tags
-		ExtraTag			ORD(64),
-#undef ORD
+		// BPGN (Bughouse)
+		WhiteA,					WhiteB,
+		WhiteACountry,			WhiteBCountry,
+		WhiteATitle,			WhiteBTitle,
+		WhiteANA,				WhiteBNA,
+		WhiteAType,				WhiteBType,
+		WhiteASex,				WhiteBSex,
+		WhiteAFideId,			WhiteBFideId,
+		WhiteAClock,			WhiteBClock,
+		WhiteAElo,				WhiteBElo,
+		WhiteARating,			WhiteBRating,
+		WhiteATeam,				WhiteBTeam,
+		WhiteATeamCountry,	WhiteBTeamCountry,
+
+		BlackA,					BlackB,
+		BlackACountry,			BlackBCountry,
+		BlackATitle,			BlackBTitle,
+		BlackANA,				BlackBNA,
+		BlackAType,				BlackBType,
+		BlackASex,				BlackBSex,
+		BlackAFideId,			BlackBFideId,
+		BlackAClock,			BlackBClock,
+		BlackAElo,				BlackBElo,
+		BlackARating,			BlackBRating,
+		BlackATeam,				BlackBTeam,
+		BlackATeamCountry,	BlackBTeamCountry,
+
+		ExtraTag, // IMPORTANT NOTE: must have value <= TagSetSize
+		BughouseTag = WhiteA,
 	};
+
+	enum { TagSetSize = 128 };
+	typedef mstl::bitfield<uint128_t> TagSet;
 
 	bool isMandatory(ID tag);
 	bool isRatingTag(ID tag);
@@ -529,7 +491,7 @@ namespace tag
 	ID fromName(mstl::string const& tag);
 	ID fromName(char const* name, unsigned length);
 
-	void initialize();		// only a hack for corrupted systems like Deb ian Wheezy
+	void initialize();		// only a hack for corrupted systems like Debian Wheezy
 	bool initializeIsOk();	// only a hack for g++-4.7
 
 } // namespace tag
@@ -604,7 +566,7 @@ namespace title
 
 	title::ID best(unsigned titles);
 	bool contains(unsigned titles, title::ID title);
-	bool containsFemaleTtile(unsigned titles);
+	bool containsFemaleTitle(unsigned titles);
 }
 
 namespace sex
@@ -664,11 +626,30 @@ namespace termination
 		Unplayed,			///< Game not played but one party gets the point
 		Abandoned,			///< Abandoned game
 		Adjudication,		///< Result due to third party adjudication process
-		Death,				///< Game concluded due to death of a player
+		Disconnection,		///< Game terminated due to disconnection
 		Emergency,			///< Game concluded due to unforeseen circumstances
 		RulesInfraction,	///< Administrative forfeit due to losing player's failure
 		TimeForfeit,		///< Loss due to losing player's failure to meet time control requirements
+		TimeForfeitBoth,	///< Game drawn because both players ran out of time
 		Unterminated,		///< Game not terminated
+	};
+
+	enum State
+	{
+		None,
+		Checkmate,
+		Stalemate,
+		GotThreeChecks,
+		LostAllMaterial,
+		HavingLessMaterial,
+		DrawnByStalemate,
+		BishopsOfOppositeColor,
+		ThreefoldRepetition,
+		FiftyMoveRuleExceeded,
+		NeitherPlayerHasMatingMaterial,
+		NobodyCanWin,
+		WhiteCannotWin,
+		BlackCannotWin,
 	};
 
 	mstl::string const& toString(Reason reason);
@@ -728,65 +709,194 @@ namespace event
 
 namespace variant
 {
-	enum
+	enum Index
 	{
-		StandardIdn		= 518,
-		TransposedIdn	= 534,
-		BughouseIdn		= 3841,
-		CrazyhouseIdn	= 3842,
-		LosersIdn		= 3843,
-		SuicideIdn		= 3844,
-		GiveawayIdn		= 3845,
+		Index_Normal,
+		Index_Bughouse,
+		Index_Crazyhouse,
+		Index_ThreeCheck,
+		Index_Antichess,
+		Index_Losers,
+
+		NumberOfVariants,
 	};
 
 	enum Type
 	{
-		Unknown,
-		Standard,
-		Chess960,
-		Shuffle,
-		Bughouse,
-		Crazyhouse,
-		Losers,
-		Suicide,
-		Giveaway,
-		Other,
+		Undetermined	= 0,
+		Normal			= 1 << Index_Normal,
+		Bughouse			= 1 << Index_Bughouse,
+		Crazyhouse		= 1 << Index_Crazyhouse,
+		ThreeCheck		= 1 << Index_ThreeCheck,
+		Antichess		= 1 << Index_Antichess,
+		Losers			= 1 << Index_Losers,
+
+		// specialised anti-chess variants
+		Suicide			= Antichess | (1 << NumberOfVariants),
+		Giveaway			= Antichess | (1 << (NumberOfVariants + 1)),
 	};
 
-	bool isStandardChess(unsigned idn);
-	bool isChess960(unsigned idn);
-	bool isShuffleChess(unsigned idn);
-	bool isBughouseChess(unsigned idn);
-	bool isCrazyhouseChess(unsigned idn);
-	bool isLosersChess(unsigned idn);
-	bool isSuicideChess(unsigned idn);
-	bool isGiveawayChess(unsigned idn);
+	enum Idn
+	{
+		None					= 0,
+		Standard				= 518,
+		Transposed			= 534,
+		NoCastling			= 3398,	// Antichess standard start position
 
-	Type fromIdn(unsigned idn);
+		LittleGame			= 4000,	// FICS wild/7, pawns/little-game, misc/little-game
+		PawnsOn4thRank		= 4001,	// FICS wild/8
+		KNNvsKP				= 4002,	// FIVS wild/19
+		Pyramid				= 4003,	// FICS misc/pyramid
+		PawnsOnly			= 4004,	// FICS pawns/pawns-only
+		KnightsOnly			= 4005,	// FICS misc/knights-only
+		BishopsOnly			= 4006,	// FICS misc/bishops-only
+		RooksOnly			= 4007,	// FICS misc/rooks-only
+		QueensOnly			= 4008,	// FICS misc/queens-only
+		NoQueens				= 4009,	// FICS misc/no-queens
+		WildFive				= 4010,	// FICS pawns/wild-five
+		KBNK					= 4011,	// FICS endings/kbnk
+		KBBK					= 4012,	// FICS endings/kbbk
+		Runaway				= 4013,	// FICS misc/runaway
+		QueenVsRooks		= 4014,	// FICS misc/queen-rooks
+
+		// NOTE: maximal number is 4095
+	};
+
+	bool isAntichess(Type variant);
+	bool isAntichessExceptLosers(Type variant);
+	bool isZhouse(Type variant);
+	bool isMainVariant(Type variant);
+
+	bool isStandardChess(uint16_t idn, variant::Type variant);
+	bool isChess960(uint16_t idn);
+	bool isShuffleChess(uint16_t idn);
+
+	Type fromIndex(unsigned index);
+	Index toIndex(Type variant);
+
+	Type fromString(char const* variant);
+	Type toMainVariant(Type variant);
+
+	mstl::string const& identifier(uint16_t idn);
+	mstl::string const& identifier(Type type);
+	mstl::string const& ficsIdentifier(uint16_t idn);
+
+	mstl::string const& fen(Idn idn);
+	mstl::string fen(uint16_t idn);
+}
+
+namespace piece
+{
+	namespace value
+	{
+		enum
+		{
+			Queen		= 9,
+			Rook		= 5,
+			Bishop	= 3,
+			Knight	= 3,
+			Pawn		= 1,
+
+			Minor		= 3,
+		};
+	}
+
+	// coincides with Scid 3.x
+	enum Type
+	{
+		None,
+		King,		K = King,
+		Queen,	Q = Queen,
+		Rook,		R = Rook,
+		Bishop,	B = Bishop,
+		Knight,	N = Knight,
+		Pawn,		P = Pawn,
+	};
+
+	// coincides with Scid 3.x
+	enum ID
+	{
+		Empty			= 0,
+		WhiteKing	= King,					WK = WhiteKing,
+		WhiteQueen	= Queen,					WQ = WhiteQueen,
+		WhiteRook	= Rook,					WR = WhiteRook,
+		WhiteBishop	= Bishop,				WB = WhiteBishop,
+		WhiteKnight	= Knight,				WN = WhiteKnight,
+		WhitePawn	= Pawn,					WP = WhitePawn,
+		BlackKing	= King	| (1 << 3),	BK = BlackKing,
+		BlackQueen	= Queen	| (1 << 3),	BQ = BlackQueen,
+		BlackRook	= Rook	| (1 << 3),	BR = BlackRook,
+		BlackBishop	= Bishop	| (1 << 3),	BB = BlackBishop,
+		BlackKnight	= Knight	| (1 << 3),	BN = BlackKnight,
+		BlackPawn	= Pawn	| (1 << 3),	BP = BlackPawn,
+
+		Last = BlackPawn,
+	};
+
+	bool isWhite(ID piece);
+	bool isBlack(ID piece);
+	bool canPromoteTo(Type type, variant::Type variant);
+
+	Type type(ID piece);
+	color::ID color(ID piece);
+
+	ID piece(Type type, db::color::ID color);
+
+	/// Return ASCII character for given piece to be used in FEN.
+	char print(ID piece);
+	/// Return the ASCII character for a given piece type.
+	char print(Type type);
+
+	/// Return the numerical ASCII value for given piece type.
+	char printNumeric(Type type);
+
+	Type fromLetter(char piece);
+	ID pieceFromLetter(char piece);
+
+	namespace utf8 { mstl::string const& asString(Type type); }
 }
 
 namespace chess960
 {
-	unsigned twin(unsigned idn);
-	unsigned lookup(mstl::string const& position);
+	uint16_t twin(uint16_t idn);
+	uint16_t lookup(mstl::string const& position);
 
-	mstl::string fen(unsigned idn);
-	mstl::string const& position(unsigned idn);
+	mstl::string fen(uint16_t idn);
+	mstl::string const& position(uint16_t idn);
 	mstl::string const& identifier();
 
-	namespace utf8 { mstl::string& position(unsigned idn, mstl::string& result); }
+	namespace utf8 { mstl::string& position(uint16_t idn, mstl::string& result); }
 }
 
 namespace shuffle
 {
-	unsigned twin(unsigned idn);
-	unsigned lookup(mstl::string const& position);
+	uint16_t twin(uint16_t idn);
+	uint16_t lookup(mstl::string const& position);
 
-	mstl::string fen(unsigned idn);
-	mstl::string position(unsigned idn);
+	mstl::string fen(uint16_t idn);
+	mstl::string position(uint16_t idn);
 	mstl::string const& identifier();
 
-	namespace utf8 { mstl::string& position(unsigned idn, mstl::string& result); }
+	namespace utf8 { mstl::string& position(uint16_t idn, mstl::string& result); }
+}
+
+namespace storage
+{
+	enum Type
+	{
+		MemoryOnly,
+		OnDisk,
+		Temporary,
+	};
+}
+
+namespace permission
+{
+	enum Mode
+	{
+		ReadWrite,
+		ReadOnly,
+	};
 }
 
 namespace mark
@@ -1124,8 +1234,10 @@ namespace board
 	enum Status
 	{
 		None,
-		Mate,
+		Checkmate,
 		Stalemate,
+		ThreeChecks,
+		Losing,
 	};
 
 	mstl::string toString(Status status);
@@ -1184,8 +1296,10 @@ namespace type
 		Antichess,					///< Antichess (and other variants)
 		PlayerCollectionFemale,	///< Player collection (female)
 		PGNFile,						///< PGN file
+		ThreeCheck,					///< Three-check Chess
+		Crazyhouse,					///< Crazyhouse Chess
 
-		LAST = PGNFile,
+		LAST = Crazyhouse,
 	};
 }
 

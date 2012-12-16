@@ -48,6 +48,7 @@ set TransparentBar					"Transparent bar"
 set NoGamesFound						"No games found"
 set NoGamesAvailable					"No games available"
 set Searching							"Searching"
+set VariantsNotYetSupported		"Chess variants not yet supported."
 
 set FromWhitesPerspective			"From whites perspective"
 set FromBlacksPerspective			"From blacks perspective"
@@ -131,7 +132,7 @@ array set Vars {
 array set Bars {}
 
 
-proc build {parent width height} {
+proc build {parent width height gameTable} {
 	variable ::ratingbox::ratings
 	variable Columns
 	variable Options
@@ -143,6 +144,8 @@ proc build {parent width height} {
 
 	set info [tk::frame $mw.info -background $Options(-background) -borderwidth 0 -takefocus 0]
 	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Options(-background)]
+
+	bind $mesg <<LanguageChanged>> [namespace code SetMessage]
 
 	$mw add $info
 	$mw add $mesg
@@ -427,6 +430,7 @@ proc build {parent width height} {
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
 
 	set Vars(progress) $progress.bar
+	set Vars(gameTable) $gameTable
 	set Vars(search) $search
 	set Vars(searching) 0
 	set Vars(data) {}
@@ -438,18 +442,24 @@ proc build {parent width height} {
 	set Vars(hidden) 1
 	set Vars(button) 0
 	set Vars(name) {}
-	set Vars(current) {}
+	set Vars(current:base) ""
+	set Vars(current:variant) ""
 	set Vars(list) {}
 	set Vars(stm) $stm
 	set Vars(side) {}
+### VARIANTS ####################################
+set Vars(force) 0
+set Vars(switcher) $switcher
+#################################################
 
 	set Vars(subscribe) [list tree [namespace current]::Update [namespace current]::Close $tb]
 	::scidb::db::subscribe {*}$Vars(subscribe)
 	::scidb::tree::init [namespace current]::Tick $tb
 	::scidb::tree::switch [expr {!$Options(base:lock)}]
 
-	Message $mc::NoGamesAvailable
-	SetSwitcher [::scidb::tree::get]
+	bind $mw <Configure> [namespace code PlaceMessage]
+	ShowMessage NoGamesAvailable
+	SetSwitcher [::scidb::tree::get] [::scidb::app::variant]
 }
 
 
@@ -478,16 +488,33 @@ proc update {position} {
 	variable Vars
 	variable Options
 
-	if {$Options(search:automatic) && ![::scidb::tree::isUpToDate?] && [llength [::scidb::tree::get]]} {
-		set n [::scidb::db::count games [::scidb::tree::get]]
+	if {	$Options(search:automatic)
+		&& ![::scidb::tree::isUpToDate?]
+		&& [llength [::scidb::tree::get]]} {
+
+	set variant [::scidb::game::query $position mainvariant?]
+### VARIANTS ####################################
+if {$variant eq "Normal"} {
+::toolbar::childconfigure $Vars(switcher) -state readonly
+#################################################
+		set n [::scidb::db::count games [::scidb::tree::get] $variant]
 		if {$n == 0} {
-			Message $mc::NoGamesAvailable
+			ShowMessage NoGamesAvailable
 		} else {
 			after cancel $Vars(after)
 			set Vars(after) [after 250 [namespace code [list DoSearch $Vars(table)]]]
 		}
-		Enabled false
+### VARIANTS ####################################
+} else {
+	ShowMessage VariantsNotYetSupported
+	games::clear [winfo parent [winfo parent $Vars(mw)]].games
+	set Vars(force) 1
+	::toolbar::childconfigure $Vars(switcher) -state disabled
+}
+#################################################
 	}
+
+	Enabled false
 }
 
 
@@ -532,7 +559,7 @@ proc Destroy {tb} {
 }
 
 
-proc View {pane base} {
+proc View {pane base variant} {
 	set view [::scidb::tree::view]
 	if {$view == -1} { return 0 }
 	return $view
@@ -549,20 +576,34 @@ proc ConfigSearchButton {table mode} {
 }
 
 
-proc Update {table base} {
+proc Update {table base variant} {
 	variable Vars
 	variable Options
 
+### VARIANTS ####################################
+if {[::scidb::game::query variant?] eq "Normal"} {
+::toolbar::childconfigure $Vars(switcher) -state readonly
+#################################################
 	if {[string length $base]} {
-		if {$base ne $Vars(current)} { SetSwitcher $base }
+		if {$base ne $Vars(current:base) || $variant ne $Vars(current:variant)} {
+			SetSwitcher $base $variant
+		}
 
 		if {$Options(search:automatic)} {
 			after cancel $Vars(after)
 			set Vars(after) [after 250 [namespace code [list DoSearch $table]]]
 		}
 	} else {
-		Message $mc::NoGamesAvailable
+		ShowMessage NoGamesAvailable
 	}
+### VARIANTS ####################################
+} else {
+ShowMessage VariantsNotYetSupported
+games::clear [winfo parent [winfo parent $Vars(mw)]].games
+set Vars(force) 1
+::toolbar::childconfigure $Vars(switcher) -state disabled
+}
+#################################################
 
 	Enabled false
 }
@@ -573,6 +614,10 @@ proc DoSearch {table} {
 	variable Options
 	variable Defaults
 
+### VARIANTS ####################################
+if {[::scidb::game::query variant?] ne "Normal"} { return }
+#################################################
+
 	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode)]} {
 		if {$Vars(searching)} {
 			$Vars(progress) configure -background $Defaults(progress:finished)
@@ -581,7 +626,7 @@ proc DoSearch {table} {
 		}
 		SearchResultAvailable $table
 	} else {
-		if {[llength $Vars(data)] == 0} { Message "$mc::Searching..." }
+		if {[llength $Vars(data)] == 0} { ShowMessage Searching }
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
 		$Vars(progress) configure -background $Defaults(progress:color)
@@ -593,8 +638,12 @@ proc DoSearch {table} {
 proc StartSearch {table} {
 	variable Vars
 
+### VARIANTS ####################################
+if {[::scidb::game::query variant?] ne "Normal"} { return }
+#################################################
+
 	if {[llength [::scidb::tree::get]] == 0} {
-		return [Message $mc::NoGamesAvailable]
+		return [ShowMessage NoGamesAvailable]
 	}
 
 	if {$Vars(searching)} {
@@ -604,9 +653,10 @@ proc StartSearch {table} {
 		ConfigSearchButton $table Start
 		# show "interrupted by user"
 	} else {
-		set n [::scidb::db::count games [::scidb::tree::get]]
+		set variant [::scidb::game::query mainvariant?]
+		set n [::scidb::db::count games [::scidb::tree::get] $variant]
 		if {$n == 0} {
-			Message $mc::NoGamesAvailable
+			ShowMessage NoGamesAvailable
 		} else {
 			DoSearch $table
 		}
@@ -614,15 +664,11 @@ proc StartSearch {table} {
 }
 
 
-proc Close {table base} {
+proc Close {table base variant} {
 	variable Vars
 
-	if {$base eq [::scidb::tree::get]} {
-		set Vars(data) {}
-		::table::clear $table
-		::table::setHeight $table 0
-		# TODO: clear tree game list
-	}
+	if {$base eq [::scidb::tree::get] && $variant eq [::scidb::app::variant]} {
+		return [ShowMessage NoGamesAvailable]	}
 }
 
 
@@ -665,7 +711,7 @@ proc AutomaticSearch {table} {
 	variable Vars
 
 	if {$Options(search:automatic)} {
-		Update $table [::scidb::tree::get]
+		Update $table [::scidb::tree::get] [::scidb::app::variant]
 	}
 }
 
@@ -822,7 +868,7 @@ proc RefreshHeader {table} {
 
 
 proc RefreshRatings {table} {
-	rEfreshHeader table
+	RefreshHeader table
 	FetchResult $table true
 	RefreshRatingLabel
 }
@@ -852,13 +898,18 @@ proc RefreshRatingLabel {} {
 
 proc SearchResultAvailable {table} {
 	FetchResult $table
-	# [namespace parent]::vars::update
+#	[namespace parent]::vars::update
 }
 
 
 proc FetchResult {table {force false}} {
 	variable Options
 	variable Vars
+
+### VARIANTS ####################################
+if {[::scidb::game::query variant?] ne "Normal"} { return }
+if {$Vars(force)} { set force true }
+#################################################
 
 	set options {}
 	if {[llength $Options(sort:column)]} {
@@ -869,27 +920,34 @@ proc FetchResult {table {force false}} {
 	if {$force || $state ne "unchanged"} {
 		set Vars(data) [::scidb::tree::fetch]
 		set nrows [llength $Vars(data)]
-		if {$nrows == 2} { set nrows 1 } elseif {$nrows} { incr nrows }
 
 		if {$nrows == 0} {
-			set n [::scidb::db::count games [::scidb::tree::get]]
-			if {$n == 0} { set msg $mc::NoGamesAvailable } else { set msg $mc::NoGamesFound }
-			Message $msg
+			set variant [::scidb::game::query mainvariant?]
+			set n [::scidb::db::count games [::scidb::tree::get] $variant]
+			if {$n == 0} { set msg NoGamesAvailable } else { set msg NoGamesFound }
+			ShowMessage $msg
 		} else {
-			$Vars(mw) raise $Vars(info)
+			if {$nrows == 2} { set nrows 1 } elseif {$nrows} { incr nrows }
 			set active [::table::active $table]
 
 			::table::clear $table
 			::table::setHeight $table 0
-
 			::table::setHeight $table $nrows [namespace current]::SetItemStyle
 			FillTable $table
+			$Vars(mw) raise $Vars(info)
 
 			if {0 <= $active && $active < max(1, $nrows - 1)} {
 				::table::activate $table $active true
 			}
 		}
 	}
+
+### VARIANTS ####################################
+if {$Vars(force)} {
+	games::UpdateTable [winfo parent [winfo parent $Vars(mw)]].games.treeGames $Vars(current:base) Normal
+	set Vars(force) 0
+}
+#################################################
 
 	set Vars(activated) 0
 	if {[llength $Vars(data)]} { Enabled true }
@@ -915,10 +973,29 @@ proc SetItemStyle {table item row} {
 }
 
 
-proc Message {msg} {
+proc PlaceMessage {} {
 	variable Vars
 
-	$Vars(mesg) configure -text $msg
+	set width [expr {[winfo width $Vars(mw)] - 50}]
+	$Vars(mesg) configure -wraplength $width
+}
+
+
+proc SetMessage {} {
+	variable Vars
+
+	set txt [set mc::$Vars(message)]
+	if {$Vars(message) eq "Searching"} { append txt "..." }
+	$Vars(mesg) configure -text $txt
+	PlaceMessage
+}
+
+
+proc ShowMessage {msg} {
+	variable Vars
+
+	set Vars(message) $msg
+	SetMessage
 	$Vars(mw) raise $Vars(mesg)
 }
 
@@ -1229,10 +1306,11 @@ proc LoadFirstGame {table row move} {
 	set index [::scidb::tree::gameIndex $row]
 	set fen [::scidb::tree::position $move]
 	set base [::scidb::tree::get]
+	set variant [::scidb::app::variant]
 	set view [::scidb::tree::view]
 
-	set position [::game::new $table $base -1 $index $fen]
-	[namespace parent]::board::bindGameControls $position $base $view $index
+	set position [::game::new $table -base $base -variant $variant -view -1 -number $index -fen $fen]
+	[namespace parent]::board::bindGameControls $position $base $variant $view $index
 }
 
 
@@ -1279,6 +1357,13 @@ proc FillSwitcher {w} {
 
 	set list {}
 	foreach base [::scidb::tree::list] { lappend list [list [::util::databaseName $base] $base] }
+### VARIANTS ####################################
+set l {}
+foreach entry $list {
+	if {"Normal" in [::scidb::db::get variants [lindex $entry 1]]} { lappend l $entry }
+}
+set list $l
+#################################################
 	set list [lsort -dictionary -index 0 $list]
 
 	foreach base $list {
@@ -1290,11 +1375,12 @@ proc FillSwitcher {w} {
 }
 
 
-proc SetSwitcher {base} {
+proc SetSwitcher {base variant} {
 	variable ::scidb::clipbaseName
 	variable Vars
 
-	set Vars(current) $base
+	set Vars(current:base) $base
+	set Vars(current:variant) $variant
 	set name [::util::databaseName $base]
 	if {$name eq $clipbaseName} { set name $::util::clipbaseName }
 	set Vars(name) $name
@@ -1302,7 +1388,7 @@ proc SetSwitcher {base} {
 
 
 proc LanguageChanged {} {
-	SetSwitcher [::scidb::tree::get]
+	SetSwitcher [::scidb::tree::get] [::scidb::app::variant]
 }
 
 
@@ -1382,10 +1468,10 @@ proc PopupMenu {table x y} {
 
 	set list {}
 	foreach base [::scidb::tree::list] {
-		if {$base eq $Vars(current)} { set _Current $base }
+		if {$base eq $Vars(current:base)} { set _Current $base }
 		lappend list [list [::util::databaseName $base] $base]
 	}
-	if {$Vars(current) eq $clipbaseName} {
+	if {$Vars(current:base) eq $clipbaseName} {
 		set _Current $clipbaseName
 	}
 

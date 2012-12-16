@@ -399,6 +399,7 @@ Node::Node(Eco eco, Position const& position, Line const& line)
 	:m_eco(eco)
 	,m_length(0)
 	,m_line(m_linebuf)
+	,m_name(0)
 	,m_isStoredLineKey(false)
 	,m_done(false)
 	,m_position(position)
@@ -578,12 +579,12 @@ dumpAscii(	Board& board,
 		mstl::string s;
 
 		board.prepareUndo(move);
-		board.prepareForPrint(move);
-		board.doMove(move);
+		board.prepareForPrint(move, variant::Normal);
+		board.doMove(move, variant::Normal);
 		for (unsigned k = 0; k < level; ++k) printf("| ");
 		printf("%s: ", move.printSan(s).c_str());
 		dumpAscii(board, done, i->node, level + 1, i->transposition, ply + 1);
-		board.undoMove(move);
+		board.undoMove(move, variant::Normal);
 	}
 }
 
@@ -643,7 +644,7 @@ dumpBinary(	mstl::ostream& strm,
 		Move move(board.makeMove(m.from(), m.to()));
 
 		board.prepareUndo(move);
-		board.doMove(move);
+		board.doMove(move, variant::Normal);
 
 		uint64_t hash = board.hashNoEP();
 		Lookup::const_iterator n = lookup.find(hash);
@@ -683,7 +684,7 @@ dumpBinary(	mstl::ostream& strm,
 		if (!i->transposition)
 			dumpBinary(strm, board, info, done, i->node);
 
-		board.undoMove(move);
+		board.undoMove(move, variant::Normal);
 	}
 }
 
@@ -813,7 +814,7 @@ resolveNames(Node* node, Name const* name, Eco eco)
 void
 prepare(mstl::bitset& done, Node* node, unsigned ply)
 {
-	if (node->name().size() == 0)
+	if (node->nameRef() == 0)
 		M_RAISE("%s not initialized\n", node->eco().asString().c_str());
 
 	M_ASSERT(!node->name(0).empty());
@@ -939,7 +940,7 @@ load(mstl::istream& strm)
 
 		while ((s = ::nextWord(s + 1)) && ::isalpha(*s))
 		{
-			Move move = board.parseMove(s);
+			Move move = board.parseMove(s, variant::Normal);
 
 			if (!move.isLegal())
 			{
@@ -947,7 +948,7 @@ load(mstl::istream& strm)
 				M_RAISE("illegal move '%s' in ECO file (line %u)", s, lineNo);
 			}
 
-			board.doMove(move);
+			board.doMove(move, variant::Normal);
 			moves.append(move);
 		}
 
@@ -965,9 +966,9 @@ load(mstl::istream& strm)
 		for (unsigned i = 0; i < moves.size(); ++i)
 		{
 			M_ASSERT(line.length < Max_Move_Length);
-			linebuf[line.length++] = moves[i].index();
 
-			board.doMove(moves[i]);
+			linebuf[line.length++] = moves[i].index();
+			board.doMove(moves[i], variant::Normal);
 
 			uint64_t hash = board.hashNoEP();
 
@@ -1008,7 +1009,7 @@ load(mstl::istream& strm)
 			if (!s)
 				throwCorrupted(lineNo);
 
-			Move move = board.parseMove(s);
+			Move move = board.parseMove(s, variant::Normal);
 
 			if (!move.isLegal())
 			{
@@ -1017,7 +1018,7 @@ load(mstl::istream& strm)
 			}
 
 			board.prepareUndo(move);
-			board.doMove(move);
+			board.doMove(move, variant::Normal);
 
 			if (first)
 			{
@@ -1048,7 +1049,7 @@ load(mstl::istream& strm)
 				}
 			}
 
-			board.undoMove(move);
+			board.undoMove(move, variant::Normal);
 		}
 
 		if (node->successors().size() > maxSuccessors)

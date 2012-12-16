@@ -34,6 +34,7 @@ inline bool Consumer::commentOthFlag() const							{ return m_commentOthFlag; }
 inline bool Consumer::allowExtraTags() const							{ return m_allowExtraTags; }
 
 inline Board& Consumer::getBoard()										{ return m_stack.top().board; }
+inline variant::Type Consumer::getVariant() const					{ return m_variant; }
 inline Board const& Consumer::board() const							{ return m_stack.top().board; }
 inline Board const& Consumer::startBoard() const					{ return m_stack.bottom().board; }
 inline unsigned Consumer::variationLevel() const					{ return m_stack.size() - 2; }
@@ -55,11 +56,21 @@ inline void Consumer::setFlags(uint32_t flags)						{ m_flags = flags; }
 inline void Consumer::setConsumer(Consumer* consumer)				{ m_consumer = consumer; }
 inline void Consumer::addMoveInfo(MoveInfo const& info)			{ m_moveInfoSet.add(info); }
 inline void Consumer::startMoveSection()								{ beginMoveSection(); }
+inline void Consumer::setProducer(Producer* producer)				{ m_producer = producer; }
+inline void Consumer::useVariant(variant::Type variant)			{ m_useVariant = variant; }
 
 inline void Consumer::incrementCommentCount()						{ ++m_commentCount; }
 inline void Consumer::incrementMoveInfoCount()						{ ++m_moveInfoCount; }
 inline void Consumer::incrementMarkCount()							{ ++m_markCount; }
 inline void Consumer::incrementAnnotationCount()					{ ++m_annotationCount; }
+
+
+inline
+void
+Consumer::setupVariant(variant::Type variant)
+{
+	m_mainVariant = m_variant = m_useVariant = variant;
+}
 
 
 inline

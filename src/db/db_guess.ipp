@@ -39,7 +39,48 @@ inline Guess::Score operator*(int n, Guess::Score const& score) { return score *
 inline Guess::Score operator+(int n, Guess::Score const& score) { return score + n; }
 inline Guess::Score operator-(int n, Guess::Score const& score) { return score - n; }
 
+
 inline color::ID Guess::Root::sideToMove() const { return color::ID(m_stm); }
+
+
+inline
+Guess::Score&
+Guess::Score::operator+=(int score)
+{
+	middleGame += score;
+	endGame += score;
+	return *this;
+}
+
+
+inline
+Guess::Score&
+Guess::Score::operator-=(int score)
+{
+	middleGame -= score;
+	endGame -= score;
+	return *this;
+}
+
+
+inline
+Guess::Score&
+Guess::Score::operator+=(Score const& score)
+{
+	middleGame += score.middleGame;
+	endGame += score.endGame;
+	return *this;
+}
+
+
+inline
+Guess::Score&
+Guess::Score::operator-=(Score const& score)
+{
+	middleGame -= score.middleGame;
+	endGame -= score.endGame;
+	return *this;
+}
 
 
 inline
@@ -48,6 +89,10 @@ Guess::Score::Score(int middleGameScore, int endGameScore)
 	,endGame(endGameScore)
 {
 }
+
+
+inline unsigned db::Guess::minor(Material mat) { return mat.knight + mat.bishop; }
+inline unsigned db::Guess::major(Material mat) { return mat.queen + mat.rook; }
 
 
 inline

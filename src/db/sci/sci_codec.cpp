@@ -30,7 +30,10 @@
 #include "sci_consumer.h"
 #include "sci_common.h"
 
-#include "sci_v91_codec.h"
+#ifndef CODEBLOCKS
+# include "sci_v91_codec.h"
+# include "sci_v92_codec.h"
+#endif
 
 #include "db_game_info.h"
 #include "db_consumer.h"
@@ -76,8 +79,8 @@ namespace
 				//----------------------------- 64 bit
 				uint64_t whitePlayer			:24;
 				uint64_t blackPlayer			:24;
-				uint64_t plyCount				:12;
-				uint64_t termination			: 4;
+				uint64_t plyCount				:11;
+				uint32_t dateDay				: 5;
 				//----------------------------- 64 bit
 				uint32_t positionData;
 				//----------------------------- 32 bit
@@ -113,8 +116,9 @@ namespace
 				//----------------------------- 32 bit
 				uint32_t whiteElo				:12;
 				uint32_t dateYear				:10;
-				uint32_t dateDay				: 5;
+				uint64_t termination			: 4;
 				uint32_t result				: 3;
+				uint64_t setup					: 1;
 				uint16_t commentEngFlag		: 1;
 				uint16_t commentOthFlag		: 1;
 				//----------------------------- 32 bit
@@ -154,8 +158,8 @@ struct IndexEntry
 #define SET_WHITE_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ffffff) << 8
 #define SET_BLACK_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ff0000) >> 16, \
 														item->u32[ 3] |= (value & 0x0000ffff) << 16
-#define SET_PLY_COUNT(item,value)			item->u32[ 3] |= (value & 0x00000fff) << 4
-#define SET_TERMINATION(item,value)			item->u32[ 3] |= value & 0x0000000f
+#define SET_PLY_COUNT(item,value)			item->u32[ 3] |= (value & 0x000007ff) << 5
+#define SET_DATE_DAY(item,value)				item->u32[ 3] |= value & 0x0000001f
 #define SET_POSITION_DATA(item,value)		item->u32[ 4]  = value
 #define SET_PLY_0(item,value)					item->u16[ 8]  = value
 #define SET_PLY_1(item,value)					item->u16[ 9]  = value
@@ -183,8 +187,9 @@ struct IndexEntry
 #define SET_ANNOTATION_COUNT(item,value)	item->u32[12] |= value & 0x0000000f
 #define SET_WHITE_ELO(item,value)			item->u32[13] |= (value & 0x00000fff) << 20
 #define SET_DATE_YEAR(item,value)			item->u32[13] |= (value & 0x000003ff) << 10
-#define SET_DATE_DAY(item,value)				item->u32[13] |= (value & 0x0000001f) << 5
-#define SET_RESULT(item,value)				item->u32[13] |= (value & 0x00000007) << 2
+#define SET_TERMINATION(item,value)			item->u32[13] |= (value & 0x0000000f) << 6
+#define SET_RESULT(item,value)				item->u32[13] |= (value & 0x00000007) << 3
+#define SET_SETUP(item,value)					item->u32[13] |= (value & 0x00000001) << 2
 #define SET_COMMENT_ENG_FLAG(item,value)	item->u32[13] |= (value & 0x00000001) << 1
 #define SET_COMMENT_OTH_FLAG(item,value)	item->u32[13] |= value & 0x00000001
 
@@ -192,8 +197,8 @@ struct IndexEntry
 #define GET_WHITE_PLAYER(item)				((item->u32[2] >>  8) & 0x00ffffff)
 #define GET_BLACK_PLAYER(item)				((item->u32[2] & 0x000000ff) << 16) | \
 														((item->u32[3] >> 16) & 0x0000ffff)
-#define GET_PLY_COUNT(item)					((item->u32[3] >>  4) & 0x00000fff)
-#define GET_TERMINATION(item)					(item->u32[3] & 0x0000000f)
+#define GET_PLY_COUNT(item)					((item->u32[3] >>  5) & 0x000007ff)
+#define GET_DATE_DAY(item)						(item->u32[3] & 0x0000001f)
 #define GET_POSITION_DATA(item)				item->u32[4]
 #define GET_PLY_0(item)							item->u16[8]
 #define GET_PLY_1(item)							item->u16[9]
@@ -221,9 +226,10 @@ struct IndexEntry
 #define GET_ANNOTATION_COUNT(item)			(item->u32[12] & 0x0000000f)
 #define GET_WHITE_ELO(item)					((item->u32[13] >> 20) & 0x00000fff)
 #define GET_DATE_YEAR(item)					((item->u32[13] >> 10) & 0x000003ff)
-#define GET_DATE_DAY(item)						((item->u32[13] >>  5) & 0x0000001f)
-#define GET_RESULT(item)						((item->u32[13] >>  2) & 0x00000007)
-#define GET_COMMENT_ENG_FLAG(item)			((item->u32[13] >> 1) & 0x00000001)
+#define GET_TERMINATION(item)					((item->u32[13] >>  6) & 0x0000000f)
+#define GET_RESULT(item)						((item->u32[13] >>  3) & 0x00000007)
+#define GET_SETUP(item)							((item->u32[13] >>  2) & 0x00000001)
+#define GET_COMMENT_ENG_FLAG(item)			((item->u32[13] >>  1) & 0x00000001)
 #define GET_COMMENT_OTH_FLAG(item)			(item->u32[13] & 0x00000001)
 
 #endif
@@ -281,7 +287,8 @@ static mstl::string const MagicGameFile  ("Scidb.g\0", 8);
 static mstl::string const MagicNamebase  ("Scidb.n\0", 8);
 static mstl::string const Extension("sci");
 
-static uint16_t const FileVersion = 92;
+static uint16_t const FileVersion	= 93;
+static unsigned const HeaderSize		= 128;
 
 static char const* NamebaseTags[Namebase::Round];
 
@@ -443,7 +450,7 @@ unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
 unsigned Codec::minYear() const					{ return Date::MinYear; }
 unsigned Codec::maxYear() const					{ return Date::MaxYear; }
-unsigned Codec::maxDescriptionLength() const	{ return 109; }
+unsigned Codec::maxDescriptionLength() const	{ return 107; }
 mstl::string const& Codec::extension() const	{ return Extension; }
 mstl::string const& Codec::encoding() const	{ return sys::utf8::Codec::utf8(); }
 bool Codec::encodingFailed() const				{ return false; }
@@ -541,12 +548,14 @@ Codec::setEncoding(mstl::string const& encoding)
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
+Codec::filterTags(TagSet& tags, Section section) const
 {
-	bool gameTagsOnly = section == GameTags;
+	tag::TagSet infoTags = Encoder::infoTags();
 
-	if (Encoder::skipTag(tag) == gameTagsOnly)
-		tags.remove(tag);
+	if (section == InfoTags)
+		infoTags.flip(0, tag::ExtraTag - 1);
+
+	tags.remove(infoTags);
 }
 
 
@@ -620,7 +629,7 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 
 	writeNamebases(namebaseFilename);
 
-	if (start > 0 && !indexStream.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+	if (start > 0 && !indexStream.seekp(start*sizeof(IndexEntry) + ::HeaderSize, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
 	writeIndex(indexStream, start, progress);
 }
@@ -710,7 +719,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 	ByteStream bstrm(buf, sizeof(IndexEntry));
 	encodeIndex(*info, bstrm);
 
-	if (	!indexStream.seekp(index*sizeof(IndexEntry) + 128)
+	if (	!indexStream.seekp(index*sizeof(IndexEntry) + ::HeaderSize)
 		|| !indexStream.write(buf, sizeof(IndexEntry)))
 	{
 		IO_RAISE(Index, Corrupted, "unexpected end of index file");
@@ -746,7 +755,7 @@ Codec::doEncoding(util::ByteStream& strm,
 	M_ASSERT(namebase(Namebase::Site).size() <= maxSiteCount());
 	M_ASSERT(namebase(Namebase::Event).size() <= maxEventCount());
 
-	Encoder encoder(strm);
+	Encoder encoder(strm, variant());
 	encoder.doEncoding(signature, data, allowedTags, allowExtraTags);
 }
 
@@ -754,7 +763,7 @@ Codec::doEncoding(util::ByteStream& strm,
 db::Consumer*
 Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(srcFormat, *this, Consumer::TagBits(true), true);
+	return new Consumer(srcFormat, Consumer::Codecs(this), Consumer::TagBits(true), true);
 }
 
 
@@ -763,7 +772,7 @@ Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
-	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
+	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset(), variant());
 	return decoder.doDecoding(consumer, tags);
 }
 
@@ -771,7 +780,7 @@ Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
 save::State
 Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 {
-	Decoder decoder(strm);
+	Decoder decoder(strm, variant());
 	return decoder.doDecoding(consumer, tags);
 }
 
@@ -781,7 +790,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
-	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset());
+	Decoder decoder(strm, m_gameData->blockSize() - info.gameOffset(), variant());
 	decoder.doDecoding(data);
 }
 
@@ -829,8 +838,11 @@ Codec::makeCodec(mstl::string const& name)
 		bstrm.skip(8); // skip magic
 		unsigned fileVersion	= bstrm.uint16();
 
-		if (fileVersion == 91)
-			return new v91::Codec;
+		switch (fileVersion)
+		{
+			case 91: return new v91::Codec;
+			case 92: return new v92::Codec;
+		}
 
 #endif
 	}
@@ -1000,7 +1012,9 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 
 	unsigned version	= bstrm.uint16();
 	unsigned numGames	= bstrm.uint24();
+	unsigned variant	= bstrm.uint8();
 	unsigned baseType	= bstrm.uint8();
+	unsigned flags		= bstrm.uint8();
 	unsigned created  = bstrm.uint32();
 
 	if (version != ::FileVersion)
@@ -1015,8 +1029,11 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 	bstrm.get(description);
 	setDescription(description);
 
+	setVariant(variant::fromIndex(variant));
 	setType(type::ID(baseType));
 	setCreated(created);
+
+	shouldCompress(flags & maintenance::Compress);
 
 	GameInfoList& infoList = gameInfoList();
 
@@ -1048,7 +1065,7 @@ Codec::readIndexProgressive(unsigned index)
 
 	char buf[sizeof(IndexEntry)];
 
-	if (!m_progressiveStream->seekg(index*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+	if (!m_progressiveStream->seekg(index*sizeof(IndexEntry) + ::HeaderSize, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "seek failed");
 
 	if (__builtin_expect(!m_progressiveStream->read(buf, sizeof(IndexEntry)), 0))
@@ -1147,6 +1164,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_gameOffset							= bits->gameOffset;
 	item.m_plyCount							= bits->plyCount;
 	item.m_positionId							= bits->positionId;
+	item,m_setup								= bits->setup;
 	item.m_dateYear							= bits->dateYear;
 	item.m_positionData						= bits->positionData;
 	item.m_signature.m_promotions			= bits->promotion;
@@ -1208,6 +1226,7 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 	item.m_gameOffset							= GET_GAME_OFFSET(bits);
 	item.m_plyCount							= GET_PLY_COUNT(bits);
 	item.m_positionId							= GET_POSITION_ID(bits);
+	item.m_setup								= GET_SETUP(bits);
 	item.m_positionData						= GET_POSITION_DATA(bits);
 	item.m_signature.m_promotions			= GET_PROMOTION(bits);
 	item.m_signature.m_underPromotions	= GET_UNDER_PROMOTION(bits);
@@ -1221,20 +1240,26 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& item)
 void
 Codec::writeIndexHeader(mstl::ostream& strm)
 {
-	unsigned char header[128];
+	unsigned char header[::HeaderSize];
 	::memset(header, 0, sizeof(header));
 
 	ByteStream bstrm(header, sizeof(header));
 
-	bstrm.put(::MagicIndexFile, 8);
-	bstrm << uint16_t(FileVersion);				// Scidb version
-	bstrm << uint24_t(gameInfoList().size());	// number of games
-	bstrm << uint8_t(type());						// base type
-	bstrm << uint32_t(created());					// creation time
+	Byte flags = 0;
 
-	bstrm.put(	description(),
-					mstl::min(	description().size(),
-									mstl::string::size_type(sizeof(header) - strm.tellp() - 1)));
+	if (shouldCompress())
+		flags |= maintenance::Compress;
+
+	bstrm.put(::MagicIndexFile, 8);
+	bstrm << uint16_t(FileVersion);						// Scidb version
+	bstrm << uint24_t(gameInfoList().size());			// number of games
+	bstrm << uint8_t(variant::toIndex(variant()));	// chess variant in this base
+	bstrm << uint8_t(type());								// base type
+	bstrm << uint8_t(flags);								// flags
+	bstrm << uint32_t(created());							// creation time
+
+	M_ASSERT(maxDescriptionLength() == sizeof(header) - bstrm.tellp() - 1);
+	bstrm.put(description(), mstl::min(unsigned(description().size()), maxDescriptionLength()));
 
 	if (!strm.seekp(0, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "seek failed");
@@ -1251,13 +1276,16 @@ Codec::writeIndex(mstl::ostream& strm, unsigned start, util::Progress& progress)
 
 	GameInfoList& infoList = gameInfoList();
 
+	if (infoList.size() == start)
+		return;
+
 	unsigned frequency	= progress.frequency(infoList.size(), 100000);
 	unsigned reportAfter	= frequency + start;
 
 	ProgressWatcher watcher(progress, infoList.size());
 	progress.message("write-index");
 
-	if (start > 0 && !strm.seekp(start*sizeof(IndexEntry) + 128, mstl::ios_base::beg))
+	if (start > 0 && !strm.seekp(start*sizeof(IndexEntry) + ::HeaderSize, mstl::ios_base::beg))
 		IO_RAISE(Index, Corrupted, "cannot seek to end of file");
 
 	for (unsigned i = start; i < infoList.size(); ++i)
@@ -1321,7 +1349,7 @@ Codec::updateIndex(mstl::ostream& strm)
 			ByteStream bstrm(buf, sizeof(IndexEntry));
 			encodeIndex(*infoList[i], bstrm);
 
-			if (!strm.seekp(i*sizeof(IndexEntry) + 128))
+			if (!strm.seekp(i*sizeof(IndexEntry) + ::HeaderSize))
 				IO_RAISE(Index, Corrupted, "unexpected end of index file");
 			if (!strm.write(buf, sizeof(IndexEntry)))
 				IO_RAISE(Index, Write_Failed, "error while writing index entry");
@@ -1356,6 +1384,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	bits->hpCount				= item.m_signature.m_hpCount;
 	bits->plyCount				= item.m_plyCount;
 	bits->positionId			= item.m_positionId;
+	bits->setup					= item.m_setup;
 	bits->variationCount		= item.m_variationCount;
 	bits->commentCount		= item.m_commentCount;
 	bits->annotationCount	= item.m_annotationCount;
@@ -1396,6 +1425,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	SET_HP_COUNT			(bits, item.m_signature.m_hpCount);
 	SET_PLY_COUNT			(bits, item.m_plyCount);
 	SET_POSITION_ID		(bits, item.m_positionId);
+	SET_SETUP				(bits, item.m_setup);
 	SET_VARIATION_COUNT	(bits, item.m_variationCount);
 	SET_COMMENT_COUNT		(bits, item.m_commentCount);
 	SET_ANNOTATION_COUNT	(bits, item.m_annotationCount);
@@ -1431,6 +1461,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	M_ASSERT(item.m_signature.m_hpCount					== (GET_HP_COUNT(bits)));
 	M_ASSERT(item.m_plyCount								== (GET_PLY_COUNT(bits)));
 	M_ASSERT(item.m_positionId								== (GET_POSITION_ID(bits)));
+	M_ASSERT(item.m_setup									== (GET_SETUP(bits)));
 	M_ASSERT(item.m_variationCount						== (GET_VARIATION_COUNT(bits)));
 	M_ASSERT(item.m_commentCount							== (GET_COMMENT_COUNT(bits)));
 	M_ASSERT(item.m_annotationCount						== (GET_ANNOTATION_COUNT(bits)));
@@ -2248,7 +2279,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 
 	ByteStream src;
 	getGameRecord(info, *m_asyncReader, src);
-	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
+	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset(), variant());
 	return decoder.findExactPosition(position, skipVariations);
 }
 

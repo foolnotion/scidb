@@ -103,10 +103,10 @@ Position::setup(char const* fen)
 	while (m_stack.size() > 1)
 		m_stack.pop();
 
-	if (__builtin_expect(!board().setup(fen), 0))	// should never fail
+	if (__builtin_expect(!board().setup(fen, variant::Normal), 0))	// should never fail
 		::throwInvalidFen();
 
-	M_ASSERT(board().validate(variant::Unknown) == Board::Valid);
+	M_ASSERT(board().validate(variant::Normal) == Board::Valid);
 
 	unsigned whitePieceNum = 0;
 	unsigned blackPieceNum = 0x10;
@@ -298,7 +298,7 @@ Position::setup(uint16_t idn)
 	while (m_stack.size() > 1)
 		m_stack.pop();
 
-	if (idn == variant::StandardIdn)
+	if (idn == variant::Standard)
 	{
 		static Squares const StandardSquares =
 		{

@@ -213,6 +213,7 @@ private:
 	static Tree* lookup(TreeCache& cache, uint64_t hash, Position const& position);
 
 	Database*		m_base;
+	variant::Type	m_variant;
 	Key				m_key;
 	unsigned			m_index;
 	unsigned			m_last;

@@ -34,10 +34,12 @@
 #include <ctype.h>
 
 using namespace db;
+using namespace db::sq;
 using namespace db::sci::decoder;
 
 
-static Byte const NoRook = 0xff;
+static Byte const Invalid = 0xff;
+#define __ ::Invalid
 
 
 __attribute__((noreturn))
@@ -51,7 +53,7 @@ throwInvalidFen()
 inline static unsigned
 convSquare(unsigned s)
 {
-	return sq::make(sq::fyle(s), sq::Rank8 - sq::rank(s));
+	return make(fyle(s), Rank8 - rank(s));
 }
 
 
@@ -65,66 +67,85 @@ Position::Position()
 void
 Position::doMove(Move& move, unsigned pieceNum)
 {
-	Lookup& lookup = m_stack.top();
+	M_ASSERT(pieceNum < 64);
 
-	if (move.isCastling())
+	Squares& squares = m_stack.top().squares;
+
+	switch (move.action())
 	{
-		Byte rank = sq::rank(move.to());
+		case Move::Null_Move:
+			// nothing to do
+			break;
 
-		if (move.isShortCastling())
+		case Move::Castle:
 		{
-			lookup.squares[pieceNum] = sq::make(sq::FyleG, rank);
+			Byte rank = sq::rank(move.to());
 
-			unsigned rookNum = m_rookNumbers[castling::kingSideIndex(move.color())];
+			if (move.isShortCastling())
+			{
+				squares[pieceNum] = make(FyleG, rank);
 
-			if (rookNum != ::NoRook)	// we allow castlings without rook
-				lookup.squares[rookNum] = sq::make(sq::FyleF, rank);
+				unsigned rookNum = m_rookNumbers[castling::kingSideIndex(move.color())];
+
+				if (rookNum != ::Invalid)	// we allow castlings w/o rook
+					squares[rookNum] = make(FyleF, rank);
+			}
+			else
+			{
+				squares[pieceNum] = make(FyleC, rank);
+
+				unsigned rookNum = m_rookNumbers[castling::queenSideIndex(move.color())];
+
+				if (rookNum != ::Invalid)	// we allow castlings w/o rook
+					squares[rookNum] = make(FyleD, rank);
+			}
+			break;
 		}
-		else
-		{
-			lookup.squares[pieceNum] = sq::make(sq::FyleC, rank);
 
-			unsigned rookNum = m_rookNumbers[castling::queenSideIndex(move.color())];
-
-			if (rookNum != ::NoRook)	// we allow castlings without rook
-				lookup.squares[rookNum] = sq::make(sq::FyleD, rank);
-		}
-	}
-	else if (__builtin_expect(!move.isNull(), 1))
-	{
-		lookup.squares[pieceNum] = move.to();
+		default:
+			squares[pieceNum] = move.to();
+			break;
 	}
 }
 
 
+inline
 void
-Position::setup(char const* fen)
+Position::reset()
 {
 	while (m_stack.size() > 1)
 		m_stack.pop();
+}
 
-	if (__builtin_expect(!board().setup(fen), 0))	// should never fail
+
+void
+Position::setup(char const* fen, variant::Type variant)
+{
+	if (__builtin_expect(!board().setup(fen, variant), 0))	// should never fail
 		::throwInvalidFen();
 
-	M_ASSERT(board().validate(variant::Unknown) == Board::Valid);
+	M_ASSERT(board().validate(variant) == Board::Valid);
 
-	unsigned whitePieceNum = 0;
-	unsigned blackPieceNum = 0x10;
+	reset();
 
 	Squares& squares = m_stack.top().squares;
 
-	::memset(squares, 0, sizeof(squares));
-	::memset(m_rookNumbers, ::NoRook, sizeof(m_rookNumbers));
+	::memset(squares, Null, sizeof(squares));
+	::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
 
 	Square shortCastlingRook[2];
 	Square longCastlingRook[2];
-
-	bool haveKing[2] = { false, false };
 
 	shortCastlingRook[color::White] = ::convSquare(board().castlingRookSquare(castling::WhiteKS));
 	shortCastlingRook[color::Black] = ::convSquare(board().castlingRookSquare(castling::BlackKS));
 	longCastlingRook [color::White] = ::convSquare(board().castlingRookSquare(castling::WhiteQS));
 	longCastlingRook [color::Black] = ::convSquare(board().castlingRookSquare(castling::BlackQS));
+
+	unsigned whitePieceNum = 1;
+	unsigned blackPieceNum = 17;
+
+	Square whiteKingSq = Null;
+	Square blackKingSq = Null;
 
 	for (unsigned i = 0; i < 64; ++fen)
 	{
@@ -145,21 +166,21 @@ Position::setup(char const* fen)
 				 // fallthru
 
 			case 'Q': case 'B': case 'N':
-				if (__builtin_expect(whitePieceNum == 0x10, 0))	// should never happen
+				if (__builtin_expect(whitePieceNum == 16, 0))	// should never happen
 					 ::throwInvalidFen();
 				squares[whitePieceNum++] = ::convSquare(i++);
 				break;
 
 			case 'P':
-				if (__builtin_expect(whitePieceNum == 0x10, 0))	// should never happen
+			{
+					if (__builtin_expect(whitePieceNum == 16, 0))	// should never happen
 					::throwInvalidFen();
-				{
-					Square sq = ::convSquare(i++);
-					if (__builtin_expect((1 << sq::rank(sq)) & (1 << sq::Rank1 | 1 << sq::Rank8), 0))
-						::throwInvalidFen();
-					squares[whitePieceNum++] = sq;
-				}
+				Square sq = ::convSquare(i++);
+				if (__builtin_expect((1 << rank(sq)) & (1 << Rank1 | 1 << Rank8), 0))
+					::throwInvalidFen();
+				squares[whitePieceNum++] = sq;
 				break;
+			}
 
 			case 'r':
 				if (i == shortCastlingRook[color::Black])
@@ -175,43 +196,40 @@ Position::setup(char const* fen)
 				break;
 
 			case 'p':
+			{
 				if (__builtin_expect(blackPieceNum == 0x20, 0))	// should never happen
 					::throwInvalidFen();
-				{
-					Square sq = ::convSquare(i++);
-					if (__builtin_expect((1 << sq::rank(sq)) & (1 << sq::Rank1 | 1 << sq::Rank8), 0))
-						::throwInvalidFen();
-					squares[blackPieceNum++] = sq;
-				}
+				Square sq = ::convSquare(i++);
+				if (__builtin_expect((1 << rank(sq)) & (1 << Rank1 | 1 << Rank8), 0))
+					::throwInvalidFen();
+				squares[blackPieceNum++] = sq;
 				break;
+			}
 
 			case 'K':
-				if (__builtin_expect(haveKing[color::White], 0))
+				if (whiteKingSq == Null)
+					squares[0] = whiteKingSq = ::convSquare(i++);
+				else if (__builtin_expect(!variant::isAntichessExceptLosers(variant), 0))
 					::throwInvalidFen();
-				if (m_rookNumbers[castling::WhiteQS] == 0)
-					m_rookNumbers[castling::WhiteQS] = whitePieceNum;
-				else if (m_rookNumbers[castling::WhiteKS] == 0)
-					m_rookNumbers[castling::WhiteKS] = whitePieceNum;
-				squares[whitePieceNum++] = squares[0];
-				squares[0] = ::convSquare(i++);
-				haveKing[color::White] = true;
+				else
+					squares[whitePieceNum++] = ::convSquare(i++);
 				break;
 
 			case 'k':
-				if (__builtin_expect(haveKing[color::Black], 0))
+				if (blackKingSq == Null)
+					squares[16] = blackKingSq = ::convSquare(i++);
+				else if (__builtin_expect(!variant::isAntichessExceptLosers(variant), 0))
 					::throwInvalidFen();
-				if (m_rookNumbers[castling::BlackQS] == 0x10)
-					m_rookNumbers[castling::BlackQS] = blackPieceNum;
-				else if (m_rookNumbers[castling::BlackKS] == 0x10)
-					m_rookNumbers[castling::BlackKS] = blackPieceNum;
-				squares[blackPieceNum++] = squares[0x10];
-				squares[0x10] = ::convSquare(i++);
-				haveKing[color::Black] = true;
+				else
+					squares[blackPieceNum++] = ::convSquare(i++);
 				break;
 
 			case '/':
 				if (__builtin_expect(i & 7, 0))
 					::throwInvalidFen();
+				break;
+
+			case '~':
 				break;
 
 			default:
@@ -222,70 +240,57 @@ Position::setup(char const* fen)
 
 
 void
-Position::setup(Board const& board)
+Position::setupBoard(Board const& board)
 {
 	M_ASSERT(board.isShuffleChessPosition());
 
-	static Square const Rank2[8] = { sq::a2, sq::b2, sq::c2, sq::d2, sq::e2, sq::f2, sq::g2, sq::h2 };
-	static Square const Rank7[8] = { sq::a7, sq::b7, sq::c7, sq::d7, sq::e7, sq::f7, sq::g7, sq::h7 };
-
-	Byte whitePieceNum = 8;
-	Byte blackPieceNum = 16;
-
-	Lookup&	lookup	= m_stack.top();
-	Squares&	squares	= lookup.squares;
-
-	::memset(squares, 0, sizeof(Squares));
-	::memcpy(squares, Rank2, sizeof(Rank2));
-	::memcpy(squares + 24, Rank7, sizeof(Rank7));
-	::memset(m_rookNumbers, ::NoRook, sizeof(m_rookNumbers));
-
-	for (unsigned square = sq::a1; square <= sq::h1; ++square)
+	static Squares const StandardSquares =
 	{
-		switch (unsigned(board.piece(sq::ID(square))))
-		{
-			case piece::King:
-				squares[whitePieceNum++] = squares[0];
-				squares[0] = square;
-				break;
+		__, a2, b2, c2, d2, e2, f2, g2,
+		h2, __, __, __, __, __, __, __,
+		__, __, __, __, __, __, __, __,
+		a7, b7, c7, d7, e7, f7, g7, h7,
+		__, __, __, __, __, __, __, __,
+		__, __, __, __, __, __, __, __,
+		__, __, __, __, __, __, __, __,
+		__, __, __, __, __, __, __, __,
+	};
 
+	reset();
+
+	Squares& squares = m_stack.top().squares;
+
+	::memcpy(squares, StandardSquares, sizeof(StandardSquares));
+	::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+
+	squares[ 0] = board.kingSquare(color::White);
+	squares[16] = board.kingSquare(color::Black);
+
+	Byte whitePieceNum = 9;
+	Byte blackPieceNum = 17;
+
+	for (unsigned square = a1; square <= h1; ++square)
+	{
+		switch (unsigned(board.piece(ID(square))))
+		{
 			case piece::Rook:
-				if (m_rookNumbers[castling::WhiteQS] == ::NoRook)
+				if (m_rookNumbers[castling::WhiteQS] == ::Invalid)
+				{
 					m_rookNumbers[castling::WhiteQS] = whitePieceNum;
+					m_rookNumbers[castling::BlackQS] = blackPieceNum;
+				}
 				else
+				{
 					m_rookNumbers[castling::WhiteKS] = whitePieceNum;
+					m_rookNumbers[castling::BlackKS] = blackPieceNum;
+				}
 				// fallthru
 
 			case piece::Queen:
 			case piece::Bishop:
 			case piece::Knight:
 				squares[whitePieceNum++] = square;
-				break;
-		}
-	}
-
-	for (unsigned square = sq::a8; square <= sq::h8; ++square)
-	{
-		switch (unsigned(board.piece(sq::ID(square))))
-		{
-			case piece::King:
-				if (m_rookNumbers[castling::BlackQS] == 16)
-					m_rookNumbers[castling::BlackQS] = blackPieceNum;
-				squares[blackPieceNum++] = squares[16];
-				squares[16] = square;
-				break;
-
-			case piece::Rook:
-				if (m_rookNumbers[castling::BlackQS] == ::NoRook)
-					m_rookNumbers[castling::BlackQS] = blackPieceNum;
-				else
-					m_rookNumbers[castling::BlackKS] = blackPieceNum;
-				// fallthru
-
-			case piece::Queen:
-			case piece::Bishop:
-			case piece::Knight:
-				squares[blackPieceNum++] = square;
+				squares[blackPieceNum++] = square + 7*8;
 				break;
 		}
 	}
@@ -293,34 +298,330 @@ Position::setup(Board const& board)
 
 
 void
+Position::setupBoard(uint16_t idn)
+{
+	reset();
+
+	Squares&	squares = m_stack.top().squares;
+
+	switch (idn)
+	{
+		case variant::PawnsOn4thRank:
+		{
+			static Squares const Squares =
+			{
+				e1, a4, b4, c4, d4, e4, f4, g4,
+				h4, a1, b1, c1, d1, f1, g1, h1,
+				e8, a8, b8, c8, d8, f8, g8, h8,
+				a5, b5, c5, d5, e5, f5, g5, h5,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			m_rookNumbers[castling::WhiteQS] =  9;
+			m_rookNumbers[castling::WhiteKS] = 15;
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 23;
+			break;
+		}
+
+		case variant::LittleGame:
+		{
+			static Squares const Squares =
+			{
+				d1, a2, b2, c2, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				e8, f7, g7, h7, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::KNNvsKP:
+		{
+			static Squares const Squares =
+			{
+				g3, h2, e5, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				g7, e6, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::Pyramid:
+		{
+			static Squares const Squares =
+			{
+				e1, d5, e5, c4, f4, b3, g3, a2,
+				h2, a1, b1, c1, d1, f1, g1, h1,
+				e8, a8, b8, c8, d8, f8, g8, h8,
+				a7, h7, b6, g6, c5, f5, d4, e4,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			m_rookNumbers[castling::WhiteQS] =  9;
+			m_rookNumbers[castling::WhiteKS] = 15;
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 23;
+			break;
+		}
+
+		case variant::PawnsOnly:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, __, __, __, __, __, __, __,
+				e8, a7, b7, c7, d7, e7, f7, g7,
+				h7, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::KnightsOnly:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, b1, g1, __, __, __, __, __,
+				e8, b8, g8, a7, b7, c7, d7, e7,
+				f7, g7, h7, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::BishopsOnly:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, c1, f1, __, __, __, __, __,
+				e8, c8, f8, a7, b7, c7, d7, e7,
+				f7, g7, h7, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::RooksOnly:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, a1, h1, __, __, __, __, __,
+				e8, a8, h8, a7, b7, c7, d7, e7,
+				f7, g7, h7, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			m_rookNumbers[castling::WhiteQS] =  9;
+			m_rookNumbers[castling::WhiteKS] = 10;
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 18;
+			break;
+		}
+
+		case variant::QueensOnly:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, d1, __, __, __, __, __, __,
+				e8, d8, a7, b7, c7, d7, e7, f7,
+				g7, h7, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::NoQueens:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, a1, b1, c1, f1, g1, h1, __,
+				e8, a8, b8, c8, f8, g8, h8, a7,
+				b7, c7, d7, e7, f7, g7, h7, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			m_rookNumbers[castling::WhiteQS] =  9;
+			m_rookNumbers[castling::WhiteKS] = 14;
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 22;
+			break;
+		}
+
+		case variant::WildFive:
+		{
+			static Squares const Squares =
+			{
+				d8, a7, b7, c7, d7, e7, f7, g7,
+				h7, __, __, __, __, __, __, __,
+				d1, a2, b2, c2, d2, e2, f2, g2,
+				h2, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::KBNK:
+		case variant::KBBK:
+		{
+			static Squares const Squares =
+			{
+				e1, a1, h1, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				e8, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			break;
+		}
+
+		case variant::Runaway:
+		{
+			static Squares const Squares =
+			{
+				e3, a2, b2, c2, d2, e2, f2, g2,
+				h2, a1, b1, c1, d1, f1, g1, h1,
+				e6, a8, b8, c8, d8, f8, g8, h8,
+				a7, b7, c7, d7, e7, f7, g7, h7,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			m_rookNumbers[castling::WhiteQS] =  9;
+			m_rookNumbers[castling::WhiteKS] = 15;
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 23;
+			break;
+		}
+
+		case variant::QueenVsRooks:
+		{
+			static Squares const Squares =
+			{
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, d1, __, __, __, __, __, __,
+				e8, a8, h8, a7, b7, c7, d7, e7,
+				f7, g7, h7, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			m_rookNumbers[castling::BlackQS] = 17;
+			m_rookNumbers[castling::BlackKS] = 18;
+			break;
+		}
+
+		default: IO_RAISE(Game, Corrupted, "error while decoding game data (invalid position number)");
+	}
+
+	board().setup(idn);
+}
+
+
+void
 Position::setup(uint16_t idn)
 {
-	while (m_stack.size() > 1)
-		m_stack.pop();
+	M_ASSERT(idn);
 
-	if (idn == variant::StandardIdn)
+	if (idn == variant::Standard)
 	{
 		static Squares const StandardSquares =
 		{
-			sq::e1, sq::b2, sq::c2, sq::d2, sq::e2, sq::f2, sq::g2, sq::h2,
-			sq::a1, sq::b1, sq::c1, sq::d1, sq::a2, sq::f1, sq::g1, sq::h1,
-			sq::e8, sq::b8, sq::c8, sq::d8, sq::a8, sq::f8, sq::g8, sq::h8,
-			sq::a7, sq::b7, sq::c7, sq::d7, sq::e7, sq::f7, sq::g7, sq::h7,
+			e1, a2, b2, c2, d2, e2, f2, g2,
+			h2, a1, b1, c1, d1, f1, g1, h1,
+			e8, a8, b8, c8, d8, f8, g8, h8,
+			a7, b7, c7, d7, e7, f7, g7, h7,
+			__, __, __, __, __, __, __, __,
+			__, __, __, __, __, __, __, __,
+			__, __, __, __, __, __, __, __,
+			__, __, __, __, __, __, __, __,
 		};
 
-		::memcpy(m_stack.top().squares, StandardSquares, sizeof(StandardSquares));
+		reset();
 
-		m_rookNumbers[castling::WhiteQS] =  8;
+		Squares&	squares = m_stack.top().squares;
+		::memcpy(squares, StandardSquares, sizeof(StandardSquares));
+
+		m_rookNumbers[castling::WhiteQS] =  9;
 		m_rookNumbers[castling::WhiteKS] = 15;
-		m_rookNumbers[castling::BlackQS] = 20;
+		m_rookNumbers[castling::BlackQS] = 17;
 		m_rookNumbers[castling::BlackKS] = 23;
 
 		board().setStandardPosition();
 	}
-	else
+	else if (variant::isShuffleChess(idn))
 	{
 		board().setup(idn);
-		setup(board());
+		setupBoard(board());
+	}
+	else
+	{
+		setupBoard(idn);
 	}
 }
 

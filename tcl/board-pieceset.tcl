@@ -35,9 +35,10 @@ namespace export makePieceSelectionFrame updatePieceSet
 variable Listbox
 variable FigurineDict [dict create]
 
-variable RegExpBBox			{scidb:bbox=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
-variable RegExpScale			{scidb:scale=\"([0-9]*[.]?[0-9]+)\"}
-variable RegExpTranslation	{scidb:translate=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
+variable RegExpBBox				{scidb:bbox=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
+variable RegExpPieceScale		{scidb:scale=\"([0-9]*[.]?[0-9]+)\"}
+variable RegExpContourWidth	{scidb:contour=\"([0-9]*[.]?[0-9]+)\"}
+variable RegExpTranslation		{scidb:translate=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
 
 event add <<PieceSetChanged>> PieceSetChanged
 
@@ -148,6 +149,7 @@ proc makePieces {size {pieces all}} {
 		$size                 \
 		$style(zoom)          \
 		$style(contour)       \
+		no                    \
 		$style(shadow)        \
 		$fillColors           \
 		$strokeColors         \
@@ -198,6 +200,7 @@ proc MakeFigurines {size dontUseContour} {
 		$size               \
 		1.2                 \
 		$contour            \
+		yes                 \
 		0.07333333333333333 \
 		{{} {}}             \
 		{{} {}}             \
@@ -211,10 +214,12 @@ proc MakeFigurines {size dontUseContour} {
 }
 
 
-proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors strokeColors
-						textures contourColors gradients shadowOpacity shadowDiffuse useWhitePiece } {
+proc MakePieces {	prefix pieceSet pieceList size scale contour boostContour shadow fillColors
+						strokeColors textures contourColors gradients shadowOpacity shadowDiffuse
+						useWhitePiece } {
 	variable RegExpBBox
-	variable RegExpScale
+	variable RegExpPieceScale
+	variable RegExpContourWidth
 	variable RegExpTranslation
 
 	if {$size == 0} { return }
@@ -248,8 +253,6 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors
 		}
 	}
 
-	set contourStrokeWidth [expr $contour*$contourWidth]
-	if {$size < 50} { set contourStrokeWidth [expr {int(round($contourStrokeWidth*(60.0/$size)))}] }
 	if {$size > $sampleSize} { set sampleSize $size }
 	if {$pieceList eq "all"} { set pieceList {wk wq wr wb wn wp bk bq br bb bn bp} }
 	set scale [expr $scale*0.96]
@@ -316,22 +319,26 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors
 		lassign [split $cp {}] c p
 
 		set pieceScale 1.0
+		set contourWd 0
 		set pieceMoveX 0
 		set pieceMoveY 0
 		set pieceColor [expr {$useWhitePiece ? "w" : $c}]
 		set grad $gradient($c)
 		set useShadow [expr {$shadow > 0}]
 		set useTexture [expr {[llength $texture($c)] > 0}]
+		set contourWd $contourWidth
+
+		regexp $RegExpBBox $font($pieceColor$p) dummy minX minY maxX maxY
+		regexp $RegExpPieceScale $font($pieceColor$p) dummy pieceScale
+		regexp $RegExpTranslation $font($pieceColor$p) dummy pieceMoveX pieceMoveY
+
+		photo_Piece($prefix$c$p,$size) blank
+
 		set useBackground [expr {$contour > 0 || $shadow > 0 || $fontIsOutline}]
 		set needBackground [expr {	$fontIsOutline
 										&& $contour > 0
 										&& [llength $fillColor($c)] > 0
 										&& $fillColor($c) ne $contourColor($c)}]
-
-		regexp $RegExpBBox $font($pieceColor$p) dummy minX minY maxX maxY
-		regexp $RegExpScale $font($pieceColor$p) dummy pieceScale
-		regexp $RegExpTranslation $font($pieceColor$p) dummy pieceMoveX pieceMoveY
-		photo_Piece($prefix$c$p,$size) blank
 
 		if {$pieceScale <= 1} {
 			set strokeScale [expr {3.0/$pieceScale - 2.0}]
@@ -346,6 +353,24 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors
 		}
 
 		if {$useBackground} {
+			regexp $RegExpContourWidth $font($pieceColor$p) dummy contourWd
+			if {$contourWd != 0} {
+				set contourStrokeWidth $contourWd
+			} else {
+				set contourStrokeWidth [expr $contour*$contourWidth]
+			}
+			if {$size >= 50} {
+				set stroke $contourColor($c)
+			} elseif {$boostContour} {
+				set stroke white
+				set contourStrokeWidth [expr {int(round($contourStrokeWidth*(60.0/$size)))}]
+			} elseif {$source eq "truetype" || $fontName eq "Burnett" || $fontName eq "Standard"} {
+				set stroke $contourColor($c)
+				set contourStrokeWidth [expr {int(round($contourStrokeWidth*(40.0/$size)))}]
+			} else {
+				set stroke black
+				set contourStrokeWidth [expr {int(round($contourStrokeWidth*(40.0/$size)))}]
+			}
 			set maskStrokeWidth [expr $contourStrokeWidth/($scale*$pieceScale)]
 			if {$fontIsOutline && [llength $grad] && $pieceColor eq "b"} {
 				set maskStrokeWidth [expr {max(0, $maskStrokeWidth - 2*($strokeWidth($c)*$strokeScale))}]
@@ -357,7 +382,7 @@ proc MakePieces {	prefix pieceSet pieceList size scale contour shadow fillColors
 				-translate $pieceMoveX $pieceMoveY \
 				-outline 1 \
 				-stroke-width $maskStrokeWidth \
-				-stroke $contourColor($c) \
+				-stroke $stroke \
 				-fill $fillColor($c)
 		}
 

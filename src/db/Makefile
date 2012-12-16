@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -Isci -Isci/v91 -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
+INCLUDE	= -I. -Isci -Isci/v91 -Isci/v92 -Isi3 -Icbh -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
 CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DISK) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
@@ -93,6 +93,12 @@ SRC_CXX = \
 	sci/v91/sci_v91_decoder_position.cpp \
 	sci/v91/sci_v91_encoder.cpp \
 	sci/v91/sci_v91_encoder_position.cpp \
+	sci/v92/sci_v91_codec.cpp \
+	sci/v92/sci_v91_consumer.cpp \
+	sci/v92/sci_v91_decoder.cpp \
+	sci/v92/sci_v91_decoder_position.cpp \
+	sci/v92/sci_v91_encoder.cpp \
+	sci/v92/sci_v91_encoder_position.cpp \
 	si3/si3_codec.cpp \
 	si3/si3_consumer.cpp \
 	si3/si3_decoder.cpp \

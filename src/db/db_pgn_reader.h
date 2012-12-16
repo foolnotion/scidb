@@ -32,10 +32,12 @@
 #include "db_tag_set.h"
 #include "db_mark_set.h"
 #include "db_move.h"
+#include "db_move_list.h"
 #include "db_comment.h"
 
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_map.h"
 
 namespace mstl { class istream; }
 namespace util { class Progress; }
@@ -62,7 +64,6 @@ public:
 		UnterminatedVariation,
 		InvalidMove,
 		UnsupportedVariant,
-		UnsupportedCrazyhouseVariant,
 		TooManyGames,
 		FileSizeExeeded,
 		GameTooLong,
@@ -73,6 +74,8 @@ public:
 		TooManyAnnotatorNames,
 		TooManySourceNames,
 		SeemsNotToBePgnText,
+		UnexpectedCastling,
+		ContinuationsNotSupported,
 
 		LastError = SeemsNotToBePgnText,
 	};
@@ -110,6 +113,10 @@ public:
 		IllegalMove,
 		CastlingCorrection,
 		ValueTooLong,
+		NotSuicideNotGiveaway,
+		VariantChangedToGiveaway,
+		VariantChangedToSuicide,
+		ResultCorrection,
 		MaximalErrorCountExceeded,
 		MaximalWarningCountExceeded,
 
@@ -139,9 +146,20 @@ public:
 		Raw,
 	};
 
+	enum ReadMode
+	{
+		Text,
+		File,
+	};
+
+	typedef mstl::map<mstl::string,unsigned> Variants;
+	typedef unsigned GameCount[variant::NumberOfVariants];
+
 	PgnReader(	mstl::istream& stream,
+					variant::Type variant,
 					mstl::string const& encoding,
-					int firstGameNumber = 0,
+					ReadMode readMode,
+					GameCount const* firstGameNumber = 0,
 					Modification modification = Normalize,
 					ResultMode resultMode = UseResultTag);
 	virtual ~PgnReader() throw();
@@ -150,6 +168,12 @@ public:
 
 	mstl::string const& encoding() const override;
 	mstl::string const& description() const;
+	uint16_t idn() const override;
+	GameCount const& accepted() const;
+	GameCount const& rejected() const;
+	unsigned accepted(unsigned variant) const;
+	unsigned rejected(unsigned variant) const;
+	Variants const& unsupportedVariants() const;
 
 	unsigned process(util::Progress& progress) override;
 
@@ -159,12 +183,14 @@ public:
 								unsigned lineNo,
 								unsigned column,
 								unsigned gameNo,
+								variant::Type variant,
 								mstl::string const& info,
 								mstl::string const& item) = 0;
 	virtual void error(	Error code,
 								unsigned lineNo,
 								unsigned column,
-								int gameNo,
+								unsigned gameNo,
+								variant::Type variant,
 								mstl::string const& message,
 								mstl::string const& info,
 								mstl::string const& item) = 0;
@@ -208,6 +234,13 @@ private:
 		unsigned column;
 	};
 
+	struct IllegalMoveWarning
+	{
+		variant::Type	m_variant;
+		Pos				m_pos;
+		mstl::string	m_move;
+	};
+
 	struct Interruption
 	{
 		Interruption(Error code, mstl::string const& msg);
@@ -217,7 +250,10 @@ private:
 
 	struct Termination {};
 
+	typedef unsigned Count[variant::NumberOfVariants];
+
 	typedef mstl::vector<Comment> Comments;
+	typedef mstl::vector<IllegalMoveWarning> Warnings;
 
 	void error(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string);
 	void error(Error code, mstl::string const& item = mstl::string::empty_string);
@@ -233,9 +269,12 @@ private:
 	int get(bool allowEndOfInput = false);
 	void putback(int c);
 	void skipLine();
+	void findNextEmptyLine();
 	void findNextEmptyLine(mstl::string& str);
+	Token skipToEndOfVariation(Token token);
 	void setLinePos(char* pos);
-	void advanceLinePos(int n);
+	void advanceLinePos(int n = 1);
+	variant::Type getVariant() const;
 
 	Token searchTag();
 	Token nextToken(Token prevToken);
@@ -244,13 +283,18 @@ private:
 	bool partOfMove(Token token) const;
 
 	void checkTags();
+	void checkFen();
 	bool checkTag(tag::ID tag, mstl::string& value);
 	void addTag(tag::ID tag, mstl::string const& value);
+	void checkVariant();
+	void checkResult();
 
 	void readTags();
 	bool readTagName(mstl::string& s);
 	void readTagValue(mstl::string& s);
 	void stripDiagram(mstl::string& comment);
+	bool parseFinalComment(mstl::string const& comment);
+	void filterFinalComments();
 
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);
@@ -263,6 +307,8 @@ private:
 	void checkMode();
 	void convertToUtf(mstl::string& s);
 	void replaceFigurineSet(char const* fromSet, char const* toSet, mstl::string& str);
+	bool testVariant(variant::Type variant) const;
+	void setupVariant(variant::Type variant);
 	mstl::string inverseFigurineMapping(mstl::string const& str);
 
 	bool doCastling(char const* castle);
@@ -319,7 +365,7 @@ private:
 	unsigned				m_putback;
 	char					m_putbackBuf[10];
 	mstl::string		m_line;
-	mstl::string		m_site;
+	mstl::string		m_variantValue;
 	Move					m_move;
 	char*					m_linePos;
 	char*					m_lineEnd;
@@ -329,10 +375,12 @@ private:
 	Pos					m_variantPos;
 	unsigned				m_countWarnings[LastWarning + 1];
 	unsigned				m_countErrors[LastError + 1];
-	unsigned				m_gameCount;
-	int					m_firstGameNumber;
+	ReadMode				m_readMode;
+	GameCount			m_gameCount;
+	GameCount const*	m_firstGameNumber;
 	ResultMode			m_resultMode;
 	Comments				m_comments;
+	Warnings				m_warnings;
 	MarkSet				m_marks;
 	country::Code		m_eventCountry;
 	Annotation			m_annotation;
@@ -353,12 +401,23 @@ private:
 	bool					m_sourceIsPossiblyChessBase;
 	bool					m_sourceIsChessOK;
 	bool					m_encodingFailed;
+	bool					m_ficsGamesDBGameNo;
+	bool					m_checkShufflePosition;
+	bool					m_isICS;
+	bool					m_hasCastled;
+	bool					m_resultCorrection;
 	unsigned				m_postIndex;
+	uint16_t				m_idn;
 	variant::Type		m_variant;
+	variant::Type		m_givenVariant;
+	variant::Type		m_thisVariant;
 	mstl::string		m_figurine;
 	mstl::string		m_description;
 	mstl::string		m_encoding;
 	sys::utf8::Codec*	m_codec;
+	Count					m_accepted;
+	Count					m_rejected;
+	Variants				m_variants;
 };
 
 } // namespace db

@@ -180,7 +180,7 @@ namespace egtb
 	};
 
 	static int
-	findTableIndex(::db::material::SigPart white, ::db::material::SigPart black)
+	findTableIndex(::db::material::Count white, ::db::material::Count black)
 	{
 		int pieceCounts[10] =
 		{
@@ -390,10 +390,10 @@ Probe::setup(mstl::string const& egtbPath)
 
 
 int
-Probe::quiesce(material::SigPart white, material::SigPart black) const
+Probe::quiesce(material::Count white, material::Count black) const
 {
-	unsigned numWhitePieces = material::count(white) + 1;
-	unsigned numBlackPieces = material::count(black) + 1;
+	unsigned numWhitePieces = white.total();
+	unsigned numBlackPieces = black.total();
 
 	// Quickly check that there is not too much material.
 	if (	numWhitePieces + numBlackPieces > m_maxPieceNumber
@@ -408,7 +408,7 @@ Probe::quiesce(material::SigPart white, material::SigPart black) const
 
 	// If KB-K or KN-K, return 0 because they are all-drawn tablebases.
 	return	numWhitePieces + numBlackPieces == 3
-			&& (material::minor(white) == 1 || material::minor(black) == 1) ? 0 : 1;
+			&& (white.minor() == 1 || black.minor() == 1) ? 0 : 1;
 }
 
 
@@ -426,8 +426,8 @@ Probe::isAvailable(Board const& board) const
 	if (m_maxPieceNumber == 0)
 		return false;
 
-	material::SigPart white = board.signature().material(color::White);
-	material::SigPart black = board.signature().material(color::Black);
+	material::Count white = board.materialCount(color::White);
+	material::Count black = board.materialCount(color::Black);
 
 	switch (quiesce(white, black))
 	{
@@ -455,13 +455,13 @@ Probe::isAvailable(Board const& board) const
 int
 Probe::findScore(Board const& board) const
 {
-	M_REQUIRE(board.validate(variant::Unknown));
+	M_REQUIRE(board.validate(variant::Undetermined));
 
 	if (m_maxPieceNumber == 0)
 		return tb::Not_Found;
 
-	material::SigPart white = board.signature().material(color::White);
-	material::SigPart black = board.signature().material(color::Black);
+	material::Count white = board.materialCount(color::White);
+	material::Count black = board.materialCount(color::Black);
 
 	switch (quiesce(white, black))
 	{
@@ -497,8 +497,8 @@ Probe::findBest(Board const& board, Move& result) const
 	if (m_maxPieceNumber == 0)
 		return tb::Not_Found;
 
-	material::SigPart white = board.signature().material(color::White);
-	material::SigPart black = board.signature().material(color::Black);
+	material::Count white = board.materialCount(color::White);
+	material::Count black = board.materialCount(color::Black);
 
 	switch (quiesce(white, black))
 	{
@@ -534,14 +534,14 @@ Probe::findBest(Board const& board, Move& result) const
 	int bestIndex	= -1;
 
 	color = egtb::opposite(color);
-	peek.generateMoves(moves);
+	peek.generateMoves(variant::Normal, moves);
 
 	for (unsigned i = 0; i < moves.size(); ++i)
 	{
 		Move move = moves[i];
 
 		peek.prepareUndo(move);
-		peek.doMove(move);
+		peek.doMove(move, variant::Normal);
 
 		if (peek.isLegal())
 		{
@@ -551,10 +551,10 @@ Probe::findBest(Board const& board, Move& result) const
 			int index	= 0; // shut up the compiler
 			int swap		= 0; // shut up the compiler
 
-			if (move.capturedPiece() | move.promotedPiece())
+			if (move.isCaptureOrPromotion())
 			{
-				white = peek.signature().material(color::White);
-				black = peek.signature().material(color::Black);
+				white = peek.materialCount(color::White);
+				black = peek.materialCount(color::Black);
 
 				switch (quiesce(white, black))
 				{
@@ -613,16 +613,16 @@ Probe::findBest(Board const& board, Move& result) const
 			}
 		}
 
-		peek.undoMove(move);
+		peek.undoMove(move, variant::Normal);
 	}
 
 	if (bestIndex == -1)
 	{
-		unsigned state = board.checkState();
+		unsigned state = board.checkState(variant::Normal);
 
-		if (state & Board::CheckMate)
+		if (state & Board::Checkmate)
 			return tb::Is_Check_Mate;
-		if (state & Board::StaleMate)
+		if (state & Board::Stalemate)
 			return tb::Is_Stale_Mate;
 
 		return tb::Illegal_Position;

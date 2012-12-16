@@ -30,6 +30,7 @@
 #include "m_algorithm.h"
 #include "m_bitfield.h"
 #include "m_bit_functions.h"
+#include "m_utility.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -58,7 +59,31 @@ static Pair const NameMap[] =
 {
 	{ "Annotator",				Annotator },
 	{ "Black",					Black, },
+	{ "BlackA",					BlackA },
+	{ "BlackAClock",			BlackAClock },
+	{ "BlackACountry",		BlackACountry },
+	{ "BlackAElo",				BlackAElo },
+	{ "BlackAFideId",			BlackAFideId },
+	{ "BlackANA",				BlackANA },
+	{ "BlackARating",			BlackARating },
+	{ "BlackASex",				BlackASex },
+	{ "BlackATeam",			BlackATeam },
+	{ "BlackATeamCountry",	BlackATeamCountry },
+	{ "BlackATitle",			BlackATitle },
+	{ "BlackAType",			BlackAType },
+	{ "BlackB",					BlackB },
 	{ "BlackBCF",				BlackECF },
+	{ "BlackBClock",			BlackBClock },
+	{ "BlackBCountry",		BlackBCountry },
+	{ "BlackBElo",				BlackBElo },
+	{ "BlackBFideId",			BlackBFideId },
+	{ "BlackBNA",				BlackBNA },
+	{ "BlackBRating",			BlackBRating },
+	{ "BlackBSex",				BlackBSex },
+	{ "BlackBTeam",			BlackBTeam },
+	{ "BlackBTeamCountry",	BlackBTeamCountry },
+	{ "BlackBTitle",			BlackBTitle },
+	{ "BlackBType",			BlackBType },
 	{ "BlackClock",			BlackClock },
 	{ "BlackCountry",			BlackCountry },
 	{ "BlackDWZ",				BlackDWZ },
@@ -77,6 +102,7 @@ static Pair const NameMap[] =
 	{ "BlackType",				BlackType },
 	{ "BlackUSCF",				BlackUSCF },
 	{ "Board",					Board },
+	{ "BughouseDBNumber",	BughouseDBNumber },
 	{ "Date",					Date },
 	{ "ECO",						Eco },
 	{ "Event",					Event },
@@ -86,6 +112,7 @@ static Pair const NameMap[] =
 	{ "EventRounds",			EventRounds },
 	{ "EventType",				EventType },
 	{ "FEN",						Fen },
+	{ "FICSGamesDBGameNo",	FICSGamesDBGameNo },
 	{ "Mode",					Mode },
 	{ "Opening",				Opening },
 	{ "PlyCount",				PlyCount },
@@ -104,7 +131,31 @@ static Pair const NameMap[] =
 	{ "Variant",				Variant },
 	{ "Variation",				Variation },
 	{ "White",					White },
+	{ "WhiteA",					WhiteA },
+	{ "WhiteAClock",			WhiteAClock },
+	{ "WhiteACountry",		WhiteACountry },
+	{ "WhiteAElo",				WhiteAElo },
+	{ "WhiteAFideId",			WhiteAFideId },
+	{ "WhiteANA",				WhiteANA },
+	{ "WhiteARating",			WhiteARating },
+	{ "WhiteASex",				WhiteASex },
+	{ "WhiteATeam",			WhiteATeam },
+	{ "WhiteATeamCountry",	WhiteATeamCountry },
+	{ "WhiteATitle",			WhiteATitle },
+	{ "WhiteAType",			WhiteAType },
+	{ "WhiteB",					WhiteB },
 	{ "WhiteBCF",				WhiteECF },
+	{ "WhiteBClock",			WhiteBClock },
+	{ "WhiteBCountry",		WhiteBCountry },
+	{ "WhiteBElo",				WhiteBElo },
+	{ "WhiteBFideId",			WhiteBFideId },
+	{ "WhiteBNA",				WhiteBNA },
+	{ "WhiteBRating",			WhiteBRating },
+	{ "WhiteBSex",				WhiteBSex },
+	{ "WhiteBTeam",			WhiteBTeam },
+	{ "WhiteBTeamCountry",	WhiteBTeamCountry },
+	{ "WhiteBTitle",			WhiteBTitle },
+	{ "WhiteBType",			WhiteBType },
 	{ "WhiteClock",			WhiteClock },
 	{ "WhiteCountry",			WhiteCountry },
 	{ "WhiteDWZ",				WhiteDWZ },
@@ -149,6 +200,7 @@ static mstl::string const Lookup[] =
 	"Emergency",
 	"RulesInfraction",
 	"TimeForfeit",
+	"TimeForfeitBoth",
 	"Unterminated",
 };
 
@@ -430,6 +482,7 @@ static CommentToken const Map[] =
 	{ "()",		Space																		},	// 173
 	{ "(+)",		Zeitnot																	},	// 174
 	{ "(.)",		Zugzwang																	},	// 176
+	{ "(?)",		QuestionableMove														}, //   6
 	{ "++--",	WhiteHasACrushingAdvantage											},	//  20
 	{ "+-",		WhiteHasADecisiveAdvantage											},	//  18
 	{ "+--",		WhiteHasACrushingAdvantage											},	//  20
@@ -1155,16 +1208,16 @@ namespace tag
 {
 	static mstl::string const* NameLookup[ExtraTag];
 
-	mstl::bitfield<uint64_t> IsWhiteRating;
-	mstl::bitfield<uint64_t> IsBlackRating;
-	mstl::bitfield<uint64_t> IsRating;
+	TagSet IsWhiteRating;
+	TagSet IsBlackRating;
+	TagSet IsRating;
 
 	void
 	initialize()
 	{
-		static_assert(U_NUMBER_OF(NameLookup) == ExtraTag, "NameLookup expired");
+		// NOTE: White/blackECF has two entries:
 		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired");
-		static_assert(ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
+		static_assert(int(ExtraTag) <= int(TagSetSize), "BitField size exceeded");
 
 #ifndef NDEBUG
 		::memset(NameLookup, 0, sizeof(NameLookup));
@@ -1259,7 +1312,8 @@ piece::fromLetter(char piece)
 #undef _
 	};
 
-	return piece >= 0 ? Lookup[static_cast<unsigned char>(piece) & 0x7f] : None;
+	M_REQUIRE(piece > 0);
+	return Lookup[static_cast<unsigned char>(piece) & 0x7f];
 }
 
 
@@ -1288,7 +1342,18 @@ piece::pieceFromLetter(char piece)
 #undef __
 	};
 
-	return piece >= 0 ? Lookup[static_cast<unsigned char>(piece) & 0x7f] : Empty;
+	M_REQUIRE(piece > 0);
+	return Lookup[static_cast<unsigned char>(piece) & 0x7f];
+}
+
+
+bool
+piece::canPromoteTo(Type type, variant::Type variant)
+{
+	if (variant::isAntichessExceptLosers(variant))
+		return piece::King <= type && type <= piece::Knight;
+
+	return piece::Queen <= type && type <= piece::Knight;
 }
 
 
@@ -1438,6 +1503,7 @@ species::fromString(char const* s)
 bool tag::isWhiteRatingTag(ID tag)	{ return IsWhiteRating.test(tag); }
 bool tag::isBlackRatingTag(ID tag)	{ return IsBlackRating.test(tag); }
 bool tag::isRatingTag(ID tag)			{ return IsRating.test(tag); }
+//bool tag::isBughouseTag(ID tag)	{ return IsBughouse.test(tag); }
 
 
 mstl::string const&
@@ -1473,24 +1539,40 @@ tag::fromName(char const* name, unsigned length)
 }
 
 
+material::Count
+material::Count::operator+(Count mat) const
+{
+	Count result = *this;;
+
+	result.king   += mat.king;
+	result.queen  += mat.queen;
+	result.rook   += mat.rook;
+	result.bishop += mat.bishop;
+	result.knight += mat.knight;
+	result.pawn   += mat.pawn;
+
+	return result;
+}
+
+
+unsigned
+material::Count::pieces() const
+{
+	return queen + rook + bishop + knight;
+}
+
+
+unsigned
+material::Count::total() const
+{
+	return king + queen + rook + bishop + knight + pawn;
+}
+
+
 unsigned
 material::minor(SigPart sig)
 {
 	return mstl::bf::count_bits(sig.minor);
-}
-
-
-unsigned
-material::major(SigPart sig)
-{
-	return mstl::bf::count_bits(sig.major);
-}
-
-
-unsigned
-material::count(SigPart sig)
-{
-	return mstl::bf::count_bits(sig.piece);
 }
 
 
@@ -1981,8 +2063,8 @@ termination::fromString(mstl::string const& s)
 			break;
 
 		case 'D':
-			if (::strcasecmp(s, "Death") == 0)
-				return Death;
+			if (::strcasecmp(s, "Disconnection") == 0)
+				return Disconnection;
 			break;
 
 		case 'E':
@@ -3376,7 +3458,10 @@ country::toRegion(Code code)
 country::Code
 country::fromString(char const* country)
 {
-	M_REQUIRE(::strlen(country) >= 3);
+	M_REQUIRE(*country == 0 || ::strlen(country) >= 3);
+
+	if (*country == '\0')
+		return Unknown;
 
 	void const* p = ::bsearch(	country,
 										NameMap,
@@ -3401,8 +3486,8 @@ country::fromString(mstl::string const& country)
 }
 
 
-unsigned
-chess960::twin(unsigned idn)
+uint16_t
+chess960::twin(uint16_t idn)
 {
 	M_REQUIRE(idn <= 960);
 	return chess960::Twins[idn];
@@ -3410,7 +3495,7 @@ chess960::twin(unsigned idn)
 
 
 mstl::string const&
-chess960::position(unsigned idn)
+chess960::position(uint16_t idn)
 {
 	M_REQUIRE(idn <= 960);
 	return chess960::PositionTable[idn];
@@ -3418,28 +3503,19 @@ chess960::position(unsigned idn)
 
 
 mstl::string&
-chess960::utf8::position(unsigned idn, mstl::string& result)
+chess960::utf8::position(uint16_t idn, mstl::string& result)
 {
 	mstl::string const& pos = chess960::position(idn);
 
-	for (unsigned i = 0; i < pos.size(); ++i)
+	for (uint16_t i = 0; i < pos.size(); ++i)
 		result += piece::utf8::asString(piece::fromLetter(pos[i]));
 
 	return result;
 }
 
 
-mstl::string const&
-chess960::identifier()
-{
-	// this seems to be the most common identifier for chess 960
-	static mstl::string const Identifier("chess 960");
-	return Identifier;
-}
-
-
 mstl::string
-chess960::fen(unsigned idn)
+chess960::fen(uint16_t idn)
 {
 	M_REQUIRE(idn <= 960);
 
@@ -3466,10 +3542,10 @@ chess960::fen(unsigned idn)
 }
 
 
-unsigned
+uint16_t
 chess960::lookup(mstl::string const& position)
 {
-	for (unsigned i = 0; i < U_NUMBER_OF(PositionTable); ++i)
+	for (uint16_t i = 0; i < U_NUMBER_OF(PositionTable); ++i)
 	{
 		if (position == PositionTable[i])
 			return i;
@@ -3479,31 +3555,22 @@ chess960::lookup(mstl::string const& position)
 }
 
 
-unsigned
-shuffle::twin(unsigned idn)
+uint16_t
+shuffle::twin(uint16_t idn)
 {
 	M_REQUIRE(idn <= 4*960);
 
 	if (idn == 0)
 		return 0;
 
-	unsigned f = (idn - 1)/960;
+	uint16_t f = (idn - 1)/960;
 
 	return chess960::Twins[idn - f*960] + f*960;
 }
 
 
-mstl::string const&
-shuffle::identifier()
-{
-	// this seems to be the best known identifier for Shuffle Chess
-	static mstl::string const Identifier("Shuffle Chess");
-	return Identifier;
-}
-
-
 mstl::string
-shuffle::position(unsigned idn)
+shuffle::position(uint16_t idn)
 {
 	M_REQUIRE(idn <= 4*960);
 
@@ -3534,7 +3601,7 @@ shuffle::position(unsigned idn)
 
 
 mstl::string
-shuffle::fen(unsigned idn)
+shuffle::fen(uint16_t idn)
 {
 	static mstl::string const Pattern = "xxxxxxxx/pppppppp/8/8/8/8/PPPPPPPP/XXXXXXXX w - - 0 1";
 
@@ -3565,21 +3632,21 @@ shuffle::fen(unsigned idn)
 
 
 mstl::string&
-shuffle::utf8::position(unsigned idn, mstl::string& result)
+shuffle::utf8::position(uint16_t idn, mstl::string& result)
 {
 	mstl::string pos = shuffle::position(idn);
 
-	for (unsigned i = 0; i < pos.size(); ++i)
+	for (uint16_t i = 0; i < pos.size(); ++i)
 		result += piece::utf8::asString(piece::fromLetter(pos[i]));
 
 	return result;
 }
 
 
-unsigned
+uint16_t
 shuffle::lookup(mstl::string const& position)
 {
-	unsigned i = chess960::lookup(position);
+	uint16_t i = chess960::lookup(position);
 
 	if (i > 0)
 		return i;
@@ -3993,15 +4060,265 @@ sex::toString(ID sex)
 }
 
 
-variant::Type
-variant::fromIdn(unsigned idn)
+mstl::string const&
+chess960::identifier()
 {
-	if (idn == 0)							return Unknown;
-	if (idn == variant::StandardIdn)	return Standard;
-	if (idn <= 960)						return Chess960;
-	if (idn <= 3840)						return Shuffle;
+	static mstl::string const Chess960Id("Chess 960");
+	return Chess960Id;
+}
 
-	return Other;
+
+mstl::string const&
+shuffle::identifier()
+{
+	static mstl::string const ShuffleId("Shuffle Chess");
+	return ShuffleId;
+}
+
+
+variant::Type
+variant::fromString(char const* identifier)
+{
+	M_REQUIRE(identifier);
+
+	switch (::toupper(identifier[0]))
+	{
+		case '3':
+			if (	::strncasecmp(identifier, "3check", 6) == 0
+				|| ::strncasecmp(identifier, "3-check", 7) == 0
+				|| ::strncasecmp(identifier, "3 check", 7) == 0)
+			{
+				return ThreeCheck;
+			}
+			break;
+
+		case '9':
+			if (::strncasecmp(identifier, "960", 3) == 0)
+				return Normal;
+			break;
+
+		case 'B':
+			if (::strncasecmp(identifier, "Bughouse", 8) == 0)
+				return Bughouse;
+			break;
+
+		case 'C':
+			if (	::strncasecmp(identifier, "Chess960", 8) == 0
+				|| ::strncasecmp(identifier, "Chess-960", 9) == 0
+				|| ::strncasecmp(identifier, "Chess 960", 9) == 0)
+			{
+				return Normal;
+			}
+			if (::strncasecmp(identifier, "Crazyhouse", 10) == 0)
+			{
+				return Crazyhouse;
+			}
+			break;
+
+		case 'F':
+			if (	::strncasecmp(identifier, "FRC", 3) == 0
+				|| ::strncasecmp(identifier, "Fischerandom", 12) == 0
+				|| ::strncasecmp(identifier, "Fischerrandom", 13) == 0)
+			{
+				return Normal;
+			}
+			break;
+
+		case 'G':
+			if (::strncasecmp(identifier, "Giveaway", 8) == 0)
+				return Giveaway;
+			break;
+
+		case 'L':
+			if (::strncasecmp(identifier, "Losers", 6) == 0)
+				return Losers;
+			break;
+
+		case 'N':
+			if (::strncasecmp(identifier, "Normal", 6) == 0)
+				return Normal;
+			break;
+
+		case 'S':
+			if (::strncasecmp(identifier, "Shuffle", 7) == 0)
+				return Normal;
+			if (::strncasecmp(identifier, "SFRC", 4) == 0)
+				return Normal;
+			if (::strncasecmp(identifier, "Standard", 4) == 0)
+				return Normal;
+			if (::strncasecmp(identifier, "Suicide", 7) == 0)
+				return Suicide;
+			break;
+
+		case 'T':
+			if (	::strncasecmp(identifier, "ThreeCheck", 10) == 0
+				|| ::strncasecmp(identifier, "Three-Check", 11) == 0
+				|| ::strncasecmp(identifier, "Three Check", 11) == 0)
+			{
+				return ThreeCheck;
+			}
+			break;
+
+		case 'W':
+			if (	::strcasecmp(identifier, "wild/fr") == 0	// Chess960
+				|| ::strcasecmp(identifier, "wild/2") == 0)	// Shuffle Chess
+				return Normal;
+			break;
+	}
+
+	return Undetermined;
+}
+
+
+mstl::string const&
+variant::identifier(uint16_t idn)
+{
+	switch (idn)
+	{
+		case None:		// fallthru
+		case Standard:	return mstl::string::empty_string;
+	}
+
+	return idn <= 960 ? chess960::identifier() : shuffle::identifier();
+}
+
+
+mstl::string const&
+variant::identifier(Type type)
+{
+	static mstl::string const BughouseId("Bughouse");
+	static mstl::string const CrazyhouseId("Crazyhouse");
+	static mstl::string const ThreeCheckId("Three-Check");
+	static mstl::string const AntichessId("Antichess");
+	static mstl::string const SuicideId("Suicide");
+	static mstl::string const GiveawayId("Giveaway");
+	static mstl::string const LosersId("Losers");
+
+	switch (type)
+	{
+		case Normal:			return mstl::string::empty_string;
+		case Bughouse:			return BughouseId;
+		case Crazyhouse:		return CrazyhouseId;
+		case ThreeCheck:		return ThreeCheckId;
+		case Antichess:		return AntichessId;
+		case Suicide:			return SuicideId;
+		case Giveaway:			return GiveawayId;
+		case Losers:			return LosersId;
+		case Undetermined:	return mstl::string::empty_string;
+	}
+
+	return mstl::string::empty_string; // satisfies the compiler
+}
+
+
+mstl::string const&
+variant::fen(Idn idn)
+{
+	static mstl::string const FStandard("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+	static mstl::string const FTransposed("rnbkqbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBKQBNR w KQkq - 0 1");
+	static mstl::string const FNoCastling("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w - - 0 1");
+	static mstl::string const FLittleGame("4k3/5ppp/8/8/8/8/PPP5/3K4 w - - 0 1");
+	static mstl::string const FPawnsOn4thRank("rnbqkbnr/8/8/pppppppp/PPPPPPPP/8/8/RNBQKBNR w KQkq - 0 1");
+	static mstl::string const FKNNvsKP("8/6k1/4p3/4N3/8/6K1/7N/8 w - - 0 1");
+	static mstl::string const FPyramid("rnbqkbnr/p6p/1p4p1/2pPPp2/2PppP2/1P4P1/P6P/RNBQKBNR w KQkq - 0 1");
+	static mstl::string const FPawnsOnly("4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w - - 0 1");
+	static mstl::string const FKnightsOnly("1n2k1n1/pppppppp/8/8/8/8/PPPPPPPP/1N2K1N1 w - - 0 1");
+	static mstl::string const FBishopsOnly("2b1kb2/pppppppp/8/8/8/8/PPPPPPPP/2B1KB2 w - - 0 1");
+	static mstl::string const FRooksOnly("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w KQkq - 0 1");
+	static mstl::string const FQueensOnly("3qk3/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w - - 0 1");
+	static mstl::string const FNoQueens("rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w KQkq - 0 1");
+	static mstl::string const FWildFive("3K4/PPPPPPPP/8/8/8/8/pppppppp/3k4 w - - 0 1");
+	static mstl::string const FKBNK("4k3/8/8/8/8/8/8/B3K2N w - - 0 1");
+	static mstl::string const FKBBK("4k3/8/8/8/8/8/8/B3K2B w - - 0 1");
+	static mstl::string const FRunaway("rnbq1bnr/pppppppp/4k3/8/8/4K3/PPPPPPPP/RNBQ1BNR w KQkq - 0 1");
+	static mstl::string const FQueenVsRooks("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w kq - 0 1");
+
+	M_REQUIRE(idn != None);
+
+	switch (idn)
+	{
+		case None:				return mstl::string::empty_string;
+		case Standard:			return FStandard;
+		case Transposed:		return FTransposed;
+		case NoCastling:		return FNoCastling;
+		case LittleGame:		return FLittleGame;
+		case PawnsOn4thRank:	return FPawnsOn4thRank;
+		case KNNvsKP:			return FKNNvsKP;
+		case Pyramid:			return FPyramid;
+		case PawnsOnly:		return FPawnsOnly;
+		case KnightsOnly:		return FKnightsOnly;
+		case BishopsOnly:		return FBishopsOnly;
+		case RooksOnly:		return FRooksOnly;
+		case QueensOnly:		return FQueensOnly;
+		case NoQueens:			return FNoQueens;
+		case WildFive:			return FWildFive;
+		case KBNK:				return FKBNK;
+		case KBBK:				return FKBBK;
+		case Runaway:			return FRunaway;
+		case QueenVsRooks:	return FQueenVsRooks;
+	}
+
+	M_ASSERT(!"position number out of range");
+	return mstl::string::empty_string;
+}
+
+
+mstl::string
+variant::fen(uint16_t idn)
+{
+	if (idn == 0)
+		return mstl::string::empty_string;
+
+	if (idn <= 4*960)
+		return shuffle::fen(idn);
+
+	return fen(Idn(idn));
+}
+
+
+mstl::string const&
+variant::ficsIdentifier(uint16_t idn)
+{
+	static mstl::string const IdLittleGame("pawns/little-game");
+	static mstl::string const IdPawnsOn4thRank("wild/8");
+	static mstl::string const IdKNNvsKP("wild/19");
+	static mstl::string const IdPyramid("misc/pyramid");
+	static mstl::string const IdPawnsOnly("pawns/pawns-only");
+	static mstl::string const IdKnightsOnly("misc/knights-only");
+	static mstl::string const IdBishopsOnly("misc/bishops-only");
+	static mstl::string const IdRooksOnly("misc/rooks-only");
+	static mstl::string const IdQueensOnly("misc/queens-only");
+	static mstl::string const IdNoQueens("misc/no-queens");
+	static mstl::string const IdWildFive("pawns/wild-five");
+	static mstl::string const IdKBNK("endings/kbnk");
+	static mstl::string const IdKBBK("endings/kbbk");
+	static mstl::string const IdRunaway("misc/runaway");
+	static mstl::string const IdQueenVsRooks("misc/queen-rooks");
+
+	M_REQUIRE(idn);
+	M_REQUIRE(!isShuffleChess(idn));
+
+	switch (idn)
+	{
+		case LittleGame:		return IdLittleGame;
+		case PawnsOn4thRank:	return IdPawnsOn4thRank;
+		case KNNvsKP:			return IdKNNvsKP;
+		case Pyramid:			return IdPyramid;
+		case PawnsOnly:		return IdPawnsOnly;
+		case KnightsOnly:		return IdKnightsOnly;
+		case BishopsOnly:		return IdBishopsOnly;
+		case RooksOnly:		return IdRooksOnly;
+		case QueensOnly:		return IdQueensOnly;
+		case NoQueens:			return IdNoQueens;
+		case WildFive:			return IdWildFive;
+		case KBNK:				return IdKBNK;
+		case KBBK:				return IdKBBK;
+		case Runaway:			return IdRunaway;
+		case QueenVsRooks:	return IdQueenVsRooks;
+	}
+
+	M_ASSERT(!"position number out of range");
+	return mstl::string::empty_string;
 }
 
 
@@ -4011,8 +4328,10 @@ board::toString(Status status)
 	switch (status)
 	{
 		case None:			return mstl::string::empty_string;
-		case Mate:			return "Mate"; break;
+		case Checkmate:	return "Checkmate"; break;
 		case Stalemate:	return "Stalemate"; break;
+		case ThreeChecks:	return "ThreeChecks"; break;
+		case Losing:		return "Losing"; break;
 	}
 
 	return mstl::string::empty_string; // satisfies the compiler

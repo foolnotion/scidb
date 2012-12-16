@@ -96,6 +96,7 @@
 ::mc::To					"Till"
 ::mc::Top				"Överkant"
 ::mc::Undo				"Undo"
+::mc::Variant			"Variant" ;# NEW
 ::mc::Variation		"Variation"
 ::mc::White				"Vit"
 ::mc::Yes				"ja"
@@ -111,6 +112,19 @@
 ::mc::Bishop			"Löpare"
 ::mc::Knight			"Springare"
 ::mc::Pawn				"Bonde"
+
+::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
+::mc::VariantName(Normal)			"Normal Chess" ;# NEW
+::mc::VariantName(Bughouse)		"Bughouse Chess" ;# NEW
+::mc::VariantName(Crazyhouse)		"Crazyhouse Chess" ;# NEW
+::mc::VariantName(ThreeCheck)		"Three-check Chess" ;# NEW
+::mc::VariantName(Antichess)		"Antichess" ;# NEW
+::mc::VariantName(Suicide)			"Suicide" ;# NEW
+::mc::VariantName(Giveaway)		"Giveaway" ;# NEW
+::mc::VariantName(Losers)			"Losers" ;# NEW
+::mc::VariantName(Chess960)		"Chess 960"
+::mc::VariantName(Symm960)			"Chess 960 (endast symmetriskt)"
+::mc::VariantName(Shuffle)			"Shuffle Chess"
 
 ### themes #############################################################
 ::scidb::themes::mc::CannotOverwriteTheme	"Kan inte skriva över tema %s."
@@ -205,6 +219,8 @@
 ::menu::mc::ScidbArchives				"Scidb arkiv"
 ::menu::mc::PGNFilesArchives			"PGN filer/arkiv"
 ::menu::mc::PGNFiles						"PGN filer"
+::menu::mc::PGNFilesArchives			"BPGN filer/arkiv"
+::menu::mc::PGNFiles						"BPGN filer"
 ::menu::mc::PGNArchives					"PGN arkiv"
 
 ::menu::mc::Language						"&Språk"
@@ -345,6 +361,7 @@
 ::application::board::mc::ShowCrosstable	"Visa turneringstabell för partiet"
 ::application::board::mc::StartEngine		"Starta analysmotor"
 ::application::board::mc::StopEngine		"Stoppa analysmotor"
+::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
 
 ::application::board::mc::Tools				"Verktyg"
 ::application::board::mc::Control			"Kontroll"
@@ -365,15 +382,18 @@
 ::application::board::mc::Accel(trial-mode)			"T" ;# NEW
 
 ### application::database ##############################################
-::application::database::mc::FileOpen							"Öppna databas..."
+::application::database::mc::FileOpen							"Öppna databas"
 ::application::database::mc::FileOpenRecent					"Öppna senaste"
-::application::database::mc::FileNew							"Ny databas..."
-::application::database::mc::FileExport						"Exportera..."
-::application::database::mc::FileImport(pgn)					"Importera PGN fil..."
-::application::database::mc::FileImport(db)					"Importera databas..."
-::application::database::mc::FileCreate						"Skapa arkiv..."
+::application::database::mc::FileNew							"Ny databas"
+::application::database::mc::FileExport						"Exportera"
+::application::database::mc::FileImport(pgn)					"Importera PGN fil"
+::application::database::mc::FileImport(db)					"Importera databas"
+::application::database::mc::FileCreate						"Skapa arkiv"
 ::application::database::mc::FileClose							"Stäng"
+::application::database::mc::FileMaintenance					"Maintenance" ;# NEW
 ::application::database::mc::FileCompact						"Komprimera"
+::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
+::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
 ::application::database::mc::HelpSwitcher						"Hjälp om databasväljare"
 
 ::application::database::mc::Games								"&Partier"
@@ -388,12 +408,9 @@
 ::application::database::mc::Medium								"Mellan"
 ::application::database::mc::Small								"Liten"
 ::application::database::mc::Tiny								"Mycket liten"
-::application::database::mc::Empty								"tom"
-::application::database::mc::None								"ingen"
-::application::database::mc::Failed								"misslyckades"
-::application::database::mc::LoadMessage						"Öppnar databas %s"
-::application::database::mc::UpgradeMessage					"Upgraderar databas %s"
-::application::database::mc::CompactMessage					"Komprimerar databas %s"
+::application::database::mc::LoadMessage						"Öppnar databas '%s'"
+::application::database::mc::UpgradeMessage					"Upgraderar databas '%s'"
+::application::database::mc::CompactMessage					"Komprimerar databas '%s'"
 ::application::database::mc::CannotOpenFile					"Kan inte öppna fil '%s'."
 ::application::database::mc::EncodingFailed					"Kodning %s misslyckades."
 ::application::database::mc::DatabaseAlreadyOpen			"Databasen '%s' är redan öppen."
@@ -405,45 +422,10 @@
 ::application::database::mc::ClipbaseDescription			"Temporär databas, lagras inte på disk."
 ::application::database::mc::HardLinkDetected				"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
 ::application::database::mc::HardLinkDetectedDetail		"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
-::application::database::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
-::application::database::mc::UriRejectedDetail(import)	"Bara Scidb databases kan importeras:"
-::application::database::mc::EmptyUriList						"Innehåll som släpps är tomt."
-::application::database::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
-::application::database::mc::SelectDatabases					"Välj databaser som ska öppnas"
-::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
-::application::database::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
-::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
-::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
-::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
-::application::database::mc::CopyGames							"Kopiera partier"
-::application::database::mc::CopyGamesFromTo					"Kopiera partier från '%src' till '%dst'"
-::application::database::mc::CopiedGames						"%s parti(er) kopierade"
-::application::database::mc::NoGamesCopied					"Inga partier kopierade"
-::application::database::mc::CopyAllGames						"Kopiera alla partier (%num) från '%src'"
-::application::database::mc::CopyFilteredGames				"Kopiera bara filtrerade partier (%num) från '%src'"
-::application::database::mc::ImportGames						"Importera partier"
-::application::database::mc::ImportOneGameTo(0)				"Kopiera ett parti till '%dst'?"
-::application::database::mc::ImportOneGameTo(1)				"Kopiera cirka ett parti till '%dst'?"
-::application::database::mc::ImportGamesTo(0)				"Kopiera %num partier till '%dst'?"
-::application::database::mc::ImportGamesTo(1)				"Kopiera cirka %num partier till '%dst'?"
-::application::database::mc::ImportFiles						"Importer filer:"
+::application::database::mc::SelectVariant					"Select Variant"
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
-
-::application::database::mc::GameCount							"Partier"
-::application::database::mc::DatabasePath						"Databaskatalog"
-::application::database::mc::DeletedGames						"Raderade partier"
-::application::database::mc::Description						"Beskrivning"
-::application::database::mc::Created							"Skapad"
-::application::database::mc::LastModified						"Senast ändrad"
-::application::database::mc::Encoding							"Kodning"
-::application::database::mc::YearRange							"Årtalsintervall"
-::application::database::mc::RatingRange						"Ratingintervall"
-::application::database::mc::Result								"Resultat"
-::application::database::mc::Score								"Poäng"
-::application::database::mc::Type								"Typ"
-::application::database::mc::ReadOnly							"Skrivskydda"
 
 ::application::database::mc::ChangeIcon						"Byt ikon"
 ::application::database::mc::Recode								"Omkoda"
@@ -488,6 +470,8 @@
 ::application::database::mc::T_Bughouse						"Chock"
 ::application::database::mc::T_Antichess						"Slagschack"
 ::application::database::mc::T_PGNFile							"PGN fil"
+::application::database::mc::T_ThreeCheck						"Three-check" ;# NEW
+::application::database::mc::T_Crazyhouse						"Crazyhouse" ;# NEW
 
 ::application::database::mc::OpenDatabase						"Öppna databas"
 ::application::database::mc::NewDatabase						"Ny databas"
@@ -577,6 +561,7 @@
 ::application::pgn::mc::CannotOpenCursorFiles			"Kan inte öppna markörfilen: %s"
 ::application::pgn::mc::ReallyReplaceMoves				"Är du säker att dragen ska ersättas i aktuellt parti?"
 ::application::pgn::mc::CurrentGameIsNotModified		"Aktuelt parti är inte ändrat."
+::application::pgn::mc::ShufflePosition					"Shuffle position..." ;# NEW
 
 ::application::pgn::mc::EditAnnotation						"Redigera schacktecken"
 ::application::pgn::mc::EditMoveInformation				"Redigera draginformation"
@@ -607,6 +592,7 @@
 ::application::tree::mc::NoGamesFound						"No games found" ;# NEW
 ::application::tree::mc::NoGamesAvailable					"No games available" ;# NEW
 ::application::tree::mc::Searching							"Searching" ;# NEW
+::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
 ::application::tree::mc::FromBlacksPerspective			"Från svarts sida"
@@ -633,6 +619,59 @@
 ::application::tree::mc::T_Number							"Numeration"
 ::application::tree::mc::T_AverageYear						"Medelår"
 ::application::tree::mc::T_FrequentPlayer					"Mest frekvent spelare"
+
+### database::switcher #################################################
+::database::switcher::mc::Empty								"tom"
+::database::switcher::mc::None								"ingen"
+::database::switcher::mc::Failed								"misslyckades"
+
+::database::switcher::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
+::database::switcher::mc::UriRejectedDetail(import)	"Bara Scidb databases kan importeras:"
+::database::switcher::mc::EmptyUriList						"Innehåll som släpps är tomt."
+::database::switcher::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
+::database::switcher::mc::SelectDatabases					"Välj databaser som ska öppnas"
+::database::switcher::mc::ExtractArchive					"Packa upp arkiv %s"
+::database::switcher::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
+::database::switcher::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
+::database::switcher::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
+::database::switcher::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
+::database::switcher::mc::CopyGames							"Kopiera partier"
+::database::switcher::mc::CopyGamesFromTo					"Kopiera partier från '%src' till '%dst'"
+::database::switcher::mc::CopiedGames						"%s parti(er) kopierade"
+::database::switcher::mc::NoGamesCopied					"Inga partier kopierade"
+::database::switcher::mc::CopyGamesFrom					"Copy games from '%s'" ;# NEW
+::database::switcher::mc::ImportGames						"Importera partier"
+::database::switcher::mc::ImportFiles						"Importer filer:"
+
+::database::switcher::mc::ImportOneGameTo(0)				"Kopiera ett parti till '%dst'?"
+::database::switcher::mc::ImportOneGameTo(1)				"Kopiera cirka ett parti till '%dst'?"
+::database::switcher::mc::ImportGamesTo(0)				"Kopiera %num partier till '%dst'?"
+::database::switcher::mc::ImportGamesTo(1)				"Kopiera cirka %num partier till '%dst'?"
+
+::database::switcher::mc::NumGames(0)						"none" ;# NEW
+::database::switcher::mc::NumGames(1)						"one game" ;# NEW
+::database::switcher::mc::NumGames(N)						"%s games" ;# NEW
+
+::database::switcher::mc::SelectGames(all)				"All games" ;# NEW
+::database::switcher::mc::SelectGames(filter)			"Only filtered games" ;# NEW
+::database::switcher::mc::SelectGames(all,variant)		"Only variant %s" ;# NEW
+::database::switcher::mc::SelectGames(filter,variant)	"Only filtered games of variant %s" ;# NEW
+::database::switcher::mc::SelectGames(complete)			"Complete database" ;# NEW
+
+::database::switcher::mc::GameCount							"Partier"
+::database::switcher::mc::DatabasePath						"Databaskatalog"
+::database::switcher::mc::DeletedGames						"Raderade partier"
+::database::switcher::mc::Description						"Beskrivning"
+::database::switcher::mc::Created							"Skapad"
+::database::switcher::mc::LastModified						"Senast ändrad"
+::database::switcher::mc::Encoding							"Kodning"
+::database::switcher::mc::YearRange							"Årtalsintervall"
+::database::switcher::mc::RatingRange						"Ratingintervall"
+::database::switcher::mc::Result								"Resultat"
+::database::switcher::mc::Score								"Poäng"
+::database::switcher::mc::Type								"Typ"
+::database::switcher::mc::Variant							"Variant" ;# NEW
+::database::switcher::mc::ReadOnly							"Skrivskydda"
 
 ### board ##############################################################
 ::board::mc::CannotReadFile			"Kan inte läsa filen '%s':"
@@ -909,44 +948,48 @@
 ::engine::mc::FeatureDetail(playingStyle)		"This engine provides different playing styles, namely %s. See the handbook of the engine for an explanation of the different styles." ;# NEW
 
 ### analysis ###########################################################
-::application::analysis::mc::Control				"Kontroll"
-::application::analysis::mc::Information			"Information" ;# NEW
-::application::analysis::mc::Setup					"Setup" ;# NEW
-::application::analysis::mc::Pause					"Pause" ;# NEW
-::application::analysis::mc::Resume					"Återuppta"
-::application::analysis::mc::LockEngine			"Lås motor på aktuell position"
-::application::analysis::mc::MultipleVariations	"Flera varianter (multi-pv)"
-::application::analysis::mc::HashFullness			"Hash djup"
-::application::analysis::mc::Hash					"Hash:" ;# NEW
-::application::analysis::mc::Lines					"Rader:"
-::application::analysis::mc::MateIn					"%color matt i %n"
-::application::analysis::mc::BestScore				"Bästa poäng (av aktuella linjer)"
-::application::analysis::mc::CurrentMove			"Söker för närvarande draget"
-::application::analysis::mc::TimeSearched			"Söktid"
-::application::analysis::mc::SearchDepth			"Sökdjup i plys (Selektivt sökdjup)"
-::application::analysis::mc::IllegalPosition		"Ogiltig ställning - Kan inte analysera"
-::application::analysis::mc::DidNotReceivePong	"Engine is not responding to \"pong\" command - Analysis aborted" ;# NEW
+::application::analysis::mc::Control						"Kontroll"
+::application::analysis::mc::Information					"Information" ;# NEW
+::application::analysis::mc::Setup							"Setup" ;# NEW
+::application::analysis::mc::Pause							"Pause" ;# NEW
+::application::analysis::mc::Resume							"Återuppta"
+::application::analysis::mc::LockEngine					"Lås motor på aktuell position"
+::application::analysis::mc::MultipleVariations			"Flera varianter (multi-pv)"
+::application::analysis::mc::HashFullness					"Hash djup"
+::application::analysis::mc::Hash							"Hash:" ;# NEW
+::application::analysis::mc::Lines							"Rader:"
+::application::analysis::mc::MateIn							"%color matt i %n"
+::application::analysis::mc::BestScore						"Bästa poäng (av aktuella linjer)"
+::application::analysis::mc::CurrentMove					"Söker för närvarande draget"
+::application::analysis::mc::TimeSearched					"Söktid"
+::application::analysis::mc::SearchDepth					"Sökdjup i plys (Selektivt sökdjup)"
+::application::analysis::mc::IllegalPosition				"Ogiltig ställning - Kan inte analysera"
+::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze" ;# NEW
+::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
 
-::application::analysis::mc::LinesPerVariation	"Rader per variant"
-::application::analysis::mc::BestFirstOrder		"Sortera på  värdering"
-::application::analysis::mc::Engine					"Motor" ;# NEW
+::application::analysis::mc::LinesPerVariation			"Rader per variant"
+::application::analysis::mc::BestFirstOrder				"Sortera på  värdering"
+::application::analysis::mc::Engine							"Motor" ;# NEW
 
-::application::analysis::mc::Seconds				"s" ;# NEW
-::application::analysis::mc::Minutes				"m" ;# NEW
+::application::analysis::mc::Seconds						"s" ;# NEW
+::application::analysis::mc::Minutes						"m" ;# NEW
 
-::application::analysis::mc::Status(checkmate)	"%s är matt"
-::application::analysis::mc::Status(stalemate)	"%s är patt"
+::application::analysis::mc::Status(checkmate)			"%s är matt"
+::application::analysis::mc::Status(stalemate)			"%s är patt"
+::application::analysis::mc::Status(threechecks)		"%s got three checks" ;# NEW
+::application::analysis::mc::Status(losing)				"%s lost all pieces" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"Den här motorn har inte stöd för vanligt schack."
 ::application::analysis::mc::NotSupported(chess960)	"Den här motorn har inte stöd för schack960."
+::application::analysis::mc::NotSupported(variant)		"This engine does not support variant '%s'." ;# NEW
 ::application::analysis::mc::NotSupported(analyze)		"Den här motorn har inte ett analys läge."
 
-::application::analysis::mc::Signal(stopped)		"Motorn stoppad av signal."
-::application::analysis::mc::Signal(resumed)		"Motorn återupptagen av signal."
-::application::analysis::mc::Signal(killed)		"Motorn dödad av signal."
-::application::analysis::mc::Signal(crashed)		"Motorn kraschade."
-::application::analysis::mc::Signal(closed)		"Motorn har stängt anslutningen."
-::application::analysis::mc::Signal(terminated)	"Motorn avslutades med värde %s."
+::application::analysis::mc::Signal(stopped)				"Motorn stoppad av signal."
+::application::analysis::mc::Signal(resumed)				"Motorn återupptagen av signal."
+::application::analysis::mc::Signal(killed)				"Motorn dödad av signal."
+::application::analysis::mc::Signal(crashed)				"Motorn kraschade."
+::application::analysis::mc::Signal(closed)				"Motorn har stängt anslutningen."
+::application::analysis::mc::Signal(terminated)			"Motorn avslutades med värde %s."
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Markera parti som raderad"
@@ -1187,13 +1230,15 @@
 ::gamebar::mc::CloseGame				"Stäng partiet"
 
 ::gamebar::mc::GameNew					"Nytt parti"
-::gamebar::mc::GameNewChess960		"Nytt parti: Chess 960"
-::gamebar::mc::GameNewChess960Sym	"Nytt parti: Chess 960 (endast symmetriskt)"
-::gamebar::mc::GameNewShuffle			"Nytt parti: Shuffle Chess"
-
 ::gamebar::mc::AddNewGame				"Spara: Lägg till nytt parti till %s..."
 ::gamebar::mc::ReplaceGame				"Spara: Ersätt parti i %s..."
 ::gamebar::mc::ReplaceMoves			"Spara: Ersätt bara dragen i partiet..."
+
+::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
+::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
+::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
+ ;# NEW
+::gamebar::mc::Tip(Losers)				"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Titta igenom partiet"
@@ -1241,9 +1286,9 @@
 ::encoding::mc::SystemEncoding		"Systemkodning:"
 
 ### setup ##############################################################
-::setup::mc::Chess960Position			"Chess 960 position"
-::setup::mc::SymmChess960Position	"Symmetrisk chess 960 position"
-::setup::mc::ShuffleChessPosition	"Shuffle chess position"
+::setup::mc::Position(Chess960)	"Chess 960 position"
+::setup::mc::Position(Symm960)	"Symmetrisk chess 960 position"
+::setup::mc::Position(Shuffle)	"Shuffle chess position"
 
 ### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Sätt startposition"
@@ -1256,9 +1301,13 @@
 ::setup::board::mc::EnPassantFile				"En passant"
 ::setup::board::mc::StartPosition				"Startposition"
 ::setup::board::mc::Fen								"FEN"
+::setup::board::mc::Promoted						"Promoted" ;# NEW
+::setup::board::mc::Holding						"Holding" ;# NEW
+::setup::board::mc::ChecksGiven					"Checks Given" ;# NEW
 ::setup::board::mc::Clear							"Rensa"
 ::setup::board::mc::CopyFen						"Kopiera FEN till urklipp"
 ::setup::board::mc::Shuffle						"Shuffle..."
+::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Chess 960 rockad"
 
@@ -1270,6 +1319,7 @@
 ::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"
 
 ::setup::board::mc::Error(InvalidFen)					"FEN är ogiltigt."
+::setup::board::mc::Error(EmptyBoard)					"Board is empty." ;# NEW
 ::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."
 ::setup::board::mc::Error(NoBlackKing)					"Svart kung saknas."
 ::setup::board::mc::Error(DoubleCheck)					"Båda kungar står i schack."
@@ -1286,6 +1336,10 @@
 ::setup::board::mc::Error(InvalidCastlingRights)	"Ogiltig tornlinje för rockad."
 ::setup::board::mc::Error(InvalidCastlingFile)		"Ogiltig rockadlinje."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"För rockad måste entydiga tornlinjer anges. (Möjligtvis är fel linjer angivna.)"
+::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
+::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)			"Ogiltig en passant-linje."
 ::setup::board::mc::Error(MultiPawnCheck)				"Två eller fler bönder ger schack."
 ::setup::board::mc::Error(TripleCheck)					"Tre eller fler pjäser ger schack."
@@ -1306,6 +1360,9 @@
 ::import::mc::ImportAborted						"Import avbruten."
 ::import::mc::TextIsEmpty							"PGN-text är tom."
 ::import::mc::AbortImport							"Avbryta PGN-import?"
+::import::mc::UnsupportedVariant					"Unsuported variant '%s' rejected" ;# NEW
+::import::mc::Accepted								"accepted" ;# NEW
+::import::mc::Rejected								"rejected" ;# NEW
 
 ::import::mc::DifferentEncoding					"Den valda kodningen %src överensstämmer inte med filkodningen %dst."
 ::import::mc::DifferentEncodingDetails			"Databasen kan därefter inte omkoderas."
@@ -1341,15 +1398,18 @@
 ::import::mc::UnknownTermination					"Okänd avbrottsorsak"
 ::import::mc::UnknownMode							"Okänd modus"
 ::import::mc::RatingTooHigh						"Ratingtal för högt(ignorerad)"
+::import::mc::EncodingFailed						"Encoding failed"
 ::import::mc::TooManyNags							"För många NAG's (latter ignored)"
 ::import::mc::IllegalCastling						"Otillåten rockad"
 ::import::mc::IllegalMove							"Ogiltigt drag"
 ::import::mc::CastlingCorrection					"Rockad korrigering"
-::import::mc::UnsupportedVariant					"Inget stöd för schackvariant"
-::import::mc::UnsupportedCrazyhouseVariant	"Varianten Crazyhouse stöds inte än (partiet hoppas över)"
 ::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
 ::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte resultatrubrik"
 ::import::mc::ValueTooLong							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
+::import::mc::NotSuicideNotGiveaway				"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
+::import::mc::VariantChangedToGiveaway			"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
+::import::mc::VariantChangedToSuicide			"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
+::import::mc::ResultCorrection					"Due to the final position of the game a correction of the result has been done" ;# NEW
 ::import::mc::MaximalErrorCountExceeded		"Fler än maximalt tillåtna fel. Inga fler fel (av tidigare typ) kommer att rapporteras"
 ::import::mc::MaximalWarningCountExceeded		"Fler än maximalt tillåtna varningar. Inga fler varningar (av tidigare typ) kommer att rapporteras"
 ::import::mc::InvalidToken							"Ogiltigt tecken"
@@ -1359,6 +1419,8 @@
 ::import::mc::UnexpectedResultToken				"Oväntad resultattecken"
 ::import::mc::UnexpectedTag						"Oväntad tag inuti parti"
 ::import::mc::UnexpectedEndOfGame				"Oväntad slut av parti (saknar resultat)"
+::import::mc::UnexpectedCastling					"Unexpected castling (not allowed in this chess variant)" ;# NEW
+::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
 ::import::mc::TagNameExpected						"Syntaxfel: Tag name expected"
 ::import::mc::TagValueExpected					"Syntaxfel: Tag value expected"
 ::import::mc::InvalidFen							"Ogiltig FEN"
@@ -1654,6 +1716,8 @@
 ::game::mc::GameDecodingFailed			"Partiet kunde inte avkodas."
 ::game::mc::GameDecodingChanged			"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set." ;# NEW
 ::game::mc::GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited." ;# NEW
+::game::mc::VariantHasChanged				"Game cannot be opened because the variant of the database has changed and is now different from the game variant." ;# NEW
+::game::mc::RemoveGameFromHistory		"Remove game from history?" ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alla språk"
@@ -1672,33 +1736,43 @@
 ::genderbox::mc::Gender(c) "Dator"
 
 ### terminationbox #####################################################
-::terminationbox::mc::Normal							"Normalt"
-::terminationbox::mc::Unplayed						"Inte spelat"
-::terminationbox::mc::Abandoned						"Avbrutet"
-::terminationbox::mc::Adjudication					"Avdömt"
-::terminationbox::mc::Death							"Död"
-::terminationbox::mc::Emergency						"Nödsituation"
-::terminationbox::mc::RulesInfraction				"Regelbrott"
-::terminationbox::mc::TimeForfeit					"Tidsöverskridning"
-::terminationbox::mc::Unterminated					"Ej färdigspelat"
+::terminationbox::mc::Normal								"Normalt"
+::terminationbox::mc::Unplayed							"Inte spelat"
+::terminationbox::mc::Abandoned							"Avbrutet"
+::terminationbox::mc::Adjudication						"Avdömt"
+::terminationbox::mc::Disconnection						"Disconnection" ;# NEW
+::terminationbox::mc::Emergency							"Nödsituation"
+::terminationbox::mc::RulesInfraction					"Regelbrott"
+::terminationbox::mc::TimeForfeit						"Tidsöverskridning"
+::terminationbox::mc::Unterminated						"Ej färdigspelat"
 
-::terminationbox::mc::State(Mate)					"%s är matt"
-::terminationbox::mc::State(Stalemate)				"%s är matt"
+::terminationbox::mc::State(Checkmate)					"%s är matt"
+::terminationbox::mc::State(Stalemate)					"%s är matt"
+::terminationbox::mc::State(ThreeChecks)				"%s got three checks" ;# NEW
+::terminationbox::mc::State(Losing)						"%s wins by losing all material" ;# NEW
 
-::terminationbox::mc::Result(1-0)					"Svart gav upp"
-::terminationbox::mc::Result(0-1)					"Vit gav upp"
-::terminationbox::mc::Result(0-0)					"Förlust dömt för båda spelaren"
-::terminationbox::mc::Result(1/2-1/2)				"Remi"
+::terminationbox::mc::Result(1-0)						"Svart gav upp"
+::terminationbox::mc::Result(0-1)						"Vit gav upp"
+::terminationbox::mc::Result(0-0)						"Förlust dömt för båda spelaren"
+::terminationbox::mc::Result(1/2-1/2)					"Remi"
 
-::terminationbox::mc::Reason(Unplayed)				"Parti är ospelat"
-::terminationbox::mc::Reason(Abandoned)			"Parti är avbrutit"
-::terminationbox::mc::Reason(Adjudication)		"Avdömt"
-::terminationbox::mc::Reason(Death)					"Death" ;# NEW
-::terminationbox::mc::Reason(Emergency)			"Avbrutit pga nödsituation"
-::terminationbox::mc::Reason(RulesInfraction)	"Avdömt pga regelbrott"
-::terminationbox::mc::Reason(TimeForfeit)			"%s tidsförlust"
-::terminationbox::mc::Reason(TimeForfeit,both)	"Båda spelarna överskred tiden"
-::terminationbox::mc::Reason(Unterminated)		"Ej färdigspelat"
+::terminationbox::mc::Reason(Unplayed)					"Parti är ospelat"
+::terminationbox::mc::Reason(Abandoned)				"Parti är avbrutit"
+::terminationbox::mc::Reason(Adjudication)			"Avdömt"
+::terminationbox::mc::Reason(Death)						"Death" ;# NEW
+::terminationbox::mc::Reason(Emergency)				"Avbrutit pga nödsituation"
+::terminationbox::mc::Reason(RulesInfraction)		"Avdömt pga regelbrott"
+::terminationbox::mc::Reason(TimeForfeit)				"%s tidsförlust"
+::terminationbox::mc::Reason(TimeForfeit,both)		"Båda spelarna överskred tiden"
+::terminationbox::mc::Reason(Unterminated)			"Ej färdigspelat"
+::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
+
+::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
+::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
+::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)" ;# NEW
+::terminationbox::mc::Termination(fifty)				"Game drawn by the 50 move rule" ;# NEW
+::terminationbox::mc::Termination(threefold)			"Game drawn by threefold move repetition" ;# NEW
+::terminationbox::mc::Termination(mating)				"Neither player has mating material" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Vid bordet"
@@ -1761,66 +1835,69 @@
 ::help::mc::Overview					"Översikt"
 
 ### crosstable #########################################################
-::crosstable::mc::TournamentTable		"Turneringstabell"
-::crosstable::mc::AverageRating			"Genomsnittsranking"
-::crosstable::mc::Category					"Kategori"
-::crosstable::mc::Games						"Partier"
-::crosstable::mc::Game						"Parti"
+::crosstable::mc::TournamentTable			"Turneringstabell"
+::crosstable::mc::AverageRating				"Genomsnittsranking"
+::crosstable::mc::Category						"Kategori"
+::crosstable::mc::Games							"Partier"
+::crosstable::mc::Game							"Parti"
 
-::crosstable::mc::ScoringSystem			"Poängsystem"
-::crosstable::mc::Tiebreak					"Tie-Break"
-::crosstable::mc::Settings					"Inställningar"
-::crosstable::mc::RevertToStart			"Återgå till de ursprungliga värdena"
-::crosstable::mc::UpdateDisplay			"Uppdatera displayen"
+::crosstable::mc::ScoringSystem				"Poängsystem"
+::crosstable::mc::Tiebreak						"Tie-Break"
+::crosstable::mc::Settings						"Inställningar"
+::crosstable::mc::RevertToStart				"Återgå till de ursprungliga värdena"
+::crosstable::mc::UpdateDisplay				"Uppdatera displayen"
+::crosstable::mc::SaveAsHTML					"Save as HTML file" ;# NEW
 
-::crosstable::mc::Traditional				"Traditionellt"
-::crosstable::mc::Bilbao					"Bilbao"
+::crosstable::mc::Traditional					"Traditionellt"
+::crosstable::mc::Bilbao						"Bilbao"
 
-::crosstable::mc::None						"None"
-::crosstable::mc::Buchholz					"Buchholz"
-::crosstable::mc::MedianBuchholz			"Median-Buchholz"
-::crosstable::mc::ModifiedMedianBuchholz "Mod. Median-Buchholz"
-::crosstable::mc::RefinedBuchholz		"Refined Buchholz"
-::crosstable::mc::SonnebornBerger		"Sonneborn-Berger"
-::crosstable::mc::Progressive				"Progressive Score"
-::crosstable::mc::KoyaSystem				"Koya System"
-::crosstable::mc::GamesWon					"Antal vinstpartier"
-::crosstable::mc::GamesWonWithBlack		"Antal vinstpartier med svart"
-::crosstable::mc::ParticularResult		"Particular Result"
-::crosstable::mc::TraditionalScoring	"Traditional Scoring"
+::crosstable::mc::None							"None"
+::crosstable::mc::Buchholz						"Buchholz"
+::crosstable::mc::MedianBuchholz				"Median-Buchholz"
+::crosstable::mc::ModifiedMedianBuchholz	"Mod. Median-Buchholz"
+::crosstable::mc::RefinedBuchholz			"Refined Buchholz"
+::crosstable::mc::SonnebornBerger			"Sonneborn-Berger"
+::crosstable::mc::Progressive					"Progressive Score"
+::crosstable::mc::KoyaSystem					"Koya System"
+::crosstable::mc::GamesWon						"Antal vinstpartier"
+::crosstable::mc::GamesWonWithBlack			"Antal vinstpartier med svart"
+::crosstable::mc::ParticularResult			"Particular Result"
+::crosstable::mc::TraditionalScoring		"Traditional Scoring"
 
-::crosstable::mc::Crosstable				"Korstabell"
-::crosstable::mc::Scheveningen			"Scheveningen"
-::crosstable::mc::Swiss						"Schweitzersystem"
-::crosstable::mc::Match						"Match"
-::crosstable::mc::Knockout					"Knockout"
-::crosstable::mc::RankingList				"Rankinglista"
+::crosstable::mc::Crosstable					"Korstabell"
+::crosstable::mc::Scheveningen				"Scheveningen"
+::crosstable::mc::Swiss							"Schweitzersystem"
+::crosstable::mc::Match							"Match"
+::crosstable::mc::Knockout						"Knockout"
+::crosstable::mc::RankingList					"Rankinglista"
 
-::crosstable::mc::Order						"Order"
-::crosstable::mc::Type						"Table Type"
-::crosstable::mc::Score						"Score"
-::crosstable::mc::Alphabetical			"Alfabetisk"
-::crosstable::mc::Rating					"Rating"
-::crosstable::mc::Federation				"Nation"
+::crosstable::mc::Order							"Order"
+::crosstable::mc::Type							"Table Type"
+::crosstable::mc::Score							"Score"
+::crosstable::mc::Alphabetical				"Alfabetisk"
+::crosstable::mc::Rating						"Rating"
+::crosstable::mc::Federation					"Nation"
 
-::crosstable::mc::Debugging				"Debugging"
-::crosstable::mc::Display					"Display"
-::crosstable::mc::Style						"Stil"
-::crosstable::mc::Spacing					"Radavstånd"
-::crosstable::mc::Padding					"Padding"
-::crosstable::mc::ShowLog					"Visa log"
-::crosstable::mc::ShowHtml					"Visa HTML"
-::crosstable::mc::ShowRating				"Rating"
-::crosstable::mc::ShowPerformance		"Prestation"
-::crosstable::mc::ShowWinDrawLoss		"Vinst/Remi/Förlust"
-::crosstable::mc::ShowTiebreak			"Tiebreak"
-::crosstable::mc::ShowOpponent			"Motståndare (som Tooltip)"
-::crosstable::mc::KnockoutStyle			"Knockout Table Style"
-::crosstable::mc::Pyramid					"Pyramid"
-::crosstable::mc::Triangle					"Trekant"
+::crosstable::mc::Debugging					"Debugging"
+::crosstable::mc::Display						"Display"
+::crosstable::mc::Style							"Stil"
+::crosstable::mc::Spacing						"Radavstånd"
+::crosstable::mc::Padding						"Padding"
+::crosstable::mc::ShowLog						"Visa log"
+::crosstable::mc::ShowHtml						"Visa HTML"
+::crosstable::mc::ShowRating					"Rating"
+::crosstable::mc::ShowPerformance			"Prestation"
+::crosstable::mc::ShowWinDrawLoss			"Vinst/Remi/Förlust"
+::crosstable::mc::ShowTiebreak				"Tiebreak"
+::crosstable::mc::ShowOpponent				"Motståndare (som Tooltip)"
+::crosstable::mc::KnockoutStyle				"Knockout Table Style"
+::crosstable::mc::Pyramid						"Pyramid"
+::crosstable::mc::Triangle						"Trekant"
 
-::crosstable::mc::CrosstableLimit		"Korstabellens maxantal av %d spelare kommer att överskridas."
-::crosstable::mc::CrosstableLimitDetail "'%s' väljer ett annat tabellformat."
+::crosstable::mc::CrosstableLimit			"Korstabellens maxantal av %d spelare kommer att överskridas."
+::crosstable::mc::CrosstableLimitDetail	"'%s' väljer ett annat tabellformat."
+::crosstable::mc::CannotOverwriteFile		"Cannot overwrite file '%s': permission denied." ;# NEW
+::crosstable::mc::CannotCreateFile			"Cannot create file '%s': permission denied." ;# NEW
 
 ### info ###############################################################
 ::info::mc::InfoTitle			"Om %s"
@@ -1988,6 +2065,7 @@
 ::dialog::fsbox::mc::ScidDatabase			"Scid databas"
 ::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase databas"
 ::dialog::fsbox::mc::PortableGameFile		"Flyttbar partifil"
+::dialog::fsbox::mc::BughousePortableGameFile "Bughouse Portable Game File" ;# NEW
 ::dialog::fsbox::mc::ZipArchive				"ZIP arkiv"
 ::dialog::fsbox::mc::ScidbArchive			"Scidb arkiv"
 ::dialog::fsbox::mc::PortableDocumentFile	"Flyttbar dokumentfil"
@@ -2012,8 +2090,9 @@
 
 ::dialog::fsbox::mc::FileType(exe)			"Körbara filer"
 ::dialog::fsbox::mc::FileType(txt)			"Textfiler"
-::dialog::fsbox::mc::FileType(log)			"Logfiler"
 ::dialog::fsbox::mc::FileType(bin)			"Binärfiler"
+::dialog::fsbox::mc::FileType(log)			"Logfiler"
+::dialog::fsbox::mc::FileType(html)			"HTML files" ;# NEW
 
 ### choosecolor ########################################################
 ::dialog::choosecolor::mc::Ok					"&OK"

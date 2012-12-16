@@ -51,7 +51,34 @@ class Consumer : private Encoder, public db::InfoConsumer
 {
 public:
 
-	Consumer(format::Type srcFormat, Codec& codec, TagBits const& allowedTags, bool allowExtraTags);
+	class Codecs
+	{
+	public:
+
+		Codecs();
+		Codecs(Codec* codec);
+
+		bool isEmpty() const;
+		bool supports(db::variant::Type variant) const;
+
+		Codec& operator[](db::variant::Type variant) const;
+
+		void add(Codec* codec);
+
+	private:
+
+		typedef db::variant::Type Variant;
+
+		mutable Codec*		m_codecs[db::variant::NumberOfVariants];
+		mutable Codec*		m_codec;
+		mutable Variant	m_variant;
+		bool					m_empty;
+	};
+
+	Consumer(format::Type srcFormat,
+				Codecs const& codecs,
+				TagBits const& allowedTags,
+				bool allowExtraTags);
 
 	format::Type format() const override;
 
@@ -88,12 +115,12 @@ private:
 	void beginVariation() override;
 	void endVariation(bool isEmpty) override;
 
+	void variantHasChanged(db::variant::Type variant) override;
+
 	util::ByteStream	m_stream;
 	Byte					m_buffer[Block_Size];
-	Codec&				m_codec;
-	unsigned				m_streamPos;
+	Codecs				m_codecs;
 	Move					m_move;
-	unsigned				m_runLength;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
 	unsigned				m_danglingEndMarker;

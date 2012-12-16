@@ -300,16 +300,16 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 }
 
 
-proc init {path base} {
-	set [namespace current]::${path}::Vars($base:index) -1
+proc init {path base variant} {
+	set [namespace current]::${path}::Vars($base:$variant:index) -1
 }
 
 
-proc forget {path base} {
+proc forget {path base variant} {
 	variable ${path}::Vars
 
-	::scrolledtable::forget $path.table $base
-	unset -nocomplain Vars($base:index)
+	::scrolledtable::forget $path.table $base $variant
+	unset -nocomplain Vars($base:$variant:index)
 }
 
 
@@ -345,8 +345,8 @@ proc fill {path first last} {
 }
 
 
-proc update {path base size} {
-	::scrolledtable::update $path.table $base $size
+proc update {path base variant size} {
+	::scrolledtable::update $path.table $base $variant $size
 }
 
 
@@ -370,8 +370,8 @@ proc borderwidth {path} {
 }
 
 
-proc selectedPlayer {path base} {
-	return [set [namespace current]::${path}::Vars($base:index)]
+proc selectedPlayer {path base variant} {
+	return [set [namespace current]::${path}::Vars($base:$variant:index)]
 }
 
 
@@ -435,7 +435,7 @@ proc see {path position} {
 }
 
 
-proc popupMenu {menu base info {playerCard {}}} {
+proc popupMenu {menu base variant info {playerCard {}}} {
 	variable Options
 
 	set parent [winfo toplevel $menu]
@@ -445,7 +445,7 @@ proc popupMenu {menu base info {playerCard {}}} {
 			-compound left \
 			-image $::icon::16x16::playercard \
 			-label " $mc::ShowPlayerCard" \
-			-command [namespace code [list ::playercard::show $base {*}$playerCard]] \
+			-command [namespace code [list ::playercard::show $base $variant {*}$playerCard]] \
 			;
 	}
 
@@ -461,7 +461,7 @@ proc popupMenu {menu base info {playerCard {}}} {
 		$menu entryconfigure end -state disabled
 	}
 
-#	if {![::scidb::db::get readonly? $base]} {
+#	if {![::scidb::db::get readonly? $base $variant]} {
 #		$menu add separator
 #		$menu add command \
 #			-label " $::mc::Edit..." \
@@ -498,9 +498,10 @@ proc TableSelected {path index} {
 	if {[llength $Vars(selectcmd)]} {
 		::widget::busyCursor on
 		set base [::scrolledtable::base $path.table]
-		set view [{*}$Vars(viewcmd) $base]
-		set Vars($base:index) [::scidb::db::get playerIndex $index $view $base]
-		{*}$Vars(selectcmd) $base $view
+		set variant [::scrolledtable::variant $path.table]
+		set view [{*}$Vars(viewcmd) $base $variant]
+		set Vars($base:$variant:index) [::scidb::db::get playerIndex $index $view $base $variant]
+		{*}$Vars(selectcmd) $base $variant $view
 		::widget::busyCursor off
 	}
 }
@@ -508,7 +509,7 @@ proc TableSelected {path index} {
 
 proc view {path} {
 	variable ${path}::Vars
-	return [{*}$Vars(viewcmd) [::scrolledtable::base $path.table]]
+	return [{*}$Vars(viewcmd) [::scrolledtable::base $path.table] [::scrolledtable::variant $path.table]]
 }
 
 
@@ -517,21 +518,20 @@ proc TableFill {path args} {
 	variable ${path}::Vars
 	variable Options
 
-	lassign [lindex $args 0] table base start first last columns
+	lassign [lindex $args 0] table base variant start first last columns
 
-	set codec [::scidb::db::get codec $base]
-	set view [{*}$Vars(viewcmd) $base]
-	set last [expr {min($last, [scidb::view::count players $base $view] - $start)}]
+	set codec [::scidb::db::get codec $base $variant]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set last [expr {min($last, [scidb::view::count players $base $variant $view] - $start)}]
 	set ratings [list $Options(rating1:type) $Options(rating2:type)]
 
-	if {![info exists Vars($base:index)]} {
-		set Vars($base:index) -1
+	if {![info exists Vars($base:$variant:index)]} {
+		set Vars($base:$variant:index) -1
 	}
 
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
-		set base [::scrolledtable::base $path.table]
-		set line [scidb::db::get playerInfo $index $view $base -ratings $ratings]
+		set line [scidb::db::get playerInfo $index $view $base $variant -ratings $ratings]
 		set text {}
 		set k 0
 
@@ -658,7 +658,7 @@ proc TableVisit {path data} {
 	variable ${path}::Vars
 	variable Options
 
-	lassign $data base mode id row
+	lassign $data base variant mode id row
 	set table $path.table
 
 	if {$mode eq "leave"} {
@@ -678,9 +678,9 @@ proc TableVisit {path data} {
 		set col [lsearch -exact $Vars(columns) $id]
 	}
 
-	set view [{*}$Vars(viewcmd) $base]
+	set view [{*}$Vars(viewcmd) $base $variant]
 	set row  [::scrolledtable::rowToIndex $table $row]
-	set item [::scidb::db::get playerInfo $row $view $base $col]
+	set item [::scidb::db::get playerInfo $row $view $base $variant $col]
 
 	if {[string length $item] == 0} { return }
 
@@ -710,14 +710,15 @@ proc SortColumn {path id dir} {
 
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path.table]
-	set view [{*}$Vars(viewcmd) $base]
+	set variant [::scrolledtable::variant $path.table]
+	set view [{*}$Vars(viewcmd) $base $variant]
 	set table $path.table
 	set ratings [list $Options(rating1:type) $Options(rating2:type)]
 	set see 0
 	set selection [::scrolledtable::selection $table]
 	if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $table]} { set see 1 }
 	if {$dir eq "reverse"} {
-		::scidb::db::reverse player $base $view
+		::scidb::db::reverse player $base $variant $view
 	} else {
 		set options [list -ratings $ratings]
 		if {[string match {rating*} $id] && $Options($id:which) eq "latest"} {
@@ -726,10 +727,10 @@ proc SortColumn {path id dir} {
 		if {$dir eq "descending"} { lappend options -descending }
 		set column [::scrolledtable::columnNo $table $id]
 		if {$column > 1} { incr column -1 }
-		::scidb::db::sort player $base $column $view {*}$options
+		::scidb::db::sort player $base $variant $column $view {*}$options
 	}
 	if {$selection >= 0} {
-		set selection [::scidb::db::get lookupPlayer $selection $view $base]
+		set selection [::scidb::db::get lookupPlayer $selection $view $base $variant]
 	}
 	::widget::busyCursor off
 	::scrolledtable::updateColumn $table $selection $see
@@ -743,8 +744,9 @@ proc Find {path combo args} {
 	set value $Vars(find-current)
 	if {[string length $value] == 0} { return }
 	set base [::scrolledtable::base $path.table]
-	set view [{*}$Vars(viewcmd) $base]
-	set i [::scidb::view::find player $base $view $value]
+	set variant [::scrolledtable::variant $table]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set i [::scidb::view::find player $base $variant $view $value]
 	if {[llength $args] == 0} {
 		if {[string length $value] > 2} {
 			lappend Find $value
@@ -782,8 +784,9 @@ proc ShowInfo {path x y} {
 	::scrolledtable::focus $table
 	::scrolledtable::activate $table [::scrolledtable::indexToRow $table $index]
 	set base [::scrolledtable::base $table]
-	set view [{*}$Vars(viewcmd) $base]
-	set info [scidb::db::get playerInfo $index $view $base -card -ratings {Elo Elo}]
+	set variant [::scrolledtable::variant $table]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set info [scidb::db::get playerInfo $index $view $base $variant -card -ratings {Elo Elo}]
 	::playercard::popupInfo $path $info
 }
 
@@ -793,18 +796,18 @@ proc HideInfo {path} {
 }
 
 
-proc PopupMenu {table menu base index} {
+proc PopupMenu {table menu base variant index} {
 	set path [winfo parent $table]
 	variable ${path}::Vars
 	variable Options
 
 	if {![string is digit $index]} { return }
 
-	set view  [{*}$Vars(viewcmd) $base]
-	set info  [scidb::db::get playerInfo $index $view $base -info]
+	set view  [{*}$Vars(viewcmd) $base $variant]
+	set info  [scidb::db::get playerInfo $index $view $base $variant -info]
 
-	set playerIndex [scidb::db::get playerIndex $index $view $base]
-	popupMenu $menu $base $info $playerIndex
+	set playerIndex [scidb::db::get playerIndex $index $view $base $variant]
+	popupMenu $menu $base $variant $info $playerIndex
 }
 
 

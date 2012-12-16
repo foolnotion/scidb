@@ -288,7 +288,7 @@ if {[::process::testOption use-analysis]} {
 	database::build $db $Attr(board,width) $Attr(board,height)
 	board::build $top.board $Attr(board,width) $Attr(board,height)
 	pgn::build $right.pgn $Attr(pgn,width) $Attr(pgn,height)
-	tree::build $bottom.tree $Attr(tree,width) $Attr(tree,height)
+	tree::build $bottom.tree $Attr(tree,width) $Attr(tree,height) $bottom.games
 	tree::games::build $bottom.games $Attr(games,width) $Attr(games,height)
 if {[::process::testOption use-analysis]} {
 	analysis::build $right.analysis $Attr(analysis,width) $Attr(analysis,height)

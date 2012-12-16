@@ -201,7 +201,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 						case 't':
 							if ((q = ::match(p + 2, "ct", 2)))
-								q = info.parseDigitalClockTime(q);
+								q = info.parseClockTime(q);
 							break;
 					}
 					break;
@@ -228,7 +228,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 				case 'm':
 					if ((q = ::match(p + 2, "mct", 3)))
-						q = info.parseMechanicalClockTime(q);
+						q = info.parseClockTime(q);
 					break;
 			}
 

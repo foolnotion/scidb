@@ -40,6 +40,7 @@ set Tiebreak					"Tie-break Rule"
 set Settings					"Settings"
 set RevertToStart				"Revert to initial values"
 set UpdateDisplay				"Update display"
+set SaveAsHTML					"Save as HTML file"
 
 set Traditional				"Traditional"
 set Bilbao						"Bilbao"
@@ -89,6 +90,8 @@ set Triangle					"Triangle"
 
 set CrosstableLimit			"The crosstable limit of %d players will be exceeded."
 set CrosstableLimitDetail	"'%s' is choosing another table mode."
+set CannotOverwriteFile		"Cannot overwrite file '%s': permission denied."
+set CannotCreateFile			"Cannot create file '%s': permission denied."
 
 } ;# namespace mc
 
@@ -172,7 +175,7 @@ variable Counter 0
 variable Reuse ""
 
 
-proc open {parent base index view source} {
+proc open {parent base variant index view source} {
 	variable ListEntries
 	variable Options
 	variable Defaults
@@ -182,15 +185,15 @@ proc open {parent base index view source} {
 	variable Key
 
 	if {$source eq "game"} {
-		set number [::scidb::db::get gameNumber $base $index $view]
-		set info [::scidb::db::fetch eventInfo $number $base -card]
+		set number [::scidb::db::get gameNumber $base $variant $index $view]
+		set info [::scidb::db::fetch eventInfo $number $base $variant -card]
 	} else { ;# $source eq "event"
-		set info [::scidb::db::get eventInfo $index $view $base -card]
-		set number [::scidb::db::get eventIndex $index $view $base]
+		set info [::scidb::db::get eventInfo $index $view $base $variant -card]
+		set number [::scidb::db::get eventIndex $index $view $base $variant]
 	}
 
 	lassign $info title type date mode timeMode country site
-	set key "key:$base:$site:$title:$type:$date:$mode:$timeMode"
+	set key "key:$base:$variant:$site:$title:$type:$date:$mode:$timeMode"
 
 	if {[info exists Key($key)]} {
 		set dlg $Key($key)
@@ -200,7 +203,7 @@ proc open {parent base index view source} {
 		} else {
 			set Vars(open) 1
 			::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
-			set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
+			set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
 			UpdateContent $dlg 1
 		}
 		return
@@ -224,6 +227,7 @@ proc open {parent base index view source} {
 	set Vars(open) 1
 	set Vars(html) $html
 	set Vars(base) $base
+	set Vars(variant) $variant
 	set Vars(view) $view
 	set Vars(index) $index
 	set Vars(info) $info
@@ -239,19 +243,19 @@ proc open {parent base index view source} {
 		::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 	}
 	if {![info exists Vars(viewId)]} {
-		set Vars(viewId) [::scidb::view::new $base slave slave slave slave slave]
+		set Vars(viewId) [::scidb::view::new $base $variant slave slave slave slave slave]
 	}
 	if {$source eq "game"} { set search gameevent } else { set search event }
-	::scidb::view::search $base $Vars(viewId) null none [list $search $number]
+	::scidb::view::search $base $variant $Vars(viewId) null none [list $search $number]
 
 	if {[winfo exists $dlg]} {
 		::widget::dialogRaise $dlg
-		set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
+		set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
 		UpdateContent $dlg 1
 		return
 	}
 
-	set Vars(subscribe) [list [namespace current]::Close $base $dlg]
+	set Vars(subscribe) [list [namespace current]::Close $base $variant $dlg]
 	::scidb::view::subscribe {*}$Vars(subscribe)
 
 	tk::toplevel $dlg -class Scidb
@@ -347,7 +351,7 @@ proc open {parent base index view source} {
 		set f [set f[expr {($i - 1)/3 + 2}]]
 		set r [expr {($i*2 - 1)%6}]
 		set Vars(label:tiebreak$i) {}
-		tk::label $f.label$i -textvar [namespace current]::Vars(label:tiebreak$i)
+		tk::label $f.label$i -textvar [namespace current]::${dlg}::Vars(label:tiebreak$i)
 		set Vars(widget:tiebreak$i) $f.choose$i
 		set Vars(value:tiebreak$i) [lindex $List(tiebreak) 0]
 		::ttk::combobox $Vars(widget:tiebreak$i) \
@@ -403,7 +407,7 @@ proc open {parent base index view source} {
 	$dlg.close configure -command [list destroy $dlg]
 
 	::update
-	set Vars(tableId) [::scidb::crosstable::make $base $Vars(viewId)]
+	set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
 	UpdateContent $dlg 1
 
 	lassign {0 0} w h
@@ -442,10 +446,14 @@ proc NextEvent {dlg step} {
 
 	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 	incr Vars(index) $step
-	set number [::scidb::db::get eventIndex $Vars(index) $Vars(view) $Vars(base)]
-	::scidb::view::search $Vars(base) $Vars(viewId) null none [list event $number]
-	set Vars(info) [::scidb::db::get eventInfo $Vars(index) $Vars(viewId) $Vars(base) -card]
-	set Vars(tableId) [::scidb::crosstable::make $Vars(base) $Vars(viewId)]
+	set view $Vars(view)
+	set base $Vars(base)
+	set variant  $Vars(variant)
+	set index $Vars(index)
+	set number [::scidb::db::get eventIndex $index $view $base $variant]
+	::scidb::view::search $base $variant $Vars(viewId) null none [list event $number]
+	set Vars(info) [::scidb::db::get eventInfo $index $Vars(viewId) $base $variant -card]
+	set Vars(tableId) [::scidb::crosstable::make $base $variant $Vars(viewId)]
 	set Vars(warning) 0
 	set Vars(lastMode) ""
 	set Vars(prevMode) ""
@@ -604,6 +612,7 @@ proc UpdateContent {dlg {setup 0}} {
 
 	set w $Vars(html)
 	set base $Vars(base)
+	set variant $Vars(variant)
 	set index $Vars(index)
 	set viewId $Vars(viewId)
 
@@ -621,11 +630,7 @@ proc UpdateContent {dlg {setup 0}} {
 		set timeMode [lindex $info [::eventtable::columnIndex timeMode]]
 		set eventCountry [lindex $info [::eventtable::columnIndex eventCountry]]
 		set site [lindex $info [::eventtable::columnIndex site]]
-		if {[string length $name] <= 1} {
-			set Vars(eventName) ""
-		} else {
-			set Vars(eventName) " ($name)"
-		}
+		if {[string length $name] <= 1} { set Vars(eventName) "" } else { set Vars(eventName) " $name" }
 		set Vars(event) [list $name $eventDate $site $eventCountry $eventType $eventMode $timeMode]
 		set i [lsearch -exact -index 0 $RecentlyUsedHistory $Vars(event)]
 
@@ -703,7 +708,7 @@ proc UpdateContent {dlg {setup 0}} {
 
 	if {$Vars(bestMode) eq "crosstable"} {
 		append preamble "\\let\\TableLimit\\$Defaults(crosstableLimit)"
-		set id [list $base $Vars(viewId)]
+		set id [list $base $variant $Vars(viewId)]
 
 		if {$Vars(warning) ne $id} {
 			set playerCount [::scidb::crosstable::get playerCount $Vars(tableId) $viewId]
@@ -792,7 +797,7 @@ proc ConfigureButtons {dlg} {
 	} else {
 		if {$Vars(index) == 0} { set state disabled } else { set state normal }
 		$dlg.previous configure -state $state
-		set count [scidb::view::count events $Vars(base) $Vars(view)]
+		set count [scidb::view::count events $Vars(base) $Vars(variant) $Vars(view)]
 		if {$Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$dlg.next configure -state $state
 	}
@@ -846,7 +851,7 @@ proc Destroy {dlg w unsubscribe} {
 	::scidb::crosstable::release $Vars(tableId) $Vars(viewId)
 	if {$Vars(open)} {
 		set Vars(open) 0
-		::scidb::view::close $Vars(base) $Vars(viewId)
+		::scidb::view::close $Vars(base) $Vars(variant) $Vars(viewId)
 	}
 	namespace delete [namespace current]::$dlg
 	array unset Key $dlg
@@ -859,16 +864,18 @@ proc Open {dlg which gameIndex} {
 	Tooltip $dlg hide
 
 	set base $Vars(base)
+	set variant $Vars(variant)
 	set path $Vars(html)
 	set viewId $Vars(viewId)
 
 	if {$which eq "pgn"} {
-		::widget::busyOperation { ::game::new $path $base $viewId $gameIndex }
+		::widget::busyOperation \
+			{ ::game::new $path -base $base -variant $variant -view $viewId -number $gameIndex }
 	} else {
-		set index [::scidb::view::map game $base $viewId $gameIndex]
-		set info [::scidb::db::get gameInfo $index $viewId $base]
+		set index [::scidb::view::map game $base $variant $viewId $gameIndex]
+		set info [::scidb::db::get gameInfo $index $viewId $base $variant]
 		set Vars(${which}Id) [::widget::busyOperation \
-			[list ::${which}::load $path $base $info $viewId $index $Vars(${which}Id)]]
+			[list ::${which}::load $path $base $variant $info $viewId $index $Vars(${which}Id)]]
 	}
 }
 
@@ -878,7 +885,7 @@ proc ShowPlayerCard {dlg rank} {
 
 	Tooltip $dlg hide
 	lassign [::scidb::crosstable::get playerId $Vars(tableId) $Vars(viewId) $rank]] gameIndex side
-	::playercard::show $Vars(base) $gameIndex $side
+	::playercard::show $Vars(base) $Vars(variant) $gameIndex $side
 }
 
 
@@ -1048,7 +1055,7 @@ proc Mouse2Down {dlg node} {
 	set gameIndex [$node attribute -default {} game]
 	if {[string length $gameIndex]} {
 		MouseEnter $dlg $node
-		::gametable::showGame $dlg $Vars(base) -1 $gameIndex 
+		::gametable::showGame $dlg $Vars(base) $Vars(variant) -1 $gameIndex 
 	} else {
 		set rank [$node attribute -default {} rank]
 		if {[string length $rank]} {
@@ -1161,6 +1168,12 @@ proc BuildMenu {dlg m} {
 		-state $state
 		;
 
+	$m add command \
+		-label "$mc::SaveAsHTML..." \
+		-command [namespace code [list SaveAsHTML $dlg]] \
+		;
+	$m add separator
+
 	$m add cascade -label $mc::Display -menu $sub
 
 	set sub [menu $m.style]
@@ -1228,6 +1241,76 @@ proc BuildMenu {dlg m} {
 }
 
 
+proc SaveAsHTML {dlg} {
+	variable ${dlg}::Vars
+	variable Options
+
+	set filetypes [list [list $::dialog::fsbox::mc::FileType(html) {.html}]]
+	set eventName [lindex $Vars(event) 0]
+	set save [::dialog::saveFile \
+		-parent $dlg \
+		-class crosstable \
+		-initialdir $::scidb::dir::home \
+		-initialfile $eventName.html \
+		-filetypes $filetypes \
+		-needencoding no \
+		-geometry last \
+	]
+
+	if {[llength $save] == 0} { return }
+
+	set file [lindex $save 0]
+	if {[catch { ::open $file w } chan ]} {
+		if {[file exists $file]} {
+			set msg $mc::CannotOverwriteFile
+		} else {
+			set msg $mc::CannotCreateFile
+		}
+		return [::dialog::error -parent $dlg -message [format $msg $file]]
+	}
+
+	set html $Vars(output:html)
+	set html [regsub -all {[ ](recv|send|game)=[\"][^\"]*[\"]} $html ""]
+
+	append data "    " [::html::textStyle [::font::htmlTextFamilies]] \n
+	append data "    " [::html::monoStyle [::font::htmlFixedFamilies]] \n
+	array set flags {}
+	while {[set n [string first "<td><img src=" $html]] != -1} {
+		set code [string range $html [expr {$n + 14}] [expr {$n + 16}]]
+		set flag $::country::icon::flag($code)
+		set wd [image width $flag]
+		set ht [image height $flag]
+		set txt "<div class=\"$code\" title=\"[::country::name $code]\"></div>"
+		set html [string replace $html [expr {$n + 4}] [expr {$n + 19}] $txt]
+		if {![info exists flags($code)]} {
+			set flags($code) 1
+			set img [string map {\t "" \n "" " " ""} [$flag cget -data]]
+			append data "    .$code { width:${wd}px; height:${ht}px; background-repeat:no-repeat; "
+			append data "background-image:url(data:image/png;base64,$img); }\n"
+		}
+	}
+	if {[string length $data]} {
+		append style "  <style type=\"text/css\">\n"
+		append style $data
+		append style "  </style>\n"
+		set html [regsub {</head>} $html $style]
+	}
+	if {[set n [string first "<img src=" $html]] != -1} {
+		set i1 [expr {$n + 10}]
+		set i2 [expr {$n + 12}]
+		set code [string range $html $i1 $i2]
+		append src "data:image/png;base64,"
+		append src [string map {\t "" \n "" " " ""} [$::country::icon::flag($code) cget -data]]
+		append src "\" title=\"[::country::name $code]"
+		set html [string replace $html $i1 $i2 $src]
+	}
+
+	fconfigure $chan -encoding binary
+	puts $chan $html
+	close $chan
+}
+
+
 proc PopupMenu {dlg} {
 	variable ${dlg}::Vars
 
@@ -1256,29 +1339,29 @@ proc WriteOptions {chan} {
 namespace eval icon {
 namespace eval 32x32 {
 
-#set go [image create photo -data {
-#	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACAVBMVEUAAAACDw8LTlECDw8C
-#	Dw8RbHECDw8CDw8CDw8CDw8CDw8CDw8CDw8NXmMCDw8CDw8CDw8CDw8CDw8OZmsCDw8CDw8D
-#	FxgCDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8PaG0CDw8CDw8CDw8CDw8CDw8CDw8CDw8D
-#	FxgOYmYCDw8GKiwCDw8CDw8CDw8CDw8GLzECDw8CDw8OYmYKSk0IODsOZWkOYmYNW18KRUkO
-#	ZmsOY2gOZmsOZmsOZmsMVFcOZmsOYmYOZWkNXmMOZmsOZmsOZWkOYmYOZmsOZmsOZmsOZmsR
-#	bHERbHEPam8RbHEOZmsWcXYXcncjfIEkfoIOZmsfeX4kfoIxiI01i5A9kZUOZmsUb3Qwh4wZ
-#	dHlDlZlVoaVBlJhLm59orrJRn6NYpKhfqKwOZWkeeH0feX4gen8he4AjfIEkfoIlf4MmgIQo
-#	gYUpgoYqg4cshIgthYouhoswh4wxiI0ziY41i5A3jJE4jpI6j5M7kJQ9kZVAk5dBlJhDlZlE
-#	lptGl5xImJ1Jmp5Lm59MnKBOnaFQnqJToKRVoaVYpKhapalcpqpfqKxnrbForrJssLRusbVw
-#	s7Z0tbh2trp4t7t8ur1+u76AvL+CvcCEvsKGwMOIwcSKwsWOxMeQxsiTx8qVyMuXycyZys2b
-#	zM6ezc+gztGk0dOm0tRLVt61AAAAZ3RSTlMAAQECAwMEBQYHCAkKCgsMDQ4PDxARERITFBUW
-#	FxgaGxwdHh8gIiMkJCUmJikqLC4uMjY5P0BFUV1gYGxxgIiKkpuytLW/yNbY4uft7vL09fb2
-#	9vb29/f39/f3+Pj5+vr6+/v9/v7+GgnqVwAAAaVJREFUOMvNkt1qU0EUhdfaM2krJShFIjQW
-#	RVAQBZEW9Eapr+BL+HA+gILQC2mlFRFRREFapBjpOfmpYAM987O3FzlJmwi51X23Nh+z1qwZ
-#	4N+Pm5bPfGcGkBl9/ZHMB56ubTbnWWzcuNlbSb/mnKDlZvvu+rmFnwW0/8BeLr6ZLDgKX9Ty
-#	yuMjtaXlF72dOA08FAIgIT/MdOnSq977/rTFIUkBCDPTYXiy679/OQ9YpsAIQoFs6ed975tv
-#	z665cXUAgxnNYDmE0+rk2q3+5cMzYPUYAGnI1fDkNMRYDXCvbB9MLFJ0ApjmDKOoKMzU+XEG
-#	j/SbQkeSAFWUaC9v9bZrwDUAkEIKaVBR+rWv3eKd1oB3AEnSEaSJykL7Q1l889lGAB1wR0AS
-#	5IGqXGjtlcURRXKdwfBpXP26mFxsvu53hoCNi9L8fLHR8A0nvA2yxd2iEzWp5hoIkoQw846A
-#	a30sumVKIcY0qboy1QVNzjHI6k63W2qKIYY8AazKOTnvRaBbg85xjjmmMPWaKQXvxHFlu/gc
-#	NOeU/vpROQMU7O+ZjuL/R/MHYAPLcEBkVE0AAAAASUVORK5CYII=
-#}]
+# set go [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAMAAABEpIrGAAACAVBMVEUAAAACDw8LTlECDw8C
+# 	Dw8RbHECDw8CDw8CDw8CDw8CDw8CDw8CDw8NXmMCDw8CDw8CDw8CDw8CDw8OZmsCDw8CDw8D
+# 	FxgCDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8CDw8PaG0CDw8CDw8CDw8CDw8CDw8CDw8CDw8D
+# 	FxgOYmYCDw8GKiwCDw8CDw8CDw8CDw8GLzECDw8CDw8OYmYKSk0IODsOZWkOYmYNW18KRUkO
+# 	ZmsOY2gOZmsOZmsOZmsMVFcOZmsOYmYOZWkNXmMOZmsOZmsOZWkOYmYOZmsOZmsOZmsOZmsR
+# 	bHERbHEPam8RbHEOZmsWcXYXcncjfIEkfoIOZmsfeX4kfoIxiI01i5A9kZUOZmsUb3Qwh4wZ
+# 	dHlDlZlVoaVBlJhLm59orrJRn6NYpKhfqKwOZWkeeH0feX4gen8he4AjfIEkfoIlf4MmgIQo
+# 	gYUpgoYqg4cshIgthYouhoswh4wxiI0ziY41i5A3jJE4jpI6j5M7kJQ9kZVAk5dBlJhDlZlE
+# 	lptGl5xImJ1Jmp5Lm59MnKBOnaFQnqJToKRVoaVYpKhapalcpqpfqKxnrbForrJssLRusbVw
+# 	s7Z0tbh2trp4t7t8ur1+u76AvL+CvcCEvsKGwMOIwcSKwsWOxMeQxsiTx8qVyMuXycyZys2b
+# 	zM6ezc+gztGk0dOm0tRLVt61AAAAZ3RSTlMAAQECAwMEBQYHCAkKCgsMDQ4PDxARERITFBUW
+# 	FxgaGxwdHh8gIiMkJCUmJikqLC4uMjY5P0BFUV1gYGxxgIiKkpuytLW/yNbY4uft7vL09fb2
+# 	9vb29/f39/f3+Pj5+vr6+/v9/v7+GgnqVwAAAaVJREFUOMvNkt1qU0EUhdfaM2krJShFIjQW
+# 	RVAQBZEW9Eapr+BL+HA+gILQC2mlFRFRREFapBjpOfmpYAM987O3FzlJmwi51X23Nh+z1qwZ
+# 	4N+Pm5bPfGcGkBl9/ZHMB56ubTbnWWzcuNlbSb/mnKDlZvvu+rmFnwW0/8BeLr6ZLDgKX9Ty
+# 	yuMjtaXlF72dOA08FAIgIT/MdOnSq977/rTFIUkBCDPTYXiy679/OQ9YpsAIQoFs6ed975tv
+# 	z665cXUAgxnNYDmE0+rk2q3+5cMzYPUYAGnI1fDkNMRYDXCvbB9MLFJ0ApjmDKOoKMzU+XEG
+# 	j/SbQkeSAFWUaC9v9bZrwDUAkEIKaVBR+rWv3eKd1oB3AEnSEaSJykL7Q1l889lGAB1wR0AS
+# 	5IGqXGjtlcURRXKdwfBpXP26mFxsvu53hoCNi9L8fLHR8A0nvA2yxd2iEzWp5hoIkoQw846A
+# 	a30sumVKIcY0qboy1QVNzjHI6k63W2qKIYY8AazKOTnvRaBbg85xjjmmMPWaKQXvxHFlu/gc
+# 	NOeU/vpROQMU7O+ZjuL/R/MHYAPLcEBkVE0AAAAASUVORK5CYII=
+# }]
 
 set go [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAErUlEQVRYw72XXYhVVRTHf2vt

@@ -34,7 +34,6 @@
 #include "u_byte_stream.h"
 
 namespace util { class ByteStream; }
-namespace mstl { template <typename T> class bitfield; }
 
 namespace db {
 
@@ -53,53 +52,80 @@ class Encoder
 {
 public:
 
-	Encoder(util::ByteStream& strm);
+	Encoder(util::ByteStream& strm, db::variant::Type variant);
 
 	void doEncoding(	Signature const& signature,
 							GameData const& data,
 							db::Consumer::TagBits const& allowedTags,
 							bool allowExtraTags);
+	void doEncoding(	Signature const& signature,
+							GameData const& data1,
+							GameData const& data2,
+							db::Consumer::TagBits const& allowedTags,
+							bool allowExtraTags);
 
-	static bool skipTag(tag::ID tag);
+	void changeVariant(db::variant::Type variant);
+
 	static bool isExtraTag(tag::ID tag);
-	static mstl::bitfield<uint64_t> const& extraTags();
+	static db::tag::TagSet const& infoTags();
 
 protected:
 
 	typedef encoder::Position Position;
 
-	void encodeNullMove(Move const& move);
-	void encodeKing(Move const& move);
-	void encodeQueen(Move const& move);
-	void encodeRook(Move const& move);
-	void encodeBishop(Move const& move);
-	void encodeKnight(Move const& move);
-	void encodePawn(Move const& move);
+	void setup(Board const& board, db::variant::Type variant);
+
+	void prepareEncoding();
+	void finishMoveSection(uint16_t runLength);
+	void encodeDataSection(	TagSet const& tags,
+									db::Consumer::TagBits const& allowedTags,
+									bool allowExtraTags,
+									EngineList const& engines);
 
 	bool encodeMove(Move const& move);
-	void encodeTag(TagSet const& tags, tag::ID tagID);
-	void encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
-	void encodeTextSection();
-	void encodeDataSection(EngineList const& engines);
-	void encodeMainline(MoveNode const* node);
-	void encodeVariation(MoveNode const* node);
-	void encodeNote(MoveNode const* node);
-	void encodeComment(MoveNode const* node);
-
-	void setup(Board const& board);
-	Byte makeMoveByte(Square from, Byte value);
 
 	util::ByteStream&	m_strm;
 	util::ByteStream	m_data;
 	util::ByteStream	m_text;
 	Position				m_position;
 	uint16_t				m_runLength;
+
+private:
+
+	bool doEncoding(Move const& move);
+
+	void encodeNullOrDropMove(Move const& move);
+	void encodeKing(Move const& move);
+	void encodeQueen(Move const& move);
+	void encodeRook(Move const& move);
+	void encodeBishop(Move const& move);
+	void encodeKnight(Move const& move);
+	void encodePawn(Move const& move);
+	void encodePieceDrop(Move const& move);
+
+	void encodeMainline(MoveNode const* node);
+	void encodeVariation(MoveNode const* node);
+	void encodeNote(MoveNode const* node);
+	void encodeComment(MoveNode const* node);
+
+	uint16_t encodeTextSection();
+	uint16_t encodeTagSection(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
+	uint16_t encodeEngineSection(EngineList const& engines);
+
+	void setup(GameData const& data);
+	void setup(Board const& board, uint16_t idn, db::variant::Type variant);
+	void putMoveByte(Square from, Byte value);
+
+	unsigned				m_offset;
+	db::variant::Type	m_variant;
 	unsigned char		m_buffer[2][4096];
 };
 
 
 } // namespace sci
 } // namespace db
+
+#include "sci_encoder.ipp"
 
 #endif // _sci_encoder_included
 

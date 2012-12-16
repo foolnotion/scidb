@@ -39,6 +39,8 @@ set ChessBaseBases			"ChessBase databases"
 set ScidbArchives				"Scidb archives"
 set PGNFilesArchives			"PGN files/archives"
 set PGNFiles					"PGN files"
+set BPGNFilesArchives		"BPGN files/archives"
+set BPGNFiles					"BPGN files"
 set PGNArchives				"PGN archives"
 
 set Language					"&Language"
@@ -337,17 +339,51 @@ proc build {menu} {
 }
 
 
-proc dbNew {parent} {
+proc addVariantsToMenu {parent m} {
+	foreach variant {ThreeCheck Crazyhouse} {
+		$m add command \
+			-label " $::mc::VariantName($variant)" \
+			-image $::icon::16x16::variant($variant) \
+			-compound left \
+			-command [list ::menu::dbNew $parent $variant] \
+			;
+	}
+
+	set lbl " $::mc::VariantName(Antichess) - $::mc::VariantName(Losers)"
+	$m add command  \
+		-label $lbl \
+		-command [namespace code [list dbNew $parent Losers]] \
+		-image $::icon::16x16::variant(Losers) \
+		-compound left \
+		;
+	::tooltip::tooltip $m -index $lbl $::gamebar::mc::Tip(Losers)
+
+	set lbl " $::mc::VariantName(Antichess) - $::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway)"
+	$m add command \
+		-label $lbl \
+		-command [namespace code [list dbNew $parent Antichess]] \
+		-image $::icon::16x16::variant(Antichess) \
+		-compound left \
+		;
+	::tooltip::tooltip $m -index $lbl $::gamebar::mc::Tip(Antichess)
+}
+
+
+proc dbNew {parent variant} {
 	variable FileSelBoxInUse
 
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	set filetypes [list                             \
-		[list $mc::ScidbBases		{.sci}]           \
-		[list $mc::ScidBases			{.si4 .si3}]      \
-		[list $mc::AllScidbBases	{.sci .si4 .si3}] \
-	]
+	if {$variant eq "Normal"} {
+		set filetypes [list                             \
+			[list $mc::ScidbBases		{.sci}]           \
+			[list $mc::ScidBases			{.si4 .si3}]      \
+			[list $mc::AllScidbBases	{.sci .si4 .si3}] \
+		]
+	} else {
+		set filetypes [list [list $mc::ScidbBases {.sci}]]
+	}
 	set result [::dialog::saveFile \
 		-parent $parent \
 		-class database \
@@ -360,12 +396,12 @@ proc dbNew {parent} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .pgn .gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 	]
 	set FileSelBoxInUse 0
 
 	if {[llength $result]} {
-		::application::database::newBase $parent {*}$result
+		::application::database::newBase $parent $variant {*}$result
 	}
 }
 
@@ -376,16 +412,16 @@ proc dbOpen {parent} {
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	set filetypes [list                                                            \
-		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .zip}] \
-		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                   \
-		[list $mc::ScidbBases			{.sci}]                                       \
-		[list $mc::ScidBases				{.si4 .si3}]                                  \
-		[list $mc::ChessBaseBases		{.cbh}]                                       \
-		[list $mc::ScidbArchives		{.scv}]                                       \
-		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                          \
-		[list $mc::PGNFiles				{.pgn .pgn.gz}]                               \
-		[list $mc::PGNArchives			{.zip}]                                       \
+	set filetypes [list                                                                              \
+		[list $mc::AllScidbFiles			{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip}] \
+		[list $mc::AllScidbBases			{.sci .si4 .si3 .cbh .scv}]                                  \
+		[list $mc::ScidbBases				{.sci}]                                                      \
+		[list $mc::ScidBases					{.si4 .si3}]                                                 \
+		[list $mc::ChessBaseBases			{.cbh}]                                                      \
+		[list $mc::ScidbArchives			{.scv}]                                                      \
+		[list $mc::PGNFilesArchives		{.pgn .pgn.gz .zip}]                                         \
+		[list $mc::BPGNFilesArchives		{.bpgn .bpgn.gz .zip}]                                       \
+		[list $mc::PGNArchives				{.zip}]                                                      \
 	]
 	set result [::dialog::openFile \
 		-parent $parent \
@@ -398,7 +434,7 @@ proc dbOpen {parent} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .pgn .gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 	]
 	set FileSelBoxInUse 0
 
@@ -441,7 +477,7 @@ proc dbCreateArchive {parent {base ""}} {
 				{sci} \
 				zlib \
 				[clock seconds] \
-				[::scidb::db::count games $base] \
+				[::scidb::db::count total $base] \
 				[namespace current]::archive::Write \
 				[namespace current]::archive::getName \
 				$progress \
@@ -492,10 +528,12 @@ proc dbImport {parent base fileTypes} {
 			]
 		}
 		pgn {
-			set filetypes [list                                   \
-				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}] \
-				[list $mc::PGNFiles				{.pgn .pgn.gz}]      \
-				[list $mc::PGNArchives			{.zip}]              \
+			set filetypes [list                                     \
+				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]   \
+				[list $mc::PGNFiles				{.pgn .pgn.gz}]        \
+				[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip}] \
+				[list $mc::BPGNFiles				{.bpgn .bpgn.gz}]      \
+				[list $mc::PGNArchives			{.zip}]                \
 			]
 		}
 	}
@@ -514,7 +552,7 @@ proc dbImport {parent base fileTypes} {
 	set FileSelBoxInUse 0
 	if {[llength $result]} {
 		lassign $result files encoding
-		::import::open $parent $base $files $title $encoding
+		::import::import $parent $base $files $title $encoding
 		if {$base eq [::scidb::db::get name]} {
 			::application::database::refreshBase $base
 		}
@@ -527,22 +565,12 @@ proc dbClose {parent} {
 }
 
 
-proc gameNew {parent {variant {}}} {
-	if {[::game::new $parent] >= 0} {
-		if {[string length $variant] == 0} {
-			::scidb::game::clear [::scidb::game::query 9 fen]
-		} else {
-			::scidb::game::clear [::setup::shuffle $variant]
-		}
-
+proc gameNew {parent {variant Normal}} {
+	if {[::game::new $parent -variant $variant] >= 0} {
+		set idn [::scidb::game::query 9 fen]
+		::scidb::game::setup $variant $idn
 		::application::switchTab board
 	}
-}
-
-
-proc importGame {parent} {
-	set pos [::game::new $parent]
-	if {$pos >= 0} { ::import::openEdit $parent $pos }
 }
 
 
@@ -610,7 +638,8 @@ proc getName {file} {
 #		.scg - .sg3 - .sg4 - .cbg	{ return $mc::Data(game) }
 #		.scn - .sn3 - .sn4			{ return $mc::Data(namebase) }
 #		.ssc								{ return $mc::Data(sorting) }
-#		.pgn - .gz  - .zip			{ return $mc::Data(game) }
+#		.pgn - .pgn.gz - .zip		{ return $mc::Data(game) }
+#		.bpgn - .bpgn.gz				{ return $mc::Data(game) }
 #		.cba								{ return $mc::Index(annotation) }
 #		.cbs								{ return $mc::Index(source) }
 #		.cbp								{ return $mc::Index(player) }
@@ -625,7 +654,7 @@ proc getName {file} {
 
 proc GetCompressionMethod {ext} {
 	switch $ext {
-		gz - zip						{ set method raw  }
+		pgn.gz - bpgn.gz - zip	{ set method raw  }
 		png - jpg - jpeg - gif	{ set method raw  }
 		default						{ set method zlib }
 	}
@@ -636,7 +665,7 @@ proc GetCompressionMethod {ext} {
 
 proc GetCount {file} {
 	switch [file extension $file] {
-		.sci - .si3 - .si4 - .cbh - .pgn - .gz {
+		.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 			return [::scidb::misc::size $file]
 		}
 	}

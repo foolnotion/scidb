@@ -59,6 +59,7 @@ proc open {parent} {
 	set borderSize 2
 	set edge 20
 	set rank $top.board.rank
+	set variant [::scidb::game::query Variant?]
 
 	if {![info exists Vars(position)]} {
 		::board::registerBoardSize $squareSize
@@ -68,7 +69,7 @@ proc open {parent} {
 	}
 
 	set Vars(position) "--------"
-	set Vars(castling) 1
+	set Vars(castling) [expr {$variant ne "Antichess"}]
 	set Vars(idn) 0
 	set Vars(size) $pieceSize
 	set Vars(dlg) $dlg
@@ -157,9 +158,12 @@ proc open {parent} {
 		incr x $squareSize
 	}
 
+	if {$variant eq "Antichess"} { set normal disabled } else { set normal normal }
+
 	::ttk::checkbutton $top.control.castling \
 		-textvar [namespace parent]::board::mc::Chess960Castling \
 		-variable [namespace current]::Vars(castling) \
+		-state $normal \
 		;
 	set Vars(castling:widget) $top.control.castling
 	::ttk::label $top.control.idn \
@@ -172,7 +176,7 @@ proc open {parent} {
 	::ttk::button $top.control.standard \
 		-style icon.TButton \
 		-image $::icon::16x16::home \
-		-command [namespace code { Shuffle std }] \
+		-command [namespace code { Shuffle Normal }] \
 		;
 	::ttk::button $top.control.shuffle \
 		-style icon.TButton \
@@ -222,6 +226,8 @@ proc open {parent} {
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.ok configure -command [namespace code [list Accept $dlg]] -state disabled
 
+	if {$state eq "normal"} { set focus $top.control.castling } else { set focus $top.control.idn }
+
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm transient $dlg [winfo toplevel $parent]
@@ -229,7 +235,10 @@ proc open {parent} {
 	wm resizable $dlg no no
 	::util::place $dlg center $parent
 	wm deiconify $dlg
-	focus $top.control.castling
+	focus $focus
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
 }
 
 
@@ -238,9 +247,13 @@ proc Shuffle {variant} {
 
 	set Vars(idn) [[namespace parent]::shuffle $variant]
 
-	switch $variant {
-		std - frc - sfrc	{ set Vars(castling) 1 }
-		shuffle				{ set Vars(castling) 0 }
+	if {[::scidb::game::query Variant?] eq "Antichess"} {
+		set castling 0
+	} else {
+		switch $variant {
+			Normal - Chess960 - Symm960	{ set Vars(castling) 1 }
+			Shuffle								{ set Vars(castling) 0 }
+		}
 	}
 
 	set fen [::scidb::board::idnToFen $Vars(idn)]
@@ -309,10 +322,12 @@ proc Update {} {
 		set state normal
 	}
 
-	if {$Vars(idn) != 0 & $Vars(idn) > 960} {
-		$Vars(castling:widget) configure -state disabled
-	} else {
-		$Vars(castling:widget) configure -state normal
+	if {[::scidb::game::query Variant?] ne "Antichess"} {
+		if {$Vars(idn) != 0 & $Vars(idn) > 960} {
+			$Vars(castling:widget) configure -state disabled
+		} else {
+			$Vars(castling:widget) configure -state normal
+		}
 	}
 
 	$Vars(dlg).ok configure -state $state

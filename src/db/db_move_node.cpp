@@ -58,7 +58,7 @@ MoveNode::MoveNode(Move const& move)
 }
 
 
-MoveNode::MoveNode(Board const& board, Move const& move)
+MoveNode::MoveNode(Board const& board, Move const& move, variant::Type variant)
 	:m_flags(0)
 	,m_next(0)
 	,m_prev(0)
@@ -68,10 +68,10 @@ MoveNode::MoveNode(Board const& board, Move const& move)
 	,m_move(move)
 	,m_commentFlag(0)
 {
-	M_REQUIRE(board.isValidMove(move));
+//	M_REQUIRE(board.isValidMove(move));
 
 	board.prepareUndo(m_move);
-	board.prepareForPrint(m_move);
+	board.prepareForPrint(m_move, variant);
 }
 
 
@@ -136,13 +136,13 @@ MoveNode::isEmptyLine() const
 
 
 void
-MoveNode::setMove(Board const& board, Move const& move)
+MoveNode::setMove(Board const& board, Move const& move, variant::Type variant)
 {
-	M_REQUIRE(board.isValidMove(move));
+//	M_REQUIRE(board.isValidMove(move));
 
 	m_move = move;
 	board.prepareUndo(m_move);
-	board.prepareForPrint(m_move);
+	board.prepareForPrint(m_move, variant);
 }
 
 
@@ -518,9 +518,9 @@ MoveNode::variationNumber(MoveNode const* node) const
 
 
 void
-MoveNode::prepareForPrint(Board const& board)
+MoveNode::prepareForPrint(Board const& board, variant::Type variant)
 {
-	board.prepareForPrint(m_move);
+	board.prepareForPrint(m_move, variant);
 }
 
 
@@ -825,7 +825,7 @@ MoveNode::transpose()
 
 
 void
-MoveNode::finish(Board const& board)
+MoveNode::finish(Board const& board, variant::Type variant)
 {
 	M_REQUIRE(atLineStart());
 
@@ -838,11 +838,11 @@ MoveNode::finish(Board const& board)
 		node->m_moveInfo->sort();
 
 		for (unsigned i = 0; i < node->m_variations.size(); ++i)
-			node->m_variations[i]->finish(myBoard);
+			node->m_variations[i]->finish(myBoard, variant);
 
 		myBoard.prepareUndo(node->m_move);
-		myBoard.prepareForPrint(node->m_move);
-		myBoard.doMove(node->m_move);
+		myBoard.prepareForPrint(node->m_move, variant);
+		myBoard.doMove(node->m_move, variant);
 	}
 }
 

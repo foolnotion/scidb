@@ -50,13 +50,16 @@ public:
 	bool blackToMove() const;
 
 	format::Type format() const;
+	variant::Type variant() const;
 	Board const& board() const;
 	virtual mstl::string const& encoding() const = 0;
+	virtual uint16_t idn() const = 0;
 
 	Consumer& consumer();
 	Consumer const& consumer() const;
 
 	void setConsumer(Consumer* consumer);
+	void setVariant(variant::Type variant);
 
 	virtual unsigned process(util::Progress& progress) = 0;
 
@@ -67,6 +70,7 @@ protected:
 private:
 
 	format::Type	m_format;
+	variant::Type	m_variant;
 	Consumer*		m_consumer;
 };
 

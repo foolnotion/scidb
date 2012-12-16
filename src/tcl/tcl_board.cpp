@@ -25,10 +25,14 @@
 // ======================================================================
 
 #include "tcl_board.h"
+#include "tcl_application.h"
 #include "tcl_base.h"
+
+#include "app_application.h"
 
 #include "db_board.h"
 #include "db_board_base.h"
+#include "db_game.h"
 
 #include "m_string.h"
 #include "m_bit_functions.h"
@@ -39,6 +43,7 @@
 #include <ctype.h>
 
 using namespace tcl;
+using namespace tcl::app;
 using namespace db;
 
 static char const* CmdAnalyseFen			= "::scidb::board::analyseFen";
@@ -97,14 +102,15 @@ getFormat(int objc, Tcl_Obj* const* objv, int index)
 
 
 static char const*
-validate(Board const& board)
+validate(Board const& board, variant::Type variant)
 {
 	char const* error = 0;
 
-	switch (board.validate(variant::Unknown, castling::DontAllowHandicap))
+	switch (board.validate(variant, castling::DontAllowHandicap))
 	{
 		case Board::Valid: break;
 
+		case Board::EmptyBoard:					error = "EmptyBoard"; break;
 		case Board::NoWhiteKing:				error = "NoWhiteKing"; break;
 		case Board::NoBlackKing:				error = "NoBlackKing"; break;
 		case Board::BothInCheck:				error = "BothInCheck"; break;
@@ -122,9 +128,13 @@ validate(Board const& board)
 		case Board::TripleCheck:				error = "TripleCheck"; break;
 		case Board::InvalidCastlingRights:	error = "InvalidCastlingRights"; break;
 		case Board::AmbiguousCastlingFyles:	error = "AmbiguousCastlingFyles"; break;
+		case Board::TooManyPiecesInHolding:	error = "TooManyPiecesInHolding"; break;
+		case Board::TooFewPiecesInHolding:	error = "TooFewPiecesInHolding"; break;
+		case Board::TooManyPromotedPieces:	error = "TooManyPromotedPieces"; break;
+		case Board::TooFewPromotedPieces:	error = "TooFewPromotedPieces"; break;
 
 		case Board::BadCastlingRights:
-			if (board.validate(variant::Unknown, castling::AllowHandicap) == Board::Valid)
+			if (board.validate(variant, castling::AllowHandicap) == Board::Valid)
 				error = "CastlingWithoutRook";
 			else
 				error = "BadCastlingRights";
@@ -141,10 +151,12 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* error = 0;
 
 	Board board;
+	char const* fen = stringFromObj(objc, objv, 1);
+	variant::Type variant = Scidb->game().variant();
 
 	// TODO: strip zeroes from first part
 
-	if (!board.setup(stringFromObj(objc, objv, 1)))
+	if (!board.setup(fen, variant))
 	{
 		error = "InvalidFen";
 	}
@@ -192,7 +204,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					board.setCastlingFyle(color::Black, sq::Fyle(sq::FyleA + *fyles - 'a'));
 			}
 
-			error = ::validate(board);
+			error = ::validate(board, variant);
 
 			if (error == 0 && board.castlingRights() != castling::Rights(rights))
 				error = "BadCastlingRights";
@@ -201,13 +213,28 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		if (error == 0)
-			error = ::validate(board);
+			error = ::validate(board, variant);
 	}
 
-	Tcl_Obj* objs[8];
+	Tcl_Obj* objs[10];
 
 	if (error == 0 && board.isStartPosition() && !board.isShuffleChessPosition())
 		error = "UnsupportedVariant";
+
+	Tcl_Obj* checksGiven[2] =
+	{
+		Tcl_NewIntObj(board.checksGiven(color::White)),
+		Tcl_NewIntObj(board.checksGiven(color::Black)),
+	};
+
+	Tcl_Obj* promoted[64];
+	unsigned n = 0;
+
+	for (unsigned i = 0; i < 64; ++i)
+	{
+		if (board.hasPromoted(sq::ID(i)))
+			promoted[n++] = Tcl_NewIntObj(i);
+	}
 
 	objs[0] = Tcl_NewStringObj(error ? error : "", -1);
 	objs[1] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
@@ -217,6 +244,8 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	objs[5] = Tcl_NewStringObj(sq::printAlgebraic(board.enPassantSquare()), -1);
 	objs[6] = Tcl_NewStringObj(color::isWhite(board.sideToMove()) ? "w" : "b", -1);
 	objs[7] = Tcl_NewIntObj(board.moveNumber());
+	objs[8] = Tcl_NewListObj(2, checksGiven);
+	objs[9] = Tcl_NewListObj(n, promoted);
 
 	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;
@@ -230,8 +259,13 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* stm		= stringFromObj(objc, objv, 2);
 	char const* ep			= stringFromObj(objc, objv, 3);
 	char const* moveNo	= stringFromObj(objc, objv, 4);
+	unsigned		checksW	= unsignedFromObj(objc, objv, 5);
+	unsigned		checksB	= unsignedFromObj(objc, objv, 6);
+	char const*	holding	= stringFromObj(objc, objv, 7);
+	Tcl_Obj*		promoted	= objectFromObj(objc, objv, 8);
 
-	color::ID toMove = ::tolower(*stm) == 'w' ? color::White : color::Black;
+	color::ID		toMove	= ::tolower(*stm) == 'w' ? color::White : color::Black;
+	variant::Type	variant	= Scidb->game().variant();
 
 	Board pos;
 	pos.clear();
@@ -240,17 +274,38 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdMakeFen, nullptr, nullptr, "invalid board: %s", board);
 
 	for (unsigned i = 0; i < 64; ++i)
-		pos.setAt(i, piece::pieceFromLetter(board[i]));
+		pos.setAt(i, piece::pieceFromLetter(board[i]), variant);
+
+	pos.setHolding(holding);
+
+	Tcl_Obj** squares;
+	int nsquares;
+
+	if (Tcl_ListObjGetElements(ti, promoted, &nsquares, &squares) != TCL_OK)
+		return error(CmdMakeFen, nullptr, nullptr, "list of squares expected");
+
+	for (unsigned i = 0; i < unsigned(nsquares); ++i)
+	{
+		sq::ID sq = sq::ID(unsignedFromObj(nsquares, squares, i));
+
+		switch (int(pos.piece(sq)))
+		{
+			case piece::Queen: case piece::Rook: case piece::Bishop: case piece::Knight:
+				pos.setPromoted(sq, variant);
+				break;
+		}
+	}
 
 	pos.setToMove(toMove);
 	pos.setMoveNumber(::strtoul(moveNo, nullptr, 10));
+	pos.setChecksGiven(checksW, checksB);
 
 	char epFyle = ::tolower(*ep);
 
 	if (epFyle >= 'a' && epFyle <= 'h')
 		pos.setEnPassantFyle(sq::Fyle(sq::FyleA + epFyle - 'a'));
 
-	setResult(pos.toFen(getFormat(objc, objv, 5)));
+	setResult(pos.toFen(variant, getFormat(objc, objv, 8)));
 	return TCL_OK;
 }
 
@@ -259,7 +314,7 @@ static int
 cmdIsValidFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	// TODO: we need some flags: allowHandicap, allowIllegalPosition (king in check)
-	setResult(Board::isValidFen(stringFromObj(objc, objv, 1), variant::Unknown));
+	setResult(Board::isValidFen(stringFromObj(objc, objv, 1), Scidb->game().variant()));
 	return TCL_OK;
 }
 
@@ -276,7 +331,7 @@ static int
 cmdFenToBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Board board;
-	board.setup(stringFromObj(objc, objv, 1));
+	board.setup(stringFromObj(objc, objv, 1), Scidb->game().variant());
 	setResult(tcl::board::toBoard(board));
 	return TCL_OK;
 }
@@ -287,16 +342,13 @@ cmdIdnToFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned idn = unsignedFromObj(objc, objv, 1);
 
-	if (idn < 1 || 4*960 < idn)
-		return error(CmdIdnToFen, nullptr, nullptr, "invalid IDN: %u", idn);
-
 	Board board;
 	board.setup(idn);
 	mstl::string result;
 
 	Tcl_Obj* objs[2];
 
-	objs[0] = Tcl_NewStringObj(board.toFen(getFormat(objc, objv, 2)), -1);
+	objs[0] = Tcl_NewStringObj(board.toFen(Scidb->game().variant(), getFormat(objc, objv, 2)), -1);
 	objs[1] = Tcl_NewStringObj(toCastling(board), -1);
 
 	setResult(U_NUMBER_OF(objs), objs);
@@ -308,9 +360,11 @@ static int
 cmdTransposeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Board board;
-	board.setup(stringFromObj(objc, objv, 1));
-	board.transpose();
-	setResult(board.toFen(getFormat(objc, objv, 2)));
+	variant::Type variant = Scidb->game().variant();
+
+	board.setup(stringFromObj(objc, objv, 1), variant);
+	board.transpose(variant);
+	setResult(board.toFen(variant, getFormat(objc, objv, 2)));
 	return TCL_OK;
 }
 
@@ -319,9 +373,12 @@ static int
 cmdNormalizeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Board board;
+	variant::Type variant = Scidb->game().variant();
 	char const* fen = stringFromObj(objc, objv, 1);
-	board.setup(fen);
-	setResult(board.toFen(getFormat(objc, objv, 2)));
+
+	board.setup(fen, variant);
+	setResult(board.toFen(variant, getFormat(objc, objv, 2)));
+
 	return TCL_OK;
 }
 

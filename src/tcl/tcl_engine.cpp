@@ -67,6 +67,7 @@ static char const* CmdSetFeatures	= "::scidb::engine::setFeatures";
 static char const* CmdSetOptions		= "::scidb::engine::setOptions";
 static char const* CmdStart			= "::scidb::engine::start";
 static char const* CmdStop				= "::scidb::engine::stop";
+static char const* CmdVariant			= "::scidb::engine::variant";
 
 
 namespace {
@@ -134,8 +135,7 @@ public:
 
 	void clearInfo() override {}
 	void updatePvInfo(unsigned) override {}
-	void updateCheckMateInfo() override {}
-	void updateStaleMateInfo() override {}
+	void updateInfo(board::Status) override {}
 	void updateState(State) override {}
 	void engineIsReady() override {}
 	void engineSignal(Signal) override {}
@@ -178,6 +178,9 @@ public:
 			Tcl_IncrRefCount(m_pv = Tcl_NewStringObj("pv", -1));
 			Tcl_IncrRefCount(m_checkmate = Tcl_NewStringObj("checkmate", -1));
 			Tcl_IncrRefCount(m_stalemate = Tcl_NewStringObj("stalemate", -1));
+			Tcl_IncrRefCount(m_threechecks = Tcl_NewStringObj("threechecks", -1));
+			Tcl_IncrRefCount(m_losing = Tcl_NewStringObj("losing", -1));
+			Tcl_IncrRefCount(m_over = Tcl_NewStringObj("over", -1));
 			Tcl_IncrRefCount(m_move = Tcl_NewStringObj("move", -1));
 			Tcl_IncrRefCount(m_line = Tcl_NewStringObj("line", -1));
 			Tcl_IncrRefCount(m_bestmove = Tcl_NewStringObj("bestmove", -1));
@@ -218,7 +221,7 @@ public:
 
 	void updateError(Error code) override
 	{
-		char const* msg;
+		char const* msg = 0; // satisfies the compiler
 
 		switch (code)
 		{
@@ -226,8 +229,15 @@ public:
 			case Engine_Has_Copy_Protection:		msg = "copyprotection"; break;
 			case Standard_Chess_Not_Supported:	msg = "standard"; break;
 			case Chess_960_Not_Supported:			msg = "chess960"; break;
+			case Losers_Not_Supported:				// fallthru
+			case Suicide_Not_Supported:			// fallthru
+			case Giveaway_Not_Supported:			// fallthru
+			case Bughouse_Not_Supported:			// fallthru
+			case Crazyhouse_Not_Supported:		// fallthru
+			case Three_Check_Not_Supported:		msg = "variant"; break;
 			case No_Analyze_Mode:					msg = "analyze"; break;
-			case Illegal_Position:					msg = "illegal"; break;
+			case Illegal_Position:					msg = "position"; break;
+			case Illegal_Moves:						msg = "moves"; break;
 			case Did_Not_Receive_Pong:				msg = "pong"; break;
 		}
 
@@ -236,7 +246,7 @@ public:
 
 	void updateState(State state) override
 	{
-		Tcl_Obj* obj;
+		Tcl_Obj* obj = 0; // satisfies the compiler
 
 		switch (state)
 		{
@@ -290,14 +300,21 @@ public:
 		}
 	}
 
-	void updateCheckMateInfo() override
+	void updateInfo(board::Status state) override
 	{
-		sendInfo(m_checkmate, Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1));
-	}
+		Tcl_Obj* objs[2];
 
-	void updateStaleMateInfo() override
-	{
-		sendInfo(m_stalemate, Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1));
+		switch (state)
+		{
+			case board::Checkmate:		objs[0] = m_checkmate; break;
+			case board::Stalemate:		objs[0] = m_stalemate; break;
+			case board::ThreeChecks:	objs[0] = m_threechecks; break;
+			case board::Losing:			objs[0] = m_losing; break;
+			case board::None:				M_ASSERT(!"should not happen"); return;
+		}
+
+		objs[1] = Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1);
+		sendInfo(m_over, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
 	void updateCurrMove() override
@@ -357,7 +374,7 @@ public:
 
 	void engineSignal(Signal signal) override
 	{
-		char const* msg;
+		char const* msg = 0; // satisfies the compiler
 		char buf[100];
 
 		switch (signal)
@@ -394,6 +411,9 @@ private:
 	static Tcl_Obj* m_pv;
 	static Tcl_Obj* m_checkmate;
 	static Tcl_Obj* m_stalemate;
+	static Tcl_Obj* m_threechecks;
+	static Tcl_Obj* m_losing;
+	static Tcl_Obj* m_over;
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_line;
 	static Tcl_Obj* m_bestmove;
@@ -409,24 +429,27 @@ private:
 	static Tcl_Obj* m_resume;
 };
 
-Tcl_Obj* Engine::m_error		= 0;
-Tcl_Obj* Engine::m_clear		= 0;
-Tcl_Obj* Engine::m_pv			= 0;
-Tcl_Obj* Engine::m_checkmate	= 0;
-Tcl_Obj* Engine::m_stalemate	= 0;
-Tcl_Obj* Engine::m_move			= 0;
-Tcl_Obj* Engine::m_line			= 0;
-Tcl_Obj* Engine::m_bestmove	= 0;
-Tcl_Obj* Engine::m_bestscore	= 0;
-Tcl_Obj* Engine::m_depth		= 0;
-Tcl_Obj* Engine::m_seldepth	= 0;
-Tcl_Obj* Engine::m_time			= 0;
-Tcl_Obj* Engine::m_hash			= 0;
-Tcl_Obj* Engine::m_state		= 0;
-Tcl_Obj* Engine::m_start		= 0;
-Tcl_Obj* Engine::m_stop			= 0;
-Tcl_Obj* Engine::m_pause		= 0;
-Tcl_Obj* Engine::m_resume		= 0;
+Tcl_Obj* Engine::m_error			= 0;
+Tcl_Obj* Engine::m_clear			= 0;
+Tcl_Obj* Engine::m_pv				= 0;
+Tcl_Obj* Engine::m_checkmate		= 0;
+Tcl_Obj* Engine::m_stalemate		= 0;
+Tcl_Obj* Engine::m_threechecks	= 0;
+Tcl_Obj* Engine::m_losing			= 0;
+Tcl_Obj* Engine::m_over				= 0;
+Tcl_Obj* Engine::m_move				= 0;
+Tcl_Obj* Engine::m_line				= 0;
+Tcl_Obj* Engine::m_bestmove		= 0;
+Tcl_Obj* Engine::m_bestscore		= 0;
+Tcl_Obj* Engine::m_depth			= 0;
+Tcl_Obj* Engine::m_seldepth		= 0;
+Tcl_Obj* Engine::m_time				= 0;
+Tcl_Obj* Engine::m_hash				= 0;
+Tcl_Obj* Engine::m_state			= 0;
+Tcl_Obj* Engine::m_start			= 0;
+Tcl_Obj* Engine::m_stop				= 0;
+Tcl_Obj* Engine::m_pause			= 0;
+Tcl_Obj* Engine::m_resume			= 0;
 
 }
 
@@ -613,7 +636,7 @@ cmdProbe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						case ::app::Engine::Variant_Suicide:		s = "suicide"; break;
 						case ::app::Engine::Variant_Crazyhouse:	s = "crazyhouse"; break;
 						case ::app::Engine::Variant_Bughouse:		s = "bughouse"; break;
-						case ::app::Engine::Variant_Give_Away:		s = "giveaway"; break;
+						case ::app::Engine::Variant_Giveaway:		s = "giveaway"; break;
 						case ::app::Engine::Variant_Three_Check:	s = "3check"; break;
 					}
 
@@ -1147,6 +1170,18 @@ cmdActive(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		setResult(variant::identifier(tcl::app::scidb->engine(id)->variant()));
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace engine {
 
@@ -1172,6 +1207,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSetFeatures,	cmdSetFeatures);
 	createCommand(ti, CmdSetOptions,		cmdSetOptions);
 	createCommand(ti, CmdStop,				cmdStop);
+	createCommand(ti, CmdVariant,			cmdVariant);
 }
 
 } // namespace engine

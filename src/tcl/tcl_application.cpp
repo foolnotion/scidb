@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "tcl_application.h"
+#include "tcl_tree.h"
 #include "tcl_base.h"
 
 #include "app_application.h"
@@ -51,14 +52,15 @@ using namespace tcl::app;
 Application* tcl::app::scidb = 0;
 Application const* tcl::app::Scidb = 0;
 
-static char const* CmdBases			= "::scidb::app::bases";
-static char const* CmdClose			= "::scidb::app::close";
-static char const* CmdCount			= "::scidb::app::count";
-static char const* CmdFinalize		= "::scidb::app::finalize";
-static char const* CmdGet				= "::scidb::app::get";
-static char const* CmdInitialized	= "::scidb::app::initialized?";
-static char const* CmdLoad				= "::scidb::app::load";
-static char const* CmdLookup			= "::scidb::app::lookup";
+static char const* CmdActiveVariants	= "::scidb::app::activeVariants";
+static char const* CmdClose				= "::scidb::app::close";
+static char const* CmdCount				= "::scidb::app::count";
+static char const* CmdFinalize			= "::scidb::app::finalize";
+static char const* CmdGet					= "::scidb::app::get";
+static char const* CmdInitialized		= "::scidb::app::initialized?";
+static char const* CmdLoad					= "::scidb::app::load";
+static char const* CmdLookup				= "::scidb::app::lookup";
+static char const* CmdVariant				= "::scidb::app::variant";
 
 
 static int
@@ -85,10 +87,12 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				return TCL_ERROR;
 			}
 
-			try {
-				db::EcoTable::specimen().load(stream);
+			try
+			{
+				db::EcoTable::specimen(variant::Index_Normal).load(stream, variant::Normal);
 			}
-			catch (...) {
+			catch (...)
+			{
 				appendResult("exception caught during load of file '%s'", path);
 				return TCL_ERROR;
 			}
@@ -208,26 +212,6 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
-cmdBases(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
-{
-	Application::CursorList list;
-	Scidb->enumCursors(list);
-	objc = list.size();
-
-	Tcl_Obj* objs[objc];
-
-	for (int i = 0; i < objc; ++i)
-	{
-		mstl::string const& name = list[i]->database().name();
-		objs[i] = Tcl_NewStringObj(name, name.size());
-	}
-
-	setResult(objc, objs);
-	return TCL_OK;
-}
-
-
-static int
 cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "countryCode", "ecoCode", "playerAlias", "siteAlias", 0 };
@@ -255,7 +239,8 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				mstl::string opening[4];
 				Tcl_Obj* objs[4];
 
-				EcoTable::specimen().getOpening(Eco(code), opening[0], opening[1], opening[2], opening[3]);
+				EcoTable::specimen(variant::Index_Normal).getOpening(
+					Eco(code), opening[0], opening[1], opening[2], opening[3]);
 				for (unsigned i = 0; i < 4; ++i)
 					objs[i] = Tcl_NewStringObj(opening[i], opening[i].size());
 				setResult(U_NUMBER_OF(objs), objs);
@@ -379,6 +364,35 @@ cmdInitialized(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(tcl::tree::variantToString(Scidb->currentVariant()));
+	return TCL_OK;
+}
+
+
+static int
+cmdActiveVariants(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	Application::Variants variants = Scidb->getAllVariants();
+
+	Tcl_Obj* objs[::db::variant::NumberOfVariants];
+	objc = 0;
+
+	for (	unsigned i = variants.find_first();
+			i != Application::Variants::npos;
+			i = variants.find_next(i))
+	{
+		M_ASSERT(objc < variant::NumberOfVariants);
+		objs[objc++] = tcl::tree::variantToString(::db::variant::fromIndex(i));
+	}
+
+	setResult(objc, objs);
+	return TCL_OK;
+}
+
+
 void
 tcl::app::setup(::app::Application* app)
 {
@@ -390,14 +404,15 @@ tcl::app::setup(::app::Application* app)
 void
 tcl::app::init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdBases,			cmdBases);
-	createCommand(ti, CmdClose,			cmdClose);
-	createCommand(ti, CmdCount,			cmdCount);
-	createCommand(ti, CmdFinalize,		cmdFinalize);
-	createCommand(ti, CmdGet,				cmdGet);
-	createCommand(ti, CmdInitialized,	cmdInitialized);
-	createCommand(ti, CmdLoad,				cmdLoad);
-	createCommand(ti, CmdLookup,			cmdLookup);
+	createCommand(ti, CmdActiveVariants,	cmdActiveVariants);
+	createCommand(ti, CmdClose,				cmdClose);
+	createCommand(ti, CmdCount,				cmdCount);
+	createCommand(ti, CmdFinalize,			cmdFinalize);
+	createCommand(ti, CmdGet,					cmdGet);
+	createCommand(ti, CmdInitialized,		cmdInitialized);
+	createCommand(ti, CmdLoad,					cmdLoad);
+	createCommand(ti, CmdLookup,				cmdLookup);
+	createCommand(ti, CmdVariant,				cmdVariant);
 }
 
 // vi:set ts=3 sw=3:

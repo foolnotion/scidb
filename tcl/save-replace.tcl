@@ -267,13 +267,12 @@ variable MaxColumnLength 380
 variable Characteristics -1
 
 
-proc open {parent base position {number 0}} {
-	if {[llength $base] == 0} { set base [::scidb::db::get name] }
-	if {![checkIfWriteable $parent $base $position $number]} { return }
+proc open {parent base variant position {number 0}} {
+	if {![checkIfWriteable $parent $base $variant $position $number]} { return }
 	incr number -1
 
 	set characteristicsOnly [expr {[llength $position] == 0}]
-	set codec [::scidb::db::get codec $base]
+	set codec [::scidb::db::get codec $base $variant]
 	if {$codec eq "si4"} { set codec "si3" }
 	if {$codec eq "sci"} {
 		set characteristics 0
@@ -291,7 +290,7 @@ proc open {parent base position {number 0}} {
 	variable ::${dlg}::Priv
 
 	if {$characteristicsOnly} {
-		set Priv(tags) [::scidb::db::get tags $number $base]
+		set Priv(tags) [::scidb::db::get tags $number $base $variant]
 	} else {
 		set Priv(tags) [::scidb::game::tags $position -userSuppliedOnly yes]
 	}
@@ -305,6 +304,7 @@ proc open {parent base position {number 0}} {
 	set Priv(white-rating) Elo
 	set Priv(black-rating) Elo
 	set Priv(base) $base
+	set Priv(variant) $variant
 	set Priv(position) $position
 	set Priv(number) $number
 	set Priv(tag:current) {}
@@ -312,11 +312,11 @@ proc open {parent base position {number 0}} {
 	set mc::Label(elo) "Elo"
 
 	if {![winfo exists $dlg]} {
-		Build $dlg $base $position $number
+		Build $dlg $base $variant $position $number
 	}
 
 	foreach attr {player event site annotator} {
-		set maxUsage [::scidb::db::get maxUsage $base $attr]
+		set maxUsage [::scidb::db::get maxUsage $base $variant $attr]
 		set digits [expr {int(ceil(log10(max(1, $maxUsage)))) + 1}]
 		$Priv(table:$attr) configcol freq -width $digits
 		$Priv(table:$attr) resize
@@ -335,20 +335,20 @@ proc open {parent base position {number 0}} {
 	if {[llength $position]} {
 		set idn [::scidb::game::query $position idn]
 	} else {
-		set idn [::scidb::db::get idn $number $base]
+		set idn [::scidb::db::get idn $number $base $variant]
 	}
 	if {$idn > 0 && $idn != 518} {
 		$dlg.top.white-rating.type set IPS
 		$dlg.top.black-rating.type set IPS
 	}
-	if {$idn == 518} { set state normal } else { set state disabled }
+	if {$idn == 518 && $variant eq "Normal"} { set state normal } else { set state disabled }
 	$dlg.top.game-eco configure -state $state
 	$dlg.top.game-eco-l configure -state $state
 	foreach attr {white-name black-name event-title event-site game-annotator} {
 		set Priv($attr) ""
 	}
 	$Priv(taglist) item delete 0 end
-	SetupTags $dlg.top $base $idn $position $number
+	SetupTags $dlg.top $base $variant $idn $position $number
 
 	# Finalization ############################################
 	focus $dlg.top.white-name
@@ -363,8 +363,8 @@ proc open {parent base position {number 0}} {
 }
 
 
-proc checkIfWriteable {parent base position number} {
-	if {[::scidb::db::get readonly? $base]} {
+proc checkIfWriteable {parent base variant position number} {
+	if {[::scidb::db::get readonly? $base $variant]} {
 		set msg [format $mc::CurrentBaseIsReadonly [::util::databaseName $base]]
 		::dialog::info -parent $parent -message $msg -title [GetTitle $base $position $number]
 		return 0
@@ -396,7 +396,7 @@ proc GetTitle {base position number} {
 }
 
 
-proc Build {dlg base position number} {
+proc Build {dlg base variant position number} {
 	variable ::${dlg}::Priv
 	variable Colors
 	variable MaxColumnLength
@@ -418,8 +418,8 @@ proc Build {dlg base position number} {
 	set top [ttk::frame $dlg.top -takefocus 0]
 	set ltrow 1
 	set rtrow 1
-	set minYear [::scidb::db::get minYear $base]
-	set maxYear [::scidb::db::get maxYear $base]
+	set minYear [::scidb::db::get minYear $base $variant]
+	set maxYear [::scidb::db::get maxYear $base $variant]
 	set rows {}
 	set charwidth [font measure TkTextFont "0"]
 	set maxlen [expr {$MaxColumnLength/$charwidth}]
@@ -1925,6 +1925,7 @@ proc UpdateMatchList {top field item args} {
 	if {$Priv(dont-match)} { return }
 
 	set base $Priv(base)
+	set variant $Priv(variant)
 
 	set attr ""
 	switch $field {
@@ -1959,7 +1960,8 @@ proc UpdateMatchList {top field item args} {
 		set matches $History($attr)
 		set title $mc::History
 	} else {
-		set matches [::scidb::db::match $attr $base 10 $Priv($field) $Priv(ratingType) $Priv(twoRatings)]
+		set matches [::scidb::db::match \
+			$attr $base $variant 10 $Priv($field) $Priv(ratingType) $Priv(twoRatings)]
 		set title [set mc::[string toupper $attr 0 0]Base]
 	}
 
@@ -2326,7 +2328,7 @@ proc NewItem {t name value} {
 }
 
 
-proc SetupTags {top base idn position number} {
+proc SetupTags {top base variant idn position number} {
 	variable ::[winfo toplevel $top]::Priv
 	variable TagOrder
 	variable RatingTagOrder
@@ -2392,7 +2394,7 @@ proc SetupTags {top base idn position number} {
 	if {[llength $position]} {
 		lassign [::scidb::game::query $position ratingTypes] ratingType(White) ratingType(Black)
 	} else {
-		lassign [::scidb::db::get ratingTypes $number $base] ratingType(White) ratingType(Black)
+		lassign [::scidb::db::get ratingTypes $number $base $variant] ratingType(White) ratingType(Black)
 	}
 
 	foreach rating $::ratingbox::ratings(all) {
@@ -2424,19 +2426,24 @@ proc SetupTags {top base idn position number} {
 		}
 	}
 
-	if {$idn == 518} {
-		if {[info exists Lookup(ECO)]} {
-			$top.game-eco set $Lookup(ECO)
-			set Priv(game-eco-flag) 1
-		} else {
-			if {[llength $position]} {
-				set eco [::scidb::game::query $position eco]
+	if {$variant eq "Normal"} {
+		if {$idn == 518} {
+			if {[info exists Lookup(ECO)]} {
+				$top.game-eco set $Lookup(ECO)
+				set Priv(game-eco-flag) 1
 			} else {
-				set eco [::scidb::db::get eco $number $base]
+				if {[llength $position]} {
+					set eco [::scidb::game::query $position eco]
+				} else {
+					set eco [::scidb::db::get eco $number $base $variant]
+				}
+				$top.game-eco set $eco
+				set Priv(game-eco-flag) 0
 			}
-			$top.game-eco set $eco
-			set Priv(game-eco-flag) 0
 		}
+	} else {
+		$top.game-eco set ""
+		set Priv(game-eco-flag) 0
 	}
 
 	set Priv(tags) [lsort -command [namespace current]::CompareTag $Priv(tags)]
@@ -2476,6 +2483,7 @@ proc Save {top fields} {
 	variable History
 
 	set base $Priv(base)
+	set variant $Priv(variant)
 	set number $Priv(number)
 	set position $Priv(position)
 	set title $Priv(title)
@@ -2486,7 +2494,7 @@ proc Save {top fields} {
 	if {$rc} {
 		::widget::busyCursor on
 		if {$Priv(characteristics-only)} {
-			::scidb::db::update $base $number [array get Tags] 
+			::scidb::db::update $base $variant $number [array get Tags] 
 		} else {
 			::log::open $title
 			::log::delay
@@ -2496,6 +2504,7 @@ proc Save {top fields} {
 			set replace [expr {$number >= 0}]
 			set cmd [list ::scidb::game::save \
 				$base \
+				$variant \
 				[array get Tags] \
 				$WhiteRating \
 				$BlackRating \

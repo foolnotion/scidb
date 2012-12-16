@@ -24,6 +24,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_assert.h"
+
 namespace db {
 namespace sci {
 namespace decoder {
@@ -39,7 +41,14 @@ inline bool Position::blackToMove() const				{ return board().blackToMove(); }
 
 inline piece::Type Position::piece(Square s) const	{ return board().piece(s); }
 
-inline Square Position::operator[](int n) const		{ return m_stack.top().squares[n]; }
+
+inline
+Square
+Position::operator[](unsigned n) const
+{
+	M_ASSERT(n < sizeof(Squares));
+	return m_stack.top().squares[n];
+}
 
 
 inline
@@ -101,6 +110,14 @@ Move
 Position::makeKnightMove(Square from, Square to) const
 {
 	return Move::genKnightMove(from, to, piece(to));
+}
+
+
+inline
+Move
+Position::makePieceDropMove(Square to, piece::Type piece)
+{
+	return Move::genPieceDrop(to, piece);
 }
 
 } // namespace decoder

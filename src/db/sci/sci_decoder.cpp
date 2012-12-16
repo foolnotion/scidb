@@ -60,22 +60,24 @@ throwCorruptData()
 }
 
 
-Decoder::Decoder(ByteStream& strm)
+Decoder::Decoder(ByteStream& strm, variant::Type variant)
 	:m_strm(strm)
 	,m_guaranteedStreamSize(strm.size())
 	,m_currentNode(0)
+	,m_variant(variant)
 {
 }
 
 
-Decoder::Decoder(ByteStream& strm, unsigned guaranteedStreamSize)
+Decoder::Decoder(ByteStream& strm, unsigned guaranteedStreamSize, variant::Type variant)
 	:m_strm(strm)
 	,m_guaranteedStreamSize(guaranteedStreamSize)
 	,m_currentNode(0)
+	,m_variant(variant)
 {
 }
 
-inline
+
 Move
 Decoder::decodeKing(sq::ID from, Byte nybble)
 {
@@ -86,13 +88,14 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 		0,	// reserved for token::Comment
 		0,	// reserved for token::Start_Marker
 		0,	// reserved for token::End_Marker
-		0,	// null move OR move with piece number > 32 (Bughouse/Crazyhouse)
+		0,	// null move OR piece drop OR move with piece number > 32 (Zhouse)
 		-9, -8, -7, -1, 1, 7, 8, 9,
 		0,	// short castling
 		0,	// long castling
 	};
 
 	M_ASSERT(nybble < U_NUMBER_OF(Offset));
+	M_ASSERT(nybble != 5);
 
 	int offset = Offset[nybble];
 
@@ -100,15 +103,6 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 	{
 		switch (nybble)
 		{
-			case 5:
-				// TODO:
-				// If variant is Bughouse or Crazyhouse we will use this
-				// code for moves with piece number > 32, otherwise it
-				// is a null move.
-				// However if next piece number is 32, then it's a null
-				// move in Bughouse/Crazyhouse.
-				return Move::null();
-
 			case 14:	return m_position.makeShortCastlingMove(from);
 			case 15:	return m_position.makeLongCastlingMove(from);
 		}
@@ -127,8 +121,6 @@ Decoder::decodeQueen(sq::ID from, Byte nybble)
 
 	if (nybble != sq::fyle(from))	// rook-horizontal move
 		return m_position.makeQueenMove(from, sq::make(sq::Fyle(nybble), sq::rank(from)));
-
-	M_ASSERT(m_strm.peek() > token::End_Marker);
 
 	// diagonal move: coded in two bytes
 	return m_position.makeQueenMove(from, (int(m_strm.get()) - 64) & 63);
@@ -179,26 +171,30 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		piece::None,
 	};
 
-	int offset = Offset[nybble];
+	// white to move ///////////////////////////////////////////////////////////////////////////////
 
 	if (m_position.whiteToMove())
 	{
-		Square to = (from + offset) & 63;
-
-		switch (offset)
+		if (nybble == 15)
 		{
-			case 8:
-				if (to >= sq::a8)
-					return Move::genPromote(from, to, PromotedPiece[nybble]);
+			if (from > sq::h2)
+			{
+				// Promotion to king (Antichess).
+				Square to = (from + m_strm.get()) & 63;
+				return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));
+			}
 
-				return Move::genOneForward(from, to);
-
-			case 16:
-				return Move::genTwoForward(from, to);
+			return Move::genTwoForward(from, (from + 16) & 63);
 		}
+
+		int offset = Offset[nybble];
+		Square to = (from + offset) & 63;
 
 		if (to >= sq::a8)
 			return Move::genCapturePromote(from, to, PromotedPiece[nybble], m_position.piece(to));
+
+		if (offset == 8)
+			return Move::genOneForward(from, to);
 
 		if (to == m_position.board().enPassantSquare())
 			return Move::genEnPassant(from, to);
@@ -206,24 +202,28 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		return Move::genPawnCapture(from, to, m_position.piece(to));
 	}
 
-	// black to move
+	// black to move ///////////////////////////////////////////////////////////////////////////////
 
-	Square to = (from - offset) & 63;
-
-	switch (offset)
+	if (nybble == 15)
 	{
-		case 8:
-			if (to <= sq::h1)
-				return Move::genPromote(from, to, PromotedPiece[nybble]);
+		if (from < sq::a7)
+		{
+			// Promotion to king (Antichess).
+			Square to = (from - m_strm.get()) & 63;
+			return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));
+		}
 
-			return Move::genOneForward(from, to);
-
-		case 16:
-			return Move::genTwoForward(from, to);
+		return Move::genTwoForward(from, (from - 16) & 63);
 	}
+
+	int offset = Offset[nybble];
+	Square to = (from - offset) & 63;
 
 	if (to <= sq::h1)
 		return Move::genCapturePromote(from, to, PromotedPiece[nybble], m_position.piece(to));
+
+	if (offset == 8)
+		return Move::genOneForward(from, to);
 
 	if (to == m_position.board().enPassantSquare())
 		return Move::genEnPassant(from, to);
@@ -232,44 +232,106 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 }
 
 
-Move
-Decoder::decodeDroppedPiece(sq::ID to, Byte nybble)
+unsigned
+Decoder::decodeZhouseMove(Move& move)
 {
-	// Crazyhouse/Bughouse feature
-	::throwCorruptData();
+	unsigned value = m_strm.get();
+
+	if (value == 0)
+	{
+		move = Move::null();
+		return 0;
+	}
+
+	unsigned pieceNum = (value >> 4);
+
+	value &= 15;
+
+	if (pieceNum == 0)
+	{
+		pieceNum = m_strm.get();
+
+		if (m_position.blackToMove())
+			pieceNum |= 0x10;
+
+		if (value < piece::Queen || piece::Pawn < value)
+			throwCorruptData();
+
+		move = m_position.makePieceDropMove(m_strm.get(), piece::Type(value));
+	}
+	else
+	{
+		pieceNum |= 0x20;
+
+		if (m_position.blackToMove())
+			pieceNum |= 0x10;
+
+		sq::ID square = sq::ID(m_position[pieceNum]);
+
+		switch (m_position.piece(square))
+		{
+			case piece::None:		throwCorruptData();
+			case piece::King:		throwCorruptData();
+			case piece::Queen:	move = decodeQueen(square, value); break;
+			case piece::Rook:		move = decodeRook(square, value); break;
+			case piece::Bishop:	move = decodeBishop(square, value); break;
+			case piece::Knight:	move = decodeKnight(square, value); break;
+			case piece::Pawn:		move = decodePawn(square, value); break;
+		}
+	}
+
+	return pieceNum;
 }
 
 
 unsigned
 Decoder::decodeMove(Byte value, Move& move)
 {
-	M_ASSERT(value > token::End_Marker);
+	M_ASSERT(value >= token::Special_Move);
 
-	unsigned	pieceNum = (value >> 4);
+	unsigned	pieceNum;
 
-	if (m_position.blackToMove())
-		pieceNum |= 0x10;
-
-	sq::ID square = sq::ID(m_position[pieceNum]);
-
-	switch (m_position.piece(square))
+	if (value == token::Special_Move)
 	{
-		case piece::King:		move = decodeKing(square, value & 15); break;
-		case piece::Queen:	move = decodeQueen(square, value & 15); break;
-		case piece::Rook:		move = decodeRook(square, value & 15); break;
-		case piece::Bishop:	move = decodeBishop(square, value & 15); break;
-		case piece::Knight:	move = decodeKnight(square, value & 15); break;
-		case piece::Pawn:		move = decodePawn(square, value & 15); break;
-		case piece::None:		move = decodeDroppedPiece(square, value & 15); break;
+		if (variant::isZhouse(m_variant))
+		{
+			pieceNum = decodeZhouseMove(move);
+		}
+		else
+		{
+			pieceNum = 0;
+			move = Move::null();
+		}
+	}
+	else
+	{
+		pieceNum = (value >> 4);
+		value &= 15;
+
+		if (m_position.blackToMove())
+			pieceNum |= 0x10;
+
+		sq::ID square = sq::ID(m_position[pieceNum]);
+
+		switch (m_position.piece(square))
+		{
+			case piece::King:		move = decodeKing(square, value); break;
+			case piece::Queen:	move = decodeQueen(square, value); break;
+			case piece::Rook:		move = decodeRook(square, value); break;
+			case piece::Bishop:	move = decodeBishop(square, value); break;
+			case piece::Knight:	move = decodeKnight(square, value); break;
+			case piece::Pawn:		move = decodePawn(square, value); break;
+			case piece::None:		throwCorruptData();
+		}
 	}
 
 	Board& board = m_position.board();
 
 	board.prepareUndo(move);
 	move.setColor(board.sideToMove());
-	M_ASSERT(board.isValidMove(move));
+	M_ASSERT(board.isValidMove(move, m_variant));
 	move.setLegalMove();
-	board.doMove(move);
+	board.doMove(move, m_variant);
 
 	return pieceNum;
 }
@@ -285,7 +347,7 @@ Decoder::decodeVariation(ByteStream& data)
 	{
 		Byte b;
 
-		while ((b = m_strm.get()) > token::End_Marker)
+		while ((b = m_strm.get()) >= token::Special_Move)
 		{
 			if (move)
 				m_position.doMove(move, pieceNum);
@@ -321,7 +383,7 @@ Decoder::decodeVariation(ByteStream& data)
 					MoveNode* current = m_currentNode;
 
 					m_position.push();
-					m_position.board().undoMove(move);
+					m_position.board().undoMove(move, m_variant);
 					current->addVariation(m_currentNode = new MoveNode);
 					decodeVariation(data);
 					m_currentNode = current;
@@ -382,7 +444,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 	{
 		Byte b = m_strm.get();
 
-		if (__builtin_expect(b > token::Last, 1))
+		if (__builtin_expect(b >= token::Special_Move, 1))
 		{
 			if (move)
 			{
@@ -497,7 +559,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					M_ASSERT(!hasNote);
 
 					m_position.push();
-					m_position.board().undoMove(lastMove);
+					m_position.board().undoMove(lastMove, m_variant);
 					consumer.startVariation();
 					decodeVariation(consumer, data, text);
 					consumer.finishVariation();
@@ -627,8 +689,6 @@ Decoder::decodeTextSection(MoveNode* node, ByteStream& text)
 void
 Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 {
-	M_ASSERT(strm.remaining());
-
 	mstl::string name;
 	mstl::string value;
 
@@ -651,12 +711,6 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 			if (tag::isRatingTag(id))
 				tags.setSignificance(id, 0);
 		}
-
-#define SCI_TAGS_FIX
-#ifdef SCI_TAGS_FIX
-		if (strm.remaining() == 0)
-			return;
-#endif
 	}
 }
 
@@ -691,18 +745,15 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 	{
 		mstl::string fen;
 		m_strm.get(fen);
-		m_position.setup(fen);
+		m_position.setup(fen, m_variant);
 		tags.set(tag::SetUp, "1");	// bad PGN design
 		tags.set(tag::Fen, fen);
 	}
 
-	if (!consumer.startGame(tags, m_position.board()))
-		return save::UnsupportedVariant;
-
 	Byte* dataSection = m_strm.base() + m_strm.uint24();
 	ByteStream text, data;
 
-	if (flags & 0x8000)
+	if (flags & flags::TextSection)
 	{
 		unsigned size = ByteStream::uint24(dataSection);
 
@@ -714,20 +765,26 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 		data.setup(dataSection, m_strm.end());
 	}
 
-	if (flags & 0x7000)
+	if (flags & flags::TagSection)
+		decodeTags(data, tags);
+
+	if (!consumer.startGame(tags, m_position.board()))
+		return save::UnsupportedVariant;
+
+	if (flags & flags::EngineSection)
 	{
 		EngineList engines;
 		decodeEngines(data, engines);
 		consumer.swapEngines(engines);
 	}
 
+//	if (flags & flags::TimeTableSection)
+//		decodeTimeTable(data);
+
 	consumer.startMoveSection();
 	decodeRun(m_strm.uint16(), consumer);
 	decodeVariation(consumer, data, text);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
-
-	if (data.remaining())
-		decodeTags(data, tags);
 
 	return consumer.finishGame(tags);
 }
@@ -747,7 +804,7 @@ Decoder::doDecoding(GameData& gameData)
 	{
 		mstl::string fen;
 		m_strm.get(fen);
-		m_position.setup(fen);
+		m_position.setup(fen, m_variant);
 	}
 
 	gameData.m_startBoard = m_position.board();
@@ -758,7 +815,7 @@ Decoder::doDecoding(GameData& gameData)
 	Byte* dataSection = m_strm.base() + m_strm.uint24();
 	ByteStream data, text;
 
-	if (flags & 0x8000)
+	if (flags & flags::TextSection)
 	{
 		unsigned size = ByteStream::uint24(dataSection);
 
@@ -770,17 +827,20 @@ Decoder::doDecoding(GameData& gameData)
 		data.setup(dataSection, m_strm.end());
 	}
 
-	decodeRun(m_strm.uint16());
+	if (flags & flags::TagSection)
+		decodeTags(data, gameData.m_tags);
 
-	if (flags & 0x7000)
+	if (flags & flags::EngineSection)
 		decodeEngines(data, gameData.m_engines);
 
+//	if (flags & flags::TimeTableSection)
+//		decodeTimeTable(data);
+
+	decodeRun(m_strm.uint16());
 	decodeVariation(data);
+
 	if (text.remaining())
 		decodeTextSection(gameData.m_startNode, text);
-
-	if (data.remaining())
-		decodeTags(data, gameData.m_tags);
 }
 
 
@@ -793,7 +853,7 @@ Decoder::skipVariations()
 	{
 		Byte b = m_strm.get();
 
-		if (__builtin_expect(b <= token::Last, 0))
+		if (__builtin_expect(b < token::Special_Move, 0))
 		{
 			switch (b)
 			{
@@ -836,7 +896,7 @@ Decoder::nextMove(unsigned runLength)
 		{
 			Byte b = m_strm.get();
 
-			if (__builtin_expect(b > token::Last, 1))
+			if (__builtin_expect(b >= token::Special_Move, 1))
 			{
 				m_position.doMove(move, decodeMove(b, move));
 				return move;
@@ -877,7 +937,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 	{
 		mstl::string fen;
 		m_strm.get(fen);
-		m_position.setup(fen);
+		m_position.setup(fen, m_variant);
 	}
 
 	m_strm.skip(3);	// skip offset to text section
@@ -916,7 +976,7 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 	{
 		Byte b = m_strm.get();
 
-		if (__builtin_expect(b > token::Last, 1))
+		if (__builtin_expect(b >= token::Special_Move, 1))
 		{
 			m_position.doMove(move, decodeMove(b, move));
 
@@ -941,7 +1001,7 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 					else
 					{
 						m_position.push();
-						m_position.board().undoMove(move);
+						m_position.board().undoMove(move, m_variant);
 						move = findExactPosition(position, false);
 						m_position.pop();
 

@@ -60,14 +60,19 @@ namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
 array set Priv {
-	count					100
-	fullscreen:size	0
-	controls:height	19
+	count						100
+	controls:height		19
+	fullscreen:size		0
+	fullscreen:size:ext	0
+	board:size				0
+	board:size:ext			0
 }
 
 array set Options {
 	fullscreen				0
 	board:size				40
+	board:size:ext			40
+	holding:distance		15
 	miniboard:size			30
 	autoplay:delay			2500
 	repeat:interval		300
@@ -79,18 +84,24 @@ array set Options {
 array set Active {}
 
 
-proc open {parent base info view index {fen {}}} {
+proc open {parent base variant info view index {fen {}}} {
 	variable Options
 	variable Active
 	variable Priv
 
-	if {$Priv(count) == 100} {
-		::board::registerSize $Options(board:size)
+	if {$variant eq "Crazyhouse"} {
+		set squareSize $Options(board:size:ext)
+	} else {
+		set squareSize $Options(board:size)
+	}
+	if {$squareSize != $Priv(board:size)} {
+		::board::registerSize $squareSize
+		set Priv(board:size) $squareSize
 	}
 	set number [::gametable::column $info number]
 	set name [::util::databaseName $base]
-	if {[info exists Priv($base:$number:$view)]} {
-		set dlg [lindex $Priv($base:$number:$view) 0]
+	if {[info exists Priv($base:$number:$variant:$view)]} {
+		set dlg [lindex $Priv($base:$variant:$number:$view) 0]
 		if {[winfo exists $dlg]} { ;# prevent raise conditions
 			::widget::dialogRaise $dlg
 			return
@@ -98,7 +109,7 @@ proc open {parent base info view index {fen {}}} {
 	}
 	set position [incr Priv(count)]
 	set dlg $parent.browser$position
-	lappend Priv($base:$number:$view) $dlg
+	lappend Priv($base:$variant:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
 	if {[tk windowingsystem] eq "x11"} {
 		bind $dlg <Button-4> [namespace code [list Goto $position -1]]
@@ -130,8 +141,19 @@ proc open {parent base info view index {fen {}}} {
 	set background [::theme::getBackgroundColor]
 
 	# board
-	set board [::board::stuff::new $lt.board $Options(board:size) 1]
-	grid $board -column 0 -row 0 -sticky nsew -padx $::theme::padding -pady $::theme::padding
+	set board [::board::diagram::new $lt.board $squareSize 1]
+	grid $board -column 3 -row 1 -sticky nsew
+
+	if {$variant eq "Crazyhouse"} {
+		set Vars(holding:w) [::board::holding::new $lt.holding-w w $squareSize]
+		set Vars(holding:b) [::board::holding::new $lt.holding-b b $squareSize]
+		grid $Vars(holding:b) -column 1 -row 1 -sticky n
+		grid $Vars(holding:w) -column 5 -row 1 -sticky s
+		grid columnconfigure $lt {2 4} -minsize $Options(holding:distance)
+	}
+
+	grid columnconfigure $lt {0 6} -minsize $::theme::padding
+	grid rowconfigure $lt {0 2} -minsize $::theme::padding
 
 	# board buttons
 	set controls [tk::frame $bot.controls]
@@ -166,7 +188,7 @@ proc open {parent base info view index {fen {}}} {
 	tk::button $controls.autoplay \
 		-takefocus 0 \
 		-background $background \
-		-image $::icon::22x22::playerStart \
+		-image $::icon::22x22::start \
 		-command [namespace code [list ToggleAutoPlay $position 1]] \
 		;
 	set Vars(control:autoplay) $controls.autoplay
@@ -214,10 +236,16 @@ proc open {parent base info view index {fen {}}} {
 	$buttons.backward configure -command [namespace code [list NextGame $dlg $position -1]]
 	$buttons.forward configure -command [namespace code [list NextGame $dlg $position +1]]
 
+	set boardSize [expr {8*$squareSize + 2}]
+	if {$variant eq "Crazyhouse"} {
+		set holdingSize [::board::holding::computeWidth $squareSize]
+		incr boardSize [expr {2*($holdingSize + $Options(holding:distance))}]
+	}
+
 	grid $controls	-row 1 -column 1 -sticky ew
 	grid $buttons	-row 1 -column 3
 	grid columnconfigure $bot {0 2 4} -minsize $::theme::padding
-	grid columnconfigure $bot 1 -minsize [expr {8*$Options(board:size) + 2}]
+	grid columnconfigure $bot 1 -minsize $boardSize
 	grid columnconfigure $bot 3 -weight 1
 	grid rowconfigure $bot {0 2} -minsize $::theme::padding
 
@@ -236,8 +264,10 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(afterid2) {}
 	set Vars(header) $rt.header
 	set Vars(board:size) $Options(board:size)
+	set Vars(board:size:ext) $Options(board:size:ext)
 	set Vars(length) -1
 	set Vars(base) $base
+	set Vars(variant) $variant
 	set Vars(name) $name
 	set Vars(view) $view
 	set Vars(index) $index
@@ -261,14 +291,14 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
 	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
-	set Vars(subscribe:close) [list [namespace current]::Close $base $position]
+	set Vars(subscribe:close) [list [namespace current]::Close2 $base [list $position $variant]]
 
 	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
 	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
 	bind $dlg <Return>					{+ break }
 	bind $dlg <Configure>				[namespace code [list FirstConfigure %W $position]]
 	bind $dlg <Control-a>				[namespace code [list ToggleAutoPlay $position]]
-	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position $base]]
+	bind $dlg <Destroy>					[namespace code [list Destroy $dlg %W $position]]
 	bind $dlg <Left>						[namespace code [list Goto $position -1]]
 	bind $dlg <Right>						[namespace code [list Goto $position +1]]
 	bind $dlg <Prior>						[namespace code [list Goto $position -10]]
@@ -316,7 +346,7 @@ proc open {parent base info view index {fen {}}} {
 	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
 	::scidb::view::subscribe {*}$Vars(subscribe:close)
 
-	if {$view == [::scidb::tree::view $base]} {
+	if {$variant == [::scidb::app::variant] && $view == [::scidb::tree::view $base]} {
 		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $position]
 		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
 	}
@@ -324,7 +354,13 @@ proc open {parent base info view index {fen {}}} {
 	update idletasks
 	::scidb::game::go $position position $Vars(fen)
 
-	set Priv(minSize) [expr {[winfo width $dlg] - [winfo width $lt]}]
+	set Priv(minWidth) [expr {[winfo width $dlg] - [winfo width $lt]}]
+	set Priv(minHeight) $Priv(minWidth)
+	if {[info exists Vars(holding:w)]} {
+		set holdingSize [::board::holding::computeWidth $squareSize]
+		set size [expr {2*($holdingSize + $Options(holding:distance))}]
+		decr Priv(minHeight) $size
+	}
 	if {[UseFullscreen?]} {
 		bind $dlg <F11> [namespace code [list ViewFullscreen $position $board]]
 	}
@@ -333,20 +369,20 @@ proc open {parent base info view index {fen {}}} {
 }
 
 
-proc closeAll {base} {
+proc closeAll {base variant} {
 	variable Priv
 
-	foreach key [array names Priv $base:*] {
+	foreach key [array names Priv $base:$variant:*] {
 		foreach dlg $Priv($key) { destroy $dlg }
 	}
 }
 
 
-proc load {parent base info view index windowId} {
+proc load {parent base variant info view index windowId} {
 	if {[llength $windowId] == 0} { set windowId _ }
 
 	if {![namespace exists [namespace current]::${windowId}]} {
-		return [open $parent $base $info $view $index]
+		return [open $parent $base $variant $info $view $index]
 	}
 
 	variable ${windowId}::Vars
@@ -363,7 +399,7 @@ proc showPosition {parent position flip key {state 0}} {
 		variable Options
 
 		destroy [::util::makePopup $w]
-		::board::stuff::new $w.board $Options(miniboard:size) 2
+		::board::diagram::new $w.board $Options(miniboard:size) 2
 		pack $w.board
 	}
 
@@ -373,10 +409,10 @@ proc showPosition {parent position flip key {state 0}} {
 	if {($state & 3) == 1 || ($state & 3) == 2} {
 		set fen [string map {K . Q . R . B . N . k . q . r . b . n .} $fen]
 	}
-	if {$flip != [::board::stuff::rotated? $w.board]} {
-		::board::stuff::rotate $w.board
+	if {$flip != [::board::diagram::rotated? $w.board]} {
+		::board::diagram::rotate $w.board
 	}
-	::board::stuff::update $w.board $fen
+	::board::diagram::update $w.board $fen
 	::tooltip::popup $parent $w cursor
 }
 
@@ -429,8 +465,8 @@ proc showNext {w position flag} {
 }
 
 
-proc makeResult {result state toMove reason} {
-	set reasonText [::terminationbox::buildText $reason $state $result $toMove]
+proc makeResult {result state toMove termination reason} {
+	set reasonText [::terminationbox::buildText $reason $state $result $toMove $termination]
 	set result [::util::formatResult $result]
 	if {$result ne "*"} { set r1 $result } else { set r1 "" }
 	if {[string length $reasonText]} { set r2 $reasonText } else { set r2 "" }
@@ -474,16 +510,22 @@ if {0} {
 		}
 	} elseif {$idn > 0} {
 		append opening1 $::gamebar::mc::StartPosition " "
-		if {$idn > 3*960} {
-			append opening1 [expr {$idn - 3*960}]
+		if {$idn > 4*960} {
+			append opening1 "\""
+			append opening1 $position
+			append opening1 "\""
 		} else {
-			append opening1 $idn
-		}
-		append opening1 " ("
-		lappend opening2 [::font::translate $position] figurine
-		append opening3 ")"
-		if {$idn > 960} {
-			append opening3 " \[$mc::NoCastlingRights\]"
+			if {$idn > 3*960} {
+				append opening1 [expr {$idn - 3*960}]
+			} else {
+				append opening1 $idn
+			}
+			append opening1 " ("
+			lappend opening2 [::font::translate $position] figurine
+			append opening3 ")"
+			if {$idn > 960} {
+				append opening3 " \[$mc::NoCastlingRights\]"
+			}
 		}
 	} elseif {$idn == 0 && [llength $position]} {
 		append opening1 "FEN: "
@@ -500,7 +542,7 @@ if {0} {
 
 proc ShowPosition {parent position key {state 0}} {
 	variable ${position}::Vars
-	showPosition $parent $position [::board::stuff::rotated? $Vars(board)] $key $state
+	showPosition $parent $position [::board::diagram::rotated? $Vars(board)] $key $state
 }
 
 
@@ -530,21 +572,23 @@ proc ConfigureButtons {position} {
 	} else {
 		if {$Vars(index) == 0} { set state disabled } else { set state normal }
 		$Vars(control:backward) configure -state $state
-		set count [scidb::view::count games $Vars(base) $Vars(view)]
+		set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
 		if {$Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$Vars(control:forward) configure -state $state
 	}
 }
 
 
-proc Update {position id base {view -1} {index -1}} {
+proc Update {position id base variant {view -1} {index -1}} {
 	variable ${position}::Vars
 
-	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
+	if {	$Vars(base) eq $base
+		&& $Vars(variant) eq $variant
+		&& ($Vars(view) == $view || $Vars(view) == 0)} {
 		if {$Vars(closed)} {
 			set index $Vars(index:last)
-			if {[::scidb::view::count games $base $Vars(view)] <= $index} { return }
-			set info [::scidb::db::get gameInfo $index $Vars(view) $base]
+			if {[::scidb::view::count games $base $variant $Vars(view)] <= $index} { return }
+			set info [::scidb::db::get gameInfo $index $Vars(view) $base $variant]
 			if {$info ne $Vars(info)} { return }
 			set Vars(index) $index
 			set Vars(closed) false
@@ -559,13 +603,13 @@ proc Update {position id base {view -1} {index -1}} {
 proc Update2 {position} {
 	variable ${position}::Vars
 
-	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-	set Vars(fen) [::scidb::game::fen $position]
+	set index [expr {$Vars(number) - 1}]
+	set Vars(index) [::scidb::db::get gameIndex $index $Vars(view) $Vars(base) $Vars(variant)]
 	ConfigureButtons $position
 }
 
 
-proc Close {position base {view {}}} {
+proc Close {position base variant {view {}}} {
 	variable ${position}::Vars
 
 	if {!$Vars(closed) && ([llength $view] == 0 || $view == $Vars(view))} {
@@ -578,11 +622,17 @@ proc Close {position base {view {}}} {
 }
 
 
-proc UpdateTreeBase {position base} {
+proc Close2 {args base view} {
+	lassign $args position variant
+	Close $position $base $variant $view
+}
+
+
+proc UpdateTreeBase {position base variant} {
 	variable ${position}::Vars
 
-	if {$base ne $Vars(base)} {
-		Close $position $base
+	if {$base ne $Vars(base) || $variant ne $Vars(variant)} {
+		Close $position $base $variant
 	}
 }
 
@@ -600,7 +650,7 @@ proc GotoGame(first) {parent position} {
 proc GotoGame(last) {parent position} {
 	variable ${position}::Vars
 
-	set index [expr {[scidb::view::count games $Vars(base) $Vars(view)] - 1}]
+	set index [expr {[scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)] - 1}]
 
 	if {$Vars(index) < $index} {
 		set Vars(index) $index
@@ -624,24 +674,25 @@ proc NextGame {parent position {step 0}} {
 	variable Priv
 
 	if {$Vars(index) == -1} { return }
-	set count [scidb::view::count games $Vars(base) $Vars(view)]
+	set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
 	set number $Vars(number)
 	set index [expr {$Vars(index) + $step}]
 	if {$index < 0 || $index == $count} { return }
 	set Vars(index) $index
-	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base)]
+	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base) $Vars(variant)]
 	set Vars(result) [list [::util::formatResult [::gametable::column $Vars(info) result]] ""]
 	set Vars(number) [::gametable::column $Vars(info) number]
-	set key $Vars(base):$number:$Vars(view)
+	set key $Vars(base):$Vars(variant):$number:$Vars(view)
 	set i [lsearch -exact $Priv($key) $parent]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
-	set key $Vars(base):$Vars(number):$Vars(view)
+	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
 	lappend Priv($key) [winfo toplevel $parent]
 	ConfigureButtons $position
 	SetTitle $position
-	set number [::scidb::db::get gameNumber $Vars(base) $index $Vars(view)]
-	::widget::busyOperation { ::game::load $parent $position $Vars(base) -1 $number }
+	set number [::scidb::db::get gameNumber $Vars(base) $Vars(variant) $index $Vars(view)]
+	::widget::busyOperation \
+		{ ::game::load $parent $position $Vars(base) -number $number -variant $Vars(variant) }
 	::scidb::game::go $position position $Vars(fen)
 	UpdateHeader $position
 }
@@ -665,6 +716,13 @@ proc Goto {position step} {
 	variable Options
 
 	::scidb::game::go $position $step
+
+	lassign [::scidb::pos::inHand? $position] matw matb
+
+	if {[info exists Vars(holding:w)]} {
+		::board::holding::update $Vars(holding:w) $matw
+		::board::holding::update $Vars(holding:b) $matb
+	}
 
 	if {$Vars(autoplay)} {
 		if {[::scidb::game::position $position atEnd?]} {
@@ -778,12 +836,24 @@ proc UpdateHeader {position} {
 		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayerInfo $position $side]]
 	}
 
-	set Vars(opening) [makeOpeningLines $data]
+	set variant [::scidb::game::query $position variant?]
 
-	if {[llength [lindex $Vars(opening) 0 0]]} {
-		$text insert end "\n"
-		foreach line $Vars(opening) {
-			$text insert end {*}$line
+	switch $variant {
+		Normal {
+			set Vars(opening) [makeOpeningLines $data]
+
+			if {[llength [lindex $Vars(opening) 0 0]]} {
+				$text insert end "\n"
+				foreach line $Vars(opening) {
+					$text insert end {*}$line
+				}
+			}
+		}
+		Suicide - Giveaway - Losers {
+			$text insert end "\n$::mc::VariantName(Antichess) - $::mc::VariantName($variant)"
+		}
+		default {
+			$text insert end "\n$::mc::VariantName($variant)"
 		}
 	}
 
@@ -798,10 +868,9 @@ proc ShowEvent {position} {
 
 	if {$Vars(closed)} { return }
 
-	set base  $Vars(base)
 	set index [expr {$Vars(number) - 1}]
 
-	set info [scidb::db::fetch eventInfo $index $base -card]
+	set info [scidb::db::fetch eventInfo $index $Vars(base) $Vars(variant) -card]
 	::eventtable::popupInfo $Vars(header) $info
 }
 
@@ -843,7 +912,7 @@ proc ShowPlayerCard {position side} {
 	variable ${position}::Vars
 
 	if {$Vars(closed)} { return }
-	::playercard::show $Vars(base) [expr {$Vars(number) - 1}] $side
+	::playercard::show $Vars(base) $Vars(variant) [expr {$Vars(number) - 1}] $side
 }
 
 
@@ -852,10 +921,11 @@ proc ShowPlayerInfo {position side} {
 
 	if {$Vars(closed)} { return }
 
-	set base  $Vars(base)
+	set base $Vars(base)
+	set variant $Vars(variant)
 	set index [expr {$Vars(number) - 1}]
 
-	set info [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
+	set info [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Elo Elo}]
 	::playercard::popupInfo $Vars(header) $info
 }
 
@@ -937,7 +1007,7 @@ proc UpdatePGN {position data {w {}}} {
 
 			result {
 				set reason [::scidb::game::query $position termination]
-				set Vars(result) [makeResult {*}[lrange $node 1 3] $reason]
+				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason]
 				PrintResult $w $position
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Colors(background) }
@@ -1057,8 +1127,8 @@ proc UpdateBoard {position cmd data} {
 	variable ${position}::Vars
 
 	switch $cmd {
-		set	{ ::board::stuff::update $Vars(board) $data }
-		move	{ ::board::stuff::move $Vars(board) $data }
+		set	{ ::board::diagram::update $Vars(board) $data }
+		move	{ ::board::diagram::move $Vars(board) $data }
 	}
 }
 
@@ -1068,13 +1138,13 @@ proc ToggleAutoPlay {position {hide 0}} {
 
 	set w $Vars(control:autoplay)
 
-	if {[$w cget -image] eq $::icon::22x22::playerStart} {
+	if {[$w cget -image] eq $::icon::22x22::start} {
 		$w configure -image $::icon::22x22::playerStop
 		set Vars(autoplay) 1
 		Goto $position +1
 		set tooltipVar StopAutoplay
 	} else {
-		$w configure -image $::icon::22x22::playerStart
+		$w configure -image $::icon::22x22::start
 		set Vars(autoplay) 0
 		after cancel $Vars(afterid)
 		set Vars(afterid) {}
@@ -1089,7 +1159,7 @@ proc ToggleAutoPlay {position {hide 0}} {
 proc SetAutoPlayTooltip {position} {
 	variable ${position}::Vars
 
-	if {[$Vars(control:autoplay) cget -image] eq $::icon::22x22::playerStart} {
+	if {[$Vars(control:autoplay) cget -image] eq $::icon::22x22::start} {
 		set tooltipVar StartAutoplay
 	} else {
 		set tooltipVar StartAutoplay
@@ -1101,11 +1171,18 @@ proc SetAutoPlayTooltip {position} {
 
 proc RotateBoard {position} {
 	variable ${position}::Vars
-	::board::stuff::rotate $Vars(board)
+
+	::board::diagram::rotate $Vars(board)
+	if {[::board::diagram::rotated? $Vars(board)]} { set w b; set b w } else { set w w; set b b }
+
+	if {[info exists Vars(holding:w)]} {
+		grid $Vars(holding:$w) -column 5 -row 1 -sticky s
+		grid $Vars(holding:$b) -column 1 -row 1 -sticky n
+	}
 }
 
 
-proc Destroy {dlg w position base} {
+proc Destroy {dlg w position} {
 	variable Active
 
 	if {$w ne $dlg} { return }
@@ -1123,7 +1200,7 @@ proc Destroy {dlg w position base} {
 		::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 	}
 
-	set key $Vars(base):$Vars(number):$Vars(view)
+	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
 	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
@@ -1193,13 +1270,15 @@ proc PopupMenu {parent board position {what ""}} {
 
 		switch $what {
 			white - black {
-				set info [scidb::db::fetch ${what}PlayerInfo $index $Vars(base) -card -ratings {Elo Elo}]
-				::playertable::popupMenu $menu $Vars(base) $info [list [expr {$Vars(number) - 1}] $what]
+				set info [scidb::db::fetch \
+					${what}PlayerInfo $index $Vars(base) $Vars(variant) -card -ratings {Elo Elo}]
+				::playertable::popupMenu \
+					$menu $Vars(base) $Vars(variant) $info [list [expr {$Vars(number) - 1}] $what]
 			}
 
 			event {
-				set info [scidb::db::fetch eventInfo $index $Vars(base) -card]
-				::eventtable::popupMenu $dlg $menu $Vars(base) 0 $index game
+				set info [scidb::db::fetch eventInfo $index $Vars(base) $Vars(variant) -card]
+				::eventtable::popupMenu $dlg $menu $Vars(base) $Vars(variant) 0 $index game
 			}
 		}
 
@@ -1207,59 +1286,62 @@ proc PopupMenu {parent board position {what ""}} {
 		$menu add separator
 	}
 
-	set count [scidb::view::count games $Vars(base) $Vars(view)]
+	if {!$Vars(closed)} {
+		set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
 
-	if {$Vars(index) == -1} { set state disabled } else { set state normal }
-	$menu add command \
-		-label " $mc::LoadGame" \
-		-image $::icon::16x16::document \
-		-compound left \
-		-command [namespace code [list LoadGame $dlg $position [::scidb::game::fen $position]]] \
-		-state $state \
-		;
+		if {$Vars(index) == -1} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::LoadGame" \
+			-image $::icon::16x16::document \
+			-compound left \
+			-command [namespace code [list LoadGame $dlg $position [::scidb::game::fen $position]]] \
+			-state $state \
+			;
 #	$menu add command \
 #		-label $mc::MergeGame \
 #		-command [namespace code [list MergeGame $dlg $position]] \
 #		-state $state \
 #		;
-	$menu add separator
-	if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
-	$menu add command \
-		-label " $mc::GotoGame(next)" \
-		-image $::icon::16x16::forward \
-		-compound left \
-		-command [namespace code [list GotoGame(next) $parent $position]] \
-		-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
-		-state $state \
-		;
-	if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
-	$menu add command \
-		-label " $mc::GotoGame(prev)" \
-		-image $::icon::16x16::backward \
-		-compound left \
-		-command [namespace code [list GotoGame(prev) $parent $position]] \
-		-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
-		-state $state \
-		;
-	if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
-	$menu add command \
-		-label " $mc::GotoGame(last)" \
-		-image $::icon::16x16::last \
-		-compound left \
-		-command [namespace code [list GotoGame(last) $parent $position]] \
-		-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
-		-state $state \
-		;
-	if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
-	$menu add command \
-		-label " $mc::GotoGame(first)" \
-		-image $::icon::16x16::first \
-		-compound left \
-		-command [namespace code [list GotoGame(first) $parent $position]] \
-		-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
-		-state $state \
-		;
-	$menu add separator
+		$menu add separator
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::GotoGame(next)" \
+			-image $::icon::16x16::forward \
+			-compound left \
+			-command [namespace code [list GotoGame(next) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::GotoGame(prev)" \
+			-image $::icon::16x16::backward \
+			-compound left \
+			-command [namespace code [list GotoGame(prev) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::GotoGame(last)" \
+			-image $::icon::16x16::last \
+			-compound left \
+			-command [namespace code [list GotoGame(last) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::GotoGame(first)" \
+			-image $::icon::16x16::first \
+			-compound left \
+			-command [namespace code [list GotoGame(first) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
+			-state $state \
+			;
+		$menu add separator
+	}
+
 	if {!$Vars(fullscreen)} {
 		$menu add command \
 			-label " $mc::IncreaseBoardSize" \
@@ -1379,7 +1461,13 @@ proc ViewFullscreen {position board} {
 proc LoadGame {parent position fen} {
 	variable ${position}::Vars
 	::widget::busyOperation {
-		::game::new $parent $Vars(base) $Vars(view) [expr {$Vars(number) - 1}] $fen
+		::game::new $parent \
+			-base $Vars(base) \
+			-variant $Vars(variant) \
+			-view $Vars(view) \
+			-number [expr {$Vars(number) - 1}] \
+			-fen $fen \
+			;
 	}
 }	
 
@@ -1389,95 +1477,122 @@ proc MergeGame {parent position} {
 }
 
 
-proc ChangeBoardSize {position board delta} {
+proc ChangeBoardSize {position board mode} {
 	variable ${position}::Vars
 	variable Options
 	variable Priv
 
-	if {$Vars(fullscreen) && $delta ne "fullscreen"} { return }
+	if {$Vars(fullscreen) && $mode ne "fullscreen"} { return }
 
-	set dlg [winfo toplevel $board]
-	set max1 [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$Options(board:size) - 75)/8}]
-	set max2 [expr {([winfo screenwidth $dlg] - $Priv(minSize) - 16)/8}]
-	set maxSize [min $max1 $max2]
-	set maxSize [expr {$maxSize - ($maxSize % 5)}]
+	set squareSize $Vars(board:size)
+	set squareSizeExt $Vars(board:size:ext)
 
-	switch $delta {
-		max {
-			set newSize $maxSize
-			set delta [expr {$newSize - $Options(board:size)}]
-			if {$delta <= 0} { return }
-		}
+	if {$Vars(variant) eq "Crazyhouse"} { set ext ":ext" } else { set ext "" }
+	set result [ComputeBoardSize $position $board $mode $ext]
 
-		min {
-			set newSize 35
-			set delta [expr {$newSize - $Options(board:size)}]
-			if {$delta >= 0} { return }
-		}
+	if {[llength $result]} {
+		lassign $result newSize delta
 
-		fullscreen {
-			set boardSize [expr {[winfo screenheight $dlg] - [winfo height $dlg] -
-										$Priv(controls:height) + 8*$Options(board:size)}]
-			set newSize [expr {$boardSize/8}]
-			unset delta
+		if {$mode ne "fullscreen" && $mode ne "restore"} {
 
-			if {[info exists Vars(control)]} {
-				grid $Vars(control)
-			} else {
-				set Vars(control) [::widget::dialogFullscreenButtons $dlg]
-				grid $Vars(control) -row 0 -column 0 -sticky ens
-				grid rowconfigure $dlg 0 -minsize $Priv(controls:height)
-				$Vars(control).minimize configure -command [list wm iconify $dlg]
-				$Vars(control).restore configure \
-					-command [namespace code [list ViewFullscreen $position $board]] \
-					;
-				$Vars(control).close configure -command [list destroy $dlg]
+			if {[string length $ext]} { set notExt "" } else { set notExt ":ext" }
+			set result2 [ComputeBoardSize $position $board $mode $notExt]
+
+			if {[llength $result2]} {
+				lassign $result2 newSize2 _
+
+				switch $mode {
+					min - max {
+						set Vars(board:size$notExt) $newSize2
+						set Options(board:size$notExt) $newSize2
+					}
+					default {
+						if {$mode < 0} {
+							set newSize2 [expr {max($newSize, $newSize2)}]
+							if {$newSize2 < $Vars(board:size$notExt)} {
+								set Vars(board:size$notExt) $newSize2
+								set Options(board:size$notExt) $newSize2
+							}
+						} else {
+							set newSize2 [expr {min($newSize, $newSize2)}]
+							if {$newSize2 > $Vars(board:size$notExt)} {
+								set Vars(board:size$notExt) $newSize2
+								set Options(board:size$notExt) $newSize2
+							}
+						}
+					}
+				}
 			}
 		}
 
-		restore {
+		Resize $position $mode $board $newSize $delta $ext
+	}
+}
+
+
+proc Resize {position mode board newSize delta ext} {
+	variable ${position}::Vars
+	variable Options
+	variable Priv
+
+	set dlg [winfo toplevel $board]
+
+	if {$mode eq "fullscreen"} {
+		if {[info exists Vars(control)]} {
+			grid $Vars(control)
+		} else {
+			set Vars(control) [::widget::dialogFullscreenButtons $dlg]
+			grid $Vars(control) -row 0 -column 0 -sticky ens
+			grid rowconfigure $dlg 0 -minsize $Priv(controls:height)
+			$Vars(control).minimize configure -command [list wm iconify $dlg]
+			$Vars(control).restore configure \
+				-command [namespace code [list ViewFullscreen $position $board]] \
+				;
+			$Vars(control).close configure -command [list destroy $dlg]
+		}
+	} else {
+		if {$mode eq "restore"} {
 			grid remove $Vars(control)
 			grid rowconfigure $dlg 0 -minsize 0
 			wm geometry $dlg +$Vars(pos:x)+$Vars(pos:y)
-			set newSize $Options(board:size)
-			set delta 0
 		}
-
-		default {
-			set newSize [expr {$Options(board:size) + $delta}]
-			if {$delta < 0 && $newSize < 35} { return }
-			if {$delta > 0 && $newSize > $maxSize} { return }
-		}
-	}
-
-	if {[info exists delta]} {
 		set Vars(size:width) [expr {$Vars(size:width) + 8*$delta}]
 		set Vars(size:height) [expr {$Vars(size:height) + 8*$delta}]
+		if {[string length $ext]} { incr Vars(size:width) [expr {2*$delta}] }
 		wm minsize $dlg $Vars(size:width) $Vars(size:height)
 		wm geometry $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}]x${Vars(size:height)}
 	}
 
-	if {$newSize != $Vars(board:size)} {
+	if {$newSize != $Vars(board:size$ext)} {
 		if {$Vars(fullscreen)} {
-			if {$Priv(fullscreen:size) == 0} {
+			if {$Priv(fullscreen:size$ext) == 0} {
 				::board::registerSize $newSize
-				set Priv(fullscreen:size) $newSize
+				set Priv(board:size) $newSize
+				set Priv(fullscreen:size$ext) $newSize
 			}
 		} else {
-			if {$newSize != $Priv(fullscreen:size)} {
+			if {$newSize != $Priv(fullscreen:size$ext)} {
 				::board::registerSize $newSize
+				set Priv(board:size) $newSize
 			}
-			if {$Vars(board:size) != $Priv(fullscreen:size)} {
-				::board::unregisterSize $Vars(board:size)
+			if {$Vars(board:size$ext) != $Priv(fullscreen:size$ext)} {
+				::board::unregisterSize $Vars(board:size$ext)
 			}
 		}
-		::board::stuff::resize $board $newSize 1
-		grid columnconfigure $dlg.bot 1 -minsize [expr {8*$newSize + 2}]
-		set Vars(board:size) $newSize
+		::board::diagram::resize $board $newSize 1
+		set size [expr {8*$newSize + 2}]
+		if {[info exists Vars(holding:w)]} {
+			::board::holding::resize $Vars(holding:w) $newSize
+			::board::holding::resize $Vars(holding:b) $newSize
+			set holdingSize [::board::holding::computeWidth $newSize]
+			incr size [expr {2*($holdingSize + $Options(holding:distance))}]
+		}
+		grid columnconfigure $dlg.bot 1 -minsize $size
+		set Vars(board:size$ext) $newSize
 	}
 
 	if {!$Vars(fullscreen)} {
-		set Options(board:size) $newSize
+		set Options(board:size$ext) $newSize
 
 		update idletasks
 
@@ -1493,12 +1608,62 @@ proc ChangeBoardSize {position board delta} {
 }
 
 
+proc ComputeBoardSize {position board mode ext} {
+	variable ${position}::Vars
+	variable Options
+	variable Priv
+
+	set squareSize $Options(board:size$ext)
+	set dlg [winfo toplevel $board]
+	set max1 [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$squareSize - 75)/8}]
+	if {[string length $ext]} { set n 10 } else { set n 8 }
+	set max2 [expr {([winfo screenwidth $dlg] - $Priv(minWidth) - 16)/$n}]
+	set maxSize [min $max1 $max2]
+	set maxSize [expr {$maxSize - ($maxSize % 5)}]
+
+	switch $mode {
+		max {
+			set newSize $maxSize
+			set delta [expr {$newSize - $squareSize}]
+			if {$delta <= 0} { return {} }
+		}
+
+		min {
+			set newSize 35
+			set delta [expr {$newSize - $squareSize}]
+			if {$delta >= 0} { return {} }
+		}
+
+		fullscreen {
+			set boardSize [expr {[winfo screenheight $dlg] - [winfo height $dlg] -
+										$Priv(controls:height) + 8*$squareSize}]
+			set newSize [expr {$boardSize/8}]
+			set delta 0
+		}
+
+		restore {
+			set newSize $squareSize
+			set delta 0
+		}
+
+		default {
+			set delta $mode
+			set newSize [expr {$squareSize + $delta}]
+			if {$delta < 0 && $newSize < 35} { return {} }
+			if {$delta > 0 && $newSize > $maxSize} { return {} }
+		}
+	}
+
+	return [list $newSize $delta]
+}
+
+
 proc UseFullscreen? {} {
 	variable Priv
 
 	set sw [winfo screenwidth .application]
 	set sh [winfo screenheight .application]
-	return [expr {$sh + $Priv(minSize) - $Priv(controls:height) <= $sw}]
+	return [expr {$sh + $Priv(minHeight) - $Priv(controls:height) <= $sw}]
 }
 
 

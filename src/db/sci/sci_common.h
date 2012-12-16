@@ -38,7 +38,8 @@ namespace token
 		Nag				= 1,
 		Comment			= 2,
 		Start_Marker	= 3,
-		End_Marker		= 4,	Last = End_Marker,
+		End_Marker		= 4,
+		Special_Move	= 5,
 	};
 }
 
@@ -52,6 +53,25 @@ namespace comm
 		Ante_Oth	= 1 << 3,
 		Post_Eng	= 1 << 4,
 		Post_Oth	= 1 << 5,
+	};
+}
+
+namespace flags
+{
+	enum
+	{
+		TextSection			= 1 << 15,
+		TagSection			= 1 << 14,
+		EngineSection		= 1 << 13,
+		TimeTableSection	= 1 << 12,
+	};
+};
+
+namespace maintenance
+{
+	enum
+	{
+		Compress = 1,
 	};
 }
 

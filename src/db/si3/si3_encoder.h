@@ -62,12 +62,14 @@ public:
 							bool allowExtraTags);
 
 	static unsigned encodeType(db::type::ID type);
-	static bool skipTag(tag::ID tag);
+	static db::tag::TagSet const& infoTags();
 	static bool isExtraTag(tag::ID tag);
 
 protected:
 
 	typedef encoder::Position Position;
+
+	void doEncoding(Move const& move);
 
 	void encodeVariation(MoveNode const* node, unsigned level = 0);
 	void encodeComments(MoveNode* node, encoding::CharSet encoding);
@@ -93,6 +95,8 @@ protected:
 
 } // namespace si3
 } // namespace db
+
+#include "si3_encoder.ipp"
 
 #endif // _si3_encoder_included
 

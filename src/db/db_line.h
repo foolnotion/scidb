@@ -57,7 +57,9 @@ struct Line
 
 	uint16_t operator[](unsigned n) const;
 
-	mstl::string& print(mstl::string& result, encoding::CharSet charSet = encoding::Latin1) const;
+	mstl::string& print(	mstl::string& result,
+								variant::Type variant,
+								encoding::CharSet charSet = encoding::Latin1) const;
 	void dump() const;
 
 	void copy(Line const& line);

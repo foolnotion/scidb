@@ -62,10 +62,34 @@ MoveInfo::AnalysisInfo::AnalysisInfo()
 }
 
 
+MoveInfo::ElapsedTime::ElapsedTime()
+	:m_seconds(0)
+	,m_milliSeconds(0)
+{
+}
+
+
 MoveInfo::MoveInfo()
 	:m_content(None)
 	,m_engine(0)
 {
+}
+
+
+bool
+MoveInfo::hasTimeInfo() const
+{
+	switch (int(m_content))
+	{
+		case PlayersClock:
+		case ElapsedGameTime:
+		case ElapsedMoveTime:
+		case ElapsedMilliSeconds:
+		case ClockTime:
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -88,11 +112,16 @@ MoveInfo::compare(MoveInfo const& mi) const
 		case PlayersClock:
 		case ElapsedGameTime:
 		case ElapsedMoveTime:
-		case MechanicalClockTime:
-		case DigitalClockTime:
+		case ClockTime:
 			if (int cmp = m_time.m_clock.compare(mi.m_time.m_clock))
 				return cmp;
 			break;
+
+		case ElapsedMilliSeconds:
+			break;
+
+		case VideoTime:
+			return int(m_centiSeconds) - int(mi.m_centiSeconds);
 
 		case Evaluation:
 			if (int cmp = int(m_analysis.m_depth)      - int(mi.m_analysis.m_depth)     ) return cmp;
@@ -102,14 +131,17 @@ MoveInfo::compare(MoveInfo const& mi) const
 			break;
 	}
 
-	return 0; // never reached
+	return 0;
 }
 
 
 void
 MoveInfo::setAnalysisEngine(unsigned engine)
 {
-	M_REQUIRE(content() == Evaluation || content() == ElapsedMoveTime || content() == PlayersClock);
+	M_REQUIRE(	content() == Evaluation
+				|| content() == ElapsedMoveTime
+				|| content() == ElapsedMilliSeconds
+				|| content() == PlayersClock);
 
 	if (m_content == PlayersClock)
 		m_content = ElapsedMoveTime;
@@ -132,6 +164,42 @@ MoveInfo::setClockEngine(unsigned engine)
 
 
 char const*
+MoveInfo::parseCentiSeconds(char const* s)
+{
+	M_REQUIRE(s);
+
+	char const* c = s;
+
+	while (::isdigit(*c))
+		++c;
+
+	if (c == s)
+		return 0;
+
+	char* e;
+
+	m_centiSeconds = ::strtoul(s, &e, 10)*100;
+
+	M_ASSERT(e);
+
+	if (c[0] == '.' && ::isdigit(c[1]))
+	{
+		char buf[3] = { c[1], ::isdigit(c[2]) ? c[2] : '0', '\0' };
+		m_centiSeconds += ::strtoul(buf, 0, 10);
+
+		do
+			++c;
+		while (::isdigit(*c));
+
+		e = const_cast<char*>(c);
+	}
+
+	m_content = VideoTime;
+	return e;
+}
+
+
+char const*
 MoveInfo::parseTime(Type type, char const* s)
 {
 	M_REQUIRE(s);
@@ -142,6 +210,33 @@ MoveInfo::parseTime(Type type, char const* s)
 		m_content = type;
 
 	return e;
+}
+
+
+char const*
+MoveInfo::parseElapsedTime(char const* s)
+{
+	M_REQUIRE(s);
+
+	if (::strchr(s, ':'))
+		return parseTime(ElapsedMoveTime, s);
+
+	char* e = 0;
+
+	m_elapsed.m_milliSeconds = 0;
+	m_elapsed.m_seconds = strtoul(::skipSpaces(s), &e, 10);
+
+	if (*::skipSpaces(e) != ']')
+	{
+		if (*e != '.')
+			return 0;
+
+		m_elapsed.m_milliSeconds = strtoul(e + 1, &e, 10);
+	}
+
+	m_content = ElapsedMilliSeconds;
+
+	return ::skipSpaces(e);
 }
 
 
@@ -255,9 +350,17 @@ MoveInfo::computeChecksum(EngineList const& engines, util::crc::checksum_t crc) 
 		case PlayersClock:
 		case ElapsedGameTime:
 		case ElapsedMoveTime:
-		case MechanicalClockTime:
-		case DigitalClockTime:
+		case ClockTime:
 			crc = m_time.m_clock.computeChecksum(crc);
+			break;
+
+		case ElapsedMilliSeconds:
+			crc = ::util::crc::compute(crc, m_elapsed.m_seconds);
+			crc = ::util::crc::compute(crc, m_elapsed.m_milliSeconds);
+			break;
+
+		case VideoTime:
+			crc = ::util::crc::compute(crc, m_centiSeconds);
 			break;
 
 		case Evaluation:
@@ -279,10 +382,24 @@ MoveInfo::computeChecksum(EngineList const& engines, util::crc::checksum_t crc) 
 
 
 void
+MoveInfo::printClock(char const* id, mstl::string& result, Format format) const
+{
+	switch (format)
+	{
+		case Pgn:	result.format("[%%%s ", id); break;
+		case Text:	result.append('(');
+	}
+
+	result.format(	"%u:%02u:%02u",
+						m_time.m_clock.hour(),
+						m_time.m_clock.minute(),
+						m_time.m_clock.second());
+}
+
+
+void
 MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) const
 {
-	static char const* Identifiers[8] = { "", "clk", "egt", "emt", "mct", "ct", "", "", };
-
 	if (m_engine)
 	{
 		switch (int(m_content))
@@ -301,20 +418,18 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 		case None:
 			return;
 
-		case PlayersClock:
-		case ElapsedGameTime:
-		case ElapsedMoveTime:
-		case MechanicalClockTime:
-		case DigitalClockTime:
+		case PlayersClock:		printClock("clk", result, format); break;
+		case ElapsedGameTime:	printClock("egt", result, format); break;
+		case ElapsedMoveTime:	printClock("emt", result, format); break;
+		case ClockTime:			printClock("ct",  result, format); break;
+
+		case ElapsedMilliSeconds:
 			switch (format)
 			{
-				case Pgn:	result.format("[%%%s ", Identifiers[m_content]); break;
-				case Text:	result.append('(');
+				case Pgn:	result.append("[%emt ", 6); break;
+				case Text:	result.append('('); break;
 			}
-			result.format(	"%u:%02u:%02u",
-								m_time.m_clock.hour(),
-								m_time.m_clock.minute(),
-								m_time.m_clock.second());
+			result.format("%u.%u", unsigned(m_elapsed.m_seconds), unsigned(m_elapsed.m_milliSeconds));
 			break;
 
 		case CorrespondenceChessSent:
@@ -335,6 +450,12 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 				if (m_time.m_clock.second())
 					result.format(":%02u", m_time.m_clock.second());
 			}
+			break;
+
+		case VideoTime:
+			if (format == Pgn)
+				result.append("[%vt ", 5);
+			result.format("%u.%u", unsigned(m_centiSeconds/1000), unsigned(m_centiSeconds % 1000));
 			break;
 
 		case Evaluation:
@@ -367,6 +488,158 @@ MoveInfo::decode(ByteStream& strm)
 	uint8_t	u = strm.get();
 	uint32_t	v;
 
+	switch (m_content = Type(((u >> 4) & 0x07) + 1))
+	{
+		case None:	// should not happen
+			break;
+
+		case CorrespondenceChessSent:
+			v = strm.uint32();
+			m_time.m_date.setYMD(
+				Date::decodeYearFrom10Bits((v >> 21) & 0x03ff),
+				((v >> 17) & 0x000f),
+				((v >> 12) & 0x001f));
+			m_time.m_clock.setHMS(
+				((u >> 4) & 0x000f),
+				((v >> 6) & 0x003f),
+				((v     ) & 0x003f));
+			break;
+
+		case PlayersClock:
+		case ElapsedGameTime:
+		case ElapsedMoveTime:
+		case ClockTime:
+			v = strm.uint16();
+			m_engine = u & 0x0f;
+			m_time.m_clock.setHMS(
+				((v >> 12) & 0x000f),
+				((v >>  6) & 0x003f),
+				((v      ) & 0x003f));
+			break;
+
+		case ElapsedMilliSeconds:
+			v = strm.uint24();
+			m_elapsed.m_seconds = (v >> 10);
+			m_elapsed.m_milliSeconds	= (v & 0x000003ff);
+			m_elapsed.m_seconds |= ((u & 0x0f) << 14);
+			break;
+
+		case VideoTime:
+			m_centiSeconds = ((uint32_t(u) & 0x000f) << 24) | strm.uint24();
+			break;
+
+		case Evaluation:
+			v = strm.uint24();
+			m_engine = u & 0x0f;
+			m_analysis.m_depth      = ((v >> 19) & 0x001f);
+			m_analysis.m_sign       = ((v >> 18) & 0x0001);
+			m_analysis.m_pawns      = ((v >>  7) & 0x07ff);
+			m_analysis.m_centipawns = ((v      ) & 0x007f);
+			break;
+
+		default:
+			IO_RAISE(Game, Corrupted, "corrupted game data");
+	}
+}
+
+
+void
+MoveInfo::encode(ByteStream& strm) const
+{
+	switch (m_content)
+	{
+		case None: // should not happen
+			break;
+
+		case CorrespondenceChessSent:
+		{
+			strm << uint8_t
+			(
+				  0x80																//  1 bit
+				| (uint8_t(m_content - 1) << 4)								//  3 bit
+				| (uint8_t(m_time.m_clock.hour() & 0x000f))				//  4 bit
+			);
+			uint32_t year = Date::encodeYearTo10Bits(m_time.m_date.year());
+			strm << uint32_t
+			(
+				  (uint32_t(year & 0x03ff) << 21)							// 10 bit
+				| (uint32_t(m_time.m_date.month() & 0x000f) << 17)		//  4 bit
+				| (uint32_t(m_time.m_date.day() & 0x001f) << 12)			//  5 bit
+				| (uint32_t(m_time.m_clock.minute() & 0x003f) << 6)		//  6 bit
+				| (uint32_t(m_time.m_clock.second() & 0x003f))			//  6 bit
+			);
+			break;
+		}
+
+		case PlayersClock:
+		case ElapsedGameTime:
+		case ElapsedMoveTime:
+		case ClockTime:
+			strm << uint8_t
+			(
+				  0x80																//  1 bit
+				| (uint8_t(m_content - 1) << 4)								//  3 bit
+				| (uint8_t(m_engine) & 0x0f)									//  4 bit
+			);
+			strm << uint16_t
+			(
+				  (uint16_t(m_time.m_clock.hour() & 0x000f) << 12)		//  4 bit
+				| (uint16_t(m_time.m_clock.minute() & 0x003f) << 6)		//  6 bit
+				| (uint16_t(m_time.m_clock.second() & 0x003f))			//  6 bit
+			);
+			break;
+
+		case ElapsedMilliSeconds:
+			strm << uint8_t
+			(
+				  0x80																//  1 bit
+				| (uint8_t(m_content - 1) << 4)								//  3 bit
+				| (uint8_t(m_elapsed.m_seconds >> 14) & 0x0f)			//  4 bit
+			);
+			strm << uint24_t
+			(
+				  (uint32_t(m_elapsed.m_seconds << 10) & 0x0003fff)	// 14 bits
+				| (uint32_t(m_elapsed.m_milliSeconds))						// 10 bits
+			);
+			break;
+
+		case VideoTime:
+			strm << uint8_t
+			(
+				  0x80																//  1 bit
+				| (uint8_t(m_content - 1) << 4)								//  3 bit
+				| (uint8_t(m_centiSeconds >> 24) & 0x0f)					//  4 bit
+			);
+			strm << uint24_t(m_centiSeconds & 0x0fff);					// 24 bit
+			break;
+
+		case Evaluation:
+			strm << uint8_t
+			(
+					0x80																//  1 bit
+				 | (uint8_t(m_content - 1) << 4)								//  3 bit
+				 | (uint8_t(m_engine & 0x0f))									//  4 bit
+			);
+			strm << uint24_t
+			(
+					(uint32_t(m_analysis.m_depth & 0x001f) << 19)		//  5 bit
+				 | (uint32_t(m_analysis.m_sign & 0x0001) << 18)			//  1 bit
+				 | (uint32_t(m_analysis.m_pawns & 0x07ff) << 7)			// 11 bit
+				 | (uint32_t(m_analysis.m_centipawns & 0x007f))			//  7 bit
+			);
+			break;
+	}
+}
+
+
+void
+MoveInfo::decodeVersion92(ByteStream& strm)
+{
+	M_REQUIRE(strm.peek() & 0x80);
+
+	uint8_t	u = strm.get();
+	uint32_t	v;
+
 	switch (m_content = Type((u >> 4) & 0x07))
 	{
 		case None:	// should not happen
@@ -386,8 +659,7 @@ MoveInfo::decode(ByteStream& strm)
 		case PlayersClock:
 		case ElapsedGameTime:
 		case ElapsedMoveTime:
-		case MechanicalClockTime:
-		case DigitalClockTime:
+		case ClockTime:
 			v = strm.uint16();
 			m_engine = u & 0x0f;
 			m_time.m_clock.setHMS(	((v      ) & 0x000f),
@@ -406,57 +678,6 @@ MoveInfo::decode(ByteStream& strm)
 
 		default:
 			IO_RAISE(Game, Corrupted, "corrupted game data");
-	}
-}
-
-
-void
-MoveInfo::encode(ByteStream& strm) const
-{
-	switch (m_content)
-	{
-		case None: // should not happen
-			break;
-
-		case CorrespondenceChessSent:
-			strm << uint8_t(	0x80																//  1 bit
-								 | (uint8_t(m_content) << 4)									//  3 bit
-								 | (uint8_t(m_time.m_date.day() & 0x0f))					//  4 bit
-			);
-			strm << uint32_t(	(uint32_t(m_time.m_date.month() & 0x0fff))			//  4 bit
-								 | (uint32_t(m_time.m_date.year() & 0x0fff) << 4)		// 12 bit
-								 | (uint32_t(m_time.m_clock.hour() & 0x000f) << 16)	//  4 bit
-								 | (uint32_t(m_time.m_clock.minute() & 0x003f) << 20)	//  6 bit
-								 | (uint32_t(m_time.m_clock.second() & 0x003f) << 26)	//  6 bit
-			);
-			break;
-
-		case PlayersClock:
-		case ElapsedGameTime:
-		case ElapsedMoveTime:
-		case MechanicalClockTime:
-		case DigitalClockTime:
-			strm << uint8_t(	0x80																//  1 bit
-								 | (uint8_t(m_content) << 4)									//  3 bit
-								 | (uint8_t(m_engine & 0x0f))									//  4 bit
-			);
-			strm << uint16_t(	(uint32_t(m_time.m_clock.hour() & 0x000f))			//  4 bit
-								 | (uint32_t(m_time.m_clock.minute() & 0x003f) << 4)	//  6 bit
-								 | (uint32_t(m_time.m_clock.second() & 0x003f) << 10)	//  6 bit
-			);
-			break;
-
-		case Evaluation:
-			strm << uint8_t(	0x80																//  1 bit
-								 | (uint8_t(m_content) << 4)									//  3 bit
-								 | (uint8_t(m_engine & 0x0f))									//  4 bit
-			);
-			strm << uint24_t(	(uint32_t(m_analysis.m_depth & 0x001f))				//  5 bit
-								 | (uint32_t(m_analysis.m_sign & 0x0001) << 5)			//  1 bit
-								 | (uint32_t(m_analysis.m_pawns & 0x07ff) << 6)			// 11 bit
-								 | (uint32_t(m_analysis.m_centipawns & 0x007f) << 17)	//  7 bit
-			);
-			break;
 	}
 }
 

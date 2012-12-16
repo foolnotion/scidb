@@ -26,8 +26,6 @@
 
 #include "sci_v91_codec.h"
 #include "sci_v91_decoder.h"
-#include "sci_v91_encoder.h"
-#include "sci_v91_consumer.h"
 #include "sci_v91_common.h"
 
 #include "db_game_info.h"
@@ -171,6 +169,52 @@ Init::Init()
 	NamebaseTags[Namebase::Event		] = "event\0\0";
 	NamebaseTags[Namebase::Annotator	] = "annota\0";
 }
+
+} // namespace
+
+namespace {
+
+struct TagLookup
+{
+	TagLookup()
+	{
+		m_lookup.set(tag::Event);
+		m_lookup.set(tag::Site);
+		m_lookup.set(tag::Date);
+		m_lookup.set(tag::Round);
+		m_lookup.set(tag::White);
+		m_lookup.set(tag::Black);
+		m_lookup.set(tag::Result);
+		m_lookup.set(tag::Annotator);
+		m_lookup.set(tag::Eco);
+		m_lookup.set(tag::WhiteElo);
+		m_lookup.set(tag::BlackElo);
+		m_lookup.set(tag::WhiteCountry);
+		m_lookup.set(tag::BlackCountry);
+		m_lookup.set(tag::WhiteTitle);
+		m_lookup.set(tag::BlackTitle);
+		m_lookup.set(tag::WhiteType);
+		m_lookup.set(tag::BlackType);
+		m_lookup.set(tag::WhiteSex);
+		m_lookup.set(tag::BlackSex);
+		m_lookup.set(tag::WhiteFideId);
+		m_lookup.set(tag::BlackFideId);
+		m_lookup.set(tag::EventDate);
+		m_lookup.set(tag::EventCountry);
+		m_lookup.set(tag::EventType);
+		m_lookup.set(tag::Mode);
+		m_lookup.set(tag::TimeMode);
+		m_lookup.set(tag::Termination);
+	}
+
+	static db::tag::TagSet m_lookup;
+
+	static db::tag::TagSet const& infoTags() { return m_lookup; }
+	bool skipTag(tag::ID tag) const { return m_lookup.test(tag); }
+};
+
+db::tag::TagSet TagLookup::m_lookup;
+static TagLookup tagLookup;
 
 } // namespace
 
@@ -410,12 +454,14 @@ Codec::setEncoding(mstl::string const& encoding)
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
+Codec::filterTags(TagSet& tags, Section section) const
 {
-	bool gameTagsOnly = section == GameTags;
+	tag::TagSet infoTags = TagLookup::infoTags();
 
-	if (Encoder::skipTag(tag) == gameTagsOnly)
-		tags.remove(tag);
+	if (section == InfoTags)
+		infoTags.flip();
+
+	tags.remove(infoTags);
 }
 
 
@@ -607,20 +653,15 @@ Codec::doEncoding(util::ByteStream& strm,
 						TagBits const&,
 						bool)
 {
-	M_ASSERT(gameInfoList().size() <= maxGameCount());
-	M_ASSERT(namebase(Namebase::Player).size() <= maxPlayerCount());
-	M_ASSERT(namebase(Namebase::Site).size() <= maxSiteCount());
-	M_ASSERT(namebase(Namebase::Event).size() <= maxEventCount());
-
-	Encoder encoder(strm);
-	encoder.doEncoding(signature, data);
+	M_ASSERT(!"should not be called");
 }
 
 
 db::Consumer*
 Codec::getConsumer(format::Type srcFormat)
 {
-	return new Consumer(srcFormat, *this);
+	M_ASSERT(!"should not be called");
+	return 0;
 }
 
 
@@ -810,6 +851,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm)
 	bstrm.get(description);
 	setDescription(description);
 
+	setVariant(variant::Normal);
 	setType(type::ID(baseType));
 	setCreated(created);
 

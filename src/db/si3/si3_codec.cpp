@@ -383,25 +383,26 @@ Codec::encoding() const
 
 
 void
-Codec::filterTag(TagSet& tags, tag::ID tag, Section section) const
+Codec::filterTags(TagSet& tags, Section section) const
 {
-	bool gameTagsOnly = section == GameTags;
+	tag::TagSet infoTags = Encoder::infoTags();
 
-	if (Encoder::skipTag(tag) == gameTagsOnly)
+	infoTags.set(tag::EventDate);
+
+	if (section == InfoTags)
 	{
-		if (tag == tag::EventDate)
-		{
-			unsigned dy = Date(tags.value(tag::Date)).year();
-			unsigned ey = Date(tags.value(tag::EventDate)).year();
-
-			if (mstl::abs(dy - ey) > 3)
-				tags.remove(tag::EventDate);
-		}
-		else
-		{
-			tags.remove(tag);
-		}
+		infoTags.flip(0, tag::ExtraTag - 1);
 	}
+	else if (tags.contains(tag::Date) && tags.contains(tag::EventDate))
+	{
+		unsigned dy = Date(tags.value(tag::Date)).year();
+		unsigned ey = Date(tags.value(tag::EventDate)).year();
+
+		if (mstl::abs(dy - ey) > 3)
+			infoTags.reset(tag::EventDate);
+	}
+
+	tags.remove(infoTags);
 }
 
 
@@ -966,9 +967,12 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 
 	uint16_t flags = (item.m_gameFlags & ((1 << 13) - 1)) << 3;
 
-	if (!item.hasStandardPosition())	flags |= flags::Non_Standard_Start;
-	if (item.hasPromotion())			flags |= flags::Promotion;
-	if (item.hasUnderPromotion())		flags |= flags::Under_Promotion;
+	if (!item.hasStandardPosition(variant::Normal))
+		flags |= flags::Non_Standard_Start;
+	if (item.hasPromotion())
+		flags |= flags::Promotion;
+	if (item.hasUnderPromotion())
+		flags |= flags::Under_Promotion;
 
 	uint32_t gameRecordLength = item.gameRecordLength();
 
@@ -1064,7 +1068,7 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 
 	uint8_t storedLineIndex;
 
-	if (item.idn() == variant::StandardIdn)
+	if (item.idn() == variant::Standard)
 		storedLineIndex = StoredLine::lookup(Eco(item.m_ecoKey)).index();
 	else
 		storedLineIndex = 0;
@@ -1120,6 +1124,7 @@ Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
 	getRecodedDescription(reinterpret_cast<char const*>(bstrm.data()), description, *m_codec);
 	setDescription(description);
 
+	setVariant(variant::Normal);
 	decodeIndex(fstrm, progress);
 	fstrm.close();
 }
@@ -1204,7 +1209,8 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	item.setGameRecordLength(gameRecordLength);
 
 	item.m_gameFlags			= flags >> 3;
-	item.m_positionId			= flags & flags::Non_Standard_Start ? 0 : variant::StandardIdn;
+	item.m_positionId			= flags & flags::Non_Standard_Start ? 0 : variant::Standard;
+	item.m_setup				= bool(flags & flags::Non_Standard_Start);
 
 	// White and Black player names
 	uint32_t whiteBlackHigh	= strm.get();
@@ -1355,7 +1361,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 			item.m_pd[color::Black].rating = mstl::min(int(rating::Max_Value), blackRating & 0x0fff));
 	}
 
-	if (item.m_positionId == variant::StandardIdn)
+	if (item.m_positionId == variant::Standard)
 	{
 		uint8_t index = strm.get();
 
@@ -2062,7 +2068,7 @@ Codec::writeNamebase(mstl::ostream& stream, NameList& base, util::Progress* prog
 
 
 mstl::string const&
-Codec::getRoundEntry(unsigned index)
+Codec::getRoundEntry(unsigned index) const
 {
 	NamebaseEntry* entry = m_roundLookup[index];
 

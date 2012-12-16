@@ -19,7 +19,98 @@
 #ifndef _mstl_iterator_included
 #define _mstl_iterator_included
 
+#include <stddef.h>
+
 namespace mstl {
+
+template <typename T>
+class reverse_iterator
+{
+public:
+
+	typedef T				value_type;
+	typedef value_type*	pointer;
+	typedef pointer		iterator;
+	typedef value_type&	reference;
+	typedef ptrdiff_t		difference_type;
+
+	explicit reverse_iterator(iterator i);
+
+	reverse_iterator& operator=(iterator i);
+
+	bool operator==(reverse_iterator const& iter) const;
+	bool operator!=(reverse_iterator const& iter) const;
+	bool operator<=(reverse_iterator const& iter) const;
+	bool operator< (reverse_iterator const& iter) const;
+
+	iterator base() const;
+
+	reference operator*() const;
+	pointer operator->() const;
+
+	reverse_iterator& operator++();
+	reverse_iterator& operator--();
+	reverse_iterator  operator++(int);
+	reverse_iterator  operator--(int);
+	reverse_iterator& operator+=(size_t n);
+	reverse_iterator& operator-=(size_t n);
+	reverse_iterator  operator+(size_t n) const;
+	reverse_iterator  operator-(size_t n) const;
+
+	reference operator[](difference_type n) const;
+	difference_type operator-(reverse_iterator const& i) const;
+
+protected:
+
+	iterator m_i;
+};
+
+
+template <typename T>
+class const_reverse_iterator
+{
+public:
+
+	typedef T						value_type;
+	typedef value_type const*	const_pointer;
+	typedef value_type*			iterator;
+	typedef const_pointer		const_iterator;
+	typedef value_type const&	const_reference;
+	typedef ptrdiff_t				difference_type;
+
+	explicit const_reverse_iterator(const_iterator i);
+	explicit const_reverse_iterator(iterator i);
+
+	const_reverse_iterator& operator=(const_iterator i);
+	const_reverse_iterator& operator=(iterator i);
+
+	bool operator==(const_reverse_iterator const& iter) const;
+	bool operator!=(const_reverse_iterator const& iter) const;
+	bool operator<=(const_reverse_iterator const& iter) const;
+	bool operator< (const_reverse_iterator const& iter) const;
+
+	const_iterator base() const;
+
+	const_reference operator*() const;
+	const_pointer operator->() const;
+
+	const_reverse_iterator& operator++();
+	const_reverse_iterator& operator--();
+	const_reverse_iterator  operator++(int);
+	const_reverse_iterator  operator--(int);
+	const_reverse_iterator& operator+=(size_t n);
+	const_reverse_iterator& operator-=(size_t n);
+	const_reverse_iterator  operator+(size_t n) const;
+	const_reverse_iterator  operator-(size_t n) const;
+
+	const_reference operator[](difference_type n) const;
+	difference_type operator-(const_reverse_iterator const& i) const;
+
+protected:
+
+	const_iterator m_i;
+};
+
 
 /// \class back_insert_iterator
 /// \ingroup IteratorAdaptors

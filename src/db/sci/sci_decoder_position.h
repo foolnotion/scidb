@@ -42,7 +42,7 @@ public:
 
 	Position();
 
-	void setup(char const* fen);
+	void setup(char const* fen, db::variant::Type variant);
 	void setup(uint16_t idn);
 
 	void push();
@@ -58,7 +58,7 @@ public:
 
 	piece::Type piece(Square s) const;
 
-	Square operator[](int n) const;
+	Square operator[](unsigned n) const;
 
 	Move makeShortCastlingMove(Square from);
 	Move makeLongCastlingMove(Square from);
@@ -67,10 +67,11 @@ public:
 	Move makeRookMove(Square s, Square t) const;
 	Move makeBishopMove(Square s, Square t) const;
 	Move makeKnightMove(Square s, Square t) const;
+	Move makePieceDropMove(Square to, piece::Type piece);
 
 private:
 
-	typedef Square Squares[32];
+	typedef Square Squares[64];
 
 	struct Lookup
 	{
@@ -80,7 +81,9 @@ private:
 
 	typedef mstl::stack<Lookup> Stack;
 
-	void setup(Board const& board);
+	void setupBoard(Board const& board);
+	void setupBoard(uint16_t idn);
+	void reset();
 
 	Stack	m_stack;
 	Byte	m_rookNumbers[4];

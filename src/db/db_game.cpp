@@ -40,6 +40,7 @@
 
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_list.h"
 #include "m_stack.h"
 #include "m_hash.h"
 #include "m_utility.h"
@@ -52,6 +53,69 @@
 #include <ctype.h>
 
 using namespace db;
+
+
+namespace {
+
+struct Position
+{
+	Position() :m_count(1) {}
+	Position(board::ExactZHPosition const& board) :m_board(board), m_count(1) {}
+
+	board::ExactZHPosition m_board;
+	unsigned m_count;
+};
+
+typedef mstl::list<Position> PositionBucket;
+typedef mstl::hash<uint64_t,PositionBucket> RepetitionMap;
+
+}
+
+
+static void
+checkThreefoldRepetitions(Board board, RepetitionMap map, variant::Type variant, MoveNode* node)
+{
+	while (true)
+	{
+		M_ASSERT(node);
+
+		if (node->atLineEnd())
+			return;
+
+		if (!node->atLineStart())
+		{
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+				checkThreefoldRepetitions(board, map, variant, node->variation(i));
+
+			board.doMove(node->move(), variant);
+
+			PositionBucket& bucket = map[board.hash()];
+			bool flag = false;
+
+			PositionBucket::iterator i = bucket.begin();
+			PositionBucket::iterator e = bucket.end();
+
+			while (i != e && i->m_board != board.exactZHPosition())
+				++i;
+
+			if (i == e)
+				bucket.push_back(board.exactZHPosition());
+			else if (++i->m_count == 3)
+				flag = true;
+
+			node->setThreefoldRepetition(flag);
+		}
+
+		node = node->next();
+	}
+}
+
+
+static void
+checkThreefoldRepetitions(Board const& startBoard, variant::Type variant, MoveNode* node)
+{
+	checkThreefoldRepetitions(startBoard, RepetitionMap(), variant, node);
+}
 
 
 namespace {
@@ -156,7 +220,6 @@ Game::Game()
 	,m_currentNode(m_startNode)
 	,m_editNode(0)
 	,m_currentBoard(m_startBoard)
-	,m_idn(0)
 	,m_undoIndex(0)
 	,m_maxUndoLevel(0)
 	,m_combinePredecessingMoves(0)
@@ -166,7 +229,8 @@ Game::Game()
 	,m_isIrreversible(false)
 	,m_isModified(false)
 	,m_wasModified(false)
-	,m_finalBoardIsValid(false)
+	,m_threefoldRepetionDetected(false)
+	,m_termination(termination::None)
 	,m_line(m_lineBuf[0])
 	,m_linebreakThreshold(0)
 	,m_linebreakMaxLineLengthMain(0)
@@ -211,6 +275,7 @@ Game::operator=(Game const& game)
 		m_currentNode						= m_startNode;
 		m_editNode							= 0;
 		m_currentKey						= edit::Key(game.m_startBoard.plyNumber());
+		m_variant							= game.m_variant;
 		m_idn									= game.m_idn;
 		m_eco									= game.m_eco;
 		m_languageSet						= game.m_languageSet;
@@ -218,7 +283,8 @@ Game::operator=(Game const& game)
 		m_isIrreversible					= false;
 		m_isModified						= false;
 		m_wasModified						= false;
-		m_finalBoardIsValid				= false;
+		m_threefoldRepetionDetected	= game.m_threefoldRepetionDetected;
+		m_termination						= game.m_termination;
 		m_subscriber						= game.m_subscriber;
 		m_undoIndex							= 0;
 		m_maxUndoLevel						= game.m_maxUndoLevel;
@@ -628,7 +694,7 @@ void
 Game::clearUndo()
 {
 	m_undoList.clear();
-	m_undoIndex= 0;
+	m_undoIndex = 0;
 }
 
 
@@ -775,6 +841,20 @@ Game::isEmpty() const
 }
 
 
+variant::Type
+Game::variant() const
+{
+	return m_variant;
+}
+
+
+uint16_t
+Game::idn() const
+{
+	return m_idn;
+}
+
+
 bool
 Game::atMainlineEnd() const
 {
@@ -845,28 +925,24 @@ Game::isLastVariation() const
 }
 
 
-Board const&
-Game::getFinalBoard() const
+void
+Game::updateFinalBoard()
 {
 	M_ASSERT(m_startNode->next());
 
-	if (!m_finalBoardIsValid)
+	HomePawns hp;
+
+	m_finalBoard = m_startBoard;
+	m_threefoldRepetionDetected = false;
+
+	for (MoveNode const* node = m_startNode->next(); node->isBeforeLineEnd(); node = node->next())
 	{
-		HomePawns hp;
-
-		m_finalBoard = m_startBoard;
-
-		for (MoveNode const* node = m_startNode->next(); node->isBeforeLineEnd(); node = node->next())
-		{
-			m_finalBoard.doMove(node->move());
-			hp.move(node->move());
-		}
-
-		m_finalBoard.signature().setHomePawns(hp.used(), hp.data());
-		m_finalBoardIsValid = true;
+		m_threefoldRepetionDetected = node->threefoldRepetition();
+		m_finalBoard.doMove(node->move(), m_variant);
+		hp.move(node->move());
 	}
 
-	return m_finalBoard;
+	m_finalBoard.signature().setHomePawns(hp.used(), hp.data());
 }
 
 
@@ -875,6 +951,14 @@ Game::getStartBoard() const
 {
 	return startBoard();
 }
+
+
+Board const&
+Game::getFinalBoard() const
+{
+	return m_finalBoard;
+}
+
 
 Move const&
 Game::currentMove() const
@@ -958,21 +1042,17 @@ Game::marks(edit::Key const& key) const
 }
 
 
-mstl::string&
+void
 Game::printMove(	Board const& board,
-						MoveNode* node,
+						Move const& move,
 						mstl::string& result,
-						unsigned flags,
-						move::Notation form)
+						move::Notation form,
+						unsigned flags)
 {
-	M_ASSERT(node);
-
-	Move& move = node->move();
+	M_REQUIRE(move.isPrintable());
 
 	if (!move)
-		return result;
-
-	M_ASSERT(move.isPrintable());
+		return;
 
 	// move number
 	if (board.blackToMove())
@@ -980,14 +1060,14 @@ Game::printMove(	Board const& board,
 		if (flags & BlackNumbers)
 		{
 			result.format("%u", board.moveNumber());
-			result += "...";
+			result.append("...", 3);
 
 			if (flags & ExportFormat)
-				result += " ";
+				result += ' ';
 			else if (flags & UseZeroWidthSpace)
-				result += "\xE2\x80\x8B";
+				result.append("\xe2\x80\x8B", 3);
 			else if (!(flags & SuppressSpace))
-				result += " ";
+				result += ' ';
 		}
 	}
 	else
@@ -998,61 +1078,36 @@ Game::printMove(	Board const& board,
 			result += '.';
 
 			if (flags & ExportFormat)
-				result += " ";
+				result += ' ';
 			else if (flags & UseZeroWidthSpace)
-				result += "\xE2\x80\x8B";
+				result.append("\xe2\x80\x8B", 3);
 			else if (!(flags & SuppressSpace))
-				result += " ";
+				result += ' ';
 		}
 	}
 
 	// move
-	switch (form)
-	{
-		case move::Algebraic:
-			move.printAlgebraic(result);
-			break;
-		case move::ShortAlgebraic:
-			move.printSan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
-			break;
-		case move::LongAlgebraic:
-			move.printLan(result, flags & ExportFormat ? encoding::Latin1 : encoding::Utf8);
-			break;
-		case move::Descriptive:
-			move.printDescriptive(result);
-			break;
-		case move::Correspondence:
-			move.printNumeric(result);
-			break;
-		case move::Telegraphic:
-			move.printAlphabetic(result);
-			break;
-	}
-
-	if (	!(flags & ExportFormat)
-		&& form != move::Descriptive
-		&& !move.givesMate()
-		&& board.isDoubleCheck())
-	{
-		result += '+';
-	}
-
-	// annotation
-	if (flags & IncludeAnnotation)
-	{
-		node->annotation().print(
-			result,
-			flags & ExportFormat ? 0 : Annotation::Flag_Extended_Symbolic_Annotation_Style);
-	}
-
-	return result;
+	if (flags & ExportFormat)
+		move.print(result, form, encoding::Latin1);
+	else
+		move.printForDisplay(result, form);
 }
 
 
 mstl::string&
 Game::printMove(mstl::string& result, unsigned flags, move::Notation style) const
 {
-	return printMove(m_currentBoard, m_currentNode, result, flags, style);
+	printMove(m_currentBoard, m_currentNode->move(), result, style, flags);
+
+	// annotation
+	if (flags & IncludeAnnotation)
+	{
+		m_currentNode->annotation().print(
+			result,
+			flags & ExportFormat ? 0 : Annotation::Flag_Extended_Symbolic_Annotation_Style);
+	}
+
+	return result;
 }
 
 
@@ -1152,7 +1207,7 @@ Game::setAnnotation(Annotation const& annotation)
 void
 Game::doMove()
 {
-	m_currentBoard.doMove(m_currentNode->move());
+	m_currentBoard.doMove(m_currentNode->move(), m_variant);
 	m_currentKey.exchangePly(m_currentBoard.plyNumber());
 }
 
@@ -1160,7 +1215,7 @@ Game::doMove()
 void
 Game::undoMove()
 {
-	m_currentBoard.undoMove(m_currentNode->move());
+	m_currentBoard.undoMove(m_currentNode->move(), m_variant);
 	m_currentKey.exchangePly(m_currentBoard.plyNumber());
 }
 
@@ -1306,7 +1361,7 @@ void
 Game::goToPosition(mstl::string const& fen)
 {
 	Board position;
-	position.setup(fen);
+	position.setup(fen, m_variant);
 
 	moveToMainlineStart();
 
@@ -1772,7 +1827,7 @@ Game::updateLanguageSet()
 Move
 Game::parseMove(mstl::string const& san) const
 {
-	Move move = m_currentBoard.parseMove(san, move::AllowIllegalMove);
+	Move move = m_currentBoard.parseMove(san, m_variant, move::AllowIllegalMove);
 
 	if (!move)
 	{
@@ -1782,7 +1837,8 @@ Game::parseMove(mstl::string const& san) const
 		board.tryCastleShort(side);
 		board.tryCastleLong(side);
 
-		move = board.parseMove(san, move::AllowIllegalMove);
+		move = board.parseMove(san, m_variant, move::AllowIllegalMove);
+		move.setIllegalMove();
 	}
 
 	return move;
@@ -1840,7 +1896,7 @@ bool
 Game::exchangeMove(Move move, Force flag)
 {
 	M_REQUIRE(isBeforeLineEnd());
-	M_REQUIRE(currentBoard().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move, m_variant));
 
 	if (move == m_currentNode->next()->move())
 		return true;
@@ -1848,7 +1904,7 @@ Game::exchangeMove(Move move, Force flag)
 	Board board(m_currentBoard);
 
 	mstl::auto_ptr<MoveNode> node(m_currentNode->next()->clone());
-	node->setMove(m_currentBoard, move);
+	node->setMove(m_currentBoard, move, m_variant);
 
 	if (!checkConsistency(node.get(), board, flag))
 		return false;
@@ -1870,11 +1926,11 @@ void
 Game::addMove(Move const& move)
 {
 	M_REQUIRE(atLineEnd());
-	M_REQUIRE(m_currentBoard.checkMove(move));
+	M_REQUIRE(m_currentBoard.checkMove(move, m_variant));
 
 	insertUndo(Truncate_Variation, AddMove);
 
-	MoveNode* node = new MoveNode(m_currentBoard, move);
+	MoveNode* node = new MoveNode(m_currentBoard, move, m_variant);
 	node->setNext(m_currentNode->removeNext());
 	m_currentNode->setNext(node);
 
@@ -1934,10 +1990,10 @@ Game::isValidVariation(MoveNode const* node) const
 
 	for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 	{
-		if (!board.isValidMove(node->move()))
+		if (!board.isValidMove(node->move(), m_variant))
 			return false;
 
-		board.doMove(node->move());
+		board.doMove(node->move(), m_variant);
 	}
 
 	return true;
@@ -1963,8 +2019,8 @@ Game::addVariation(MoveNodeP node)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForPrint(n->move());
-		board.doMove(n->move());
+		board.prepareForPrint(n->move(), m_variant);
+		board.doMove(n->move(), m_variant);
 	}
 
 	MoveNode* varNode = node.release();
@@ -1980,9 +2036,9 @@ unsigned
 Game::addVariation(Move const& move)
 {
 	M_REQUIRE(isBeforeLineEnd());
-	M_REQUIRE(currentBoard().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move, m_variant));
 
-	MoveNode* node = new MoveNode(m_currentBoard, move);
+	MoveNode* node = new MoveNode(m_currentBoard, move, m_variant);
 	node->setNext(new MoveNode);
 	MoveNodeP var(new MoveNode(node));
 
@@ -2019,9 +2075,9 @@ void
 Game::newMainline(Move const& move)
 {
 	M_REQUIRE(isBeforeLineEnd());
-	M_REQUIRE(currentBoard().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move, m_variant));
 
-	MoveNode* node = new MoveNode(m_currentBoard, move);
+	MoveNode* node = new MoveNode(m_currentBoard, move, m_variant);
 	node->setNext(new MoveNode);
 	newMainline(new MoveNode(node));
 }
@@ -2053,7 +2109,7 @@ Game::removeMainline()
 
 
 bool
-Game::checkConsistency(MoveNode* node, Board& board, Force flag)
+Game::checkConsistency(MoveNode* node, Board& board, Force flag) const
 {
 	M_ASSERT(node);
 
@@ -2064,9 +2120,9 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 
 		M_ASSERT(node->move());
 
-		node->move().setLegalMove(board.isValidMove(node->move(), move::DontAllowIllegalMove));
+		node->move().setLegalMove(board.isValidMove(node->move(), m_variant, move::DontAllowIllegalMove));
 
-		if (!board.isValidMove(node->move(), node->constraint()))
+		if (!board.isValidMove(node->move(), m_variant, node->constraint()))
 		{
 			if (flag == OnlyIfRemainsConsistent)
 				return false;
@@ -2105,7 +2161,7 @@ Game::checkConsistency(MoveNode* node, Board& board, Force flag)
 			}
 		}
 
-		board.doMove(node->move());
+		board.doMove(node->move(), m_variant);
 		node = node->next();
 	}
 
@@ -2228,7 +2284,7 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 		return true;
 
 	Board board(m_currentBoard);
-	board.undoMove(m_currentNode->move());
+	board.undoMove(m_currentNode->move(), m_variant);
 
 	m_currentNode->variation(variationNumber)->setFolded(false);
 
@@ -2240,7 +2296,7 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 	node->getOneBeforeLineEnd()->setNext(curr);
 
 	board = m_currentBoard;
-	board.undoMove(m_currentNode->move());
+	board.undoMove(m_currentNode->move(), m_variant);
 
 	if (!checkConsistency(node, board, flag))
 		return false;
@@ -2273,7 +2329,7 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 		return insertMoves(variationNumber);
 
 	Board board(m_currentBoard);
-	board.undoMove(m_currentNode->move());
+	board.undoMove(m_currentNode->move(), m_variant);
 
 	MoveNode* curr = m_currentNode->clone();
 	MoveNode* node = curr->removeVariation(variationNumber);
@@ -2294,7 +2350,7 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 	line->addVariation(node);
 
 	board = m_currentBoard;
-	board.undoMove(node->next()->move());
+	board.undoMove(node->next()->move(), m_variant);
 
 	if (!checkConsistency(line, board, flag))
 		return false;
@@ -2351,8 +2407,8 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForPrint(n->move());
-		board.doMove(n->move());
+		board.prepareForPrint(n->move(), m_variant);
+		board.doMove(n->move(), m_variant);
 	}
 
 	MoveNode* varNode = node.release();
@@ -2366,7 +2422,7 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 void
 Game::replaceVariation(Move const& move)
 {
-	M_REQUIRE(currentBoard().checkMove(move));
+	M_REQUIRE(currentBoard().checkMove(move, m_variant));
 
 	if (atLineEnd())
 	{
@@ -2374,7 +2430,7 @@ Game::replaceVariation(Move const& move)
 	}
 	else
 	{
-		MoveNode* node = new MoveNode(m_currentBoard, move);
+		MoveNode* node = new MoveNode(m_currentBoard, move, m_variant);
 		node->setNext(new MoveNode);
 		replaceNode(node, ReplaceVariation);
 	}
@@ -2581,8 +2637,10 @@ Game::revertGame(MoveNode* startNode, Command command)
 
 	if (command == Transpose)
 	{
-		m_idn = chess960::twin(m_idn);
-		m_startBoard.transpose();
+		if (variant::isChess960(m_idn))
+			m_idn = chess960::twin(m_idn);
+
+		m_startBoard.transpose(m_variant);
 	}
 
 	moveTo(m_currentKey);
@@ -2620,9 +2678,22 @@ Game::clear(Board const* startPosition)
 	}
 
 	if (startPosition)
-		m_startBoard = *startPosition;
-	m_currentBoard = m_startBoard;
+		setup(*startPosition);
 	updateSubscriber(UpdateAll);
+}
+
+
+void
+Game::setup(Board const& startPosition)
+{
+	M_REQUIRE(isEmpty());
+
+	m_startBoard = startPosition;
+
+	if (variant::isAntichessExceptLosers(m_variant))
+		m_startBoard.removeCastlingRights();
+
+	m_currentBoard = m_startBoard;
 }
 
 
@@ -2639,20 +2710,19 @@ Game::resetForNextLoad()
 	m_undoList.clear();
 	m_languageSet.clear();
 	m_undoIndex = 0;
-	m_idn = 0;
+	m_idn = variant::Standard;
 	m_isIrreversible = false;
 	m_isModified = false;
 	m_wasModified = false;
-	m_finalBoardIsValid = false;
 	m_startBoard = Board::standardBoard();
 	m_currentBoard = m_startBoard;
 	m_finalBoard.clear();
 	m_tags.clear();
 	m_flags = 0;
 	m_eco = Eco();
+	m_line.length = 0;
 	m_undoCommand = None;
 	m_redoCommand = None;
-	m_line.length = 0;
 }
 
 
@@ -2674,12 +2744,14 @@ Game::setStartPosition(mstl::string const& fen)
 {
 	M_REQUIRE(isEmpty());
 
-	if (!m_startBoard.setup(fen))
+	Board board;
+
+	if (!board.setup(fen, m_variant))
 		DB_RAISE("invalid FEN");
 
-	m_currentBoard = m_startBoard;
+	setup(board);
 
-	M_DEBUG(m_startBoard.validate(variant::Unknown, castling::AllowHandicap) == Board::Valid);
+	M_DEBUG(m_startBoard.validate(m_variant, castling::AllowHandicap) == Board::Valid);
 }
 
 
@@ -2689,10 +2761,11 @@ Game::setStartPosition(unsigned idn)
 	M_REQUIRE(isEmpty());
 	M_REQUIRE(idn <= 4*960);
 
-	m_startBoard.setup(idn);
-	m_currentBoard = m_startBoard;
+	Board board;
+	board.setup(idn);
+	setup(board);
 
-	M_DEBUG(m_startBoard.validate(variant::fromIdn(idn)) == Board::Valid);
+	M_DEBUG(m_startBoard.validate(m_variant) == Board::Valid);
 }
 
 
@@ -2780,7 +2853,7 @@ Game::dumpHistory(mstl::string& result) const
 
 		Move const& move = hist[i];
 
-		if (m_idn == variant::StandardIdn && move.isCastling())
+		if (m_idn == variant::Standard && move.isCastling())
 		{
 			sq::Fyle fyle = move.isShortCastling() ? sq::FyleG : sq::FyleC;
 
@@ -2799,18 +2872,30 @@ Game::dumpHistory(mstl::string& result) const
 
 
 bool
-Game::finishLoad(mstl::string const* fen)
+Game::finishLoad(variant::Type variant, mstl::string const* fen)
 {
 	M_REQUIRE(atMainlineStart());
+	M_REQUIRE(variant != variant::Undetermined);
+	M_REQUIRE(variant != variant::Antichess);
 
-	Board board(m_startBoard);
+	bool ok = true;
 
-	bool ok = checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent);
+	m_variant = variant;
+	m_idn = 0;
 
-	if (!ok)
-		checkConsistency(m_startNode->next(), board, TruncateIfNeccessary);
+	if (variant::isAntichessExceptLosers(variant))
+	{
+		m_startBoard.removeCastlingRights();
+	}
+	else
+	{
+		Board	board(m_startBoard);
 
-	m_startNode->finish(m_startBoard);
+		if (!(ok = checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent)))
+			checkConsistency(m_startNode->next(), board, TruncateIfNeccessary);
+	}
+
+	m_startNode->finish(m_startBoard, m_variant);
 	m_currentBoard = m_startBoard;
 
 	if (fen)
@@ -2818,6 +2903,7 @@ Game::finishLoad(mstl::string const* fen)
 	else
 		moveToMainlineStart();
 
+	::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
 	updateLine();
 	updateLanguageSet();
 	m_wantedLanguages = m_languageSet;
@@ -2863,9 +2949,21 @@ Game::currentLine(Line& result)
 	}
 
 	result.length = length;
-	m_currentBoard.signature().setHomePawns(hp.used(), hp.data());
 
-	return hp.signature();
+	uint16_t hpsig;
+
+	if (m_startBoard.isStartPosition())
+	{
+		m_currentBoard.signature().setHomePawns(hp.used(), hp.data());
+		hpsig = hp.signature();
+	}
+	else
+	{
+		m_currentBoard.signature().setHomePawns(0, hp::Pawns());
+		hpsig = 0;
+	}
+
+	return hpsig;
 }
 
 
@@ -2874,8 +2972,6 @@ Game::updateLine()
 {
 	if (!isMainline())
 		return false;
-
-	m_finalBoardIsValid = false;
 
 	unsigned idn = m_startBoard.computeIdn();
 
@@ -2896,16 +2992,17 @@ Game::updateLine()
 
 		Line line(lineBuf, i);
 
-		if (idn == variant::StandardIdn)
+		if (m_variant == variant::Normal && idn == variant::Standard)
 		{
 			if (line != m_line || !m_eco)
 			{
+				EcoTable const& ecoTable = EcoTable::specimen(m_variant);
 				Eco eco(m_eco);
 
 				m_line = line;
-				m_eco = EcoTable::specimen().getEco(m_line);
+				m_eco = ecoTable.getEco(m_line);
 
-				EcoTable::specimen().lookup(m_line);
+				ecoTable.lookup(m_line);
 
 				if (m_eco != eco)
 					update = true;
@@ -2924,6 +3021,88 @@ Game::updateLine()
 	}
 
 	m_idn = idn;
+	updateFinalBoard();
+
+	unsigned state = m_finalBoard.checkState(m_variant);
+
+	if (state & Board::Checkmate)
+	{
+		m_termination = termination::Checkmate;
+	}
+	else if (state & Board::Stalemate)
+	{
+		if (m_variant == variant::Suicide)
+		{
+			int totw = m_finalBoard.materialCount(color::White).total();
+			int totb = m_finalBoard.materialCount(color::Black).total();
+
+			m_termination = totw == totb ? termination::DrawnByStalemate : termination::HavingLessMaterial;
+		}
+		else
+		{
+			m_termination = termination::Stalemate;
+		}
+	}
+	else if (state & Board::ThreeChecks)
+	{
+		m_termination = termination::GotThreeChecks;
+	}
+	else if (state & Board::Losing)
+	{
+		m_termination = termination::LostAllMaterial;
+	}
+	else if (m_threefoldRepetionDetected)
+	{
+		m_termination = termination::ThreefoldRepetition;
+	}
+	else if (m_finalBoard.halfMoveClock() >= 50)
+	{
+		m_termination = termination::FiftyMoveRuleExceeded;
+	}
+	else if (	variant::isAntichessExceptLosers(m_variant)
+				&& m_finalBoard.materialCount(color::White).total() == 1
+				&& m_finalBoard.materialCount(color::Black).total() == 1
+				&& m_finalBoard.materialCount(color::White).bishop == 1
+				&& m_finalBoard.materialCount(color::Black).bishop == 1
+				&& m_finalBoard.hasBishopOnLite(color::White) == m_finalBoard.hasBishopOnDark(color::Black))
+	{
+		m_termination = termination::BishopsOfOppositeColor;
+	}
+	else if (	!variant::isAntichessExceptLosers(m_variant)
+				&& !variant::isZhouse(m_variant)
+				&& m_finalBoard.materialCount(color::White).total() == 1
+				&& m_finalBoard.materialCount(color::Black).total() == 1)
+	{
+		m_termination = termination::NeitherPlayerHasMatingMaterial;
+	}
+	else if (	!variant::isAntichessExceptLosers(m_variant)
+				&& !variant::isZhouse(m_variant)
+				&& m_finalBoard.materialCount(color::White).total() <= 2
+				&& m_finalBoard.materialCount(color::Black).total() <= 2
+				&& m_finalBoard.materialCount(color::White).minor() <= 1
+				&& m_finalBoard.materialCount(color::Black).minor() <= 1)
+	{
+		m_termination = termination::NobodyCanWin;
+	}
+	else if (	!variant::isAntichessExceptLosers(m_variant)
+				&& !variant::isZhouse(m_variant)
+				&& m_finalBoard.materialCount(color::White).total() <= 2
+				&& m_finalBoard.materialCount(color::White).minor() <= 1)
+	{
+		m_termination = termination::WhiteCannotWin;
+	}
+	else if (	!variant::isAntichessExceptLosers(m_variant)
+				&& !variant::isZhouse(m_variant)
+				&& m_finalBoard.materialCount(color::Black).total() <= 2
+				&& m_finalBoard.materialCount(color::Black).minor() <= 1)
+	{
+		m_termination = termination::BlackCannotWin;
+	}
+	else
+	{
+		m_termination = termination::None;
+	}
+
 	return update;
 }
 
@@ -2931,7 +3110,7 @@ Game::updateLine()
 Eco
 Game::computeEcoCode() const
 {
-	if (m_idn != variant::StandardIdn)
+	if (m_idn != variant::Standard || m_variant != variant::Normal)
 		return Eco();
 
 	uint16_t lineBuf[opening::Max_Line_Length];
@@ -2946,7 +3125,7 @@ Game::computeEcoCode() const
 	}
 
 	Line line(lineBuf, i);
-	return EcoTable::specimen().getEco(m_line);
+	return EcoTable::specimen(m_variant).getEco(m_line);
 }
 
 
@@ -2982,25 +3161,22 @@ Game::setUndoLevel(unsigned level, unsigned combinePredecessingMoves)
 bool
 Game::transpose(Force flag)
 {
-	if (m_idn)
-	{
-		mstl::auto_ptr<MoveNode> root(m_startNode->clone());
-		Board board(m_startBoard);
+	mstl::auto_ptr<MoveNode> root(m_startNode->clone());
+	Board board(m_startBoard);
 
-		root->transpose();
-		board.transpose();
+	root->transpose();
+	board.transpose(m_variant);
 
-		if (!checkConsistency(root.get()->next(), board, flag))
-			return false;
+	if (!checkConsistency(root.get()->next(), board, flag))
+		return false;
 
-		insertUndo(Revert_Game, Transpose, m_startNode);
+	insertUndo(Revert_Game, Transpose, m_startNode);
 
-		m_startNode = root.release();
-		m_idn = chess960::twin(m_idn);
-		m_startBoard.transpose();
-		moveToMainlineStart();
-		updateSubscriber(UpdateBoard | UpdatePgn | UpdateOpening | UpdateIllegalMoves);
-	}
+	m_startNode = root.release();
+	m_idn = chess960::twin(m_idn);
+	m_startBoard.transpose(m_variant);
+	moveToMainlineStart();
+	updateSubscriber(UpdateBoard | UpdatePgn | UpdateOpening | UpdateIllegalMoves);
 
 	return true;
 }
@@ -3176,6 +3352,8 @@ Game::updateSubscriber(unsigned action)
 			m_flags |= GameInfo::Flag_Illegal_Castling;
 		else
 			m_flags &= ~GameInfo::Flag_Illegal_Castling;
+
+		::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
 	}
 
 	updateLine();
@@ -3190,7 +3368,9 @@ Game::updateSubscriber(unsigned action)
 															m_idn,
 															m_eco,
 															m_startBoard,
-															getFinalBoard(),
+															m_variant,
+															m_termination,
+															m_finalBoard,
 															m_startNode,
 															m_linebreakThreshold,
 															m_linebreakMaxLineLengthMain,
@@ -3200,12 +3380,12 @@ Game::updateSubscriber(unsigned action)
 		}
 		else
 		{
-			Board const& finalBoard = getFinalBoard();
-
 			Root editNode(edit::Root::makeList(	m_tags,
 															m_idn,
 															m_eco,
 															m_startBoard,
+															m_variant,
+															m_termination,
 															m_languageSet,
 															m_wantedLanguages,
 															m_engines,
@@ -3218,7 +3398,12 @@ Game::updateSubscriber(unsigned action)
 
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
-			m_subscriber->updateEditor(diff, m_tags, m_moveStyle, finalBoard.status(), finalBoard.sideToMove());
+			m_subscriber->updateEditor(diff,
+												m_tags,
+												m_moveStyle,
+												m_finalBoard.status(m_variant),
+												m_termination,
+												m_finalBoard.sideToMove());
 			delete m_editNode;
 			m_editNode = editNode.release();
 		}
@@ -3238,7 +3423,7 @@ Game::board(edit::Key const& key) const
 	M_REQUIRE(isValidKey(key));
 
 	Board board = m_startBoard;
-	key.setBoard(m_startNode, board);
+	key.setBoard(m_startNode, board, m_variant);
 	return board;
 }
 
@@ -3246,14 +3431,14 @@ Game::board(edit::Key const& key) const
 mstl::string&
 Game::printFen(mstl::string& result) const
 {
-	return m_currentBoard.toFen(result);
+	return m_currentBoard.toFen(result, m_variant);
 }
 
 
 mstl::string&
 Game::printFen(mstl::string const& key, mstl::string& result) const
 {
-	return board(key).toFen(result);
+	return board(key).toFen(result, m_variant);
 }
 
 

@@ -34,20 +34,22 @@
 
 #include "m_map.h"
 #include "m_vector.h"
-#include "m_string.h"
 #include "m_ref_counted_ptr.h"
 #include "m_ref_counter.h"
+#include "m_bitfield.h"
 
 namespace util { class Progress; }
 namespace util { class PipedProgress; }
 
 namespace mstl { class ostream; }
+namespace mstl { class string; }
 
 namespace db {
 
 class Board;
 class Game;
 class GameInfo;
+class MultiBase;
 class NamebasePlayer;
 class Producer;
 class TagSet;
@@ -59,6 +61,7 @@ class Log;
 
 namespace app {
 
+class MultiCursor;
 class Cursor;
 class Engine;
 
@@ -67,6 +70,7 @@ class Application
 public:
 
 	typedef util::crc::checksum_t checksum_t;
+	typedef mstl::bitfield<uint32_t> Variants;
 
 	static unsigned const InvalidPosition = unsigned(-1);
 
@@ -74,52 +78,89 @@ public:
 	{
 		virtual ~Subscriber() = 0;
 
-		void updateList(unsigned id, mstl::string const& filename);
-		void updateList(unsigned id, mstl::string const& filename, unsigned view);
+		void updateList(	unsigned id,
+								mstl::string const& name,
+								db::variant::Type variant);
+		void updateList(	unsigned id,
+								mstl::string const& name,
+								db::variant::Type variant,
+								unsigned view);
 
-		virtual void updateGameList(unsigned id, mstl::string const& filename) = 0;
-		virtual void updateGameList(unsigned id, mstl::string const& filename, unsigned view) = 0;
 		virtual void updateGameList(	unsigned id,
-												mstl::string const&
-												filename, unsigned view,
+												mstl::string const& name,
+												db::variant::Type variant) = 0;
+		virtual void updateGameList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
+												unsigned view) = 0;
+		virtual void updateGameList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
+												unsigned view,
 												unsigned index) = 0;
 
-		virtual void updatePlayerList(unsigned id, mstl::string const& filename) = 0;
-		virtual void updatePlayerList(unsigned id, mstl::string const& filename, unsigned view) = 0;
 		virtual void updatePlayerList(unsigned id,
-												mstl::string const& filename,
+												mstl::string const& name,
+												db::variant::Type variant) = 0;
+		virtual void updatePlayerList(unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
+												unsigned view) = 0;
+		virtual void updatePlayerList(unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
 												unsigned view,
 												unsigned index) = 0;
 
-		virtual void updateEventList(unsigned id, mstl::string const& filename) = 0;
-		virtual void updateEventList(unsigned id, mstl::string const& filename, unsigned view) = 0;
 		virtual void updateEventList(	unsigned id,
-												mstl::string const& filename,
+												mstl::string const& name,
+												db::variant::Type variant) = 0;
+		virtual void updateEventList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
+												unsigned view) = 0;
+		virtual void updateEventList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
 												unsigned view,
 												unsigned index) = 0;
 
-		virtual void updateSiteList(unsigned id, mstl::string const& filename) = 0;
-		virtual void updateSiteList(unsigned id, mstl::string const& filename, unsigned view) = 0;
 		virtual void updateSiteList(	unsigned id,
-												mstl::string const& filename,
+												mstl::string const& name,
+												db::variant::Type variant) = 0;
+		virtual void updateSiteList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
+												unsigned view) = 0;
+		virtual void updateSiteList(	unsigned id,
+												mstl::string const& name,
+												db::variant::Type variant,
 												unsigned view,
 												unsigned index) = 0;
 
-		virtual void updateAnnotatorList(unsigned id, mstl::string const& filename) = 0;
-		virtual void updateAnnotatorList(unsigned id, mstl::string const& filename, unsigned view) = 0;
 		virtual void updateAnnotatorList(unsigned id,
-													mstl::string const& filename,
+													mstl::string const& name,
+													db::variant::Type variant) = 0;
+		virtual void updateAnnotatorList(unsigned id,
+													mstl::string const& name,
+													db::variant::Type variant,
+													unsigned view) = 0;
+		virtual void updateAnnotatorList(unsigned id,
+													mstl::string const& name,
+													db::variant::Type variant,
 													unsigned view,
 													unsigned index) = 0;
 
-		virtual void updateDatabaseInfo( mstl::string const& filename) = 0;
+		virtual void updateDatabaseInfo(mstl::string const& name, db::variant::Type variant) = 0;
 
-		virtual void updateGameInfo(mstl::string const& filename, unsigned index) = 0;
+		virtual void updateGameInfo(	mstl::string const& name,
+												db::variant::Type variant,
+												unsigned index) = 0;
 		virtual void updateGameInfo(unsigned position) = 0;
 
 		virtual void gameSwitched(unsigned position) = 0;
-		virtual void updateTree(mstl::string const& filename) = 0;
-		virtual void closeDatabase(mstl::string const& filename) = 0;
+		virtual void updateTree(mstl::string const& name, db::variant::Type variant) = 0;
+		virtual void closeDatabase(mstl::string const& name, db::variant::Type variant) = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
@@ -137,6 +178,8 @@ public:
 	bool isClosed() const;
 	bool contains(Cursor& cursor) const;
 	bool contains(mstl::string const& name) const;
+	bool contains(mstl::string const& name, db::variant::Type variant) const;
+	bool contains(char const* name, db::variant::Type variant) const;
 	bool containsGameAt(unsigned position) const;
 	bool isScratchGame(unsigned position) const;
 	bool haveCurrentGame() const;
@@ -150,27 +193,31 @@ public:
 
 	unsigned countBases() const;
 	unsigned countGames() const;
+	unsigned countGames(mstl::string const& name) const;
 	unsigned countModifiedGames() const;
 	unsigned countEngines() const;
 	unsigned maxEngineId() const;
 
-	void enumCursors(CursorList& list) const;
+	void enumCursors(CursorList& list, db::variant::Type variant) const;
 
-	Cursor* open(	mstl::string const& filename,
+	Cursor* open(	mstl::string const& name,
 						mstl::string const& encoding,
 						bool readOnly,
 						util::Progress& progress);
 	Cursor* create(mstl::string const& name,
+						db::variant::Type variant,
 						mstl::string const& encoding,
 						db::type::ID type = db::type::Unspecific);
+	unsigned create(	mstl::string const& name,
+							db::type::ID type,
+							db::Producer& producer,
+							util::Progress& progress);
 
 	void close();
-	void close(Cursor& cursor);
 	void close(mstl::string const& name);
 	void closeAll(CloseMode mode);
 	void closeAllGames(Cursor& cursor);
 	void switchBase(Cursor& cursor);
-	void switchBase(mstl::string const& name);
 	void refreshGames();
 	void refreshGame(unsigned position = InvalidPosition, bool immediate = false);
 
@@ -185,8 +232,13 @@ public:
 	Cursor& cursor(char const* name);
 	Cursor const& cursor(char const* name) const;
 	Cursor& cursor(mstl::string const& name);
+	Cursor& cursor(mstl::string const& name, db::variant::Type variant);
 	Cursor const& cursor(mstl::string const& name) const;
+	Cursor const& cursor(mstl::string const& name, db::variant::Type variant) const;
 	Cursor const& cursor(unsigned databaseId) const;
+
+	MultiCursor& multiCursor(mstl::string const& name);
+	db::MultiBase& multiBase(mstl::string const& name);
 
 	db::Game& game(unsigned position = InvalidPosition);
 	db::Game const& game(unsigned position = InvalidPosition) const;
@@ -200,10 +252,14 @@ public:
 	db::Database const& database(unsigned position = InvalidPosition) const;
 	mstl::string const& databaseName(unsigned position = InvalidPosition) const;
 	mstl::string const& sourceName(unsigned position = InvalidPosition) const;
+	db::variant::Type variant(unsigned position = InvalidPosition) const;
 	unsigned currentPosition() const;
 	unsigned indexAt(unsigned position) const;
 	checksum_t checksumIndex(unsigned position = InvalidPosition) const;
 	checksum_t checksumMoves(unsigned position = InvalidPosition) const;
+	db::variant::Type currentVariant() const;
+	Variants getAllVariants() const;
+	Variants getAllVariants(mstl::string const& name) const;
 
 	db::load::State loadGame(unsigned position);
 	db::load::State loadGame(	unsigned position,
@@ -211,16 +267,17 @@ public:
 										unsigned index,
 										mstl::string const* fen = 0);
 
-	void newGame(unsigned position);
+	void newGame(unsigned position, db::variant::Type variant = db::variant::Normal);
 	void deleteGame(Cursor& cursor, unsigned index, unsigned view = 0, bool flag = true);
 	void swapGames(unsigned position1, unsigned position2);
 	void setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigned flags);
 	void releaseGame(unsigned position);
 	void switchGame(unsigned position);
 	void clearGame(db::Board const* startPosition = 0);
+	void setupGame(db::Board const& startPosition);
 	void setSource(unsigned position, mstl::string const& name, unsigned index);
 	db::save::State writeGame(	unsigned position,
-										mstl::string const& filename,
+										mstl::string const& name,
 										mstl::string const& encoding,
 										mstl::string const& comment,
 										unsigned flags) const;
@@ -236,7 +293,7 @@ public:
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
-	void save(Cursor& cursor, util::Progress& progress, unsigned start = 0);
+	void save(mstl::string const& name, util::Progress& progress);
 	void startUpdateTree(Cursor& cursor);
 
 	unsigned addEngine(Engine* engine);
@@ -248,7 +305,9 @@ public:
 	bool stopAnalysis(unsigned engineId);
 
 	void clearBase(Cursor& cursor);
+	void clearBase(MultiCursor& cursor);
 	void compactBase(Cursor& cursor, ::util::Progress& progress);
+	void changeVariant(mstl::string const& name, ::db::variant::Type variant);
 
 	void setReferenceBase(Cursor* cursor);
 	void setSwitchReferenceBase(bool flag);
@@ -306,8 +365,11 @@ public:
 
 private:
 
-	struct EditGame
+	struct EditGame : public mstl::ref_counter
 	{
+		EditGame();
+		~EditGame();
+
 		Cursor*			cursor;
 		unsigned			index;
 		db::Game*		game;
@@ -320,25 +382,49 @@ private:
 		mstl::string	encoding;
 	};
 
-	EditGame& insertScratchGame(unsigned position);
-	EditGame& insertGame(unsigned position);
+	typedef mstl::ref_counted_ptr<EditGame>		GameP;
+	typedef mstl::map<unsigned,GameP>				GameMap;
+	typedef mstl::map<unsigned,unsigned> 			IndexMap;
+	typedef mstl::ref_counted_ptr<MultiCursor>	CursorP;
+	typedef mstl::map<mstl::string,CursorP>		CursorMap;
+	typedef mstl::vector<Engine*>						EngineList;
+
+	struct Iterator
+	{
+		Iterator(CursorMap::const_iterator begin, CursorMap::const_iterator end);
+		bool operator!=(Iterator const& i) const;
+		Iterator& operator++();
+		Cursor* operator->();
+		Cursor& operator*();
+
+		CursorMap::const_iterator	m_current;
+		CursorMap::const_iterator	m_end;
+		unsigned							m_variant;
+	};
+
+	Iterator begin() const;
+	Iterator end() const;
+
+	Cursor* clipbase(db::variant::Type variant) const;
+	Cursor* clipbase(unsigned variantInddx) const;
+	Cursor* scratchbase(db::variant::Type variant) const;
+	Cursor* scratchbase(unsigned variantIndex) const;
+
+	GameP insertScratchGame(unsigned position, db::variant::Type variant);
+	GameP insertGame(unsigned position);
 	Cursor* findBase(mstl::string const& name);
-	Cursor const* findBase(mstl::string const& name) const;
+	Cursor* findBase(mstl::string const& name, db::variant::Type variant);
+	Cursor const* findBase(	mstl::string const& name) const;
+	Cursor const* findBase(	mstl::string const& name, db::variant::Type variant) const;
 	void setReferenceBase(Cursor* cursor, bool isUserSet);
-	void moveGamesToScratchbase(Cursor& cursor);
+	void moveGamesToScratchbase(Cursor& cursor, bool overtake = false);
 	EditGame* findGame(Cursor* cursor, unsigned index, unsigned* position = 0);
 	unsigned findUnusedPosition() const;
 	void setActiveBase(Cursor* cursor);
 	void stopAnalysis(db::Game const* game);
 
-	typedef mstl::map<unsigned,EditGame>		GameMap;
-	typedef mstl::map<unsigned,unsigned> 		IndexMap;
-	typedef mstl::map<mstl::string,Cursor*>	CursorMap;
-	typedef mstl::vector<Engine*>					EngineList;
-
 	Cursor*			m_current;
-	Cursor*			m_clipBase;
-	Cursor*			m_scratchBase;
+	Cursor*			m_clipbase;
 	Cursor*			m_referenceBase;
 	bool				m_switchReference;
 	bool				m_isUserSet;
@@ -358,9 +444,6 @@ private:
 	mutable SubscriberP m_subscriber;
 
 	static Application* m_instance;
-
-	static mstl::string m_clipbaseName;
-	static mstl::string m_scratchbaseName;
 };
 
 } // namespace app

@@ -277,7 +277,7 @@ uci::Engine::setupPosition(Board const& board)
 	else
 	{
 		db::Board::Format	fmt(m_needChess960 ? Board::Shredder : Board::XFen);
-		mstl::string		fen(board.toFen(fmt));
+		mstl::string		fen(board.toFen(variant::Normal, fmt));
 
 		m_position.append("fen ", 4);
 		m_position.append(fen);
@@ -324,15 +324,15 @@ uci::Engine::startAnalysis(bool isNewGame)
 
 	m_board = game->currentBoard();
 
-	unsigned state = m_board.checkState();
+	unsigned state = m_board.checkState(variant::Normal);
 
-	if (state & Board::CheckMate)
+	if (state & Board::Checkmate)
 	{
-		updateCheckMateInfo();
+		updateInfo(board::Checkmate);
 	}
-	else if (state & Board::StaleMate)
+	else if (state & Board::Stalemate)
 	{
-		updateStaleMateInfo();
+		updateInfo(board::Stalemate);
 	}
 	else
 	{
@@ -594,7 +594,7 @@ uci::Engine::parseBestMove(char const* msg)
 
 	if (move.isLegal())
 	{
-		m_board.prepareForPrint(move);
+		m_board.prepareForPrint(move, variant::Normal);
 		setBestMove(move);
 	}
 	else
@@ -610,9 +610,9 @@ uci::Engine::parseBestMove(char const* msg)
 	{
 		s = ::skipSpaces(s + 6);
 
-		m_board.doMove(move);
+		m_board.doMove(move, variant::Normal);
 		Move ponder(m_board.parseLAN(s));
-		m_board.undoMove(move);
+		m_board.undoMove(move, variant::Normal);
 
 		if (move.isLegal())
 		{
@@ -794,7 +794,7 @@ uci::Engine::parseInfo(char const* s)
 					varno = setVariation(varno, moves);
 					havePv = true;
 
-					if (!haveMate && (board.checkState() & Board::CheckMate))
+					if (!haveMate && (board.checkState(variant::Normal) & Board::Checkmate))
 					{
 						int n = board.moveNumber() - m_board.moveNumber();
 						mate = board.whiteToMove() ? -n : +n;
@@ -870,7 +870,7 @@ uci::Engine::parseCurrentMove(char const* s)
 		return Move();
 	}
 
-	m_board.prepareForPrint(move);
+	m_board.prepareForPrint(move, variant::Normal);
 	return move;
 }
 
@@ -886,14 +886,14 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 
 		if (next == 0)
 		{
-			mstl::string msg("Illegal move in pv: ");
+			mstl::string msg("Illegal move in PV: ");
 			msg.append(s, ::skipNonSpaces(s));
 			error(msg);
 			return 0;
 		}
 
-		board.prepareForPrint(move);
-		board.doMove(move);
+		board.prepareForPrint(move, variant::Normal);
+		board.doMove(move, variant::Normal);
 		moves.append(move);
 
 		s = ::skipSpaces(next);
@@ -902,7 +902,7 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 		{
 			while (::isLan(s))
 				s = ::skipWords(s, 1);
-			log("WARNING: Pv is too long (truncated)");
+			log("WARNING: PV is too long (truncated)");
 			return s;
 		}
 	}

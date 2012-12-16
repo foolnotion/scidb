@@ -26,6 +26,12 @@
 
 namespace app {
 
+inline View::UpdateMode View::gameUpdateMode() const			{ return m_gameUpdateMode; }
+inline View::UpdateMode View::playerUpdateMode() const		{ return m_playerUpdateMode; }
+inline View::UpdateMode View::eventUpdateMode() const			{ return m_eventUpdateMode; }
+inline View::UpdateMode View::siteUpdateMode() const			{ return m_siteUpdateMode; }
+inline View::UpdateMode View::annotatorUpdateMode() const	{ return m_annotatorUpdateMode; }
+
 inline unsigned View::countGames() const		{ return m_gameFilter.count(); }
 inline unsigned View::totalGames() const		{ return m_gameFilter.size(); }
 inline unsigned View::countPlayers() const	{ return m_playerFilter.count(); }

@@ -40,12 +40,12 @@ namespace sys  { namespace utf8 { class Codec; } }
 namespace db {
 
 namespace sci  { namespace v91 { class Codec; } }
+namespace sci  { namespace v92 { class Codec; } }
 namespace sci  { class Codec; }
 namespace si3  { class Codec; }
 namespace cbh  { class Codec; }
 namespace bits { template <int> struct Accessor; }
 
-class DatabaseContent;
 class Namebases;
 class NamebaseEntry;
 class NamebaseEvent;
@@ -59,7 +59,7 @@ class GameInfo
 {
 public:
 
-	static unsigned const MaxPlyCount = 0x0fff - 1;
+	static unsigned const MaxPlyCount = 0x07ff - 1;
 
 	enum
 	{
@@ -102,11 +102,14 @@ public:
 
 		// --- flags for Scid 4.x -----------------------------------------------
 		Flag_User1						= Flag_Best_Game,
-		Flag_User2						= Flag_Decided_Tournament,
-		Flag_User3						= Flag_Model_Game,
-		Flag_User4						= Flag_Strategy,
-		Flag_User5						= Flag_With_Attack,
-		Flag_User6						= Flag_Sacrifice,
+		Flag_User2						= Flag_Best_Game << 1,
+		Flag_User3						= Flag_Best_Game << 2,
+		Flag_User4						= Flag_Best_Game << 3,
+		Flag_User5						= Flag_Best_Game << 4,
+		Flag_User6						= Flag_Best_Game << 5,
+
+		// --- special flag to distiguish between Losers and Giveaway ----------
+		Flag_Giveaway					= Flag_Illegal_Castling,
 	};
 
 	GameInfo();
@@ -130,7 +133,8 @@ public:
 	template <int N> uint16_t ply() const;
 	bool hasShuffleChessPosition() const;
 	bool hasChess960Position() const;
-	bool hasStandardPosition() const;
+	bool hasStandardPosition(variant::Type variant) const;
+	bool setupBoard() const;
 	result::ID result() const;
 	uint16_t plyCount() const;								// ChessBase: move count times 2
 	uint16_t idn() const;
@@ -165,6 +169,7 @@ public:
 	NamebaseEvent const* eventEntry() const;
 	material::si3::Signature material() const;
 	Signature signature() const;							// ChessBase: n/a; Scid: roughly
+	bool isGiveaway() const;
 
 	// Scid 3.x: possibly n/a until game is loaded
 	Date eventDate() const;
@@ -197,7 +202,7 @@ public:
 
 	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 
-	void setupTags(TagSet& tags) const;
+	void setupTags(TagSet& tags, variant::Type variant) const;
 	void setup(	uint32_t gameOffset,
 					uint32_t gameRecordLength);
 	void setup(	uint32_t gameOffset,
@@ -278,6 +283,7 @@ private:
 	};
 
 	friend class sci::v91::Codec;
+	friend class sci::v92::Codec;
 	friend class sci::Codec;
 	friend class si3::Codec;
 	friend class cbh::Codec;
@@ -290,10 +296,10 @@ private:
 	void setMaterial(material::si3::Signature sig);
 	void setGameRecordLength(unsigned length);
 	void setLangCount(unsigned count);
-	void setupOpening(unsigned idn, Line const& line);
+	void setupOpening(bool startPosition, variant::Index variantIndex, unsigned idn, Line const& line);
 	void setupRating(TagSet const& tags, color::ID color, rating::Type rtType, tag::ID tag);
 
-	static void setupIdn(TagSet& tags, uint16_t idn);
+	static void setupVariant(TagSet& tags, variant::Type variant, uint16_t idn);
 
 	NamebaseEvent*		m_event;
 	NamebasePlayer*	m_player[2];
@@ -317,10 +323,10 @@ private:
 	uint32_t m_gameOffset;
 
 	uint64_t m_gameFlags			:26;
-	uint64_t m_plyCount			:12;
 	uint64_t m_positionId		:12;
+	uint64_t m_plyCount			:11;
 	uint64_t m_dateYear			:10;
-	uint64_t m_dateMonth			: 4;
+	uint64_t m_dateDay			: 5;
 
 	union __attribute__((packed))
 	{
@@ -337,8 +343,9 @@ private:
 
 	uint32_t m_round				: 8;
 	uint32_t m_subround			: 8;
-	uint32_t m_dateDay			: 5;
+	uint32_t m_dateMonth			: 4;
 	uint32_t m_result				: 3;
+	uint32_t m_setup				: 1;
 	uint32_t __unused__			: 8;
 
 	static const GameInfo m_initializer;
@@ -348,8 +355,9 @@ private:
 //#endif
 ;
 
-// NOTE: 64 bytes on all 32 bit platforms (63 bytes if packed on Intel based platforms)
-// NOTE: IndexEntry (Scid) has 48 bytes
+// NOTE: 64 bytes on all 32 bit platforms (63 bytes if packed)
+// NOTE: 96 bytes on all 64 bit platforms (64 on Intel/AMD platforms)
+// NOTE: IndexEntry (Scid) has 48 bytes on Intel/AMD platforms
 
 } // namespace db
 

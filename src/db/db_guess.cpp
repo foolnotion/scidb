@@ -68,12 +68,6 @@ using namespace db::castling;
 using namespace db::board;
 
 
-int const db::Guess::Piece[8] =
-{
-	0, KingValue, QueenValue, RookValue, BishopValue, KnightValue, PawnValue
-};
-
-
 namespace {
 
 typedef db::Guess::Score Score;
@@ -82,6 +76,32 @@ typedef int ScoreList[MoveList::Maximum_Moves];
 
 } // namespace
 
+
+// Normal piece values
+db::Guess::PieceValues db::Guess::PieceStandard =
+{
+	0, KingValue, QueenValue, RookValue, BishopValue, KnightValue, PawnValue,
+};
+
+// Bughouse/Crazyhouse piece values
+db::Guess::PieceValues db::Guess::PieceZH =
+{
+	0, KingValueZH, QueenValueZH, RookValueZH, BishopValueZH, KnightValueZH, PawnValueZH,
+};
+
+// Suicide Chess piece values
+db::Guess::PieceValues db::Guess::PieceSuicide =
+{
+	0, KingValueSuicide, QueenValueSuicide, RookValueSuicide,
+	BishopValueSuicide, KnightValueSuicide, PawnValueSuicide,
+};
+
+// Losers Chess piece values
+db::Guess::PieceValues db::Guess::PieceLosers =
+{
+	0, KingValueLosers, QueenValueLosers, RookValueLosers,
+	BishopValueLosers, KnightValueLosers, PawnValueLosers,
+};
 
 // ------------------------------------------------------------------------
 // class Transposition is adopted from toga/trans.cpp
@@ -223,42 +243,6 @@ Transposition::store(uint64_t key, uint16_t move, unsigned depth, int score, int
 }
 
 
-Score&
-Score::operator+=(int score)
-{
-	middleGame += score;
-	endGame += score;
-	return *this;
-}
-
-
-Score&
-Score::operator-=(int score)
-{
-	middleGame -= score;
-	endGame -= score;
-	return *this;
-}
-
-
-Score&
-Score::operator+=(Score const& score)
-{
-	middleGame += score.middleGame;
-	endGame += score.endGame;
-	return *this;
-}
-
-
-Score&
-Score::operator-=(Score const& score)
-{
-	middleGame -= score.middleGame;
-	endGame -= score.endGame;
-	return *this;
-}
-
-
 int
 Score::weightedScore(int totalPiecesWhite, int totalPiecesBlack) const
 {
@@ -267,16 +251,63 @@ Score::weightedScore(int totalPiecesWhite, int totalPiecesBlack) const
 }
 
 
-db::Guess::Guess(Board const& board, unsigned idn)
+db::Guess::Guess(Board const& board, variant::Type variant, uint16_t idn)
 	:Board(board)
+	,m_variant(variant)
 	,m_idn(idn)
 	,m_trans(new Transposition)
 	,m_ply(0)
+	,m_preEvalMeth(0)
+	,m_evalMeth(0)
+	,m_pieceValues(0)
+	,m_dangerFactor(1)
+	,m_kingSafetyFactor(1)
 #ifdef USE_NULL_MOVE_SEARCH
 	,m_pvCounter(0)
 #endif
 {
-	M_REQUIRE(idn <= 4*960);
+	M_REQUIRE(variant != variant::Undetermined);
+	M_REQUIRE(variant != variant::Antichess);
+
+	switch (variant)
+	{
+		case variant::Normal:
+			m_preEvalMeth = &Guess::preEvaluateNormal;
+			m_evalMeth = &Guess::evaluate;
+			m_pieceValues = PieceStandard;
+			break;
+
+		case variant::ThreeCheck:
+			m_preEvalMeth = &Guess::preEvaluate3check;
+			m_evalMeth = &Guess::evaluate3check;
+			m_pieceValues = PieceStandard;
+			break;
+
+		case variant::Bughouse:
+		case variant::Crazyhouse:
+			m_preEvalMeth = &Guess::preEvaluateZH;
+			m_evalMeth = &Guess::evaluateZH;
+			m_pieceValues = PieceZH;
+			break;
+
+		case variant::Losers:
+			m_preEvalMeth = &Guess::preEvaluateLosers;
+			m_evalMeth = &Guess::evaluateLosers;
+			m_pieceValues = PieceLosers;
+			break;
+
+		case variant::Suicide:
+		case variant::Giveaway:
+			m_preEvalMeth = &Guess::preEvaluateSuicide;
+			m_evalMeth = &Guess::evaluateSuicide;
+			m_pieceValues = PieceSuicide;
+			break;
+
+		case variant::Antichess:
+		case variant::Undetermined:
+			// cannot happen
+			break;
+	}
 }
 
 
@@ -286,17 +317,41 @@ db::Guess::~Guess() throw()
 }
 
 
-unsigned db::Guess::minor(Material mat) { return mat.knight + mat.bishop; }
-unsigned db::Guess::major(Material mat) { return mat.queen + mat.rook; }
-
-
 unsigned
 db::Guess::total(Material mat)
 {
+	// NOTE: only pieces, no pawns
 	return	piece::value::Queen*mat.queen
 			 + piece::value::Rook*mat.rook
 			 + piece::value::Bishop*mat.bishop
 			 + piece::value::Knight*mat.knight;
+}
+
+
+inline
+bool
+db::Guess::kingIsInCheck(color::ID color) const
+{
+	return !variant::isAntichessExceptLosers(m_variant) && isInCheck(color);
+}
+
+
+inline
+bool
+db::Guess::kingMovesIntoCheck(Move const& move) const
+{
+	if (variant::isAntichessExceptLosers(m_variant))
+		return false;
+
+	return isIntoCheck(move, m_variant);
+}
+
+
+inline
+bool
+db::Guess::boardIsLegal() const
+{
+	return variant::isAntichessExceptLosers(m_variant) || isLegal();
 }
 
 
@@ -349,9 +404,9 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 	M_ASSERT(square != sq::Null);
 
 	MoveList moves;
-	Board::generateMoves(moves);
+	Board::generateMoves(m_variant, moves);
 
-	uint64_t sqMask = ::setBit(square);
+	uint64_t sqMask = setBit(square);
 
 	if ((m_occupied & sqMask) && m_stm == (m_occupiedBy[White] & sqMask ? White : Black))
 	{
@@ -367,7 +422,7 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 		{
 			for (unsigned i = 0; i < moves.size(); ++i)
 			{
-				if (moves[i].from() == square)
+				if (moves[i].from() == square && !moves[i].isPieceDrop())
 					result.append(moves[i]);
 			}
 		}
@@ -376,7 +431,7 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 	{
 		for (unsigned i = 0; i < moves.size(); ++i)
 		{
-			if (moves[i].to() == square)
+			if (moves[i].to() == square && !moves[i].isPieceDrop())
 				result.append(moves[i]);
 		}
 	}
@@ -395,8 +450,11 @@ db::Guess::search(Square square, unsigned maxDepth)
 Move
 db::Guess::bestMove(Square square, MoveList const& exclude, unsigned maxDepth)
 {
+	if (gameIsOver(m_variant))
+		return Move::empty();
+
 	EcoTable::Successors successors;
-	EcoTable::specimen().getSuccessors(hash(), successors);
+	EcoTable::specimen(variant::toMainVariant(m_variant)).getSuccessors(hash(), successors);
 
 	MoveList moves;
 	MoveList ecoMoves;
@@ -469,10 +527,62 @@ db::Guess::bestSquare(Square square, unsigned maxDepth)
 }
 
 
+int
+db::Guess::evaluateNoMoves() const
+{
+	if (variant::isAntichess(m_variant))
+	{
+		// We know different rules for stalemate:
+		// ---------------------------------------------------------------
+		switch (int(m_variant))
+		{
+			case variant::Giveaway:
+				// It is a win for the stalemated player (international rules).
+				return Infinity;
+
+			case variant::Suicide:
+				// It is a win for the player with the fewer number of pieces,
+				//	It is a draw if both have the same number of pieces.
+				//	The type of the piece makes no difference (FICS rules).
+				{
+					int diff = int(m_material[m_stm].total()) - int(m_material[m_stm ^ 1].total());
+
+					if (diff > 0) return -Infinity;
+					if (diff < 0) return +Infinity;
+					return 0;
+				}
+				break;
+
+			case variant::Losers:
+				// If a player's King is checkmated or stalemated that player wins.
+				return Infinity;
+		}
+	}
+
+	return isInCheck() ? -Infinity  : 0; // either checkmate or stalemate
+}
+
+
 Move
 db::Guess::search(MoveList& moves, unsigned maxDepth)
 {
-	filterLegalMoves(moves);
+	filterLegalMoves(moves, m_variant);
+
+	if (variant::isZhouse(m_variant))
+	{
+		// we don't need piece dops as first move
+		unsigned k = 0;
+
+		for (unsigned i = 0; i < moves.size(); ++i)
+		{
+			Move move = moves[i];
+
+			if (!move.isPieceDrop())
+				moves[k++] = move;
+		}
+
+		moves.cut(k);
+	}
 
 	if (moves.isEmpty())
 		return Move::empty();
@@ -480,13 +590,14 @@ db::Guess::search(MoveList& moves, unsigned maxDepth)
 	if (moves.size() == 1)
 		return moves[0];
 
-	if (isInCheck())
+	if (kingIsInCheck(sideToMove()))
 		++maxDepth;
 
 	maxDepth = mstl::min(maxDepth, unsigned(MaxDepth));
 
 	::memset(m_killer, 0, sizeof(m_killer));
 	preEvaluate();
+	(this->*m_preEvalMeth)();
 
 	ScoreList scores;
 
@@ -495,10 +606,10 @@ db::Guess::search(MoveList& moves, unsigned maxDepth)
 		Move& move = moves[i];
 
 		prepareUndo(move);
-		doMove(move);
+		doMove(move, m_variant);
 		scores[i] = -quiesce(-Infinity, Infinity, move.isPromotion());
 		TRACE(::printf("%d: quiesce(%s) = %d\n", m_ply, move.asString().c_str(), scores[i]));
-		undoMove(move);
+		undoMove(move, m_variant);
 	}
 
 	moves.sort(scores);
@@ -575,11 +686,14 @@ db::Guess::SEARCH(MoveList& moves, unsigned depth, int alpha, int beta, bool all
 	ScoreList scores;
 	unsigned	k = 0;
 
+	bool isCheckEvasion = kingIsInCheck(sideToMove());
+
 	for (unsigned i = 0; i < moves.size(); ++i)
 	{
 		Move& move = moves[i];
+		prepareUndo(move);
 
-		if (!isIntoCheck(move))
+		if (!kingMovesIntoCheck(move))
 		{
 			if (move.index() == bestMove)
 			{
@@ -598,6 +712,18 @@ db::Guess::SEARCH(MoveList& moves, unsigned depth, int alpha, int beta, bool all
 			{
 				scores[k] = 1000;
 			}
+			else if (move.isPieceDrop())
+			{
+				if (isCheckEvasion || isContactCheck(move, m_variant))
+				{
+					scores[k] = 200;
+				}
+				else
+				{
+					int see = staticExchangeEvaluator(move);
+					scores[k] = see >= 0 ? -50 : see - 50;
+				}
+			}
 			else if (move.isCastling())
 			{
 				scores[k] = 100;
@@ -607,7 +733,6 @@ db::Guess::SEARCH(MoveList& moves, unsigned depth, int alpha, int beta, bool all
 				scores[k] = 0;
 			}
 
-			prepareUndo(move);
 			moves[k++] = move;
 		}
 	}
@@ -616,13 +741,71 @@ db::Guess::SEARCH(MoveList& moves, unsigned depth, int alpha, int beta, bool all
 	moves.sort(scores);
 
 	if (moves.isEmpty())
-		return isInCheck() ? -Infinity  : 0;	// either checkmate or stalemate
+		return evaluateNoMoves();
 
 	score = ITERATE(moves, depth, alpha, beta, allowNull);
 	TRACE(::printf("%u (%d): iterator(%s) = %d\n", depth, m_ply, moves[0].asString().c_str(), score));
 	m_trans->store(m_hash, moves[0].index(), m_ply, score, alpha, beta);
 
 	return score;
+}
+
+
+int
+db::Guess::search1(MoveList& moves, int alpha, int beta)
+{
+	M_ASSERT(alpha <= beta);
+
+	uint16_t	bestMove	= 0;
+	int		score;
+
+	if (m_trans->lookup(m_hash, bestMove, score, 1, alpha, beta))
+	{
+		int bestMoveIndex = moves.find(bestMove);
+		M_ASSERT(bestMoveIndex >= 0);
+		mstl::swap(moves[0], moves[bestMoveIndex]);
+		TRACE(::printf("%d (%d): lookup(%s) = %d\n", 1, m_ply, moves[0].asString().c_str(), score));
+		return score;
+	}
+
+	unsigned k = 0;
+
+	for (unsigned i = 0; i < moves.size(); ++i)
+	{
+		Move move = moves[i];
+
+		prepareUndo(move);
+		doMove(move, m_variant);
+
+		if (boardIsLegal())
+		{
+			int score = -quiesce(-beta, -alpha, false);
+			TRACE(::printf("%d: quiesce(%s) = %d\n", m_ply, move.asString().c_str(), score));
+
+			if (score >= beta)
+			{
+				addKillerMove(move, score);
+				mstl::swap(moves[0], moves[i]);
+				undoMove(move, m_variant);
+				return score;
+			}
+
+			if (score > alpha)
+			{
+				alpha = score;
+				mstl::swap(moves[0], moves[i]);
+			}
+
+			moves[k++] = move;
+		}
+
+		undoMove(move, m_variant);
+	}
+
+	if (moves.isEmpty())
+		return evaluateNoMoves();
+
+	return alpha;
 }
 
 
@@ -636,9 +819,9 @@ db::Guess::iterate(MoveList& moves, int alpha, int beta)
 		Move move = moves[i];
 
 		prepareUndo(move);
-		doMove(move);
+		doMove(move, m_variant);
 
-		if (isLegal())
+		if (boardIsLegal())
 		{
 			int score = -quiesce(-beta, -alpha, move.isPromotion());
 			TRACE(::printf("%d: quiesce(%s) = %d\n", m_ply, move.asString().c_str(), score));
@@ -647,7 +830,7 @@ db::Guess::iterate(MoveList& moves, int alpha, int beta)
 			{
 				addKillerMove(move, score);
 				mstl::swap(moves[0], moves[i]);
-				undoMove(move);
+				undoMove(move, m_variant);
 				return score;
 			}
 
@@ -660,11 +843,11 @@ db::Guess::iterate(MoveList& moves, int alpha, int beta)
 			moves[k++] = move;
 		}
 
-		undoMove(move);
+		undoMove(move, m_variant);
 	}
 
 	if (moves.isEmpty())
-		return isInCheck() ? -Infinity  : 0;	// either checkmate or stalemate
+		return evaluateNoMoves();
 
 	return alpha;
 }
@@ -679,7 +862,7 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 
 	int score = 0;	// satisfies the compiler
 
-	unsigned baseExtension = (moves.size() == 1);
+	unsigned extension = (moves.size() == 1);
 
 #ifdef USE_PV_SEARCH
 	bool foundPV = false;
@@ -690,31 +873,15 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 		Move move = moves[i];
 
 		++m_ply;
-		doMove(move);
-		M_ASSERT(isLegal());
+		doMove(move, m_variant);
+		M_ASSERT(boardIsLegal());
 
 		MoveList moveList;
-
-		unsigned extension = baseExtension;
-
-		if (	move.pieceMoved() == piece::Pawn
-			&& !mstl::is_between(sq::rank(move.to()), sq::Rank3, sq::Rank6))
-		{
-			++extension;
-		}
-
-		// reduce extension if the search is deep
-		if (m_ply >= mstl::mul2(depth))
-			extension = mstl::div2(extension);
-
-		// Limit extension to 1
-		if (extension > 1)
-			extension = 1;
 
 #ifdef USE_PV_SEARCH
 		if (foundPV)
 		{
-			Board::generateMoves(moveList);
+			Board::generateMoves(m_variant, moveList);
 
 			INCR(m_pvCounter);
 			// Do a minimal window search first, to try and quickly
@@ -747,19 +914,19 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 				&& m_pvCounter == 0
 				&& depth > NullDepth + 1
 				&& m_totalPieces[m_stm] >= 6
-				&& !isInCheck())
+				&& !kingIsInCheck(notToMove()))
 			{
 				Move null(Move::null());
 
 				prepareUndo(null);
 				doMove(null);
-				Board::generateMoves(moveList);
+				Board::generateMoves(m_variant, moveList);
 				score = -SEARCH(moveList, -beta, -beta + 1, depth + extension - NullDepth - 1, false);
 				undoMove(null);
 
 				if (score >= beta)
 				{
-					undoMove(move);
+					undoMove(move, m_variant);
 					--m_ply;
 					addKillerMove(move, score);
 					mstl::swap(moves[0], moves[i]);
@@ -769,12 +936,12 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 			}
 #endif // USE_NULL_MOVE_SEARCH
 
-			Board::generateMoves(moveList);
+			Board::generateMoves(m_variant, moveList);
 			score = -SEARCH(moveList, depth + extension - 1, -beta, -alpha, true);
 			TRACE(::printf("%d (%d): search(%s) = %d\n", depth, m_ply, move.asString().c_str(), score));
 		}
 
-		undoMove(move);
+		undoMove(move, m_variant);
 		--m_ply;
 
 		if (score >= beta)
@@ -798,6 +965,11 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 }
 
 
+// iterate -> quiesce(promo)
+// quiesce(promo) -> SEARCH -> iterate
+// iterate -> quiesce(promo)
+
+
 int
 db::Guess::quiesce(int alpha, int beta, bool isPromotion)
 {
@@ -805,16 +977,16 @@ db::Guess::quiesce(int alpha, int beta, bool isPromotion)
 		return quiesce(alpha, beta);
 
 	MoveList moves;
-	Board::generateMoves(moves);
+	Board::generateMoves(m_variant, moves);
 
-	return SEARCH(moves, 1, alpha, beta, false);
+	return search1(moves, alpha, beta);
 }
 
 
 int
 db::Guess::quiesce(int alpha, int beta)
 {
-	int score = evaluate(alpha, beta);
+	int score = (this->*m_evalMeth)(alpha, beta);
 
 	if (isBlack(sideToMove()))
 		score = -score;
@@ -822,8 +994,11 @@ db::Guess::quiesce(int alpha, int beta)
 	if (score >= beta)
 		return score;
 
-	if (score + QueenValue + PawnValue < alpha)
+	if (	!variant::isAntichess(m_variant)
+		&& score + m_pieceValues[piece::Queen] + m_pieceValues[piece::Pawn] < alpha)
+	{
 		return alpha;
+	}
 
 	if (score > alpha)
 		alpha = score;
@@ -831,8 +1006,9 @@ db::Guess::quiesce(int alpha, int beta)
 	MoveList		moves;
 	ScoreList	scoreList;
 
-	Board::generateCapturingMoves(moves);
-	filterLegalMoves(moves);
+	Board::generateCapturingMoves(m_variant, moves);
+
+	filterLegalMoves(moves, m_variant);
 
 	M_ASSERT(moves.size() <= U_NUMBER_OF(scoreList));
 
@@ -851,14 +1027,15 @@ db::Guess::quiesce(int alpha, int beta)
 		// all moves but under-promotions:
 		if (promoted == piece::None || promoted == piece::Queen)
 		{
-			if (scoreList[i] < mstl::max(0, alpha - value - PawnValue))
+			if (scoreList[i] < mstl::max(0, alpha - value - m_pieceValues[piece::Pawn]))
 				return alpha;	// we cannot improve alpha
 
-			doMove(move);
-			M_ASSERT(isLegal());
+			prepareUndo(move);
+			doMove(move, m_variant);
+			M_ASSERT(boardIsLegal());
 			score = -quiesce(-beta, -alpha);
 			TRACE(::printf("(%d): quiesce(%s) = %d\n", m_ply, move.asString().c_str(), score));
-			undoMove(move);
+			undoMove(move, m_variant);
 
 			if (score >= beta)
 				return score;
@@ -901,15 +1078,15 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 	// the list as it is being captured to start things off.
 	if (move.isPromotion())
 	{
-		attackedPiece = Piece[move.promoted()];
-		swapList[0] = attackedPiece - PawnValue;
+		attackedPiece = m_pieceValues[move.promoted()];
+		swapList[0] = attackedPiece - m_pieceValues[piece::Pawn];
 	}
 	else
 	{
-		attackedPiece = Piece[move.pieceMoved()];
-		swapList[0] = Piece[move.captured()];
+		attackedPiece = m_pieceValues[move.pieceMoved()];
+		swapList[0] = m_pieceValues[move.capturedOrDropped()];
 
-		if (attackedPiece != RookValue)
+		if (!variant::isAntichess(m_variant) && attackedPiece != m_pieceValues[piece::Rook])
 		{
 			// Find the estimated result assuming one recapture:
 			int fastResult = swapList[0] - attackedPiece;
@@ -917,7 +1094,7 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 			// We can do quick estimation for a big gain, but have to be
 			// careful since move ordering is very sensitive to positive SEE
 			// scores. Only return a fast estimate for PxQ, NxQ, BxQ and PxR:
-			if (fastResult > KnightValue)
+			if (fastResult > m_pieceValues[piece::Knight])
 				return fastResult;
 		}
 	}
@@ -950,13 +1127,13 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 			occupied &= ~::setBit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = PawnValue;
+			attackedPiece = m_pieceValues[piece::Pawn];
 		}
 		else if (knights & occupied)
 		{
 			occupied &= ~::setBit(lsb(knights & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = KnightValue;
+			attackedPiece = m_pieceValues[piece::Knight];
 		}
 		else if (bishops & occupied)
 		{
@@ -964,7 +1141,7 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 			occupied &= ~::setBit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = BishopValue;
+			attackedPiece = m_pieceValues[piece::Bishop];
 		}
 		else if (rooks & occupied)
 		{
@@ -972,7 +1149,7 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 			occupied &= ~::setBit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = RookValue;
+			attackedPiece = m_pieceValues[piece::Rook];
 		}
 		else if (queens & occupied)
 		{
@@ -980,13 +1157,13 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 			occupied &= ~::setBit(square);
 			occupied |= addXrayPiece(square, target);
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = QueenValue;
+			attackedPiece = m_pieceValues[piece::Queen];
 		}
 		else if (kings & occupied)
 		{
 			occupied &= ~::setBit(lsb(kings & occupied));
 			swapList[n] = -swapList[n - 1] + attackedPiece;
-			attackedPiece = KingValue;
+			attackedPiece = m_pieceValues[piece::King];
 		}
 		else
 		{

@@ -24,36 +24,44 @@
 // (at your option) any later version.
 // ======================================================================
 
+#ifndef _sci_v92_common_included
+#define _sci_v92_common_included
+
 namespace db {
 namespace sci {
-namespace v91 {
-namespace encoder {
+namespace v92 {
 
-inline Byte Position::Lookup::operator[](unsigned i) const	{ return numbers[i]; }
-inline Byte& Position::Lookup::operator[](unsigned i)			{ return numbers[i]; }
-
-inline Position::Lookup& Position::lookup() { return m_stack.top(); }
-
-inline void Position::preparePush()	{ m_stack.reserve(m_stack.size() + 1); }
-inline void Position::push()			{ m_stack.dup(); }
-inline void Position::pop()			{ m_stack.pop(); }
-
-inline void Position::doMove(Move const& move) { doMove(lookup(), move); }
-
-inline Byte Position::operator[](int n) const { return m_stack.top()[n]; }
-
-
-inline
-Position::Lookup&
-Position::previous()
+namespace token
 {
-	M_ASSERT(m_stack.size() > 1);
-	return *(m_stack.end() - 2);
+	enum
+	{
+		Mark				= 0,
+		Nag				= 1,
+		Comment			= 2,
+		Start_Marker	= 3,
+		End_Marker		= 4,	Last = End_Marker,
+	};
 }
 
-} // namespace encoder
-} // namespace v91
+namespace comm
+{
+	enum
+	{
+		Ante		= 1 << 0,
+		Post		= 1 << 1,
+		Ante_Eng	= 1 << 2,
+		Ante_Oth	= 1 << 3,
+		Post_Eng	= 1 << 4,
+		Post_Oth	= 1 << 5,
+	};
+}
+
+enum { Block_Size = 131072 };
+
+} // namespace v92
 } // namespace sci
 } // namespace db
+
+#endif // _sci_v92_common_included
 
 // vi:set ts=3 sw=3:

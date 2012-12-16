@@ -71,7 +71,7 @@ proc build {parent} {
 		;
 
 	namespace eval [namespace current]::$tb {}
-	variable [namespace current]::${tb}::Vars
+	variable ${tb}::Vars
 	array set Vars {
 		minheight	0
 		minsize		{}
@@ -84,6 +84,7 @@ proc build {parent} {
 	set Vars(toolbars)	{}
 	set Vars(after)		{}
 	set Vars(resizing)	0
+	set Vars(codec)		{}
 
 	bind $tb <<TableMinSize>>		[namespace code [list TableMinSize $tb %d]]
 	bind $tb <<TableLayout>>		[namespace code [list TableLayout $tb]]
@@ -213,16 +214,6 @@ proc activate {w flag} {
 }
 
 
-proc prepareSwitch {w newCodec} {
-	# we have to clear the country column if the codec is changing
-	if {[::scidb::db::get codec] ne $newCodec} {
-		::gametable::clearColumn $w.table whiteCountry
-		::gametable::clearColumn $w.table blackCountry
-		::gametable::clearColumn $w.table eventCountry
-	}
-}
-
-
 proc overhang {parent} {
 	return [::gametable::overhang $parent.table]
 }
@@ -238,19 +229,23 @@ proc borderwidth {parent} {
 }
 
 
-proc View {pane base} {
+proc View {pane base variant} {
 	return 0
 }
 
 
-proc Update {path id base {view -1} {index -1}} {
+proc Update {path id base variant {view -1} {index -1}} {
 	variable ${path}::Vars
 
 	if {$view <= 0} {
 		after cancel $Vars(after)
 
+		set codec [::scidb::db::get codec $base]
+		if {$Vars(codec) ne $codec} { CodecChanged $path $codec }
+
 		if {$index == -1} {
-			set Vars(after) [after idle [list ::gametable::update $path $base [::scidb::db::count games]]]
+			set n [::scidb::db::count games $base $variant]
+			set Vars(after) [after idle [list ::gametable::update $path $base $variant $n]]
 		} else {
 			set Vars(after) [after idle [list ::gametable::fill $path $index [expr {$index + 1}]]]
 		}
@@ -258,8 +253,19 @@ proc Update {path id base {view -1} {index -1}} {
 }
 
 
-proc Close {path base} {
-	::gametable::forget $path $base
+proc Close {path base variant} {
+	::gametable::forget $path $base $variant
+}
+
+
+proc CodecChanged {path newCodec} {
+	variable ${path}::Vars
+
+	set Vars(codec) $newCodec
+	# we have to clear the country column if the codec is changing
+	::gametable::clearColumn $path whiteCountry
+	::gametable::clearColumn $path blackCountry
+	::gametable::clearColumn $path eventCountry
 }
 
 

@@ -46,10 +46,10 @@
 		<link rel="shortcut icon" href="http://scidb.sourceforge.net/images/scidb.ico" />\cr
 		<title>#title</title>\cr
 		\unless\ifempty#style%
-			<link rel="stylesheet" type="text/css" media="screen" href="#style"\cr
+			<link rel="stylesheet" type="text/css" media="screen" href="#style" />\cr
 		\fi
 	\decr\indent
-	<head>\cr
+	</head>\cr
 	\ucusemap\1}
 
 \def\xhtml-foot{</html>}

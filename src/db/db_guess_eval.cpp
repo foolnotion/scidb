@@ -121,7 +121,7 @@ namespace bonus
 		  0,  12,  20,  24,  24,  20,  12,   0,
 		  0,  10,  16,  20,  20,  16,  10,   0,
 		-30, -20, -20, -10, -10, -20, -20, -30,
-	} ;
+	};
 
 	static int8_t const BishopSquare[64] =
 	{
@@ -207,7 +207,7 @@ namespace bonus
 		0, 0, 0, 0, 0, 0, 0, 0,
 	};
 
-}; // namespace bonus
+} // namespace bonus
 
 namespace mate
 {
@@ -262,19 +262,19 @@ namespace penalty
 		{   35,   70,  105,  105,  105,  105,  105,  105, 105 },
 	};
 
-}; // namespace penalty
+} // namespace penalty
 
 namespace safety
 {
-	static int const Safety[16] =
-	{
-		0, 7, 14, 21, 28, 35, 42, 49, 56, 63, 70, 77, 84, 91, 98, 105,
-	};
-
-	static int const Tropism[16] =
-	{
-		0, 1, 2, 3, 4, 5, 11, 20, 32, 47, 65, 86, 110, 137, 167, 200,
-	};
+//	static int Safety[16] =
+//	{
+//		 0,  7, 14, 21, 28, 35, 42,  49, 56, 63, 70, 77, 84, 91, 98, 105
+//	};
+//
+//	static int const Tropism[16] =
+//	{
+//		0, 1, 2, 3, 4, 5, 11, 20, 32, 47, 65, 86, 110, 137, 167, 200,
+//	};
 
 	static int const KingSafety[16][16] =
 	{
@@ -420,6 +420,14 @@ hasOpposition(bool onMove, sq::ID king, sq::ID enemyKing)
 }
 
 
+void
+db::Guess::preEvaluateNormal()
+{
+	m_dangerFactor = 1;
+	m_kingSafetyFactor = 1;
+}
+
+
 // ------------------------------------------------------------------------
 // adopted from crafty-22.8/preeval.c
 // ------------------------------------------------------------------------
@@ -432,50 +440,7 @@ db::Guess::preEvaluate()
 	::memset(m_pawnData = m_pawnTable, 0, sizeof(m_pawnTable));
 
 	m_root.m_castle	= m_castle;
-	m_root.m_stm		= m_stm;
-
-	// Now check to see if the "trojan check" code should be
-	// turned on. Basically if the king is in the corner,
-	// the opponent has placed a piece on g4/g5, and both
-	// sides have pawns attacking that piece, and queens are
-	// still on the board, then it is a threat that must be
-	// handled.
-	//
-	// This is handled as 4 separate cases for each corner of
-	// the board, for simplicity.
-	m_trojanCheck = false;
-
-	if (m_matCount[Black].queen && m_matCount[Black].rook)
-	{
-		uint64_t king = m_kings & m_occupiedBy[White];
-
-		if (king & (G1 | H1))
-		{
-			if (((knights(Black) | bishops(Black)) & G4) && (pawns(White) & (H3 | H5)) == (H3 | H5))
-				m_trojanCheck = true;
-		}
-		else if (king & (B1 | A1))
-		{
-			if (((knights(Black) | bishops(Black)) & B4) && (pawns(White) & (A3 | A5)) == (A3 | A5))
-				m_trojanCheck = true;
-		}
-	}
-
-	if (m_matCount[White].queen && m_matCount[White].rook)
-	{
-		uint64_t king = m_kings & m_occupiedBy[Black];
-
-		if (king & (G8 | H8))
-		{
-			if (((knights(White) | bishops(White)) & G5) && (pawns(Black) & (H4 | H6)) == (H4 | H6))
-				m_trojanCheck = true;
-		}
-		else if (king & (B8 | A8))
-		{
-			if (((knights(White) | bishops(White)) & B5) && (pawns(Black) & (A4 | A6)) == (A4 | A6))
-				m_trojanCheck = true;
-		}
-	}
+	m_root.m_stm			= m_stm;
 }
 
 
@@ -486,10 +451,10 @@ db::Guess::doScorePieces(Score score, int alpha, int beta) const
 	{
 		int pscore	= score.weightedScore(m_totalPieces[White], m_totalPieces[Black]);
 		int lscore	= whiteToMove() ? pscore : -pscore;
-		int total	= m_matCount[White].bishop + m_matCount[White].rook
-						+ m_matCount[Black].bishop + m_matCount[Black].rook
-						+ m_matCount[White].knight + ::mul2(m_matCount[White].queen)
-						+ m_matCount[Black].knight + ::mul2(m_matCount[Black].queen);
+		int total	= m_material[White].bishop + m_material[White].rook
+						+ m_material[Black].bishop + m_material[Black].rook
+						+ m_material[White].knight + ::mul2(m_material[White].queen)
+						+ m_material[Black].knight + ::mul2(m_material[Black].queen);
 		int cutoff	= ::LazyEvalCutoff + ::mul4(total);
 
 		if ((lscore - cutoff) >= beta || alpha >= (lscore + cutoff))
@@ -521,18 +486,6 @@ db::Guess::doScorePieces(Score score, int alpha, int beta) const
 int
 db::Guess::evaluate(int alpha, int beta)
 {
-	// Initialize.
-	m_totalPieces[White]	= total(m_matCount[White]);
-	m_totalPieces[Black]	= total(m_matCount[Black]);
-	m_dangerous[White]	= 	(m_matCount[White].queen && m_totalPieces[White] > 13)
-								|| (m_matCount[White].rook > 1 && m_totalPieces[White] > 15);
-	m_dangerous[Black]	= 	(m_matCount[Black].queen && m_totalPieces[Black] > 13)
-								|| (m_matCount[Black].rook > 1 && m_totalPieces[Black] > 15);
-	m_majors					= major(m_matCount[White]) - major(m_matCount[Black]);
-	m_minors					= minor(m_matCount[White]) - minor(m_matCount[Black]);
-	m_tropism[White]		= 0;
-	m_tropism[Black]		= 0;
-
 	Score score = evaluateMaterial();
 
 	// Check for draws due to insufficient material and adjust the
@@ -553,7 +506,7 @@ db::Guess::evaluate(int alpha, int beta)
 	// draw although it can not collapse completely to the drawscore as
 	// it is possible to lose KRB vs KR if the KR side lets the king
 	// get trapped on the edge of the board.
-	if ((m_matCount[White].pawn | m_matCount[Black].pawn) == 0)
+	if ((m_material[White].pawn | m_material[Black].pawn) == 0)
 	{
 		if (m_totalPieces[White] > piece::value::Minor || m_totalPieces[Black] > piece::value::Minor)
 		{
@@ -682,12 +635,24 @@ db::Guess::evaluate(int alpha, int beta)
 db::Guess::Score
 db::Guess::evaluateMaterial()
 {
+	// Initialize.
+	m_totalPieces[White]	= total(m_material[White]);
+	m_totalPieces[Black]	= total(m_material[Black]);
+	m_dangerous[White]	= 	(m_material[White].queen && m_totalPieces[White] > 13)
+								|| (m_material[White].rook > 1 && m_totalPieces[White] > 15);
+	m_dangerous[Black]	= 	(m_material[Black].queen && m_totalPieces[Black] > 13)
+								|| (m_material[Black].rook > 1 && m_totalPieces[Black] > 15);
+	m_majors					= major(m_material[White]) - major(m_material[Black]);
+	m_minors					= minor(m_material[White]) - minor(m_material[Black]);
+	m_tropism[White]		= 0;
+	m_tropism[Black]		= 0;
+
 	// We start with the raw Material balance for the current position.
-	int material	= (int(m_matCount[White].queen ) - int(m_matCount[Black].queen ))*QueenValue
-						+ (int(m_matCount[White].rook  ) - int(m_matCount[Black].rook  ))*RookValue
-						+ (int(m_matCount[White].bishop) - int(m_matCount[Black].bishop))*BishopValue
-						+ (int(m_matCount[White].knight) - int(m_matCount[Black].knight))*KnightValue
-						+ (int(m_matCount[White].pawn  ) - int(m_matCount[Black].pawn  ))*PawnValue;
+	int material	= (int(m_material[White].queen ) - int(m_material[Black].queen ))*QueenValue
+						+ (int(m_material[White].rook  ) - int(m_material[Black].rook  ))*RookValue
+						+ (int(m_material[White].bishop) - int(m_material[Black].bishop))*BishopValue
+						+ (int(m_material[White].knight) - int(m_material[Black].knight))*KnightValue
+						+ (int(m_material[White].pawn  ) - int(m_material[Black].pawn  ))*PawnValue;
 
 	Score score = material + (whiteToMove() ? bonus::WhiteToMove : -bonus::WhiteToMove);
 
@@ -733,13 +698,13 @@ db::Guess::evaluateMaterialDynamic(color::ID side)
 	// computing each type of piece bonus based on this number.
 
 	int score	= 0;
-	int np		= m_matCount[White].pawn + m_matCount[Black].pawn;
+	int np		= m_material[White].pawn + m_material[Black].pawn;
 
-	if (m_matCount[side].knight)
+	if (m_material[side].knight)
 	{
 		score += ::mul2(np) - 16;
 
-		if (m_matCount[side].knight > 1)
+		if (m_material[side].knight > 1)
 			score -= 11;
 	}
 
@@ -747,14 +712,14 @@ db::Guess::evaluateMaterialDynamic(color::ID side)
 	if (hasBishopOnLite(side) && hasBishopOnDark(side))
 		score += bonus::BishopPair;
 
-	if (m_matCount[side].queen)
+	if (m_material[side].queen)
 	{
 		score +=	np
-				+  m_matCount[White].knight + m_matCount[White].bishop
-				+  m_matCount[Black].knight + m_matCount[Black].bishop;
+				+  m_material[White].knight + m_material[White].bishop
+				+  m_material[Black].knight + m_material[Black].bishop;
 	}
 
-	return score + m_matCount[side].rook*(32 - ::mul2(np));
+	return score + m_material[side].rook*(32 - ::mul2(np));
 }
 
 
@@ -786,9 +751,9 @@ db::Guess::evaluateWinningChances()
 	{
 		if (m_majors == -m_minors)
 		{
-			if (m_matCount[White].pawn == 0)
+			if (m_material[White].pawn == 0)
 				canWin = WinningChances(canWin & OnlyBlackCanWin);
-			if (m_matCount[Black].pawn == 0)
+			if (m_material[Black].pawn == 0)
 				canWin = WinningChances(canWin & OnlyWhiteCanWin);
 
 			if (canWin == NeitherSideCanWin)
@@ -821,7 +786,7 @@ db::Guess::evaluateWinningChances(color::ID side)
 	// side can not possibly win. We recognize an exception
 	// where the weaker side's king is trapped on the edge
 	// where it might be checkmated.
-	if (	m_matCount[side].pawn == 0
+	if (	m_material[side].pawn == 0
 		&& (	m_totalPieces[side] <= piece::value::Minor
 			|| (	m_totalPieces[side] - m_totalPieces[opponent] <= piece::value::Minor
 				&& (king(opponent) & NotEdge))))
@@ -838,18 +803,18 @@ db::Guess::evaluateWinningChances(color::ID side)
 	uint64_t pawns = this->pawns(side);
 
 #if 0	// XXX something is wrong!!
-	if (	m_matCount[side].pawn
+	if (	m_material[side].pawn
 		&& !(pawns & ::NotRookPawns)
 		&& m_totalPieces[side] <= piece::value::Minor
-		&& m_matCount[side].knight == 0
-		&& m_matCount[side].bishop
+		&& m_material[side].knight == 0
+		&& m_material[side].bishop
 				?		m_totalPieces[opponent]
 					&& !(FyleMask[hasBishopOnDark(side) == isWhite(side) ? FyleH : FyleA] & pawns)
 				: !(pawns & FyleMaskA) || !(pawns & FyleMaskH))
 	{
 		TRACE_2(	"%s %s\n",
 					printColor(side),
-					m_matCount[side].bishop ? "has wrong color bishop" : "has rook pawns");
+					m_material[side].bishop ? "has wrong color bishop" : "has rook pawns");
 
 		sq::ID	promote	= sq::make(pawns & FyleMaskA ? FyleA : FyleH, HomeRank[opponent]);
 		int		ekd		= sq::distance(kingSq(opponent), promote) - (sideToMove() != side);
@@ -870,24 +835,24 @@ db::Guess::evaluateWinningChances(color::ID side)
 	// If both sides have pawns, and we have made it through
 	// the previous tests, then this side has winning
 	// chances.
-	if (m_matCount[side].pawn)
+	if (m_material[side].pawn)
 		return true;
 
 	// If side has two bishops, and the other side has
 	// a single kinght, the two bishops win.
-	if (	m_matCount[side].pawn == 0
-		&& minor(m_matCount[side]) == 2
-		&& minor(m_matCount[opponent]) == 1
-		&& (m_matCount[side].knight > 0 || m_matCount[opponent].knight == 0))
+	if (	m_material[side].pawn == 0
+		&& minor(m_material[side]) == 2
+		&& minor(m_material[opponent]) == 1
+		&& (m_material[side].knight > 0 || m_material[opponent].knight == 0))
 	{
 		return false;
 	}
 
 	// If one side is two knights ahead and the opponent has
 	// no remaining material, it is a draw.
-	if (	m_matCount[side].pawn == 0
-		&& m_matCount[side].knight == 2
-		&& m_totalPieces[opponent] + m_matCount[opponent].pawn == 0)
+	if (	m_material[side].pawn == 0
+		&& m_material[side].knight == 2
+		&& m_totalPieces[opponent] + m_material[opponent].pawn == 0)
 	{
 		return false;
 	}
@@ -895,10 +860,10 @@ db::Guess::evaluateWinningChances(color::ID side)
 	// Check to see if this is a KRP vs KR or KQP vs KQ type
 	// ending. If so, and the losing king is in front of the
 	// passer, then this is a drawish ending.
-	if (	m_matCount[side].pawn == 1
-		&& m_matCount[opponent].pawn == 0
+	if (	m_material[side].pawn == 1
+		&& m_material[opponent].pawn == 0
 		&& m_majors == 0
-		&& m_matCount[side].rook + m_matCount[side].queen == 1)
+		&& m_material[side].rook + m_material[side].queen == 1)
 	{
 		sq::ID sq = sq::ID(lsb(pawns));	// this side has only one pawn
 
@@ -939,15 +904,15 @@ db::Guess::evaluateDraws(WinningChances canWin, int score)
 	// advancing.
 	if (	m_totalPieces[White] <= 8
 		&& m_totalPieces[Black] <= 8
-		&& m_matCount[White].bishop == 1
-		&& m_matCount[Black].bishop == 1
+		&& m_material[White].bishop == 1
+		&& m_material[Black].bishop == 1
 		&& hasBishopOnDark(White) != hasBishopOnDark(Black))
 	{
 		if (	m_totalPieces[White] == 3
 			&&	m_totalPieces[Black] == 3
-			&& (	(	m_matCount[White].pawn < 4
-					&& m_matCount[Black].pawn < 4)
-				|| mstl::abs(m_matCount[White].pawn - m_matCount[Black].pawn) < 2))
+			&& (	(	m_material[White].pawn < 4
+					&& m_material[Black].pawn < 4)
+				|| mstl::abs(m_material[White].pawn - m_material[Black].pawn) < 2))
 		{
 			score = score/2;
 		}
@@ -990,7 +955,7 @@ db::Guess::evaluateMate(color::ID side)
 	// no pieces or pawns, then use the special bishop_knight
 	// scoring board for the losing king to force it to the
 	// right corner for mate.
-	if (m_matCount[opponent].value == 0 && m_matCount[side].bishop == 1 && m_matCount[side].knight == 1)
+	if (m_material[opponent].value == 0 && m_material[side].bishop == 1 && m_material[side].knight == 1)
 	{
 		sq::ID square = kingSq(opponent);
 
@@ -1032,7 +997,7 @@ db::Guess::evaluateDevelopment(color::ID side)
 
 	// First, some "thematic" things, which includes don't
 	// block the c-pawn in queen-pawn openings.
-	if (m_idn == variant::StandardIdn)
+	if (m_idn == variant::Standard)
 	{
 		if (isWhite(side))
 		{
@@ -1062,7 +1027,7 @@ db::Guess::evaluateDevelopment(color::ID side)
 		}
 		else
 		{
-			int penalty = (m_matCount[side].queen ? 3 : 1)*development::LosingCastle;
+			int penalty = (m_material[side].queen ? 3 : 1)*development::LosingCastle;
 
 			if (m_castle & rights)
 				penalty = ::div2(penalty);
@@ -1125,17 +1090,6 @@ db::Guess::evaluateKings(color::ID side, Flip flip)
 
 	if (m_dangerous[opponent])
 	{
-		// Now, check for the "trojan horse" attack where the
-		// opponent offers a piece to open the h-file with a very
-		// difficult to refute attack.
-		if (m_trojanCheck && m_root.sideToMove() == side && ::fyle(m_ksq[side]) >= FyleE)
-		{
-			if (!(m_pawns & FyleMaskH) && m_matCount[opponent].rook && m_matCount[opponent].queen)
-				score.middleGame -= penalty::KingSafetyMateThreat;
-		}
-
-		TRACE_2("%s kings[trojan horse]            = %d\n", printColor(side), score.middleGame);
-
 		// Now do castle scoring, if the king has castled, the
 		// pawns in front are important. If not castled yet, the
 		// pawns on the kingside should be preserved for this.
@@ -1176,8 +1130,7 @@ db::Guess::evaluateKings(color::ID side, Flip flip)
 
 		m_tropism[opponent] = mstl::max(0, mstl::min(15, m_tropism[opponent]));
 		defects = mstl::min(15, defects);
-
-		score.middleGame -= safety::KingSafety[defects][m_tropism[opponent]];
+		score.middleGame -= m_kingSafetyFactor*safety::KingSafety[defects][m_tropism[opponent]];
 	}
 
 	TRACE("%s score[defects]                 = %d\n", printColor(side), defects);
@@ -1446,9 +1399,9 @@ db::Guess::evaluateRooks(color::ID side, Flip flip)
 		if (!(pawns(side) & FyleMask[fyle]))
 		{
 			if (!(pawns(opponent) & FyleMask[fyle]))
-				score += bonus::RookOpenFyle;
+				score += m_dangerFactor*bonus::RookOpenFyle;
 			else
-				score += bonus::RookHalfOpenFyle;
+				score += m_dangerFactor*bonus::RookHalfOpenFyle;
 		}
 
 		TRACE_2(	"%s rooks[(half) open fyle]        = %d, %d\n",
@@ -1627,9 +1580,9 @@ db::Guess::evaluateQueens(color::ID side, Flip flip)
 db::Guess::Score
 db::Guess::evaluatePawns(color::ID side)
 {
+	Score			score;
 	uint64_t		pawnMoves	= 0;
 	color::ID	opponent		= opposite(side);
-	Score			score			= 0;
 	int			dir			= isWhite(side) ? 8 : -8;
 	uint64_t 	myPawns		= pawns(side);
 	uint64_t 	enemyPawns	= pawns(opponent);
@@ -1821,7 +1774,7 @@ db::Guess::evaluatePawns(color::ID side)
 	pawnEval.defects[FyleD] = evaluateKingsFyle(side, FyleD);
 	pawnEval.defects[FyleE] = evaluateKingsFyle(side, FyleE);
 
-	if (m_idn != variant::StandardIdn)
+	if (m_idn != variant::Standard)
 	{
 		int fyle = ::fyle(m_ksq[side]);
 
@@ -1890,7 +1843,7 @@ db::Guess::evaluateKingsFyle(color::ID side, int whichFyle)
 
 	TRACE_2("%s pawn[safety]   fyle %c, defects = %d\n", printColor(side), printFyle(whichFyle), defects);
 
-	return defects;
+	return m_dangerFactor*defects;
 }
 
 
@@ -2080,8 +2033,8 @@ db::Guess::evaluatePassedPawnRaces()
 		// Check to see if side has one pawn and neither side
 		// has any pieces. If so, use the simple pawn evaluation
 		// logic.
-		if (	m_matCount[side].pawn
-			&& !m_matCount[opponent].pawn
+		if (	m_material[side].pawn
+			&& !m_material[opponent].pawn
 			&& m_totalPieces[White] + m_totalPieces[Black] == 0)
 		{
 			uint64_t	pawns		= myPawns;
@@ -2320,6 +2273,307 @@ db::Guess::evaluatePassedPawnRaces()
 	return 0;
 }
 
+
+void
+db::Guess::preEvaluate3check()
+{
+	// TODO: we want maximal aggressivity
+	m_dangerFactor = (m_checksGiven[m_stm] + 1)*2;
+	m_kingSafetyFactor = mstl::max(1, int(m_checksGiven[m_stm ^ 1])*2);
+}
+
+
+int
+db::Guess::evaluate3check(int alpha, int beta)
+{
+	static int Bonus[7] =
+		{ -2*Infinity, -10*PawnValue, -4*PawnValue, 0, 4*PawnValue, 10*PawnValue, 2*Infinity, };
+
+	Score score = evaluateMaterial();
+
+	score += Bonus[int(m_checksGiven[m_stm]) - int(m_checksGiven[m_stm ^ 1]) + 3];
+
+	if (m_pawnData->key != m_pawnHash)
+	{
+		PawnHashEntry* entry = m_pawnTable + (m_pawnHash & (PawnTableSize - 1));
+
+		if (entry->key != m_pawnHash)
+		{
+			// initialize pawn score structure
+			::memset(entry->eval, 0, sizeof(entry->eval));
+			entry->eval[White].openFyle = 0xff;	// assume all fyles are open
+			entry->eval[Black].openFyle = 0xff;	// dito
+			entry->key = m_pawnHash;
+			entry->score = 0;
+
+			// evaluatePawns() does all of the analysis for information
+			// specifically regarding only pawns. In many cases, it merely
+			// records the presence/absence of positional pawn feature
+			// because that feature also depends on pieces. Note that
+			// anything put into EvaluatePawns() can only consider the
+			// placement of pawns.
+			entry->score += evaluatePawns(White);
+			entry->score -= evaluatePawns(Black);
+		}
+
+		m_pawnData = entry;
+	}
+
+	score += m_pawnData->score;
+
+	TRACE_2("score[evaluate pawns]                = %d, %d\n", score.middleGame, score.endGame);
+
+	Eval const& eval = m_pawnData->eval;
+
+	// If there are any passed pawns, first call evaluatePassedPawns()
+	// to evaluate them. Then, if one side has a passed pawn and the
+	// other side has no pieces, call evaluatePassedPawnRaces() to see
+	// if the passed pawn can be stopped from promoting.
+	if (eval[Black].passedPawn || eval[White].passedPawn)
+	{
+		if (eval[White].passedPawn)
+			score += evaluatePassedPawns(White, ::wflip);
+
+		if (eval[Black].passedPawn)
+			score -= evaluatePassedPawns(Black, ::bflip);
+
+		if (	(m_totalPieces[White] == 0 && eval[Black].passedPawn)
+			|| (m_totalPieces[Black] == 0 && eval[White].passedPawn))
+		{
+			score += evaluatePassedPawnRaces();
+		}
+
+		TRACE_2("score[passed pawns]                  = %d, %d\n", score.middleGame, score.endGame);
+	}
+
+	// Add bonus (penalties) for pawn storms.
+	if (fyle(m_ksq[White]) <= FyleC && fyle(m_ksq[Black] >= FyleF))
+		score.middleGame += eval[White].longVsShortScore - eval[Black].shortVsLongScore;
+	else if (fyle(m_ksq[Black]) <= FyleC && fyle(m_ksq[White] >= FyleF))
+		score.middleGame += eval[White].shortVsLongScore - eval[Black].longVsShortScore;
+
+	TRACE_2("score[pawn storm]                    = %d, %d\n", score.middleGame, score.endGame);
+	TRACE_1("score[pawns]                         = %d, %d\n", score.middleGame, score.endGame);
+
+	// Call EvaluateDevelopment() to evaluate development. Note that
+	// we only do this when either side has not castled at the root.
+	if (m_root.canCastle(White))
+		score.middleGame += evaluateDevelopment(White);
+	if (m_root.canCastle(Black))
+		score.middleGame -= evaluateDevelopment(Black);
+
+	TRACE("score[development]                   = %d, %d\n", score.middleGame, score.endGame);
+
+	// Now evaluate pieces.
+	if (doScorePieces(score, alpha, beta))
+	{
+		score += evaluateKnights(White, ::wflip);
+		score -= evaluateKnights(Black, ::bflip);
+
+		score += evaluateBishops(White, ::wflip);
+		score -= evaluateBishops(Black, ::bflip);
+
+		score += evaluateRooks(White, ::wflip);
+		score -= evaluateRooks(Black, ::bflip);
+
+		score += evaluateQueens(White, ::wflip);
+		score -= evaluateQueens(Black, ::bflip);
+
+		score += evaluateKings(White, ::wflip);
+		score -= evaluateKings(Black, ::bflip);
+	}
+
+	TRACE("score[pieces]                        = %d, %d\n", score.middleGame, score.endGame);
+
+	return score.weightedScore(m_totalPieces[White], m_totalPieces[Black]);
+}
+
+
+void
+db::Guess::preEvaluateZH()
+{
+	m_dangerFactor = 3;
+	m_kingSafetyFactor = 2;
+}
+
+
+int
+db::Guess::evaluateZH(int alpha, int beta)
+{
+	Score score = evaluateMaterialZH();
+
+	if (m_pawnData->key != m_pawnHash)
+	{
+		PawnHashEntry* entry = m_pawnTable + (m_pawnHash & (PawnTableSize - 1));
+
+		if (entry->key != m_pawnHash)
+		{
+			// initialize pawn score structure
+			::memset(entry->eval, 0, sizeof(entry->eval));
+			entry->eval[White].openFyle = 0xff;	// assume all fyles are open
+			entry->eval[Black].openFyle = 0xff;	// dito
+			entry->key = m_pawnHash;
+			entry->score = 0;
+
+			// evaluatePawns() does all of the analysis for information
+			// specifically regarding only pawns. In many cases, it merely
+			// records the presence/absence of positional pawn feature
+			// because that feature also depends on pieces. Note that
+			// anything put into EvaluatePawns() can only consider the
+			// placement of pawns.
+			entry->score += evaluatePawns(White);
+			entry->score -= evaluatePawns(Black);
+		}
+
+		m_pawnData = entry;
+	}
+
+	score += m_pawnData->score;
+
+	TRACE_2("score[evaluate pawns]                = %d, %d\n", score.middleGame, score.endGame);
+
+	Eval const& eval = m_pawnData->eval;
+
+	// If there are any passed pawns, first call evaluatePassedPawns()
+	// to evaluate them. Then, if one side has a passed pawn and the
+	// other side has no pieces, call evaluatePassedPawnRaces() to see
+	// if the passed pawn can be stopped from promoting.
+	if (eval[Black].passedPawn || eval[White].passedPawn)
+	{
+		if (eval[White].passedPawn)
+			score += evaluatePassedPawns(White, ::wflip);
+
+		if (eval[Black].passedPawn)
+			score -= evaluatePassedPawns(Black, ::bflip);
+
+		if (	(m_totalPieces[White] == 0 && eval[Black].passedPawn)
+			|| (m_totalPieces[Black] == 0 && eval[White].passedPawn))
+		{
+			score += evaluatePassedPawnRaces();
+		}
+
+		TRACE_2("score[passed pawns]                  = %d, %d\n", score.middleGame, score.endGame);
+	}
+
+	// Add bonus (penalties) for pawn storms.
+	if (fyle(m_ksq[White]) <= FyleC && fyle(m_ksq[Black] >= FyleF))
+		score.middleGame += eval[White].longVsShortScore - eval[Black].shortVsLongScore;
+	else if (fyle(m_ksq[Black]) <= FyleC && fyle(m_ksq[White] >= FyleF))
+		score.middleGame += eval[White].shortVsLongScore - eval[Black].longVsShortScore;
+
+	TRACE_2("score[pawn storm]                    = %d, %d\n", score.middleGame, score.endGame);
+	TRACE_1("score[pawns]                         = %d, %d\n", score.middleGame, score.endGame);
+
+	// Now evaluate pieces.
+	if (doScorePiecesZH(score, alpha, beta))
+	{
+		score += evaluateKnights(White, ::wflip);
+		score -= evaluateKnights(Black, ::bflip);
+
+		score += evaluateBishops(White, ::wflip);
+		score -= evaluateBishops(Black, ::bflip);
+
+		score += evaluateRooks(White, ::wflip);
+		score -= evaluateRooks(Black, ::bflip);
+
+		score += evaluateQueens(White, ::wflip);
+		score -= evaluateQueens(Black, ::bflip);
+
+		score += evaluateKings(White, ::wflip);
+		score -= evaluateKings(Black, ::bflip);
+	}
+
+	TRACE("score[pieces]                        = %d, %d\n", score.middleGame, score.endGame);
+
+	return score.weightedScore(m_totalPieces[White], m_totalPieces[Black]);
+}
+
+
+db::Guess::Score
+db::Guess::evaluateMaterialZH()
+{
+	Material totalCount[2];
+
+	totalCount[White].queen  = m_material[White].queen  + m_holding[White].queen;
+	totalCount[White].rook   = m_material[White].rook   + m_holding[White].rook;
+	totalCount[White].bishop = m_material[White].bishop + m_holding[White].bishop;
+	totalCount[White].knight = m_material[White].knight + m_holding[White].knight;
+	totalCount[White].pawn   = m_material[White].pawn   + m_holding[White].pawn;
+
+	totalCount[Black].queen  = m_material[Black].queen  + m_holding[Black].queen;
+	totalCount[Black].rook   = m_material[Black].rook   + m_holding[Black].rook;
+	totalCount[Black].bishop = m_material[Black].bishop + m_holding[Black].bishop;
+	totalCount[Black].knight = m_material[Black].knight + m_holding[Black].knight;
+	totalCount[Black].pawn   = m_material[Black].pawn   + m_holding[Black].pawn;
+
+	// Initialize.
+	m_totalPieces[White]	= total(totalCount[White]);
+	m_totalPieces[Black]	= total(totalCount[Black]);
+	m_dangerous[White]	= 	(totalCount[White].queen && m_totalPieces[White] > 13)
+								|| (totalCount[White].rook > 1 && m_totalPieces[White] > 15);
+	m_dangerous[Black]	= 	(totalCount[Black].queen && m_totalPieces[Black] > 13)
+								|| (totalCount[Black].rook > 1 && m_totalPieces[Black] > 15);
+	m_majors					= major(totalCount[White]) - major(totalCount[Black]);
+	m_minors					= minor(totalCount[White]) - minor(totalCount[Black]);
+	m_tropism[White]		= 0;
+	m_tropism[Black]		= 0;
+
+	// We start with the raw Material balance for the current position.
+	int material	=
+			(int(m_material   [White].queen ) - int(m_material   [Black].queen ))*QueenValueZH
+		 + (int(m_material   [White].rook  ) - int(m_material   [Black].rook  ))*RookValueZH
+		 + (int(m_material   [White].bishop) - int(m_material   [Black].bishop))*BishopValueZH
+		 + (int(m_material   [White].knight) - int(m_material   [Black].knight))*KnightValueZH
+		 + (int(m_material   [White].pawn  ) - int(m_material   [Black].pawn  ))*PawnValueZH
+		 + (int(m_holding[White].queen ) - int(m_holding[Black].queen ))*QueenValueInHand
+		 + (int(m_holding[White].rook  ) - int(m_holding[Black].rook  ))*RookValueInHand
+		 + (int(m_holding[White].bishop) - int(m_holding[Black].bishop))*BishopValueInHand
+		 + (int(m_holding[White].knight) - int(m_holding[Black].knight))*KnightValueInHand
+		 + (int(m_holding[White].pawn  ) - int(m_holding[Black].pawn  ))*PawnValueInHand;
+
+	Score score = material + (whiteToMove() ? bonus::WhiteToMove : -bonus::WhiteToMove);
+
+	TRACE("score[material]                      = %d, %d\n", score.middleGame, score.endGame);
+
+	// Test 1.  If majors or minors are not balanced, then if one side
+	// is only an exchange up or down, we do not give any sort of bad
+	// trade penalty/bonus.
+	//
+	// Test 2.  If majors or minors are not balanced, then if one side
+	// has more piece material points than the other (using normal
+	// piece values of 3, 3, 5, 9 for N, B, R and Q) then the side that
+	// is behind in piece material gets a penalty.
+
+	int majors = mstl::min(4, mstl::max(-4, m_majors));
+	int minors = mstl::min(4, mstl::max(-4, m_minors));
+
+	score += penalty::Imbalance[majors + 4][minors + 4];
+
+	TRACE("score[imbalance]                     = %d, %d\n", score.middleGame, score.endGame);
+
+	return score;
+}
+
+
+bool
+db::Guess::doScorePiecesZH(Score score, int alpha, int beta) const
+{
+	if (::LazyEvalCutoff)
+	{
+		int pscore	= score.weightedScore(m_totalPieces[White], m_totalPieces[Black]);
+		int lscore	= whiteToMove() ? pscore : -pscore;
+		int total	= m_material[White].bishop + m_material[White].rook
+						+ m_material[Black].bishop + m_material[Black].rook
+						+ m_material[White].knight + ::mul2(m_material[White].queen)
+						+ m_material[Black].knight + ::mul2(m_material[Black].queen);
+		int cutoff	= ::LazyEvalCutoff + ::mul4(total);
+
+		if ((lscore - cutoff) >= beta || alpha >= (lscore + cutoff))
+			return false;
+	}
+
+	return true;
+}
 
 #if 0
 

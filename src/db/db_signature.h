@@ -34,6 +34,7 @@ namespace db {
 class GameInfo;
 
 namespace sci { namespace v91  { class Codec; } }
+namespace sci { namespace v92  { class Codec; } }
 namespace sci { class Codec; }
 namespace si3 { class Codec; }
 namespace cbh { class Codec; }
@@ -55,6 +56,7 @@ public:
 	hp::Pawns homePawnsData() const;
 
 	/// Returns whether current signature can reach final signature \target.
+	bool isReachableFinal(Signature const& target) const;
 	bool isReachableFinal(Signature const& target, uint16_t currentHpSig) const;
 	bool isReachableFinalPosition(Signature const& target, uint16_t currentHpSig) const;
 	bool isReachableFinalMaterial(Signature const& target) const;
@@ -69,6 +71,7 @@ public:
 
 	void debug(unsigned spaces = 0) const;
 
+	static bool isReachable(Signature const& current, Signature const& target);
 	static bool isReachable(Signature const& current, Signature const& target, uint16_t currentHpSig);
 	static bool isReachablePosition(	Signature const& current,
 												Signature const& target,
@@ -79,6 +82,7 @@ public:
 	static void initialize();
 
 	friend class sci::v91::Codec;
+	friend class sci::v92::Codec;
 	friend class sci::Codec;
 	friend class si3::Codec;
 	friend class cbh::Codec;
@@ -87,17 +91,23 @@ protected:
 
 	friend class GameInfo;
 
-	typedef material::Signature	Material;
+	typedef material::Signature	MatSig;
 	typedef pawns::Progress			Progress;
 
 	hp::Pawns	m_homePawns;	// home pawns
-	Material		m_material;		// material signature
+	MatSig		m_matSig;		// material signature
 	Progress		m_progress;		// pawn progress per side for each fyle
 
-	uint16_t m_promotions		:4;
-	uint16_t m_underPromotions	:4;
-	uint16_t m_castling			:4;
-	uint16_t m_hpCount			:4;
+	// TODO:
+	// we need (at least) 2 bits for number of checks given (for three-check only)
+	// probably we should (mis)use m_underPromotions for this purpose:
+	//		- 0011 for under-promotions
+	//		- 1100 for checks given
+
+	uint16_t m_promotions		:4;	// count promotions
+	uint16_t m_underPromotions	:4;	// count under-promotions
+	uint16_t m_castling			:4;	// castling flags / count kings on board (Antichess)
+	uint16_t m_hpCount			:4;	// length of home pawns (in nybbles)
 }
 __attribute__((packed));
 

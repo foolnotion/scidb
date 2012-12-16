@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "app_cursor.h"
+#include "app_multi_cursor.h"
 #include "app_application.h"
 #include "app_view.h"
 
@@ -44,18 +45,18 @@ using namespace app;
 Cursor::Subscriber::~Subscriber() throw() {}
 
 
-Cursor::Cursor(Application& app, Database* database)
-	:m_app(app)
+Cursor::Cursor(MultiCursor& cursor, Database* database)
+	:m_cursor(cursor)
 	,m_db(database)
 	,m_treeView(-1)
 	,m_isRefBase(false)
-	,m_isScratchBase(false)
 	,m_isActive(false)
 {
 	M_REQUIRE(database);
 
-	m_viewList.push_back(new View(app, *database));	// base view
-	m_viewList.push_back(new View(app, *database));	// view 0
+	m_viewList.push_back(new View(m_cursor.app(), *database));	// base view
+	m_viewList.push_back(new View(m_cursor.app(), *database));	// view 0
+	m_freeSet.resize(1);
 }
 
 
@@ -64,6 +65,10 @@ Cursor::~Cursor()
 	clear();
 	delete *m_viewList.begin();
 }
+
+
+db::format::Type Cursor::format() const	{ return m_db->format(); }
+db::variant::Type Cursor::variant() const	{ return m_db->variant(); }
 
 
 void
@@ -75,6 +80,10 @@ Cursor::clear() throw()
 	m_viewList.resize(1);
 	m_treeView = -1;
 }
+
+
+bool Cursor::isScratchbase() const	{ return m_cursor.isScratchbase(); }
+bool Cursor::isClipbase() const		{ return m_cursor.isClipbase(); }
 
 
 bool
@@ -106,7 +115,7 @@ bool
 Cursor::isViewOpen(unsigned view) const
 {
 	M_REQUIRE(isValidView(view));
-	return view == BaseView ? true : m_viewList[view + 1] != 0;
+	return view == BaseView || (view + 1 < m_viewList.size() && m_viewList[view + 1] != 0);
 }
 
 
@@ -120,7 +129,7 @@ Cursor::newView(	View::UpdateMode gameUpdateMode,
 	M_REQUIRE(isOpen());
 
 	unsigned	viewId;
-	View*		view = new View(	m_app,
+	View*		view = new View(	m_cursor.app(),
 										*m_db,
 										gameUpdateMode,
 										playerUpdateMode,
@@ -128,15 +137,16 @@ Cursor::newView(	View::UpdateMode gameUpdateMode,
 										siteUpdateMode,
 										annotatorUpdateMode);
 
-	if (m_freeSet.empty())
+	if (m_freeSet.none())
 	{
 		viewId = m_viewList.size() - 1;
 		m_viewList.push_back(view);
+		m_freeSet.resize(m_viewList.size());
 	}
 	else
 	{
-		viewId = *m_freeSet.begin();
-		m_freeSet.erase(m_freeSet.begin());
+		viewId = m_freeSet.find_first();
+		m_freeSet.reset(viewId);
 		m_viewList[viewId + 1] = view;
 	}
 
@@ -155,21 +165,21 @@ Cursor::newTreeView()
 
 
 void
-Cursor::closeView(unsigned view)
+Cursor::closeView(unsigned view, bool informUser)
 {
 	M_REQUIRE(view != BaseView);
 	M_REQUIRE(isValidView(view));
 
 	if (view != 0 && m_viewList[view + 1])
 	{
-		m_freeSet.push_back(view);
+		m_freeSet.set(view);
 		delete m_viewList[view + 1];
 		m_viewList[view + 1] = 0;
 
 		if (m_treeView == int(view))
 			m_treeView = -1;
 
-		if (m_subscriber)
+		if (informUser && m_subscriber)
 			m_subscriber->close(view);
 	}
 }
@@ -310,15 +320,38 @@ Cursor::database()
 
 
 void
+Cursor::closeAllViews()
+{
+	if (m_db == 0)
+		return;
+
+	for (unsigned i = 1; i < m_viewList.size(); ++i)
+	{
+		unsigned view = i - 1;
+
+		if (m_viewList[view + 1])
+		{
+			m_freeSet.set(view);
+			delete m_viewList[view + 1];
+			m_viewList[view + 1] = 0;
+
+			if (m_treeView == int(view))
+				m_treeView = -1;
+
+			if (m_subscriber)
+				m_subscriber->close(view);
+		}
+	}
+}
+
+
+void
 Cursor::close()
 {
 	if (m_db)
 	{
-		for (unsigned i = 1; i < m_viewList.size(); ++i)
-			closeView(i - 1);
-
+		closeAllViews();
 		m_db->close();
-		delete m_db;
 		m_db = 0;
 		clear();
 		m_freeSet.clear();
@@ -334,14 +367,14 @@ Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 	M_REQUIRE(index < countGames());
 
 	// TODO: handle return code!
-	m_app.updateCharacteristics(*this, index, tags);
+	m_cursor.app().updateCharacteristics(*this, index, tags);
 }
 
 
 void
 Cursor::updateViews()
 {
-	if (!m_isScratchBase)
+	if (!isScratchbase())
 	{
 		for (unsigned i = 0; i < m_viewList.size(); ++i)
 		{
@@ -369,14 +402,14 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 		updateViews();
 
 	if (m_isRefBase)
-		m_app.startUpdateTree(*this);	
+		m_cursor.app().startUpdateTree(*this);
 
 	return res;
 }
 
 
 unsigned
-Cursor::importGames(db::Database& src, Log& log, util::Progress& progress)
+Cursor::importGames(db::Database const& src, Log& log, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
@@ -390,7 +423,7 @@ Cursor::importGames(db::Database& src, Log& log, util::Progress& progress)
 		updateViews();
 
 	if (m_isRefBase)
-		m_app.startUpdateTree(*this);	
+		m_cursor.app().startUpdateTree(*this);
 
 	return res;
 }

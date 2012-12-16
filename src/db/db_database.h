@@ -69,18 +69,19 @@ public:
 	typedef format::Type Format;
 	typedef Consumer::TagBits TagBits;
 
-	enum Storage	{ MemoryOnly, OnDisk, Temporary };
-	enum Mode		{ ReadOnly, ReadWrite };
-	enum Access		{ GameIndex, MyIndex };
+	enum Access { GameIndex, MyIndex };
 
 	Database(Database const& db, mstl::string const& name);
 	Database(mstl::string const& name,
-				mstl::string const& encoding,
-				Storage storage = MemoryOnly,
-				Type type = type::Unspecific);
+				mstl::string const& encoding);
 	Database(mstl::string const& name,
 				mstl::string const& encoding,
-				Mode mode,
+				storage::Type storage,
+				Type type = type::Unspecific,
+				variant::Type variant = variant::Undetermined);
+	Database(mstl::string const& name,
+				mstl::string const& encoding,
+				permission::Mode mode,
 				util::Progress& progress);
 	Database(mstl::string const& name, Producer& producer, util::Progress& progress);
 	~Database() throw();
@@ -88,6 +89,8 @@ public:
 	/// Cast
 	DatabaseContent const& content() const;
 
+	/// Returns whether current database is empty.
+	bool isEmpty() const;
 	/// Returns whether the database is set read-only or not.
 	bool isReadOnly() const;
 	/// Returns whether the database is potentially writeable or not.
@@ -131,6 +134,8 @@ public:
 	mstl::string const& description() const;
 	/// Returns the type of database
 	Type type() const;
+	/// Return the variant of this database (may be undetermined if database is empty)
+	variant::Type variant() const;
 	/// Returns the (decoding) format of database
 	Format format() const;
 	/// Returns the encoding of database
@@ -193,9 +198,9 @@ public:
 	/// Set the game flags of the specified game.
 	void setGameFlags(unsigned index, unsigned flags);
 	/// Export one game at the given position.
-	save::State exportGame(unsigned index, Consumer& consumer);
+	save::State exportGame(unsigned index, Consumer& consumer) const;
 	/// Export one game at the given position.
-	save::State exportGame(unsigned index, Database& destination);
+	save::State exportGame(unsigned index, Database& destination) const;
 	/// Export games into an open database.
 	// The destination may be either a producer or a database.
 	template <class Destination>
@@ -204,7 +209,7 @@ public:
 								Selector const& gameSelector,
 								copy::Mode copyMode,
 								Log& log,
-								util::Progress& progress);
+								util::Progress& progress) const;
 	// Copy games from this database to the destination database.
 	unsigned copyGames(	Database& destination,
 								Filter const& gameFilter,
@@ -212,7 +217,7 @@ public:
 								TagBits const& allowedTags,
 								bool allowExtraTags,
 								Log& log,
-								util::Progress& progress);
+								util::Progress& progress) const;
 	/// Add new game to database.
 	save::State addGame(Game& game);
 	/// Replace game in database.
@@ -233,7 +238,7 @@ public:
 	/// Attach database to a file.
 	void attach(mstl::string const& filename, util::Progress& progress);
 	/// Update database files.
-	void save(util::Progress& progress, unsigned start = 0);
+	void save(util::Progress& progress);
 	/// Write complete index of database to stream.
 	void writeIndex(mstl::ostream& os, util::Progress& progress);
 	/// Write complete namebases of database to stream.
@@ -263,6 +268,8 @@ public:
 	void setupTags(unsigned index, TagSet& tags) const;
 	/// Set database type.
 	void setType(Type type);
+	/// Set variant of database games.
+	void setVariant(variant::Type variant);
 	/// Set description of database.
 	void setDescription(mstl::string const& description);
 	/// Set/unset read-only flag.
@@ -276,7 +283,9 @@ public:
 	/// Import whole database.
 	unsigned importGames(Producer& producer, util::Progress& progress);
 	/// Import whole database.
-	unsigned importGames(Database& src, Log& log, util::Progress& progress);
+	unsigned importGames(Database const& src, Log& log, util::Progress& progress);
+	/// Called from MultiBase after game import.
+	void finishImport(unsigned oldSize, bool encodingFailed);
 
 	Namebases& namebases();
 	using DatabaseContent::namebase;
@@ -288,7 +297,7 @@ private:
 	/// Read the given gzipped PGN file
 	bool open(mstl::string const& name, mstl::fstream& stream);
 
-	void setEncodingFailed(bool flag);
+	void setEncodingFailed(bool flag) const;
 	load::State loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::string const* fen);
 
 	NamebaseEntry const* insertPlayer(mstl::string const& name);
@@ -303,8 +312,8 @@ private:
 	unsigned			m_size;
 	uint64_t			m_lastChange;
 	TreeCache		m_treeCache;
-	bool				m_encodingFailed;
-	bool				m_encodingOk;
+	mutable bool	m_encodingFailed;
+	mutable bool	m_encodingOk;
 	bool				m_usingAsyncReader;
 };
 

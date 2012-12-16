@@ -47,14 +47,14 @@ array set Priv {
 }
 
 
-proc open {parent base info view index {fen {}}} {
+proc open {parent base variant info view index {fen {}}} {
 	variable Priv
 
 	set number [::gametable::column $info number]
 	set name [file rootname [file tail $base]]
 
-	if {[info exists Priv($base:$number:$view)]} {
-		set dlg [lindex $Priv($base:$number:$view) 0]
+	if {[info exists Priv($base:$variant:$number:$view)]} {
+		set dlg [lindex $Priv($base:$variant:$number:$view) 0]
 		if {[winfo exists $dlg]} { ;# prevent raise conditions
 			::widget::dialogRaise $dlg
 			return
@@ -63,7 +63,7 @@ proc open {parent base info view index {fen {}}} {
 
 	set position [incr Priv(count)]
 	set dlg $parent.overview$position
-	lappend Priv($base:$number:$view) $dlg
+	lappend Priv($base:$variant:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
 	::widget::dialogButtons $dlg {close previous next help} -default close
@@ -82,7 +82,7 @@ proc open {parent base info view index {fen {}}} {
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
-	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base]]
+	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base $variant]]
 	bind $dlg <F1> [list ::help::open .application Game-Overview -parent $dlg ]
 
 	namespace eval $nb {}
@@ -91,9 +91,9 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(index) $index
 	set Vars(number) $number
 	set Vars(base) $base
+	set Vars(variant) $variant
 	set Vars(name) $name
 	set Vars(view) $view
-	set Vars(tabs) {}
 	set Vars(after) {}
 	set Vars(flip) $Priv(flip)
 	set Vars(fen) $fen
@@ -102,14 +102,13 @@ proc open {parent base info view index {fen {}}} {
 	set Vars(after) {}
 	set Vars(moves) ""
 
-	set idn [::gametable::column $info idn]
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
 	$nb select $Priv(tab)
 	pack $nb
 
 	bind $nb <Destroy> [namespace code [list Destroy $nb]]
-	$dlg.previous configure -command [namespace code [list NextGame $nb $base -1]]
-	$dlg.next configure -command [namespace code [list NextGame $nb $base +1]]
+	$dlg.previous configure -command [namespace code [list NextGame $nb $base $variant -1]]
+	$dlg.next configure -command [namespace code [list NextGame $nb $base $variant +1]]
 
 	SetAccelerator $nb
 
@@ -120,11 +119,13 @@ proc open {parent base info view index {fen {}}} {
 	wm deiconify $dlg
 	focus $nb
 
-	NextGame $nb $base
+	NextGame $nb $base $variant
 
 	set Vars(subscribe:list) [list [namespace current]::Update [namespace current]::Close $nb]
+	set Vars(subscribe:close) [list [namespace current]::Close2 $base [list $nb $variant]]
 	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
-	if {$view == [::scidb::tree::view $base]} {
+	::scidb::view::subscribe {*}$Vars(subscribe:close)
+	if {$variant == [::scidb::app::variant] && $view == [::scidb::tree::view $base]} {
 		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $nb]
 		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
 	}
@@ -133,24 +134,24 @@ proc open {parent base info view index {fen {}}} {
 }
 
 
-proc closeAll {base} {
+proc closeAll {base variant} {
 	variable Priv
 
-	foreach key [array names Priv $base:*] {
+	foreach key [array names Priv $base:$variant:*] {
 		foreach dlg $Priv($key) { destroy $dlg }
 	}
 }
 
 
-proc load {parent base info view index windowId} {
+proc load {parent base variant info view index windowId} {
 	if {[llength $windowId] == 0} { set windowId _ }
 
 	if {![namespace exists [namespace current]::${windowId}]} {
-		return [open $parent $base $info $view $index]
+		return [open $parent $base $variant $info $view $index]
 	}
 
 	variable ${windowId}::Vars
-	NextGame $windowId $base {} [expr {$index - $Vars(index)}]
+	NextGame $windowId $base $variant {} [expr {$index - $Vars(index)}]
 	return $windowId
 }
 
@@ -166,21 +167,23 @@ proc ConfigureButtons {nb} {
 	} else {
 		if {$Vars(index) == 0} { set state disabled } else { set state normal }
 		$dlg.previous configure -state $state
-		set count [scidb::view::count games $Vars(base) $Vars(view)]
+		set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
 		if {$Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$dlg.next configure -state $state
 	}
 }
 
 
-proc Update {nb id base {view -1} {index -1}} {
+proc Update {nb id base variant {view -1} {index -1}} {
 	variable ${nb}::Vars
 
-	if {$Vars(base) eq $base && ($Vars(view) == $view || $Vars(view) == 0)} {
+	if {	$Vars(base) eq $base
+		&& $variant eq $Vars(variant)
+		&& ($Vars(view) == $view || $Vars(view) == 0)} {
 		if {$Vars(closed)} {
 			set index $Vars(index:last)
-			if {[::scidb::view::count games $base $Vars(view)] <= $index} { return }
-			set info [::scidb::db::get gameInfo $index $Vars(view) $base]
+			if {[::scidb::view::count games $base $variant $Vars(view)] <= $index} { return }
+			set info [::scidb::db::get gameInfo $index $Vars(view) $base $variant]
 			if {$info ne $Vars(info)} { return }
 			set Vars(index) $index
 			set Vars(closed) false
@@ -195,16 +198,16 @@ proc Update {nb id base {view -1} {index -1}} {
 proc Update2 {nb} {
 	variable ${nb}::Vars
 
-	set Vars(index) [::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base)]
-	set Vars(fen) [::scidb::game::fen]
+	set Vars(index) \
+		[::scidb::db::get gameIndex [expr {$Vars(number) - 1}] $Vars(view) $Vars(base) $Vars(variant)]
 	ConfigureButtons $nb
 }
 
 
-proc Close {nb base {view {}}} {
+proc Close {nb base variant {view {}}} {
 	variable ${nb}::Vars
 
-	if {!$Vars(closed) && ([llength $view] == 0 || $view == $Vars(view))} {
+	if {!$Vars(closed) && $variant eq $Vars(variant) && ([llength $view] == 0 || $view == $Vars(view))} {
 		set Vars(index:last) $Vars(index)
 		set Vars(index) -1
 		set Vars(closed) 1
@@ -214,38 +217,44 @@ proc Close {nb base {view {}}} {
 }
 
 
-proc UpdateTreeBase {nb base} {
+proc Close2 {args base view} {
+	lassign $args bn variant
+	Close $bn $base $variant $view
+}
+
+
+proc UpdateTreeBase {nb base variant} {
 	variable ${nb}::Vars
 
-	if {$base ne $Vars(base)} {
-		Close $nb $base
+	if {$base ne $Vars(base) || $variant ne $Vars(variant)} {
+		Close $nb $base $variant
 	}
 }
 
 
-proc GotoFirstGame {nb base} {
+proc GotoFirstGame {nb base variant} {
 	variable ${nb}::Vars
 
 	if {$Vars(index) > 0} {
 		set Vars(index) 0
-		NextGame $nb $base
+		NextGame $nb $base $variant
 	}
 }
 
 
-proc GotoLastGame {nb base} {
+proc GotoLastGame {nb base variant} {
 	variable ${nb}::Vars
 
-	set index [expr {[scidb::view::count games $Vars(base) $Vars(view)] - 1}]
+	set index [expr {[scidb::view::count games $base $variant $Vars(view)] - 1}]
 
 	if {$Vars(index) < $index} {
 		set Vars(index) $index
-		NextGame $nb $base
+		NextGame $nb $base $variant
 	}
 }
 
 
-proc NextGame {nb base {step 0}} {
+proc NextGame {nb base variant {step 0}} {
 	variable ${nb}::Vars
 	variable Priv
 
@@ -253,66 +262,40 @@ proc NextGame {nb base {step 0}} {
 	set number $Vars(number)
 	incr Vars(index) $step
 	ConfigureButtons $nb
-	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base)]
+
+	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base) $Vars(variant)]
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set dlg [winfo toplevel $nb]
-	set key $Vars(base):$number:$Vars(view)
+	set key $Vars(base):$Vars(variant):$number:$Vars(view)
 	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
-	set key $Vars(base):$Vars(number):$Vars(view)
+	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
 	lappend Priv($key) $dlg
-	set idn [::gametable::column $Vars(info) idn]
-	SetTitle $nb
-	set failed 0
 
-	foreach {boardSize nrows ncols} $Vars(tabs) {
+	SetTitle $nb
+	array unset Vars(result:*)
+	array set Vars { fill:0 1 fill:1 1 fill:2 1 fill:3 1 }
+	set failed 0
+	set index 0
+
+	foreach {boardSize nrows ncols} $Priv(tabs) {
 		if {$failed} { continue }
 		set num [expr {$ncols*$nrows}]
 		set result [::widget::busyOperation \
-			{ ::scidb::game::dump $base $Vars(view) $Vars(index) $Vars(fen) $num }]
+			{ ::scidb::game::dump $base $variant $Vars(view) $Vars(index) $Vars(fen) $num }]
 		set failed 1
 		switch [lindex $result 0] {
 			 1 { set failed 0 }
 			-1 { after idle [list ::dialog::info  -parent $nb -message $::game::mc::GameDecodingFailed] }
 			-2 { after idle [list ::dialog::error -parent $nb -message $::game::mc::GameDataCorrupted] }
 		}
-		set result [lreplace $result 0 0]
-		set length [expr {[llength $result]/2}]
-
-		for {set i 0} {$i < $num} {incr i} {
-			set row [expr {$i/$ncols}]
-			set col [expr {$i % $ncols}]
-			set text $nb.s$boardSize.text_${row}_${col}
-			$text configure -state normal
-			$text delete 1.0 end
-			if {$i == 0 && $idn != 0 && $idn != 518} {
-				$text insert end "$::gamebar::mc::StartPosition $idn\n"
-			}
-			set moves [::font::splitMoves [lindex $result [expr {2*$i}]]]
-			foreach {move tag} $moves { $text insert end $move $tag }
-			if {$i == $length - 1} {
-				set res [::gametable::column $Vars(info) result]
-				set res [::util::formatResult $res]
-				if {[lindex [split [$text index current] .] 1] > 1} {
-					$text insert end " "
-				}
-				$text insert end "$res"
-			}
-			if {$i < $length} {
-				set position [lindex $result [expr {2*$i + 1}]]
-			} else {
-				set position empty
-			}
-			::board::stuff::update $nb.s$boardSize.board_${row}_${col} $position
-			update idletasks
-#			For any reason this is not working.
-#			if {[$text count -displaylines 1.0 end] > 2} {
-#				$text insert 2.end "\u204d"
-#			}
-			$text configure -state disabled
-		}
+		set Vars(result:$index) [lreplace $result 0 0]
+		incr index
 	}
+
+	ConfigureTab [$nb select]
+	FillTab $nb [$nb select]
 }
 
 
@@ -361,15 +344,15 @@ proc BuildTab {nb boardSize sw sh specified} {
 		set boardSize [min $size1 $size2]
 	}
 	if {[winfo exists $nb.s$boardSize]} { return }
-	if {$Priv(count) == 1} { ::board::registerSize $boardSize }
 	set f [::ttk::frame $nb.s$boardSize]
+	set Priv(pane:$f) [list $boardSize $nrows $ncols]
 	$nb add $f -sticky nsew -text "${nrows}x${ncols}"
-	variable ${nb}::Vars
-	lappend Vars(tabs) $boardSize $nrows $ncols
+	lappend Priv(tabs) $boardSize $nrows $ncols
+	set size [expr {8*$boardSize + 2}]
 
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {
-			set board [::board::stuff::new $f.board_${row}_${col} $boardSize 1 $Priv(flip)]
+			set board [tk::frame $f.frame_${row}_${col} -width $size -height $size]
 			set t $f.text_${row}_${col}
 			set text [tk::text $t                    \
 				-borderwidth 1                        \
@@ -409,7 +392,67 @@ proc BuildTab {nb boardSize sw sh specified} {
 }
 
 
-proc PopupMenu {nb base} {
+proc ConfigureTab {pane} {
+	variable Priv
+
+	if {[winfo exists $pane.frame_0_0.board]} { return }
+	lassign $Priv(pane:$pane) boardSize nrows ncols
+	::board::registerSize $boardSize
+
+	for {set row 0} {$row < $nrows} {incr row} {
+		for {set col 0} {$col < $ncols} {incr col} {
+			pack [::board::diagram::new $pane.frame_${row}_${col}.board $boardSize 1 $Priv(flip)]
+		}
+	}
+
+	update idletasks
+}
+
+
+proc FillTab {nb pane} {
+	variable ${nb}::Vars
+	variable Priv
+
+	set index $Priv(tab)
+	if {!$Vars(fill:$index)} { return }
+	lassign $Priv(pane:$pane) boardSize nrows ncols
+	set num [expr {$ncols*$nrows}]
+	set result $Vars(result:$index)
+	set length [expr {[llength $result]/2}]
+	set idn [::gametable::column $Vars(info) idn]
+
+	for {set i 0} {$i < $num} {incr i} {
+		set row [expr {$i/$ncols}]
+		set col [expr {$i % $ncols}]
+		set text $pane.text_${row}_${col}
+		$text configure -state normal
+		$text delete 1.0 end
+		if {$i == 0 && $idn != 0 && $idn != 518} {
+			$text insert end "$::gamebar::mc::StartPosition $idn\n"
+		}
+		set moves [::font::splitMoves [lindex $result [expr {2*$i}]]]
+		foreach {move tag} $moves { $text insert end $move $tag }
+		if {$i == $length - 1} {
+			set res [::gametable::column $Vars(info) result]
+			set res [::util::formatResult $res]
+			if {[lindex [split [$text index current] .] 1] > 1} {
+				$text insert end " "
+			}
+			$text insert end "$res"
+		}
+		if {$i < $length} {
+			set position [lindex $result [expr {2*$i + 1}]]
+		} else {
+			set position empty
+		}
+		$text configure -state disabled
+		update idletasks
+		::board::diagram::update $pane.frame_${row}_${col}.board $position
+	}
+}
+
+
+proc PopupMenu {nb base variant} {
 	variable ${nb}::Vars
 
 	set menu $nb.__menu__
@@ -442,14 +485,14 @@ proc PopupMenu {nb base} {
 		-compound left \
 		-image $::icon::16x16::first \
 		-label " $::browser::mc::GotoFirstGame" \
-		-command [namespace code [list GotoFirstGame $nb $base]] \
+		-command [namespace code [list GotoFirstGame $nb $base $variant]] \
 		-state $state \
 		;
 	$menu add command \
 		-compound left \
 		-image $::icon::16x16::last \
 		-label " $::browser::mc::GotoLastGame" \
-		-command [namespace code [list GotoLastGame $nb $base]] \
+		-command [namespace code [list GotoLastGame $nb $base $variant]] \
 		-state $state \
 		;
 
@@ -470,7 +513,7 @@ proc RotateBoard {nb} {
 
 	foreach tab [$nb tabs] {
 		foreach w [winfo children $tab] {
-			if {[winfo class $w] eq "Board"} { ::board::stuff::rotate $w }
+			if {[winfo class $w] eq "Board"} { ::board::diagram::rotate $w }
 		}
 	}
 
@@ -485,12 +528,13 @@ proc Destroy {nb} {
 
 		catch { destroy $nb.__menu__ }
 
-		set key $Vars(base):$Vars(number):$Vars(view)
+		set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
 		set i [lsearch -exact $Priv($key) [winfo toplevel $nb]]
 		if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 		if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
 		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+		::scidb::view::unsubscribe {*}$Vars(subscribe:close)
 		if {[info exists Vars(subscribe:tree)]} {
 			::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 		}
@@ -502,14 +546,24 @@ proc Destroy {nb} {
 
 proc TabChanged {nb} {
 	variable Priv
-	set Priv(tab) [$nb index [$nb select]]
+
+	set pane [$nb select]
+	set Priv(tab) [$nb index $pane]
+	ConfigureTab $pane
+	FillTab $nb $pane
 }
 
 
 proc LoadGame {nb} {
 	variable ${nb}::Vars
 	::widget::busyOperation {
-		::game::new $nb $Vars(base) $Vars(view) [expr {$Vars(number) - 1}] $Vars(fen)
+		::game::new $nb \
+			-base $Vars(base) \
+			-variant $Vars(variant) \
+			-view $Vars(view) \
+			-number [expr {$Vars(number) - 1}] \
+			-fen $Vars(fen) \
+			;
 	}
 }	
 

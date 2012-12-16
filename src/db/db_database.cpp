@@ -91,7 +91,7 @@ Database::exportGames<Database>(	Database& destination,
 											Selector const& gameSelector,
 											copy::Mode copyMode,
 											Log& log,
-											util::Progress& progress);
+											util::Progress& progress) const;
 template
 unsigned
 Database::exportGames<Consumer>(	Consumer& destination,
@@ -99,7 +99,7 @@ Database::exportGames<Consumer>(	Consumer& destination,
 											Selector const& gameSelector,
 											copy::Mode copyMode,
 											Log& log,
-											util::Progress& progress);
+											util::Progress& progress) const;
 
 
 Database::Database(Database const& db, mstl::string const& name)
@@ -121,8 +121,8 @@ Database::Database(Database const& db, mstl::string const& name)
 }
 
 
-Database::Database(mstl::string const& name, mstl::string const& encoding, Storage storage, Type type)
-	:DatabaseContent(encoding, type)
+Database::Database(mstl::string const& name, mstl::string const& encoding)
+	:DatabaseContent(encoding, type::Unspecific)
 	,m_codec(DatabaseCodec::makeCodec(name))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
@@ -137,36 +137,72 @@ Database::Database(mstl::string const& name, mstl::string const& encoding, Stora
 
 	// NOTE: we assume normalized (unique) file names.
 
-	m_type = type;
-	m_memoryOnly = storage == MemoryOnly;
-	m_temporary = storage == Temporary;
+	m_type = type::Unspecific;
+	m_memoryOnly = false;
+	m_temporary = true;
 	m_created = sys::time::time();
-	m_readOnly = m_temporary;
-
-	if (m_temporary || !m_codec->isWriteable())
-		m_writeable = false;
-
-	if (m_temporary)
-	{
-		m_size = m_codec->openProgressive(this, m_rootname, encoding);
-	}
-	else
-	{
-		if (m_memoryOnly)
-			m_codec->open(this, encoding);
-		else
-			m_codec->open(this, m_rootname, encoding);
-
-		m_size = m_gameInfoList.size();
-	}
-
+	m_readOnly = true;
+	m_writeable = false;
+	m_size = m_codec->openProgressive(this, m_rootname, encoding);
 	m_namebases.setModified(true);
 }
 
 
 Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
-							Mode mode,
+							storage::Type storage,
+							Type type,
+							variant::Type variant)
+	:DatabaseContent(encoding, type)
+	,m_codec(DatabaseCodec::makeCodec(name))
+	,m_name(name)
+	,m_rootname(file::rootname(name))
+	,m_id(Counter++)
+	,m_size(0)
+	,m_lastChange(sys::time::timestamp())
+	,m_encodingFailed(false)
+	,m_encodingOk(true)
+	,m_usingAsyncReader(false)
+{
+	M_REQUIRE(storage != storage::Temporary);
+	M_REQUIRE(variant::isMainVariant(variant));
+
+	M_ASSERT(m_codec);
+
+	// NOTE: we assume normalized (unique) file names.
+
+	m_type = type;
+	m_memoryOnly = storage == storage::MemoryOnly;
+	m_temporary = false;
+	m_created = sys::time::time();
+	m_readOnly = m_temporary;
+
+	switch (m_codec->format())
+	{
+		case format::Scidb:		m_variant = variant; break;
+		case format::Scid3:		// fallthru
+		case format::Scid4:		m_variant = variant::Normal; break;
+		case format::ChessBase:	m_variant = variant::Normal; break;
+
+		default: M_RAISE(!"unexpected format");
+	}
+
+	if (!m_codec->isWriteable())
+		m_writeable = false;
+
+	if (m_memoryOnly)
+		m_codec->open(this, encoding);
+	else
+		m_codec->open(this, m_rootname, encoding);
+
+	m_size = m_gameInfoList.size();
+	m_namebases.setModified(true);
+}
+
+
+Database::Database(	mstl::string const& name,
+							mstl::string const& encoding,
+							permission::Mode mode,
 							util::Progress& progress)
 	:DatabaseContent(encoding)
 	,m_codec(0)
@@ -185,7 +221,7 @@ Database::Database(	mstl::string const& name,
 
 	mstl::string ext = file::suffix(m_name);
 
-	m_readOnly = mode == ReadOnly;
+	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name);
 
 	if (m_codec == 0)
@@ -235,6 +271,12 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 }
 
 
+Database::~Database() throw()
+{
+	delete m_codec;
+}
+
+
 void
 Database::attach(mstl::string const& filename, util::Progress& progress)
 {
@@ -254,18 +296,19 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 
 
 void
-Database::save(util::Progress& progress, unsigned start)
+Database::save(util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
-	M_REQUIRE(start <= countGames());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 
 	if (m_size == m_gameInfoList.size())
 		return;
 
+	unsigned start = m_size;
+
 	m_namebases.update();
-	m_size = m_gameInfoList.size();
 
 	if (!isMemoryOnly())
 	{
@@ -275,6 +318,7 @@ Database::save(util::Progress& progress, unsigned start)
 		setEncodingFailed(m_codec->encodingFailed());
 	}
 
+	m_size = m_gameInfoList.size();
 	m_lastChange = sys::time::timestamp();
 	m_treeCache.setIncomplete(start);
 
@@ -309,7 +353,6 @@ Database::writeNamebases(mstl::ostream& os, util::Progress& progress)
 	m_namebases.update();
 	m_codec->reset();
 	m_codec->writeNamebases(os, progress);
-	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
 
@@ -335,7 +378,7 @@ Database::sync(util::Progress& progress)
 	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable)
 	{
 		if (m_size != m_gameInfoList.size())
-			save(progress, m_size);
+			save(progress);
 
 		m_codec->sync();
 	}
@@ -379,15 +422,7 @@ Database::remove()
 bool
 Database::shouldCompress() const
 {
-	if (!isReadOnly())
-	{
-		format::Type format = this->format();
-
-		if (format::isScidFormat(format) || format == format::Scidb)
-			return m_statistic.deleted > 0;
-	}
-
-	return false;
+	return !isReadOnly() && format() == format::Scidb && (m_shouldCompress || m_statistic.deleted > 0);
 }
 
 
@@ -399,9 +434,7 @@ Database::getInfoTags(unsigned index, TagSet& tags) const
 
 	tags.clear();
 	setupTags(index, tags);
-
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
-		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::InfoTags);
+	m_codec->filterTags(tags, DatabaseCodec::InfoTags);
 }
 
 
@@ -413,9 +446,7 @@ Database::getGameTags(unsigned index, TagSet& tags) const
 
 	tags.clear();
 	setupTags(index, tags);
-
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
-		m_codec->filterTag(tags, tag::ID(i), DatabaseCodec::GameTags);
+	m_codec->filterTags(tags, DatabaseCodec::GameTags);
 }
 
 
@@ -425,6 +456,7 @@ Database::clear()
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 
 	m_gameInfoList.clear();
 	m_statistic.clear();
@@ -481,6 +513,8 @@ Database::computeChecksum(unsigned index) const
 	GameInfo const& info = *m_gameInfoList[index];
 	util::crc::checksum_t crc = m_codec->computeChecksum(info, info.computeChecksum());
 
+	crc = ::util::crc::compute(crc, uint32_t(m_variant));
+
 	if (format::isScidFormat(format()))
 	{
 		mstl::string const& round = static_cast<si3::Codec*>(m_codec)->getRoundEntry(index);
@@ -503,6 +537,13 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 	if (encoding)
 		*encoding = this->encoding();
 
+	variant::Type variant;
+
+	if (m_variant == variant::Antichess)
+		variant = info->isGiveaway() ? variant::Giveaway : variant::Suicide;
+	else
+		variant = m_variant;
+
 	try
 	{
 		m_codec->decodeGame(game, *info, encoding);
@@ -519,7 +560,7 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 
 	setEncodingFailed(m_codec->encodingFailed());
 	game.moveToMainlineStart();
-	load::State state = game.finishLoad(fen) ? load::Ok : load::Corrupted;
+	load::State state = game.finishLoad(variant, fen) ? load::Ok : load::Corrupted;
 	setupTags(index, game.m_tags);
 
 	return state;
@@ -531,8 +572,11 @@ Database::newGame(Game& game, GameInfo const& info)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(isMemoryOnly());
+	M_REQUIRE(game.variant() != variant::Undetermined);
+	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
@@ -555,7 +599,9 @@ Database::addGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 
 	unsigned char buffer[8192];
 	ByteStream strm(buffer, sizeof(buffer));
@@ -591,7 +637,9 @@ Database::updateGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
+	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 	M_REQUIRE(!usingAsyncReader());
 
 	unsigned char buffer[8192];
@@ -600,7 +648,9 @@ Database::updateGame(Game& game)
 
 	if (format() == format::Scidb)
 	{
-		info.setIllegalCastling(game.containsIllegalCastlings());
+		if (!variant::isAntichessExceptLosers(m_variant))
+			info.setIllegalCastling(game.containsIllegalCastlings());
+
 		info.setIllegalMove(game.containsIllegalMoves());
 	}
 
@@ -633,7 +683,9 @@ Database::updateMoves(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
+	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 	M_REQUIRE(!usingAsyncReader());
 
 	unsigned char buffer[8192];
@@ -649,17 +701,32 @@ Database::updateMoves(Game& game)
 
 		if (format() == format::Scidb)
 		{
-			bool illegalCastling	= game.containsIllegalCastlings();
-			bool illegalMoves		= game.containsIllegalMoves();
-
-			if (	illegalCastling != info.containsIllegalCastlings()
-				|| illegalMoves != info.containsIllegalMoves())
+			if (variant::isAntichessExceptLosers(m_variant))
 			{
-				info.setIllegalCastling(illegalCastling);
-				info.setIllegalMove(illegalMoves);
+				bool illegalMoves = game.containsIllegalMoves();
 
-				if (!m_memoryOnly)
-					m_codec->update(m_rootname, game.index(), false);
+				if (illegalMoves != info.containsIllegalMoves())
+				{
+					info.setIllegalMove(illegalMoves);
+
+					if (!m_memoryOnly)
+						m_codec->update(m_rootname, game.index(), false);
+				}
+			}
+			else
+			{
+				bool illegalCastling	= game.containsIllegalCastlings();
+				bool illegalMoves		= game.containsIllegalMoves();
+
+				if (	illegalCastling != info.containsIllegalCastlings()
+					|| illegalMoves != info.containsIllegalMoves())
+				{
+					info.setIllegalCastling(illegalCastling);
+					info.setIllegalMove(illegalMoves);
+
+					if (!m_memoryOnly)
+						m_codec->update(m_rootname, game.index(), false);
+				}
 			}
 		}
 
@@ -677,6 +744,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
 
@@ -702,10 +770,11 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 
 
 save::State
-Database::exportGame(unsigned index, Consumer& consumer)
+Database::exportGame(unsigned index, Consumer& consumer) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(index < countGames());
+	M_REQUIRE(consumer.variant() == variant());
 
 	format::Type		format	= this->format();
 	GameInfo const*	info		= m_gameInfoList[index];
@@ -784,7 +853,7 @@ Database::exportGame(unsigned index, Consumer& consumer)
 
 
 save::State
-Database::exportGame(unsigned index, Database& destination)
+Database::exportGame(unsigned index, Database& destination) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(destination.isOpen());
@@ -807,7 +876,7 @@ Database::copyGames(	Database& destination,
 							TagBits const& allowedTags,
 							bool allowExtraTags,
 							Log& log,
-							util::Progress& progress)
+							util::Progress& progress) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(destination.isOpen());
@@ -815,6 +884,7 @@ Database::copyGames(	Database& destination,
 	M_REQUIRE(	destination.format() == format::Scidb
 				|| destination.format() == format::Scid3
 				|| destination.format() == format::Scid4);
+	M_REQUIRE(destination.variant() == variant());
 
 	if (size() == 0)
 		return 0;
@@ -848,11 +918,10 @@ Database::copyGames(	Database& destination,
 	{
 		if (dstFormat == format::Scidb)
 		{
+			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
 			// XXX do we need the source encoding?
-			sci::Consumer consumer(	srcFormat,
-											dynamic_cast<sci::Codec&>(destination.codec()),
-											allowedTags,
-											allowExtraTags);
+			sci::Consumer consumer(srcFormat, codecs, allowedTags, allowExtraTags);
+			consumer.setupVariant(m_variant);
 			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
 		}
 		else // dstFormat == format::Scid3 || dstFormat == format::Scid4
@@ -862,6 +931,7 @@ Database::copyGames(	Database& destination,
 											encoding(), // XXX do we need the source encoding?
 											allowedTags,
 											allowExtraTags);
+			consumer.setupVariant(variant::Normal);
 			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
 		}
 	}
@@ -877,11 +947,12 @@ Database::exportGames(	Destination& destination,
 								Selector const& gameSelector,
 								copy::Mode copyMode,
 								Log& log,
-								util::Progress& progress)
+								util::Progress& progress) const
 {
 	M_REQUIRE(gameFilter.size() == size());
+	M_REQUIRE(destination.variant() == variant());
 
-	enum { MaxWarning = 40 };
+	enum { MaxWarnings = 40 };
 
 	if (size() == 0)
 		return 0;
@@ -932,12 +1003,12 @@ Database::exportGames(	Destination& destination,
 			if (destination.format() == format::Scidb && ::format::isScidFormat(format()))
 			{
 				unsigned unused;
-				mstl::string const& round = static_cast<si3::Codec&>(codec()).getRoundEntry(index);
+				mstl::string const& round = static_cast<si3::Codec const&>(codec()).getRoundEntry(index);
 
 				if (!PgnReader::parseRound(round, unused, unused))
 				{
 					log.warning(
-						warnings++ >= MaxWarning ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
+						warnings++ >= MaxWarnings ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
 						gameSelector.map(infoIndex));
 				}
 			}
@@ -958,27 +1029,33 @@ Database::importGame(Producer& producer, unsigned index)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(	producer.variant() == variant::Undetermined
+				|| variant::toMainVariant(producer.variant()) == variant());
 
 	SingleProgress progress;
 
 	m_codec->reset();
 	unsigned n = m_codec->importGames(producer, progress, index);
-	m_lastChange = sys::time::timestamp();
-	m_namebases.update();
-	setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
-	m_statistic.add(*m_gameInfoList[index]);
 
-	if (!isMemoryOnly())
+	if (n > 0)
 	{
-		m_codec->update(m_rootname, index, true);
-		m_codec->updateHeader(m_rootname);
-		m_size = m_gameInfoList.size();
-	}
+		m_lastChange = sys::time::timestamp();
+		m_namebases.update();
+		setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
+		m_statistic.add(*m_gameInfoList[index]);
 
-	if (n)
+		if (!isMemoryOnly())
+		{
+			m_codec->update(m_rootname, index, true);
+			m_codec->updateHeader(m_rootname);
+			m_size = m_gameInfoList.size();
+		}
+
 		m_treeCache.setIncomplete();
+	}
 
 	return n;
 }
@@ -989,32 +1066,34 @@ Database::importGames(Producer& producer, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(	producer.variant() == variant::Undetermined
+				|| variant::toMainVariant(producer.variant()) == variant());
 
 	unsigned oldSize = m_gameInfoList.size();
 
 	m_codec->reset();
 	unsigned n = m_codec->importGames(producer, progress);
-	m_lastChange = sys::time::timestamp();
-	m_namebases.update();
-	setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + oldSize,
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Continue);
 
 	if (n)
-		m_treeCache.setIncomplete();
+	{
+		m_lastChange = sys::time::timestamp();
+		finishImport(oldSize, producer.encodingFailed());
+	}
 
 	return n;
 }
 
 
 unsigned
-Database::importGames(Database& db, Log& log, util::Progress& progress)
+Database::importGames(Database const& db, Log& log, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(db.variant() == variant());
 
 	unsigned oldSize = m_gameInfoList.size();
 
@@ -1028,17 +1107,25 @@ Database::importGames(Database& db, Log& log, util::Progress& progress)
 
 	unsigned n = db.copyGames(*this, filter, selector, allowedTags, true, log, progress);
 
+	if (n > 0)
+		finishImport(oldSize, db.encodingFailed());
+
+	return n;
+}
+
+
+void
+Database::finishImport(unsigned oldSize, bool encodingFailed)
+{
 	m_lastChange = sys::time::timestamp();
 	m_namebases.update();
-	setEncodingFailed(db.encodingFailed() || m_codec->encodingFailed());
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + oldSize,
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								Statistic::Continue);
+	m_treeCache.setIncomplete();
 
-	if (n)
-		m_treeCache.setIncomplete();
-
-	return n;
+	if (encodingFailed || m_codec->encodingFailed())
+		setEncodingFailed(true);
 }
 
 
@@ -1083,7 +1170,7 @@ Database::setupTags(unsigned index, TagSet& tags) const
 {
 	M_REQUIRE(isOpen());
 
-	gameInfo(index).setupTags(tags);
+	gameInfo(index).setupTags(tags, m_variant);
 
 	if (format::isScidFormat(format()))
 		tags.set(tag::Round, static_cast<si3::Codec*>(m_codec)->getRoundEntry(index));
@@ -1095,6 +1182,7 @@ Database::deleteGame(unsigned index, bool flag)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 
 	if (gameInfo(index).isDeleted())
@@ -1117,6 +1205,7 @@ Database::setGameFlags(unsigned index, unsigned flags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 
 	gameInfo(index).setFlags(flags);
@@ -1131,6 +1220,7 @@ Database::setType(Type type)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 
 	if (type != m_type)
 	{
@@ -1147,6 +1237,7 @@ Database::setDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
 
 	if (m_description != description)
 	{
@@ -1154,6 +1245,25 @@ Database::setDescription(mstl::string const& description)
 
 		if (m_codec->maxDescriptionLength() < m_description.size())
 			m_description.set_size(m_codec->maxDescriptionLength());
+
+		if (!m_memoryOnly)
+			m_codec->updateHeader(m_rootname);
+	}
+}
+
+
+void
+Database::setVariant(variant::Type variant)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(isWriteable());
+	M_REQUIRE(isEmpty());
+	M_REQUIRE(variant::isMainVariant(variant));
+
+	if (m_variant != variant)
+	{
+		m_variant = variant;
 
 		if (!m_memoryOnly)
 			m_codec->updateHeader(m_rootname);
@@ -1206,7 +1316,8 @@ Database::openAsyncReader()
 void
 Database::closeAsyncReader()
 {
-	M_REQUIRE(isOpen());
+	if (!isOpen())
+		return;
 
 	if (m_usingAsyncReader)
 	{
@@ -1352,8 +1463,10 @@ Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) cons
 			stats.addRating(rating::Elo, info->elo(color));
 			stats.addDate(info->date());
 			stats.addScore(color, info->result());
-			if (info->idn() == variant::StandardIdn)
+if (m_variant == variant::Normal) { // XXX
+			if (info->idn() == variant::Standard)
 				stats.addEco(color, info->ecoKey());
+}
 		}
 	}
 

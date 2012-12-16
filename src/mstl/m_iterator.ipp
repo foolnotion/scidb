@@ -18,6 +18,379 @@
 
 namespace mstl {
 
+template <typename T> inline reverse_iterator<T>::reverse_iterator(iterator i) :m_i(i) {}
+
+
+template <typename T>
+inline
+typename reverse_iterator<T>::iterator
+reverse_iterator<T>::base() const
+{
+	return m_i - 1;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>&
+reverse_iterator<T>::operator=(iterator i)
+{
+	m_i = i + 1;
+	return *this;
+}
+
+
+template <typename T>
+inline
+bool
+reverse_iterator<T>::operator==(reverse_iterator const& iter) const
+{
+	return m_i == iter.m_i;
+}
+
+
+template <typename T>
+inline
+bool
+reverse_iterator<T>::operator!=(reverse_iterator const& iter) const
+{
+	return m_i != iter.m_i;
+}
+
+
+template <typename T>
+inline
+bool
+reverse_iterator<T>::operator<=(reverse_iterator const& iter) const
+{
+	return iter.m_i <= m_i;
+}
+
+
+template <typename T>
+inline
+bool
+reverse_iterator<T>::operator<(reverse_iterator const& iter) const
+{
+	return iter.m_i < m_i;
+}
+
+
+template <typename T>
+inline
+typename reverse_iterator<T>::reference
+reverse_iterator<T>::operator*() const
+{
+	iterator prev = m_i;
+	return *--prev;
+}
+
+
+template <typename T>
+inline
+typename reverse_iterator<T>::pointer
+reverse_iterator<T>::operator->() const
+{
+	return &(operator*());
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>&
+reverse_iterator<T>::operator++()
+{
+	--m_i;
+	return *this;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>&
+reverse_iterator<T>::operator--()
+{
+	++m_i;
+	return *this;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>
+reverse_iterator<T>::operator++(int)
+{
+	reverse_iterator prev = *this;
+	--m_i;
+	return prev;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>
+reverse_iterator<T>::operator--(int)
+{
+	reverse_iterator prev = *this;
+	++m_i;
+	return prev;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>&
+reverse_iterator<T>::operator+=(size_t n)
+{
+	m_i -= n;
+	return *this;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>&
+reverse_iterator<T>::operator-=(size_t n)
+{
+	m_i += n;
+	return *this;
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>
+reverse_iterator<T>::operator+(size_t n) const
+{
+	return reverse_iterator(m_i - n);
+}
+
+
+template <typename T>
+inline
+reverse_iterator<T>
+reverse_iterator<T>::operator-(size_t n) const
+{
+	return reverse_iterator(m_i + n);
+}
+
+
+template <typename T>
+inline
+typename reverse_iterator<T>::reference
+reverse_iterator<T>::operator[](difference_type n) const
+{
+	return *(*this + n);
+}
+
+
+template <typename T>
+inline
+typename reverse_iterator<T>::difference_type
+reverse_iterator<T>::operator-(reverse_iterator const& i) const
+{
+	return i.m_i - m_i;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>::const_reverse_iterator(iterator i)
+	:m_i(i)
+{
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>::const_reverse_iterator(const_iterator i)
+	:m_i(i)
+{
+}
+
+
+template <typename T>
+inline
+typename const_reverse_iterator<T>::const_iterator
+const_reverse_iterator<T>::base() const
+{
+	return m_i - 1;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator=(iterator i)
+{
+	m_i = i + 1;
+	return *this;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator=(const_iterator i)
+{
+	m_i = i + 1;
+	return *this;
+}
+
+
+template <typename T>
+inline
+bool
+const_reverse_iterator<T>::operator==(const_reverse_iterator const& iter) const
+{
+	return m_i == iter.m_i;
+}
+
+
+template <typename T>
+inline
+bool
+const_reverse_iterator<T>::operator!=(const_reverse_iterator const& iter) const
+{
+	return m_i != iter.m_i;
+}
+
+
+template <typename T>
+inline
+bool
+const_reverse_iterator<T>::operator<=(const_reverse_iterator const& iter) const
+{
+	return iter.m_i <= m_i;
+}
+
+
+template <typename T>
+inline
+bool
+const_reverse_iterator<T>::operator<(const_reverse_iterator const& iter) const
+{
+	return iter.m_i < m_i;
+}
+
+
+template <typename T>
+inline
+typename const_reverse_iterator<T>::const_reference
+const_reverse_iterator<T>::operator*() const
+{
+	const_iterator prev  = m_i;
+	return *--prev;
+}
+
+
+template <typename T>
+inline
+typename const_reverse_iterator<T>::const_pointer
+const_reverse_iterator<T>::operator->() const
+{
+	return &(operator*());
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator++()
+{
+	--m_i;
+	return *this;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator--()
+{
+	++m_i;
+	return *this;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>
+const_reverse_iterator<T>::operator++(int)
+{
+	const_reverse_iterator prev = *this;
+	--m_i;
+	return prev;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>
+const_reverse_iterator<T>::operator--(int)
+{
+	const_reverse_iterator prev = *this;
+	++m_i;
+	return prev;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator+=(size_t n)
+{
+	m_i -= n;
+	return *this;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>&
+const_reverse_iterator<T>::operator-=(size_t n)
+{
+	m_i += n;
+	return *this;
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>
+const_reverse_iterator<T>::operator+(size_t n) const
+{
+	return const_reverse_iterator(m_i - n);
+}
+
+
+template <typename T>
+inline
+const_reverse_iterator<T>
+const_reverse_iterator<T>::operator-(size_t n) const
+{
+	return const_reverse_iterator(m_i + n);
+}
+
+
+template <typename T>
+inline
+typename const_reverse_iterator<T>::const_reference
+const_reverse_iterator<T>::operator[](difference_type n) const
+{
+	return *(*this + n);
+}
+
+
+template <typename T>
+inline
+typename const_reverse_iterator<T>::difference_type
+const_reverse_iterator<T>::operator-(const_reverse_iterator const& i) const
+{
+	return i.m_i - m_i;
+}
+
+
 template <class Container>
 inline
 back_insert_iterator<Container>::back_insert_iterator(Container& ctr) : m_container(ctr) {}

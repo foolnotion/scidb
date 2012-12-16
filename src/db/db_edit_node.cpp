@@ -346,7 +346,7 @@ Node::Type Marks::type() const		{ return TMarks; }
 Node::Type Space::type() const		{ return TSpace; }
 
 
-void Opening::visit(Visitor& visitor) const		{ visitor.opening(m_board, m_idn, m_eco); }
+void Opening::visit(Visitor& visitor) const		{ visitor.opening(m_board, m_variant, m_idn, m_eco); }
 void Languages::visit(Visitor& visitor) const	{ visitor.languages(m_langSet); }
 void Ply::visit(Visitor& visitor) const			{ visitor.move(m_moveNo, m_move); }
 void Comment::visit(Visitor& visitor) const		{ visitor.comment(m_position, m_varPos, m_comment); }
@@ -542,7 +542,12 @@ Node::operator==(Node const* node) const
 
 
 void
-Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags, board::Status status, color::ID toMove)
+Node::visit(Visitor& visitor,
+				List const& nodes,
+				TagSet const& tags,
+				board::Status status,
+				termination::State termination,
+				color::ID toMove)
 {
 	result::ID result = result::fromString(tags.value(tag::Result));
 
@@ -551,7 +556,7 @@ Node::visit(Visitor& visitor, List const& nodes, TagSet const& tags, board::Stat
 	for (unsigned i = 0; i < nodes.size(); ++i)
 		nodes[i]->visit(visitor);
 
-	visitor.finish(result, status, toMove);
+	visitor.finish(result, status, termination, toMove);
 }
 
 
@@ -1144,6 +1149,7 @@ Root::Root()
 	,m_variation(0)
 	,m_result(result::Unknown)
 	,m_reason(board::None)
+	,m_termination(termination::None)
 	,m_toMove(color::White)
 {
 }
@@ -1165,7 +1171,7 @@ Root::visit(Visitor& visitor) const
 	m_opening->visit(visitor);
 	m_languages->visit(visitor);
 	m_variation->visit(visitor);
-	visitor.finish(m_result, m_reason, m_toMove);
+	visitor.finish(m_result, m_reason, m_termination, m_toMove);
 }
 
 
@@ -1241,6 +1247,8 @@ Root::makeList(TagSet const& tags,
 					uint16_t idn,
 					Eco eco,
 					db::Board const& startBoard,
+					variant::Type variant,
+					termination::State termination,
 					db::Board const& finalBoard,
 					MoveNode const* node,
 					unsigned linebreakThreshold,
@@ -1262,11 +1270,11 @@ Root::makeList(TagSet const& tags,
 
 	Root* root = new Root;
 
-	root->m_opening = new Opening(startBoard, idn, eco);
+	root->m_opening = new Opening(startBoard, variant, idn, eco);
 	root->m_languages = new Languages;
 	root->m_variation = new Variation(key);
 	root->m_result = result::fromString(tags.value(tag::Result));
-	root->m_reason = finalBoard.status();
+	root->m_reason = finalBoard.status(variant);
 	root->m_toMove = finalBoard.sideToMove();
 
 	KeyNode::List& result = root->m_variation->m_list;
@@ -1294,6 +1302,8 @@ Root::makeList(TagSet const& tags,
 					uint16_t idn,
 					Eco eco,
 					db::Board const& startBoard,
+					variant::Type variant,
+					termination::State termination,
 					LanguageSet const& langSet, // unused
 					LanguageSet const& wantedLanguages,
 					EngineList const& engines,
@@ -1325,12 +1335,12 @@ Root::makeList(TagSet const& tags,
 	Root*			root	= new Root;
 	Variation*	var	= new Variation(work.key);
 
-	root->m_opening = new Opening(startBoard, idn, eco);
+	root->m_opening = new Opening(startBoard, variant, idn, eco);
 	root->m_languages = work.languages;
 	root->m_variation = var;
 	root->m_result = result::fromString(tags.value(tag::Result));
 
-	makeList(work, var->m_list, node, 1, 1);
+	makeList(work, var->m_list, node, variant, 1, 1);
 	work.pushBreak();
 
 	return root;
@@ -1341,6 +1351,7 @@ void
 Root::makeList(Work& work,
 					KeyNode::List& result,
 					MoveNode const* node,
+					variant::Type variant,
 					unsigned varNo,
 					unsigned varCount)
 {
@@ -1383,7 +1394,7 @@ Root::makeList(Work& work,
 //			work.isFolded = false;
 		work.key.addPly(work.board.plyNumber() + 1);
 		result.push_back(new Move(work, node));
-		work.board.doMove(node->move());
+		work.board.doMove(node->move(), variant);
 		work.key.removePly();
 	}
 	else
@@ -1399,11 +1410,11 @@ Root::makeList(Work& work,
 			{
 				work.pushParagraph(Spacing::Diagram);
 				work.pop(const_cast<Move*>(static_cast<Move const*>(result.back()))->m_list);
-				work.board.doMove(node->move());
+				work.board.doMove(node->move(), variant);
 				result.push_back(new Diagram(
 					work,
 					node->annotation().contains(nag::Diagram) ? color::White : color::Black));
-				work.board.undoMove(node->move());
+				work.board.undoMove(node->move(), variant);
 				work.pushParagraph(Spacing::Diagram);
 				work.needMoveNo = true;
 			}
@@ -1447,7 +1458,7 @@ Root::makeList(Work& work,
 						work.m_linebreakMaxLineLength = ::DontSetBreaks;
 					}
 
-					makeList(work, var->m_list, node->variation(i), i + 1, node->variationCount());
+					makeList(work, var->m_list, node->variation(i), variant, i + 1, node->variationCount());
 					work.m_linebreakMaxLineLength = linebreakMaxLineLength;
 					M_ASSERT(work.m_level > 0);
 					--work.m_level;
@@ -1460,7 +1471,7 @@ Root::makeList(Work& work,
 			}
 
 			work.isFolded = isFolded;
-			work.board.doMove(node->move());
+			work.board.doMove(node->move(), variant);
 			work.key.removePly();
 		}
 	}

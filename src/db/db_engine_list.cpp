@@ -45,7 +45,7 @@ EngineList::engine(unsigned n) const
 unsigned
 EngineList::addEngine(mstl::string const& engine)
 {
-	if (engine.empty())
+	if (engine.empty() || count() == MaxEngines)
 		return 0;
 
 	return m_map.insert(Map::value_type(engine, m_map.size() + 1)).first->second;

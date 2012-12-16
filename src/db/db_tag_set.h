@@ -33,7 +33,6 @@
 
 #include "m_string.h"
 #include "m_vector.h"
-#include "m_bitfield.h"
 
 namespace db {
 
@@ -89,6 +88,7 @@ public:
 	void setSignificance(tag::ID tag, Byte value);
 
 	void remove(tag::ID tag);
+	void remove(tag::TagSet const& set);
 	void clear();
 
 	tag::ID findFirst() const;
@@ -99,7 +99,7 @@ public:
 private:
 
 	typedef mstl::vector<Tag> ExtraTags;
-	typedef mstl::bitfield<uint64_t> BitSet;
+	typedef tag::TagSet BitSet;
 
 	int find(mstl::string const& tag) const;
 

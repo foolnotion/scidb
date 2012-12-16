@@ -207,7 +207,7 @@ loadEcoFile()
 		exit(1);
 	}
 
-	EcoTable::specimen().load(stream);
+	EcoTable::specimen(variant::Normal).load(stream, variant::Normal);
 }
 
 
@@ -348,16 +348,14 @@ printUsualTagsAndExit(int rc)
 static void
 printMandatoryTagsAndExit(int rc)
 {
-	mstl::string tagList;
+	mstl::string	tagList;
+	tag::TagSet		mandatoryTags(sci::Encoder::infoTags());
 
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (unsigned i = mandatoryTags.find_first(); i != tag::TagSet::npos; i = mandatoryTags.find_next(i))
 	{
-		if (sci::Encoder::skipTag(tag::ID(i)))
-		{
-			if (!tagList.empty())
-				tagList += ',';
-			tagList += tag::toName(tag::ID(i));
-		}
+		if (!tagList.empty())
+			tagList += ',';
+		tagList += tag::toName(tag::ID(i));
 	}
 
 	printf("%s\n", tagList.c_str());
@@ -623,10 +621,10 @@ main(int argc, char* argv[])
 
 		Progress	progress;
 
-		Database	src(cdbPath, convertfrom, Database::ReadOnly, progress);
-		Database	dst(sciPath, "utf-8", Database::OnDisk);
+		Database	src(cdbPath, convertfrom, permission::ReadOnly, progress);
+		Database	dst(sciPath, sys::utf8::Codec::utf8(), storage::OnDisk);
 		sci::Consumer consumer(	cdbFormat,
-										dynamic_cast<sci::Codec&>(dst.codec()),
+										sci::Consumer::Codecs(&dynamic_cast<sci::Codec&>(dst.codec())),
 										tagList,
 										extraTags);
 

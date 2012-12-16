@@ -33,6 +33,7 @@ namespace eval mc {
 set ShowCrosstable			"Show tournament table for this game"
 set StartEngine				"Start chess analysis engine"
 set StopEngine					"Stop chess analysis engine"
+set InsertNullMove			"Insert null move"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -60,10 +61,9 @@ namespace import ::tcl::mathfunc::abs
 
 variable board {}
 
-variable Index		-1
 variable Vars
-variable Toolbar
 variable Dim
+variable Layouts {Normal Crazyhouse}
 
 set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 
@@ -71,9 +71,12 @@ set Defaults(coords-font-family) [font configure TkDefaultFont -family]
 proc build {w width height} {
 	variable Dim
 	variable Vars
+	variable Layouts
 	variable board
 	variable mc::Accel
 
+	set Vars(variant) Normal
+	set Vars(layout) Normal
 	Preload $width $height
 
 	set canv [tk::canvas $w.c -width $width -height $height -takefocus 1 -borderwidth 0]
@@ -84,7 +87,17 @@ proc build {w width height} {
 	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
-	set board [::board::stuff::new $border.board $Dim(squaresize) $Dim(edgethickness)]
+	set board [::board::diagram::new $border.board $Dim(squaresize) $Dim(edgethickness)]
+	::board::diagram::setTargets $board $border $canv
+	set boardc [::board::diagram::canvas $board]
+	set Vars(holding:w) [::board::holding::new $canv.holding-w w $Dim(squaresize) $boardc $border $canv]
+	set Vars(holding:b) [::board::holding::new $canv.holding-b b $Dim(squaresize) $boardc $border $canv]
+	::bind $Vars(holding:w) <<InHandSelection>> { ::move::inHandSelected %W %d }
+	::bind $Vars(holding:b) <<InHandSelection>> { ::move::inHandSelected %W %d }
+	::bind $Vars(holding:w) <<InHandPieceDrop>> { ::move::inHandPieceDrop %W %x %y %s %d }
+	::bind $Vars(holding:b) <<InHandPieceDrop>> { ::move::inHandPieceDrop %W %x %y %s %d }
+	::bind $Vars(holding:w) <<InHandDropPosition>> { ::move::inHandDropPosition %W %x %y %s %d }
+	::bind $Vars(holding:b) <<InHandDropPosition>> { ::move::inHandDropPosition %W %x %y %s %d }
 	$canv create window 0 0 -window $border -anchor nw -tag board
 	$border create window 0 0 -window $board -anchor nw -tag board
 	set Vars(widget:border) $border
@@ -96,6 +109,7 @@ proc build {w width height} {
 	set Vars(registered) {}
 	set Vars(subscribe:list) {}
 	set Vars(current:game) {}
+	foreach layout $Layouts { set Vars(inuse:$layout) {}; set Vars(registered:$layout) 0 }
 
 	$board configure -cursor crosshair
 	::bind $canv <Configure> [namespace code { ConfigureWindow %W %w %h }]
@@ -109,17 +123,17 @@ proc build {w width height} {
 		::bind $canv <MouseWheel> [namespace code [list goto [expr {%D < 0 ? +1 : -1}]]]
 	}
 
-	::board::stuff::bind $board all <Enter>				{ ::move::enterSquare %q }
-	::board::stuff::bind $board all <Leave>				{ ::move::leaveSquare %q }
-	::board::stuff::bind $board all <ButtonPress-1>		{ ::move::pressSquare %q %s }
-	::board::stuff::bind $board all <ButtonPress-1>		{+focus %W }
-	::board::stuff::bind $board all <ButtonPress-2>		{ ::move::nextGuess %X %Y }
-	::board::stuff::bind $board all <ButtonRelease-1>	{ ::move::releaseSquare %X %Y %s }
-	::board::stuff::bind $board all <Button1-Motion>	{ ::move::dragPiece %X %Y }
+	::board::diagram::bind $board all <Enter>					{ ::move::enterSquare %q }
+	::board::diagram::bind $board all <Leave>					{ ::move::leaveSquare %q }
+	::board::diagram::bind $board all <ButtonPress-1>		{ ::move::pressSquare %q %s }
+	::board::diagram::bind $board all <ButtonPress-1>		{+focus %W }
+	::board::diagram::bind $board all <ButtonPress-2>		{ ::move::nextGuess %X %Y }
+	::board::diagram::bind $board all <ButtonRelease-1>	{ ::move::releaseSquare %X %Y %s }
+	::board::diagram::bind $board all <Button1-Motion>		{ ::move::dragPiece %X %Y %s }
 
-	::board::stuff::bind $board all <Control-ButtonPress-1>		{ ::marks::pressSquare %X %Y }
-	::board::stuff::bind $board all <Control-ButtonPress-1>		{+ ::move::disable }
-	::board::stuff::bind $board all <Control-ButtonRelease-1>	{ ::marks::unpressSquare }
+	::board::diagram::bind $board all <Control-ButtonPress-1>	{ ::marks::pressSquare %X %Y }
+	::board::diagram::bind $board all <Control-ButtonPress-1>	{+ ::move::disable }
+	::board::diagram::bind $board all <Control-ButtonRelease-1>	{ ::marks::unpressSquare }
 
 	::bind .application <<ControlOn>>	{ ::move::disable }
 	::bind .application <<ControlOff>>	{ ::move::enable %X %Y }
@@ -127,7 +141,7 @@ proc build {w width height} {
 	::bind .application <FocusOut>		{ ::move::enable }
 	::bind .application <FocusOut>		{+ ::marks::releaseSquare }
 
-	::board::stuff::update $board standard
+	::board::diagram::update $board standard
 	::board::unregisterSize $Dim(squaresize)
 
 	set tbTools		[::toolbar::toolbar $w \
@@ -186,7 +200,7 @@ proc build {w width height} {
 		-image $::icon::toolbarSideToMove \
 		-variable ::board::layout(side-to-move) \
 		-tooltipvar ::board::options::mc::ShowSideToMove \
-		-command [namespace code [list Apply $canv]] \
+		-command [namespace code Apply] \
 		;
 
 	set Vars(game:next) [::toolbar::add $tbGame button \
@@ -247,8 +261,11 @@ proc build {w width height} {
 	bind <Control-Up>		[namespace code LoadPrevious]
 	bind <Control-Home>	[namespace code LoadFirst]
 	bind <Control-End>	[namespace code LoadLast]
+	bind <Control-0>		{ ::move::addMove -- }
 	bind <<Undo>>			[namespace parent]::pgn::undo
 	bind <<Redo>>			[namespace parent]::pgn::redo
+	bind <BackSpace>		[namespace parent]::pgn::undoLastMove
+	bind <Delete>			[list ::scidb::game::strip truncate]
 	bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
 
 	for {set i 1} {$i <= 9} {incr i} {
@@ -271,9 +288,9 @@ proc build {w width height} {
 	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment p]
 	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment a]
 	set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
-	set Vars(cmd:add-new-game)			[list [namespace parent]::pgn::SaveGame add]
-	set Vars(cmd:replace-game)			[list [namespace parent]::pgn::SaveGame replace]
-	set Vars(cmd:replace-moves)		[list [namespace parent]::pgn::SaveGame moves]
+	set Vars(cmd:add-new-game)			[list [namespace parent]::pgn::saveGame add]
+	set Vars(cmd:replace-game)			[list [namespace parent]::pgn::saveGame replace]
+	set Vars(cmd:replace-moves)		[list [namespace parent]::pgn::saveGame moves]
 	set Vars(cmd:trial-mode)			::game::flipTrialMode
 
 	LanguageChanged
@@ -292,8 +309,6 @@ proc build {w width height} {
 
 
 proc activate {w flag} {
-	variable Toolbar
-	variable Index
 	variable Vars
 
 	set Vars(active) $flag
@@ -365,14 +380,27 @@ proc goto {step} {
 }
 
 
+proc deselectInHandPiece {} {
+	variable Vars
+
+	::board::holding::deselect $Vars(holding:w)
+	::board::holding::deselect $Vars(holding:b)
+}
+
+
+proc finishDrop {color} {
+	::board::holding::finishDrop [set [namespace current]::Vars(holding:[string index $color 0])]
+}
+
+
 proc update {position cmd data} {
 	variable ::board::layout
 	variable board
 	variable Vars
 
 	switch $cmd {
-		set	{ ::board::stuff::update $board $data }
-		move	{ ::board::stuff::move $board $data }
+		set	{ ::board::diagram::update $board $data }
+		move	{ ::board::diagram::move $board $data }
 	}
 
 	UpdateSideToMove $Vars(widget:frame)
@@ -385,7 +413,7 @@ proc updateMarks {marks} {
 	variable board
 	variable Vars
 
-	::board::stuff::updateMarks $board $marks
+	::board::diagram::updateMarks $board $marks
 	if {!$Vars(autoplay)} {
 		::move::leaveSquare
 		::move::enterSquare
@@ -395,7 +423,7 @@ proc updateMarks {marks} {
 
 proc rotated? {} {
 	variable board
-	return [::board::stuff::rotated? $board]
+	return [::board::diagram::rotated? $board]
 }
 
 
@@ -407,14 +435,14 @@ proc bind {key cmd} {
 	::bind $Vars(widget:border) $key $cmd
 	::bind $Vars(widget:frame) $key {+ break }
 	::bind $Vars(widget:border) $key {+ break }
-	::board::stuff::bind $board $key $cmd
+	::board::diagram::bind $board $key $cmd
 }
 
 
-proc bindGameControls {position base view number} {
+proc bindGameControls {position base variant view number} {
 	variable Vars
 
-	set Vars(current:game) [list $position $base $view $number]
+	set Vars(current:game) [list $position $base $variant $view $number]
 
 	if {[llength $Vars(subscribe:list)]} {
 		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
@@ -450,10 +478,10 @@ proc LoadGame {incr} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] == 0} { return }
-	lassign $Vars(current:game) position base view number
-	set numGames [scidb::view::count games $base $view]
+	lassign $Vars(current:game) position base variant view number
+	set numGames [scidb::view::count games $base $variant $view]
 	if {$numGames <= 1} { return }
-	set index [::scidb::db::get gameIndex $number $view $base]
+	set index [::scidb::db::get gameIndex $number $view $base $variant]
 	if {$index == -1} { return }
 
 	switch $incr {
@@ -473,15 +501,15 @@ proc LoadGame {incr} {
 		}
 	}
 
-	set number [::scidb::db::get gameNumber $base $index $view]
-	lset Vars(current:game) 3 $number
+	set number [::scidb::db::get gameNumber $base $variant $index $view]
+	lset Vars(current:game) 4 $number
 	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
 		set fen [::scidb::tree::position]
 	} else {
 		set fen ""
 	}
 
-	::game::new .application $base $view $number $fen
+	::game::new .application -base $base -variant $variant -view $view -number $number -fen $fen
 	UpdateGameButtonState
 }
 
@@ -562,56 +590,69 @@ proc PopupMenu {w} {
 		-compound left \
 		-image $::icon::16x16::setup \
 		-label " $::board::options::mc::BoardSetup..." \
-		-command [list ::board::options::openConfigDialog $w \
-			[list [namespace current]::Apply $Vars(widget:frame)]] \
+		-command [list ::board::options::openConfigDialog $w [namespace current]::Apply] \
 		-state $state \
 		;
 	
+	if {![::application::pgn::empty?]} {
+		$m add separator
+
+		$m add command \
+			-label " $mc::InsertNullMove" \
+			-command { ::move::addMove -- } \
+			-accelerator "$::mc::Key(Ctrl)-0" \
+			;
+	}
+
 	$m add separator
 
 	$m add checkbutton \
 		-label $::board::options::mc::ShowSideToMove \
 		-variable ::board::layout(side-to-move) \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	$m add checkbutton \
 		-label $::board::options::mc::ShowMaterialValues \
 		-variable ::board::layout(material-values) \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	$m add checkbutton \
 		-label $::board::options::mc::ShowMaterialBar \
 		-variable ::board::layout(material-bar) \
 		-state [expr {$::board::layout(material-values) ? "normal" : "disabled"}] \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	$m add checkbutton \
 		-label $::board::options::mc::ShowBorder \
 		-variable ::board::layout(border) \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	$m add checkbutton \
 		-label $::board::options::mc::ShowCoordinates \
 		-variable ::board::layout(coordinates) \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	$m add checkbutton \
 		-label $::board::options::mc::ShowSuggestedMove \
 		-variable ::board::hilite(show-suggested) \
-		-command [namespace code [list Apply $Vars(widget:frame)]] \
+		-command [namespace code Apply] \
 		;
 	tk_popup $m {*}[winfo pointerxy $w]
 }
 
 
-proc Apply {canv} {
+proc Apply {} {
 	variable Vars
-	RebuildBoard $canv $Vars(width) $Vars(height)
+
+	if {[info exists Vars(width)]} {
+		RebuildBoard $Vars(widget:frame) $Vars(width) $Vars(height)
+	}
 }
 
 
 proc RebuildBoard {canv width height} {
 	variable ::board::layout
+	variable Layouts
 	variable Dim
 	variable Vars
 	variable board
@@ -640,16 +681,32 @@ proc RebuildBoard {canv width height} {
 		set Vars(registered) [list $pieceSize $layout(material-bar)]
 	}
 
+	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
+		::update idletasks
+		foreach l $Layouts {
+			if {$l ne $Vars(layout) && [llength $Vars(inuse:$l)] && !$Vars(registered:$l)} {
+				::board::registerSize $Vars(inuse:$l)
+				set Vars(registered:$l) 1
+			}
+		}
+		::board::diagram::resize $board $Dim(squaresize) $Dim(edgethickness)
+		if {$Vars(registered:$Vars(layout))} {
+			::board::unregisterSize $Vars(inuse:$Vars(layout))
+			set Vars(registered:$Vars(layout)) 0
+		}
+		set Vars(inuse:$Vars(layout)) $Dim(squaresize)
+	} else {
+		::board::diagram::rebuild $board
+	}
+
+	if {$Vars(layout) ne "Normal"} {
+		::board::holding::resize $Vars(holding:w) $Dim(squaresize)
+		::board::holding::resize $Vars(holding:b) $Dim(squaresize)
+	}
+
 	BuildBoard $canv
 	ConfigureBoard $canv
 	DrawMaterialValues $canv
-
-	if {$squareSize != $Dim(squaresize) || $edgeThickness != $Dim(edgethickness)} {
-		::update idletasks
-		::board::stuff::resize $board $Dim(squaresize) $Dim(edgethickness)
-	} else {
-		::board::stuff::rebuild $board
-	}
 }
 
 
@@ -657,34 +714,46 @@ proc DrawMaterialValues {canv} {
 	variable ::board::layout
 	variable Vars
 
-	if {$layout(material-values)} {
-		set material [::scidb::game::material]
-		if {[string equal $material $Vars(material)]} { return }
+	if {$Vars(layout) eq "Normal"} {
+		if {$layout(material-values)} {
+			set material [::scidb::game::material]
+			if {[string equal $material $Vars(material)]} { return }
 
-		$canv delete material
-		lassign $material p n b r q
+			$canv delete material
+			lassign $material p n b r q k
 
-		# match knights and bishops
-		for {} {$n < 0 && $b > 0} {incr b -1} {incr n}
-		for {} {$b < 0 && $n > 0} {incr n -1} {incr b}
+			if {$Vars(variant) eq "Normal"} {
+				# match knights and bishops
+				for {} {$n < 0 && $b > 0} {incr b -1} {incr n}
+				for {} {$b < 0 && $n > 0} {incr n -1} {incr b}
+			}
 
-		set sum [expr {abs($p) + abs($n) + abs($b) + abs($r) + abs($q)}]
-		set rank 0
+			set sum [expr {abs($p) + abs($n) + abs($b) + abs($r) + abs($q) + abs($k)}]
+			set rank 0
 
-		AddMaterial $q "q" $canv $rank $sum; incr rank [abs $q]
-		AddMaterial $r "r" $canv $rank $sum; incr rank [abs $r]
-		AddMaterial $b "b" $canv $rank $sum; incr rank [abs $b]
-		AddMaterial $n "n" $canv $rank $sum; incr rank [abs $n]
-		AddMaterial $p "p" $canv $rank $sum
-	} elseif {[string length $Vars(material)]} {
-		$canv delete material
-		set Vars(material) {}
+			switch $Vars(variant) {
+				Suicide - Giveaway	{ set pieces {k r n q p b} }
+				default					{ set pieces {k q r b n p} }
+			}
+
+			foreach piece $pieces {
+				AddMaterial [set $piece] $piece $canv $rank $sum; incr rank [abs [set $piece]]
+			}
+		} elseif {[string length $Vars(material)]} {
+			$canv delete material
+			set Vars(material) {}
+		}
+	} else {
+		lassign [::scidb::pos::inHand?] matw matb
+		::board::holding::update $Vars(holding:w) $matw
+		::board::holding::update $Vars(holding:b) $matb
 	}
 }
 
 
 proc AddMaterial {count piece canv rank sum} {
 	variable ::board::layout
+	variable Vars
 	variable Dim
 
 	if {$count == 0} { return }
@@ -693,7 +762,7 @@ proc AddMaterial {count piece canv rank sum} {
 	set gap	[expr {$Dim(piece)/4}]
 	set offs	[expr {$Dim(piece) + $gap}]
 	set size	[expr {$sum*$Dim(piece) + ($sum - 1)*$gap}]
-	set x		[expr {$Dim(border:x2) + $Dim(gap) + ($Dim(stm) - $Dim(piece) - $dist)/2 + 1}]
+	set x		[expr {$Dim(border:x2) + $Dim(gap:x) + ($Dim(stm) - $Dim(piece) - $dist)/2 + 1}]
 	set y		[expr {$Dim(mid:y) - $size/2 + $rank*$offs}]
 	set res	${Dim(piece)}x${Dim(piece)}
 
@@ -702,6 +771,10 @@ proc AddMaterial {count piece canv rank sum} {
 		set count [abs $count]
 	} else {
 		set color "w"
+	}
+
+	if {$Vars(variant) ne "Normal"} {
+		if {$color eq "w"} { set color "b" } else { set color "w" }
 	}
 
 	set pieceSize $Dim(piece:size)
@@ -724,18 +797,25 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 		::update idletasks
 	}
 
-	set distance		[expr {max(1, min($canvWidth, $canvHeight)/150)}]
-	set width			[expr {$canvWidth - 2*$distance}]
-	set height			[expr {$canvHeight - 2*$distance}]
+	set distance	[expr {max(1, min($canvWidth, $canvHeight)/150)}]
+	set width		[expr {$canvWidth - 2*$distance}]
+	set height		[expr {$canvHeight - 2*$distance}]
 
-	if {$layout(side-to-move) || $layout(material-values)} {
+	if {$layout(side-to-move) || ($layout(material-values) && $Vars(layout) eq "Normal")} {
 		if {$layout(side-to-move)} { set minsize 64 } else { set minsize 34 }
-#		set Dim(stm)	[expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/32 + 5))}]
-		set Dim(stm)	[expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/32 + 5))}]
-		set Dim(gap)	[expr {max(7, $Dim(stm)/3)}]
+		set Dim(stm) [expr {max(18, min($minsize, (min($canvWidth, $canvHeight) - 19)/32 + 5))}]
+		set Dim(gap:x) [expr {max(7, $Dim(stm)/3)}]
+		set Dim(gap:y) $Dim(gap:x)
 	} else {
-		set Dim(stm)	0
-		set Dim(gap)	0
+		set Dim(stm) 0
+		set Dim(gap:x) 0
+		set Dim(gap:y) 0
+	}
+
+	if {$Vars(layout) eq "Normal"} {
+		set stmsize [expr {$Dim(gap:x) + $Dim(stm)}]
+	} else {
+		set stmsize 0
 	}
 
 	if {$layout(border) && $layout(coordinates)} {
@@ -753,16 +833,30 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	}
 
 	if {$layout(border)} {
-		set width [expr {$width - 2*$Dim(borderthickness) - 2*($Dim(stm) + $Dim(gap))}]
+		set width [expr {$width - 2*$Dim(borderthickness) - 2*$stmsize}]
 	} else {
-		set width [expr {$width - max(2*$Dim(offset), 2*($Dim(stm) + $Dim(gap)))}]
+		set width [expr {$width - 2*max($Dim(offset), $stmsize)}]
 	}
 
 	set height					[expr {$height - 2*$Dim(offset)}]
 	set boardsize				[expr {min($width, $height)}]
 	set Dim(edgethickness)	[expr {$Dim(borderthickness) ? 0 : ($boardsize/8 < 65 ? 1 : 2)}]
-	set Dim(squaresize)		[expr {($boardsize - 2*$Dim(edgethickness))/8}]
-	set Dim(border:gap)		[::board::computeGap $Dim(squaresize)]
+
+	if {$Vars(layout) eq "Crazyhouse"} {
+		set squaresize		[expr {($boardsize - 2*$Dim(edgethickness) - 4)/10.3333}]
+		set Dim(distance)	[expr {round($squaresize/3.0)}]
+		if {$layout(side-to-move)} { set Dim(gap:x) $Dim(distance) }
+
+		set width				[expr {$width - 2*$Dim(distance) - 4}]
+		set squaresize1		[expr {($width - 2*$Dim(edgethickness))/10}]
+		set squaresize2		[expr {($height - 2*$Dim(edgethickness))/8}]
+		set Dim(squaresize)	[expr {min($squaresize1, $squaresize2)}]
+		set width				[expr {$width - 2*$Dim(squaresize)}]
+	} else {
+		set Dim(squaresize)	[expr {($boardsize - 2*$Dim(edgethickness))/8}]
+	}
+
+	set Dim(border:gap)	[::board::computeGap $Dim(squaresize)]
 
 	if {$Dim(border:gap) > 0} {
 		if {[::board::borderlineGap] > 0 || $layout(border)} {
@@ -787,7 +881,8 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 	if {$bordersize != -1 && $Dim(bordersize) != $bordersize} {
 		$Vars(widget:frame) delete stm
 		$Vars(widget:border) delete shadow
-		$Vars(widget:border) delete mvbar mv
+		$Vars(widget:border) delete mvbar
+		$Vars(widget:border) delete holdingbar
 	}
 
 	if {$layout(material-bar)} {
@@ -816,17 +911,17 @@ proc ConfigureBoard {canv} {
 
 	# configure side to move #######################
 	if {$layout(side-to-move)} {
-		if {[::board::stuff::flipped? $board]} {
+		if {[::board::diagram::flipped? $board]} {
 			set stmw stmb
 			set stmb stmw
 		} else {
 			set stmw stmw
 			set stmb stmb
 		}
-		set x [expr {$Dim(border:x2) + $Dim(gap)}]
-		set y [expr {$Dim(border:y1) + $Dim(gap)}]
+		set x [expr {$Dim(border:x2) + $Dim(gap:x)}]
+		set y [expr {$Dim(border:y1) + $Dim(gap:y)}]
 		$canv coords $stmb $x $y
-		set y [expr {$Dim(border:y2) - $Dim(stm) - $Dim(gap)}]
+		set y [expr {$Dim(border:y2) - $Dim(stm) - $Dim(gap:y)}]
 		$canv coords $stmw $x $y
 		$canv raise stm
 	}
@@ -837,34 +932,56 @@ proc ConfigureBoard {canv} {
 	# configure material bar #######################
 	$canv delete material
 
-	set state hidden
-	if {$layout(material-values) && $layout(material-bar)} {
-		set size $Dim(piece)
-		set dist [expr {$size/8}]
-		set x3 [expr {$Dim(border:x2) + $Dim(gap) + ($Dim(stm) - $size - $dist)/2}]
-		set x4 [expr {$x3 + $size + $dist}]
+	if {$Vars(layout) eq "Normal"} {
+		set state hidden
+		if {$layout(material-values) && $layout(material-bar)} {
+			set size $Dim(piece)
+			set dist [expr {$size/8}]
+			set x3 [expr {$Dim(border:x2) + $Dim(gap:x) + ($Dim(stm) - $size - $dist)/2}]
+			set x4 [expr {$x3 + $size + $dist}]
 
-		if {$layout(side-to-move)} {
-			set y3 [expr {$Dim(border:y1) + $Dim(stm) + 2*$Dim(gap) + 1}]
-			set y4 [expr {$Dim(border:y2) - $Dim(stm) - 2*$Dim(gap) - 1}]
-		} else {
-			set y3 [expr {$Dim(border:y1) + $Dim(edgethickness)}]
-			set y4 [expr {$Dim(border:y2) - $Dim(edgethickness)}]
+			if {$layout(side-to-move)} {
+				set y3 [expr {$Dim(border:y1) + $Dim(stm) + 2*$Dim(gap:y) + 1}]
+				set y4 [expr {$Dim(border:y2) - $Dim(stm) - 2*$Dim(gap:y) - 1}]
+			} else {
+				set y3 [expr {$Dim(border:y1) + $Dim(edgethickness)}]
+				set y4 [expr {$Dim(border:y2) - $Dim(edgethickness)}]
+			}
+
+			$canv coords mvbar-1 $x3 $y3 $x4 $y4
+			incr x3; incr y3
+			$canv coords mvbar-2 $x3 $y3 $x4 $y4
+			incr x4 -1; incr y4 -1
+			$canv coords mvbar-3 $x3 $y3 $x4 $y4
+
+			$canv raise mvbar
+			set state normal
 		}
-
-		$canv coords mvbar1 $x3 $y3 $x4 $y4
-		incr x3; incr y3
-		$canv coords mvbar2 $x3 $y3 $x4 $y4
-		incr x4 -1; incr y4 -1
-		$canv coords mvbar3 $x3 $y3 $x4 $y4
-
-		$canv raise mvbar
-		set state normal
+		$canv itemconfigure mvbar-1 -state $state
+		$canv itemconfigure mvbar-2 -state $state
+		$canv itemconfigure mvbar-3 -state $state
 	}
 
-	$canv itemconfigure mvbar1 -state $state
-	$canv itemconfigure mvbar2 -state $state
-	$canv itemconfigure mvbar3 -state $state
+	# configure in-hand bars #######################
+	if {$Vars(layout) ne "Normal"} {
+		set wd [::board::holding::width $Vars(holding:w)]
+		set ht [::board::holding::height $Vars(holding:w)]
+		set distance $Dim(distance)
+		if {$layout(side-to-move)} {
+			set yincr [expr {2*$Dim(gap:y) + $Dim(stm) + $Dim(edgethickness)}]
+		} else {
+			set yincr $Dim(edgethickness)
+		}
+		set xw [expr {$Dim(border:x2) + $distance}]
+		set yw [expr {$Dim(border:y2) - $ht - $yincr}]
+		set xb [expr {$Dim(border:x1) - $distance - $wd}]
+		set yb [expr {$Dim(border:y1) + $yincr}]
+		if {[::board::diagram::flipped? $board]} { lassign {b w} w b } else { lassign {w b} w b }
+		$canv coords holdingbar-$w $xw $yw
+		$canv coords holdingbar-$b $xb $yb
+		$canv raise holdingbar-$w
+		$canv raise holdingbar-$b
+	}
 
 	# configure coordinates ########################
 	if {$layout(coordinates)} {
@@ -872,7 +989,7 @@ proc ConfigureBoard {canv} {
 		$w itemconfigure ncoords -state normal
 		set size $Dim(offset)
 		if {$layout(border)} { incr size -4 }
-		set font [ComputeFont $w $size]
+		set font [ComputeCoordFont $w $size]
 	}
 	$canv itemconfigure coords -state hidden
 	$border itemconfigure coords -state hidden
@@ -897,7 +1014,7 @@ proc ConfigureBoard {canv} {
 		}
 		set columns {8 7 6 5 4 3 2 1}
 		set rows {A B C D E F G H}
-		if {[::board::stuff::flipped? $board]} {
+		if {[::board::diagram::flipped? $board]} {
 			set columns [lreverse $columns]
 			set rows [lreverse $rows]
 		}
@@ -924,7 +1041,7 @@ proc ConfigureBoard {canv} {
 }
 
 
-proc ComputeFont {w size} {
+proc ComputeCoordFont {w size} {
 	variable Defaults
 	variable Dim
 
@@ -952,6 +1069,7 @@ proc ComputeFont {w size} {
 proc BuildBoard {canv} {
 	variable ::board::layout
 	variable ::board::colors
+	variable ::board::square::style
 	variable stmWhite
 	variable stmBlack
 	variable Dim
@@ -966,7 +1084,7 @@ proc BuildBoard {canv} {
 			$border configure -background $colors(hint,border-color)
 		}
 		if {[llength [$border find withtag shadow]] == 0} {
-			::board::stuff::drawBorderlines $border $Dim(bordersize)
+			::board::diagram::drawBorderlines $border $Dim(bordersize)
 		}
 	}
 
@@ -983,11 +1101,20 @@ proc BuildBoard {canv} {
 	}
 
 	# material bar #################################
-	$canv delete mvbar mv
-	if {$layout(material-values) && $layout(material-bar) && [llength [$canv find withtag mv]] == 0} {
-		$canv create rectangle 0 0 0 0 -fill white -width 0 -tags {mvbar mvbar1}
-		$canv create rectangle 0 0 0 0 -fill black -width 0 -tag {mvbar mvbar2}
-		$canv create rectangle 0 0 0 0  -fill #e6e6e6 -width 0 -tag {mvbar mvbar3}
+	if {$Vars(layout) ne "Normal" || !$layout(material-values) || !$layout(material-bar)} {
+		$canv delete mvbar
+	} elseif {[llength [$canv find withtag mvbar]] == 0} {
+		$canv create rectangle 0 0 0 0 -fill white -width 0 -tags {mvbar mvbar-1}
+		$canv create rectangle 0 0 0 0 -fill black -width 0 -tags {mvbar mvbar-2}
+		$canv create rectangle 0 0 0 0  -fill #e6e6e6 -width 0 -tags {mvbar mvbar-3}
+	}
+
+	# in-hand bars #################################
+	if {$Vars(layout) eq "Normal"} {
+		$canv delete holdingbar
+	} elseif {[llength [$canv find withtag holdingbar]] == 0} {
+		$canv create window 0 0 -anchor nw -tags {holdingbar holdingbar-w} -window $Vars(holding:w)
+		$canv create window 0 0 -anchor nw -tags {holdingbar holdingbar-b} -window $Vars(holding:b)
 	}
 
 	# coordinates ##################################
@@ -1012,7 +1139,7 @@ proc Rotate {canv} {
 	variable board
 	variable Vars
 
-	::board::stuff::rotate $board
+	::board::diagram::rotate $board
 	ConfigureBoard $canv
 	DrawMaterialValues $Vars(widget:frame)
 }
@@ -1073,14 +1200,21 @@ proc GameSwitched {position} {
 	if {[lindex [::scidb::game::link?] 0] eq $scratchbaseName} {
 		set state disabled
 	} else {
-		lassign [::scidb::game::sink? $position] base index
-		set name [lindex [scidb::db::fetch eventInfo $index $base] 0]
-		if {$name eq "?" || $name eq "-"} { set name "" }
-		if {[string length $name]} { set state normal } else { set state disabled }
+		set state normal
 	}
 
 	::toolbar::childconfigure $Vars(crossTable) -state $state
 	UpdateGameControls $position
+
+	set Vars(variant) [::scidb::game::query $position variant]
+	switch $Vars(variant) {
+		Crazyhouse	{ set layout "Crazyhouse" }
+		default		{ set layout "Normal" }
+	}
+	if {$layout ne $Vars(layout)} {
+		set Vars(layout) $layout
+		Apply
+	}
 }
 
 
@@ -1096,7 +1230,7 @@ proc UpdateGameControls {position} {
 
 	if {$position != 9} {
 		set Vars(current:game) [list $position {*}[::game::getSourceInfo $position]]
-		set view [lindex $Vars(current:game) 2]
+		set view [lindex $Vars(current:game) 3]
 		if {$view >= 0} {
 			UpdateGameButtonState
 			set cmd [list [namespace current]::UpdateGameList [namespace current]::CloseGameList $position]
@@ -1116,11 +1250,11 @@ proc UpdateGameControls {position} {
 proc UpdateGameButtonState {} {
 	variable Vars
 
-	lassign $Vars(current:game) position base view number
-	set numGames [scidb::view::count games $base $view]
+	lassign $Vars(current:game) position base variant view number
+	set numGames [scidb::view::count games $base $variant $view]
 
 	if {$numGames > 1} {
-		set index [::scidb::db::get gameIndex $number $view $base]
+		set index [::scidb::db::get gameIndex $number $view $base $variant]
 		if {$index >= 0} {
 			if {$index == 0} { set state disabled } else { set state normal }
 			::toolbar::childconfigure $Vars(game:prev) -state $state
@@ -1138,25 +1272,25 @@ proc UpdateGameButtonState {} {
 }
 
 
-proc UpdateGameList {position id base {view -1} {index -1}} {
+proc UpdateGameList {position id base variant {view -1} {index -1}} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] == 0} { return }
-	lassign $Vars(current:game) currPos currBase currView currNumber
+	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
 
-	if {$currBase eq $base && ($currView == $view || $currView == 0)} {
+	if {$currBase eq $base && $variant eq $currVariant && ($currView == $view || $currView == 0)} {
 		UpdateGameButtonState
 	}
 }
 
 
-proc CloseGameList {position base {view {}}} {
+proc CloseGameList {position base variant {view {}}} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] == 0} { return }
-	lassign $Vars(current:game) currPos currBase currView currNumber
+	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
 
-	if {$base eq $currBase && ([llength $view] == 0 || $view == $currView)} {
+	if {$base eq $currBase && $variant eq $currVariant && ([llength $view] == 0 || $view == $currView)} {
 		if {[llength $Vars(subscribe:list)]} {
 			::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
 			set Vars(subscribe:list) {}
@@ -1173,8 +1307,9 @@ proc CloseGameList {position base {view {}}} {
 
 proc ShowCrossTable {parent} {
 	set base [::scidb::game::query database]
+	set variant [::scidb::app::variant]
 	set index [::scidb::game::index]
-	::crosstable::open .application $base $index -1 game
+	::crosstable::open .application $base $variant $index -1 game
 }
 
 

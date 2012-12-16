@@ -240,9 +240,9 @@ Decoder::decodeMove(Byte value, Move& move)
 
 	board.prepareUndo(move);
 	move.setColor(board.sideToMove());
-	M_ASSERT(board.isValidMove(move));
+	M_ASSERT(board.isValidMove(move, variant::Normal));
 	move.setLegalMove();
-	board.doMove(move);
+	board.doMove(move, variant::Normal);
 
 	return pieceNum;
 }
@@ -287,7 +287,7 @@ Decoder::decodeVariation()
 					MoveNode* current = m_currentNode;
 
 					m_position.push();
-					m_position.board().undoMove(move);
+					m_position.board().undoMove(move, variant::Normal);
 					current->addVariation(m_currentNode = new MoveNode);
 					decodeVariation();
 					m_currentNode = current;
@@ -420,7 +420,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					M_ASSERT(!hasNote);
 
 					m_position.push();
-					m_position.board().undoMove(lastMove);
+					m_position.board().undoMove(lastMove, variant::Normal);
 					consumer.startVariation();
 					decodeVariation(consumer, data, text);
 					consumer.finishVariation();
@@ -825,7 +825,7 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 					else
 					{
 						m_position.push();
-						m_position.board().undoMove(move);
+						m_position.board().undoMove(move, variant::Normal);
 						move = findExactPosition(position, false);
 						m_position.pop();
 

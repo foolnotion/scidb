@@ -137,10 +137,14 @@ tk_image.o: ../mstl/m_utility.ipp
 tk_image.o: ../mstl/m_limits.h
 tk_image.o: ../mstl/m_bit_functions.h
 tk_image.o: ../mstl/m_bit_functions.ipp
+tk_image.o: ../mstl/m_uint128_t.h
+tk_image.o: ../mstl/m_uint128.h
 tk_image.o: ../mstl/m_assert.h
 tk_image.o: ../mstl/m_exception.h
 tk_image.o: ../mstl/m_backtrace.h
 tk_image.o: ../mstl/m_exception.ipp
+tk_image.o: ../mstl/m_iterator.h
+tk_image.o: ../mstl/m_iterator.ipp
 tk_image.o: ../mstl/m_vector.ipp
 tk_image.o: ../mstl/m_uninitialized.h
 tk_image.o: ../mstl/m_uninitialized.ipp
@@ -207,6 +211,8 @@ tk_jpeg.o: ../mstl/m_exception.h
 tk_jpeg.o: ../mstl/m_backtrace.h
 tk_jpeg.o: ../mstl/m_exception.ipp
 tk_misc.o: tk_init.h
+tk_misc.o: ../tcl/tcl_base.h
+tk_misc.o: ../tcl/tcl_base.ipp
 tk_multiwindow.o: tk_init.h
 tk_multiwindow.o: ../tcl/tcl_base.h
 tk_multiwindow.o: ../tcl/tcl_base.ipp
@@ -241,6 +247,8 @@ tk_selection.o: ../mstl/m_utility.ipp
 tk_selection.o: ../mstl/m_limits.h
 tk_selection.o: ../mstl/m_bit_functions.h
 tk_selection.o: ../mstl/m_bit_functions.ipp
+tk_selection.o: ../mstl/m_uint128_t.h
+tk_selection.o: ../mstl/m_uint128.h
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h
@@ -264,7 +272,11 @@ tk_twm.o: ../mstl/m_utility.ipp
 tk_twm.o: ../mstl/m_limits.h
 tk_twm.o: ../mstl/m_bit_functions.h
 tk_twm.o: ../mstl/m_bit_functions.ipp
+tk_twm.o: ../mstl/m_uint128_t.h
+tk_twm.o: ../mstl/m_uint128.h
 tk_twm.o: ../mstl/m_assert.h
+tk_twm.o: ../mstl/m_iterator.h
+tk_twm.o: ../mstl/m_iterator.ipp
 tk_twm.o: ../mstl/m_vector.ipp
 tk_twm.o: ../mstl/m_uninitialized.h
 tk_twm.o: ../mstl/m_uninitialized.ipp
@@ -303,6 +315,8 @@ tk_x11.o: ../mstl/m_utility.ipp
 tk_x11.o: ../mstl/m_limits.h
 tk_x11.o: ../mstl/m_bit_functions.h
 tk_x11.o: ../mstl/m_bit_functions.ipp
+tk_x11.o: ../mstl/m_uint128_t.h
+tk_x11.o: ../mstl/m_uint128.h
 tk_x11.o: ../mstl/m_assert.h
 tk_x11.o: ../mstl/m_exception.h
 tk_x11.o: ../mstl/m_backtrace.h

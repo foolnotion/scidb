@@ -25,10 +25,18 @@
 // ======================================================================
 
 #include "db_provider.h"
+#include "db_board.h"
 
 using namespace db;
 
 Provider::Provider(format::Type srcFormat) :m_format(srcFormat), m_index(-1) {}
 Provider::~Provider() throw() {}
+
+
+bool
+Provider::setupBoard() const
+{
+	return !getStartBoard().isStartPosition();
+}
 
 // vi:set ts=3 sw=3:

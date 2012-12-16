@@ -30,17 +30,11 @@
 
 namespace db {
 
-inline format::Type Producer::format() const				{ return m_format; }
+inline format::Type Producer::format() const					{ return m_format; }
+inline variant::Type Producer::variant() const				{ return m_variant; }
 
-inline bool Producer::hasConsumer() const					{ return m_consumer; }
-inline void Producer::setConsumer(Consumer* consumer)	{ m_consumer = consumer; }
-
-
-inline Producer::Producer(format::Type srcFormat, Consumer* consumer)
-	:m_format(srcFormat)
-	,m_consumer(consumer)
-{
-}
+inline bool Producer::hasConsumer() const						{ return m_consumer; }
+inline void Producer::setVariant(variant::Type variant)	{ m_variant = variant; }
 
 
 inline
@@ -65,6 +59,7 @@ inline
 Board&
 Producer::board()
 {
+	M_REQUIRE(hasConsumer());
 	return m_consumer->getBoard();
 }
 
@@ -72,6 +67,7 @@ inline
 Board const&
 Producer::board() const
 {
+	M_REQUIRE(hasConsumer());
 	return m_consumer->board();
 }
 
@@ -80,6 +76,7 @@ inline
 bool
 Producer::whiteToMove() const
 {
+	M_REQUIRE(hasConsumer());
 	return color::isWhite(m_consumer->board().sideToMove());
 }
 
@@ -88,6 +85,7 @@ inline
 bool
 Producer::blackToMove() const
 {
+	M_REQUIRE(hasConsumer());
 	return color::isBlack(m_consumer->board().sideToMove());
 }
 

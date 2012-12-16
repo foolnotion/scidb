@@ -169,6 +169,9 @@ bitfield<Bits>::bitfield(unsigned from, unsigned to)
 	static_assert(numeric_limits<Bits>::is_integer, "template parameter is not integer");
 	static_assert(numeric_limits<Bits>::is_unsigned, "template parameter is not unsigned integer");
 
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	set(from, to);
 }
 
@@ -317,6 +320,7 @@ inline
 Bits
 bitfield<Bits>::mask(unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	return value_type(1) << n;
 }
 
@@ -326,6 +330,9 @@ inline
 Bits
 bitfield<Bits>::mask(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	return value_type((value_type(~0) << from) & (value_type(~0) >> ((nbits - 1) - to)));
 }
 
@@ -335,6 +342,7 @@ inline
 Bits
 bitfield<Bits>::byte_mask(unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	return value_type(0xff) << (n << 3);
 }
 
@@ -344,6 +352,9 @@ inline
 Bits
 bitfield<Bits>::byte_mask(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	return mask(from ? (from << 3) - 1 : from, ((to + 1) << 3) - 1);
 }
 
@@ -353,6 +364,7 @@ inline
 typename bitfield<Bits>::reference
 bitfield<Bits>::operator[](unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	return reference(m_bits, mask(n));
 }
 
@@ -362,6 +374,7 @@ inline
 bool
 bitfield<Bits>::operator[](unsigned n) const
 {
+	M_REQUIRE(n < nbits);
 	return m_bits & mask(n);
 }
 
@@ -398,6 +411,7 @@ inline
 void
 bitfield<Bits>::set(unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	m_bits |= mask(n);
 }
 
@@ -407,6 +421,9 @@ inline
 void
 bitfield<Bits>::set(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	m_bits |= mask(from, to);
 }
 
@@ -416,6 +433,8 @@ inline
 bool
 bitfield<Bits>::test_and_set(unsigned n)
 {
+	M_REQUIRE(n < nbits);
+
 	value_type m = mask(n);
 
 	if ((m_bits & m) != 0)
@@ -431,7 +450,7 @@ inline
 void
 bitfield<Bits>::reset()
 {
-	m_bits = 0;
+	m_bits = 0u;
 }
 
 
@@ -440,6 +459,7 @@ inline
 void
 bitfield<Bits>::reset(unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	m_bits &= ~mask(n);
 }
 
@@ -449,6 +469,9 @@ inline
 void
 bitfield<Bits>::reset(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	m_bits &= ~mask(from, to);
 }
 
@@ -467,6 +490,7 @@ inline
 void
 bitfield<Bits>::put(unsigned n, bool value)
 {
+	M_REQUIRE(n < nbits);
 	value ? set(n) : reset(n);
 }
 
@@ -476,6 +500,9 @@ inline
 void
 bitfield<Bits>::put(unsigned from, unsigned to, bool value)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	value ? set(from, to) : reset(from, to);
 }
 
@@ -494,6 +521,7 @@ inline
 void
 bitfield<Bits>::flip(unsigned n)
 {
+	M_REQUIRE(n < nbits);
 	m_bits ^= mask(n);
 }
 
@@ -503,6 +531,9 @@ inline
 void
 bitfield<Bits>::flip(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	m_bits ^= mask(from, to);
 }
 
@@ -521,6 +552,7 @@ inline
 bool
 bitfield<Bits>::test(unsigned n) const
 {
+	M_REQUIRE(n < nbits);
 	return operator[](n);
 }
 
@@ -539,7 +571,7 @@ inline
 bool
 bitfield<Bits>::any() const
 {
-	return m_bits != 0;
+	return m_bits != 0u;
 }
 
 
@@ -548,7 +580,7 @@ inline
 bool
 bitfield<Bits>::complete() const
 {
-	return m_bits == value_type(~0);
+	return m_bits == value_type(~0u);
 }
 
 
@@ -596,7 +628,7 @@ inline
 unsigned
 bitfield<Bits>::find_last() const
 {
-	return m_bits == 0 ? npos : bf::msb_index(m_bits);
+	return m_bits == 0u ? npos : bf::msb_index(m_bits);
 }
 
 
@@ -605,7 +637,7 @@ inline
 unsigned
 bitfield<Bits>::find_first() const
 {
-	return m_bits == 0 ? npos : bf::lsb_index(m_bits);
+	return m_bits == 0u ? npos : bf::lsb_index(m_bits);
 }
 
 
@@ -704,6 +736,9 @@ inline
 void
 bitfield<Bits>::increase(unsigned from, unsigned to)
 {
+	M_REQUIRE(to < nbits);
+	M_REQUIRE(from <= to);
+
 	value_type m = mask(from, to);
 	value_type v = m_bits & m;
 

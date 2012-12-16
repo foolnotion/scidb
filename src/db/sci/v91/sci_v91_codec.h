@@ -79,7 +79,7 @@ public:
 
 	unsigned gameFlags() const override;
 
-	void filterTag(TagSet& tags, tag::ID tag, Section section) const override;
+	void filterTags(TagSet& tags, Section section) const override;
 	mstl::string const& extension() const override;
 	mstl::string const& encoding() const override;
 

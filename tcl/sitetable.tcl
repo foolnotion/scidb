@@ -199,15 +199,15 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 }
 
 
-proc init {path base} {
+proc init {path base variant} {
 	variable ${path}::Vars
-	set Vars($base:index) -1
+	set Vars($base:$variant:index) -1
 }
 
 
-proc forget {path base} {
-	::scrolledtable::forget $path $base
-	unset -nocomplain [namespace current]::${path}::Vars($base:index)
+proc forget {path base variant} {
+	::scrolledtable::forget $path $base $variant
+	unset -nocomplain [namespace current]::${path}::Vars($base:$variant:index)
 }
 
 
@@ -243,8 +243,8 @@ proc fill {path first last} {
 }
 
 
-proc update {path base size} {
-	::scrolledtable::update $path $base $size
+proc update {path base variant size} {
+	::scrolledtable::update $path $base $variant $size
 }
 
 
@@ -268,9 +268,9 @@ proc borderwidth {path} {
 }
 
 
-proc selectedSite {path base} {
+proc selectedSite {path base variant} {
 	variable ${path}::Vars
-	return $Vars($base:index) 
+	return $Vars($base:$variant:index) 
 }
 
 
@@ -345,10 +345,11 @@ proc TableSelected {path index} {
 	if {[llength $Vars(selectcmd)]} {
 		::widget::busyCursor on
 		set base [::scrolledtable::base $path]
-		set view [{*}$Vars(viewcmd) $base]
-		set Vars($base:index) [::scidb::db::get siteIndex $index $view $base]
-		set Vars($base:index) $index
-		{*}$Vars(selectcmd) $base $view
+		set variant [::scrolledtable::variant $path]
+		set view [{*}$Vars(viewcmd) $base $variant]
+		set Vars($base:$variant:index) [::scidb::db::get siteIndex $index $view $base $variant]
+		set Vars($base:$variant:index) $index
+		{*}$Vars(selectcmd) $base $variant $view
 		::widget::busyCursor off
 	}
 }
@@ -358,19 +359,19 @@ proc TableFill {path args} {
 	variable ${path}::Vars
 	variable Options
 
-	lassign [lindex $args 0] table base start first last columns
+	lassign [lindex $args 0] table base variant start first last columns
 
-	set codec [::scidb::db::get codec $base]
-	set view [{*}$Vars(viewcmd) $base]
-	set last [expr {min($last, [scidb::view::count sites $base $view] - $start)}]
+	set codec [::scidb::db::get codec $base $variant]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set last [expr {min($last, [scidb::view::count sites $base $variant $view] - $start)}]
 
-	if {![info exists Vars($base:index)]} {
-		set Vars($base:index) -1
+	if {![info exists Vars($base:$variant:index)]} {
+		set Vars($base:$variant:index) -1
 	}
 
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
-		set line [::scidb::db::get siteInfo $index $view $base]
+		set line [::scidb::db::get siteInfo $index $view $base $variant]
 		set text {}
 		set k 0
 
@@ -414,7 +415,7 @@ proc TableFill {path args} {
 proc TableVisit {table data} {
 	variable ${table}::Vars
 
-	lassign $data base mode id row
+	lassign $data base variant mode id row
 
 	if {$mode eq "leave"} {
 		::tooltip::hide true
@@ -423,10 +424,10 @@ proc TableVisit {table data} {
 
 	if {$id ne "country"} { return }
 
-	set view [{*}$Vars(viewcmd) $base]
+	set view [{*}$Vars(viewcmd) $base $variant]
 	set row  [::scrolledtable::rowToIndex $table $row]
 	set col  [lsearch -exact $Vars(columns) $id]
-	set item [::scidb::db::get siteInfo $row $view $base $col]
+	set item [::scidb::db::get siteInfo $row $view $base $variant $col]
 
 	if {[string length $item] > 0} {
 		set tip [::country::name $item]
@@ -443,20 +444,21 @@ proc SortColumn {path id dir {rating {}}} {
 
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path]
-	set view [{*}$Vars(viewcmd) $base]
+	set variant [::scrolledtable::variant $path]
+	set view [{*}$Vars(viewcmd) $base $variant]
 	set see 0
 	set selection [::scrolledtable::selection $path]
 	if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $path]} { set see 1 }
 	if {$dir eq "reverse"} {
-		::scidb::db::reverse site $base $view
+		::scidb::db::reverse site $base $variant $view
 	} else {
 		set options {}
 		if {$dir eq "descending"} { lappend options -descending }
 		set column [::scrolledtable::columnNo $path $id]
-		::scidb::db::sort site $base $column $view {*}$options
+		::scidb::db::sort site $base $variant $column $view {*}$options
 	}
 	if {$selection >= 0} {
-		set selection [::scidb::db::get lookupSite $selection $view $base]
+		set selection [::scidb::db::get lookupSite $selection $view $base $variant]
 	}
 	::widget::busyCursor off
 	::scrolledtable::updateColumn $path $selection $see
@@ -470,8 +472,9 @@ proc Find {path combo args} {
 	set value $Vars(find-current)
 	if {[string length $value] == 0} { return }
 	set base [::scrolledtable::base $path]
-	set view [{*}$Vars(viewcmd) $base]
-	set i [::scidb::view::find site $base $view $value]
+	set variant [::scrolledtable::variant $path]
+	set view [{*}$Vars(viewcmd) $base $variant]
+	set i [::scidb::view::find site $base $variant $view $value]
 	if {[llength $args] == 0} {
 		if {[string length $value] > 2} {
 			lappend Find $value

@@ -31,6 +31,7 @@
 #include "db_move_info_set.h"
 #include "db_game_info.h"
 #include "db_comment.h"
+#include "db_producer.h"
 
 #include "sys_utf8_codec.h"
 
@@ -56,11 +57,16 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_moveInfoCount(0)
 	,m_markCount(0)
 	,m_terminated(false)
+	,m_mainVariant(variant::Normal)
+	,m_variant(variant::Normal)
+	,m_useVariant(variant::Normal)
+	,m_idn(0)
 	,m_flags(0)
 	,m_line(m_moveBuffer)
 	,m_encoding(encoding)
 	,m_codec(new sys::utf8::Codec(encoding))
 	,m_consumer(0)
+	,m_producer(0)
 	,m_setupBoard(true)
 	,m_commentEngFlag(false)
 	,m_commentOthFlag(false)
@@ -71,6 +77,28 @@ Consumer::Consumer(	format::Type srcFormat,
 Consumer::~Consumer() throw()
 {
 	delete m_codec;
+}
+
+
+void
+Consumer::variantHasChanged(variant::Type)
+{
+	// no action
+}
+
+
+void
+Consumer::setVariant(variant::Type variant)
+{
+	m_useVariant = m_variant = variant;
+
+	if (m_producer && m_producer->variant() == variant::Undetermined)
+	{
+		m_producer->setVariant(
+			variant == variant::Undetermined ? variant : variant::toMainVariant(variant));
+	}
+
+	variantHasChanged(variant);
 }
 
 
@@ -95,6 +123,20 @@ Consumer::plyCount() const
 }
 
 
+variant::Type
+Consumer::variant() const
+{
+	return m_variant;
+}
+
+
+uint16_t
+Consumer::idn() const
+{
+	return m_idn;
+}
+
+
 void
 Consumer::setup(Board const& startPosition)
 {
@@ -115,11 +157,10 @@ Consumer::setup(mstl::string const& fen)
 	// XXX possibly we should allow:
 	// 1. handicap games
 	// 2. illegal positions (king in check)
-	M_ASSERT(Board::isValidFen(fen, variant::Unknown));
+	M_ASSERT(Board::isValidFen(fen, m_useVariant));
 
-	m_stack.bottom().board.setup(fen);
+	m_stack.bottom().board.setup(fen, m_useVariant);
 }
-
 
 
 void
@@ -145,21 +186,40 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_commentEngFlag = false;
 	m_commentOthFlag = false;
 	m_flags = 0;
+	m_variant = m_mainVariant;
+	m_useVariant = m_mainVariant;
 	m_moveInfoSet.clear();
 	m_engines.clear();
 	m_homePawns.clear();
 
 	if (board)
-		m_stack.bottom().board = *board;
-	else if (tags.contains(tag::Fen))
-		setup(tags.value(tag::Fen));
-	else if (tags.contains(tag::Idn))
-		setup(::strtoul(tags.value(tag::Idn), nullptr, 10));
-	else if (m_setupBoard)
-		setup(Board::standardBoard());
+	{
+		if (board->notDerivableFromChess960())
+			return false;
 
-	if (getStartBoard().notDerivableFromChess960())
-		return false;
+		m_stack.bottom().board = *board;
+
+		m_idn = startBoard().computeIdn();
+	}
+	else if (tags.contains(tag::Fen))
+	{
+		setup(tags.value(tag::Fen));
+
+		if (startBoard().notDerivableFromChess960())
+			return false;
+
+		m_idn = startBoard().computeIdn();
+	}
+	else if (tags.contains(tag::Idn))
+	{
+		m_idn = tags.asInt(tag::Idn);
+		setup(m_idn);
+	}
+	else if (m_setupBoard)
+	{
+		setup(Board::standardBoard());
+		m_idn = variant::Standard;
+	}
 
 	m_stack.dup();
 	m_stack.top().empty = true;
@@ -176,9 +236,13 @@ Consumer::finishGame(TagSet const& tags)
 
 	if (startBoard().isStartPosition())
 		m_stack.top().board.signature().setHomePawns(m_homePawns.used(), m_homePawns.data());
+	else
+		m_stack.top().board.signature().setHomePawns(0, hp::Pawns());
 
 	save::State state = endGame(tags);
 	m_stack.pop();
+	m_setupBoard = true;
+
 	return state;
 }
 
@@ -269,7 +333,7 @@ Consumer::putMove(Move const& move,
 						Comment const& comment,
 						MarkSet const& marks)
 {
-	M_REQUIRE(terminated() || board().isValidMove(move));
+	M_REQUIRE(terminated() || board().isValidMove(move, m_useVariant));
 
 	if (m_terminated)
 		return;
@@ -320,7 +384,7 @@ Consumer::putMove(Move const& move,
 			m_moveInfoSet.clear();
 		}
 
-		entry.board.doMove(entry.move);
+		entry.board.doMove(move, m_useVariant);
 
 		if (isMainline())
 		{
@@ -348,7 +412,7 @@ Consumer::putMove(Move const& move,
 void
 Consumer::putMove(Move const& move)
 {
-	M_REQUIRE(terminated() || board().isValidMove(move));
+	M_REQUIRE(terminated() || board().isValidMove(move, m_useVariant));
 
 	if (m_terminated)
 		return;
@@ -378,7 +442,7 @@ Consumer::putMove(Move const& move)
 			m_moveInfoSet.clear();
 		}
 
-		entry.board.doMove(entry.move);
+		entry.board.doMove(move, m_useVariant);
 
 		if (isMainline())
 		{
@@ -413,7 +477,7 @@ Consumer::startVariation()
 
 	m_stack.dup();
 	Entry& entry = m_stack.top();
-	entry.board.undoMove(entry.move);
+	entry.board.undoMove(entry.move, m_useVariant);
 	entry.empty = true;
 	entry.move.clear();
 }

@@ -46,13 +46,16 @@ set UnlockGame				"Unlock Game"
 set CloseGame				"Close Game"
 
 set GameNew					"New Game"
-set GameNewChess960		"New Game: Chess 960"
-set GameNewChess960Sym	"New Game: Chess 960 (symmetrical only)"
-set GameNewShuffle		"New Game: Shuffle"
 
 set AddNewGame				"Save: Add New Game to %s..."
 set ReplaceGame			"Save: Replace Game in %s..."
 set ReplaceMoves			"Save: Replace Moves Only in Game..."
+
+set Tip(Antichess)		"There is no check, no castling, the king\nis captured like an ordinary piece."
+set Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)."
+set Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)."
+#set Tip(AISE)				"In case of stalemate the game is remis\n(according to AISE rules)."
+set Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated."
 
 } ;# namespace mc
 
@@ -398,6 +401,10 @@ proc insert {gamebar at id tags} {
 		incr Specs(size:$gamebar)
 		Setup $gamebar $at $id $tags $data
 	}
+
+	foreach recv $Specs(receiver:$gamebar) {
+		eval $recv inserted $id
+	}
 }
 
 
@@ -505,16 +512,8 @@ proc lock {gamebar id} {
 		variable icon::15x15::close
 
 		if {$Specs(modified:$id:$gamebar)} { set state modified } else { set state locked }
-		set Specs(state:$id:$gamebar) $state
 		set Specs(locked:$id:$gamebar) 1
-
-		if {!$Specs(modified:$id:$gamebar)} {
-			$gamebar itemconfigure close:icon$id -image $close(locked)
-		}
-
-		foreach recv $Specs(receiver:$gamebar) {
-			eval $recv lock $id
-		}
+		SetState $gamebar $id $state
 	}
 }
 
@@ -626,6 +625,31 @@ proc popupMenu {parent {addGameHistory 1} {remove -1}} {
 	menu $menu -tearoff 0
 	AddGameMenuEntries $menu 0 $addGameHistory 2 $remove
 	tk_popup $menu {*}[winfo pointerxy .]
+}
+
+
+proc addVariantsToMenu {parent m} {
+	foreach variant {ThreeCheck Crazyhouse} {
+		$m add command \
+			-label " $::mc::VariantName($variant)" \
+			-image $::icon::16x16::variant($variant) \
+			-compound left \
+			-command [list ::menu::gameNew $parent $variant] \
+			;
+	}
+	foreach variant {Losers Suicide Giveaway} {
+		set lbl " $::mc::VariantName(Antichess) - $::mc::VariantName($variant)"
+		$m add command \
+			-label $lbl \
+			-command [list ::menu::gameNew $parent $variant] \
+			-image $::icon::16x16::variant($variant) \
+			-compound left \
+			;
+		set tip ""
+		if {$variant ne "Losers"} { append tip $mc::Tip(Antichess) "\n" }
+		append tip $mc::Tip($variant)
+		::tooltip::tooltip $m -index $lbl $tip
+	}
 }
 
 
@@ -813,7 +837,7 @@ proc ShowTags {gamebar id} {
 	set f [::util::makePopup $dlg]
 	set bg [$f cget -background]
 
-	lassign [::scidb::game::link? $id] base number
+	lassign [::scidb::game::link? $id] base variant number
 	if {$base ne $scratchbaseName} {
 		if {$base eq $clipbaseName} {
 			set name $T_Clipbase
@@ -1223,27 +1247,16 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 		-compound left \
 		-command [list ::menu::gameNew $parent] \
 		;
-	$m add command \
-		-label " $mc::GameNewChess960" \
-		-accelerator "Ctrl+Shift+X" \
-		-image $::icon::16x16::dice \
+
+	set sub [menu $m.newGame -tearoff 0]
+	addVariantsToMenu $parent $sub
+	$m add cascade \
+		-menu $sub \
+		-label " $mc::GameNew" \
+		-image $::icon::16x16::document \
 		-compound left \
-		-command [list ::menu::gameNew $parent frc] \
 		;
-	$m add command \
-		-label " $mc::GameNewChess960Sym" \
-		-accelerator "Ctrl+Shift+Y" \
-		-image $::icon::16x16::dice \
-		-compound left \
-		-command [list ::menu::gameNew $parent sfrc] \
-		;
-	$m add command \
-		-label " $mc::GameNewShuffle" \
-		-accelerator "Ctrl+Shift+Z" \
-		-image $::icon::16x16::dice \
-		-compound left \
-		-command [list ::menu::gameNew $parent shuffle] \
-		;
+
 	$m add command \
 		-label " $::import::mc::ImportPgnGame" \
 		-image $::icon::16x16::filetypePGN \
@@ -1257,14 +1270,16 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 
 		$m add separator
 		set position [::scidb::game::current]
-		lassign [::scidb::game::link? $position] base index
+		lassign [::scidb::game::link? $position] base variant index
 		unset -nocomplain state
 
 		set actual [::scidb::db::get name]
 
 		if {$base ne $scratchbaseName} {
-			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
-				if {$index >= 0} { set state normal } else { set state disabled }
+			if {	$index >= 0
+				&& [::scidb::db::get open? $base $variant]
+				&& ![::scidb::db::get readonly? $base $variant]} {
+				set state normal
 			} else {
 				set state disabled
 			}
@@ -1280,7 +1295,7 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 				-label " [format $mc::ReplaceGame $name]" \
 				-image $::icon::16x16::save \
 				-compound left \
-				-command [list ::dialog::save::open $parent $base $position [expr {$index + 1}]] \
+				-command [list ::dialog::save::open $parent $base $variant $position [expr {$index + 1}]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-game)" \
 				;
@@ -1298,7 +1313,8 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 
 		if {	$actual eq $scratchbaseName
 			|| $actual eq $clipbaseName
-			|| [::scidb::db::get readonly? $actual]} {
+			|| [::scidb::db::get readonly? $actual]
+			|| $variant ni [::scidb::db::get variants $actual]} {
 			set state disabled
 		} else {
 			set state normal
@@ -1307,19 +1323,21 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 			-label " [format $mc::AddNewGame [::util::databaseName $actual]]" \
 			-image $::icon::16x16::saveAs \
 			-compound left \
-			-command [list ::dialog::save::open $parent $actual $position] \
+			-command [list ::dialog::save::open $parent $actual $variant $position] \
 			-state $state \
 			-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(add-new-game)" \
 			;
 
 		menu $m.save
 		set count 0
-		foreach base [::scidb::app::bases] {
-			if {$base ne $actual && ![::scidb::db::get readonly? $base]} {
+		foreach base [::scidb::tree::list] {
+			if {	$base ne $actual
+				&& ![::scidb::db::get readonly? $base]
+				&& $variant in [::scidb::db::get variants $base]} {
 				set name [::util::databaseName $base]
 				$m.save add command \
 					-label $name \
-					-command [list ::dialog::save::open $parent $base $position] \
+					-command [list ::dialog::save::open $parent $base $variant $position] \
 					;
 				incr count
 			}
@@ -1362,15 +1380,14 @@ proc PopupEventMenu {gamebar id} {
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
-	set base [lindex [::scidb::game::link? $id] 0]
+	lassign [::scidb::game::link? $id] base variant _
 
-	if {[::scidb::db::get open? $base]} {
+	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(event:locked) 1
 		set name [GetEventName $gamebar $id]
-		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
-			lassign [::scidb::game::sink? $id] base index
-			::eventtable::popupMenu $gamebar $menu $base 0 $index game
+			lassign [::scidb::game::sink? $id] base variant index
+			::eventtable::popupMenu $gamebar $menu $base $variant 0 $index game
 			$menu add separator
 		}
 	}
@@ -1386,16 +1403,16 @@ proc PopupPlayerMenu {gamebar id side} {
 	catch { destroy $menu }
 	menu $menu -tearoff 0
 
-	set base [lindex [::scidb::game::link? $id] 0]
+	lassign [::scidb::game::link? $id] base variant _
 
-	if {[::scidb::db::get open? $base]} {
+	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(player:locked) 1
-		lassign [::scidb::game::sink? $id] base gameIndex
 		set info [GetPlayerInfo $gamebar $id $side]
 		set name [lindex $info 0]
 		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
-			::playertable::popupMenu $menu $base $info [list $gameIndex $side]
+			lassign [::scidb::game::sink? $id] base variant gameIndex
+			::playertable::popupMenu $menu $base $variant $info [list $gameIndex $side]
 			$menu add separator
 		}
 	}
@@ -1430,17 +1447,17 @@ proc BuildMenu {gamebar id side menu} {
 		set addsep {}
 	
 		if {$current && [lindex [::scidb::game::sink? $id] 0] ne $::scidb::scratchbaseName} {
-			lassign [::scidb::game::link? $id] base index
-			if {[::scidb::db::get open? $base] && ![::scidb::db::get readonly? $base]} {
+			lassign [::scidb::game::link? $id] base variant index
+			if {[::scidb::db::get open? $base $variant] && ![::scidb::db::get readonly? $base $variant]} {
 				set flag [::scidb::db::get deleted? $index -1 $base]
 				if {$flag} { set var UndeleteGame } else { set var DeleteGame }
 				$menu add command \
 					-compound left \
 					-image $::icon::16x16::remove \
 					-label " [set ::gametable::mc::$var]" \
-					-command [namespace code [list ::gametable::deleteGame $base $index]] \
+					-command [namespace code [list ::gametable::deleteGame $base $variant $index]] \
 					;
-				::gametable::addGameFlagsMenuEntry $menu $base -1 $index
+				::gametable::addGameFlagsMenuEntry $menu $base $variant -1 $index
 				set addsep [list $menu add separator]
 			}
 		}
@@ -1626,7 +1643,7 @@ proc MakeData {gamebar id tags {update no}} {
 
 	lassign {"N.N." "N.N." "?" "?" "" "" "" 0 0} \
 		white black event site date whiteCountry blackCountry whiteElo blackElo
-	lassign [::scidb::game::link? $id] base
+	lassign [::scidb::game::link? $id] base _ _
 
 	if {$base eq $scratchbaseName && !$update} {
 		if {![info exists Specs(count:$id:$gamebar)]} {
@@ -1973,7 +1990,6 @@ proc EnterEvent {gamebar id} {
 
 	if {$id eq $sid || $id eq "-1"} {
 		set name [GetEventName $gamebar $sid]
-		if {$name eq "?" || $name eq "-"} { set name "" }
 
 		if {[string length $name]} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
@@ -2018,7 +2034,6 @@ proc EnterPlayer {gamebar id side} {
 
 	if {$id eq $sid || $id eq "-1"} {
 		set name [GetPlayerName $gamebar $sid $side]
-		if {$name eq "?" || $name eq "-"} { set name "" }
 
 		if {[string length $name]} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
@@ -2082,13 +2097,15 @@ proc LeaveFlag {gamebar id} {
 
 
 proc GetEventInfo {gamebar id} {
-	lassign [::scidb::game::sink? $id] base index
-	return [scidb::db::fetch eventInfo $index $base -card]
+	lassign [::scidb::game::sink? $id] base variant index
+	return [scidb::db::fetch eventInfo $index $base $variant -card]
 }
 
 
 proc GetEventName {gamebar id} {
-	return [lindex [GetEventInfo $gamebar $id] 0]
+	set name [lindex [GetEventInfo $gamebar $id] 0]
+	if {$name eq "?" || $name eq "-"} { set name "" }
+	return $name
 }
 
 
@@ -2113,7 +2130,6 @@ proc HideEvent {gamebar id} {
 
 	set sid $Specs(selected:$gamebar)
 	set name [GetEventName $gamebar $sid]
-	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
 		::eventtable::popdownInfo $gamebar
@@ -2124,13 +2140,15 @@ proc HideEvent {gamebar id} {
 
 
 proc GetPlayerInfo {gamebar id side} {
-	lassign [::scidb::game::sink? $id] base index
-	return [scidb::db::fetch ${side}PlayerInfo $index $base -card -ratings {Elo Elo}]
+	lassign [::scidb::game::sink? $id] base variant index
+	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Elo Elo}]
 }
 
 
 proc GetPlayerName {gamebar id side} {
-	return [lindex [GetPlayerInfo $gamebar $id $side] 0]
+	set name [lindex [GetPlayerInfo $gamebar $id $side] 0]
+	if {$name eq "?" || $name eq "-"} { set name "" }
+	return $name
 }
 
 
@@ -2143,8 +2161,8 @@ proc ShowPlayerCard {gamebar id side} {
 	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
-		lassign [::scidb::game::sink? $id] base index
-		::playercard::show $base $index $side
+		lassign [::scidb::game::sink? $id] base variant index
+		::playercard::show $base $variant $index $side
 	}
 }
 
@@ -2170,7 +2188,6 @@ proc HidePlayerInfo {gamebar id side} {
 
 	set sid $Specs(selected:$gamebar)
 	set name [GetPlayerName $gamebar $sid $side]
-	if {$name eq "?" || $name eq "-"} { set name "" }
 
 	if {[string length $name]} {
 		::playercard::popdownInfo $gamebar

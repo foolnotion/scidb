@@ -62,6 +62,8 @@ HyphenationRule.o: ../../mstl/m_utility.ipp
 HyphenationRule.o: ../../mstl/m_limits.h
 HyphenationRule.o: ../../mstl/m_bit_functions.h
 HyphenationRule.o: ../../mstl/m_bit_functions.ipp
+HyphenationRule.o: ../../mstl/m_uint128_t.h
+HyphenationRule.o: ../../mstl/m_uint128.h
 HyphenationRule.o: ../../mstl/m_assert.h
 HyphenationRule.o: ../../mstl/m_exception.h
 HyphenationRule.o: ../../mstl/m_backtrace.h
@@ -69,6 +71,8 @@ HyphenationRule.o: ../../mstl/m_exception.ipp
 HyphenationRule.o: ../../mstl/m_vector.h
 HyphenationRule.o: ../../mstl/m_memblock.h
 HyphenationRule.o: ../../mstl/m_memblock.ipp
+HyphenationRule.o: ../../mstl/m_iterator.h
+HyphenationRule.o: ../../mstl/m_iterator.ipp
 HyphenationRule.o: ../../mstl/m_vector.ipp
 HyphenationRule.o: ../../mstl/m_uninitialized.h
 HyphenationRule.o: ../../mstl/m_uninitialized.ipp
@@ -88,6 +92,8 @@ HyphenationTree.o: ../../mstl/m_utility.ipp
 HyphenationTree.o: ../../mstl/m_limits.h
 HyphenationTree.o: ../../mstl/m_bit_functions.h
 HyphenationTree.o: ../../mstl/m_bit_functions.ipp
+HyphenationTree.o: ../../mstl/m_uint128_t.h
+HyphenationTree.o: ../../mstl/m_uint128.h
 HyphenationTree.o: ../../mstl/m_assert.h
 HyphenationTree.o: ../../mstl/m_exception.h
 HyphenationTree.o: ../../mstl/m_backtrace.h
@@ -95,6 +101,8 @@ HyphenationTree.o: ../../mstl/m_exception.ipp
 HyphenationTree.o: ../../mstl/m_vector.h
 HyphenationTree.o: ../../mstl/m_memblock.h
 HyphenationTree.o: ../../mstl/m_memblock.ipp
+HyphenationTree.o: ../../mstl/m_iterator.h
+HyphenationTree.o: ../../mstl/m_iterator.ipp
 HyphenationTree.o: ../../mstl/m_vector.ipp
 HyphenationTree.o: ../../mstl/m_uninitialized.h
 HyphenationTree.o: ../../mstl/m_uninitialized.ipp
@@ -112,6 +120,7 @@ HyphenationTree.o: ../../mstl/m_ios.ipp
 HyphenationTree.o: ../../mstl/m_istream.ipp
 HyphenationTree.o: ../../mstl/m_bitfield.h
 HyphenationTree.o: ../../mstl/m_bitfield.ipp
+HyphenationTree.o: ../../mstl/m_bitfield128.h
 Hyphenator.o: Hyphenator.h
 Hyphenator.o: ../../mstl/m_string.h
 Hyphenator.o: ../../mstl/m_types.h
@@ -123,6 +132,8 @@ Hyphenator.o: ../../mstl/m_utility.ipp
 Hyphenator.o: ../../mstl/m_limits.h
 Hyphenator.o: ../../mstl/m_bit_functions.h
 Hyphenator.o: ../../mstl/m_bit_functions.ipp
+Hyphenator.o: ../../mstl/m_uint128_t.h
+Hyphenator.o: ../../mstl/m_uint128.h
 Hyphenator.o: ../../mstl/m_assert.h
 Hyphenator.o: ../../mstl/m_exception.h
 Hyphenator.o: ../../mstl/m_backtrace.h
@@ -130,6 +141,8 @@ Hyphenator.o: ../../mstl/m_exception.ipp
 Hyphenator.o: ../../mstl/m_vector.h
 Hyphenator.o: ../../mstl/m_memblock.h
 Hyphenator.o: ../../mstl/m_memblock.ipp
+Hyphenator.o: ../../mstl/m_iterator.h
+Hyphenator.o: ../../mstl/m_iterator.ipp
 Hyphenator.o: ../../mstl/m_vector.ipp
 Hyphenator.o: ../../mstl/m_uninitialized.h
 Hyphenator.o: ../../mstl/m_uninitialized.ipp
@@ -178,10 +191,14 @@ Language.o: ../../mstl/m_utility.ipp
 Language.o: ../../mstl/m_limits.h
 Language.o: ../../mstl/m_bit_functions.h
 Language.o: ../../mstl/m_bit_functions.ipp
+Language.o: ../../mstl/m_uint128_t.h
+Language.o: ../../mstl/m_uint128.h
 Language.o: ../../mstl/m_assert.h
 Language.o: ../../mstl/m_exception.h
 Language.o: ../../mstl/m_backtrace.h
 Language.o: ../../mstl/m_exception.ipp
+Language.o: ../../mstl/m_iterator.h
+Language.o: ../../mstl/m_iterator.ipp
 Language.o: ../../mstl/m_vector.ipp
 Language.o: ../../mstl/m_uninitialized.h
 Language.o: ../../mstl/m_uninitialized.ipp

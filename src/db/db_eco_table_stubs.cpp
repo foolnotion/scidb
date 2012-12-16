@@ -18,7 +18,7 @@
 
 #include "db_eco_table.h"
 
-db::EcoTable db::EcoTable::m_specimen;
+db::EcoTable db::EcoTable::m_specimen[variant::NumberOfVariants];
 
 using namespace db;
 

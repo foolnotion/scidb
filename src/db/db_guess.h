@@ -42,9 +42,9 @@ class Guess : public Board
 public:
 
 	enum { MaxDepth = 7, DefaultDepth = 3 };
-	enum { IdnStandard = variant::StandardIdn };
+	enum { IdnStandard = variant::Standard };
 
-	Guess(Board const& board, unsigned idn);
+	Guess(Board const& board, variant::Type variant, uint16_t idn);
 	~Guess() throw();
 
 	Move search(Square square, unsigned maxDepth = DefaultDepth);
@@ -101,14 +101,45 @@ private:
 #endif
 
 	typedef sq::ID (*Flip)(sq::ID);
+	typedef int const PieceValues[8];
 
-	static int const Infinity		= 32000;
-	static int const KingValue		= 32767;
-	static int const QueenValue	=   970;
-	static int const RookValue		=   500;
-	static int const BishopValue	=   325;
-	static int const KnightValue	=   300;
-	static int const PawnValue		=   100;
+	static int const Infinity			= 32000;
+
+	static int const KingValue			= 32767;
+	static int const QueenValue		=   970;
+	static int const RookValue			=   500;
+	static int const BishopValue		=   325;
+	static int const KnightValue		=   300;
+	static int const PawnValue			=   100;
+
+	static int const KingValueZH		= 32767;
+	static int const QueenValueZH		=   480; // Sjeng gives 450
+	static int const RookValueZH		=   300; // Sjeng gives 250
+	static int const BishopValueZH	=   300; // Sjeng gives 230
+	static int const KnightValueZH	=   250; // sjeng gives 210
+	static int const PawnValueZH		=   130; // Sjeng gives 100
+
+	static int const QueenValueInHand	=   450; // Sjeng gives 450
+	static int const RookValueInHand		=   300; // Sjeng gives 250
+	static int const BishopValueInHand	=   240; // Sjeng gives 230
+	static int const KnightValueInHand	=   250; // sjeng gives 210
+	static int const PawnValueInHand		=   100; // Sjeng gives 100
+
+	// Piece values from Sjeng
+	static int const KingValueSuicide		=  500; //                    -- 280
+	static int const QueenValueSuicide		=   50; // Nilatac gives  100 -- 390
+	static int const RookValueSuicide		=  150; // Nilatac gives  500 -- 500
+	static int const BishopValueSuicide		=    0; // Nilatac gives -200 -- 370
+	static int const KnightValueSuicide		=  150; // Nilatac gives   50 -- 340
+	static int const PawnValueSuicide		=   15; // Nilatac gives -100 -- 290
+
+	// Piece values from Sjeng
+	static int const KingValueLosers		= 5000;
+	static int const QueenValueLosers	=  400;
+	static int const RookValueLosers		=  350;
+	static int const BishopValueLosers	=  270;
+	static int const KnightValueLosers	=  320;
+	static int const PawnValueLosers		=   80;
 
 	void generateMoves(Square square, MoveList& result) const;
 
@@ -123,14 +154,30 @@ private:
 	int search(MoveList& moves, unsigned depth, int alpha, int beta);
 	int iterate(MoveList& moves, unsigned depth, int alpha, int beta);
 #endif
+	int search1(MoveList& moves, int alpha, int beta);
 	int iterate(MoveList& moves, int alpha, int beta);
 
 	void addKillerMove(Move const& move, int score);
 	bool isKillerMove(uint32_t move, unsigned index);
 
+	bool kingIsInCheck(color::ID color) const;
+	bool kingMovesIntoCheck(Move const& move) const;
+	bool boardIsLegal() const;
+	int evaluateNoMoves() const;
+	int countAllPieces(color::ID side) const;
+	int staticExchangeEvaluator(Move const& move);
+	uint64_t addXrayPiece(unsigned from, unsigned target);
+
+	// normal chess evaluation
 	void preEvaluate();
+	void preEvaluateNormal();
+	void preEvaluate3check();
+	void preEvaluateZH();
 	int evaluate(int alpha, int beta);
+	int evaluate3check(int alpha, int beta);
+	int evaluateZH(int alpha, int beta);
 	Score evaluateMaterial();
+	Score evaluateMaterialZH();
 	int evaluateMaterialDynamic(color::ID side);
 	WinningChances evaluateWinningChances();
 	bool evaluateWinningChances(color::ID side);
@@ -148,9 +195,29 @@ private:
 	Score evaluatePassedPawns(color::ID side, Flip flip);
 	Score evaluatePassedPawnRaces();
 	bool doScorePieces(Score score, int alpha, int beta) const;
+	bool doScorePiecesZH(Score score, int alpha, int beta) const;
 
-	int staticExchangeEvaluator(Move const& move);
-	uint64_t addXrayPiece(unsigned from, unsigned target);
+	// Suicide evaluation
+	void preEvaluateSuicide();
+	int evaluateSuicide(int alpha, int beta);
+	int evaluateMaterialSuicide();
+	int evaluateKnightsSuicide(color::ID side, Flip flip);
+	int evaluateBishopsSuicide(color::ID side, Flip flip);
+	int evaluateQueensSuicide(color::ID side, Flip flip);
+	int evaluateRooksSuicide(color::ID side);
+	int evaluatePawnsSuicide(color::ID side);
+	int evaluateKingsSuicide(color::ID side);
+
+	// Losers evaluation
+	void preEvaluateLosers();
+	int evaluateLosers(int alpha, int beta);
+	int evaluateMaterialLosers();
+	int evaluateKnightsLosers(color::ID side, Flip flip);
+	int evaluateBishopsLosers(color::ID side, Flip flip);
+	int evaluateQueensLosers(color::ID side, Flip flip);
+	int evaluateRooksLosers(color::ID side);
+	int evaluatePawnsLosers(color::ID side);
+	int evaluateKingsLosers(color::ID side);
 
 #if 0
 	Recognized recognize();
@@ -196,8 +263,15 @@ private:
 		color::ID sideToMove() const;
 	};
 
-	static int const Piece[8];
+	typedef int (Guess::*EvalMeth)(int, int);
+	typedef void (Guess::*PreEvalMeth)();
 
+	static PieceValues PieceStandard;
+	static PieceValues PieceSuicide;
+	static PieceValues PieceLosers;
+	static PieceValues PieceZH;
+
+	variant::Type	m_variant;
 	int				m_idn;
 	int				m_totalPieces[2];
 	int				m_tropism[2];
@@ -206,11 +280,15 @@ private:
 	PawnHashEntry*	m_pawnData;
 	PawnHashEntry	m_pawnTable[PawnTableSize];
 	bool				m_dangerous[2];
-	bool				m_trojanCheck;
 	Root				m_root;
 	Transposition*	m_trans;
 	uint32_t			m_killer[(2*MaxDepth + 2)*2];
 	unsigned			m_ply;
+	PreEvalMeth		m_preEvalMeth;
+	EvalMeth			m_evalMeth;
+	int const*		m_pieceValues;
+	int				m_dangerFactor;
+	int				m_kingSafetyFactor;
 #ifdef USE_NULL_MOVE_SEARCH
 	int				m_pvCounter;
 #endif

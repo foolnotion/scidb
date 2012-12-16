@@ -39,6 +39,7 @@
 
 #include "u_piped_progress.h"
 
+#include "m_map.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -66,6 +67,7 @@ static char const* CmdSet			= "::scidb::tree::set";
 static char const* CmdStop			= "::scidb::tree::stop";
 static char const* CmdSwitch		= "::scidb::tree::switch";
 static char const* CmdUpdate		= "::scidb::tree::update";
+static char const* CmdVariant		= "::scidb::tree::variant";
 static char const* CmdView			= "::scidb::tree::view";
 
 
@@ -133,6 +135,40 @@ tcl::tree::referenceBaseChanged()
 }
 
 
+Tcl_Obj*
+tcl::tree::variantToString(variant::Type variant)
+{
+	typedef mstl::map<variant::Type,Tcl_Obj*> Cache;
+	static Cache cache;
+
+	Cache::iterator i = cache.find(variant);
+
+	if (i == cache.end())
+	{
+		char const* s = "<unknown>";
+
+		switch (int(variant))
+		{
+			case variant::Undetermined:	s = "Undetermined"; break;
+			case variant::Normal:			s = "Normal"; break;
+			case variant::Bughouse:			s = "Bughouse"; break;
+			case variant::Crazyhouse:		s = "Crazyhouse"; break;
+			case variant::ThreeCheck:		s = "ThreeCheck"; break;
+			case variant::Losers:			s = "Losers"; break;
+			case variant::Giveaway:			s = "Giveaway"; break;
+			case variant::Suicide:			s = "Suicide"; break;
+			case variant::Antichess:		s = "Antichess"; break;
+		}
+
+		Tcl_Obj* str = Tcl_NewStringObj(s, -1);
+		Tcl_IncrRefCount(str);
+		i = cache.insert(Cache::value_type(variant, str)).first;
+	}
+
+	return i->second;
+}
+
+
 static int
 cmdInit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -150,25 +186,18 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	setResult(list);
 
 	Application::CursorList cursors;
-	Scidb->enumCursors(cursors);
+	Scidb->enumCursors(cursors, variant::toMainVariant(Scidb->game().variant()));
+	objc = cursors.size();
+
+	Tcl_Obj* objs[objc];
 
 	for (unsigned i = 0; i < cursors.size(); ++i)
 	{
-		switch (cursors[i]->database().format())
-		{
-			case format::Scidb:
-			case format::Scid3:
-			case format::Scid4:
-			case format::Pgn:
-				Tcl_ListObjAppendElement(0, list, Tcl_NewStringObj(cursors[i]->database().name(), -1));
-				break;
-
-			case format::ChessBase:
-			case format::LaTeX:
-				break;
-		}
+		mstl::string const& name = cursors[i]->database().name();
+		objs[i] = Tcl_NewStringObj(name, name.size());
 	}
 
+	setResult(objc, objs);
 	return TCL_OK;
 }
 
@@ -186,12 +215,26 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (Scidb->haveReferenceBase())
+		setResult(tcl::tree::variantToString(Scidb->referenceBase().database().variant()));
+	else
+		setResult("");
+
+	return TCL_OK;
+}
+
+
+static int
 cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* base = stringFromObj(objc, objv, 1);
 
 	if (*base)
 		scidb->setReferenceBase(&scidb->cursor(base));
+	else
+		scidb->setReferenceBase(0);
 
 	return TCL_OK;
 }
@@ -410,7 +453,8 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (Tree const* tree = Scidb->currentTree())
 	{
-		Board const& board = Scidb->game().currentBoard();
+		Game const&		game	= Scidb->game();
+		Board const&	board	= game.currentBoard();
 
 		if (tree->isTreeFor(Scidb->cursor().database(), board))
 		{
@@ -421,7 +465,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			TreeInfo const& info = tree->info(row);
 
-			if (board.isValidMove(info.move(), move::DontAllowIllegalMove))
+			if (board.isValidMove(info.move(), game.variant(), move::DontAllowIllegalMove))
 			{
 				mstl::string s;
 				info.move().printSan(s);
@@ -491,21 +535,22 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (Tree const* tree = Scidb->currentTree())
 	{
 		char const* move = objc > 1 ? Tcl_GetString(objv[1]) : 0;
+		variant::Type variant = Scidb->game().variant();
 
 		Board board;
 		board.setup(tree->position());
 
 		if (move)
 		{
-			Move m = board.parseMove(move, ::db::move::AllowIllegalMove);
+			Move m = board.parseMove(move, variant, ::db::move::AllowIllegalMove);
 
 			if (!m)
 				return error(CmdPosition, nullptr, nullptr, "illegal move '%s'", move);
 
-			board.doMove(m);
+			board.doMove(m, variant);
 		}
 
-		setResult(board.toFen());
+		setResult(board.toFen(variant));
 	}
 
 	return TCL_OK;
@@ -558,6 +603,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdStop,			cmdStop);
 	createCommand(ti, CmdSwitch,		cmdSwitch);
 	createCommand(ti, CmdUpdate,		cmdUpdate);
+	createCommand(ti, CmdVariant,		cmdVariant);
 	createCommand(ti, CmdView,			cmdView);
 }
 

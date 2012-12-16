@@ -61,11 +61,13 @@ public:
 	GameInfoList	m_gameInfoList;
 	Namebases		m_namebases;
 	Type				m_type;
+	variant::Type	m_variant;
 	uint32_t			m_created;
 	bool				m_readOnly;
 	bool				m_writeable;
 	bool				m_memoryOnly;
 	bool				m_temporary;
+	bool				m_shouldCompress;
 	mstl::string	m_description;
 	mstl::string	m_encoding;
 	Allocator 		m_allocator;

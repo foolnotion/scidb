@@ -44,6 +44,9 @@ set ImportOK								"PGN text imported with no errors or warnings."
 set ImportAborted							"Import aborted."
 set TextIsEmpty							"PGN text is empty."
 set AbortImport							"Abort PGN import?"
+set UnsupportedVariant					"Unsuported variant '%s' rejected"
+set Accepted								"accepted"
+set Rejected								"rejected"
 
 set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
@@ -84,11 +87,13 @@ set TooManyNags							"Too many NAG's (latter ignored)"
 set IllegalCastling						"Illegal castling"
 set IllegalMove							"Illegal move"
 set CastlingCorrection					"Castling correction"
-set UnsupportedVariant					"Unsupported chess variant"
-set UnsupportedCrazyhouseVariant		"Variant Crazyhouse is not yet supported (game skipped)"
 set DecodingFailed						"Decoding of this game was not possible"
 set ResultDidNotMatchHeaderResult	"Result did not match header result"
 set ValueTooLong							"Tag value is too long and will truncated to 255 characacters"
+set NotSuicideNotGiveaway				"Due to the outcome of the game the variant isn't either Suicide or Giveaway."
+set VariantChangedToGiveaway			"Due to the outcome of the game the variant has been changed to Giveaway"
+set VariantChangedToSuicide			"Due to the outcome of the game the variant has been changed to Suicide"
+set ResultCorrection						"Due to the final position of the game a correction of the result has been done"
 set MaximalErrorCountExceeded			"Maximal error count (of previous error type) exceeded"
 set MaximalWarningCountExceeded		"Maximal warning count (of previous warning type) exceeded"
 set InvalidToken							"Invalid token"
@@ -98,6 +103,8 @@ set UnexpectedEndOfInput				"Unexpected end of input"
 set UnexpectedResultToken				"Unexpected result token"
 set UnexpectedTag							"Unexpected tag inside game"
 set UnexpectedEndOfGame					"Unexpected end of game (missing result)"
+set UnexpectedCastling					"Unexpected castling (not allowed in this chess variant)"
+set ContinuationsNotSupported			"'Continuations' not supported"
 set TagNameExpected						"Syntax error: Tag name expected"
 set TagValueExpected						"Syntax error: Tag value expected"
 set InvalidFen								"Invalid FEN"
@@ -123,9 +130,17 @@ variable Background			#ebf4f5
 variable SelectBackground	#ffdd76
 variable HiliteBackground	linen
 
+variable Variants {Undetermined Normal ThreeCheck Crazyhouse Suicide Giveaway Losers}
 
-proc open {parent base files msg {encoding {}} {type {}} {useLog 1}} {
-	::remote::busyOperation { Open $parent $base $files $msg $encoding $type $useLog }
+
+proc import {parent base files msg {encoding {}}} {
+	if {[llength $files] == 0} { return 0 }
+	::remote::busyOperation { Import $parent $base $files $msg $encoding }
+}
+
+
+proc open {parent file msg encoding type} {
+	::remote::busyOperation { Open $parent $file $msg $encoding $type }
 }
 
 
@@ -147,6 +162,8 @@ proc openEdit {parent position {mode {}}} {
 
 	set dlg [tk::toplevel ${parent}.importOnePgnGame${position} -class Scidb]
 	set top [ttk::frame $dlg.top]
+	set vlb [ttk::label $top.variantsText -textvariable ::mc::Variant]
+	set var [ttk::tcombobox $top.variants -state readonly -showcolumns name -format "%1" -width 26]
 	set lbl [ttk::label $top.figurinesText -textvariable ::export::mc::Figurines]
 	set fig [ttk::tcombobox $top.figurines \
 					-state readonly \
@@ -154,7 +171,7 @@ proc openEdit {parent position {mode {}}} {
 					-format "%1 (%2)" \
 					-width 26 \
 				]
-	set lab [ttk::label $top.encodingText -textvariable ::encoding::mc::Encoding]
+	set elb [ttk::label $top.encodingText -textvariable ::encoding::mc::Encoding]
 	set enc [ttk::entrybuttonbox $top.encoding \
 		-textvariable [namespace current]::Priv($position:encodingVar) \
 		-command [namespace code [list ChooseEncoding $top.encoding $position]] \
@@ -164,8 +181,11 @@ proc openEdit {parent position {mode {}}} {
 	$fig addcol text  -id fig -font TkFixedFont -font2 $::font::figurine(text:normal)
 	$fig addcol image -id flag
 	$fig addcol text  -id lang
-
 	bind $fig <<ComboboxCurrent>> [namespace code [list ShowCountry $fig $position]]
+
+	$var addcol image -id icon
+	$var addcol text  -id name
+	bind $var <<ComboboxCurrent>> [namespace code [list SetVariant $var $position]]
 
 	set gamebar [::application::pgn::gamebar]
 	set recv [namespace code [list GamebarChanged $dlg $position]]
@@ -213,27 +233,30 @@ proc openEdit {parent position {mode {}}} {
 	set Priv($position:txt) $edit.text
 	set Priv($position:used) $used
 	set Priv($position:sets) {}
+	set Priv($position:variantList) {}
 	set Priv($position:mode) $mode
 	set Priv($position:varno) -1
 	set Priv($position:figurines) $fig
+	set Priv($position:variants) $var
 	set Priv(showOnlyEncodingWarnings) 0
 
 	pack $top -expand yes -fill both
 
-	grid $lbl  -row 1 -column 1 -sticky w
-	grid $fig  -row 1 -column 3 -sticky w
-	grid $lab  -row 1 -column 5 -sticky w
-	grid $enc  -row 1 -column 7 -sticky w
-	grid $main -row 3 -column 0 -sticky ewns -columnspan 9
+	grid $vlb  -row 1 -column 1 -sticky w
+	grid $var  -row 1 -column 3 -sticky ew
+	grid $lbl  -row 3 -column 1 -sticky w
+	grid $fig  -row 3 -column 3 -sticky ew
+	grid $elb  -row 5 -column 1 -sticky w
+	grid $enc  -row 5 -column 3 -sticky ew
+	grid $main -row 7 -column 0 -sticky ewns -columnspan 5
 	grid rowconfigure $top 3 -weight 1
-	grid rowconfigure $top {0 2} -minsize 5
-	grid columnconfigure $top 4 -weight 1
-	grid columnconfigure $top {0 2 6 8} -minsize $::theme::padding
-	grid columnconfigure $top 4 -minsize [expr {2*$::theme::padding}]
+	grid rowconfigure $top {0 2 4 6} -minsize 5
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padding
+	grid columnconfigure $top {4} -weight 1
 
 	::widget::dialogButtons $dlg {import close} -default import
 	bind $dlg <Return> {}
-	$dlg.import configure -command [namespace code [list Import $position $dlg]]
+	$dlg.import configure -command [namespace code [list DoImport $position $dlg]]
 	$dlg.close configure -command [namespace code [list Close $position $dlg]]
 	bind $dlg <Escape> [namespace code [list AskAbort $position $dlg.close]]
 
@@ -250,7 +273,8 @@ proc openEdit {parent position {mode {}}} {
 	bind $edit.text <Shift-Tab> {+ break }
 
 	Clear $position
-	SetFigurines $dlg $position
+	SetFigurines $position
+	SetVariants $position
 
 	wm withdraw $dlg
 	::util::place $dlg center [winfo toplevel $parent]
@@ -277,7 +301,7 @@ proc openEdit {parent position {mode {}}} {
 proc makeLog {arguments} {
 	variable Priv
 
-	lassign $arguments type lineNo column gameNo msg code info item
+	lassign $arguments type lineNo column gameNo variant msg code info item
 	set line ""
 
 	if {$code eq "SeemsNotToBePgnText"} { set Priv(ok) 0 }
@@ -286,8 +310,9 @@ proc makeLog {arguments} {
 	if {$column} {
 		append line " (" $mc::Column " " [::locale::formatNumber $column] ")"
 	}
-	if {[::info exists Priv(gameNo)] && $Priv(gameNo) && [llength $gameNo] && $gameNo > 0} {
+	if {[::info exists Priv(gameNo)] && $Priv(gameNo) && $gameNo > 0} {
 		append line " " $mc::GameNumber " " [::locale::formatNumber $gameNo]
+		append line " (" $mc::VariantName($variant) ")"
 	}
 	append line ": "
 
@@ -311,30 +336,128 @@ proc showOnlyEncodingWarnings {flag} {
 }
 
 
-proc Open {parent base files msg encoding type useLog} {
-	variable Priv
+proc logResult {total emptyText importText accepted rejected {unsupported {}}} {
+	set count 0
+	foreach acc $accepted rej $rejected { incr count $acc; incr count $rej }
 
-	if {[llength $files] == 0} { return 0 }
+	if {$total == 0} {
+		set lastMsg $emptyText
+	} else {
+		set lastMsg [format $importText [::locale::formatNumber $total]]
+	}
+
+	if {$count == 0} {
+		append lastMsg " ($mc::FileIsEmpty)"
+		::log::info $lastMsg
+	} else {
+		if {$total == 0} { set show 1 } else { set show -1 }
+
+		set detailed yes
+		foreach acc $accepted { if {$acc == $total} { set detailed no } }
+
+		if {$detailed || $total == 0} {
+			set variants {normal bughouse crazyhouse threeCheck antichess losers}
+			foreach variant $variants acc $accepted rej $rejected {
+				if {$acc || $rej} {
+					if {$variant eq "antichess"} {
+						set msg "- $::mc::VariantName(Suicide)/$::mc::VariantName(Giveaway):"
+					} else {
+						set msg "- $::mc::VariantName([string toupper $variant 0 0]):"
+					}
+					if {$acc} {
+						append msg " [::locale::formatNumber $acc]"
+						if {$rej} { append msg " ($mc::Accepted) -" }
+						incr show
+					}
+					if {$rej} {
+						append msg " [::locale::formatNumber $rej] ($mc::Rejected)"
+						incr show
+					}
+					::log::info $msg
+				}
+			}
+		}
+
+		foreach {variant n} $unsupported {
+			::log::info "- [format $mc::UnsupportedVariant $variant]: [::locale::formatNumber $n]"
+		}
+
+		::log::info $lastMsg
+		if {$show > 0} { ::log::show }
+	}
+}
+
+
+proc Open {parent file msg encoding type} {
+	variable Priv
 
 	set Priv(ok) 1
 	set Priv(gameNo) 1
 
-	if {[llength $type] == 0} {
-		set codec [::scidb::db::get codec $base]
-		if {[llength $encoding] == 0} {
-			switch $codec {
-				sci - si3 - si4	{ set encoding utf-8 }
-				default				{ set encoding $::encoding::defaultEncoding }
-			}
+	set msg [format $mc::ImportingPgnFile [file tail $file]]
+	::log::open $mc::DatabaseImport
+	::log::info $msg
+	set cmd [list ::scidb::db::open $file [namespace current]::Log log]
+	set info "$::mc::File: [file tail $file]"
+	set options [list -message $msg -log yes -interrupt yes -information $info]
+	set cmd [list ::scidb::db::open $file [namespace current]::Log log]
+	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
+
+	if {[catch { ::util::catchException $cmd result } rc opts]} {
+		::log::error $mc::AbortedDueToInternalError
+		::progress::close
+		::log::close
+		return {*}$opts -rethrow 1 "internal error"
+	}
+
+	if {$rc == 1} {
+		::log::error $mc::AbortedDueToIoError
+		::progress::close
+		::log::close
+		set Priv(ok) 0
+		return 0
+	}
+
+	lassign $result total accepted rejected unsupported
+
+	if {$total < 0} {
+		::log::warning $mc::UserHasInterrupted
+		set total [expr {-$total + 1}]
+	}
+
+	update idletasks	;# be sure the following will be appended
+	if {$Priv(ok)} {
+		logResult $total $mc::NoGamesImported $mc::ImportedGames $accepted $rejected $unsupported
+	}
+
+	set cmd [list ::scidb::db::save $file]
+	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 }]
+	if {$rc == 1} {
+		::log::error $mc::AbortedDueToIoError
+		set Priv(ok) 0
+	}
+	::progress::close
+	::log::close
+
+	return $Priv(ok)
+}
+
+
+proc Import {parent base files msg encoding} {
+	variable Priv
+
+	set Priv(ok) 1
+	set Priv(gameNo) 1
+
+	set codec [::scidb::db::get codec $base]
+	if {[llength $encoding] == 0} {
+		switch $codec {
+			sci - si3 - si4	{ set encoding utf-8 }
+			default				{ set encoding $::encoding::defaultEncoding }
 		}
-	} else {
-		::scidb::db::new $base $type $encoding
-		set codec sci
 	}
 
 	::log::open $mc::DatabaseImport
-	set ngames [::scidb::db::count games $base]
-
 	switch $codec {
 		si3 - si4 {
 			set fileEncoding [::scidb::db::get encoding]
@@ -352,26 +475,23 @@ proc Open {parent base files msg encoding type useLog} {
 	}
 
 	foreach file $files {
-		switch [file extension $file] {
-			.pgn - .gz - .zip	{ set msg $mc::ImportingPgnFile }
-			default				{ set msg $mc::ImportingDatabase }
-		}
-		set msg [format $msg [file tail $file]]
-		::log::info $msg
-		append info "$::mc::File: [file tail $file]"
-		set options [list -message $msg -log $useLog -interrupt yes -information $info]
+		::log::info [format $mc::ImportingPgnFile [file tail $file]]
+		set info "$::mc::File: [file tail $file]"
+		set options [list -message $msg -log yes -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]
 		switch [file extension $file] {
 			.sci - .si3 - .si4	{ set encoding utf-8 }
 			default					{ set encoding auto }
 		}
+
 		set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
-		if {[catch { ::util::catchException $cmd count } rc opts]} {
+		if {[catch { ::util::catchException $cmd result } rc opts]} {
 			::log::error $mc::AbortedDueToInternalError
 			::progress::close
 			::log::close
 			return {*}$opts -rethrow 1 "internal error"
 		}
+
 		if {$rc == 1} {
 			::log::error $mc::AbortedDueToIoError
 			::progress::close
@@ -379,27 +499,24 @@ proc Open {parent base files msg encoding type useLog} {
 			set Priv(ok) 0
 			return 0
 		}
-		if {$rc < 0} {
+
+		lassign $result total accepted rejected unsupported
+
+		if {$total < 0} {
 			::log::warning $mc::UserHasInterrupted
-			set count [expr {-$rc - 2}]
+			set total [expr {-$total + 1}]
 			set rc -1
 		}
 
 		update idletasks	;# be sure the following will be appended
-
-		if {$count == 0} {
-			set msg $mc::NoGamesImported
-			if {$Priv(ok)} { append msg " ($mc::FileIsEmpty)" }
-		} else {
-			set msg [format $mc::ImportedGames [::locale::formatNumber $count]]
+		if {$Priv(ok)} {
+			logResult $total $mc::NoGamesImported $mc::ImportedGames $accepted $rejected $unsupported
 		}
-
-		::log::info $msg
 		if {$rc == -1} { break }
 	}
 
-	set cmd [list ::scidb::db::save $base $ngames]
-	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
+	set cmd [list ::scidb::db::save $base]
+	set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 }]
 	if {$rc == 1} {
 		::log::error $mc::AbortedDueToIoError
 		set Priv(ok) 0
@@ -546,7 +663,37 @@ proc GamebarChanged {dlg position action id} {
 }
 
 
-proc SetFigurines {dlg position} {
+proc SetVariants {position} {
+	variable Variants
+	variable Priv
+
+	set w $Priv($position:variants)
+	set index [$w current]
+	if {$index == -1} {
+		set current $::mc::VariantName(Undetermined)
+	} else {
+		set current [lindex $Priv($position:variantList) $index]
+	}
+	set Priv($position:variantList) {}
+	$w clear
+
+	foreach variant $Variants {
+		lappend Priv($position:variantList) $::mc::VariantName($variant)
+		if {[::info exists ::icon::16x16::variant($variant)]} {
+			set icon $::icon::16x16::variant($variant)
+		} else {
+			set icon ""
+		}
+		$w listinsert [list $icon $::mc::VariantName($variant)]
+	}
+
+	set index [lsearch -index 0 -exact $Priv($position:variantList) $current]
+	$w resize
+	$w current $index
+}
+
+
+proc SetFigurines {position} {
 	variable Figurines
 	variable Priv
 
@@ -607,7 +754,8 @@ proc LanguageChanged {dlg w position} {
 	variable Priv
 
 	if {$dlg eq $w} {
-		SetFigurines $dlg $position
+		SetFigurines $position
+		SetVariants $position
 		SetTitle $dlg $position
 
 		if {$Priv($position:encoding) eq $::encoding::autoEncoding} {
@@ -669,9 +817,20 @@ proc ShowCountry {w position} {
 }
 
 
-proc Import {position dlg} {
+proc SetVariant {w position} {
 	variable Priv
+	variable Variants
+
+	set i [lsearch -exact $Priv($position:variantList) [$w get]]
+	set iconVar ::icon::16x16::variant([lindex $Variants $i])
+	if {[::info exists $iconVar]} { $w placeicon [set $iconVar] }
+}
+
+
+proc DoImport {position dlg} {
 	variable ::log::colors
+	variable Variants
+	variable Priv
 
 	set Priv(position) $position
 	set Priv(gameNo) 0
@@ -686,6 +845,7 @@ proc Import {position dlg} {
 	$log delete 0 end
 	set content [$txt get 1.0 end]
 	set figurine [$Priv($position:figurines) get fig]
+	set variant [lindex $Variants [$Priv($position:variants) current]]
 	if {$Priv($position:mode) eq "game"} { set isVar 0 } else { set isVar 1 }
 
 	if {$figurine eq $::encoding::mc::AutoDetect} {
@@ -699,6 +859,7 @@ proc Import {position dlg} {
 			set state [::scidb::game::import \
 				$position \
 				$content \
+				-variant $variant \
 				-encoding utf-8 \
 				-figurine $figurine \
 				-variation $isVar \
@@ -726,13 +887,14 @@ proc Import {position dlg} {
 		}
 
 		set index [lsearch -exact -index 0 $Priv($position:sets) $code]
-		$Priv($position:figurines) current [incr index]
+#		$Priv($position:figurines) current [incr index]
 	}
 
 	set state [::scidb::game::import \
 		$position \
 		$content \
 		[namespace current]::Log import \
+		-variant $variant \
 		-encoding utf-8 \
 		-figurine $figurine \
 		-variation $isVar \

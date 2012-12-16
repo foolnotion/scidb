@@ -331,7 +331,7 @@ proc alert {args} {
 	if {$windowingsystem eq "aqua"} {
 		catch { ::tk::unsupported::MacWindowStyle style $w moveableModal {} }
 	}
-	catch { wm attributes $dlg -type dialog }
+	catch { wm attributes $w -type dialog }
 
 	set alertBox [tk::frame $w.alert]
 

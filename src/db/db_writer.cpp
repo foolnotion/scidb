@@ -245,7 +245,7 @@ Writer::beginGame(TagSet const& tags)
 					if (test(Flag_Use_Shredder_FEN))
 					{
 						mstl::string fen;
-						startBoard().toFen(fen, Board::Shredder);
+						startBoard().toFen(fen, variant(), Board::Shredder);
 						writeTag(tag::ID(i), fen);
 					}
 					else
@@ -258,11 +258,14 @@ Writer::beginGame(TagSet const& tags)
 			case tag::Idn:
 				if (!isEmpty && test(Flag_Include_Position_Tag))
 				{
-					mstl::string buf;
-					buf.format(	"%s %s",
-									value.c_str(),
-									shuffle::position(::strtoul(value.c_str(), nullptr, 10)).c_str());
-					writeTag(tag::ID(i), buf);
+					uint16_t idn = ::strtoul(value.c_str(), nullptr, 10);
+
+					if (variant::isShuffleChess(idn))
+					{
+						mstl::string buf;
+						buf.format(	"%s %s", value.c_str(), shuffle::position(idn).c_str());
+						writeTag(tag::ID(i), buf);
+					}
 				}
 				break;
 
@@ -420,7 +423,7 @@ Writer::writeMove(Move const& move,
 	if (!move.isPrintable())
 	{
 		Move m(move);
-		board().prepareForPrint(m);
+		board().prepareForPrint(m, variant());
 		writeMove(m, m_moveNumber, annotation, marks, preComment, comment);
 	}
 	else

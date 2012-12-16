@@ -1069,7 +1069,7 @@ DrawTab(Slave* slave, Pixmap pixmap, int x, int y, int height, int selected)
 static void
 DrawTabs(Notebook* nb, Pixmap pixmap, int x, int y, int width, int height)
 {
-	int cx;
+	int cx = 0; // satisifies the compiler
 	int i;
 
 	for (i = 0; i < nb->numSlaves; ++i)

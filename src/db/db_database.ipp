@@ -30,6 +30,7 @@
 
 namespace db {
 
+inline bool Database::isEmpty() const							{ return m_size == 0; }
 inline bool Database::isOpen() const							{ return m_codec; }
 inline bool Database::isReadOnly() const						{ return m_readOnly; }
 inline bool Database::isWriteable() const						{ return m_writeable; }
@@ -125,13 +126,6 @@ Database::setReadOnly(bool flag)
 
 
 inline
-Database::~Database() throw()
-{
-	delete m_codec;
-}
-
-
-inline
 format::Type
 Database::format() const
 {
@@ -140,8 +134,16 @@ Database::format() const
 
 
 inline
+variant::Type
+Database::variant() const
+{
+	return m_variant;
+}
+
+
+inline
 void
-Database::setEncodingFailed(bool flag)
+Database::setEncodingFailed(bool flag) const
 {
 	if ((m_encodingFailed = flag))
 		m_encodingOk = false;

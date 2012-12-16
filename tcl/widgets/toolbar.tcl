@@ -1642,6 +1642,7 @@ proc Tracer3 {toolbar args} {
 proc Tracer4 {toolbar w var args} {
 	variable Specs
 
+	if {$Specs(state:$w:$toolbar) eq "disabled"} { return }
 	ConfigureCheckButton $toolbar $w $w $var
 
 	if {[winfo exists $toolbar.floating]} {

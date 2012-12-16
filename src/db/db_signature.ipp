@@ -31,8 +31,8 @@ namespace db {
 inline bool Signature::hasPromotion() const			{ return m_promotions; }
 inline bool Signature::hasUnderPromotion() const	{ return m_underPromotions; }
 
-inline material::Signature Signature::material() const { return m_material; }
-inline material::SigPart Signature::material(color::ID color) const { return m_material.part[color]; }
+inline material::Signature Signature::material() const { return m_matSig; }
+inline material::SigPart Signature::material(color::ID color) const { return m_matSig.part[color]; }
 inline pawns::Side Signature::progress(color::ID color) const { return m_progress.side[color]; }
 inline castling::Rights Signature::castling() const { return castling::Rights(m_castling); }
 inline hp::Pawns Signature::homePawnsData() const { return m_homePawns; }
@@ -71,6 +71,21 @@ Signature::clearHomePawns()
 
 inline
 bool
+Signature::isReachableFinal(Signature const& target) const
+{
+	if (!isReachableFinalMaterial(target))
+		return false;
+
+	// check whether pawn structure is reachable
+	return	isReachablePawnStructure(	m_progress.side[color::White],
+													target.m_progress.side[color::White])
+			&& isReachablePawnStructure(	m_progress.side[color::Black],
+													target.m_progress.side[color::Black]);
+}
+
+
+inline
+bool
 Signature::isReachableFinal(Signature const& sig, uint16_t currentHpSig) const
 {
 	if (m_castling & ~sig.m_castling)
@@ -85,6 +100,14 @@ bool
 Signature::isReachable(Signature const& current, Signature const& sig, uint16_t currentHpSig)
 {
 	return current.isReachableFinal(sig, currentHpSig);
+}
+
+
+inline
+bool
+Signature::isReachable(Signature const& current, Signature const& sig)
+{
+	return current.isReachableFinal(sig);
 }
 
 

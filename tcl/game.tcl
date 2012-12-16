@@ -60,16 +60,18 @@ set GameDataCorrupted			"Game data is corrupted."
 set GameDecodingFailed			"Decoding of this game was not possible."
 set GameDecodingChanged			"The database is opened with character set '%base%', but this game seems to be encoded with character set '%game%', therefore this game is loaded with the detected character set."
 set GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited."
+set VariantHasChanged			"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
+set RemoveGameFromHistory		"Remove game from history?"
 
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::max
 namespace import ::tcl::mathfunc::min
 
-# {<time> <modified> <locked> {<base> <codec> <number>} {<crc-index> <crc-moves>} <tags>}
+# {<time> <modified> <locked> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <tags>}
 variable List		{}
 
-# {<tags> {<base> <codec> <number>} {<crc-index> <crc-moves>} <encoding>}
+# {<tags> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <encoding>}
 variable History	{}
 
 variable HistorySize		10
@@ -87,13 +89,27 @@ array set Options {
 }
 
 
-proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
+proc new {parent args} {
 	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
 	variable MaxPosition
 	variable List
 	variable Options
 	variable Count
 	variable Vars
+
+	array set opts {
+		-base		""
+		-view		-1
+		-number	-1
+		-fen		""
+		-variant	Normal
+	}
+	array set opts $args
+	set base $opts(-base)
+	set view $opts(-view)
+	set number $opts(-number)
+	set variant $opts(-variant)
 
 	set init [expr {[llength $List] == 0}]
 
@@ -106,8 +122,9 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 		set lock 0
 	}
 	if {[llength $base] == 0} { set base $scratchbaseName }
-	set codec [::scidb::db::get codec $base]
-	set id [list $base $codec $number]
+	set variant $opts(-variant)
+	set codec [::scidb::db::get codec $base $variant]
+	set id [list $base $codec $number $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
 	set entry [list $time 0 0 $id]
 	set tags {}
@@ -122,7 +139,15 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 	if {$pos >= 0} {
 		set loadPos [expr {$MaxPosition + 1}]
 		::scidb::game::release $loadPos
-		if {![load $parent $loadPos $base $view $number yes $fen]} { return -1 }
+		if {![load $parent $loadPos $base \
+			-view $view \
+			-number $number \
+			-checkEncoding yes \
+			-fen $opts(-fen) \
+			-variant $opts(-variant) \
+		]} {
+			return -1
+		}
 		set crc [::scidb::game::query $loadPos checksum]
 
 		if {$crc ne [lindex $List $pos 4]} {
@@ -169,7 +194,6 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 					::dialog::info -parent $parent -message $mc::AllSlotsOccupied -detail $mc::ReleaseOneGame
 					return -2
 				}
-				lappend List $entry	;# only a placeholder
 				set cmd add
 			} elseif {[llength [lindex $List $pos 0]] == 0} {
 				set cmd add
@@ -180,7 +204,15 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 
 		if {$loadPos == -1} {
 			::scidb::game::release $pos ;# release scratch game
-			if {![load $parent $pos $base $view $number yes $fen]} { return -1 }
+			if {![load $parent $pos $base \
+				-view $view \
+				-number $number \
+				-checkEncoding yes \
+				-fen $opts(-fen) \
+				-variant $opts(-variant) \
+			]} {
+				return -1
+			}
 			set crc [::scidb::game::query $pos checksum]
 		} else {
 			::scidb::game::swap $pos $loadPos
@@ -191,8 +223,12 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 		set tags [::scidb::game::tags $pos]
 		lappend entry $crc $tags
 		::scidb::game::switch $pos
-		lset List $pos $entry
-		::application::pgn::$cmd $pos $base $tags
+		if {$pos == [llength $List]} {
+			lappend List $entry
+		}  else {
+			lset List $pos $entry
+		}
+		::application::pgn::$cmd $pos $base $variant $tags
 		if {$cmd eq "replace"} { stateChanged $pos 0 }
 	}
 
@@ -206,7 +242,7 @@ proc new {parent {base {}} {view -1} {number -1} {fen ""}} {
 		::scidb::db::subscribe gameHistory [namespace current]::UpdateHistory
 	}
 
-	UpdateHistoryEntry $pos $base $tags
+	UpdateHistoryEntry $pos $base $variant $tags
 
 	return $pos
 }
@@ -275,27 +311,50 @@ proc lockChanged {position locked} {
 }
 
 
-proc load {parent position base view number {checkEncoding 0} {fen ""}} {
+proc load {parent position base args} {
 	variable ::scidb::scratchbaseName
 	variable Vars
+
+	array set opts {
+		-view				-1
+		-number			-1
+		-fen				""
+		-variant			Normal
+		-checkEncoding	0
+	}
+	array set opts $args
 
 	set rc 0
 
 	if {$base eq $scratchbaseName} {
 		set Vars(lookup:$position) {}
-		::scidb::game::new $position [::scidb::pos::fen]
+		::scidb::game::new $position $opts(-variant)
 		set rc 1
 	} else {
-		switch [::scidb::game::load $position $base $number $fen] {
+		set variant $opts(-variant)
+		set parent [winfo toplevel $parent]
+
+		if {[catch { ::scidb::game::load $position $base $variant $opts(-number) $opts(-fen) } \
+				result options]} {
+			array set opts $options
+			::dialog::error \
+				-parent $parent \
+				-message $::import::mc::AbortedDueToInternalError \
+				;
+			::tk::dialog::error::bgerror $opts(-errorinfo)
+			return 0 
+		}
+
+		switch $result {
 			 1 { set rc 1 }
-			-1 { ::dialog::info  -parent [winfo toplevel $parent] -message $mc::GameDecodingFailed }
-			-2 { ::dialog::error -parent [winfo toplevel $parent] -message $mc::GameDataCorrupted }
+			-1 { ::dialog::info  -parent $parent -message $mc::GameDecodingFailed }
+			-2 { ::dialog::error -parent $parent -message $mc::GameDataCorrupted }
 		}
 
 		if {$rc == 1} {
-			set Vars(lookup:$position) [list $base $view $number]
+			set Vars(lookup:$position) [list $base $variant $opts(-view) $opts(-number)]
 
-			if {$checkEncoding} {
+			if {$opts(-checkEncoding)} {
 				set baseEncoding [::scidb::db::get encoding $base]
 				set gameEncoding [::scidb::game::query $position encoding]
 
@@ -303,7 +362,7 @@ proc load {parent position base view number {checkEncoding 0} {fen ""}} {
 					set fmt [list %base% $baseEncoding %game% $gameEncoding]
 					set msg [string map $fmt $mc::GameDecodingChanged]
 					set dtl $mc::GameDecodingChangedDetail
-					::dialog::info -parent [winfo toplevel $parent] -message $msg -detail $dtl
+					::dialog::info -parent $parent -message $msg -detail $dtl
 				}
 			}
 		}
@@ -313,7 +372,7 @@ proc load {parent position base view number {checkEncoding 0} {fen ""}} {
 }
 
 
-proc setFirst {base tags} {
+proc setFirst {base variant tags} {
 	variable List
 
 	if {[llength $List] == 0} {
@@ -322,7 +381,7 @@ proc setFirst {base tags} {
 	}
 
 	if {[llength $List] == 0} { lappend List {} }
-	set id [list $base sci 0]
+	set id [list $base sci 0 $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
 	lset List 0 [list $time 0 0 $id {0 0} $tags]
 }
@@ -334,12 +393,12 @@ proc release {position} {
 
 	update ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {{} 0 0 {{} {} {} {}} {0 0} {}}
+	lset List $position {{} 0 0 {{} {} {} {} {}} {0 0} {}}
 	set Vars(lookup:$position) {}
 }
 
 
-proc closeAll {parent base {title ""} {detail ""}} {
+proc closeAll {parent base variant {title ""} {detail ""}} {
 	variable List
 	variable Options
 
@@ -354,9 +413,9 @@ proc closeAll {parent base {title ""} {detail ""}} {
 
 	foreach entry $List {
 		lassign $entry time modified locked database crc tags
-		lassign $database name codec number
+		lassign $database name _ number var
 
-		if {$base eq $name} {
+		if {$base eq $name && $variant eq $var} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
 			set entry [list $pos $index $time $modified $locked $number $tags]
 			if {$modified} { lappend modifiedGames $entry } else { lappend openGames $entry }
@@ -391,7 +450,6 @@ proc closeAll {parent base {title ""} {detail ""}} {
 	set name [::util::databaseName $base]
 	append msg [format $mc::CloseAllGames $name]
 	append msg <embed>
-	set base
 
 	if {$query} {
 		set reply [::dialog::question \
@@ -418,7 +476,7 @@ proc closeAll {parent base {title ""} {detail ""}} {
 }
 
 
-proc releaseAll {parent base} {
+proc releaseAll {parent base {variant ""}} {
 	variable List
 	variable Options
 
@@ -428,9 +486,9 @@ proc releaseAll {parent base} {
 
 	foreach entry $List {
 		lassign $entry time modified locked database crc tags
-		lassign $database name codec number
+		lassign $database name _ number var
 
-		if {$base eq $name} {
+		if {$base eq $name && ([string length $variant] == 0 || $variant eq $var)} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
 			set entry [list $pos $index $time $modified $locked $number $tags]
 			if {$modified} { lappend modifiedGames $entry } else { lappend openGames $entry }
@@ -476,7 +534,6 @@ proc releaseAll {parent base} {
 		set name [::util::databaseName $base]
 		append msg [format $mc::CloseAllGames $name]
 		append msg <embed>
-		set base
 
 		set reply [::dialog::question \
 			-parent $parent \
@@ -520,7 +577,7 @@ proc queryCloseApplication {parent} {
 
 	foreach entry $List {
 		lassign $entry time modified locked database crc tags
-		lassign $database name codec number
+		lassign $database name _ number _
 
 		if {$modified && ![::scidb::game::query $pos empty?]} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
@@ -580,32 +637,6 @@ proc flipTrialMode {{pos -1}} {
 proc trialMode? {{pos -1}} {
 	return [::scidb::game::query $pos trial]
 }
-
-
-proc save {parent} {
-	if {[::scidb::game::current] != 9} {
-		::dialog::save::open $parent [::scidb::db::get name] -1
-	}
-}
-
-
-proc replace {parent} {
-	if {[::scidb::game::current] != 9} {
-		::dialog::save::open $parent [::scidb::db::get name] -1 [::scidb::game::number]
-	}
-}
-
-
-# proc replaceMoves {parent} {
-# 	if {[::scidb::game::current] != 9} {
-# 		set base [::scidb::db::get name]
-# 		set number [::scidb::game::number]
-# 
-# 		if {[::dialog::save::checkIfWriteable $parent $base -1 $number]} {
-# 			::application::pgn::replaceMoves $parent
-# 		}
-# 	}
-# }
 
 
 proc clearHistory {} {
@@ -676,7 +707,7 @@ proc recover {} {
 						;
 				} else {
 					if {	$length != 3
-						|| [llength [lindex $header 1]] != 3
+						|| [llength [lindex $header 1]] != 4
 						|| [llength [lindex $header 2]] != 2} {
 						::dialog::error \
 							-parent .application \
@@ -685,24 +716,24 @@ proc recover {} {
 							;
 					} else {
 						lassign $header time key crc
+						lassign $key base _ index variant
 						set Current(file) $file
 						set Current(key) $key
-						::scidb::game::new $count
+						::scidb::game::new $count $variant
 						set tags [::scidb::game::tags $count]
 						lappend List [list $time 1 0 $key $crc $tags]
 						::scidb::game::import $count $content [namespace current]::Log {} \
 							-encoding utf-8 \
 							-variation 0 \
 							-scidb 1 \
-							-database [lindex $key 0] \
-							-index [lindex $key 2] \
+							-database $base \
+							-index $index \
+							-variant $variant \
 							;
 						Update _ $count
 						set tags [lindex $List $count 5]
-						set base [lindex $key 0]
-						set index [lindex $key 2]
 						::scidb::game::sink $count $base $index
-						::application::pgn::add $count $base $tags
+						::application::pgn::add $count $base $variant $tags
 						::application::pgn::setModified $count
 						::scidb::game::modified $count
 						incr count
@@ -783,30 +814,38 @@ proc openGame {parent index} {
 	variable List
 
 	lassign [lindex $History $index] tags base crcHist encoding
-	lassign $base base codec number
+	lassign $base base codec number variant
 	set rc 1
 	set parent [winfo toplevel $parent]
 
 	if {[::application::database::openBase $parent $base no -encoding $encoding]} {
-		set pos [new $parent $base -1 $number]
-		if {$pos >= 0} {
-			set crcLoad [lindex $List $pos 4]
-			if {$crcLoad ne $crcHist} {
-				# TODO: open new slot iff only crc-index differs
-				set msg [format $mc::GameHasChanged [expr {$number + 1}]]
-				set det $mc::GameHasChangedDetail
-				::dialog::warning -buttons {ok} -parent $parent -message $msg -detail $det
-			}
-		} elseif {$pos == -1} {
+		if {$variant ni [::scidb::db::get variants $base]} {
+			::dialog::warning -buttons {ok} -parent $parent -message $mc::VariantHasChanged
 			set rc 0
+		} else {
+			set pos [new $parent -base $base -number $number -variant $variant]
+			if {$pos >= 0} {
+				set crcLoad [lindex $List $pos 4]
+				if {$crcLoad ne $crcHist} {
+					# TODO: open new slot iff only crc-index differs
+					set msg [format $mc::GameHasChanged [expr {$number + 1}]]
+					set det $mc::GameHasChangedDetail
+					::dialog::warning -buttons {ok} -parent $parent -message $msg -detail $det
+				}
+			} elseif {$pos == -1} {
+				set rc 0
+			}
 		}
 	} else {
 		set rc 0
 	}
 
 	if {!$rc} {
-		set History [lreplace $History $index $index]
-		::application::pgn::historyChanged
+		set reply [::dialog::question -parent $parent -message $mc::RemoveGameFromHistory -default yes]
+		if {$reply eq "yes"} {
+			set History [lreplace $History $index $index]
+			::application::pgn::historyChanged
+		}
 	}
 
 	return $rc
@@ -917,6 +956,8 @@ proc Log {_ arguments} {
 		append msg [lindex $Current(key) 1]
 		append msg " #"
 		append msg [lindex $Current(key) 2]
+		append msg " - "
+		append msg [lindex $Current(key) 3]
 		append msg "):"
 		::log::error $msg
 		::log::info [::import::makeLog $arguments]
@@ -933,45 +974,48 @@ proc Update {_ position} {
 		set key    [lindex $List $position 3]
 		set tags   [::scidb::game::tags $position]
 
-		lassign [::scidb::game::link? $position] base number
+		lassign [::scidb::game::link? $position] base variant number
 
 		set i [lsearch -exact -index 1 $History $key]
 		if {$i >= 0} {
-			lassign [lindex $History $i 1] filename _ index
-			if {$base eq $filename} {
+			set filename [lindex $History $i 1 0]
+			set var [lindex $History $i 1 3]
+			if {$base eq $filename && $variant eq $var} {
 				set History [lreplace $History $i $i]
 			}
 		}
 
-		if {[::scidb::db::get open? $base]} {
-			set codec [::scidb::db::get codec $base]
+		if {[::scidb::db::get open? $base $variant]} {
+			set codec [::scidb::db::get codec $base $variant]
 		} else {
 			set codec sci
+			set variant Normal
 		}
 
 		lset List $position 3 0 $base
 		lset List $position 3 1 $codec
 		lset List $position 3 2 $number
+		lset List $position 3 3 [::scidb::game::query $position variant?]
 		lset List $position 1 [::scidb::game::query $position modified?]
 		lset List $position 4 [::scidb::game::query $position checksum]
 		lset List $position 5 $tags
 
-		if {[::scidb::db::get open? $base]} {
-			UpdateHistoryEntry $position $base $tags
+		if {[::scidb::db::get open? $base $variant]} {
+			UpdateHistoryEntry $position $base $variant $tags
 		}
 	}
 }
 
 
-proc UpdateHistory {_ base index} {
+proc UpdateHistory {_ base variant index} {
 	variable History
 
 	for {set i 0} {$i < [llength $History]} {incr i} {
 		lassign [lindex $History $i] info key crcHist _
-		lassign $key filename codec number
+		lassign $key filename codec number var
 
-		if {$base eq $filename && $index eq $number} {
-			set tags [::scidb::db::get tags $index $base]
+		if {$base eq $filename && $variant eq $var && $index eq $number} {
+			set tags [::scidb::db::get tags $index $base $variant]
 			set info {}
 
 			foreach pair $tags {
@@ -981,14 +1025,14 @@ proc UpdateHistory {_ base index} {
 			foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 
 			lset History $i 0 $info
-			lset History $i 2 [list [::scidb::db::get checksum $index $base] [lindex $crcHist 1]]
-			lset History $i 3 [::scidb::db::get encoding $base]
+			lset History $i 2 [list [::scidb::db::get checksum $index $base $variant] [lindex $crcHist 1]]
+			lset History $i 3 [::scidb::db::get encoding $base $variant]
 		}
 	}
 }
 
 
-proc UpdateHistoryEntry {pos base tags} {
+proc UpdateHistoryEntry {pos base variant tags} {
 	variable ::scidb::scratchbaseName
 	variable ::scidb::clipbaseName
 	variable List
@@ -1004,7 +1048,7 @@ proc UpdateHistoryEntry {pos base tags} {
 		set lookup($name) $value
 	}
 	set info {}
-	set encoding [::scidb::db::get encoding $base]
+	set encoding [::scidb::db::get encoding $base $variant]
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
 
@@ -1013,11 +1057,11 @@ proc UpdateHistoryEntry {pos base tags} {
 	while {$i < [llength $History]} {
 		set i [lsearch -exact -index 0 -start $i $History $info]
 		if {$i == -1} { break }
-		if {$base eq [lindex $History $i 1 0]} { set k $i }
+		if {$base eq [lindex $History $i 1 0] && $variant eq [lindex $History $i 1 3]} { set k $i }
 		incr i
 	}
 
-	if {$k >= 0 && $base eq [lindex $List $pos 3 0]} {
+	if {$k >= 0 && $base eq [lindex $List $pos 3 0] && $variant eq [lindex $List $pos 3 3]} {
 		if {$k == -1} { set k end }
 		set History [lreplace $History $k $k]
 	}

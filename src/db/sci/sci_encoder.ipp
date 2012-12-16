@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,78 +24,27 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _sci_v91_encoder_position_included
-#define _sci_v91_encoder_position_included
-
-#include "db_common.h"
-
-#include "m_stack.h"
-
 namespace db {
-
-class Board;
-class Move;
-
 namespace sci {
-namespace v91 {
-namespace encoder {
 
-class Position
+inline
+void
+Encoder::changeVariant(db::variant::Type variant)
 {
-public:
+	m_variant = variant;
+}
 
-	class Lookup
-	{
-	private:
 
-		friend class Position;
+inline
+bool
+Encoder::doEncoding(Move const& move)
+{
+	bool rc = encodeMove(move);
+	m_position.doMove(move);
+	return rc;
+}
 
-		typedef Byte Numbers[64];
-
-		Byte operator[](unsigned i) const;
-		Byte& operator[](unsigned i);
-
-		Numbers numbers;
-	};
-
-	Position();
-
-	void setup(Board const& board);
-	void setup();
-
-	void preparePush();
-	void push();
-	void pop();
-	void doMove(Move const& move);
-	void doMove(Lookup& lookup, Move const& move);
-
-	Lookup& lookup();
-	Lookup& previous();
-
-	Byte operator[](int n) const;
-
-private:
-
-	typedef mstl::stack<Lookup> Stack;
-
-	Stack	m_stack;
-	Byte	m_rookNumbers[4];
-};
-
-} // namespace encoder
-} // namespace v91
 } // namespace sci
 } // namespace db
-
-namespace mstl {
-
-template <typename> struct is_pod;
-template <> struct is_pod<db::sci::v91::encoder::Position::Lookup> { enum { value = 1 }; };
-
-} // namespace mstl
-
-#include "sci_v91_encoder_position.ipp"
-
-#endif // _sci_v91_encoder_position_included
 
 // vi:set ts=3 sw=3:

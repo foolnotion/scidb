@@ -24,8 +24,12 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "tcl_view.h"
+
 #include "tcl_progress.h"
 #include "tcl_application.h"
+#include "tcl_pgn_reader.h"
+#include "tcl_game.h"
 #include "tcl_exception.h"
 #include "tcl_log.h"
 #include "tcl_obj.h"
@@ -54,6 +58,7 @@
 #include "m_assert.h"
 
 #include <tcl.h>
+#include <ctype.h>
 
 using namespace db;
 using namespace app;
@@ -243,8 +248,8 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 }
 
 
-static bool
-buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, View::TagBits& tagBits)
+bool
+tcl::view::buildTagSet(Tcl_Interp* ti, char const* cmd, Tcl_Obj* allowedTags, ::db::tag::TagSet& tagBits)
 {
 	Tcl_Obj**	tags;
 	int			tagCount;
@@ -282,11 +287,16 @@ static int
 cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const*			base		= stringFromObj(objc, objv, 1);
+	variant::Type		variant	= variant::Undetermined;
+	unsigned				n			= 2;
 	View::UpdateMode	mode[5];
+
+	if (objc > 7)
+		variant = tcl::game::variantFromObj(objv[n++]);
 
 	for (unsigned i = 0; i < U_NUMBER_OF(mode); ++i)
 	{
-		char const* arg = stringFromObj(objc, objv, i + 2);
+		char const* arg = stringFromObj(objc, objv, i + n);
 
 		if (::strcmp(arg, "master") == 0)
 			mode[i] = View::AddNewGames;
@@ -296,7 +306,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			error(CmdNew, 0, 0, "unknown resize mode '%s'", arg);
 	}
 
-	setResult(scidb->cursor(base).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
+	setResult(scidb->cursor(base, variant).newView(mode[0], mode[1], mode[2], mode[3], mode[4]));
 	return TCL_OK;
 }
 
@@ -304,18 +314,20 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdClose(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 3)
+	if (objc != 3 && objc != 4)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<database> <view>");
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> ?<variant>? <view>");
 		return TCL_ERROR;
 	}
 
 	int view;
 
-	if (Tcl_GetIntFromObj(ti, objv[2], &view) != TCL_OK)
+	if (Tcl_GetIntFromObj(ti, objv[objc > 3 ? 3 : 2], &view) != TCL_OK)
 		return error(CmdClose, 0, 0, "unsigned integer expected for view");
 
-	scidb->cursor(Tcl_GetString(objv[1])).closeView(view);
+	variant::Type variant = objc > 3 ? tcl::game::variantFromObj(objv[2]) : variant::Undetermined;
+
+	scidb->cursor(Tcl_GetString(objv[1]), variant).closeView(view);
 	return TCL_OK;
 }
 
@@ -324,37 +336,38 @@ static int
 cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
-	static char const* args[] = { "<database> <view>" };
+	static char const* args[] = { "<database> <variant> <view>" };
 	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites };
 
-	if (objc != 4)
+	if (objc != 5)
 		return usage(CmdCount, nullptr, nullptr, subcommands, args);
 
-	char const* database = stringFromObj(objc, objv, 2);
+	char const*		database	= stringFromObj(objc, objv, 2);
+	variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 3);
 
 	int index	= tcl::uniqueMatchObj(objv[1], subcommands);
-	int view		= intFromObj(objc, objv, 3);
+	int view		= intFromObj(objc, objv, 4);
 
 	switch (index)
 	{
 		case Cmd_Games:
-			setResult(Scidb->cursor(database).isViewOpen(view));
+			setResult(Scidb->cursor(database, variant).isViewOpen(view));
 			return TCL_OK;
 
 		case Cmd_Players:
-			setResult(Scidb->cursor(database).isViewOpen(view));
+			setResult(Scidb->cursor(database, variant).isViewOpen(view));
 			return TCL_OK;
 
 		case Cmd_Annotators:
-			setResult(Scidb->cursor(database).isViewOpen(view));
+			setResult(Scidb->cursor(database, variant).isViewOpen(view));
 			return TCL_OK;
 
 		case Cmd_Events:
-			setResult(Scidb->cursor(database).isViewOpen(view));
+			setResult(Scidb->cursor(database, variant).isViewOpen(view));
 			return TCL_OK;
 
 		case Cmd_Sites:
-			setResult(Scidb->cursor(database).isViewOpen(view));
+			setResult(Scidb->cursor(database, variant).isViewOpen(view));
 			return TCL_OK;
 	}
 
@@ -366,37 +379,38 @@ static int
 cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "games", "players", "annotators", "events", "sites", 0 };
-	static char const* args[] = { "<database> <view>" };
+	static char const* args[] = { "<database> <variant> <view>" };
 	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites };
 
-	if (objc != 4)
+	if (objc < 5)
 		return usage(CmdCount, nullptr, nullptr, subcommands, args);
 
 	char const* database = stringFromObj(objc, objv, 2);
+	variant::Type variant = tcl::game::variantFromObj(objc, objv, 3);
 
 	int index	= tcl::uniqueMatchObj(objv[1], subcommands);
-	int view		= intFromObj(objc, objv, 3);
+	int view		= intFromObj(objc, objv, 4);
 
 	switch (index)
 	{
 		case Cmd_Games:
-			setResult(Scidb->cursor(database).view(view).countGames());
+			setResult(Scidb->cursor(database, variant).view(view).countGames());
 			return TCL_OK;
 
 		case Cmd_Players:
-			setResult(Scidb->cursor(database).view(view).countPlayers());
+			setResult(Scidb->cursor(database, variant).view(view).countPlayers());
 			return TCL_OK;
 
 		case Cmd_Annotators:
-			setResult(Scidb->cursor(database).view(view).countAnnotators());
+			setResult(Scidb->cursor(database, variant).view(view).countAnnotators());
 			return TCL_OK;
 
 		case Cmd_Events:
-			setResult(Scidb->cursor(database).view(view).countEvents());
+			setResult(Scidb->cursor(database, variant).view(view).countEvents());
 			return TCL_OK;
 
 		case Cmd_Sites:
-			setResult(Scidb->cursor(database).view(view).countSites());
+			setResult(Scidb->cursor(database, variant).view(view).countSites());
 			return TCL_OK;
 	}
 
@@ -408,26 +422,27 @@ static int
 cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* subcommands[] = { "player", "event", "site", "annotator", 0 };
-	static char const* args[] = { "<database> <view>" };
+	static char const* args[] = { "<database> <variant> <view>" };
 	enum { Cmd_Player, Cmd_Event, Cmd_Site, Cmd_Annotator };
 
-	if (objc != 5)
+	if (objc != 6)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "player|event|site|annotator <database> <view> <string>");
+		Tcl_WrongNumArgs(ti, 1, objv, "player|event|site|annotator <database> <variant> <view> <string>");
 		return TCL_ERROR;
 	}
 
 	int index = tcl::uniqueMatchObj(objv[1], subcommands);
 
-	char const*	database	= Tcl_GetString(objv[2]);
-	char const* name		= Tcl_GetString(objv[4]);
+	char const*		database	= Tcl_GetString(objv[2]);
+	char const* 	name		= Tcl_GetString(objv[5]);
+	variant::Type	variant	= tcl::game::variantFromObj(objv[3]);
 
 	int view;
 
-	if (Tcl_GetIntFromObj(ti, objv[3], &view) != TCL_OK)
+	if (Tcl_GetIntFromObj(ti, objv[4], &view) != TCL_OK)
 		return error(CmdFind, 0, 0, "unsigned integer expected for view");
 
-	View const& v = Scidb->cursor(database).view(view);
+	View const& v = Scidb->cursor(database, variant).view(view);
 
 	switch (index)
 	{
@@ -458,17 +473,21 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc < 5 || 6 < objc)
+	if (objc < 5 || 7 < objc)
 	{
-		Tcl_WrongNumArgs(	ti,
-								1,
-								objv,
-								"<database> <view> <operator> <none|events|sites|players> ?<query>?");
+		Tcl_WrongNumArgs(
+			ti,
+			1,
+			objv,
+			"<database> ?<variant>? <view> <operator> <none|events|sites|players> ?<query>?");
 		return TCL_ERROR;
 	}
 
-	char const*	database	= Tcl_GetString(objv[1]);
-	char const*	ops		= Tcl_GetString(objv[3]);
+	unsigned n = *Tcl_GetString(objv[2]) == '-' || isdigit(*Tcl_GetString(objv[2])) ? 0 : 1;
+
+	char const*		database	= Tcl_GetString(objv[1]);
+	char const*		ops		= Tcl_GetString(objv[3 + n]);
+	variant::Type	variant	= n ? tcl::game::variantFromObj(objv[2]) : variant::Undetermined;
 
 	Query::Operator op;
 
@@ -487,7 +506,7 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdSearch, 0, 0, "invalid operator %s", ops);
 
-	char const* f = Tcl_GetString(objv[4]);
+	char const* f = Tcl_GetString(objv[4 + n]);
 	unsigned filter = Application::None;
 
 	switch (f[0])
@@ -502,18 +521,18 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	int view;
 
-	if (Tcl_GetIntFromObj(ti, objv[2], &view) != TCL_OK)
+	if (Tcl_GetIntFromObj(ti, objv[2 + n], &view) != TCL_OK)
 		return error(CmdSearch, 0, 0, "unsigned integer expected for view");
 
 	// NOTE: we don't like to interrupt tree search!
-	Cursor const& cursor = Scidb->cursor(database);
+	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	SearchP search;
 
-	if (objc >= 6)
-		search = buildSearch(cursor.database(), ti, objv[5]);
+	if (objc + n >= 6)
+		search = buildSearch(cursor.database(), ti, objv[5 + n]);
 
-	if (!search && objc == 6)
+	if (!search && objc == int(6 + n))
 		return TCL_ERROR;
 
 	scidb->searchGames(	const_cast<Cursor&>(cursor),
@@ -528,25 +547,47 @@ cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	if (objc != 10)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<source> <view> <destination> <variant> <tag-set> "
+			"<progress-cmd> <progress-arg> <log-cmd> <log-arg>");
+		return TCL_ERROR;
+	}
+
+
 	View::TagBits	tagBits;
 	mstl::string	source(stringFromObj(objc, objv, 1));
 	unsigned			viewNo(unsignedFromObj(objc, objv, 2));
 	mstl::string	destination(stringFromObj(objc, objv, 3));
-	bool				extraTags(buildTagSet(ti, CmdExport, objv[4], tagBits));
-	Progress			progress(objectFromObj(objc, objv, 5), objectFromObj(objc, objv, 6));
-	tcl::Log			log(objectFromObj(objc, objv, 7), objectFromObj(objc, objv, 8));
-	View&				view(scidb->cursor(source).view(viewNo));
+	variant::Type	variant(tcl::game::variantFromObj(objc, objv, 4));
+	bool				extraTags(tcl::view::buildTagSet(ti, CmdCopy, objv[5], tagBits));
+	Tcl_Obj*			progressCmd(objectFromObj(objc, objv, 6));
+	Tcl_Obj*			progressArg(objectFromObj(objc, objv, 7));
+	Tcl_Obj*			logCmd(objectFromObj(objc, objv, 8));
+	Tcl_Obj*			logArg(objectFromObj(objc, objv, 9));
+	Progress			progress(progressCmd, progressArg);
+	tcl::Log			log(logCmd, logArg);
+	View&				view(scidb->cursor(source, variant).view(viewNo));
+	unsigned			n;
+	unsigned			accepted[variant::NumberOfVariants];
+	unsigned			rejected[variant::NumberOfVariants];
 
-	unsigned n = view.copyGames(	scidb->cursor(destination),
-											tagBits,
-											extraTags,
-											log,
-											progress);
+	::memset(accepted, 0, sizeof(accepted));
+	::memset(rejected, 0, sizeof(rejected));
+
+	Cursor& dst = scidb->cursor(destination, variant);
+	unsigned variantIndex = variant::toIndex(variant);
+
+	n = view.copyGames(dst, tagBits, extraTags, log, progress);
+	accepted[variantIndex] = n;
+	rejected[variantIndex] = dst.countGames() - n;
 
 	if (progress.interrupted())
-		throw InterruptException(n);
+		n = -n - 1;
 
-	setResult(n);
+	tcl::PgnReader::setResult(n, accepted, rejected);
 	return TCL_OK;
 }
 
@@ -554,28 +595,29 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 13)
+	if (objc != 14)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"<database> <view> <file> <flags> <mode> <encoding> <exclude-illegal-games-flag> "
+			"<database> <variant> <view> <file> <flags> <mode> <encoding> <exclude-illegal-games-flag> "
 			"<exported-tags> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}
 
 	View::TagBits	tagBits;
 	char const*		database			= stringFromObj(objc, objv, 1);
-	unsigned			view				= unsignedFromObj(objc, objv, 2);
-	char const*		filename			= stringFromObj(objc, objv, 3);
-	unsigned			flags				= unsignedFromObj(objc, objv, 4);
-	View::FileMode	mode				= boolFromObj(objc, objv, 5) ? View::Append : View::Create;
-	mstl::string	encoding			= stringFromObj(objc, objv, 6);
-	bool				excludeIllegal	= boolFromObj(objc, objv, 7);
-	bool				extraTags		= buildTagSet(ti, CmdExport, objv[8], tagBits);
+	variant::Type	variant			= tcl::game::variantFromObj(objc, objv, 2);
+	unsigned			view				= unsignedFromObj(objc, objv, 3);
+	char const*		filename			= stringFromObj(objc, objv, 4);
+	unsigned			flags				= unsignedFromObj(objc, objv, 5);
+	View::FileMode	mode				= boolFromObj(objc, objv, 6) ? View::Append : View::Create;
+	mstl::string	encoding			= stringFromObj(objc, objv, 7);
+	bool				excludeIllegal	= boolFromObj(objc, objv, 8);
+	bool				extraTags		= tcl::view::buildTagSet(ti, CmdExport, objv[9], tagBits);
 
-	Progress			progress(objv[9], objv[10]);
-	tcl::Log			log(objv[11], objv[12]);
-	Cursor&			cursor(scidb->cursor(database));
+	Progress			progress(objv[10], objv[11]);
+	tcl::Log			log(objv[12], objv[13]);
+	Cursor&			cursor(scidb->cursor(database, variant));
 	Database&		db(cursor.database());
 	View&				v(cursor.view(view));
 	type::ID			type(db.type());
@@ -612,31 +654,33 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string str;
 	};
 
-	if (objc != 17)
+	if (objc != 18)
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"<database> <view> <file> <search-path> <script-path> <preamble> <flags> <options> <nag-map> "
-			"<languages> <significant> <progress-cmd> <progress-arg> <log-cmd> <log-arg>");
+			"<database> <variant> <view> <file> <search-path> <script-path> <preamble> <flags> "
+			" <options> <nag-map> <languages> <significant> <progress-cmd> <progress-arg> "
+			"<log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}
 
 	char const*		database			= stringFromObj(objc, objv, 1);
-	unsigned			view				= unsignedFromObj(objc, objv, 2);
-	char const*		filename			= stringFromObj(objc, objv, 3);
-	char const* 	searchPath		= stringFromObj(objc, objv, 4);
-	mstl::string 	scriptPath		= stringFromObj(objc, objv, 5);
-	mstl::string 	preamble			= stringFromObj(objc, objv, 6);
-	unsigned			flags				= unsignedFromObj(objc, objv, 7);
-	unsigned			options			= unsignedFromObj(objc, objv, 8);
-	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 9);
-	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 10);
-	unsigned			significant		= unsignedFromObj(objc, objv, 11);
-	char const*		trace				= stringFromObj(objc, objv, 12);
+	variant::Type	variant			= tcl::game::variantFromObj(objc, objv, 2);
+	unsigned			view				= unsignedFromObj(objc, objv, 3);
+	char const*		filename			= stringFromObj(objc, objv, 4);
+	char const* 	searchPath		= stringFromObj(objc, objv, 5);
+	mstl::string 	scriptPath		= stringFromObj(objc, objv, 6);
+	mstl::string 	preamble			= stringFromObj(objc, objv, 7);
+	unsigned			flags				= unsignedFromObj(objc, objv, 8);
+	unsigned			options			= unsignedFromObj(objc, objv, 9);
+	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 10);
+	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 11);
+	unsigned			significant		= unsignedFromObj(objc, objv, 12);
+	char const*		trace				= stringFromObj(objc, objv, 13);
 
-	Progress				progress(objv[13], objv[14]);
-	tcl::Log				log(objv[15], objv[16]);
-	Cursor&				cursor(scidb->cursor(database));
+	Progress				progress(objv[14], objv[15]);
+	tcl::Log				log(objv[16], objv[17]);
+	Cursor&				cursor(scidb->cursor(database, variant));
 	View&					v(cursor.view(view));
 	Tcl_Obj**			objs;
 	View::NagMap		nagMap;
@@ -714,9 +758,11 @@ static int
 cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* attr = stringFromObj(objc, objv, 1);
-	Cursor const& cursor(Scidb->cursor(stringFromObj(objc, objv, 2)));
-	View const& view = cursor.view(unsignedFromObj(objc, objv, 3));
-	unsigned index = unsignedFromObj(objc, objv, 4);
+	char const* database(stringFromObj(objc, objv, 2));
+	variant::Type variant = objc > 5 ? tcl::game::variantFromObj(objv[3]) : variant::Undetermined;
+	Cursor const& cursor(Scidb->cursor(database, variant));
+	View const& view = cursor.view(unsignedFromObj(objc, objv, objc > 5 ? 4 : 3));
+	unsigned index = unsignedFromObj(objc, objv, objc > 5 ? 5 : 4);
 
 	if (::strcmp(attr, "player") == 0)
 		setResult(view.lookupPlayer(index));

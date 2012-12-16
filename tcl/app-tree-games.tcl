@@ -39,7 +39,7 @@ proc build {parent width height} {
 		-takefocus 0 \
 		-listmode 1 \
 		-positioncmd ::scidb::tree::position \
-		]
+	]
 
 	::bind $tb <<TableVisit>>		+[namespace code [list TableVisit $table %d]]
 	::bind $tb <<TablePopdown>>	+[namespace code [list ReleaseButton $table]]
@@ -53,7 +53,6 @@ proc build {parent width height} {
 
 	set Vars(after) {}
 	set Vars(button) 0
-	set Vars(base) ""
 
 	::scidb::db::subscribe gameList \
 		[namespace current]::TableUpdate \
@@ -62,6 +61,11 @@ proc build {parent width height} {
 		;
 	bind $table <<TableMinSize>> [namespace code [list TableMinSize $table %d]]
 	return $table
+}
+
+
+proc clear {parent} {
+	::gametable::clear $parent.treeGames
 }
 
 
@@ -153,32 +157,30 @@ proc TableVisit {table data} {
 }
 
 
-proc View {pane base} {
+proc View {pane base variant} {
 	return [::scidb::tree::view $pane $base]
 }
 
 
-proc TableUpdate {table id base {view -1} {index -1}} {
+proc TableUpdate {table id base variant {view -1} {index -1}} {
 	variable Vars
 
-	if {[::scidb::tree::isRefBase? $base]} {
-		if {$view == [::scidb::tree::view]} {
-			after cancel $Vars(after)
+	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
+		after cancel $Vars(after)
 
-			if {$index == -1} {
-				set Vars(after) [after idle [namespace code [list UpdateTable $table $base]]]
-			} else {
-				set Vars(after) [after idle [list ::gametable::fill $table $index [expr {$index + 1}]]]
-			}
+		if {$index == -1} {
+			set Vars(after) [after idle [namespace code [list UpdateTable $table $base $variant]]]
+		} else {
+			set Vars(after) [after idle [list ::gametable::fill $table $index [expr {$index + 1}]]]
 		}
 	}
 }
 
 
-proc UpdateTable {table base} {
-	set size [::scidb::view::count games $base [::scidb::tree::view]]
+proc UpdateTable {table base variant} {
+	set size [::scidb::view::count games $base $variant [::scidb::tree::view]]
 	::scrolledtable::select $table none
-	after idle [list ::gametable::update $table $base $size]
+	after idle [list ::gametable::update $table $base $variant $size]
 	after idle [list ::scrolledtable::scroll $table home]
 }
 
@@ -188,8 +190,8 @@ proc TableMinSize {table minsize} {
 }
 
 
-proc Close {table base} {
-	::gametable::forget $table $base
+proc Close {table base variant} {
+	::gametable::forget $table $base $variant
 }
 
 } ;# namespace games

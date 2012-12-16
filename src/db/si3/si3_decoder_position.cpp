@@ -67,9 +67,9 @@ Position::doMove(Move& move, unsigned pieceNum)
 
 	move.setColor(color);
 
-	if (lookup.board.isValidMove(move, move::DontAllowIllegalMove))
+	if (lookup.board.isValidMove(move, variant::Normal, move::DontAllowIllegalMove))
 		move.setLegalMove();
-	else if (!lookup.board.checkMove(move, move::AllowIllegalMove))
+	else if (!lookup.board.checkMove(move, variant::Normal, move::AllowIllegalMove))
 		IO_RAISE(Game, Corrupted, "invalid move");
 
 	lookup.board.prepareUndo(move);
@@ -105,7 +105,9 @@ Position::doMove(Move& move, unsigned pieceNum)
 	}
 	else if (__builtin_expect(!move.isNull(), 1))
 	{
-		if (move.captured() != piece::None)
+		M_ASSERT(!move.isPieceDrop());
+
+		if (move.capturedType() != piece::None)
 		{
 			unsigned	count = --lookup.pieceCount[color::opposite(color)];
 			lookup.capturedNum = lookup.numbers[move.capturedSquare()];
@@ -115,7 +117,7 @@ Position::doMove(Move& move, unsigned pieceNum)
 		lookup.set(pieceNum, move.to());
 	}
 
-	lookup.board.doMove(move);
+	lookup.board.doMove(move, variant::Normal);
 }
 
 
@@ -148,9 +150,11 @@ Position::undoMove(Move const& move)
  	}
  	else if (__builtin_expect(!move.isNull(), 1))
  	{
+		M_ASSERT(!move.isPieceDrop());
+
  		unsigned	pieceNum	= lookup.numbers[move.to()];
 
-	 	if (move.captured() != piece::None)
+	 	if (move.capturedType() != piece::None)
  		{
  			M_ASSERT(lookup.capturedNum);
 
@@ -162,7 +166,7 @@ Position::undoMove(Move const& move)
 		lookup.set(pieceNum, move.from());
  	}
 
- 	lookup.board.undoMove(move);
+ 	lookup.board.undoMove(move, variant::Normal);
 }
 
 
@@ -174,13 +178,13 @@ Position::setup(char const* fen)
 
 	typedef unsigned Pieces[2];
 
-	if (__builtin_expect(!board().setup(fen), 0))	// should never fail
+	if (__builtin_expect(!board().setup(fen, variant::Normal), 0))	// should never fail
 		::throwInvalidFen();
 
 	// Scid allows invalid FEN's, we'll try to fix it.
 	board().fixBadCastlingRights();
 
-	if (board().validate(variant::Standard) != Board::Valid)
+	if (board().validate(variant::Normal) != Board::Valid)
 		IO_RAISE(Game, Invalid_Data, "invalid FEN (%s)", fen);
 
 // WARNING: flags::Non_Standard_Start is possibly set wrong (Scid bug)
@@ -312,6 +316,9 @@ Position::setup(char const* fen)
 				haveKing[color::Black] = true;
 			break;
 
+			case '~':
+				break;
+
 			case '/':
 				if (__builtin_expect(i & 7, 0))	// should never happen
 					::throwInvalidFen();
@@ -331,9 +338,9 @@ Position::setup()
 		sq::e8, sq::a8, sq::b8, sq::c8, sq::d8, sq::f8, sq::g8, sq::h8,
 		sq::a7, sq::b7, sq::c7, sq::d7, sq::e7, sq::f7, sq::g7, sq::h7,
 	};
-#define __ 0
 	static Numbers const StandardPieceNumbers =
 	{
+#define __ 0
 		 1,  2,  3,  4,  0,  5,  6,  7,
 		 8,  9, 10, 11, 12, 13, 14, 15,
 		__, __, __, __, __, __, __, __,
@@ -342,8 +349,8 @@ Position::setup()
 		__, __, __, __, __, __, __, __,
 		24, 25, 26, 27, 28, 29, 30, 31,
 		17, 18, 19, 20, 16, 21, 22, 23,
-	};
 #undef __
+	};
 
 	while (m_stack.size() > 1)
 		m_stack.pop();

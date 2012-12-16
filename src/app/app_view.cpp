@@ -542,7 +542,7 @@ View::dumpGame(unsigned index,
 	{
 		game.forward(lengths[i]);
 		positions.push_back();
-		game.currentBoard().toFen(positions.back());
+		game.currentBoard().toFen(positions.back(), game.variant());
 	}
 
 	return Result(state, count);
@@ -582,6 +582,7 @@ View::exportGames(Consumer& destination,
 						Log& log,
 						util::Progress& progress) const
 {
+	destination.setupVariant(m_db.variant());
 	return m_db.exportGames(destination, m_gameFilter, m_gameSelector, copyMode, log, progress);
 }
 
@@ -611,24 +612,21 @@ View::exportGames(mstl::string const& filename,
 
 	if (ext == "sci")
 	{
-		Database destination(filename, sys::utf8::Codec::utf8(), Database::OnDisk);
+		Database destination(filename, sys::utf8::Codec::utf8(), storage::OnDisk, type, m_db.variant());
 		destination.setDescription(description);
-		destination.setType(type);
 		progress.message("write-game");
 
 		if (	m_db.format() == format::Scidb
 			&& fmode != Upgrade
 			&& allowExtraTags
-			&& (allowedTags | sci::Encoder::extraTags()).any())
+			&& (allowedTags | sci::Encoder::infoTags()).any())
 		{
 			count = exportGames(destination, copyMode, log, progress);
 		}
 		else
 		{
-			sci::Consumer consumer(	m_db.format(),
-											dynamic_cast<sci::Codec&>(destination.codec()),
-											allowedTags,
-											allowExtraTags);
+			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
+			sci::Consumer consumer(m_db.format(), codecs, allowedTags, allowExtraTags);
 			count = exportGames(consumer, copyMode, log, progress);
 		}
 
@@ -638,9 +636,8 @@ View::exportGames(mstl::string const& filename,
 	}
 	else if (ext == "si3" || ext == "si4")
 	{
-		Database destination(filename, sys::utf8::Codec::utf8(), Database::OnDisk);
+		Database destination(filename, sys::utf8::Codec::utf8(), storage::OnDisk, type, m_db.variant());
 		destination.setDescription(description);
-		destination.setType(type);
 
 //		We do not use speed up because the scid bases created with the Scid application
 //		may contain some broken data. The exporting will fix the data.

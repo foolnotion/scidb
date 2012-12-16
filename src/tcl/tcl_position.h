@@ -27,6 +27,8 @@
 #ifndef _tcl_position_included
 #define _tcl_position_included
 
+#include "db_common.h"
+
 extern "C" { struct Tcl_Interp; }
 
 namespace db	{ class Board; }
@@ -36,7 +38,7 @@ namespace tcl {
 namespace pos {
 
 void dumpBoard(::db::Board const& board, mstl::string& result);
-void dumpFen(mstl::string const& position, mstl::string& result);
+void dumpFen(mstl::string const& position, ::db::variant::Type variant, mstl::string& result);
 void resetMoveCache();
 
 } // namespace pos

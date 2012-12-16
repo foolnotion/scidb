@@ -66,25 +66,41 @@ struct TagLookup
 {
 	TagLookup()
 	{
-		m_lookup.set(tag::Event);
-		m_lookup.set(tag::Site);
-		m_lookup.set(tag::Date);
-		m_lookup.set(tag::Round);
-		m_lookup.set(tag::White);
-		m_lookup.set(tag::Black);
-		m_lookup.set(tag::Result);
-		m_lookup.set(tag::Eco);
-		m_lookup.set(tag::WhiteElo);
-		m_lookup.set(tag::BlackElo);
+		m_info.set(tag::Event);
+		m_info.set(tag::Site);
+		m_info.set(tag::Date);
+		m_info.set(tag::Round);
+		m_info.set(tag::White);
+		m_info.set(tag::Black);
+		m_info.set(tag::Result);
+		m_info.set(tag::Eco);
+		m_info.set(tag::WhiteElo);
+		m_info.set(tag::BlackElo);
+
+		m_ignore = m_info;
+		m_ignore.set(tag::Fen);
+		m_ignore.set(tag::Idn);
+		m_ignore.set(tag::WhiteCountry);
+		m_ignore.set(tag::BlackCountry);
+		m_ignore.set(tag::Annotator);
+		m_ignore.set(tag::PlyCount);
+//		m_ignore.set(tag::Opening);
+//		m_ignore.set(tag::Variation);
+//		m_ignore.set(tag::Source);
+		m_ignore.set(tag::SetUp);
+		m_ignore.set(tag::EventDate);
 	}
 
-	static db::Consumer::TagBits m_lookup;
+	static db::tag::TagSet m_info;
+	static db::tag::TagSet m_ignore;
 
-	bool skipTag(tag::ID tag) const { return m_lookup.test(tag); }
+	static db::tag::TagSet const& infoTags()	{ return m_info; }
+	static bool skipTag(tag::ID tag) 			{ return m_ignore.test(tag); }
 };
 
-db::Consumer::TagBits TagLookup::m_lookup;
-static TagLookup tagLookup;
+db::Consumer::TagBits TagLookup::m_info;
+db::Consumer::TagBits TagLookup::m_ignore;
+static TagLookup m_tagLookup;
 
 } // namespace
 
@@ -93,7 +109,7 @@ Encoder::Encoder(ByteStream& strm, sys::utf8::Codec& codec)
 	:m_strm(strm)
 	,m_codec(codec)
 {
-	static_assert(tag::ExtraTag <= 8*sizeof(uint64_t), "BitField size exceeded");
+	static_assert(int(tag::ExtraTag) <= int(tag::TagSetSize), "BitField size exceeded");
 }
 
 
@@ -103,7 +119,7 @@ Encoder::setup(Board const& board)
 	if (!board.isStandardPosition())
 	{
 		mstl::string fen;
-		board.toFen(fen);
+		board.toFen(fen, variant::Normal);
 		m_strm.put(fen, fen.size() + 1);
 		m_position.setup(board);
 	}
@@ -153,36 +169,17 @@ Encoder::encodeTag(TagSet const& tags, tag::ID tagID)
 }
 
 
-bool
-Encoder::skipTag(tag::ID tag)
+db::tag::TagSet const&
+Encoder::infoTags()
 {
-	return ::tagLookup.skipTag(tag);
+	return TagLookup::infoTags();
 }
 
 
 bool
 Encoder::isExtraTag(tag::ID tag)
 {
-	switch (int(tag))
-	{
-		case tag::Fen:
-		case tag::Idn:
-		case tag::WhiteCountry:
-		case tag::BlackCountry:
-		case tag::Annotator:
-		case tag::PlyCount:
-//		case tag::Opening:
-//		case tag::Variation:
-//		case tag::Source:
-		case tag::SetUp:
-		case tag::EventDate:
-			return false;
-
-		case tag::ExtraTag:
-			return true;
-	}
-
-	return !skipTag(tag);
+	return !TagLookup::skipTag(tag);
 }
 
 
@@ -214,7 +211,7 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 
 	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
 	{
-		if (!::tagLookup.skipTag(tag))
+		if (!TagLookup::skipTag(tag))
 		{
 			Byte key = 0;
 
@@ -349,35 +346,35 @@ inline
 void
 Encoder::encodeQueen(Move const& move)
 {
-    // We cannot fit all Queen moves in one byte, so Rooklike moves
-    // are in one byte (encoded the same way as Rook moves),
-    // while diagonal moves are in two bytes.
+   // We cannot fit all Queen moves in one byte, so Rooklike moves
+   // are in one byte (encoded the same way as Rook moves),
+   // while diagonal moves are in two bytes.
 
-    M_ASSERT(move.to() <= sq::h8 && move.from() <= sq::h8);
+   M_ASSERT(move.to() <= sq::h8 && move.from() <= sq::h8);
 
-    if (sq::rank(move.from()) == sq::rank(move.to()))
-	 {
-        // Rook-horizontal move
-        m_strm.put(::makeMoveByte(m_position[move.from()], sq::fyle(move.to())));
+   if (sq::rank(move.from()) == sq::rank(move.to()))
+	{
+		// Rook-horizontal move
+		m_strm.put(::makeMoveByte(m_position[move.from()], sq::fyle(move.to())));
+	}
+	else if (sq::fyle(move.from()) == sq::fyle(move.to()))
+	{
+		// Rook-vertical move
+		m_strm.put(::makeMoveByte(m_position[move.from()], sq::rank(move.to()) + 8));
+	}
+	else
+	{
+		// Diagonal move:
+		// First, we put a rook-horizontal move to the from square (which
+		// is illegal of course) to indicate it is NOT a rooklike move.
+		m_strm.put(::makeMoveByte(m_position[move.from()], sq::fyle(move.from())));
 
-    }
-	 else if (sq::fyle(move.from()) == sq::fyle(move.to()))
-	 {
-        // Rook-vertical move
-        m_strm.put(::makeMoveByte(m_position[move.from()], sq::rank(move.to()) + 8));
-    }
-	 else
-	 {
-        // Diagonal move:
-        // First, we put a rook-horizontal move to the from square (which
-        // is illegal of course) to indicate it is NOT a rooklike move.
-        m_strm.put(::makeMoveByte(m_position[move.from()], sq::fyle(move.from())));
-
-        // Now we put the to-square in the next byte. We add a 64 to it
-        // to make sure that it cannot clash with the Special tokens (which
-        // are in the range 0 to 15, since they are special King moves).
-        m_strm.put(move.to() + 64);
-    }
+		// Now we put the to-square in the next byte. We add a 64 to it
+		// to make sure that it cannot clash with the Special tokens (which
+		// are in the range 0 to 15, since they are special King moves).
+		static_assert(token::Last < 64, "decoding cannot work");
+		m_strm.put(move.to() + 64);
+	}
 }
 
 
@@ -385,21 +382,21 @@ inline
 void
 Encoder::encodeRook(Move const& move)
 {
-    // Valid Rook moves are to same rank, OR to same fyle.
-    // We encode the 8 squares on the same rank 0-8, and the 8
-    // squares on the same fyle 9-15. This means that for any particular
-    // rook move, two of the values in the range [0-15] will be
-    // meaningless, as they will represent the from-square.
+	// Valid Rook moves are to same rank, OR to same fyle.
+	// We encode the 8 squares on the same rank 0-8, and the 8
+	// squares on the same fyle 9-15. This means that for any particular
+	// rook move, two of the values in the range [0-15] will be
+	// meaningless, as they will represent the from-square.
 
-    Byte value;
+	Byte value;
 
-    // Check if the two squares share the same rank
-    if (sq::rank(move.from()) == sq::rank(move.to()))
-        value = sq::fyle(move.to());
-    else
-        value = sq::rank(move.to()) + 8;
+	// Check if the two squares share the same rank
+	if (sq::rank(move.from()) == sq::rank(move.to()))
+		value = sq::fyle(move.to());
+	else
+		value = sq::rank(move.to()) + 8;
 
-    m_strm.put(::makeMoveByte(m_position[move.from()], value));
+	m_strm.put(::makeMoveByte(m_position[move.from()], value));
 }
 
 
@@ -407,19 +404,19 @@ inline
 void
 Encoder::encodeBishop(Move const& move)
 {
-    // We encode a Bishop move as the Fyle moved to, plus
-    // a one-bit flag to indicate if the direction was
-    // up-right/down-left or vice versa.
+	// We encode a Bishop move as the Fyle moved to, plus
+	// a one-bit flag to indicate if the direction was
+	// up-right/down-left or vice versa.
 
-    Byte	value		= sq::fyle(move.to());
-    int	rankDiff	= int(sq::rank(move.to())) - int(sq::rank(move.from()));
-    int	fyleDiff	= int(sq::fyle(move.to())) - int(sq::fyle(move.from()));
+	Byte	value		= sq::fyle(move.to());
+	int	rankDiff	= int(sq::rank(move.to())) - int(sq::rank(move.from()));
+	int	fyleDiff	= int(sq::fyle(move.to())) - int(sq::fyle(move.from()));
 
-    // If (rankdiff*fylediff) is negative, it's up-left/down-right
-	 if ((rankDiff ^ fyleDiff) < 0)
-		 value += 8;
+	// If (rankdiff*fylediff) is negative, it's up-left/down-right
+	if ((rankDiff ^ fyleDiff) < 0)
+		value += 8;
 
-    m_strm.put(::makeMoveByte(m_position[move.from()], value));
+	m_strm.put(::makeMoveByte(m_position[move.from()], value));
 }
 
 
@@ -656,8 +653,7 @@ Encoder::encodeVariation(MoveNode const* node, unsigned level)
 			}
 			else
 			{
-				encodeMove(node->move());
-				m_position.doMove(node->move());
+				doEncoding(node->move());
 			}
 
 			afterVariation = false;
@@ -747,6 +743,8 @@ Encoder::encodeType(type::ID type)
 		case type::Antichess:					return 0;	// Unknown
 		case type::PlayerCollectionFemale:	return 9;	// Player collection
 		case type::PGNFile:						return 3;	// PGN format file
+		case type::ThreeCheck:					return 0;	// Unknown
+		case type::Crazyhouse:					return 0;	// Unknown
 	}
 
 	return 0;	// satisfies the compiler

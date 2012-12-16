@@ -250,9 +250,17 @@ unquoteChars(char* s, char const* e)
 static int
 selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 {
-	char*	propInfo	= 0;
-	Atom	type;
-	int	format;
+	// prevent the strict aliasing problem
+	union PropInfo
+	{
+		PropInfo() :c(0) {}
+		char* c;
+		unsigned char* u;
+	};
+
+	PropInfo	propInfo;
+	Atom		type;
+	int		format;
 
 	unsigned long numItems = 0;
 	unsigned long bytesAfter;
@@ -274,11 +282,11 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 												&format,
 												&numItems,
 												&bytesAfter,
-												reinterpret_cast<unsigned char**>(&propInfo));
+												&propInfo.u);
 
 	int done = 0;
 
-	if (result == Success && propInfo != 0 && type != None && bytesAfter == 0 && format == 8)
+	if (result == Success && propInfo.c != 0 && type != None && bytesAfter == 0 && format == 8)
 	{
 		Atom xaPlainTextUtf8		= 0;
 		Atom xaPlainTextLatin1	= 0;
@@ -297,21 +305,21 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 			|| type == (xaUriList			= Tk_InternAtom(tkwin, "text/uri-list"))
 			|| type == (xaQIconList			= Tk_InternAtom(tkwin, "application/x-qiconlist")))
 		{
-			while (numItems > 0 && propInfo[numItems - 1] == '\0')
+			while (numItems > 0 && propInfo.c[numItems - 1] == '\0')
 				--numItems;
 
-			numItems = mapToUnixNewline(propInfo, propInfo + numItems) - propInfo;
+			numItems = mapToUnixNewline(propInfo.c, propInfo.c + numItems) - propInfo.c;
 
 			if (type == xaPlainTextUtf8 || type == xaHtmlUtf8)
 			{
-				Tcl_SetObjResult(Tk_Interp(tkwin), Tcl_NewStringObj(propInfo, numItems));
+				Tcl_SetObjResult(Tk_Interp(tkwin), Tcl_NewStringObj(propInfo.c, numItems));
 			}
 			else if (type == xaPlainTextLatin1 || type == xaHtmlLatin1 || type == xaQIconList)
 			{
 				Tcl_DString ds;
 				Tcl_Encoding encoding = Tcl_GetEncoding(Tk_Interp(tkwin), "iso8859-1");
 
-				Tcl_ExternalToUtfDString(encoding, propInfo, numItems, &ds);
+				Tcl_ExternalToUtfDString(encoding, propInfo.c, numItems, &ds);
 				Tcl_DStringResult(Tk_Interp(tkwin), &ds);
 				Tcl_DStringFree(&ds);
 				Tcl_FreeEncoding(encoding);
@@ -321,9 +329,9 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 				Tcl_DString ds;
 
 				if (type == xaUriList)
-					numItems = unquoteChars(propInfo, propInfo + numItems) - propInfo;
+					numItems = unquoteChars(propInfo.c, propInfo.c + numItems) - propInfo.c;
 
-				Tcl_ExternalToUtfDString(0, propInfo, numItems, &ds);
+				Tcl_ExternalToUtfDString(0, propInfo.c, numItems, &ds);
 				Tcl_DStringResult(Tk_Interp(tkwin), &ds);
 				Tcl_DStringFree(&ds);
 			}
@@ -338,8 +346,8 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 	    Tcl_SetResult(Tk_Interp(tkwin), const_cast<char*>("selection property too large"), TCL_STATIC);
 	}
 
-	if (propInfo)
-		XFree(propInfo);
+	if (propInfo.c)
+		XFree(propInfo.c);
 
 	return done;
 }
@@ -422,51 +430,75 @@ selectionSend(	Tcl_Interp* ti,
 				|| type == Tk_InternAtom(source, "text/html;charset=UTF-8"))
 	{
 		format = 8;
-		encoding = Tcl_GetEncoding(0, "utf-8");
 	}
 	else if (type == Tk_InternAtom(source, "application/x-color"))
 	{
 		format = 16;
 	}
 
-	if (format)
+	Tcl_Preserve(ti);
+
+	switch (format)
 	{
-		Tcl_Preserve(ti);
+		case 8:
+			{
+				int	srcLen;
+				char*	src		= Tcl_GetStringFromObj(data, &srcLen);
 
-		switch (format)
-		{
-			case 8:
+				Tcl_DString ds;
+				Tcl_DStringInit(&ds);
+
+				if (type == Tk_InternAtom(source, "text/uri-list"))
 				{
-					int	srcLen;
-					char*	src		= Tcl_GetStringFromObj(data, &srcLen);
+					Tcl_DString buf;
 
-					Tcl_DString ds;
-					Tcl_DStringInit(&ds);
+					Tcl_UtfToExternalDString(0, src, srcLen, &buf);
+					Tcl_DStringSetLength(&ds, 4*Tcl_DStringLength(&buf));
+					Tcl_DStringSetLength(
+						&ds,
+						quoteChars(
+							Tcl_DStringValue(&buf),
+							Tcl_DStringValue(&buf) + Tcl_DStringLength(&buf),
+							Tcl_DStringValue(&ds)));
+					Tcl_DStringFree(&buf);
+				}
+				else if (encoding == 0 || strcmp(Tcl_GetEncodingName(encoding), "utf-8") != 0)
+				{
+					Tcl_UtfToExternalDString(encoding, src, srcLen, &ds);
+				}
 
-					if (type == Tk_InternAtom(source, "text/uri-list"))
-					{
-						Tcl_DString buf;
+				if (Tcl_DStringLength(&ds) > 0)
+				{
+					src = Tcl_DStringValue(&ds);
+					srcLen = Tcl_DStringLength(&ds);
+				}
 
-						Tcl_UtfToExternalDString(0, src, srcLen, &buf);
-						Tcl_DStringSetLength(&ds, 4*Tcl_DStringLength(&buf));
-						Tcl_DStringSetLength(
-							&ds,
-							quoteChars(
-								Tcl_DStringValue(&buf),
-								Tcl_DStringValue(&buf) + Tcl_DStringLength(&buf),
-								Tcl_DStringValue(&ds)));
-						Tcl_DStringFree(&buf);
-					}
-					else if (encoding == 0 || strcmp(Tcl_GetEncodingName(encoding), "utf-8") != 0)
-					{
-						Tcl_UtfToExternalDString(encoding, src, srcLen, &ds);
-					}
+				XChangeProperty(
+					Tk_Display(source),
+					target,
+					selection,
+					type,
+					format,
+					PropModeReplace,
+					reinterpret_cast<unsigned char*>(src),
+					srcLen);
 
-					if (Tcl_DStringLength(&ds) > 0)
-					{
-						src = Tcl_DStringValue(&ds);
-						srcLen = Tcl_DStringLength(&ds);
-					}
+				Tcl_DStringFree(&ds);
+				success = TCL_OK;
+			}
+			break;
+
+		case 16:
+			{
+				int nfields;
+				Tcl_Obj** field;
+
+				if ((success = Tcl_ListObjGetElements(ti, data, &nfields, &field)))
+				{
+					uint16_t* props = reinterpret_cast<uint16_t*>(ckalloc(sizeof(uint16_t)*nfields));
+
+					for (int i = 0; i< nfields; ++i)
+						props[i] = strtol(Tcl_GetString(field[i]), 0, 0);
 
 					XChangeProperty(
 						Tk_Display(source),
@@ -475,91 +507,118 @@ selectionSend(	Tcl_Interp* ti,
 						type,
 						format,
 						PropModeReplace,
-						reinterpret_cast<unsigned char*>(src),
-						srcLen);
+						reinterpret_cast<unsigned char*>(props),
+						nfields);
 
-					Tcl_DStringFree(&ds);
-					success = TCL_OK;
+					ckfree(reinterpret_cast<char*>(props));
 				}
-				break;
+			}
+			break;
 
-			case 16:
+		case 32:
+			{
+				int nfields;
+				Tcl_Obj** field;
+
+				if ((success = Tcl_ListObjGetElements(ti, data, &nfields, &field)))
 				{
-					int nfields;
-					Tcl_Obj** field;
+					uint32_t* props = reinterpret_cast<uint32_t*>(ckalloc(sizeof(uint32_t)*nfields));
 
-					if ((success = Tcl_ListObjGetElements(ti, data, &nfields, &field)))
-					{
-						uint16_t* props = reinterpret_cast<uint16_t*>(ckalloc(sizeof(uint16_t)*nfields));
+					for (int i = 0; i< nfields; ++i)
+						props[i] = strtol(Tcl_GetString(field[i]), 0, 0);
 
-						for (int i = 0; i< nfields; ++i)
-							props[i] = strtol(Tcl_GetString(field[i]), 0, 0);
+					XChangeProperty(
+						Tk_Display(source),
+						target,
+						selection,
+						type,
+						format,
+						PropModeReplace,
+						reinterpret_cast<unsigned char*>(props),
+						nfields);
 
-						XChangeProperty(
-							Tk_Display(source),
-							target,
-							selection,
-							type,
-							format,
-							PropModeReplace,
-							reinterpret_cast<unsigned char*>(props),
-							nfields);
-
-						ckfree(reinterpret_cast<char*>(props));
-					}
+					ckfree(reinterpret_cast<char*>(props));
 				}
-				break;
-
-			case 32:
-				{
-					int nfields;
-					Tcl_Obj** field;
-
-					if ((success = Tcl_ListObjGetElements(ti, data, &nfields, &field)))
-					{
-						uint32_t* props = reinterpret_cast<uint32_t*>(ckalloc(sizeof(uint32_t)*nfields));
-
-						for (int i = 0; i< nfields; ++i)
-							props[i] = strtol(Tcl_GetString(field[i]), 0, 0);
-
-						XChangeProperty(
-							Tk_Display(source),
-							target,
-							selection,
-							type,
-							format,
-							PropModeReplace,
-							reinterpret_cast<unsigned char*>(props),
-							nfields);
-
-						ckfree(reinterpret_cast<char*>(props));
-					}
-				}
-				break;
-		}
-
-		if (success == TCL_OK)
-		{
-			XEvent event;
-
-			event.xselection.type		= SelectionNotify;
-			event.xselection.display	= Tk_Display(source);
-			event.xselection.requestor	= target;
-			event.xselection.selection	= Tk_InternAtom(source, "XdndSelection");
-			event.xselection.target		= type;
-			event.xselection.property	= selection;
-			event.xselection.time		= time ? time : CurrentTime;
-
-			XSendEvent(event.xselection.display, event.xselection.requestor, False, NoEventMask, &event);
-		}
-
-		Tcl_Release(ti);
+			}
+			break;
 	}
+
+	if (success == TCL_OK)
+	{
+		XEvent event;
+
+		event.xselection.type		= SelectionNotify;
+		event.xselection.display	= Tk_Display(source);
+		event.xselection.requestor	= target;
+		event.xselection.selection	= Tk_InternAtom(source, "XdndSelection");
+		event.xselection.target		= type;
+		event.xselection.property	= selection;
+		event.xselection.time		= time ? time : CurrentTime;
+
+		XSendEvent(event.xselection.display, event.xselection.requestor, False, NoEventMask, &event);
+	}
+
+	Tcl_Release(ti);
 
 	if (encoding)
 		Tcl_FreeEncoding(encoding);
 
 	return success;
+}
+
+
+static int
+selSend(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 8)
+	{
+		Tcl_WrongNumArgs(ti, 2, objv, "source target selection type time data");
+		return TCL_ERROR;
+	}
+
+	Tk_Window source = Tk_NameToWindow(ti, Tcl_GetString(objv[2]), Tk_MainWindow(ti));
+
+	if (!source)
+	{
+		Tcl_AppendResult(ti, "value for \"source\" should be a valid window name", nullptr);
+		return TCL_ERROR;
+	}
+
+	Window target = None;
+
+	{
+		long t;
+
+		if (Tcl_GetLongFromObj(ti, objv[3], &t) != TCL_OK)
+		{
+			Tcl_AppendResult(ti, "value for \"target\" should be window id", nullptr);
+			return TCL_ERROR;
+		}
+
+		target = t;
+	}
+
+	Atom selection	= Tk_InternAtom(source, Tcl_GetString(objv[4]));
+	Atom type		= Tk_InternAtom(source, Tcl_GetString(objv[5]));
+
+	if (selection == None || type == None)
+		return TCL_ERROR;
+
+	Time time;
+
+	{
+		long t;
+
+		if (Tcl_GetLongFromObj(ti, objv[6], &t) != TCL_OK)
+		{
+			Tcl_AppendResult(ti, "invalid value for \"time\"", nullptr);
+			return TCL_ERROR;
+		}
+
+		time = t;
+	}
+
+	return selectionSend(ti, source, target, selection, type, time, objv[7]);
 }
 
 # endif // __unix__
@@ -663,61 +722,6 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	return invokeTkSelection(ti, nargs, args);
-}
-
-
-static int
-selSend(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
-{
-	if (objc != 8)
-	{
-		Tcl_WrongNumArgs(ti, 2, objv, "source target selection type time data");
-		return TCL_ERROR;
-	}
-
-	Tk_Window source = Tk_NameToWindow(ti, Tcl_GetString(objv[2]), Tk_MainWindow(ti));
-
-	if (!source)
-	{
-		Tcl_AppendResult(ti, "value for \"source\" should be a valid window name", nullptr);
-		return TCL_ERROR;
-	}
-
-	Window target = None;
-
-	{
-		long t;
-
-		if (Tcl_GetLongFromObj(ti, objv[3], &t) != TCL_OK)
-		{
-			Tcl_AppendResult(ti, "value for \"target\" should be window id", nullptr);
-			return TCL_ERROR;
-		}
-
-		target = t;
-	}
-
-	Atom selection	= Tk_InternAtom(source, Tcl_GetString(objv[4]));
-	Atom type		= Tk_InternAtom(source, Tcl_GetString(objv[5]));
-
-	if (selection == None || type == None)
-		return TCL_ERROR;
-
-	Time time;
-
-	{
-		long t;
-
-		if (Tcl_GetLongFromObj(ti, objv[6], &t) != TCL_OK)
-		{
-			Tcl_AppendResult(ti, "invalid value for \"time\"", nullptr);
-			return TCL_ERROR;
-		}
-
-		time = t;
-	}
-
-	return selectionSend(ti, source, target, selection, type, time, objv[7]);
 }
 
 
