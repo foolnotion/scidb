@@ -184,8 +184,8 @@ namespace egtb
 	{
 		int pieceCounts[10] =
 		{
-			white.pawn, white.knight, white.bishop, white.rook, white.queen,
-			black.pawn, black.knight, black.bishop, black.rook, black.queen,
+			int(white.pawn), int(white.knight), int(white.bishop), int(white.rook), int(white.queen),
+			int(black.pawn), int(black.knight), int(black.bishop), int(black.rook), int(black.queen),
 		};
 
 		int index = IDescFindFromCounters(pieceCounts);

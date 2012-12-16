@@ -314,7 +314,7 @@ mul4(T x)
 
 template <typename T>
 inline
-constexpr unsigned
+unsigned
 log2_floor(T x)
 {
 	static_assert(numeric_limits<T>::is_integer, "template parameter not integer");

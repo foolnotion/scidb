@@ -184,7 +184,7 @@ Database::Database(	mstl::string const& name,
 		case format::Scid4:		m_variant = variant::Normal; break;
 		case format::ChessBase:	m_variant = variant::Normal; break;
 
-		default: M_RAISE(!"unexpected format");
+		default: M_ASSERT(!"unexpected format");
 	}
 
 	if (!m_codec->isWriteable())

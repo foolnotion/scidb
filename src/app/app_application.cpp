@@ -811,7 +811,7 @@ Application::closeAll(CloseMode mode)
 					{
 						stopUpdateTree();
 
-						if (mode != mode == Including_Clipbase)
+						if (mode != Including_Clipbase)
 							refBase = clipbase(variant::Normal);
 					}
 				}

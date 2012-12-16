@@ -14,7 +14,7 @@ variants.
 * New board themes: "Staunton" and "Virtual".
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #566)
+Scidb 1.0 BETA (rev. #568)
 ------------------------------------------------------------------------------
 * Bug in Elo performance table fixed (thanks to Steve for testing)
 

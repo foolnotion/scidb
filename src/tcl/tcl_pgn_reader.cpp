@@ -161,7 +161,7 @@ PgnReader::warning(	Warning code,
 	objv[0] = m_warning;
 	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
-	objv[3] = Tcl_NewIntObj(gameNo);
+	objv[3] = gameNo > 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
 	objv[4] = tree::variantToString(variant),
 	objv[5] = Tcl_NewStringObj(mstl::string::empty_string, 0);
 	objv[6] = Tcl_NewStringObj(msg, -1);
@@ -244,7 +244,7 @@ PgnReader::error(	Error code,
 	objv[0] = m_error;
 	objv[1] = Tcl_NewIntObj(lineNo);
 	objv[2] = Tcl_NewIntObj(column);
-	objv[3] = gameNo >= 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
+	objv[3] = gameNo > 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
 	objv[4] = tree::variantToString(variant),
 	objv[5] = Tcl_NewStringObj(message, message.size());
 	objv[6] = Tcl_NewStringObj(msg, -1);

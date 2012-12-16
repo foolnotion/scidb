@@ -70,7 +70,7 @@ template <typename T> constexpr T mod4(T x);
 template <typename T> constexpr T mul2(T x);
 template <typename T> constexpr T mul4(T x);
 
-template <typename T> constexpr unsigned log2_floor(T x);
+template <typename T> unsigned log2_floor(T x);
 template <typename T> unsigned log2_ceil(T x);
 
 template <typename T> constexpr bool is_between(T x, T a, T b);
