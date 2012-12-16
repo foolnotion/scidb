@@ -97,7 +97,7 @@ Crea o cambia la descrizione per questo database.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+<menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Imposta il database per la sola lettura o scrittura.
 Questa possibilità è disponibile solo per database nei formati Scidb e Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
 <note/>File <abbr>PGN</abbr> e Chessbase sono sempre in sola-lettura.

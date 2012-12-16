@@ -19,6 +19,9 @@
 TITLE Novedades
 
 <ul style="padding: 5px;">
+  <NEW>
+  <li class="space">Support of chess variants: Crazyhouse, Antichess (Suicide, Giveaway, Losers), and Three-Check</li>
+  </NEW>
   <li class="space">Más páginas de ayuda</li>
   <li class="space">Ventana de análisis: lanza motores ajedrecísticos externos</li>
 <NEW>
@@ -34,6 +37,11 @@ TITLE Novedades
   <li class="space">Localización al idioma sueco integrada (gracias a Lars Ekman)</li>
   <li class="space">Traducción al idioma español reactivada (gracias a Juan Carlos Vásquez)</li>
   <li class="space">Se agregaron páginas de ayuda en idioma español (gracias a Carlos Fernando González)</li>
+  <NEW>
+  <li class="space">HTML file export of tournament table</li>
+  <li class="space">New piece sets: "Free Staunton", and "Virtual"</li>
+  <li class="space">New board themes: "Blue Mono", "Staunton", and "Virtual"</li>
+  </NEW>
   <li class="space">Detección automática de grupo de caracteres al codificar partidas (para si3/si4/cbh)</li>
   <li class="space">Explorador de partidas: integración del modo de pantalla completa, y también aumentar/minimizar tablero</li>
   <li class="space">Diálogo de selección de archivos mejorado</li>

@@ -113,7 +113,7 @@ Crea o cambia la descripción para esta base.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+<menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Establecer esta base como de sólo-lectura o editable.
 Esto sólo es posible para las bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).

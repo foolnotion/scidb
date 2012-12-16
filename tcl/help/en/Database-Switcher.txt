@@ -112,7 +112,7 @@ Create or change the description for this database.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+<menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Set this database read-only or writeable.
 This is possibly only for Scidb and Scid databases
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).

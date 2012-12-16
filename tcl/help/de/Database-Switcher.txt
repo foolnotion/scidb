@@ -113,7 +113,7 @@ Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::ReadOnly%</menuitem>
+<menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
 Diese Datanbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
 Dies ist nur für Scidb- und Scid-Datenbanken
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) möglich.
