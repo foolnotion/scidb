@@ -52,7 +52,7 @@ set Head						"Head"
 set Version					"Version"
 set Distributed			"This program is distributed under the terms of the GNU General Public License."
 set Inspired				"Scidb is inspired by Scid 3.6.1, copyrighted \u00A9 1999-2003 by Shane Hudson."
-set SpecialThanks			"Special thanks to Shane Hudson for his terrific work. His effort is the basis for this application."
+set SpecialThanks			"Special thanks to %s for his terrific work. His effort is the basis for this application."
 
 } ;# namespace mc
 
@@ -155,7 +155,7 @@ proc DisplayAbout {w} {
 		<font style='font-family: $fam; font-size: 12pt;'>
 			$mc::Version $::scidb::version<br/>
 			Copyright &#x00A9; 2008-2012 Gregor Cramer<br/><br/>
-			<a href='http://scidb.sourceforge.net'>scidb.sourceforge.net</a><br/><br/>
+			[Url http://scidb.sourceforge.net]<br/><br/>
 			$mc::Distributed<br/><br/>
 			<font style='font-size: 10pt;'>$mc::Inspired</font>
 		</font>
@@ -217,101 +217,187 @@ proc Mouse1Up {w node} {
 }
 
 
-proc Enc {s} { return [encoding convertfrom utf-8 $s] }
-
-
 proc BuildContributionsFrame {w} {
-	set t [tk::text $w.t \
-		-padx 10 -pady 10 \
-		-cursor left_ptr \
-		-width 0 -height 0 \
-		-wrap word \
-		-font TkTextFont \
-		-yscrollcommand [list ::scrolledframe::sbset $w.s] \
-	]
-	set s [ttk::scrollbar $w.s -command [list $t yview]]
-	grid $t -row 0 -column 0 -sticky nsew
-	grid $s -row 0 -column 1 -sticky ns
-	grid rowconfigure $w 0 -weight 1
-	grid columnconfigure $w 0 -weight 1
+	set textFam {"Bitstream Vera Sans" "DejaVu Sans" Verdana "Lucida Grande" "Lucida Sans" Arial}
+#	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] $textFam]
 
-	set family [font configure TkTextFont -family]
-	set size [font configure TkTextFont -size]
-	$t tag configure caption -font [list $family $size bold]
+	append css {
+		h1 { font-size: 110%; background-color: #e5eeff; }
+		p  { padding-bottom: 0.3cm }
+		table  { padding-bottom: 0.3cm }
+	}
 
-	DisplayContributions $t
-	bind $t <<LanguageChanged>> [namespace code [list DisplayContributions $t]]
+	::html $w.t \
+		-imagecmd [namespace code GetImage] \
+		-center yes \
+		-fittowidth yes \
+		-width 580 \
+		-height 400 \
+		-borderwidth 1 \
+		-relief sunken \
+		-doublebuffer no \
+		-exportselection yes \
+		-css $css \
+		;
+	pack $w.t
+
+	bind [winfo toplevel $w] <FocusIn>	[list $w.t focusin]
+	bind [winfo toplevel $w] <FocusOut>	[list $w.t focusout]
+
+	$w.t handler node link [list [namespace current]::LinkHandler $w.t]
+	$w.t handler node a    [namespace current]::A_NodeHandler
+
+	$w.t onmouseover [list [namespace current]::MouseEnter $w.t]
+	$w.t onmouseout  [list [namespace current]::MouseLeave $w.t]
+	$w.t onmouseup1  [list [namespace current]::Mouse1Up $w.t]
+
+	DisplayContributions $w.t
+	bind $w.t <<LanguageChanged>> [namespace code [list DisplayContributions $w.t]]
 }
 
 
-proc DisplayContributions {t} {
-	$t configure -state normal
-	$t delete 1.0 end
+proc DisplayContributions {w} {
+	$w parse "
+		<h1>$mc::Development</h1>
+		<p>
+			[Name {Gregor Cramer}]
+		</p>
+		<h1>$mc::Localization</h1>
+			<table border='0'>
+				<tr>
+					<td>[Name {Lars Ekman}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName sv]</td>
+				</tr>
+				<tr>
+					<td>[Name {Carlos Fernando González}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName es]</td>
+				</tr>
+				<tr>
+					<td>[Name {Giovanni Ornaghi}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName it]</td>
+				</tr>
+				<tr>
+					<td>[Name {Zoltán Tibenszky}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName hu]</td>
+				</tr>
+				<tr>
+					<td>[Name {Juan Carlos Vásquez}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName es]</td>
+				</tr>
+				<tr>
+					<td>[Name {Gregor Cramer}]</td>
+					<td>\u2000</td>
+					<td>[::encoding::languageName de], [::encoding::languageName en]</td>
+				</tr>
+			</table>
+		<h1>$mc::Testing</h1>
+			<table border='0'>
+				<tr><td>[Name {Steven Atkinson}]</td></tr>
+				<tr><td>[Name {Paolo Casaschi}]</td></tr>
+				<tr><td>[Name {Gregor Cramer}]</td></tr>
+				<tr><td>[Name {Lars Ekman}]</td></tr>
+				<!-- Carlos Fernando González -->
+				<tr><td>[Name {Giovanni Ornaghi}]</td></tr>
+				<tr><td>[Name {Zoltán Tibenszky}]</td></tr>
+			</table>
+		<h1>TrueType $mc::FontDesign</h1>
+			<table border='0'>
+				<tr><td colspan='2'>[Name {Armando Hernández Marroquín}]</td></tr>
+				<tr><td>\u2001</td><td>Adventurer, Condal, Kingdom, Leipzig, Lucena, Magnetic,
+											Marroquin, Maya, Mediaeval, Merida, Motif, Usual</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "[set [namespace current]::mc::Development]:\n"] caption
-	$t insert end [Enc "Gregor Cramer"]
+				<tr><td colspan='2'>[Name {Eric Bentzen}]</td></tr>
+				<tr><td>\u2001</td><td>Alpha, Berlin</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-#	$t insert end [Enc "\n\n"]
-#	$t insert end [Enc "[set [namespace current]::mc::Programming]:\n"] caption
-#	$t insert end [Enc "Gregor Cramer ([set [namespace current]::mc::Head]), "]
-#	$t insert end [Enc "Giovanni Ornaghi"]
+				<tr><td colspan='2'>[Name {David L. Brown}]</td></tr>
+				<tr><td>\u2001</td><td>Good Companion</td></tr>
+				<tr><td>\u2001</td><td>
+					[Url http://www.bstephen.me.uk/downloads/8-good-companion-chess-fonts]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "[set [namespace current]::mc::Localization]:\n"] caption
-	$t insert end [Enc "Lars Ekman ([::encoding::languageName sv]), "]
-	$t insert end [Enc "Carlos Fernando González ([::encoding::languageName es]), "]
-	$t insert end [Enc "Giovanni Ornaghi ([::encoding::languageName it]), "]
-	$t insert end [Enc "Zoltán Tibenszky ([::encoding::languageName hu]), "]
-	$t insert end [Enc "Juan Carlos V�squez ([::encoding::languageName es]), "]
-	$t insert end [Enc "Gregor Cramer ([::encoding::languageName de], [::encoding::languageName en])"]
+				<tr><td colspan='2'>[Name {Alan Cowderoy}]</td></tr>
+				<tr><td>\u2001</td><td>Traveller Standard</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "[set [namespace current]::mc::Testing]:\n"] caption
-	$t insert end [Enc "Steven Atkinson, "]
-	$t insert end [Enc "Paolo Casaschi, "]
-	$t insert end [Enc "Gregor Cramer, "]
-	$t insert end [Enc "Lars Ekman, "]
-#	$t insert end [Enc "Carlos Fernando González, "]
-	$t insert end [Enc "Giovanni Ornaghi, "]
-	$t insert end [Enc "Zoltán Tibenszky"]
+				<tr><td colspan='2'>[Name {Frank David}]</td></tr>
+				<tr><td>\u2001</td><td>[Enc {Chess Olé}]</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "TrueType [set [namespace current]::mc::FontDesign]:\n"] caption
-	$t insert end [Enc "Armando Hernández Marroquín, "]
-	$t insert end [Enc "Eric Bentzen, "]
-	$t insert end [Enc "David L. Brown, "]
-	$t insert end [Enc "Alan Cowderoy, "]
-	$t insert end [Enc "Frank David, "]
-	$t insert end [Enc "Matthieu Leschemelle, "]
-	$t insert end [Enc "Christian Poisson, "]
-	$t insert end [Enc "Alastair Scott, "]
-	$t insert end [Enc "Christoph Wirth"]
+				<tr><td colspan='2'>[Name {Matthieu Leschemelle}]</td></tr>
+				<tr><td>\u2001</td><td>Cases</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "SVG [set [namespace current]::mc::ChessPieceDesign]:\n"] caption
-	$t insert end [Enc "Colin M.L. Burnett, "]
-	$t insert end [Enc "Eran Karu, "]
-	$t insert end [Enc "Maurizio Monge, "]
-	$t insert end [Enc "Peter Wong"]
+				<tr><td colspan='2'>[Name {Christian Poisson}]</td></tr>
+				<tr><td>\u2001</td><td>Phoenix</td></tr>
+				<tr><td>\u2001</td><td>
+					[Url http://christian.poisson.free.fr/problemesis/police.html]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "[set [namespace current]::mc::BoardThemeDesign]:\n"] caption
-	$t insert end [Enc "Gregor Cramer"]
+				<tr><td colspan='2'>[Name {Alastair Scott}]</td></tr>
+				<tr><td>\u2001</td><td>Cheq</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "[set [namespace current]::mc::FlagsDesign]:\n"] caption
-	$t insert end [Enc "Mark James, "]
-	$t insert end [Enc "Gregor Cramer"]
+				<tr><td colspan='2'>[Name {Christoph Wirth}]</td></tr>
+				<tr><td>\u2001</td><td>Smart Regular</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
+				<tr height='7'></tr>
+			</table>
+		<h1>SVG $mc::ChessPieceDesign</h1>
+			<table border='0'>
+				<tr><td colspan='2'>[Name {Colin M.L. Burnett}]</td></tr>
+				<tr><td>\u2001</td><td>Burnett</td></tr>
+				<tr><td>\u2001</td><td>[Url http://en.wikipedia.org/wiki/Chess_pieces]</td></tr>
+				<tr height='7'></tr>
 
-#	$t insert end [Enc "\n\n"]
-#	$t insert end [Enc "[set [namespace current]::mc::IconDesign]:\n"] caption
-#	$t insert end [Enc "Gregor Cramer"]
+				<tr><td colspan='2'>[Name {Eran Karu}]</td></tr>
+				<tr><td>\u2001</td><td>Free Staunton</td></tr>
+				<tr><td>\u2001</td><td>
+					[Url http://code.google.com/p/pychess/source/browse/pieces/freestaunton]</td></tr>
+				<tr height='7'></tr>
 
-	$t insert end [Enc "\n\n"]
-	$t insert end [Enc "Scid 3:\n"] caption
-	$t insert end [Enc $mc::SpecialThanks]
+				<tr><td colspan='2'>[Name {Maurizio Monge}]</td></tr>
+				<tr><td>\u2001</td><td>Eyes, Fantasy, Skulls, Spatial</td></tr>
+				<tr><td>\u2001</td><td>[Url http://poisson.phc.unipi.it/~monge/chess_art.php]</td></tr>
+				<tr height='7'></tr>
 
-	$t configure -state disabled
+				<tr><td colspan='2'>[Name {Unicode Consortium}]</td></tr>
+				<tr><td>\u2001</td><td>Standard</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.fileformat.info/info/unicode]</td></tr>
+				<tr height='7'></tr>
+
+				<tr><td colspan='2'>[Name {Peter Wong}]</td></tr>
+				<tr><td>\u2001</td><td>Virtual</td></tr>
+				<tr><td>\u2001</td><td>[Url http://www.virtualpieces.net/diagrams]</td></tr>
+				<tr height='7'></tr>
+			</table>
+		<h1>$mc::BoardThemeDesign</h1>
+		<p>
+			[Name {Gregor Cramer}]
+		</p>
+		<h1>$mc::FlagsDesign</h1>
+			<table border='0'>
+				<tr><td>[Name {Mark James}]</td></tr>
+				<tr><td>[Name {Gregor Cramer}]</td></tr>
+			</table>
+		<h1>Scid 3</h1>
+		<p>
+			[format $mc::SpecialThanks [Name {Shane Hudson}]]
+		</p>
+	"
 }
 
 
@@ -389,6 +475,11 @@ proc BuildLicenseFrame {w} {
 	$t insert end [set [namespace current]::License]
 	$t configure -state disabled
 }
+
+
+proc Url {url}		{ return "<a href='$url'>$url</a>" }
+proc Enc {name}	{ return [encoding convertfrom utf-8 $name] }
+proc Name {name}	{ return "<b>[Enc $name]</b>" }
 
 
 set License \

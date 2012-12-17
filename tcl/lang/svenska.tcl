@@ -1921,7 +1921,7 @@
 ::info::mc::Version				"Version"
 ::info::mc::Distributed			"Det här programmet distribueras enligt bestämmelserna i GNU General Public License."
 ::info::mc::Inspired				"Scidb bygger på Scid 3.6.1, copyright \u00A9 1999-2003 by Shane Hudson."
-::info::mc::SpecialThanks		"Särskilt tack till Shane Hudson för ett fantastiska jobb. Hans insatser är grunden för detta program."
+::info::mc::SpecialThanks		"Särskilt tack till %s för ett fantastiska jobb. Hans insatser är grunden för detta program."
 
 ### comment ############################################################
 ::comment::mc::CommentBeforeMove		"Kommentar före draget"
