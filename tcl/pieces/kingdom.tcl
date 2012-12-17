@@ -519,4 +519,4 @@ set truetype_Kingdom(sample,24pt,200x34) {
   4WNnXv0/5NXfEV49dp7/BuY20dw5cp3AAAAAAElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

@@ -2714,6 +2714,21 @@ Board::setup(ExactPosition const& position)
 }
 
 
+void
+Board::setup(ExactZHPosition const& position)
+{
+	// IMPORTANT NOTE: The information in 'position' is not sufficient
+	// to build a consistent board. The resulting board should not be
+	// used for playing or validation.
+
+	setup((ExactPosition const&)position);
+	m_holding[White] = position.m_holding[White];
+	m_holding[Black] = position.m_holding[Black];
+	m_promoted[White] = position.m_promoted[White];
+	m_promoted[Black] = position.m_promoted[Black];
+}
+
+
 bool
 Board::notDerivableFromStandardChess() const
 {

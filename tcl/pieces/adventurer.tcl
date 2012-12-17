@@ -402,4 +402,4 @@ set truetype_Adventurer(sample,24pt,200x34) {
   f8jTvyM8fSw8/wXDyKFJ++3b1AAAAABJRU5ErkJggg==
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

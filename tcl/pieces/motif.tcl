@@ -328,4 +328,4 @@ set truetype_Motif(sample,24pt,200x34) {
   9AMAAER1n9IP7X9HaP/6vT2whf8BRMS8Qjyd/j8AAAAASUVORK5CYII=
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

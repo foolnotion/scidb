@@ -32,10 +32,10 @@ lappend board_PieceSet { Eyes svg {contour 50} {sampling 50} }
 
 set svg_Eyes(wk) {
 <svg
-  scidb:bbox="94.727882,61.423515,782.9887,845.194346"
-  scidb:translate="0,-15"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="94.727882,61.423515,782.9887,845.194346"
+   scidb:translate="0,-15"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -124,7 +124,7 @@ set svg_Eyes(wk) {
 
 set svg_Eyes(wq) {
 <svg
-  scidb:bbox="58.538578,109.349655,806.316054,838.01042"
+   scidb:bbox="58.538578,109.349655,806.316054,838.01042"
    scidb:scale="1.1"
    width="700pt"
    height="700pt">
@@ -240,10 +240,10 @@ set svg_Eyes(wq) {
 
 set svg_Eyes(wr) {
 <svg
-  scidb:bbox="83.689892,88.46875,792.62261,831.64213"
-  scidb:translate="0,15"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="83.689892,88.46875,792.62261,831.64213"
+   scidb:translate="0,15"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2392">
@@ -335,10 +335,10 @@ set svg_Eyes(wr) {
 
 set svg_Eyes(wb) {
 <svg
-  scidb:bbox="146.19053,48.456921,700.59577,843.41203"
-  scidb:translate="0,-20"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="146.19053,48.456921,700.59577,843.41203"
+   scidb:translate="0,-20"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -439,11 +439,11 @@ set svg_Eyes(wb) {
 
 set svg_Eyes(wn) {
 <svg
-  scidb:bbox="130.0175,88.502852,792.04609,847.96842"
-  scidb:scale="1.05"
-  scidb:translate="0,7"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="130.0175,88.502852,792.04609,847.96842"
+   scidb:scale="1.05"
+   scidb:translate="0,7"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -488,11 +488,11 @@ set svg_Eyes(wn) {
 
 set svg_Eyes(wp) {
 <svg
-  scidb:bbox="215.46561,215.03367,670.6277,795.04693"
-  scidb:scale="1.3"
-  scidb:translate="0,20"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="215.46561,215.03367,670.6277,795.04693"
+   scidb:scale="1.3"
+   scidb:translate="0,20"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -578,10 +578,10 @@ set svg_Eyes(wp) {
 
 set svg_Eyes(bk) {
 <svg
-  scidb:bbox="94.727882,61.423515,782.9887,845.194346"
-  scidb:translate="0,-15"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="94.727882,61.423515,782.9887,845.194346"
+   scidb:translate="0,-15"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -670,10 +670,10 @@ set svg_Eyes(bk) {
 
 set svg_Eyes(bq) {
 <svg
-  scidb:bbox="58.538578,109.349655,806.316054,838.01042"
-  scidb:scale="1.1"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="58.538578,109.349655,806.316054,838.01042"
+   scidb:scale="1.1"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -786,10 +786,10 @@ set svg_Eyes(bq) {
 
 set svg_Eyes(br) {
 <svg
-  scidb:bbox="83.689892,88.46875,792.62261,831.64213"
-  scidb:translate="0,15"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="83.689892,88.46875,792.62261,831.64213"
+   scidb:translate="0,15"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2392">
@@ -881,10 +881,10 @@ set svg_Eyes(br) {
 
 set svg_Eyes(bb) {
 <svg
-  scidb:bbox="146.19053,48.456921,700.59577,843.41203"
-  scidb:translate="0,-20"
-  height="700pt"
-  width="700pt">
+   scidb:bbox="146.19053,48.456921,700.59577,843.41203"
+   scidb:translate="0,-20"
+   height="700pt"
+   width="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -985,11 +985,11 @@ set svg_Eyes(bb) {
 
 set svg_Eyes(bn) {
 <svg
-  scidb:bbox="130.0175,88.502852,792.04609,847.96842"
-  scidb:scale="1.05"
-  scidb:translate="0,7"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="130.0175,88.502852,792.04609,847.96842"
+   scidb:scale="1.05"
+   scidb:translate="0,7"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -1034,11 +1034,11 @@ set svg_Eyes(bn) {
 
 set svg_Eyes(bp) {
 <svg
-  scidb:bbox="215.46561,215.03367,670.6277,795.04693"
-  scidb:scale="1.3"
-  scidb:translate="0,20"
-  width="700pt"
-  height="700pt">
+   scidb:bbox="215.46561,215.03367,670.6277,795.04693"
+   scidb:scale="1.3"
+   scidb:translate="0,20"
+   width="700pt"
+   height="700pt">
   <defs>
     <linearGradient
        id="linearGradient2507">
@@ -1343,4 +1343,4 @@ set svg_Eyes(sample,24pt,200x34) {
   yVW30tZZrcZa69RGNf+rMvjmH3a+XvQ/YWzyRjJ4coIAAAAASUVORK5CYII=
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

@@ -351,4 +351,4 @@ set truetype_Alpha(sample,24pt,200x34) {
   RX24CIwqQZ39f0fo/9i6/+nL8x+Rnafh5FXTAwAAAABJRU5ErkJggg==
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

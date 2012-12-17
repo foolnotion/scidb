@@ -196,18 +196,12 @@ mapScid4Flags(mstl::string& flags)
 
 		if (!isspace(c))
 		{
-			if (c == User1)
-				flags[i] = '1';
-			else if (c == User2)
-				flags[i] = '2';
-			else if (c == User3)
-				flags[i] = '3';
-			else if (c == User4)
-				flags[i] = '4';
-			else if (c == User5)
-				flags[i] = '5';
-			else if (c == User6)
-				flags[i] = '6';
+			if      (c == User1) flags[i] = '1';
+			else if (c == User2) flags[i] = '2';
+			else if (c == User3) flags[i] = '3';
+			else if (c == User4) flags[i] = '4';
+			else if (c == User5) flags[i] = '5';
+			else if (c == User6) flags[i] = '6';
 		}
 	}
 }
@@ -1794,8 +1788,11 @@ findRating(GameInfo const& info, color::ID color, rating::Type type)
 
 
 static void
-playerRatings(NamebasePlayer const& player, rating::Type type, int16_t* ratings)
+playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings)
 {
+	if (type == rating::Any)
+		type = player.findRatingType();
+
 	ratings[0] = player.playerHighestRating(type);
 	ratings[1] = player.playerLatestRating(type);
 
@@ -2258,7 +2255,7 @@ getPlayerInfo(	int index,
 					int view,
 					char const* database,
 					variant::Type variant,
-					Ratings const& ratings,
+					Ratings& ratings,
 					bool info,
 					bool idCard)
 {
@@ -4282,7 +4279,7 @@ wikiLinkList(Player const* player)
 
 
 int
-tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, bool info, bool idCard)
+tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard)
 {
 	M_ASSERT(!idCard || info);
 
@@ -4345,16 +4342,26 @@ tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings const& ratings, boo
 	::playerRatings(player, ratings.first,  rating1);
 	::playerRatings(player, ratings.second, rating2);
 
-	Tcl_Obj* ratingObj1[2] = { Tcl_NewIntObj(rating1[0]), Tcl_NewIntObj(rating1[1]) };
-	Tcl_Obj* ratingObj2[2] = { Tcl_NewIntObj(rating2[0]), Tcl_NewIntObj(rating2[1]) };
+	Tcl_Obj* ratingObj1[3] =
+	{
+		Tcl_NewIntObj(rating1[0]),
+		Tcl_NewIntObj(rating1[1]),
+		Tcl_NewStringObj(rating::toString(ratings.first), -1),
+	};
+	Tcl_Obj* ratingObj2[3] =
+	{
+		Tcl_NewIntObj(rating2[0]),
+		Tcl_NewIntObj(rating2[1]),
+		Tcl_NewStringObj(rating::toString(ratings.second), -1),
+	};
 
 	mstl::string const ratingType = rating::toString(player.playerRatingType());
 
 	objv[attribute::player::Name      ] = Tcl_NewStringObj(*name, name->size());
 	objv[attribute::player::FideID    ] = fideID ? Tcl_NewIntObj(fideID) : Tcl_NewListObj(0, 0);
 	objv[attribute::player::Sex       ] = Tcl_NewStringObj(sex, -1);
-	objv[attribute::player::Rating1   ] = Tcl_NewListObj(2, ratingObj1);
-	objv[attribute::player::Rating2   ] = Tcl_NewListObj(2, ratingObj2);
+	objv[attribute::player::Rating1   ] = Tcl_NewListObj(3, ratingObj1);
+	objv[attribute::player::Rating2   ] = Tcl_NewListObj(3, ratingObj2);
 	objv[attribute::player::RatingType] = Tcl_NewStringObj(ratingType, ratingType.size());
 	objv[attribute::player::Country   ] = Tcl_NewStringObj(federation, -1);
 	objv[attribute::player::Title     ] = Tcl_NewStringObj(title, -1);

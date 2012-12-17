@@ -394,4 +394,4 @@ set truetype_Lucena(sample,24pt,200x34) {
   rkJggg==
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

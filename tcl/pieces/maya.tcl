@@ -422,4 +422,4 @@ set truetype_Maya(sample,24pt,200x34) {
   /yF9f0foeww8/wWy2Mk8jcJUOwAAAABJRU5ErkJggg==
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

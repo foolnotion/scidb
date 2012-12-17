@@ -188,7 +188,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_PlayerInfo:
 			{
 				unsigned ranking = unsignedFromObj(objc, objv, 4);
-				tcl::db::Ratings ratings(rating::Elo, rating::Elo);
+				tcl::db::Ratings ratings(rating::Any, rating::Any);
 				NamebasePlayer const* player = table->getPlayer(ranking - 1);
 				if (!player)
 					return error(CmdGet, nullptr, nullptr, "invalid ranking number %u", ranking);

@@ -430,4 +430,4 @@ set truetype_Lucena_Thin(sample,24pt,200x34) {
   O8JLlv4LEnOkSLbtQdsAAAAASUVORK5CYII=
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

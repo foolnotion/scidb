@@ -162,9 +162,9 @@ proc Show {} {
 						set geom [string range $geom [string first + $geom] end]
 						catch { wm geometry $Log $geom }
 					}
-					wm withdraw $dlg
+					wm withdraw $Log
 				}
-				wm deiconify $dlg
+				wm deiconify $Log
 				raise $Log
 				focus -force $Log
 			}

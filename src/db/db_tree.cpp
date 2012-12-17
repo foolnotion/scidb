@@ -30,6 +30,7 @@
 #include "db_eco_table.h"
 #include "db_signature.h"
 #include "db_board.h"
+#include "db_exception.h"
 
 #include "u_byte_stream.h"
 #include "u_progress.h"
@@ -94,7 +95,7 @@ move(Board const& position, uint16_t m)
 
 Tree::Key::Key()
 	:m_hash(0)
-	,m_position(Board::emptyBoard().exactPosition())
+	,m_position(Board::emptyBoard().exactZHPosition())
 	,m_mode(tree::Exact)
 	,m_ratingType(rating::Any)
 {
@@ -114,7 +115,7 @@ void
 Tree::Key::clear()
 {
 	m_hash = 0;
-	m_position = Board::emptyBoard().exactPosition();
+	m_position = Board::emptyBoard().exactZHPosition();
 }
 
 
@@ -198,10 +199,21 @@ Tree::possiblyAdd(Database const& base,
 						Eco eco,
 						Board const& myPosition)
 {
-	Move m = base.findExactPositionAsync(m_index, myPosition, true);
+	try
+	{
+		Move m = base.findExactPositionAsync(m_index, myPosition, true);
 
-	if (!m.isInvalid())
-		add(info, eco, ::index(m), myPosition);
+		if (!m.isInvalid())
+			add(info, eco, ::index(m), myPosition);
+	}
+	catch (IOException const& exc)
+	{
+		// ignore errors while decoding
+	}
+	catch (...)
+	{
+		throw;
+	}
 
 #ifdef SHOW_TREE_INFO
 	++m_numGamesParsed;
@@ -642,7 +654,7 @@ Tree::makeTree(TreeP tree,
 	{
 		tree.reset(new Tree);
 
-		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactPosition());
+		tree->m_key.set(mode, ratingType, myPosition.hash(), myPosition.exactZHPosition());
 		tree->m_index = 0;
 		tree->m_last = mstl::numeric_limits<unsigned>::max();
 		tree->m_complete = false;
@@ -742,7 +754,7 @@ Tree::isTreeFor(Database const& base, Board const& position) const
 	return	m_complete
 			&& m_base->id() == base.id()
 			&& m_key.hash() == position.hash()
-			&& m_key.position() == position.exactPosition();
+			&& m_key.position() == position.exactZHPosition();
 }
 
 
@@ -754,7 +766,7 @@ Tree::isTreeFor(	Database const& base,
 {
 	return	m_complete
 			&& m_base->id() == base.id()
-			&& m_key.match(mode, ratingType, position.hash(), position.exactPosition());
+			&& m_key.match(mode, ratingType, position.hash(), position.exactZHPosition());
 }
 
 

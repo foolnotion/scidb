@@ -173,6 +173,8 @@ public:
 	void setup(unsigned idn);
 	/// Setup board from given position (only usable for standard chess).
 	void setup(ExactPosition const& position);
+	/// Setup board from given position
+	void setup(ExactZHPosition const& position);
 	/// Set En Passant fyle
 	void setEnPassantFyle(sq::Fyle fyle);
 	/// Set En Passant fyle

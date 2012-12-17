@@ -429,7 +429,7 @@ ComputeSlotAddress(	char* recordPtr,	// Pointer to the start of a record
 //
 //----------------------------------------------------------------------
 static int
-GetIndex(	Notebook* nb,		// Pointer to the notebook info
+GetIndex(Notebook* nb,		// Pointer to the notebook info
 			Tk_Window tkwin)	// Window to search for
 {
 	int i;
@@ -2507,17 +2507,12 @@ NotebookReqProc(	ClientData clientData,	// Notebook's information about window
 	Slave*		slave	= (Slave*)clientData;
 	Notebook*	nb		= (Notebook*)slave->master;
 
-	if (Tk_IsMapped(nb->tkwin))
+	ComputeGeometry(nb);
+
+	if (Tk_IsMapped(nb->tkwin) && !(nb->flags & RESIZE_PENDING))
 	{
-		if (!(nb->flags & RESIZE_PENDING))
-		{
-			nb->flags |= RESIZE_PENDING;
-			Tcl_DoWhenIdle(ArrangePane, (ClientData)nb);
-		}
-	}
-	else
-	{
-		ComputeGeometry(nb);
+		nb->flags |= RESIZE_PENDING;
+		Tcl_DoWhenIdle(ArrangePane, (ClientData)nb);
 	}
 }
 

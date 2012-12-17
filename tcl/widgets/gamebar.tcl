@@ -2141,7 +2141,7 @@ proc HideEvent {gamebar id} {
 
 proc GetPlayerInfo {gamebar id side} {
 	lassign [::scidb::game::sink? $id] base variant index
-	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Elo Elo}]
+	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Any Any}]
 }
 
 

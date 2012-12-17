@@ -48,7 +48,7 @@ namespace tcl
 								unsigned index,
 								Ratings const& ratings);
 		int getPlayerInfo(::db::NamebasePlayer const& player,
-								Ratings const& ratings,
+								Ratings& ratings,
 								bool info,
 								bool idCard);
 		int getPlayerStats(::db::Database const& db, ::db::NamebasePlayer const& player);

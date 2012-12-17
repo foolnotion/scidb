@@ -53,7 +53,7 @@ class Tree : public mstl::ref_counter
 public:
 
 	typedef mstl::ref_counted_ptr<Tree> TreeP;
-	typedef board::ExactPosition Position;
+	typedef board::ExactZHPosition Position;
 
 	class Key
 	{

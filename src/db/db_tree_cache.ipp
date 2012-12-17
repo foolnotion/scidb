@@ -34,7 +34,7 @@ inline
 Tree*
 TreeCache::lookup(Board const& position, tree::Mode mode, rating::Type ratingType) const
 {
-	return lookup(position.hash(), position.exactPosition(), mode, ratingType);
+	return lookup(position.hash(), position.exactZHPosition(), mode, ratingType);
 }
 
 
@@ -53,7 +53,7 @@ inline
 bool
 TreeCache::isCached(Board const& position, tree::Mode mode, rating::Type ratingType) const
 {
-	return isCached(position.hash(), position.exactPosition(), mode, ratingType);
+	return isCached(position.hash(), position.exactZHPosition(), mode, ratingType);
 }
 
 } // namespace db

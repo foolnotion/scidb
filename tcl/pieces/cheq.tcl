@@ -294,4 +294,4 @@ set truetype_Cheq(sample,24pt,200x34) {
   78cFOV44LeIy3QfQSun6C/wy0/L/IS0fW7dcEtd/Af5YDLXOnfKlAAAAAElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

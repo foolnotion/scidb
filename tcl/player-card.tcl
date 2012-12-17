@@ -154,7 +154,7 @@ proc show {base variant args} {
 proc popupInfo {path info} {
 	variable Photo
 
-	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth dateOfDeath
+	lassign $info name fideID type sex rating _ _ country titles _ _ dateOfBirth dateOfDeath
 	if {[string length $name] == 0} { return }
 	if {[string index $fideID 0] eq "-"} { set fideID [string range $fideID 1 end] }
 
@@ -166,7 +166,7 @@ proc popupInfo {path info} {
 	set f [tk::frame $top.f -borderwidth 0 -background $bg]
 	grid $f -column 3 -row 1
 
-	lassign $elo highestRating mostRecentRating
+	lassign $rating highestRating mostRecentRating ratingType
 	set highestRating [abs $highestRating]
 	set mostRecentRating [max 0 $mostRecentRating]
 	set dateOfBirth [::locale::formatDate $dateOfBirth]
@@ -190,7 +190,11 @@ proc popupInfo {path info} {
 	foreach var {	name sex dateOfBirth dateOfDeath highestRating
 						mostRecentRating title federation fideID} {
 		set value [set $var]
-		if {[string length $value] == 0 || $value == 0} { set value "\u2013" }
+		if {[string length $value] <= 1} {
+			set value "\u2013"
+		} elseif {$var in {highestRating mostRecentRating} && $ratingType ne "Rating"} {
+			append value " ($ratingType)"
+		}
 		set attr [string toupper $var 0 0]
 		if {[info exists ::playertable::mc::T_$attr]} {
 			set text [set ::playertable::mc::T_$attr]
@@ -384,7 +388,7 @@ proc UpdatePlayer {w id key base variant name playerCardArgs} {
 
 
 proc MakeKey {base variant info} {
-	lassign $info name fideID type sex elo _ _ country titles _ _ dateOfBirth _
+	lassign $info name fideID type sex _ _ _ country titles _ _ dateOfBirth _
 	if {[string length $name] == 0} { return "" }
 	return card:$base:$variant:$name:$fideID:$type:$sex:$country:$titles:$dateOfBirth
 }

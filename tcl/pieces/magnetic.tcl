@@ -352,4 +352,4 @@ set truetype_Magnetic(sample,24pt,200x34) {
   z/4f8uzvCM8eC89/AX7nf7Z7GpSnAAAAAElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

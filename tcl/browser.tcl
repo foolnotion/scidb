@@ -925,7 +925,7 @@ proc ShowPlayerInfo {position side} {
 	set variant $Vars(variant)
 	set index [expr {$Vars(number) - 1}]
 
-	set info [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Elo Elo}]
+	set info [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Any Any}]
 	::playercard::popupInfo $Vars(header) $info
 }
 
@@ -1271,7 +1271,7 @@ proc PopupMenu {parent board position {what ""}} {
 		switch $what {
 			white - black {
 				set info [scidb::db::fetch \
-					${what}PlayerInfo $index $Vars(base) $Vars(variant) -card -ratings {Elo Elo}]
+					${what}PlayerInfo $index $Vars(base) $Vars(variant) -card -ratings {Any Any}]
 				::playertable::popupMenu \
 					$menu $Vars(base) $Vars(variant) $info [list [expr {$Vars(number) - 1}] $what]
 			}

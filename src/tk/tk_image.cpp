@@ -53,12 +53,6 @@
 
 using namespace tcl;
 
-//#define DEBUG(expr) expr
-
-#ifndef DEBUG
-# define DEBUG(expr)
-#endif
-
 //#define NEED_BGR
 #define ONLY_RGBA_NEEDED
 
@@ -2371,7 +2365,6 @@ tk_create_image(	char const* subcmd,
 
 	double min_x, min_y, max_x, max_y;
 	path.bounding_rect(&min_x, &min_y, &max_x, &max_y);
-	DEBUG(::printf("bounding rect: min = (%f, %f), max = (%f, %f)\n", min_x, min_y, max_x, max_y));
 	double mx = 0.5*(min_x + max_x);
 	double my = 0.5*(min_y + max_y);
 
@@ -2409,6 +2402,14 @@ tk_create_image(	char const* subcmd,
 										TK_PHOTO_COMPOSITE_SET);
 
 	delete [] block.pixelPtr;
+
+	Tcl_Obj* objs[4] =
+	{
+		Tcl_NewDoubleObj(min_x), Tcl_NewDoubleObj(min_y),
+		Tcl_NewDoubleObj(max_x), Tcl_NewDoubleObj(max_y)
+	};
+	setResult(4, objs);
+
 	return rc;
 }
 

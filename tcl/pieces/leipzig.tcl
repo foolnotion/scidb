@@ -561,4 +561,4 @@ set truetype_Leipzig(sample,24pt,200x34) {
   YII=
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

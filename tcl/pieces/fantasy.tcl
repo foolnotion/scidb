@@ -1660,4 +1660,4 @@ set svg_Fantasy(sample,24pt,200x34) {
   rBga1H2rX0P+H7ScFDL7v6H9D2a29KXxQZK+AAAAAElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

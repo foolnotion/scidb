@@ -34,6 +34,7 @@ lappend board_PieceSet { {Free Staunton} svg {contour 15} {sampling 60} }
 
 set svg_FreeStaunton(wk) {
 <svg
+   scidb:bbox="34.840800,30.941005,318.268800,319.107610"
    scidb:translate="0,-3"
    width="353.63"
    height="353.63">
@@ -292,11 +293,11 @@ set svg_FreeStaunton(wk) {
        style="fill:url(#linearGradient9594);fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline"
        d="M 176.2936,231.018 C 176.2936,195.6548 176.2936,160.29161 167.4528,142.61001 C 158.612,124.92841 136.51,93.985614 96.7264,93.985614 C 72.31394,93.985614 34.8408,111.66721 34.8408,151.45081 C 34.8408,162.50181 37.051,172.44771 42.02395,181.84105 C 46.9969,191.2344 74.6244,217.7568 109.9876,226.5976 C 129.16599,231.3922 176.2936,231.018 176.2936,231.018 z" />
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wq) {
 <svg
+   scidb:bbox="34.722360,35.361204,317.905030,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -747,11 +748,11 @@ set svg_FreeStaunton(wq) {
        x="102.4029"
        y="189.6579" />
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wr) {
 <svg
+   scidb:bbox="66.305992,52.940805,287.325992,319.107610"
    scidb:translate="0,17"
    width="353.63"
    height="353.63">
@@ -921,11 +922,11 @@ set svg_FreeStaunton(wr) {
          style="fill:url(#linearGradient13438);fill-opacity:1.0;fill-rule:nonzero;stroke:#000000;stroke-width:8.59645652999999930;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wb) {
 <svg
+   scidb:bbox="66.305992,35.361205,287.325992,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -1169,11 +1170,11 @@ set svg_FreeStaunton(wb) {
        style="fill:url(#linearGradient8537);fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 139.98939,97.04459 C 176.89372,136.44754 176.89372,136.44754 176.89372,136.44754" />
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wn) {
 <svg
+   scidb:bbox="63.182443,45.550385,287.325992,319.107610"
    scidb:translate="0,10"
    width="353.63"
    height="353.63">
@@ -1418,11 +1419,11 @@ set svg_FreeStaunton(wn) {
          style="fill:url(#linearGradient12666);fill-opacity:1.0;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wp) {
 <svg
+   scidb:bbox="66.305992,39.361302,287.325992,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -1664,11 +1665,11 @@ set svg_FreeStaunton(wp) {
        style="fill:url(#linearGradient11328);fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
        d="M 114.9304,237.4384 C 132.612,221.018 142.56318,213.26644 150.714,188.814 C 159.1344,163.5528 159.1344,132.61 159.1344,119.3488 C 163.5548,119.3488 190.0772,119.3488 194.4976,119.3488 C 194.4976,132.61 194.4976,163.5528 202.918,188.814 C 211.06882,213.26644 221.02,221.018 238.7016,237.4384 C 198.918,237.4384 190.0772,237.4384 176.816,237.4384 C 163.5548,237.4384 114.9304,237.4384 114.9304,237.4384 z" />
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bk) {
 <svg
+   scidb:bbox="34.840800,30.941005,318.268800,319.107610"
    scidb:translate="0,-3"
    width="353.63"
    height="353.63">
@@ -1911,11 +1912,11 @@ set svg_FreeStaunton(bk) {
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.24820232;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bq) {
 <svg
+   scidb:bbox="35.724970,35.361204,319.758920,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -2330,11 +2331,11 @@ set svg_FreeStaunton(bq) {
        d="M 194.4976,64.093803 A 19.8918,19.8918 0 1 1 154.714,64.093803 A 19.8918,19.8918 0 1 1 194.4976,64.093803 z"
        transform="translate(-61.981829,-1.9884087)" />
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(br) {
 <svg
+   scidb:bbox="66.305992,52.940805,287.325992,319.107610"
    scidb:translate="0,17"
    width="353.63"
    height="353.63">
@@ -2521,11 +2522,11 @@ set svg_FreeStaunton(br) {
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.2592411;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bb) {
 <svg
+   scidb:bbox="66.305992,35.361205,287.325992,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -2740,11 +2741,11 @@ set svg_FreeStaunton(bb) {
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.25301361;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bn) {
 <svg
+   scidb:bbox="63.182443,45.550385,287.325992,319.107610"
    scidb:translate="0,10"
    width="353.63"
    height="353.63">
@@ -3038,11 +3039,11 @@ set svg_FreeStaunton(bn) {
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:8.01351547;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bp) {
 <svg
+   scidb:bbox="66.305992,39.361302,287.325992,319.107610"
    width="353.63"
    height="353.63">
   <defs>
@@ -3237,8 +3238,7 @@ set svg_FreeStaunton(bp) {
          style="fill:none;fill-rule:evenodd;stroke:#000000;stroke-width:7.25372314;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
     </g>
   </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wk,mask) {
 <svg
@@ -3286,8 +3286,7 @@ set svg_FreeStaunton(wk,mask) {
         d="M 176.2936,231.018 C 176.2936,195.6548 176.2936,160.29161 167.4528,142.61001 C 158.612,124.92841 136.51,93.985614 96.7264,93.985614 C 72.31394,93.985614 34.8408,111.66721 34.8408,151.45081 C 34.8408,162.50181 37.051,172.44771 42.02395,181.84105 C 46.9969,191.2344 74.6244,217.7568 109.9876,226.5976 C 129.16599,231.3922 176.2936,231.018 176.2936,231.018 z"
         style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wq,mask) {
 <svg
@@ -3354,8 +3353,7 @@ set svg_FreeStaunton(wq,mask) {
         d="M 194.4976,64.093803 A 19.8918,19.8918 0 1 1 154.714,64.093803 A 19.8918,19.8918 0 1 1 194.4976,64.093803 z"
         transform="translate(123.40743,22.112195)" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wr,mask) {
 <svg
@@ -3390,8 +3388,7 @@ set svg_FreeStaunton(wr,mask) {
         width="132.40428"
         style="fill:black;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:8.59645653;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wb,mask) {
 <svg
@@ -3433,8 +3430,7 @@ set svg_FreeStaunton(wb,mask) {
         d="M 139.98939,97.04459 C 176.89372,136.44754 176.89372,136.44754 176.89372,136.44754"
         style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wn,mask) {
 <svg
@@ -3515,8 +3511,7 @@ set svg_FreeStaunton(wn,mask) {
         d="M 247.5424,221.018 C 265.224,221.018 265.224,221.018 265.224,221.018"
         style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(wp,mask) {
 <svg
@@ -3552,8 +3547,7 @@ set svg_FreeStaunton(wp,mask) {
         d="M 114.9304,237.4384 C 132.612,221.018 142.56318,213.26644 150.714,188.814 C 159.1344,163.5528 159.1344,132.61 159.1344,119.3488 C 163.5548,119.3488 190.0772,119.3488 194.4976,119.3488 C 194.4976,132.61 194.4976,163.5528 202.918,188.814 C 211.06882,213.26644 221.02,221.018 238.7016,237.4384 C 198.918,237.4384 190.0772,237.4384 176.816,237.4384 C 163.5548,237.4384 114.9304,237.4384 114.9304,237.4384 z"
         style="fill:black;fill-opacity:1;fill-rule:evenodd;stroke:#000000;stroke-width:8;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bk,mask) {
 <svg
@@ -3600,8 +3594,7 @@ set svg_FreeStaunton(bk,mask) {
         d="M 104.1276,236.17719 C 249.27265,236.17719 249.27265,236.17719 249.27265,236.17719"
         style="fill:black;fill-rule:evenodd;stroke:#000000;stroke-width:7.24820231999999990;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bq,mask) {
 <svg
@@ -3668,8 +3661,7 @@ set svg_FreeStaunton(bq,mask) {
         d="M 194.4976,64.093803 A 19.8918,19.8918 0 1 1 154.714,64.093803 A 19.8918,19.8918 0 1 1 194.4976,64.093803 z"
         transform="translate(125.26132,21.648722)" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(br,mask) {
 <svg
@@ -3704,8 +3696,7 @@ set svg_FreeStaunton(br,mask) {
         d="M 104.13812,236.17719 C 249.72561,236.17719 249.72561,236.17719 249.72561,236.17719"
         style="fill:black;fill-rule:evenodd;stroke:#000000;stroke-width:7.25924109999999880;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline;fill-opacity:1" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bb,mask) {
 <svg
@@ -3747,8 +3738,7 @@ set svg_FreeStaunton(bb,mask) {
         d="M 104.39289,236.17719 C 249.7307,236.17719 249.7307,236.17719 249.7307,236.17719"
         style="fill:black;fill-rule:evenodd;stroke:#000000;stroke-width:7.25301361000000000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bn,mask) {
 <svg
@@ -3829,8 +3819,7 @@ set svg_FreeStaunton(bn,mask) {
         d="M 101.66872,237.52472 C 252.44883,237.52472 252.44883,237.52472 252.44883,237.52472"
         style="fill:black;fill-rule:evenodd;stroke:#000000;stroke-width:8.01351546999999980;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(bp,mask) {
 <svg
@@ -3866,8 +3855,7 @@ set svg_FreeStaunton(bp,mask) {
         d="M 104.24874,236.17719 C 249.615,236.17719 249.615,236.17719 249.615,236.17719"
         style="fill:black;fill-rule:evenodd;stroke:#000000;stroke-width:7.25372314000000000;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;display:inline" />
    </g>
-</svg>
-}
+</svg>}
 
 set svg_FreeStaunton(sample,24pt,200x34) {
   iVBORw0KGgoAAAANSUhEUgAAAMgAAAAiCAQAAACwjl7xAAAN8klEQVRo3u2beXRUVbaHv3Mr
@@ -3940,4 +3928,4 @@ set svg_FreeStaunton(sample,24pt,200x34) {
   AElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:

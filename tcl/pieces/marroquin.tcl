@@ -397,4 +397,4 @@ set truetype_Marroquin(sample,24pt,200x34) {
   XLyD/JH06fz//W+KCKW17JFSiqWyvffLvSn/BRWY1eJBuDQBAAAAAElFTkSuQmCC
 }
 
-# vi:set ts=2 sw=2 et:
+# vi:set ts=2 sw=2 et nowrap:
