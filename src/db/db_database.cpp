@@ -104,7 +104,7 @@ Database::exportGames<Consumer>(	Consumer& destination,
 
 Database::Database(Database const& db, mstl::string const& name)
 	:DatabaseContent(db)
-	,m_codec(DatabaseCodec::makeCodec(name))
+	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
@@ -123,7 +123,7 @@ Database::Database(Database const& db, mstl::string const& name)
 
 Database::Database(mstl::string const& name, mstl::string const& encoding)
 	:DatabaseContent(encoding, type::Unspecific)
-	,m_codec(DatabaseCodec::makeCodec(name))
+	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::Existing))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
@@ -154,7 +154,7 @@ Database::Database(	mstl::string const& name,
 							Type type,
 							variant::Type variant)
 	:DatabaseContent(encoding, type)
-	,m_codec(DatabaseCodec::makeCodec(name))
+	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
 	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
@@ -222,7 +222,7 @@ Database::Database(	mstl::string const& name,
 	mstl::string ext = file::suffix(m_name);
 
 	m_readOnly = mode == permission::ReadOnly;
-	m_codec = DatabaseCodec::makeCodec(m_name);
+	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 
 	if (m_codec == 0)
 	{
@@ -259,7 +259,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	// NOTE: we assume normalized (unique) file names.
 
 	m_created = sys::time::time();
-	m_codec = DatabaseCodec::makeCodec();
+	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec->isWriteable());
 	m_codec->open(this, sys::utf8::Codec::utf8(), producer, progress);
 	m_size = m_gameInfoList.size();
@@ -496,7 +496,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 
 	delete m_codec;
 
-	m_codec = DatabaseCodec::makeCodec(name());
+	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec);
 	m_codec->open(this, m_rootname, m_encoding, progress);
 	m_size = m_gameInfoList.size();

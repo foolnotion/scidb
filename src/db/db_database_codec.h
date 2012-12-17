@@ -74,6 +74,8 @@ class DatabaseCodec
 {
 public:
 
+	enum Mode { Existing, New };
+
 	typedef mstl::vector<mstl::string> StringList;
 	typedef tag::TagSet TagBits;
 
@@ -198,7 +200,7 @@ public:
 
 	static bool hasCodecFor(mstl::string const& suffix);
 	static bool upgradeIndexOnly();
-	static DatabaseCodec* makeCodec(mstl::string const& name);
+	static DatabaseCodec* makeCodec(mstl::string const& name, Mode mode);
 	static DatabaseCodec* makeCodec();
 
 	static int getNumberOfGames(mstl::string const& filename);
@@ -211,7 +213,7 @@ public:
 
 protected:
 
-	enum Mode { Readonly = 1, Truncate = 2 };
+	enum { Readonly = 1, Truncate = 2 };
 
 	class InfoData;
 
