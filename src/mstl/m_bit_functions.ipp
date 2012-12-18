@@ -173,7 +173,7 @@ reverse(uint128_t const& x)
 
 inline
 uint128_t
-reverse(uint128_t a)
+reverse(uint128_t x)
 {
 	return uint128_t(reverse(uint64_t(x))) << 64 | uint128_t(reverse(uint64_t(x >> 64)));
 }
