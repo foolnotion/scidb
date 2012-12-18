@@ -93,7 +93,7 @@ inline
 unsigned
 popcount(uint128_t const& x)
 {
-	return popcount(x.lo()) + popcount(x.hi());
+	return pc(x.lo()) + pc(x.hi());
 }
 
 # else // if __WORDSIZE == 64
@@ -173,9 +173,9 @@ reverse(uint128_t const& x)
 
 inline
 uint128_t
-mstl::bf::bits::reverse(uint128_t a)
+reverse(uint128_t a)
 {
-   return (reverse(uint64_t(a >> 64)) << 64) | reverse(uint64_t(a));
+	return uint128_t(reverse(uint64_t(x))) << 64 | uint128_t(reverse(uint64_t(x >> 64)));
 }
 
 # endif // __WORDSIZE
