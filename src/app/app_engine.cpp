@@ -397,7 +397,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_maxSkillLevel(0)
 	,m_maxMultiPV(1)
 	,m_wantedMultiPV(1)
-	,m_variations(1, MoveList())
+	,m_lines(1, MoveList())
 	,m_hashFullness(0)
 	,m_hashSize(0)
 	,m_minHashSize(0)
@@ -793,6 +793,31 @@ Engine::numThreads() const
 
 
 void
+Engine::snapshot()
+{
+	m_snapshot.m_board = currentBoard();
+	m_snapshot.m_lines = m_lines;
+}
+
+
+bool
+Engine::snapshotExists(unsigned lineNo) const
+{
+	return	m_game
+			&& m_snapshot.m_board.isEqualPosition(m_game->currentBoard())
+			&& lineNo < m_snapshot.m_lines.size();
+}
+
+
+MoveList const&
+Engine::snapshotLine(unsigned lineNo) const
+{
+	M_REQUIRE(snapshotExists(lineNo));
+	return m_snapshot.m_lines[lineNo];
+}
+
+
+void
 Engine::activate()
 {
 	if (!m_process)
@@ -1077,7 +1102,7 @@ Engine::probe(unsigned timeout)
 
 
 bool
-Engine::startAnalysis(db::Game const* game)
+Engine::startAnalysis(db::Game* game)
 {
 	M_REQUIRE(game);
 	M_REQUIRE(isActive());
@@ -1150,7 +1175,7 @@ Engine::startAnalysis(db::Game const* game)
 
 		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
 		{
-			m_variations[i].clear();
+			m_lines[i].clear();
 			m_sortScores[i] = INT_MIN;
 			m_scores[i] = score;
 			m_mates[i] = 0;
@@ -1253,7 +1278,7 @@ Engine::changeNumberOfVariations(unsigned n)
 				m_map[i] = i;
 		}
 
-		m_variations.resize(n);
+		m_lines.resize(n);
 		m_wantedMultiPV = n;
 
 		if (isActive())
@@ -1400,7 +1425,7 @@ Engine::setBestMove(db::Move const& move)
 void
 Engine::reorderKeepStable(unsigned currentNo)
 {
-	MoveList const& moves = m_variations[currentNo];
+	MoveList const& moves = m_lines[currentNo];
 
 	int matchIndex = -1;
 
@@ -1410,7 +1435,7 @@ Engine::reorderKeepStable(unsigned currentNo)
 
 		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
 		{
-			unsigned length = moves.match(m_variations[i]);
+			unsigned length = moves.match(m_lines[i]);
 
 			if (length > matchLength)
 			{
@@ -1495,10 +1520,10 @@ Engine::insertPV(db::MoveList const& moves)
 
 	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
 	{
-		if (m_variations[i].isEmpty())
+		if (m_lines[i].isEmpty())
 			return i;
 
-		if (m_variations[i].front() == moves.front())
+		if (m_lines[i].front() == moves.front())
 			return i;
 
 		if (worstScore > m_sortScores[i])
@@ -1517,7 +1542,7 @@ Engine::findVariation(db::Move const& move) const
 {
 	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
 	{
-		MoveList const& moves = m_variations[i];
+		MoveList const& moves = m_lines[i];
 
 		if (!moves.isEmpty() && moves.front() == move)
 			return i;
@@ -1536,7 +1561,7 @@ Engine::setVariation(unsigned no, db::MoveList const& moves)
 	if (m_wantedMultiPV > m_maxMultiPV)
 		no = insertPV(moves);
 
-	m_variations[no] = moves;
+	m_lines[no] = moves;
 	return no;
 }
 

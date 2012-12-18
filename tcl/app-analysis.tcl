@@ -48,6 +48,7 @@ set SearchDepth				"Search depth in plies (Selective search depth)"
 set IllegalPosition			"Illegal position - Cannot analyze"
 set IllegalMoves				"Illegal moves in game - Cannot analyze"
 set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
+set OperationFailed			"Operation '%s' failed due to raise conditions."
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -73,6 +74,11 @@ set Signal(crashed)			"Engine crashed."
 set Signal(closed)			"Engine has closed connection."
 set Signal(terminated)		"Engine terminated with exit code %s."
 
+set Add(move)					"Add move"
+set Add(var)					"Add move as new variation"
+set Add(line)					"Add variation"
+set Add(all)					"Add all variations"
+
 } ;# analysis mc
 
 namespace import ::tcl::mathfunc::abs
@@ -83,6 +89,7 @@ array set Defaults {
 	info:foreground	darkgreen
 	best:foreground	darkgreen
 	error:foreground	darkred
+	active:background	#ebf4f5
 }
 
 array set Options {
@@ -126,6 +133,8 @@ proc build {parent width height} {
 	array set fopt [font configure $Options(font)]
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
+	set Vars(keepActive) 0
+
 	set charwidth [font measure $Options(font) "0"]
 	set minsize [expr {12*$charwidth}]
 
@@ -249,9 +258,20 @@ proc build {parent width height} {
 		-background $Defaults(background) \
 		-font $Options(font) \
 		;
-	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree]]
+	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree %x %y]]
+	bind $tree <ButtonPress-1> [namespace code [list AddMoves $tree %x %y]]
 
-	$tree element create elemRect rect -open nw -outline gray -outlinewidth 1
+	$tree notify install <Item-enter>
+	$tree notify install <Item-leave>
+	$tree notify bind Table <Item-enter> [namespace code [list VisitItem $tree enter %C %I %x %y]]
+	$tree notify bind Table <Item-leave> [namespace code [list VisitItem $tree leave %C %I]]
+
+	$tree element create elemRect rect \
+		-open nw \
+		-outline gray \
+		-outlinewidth 1 \
+		-fill [list $Defaults(active:background) active] \
+		;
 	$tree element create elemTextFig text -lines $Options(engine:nlines) \
 		-wrap word -font2 $::font::figurine(text:normal)
 	$tree element create elemTextSym text -lines $Options(engine:nlines) \
@@ -684,6 +704,14 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 }
 
 
+proc Display(suspended) {args} {
+	variable Vars
+
+	set line [lindex $args 6]
+	set Vars(suspended,$line) $args
+}
+
+
 proc Display(bestscore) {score mate bestLines} {
 	variable Vars
 
@@ -857,19 +885,97 @@ proc Signal {id code} {
 }
 
 
+proc VisitItem {w mode column item {x {}} {y {}}} {
+	variable Vars
+
+	if {$Vars(keepActive)} { return }
+	if {[string length $column] == 0} { return }
+	if {$mode eq "leave"} { set item root }
+	$w activate $item
+}
+
+
+proc AddMoves {w x y} {
+	variable Options
+	variable Vars
+
+	set id [$w identify $x $y]
+	if {[lindex $id 0] ne "item"} { return }
+	set line [$w item order [lindex $id 1] -visible]
+	if {[::scidb::engine::empty? $Vars(engine:id) $line]} { return }
+	if {[::scidb::engine::snapshot $Vars(engine:id)]} { set arg line } else { set arg move }
+	InsertMoves $w add $line $mc::Add($arg)
+}
+
+
+proc InsertMoves {parent what line operation} {
+	variable Vars
+
+	application::pgn::ensureScratchGame
+
+	if {![::scidb::engine::snapshot $Vars(engine:id) $what $line]} {
+		# in seldom cases (raise conditions) the operation may fail
+		dialog::error \
+			-parent $parent \
+			-message [format $mc::OperationFailed $operation] \
+			;
+	}
+}
+
+
 proc LanguageChanged {} {
 	variable Vars
 	if {[llength $Vars(message)]} { {*}$Vars(message) }
 }
 
 
-proc PopupMenu {parent} {
+proc PopupMenu {parent args} {
+	variable Options
 	variable Vars
 
 	set menu $parent.__menu__
 	catch { destroy $menu }
-	menu $menu -tearoff 0
+	menu $menu -tearoff no
 	catch { wm attributes $menu -type popup_menu }
+
+	if {[llength $args]} {
+		set id [$parent identify {*}$args]
+
+		if {[lindex $id 0] eq "item"} {
+			set line [$parent item order [lindex $id 1] -visible]
+			if {![::scidb::engine::empty? $Vars(engine:id) $line]} {
+				if {[::scidb::engine::snapshot $Vars(engine:id)]} {
+					set state normal
+					set lbl $mc::Add(var)
+				} else {
+					set state disabled
+					set lbl $mc::Add(move)
+				}
+				$menu add command \
+					-label $lbl \
+					-image $::icon::16x16::plus \
+					-compound left \
+					-command [namespace code [list InsertMoves $parent move $line $lbl]] \
+					;
+				$menu add command \
+					-label $mc::Add(line) \
+					-image $::icon::16x16::plus \
+					-compound left \
+					-command [namespace code [list InsertMoves $parent line $line $mc::Add(line)]] \
+					-state $state \
+					;
+				if {$Options(engine:multiPV) == 1} { set state disabled }
+				$menu add command \
+					-label $mc::Add(all) \
+					-image $::icon::16x16::plus \
+					-compound left \
+					-command [namespace code [list InsertMoves $parent all $line $mc::Add(all)]] \
+					-state $state \
+					;
+				$menu add separator
+			}
+		}
+	}
 
 	$menu add command \
 		-label "$mc::Setup..." \
@@ -929,7 +1035,40 @@ proc PopupMenu {parent} {
 			;
 	}
 
+	set Vars(keepActive) 1
+	rename [namespace current]::Display(pv) [namespace current]::Display_
+	rename [namespace current]::Display(suspended) [namespace current]::Display(pv)
+	::bind $menu <<MenuUnpost>> [namespace code [list RevertDisplay $parent]]
 	tk_popup $menu {*}[winfo pointerxy $parent]
+}
+
+
+proc RevertDisplay {w} {
+	variable Vars
+
+	rename [namespace current]::Display(pv) [namespace current]::Display(suspended)
+	rename [namespace current]::Display_ [namespace current]::Display(pv)
+
+	foreach line [array names Vars suspended,*] {
+		Display(pv) {*}$Vars($line)
+	}
+
+	array unset Vars suspended,*
+	set Vars(keepActive) 0
+	after idle [namespace code [list ActivateCurrent $w]]
+}
+
+
+proc ActivateCurrent {w} {
+	variable Vars
+
+	if {![winfo exists $w]} { return }
+	lassign [winfo pointerxy $w] x y
+	set x [expr {$x - [winfo rootx $w]}]
+	set y [expr {$y - [winfo rooty $w]}]
+	set id [$w identify $x $y]
+	if {[lindex $id 0] eq "item"} { set item [lindex $id 1] } else { set item root }
+	$w activate $item
 }
 
 

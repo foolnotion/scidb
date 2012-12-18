@@ -152,6 +152,14 @@ Engine::currentGame() const
 
 
 inline
+db::Game*
+Engine::currentGame()
+{
+	return m_game;
+}
+
+
+inline
 bool
 Engine::Concrete::hasFeature(unsigned feature) const
 {
@@ -419,7 +427,15 @@ db::MoveList const&
 Engine::variation(unsigned no) const
 {
 	M_REQUIRE(no < numVariations());
-	return m_variations[no];
+	return m_lines[no];
+}
+
+
+inline
+bool
+Engine::lineIsEmpty(unsigned no) const
+{
+	return no < m_numVariations && m_lines[no].isEmpty();
 }
 
 

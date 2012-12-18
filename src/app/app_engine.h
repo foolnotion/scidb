@@ -28,6 +28,7 @@
 #define _app_engine_included
 
 #include "db_move_list.h"
+#include "db_board.h"
 
 #include "m_string.h"
 #include "m_pvector.h"
@@ -305,6 +306,7 @@ public:
 	bool pondering() const;
 	bool isBestLine(unsigned no) const;
 	bool bestInfoHasChanged() const;
+	bool lineIsEmpty(unsigned no) const;
 
 	int exitStatus() const;
 	::sys::Process& process();
@@ -352,6 +354,7 @@ public:
 	unsigned limitedStrength() const;
 	mstl::string const& playingStyles() const;
 	db::Game const* currentGame() const;
+	db::Game* currentGame();
 	Options const& options() const;
 	unsigned supportedVariants() const;
 	db::variant::Type variant() const;
@@ -361,7 +364,7 @@ public:
 	virtual void engineIsReady() = 0;
 	virtual void engineSignal(Signal signal) = 0;
 
-	bool startAnalysis(db::Game const* game);
+	bool startAnalysis(db::Game* game);
 	bool stopAnalysis();
 	void removeGame();
 
@@ -390,6 +393,10 @@ public:
 	void removeVariant(unsigned variant);
 
 	bool doMove(db::Move const& lastMove);
+
+	void snapshot();
+	bool snapshotExists(unsigned lineNo) const;
+	::db::MoveList const& snapshotLine(unsigned lineNo) const;
 
 	friend class uci::Engine;
 	friend class winboard::Engine;
@@ -470,6 +477,12 @@ private:
 	typedef int Scores[MaxNumVariations];
 	typedef unsigned Map[MaxNumVariations];
 
+	struct Snapshot
+	{
+		::db::Board	m_board;
+		Variations	m_lines;
+	};
+
 	class Process;
 	friend class Process;
 
@@ -484,7 +497,7 @@ private:
 	void resumed();
 
 	Concrete*			m_engine;
-	db::Game const*	m_game;
+	db::Game*			m_game;
 	unsigned				m_gameId;
 	mstl::string		m_name;
 	mstl::string		m_command;
@@ -507,7 +520,7 @@ private:
 	unsigned				m_maxMultiPV;
 	unsigned				m_wantedMultiPV;
 	Map					m_map;
-	Variations			m_variations;
+	Variations			m_lines;
 	unsigned				m_numVariations;
 	Scores				m_scores;
 	Scores				m_mates;
@@ -554,6 +567,7 @@ private:
 	Options				m_options;
 	mstl::string		m_script;
 	mstl::string		m_buffer;
+	Snapshot				m_snapshot;
 };
 
 } // namespace app

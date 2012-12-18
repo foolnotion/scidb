@@ -31,6 +31,7 @@
 #include "app_application.h"
 
 #include "db_player.h"
+#include "db_game.h"
 
 #include "sys_process.h"
 
@@ -51,6 +52,7 @@ using namespace tcl;
 static char const* CmdActivate		= "::scidb::engine::activate";
 static char const* CmdAnalyize		= "::scidb::engine::analyze";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
+static char const* CmdEmpty			= "::scidb::engine::empty?";
 static char const* CmdInfo				= "::scidb::engine::info";
 static char const* CmdInvoke			= "::scidb::engine::invoke";
 static char const* CmdActive			= "::scidb::engine::active?";
@@ -65,6 +67,7 @@ static char const* CmdProbe			= "::scidb::engine::probe";
 static char const* CmdResume			= "::scidb::engine::resume";
 static char const* CmdSetFeatures	= "::scidb::engine::setFeatures";
 static char const* CmdSetOptions		= "::scidb::engine::setOptions";
+static char const* CmdSnapshot		= "::scidb::engine::snapshot";
 static char const* CmdStart			= "::scidb::engine::start";
 static char const* CmdStop				= "::scidb::engine::stop";
 static char const* CmdVariant			= "::scidb::engine::variant";
@@ -1182,6 +1185,101 @@ cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdEmpty(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned	id		= unsignedFromObj(objc, objv, 1);
+	unsigned line	= unsignedFromObj(objc, objv, 2);
+
+	if (tcl::app::scidb->engineExists(id))
+		setResult(tcl::app::Scidb->engine(id)->lineIsEmpty(line));
+	else
+		setResult(true);
+
+	return TCL_OK;
+}
+
+
+static int
+cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned	id = unsignedFromObj(objc, objv, 1);
+	bool		rc = false;
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		::app::Engine* engine = tcl::app::Scidb->engine(id);
+		Game* game = engine->currentGame();
+
+		if (objc == 2)
+		{
+			engine->snapshot();
+			rc = !game->atLineEnd();
+		}
+		else
+		{
+			char const* cmd = Tcl_GetString(objv[2]);
+
+			if (game)
+			{
+				if (::strcmp(cmd, "add") == 0 || ::strcmp(cmd, "move") == 0)
+				{
+					unsigned line = unsignedFromObj(objc, objv, 3);
+
+					if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
+					{						if (game->atLineEnd())
+						{
+							game->addMove(engine->snapshotLine(line)[0]);
+							game->goForward();
+						}
+						else if (::strcmp(cmd, "move") == 0)
+						{
+							game->addVariation(engine->snapshotLine(line)[0]);
+						}
+						else
+						{
+							game->addVariation(engine->snapshotLine(line));
+						}
+
+						rc = true;
+					}
+				}
+				else if (!game->isEmpty())
+				{
+					if (::strcmp(cmd, "line") == 0)
+					{
+						unsigned line = unsignedFromObj(objc, objv, 3);
+
+						if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
+						{
+							game->addVariation(engine->snapshotLine(line));
+							rc = true;
+						}					}
+					else if (::strcmp(cmd, "all") == 0)
+					{
+						for (unsigned line = 0; engine->snapshotExists(line); ++line)
+						{
+							if (!engine->snapshotLine(line).isEmpty())
+							{
+								game->addVariation(engine->snapshotLine(line));
+								rc = true;
+							}
+						}
+					}
+					else
+					{
+						return error(CmdSnapshot, 0, 0, "unknown command '%s'", cmd);
+					}
+				}
+			}
+		}
+	}
+
+	setResult(rc);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace engine {
 
@@ -1189,11 +1287,12 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdActivate,		cmdActivate);
+	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdAnalyize,		cmdAnalyze);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
+	createCommand(ti, CmdEmpty,				cmdEmpty);
 	createCommand(ti, CmdInfo,				cmdInfo);
 	createCommand(ti, CmdInvoke,			cmdInvoke);
-	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdKill,				cmdKill);
 	createCommand(ti, CmdList,				cmdList);
 	createCommand(ti, CmdLog,				cmdLog);
@@ -1206,6 +1305,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdStart,			cmdStart);
 	createCommand(ti, CmdSetFeatures,	cmdSetFeatures);
 	createCommand(ti, CmdSetOptions,		cmdSetOptions);
+	createCommand(ti, CmdSnapshot,			cmdSnapshot);
 	createCommand(ti, CmdStop,				cmdStop);
 	createCommand(ti, CmdVariant,			cmdVariant);
 }

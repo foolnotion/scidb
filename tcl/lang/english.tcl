@@ -957,6 +957,7 @@
 ::application::analysis::mc::IllegalPosition				"Illegal position - Cannot analyze"
 ::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze"
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted"
+::application::analysis::mc::OperationFailed				"Operation '%s' failed due to raise conditions."
 
 ::application::analysis::mc::LinesPerVariation			"Lines per variation"
 ::application::analysis::mc::BestFirstOrder				"Sort by evaluation"
@@ -981,6 +982,10 @@
 ::application::analysis::mc::Signal(crashed)				"Engine crashed."
 ::application::analysis::mc::Signal(closed)				"Engine has closed connection."
 ::application::analysis::mc::Signal(terminated)			"Engine terminated with exit code %s."
+
+::application::analysis::mc::Add(move)						"Add move"
+::application::analysis::mc::Add(var)						"Add variation"
+::application::analysis::mc::Add(all)						"Add all variations"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Mark game as deleted"

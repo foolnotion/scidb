@@ -958,6 +958,7 @@
 ::application::analysis::mc::IllegalPosition				"Illegale Stellung - keine Analyse möglich"
 ::application::analysis::mc::IllegalMoves					"Illegale Züge in der Partie - keine Analyse möglich"
 ::application::analysis::mc::DidNotReceivePong			"Der Motor antwortet nicht auf das \"ping\"-Kommando - Motor beendet"
+::application::analysis::mc::OperationFailed				"Die Operation '%s' schlug fehl aufgrund einer Zustandswechsels."
 
 ::application::analysis::mc::LinesPerVariation			"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder				"Sortiere nach Bewertung"
@@ -982,6 +983,11 @@
 ::application::analysis::mc::Signal(crashed)				"Der Motor stürzte ab."
 ::application::analysis::mc::Signal(closed)				"Der Motor hat die Verbindung abgebrochen."
 ::application::analysis::mc::Signal(terminated)			"Der Motor beendete mit Rückgabewert %s."
+
+::application::analysis::mc::Add(move)						"Zug hinzufügen"
+::application::analysis::mc::Add(var)						"Zug hinzufügen als neue Variante"
+::application::analysis::mc::Add(line)						"Variante hinzufügen"
+::application::analysis::mc::Add(all)						"Alle Varianten hinzufügen"
 
 ### gametable ##########################################################
 ::gametable::mc::DeleteGame				"Partie zum Löschen markieren"

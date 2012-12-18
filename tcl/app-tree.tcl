@@ -724,6 +724,7 @@ proc SortColumn {table} {
 proc DoSelection {table} {
 	variable Vars
 
+	if {![winfo exists $table]} { return }
 	if {$Vars(hidden)} { return }
 
 	lassign [winfo pointerxy $table] x y
