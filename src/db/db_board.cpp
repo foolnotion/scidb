@@ -129,7 +129,7 @@ inline static Byte queenSideIndex(Byte color)	{ return castling::queenSideIndex(
 static void __attribute__((constructor)) initialize() { Board::initialize(); }
 
 
-#if __GNUC_PREREQ(4,7)
+#if __GNUC_PREREQ(4,5)
 
 // prevent GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
