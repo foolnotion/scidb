@@ -388,8 +388,11 @@ proc deselectInHandPiece {} {
 }
 
 
-proc finishDrop {color} {
-	::board::holding::finishDrop [set [namespace current]::Vars(holding:[string index $color 0])]
+proc finishDrop {} {
+	variable Vars
+
+	set color [::scidb::game::query stm]
+	::board::holding::finishDrop $Vars(holding:[string index $color 0])
 }
 
 

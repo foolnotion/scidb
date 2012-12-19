@@ -47,6 +47,9 @@ static ProcessMap m_processMap;
 
 #ifndef __WIN32__
 
+// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
+#define __KERNEL__
+
 # include <signal.h>
 # include <sys/types.h>
 # include <sys/wait.h>

@@ -24,6 +24,8 @@ bool sys::signal::sendInterrupt(long pid) { return false; }
 
 #else
 
+// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
+# define __KERNEL__
 # include <signal.h>
 
 bool

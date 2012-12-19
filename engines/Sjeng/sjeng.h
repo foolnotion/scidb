@@ -24,6 +24,9 @@
 #ifndef SJENG_H
 #define SJENG_H
 
+// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
+#define __KERNEL__
+
 #include "config.h"
 #include <ctype.h>
 #include <signal.h>

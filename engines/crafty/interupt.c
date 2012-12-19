@@ -1,3 +1,6 @@
+// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
+#define __KERNEL__
+
 #include <signal.h>
 #include "chess.h"
 #include "data.h"

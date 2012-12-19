@@ -684,6 +684,15 @@ NamebasePlayer::setRating(rating::Type type, uint16_t value)
 	}
 }
 
+
+inline
+void
+NamebasePlayer::copyRating(NamebasePlayer const& player)
+{
+	::memcpy(m_rating, player.m_rating, sizeof(m_rating));
+	m_ratingType = player.m_ratingType;
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

@@ -538,9 +538,7 @@ proc doDestructiveCommand {parent action cmd yesAction noAction} {
 
 proc inHandSelected {w piece} {
 	variable Drop
-
 	set Drop(piece) $piece
-	set Drop(color) [::scidb::game::query stm]
 }
 
 
@@ -581,20 +579,24 @@ proc inHandPieceDrop {w x y state piece} {
 	set square [::board::diagram::getSquare $board $x $y]
 	set allowIllegalMove [::util::shiftIsHeldDown? $state]
 
-	if {$square != -1} {
+	if {$square == -1} {
+		::application::board::finishDrop
+	} else {
 		::application::board::deselectInHandPiece
 		if {[::scidb::pos::legal? $square $square $allowIllegalMove $piece]} {
 			::board::diagram::setPiece $board $square $piece
 			set Drop(takeBack) $square
 			set Drop(piece) $piece
-			set Drop(color) [::scidb::game::query stm]
 			::board::diagram::animate $board 0
 			AddMove $square $square $allowIllegalMove
 			::board::diagram::animate $board 1
 			set Drop(takeBack) -1
+		} else {
+			::application::board::finishDrop
 		}
-		set Drop(piece) " "
 	}
+
+	set Drop(piece) " "
 }
 
 
@@ -717,7 +719,7 @@ proc AfterAddMove {} {
 	::board::diagram::setDragSquare $board
 
 	if {$Drop(takeBack) != -1} {
-		::application::board::finishDrop $Drop(color)
+		::application::board::finishDrop
 		::board::diagram::setPiece $board $Drop(takeBack) .
 		set Drop(takeBack) -1
 	}

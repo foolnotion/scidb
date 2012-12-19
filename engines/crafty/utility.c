@@ -1,3 +1,6 @@
+// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
+#define __KERNEL__
+
 #include <stdarg.h>
 #include <errno.h>
 #include <ctype.h>

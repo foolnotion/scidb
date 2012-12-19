@@ -1151,6 +1151,9 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 		return save::TooManyAnnotatorNames;
 	}
 
+	whiteEntry->copyRating(*info.playerEntry(color::White));
+	blackEntry->copyRating(*info.playerEntry(color::Black));
+
 	GameInfo* i = allocGameInfo();
 	*i = info;
 
