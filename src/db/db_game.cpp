@@ -2434,16 +2434,28 @@ Game::truncateVariation(move::Position position)
 	if (atLineEnd())
 		return;
 
-	MoveNode* node = m_currentNode->removeNext();
-	insertUndo(Replace_Node, TruncateVariation, node);
-	m_currentNode->setNext(node->getLineEnd()->clone());
-
 	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet;
 
 	if (isMainline())
 		flags |= UpdateOpening;
 	if (position == move::Ante)
 		flags |= UpdateBoard;
+
+	if (atLineStart() && !isMainline())
+	{
+		MoveNode*	prev	= m_currentNode->prev();
+		unsigned		n		= prev->variationNumber(m_currentNode);
+
+		exitVariation();
+		removeVariation(n);
+		flags |= UpdateBoard;
+	}
+	else
+	{
+		MoveNode* node = m_currentNode->removeNext();
+		insertUndo(Replace_Node, TruncateVariation, node);
+		m_currentNode->setNext(node->getLineEnd()->clone());
+	}
 
 	updateSubscriber(flags);
 }

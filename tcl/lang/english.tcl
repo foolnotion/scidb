@@ -984,7 +984,8 @@
 ::application::analysis::mc::Signal(terminated)			"Engine terminated with exit code %s."
 
 ::application::analysis::mc::Add(move)						"Add move"
-::application::analysis::mc::Add(var)						"Add variation"
+::application::analysis::mc::Add(var)						"Add move as new variation"
+::application::analysis::mc::Add(line)						"Add variation"
 ::application::analysis::mc::Add(all)						"Add all variations"
 
 ### gametable ##########################################################
