@@ -131,12 +131,14 @@ static void __attribute__((constructor)) initialize() { Board::initialize(); }
 
 #if __GNUC_PREREQ(4,5)
 
-// prevent GCC bug:
+// catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 
 #define HASH_HOLDING_ADD(piece, count) \
-	hashHoldingAdd(piece, count); \
-	++count
+	{ \
+		hashHoldingAdd(piece, count); \
+		++count; \
+	}
 
 #else
 
@@ -395,6 +397,7 @@ void
 Board::hashPawn(Square s, piece::ID piece)
 {
 	M_ASSERT(piece::type(piece) == piece::Pawn);
+	M_ASSERT(s <= sq::h8);
 
 	uint64_t value = rand64::Squares[piece][s];
 
@@ -407,6 +410,8 @@ void
 Board::hashPawn(Square s, Square t, piece::ID piece)
 {
 	M_ASSERT(piece::type(piece) == piece::Pawn);
+	M_ASSERT(s <= sq::h8);
+	M_ASSERT(t <= sq::h8);
 
 	uint64_t const*	values	= rand64::Squares[piece];
 	uint64_t				value		= values[s] ^ values[t];
@@ -421,6 +426,7 @@ Board::hashPiece(Square s, piece::ID piece)
 {
 	M_ASSERT(piece::type(piece) != piece::None);
 	M_ASSERT(piece::type(piece) != piece::Pawn);
+	M_ASSERT(s <= sq::h8);
 
 	m_hash ^= rand64::Squares[piece][s];
 }
@@ -431,6 +437,8 @@ Board::hashPiece(Square s, Square t, piece::ID piece)
 {
 	M_ASSERT(piece::type(piece) != piece::None);
 	M_ASSERT(piece::type(piece) != piece::Pawn);
+	M_ASSERT(s <= sq::h8);
+	M_ASSERT(t <= sq::h8);
 
 	uint64_t const* values = rand64::Squares[piece];
 
@@ -445,6 +453,7 @@ Board::hashPromotedPiece(Square s, piece::ID piece, variant::Type variant)
 	M_ASSERT(piece::type(piece) != piece::None);
 	M_ASSERT(piece::type(piece) != piece::Pawn);
 	M_ASSERT(piece::type(piece) != piece::King);
+	M_ASSERT(s <= sq::h8);
 
 	if (variant::isZhouse(variant))
 		m_hash ^= rand64::SquaresPromoted[piece][s];
@@ -501,6 +510,7 @@ Board::hashHoldingAdd(piece::ID piece, Byte oldCount)
 {
 	M_ASSERT(piece != piece::Empty);
 	M_ASSERT(piece::type(piece) != piece::King);
+	M_ASSERT(oldCount < 20);
 
 	m_hash ^= (oldCount ? setBit(oldCount - 1) : rand64::Holding[piece]);
 	m_hash ^= setBit(oldCount);
@@ -558,11 +568,13 @@ Board::kingOnBoard(color::ID color) const
 	return (m_kings & m_occupiedBy[color]) == setBit(m_ksq[color]);
 }
 
+
 unsigned
 Board::countChecks() const
 {
 	return count(attacks(m_stm ^ 1, m_ksq[m_stm]));
 }
+
 
 bool
 Board::isIntoCheck(Move const& move, variant::Type variant) const

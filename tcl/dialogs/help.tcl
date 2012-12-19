@@ -224,6 +224,16 @@ proc open {parent {file {}} args} {
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
+#	switch [tk windowingsystem] {
+#		win32 - aqua {
+#			bind $dlg <MouseWheel> [list event generate $html <MouseWheel> -delta %D]
+#		}
+#		x11 {
+#			bind $dlg <ButtonPress-4> [list event generate $html <ButtonPress-4>]
+#			bind $dlg <ButtonPress-5> [list event generate $html <ButtonPress-5>]
+#		}
+#	}
+
 	if {$opts(-transient)} {
 		wm transient $dlg [winfo toplevel $parent]
 	}
@@ -1036,15 +1046,7 @@ proc BuildHtmlFrame {dlg w} {
 	bind $dlg <FocusIn>	[list $w focusin]
 	bind $dlg <FocusOut>	[list $w focusout]
 
-	switch [tk windowingsystem] {
-		win32 - aqua {
-			bind $dlg <MouseWheel> [list event generate [$w drawable] <MouseWheel> -delta %D]
-		}
-		x11 {
-			bind $dlg <ButtonPress-4> [list event generate [$w drawable] <ButtonPress-4>]
-			bind $dlg <ButtonPress-5> [list event generate [$w drawable] <ButtonPress-5>]
-		}
-	}
+	return [$w drawable]
 }
 
 

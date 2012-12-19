@@ -116,11 +116,13 @@ proc build {w width height} {
 	::bind $canv <Destroy> [namespace code [list activate $w 0]]
 	::bind $canv <FocusIn> [namespace code { GotFocus %W }]
 
-	if {[tk windowingsystem] eq "x11"} {
-		::bind $canv <Button-4> [namespace code [list goto -1]]
-		::bind $canv <Button-5> [namespace code [list goto +1]]
-	} else {
-		::bind $canv <MouseWheel> [namespace code [list goto [expr {%D < 0 ? +1 : -1}]]]
+	foreach {bind canvas} [list ::bind $canv ::bind $border ::board::diagram::bind $board] {
+		if {[tk windowingsystem] eq "x11"} {
+			$bind $canvas <Button-4> [namespace code [list goto -1]]
+			$bind $canvas <Button-5> [namespace code [list goto +1]]
+		} else {
+			$bind $canvas <MouseWheel> [namespace code [list goto [expr {%D < 0 ? +1 : -1}]]]
+		}
 	}
 
 	::board::diagram::bind $board all <Enter>					{ ::move::enterSquare %q }

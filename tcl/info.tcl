@@ -218,14 +218,12 @@ proc Mouse1Up {w node} {
 
 
 proc BuildContributionsFrame {w} {
-	set textFam {"Bitstream Vera Sans" "DejaVu Sans" Verdana "Lucida Grande" "Lucida Sans" Arial}
-#	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
-	set css [::html::defaultCSS [::font::htmlFixedFamilies] $textFam]
+	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 
 	append css {
-		h1 { font-size: 110%; background-color: #e5eeff; }
-		p  { padding-bottom: 0.3cm }
-		table  { padding-bottom: 0.3cm }
+		h1		{ font-size: 120%; background-color: #e5eeff; }
+		p		{ padding-bottom: 0.3cm }
+		table	{ padding-bottom: 0.3cm }
 	}
 
 	::html $w.t \
