@@ -813,7 +813,7 @@ MoveList const&
 Engine::snapshotLine(unsigned lineNo) const
 {
 	M_REQUIRE(snapshotExists(lineNo));
-	return m_snapshot.m_lines[lineNo];
+	return m_snapshot.m_lines[m_map[lineNo]];
 }
 
 

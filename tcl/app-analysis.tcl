@@ -340,6 +340,12 @@ proc build {parent width height} {
 		-command [namespace code EngineLock] \
 	]
 	lappend Vars(toolbar:childs) $Vars(button:lock)
+	::toolbar::add $tbControl button \
+		-image $::icon::toolbarSetup \
+		-command [namespace code Setup] \
+		-tooltipvar [namespace current]::mc::Setup \
+		;
+	::toolbar::addSeparator $tbControl
 	set tbw [::toolbar::add $tbControl checkbutton \
 		-image $::icon::toolbarLines \
 		-variable [namespace current]::Options(engine:multiPV) \
@@ -356,11 +362,6 @@ proc build {parent width height} {
 		-command [namespace code [list SetOrdering $tree]] \
 	]
 	lappend Vars(toolbar:childs) $Vars(widget:ordering)
-	::toolbar::add $tbControl button \
-		-image $::icon::toolbarSetup \
-		-command [namespace code Setup] \
-		-tooltipvar [namespace current]::mc::Setup \
-		;
 	::toolbar::addSeparator $tbControl
 	::toolbar::add $tbControl label -textvar [namespace current]::mc::Lines
 	set lpv [::toolbar::add $tbControl ::ttk::spinbox \

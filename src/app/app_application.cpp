@@ -296,7 +296,10 @@ Application::~Application() throw()
 	m_instance = 0;
 
 	for (EngineList::iterator i = m_engineList.begin(); i != m_engineList.end(); ++i)
+	{
+		(*i)->deactivate();
 		delete *i;
+	}
 
 	m_gameMap.clear();
 }
@@ -843,6 +846,7 @@ Application::closeAllGames(Cursor& cursor)
 			if (game.cursor->isScratchbase())
 				m_indexMap.erase(position);
 
+			stopAnalysis(game.game);
 			i = m_gameMap.erase(i);
 
 			if (m_position == position)

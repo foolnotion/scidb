@@ -3467,7 +3467,7 @@ Game::updateSubscriber(unsigned action)
 	if (m_isModified != m_wasModified)
 		m_subscriber->stateChanged(m_wasModified = m_isModified);
 
-	if (action & UpdateBoard)
+	if ((action & UpdateBoard) && m_undoCommand == None && m_redoCommand == None)
 		goToCurrentMove();
 }
 
