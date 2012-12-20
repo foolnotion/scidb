@@ -995,7 +995,7 @@ proc DoLayout {position data {w {}}} {
 
 			result {
 				set reason [::scidb::game::query $position termination]
-				set resultList [list {*}[lrange $node 1 end] $reason]
+				set resultList [list {*}[lrange $node 1 end] $reason $Options(spacing:paragraph)]
 
 				if {$Vars(result:$position) != $resultList} {
 					if {[string length $Vars(last:$position)]} {
@@ -1005,7 +1005,7 @@ proc DoLayout {position data {w {}}} {
 					$w mark set current m-0
 					set prevChar [$w get current-1c]
 					$w delete current end
-					set result [::browser::makeResult {*}$resultList]
+					set result [::browser::makeResult {*}[lrange $resultList 0 end-1]]
 					if {[llength $result]} {
 						lassign $result result reason
 						if {$Options(spacing:paragraph)} { $w insert current \n }
@@ -1278,6 +1278,20 @@ proc InsertMove {position w level key data} {
 				} else {
 					set prefixAnnotation $prefix
 					set suffixAnnotation $infix
+				}
+			}
+
+			states {
+				set states [lindex $node 1]
+				set tags state
+				if {$level == 0} { lappend tags main }
+				if {[string match *3* $states]} {
+					$w insert current " "
+					$w insert current "3\u00d7" [list {*}$tags threefold]
+				}
+				if {[string match *f* $states]} {
+					$w insert current " "
+					$w insert current "50" [list {*}$tags fifty]
 				}
 			}
 

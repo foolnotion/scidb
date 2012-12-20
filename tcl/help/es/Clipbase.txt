@@ -36,7 +36,7 @@ independiente.
    
 <p>
 La Base temporal no puede cerrarse. Existe una función de menú para vaciarla
-(ver <a href="Database-Switcher.html#Empty-Clipbase">
+(<see/> <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 

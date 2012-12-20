@@ -222,7 +222,8 @@ es decir, mediante el manejo de las bases de datos en el
 
 <annotation>
 Todas las operaciones de Arrastrar&amp;Soltar se realizan sobre bases de datos completas, es 
-decir, sobre todos los archivos asociados a una base de datos determinada.
+decir, sobre todos los archivos asociados a una base de datos determinada (<see/>
+<a href="Database-Formats.html">Formatos de bases de datos</a>).
 </annotation>
 
 END

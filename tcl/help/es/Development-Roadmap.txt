@@ -21,13 +21,15 @@ TITLE Mapa de ruta del desarrollo
 <h2>Características para las próximas versiones</h2>
 
 <ul>
+<NEW>
+  <li>Download/upload/update databases via the internet</li>
+  <li>Supporting attachments of documents to a database. The main reason
+      is that Chessbase databases have attached documents.</li>
+</NEW>
   <li>Funciones de búsqueda: búsqueda por encabezado, búsqueda por posición, etc.</li>
   <li>Funciones de filtro: filtro de partidas, filtro de jugadores</li>
   <li>Distribución de ventanas flexible</li>
   <li>Generación de documentos: exportar a LaTeX</li>
-<NEW>
-  <li>Support of more chess variants: Bughouse, Crazyhouse, Antichess</li>
-</NEW>
   <li>Soporte de Windows</li>
   <li>Compresión de bases de datos (eliminación de las partidas borradas)</li>
   <li>Entrada de jugadas con el teclado</li>

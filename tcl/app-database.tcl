@@ -1291,7 +1291,7 @@ proc PopupMenu {parent x y {base ""}} {
 
 	$menu add command \
 		-label " $mc::FileOpen..." \
-		-image $::icon::16x16::docOpen \
+		-image $::icon::16x16::databaseOpen \
 		-compound left \
 		-command [list ::menu::dbOpen $top] \
 		;
@@ -1302,14 +1302,14 @@ proc PopupMenu {parent x y {base ""}} {
 	$menu add cascade \
 		-menu $m \
 		-label " [::mc::stripAmpersand $mc::FileOpenRecent]" \
-		-image $::icon::16x16::docOpen \
+		-image $::icon::16x16::databaseOpen \
 		-compound left \
 		-state $state \
 		;
 
 	$menu add command \
 		-label " $mc::FileNew ($::mc::VariantName(Normal))..." \
-		-image $::icon::16x16::docNew \
+		-image $::icon::16x16::databaseNew \
 		-compound left \
 		-command [list ::menu::dbNew $top Normal] \
 		;
@@ -1318,7 +1318,7 @@ proc PopupMenu {parent x y {base ""}} {
 	$menu add cascade \
 		-menu $menu.mFileNew \
 		-label " $mc::FileNew..." \
-		-image $::icon::16x16::docNewAlt \
+		-image $::icon::16x16::databaseNewAlt \
 		-compound left \
 		;
 	::menu::addVariantsToMenu $top $menu.mFileNew

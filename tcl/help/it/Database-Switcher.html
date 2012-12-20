@@ -43,6 +43,10 @@
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
 Il database attivo sarà evidenziato con uno sfondo giallo.
+<span class="NEW">
+All databases not belonging to the chess variant of the active
+database are disabled (white background).
+</span>
 </p>
 
 <p>
@@ -55,6 +59,9 @@ Fuinzionalità del selezionatore di Database:
 
 <ul>
   <li><a href="#Administration">Amministrazione</a></li>
+<span class="NEW">
+  <li><a href="#Maintenance">Maintenance</a></li>
+</span>
   <li><a href="#DND">Trascinamento (Drag &amp; Drop)</a></li>
 </ul>
 
@@ -78,11 +85,6 @@ in altri formati database o documenti.
 </p>
 
 <p>
-<span class="menuitem">Importa file PGN</span>
-Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
-</p>
-
-<p>
 <span class="menuitem">Importa Database</span>
 I database da importare saranno selezionati con la
 <a href="File-Selection-Dialog.html">interfaccia di selezione del file</a>.
@@ -91,28 +93,22 @@ selezionare più database allo stesso tempo.
 </p>
 
 <p>
-<span class="menuitem">Crea Archivio</span>
-Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
-La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
-si aprirà per permettere la selezione del name dell'archivio.
+<span class="menuitem">Importa file PGN</span>
+Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
 </p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Maintenance</span>
+This sub-menu provides functionality for the maintenance of databases
+(&#x21d2; <a href="#Maintenance">Maintenance</a>).
+</p>
+</span>
 
 <p>
 <span class="menuitem">Chiudi</span>
 Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
 <br/><img src="../images/note.png" alt="note" /> Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
-</p>
-
-<p>
-<span class="menuitem">Cambia Icona</span>
-Seleziona un'icona per il database.
-<br/><img src="../images/note.png" alt="note" /> Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
-</p>
-
-<p>
-<span class="menuitem">Modifica Descrizione</span>
-Crea o cambia la descrizione per questo database.
-<br/><img src="../images/note.png" alt="note" /> Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
 </p>
 
 <p>
@@ -124,11 +120,6 @@ Questa possibilità è disponibile solo per database nei formati Scidb e Scid (<
 </p>
 
 <p>
-<span class="menuitem">Nuovo Database</span>
-Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
-</p>
-
-<p>
 <span class="menuitem">Apri Database</span>
 Apre un altro database.
 </p>
@@ -137,6 +128,21 @@ Apre un altro database.
 <span class="menuitem">Apri Recente</span>
 Apre un database dallo storico dei database aperti.
 </p>
+
+<p>
+<span class="menuitem">Nuovo Database</span>
+Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
+<span class="NEW">
+If the database should store games of any chess variant please use the next menu item.
+</span>
+</p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Nuovo Database</span>
+Create a new database of any chess variant. Only Scidb databases
+can be created in this case.
+</span>
 
 <p>
 <span class="menuitem">Grandezza simbolo</span>
@@ -155,6 +161,57 @@ Svuota Clipbase</span>
 <br/><img src="../images/note.png" alt="note" /> Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
 
+<span class="NEW">
+<h3 id="Maintenance">Maintenance</h3>
+
+<p>
+This sub-menu provides functionality for the maintenance of databases.
+</p>
+</span>
+
+<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+
+<p>
+<span class="menuitem">Cambia Icona</span>
+Seleziona un'icona per il database.
+<br/><img src="../images/note.png" alt="note" /> Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<span class="menuitem">Modifica Descrizione</span>
+Crea o cambia la descrizione per questo database.
+<br/><img src="../images/note.png" alt="note" /> Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Strip Move Information</span>
+Not yet implemented.
+</p>
+
+<p>
+<span class="menuitem">Strip PGN Tags</span>
+Not yet implemented.
+</p>
+</span>
+
+<span class="NEW">
+<p id="Compact">
+<span class="menuitem">Compresso</span>
+Compact this database, this means that all games marked for deletion
+wil be deleted physically. You cannot revert this action. This menu
+item is disabled if the database does not contain any game with a
+deletion marker.
+</p>
+</span>
+
+<p>
+<span class="menuitem">Crea Archivio</span>
+Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
+La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
+si aprirà per permettere la selezione del name dell'archivio.
+</p>
+
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 
 <p>
@@ -163,6 +220,20 @@ Il database può essere aperto con il trascinamento di una lista URI. Se una lis
 uno sfondo colorato sarà indicherà che il trascinamento di questo elemento è possibile.
 In questo modo potrai parire i database con l'aiuto di un gestore file esterno.
 </p>
+
+<span class="NEW">
+<p>
+The list of files may also be dropped over a database field. In this case 
+the games will be copied into the destination database.
+</p>
+
+<p>
+To copy all games (of one chess variant) of one database to another, drag the
+games while holding the left mouse button and drop the games into the destination
+field. It is required that the destination database is writeable and not disabled.
+This is an important way to manage and copy games within databases.
+</p>
+</span>
 
 </body>
 </html>

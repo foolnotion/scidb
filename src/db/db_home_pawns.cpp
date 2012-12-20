@@ -177,6 +177,15 @@ HomePawns::debug() const
 void
 HomePawns::initialize()
 {
+#ifdef BROKEN_LINKER_HACK
+	static bool initialized = false;
+
+	if (initialized)
+		return;
+
+	initialized = true;
+#endif
+
 	::memset(::HomePawnMask, 0, sizeof(::HomePawnMask));
 
 	::HomePawnMask[color::White][sq::a2] = a2;

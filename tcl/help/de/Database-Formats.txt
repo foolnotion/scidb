@@ -31,6 +31,26 @@ Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 </p>
 
 <p>
+Nur das Scidb-Format (sowie das PGN-Format) speichert Partien verschiedener Schachformen,
+zur Zeit sind dies:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
+    <tr><td>Normalschach  </td><td>(inklusive Schach-960 und Shuffle-Schach)</td></tr>
+    <tr><td>Einsetzschach </td><td>(Crazyhouse)</td></tr>
+    <tr><td>Schlachschach </td><td>(Suicide, Giveaway)</td></tr>
+    <tr><td>Losers        </td><td>(Schlagschachvariante)</td></tr>
+    <tr><td>Drei-Schach   </td><td>(Three-Check)</td></tr>
+  </table>
+</box>
+
+</p>
+Eine Datenbank ist auf eine Schachform festgelegt (die
+<a href="Clipbase.html">Ablage-Datenbank</a> ist eine Ausnahme).
+</p>
+
+<p>
 Datenbanken im Scidb-Format sind immer im <nobr>UTF-8</nobr> Zeichensatz enkodiert und damit
 unter jedem System und jeder Lokation problemlos verwendbar.
 </p>

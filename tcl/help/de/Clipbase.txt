@@ -36,7 +36,7 @@ der Suchergebnisse als eine eigenständige Datenbank.
    
 <p>
 Die Ablage kann nicht geschlossen werden. Es exisitiert eine Menüfunktion zum Leeren
-der Ablage (siehe <a href="Database-Switcher.html#Empty-Clipbase">
+der Ablage (<see/> <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 

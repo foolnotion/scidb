@@ -235,7 +235,8 @@ jeweils erneut zu öffnen; nämlich durch Ziehen der Datenbank in den
 
 <annotation>
 Alle Drag&amp;Drop-Operationen wirken auf eine gesamte Datenbank, d.h. auf
-alle zu einer Datenbank gehörigen Dateien.
+alle zu einer Datenbank gehörigen Dateien
+(<see/> <a href="Database-Formats.html">Datenbankformate</a>).
 </annotation>
 
 END

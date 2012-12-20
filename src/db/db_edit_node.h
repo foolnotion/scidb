@@ -64,7 +64,7 @@ public:
 		TRoot, TOpening, TLanguages,	// root level (unused)
 		TAction,								// root level (used)
 		TMove, TDiagram, TVariation,	// variation level
-		TPly, TAnnotation, TMarks, TComment, TSpace,	// move level
+		TPly, TAnnotation, TStates, TMarks, TComment, TSpace,	// move level
 	};
 
 	enum Bracket { Blank, Open, Close, End, Fold, Empty, Start };
@@ -405,6 +405,25 @@ private:
 };
 
 
+class States : public Node
+{
+public:
+
+	States(MoveNode const& node);
+
+	Type type() const override;
+
+	bool operator==(Node const* node) const override;
+
+	void visit(Visitor& visitor) const override;
+
+private:
+
+	bool m_threefoldRepetition;
+	bool m_fiftyMoveRule;
+};
+
+
 class Marks : public Node
 {
 public:
@@ -473,6 +492,7 @@ public:
 	virtual void position(db::Board const& board, color::ID fromColor) = 0;
 	virtual void comment(move::Position position, VarPos varPos, db::Comment const& comment) = 0;
 	virtual void annotation(db::Annotation const& annotation, bool isTexual) = 0;
+	virtual void states(bool threefoldRepetition, bool fiftyMoveRule) = 0;
 	virtual void marks(bool hasMarks) = 0;
 	virtual void number(mstl::string const& number, bool isFirstVar) = 0;
 	virtual void space(Bracket bracket, bool isFirstOrLastVar) = 0;

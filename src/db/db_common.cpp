@@ -1192,6 +1192,15 @@ namespace castling
 	void
 	initialize()
 	{
+#ifdef BROKEN_LINKER_HACK
+		static bool initialized = false;
+
+		if (initialized)
+			return;
+
+		initialized = true;
+#endif
+
 		::memset(Transpose, 0, sizeof(Transpose));
 
 		for (unsigned i = 1; i <= AllRights; ++i)
@@ -1215,6 +1224,15 @@ namespace tag
 	void
 	initialize()
 	{
+#ifdef BROKEN_LINKER_HACK
+	static bool initialized = false;
+
+	if (initialized)
+		return;
+
+	initialized = true;
+#endif
+
 		// NOTE: White/blackECF has two entries:
 		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired");
 		static_assert(int(ExtraTag) <= int(TagSetSize), "BitField size exceeded");

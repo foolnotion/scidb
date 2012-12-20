@@ -42,6 +42,7 @@ inline bool MoveNode::hasSupplement() const				{ return m_flags & HasSupplement;
 inline bool MoveNode::hasMoveInfo() const					{ return m_flags & HasMoveInfo; }
 inline bool MoveNode::isFolded() const						{ return m_flags & IsFolded; }
 inline bool MoveNode::threefoldRepetition() const		{ return m_flags & ThreefoldRepetition; }
+inline bool MoveNode::fiftyMoveRule() const				{ return m_flags & FiftyMoveRule; }
 
 inline bool MoveNode::hasComment(move::Position position) const	 { return m_flags & (1 << position); }
 
@@ -87,6 +88,17 @@ MoveNode::setThreefoldRepetition(bool flag)
 		m_flags |= ThreefoldRepetition;
 	else
 		m_flags &= ~ThreefoldRepetition;
+}
+
+
+inline
+void
+MoveNode::setFiftyMoveRule(bool flag)
+{
+	if (flag)
+		m_flags |= FiftyMoveRule;
+	else
+		m_flags &= ~FiftyMoveRule;
 }
 
 

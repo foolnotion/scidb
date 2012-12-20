@@ -26,6 +26,8 @@ TITLE Der Datenbankumschalter
 <p>
 Der Datanbankumschalter ermöglicht den einfachen Wechsel zwischen Datenbanken.
 Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
+Alle Datenbanken, die nicht zur Schachform der aktiven Datenbank gehören,
+sind gesperrt (weißer Hintergrund).
 </p>
 
 <p>
@@ -39,6 +41,7 @@ Die Funktionalitäten im Datenbankumschalter sind:
 
 <ul>
   <li><a href="#Administration">Administration</a></li>
+  <li><a href="#Maintenance">%::application::database::mc::FileMaintenance%</a></li>
   <li><a href="#DND">Drag &amp; Drop</a></li>
 </ul>
 
@@ -78,11 +81,9 @@ mehrere Datenbanken gleichzeitig ausgewählt werden.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileCreate%</menuitem>
-Ein <a href="Database-Formats.html#Database-Archive">Datenbankarchiv</a>
-für die gewählte Datenbank anlegen. Der
-<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geöffnet,
-um den Archivnamen zu wählen.
+<menuitem>%::application::database::mc::FileMaintenance%</menuitem>
+Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten (<see/>
+<a href="#Maintenance">%::application::database::mc::FileMaintenance%</a>).
 </p>
 
 <p>
@@ -90,26 +91,6 @@ um den Archivnamen zu wählen.
 Die gewählte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
 aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
 <note/>Eine Schliessung der <a href="Clipbase.html">Ablage-Datenbank</a> ist nicht möglich.
-</p>
-
-<p id="Compact">
-<menuitem>%::application::database::mc::FileCompact%</menuitem>
-Diese Datenbank komprimieren, d.h. die zum Löschen vorgemerkten Partien werden
-physikalisch gelöscht. Diese Aktion kann nicht rückgägngig gemacht werden.
-Dieser Menüpunkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
-Lösch-Markierung versehen sind.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Ein neues Piktogramm für diese Datanbank auswählen.
-<note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::EditDescription%</menuitem>
-Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
-<note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
 <p>
@@ -123,13 +104,6 @@ nicht schreibgeschützt werden.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileNew%</menuitem>
-Eine neue Datenbank anlegen. Es können nur Scidb- und
-Scid-Datenbanken (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
-neu angelegt werden.
-</p>
-
-<p>
 <menuitem>%::application::database::mc::FileOpen%</menuitem>
 Eine weitere Datenbank öffnen.
 </p>
@@ -137,6 +111,20 @@ Eine weitere Datenbank öffnen.
 <p>
 <menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
 Eine Datenbank öffnen über die Datenbankhistorie.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileNew% (%::mc::VariantName(Normal)%)</menuitem>
+Eine neue Datenbank anlegen. Es können nur Scidb- und
+Scid-Datenbanken (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
+neu angelegt werden. Soll die Datenbank Partien einer anderen Schachform speichern
+dann wird der nächste Menüpunkt verwendet.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
+Eine neue Datenbank einer anderen Schachform anlegen. In diesem Fall
+können nur Scidb-Datenbanken neu angelegt werden.
 </p>
 
 <p>
@@ -156,6 +144,52 @@ Hilfedialog zum Datenbankumschalter öffnen.
 <note/>Dieser Menüpunkt steht nur für die
 <a href="Clipbase.html">Ablage-Datenbank</a> zur Verfügung.
 
+<h3 id="Maintenance">%::application::database::mc::FileMaintenance%</h3>
+
+<p>
+Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten:
+</p>
+
+<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+
+<p>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
+Ein neues Piktogramm für diese Datanbank auswählen.
+<note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
+Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
+<note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
+Noch nicht implementiert.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
+Noch nicht implementiert.
+</p>
+
+<p id="Compact">
+<menuitem>%::application::database::mc::FileCompact%</menuitem>
+Diese Datenbank komprimieren, d.h. die zum Löschen vorgemerkten Partien werden
+physikalisch gelöscht. Diese Aktion kann nicht rückgägngig gemacht werden.
+Dieser Menüpunkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
+Lösch-Markierung versehen sind.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Ein <a href="Database-Formats.html#Database-Archive">Datenbankarchiv</a>
+für die gewählte Datenbank anlegen. Der
+<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geöffnet,
+um den Archivnamen zu wählen.
+</p>
+
 <h3 id="DND">Drag &amp; Drop</h3>
 
 <p>
@@ -164,6 +198,19 @@ Wird eine URI-Liste (Dateienliste) &ndash; oder eine einzelne Datei &ndash; in
 das Datenbankumschaltfenster gezogen, so signalisiert ein farbiger Hintergrund,
 daß ein Drop erfolgen kann. Auf diese Weise kann das Öffnen von Datenbanken
 beispielsweise auch mit einem externen Dateimanager erfolgen.
+</p>
+
+<p>
+Die Dateienliste kann auch über ein Datenbankfeld fallengelassen werden. In diesem
+Fall werden die Partien in die Zieldatenbank kopiert.
+</p>
+
+<p>
+Um alle Partien (einr Schachform) einer Datenbank in eine andere zu kopieren werden
+mit gedrückter linker Maustaste die Partien gegriffen und in das Zielfeld gezogen und
+fallengelassen. Voraussetzung ist, daß die Zieldatenbank nicht schreibgeschützt ist
+und auch nicht gesperrt. Dies ist ein wichtiges Instrument zum Verwalten und
+Kopieren von Dateien zwischen Datanbanken.
 </p>
 
 END

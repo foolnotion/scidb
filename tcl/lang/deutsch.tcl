@@ -779,6 +779,8 @@
 ::pgn::setup::mc::RevertSettings					"Auf Anfangswerte zurücksetzen"
 ::pgn::setup::mc::ResetSettings					"Auf Werkseinstellung zurücksetzen"
 ::pgn::setup::mc::DiscardAllChanges				"Alle bereits angewendeten Änderungen verwerfen?"
+::pgn::setup::mc::ThreefoldRepetition			"Dreifache Zugwiederholung"
+::pgn::setup::mc::FiftyMoveRule					"50-Züge-Regel"
 
 ::pgn::setup::mc::Setup(Appearance)				"Aussehen"
 ::pgn::setup::mc::Setup(Layout)					"Layout"

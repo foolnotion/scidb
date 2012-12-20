@@ -2098,11 +2098,10 @@ if {[string length $gxxVer]} {
     checkExpat
     checkGdbm
 
-    if {[isInsaneUnixRelease]} {
-        if {![string match Debian* $insaneRelease]} {
-            Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
-        }
-    }
+    # We will always use the broken linker hack, the newer versions
+    # of the GNU linker are all broken (problems with the initialization
+    # of static objects).
+    Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
 
     if {$::tcl_platform(platform) eq "unix"} {
         findFontconfig
@@ -2138,18 +2137,18 @@ if {[string length $gxxVer]} {
         } else { ;# Ubuntu, Linux Mint
             puts "You're about to build Scidb on an insane distribution"
             puts "($insaneRelease - the linker is broken - among other"
-            puts "severe problems). Scidb may crash - but hopefully it"
-            puts "will not."
+            puts "severe problems)."
             puts "Also the call of sub-processes is not working properly"
             puts "on this system, you may not get a proper error message"
             puts "in case of an exception."
         }
         puts "Furthermore the distributed Tk library is broken, some"
-        puts "windows of the application will be frozen. You have to"
-        puts "use a self-compiled Tk library if you like to avoid this"
-        puts "problem."
+        puts "windows of the application will be frozen, or the problem"
+        puts "with endless loops inside the Tk library will occur."
+        puts "You have to use a self-compiled Tk library if you like"
+        puts "to avoid this problem."
         puts "It is highly recommended to build Scidb on a working Unix"
-        puts "system. Your installed system is only a pseudo-Unix system."
+        puts "system, your installed system is only a pseudo-Unix system."
         puts "It is broken and distorted due to the \"kernel hardening\""
         puts "paranoia, which assumes that every software is an attacker."
         puts "But Scidb is definitively not an attacker and requires a"

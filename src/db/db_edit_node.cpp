@@ -57,8 +57,15 @@ deleteList(List& list)
 
 struct Node::Spacing
 {
-	enum Type		{ Zero, Space, Open, Close, Break, Para };
-	enum Context	{ None, Comment, Annotation, PreComment, Diagram, StartVariation, EndVariation };
+	enum Type
+	{
+		Zero, Space, Open, Close, Break, Para
+	}
+;
+	enum Context
+	{
+		None, Comment, Annotation, PreComment, Diagram, Result, StartVariation, EndVariation
+	};
 
 	struct Token
 	{
@@ -342,6 +349,7 @@ Node::Type Diagram::type() const		{ return TDiagram; }
 Node::Type Ply::type() const			{ return TPly; }
 Node::Type Comment::type() const		{ return TComment; }
 Node::Type Annotation::type() const	{ return TAnnotation; }
+Node::Type States::type() const		{ return TStates; }
 Node::Type Marks::type() const		{ return TMarks; }
 Node::Type Space::type() const		{ return TSpace; }
 
@@ -463,6 +471,31 @@ void
 Annotation::visit(Visitor& visitor) const
 {
 	visitor.annotation(m_annotation, m_type == Textual);
+}
+
+
+States::States(MoveNode const& node)
+	:m_threefoldRepetition(node.threefoldRepetition())
+	,m_fiftyMoveRule(node.fiftyMoveRule())
+{
+}
+
+
+bool
+States::operator==(Node const* node) const
+{
+	M_ASSERT(node);
+	M_ASSERT(dynamic_cast<States const*>(node));
+
+	return	m_threefoldRepetition == static_cast<States const*>(node)->m_threefoldRepetition
+			&& m_fiftyMoveRule == static_cast<States const*>(node)->m_fiftyMoveRule;
+}
+
+
+void
+States::visit(Visitor& visitor) const
+{
+	visitor.states(m_threefoldRepetition, m_fiftyMoveRule);
 }
 
 
@@ -866,10 +899,10 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	if (work.isFolded)
 		return;
 
-	if (move->hasMark())
+	if (move->threefoldRepetition() || move->fiftyMoveRule())
 	{
 		work.pop(m_list);
-		m_list.push_back(new Marks(move->marks()));
+		m_list.push_back(new States(*move));
 		work.m_isVirgin = false;
 		work.pushSpace();
 	}
@@ -993,6 +1026,12 @@ Move::Move(Work& work, MoveNode const* move)
 
 	if (work.isFolded)
 		return;
+
+	if (move->threefoldRepetition() || move->fiftyMoveRule())
+	{
+		m_list.push_back(new States(*move));
+		work.pushSpace();
+	}
 
 	if (move->hasMark())
 	{
@@ -1341,7 +1380,7 @@ Root::makeList(TagSet const& tags,
 	root->m_result = result::fromString(tags.value(tag::Result));
 
 	makeList(work, var->m_list, node, variant, 1, 1);
-	work.pushBreak();
+	work.pushParagraph(Spacing::Result);
 
 	return root;
 }
@@ -1389,7 +1428,7 @@ Root::makeList(Work& work,
 
 	if (work.isFolded)
 	{
-//		too confusing!
+//		too confusing for the user!
 //		if (node->next()->atLineEnd() && !node->hasNote() && !node->prev()->hasNote())
 //			work.isFolded = false;
 		work.key.addPly(work.board.plyNumber() + 1);

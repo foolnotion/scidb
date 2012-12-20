@@ -1655,7 +1655,7 @@ namespace eval 16x16 {
 		CCwqdjwxonlq0vvdhA0BgOLGva5qHI9/c0OODu12wAAAAABJRU5ErkJggg==
 	}]
 
-	set docNew [image create photo -data {
+	set databaseNew [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADBElEQVQ4y1WSW2tcVRzFf/uc
 		fWb2yUwuk8tkYnOZxksrMWoFRcQblKJF0Q/Q9k0Q9BP4BRQE8aFBH0XwRX1RAn20KFaUYoyM
 		6UNbzN12rmcyZ+bkXPf2YTDUBf+3tX78WSzBAzJrFyeYP3uWXOlxZK6CpRVhpIkGPY6bO9T3
@@ -1674,19 +1674,26 @@ namespace eval 16x16 {
 		bW3BqzH0ngAAAABJRU5ErkJggg==
 	}]
 
-	set docNewAlt [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAABmUlEQVQYGQXBP2sTYQDA4d97
-		9565pNcmtrE5UQy1gpUizoKbOLk4W50ddBAEEb+ESz+BCC4OTq6CDg5CFSSDGmJaJJL0/uZy
-		l9x7d+/5PAIA3nXO7VnXTFfYhVbzfBwOJn+eFQACXjevHLQfNveNDUsKkVLpPE+mw0+Lwydf
-		QcD7eztvW7bAQCJQlJQUjAi+BHefhwb83B7aMRklGgOLGkUOJG60BhK8MsOnR5s2NoolKQFT
-		IhRgwGy8jFISMlJWaCpyFAXpr0kMEi6m63qJh0ZTIEjwiFjQ8FQGEtbaO842U1JOOaVGU7NJ
-		F9+NLSoJgda6oMslHAxKchIC/jITJmDAIIz8mISMDE2NYsw3Rvj95A6YcKvVO1idVZRU1KQM
-		GLHHSzwnuL5/IqEvL7S6mIQEzIExu0TAyZnebvxAgl9XNVymg41FzRGPOOIH97GdF30Jn4sb
-		4brrsIVFg4oGT4HHHFKs1LEJ08W/YVjPRaqzalnMlK8mYoubxvd08lu9EgCAjdtwO5tNu6rm
-		Sf/qxm3jPMfmm48f/gPXHMDpPFKS+QAAAABJRU5ErkJggg==
+	set databaseNewAlt [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAADDUlEQVQ4y1WSy2skVRjFf7ce
+		3VXdndiPpNOZJDONr0TCgCMTF4JKkEFF0J2bGXfZxH9AzFaJiyAuHHTnyo3MRhFciaBI0BGD
+		0M4g42gyncR+p7rT3ZWqulX3umgM44Fvd86Pj8MRPCR989U8iysrpApPYaUqGMohCBXh+JSz
+		zgGt+h3u390Xn7bkfxkLQG8/5/L0tevMLr1FLruKZUzjKAsrEpxEEAcKfyakUGgh7/2g3+Wm
+		+IBfzgFqpvyykS98jKscRBdEODkicCOIIgNz7DJVq+K1qxqekG/zmv0JngXQ+f3H8rQxdJzV
+		KsI1YToGW0ImAGcEoy74dYg6KFMx7FMZDEUW9AQwbPXi8OfvyHkObtXBnrMxKhpBBH6AHkUk
+		Jxp5BON98HsQhQ91cNfj4KJj9M1RkBenZ6gpsEdg2hNTkoAMJqEzKWiF3Dvs6ME5oFy9MG5X
+		Lqlj4VHwOuSdM7KpGFtoEBD2YNgy8fo2vsqQzcXduXbXPwc8bvUfsZdKudPVWTpHWTr+mON2
+		gO5FoGIsqXASTbmkmc1GmHFQ8RaxuUNiAfS6vsr9VlOlJM3CUhrxKOhyjDYTkAnGUNH4u8K4
+		aXO4r0j+ESLthkAy+eCrA+296Fq9dC9asHIBKQdECigACQx6ed65tY6UEq01UspL3szwGnz7
+		tQmwccXKxNUr1w/VXOFEGZxqk5EwGVoW/bHFe188j9BF1tbW2NnZodls5vyj0eXi1XLdAnhh
+		LrZS5U4mrF6kN+0y6Pm0uz56FIGQdEcOV1eW8TwPgHq9npqfn39s8MfghgD49Q3jyWJRf1+4
+		bFVyz7iYKROmFDobg4558/1XuPXZl+zt7WHbNo7j4DgOm5ubuxbAhzUtX1/Ge7YsK+l9ibkI
+		ZEHYkzULFbGxsUGSJGxtbbG9vY2UMgiT8IEJUPMY1U64fzBEN3xEO0B1IpK2RB41iWp/uVGr
+		aYpSscT6+rqxu7s7bjQafx4XWh8J/i8HqLhpKqUCxUwWJ0lI2t308MJCdTkznXkJi3kQD2xt
+		fX77p9vf/AuP8nHqvDdJKQAAAABJRU5ErkJggg==
 	}]
 
-	set docOpen [image create photo -data {
+	set databaseOpen [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABHNCSVQICAgIfAhkiAAAAAlw
 		SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA
 		AAIASURBVDiNpZPPS1RRFMc/9933xgpMs/xRM1BuWgQRBAURBEHQrk0RGAQtohKKCHIX7luE
@@ -4444,7 +4451,7 @@ namespace eval 22x22 {
 		RU5ErkJggg==
 	}]
 
-	set docOpen [image create photo -data {
+	set databaseOpen [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAABHNCSVQICAgIfAhkiAAAAAlw
 		SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA
 		AAOfSURBVDiNtZPNa1xVGMZ/77l35t6ZzGQSbBNDPhoVxBYmfhQNIqhkoahYLFTUhWDtQnSv
@@ -4512,7 +4519,7 @@ namespace eval 22x22 {
 		pKZs6fAfSIiHLPOtQtgAAAAASUVORK5CYII=
 	}]
 
-	set docNew [image create photo -data {
+	set databaseNew [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAEwklEQVQYGXXBSWhdVQCA4f/c
 		e+7wxry8DM3YGpU2KlrnEREcwJ1YENeCuHApCE4rdSMIbhTUjcNKXLgRRVBQ6wCKdmEHTRTb
 		pkma5CV5eUPuu/ecc88xkVtQ0O8T/Ad3BYKHLmswOz9JpTmKDGvgJNZYVJLS326zee4ip8+3
@@ -4539,20 +4546,31 @@ namespace eval 22x22 {
 		EIAxufnJKPO2s3z6FwjbXeQjndONAAAAAElFTkSuQmCC
 	}]
 
-	set docNewAlt [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAQAAABuvaSwAAACe0lEQVQYGQXBv4tbdQAA8M97
-		75vkvSTnpWe4Xj3PH1iotlRpKQiKFYuDq0MVOggu/gV18ccsQlEQXFwEdwcXEVycxKGbPwqt
-		9NCTNmdyXtNcLsn76ecTAfBudHGweSodJmtCUxfLxeH0/t74kxyACPh6sPPqxhvphbDd9NNW
-		Ga+aqqqWq/Hs9uFPd3/Yv/1ZAxF8e2nn0/WXO50YsUzhWK1UKPzb7O75/ODLjwpi3g799/tX
-		os5SLpc7tlSr1OiJo80nwoe98xCzHnaHE4VSIUIj6GiLVCqpxqo/OwGBfrNbzZx2QiaVaqG0
-		sJCbmDtwEB0lEIjrppj608C6NZm+RKGUW5iamiqbqIKYG+Xhr3Udo1KqFWpBrFEhFlvdnfwN
-		Ac301lo+S9u6Yi2pDJFCpLRwYP+3n/+BAK+fH6QTE2OpnkzQyB2bK6RO2n7uTO+DBQFGYc0r
-		ZiaO1KgQ9AUtwcJfnf9aEOCoumNh6BFbulKFRmHhgYmxiXm2PPXO+JsygQuXs8uxRq1SKlRy
-		x0buGJkj7pWbxez5UQL5YHhl0Ovq6ujIZBJTt1R2bNs0iNvPlheXowTeOrN5bRoeWsmVKrWH
-		/jD3lLarzrkpRPFwOQzwePfJdsuRY/vuiwWVfc+orcADjSqKXwwwrldOOyszE4klHvpO5Bom
-		Wq7jujwLsBSaPYUNbamOWKWQg0gNVhoBfslfWG70KrmWRixo6Zn72NQXeE+kQ5HAvcP9dL4d
-		ddtJR6orE5ka6ep4DT9qiRS/R4Cus/1LW+dO7gw3Bt1uUtSzpP3Y8NE0XqoEleW95Y0IALRk
-		ulKJer1+6emtq503o60mUpY3i6+a7/8HzIgM+lUFKCoAAAAASUVORK5CYII=
+	set databaseNewAlt [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAEy0lEQVQ4y3XVzYscRRzG8W/1
+		2/S89LxlZzOzL5pNMFkVX2LexCBCICDkEDSI5CiIh9y9qCdJDoJgDioqgkEPgoe9KRGExIAe
+		JAlqYuKuwWw22ffd2Z2d2Z7uruoqD5uMbKL1B3zqqaqHXwn+Y5kdCI5uKzM82iBf7cPxAjAO
+		WmmSMKLTXGFpcpY/bi2Kb0n+yxCbwHf3l9n17As0hl4kV96NmxtE2wUC4yJTi440pHGKCiOi
+		1UWWlyZYmDjP1XNnGdcT4jzmAdh8eHQvo8+9R9/QQbJ+BkeDpcCRUJIQK1iVoBUkEiIFsYQ7
+		Pxuunb2N4ANu8pH4EgngAHT7cUy19qYoVw7htCFaBl+BuAuFEqTc2EgrEAq8GPonof2TYCcP
+		mSneNn1cAC734KlRnPrEhb5CycYa3AJGg5KQl2DfBQsSjAQZQ7gCySRkpqAiYRHiLoVWh8q9
+		G3AAdM0yi+MTabczQ+mpQbytZUTgI4wFRQ05CU4X4jZEK5C0MF0FdyBdhXAGWguIqIW9CRY2
+		2hgh15sd1NVx/CXI9AvcqsAqCazIgKMhBmLQXUhbkCxCvABxE5TCCIv0HmwBjH4j1K02V5RB
+		Cxs0kKSGRGukSVGxRhvQGVAuSEBqSAVgg3BgTfH3Xy2mNiWG1FyVlesLTi0ZiFt+Q7YokeA4
+		GssHuwBWcaNDwgIdQ2pDmFosKo/pTpb5VXl17HLnzn0wvPZ8/xPTI0/64501JheWscfXyE6H
+		5IoJmUBheRqMQUYQrVmEazZJ4uBlXYaHXPZXOo++Wu/kC5/S3QSv377pbOtL2X64QbuVYWUu
+		YK3jsW4nJK5EpQqBwnVTgkATDGrKRJRNiLuS0pqOM7NN3AcSr7dlmv5+g1I0RXkoy5aagxgG
+		U1FQTDGJQmgNXQ0tzdStCpduNmgua2bmi+iuyi5Vbjb2nOwsXnpHqR68HNFtaEhWEoSb4KXg
+		xCDWQQQgPECBCuGXiQE+/nY3aRrgOBuEUqoRdYbfyhQvfrHn5MKFXu/WFeX+Wv5QuWLns0WF
+		F4BVAFEASkB543xfnz/EV9+PUijUqNfrVCoVgiAgCAIr4/mj7lztmSRK5nqJX9+X1+2H9gXn
+		1jXB7XlqcYtqGFGIJF6aYitNHBp++KWIn8lSLpcxxnDq1CkATpw4gRDCCoJgNF4YfaMHP1WP
+		ct72FW81P8K0yrIkO8zOhcj5GO0mkElpRjarTWg0ciRJgta6NxnDMEQIgdZaCCEO9ODmjNZ+
+		coXq7mkGDlQxJRe1pJGuJPUkxpP8emMLP543GGM4ffo0ALOzs3iex5kzZwA4duwYUspsD15L
+		wG5p0/5zCS2X8AcsMlkLvyCgYABDe34QrTVKqV5Sy7I2JVdKYYz5t26fXDPJyzuJnh4gb0kg
+		1JDR/5bSh0eGJ7GcOlJKjh8/ThzHjI2NAXDkyBGEELiuixBC9uDPx/n5UpPPDrc4dvAJGjsF
+		bn8WciVwsmCVYHhkkUoVOq11crlcr2oAruti272SXRf3fVU54LFqnr0jdR4fqjPcv5VqsUYu
+		E2CrBP3bxICdxLsGqtXqFt/3rXuP6DgOaZoSRdFMHMfvC/5/uUD27mb+xhxD+zX0rv0Pj2wV
+		O17xrcJLQP3uF6eUUhellJ8ZY777BynPVWNbOXv+AAAAAElFTkSuQmCC
 	}]
 
 	set add [image create photo -data {
@@ -6689,7 +6707,7 @@ namespace eval 32x32 {
 		RCLt73G32/WAw5/F3+l0SrZtLyq/eYIyRBfuA/43LqIG1lvyQUYAAAAASUVORK5CYII=
 	}]
 
-	set docOpen [image create photo -data {
+	set databaseOpen [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABHNCSVQICAgIfAhkiAAAAAlw
 		SFlzAAAN1wAADdcBQiibeAAAABl0RVh0U29mdHdhcmUAd3d3Lmlua3NjYXBlLm9yZ5vuPBoA
 		AAXgSURBVFiFxZddaKRXGcd/z/sx38nM5GOa1DWbbtLSJRGlInjjsjcq6IVWtFK6FqlYEFl7
@@ -6788,7 +6806,7 @@ namespace eval 32x32 {
 		FnPWUULr8BebViFPlQjz0wAAAABJRU5ErkJggg==
 	}]
 
-	set docNew [image create photo -data {
+	set databaseNew [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABmJLR0QAAAAAAAD5Q7t/AAAI
 		W0lEQVQYGQXBWaim50EA4Of9vu/f/7PNmS2TSWayNct0kmhqY9WUutyIoCgEiwuId/Gi3tgL
 		iy0IllwovdPeWqhQGyoiFkuxlZTWYpZWk0zSLJNtJjNz5uzLf/7lexefJwAAAAAAQOmpXdJ1
@@ -6832,29 +6850,49 @@ namespace eval 32x32 {
 		f1G/qqoHq379pSD8XggBQClFLvl7aRG/XNfVCy9/MU/+H1x3OT/HJIx3AAAAAElFTkSuQmCC
 	}]
 
-	set docNewAlt [image create photo -data {
-		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAQAAADZc7J/AAAERElEQVQYGQXBwYtcZwEA8N/3
-		vTfvzc7M7ia7STaJSZpipLExQrHYIvSgPcWDUlGo14KIF/GgN+mlloKCf4IXBaEgngRrrMce
-		DFUwoYZIJYYmu9nNJrszs7Mz8977Pn+/AAAAvFGcq05WZREDTTde7izfbwEAgAAA/GLt0pX1
-		64MvVpfLzWIYq07WNt1s8Wz+4Pjuwe39ex8//WMGgADwg/i1q+ffOHVj7cXeei8mSa02tZRl
-		WXKcJ9Ppf7b/uvuH2T/faQAC8N7o2o8v/mh0oaenFZSSvtrUHEmn0eoEd+3ux9/N3/vZY6AA
-		fviTy++snwgarajRCpLGXNLptJKkMLNrY9B/dTH8xgc3E0R4q45fL8qFpNNqREkrSaIoCqKg
-		csKKM0aOFa8VJ4ASivC/3prTgk5AUEoyCqUkaXVajaR0IJjXez2ghDW7+R++4Lw+sqxSigoZ
-		nYVjC9kzndbSoadFWwAlFCm3Bz7x2ClDQ7VKz0jUWGg1GtHMzMIzT00kEVCCrKEz1RkaGKjV
-		jtSyTtJpLBybmTnWCSQJiPDLdvkwiKKIpNPpNOYaSdbpJESFQhTlnekRUADLdu2V9c1apVKp
-		1Pr6Bgb6ShFZ0ml1lp48vvOr39+SoQQ256E/1olqQRQFUVQgiQoRydKhXXvaHQkogW++dO7i
-		vm0P7VixZmRkoBLRmjsyceBIkK27tJW+cvPPQAnMhyte8lWPPPDUnseSUgZZlhVqqzZVNhza
-		3gAogWf535JrNpzTmmpRaAQZlKIkq4wde+RZCVAC2rF7DpxSG9rCUF8jyTqNhbmFpbEn9hzK
-		AEogtUHnUGvk2JHKTF9GlrSWFmaOTEwtoQOIwPY0NUEQZEmr05hLoNNqNRozUxMzc3u9754B
-		ChDur6x//tTlQahVeio9PbW+SkSWLE08tOPAQqu7UK9c/exL4zupAC4Ozn+vurBAT61S6an0
-		1YIkaey4peea615w2eZq+9r8W/n29fsBePvL5/4WNh840tM3NDAyNNCTHBvb9pkrrmgsNbKo
-		s+PuXvN6CaSiH8/7nENLUwf27CAoFDpzCxueN5d8H39xTzBwdnP75yUw9yku2bJh5lCSZUR0
-		HvnEltbMDHT29dGL4dslENtl+q+xi2qlSqFUKJSy1p4Dz5l4C3DDDb9xV6YugXFcxcKOmaGe
-		Wk+lEGWdCZIFADjrlkoWgY9WJk0QRFkSQFAoFMiSpcYHPgR3/Ml9ZJTAv57Mb7+6dTUUClGh
-		1FOpFToM1SZWvK/1Oj5y06qRiAIw2X/06WDnxPFKEWu1WqW2ohYkrbEnhtYMrXpk376BKFl8
-		HABEZ70cX1m7tvXc2c3Tw9PVyXIt9rTG6aB9kvuj86FvYc9C30Ap2Z91bwYAQG3daWdsOGmk
-		FmQLk8Hs5Ref/+mJ/ggJnSPTaXrXrwMAAACiALLEm/34QvW27wSQ5Q+bd4u///bo/7G96lqa
-		rs/iAAAAAElFTkSuQmCC
+	set databaseNewAlt [image create photo -data {
+		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
+		Y0XnEJoaoQAAAABJRU5ErkJggg==
 	}]
 
 	set logo [image create photo -data {
@@ -7834,9 +7872,9 @@ set iconRepeat		[makeStateSpecificIcons [set [namespace current]::16x16::repeat]
 set iconBlackPawn	[makeStateSpecificIcons [set [namespace current]::16x16::blackPawn]]
 set iconSetup		[makeStateSpecificIcons [set [namespace current]::16x16::setup]]
 
-set toolbarDocNew						[makeToolbarIcon docNew]
-set toolbarDocNewAlt					[makeToolbarIcon docNewAlt]
-set toolbarDocOpen					[makeToolbarIcon docOpen]
+set toolbarDocNew						[makeToolbarIcon databaseNew]
+set toolbarDocNewAlt					[makeToolbarIcon databaseNewAlt]
+set toolbarDocOpen					[makeToolbarIcon databaseOpen]
 set toolbarDocSave					[makeToolbarIcon disk]
 set toolbarDocClose					[makeToolbarIcon close]
 set toolbarDocumentNew				[makeToolbarIcon documentNew]

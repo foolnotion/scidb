@@ -104,6 +104,15 @@ kingPawnSquare(sq::ID pawn, sq::ID king, sq::ID queen, bool toMove)
 void
 board::base::initialize()
 {
+#ifdef BROKEN_LINKER_HACK
+	static bool initialized = false;
+
+	if (initialized)
+		return;
+
+	initialized = true;
+#endif
+
 	static Byte const RotateL90[64] =
 	{
 		h1, h2, h3, h4, h5, h6, h7, h8,

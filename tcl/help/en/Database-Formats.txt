@@ -30,6 +30,26 @@ recommended because of speed and feature completeness considerations.
 </p>
 
 <p>
+Only Scidb's format (and PGN format) is storing games of various chess variants,
+currently this is:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
+    <tr><td>Normal Chess      </td><td>(including Chess 960, Shuffle Chess)</td></tr>
+    <tr><td>Crazyhouse        </td><td></td></tr>
+    <tr><td>Antichess         </td><td>(Suicide, Giveaway)</td></tr>
+    <tr><td>Losers Chess      </td><td>(variant of Antichess)</td></tr>
+    <tr><td>Three-Check Chess </td><td></td></tr>
+  </table>
+</box>
+
+</p>
+A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
+is an exception).
+</p>
+
+<p>
 Scidb databases are always encoded with character set <nobr>UTF-8</nobr>. Hence
 these databases can be used without any complications under all systems
 and locations.

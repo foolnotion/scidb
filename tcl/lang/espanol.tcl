@@ -782,6 +782,8 @@
 ::pgn::setup::mc::RevertSettings					"Volver a la configuración inicial"
 ::pgn::setup::mc::ResetSettings					"Volver a la configuración original"
 ::pgn::setup::mc::DiscardAllChanges				"¿Desea descartar todos los cambios realizados?"
+::pgn::setup::mc::ThreefoldRepetition			"Threefold move repetition" ;# NEW
+::pgn::setup::mc::FiftyMoveRule					"50 move rule" ;# NEW
 
 ::pgn::setup::mc::Setup(Appearance)				"Apariencia"
 ::pgn::setup::mc::Setup(Layout)					"Disposición"

@@ -24,6 +24,10 @@ TITLE Il Selezionatore di Database
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
 Il database attivo sarà evidenziato con uno sfondo giallo.
+<NEW>
+All databases not belonging to the chess variant of the active
+database are disabled (white background).
+</NEW>
 </p>
 
 <p>
@@ -36,6 +40,9 @@ Fuinzionalità del selezionatore di Database:
 
 <ul>
   <li><a href="#Administration">Amministrazione</a></li>
+<NEW>
+  <li><a href="#Maintenance">%::application::database::mc::FileMaintenance%</a></li>
+</NEW>
   <li><a href="#DND">Trascinamento (Drag &amp; Drop)</a></li>
 </ul>
 
@@ -59,11 +66,6 @@ in altri formati database o documenti.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileImport(pgn)%</menuitem>
-Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
-</p>
-
-<p>
 <menuitem>%::application::database::mc::FileImport(db)%</menuitem>
 I database da importare saranno selezionati con la
 <a href="File-Selection-Dialog.html">interfaccia di selezione del file</a>.
@@ -72,28 +74,22 @@ selezionare più database allo stesso tempo.
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileCreate%</menuitem>
-Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
-La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
-si aprirà per permettere la selezione del name dell'archivio.
+<menuitem>%::application::database::mc::FileImport(pgn)%</menuitem>
+Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
 </p>
+
+<NEW>
+<p>
+<menuitem>%::application::database::mc::FileMaintenance%</menuitem>
+This sub-menu provides functionality for the maintenance of databases
+(<see/> <a href="#Maintenance">%::application::database::mc::FileMaintenance%</a>).
+</p>
+</NEW>
 
 <p>
 <menuitem>%::application::database::mc::FileClose%</menuitem>
 Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
 <note/>Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Seleziona un'icona per il database.
-<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::EditDescription%</menuitem>
-Crea o cambia la descrizione per questo database.
-<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
 </p>
 
 <p>
@@ -105,11 +101,6 @@ Questa possibilità è disponibile solo per database nei formati Scidb e Scid (<
 </p>
 
 <p>
-<menuitem>%::application::database::mc::FileNew%</menuitem>
-Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
-</p>
-
-<p>
 <menuitem>%::application::database::mc::FileOpen%</menuitem>
 Apre un altro database.
 </p>
@@ -118,6 +109,21 @@ Apre un altro database.
 <menuitem>%::application::database::mc::FileOpenRecent%</menuitem>
 Apre un database dallo storico dei database aperti.
 </p>
+
+<p>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
+Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
+<NEW>
+If the database should store games of any chess variant please use the next menu item.
+</NEW>
+</p>
+
+<NEW>
+<p>
+<menuitem>%::application::database::mc::FileNew%</menuitem>
+Create a new database of any chess variant. Only Scidb databases
+can be created in this case.
+</NEW>
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>
@@ -136,6 +142,57 @@ Apri la finestra di aiuto riguardante il selezionatore di database.
 <note/>Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
 
+<NEW>
+<h3 id="Maintenance">%::application::database::mc::FileMaintenance%</h3>
+
+<p>
+This sub-menu provides functionality for the maintenance of databases.
+</p>
+</NEW>
+
+<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+
+<p>
+<menuitem>%::application::database::mc::ChangeIcon%</menuitem>
+Seleziona un'icona per il database.
+<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::EditDescription%</menuitem>
+Crea o cambia la descrizione per questo database.
+<note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
+</p>
+
+<NEW>
+<p>
+<menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
+Not yet implemented.
+</p>
+
+<p>
+<menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
+Not yet implemented.
+</p>
+</NEW>
+
+<NEW>
+<p id="Compact">
+<menuitem>%::application::database::mc::FileCompact%</menuitem>
+Compact this database, this means that all games marked for deletion
+wil be deleted physically. You cannot revert this action. This menu
+item is disabled if the database does not contain any game with a
+deletion marker.
+</p>
+</NEW>
+
+<p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
+La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
+si aprirà per permettere la selezione del name dell'archivio.
+</p>
+
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 
 <p>
@@ -144,6 +201,20 @@ Il database può essere aperto con il trascinamento di una lista URI. Se una lis
 uno sfondo colorato sarà indicherà che il trascinamento di questo elemento è possibile.
 In questo modo potrai parire i database con l'aiuto di un gestore file esterno.
 </p>
+
+<NEW>
+<p>
+The list of files may also be dropped over a database field. In this case 
+the games will be copied into the destination database.
+</p>
+
+<p>
+To copy all games (of one chess variant) of one database to another, drag the
+games while holding the left mouse button and drop the games into the destination
+field. It is required that the destination database is writeable and not disabled.
+This is an important way to manage and copy games within databases.
+</p>
+</NEW>
 
 END
 

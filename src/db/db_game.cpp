@@ -74,7 +74,11 @@ typedef mstl::hash<uint64_t,PositionBucket> RepetitionMap;
 
 
 static void
-checkThreefoldRepetitions(Board board, RepetitionMap map, variant::Type variant, MoveNode* node)
+checkThreefoldRepetitions(	Board board,
+									RepetitionMap map,
+									variant::Type variant,
+									MoveNode* node,
+									bool haveRepetition)
 {
 	while (true)
 	{
@@ -85,8 +89,15 @@ checkThreefoldRepetitions(Board board, RepetitionMap map, variant::Type variant,
 
 		if (!node->atLineStart())
 		{
-			for (unsigned i = 0; i < node->variationCount(); ++i)
-				checkThreefoldRepetitions(board, map, variant, node->variation(i));
+//			for (unsigned i = 0; i < node->variationCount(); ++i)
+//			{
+//				checkThreefoldRepetitions(
+//					board,
+//					map,
+//					variant,
+//					node->variation(i),
+//					haveRepetition);
+//			}
 
 			board.doMove(node->move(), variant);
 
@@ -104,7 +115,11 @@ checkThreefoldRepetitions(Board board, RepetitionMap map, variant::Type variant,
 			else if (++i->m_count == 3)
 				flag = true;
 
-			node->setThreefoldRepetition(flag);
+			node->setThreefoldRepetition(flag && !haveRepetition);
+			node->setFiftyMoveRule(board.halfMoveClock() == 100);
+
+			if (flag)
+				haveRepetition = true;
 		}
 
 		node = node->next();
@@ -115,7 +130,7 @@ checkThreefoldRepetitions(Board board, RepetitionMap map, variant::Type variant,
 static void
 checkThreefoldRepetitions(Board const& startBoard, variant::Type variant, MoveNode* node)
 {
-	checkThreefoldRepetitions(startBoard, RepetitionMap(), variant, node);
+	checkThreefoldRepetitions(startBoard, RepetitionMap(), variant, node, false);
 }
 
 
@@ -3122,7 +3137,7 @@ Game::updateLine()
 	{
 		m_termination = termination::ThreefoldRepetition;
 	}
-	else if (m_finalBoard.halfMoveClock() >= 50)
+	else if (m_finalBoard.halfMoveClock() >= 100)
 	{
 		m_termination = termination::FiftyMoveRuleExceeded;
 	}

@@ -42,6 +42,28 @@
 
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
 
+<span class="NEW">
+<p>
+Only Scidb's format (and PGN format) is storing games of various chess variants,
+currently this is:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
+    <tr><td>Normal Chess      </td><td>(including Chess 960, Shuffle Chess)</td></tr>
+    <tr><td>Crazyhouse        </td><td></td></tr>
+    <tr><td>Antichess         </td><td>(Suicide, Giveaway)</td></tr>
+    <tr><td>Losers Chess      </td><td>(variant of Antichess)</td></tr>
+    <tr><td>Three-Check Chess </td><td></td></tr>
+  </table>
+</div>
+
+</p>
+A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
+is an exception).
+</p>
+</span>
+
 <p>
 I database Scidb sono sempre codificati con il set caratteri <span style="white-space:nowrap;">UTF-8</span>. Per questo
 i database possono essere usati senza complicazioni su tutti i sistemi e con tutte

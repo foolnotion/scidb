@@ -91,6 +91,8 @@ set HtmlMapping {
 	<dir>				{<ul style="list-style-type: none"><li>}
 	</dir>			{</li></ul>}
 
+	<see/>			&#x21d2;
+
 	<NEW>				{<span class="NEW">}
 	</NEW>			{</span>}
 

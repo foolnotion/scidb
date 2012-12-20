@@ -21,6 +21,9 @@ TITLE Entwicklungsplanung
 <h2>Funktionen für die nächsten Veröffentlichungen</h2>
 
 <ul>
+  <li>Download/Upload/Update von Datenbanken über das Internet</li>
+  <li>Anheftung von Dokumenten an Datenbanken. Der Hauptgrund dafür ist
+      daß ChessBase-datenbanken angeheftete Dokument besitzen.</li>
   <li>Suchfunktionen: Partiedatensuche, Positionssuche, etc.</li>
   <li>Filterfunktionen: Partienfilter, Spielerfilter</li>
   <li>Flexibles Fensterlayout</li>

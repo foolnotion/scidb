@@ -253,6 +253,7 @@ public:
 			Tcl_IncrRefCount(m_board			= Tcl_NewStringObj("board",				-1));
 			Tcl_IncrRefCount(m_comment			= Tcl_NewStringObj("comment",				-1));
 			Tcl_IncrRefCount(m_annotation		= Tcl_NewStringObj("annotation",			-1));
+			Tcl_IncrRefCount(m_states			= Tcl_NewStringObj("states",				-1));
 			Tcl_IncrRefCount(m_marks			= Tcl_NewStringObj("marks",				-1));
 			Tcl_IncrRefCount(m_space			= Tcl_NewStringObj("space",				-1));
 			Tcl_IncrRefCount(m_break			= Tcl_NewStringObj("break",				-1));
@@ -566,6 +567,24 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
+	void states(bool threefoldRepetition, bool fiftyMoveRule) override
+	{
+		mstl::string states;
+
+		if (threefoldRepetition)
+			states += '3';
+		if (fiftyMoveRule)
+			states += 'f';
+
+		Tcl_Obj* objv[2];
+
+		objv[0] = m_states;
+		objv[1] = Tcl_NewStringObj(states, states.size());
+
+		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
+		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+	};
+
 	void marks(bool hasMarks) override
 	{
 		Tcl_Obj* objv[2];
@@ -705,6 +724,7 @@ public:
 	static Tcl_Obj* m_board;
 	static Tcl_Obj* m_comment;
 	static Tcl_Obj* m_annotation;
+	static Tcl_Obj* m_states;
 	static Tcl_Obj* m_marks;
 	static Tcl_Obj* m_space;
 	static Tcl_Obj* m_break;
@@ -761,6 +781,7 @@ Tcl_Obj* Visitor::m_color				= 0;
 Tcl_Obj* Visitor::m_board				= 0;
 Tcl_Obj* Visitor::m_comment			= 0;
 Tcl_Obj* Visitor::m_annotation		= 0;
+Tcl_Obj* Visitor::m_states				= 0;
 Tcl_Obj* Visitor::m_marks				= 0;
 Tcl_Obj* Visitor::m_space				= 0;
 Tcl_Obj* Visitor::m_break				= 0;

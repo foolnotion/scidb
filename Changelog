@@ -1,6 +1,12 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #585)
+------------------------------------------------------------------------------
+* Broken linker hack again - another workaround. I decided to switch this hack
+on per default. All newer versions of the GNU linker are broken.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #577)
 ------------------------------------------------------------------------------
 * Analysis window: "Add move", "Add variation" and "Add all variations"

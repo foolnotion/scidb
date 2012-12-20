@@ -46,7 +46,7 @@ so wird nur die Markierung für <em>%::gametable::mc::GameFlags(I)%</em> angezeig
 <p>
 Es gibt noch eine weitere besondere, nicht vom Benutzer einstellbare Markierung,
 die Lösch-Markierung. Eine Partie mit diesem Flag ist zur Löschung vorgemerkt,
-und die Partie wird erst entfernt, wenn die Datenbank komprimiert wird (siehe
+und die Partie wird erst entfernt, wenn die Datenbank komprimiert wird (<see/>
 <a href="Database-Switcher.html#Compact">Datenbankumschalter:
 %::application::database::mc::FileCompact%</a>).
 </p>

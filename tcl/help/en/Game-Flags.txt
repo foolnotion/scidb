@@ -45,7 +45,7 @@ the marker <em>%::gametable::mc::GameFlags(I)%</em> will be displayed.
 <p>
 There exists another special marker which is not user-settable, the deletion
 marker. A game marked thus will be removed when next the database is compacted
-(see <a href="Database-Switcher.html#Compact">Database switcher:
+(<see/> <a href="Database-Switcher.html#Compact">Database switcher:
 %::application::database::mc::FileCompact%</a>).
 </p>
 

@@ -34,7 +34,7 @@ der Suchergebnisse als eine eigenständige Database.
    
 <p>
 The Clipbase cannot be closed. It exists a menu function for emptying the Clipbase
-(see <a href="Database-Switcher.html#Empty-Clipbase">
+(<see/> <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 

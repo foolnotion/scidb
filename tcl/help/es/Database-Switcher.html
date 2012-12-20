@@ -43,6 +43,10 @@
 <p>
 El intercambiador de bases de datos provee una navegación fácil entre las bases de datos.
 La base de datos activa se resaltará con un trasfondo amarillo.
+<span class="NEW">
+All databases not belonging to the chess variant of the active
+database are disabled (white background).
+</span>
 </p>
 
 <p>
@@ -56,6 +60,9 @@ Funciones del intercambiador de bases de datos:
 
 <ul>
   <li><a href="#Administration">Administración</a></li>
+<span class="NEW">
+  <li><a href="#Maintenance">Maintenance</a></li>
+</span>
   <li><a href="#DND">Arrastrar &amp; Soltar</a></li>
 </ul>
 
@@ -96,38 +103,19 @@ select multiple databases simultaneously.
 </p>
 </span>
 
+<span class="NEW">
 <p>
-<span class="menuitem">Crear Archivo</span>
-Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
-Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
-para seleccionar un nombre de archivo.
+<span class="menuitem">Maintenance</span>
+This sub-menu provides functionality for the maintenance of databases
+(&#x21d2; <a href="#Maintenance">Maintenance</a>).
 </p>
+</span>
 
 <p>
 <span class="menuitem">Cerrar</span>
 La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
 se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
 <br/><img src="../images/note.png" alt="note" /> No es posible cerrar la <a href="Clipbase.html">Base temporal</a>.
-</p>
-
-<p id="Compact">
-<span class="menuitem">Compactar</span>
-Compactará la base de datos actual; esto significa que todas las partidas
-marcadas para su eliminación se borrarán físicamente y no podrá revertir
-esta acción. Este ítem no está habilitado si la base de datos no contiene
-ninguna partida con un marcador de eliminación.
-</p>
-
-<p>
-<span class="menuitem">Cambiar ícono</span>
-Selecciona un ícono para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
-</p>
-
-<p>
-<span class="menuitem">Editar Descripción</span>
-Crea o cambia la descripción para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
 <p>
@@ -137,12 +125,6 @@ Esto sólo es posible para las bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
 <br/><img src="../images/note.png" alt="note" /> Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
 <br/><img src="../images/note.png" alt="note" /> La <a href="Clipbase.html">Base temporal</a> no puede establecerse como de sólo-lectura.
-</p>
-
-<p>
-<span class="menuitem">Nueva Base</span>
-Crea una nueva base de datos. Sólo pueden crearse bases Scidb y Scid
-(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
 </p>
 
 <p>
@@ -156,9 +138,32 @@ Abre una base de datos a través del historial de bases de datos.
 </p>
 
 <p>
+<span class="menuitem">Nueva Base</span>
+Crea una nueva base de datos. Sólo pueden crearse bases Scidb y Scid
+(<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
+<span class="NEW">
+If the database should store games of any chess variant please use the next menu item.
+</span>
+</p>
+
+</span>
+<p>
+<span class="menuitem">Nueva Base</span>
+Create a new database of any chess variant. Only Scidb databases
+can be created in this case.
+</span>
+
+<p>
 <span class="menuitem">Tamaño del símbolo</span>
 Selecciona el tamaño de los símbolos de base de datos.
 </p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Ayuda con el Cambiador de Bases de Datos</span>
+Open the help dialog about the database switcher.
+</p>
+</span>
 
 <ul style="list-style-type: none"><li><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></li></ul>
 
@@ -166,6 +171,55 @@ Selecciona el tamaño de los símbolos de base de datos.
 Vaciar Base temporal</span>
 <br/><img src="../images/note.png" alt="note" /> Esta entrada de menú sólo se proporcionará para la
 <a href="Clipbase.html">Base temporal</a>.
+
+<span class="NEW">
+<h3 id="Maintenance">Maintenance</h3>
+
+<p>
+This sub-menu provides functionality for the maintenance of databases.
+</p>
+</span>
+
+<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+
+<p>
+<span class="menuitem">Cambiar ícono</span>
+Selecciona un ícono para esta base.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
+</p>
+
+<p>
+<span class="menuitem">Editar Descripción</span>
+Crea o cambia la descripción para esta base.
+<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
+</p>
+
+<span class="NEW">
+<p>
+<span class="menuitem">Strip Move Information</span>
+Not yet implemented.
+</p>
+
+<p>
+<span class="menuitem">Strip PGN Tags</span>
+Not yet implemented.
+</p>
+</span>
+
+<p id="Compact">
+<span class="menuitem">Compactar</span>
+Compactará la base de datos actual; esto significa que todas las partidas
+marcadas para su eliminación se borrarán físicamente y no podrá revertir
+esta acción. Este ítem no está habilitado si la base de datos no contiene
+ninguna partida con un marcador de eliminación.
+</p>
+
+<p>
+<span class="menuitem">Crear Archivo</span>
+Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
+Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
+para seleccionar un nombre de archivo.
+</p>
 
 <h3 id="DND">Arrastrar &amp; Soltar</h3>
 
@@ -175,6 +229,20 @@ Si se arrastra una lista URI (lista de archivos) &ndash; o un único archivo &nd
 intercambiador de bases de datos, un trasfondo coloreado indicará que es posible soltar dicho ítem. 
 De esta manera usted podrá abrir bases de datos con la ayuda de un administrador de archivos externo.
 </p>
+
+<span class="NEW">
+<p>
+The list of files may also be dropped over a database field. In this case 
+the games will be copied into the destination database.
+</p>
+
+<p>
+To copy all games (of one chess variant) of one database to another, drag the
+games while holding the left mouse button and drop the games into the destination
+field. It is required that the destination database is writeable and not disabled.
+This is an important way to manage and copy games within databases.
+</p>
+</span>
 
 </body>
 </html>

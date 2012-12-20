@@ -778,6 +778,8 @@
 ::pgn::setup::mc::RevertSettings					"Revert to initial settings"
 ::pgn::setup::mc::ResetSettings					"Reset to factory settings"
 ::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?"
+::pgn::setup::mc::ThreefoldRepetition			"Threefold move repetition"
+::pgn::setup::mc::FiftyMoveRule					"50 move rule"
 
 ::pgn::setup::mc::Setup(Appearance)				"Appearance"
 ::pgn::setup::mc::Setup(Layout)					"Layout"

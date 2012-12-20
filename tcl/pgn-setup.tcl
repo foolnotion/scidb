@@ -39,6 +39,8 @@ set Spaces							"spaces"
 set RevertSettings				"Revert to initial settings"
 set ResetSettings					"Reset to factory settings"
 set DiscardAllChanges			"Discard all applied changes?"
+set ThreefoldRepetition			"Threefold move repetition"
+set FiftyMoveRule					"50 move rule"
 
 set Setup(Appearance)			"Appearance"
 set Setup(Layout)					"Layout"
@@ -281,6 +283,7 @@ proc configureText {path {fontContext ""}} {
 	$w tag configure result -foreground  $Colors(foreground:result)
 	$w tag configure empty -foreground $Colors(foreground:empty)
 	$w tag configure illegal -foreground $Colors(foreground:illegal)
+	$w tag configure state -foreground $Colors(foreground:illegal)
 
 	if {$context eq "editor"} {
 		$w tag configure main -font $::font::text($fontContext:$bold)
@@ -672,6 +675,11 @@ proc InitText {path} {
 		$w tag bind nag$k <Any-Leave> [namespace code [list Tooltip $w hide]]
 	}
 
+	$w tag bind threefold <Any-Enter> [namespace code [list Tooltip $w threefold]]
+	$w tag bind threefold <Any-Leave> [namespace code [list Tooltip $w hide]]
+	$w tag bind fifty     <Any-Enter> [namespace code [list Tooltip $w fifty]]
+	$w tag bind fifty     <Any-Leave> [namespace code [list Tooltip $w hide]]
+
 	$w tag bind illegal <Any-Enter> [namespace code [list Tooltip $w illegal]]
 	$w tag bind illegal <Any-Leave> [namespace code [list Tooltip $w hide]]
 
@@ -683,8 +691,10 @@ proc Tooltip {path nag} {
 	variable ::annotation::mc::Nag
 
 	switch $nag {
-		hide		{ ::tooltip::hide }
-		illegal	{ ::tooltip::show $path $::browser::mc::IllegalMove }
+		hide			{ ::tooltip::hide }
+		illegal		{ ::tooltip::show $path $::browser::mc::IllegalMove }
+		threefold	{ ::tooltip::show $path $mc::ThreefoldRepetition }
+		fifty			{ ::tooltip::show $path $mc::FiftyMoveRule }
 		
 		default {
 			if {[info exists Nag($nag)]} {
