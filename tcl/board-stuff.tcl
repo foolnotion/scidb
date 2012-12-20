@@ -766,7 +766,7 @@ proc Build {w} {
 		set x [expr {$col*$size}]
 		set y [expr {(7 - $row)*$size}]
 		set k [expr {$flip ? 63 - $i : $i}]
-		set color [expr {($row + $col) % 2 ? "lite" : "dark"}]
+		set color [expr {($row + $col) % 2 ? "dark" : "lite"}]
 		$w.c delete square:$k
 		$w.c delete selected:$k
 		$w.c delete suggested:$k

@@ -6,6 +6,11 @@ Scidb 1.0 BETA (rev. #585)
 * Broken linker hack again - another workaround. I decided to switch this hack
 on per default. All newer versions of the GNU linker are broken.
 
+* Game editor now shows some special annotation for the following states:
+- "3x" if threefold repetition is detected (this will be flagged only one
+  time)
+- "50" if the fifty move rule is reached (every time the count is 50)
+
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #577)
 ------------------------------------------------------------------------------
