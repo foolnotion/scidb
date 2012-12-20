@@ -63,9 +63,6 @@ void backtrace::text_write(ostringstream&, size_t) const {}
 #  include <fcntl.h>
 #  include <errno.h>
 #  include <sys/socket.h>
-
-// avoid warning "Attempt to use kernel headers from user space", what a nonsense!
-#  define __KERNEL__
 #  include <sys/wait.h>
 
 #  define USE_GDB	// addr2line is not working properly (wrong line numbers)
