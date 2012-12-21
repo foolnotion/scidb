@@ -868,9 +868,10 @@ proc Add {toolbar widgetCommand args} {
 	if {[string match *spinbox $widgetCommand]} { set variable {} }
 
 	eval $widgetCommand $w [array get options]
+
 	if {[winfo class $w] eq "Button"} {
-		set Specs(active:$w:$toolbar) [$w cget -activebackground]
 		set Specs(command:$w:$toolbar) [$w cget -command]
+		set Specs(active:$w:$toolbar) [$w cget -activebackground]
 		set Specs(button1:$w:$toolbar) ::tooltip::hide
 		set Specs(entercmd:$w:$toolbar) {}
 		if {[$w cget -state] eq "normal"} {

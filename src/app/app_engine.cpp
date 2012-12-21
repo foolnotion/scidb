@@ -397,6 +397,7 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_maxSkillLevel(0)
 	,m_maxMultiPV(1)
 	,m_wantedMultiPV(1)
+	,m_usedMultiPV(1)
 	,m_lines(1, MoveList())
 	,m_hashFullness(0)
 	,m_hashSize(0)
@@ -589,7 +590,7 @@ Engine::setSkillLevelRange(unsigned minLevel, unsigned maxLevel)
 void
 Engine::reorderVariations(unsigned currentNo)
 {
-	if (m_wantedMultiPV > 1)
+	if (m_usedMultiPV > 1)
 	{
 		switch (m_ordering)
 		{
@@ -608,23 +609,24 @@ Engine::setScore(unsigned no, int score)
 
 	int bestScore = m_bestScore;
 
+	m_usedMultiPV = mstl::max(no + 1, m_usedMultiPV);
 	m_scores[no] = score;
 	m_mates[no] = 0;
 
 	if (color::isWhite(currentBoard().sideToMove()))
 	{
-		m_bestScore = *mstl::max_element(m_scores, m_scores + m_wantedMultiPV);
+		m_bestScore = *mstl::max_element(m_scores, m_scores + m_usedMultiPV);
 
-		if (m_shortestMate < 0 || *mstl::max_element(m_mates, m_mates + m_wantedMultiPV) == 0)
+		if (m_shortestMate < 0 || *mstl::max_element(m_mates, m_mates + m_usedMultiPV) == 0)
 			m_shortestMate = 0;
 
 		m_sortScores[no] = score;
 	}
 	else
 	{
-		m_bestScore = *mstl::min_element(m_scores, m_scores + m_wantedMultiPV);
+		m_bestScore = *mstl::min_element(m_scores, m_scores + m_usedMultiPV);
 
-		if (m_shortestMate > 0 || *mstl::min_element(m_mates, m_mates + m_wantedMultiPV) == 0)
+		if (m_shortestMate > 0 || *mstl::min_element(m_mates, m_mates + m_usedMultiPV) == 0)
 			m_shortestMate = 0;
 
 		m_sortScores[no] = -score;
@@ -641,7 +643,7 @@ Engine::setScore(unsigned no, int score)
 
 		m_selection.reset();
 
-		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		{
 			if (m_scores[i] == m_bestScore)
 				m_selection.set(i);
@@ -660,6 +662,7 @@ Engine::setMate(unsigned no, int numMoves)
 
 	int shortestMate = m_shortestMate;
 
+	m_usedMultiPV = mstl::max(no + 1, m_usedMultiPV);
 	m_mates[no] = numMoves;
 
 	int maxNegative	= INT_MIN;
@@ -668,7 +671,7 @@ Engine::setMate(unsigned no, int numMoves)
 	int minPositive	= INT_MAX;
 	int zeroIndex		= -1;
 
-	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 	{
 		int mate		= m_mates[i];
 		int score	= m_scores[i];
@@ -739,7 +742,7 @@ Engine::setMate(unsigned no, int numMoves)
 
 		m_selection.reset();
 
-		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		{
 			if (m_mates[i] == m_shortestMate)
 				m_selection.set(i);
@@ -1183,6 +1186,7 @@ Engine::startAnalysis(db::Game* game)
 		}
 
 		resetInfo();
+		m_usedMultiPV = 0;
 		m_bestIndex = 0;
 		m_bestInfoHasChanged = false;
 		m_selection.reset();
@@ -1271,14 +1275,25 @@ Engine::changeNumberOfVariations(unsigned n)
 					m_map[i] = firstFree;
 				}
 			}
+
+			m_usedMultiPV = mstl::min(n, m_usedMultiPV);
 		}
 		else
 		{
+			int score = color::isWhite(currentBoard().sideToMove()) ? INT_MIN : INT_MAX;
+
+			m_lines.resize(n);
+
 			for (unsigned i = m_wantedMultiPV; i < n; ++i)
+			{
+				m_lines[i].clear();
+				m_sortScores[i] = INT_MIN;
+				m_scores[i] = score;
+				m_mates[i] = 0;
 				m_map[i] = i;
+			}
 		}
 
-		m_lines.resize(n);
 		m_wantedMultiPV = n;
 
 		if (isActive())
@@ -1429,11 +1444,11 @@ Engine::reorderKeepStable(unsigned currentNo)
 
 	int matchIndex = -1;
 
-	if (m_wantedMultiPV > 1 && !isBestLine(currentNo))
+	if (m_usedMultiPV > 1 && !isBestLine(currentNo))
 	{
 		unsigned matchLength = 0;
 
-		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		{
 			unsigned length = moves.match(m_lines[i]);
 
@@ -1461,18 +1476,18 @@ void
 Engine::reorderBestFirst(unsigned currentNo)
 {
 	Map old, map;
-	::memcpy(old, m_map, sizeof(old[0])*m_wantedMultiPV);
+	::memcpy(old, m_map, sizeof(old[0])*m_usedMultiPV);
 
 	for (unsigned k = 0; k < m_wantedMultiPV; ++k)
 		map[k] = k;
 
-	for (unsigned k = 0, n = m_wantedMultiPV - 1; k < n; ++k)
+	for (unsigned k = 0, n = m_usedMultiPV - 1; k < n; ++k)
 	{
 		unsigned index = k;
 
 		int score = m_sortScores[map[index]];
 
-		for (unsigned i = k + 1; i < m_wantedMultiPV; ++i)
+		for (unsigned i = k + 1; i < m_usedMultiPV; ++i)
 		{
 			int score2 = m_sortScores[map[i]];
 
@@ -1487,14 +1502,14 @@ Engine::reorderBestFirst(unsigned currentNo)
 			mstl::swap(map[index], map[k]);
 	}
 
-	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		m_map[map[i]] = i;
 
-	if (memcmp(m_map, old, sizeof(old[0])*m_wantedMultiPV))
+	if (memcmp(m_map, old, sizeof(old[0])*m_usedMultiPV))
 	{
 		m_useBestInfo = false;
 
-		for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+		for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		{
 			if (i != currentNo && m_map[i] != old[i])
 				updatePvInfo(i);
@@ -1515,6 +1530,8 @@ Engine::setOrdering(Ordering method)
 unsigned
 Engine::insertPV(db::MoveList const& moves)
 {
+	M_REQUIRE(!moves.isEmpty());
+
 	unsigned worstIndex = 0;
 	int worstScore = INT_MAX;
 
@@ -1540,11 +1557,13 @@ Engine::insertPV(db::MoveList const& moves)
 int
 Engine::findVariation(db::Move const& move) const
 {
-	for (unsigned i = 0; i < m_wantedMultiPV; ++i)
+	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 	{
 		MoveList const& moves = m_lines[i];
 
-		if (!moves.isEmpty() && moves.front() == move)
+		M_ASSERT(!moves.isEmpty());
+
+		if (moves.front() == move)
 			return i;
 	}
 
@@ -1561,6 +1580,7 @@ Engine::setVariation(unsigned no, db::MoveList const& moves)
 	if (m_wantedMultiPV > m_maxMultiPV)
 		no = insertPV(moves);
 
+	m_usedMultiPV = mstl::max(m_usedMultiPV, no + 1);
 	m_lines[no] = moves;
 	return no;
 }

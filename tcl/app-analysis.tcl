@@ -120,7 +120,7 @@ proc build {parent width height} {
 	variable Vars
 
 	set Vars(best:0) black
-	if {$Options(engine:bestFirst)} {
+	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
 		set Vars(best:1) black
 	} else {
 		set Vars(best:1) $Defaults(best:foreground)
@@ -491,13 +491,18 @@ proc SetOrdering {tree} {
 	variable Defaults
 	variable Options
 
-	if {$Options(engine:bestFirst)} {
+	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
 		set Vars(best:1) black
-		set order bestFirst
 	} else {
 		set Vars(best:1) $Defaults(best:foreground)
+	}
+
+	if {$Options(engine:bestFirst)} {
+		set order bestFirst
+	} else {
 		set order unordered
 	}
+
 	::scidb::engine::ordering $Vars(engine:id) $order
 
 	if {$Options(engine:bestFirst)} {
@@ -520,9 +525,15 @@ proc EngineLock {args} {
 
 proc SetMultiPV {tree} {
 	variable Vars
+	variable Defaults
 	variable Options
 
 	::scidb::engine::multiPV $Vars(engine:id) $Options(engine:multiPV)
+	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
+		set Vars(best:1) black
+	} else {
+		set Vars(best:1) $Defaults(best:foreground)
+	}
 	Layout $tree
 }
 

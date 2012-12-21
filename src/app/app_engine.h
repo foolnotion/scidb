@@ -519,9 +519,9 @@ private:
 	unsigned				m_maxSkillLevel;
 	unsigned				m_maxMultiPV;
 	unsigned				m_wantedMultiPV;
+	unsigned				m_usedMultiPV;
 	Map					m_map;
 	Variations			m_lines;
-	unsigned				m_numVariations;
 	Scores				m_scores;
 	Scores				m_mates;
 	Scores				m_sortScores;

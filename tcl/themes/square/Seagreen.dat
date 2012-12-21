@@ -3,7 +3,7 @@
   borderline,opacity    {0x50}
   borderline,width      {0.02}
   dark,rotation         {0}
-  dark,solid            {#f1f0ec}
+  dark,solid            {#99b9a1}
   dark,texture          {}
   dark,x1               {0}
   dark,x2               {150}
@@ -18,7 +18,7 @@
   hint,coordinates      {#ffffff}
   identifier            {Seagreen|1355510010833|yellow.color|gregor}
   lite,rotation         {0}
-  lite,solid            {#99b9a1}
+  lite,solid            {#f1f0ec}
   lite,texture          {}
   lite,x1               {0}
   lite,x2               {150}

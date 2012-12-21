@@ -435,7 +435,7 @@ inline
 bool
 Engine::lineIsEmpty(unsigned no) const
 {
-	return no < m_numVariations && m_lines[no].isEmpty();
+	return no < m_wantedMultiPV && m_lines[no].isEmpty();
 }
 
 
