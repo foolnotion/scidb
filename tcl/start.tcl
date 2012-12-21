@@ -73,7 +73,7 @@ if {![file isdirectory $user]} {
 	file mkdir [file join $user log]
 	file mkdir [file join $user photos]
 	file mkdir [file join $user backup]
-	file mkdir [file join $user engines sjeng]
+	file mkdir [file join $user engines]
 	file copy  [file join $share themes] $user
 } else {
 	set setup 0
