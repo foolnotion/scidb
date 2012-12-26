@@ -27,6 +27,8 @@
 #include "tcl_sort.h"
 #include "tcl_base.h"
 
+#include "m_types.h" // for nullptr
+
 #include <tcl.h>
 #include <tk.h>
 #include <string.h>

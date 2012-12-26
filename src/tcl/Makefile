@@ -1617,6 +1617,7 @@ tcl_progress.o: tcl_base.ipp
 tcl_sort.o: tcl_sort.h
 tcl_sort.o: tcl_base.h
 tcl_sort.o: tcl_base.ipp
+tcl_sort.o: ../mstl/m_types.h
 tcl_tree.o: tcl_tree.h
 tcl_tree.o: ../db/db_common.h
 tcl_tree.o: ../util/u_base.h

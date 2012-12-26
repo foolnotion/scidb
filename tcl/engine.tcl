@@ -730,7 +730,8 @@ proc showEngineDictionary {parent} {
 	bind $lb <<HeaderVisit>> [namespace code [list VisitHeader $lb %d]]
 	$lb bind <ButtonPress-3> [namespace code [list PopupMenu $lb %x %y]]
 	set colwd 20
-	$lb addcol text  -id name -headervar [namespace current]::mc::Name
+	$lb addcol image -id country -justify center -headervar [namespace current]::mc::Country
+	$lb addcol text  -id name -headervar [namespace current]::mc::Name -witdh 30
 	$lb addcol text  -id elo -justify right -foreground darkgreen -header "Elo"
 	$lb addcol text  -id ccrl -justify right -foreground darkgreen -header "CCRL"
 	$lb addcol image -id chess960 -width $colwd -header "9" -justify center
@@ -750,8 +751,8 @@ proc showEngineDictionary {parent} {
 		foreach name $engines {
 			set result [::scidb::engine::info $name]
 			if {[llength $result]} {
-				lassign $result _ _ elo ccrl _ _ variants url
-				lappend Priv(engines) [list $name $elo $ccrl $url {*}$variants]
+				lassign $result _ country elo ccrl _ _ variants url
+				lappend Priv(engines) [list $country $name $elo $ccrl $url {*}$variants]
 			}
 		}
 	}
@@ -760,6 +761,7 @@ proc showEngineDictionary {parent} {
 	ResetFilter $lb
 	FillDict $lb
 	$lb resize
+	$lb fixwidth
 
 	grid $lb -row 1 -column 1 -sticky ewns
 	grid rowconfigure $top {1} -weight 1
@@ -1056,7 +1058,7 @@ proc OpenUrl {parent index} {
 	variable Priv
 
 	if {[llength $index] == 0} {
-		set url [lindex $Priv(engines) [lindex $Priv(filter) $Priv(dict:current)] 3]
+		set url [lindex $Priv(engines) [lindex $Priv(filter) $Priv(dict:current)] 4]
 		if {[string length $url]} { ::web::open $parent $url }
 	} else {
 		set Priv(dict:current) $index
@@ -1099,18 +1101,23 @@ proc VisitItem {lb data} {
 	switch $mode {
 		enter {
 			set entry [lindex $Priv(engines) [lindex $Priv(filter) $index]]
-			lassign $entry _ _ _ _ chess960 shuffle threeCheck crazyhouse bughouse suicide giveaway losers
-			set name [string toupper $id 0 0]
-			if {[info exists ::mc::VariantName($name)] && [set $id]} {
-				switch $name {
-					Suicide - Giveaway - Losers {
-						set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
+			lassign $entry country _ _ _ _ chess960 shuffle threeCheck \
+				crazyhouse bughouse suicide giveaway losers
+			if {$id eq "country"} {
+				tooltip::show $lb [::country::name $country]
+			} else {
+				set name [string toupper $id 0 0]
+				if {[info exists ::mc::VariantName($name)] && [set $id]} {
+					switch $name {
+						Suicide - Giveaway - Losers {
+							set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
+						}
+						default {
+							set tip $::mc::VariantName($name)
+						}
 					}
-					default {
-						set tip $::mc::VariantName($name)
-					}
+					tooltip::show $lb $tip
 				}
-				tooltip::show $lb $tip
 			}
 		}
 		leave {
@@ -1133,7 +1140,7 @@ proc PopupMenu {lb x y} {
 	set index [expr {[lindex $item 1] - 1}]
 	$lb select $index
 
-	set url [lindex $Priv(engines) [lindex $Priv(filter) $index] 3]
+	set url [lindex $Priv(engines) [lindex $Priv(filter) $index] 4]
 	if {[string length $url]} {
 		$m add command \
 			-label $mc::OpenUrl \
@@ -1171,13 +1178,13 @@ proc SortEngines {lb} {
 	::widget::busyCursor on
 	switch $Priv(sort) {
 		name {
-			set Priv(engines) [::scidb::misc::sort -dictionary -nopunct -index 0 $Priv(engines)]
+			set Priv(engines) [::scidb::misc::sort -dictionary -nopunct -index 1 $Priv(engines)]
 		}
 		elo {
-			set Priv(engines) [lsort -integer -index 1 -decreasing $Priv(engines)]
+			set Priv(engines) [lsort -integer -index 2 -decreasing $Priv(engines)]
 		}
 		rating {
-			set Priv(engines) [lsort -integer -index 2 -decreasing $Priv(engines)]
+			set Priv(engines) [lsort -integer -index 3 -decreasing $Priv(engines)]
 		}
 	}
 	FillDict $lb
@@ -1334,7 +1341,7 @@ proc FillDict {lb} {
 
 	set index 0
 	foreach entry $Priv(engines) {
-		lassign $entry name elo ccrl url chess960 shuffle \
+		lassign $entry country name elo ccrl url chess960 shuffle \
 			threeCheck crazyhouse bughouse suicide giveaway losers
 
 		if {	$elo  >= $Filter(elo:min)  && $Filter(elo:max)  >= $elo
@@ -1360,7 +1367,12 @@ proc FillDict {lb} {
 				if {$giveaway}		{ lset v 5 $::icon::16x16::checkGreen }
 				if {$losers}		{ lset v 6 $::icon::16x16::checkGreen }
 
-				$lb insert [list $name $elo $ccrl {*}$v $url]
+				if {[string length $country]} {
+					set flag $::country::icon::flag($country)
+				} else {
+					set flag ""
+				}
+				$lb insert [list $flag $name $elo $ccrl {*}$v $url]
 				lappend Priv(filter) $index
 			}
 		}

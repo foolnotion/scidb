@@ -63,7 +63,7 @@ and new commands:
 		columns if no list is given.
 
 	<pathName> column squeeze ?<list-of-columnDesc>?
-		Squeeze all specified columns until all columns wil fit
+		Squeeze all specified columns until all columns will fit
 		the visible width (excluding the needed width for the
 		header). The list may be empty. Assume all columns if no
 		list is given.

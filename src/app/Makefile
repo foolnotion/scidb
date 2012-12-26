@@ -414,6 +414,10 @@ app_engine.o: ../db/db_move.ipp
 app_engine.o: ../mstl/m_iterator.h
 app_engine.o: ../mstl/m_iterator.ipp
 app_engine.o: ../db/db_move_list.ipp
+app_engine.o: ../db/db_board.h
+app_engine.o: ../db/db_signature.h
+app_engine.o: ../db/db_signature.ipp
+app_engine.o: ../db/db_board.ipp
 app_engine.o: ../mstl/m_pvector.h
 app_engine.o: ../mstl/m_vector.h
 app_engine.o: ../mstl/m_memblock.h
@@ -434,10 +438,6 @@ app_engine.o: ../mstl/m_list_node.ipp
 app_engine.o: ../mstl/m_list.ipp
 app_engine.o: app_engine.ipp
 app_engine.o: app_uci_engine.h
-app_engine.o: ../db/db_board.h
-app_engine.o: ../db/db_signature.h
-app_engine.o: ../db/db_signature.ipp
-app_engine.o: ../db/db_board.ipp
 app_engine.o: app_winboard_engine.h
 app_engine.o: ../mstl/m_auto_ptr.h
 app_engine.o: ../mstl/m_auto_ptr.ipp
@@ -658,6 +658,10 @@ app_uci_engine.o: ../db/db_move.ipp
 app_uci_engine.o: ../mstl/m_iterator.h
 app_uci_engine.o: ../mstl/m_iterator.ipp
 app_uci_engine.o: ../db/db_move_list.ipp
+app_uci_engine.o: ../db/db_board.h
+app_uci_engine.o: ../db/db_signature.h
+app_uci_engine.o: ../db/db_signature.ipp
+app_uci_engine.o: ../db/db_board.ipp
 app_uci_engine.o: ../mstl/m_pvector.h
 app_uci_engine.o: ../mstl/m_vector.h
 app_uci_engine.o: ../mstl/m_memblock.h
@@ -677,10 +681,6 @@ app_uci_engine.o: ../mstl/m_list_node.h
 app_uci_engine.o: ../mstl/m_list_node.ipp
 app_uci_engine.o: ../mstl/m_list.ipp
 app_uci_engine.o: app_engine.ipp
-app_uci_engine.o: ../db/db_board.h
-app_uci_engine.o: ../db/db_signature.h
-app_uci_engine.o: ../db/db_signature.ipp
-app_uci_engine.o: ../db/db_board.ipp
 app_uci_engine.o: app_exception.h
 app_uci_engine.o: ../util/u_exception.h
 app_uci_engine.o: ../db/db_game.h
@@ -948,6 +948,10 @@ app_winboard_engine.o: ../db/db_move.ipp
 app_winboard_engine.o: ../mstl/m_iterator.h
 app_winboard_engine.o: ../mstl/m_iterator.ipp
 app_winboard_engine.o: ../db/db_move_list.ipp
+app_winboard_engine.o: ../db/db_board.h
+app_winboard_engine.o: ../db/db_signature.h
+app_winboard_engine.o: ../db/db_signature.ipp
+app_winboard_engine.o: ../db/db_board.ipp
 app_winboard_engine.o: ../mstl/m_pvector.h
 app_winboard_engine.o: ../mstl/m_vector.h
 app_winboard_engine.o: ../mstl/m_memblock.h
@@ -967,10 +971,6 @@ app_winboard_engine.o: ../mstl/m_list_node.h
 app_winboard_engine.o: ../mstl/m_list_node.ipp
 app_winboard_engine.o: ../mstl/m_list.ipp
 app_winboard_engine.o: app_engine.ipp
-app_winboard_engine.o: ../db/db_board.h
-app_winboard_engine.o: ../db/db_signature.h
-app_winboard_engine.o: ../db/db_signature.ipp
-app_winboard_engine.o: ../db/db_board.ipp
 app_winboard_engine.o: ../mstl/m_auto_ptr.h
 app_winboard_engine.o: ../mstl/m_auto_ptr.ipp
 app_winboard_engine.o: app_exception.h

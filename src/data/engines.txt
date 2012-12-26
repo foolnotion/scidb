@@ -109,11 +109,11 @@
 *	Booot									2702	2796	UKR	WB/UCI	N				http://sdchess.narod.ru/download_engines.htm
 *	Braincrack							1712	----	GER	WB			N				http://sourceforge.net/projects/braincrack/
 *	Brainless							----	----	CAN	WB			N				http://cyberfish.wecheer.com/Brainless/
-	Brama									1661	----	ITA	WB			N				http://xoomer.virgilio.it/biagiopas/brama/brama.htm
+	Brama									1661	----	ITA	WB			N
 *	BremboCE								1692	----	ITA	WB			N				http://web.tiscali.it/BremboCE
 	Bright								2826	2883	NED	UCI		N				http://members.ziggo.nl/allard.siemelink/bright/
 	Bruja									2415	2556	USA	WB			N
- 	Brutus Chess						2572	2556	NED	WB/UCI	N				http://home.casema.nl/vermeire/brutus.html
+ 	Brutus Chess						2572	2556	NED	WB/UCI	N
 =	Brutus
 *	BSC									1874	----	FRA	WB			N				http://b0n0.free.fr/bsc/bsc.html
 	Bubble								----	----	BRA	WB/UCI	N				http://bubblechess.awardspace.co.uk/
@@ -508,7 +508,7 @@
 *	King's Out							2085	----	GER	WB			N
 *	Kingzilla							----	----	---	?			N
 	Kiwi									2085	2553	ITA	WB			N			http://www.ascotti.org/programming/chess/chess.htm
-*	KKFChess								1899	----	HKG	WB/UCI	S			http://freespace.virgin.net/andrew.fankk/
+*	KKFChess								1899	----	HKG	WB/UCI	CSL		http://freespace.virgin.net/andrew.fankk/
 *	KMTChess								----	2257	ESP	WB			N			http://sourceforge.net/projects/kmtchess/
 *	KnightCap							1950	----	AUS	WB			N			http://www.samba.org/KnightCap/
 *	KnightDreamer						2220	2522	SWE	WB			N

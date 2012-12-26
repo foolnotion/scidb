@@ -298,6 +298,7 @@ proc WidgetProc {w command args} {
 				-headervar	""
 				-minwidth	0
 				-ellipsis	0
+				-resize		no
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -337,6 +338,7 @@ proc WidgetProc {w command args} {
 				-justify $opts(-justify)     \
 				-borderwidth 1               \
 				-button no                   \
+				-resize $opts(-resize)       \
 				;
 			if {[llength $opts(-font)]} {
 				set charwidth [font measure $opts(-font) "0"]
@@ -373,6 +375,23 @@ proc WidgetProc {w command args} {
 				image		{ set Priv(type:$id) elemImg }
 				text		{ set Priv(type:$id) elemTxt }
 				combined	{ set Priv(type:$id) elemCom }
+			}
+		}
+
+		fixwidth {
+			if {[llength $args] > 1} {
+				error "wrong # args: should be \"[namespace current] $command ?id?"
+			}
+			if {[llength $args] == 0} {
+				foreach column $Priv(columns) {
+					$t column configure $column -width [$t column width $column]
+				}
+			} else {
+				set id [lindex $args 0]
+				if {![info exists Priv(type:$id)]} {
+					error "unknown column id \"$id\""
+				}
+				$t column configure name -width [$t column width name]
 			}
 		}
 
