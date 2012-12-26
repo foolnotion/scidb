@@ -70,6 +70,7 @@
 ::mc::Delete			"Elimina"
 ::mc::Edit				"Modifica"
 ::mc::File				"File"
+::mc::Filter			"Filter" ;# NEW
 ::mc::From				"Da"
 ::mc::Game				"Partita"
 ::mc::Layout			"Layout"
@@ -232,6 +233,7 @@
 ::menu::mc::Help							"&Aiuto"
 ::menu::mc::Contact						"&Contenuti (browser)"
 ::menu::mc::Quit							"&Esci"
+::menu::mc::Tools							"&Tools" ;# NEW
 ::menu::mc::Extras						"E&xtras"
 ::menu::mc::Setup							"Impos&ta"
 ::menu::mc::Engines						"&Motori"
@@ -240,6 +242,7 @@
 ::menu::mc::ContactFeatureRequest	"&Richiesta Funzione"
 ::menu::mc::InstallChessBaseFonts	"Installa Caratteri ChessBase"
 ::menu::mc::OpenEngineLog				"Apri Console &Motori"
+::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
 ::menu::mc::NewFile						"Crea un file Scidb"
@@ -327,7 +330,7 @@
 ::util::photos::mc::Message(maintenance)		"Il server che ospita le foto è al momento in manutenzione."
 ::util::photos::mc::Message(notfound)			"Download interrotto perché il server che ospita le foto è al momento in manutenzione."
 ::util::photos::mc::Message(aborted)			"L'utente ha interrotto il download."
-::util::photos::mc::Message(killed)				"Interruzione inaspettata del download. La sub-routine è cessata." ;# has died?
+::util::photos::mc::Message(killed)				"Interruzione inaspettata del download. La sub-routine è cessata."
 
 ::util::photos::mc::Detail(nohttp)				"Per favore installa il pacchetto TclHttp, per esemio %s."
 ::util::photos::mc::Detail(noconnect)			"Probabilmente non hai una connessione internet."
@@ -892,12 +895,18 @@
 ::engine::mc::ChooseDifferentName	"Per favore scegli un nome diverso."
 ::engine::mc::ReservedName				"Il nome '%s' è riservato e non può essere usato."
 ::engine::mc::ReallyDeleteProfile	"Vuoi davvero eliminare il profilo '%s'?"
+::engine::mc::SortName					"Sort by name" ;# NEW
+::engine::mc::SortElo					"Sort by Elo rating" ;# NEW
+::engine::mc::SortRating				"Sort by CCRL rating" ;# NEW
+::engine::mc::OpenUrl					"Open URL (web browser)" ;# NEW
 
 ::engine::mc::AdminEngines				"Configura Motori"
 ::engine::mc::SetupEngine				"Imposta motore %s"
 ::engine::mc::ImageFiles				"File di immagine"
 ::engine::mc::SelectEngine				"Seleziona Motore"
 ::engine::mc::SelectEngineLogo		"Seleziona Logo Motore"
+::engine::mc::EngineDictionary		"Engine Dictionary" ;# NEW
+::engine::mc::EngineFilter				"Engine Filter" ;# NEW
 ::engine::mc::EngineLog					"Console del motore"
 ::engine::mc::Probing					"Sondaggio" ;# Probing?
 ::engine::mc::NeverUsed					"Mai usato"
@@ -990,7 +999,7 @@
 
 ::application::analysis::mc::Signal(stopped)				"Motore interrotto da segnale."
 ::application::analysis::mc::Signal(resumed)				"Motore riattivato da segnale."
-::application::analysis::mc::Signal(killed)				"Motore terminato da segnale."
+::application::analysis::mc::Signal(killed)				"Motore terminato da segnale." ;# NEW change to "Engine crashed or killed by signal."
 ::application::analysis::mc::Signal(crashed)				"Il motore è crashato."
 ::application::analysis::mc::Signal(closed)				"Il motore ha terminato la connessione."
 ::application::analysis::mc::Signal(terminated)			"Motore interrotto con codice di errore %s."
@@ -1263,6 +1272,8 @@
 ::browser::mc::DecreaseBoardSize	"Diminuisci grandezza scacchiera"
 ::browser::mc::MaximizeBoardSize	"Ingrandisci dimensione scacchiera"
 ::browser::mc::MinimizeBoardSize	"Minimizza dimensione scacchiera"
+::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
+::browser::mc::LoadNextGame		"Load next game" ;# NEW
 
 ::browser::mc::GotoGame(first)  	"Vai alla prima partita"
 ::browser::mc::GotoGame(last)   	"Vai all'ultima partita"
@@ -1308,6 +1319,7 @@
 ::setup::board::mc::Castling						"Arrocco"
 ::setup::board::mc::MoveNumber					"Numero mossa"
 ::setup::board::mc::EnPassantFile				"En passant"
+::setup::board::mc::HalfMoves						"Half moves" ;# NEW
 ::setup::board::mc::StartPosition				"Posizione iniziale"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Promoted" ;# NEW

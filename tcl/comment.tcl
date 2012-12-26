@@ -165,6 +165,7 @@ proc open {parent pos lang} {
 	}
 	# XXX possibly we can use only {Scidb Symbol Traveller}
 	$top.text tag configure figurine -font $::font::figurine(text:normal)
+	$top.text tag configure figurineb -font $::font::figurine(text:bold)
 	$top.text tag configure symbol -font $::font::symbol(text:normal)
 	$top.text tag configure symbolb -font $::font::symbol(text:bold)
 	$top.text tag configure underline -underline true
@@ -509,7 +510,7 @@ proc InsertComment {lang content} {
 				$w insert end $text $attrs
 			}
 
-			sym { InsertFigurine $w $text }
+			sym { InsertFigurine $w $text [expr {$flags & 1}] }
 			nag { InsertNag $w $text [expr {$flags & 1}] }
 
 			+bold			{ incr flags +1 }
@@ -523,14 +524,19 @@ proc InsertComment {lang content} {
 }
 
 
-proc InsertFigurine {w fig} {
+proc InsertFigurine {w fig {bold {}}} {
 	variable Vars
 
+	if {[llength $bold] == 0} { set bold $Vars(format:bold) }
 	set Vars(symbol:[incr Vars(count)]) $fig
 	set selrange [$w tag ranges sel]
 	set text [string map $::figurines::pieceMap $fig]
 	set key key$Vars(count)
-	set tags [list figurine $key]
+	if {$bold} {
+		set tags [list figurineb $key]
+	} else {
+		set tags [list figurine $key]
+	}
 	$w tag bind $key <Enter> {}
 	$w tag bind $key <Leave> {}
 
@@ -691,16 +697,16 @@ proc ParseDump {dump} {
 
 			tagon {
 				switch -glob $value {
-					symbol*	{ set token nag }
-					code*		{ set token nag }
-					figurine	{ set token sym }
-					key*		{ set num [string range $value 3 end] }
+					symbol*		{ set token nag }
+					code*			{ set token nag }
+					figurine*	{ set token sym }
+					key*			{ set num [string range $value 3 end] }
 				}
 			}
 
 			tagoff {
 				switch -glob $value {
-					symbol* - code* - figurine { set token str }
+					symbol* - code* - figurine* { set token str }
 				}
 			}
 		}
@@ -850,7 +856,7 @@ proc DumpToComment {dump} {
 
 			tagon {
 				switch -glob $value {
-					symbol* - code* - figurine {
+					symbol* - code* - figurine* {
 						set n 0
 						set lst 2
 						if {$fst == 0} { set fst 2 }
@@ -860,7 +866,7 @@ proc DumpToComment {dump} {
 
 			tagoff {
 				switch -glob $value {
-					symbol* - code* - figurine { set n 1 }
+					symbol* - code* - figurine* { set n 1 }
 				}
 			}
 		}
@@ -918,6 +924,13 @@ proc DumpToComment {dump} {
 						set token nag
 					}
 
+					figurineb {
+						if {[incr flags(bold)] == 1} {
+							lappend content "+bold"
+						}
+						set token sym
+					}
+
 					key*				{ set num [string range $value 3 end] }
 					code - symbol	{ set token nag }
 					figurine			{ set token sym }
@@ -932,7 +945,7 @@ proc DumpToComment {dump} {
 						}
 					}
 
-					symbolb - codeb {
+					symbolb - codeb - figurineb {
 						if {[incr flags(bold) -1] == 0} {
 							lappend content "-bold"
 						}
@@ -1693,7 +1706,7 @@ proc ChangeFormat {format {toggle no}} {
 	if {[llength $selrange] == 0} { return }
 
 	lassign $selrange prevIndex lastIndex
-	array set flags {bold 0 italic 0 underline 0 symbol 0 symbolb 0 figurine 0}
+	array set flags {bold 0 italic 0 underline 0 symbol 0 symbolb 0 figurine 0 figurineb 0}
 	set flags($format) $Vars(format:$format)
 
 	foreach {key value index} [$w dump -tag 1.0 ${lastIndex}+1c] {
@@ -1708,7 +1721,15 @@ proc ChangeFormat {format {toggle no}} {
 						$w tag remove symbolb {*}$range
 						$w tag add symbol {*}$range
 					}
-				} elseif {!$flags(figurine)} {
+				} elseif {$flags(figurine) || $flags(figurineb)} {
+					if {$flags(figurine) && $flags(bold)} {
+						$w tag remove figurine {*}$range
+						$w tag add figurineb {*}$range
+					} elseif {$flags(figurineb) && !$flags(bold)} {
+						$w tag remove figurineb {*}$range
+						$w tag add figurine {*}$range
+					}
+				} else {
 					if {$flags(bold) && $flags(italic)} {
 						set fmt bold-italic
 					} elseif {$flags(bold)} {

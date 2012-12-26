@@ -1,4 +1,9 @@
 set Index {
+  { A
+    {
+      {{Administrate database} {Database-Switcher.html} {Administration}}
+    }
+  }
   { B
     {
       {{Barras de herramientas} {Toolbar-Usage.html} {}}
@@ -8,6 +13,8 @@ set Index {
   { C
     {
       {{Clipbase} {Clipbase.html} {}}
+      {{Compress} {Database-Switcher.html} {Compact}}
+      {{Compress database} {Database-Switcher.html} {Compact}}
       {{Código ECO} {ECO-Code.html} {}}
     }
   }

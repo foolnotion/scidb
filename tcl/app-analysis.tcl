@@ -69,7 +69,7 @@ set NotSupported(analyze)	"This engine does not have an analysis mode."
 
 set Signal(stopped)			"Engine stopped by signal."
 set Signal(resumed)			"Engine resumed by signal."
-set Signal(killed)			"Engine killed by signal."
+set Signal(killed)			"Engine crashed or killed by signal."
 set Signal(crashed)			"Engine crashed."
 set Signal(closed)			"Engine has closed connection."
 set Signal(terminated)		"Engine terminated with exit code %s."

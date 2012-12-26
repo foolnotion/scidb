@@ -302,7 +302,6 @@ if {[::process::testOption use-analysis]} {
 	::widget::dialogSetTitle $app [namespace code Title]
 	wm deiconify $app
 	database::finish $app
-	raise $app
 	::splash::close
 	ChooseLanguage $app
 	focus $nb

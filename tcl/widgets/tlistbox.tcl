@@ -193,8 +193,12 @@ proc Build {w args} {
 
 	$t notify install <Item-enter>
 	$t notify install <Item-leave>
+	$t notify install <Header-enter>
+	$t notify install <Header-leave>
 
-	$t notify bind $t <Item-enter> [namespace code { VisitItem %W enter %C %I %x %y }]
+	$t notify bind $t <Header-enter> [namespace code { VisitHeader %W enter %C }]
+	$t notify bind $t <Header-leave> [namespace code { VisitHeader %W leave %C }]
+	$t notify bind $t <Item-enter> [namespace code { VisitItem %W enter %C %I }]
 	$t notify bind $t <Item-leave> [namespace code { VisitItem %W leave %C %I }]
 
 	$t state define highlight
@@ -291,7 +295,9 @@ proc WidgetProc {w command args} {
 				-squeeze		no
 				-steady		yes
 				-header		""
+				-headervar	""
 				-minwidth	0
+				-ellipsis	0
 			}
 			set opts(-id) [llength $Priv(columns)]
 			set opts(-background) $Priv(background:normal)
@@ -310,8 +316,15 @@ proc WidgetProc {w command args} {
 			} elseif {$opts(-expand)} {
 				set Priv(expand) $id
 			}
+			set Priv(ellipsis:$id) $opts(-ellipsis)
 			set colors $opts(-background)
 			if {[llength $Priv(stripes)]} { set colors [list $Priv(stripes) $colors] }
+			if {[string length $opts(-headervar)]} {
+				set opts(-header) [set $opts(-headervar)]
+				set cmd [list [namespace current]::SetHeaderLabel $t $id]
+				trace add variable $opts(-headervar) write $cmd
+				bind $t <Destroy> +[list trace remove variable $opts(-headervar) write $cmd]
+			}
 			if {[string length $opts(-header)]} { $t configure -showheader yes }
 			$t column create                \
 				-tag $id                     \
@@ -321,6 +334,7 @@ proc WidgetProc {w command args} {
 				-steady $opts(-steady)       \
 				-itembackground $colors      \
 				-text $opts(-header)         \
+				-justify $opts(-justify)     \
 				-borderwidth 1               \
 				-button no                   \
 				;
@@ -387,6 +401,9 @@ proc WidgetProc {w command args} {
 						set background $opts(-background)
 						if {[llength $background] == 0} { set background $Priv(background:normal) }
 						$t column configure $id -itembackground $opts(-background)
+					}
+					-header {
+						$t column configure $id -text $opts(-header)
 					}
 					default {
 						error "cannot set column attribute \"$key\""
@@ -986,6 +1003,12 @@ proc WidgetProc {w command args} {
 }
 
 
+proc SetHeaderLabel {t id name1 name2 _} {
+	if {[string length $name1] && [string length $name2]} { set name1 ${name1}(${name2}) }
+	$t column configure $id -text [set $name1]
+}
+
+
 proc FindMatch {w column code mapping} {
 	variable [namespace current]::${w}::Priv
 
@@ -1117,9 +1140,10 @@ proc MakeStyles {w} {
 			}
 
 			elemTxt {
+				if {$Priv(ellipsis:$id)} { set squeeze {-squeeze x} } else { set squeeze {} }
 				set s [$t style create style$id]
 				$t style elements $s [list sel$dir elemTxt elemImg]
-				$t style layout $s elemTxt -ipadx $padx -pady $Priv(pady) -expand ns
+				$t style layout $s elemTxt -ipadx $padx -pady $Priv(pady) -expand ns {*}$squeeze
 				$t style layout $s elemImg -ipadx $padx -pady $Priv(pady) -expand nsew -detach yes
 			}
 
@@ -1151,11 +1175,18 @@ proc MakeItems {w first last} {
 }
 
 
-proc VisitItem {t mode column item {x {}} {y {}}} {
+proc VisitItem {t mode column item} {
 	if {[$t cget -state] eq "disabled"} { return }
 	set index [expr {$item - 1}]
 	set id [$t column tag names $column]
 	event generate [winfo parent $t] <<ItemVisit>> -data [list $mode $id $index $column]
+}
+
+
+proc VisitHeader {t mode column} {
+	if {[$t cget -state] eq "disabled"} { return }
+	set id [$t column tag names $column]
+	event generate [winfo parent $t] <<HeaderVisit>> -data [list $mode $id $column]
 }
 
 

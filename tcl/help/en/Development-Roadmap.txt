@@ -21,16 +21,14 @@ TITLE Development roadmap
 <h2>Features for next releases</h2>
 
 <ul>
-  <li>Download/upload/update databases via the internet</li>
+  <li>Download/upload/update/load databases via the internet</li>
   <li>Supporting attachments of documents to a database. The main reason
       is that Chessbase databases have attached documents.</li>
   <li>Search functions: search by header, position search, etc.</li>
   <li>Filter functions: game filter, player filter</li>
   <li>Flexible window layout</li>
-  <li>Support of more chess variants: Bughouse, Crazyhouse, Antichess</li>
   <li>Document generation:: LaTeX export</li>
   <li>Windows support</li>
-  <li>Database compression (elimination of deleted games)</li>
   <li>Input of moves with keyboard</li>
   <li>Board photo</li>
 </ul>
@@ -39,7 +37,6 @@ TITLE Development roadmap
 
 <ul>
   <li>Duplicate detection</li>
-  <li>Loading databases from the Internet</li>
   <li>Player dictionary dialog</li>
   <li>Document generation: PDF export and HTML export</li>
   <li>Dialog for spell checking player names</li>

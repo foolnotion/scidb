@@ -52,6 +52,7 @@ set LeaveFullscreen			"Leave &Full-Screen"
 set Help							"&Help"
 set Contact						"&Contact (Web Browser)"
 set Quit							"&Quit"
+set Tools						"&Tools"
 set Extras						"&Extras"
 set Setup						"Setu&p"
 set Engines						"&Engines"
@@ -60,6 +61,7 @@ set ContactBugReport			"&Bug Report"
 set ContactFeatureRequest	"&Feature Request"
 set InstallChessBaseFonts	"Install ChessBase Fonts"
 set OpenEngineLog				"Open &Engine Console"
+set OpenEngineDictionary	"Open Engine &Dictionary"
 
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
@@ -177,20 +179,6 @@ proc build {menu} {
 		}
 	}
 
-	### setup ################################################################
-	set m [menu $menu.mSetup]
-	lassign [::tk::UnderlineAmpersand $mc::Setup] text ul
-	$menu add cascade \
-		-compound left \
-		-menu $m \
-		-label " $text" \
-		-underline [incr ul] \
-		-image $::icon::16x16::setup \
-		;
-	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
-	set cmd [namespace code [list ::engine::openAdmininstration .application]]
-	$m add command -label " $text" -underline [incr ul] -command $cmd 
-
 	### toolbars #############################################################
 	set m [menu $menu.mToolbars]
 	lassign [::tk::UnderlineAmpersand $mc::Toolbars] text ul
@@ -204,6 +192,89 @@ proc build {menu} {
 	foreach parent [::toolbar::activeParents] {
 		::toolbar::addToolbarMenu $m $parent none
 	}
+
+	### setup ################################################################
+	$menu add separator
+
+	set m [menu $menu.mSetup]
+	lassign [::tk::UnderlineAmpersand $mc::Setup] text ul
+	$menu add cascade \
+		-compound left \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::setup \
+		;
+	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
+	set cmd [namespace code [list ::engine::openAdmininstration .application]]
+	$m add command -label " $text" -underline [incr ul] -command $cmd 
+
+	### tools ################################################################
+	set m [menu $menu.mTools]
+	lassign [::tk::UnderlineAmpersand $mc::Tools] text ul
+	$menu add cascade \
+		-compound left \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		;
+	lassign [::tk::UnderlineAmpersand $mc::OpenEngineDictionary] text ul
+	set cmd [namespace code [list ::engine::showEngineDictionary .application]]
+	$m add command \
+		-compound left \
+		-label " $text..." \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		-command $cmd \
+		;
+
+	### extras ###############################################################
+	set m [menu $menu.mExtras]
+	lassign [::tk::UnderlineAmpersand $mc::Extras] text ul
+	$menu add cascade \
+		-compound left \
+		-menu $m \
+		-label " $text" \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		;
+
+	if {[::util::photos::busy?]} { set state disabled } else { set state normal }
+	lassign [::tk::UnderlineAmpersand $::util::photos::mc::InstallPlayerPhotos] text ul
+	set cmd [namespace code [list ::util::photos::openDialog .application]]
+	$m add command \
+		-compound left \
+		-label " $text" \
+		-underline $ul \
+		-image $::icon::16x16::none \
+		-command $cmd \
+		-state $state \
+		;
+
+	if {[llength [info procs ::font::installChessBaseFonts]]} {
+		lassign [::tk::UnderlineAmpersand $mc::InstallChessBaseFonts] text ul
+		set cmd [namespace code [list ::font::installChessBaseFonts .application]]
+		$m add command \
+			-compound left \
+			-label " $text" \
+			-underline $ul \
+			-image $::icon::16x16::fonts \
+			-command $cmd \
+			;
+	}
+
+	lassign [::tk::UnderlineAmpersand $mc::OpenEngineLog] text ul
+	set cmd [namespace code [list ::engine::openEngineLog .application]]
+	if {[::engine::logIsOpen? .application]} { set state disabled } else { set state normal }
+	$m add command \
+		-compound left \
+		-label " $text..." \
+		-underline [incr ul] \
+		-image $::icon::16x16::none \
+		-command $cmd \
+		-state $state \
+		;
 
 	### help #################################################################
 	$menu add separator
@@ -263,53 +334,6 @@ proc build {menu} {
 		-label $text \
 		-underline $ul \
 		-command [namespace code [list featureRequest .application]] \
-		;
-
-	### extras ###############################################################
-	set m [menu $menu.mExtras]
-	lassign [::tk::UnderlineAmpersand $mc::Extras] text ul
-	$menu add cascade \
-		-compound left \
-		-menu $m \
-		-label " $text" \
-		-underline [incr ul] \
-		-image $::icon::16x16::none \
-		;
-
-	if {[::util::photos::busy?]} { set state disabled } else { set state normal }
-	lassign [::tk::UnderlineAmpersand $::util::photos::mc::InstallPlayerPhotos] text ul
-	set cmd [namespace code [list ::util::photos::openDialog .application]]
-	$m add command \
-		-compound left \
-		-label " $text" \
-		-underline $ul \
-		-image $::icon::16x16::none \
-		-command $cmd \
-		-state $state \
-		;
-
-	if {[llength [info procs ::font::installChessBaseFonts]]} {
-		lassign [::tk::UnderlineAmpersand $mc::InstallChessBaseFonts] text ul
-		set cmd [namespace code [list ::font::installChessBaseFonts .application]]
-		$m add command \
-			-compound left \
-			-label " $text" \
-			-underline $ul \
-			-image $::icon::16x16::fonts \
-			-command $cmd \
-			;
-	}
-
-	lassign [::tk::UnderlineAmpersand $mc::OpenEngineLog] text ul
-	set cmd [namespace code [list ::engine::openEngineLog .application]]
-	if {[::engine::logIsOpen? .application]} { set state disabled } else { set state normal }
-	$m add command \
-		-compound left \
-		-label " $text..." \
-		-underline [incr ul] \
-		-image $::icon::16x16::none \
-		-command $cmd \
-		-state $state \
 		;
 
 	### fullscreen ###########################################################

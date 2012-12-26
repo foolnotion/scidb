@@ -40,6 +40,14 @@ der Ablage (<see/> <a href="Database-Switcher.html#Empty-Clipbase">
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 
+<p>
+Die Ablage hält die Daten intern im Scidb-Format und ist insofern eine Ausnahme, weil
+sie Partien verschiedener Schachformenen gleichzeitig halten kann. Jedoch können
+administrative Operationen (<see/>
+<a href="Database-Switcher.txt#Maintenance">Datenbank administrieren</a>)
+immer nur auf jeweils eine Schachform angewendet werden.
+</p>
+
 END
 
 <!-- vi:set ts=2 sw=2 et filetype=html: -->

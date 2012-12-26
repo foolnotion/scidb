@@ -1487,7 +1487,8 @@ proc PrintComment {position w level key pos data} {
 			switch -- $code {
 				sym {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
-					$w insert current [string map $::figurines::pieceMap $text] [list figurine $langTag]
+					if {$flags & 1} { set fig figurineb } else { set fig figurine }
+					$w insert current [string map $::figurines::pieceMap $text] [list $fig $langTag]
 				}
 				nag {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }

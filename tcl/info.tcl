@@ -221,9 +221,37 @@ proc BuildContributionsFrame {w} {
 	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 
 	append css {
-		h1		{ font-size: 120%; background-color: #e5eeff; }
-		p		{ padding-bottom: 0.3cm }
-		table	{ padding-bottom: 0.3cm }
+		h1 {
+			font-size:		110%;
+			font-weight:	bold;
+		}
+		hr {
+			border:			0;
+			border-top:		solid 1px black;
+			border-bottom:	transparent;
+		}
+		table {
+			padding-top:		0.2em;
+			padding-bottom:	0.5em;
+		}
+		div.box {
+			background:			#eedd82;
+			border:				1px solid black;
+			border-radius:		0.5em;
+			margin-top:			1em;
+			margin-bottom:		1em;
+			margin-left:		0em;
+			margin-right:		0em;
+			padding-top:		0em;
+			padding-bottom:	0em;
+			padding-left:		1em;
+			padding-right:		1em;
+			overflow:			hidden;
+		}
+		:hover {
+			text-decoration:	underline;
+			background:			none;
+		}
 	}
 
 	::html $w.t \
@@ -257,11 +285,16 @@ proc BuildContributionsFrame {w} {
 
 proc DisplayContributions {w} {
 	$w parse "
-		<h1>$mc::Development</h1>
-		<p>
-			[Name {Gregor Cramer}]
-		</p>
-		<h1>$mc::Localization</h1>
+		<div class='box'>
+			<h1>$mc::Development</h1>
+			<hr/>
+			<p>
+				[Name {Gregor Cramer}]
+			</p>
+		</div>
+		<div class='box'>
+			<h1>$mc::Localization</h1>
+			<hr/>
 			<table border='0'>
 				<tr>
 					<td>[Name {Lars Ekman}]</td>
@@ -294,7 +327,10 @@ proc DisplayContributions {w} {
 					<td>[::encoding::languageName de], [::encoding::languageName en]</td>
 				</tr>
 			</table>
-		<h1>$mc::Testing</h1>
+		</div>
+		<div class='box'>
+			<h1>$mc::Testing</h1>
+			<hr/>
 			<table border='0'>
 				<tr><td>[Name {Steven Atkinson}]</td></tr>
 				<tr><td>[Name {Paolo Casaschi}]</td></tr>
@@ -304,7 +340,10 @@ proc DisplayContributions {w} {
 				<tr><td>[Name {Giovanni Ornaghi}]</td></tr>
 				<tr><td>[Name {Zoltán Tibenszky}]</td></tr>
 			</table>
-		<h1>TrueType $mc::FontDesign</h1>
+		</div>
+		<div class='box'>
+			<h1>TrueType $mc::FontDesign</h1>
+			<hr/>
 			<table border='0'>
 				<tr><td colspan='2'>[Name {Armando Hernández Marroquín}]</td></tr>
 				<tr><td>\u2001</td><td>Adventurer, Condal, Kingdom, Leipzig, Lucena, Magnetic,
@@ -354,7 +393,10 @@ proc DisplayContributions {w} {
 				<tr><td>\u2001</td><td>[Url http://www.enpassant.dk/chess/fonteng.htm]</td></tr>
 				<tr height='7'></tr>
 			</table>
-		<h1>SVG $mc::ChessPieceDesign</h1>
+		</div>
+		<div class='box'>
+			<h1>SVG $mc::ChessPieceDesign</h1>
+			<hr/>
 			<table border='0'>
 				<tr><td colspan='2'>[Name {Colin M.L. Burnett}]</td></tr>
 				<tr><td>\u2001</td><td>Burnett</td></tr>
@@ -382,19 +424,29 @@ proc DisplayContributions {w} {
 				<tr><td>\u2001</td><td>[Url http://www.virtualpieces.net/diagrams]</td></tr>
 				<tr height='7'></tr>
 			</table>
-		<h1>$mc::BoardThemeDesign</h1>
-		<p>
-			[Name {Gregor Cramer}]
-		</p>
-		<h1>$mc::FlagsDesign</h1>
+		</div>
+		<div class='box'>
+			<h1>$mc::BoardThemeDesign</h1>
+			<hr/>
+			<p>
+				[Name {Gregor Cramer}]
+			</p>
+		</div>
+		<div class='box'>
+			<h1>$mc::FlagsDesign</h1>
+			<hr/>
 			<table border='0'>
 				<tr><td>[Name {Mark James}]</td></tr>
 				<tr><td>[Name {Gregor Cramer}]</td></tr>
 			</table>
-		<h1>Scid 3</h1>
-		<p>
-			[format $mc::SpecialThanks [Name {Shane Hudson}]]
-		</p>
+		</div>
+		<div class='box'>
+			<h1>Scid 3</h1>
+			<hr/>
+			<p>
+				[format $mc::SpecialThanks [Name {Shane Hudson}]]
+			</p>
+		</div>
 	"
 }
 
@@ -477,7 +529,7 @@ proc BuildLicenseFrame {w} {
 
 proc Url {url}		{ return "<a href='$url'>$url</a>" }
 proc Enc {name}	{ return [encoding convertfrom utf-8 $name] }
-proc Name {name}	{ return "<b>[Enc $name]</b>" }
+proc Name {name}	{ return [Enc $name] }
 
 
 set License \

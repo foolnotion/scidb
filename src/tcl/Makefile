@@ -36,6 +36,7 @@ SRC_CXX = \
 	tcl_pgn_reader.cpp \
 	tcl_position.cpp \
 	tcl_progress.cpp \
+	tcl_sort.cpp \
 	tcl_tree.cpp \
 	tcl_view.cpp \
 	tcl_zlib.cpp \
@@ -827,6 +828,10 @@ tcl_engine.o: ../db/db_move.ipp
 tcl_engine.o: ../mstl/m_iterator.h
 tcl_engine.o: ../mstl/m_iterator.ipp
 tcl_engine.o: ../db/db_move_list.ipp
+tcl_engine.o: ../db/db_board.h
+tcl_engine.o: ../db/db_signature.h
+tcl_engine.o: ../db/db_signature.ipp
+tcl_engine.o: ../db/db_board.ipp
 tcl_engine.o: ../mstl/m_pvector.h
 tcl_engine.o: ../mstl/m_vector.h
 tcl_engine.o: ../mstl/m_memblock.h
@@ -858,10 +863,6 @@ tcl_engine.o: ../mstl/m_bitset_iterator.h
 tcl_engine.o: ../mstl/m_bitset_iterator.ipp
 tcl_engine.o: ../mstl/m_bitset.ipp
 tcl_engine.o: ../db/db_filter.ipp
-tcl_engine.o: ../db/db_board.h
-tcl_engine.o: ../db/db_signature.h
-tcl_engine.o: ../db/db_signature.ipp
-tcl_engine.o: ../db/db_board.ipp
 tcl_engine.o: ../db/db_line.h
 tcl_engine.o: ../db/db_line.ipp
 tcl_engine.o: ../mstl/m_ref_counter.h
@@ -920,6 +921,17 @@ tcl_engine.o: ../db/db_database.ipp
 tcl_engine.o: ../db/db_database_codec.h
 tcl_engine.o: ../db/db_database_codec.ipp
 tcl_engine.o: ../app/app_application.ipp
+tcl_engine.o: ../db/db_game.h
+tcl_engine.o: ../db/db_game_data.h
+tcl_engine.o: ../db/db_tag_set.h
+tcl_engine.o: ../db/db_tag_set.ipp
+tcl_engine.o: ../db/db_comment.h
+tcl_engine.o: ../db/db_comment.ipp
+tcl_engine.o: ../db/db_edit_key.h
+tcl_engine.o: ../db/db_edit_key.ipp
+tcl_engine.o: ../mstl/m_auto_ptr.h
+tcl_engine.o: ../mstl/m_auto_ptr.ipp
+tcl_engine.o: ../db/db_game.ipp
 tcl_engine.o: ../sys/sys_process.h
 tcl_engine.o: ../sys/sys_process.ipp
 tcl_engine.o: ../mstl/m_ofstream.h
@@ -1202,6 +1214,7 @@ tcl_log.o: ../mstl/m_type_traits.ipp
 tcl_log.o: ../mstl/m_utility.ipp
 tcl_log.o: tcl_base.h
 tcl_log.o: tcl_base.ipp
+tcl_misc.o: tcl_sort.h
 tcl_misc.o: tcl_base.h
 tcl_misc.o: tcl_base.ipp
 tcl_misc.o: tcl_exception.h
@@ -1601,6 +1614,9 @@ tcl_progress.o: tcl_exception.h
 tcl_progress.o: ../util/u_exception.h
 tcl_progress.o: tcl_base.h
 tcl_progress.o: tcl_base.ipp
+tcl_sort.o: tcl_sort.h
+tcl_sort.o: tcl_base.h
+tcl_sort.o: tcl_base.ipp
 tcl_tree.o: tcl_tree.h
 tcl_tree.o: ../db/db_common.h
 tcl_tree.o: ../util/u_base.h

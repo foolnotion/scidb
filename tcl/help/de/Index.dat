@@ -9,6 +9,7 @@ set Index {
     {
       {{Dateiauswahldialog} {File-Selection-Dialog.html} {}}
       {{Dateiformate} {Database-Formats.html} {}}
+      {{Datenbank administrieren} {Database-Switcher.html} {Administration}}
       {{Datenbank komprimieren} {Database-Switcher.html} {Compact}}
       {{Datenbankarchiv} {Database-Formats.html} {Database-Archive}}
       {{Datenbankformate} {Database-Formats.html} {}}

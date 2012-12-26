@@ -187,6 +187,8 @@ public:
 	void setPlyNumber(unsigned number);
 	/// Set the move number (NOTE: side to move must be set before).
 	void setMoveNumber(unsigned number);
+	/// Set the half move clock,
+	void setHalfMoveClock(unsigned number);
 	/// Set the number of checks given for both sides.
 	void setChecksGiven(unsigned white, unsigned black);
 	/// Transpose board position.

@@ -88,7 +88,7 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 		0,	// reserved for token::Comment
 		0,	// reserved for token::Start_Marker
 		0,	// reserved for token::End_Marker
-		0,	// null move OR piece drop OR move with piece number > 32 (Zhouse)
+		0,	// reserved for token::Special_Move
 		-9, -8, -7, -1, 1, 7, 8, 9,
 		0,	// short castling
 		0,	// long castling
@@ -123,7 +123,11 @@ Decoder::decodeQueen(sq::ID from, Byte nybble)
 		return m_position.makeQueenMove(from, sq::make(sq::Fyle(nybble), sq::rank(from)));
 
 	// diagonal move: coded in two bytes
+#ifdef CORRECTION
+	return m_position.makeQueenMove(from, m_strm.get() & 63);
+#else
 	return m_position.makeQueenMove(from, (int(m_strm.get()) - 64) & 63);
+#endif
 }
 
 
@@ -237,34 +241,53 @@ Decoder::decodeZhouseMove(Move& move)
 {
 	unsigned value = m_strm.get();
 
+#ifdef CORRECTION
+	if (value == token::Special_Move)
+#else
 	if (value == 0)
+#endif
 	{
 		move = Move::null();
 		return 0;
 	}
 
-	unsigned pieceNum = (value >> 4);
+#ifdef CORRECTION
+	M_ASSERT(value > token::Special_Move);
+#endif
 
-	value &= 15;
+	unsigned pieceNum = (value >> 4);
 
 	if (pieceNum == 0)
 	{
+#ifdef CORRECTION
+		pieceNum = m_strm.get() & 63;
+#else
 		pieceNum = m_strm.get();
+#endif
 
 		if (m_position.blackToMove())
 			pieceNum |= 0x10;
+
+#ifdef CORRECTION
+		if ((value &= 7) < piece::Queen)
+			throwCorruptData();
+#else
+		value &= 15;
 
 		if (value < piece::Queen || piece::Pawn < value)
 			throwCorruptData();
+#endif
 
+#ifdef CORRECTION
+		move = m_position.makePieceDropMove(m_strm.get() & 63, piece::Type(value));
+#else
 		move = m_position.makePieceDropMove(m_strm.get(), piece::Type(value));
+#endif
 	}
 	else
 	{
-		pieceNum |= 0x20;
-
-		if (m_position.blackToMove())
-			pieceNum |= 0x10;
+		value &= 15;
+		pieceNum |= m_position.blackToMove() ? 0x30 : 0x20;
 
 		sq::ID square = sq::ID(m_position[pieceNum]);
 

@@ -19,6 +19,7 @@
 INDEX Datenbankumschalter
 INDEX Komprimieren#Compact
 INDEX Datenbank komprimieren#Compact
+INDEX Datenbank administrieren#Administration
 TITLE Der Datenbankumschalter
 
 <ul><img src="images/database-switcher.png"/></ul>
@@ -210,7 +211,7 @@ Um alle Partien (einr Schachform) einer Datenbank in eine andere zu kopieren wer
 mit gedrückter linker Maustaste die Partien gegriffen und in das Zielfeld gezogen und
 fallengelassen. Voraussetzung ist, daß die Zieldatenbank nicht schreibgeschützt ist
 und auch nicht gesperrt. Dies ist ein wichtiges Instrument zum Verwalten und
-Kopieren von Dateien zwischen Datanbanken.
+Kopieren von Dateien zwischen Datenbanken.
 </p>
 
 END

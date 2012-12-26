@@ -1409,7 +1409,7 @@ proc EditDescription {parent file} {
 	set dlg [tk::toplevel $parent.descr -class Dialog]
 	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
 	pack $top -fill both
-	::ttk::entry $top.entry -takefocus 1 -width 108 -textvar [namespace current]::Vars(description)
+	::ttk::entry $top.entry -takefocus 1 -width 80 -textvar [namespace current]::Vars(description)
 	$top.entry selection range 0 end
 	$top.entry icursor end
 	pack $top.entry -fill x -padx $::theme::padx -pady $::theme::pady
@@ -1433,6 +1433,7 @@ proc EditDescription {parent file} {
 proc SetDescription {dlg file} {
 	variable Vars
 
+	set Vars(description) [string trim $Vars(description)]
 	set length [::scidb::db::set description $file $Vars(description)]
 
 	if {$length == 0} {
@@ -1448,12 +1449,12 @@ proc SetDescription {dlg file} {
 
 
 proc StripMoveInfo {parent file} {
-	return [::beta::notYetImplemented $dlg strip-move-info]
+	return [::beta::notYetImplemented $parent strip-move-info]
 }
 
 
 proc StripPGNTags {parent file} {
-	return [::beta::notYetImplemented $dlg strip-move-tags]
+	return [::beta::notYetImplemented $parent strip-move-tags]
 }
 
 

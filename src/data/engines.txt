@@ -320,10 +320,10 @@
 	Erendal								----	----	CAN	?			N
 	Ermintrude							----	----	GBR	?			N
 *	EtaBeta								----	----	ITA	?			N
-*	EtChess								----	----	FRA	WB			N			http://perso.wanadoo.fr/eric.triki/
 *	Equilibrium							----	----	ITA	?			N
 	Esc									2165	----	ITA	?			N
-*	E.T. Chess							2675	2751	FRA	WB			N
+*	E.T. Chess							2675	2751	FRA	WB			N			http://perso.wanadoo.fr/eric.triki/
+=	EtChess
 	Étude									----	----	USA	WB/UC		N
 =	Etude
 *	EveAnn								1967	2313	ESP	WB			N			http://webs.ono.com/a.valverde/
@@ -937,7 +937,7 @@
 *	StAndersen							1751	----	SWE	WB			N
 *	Stan's Chess						1681	----	NED	WB			N
 	Stobor								----	----	USA	?			N
-	Stockfish							2976	3295	ITA	UCI		N			http://www.stockfishchess.com
+	Stockfish							2976	3295	ITA	UCI		NF			http://www.stockfishchess.com
 	Storm									1822	----	USA	WB			N
 *	StrategicDeep						1550	----	POL	WB			N
 	Strelka								----	----	RUS	WB/UCI	N			http://sdchess.narod.ru/download_engines.htm

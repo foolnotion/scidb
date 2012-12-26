@@ -983,13 +983,13 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	struct Callback : public ::db::Player::PlayerCallback
 	{
-		Callback(Tcl_Obj* obj) : list(obj) {}
-		Tcl_Obj* list;
+		Callback(Tcl_Obj* obj) : m_list(obj) {}
+		Tcl_Obj* m_list;
 
 		void entry(::db::Player const& player) override
 		{
 			if (player.isEngine() && (player.supportsUciProtocol() || player.supportsWinboardProtocol()))
-				Tcl_ListObjAppendElement(0, list, Tcl_NewStringObj(player.name(), player.name().size()));
+				Tcl_ListObjAppendElement(0, m_list, Tcl_NewStringObj(player.name(), player.name().size()));
 		}
 	};
 
@@ -1010,11 +1010,21 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		::db::Player::StringList const& aliases = player->aliases();
 		Tcl_Obj* objs[9];
 		Tcl_Obj* v[aliases.size() + 1];
+		Tcl_Obj* f[8];
 
 		v[0] = Tcl_NewStringObj(player->name(), player->name().size());
 
 		for (unsigned i = 0; i < aliases.size(); ++i)
 			v[i + 1] = Tcl_NewStringObj(aliases[i], aliases[i].size());
+
+		f[0] = Tcl_NewBooleanObj(player->supportsChess960());
+		f[1] = Tcl_NewBooleanObj(player->supportsShuffleChess());
+		f[2] = Tcl_NewBooleanObj(player->supportsThreeCheckChess());
+		f[3] = Tcl_NewBooleanObj(player->supportsCrazyhouseChess());
+		f[4] = Tcl_NewBooleanObj(player->supportsBughouseChess());
+		f[5] = Tcl_NewBooleanObj(player->supportsSuicideChess());
+		f[6] = Tcl_NewBooleanObj(player->supportsGiveawayChess());
+		f[7] = Tcl_NewBooleanObj(player->supportsLosersChess());
 
 		objs[0] = Tcl_NewStringObj(player->name(), -1);
 		objs[1] = Tcl_NewStringObj(::db::country::toString(player->federation()), -1);
@@ -1022,7 +1032,7 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		objs[3] = Tcl_NewIntObj(player->latestRating(::db::rating::Rating));
 		objs[4] = Tcl_NewBooleanObj(player->supportsUciProtocol());
 		objs[5] = Tcl_NewBooleanObj(player->supportsWinboardProtocol());
-		objs[6] = Tcl_NewBooleanObj(player->supportsChess960());
+		objs[6] = Tcl_NewListObj(8, f);
 		objs[7] = Tcl_NewStringObj(player->url(), -1);
 		objs[8] = Tcl_NewListObj(aliases.size() + 1, v);
 

@@ -482,7 +482,7 @@ proc LoadLast		{} { LoadGame last }
 proc LoadGame {incr} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] == 0} { return }
+	if {[llength $Vars(current:game)] <= 1} { return }
 	lassign $Vars(current:game) position base variant view number
 	set numGames [scidb::view::count games $base $variant $view]
 	if {$numGames <= 1} { return }
@@ -1235,16 +1235,19 @@ proc UpdateGameControls {position} {
 
 	if {$position != 9} {
 		set Vars(current:game) [list $position {*}[::game::getSourceInfo $position]]
-		set view [lindex $Vars(current:game) 3]
-		if {$view >= 0} {
-			UpdateGameButtonState
-			set cmd [list [namespace current]::UpdateGameList [namespace current]::CloseGameList $position]
-			::scidb::db::subscribe gameList {*}$cmd
-			set Vars(subscribe:list) $cmd
+		if {[llength $Vars(current:game)]} {
+			set view [lindex $Vars(current:game) 3]
+			if {$view >= 0} {
+				UpdateGameButtonState
+				set cmd [list [namespace current]::UpdateGameList \
+					[namespace current]::CloseGameList $position]
+				::scidb::db::subscribe gameList {*}$cmd
+				set Vars(subscribe:list) $cmd
+			}
 		}
 	}
 
-	if {[llength $Vars(current:game)] == 0} {
+	if {[llength $Vars(current:game)] <= 1} {
 		foreach action {next prev first last} {
 			::toolbar::childconfigure $Vars(game:$action) -state disabled
 		}
@@ -1280,7 +1283,7 @@ proc UpdateGameButtonState {} {
 proc UpdateGameList {position id base variant {view -1} {index -1}} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] == 0} { return }
+	if {[llength $Vars(current:game)] <= 1} { return }
 	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
 
 	if {$currBase eq $base && $variant eq $currVariant && ($currView == $view || $currView == 0)} {
@@ -1292,7 +1295,7 @@ proc UpdateGameList {position id base variant {view -1} {index -1}} {
 proc CloseGameList {position base variant {view {}}} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] == 0} { return }
+	if {[llength $Vars(current:game)] <= 1} { return }
 	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
 
 	if {$base eq $currBase && $variant eq $currVariant && ([llength $view] == 0 || $view == $currView)} {

@@ -19,6 +19,7 @@
 INDEX Database switcher
 INDEX Compress#Compact
 INDEX Compress database#Compact
+INDEX Administrate database#Administration
 TITLE The Database switcher
 
 <ul><img src="images/database-switcher.png"/></ul>

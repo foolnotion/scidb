@@ -24,6 +24,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "tcl_sort.h"
 #include "tcl_base.h"
 #include "tcl_exception.h"
 #include "tcl_database.h"
@@ -75,6 +76,7 @@ static char const* CmdPredPow2				= "::scidb::misc::predPow2";
 static char const* CmdRevision				= "::scidb::misc::revision";
 static char const* CmdSetModTime				= "::scidb::misc::setModTime";
 static char const* CmdSize						= "::scidb::misc::size";
+static char const* CmdSort						= "::scidb::misc::sort";
 static char const* CmdSuccPow2				= "::scidb::misc::succPow2";
 static char const* CmdSuffixes				= "::scidb::misc::suffixes";
 static char const* CmdToAscii					= "::scidb::misc::toAscii";
@@ -1099,6 +1101,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdRevision,				cmdRevision);
 	createCommand(ti, CmdSetModTime,				cmdSetModTime);
 	createCommand(ti, CmdSize,						cmdSize);
+	createCommand(ti, CmdSort,						tcl::misc::sort);
 	createCommand(ti, CmdSuccPow2,				cmdSuccPow2);
 	createCommand(ti, CmdSuffixes,				cmdSuffixes);
 	createCommand(ti, CmdToAscii,					cmdToAscii);

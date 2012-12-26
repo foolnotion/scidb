@@ -71,6 +71,7 @@
 ::mc::Delete			"Eliminar"
 ::mc::Edit				"Editar"
 ::mc::File				"Archivo"
+::mc::Filter			"Filter" ;# NEW
 ::mc::From				"De"
 ::mc::Game				"Partida"
 ::mc::Layout			"Disposición"
@@ -233,6 +234,7 @@
 ::menu::mc::Help							"&Ayuda"
 ::menu::mc::Contact						"&Contenidos (navegador web)"
 ::menu::mc::Quit							"&Salir"
+::menu::mc::Tools							"&Tools" ;# NEW
 ::menu::mc::Extras						"E&xtras" 
 ::menu::mc::Setup							"Configu&rar"
 ::menu::mc::Engines						"Motor&es"
@@ -241,6 +243,7 @@
 ::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
 ::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
 ::menu::mc::OpenEngineLog				"Abrir bitácora d&el Motor"
+::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
 
 ::menu::mc::OpenFile						"Abrir un archivo Scidb"
 ::menu::mc::NewFile						"Crear un archivo Scidb"
@@ -886,12 +889,18 @@
 ::engine::mc::ChooseDifferentName	"Por favor escoja un nombre diferente."
 ::engine::mc::ReservedName				"El nombre '%s' es reservado y no puede ser usado."
 ::engine::mc::ReallyDeleteProfile	"¿Realmente desea borrar el perfil '%s'?"
+::engine::mc::SortName					"Sort by name" ;# NEW
+::engine::mc::SortElo					"Sort by Elo rating" ;# NEW
+::engine::mc::SortRating				"Sort by CCRL rating" ;# NEW
+::engine::mc::OpenUrl					"Open URL (web browser)" ;# NEW
 
 ::engine::mc::AdminEngines				"Administrar Motores"
 ::engine::mc::SetupEngine				"Configurar motor %s"
 ::engine::mc::ImageFiles				"Archivos de Imagen"
 ::engine::mc::SelectEngine				"Seleccionar Motor"
 ::engine::mc::SelectEngineLogo		"Elegir un logotipo para el Motor"
+::engine::mc::EngineDictionary		"Engine Dictionary" ;# NEW
+::engine::mc::EngineFilter				"Engine Filter" ;# NEW
 ::engine::mc::EngineLog					"Bitácora del Motor"
 ::engine::mc::Probing					"Penetrante"
 ::engine::mc::NeverUsed					"Nunca utilizado"
@@ -983,7 +992,7 @@
 
 ::application::analysis::mc::Signal(stopped)				"Motor de análisis detenido por señal."
 ::application::analysis::mc::Signal(resumed)				"Motor de análisis continúa por señal."
-::application::analysis::mc::Signal(killed)				"Motor de análisis eliminado por señal."
+::application::analysis::mc::Signal(killed)				"Motor de análisis eliminado por señal." ;# NEW change to "Engine crashed or killed by signal."
 ::application::analysis::mc::Signal(crashed)				"El motor de análisis falló."
 ::application::analysis::mc::Signal(closed)				"El motor de análisis cerró la conexión."
 ::application::analysis::mc::Signal(terminated)			"El motor de análisis terminado con código %s."
@@ -1257,6 +1266,8 @@
 ::browser::mc::DecreaseBoardSize	"Achicar el tablero"
 ::browser::mc::MaximizeBoardSize	"Maximizar el tamaño del tablero"
 ::browser::mc::MinimizeBoardSize	"Minimizar el tamaño del tablero"
+::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
+::browser::mc::LoadNextGame		"Load next game" ;# NEW
 
 ::browser::mc::GotoGame(first)	"Ir a la primera partida"
 ::browser::mc::GotoGame(last)		"Ir a la última partida"
@@ -1302,6 +1313,7 @@
 ::setup::board::mc::Castling						"Enroque"
 ::setup::board::mc::MoveNumber					"Número de jugada"
 ::setup::board::mc::EnPassantFile				"Al paso"
+::setup::board::mc::HalfMoves						"Half moves" ;# NEW
 ::setup::board::mc::StartPosition				"Posición inicial"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Promoted" ;# NEW

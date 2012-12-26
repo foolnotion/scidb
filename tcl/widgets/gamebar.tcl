@@ -920,7 +920,7 @@ proc Setup {gamebar at id tags data} {
 		if {$Options(separateColumn) && $Specs(size:$gamebar) == 2} {
 			SetSelected $gamebar $id
 		} else {
-			PrepareAsHeader $gamebar $Specs(selected:$gamebar)
+#			PrepareAsHeader $gamebar $Specs(selected:$gamebar)
 			Update $gamebar $id no
 		}
 	}
@@ -987,6 +987,8 @@ proc PrepareAsSunkenButton {gamebar id} {
 	if {$Specs(size:$gamebar) > 1} {
 		$gamebar itemconfigure digit$id -state normal
 	}
+	$gamebar itemconfigure white$id -font $Specs(font:$gamebar)
+	$gamebar itemconfigure black$id -font $Specs(font:$gamebar)
 	$gamebar raise blackbg$id
 	$gamebar raise black$id
 	$gamebar raise digit$id

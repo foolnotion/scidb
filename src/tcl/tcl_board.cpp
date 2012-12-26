@@ -216,8 +216,6 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			error = ::validate(board, variant);
 	}
 
-	Tcl_Obj* objs[10];
-
 	if (error == 0 && board.isStartPosition() && !board.isShuffleChessPosition())
 		error = "UnsupportedVariant";
 
@@ -236,16 +234,19 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			promoted[n++] = Tcl_NewIntObj(i);
 	}
 
-	objs[0] = Tcl_NewStringObj(error ? error : "", -1);
-	objs[1] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
-	objs[2] = Tcl_NewBooleanObj(board.notDerivableFromStandardChess());
-	objs[3] = Tcl_NewBooleanObj(board.notDerivableFromChess960());
-	objs[4] = Tcl_NewStringObj(toCastling(board), -1);
-	objs[5] = Tcl_NewStringObj(sq::printAlgebraic(board.enPassantSquare()), -1);
-	objs[6] = Tcl_NewStringObj(color::isWhite(board.sideToMove()) ? "w" : "b", -1);
-	objs[7] = Tcl_NewIntObj(board.moveNumber());
-	objs[8] = Tcl_NewListObj(2, checksGiven);
-	objs[9] = Tcl_NewListObj(n, promoted);
+	Tcl_Obj* objs[11];
+
+	objs[ 0] = Tcl_NewStringObj(error ? error : "", -1);
+	objs[ 1] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
+	objs[ 2] = Tcl_NewBooleanObj(board.notDerivableFromStandardChess());
+	objs[ 3] = Tcl_NewBooleanObj(board.notDerivableFromChess960());
+	objs[ 4] = Tcl_NewStringObj(toCastling(board), -1);
+	objs[ 5] = Tcl_NewStringObj(sq::printAlgebraic(board.enPassantSquare()), -1);
+	objs[ 6] = Tcl_NewStringObj(color::isWhite(board.sideToMove()) ? "w" : "b", -1);
+	objs[ 7] = Tcl_NewIntObj(board.moveNumber());
+	objs[ 8] = Tcl_NewIntObj(board.halfMoveClock());
+	objs[ 9] = Tcl_NewListObj(2, checksGiven);
+	objs[10] = Tcl_NewListObj(n, promoted);
 
 	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;
@@ -255,14 +256,15 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* board		= stringFromObj(objc, objv, 1);
-	char const* stm		= stringFromObj(objc, objv, 2);
-	char const* ep			= stringFromObj(objc, objv, 3);
-	char const* moveNo	= stringFromObj(objc, objv, 4);
-	unsigned		checksW	= unsignedFromObj(objc, objv, 5);
-	unsigned		checksB	= unsignedFromObj(objc, objv, 6);
-	char const*	holding	= stringFromObj(objc, objv, 7);
-	Tcl_Obj*		promoted	= objectFromObj(objc, objv, 8);
+	char const* board			= stringFromObj(objc, objv, 1);
+	char const* stm			= stringFromObj(objc, objv, 2);
+	char const* ep				= stringFromObj(objc, objv, 3);
+	char const* moveNo		= stringFromObj(objc, objv, 4);
+	char const* halfMoves	= stringFromObj(objc, objv, 5);
+	unsigned		checksW		= unsignedFromObj(objc, objv, 6);
+	unsigned		checksB		= unsignedFromObj(objc, objv, 7);
+	char const*	holding		= stringFromObj(objc, objv, 8);
+	Tcl_Obj*		promoted		= objectFromObj(objc, objv, 9);
 
 	color::ID		toMove	= ::tolower(*stm) == 'w' ? color::White : color::Black;
 	variant::Type	variant	= Scidb->game().variant();
@@ -298,6 +300,7 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	pos.setToMove(toMove);
 	pos.setMoveNumber(::strtoul(moveNo, nullptr, 10));
+	pos.setHalfMoveClock(::strtoul(halfMoves, nullptr, 10));
 	pos.setChecksGiven(checksW, checksB);
 
 	char epFyle = ::tolower(*ep);
@@ -305,7 +308,7 @@ cmdMakeFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (epFyle >= 'a' && epFyle <= 'h')
 		pos.setEnPassantFyle(sq::Fyle(sq::FyleA + epFyle - 'a'));
 
-	setResult(pos.toFen(variant, getFormat(objc, objv, 8)));
+	setResult(pos.toFen(variant, getFormat(objc, objv, 10)));
 	return TCL_OK;
 }
 

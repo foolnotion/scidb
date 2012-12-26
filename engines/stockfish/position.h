@@ -189,11 +189,6 @@ public:
   bool pos_is_ok(int* failedStep = NULL) const;
   void flip();
 
-#if 1 // required for a FIX in ThreadPool::start_searching() (Gregor Cramer)
-  StateInfo* currentStateInfo() const { return st; }
-  void reset(StateInfo* state) { st = state; }
-#endif
-
 private:
   // Initialization helpers (used while setting up a position)
   void clear();

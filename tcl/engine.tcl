@@ -75,12 +75,18 @@ set ProfileAlreadyExists	"A profile with name '%s' already exists."
 set ChooseDifferentName		"Please choose a different name."
 set ReservedName				"Name '%s' is reserved and cannot be used."
 set ReallyDeleteProfile		"Really delete profile '%s'?"
+set SortName					"Sort by name"
+set SortElo						"Sort by Elo rating"
+set SortRating					"Sort by CCRL rating"
+set OpenUrl						"Open URL (web browser)"
 
 set AdminEngines				"Manage Engines"
 set SetupEngine				"Setup engine %s"
 set ImageFiles					"Image files"
 set SelectEngine				"Select Engine"
 set SelectEngineLogo			"Select Engine Logo"
+set EngineDictionary			"Engine Dictionary"
+set EngineFilter				"Engine Filter"
 set EngineLog					"Engine Console"
 set Probing						"Probing"
 set NeverUsed					"Never used"
@@ -698,88 +704,86 @@ proc logIsOpen? {parent} {
 }
 
 
-# proc EngineDictionary {list} {
-# 	variable Priv
-# 	variable _Name
-# 
-# 	set dlg [tk::toplevel $list.newEngine -class Scidb]
-# 	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
-# 	wm withdraw $dlg
-# 	pack $top
-# 
-# 	set lb [::tlistbox $top.list \
-# 		-height 15 \
-# 		-borderwidth 1 \
-# 		-relief sunken \
-# 		-selectmode browse \
-# 		-stripes #ebf4f5 \
-# 		-linespace 18 \
-# 	]
-# 	bind $lb <<ListboxSelect>> [namespace code [list SetEngine %d]]
-# 	$lb addcol text  -id name -header $mc::Name
-# 	$lb addcol text  -id elo -justify right -foreground darkgreen -header "Elo"
-# 	$lb addcol text  -id ccrl -justify right -foreground darkgreen -header "CCRL"
-# 	$lb addcol image -id chess960 -header "960"
-# 
-# 	set en [ttk::entry $top.name -textvar [namespace current]::_Name]
-# 
-# 	if {[llength $Priv(engines)] == 0} {
-# 		# TODO
-# 		# write own sorting routine because we have to take
-# 		# unicode characters into account.
-# 		set Priv(engines) [lsort -dictionary -unique [::scidb::engine::list]]
-# 	}
-# 
-# 	foreach entry $Priv(engines) {
-# 		set result [::scidb::engine::info $entry]
-# 		lassign {0 0 "" ""} elo ccrl chess960 url aliases
-# 		if {[llength $result]} {
-# 			lassign $result _ _ elo ccrl _ _ chess960Flag
-# 			if {$chess960Flag} { set chess960 $::icon::16x16::checkGreen }
-# 		}
-# 		if {$elo == 0} { set elo "" }
-# 		if {$ccrl == 0} { set ccrl "" }
-# 		$lb insert [list $entry $elo $ccrl $chess960]
-# 	}
-# 
-# 	$lb resize
-# 
-# 	grid $lb -row 1 -column 1 -sticky ew
-# 	grid $en -row 3 -column 1 -sticky ew
-# 
-# 	grid columnconfigure $top {0 2} -minsize $::theme::padx
-# 	grid rowconfigure $top {0 2} -minsize $::theme::pady
-# 
-# 	::widget::dialogButtons $dlg {ok cancel}
-# 	$dlg.ok configure -command [namespace code [list MakeNewEngine $dlg $list]]
-# 	$dlg.cancel configure -command [list destroy $dlg]
-# 
-# 	wm resizable $dlg false false
-# 	wm title $dlg $mc::SelectEngine
-# 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-# 	wm transient $dlg [winfo toplevel $list]
-# 	::util::place $dlg center [winfo toplevel $list]
-# 	wm deiconify $dlg
-# 
-# 	if {[llength $Priv(engines)]} {
-# 		focus $lb
-# 		$lb select 0
-# 	} else {
-# 		focus $en
-# 	}
-# 
-# 	::ttk::grabWindow $dlg
-# 	tkwait window $dlg
-# 	::ttk::releaseGrab $dlg
-# }
-# 
-# 
-# proc SetEngine {index} {
-# 	variable Priv
-# 	variable _Name
-# 
-# 	set _Name [lindex $Priv(engines) $index]
-# }
+proc showEngineDictionary {parent} {
+	variable Priv
+
+	if {$parent eq "."} { set dlg .engineDict } else { set dlg $parent.engineDict }
+	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
+	tk::toplevel $parent.engineDict -class Scidb
+	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
+	wm withdraw $dlg
+	pack $top -fill both -expand yes
+
+	set lb [::tlistbox $top.list \
+		-height 20 \
+		-borderwidth 1 \
+		-relief sunken \
+		-selectmode browse \
+		-stripes #ebf4f5 \
+		-linespace 18 \
+		-usescroll yes \
+		-setgrid 1 \
+	]
+	bind $dlg <Any-Key> [namespace code [list Search $lb %K]]
+	bind $lb <<ListboxSelect>> [namespace code [list OpenUrl $dlg %d]]
+	bind $lb <<ItemVisit>> [namespace code [list VisitItem $lb %d]]
+	bind $lb <<HeaderVisit>> [namespace code [list VisitHeader $lb %d]]
+	$lb bind <ButtonPress-3> [namespace code [list PopupMenu $lb %x %y]]
+	set colwd 20
+	$lb addcol text  -id name -headervar [namespace current]::mc::Name
+	$lb addcol text  -id elo -justify right -foreground darkgreen -header "Elo"
+	$lb addcol text  -id ccrl -justify right -foreground darkgreen -header "CCRL"
+	$lb addcol image -id chess960 -width $colwd -header "9" -justify center
+	$lb addcol image -id threeCheck -width $colwd -justify center
+	$lb addcol image -id crazyhouse -width $colwd -justify center
+	$lb addcol image -id bughouse -width $colwd -justify center
+	$lb addcol image -id suicide -width $colwd -justify center
+	$lb addcol image -id giveaway -width $colwd -justify center
+	$lb addcol image -id losers -width $colwd -justify center
+	$lb addcol text  -id url -header "URL" -expand yes -width 50 -squeeze 1 -ellipsis 1
+	FillHeader $lb
+
+	if {![info exists Priv(engines)]} {
+		set engines [::scidb::misc::sort -dictionary -nopunct -unique -index 0 [::scidb::engine::list]]
+		set Priv(engines) {}
+
+		foreach name $engines {
+			set result [::scidb::engine::info $name]
+			if {[llength $result]} {
+				lassign $result _ _ elo ccrl _ _ variants url
+				lappend Priv(engines) [list $name $elo $ccrl $url {*}$variants]
+			}
+		}
+	}
+
+	set Priv(sort) name
+	ResetFilter $lb
+	FillDict $lb
+	$lb resize
+
+	grid $lb -row 1 -column 1 -sticky ewns
+	grid rowconfigure $top {1} -weight 1
+	grid columnconfigure $top {1} -weight 1
+
+	grid columnconfigure $top {0 2} -minsize $::theme::padx
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+
+	::widget::dialogButtons $dlg {close}
+	::widget::dialogButtonAdd $dlg filter ::mc::Filter {}
+	$dlg.close configure -command [list destroy $dlg]
+	$dlg.filter configure -command [namespace code [list SetFilter $lb]]
+
+	wm resizable $dlg yes yes
+	wm title $dlg $mc::EngineDictionary
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	::util::place $dlg center [winfo toplevel $parent]
+	wm deiconify $dlg
+
+	if {[llength $Priv(engines)]} {
+		focus $lb
+		$lb select 0
+	}
+}
 
 
 proc setup {} {
@@ -1045,6 +1049,329 @@ proc kill {engineId} {
 
 proc engineName {engineId} {
 	return [set [namespace current]::Vars(current:name)]
+}
+
+
+proc OpenUrl {parent index} {
+	variable Priv
+
+	if {[llength $index] == 0} {
+		set url [lindex $Priv(engines) [lindex $Priv(filter) $Priv(dict:current)] 3]
+		if {[string length $url]} { ::web::open $parent $url }
+	} else {
+		set Priv(dict:current) $index
+	}
+}
+
+
+proc VisitHeader {lb data} {
+	variable Priv
+
+	lassign $data mode id column
+
+	switch $mode {
+		enter {
+			set name [string toupper $id 0 0]
+			if {[info exists ::mc::VariantName($name)]} {
+				switch $name {
+					Suicide - Giveaway - Losers {
+						set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
+					}
+					default {
+						set tip $::mc::VariantName($name)
+					}
+				}
+				tooltip::show $lb $tip
+			}
+		}
+		leave {
+			::tooltip::tooltip hide
+		}
+	}
+}
+
+
+proc VisitItem {lb data} {
+	variable Priv
+
+	lassign $data mode id index column
+
+	switch $mode {
+		enter {
+			set entry [lindex $Priv(engines) [lindex $Priv(filter) $index]]
+			lassign $entry _ _ _ _ chess960 shuffle threeCheck crazyhouse bughouse suicide giveaway losers
+			set name [string toupper $id 0 0]
+			if {[info exists ::mc::VariantName($name)] && [set $id]} {
+				switch $name {
+					Suicide - Giveaway - Losers {
+						set tip "$::mc::VariantName(Antichess) - $::mc::VariantName($name)"
+					}
+					default {
+						set tip $::mc::VariantName($name)
+					}
+				}
+				tooltip::show $lb $tip
+			}
+		}
+		leave {
+			::tooltip::tooltip hide
+		}
+	}
+}
+
+
+proc PopupMenu {lb x y} {
+	variable Priv
+
+	set m $lb.__menu__
+	catch { destroy $m }
+	menu $m -tearoff 0
+	catch { wm attributes $m -type popup_menu }
+
+	set item [$lb identify $x $y]
+	if {[lindex $item 0] ne "item"} { return }
+	set index [expr {[lindex $item 1] - 1}]
+	$lb select $index
+
+	set url [lindex $Priv(engines) [lindex $Priv(filter) $index] 3]
+	if {[string length $url]} {
+		$m add command \
+			-label $mc::OpenUrl \
+			-command [list ::web::open $lb $url] \
+			;
+		$m add separator
+	}
+
+	$m add radiobutton \
+		-label $mc::SortName \
+		-command [namespace code [list SortEngines $lb]] \
+		-variable [namespace current]::Priv(sort) \
+		-value name \
+		;
+	$m add radiobutton \
+		-label $mc::SortElo \
+		-command [namespace code [list SortEngines $lb]] \
+		-variable [namespace current]::Priv(sort) \
+		-value elo \
+		;
+	$m add radiobutton \
+		-label $mc::SortRating \
+		-command [namespace code [list SortEngines $lb]] \
+		-variable [namespace current]::Priv(sort) \
+		-value rating \
+		;
+
+	tk_popup $m {*}[winfo pointerxy $lb]
+}
+
+
+proc SortEngines {lb} {
+	variable Priv
+
+	::widget::busyCursor on
+	switch $Priv(sort) {
+		name {
+			set Priv(engines) [::scidb::misc::sort -dictionary -nopunct -index 0 $Priv(engines)]
+		}
+		elo {
+			set Priv(engines) [lsort -integer -index 1 -decreasing $Priv(engines)]
+		}
+		rating {
+			set Priv(engines) [lsort -integer -index 2 -decreasing $Priv(engines)]
+		}
+	}
+	FillDict $lb
+	::widget::busyCursor off
+}
+
+
+proc FillHeader {lb} {
+	$lb configcol threeCheck	-header [string range $::mc::VariantName(ThreeCheck) 0 1]
+	$lb configcol crazyhouse	-header [string range $::mc::VariantName(Crazyhouse) 0 1]
+	$lb configcol bughouse		-header [string range $::mc::VariantName(Bughouse) 0 1]
+	$lb configcol suicide		-header [string range $::mc::VariantName(Suicide) 0 1]
+	$lb configcol giveaway		-header [string range $::mc::VariantName(Giveaway) 0 1]
+	$lb configcol losers			-header [string range $::mc::VariantName(Losers) 0 1]
+}
+
+
+proc ResetFilter {lb} {
+	variable Filter
+
+	foreach variant {Normal Chess960 ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
+		set Filter($variant) 1
+	}
+
+	set Filter(elo:min) 0
+	set Filter(elo:max) 4000
+	set Filter(ccrl:min) 0
+	set Filter(ccrl:max) 4000
+}
+
+
+proc SetFilter {lb} {
+	variable Filter
+	variable Filter_
+	variable Reply_
+
+	set parent [winfo toplevel $lb]
+	set dlg [tk::toplevel $parent.engineFilter -class Scidb]
+	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
+	wm withdraw $dlg
+	pack $top -fill both -expand yes
+
+	set v [::ttk::labelframe $top.variants -text $mc::Variants]
+
+	set row 0
+	set col 1
+	foreach variant {Normal Chess960 ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
+		set name [string tolower $variant 0 0]
+		grid rowconfigure $v $row -minsize $::theme::pady
+		ttk::checkbutton $v.$name \
+			-text $::mc::VariantName($variant) \
+			-variable [namespace current]::Filter($variant) \
+			;
+		grid $v.$name -row $row -column $col -sticky w
+		if {[incr col 2] > 3} {
+			set col 1
+			incr row 2
+		}
+	}
+	grid rowconfigure $v $row -minsize $::theme::pady
+	grid columnconfigure $v {0 2 4} -minsize $::theme::padx
+
+	ttk::label $top.elo -text "Elo"
+	ttk::spinbox $top.eloMin \
+		-from 0 \
+		-to 4000 \
+		-textvar [namespace current]::Filter(elo:min) \
+		-width 5 \
+		-justify right \
+		;
+	ttk::label $top.eloDelim -text "\u2212"
+	ttk::spinbox $top.eloMax \
+		-from 0 \
+		-to 4000 \
+		-textvar [namespace current]::Filter(elo:max) \
+		-width 5 \
+		-justify right \
+		;
+
+	ttk::label $top.ccrl -text "CCRL"
+	ttk::spinbox $top.ccrlMin \
+		-from 0 \
+		-to 4000 \
+		-textvar [namespace current]::Filter(ccrl:min) \
+		-width 5 \
+		-justify right \
+		;
+	ttk::label $top.ccrlDelim -text "\u2212"
+	ttk::spinbox $top.ccrlMax \
+		-from 0 \
+		-to 4000 \
+		-textvar [namespace current]::Filter(ccrl:max) \
+		-width 5 \
+		-justify right \
+		;
+
+	::validate::spinboxInt $top.eloMin
+	::validate::spinboxInt $top.eloMax
+	::validate::spinboxInt $top.ccrlMin
+	::validate::spinboxInt $top.ccrlMax
+
+	grid $top.variants	-row 1 -column 1 -columnspan 6 -sticky ew
+	grid $top.elo			-row 3 -column 1 -sticky w
+	grid $top.eloMin		-row 3 -column 3
+	grid $top.eloDelim	-row 3 -column 4
+	grid $top.eloMax		-row 3 -column 5
+	grid $top.ccrl			-row 5 -column 1 -sticky w
+	grid $top.ccrlMin		-row 5 -column 3
+	grid $top.ccrlDelim	-row 5 -column 4
+	grid $top.ccrlMax		-row 5 -column 5
+
+	grid rowconfigure $top {0 2 4 6} -minsize $::theme::pady
+	grid columnconfigure $top {0 2 7} -minsize $::theme::padx
+	grid columnconfigure $top {6} -weight 1
+
+	array set Filter_ [array get Filter]
+	set Reply_ ""
+	::widget::dialogButtons $dlg {ok revert} -default ok
+	$dlg.ok configure -command [list set [namespace current]::Reply_ ok]
+	$dlg.revert configure -command [namespace code [list ResetFilter $lb]]
+	wm resizable $dlg no no
+	wm title $dlg $mc::EngineFilter
+	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::Reply_ cancel]
+	::util::place $dlg center $parent
+	::ttk::grabWindow $dlg
+	wm deiconify $dlg
+	focus $v.chess960
+	tkwait variable [namespace current]::Reply_
+	::ttk::releaseGrab $dlg
+	destroy $dlg
+
+	switch $Reply_ {
+		ok {
+			if {![arrayEqual Filter Filter_]} { FillDict $lb }
+		}
+		cancel {
+			array set Filter [array get Filter_]
+		}
+	}
+}
+
+
+proc FillDict {lb} {
+	variable Priv
+	variable Filter
+
+	$lb clear
+	set Priv(filter) {}
+
+	set variants {}
+	foreach variant {Normal Chess960 ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
+		if {$Filter($variant)} { lappend variants $variant }
+	}
+
+	set index 0
+	foreach entry $Priv(engines) {
+		lassign $entry name elo ccrl url chess960 shuffle \
+			threeCheck crazyhouse bughouse suicide giveaway losers
+
+		if {	$elo  >= $Filter(elo:min)  && $Filter(elo:max)  >= $elo
+			&& $ccrl >= $Filter(ccrl:min) && $Filter(ccrl:max) >= $ccrl} {
+			set normal 1
+			set include 0
+
+			foreach variant {Normal Chess960 ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
+				if {$variant in $variants && [set [string tolower $variant 0 0]]} {
+					set include 1
+				}
+			}
+
+			if {$include} {
+				set v [lrepeat 7 "\u2212"]
+				if {$elo == 0}		{ set elo "" }
+				if {$ccrl == 0}	{ set ccrl "" }
+				if {$chess960}		{ lset v 0 $::icon::16x16::checkGreen }
+				if {$threeCheck}	{ lset v 1 $::icon::16x16::checkGreen }
+				if {$crazyhouse}	{ lset v 2 $::icon::16x16::checkGreen }
+				if {$bughouse}		{ lset v 3 $::icon::16x16::checkGreen }
+				if {$suicide}		{ lset v 4 $::icon::16x16::checkGreen }
+				if {$giveaway}		{ lset v 5 $::icon::16x16::checkGreen }
+				if {$losers}		{ lset v 6 $::icon::16x16::checkGreen }
+
+				$lb insert [list $name $elo $ccrl {*}$v $url]
+				lappend Priv(filter) $index
+			}
+		}
+
+		incr index
+	}
+}
+
+
+proc Search {lb s} {
+	if {[string length $s] == 1} { $lb search 0 $s }
 }
 
 

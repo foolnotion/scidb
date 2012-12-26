@@ -70,6 +70,7 @@
 ::mc::Delete		"Töröl"
 ::mc::Edit		"Szerkeszt"
 ::mc::File		"File" ;# NEW
+::mc::Filter		"Filter" ;# NEW
 ::mc::From		"From" ;# NEW
 ::mc::Game		"Játszma"
 ::mc::Layout		"Layout"
@@ -232,6 +233,7 @@
 ::menu::mc::Help							"&Súgó"
 ::menu::mc::Contact						"&Contact (Web Browser)" ;# NEW
 ::menu::mc::Quit							"&Kilépés"
+::menu::mc::Tools							"&Tools" ;# NEW
 ::menu::mc::Extras						"E&xtras" ;# NEW
 ::menu::mc::Setup						"Setu&p" ;# NEW
 ::menu::mc::Engines						"&Engines" ;# NEW
@@ -240,6 +242,7 @@
 ::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
 ::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
 ::menu::mc::OpenEngineLog		"Open &Engine Console" ;# NEW
+::menu::mc::OpenEngineDictionary	"Open Engine &Dictionary" ;# NEW
 
 ::menu::mc::OpenFile						"Scidb fájl megnyitása"
 ::menu::mc::NewFile						"Scidb fájl létrehozása"
@@ -890,12 +893,18 @@
 ::engine::mc::ChooseDifferentName	"Please choose a different name." ;# NEW
 ::engine::mc::ReservedName		"Name '%s' is reserved and cannot be used." ;# NEW
 ::engine::mc::ReallyDeleteProfile	"Really delete profile '%s'?" ;# NEW
+::engine::mc::SortName			"Sort by name" ;# NEW
+::engine::mc::SortElo			"Sort by Elo rating" ;# NEW
+::engine::mc::SortRating		"Sort by CCRL rating" ;# NEW
+::engine::mc::OpenUrl			"Open URL (web browser)" ;# NEW
 
 ::engine::mc::AdminEngines		"Manage Engines" ;# NEW
 ::engine::mc::SetupEngine		"Setup engine %s" ;# NEW
 ::engine::mc::ImageFiles		"Image files" ;# NEW
 ::engine::mc::SelectEngine		"Select Engine" ;# NEW
 ::engine::mc::SelectEngineLogo		"Select Engine Logo" ;# NEW
+::engine::mc::EngineDictionary		"Engine Dictionary" ;# NEW
+::engine::mc::EngineFilter		"Engine Filter" ;# NEW
 ::engine::mc::EngineLog			"Engine Console" ;# NEW
 ::engine::mc::Probing			"Probing" ;# NEW
 ::engine::mc::NeverUsed			"Never used" ;# NEW
@@ -989,7 +998,7 @@
 
 ::application::analysis::mc::Signal(stopped)		"Engine stopped by signal." ;# NEW
 ::application::analysis::mc::Signal(resumed)		"Engine resumed by signal." ;# NEW
-::application::analysis::mc::Signal(killed)		"Engine killed by signal." ;# NEW
+::application::analysis::mc::Signal(killed)		"Engine crashed or killed by signal." ;# NEW
 ::application::analysis::mc::Signal(crashed)		"Engine crashed." ;# NEW
 ::application::analysis::mc::Signal(closed)		"Engine has closed connection." ;# NEW
 ::application::analysis::mc::Signal(terminated)		"Engine terminated with exit code %s." ;# NEW
@@ -1262,6 +1271,8 @@
 ::browser::mc::DecreaseBoardSize	"Tábla méretének növelése"
 ::browser::mc::MaximizeBoardSize	"Maximize board size" ;# NEW
 ::browser::mc::MinimizeBoardSize	"Minimize board size" ;# NEW
+::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
+::browser::mc::LoadNextGame		"Load next game" ;# NEW
 
 ::browser::mc::GotoGame(first)		"Első játszmához"
 ::browser::mc::GotoGame(last)		"Utolsó játszmához"
@@ -1307,6 +1318,7 @@
 ::setup::board::mc::Castling			"Sáncolás"
 ::setup::board::mc::MoveNumber			"Lépésszám"
 ::setup::board::mc::EnPassantFile		"Menetközbeni ütés"
+::setup::board::mc::HalfMoves			"Half moves" ;# NEW
 ::setup::board::mc::StartPosition		"Kiinduló állás"
 ::setup::board::mc::Fen				"FEN"
 ::setup::board::mc::Promoted			"Promoted" ;# NEW

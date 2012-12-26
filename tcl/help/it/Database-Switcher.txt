@@ -17,6 +17,12 @@
 *********************************************************************** -->
 
 INDEX Selezionatore di Database
+<!-- NEW
+INDEX Compress#Compact
+INDEX Compress database#Compact
+INDEX Administrate database#Administration
+-->
+
 TITLE Il Selezionatore di Database
 
 <ul><img src="images/database-switcher.png"/></ul>

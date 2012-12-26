@@ -42,6 +42,8 @@ set IncreaseBoardSize	"Increase board size"
 set DecreaseBoardSize	"Decrease board size"
 set MaximizeBoardSize	"Maximize board size"
 set MinimizeBoardSize	"Minimize board size"
+set LoadPrevGame			"Load previous game"
+set LoadNextGame			"Load next game"
 
 set IllegalMove			"Illegal move"
 set NoCastlingRights		"no castling rights"
@@ -235,6 +237,8 @@ proc open {parent base variant info view index {fen {}}} {
 	$buttons.close configure -command [list destroy $dlg]
 	$buttons.backward configure -command [namespace code [list NextGame $dlg $position -1]]
 	$buttons.forward configure -command [namespace code [list NextGame $dlg $position +1]]
+	::tooltip::tooltip $buttons.backward [namespace current]::mc::LoadPrevGame
+	::tooltip::tooltip $buttons.forward [namespace current]::mc::LoadNextGame
 
 	set boardSize [expr {8*$squareSize + 2}]
 	if {$variant eq "Crazyhouse"} {
@@ -603,6 +607,7 @@ proc Update {position id base variant {view -1} {index -1}} {
 proc Update2 {position} {
 	variable ${position}::Vars
 
+	if {![namespace exists [namespace current]::${position}]} { return }
 	set index [expr {$Vars(number) - 1}]
 	set Vars(index) [::scidb::db::get gameIndex $index $Vars(view) $Vars(base) $Vars(variant)]
 	ConfigureButtons $position
@@ -1221,6 +1226,8 @@ proc ConfigureHeader {position} {
 
 proc ConfigureHeader2 {position} {
 	variable ${position}::Vars
+
+	if {![namespace exists [namespace current]::${position}]} { return }
 	$Vars(header) configure -height [$Vars(header) count -displaylines 1.0 end]
 }
 
@@ -1247,6 +1254,7 @@ proc SecondConfigure {w position width} {
 proc SetMinSize {w position} {
 	variable ${position}::Vars
 
+	if {![namespace exists [namespace current]::${position}]} { return }
 	wm minsize $w [winfo width $w] [winfo height $w]
 	set Vars(size:width) [winfo width $w]
 	set Vars(size:height) [winfo height $w]
@@ -1482,6 +1490,7 @@ proc ChangeBoardSize {position board mode} {
 	variable Options
 	variable Priv
 
+	if {![namespace exists [namespace current]::${position}]} { return }
 	if {$Vars(fullscreen) && $mode ne "fullscreen"} { return }
 
 	set squareSize $Vars(board:size)

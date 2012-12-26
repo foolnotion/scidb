@@ -1,6 +1,14 @@
 [November 2012] ==============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #593)
+------------------------------------------------------------------------------
+* Invalid access to memory in Stockfish fixed. Now it seems that Stockfish is
+really stable.
+
+* Engine dictionary implemented.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #585)
 ------------------------------------------------------------------------------
 * Broken linker hack again - another workaround. I decided to switch this hack

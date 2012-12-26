@@ -125,9 +125,13 @@ Encoder::putMoveByte(Square from, Byte value)
 
 	if (pieceNum & 0x10)
 	{
-		m_strm.put(5);
+		m_strm.put(token::Special_Move);
 		pieceNum &= 0x0f;
 	}
+
+#ifdef CORRECTION
+	M_ASSERT(((pieceNum << 4) | value) > token::Special_Move);
+#endif
 
    m_strm.put((pieceNum << 4) | value);
 }
@@ -146,9 +150,17 @@ Encoder::encodePieceDrop(Move const& move)
 		pieceNum |= 0x20;
 	}
 
+#ifdef CORRECTION
+	M_ASSERT(pieceNum < 64);
+	// Make sure that it cannot clash with the special tokens.
+	m_strm.put(move.dropped() | 8);
+	m_strm.put(pieceNum | 64);
+	m_strm.put(move.to() | 64);
+#else
 	m_strm.put(move.dropped());
 	m_strm.put(pieceNum);
 	m_strm.put(move.to());
+#endif
 }
 
 
@@ -158,12 +170,16 @@ Encoder::encodeNullOrDropMove(Move const& move)
 {
 	M_ASSERT(move.isNull() || variant::isZhouse(m_variant));
 
-	m_strm.put(5);
+	m_strm.put(token::Special_Move);
 
 	if (variant::isZhouse(m_variant))
 	{
 		if (move.isNull())
+#ifdef CORRECTION
+			m_strm.put(token::Special_Move);
+#else
 			m_strm.put(0);
+#endif
 		else
 			encodePieceDrop(move);
 	}
@@ -232,11 +248,17 @@ Encoder::encodeQueen(Move const& move)
 		// is illegal of course) to indicate it is NOT a rooklike move.
 		putMoveByte(from, sq::fyle(from));
 
+#ifdef CORRECTION
+		// Now we put the to-square in the next byte. We make sure that it
+		// cannot clash with the special tokens.
+		m_strm.put(to | 64);
+#else
 		// Now we put the to-square in the next byte. We add a 64 to it
-		// to make sure that it cannot clash with the Special tokens (which
+		// to make sure that it cannot clash with the special tokens (which
 		// are in the range 0 to 15, since they are special King moves).
 		static_assert(token::Special_Move < 64, "decoding cannot work");
 		m_strm.put(to + 64);
+#endif
 	}
 }
 

@@ -70,6 +70,7 @@
 ::mc::Delete			"Radera"
 ::mc::Edit				"Redigera"
 ::mc::File				"Arkiv"
+::mc::Filter			"Filter" ;# NEW
 ::mc::From				"Från"
 ::mc::Game				"Parti"
 ::mc::Layout			"Layout"
@@ -232,6 +233,7 @@
 ::menu::mc::Help							"&Hjälp"
 ::menu::mc::Contact						"&Kontakt (Webbläsare)"
 ::menu::mc::Quit							"&Avsluta"
+::menu::mc::Tools							"&Tools" ;# NEW
 ::menu::mc::Extras						"&Tillägg"
 ::menu::mc::Setup							"&Inställningar"
 ::menu::mc::Engines						"&Motorer"
@@ -240,6 +242,7 @@
 ::menu::mc::ContactFeatureRequest	"Ö&nskemål"
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
 ::menu::mc::OpenEngineLog				"Öppna &motor konsol"
+::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
@@ -890,12 +893,18 @@
 ::engine::mc::ChooseDifferentName	"Välj ett annat namn."
 ::engine::mc::ReservedName				"Namnet '%s' är reserverat och kan inte användas."
 ::engine::mc::ReallyDeleteProfile	"Ta bort profil '%s'?"
+::engine::mc::SortName					"Sort by name" ;# NEW
+::engine::mc::SortElo					"Sort by Elo rating" ;# NEW
+::engine::mc::SortRating				"Sort by CCRL rating" ;# NEW
+::engine::mc::OpenUrl					"Open URL (web browser)" ;# NEW
 
 ::engine::mc::AdminEngines				"Hantera motorer"
 ::engine::mc::SetupEngine				"Installera motor %s"
 ::engine::mc::ImageFiles				"Imagefiler"
 ::engine::mc::SelectEngine				"Välj motor"
 ::engine::mc::SelectEngineLogo		"Välj motor logo"
+::engine::mc::EngineDictionary		"Engine Dictionary" ;# NEW
+::engine::mc::EngineFilter				"Engine Filter" ;# NEW
 ::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"Aldrig använd"
@@ -989,7 +998,7 @@
 
 ::application::analysis::mc::Signal(stopped)				"Motorn stoppad av signal."
 ::application::analysis::mc::Signal(resumed)				"Motorn återupptagen av signal."
-::application::analysis::mc::Signal(killed)				"Motorn dödad av signal."
+::application::analysis::mc::Signal(killed)				"Motorn dödad av signal." ;# NEW change to "Engine crashed or killed by signal."
 ::application::analysis::mc::Signal(crashed)				"Motorn kraschade."
 ::application::analysis::mc::Signal(closed)				"Motorn har stängt anslutningen."
 ::application::analysis::mc::Signal(terminated)			"Motorn avslutades med värde %s."
@@ -1262,6 +1271,8 @@
 ::browser::mc::DecreaseBoardSize	"Förminska brädet"
 ::browser::mc::MaximizeBoardSize	"Maximera brädet"
 ::browser::mc::MinimizeBoardSize	"Minimera brädet"
+::browser::mc::LoadPrevGame		"Load previous game" ;# NEW
+::browser::mc::LoadNextGame		"Load next game" ;# NEW
 
 ::browser::mc::GotoGame(first)	"Gå till första partiet"
 ::browser::mc::GotoGame(last)		"Gå till sista partiet"
@@ -1307,6 +1318,7 @@
 ::setup::board::mc::Castling						"Rockad"
 ::setup::board::mc::MoveNumber					"Dragnummer"
 ::setup::board::mc::EnPassantFile				"En passant"
+::setup::board::mc::HalfMoves						"Half moves" ;# NEW
 ::setup::board::mc::StartPosition				"Startposition"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Promoted" ;# NEW

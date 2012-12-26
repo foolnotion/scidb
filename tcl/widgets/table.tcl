@@ -417,9 +417,9 @@ proc addcol {table id args} {
 	$table.t notify install <Item-leave>
 	$table.t notify install <Column-resized>
 	$table.t notify bind Table <ColumnDrag-receive> [namespace code [list MoveColumn $table %C %b]]
-	$table.t notify bind Table <Header-enter> [namespace code [list Tooltip $table show %C %x %y]]
+	$table.t notify bind Table <Header-enter> [namespace code [list Tooltip $table show %C]]
 	$table.t notify bind Table <Header-leave> [namespace code [list Tooltip $table hide]]
-	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I %x %y]]
+	$table.t notify bind Table <Item-enter> [namespace code [list VisitItem $table enter %C %I]]
 	$table.t notify bind Table <Item-leave> [namespace code [list VisitItem $table leave %C %I]]
 	$table.t notify bind Table <Column-resized> [namespace code [list UpdateColunnWidth $table %C %w]]
 
@@ -1224,7 +1224,7 @@ proc Scroll {table action} {
 }
 
 
-proc Tooltip {table mode {id {}} {x 0} {y 0}} {
+proc Tooltip {table mode {id {}}} {
 	variable ${table}::Vars
 
 	if {[llength $id]} {
@@ -1252,7 +1252,7 @@ proc Tooltip {table mode {id {}} {x 0} {y 0}} {
 }
 
 
-proc VisitItem {table mode column item {x {}} {y {}}} {
+proc VisitItem {table mode column item} {
 	variable ${table}::Vars
 
 	if {[string length $column] == 0} { return }

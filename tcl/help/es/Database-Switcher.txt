@@ -17,6 +17,11 @@
 *********************************************************************** -->
 
 INDEX Intercambiador de bases de datos
+<!-- NEW
+INDEX Compress#Compact
+INDEX Compress database#Compact
+INDEX Administrate database#Administration
+-->
 
 TITLE El intercambiador de bases de datos
 

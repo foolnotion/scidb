@@ -46,7 +46,7 @@ Scidb:
   <li class="space">
     Il formato di Scidb attuale (.sci) sarà finito al più tardi con il
     rilascio della prima versione completa (cioè quando sarà raggiunta
-    la versione 1.0 o superiore, la versione corrente è la 0.92).
+    la versione 1.0 o superiore, la versione corrente è la 0.93).
     Nonostante ciò il formato attuale è del tutto utilizzabile, e sarà
     possibile aggiornarlo in futuro.
   </li>

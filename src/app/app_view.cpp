@@ -530,7 +530,12 @@ View::dumpGame(unsigned index,
 		lengths[0] = 0;
 
 		for (unsigned i = 1; i < size; ++i)
-			count += (lengths[i] = game.dumpMoves(result[i], unsigned(i*delta + 0.5) - count));
+		{
+			count += (lengths[i] = game.dumpMoves(
+												result[i],
+												unsigned(i*delta + 0.5) - count,
+												Game::SuppressSpace | Game::WhiteNumbers));
+		}
 	}
 
 	if (fen.empty())

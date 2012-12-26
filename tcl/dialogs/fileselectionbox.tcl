@@ -279,7 +279,7 @@ proc Open {type args} {
 		-geometry		""
 		-embed			0
 		-needencoding	0
-		-rows				10
+		-rows				11
 		-class			{}
 		-databases		1
 		-filetypes		{}

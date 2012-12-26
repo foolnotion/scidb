@@ -61,10 +61,9 @@ using namespace TeXt;
 //#define DEBUG
 
 #ifdef DEBUG
-# undef DEBUG
-# define DEBUG(stmt) stmt
+# define TRACE(stmt) stmt
 #else
-# define DEBUG(stmt)
+# define TRACE(stmt)
 #endif
 
 //#define USE_CONFLICT_MAP
@@ -910,7 +909,7 @@ Player::newPlayer(mstl::string const& name,
 			{
 				if (players.size() >= 2)
 				{
-					DEBUG(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
+					TRACE(::printf("cannot distinguish between federation: %s ignored\n", name.c_str()));
 					return 0;
 				}
 
@@ -1063,7 +1062,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 			{
 				if (players.size() >= 2)
 				{
-					DEBUG(::printf("cannot distinguish between federation: alias %s ignored\n",
+					TRACE(::printf("cannot distinguish between federation: alias %s ignored\n",
 										name.c_str()));
 					return false;
 				}
@@ -1078,7 +1077,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 
 					if (p->sex() == sex || p->sex() == sex::Unspecified)
 					{
-						DEBUG(::printf("alias %s already exists\n", name.c_str()));
+						TRACE(::printf("alias %s already exists\n", name.c_str()));
 						return false;
 					}
 				}
@@ -1094,7 +1093,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 
 					if (country::match(federation, p->federation()))
 					{
-						DEBUG(::printf("alias %s already exists\n", name.c_str()));
+						TRACE(::printf("alias %s already exists\n", name.c_str()));
 						return false;
 					}
 				}
@@ -1108,7 +1107,7 @@ Player::newAlias(mstl::string const& name, mstl::string const& ascii, Player* pl
 					if (	(p->sex() == sex::Unspecified || p->sex() == sex)
 						&& country::match(federation, p->federation()))
 					{
-						DEBUG(::printf("alias %s already exists\n", name.c_str()));
+						TRACE(::printf("alias %s already exists\n", name.c_str()));
 						return false;
 					}
 				}
@@ -1183,7 +1182,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 				{
 					if (players.size() >= 2)
 					{
-						DEBUG(::printf("cannot distinguish between federation: name %s ignored\n",
+						TRACE(::printf("cannot distinguish between federation: name %s ignored\n",
 											name.c_str()));
 						return false;
 					}
@@ -1198,7 +1197,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 
 						if (p->sex() == sex || p->sex() == sex::Unspecified)
 						{
-							DEBUG(::printf("name %s already exists\n", name.c_str()));
+							TRACE(::printf("name %s already exists\n", name.c_str()));
 							return false;
 						}
 					}
@@ -1214,7 +1213,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 
 						if (country::match(federation, p->federation()))
 						{
-							DEBUG(::printf("name %s already exists\n", name.c_str()));
+							TRACE(::printf("name %s already exists\n", name.c_str()));
 							return false;
 						}
 					}
@@ -1228,7 +1227,7 @@ Player::replaceName(mstl::string const& name, mstl::string const& ascii, Player*
 						if (	(p->sex() == sex::Unspecified || p->sex() == sex)
 							&& country::match(federation, p->federation()))
 						{
-							DEBUG(::printf("name %s already exists\n", name.c_str()));
+							TRACE(::printf("name %s already exists\n", name.c_str()));
 							return 0;
 						}
 					}
@@ -1306,7 +1305,7 @@ Player::insertPlayer(mstl::string& name, unsigned region, country::Code federati
 			}
 			else
 			{
-				DEBUG(::printf("'%s' does not fit region 1, 2, and 4\n", name.c_str()));
+				TRACE(::printf("'%s' does not fit region 1, 2, and 4\n", name.c_str()));
 				return 0;;
 			}
 		}
@@ -1318,7 +1317,7 @@ Player::insertPlayer(mstl::string& name, unsigned region, country::Code federati
 
 	if (!sys::utf8::Codec::fitsRegion(name, region))
 	{
-		DEBUG(::printf("'%s' does not fit region %u\n", name.c_str(), region));
+		TRACE(::printf("'%s' does not fit region %u\n", name.c_str(), region));
 		return 0;;
 	}
 
@@ -1362,7 +1361,7 @@ Player::insertAlias(mstl::string& name, unsigned region, Player* player)
 			region = country::toRegion(player->federation());
 	}
 
-	DEBUG(if (!sys::utf8::Codec::fitsRegion(name, region))
+	TRACE(if (!sys::utf8::Codec::fitsRegion(name, region))
 				return ::printf("'%s' does not fit region %u\n", name.c_str(), region) == 0);
 
 	mstl::string ascii;
@@ -1395,14 +1394,14 @@ Player::replaceName(mstl::string& name, unsigned region, Player* player)
 
 	if (country::isGermanSpeakingCountry(player->federation()))
 	{
-		DEBUG(if (!sys::utf8::Codec::fitsRegion(name, 1))
+		TRACE(if (!sys::utf8::Codec::fitsRegion(name, 1))
 					return ::printf("'%s' does not fit region %u\n", name.c_str(), 1) == 0);
 
 		sys::utf8::Codec::mapFromGerman(name, ascii);
 	}
 	else
 	{
-		DEBUG(if (!sys::utf8::Codec::fitsRegion(name, region))
+		TRACE(if (!sys::utf8::Codec::fitsRegion(name, region))
 					return ::printf("'%s' does not fit region %u\n", name.c_str(), region) == 0);
 
 		sys::utf8::Codec::convertToNonDiacritics(region, name, ascii);
@@ -1603,10 +1602,44 @@ Player::loadDone()
 {
 	typedef int (*Compare)(const void *, const void *);
 
-	::qsort(	playerList.begin(),
-				playerList.size(),
+	::qsort(	::playerList.begin(),
+				::playerList.size(),
 				sizeof(PlayerList::value_type),
 				reinterpret_cast<Compare>(cmpAssoc));
+
+#ifdef DEBUG
+	unsigned count[rating::Last];
+	unsigned number[rating::Last + 1];
+	::memset(count, 0, sizeof(count));
+	::memset(number, 0, sizeof(number));
+	for (unsigned i = 0; i < ::playerList.size(); ++i)
+	{
+		unsigned n = 0;
+
+		Player const* player = ::playerList[i].second;
+
+		for (unsigned k = 0; k < rating::Last; ++k)
+		{
+			if (player->m_highestRating[k] || player->m_latestRating[k])
+			{
+				++count[k];
+				++n;
+			}
+		}
+
+		++number[n];
+	}
+	for (unsigned k = 0; k < rating::Last; ++k)
+	{
+		if (count[k])
+			::printf("### Rating %s: %u\n", rating::toString(rating::Type(k)).c_str(), count[k]);
+	}
+	for (unsigned k = 1; k <= rating::Last; ++k)
+	{
+		if (number[k])
+			::printf("### Ratings %u: %u\n", k, number[k]);
+	}
+#endif
 }
 
 
@@ -1641,11 +1674,11 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 {
 	enum Section { Invalid, Player, Site, Event, Round };
 
-	DEBUG(unsigned countPlayers	= 0);
-	DEBUG(unsigned countViafIds	= 0);
-	DEBUG(unsigned countPndIds		= 0);
+	TRACE(unsigned countPlayers	= 0);
+	TRACE(unsigned countViafIds	= 0);
+	TRACE(unsigned countPndIds		= 0);
 
-	DEBUG(::printf("### Parse Spellcheck File #####################\n"));
+	TRACE(::printf("### Parse Spellcheck File #####################\n"));
 
 	::playerList.reserve(200000);
 
@@ -1731,7 +1764,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 										if (::strncmp(t, "VIAF ", 5) == 0)
 										{
 											player->setViafID(::strtoul(t + 5, nullptr, 10));
-											DEBUG(++countViafIds);
+											TRACE(++countViafIds);
 										}
 										break;
 
@@ -1739,7 +1772,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 										if (::strncmp(t, "PND ", 4) == 0 && ::findSpace(t + 4) - t == 13)
 										{
 											player->setPndID(t + 4);
-											DEBUG(++countPndIds);
+											TRACE(++countPndIds);
 										}
 										break;
 								}
@@ -1851,7 +1884,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 
 						if ((player = insertPlayer(line, region, federation, sex)))
 						{
-							DEBUG(++countPlayers);
+							TRACE(++countPlayers);
 
 							int score = ::getElo(elo);
 
@@ -1918,15 +1951,15 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 
 #endif
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(if (countViafIds) ::printf("VIAF-ID entries:     %u\n", countViafIds));
-	DEBUG(if (countPndIds)  ::printf("PND-ID entries:      %u\n", countPndIds));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Aliases total:       %u\n", ::aliasDict.used()));
-	DEBUG(::printf("ASCII total:         %u\n", ::asciiDict.size()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(if (countViafIds) ::printf("VIAF-ID entries:     %u\n", countViafIds));
+	TRACE(if (countPndIds)  ::printf("PND-ID entries:      %u\n", countPndIds));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Aliases total:       %u\n", ::aliasDict.used()));
+	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
@@ -1948,13 +1981,13 @@ Player::parseFideRating(mstl::istream& stream)
 	mstl::string key;
 	mstl::string federation;
 
-	DEBUG(unsigned count = 0);
-	DEBUG(unsigned total = 0);
+	TRACE(unsigned count = 0);
+	TRACE(unsigned total = 0);
 
 	if (!stream.getline(line))
 		return;
 
-	DEBUG(::printf("### Parse Fide Rating #########################\n"));
+	TRACE(::printf("### Parse Fide Rating #########################\n"));
 
 	while (stream.getline(line))
 	{
@@ -2048,7 +2081,7 @@ Player::parseFideRating(mstl::istream& stream)
 					::playerDict.insert_unique(fideID, player);
 					player->setFideID(fideID);
 					player->setType(species::Human);
-					DEBUG(++count);
+					TRACE(++count);
 				}
 				else
 				{
@@ -2057,7 +2090,7 @@ Player::parseFideRating(mstl::istream& stream)
 						if (player->m_sex == sex::Unspecified)
 							player->m_sex = sex;
 						else if (sex != sex::ID(player->m_sex))
-							DEBUG(::printf("mismatch of sex: %s (%u)\n", player->name().c_str(), fideID));
+							TRACE(::printf("mismatch of sex: %s (%u)\n", player->name().c_str(), fideID));
 					}
 
 					if (country != country::Unknown)
@@ -2069,16 +2102,16 @@ Player::parseFideRating(mstl::istream& stream)
 						}
 						else if (country != player->federation() && country != player->nativeCountry())
 						{
-							DEBUG(::printf("mismatch of country: %s (%u)\n", player->name().c_str(), fideID));
+							TRACE(::printf("mismatch of country: %s (%u)\n", player->name().c_str(), fideID));
 						}
 					}
 				}
 
-				DEBUG(++total);
+				TRACE(++total);
 
 				unsigned	year = ::isdigit(s[64]) ? ::strtoul(s + 64, nullptr, 10) : 0;
 
-				DEBUG(if (year && player->dateOfBirth() && player->dateOfBirth().year() != year)
+				TRACE(if (year && player->dateOfBirth() && player->dateOfBirth().year() != year)
 							::printf("birth date mismatch: %s (%u)\n", name.c_str(), fideID));
 
 				player->setTitles(player->titles() | titles);
@@ -2097,14 +2130,14 @@ Player::parseFideRating(mstl::istream& stream)
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("FIDE entries:        %u (%u)\n", count, total));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("Aliases total:       %u\n", ::aliasDict.used()));
-	DEBUG(::printf("ASCII total:         %u\n", ::asciiDict.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("FIDE entries:        %u (%u)\n", count, total));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("Aliases total:       %u\n", ::aliasDict.used()));
+	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
@@ -2121,10 +2154,10 @@ Player::parseEcfRating(mstl::istream& stream)
 	mstl::string line;
 	mstl::string name;
 
-	DEBUG(unsigned count = 0);
-	DEBUG(unsigned total = 0);
+	TRACE(unsigned count = 0);
+	TRACE(unsigned total = 0);
 
-	DEBUG(::printf("### Parse ECF Rating ##########################\n"));
+	TRACE(::printf("### Parse ECF Rating ##########################\n"));
 
 	while (stream.getline(line))
 	{
@@ -2173,22 +2206,22 @@ Player::parseEcfRating(mstl::istream& stream)
 				if (!(player = insertPlayer(name, country::England, sex)))
 					continue;
 
-				DEBUG(++count);
+				TRACE(++count);
 			}
 
 			player->setLatestRating(rating::ECF, rating);
 			player->setHighestRating(rating::ECF, rating);
 			player->setEcfID(line.data());
-			DEBUG(++total);
+			TRACE(++total);
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("ECF entried:         %u (%u)\n", count, total));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("ECF entried:         %u (%u)\n", count, total));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
@@ -2211,9 +2244,9 @@ Player::parseDwzRating(mstl::istream& stream)
 
 	sys::utf8::Codec codec(sys::utf8::Codec::latin1());
 
-	DEBUG(unsigned count = 0);
-	DEBUG(unsigned total = 0);
-	DEBUG(::printf("### Parse DWZ Rating ##########################\n"));
+	TRACE(unsigned count = 0);
+	TRACE(unsigned total = 0);
+	TRACE(::printf("### Parse DWZ Rating ##########################\n"));
 
 	while (stream.getline(line))
 	{
@@ -2260,7 +2293,7 @@ Player::parseDwzRating(mstl::istream& stream)
 					}
 					else if (fideID)
 					{
-//						DEBUG(::printf("player '%s': mismatch of FIDE Id (%u - %u)\n",
+//						TRACE(::printf("player '%s': mismatch of FIDE Id (%u - %u)\n",
 //											name.c_str(),
 //											player->fideID(),
 //											fideID));
@@ -2277,7 +2310,7 @@ Player::parseDwzRating(mstl::istream& stream)
 					::alloc(::asciiDict[player], ascii);
 				}
 
-				DEBUG(++count);
+				TRACE(++count);
 			}
 
 			unsigned yearOfBirth = ::isdigit(line[22]) ? ::strtoul(line.c_str() + 22, nullptr, 10) : 0;
@@ -2294,17 +2327,17 @@ Player::parseDwzRating(mstl::istream& stream)
 			player->setLatestRating(rating::DWZ, rating);
 			player->setHighestRating(rating::DWZ, rating);
 			player->setDsbID(line, line.c_str() + 6);
-			DEBUG(++total);
+			TRACE(++total);
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("DWZ entries:         %u (%u)\n", count, total));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("ASCII total:         %u\n", ::asciiDict.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("DWZ entries:         %u (%u)\n", count, total));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
@@ -2324,9 +2357,9 @@ Player::parseIccfRating(mstl::istream& stream)
 
 	sys::utf8::Codec codec(sys::utf8::Codec::latin1());
 
-	DEBUG(unsigned count = 0);
-	DEBUG(unsigned total = 0);
-	DEBUG(::printf("### Parse ICCF Rating #########################\n"));
+	TRACE(unsigned count = 0);
+	TRACE(unsigned total = 0);
+	TRACE(::printf("### Parse ICCF Rating #########################\n"));
 
 	while (stream.getline(line))
 	{
@@ -2351,8 +2384,8 @@ Player::parseIccfRating(mstl::istream& stream)
 				{
 					unsigned id = ::strtoul(line.c_str(), nullptr, 10);
 
-					DEBUG(if (player->latestRating() == 0) ++count);
-					DEBUG(++total);
+					TRACE(if (player->latestRating() == 0) ++count);
+					TRACE(++total);
 
 					switch (line[11])
 					{
@@ -2379,12 +2412,12 @@ Player::parseIccfRating(mstl::istream& stream)
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("ICCF entries:        %u (%u)\n", count, total));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("ICCF entries:        %u (%u)\n", count, total));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
@@ -2397,9 +2430,9 @@ Player::parseIpsRatingList(mstl::istream& stream)
 	mstl::string name;
 	mstl::string latin1;
 
-	DEBUG(unsigned count = 0);
-	DEBUG(unsigned total = 0);
-	DEBUG(::printf("### Parse IPS Rating ##########################\n"));
+	TRACE(unsigned count = 0);
+	TRACE(unsigned total = 0);
+	TRACE(::printf("### Parse IPS Rating ##########################\n"));
 
 	while (stream.getline(line))
 	{
@@ -2421,11 +2454,11 @@ Player::parseIpsRatingList(mstl::istream& stream)
 					if (!containsPlayer(name, country::Unknown, sex::Unspecified))
 					{
 						player = insertPlayer(name, 1);
-						DEBUG(++count);
+						TRACE(++count);
 					}
 				}
 
-				DEBUG(++total);
+				TRACE(++total);
 
 				if (player)
 				{
@@ -2441,20 +2474,20 @@ Player::parseIpsRatingList(mstl::istream& stream)
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("IPS rating entries:  %u (%u)\n", count, total));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player map entries:  %u\n", ::playerDict.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("IPS rating entries:  %u (%u)\n", count, total));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
 void
 Player::parseChessgamesDotComLinks(mstl::istream& stream)
 {
-	DEBUG(unsigned countLinks = 0);
-	DEBUG(::printf("### Parse chessgames.com Links ################\n"));
+	TRACE(unsigned countLinks = 0);
+	TRACE(::printf("### Parse chessgames.com Links ################\n"));
 
 	mstl::string line;
 
@@ -2478,27 +2511,27 @@ Player::parseChessgamesDotComLinks(mstl::istream& stream)
 				char* s = ::charAllocator.alloc(len + 1);
 				::memcpy(s, t, len + 1);
 				::chessgamesDict[player] = s;
-				DEBUG(++countLinks);
+				TRACE(++countLinks);
 			}
 			else
 			{
-				DEBUG(::printf("chessgames-links: cannot find '%s'\n", name.c_str()));
+				TRACE(::printf("chessgames-links: cannot find '%s'\n", name.c_str()));
 			}
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("Chessgames.com links %u\n", countLinks));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("Chessgames.com links %u\n", countLinks));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
 void
 Player::parseWikipediaLinks(mstl::istream& stream)
 {
-	DEBUG(unsigned countLinks = 0);
-	DEBUG(char const* lang = "??");
-	DEBUG(::printf("### Parse Wikipedia Links #####################\n"));
+	TRACE(unsigned countLinks = 0);
+	TRACE(char const* lang = "??");
+	TRACE(::printf("### Parse Wikipedia Links #####################\n"));
 
 	mstl::string line;
 
@@ -2516,7 +2549,7 @@ Player::parseWikipediaLinks(mstl::istream& stream)
 				{
 					char* s = ::charAllocator.alloc(3);
 					::memcpy(s, line.c_str() + 6, 3);
-					DEBUG(lang = s);
+					TRACE(lang = s);
 
 					LangMap::const_pointer i = ::langMap.find(s);
 
@@ -2560,26 +2593,26 @@ Player::parseWikipediaLinks(mstl::istream& stream)
 				char* s = ::charAllocator.alloc(len + 1);
 				::memcpy(s, t, len + 1);
 				(*lookup)[player].hook(s, len);
-				DEBUG(++countLinks);
+				TRACE(++countLinks);
 			}
 			else
 			{
-				DEBUG(::printf("wiki-links(%s): cannot find '%s'\n", lang, name.c_str()));
+				TRACE(::printf("wiki-links(%s): cannot find '%s'\n", lang, name.c_str()));
 			}
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("Wikipedia links:     %u (%s)\n", countLinks, lang));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("Wikipedia links:     %u (%s)\n", countLinks, lang));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 
 void
 Player::parseComputerList(mstl::istream& stream)
 {
-	DEBUG(unsigned countEngines = 0);
-	DEBUG(::printf("### Parse Computer List #######################\n"));
+	TRACE(unsigned countEngines = 0);
+	TRACE(::printf("### Parse Computer List #######################\n"));
 
 	mstl::string		line;
 	mstl::string		name;
@@ -2666,7 +2699,7 @@ Player::parseComputerList(mstl::istream& stream)
 
 					if ((player = insertPlayer(name, 1, federation)))
 					{
-						DEBUG(++countEngines);
+						TRACE(++countEngines);
 
 						while (*s != '\0' && !::isspace(*s))
 						{
@@ -2722,13 +2755,13 @@ Player::parseComputerList(mstl::istream& stream)
 		}
 	}
 
-	DEBUG(::printf("-----------------------------------------------------\n"));
-	DEBUG(::printf("Engines:             %u\n", countEngines));
-	DEBUG(::printf("Players total:       %u\n", ::playerLookup.used()));
-	DEBUG(::printf("Player list entries: %u\n", ::playerList.size()));
-	DEBUG(::printf("Aliases total:       %u\n", ::aliasDict.used()));
-	DEBUG(::printf("ASCII total:         %u\n", ::asciiDict.size()));
-	DEBUG(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("-----------------------------------------------------\n"));
+	TRACE(::printf("Engines:             %u\n", countEngines));
+	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
+	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
+	TRACE(::printf("Aliases total:       %u\n", ::aliasDict.used()));
+	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
+	TRACE(::printf("-----------------------------------------------------\n"));
 }
 
 

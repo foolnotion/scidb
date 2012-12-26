@@ -95,26 +95,27 @@ proc popupPositionMenu {ns w} {
 namespace eval board {
 namespace eval mc {
 
-set SetStartBoard				"Set Start Board"
-set SideToMove					"Side to move"
-set Castling					"Castling"
-set MoveNumber					"Move number"
-set EnPassantFile				"En passant"
-set StartPosition				"Start position"
-set Fen							"FEN"
-set Promoted					"Promoted"
-set Holding						"Holding"
-set ChecksGiven				"Checks Given"
-set Clear						"Clear"
-set CopyFen						"Copy FEN to clipboard"
-set Shuffle						"Shuffle..."
-set FICSPosition				"FICS Start Position..."
-set StandardPosition			"Standard Position"
-set Chess960Castling			"Chess 960 castling"
+set SetStartBoard							"Set Start Board"
+set SideToMove								"Side to move"
+set Castling								"Castling"
+set MoveNumber								"Move number"
+set HalfMoves								"Half moves"
+set EnPassantFile							"En passant"
+set StartPosition							"Start position"
+set Fen										"FEN"
+set Promoted								"Promoted"
+set Holding									"Holding"
+set ChecksGiven							"Checks Given"
+set Clear									"Clear"
+set CopyFen									"Copy FEN to clipboard"
+set Shuffle									"Shuffle..."
+set FICSPosition							"FICS Start Position..."
+set StandardPosition						"Standard Position"
+set Chess960Castling						"Chess 960 castling"
 
-set InvalidFen					"Invalid FEN"
-set CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-set UnsupportedVariant		"Position is a start position but not a Shuffle Chess position. Are you sure?"
+set InvalidFen								"Invalid FEN"
+set CastlingWithoutRook					"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+set UnsupportedVariant					"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 set ChangeToFormat(xfen)				"Change to X-Fen format"
 set ChangeToFormat(shredder)			"Change to Shredder format"
@@ -316,16 +317,16 @@ proc open {parent} {
 	grid columnconfigure $stm {0 2 4} -minsize $::theme::padding
 	grid columnconfigure $stm {1 3} -weight 1
 
-	# move number + en passant file ###########################
+	# move number + en passant file + half moves ##############
 	set moveno [ttk::frame $right.moveno]
 
 	ttk::label $moveno.move_text -textvar [namespace current]::mc::MoveNumber
 	::ttk::spinbox $moveno.move_value \
 		-from 1 \
-		-to 999 \
+		-to 9999 \
 		-textvariable [namespace current]::Vars(moveno) \
-		-command [namespace code [list MoveNumberChanged $moveno.move_value]] \
-		-width 3 \
+		-command [namespace code Update] \
+		-width 4 \
 		;
 	::validate::spinboxInt $moveno.move_value
 	::theme::configureSpinbox $moveno.move_value
@@ -337,17 +338,31 @@ proc open {parent} {
 		-state readonly  \
 		-values {- a b c d e f g h} \
 		-textvariable [namespace current]::Vars(ep) \
-		-width 2 \
+		-width 4 \
 		;
 	bind $moveno.ep_value <<ComboboxSelected>> [namespace code Update]
 
-	grid $moveno.move_text	-row 0 -column 0 -sticky w
-	grid $moveno.move_value	-row 0 -column 2 -sticky ew
-	grid $moveno.ep_text		-row 2 -column 0 -sticky w
-	grid $moveno.ep_value	-row 2 -column 2 -sticky ew
+	ttk::label $moveno.halfmoves_text -textvar [namespace current]::mc::HalfMoves
+	::ttk::spinbox $moveno.halfmoves_value \
+		-from 0 \
+		-to 9999 \
+		-textvariable [namespace current]::Vars(halfmoves) \
+		-command [namespace code Update] \
+		-width 4 \
+		;
+	::validate::spinboxInt $moveno.halfmoves_value
+	::theme::configureSpinbox $moveno.halfmoves_value
+	bind $moveno.halfmoves_value <FocusOut> +[namespace code Update]
+
+	grid $moveno.move_text			-row 0 -column 0 -sticky w
+	grid $moveno.move_value			-row 0 -column 2 -sticky ew
+	grid $moveno.ep_text				-row 2 -column 0 -sticky w
+	grid $moveno.ep_value			-row 2 -column 2 -sticky ew
+	grid $moveno.halfmoves_text	-row 4 -column 0 -sticky w
+	grid $moveno.halfmoves_value	-row 4 -column 2 -sticky ew
 	grid columnconfigure $moveno 1 -minsize $::theme::padding
 	grid columnconfigure $moveno 2 -weight 1
-	grid rowconfigure $moveno 1 -minsize $::theme::padding
+	grid rowconfigure $moveno {1 3} -minsize $::theme::padding
 
 	# IDN #####################################################
 	set idn [ttk::labelframe $right.idn \
@@ -466,7 +481,7 @@ proc open {parent} {
 			-labelwidget [ttk::label $bottom.holdlbl -textvar [namespace current]::mc::Holding]]
 
 		set figfont $::font::figurine(text:normal)
-		set figfont [list [font configure $figfont -family] -18]
+		set figfont [list [font configure $figfont -family] -20]
 
 		set col 1
 		foreach {piece fig} {Q "\u2655" R "\u2656" B "\u2657" N "\u2658" P "\u2659" 
@@ -760,7 +775,7 @@ proc SetupPromoted {} {
 	variable Marker
 
 	lassign [::scidb::board::analyseFen $Vars(fen)] \
-		error idn notStd not960 castling ep stm moveno checksGiven promoted
+		error idn notStd not960 castling ep stm moveno halfmoves checksGiven promoted
 	if {$idn > 4*960} { set idn 0 }
 
 	::board::diagram::removeAllMarkers $Vars(board)
@@ -815,7 +830,7 @@ proc AnalyseFen {fen {cmd none}} {
 
 	if {$cmd eq "init"} {
 		lassign [::scidb::board::analyseFen $fen] \
-			error idn notStd not960 castling ep stm moveno checksGiven promoted
+			error idn notStd not960 castling ep stm moveno halfmoves checksGiven promoted
 
 		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
@@ -846,7 +861,7 @@ proc AnalyseFen {fen {cmd none}} {
 		foreach right {w:short w:long b:short b:long} { append castlingFiles $Vars($right:fyle) }
 
 		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles] \
-			error idn notStd not960 unused ep stm moveno checksGiven promoted
+			error idn notStd not960 unused ep stm moveno halfmoves checksGiven promoted
 		if {$idn > 4*960} { set idn 0 }
 	}
 
@@ -900,6 +915,7 @@ proc AnalyseFen {fen {cmd none}} {
 	set Vars(stm) $stm
 	set Vars(ep) [string index $ep 0]
 	set Vars(moveno) $moveno
+	set Vars(halfmoves) $halfmoves
 
 	if {[llength $idn] == 0} {
 		set Vars(checks:w) [lindex $checksGiven 0]
@@ -1078,6 +1094,7 @@ proc Shuffle {variant} {
 		set Vars(idn) $idn
 		set Vars(ep) "-"
 		set Vars(moveno) 1
+		set Vars(halfmoves) 0
 		set Vars(stm) "w"
 		set Vars(freeze) 0
 
@@ -1143,14 +1160,6 @@ proc SetCastlingRights {} {
 	lassign [::scidb::board::idnToFen $idn $Options(fen:format)] Vars(fen) castlingRights
 	set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 	AnalyseFen $Vars(fen) init
-}
-
-
-proc MoveNumberChanged {w} {
-	variable Vars
-
-	set Vars(moveno) [$w get]
-	Update
 }
 
 
@@ -1226,7 +1235,7 @@ proc Update {} {
 	}
 
 	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
-		$checksW $checksB $holding $promoted $Options(fen:format)]
+		$Vars(halfmoves) $checksW $checksB $holding $promoted $Options(fen:format)]
 
 	if {[string length $castling]} {
 		lset Vars(fen) 2 $castling
@@ -1240,7 +1249,7 @@ proc Update {} {
 
 	if {[llength $Vars(idn)] == 0} {
 		set Vars(fen) [::scidb::board::makeFen \
-			$Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
+			$Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) $Vars(halfmoves) \
 			$Vars(checks:w) $Vars(checks:b) $holding $promoted $Options(fen:format)] \
 			;
 		if {[string length $castling]} {
