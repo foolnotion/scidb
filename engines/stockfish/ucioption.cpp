@@ -87,6 +87,9 @@ void init(OptionsMap& o) {
   o["Minimum Thinking Time"]       = Option(20, 0, 5000);
   o["Slow Mover"]                  = Option(100, 10, 1000);
   o["UCI_Chess960"]                = Option(false);
+#ifdef THREECHECK
+  o["UCI_VariantThreeCheck"]       = Option(false, on_eval);
+#endif
   o["UCI_AnalyseMode"]             = Option(false, on_eval);
 }
 

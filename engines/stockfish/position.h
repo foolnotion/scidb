@@ -53,6 +53,9 @@ struct StateInfo {
   int castleRights, rule50, pliesFromNull;
   Score psqScore;
   Square epSquare;
+#ifdef THREECHECK
+  unsigned checksGiven[2];
+#endif
 
   Key key;
   Bitboard checkersBB;
@@ -66,6 +69,9 @@ struct ReducedStateInfo {
   int castleRights, rule50, pliesFromNull;
   Score psqScore;
   Square epSquare;
+#ifdef THREECHECK
+  unsigned checksGiven[2];
+#endif
 };
 
 
@@ -95,11 +101,20 @@ class Position {
 public:
   Position() {}
   Position(const Position& p, Thread* t) { *this = p; thisThread = t; }
+#ifdef THREECHECK
+  Position(const std::string& f, Thread* t) { from_fen(f, false, false, t); }
+  Position(const std::string& f, bool c960, bool threec, Thread* t) { from_fen(f, c960, threec, t); }
+#else
   Position(const std::string& f, bool c960, Thread* t) { from_fen(f, c960, t); }
+#endif
   Position& operator=(const Position&);
 
   // Text input/output
+#ifdef THREECHECK
+  void from_fen(const std::string& fen, bool isChess960, bool isThreeCheck, Thread* th);
+#else
   void from_fen(const std::string& fen, bool isChess960, Thread* th);
+#endif
   const std::string to_fen() const;
   void print(Move m = MOVE_NONE) const;
 
@@ -179,6 +194,13 @@ public:
   // Other properties of the position
   Color side_to_move() const;
   int startpos_ply_counter() const;
+#ifdef THREECHECK
+  bool is_three_check() const;
+  bool got_third_check() const;
+  unsigned checks_given() const;
+  unsigned checks_taken() const;
+  void hash_three_check(Key& key, unsigned checksGiven);
+#endif
   bool is_chess960() const;
   Thread* this_thread() const;
   int64_t nodes_searched() const;
@@ -227,6 +249,9 @@ private:
   Thread* thisThread;
   StateInfo* st;
   int chess960;
+#ifdef THREECHECK
+  int threeCheck;
+#endif
 };
 
 inline int64_t Position::nodes_searched() const {
@@ -404,6 +429,24 @@ inline bool Position::bishop_pair(Color c) const {
 inline bool Position::pawn_on_7th(Color c) const {
   return pieces(c, PAWN) & rank_bb(relative_rank(c, RANK_7));
 }
+
+#ifdef THREECHECK
+inline bool Position::is_three_check() const {
+  return threeCheck;
+}
+
+inline bool Position::got_third_check() const {
+	return st->checksGiven[sideToMove ^ 1] == 3;
+}
+
+inline unsigned Position::checks_given() const {
+  return st->checksGiven[sideToMove];
+}
+
+inline unsigned Position::checks_taken() const {
+  return st->checksGiven[sideToMove ^ 1];
+}
+#endif
 
 inline bool Position::is_chess960() const {
   return chess960;

@@ -52,6 +52,9 @@ Key enpassant[8];  // [file]
 Key castle[16];    // [castleRight]
 Key side;
 Key exclusion;
+#ifdef THREECHECK
+Key checks[2][3];
+#endif
 
 /// init() initializes at startup the various arrays used to compute hash keys
 /// and the piece square tables. The latter is a two-step operation: First, the
@@ -97,6 +100,12 @@ void init() {
           pieceSquareTable[make_piece(BLACK, pt)][~s] = -(v + PSQT[pt][s]);
       }
   }
+
+#ifdef THREECHECK
+  for (Color c = WHITE; c <= BLACK; c++)
+      for (unsigned n = 0; n < 3; n++)
+          checks[c][n] = rk.rand<Key>();
+#endif
 }
 
 } // namespace Zobrist
@@ -176,7 +185,11 @@ Position& Position::operator=(const Position& pos) {
 /// string. This function is not very robust - make sure that input FENs are
 /// correct (this is assumed to be the responsibility of the GUI).
 
+#ifdef THREECHECK
+void Position::from_fen(const string& fenStr, bool isChess960, bool isThreeCheck, Thread* th) {
+#else
 void Position::from_fen(const string& fenStr, bool isChess960, Thread* th) {
+#endif
 /*
    A FEN string defines a particular position using only the ASCII character set.
 
@@ -280,6 +293,16 @@ void Position::from_fen(const string& fenStr, bool isChess960, Thread* th) {
   // 5-6. Halfmove clock and fullmove number
   fen >> std::skipws >> st->rule50 >> startPosPly;
 
+#ifdef THREECHECK
+  // 7. Checks given counter for Three-Check positions
+  if ((fen >> std::skipws >> token) && token == '+')
+  {
+    fen >> st->checksGiven[WHITE];
+    fen >> token; // skip '+'
+    fen >> st->checksGiven[BLACK];
+  }
+#endif
+
   // Convert from fullmove starting from 1 to ply starting from 0,
   // handle also common incorrect FEN with fullmove = 0.
   startPosPly = std::max(2 * (startPosPly - 1), 0) + int(sideToMove == BLACK);
@@ -292,6 +315,9 @@ void Position::from_fen(const string& fenStr, bool isChess960, Thread* th) {
   st->npMaterial[BLACK] = compute_non_pawn_material(BLACK);
   st->checkersBB = attackers_to(king_square(sideToMove)) & pieces(~sideToMove);
   chess960 = isChess960;
+#ifdef THREECHECK
+  threeCheck = isThreeCheck;
+#endif
   thisThread = th;
 
   assert(pos_is_ok());
@@ -753,6 +779,18 @@ bool Position::move_gives_check(Move m, const CheckInfo& ci) const {
 }
 
 
+#ifdef THREECHECK
+void Position::hash_three_check(Key& key, unsigned checksGiven) {
+  assert(checksGiven <= 2);
+
+  if (checksGiven)
+    key ^= Zobrist::checks[sideToMove][checksGiven - 1];
+ 
+  key ^= Zobrist::checks[sideToMove][checksGiven];
+}
+#endif
+
+
 /// Position::do_move() makes a move, and saves all information necessary
 /// to a StateInfo object. The move is assumed to be legal. Pseudo-legal
 /// moves should be filtered out before this function is called.
@@ -767,6 +805,10 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
 
   assert(is_ok(m));
   assert(&newSt != st);
+#ifdef THREECHECK
+  assert(checks_given() < 3);
+  assert(checks_taken() < 3);
+#endif
 
   nodes++;
   Key k = st->key;
@@ -791,6 +833,10 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   {
       st->key = k;
       do_castle_move<true>(m);
+#ifdef THREECHECK
+      if (moveIsCheck && threeCheck)
+          hash_three_check(st->key, st->checksGiven[sideToMove]++);
+#endif
       return;
   }
 
@@ -966,6 +1012,11 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
 
   if (moveIsCheck)
   {
+#ifdef THREECHECK
+      if (threeCheck)
+          hash_three_check(st->key, st->checksGiven[sideToMove]++);
+#endif
+
       if (type_of(m) != NORMAL)
           st->checkersBB = attackers_to(king_square(them)) & pieces(us);
       else
@@ -1176,6 +1227,11 @@ void Position::do_castle_move(Move m) {
 
       // Update checkers BB
       st->checkersBB = attackers_to(king_square(~us)) & pieces(us);
+
+#ifdef THREECHECK
+      if (threeCheck)
+          hash_three_check(st->key, st->checksGiven[sideToMove]++);
+#endif
 
       sideToMove = ~sideToMove;
   }
@@ -1392,6 +1448,16 @@ Key Position::compute_key() const {
   if (sideToMove == BLACK)
       k ^= Zobrist::side;
 
+#ifdef THREECHECK
+  if (threeCheck)
+  {
+      if (st->checksGiven[WHITE])
+          k ^= Zobrist::checks[WHITE][st->checksGiven[WHITE]];
+      if (st->checksGiven[BLACK])
+          k ^= Zobrist::checks[BLACK][st->checksGiven[BLACK]];
+  }
+#endif
+
   return k;
 }
 
@@ -1525,6 +1591,9 @@ void Position::flip() {
   sideToMove = ~pos.side_to_move();
   thisThread = pos.this_thread();
   nodes = pos.nodes_searched();
+#ifdef THREECHECK
+  threeCheck = pos.is_three_check();
+#endif
   chess960 = pos.is_chess960();
   startPosPly = pos.startpos_ply_counter();
 
@@ -1552,6 +1621,10 @@ void Position::flip() {
   st->psqScore = compute_psq_score();
   st->npMaterial[WHITE] = compute_non_pawn_material(WHITE);
   st->npMaterial[BLACK] = compute_non_pawn_material(BLACK);
+#ifdef THREECHECK
+  st->checksGiven[WHITE] = pos.st->checksGiven[WHITE];
+  st->checksGiven[BLACK] = pos.st->checksGiven[BLACK];
+#endif
 
   assert(pos_is_ok());
 }

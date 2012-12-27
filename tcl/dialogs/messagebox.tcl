@@ -487,17 +487,17 @@ proc alert {args} {
 	if {$opts(-topmost)} {
 		wm attributes $w -topmost true
 	}
+	if {[llength $opts(-buttons)] == 0} {
+		wm protocol $w WM_DELETE_WINDOW [list destroy $w]
+	}
 	wm resizable $w false false
 	wm deiconify $w
+	raise $w
 #	tkwait visibility $w
 	set focus [expr {[llength $defaultButton] ? $defaultButton : $w}]
 	focus $focus
 
-	if {[llength $opts(-buttons)] == 0} {
-		wm protocol $w WM_DELETE_WINDOW [list destroy $w]
-		wm deiconify $w
-		return $w
-	}
+	if {[llength $opts(-buttons)] == 0} { return $w }
 
 	::ttk::grabWindow $w
 	vwait ::dialog::Reply

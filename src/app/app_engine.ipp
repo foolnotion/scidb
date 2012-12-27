@@ -40,6 +40,7 @@ inline bool Engine::Concrete::isAnalyzing() const				{ return m_engine->isAnalyz
 inline bool Engine::Concrete::isProbing() const					{ return m_engine->isProbing(); }
 inline bool Engine::Concrete::playOther() const					{ return m_engine->playOther(); }
 inline bool Engine::Concrete::pondering() const					{ return m_engine->pondering(); }
+inline bool Engine::Concrete::isChess960Position() const		{ return m_engine->m_isChess960; }
 
 inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMultiPV(); }
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
@@ -49,7 +50,6 @@ inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillL
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
 inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
-inline unsigned Engine::Concrete::currentVariant() const		{ return m_engine->m_currentVariant; }
 
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 
@@ -71,7 +71,6 @@ inline void Engine::Concrete::setTime(double time)						{ m_engine->setTime(time
 inline void Engine::Concrete::setNodes(unsigned nodes)				{ m_engine->setNodes(nodes); }
 
 inline void Engine::Concrete::updatePvInfo(unsigned line)			{ m_engine->updatePvInfo(line); }
-inline void Engine::Concrete::updateInfo(db::board::Status state)	{ m_engine->updateInfo(state); }
 inline void Engine::Concrete::updateCurrMove()							{ m_engine->updateCurrMove(); }
 inline void Engine::Concrete::updateCurrLine()							{ m_engine->updateCurrLine(); }
 inline void Engine::Concrete::updateBestMove()							{ m_engine->updateBestMove(); }
@@ -82,9 +81,34 @@ inline void Engine::Concrete::updateError(Error code)					{ m_engine->updateErro
 inline void Engine::Concrete::updateState(State state)				{ m_engine->updateState(state); }
 inline void Engine::Concrete::resetInfo()									{ m_engine->resetInfo(); }
 inline void Engine::Concrete::error(Error code)							{ m_engine->error(code); }
+inline void Engine::Concrete::setBoard(db::Board const& board)		{ m_board = board; }
 
 inline void Engine::Concrete::log(mstl::string const& msg)			{ m_engine->log(msg); }
 inline void Engine::Concrete::error(mstl::string const& msg)		{ m_engine->error(msg); }
+
+
+inline
+db::variant::Type
+Engine::Concrete::currentVariant() const
+{
+	return m_engine->m_currentVariant;
+}
+
+
+inline
+db::Board&
+Engine::Concrete::currentBoard()
+{
+	return m_board;
+}
+
+
+inline
+db::Board const&
+Engine::Concrete::currentBoard() const
+{
+	return m_board;
+}
 
 
 inline

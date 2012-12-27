@@ -21,13 +21,15 @@
 #define SEARCH_H_INCLUDED
 
 #include <cstring>
-#if 0 // Fix By Gregor Cramer (conflict with -fno-rtti)
+#if 0 // Fix By Gregor Cramer
 #include <memory>
 #endif
 #include <stack>
 #include <vector>
 
 #if 1 // Fix By Gregor Cramer
+// GNU's implementation of auto_ptr ia a conflict to -fno-rtti,
+// our implementation is clean, and has better performance.
 #include "m_auto_ptr.h"
 #endif
 

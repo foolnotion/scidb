@@ -54,7 +54,11 @@ namespace {
 
 void UCI::loop(const string& args) {
 
+#ifdef THREECHECK
+  Position pos(StartFEN, Threads.main_thread()); // The root position
+#else
   Position pos(StartFEN, false, Threads.main_thread()); // The root position
+#endif
   string cmd, token;
 
   while (token != "quit")
@@ -173,7 +177,11 @@ namespace {
     else
         return;
 
+#ifdef THREECHECK
+    pos.from_fen(fen, Options["UCI_Chess960"], Options["UCI_VariantThreeCheck"], Threads.main_thread());
+#else
     pos.from_fen(fen, Options["UCI_Chess960"], Threads.main_thread());
+#endif
     SetupStates = Search::StateStackPtr(new std::stack<StateInfo>());
 
     // Parse move list (if any)

@@ -1307,7 +1307,7 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 				-label " [format $mc::ReplaceMoves $name]" \
 				-image $::icon::16x16::save \
 				-compound left \
-				-command [namespace code [list replaceMoves $parent]] \
+				-command [list ::application::pgn::replaceMoves $parent] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-moves)" \
 				;

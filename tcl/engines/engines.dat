@@ -9,7 +9,7 @@ set ::engine::Engines {
 		Author "Tord Romstad, Marco Costalba & Joona Kiiski"
 		Command stockfish-scidb
 		Protocol UCI
-		Variants {standard chess960}
+		Variants {standard chess960 3check}
 		Features:UCI {
 			analyze true
 			multiPV 500

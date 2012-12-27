@@ -138,7 +138,7 @@ public:
 
 	void clearInfo() override {}
 	void updatePvInfo(unsigned) override {}
-	void updateInfo(board::Status) override {}
+	void updateInfo(db::color::ID, board::Status) override {}
 	void updateState(State) override {}
 	void engineIsReady() override {}
 	void engineSignal(Signal) override {}
@@ -303,7 +303,7 @@ public:
 		}
 	}
 
-	void updateInfo(board::Status state) override
+	void updateInfo(db::color::ID sideToMove, board::Status state) override
 	{
 		Tcl_Obj* objs[2];
 
@@ -316,7 +316,7 @@ public:
 			case board::None:				M_ASSERT(!"should not happen"); return;
 		}
 
-		objs[1] = Tcl_NewStringObj(color::printColor(currentBoard().sideToMove()), -1);
+		objs[1] = Tcl_NewStringObj(color::printColor(sideToMove), -1);
 		sendInfo(m_over, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
@@ -1189,7 +1189,13 @@ cmdVariant(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned id = unsignedFromObj(objc, objv, 1);
 
 	if (tcl::app::scidb->engineExists(id))
-		setResult(variant::identifier(tcl::app::scidb->engine(id)->variant()));
+	{
+		mstl::string variant(variant::identifier(tcl::app::scidb->engine(id)->variant()));
+		mstl::string::size_type n = variant.find('-');
+		if (n != mstl::string::npos)
+			variant.erase(variant.begin() + n);
+		setResult(variant);
+	}
 
 	return TCL_OK;
 }

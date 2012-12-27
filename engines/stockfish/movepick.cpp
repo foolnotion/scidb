@@ -69,8 +69,18 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
   ss = s;
 
   if (p.in_check())
-      phase = EVASION;
+  {
+#ifdef THREECHECK
+      if (pos.got_third_check())
+      {
+          phase = STOP - 1;
+          ttMove = MOVE_NONE;
+          return;
+      }
+#endif
 
+      phase = EVASION;
+  }
   else
   {
       phase = MAIN_SEARCH;
@@ -97,7 +107,18 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
   assert(d <= DEPTH_ZERO);
 
   if (p.in_check())
+  {
+#ifdef THREECHECK
+      if (pos.got_third_check())
+      {
+          phase = STOP - 1;
+          ttMove = MOVE_NONE;
+          return;
+      }
+#endif
+
       phase = EVASION;
+  }
 
   else if (d > DEPTH_QS_NO_CHECKS)
       phase = QSEARCH_0;
@@ -275,6 +296,11 @@ void MovePicker::generate_next() {
 /// searched previously.
 template<>
 Move MovePicker::next_move<false>() {
+
+#ifdef THREECHECK
+   if (pos.is_three_check() && (pos.checks_taken() == 3 || pos.checks_given() == 3))
+       return MOVE_NONE;
+#endif
 
   Move move;
 

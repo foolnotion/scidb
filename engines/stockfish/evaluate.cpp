@@ -148,7 +148,14 @@ namespace {
     S(0, 0), S(0, 0), S(56, 70), S(56, 70), S(76, 99), S(86, 118)
   };
 
-  #undef S
+#ifdef THREECHECK
+  const Score ChecksGivenBonus[4] = {
+    S(0, 0),
+    S(2*PawnValueMg + PawnValueMg/2, 2*PawnValueEg),
+    S(4*PawnValueMg + PawnValueMg/2, 4*PawnValueEg),
+    S(9*PawnValueMg + PawnValueMg/2, 9*PawnValueEg),
+  };
+#endif
 
   // Bonus for having the side to move (modified by Joona Kiiski)
   const Score Tempo = make_score(24, 11);
@@ -160,6 +167,23 @@ namespace {
   // Rooks on open files (modified by Joona Kiiski)
   const Score RookOpenFileBonus = make_score(43, 21);
   const Score RookHalfOpenFileBonus = make_score(19, 10);
+
+#ifdef THREECHECK
+  const Score RookOpenFileBonus3[4] = {
+    RookOpenFileBonus,
+    S(2*PawnValueMg, 2*PawnValueEg),
+    S(4*PawnValueMg, 4*PawnValueEg),
+    S(VALUE_KNOWN_WIN, VALUE_KNOWN_WIN),
+  };
+  const Score RookHalfOpenFileBonus3[4] = {
+    RookOpenFileBonus,
+    S(PawnValueMg, PawnValueEg),
+    S(2*PawnValueMg, 2*PawnValueEg),
+    S(3*PawnValueMg, 4*PawnValueEg),
+  };
+#endif
+
+  #undef S
 
   // Penalty for rooks trapped inside a friendly king which has lost the
   // right to castle.
@@ -282,16 +306,27 @@ namespace Eval {
     Weights[Mobility]       = weight_option("Mobility (Middle Game)", "Mobility (Endgame)", WeightsInternal[Mobility]);
     Weights[PassedPawns]    = weight_option("Passed Pawns (Middle Game)", "Passed Pawns (Endgame)", WeightsInternal[PassedPawns]);
     Weights[Space]          = weight_option("Space", "Space", WeightsInternal[Space]);
-    Weights[KingDangerUs]   = weight_option("Cowardice", "Cowardice", WeightsInternal[KingDangerUs]);
-    Weights[KingDangerThem] = weight_option("Aggressiveness", "Aggressiveness", WeightsInternal[KingDangerThem]);
 
-    // King safety is asymmetrical. Our king danger level is weighted by
-    // "Cowardice" UCI parameter, instead the opponent one by "Aggressiveness".
-    // If running in analysis mode, make sure we use symmetrical king safety. We
-    // do this by replacing both Weights[kingDangerUs] and Weights[kingDangerThem]
-    // by their average.
-    if (Options["UCI_AnalyseMode"])
-        Weights[KingDangerUs] = Weights[KingDangerThem] = (Weights[KingDangerUs] + Weights[KingDangerThem]) / 2;
+#ifdef THREECHECK
+    if (Options["UCI_VariantThreeCheck"])
+    {
+        Weights[KingDangerUs] = make_score(100, 100);
+        Weights[KingDangerThem] = make_score(256, 256);
+    }
+    else
+#endif
+    {
+        Weights[KingDangerUs]   = weight_option("Cowardice", "Cowardice", WeightsInternal[KingDangerUs]);
+        Weights[KingDangerThem] = weight_option("Aggressiveness", "Aggressiveness", WeightsInternal[KingDangerThem]);
+
+        // King safety is asymmetrical. Our king danger level is weighted by
+        // "Cowardice" UCI parameter, instead the opponent one by "Aggressiveness".
+        // If running in analysis mode, make sure we use symmetrical king safety. We
+        // do this by replacing both Weights[kingDangerUs] and Weights[kingDangerThem]
+        // by their average.
+        if (Options["UCI_AnalyseMode"])
+            Weights[KingDangerUs] = Weights[KingDangerThem] = (Weights[KingDangerUs] + Weights[KingDangerThem]) / 2;
+    }
 
     const int MaxSlope = 30;
     const int Peak = 1280;
@@ -373,6 +408,15 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // in the position object (material + piece square tables) and adding
   // Tempo bonus. Score is computed from the point of view of white.
   score = pos.psq_score() + (pos.side_to_move() == WHITE ? Tempo : -Tempo);
+
+#ifdef THREECHECK
+  if (pos.is_three_check())
+  {
+      assert(pos.checks_given() <= 3);
+      score += ChecksGivenBonus[pos.checks_given()];
+      score -= ChecksGivenBonus[pos.checks_taken()];
+  }
+#endif
 
   // Probe the material hash table
   ei.mi = pos.this_thread()->materialTable.probe(pos);
@@ -632,9 +676,23 @@ Value do_evaluate(const Position& pos, Value& margin) {
             if (ei.pi->file_is_half_open(Us, f))
             {
                 if (ei.pi->file_is_half_open(Them, f))
-                    score += RookOpenFileBonus;
+                {
+#ifdef THREECHECK
+                    if (pos.is_three_check())
+                        score += RookOpenFileBonus3[pos.checks_given()];
+                    else
+#endif
+                        score += RookOpenFileBonus;
+                }
                 else
-                    score += RookHalfOpenFileBonus;
+                {
+#ifdef THREECHECK
+                    if (pos.is_three_check())
+                        score += RookHalfOpenFileBonus3[pos.checks_given()];
+                    else
+#endif
+                        score += RookHalfOpenFileBonus;
+                }
             }
 
             // Penalize rooks which are trapped inside a king. Penalize more if

@@ -217,7 +217,6 @@ proc openAdmininstration {parent} {
 	pack $top -fill both -expand yes
 
 	set Priv(state) edit
-	set Priv(engines) {}
 	set Priv(selection) -1
 	set Priv(initialise) 1
 	set Priv(rows) {0}

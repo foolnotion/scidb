@@ -164,7 +164,6 @@ public:
 		virtual Result probeResult() const = 0;
 		virtual Result probeAnalyzeFeature() const;
 		virtual unsigned probeTimeout() const = 0;
-		virtual db::Board const& currentBoard() const = 0;
 
 		friend class Engine;
 
@@ -175,7 +174,10 @@ public:
 		bool isProbingAnalyze() const;
 		bool hasFeature(unsigned feature) const;
 		bool hasVariant(unsigned variant) const;
+		bool isChess960Position() const;
 
+		db::Board& currentBoard();
+		db::Board const& currentBoard() const;
 		unsigned maxMultiPV() const;
 		unsigned numVariations() const;
 		unsigned hashSize() const;
@@ -188,11 +190,12 @@ public:
 		bool pondering() const;
 		db::Game const* currentGame() const;
 		Options const& options() const;
-		unsigned currentVariant() const;
+		::db::variant::Type currentVariant() const;
 		int findVariation(db::Move const& move) const;
 
 		long pid() const;
 
+		void setBoard(db::Board const& board);
 		void engineIsReady();
 		void error(Error code);
 
@@ -242,7 +245,6 @@ public:
 		void setPlayingStyles(mstl::string const& styles);
 
 		void updatePvInfo(unsigned line);
-		void updateInfo(db::board::Status state);
 		void updateCurrMove();
 		void updateCurrLine();
 		void updateBestMove();
@@ -258,7 +260,8 @@ public:
 
 	private:
 
-		Engine* m_engine;
+		Engine*		m_engine;
+		db::Board	m_board;
 	};
 
 	static unsigned const Feature_Analyze			= 1 << 0;
@@ -409,7 +412,7 @@ protected:
 	virtual void updateState(State state) = 0;
 	virtual void updateError(Error code) = 0;
 	virtual void updatePvInfo(unsigned line) = 0;
-	virtual void updateInfo(db::board::Status state) = 0;
+	virtual void updateInfo(db::color::ID sideToMove, db::board::Status state) = 0;
 	virtual void updateCurrMove();
 	virtual void updateCurrLine();
 	virtual void updateBestMove();
@@ -510,7 +513,8 @@ private:
 	mstl::string		m_playingStyles;
 	mstl::string		m_playingStyle;
 	Ordering				m_ordering;
-	unsigned				m_currentVariant;
+	db::variant::Type	m_currentVariant;
+	bool					m_isChess960;
 	unsigned				m_elo;
 	unsigned				m_minElo;
 	unsigned				m_maxElo;

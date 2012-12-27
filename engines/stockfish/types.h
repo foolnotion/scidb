@@ -60,7 +60,11 @@
 #if defined(_MSC_VER)
 #  define FORCE_INLINE  __forceinline
 #elif defined(__GNUC__)
+# ifdef __OPTIMIZE__
 #  define FORCE_INLINE  inline __attribute__((always_inline))
+# else
+#  define FORCE_INLINE  inline
+# endif
 #else
 #  define FORCE_INLINE  inline
 #endif
@@ -325,6 +329,9 @@ namespace Zobrist {
   extern Key castle[16];    // [castleRight]
   extern Key side;
   extern Key exclusion;
+#ifdef THREECHECK
+  extern Key checks[2][3];
+#endif
 
   void init();
 }

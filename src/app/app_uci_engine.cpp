@@ -202,6 +202,7 @@ setNonZeroValue(mstl::string& s, unsigned value)
 
 uci::Engine::Engine()
 	:m_state(None)
+	,m_variant(variant::Normal)
 	,m_needChess960(false)
 	,m_uciok(false)
 	,m_isReady(false)
@@ -215,7 +216,7 @@ uci::Engine::Engine()
 	,m_startAnalyzeIsPending(false)
 	,m_stopAnalyzeIsPending(false)
 	,m_continueAnalysis(false)
-	,m_sendChess960(false)
+	,m_isChess960(false)
 	,m_sendAnalyseMode(false)
 	,m_usedAnalyseModeBefore(false)
 {
@@ -240,14 +241,7 @@ uci::Engine::doMove(db::Move const& lastMove)
 bool
 uci::Engine::whiteToMove() const
 {
-	return m_board.whiteToMove();
-}
-
-
-db::Board const&
-uci::Engine::currentBoard() const
-{
-	return m_board;
+	return currentBoard().whiteToMove();
 }
 
 
@@ -297,6 +291,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 {
 	M_ASSERT(currentGame());
 	M_ASSERT(isActive());
+	M_ASSERT(!currentGame()->currentBoard().gameIsOver(currentGame()->variant()));
 
 	m_state = Start;
 	m_isNewGame = isNewGame;
@@ -311,65 +306,40 @@ uci::Engine::startAnalysis(bool isNewGame)
 
 	db::Game const* game = currentGame();
 
-	if (isNewGame)
+	if (m_hasAnalyseMode && !m_usedAnalyseModeBefore)
 	{
-		bool needChess960 = currentVariant() == app::Engine::Variant_Chess_960;
+		m_sendAnalyseMode = true;
+		m_usedAnalyseModeBefore = true;
+	}
 
-		if (needChess960 != m_needChess960)
+	setBoard(game->currentBoard());
+
+	if (game->historyIsLegal())
+	{
+		// We prefer to use the "position moves" setup because (due to Steve):
+		// The problem is that lots engines will reset their analysis with "position fen".
+		// Only a few will check to see if the new position is in their search tree.
+		setupPosition(game->startBoard());
+
+		if (game->startBoard().plyNumber() != currentBoard().plyNumber())
 		{
-			m_needChess960 = needChess960;
-			m_sendChess960 = true;
+			m_position.append(" moves", 6);
+			game->dumpHistory(m_position);
 		}
-	}
-
-	m_board = game->currentBoard();
-
-	unsigned state = m_board.checkState(variant::Normal);
-
-	if (state & Board::Checkmate)
-	{
-		updateInfo(board::Checkmate);
-	}
-	else if (state & Board::Stalemate)
-	{
-		updateInfo(board::Stalemate);
 	}
 	else
 	{
-		if (m_hasAnalyseMode && !m_usedAnalyseModeBefore)
-		{
-			m_sendAnalyseMode = true;
-			m_usedAnalyseModeBefore = true;
-		}
-
-		if (game->historyIsLegal())
-		{
-			// We prefer to use the "position moves" setup because (due to Steve):
-			// The problem is that lots engines will reset their analysis with "position fen".
-			// Only a few will check to see if the new position is in their search tree.
-			setupPosition(game->startBoard());
-
-			if (game->startBoard().plyNumber() != m_board.plyNumber())
-			{
-				m_position.append(" moves", 6);
-				game->dumpHistory(m_position);
-			}
-		}
-		else
-		{
-			// "position moves" cannot be used because the move history contains illegal moves.
-			setupPosition(m_board);
-		}
-
-		if (isNewGame)
-			send("ucinewgame"); // clear's all states
-
-		m_waitingOn = "position";
-		send("isready");
-
-		m_isAnalyzing = true;
-		updateState(app::Engine::Start);
+		// "position moves" cannot be used because the move history contains illegal moves.
+		setupPosition(currentBoard());
 	}
+
+	if (isNewGame)
+		send("ucinewgame"); // clear's all states
+
+	m_waitingOn = "position";
+	send("isready");
+
+	updateState(app::Engine::Start);
 
 	return true;
 }
@@ -385,8 +355,6 @@ uci::Engine::stopAnalysis(bool restartIsPending)
 
 	if (!m_isAnalyzing)
 		return false;
-
-	m_isAnalyzing = false;
 
 	if (!m_stopAnalyzeIsPending)
 	{
@@ -408,7 +376,10 @@ uci::Engine::continueAnalysis()
 	if (m_continueAnalysis)
 	{
 		if (currentGame())
+		{
 			send("go infinite");
+			m_isAnalyzing = true;
+		}
 
 		m_continueAnalysis = false;
 	}
@@ -430,6 +401,7 @@ void
 uci::Engine::resume()
 {
 	send("go infinite");
+	m_isAnalyzing = true;
 	m_state = Start;
 	updateState(app::Engine::Resume);
 }
@@ -505,13 +477,21 @@ uci::Engine::processMessage(mstl::string const& message)
 						m_sendAnalyseMode = false;
 					}
 
-					if (m_sendChess960)
+					if (isChess960Position() != m_isChess960)
 					{
-						send("setoption name UCI_Chess960 value " + ::toBool(m_needChess960));
-						m_sendChess960 = false;
+						send("setoption name UCI_Chess960 value " + ::toBool(isChess960Position()));
+						m_isChess960 = isChess960Position();
+					}
+
+					if (m_variant != currentVariant())
+					{
+						send("setoption name UCI_VariantThreeCheck value " +
+								::toBool(currentVariant() == variant::ThreeCheck));
+						m_variant = currentVariant();
 					}
 
 					send(m_position);
+					m_isAnalyzing = true;
 
 					if (searchMate() > 0)
 						send("go mate=" + ::toStr(searchMate()));
@@ -588,13 +568,14 @@ void
 uci::Engine::parseBestMove(char const* msg)
 {
 	m_stopAnalyzeIsPending = false;
+	m_isAnalyzing = false;
 
 	char const* s = ::skipSpaces(msg);
-	Move move(m_board.parseLAN(s));
+	Move move(currentBoard().parseLAN(s));
 
 	if (move.isLegal())
 	{
-		m_board.prepareForPrint(move, variant::Normal);
+		currentBoard().prepareForPrint(move, variant::Normal);
 		setBestMove(move);
 	}
 	else
@@ -610,9 +591,9 @@ uci::Engine::parseBestMove(char const* msg)
 	{
 		s = ::skipSpaces(s + 6);
 
-		m_board.doMove(move, variant::Normal);
-		Move ponder(m_board.parseLAN(s));
-		m_board.undoMove(move, variant::Normal);
+		currentBoard().doMove(move, variant::Normal);
+		Move ponder(currentBoard().parseLAN(s));
+		currentBoard().undoMove(move, variant::Normal);
 
 		if (move.isLegal())
 		{
@@ -785,7 +766,7 @@ uci::Engine::parseInfo(char const* s)
 			case 'p':
 				if (strncmp(s, "pv ", 3) == 0)
 				{
-					Board board(m_board);
+					Board board(currentBoard());
 					MoveList moves;
 
 					if (!(s = parseMoveList(skipWords(s, 1), board, moves)))
@@ -796,7 +777,7 @@ uci::Engine::parseInfo(char const* s)
 
 					if (!haveMate && (board.checkState(variant::Normal) & Board::Checkmate))
 					{
-						int n = board.moveNumber() - m_board.moveNumber();
+						int n = board.moveNumber() - currentBoard().moveNumber();
 						mate = board.whiteToMove() ? -n : +n;
 						haveMate = true;
 					}
@@ -860,7 +841,7 @@ uci::Engine::parseInfo(char const* s)
 Move
 uci::Engine::parseCurrentMove(char const* s)
 {
-	Move move = m_board.parseLAN(s);
+	Move move = currentBoard().parseLAN(s);
 
 	if (!move.isLegal())
 	{
@@ -870,7 +851,7 @@ uci::Engine::parseCurrentMove(char const* s)
 		return Move();
 	}
 
-	m_board.prepareForPrint(move, variant::Normal);
+	currentBoard().prepareForPrint(move, variant::Normal);
 	return move;
 }
 
@@ -984,6 +965,11 @@ uci::Engine::parseOption(char const* msg)
 					; // we do not use
 				else if (name == "UCI_SetPositionValue")
 					; // we do not use
+				break;
+
+			case 'V':
+				if (name == "UCI_VariantThreeCheck")
+					addVariant(app::Engine::Variant_Three_Check);
 				break;
 		}
 	}

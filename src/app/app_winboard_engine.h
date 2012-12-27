@@ -60,8 +60,6 @@ public:
 
 protected:
 
-	db::Board const& currentBoard() const override;
-
 	void setupBoard(db::Board const& board);
 	void reset();
 
@@ -102,7 +100,6 @@ private:
 	void detectFeatures(char const* identifier);
 	void pongReceived();
 
-	db::Board			m_board;
 	TimerP				m_timer;
 	State					m_state;
 	mstl::string		m_chess960Variant;

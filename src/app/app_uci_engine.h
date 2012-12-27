@@ -73,11 +73,12 @@ protected:
 
 	Result probeResult() const override;
 	unsigned probeTimeout() const override;
-	db::Board const& currentBoard() const override;
 
 private:
 
 	enum State { None, Start, Stop, Pause };
+
+	typedef ::db::variant::Type Variant;
 
 	bool whiteToMove() const;
 
@@ -91,12 +92,12 @@ private:
 
 	db::Move parseCurrentMove(char const* s);
 
-	db::Board		m_board;
 	mstl::string	m_position;
 	mstl::string	m_waitingOn;
 	mstl::string	m_name;
 	mstl::string	m_value;
 	State				m_state;
+	Variant			m_variant;
 	bool				m_needChess960;
 	bool				m_uciok;
 	bool				m_isReady;
@@ -110,7 +111,7 @@ private:
 	bool				m_startAnalyzeIsPending;
 	bool				m_stopAnalyzeIsPending;
 	bool				m_continueAnalysis;
-	bool				m_sendChess960;
+	bool				m_isChess960;
 	bool				m_sendAnalyseMode;
 	bool				m_usedAnalyseModeBefore;
 };

@@ -388,7 +388,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_directory(directory)
 	,m_identifier(rootname(basename(command)))
 	,m_ordering(Unordered)
-	,m_currentVariant(Variant_Standard)
+	,m_currentVariant(variant::Normal)
+	,m_isChess960(false)
 	,m_elo(0)
 	,m_minElo(0)
 	,m_maxElo(0)
@@ -1104,6 +1105,7 @@ Engine::probe(unsigned timeout)
 }
 
 
+#include <stdio.h>
 bool
 Engine::startAnalysis(db::Game* game)
 {
@@ -1138,9 +1140,10 @@ Engine::startAnalysis(db::Game* game)
 			return false;
 		}
 
-		m_currentVariant = Variant_Standard;
+		m_currentVariant = game->variant();
+		m_isChess960 = false;
 
-		if (!variant::isStandardChess(game->idn(), game->variant()))
+		if (!variant::isStandardChess(game->idn(), m_currentVariant))
 		{
 			if (	variant::isShuffleChess(game->idn())
 				|| game->startBoard().notDerivableFromStandardChess())
@@ -1152,7 +1155,7 @@ Engine::startAnalysis(db::Game* game)
 					return false;
 				}
 
-				m_currentVariant = Variant_Chess_960;
+				m_isChess960 = true;
 			}
 		}
 
@@ -1165,7 +1168,7 @@ Engine::startAnalysis(db::Game* game)
 	}
 	else if (isAnalyzing())
 	{
-		if (m_engine->currentBoard().isEqualPosition(game->currentBoard()))
+		if (m_engine->m_board.isEqualPosition(game->currentBoard()))
 			return true;
 	}
 
@@ -1203,8 +1206,33 @@ Engine::startAnalysis(db::Game* game)
 			return false;
 		}
 
-		if (!m_engine->startAnalysis(isNew))
-			return false;
+		unsigned state = game->currentBoard().checkState(m_currentVariant);
+
+		if (state & Board::Checkmate)
+		{
+			m_engine->stopAnalysis(false);
+			updateInfo(game->currentBoard().sideToMove(), board::Checkmate);
+		}
+		else if (state & Board::Stalemate)
+		{
+			m_engine->stopAnalysis(false);
+			updateInfo(game->currentBoard().sideToMove(), board::Stalemate);
+		}
+		else if (state & Board::ThreeChecks)
+		{
+			m_engine->stopAnalysis(false);
+			updateInfo(game->currentBoard().sideToMove(), board::ThreeChecks);
+		}
+		else if (state & Board::Losing)
+		{
+			m_engine->stopAnalysis(false);
+			updateInfo(game->currentBoard().sideToMove(), board::Losing);
+		}
+		else
+		{
+			if (!m_engine->startAnalysis(isNew))
+				return false;
+		}
 	}
 
 	return true;

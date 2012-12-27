@@ -618,9 +618,6 @@ db::Guess::search(MoveList& moves, unsigned maxDepth)
 
 	TRACE(::printf("1: search() = %d (best move: %s)\n", bestScore, moves[0].asString().c_str()));
 
-	if (moves.isEmpty() || bestScore <= -Infinity)
-		return Move::empty();
-
 	if (bestScore >= Infinity || maxDepth == 1)
 		return moves[0];
 

@@ -687,7 +687,7 @@ Board::checkState(variant::Type variant) const
 		}
 
 		if (m_checksGiven[m_stm ^ 1] >= 3)
-			state |= ThreeChecks;
+			return state |= ThreeChecks;
 
 		MoveList moves;
 		generateMoves(variant, moves);
@@ -864,7 +864,7 @@ Board::prepareForPrint(Move& move, variant::Type variant) const
 						move.setMate();
 
 					if (variant == variant::ThreeCheck)
-						move.setChecksGiven(m_checksGiven[m_stm ^ 1] + 1);
+						move.setChecksGiven(m_checksGiven[m_stm] + 1);
 				}
 			}
 
@@ -2335,22 +2335,6 @@ Board::setup(char const* fen, variant::Type variant)
 
 					--p;
 				}
-				else if (::isdigit(*p))
-				{
-					m_checksGiven[White] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
-
-					if (*p++ != ':')
-					{
-						m_checksGiven[White] = 0;
-						return 0;
-					}
-
-					if (!::isdigit(*p))
-						return 0;
-
-					m_checksGiven[Black] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
-					hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
-				}
 				// else:
 				// Some guys are ending the first part with a superfluous '/'.
 			}
@@ -2652,6 +2636,32 @@ Board::setup(char const* fen, variant::Type variant)
 
 	while (*p == ' ')
 		++p;
+
+	if (variant == variant::ThreeCheck)
+	{
+		if (*p++ != '+')
+			return 0;
+
+		if (!::isdigit(*p))
+			return 0;
+
+		m_checksGiven[White] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
+
+		if (*p++ != '+')
+		{
+			m_checksGiven[White] = 0;
+			return 0;
+		}
+
+		if (!::isdigit(*p))
+			return 0;
+
+		m_checksGiven[Black] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
+		hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
+
+		while (*p == ' ')
+			++p;
+	}
 
 	return p;
 }
@@ -3256,7 +3266,7 @@ Board::generateMoves(variant::Type variant, MoveList& result) const
 				generateCastlingMoves(result);
 		}
 	}
-	else
+	else if (variant != variant::ThreeCheck || m_checksGiven[m_stm ^ 1] < 3)
 	{
 		generateNormalMoves(result);
 
@@ -5140,15 +5150,15 @@ Board::doMove(Move const& m, variant::Type variant)
 	m_occupiedR45 ^= MaskR45[from];
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
 
+	if (variant == variant::ThreeCheck && givesCheck())
+	{
+		M_ASSERT(m_checksGiven[m_stm] < 3);
+		hashChecksGiven(m_stm, m_checksGiven[m_stm]++);
+	}
+
 	hashToMove();
 	swapToMove();
 	++m_plyNumber;
-
-	if (variant == variant::ThreeCheck && isInCheck())
-	{
-		M_ASSERT(m_checksGiven[sntm] < 3);
-		hashChecksGiven(sntm, m_checksGiven[sntm]++);
-	}
 }
 
 
@@ -5167,8 +5177,8 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 	if (variant == variant::ThreeCheck && isInCheck())
 	{
-		M_ASSERT(m_checksGiven[m_stm] > 0);
-		hashChecksGiven(m_stm, --m_checksGiven[m_stm]);
+		M_ASSERT(m_checksGiven[sntm] > 0);
+		hashChecksGiven(sntm, --m_checksGiven[sntm]);
 	}
 
 	switch (m.action())
@@ -6385,11 +6395,6 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 			for (unsigned i = 0; i < m_holding[Black].pawn;   ++i) result += 'p';
 		}
 	}
-	else if (variant == variant::ThreeCheck)
-	{
-		if (m_checksGiven[White] | m_checksGiven[Black])
-			result.format("/%u:%u", m_checksGiven[White], m_checksGiven[Black]);
-	}
 
 	// side to move
 	result += whiteToMove() ? " w " : " b ";
@@ -6523,6 +6528,13 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 
 	// move number
 	result.format(" %u", unsigned(moveNumber()));
+
+	if (variant == variant::ThreeCheck)
+	{
+		// checks given counter (+<checks given with White>+<checks given with Black>)
+		if (m_checksGiven[White] | m_checksGiven[Black])
+			result.format(" +%u+%u", m_checksGiven[White], m_checksGiven[Black]);
+	}
 
 	return result;
 }

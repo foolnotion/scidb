@@ -221,13 +221,6 @@ winboard::Engine::Engine()
 winboard::Engine::~Engine() throw() {}
 
 
-db::Board const&
-winboard::Engine::currentBoard() const
-{
-	return m_board;
-}
-
-
 winboard::Engine::Result
 winboard::Engine::probeResult() const
 {
@@ -461,6 +454,7 @@ winboard::Engine::startAnalysis(bool)
 {
 	M_ASSERT(currentGame());
 	M_ASSERT(isActive());
+	M_ASSERT(!currentGame()->currentBoard().gameIsOver(currentGame()->variant()));
 
 	m_state = Start;
 
@@ -477,70 +471,47 @@ winboard::Engine::startAnalysis(bool)
 	History moves;
 	game->getHistory(moves);
 
-	m_board = game->currentBoard();
+	setBoard(game->currentBoard());
 	m_variant = game->variant();
 
-	unsigned state = m_board.checkState(m_variant);
+	Board const& startBoard = game->startBoard();
+	mstl::string v;
 
-	if (state & Board::Checkmate)
-	{
-		updateInfo(board::Checkmate);
-	}
-	else if (state & Board::Stalemate)
-	{
-		updateInfo(board::Stalemate);
-	}
-	else if (state & Board::ThreeChecks)
-	{
-		updateInfo(board::ThreeChecks);
-	}
-	else if (state & Board::Losing)
-	{
-		updateInfo(board::Losing);
-	}
-	else
-	{
-		Board const& startBoard = game->startBoard();
-		mstl::string v;
+	if (m_featureSigint)
+		::sys::signal::sendInterrupt(pid());
 
-		if (m_featureSigint)
-			::sys::signal::sendInterrupt(pid());
+	send("new");
+	send("force");
 
-		send("new");
-		send("force");
-
-		if (m_featureVariant)
+	if (m_featureVariant)
+	{
+		if (isChess960Position())
 		{
-			switch (currentVariant())
-			{
-				case app::Engine::Variant_Standard:
-					switch (m_variant)
-					{
-						case variant::Normal:		v = "standard"; break;
-						case variant::Losers:		v = "losers"; break;
-						case variant::Suicide:		v = "suicide"; break;
-						case variant::Giveaway:		v = "giveaway"; break;
-						case variant::Bughouse:		v = "bughouse"; break;
-						case variant::Crazyhouse:	v = "crazyhouse"; break;
-						case variant::ThreeCheck:	v = "3check"; break;
-
-						default:
-							M_RAISE("unexpected variant %s", variant::identifier(game->variant()).c_str());
-					}
-					break;
-
-				case app::Engine::Variant_Chess_960:
-					v = m_chess960Variant;
-					break;
-			}
-
-			send("variant " + v);
+			v = m_chess960Variant;
 		}
+		else
+		{
+			switch (m_variant)
+			{
+				case variant::Normal:		v = "standard"; break;
+				case variant::Losers:		v = "losers"; break;
+				case variant::Suicide:		v = "suicide"; break;
+				case variant::Giveaway:		v = "giveaway"; break;
+				case variant::Bughouse:		v = "bughouse"; break;
+				case variant::Crazyhouse:	v = "crazyhouse"; break;
+				case variant::ThreeCheck:	v = "3check"; break;
+
+				default:
+					M_RAISE("unexpected variant %s", variant::identifier(game->variant()).c_str());
+			}
+		}
+
+		send("variant " + v);
 
 		if (moves.empty())
 		{
-			if (!m_board.isStandardPosition())
-				setupBoard(m_board);
+			if (!currentBoard().isStandardPosition())
+				setupBoard(currentBoard());
 		}
 		else if (game->historyIsLegal())
 		{
@@ -1278,7 +1249,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 	char const*	illegal(0);
 	char const*	e(0);
-	Board 		board(m_board);
+	Board 		board(currentBoard());
 	MoveList 	moves;
 
 	while (*s)
@@ -1360,12 +1331,12 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 
 		if (board.checkState(m_variant) & Board::Checkmate)
 		{
-			int n = mstl::div2(board.plyNumber() - m_board.plyNumber() + 1);
+			int n = mstl::div2(board.plyNumber() - currentBoard().plyNumber() + 1);
 			setMate(varno, board.whiteToMove() ? -n : +n);
 		}
 		else
 		{
-			setScore(varno, m_dontInvertScore || m_board.whiteToMove() ? score : -score);
+			setScore(varno, m_dontInvertScore || currentBoard().whiteToMove() ? score : -score);
 		}
 
 		updatePvInfo(varno);
@@ -1390,14 +1361,14 @@ winboard::Engine::parseCurrentMove(char const* s)
 		s = ::skipMoveNumber(::skipWords(s, 3));
 
 		Move move;
-		char const* t = m_board.parseMove(::skipDots(s), move, m_variant);
+		char const* t = currentBoard().parseMove(::skipDots(s), move, m_variant);
 
 		if (t == 0)
 			return true; // skip it anayway
 
 		if (move.isLegal())
 		{
-			m_board.prepareForPrint(move, m_variant);
+			currentBoard().prepareForPrint(move, m_variant);
 			setCurrentMove(moveNo, moveCount, move);
 			updateCurrMove();
 			setTime((hours*60 + minutes)*60 + seconds);

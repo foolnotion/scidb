@@ -36,6 +36,8 @@
 #include "tt.h"
 #include "ucioption.h"
 
+#define HASHFULL // (Gregor Cramer)
+
 namespace Search {
 
   volatile SignalsType Signals;
@@ -311,11 +313,22 @@ finalize:
   if (!Signals.stop && (Limits.ponder || Limits.infinite))
       pos.this_thread()->wait_for_stop_or_ponderhit();
 
-  // Best move could be MOVE_NONE when searching on a stalemate position
-  sync_cout << "bestmove " << move_to_uci(RootMoves[0].pv[0], Chess960)
-            << " ponder "  << move_to_uci(RootMoves[0].pv[1], Chess960) << sync_endl;
+#ifdef THREECHECK
+  if (pos.got_third_check())
+  {
+      sync_cout << "bestmove " << "(none) ponder (none)" << sync_endl;
+  }
+  else
+#endif
+  {
+      // Best move could be MOVE_NONE when searching on a stalemate position
+      sync_cout << "bestmove " << move_to_uci(RootMoves[0].pv[0], Chess960)
+                << " ponder "  << move_to_uci(RootMoves[0].pv[1], Chess960) << sync_endl;
+  }
 
+#ifdef HASHFULL // (Gregor Cramer)
   sync_cout << "info hashfull " << TT.fullness() << sync_endl;
+#endif
 }
 
 
@@ -401,13 +414,14 @@ namespace {
                 if (Signals.stop)
                     break;
 
-					 Time::point currentTime = Time::now();
+                Time::point currentTime = Time::now();
 
                 // Send full PV info to GUI if we are going to leave the loop or
                 // if we have a fail high/low and we are deep in the search.
                 if ((bestValue > alpha && bestValue < beta) || currentTime - SearchTime > 2000)
                     sync_cout << uci_pv(pos, depth, alpha, beta) << sync_endl;
 
+#ifdef HASHFULL // (Gregor Cramer)
                 // This seems to be the appropriate place to send our stats,
                 // but with at least one-second gap (Gregor Cramer)
                 if (currentTime >= startTime + 1000)
@@ -415,6 +429,7 @@ namespace {
                   sync_cout << "info hashfull " << TT.fullness() << sync_endl;
                   startTime = currentTime;
                 }
+#endif
 
                 // In case of failing high/low increase aspiration window and
                 // research, otherwise exit the fail high/low loop.
@@ -688,110 +703,117 @@ namespace {
             return v;
     }
 
-    // Step 7. Static null move pruning (is omitted in PV nodes)
-    // We're betting that the opponent doesn't have a move that will reduce
-    // the score by more than futility_margin(depth) if we do a null move.
-    if (   !PvNode
-        && !ss->skipNullMove
-        &&  depth < RazorDepth
-        && !inCheck
-        &&  refinedValue - futility_margin(depth, 0) >= beta
-        &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
-        &&  pos.non_pawn_material(pos.side_to_move()))
-        return refinedValue - futility_margin(depth, 0);
-
-    // Step 8. Null move search with verification search (is omitted in PV nodes)
-    if (   !PvNode
-        && !ss->skipNullMove
-        &&  depth > ONE_PLY
-        && !inCheck
-        &&  refinedValue >= beta
-        &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
-        &&  pos.non_pawn_material(pos.side_to_move()))
+#ifdef THREECHECK
+    if (!pos.is_three_check())
     {
-        ss->currentMove = MOVE_NULL;
+#endif
+       // Step 7. Static null move pruning (is omitted in PV nodes)
+       // We're betting that the opponent doesn't have a move that will reduce
+       // the score by more than futility_margin(depth) if we do a null move.
+       if (   !PvNode
+           && !ss->skipNullMove
+           &&  depth < RazorDepth
+           && !inCheck
+           &&  refinedValue - futility_margin(depth, 0) >= beta
+           &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
+           &&  pos.non_pawn_material(pos.side_to_move()))
+           return refinedValue - futility_margin(depth, 0);
 
-        // Null move dynamic reduction based on depth
-        Depth R = 3 * ONE_PLY + depth / 4;
+       // Step 8. Null move search with verification search (is omitted in PV nodes)
+       if (   !PvNode
+           && !ss->skipNullMove
+           &&  depth > ONE_PLY
+           && !inCheck
+           &&  refinedValue >= beta
+           &&  abs(beta) < VALUE_MATE_IN_MAX_PLY
+           &&  pos.non_pawn_material(pos.side_to_move()))
+       {
+           ss->currentMove = MOVE_NULL;
 
-        // Null move dynamic reduction based on value
-        if (refinedValue - PawnValueMg > beta)
-            R += ONE_PLY;
+           // Null move dynamic reduction based on depth
+           Depth R = 3 * ONE_PLY + depth / 4;
 
-        pos.do_null_move<true>(st);
-        (ss+1)->skipNullMove = true;
-        nullValue = depth-R < ONE_PLY ? -qsearch<NonPV>(pos, ss+1, -beta, -alpha, DEPTH_ZERO)
-                                      : - search<NonPV>(pos, ss+1, -beta, -alpha, depth-R);
-        (ss+1)->skipNullMove = false;
-        pos.do_null_move<false>(st);
+           // Null move dynamic reduction based on value
+           if (refinedValue - PawnValueMg > beta)
+               R += ONE_PLY;
 
-        if (nullValue >= beta)
-        {
-            // Do not return unproven mate scores
-            if (nullValue >= VALUE_MATE_IN_MAX_PLY)
-                nullValue = beta;
+           pos.do_null_move<true>(st);
+           (ss+1)->skipNullMove = true;
+           nullValue = depth-R < ONE_PLY ? -qsearch<NonPV>(pos, ss+1, -beta, -alpha, DEPTH_ZERO)
+                                         : - search<NonPV>(pos, ss+1, -beta, -alpha, depth-R);
+           (ss+1)->skipNullMove = false;
+           pos.do_null_move<false>(st);
 
-            if (depth < 6 * ONE_PLY)
-                return nullValue;
+           if (nullValue >= beta)
+           {
+               // Do not return unproven mate scores
+               if (nullValue >= VALUE_MATE_IN_MAX_PLY)
+                   nullValue = beta;
 
-            // Do verification search at high depths
-            ss->skipNullMove = true;
-            Value v = search<NonPV>(pos, ss, alpha, beta, depth-R);
-            ss->skipNullMove = false;
+               if (depth < 6 * ONE_PLY)
+                   return nullValue;
 
-            if (v >= beta)
-                return nullValue;
-        }
-        else
-        {
-            // The null move failed low, which means that we may be faced with
-            // some kind of threat. If the previous move was reduced, check if
-            // the move that refuted the null move was somehow connected to the
-            // move which was reduced. If a connection is found, return a fail
-            // low score (which will cause the reduced move to fail high in the
-            // parent node, which will trigger a re-search with full depth).
-            threatMove = (ss+1)->currentMove;
+               // Do verification search at high depths
+               ss->skipNullMove = true;
+               Value v = search<NonPV>(pos, ss, alpha, beta, depth-R);
+               ss->skipNullMove = false;
 
-            if (   depth < ThreatDepth
-                && (ss-1)->reduction
-                && threatMove != MOVE_NONE
-                && connected_moves(pos, (ss-1)->currentMove, threatMove))
-                return beta - 1;
-        }
+               if (v >= beta)
+                   return nullValue;
+           }
+           else
+           {
+               // The null move failed low, which means that we may be faced with
+               // some kind of threat. If the previous move was reduced, check if
+               // the move that refuted the null move was somehow connected to the
+               // move which was reduced. If a connection is found, return a fail
+               // low score (which will cause the reduced move to fail high in the
+               // parent node, which will trigger a re-search with full depth).
+               threatMove = (ss+1)->currentMove;
+
+               if (   depth < ThreatDepth
+                   && (ss-1)->reduction
+                   && threatMove != MOVE_NONE
+                   && connected_moves(pos, (ss-1)->currentMove, threatMove))
+                   return beta - 1;
+           }
+       }
+
+       // Step 9. ProbCut (is omitted in PV nodes)
+       // If we have a very good capture (i.e. SEE > seeValues[captured_piece_type])
+       // and a reduced search returns a value much above beta, we can (almost) safely
+       // prune the previous move.
+       if (   !PvNode
+           &&  depth >= RazorDepth + ONE_PLY
+           && !inCheck
+           && !ss->skipNullMove
+           &&  excludedMove == MOVE_NONE
+           &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
+       {
+           Value rbeta = beta + 200;
+           Depth rdepth = depth - ONE_PLY - 3 * ONE_PLY;
+
+           assert(rdepth >= ONE_PLY);
+           assert((ss-1)->currentMove != MOVE_NONE);
+           assert((ss-1)->currentMove != MOVE_NULL);
+
+           MovePicker mp(pos, ttMove, H, pos.captured_piece_type());
+           CheckInfo ci(pos);
+
+           while ((move = mp.next_move<false>()) != MOVE_NONE)
+               if (pos.pl_move_is_legal(move, ci.pinned))
+               {
+                   ss->currentMove = move;
+                   pos.do_move(move, st, ci, pos.move_gives_check(move, ci));
+                   value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, rdepth);
+                   pos.undo_move(move);
+                   if (value >= rbeta)
+                       return value;
+               }
+       }
+#ifdef THREECHECK
     }
-
-    // Step 9. ProbCut (is omitted in PV nodes)
-    // If we have a very good capture (i.e. SEE > seeValues[captured_piece_type])
-    // and a reduced search returns a value much above beta, we can (almost) safely
-    // prune the previous move.
-    if (   !PvNode
-        &&  depth >= RazorDepth + ONE_PLY
-        && !inCheck
-        && !ss->skipNullMove
-        &&  excludedMove == MOVE_NONE
-        &&  abs(beta) < VALUE_MATE_IN_MAX_PLY)
-    {
-        Value rbeta = beta + 200;
-        Depth rdepth = depth - ONE_PLY - 3 * ONE_PLY;
-
-        assert(rdepth >= ONE_PLY);
-        assert((ss-1)->currentMove != MOVE_NONE);
-        assert((ss-1)->currentMove != MOVE_NULL);
-
-        MovePicker mp(pos, ttMove, H, pos.captured_piece_type());
-        CheckInfo ci(pos);
-
-        while ((move = mp.next_move<false>()) != MOVE_NONE)
-            if (pos.pl_move_is_legal(move, ci.pinned))
-            {
-                ss->currentMove = move;
-                pos.do_move(move, st, ci, pos.move_gives_check(move, ci));
-                value = -search<NonPV>(pos, ss+1, -rbeta, -rbeta+1, rdepth);
-                pos.undo_move(move);
-                if (value >= rbeta)
-                    return value;
-            }
-    }
+#endif
 
     // Step 10. Internal iterative deepening
     if (   depth >= IIDDepth[PvNode]
