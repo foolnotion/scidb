@@ -199,6 +199,7 @@ public:
   bool got_third_check() const;
   unsigned checks_given() const;
   unsigned checks_taken() const;
+  unsigned checks_index() const;
   void hash_three_check(Key& key, unsigned checksGiven);
 #endif
   bool is_chess960() const;
@@ -445,6 +446,10 @@ inline unsigned Position::checks_given() const {
 
 inline unsigned Position::checks_taken() const {
   return st->checksGiven[sideToMove ^ 1];
+}
+
+inline unsigned Position::checks_index() const {
+  return unsigned(threeCheck) + st->checksGiven[sideToMove];
 }
 #endif
 

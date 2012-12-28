@@ -97,6 +97,7 @@ array set Options {
 	engine:bestFirst	0
 	engine:nlines		2
 	engine:multiPV		4
+	engine:delay		250
 }
 
 array set Vars {
@@ -407,10 +408,15 @@ proc build {parent width height} {
 
 
 proc update {args} {
+	variable Options
 	variable Vars
 
+	if {[info exists Vars(after)]} {
+		after cancel $Vars(after)
+	}
+
 	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
-		after idle [list :::engine::startAnalysis $Vars(engine:id)]
+		set Vars(after) [after $Options(engine:delay) [list :::engine::startAnalysis $Vars(engine:id)]]
 	}
 }
 
@@ -422,6 +428,7 @@ proc startAnalysis {dialog} {
 	set Vars(message) {}
 	$Vars(mesg) configure -text ""
 	::engine::kill $Vars(engine:id)
+	after cancel $Vars(after)
 
 	set isReadyCmd [namespace current]::IsReady
 	set signalCmd [namespace current]::Signal
@@ -443,6 +450,7 @@ proc restartAnalysis {} {
 	variable Options
 	variable Vars
 	
+	after cancel $Vars(after)
 	::engine::restartAnalysis $Vars(engine:id) [list multiPV $Options(engine:multiPV)]
 }
 
@@ -450,6 +458,7 @@ proc restartAnalysis {} {
 proc stopAnalysis {} {
 	variable Vars
 
+	after cancel $Vars(after)
 	::engine::stopAnalysis $Vars(engine:id)
 	set Vars(engine:id) -1
 }
@@ -466,6 +475,7 @@ proc Pause {tree} {
 	set Vars(engine:pause) [expr {!$Vars(engine:pause)}]
 
 	if {$Vars(engine:pause)} {
+		after cancel $Vars(after)
 		::engine::pause $Vars(engine:id)
 		::toolbar::childconfigure $Vars(button:pause) \
 			-image $::icon::toolbarStart \
@@ -518,6 +528,7 @@ proc EngineLock {args} {
 	variable Vars
 
 	if {$Vars(engine:id) != -1 && !$Vars(engine:locked)} {
+		after cancel $Vars(after)
 		after idle [list :::engine::startAnalysis $Vars(engine:id)]
 	}
 }
@@ -592,7 +603,6 @@ proc Layout {tree} {
 proc SetState {state} {
 	variable Vars
 
-	after cancel $Vars(after)
 	if {![winfo exists $Vars(tree)]} { return }
 	if {$Vars(state) eq $state} { return }
 	set Vars(state) $state
@@ -661,7 +671,7 @@ proc Display(state) {state} {
 	variable Vars
 
 	switch $state {
-		stop		{ set Vars(after) [after idle [namespace code [list SetState disabled]]] }
+		stop		{ after idle [namespace code [list SetState disabled]] }
 		start		{ SetState normal }
 		pause		{}
 		resume	{}
@@ -861,6 +871,7 @@ proc UpdateInfo {id type info} {
 proc Destroy {} {
 	variable Vars
 
+	after cancel $Vars(after)
 	::engine::kill $Vars(engine:id)
 	set Vars(engine:id) -1
 }
@@ -874,6 +885,7 @@ proc IsReady {id} {
 proc Signal {id code} {
 	variable Vars
 
+	after cancel $Vars(after)
 	set parent [winfo toplevel $Vars(tree)]
 	SetState disabled
 

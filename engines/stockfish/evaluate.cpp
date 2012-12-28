@@ -161,26 +161,43 @@ namespace {
   const Score Tempo = make_score(24, 11);
 
   // Rooks and queens on the 7th rank (modified by Joona Kiiski)
+#ifdef THREECHECK
+  const Score RookOn7thBonus[4]  = {
+    S(47, 98),
+    S(47 + 3*PawnValueMg, 98 + 3*PawnValueEg),
+    S(47 + 6*PawnValueMg, 98 + 6*PawnValueEg),
+    S(47 + 9*PawnValueMg, 98 + 9*PawnValueEg),
+  };
+  const Score QueenOn7thBonus[4] = {
+    S(27, 54),
+    S(27 + 2*PawnValueMg, 54 + 2*PawnValueEg),
+    S(27 + 4*PawnValueMg, 54 + 4*PawnValueEg),
+    S(27 + 6*PawnValueMg, 54 + 6*PawnValueEg),
+  };
+#else
   const Score RookOn7thBonus  = make_score(47, 98);
   const Score QueenOn7thBonus = make_score(27, 54);
+#endif
 
   // Rooks on open files (modified by Joona Kiiski)
+#ifdef THREECHECK
+  const Score RookOpenFileBonus[5] = {
+    S(43, 21),
+    S(43 + 2*PawnValueMg, 21 + 2*PawnValueEg),
+    S(43 + 4*PawnValueMg, 21 + 4*PawnValueEg),
+    S(43 + 6*PawnValueMg, 21 + 6*PawnValueEg),
+    S(43 + 8*PawnValueMg, 21 + 8*PawnValueEg),
+  };
+  const Score RookHalfOpenFileBonus[5] = {
+    S(19, 10),
+    S(19 + 1*PawnValueMg, 10 + 1*PawnValueEg),
+    S(19 + 2*PawnValueMg, 10 + 2*PawnValueEg),
+    S(19 + 3*PawnValueMg, 10 + 3*PawnValueEg),
+    S(19 + 4*PawnValueMg, 10 + 4*PawnValueEg),
+  };
+#else
   const Score RookOpenFileBonus = make_score(43, 21);
   const Score RookHalfOpenFileBonus = make_score(19, 10);
-
-#ifdef THREECHECK
-  const Score RookOpenFileBonus3[4] = {
-    RookOpenFileBonus,
-    S(2*PawnValueMg, 2*PawnValueEg),
-    S(4*PawnValueMg, 4*PawnValueEg),
-    S(VALUE_KNOWN_WIN, VALUE_KNOWN_WIN),
-  };
-  const Score RookHalfOpenFileBonus3[4] = {
-    RookOpenFileBonus,
-    S(PawnValueMg, PawnValueEg),
-    S(2*PawnValueMg, 2*PawnValueEg),
-    S(3*PawnValueMg, 4*PawnValueEg),
-  };
 #endif
 
   #undef S
@@ -219,12 +236,33 @@ namespace {
   const int KingAttackWeights[] = { 0, 0, 2, 2, 3, 5 };
 
   // Bonuses for enemy's safe checks
+#ifdef THREECHECK
+  const int QueenContactCheckBonus[5] = {
+    6, (3*PawnValueMg)/2, 3*PawnValueMg, (9*PawnValueMg)/2, 6*PawnValueMg,
+  };
+  const int RookContactCheckBonus[5] = {
+    4, PawnValueMg, 2*PawnValueMg, 3*PawnValueMg, 4*PawnValueMg,
+  };
+  const int QueenCheckBonus[5] = {
+    3, PawnValueMg, 2*PawnValueMg, 3*PawnValueMg, 4*PawnValueMg,
+  };
+  const int RookCheckBonus[5] = {
+    2, (3*PawnValueMg)/4, (6*PawnValueMg)/4, (9*PawnValueMg)/4, 3*PawnValueMg,
+  };
+  const int BishopCheckBonus[5] = {
+    1, PawnValueMg/2, PawnValueMg, (3*PawnValueMg)/2, 2*PawnValueMg,
+  };
+  const int KnightCheckBonus[5] = {
+    1, PawnValueMg/2, PawnValueMg, (3*PawnValueMg)/2, 2*PawnValueMg,
+  };
+#else
   const int QueenContactCheckBonus = 6;
   const int RookContactCheckBonus  = 4;
   const int QueenCheckBonus        = 3;
   const int RookCheckBonus         = 2;
   const int BishopCheckBonus       = 1;
   const int KnightCheckBonus       = 1;
+#endif
 
   // InitKingDanger[Square] contains penalties based on the position of the
   // defending king, indexed by king's square (from white's point of view).
@@ -644,7 +682,13 @@ Value do_evaluate(const Position& pos, Value& margin) {
             && relative_rank(Us, s) == RANK_7
             && relative_rank(Us, pos.king_square(Them)) == RANK_8)
         {
+#ifdef THREECHECK
+            score += (Piece == ROOK
+                      ? RookOn7thBonus[pos.checks_index()]
+                      : QueenOn7thBonus[pos.checks_index()]);
+#else
             score += (Piece == ROOK ? RookOn7thBonus : QueenOn7thBonus);
+#endif
         }
 
         // Special extra evaluation for bishops
@@ -678,47 +722,48 @@ Value do_evaluate(const Position& pos, Value& margin) {
                 if (ei.pi->file_is_half_open(Them, f))
                 {
 #ifdef THREECHECK
-                    if (pos.is_three_check())
-                        score += RookOpenFileBonus3[pos.checks_given()];
-                    else
+                    score += RookOpenFileBonus[pos.checks_index()];
+#else
+                    score += RookOpenFileBonus;
 #endif
-                        score += RookOpenFileBonus;
                 }
                 else
                 {
 #ifdef THREECHECK
-                    if (pos.is_three_check())
-                        score += RookHalfOpenFileBonus3[pos.checks_given()];
-                    else
+                    score += RookHalfOpenFileBonus[pos.checks_index()];
+#else
+                    score += RookHalfOpenFileBonus;
 #endif
-                        score += RookHalfOpenFileBonus;
                 }
             }
 
-            // Penalize rooks which are trapped inside a king. Penalize more if
-            // king has lost right to castle.
-            if (mob > 6 || ei.pi->file_is_half_open(Us, f))
-                continue;
-
-            ksq = pos.king_square(Us);
-
-            if (    file_of(ksq) >= FILE_E
-                &&  file_of(s) > file_of(ksq)
-                && (relative_rank(Us, ksq) == RANK_1 || rank_of(ksq) == rank_of(s)))
+            if (!pos.is_three_check())
             {
-                // Is there a half-open file between the king and the edge of the board?
-                if (!ei.pi->has_open_file_to_right(Us, file_of(ksq)))
-                    score -= make_score(pos.can_castle(Us) ? (TrappedRookPenalty - mob * 16) / 2
-                                                           : (TrappedRookPenalty - mob * 16), 0);
-            }
-            else if (    file_of(ksq) <= FILE_D
-                     &&  file_of(s) < file_of(ksq)
-                     && (relative_rank(Us, ksq) == RANK_1 || rank_of(ksq) == rank_of(s)))
-            {
-                // Is there a half-open file between the king and the edge of the board?
-                if (!ei.pi->has_open_file_to_left(Us, file_of(ksq)))
-                    score -= make_score(pos.can_castle(Us) ? (TrappedRookPenalty - mob * 16) / 2
-                                                           : (TrappedRookPenalty - mob * 16), 0);
+                // Penalize rooks which are trapped inside a king. Penalize more if
+                // king has lost right to castle.
+                if (mob > 6 || ei.pi->file_is_half_open(Us, f))
+                    continue;
+
+                ksq = pos.king_square(Us);
+
+                if (    file_of(ksq) >= FILE_E
+                    &&  file_of(s) > file_of(ksq)
+                    && (relative_rank(Us, ksq) == RANK_1 || rank_of(ksq) == rank_of(s)))
+                {
+                    // Is there a half-open file between the king and the edge of the board?
+                    if (!ei.pi->has_open_file_to_right(Us, file_of(ksq)))
+                        score -= make_score(pos.can_castle(Us) ? (TrappedRookPenalty - mob * 16) / 2
+                                                               : (TrappedRookPenalty - mob * 16), 0);
+                }
+                else if (    file_of(ksq) <= FILE_D
+                         &&  file_of(s) < file_of(ksq)
+                         && (relative_rank(Us, ksq) == RANK_1 || rank_of(ksq) == rank_of(s)))
+                {
+                    // Is there a half-open file between the king and the edge of the board?
+                    if (!ei.pi->has_open_file_to_left(Us, file_of(ksq)))
+                        score -= make_score(pos.can_castle(Us) ? (TrappedRookPenalty - mob * 16) / 2
+                                                               : (TrappedRookPenalty - mob * 16), 0);
+                }
             }
         }
     }
@@ -844,7 +889,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             b &= (  ei.attackedBy[Them][PAWN]   | ei.attackedBy[Them][KNIGHT]
                   | ei.attackedBy[Them][BISHOP] | ei.attackedBy[Them][ROOK]);
             if (b)
-                attackUnits +=  QueenContactCheckBonus
+                attackUnits +=  QueenContactCheckBonus[pos.checks_index()]
                               * popcount<Max15>(b)
                               * (Them == pos.side_to_move() ? 2 : 1);
         }
@@ -862,7 +907,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             b &= (  ei.attackedBy[Them][PAWN]   | ei.attackedBy[Them][KNIGHT]
                   | ei.attackedBy[Them][BISHOP] | ei.attackedBy[Them][QUEEN]);
             if (b)
-                attackUnits +=  RookContactCheckBonus
+                attackUnits +=  RookContactCheckBonus[pos.checks_index()]
                               * popcount<Max15>(b)
                               * (Them == pos.side_to_move() ? 2 : 1);
         }
@@ -876,22 +921,22 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // Enemy queen safe checks
         b = (b1 | b2) & ei.attackedBy[Them][QUEEN];
         if (b)
-            attackUnits += QueenCheckBonus * popcount<Max15>(b);
+            attackUnits += QueenCheckBonus[pos.checks_index()] * popcount<Max15>(b);
 
         // Enemy rooks safe checks
         b = b1 & ei.attackedBy[Them][ROOK];
         if (b)
-            attackUnits += RookCheckBonus * popcount<Max15>(b);
+            attackUnits += RookCheckBonus[pos.checks_index()] * popcount<Max15>(b);
 
         // Enemy bishops safe checks
         b = b2 & ei.attackedBy[Them][BISHOP];
         if (b)
-            attackUnits += BishopCheckBonus * popcount<Max15>(b);
+            attackUnits += BishopCheckBonus[pos.checks_index()] * popcount<Max15>(b);
 
         // Enemy knights safe checks
         b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
         if (b)
-            attackUnits += KnightCheckBonus * popcount<Max15>(b);
+            attackUnits += KnightCheckBonus[pos.checks_index()] * popcount<Max15>(b);
 
         // To index KingDangerTable[] attackUnits must be in [0, 99] range
         attackUnits = std::min(99, std::max(0, attackUnits));
