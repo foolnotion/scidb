@@ -3349,6 +3349,34 @@ namespace eval 16x16 {
 		YII=
 	}]
 
+	set filter(inactive) [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABFFBM
+		VEVMTEz///+2dAa2dAa2dAampqajo6OrmHi2dAa2dAa2dAa2dAa2dAaUlJS5dgi4dgiRkZG3
+		eRORkZG7eQyCgoKNjY2NjY27eQu7eQyAgIC7eQq6eAt5eXl+fn66dwfGgQ5sbGx4eHjCfg1q
+		ampxcXG4dgbJiiDDgRHSjh3MgwjUiAnOjSDPkSh8a01cXFxcXFybbyVOTk5QUFBUVFRXV1dY
+		WFhgYGBiYmJjY2NsbGxxcXFycnJzc3N8fHx+fn6EhISHh4eVlZWWlpagoKC4uLjDw8POzs7P
+		z8/Q0NDX19fYlija2trd3d3hlBPhlhnh4eHk5OTn5+fooCbpq0Xq6urwqDHz8/P0sED0s0X1
+		uFL7+/v////3d9UbAAAAMXRSTlMAAAYSFhwfJj9BRlhlhpOam5ucpa2tr7q/zc7V2trb2+Xm
+		6O7v7/Dz9/j4+fn8/f7+5u8VRAAAAJlJREFUGNNVyNUWgjAAANBN7O5WnGJ3YXc3Fgb//x/q
+		GEe4jxcAb6kz6DUjWgAx4KxvBEHgukiK8vr9c2YtJFo30TgsxU40SZBoLFfYMEaiujhhrJtE
+		oL/neZ4bFR0kNKg2nc/alVw2qscBgB0xjEeXPBzjVuobkDDSl3smqP4HNKcfz61PFipb/nUN
+		yQJCfyHlUgRlMkBFYB9n9Btubp4LmQAAAABJRU5ErkJggg==
+	}]
+
+	set filter(active) [image create photo -data {
+		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAAA3NCSVQICAjb4U/gAAABHVBM
+		VEW/LA3///+2dAa2dAa2dAbflobek4PTjGG2dAa2dAa2dAa2dAa2dAbZgW+5dgi4dgi8eBDY
+		fmvYfmu7eQzWblnWeWXWeGS7eQu7eQzTalS7eQq6eAvRYkvRZ1C6dwfGgQ7OVTvPYEnCfg3M
+		UTe4dgbMWD/JiiDDgRHSjh3MgwjViAnOjSDPkSjMVCHFPyO9ZRLFPyLALg/AMBLCNhjDOh3E
+		Oh3GRCjHRyzIRSrIRyzJSC3KUTjMVz7NWUDOWkLQZE7Ub1rWa1XWdF/YlijZg3Hdj3/ehnTh
+		lBPhlhnmq5/ooCbpq0XvyMDwqDHxvrPx0Mn0sED0s0X1uFL14Nv22NP44dz44+D70Mj70cn8
+		3Nb94t397Oj+8/H/+/v///97KZoNAAAAMXRSTlMAAAYSFhwfJj9BRlhlhpOam5ucpa2tr7q/
+		zc7V2trb2+Xm6O7v7/Dz9/j4+fn8/f7+5u8VRAAAAJpJREFUGNNVyNUWgkAUAMBdsbu7ULG7
+		u7s7kf//DHW5HnEeByFrutFpFT1ShAlkLGw4jjs06W9kl8+Pc1kDUXvw+m6I+o03DkKULlei
+		54fIre9E1QzhaB9Zlj11U3oICZ0fzkaVTDzmlZNAyEAzjEUWmkwDWuodGCh981XUKf4FVke2
+		u4FNECJdYr9wCQJjezJs+gtKpcB/QbwAo2cc8eQQ3r0AAAAASUVORK5CYII=
+	}]
+
 } ;# namespace 16x16
 
 namespace eval 22x22 {

@@ -773,6 +773,7 @@ proc showEngineDictionary {parent} {
 	::widget::dialogButtonAdd $dlg filter ::mc::Filter {}
 	$dlg.close configure -command [list destroy $dlg]
 	$dlg.filter configure -command [namespace code [list SetFilter $lb]]
+	$dlg.filter configure -image $::icon::16x16::filter(inactive) -compound left
 
 	wm resizable $dlg yes yes
 	wm title $dlg $mc::EngineDictionary
@@ -1202,6 +1203,7 @@ proc FillHeader {lb} {
 
 
 proc ResetFilter {lb} {
+	variable DefaultFilter
 	variable Filter
 
 	foreach variant {Normal Chess960 ThreeCheck Crazyhouse Bughouse Suicide Giveaway Losers} {
@@ -1212,10 +1214,13 @@ proc ResetFilter {lb} {
 	set Filter(elo:max) 4000
 	set Filter(ccrl:min) 0
 	set Filter(ccrl:max) 4000
+
+	array set DefaultFilter [array get Filter]
 }
 
 
 proc SetFilter {lb} {
+	variable DefaultFilter
 	variable Filter
 	variable Filter_
 	variable Reply_
@@ -1314,6 +1319,9 @@ proc SetFilter {lb} {
 	tkwait variable [namespace current]::Reply_
 	::ttk::releaseGrab $dlg
 	destroy $dlg
+
+	if {[arrayEqual Filter DefaultFilter]} { set state inactive } else { set state active }
+	[winfo toplevel $lb].filter configure -image $::icon::16x16::filter($state)
 
 	switch $Reply_ {
 		ok {

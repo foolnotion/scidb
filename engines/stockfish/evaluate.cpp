@@ -737,7 +737,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
                 }
             }
 
+#ifdef THREECHECK
             if (!pos.is_three_check())
+#endif
             {
                 // Penalize rooks which are trapped inside a king. Penalize more if
                 // king has lost right to castle.
@@ -889,9 +891,15 @@ Value do_evaluate(const Position& pos, Value& margin) {
             b &= (  ei.attackedBy[Them][PAWN]   | ei.attackedBy[Them][KNIGHT]
                   | ei.attackedBy[Them][BISHOP] | ei.attackedBy[Them][ROOK]);
             if (b)
+#ifdef THREECHECK
                 attackUnits +=  QueenContactCheckBonus[pos.checks_index()]
                               * popcount<Max15>(b)
                               * (Them == pos.side_to_move() ? 2 : 1);
+#else
+                attackUnits +=  QueenContactCheckBonus
+                              * popcount<Max15>(b)
+                              * (Them == pos.side_to_move() ? 2 : 1);
+#endif
         }
 
         // Analyse enemy's safe rook contact checks. First find undefended
@@ -907,9 +915,15 @@ Value do_evaluate(const Position& pos, Value& margin) {
             b &= (  ei.attackedBy[Them][PAWN]   | ei.attackedBy[Them][KNIGHT]
                   | ei.attackedBy[Them][BISHOP] | ei.attackedBy[Them][QUEEN]);
             if (b)
+#ifdef THREECHECK
                 attackUnits +=  RookContactCheckBonus[pos.checks_index()]
                               * popcount<Max15>(b)
                               * (Them == pos.side_to_move() ? 2 : 1);
+#else
+                attackUnits +=  RookContactCheckBonus
+                              * popcount<Max15>(b)
+                              * (Them == pos.side_to_move() ? 2 : 1);
+#endif
         }
 
         // Analyse enemy's safe distance checks for sliders and knights
@@ -921,22 +935,38 @@ Value do_evaluate(const Position& pos, Value& margin) {
         // Enemy queen safe checks
         b = (b1 | b2) & ei.attackedBy[Them][QUEEN];
         if (b)
+#ifdef THREECHECK
             attackUnits += QueenCheckBonus[pos.checks_index()] * popcount<Max15>(b);
+#else
+            attackUnits += QueenCheckBonus * popcount<Max15>(b);
+#endif
 
         // Enemy rooks safe checks
         b = b1 & ei.attackedBy[Them][ROOK];
         if (b)
+#ifdef THREECHECK
             attackUnits += RookCheckBonus[pos.checks_index()] * popcount<Max15>(b);
+#else
+            attackUnits += RookCheckBonus * popcount<Max15>(b);
+#endif
 
         // Enemy bishops safe checks
         b = b2 & ei.attackedBy[Them][BISHOP];
         if (b)
+#ifdef THREECHECK
             attackUnits += BishopCheckBonus[pos.checks_index()] * popcount<Max15>(b);
+#else
+            attackUnits += BishopCheckBonus * popcount<Max15>(b);
+#endif
 
         // Enemy knights safe checks
         b = pos.attacks_from<KNIGHT>(ksq) & ei.attackedBy[Them][KNIGHT] & safe;
         if (b)
+#ifdef THREECHECK
             attackUnits += KnightCheckBonus[pos.checks_index()] * popcount<Max15>(b);
+#else
+            attackUnits += KnightCheckBonus * popcount<Max15>(b);
+#endif
 
         // To index KingDangerTable[] attackUnits must be in [0, 99] range
         attackUnits = std::min(99, std::max(0, attackUnits));
