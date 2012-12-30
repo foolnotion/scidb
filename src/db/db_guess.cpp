@@ -403,8 +403,13 @@ db::Guess::generateMoves(Square square, MoveList& result) const
 {
 	M_ASSERT(square != sq::Null);
 
+	variant::Type variant = m_variant;
+
+	if (variant::isZhouse(variant) && m_ply == 1)
+		variant = variant::Normal;
+
 	MoveList moves;
-	Board::generateMoves(m_variant, moves);
+	Board::generateMoves(variant, moves);
 
 	uint64_t sqMask = setBit(square);
 
@@ -930,6 +935,8 @@ db::Guess::ITERATE(MoveList& moves, unsigned depth, int alpha, int beta, bool al
 					TRACE(::printf("%d (%d): move-back: %s\n", depth, m_ply + 1, move.asString().c_str()));
 					return score;
 				}
+
+				moveList.clear();
 			}
 #endif // USE_NULL_MOVE_SEARCH
 
@@ -1003,7 +1010,8 @@ db::Guess::quiesce(int alpha, int beta)
 	MoveList		moves;
 	ScoreList	scoreList;
 
-	Board::generateCapturingMoves(m_variant, moves);
+	Board::generateCapturingPawnMoves(m_variant, moves);
+	Board::generateCapturingPieceMoves(m_variant, moves);
 
 	filterLegalMoves(moves, m_variant);
 

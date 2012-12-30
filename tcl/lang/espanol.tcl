@@ -244,6 +244,7 @@
 ::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
 ::menu::mc::OpenEngineLog				"Abrir bitácora d&el Motor"
 ::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
+::menu::mc::PrivatePlayerCard			"&Private Player Card" ;# NEW
 
 ::menu::mc::OpenFile						"Abrir un archivo Scidb"
 ::menu::mc::NewFile						"Crear un archivo Scidb"
@@ -1313,7 +1314,7 @@
 ::setup::board::mc::Castling						"Enroque"
 ::setup::board::mc::MoveNumber					"Número de jugada"
 ::setup::board::mc::EnPassantFile				"Al paso"
-::setup::board::mc::HalfMoves						"Half moves" ;# NEW
+::setup::board::mc::HalfMoves						"Half move clock" ;# NEW
 ::setup::board::mc::StartPosition				"Posición inicial"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Promoted" ;# NEW
@@ -1739,11 +1740,11 @@
 ::languagebox::mc::None				"Ninguno"
 
 ### datebox ############################################################
-::widget::datebox::mc::Today		"Hoy"
-::widget::datebox::mc::Calendar	"Calendario..."
-::widget::datebox::mc::Year		"Año"
-::widget::datebox::mc::Month		"Mes"
-::widget::datebox::mc::Day			"Día"
+::datebox::mc::Today		"Hoy"
+::datebox::mc::Calendar	"Calendario..."
+::datebox::mc::Year		"Año"
+::datebox::mc::Month		"Mes"
+::datebox::mc::Day		"Día"
 
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Masculino"

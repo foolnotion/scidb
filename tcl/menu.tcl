@@ -62,6 +62,7 @@ set ContactFeatureRequest	"&Feature Request"
 set InstallChessBaseFonts	"Install ChessBase Fonts"
 set OpenEngineLog				"Open &Engine Console"
 set OpenEngineDictionary	"Open Engine &Dictionary"
+set PrivatePlayerCard		"&Private Player Card"
 
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
@@ -207,7 +208,21 @@ proc build {menu} {
 		;
 	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
 	set cmd [namespace code [list ::engine::openAdmininstration .application]]
-	$m add command -label " $text" -underline [incr ul] -command $cmd 
+	$m add command \
+		-label " $text" \
+		-underline [incr ul] -command $cmd \
+		;
+if {0} {
+	lassign [::tk::UnderlineAmpersand $mc::PrivatePlayerCard] text ul
+	set cmd [namespace code [list ::playercard::setupPrivateCard .application]]
+	$m add command \
+		-label " $text" \
+		-underline [incr ul] \
+		-command $cmd \
+		-image $::icon::16x16::playercard \
+		-compound left \
+		;
+}
 
 	### tools ################################################################
 	set m [menu $menu.mTools]

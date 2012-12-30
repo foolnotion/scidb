@@ -254,7 +254,7 @@ PgnWriter::putTokens(mstl::string const& s)
 void
 PgnWriter::writeBeginGame(unsigned number)
 {
-	if (number > 1 || test(Flag_Append_Games))
+	if (number == 1 && test(Flag_Append_Games))
 		m_strm.put('\n');
 
 	m_pendingSpace = 0;

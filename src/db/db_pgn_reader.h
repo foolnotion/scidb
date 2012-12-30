@@ -295,6 +295,7 @@ private:
 	void stripDiagram(mstl::string& comment);
 	bool parseFinalComment(mstl::string const& comment);
 	void filterFinalComments();
+	bool parseVariant();
 
 	void putNag(nag::ID nag);
 	void putNag(nag::ID whiteNag, nag::ID blackNag);

@@ -107,6 +107,13 @@ matchEndOfSentence(char const* lhs, char const* rhs, unsigned len)
 
 
 static bool
+equal(char const* lhs, char const* rhs)
+{
+	return strcmp(lhs, rhs) == 0;
+}
+
+
+static bool
 equal(char const* lhs, char const* rhs, unsigned len)
 {
 	return strncmp(lhs, rhs, len) == 0;
@@ -1600,6 +1607,8 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "Game drawn by stalemate (opposite color bishops)", 48))
 				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "Game drawn by adjudication", 26))
+				return ::setTermination(m_tags, termination::Adjudication);
 			break;
 
 		case 'N':
@@ -2246,6 +2255,218 @@ PgnReader::checkFen()
 }
 
 
+bool
+PgnReader::parseVariant()
+{
+	if (equal(m_variantValue, "wild/", 5))
+	{
+		// wild/0	Reversed queen and king
+		// wild/1	Random shuffle different on each side
+		// wild/2	Random shuffle mirror sides
+		// wild/3	Random pieces
+		// wild/4	Random pieces balanced bishops
+		// wild/5	White pawns start on 7th with pieces behind pawns
+		// wild/7	Three pawns and a king (Little Game)
+		// wild/8	Pawns start on 4th rank
+		// wild/8a	Pawns on 5th rank
+		// wild/9	Two kings for each side
+		// wild/10	Handicap of pawn & move
+		// wild/11	handicap of knight
+		// wild/12	handicap of rook
+		// wild/13	handicap of queen
+		// wild/14	handicap of rook (a-pawn on a3)
+		// wild/16	Kriegsspiel
+		// wild/17	Losers Chess
+		// wild/18	Power Chess
+		// wild/19	King, Knight, Knight vs. King & Pawn
+		// wild/20	Loadgame
+		// wild/21	Thematic
+		// wild/22	Fischer Random
+		// wild/23	Crazyhouse
+		// wild/24	Bughouse
+		// wild/25	Three-Check Chess
+		// wild/26	Giveaway Chess
+		// wild/27	Atomic Chess
+		// wild/28	Shatranj
+		// wild/29	Random Wild
+		// wild/fr	Fischer Random
+
+		char const* v = m_variantValue.c_str() + 5;
+
+		switch (*v)
+		{
+			case '1':
+				if (equal(v, "17")) // Losers
+				{
+					setupVariant(variant::Losers);
+				}
+				else if (equal(v, "19")) // KNN vs. KP
+				{
+					setupVariant(variant::Normal);
+					m_idn = variant::KNNvsKP;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+
+			case '2':
+				if (equal(v, "2")) // Shuffle chess
+					setupVariant(variant::Normal);
+				else if (equal(v, "22") || equal(v, "fr")) // Chess 960
+					setupVariant(variant::Normal);
+				else if (equal(v, "23")) // Crazyhouse
+					setupVariant(variant::Crazyhouse);
+				else if (equal(v, "25")) // Three-check
+					setupVariant(variant::ThreeCheck);
+				else if (equal(v, "26")) // Giveaway
+					setupVariant(variant::Giveaway);
+				else
+					return false;
+				break;
+
+			case '7':
+				if (equal(v, "7")) // Three pawns and a king (Little Game)
+				{
+					setupVariant(variant::Normal);
+					m_idn = variant::LittleGame;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+
+			case '8':
+				if (equal(v, "8")) // Pawns start on 4th rank
+				{
+					setupVariant(variant::Normal);
+					m_idn = variant::PawnsOn4thRank;
+				}
+				else
+				{
+					return false;
+				}
+				break;
+
+			default:
+				return false;
+		}
+	}
+	else if (equal(m_variantValue, "misc/", 5))
+	{
+		// misc/little-game		same as wild/7
+		// misc/pyramid			pyramidal pawn formation
+		// misc/knights-only		standard position with knights only
+		// misc/bishops-only		standard position with bishops only
+		// misc/rooks-only		standard position with rooks only
+		// misc/queens-only		standard position with queens only
+		// misc/no-queens			standard position without queens
+		// misc/runaway			standard position with king on 3rd/6th rank
+		// misc/queen-rooks		Queen vs. rooks
+
+		char const* v = m_variantValue.c_str() + 5;
+
+		m_idn = 0;
+
+		switch (*v)
+		{
+			case 'p':
+				if (equal(v, "pawns-only"))
+					m_idn = variant::PawnsOnly;
+				else if (equal(v, "pyramid"))
+					m_idn = variant::Pyramid;
+				break;
+
+			case 'k':
+				if (equal(v, "knights-only"))
+					m_idn = variant::KnightsOnly;
+				break;
+
+			case 'b':
+				if (equal(v, "bishops-only"))
+					m_idn = variant::BishopsOnly;
+				break;
+
+			case 'r':
+				if (equal(v, "rooks-only"))
+					m_idn = variant::RooksOnly;
+				else if (equal(v, "runaway"))
+					m_idn = variant::Runaway;
+				break;
+
+			case 'q':
+				if (equal(v, "queens-only"))
+					m_idn = variant::QueensOnly;
+				else if (equal(v, "queen-rooks"))
+					m_idn = variant::QueenVsRooks;
+				break;
+
+			case 'n':
+				if (equal(v, "no-queens"))
+					m_idn = variant::NoQueens;
+				break;
+
+			case 'l':
+				if (equal(v, "little-game"))
+					m_idn = variant::LittleGame;
+				break;
+		}
+
+		if (m_idn == 0)
+			return false;
+
+		setupVariant(variant::Normal);
+	}
+	else if (equal(m_variantValue, "odds/", 5))
+	{
+		setupVariant(variant::Normal);
+	}
+	else if (equal(m_variantValue, "pawns/", 6))
+	{
+		// pawns/little-game		same as wild/7
+		// pawns/pawns-only		standard position with pawns only
+		// pawns/wild-five		all pawns on opponents pawn rank
+
+		char const* v = m_variantValue.c_str() + 6;
+
+		if (equal(v, "pawns-only"))
+			m_idn = variant::PawnsOnly;
+		else if (equal(v, "wild-five"))
+			m_idn = variant::WildFive;
+		else if (equal(v, "little-game"))
+			m_idn = variant::LittleGame;
+		else
+			return false;
+
+		setupVariant(variant::Normal);
+	}
+	else if (equal(m_variantValue, "endings/", 8))
+	{
+		// endings/kbnk	KBN vs. K
+		// endibgs/kbbk	KBB vs. K
+
+		char const* v = m_variantValue.c_str() + 8;
+
+		if (equal(v, "kbnk"))
+			m_idn = variant::KBNK;
+		else if (equal(v, "kbbk"))
+			m_idn = variant::KBBK;
+		else
+			return false;
+
+		setupVariant(variant::Normal);
+	}
+	else
+	{
+		return false;
+	}
+
+	return true;
+}
+
+
 void
 PgnReader::checkTags()
 {
@@ -2411,182 +2632,31 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			{
 				mstl::string::size_type pos;
 
-				if (value.find_ignore_case("crazyhouse") != mstl::string::npos)
+				if (value.find_ignore_case(" crazyhouse ") != mstl::string::npos)
 				{
 					setupVariant(variant::Crazyhouse);
 				}
-				else if (value.find_ignore_case("suicide") != mstl::string::npos)
+				else if (value.find_ignore_case(" suicide ") != mstl::string::npos)
 				{
 					setupVariant(variant::Suicide);
 				}
-				else if (value.find_ignore_case("losers") != mstl::string::npos)
+				else if (value.find_ignore_case(" losers ") != mstl::string::npos)
 				{
 					setupVariant(variant::Losers);
 				}
-				else if (value.find_ignore_case("atomic") != mstl::string::npos)
+				else if (	(pos = value.find("uwild/")) != mstl::string::npos
+							|| (pos = value.find("wild/")) != mstl::string::npos
+							|| (pos = value.find("pawns/")) != mstl::string::npos
+							|| (pos = value.find("atomic/")) != mstl::string::npos
+							|| (pos = value.find("misc/")) != mstl::string::npos
+							|| (pos = value.find("odds/")) != mstl::string::npos
+							|| (pos = value.find("endings/")) != mstl::string::npos)
 				{
-					error(UnsupportedVariant, m_prevPos, "atomic");
-				}
-				else if ((pos = value.find("uwild/")) != mstl::string::npos)
-				{
-					char const* v = value.c_str() + pos;
-					error(UnsupportedVariant, m_prevPos, mstl::string(v, ::skipWord(v)));
-				}
-				else if ((pos = value.find("wild/")) != mstl::string::npos)
-				{
-					// wild/0	Reversed queen and king
-					// wild/1	Random shuffle different on each side
-					// wild/2	Random shuffle mirror sides
-					// wild/3	Random pieces
-					// wild/4	Random pieces balanced bishops
-					// wild/5	White pawns start on 7th with pieces behind pawns
-					// wild/7	Three pawns and a king (Little Game)
-					// wild/8	Pawns start on 4th rank
-					// wild/8a	Pawns on 5th rank
-					// wild/9	Two kings for each side
-					// wild/10	Handicap of pawn & move
-					// wild/11	handicap of knight
-					// wild/12	handicap of rook
-					// wild/13	handicap of queen
-					// wild/14	handicap of rook (a-pawn on a3)
-					// wild/16	Kriegsspiel
-					// wild/17	Losers Chess
-					// wild/18	Power Chess
-					// wild/19	King, Knight, Knight vs. King & Pawn
-					// wild/20	Loadgame
-					// wild/21	Thematic
-					// wild/22	Fischer Random
-					// wild/23	Crazyhouse
-					// wild/24	Bughouse
-					// wild/25	Three-Check Chess
-					// wild/26	Giveaway Chess
-					// wild/27	Atomic Chess
-					// wild/28	Shatranj
-					// wild/29	Random Wild
-					// wild/fr	Fischer Random
+					char const *v = value.c_str() + pos;
 
-					char const* v = value.c_str() + pos + 5;
-
-					m_variantValue.assign(v - 5, ::skipWord(v));
-
-					if (equal(v, "2 ", 2)) // (wild) shuffle chess
-					{
-						setupVariant(variant::Normal);
-					}
-					else if (equal(v, "7 ", 2)) // Three pawns and a king (Little Game)
-					{
-						setupVariant(variant::Normal);
-						m_idn = variant::LittleGame;
-					}
-					else if (equal(v, "8 ", 2)) // Pawns start on 4th rank
-					{
-						setupVariant(variant::Normal);
-						m_idn = variant::PawnsOn4thRank;
-					}
-					else if (equal(v, "17 ", 3)) // Losers
-					{
-						setupVariant(variant::Losers);
-					}
-					else if (equal(v, "19 ", 3)) // KNN vs. KP
-					{
-						setupVariant(variant::Normal);
-						m_idn = variant::KNNvsKP;
-					}
-					else if (equal(v, "22 ", 3) || equal(v, "fr ", 3)) // Chess 960
-					{
-						setupVariant(variant::Normal);
-					}
-					else if (equal(v, "23 ", 3)) // Crazyhouse
-					{
-						setupVariant(variant::Crazyhouse);
-					}
-					else if (equal(v, "25 ", 3)) // Three-check
-					{
-						setupVariant(variant::ThreeCheck);
-					}
-					else if (equal(v, "26 ", 3)) // Giveaway
-					{
-						setupVariant(variant::Giveaway);
-					}
-					else
-					{
-						error(UnsupportedVariant, m_prevPos, m_variantValue);
-					}
-				}
-				else if ((pos = value.find("misc/")) != mstl::string::npos)
-				{
-					// misc/little-game		same as wild/7
-					// misc/pyramid			pyramidal pawn formation
-					// misc/knights-only		standard position with knights only
-					// misc/bishops-only		standard position with bishops only
-					// misc/rooks-only		standard position with rooks only
-					// misc/queens-only		standard position with queens only
-					// misc/no-queens			standard position without queens
-					// misc/runaway			standard position with king on 3rd/6th rank
-					// misc/queen-rooks		Queen vs. rooks
-
-					char const* v = value.c_str() + pos;
 					m_variantValue.assign(v, ::skipWord(v));
 
-					if (value.find("misc/pawns-only") != mstl::string::npos)
-						m_idn = variant::PawnsOnly;
-					else if (value.find("misc/knights-only") != mstl::string::npos)
-						m_idn = variant::KnightsOnly;
-					else if (value.find("misc/bishops-only") != mstl::string::npos)
-						m_idn = variant::BishopsOnly;
-					else if (value.find("misc/rooks-only") != mstl::string::npos)
-						m_idn = variant::RooksOnly;
-					else if (value.find("misc/queens-only") != mstl::string::npos)
-						m_idn = variant::QueensOnly;
-					else if (value.find("misc/no-queens") != mstl::string::npos)
-						m_idn = variant::NoQueens;
-					else if (value.find("misc/queen-rooks") != mstl::string::npos)
-						m_idn = variant::QueenVsRooks;
-					else if (value.find("misc/runaway") != mstl::string::npos)
-						m_idn = variant::Runaway;
-					else if (value.find("misc/little-game") != mstl::string::npos)
-						m_idn = variant::LittleGame;
-					else if (value.find("misc/pyramid") != mstl::string::npos)
-						m_idn = variant::Pyramid;
-					else
-						error(UnsupportedVariant, m_prevPos, m_variantValue);
-				}
-//				else if ((pos = value.find("odds/")) != mstl::string::npos)
-//				{
-//					char const* v = value.c_str() + pos;
-//					error(UnsupportedVariant, m_prevPos, mstl::string(v, ::skipWord(v)));
-//				}
-				else if ((pos = value.find("pawns/")) != mstl::string::npos)
-				{
-					// pawns/little-game		same as wild/7
-					// pawns/pawns-only		standard position with pawns only
-					// pawns/wild-five		all pawns on opponents pawn rank
-
-					char const* v = value.c_str() + pos;
-					m_variantValue.assign(v, ::skipWord(v));
-
-					if (value.find("pawns/pawns-only") != mstl::string::npos)
-						m_idn = variant::PawnsOnly;
-					else if (value.find("pawns/wild-five") != mstl::string::npos)
-						m_idn = variant::WildFive;
-					else if (value.find("pawns/little-game") != mstl::string::npos)
-						m_idn = variant::LittleGame;
-					else
-						error(UnsupportedVariant, m_prevPos, m_variantValue);
-				}
-				else if ((pos = value.find("endings/")) != mstl::string::npos)
-				{
-					// endings/kbnk	KBN vs. K
-					// endibgs/kbbk	KBB vs. K
-
-					char const* v = value.c_str() + pos;
-					m_variantValue.assign(v, ::skipWord(v));
-
-					if (value.find("endings/kbnk") != mstl::string::npos)
-						m_idn = variant::KBNK;
-					else if (value.find("endings/kbbk") != mstl::string::npos)
-						m_idn = variant::KBBK;
-					else
+					if (!parseVariant())
 						error(UnsupportedVariant, m_prevPos, m_variantValue);
 				}
 
@@ -2896,7 +2966,12 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			m_variant = m_thisVariant = variant::fromString(value);
 
 			if (m_variant == variant::Undetermined)
-				error(UnsupportedVariant, m_prevPos, value);
+			{
+				m_variantValue = value;
+
+				if (!parseVariant())
+					error(UnsupportedVariant, m_prevPos, value);
+			}
 
 			m_variantPos = m_prevPos;
 			return false;	// we will set this tag later by our own
@@ -3480,8 +3555,6 @@ PgnReader::doCastling(char const* castle)
 	if (variant::isAntichessExceptLosers(m_variant))
 		error(UnexpectedCastling, m_prevPos, castle);
 
-	m_hasCastled = true;
-
 	putMove();
 	board().parseMove(castle, m_move, m_variant, move::DontAllowIllegalMove);
 
@@ -3539,6 +3612,7 @@ PgnReader::doCastling(char const* castle)
 			m_move = moves[0];
 			m_move.setColor(side);
 			warning(CastlingCorrection, m_prevPos, msg);
+			m_hasCastled = true;
 			return true;
 		}
 //	This fix comes too late, the sci/si3 decoder has already written the FEN
@@ -3579,6 +3653,7 @@ PgnReader::doCastling(char const* castle)
 		w.m_move.assign(castle);
 	}
 
+	m_hasCastled = true;
 	return true;
 }
 
@@ -5875,7 +5950,7 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 			if (p && p - toSet < 5)
 			{
 				// parse: [KQRBN]([a-h][1-8])?[x:-]?[a-h][1-8]
-				// parse: [QRBN][@][a-h][1-8]
+				// parse: [QRBNP][@][a-h][1-8]
 
 				char*	t			= s + 1;
 				bool	needFyle	= true;

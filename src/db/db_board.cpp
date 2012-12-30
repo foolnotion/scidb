@@ -129,25 +129,6 @@ inline static Byte queenSideIndex(Byte color)	{ return castling::queenSideIndex(
 static void __attribute__((constructor)) initialize() { Board::initialize(); }
 
 
-#if __GNUC_PREREQ(4,5)
-
-// catch GCC bug:
-// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
-
-#define HASH_HOLDING_ADD(piece, count) \
-	{ \
-		hashHoldingAdd(piece, count); \
-		++count; \
-	}
-
-#else
-
-# define HASH_HOLDING_ADD(piece, count) \
-	hashHoldingAdd(piece, count++)
-
-#endif
-
-
 template <typename T>
 inline static
 T
@@ -529,6 +510,202 @@ Board::hashHoldingRemove(piece::ID piece, Byte newCount)
 }
 
 
+namespace db { // GCC will not compile without explicit namespace
+
+template <>
+inline
+void
+Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+// catch GCC bug:
+// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
+#if __GNUC_PREREQ(4,5)
+	hashHoldingAdd(::toPiece(piece::Pawn, color), m_holding[color].pawn++);
+#else
+	hashHoldingAdd(::toPiece(piece::Pawn, color), m_holding[color].pawn);
+	++m_holding[color].pawn;
+#endif
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Knight>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+// catch GCC bug:
+// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
+#if __GNUC_PREREQ(4,5)
+	hashHoldingAdd(::toPiece(piece::Knight, color), m_holding[color].knight++);
+#else
+	hashHoldingAdd(::toPiece(piece::Knight, color), m_holding[color].knight);
+	++m_holding[color].knight;
+#endif
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Bishop>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+// catch GCC bug:
+// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
+#if __GNUC_PREREQ(4,5)
+	hashHoldingAdd(::toPiece(piece::Bishop, color), m_holding[color].bishop++);
+#else
+	hashHoldingAdd(::toPiece(piece::Bishop, color), m_holding[color].bishop);
+	++m_holding[color].bishop;
+#endif
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Rook>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+// catch GCC bug:
+// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
+#if __GNUC_PREREQ(4,5)
+	hashHoldingAdd(::toPiece(piece::Rook, color), m_holding[color].rook++);
+#else
+	hashHoldingAdd(::toPiece(piece::Rook, color), m_holding[color].rook);
+	++m_holding[color].rook;
+#endif
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Queen>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+// catch GCC bug:
+// "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
+#if __GNUC_PREREQ(4,5)
+	hashHoldingAdd(::toPiece(piece::Queen, color), m_holding[color].queen++);
+#else
+	hashHoldingAdd(::toPiece(piece::Queen, color), m_holding[color].queen);
+	++m_holding[color].queen;
+#endif
+}
+
+
+template <>
+inline
+void
+Board::removeFromHolding<piece::Pawn>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+}
+
+
+template <>
+inline
+void
+Board::removeFromHolding<piece::Knight>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+}
+
+
+template <>
+inline
+void
+Board::removeFromHolding<piece::Bishop>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+}
+
+
+template <>
+inline
+void
+Board::removeFromHolding<piece::Rook>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+}
+
+
+template <>
+inline
+void
+Board::removeFromHolding<piece::Queen>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+}
+
+
+template <piece::Type Piece>
+inline
+void
+Board::addToHolding(uint64_t toMask, variant::Type variant, unsigned color)
+{
+	static_assert(Piece != piece::Pawn, "do not use for pawns");
+
+	if (m_promoted[color] & toMask)
+	{
+		m_promoted[color] ^= toMask;
+		m_partner->m_capturePromoted = true;
+		m_partner->addToHolding<piece::Pawn>(variant, color);
+	}
+	else
+	{
+		m_partner->addToHolding<Piece>(variant, color);
+	}
+}
+
+
+template <piece::Type Piece>
+inline
+void
+Board::removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned color)
+{
+	if (m_capturePromoted)
+	{
+		m_partner->m_promoted[color] ^= fromMask;
+		m_partner->removeFromHolding<piece::Pawn>(variant, color);
+	}
+	else
+	{
+		m_partner->removeFromHolding<Piece>(variant, color);
+	}
+}
+
+} // namespace db
+
+
 void
 Board::hashChecksGiven(color::ID color, unsigned n)
 {
@@ -660,17 +837,9 @@ Board::checkState(variant::Type variant) const
 	if (variant::isAntichessExceptLosers(variant))
 	{
 		if (m_material[m_stm].total() == 0)
-		{
 			state |= Losing;
-		}
-		else
-		{
-			MoveList moves;
-			generateMoves(variant, moves);
-
-			if (moves.isEmpty())
-				state |= Stalemate;
-		}
+		else if (!findAnyLegalMove(variant))
+			state |= Stalemate;
 	}
 	else
 	{
@@ -689,17 +858,8 @@ Board::checkState(variant::Type variant) const
 		if (m_checksGiven[m_stm ^ 1] >= 3)
 			return state |= ThreeChecks;
 
-		MoveList moves;
-		generateMoves(variant, moves);
-
-		for (unsigned i = 0; i < moves.size(); ++i)
-		{
-			Board peek(*this);
-			peek.doMove(moves[i], variant);
-
-			if (isLegal() && !peek.givesCheck())
-				return state;
-		}
+		if (findAnyLegalMove(variant))
+			return state;
 
 		switch (variant)
 		{
@@ -786,13 +946,18 @@ Board::setEnPassantSquare(color::ID color, Square sq)
 Board::Board(Board const& board)
 {
 	::memcpy(this, &board, sizeof(board));
+	m_partner = this;
 }
 
 
 Board&
 Board::operator=(Board const& board)
 {
-	::memcpy(this, &board, sizeof(board));
+	if (this != &board)
+	{
+		::memcpy(this, &board, sizeof(board));
+		m_partner = this;
+	}
 	return *this;
 }
 
@@ -1072,6 +1237,8 @@ Board::hasPromoted(Square sq) const
 bool
 Board::setAt(Square s, piece::ID p, variant::Type variant)
 {
+	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
+
 	piece::Type pt = piece::type(p);
 
 	if (pt == piece::None)
@@ -1095,7 +1262,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_matSig.part[color].pawn |= m_matSig.part[color].pawn + 1;
 			pawnProgressAdd(color, s);
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Pawn, color ^ 1), --m_holding[color ^ 1].pawn);
+				m_partner->removeFromHolding<piece::Pawn>(variant, color);
 			break;
 
 		case piece::Knight:
@@ -1104,7 +1271,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			++m_material[color].knight;
 			m_matSig.part[color].knight |= m_matSig.part[color].knight + 1;
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Knight, color ^ 1), --m_holding[color ^ 1].knight);
+				m_partner->removeFromHolding<piece::Knight>(variant, color);
 			break;
 
 		case piece::Bishop:
@@ -1113,7 +1280,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			++m_material[color].bishop;
 			m_matSig.part[color].bishop |= m_matSig.part[color].bishop + 1;
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Bishop, color ^ 1), --m_holding[color ^ 1].bishop);
+				m_partner->removeFromHolding<piece::Bishop>(variant, color);
 			break;
 
 		case piece::Rook:
@@ -1122,7 +1289,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			++m_material[color].rook;
 			m_matSig.part[color].rook |= m_matSig.part[color].rook + 1;
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Rook, color ^ 1), --m_holding[color ^ 1].rook);
+				m_partner->removeFromHolding<piece::Rook>(variant, color);
 			break;
 
 		case piece::Queen:
@@ -1131,7 +1298,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			++m_material[color].queen;
 			m_matSig.part[color].queen |= m_matSig.part[color].queen + 1;
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Queen, color ^ 1), --m_holding[color ^ 1].queen);
+				m_partner->removeFromHolding<piece::Queen>(variant, color);
 			break;
 
 		case piece::King:
@@ -1161,6 +1328,7 @@ void
 Board::removeAt(Square s, variant::Type variant)
 {
 	M_REQUIRE(piece(s) != piece::Pawn || (rank(s) != Rank1 && rank(s) != Rank8));
+	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
 
 	uint64_t bit = setBit(s);
 
@@ -1177,7 +1345,7 @@ Board::removeAt(Square s, variant::Type variant)
 			m_matSig.part[color].pawn = (1 << --m_material[color].pawn) - 1;
 			pawnProgressRemove(color, s);
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Pawn, color ^ 1), m_holding[color ^ 1].pawn);
+				m_partner->addToHolding<piece::Pawn>(variant, color);
 			break;
 
 		case piece::Knight:
@@ -1185,7 +1353,7 @@ Board::removeAt(Square s, variant::Type variant)
 			m_knights ^= bit;
 			m_matSig.part[color].knight = (1 << --m_material[color].knight) - 1;
 			if (variant::isZhouse(variant))
- 				HASH_HOLDING_ADD(::toPiece(piece::Knight, color ^ 1), m_holding[color ^ 1].knight);
+				m_partner->addToHolding<piece::Knight>(variant, color);
 			break;
 
 		case piece::Bishop:
@@ -1193,7 +1361,7 @@ Board::removeAt(Square s, variant::Type variant)
 			m_bishops ^= bit;
 			m_matSig.part[color].bishop = (1 << --m_material[color].bishop) - 1;
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Bishop, color ^ 1), m_holding[color ^ 1].bishop);
+				m_partner->addToHolding<piece::Bishop>(variant, color);
 			break;
 
 		case piece::Rook:
@@ -1210,7 +1378,7 @@ Board::removeAt(Square s, variant::Type variant)
 				}
 			}
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Rook, color ^ 1), m_holding[color ^ 1].rook);
+				m_partner->addToHolding<piece::Rook>(variant, color);
 			break;
 
 		case piece::Queen:
@@ -1218,7 +1386,7 @@ Board::removeAt(Square s, variant::Type variant)
 			m_queens ^= bit;
 			m_matSig.part[color].queen = (1 << --m_material[color].queen) - 1;
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Queen, color ^ 1), m_holding[color ^ 1].queen);
+				m_partner->addToHolding<piece::Queen>(variant, color);
 			break;
 
 		case piece::King:
@@ -1723,8 +1891,8 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	{
 		unsigned n;
 
-		n = m_holding[White].total()
-		  + m_holding[Black].total()
+		n = m_partner->m_holding[White].total()
+		  + m_partner->m_holding[Black].total()
 		  + m_material[White].total()
 		  + m_material[Black].total();
 
@@ -1736,8 +1904,8 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 
 		n = m_material[Black].pawn
 		  + m_material[White].pawn
-		  + m_holding[Black].pawn
-		  + m_holding[White].pawn
+		  + m_partner->m_holding[Black].pawn
+		  + m_partner->m_holding[White].pawn
 		  + count(m_promoted[Black])
 		  + count(m_promoted[White]);
 
@@ -3163,7 +3331,7 @@ Board::filterLegalMoves(MoveList& result, variant::Type variant) const
 			else
 			{
 				Board peek(*this);
-				peek.doMove(move, variant::Normal);
+				peek.doMove(move, variant);
 
 				if (peek.isLegal())
 				{
@@ -3175,6 +3343,25 @@ Board::filterLegalMoves(MoveList& result, variant::Type variant) const
 
 		result.cut(k);
 	}
+}
+
+
+bool
+Board::containsAnyLegalMove(MoveList const& moves, variant::Type variant) const
+{
+	if (variant::isAntichessExceptLosers(variant))
+		return !moves.isEmpty();
+
+	for (unsigned i = 0; i < moves.size(); ++i)
+	{
+		Board peek(*this);
+		peek.doMove(moves[i], variant);
+
+		if (peek.isLegal())
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -3248,19 +3435,94 @@ Board::genCastleLong(MoveList& result, color::ID side) const
 }
 
 
+bool
+Board::findAnyLegalMove(variant::Type variant) const
+{
+	MoveList moves;
+
+	if (variant::isAntichess(variant))
+	{
+		generateCapturingPawnMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateCapturingPieceMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateNonCapturingPawnMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateNonCapturingPieceMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		if (variant == variant::Losers)
+		{
+			moves.clear();
+			generateCastlingMoves(moves);
+			if (containsAnyLegalMove(moves, variant))
+				return true;
+		}
+	}
+	else if (variant != variant::ThreeCheck || m_checksGiven[m_stm ^ 1] < 3)
+	{
+		moves.clear();
+		generateNonCapturingPawnMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateNonCapturingPieceMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		generateCapturingPawnMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateCapturingPieceMoves(variant, moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		moves.clear();
+		generateCastlingMoves(moves);
+		if (containsAnyLegalMove(moves, variant))
+			return true;
+
+		if (variant::isZhouse(variant))
+		{
+			moves.clear();
+			generatePieceDropMoves(moves);
+			if (containsAnyLegalMove(moves, variant))
+				return true;
+		}
+	}
+
+	return false;
+}
+
+
 void
 Board::generateMoves(variant::Type variant, MoveList& result) const
 {
 	if (variant::isAntichess(variant))
 	{
-		generateCapturingMoves(variant, result);
+		generateCapturingPawnMoves(variant, result);
+		generateCapturingPieceMoves(variant, result);
 
 		if (variant == variant::Losers)
 			filterLegalMoves(result, variant);
 
 		if (result.isEmpty())
 		{
-			generateNonCapturingMoves(variant, result);
+			generateNonCapturingPawnMoves(variant, result);
+			generateNonCapturingPieceMoves(variant, result);
 
 			if (variant == variant::Losers)
 				generateCastlingMoves(result);
@@ -3268,7 +3530,11 @@ Board::generateMoves(variant::Type variant, MoveList& result) const
 	}
 	else if (variant != variant::ThreeCheck || m_checksGiven[m_stm ^ 1] < 3)
 	{
-		generateNormalMoves(result);
+		generateCapturingPawnMoves(variant, result);
+		generateNonCapturingPawnMoves(variant, result);
+		generateCapturingPieceMoves(variant, result);
+		generateNonCapturingPieceMoves(variant, result);
+		generateCastlingMoves(result);
 
 		if (variant::isZhouse(variant))
 			generatePieceDropMoves(result);
@@ -3297,13 +3563,9 @@ Board::generateCastlingMoves(MoveList& result) const
 
 
 void
-Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
+Board::generateNonCapturingPawnMoves(variant::Type variant, MoveList& result) const
 {
-	M_REQUIRE(variant::isAntichess(variant));
-
 	uint64_t moves;
-
-	result.clear();
 
 	if (m_stm == White)
 	{
@@ -3323,7 +3585,7 @@ Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
 				result.append(Move::genPromote(to - 8, to, piece::Knight));
 				result.append(Move::genPromote(to - 8, to, piece::Rook));
 				result.append(Move::genPromote(to - 8, to, piece::Bishop));
-				if (variant != variant::Losers)
+				if (variant::isAntichessExceptLosers(variant))
 					result.append(Move::genPromote(to - 8, to, piece::King));
 			}
 			else
@@ -3363,7 +3625,7 @@ Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
 				result.append(Move::genPromote(to + 8, to, piece::Knight));
 				result.append(Move::genPromote(to + 8, to, piece::Rook));
 				result.append(Move::genPromote(to + 8, to, piece::Bishop));
-				if (variant != variant::Losers)
+				if (variant::isAntichessExceptLosers(variant))
 					result.append(Move::genPromote(to + 8, to, piece::King));
 			}
 		}
@@ -3377,7 +3639,12 @@ Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
 			result.append(Move::genTwoForward(to + 16, to));
 		}
 	}
+}
 
+
+void
+Board::generateNonCapturingPieceMoves(variant::Type variant, MoveList& result) const
+{
 	uint64_t occupiedBy = m_occupiedBy[m_stm];
 	uint64_t movers;
 
@@ -3441,22 +3708,8 @@ Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
 		}
 	}
 
-	// king movs
-	if (variant == variant::Losers)
-	{
-		generateCastlingMoves(result);
-
-		uint64_t moves = kingAttacks(m_ksq[m_stm]) & ~m_occupiedBy[m_stm];
-
-		while (moves)
-		{
-			uint8_t to = lsbClear(moves);
-
-			if (!isAttackedBy(m_stm ^ 1, to))
-				result.append(Move::genKingMove(m_ksq[m_stm], to, m_piece[to]));
-		}
-	}
-	else
+	// king moves
+	if (variant::isAntichessExceptLosers(variant))
 	{
 		movers = m_kings & occupiedBy;
 
@@ -3472,275 +3725,23 @@ Board::generateNonCapturingMoves(variant::Type variant, MoveList& result) const
 			}
 		}
 	}
-}
-
-
-void
-Board::generateNormalMoves(MoveList& result) const
-{
-	// NOTE: this function is for normal chess only.
-	M_ASSERT(kingOnBoard());
-
-	result.clear();
-
-	if (m_stm == White)
-	{
-		// castle moves
-		if ((m_castle & WhiteKingside) && shortCastlingWhiteIsLegal())
-			genCastleShort(result, White);
-		if ((m_castle & WhiteQueenside) && longCastlingWhiteIsLegal())
-			genCastleLong(result, White);
-
-		// pawn en passant moves
-		uint64_t movers = m_pawns & m_occupiedBy[White];
-
-		if (m_epSquare != Null)
-		{
-			uint64_t moves = PawnAttacks[Black][m_epSquare] & movers;
-
-			while (moves)
-				result.append(Move::genEnPassant(lsbClear(moves), m_epSquare));
-		}
-
-		// pawn captures
-		uint64_t moves = ::shiftUpRight(movers) & m_occupiedBy[Black] & ~m_kings;
-
-		while (moves)
-		{
-			uint32_t to = lsbClear(moves);
-			uint32_t captured = m_piece[to];
-
-			if (::rank(to) == Rank8)
-			{
-				result.append(Move::genCapturePromote(to - 9, to, piece::Queen, captured));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Knight, captured));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Rook, captured));
-				result.append(Move::genCapturePromote(to - 9, to, piece::Bishop, captured));
-			}
-			else
-			{
-				result.append(Move::genPawnCapture(to - 9, to, captured));
-			}
-		}
-
-		moves = ::shiftUpLeft(movers) & m_occupiedBy[Black] & ~m_kings;
-
-		while (moves)
-		{
-			uint32_t to = lsbClear(moves);
-			uint32_t captured = m_piece[to];
-
-			if (::rank(to) == Rank8)
-			{
-				result.append(Move::genCapturePromote(to - 7, to, piece::Queen, captured));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Knight, captured));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Rook, captured));
-				result.append(Move::genCapturePromote(to - 7, to, piece::Bishop, captured));
-			}
-			else
-			{
-				result.append(Move::genPawnCapture(to - 7, to, captured));
-			}
-		}
-
-		// pawns 1 forward
-		moves = ::shiftUp(movers) & ~m_occupied;
-		movers = moves;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-
-			if (::rank(to) == Rank8)
-			{
-				result.append(Move::genPromote(to - 8, to, piece::Queen));
-				result.append(Move::genPromote(to - 8, to, piece::Knight));
-				result.append(Move::genPromote(to - 8, to, piece::Rook));
-				result.append(Move::genPromote(to - 8, to, piece::Bishop));
-			}
-			else
-			{
-				result.append(Move::genOneForward(to - 8, to));
-			}
-		}
-
-		// pawns 2 forward
-		moves = ::shiftUp(movers) & RankMask4 & ~m_occupied;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genTwoForward(to - 16, to));
-		}
-	}
 	else
 	{
-		// castle moves
-		if ((m_castle & BlackKingside) && shortCastlingBlackIsLegal())
-			genCastleShort(result, Black);
-		if ((m_castle & BlackQueenside) && longCastlingBlackIsLegal())
-			genCastleLong(result, Black);
-
-		// pawn en passant moves
-		uint64_t movers = m_pawns & m_occupiedBy[Black];
-
-		if (m_epSquare != Null)
-		{
-			uint64_t moves = PawnAttacks[White][m_epSquare] & movers;
-
-			while (moves)
-				result.append(Move::genEnPassant(lsbClear(moves), m_epSquare));
-		}
-
-		// pawn captures
-		uint64_t moves = ::shiftDownLeft(movers) & m_occupiedBy[White] & ~m_kings;
+		uint64_t moves = kingAttacks(m_ksq[m_stm]) & ~m_occupiedBy[m_stm];
 
 		while (moves)
 		{
-			unsigned to = lsbClear(moves);
+			uint8_t to = lsbClear(moves);
 
-			if (::rank(to) == Rank1)
-			{
-				result.append(Move::genCapturePromote(to + 9, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to + 9, to, piece::Bishop, m_piece[to]));
-			}
-			else
-			{
-				result.append(Move::genPawnCapture(to + 9, to, m_piece[to]));
-			}
+			if (!isAttackedBy(m_stm ^ 1, to))
+				result.append(Move::genKingMove(m_ksq[m_stm], to, m_piece[to]));
 		}
-
-		moves = ::shiftDownRight(movers) & m_occupiedBy[White] & ~m_kings;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-
-			if (::rank(to) == Rank1)
-			{
-				result.append(Move::genCapturePromote(to + 7, to, piece::Queen,  m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Knight, m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Rook,   m_piece[to]));
-				result.append(Move::genCapturePromote(to + 7, to, piece::Bishop, m_piece[to]));
-			}
-			else
-			{
-				result.append(Move::genPawnCapture(to + 7, to, m_piece[to]));
-			}
-		}
-
-		// pawns 1 forward
-		moves = ::shiftDown(movers) & ~m_occupied;
-		movers = moves;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-
-			if (::rank(to) != 0)
-			{
-				result.append(Move::genOneForward(to + 8, to));
-			}
-			else
-			{
-				result.append(Move::genPromote(to + 8, to, piece::Queen));
-				result.append(Move::genPromote(to + 8, to, piece::Knight));
-				result.append(Move::genPromote(to + 8, to, piece::Rook));
-				result.append(Move::genPromote(to + 8, to, piece::Bishop));
-			}
-		}
-
-		// pawns 2 forward
-		moves = ::shiftDown(movers) & RankMask5 & ~m_occupied;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genTwoForward(to + 16, to));
-		}
-	}
-
-	uint64_t occupied = m_occupiedBy[m_stm];
-	uint64_t capture  = ~occupied & ~m_kings;
-	uint64_t movers;
-
-	// knight moves
-	movers = m_knights & occupied;
-
-	while (movers)
-	{
-		unsigned from = lsbClear(movers);
-		uint64_t moves = knightAttacks(from) & capture;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genKnightMove(from, to, m_piece[to]));
-		}
-	}
-
-	// bishop moves
-	movers = m_bishops & occupied;
-
-	while (movers)
-	{
-		unsigned from = lsbClear(movers);
-		uint64_t moves = bishopAttacks(from) & capture;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genBishopMove(from, to, m_piece[to]));
-		}
-	}
-
-	// rook moves
-	movers = m_rooks & occupied;
-
-	while (movers)
-	{
-		unsigned from = lsbClear(movers);
-		uint64_t moves = rookAttacks(from) & capture;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genRookMove(from, to, m_piece[to]));
-		}
-	}
-
-	// queen moves
-	movers = m_queens & occupied;
-
-	while (movers)
-	{
-		unsigned from = lsbClear(movers);
-		uint64_t moves = queenAttacks(from) & capture;
-
-		while (moves)
-		{
-			unsigned to = lsbClear(moves);
-			result.append(Move::genQueenMove(from, to, m_piece[to]));
-		}
-	}
-
-	// king moves
-	uint64_t moves = kingAttacks(m_ksq[m_stm]) & capture;
-
-	while (moves)
-	{
-		uint8_t to = lsbClear(moves);
-
-		if (!isAttackedBy(m_stm ^ 1, to))
-			result.append(Move::genKingMove(m_ksq[m_stm], to, m_piece[to]));
 	}
 }
 
 
 void
-Board::generatePawnCapturingMoves(variant::Type variant, MoveList& result) const
+Board::generateCapturingPawnMoves(variant::Type variant, MoveList& result) const
 {
 	if (m_stm == White)
 	{
@@ -3872,12 +3873,8 @@ Board::generatePawnCapturingMoves(variant::Type variant, MoveList& result) const
 
 
 void
-Board::generateCapturingMoves(variant::Type variant, MoveList& result) const
+Board::generateCapturingPieceMoves(variant::Type variant, MoveList& result) const
 {
-	result.clear();
-
-	generatePawnCapturingMoves(variant, result);
-
 	uint64_t occupied	= m_occupiedBy[m_stm];
 	uint64_t capture	= m_occupiedBy[m_stm ^ 1];
 	uint64_t movers;
@@ -3985,14 +3982,17 @@ Board::generatePieceDropMoves(MoveList& result) const
 
 	uint64_t free = ~m_occupied;
 
-	while (free)
+	if (inHand.piece)
 	{
-		uint8_t to = lsbClear(free);
+		while (free)
+		{
+			uint8_t to = lsbClear(free);
 
-		if (inHand.queen)		result.append(Move::genPieceDrop(to, piece::Queen));
-		if (inHand.rook)		result.append(Move::genPieceDrop(to, piece::Rook));
-		if (inHand.bishop)	result.append(Move::genPieceDrop(to, piece::Bishop));
-		if (inHand.knight)	result.append(Move::genPieceDrop(to, piece::Knight));
+			if (inHand.queen)		result.append(Move::genPieceDrop(to, piece::Queen));
+			if (inHand.rook)		result.append(Move::genPieceDrop(to, piece::Rook));
+			if (inHand.bishop)	result.append(Move::genPieceDrop(to, piece::Bishop));
+			if (inHand.knight)	result.append(Move::genPieceDrop(to, piece::Knight));
+		}
 	}
 
 	if (inHand.pawn)
@@ -4185,7 +4185,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 
 				MoveList moveList;
 				MoveList validList;
-				generatePawnCapturingMoves(variant, moveList);
+				generateCapturingPawnMoves(variant, moveList);
 
 				for (Move* m = moveList.begin(); m != moveList.end(); ++m)
 				{
@@ -4679,6 +4679,7 @@ void
 Board::doMove(Move const& m, variant::Type variant)
 {
 	M_REQUIRE(!m.isEmpty());
+	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
 
 	m_epSquareFen = Null;
 	m_capturePromoted = false;
@@ -4916,46 +4917,35 @@ Board::doMove(Move const& m, variant::Type variant)
 				switch (Byte(m.dropped()))
 				{
 					case piece::Pawn:
-					{
-						piece::ID piece = ::toPiece(piece::Pawn, m_stm);
 						m_pawns ^= toMask;
 						m_piece[to] = piece::Pawn;
 						m_matSig.part[m_stm].pawn = (1 << ++m_material[m_stm].pawn) - 1;
-						hashPawn(to, piece);
-						hashHoldingRemove(piece, --m_holding[m_stm].pawn);
+						hashPawn(to, ::toPiece(piece::Pawn, m_stm));
+						m_partner->removeFromHolding<piece::Pawn>(variant, sntm);
 						break;
-					}
 
 					case piece::Knight:
-					{
-						piece::ID piece = ::toPiece(piece::Knight, m_stm);
 						m_knights ^= toMask;
 						m_piece[to] = piece::Knight;
 						m_matSig.part[m_stm].knight = (1 << ++m_material[m_stm].knight) - 1;
-						hashPiece(to, piece);
-						hashHoldingRemove(piece, --m_holding[m_stm].knight);
+						hashPiece(to, ::toPiece(piece::Knight, m_stm));
+						m_partner->removeFromHolding<piece::Knight>(variant, sntm);
 						break;
-					}
 
 					case piece::Bishop:
-					{
-						piece::ID piece = ::toPiece(piece::Bishop, m_stm);
 						m_bishops ^= toMask;
 						m_piece[to] = piece::Bishop;
 						m_matSig.part[m_stm].bishop = (1 << ++m_material[m_stm].bishop) - 1;
-						hashPiece(to, piece);
-						hashHoldingRemove(piece, --m_holding[m_stm].bishop);
+						hashPiece(to, ::toPiece(piece::Bishop, m_stm));
+						m_partner->removeFromHolding<piece::Bishop>(variant, sntm);
 						break;
-					}
 
 					case piece::Rook:
-					{
-						piece::ID piece = ::toPiece(piece::Rook, m_stm);
 						m_rooks ^= toMask;
 						m_piece[to] = piece::Rook;
 						m_matSig.part[m_stm].rook = (1 << ++m_material[m_stm].rook) - 1;
-						hashPiece(to, piece);
-						hashHoldingRemove(piece, --m_holding[m_stm].rook);
+						hashPiece(to, ::toPiece(piece::Rook, m_stm));
+						m_partner->removeFromHolding<piece::Rook>(variant, sntm);
 						if (!m_kingHasMoved[m_stm])
 						{
 							unsigned index = ::kingSideIndex(m_stm);
@@ -4977,18 +4967,14 @@ Board::doMove(Move const& m, variant::Type variant)
 							}
 						}
 						break;
-					}
 
 					case piece::Queen:
-					{
-						piece::ID piece = ::toPiece(piece::Queen, m_stm);
 						m_queens ^= toMask;
 						m_piece[to] = piece::Queen;
 						m_matSig.part[m_stm].queen = (1 << ++m_material[m_stm].queen) - 1;
-						hashPiece(to, piece);
-						hashHoldingRemove(piece, --m_holding[m_stm].queen);
+						hashPiece(to, ::toPiece(piece::Queen, m_stm));
+						m_partner->removeFromHolding<piece::Queen>(variant, sntm);
 						break;
-					}
 				}
 
 				m_occupiedL90 ^= MaskL90[to];
@@ -5019,7 +5005,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_matSig.part[sntm].pawn = (1 << --m_material[sntm].pawn) - 1;
 			hashPawn(to, ::toPiece(piece::Pawn, sntm));
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
+				m_partner->addToHolding<piece::Pawn>(variant, sntm);
 			break;
 
 		case piece::Knight:
@@ -5029,18 +5015,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_matSig.part[sntm].knight = (1 << --m_material[sntm].knight) - 1;
 			hashPiece(to, ::toPiece(piece::Knight, sntm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_promoted[sntm] & toMask)
-				{
-					m_promoted[sntm] ^= toMask;
-					m_capturePromoted = true;
-					HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
-				}
-				else
-				{
-					HASH_HOLDING_ADD(::toPiece(piece::Knight, m_stm), m_holding[m_stm].knight);
-				}
-			}
+				addToHolding<piece::Knight>(toMask, variant, sntm);
 			break;
 
 		case piece::Bishop:
@@ -5050,18 +5025,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_matSig.part[sntm].bishop = (1 << --m_material[sntm].bishop) - 1;
 			hashPiece(to, ::toPiece(piece::Bishop, sntm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_promoted[sntm] & toMask)
-				{
-					m_promoted[sntm] ^= toMask;
-					m_capturePromoted = true;
-					HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
-				}
-				else
-				{
-					HASH_HOLDING_ADD(::toPiece(piece::Bishop, m_stm), m_holding[m_stm].bishop);
-				}
-			}
+				addToHolding<piece::Bishop>(toMask, variant, sntm);
 			break;
 
 		case piece::Rook:
@@ -5081,18 +5045,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_matSig.part[sntm].rook = (1 << --m_material[sntm].rook) - 1;
 			hashPiece(to, ::toPiece(piece::Rook, sntm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_promoted[sntm] & toMask)
-				{
-					m_promoted[sntm] ^= toMask;
-					m_capturePromoted = true;
-					HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
-				}
-				else
-				{
-					HASH_HOLDING_ADD(::toPiece(piece::Rook, m_stm), m_holding[m_stm].rook);
-				}
-			}
+				addToHolding<piece::Rook>(toMask, variant, sntm);
 			break;
 
 		case piece::Queen:
@@ -5102,18 +5055,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_matSig.part[sntm].queen = (1 << --m_material[sntm].queen) - 1;
 			hashPiece(to, ::toPiece(piece::Queen, sntm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_promoted[sntm] & toMask)
-				{
-					m_promoted[sntm] ^= toMask;
-					m_capturePromoted = true;
-					HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
-				}
-				else
-				{
-					HASH_HOLDING_ADD(::toPiece(piece::Queen, m_stm), m_holding[m_stm].queen);
-				}
-			}
+				addToHolding<piece::Queen>(toMask, variant, sntm);
 			break;
 
 		case piece::King:
@@ -5138,7 +5080,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			pawnProgressRemove(sntm, epsq);
 			hashPawn(epsq, ::toPiece(piece::Pawn, sntm));
 			if (variant::isZhouse(variant))
-				HASH_HOLDING_ADD(::toPiece(piece::Pawn, m_stm), m_holding[m_stm].pawn);
+				m_partner->addToHolding<piece::Pawn>(variant, sntm);
 			break;
 	}
 	// ...no we did not forget the king!
@@ -5167,6 +5109,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 {
 	M_REQUIRE(!m.isEmpty());
 	M_REQUIRE(m.preparedForUndo());
+	M_REQUIRE(variant != variant::Bughouse || hasPartnerBoard());
 
 	unsigned from		= m.from();
 	unsigned to			= m.to();
@@ -5408,42 +5351,31 @@ Board::undoMove(Move const& m, variant::Type variant)
 			switch (Byte(m.dropped()))
 			{
 				case piece::Pawn:
-				{
-					piece::ID piece = ::toPiece(piece::Pawn, sntm);
 					m_pawns ^= toMask;
 					m_matSig.part[sntm].pawn = (1 << --m_material[sntm].pawn) - 1;
-					hashPawn(to, piece);
-					HASH_HOLDING_ADD(piece, m_holding[sntm].pawn);
+					hashPawn(to, ::toPiece(piece::Pawn, sntm));
+					m_partner->addToHolding<piece::Pawn>(variant, m_stm);
 					break;
-				}
 
 				case piece::Knight:
-				{
-					piece::ID piece = ::toPiece(piece::Knight, sntm);
 					m_knights ^= toMask;
 					m_matSig.part[sntm].knight = (1 << --m_material[sntm].knight) - 1;
 					hashPiece(to, ::toPiece(piece::Knight, sntm));
-					HASH_HOLDING_ADD(piece, m_holding[sntm].knight);
+					m_partner->addToHolding<piece::Knight>(variant, m_stm);
 					break;
-				}
 
 				case piece::Bishop:
-				{
-					piece::ID piece = ::toPiece(piece::Bishop, sntm);
 					m_bishops ^= toMask;
 					m_matSig.part[sntm].bishop = (1 << --m_material[sntm].bishop) - 1;
 					hashPiece(to, ::toPiece(piece::Bishop, sntm));
-					HASH_HOLDING_ADD(piece, m_holding[sntm].bishop);
+					m_partner->addToHolding<piece::Bishop>(variant, m_stm);
 					break;
-				}
 
 				case piece::Rook:
-				{
-					piece::ID piece = ::toPiece(piece::Rook, sntm);
 					m_rooks ^= toMask;
 					m_matSig.part[sntm].rook = (1 << --m_material[sntm].rook) - 1;
-					hashPiece(to, piece);
-					HASH_HOLDING_ADD(piece, m_holding[sntm].rook);
+					hashPiece(to, ::toPiece(piece::Rook, sntm));
+					m_partner->addToHolding<piece::Rook>(variant, m_stm);
 					if (!m_kingHasMoved[sntm])
 					{
 						unsigned index = ::kingSideIndex(sntm);
@@ -5465,17 +5397,13 @@ Board::undoMove(Move const& m, variant::Type variant)
 						}
 					}
 					break;
-				}
 
 				case piece::Queen:
-				{
-					piece::ID piece = ::toPiece(piece::Queen, sntm);
 					m_queens ^= toMask;
 					m_matSig.part[sntm].queen = (1 << --m_material[sntm].queen) - 1;
-					hashPiece(to, piece);
-					HASH_HOLDING_ADD(piece, m_holding[sntm].queen);
+					hashPiece(to, ::toPiece(piece::Queen, sntm));
+					m_partner->addToHolding<piece::Queen>(variant, m_stm);
 					break;
-				}
 			}
 
 			m_piece[to] = piece::None;
@@ -5511,7 +5439,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_matSig.part[m_stm].pawn = (1 << ++m_material[m_stm].pawn) - 1;
 			hashPawn(to, ::toPiece(piece::Pawn, m_stm));
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
+				m_partner->removeFromHolding<piece::Pawn>(variant, m_stm);
 			break;
 
 		case piece::Knight:
@@ -5520,17 +5448,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_matSig.part[m_stm].knight = (1 << ++m_material[m_stm].knight) - 1;
 			hashPiece(to, ::toPiece(piece::Knight, m_stm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_capturePromoted)
-				{
-					m_promoted[m_stm] ^= toMask;
-					hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
-				}
-				else
-				{
-					hashHoldingRemove(::toPiece(piece::Knight, sntm), --m_holding[sntm].knight);
-				}
-			}
+				removeFromHolding<piece::Knight>(toMask, variant, m_stm);
 			break;
 
 		case piece::Bishop:
@@ -5539,17 +5457,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_matSig.part[m_stm].bishop = (1 << ++m_material[m_stm].bishop) - 1;
 			hashPiece(to, ::toPiece(piece::Bishop, m_stm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_capturePromoted)
-				{
-					m_promoted[m_stm] ^= toMask;
-					hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
-				}
-				else
-				{
-					hashHoldingRemove(::toPiece(piece::Bishop, sntm), --m_holding[sntm].bishop);
-				}
-			}
+				removeFromHolding<piece::Bishop>(toMask, variant, m_stm);
 			break;
 
 		case piece::Rook:
@@ -5558,17 +5466,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_matSig.part[m_stm].rook = (1 << ++m_material[m_stm].rook) - 1;
 			hashPiece(to, ::toPiece(piece::Rook, m_stm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_capturePromoted)
-				{
-					m_promoted[m_stm] ^= toMask;
-					hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
-				}
-				else
-				{
-					hashHoldingRemove(::toPiece(piece::Rook, sntm), --m_holding[sntm].rook);
-				}
-			}
+				removeFromHolding<piece::Rook>(toMask, variant, m_stm);
 			break;
 
 		case piece::Queen:
@@ -5577,17 +5475,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_matSig.part[m_stm].queen = (1 << ++m_material[m_stm].queen) - 1;
 			hashPiece(to, ::toPiece(piece::Queen, m_stm));
 			if (variant::isZhouse(variant))
-			{
-				if (m_capturePromoted)
-				{
-					m_promoted[m_stm] ^= toMask;
-					hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
-				}
-				else
-				{
-					hashHoldingRemove(::toPiece(piece::Queen, sntm), --m_holding[sntm].queen);
-				}
-			}
+				removeFromHolding<piece::Queen>(toMask, variant, m_stm);
 			break;
 
 		case piece::King:
@@ -5611,7 +5499,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			pawnProgressAdd(m_stm, epsq);
 			hashPawn(epsq, ::toPiece(piece::Pawn, m_stm));
 			if (variant::isZhouse(variant))
-				hashHoldingRemove(::toPiece(piece::Pawn, sntm), --m_holding[sntm].pawn);
+				m_partner->removeFromHolding<piece::Pawn>(variant, m_stm);
 			break;
 	}
 	// ...no we did not forget the king!
@@ -6055,7 +5943,8 @@ Board::prepareMove(Move& move, variant::Type variant, move::Constraint flag) con
 				if (!move.isCapture() && (variant != variant::Losers || !isInCheck()))
 				{
 					MoveList result;
-					generateCapturingMoves(variant, result);
+					generateCapturingPawnMoves(variant, result);
+					generateCapturingPieceMoves(variant, result);
 
 					if (variant == variant::Losers)
 						filterLegalMoves(result, variant);

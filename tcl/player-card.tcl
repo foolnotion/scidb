@@ -254,6 +254,142 @@ proc popdownInfo {path} {
 }
 
 
+proc setupPrivateCard {parent} {
+	variable Var
+
+	# Name
+	# Sex
+	# Birthday
+	# Actual Rating
+	# Title
+	# Nation
+	# Fide-ID (6-8 digits) / DSB-ID "<zps>-<nr>" / ECF-ID (6 digits + 1 alpha) / ICCF-ID (6 digits)
+	# Photo
+
+	set dlg $parent.setupPrivateCard
+	tk::toplevel $dlg -class Scidb
+	wm withdraw $dlg
+	set top [ttk::frame $dlg.top]
+	pack $top -fill both -expand yes
+
+	### left frame ########################################################
+	set list [::tlistbox $top.select \
+		-usescroll yes \
+		-padx 5 \
+		-pady 7 \
+		-selectmode browse \
+	]
+
+	### right frame #######################################################
+	set f [ttk::frame $top.data -borderwidth 0 -takefocus 0]
+
+	ttk::label		$f.lname -textvar ::engine::mc::Name
+	ttk::entry		$f.ename -textvar [namespace current]::Var(Name)
+	ttk::label		$f.lsex -textvar ::playertable::mc::T_Sex
+	::genderbox		$f.bsex -textvar [namespace current]::Var(Sex)
+	ttk::label		$f.lbirthday -textvar ::playertable::mc::DateOfBirth
+	::datebox		$f.bbirthday
+	ttk::label		$f.lnation -textvar ::playertable::mc::T_Federation
+	::countrybox	$f.bnation -textvar [namespace current]::Var(Nation)
+
+	ttk::label		$f.lrating1 -textvar [::mc::var ::engine::mc::Rating " 1"]
+	::ratingbox		$f.brating1 -textvar [namespace current]::Var(Rating1) -format all
+	ttk::spinbox	$f.escore1 -textvar [namespace current]::Var(Score1) -width 5 -from 0 -to 4000
+	ttk::label		$f.lrating2 -textvar [::mc::var ::engine::mc::Rating " 2"]
+	::ratingbox		$f.brating2 -textvar [namespace current]::Var(Rating2) -format all
+	ttk::spinbox	$f.escore2 -textvar [namespace current]::Var(Score2) -width 5 -from 0 -to 4000
+	ttk::label		$f.lrating3 -textvar [::mc::var ::engine::mc::Rating " 3"]
+	::ratingbox		$f.brating3 -textvar [namespace current]::Var(Rating3) -format all
+	ttk::spinbox	$f.escore3 -textvar [namespace current]::Var(Score3) -width 5 -from 0 -to 4000
+
+	ttk::label		$f.ltitle1 -textvar [::mc::var ::playertable::mc::F_Title " 1"]
+	::titlebox		$f.btitle1 -textvar [namespace current]::Var(Title1)
+	ttk::label		$f.ltitle2 -textvar [::mc::var ::playertable::mc::F_Title " 2"]
+	::titlebox		$f.btitle2 -textvar [namespace current]::Var(Title2)
+	ttk::label		$f.ltitle3 -textvar [::mc::var ::playertable::mc::F_Title " 3"]
+	::titlebox		$f.btitle3 -textvar [namespace current]::Var(Title3)
+
+	ttk::label		$f.lfide -textvar ::playertable::mc::F_FideID
+	ttk::entry		$f.efide -textvar [namespace current]::Var(FideID)
+	ttk::label		$f.ldsb -text "DSB-ID"
+	ttk::entry		$f.edsb -textvar [namespace current]::Var(DsbID)
+	ttk::label		$f.lecf -text "ECF-ID"
+	ttk::entry		$f.eecf -textvar [namespace current]::Var(EcfID)
+	ttk::label		$f.liccf -text "ICCF-ID"
+	ttk::entry		$f.eiccf -textvar [namespace current]::Var(IccfID)
+	ttk::label		$f.luscf -text "USCF-ID"
+	ttk::entry		$f.euscf -textvar [namespace current]::Var(UscfID)
+
+	### Geometry ##########################################################
+	grid $top.select -row 1 -column 1 -sticky ns
+	grid $top.data   -row 1 -column 3 -sticky nsew
+
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+
+	grid $f.lname		-row  1 -column 1 -sticky w
+	grid $f.ename		-row  1 -column 3 -sticky we -columnspan 3
+	grid $f.lsex		-row  3 -column 1 -sticky w
+	grid $f.bsex		-row  3 -column 3 -sticky w -columnspan 3
+	grid $f.lbirthday	-row  5 -column 1 -sticky w
+	grid $f.bbirthday	-row  5 -column 3 -sticky w -columnspan 3
+	grid $f.lnation	-row  7 -column 1 -sticky w
+	grid $f.bnation	-row  7 -column 3 -sticky we -columnspan 3
+
+	grid $f.lrating1	-row  9 -column 1 -sticky w
+	grid $f.brating1	-row  9 -column 3 -sticky w
+	grid $f.escore1	-row  9 -column 5 -sticky w
+	grid $f.lrating2	-row 11 -column 1 -sticky w
+	grid $f.brating2	-row 11 -column 3 -sticky w
+	grid $f.escore2	-row 11 -column 5 -sticky w
+	grid $f.lrating3	-row 13 -column 1 -sticky w
+	grid $f.brating3	-row 13 -column 3 -sticky w
+	grid $f.escore3	-row 13 -column 5 -sticky w
+
+	grid $f.ltitle1	-row 15 -column 1 -sticky w
+	grid $f.btitle1	-row 15 -column 3 -sticky we -columnspan 3
+	grid $f.ltitle2	-row 17 -column 1 -sticky w
+	grid $f.btitle2	-row 17 -column 3 -sticky we -columnspan 3
+	grid $f.ltitle3	-row 19 -column 1 -sticky w
+	grid $f.btitle3	-row 19 -column 3 -sticky we -columnspan 3
+
+	grid $f.lfide		-row 21 -column 1 -sticky w
+	grid $f.efide		-row 21 -column 3 -sticky w -columnspan 3
+	grid $f.ldsb		-row 23 -column 1 -sticky w
+	grid $f.edsb		-row 23 -column 3 -sticky w -columnspan 3
+	grid $f.lecf		-row 25 -column 1 -sticky w
+	grid $f.eecf		-row 25 -column 3 -sticky w -columnspan 3
+	grid $f.liccf		-row 27 -column 1 -sticky w
+	grid $f.eiccf		-row 27 -column 3 -sticky w -columnspan 3
+	grid $f.luscf		-row 29 -column 1 -sticky w
+	grid $f.euscf		-row 29 -column 3 -sticky w -columnspan 3
+
+	grid columnconfigure $f {2 4} -minsize $::theme::padx
+	grid columnconfigure $f {5} -weight 1
+	grid rowconfigure $f {2 4 6 10 12 16 18 22 24 26 28} -minsize $::theme::pady
+	grid rowconfigure $f {8 14 20} -minsize $::theme::padY
+
+	### Buttons ###########################################################
+	::widget::dialogButtons $dlg {new save delete close help} -default close
+	$dlg.delete configure -command [namespace code [list DeletePlayer $list]]
+	$dlg.save configure -command [namespace code [list SavePlayer $list]] -state disabled
+	$dlg.new configure -command [namespace code [list NewPlayer $list]]
+	$dlg.close configure -command [namespace code [list CloseSetup $list]]
+
+	### Popup #############################################################
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
+	wm minsize $dlg [winfo reqwidth $dlg] [winfo reqheight $dlg]
+	wm resizable $dlg true false
+	wm title $dlg [::mc::stripAmpersand $::menu::mc::PrivatePlayerCard]
+	wm transient $dlg [winfo toplevel $parent]
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $list
+	update idletasks
+	wm geometry $dlg [winfo width $dlg]x[winfo height $dlg]
+}
+
+
 proc buildWebMenu {parent m info} {
 	variable Options
 

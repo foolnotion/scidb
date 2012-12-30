@@ -60,6 +60,7 @@ public:
 	bool contains(mstl::string const& tag) const;
 	bool isUserSupplied(tag::ID tag) const;
 
+	unsigned size() const;
 	unsigned countExtra() const;
 	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
 

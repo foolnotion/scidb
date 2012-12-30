@@ -134,6 +134,7 @@ variable Variants {Undetermined Normal ThreeCheck Crazyhouse Suicide Giveaway Lo
 
 
 proc import {parent base files msg {encoding {}}} {
+puts "import $base"
 	if {[llength $files] == 0} { return 0 }
 	::remote::busyOperation { Import $parent $base $files $msg $encoding }
 }
@@ -339,7 +340,8 @@ proc showOnlyEncodingWarnings {flag} {
 proc logResult {total emptyText importText accepted rejected {unsupported {}}} {
 	set count 0
 	foreach acc $accepted rej $rejected { incr count $acc; incr count $rej }
-
+	set count [expr {$count + [llength $unsupported]/2}]
+	
 	if {$total == 0} {
 		set lastMsg $emptyText
 	} else {

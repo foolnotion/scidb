@@ -38,7 +38,19 @@
   <h1 class="title">Datenbankformate</h1>
 </div>
 
-<h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<p>
+Scidb unterstützt folgende Formate:
+</p>
+
+<ul>
+  <li><a href="#Scidb">Scidb</a></li>
+  <li><a href="#Scid">Scid</a></li>
+  <li><a href="#ChessBase">ChessBase</a></li>
+  <li><a href="#PGN">PGN</a></li>
+  <li><a href="#Database-Archive">Datenbankarchiv</a></li>
+</ul>
+
+<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 <p>
 Dies ist Scidb's eigenes Datenbankformat und wird ausdrücklich
@@ -53,11 +65,26 @@ zur Zeit sind dies:
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr><td>Normalschach  </td><td>(inklusive Schach-960 und Shuffle-Schach)</td></tr>
-    <tr><td>Einsetzschach </td><td>(Crazyhouse)</td></tr>
-    <tr><td>Schlachschach </td><td>(Suicide, Giveaway)</td></tr>
-    <tr><td>Losers        </td><td>(Schlagschachvariante)</td></tr>
-    <tr><td>Drei-Schach   </td><td>(Three-Check)</td></tr>
+    <tr>
+      <td>Normalschach</td>
+      <td>(inklusive Schach-960 und Shuffle-Schach)</td>
+    </tr>
+    <tr>
+      <td>Einsetzschach</td>
+      <td>(Crazyhouse)</td>
+    </tr>
+    <tr>
+      <td>Schlagschach</td>
+      <td>(Suicide, Giveaway)</td>
+    </tr>
+    <tr>
+      <td>Losers</td>
+      <td>(Schlagschachvariante)</td>
+    </tr>
+    <tr>
+      <td>Dreimal-Schach</td>
+      <td>(Three-Check)</td>
+    </tr>
   </table>
 </div>
 
@@ -92,7 +119,7 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
   </table>
 </div>
 
-<h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
 <p>
 Dies ist Scid's Datenbankformat und wird aufgrund des hohen
@@ -146,7 +173,7 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 von Scidb nicht beachtet. Ebenso bleiben auch gespeicherte Partienlisten (Endung
 <code>.txt</code>) unbeachtet.</p>
 
-<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
+<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 <p>
 Die Firma <a href="http://www.chessbase.de">ChessBase</a> hält das Format dieser
@@ -186,7 +213,7 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
   </table>
 </div>
 
-<h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
@@ -204,6 +231,85 @@ ist eine PGN-Datei mit dem Zeichensatz <span style="white-space:nowrap;">Latin-1
 eine <span style="white-space:nowrap;">UTF-8</span>-Enkodierung angenommen (gemäß
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ</a>).
 </p>
+
+<p>
+Beim Lesen von FICS-Partien werden nur die folgenden Varianten akzeptiert:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr>
+      <td>wild/2 </td>
+      <td>&#x2001;</td>
+      <td>misc/bishops-only</td>
+      <td>&#x2001;</td>
+      <td>crazyhouse</td>
+    </tr>
+    <tr>
+      <td>wild/7</td>
+      <td>&#x2001;</td>
+      <td>misc/knights-only</td>
+      <td>&#x2001;</td>
+      <td>endings/kbbk</td>
+    </tr>
+    <tr>
+      <td>wild/8 </td>
+      <td>&#x2001;</td>
+      <td>misc/little-game</td>
+      <td>&#x2001;</td>
+      <td>endings/kbnk</td>
+    </tr>
+    <tr>
+      <td>wild/17</td>
+      <td>&#x2001;</td>
+      <td>misc/no-queens</td>
+      <td>&#x2001;</td>
+      <td>losers</td>
+    </tr>
+    <tr>
+      <td>wild/19</td>
+      <td>&#x2001;</td>
+      <td>misc/pawns-only</td>
+      <td>&#x2001;</td>
+      <td>odds/*</td>
+    </tr>
+    <tr>
+      <td>wild/22</td>
+      <td>&#x2001;</td>
+      <td>misc/pyramid</td>
+      <td>&#x2001;</td>
+      <td>pawns/little-game</td>
+    </tr>
+    <tr>
+      <td>wild/23</td>
+      <td>&#x2001;</td>
+      <td>misc/queen-rooks</td>
+      <td>&#x2001;</td>
+      <td>pawns/pawns-only</td>
+    </tr>
+    <tr>
+      <td>wild/25</td>
+      <td>&#x2001;</td>
+      <td>misc/queens-only</td>
+      <td>&#x2001;</td>
+      <td>pawns/wild-five</td>
+    </tr>
+    <tr>
+      <td>wild/26</td>
+      <td>&#x2001;</td>
+      <td>misc/rooks-only</td>
+      <td>&#x2001;</td>
+      <td>suicide</td>
+    </tr>
+    <tr>
+      <td>wild/fr</td>
+      <td>&#x2001;</td>
+      <td>misc/runaway</td>
+      <td>&#x2001;</td>
+      <td></td>
+    </tr>
+  </table>
+</div>
 
 <p>
 Eine vollständige Beschreibung dieses Formats findet man unter

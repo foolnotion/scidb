@@ -2,6 +2,7 @@ set Index {
   { A
     {
       {{Administrate database} {Database-Switcher.html} {Administration}}
+      {{Archivo de base de datos} {Database-Formats.html} {Database-Archive}}
     }
   }
   { B
@@ -31,7 +32,6 @@ set Index {
   }
   { F
     {
-      {{Formatos de bases de datos} {Database-Formats.html} {}}
       {{Formatos de bases de datos} {Database-Formats.html} {}}
     }
   }

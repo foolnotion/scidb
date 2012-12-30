@@ -210,46 +210,47 @@
 ::progress::mc::Message(copy-game)		"Copy %s game(s)" ;# NEW
 
 ### menu ###############################################################
-::menu::mc::Theme							"Téma"
+::menu::mc::Theme			"Téma"
 
-::menu::mc::AllScidbFiles				"Minden Scidb fájl"
-::menu::mc::AllScidbBases				"Minde Scidb adatbázis"
-::menu::mc::ScidBases					"Scid adatbázisok"
-::menu::mc::ScidbBases					"Scidb adatbázisok"
-::menu::mc::ChessBaseBases				"ChessBase adatbázisok"
-::menu::mc::ScidbArchives				"Scidb archives" ;# NEW
-::menu::mc::PGNFilesArchives			"PGN fájlok/arhívumok"
-::menu::mc::PGNFiles						"PGN fájlok"
-::menu::mc::PGNFilesArchives			"BPGN fájlok/arhívumok"
-::menu::mc::PGNFiles						"BPGN fájlok"
-::menu::mc::PGNArchives					"PGN arhívumok"
+::menu::mc::AllScidbFiles		"Minden Scidb fájl"
+::menu::mc::AllScidbBases		"Minde Scidb adatbázis"
+::menu::mc::ScidBases			"Scid adatbázisok"
+::menu::mc::ScidbBases			"Scidb adatbázisok"
+::menu::mc::ChessBaseBases		"ChessBase adatbázisok"
+::menu::mc::ScidbArchives		"Scidb archives" ;# NEW
+::menu::mc::PGNFilesArchives		"PGN fájlok/arhívumok"
+::menu::mc::PGNFiles			"PGN fájlok"
+::menu::mc::PGNFilesArchives		"BPGN fájlok/arhívumok"
+::menu::mc::PGNFiles			"BPGN fájlok"
+::menu::mc::PGNArchives			"PGN arhívumok"
 
-::menu::mc::Language						"L&anguage" ;# NEW
-::menu::mc::Toolbars						"&Toolbars" ;# NEW
-::menu::mc::ShowLog						"&Log fájl mutatása"
-::menu::mc::AboutScidb					"Scidb &Névjegy"
-::menu::mc::Fullscreen					"&Teljes képernyő"
-::menu::mc::LeaveFullscreen			"Leave &Teljes képernyő" ;# NEW "Leave Full-Screen"
-::menu::mc::Help							"&Súgó"
-::menu::mc::Contact						"&Contact (Web Browser)" ;# NEW
-::menu::mc::Quit							"&Kilépés"
-::menu::mc::Tools							"&Tools" ;# NEW
-::menu::mc::Extras						"E&xtras" ;# NEW
-::menu::mc::Setup						"Setu&p" ;# NEW
-::menu::mc::Engines						"&Engines" ;# NEW
+::menu::mc::Language			"L&anguage" ;# NEW
+::menu::mc::Toolbars			"&Toolbars" ;# NEW
+::menu::mc::ShowLog			"&Log fájl mutatása"
+::menu::mc::AboutScidb			"Scidb &Névjegy"
+::menu::mc::Fullscreen			"&Teljes képernyő"
+::menu::mc::LeaveFullscreen		"Leave &Teljes képernyő" ;# NEW "Leave Full-Screen"
+::menu::mc::Help			"&Súgó"
+::menu::mc::Contact			"&Contact (Web Browser)" ;# NEW
+::menu::mc::Quit			"&Kilépés"
+::menu::mc::Tools			"&Tools" ;# NEW
+::menu::mc::Extras			"E&xtras" ;# NEW
+::menu::mc::Setup			"Setu&p" ;# NEW
+::menu::mc::Engines			"&Engines" ;# NEW
 
-::menu::mc::ContactBugReport			"&Hiba jelentés"
+::menu::mc::ContactBugReport		"&Hiba jelentés"
 ::menu::mc::ContactFeatureRequest	"&Feature Request" ;# NEW
 ::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts" ;# NEW
 ::menu::mc::OpenEngineLog		"Open &Engine Console" ;# NEW
 ::menu::mc::OpenEngineDictionary	"Open Engine &Dictionary" ;# NEW
+::menu::mc::PrivatePlayerCard		"&Private Player Card" ;# NEW
 
-::menu::mc::OpenFile						"Scidb fájl megnyitása"
-::menu::mc::NewFile						"Scidb fájl létrehozása"
-::menu::mc::Archiving					"Archiving" ;# NEW
-::menu::mc::CreateArchive				"Create Archive" ;# NEW
-::menu::mc::BuildArchive				"Create archive %s" ;# NEW
-::menu::mc::Data							"%s data" ;# NEW
+::menu::mc::OpenFile			"Scidb fájl megnyitása"
+::menu::mc::NewFile			"Scidb fájl létrehozása"
+::menu::mc::Archiving			"Archiving" ;# NEW
+::menu::mc::CreateArchive		"Create Archive" ;# NEW
+::menu::mc::BuildArchive		"Create archive %s" ;# NEW
+::menu::mc::Data			"%s data" ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Severe error during load of ECO file" ;# NEW
@@ -1318,7 +1319,7 @@
 ::setup::board::mc::Castling			"Sáncolás"
 ::setup::board::mc::MoveNumber			"Lépésszám"
 ::setup::board::mc::EnPassantFile		"Menetközbeni ütés"
-::setup::board::mc::HalfMoves			"Half moves" ;# NEW
+::setup::board::mc::HalfMoves			"Half move clock" ;# NEW
 ::setup::board::mc::StartPosition		"Kiinduló állás"
 ::setup::board::mc::Fen				"FEN"
 ::setup::board::mc::Promoted			"Promoted" ;# NEW
@@ -1744,11 +1745,11 @@
 ::languagebox::mc::None				"Egyik sem"
 
 ### datebox ############################################################
-::widget::datebox::mc::Today		"Ma"
-::widget::datebox::mc::Calendar		"Naptár..."
-::widget::datebox::mc::Year		"Év"
-::widget::datebox::mc::Month		"Hónap"
-::widget::datebox::mc::Day		"Nap"
+::datebox::mc::Today		"Ma"
+::datebox::mc::Calendar		"Naptár..."
+::datebox::mc::Year		"Év"
+::datebox::mc::Month		"Hónap"
+::datebox::mc::Day		"Nap"
 
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Férfi"

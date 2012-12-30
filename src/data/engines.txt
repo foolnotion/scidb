@@ -260,10 +260,10 @@
 =	K9
 *	Deep Blue							----	----	USA	?			N
 *	DeepDuke								----	----	SUI	WB/UCI	N			http://sourceforge.net/projects/deepduke/
-*	Deep Fritz							2932	2954	GER	UCI		N
+*	Deep Fritz							2932	2954	GER	UCI		NFG		http://www.chessbase.de/
 *	Deep Junior							2858	2944	ISR	UCI		N
 *	Deep Patzer							2381	----	GER	WB			N
-*	Deep Shredder						2886	2948	GER	UCI		N
+*	Deep Shredder						2886	2948	GER	UCI		N			http://www.shredderchess.de/
 * 	Deep Sjeng							2843	2915	BEL	WB/UCI	N			http://sjeng.org/index.html
 *	Deep Thought						----	----	USA	-			N
 *	DeepTrouble							1719	----	USA	WB			N
@@ -983,7 +983,7 @@
 	Timea									----	----	HUN	?			N
 	Tinker								2480	----	USA	?			N
 	Tippy Chess							----	----	BRA	UCI		N			http://www.tippychess.com/downloads.asp
-*	TJChess								----	2243	USA	WB/UCI	N			http://www.tonyjh.com/chess/
+*	TJchess								----	2243	USA	WB			NFCB		http://www.tonyjh.com/chess/
 *	Toga II								2873	3006	ZZX	UCI		N			http://www.superchessengine.com/toga_ii.htm
  	Toga									----	----	ZZX	UCI		N			http://www.superchessengine.com/toga_ii.htm
 	Toga Cluster						----	----	GER	UCI		N

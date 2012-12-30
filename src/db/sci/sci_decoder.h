@@ -56,6 +56,7 @@ public:
 	Decoder(util::ByteStream& strm, unsigned guaranteedStreamSize, variant::Type variant);
 
 	Move findExactPosition(Board const& position, bool skipVariations);
+	unsigned findTags(TagSet& tags);
 
 	void doDecoding(GameData& data);
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags);
@@ -66,8 +67,6 @@ private:
 	void decodeRun(unsigned count, Consumer& consumer);
 	void decodeVariation(util::ByteStream& data);
 	void decodeVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text);
-	void decodeEngines(util::ByteStream& strm, EngineList& engines);
-	void decodeTags(util::ByteStream& strm, TagSet& tags);
 	void decodeTextSection(MoveNode* node, util::ByteStream& text);
 	void decodeMark();
 
@@ -84,6 +83,9 @@ private:
 	Move decodePawn(sq::ID from, Byte nybble);
 
 	Move searchForPosition(Board const& position, bool skipVariations);
+
+	static void decodeEngines(util::ByteStream& strm, EngineList& engines);
+	static void decodeTags(util::ByteStream& strm, TagSet& tags);
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);

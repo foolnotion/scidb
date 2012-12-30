@@ -38,6 +38,20 @@
   <h1 class="title">Formati Database</h1>
 </div>
 
+<span class="NEW">
+<p>
+Scidb supports following formats:
+</p>
+</span>
+
+<ul>
+  <li><a href="#Scidb">Scidb</a></li>
+  <li><a href="#Scid">Scid</a></li>
+  <li><a href="#ChessBase">ChessBase</a></li>
+  <li><a href="#PGN">PGN</a></li>
+  <li><a href="#Database-Archive">Archivio Database</a></li>
+</ul>
+
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
@@ -50,11 +64,26 @@ currently this is:
 
 <div class="box">
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr><td>Normal Chess      </td><td>(including Chess 960, Shuffle Chess)</td></tr>
-    <tr><td>Crazyhouse        </td><td></td></tr>
-    <tr><td>Antichess         </td><td>(Suicide, Giveaway)</td></tr>
-    <tr><td>Losers Chess      </td><td>(variant of Antichess)</td></tr>
-    <tr><td>Three-Check Chess </td><td></td></tr>
+    <tr>
+      <td>Normal Chess</td>
+      <td>(including Scacchi 960, Scacchi Shuffle)</td>
+    </tr>
+    <tr>
+      <td>Crazyhouse Chess</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>Vinciperdi</td>
+      <td>(Suicide, Giveaway)</td>
+    </tr>
+    <tr>
+      <td>Losers</td>
+      <td>(variant of Vinciperdi)</td>
+    </tr>
+    <tr>
+      <td>Three-check Chess</td>
+      <td></td>
+    </tr>
   </table>
 </div>
 
@@ -191,6 +220,87 @@ Ma se un file PGN comincia con un marcatore <span style="white-space:nowrap;">UT
 (<span style="white-space:nowrap;">UTF-8</span>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <span style="white-space:nowrap;">UTF-8</span>
 (in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
+
+<span class="NEW">
+<p>
+Only the following variants will be accepted if reading FICS games:
+</p>
+</span>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr>
+      <td>wild/2 </td>
+      <td>&#x2001;</td>
+      <td>misc/bishops-only</td>
+      <td>&#x2001;</td>
+      <td>crazyhouse</td>
+    </tr>
+    <tr>
+      <td>wild/7</td>
+      <td>&#x2001;</td>
+      <td>misc/knights-only</td>
+      <td>&#x2001;</td>
+      <td>endings/kbbk</td>
+    </tr>
+    <tr>
+      <td>wild/8 </td>
+      <td>&#x2001;</td>
+      <td>misc/little-game</td>
+      <td>&#x2001;</td>
+      <td>endings/kbnk</td>
+    </tr>
+    <tr>
+      <td>wild/17</td>
+      <td>&#x2001;</td>
+      <td>misc/no-queens</td>
+      <td>&#x2001;</td>
+      <td>losers</td>
+    </tr>
+    <tr>
+      <td>wild/19</td>
+      <td>&#x2001;</td>
+      <td>misc/pawns-only</td>
+      <td>&#x2001;</td>
+      <td>odds/*</td>
+    </tr>
+    <tr>
+      <td>wild/22</td>
+      <td>&#x2001;</td>
+      <td>misc/pyramid</td>
+      <td>&#x2001;</td>
+      <td>pawns/little-game</td>
+    </tr>
+    <tr>
+      <td>wild/23</td>
+      <td>&#x2001;</td>
+      <td>misc/queen-rooks</td>
+      <td>&#x2001;</td>
+      <td>pawns/pawns-only</td>
+    </tr>
+    <tr>
+      <td>wild/25</td>
+      <td>&#x2001;</td>
+      <td>misc/queens-only</td>
+      <td>&#x2001;</td>
+      <td>pawns/wild-five</td>
+    </tr>
+    <tr>
+      <td>wild/26</td>
+      <td>&#x2001;</td>
+      <td>misc/rooks-only</td>
+      <td>&#x2001;</td>
+      <td>suicide</td>
+    </tr>
+    <tr>
+      <td>wild/fr</td>
+      <td>&#x2001;</td>
+      <td>misc/runaway</td>
+      <td>&#x2001;</td>
+      <td></td>
+    </tr>
+  </table>
+</div>
 
 <p>
 Per le specifiche complete su questo formato visitare

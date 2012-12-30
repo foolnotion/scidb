@@ -22,7 +22,19 @@ INDEX Datenbankarchiv#Database-Archive
 INDEX Archiv#Database-Archive
 TITLE Datenbankformate
 
-<h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<p>
+Scidb unterstützt folgende Formate:
+</p>
+
+<ul>
+  <li><a href="#Scidb">Scidb</a></li>
+  <li><a href="#Scid">Scid</a></li>
+  <li><a href="#ChessBase">ChessBase</a></li>
+  <li><a href="#PGN">PGN</a></li>
+  <li><a href="#Database-Archive">Datenbankarchiv</a></li>
+</ul>
+
+<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 <p>
 Dies ist Scidb's eigenes Datenbankformat und wird ausdrücklich
@@ -37,11 +49,26 @@ zur Zeit sind dies:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr><td>Normalschach  </td><td>(inklusive Schach-960 und Shuffle-Schach)</td></tr>
-    <tr><td>Einsetzschach </td><td>(Crazyhouse)</td></tr>
-    <tr><td>Schlachschach </td><td>(Suicide, Giveaway)</td></tr>
-    <tr><td>Losers        </td><td>(Schlagschachvariante)</td></tr>
-    <tr><td>Drei-Schach   </td><td>(Three-Check)</td></tr>
+    <tr>
+      <td>%::mc::VariantName(Normal)%</td>
+      <td>(inklusive %::mc::VariantName(Chess960)% und %::mc::VariantName(Shuffle)%)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Crazyhouse)%</td>
+      <td>(Crazyhouse)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Antichess)%</td>
+      <td>(%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Losers)%</td>
+      <td>(Schlagschachvariante)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(ThreeCheck)%</td>
+      <td>(Three-Check)</td>
+    </tr>
   </table>
 </box>
 
@@ -76,7 +103,7 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
   </table>
 </box>
 
-<h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
 <p>
 Dies ist Scid's Datenbankformat und wird aufgrund des hohen
@@ -130,7 +157,7 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 von Scidb nicht beachtet. Ebenso bleiben auch gespeicherte Partienlisten (Endung
 <code>.txt</code>) unbeachtet.</note>
 
-<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
+<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
 
 <p>
 Die Firma <a href="http://www.chessbase.de">ChessBase</a> hält das Format dieser
@@ -170,7 +197,7 @@ Eine Datenbank im ChessBase-Format besteht aus sehr vielen Dateien, die wichtigs
   </table>
 </box>
 
-<h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
@@ -188,6 +215,12 @@ ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
 eine <nobr>UTF-8</nobr>-Enkodierung angenommen (gemäß
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ</a>).
 </p>
+
+<p>
+Beim Lesen von FICS-Partien werden nur die folgenden Varianten akzeptiert:
+</p>
+
+INCLUDE ../FICS-Variants.txt
 
 <p>
 Eine vollständige Beschreibung dieses Formats findet man unter

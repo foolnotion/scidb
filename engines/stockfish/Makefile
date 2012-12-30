@@ -194,8 +194,8 @@ endif
 GCC_MAJOR := `$(CXX) -dumpversion | cut -f1 -d.`
 GCC_MINOR := `$(CXX) -dumpversion | cut -f2 -d.`
 ifeq (1,$(shell expr \( $(GCC_MAJOR) \> 4 \) \| \( $(GCC_MAJOR) \= 4 \& $(GCC_MINOR) \>= 5 \)))
-	ENABLED_LTO := `$(CXX) -v 2>&1 | grep disable-lto`
-	ifeq (1,$(shell expr "$(ENABLED_LTO)" == ""))
+	DISABLE_LTO := `$(CXX) -v 2>&1 | grep disable-lto`
+	ifeq (1,$(shell expr "$(DISABLE_LTO)" == ""))
 		CXXFLAGS += -flto
 		LDFLAGS += $(CXXFLAGS)
 	endif

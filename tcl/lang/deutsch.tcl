@@ -117,7 +117,7 @@
 ::mc::VariantName(Normal)			"Normalschach"
 ::mc::VariantName(Bughouse)		"Tandemschach"
 ::mc::VariantName(Crazyhouse)		"Einsetzschach"
-::mc::VariantName(ThreeCheck)		"Drei-Schach"
+::mc::VariantName(ThreeCheck)		"Dreimal-Schach"
 ::mc::VariantName(Antichess)		"Schlagschach"
 ::mc::VariantName(Suicide)			"Suicide"
 ::mc::VariantName(Giveaway)		"Giveaway"
@@ -242,6 +242,7 @@
 ::menu::mc::InstallChessBaseFonts	"ChessBase-Zeichensätze installieren"
 ::menu::mc::OpenEngineLog				"&Motoren-Konsole öffnen"
 ::menu::mc::OpenEngineDictionary		"Motoren&übersicht öffnen"
+::menu::mc::PrivatePlayerCard			"&Private Spielerkarteikarte"
 
 ::menu::mc::OpenFile						"Eine Scidb-Datei öffnen"
 ::menu::mc::NewFile						"Eine Scidb-Datei anlegen"
@@ -478,7 +479,7 @@
 ::application::database::mc::T_Bughouse						"Tandemschach (Bughouse)"
 ::application::database::mc::T_Antichess						"Anti-Schach"
 ::application::database::mc::T_PGNFile							"PGN-Datei"
-::application::database::mc::T_ThreeCheck						"Drei-Schach"
+::application::database::mc::T_ThreeCheck						"Dreimal-Schach"
 ::application::database::mc::T_Crazyhouse						"Einsetzschach"
 
 ::application::database::mc::OpenDatabase						"Datenbank öffnen"
@@ -898,7 +899,7 @@
 ::engine::mc::SelectEngineLogo		"Logo auswählen"
 ::engine::mc::EngineDictionary		"Motorenverzeichniss"
 ::engine::mc::EngineFilter				"Motorenfilter"
-::engine::mc::EngineLog					"Schachprogramm-Konsole"
+::engine::mc::EngineLog					"Motoren-Konsole"
 ::engine::mc::Probing					"Erprobung"
 ::engine::mc::NeverUsed					"Nie benutzt"
 ::engine::mc::OpenFsbox					"Dateiauswahldialog öffnen"
@@ -1250,8 +1251,8 @@
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Partien-Browser"
-::browser::mc::StartAutoplay		"Automtisches Vorspielen starten"
-::browser::mc::StopAutoplay		"Automtisches Vorspielen beenden"
+::browser::mc::StartAutoplay		"Automatisches Vorspielen starten"
+::browser::mc::StopAutoplay		"Automatisches Vorspielen beenden"
 ::browser::mc::GoForward			"Ein Zug vorwärts"
 ::browser::mc::GoBackward			"Ein Zug zurück"
 ::browser::mc::GoForwardFast		"Einige Züge vorwärts"
@@ -1309,7 +1310,7 @@
 ::setup::board::mc::Castling						"Rochade"
 ::setup::board::mc::MoveNumber					"Zugnummer"
 ::setup::board::mc::EnPassantFile				"En-Passant"
-::setup::board::mc::HalfMoves						"Halbzüge"
+::setup::board::mc::HalfMoves						"Halbzugzähler"
 ::setup::board::mc::StartPosition				"Startposition"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Verwandelt"
@@ -1735,11 +1736,11 @@
 ::languagebox::mc::None				"Keine"
 
 ### datebox ############################################################
-::widget::datebox::mc::Today		"Heute"
-::widget::datebox::mc::Calendar	"Kalender..."
-::widget::datebox::mc::Year		"Jahr"
-::widget::datebox::mc::Month		"Monat"
-::widget::datebox::mc::Day			"Tag"
+::datebox::mc::Today		"Heute"
+::datebox::mc::Calendar	"Kalender..."
+::datebox::mc::Year		"Jahr"
+::datebox::mc::Month		"Monat"
+::datebox::mc::Day		"Tag"
 
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Männlich"

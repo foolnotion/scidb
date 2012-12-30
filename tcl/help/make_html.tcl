@@ -412,7 +412,7 @@ proc processContents {contents} {
 			}
 			processContents [readContents $inc $f]
 		} else {
-			while {[regexp {%(::)?[a-zA-Z_:]*([(].*[)])?%} $line pattern]} {
+			while {[regexp {%(::)?[a-zA-Z_:]*(\([^)]*\))?%} $line pattern]} {
 				set var [string range $pattern 1 end-1]
 				if {[info exists $var]} {
 					set line [string map [list $pattern [set $var]] $line]

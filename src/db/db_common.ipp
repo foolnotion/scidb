@@ -138,13 +138,30 @@ inline Type type(ID piece)					{ return Type(piece & 7); }
 inline bool isWhite(ID piece) { return piece && !color(piece); }
 inline bool isBlack(ID piece) { return color(piece); }
 
-inline ID piece(Type type, db::color::ID color)		{ return ID(type | (color << 3)); }
+inline ID piece(Type type, db::color::ID color) { return ID(type | (color << 3)); }
+inline ID swap(ID piece) { return ID(piece & (1 << 3) ? piece & 7 : piece | (1 << 3)); }
 
 inline
 char
 print(db::piece::ID piece)
 {
 	M_ASSERT(piece <= 14);
+
+	static_assert(
+			WhiteKing	== 1
+		&& WhiteQueen	== 2
+		&& WhiteRook	== 3
+		&& WhiteBishop	== 4
+		&& WhiteKnight	== 5
+		&& WhitePawn	== 6
+		&& BlackKing	== 9
+		&& BlackQueen	== 10
+		&& BlackRook	== 11
+		&& BlackBishop	== 12
+		&& BlackKnight	== 13
+		&& BlackPawn	== 14,
+		"piece number has changed");
+
 	return " KQRBNP  kqrbnp"[piece];
 };
 
@@ -153,6 +170,11 @@ char
 print(Type type)
 {
 	M_ASSERT(type <= 6);
+
+	static_assert(
+		King == 1 && Queen == 2 && Rook == 3 && Bishop == 4 && Knight == 5 && Pawn == 6,
+		"piece number has changed");
+
 	return " KQRBNP"[type];
 };
 

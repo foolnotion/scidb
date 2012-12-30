@@ -230,8 +230,10 @@ public:
 	void prepareUndo(Move& move) const;
 	/// Generate all possible moves in a given position
 	void generateMoves(variant::Type variant, MoveList& result) const;
-	/// Generate all possible capturing moves in a given position
-	void generateCapturingMoves(variant::Type variant, MoveList& result) const;
+	/// Generate all possible capturing piece (not pawns) moves in a given position
+	void generateCapturingPieceMoves(variant::Type variant, MoveList& result) const;
+	/// Generate all possible capturing pawn moves in a given position
+	void generateCapturingPawnMoves(variant::Type variant, MoveList& result) const;
 	/// Generate all possible castling moves in a given position.
 	void generateCastlingMoves(MoveList& result) const;
 	/// Remove all illegal moves from given move list (king remains in check).
@@ -307,6 +309,8 @@ public:
 	bool hasBishopOnDark(color::ID side) const;
 	/// Returns whether given side has a bishop on lite squares
 	bool hasBishopOnLite(color::ID side) const;
+	/// Returns whether the partner board (Bughouse) is set.
+	bool hasPartnerBoard() const;
 
 	/// Returns current board state (check mate, stale mate, ...)
 	unsigned checkState(variant::Type variant) const;
@@ -533,10 +537,9 @@ private:
 	void pawnProgressAdd(unsigned color, unsigned at);
 
 	// helpers
-	void generateNormalMoves(MoveList& result) const;
 	void generatePieceDropMoves(MoveList& result) const;
-	void generateNonCapturingMoves(variant::Type variant, MoveList& result) const;
-	void generatePawnCapturingMoves(variant::Type variant, MoveList& result) const;
+	void generateNonCapturingPieceMoves(variant::Type variant, MoveList& result) const;
+	void generateNonCapturingPawnMoves(variant::Type variant, MoveList& result) const;
 
 	void genCastleShort(MoveList& result, color::ID side) const;
 	void genCastleLong(MoveList& result, color::ID side) const;
@@ -557,6 +560,9 @@ private:
 	bool shortCastlingBlackIsPossible() const;
 	bool longCastlingWhiteIsPossible() const;
 	bool longCastlingBlackIsPossible() const;
+
+	bool findAnyLegalMove(variant::Type variant) const;
+	bool containsAnyLegalMove(MoveList const& moves, variant::Type variant) const;
 
 	char const* parsePieceDrop(char const* s,
 										Move& move,
@@ -586,6 +592,14 @@ private:
 	void hashHoldingAdd(piece::ID piece, Byte count);
 	void hashHoldingRemove(piece::ID piece, Byte count);
 	void hashHolding(piece::ID piece, Byte count);
+	template <piece::Type Piece>
+	void addToHolding(variant::Type variant, unsigned color);
+	template <piece::Type Piece>
+	void addToHolding(uint64_t toMask, variant::Type variant, unsigned color);
+	template <piece::Type Piece>
+	void removeFromHolding(variant::Type variant, unsigned color);
+	template <piece::Type Piece>
+	void removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned color);
 
 	// Additional board data
 	uint64_t	m_occupied;						// square is empty or holds a piece
@@ -594,6 +608,7 @@ private:
 	uint64_t	m_occupiedR45;					// the opposite odd transformation, just as messy
 
 	// Extra state data
+	Board*		m_partner;					// partner board in Bughouse
 	Byte			m_piece[64];				// type of piece on this square
 	Byte			m_destroyCastle[64];		// inverted castle mask for each square
 	Byte			m_unambiguous[4];			// whether castling rook fyles are unambiguous

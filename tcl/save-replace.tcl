@@ -599,7 +599,7 @@ proc Build {dlg base variant position number} {
 		ttk::label $top.game-$attr-l -textvar [namespace current]::mc::Label($attr)
 	}
 
-	::widget::datebox $top.game-date -minYear $minYear -maxYear $maxYear
+	datebox $top.game-date -minYear $minYear -maxYear $maxYear
 	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result)
 	roundbox $top.game-round -width 10 -textvar ::${dlg}::Priv(event-round) -useString $useStringForRound
 	terminationbox $top.game-termination \
@@ -687,7 +687,7 @@ proc Build {dlg base variant position number} {
 		-textvar ::${dlg}::Priv(event-country) \
 		-state $state \
 		;
-	::widget::datebox $top.event-eventDate \
+	datebox $top.event-eventDate \
 		-minYear $minYear \
 		-maxYear $maxYear \
 		-tooltip [namespace current]::mc::SetToGameDate \
@@ -2940,7 +2940,7 @@ proc CheckFields {top title fields} {
 						SourceDate {
 							lassign {{} {} {}} y m d
 							lassign [split $value .] y m d
-							lassign [::widget::datebox::validate $y $m $d] date err
+							lassign [datebox::validate $y $m $d] date err
 							if {[llength $err]} {
 								set error [format $mc::ExtraTag $tag]
 								append error [format [set mc::$err] $value]

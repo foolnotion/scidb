@@ -35,7 +35,7 @@
 
 namespace db {
 
-inline Board::Board() {}
+inline Board::Board() :m_partner(this) {}
 
 inline void Board::Board::clear() { *this = m_emptyBoard; }
 
@@ -48,6 +48,7 @@ inline bool Board::isEmpty() const					{ return m_hash == 0; }
 inline bool Board::isStandardPosition() const	{ return isEqualPosition(m_standardBoard); }
 inline bool Board::whiteToMove() const				{ return color::isWhite(sideToMove()); }
 inline bool Board::blackToMove() const				{ return color::isBlack(sideToMove()); }
+inline bool Board::hasPartnerBoard() const		{ return m_partner != this; }
 
 inline Square Board::enPassantSquare() const		{ return m_epSquare; }
 

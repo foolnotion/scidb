@@ -332,6 +332,7 @@ public:
 	db::Move const& currentMove() const;
 	unsigned hashFullness() const;
 	unsigned ordering(unsigned line) const;
+	unsigned countLines() const;
 
 	mstl::string const& identifier() const;
 	mstl::string const& shortName() const;

@@ -26,8 +26,6 @@
 
 ::util::source date-selection-box
 
-namespace eval widget {
-
 proc datebox {w args} { return [datebox::Build $w {*}$args] }
 
 namespace eval datebox {
@@ -85,7 +83,9 @@ proc validate {y m d {minYear 0} {maxYear 9999}} {
 
 
 proc Build {w args} {
+	array set opts [list -minYear [::scidb::misc::minYear] -maxYear [::scidb::misc::maxYear]]
 	set opts(-tooltip) [namespace current]::mc::Today
+	set opts(-usetoday) 0
 	array set opts $args
 
 	ttk::frame $w -borderwidth 0 -takefocus 0 -class DateBoxFrame
@@ -143,11 +143,13 @@ proc Build {w args} {
 		-image $icon::16x16::calendar \
 		-command [namespace code [list Choose $w.cal]] \
 		;
-	ttk::button $w.today \
-		-style icon.TButton \
-		-image $icon::16x16::today \
-		-command [namespace code [list Today $w.today]] \
-		;
+	if {$opts(-usetoday)} {
+		ttk::button $w.today \
+			-style icon.TButton \
+			-image $icon::16x16::today \
+			-command [namespace code [list Today $w.today]] \
+			;
+	}
 	
 	grid $w.y		-row 0 -column 0
 	grid $w.dot1	-row 0 -column 1
@@ -155,16 +157,19 @@ proc Build {w args} {
 	grid $w.dot2	-row 0 -column 3
 	grid $w.d		-row 0 -column 4
 	grid $w.cal		-row 0 -column 6 -sticky ns
-	grid $w.today	-row 0 -column 8 -sticky ns
+
+	if {$opts(-usetoday)} {
+		grid $w.today -row 0 -column 8 -sticky ns
+		::tooltip::tooltip $w.today $opts(-tooltip)
+	}
 
 	grid columnconfigure $w 5 -minsize 5
 	grid columnconfigure $w 7 -minsize 3
 
-	::tooltip::tooltip $w.y			[namespace current]::mc::Year
-	::tooltip::tooltip $w.m			[namespace current]::mc::Month
-	::tooltip::tooltip $w.d			[namespace current]::mc::Day
-	::tooltip::tooltip $w.cal		[namespace current]::mc::Calendar
-	::tooltip::tooltip $w.today	$opts(-tooltip)
+	::tooltip::tooltip $w.y		[namespace current]::mc::Year
+	::tooltip::tooltip $w.m		[namespace current]::mc::Month
+	::tooltip::tooltip $w.d		[namespace current]::mc::Day
+	::tooltip::tooltip $w.cal	[namespace current]::mc::Calendar
 
 	rename ::$w $w.__w__
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
@@ -378,6 +383,5 @@ set today [image create photo -data {
 } ;# namespace 16x16
 } ;# namespace icon
 } ;# namespace datebox
-} ;# namespace widget
 
 # vi:set ts=3 sw=3:

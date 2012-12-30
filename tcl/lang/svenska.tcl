@@ -243,6 +243,7 @@
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
 ::menu::mc::OpenEngineLog				"Öppna &motor konsol"
 ::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
+::menu::mc::PrivatePlayerCard			"&Private Player Card" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
 ::menu::mc::NewFile						"Skapa Scidb fil"
@@ -1319,6 +1320,7 @@
 ::setup::board::mc::MoveNumber					"Dragnummer"
 ::setup::board::mc::EnPassantFile				"En passant"
 ::setup::board::mc::HalfMoves						"Half moves" ;# NEW
+::setup::board::mc::HalfMoves						"Half move clock" ;# NEW
 ::setup::board::mc::StartPosition				"Startposition"
 ::setup::board::mc::Fen								"FEN"
 ::setup::board::mc::Promoted						"Promoted" ;# NEW
@@ -1744,11 +1746,11 @@
 ::languagebox::mc::None				"Inget"
 
 ### datebox ############################################################
-::widget::datebox::mc::Today		"Idag"
-::widget::datebox::mc::Calendar	"Kalender..."
-::widget::datebox::mc::Year		"År"
-::widget::datebox::mc::Month		"Månad"
-::widget::datebox::mc::Day			"Dag"
+::datebox::mc::Today		"Idag"
+::datebox::mc::Calendar	"Kalender..."
+::datebox::mc::Year		"År"
+::datebox::mc::Month		"Månad"
+::datebox::mc::Day		"Dag"
 
 ### genderbox ##########################################################
 ::genderbox::mc::Gender(m) "Man"

@@ -95,7 +95,7 @@ Decoder::decodeKing(sq::ID from, Byte nybble)
 	};
 
 	M_ASSERT(nybble < U_NUMBER_OF(Offset));
-	M_ASSERT(nybble != 5);
+	M_ASSERT(nybble > token::Special_Move);
 
 	int offset = Offset[nybble];
 
@@ -864,6 +864,33 @@ Decoder::doDecoding(GameData& gameData)
 
 	if (text.remaining())
 		decodeTextSection(gameData.m_startNode, text);
+}
+
+
+unsigned
+Decoder::findTags(TagSet& tags)
+{
+	uint16_t flags = m_strm.uint16();
+
+	if (!(flags & flags::TagSection))
+		return 0;
+
+	uint16_t idn = flags & 0x0fff;
+
+	if (idn == 0)
+		m_strm.skipString();
+
+	Byte* dataSection = m_strm.base() + m_strm.uint24();
+
+	if (flags & flags::TextSection)
+		dataSection += ByteStream::uint24(dataSection) + 3;
+
+	ByteStream data(dataSection, m_strm.end());
+	unsigned n = tags.size();
+
+	decodeTags(data, tags);
+
+	return tags.size() - n;
 }
 
 

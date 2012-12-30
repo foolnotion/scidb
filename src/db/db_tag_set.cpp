@@ -110,6 +110,13 @@ TagSet::operator=(TagSet&& set)
 #endif
 
 
+unsigned
+TagSet::size() const
+{
+	return m_set.count() + countExtra();
+}
+
+
 int
 TagSet::find(mstl::string const& tag) const
 {

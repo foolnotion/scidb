@@ -135,6 +135,7 @@ proc build {parent width height} {
 #	set Vars(font:bold) [list $fopt(-family) $fopt(-size) bold]
 	set Vars(linespace) [font metrics $Options(font) -linespace]
 	set Vars(keepActive) 0
+	set Vars(current:item) 0
 
 	set charwidth [font measure $Options(font) "0"]
 	set minsize [expr {12*$charwidth}]
@@ -708,6 +709,8 @@ proc Display(clear) {} {
 		$Vars(tree) item element configure Line$i Value elemTextFig -text "" -fill black
 		$Vars(tree) item element configure Line$i Moves elemTextFig -text "" -fill black
 	}
+
+	$Vars(tree) activate root
 }
 
 
@@ -723,6 +726,10 @@ proc Display(pv) {score mate depth seldepth time nodes line pv} {
 	$Vars(tree) item element configure Line$line Eval  elemTextSym -text $evalTxt
 	$Vars(tree) item element configure Line$line Value elemTextFig -text $scoreTxt
 	$Vars(tree) item element configure Line$line Moves elemTextFig -text [::font::translate $pv]
+
+	if {$line + 1 == $Vars(current:item)} {
+		$Vars(tree) activate $Vars(current:item)
+	}
 }
 
 
@@ -914,8 +921,16 @@ proc VisitItem {w mode column item {x {}} {y {}}} {
 
 	if {$Vars(keepActive)} { return }
 	if {[string length $column] == 0} { return }
-	if {$mode eq "leave"} { set item root }
-	$w activate $item
+
+	if {$mode eq "leave"} {
+		$w activate root
+		set Vars(current:item) 0
+	} else {
+		if {$item <= [::scidb::engine::countLines $Vars(engine:id)]} {
+			$w activate $item
+		}
+		set Vars(current:item) $item
+	}
 }
 
 

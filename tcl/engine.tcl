@@ -400,13 +400,14 @@ proc openAdmininstration {parent} {
 	set Priv(pane:setup) $setup
 	set Priv(notebook) $nb
 
-	### Geoemetry #########################################################
+	### Geometry ##########################################################
 	grid $list -row 1 -column 1
 	grid $nb	  -row 1 -column 3 -sticky nswe
 	grid rowconfigure $top {0 2} -minsize $::theme::pady
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
 	grid columnconfigure $top {3} -weight 1
 
+	### Buttons ###########################################################
 	::widget::dialogButtons $dlg {new save delete close help} -default close
 	$dlg.delete configure -command [namespace code [list DeleteEngine $list]]
 	$dlg.save configure -command [namespace code [list SaveEngine $list]] -state disabled
@@ -416,6 +417,7 @@ proc openAdmininstration {parent} {
 	set Priv(button:save) $dlg.save
 	set Priv(button:delete) $dlg.delete
 
+	### Popup #############################################################
 	if {[llength $Engines]} { $list select 0 }
 	update idletasks
 
@@ -1390,7 +1392,7 @@ proc FillDict {lb} {
 
 
 proc Search {lb s} {
-	if {[string length $s] == 1} { $lb search 0 $s }
+	if {[string length $s] == 1} { $lb search name $s }
 }
 
 

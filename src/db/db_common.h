@@ -130,13 +130,17 @@ namespace material
 				uint32_t rook  :5;
 				uint32_t queen :5;
 				uint32_t king  :5;
+				uint32_t _rest1:5;
 			};
 
 			struct
 			{
-				uint32_t value:30;
-				uint32_t _rest: 2;
+				uint32_t value :30;
+				uint32_t _rest2: 2;
 			};
+
+			uint32_t piece :25;
+			uint32_t _rest3: 7;
 		};
 
 		unsigned minor() const;
@@ -446,7 +450,7 @@ namespace tag
 		Remark,					///< Any comment to this game
 		Board,					///< The board number
 		FICSGamesDBGameNo,	///< FICS game identifier
-		BughouseDBNumber,		///< bughousedb.com game identifier
+		BughouseDBGameNo,		///< bughouse-db.org game identifier
 
 		// BPGN (Bughouse)
 		WhiteA,					WhiteB,
@@ -841,6 +845,7 @@ namespace piece
 	color::ID color(ID piece);
 
 	ID piece(Type type, db::color::ID color);
+	ID swap(ID piece);
 
 	/// Return ASCII character for given piece to be used in FEN.
 	char print(ID piece);

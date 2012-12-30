@@ -22,6 +22,18 @@ INDEX Database archive#Database-Archive
 INDEX Archive#Database-Archive
 TITLE Database formats
 
+<p>
+Scidb supports following formats:
+</p>
+
+<ul>
+  <li><a href="#Scidb">Scidb</a></li>
+  <li><a href="#Scid">Scid</a></li>
+  <li><a href="#ChessBase">ChessBase</a></li>
+  <li><a href="#PGN">PGN</a></li>
+  <li><a href="#Database-Archive">Database archive</a></li>
+</ul>
+
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 <p>
@@ -36,11 +48,26 @@ currently this is:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr><td>Normal Chess      </td><td>(including Chess 960, Shuffle Chess)</td></tr>
-    <tr><td>Crazyhouse        </td><td></td></tr>
-    <tr><td>Antichess         </td><td>(Suicide, Giveaway)</td></tr>
-    <tr><td>Losers Chess      </td><td>(variant of Antichess)</td></tr>
-    <tr><td>Three-Check Chess </td><td></td></tr>
+    <tr>
+      <td>%::mc::VariantName(Normal)%</td>
+      <td>(including %::mc::VariantName(Chess960)%, %::mc::VariantName(Shuffle)%)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Crazyhouse)%</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Antichess)%</td>
+      <td>(%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(Losers)%</td>
+      <td>(variant of %::mc::VariantName(Antichess)%)</td>
+    </tr>
+    <tr>
+      <td>%::mc::VariantName(ThreeCheck)%</td>
+      <td></td>
+    </tr>
   </table>
 </box>
 
@@ -183,6 +210,12 @@ But if a PGN file is starting with an <nobr>UTF-8</nobr> mark (<nobr>UTF-8</nobr
 byte sequence EF BB BF) an <nobr>UTF-8</nobr> encoding will be expected (according to
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
+
+<p>
+Only the following variants will be accepted if reading FICS games:
+</p>
+
+INCLUDE ../FICS-Variants.txt
 
 <p>
 A complete specification of this format will be found at

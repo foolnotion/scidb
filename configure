@@ -332,29 +332,52 @@ proc detectUnixDistribution {} {
 
     set distribution(os) [exec uname -s]
     set distribution(machine) [exec uname -m]
-    set distribution(distributor) "(Unknown - couldn't detect)"
+    set distribution(distributor) ""
 
-    if {$distribution(os) == "SunOS"} {
-        set distribution(os) "Solaris"
-        set distribution(revision) [exec uname -v]
-    } elseif {$distribution(os) == "AIX"} {
-        set distribution(revision) [exec oslevel]
-    } elseif {$distribution(os) == "Linux"} {
-        if {[file readable /etc/lsb-release]} {
-            DetectDebian
-        } elseif {[file readable /etc/SuSE-release]} {
-            DetectSuSE /etc/SuSE-release
-        } elseif {[file readable /etc/UnitedLinux-release]} {
-            DetectSuSE /etc/UnitedLinux-release
-        } elseif {[file readable /etc/mandrake-release]} {
-            DetectRedHat /etc/mandrake-release
-        } elseif {[file readable /etc/redhat-release]} {
-            DetectRedHat /etc/redhat-release
-        } elseif {[file readable /etc/debian_version]} {
-            set distribution(distributor) "Debian"
-            set fd [open /etc/debian_version r]; gets $fd line; close $fd
-            set distribution(revision) $line
-        } else {
+    switch $distribution(os) {
+        SunOS {
+            set distribution(os) "Solaris"
+            set distribution(revision) [exec uname -v]
+        }
+        AIX {
+            set distribution(revision) [exec oslevel]
+        }
+        Linux {
+            if {[file readable /etc/lsb-release]} {
+                DetectDebian
+            } elseif {[file readable /etc/SuSE-release]} {
+                DetectSuSE /etc/SuSE-release
+            } elseif {[file readable /etc/UnitedLinux-release]} {
+                DetectSuSE /etc/UnitedLinux-release
+            } elseif {[file readable /etc/mandrake-release]} {
+                DetectRedHat /etc/mandrake-release
+            } elseif {[file readable /etc/redhat-release]} {
+                DetectRedHat /etc/redhat-release
+            } elseif {[file readable /etc/debian_version]} {
+                set distribution(distributor) "Debian"
+                set fd [open /etc/debian_version r]; gets $fd line; close $fd
+                set distribution(revision) $line
+            }
+        }
+    }
+
+    if {[string length $distribution(distributor)] == 0} {
+        if {[file readable /proc/version]} {
+            set id [exec cat /proc/version]
+            if {[regexp {^.*\(.*\) \((.*)\) [^()]+$} $id _ id]} {
+                if {[regexp {^.*\((.*)\)$} $id _ id]} {
+                    set detected 1
+                    if {[regexp {^([^0-9]+)\s+([0-9.-]*)$} $id _ distributor revision]} {
+                        set distribution(distributor) $distributor
+                        set distribution(revision) $revision
+                    } else {
+                        set distribution(distributor) $id
+                    }
+                }
+            }
+        }
+
+        if {[string length $distribution(distributor)] == 0} {
             set files [glob -nocomplain -directory /etc -types f *-release]
             if {[llength $files] == 1} {
                 variable release
@@ -368,6 +391,10 @@ proc detectUnixDistribution {} {
                 }
             }
         }
+    }
+
+    if {[string length $distribution(distributor)] == 0} {
+        set distribution(distributor) "(Unknown - couldn't detect)"
     }
 }
 

@@ -102,7 +102,7 @@ static Pair const NameMap[] =
 	{ "BlackType",				BlackType },
 	{ "BlackUSCF",				BlackUSCF },
 	{ "Board",					Board },
-	{ "BughouseDBNumber",	BughouseDBNumber },
+	{ "BughouseDBGameNo",	BughouseDBGameNo },
 	{ "Date",					Date },
 	{ "ECO",						Eco },
 	{ "Event",					Event },

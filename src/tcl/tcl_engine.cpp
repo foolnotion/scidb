@@ -52,6 +52,7 @@ using namespace tcl;
 static char const* CmdActivate		= "::scidb::engine::activate";
 static char const* CmdAnalyize		= "::scidb::engine::analyze";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
+static char const* CmdCountLines		= "::scidb::engine::countLines";
 static char const* CmdEmpty			= "::scidb::engine::empty?";
 static char const* CmdInfo				= "::scidb::engine::info";
 static char const* CmdInvoke			= "::scidb::engine::invoke";
@@ -1072,6 +1073,18 @@ cmdClearHash(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdCountLines(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+		setResult(tcl::app::scidb->engine(id)->countLines());
+
+	return TCL_OK;
+}
+
+
+static int
 cmdKill(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned id = unsignedFromObj(objc, objv, 1);
@@ -1243,7 +1256,8 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					unsigned line = unsignedFromObj(objc, objv, 3);
 
 					if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
-					{						if (game->atLineEnd())
+					{
+						if (game->atLineEnd())
 						{
 							game->addMove(engine->snapshotLine(line)[0]);
 							game->goForward();
@@ -1270,7 +1284,8 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						{
 							game->addVariation(engine->snapshotLine(line));
 							rc = true;
-						}					}
+						}
+					}
 					else if (::strcmp(cmd, "all") == 0)
 					{
 						for (unsigned line = 0; engine->snapshotExists(line); ++line)
@@ -1306,6 +1321,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdAnalyize,		cmdAnalyze);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
+	createCommand(ti, CmdCountLines,		cmdCountLines);
 	createCommand(ti, CmdEmpty,				cmdEmpty);
 	createCommand(ti, CmdInfo,				cmdInfo);
 	createCommand(ti, CmdInvoke,			cmdInvoke);

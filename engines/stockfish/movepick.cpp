@@ -70,15 +70,6 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
 
   if (p.in_check())
   {
-#ifdef THREECHECK
-      if (pos.got_third_check())
-      {
-          phase = STOP - 1;
-          ttMove = MOVE_NONE;
-          return;
-      }
-#endif
-
       phase = EVASION;
   }
   else
@@ -107,18 +98,7 @@ MovePicker::MovePicker(const Position& p, Move ttm, Depth d, const History& h,
   assert(d <= DEPTH_ZERO);
 
   if (p.in_check())
-  {
-#ifdef THREECHECK
-      if (pos.got_third_check())
-      {
-          phase = STOP - 1;
-          ttMove = MOVE_NONE;
-          return;
-      }
-#endif
-
       phase = EVASION;
-  }
 
   else if (d > DEPTH_QS_NO_CHECKS)
       phase = QSEARCH_0;
