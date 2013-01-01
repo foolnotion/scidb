@@ -398,7 +398,7 @@ proc dragPiece {x y state} {
 }
 
 
-proc addMove {san {noMoveCmd {}} {myActions {}} {force no}} {
+proc addMove {confirmWindowType san {noMoveCmd {}} {myActions {}} {force no}} {
 	variable ::application::board::board
 
 	if {[::scidb::game::position atEnd?]} {
@@ -418,7 +418,7 @@ proc addMove {san {noMoveCmd {}} {myActions {}} {force no}} {
 		}
 		::board::diagram::finishDrag $board
 		update idletasks
-		set action [ConfirmReplaceMove $myActions]
+		set action [ConfirmReplaceMove $confirmWindowType $myActions]
 	}
 
 	if {![doAction $action $san $noMoveCmd]} {
@@ -702,6 +702,7 @@ proc DoAddMove {sq1 sq2 allowIllegalMove} {
 	}
 
 	addMove \
+		menu \
 		[::scidb::pos::san $sq1 $sq2 $_promoted] \
 		[namespace code AfterAddMove] \
 		{} \
@@ -739,7 +740,7 @@ proc SetAction {action} {
 }
 
 
-proc ConfirmReplaceMove {extraActions} {
+proc ConfirmReplaceMove {confirmWindowType extraActions} {
 	variable ::application::board::board
 	variable Options
 	variable Disabled

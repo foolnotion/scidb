@@ -142,7 +142,7 @@ Position::undoMove(Move const& move)
 
  		unsigned	pieceNum	= lookup.numbers[move.to()];
 
-	 	if (move.captured() != piece::None)
+	 	if (move.isCapture())
  		{
  			M_ASSERT(lookup.capturedNum);
 
