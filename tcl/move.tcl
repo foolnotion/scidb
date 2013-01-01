@@ -126,6 +126,10 @@ proc disable {} {
 proc reset {} {
 	variable ::application::board::board
 	variable Square
+	variable Drop
+
+	::application::board::deselectInHandPiece
+	set Drop(piece) " "
 
 	if {$Square(selected) != -1} {
 		::board::diagram::hilite $board $Square(selected) off

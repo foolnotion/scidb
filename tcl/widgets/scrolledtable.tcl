@@ -896,6 +896,7 @@ proc PopupMenu {table y} {
 	variable ${table}::Vars
 
 	::tooltip::hide
+	if {![info exists Vars(variant)]} { return }
 	set row [::table::at $table $y]
 
 	switch $row {

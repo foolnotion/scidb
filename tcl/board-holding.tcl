@@ -48,6 +48,7 @@ proc new {w color size args} {
 	set Vars(selection) ""
 	set Vars(afterid) {}
 	set Vars(pieces) {0 0 0 0 0}
+	set Vars(piece) ""
 	set Vars(targets) $args
 	lappend Vars(targets) $w
 
@@ -141,6 +142,7 @@ proc finishDrop {w} {
 
 	set p [string tolower $Vars(piece)]
 	$w itemconfigure piece-$p -state normal
+	set Vars(piece) ""
 }
 
 
@@ -302,7 +304,7 @@ proc FinishDrag {w x y state} {
 			set y [expr {$y - $Vars(dy)}]
 			event generate $w <<InHandPieceDrop>> -x $x -y $y -state $state -data $Vars(piece)
 		} elseif {[::scidb::pos::stm] eq $Vars(color)} {
-			if {$Vars(selection) eq $Vars(piece)} {
+			if {[string toupper $Vars(selection)] eq [string toupper $Vars(piece)]} {
 				deselect $w
 				event generate $w <<InHandSelection>> -data " "
 			} else {
