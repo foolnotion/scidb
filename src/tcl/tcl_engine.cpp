@@ -458,6 +458,22 @@ Tcl_Obj* Engine::m_resume			= 0;
 }
 
 
+namespace {
+
+	struct Callback : public ::db::Player::PlayerCallback
+	{
+		Callback(Tcl_Obj* obj) : m_list(obj) {}
+		Tcl_Obj* m_list;
+
+		void entry(unsigned index, ::db::Player const& player) override
+		{
+			if (player.isEngine() && (player.supportsUciProtocol() || player.supportsWinboardProtocol()))
+				Tcl_ListObjAppendElement(0, m_list, Tcl_NewStringObj(player.name(), player.name().size()));
+		}
+	};
+}
+
+
 static EngineLog* m_log = 0;
 
 
@@ -981,18 +997,6 @@ static int
 cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	Tcl_Obj* result = Tcl_NewListObj(0, 0);
-
-	struct Callback : public ::db::Player::PlayerCallback
-	{
-		Callback(Tcl_Obj* obj) : m_list(obj) {}
-		Tcl_Obj* m_list;
-
-		void entry(::db::Player const& player) override
-		{
-			if (player.isEngine() && (player.supportsUciProtocol() || player.supportsWinboardProtocol()))
-				Tcl_ListObjAppendElement(0, m_list, Tcl_NewStringObj(player.name(), player.name().size()));
-		}
-	};
 
 	Callback cb(result);
 	::db::Player::enumerate(cb);

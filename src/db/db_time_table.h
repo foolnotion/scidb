@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,39 +24,41 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_game_data_included
-#define _db_game_data_included
+#ifndef _db_time_table_included
+#define _db_time_table_included
 
-#include "db_board.h"
-#include "db_tag_set.h"
-#include "db_engine_list.h"
-#include "db_time_table.h"
+#include "db_move_info.h"
 
-#include "m_utility.h"
+#include "m_vector.h"
 
 namespace db {
 
-class MoveNode;
-
-class GameData : public mstl::noncopyable
+class TimeTable
 {
 public:
 
-	GameData();
-	virtual ~GameData() throw();
+	MoveInfo const& operator[](unsigned index) const;
 
-	MoveNode*		m_startNode;	///< Keeps the starting node of the game
-	Board				m_startBoard;	///< Keeps the start position of the game
-	TagSet			m_tags;
-	variant::Type	m_variant;
-	uint16_t			m_idn;
-	EngineList		m_engines;
-	TimeTable		m_timeTable;
+	bool isEmpty() const;
 
+	unsigned size() const;
+
+	void cut(unsigned newSize);
+	void reserve(unsigned capacity);
+	void add(MoveInfo const& moveInfo);
+	void set(unsigned index, MoveInfo const& moveInfo);
+
+private:
+
+	typedef mstl::vector<MoveInfo> Table;
+
+	Table m_table;
 };
 
 } // namespace db
 
-#endif // _db_game_data_included
+#include "db_time_table.ipp"
+
+#endif // _db_time_table_included
 
 // vi:set ts=3 sw=3:

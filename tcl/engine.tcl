@@ -710,26 +710,30 @@ proc showEngineDictionary {parent} {
 
 	if {$parent eq "."} { set dlg .engineDict } else { set dlg $parent.engineDict }
 	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
-	tk::toplevel $parent.engineDict -class Scidb
+	tk::toplevel $dlg -class Scidb
 	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
 	wm withdraw $dlg
 	pack $top -fill both -expand yes
 
+	set linespace [expr {min(18,[font metrics TkTextFont -linespace])}]
 	set lb [::tlistbox $top.list \
 		-height 20 \
 		-borderwidth 1 \
 		-relief sunken \
 		-selectmode browse \
 		-stripes #ebf4f5 \
-		-linespace 18 \
 		-usescroll yes \
 		-setgrid 1 \
+		-linespace $linespace \
 	]
+
 	bind $dlg <Any-Key> [namespace code [list Search $lb %K]]
 	bind $lb <<ListboxSelect>> [namespace code [list OpenUrl $dlg %d]]
 	bind $lb <<ItemVisit>> [namespace code [list VisitItem $lb %d]]
 	bind $lb <<HeaderVisit>> [namespace code [list VisitHeader $lb %d]]
+	bind $lb <<LanguageChanged>> [namespace code [list SetDialogHeader $dlg]]
 	$lb bind <ButtonPress-3> [namespace code [list PopupMenu $lb %x %y]]
+
 	set colwd 20
 	$lb addcol image -id country -justify center -headervar [namespace current]::mc::Country
 	$lb addcol text  -id name -headervar [namespace current]::mc::Name -witdh 30
@@ -777,8 +781,8 @@ proc showEngineDictionary {parent} {
 	$dlg.filter configure -command [namespace code [list SetFilter $lb]]
 	$dlg.filter configure -image $::icon::16x16::filter(inactive) -compound left
 
+	SetDialogHeader $dlg
 	wm resizable $dlg yes yes
-	wm title $dlg $mc::EngineDictionary
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	::util::place $dlg center [winfo toplevel $parent]
 	wm deiconify $dlg
@@ -1065,6 +1069,11 @@ proc OpenUrl {parent index} {
 	} else {
 		set Priv(dict:current) $index
 	}
+}
+
+
+proc SetDialogHeader {dlg} {
+	wm title $dlg $mc::EngineDictionary
 }
 
 

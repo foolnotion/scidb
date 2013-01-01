@@ -111,6 +111,7 @@ Encoder::Encoder(ByteStream& strm, variant::Type variant)
 	,m_text(m_buffer[1], sizeof(m_buffer[1]))
 	,m_runLength(0)
 	,m_variant(variant)
+	,m_hasTimeTable(false)
 {
 }
 
@@ -518,8 +519,11 @@ Encoder::encodeNote(MoveNode const* node)
 
 		for (unsigned i = 0; i < moveInfo.count(); ++i)
 		{
-			m_strm.put(token::Mark);
-			moveInfo[i].encode(m_data);
+			if (!m_hasTimeTable || moveInfo[i].content() != MoveInfo::ElapsedMilliSeconds)
+			{
+				m_strm.put(token::Mark);
+				moveInfo[i].encode(m_data);
+			}
 		}
 	}
 
@@ -582,7 +586,7 @@ Encoder::isExtraTag(tag::ID tag)
 
 
 void
-Encoder::setup(Board const& board, uint16_t idn, variant::Type variant)
+Encoder::setup(Board const& board, uint16_t idn, variant::Type variant, bool hasTimeTable)
 {
 	uint16_t flags = idn;
 
@@ -612,13 +616,15 @@ Encoder::setup(Board const& board, uint16_t idn, variant::Type variant)
 		board.toFen(fen, variant);
 		m_strm.put(fen);
 	}
+
+	m_hasTimeTable = hasTimeTable;
 }
 
 
 void
-Encoder::setup(Board const& board, variant::Type variant)
+Encoder::setup(Board const& board, variant::Type variant, bool hasTimeTable)
 {
-	setup(board, board.computeIdn(), variant);
+	setup(board, board.computeIdn(), variant, hasTimeTable);
 }
 
 
@@ -626,7 +632,7 @@ void
 Encoder::setup(GameData const& data)
 {
 	M_ASSERT(data.m_idn == data.m_startBoard.computeIdn());
-	setup(data.m_startBoard, data.m_idn, data.m_variant);
+	setup(data.m_startBoard, data.m_idn, data.m_variant, !data.m_timeTable.isEmpty());
 }
 
 
@@ -689,6 +695,21 @@ Encoder::encodeEngineSection(EngineList const& engines)
 
 
 uint16_t
+Encoder::encodeTimeTableSection(TimeTable const& timeTable)
+{
+	if (timeTable.isEmpty())
+		return 0;
+
+	m_strm << uint16_t(timeTable.size());
+
+	for (unsigned i = 0; i < timeTable.size(); ++i)
+		timeTable[i].encode(m_strm);
+
+	return flags::TimeTableSection;
+}
+
+
+uint16_t
 Encoder::encodeTextSection()
 {
 	unsigned size = m_text.tellp();
@@ -711,8 +732,8 @@ Encoder::prepareEncoding()
 {
 	m_runLength = 0;
 	m_offset = m_strm.tellp();
-	m_strm << uint24_t(0);			// place holder for offset to text section
-	m_strm << uint16_t(0);			// place holder for run length
+	m_strm << uint24_t(0);		// place holder for offset to text section
+	m_strm << uint16_t(0);		// place holder for run length
 }
 
 
@@ -720,7 +741,8 @@ void
 Encoder::encodeDataSection(TagSet const& tags,
 									db::Consumer::TagBits const& allowedTags,
 									bool allowExtraTags,
-									EngineList const& engines)
+									EngineList const& engines,
+									TimeTable const& timeTable)
 {
 	uint16_t flags = ByteStream::uint16(m_strm.base());
 
@@ -733,6 +755,7 @@ Encoder::encodeDataSection(TagSet const& tags,
 	flags |= encodeTextSection();
 	flags |= encodeTagSection(tags, allowedTags, allowExtraTags);
 	flags |= encodeEngineSection(engines);
+	flags |= encodeTimeTableSection(timeTable);
 
 	ByteStream::set(m_strm.base(), flags);
 	m_strm.put(m_data.base(), m_data.tellp());
@@ -749,7 +772,7 @@ Encoder::doEncoding(	Signature const&,
 	setup(data);
 	prepareEncoding();
 	encodeMainline(data.m_startNode);
-	encodeDataSection(data.m_tags, allowedTags, allowExtraTags, data.m_engines);
+	encodeDataSection(data.m_tags, allowedTags, allowExtraTags, data.m_engines, data.m_timeTable);
 }
 
 

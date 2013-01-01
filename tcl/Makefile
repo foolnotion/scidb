@@ -107,6 +107,7 @@ SOURCES = \
 	comment.tcl \
 	marks.tcl \
 	engine.tcl \
+	player-dict.tcl \
 	application.tcl \
 	app-board.tcl \
 	app-database.tcl \

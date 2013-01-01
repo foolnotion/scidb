@@ -28,6 +28,7 @@
 #include "tcl_tree.h"
 #include "tcl_application.h"
 #include "tcl_pgn_reader.h"
+#include "tcl_player.h"
 #include "tcl_progress.h"
 #include "tcl_exception.h"
 #include "tcl_game.h"
@@ -1045,19 +1046,16 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			unsigned variantIndex = variant::toIndex(db->variant());
 
-			for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+			if (Scidb->contains(dst, db->variant()))
 			{
-				if (variantIndex != v)
-				{
-					rejected[v] = scidb->cursor(dst, variant::fromIndex(v)).database().countGames();
-				}
-				else if (Scidb->contains(dst, db->variant()))
-				{
-					Cursor& destination(scidb->cursor(dst, db->variant()));
-					n = destination.importGames(*db, log, progress);
-					accepted[variantIndex] = n;
-					rejected[variantIndex] = destination.database().countGames() - n;
-				}
+				Cursor& destination(scidb->cursor(dst, db->variant()));
+				n = destination.importGames(*db, log, progress);
+				accepted[variantIndex] = n;
+				rejected[variantIndex] = destination.database().countGames() - n;
+			}
+			else
+			{
+				rejected[variantIndex] = db->countGames();
 			}
 		}
 
@@ -1787,23 +1785,6 @@ findRating(GameInfo const& info, color::ID color, rating::Type type)
 }
 
 
-static void
-playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings)
-{
-	if (type == rating::Any)
-		type = player.findRatingType();
-
-	ratings[0] = player.playerHighestRating(type);
-	ratings[1] = player.playerLatestRating(type);
-
-	if (!player.isPlayerRating(type))
-	{
-		ratings[0] = -ratings[0];
-		ratings[1] = -ratings[1];
-	}
-}
-
-
 static int
 getPlayerKey(NamebasePlayer const& player)
 {
@@ -2266,10 +2247,7 @@ getPlayerInfo(	int index,
 	if (view >= 0)
 		index = cursor.playerIndex(index, view);
 
-	return getPlayerInfo(cursor.database().player(index),
-								ratings,
-								info,
-								idCard);
+	return tcl::player::getInfo(cursor.database().player(index), ratings, info, idCard);
 }
 
 
@@ -2592,7 +2570,7 @@ cmdPlayerInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		player = &base.player(index, color::fromSide(stringFromObj(objc, objv, 4)));
 
 	Ratings ratings(rating::Any, rating::Any);
-	return getPlayerInfo(*player, ratings, true, true);
+	return tcl::player::getInfo(*player, ratings, true, true);
 }
 
 
@@ -2759,7 +2737,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				color::ID side = idx == Cmd_WhitePlayerInfo ? color::White : color::Black;
-				return getPlayerInfo(*info.playerEntry(side), ratings, infoWanted, idCard);
+				return tcl::player::getInfo(*info.playerEntry(side), ratings, infoWanted, idCard);
 			}
 			break;
 
@@ -4244,188 +4222,6 @@ cmdWrite(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	objs[2] = Tcl_NewIntObj(os.crc());
 	setResult(3, objs);
 
-	return TCL_OK;
-}
-
-
-static Tcl_Obj*
-wikiLinkList(Player const* player)
-{
-	typedef Player::AssocList AssocList;
-
-	AssocList wikiLinks;
-
-	if (player->wikipediaLinks(wikiLinks))
-	{
-		Tcl_Obj* objs[mstl::mul2(wikiLinks.size())];
-		unsigned n = 0;
-
-		Player::AssocList::const_iterator i = wikiLinks.begin();
-		Player::AssocList::const_iterator e = wikiLinks.end();
-
-		for ( ; i != e; ++i)
-		{
-			Player::Assoc const& assoc = *i;
-
-			objs[n++] = Tcl_NewStringObj(assoc.first, -1);
-			objs[n++] = Tcl_NewStringObj(assoc.second, -1);
-		}
-
-		return Tcl_NewListObj(n, objs);
-	}
-
-	return Tcl_NewListObj(0, 0);
-}
-
-
-int
-tcl::db::getPlayerInfo(NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard)
-{
-	M_ASSERT(!idCard || info);
-
-	Tcl_Obj* objv[info ? attribute::player::LastInfo : attribute::player::LastColumn];
-
-	M_ASSERT(::memset(objv, 0, sizeof(objv)));
-
-	mstl::string			title;
-	char const*				federation(mstl::string::empty_string.c_str());
-	mstl::string const*	name(&player.name());
-	mstl::string			sex(sex::toString(player.sex()));
-	int32_t					fideID(player.fideID());
-	Player const*			p(player.player());
-
-	if (p)
-	{
-		if (idCard || player.title() == title::None)
-		{
-			unsigned titles = p->titles();
-
-			while (titles)
-			{
-				unsigned t = 1u << mstl::bf::lsb_index(titles);
-
-				if (!title.empty())
-					title += ' ';
-
-				title += title::toString(title::toID(t));
-				titles &= ~t;
-			}
-		}
-
-		if (idCard || player.federation() == country::Unknown)
-			federation = country::toString(p->federation());
-
-		if (idCard || player.sex() == sex::Unspecified)
-			sex = sex::toString(p->sex());
-
-		if (idCard)
-			name = &p->name();
-
-		if (fideID == 0)
-		{
-			fideID = p->fideID();
-
-			if (!idCard)
-				fideID = -fideID;
-		}
-	}
-
-	if (title.empty())
-		title = title::toString(player.title());
-
-	if (!*federation)
-		federation = country::toString(player.federation());
-
-	int16_t rating1[2];
-	int16_t rating2[2];
-
-	::playerRatings(player, ratings.first,  rating1);
-	::playerRatings(player, ratings.second, rating2);
-
-	Tcl_Obj* ratingObj1[3] =
-	{
-		Tcl_NewIntObj(rating1[0]),
-		Tcl_NewIntObj(rating1[1]),
-		Tcl_NewStringObj(rating::toString(ratings.first), -1),
-	};
-	Tcl_Obj* ratingObj2[3] =
-	{
-		Tcl_NewIntObj(rating2[0]),
-		Tcl_NewIntObj(rating2[1]),
-		Tcl_NewStringObj(rating::toString(ratings.second), -1),
-	};
-
-	mstl::string const ratingType = rating::toString(player.playerRatingType());
-
-	objv[attribute::player::Name      ] = Tcl_NewStringObj(*name, name->size());
-	objv[attribute::player::FideID    ] = fideID ? Tcl_NewIntObj(fideID) : Tcl_NewListObj(0, 0);
-	objv[attribute::player::Sex       ] = Tcl_NewStringObj(sex, -1);
-	objv[attribute::player::Rating1   ] = Tcl_NewListObj(3, ratingObj1);
-	objv[attribute::player::Rating2   ] = Tcl_NewListObj(3, ratingObj2);
-	objv[attribute::player::RatingType] = Tcl_NewStringObj(ratingType, ratingType.size());
-	objv[attribute::player::Country   ] = Tcl_NewStringObj(federation, -1);
-	objv[attribute::player::Title     ] = Tcl_NewStringObj(title, -1);
-	objv[attribute::player::Type      ] = Tcl_NewStringObj(species::toString(player.findType()), -1);
-	objv[attribute::player::PlayerInfo] = Tcl_NewBooleanObj(player.havePlayerInfo());
-	objv[attribute::player::Frequency ] = Tcl_NewIntObj(player.frequency());
-
-	M_ASSERT(::checkNonZero(objv, attribute::player::LastColumn));
-
-	if (info)
-	{
-		unsigned			viafID(0);
-		unsigned			iccfID(0);
-		mstl::string	dsbID;
-		mstl::string	ecfID;
-		mstl::string	pndID;
-		mstl::string	chessgamesID;
-		Date				dateOfBirth;
-		Date				dateOfDeath;
-		Tcl_Obj*			wikiLinkList(0);
-		Tcl_Obj*			aliasList(0);
-
-		if (p)
-		{
-			typedef Player::StringList	StringList;
-
-			dateOfBirth = p->dateOfBirth();
-			dateOfDeath = p->dateOfDeath();
-			iccfID = p->iccfID();
-			dsbID = p->dsbID();
-			ecfID = p->ecfID();
-			viafID = p->viafID();
-			pndID = p->pndID();
-			chessgamesID = p->chessgamesID();
-			wikiLinkList = ::wikiLinkList(p);
-
-			StringList const& aliases = p->aliases();
-
-			if (!aliases.empty())
-			{
-				Tcl_Obj* objs[aliases.size()];
-
-				for (unsigned i = 0; i < aliases.size(); ++i)
-					objs[i] = Tcl_NewStringObj(aliases[i], aliases[i].size());
-
-				aliasList = Tcl_NewListObj(aliases.size(), objs);
-			}
-		}
-
-		objv[attribute::player::DateOfBirth  ] = Tcl_NewStringObj(dateOfBirth.asShortString(), -1);
-		objv[attribute::player::DateOfDeath  ] = Tcl_NewStringObj(dateOfDeath.asShortString(), -1);
-		objv[attribute::player::DsbID        ] = Tcl_NewStringObj(dsbID, dsbID.size());
-		objv[attribute::player::EcfID        ] = Tcl_NewStringObj(ecfID, ecfID.size());
-		objv[attribute::player::IccfID       ] = iccfID ? Tcl_NewIntObj(iccfID) : Tcl_NewStringObj(0, 0);
-		objv[attribute::player::ViafID       ] = viafID ? Tcl_NewIntObj(viafID) : Tcl_NewStringObj(0, 0);
-		objv[attribute::player::PndID        ] = Tcl_NewStringObj(pndID, pndID.size());
-		objv[attribute::player::ChessgComLink] = Tcl_NewStringObj(chessgamesID, chessgamesID.size());
-		objv[attribute::player::WikiLink     ] = wikiLinkList ? wikiLinkList : Tcl_NewListObj(0, 0);
-		objv[attribute::player::Aliases      ] = aliasList ? aliasList : Tcl_NewListObj(0, 0);
-
-		M_ASSERT(::checkNonZero(objv, attribute::player::LastInfo));
-	}
-
-	setResult(info ? attribute::player::LastInfo : attribute::player::LastColumn, objv);
 	return TCL_OK;
 }
 

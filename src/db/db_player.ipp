@@ -29,6 +29,9 @@
 
 namespace db {
 
+inline Player::DsbID::operator uint32_t() const { return value; }
+inline Player::EcfID::operator uint32_t() const { return value; }
+
 inline void Player::setFederation(country::Code federation)		{ m_federation = federation; }
 inline void Player::setNativeCountry(country::Code country)		{ m_nativeCountry = country; }
 inline void Player::setFideID(unsigned id)							{ m_fideID = id; }
@@ -46,6 +49,8 @@ inline void Player::setThreeCheckChessFlag(bool flag)				{ m_threeCheck = flag; 
 inline void Player::setWinboardProtocol(bool flag)					{ m_winboard = flag; }
 inline void Player::setUciProtocol(bool flag)						{ m_uci = flag; }
 inline void Player::setUnique(bool flag)								{ m_notUnique = !flag; }
+inline void Player::setEcfID(EcfID id)									{ m_ecfId = id; }
+inline void Player::setDsbID(DsbID id)									{ m_dsbId = id; }
 
 inline bool Player::supportsUciProtocol() const						{ return m_uci; }
 inline bool Player::supportsWinboardProtocol() const				{ return m_winboard; }
@@ -73,6 +78,8 @@ inline bool Player::isUnique() const					{ return !m_notUnique; }
 inline bool Player::isNotUnique() const				{ return m_notUnique; }
 inline uint16_t Player::birthYear() const				{ return m_birthYear; }
 inline unsigned Player::region() const					{ return m_region; }
+inline Player::EcfID Player::ecfID() const			{ return m_ecfId; }
+inline Player::DsbID Player::dsbID() const			{ return m_dsbId; }
 
 
 inline

@@ -55,13 +55,21 @@ set Quit							"&Quit"
 set Tools						"&Tools"
 set Extras						"&Extras"
 set Setup						"Setu&p"
-set Engines						"&Engines"
 
+# Contact
 set ContactBugReport			"&Bug Report"
 set ContactFeatureRequest	"&Feature Request"
-set InstallChessBaseFonts	"Install ChessBase Fonts"
-set OpenEngineLog				"Open &Engine Console"
-set OpenEngineDictionary	"Open Engine &Dictionary"
+
+# Extras
+set InstallChessBaseFonts	"Install ChessBase &Fonts"
+set OpenEngineLog				"Open Engine &Console"
+
+# Tools
+set OpenEngineDictionary	"Open &Engine Dictionary"
+set OpenPlayerDictionary	"Open &Player Dictionary"
+
+# Setup
+set Engines						"&Engines"
 set PrivatePlayerCard		"&Private Player Card"
 
 set OpenFile					"Open a Scidb File"
@@ -234,13 +242,18 @@ if {0} {
 		-underline [incr ul] \
 		-image $::icon::16x16::none \
 		;
+	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
+	set cmd [namespace code [list ::playerdict::open .application]]
+	$m add command \
+		-label " $text..." \
+		-underline [incr ul] \
+		-command $cmd \
+		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenEngineDictionary] text ul
 	set cmd [namespace code [list ::engine::showEngineDictionary .application]]
 	$m add command \
-		-compound left \
 		-label " $text..." \
 		-underline [incr ul] \
-		-image $::icon::16x16::none \
 		-command $cmd \
 		;
 

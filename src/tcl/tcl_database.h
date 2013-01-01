@@ -47,10 +47,6 @@ namespace tcl
 		int getGameInfo(	::db::Database const& db,
 								unsigned index,
 								Ratings const& ratings);
-		int getPlayerInfo(::db::NamebasePlayer const& player,
-								Ratings& ratings,
-								bool info,
-								bool idCard);
 		int getPlayerStats(::db::Database const& db, ::db::NamebasePlayer const& player);
 		int getTags(::db::TagSet const& tags, bool userSuppliedOnly);
 

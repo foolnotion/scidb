@@ -131,6 +131,7 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
 	,m_lastCommentPos(0)
+	,m_plyCount(0)
 {
 //	M_REQUIRE(!codecs.isEmpty());
 }
@@ -158,7 +159,7 @@ Consumer::beginGame(TagSet const& tags)
 
 	m_stream.reset(sizeof(m_buffer));
 	m_stream.resetp();
-	Encoder::setup(board(), variant());
+	Encoder::setup(board(), variant(), !timeTable().isEmpty());
 	Encoder::changeVariant(variant());
 	m_data.resetp();
 	m_text.resetp();
@@ -168,6 +169,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_danglingPop = false;
 	m_danglingEndMarker = 1;
 	m_lastCommentPos = 0;
+	m_plyCount = 0;
 
 	return true;
 }
@@ -181,7 +183,7 @@ Consumer::endGame(TagSet const& tags)
 	if (!m_codecs.supports(variant))
 		return save::UnsupportedVariant;
 
-	encodeDataSection(tags, allowedTags(), allowExtraTags(), engines());
+	encodeDataSection(tags, allowedTags(), allowExtraTags(), engines(), timeTable());
 	return m_codecs[variant].addGame(m_stream, tags, *this);
 }
 
@@ -362,6 +364,13 @@ Consumer::preparseComment(mstl::string& comment)
 	}
 
 	InfoConsumer::preparseComment(comment);
+	int i = m_moveInfoSet.findElapsedMilliSeconds();
+
+	if (i >= 0 && (!m_timeTable.isEmpty() || m_plyCount == 0))
+	{
+		m_timeTable.set(m_plyCount, m_moveInfoSet[i]);
+		m_moveInfoSet.remove(i);
+	}
 }
 
 
@@ -443,6 +452,7 @@ Consumer::sendMove(Move const& move)
 	if (!m_endOfRun)
 		++m_runLength;
 
+	m_plyCount++;
 	return true;
 }
 
@@ -472,6 +482,7 @@ Consumer::sendMove(	Move const& move,
 	if (!m_endOfRun)
 		++m_runLength;
 
+	m_plyCount++;
 	return true;
 }
 

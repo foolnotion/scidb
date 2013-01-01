@@ -34,6 +34,7 @@
 #include "db_annotation.h"
 #include "db_database_codec.h"
 #include "db_tag_set.h"
+#include "db_time_table.h"
 #include "db_consumer.h"
 #include "db_exception.h"
 
@@ -739,6 +740,22 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 
 
 void
+Decoder::decodeTimeTable(util::ByteStream& strm, TimeTable& timeTable)
+{
+	uint16_t length = strm.uint16();
+
+	timeTable.reserve(length);
+
+	for ( ; length; length--)
+	{
+		MoveInfo info;
+		info.decode(strm);
+		timeTable.add(info);
+	}
+}
+
+
+void
 Decoder::decodeEngines(ByteStream& strm, EngineList& engines)
 {
 	uint8_t count = strm.get();
@@ -801,8 +818,8 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 		consumer.swapEngines(engines);
 	}
 
-//	if (flags & flags::TimeTableSection)
-//		decodeTimeTable(data);
+	if (flags & flags::TimeTableSection)
+		decodeTimeTable(data, consumer.timeTable());
 
 	consumer.startMoveSection();
 	decodeRun(m_strm.uint16(), consumer);
@@ -856,8 +873,8 @@ Decoder::doDecoding(GameData& gameData)
 	if (flags & flags::EngineSection)
 		decodeEngines(data, gameData.m_engines);
 
-//	if (flags & flags::TimeTableSection)
-//		decodeTimeTable(data);
+	if (flags & flags::TimeTableSection)
+		decodeTimeTable(data, gameData.m_timeTable);
 
 	decodeRun(m_strm.uint16());
 	decodeVariation(data);

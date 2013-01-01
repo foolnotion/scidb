@@ -235,13 +235,21 @@
 ::menu::mc::Tools							"&Tools"
 ::menu::mc::Extras						"E&xtras"
 ::menu::mc::Setup							"Setu&p"
-::menu::mc::Engines						"&Engines"
 
+# Contact
 ::menu::mc::ContactBugReport			"&Bug Report"
 ::menu::mc::ContactFeatureRequest	"&Feature Request"
+
+# Extras
 ::menu::mc::InstallChessBaseFonts	"Install ChessBase Fonts"
-::menu::mc::OpenEngineLog				"Open &Engine Console"
-::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary"
+::menu::mc::OpenEngineLog				"Open Engine &Console"
+
+# Tools
+::menu::mc::OpenEngineDictionary		"Open &Engine &Dictionary"
+::menu::mc::OpenPlayerDictionary		"Open &Player Dictionary"
+
+# Setup
+::menu::mc::Engines						"&Engines"
 ::menu::mc::PrivatePlayerCard			"&Private Player Card"
 
 ::menu::mc::OpenFile						"Open a Scidb File"
@@ -782,7 +790,7 @@
 ::pgn::setup::mc::RevertSettings					"Revert to initial settings"
 ::pgn::setup::mc::ResetSettings					"Reset to factory settings"
 ::pgn::setup::mc::DiscardAllChanges				"Discard all applied changes?"
-::pgn::setup::mc::ThreefoldRepetition			"Threefold move repetition"
+::pgn::setup::mc::ThreefoldRepetition			"Threefold repetition"
 ::pgn::setup::mc::FiftyMoveRule					"50 move rule"
 
 ::pgn::setup::mc::Setup(Appearance)				"Appearance"
@@ -1783,7 +1791,7 @@
 ::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
 ::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)"
 ::terminationbox::mc::Termination(fifty)				"Game drawn by the 50 move rule"
-::terminationbox::mc::Termination(threefold)			"Game drawn by threefold move repetition"
+::terminationbox::mc::Termination(threefold)			"Game drawn by threefold repetition"
 ::terminationbox::mc::Termination(mating)				"Neither player has mating material"
 
 ### eventmodebox #######################################################

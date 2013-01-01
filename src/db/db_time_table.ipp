@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,39 +24,16 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_game_data_included
-#define _db_game_data_included
-
-#include "db_board.h"
-#include "db_tag_set.h"
-#include "db_engine_list.h"
-#include "db_time_table.h"
-
-#include "m_utility.h"
-
 namespace db {
 
-class MoveNode;
+inline bool TimeTable::isEmpty() const					{ return m_table.empty(); }
 
-class GameData : public mstl::noncopyable
-{
-public:
+inline unsigned TimeTable::size() const				{ return m_table.size(); }
 
-	GameData();
-	virtual ~GameData() throw();
+inline void TimeTable::reserve(unsigned capacity)	{ m_table.reserve(capacity); }
 
-	MoveNode*		m_startNode;	///< Keeps the starting node of the game
-	Board				m_startBoard;	///< Keeps the start position of the game
-	TagSet			m_tags;
-	variant::Type	m_variant;
-	uint16_t			m_idn;
-	EngineList		m_engines;
-	TimeTable		m_timeTable;
-
-};
+inline MoveInfo const& TimeTable::operator[](unsigned index) const { return m_table[index]; }
 
 } // namespace db
-
-#endif // _db_game_data_included
 
 // vi:set ts=3 sw=3:

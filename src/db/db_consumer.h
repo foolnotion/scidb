@@ -33,6 +33,7 @@
 #include "db_home_pawns.h"
 #include "db_move_info_set.h"
 #include "db_engine_list.h"
+#include "db_time_table.h"
 #include "db_common.h"
 
 #include "m_stack.h"
@@ -47,6 +48,7 @@ class TagSet;
 class MarkSet;
 class MoveInfo;
 class EngineList;
+class TimeTable;
 class Annotation;
 class Move;
 class Producer;
@@ -69,6 +71,7 @@ public:
 	bool commentEngFlag() const override;
 	bool commentOthFlag() const override;
 	bool allowExtraTags() const;
+	virtual bool supportsVariant(variant::Type variant) const;
 
 	virtual format::Type format() const = 0;
 
@@ -90,6 +93,8 @@ public:
 	sys::utf8::Codec& codec() const;
 	MoveInfoSet const& moveInfo() const;
 	EngineList const& engines() const;
+	TimeTable& timeTable();
+	TimeTable const& timeTable() const;
 	TagBits const& allowedTags() const;
 
 	Board const& getFinalBoard() const override;
@@ -176,6 +181,7 @@ protected:
 
 	MoveInfoSet	m_moveInfoSet;
 	EngineList	m_engines;
+	TimeTable	m_timeTable;
 
 private:
 

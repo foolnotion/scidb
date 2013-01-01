@@ -70,6 +70,8 @@ private:
 	void start();
 	void finish();
 
+	bool supportsVariant(variant::Type variant) const override;
+
 	bool beginGame(TagSet const& tags) override;
 	save::State endGame(TagSet const& tags) override;
 	save::State skipGame(TagSet const& tags) override;

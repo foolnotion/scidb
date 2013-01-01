@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,39 +24,26 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_game_data_included
-#define _db_game_data_included
+#ifndef _tcl_player_included
+#define _tcl_player_included
 
-#include "db_board.h"
-#include "db_tag_set.h"
-#include "db_engine_list.h"
-#include "db_time_table.h"
+#include "db_common.h"
 
-#include "m_utility.h"
+#include "m_pair.h"
 
-namespace db {
+extern "C" { struct Tcl_Interp; }
 
-class MoveNode;
+namespace db { class NamebasePlayer; }
 
-class GameData : public mstl::noncopyable
+namespace tcl
 {
-public:
+	namespace player
+	{
+		typedef mstl::pair< ::db::rating::Type, ::db::rating::Type> Ratings;
+		int getInfo(::db::NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard);
+	}
+}
 
-	GameData();
-	virtual ~GameData() throw();
-
-	MoveNode*		m_startNode;	///< Keeps the starting node of the game
-	Board				m_startBoard;	///< Keeps the start position of the game
-	TagSet			m_tags;
-	variant::Type	m_variant;
-	uint16_t			m_idn;
-	EngineList		m_engines;
-	TimeTable		m_timeTable;
-
-};
-
-} // namespace db
-
-#endif // _db_game_data_included
+#endif // _tcl_player_included
 
 // vi:set ts=3 sw=3:

@@ -41,6 +41,7 @@ class Move;
 class MoveNode;
 class MoveInfoTable;
 class EngineList;
+class TimeTable;
 class Signature;
 class GameData;
 class Board;
@@ -73,14 +74,15 @@ protected:
 
 	typedef encoder::Position Position;
 
-	void setup(Board const& board, db::variant::Type variant);
+	void setup(Board const& board, db::variant::Type variant, bool hasTimeTable);
 
 	void prepareEncoding();
 	void finishMoveSection(uint16_t runLength);
 	void encodeDataSection(	TagSet const& tags,
 									db::Consumer::TagBits const& allowedTags,
 									bool allowExtraTags,
-									EngineList const& engines);
+									EngineList const& engines,
+									TimeTable const& timeTable);
 
 	bool encodeMove(Move const& move);
 
@@ -109,15 +111,19 @@ private:
 	void encodeComment(MoveNode const* node);
 
 	uint16_t encodeTextSection();
-	uint16_t encodeTagSection(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags);
+	uint16_t encodeTagSection(	TagSet const& tags,
+										db::Consumer::TagBits allowedTags,
+										bool allowExtraTags);
 	uint16_t encodeEngineSection(EngineList const& engines);
+	uint16_t encodeTimeTableSection(TimeTable const& timeTable);
 
 	void setup(GameData const& data);
-	void setup(Board const& board, uint16_t idn, db::variant::Type variant);
+	void setup(Board const& board, uint16_t idn, db::variant::Type variant, bool hasTimeTable);
 	void putMoveByte(Square from, Byte value);
 
 	unsigned				m_offset;
 	db::variant::Type	m_variant;
+	bool					m_hasTimeTable;
 	unsigned char		m_buffer[2][4096];
 };
 

@@ -118,6 +118,8 @@ MoveInfo::compare(MoveInfo const& mi) const
 			break;
 
 		case ElapsedMilliSeconds:
+			if (int cmp = int(m_elapsed.m_seconds)      - int(mi.m_elapsed.m_seconds)    ) return cmp;
+			if (int cmp = int(m_elapsed.m_milliSeconds) - int(mi.m_elapsed.m_milliSeconds)) return cmp;
 			break;
 
 		case VideoTime:

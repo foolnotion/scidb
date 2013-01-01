@@ -67,6 +67,13 @@ Consumer::format() const
 
 
 bool
+Consumer::supportsVariant(variant::Type variant) const
+{
+	return variant == variant::Normal;
+}
+
+
+bool
 Consumer::beginGame(TagSet const& tags)
 {
 	if (board().notDerivableFromStandardChess())

@@ -53,7 +53,52 @@ public:
 	public:
 
 		virtual ~PlayerCallback();
-		virtual void entry(Player const& player) = 0;
+		virtual void entry(unsigned index, Player const& player) = 0;
+	};
+
+	struct DsbID
+	{
+		DsbID();
+		DsbID(char const* zps, char const* nr);
+
+		operator uint32_t() const;
+
+		void setup(char const* zps, char const* nr);
+		mstl::string asString() const;
+
+		union
+		{
+			struct
+			{
+				uint32_t zpsPrefix:5;	// 1. digit (0-9, A-L) 
+				uint32_t zpsSuffix:14;	// 4 digits
+				uint32_t dsbMglNr	:11;	// 0..2000
+			};
+
+			uint32_t value;
+		};
+	};
+
+	struct EcfID
+	{
+		EcfID();
+		EcfID(char const* id);
+
+		operator uint32_t() const;
+
+		void setup(char const* id);
+		mstl::string asString() const;
+
+		union
+		{
+			struct
+			{
+				uint32_t prefix:19;	// 6 digits
+				uint32_t suffix:4;	// A-L
+			};
+
+			uint32_t value;
+		};
 	};
 
 	typedef mstl::pair<mstl::string,mstl::string> Assoc;
@@ -126,9 +171,9 @@ public:
 	/// Return FIDE player ID.
 	unsigned fideID() const;
 	/// Return DSB player ID.
-	mstl::string dsbID() const;
+	DsbID dsbID() const;
 	/// Return ECF player ID.
-	mstl::string ecfID() const;
+	EcfID ecfID() const;
 	/// Return ICCF player ID.
 	unsigned iccfID() const;
 	/// Return VIAF (Virtual International Authority File) ID.
@@ -161,8 +206,8 @@ public:
 	void setFederation(country::Code federation);
 	void setNativeCountry(country::Code country);
 	void setFideID(unsigned id);
-	void setEcfID(char* id);
-	void setDsbID(char const* zps, char const* nr);
+	void setEcfID(EcfID id);
+	void setDsbID(DsbID id);
 	void setIccfID(unsigned id);
 	void setViafID(unsigned id);
 	void setPndID(char const* id);
@@ -181,11 +226,20 @@ public:
 	static bool isNormalized(mstl::string const& name);
 	static bool containsPlayer(mstl::string const& name, country::Code country, sex::ID sex);
 
-	static Player* findPlayer(uint32_t fideID);
+	static Player const& getPlayer(unsigned index);
 	static Player* findPlayer(	mstl::string const& name,
 										country::Code federation = country::Unknown,
 										sex::ID sex = sex::Unspecified);
+	static Player* findPlayer(	mstl::string const& name,
+										country::Code federation,
+										Date const& birthDate,
+										species::ID type,
+										sex::ID sex);
 	static Player* findEngine(mstl::string const& name);
+	static Player* findFidePlayer(uint32_t fideID);
+	static Player* findIccfPlayer(uint32_t iccfID);
+	static Player* findDsbPlayer(DsbID dsbID);
+	static Player* findEcfPlayer(EcfID ecfID);
 	static mstl::string& normalize(mstl::string& name);
 	static mstl::string& normalize(mstl::string const& name, mstl::string& result);
 	static void standardizeNames(mstl::string& name);
@@ -244,37 +298,23 @@ private:
 	Ratings m_highestRating;
 	Ratings m_latestRating;
 
-	uint32_t m_fideID			:26;	// 100.000..40.000.000
-	uint32_t m_ratingType	:4;
-	uint32_t m_sex				:2;
-
-	uint32_t m_iccfID			:20;	// 10.000..1.000.000
-	uint32_t m_dsbMglNr		:11;	// 0..2000
-	uint32_t m_chess960		:1;
-
-	uint32_t m_uscfID			:25;	// 10.000.000...30.000.000
-	uint32_t m_birthDay		:5;
-	uint32_t m_winboard		:1;
-	uint32_t m_uci				:1;
-
-	uint32_t m_ecfPrefix		:19;	// 6 digits
-	uint32_t m_birthYear		:11;
-	uint32_t m_species		:2;
-
 	uint32_t m_titles			:16;
-	uint32_t m_deathYear		:11;
+	uint32_t m_birthYear		:11;
 	uint32_t m_deathDay		:5;
 
-	uint32_t m_zpsSuffix		:14;	// 4 digits
-	uint32_t m_federation	:9;
+	uint32_t m_deathYear		:11;
+	uint32_t m_nativeCountry:9;
+	uint32_t m_birthDay		:5;
 	uint32_t m_birthMonth	:4;
-	uint32_t m_deathMonth	:4;
+	uint32_t m_species		:2;
 	uint32_t m_notUnique		:1;
 
-	uint32_t m_nativeCountry:9;
-	uint32_t m_zpsPrefix		:5;	// 1. digit (0-9, A-L)
-	uint32_t m_ecfSuffix		:4;	// A-L
+	uint32_t m_federation	:9;
+	uint32_t m_ratingType	:4;
+	uint32_t m_deathMonth	:4;
 	uint32_t m_region			:3;
+	uint32_t m_sex				:2;
+	uint32_t m_chess960		:1;
 	uint32_t m_shuffle		:1;
 	uint32_t m_bughouse		:1;
 	uint32_t m_crazyhouse	:1;
@@ -282,7 +322,13 @@ private:
 	uint32_t m_suicide		:1;
 	uint32_t m_giveaway		:1;
 	uint32_t m_threeCheck	:1;
-	uint32_t m_unused			:4;
+	uint32_t m_winboard		:1;
+	uint32_t m_uci				:1;
+
+	uint32_t	m_fideID;	// 100.000..40.000.000
+	uint32_t	m_iccfID;	// 10.000..1.000.000
+	DsbID		m_dsbId;
+	EcfID		m_ecfId;
 
 	static unsigned m_minELO;
 	static unsigned m_minDWZ;

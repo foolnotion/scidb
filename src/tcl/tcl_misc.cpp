@@ -668,7 +668,7 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (::strcmp(which, "player") == 0)
 	{
-		::db::Player const* player = ::db::Player::findPlayer(unsignedFromObj(objc, objv, 2));
+		::db::Player const* player = ::db::Player::findFidePlayer(unsignedFromObj(objc, objv, 2));
 		bool unicodeFlag = false;
 
 		if (objc > 3)

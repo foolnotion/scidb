@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2012 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,39 +24,38 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_game_data_included
-#define _db_game_data_included
-
-#include "db_board.h"
-#include "db_tag_set.h"
-#include "db_engine_list.h"
 #include "db_time_table.h"
 
-#include "m_utility.h"
+#include "m_assert.h"
 
-namespace db {
+using namespace db;
 
-class MoveNode;
 
-class GameData : public mstl::noncopyable
+void
+TimeTable::cut(unsigned newSize)
 {
-public:
+	M_REQUIRE(newSize <= size());
+	m_table.resize(newSize);
+}
 
-	GameData();
-	virtual ~GameData() throw();
 
-	MoveNode*		m_startNode;	///< Keeps the starting node of the game
-	Board				m_startBoard;	///< Keeps the start position of the game
-	TagSet			m_tags;
-	variant::Type	m_variant;
-	uint16_t			m_idn;
-	EngineList		m_engines;
-	TimeTable		m_timeTable;
+void
+TimeTable::add(MoveInfo const& moveInfo)
+{
+	M_REQUIRE(moveInfo.content() == MoveInfo::ElapsedMilliSeconds);
+	m_table.push_back(moveInfo);
+}
 
-};
 
-} // namespace db
+void
+TimeTable::set(unsigned index, MoveInfo const& moveInfo)
+{
+	M_REQUIRE(moveInfo.content() == MoveInfo::ElapsedMilliSeconds);
 
-#endif // _db_game_data_included
+	if (index <= m_table.size())
+		m_table.resize(index + 1);
+
+	m_table[index] = moveInfo;
+}
 
 // vi:set ts=3 sw=3:

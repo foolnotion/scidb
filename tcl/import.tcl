@@ -356,6 +356,7 @@ proc logResult {total emptyText importText accepted rejected {unsupported {}}} {
 
 		set detailed yes
 		foreach acc $accepted { if {$acc == $total} { set detailed no } }
+		foreach rej $rejected { if {$rej} { set detailed yes } }
 
 		if {$detailed || $total == 0} {
 			set variants {normal bughouse crazyhouse threeCheck antichess losers}

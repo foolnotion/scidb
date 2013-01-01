@@ -97,7 +97,7 @@ Position::doMove(Move const& move)
 	{
 		M_ASSERT(!move.isPieceDrop());
 
-		if (move.captured() != piece::None)
+		if (move.isCapture())
 		{
 			color::ID	opposite	= color::opposite(color);
 			unsigned		count		= --lookup.pieceCount[opposite];

@@ -109,7 +109,7 @@ public:
 	void readIndexProgressive(unsigned index);
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
-	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
+	save::State doDecoding(	db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
 	void doDecoding(GameData& data, GameInfo& info, mstl::string*) override;
 
 	void doEncoding(	util::ByteStream& strm,

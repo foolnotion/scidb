@@ -2989,6 +2989,7 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	updateLine();
 	updateLanguageSet();
 	m_wantedLanguages = m_languageSet;
+	m_startNode->updateFromTimeTable(m_timeTable);
 
 	return ok;
 }
@@ -3054,6 +3055,11 @@ Game::updateLine()
 {
 	if (!isMainline())
 		return false;
+
+	unsigned length = m_startNode->countHalfMoves();
+
+	if (m_timeTable.size() > length)
+		m_timeTable.cut(length);
 
 	unsigned idn = m_startBoard.computeIdn();
 
@@ -3307,7 +3313,6 @@ bool
 Game::isFolded(edit::Key const& key) const
 {
 	M_REQUIRE(isValidKey(key));
-
 	return key.findPosition(m_startNode, m_startBoard.plyNumber())->getLineStart()->isFolded();
 }
 

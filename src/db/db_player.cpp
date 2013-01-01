@@ -137,7 +137,10 @@ typedef mstl::chunk_allocator<Player> PAllocator;
 static Player InvalidEntry;
 static PlayerLookup playerLookup(unsigned(200000*(100/PlayerLookup::Load)));
 static AliasDict aliasDict(unsigned(150000*(100/AliasDict::Load)));
-static PlayerDict playerDict(unsigned(120000*(100/PlayerDict::Load)));
+static PlayerDict fidePlayerDict(unsigned(120000*(100/PlayerDict::Load)));
+static PlayerDict iccfPlayerDict(unsigned(10000*(100/PlayerDict::Load)));
+static PlayerDict dsbPlayerDict(unsigned(20000*(100/PlayerDict::Load)));
+static PlayerDict ecfPlayerDict(unsigned(10000*(100/PlayerDict::Load)));
 static Lookup asciiDict(8192);
 static Lookup chessgamesDict(8192);
 static Lookup urlDict(512);
@@ -618,6 +621,32 @@ findPlayer(mstl::string const& name, Players const& players)
 
 
 static Player*
+findPlayer( Players const& players,
+				country::Code federation,
+				Date const& birthDate,
+				species::ID type,
+				sex::ID sex)
+{
+	M_ASSERT(players.size() >= 1);
+
+	for (unsigned i = 0; i < players.size(); ++i)
+	{
+		Player* player = players[i];
+
+		if (	federation == player->federation()
+			&& type == player->type()
+			&& sex == player->sex()
+			&& birthDate == player->dateOfBirth())
+		{
+			return player;
+		}
+	}
+
+	return 0;
+}
+
+
+static Player*
 findPlayer(mstl::string const& name, Players const& players, country::Code federation, sex::ID sex)
 {
 	M_ASSERT(players.size() >= 1);
@@ -669,35 +698,88 @@ findPlayer(mstl::string const& name, Players const& players, country::Code feder
 }
 
 
+Player::EcfID::EcfID() : prefix(0), suffix(0) {}
+Player::EcfID::EcfID(char const* id) { setup(id); }
+
+
+void
+Player::EcfID::setup(char const* id)
+{
+	M_REQUIRE(id);
+	// require: #id >= 7
+	M_REQUIRE('A' <= id[6] && id[6] <= 'L');
+
+	prefix = ::strtoul(id, nullptr, 10);
+	suffix = id[6] - 'A';
+}
+
+
+mstl::string
+Player::EcfID::asString() const
+{
+	mstl::string id;
+
+	if (prefix)
+		id.format("%u%c", unsigned(prefix), char(suffix + 'A'));
+
+	return id;
+}
+
+
+Player::DsbID::DsbID() :value(0) {}
+Player::DsbID::DsbID(char const* zps, char const* nr) :value(0) { setup(zps, nr); }
+
+
+void
+Player::DsbID::setup(char const* zps, char const* nr)
+{
+	M_REQUIRE(zps);
+	M_REQUIRE(nr);
+	// require: #zps >= 5
+	M_REQUIRE(('0' <= *zps && *zps <= '9') || ('A' <= *zps && *zps <= 'L'));
+
+	zpsPrefix = ::isdigit(*zps) ? *zps - '0' : *zps - 'A' + 10;
+	zpsSuffix = ::strtoul(zps + 1, nullptr, 10);
+	dsbMglNr = ::strtoul(nr, nullptr, 10);
+}
+
+
+mstl::string
+Player::DsbID::asString() const
+{
+	mstl::string id;
+
+	if (dsbMglNr)
+	{
+		id.format(	"%c%04u-%u",
+						char(zpsPrefix <= 9 ? zpsPrefix + '0' :  zpsPrefix - 10 + 'A'),
+						unsigned(zpsSuffix),
+						unsigned(dsbMglNr));
+	}
+
+	return id;
+}
+
+
 Player::PlayerCallback::~PlayerCallback() {}
 
 
 Player::Player()
-	:m_fideID(0)
-	,m_ratingType(rating::Last)
-	,m_sex(sex::Unspecified)
-	,m_iccfID(0)
-	,m_dsbMglNr(0)
-	,m_chess960(0)
-	,m_uscfID(0)
-	,m_birthDay(0)
-	,m_winboard(0)
-	,m_uci(0)
-	,m_ecfPrefix(0)
+	:m_titles(0)
 	,m_birthYear(0)
-	,m_species(species::Human)
-	,m_titles(0)
-	,m_deathYear(0)
 	,m_deathDay(0)
-	,m_zpsSuffix(0)
-	,m_federation(country::Unknown)
-	,m_birthMonth(0)
-	,m_deathMonth(0)
-	,m_notUnique(0)
+	,m_deathYear(0)
 	,m_nativeCountry(country::Unknown)
-	,m_zpsPrefix(0)
-	,m_ecfSuffix(0)
+	,m_birthDay(0)
+	,m_birthMonth(0)
+	,m_species(species::Human)
+	,m_notUnique(0)
+	,m_federation(country::Unknown)
+	,m_ratingType(rating::Last)
+	,m_deathMonth(0)
 	,m_region(0)
+	,m_sex(sex::Unspecified)
+	,m_chess960(0)
 	,m_shuffle(0)
 	,m_bughouse(0)
 	,m_crazyhouse(0)
@@ -705,6 +787,10 @@ Player::Player()
 	,m_suicide(0)
 	,m_giveaway(0)
 	,m_threeCheck(0)
+	,m_winboard(0)
+	,m_uci(0)
+	,m_fideID(0)
+	,m_iccfID(0)
 {
 	::memset(m_latestRating, 0, sizeof(m_latestRating));
 	::memset(m_highestRating, 0, sizeof(m_highestRating));
@@ -714,7 +800,7 @@ Player::Player()
 unsigned
 Player::countPlayers()
 {
-	return ::playerLookup.used();
+	return ::playerList.size();
 }
 
 
@@ -843,10 +929,57 @@ Player::containsPlayer(mstl::string const& name, country::Code federation, sex::
 
 
 Player*
-Player::findPlayer(uint32_t fideID)
+Player::findFidePlayer(uint32_t fideID)
 {
-	Player* const* playerEntry = ::playerDict.find(fideID);
+	Player* const* playerEntry = ::fidePlayerDict.find(fideID);
 	return playerEntry ? *playerEntry : 0;
+}
+
+
+Player*
+Player::findIccfPlayer(uint32_t iccfID)
+{
+	Player* const* playerEntry = ::iccfPlayerDict.find(iccfID);
+	return playerEntry ? *playerEntry : 0;
+}
+
+
+Player*
+Player::findDsbPlayer(DsbID dsbID)
+{
+	Player* const* playerEntry = ::dsbPlayerDict.find(dsbID);
+	return playerEntry ? *playerEntry : 0;
+}
+
+
+Player*
+Player::findEcfPlayer(EcfID ecfID)
+{
+	Player* const* playerEntry = ::ecfPlayerDict.find(ecfID);
+	return playerEntry ? *playerEntry : 0;
+}
+
+
+Player const&
+Player::getPlayer(unsigned index)
+{
+	M_REQUIRE(index < countPlayers());
+	return *::playerList[index].second;
+}
+
+
+Player*
+Player::findPlayer(	mstl::string const& name,
+							country::Code federation,
+							Date const& birthDate,
+							species::ID type,
+							sex::ID sex)
+{
+	mstl::string key(name);
+	normalize(key);
+
+	::Players const* p = ::playerLookup.find(key);
+	return p ? ::findPlayer(*p, federation, birthDate, type, sex) : 0;
 }
 
 
@@ -864,11 +997,11 @@ Player::findPlayer(mstl::string const& name, country::Code federation, sex::ID s
 Player*
 Player::insertPlayer(uint32_t fideID, mstl::string const& name)
 {
-	M_REQUIRE(findPlayer(fideID) == 0);
+	M_REQUIRE(findFidePlayer(fideID) == 0);
 
 	Player* player = new Player;
 
-	::playerDict.insert_unique(fideID, player);
+	::fidePlayerDict.insert_unique(fideID, player);
 
 	player->m_name = name;
 	player->setFideID(fideID);
@@ -1498,65 +1631,6 @@ Player::setPndID(char const* id)
 }
 
 
-void
-Player::setEcfID(char* id)
-{
-	M_REQUIRE(id);
-	// require: #id >= 7
-	M_REQUIRE('A' <= id[6] && id[6] <= 'L');
-
-	m_ecfSuffix = id[6] - 'A';
-
-	char c = id[6];
-	id[6] = '\0';
-	m_ecfPrefix = ::strtoul(id, nullptr, 10);
-	id[6] = c;
-}
-
-
-mstl::string
-Player::ecfID() const
-{
-	mstl::string id;
-
-	if (m_ecfPrefix)
-		id.format("%u%c", unsigned(m_ecfPrefix), char(m_ecfSuffix + 'A'));
-
-	return id;
-}
-
-
-void
-Player::setDsbID(char const* zps, char const* nr)
-{
-	M_REQUIRE(zps);
-	M_REQUIRE(nr);
-	// require: #zps >= 5
-	M_REQUIRE(('0' <= *zps && *zps <= '9') || ('A' <= *zps && *zps <= 'L'));
-
-	m_zpsPrefix = ::isdigit(*zps) ? *zps - '0' : *zps - 'A' + 10;
-	m_zpsSuffix = ::strtoul(zps + 1, nullptr, 10);
-	m_dsbMglNr = ::strtoul(nr, nullptr, 10);
-}
-
-
-mstl::string
-Player::dsbID() const
-{
-	mstl::string id;
-
-	if (m_dsbMglNr)
-	{
-		id.format(	"%c%04u-%u",
-						char(m_zpsPrefix <= 9 ? m_zpsPrefix + '0' :  m_zpsPrefix - 10 + 'A'),
-						unsigned(m_zpsSuffix),
-						unsigned(m_dsbMglNr));
-	}
-
-	return id;
-}
-
-
 unsigned
 Player::findMatches(mstl::string const& name, Matches& result, unsigned maxMatches)
 {
@@ -1756,7 +1830,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 										if (::strncmp(t, "FIDEID ", 7) == 0)
 										{
 											player->setFideID(::strtoul(t + 7, nullptr, 10));
-											::playerDict.insert_unique(player->fideID(), player);
+											::fidePlayerDict.insert_unique(player->fideID(), player);
 										}
 										break;
 
@@ -1957,7 +2031,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
 	TRACE(::printf("Aliases total:       %u\n", ::aliasDict.used()));
 	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("-----------------------------------------------------\n"));
 }
@@ -2045,7 +2119,7 @@ Player::parseFideRating(mstl::istream& stream)
 					}
 				}
 
-				Player* const* playerEntry = ::playerDict.find(fideID);
+				Player* const* playerEntry = ::fidePlayerDict.find(fideID);
 				Player* player = 0;
 
 				if (playerEntry)
@@ -2078,7 +2152,7 @@ Player::parseFideRating(mstl::istream& stream)
 					if (!(player = insertPlayer(name, country, sex)))
 						continue;
 
-					::playerDict.insert_unique(fideID, player);
+					::fidePlayerDict.insert_unique(fideID, player);
 					player->setFideID(fideID);
 					player->setType(species::Human);
 					TRACE(++count);
@@ -2133,7 +2207,7 @@ Player::parseFideRating(mstl::istream& stream)
 	TRACE(::printf("-----------------------------------------------------\n"));
 	TRACE(::printf("FIDE entries:        %u (%u)\n", count, total));
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("Aliases total:       %u\n", ::aliasDict.used()));
 	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
@@ -2176,7 +2250,7 @@ Player::parseEcfRating(mstl::istream& stream)
 
 			if (fideID)
 			{
-				if (Player* const* playerEntry = ::playerDict.find(fideID))
+				if (Player* const* playerEntry = ::fidePlayerDict.find(fideID))
 				{
 					player = *playerEntry;
 
@@ -2209,9 +2283,14 @@ Player::parseEcfRating(mstl::istream& stream)
 				TRACE(++count);
 			}
 
+			EcfID ecfID(line.data());
+
 			player->setLatestRating(rating::ECF, rating);
 			player->setHighestRating(rating::ECF, rating);
-			player->setEcfID(line.data());
+			player->setEcfID(ecfID);
+
+			M_ASSERT(ecfID);
+			::ecfPlayerDict[ecfID] = player;
 			TRACE(++total);
 		}
 	}
@@ -2219,7 +2298,7 @@ Player::parseEcfRating(mstl::istream& stream)
 	TRACE(::printf("-----------------------------------------------------\n"));
 	TRACE(::printf("ECF entried:         %u (%u)\n", count, total));
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("-----------------------------------------------------\n"));
 }
@@ -2260,7 +2339,7 @@ Player::parseDwzRating(mstl::istream& stream)
 
 			if (fideID)
 			{
-				Player* const* playerEntry = ::playerDict.find(fideID);
+				Player* const* playerEntry = ::fidePlayerDict.find(fideID);
 
 				if (playerEntry)
 					player = *playerEntry;
@@ -2324,9 +2403,14 @@ Player::parseDwzRating(mstl::istream& stream)
 				player->setType(species::Human);
 			}
 
+			DsbID dsbID(line, line.c_str() + 6);
+
 			player->setLatestRating(rating::DWZ, rating);
 			player->setHighestRating(rating::DWZ, rating);
-			player->setDsbID(line, line.c_str() + 6);
+			player->setDsbID(dsbID);
+
+			M_ASSERT(dsbID);
+			::dsbPlayerDict[dsbID] = player;
 			TRACE(++total);
 		}
 	}
@@ -2334,7 +2418,7 @@ Player::parseDwzRating(mstl::istream& stream)
 	TRACE(::printf("-----------------------------------------------------\n"));
 	TRACE(::printf("DWZ entries:         %u (%u)\n", count, total));
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("ASCII total:         %u\n", ::asciiDict.size()));
 	TRACE(::printf("-----------------------------------------------------\n"));
@@ -2404,6 +2488,7 @@ Player::parseIccfRating(mstl::istream& stream)
 					player->setLatestRating(rating::ICCF, rating);
 					player->setHighestRating(rating::ICCF, rating);
 					player->setIccfID(id);
+					::iccfPlayerDict[id] = player;
 
 					if (player->federation() == country::Unknown)
 						player->setFederation(federation);
@@ -2415,7 +2500,7 @@ Player::parseIccfRating(mstl::istream& stream)
 	TRACE(::printf("-----------------------------------------------------\n"));
 	TRACE(::printf("ICCF entries:        %u (%u)\n", count, total));
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("-----------------------------------------------------\n"));
 }
@@ -2477,7 +2562,7 @@ Player::parseIpsRatingList(mstl::istream& stream)
 	TRACE(::printf("-----------------------------------------------------\n"));
 	TRACE(::printf("IPS rating entries:  %u (%u)\n", count, total));
 	TRACE(::printf("Players total:       %u\n", ::playerLookup.used()));
-	TRACE(::printf("Player map entries:  %u\n", ::playerDict.used()));
+	TRACE(::printf("Player map entries:  %u\n", ::fidePlayerDict.used()));
 	TRACE(::printf("Player list entries: %u\n", ::playerList.size()));
 	TRACE(::printf("-----------------------------------------------------\n"));
 }
@@ -2868,10 +2953,10 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 			receptacle.add("BirthDay", p->dateOfBirth().asString());
 		if (p->dateOfDeath())
 			receptacle.add("DeathDay", p->dateOfDeath().asString());
-		if (!p->dsbID().empty())
-			receptacle.add("ID-DSB", p->dsbID());
-		if (!p->ecfID().empty())
-			receptacle.add("ID-ECF", p->ecfID());
+		if (p->dsbID())
+			receptacle.add("ID-DSB", p->dsbID().asString());
+		if (p->ecfID())
+			receptacle.add("ID-ECF", p->ecfID().asString());
 		if (p->iccfID())
 			receptacle.add("ICCF-ID", Value(p->iccfID()));
 		if (p->viafID())
@@ -2983,11 +3068,8 @@ Player::emitPlayerCard(	TeXt::Receptacle& receptacle,
 void
 Player::enumerate(PlayerCallback& cb)
 {
-	for (PlayerLookup::const_iterator i = playerLookup.begin(); i != playerLookup.end(); ++i)
-	{
-		for (unsigned k = 0; k < i->second.size(); ++k)
-			cb.entry(*i->second[k]);
-	}
+	for (unsigned i = 0; i < playerList.size(); ++i)
+		cb.entry(i, *::playerList[i].second);
 }
 
 

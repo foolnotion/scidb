@@ -49,6 +49,7 @@ public:
 
 	unsigned count() const;
 	::util::crc::checksum_t computeChecksum(EngineList const& engines, util::crc::checksum_t crc) const;
+	int findElapsedMilliSeconds() const;
 
 	MoveInfo const& operator[](unsigned n) const;
 	MoveInfo& operator[](unsigned n);
@@ -56,6 +57,7 @@ public:
 	MoveInfo& add();
 	MoveInfo& add(MoveInfo const& info);
 
+	void remove(unsigned n);
 	void resize(unsigned n);
 	void reserve(unsigned n);
 	void swap(MoveInfoSet& row);

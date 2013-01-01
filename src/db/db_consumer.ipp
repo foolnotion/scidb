@@ -50,6 +50,8 @@ inline uint32_t Consumer::flags() const								{ return m_flags; }
 inline Consumer* Consumer::consumer() const							{ return m_consumer; }
 inline MoveInfoSet const& Consumer::moveInfo() const				{ return m_moveInfoSet; }
 inline EngineList const& Consumer::engines() const					{ return m_engines; }
+inline TimeTable& Consumer::timeTable()								{ return m_timeTable; }
+inline TimeTable const& Consumer::timeTable() const				{ return m_timeTable; }
 inline Consumer::TagBits const& Consumer::allowedTags() const	{ return m_allowedTags; }
 
 inline void Consumer::setFlags(uint32_t flags)						{ m_flags = flags; }

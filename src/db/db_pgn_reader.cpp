@@ -656,7 +656,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 		if (m_thisVariant == variant::Undetermined)
 			++m_variants[item];
 		else
-			++m_rejected[variant::toIndex(m_thisVariant)];
+			++m_rejected[variant::toIndex(variant::toMainVariant(m_thisVariant))];
 
 		throw Interruption(code, mstl::string::empty_string);
 	}
@@ -834,6 +834,9 @@ PgnReader::setupVariant(variant::Type variant)
 {
 	M_ASSERT(variant != variant::Antichess);
 
+	if (!consumer().supportsVariant(variant))
+		error(UnsupportedVariant, m_currPos, variant::identifier(variant));
+
 	consumer().setVariant(m_variant = variant);
 	m_tags.set(tag::Variant, variant::identifier(variant));
 }
@@ -912,13 +915,21 @@ PgnReader::process(Progress& progress)
 				if (m_variant != variant::Undetermined && !m_tags.contains(tag::Variant))
 					m_tags.set(tag::Variant, variant::identifier(m_givenVariant = m_variant));
 
+				if (m_variant != variant::Undetermined && !consumer().supportsVariant(m_variant))
+					error(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
+
 				if (!consumer().startGame(m_tags))
 					error(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
 				token = nextToken(kTag);
 				consumer().setVariant(m_variant);
-				if (m_variant == variant::Undetermined || m_variant == variant::Normal)
+
+				if (	(m_variant == variant::Undetermined || m_variant == variant::Normal)
+					&& consumer().supportsVariant(variant::Crazyhouse))
+				{
 					consumer().useVariant(variant::Crazyhouse);
+				}
+
 				consumer().startMoveSection();
 
 				unsigned nestedVar = 0;

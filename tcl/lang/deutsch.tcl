@@ -235,13 +235,21 @@
 ::menu::mc::Tools							"&Werkzeuge"
 ::menu::mc::Extras						"E&xtras"
 ::menu::mc::Setup							"&Einstellungen"
-::menu::mc::Engines						"&Motoren (Schachprogramme)"
 
+# Contact
 ::menu::mc::ContactBugReport			"&Fehlerbericht"
 ::menu::mc::ContactFeatureRequest	"Funktions&wunsch"
+
+# Extras
 ::menu::mc::InstallChessBaseFonts	"ChessBase-Zeichensätze installieren"
-::menu::mc::OpenEngineLog				"&Motoren-Konsole öffnen"
-::menu::mc::OpenEngineDictionary		"Motoren&übersicht öffnen"
+::menu::mc::OpenEngineLog				"Motoren&konsole öffnen"
+
+# Tools
+::menu::mc::OpenEngineDictionary		"Motoren&lexikon öffnen"
+::menu::mc::OpenPlayerDictionary		"Spielerlexikon öffnen"
+
+# Setup
+::menu::mc::Engines						"&Motoren (Schachprogramme)"
 ::menu::mc::PrivatePlayerCard			"&Private Spielerkarteikarte"
 
 ::menu::mc::OpenFile						"Eine Scidb-Datei öffnen"
@@ -783,7 +791,7 @@
 ::pgn::setup::mc::RevertSettings					"Auf Anfangswerte zurücksetzen"
 ::pgn::setup::mc::ResetSettings					"Auf Werkseinstellung zurücksetzen"
 ::pgn::setup::mc::DiscardAllChanges				"Alle bereits angewendeten Änderungen verwerfen?"
-::pgn::setup::mc::ThreefoldRepetition			"Dreifache Zugwiederholung"
+::pgn::setup::mc::ThreefoldRepetition			"Dreifache Stellungswiederholung"
 ::pgn::setup::mc::FiftyMoveRule					"50-Züge-Regel"
 
 ::pgn::setup::mc::Setup(Appearance)				"Aussehen"
@@ -897,7 +905,7 @@
 ::engine::mc::ImageFiles				"Bilddateien"
 ::engine::mc::SelectEngine				"Programm auswählen"
 ::engine::mc::SelectEngineLogo		"Logo auswählen"
-::engine::mc::EngineDictionary		"Motorenverzeichniss"
+::engine::mc::EngineDictionary		"Motorenlexikon"
 ::engine::mc::EngineFilter				"Motorenfilter"
 ::engine::mc::EngineLog					"Motoren-Konsole"
 ::engine::mc::Probing					"Erprobung"
@@ -1783,7 +1791,7 @@
 ::terminationbox::mc::Termination(less-material)	"%s gewinnt aufgrund weniger Figurenmaterial (patt)"
 ::terminationbox::mc::Termination(bishops)			"Parte remis durch patt (verschiedenfarbige Läufer)"
 ::terminationbox::mc::Termination(fifty)				"Parte remis aufgrund der 50-Züge-Regel"
-::terminationbox::mc::Termination(threefold)			"Parte remis aufgrund dreifacher Zugwiederholung"
+::terminationbox::mc::Termination(threefold)			"Parte remis aufgrund dreifacher Stellungswiederholung"
 ::terminationbox::mc::Termination(mating)				"Kein Spieler hat noch Mattmaterial"
 
 ### eventmodebox #######################################################

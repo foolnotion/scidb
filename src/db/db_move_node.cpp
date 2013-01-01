@@ -28,6 +28,7 @@
 #include "db_annotation.h"
 #include "db_mark_set.h"
 #include "db_move_info_set.h"
+#include "db_time_table.h"
 #include "db_board.h"
 
 #include "u_crc.h"
@@ -1030,6 +1031,24 @@ MoveNode::getOneBeforeLineEnd()
 		node = node->m_next;
 
 	return node->m_prev;
+}
+
+
+void
+MoveNode::updateFromTimeTable(TimeTable const& timeTable)
+{
+	M_REQUIRE(atLineStart());
+
+	unsigned i = 0;
+
+	for (MoveNode* p = m_next; p; p = p->m_next, ++i)
+	{
+		if (i == timeTable.size())
+			return;
+
+		if (!timeTable[i].isEmpty())
+			p->addMoveInfo(timeTable[i]);
+	}
 }
 
 

@@ -445,7 +445,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 
 	if (fideIdFlag)
 	{
-		p = Player::findPlayer(fideID);
+		p = Player::findFidePlayer(fideID);
 
 		if (p == 0)
 		{

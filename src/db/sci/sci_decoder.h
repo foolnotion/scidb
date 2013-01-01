@@ -45,6 +45,7 @@ class MoveNode;
 class Consumer;
 class TagSet;
 class EngineList;
+class TimeTable;
 
 namespace sci {
 
@@ -86,6 +87,7 @@ private:
 
 	static void decodeEngines(util::ByteStream& strm, EngineList& engines);
 	static void decodeTags(util::ByteStream& strm, TagSet& tags);
+	static void decodeTimeTable(util::ByteStream& strm, TimeTable& timeTable);
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);

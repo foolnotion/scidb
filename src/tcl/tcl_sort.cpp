@@ -339,7 +339,10 @@ Sort::process(int objc, Tcl_Obj* const objv[])
 
 				if (i == objc - 2)
 				{
-					Tcl_AppendResult(m_interp, "\"-index\" option must be " "followed by list index", nullptr);
+					Tcl_AppendResult(
+						m_interp,
+						"\"-index\" option must be " "followed by list index",
+						nullptr);
 					return TCL_ERROR;
 				}
 
@@ -352,7 +355,9 @@ Sort::process(int objc, Tcl_Obj* const objv[])
 				{
 					if (Tcl_GetIntFromObj(m_interp, indices[j], &m_indexVec[j]) != TCL_OK)
 					{
-						Tcl_AppendObjToErrorInfo(m_interp, Tcl_ObjPrintf( "\n    (-index option item number %d)", j));
+						Tcl_AppendObjToErrorInfo(
+							m_interp,
+							Tcl_ObjPrintf( "\n    (-index option item number %d)", j));
 						return TCL_ERROR;
 					}
 				}

@@ -87,9 +87,18 @@ Consumer::variantHasChanged(variant::Type)
 }
 
 
+bool
+Consumer::supportsVariant(variant::Type) const
+{
+	return true;
+}
+
+
 void
 Consumer::setVariant(variant::Type variant)
 {
+	M_REQUIRE(supportsVariant(variant));
+
 	m_useVariant = m_variant = variant;
 
 	if (m_producer && m_producer->variant() == variant::Undetermined)

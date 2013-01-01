@@ -27,7 +27,7 @@
 #include "tcl_tree.h"
 #include "tcl_base.h"
 #include "tcl_application.h"
-#include "tcl_database.h"
+#include "tcl_player.h"
 
 #include "app_application.h"
 #include "app_cursor.h"
@@ -509,8 +509,8 @@ cmdPlayer(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								"unknown rating type %s",
 								stringFromObj(objc, objv, 3));
 
-		::tcl::db::Ratings ratings(ratingType, rating::Elo);
-		::tcl::db::getPlayerInfo(*player, ratings, true, true);
+		::tcl::player::Ratings ratings(ratingType, rating::Elo);
+		::tcl::player::getInfo(*player, ratings, true, true);
 	}
 	else
 	{
