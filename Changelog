@@ -3,8 +3,8 @@
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #602)
 ------------------------------------------------------------------------------
-* Time tables implemented. Advantages: 1) needs less size 2) position search
-is faster.
+* Time tables implemented. Advantages: 1) needs less size (Scid needs 3x more
+space) 2) position search is faster.
 
 [December 2012] ==============================================================
 

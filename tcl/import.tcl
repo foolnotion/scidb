@@ -134,7 +134,6 @@ variable Variants {Undetermined Normal ThreeCheck Crazyhouse Suicide Giveaway Lo
 
 
 proc import {parent base files msg {encoding {}}} {
-puts "import $base"
 	if {[llength $files] == 0} { return 0 }
 	::remote::busyOperation { Import $parent $base $files $msg $encoding }
 }

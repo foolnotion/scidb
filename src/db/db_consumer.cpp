@@ -97,7 +97,7 @@ Consumer::supportsVariant(variant::Type) const
 void
 Consumer::setVariant(variant::Type variant)
 {
-	M_REQUIRE(supportsVariant(variant));
+	M_REQUIRE(variant == variant::Undetermined || supportsVariant(variant));
 
 	m_useVariant = m_variant = variant;
 

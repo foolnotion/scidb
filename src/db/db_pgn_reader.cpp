@@ -658,6 +658,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 		else
 			++m_rejected[variant::toIndex(variant::toMainVariant(m_thisVariant))];
 
+		m_move.clear();
 		throw Interruption(code, mstl::string::empty_string);
 	}
 
@@ -924,11 +925,8 @@ PgnReader::process(Progress& progress)
 				token = nextToken(kTag);
 				consumer().setVariant(m_variant);
 
-				if (	(m_variant == variant::Undetermined || m_variant == variant::Normal)
-					&& consumer().supportsVariant(variant::Crazyhouse))
-				{
+				if (m_variant == variant::Undetermined || m_variant == variant::Normal)
 					consumer().useVariant(variant::Crazyhouse);
-				}
 
 				consumer().startMoveSection();
 
