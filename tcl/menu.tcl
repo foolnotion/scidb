@@ -242,13 +242,13 @@ if {0} {
 		-underline [incr ul] \
 		-image $::icon::16x16::none \
 		;
-	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
-	set cmd [namespace code [list ::playerdict::open .application]]
-	$m add command \
-		-label " $text..." \
-		-underline [incr ul] \
-		-command $cmd \
-		;
+#	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
+#	set cmd [namespace code [list ::playerdict::open .application]]
+#	$m add command \
+#		-label " $text..." \
+#		-underline [incr ul] \
+#		-command $cmd \
+#		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenEngineDictionary] text ul
 	set cmd [namespace code [list ::engine::showEngineDictionary .application]]
 	$m add command \

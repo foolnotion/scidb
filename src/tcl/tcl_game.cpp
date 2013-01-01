@@ -123,6 +123,16 @@ static char const* CmdVariation		= "::scidb::game::variation";
 static char const*
 searchTag(char const* s)
 {
+	while (*s == ';')
+	{
+		do
+			++s;
+		while (*s && *s != '\n');
+
+		while (isspace(*s))
+			++s;
+	}
+
 	while (isspace(*s))
 		++s;
 

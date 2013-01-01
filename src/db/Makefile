@@ -76,6 +76,7 @@ SRC_CXX = \
 	db_statistic.cpp \
 	db_tablebase.cpp \
 	db_tag_set.cpp \
+	db_time_table.cpp \
 	db_tournament_table.cpp \
 	db_tree.cpp \
 	db_tree_info.cpp \
