@@ -220,8 +220,8 @@
 ::menu::mc::ScidbArchives				"Archivi Scidb"
 ::menu::mc::PGNFilesArchives			"File/Archivi PGN"
 ::menu::mc::PGNFiles						"File PGN"
-::menu::mc::PGNFilesArchives			"File/Archivi BPGN"
-::menu::mc::PGNFiles						"File BPGN"
+::menu::mc::BPGNFilesArchives			"File/Archivi BPGN"
+::menu::mc::BPGNFiles					"File BPGN"
 ::menu::mc::PGNArchives					"Archivi PGN"
 
 ::menu::mc::Language						"&Lingua"
@@ -267,7 +267,6 @@
 ::load::mc::EngineSetupFailed		"Loading engine configuration failed" ;# NEW
 
 ::load::mc::Loading					"Carico %s"
-::load::mc::ReadingOptionsFile	"Permessi di lettura del file"
 ::load::mc::StartupFinished		"Startup completato"
 ::load::mc::SystemEncoding			"La codifica di sistema è '%s'"
 
@@ -435,7 +434,14 @@
 ::application::database::mc::ClipbaseDescription			"Database temporaneo, non è salvato sul disco"
 ::application::database::mc::HardLinkDetected				"Impossibile caricare il file '%file1' perché è già caricato come file '%file2'. Questo può succedere solo se ci sono collegamenti tra i due." ;# hard links?
 ::application::database::mc::HardLinkDetectedDetail		"Se il database viene caricato due volte il programma potrebbe crashare per l'eccessivo utilizzo dei threads." ;# thread? lasciare così?
-::application::database::mc::SelectVariant					"Select Variant"
+::application::database::mc::OverwriteExistingFiles		"Sovrascrivi i file esistenti nella cartella '%s'?"
+::application::database::mc::SelectDatabases					"Selezione il database da aprire"
+::application::database::mc::ExtractArchive					"Estrai l'archivio %s"
+::application::database::mc::CompactDetail					"Tutte le partite devono essere chiuse per permettere la compressione."
+::application::database::mc::ReallyCompact					"Vuoi davvero comprimere il database '%s'?"
+::application::database::mc::ReallyCompactDetail(1)		"Solo una partita sar�|  eliminata."
+::application::database::mc::ReallyCompactDetail(N)		"%s partite saranno eliminate."
+::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"
@@ -641,13 +647,6 @@
 ::database::switcher::mc::UriRejectedDetail(open)		"Solo database Scidb possono essere aperti:"
 ::database::switcher::mc::UriRejectedDetail(import)	"Solo database Scidb possono essere importati:"
 ::database::switcher::mc::EmptyUriList						"Gli archivi trascinati sono vuoti."
-::database::switcher::mc::OverwriteExistingFiles		"Sovrascrivi i file esistenti nella cartella '%s'?"
-::database::switcher::mc::SelectDatabases					"Selezione il database da aprire"
-::database::switcher::mc::ExtractArchive					"Estrai l'archivio %s"
-::database::switcher::mc::CompactDetail					"Tutte le partite devono essere chiuse per permettere la compressione."
-::database::switcher::mc::ReallyCompact					"Vuoi davvero comprimere il database '%s'?"
-::database::switcher::mc::ReallyCompactDetail(1)		"Solo una partita sarà eliminata."
-::database::switcher::mc::ReallyCompactDetail(N)		"%s partite saranno eliminate."
 ::database::switcher::mc::CopyGames							"Copia partite"
 ::database::switcher::mc::CopyGamesFromTo					"Copia partite da '%src' a '%dst'"
 ::database::switcher::mc::CopiedGames						"%s game(s) copied"
@@ -683,7 +682,6 @@
 ::database::switcher::mc::Result								"Risultato"
 ::database::switcher::mc::Score								"Score"
 ::database::switcher::mc::Type								"Tipo"
-::database::switcher::mc::Variant							"Variant" ;# NEW
 ::database::switcher::mc::ReadOnly							"Sola Lettura"
 
 ### board ##############################################################
@@ -1368,8 +1366,8 @@
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Per arroccare bisogna disambiguare la colonna della torre (è possibile siano messe male)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
 ::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too many pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)			"Colonna di en passant non ragionevole."
 ::setup::board::mc::Error(MultiPawnCheck)				"Due o più pedoni danno scacco."
 ::setup::board::mc::Error(TripleCheck)					"Tre o più pezzi danno scacco."
@@ -2234,8 +2232,6 @@
 ::fsbox::mc::CannotDuplicate				"Impossibile duplicare il file '%s' per mancanza di permessi lettura."
 ::fsbox::mc::ReallyDuplicateFile			"Vuoi davvero duplicare questo file?"
 ::fsbox::mc::ReallyDuplicateDetail		"Questo file ha circa %s. Duplicarlo può richiedere del tempo."
-::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
-::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
 ::fsbox::mc::InvalidFileExt				"Operazione fallita: '%s' ha un'estensione file non valida."
 ::fsbox::mc::CannotRename					"Impossibile rinominare in '%s' perché questa cartella\file esiste già."
 ::fsbox::mc::CannotCreate					"Non posso creare la cartella '%s' perché questa cartella\file esiste già."

@@ -221,8 +221,8 @@
 ::menu::mc::ScidbArchives				"Archivos Scidb"
 ::menu::mc::PGNFilesArchives			"Archivos PGN"
 ::menu::mc::PGNFiles						"Archivos PGN"
-::menu::mc::PGNFilesArchives			"Archivos BPGN"
-::menu::mc::PGNFiles						"Archivos BPGN"
+::menu::mc::BPGNFilesArchives			"Archivos BPGN"
+::menu::mc::BPGNFiles					"Archivos BPGN"
 ::menu::mc::PGNArchives					"Archivos PGN"
 
 ::menu::mc::Language						"&Idioma"
@@ -435,7 +435,14 @@
 ::application::database::mc::ClipbaseDescription			"Base temporal, no se guarda al disco."
 ::application::database::mc::HardLinkDetected				"No se puede cargar el archivo '%file1' porque ya está cargado como '%file2'. Esto sucede cuando se usan hard links."
 ::application::database::mc::HardLinkDetectedDetail		 "Si se carga la misma base de datos nuevamente, la aplicació puede terminar debido a los hilos usados."
-::application::database::mc::SelectVariant					"Select Variant"
+::application::database::mc::OverwriteExistingFiles		"¿Sobrescribir archivos existentes en el directorio '%s'?"
+::application::database::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
+::application::database::mc::ExtractArchive					"Extracer archivo %s"
+::application::database::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
+::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
+::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida."
+::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
+::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames						"%s partida(s) recodificadas"
@@ -640,13 +647,6 @@
 ::database::switcher::mc::UriRejectedDetail(open)		"Solamente pueden abrirse bases de datos Scidb:"
 ::database::switcher::mc::UriRejectedDetail(import)	"Solamente pueden importarse bases de datos de Scidb:"
 ::database::switcher::mc::EmptyUriList						"Descartar contenido está vacóo."
-::database::switcher::mc::OverwriteExistingFiles		"¿Sobrescribir archivos existentes en el directorio '%s'?"
-::database::switcher::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
-::database::switcher::mc::ExtractArchive					"Extracer archivo %s"
-::database::switcher::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
-::database::switcher::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
-::database::switcher::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida." 
-::database::switcher::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
 ::database::switcher::mc::CopyGames							"Copiar partidas"
 ::database::switcher::mc::CopyGamesFromTo					"Copiar partidas de '%src' a '%dst'"
 ::database::switcher::mc::CopiedGames						"%s partida(s) copiada"
@@ -682,7 +682,6 @@
 ::database::switcher::mc::Result								"Resultado"
 ::database::switcher::mc::Score								"puntuación"
 ::database::switcher::mc::Type								"Tipo"
-::database::switcher::mc::Variant							"Variante"
 ::database::switcher::mc::ReadOnly							"Sólo lectura"
 
 ### board ##############################################################
@@ -914,6 +913,7 @@
 ::engine::mc::Probing					"Penetrante"
 ::engine::mc::NeverUsed					"Nunca utilizado"
 ::engine::mc::OpenFsbox					"Abrir el diálogo Seleccionar archivo"
+::engine::mc::ResetToDefault			"Reset to default" ;# NEW
 ::engine::mc::ShowInfo					"Mostrar \"Info\""
 ::engine::mc::TotalUsage				"%s veces en total"
 ::engine::mc::Memory						"Memoria (MB)"
@@ -1361,9 +1361,9 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Fila no válida para el enroque."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"El enroque requiere filas con torre para no ser ambiguo (posiblemente estén mal configuradas)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too many pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 ::setup::board::mc::Error(InvalidEnPassant)			"Fila al paso no razonable."
 ::setup::board::mc::Error(MultiPawnCheck)				"Dos o más peones dando jaque."
 ::setup::board::mc::Error(TripleCheck)					"Tres o más piezas dando jaque."

@@ -140,7 +140,8 @@ proc WidgetProc {w command args} {
 			variable results
 			set index [lsearch -exact $results $result]
 			if {$index == -1} {
-				error "wrong arg '$result'; should be one of [join $results \", \"]"
+				set args [join $results ", "]
+				error "wrong arg '$result'; should be one of \{$args\}"
 			}
 			return [$w.__w__ current $index]
 		}

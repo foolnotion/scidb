@@ -220,8 +220,8 @@
 ::menu::mc::ScidbArchives				"Scidb arkiv"
 ::menu::mc::PGNFilesArchives			"PGN filer/arkiv"
 ::menu::mc::PGNFiles						"PGN filer"
-::menu::mc::PGNFilesArchives			"BPGN filer/arkiv"
-::menu::mc::PGNFiles						"BPGN filer"
+::menu::mc::BPGNFilesArchives			"BPGN filer/arkiv"
+::menu::mc::BPGNFiles					"BPGN filer"
 ::menu::mc::PGNArchives					"PGN arkiv"
 
 ::menu::mc::Language						"&Språk"
@@ -236,7 +236,6 @@
 ::menu::mc::Tools							"&Tools" ;# NEW
 ::menu::mc::Extras						"&Tillägg"
 ::menu::mc::Setup							"&Inställningar"
-::menu::mc::Engines						"&Motorer"
 
 # Contact
 ::menu::mc::ContactBugReport			"&Felrapport"
@@ -435,7 +434,14 @@
 ::application::database::mc::ClipbaseDescription			"Temporär databas, lagras inte på disk."
 ::application::database::mc::HardLinkDetected				"Kan inte ladda filen '%file1' därför den redan är laddad som filen '%file2'. Det kan bara hända när hård länkar är involverade."
 ::application::database::mc::HardLinkDetectedDetail		"Om vi laddar den här databasen två gånger kan applikation krasha pga trådanvändandet."
-::application::database::mc::SelectVariant					"Select Variant"
+::application::database::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
+::application::database::mc::SelectDatabases					"Välj databaser som ska öppnas"
+::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
+::application::database::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
+::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
+::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
+::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
+::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
@@ -641,13 +647,6 @@
 ::database::switcher::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
 ::database::switcher::mc::UriRejectedDetail(import)	"Bara Scidb databases kan importeras:"
 ::database::switcher::mc::EmptyUriList						"Innehåll som släpps är tomt."
-::database::switcher::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
-::database::switcher::mc::SelectDatabases					"Välj databaser som ska öppnas"
-::database::switcher::mc::ExtractArchive					"Packa upp arkiv %s"
-::database::switcher::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
-::database::switcher::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
-::database::switcher::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
-::database::switcher::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
 ::database::switcher::mc::CopyGames							"Kopiera partier"
 ::database::switcher::mc::CopyGamesFromTo					"Kopiera partier från '%src' till '%dst'"
 ::database::switcher::mc::CopiedGames						"%s parti(er) kopierade"
@@ -683,7 +682,6 @@
 ::database::switcher::mc::Result								"Resultat"
 ::database::switcher::mc::Score								"Poäng"
 ::database::switcher::mc::Type								"Typ"
-::database::switcher::mc::Variant							"Variant" ;# NEW
 ::database::switcher::mc::ReadOnly							"Skrivskydda"
 
 ### board ##############################################################
@@ -919,7 +917,6 @@
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"Aldrig använd"
 ::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
-::engine::mc::DefaultValue				"Standardvärde"
 ::engine::mc::ResetToDefault			"Återställ till standard"
 ::engine::mc::ShowInfo					"Visa \"Info\""
 ::engine::mc::TotalUsage				"%s times in total" ;# NEW
@@ -1328,7 +1325,6 @@
 ::setup::board::mc::Castling						"Rockad"
 ::setup::board::mc::MoveNumber					"Dragnummer"
 ::setup::board::mc::EnPassantFile				"En passant"
-::setup::board::mc::HalfMoves						"Half moves" ;# NEW
 ::setup::board::mc::HalfMoves						"Half move clock" ;# NEW
 ::setup::board::mc::StartPosition				"Startposition"
 ::setup::board::mc::Fen								"FEN"
@@ -1795,8 +1791,8 @@
 ::terminationbox::mc::Reason(RulesInfraction)		"Avdömt pga regelbrott"
 ::terminationbox::mc::Reason(TimeForfeit)				"%s tidsförlust"
 ::terminationbox::mc::Reason(TimeForfeit,both)		"Båda spelarna överskred tiden"
-::terminationbox::mc::Reason(Unterminated)			"Ej färdigspelat"
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
+::terminationbox::mc::Reason(Unterminated)			"Ej färdigspelat"
 
 ::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
 ::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"

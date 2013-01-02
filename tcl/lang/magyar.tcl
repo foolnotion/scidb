@@ -220,8 +220,8 @@
 ::menu::mc::ScidbArchives		"Scidb archives" ;# NEW
 ::menu::mc::PGNFilesArchives		"PGN fájlok/arhívumok"
 ::menu::mc::PGNFiles			"PGN fájlok"
-::menu::mc::PGNFilesArchives		"BPGN fájlok/arhívumok"
-::menu::mc::PGNFiles			"BPGN fájlok"
+::menu::mc::BPGNFilesArchives		"BPGN fájlok/arhívumok"
+::menu::mc::BPGNFiles			"BPGN fájlok"
 ::menu::mc::PGNArchives			"PGN arhívumok"
 
 ::menu::mc::Language			"L&anguage" ;# NEW
@@ -434,7 +434,14 @@
 ::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
 ::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. This can only happen if hard links are involved." ;# ? NEW
 ::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads." ;# NEW
-::application::database::mc::SelectVariant					"Select Variant"
+::application::database::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
+::application::database::mc::SelectDatabases		"Select the databases to be opened" ;# NEW
+::application::database::mc::ExtractArchive		"Extract archive %s" ;# NEW
+::application::database::mc::CompactDetail			"All games must been closed before a compaction can be done." ;# NEW
+::application::database::mc::ReallyCompact			"Really compact database '%s'?" ;# NEW
+::application::database::mc::ReallyCompactDetail(1)		"Only one game will be deleted." ;# NEW
+::application::database::mc::ReallyCompactDetail(N)		"%s games will be deleted." ;# NEW
+::application::database::mc::SelectVariant			"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -640,13 +647,6 @@
 ::database::switcher::mc::UriRejectedDetail(open)	"Only Scidb databases can be opened:" ;# NEW
 ::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
 ::database::switcher::mc::EmptyUriList			"Drop content is empty." ;# NEW
-::database::switcher::mc::OverwriteExistingFiles	"Overwrite exisiting files in directory '%s'?" ;# NEW
-::database::switcher::mc::SelectDatabases		"Select the databases to be opened" ;# NEW
-::database::switcher::mc::ExtractArchive		"Extract archive %s" ;# NEW
-::database::switcher::mc::CompactDetail			"All games must been closed before a compaction can be done." ;# NEW
-::database::switcher::mc::ReallyCompact			"Really compact database '%s'?" ;# NEW
-::database::switcher::mc::ReallyCompactDetail(1)	"Only one game will be deleted." ;# NEW
-::database::switcher::mc::ReallyCompactDetail(N)	"%s games will be deleted." ;# NEW
 ::database::switcher::mc::CopyGames			"Copy games" ;# NEW
 ::database::switcher::mc::CopyGamesFromTo		"Copy games from '%src' to '%dst'" ;# NEW
 ::database::switcher::mc::CopiedGames			"%s game(s) copied"
@@ -682,7 +682,6 @@
 ::database::switcher::mc::Result			"Eredmény"
 ::database::switcher::mc::Score				"Pontszám"
 ::database::switcher::mc::Type				"Típus"
-::database::switcher::mc::Variant			"Variant" ;# NEW
 ::database::switcher::mc::ReadOnly			"Csak olvasható"
 
 ### board ##############################################################
@@ -918,7 +917,6 @@
 ::engine::mc::Probing			"Probing" ;# NEW
 ::engine::mc::NeverUsed			"Never used" ;# NEW
 ::engine::mc::OpenFsbox			"Open File Selection Dialog" ;# NEW
-::engine::mc::DefaultValue		"Default value" ;# NEW
 ::engine::mc::ResetToDefault		"Reset to default" ;# NEW
 ::engine::mc::ShowInfo			"Show \"Info\"" ;# NEW don't translate "Info"
 ::engine::mc::TotalUsage		"%s times in total" ;# NEW
@@ -1319,56 +1317,56 @@
 ::setup::mc::Position(Shuffle)	"Shuffle chess position"
 
 ### setup board ########################################################
-::setup::position::mc::SetStartPosition		"Kezdő pozíció beállítása"
-::setup::position::mc::UsePreviousPosition	"Előző pozíció használata"
+::setup::position::mc::SetStartPosition			"Kezdő pozíció beállítása"
+::setup::position::mc::UsePreviousPosition		"Előző pozíció használata"
 
-::setup::board::mc::SetStartBoard		"Kiinduló állás beállítása"
-::setup::board::mc::SideToMove			"Lépésre következő fél"
-::setup::board::mc::Castling			"Sáncolás"
-::setup::board::mc::MoveNumber			"Lépésszám"
-::setup::board::mc::EnPassantFile		"Menetközbeni ütés"
-::setup::board::mc::HalfMoves			"Half move clock" ;# NEW
-::setup::board::mc::StartPosition		"Kiinduló állás"
-::setup::board::mc::Fen				"FEN"
-::setup::board::mc::Promoted			"Promoted" ;# NEW
-::setup::board::mc::Holding			"Holding" ;# NEW
-::setup::board::mc::ChecksGiven			"Checks Given" ;# NEW
-::setup::board::mc::Clear			"Törlés"
-::setup::board::mc::CopyFen			"FEN másolása a vágólapra"
-::setup::board::mc::Shuffle			"Keverés..."
-::setup::board::mc::FICSPosition		"FICS Start Position..." ;# NEW
-::setup::board::mc::StandardPosition		"Standard Position"
-::setup::board::mc::Chess960Castling		"Chess 960 castling"
+::setup::board::mc::SetStartBoard			"Kiinduló állás beállítása"
+::setup::board::mc::SideToMove				"Lépésre következő fél"
+::setup::board::mc::Castling				"Sáncolás"
+::setup::board::mc::MoveNumber				"Lépésszám"
+::setup::board::mc::EnPassantFile			"Menetközbeni ütés"
+::setup::board::mc::HalfMoves				"Half move clock" ;# NEW
+::setup::board::mc::StartPosition			"Kiinduló állás"
+::setup::board::mc::Fen					"FEN"
+::setup::board::mc::Promoted				"Promoted" ;# NEW
+::setup::board::mc::Holding				"Holding" ;# NEW
+::setup::board::mc::ChecksGiven				"Checks Given" ;# NEW
+::setup::board::mc::Clear				"Törlés"
+::setup::board::mc::CopyFen				"FEN másolása a vágólapra"
+::setup::board::mc::Shuffle				"Keverés..."
+::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
+::setup::board::mc::StandardPosition			"Standard Position"
+::setup::board::mc::Chess960Castling			"Chess 960 castling"
 
-::setup::board::mc::InvalidFen			"Érvénytelen FEN"
-::setup::board::mc::CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-::setup::board::mc::UnsupportedVariant		"Position is a start position but not a Shuffle Chess position. Are you sure?"
+::setup::board::mc::InvalidFen				"Érvénytelen FEN"
+::setup::board::mc::CastlingWithoutRook			"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+::setup::board::mc::UnsupportedVariant			"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
-::setup::board::mc::ChangeToFormat(xfen)	"Change to X-Fen format" ;# NEW
-::setup::board::mc::ChangeToFormat(shredder)	"Change to Shredder format" ;# NEW
+::setup::board::mc::ChangeToFormat(xfen)		"Change to X-Fen format" ;# NEW
+::setup::board::mc::ChangeToFormat(shredder)		"Change to Shredder format" ;# NEW
 
-::setup::board::mc::Error(InvalidFen)		"Érvénytelen FEN."
-::setup::board::mc::Error(EmptyBoard)		"Board is empty." ;# NEW
-::setup::board::mc::Error(NoWhiteKing)		"Világos király hiányzik."
-::setup::board::mc::Error(NoBlackKing)		"Sötét király hiányzik."
-::setup::board::mc::Error(DoubleCheck)		"Mindkét király sakkban áll."
-::setup::board::mc::Error(OppositeCheck)	"A nem lépésre jövő fél királya sakkban áll."
-::setup::board::mc::Error(TooManyWhitePawns)	"Túl sok világos gyalog."
-::setup::board::mc::Error(TooManyBlackPawns)	"Túl sok sötét gyalog."
-::setup::board::mc::Error(TooManyWhitePieces)	"Túl sok világos tiszt."
-::setup::board::mc::Error(TooManyBlackPieces)	"Túl sok sötét tiszt."
-::setup::board::mc::Error(PawnsOn18)		"Gyalog az 1. vagy a 8. soron."
-::setup::board::mc::Error(TooManyKings)		"Több mint két király."
-::setup::board::mc::Error(TooManyWhite)		"Túl sok világos figura."
-::setup::board::mc::Error(TooManyBlack)		"Túl sok sötét figura."
-::setup::board::mc::Error(BadCastlingRights)	"Hibás sáncolási jogok."
+::setup::board::mc::Error(InvalidFen)			"Érvénytelen FEN."
+::setup::board::mc::Error(EmptyBoard)			"Board is empty." ;# NEW
+::setup::board::mc::Error(NoWhiteKing)			"Világos király hiányzik."
+::setup::board::mc::Error(NoBlackKing)			"Sötét király hiányzik."
+::setup::board::mc::Error(DoubleCheck)			"Mindkét király sakkban áll."
+::setup::board::mc::Error(OppositeCheck)		"A nem lépésre jövő fél királya sakkban áll."
+::setup::board::mc::Error(TooManyWhitePawns)		"Túl sok világos gyalog."
+::setup::board::mc::Error(TooManyBlackPawns)		"Túl sok sötét gyalog."
+::setup::board::mc::Error(TooManyWhitePieces)		"Túl sok világos tiszt."
+::setup::board::mc::Error(TooManyBlackPieces)		"Túl sok sötét tiszt."
+::setup::board::mc::Error(PawnsOn18)			"Gyalog az 1. vagy a 8. soron."
+::setup::board::mc::Error(TooManyKings)			"Több mint két király."
+::setup::board::mc::Error(TooManyWhite)			"Túl sok világos figura."
+::setup::board::mc::Error(TooManyBlack)			"Túl sok sötét figura."
+::setup::board::mc::Error(BadCastlingRights)		"Hibás sáncolási jogok."
 ::setup::board::mc::Error(InvalidCastlingRights)	"Értelmetlen bástya vonal(ak) sáncoláshoz."
 ::setup::board::mc::Error(InvalidCastlingFile)		"Érvénytelen sáncolási vonal."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
 ::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPromotedPieces)		"Too many pieces marked as promoted." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
+::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
