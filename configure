@@ -167,12 +167,9 @@ foreach name [array names environment] {
 }
 
 array set compiler {
-    simd                        {}
-    thread-support              {}
-    no-stack-protector          {}
-    no-gzoffset                 {}
-    var-tracking                {}
-    var-tracking-assignments    {}
+    simd            {}
+    thread-support  {}
+    no-gzoffset     {}
 }
 
 array set option {
@@ -1439,7 +1436,7 @@ cat <<EOF > testCompilerFlag.c
 int main() { return 1; }
 EOF
 
-__CC__ -g -f%FLAG% -o testCompilerFlag testCompilerFlag.c
+__CC__ -g %FLAG% -o testCompilerFlag testCompilerFlag.c
 if [ -f testCompilerFlag ]; then
     exit 0
 else
@@ -1592,14 +1589,19 @@ proc checkGCC {cc} {
             set compiler(thread-support) -DDONT_USE_SYNC_BUILTIN
             puts "no."
         }
-        # we check silently which options the compiler supports.
-        # don't use var-tracking*, compile time is too long.
-        # foreach opt {no-stack-protector var-tracking var-tracking-assignments}
-        foreach opt {no-stack-protector} {
+        # We check silently which options the compiler supports.
+        #
+        # Don't use "var-tracking*", compile time is too long.
+        #
+        # We use "Wno-cpp" to suppress this stupid "Attemot to use
+        # kernel headers from user space" warning (the inventor
+        # of this warning is without any serious experience in
+        # software development).
+        foreach opt {-fno-stack-protector -Wno-cpp} {
             set script [regsub -all %FLAG% $TestCompilerFlag $opt]
             set script [regsub -all __CC__ $script $environment($cc)]
             if {[Probe testCompilerFlag $script]} {
-                set compiler($opt) -f$opt
+                set compiler($opt) $opt
             }
         }
     }
@@ -1741,8 +1743,10 @@ proc writeMakefile {{type ""}} {
     global option defaults environment package compiler feature configure subdir tcl_platform engines
 
     set extra_c_flags "-pipe -Wno-format-security"
-    if {[string length $compiler(no-stack-protector)]} {
-        Append extra_c_flags $compiler(no-stack-protector)
+    foreach opt [array names compiler -*] {
+        if {[string length $compiler($opt)]} {
+            Append extra_c_flags $compiler($opt)
+        }
     }
 
     Append option(EXTRA_CXXFLAGS) $extra_c_flags
@@ -1774,11 +1778,6 @@ proc writeMakefile {{type ""}} {
 
     if { $feature(symbols)} {
         Append option(C_DEBUG) "-g"
-        foreach opt {var-tracking var-tracking-assignments} {
-            if {[llength $compiler($opt)]} {
-                Append option(EXTRA_DEBUG_FLAGS) $compiler($opt)
-            }
-        }
         set option(CXX_DEBUG) $option(C_DEBUG)
     }
     if {!$feature(assertions)}      { Append option(C_DEBUG) "-DNDEBUG" }
