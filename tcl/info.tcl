@@ -14,7 +14,7 @@
 # ======================================================================
 
 # ======================================================================
-# Copyright: (C) 2009-2012 Gregor Cramer
+# Copyright: (C) 2009-2013 Gregor Cramer
 # ======================================================================
 
 # ======================================================================
@@ -154,7 +154,7 @@ proc DisplayAbout {w} {
 		<br/><br/>
 		<font style='font-family: $fam; font-size: 12pt;'>
 			$mc::Version $::scidb::version<br/>
-			Copyright &#x00A9; 2008-2012 Gregor Cramer<br/><br/>
+			Copyright &#x00A9; 2008-2013 Gregor Cramer<br/><br/>
 			[Url http://scidb.sourceforge.net]<br/><br/>
 			$mc::Distributed<br/><br/>
 			<font style='font-size: 10pt;'>$mc::Inspired</font>

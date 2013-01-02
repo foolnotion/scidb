@@ -10,7 +10,7 @@
  *
  *		This module is the header for treectrl widgets for the Tk toolkit.
  *
- * Copyright (c) 2009-2012 Gregor Cramer
+ * Copyright (c) 2009-2013 Gregor Cramer
  * Copyright (c) 2002-2008 Tim Baker
  * Copyright (c) 2002-2003 Christian Krone
  * Copyright (c) 2003 ActiveState Corporation

@@ -19,7 +19,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -76,6 +76,8 @@ public:
 	bool isEmpty() const;
 	/// Returns @p true if all date parts are defined.
 	bool isFull() const;
+	/// Returns true if date is between min and max.
+	bool isBetween(Date const& min, Date const& max) const;
 
 	/// Returns year, @p 0 if undefined.
 	unsigned year() const;

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -324,7 +324,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 		if (game->startBoard().plyNumber() != currentBoard().plyNumber())
 		{
 			m_position.append(" moves", 6);
-			game->dumpHistory(m_position);
+			game->dumpHistory(m_position, Game::UCI);
 		}
 	}
 	else

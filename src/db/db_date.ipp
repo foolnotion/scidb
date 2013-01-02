@@ -19,7 +19,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -113,6 +113,17 @@ int
 Date::compare(Date const& date) const
 {
 	return int(m_value) - int(date.m_value);
+}
+
+
+inline
+bool
+Date::isBetween(Date const& min, Date const& max) const
+{
+	if (isEmpty())
+		return false;
+
+	return min <= *this && *this <= max;
 }
 
 } // namespace db

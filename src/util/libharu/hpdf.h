@@ -4,7 +4,7 @@
  * URL http://libharu.org/
  *
  * Copyright (c) 1999-2006 Takeshi Kanno
- * Copyright (c) 2011-2012 Gregor Cramer
+ * Copyright (c) 2011-2013 Gregor Cramer
  *
  * Permission to use, copy, modify, distribute and sell this software
  * and its documentation for any purpose is hereby granted without fee,

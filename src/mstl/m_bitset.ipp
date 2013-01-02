@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -670,6 +670,17 @@ bitset::test_and_set(size_type n)
 	M_REQUIRE(n < size());
 
 	return m_bits[word_index(n)].test_and_set(bitfield::word_index(n));
+}
+
+
+inline
+bool
+bitset::test_and_reset(size_type n)
+{
+	M_REQUIRE(!compressed());
+	M_REQUIRE(n < size());
+
+	return m_bits[word_index(n)].test_and_reset(bitfield::word_index(n));
 }
 
 

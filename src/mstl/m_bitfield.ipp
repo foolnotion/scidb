@@ -6,7 +6,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2012 Gregor Cramer
+// Copyright: (C) 2009-2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -442,6 +442,23 @@ bitfield<Bits>::test_and_set(unsigned n)
 
 	m_bits |= m;
 	return false;
+}
+
+
+template <class Bits>
+inline
+bool
+bitfield<Bits>::test_and_reset(unsigned n)
+{
+	M_REQUIRE(n < nbits);
+
+	value_type m = mask(n);
+
+	if ((m_bits & m) == 0)
+		return false;
+
+	m_bits &= ~m;
+	return true;
 }
 
 
