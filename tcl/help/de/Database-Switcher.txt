@@ -207,7 +207,7 @@ Fall werden die Partien in die Zieldatenbank kopiert.
 </p>
 
 <p>
-Um alle Partien (einr Schachform) einer Datenbank in eine andere zu kopieren werden
+Um alle Partien einer Datenbank (jedoch nur einer Schachform) in eine andere zu kopieren werden
 mit gedrückter linker Maustaste die Partien gegriffen und in das Zielfeld gezogen und
 fallengelassen. Voraussetzung ist, daß die Zieldatenbank nicht schreibgeschützt ist
 und auch nicht gesperrt. Dies ist ein wichtiges Instrument zum Verwalten und
