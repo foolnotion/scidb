@@ -444,7 +444,7 @@ proc saveGame {mode} {
 	variable Vars
 
 	set position [::gamebar::selected $Vars(gamebar)]
-	lassign [::scidb::game::link? $position] base variant_
+	lassign [::scidb::game::link? $position] base variant _
 
 	if {$base eq $clipbaseName} { return }
 	if {[::scidb::db::get readonly? $base $variant]} { return }
