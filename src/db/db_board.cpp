@@ -505,8 +505,8 @@ Board::hashHoldingRemove(piece::ID piece, Byte newCount)
 	M_ASSERT(piece::type(piece) != piece::King);
 	M_ASSERT(newCount < 20); // rough check if negative
 
+	m_hash ^= setBit(newCount + 1);
 	m_hash ^= (newCount ? setBit(newCount) : rand64::Holding[piece]);
-	m_hash ^= setBit(newCount - 1);
 }
 
 
@@ -697,6 +697,8 @@ inline
 void
 Board::removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned color)
 {
+	static_assert(Piece != piece::Pawn, "do not use for pawns");
+
 	if (m_capturePromoted)
 	{
 		m_partner->m_promoted[color] ^= fromMask;
@@ -1088,7 +1090,7 @@ Board::prepareForPrint(Move& move, variant::Type variant) const
 
 							if (others && count(movers & m_occupiedBy[m_stm]) == 1)
 							{
-								// this is confusing if more than moving piece exists
+								// this is confusing if more than one moving piece exists
 								if (state & Checkmate)
 									filterCheckmateMoves(move, others, variant);
 								else
@@ -1315,7 +1317,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			break;
 
 		case piece::None:
-			break; // error
+			break; // cannot happen
 	}
 
 	m_piece[s] = pt;
@@ -1404,7 +1406,7 @@ Board::removeAt(Square s, variant::Type variant)
 			break;
 
 		case piece::None:
-			break; // error
+			break; // cannot happen
 	}
 
 	m_piece[s] = piece::None;
@@ -2482,7 +2484,7 @@ Board::setup(char const* fen, variant::Type variant)
 	// 2) Three-Check: there is no information of given checks
 	// 3) Crazyhouse: there exists no standard for the content of the holding
 	// ------------------------------------------------------------------------
-	// For case (2) we have our own extension: a trailing "/<n>:<n> denotes the
+	// For case (2) we have our own extension: a trailing " +<n>+<n>" denotes the
 	// numbers of checks given (white/black).
 	// For case (3) we are using the BPGN definition: a trailing "/<pieces>"
 	// denotes the pieces in holding; for example "/QQRbnp".
