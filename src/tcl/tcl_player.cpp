@@ -423,8 +423,8 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case 'n':
 			switch (tolower(opStr[1]))
 			{
-				case 'u': op = op = app::PlayerDictionary::Null; break;
-				case 'o': op = op = app::PlayerDictionary::Not; break;
+				case 'u': op = app::PlayerDictionary::Null; break;
+				case 'o': op = app::PlayerDictionary::Not; break;
 			}
 			break;
 
@@ -433,8 +433,8 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				switch (tolower(opStr[2]))
 				{
-					case 's': op = op = app::PlayerDictionary::Reset; break;
-					case 'm': op = op = app::PlayerDictionary::Remove; break;
+					case 's': op = app::PlayerDictionary::Reset; break;
+					case 'm': op = app::PlayerDictionary::Remove; break;
 				}
 			}
 			break;

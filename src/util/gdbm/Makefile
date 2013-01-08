@@ -17,7 +17,7 @@ include ../../../Makefile.in
 INCLUDE	= -I.
 DEBUG		= -DNDEBUG
 OPTIMIZE	= -O2
-CFLAGS	+= $(OPTIMIZE) $(DEBUG)
+CFLAGS	+= $(OPTIMIZE) $(DEBUG) -Wno-unused-result
 
 SRC_C = \
 	bucket.c \

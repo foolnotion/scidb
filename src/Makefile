@@ -17,7 +17,7 @@ include ../Makefile.in
 TK_PROGRAM		= tkscidb$(SUFFIX)
 TCL_PROGRAM		= tclscidb$(SUFFIX)
 
-INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
+INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/sci -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(ZLIB_INC)
 ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip

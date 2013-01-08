@@ -5,7 +5,7 @@
 include ../../Makefile.in
 
 EXE		= crafty-scidb
-CFLAGS	= -O3 -fomit-frame-pointer -DNOEGTB -DCPUS=$(CPUS) -DSKILL
+CFLAGS	= -O3 -fomit-frame-pointer -DNOEGTB -DCPUS=$(CPUS) -DSKILL -Wno-unused-result
 
 OBJS = search.o thread.o repeat.o next.o killer.o quiesce.o evaluate.o        \
        movgen.o make.o unmake.o hash.o  attacks.o swap.o boolean.o utility.o  \
