@@ -214,7 +214,7 @@ static mstl::string const Lookup[] =
 	"GM", "IM", "FM", "CM",
 	"WGM", "WIM", "WFM", "WCM",
 	"HGM",
-	"CGM", "CIM", "LGM", "ILM", "CSIM",
+	"CGM", "CIM", "CLGM", "CILM", "CSIM",
 };
 
 } // namespace title
@@ -1390,6 +1390,7 @@ title::fromString(char const* title)
 		case 'F': return title[1] == 'M' ? title::FM : title::None;
 		case 'G': return title[1] == 'M' ? title::GM : title::None;
 		case 'S': return title[1] == 'I' && title[2] == 'M' ? title::CSIM : title::None;
+		case 'L': return title[1] == 'G' && title[2] == 'M' ? title::CLGM : title::None;
 
 		case 'C':
 			switch (title[1])
@@ -1397,16 +1398,14 @@ title::fromString(char const* title)
 				case 'G': return title[2] == 'M' ? title::CGM : title::None;
 				case 'M': return title::CM;
 				case 'S': return title[2] == 'I' && title[3] == 'M' ? title::CSIM : title::None;
-				case 'L':
+				case 'L': return title[2] == 'G' && title[3] == 'M' ? title::CLGM : title::None;
+				case 'I':
 					switch (title[2])
 					{
-						case 'G': return title[3] == 'M' ? title::CLGM : title::None;
-						case 'I': return title[3] == 'M' ? title::CLIM : title::None;
+						case 'L': return title[3] == 'M' ? title::CILM : title::None;
+						case 'M': return title::CIM;
 					}
 					break;
-
-				case 'I':
-					return title[2] == 'M' ? title::CIM : title::None;
 			}
 			break;
 
@@ -1416,16 +1415,9 @@ title::fromString(char const* title)
 		case 'I':
 			switch (title[1])
 			{
-				case 'G': return title[2] == 'M' ? title::GM : title::None;
+				case 'G': return title[1] == 'G' && title[2] == 'M' ? title::GM : title::None;
+				case 'L': return title[2] == 'M' ? title::CILM : title::None;
 				case 'M': return title::IM;
-			}
-			break;
-
-		case 'L':
-			switch (title[1])
-			{
-				case 'G': return title[2] == 'M' ? title::CLGM : title::None;
-				case 'I': return title[2] == 'M' ? title::CLIM : title::None;
 			}
 			break;
 

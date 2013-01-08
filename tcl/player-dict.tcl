@@ -254,6 +254,9 @@ proc open {parent args} {
 				set tvar [namespace current]::mc::T_[string toupper $id 0 0]
 				set fvar [namespace current]::mc::F_[string toupper $id 0 0]
 			}
+			federationId {
+				set fvar [namespace current]::mc::F_FederationId
+			}
 			default {
 				set ivar ::playertable::icon::12x12::I_[string toupper $id 0 0]
 				set tvar ::playertable::mc::T_[string toupper $id 0 0]
@@ -909,6 +912,34 @@ proc TableVisit {table data} {
 	if {$mode eq "leave"} {
 		::tooltip::hide true
 		return
+	}
+
+	set tip ""
+	set info [scidb::player::info [::scrolledtable::rowToIndex $table $row]]
+
+	switch $id {
+		federation {
+			set code [lindex $info 0]
+			if {[string length $code]} {
+				set tip [::country::name $code]
+			}
+		}
+		country {
+			set code [lindex $info 3]
+			if {[string length $code]} {
+				set tip [::country::name $code]
+			}
+		}
+		titles {
+			foreach title [lindex $info 7] {
+				if {[string length $tip]} { append tip \n }
+				append tip $::titlebox::mc::Title($title)
+			}
+		}
+	}
+
+	if {[string length $tip]} {
+		::tooltip::show $table $tip
 	}
 }
 

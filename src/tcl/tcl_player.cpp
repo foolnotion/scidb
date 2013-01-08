@@ -425,7 +425,7 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	for (unsigned i = 0; i < title::Last; ++i)
 	{
-		if (title::contains(player.titles(), title::ID(i)))
+		if (i != title::None && title::contains(player.titles(), title::ID(i)))
 			titles[numTitles++] = Tcl_NewStringObj(title::toString(title::ID(i)), -1);
 	}
 

@@ -532,7 +532,7 @@ namespace title
 		CGM,	///< Correspondence Grandmaster (ICCF)
 		CIM,	///< Correspondence International Master (ICCF)
 		CLGM,	///< Correspondence Lady Grandmaster (ICCF)
-		CLIM,	///< Correspondence Lady International Master (ICCF)
+		CILM,	///< Correspondence Lady International Master (ICCF)
 		CSIM,	///< Correspondence Senior International Master (ICCF)
 
 		Last,
@@ -553,7 +553,7 @@ namespace title
 		Mask_CGM		= 1 << CGM,
 		Mask_CIM		= 1 << CIM,
 		Mask_CLGM	= 1 << CLGM,
-		Mask_CLIM	= 1 << CLIM,
+		Mask_CILM	= 1 << CILM,
 		Mask_CSIM	= 1 << CSIM,
 
 		Mask_Any		= ((1 << Last) - 1) & ~Mask_None,
