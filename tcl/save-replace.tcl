@@ -55,6 +55,7 @@ set SaveGameFailedDetail		"See log for details."
 set SavingGameLogInfo			"Saving game (%white - %black, %event) into database '%base'"
 set CurrentBaseIsReadonly		"Current database '%s' is read-only."
 set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
+set OpenPlayerDictionary		"Open Player Dictionary"
 
 set LocalName						"&Local Name"
 set EnglishName					"E&nglish Name"
@@ -282,7 +283,6 @@ proc open {parent base variant position {number 0}} {
 	} else {
 		set characteristics $characteristicsOnly
 	}
-#	set dlg $parent.saveReplace_${characteristics}_${codec}
 	set dlg [winfo toplevel $parent].saveReplace_${characteristics}_${codec}
 
 	Destroy $dlg
@@ -358,11 +358,13 @@ proc open {parent base variant position {number 0}} {
 	# Finalization ############################################
 	focus $dlg.top.white-name
 	$dlg.top.white-name selection range 0 end
+	bind $dlg <FocusIn> { ::playerdict::unsetReceiver }
 
 	::ttk::grabWindow $dlg
 	set Priv(finished) 0
    tkwait variable [namespace current]::Priv(finished)
 	::ttk::releaseGrab $dlg
+	::playerdict::unsetReceiver
 
 	return $dlg
 }
@@ -464,6 +466,12 @@ proc Build {dlg base variant position number} {
 		if {$state eq "normal"} {
 			fideidbox $top.$side-fideID -textvar ::${dlg}::Priv(${side}-fideID) -state $state
 		}
+		ttk::button $top.$side-dict \
+			-style icon.TButton \
+			-image $::icon::12x12::dictionary \
+			-command [namespace code [list GetPlayerFromDict $dlg $side]] \
+			;
+		::tooltip::tooltip $top.$side-dict [namespace current]::mc::OpenPlayerDictionary
 		ttk::frame $top.$side-rating -borderwidth 0 -takefocus 0
 		if {$twoRatings} {
 			ttk::label $top.$side-rating.l-elo -text "Elo"
@@ -513,7 +521,8 @@ proc Build {dlg base variant position number} {
 		set Priv(${side}-fideID) {}
 
 		lappend rows [set $row]
-		grid $top.$side -row [set $row] -column $col -columnspan 3 -sticky ew
+		if {$side eq "white"} { set span 4} else { set span 3}
+		grid $top.$side -row [set $row] -column $col -columnspan $span -sticky ew
 		incr $row 2
 
 		grid $top.$side-player-l -row [set $row] -column $col -sticky w
@@ -522,10 +531,14 @@ proc Build {dlg base variant position number} {
 
 		grid $top.$side-name -row 0 -column 0 -sticky ew -in $top.$side-player
 		grid columnconfigure $top.$side-player 0 -weight 1
+		set c 2; set cols {1}
 		if {$state eq "normal"} {
 			grid $top.$side-fideID -row 0 -column 2 -sticky w -in $top.$side-player
-			grid columnconfigure $top.$side-player 1 -minsize $::theme::padding
+			lappend cols 3
+			incr c 2
 		}
+		grid $top.$side-dict -row 0 -column $c -sticky wns -in $top.$side-player
+		grid columnconfigure $top.$side-player $cols -minsize $::theme::padding
 
 		set list {name {}}
 		if {$state eq "normal"} { lappend list fideID FideId }
@@ -3016,6 +3029,23 @@ proc CheckFields {top title fields} {
 	}
 
 	return 1
+}
+
+
+proc SetPlayerFromDict {dlg side info} {
+	variable ::${dlg}::Priv
+	lassign $info Priv(${side}-name) Priv(${side}-fideID)
+	::widget::dialogRaise $dlg
+	focus -force $dlg.top.$side-name
+	$dlg.top.$side-name icursor end
+	::playerdict::unsetReceiver
+}
+
+
+proc GetPlayerFromDict {dlg side} {
+	variable ::${dlg}::Priv
+	::playerdict::setReceiver [namespace code [list SetPlayerFromDict $dlg $side]]
+	::playerdict::open . -federation Fide -rating1 Elo -rating2 $Priv(${side}-rating)
 }
 
 

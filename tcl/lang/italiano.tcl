@@ -1674,6 +1674,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Salvataggio partita (%white - %black, %event) nel database '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"L'attuale database '%s' è per sola-lettura."
 ::dialog::save::mc::CurrentGameHasTrialMode	"L'attuale partita è in modalità di prova e non può essere salvata."
+::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary" ;# NEW
 
 ::dialog::save::mc::LocalName						"&Nome locale"
 ::dialog::save::mc::EnglishName					"Nome &Inglese"

@@ -76,14 +76,39 @@ array set Options {
 	rating2:type	DWZ
 }
 
+set Priv(receiver) {}
 
-proc open {parent} {
+
+proc setReceiver {cmd}	{ set [namespace current]::Priv(receiver) $cmd }
+proc unsetReceiver {}	{ set [namespace current]::Priv(receiver) {} }
+
+
+proc open {parent args} {
 	variable ::gametable::ratings
 	variable Priv
 	variable DefaultFilter
 	variable Filter
 	variable Columns
 	variable Options
+
+	array set opts {
+		-federation	""
+		-rating1		""
+		-rating2		""
+	}
+	array set opts $args
+
+	if {[string length $opts(-federation)]} {
+		set Options(federation) $opts(-federation)
+	}
+	if {[string length $opts(-rating1)]} {
+		set Options(rating1:type) $opts(-rating1)
+	}
+	if {[string length $opts(-rating2)]} {
+		set Options(rating1:type) $opts(-rating2)
+	}
+
+	array unset opts
 
 	if {$parent eq "."} { set dlg .playerDict } else { set dlg $parent.playerDict }
 	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
@@ -271,8 +296,8 @@ proc open {parent} {
 #		-stripes #cddfe2
 
 	::bind $table <<TableFill>>		[namespace code [list TableFill $table %d]]
-	::bind $table <<TableSelected>>	[namespace code [list TableSelected $table %d]]
 	::bind $table <<TableVisit>>		[namespace code [list TableVisit $table %d]]
+	::bind $table <<TableSelected>>	[namespace code [list TableSelected $table %d]]
 
 	set Priv(search) ""
 	set cmd [namespace code [list Search $table]]
@@ -299,8 +324,8 @@ proc open {parent} {
 	grid rowconfigure $top {0 2 4 6} -minsize $::theme::pady
 
 	::widget::dialogButtons $dlg {close}
-	::widget::dialogButtonAdd $dlg filter ::mc::Filter {}
 	$dlg.close configure -command [list destroy $dlg]
+	::widget::dialogButtonAdd $dlg filter ::mc::Filter {}
 	$dlg.filter configure -command [namespace code [list SetFilter $table]]
 	$dlg.filter configure -image $::icon::16x16::filter(inactive) -compound left
 
@@ -867,7 +892,12 @@ proc TableFill {table args} {
 proc TableSelected {table index} {
 	variable Priv
 
-	# TODO
+	if {[llength $Priv(receiver)]} {
+		set info [scidb::player::info $index]
+		{*}$Priv(receiver) [lrange [scidb::player::info $index] 1 2]
+	} else {
+		::scrolledtable::select $table none 
+	}
 }
 
 

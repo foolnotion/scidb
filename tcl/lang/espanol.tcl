@@ -1670,6 +1670,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Guardar partida (%white - %black, %event) en base '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"La base actual '%s' es de sólo lectura."
 ::dialog::save::mc::CurrentGameHasTrialMode	"El juego actual está en modo de prueba y no puede ser guardado."
+::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary" ;# NEW
 
 ::dialog::save::mc::LocalName						"&Nombre local"
 ::dialog::save::mc::EnglishName					"Nombre I&nglés"
