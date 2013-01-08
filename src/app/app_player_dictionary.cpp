@@ -353,7 +353,7 @@ PlayerDictionary::prepareForOp(Operator op, Setter& setter)
 			return false;
 
 		case Null:
-			m_attrFilter = m_attrFilter;
+			m_attrFilter = m_baseFilter;
 			// fallthru
 
 		case Remove:

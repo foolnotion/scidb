@@ -304,7 +304,7 @@ private:
 	Ratings m_highestRating;
 	Ratings m_latestRating;
 
-	uint32_t m_titles			:15;
+	uint32_t m_titles			:14;
 	uint32_t m_birthYear		:11;
 	uint32_t m_deathMonth	:4;
 	uint32_t m_sex				:2;

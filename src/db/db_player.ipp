@@ -88,12 +88,9 @@ void
 Player::addTitle(title::ID title)
 {
 	M_REQUIRE(title != title::Last);
+	M_REQUIRE(title != title::None);
 
-	if (title != title::None)
-	{
-		m_titles = title::add(m_titles, title);
-		m_titles &= ~title::Mask_None;
-	}
+	m_titles = title::add(m_titles, title);
 }
 
 
@@ -102,12 +99,9 @@ void
 Player::setTitles(unsigned titles)
 {
 	M_REQUIRE(titles < (1 << (title::Last)));
+	M_REQUIRE(!(titles & title::Mask_None));
 
-	if (titles & title::Mask_Any)
-	{
-		m_titles = titles;
-		m_titles &= ~title::Mask_None;
-	}
+	m_titles = titles;
 }
 
 

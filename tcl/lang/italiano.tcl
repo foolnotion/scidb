@@ -112,15 +112,15 @@
 ::mc::Logical(or)			"OR"
 ::mc::Logical(and)		"AND"
 ::mc::Logical(null)		"None" ;# NEW
-::mc::Logical(not)		"NOT"
 ::mc::Logical(remove)	"Remove" ;# NEW
+::mc::Logical(not)		"NOT"
 
-::mc::LogicalDetail(reset)			"Reset filter" ;# NEW
-::mc::LogicalDetail(or)				"Add to filter" ;# NEW
-::mc::LogicalDetail(and)			"Restrict filter" ;# NEW
-::mc::LogicalDetail(null)			"Clear filter" ;# NEW
-::mc::LogicalDetail(not)			"Exlude from filter" ;# NEW
-::mc::LogicalDetail(remove)		"Remove from filter" ;# NEW
+::mc::LogicalDetail(reset)			"Clear filter / Reset display" ;# NEW
+::mc::LogicalDetail(or)				"Remove from filter / Add to display" ;# NEW
+::mc::LogicalDetail(and)			"Extend filter / Restrict display" ;# NEW
+::mc::LogicalDetail(null)			"Fill filter / Clear display" ;# NEW
+::mc::LogicalDetail(remove)		"Add to filter / Remove from display" ;# NEW
+::mc::LogicalDetail(not)			"Restrict filter / Extent display" ;# NEW
 
 ::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
 ::mc::VariantName(Normal)			"Normal Chess" ;# NEW

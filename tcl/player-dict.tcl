@@ -440,7 +440,6 @@ proc SetFilter {table} {
 
 	array set Filter_ [array get Filter]
 
-	set Title_() 0
 	foreach title $::titlebox::titles(all) { set Title_($title) 0 }
 	foreach title $Filter(titles) { set Title_($title) 1 }
 
@@ -495,8 +494,8 @@ proc SetFilter {table} {
 	grid $ids.dsb		-row 1 -column 5
 	grid $ids.ecf		-row 1 -column 7
 	grid $ids.iccf		-row 1 -column 9
-	grid columnconfigure $ids {1 3 5 7 9} -uniform id
-	grid columnconfigure $ids {2 4 6 8} -minsize $::theme::padX
+#	grid columnconfigure $ids {1 3 5 7 9} -uniform id
+	grid columnconfigure $ids {2 4 6 8} -minsize [expr {4*$::theme::padx}]
 	grid columnconfigure $ids {0 10} -minsize $::theme::padx -weight 1
 	grid rowconfigure $ids {2} -minsize $::theme::pady
 
@@ -521,7 +520,7 @@ proc SetFilter {table} {
 	grid $sex.any		-row 1 -column 1
 	grid $sex.male		-row 1 -column 3
 	grid $sex.female	-row 1 -column 5
-	grid columnconfigure $sex {2 4 6} -minsize $::theme::padX
+	grid columnconfigure $sex {2 4 6} -minsize [expr {4*$::theme::padx}]
 	grid columnconfigure $sex {0 8} -minsize $::theme::padx -weight 1
 	grid rowconfigure $sex {0 2} -minsize $::theme::pady
 
@@ -562,23 +561,18 @@ proc SetFilter {table} {
 	### titles #####################################################
 	tk::label $top.ltitles -textvar [namespace current]::mc::Titles -background $bg -font $bold
 	set titles [ttk::labelframe $top.titles -labelwidget $top.ltitles]
-	ttk::checkbutton $titles.none \
-		-textvar [namespace current]::mc::None \
-		-variable [namespace current]::Title_() \
-		;
-	grid $titles.none -row 1 -column 3 -sticky w
 	ttk::button $titles.fide \
 		-text "Fide" \
 		-style aligned.TButton \
 		-command [namespace code [list ToggleTitles Fide]] \
 		;
-	grid $titles.fide -row 3 -column 1 -sticky w
+	grid $titles.fide -row 1 -column 1 -sticky w
 	set col 3
 	foreach title $::titlebox::titles(Fide) {
 		set w $titles.[string tolower $title]
 		ttk::checkbutton $w -text $title -variable [namespace current]::Title_($title)
 		::tooltip::tooltip $w ::titlebox::mc::Title($title)
-		grid $w -row 3 -column $col -sticky w
+		grid $w -row 1 -column $col -sticky w
 		grid columnconfigure $titles $col -uniform title
 		incr col 2
 	}
@@ -588,13 +582,13 @@ proc SetFilter {table} {
 		-style aligned.TButton \
 		-command [namespace code [list ToggleTitles ICCF]] \
 		;
-	grid $titles.iccf -row 5 -column 1 -sticky w
+	grid $titles.iccf -row 3 -column 1 -sticky w
 	set col 3
 	foreach title $::titlebox::titles(ICCF) {
 		set w $titles.[string tolower $title]
 		ttk::checkbutton $w -text $title -variable [namespace current]::Title_($title)
 		::tooltip::tooltip $w ::titlebox::mc::Title($title)
-		grid $w -row 5 -column $col -sticky w
+		grid $w -row 3 -column $col -sticky w
 		grid columnconfigure $titles $col -uniform title
 		incr col 2
 	}
@@ -602,7 +596,7 @@ proc SetFilter {table} {
 	grid columnconfigure $titles {0 20} -minsize $::theme::padx
 	grid columnconfigure $titles {2 4 6 8 10 12 14 16 18} -minsize $::theme::padX
 	grid columnconfigure $titles {1} -uniform btn
-	grid rowconfigure $titles {0 2 4 6} -minsize $::theme::pady
+	grid rowconfigure $titles {0 2 4} -minsize $::theme::pady
 
 	### birth/death year ###########################################
 	tk::label $top.lyear -background $bg -font $bold
@@ -642,7 +636,7 @@ proc SetFilter {table} {
 	tk::label $top.loperation -textvar [namespace current]::mc::Operation -background $bg -font $bold
 	set operation [ttk::labelframe $top.operation -labelwidget $top.loperation]
 	set col 1
-	foreach op {reset or and null not remove} {
+	foreach op {reset or and null remove not} {
 		set w $operation.$op
 		ttk::radiobutton $w \
 			-style darker.TRadiobutton \
@@ -652,10 +646,10 @@ proc SetFilter {table} {
 			;
 		::tooltip::tooltip $w ::mc::LogicalDetail($op)
 		grid $w -row 1 -column $col -sticky w
-		grid columnconfigure $operation $col -uniform op
+#		grid columnconfigure $operation $col -uniform op
 		incr col 2
 	}
-	grid columnconfigure $operation {0 2 4 6 8 10 12} -minsize $::theme::padX
+	grid columnconfigure $operation {0 2 4 6 8 10 12} -minsize [expr {4*$::theme::padx}]
 	grid columnconfigure $operation {0 12} -weight 1
 	grid rowconfigure $operation {0 2} -minsize $::theme::pady
 
@@ -685,13 +679,13 @@ proc SetFilter {table} {
 	::ttk::grabWindow $dlg
 	wm deiconify $dlg
 	focus $general.name
+	tkwait visibility $dlg
 	tkwait variable [namespace current]::Reply_
 	::ttk::releaseGrab $dlg
 
 	if {$Reply_ eq "cancel"} { return [destroy $dlg] }
 	set Filter(titles) {}
 
-	if {$Title_()} { lappend Filter(titles) "" }
 	foreach title $::titlebox::titles(all) {
 		if {$Title_($title)} { lappend Filter(titles) $title }
 	}
@@ -781,7 +775,6 @@ proc ResetFilter {top} {
 
 	array set Filter [array get DefaultFilter]
 
-	set Title_() 0
 	foreach title $::titlebox::titles(all) { set Title_($title) 0 }
 	foreach title $Filter(titles) { set Title_($title) 1 }
 

@@ -572,7 +572,7 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					{
 						char const* s = Tcl_GetString(objs[i]);
 						title::ID title = title::fromString(s);
-						if (title == title::None && *s != '\0')
+						if (title == title::None)
 							return error(CmdFilter, nullptr, nullptr, "invalid title '%s'", s);
 						titles |= title::fromID(title);
 					}

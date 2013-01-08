@@ -555,8 +555,6 @@ namespace title
 		Mask_CLGM	= 1 << CLGM,
 		Mask_CILM	= 1 << CILM,
 		Mask_CSIM	= 1 << CSIM,
-
-		Mask_Any		= ((1 << Last) - 1) & ~Mask_None,
 	};
 
 	ID toID(unsigned title);

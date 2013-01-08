@@ -1500,7 +1500,7 @@ title::toString(ID title)
 title::ID
 title::best(unsigned titles)
 {
-	return title::ID(mstl::bf::lsb_index(titles));
+	return titles ? title::ID(mstl::bf::lsb_index(titles)) : title::None;
 }
 
 

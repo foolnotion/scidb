@@ -783,7 +783,7 @@ Player::PlayerCallback::~PlayerCallback() {}
 
 
 Player::Player()
-	:m_titles(title::Mask_None)
+	:m_titles(0)
 	,m_birthYear(0)
 	,m_deathMonth(0)
 	,m_sex(sex::Unspecified)
