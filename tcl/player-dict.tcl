@@ -91,6 +91,9 @@ proc open {parent args} {
 	variable Columns
 	variable Options
 
+	if {$parent eq "."} { set dlg .playerDict } else { set dlg $parent.playerDict }
+	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
+
 	array set opts {
 		-federation	""
 		-rating1		""
@@ -110,8 +113,6 @@ proc open {parent args} {
 
 	array unset opts
 
-	if {$parent eq "."} { set dlg .playerDict } else { set dlg $parent.playerDict }
-	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
 	tk::toplevel $dlg -class Scidb
 	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
 	wm withdraw $dlg
@@ -724,32 +725,30 @@ proc SetFilter {table} {
 		append Filter(name) "*"
 	}
 
-	if {[arrayEqual Filter DefaultFilter]} {
-		$parent.filter configure -image $::icon::16x16::filter(inactive)
-	} else {
-		$parent.filter configure -image $::icon::16x16::filter(active)
-
-		foreach attr {country federation name federationId sex titles} {
-			if {$Filter($attr) ne $DefaultFilter($attr)} {
-				lappend filter $attr $Filter($attr)
-			}
-		}
-
-		foreach attr {rating1 rating2} {
-			if {	$Filter($attr:min) ne $DefaultFilter($attr:min)
-				|| $Filter($attr:max) ne $DefaultFilter($attr:max)} {
-				lappend filter $attr [list $Options($attr:type) $Filter($attr:min) $Filter($attr:max)]
-			}
-		}
-
-		foreach attr {birth death} {
-			if {	$Filter($attr:min) ne $DefaultFilter($attr:min)
-				|| $Filter($attr:max) ne $DefaultFilter($attr:max)} {
-				lappend filter $attr [list $Filter($attr:min) $Filter($attr:max)]
-			}
+	foreach attr {country federation name federationId sex titles} {
+		if {$Filter($attr) ne $DefaultFilter($attr)} {
+			lappend filter $attr $Filter($attr)
 		}
 	}
 
+	foreach attr {rating1 rating2} {
+		if {	$Filter($attr:min) ne $DefaultFilter($attr:min)
+			|| $Filter($attr:max) ne $DefaultFilter($attr:max)} {
+			lappend filter $attr [list $Options($attr:type) $Filter($attr:min) $Filter($attr:max)]
+		}
+	}
+
+	foreach attr {birth death} {
+		if {	$Filter($attr:min) ne $DefaultFilter($attr:min)
+			|| $Filter($attr:max) ne $DefaultFilter($attr:max)} {
+			lappend filter $attr [list $Filter($attr:min) $Filter($attr:max)]
+		}
+	}
+
+	if {[llength $filter] == 0} { set Filter(operation) reset }
+
+	if {[arrayEqual Filter DefaultFilter]} { set state inactive } else { set state active }
+	$parent.filter configure -image $::icon::16x16::filter($state)
 	::scidb::player::filter $Filter(operation) $filter
 	UpdateFilter $table
 	::widget::busyCursor off
@@ -953,7 +952,7 @@ proc RefreshRatings {table number} {
 proc RefreshFederation {table} {
 	variable Options
 
-	set mc::F_Federation $Options(federation)
+	set mc::F_FederationId $Options(federation)
 	::scrolledtable::refresh $table
 }
 

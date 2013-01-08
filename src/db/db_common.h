@@ -561,6 +561,7 @@ namespace title
 
 	ID toID(unsigned title);
 	unsigned fromID(ID title);
+	unsigned add(unsigned titles, ID title);
 
 	mstl::string const& toString(ID title);
 	ID fromString(char const* title);

@@ -91,7 +91,7 @@ Player::addTitle(title::ID title)
 
 	if (title != title::None)
 	{
-		m_titles |= fromID(title);
+		m_titles = title::add(m_titles, title);
 		m_titles &= ~title::Mask_None;
 	}
 }

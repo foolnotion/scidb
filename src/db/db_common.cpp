@@ -1382,6 +1382,57 @@ append(mstl::string& result, unsigned count, mstl::string const& s)
 }
 
 
+unsigned
+title::add(unsigned titles, ID title)
+{
+	static unsigned Remove[Last] =
+	{
+		/* None	*/ 0,
+		/* GM		*/ ~(Mask_IM | Mask_FM | Mask_CM),
+		/* IM		*/ ~(Mask_FM | Mask_CM),
+		/* FM		*/ ~Mask_CM,
+		/* CM		*/ 0,
+		/* WGM	*/ ~(Mask_WIM | Mask_WFM | Mask_WCM),
+		/* WIM	*/ ~(Mask_WFM | Mask_WCM),
+		/* WFM	*/ ~Mask_WCM,
+		/* WCM	*/ 0,
+		/* HGM	*/ 0,
+		/* CGM	*/ ~(CSIM | Mask_CIM),
+		/* CIM	*/ 0,
+		/* CLGM	*/ ~Mask_CILM,
+		/* CILM	*/ 0,
+		/* CSIM	*/ ~Mask_CIM,
+	};
+
+	static unsigned Ignore[Last] =
+	{
+		/* None	*/ 0,
+		/* GM		*/ 0,
+		/* IM		*/ Mask_GM,
+		/* FM		*/ Mask_GM | Mask_IM,
+		/* CM		*/ Mask_GM | Mask_IM | Mask_FM,
+		/* WGM	*/ 0,
+		/* WIM	*/ Mask_WGM,
+		/* WFM	*/ Mask_WGM | Mask_WIM,
+		/* WCM	*/ Mask_WGM | Mask_WIM | Mask_WFM,
+		/* HGM	*/ 0,
+		/* CGM	*/ 0,
+		/* CIM	*/ Mask_CGM | Mask_CSIM,
+		/* CLGM	*/ 0,
+		/* CILM	*/ Mask_CLGM,
+		/* CSIM	*/ Mask_CGM,
+	};
+
+	if ((titles & Ignore[title]) == 0)
+	{
+		titles |= fromID(title);
+		titles &= Remove[title];
+	}
+
+	return titles;
+}
+
+
 title::ID
 title::fromString(char const* title)
 {

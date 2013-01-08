@@ -2267,7 +2267,15 @@ Player::parseFideRating(mstl::istream& stream)
 				TRACE(if (year && player->dateOfBirth() && player->dateOfBirth().year() != year)
 							::printf("birth date mismatch: %s (%u)\n", name.c_str(), fideID));
 
-				player->setTitles(player->titles() | titles);
+				if (titles)
+				{
+					TRACE(if ((player->tiles() & titles) == 0)
+							printf("title mismatch(%s): %s - %s\n"
+							name.c_str(),
+							title::toString(player->titles()).c_str(),
+							title::toString(titles).c_str()));
+					player->addTitle(title::toID(titles));
+				}
 
 				if (year && (!player->dateOfBirth() || player->dateOfBirth().month() == 0))
 					player->setDateOfBirth(Date(year));
