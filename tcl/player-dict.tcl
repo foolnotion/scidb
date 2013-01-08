@@ -947,11 +947,9 @@ proc Refresh {table} {
 
 
 proc PopupMenu {table menu _ _ index} {
-	variable Priv
-
-	if {![string is digit $index]} { return }
-
-#	set info [scidb::player::info $index]
+	if {![string is digit -strict $index]} { return }
+	set info [scidb::player::info $index -web 1]
+	::playercard::buildWebMenu $table $menu $info
 }
 
 } ;# namespace playerdict

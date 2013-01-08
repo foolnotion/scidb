@@ -131,10 +131,16 @@ playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings
 }
 
 
-int
-tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard)
+static int
+getInfo(	NamebasePlayer const* player,
+			Player const* p,
+			tcl::player::Ratings& ratings,
+			bool info,
+			bool idCard)
 {
 	M_ASSERT(!idCard || info);
+	M_ASSERT(!idCard || player);
+	M_ASSERT(player || p);
 
 	Tcl_Obj* objv[info ? attribute::player::LastInfo : attribute::player::LastColumn];
 
@@ -142,14 +148,32 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 
 	mstl::string			title;
 	char const*				federation(mstl::string::empty_string.c_str());
-	mstl::string const*	name(&player.name());
-	mstl::string			sex(sex::toString(player.sex()));
-	int32_t					fideID(player.fideID());
-	Player const*			p(player.player());
+	mstl::string const*	name;
+	mstl::string			sex;
+	mstl::string			species;
+	int32_t					fideID;
+	bool						haveInfo;
+
+	if (player)
+	{
+		name = &player->name();
+		sex = sex::toString(player->sex());
+		species = species::toString(player->findType());
+		fideID = player->fideID();
+		haveInfo = player->havePlayerInfo();
+	}
+	else
+	{
+		name = &p->name();
+		sex = sex::toString(p->sex());
+		species = species::toString(p->type());
+		fideID = p->fideID();
+		haveInfo = true;
+	}
 
 	if (p)
 	{
-		if (idCard || player.title() == title::None)
+		if (idCard || !player || player->title() == title::None)
 		{
 			unsigned titles = p->titles();
 
@@ -165,11 +189,14 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 			}
 		}
 
-		if (idCard || player.federation() == country::Unknown)
+		if (idCard || !player || player->federation() == country::Unknown)
 			federation = country::toString(p->federation());
 
-		if (idCard || player.sex() == sex::Unspecified)
+		if (idCard || (player && player->sex() == sex::Unspecified))
 			sex = sex::toString(p->sex());
+
+		if (idCard || (player && player->type() == species::Unspecified))
+			species = species::toString(p->type());
 
 		if (idCard)
 			name = &p->name();
@@ -183,17 +210,31 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 		}
 	}
 
-	if (title.empty())
-		title = title::toString(player.title());
-
-	if (!*federation)
-		federation = country::toString(player.federation());
-
+	mstl::string ratingType;
 	int16_t rating1[2];
 	int16_t rating2[2];
 
-	::playerRatings(player, ratings.first,  rating1);
-	::playerRatings(player, ratings.second, rating2);
+	if (player)
+	{
+		if (title.empty())
+			title = title::toString(player->title());
+
+		if (!*federation)
+			federation = country::toString(player->federation());
+
+		::playerRatings(*player, ratings.first,  rating1);
+		::playerRatings(*player, ratings.second, rating2);
+
+		ratingType = rating::toString(player->playerRatingType());
+	}
+	else
+	{
+		ratingType = rating::toString(ratings.second);
+		rating1[0] = p->highestRating(ratings.first);
+		rating2[0] = p->highestRating(ratings.second);
+		rating1[1] = p->latestRating(ratings.first);
+		rating2[1] = p->latestRating(ratings.second);
+	}
 
 	Tcl_Obj* ratingObj1[3] =
 	{
@@ -208,19 +249,17 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 		Tcl_NewStringObj(rating::toString(ratings.second), -1),
 	};
 
-	mstl::string const ratingType = rating::toString(player.playerRatingType());
-
 	objv[attribute::player::Name      ] = Tcl_NewStringObj(*name, name->size());
 	objv[attribute::player::FideID    ] = fideID ? Tcl_NewIntObj(fideID) : Tcl_NewListObj(0, 0);
-	objv[attribute::player::Sex       ] = Tcl_NewStringObj(sex, -1);
+	objv[attribute::player::Sex       ] = Tcl_NewStringObj(sex, sex.size());
 	objv[attribute::player::Rating1   ] = Tcl_NewListObj(3, ratingObj1);
 	objv[attribute::player::Rating2   ] = Tcl_NewListObj(3, ratingObj2);
 	objv[attribute::player::RatingType] = Tcl_NewStringObj(ratingType, ratingType.size());
 	objv[attribute::player::Country   ] = Tcl_NewStringObj(federation, -1);
-	objv[attribute::player::Title     ] = Tcl_NewStringObj(title, -1);
-	objv[attribute::player::Type      ] = Tcl_NewStringObj(species::toString(player.findType()), -1);
-	objv[attribute::player::PlayerInfo] = Tcl_NewBooleanObj(player.havePlayerInfo());
-	objv[attribute::player::Frequency ] = Tcl_NewIntObj(player.frequency());
+	objv[attribute::player::Title     ] = Tcl_NewStringObj(title, title.size());
+	objv[attribute::player::Type      ] = Tcl_NewStringObj(species, species.size());
+	objv[attribute::player::PlayerInfo] = Tcl_NewBooleanObj(haveInfo);
+	objv[attribute::player::Frequency ] = Tcl_NewIntObj(player ? player->frequency() : 0);
 
 	M_ASSERT(::checkNonZero(objv, attribute::player::LastColumn));
 
@@ -244,8 +283,8 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 			dateOfBirth = p->dateOfBirth();
 			dateOfDeath = p->dateOfDeath();
 			iccfID = p->iccfID();
-			dsbID = p->dsbID();
-			ecfID = p->ecfID();
+			dsbID = p->dsbID().asString();
+			ecfID = p->ecfID().asString();
 			viafID = p->viafID();
 			pndID = p->pndID();
 			chessgamesID = p->chessgamesID();
@@ -283,6 +322,14 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 }
 
 
+int
+tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard)
+{
+	M_ASSERT(!idCard || info);
+	return ::getInfo(&player, player.player(), ratings, info, idCard);
+}
+
+
 static int
 cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -314,6 +361,7 @@ cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			m_dictionary = new app::PlayerDictionary(mode);
 			m_dictionary->sort(app::PlayerDictionary::Name, order::Ascending);
+			m_dictionary->finishOperation();
 		}
 	}
 	else if (strcmp(cmd, "close") == 0)
@@ -338,6 +386,7 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	tcl::player::Ratings ratings(rating::Elo, rating::DWZ);
 	federation::ID federation = federation::Fide;
+	bool forWeb = false;
 
 	while (objc > 2)
 	{
@@ -347,13 +396,18 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
 		else if (::strcmp(arg, "-federation") == 0)
 			federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
+		else if (::strcmp(arg, "-web") == 0)
+			forWeb = boolFromObj(objc, objv, objc - 1);
 		else
 			return error(::CmdInfo, nullptr, nullptr, "invalid argument %s", arg);
 
 		objc -= 2;
 	}
 
-	Player const&	player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
+	Player const& player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
+
+	if (forWeb)
+		return ::getInfo(0, &player, ratings, true, false);
 
 	Tcl_Obj* objs[10];
 	Tcl_Obj* titles[title::Last];
