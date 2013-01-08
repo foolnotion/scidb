@@ -307,11 +307,11 @@ pgn_split_eco: pgn_split_eco.o $(LIBS)
 
 cbh2si4: cbh2si4.o $(LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(PROFILING) $(ALL_LIBS)
 
 cdb2sci: cdb2sci.o $(LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(PROFILING) $(ALL_LIBS)
 
 $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
 	@echo "Building $@"
@@ -319,7 +319,7 @@ $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
 
 $(TK_PROGRAM): tkscidb.o $(LIBS) $(TCL_LIBS) $(TK_LIBS)
 	@echo "Building $@"
-	@$(CXX) -o $@ $< $(LDFLAGS) $(ALL_TK_LIBS) $(ALL_LIBS)
+	@$(CXX) -o $@ $< $(LDFLAGS) $(PROFILING) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:
 	@echo "Compiling `awk 'BEGIN { printf "%-30s", "$<" }'`  [$(ALL_CXXFLAGS:  = )]"
@@ -516,6 +516,8 @@ cbh2si4.o: db/db_move_info.ipp
 cbh2si4.o: db/db_move_info_set.ipp
 cbh2si4.o: db/db_engine_list.h
 cbh2si4.o: db/db_engine_list.ipp
+cbh2si4.o: db/db_time_table.h
+cbh2si4.o: db/db_time_table.ipp
 cbh2si4.o: db/db_consumer.ipp
 cbh2si4.o: db/db_database.ipp
 cbh2si4.o: db/db_database_codec.h
@@ -671,6 +673,8 @@ cdb2sci.o: db/db_move_info.ipp
 cdb2sci.o: db/db_move_info_set.ipp
 cdb2sci.o: db/db_engine_list.h
 cdb2sci.o: db/db_engine_list.ipp
+cdb2sci.o: db/db_time_table.h
+cdb2sci.o: db/db_time_table.ipp
 cdb2sci.o: db/db_consumer.ipp
 cdb2sci.o: db/db_database.ipp
 cdb2sci.o: db/db_database_codec.h
@@ -1018,6 +1022,8 @@ pgn_split_eco.o: mstl/m_pair.h
 pgn_split_eco.o: mstl/m_pair.ipp
 pgn_split_eco.o: mstl/m_map.ipp
 pgn_split_eco.o: db/db_engine_list.ipp
+pgn_split_eco.o: db/db_time_table.h
+pgn_split_eco.o: db/db_time_table.ipp
 pgn_split_eco.o: mstl/m_stack.h
 pgn_split_eco.o: mstl/m_stack.ipp
 pgn_split_eco.o: db/db_consumer.ipp
@@ -1187,6 +1193,8 @@ tkscidb.o: db/db_engine_list.h
 tkscidb.o: mstl/m_map.h
 tkscidb.o: mstl/m_map.ipp
 tkscidb.o: db/db_engine_list.ipp
+tkscidb.o: db/db_time_table.h
+tkscidb.o: db/db_time_table.ipp
 tkscidb.o: db/db_consumer.ipp
 tkscidb.o: db/db_database.ipp
 tkscidb.o: db/db_database_codec.h
