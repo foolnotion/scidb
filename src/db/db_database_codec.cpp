@@ -63,35 +63,20 @@ using namespace util;
 namespace file = util::misc::file;
 
 
-static mstl::string const&
-normalizePlayerName(mstl::string const& name, mstl::string& result)
-{
-	mstl::string value;
-	result.assign(name.c_str(), name.size());
-	while (PgnReader::extractPlayerData(result, value))
-		;
-	return result;
-}
-
-
-static mstl::string const&
-normalizeSiteName(mstl::string const& name, mstl::string& result)
-{
-	result.assign(name.c_str(), name.size());
-	PgnReader::extractCountryFromSite(result);
-	return result;
-}
-
-
 struct DatabaseCodec::InfoData
 {
 	InfoData(TagSet const& tags);
+
+	mstl::string const& normalizeWhitePlayerName(mstl::string const& name, mstl::string& result);
+	mstl::string const& normalizeBlackPlayerName(mstl::string const& name, mstl::string& result);
+	mstl::string const& normalizeSiteName(mstl::string const& name, mstl::string& result);
 
 	country::Code	whiteCountry, blackCountry, eventCountry;
 	title::ID		whiteTitle, blackTitle;
 	species::ID		whiteType, blackType;
 	sex::ID			whiteSex, blackSex;
 	uint32_t			whiteFideID, blackFideID;
+	uint16_t			whiteElo, blackElo;
 	event::Type		eventType;
 	time::Mode		timeMode;
 	event::Mode		eventMode;
@@ -111,6 +96,8 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 	,blackSex(sex::Unspecified)
 	,whiteFideID(0)
 	,blackFideID(0)
+	,whiteElo(0)
+	,blackElo(0)
 	,eventType(event::Unknown)
 	,timeMode(time::Unknown)
 	,eventMode(event::Undetermined)
@@ -162,6 +149,117 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 
 	if (tags.contains(tag::EventDate))
 		eventDate.fromString(tags.value(tag::EventDate));
+}
+
+
+mstl::string const&
+DatabaseCodec::InfoData::normalizeWhitePlayerName(mstl::string const& name, mstl::string& result)
+{
+	PgnReader::Tag	tag;
+	mstl::string	value;
+
+	result.assign(name.c_str(), name.size());
+
+	while ((tag = PgnReader::extractPlayerData(result, value)) != PgnReader::None)
+	{
+		switch (tag)
+		{
+			case PgnReader::Country:
+				if (whiteCountry == country::Unknown)
+					whiteCountry = country::fromString(value);
+				break;
+
+			case PgnReader::Title:
+				if (whiteTitle == title::None)
+					whiteTitle = title::fromString(value);
+				break;
+
+			case PgnReader::Human:
+				if (whiteType == species::Unspecified)
+					whiteType = species::Human;
+				break;
+
+			case PgnReader::Program:
+				if (whiteType == species::Unspecified)
+					whiteType = species::Program;
+				break;
+
+			case PgnReader::Sex:
+				if (whiteSex == sex::Unspecified)
+					whiteSex = sex::fromString(value);
+				break;
+
+			case PgnReader::Elo:
+				whiteElo = ::atoi(value);
+				break;
+
+			case PgnReader::None:
+				break;
+		}
+	}
+
+	return result;
+}
+
+
+mstl::string const&
+DatabaseCodec::InfoData::normalizeBlackPlayerName(mstl::string const& name, mstl::string& result)
+{
+	PgnReader::Tag	tag;
+	mstl::string	value;
+
+	result.assign(name.c_str(), name.size());
+
+	while ((tag = PgnReader::extractPlayerData(result, value)) != PgnReader::None)
+	{
+		switch (tag)
+		{
+			case PgnReader::Country:
+				if (blackCountry == country::Unknown)
+					blackCountry = country::fromString(value);
+				break;
+
+			case PgnReader::Title:
+				if (blackTitle == title::None)
+					blackTitle = title::fromString(value);
+				break;
+
+			case PgnReader::Human:
+				if (blackType == species::Unspecified)
+					blackType = species::Human;
+				break;
+
+			case PgnReader::Program:
+				if (blackType == species::Unspecified)
+					blackType = species::Program;
+				break;
+
+			case PgnReader::Sex:
+				if (blackSex == sex::Unspecified)
+					blackSex = sex::fromString(value);
+				break;
+
+			case PgnReader::Elo:
+				blackElo = ::atoi(value);
+				break;
+
+			case PgnReader::None:
+				break;
+		}
+	}
+
+	return result;
+}
+
+
+mstl::string const&
+DatabaseCodec::InfoData::normalizeSiteName(mstl::string const& name, mstl::string& result)
+{
+	result.assign(name.c_str(), name.size());
+	country::Code country = PgnReader::extractCountryFromSite(result);
+	if (eventCountry == country::Unknown)
+		eventCountry = country;
+	return result;
 }
 
 
@@ -860,57 +958,53 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 	Player	blackEntry;
 	Site		siteEntry;
 
-	switch (provider.sourceFormat())
+	if (format::isScidFormat(provider.sourceFormat()) && !format::isScidFormat(format()))
 	{
-		case format::Scid3:
-		case format::Scid4:
-			{
-				mstl::string name;
+		mstl::string name;
 
-				whiteEntry = namebase(Namebase::Player).insertPlayer(
-									::normalizePlayerName(tags.value(tag::White), name),
-									data.whiteCountry,
-									data.whiteTitle,
-									data.whiteType,
-									data.whiteSex,
-									data.whiteFideID,
-									maxPlayerCount);
-				blackEntry = namebase(Namebase::Player).insertPlayer(
-									::normalizePlayerName(tags.value(tag::Black), name),
-									data.blackCountry,
-									data.blackTitle,
-									data.blackType,
-									data.blackSex,
-									data.blackFideID,
-									maxPlayerCount);
-				siteEntry = namebase(Namebase::Site).insertSite(
-									::normalizeSiteName(tags.value(tag::Site), name),
-									data.eventCountry,
-									maxSiteCount());
-			}
-			break;
-
-		default:
-			whiteEntry	= namebase(Namebase::Player).insertPlayer(
-									tags.value(tag::White),
-									data.whiteCountry,
-									data.whiteTitle,
-									data.whiteType,
-									data.whiteSex,
-									data.whiteFideID,
-									maxPlayerCount);
-			blackEntry	= namebase(Namebase::Player).insertPlayer(
-									tags.value(tag::Black),
-									data.blackCountry,
-									data.blackTitle,
-									data.blackType,
-									data.blackSex,
-									data.blackFideID,
-									maxPlayerCount);
-			siteEntry	= namebase(Namebase::Site).insertSite(
-									tags.value(tag::Site),
-									data.eventCountry,
-									maxSiteCount());
+		whiteEntry = namebase(Namebase::Player).insertPlayer(
+							data.normalizeWhitePlayerName(tags.value(tag::White), name),
+							data.whiteCountry,
+							data.whiteTitle,
+							data.whiteType,
+							data.whiteSex,
+							data.whiteFideID,
+							maxPlayerCount);
+		blackEntry = namebase(Namebase::Player).insertPlayer(
+							data.normalizeBlackPlayerName(tags.value(tag::Black), name),
+							data.blackCountry,
+							data.blackTitle,
+							data.blackType,
+							data.blackSex,
+							data.blackFideID,
+							maxPlayerCount);
+		siteEntry = namebase(Namebase::Site).insertSite(
+							data.normalizeSiteName(tags.value(tag::Site), name),
+							data.eventCountry,
+							maxSiteCount());
+	}
+	else
+	{
+		whiteEntry	= namebase(Namebase::Player).insertPlayer(
+								tags.value(tag::White),
+								data.whiteCountry,
+								data.whiteTitle,
+								data.whiteType,
+								data.whiteSex,
+								data.whiteFideID,
+								maxPlayerCount);
+		blackEntry	= namebase(Namebase::Player).insertPlayer(
+								tags.value(tag::Black),
+								data.blackCountry,
+								data.blackTitle,
+								data.blackType,
+								data.blackSex,
+								data.blackFideID,
+								maxPlayerCount);
+		siteEntry	= namebase(Namebase::Site).insertSite(
+								tags.value(tag::Site),
+								data.eventCountry,
+								maxSiteCount());
 	}
 
 	Event eventEntry = namebase(Namebase::Event).insertEvent(
@@ -1016,6 +1110,8 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 					blackEntry,
 					eventEntry,
 					annotatorEntry,
+					data.whiteElo,
+					data.blackElo,
 					tags,
 					provider,
 					m_db->m_namebases);

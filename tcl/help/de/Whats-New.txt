@@ -41,6 +41,8 @@ TITLE Was ist neu?
   <li class="space">Spieler-Karteikarten implementiert</li>
   <li class="space">Datenbankarchivierung integriert</li>
   <li class="space">Setup-Dialog für Partie-Editor/Browser</li>
+  <li class="space">Motorenlexikon implementiert</li>
+  <li class="space">Spielerlexikon implementiert</li>
   <li class="space">Drag&amp;Drop im Dateiauswahldialog implementiert</li>
   <li class="space">Drag&amp;Drop im Datenbankumschalter implementiert: auf diese Weise können Partien zwischen Datenbanken kopiert werden</li>
   <li class="space">Datenbankfenster: Andocken/Abkopplen der Listen-Reiter integriert</li>

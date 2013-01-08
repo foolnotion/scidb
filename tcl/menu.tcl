@@ -242,13 +242,13 @@ if {0} {
 		-underline [incr ul] \
 		-image $::icon::16x16::none \
 		;
-#	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
-#	set cmd [namespace code [list ::playerdict::open .application]]
-#	$m add command \
-#		-label " $text..." \
-#		-underline [incr ul] \
-#		-command $cmd \
-#		;
+	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
+	set cmd [namespace code [list ::playerdict::open .]]
+	$m add command \
+		-label " $text..." \
+		-underline [incr ul] \
+		-command $cmd \
+		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenEngineDictionary] text ul
 	set cmd [namespace code [list ::engine::showEngineDictionary .application]]
 	$m add command \
@@ -427,15 +427,7 @@ proc dbNew {parent variant} {
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	if {$variant eq "Normal"} {
-		set filetypes [list                             \
-			[list $mc::ScidbBases		{.sci}]           \
-			[list $mc::ScidBases			{.si4 .si3}]      \
-			[list $mc::AllScidbBases	{.sci .si4 .si3}] \
-		]
-	} else {
-		set filetypes [list [list $mc::ScidbBases {.sci}]]
-	}
+	set filetypes [list [list $mc::ScidbBases {.sci}]]
 	set result [::dialog::saveFile \
 		-parent $parent \
 		-class database \

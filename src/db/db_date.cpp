@@ -30,6 +30,7 @@
 #include "m_stdio.h"
 
 #include <string.h>
+#include <ctype.h>
 
 using namespace db;
 
@@ -237,6 +238,60 @@ Date::parseFromString(char const* s, unsigned size)
 			else
 			{
 				m_year = m_month = 0;
+				return false;
+			}
+			break;
+
+		case 8:
+			m_value = 0;
+			if ((s[4] != '.' && s[4] != '/') || (s[6] != '.' && s[6] != '/'))
+				return false;
+			if (!parseYear(s))
+				return false;
+			if (s[5] != '?')
+			{
+				if (!::isdigit(s[5]))
+					return false;
+				m_month = s[5] - '0';
+				if (s[7] != '?')
+				{
+					if (!::isdigit(s[7]))
+						return false;
+					m_day = s[7] - '0';
+				}
+			}
+			break;
+
+		case 9:
+			m_value = 0;
+			if (s[4] != '.' && s[4] != '/')
+				return false;
+			if (!parseYear(s))
+				return false;
+			if (s[6] == '.' || s[6] == '/')
+			{
+				if (s[5] != '?')
+				{
+					if (!::isdigit(s[5]))
+						return false;
+					m_month = s[5] - '0';
+					if (!parseDay(s + 7))
+						return false;
+				}
+			}
+			else if (s[7] == '.' || s[7] == '/')
+			{
+				if (s[8] != '?')
+				{
+					if (!parseMonth(s + 5))
+						return false;
+					if (!::isdigit(s[8]))
+						return false;
+					m_day = s[8] - '0';
+				}
+			}
+			else
+			{
 				return false;
 			}
 			break;

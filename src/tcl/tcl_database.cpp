@@ -897,27 +897,30 @@ cmdAttach(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 4 && objc != 6)
+	if (objc < 4)
 	{
-		Tcl_WrongNumArgs(	ti, 1, objv, "<file> <progress-cmd> <arg> ?-encoding <string>?");
+		Tcl_WrongNumArgs(
+			ti,
+			1, objv,
+			"<file> <progress-cmd> <arg> ?-encoding <string>? ?-readonly <flag>?");
 		return TCL_ERROR;
 	}
 
 	char const* encoding = sys::utf8::Codec::utf8();
+	bool readonly = false;
 
-	if (objc == 6)
+	for ( ; objc > 4; objc -= 2)
 	{
-		encoding = stringFromObj(objc, objv, 5);
+		char const* arg = stringFromObj(objc, objv, objc - 2);
 
-		if (::strcmp(stringFromObj(objc, objv, 4), "-encoding"))
-		{
-			appendResult("unexpected option '%s'", stringFromObj(objc, objv, 4));
-			return TCL_ERROR;
-		}
-		encoding = Tcl_GetString(objv[5]);
+		if (::strcmp(arg, "-encoding") == 0)
+			encoding = stringFromObj(objc, objv, objc - 1);
+		else if (::strcmp(arg, "-readonly") == 0)
+			readonly = boolFromObj(objc, objv, objc - 1);
+		else
+			error(CmdLoad, nullptr, nullptr, "unexpected option '%s'", arg);
 	}
 
-//	mstl::string path(Tcl_FSGetNativePath(objv[1]));
 	mstl::string path(Tcl_GetString(objv[1]));
 
 	if (util::misc::file::suffix(path) == "sci")
@@ -926,7 +929,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Progress	progress(objv[2], objv[3]);
 	progress.checkInterruption();
 
-	Cursor* cursor = scidb->open(path, encoding, false, progress);
+	Cursor* cursor = scidb->open(path, encoding, readonly, progress);
 
 	if (cursor == 0)
 		return TCL_ERROR;

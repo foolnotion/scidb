@@ -47,16 +47,20 @@ namespace import ::tcl::mathfunc::max
 proc build {path columns args} {
 	variable Defaults
 
-	array set opts [list              \
-		-useScale	0                  \
-		-layout		bottom             \
-		-lock			{}                 \
-		-popupcmd	{}                 \
-		-stripes		$Defaults(stripes) \
-		-takefocus	1                  \
-		-listmode	0                  \
-		-fixedrows	0                  \
-	]
+	set opts(-background) $Defaults(background)
+	set opts(-stripes) $Defaults(stripes)
+
+	array set opts {
+		-useScale		0
+		-layout			bottom
+		-lock				{}
+		-popupcmd		{}
+		-takefocus		1
+		-listmode		0
+		-fixedrows		0
+		-configurable	no
+		-height			10
+	}
 	array set opts $args
 
 	ttk::frame $path -takefocus 0
@@ -74,16 +78,18 @@ proc build {path columns args} {
 
 	table::table $tb                                  \
 		-moveable 1                                    \
-		-setgrid 0                                     \
 		-takefocus $opts(-takefocus)                   \
 		-fillcolumn end                                \
 		-stripes $opts(-stripes)                       \
 		-highlightcolor $Defaults(highlight)           \
-		-background $Defaults(background)              \
+		-background $opts(-background)                 \
 		-separatorcolor $Defaults(separatorcolor)      \
 		-listmode $opts(-listmode)                     \
 		-fixedrows $opts(-fixedrows)                   \
 		-labelbackground [::theme::getBackgroundColor] \
+		-configurable $opts(-configurable)             \
+		-height $opts(-height)                         \
+		-stripes $opts(-stripes)                       \
 		;
 	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
 	
@@ -219,6 +225,10 @@ proc update {path base variant size} {
 	set table $path.top.table
 	variable ${table}::Vars
 
+	if {![info exists Vars(variant)]} {
+		set Vars(variant) $variant
+		set Vars(base) $base
+	}
 	if {$Vars(base) ne $base || $Vars(variant) ne $variant} {
 		::table::activate $table none
 		::table::select $table none
@@ -554,6 +564,11 @@ proc changeLayout {path dir} {
 
 proc overhang {path} {
 	return [::table::overhang $path.top.table]
+}
+
+
+proc computeHeight {path rows} {
+	return [::table::computeHeight $path.top.table $rows]
 }
 
 

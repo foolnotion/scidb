@@ -39,7 +39,6 @@ set HighestRating				"Highest rating"
 set MostRecentRating			"Most recent rating"
 set DateOfBirth				"Date of birth"
 set DateOfDeath				"Date of death"
-set FideID						"Fide ID"
 
 set TooltipRating				"Rating: %s"
 
@@ -48,9 +47,13 @@ set ShowPlayerCard			"Show Player Card..."
 set F_LastName					"Last Name"
 set F_FirstName				"First Name"
 set F_FideID					"Fide ID"
+set F_DSBID						"DSB ID"
+set F_ECFID						"ECF ID"
+set F_ICCFID					"ICCF ID"
 set F_Title						"Title"
 
 set T_Federation				"Federation"
+set T_NativeCountry			"Native Country"
 set T_RatingType				"Rating Type"
 set T_Type						"Type"
 set T_Sex						"Sex"
@@ -59,6 +62,7 @@ set T_PlayerInfo				"Info Flag"
 # translation not needed (TODO)
 set F_RatingType				"RT"
 set F_Federation				"\u2691"
+set F_NativeCountry			"\u2690"
 set F_Frequency				"\u2211"
 
 } ;# namespace mc
@@ -164,7 +168,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 			rating1 - rating2 {
 				foreach ratType $ratings {
-				set number [string index $id 6]
+					set number [string index $id 6]
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshRatings $path $number]] \
 						-label $ratType \

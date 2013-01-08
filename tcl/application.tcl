@@ -336,7 +336,7 @@ proc shutdown {} {
 	if {[winfo exists $dlg]} { return }
 
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
-	if {[llength [grab current]]} { bell; return }
+	if {[string match .application* [grab current]]} { bell; return }
 
 	if {[::util::photos::busy?]} {
 		append msg $::util::photos::mc::DownloadStillInProgress "\n\n"

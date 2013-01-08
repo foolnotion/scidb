@@ -70,6 +70,8 @@ public:
 	static bool isExtraTag(tag::ID tag);
 	static db::tag::TagSet const& infoTags();
 
+	static void initialize();
+
 protected:
 
 	typedef encoder::Position Position;

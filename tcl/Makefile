@@ -91,6 +91,7 @@ SOURCES = \
 	widgets/notation.tcl \
 	widgets/twm.tcl \
 	widgets/database-switcher.tcl \
+	widgets/registerbutton.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \

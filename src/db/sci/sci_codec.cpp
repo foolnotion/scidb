@@ -1883,7 +1883,7 @@ Codec::readPlayerbase(ByteStream& bstrm, Namebase& base, unsigned count, util::P
 				uint16_t extraneous = bstrm.uint16();
 
 				country = country::Code(extraneous & 0x01ff);
-				title = title::ID((extraneous >> 9) & 0x1f);
+				title = title::ID((extraneous >> 9) & 0x1f);// NOTE: only 4 bits really needed
 			}
 			else
 			{
@@ -2194,7 +2194,7 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base, util::Progress* 
 	if (fideID)
 		flags |= 0x80;
 
-	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x1f) << 9)
+	if (uint16_t extranouos =	(uint16_t(prev->title() & 0x1f) << 9)	// NOTE: only 4 bits really used
 									 | uint16_t(prev->federation() & 0x01ff))
 	{
 		bstrm.put(flags | 0x40);

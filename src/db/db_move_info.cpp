@@ -292,43 +292,56 @@ MoveInfo::parseEvaluation(char const* s)
 		m_analysis.m_depth = 0;
 	}
 
-	switch (*s)
+	char sign = *s;
+
+	switch (sign)
 	{
 		case '+':	m_analysis.m_sign = 0; break;
 		case '-':	m_analysis.m_sign = 1; break;
+		case 'M':	m_analysis.m_sign = 0; break;
+		case 'm':	m_analysis.m_sign = 1; break;
 		default:		return 0;
 	}
 
 	unsigned pawns = ::strtoul(++s, &e, 10);
 
-	if (s == e || *e != '.')
-		return 0;
-
-	s = e + 1;
-
-	unsigned centipawns = ::strtoul(s, &e, 10);
-
-	if (s == e)
-		return 0;
-
-	m_analysis.m_pawns = mstl::min(pawns, (1u << 11) - 1);
-	m_analysis.m_centipawns = mstl::min(centipawns, 99u);
-
-	switch (*e)
+	if (::isdigit(sign))
 	{
-		case '|':
-			if (::isdigit(e[1]))
-				m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
-			else if (e[1] == 'd' && ::isdigit(e[2]))
-				m_analysis.m_depth = ::strtoul(e + 2, &e, 10);
-			break;
+		if (s == e || *e != '.')
+			return 0;
 
-		case '/':
-			if (::isdigit(e[1]))
-				m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
-			break;
+		s = e + 1;
+
+		unsigned centipawns = ::strtoul(s, &e, 10);
+
+		if (s == e)
+			return 0;
+
+		m_analysis.m_pawns = mstl::min(pawns, (1u << 10) - 2u);
+		m_analysis.m_centipawns = mstl::min(centipawns, 99u);
+
+		switch (*e)
+		{
+			case '|':
+				if (::isdigit(e[1]))
+					m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
+				else if (e[1] == 'd' && ::isdigit(e[2]))
+					m_analysis.m_depth = ::strtoul(e + 2, &e, 10);
+				break;
+
+			case '/':
+				if (::isdigit(e[1]))
+					m_analysis.m_depth = ::strtoul(e + 1, &e, 10);
+				break;
+		}
+	}
+	else
+	{
+		m_analysis.m_pawns = (1u << 10) - 1;
+		m_analysis.m_centipawns = pawns;
 	}
 
+	m_analysis.m_depth = mstl::min(uint8_t((1 << 6) - 1), m_analysis.m_depth);
 	m_content = Evaluation;
 
 	return ::skipSpaces(e);
@@ -465,10 +478,19 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 				result.append("[%eval ", 7);
 			if (m_analysis.m_depth)
 				result.format("%u:", m_analysis.m_depth);
-			result.format(	"%c%u.%02u",
-								m_analysis.m_sign ? '-' : '+',
-								unsigned(m_analysis.m_pawns),
-								m_analysis.m_centipawns);
+			if (m_analysis.m_pawns == (1 << 10) - 1)
+			{
+				result.format(	"%cM%u",
+									m_analysis.m_sign ? '-' : '+',
+									unsigned(m_analysis.m_centipawns));
+			}
+			else
+			{
+				result.format(	"%c%u.%02u",
+									m_analysis.m_sign ? '-' : '+',
+									unsigned(m_analysis.m_pawns),
+									unsigned(m_analysis.m_centipawns));
+			}
 			if (format == Text)
 				return;
 			break;
@@ -533,9 +555,9 @@ MoveInfo::decode(ByteStream& strm)
 		case Evaluation:
 			v = strm.uint24();
 			m_engine = u & 0x0f;
-			m_analysis.m_depth      = ((v >> 19) & 0x001f);
-			m_analysis.m_sign       = ((v >> 18) & 0x0001);
-			m_analysis.m_pawns      = ((v >>  7) & 0x07ff);
+			m_analysis.m_depth      = ((v >> 18) & 0x003f);
+			m_analysis.m_sign       = ((v >> 17) & 0x0001);
+			m_analysis.m_pawns      = ((v >>  7) & 0x03ff);
 			m_analysis.m_centipawns = ((v      ) & 0x007f);
 			break;
 
@@ -566,8 +588,8 @@ MoveInfo::encode(ByteStream& strm) const
 			(
 				  (uint32_t(year & 0x03ff) << 21)							// 10 bit
 				| (uint32_t(m_time.m_date.month() & 0x000f) << 17)		//  4 bit
-				| (uint32_t(m_time.m_date.day() & 0x001f) << 12)			//  5 bit
-				| (uint32_t(m_time.m_clock.minute() & 0x003f) << 6)		//  6 bit
+				| (uint32_t(m_time.m_date.day() & 0x001f) << 12)		//  5 bit
+				| (uint32_t(m_time.m_clock.minute() & 0x003f) << 6)	//  6 bit
 				| (uint32_t(m_time.m_clock.second() & 0x003f))			//  6 bit
 			);
 			break;
@@ -586,7 +608,7 @@ MoveInfo::encode(ByteStream& strm) const
 			strm << uint16_t
 			(
 				  (uint16_t(m_time.m_clock.hour() & 0x000f) << 12)		//  4 bit
-				| (uint16_t(m_time.m_clock.minute() & 0x003f) << 6)		//  6 bit
+				| (uint16_t(m_time.m_clock.minute() & 0x003f) << 6)	//  6 bit
 				| (uint16_t(m_time.m_clock.second() & 0x003f))			//  6 bit
 			);
 			break;
@@ -624,9 +646,9 @@ MoveInfo::encode(ByteStream& strm) const
 			);
 			strm << uint24_t
 			(
-					(uint32_t(m_analysis.m_depth & 0x001f) << 19)		//  5 bit
-				 | (uint32_t(m_analysis.m_sign & 0x0001) << 18)			//  1 bit
-				 | (uint32_t(m_analysis.m_pawns & 0x07ff) << 7)			// 11 bit
+					(uint32_t(m_analysis.m_depth & 0x003f) << 18)		//  6 bit
+				 | (uint32_t(m_analysis.m_sign & 0x0001) << 17)			//  1 bit
+				 | (uint32_t(m_analysis.m_pawns & 0x03ff) << 7)			// 10 bit
 				 | (uint32_t(m_analysis.m_centipawns & 0x007f))			//  7 bit
 			);
 			break;
@@ -672,9 +694,9 @@ MoveInfo::decodeVersion92(ByteStream& strm)
 		case Evaluation:
 			v = strm.uint24();
 			m_engine = u & 0x0f;
-			m_analysis.m_depth      = ((v      ) & 0x001f);
-			m_analysis.m_sign       = ((v >>  5) & 0x0001);
-			m_analysis.m_pawns      = ((v >>  6) & 0x07ff);
+			m_analysis.m_depth      = ((v      ) & 0x003f);
+			m_analysis.m_sign       = ((v >>  6) & 0x0001);
+			m_analysis.m_pawns      = ((v >>  7) & 0x03ff);
 			m_analysis.m_centipawns = ((v >> 17) & 0x007f);
 			break;
 

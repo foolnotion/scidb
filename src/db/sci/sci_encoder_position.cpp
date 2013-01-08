@@ -612,6 +612,26 @@ Position::setup(uint16_t idn)
 			break;
 		}
 
+		case variant::UpsideDown:
+		{
+			static Lookup::Numbers const PieceNumbers =
+			{
+				 9, 10, 11, 12,  0, 13, 14, 15, // a1,..,h1
+				 1,  2,  3,  4,  5,  6,  7,  8, // a2,..,h2
+				__, __, __, __, __, __, __, __, // a3,..,h3
+				__, __, __, __, __, __, __, __, // a4,..,h4
+				__, __, __, __, __, __, __, __, // a5,..,h5
+				__, __, __, __, __, __, __, __, // a6,..,h6
+				 8,  9, 10, 11, 12, 13, 14, 15, // a7,..,h7
+				 1,  2,  3,  4,  0,  5,  6,  7, // a8,..,h8
+			};
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
+			::memcpy(lookup.numbers, PieceNumbers, sizeof(PieceNumbers));
+			wUsed.set(0, 15);
+			bUsed.set(0, 15);
+			break;
+		}
+
 		default:
 			M_ASSERT(!"unexpected position number");
 			break;

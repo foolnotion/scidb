@@ -70,7 +70,7 @@ public:
 		{
 			struct
 			{
-				uint32_t zpsPrefix:5;	// 1. digit (0-9, A-L) 
+				uint32_t zpsPrefix:5;	// 1. digit (0-9, A-L)
 				uint32_t zpsSuffix:14;	// 4 digits
 				uint32_t dsbMglNr	:11;	// 0..2000
 			};
@@ -135,6 +135,8 @@ public:
 	bool supportsGiveawayChess() const;
 	/// Return whether Three-Check Chesss is supported.
 	bool supportsThreeCheckChess() const;
+	/// Returns whether given federation ID exists.
+	bool hasID(federation::ID federation) const;
 
 	/// Returns players name.
 	mstl::string const& name() const;
@@ -148,6 +150,8 @@ public:
 	Date dateOfDeath() const;
 	/// Return players year of birth, if known.
 	uint16_t birthYear() const;
+	/// Return players year of death, if known.
+	uint16_t deathYear() const;
 	/// Returns players highest overall Elo rating achieved (< 0 if estimated).
 	int16_t highestElo() const;
 	/// Returns players latest Elo rating achieved  (< 0 if estimated).
@@ -176,6 +180,8 @@ public:
 	EcfID ecfID() const;
 	/// Return ICCF player ID.
 	unsigned iccfID() const;
+	/// Return wanted federation id (empty string id not exisiting)
+	mstl::string federationID(federation::ID federation) const;
 	/// Return VIAF (Virtual International Authority File) ID.
 	unsigned viafID() const;
 	/// Return PND (Personennamendatei) ID.
@@ -298,9 +304,10 @@ private:
 	Ratings m_highestRating;
 	Ratings m_latestRating;
 
-	uint32_t m_titles			:16;
+	uint32_t m_titles			:15;
 	uint32_t m_birthYear		:11;
-	uint32_t m_deathDay		:5;
+	uint32_t m_deathMonth	:4;
+	uint32_t m_sex				:2;
 
 	uint32_t m_deathYear		:11;
 	uint32_t m_nativeCountry:9;
@@ -310,10 +317,9 @@ private:
 	uint32_t m_notUnique		:1;
 
 	uint32_t m_federation	:9;
+	uint32_t m_deathDay		:5;
 	uint32_t m_ratingType	:4;
-	uint32_t m_deathMonth	:4;
 	uint32_t m_region			:3;
-	uint32_t m_sex				:2;
 	uint32_t m_chess960		:1;
 	uint32_t m_shuffle		:1;
 	uint32_t m_bughouse		:1;
@@ -324,6 +330,7 @@ private:
 	uint32_t m_threeCheck	:1;
 	uint32_t m_winboard		:1;
 	uint32_t m_uci				:1;
+	// rest: 1
 
 	uint32_t	m_fideID;	// 100.000..40.000.000
 	uint32_t	m_iccfID;	// 10.000..1.000.000

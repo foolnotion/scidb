@@ -1,204 +1,103 @@
 ####################################################################
-# USCF Rating, April 2010
+# USCF Rating, December 2012
 ####################################################################
-1	Nakamura, Hikaru (12641216)	NY	USA	2817
-2	Kamsky, Gata (12528459)	NY	USA	2771
-3	Onischuk, Alexander (12625186)	VA	USA	2765
-4	Seirawan, Yasser (10509459)	WA	USA	2718
-5	Akobian, Varuzhan (12740522)	CA	USA	2671
-6	Ehlvest, Jaan (12514557)	NY	USA	2669
-7	Shulman, Yury (12741541)	IL	USA	2668
-8	Christiansen, Larry M (10460921)	MA	USA	2657
-	Hess, Robert L (12749774)	NY	USA	2657
-10	Shabalov, Alexander (12544264)	PA	USA	2643
-	Lenderman, Aleksandr (12787646)	NY	USA	2643
-12	Kaidanov, Gregory (12543746)	KY	USA	2633
-13	Benjamin, Joel (10102511)	NJ	USA	2621
-	Finegold, Benjamin P (11264417)	MO	USA	2621
-15	Khachiyan, Melikset (12827326)	CA	USA	2619
-16	Perelshteyn, Eugene (12627196)	MA	USA	2613
-17	Bhat, Vinay S (12551720)	CA	USA	2610
-	Becerra, Julio J (12778049)	FL	USA	2610
-19	Stripunsky, Alexander (12715435)	NJ	USA	2607
-	Robson, Ray (12847250)	FL	USA	2607
-21	Ibragimov, Ildar (12576446)	CT	USA	2597
-22	Friedel, Joshua Edward (12593986)	NH	USA	2596
-23	Gulko, Boris (12473035)	NJ	USA	2591
-24	De Firmian, Nick E (10469007)	*FOR*	USA	2590
-25	Ivanov, Alexander (12513936)	MA	USA	2585
-26	Fishbein, Alexander (12077910)	NJ	USA	2582
-27	Kudrin, Sergey (11257585)	CT	USA	2579
-28	Goldin, Alexander (12556822)	KY	USA	2574
-29	Yermolinsky, Alex (12534917)	SD	USA	2572
-30	Lakdawala, Cyrus F (11486738)	CA	USA	2553
-31	Gonzalez, Renier (12843801)	FL	USA	2551
-32	Kraai, Jesse (12442362)	CA	USA	2550
-33	Ippolito, Dean J (12445752)	NJ	USA	2548
-34	Sevillano, Enrico Manalili (12650696)	CA	USA	2547
-35	Smith, Bryan G (12602587)	PA	USA	2545
-36	Shankland, Samuel L (12852765)	CA	USA	2541
-37	Altounian, Levon (12625289)	AZ	USA	2534
-38	Ludwig, Daniel J (12717400)	FL	USA	2532
-39	Lapshun, Yury (12548533)	NY	USA	2525
-40	Foygel, Igor (12563122)	MA	USA	2522
-41	Vigorito, David (12426279)	MA	USA	2519
-42	Fedorowicz, John P (10604737)	NY	USA	2515
-43	Gurevich, Dmitry (12212800)	IL	USA	2514
-	Sagalchik, Gennady (12565070)	NY	USA	2514
-45	Browne, Walter S (10488192)	CA	USA	2512
-46	Esserman, Marc R (20008479)	MA	USA	2509
-47	Arnold, Marc Tyler (12770589)	NY	USA	2507
-	Zatonskih, Anna (12873912)	NY	USA	2507
-49	Milman, Lev (21012681)	NY	USA	2501
-50	Krush, Irina (12543137)	NY	USA	2500
-51	Bartholomew, John D (12718516)	MN	USA	2496
-52	Meyer, Eugene B (10122953)	VA	USA	2492
-53	Bercys, Salvijus (12909023)	NY	USA	2489
-54	Norowitz, Yaacov (12566496)	NJ	USA	2486
-55	Florean, Andrei Costel (12878904)	CA	USA	2477
-56	Mulyar, Michael A (12524770)	CO	USA	2471
-	Nagle, Sean M (12571512)	MN	USA	2471
-58	Balandin, Alex (12596603)	MN	USA	2470
-59	Fernandez, Daniel (20058682)	TX	USA	2464
-60	Hungaski, Robert Andrew (12790312)	CT	USA	2462
-61	Ziatdinov, Rashid (12650697)	FL	USA	2461
-62	Palatnik, Semion (12542096)	MD	USA	2458
-	Molner, Mackenize S (12662506)	NJ	USA	2458
-64	Annakov, Babakuli (12801991)	TX	USA	2451
-65	Yedidia, Jonathan (10141591)	MA	USA	2448
-66	Rohde, Michael A (10047871)	NY	USA	2445
-67	Kaufman, Lawrence Charles (10179416)	MD	USA	2443
-	Rensch, Daniel M (12659833)	AZ	USA	2443
-69	Ginsburg, Mark (10172918)	AZ	USA	2442
-	Brooks, Michael (11045685)	MO	USA	2442
-	Kalikshteyn, Alexander (12579305)	NY	USA	2442
-72	Shneider, Igor (12726345)	TX	USA	2440
-73	Schroer, Jonathan (10118131)	NC	USA	2437
-74	Bryant, John Daniel (12796667)	TX	USA	2436
-75	Kotlyar, Gregory (12491747)	CA	USA	2435
-76	Naroditsky, Daniel A (12892910)	CA	USA	2434
-77	Heimann, Mark (12802899)	PA	USA	2432
-78	Zilberstein, Dmitry (12610669)	CA	USA	2429
-	Enkhbat, Tegshsuren (12723905)	MD	USA	2429
-80	Sarkar, Justin (12561884)	NY	USA	2427
-81	Lee, Michael (12858009)	WA	USA	2426
-82	Paschall, William Mark (12494878)	MA	USA	2425
-	Gulamali, Kazim (12680172)	GA	USA	2425
-	Banawa, Joel (12922625)	CA	USA	2425
-85	Regan, Kenneth W (10054834)	NY	USA	2421
-86	Zierk, Steven C (12796611)	CA	USA	2420
-87	Bradford, Joseph Mark (10378583)	TX	USA	2417
-88	Bartell, Thomas (12559979)	NJ	USA	2416
-89	Strugatsky, Vladimir (12532873)	CA	USA	2414
-90	Peters, Jack (10011876)	CA	USA	2413
-	Yang, Darwin (12945617)	TX	USA	2413
-92	Pruess, David (12601834)	CA	USA	2412
-93	Felecan, Florin (12717022)	IL	USA	2411
-94	Burnett, Ronald (12093120)	TN	USA	2408
-95	Holt, Conrad (12937909)	KS	USA	2405
-96	Adler, Victor-Edvin (12714318)	MN	USA	2403
-97	Goletiani, Rusudan (12807449)	NY	USA	2401
-98	Riordan, Charles R (12611870)	MA	USA	2399
-99	Tate, Emory A (11126545)	CA	USA	2390
-100	Donaldson, John (10270294)	CA	USA	2389
-
-1	Kosteniuk, Alexandra (12905458)	FL	RUS	2582
-2	Zatonskih, Anna (12873912)	NY	USA	2507
-3	Krush, Irina (12543137)	NY	USA	2500
-4	Goletiani, Rusudan (12807449)	NY	USA	2401
-5	Baginskaite, Camilla (12716466)	SD	USA	2387
-6	Abrahamyan, Tatev (12851435)	CA	USA	2369
-7	Foisor, Sabina-Francesca (14012260)	MD	USA	2356
-8	Rohonyan, Katerine (12973020)	WA	USA	2331
-9	Melekhina, Alisa (12726115)	PA	USA	2320
-10	Corke, Anya S (12809699)	*FOR*	ENG	2319
-11	Zenyuk, Iryna (12846035)	PA	USA	2280
-12	Zorigt, Bayaraa (13526576)	TX	MGL	2266
-13	Battsetseg, Tsagaan (12719650)	MD	USA	2247
-14	Ortiz, Nadya (12929750)	TX	COL	2226
-15	Marshall, Abby (12784803)	VA	USA	2223
-16	Ross, Laura R (12630804)	NY	USA	2216
-17	Epstein, Esther (12515912)	MA	USA	2210
-18	Marinello, Beatriz (12537449)	NY	USA	2206
-19	Cardona, Liulia (13469768)	AZ	CUB	2181
-20	Airapetian, Chouchanik (12629918)	WA	USA	2147
-21	Morales, Luciana (13458094)	TX	PER	2143
-22	Zepeda, Sonia (13992241)	CA	ESA	2140
-23	Saheli, Nath (14006402)	TX	IND	2133
-24	Eynullayeva, Roza (12817693)	MA	USA	2124
-25	Sagalchik, Olga (12565069)	NY	USA	2107
-26	Kats, Alena (12980885)	NY	USA	2098
-27	Vazirova, Karina (13744783)	TX	RUS	2096
-28	Chiang, Sarah (13091081)	TX	USA	2085
-29	Vicary, Elizabeth (12477355)	NY	USA	2082
-30	Fan, Yun (14024290)	IN	USA	2079
-31	West, Vanessa A (12744619)	CA	USA	2075
-32	Levina, Anna (12660143)	NY	USA	2072
-33	Itkis, Hana (12667543)	NJ	USA	2063
-34	Dai, Yang (12897613)	VA	USA	2061
-35	Izoria, Ana (13507403)	NY	GEO	2058
-36	Robinson, Darrian (12925651)	NY	USA	2044
-37	Matlin, Anna R (12876169)	NJ	USA	2043
-38	Jamison, Courtney Nicole (12746751)	TX	USA	2022
-39	Lee, Megan (12902833)	WA	USA	2021
-40	Liu, Jennie S (12830124)	NJ	USA	2015
-41	Mateer, Amanda Rae (12752032)	AZ	USA	2014
-42	Root, Alexey Wilhelmina (10374651)	TX	USA	2009
-43	Teasley, Dorothy (10074258)	NY	USA	2000
-44	Zhu, Caroline (12888833)	TX	USA	1996
-45	Popova, Elena (14231678)	CA	RUS	1995
-46	Parrilla, Medina M (12782436)	NY	USA	1976
-47	Mcvay, Karsten A (12744370)	NJ	USA	1971
-48	Litvak, Eve V (12799901)	NJ	USA	1970
-49	Datta, Anjali (12783131)	TX	USA	1969
-50	Kerr, Julia K (12696374)	NY	USA	1965
-51	Yang, Sylvia Siyuan (12909161)	TX	USA	1964
-52	Skidmore, Jennifer M (12457851)	MI	USA	1954
-53	Peters, Epiphany M (12937939)	MI	USA	1948
-54	Blanco, Maria (12777021)	GA	VEN	1942
-55	Ballantyne, Rochelle (13104890)	NY	USA	1939
-56	Acon, Jennifer C (13313093)	CA	USA	1938
-57	Haring, Ruth Inez (10383242)	CA	USA	1932
-58	Zhurbinskiy, Eve D (12878963)	NJ	USA	1926
-59	Regam, Jessica Shor (13467370)	PA	USA	1920
-60	Diaz, Linda V (12908194)	NY	USA	1911
-61	Dimitrijevic, Vesna (12436451)	MA	USA	1907
-62	Xiang, Ellen (21029572)	TX	USA	1904
-63	Kennedy, Shernaz (11322000)	NY	USA	1900
-64	Ginzburg, Anna (12758604)	NY	USA	1894
-65	Faerman, Lily (12566295)	NY	USA	1893
-66	Ferguson, Tamara (12778340)	PA	USA	1885
-67	Liao, Simone (13228302)	CA	USA	1883
-68	Carter, Ashley (12862296)	MI	USA	1880
-69	Dulger, Elena (12840000)	AZ	USA	1876
-70	Sobel, Simone (12607573)	CA	USA	1875
-71	Dapul-Weberman, Sarah (12723205)	NY	USA	1874
-72	Katz, Alanna (12621290)	NY	USA	1869
-73	Christiansen, Natasha C (11366805)	MA	USA	1867
-74	Wong, Kinsleigh (13314143)	AZ	USA	1866
-75	Niemi, Nicole (12640884)	WI	USA	1865
-76	Goodkind, Lauren (12778910)	CA	USA	1859
-77	Hu, Dianna (12938312)	NY	USA	1847
-78	Ding, Kimberly (13218531)	NJ	USA	1846
-79	Simo, Judit (12912013)	OH	HUN	1833
-80	Lelko, Rebecca A (12851444)	OH	USA	1831
-	Huang, Becky (12932148)	PA	USA	1831
-82	O'Neill, Julie Anne (10457262)	TX	USA	1830
-83	Francis, Emily (12800537)	GA	USA	1827
-	Botez, V Alexandra (12882405)	OR	FOR	1827
-85	Zelner, Catherine (12568602)	FL	USA	1826
-86	Mcgrew, Bethel (12842583)	MI	USA	1823
-87	Narducci, Alicia Y (12793253)	CA	USA	1822
-88	Lam, Fiona V (12963876)	MD	USA	1814
-89	Mc Gruder, Colette (10430348)	CA	USA	1810
-90	Bhat, Samyukta (12931097)	CA	USA	1808
-91	Vempati, Gayatri (12847303)	TX	USA	1806
-92	Chen, Michelle Xueying (12918779)	MA	USA	1805
-	Dong, Alice (13398051)	NJ	USA	1805
-94	Naylor, Carla (11178464)	VA	USA	1803
-95	Taylor, Liz (12641877)	CA	USA	1800
-96	Flewelling, Heather (12605124)	HI	USA	1798
-	Villarreal, Maria Elena (12804504)	*FOR*	USA	1798
-	Gologorsky, Rachel (13302945)	FL	USA	1798
-99	Goodkind, Barbara (12778604)	CA	USA	1794
-	Jones, Julia E (12811694)	TX	USA	1794
+1	Kamsky, Gata (12528459)	NY	USA	2845	
+2	Nakamura, Hikaru (12641216)	MO	USA	2834	
+3	Gareev, Timur (13262157)	TX	USA	2756	
+4	Onischuk, Alexander (12625186)	TX	USA	2747	
+5	Akobian, Varuzhan (12740522)	KS	USA	2701	
+6	Lenderman, Aleksandr (12787646)	NY	USA	2701	
+7	Stripunsky, Alexander (12715435)	NJ	USA	2694	
+8	Robson, Ray (12847250)	FL	USA	2691	
+9	Shankland, Sam (12852765)	CA	USA	2684	
+10	Shabalov, Alexander (12544264)	PA	USA	2682	
+11	Seirawan, Yasser (10509459)	WA	USA	2677	
+12	Kaidanov, Gregory (12543746)	KY	USA	2670	
+13	Ehlvest, Jaan (12514557)	NY	USA	2665	
+14	Hess, Robert L (12749774)	NY	USA	2661	
+15	Christiansen, Larry M (10460921)	MA	USA	2652	
+16	Shulman, Yury (12741541)	IL	USA	2652	
+17	Ivanov, Alexander (12513936)	MA	USA	2639	
+18	Becerra, Julio J (12778049)	FL	USA	2632	
+19	Arnold, Marc Tyler (12770589)	NY	USA	2626	
+20	Ramirez, Alejandro (12688291)	TX	USA	2620	
+21	Alburt, Lev (12078790)	NY	USA	2617	
+22	Sammour-Hasbun, Jorge E (12496662)	RI	USA	2616	
+23	Benjamin, Joel (10102511)	NJ	USA	2610	
+24	Sevillano, Enrico (12650696)	CA	USA	2608	
+25	Kudrin, Sergey (11257585)	CT	USA	2605	
+26	Perelshteyn, Eugene (12627196)	MA	USA	2599	
+27	Ibragimov, Ildar (12576446)	CT	USA	2595	
+28	Dlugy, Maxim (11435629)	NJ	USA	2594	
+29	Goldin, Alexander (12556822)	KY	USA	2594	
+30	Gulko, Boris (12473035)	NJ	USA	2591	
+31	Norowitz, Yaacov (12566496)	NJ	USA	2590	
+32	Finegold, Benjamin P (11264417)	MO	USA	2587	
+33	Yang, Darwin (12945617)	TX	USA	2587	
+34	De Firmian, Nick E (10469007)	CA	USA	2575	
+35	Holt, Conrad (12937909)	KS	USA	2571	
+36	Ludwig, Daniel J (12717400)	TX	USA	2566	
+37	Friedel, Joshua Edward (12593986)	NH	USA	2565	
+38	Gurevich, Dmitry (12212800)	IL	USA	2560	
+39	Shen, Victor C (12809707)	NJ	USA	2553	
+40	Naroditsky, Daniel A (12892910)	CA	USA	2553	
+41	Vigorito, David (12426279)	MA	USA	2547	
+42	Fishbein, Alexander (12077910)	NJ	USA	2546	
+43	Khachiyan, Melikset (12827326)	CA	USA	2545	
+44	Molner, Mackenzie S (12662506)	AZ	USA	2544	
+45	Rohde, Michael A (10047871)	NY	USA	2543	
+46	Hungaski, Robert (12790312)	NY	USA	2542	
+47	Esserman, Marc (20008479)	MA	USA	2542	
+48	Yermolinsky, Alex (12534917)	SD	USA	2541	
+49	Shahade, Greg (20013106)	PA	USA	2538	
+50	Perez, Robert (12913092)	FL	USA	2533	
+51	Zatonskih, Anna (12873912)	NY	USA	2526	
+52	Browne, Walter S (10488192)	CA	USA	2524	
+53	Krush, Irina (12543137)	NY	USA	2521	
+54	Foygel, Igor (12563122)	MA	USA	2521	
+55	Zierk, Steven C (12796611)	MA	USA	2519	
+56	Sagalchik, Gennady (12565070)	NY	USA	2516	
+57	Bryant, John Daniel (12796667)	CA	USA	2510	
+58	Gonzalez, Renier (12843801)	FL	USA	2510	
+59	Smith, Bryan G (12602587)	PA	USA	2507	
+60	Bartell, Thomas (12559979)	PA	USA	2505	
+61	Altounian, Levon (12625289)	AZ	USA	2505	
+62	Enkhbat, Tegshsuren (12723905)	MD	USA	2503	
+63	Ippolito, Dean (12445752)	NJ	USA	2498	
+64	Sarkar, Justin (12561884)	NY	USA	2498	
+65	Nagle, Sean M (12571512)	MN	USA	2498	
+66	Lakdawala, Cyrus F (11486738)	CA	USA	2497	
+67	Fedorowicz, John P (10604737)	NY	USA	2495	
+68	Bartholomew, John David (12718516)	MN	USA	2493	
+69	Bonin, Jay Richard (10098327)	NY	USA	2488	
+70	Ashley, Maurice A (12357030)	NY	USA	2486	
+71	Kiewra, Keaton (12642647)	TX	USA	2486	
+72	Palatnik, Semion (12542096)	MD	USA	2472	
+73	Wang, Philip Xiao (12558771)	CA	USA	2470	
+74	Zilberstein 126, Dmitry (12610669)	CA	USA	2468	
+75	Sharma, Arun (12525113)	CA	USA	2467	
+76	Young, Gregory (12888228)	CA	USA	2467	
+77	Bercys, Salvijus (12909023)	NY	USA	2466	
+78	Balandin, Alex (12596603)	MN	USA	2459	
+79	Rensch, Daniel M (12659833)	AZ	USA	2458	
+80	Sher, Miron (12717615)	NY	USA	2458	
+81	Mulyar, Michael A (12524770)	CO	USA	2457	
+82	Yedidia, Jonathan (10141591)	MA	USA	2454	
+83	Lee, Michael (12858009)	WA	USA	2453	
+84	Sevian, Samuel (13493815)	CA	USA	2451	
+85	Stein, Alan R (12499885)	NY	USA	2449	
+86	Coleman, Teddy (12662799)	NY	USA	2447	
+87	Gulamali, Kazim (12680172)	GA	USA	2447	
+88	Rizzitano, James A (10019656)	MA	USA	2446	
+89	Getz, Alec (12805454)	NY	USA	2443	
+90	Heimann, Mark (12802899)	PA	USA	2441	
+91	Kislik, Erik A (12850976)	CA	USA	2441	
+92	Zelner, Alexander (12400396)	FL	USA	2439	
+93	Braylovskiy, Grigoriy (12588419)	NY	USA	2439	
+	Banawa, Joel (12922625)	AZ	USA	2439	
+	95	Troff, Kayden W (12939342)	UT	USA	2438	
+	96	Kleiman, Jake (12683681)	TN	USA	2436	
+	97	Ostrovskiy, Aleksandr (12881112)	NY	USA	2435	
+		Fernandez, Daniel (20058682)	TX	USA	2435	
+		99	Peters, Jack (10011876)	CA	USA	2434	
+			Xiong, Jeffery (13648621)	TX	USA	2434

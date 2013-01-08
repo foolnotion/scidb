@@ -123,7 +123,7 @@ set TagIsEmpty						"Tag '%s' is empty (will be discarded)."
 namespace import ::tcl::mathfunc::max
 
 
-array set TagOrder {
+array set DefaultTagOrder {
 	Event					 0
 	Site					 1
 	Date					 2
@@ -191,10 +191,10 @@ array set TagOrder {
 
 foreach type {	WhiteElo BlackElo WhiteIPS BlackIPS WhiteDWZ BlackDWZ WhiteECF BlackECF WhiteUSCF
 					BlackUSCF WhiteICCF BlackICCF WhiteRapid BlackRapid WhiteRating BlackRating} {
-	set RatingTagOrder($type) $TagOrder($type)
+	set RatingTagOrder($type) $DefaultTagOrder($type)
 }
 
-foreach type [array names TagOrder] {
+foreach type [array names DefaultTagOrder] {
 	set Mandatory($type,1) 0
 	set Mandatory($type,0) 0
 }
@@ -268,6 +268,9 @@ variable Characteristics -1
 
 
 proc open {parent base variant position {number 0}} {
+	variable TagOrder
+	variable DefaultTagOrder
+
 	if {![checkIfWriteable $parent $base $variant $position $number]} { return }
 	incr number -1
 
@@ -288,6 +291,8 @@ proc open {parent base variant position {number 0}} {
 		namespace eval ::$dlg {}
 	}
 	variable ::${dlg}::Priv
+
+	array set TagOrder [array get DefaultTagOrder]
 
 	if {$characteristicsOnly} {
 		set Priv(tags) [::scidb::db::get tags $number $base $variant]
@@ -1062,7 +1067,7 @@ proc Destroy {dlg} {
 
 	array unset Lookup
 	array unset Item
-	array unset TagOrder PlyCount
+	array unset TagOrder
 }
 
 
@@ -1748,7 +1753,7 @@ proc VisitMatch {lb data} {
 				white-name - black-name {
 					if {1} { ;# show Fide ID
 						set item [lindex $data [lsearch $Attrs(player) fideID]]
-						if {[llength $item]} { set tip "$::playertable::mc::FideID: $item" }
+						if {[llength $item]} { set tip "$mc::Label(fideID): $item" }
 					} else { ;# show aliases
 						set attr player
 						set name [lindex $data [lsearch $Attrs(player) name]]

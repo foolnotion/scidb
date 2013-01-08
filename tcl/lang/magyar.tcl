@@ -33,85 +33,93 @@
 ::mc::AsciiMapping	{Á A É E Í I Ó O Ö O Ő O Ú U Ü U Ű U á a é e í i ó o ö o ő o ú u ü u ű}
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
-::mc::Key(Alt)		"Alt" ;# NEW
-::mc::Key(BS)		"\u232b"
-::mc::Key(Ctrl)		"Ctrl" ;# NEW
-::mc::Key(Del)		"Delete" ;# NEW
-::mc::Key(Down)		"\u2193"
-::mc::Key(End)		"End" ;# NEW
-::mc::Key(Enter)	"\u23ce"
-::mc::Key(Esc)		"Kilépés"
-::mc::Key(Home)		"Home" ;# NEW
-::mc::Key(Left)		"\u2190"
-::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
-::mc::Key(Prior)	"Page\u2191"	;# Page Up NEW
-::mc::Key(Right)	"\u2192"
-::mc::Key(Shift)	"Shift" ;# NEW
-::mc::Key(Up)		"\u2191"
+::mc::Key(Alt)			"Alt" ;# NEW
+::mc::Key(BS)			"\u232b"
+::mc::Key(Ctrl)			"Ctrl" ;# NEW
+::mc::Key(Del)			"Delete" ;# NEW
+::mc::Key(Down)			"\u2193"
+::mc::Key(End)			"End" ;# NEW
+::mc::Key(Enter)		"\u23ce"
+::mc::Key(Esc)			"Kilépés"
+::mc::Key(Home)			"Home" ;# NEW
+::mc::Key(Left)			"\u2190"
+::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
+::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)		"\u2192"
+::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Up)			"\u2191"
 
-::mc::Alignment		"Sorba rendezés(?)"
-::mc::Apply		"Alkalmaz"
-::mc::Archive		"Archive" ;# NEW
-::mc::Background	"Háttér"
-::mc::Black		"Sötét"
-::mc::Bottom		"Alsó"	;#Alul??
-::mc::Cancel		"Mégse"
-::mc::Clear		"Törlése"
-::mc::Close		"Bezár"
-::mc::Color		"Szín"
-::mc::Colors		"Színek"
-::mc::Configuration	"Beállítás" ;#"Configuration"
-::mc::Copy		"Másol"
-::mc::Cut		"Kivág"
-::mc::Dark		"Sötét"
-::mc::Database		"Adatbázis"
-::mc::Default		"Alapértelmezett"
-::mc::Delete		"Töröl"
-::mc::Edit		"Szerkeszt"
-::mc::File		"Fájl"
-::mc::Filter		"Filter" ;# NEW
-::mc::From		"From" ;# NEW
-::mc::Game		"Játszma"
-::mc::Layout		"Layout"
-::mc::Left		"Bal"
-::mc::Lite		"Világos"
-::mc::Low				"Low" ;# NEW
-::mc::Modify		"Módosít"
-::mc::No		"Nem"
+::mc::Alignment			"Sorba rendezés(?)"
+::mc::Apply			"Alkalmaz"
+::mc::Archive			"Archive" ;# NEW
+::mc::Background		"Háttér"
+::mc::Black			"Sötét"
+::mc::Bottom			"Alsó"	;#Alul??
+::mc::Cancel			"Mégse"
+::mc::Clear			"Törlése"
+::mc::Close			"Bezár"
+::mc::Color			"Szín"
+::mc::Colors			"Színek"
+::mc::Configuration		"Beállítás" ;#"Configuration"
+::mc::Copy			"Másol"
+::mc::Cut			"Kivág"
+::mc::Dark			"Sötét"
+::mc::Database			"Adatbázis"
+::mc::Default			"Alapértelmezett"
+::mc::Delete			"Töröl"
+::mc::Edit			"Szerkeszt"
+::mc::File			"Fájl"
+::mc::Filter			"Filter" ;# NEW
+::mc::From			"From" ;# NEW
+::mc::Game			"Játszma"
+::mc::Layout			"Layout"
+::mc::Left			"Bal"
+::mc::Lite			"Világos"
+::mc::Low					"Low" ;# NEW
+::mc::Modify			"Módosít"
+::mc::No			"Nem"
 ::mc::Normal			"Normal" ;# NEW
-::mc::NotAvailable	"Nem elérhető" ;# I put it back, since n/e has no meaning in hungarian, unlike n/a in english; Zoltan 2010.02.11
-::mc::Number		"Szám"
-::mc::OK		"OK"
-::mc::Order		"Rendezés"
-::mc::Paste		"Beillesztés"
-::mc::PieceSet		"Bábukészlet"
-::mc::Preview		"Előnézet"
-::mc::Redo		"Újra"
-::mc::Remove		"Eltávolítás"
-::mc::Reset		"Reset"
-::mc::Right		"Jobb"
-::mc::SelectAll		"Mindent kijelöl"
-::mc::Texture		"Textúra"
-::mc::Theme		"Téma"
-::mc::To		"To" ;# NEW
-::mc::Top		"Felső"  ;# felül
-::mc::Undo		"Visszavonás"
-::mc::Variant		"Variant" ;# NEW
-::mc::Variation		"Variáció"
-::mc::White		"Világos"
-::mc::Yes		"igen"
+::mc::Number			"Szám"
+::mc::OK			"OK"
+::mc::Order			"Rendezés"
+::mc::Paste			"Beillesztés"
+::mc::PieceSet			"Bábukészlet"
+::mc::Preview			"Előnézet"
+::mc::Redo			"Újra"
+::mc::Remove			"Eltávolítás"
+::mc::Reset			"Reset"
+::mc::Right			"Jobb"
+::mc::SelectAll			"Mindent kijelöl"
+::mc::Texture			"Textúra"
+::mc::Theme			"Téma"
+::mc::To			"To" ;# NEW
+::mc::Top			"Felső"  ;# felül
+::mc::Undo			"Visszavonás"
+::mc::Variant			"Variant" ;# NEW different from "Variation"
+::mc::Variation			"Variáció"
+::mc::White			"Világos"
+::mc::Yes			"igen"
 
-::mc::LogicalReset	"Reset" ;# NEW
-::mc::LogicalAnd	"És"
-::mc::LogicalOr		"Vagy"
-::mc::LogicalNot	"Nem"
+::mc::King			"Király"
+::mc::Queen			"Vezér"
+::mc::Rook			"Bástya"
+::mc::Bishop			"Futó"
+::mc::Knight			"Huszár"
+::mc::Pawn			"Gyalog"
 
-::mc::King		"Király"
-::mc::Queen		"Vezér"
-::mc::Rook		"Bástya"
-::mc::Bishop		"Futó"
-::mc::Knight		"Huszár"
-::mc::Pawn		"Gyalog"
+::mc::Logical(reset)		"Reset" ;# NEW
+::mc::Logical(or)		"Vagy"
+::mc::Logical(and)		"És"
+::mc::Logical(null)		"None" ;# NEW
+::mc::Logical(not)		"Nem"
+::mc::Logical(remove)		"Remove" ;# NEW
+
+::mc::LogicalDetail(reset)	"Reset filter" ;# NEW
+::mc::LogicalDetail(or)		"Add to filter" ;# NEW
+::mc::LogicalDetail(and)	"Restrict filter" ;# NEW
+::mc::LogicalDetail(null)	"Clear filter" ;# NEW
+::mc::LogicalDetail(not)	"Exlude from filter" ;# NEW
+::mc::LogicalDetail(remove)	"Remove from filter" ;# NEW
 
 ::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
 ::mc::VariantName(Normal)	"Normal Chess" ;# NEW
@@ -322,40 +330,40 @@
 ::util::photos::mc::Error(nohttp)		"Internet kapcsolat nem hozható létre a TclHttp csomag hiánya miatt."
 ::util::photos::mc::Error(busy)			"Telepítés/frissítés folyamatban." ;#"The installation/update is already running."  ;#NEW
 ::util::photos::mc::Error(failed)		"Unexpected error: The invocation of the sub-process has failed."  ;#NEW
-::util::photos::mc::Error(passwd)		"The password is wrong."  ;#NEW
+::util::photos::mc::Error(passwd)		"A jelszó hibás."
 ::util::photos::mc::Error(nosudo)		"Cannot invoke 'sudo' command because your user is not in the sudoers file."  ;#NEW
 ::util::photos::mc::Detail(nosudo)		"As a workaround you may do a private installation, or start this application as a super-user."  ;#NEW
 
-::util::photos::mc::Message(uptodate)		"The photo files are still up-to-date." ;# NEW
-::util::photos::mc::Message(finished)		"The installation/update of photo files has finished." ;# NEW
-::util::photos::mc::Message(broken)		"Broken Tcl library version." ;# NEW
-::util::photos::mc::Message(noperm)		"You dont have write permissions for directory '%s'." ;# NEW
-::util::photos::mc::Message(missing)		"Cannot find directory '%s'." ;# NEW
-::util::photos::mc::Message(httperr)		"HTTP error: %s" ;# NEW
-::util::photos::mc::Message(httpcode)		"Unexpected HTTP code %s." ;# NEW
-::util::photos::mc::Message(noconnect)		"HTTP connection failed." ;# NEW
-::util::photos::mc::Message(timeout)		"HTTP timeout occurred." ;# NEW
+::util::photos::mc::Message(uptodate)		"A fényképek naprakészek"
+::util::photos::mc::Message(finished)		"A fényképek telepítése/frissítése befejeződött"
+::util::photos::mc::Message(broken)		"Sérült Tcl könyvtár verzió"
+::util::photos::mc::Message(noperm)		"A '%s' könyvtárhoz nincs írási jogosultsága."
+::util::photos::mc::Message(missing)		"'%s' könyvtár nem található."
+::util::photos::mc::Message(httperr)		"HTTP hiba: %s"
+::util::photos::mc::Message(httpcode)		"Váratlan HTTP utasítás: %s."
+::util::photos::mc::Message(noconnect)		"HTTP kapcsolat megszakadt."
+::util::photos::mc::Message(timeout)		"HTTP kapcsolat túllépte az időkeretet."
 ::util::photos::mc::Message(crcerror)		"Checksum error occurred. Possibly the file server is currently in maintenance mode." ;# NEW
 ::util::photos::mc::Message(maintenance)	"Photo file server maintenance is currently in progress." ;# NEW
 ::util::photos::mc::Message(notfound)		"Download aborted because photo file server maintenance is currently in progress." ;# NEW
 ::util::photos::mc::Message(aborted)		"User has aborted download." ;# NEW
 ::util::photos::mc::Message(killed)		"Unexpected termination of download. The sub-process has died." ;# NEW
 
-::util::photos::mc::Detail(nohttp)		"Please install package TclHttp, for example %s." ;# NEW
+::util::photos::mc::Detail(nohttp)		"Kérem telepítse a TclHttp csomagot. Pl.: %s."
 ::util::photos::mc::Detail(noconnect)		"Probably you don't have an internet connection." ;# NEW
 ::util::photos::mc::Detail(badhost)		"Another possibility is a bad host, or a bad port." ;# NEW
 
 ::util::photos::mc::Log(started)		"Installation/update of photo files started at %s." ;# NEW
 ::util::photos::mc::Log(finished)		"Installation/update of photo files finished at %s." ;# NEW
 ::util::photos::mc::Log(destination)		"Destination directory for photo file download is '%s'." ;# NEW
-::util::photos::mc::Log(created:1)		"%s file created." ;# NEW
-::util::photos::mc::Log(created:N)		"%s file(s) created." ;# NEW
-::util::photos::mc::Log(deleted:1)		"%s file deleted." ;# NEW
-::util::photos::mc::Log(deleted:N)		"%s file(s) deleted." ;# NEW
-::util::photos::mc::Log(skipped:1)		"%s file skipped." ;# NEW
-::util::photos::mc::Log(skipped:N)		"%s file(s) skipped." ;# NEW
-::util::photos::mc::Log(updated:1)		"%s file updated." ;# NEW
-::util::photos::mc::Log(updated:N)		"%s file(s) updated." ;# NEW
+::util::photos::mc::Log(created:1)		"%s fájl létrehozva."
+::util::photos::mc::Log(created:N)		"%s fájlok létrehozva."
+::util::photos::mc::Log(deleted:1)		"%s fájl törölve."
+::util::photos::mc::Log(deleted:N)		"%s fájlok törölve."
+::util::photos::mc::Log(skipped:1)		"%s fájl kihagyva."
+::util::photos::mc::Log(skipped:N)		"%s fájlok kihagyva."
+::util::photos::mc::Log(updated:1)		"%s fájl frissítve."
+::util::photos::mc::Log(updated:N)		"%s fájlok frissítve."
 
 ### application ########################################################
 ::application::mc::Database				"&Adatbázis"
@@ -368,31 +376,32 @@
 ::application::mc::Shutdown				"Kilépés..."
 ::application::mc::QuitAnyway				"Biztos ki akar lépni?"
 
-::application::mc::UpdatesAvailable		"Updates available" ;# NEW
+::application::mc::UpdatesAvailable		"Új frissítés érhető el"
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable	"Mutasd a verseny kereszttábláját"
-::application::board::mc::StartEngine		"Elemzőmodul indítása"
-::application::board::mc::StopEngine		"Elemzőmodul leállítása"
-::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
+::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
+::application::board::mc::StartEngine			"Elemzőmodul indítása"
+::application::board::mc::StopEngine			"Elemzőmodul leállítása"
+::application::board::mc::InsertNullMove		"Insert null move" ;# NEW
+::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 
-::application::board::mc::Tools			"Eszközök"
-::application::board::mc::Control		"Kezelés"
-::application::board::mc::Game			"Játszma"
-::application::board::mc::GoIntoNextVar		"Következő variáció"
-::application::board::mc::GoIntPrevVar		"Előző variáció"
-::application::board::mc::LoadGame(next)	"Következő játszma betöltése"
-::application::board::mc::LoadGame(prev)	"Előző játszma betöltése"
-::application::board::mc::LoadGame(first)	"Első játszma betöltése"
-::application::board::mc::LoadGame(last)	"Utolsó játszma betöltése"
+::application::board::mc::Tools				"Eszközök"
+::application::board::mc::Control			"Kezelés"
+::application::board::mc::Game				"Játszma"
+::application::board::mc::GoIntoNextVar			"Következő variáció"
+::application::board::mc::GoIntPrevVar			"Előző variáció"
+::application::board::mc::LoadGame(next)		"Következő játszma betöltése"
+::application::board::mc::LoadGame(prev)		"Előző játszma betöltése"
+::application::board::mc::LoadGame(first)		"Első játszma betöltése"
+::application::board::mc::LoadGame(last)		"Utolsó játszma betöltése"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
-::application::board::mc::Accel(edit-marks)			"M"
+::application::board::mc::Accel(edit-marks)		"M"
 ::application::board::mc::Accel(add-new-game)		"S" ;# NEW
 ::application::board::mc::Accel(replace-game)		"R" ;# NEW
 ::application::board::mc::Accel(replace-moves)		"V" ;# NEW
-::application::board::mc::Accel(trial-mode)			"T" ;# NEW
+::application::board::mc::Accel(trial-mode)		"T" ;# NEW
 
 ### application::database ##############################################
 ::application::database::mc::FileOpen						"Fájl megnyitása"
@@ -403,7 +412,7 @@
 ::application::database::mc::FileImport(db)				"Adatbázis importálása "
 ::application::database::mc::FileCreate					"Archívum létrehozása"
 ::application::database::mc::FileClose						"Bezárás"
-::application::database::mc::FileMaintenance					"Maintenance" ;# NEW
+::application::database::mc::FileMaintenance					"Karbantartás"
 ::application::database::mc::FileCompact					"Kompakt"
 ::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
 ::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
@@ -566,10 +575,10 @@
 ::application::pgn::mc::InsertDiagram						"Diagram beillesztése"
 ::application::pgn::mc::InsertDiagramFromBlack			"Diagram beillesztése sötét nézőpontjából"
 ::application::pgn::mc::SuffixCommentaries				"Lépés utáni szimbólumok"
-::application::pgn::mc::StripOriginalComments			"Strip original comments"  ;#NEW
+::application::pgn::mc::StripOriginalComments			"Eredeti megjegyzések törlése"
 
 ::application::pgn::mc::LanguageSelection				"Nyelvek" ;# NEW change to "Language Selection"
-::application::pgn::mc::MoveNotation					"Move Notation" ;# NEW
+::application::pgn::mc::MoveNotation					"Lépésjegyzés"
 ::application::pgn::mc::CollapseVariations				"Változatok elrejtése"
 ::application::pgn::mc::ExpandVariations					"Változatok kibontása"
 ::application::pgn::mc::EmptyGame							"Üres játszma"
@@ -581,7 +590,7 @@
 ::application::pgn::mc::CannotOpenCursorFiles			"Cannot open cursor files: %s" ;# NEW
 ::application::pgn::mc::ReallyReplaceMoves			"Tényleg felül akarja írni az aktuális játszma lépéseit?"
 ::application::pgn::mc::CurrentGameIsNotModified		"Az aktuális játszma nem lett módosítva"
-::application::pgn::mc::ShufflePosition				"Shuffle position..." ;# NEW
+::application::pgn::mc::ShufflePosition				"Pozíció keverése..."
 
 ::application::pgn::mc::EditAnnotation						"Értékelés szerkesztése"
 ::application::pgn::mc::EditMoveInformation				"Lépés információ szerkesztése"
@@ -609,9 +618,9 @@
 ::application::tree::mc::LockReferenceBase			"Referencia adatbázis zárolása"
 ::application::tree::mc::SwitchReferenceBase			"Referencia adatbázis váltás"
 ::application::tree::mc::TransparentBar				"Transparent bar"
-::application::tree::mc::NoGamesFound				"No games found" ;# NEW
-::application::tree::mc::NoGamesAvailable			"No games available" ;# NEW
-::application::tree::mc::Searching				"Searching" ;# NEW
+::application::tree::mc::NoGamesFound				"Nem található játszma"
+::application::tree::mc::NoGamesAvailable			"Nincs elérhető játszma"
+::application::tree::mc::Searching				"Keresés"
 ::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
@@ -645,31 +654,31 @@
 ::database::switcher::mc::None				"nincs"
 ::database::switcher::mc::Failed			"meghiúsult"
 
-::database::switcher::mc::UriRejectedDetail(open)	"Only Scidb databases can be opened:" ;# NEW
-::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:" ;# NEW
+::database::switcher::mc::UriRejectedDetail(open)	"Csak Scidb adabázisok nyithatóak meg:"
+::database::switcher::mc::UriRejectedDetail(import)	"Csak Scidb adatbázisok importálhatóak:"
 ::database::switcher::mc::EmptyUriList			"Drop content is empty." ;# NEW
-::database::switcher::mc::CopyGames			"Copy games" ;# NEW
-::database::switcher::mc::CopyGamesFromTo		"Copy games from '%src' to '%dst'" ;# NEW
-::database::switcher::mc::CopiedGames			"%s game(s) copied"
+::database::switcher::mc::CopyGames			"Játszmák másolása"
+::database::switcher::mc::CopyGamesFromTo		"Játszmák másolása '%src'-ból/-ből '%dst'-ba/-be"
+::database::switcher::mc::CopiedGames			"%s játszmák átmásolva"
 ::database::switcher::mc::NoGamesCopied			"No games copied"
-::database::switcher::mc::CopyGamesFrom			"Copy games from '%s'" ;# NEW
-::database::switcher::mc::ImportGames			"Import games" ;# NEW
-::database::switcher::mc::ImportFiles			"Import Files:" ;# NEW
+::database::switcher::mc::CopyGamesFrom			"Játszmák másolása '%s'-ból/-ből"
+::database::switcher::mc::ImportGames			"Játszmák importálása"
+::database::switcher::mc::ImportFiles			"Fájlok importálása:"
 
-::database::switcher::mc::ImportOneGameTo(0)		"Copy one game to '%dst'?" ;# NEW
+::database::switcher::mc::ImportOneGameTo(0)		"Egyetlen játszma másolása '%dst'-be/-ba?"
 ::database::switcher::mc::ImportOneGameTo(1)		"Copy about one game to '%dst'?" ;# NEW
-::database::switcher::mc::ImportGamesTo(0)		"Copy %num games to '%dst'?" ;# NEW
-::database::switcher::mc::ImportGamesTo(1)		"Copy about %num games to '%dst'?" ;# NEW
+::database::switcher::mc::ImportGamesTo(0)		"%num játszmák másolása '%dst'-be/-ba?"
+::database::switcher::mc::ImportGamesTo(1)		"Copy about %num games to '%dst'-be/-ba?"
 
 ::database::switcher::mc::NumGames(0)			"none" ;# NEW
-::database::switcher::mc::NumGames(1)			"one game" ;# NEW
-::database::switcher::mc::NumGames(N)			"%s games" ;# NEW
+::database::switcher::mc::NumGames(1)			"egy játszma"
+::database::switcher::mc::NumGames(N)			"%s játszmák"
 
-::database::switcher::mc::SelectGames(all)		"All games" ;# NEW
-::database::switcher::mc::SelectGames(filter)		"Only filtered games" ;# NEW
+::database::switcher::mc::SelectGames(all)		"Összes játszma"
+::database::switcher::mc::SelectGames(filter)		"Csak a szűrt játszmák"
 ::database::switcher::mc::SelectGames(all,variant)	"Only variant %s" ;# NEW
 ::database::switcher::mc::SelectGames(filter,variant)	"Only filtered games of variant %s" ;# NEW
-::database::switcher::mc::SelectGames(complete)		"Complete database" ;# NEW
+::database::switcher::mc::SelectGames(complete)		"Teljes adatbázis"
 
 ::database::switcher::mc::GameCount			"Játszmák"
 ::database::switcher::mc::DatabasePath			"Adatbázis elérési útvonala"
@@ -690,9 +699,9 @@
 ::board::mc::CannotFindFile		"Fájl '%s' nem található"
 ::board::mc::FileWillBeIgnored		"'%s' figyelmen kívül hagyva (duplicate ID)" ;# ;# NEW
 ::board::mc::IsCorrupt			"'%s' hibás (ismeretlen %s style '%s')"
-::board::mc::SquareStyleIsUndefined	"Square style '%s' no longer exists" ;# NEW
-::board::mc::PieceStyleIsUndefined	"Piece style '%s' no longer exists" ;# NEW
-::board::mc::ThemeIsUndefined		"Board theme '%s' no longer exists" ;# NEW
+::board::mc::SquareStyleIsUndefined	"Mező stílus '%s' már nem létezik"
+::board::mc::PieceStyleIsUndefined	"Figura stílus '%s' már nem létezik"
+::board::mc::ThemeIsUndefined		"Tábla stílus(téma?) '%s' már nem létezik"
 
 ::board::mc::ThemeManagement		"Téma beállítások"
 ::board::mc::Setup			"Beállítás"
@@ -794,8 +803,8 @@
 ::pgn::setup::mc::RevertSettings			"Változtatások elvetése"
 ::pgn::setup::mc::ResetSettings				"Eredeti beállítások visszaállítása"
 ::pgn::setup::mc::DiscardAllChanges			"Elvet minden változtatást?"
-::pgn::setup::mc::ThreefoldRepetition			"Threefold repetition" ;# NEW
-::pgn::setup::mc::FiftyMoveRule				"50 move rule" ;# NEW
+::pgn::setup::mc::ThreefoldRepetition			"Háromszori ismétlés"
+::pgn::setup::mc::FiftyMoveRule				"50 lépéses szabály"
 
 ::pgn::setup::mc::Setup(Appearance)			"Megjelenítés"
 ::pgn::setup::mc::Setup(Layout)				"Layout"
@@ -833,8 +842,8 @@
 ::pgn::setup::mc::Section(ParLayout)			"Paragraph Layout" ;# NEW
 ::pgn::setup::mc::ParLayout(use-spacing)		"Bekezdés stílus"
 ::pgn::setup::mc::ParLayout(column-style)		"Oszlop stílus"
-::pgn::setup::mc::ParLayout(tabstop-1)			"Indent for White Move" ;# NEW
-::pgn::setup::mc::ParLayout(tabstop-2)			"Indent for Black Move" ;# NEW
+::pgn::setup::mc::ParLayout(tabstop-1)			"Behúzás világos lépésinek"
+::pgn::setup::mc::ParLayout(tabstop-2)			"Behúzás sötét lépésinek"
 ::pgn::setup::mc::ParLayout(mainline-bold)		"Főváltozat félkövér betűkkel"
 
 ::pgn::setup::mc::Section(Variations)			"Változatok megjelenítése"
@@ -902,10 +911,10 @@
 ::engine::mc::ChooseDifferentName	"Kérem válasszon más nevet."
 ::engine::mc::ReservedName		"'%s' fenntartott név ezért nem használható"
 ::engine::mc::ReallyDeleteProfile	"Biztos törli a '%s' profilt?"
-::engine::mc::SortName			"Sort by name" ;# NEW
-::engine::mc::SortElo			"Sort by Elo rating" ;# NEW
+::engine::mc::SortName			"Név szerinti rendezés"
+::engine::mc::SortElo			"ELO szerinti rendezés"
 ::engine::mc::SortRating		"Sort by CCRL rating" ;# NEW
-::engine::mc::OpenUrl			"Open URL (web browser)" ;# NEW
+::engine::mc::OpenUrl			"Link megnyitása böngészőben"
 
 ::engine::mc::AdminEngines		"Elemző modulok kezelése"
 ::engine::mc::SetupEngine		"%s modul beállításai"
@@ -913,7 +922,7 @@
 ::engine::mc::SelectEngine		"Elemzőmodul választása"
 ::engine::mc::SelectEngineLogo		"Logó választása az elemző modul számára"
 ::engine::mc::EngineDictionary		"Engine Dictionary" ;# NEW
-::engine::mc::EngineFilter		"Engine Filter" ;# NEW
+::engine::mc::EngineFilter		"Elemző modul szűrő"
 ::engine::mc::EngineLog			"Elemző modul terminál"
 ::engine::mc::Probing			"Probing"  ;#NEW
 ::engine::mc::NeverUsed			"Sohasem használt"
@@ -929,22 +938,22 @@
 ::engine::mc::ConfirmNewEngine		"Új elemző modul megerősítése (?)"
 ::engine::mc::EngineAlreadyExists	"Már létezik ezen elemzőmodulhoz tartozó bejegyzés"
 ::engine::mc::CopyFromEngine		"Bejegyzés másolása"
-::engine::mc::CannotOpenProcess		"Cannot start process."  ;#NEW
-::engine::mc::DoesNotRespond		"This engine does not respond either to UCI nor to XBoard/WinBoard protocol."  ;#NEW
+::engine::mc::CannotOpenProcess		"Folyamat nem indítható."
+::engine::mc::DoesNotRespond		"Ez az elemzőmodul nem reagál sem az UCI sem az XBoard/WinBoard protokolra"
 ::engine::mc::DiscardChanges		"The current item has changed.\n\nReally discard changes?"
-::engine::mc::ReallyDelete		"Really delete engine '%s'?" ;# NEW
-::engine::mc::EntryAlreadyExists	"An entry with name '%s' already exists." ;# NEW
+::engine::mc::ReallyDelete		"Tényleg törli a(z) '%s' elemzőmodult?"
+::engine::mc::EntryAlreadyExists	"Már létezik egy '%s' nevű bejegyzés."
 ::engine::mc::NoFeaturesAvailable	"This engine does not provide any feature, not even an analyze mode is available. You cannot use this engine for the analysis of positions." ;# NEW
-::engine::mc::NoStandardChess		"This engine does not support standard chess." ;# NEW
-::engine::mc::NoEngineAvailable		"No engine available." ;# NEW
-::engine::mc::FailedToCreateDir		"Failed to create directory '%s'." ;# NEW
+::engine::mc::NoStandardChess		"Ez a modul nem támogatja a hagyományos sakkot."
+::engine::mc::NoEngineAvailable		"Nincs elérhető elemző modul."
+::engine::mc::FailedToCreateDir		"'%s' könyvtár létrehozása meghiúsult."
 ::engine::mc::ScriptErrors		"Any errors while saving will be displayed here." ;# NEW
-::engine::mc::CommandNotAllowed		"Usage of command '%s' is not allowed here." ;# NEW
-::engine::mc::ThrowAwayChanges		"Throw away all changes?" ;# NEW
-::engine::mc::ResetToDefaultContent	"Reset to default content" ;# NEW
+::engine::mc::CommandNotAllowed		"A(z) '%s' utasítás itt nem használható."
+::engine::mc::ThrowAwayChanges		"Az összes változtatás elvetése?"
+::engine::mc::ResetToDefaultContent	"Alapbeállítások visszaállítása"
 
-::engine::mc::ProbeError(registration)		"This engine requires a registration." ;# NEW
-::engine::mc::ProbeError(copyprotection)	"This engine is copy-protected." ;# NEW
+::engine::mc::ProbeError(registration)		"Ez a modul előzetes regosztrációt igényel."
+::engine::mc::ProbeError(copyprotection)	"Ez a modul másolás-védett."
 
 ::engine::mc::FeatureDetail(analyze)		"This engine provides an analyze mode." ;# NEW
 ::engine::mc::FeatureDetail(multiPV)		"Allows you to see the engine evaluations and principal variations (PVs) from the highest ranked candidate moves. This engines can show up to %s principal variations." ;# NEW
@@ -1167,10 +1176,14 @@
 ::playertable::mc::F_LastName			"Családnév"
 ::playertable::mc::F_FirstName			"Keresztnév"
 ::playertable::mc::F_FideID			"Fide azonosító"
+::playertable::mc::F_DSBID			"DSB ID" ;# NEW
+::playertable::mc::F_ECFID			"ECF ID" ;# NEW
+::playertable::mc::F_ICCFID			"ICCF ID" ;# NEW
 ::playertable::mc::F_Title			"Cím"
 ::playertable::mc::F_Frequency			"Gyakorisg"
 
 ::playertable::mc::T_Federation			"Szövetség"
+::playertable::mc::T_NativeCountry		"Native Country" ;# NEW
 ::playertable::mc::T_RatingType			"Rating Type"
 ::playertable::mc::T_Type			"Típus"
 ::playertable::mc::T_Sex			"Neme"
@@ -1186,7 +1199,6 @@
 ::playertable::mc::MostRecentRating		"Legutolsó ELO pontszám"
 ::playertable::mc::DateOfBirth			"Születési dátum"
 ::playertable::mc::DateOfDeath			"Elhalálozás dátuma"
-::playertable::mc::FideID			"Fide azonosító"
 
 ::playertable::mc::ShowPlayerCard		"Show Player Card..." ;# NEW
 
@@ -1194,7 +1206,18 @@
 ::eventtable::mc::Attendance	"Attendance" ;# NEW
 
 ### player dictionary ##################################################
-::playerdict::PlayerDictionary "Player Dictionary" ;# NEW
+::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
+::playerdict::mc::PlayerFilter		"Player Filter" ;# NEW
+::playerdict::mc::Count			"Count" ;# NEW
+::playerdict::mc::Ignore		"Ignore" ;# NEW
+::playerdict::mc::FederationID		"Federation ID" ;# NEW
+::playerdict::mc::BirthYear		"Birth Year" ;# NEW
+::playerdict::mc::DeathYear		"Death Year" ;# NEW
+::playerdict::mc::Ratings		"Ratings" ;# NEW
+::playerdict::mc::Titles		"Titles" ;# NEW
+::playerdict::mc::None			"None" ;# NEW
+::playerdict::mc::Operation		"Operation" ;# NEW
+::playerdict::mc::CancelSort		"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard		"Player Card" ;# NEW
@@ -1338,7 +1361,7 @@
 ::setup::board::mc::Clear				"Törlés"
 ::setup::board::mc::CopyFen				"FEN másolása a vágólapra"
 ::setup::board::mc::Shuffle				"Keverés..."
-::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
+::setup::board::mc::FICSPosition			"FICS Start Position (and more)..."
 ::setup::board::mc::StandardPosition			"Standard Position"
 ::setup::board::mc::Chess960Castling			"Chess 960 castling"
 
@@ -1840,7 +1863,7 @@
 ::help::mc::MatchEntireWord		"Teljes szó keresése"
 ::help::mc::MatchCase				"Match case" ;# NEW
 ::help::mc::TitleOnly				"Keresés csak a címek között"
-::help::mc::CurrentPageOnly		"Search in current page only" ;# NEW
+::help::mc::CurrentPageOnly		"Keresés csak a jelenlegi oldalon"
 ::help::mc::GoBack					"Egy oldallal vissza"
 ::help::mc::GoForward				"Egy oldallal előre"
 ::help::mc::GotoPage					"Menj a '%s'-dik oldalra"
@@ -1848,11 +1871,11 @@
 ::help::mc::CollapseAllItems		"Összecsukás"
 ::help::mc::SelectLanguage			"Nyelv választás"
 ::help::mc::NoHelpAvailable		"Nincs elérhető súgó fájl magyar nyelven.\nVálaszz másik nyelvet\na súgó számára."
-::help::mc::NoHelpAvailableAtAll	"No help files available for this topic." ;# NEW
+::help::mc::NoHelpAvailableAtAll	"Ehhez a témához még nem létezik súgó fájl."
 ::help::mc::KeepLanguage			"Őrizzem meg a %s nyelvet a következő alkalmakra is?"
 ::help::mc::ParserError				"Error while parsing file %s." ;# NEW
 ::help::mc::NoMatch					"Nincs találat"
-::help::mc::MaxmimumExceeded		"Maximal number of matches exceeded in some pages." ;# NEW
+::help::mc::MaxmimumExceeded		"Túl sok találat néhány oldalon."
 ::help::mc::OnlyFirstMatches		"Csak az első %s találat jelenik meg."
 ::help::mc::HideIndex				"Tárgymutató elrejtése"
 ::help::mc::ShowIndex				"Tárgymutató mutatása"
@@ -1871,12 +1894,12 @@
 ::crosstable::mc::Category			"Kategória"
 ::crosstable::mc::Games				"játszmák"
 ::crosstable::mc::Game				"játszma"
-::crosstable::mc::ScoringSystem			"Scoring System" ;# NEW
+::crosstable::mc::ScoringSystem			"Pontozási rendszer"
 ::crosstable::mc::Tiebreak			"Rövidített játszma"
 ::crosstable::mc::Settings			"Beállítások"
 ::crosstable::mc::RevertToStart			"Kiinduló értékek visszaállítása"
 ::crosstable::mc::UpdateDisplay			"Képernyő frissítése"
-::crosstable::mc::SaveAsHTML			"Save as HTML file" ;# NEW
+::crosstable::mc::SaveAsHTML			"Mentés HTML fájlként"
 
 ::crosstable::mc::Traditional			"Hagyományos"
 ::crosstable::mc::Bilbao			"Bilbao" ;# NEW
@@ -1890,9 +1913,9 @@
 ::crosstable::mc::Progressive			"Progresszív"
 ::crosstable::mc::KoyaSystem			"Koya rendszer"
 ::crosstable::mc::GamesWon			"Nyert játszmák"
-::crosstable::mc::GamesWonWithBlack		"Sötéttel nyert játszmákGames Won with Black" ;# NEW
+::crosstable::mc::GamesWonWithBlack		"Sötéttel nyert játszmák"
 ::crosstable::mc::ParticularResult		"Particular Result" ;# NEW
-::crosstable::mc::TraditionalScoring		"Traditional Scoring" ;# NEW
+::crosstable::mc::TraditionalScoring		"Hagyományos pontozás"
 
 ::crosstable::mc::Crosstable			"Kereszttábla"
 ::crosstable::mc::Scheveningen			"Scheveningeni"
@@ -1901,7 +1924,7 @@
 ::crosstable::mc::Knockout			"Kieséses"
 ::crosstable::mc::RankingList			"Rangsor"
 
-::crosstable::mc::Order				"Order" ;# NEW
+::crosstable::mc::Order				"Sorrend"
 ::crosstable::mc::Type				"Tábla típus"
 ::crosstable::mc::Score				"Pont"
 ::crosstable::mc::Alphabetical			"Alphabetical"
@@ -1917,7 +1940,7 @@
 ::crosstable::mc::ShowHtml			"HTML megnyitása"
 ::crosstable::mc::ShowRating			"Értékszám"
 ::crosstable::mc::ShowPerformance		"Teljesítmény"
-::crosstable::mc::ShowWinDrawLoss		"Win/Draw/Loss" ;# NEW
+::crosstable::mc::ShowWinDrawLoss		"Győzelem/Döntetlen/Vereség"
 ::crosstable::mc::ShowTiebreak			"Rövidített játszma"
 ::crosstable::mc::ShowOpponent			"Ellenfél (as Tooltip)"
 ::crosstable::mc::KnockoutStyle			"Kiütéses Táblázat Stílus" ;# ?
@@ -1926,8 +1949,8 @@
 
 ::crosstable::mc::CrosstableLimit		"Túl sok a játékos (>%d) a kereszttáblához."
 ::crosstable::mc::CrosstableLimitDetail		"'%s' is choosing another table mode."
-::crosstable::mc::CannotOverwriteFile		"Cannot overwrite file '%s': permission denied." ;# NEW
-::crosstable::mc::CannotCreateFile		"Cannot create file '%s': permission denied." ;# NEW
+::crosstable::mc::CannotOverwriteFile		"'%s' felülírása sikertelen: hozzáférés megtagadva."
+::crosstable::mc::CannotCreateFile		"'%s' létrehozása sikertelen: hozzáférés megtagadva."
 
 ### info ###############################################################
 ::info::mc::InfoTitle		"Névjegy %s"
@@ -1944,8 +1967,8 @@
 ::info::mc::BoardThemeDesign	"Tábla terv" ;#"Board theme design"
 ::info::mc::FlagsDesign		"Miniatűr zászló terv" ;#"Miniature flags design"
 ::info::mc::IconDesign		"Ikon terv"
-::info::mc::Development		"Development" ;# NEW
-::info::mc::Programming		"Programming" ;# NEW
+::info::mc::Development		"Fejlesztés"
+::info::mc::Programming		"Kódolás"
 ::info::mc::Head		"Head" ;# NEW
 
 ::info::mc::Version		"Verzió"
@@ -1998,8 +2021,8 @@
 ::move::mc::Action(mainline)	"Új főváltozat"
 ::move::mc::Action(trial)	"Változat kipróbálása"
 ::move::mc::Action(exchange)	"Lépés cseréje"
-::move::mc::Action(append)	"Append move" ;# NEW
-::move::mc::Action(load)	"Load first game with this continuation" ;# NEW
+::move::mc::Action(append)	"Lépés hozzáadása"
+::move::mc::Action(load)	"Első játszma betöltése ezzel a folytatással"
 
 ::move::mc::GameWillBeTruncated	"Játszma megcsonkításra kerül. Folytatod? '%s'"
 
@@ -2084,26 +2107,26 @@
 ::table::mc::OptimizeColumns			"Minden oszlop optimalizálása"
 ::table::mc::FitColumnWidth			"Fit column width"
 ::table::mc::FitColumns				"Fit all columns"
-::table::mc::ExpandColumn			"Expand column width" ;# NEW
-::table::mc::SqueezeColumns			"Squeeze all columns"
+::table::mc::ExpandColumn			"Oszlopszélesség növelése"
+::table::mc::SqueezeColumns			"Oszlopszélesség csökkentése (Squeeze)"
 ::table::mc::AccelFitColumns			"Ctrl+,"
 ::table::mc::AccelOptimizeColumns		"Ctrl+."
 ::table::mc::AccelSqueezeColumns		"Ctrl+#"
 
 ### fileselectionbox ###################################################
-::dialog::fsbox::mc::ScidbDatabase		"Scidb Database" ;# NEW
-::dialog::fsbox::mc::ScidDatabase		"Scid Database" ;# NEW
-::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase Database" ;# NEW
-::dialog::fsbox::mc::PortableGameFile		"Portable Game File" ;# NEW
-::dialog::fsbox::mc::BughousePortableGameFile "Bughouse Portable Game File" ;# NEW
-::dialog::fsbox::mc::ZipArchive			"ZIP Archive" ;# NEW
-::dialog::fsbox::mc::ScidbArchive		"Scidb Arvchive" ;# NEW
-::dialog::fsbox::mc::PortableDocumentFile	"Portable Document File" ;# NEW
+::dialog::fsbox::mc::ScidbDatabase		"Scidb adatbázis"
+::dialog::fsbox::mc::ScidDatabase		"Scid adatbázis"
+::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase adatbázis"
+::dialog::fsbox::mc::PortableGameFile		"PGN fájl"
+::dialog::fsbox::mc::BughousePortableGameFile "Bughouse PGN fájl"
+::dialog::fsbox::mc::ZipArchive			"ZIP archívum"
+::dialog::fsbox::mc::ScidbArchive		"Scidb archívum"
+::dialog::fsbox::mc::PortableDocumentFile	"PDF" ;# NEW
 ::dialog::fsbox::mc::HypertextFile		"Hypertext File" ;# NEW
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File" ;# NEW
-::dialog::fsbox::mc::ImageFile			"Image File" ;# NEW
-::dialog::fsbox::mc::TextFile			"Text File" ;# NEW
-::dialog::fsbox::mc::BinaryFile			"Binary File" ;# NEW
+::dialog::fsbox::mc::ImageFile			"Képfájl"
+::dialog::fsbox::mc::TextFile			"Szövegfájl"
+::dialog::fsbox::mc::BinaryFile			"Bináris fájl"
 ::dialog::fsbox::mc::ShellScript		"Shell Script" ;# NEW
 ::dialog::fsbox::mc::Executable			"Executable" ;# NEW
 

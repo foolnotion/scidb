@@ -158,9 +158,21 @@ MoveInfoSet::sort()
 // Elapsed Move Time:		[%emt 0:05:42]
 // Mechanical Clock Time:	[%mct 17:10:42]
 // (Digital) Clock Time:	[%ct 17:10:42]
-// Corres. Chess Sent:		[%ccsnt 2011.06.16], [%ccsnt 2011.06.16,17:53], [%ccsnt 2011.06.16,17:53:02]
-// Evaluation information:	[%eval -6.05], "+0.92", "11:+0.00", "Crafty: 12:+0.61", "-11.78|d9", "+0.00/0"
-// Time Information:			"1:40:25", "(1:40:25)", "Crafty: 1:40:25", "Rybka Aquarium (0:00:45)"
+// Corres. Chess Sent:		[%ccsnt 2011.06.16]
+// 								[%ccsnt 2011.06.16,17:53]
+// 								[%ccsnt 2011.06.16,17:53:02]
+// Evaluation information:	[%eval -6.05]
+// 								"+0.92"
+// 								"11:+0.00"
+// 								"Crafty: 12:+0.61"
+// 								"-11.78|d9"
+// 								"+0.00/0"
+// 								"[Stockfish 1.9.1] 21:+2.74"
+// 								"[Stockfish 1.9.1] 66:M4"
+// Time Information:			"1:40:25"
+// 								"(1:40:25)"
+// 								"Crafty: 1:40:25"
+// 								"Rybka Aquarium (0:00:45)"
 //
 // NOTE:
 // Evaluation information may be followed by a time value; e.g. " 4s".
@@ -232,6 +244,9 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 					break;
 			}
 
+			if (q)
+				q = ::skipSpaces(q);
+
 			if (q && *q == ']')
 			{
 				add(info);
@@ -268,6 +283,10 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 	{
 		if (::isalpha(*s))
 		{
+			// "Crafty: 12:+0.61"
+			// "Crafty: 1:40:25"
+			// "Rybka Aquarium (0:00:45)"
+
 			char delim = '\0';
 
 			while (::isalnum(*s) || *s == ' ')
@@ -302,10 +321,9 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			while (*p == ' ')
 				--p;
 			++p;
+			s = ::skipSpaces(q + (delim == ')'));
 
 			info.setAnalysisEngine(engineList.addEngine(mstl::string(comment.begin(), p)));
-			add(info);
-			comment.clear();
 			rc = true;
 		}
 		else if (::seemsToBeEvaluation(s))
@@ -315,7 +333,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			if (e && ::isDelim(::skipSpaces(e)))
 			{
 				add(info);
-				comment.clear();
+				s = e;
 				rc = true;
 			}
 		}
@@ -325,10 +343,45 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 			if (e && ::isDelim(::skipSpaces(e)))
 			{
-				add(info);
-				comment.clear();
+				s = e;
 				rc = true;
 			}
+		}
+		else if (*s == '[')
+		{
+			// "[Stockfish 1.9.1] 66:M4"
+
+			char const* q = s + 1;
+
+			while (*q != ']')
+			{
+				if (!*++q)
+					return false;
+			}
+
+			mstl::string engine(s + 1, q);
+
+			s = ::skipSpaces(q + 1);
+
+			if (!::isdigit(*s))
+				return false;
+
+			q = info.parseEvaluation(s);
+
+			if (!q)
+				return false;
+
+			info.setAnalysisEngine(engineList.addEngine(engine));
+			s = ::skipSpaces(q);
+			rc = true;
+		}
+
+		if (rc)
+		{
+			add(info);
+			result.append(s, comment.end());
+			comment.swap(result);
+			comment.trim();
 		}
 	}
 

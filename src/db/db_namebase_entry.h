@@ -267,14 +267,14 @@ public:
 			uint32_t	m_species:3;
 			uint32_t m_sex:3;
 			uint32_t	m_federation:9;
-			uint32_t	m_title:5;
+			uint32_t	m_title:4;
 			uint32_t m_fideIdFlag:1;
 			uint32_t	m_federationFlag:1;
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
 			uint32_t m_ignored_:4;
-			uint32_t m_unused_:3;
+			uint32_t m_unused_:4;
 		};
 
 		uint32_t m_key;
@@ -369,14 +369,14 @@ private:
 			uint32_t	m_species:3;
 			uint32_t m_sex:3;
 			uint32_t	m_federation:9;
-			uint32_t	m_title:5;
+			uint32_t	m_title:4;
 			uint32_t m_fideIdFlag:1;
 			uint32_t	m_federationFlag:1;
 			uint32_t	m_titleFlag:1;
 			uint32_t m_sexFlag:1;
 			uint32_t m_speciesFlag:1;
 			uint32_t	m_ratingType:4;
-			uint32_t m_unused_:3;
+			uint32_t m_unused_:4;
 		};
 
 		uint32_t m_value;

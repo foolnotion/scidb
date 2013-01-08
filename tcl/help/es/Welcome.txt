@@ -30,6 +30,7 @@ tenga en cuenta al experimentar con Scidb:
     será lenta en algunas partes.
   </li>
 
+<!--
   <li style="margin-top: 0.5em; ">
     Que el soporte de las bases de datos de Scid (.si3/.si4) se realiza mediante una 
     emulación bastante compleja que aún no ha sido probada en forma suficiente.
@@ -40,6 +41,7 @@ tenga en cuenta al experimentar con Scidb:
     Que en forma predeterminada las bases de datos Scid se abrirán en modo de 
     sólo-lectura, el cual es - por supuesto - más seguro.
   </li>
+-->
 
   <li style="margin-top: 0.5em; ">
     Que el actual formato Scidb (.sci) estará terminado, a más tardar, para la primera

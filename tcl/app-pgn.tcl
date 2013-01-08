@@ -2769,29 +2769,32 @@ proc NewGame {} {
 }
 
 
-# # NOTE: will be called from popupShuffleMenu
-# proc Shuffle {variant} {
-# 	variable Vars
-# 
-# 	set parent $Vars(button:shuffle)
-# 
-# 	if {[::scidb::game::query modified?]} {
-# 		set reply [::dialog::question -parent $parent -message $::gamebar::mc::DiscardNewGame]
-# 		if {$reply eq "no"} { return }
-# 	}
-# 
-# 	set oldIdn [::scidb::game::query idn]
-# 	set newIdn [::setup::shuffle $variant]
-# 	while {$oldIdn == $newIdn} { set newIdn [::setup:shuffle $variant] }
-# 	::scidb::game::clear $newIdn
-# 	::scidb::game::modified $Vars(position) no
-# }
-# 
-# 
-# proc ShufflePosition {} {
-# 	variable Vars
-# 	::setup::popupShuffleMenu [namespace current] $Vars(button:shuffle)
-# }
+# NOTE: will be called from ::setup::popupShuffleMenu
+proc Shuffle {variant} {
+	variable Vars
+
+	set parent $Vars(frame)
+
+	if {[::scidb::game::query modified?]} {
+		set reply [::dialog::question -parent $parent -message $::gamebar::mc::DiscardNewGame]
+		if {$reply eq "no"} { return }
+	}
+
+	if {[string is integer -strict $variant]} {
+		set newIdn $variant
+	} elseif {$variant eq "Normal"} {
+		set newIdn [::setup::shuffle $variant]
+	} else {
+		set oldIdn [::scidb::game::query idn]
+		set newIdn [::setup::shuffle $variant]
+		while {$oldIdn == $newIdn} { set newIdn [::setup::shuffle $variant] }
+	}
+
+	::scidb::game::clear $newIdn
+	if {$Vars(position) >= 0} {
+		::scidb::game::modified $Vars(position) no
+	}
+}
 
 
 proc LanguageChanged {} {

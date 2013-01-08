@@ -1119,7 +1119,7 @@ PgnReader::checkVariant()
 								if (board().sideToMove() == winner)
 								{
 									// side to move wins (international rules),
-									// but side not move got the point -> cannot be Giveaway
+									// but side not to move got the point -> cannot be Giveaway
 									warning(NotSuicideNotGiveaway);
 								}
 								else
@@ -1135,7 +1135,7 @@ PgnReader::checkVariant()
 							if (board().sideToMove() == loser)
 							{
 								// side to move wins (international rules),
-								// but side not move got the point -> cannot be Giveaway
+								// but side not to move got the point -> cannot be Giveaway
 								if (board().materialCount(winner).total() < board().materialCount(loser).total())
 								{
 									// the side with less pieces wins (FICS rules)
@@ -2221,6 +2221,11 @@ PgnReader::checkFen()
 			if (!::equal(fen, "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w", 38))
 				m_idn = 0;
 			break;
+
+		case variant::UpsideDown:
+			if (!::equal(fen, "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w", 45))
+				m_idn = 0;
+			break;
 	}
 
 	if (m_idn > 4*960)
@@ -2274,7 +2279,7 @@ PgnReader::parseVariant()
 		// wild/2	Random shuffle mirror sides
 		// wild/3	Random pieces
 		// wild/4	Random pieces balanced bishops
-		// wild/5	White pawns start on 7th with pieces behind pawns
+		// wild/5	Upside down
 		// wild/7	Three pawns and a king (Little Game)
 		// wild/8	Pawns start on 4th rank
 		// wild/8a	Pawns on 5th rank
@@ -2333,6 +2338,18 @@ PgnReader::parseVariant()
 					setupVariant(variant::Giveaway);
 				else
 					return false;
+				break;
+
+			case '5':
+				if (equal(v, "7")) // Upside down
+				{
+					setupVariant(variant::Normal);
+					m_idn = variant::UpsideDown;
+				}
+				else
+				{
+					return false;
+				}
 				break;
 
 			case '7':
@@ -5647,8 +5664,20 @@ PgnReader::extractCountryFromSite(mstl::string& data)
 		{
 			while (*s != ',')
 			{
-				if (s == data.begin() || *s == '/')
+				if (*s == '/')
 					return country::Unknown;
+
+				if (s == data.begin())
+				{
+					Site const* site = Site::findSite(s);
+					if (site && site->countCountries() == 1)
+					{
+						if (data.size() == 3)
+							data = "";
+						return site->country(0);
+					}
+					return country::Unknown;
+				}
 
 				--s;
 			}
@@ -5659,8 +5688,15 @@ PgnReader::extractCountryFromSite(mstl::string& data)
 
 			::util::NulString str(s, e - s + 1);
 
-			if ((country = Site::findCountryCode(str)) == country::Unknown)
+			Site const* site = Site::findSite(str);
+
+			if (site == 0 || site->countCountries() > 1)
 				return country::Unknown;
+
+			country = site->country(0);
+
+			if (Site::findCountryCode(str) == country::Unknown)
+				return country;
 		}
 	}
 

@@ -34,85 +34,93 @@
 ::mc::AsciiMapping	{ä a à a á a å a æ a é e ë e ç c í i ñ n ö o õ o ø o ü u ß ss Å A Ä A Ö O Ü U}
 ::mc::SortOrder		{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z Å Ä Ö a b c d e f g h i j k l m n o p q r s t u v w x y z å ä ö}
 
-::mc::Key(Alt)			"Alt"
-::mc::Key(BS)			"\u232b"
-::mc::Key(Ctrl)		"Ctrl" ;# NEW
-::mc::Key(Del)			"Del" ;# NEW
-::mc::Key(Down)		"\u2193"
-::mc::Key(End)			"End" ;# NEW
-::mc::Key(Enter)		"Enter" ;# NEW
-::mc::Key(Esc)			"Esc"
-::mc::Key(Home)		"Home" ;# NEW
-::mc::Key(Left)		"\u2190"	;# "Vänster"
-::mc::Key(Next)		"Page\u2193"	;# Page Down NEW
-::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
-::mc::Key(Right)		"\u2192" ;# "Höger"
-::mc::Key(Shift)		"Shift" ;# NEW
-::mc::Key(Up)			"\u2191"
+::mc::Key(Alt)				"Alt"
+::mc::Key(BS)				"\u232b"
+::mc::Key(Ctrl)			"Ctrl" ;# NEW
+::mc::Key(Del)				"Del" ;# NEW
+::mc::Key(Down)			"\u2193"
+::mc::Key(End)				"End" ;# NEW
+::mc::Key(Enter)			"Enter" ;# NEW
+::mc::Key(Esc)				"Esc"
+::mc::Key(Home)			"Home" ;# NEW
+::mc::Key(Left)			"\u2190"	;# "Vänster"
+::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
+::mc::Key(Prior)			"Page\u2191"	;# Page Up NEW
+::mc::Key(Right)			"\u2192" ;# "Höger"
+::mc::Key(Shift)			"Shift" ;# NEW
+::mc::Key(Up)				"\u2191"
 
-::mc::Alignment		"Justering"
-::mc::Apply				"Verkställ"
-::mc::Archive			"Arkiv"
-::mc::Background		"Bakgrund"
-::mc::Black				"Svart"
-::mc::Bottom			"Underkant"
-::mc::Cancel			"Avbryt"
-::mc::Clear				"Töm"
-::mc::Close				"Stäng"
-::mc::Color				"Färg"
-::mc::Colors			"Färger"
-::mc::Configuration	"Konfiguration"
-::mc::Copy				"Kopiera"
-::mc::Cut				"Klipp ut"
-::mc::Dark				"Mörk"
-::mc::Database			"Databas"
-::mc::Default			"Standard"
-::mc::Delete			"Radera"
-::mc::Edit				"Redigera"
-::mc::File				"Arkiv"
-::mc::Filter			"Filter" ;# NEW
-::mc::From				"Från"
-::mc::Game				"Parti"
-::mc::Layout			"Layout"
-::mc::Left				"Vänster"
-::mc::Lite				"Ljus"
-::mc::Low				"Låg"
-::mc::Modify			"Ändra"
-::mc::No					"nej"
-::mc::Normal			"Normal" ;# NEW
-::mc::NotAvailable	"n/a"
-::mc::Number			"Nummer"
-::mc::OK					"OK"
-::mc::Order				"Ordning"
-::mc::Paste				"Klistra in"
-::mc::PieceSet			"Pjäser"
-::mc::Preview			"Förhandsgranska"
-::mc::Redo				"Gör om"
-::mc::Remove			"Ta bort"
-::mc::Reset				"Återställ"
-::mc::Right				"Höger"
-::mc::SelectAll		"Markera allt"
-::mc::Texture			"Texture"
-::mc::Theme				"Tema"
-::mc::To					"Till"
-::mc::Top				"Överkant"
-::mc::Undo				"Undo"
-::mc::Variant			"Variant" ;# NEW
-::mc::Variation		"Variation"
-::mc::White				"Vit"
-::mc::Yes				"ja"
+::mc::Alignment			"Justering"
+::mc::Apply					"Verkställ"
+::mc::Archive				"Arkiv"
+::mc::Background			"Bakgrund"
+::mc::Black					"Svart"
+::mc::Bottom				"Underkant"
+::mc::Cancel				"Avbryt"
+::mc::Clear					"Töm"
+::mc::Close					"Stäng"
+::mc::Color					"Färg"
+::mc::Colors				"Färger"
+::mc::Configuration		"Konfiguration"
+::mc::Copy					"Kopiera"
+::mc::Cut					"Klipp ut"
+::mc::Dark					"Mörk"
+::mc::Database				"Databas"
+::mc::Default				"Standard"
+::mc::Delete				"Radera"
+::mc::Edit					"Redigera"
+::mc::File					"Arkiv"
+::mc::Filter				"Filter" ;# NEW
+::mc::From					"Från"
+::mc::Game					"Parti"
+::mc::Layout				"Layout"
+::mc::Left					"Vänster"
+::mc::Lite					"Ljus"
+::mc::Low					"Låg"
+::mc::Modify				"Ändra"
+::mc::No						"nej"
+::mc::Normal				"Normal" ;# NEW
+::mc::Number				"Nummer"
+::mc::OK						"OK"
+::mc::Order					"Ordning"
+::mc::Paste					"Klistra in"
+::mc::PieceSet				"Pjäser"
+::mc::Preview				"Förhandsgranska"
+::mc::Redo					"Gör om"
+::mc::Remove				"Ta bort"
+::mc::Reset					"Återställ"
+::mc::Right					"Höger"
+::mc::SelectAll			"Markera allt"
+::mc::Texture				"Texture"
+::mc::Theme					"Tema"
+::mc::To						"Till"
+::mc::Top					"Överkant"
+::mc::Undo					"Undo"
+::mc::Variant				"Variant" ;# NEW different from "Variation"
+::mc::Variation			"Variation"
+::mc::White					"Vit"
+::mc::Yes					"ja"
 
-::mc::LogicalReset	"Återställ"
-::mc::LogicalAnd		"Och"
-::mc::LogicalOr		"Eller"
-::mc::LogicalNot		"Icke"
+::mc::King					"Kung"
+::mc::Queen					"Dam"
+::mc::Rook					"Torn"
+::mc::Bishop				"Löpare"
+::mc::Knight				"Springare"
+::mc::Pawn					"Bonde"
 
-::mc::King				"Kung"
-::mc::Queen				"Dam"
-::mc::Rook				"Torn"
-::mc::Bishop			"Löpare"
-::mc::Knight			"Springare"
-::mc::Pawn				"Bonde"
+::mc::Logical(reset)		"Återställ"
+::mc::Logical(or)			"Eller"
+::mc::Logical(and)		"Och"
+::mc::Logical(null)		"None" ;# NEW
+::mc::Logical(not)		"Icke"
+::mc::Logical(remove)	"Remove" ;# NEW
+
+::mc::LogicalDetail(reset)			"Reset filter" ;# NEW
+::mc::LogicalDetail(or)				"Add to filter" ;# NEW
+::mc::LogicalDetail(and)			"Restrict filter" ;# NEW
+::mc::LogicalDetail(null)			"Clear filter" ;# NEW
+::mc::LogicalDetail(not)			"Exlude from filter" ;# NEW
+::mc::LogicalDetail(remove)		"Remove from filter" ;# NEW
 
 ::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
 ::mc::VariantName(Normal)			"Normal Chess" ;# NEW
@@ -370,20 +378,21 @@
 ::application::mc::UpdatesAvailable		"Uppdateringar tillgängliga"
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable	"Visa turneringstabell för partiet"
-::application::board::mc::StartEngine		"Starta analysmotor"
-::application::board::mc::StopEngine		"Stoppa analysmotor"
-::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
+::application::board::mc::ShowCrosstable				"Visa turneringstabell för partiet"
+::application::board::mc::StartEngine					"Starta analysmotor"
+::application::board::mc::StopEngine					"Stoppa analysmotor"
+::application::board::mc::InsertNullMove				"Insert null move" ;# NEW
+::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 
-::application::board::mc::Tools				"Verktyg"
-::application::board::mc::Control			"Kontroll"
-::application::board::mc::Game				"Parti"
-::application::board::mc::GoIntoNextVar	"Gå in i nästa variant"
-::application::board::mc::GoIntPrevVar		"Gå in i föregående variant"
-::application::board::mc::LoadGame(next)	"Ladda nästa parti"
-::application::board::mc::LoadGame(prev)	"Ladda föregående parti"
-::application::board::mc::LoadGame(first)	"Ladda första parti"
-::application::board::mc::LoadGame(last)	"Ladda sista parti"
+::application::board::mc::Tools							"Verktyg"
+::application::board::mc::Control						"Kontroll"
+::application::board::mc::Game							"Parti"
+::application::board::mc::GoIntoNextVar				"Gå in i nästa variant"
+::application::board::mc::GoIntPrevVar					"Gå in i föregående variant"
+::application::board::mc::LoadGame(next)				"Ladda nästa parti"
+::application::board::mc::LoadGame(prev)				"Ladda föregående parti"
+::application::board::mc::LoadGame(first)				"Ladda första parti"
+::application::board::mc::LoadGame(last)				"Ladda sista parti"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -1166,10 +1175,14 @@
 ::playertable::mc::F_LastName					"Efternamn"
 ::playertable::mc::F_FirstName				"Förnamn"
 ::playertable::mc::F_FideID					"Fide ID"
+::playertable::mc::F_DSBID						"DSB ID" ;# NEW
+::playertable::mc::F_ECFID						"ECF ID" ;# NEW
+::playertable::mc::F_ICCFID					"ICCF ID" ;# NEW
 ::playertable::mc::F_Title						"Titel"
 ::playertable::mc::F_Frequency				"Frekvens"
 
 ::playertable::mc::T_Federation				"Nation"
+::playertable::mc::T_NativeCountry			"Native Country" ;# NEW
 ::playertable::mc::T_RatingType				"Ratingtyp"
 ::playertable::mc::T_Type						"Typ"
 ::playertable::mc::T_Sex						"Kön"
@@ -1185,12 +1198,25 @@
 ::playertable::mc::MostRecentRating			"Senaste rating"
 ::playertable::mc::DateOfBirth				"Födelsedatum"
 ::playertable::mc::DateOfDeath				"Dödsdatum"
-::playertable::mc::FideID						"Fide ID"
 
 ::playertable::mc::ShowPlayerCard			"Visa spelarkort..."
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Deltagande"
+
+### player dictionary ##################################################
+::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
+::playerdict::mc::PlayerFilter		"Player Filter" ;# NEW
+::playerdict::mc::Count					"Count" ;# NEW
+::playerdict::mc::Ignore				"Ignore" ;# NEW
+::playerdict::mc::FederationID		"Federation ID" ;# NEW
+::playerdict::mc::BirthYear			"Birth Year" ;# NEW
+::playerdict::mc::DeathYear			"Death Year" ;# NEW
+::playerdict::mc::Ratings				"Ratings" ;# NEW
+::playerdict::mc::Titles				"Titles" ;# NEW
+::playerdict::mc::None					"None" ;# NEW
+::playerdict::mc::Operation			"Operation" ;# NEW
+::playerdict::mc::CancelSort			"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Spelarkort"
@@ -1334,7 +1360,7 @@
 ::setup::board::mc::Clear							"Rensa"
 ::setup::board::mc::CopyFen						"Kopiera FEN till urklipp"
 ::setup::board::mc::Shuffle						"Shuffle..."
-::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
+::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Chess 960 rockad"
 

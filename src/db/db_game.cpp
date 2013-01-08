@@ -3065,7 +3065,7 @@ Game::updateLine()
 
 	bool update = m_idn != idn;
 
-	if (idn)
+	if (idn && m_startBoard.isStartPosition())
 	{
 		uint16_t* lineBuf = m_line.moves == m_lineBuf[0] ? m_lineBuf[1] : m_lineBuf[0];
 

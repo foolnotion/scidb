@@ -129,6 +129,7 @@ typedef mstl::map<Player*,PndID> PndDict;
 typedef mstl::map<Player*,ViafID> ViafDict;
 typedef mstl::map<Player const*,mstl::string> Lookup;
 typedef mstl::vector<Entry> PlayerList;
+typedef mstl::vector<Player const*> PlayerRegister;
 typedef mstl::hash<unsigned,Player*> PlayerDict;
 typedef mstl::hash<mstl::string,Lookup*> LangMap;
 typedef mstl::chunk_allocator<char> CAllocator;
@@ -147,6 +148,7 @@ static Lookup urlDict(512);
 static CAllocator charAllocator(1024);
 static PAllocator playerAllocator(32768);
 static PlayerList playerList;
+static PlayerRegister playerDict;
 static mstl::string exclude;
 static LangMap langMap;
 static PndDict pndMap(250);
@@ -349,7 +351,7 @@ extractPlayerData(mstl::string& str,
 
 
 static unsigned
-getTitles(mstl::string const& str)
+getTitles(mstl::string const& str, sex::ID& sex)
 {
 	char const*	s = str.c_str();
 	unsigned		titles = 0;
@@ -358,13 +360,18 @@ getTitles(mstl::string const& str)
 	{
 		char const* t = s;
 
-		while (*t && *t != '+')
+		while (*t && *t != '+' && *t != ' ')
 			++t;
 
 		unsigned len = t - s;
 
 		switch (len)
 		{
+			case 1:
+				if (tolower(s[0]) == 'w')
+					sex = sex::Female;
+				break;
+
 			case 2:
 				if (tolower(s[1]) == 'm')
 				{
@@ -373,37 +380,48 @@ getTitles(mstl::string const& str)
 						case 'g': titles |= title::Mask_GM; break;
 						case 'i': titles |= title::Mask_IM; break;
 						case 'f': titles |= title::Mask_FM; break;
+						case 'c': titles |= title::Mask_CM; break;
 					}
 				}
 				break;
 
 			case 3:
-				if (tolower(s[2]) == 'm')
+				switch (tolower(s[2]))
 				{
-					switch (tolower(s[0]))
-					{
-						case 'c':
-							switch (tolower(s[1]))
-							{
-								case 'g': titles |= title::Mask_CGM; break;
-								case 'i': titles |= title::Mask_CIM; break;
-							}
-							break;
+					case 'm':
+						switch (tolower(s[0]))
+						{
+							case 'c':
+								switch (tolower(s[1]))
+								{
+									case 'g': titles |= title::Mask_CGM; break;
+									case 'i': titles |= title::Mask_CIM; break;
+									case 's': titles |= title::Mask_CSIM; break;
+									case 'l': titles |= title::Mask_CLIM; break;
+								}
+								break;
 
-						case 'h':
-							if (tolower(s[1]) == 'g')
-								titles |= title::Mask_HGM;
-							break;
+							case 'h':
+								if (tolower(s[1]) == 'g')
+									titles |= title::Mask_HGM;
+								break;
 
-						case 'w':
-							switch (tolower(s[1]))
-							{
-								case 'g': titles |= title::Mask_WGM; break;
-								case 'i': titles |= title::Mask_WIM; break;
-								case 'f': titles |= title::Mask_WFM; break;
-							}
-							break;
-					}
+							case 'w':
+								switch (tolower(s[1]))
+								{
+									case 'g': titles |= title::Mask_WGM; break;
+									case 'i': titles |= title::Mask_WIM; break;
+									case 'f': titles |= title::Mask_WFM; break;
+									case 'c': titles |= title::Mask_WCM; break;
+								}
+								break;
+						}
+						break;
+
+					case 'g':
+						if (tolower(s[0]) == 'c' && tolower(s[1]) == 'l')
+							titles |= title::Mask_CLGM;
+						break;
 				}
 				break;
 		}
@@ -765,9 +783,10 @@ Player::PlayerCallback::~PlayerCallback() {}
 
 
 Player::Player()
-	:m_titles(0)
+	:m_titles(title::Mask_None)
 	,m_birthYear(0)
-	,m_deathDay(0)
+	,m_deathMonth(0)
+	,m_sex(sex::Unspecified)
 	,m_deathYear(0)
 	,m_nativeCountry(country::Unknown)
 	,m_birthDay(0)
@@ -775,10 +794,9 @@ Player::Player()
 	,m_species(species::Human)
 	,m_notUnique(0)
 	,m_federation(country::Unknown)
+	,m_deathDay(0)
 	,m_ratingType(rating::Last)
-	,m_deathMonth(0)
 	,m_region(0)
-	,m_sex(sex::Unspecified)
 	,m_chess960(0)
 	,m_shuffle(0)
 	,m_bughouse(0)
@@ -797,10 +815,71 @@ Player::Player()
 }
 
 
+mstl::string
+Player::federationID(federation::ID federation) const
+{
+	M_REQUIRE(federation != federation::None);
+
+	switch (federation)
+	{
+		case federation::Fide:
+			if (m_fideID)
+			{
+				mstl::string id;
+				id.format("%u", m_fideID);
+				return id;
+			}
+			break;
+
+		case federation::ICCF:
+			if (m_iccfID)
+			{
+				mstl::string id;
+				id.format("%u", m_iccfID);
+				return id;
+			}
+			break;
+
+		case federation::DSB:
+			if (m_dsbId)
+				return m_dsbId.asString();
+			break;
+
+		case federation::ECF:
+			if (m_ecfId)
+				return m_ecfId.asString();
+			break;
+
+		case federation::None:
+			break;
+	}
+
+	return mstl::string::empty_string;
+}
+
+
+bool
+Player::hasID(federation::ID federation) const
+{
+	M_REQUIRE(federation != federation::None);
+
+	switch (federation)
+	{
+		case federation::Fide:	return m_fideID;
+		case federation::ICCF:	return m_iccfID;
+		case federation::DSB:	return m_dsbId;
+		case federation::ECF:	return m_ecfId;
+		case federation::None:	break;
+	}
+
+	return false; // satisfies the compiler
+}
+
+
 unsigned
 Player::countPlayers()
 {
-	return ::playerList.size();
+	return ::playerDict.size();
 }
 
 
@@ -964,7 +1043,7 @@ Player const&
 Player::getPlayer(unsigned index)
 {
 	M_REQUIRE(index < countPlayers());
-	return *::playerList[index].second;
+	return *::playerDict[index];
 }
 
 
@@ -1030,7 +1109,7 @@ Player::newPlayer(mstl::string const& name,
 
 	if (players.empty())
 	{
-		player = ::playerAllocator.alloc();
+		::playerDict.push_back(player = ::playerAllocator.alloc());
 	}
 	else
 	{
@@ -1096,7 +1175,7 @@ Player::newPlayer(mstl::string const& name,
 		}
 
 		if (player == 0)
-			player = ::playerAllocator.alloc();
+			::playerDict.push_back(player = ::playerAllocator.alloc());
 	}
 
 	if (player->federation() == country::Unknown)
@@ -1937,7 +2016,7 @@ Player::parseSpellcheckFile(mstl::istream& stream)
 					{
 						country::Code federation = ::getFederation(federations);
 						country::Code nativeCountry	= ::getNativeCountry(federations);
-						unsigned titleMask = ::getTitles(titles);
+						unsigned titleMask = ::getTitles(titles, sex);
 						unsigned region = 0;
 
 						if (title::containsFemaleTitle(titleMask))
@@ -2473,8 +2552,8 @@ Player::parseIccfRating(mstl::istream& stream)
 
 					switch (line[11])
 					{
-						case 'I': player->addTitle(line[12] == 'M' ? title::CIM : title::CILM); break;
-						case 'L': player->addTitle(title::CLGM); break;
+						case 'I': player->addTitle(title::CIM); break;
+						case 'L': player->addTitle(line[12] == 'I' ? title::CLIM : title::CLGM); break;
 						case 'S': player->addTitle(title::CSIM); break;
 						case 'G': player->addTitle(title::CGM); break;
 					}

@@ -77,6 +77,7 @@ inline bool Player::isEngine() const					{ return m_species == species::Program;
 inline bool Player::isUnique() const					{ return !m_notUnique; }
 inline bool Player::isNotUnique() const				{ return m_notUnique; }
 inline uint16_t Player::birthYear() const				{ return m_birthYear; }
+inline uint16_t Player::deathYear() const				{ return m_deathYear; }
 inline unsigned Player::region() const					{ return m_region; }
 inline Player::EcfID Player::ecfID() const			{ return m_ecfId; }
 inline Player::DsbID Player::dsbID() const			{ return m_dsbId; }
@@ -87,7 +88,12 @@ void
 Player::addTitle(title::ID title)
 {
 	M_REQUIRE(title != title::Last);
-	m_titles |= fromID(title);
+
+	if (title != title::None)
+	{
+		m_titles |= fromID(title);
+		m_titles &= ~title::Mask_None;
+	}
 }
 
 
@@ -95,8 +101,13 @@ inline
 void
 Player::setTitles(unsigned titles)
 {
-	M_REQUIRE(titles < (1 << (title::Last - 1)));
-	m_titles = titles;
+	M_REQUIRE(titles < (1 << (title::Last)));
+
+	if (titles & title::Mask_Any)
+	{
+		m_titles = titles;
+		m_titles &= ~title::Mask_None;
+	}
 }
 
 

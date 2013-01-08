@@ -43,9 +43,6 @@ set Title(WIM)		"Woman International Master (FIDE)"
 set Title(WFM)		"Woman Fide Master (FIDE)"
 set Title(WCM)		"Woman Candidate Master (FIDE)"
 set Title(HGM)		"Honorary Grandmaster (FIDE)"
-set Title(NM)		"National Master (USCF)"
-set Title(SM)		"Senior Master (USCF)"
-set Title(LM)		"Life Master (USCF)"
 set Title(CGM)		"Correspondence Grandmaster (ICCF)"
 set Title(CIM)		"Correspondence International Master (ICCF)"
 set Title(CLGM)	"Correspondence Lady Grandmaster (ICCF)"
@@ -55,27 +52,9 @@ set Title(CSIM)	"Correspondence Senior International Master (ICCF)"
 }
 
 
-variable titles { GM IM FM CM WGM WIM WFM WCM HGM CGM CLGM CIM CILM CSIM NM SM LM }
-
-array set Association {
-	GM		FIDE
-	IM		FIDE
-	FM		FIDE
-	CM		FIDE
-	WGM	FIDE
-	WIM	FIDE
-	WFM	FIDE
-	WCM	FIDE
-	HGM	FIDE
-	CGM	ICCF
-	CLGM	ICCF
-	CIM	ICCF
-	CILM	ICCF
-	CSIM	ICCF
-	NM		USCF
-	SM		USCF
-	LM		USCF
-}
+set titles(Fide)	{ GM IM FM CM WGM WIM WFM WCM HGM }
+set titles(ICCF)	{ CGM CLGM CIM CILM CSIM }
+set titles(all)	[concat $titles(Fide) $titles(ICCF)]
 
 
 proc Build {w args} {
@@ -103,7 +82,7 @@ proc Build {w args} {
 	set vcmd { return [string is alpha [string trim [string range %P 0 2]]] }
 
 	ttk::tcombobox $w \
-		-height [expr {[llength $titles] + 1}] \
+		-height [expr {[llength $titles(all)] + 1}] \
 		-showcolumns {title descr} \
 		-format "%1 \u2013 %2" \
 		-empty {0} \
@@ -149,7 +128,7 @@ proc WidgetProc {w command args} {
 			variable titles
 			set item [$w.__w__ current]
 			if {$item <= 0} { return "" }
-			return [lindex $titles [expr {$item - 1}]]
+			return [lindex $titles(all) [expr {$item - 1}]]
 		}
 
 		valid? {
@@ -192,16 +171,12 @@ proc WidgetProc {w command args} {
 proc SetupList {w} {
 	variable mc::Title
 	variable titles
-	variable Association
 
 	$w listinsert { "\u2014" } -index 0
 
 	set index 0
-	foreach title $titles {
-		switch $Association($title) {
-			ICCF		{ set highlight yes }
-			default	{ set highlight no  }
-		}
+	foreach title $titles(all) {
+		if {$title in $titles(ICCF)} { set highlight yes } else { set highlight no }
 		$w listinsert [list $title $Title($title)] -index [incr index] -highlight $highlight
 	}
 
@@ -258,7 +233,7 @@ proc Search {w var full} {
 	variable titles
 
 	set title [lindex [string toupper [set $var]] 0]
-	set n [lsearch -exact $titles $title]
+	set n [lsearch -exact $titles(all) $title]
 	if {$n >= 0} {
 		$w current [incr n]
 		if {!$full} {

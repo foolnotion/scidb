@@ -135,6 +135,7 @@ NameList::update(Namebase& base, sys::utf8::Codec& codec)
 
 	for (unsigned i = 0; i < base.size(); ++i)
 	{
+		// XXX but this entry may still remain in namebase!
 		if (base.entryAt(i)->frequency() == 0)
 			m_usedIdSet.reset(base.entryAt(i)->id());
 	}
@@ -327,20 +328,24 @@ NameList::append(	mstl::string const& originalName,
 						NamebaseEntry* entry,
 						sys::utf8::Codec& codec)
 {
-	mstl::string const* str;
+	if (m_list.empty() || originalName != m_list.back()->encoded)
+	{
+		mstl::string const* str;
 
-	if (entry->name() == originalName)
-	{
-		str = 0;
-	}
-	else
-	{
-		m_buf.assign(originalName);
-		str = &m_buf;
+		if (entry->name() == originalName)
+		{
+			str = 0;
+		}
+		else
+		{
+			m_buf.assign(originalName);
+			str = &m_buf;
+		}
+
+		m_list.push_back(newNode(entry, str, id));
 	}
 
 	m_usedIdSet.set(id);
-	m_list.push_back(newNode(entry, str, id));
 	m_lookup[id] = m_list.back();
 	m_maxId = mstl::max(m_maxId, id + 1);
 }

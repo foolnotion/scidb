@@ -71,6 +71,7 @@ public:
 		DateOfBirth,
 		DateOfDeath,
 		Federation,
+		Titles,
 		NativeCountry,
 		LatestElo,
 		LatestRating,
@@ -87,34 +88,42 @@ public:
 	unsigned count() const;
 
 	::db::Player const& getPlayer(unsigned number) const;
+	int search(mstl::string const& name) const;
 
-	void reset();
-	void sort(Attribute attr);
+	void finishOperation();
+
+	void sort(Attribute attr, ::db::order::ID order);
+	void reverseOrder();
+	void cancelSort();
+
+	void resetFilter();
+	void negateFilter();
+	void filterLetter(char letter);
 	void filterName(Operator op, mstl::string const& pattern);
 	void filterFederation(Operator op, ::db::country::Code country);
 	void filterNativeCountry(Operator op, ::db::country::Code country);
 	void filterType(Operator op, ::db::species::ID type);
 	void filterSex(Operator op, ::db::sex::ID sex);
-	void filterFideID(Operator op);
-	void filterIccfID(Operator op);
-	void filterDsbID(Operator op);
-	void filterEcfID(Operator op);
+	void filterTitles(Operator op, unsigned titles);
+	void filterFederationID(Operator op, ::db::federation::ID federation);
 	void filterScore(Operator op, ::db::rating::Type rating, uint16_t min, uint16_t max);
-	void filterDateOfBirth(Operator op, ::db::Date const& min, ::db::Date const& max);
-	void filterDateOfDeath(Operator op, ::db::Date const& min, ::db::Date const& max);
+	void filterBirthYear(Operator op, uint16_t minYear, uint16_t maxYear);
+	void filterDeathYear(Operator op, uint16_t minYear, uint16_t maxYear);
 
 private:
 
+	typedef mstl::bitset Filter;
+	typedef mstl::vector<unsigned> Selector;
 	typedef void (mstl::bitset::*Setter)(mstl::bitset::size_type);
 
 	bool prepareForOp(Operator op, Setter& setter);
 
-	typedef mstl::bitset Filter;
-	typedef mstl::vector<unsigned> Selector;
-
 	Filter	m_baseFilter;
+	Filter	m_nameFilter;
+	Filter	m_attrFilter;
 	Filter	m_filter;
 	Selector	m_selector;
+	Selector	m_map;
 	unsigned	m_count;
 };
 

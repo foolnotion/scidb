@@ -167,6 +167,8 @@ public:
 	void setToMove(color::ID color);
 	/// Set initial chess game position on the board
 	void setStandardPosition();
+	/// Set initial chess game position on the board
+	void setStandardPosition(variant::Type variant);
 	/// Parse given FEN, return true if loaded properly otherwise false
 	char const* setup(char const* fen, variant::Type variant);
 	/// Setup board from given IDN (unique IDentification Number)
@@ -629,6 +631,7 @@ private:
 	static Board m_emptyBoard;
 	static Board m_standardBoard;
 	static Board m_shuffleChessBoard;
+	static Board m_antichessBoard;
 	static Board m_littleGame;
 	static Board m_pawnsOn4thRank;
 	static Board m_pyramid;
@@ -644,6 +647,7 @@ private:
 	static Board m_kbbk;
 	static Board m_runaway;
 	static Board m_queenVsRooks;
+	static Board m_upsideDown;
 }
 __attribute__((packed));
 

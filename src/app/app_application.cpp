@@ -1451,7 +1451,7 @@ Application::setupGame(Board const& startPosition)
 	EditGame& game = *m_gameMap[m_position];
 
 	game.game->setup(startPosition);
-	game.game->updateSubscriber(Game::UpdateBoard);
+	game.game->updateSubscriber(Game::UpdateBoard | Game::UpdatePgn);
 
 	if (m_subscriber && m_referenceBase && !m_treeIsFrozen)
 		m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());

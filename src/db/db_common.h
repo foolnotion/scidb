@@ -529,13 +529,10 @@ namespace title
 		WFM,	///< Woman Fide Master (FIDE)
 		WCM,	///< Woman Candidate Master (FIDE)
 		HGM,	///< Honorary Grandmaster (FIDE)
-		NM,	///< National Master (USCF)
-		SM,	///< Senior Master (USCF)
-		LM,	///< Life Master (USCF)
 		CGM,	///< Correspondence Grandmaster (ICCF)
 		CIM,	///< Correspondence International Master (ICCF)
 		CLGM,	///< Correspondence Lady Grandmaster (ICCF)
-		CILM,	///< Correspondence Lady International Master (ICCF)
+		CLIM,	///< Correspondence Lady International Master (ICCF)
 		CSIM,	///< Correspondence Senior International Master (ICCF)
 
 		Last,
@@ -543,23 +540,23 @@ namespace title
 
 	enum
 	{
-		Mask_GM		= 1 << (GM   - 1),
-		Mask_IM		= 1 << (IM   - 1),
-		Mask_FM		= 1 << (FM   - 1),
-		Mask_CM		= 1 << (CM   - 1),
-		Mask_WGM		= 1 << (WGM  - 1),
-		Mask_WIM		= 1 << (WIM  - 1),
-		Mask_WFM		= 1 << (WFM  - 1),
-		Mask_WCM		= 1 << (WCM  - 1),
-		Mask_HGM		= 1 << (HGM  - 1),
-		Mask_NM		= 1 << (NM   - 1),
-		Mask_SM		= 1 << (SM   - 1),
-		Mask_LM		= 1 << (LM   - 1),
-		Mask_CGM		= 1 << (CGM  - 1),
-		Mask_CIM		= 1 << (CIM  - 1),
-		Mask_CLGM	= 1 << (CLGM - 1),
-		Mask_CILM	= 1 << (CILM - 1),
-		Mask_CSIM	= 1 << (CSIM - 1),
+		Mask_None	= 1 << None,
+		Mask_GM		= 1 << GM,
+		Mask_IM		= 1 << IM,
+		Mask_FM		= 1 << FM,
+		Mask_CM		= 1 << CM,
+		Mask_WGM		= 1 << WGM,
+		Mask_WIM		= 1 << WIM,
+		Mask_WFM		= 1 << WFM,
+		Mask_WCM		= 1 << WCM,
+		Mask_HGM		= 1 << HGM,
+		Mask_CGM		= 1 << CGM,
+		Mask_CIM		= 1 << CIM,
+		Mask_CLGM	= 1 << CLGM,
+		Mask_CLIM	= 1 << CLIM,
+		Mask_CSIM	= 1 << CSIM,
+
+		Mask_Any		= ((1 << Last) - 1) & ~Mask_None,
 	};
 
 	ID toID(unsigned title);
@@ -619,6 +616,20 @@ namespace rating
 
 	mstl::string const& toString(Type type);
 	Type fromString(char const* s);
+}
+
+namespace federation
+{
+	enum ID
+	{
+		None,
+		Fide,	// World Chess Federation
+		DSB,	// Deutscher Schachbund (German Chess Federation)
+		ECF,	// English Chess Federation (formerly "BCF: British Chess Federation)
+		ICCF,	// International Correspondence Chess Federation
+	};
+
+	ID fromString(char const* s);
 }
 
 namespace termination
@@ -762,6 +773,7 @@ namespace variant
 		KBBK					= 4012,	// FICS endings/kbbk
 		Runaway				= 4013,	// FICS misc/runaway
 		QueenVsRooks		= 4014,	// FICS misc/queen-rooks
+		UpsideDown			= 4015,	// Upside down chess <http://www.chessvariants.org/diffsetup.dir/upside.html>
 
 		// NOTE: maximal number is 4095
 	};

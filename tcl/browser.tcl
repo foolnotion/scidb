@@ -517,6 +517,9 @@ if {0} {
 		if {$idn > 4*960} {
 			append opening1 "\""
 			append opening1 $position
+			if {[info exists ::setup::PositionAlt($position)]} {
+				append opening1 " ($::setup::PositionAlt($position))"
+			}
 			append opening1 "\""
 		} else {
 			if {$idn > 3*960} {
@@ -1147,13 +1150,11 @@ proc ToggleAutoPlay {position {hide 0}} {
 		$w configure -image $::icon::22x22::playerStop
 		set Vars(autoplay) 1
 		Goto $position +1
-		set tooltipVar StopAutoplay
 	} else {
 		$w configure -image $::icon::22x22::start
 		set Vars(autoplay) 0
 		after cancel $Vars(afterid)
 		set Vars(afterid) {}
-		set tooltipVar StartAutoplay
 	}
 
 	SetAutoPlayTooltip $position
@@ -1167,7 +1168,7 @@ proc SetAutoPlayTooltip {position} {
 	if {[$Vars(control:autoplay) cget -image] eq $::icon::22x22::start} {
 		set tooltipVar StartAutoplay
 	} else {
-		set tooltipVar StartAutoplay
+		set tooltipVar StopAutoplay
 	}
 
 	::tooltip::tooltip $Vars(control:autoplay) "[set mc::$tooltipVar] ($::mc::Key(Ctrl)-A)"

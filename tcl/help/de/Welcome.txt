@@ -30,6 +30,7 @@ Version sollte folgendes berücksichtigt werden:
     noch entsprechend langsam.
   </li>
 
+<!--
   <li class="space">
     Die Unterstützung der Scid-Datenbanken (<abbr>.si3</abbr>/<abbr>.si4</abbr>) erfolgt
     durch eine recht komplexe Emulation, die noch nicht genügend ausgetestet ist.
@@ -39,6 +40,7 @@ Version sollte folgendes berücksichtigt werden:
     Standardmäßig werden die Scid-Datenbanken nur im Lesemodus, der natürlich unkritisch
     ist, geöffnet.
   </li>
+-->
 
   <li class="space">
     Das aktuelle Scidb-Format (<abbr>.sci</abbr>) wird spätestens mit der ersten Vollversion

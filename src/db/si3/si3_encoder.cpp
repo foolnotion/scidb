@@ -64,7 +64,7 @@ namespace {
 
 struct TagLookup
 {
-	TagLookup()
+	static void initialize()
 	{
 		m_info.set(tag::Event);
 		m_info.set(tag::Site);
@@ -100,7 +100,13 @@ struct TagLookup
 
 db::Consumer::TagBits TagLookup::m_info;
 db::Consumer::TagBits TagLookup::m_ignore;
-static TagLookup m_tagLookup;
+
+static void
+__attribute__((constructor))
+initialize()
+{
+	TagLookup::initialize();
+}
 
 } // namespace
 
@@ -748,6 +754,13 @@ Encoder::encodeType(type::ID type)
 	}
 
 	return 0;	// satisfies the compiler
+}
+
+
+void
+Encoder::initialize()
+{
+	TagLookup::initialize();
 }
 
 // vi:set ts=3 sw=3:

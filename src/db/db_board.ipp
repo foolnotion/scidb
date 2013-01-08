@@ -81,7 +81,6 @@ inline uint64_t Board::pawnHash() const					{ return m_pawnHash; }
 inline Board const& Board::standardBoard()				{ return m_standardBoard; }
 inline Board const& Board::emptyBoard()					{ return m_emptyBoard; }
 
-inline void Board::setStandardPosition()					{ *this = m_standardBoard; }
 inline void Board::destroyCastle(color::ID color)		{ m_castle &= ~castling::bothSides(color); }
 inline void Board::setToMove(color::ID color)			{ m_stm = color; }
 inline void Board::swapToMove()								{ m_stm ^= 1; }
@@ -90,6 +89,22 @@ inline void Board::setEnPassantSquare(Square sq)		{ setEnPassantSquare(sideToMov
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
 inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number; }
 
+
+inline
+void
+Board::setStandardPosition()
+{
+	*this = m_standardBoard;
+}
+
+
+inline
+void
+Board::setStandardPosition(variant::Type variant)
+{
+	M_REQUIRE(variant::isMainVariant(variant));
+	*this = variant == variant::Antichess ? m_antichessBoard : m_standardBoard;
+}
 
 
 inline

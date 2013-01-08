@@ -34,85 +34,93 @@
 ::mc::AsciiMapping	{Å A à a À A å a è e È E é e É E ì i Ì i  ò o Ò O ù u Ù U}
 ::mc::SortOrder		{A À Å B C D E È É F G H I Ì J K L M N O Ò P Q R S T U Ù V W X Y Z a à å b c d e è é f g h i ì j k l m n o ò p q r s t u ù v w x y z}
 
-::mc::Key(Alt)			"Alt"
-::mc::Key(BS)			"\u232b"
-::mc::Key(Ctrl)		"Ctrl"
-::mc::Key(Del)			"Canc"
-::mc::Key(Down)		"\u2193"
-::mc::Key(End)			"Fine"
-::mc::Key(Enter)		"Invio"
-::mc::Key(Esc)			"Esci"
-::mc::Key(Home)		"Inizio" ;# "Home"
-::mc::Key(Left)		"\u2190"
-::mc::Key(Next)		"Page\u2193"
-::mc::Key(Prior)		"Page\u2191"
-::mc::Key(Right)		"\u2192"
-::mc::Key(Shift)		"Shift"
-::mc::Key(Up)			"\u2191"
+::mc::Key(Alt)				"Alt"
+::mc::Key(BS)				"\u232b"
+::mc::Key(Ctrl)			"Ctrl"
+::mc::Key(Del)				"Canc"
+::mc::Key(Down)			"\u2193"
+::mc::Key(End)				"Fine"
+::mc::Key(Enter)			"Invio"
+::mc::Key(Esc)				"Esci"
+::mc::Key(Home)			"Inizio" ;# "Home"
+::mc::Key(Left)			"\u2190"
+::mc::Key(Next)			"Page\u2193"
+::mc::Key(Prior)			"Page\u2191"
+::mc::Key(Right)			"\u2192"
+::mc::Key(Shift)			"Shift"
+::mc::Key(Up)				"\u2191"
 
-::mc::Alignment		"Allineamento"
-::mc::Apply				"Applica"
-::mc::Archive			"Archivio"
-::mc::Background		"Sfondo"
-::mc::Black				"Nero"
-::mc::Bottom			"Basso"
-::mc::Cancel			"Annulla"
-::mc::Clear				"Pulisci"
-::mc::Close				"Chiudi"
-::mc::Color				"Colore"
-::mc::Colors			"Colori"
-::mc::Configuration	"Configurazione"
-::mc::Copy				"Copia"
-::mc::Cut				"Taglia"
-::mc::Dark				"Scura"
-::mc::Database			"Database"
-::mc::Default			"Default"
-::mc::Delete			"Elimina"
-::mc::Edit				"Modifica"
-::mc::File				"File"
-::mc::Filter			"Filter" ;# NEW
-::mc::From				"Da"
-::mc::Game				"Partita"
-::mc::Layout			"Layout"
-::mc::Left				"Sinistra"
-::mc::Lite				"Chiara"
-::mc::Low				"Basso"
-::mc::Modify			"Cambia"
-::mc::No					"no"
-::mc::Normal			"Normale"
-::mc::NotAvailable	"n/a"
-::mc::Number			"Numero"
-::mc::OK					"OK"
-::mc::Order				"Ordine"
-::mc::Paste				"Incolla"
-::mc::PieceSet			"Set di Pezzi"
-::mc::Preview			"Anteprima"
-::mc::Redo				"Rifai"
-::mc::Remove			"Rimuovi"
-::mc::Reset				"Reset"
-::mc::Right				"Destra"
-::mc::SelectAll		"Seleziona Tutto"
-::mc::Texture			"Texture"
-::mc::Theme				"Tema"
-::mc::To					"A"
-::mc::Top				"Alto"
-::mc::Undo				"Indietro"
-::mc::Variant			"Variant" ;# NEW
-::mc::Variation		"Variante"
-::mc::White				"Bianco"
-::mc::Yes				"sì"
+::mc::Alignment			"Allineamento"
+::mc::Apply					"Applica"
+::mc::Archive				"Archivio"
+::mc::Background			"Sfondo"
+::mc::Black					"Nero"
+::mc::Bottom				"Basso"
+::mc::Cancel				"Annulla"
+::mc::Clear					"Pulisci"
+::mc::Close					"Chiudi"
+::mc::Color					"Colore"
+::mc::Colors				"Colori"
+::mc::Configuration		"Configurazione"
+::mc::Copy					"Copia"
+::mc::Cut					"Taglia"
+::mc::Dark					"Scura"
+::mc::Database				"Database"
+::mc::Default				"Default"
+::mc::Delete				"Elimina"
+::mc::Edit					"Modifica"
+::mc::File					"File"
+::mc::Filter				"Filter" ;# NEW
+::mc::From					"Da"
+::mc::Game					"Partita"
+::mc::Layout				"Layout"
+::mc::Left					"Sinistra"
+::mc::Lite					"Chiara"
+::mc::Low					"Basso"
+::mc::Modify				"Cambia"
+::mc::No						"no"
+::mc::Normal				"Normale"
+::mc::Number				"Numero"
+::mc::OK						"OK"
+::mc::Order					"Ordine"
+::mc::Paste					"Incolla"
+::mc::PieceSet				"Set di Pezzi"
+::mc::Preview				"Anteprima"
+::mc::Redo					"Rifai"
+::mc::Remove				"Rimuovi"
+::mc::Reset					"Reset"
+::mc::Right					"Destra"
+::mc::SelectAll			"Seleziona Tutto"
+::mc::Texture				"Texture"
+::mc::Theme					"Tema"
+::mc::To						"A"
+::mc::Top					"Alto"
+::mc::Undo					"Indietro"
+::mc::Variant				"Variant" ;# NEW different from "Variation"
+::mc::Variation			"Variante"
+::mc::White					"Bianco"
+::mc::Yes					"sì"
 
-::mc::LogicalReset	"Reset"
-::mc::LogicalAnd		"AND"
-::mc::LogicalOr		"OR"
-::mc::LogicalNot		"NOT"
+::mc::King					"Re"
+::mc::Queen					"Donna"
+::mc::Rook					"Torre"
+::mc::Bishop				"Alfiere"
+::mc::Knight				"Cavallo"
+::mc::Pawn					"Pedone"
 
-::mc::King				"Re"
-::mc::Queen				"Donna"
-::mc::Rook				"Torre"
-::mc::Bishop			"Alfiere"
-::mc::Knight			"Cavallo"
-::mc::Pawn				"Pedone"
+::mc::Logical(reset)		"Reset"
+::mc::Logical(or)			"OR"
+::mc::Logical(and)		"AND"
+::mc::Logical(null)		"None" ;# NEW
+::mc::Logical(not)		"NOT"
+::mc::Logical(remove)	"Remove" ;# NEW
+
+::mc::LogicalDetail(reset)			"Reset filter" ;# NEW
+::mc::LogicalDetail(or)				"Add to filter" ;# NEW
+::mc::LogicalDetail(and)			"Restrict filter" ;# NEW
+::mc::LogicalDetail(null)			"Clear filter" ;# NEW
+::mc::LogicalDetail(not)			"Exlude from filter" ;# NEW
+::mc::LogicalDetail(remove)		"Remove from filter" ;# NEW
 
 ::mc::VariantName(Undetermined)	"Undetermined" ;# NEW
 ::mc::VariantName(Normal)			"Normal Chess" ;# NEW
@@ -370,20 +378,21 @@
 ::application::mc::UpdatesAvailable		"Updates available" ;# NEW
 
 ### application::board #################################################
-::application::board::mc::ShowCrosstable	"Mostra tabella torneo per questa partita"
-::application::board::mc::StartEngine		"Fai partire il motore di analisi"
-::application::board::mc::StopEngine		"Ferma il motore di analisi"
-::application::board::mc::InsertNullMove	"Insert null move" ;# NEW
+::application::board::mc::ShowCrosstable				"Mostra tabella torneo per questa partita"
+::application::board::mc::StartEngine					"Fai partire il motore di analisi"
+::application::board::mc::StopEngine					"Ferma il motore di analisi"
+::application::board::mc::InsertNullMove				"Insert null move" ;# NEW
+::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
 
-::application::board::mc::Tools				"Strumenti"
-::application::board::mc::Control			"Controllo"
-::application::board::mc::Game				"Partita"
-::application::board::mc::GoIntoNextVar	"Vai alla prossima variante"
-::application::board::mc::GoIntPrevVar		"Vai alla precedente variante"
-::application::board::mc::LoadGame(next)	"Carica la prossima partita"
-::application::board::mc::LoadGame(prev)	"Carica la partita precedente"
-::application::board::mc::LoadGame(first)	"Carica la prima partita"
-::application::board::mc::LoadGame(last)	"Carica l'ultima partita"
+::application::board::mc::Tools							"Strumenti"
+::application::board::mc::Control						"Controllo"
+::application::board::mc::Game							"Partita"
+::application::board::mc::GoIntoNextVar				"Vai alla prossima variante"
+::application::board::mc::GoIntPrevVar					"Vai alla precedente variante"
+::application::board::mc::LoadGame(next)				"Carica la prossima partita"
+::application::board::mc::LoadGame(prev)				"Carica la partita precedente"
+::application::board::mc::LoadGame(first)				"Carica la prima partita"
+::application::board::mc::LoadGame(last)				"Carica l'ultima partita"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -1167,10 +1176,14 @@
 ::playertable::mc::F_LastName					"Cognome"
 ::playertable::mc::F_FirstName				"Nome"
 ::playertable::mc::F_FideID					"ID Fide"
+::playertable::mc::F_DSBID						"DSB ID" ;# NEW
+::playertable::mc::F_ECFID						"ECF ID" ;# NEW
+::playertable::mc::F_ICCFID					"ICCF ID" ;# NEW
 ::playertable::mc::F_Title						"Titolo"
 ::playertable::mc::F_Frequency				"Frequenza"
 
 ::playertable::mc::T_Federation				"Federazione"
+::playertable::mc::T_NativeCountry			"Native Country" ;# NEW
 ::playertable::mc::T_RatingType				"Tipo punteggio"
 ::playertable::mc::T_Type						"Tipo"
 ::playertable::mc::T_Sex						"Genere"
@@ -1186,12 +1199,25 @@
 ::playertable::mc::MostRecentRating			"Punteggio più recente"
 ::playertable::mc::DateOfBirth				"Data di nascita"
 ::playertable::mc::DateOfDeath				"Data di morte"
-::playertable::mc::FideID						"ID Fide"
 
 ::playertable::mc::ShowPlayerCard			"Mostra Informazioni Giocatore..."
 
 ### eventtable #########################################################
 ::eventtable::mc::Attendance	"Frequenza di partecipazione"
+
+### player dictionary ##################################################
+::playerdict::mc::PlayerDictionary	"Player Dictionary" ;# NEW
+::playerdict::mc::PlayerFilter		"Player Filter" ;# NEW
+::playerdict::mc::Count					"Count" ;# NEW
+::playerdict::mc::Ignore				"Ignore" ;# NEW
+::playerdict::mc::FederationID		"Federation ID" ;# NEW
+::playerdict::mc::BirthYear			"Birth Year" ;# NEW
+::playerdict::mc::DeathYear			"Death Year" ;# NEW
+::playerdict::mc::Ratings				"Ratings" ;# NEW
+::playerdict::mc::Titles				"Titles" ;# NEW
+::playerdict::mc::None					"None" ;# NEW
+::playerdict::mc::Operation			"Operation" ;# NEW
+::playerdict::mc::CancelSort			"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Informazioni Giocatore"
@@ -1335,7 +1361,7 @@
 ::setup::board::mc::Clear							"Pulisci"
 ::setup::board::mc::CopyFen						"Copia FEN a clipboard"
 ::setup::board::mc::Shuffle						"Mischia..."
-::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
+::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
 ::setup::board::mc::StandardPosition			"Posizione Standard"
 ::setup::board::mc::Chess960Castling			"Arrocco da Scacchi 960"
 

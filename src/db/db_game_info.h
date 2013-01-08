@@ -211,6 +211,8 @@ public:
 					NamebasePlayer* blackPlayer,
 					NamebaseEvent* event,
 					NamebaseEntry* annotator,
+					uint16_t whiteElo,
+					uint16_t blackElo,
 					TagSet const& tags,
 					Provider const& provider,
 					Namebases& namebases);

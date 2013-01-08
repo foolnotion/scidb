@@ -69,6 +69,7 @@ namespace bf = mstl::bf;
 #define KBBK_Hash					UINT64_C(0x51be7cba98acb392)
 #define Runaway_Hash				UINT64_C(0x548d1ba18e63df59)
 #define QueenVsRooks_Hash		UINT64_C(0x0a4301a374bff9ae)
+#define UpsideDown_Hash			UINT64_C(0xcfa9f03a9b87134d)
 
 static uint64_t const DarkSquares	= A1 | C1 | E1 | G1
 												| B2 | D2 | F2 | H2
@@ -89,6 +90,7 @@ static uint64_t const LiteSquares	= B1 | D1 | F1 | H1
 												| A8 | C8 | E8 | G8;
 
 Board Board::m_standardBoard;
+Board Board::m_antichessBoard;
 Board Board::m_shuffleChessBoard;
 Board Board::m_littleGame;
 Board Board::m_pawnsOn4thRank;
@@ -105,6 +107,7 @@ Board Board::m_kbnk;
 Board Board::m_kbbk;
 Board Board::m_runaway;
 Board Board::m_queenVsRooks;
+Board Board::m_upsideDown;
 Board Board::m_emptyBoard;
 
 inline static int mul8(int x)				{ return x << 3; }
@@ -3155,6 +3158,11 @@ Board::computeIdn() const
 				if (m_queenVsRooks.exactPosition() == exactPosition())
 					idn = variant::QueenVsRooks;
 				break;
+
+			case UpsideDown_Hash:
+				if (m_upsideDown.exactPosition() == exactPosition())
+					idn = variant::UpsideDown;
+				break;
 		}
 	}
 
@@ -3186,6 +3194,7 @@ Board::setup(unsigned idn)
 			case variant::KBBK:					*this = m_kbbk; break;
 			case variant::Runaway:				*this = m_runaway; break;
 			case variant::QueenVsRooks:		*this = m_queenVsRooks; break;
+			case variant::UpsideDown:			*this = m_upsideDown; break;
 			default:									M_ASSERT(!"unexpected position number"); break;
 		}
 	}
@@ -6547,6 +6556,7 @@ Board::initialize()
 	// Standard board
 	m_standardBoard.setup(variant::fen(variant::Standard), variant::Normal);
 	::memset(m_standardBoard.m_unambiguous, true, U_NUMBER_OF(m_standardBoard.m_unambiguous));
+	m_antichessBoard.setup(variant::fen(variant::NoCastling), variant::Antichess);
 
 	// Shuffle Chess board
 	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Normal);
@@ -6572,6 +6582,7 @@ Board::initialize()
 	m_kbbk.setup(variant::fen(variant::KBBK), variant::Normal);
 	m_runaway.setup(variant::fen(variant::Runaway), variant::Normal);
 	m_queenVsRooks.setup(variant::fen(variant::QueenVsRooks), variant::Normal);
+	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Normal);
 
 	assert(m_littleGame.m_hash == LittleGame_Hash);
 	assert(m_pawnsOn4thRank.m_hash == PawnsOn4thRank_Hash);
@@ -6588,6 +6599,7 @@ Board::initialize()
 	assert(m_kbbk.m_hash = KBBK_Hash);
 	assert(m_runaway.m_hash == Runaway_Hash);
 	assert(m_queenVsRooks.m_hash == QueenVsRooks_Hash);
+	assert(m_upsideDown.m_hash == UpsideDown_Hash);
 }
 
 // vi:set ts=3 sw=3:

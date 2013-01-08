@@ -34,6 +34,7 @@ set ShowCrosstable			"Show tournament table for this game"
 set StartEngine				"Start chess analysis engine"
 set StopEngine					"Stop chess analysis engine"
 set InsertNullMove			"Insert null move"
+set SelectStartPosition		"Select Start Position"
 
 set Tools						"Tools"
 set Control						"Control"
@@ -577,6 +578,20 @@ proc PopupMenu {w} {
 		-image $::icon::16x16::rotateBoard \
 		-label $::overview::mc::RotateBoard \
 		-command [namespace code [list Rotate $Vars(widget:frame)]] \
+		;
+	set pos [menu $m.pos -tearoff false]
+	$pos add command \
+		-label $::setup::board::mc::StandardPosition \
+		-command [list ::application::pgn::Shuffle Normal] \
+		;
+	::setup::setupShuffleMenu ::application::pgn $pos
+	$pos add separator
+	::setup::setupPositionMenu ::application::pgn $pos
+	$m add cascade \
+		-menu $pos \
+		-compound left \
+		-image $::icon::16x16::checker \
+		-label " $mc::SelectStartPosition" \
 		;
 	$m add command \
 		-compound left \

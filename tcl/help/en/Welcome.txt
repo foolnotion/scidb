@@ -30,6 +30,7 @@ consider while experimenting with Scidb:
     slow in several places.
   </li>
 
+<!--
   <li class="space">
     The support of Scid databases (.si3/.si4) is performed by a quite complex
     emulation which is not yet sufficiently tested.
@@ -39,6 +40,7 @@ consider while experimenting with Scidb:
     Per default the Scid databases will be opened in read-only mode, which is
     of course uncritical.
   </li>
+-->
 
   <li class="space">
     The current Scidb format (.sci) will be finished at latest with the first

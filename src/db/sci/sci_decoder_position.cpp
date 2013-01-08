@@ -562,8 +562,8 @@ Position::setupBoard(uint16_t idn)
 			{
 				e1, a2, b2, c2, d2, e2, f2, g2,
 				h2, d1, __, __, __, __, __, __,
-				e8, a8, h8, a7, b7, c7, d7, e7,
-				f7, g7, h7, __, __, __, __, __,
+				e3, a2, b2, c2, d2, e2, f2, g2,
+				h2, a1, b1, c1, d1, f1, g1, h1,
 				__, __, __, __, __, __, __, __,
 				__, __, __, __, __, __, __, __,
 				__, __, __, __, __, __, __, __,
@@ -573,6 +573,24 @@ Position::setupBoard(uint16_t idn)
 			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
 			m_rookNumbers[castling::BlackQS] = 17;
 			m_rookNumbers[castling::BlackKS] = 18;
+			break;
+		}
+
+		case variant::UpsideDown:
+		{
+			static Squares const Squares =
+			{
+				e8, a8, b8, c8, d8, f8, g8, h8,
+				a7, b7, c7, d7, e7, f7, g7, h7,
+				e1, a2, b2, c2, d2, e2, f2, g2,
+				h2, a1, b1, c1, d1, f1, g1, h1,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+				__, __, __, __, __, __, __, __,
+			};
+			::memcpy(squares, Squares, sizeof(Squares));
+			::memset(m_rookNumbers, ::Invalid, sizeof(m_rookNumbers));
 			break;
 		}
 
@@ -588,7 +606,7 @@ Position::setup(uint16_t idn)
 {
 	M_ASSERT(idn);
 
-	if (idn == variant::Standard)
+	if (idn == variant::Standard || idn == variant::NoCastling)
 	{
 		static Squares const StandardSquares =
 		{
@@ -612,7 +630,7 @@ Position::setup(uint16_t idn)
 		m_rookNumbers[castling::BlackQS] = 17;
 		m_rookNumbers[castling::BlackKS] = 23;
 
-		board().setStandardPosition();
+		board().setStandardPosition(idn == variant::Standard ? variant::Normal : variant::Antichess);
 	}
 	else if (variant::isShuffleChess(idn))
 	{

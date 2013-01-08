@@ -312,34 +312,16 @@ proc dialogButtons {dlg buttons args} {
 }
 
 
+proc dialogButtonReplace {dlg type iconType} {
+	$dlg.$type configure -image [GetIcon $iconType]
+}
+
+
 proc dialogButtonSetIcons {dlg} {
 	foreach w [winfo children $dlg] {
 		if {[winfo class $w] eq "TButton"} {
-			set icon {}
-
-			switch [lindex [split $w .] end] {
-				ok			{ set icon $::icon::iconOk }
-				cancel	{ set icon $::icon::iconCancel }
-				apply		{ set icon $::icon::iconApply }
-				update	{ set icon $::icon::iconUpdate }
-				reset		{ set icon $::icon::iconSetup }
-				clear		{ set icon $::icon::iconClear }
-				close		{ set icon $::icon::iconClose }
-				revert	{ set icon $::icon::iconReset }
-				previous	{ set icon $::icon::iconBackward }
-				next		{ set icon $::icon::iconForward }
-				first		{ set icon $::icon::iconFirst }
-				last		{ set icon $::icon::iconLast }
-				new		{ set icon $::icon::16x16::plus }
-				save		{ set icon $::icon::iconSave }
-				delete	{ set icon $::icon::16x16::delete }
-				help		{ set icon $::icon::16x16::help }
-				start		{ set icon $::icon::16x16::run }
-			}
-
-			if {[llength $icon]} {
-				$w configure -compound left -image $icon
-			}
+			set icon [GetIcon [lindex [split $w .] end]]
+			if {[llength $icon]} { $w configure -compound left -image $icon }
 		}
 	}
 }
@@ -507,7 +489,7 @@ proc busyCursor {w {state on}} {
 
 	if {$action eq "hold"} { ::update }
 
-	foreach toplevel {.application .setupEngine .help} {
+	foreach toplevel {.application .setupEngine .help .playerDict} {
 		if {[winfo exists $toplevel]} {
 			::scidb::tk::busy $action $toplevel
 
@@ -635,6 +617,29 @@ proc DoAlignment {dlg} {
 				pack configure [lindex $slaves $i] -expand 1 -anchor w
 			}
 		}
+	}
+}
+
+
+proc GetIcon {type} {
+	switch $type {
+		ok			{ return $::icon::iconOk }
+		cancel	{ return $::icon::iconCancel }
+		apply		{ return $::icon::iconApply }
+		update	{ return $::icon::iconUpdate }
+		reset		{ return $::icon::iconSetup }
+		clear		{ return $::icon::iconClear }
+		close		{ return $::icon::iconClose }
+		revert	{ return $::icon::iconReset }
+		previous	{ return $::icon::iconBackward }
+		next		{ return $::icon::iconForward }
+		first		{ return $::icon::iconFirst }
+		last		{ return $::icon::iconLast }
+		new		{ return $::icon::16x16::plus }
+		save		{ return $::icon::iconSave }
+		delete	{ return $::icon::16x16::delete }
+		help		{ return $::icon::16x16::help }
+		start		{ return $::icon::16x16::run }
 	}
 }
 

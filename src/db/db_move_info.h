@@ -117,10 +117,10 @@ private:
 	{
 		AnalysisInfo();
 
-		uint8_t m_depth;
-		uint8_t m_sign;
-		uint8_t m_pawns;
-		uint8_t m_centipawns;
+		uint8_t	m_depth;
+		uint8_t	m_sign;
+		uint16_t	m_pawns;
+		uint8_t	m_centipawns;
 	};
 
 	struct ElapsedTime

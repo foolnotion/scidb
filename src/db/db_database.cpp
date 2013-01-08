@@ -216,6 +216,7 @@ Database::Database(	mstl::string const& name,
 	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(file::hasSuffix(name));
+	M_REQUIRE(file::suffix(m_name) == "sci" || mode == permission::ReadOnly);
 
 	// NOTE: we assume normalized (unique) file names.
 
@@ -776,30 +777,95 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(consumer.variant() == variant());
 
-	format::Type		format	= this->format();
 	GameInfo const*	info		= m_gameInfoList[index];
 	TagSet				tags;
 
 	setupTags(index, tags);
 
-	if (format == format::Scid3 || format == format::Scid4)
+	if (!format::isScidFormat(consumer.format()) && format::isScidFormat(format()))
 	{
+		PgnReader::Tag tag;
+
 		mstl::string s;
 		mstl::string v;
 
 		s = tags.value(tag::White);
-		while (PgnReader::extractPlayerData(s, v) != PgnReader::None)
-			;
+		while ((tag = PgnReader::extractPlayerData(s, v)) != PgnReader::None)
+		{
+			switch (tag)
+			{
+				case PgnReader::Country:
+					tags.add(tag::WhiteCountry, country::fromString(v));
+					break;
+
+				case PgnReader::Title:
+					tags.add(tag::WhiteTitle, title::toString(title::fromString(v)));
+					break;
+
+				case PgnReader::Human:
+					tags.add(tag::WhiteType, species::toString(species::Human));
+					break;
+
+				case PgnReader::Program:
+					tags.add(tag::WhiteType, species::toString(species::Program));
+					break;
+
+				case PgnReader::Sex:
+					tags.add(tag::WhiteSex, sex::toString(sex::fromString(v)));
+					break;
+
+				case PgnReader::Elo:
+					tags.add(tag::WhiteElo, v);
+					break;
+
+				case PgnReader::None:
+					break;
+			}
+		}
 		tags.set(tag::White, s);
 
 		s = tags.value(tag::Black);
-		while (PgnReader::extractPlayerData(s, v) != PgnReader::None)
-			;
+		while ((tag = PgnReader::extractPlayerData(s, v)) != PgnReader::None)
+		{
+			switch (tag)
+			{
+				case PgnReader::Country:
+					tags.add(tag::BlackCountry, country::fromString(v));
+					break;
+
+				case PgnReader::Title:
+					tags.add(tag::BlackTitle, title::toString(title::fromString(v)));
+					break;
+
+				case PgnReader::Human:
+					tags.add(tag::BlackType, species::toString(species::Human));
+					break;
+
+				case PgnReader::Program:
+					tags.add(tag::BlackType, species::toString(species::Program));
+					break;
+
+				case PgnReader::Sex:
+					tags.add(tag::BlackSex, sex::toString(sex::fromString(v)));
+					break;
+
+				case PgnReader::Elo:
+					tags.add(tag::BlackElo, v);
+					break;
+
+				case PgnReader::None:
+					break;
+			}
+		}
 		tags.set(tag::Black, s);
 
 		s = tags.value(tag::Site);
-		PgnReader::extractCountryFromSite(s);
-		tags.set(tag::Site, s);
+		country::Code code = PgnReader::extractCountryFromSite(s);
+		if (code != country::Unknown)
+		{
+			tags.add(tag::EventCountry, country::toString(code));
+			tags.set(tag::Site, s);
+		}
 	}
 
 	save::State rc;

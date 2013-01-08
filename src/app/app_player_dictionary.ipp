@@ -26,7 +26,7 @@
 
 namespace app {
 
-unsigned PlayerDictionary::count() const { return m_count; }
+inline unsigned PlayerDictionary::count() const { return m_count; }
 
 } // namespace app
 

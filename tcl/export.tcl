@@ -3015,7 +3015,6 @@ proc DoExport {parent dlg file} {
 			set incomplete 0
 			foreach tag [array names Tags] {
 				if {$Tags($tag)} {
-					lappend tagList $tag
 					if {[string match White/Black* $tag]} {
 						set name [string range $tag 11 end]
 						lappend tagList White$name

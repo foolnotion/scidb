@@ -89,6 +89,11 @@ proc getToplevelBackground {} {
 }
 
 
+proc getForegroundColor {} {
+	return [ttk::style lookup [currentTheme] -foreground]
+}
+
+
 proc getBackgroundColor {} {
 	return [ttk::style lookup [currentTheme] -background]
 }
@@ -110,6 +115,16 @@ proc getActiveBackgroundColor {} {
 	}
 
 	return $activebg
+}
+
+
+proc getSelectForegroundColor {} {
+	return [ttk::style lookup [currentTheme] -selectforeground]
+}
+
+
+proc getSelectBackgroundColor {} {
+	return [ttk::style lookup [currentTheme] -selectbackground]
 }
 
 

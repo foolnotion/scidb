@@ -27,8 +27,12 @@
 #include "tcl_player.h"
 #include "tcl_base.h"
 
+#include "app_player_dictionary.h"
+
 #include "db_player.h"
 #include "db_namebase_entry.h"
+
+#include "m_utility.h"
 
 #include <tcl.h>
 #include <string.h>
@@ -38,52 +42,15 @@ using namespace db;
 using namespace tcl;
 
 
-static char const* CmdInfo	= "::scidb::player::info";
-static char const* CmdList	= "::scidb::player::list";
+static char const* CmdCount	= "::scidb::player::count";
+static char const* CmdDict		= "::scidb::player::dict";
+static char const* CmdFilter	= "::scidb::player::filter";
+static char const* CmdLetter	= "::scidb::player::letter";
+static char const* CmdInfo		= "::scidb::player::info";
+static char const* CmdSearch	= "::scidb::player::search";
+static char const* CmdSort		= "::scidb::player::sort";
 
-
-namespace {
-
-struct CallbackLetter : public ::db::Player::PlayerCallback
-{
-	CallbackLetter(Tcl_Obj* obj, char letter) : m_list(obj), m_letter(letter) {}
-
-	Tcl_Obj* m_list;
-	char m_letter;
-
-	void entry(unsigned index, ::db::Player const& player) override
-	{
-		if ((player.name().front()) == m_letter)
-			Tcl_ListObjAppendElement(0, m_list, Tcl_NewIntObj(index));
-	}
-};
-
-struct CallbackRest : public ::db::Player::PlayerCallback
-{
-	CallbackRest(Tcl_Obj* obj) : m_list(obj) {}
-
-	Tcl_Obj* m_list;
-
-	void entry(unsigned index, ::db::Player const& player) override
-	{
-		if (!isalpha(player.name().front()))
-			Tcl_ListObjAppendElement(0, m_list, Tcl_NewIntObj(index));
-	}
-};
-
-struct CallbackAll : public ::db::Player::PlayerCallback
-{
-	CallbackAll(Tcl_Obj* obj) : m_list(obj) {}
-
-	Tcl_Obj* m_list;
-
-	void entry(unsigned index, ::db::Player const& player) override
-	{
-		Tcl_ListObjAppendElement(0, m_list, Tcl_NewIntObj(index));
-	}
-};
-
-}
+static app::PlayerDictionary* m_dictionary = 0;
 
 
 __attribute__((unused))
@@ -97,6 +64,23 @@ checkNonZero(Tcl_Obj** objv, unsigned size)
 	}
 
 	return true;
+}
+
+
+static tcl::player::Ratings
+convRatings(char const* s)
+{
+	M_ASSERT(s);
+
+	char const* t = s;
+
+	while (*t && !::isspace(*t))
+		++t;
+
+	while (::isspace(*t))
+		++t;
+
+	return tcl::player::Ratings(rating::fromString(s), rating::fromString(t));
 }
 
 
@@ -300,28 +284,48 @@ tcl::player::getInfo(NamebasePlayer const& player, Ratings& ratings, bool info, 
 
 
 static int
-cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char		letter = toupper(*stringFromObj(objc, objv, 1));
-	Tcl_Obj*	result = Tcl_NewListObj(0, 0);
+	setResult(Tcl_NewIntObj(m_dictionary ? m_dictionary->count() : 0));
+	return TCL_OK;
+}
 
-	if (isalpha(letter))
+
+static int
+cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* cmd = stringFromObj(objc, objv, 1);
+
+	if (strcmp(cmd, "open") == 0)
 	{
-		CallbackLetter cb(result, letter);
-		::db::Player::enumerate(cb);
+		app::PlayerDictionary::Mode mode;
+		char const* modeStr = stringFromObj(objc, objv, 2);
+
+		if (strcmp(modeStr, "all") == 0)
+			mode = app::PlayerDictionary::All;
+		else if (strcmp(modeStr, "player") == 0)
+			mode = app::PlayerDictionary::PlayersOnly;
+		else if (strcmp(modeStr, "engine") == 0)
+			mode = app::PlayerDictionary::EnginesOnly;
+		else
+			return error(CmdDict, nullptr, nullptr, "Unknown dictionary mode '%s'", modeStr);
+
+		if (m_dictionary == 0)
+		{
+			m_dictionary = new app::PlayerDictionary(mode);
+			m_dictionary->sort(app::PlayerDictionary::Name, order::Ascending);
+		}
 	}
-	else if (isspace(letter))
+	else if (strcmp(cmd, "close") == 0)
 	{
-		CallbackAll cb(result);
-		::db::Player::enumerate(cb);
+		delete m_dictionary;
+		m_dictionary = 0;
 	}
 	else
 	{
-		CallbackRest cb(result);
-		::db::Player::enumerate(cb);
+		return error(CmdDict, nullptr, nullptr, "Unknown command '%s'", cmd);
 	}
 
-	setResult(result);
 	return TCL_OK;
 }
 
@@ -329,16 +333,32 @@ cmdList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Player const&	player = ::Player::getPlayer(unsignedFromObj(objc, objv, 1));
+	if (!m_dictionary)
+		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
 
-	Tcl_Obj* objs[12];
-	Tcl_Obj* ratings[rating::Last];
+	tcl::player::Ratings ratings(rating::Elo, rating::DWZ);
+	federation::ID federation = federation::Fide;
+
+	while (objc > 2)
+	{
+		char const* arg = stringFromObj(objc, objv, objc - 2);
+
+		if (::strcmp(arg, "-ratings") == 0)
+			ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
+		else if (::strcmp(arg, "-federation") == 0)
+			federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
+		else
+			return error(::CmdInfo, nullptr, nullptr, "invalid argument %s", arg);
+
+		objc -= 2;
+	}
+
+	Player const&	player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
+
+	Tcl_Obj* objs[10];
 	Tcl_Obj* titles[title::Last];
 	int		numTitles = 0;
 	char		sex;
-
-	for (unsigned i = 0; i < rating::Last; ++i)
-		ratings[i] = Tcl_NewIntObj(player.latestRating(rating::Type(i)));
 
 	if (player.type() == species::Program)
 		sex = 'c';
@@ -355,20 +375,290 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			titles[numTitles++] = Tcl_NewStringObj(title::toString(title::ID(i)), -1);
 	}
 
-	objs[ 0] = Tcl_NewStringObj(player.name(), player.name().size());
-	objs[ 1] = Tcl_NewStringObj(country::toString(player.nativeCountry()), -1);
-	objs[ 2] = Tcl_NewStringObj(country::toString(player.federation()), -1);
-	objs[ 3] = Tcl_NewStringObj(&sex, 1);
-	objs[ 4] = Tcl_NewStringObj(player.dateOfBirth().asShortString(), -1);
-	objs[ 5] = Tcl_NewStringObj(player.dateOfDeath().asShortString(), -1);
-	objs[ 6] = Tcl_NewListObj(numTitles, titles);
-	objs[ 7] = Tcl_NewIntObj(player.fideID());
-	objs[ 8] = Tcl_NewIntObj(player.iccfID());
-	objs[ 9] = Tcl_NewStringObj(player.dsbID().asString(), -1);
-	objs[10] = Tcl_NewStringObj(player.ecfID().asString(), -1);
-	objs[11] = Tcl_NewListObj(U_NUMBER_OF(ratings), ratings);
+	objs[0] = Tcl_NewStringObj(country::toString(player.nativeCountry()), -1);
+	objs[1] = Tcl_NewStringObj(player.name(), player.name().size());
+	objs[2] = Tcl_NewStringObj(player.federationID(federation), -1);
+	objs[3] = Tcl_NewStringObj(country::toString(player.federation()), -1);
+	objs[4] = Tcl_NewStringObj(&sex, 1);
+	objs[5] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.first)));
+	objs[6] = Tcl_NewIntObj(mstl::max(int16_t(0), player.latestRating(ratings.second)));
+	objs[7] = Tcl_NewListObj(numTitles, titles);
+	objs[8] = Tcl_NewIntObj(player.birthYear());
+	objs[9] = Tcl_NewIntObj(player.deathYear());
 
 	setResult(U_NUMBER_OF(objs), objs);
+	return TCL_OK;
+}
+
+
+static int
+cmdLetter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (!m_dictionary)
+		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
+
+	m_dictionary->filterLetter(toupper(*stringFromObj(objc, objv, 1)));
+	m_dictionary->finishOperation();
+	return TCL_OK;
+}
+
+
+static int
+cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (!m_dictionary)
+		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
+
+	char const*	opStr		= stringFromObj(objc, objv, 1);
+	Tcl_Obj*		filter	= objectFromObj(objc, objv, 2);
+	int			length;
+
+	if (Tcl_ListObjLength(ti, filter, &length) != TCL_OK || mstl::is_odd(length))
+		return error(CmdInfo, nullptr, nullptr, "list of name/value pairs expected");
+
+	app::PlayerDictionary::Operator op = app::PlayerDictionary::Reset;
+
+	switch (tolower(*opStr))
+	{
+		case 'n':
+			switch (tolower(opStr[1]))
+			{
+				case 'u': op = op = app::PlayerDictionary::Null; break;
+				case 'o': op = op = app::PlayerDictionary::Not; break;
+			}
+			break;
+
+		case 'r':
+			if (tolower(opStr[1]) == 'e')
+			{
+				switch (tolower(opStr[2]))
+				{
+					case 's': op = op = app::PlayerDictionary::Reset; break;
+					case 'm': op = op = app::PlayerDictionary::Remove; break;
+				}
+			}
+			break;
+
+		case 'a': op = app::PlayerDictionary::And; break;
+		case 'o': op = app::PlayerDictionary::Or; break;
+	}
+
+	if (length > 0)
+	{
+		for (int i = 0; i < length; i += 2)
+		{
+			Tcl_Obj* key;
+			Tcl_Obj* val;
+
+			Tcl_ListObjIndex(nullptr, filter, i, &key);
+			Tcl_ListObjIndex(nullptr, filter, i + 1, &val);
+
+			char const* attr = Tcl_GetString(key);
+
+			switch (tolower(*attr))
+			{
+				case 'c': // country
+					m_dictionary->filterNativeCountry(op, ::country::fromString(Tcl_GetString(val)));
+					break;
+
+				case 'f':
+					if (strcasecmp(attr, "federationId") == 0)
+					{
+						federation::ID federation = federation::None;
+
+						switch (::toupper(*Tcl_GetString(val)))
+						{
+							case 'F': federation = federation::Fide; break;
+							case 'I': federation = federation::ICCF; break;
+							case 'D': federation = federation::DSB; break;
+							case 'E': federation = federation::ECF; break;
+						}
+
+						m_dictionary->filterFederationID(op, federation);
+					}
+					else // federation
+					{
+						m_dictionary->filterFederation(op, ::country::fromString(Tcl_GetString(val)));
+					}
+					break;
+
+				case 'n': // name
+					m_dictionary->filterName(op, Tcl_GetString(val));
+					break;
+
+				case 's': // sex
+					m_dictionary->filterSex(op, sex::fromString(Tcl_GetString(val)));
+					break;
+
+				case 'r': // rating
+				{
+					Tcl_Obj** objs;
+					int len, min, max;
+					rating::Type type;
+					if (	Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK
+						|| len != 3
+						|| (type = rating::fromString(Tcl_GetString(objs[0]))) == rating::Any
+						|| Tcl_GetIntFromObj(ti, objs[1], &min) != TCL_OK
+						|| Tcl_GetIntFromObj(ti, objs[2], &max) != TCL_OK)
+					{
+						return error(CmdFilter, nullptr, nullptr, "'rating min-score max-score' expected");
+					}
+					m_dictionary->filterScore(op, type, min, max);
+					break;
+				}
+
+				case 't': // titles
+				{
+					Tcl_Obj** objs;
+					int len;
+					unsigned titles = 0;
+					if (Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK)
+						return error(CmdFilter, nullptr, nullptr, "list of titles expected");
+					for (int i = 0; i < len; ++i)
+					{
+						char const* s = Tcl_GetString(objs[i]);
+						title::ID title = title::fromString(s);
+						if (title == title::None && *s != '\0')
+							return error(CmdFilter, nullptr, nullptr, "invalid title '%s'", s);
+						titles |= title::fromID(title);
+					}
+					m_dictionary->filterTitles(op, titles);
+					break;
+				}
+
+				case 'b': // birthYear
+				case 'd': // birthYear
+				{
+					Tcl_Obj** objs;
+					int len, min, max;
+					if (	Tcl_ListObjGetElements(ti, val, &len, &objs) != TCL_OK
+						|| len != 2
+						|| Tcl_GetIntFromObj(ti, objs[0], &min) != TCL_OK
+						|| Tcl_GetIntFromObj(ti, objs[0], &max) != TCL_OK)
+					{
+						return error(CmdFilter, nullptr, nullptr, "'min-year max-year' expected");
+					}
+					if (tolower(*attr) == 'b')
+						m_dictionary->filterBirthYear(op, min, max);
+					else
+						m_dictionary->filterDeathYear(op, min, max);
+					break;
+				}
+			}
+
+			if (op == app::PlayerDictionary::Reset)
+				op = app::PlayerDictionary::And;
+			else if (op == app::PlayerDictionary::Null)
+				op = app::PlayerDictionary::Not;
+		}
+	}
+	else
+	{
+		m_dictionary->resetFilter();
+	}
+
+	m_dictionary->finishOperation();
+	return TCL_OK;
+}
+
+
+static int
+cmdSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (!m_dictionary)
+		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
+
+	setResult(m_dictionary->search(stringFromObj(objc, objv, 1)));
+	return TCL_OK;
+}
+
+
+static int
+cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (!m_dictionary)
+		return error(CmdInfo, nullptr, nullptr, "player dictionary is closed");
+
+	char const* order	= stringFromObj(objc, objv, 1);
+
+	if (strcmp(order, "reverse") == 0)
+	{
+		m_dictionary->reverseOrder();
+	}
+	else if (strcmp(order, "cancel") == 0)
+	{
+		m_dictionary->cancelSort();
+		m_dictionary->sort(app::PlayerDictionary::Name, order::Ascending);
+	}
+	else
+	{
+		char const* attr	= stringFromObj(objc, objv, 2);
+
+		app::PlayerDictionary::Attribute attribute;
+		order::ID ordering = order::Ascending;
+
+		switch (*attr)
+		{
+			case 'c': attribute = app::PlayerDictionary::NativeCountry; break;
+			case 'n': attribute = app::PlayerDictionary::Name; break;
+			case 'b': attribute = app::PlayerDictionary::DateOfBirth; break;
+			case 'd': attribute = app::PlayerDictionary::DateOfDeath; break;
+			case 's': attribute = app::PlayerDictionary::Sex; break;
+			case 'f': attribute = app::PlayerDictionary::Federation; break;
+
+			case 'F': attribute = app::PlayerDictionary::FideID; break;
+			case 'U': attribute = app::PlayerDictionary::LatestUSCF; break;
+
+			case 't':
+				if (attr[1] == 'y')
+					attribute = app::PlayerDictionary::Type;
+				else
+					attribute = app::PlayerDictionary::Titles;
+				break;
+
+			case 'D':
+				if (attr[1] == 'W')
+					attribute = app::PlayerDictionary::LatestDWZ;
+				else
+					attribute = app::PlayerDictionary::DsbId;
+				break;
+
+			case 'E':
+				if (attr[1] != 'C')
+					attribute = app::PlayerDictionary::LatestElo;
+				else if (strlen(attr) == 3)
+					attribute = app::PlayerDictionary::LatestECF;
+				else
+					attribute = app::PlayerDictionary::EcfId;
+				break;
+
+			case 'I':
+				if (attr[1] == 'P')
+					attribute = app::PlayerDictionary::LatestIPS;
+				else if (strlen(attr) == 4)
+					attribute = app::PlayerDictionary::LatestICCF;
+				else
+					attribute = app::PlayerDictionary::IccfId;
+				break;
+
+			case 'R':
+				if (attr[1] == 'a' && attr[2] == 'p')
+					attribute = app::PlayerDictionary::LatestRapid;
+				else
+					attribute = app::PlayerDictionary::LatestRating;
+				break;
+		}
+
+		switch (tolower(*order))
+		{
+			case 'a': ordering = order::Ascending; break;
+			case 'd': ordering = order::Descending; break;
+		}
+
+		m_dictionary->sort(attribute, ordering);
+	}
+
+	m_dictionary->finishOperation();
 	return TCL_OK;
 }
 
@@ -379,8 +669,13 @@ namespace player {
 void
 init(Tcl_Interp* ti)
 {
-	createCommand(ti, CmdInfo,	cmdInfo);
-	createCommand(ti, CmdList,	cmdList);
+	createCommand(ti, CmdCount,		cmdCount);
+	createCommand(ti, CmdDict,		cmdDict);
+	createCommand(ti, CmdInfo,		cmdInfo);
+	createCommand(ti, CmdFilter,	cmdFilter);
+	createCommand(ti, CmdLetter,	cmdLetter);
+	createCommand(ti, CmdSearch,	cmdSearch);
+	createCommand(ti, CmdSort,		cmdSort);
 }
 
 } // namespace player

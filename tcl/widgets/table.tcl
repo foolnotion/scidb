@@ -107,6 +107,7 @@ array set Defaults {
 	-listmode					0
 	-takefocus          		1
 	-fixedrows					0
+	-configurable				1
 	-imagepadx					{2 2}
 	-imagepady					{0 0}
 	-padx							{2 2}
@@ -621,6 +622,12 @@ proc keepFocus {table {flag {}}} {
 
 proc height {table} {
 	return [set ${table}::Vars(height)]
+}
+
+
+proc computeHeight {table rows} {
+	variable ${table}::Vars
+	return [expr {[$table.t headerheight] + 2*[$table.t cget -borderwidth] + $rows*$Vars(linespace)}]
 }
 
 
@@ -1408,9 +1415,11 @@ proc PopupMenu {table x y X Y} {
 				-command [list $table.t column expand $id yes] \
 				;
 		}
-		$menu add command \
-			-label "$mc::Configure..." \
-			-command [namespace code [list OpenConfigureDialog $table $id $header]]
+		if {$Options(-configurable)} {
+			$menu add command \
+				-label "$mc::Configure..." \
+				-command [namespace code [list OpenConfigureDialog $table $id $header]]
+		}
 
 		if {	!$Options(-pixels:$id)
 			&& (	($Options(-maxwidth:$id) == 0 && $Options(-minwidth:$id) > 0)

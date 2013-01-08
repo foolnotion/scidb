@@ -214,7 +214,6 @@ static mstl::string const Lookup[] =
 	"GM", "IM", "FM", "CM",
 	"WGM", "WIM", "WFM", "WCM",
 	"HGM",
-	"NM", "SM", "LM",
 	"CGM", "CIM", "LGM", "ILM", "CSIM",
 };
 
@@ -1384,37 +1383,30 @@ append(mstl::string& result, unsigned count, mstl::string const& s)
 
 
 title::ID
-title::toID(unsigned title)
-{
-	M_REQUIRE(title <= Mask_CSIM);
-	return title::ID(title ? mstl::bf::lsb_index(title) + 1 : 0);
-}
-
-
-unsigned
-title::fromID(ID title)
-{
-	return title ? 1u << (title - 1) : unsigned(title::None);
-}
-
-
-title::ID
 title::fromString(char const* title)
 {
 	switch (title[0])
 	{
 		case 'F': return title[1] == 'M' ? title::FM : title::None;
 		case 'G': return title[1] == 'M' ? title::GM : title::None;
-		case 'N': return title[1] == 'M' ? title::NM : title::None;
-		case 'S': return title[1] == 'M' || (title[1] == 'I' && title[2] == 'M') ? title::SM : title::None;
+		case 'S': return title[1] == 'I' && title[2] == 'M' ? title::CSIM : title::None;
 
 		case 'C':
 			switch (title[1])
 			{
 				case 'G': return title[2] == 'M' ? title::CGM : title::None;
-				case 'I': return title[2] == 'M' ? title::CIM : title::None;
 				case 'M': return title::CM;
 				case 'S': return title[2] == 'I' && title[3] == 'M' ? title::CSIM : title::None;
+				case 'L':
+					switch (title[2])
+					{
+						case 'G': return title[3] == 'M' ? title::CLGM : title::None;
+						case 'I': return title[3] == 'M' ? title::CLIM : title::None;
+					}
+					break;
+
+				case 'I':
+					return title[2] == 'M' ? title::CIM : title::None;
 			}
 			break;
 
@@ -1425,7 +1417,6 @@ title::fromString(char const* title)
 			switch (title[1])
 			{
 				case 'G': return title[2] == 'M' ? title::GM : title::None;
-				case 'L': return title[2] == 'M' ? title::CILM : title::None;
 				case 'M': return title::IM;
 			}
 			break;
@@ -1434,7 +1425,7 @@ title::fromString(char const* title)
 			switch (title[1])
 			{
 				case 'G': return title[2] == 'M' ? title::CLGM : title::None;
-				case 'M': return title::LM;
+				case 'I': return title[2] == 'M' ? title::CLIM : title::None;
 			}
 			break;
 
@@ -1466,7 +1457,7 @@ title::toString(ID title)
 title::ID
 title::best(unsigned titles)
 {
-	return titles ? title::ID(mstl::bf::lsb_index(titles) + 1) : title::None;
+	return title::ID(mstl::bf::lsb_index(titles));
 }
 
 
@@ -4250,6 +4241,7 @@ variant::fen(Idn idn)
 	static mstl::string const FKBBK("4k3/8/8/8/8/8/8/B3K2B w - - 0 1");
 	static mstl::string const FRunaway("rnbq1bnr/pppppppp/4k3/8/8/4K3/PPPPPPPP/RNBQ1BNR w KQkq - 0 1");
 	static mstl::string const FQueenVsRooks("r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w kq - 0 1");
+	static mstl::string const FUpsideDown("RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w - - 0 1");
 
 	M_REQUIRE(idn != None);
 
@@ -4274,6 +4266,7 @@ variant::fen(Idn idn)
 		case KBBK:				return FKBBK;
 		case Runaway:			return FRunaway;
 		case QueenVsRooks:	return FQueenVsRooks;
+		case UpsideDown:		return FUpsideDown;
 	}
 
 	M_ASSERT(!"position number out of range");
@@ -4312,6 +4305,7 @@ variant::ficsIdentifier(uint16_t idn)
 	static mstl::string const IdKBBK("endings/kbbk");
 	static mstl::string const IdRunaway("misc/runaway");
 	static mstl::string const IdQueenVsRooks("misc/queen-rooks");
+	static mstl::string const IdUpsideDown("wild/5");
 
 	M_REQUIRE(idn);
 	M_REQUIRE(!isShuffleChess(idn));
@@ -4333,6 +4327,7 @@ variant::ficsIdentifier(uint16_t idn)
 		case KBBK:				return IdKBBK;
 		case Runaway:			return IdRunaway;
 		case QueenVsRooks:	return IdQueenVsRooks;
+		case UpsideDown:		return IdUpsideDown;
 	}
 
 	M_ASSERT(!"position number out of range");
@@ -4353,6 +4348,21 @@ board::toString(Status status)
 	}
 
 	return mstl::string::empty_string; // satisfies the compiler
+}
+
+
+federation::ID
+federation::fromString(char const* s)
+{
+	switch (::toupper(*s))
+	{
+		case 'F': return Fide;
+		case 'D': return DSB;
+		case 'E': return ECF;
+		case 'I': return ICCF;
+	}
+
+	return Fide; // satisfies the compiler
 }
 
 // vi:set ts=3 sw=3:

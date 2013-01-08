@@ -162,7 +162,9 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 
 	static char const* subcommands[] =
 	{
-		"OR", "AND", "NOT", "player", "event", "site", "gameevent", "annotator", 0
+		"OR", "AND", "NOT", "REMOVE", "RESET", "NULL",
+		"player", "event", "site", "gameevent", "annotator",
+		0
 	};
 	static char const* args[] =
 	{
@@ -170,19 +172,22 @@ buildSearch(Database const& db, Tcl_Interp* ti, Tcl_Obj* query)
 	};
 	enum
 	{
-		OR, AND, NOT, Player, Event, Site, GameEvent, Annotator
+		Or, And, Not, Remove, Reset, Null, Player, Event, Site, GameEvent, Annotator
 	};
 
 	SearchP search;
 
 	switch (tcl::uniqueMatchObj(objv[0], subcommands))
 	{
-		case OR:
-		case AND:
+		case Or:
+		case And:
+		case Remove:
+		case Reset:
+		case Null:
 			// TODO
 			return search;
 
-		case NOT:
+		case Not:
 			if (objc != 2)
 			{
 				error(CmdSearch, "NOT", 0, "invalid query");

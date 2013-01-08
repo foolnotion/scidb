@@ -50,7 +50,7 @@ namespace {
 
 struct TagLookup
 {
-	TagLookup()
+	static void initialize()
 	{
 		m_info.set(tag::Event);
 		m_info.set(tag::Site);
@@ -100,7 +100,13 @@ struct TagLookup
 
 db::tag::TagSet TagLookup::m_info;
 db::tag::TagSet TagLookup::m_ignore;
-static TagLookup m_tagLookup;
+
+static void
+__attribute__((constructor))
+initialize()
+{
+	TagLookup::initialize();
+}
 
 } // namespace
 
@@ -597,6 +603,7 @@ Encoder::setup(Board const& board, uint16_t idn, variant::Type variant, bool has
 			break;
 
 		case variant::Standard:
+		case variant::NoCastling:
 			m_position.setupStandard();
 			break;
 
@@ -819,5 +826,12 @@ Encoder::writeTags(TagSet const& tags)
 	Decoder::decodeTags(data, myTags);
 }
 #endif
+
+
+void
+Encoder::initialize()
+{
+	TagLookup::initialize();
+}
 
 // vi:set ts=3 sw=3:

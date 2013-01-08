@@ -35,6 +35,9 @@ set Position(Shuffle)			"Shuffle chess position"
 
 }
 
+set PositionAlt(wild/5)					"Upside down"
+set PositionAlt(pawns/little-game)	"wild/7"
+
 variable SFRC { 446 462 518 524 534 540 692 708 }
 
 proc shuffle {variant} {
@@ -56,12 +59,42 @@ proc popupShuffleMenu {ns w} {
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
+	setupShuffleMenu $ns $m
+	tk_popdown $m $w
+}
 
+
+proc setupShuffleMenu {ns m} {
 	foreach variant {Chess960 Symm960 Shuffle} {
 		$m add command -label $mc::Position($variant) -command [list ${ns}::Shuffle $variant]
 	}
+}
 
-	tk_popdown $m $w
+
+proc setupPositionMenu {ns m} {
+	variable PositionAlt
+
+	foreach {idn name} { 4015 "wild/5"
+								4001 "wild/8"
+								4002 "wild/19"
+								4004 "pawns/pawns-only"
+								4000 "pawns/little-game"
+								4010 "pawns/wild-five"
+								4003 "misc/pyramid"
+								4013 "misc/runaway"
+								4009 "misc/no-queens"
+								4014 "misc/queen-rooks"
+								4005 "misc/knights-only"
+								4006 "misc/bishops-only"
+								4007 "misc/rooks-only"
+								4008 "misc/queens-only"
+								4011 "endings/kbnk"
+								4012 "endings/kbbk"} {
+		if {[info exists PositionAlt($name)]} {
+			append name " ($PositionAlt($name))"
+		}
+		$m add command -label $name -command [list ${ns}::Shuffle $idn]
+	}
 }
 
 
@@ -70,25 +103,7 @@ proc popupPositionMenu {ns w} {
 	if {[winfo exists $m]} { destroy $m }
 	menu $m -tearoff false
 	catch { wm attributes $m -type popup_menu }
-
-	foreach {idn name} { 4001 wild/8
-								4002 wild/19
-								4004 pawns/pawns-only
-								4000 pawns/little-game
-								4010 pawns/wild-five
-								4003 misc/pyramid
-								4013 misc/runaway
-								4009 misc/no-queens
-								4014 misc/queen-rooks
-								4005 misc/knights-only
-								4006 misc/bishops-only
-								4007 misc/rooks-only
-								4008 misc/queens-only
-								4011 endings/kbnk
-								4012 endings/kbbk} {
-		$m add command -label $name -command [list ${ns}::Shuffle $idn]
-	}
-	
+	setupPositionMenu $ns $m
 	tk_popdown $m $w
 }
 
@@ -109,7 +124,7 @@ set ChecksGiven							"Checks Given"
 set Clear									"Clear"
 set CopyFen									"Copy FEN to clipboard"
 set Shuffle									"Shuffle..."
-set FICSPosition							"FICS Start Position..."
+set FICSPosition							"FICS Start Position (and more)..."
 set StandardPosition						"Standard Position"
 set Chess960Castling						"Chess 960 castling"
 
@@ -1039,12 +1054,12 @@ proc SetupBoard {cmd} {
 
 		mirror {
 			set Vars(fen) [::scidb::board::transposeFen $Vars(fen) $Options(fen:format)]
+			set Vars(fen) [scidb::board::normalizeFen $Vars(fen) $Options(fen:format)]
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 			::board::diagram::update $Vars(board) $Vars(pos)
-			AnalyseFen $Vars(fen) init
 		}
 	}
-	
+
 	Update
 }
 

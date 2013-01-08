@@ -27,6 +27,7 @@ Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes v
     Ez a verzió sok, hibakereséshez használt információval dolgozik, ami lelassíthatja a működést.
   </li>
 
+<!--
   <li class="space">
     A Scid adatbázisok (.si3/.si4) megnyitása egy összetett emulációs folyamat segítségével történik, ami még nincs teljeskörüen tesztelve.    
 	  <annotation>
@@ -34,6 +35,7 @@ Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes v
     </annotation>
     Scid adatbázisok megnyitása alapértelmezetten írásvédett módban történik, így a fentiek nem jelentenek veszélyt az adatbázisra.
   </li>
+-->
 
   <li class="space">
     Az aktuális Scidb formátum (.sci) legkésőbb az első teljes verzió megjelenésekor véglesedik (Ami az 1.0-ás verzió lesz. A jelenlegi verziószám 0.93). Mindazonáltal a jelenlegi formátum már teljes értékű és a későbbi változatások csupán új funkciók hozzáadására korlátozódnak.

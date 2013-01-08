@@ -48,6 +48,8 @@
 # include "db_home_pawns.h"
 # include "db_signature.h"
 # include "db_probe.h"
+# include "sci_encoder.h"
+# include "si3_encoder.h"
 # include "tcl_progress.h"
 #endif
 
@@ -79,6 +81,8 @@ init(Tcl_Interp* ti)
 		db::HomePawns::initialize();
 		db::Signature::initialize();
 		db::Probe::initialize();
+		db::sci::Encoder::initialize();
+		db::si3::Encoder::initialize();
 		tcl::Progress::initialize();
 
 #endif
