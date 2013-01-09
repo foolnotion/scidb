@@ -25,7 +25,7 @@ Eine <em>Markierung</em> ("Flag") ist ein Kennzeichen irgendeiner Charakteristik
 für jede Partie der Datenbank ein- oder ausgeschaltet werden kann. Es gibt 21 vom
 Benutzer einstellbare Markierungen, die direkt in jede Partie gesetzt werden können.
 Diese Markierungen dienen vornehmlich zum Suchen von Partiedaten, oder zum Filtern
-von Partielisten. Diese Markierungen haben ansonsten keine weitere Bedeutung und
+von Partienliste. Diese Markierungen haben ansonsten keine weitere Bedeutung und
 können deshalb vom Benutzer frei verwendet werden.
 </p>
 

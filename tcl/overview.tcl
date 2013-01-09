@@ -84,8 +84,13 @@ proc open {parent base variant info view index {fen {}}} {
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
-	bind $dlg <ButtonPress-3> [namespace code [list PopupMenu $nb $base $variant]]
-	bind $dlg <F1> [list ::help::open .application Game-Overview -parent $dlg ]
+
+	bind $dlg <F1>					[list ::help::open .application Game-Overview -parent $dlg]
+	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $nb $base $variant]]
+	bind $dlg <Control-Home>	[namespace code [list GotoGame(first) $nb $base $variant]]
+	bind $dlg <Control-End>		[namespace code [list GotoGame(last) $nb $base $variant]]
+	bind $dlg <Control-Down>	[namespace code [list GotoGame(next) $nb $base $variant]]
+	bind $dlg <Control-Up>		[namespace code [list GotoGame(prev) $nb $base $variant]]
 
 	namespace eval $nb {}
 	variable ${nb}::Vars
@@ -234,7 +239,7 @@ proc UpdateTreeBase {nb base variant} {
 }
 
 
-proc GotoFirstGame {nb base variant} {
+proc GotoGame(first) {nb base variant} {
 	variable ${nb}::Vars
 
 	if {$Vars(index) > 0} {
@@ -244,7 +249,7 @@ proc GotoFirstGame {nb base variant} {
 }
 
 
-proc GotoLastGame {nb base variant} {
+proc GotoGame(last) {nb base variant} {
 	variable ${nb}::Vars
 
 	set index [expr {[scidb::view::count games $base $variant $Vars(view)] - 1}]
@@ -253,6 +258,16 @@ proc GotoLastGame {nb base variant} {
 		set Vars(index) $index
 		NextGame $nb $base $variant
 	}
+}
+
+
+proc GotoGame(next) {nb base variant} {
+	NextGame $nb $base $variant +1
+}
+
+
+proc GotoGame(prev) {nb base variant} {
+	NextGame $nb $base $variant -1
 }
 
 
@@ -482,21 +497,46 @@ proc PopupMenu {nb base variant} {
 #		-command [namespace code [list MergeGame $nb]] \
 #		-state $state \
 #		;
-	$menu add separator
-	$menu add command \
-		-compound left \
-		-image $::icon::16x16::first \
-		-label " $::browser::mc::GotoFirstGame" \
-		-command [namespace code [list GotoFirstGame $nb $base $variant]] \
-		-state $state \
-		;
-	$menu add command \
-		-compound left \
-		-image $::icon::16x16::last \
-		-label " $::browser::mc::GotoLastGame" \
-		-command [namespace code [list GotoLastGame $nb $base $variant]] \
-		-state $state \
-		;
+	if {$Vars(index) >= 0} {
+		$menu add separator
+		set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $::browser::mc::GotoGame(next)" \
+			-image $::icon::16x16::forward \
+			-compound left \
+			-command [namespace code [list GotoGame(next) $nb $base $variant]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $::browser::mc::GotoGame(prev)" \
+			-image $::icon::16x16::backward \
+			-compound left \
+			-command [namespace code [list GotoGame(prev) $nb $base $variant]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::last \
+			-label " $::browser::mc::GotoGame(last)" \
+			-command [namespace code [list GotoGame(last) $nb $base $variant]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::first \
+			-label " $::browser::mc::GotoGame(first)" \
+			-command [namespace code [list GotoGame(first) $nb $base $variant]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
+			-state $state \
+			;
+	}
 
 	tk_popup $menu {*}[winfo pointerxy $nb]
 }

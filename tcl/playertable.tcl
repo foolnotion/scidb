@@ -75,7 +75,7 @@ namespace import ::tcl::mathfunc::max
 set Columns {
 	{ lastName		left		10		0		14			1			0			1			{}				}
 	{ firstName		left		10		0		14			1			0			1			{}				}
-	{ fideID			right		 0		0		10			0			1			1			{}				}
+	{ federationId	right		 0		0		12			0			1			1			{}				}
 	{ type			center	 0		0		14px		0			1			0			{}				}
 	{ sex				center	 0		0		14px		0			1			0			{}				}
 	{ rating1		center	 0		0		 6			0			1			1			darkblue		}
@@ -92,6 +92,7 @@ foreach col $Columns { lappend columns [lindex $col 0] }
 
 array set Defaults {
 	country-code	flags
+	federation		Fide
 
 	exclude-elo		1
 	include-type	1
@@ -123,6 +124,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	set mc::F_Rating1 $Options(rating1:type)
 	set mc::F_Rating2 $Options(rating2:type)
+	set mc::F_FederationId [set mc::F_${Options(federation)}ID]
 
 	RefreshHeader 1
 	RefreshHeader 2
@@ -160,6 +162,18 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 						-command [namespace code [list Refresh $path]] \
 						-labelvar ::gametable::mc::$labelvar \
 						-variable [namespace current]::Options(country-code) \
+						-value $value \
+					]
+				}
+				lappend menu { separator }
+			}
+
+			federationId {
+				foreach value {Fide DSB ECF ICCF} {
+					lappend menu [list radiobutton \
+						-command [namespace code [list RefreshFederation $path]] \
+						-label [set mc::F_${value}ID] \
+						-variable [namespace current]::Options(federation) \
 						-value $value \
 					]
 				}
@@ -489,6 +503,14 @@ proc RefreshRatings {path number} {
 }
 
 
+proc RefreshFederation {path} {
+	variable Options
+
+	set mc::F_FederationId [set mc::F_${Options(federation)}ID]
+	::scrolledtable::refresh $path.table
+}
+
+
 proc Refresh {path} {
 	set table $path.table
 	::scrolledtable::clear $table
@@ -535,7 +557,8 @@ proc TableFill {path args} {
 
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
-		set line [scidb::db::get playerInfo $index $view $base $variant -ratings $ratings]
+		set line [scidb::db::get playerInfo $index $view $base $variant \
+						-ratings $ratings -federation $Options(federation)]
 		set text {}
 		set k 0
 
@@ -554,14 +577,6 @@ proc TableFill {path args} {
 
 				firstName {
 					incr k -1
-				}
-
-				fideID {
-					if {[string index $item 0] eq "-"} {
-						lappend text "*[string range $item 1 end]"
-					} else {
-						lappend text $item
-					}
 				}
 
 				playerInfo {

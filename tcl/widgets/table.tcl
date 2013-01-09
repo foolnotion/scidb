@@ -1363,8 +1363,40 @@ proc PopupMenu {table x y X Y} {
 	set menu $table.__menu__${id}__
 	catch { destroy $menu }
 	menu $menu -tearoff 0 -disabledforeground black
-	set count 0
 	::tooltip::hide
+
+	array set hidden {}
+	set groups {}
+	set tail 0
+	set optimize 0
+	foreach i [$table.t column list] {
+		set cid [$table.t column tag names $i]
+		if {$Options(-optimizable:$cid)} {
+			set optimize 1
+		}
+		if {!$Options(-visible:$cid)} {
+			if {$cid eq "tail"} {
+				set tail 1
+			} else {
+				set g $Vars(groupvar:$cid)
+				set t 1
+				if {[llength $g] == 0} {
+					set g $Vars(group:$cid)
+					set t 0
+				}
+				set entry [list $t $g]
+				set k [lsearch -exact $groups $entry]
+				if {$k == -1} { lappend groups $entry }
+				lappend hidden($g) $cid
+			}
+		}
+	}
+	set k [lsearch -exact $groups ""]
+	if {$k >= 0} {
+		set e [lindex $groups $k]
+		set groups [lreplace $groups $k $k]
+		lappend groups $e
+	}
 
 	$menu add command                                    \
 		-background $options(menu:headerbackground)       \
@@ -1377,6 +1409,7 @@ proc PopupMenu {table x y X Y} {
 	$menu add separator
 
 	if {$id ne "tail"} {
+		set count 0
 		foreach item $Vars(menu:$id) {
 			set type [lindex $item 0]
 			array set opts [lrange $item 1 end]
@@ -1384,6 +1417,7 @@ proc PopupMenu {table x y X Y} {
 				set opts(-label) [set $opts(-labelvar)]
 				array unset opts -labelvar
 			}
+			incr count
 			$menu add $type {*}[array get opts]
 			if {$type eq "radiobutton"} {
 				::theme::configureRadioEntry $menu $opts(-label)
@@ -1391,118 +1425,16 @@ proc PopupMenu {table x y X Y} {
 			unset opts
 		}
 
-		if {$Options(-removable:$id)} {
-			$menu add command \
-				-label $mc::Hide \
-				-command [namespace code [list Hide $table $id]] \
-				;
-		}
-
-		if {	!$Options(-pixels:$id)
-			&& $Options(-optimizable:$id)
-			&& (	$Options(-maxwidth:$id) == 0
-				|| $Options(-maxwidth:$id) >= $Options(-width:$id))} {
-			$menu add command \
-				-label $mc::OptimizeColumn \
-				-command [list $table.t column optimize $id] \
-				;
-			$menu add command \
-				-label $mc::FitColumnWidth \
-				-command [list $table.t column fit $id] \
-				;
-			$menu add command \
-				-label $mc::ExpandColumn \
-				-command [list $table.t column expand $id yes] \
-				;
-		}
-		if {$Options(-configurable)} {
-			$menu add command \
-				-label "$mc::Configure..." \
-				-command [namespace code [list OpenConfigureDialog $table $id $header]]
-		}
-
-		if {	!$Options(-pixels:$id)
-			&& (	($Options(-maxwidth:$id) == 0 && $Options(-minwidth:$id) > 0)
-				|| $Options(-maxwidth:$id) > $Options(-minwidth:$id))} {
-			$menu add separator
-			$menu add check \
-				-label $mc::AutoStretchColumn \
-				-variable [namespace current]::${table}::Options(-stretch:$id) \
-				-command [namespace code [list ToggleStretchable $table $id]] \
-				;
-		}
+		if {$count && [$menu type end] ne "separator"} { $menu add separator }
 	}
 
-	incr count
-	array set hidden {}
-	set groups {}
-	set tail 0
-	foreach i [$table.t column list] {
-		set id [$table.t column tag names $i]
-		if {!$Options(-visible:$id)} {
-			if {$id eq "tail"} {
-				set tail 1
-			} else {
-				set g $Vars(groupvar:$id)
-				set t 1
-				if {[llength $g] == 0} {
-					set g $Vars(group:$id)
-					set t 0
-				}
-				set entry [list $t $g]
-				set k [lsearch -exact $groups $entry]
-				if {$k == -1} { lappend groups $entry }
-				lappend hidden($g) $id
-			}
-		}
-	}
-	set k [lsearch -exact $groups ""]
-	if {$k >= 0} {
-		set e [lindex $groups $k]
-		set groups [lreplace $groups $k $k]
-		lappend groups $e
-	}
-
-	$menu entryconfigure 0 -label $header
-
-	if {$id ne "tail"} { $menu add separator }
-
-	if {$Options(-listmode)} {
-		$menu add command \
-			-label $mc::OptimizeColumns \
-			-command [namespace code [list FitColumns $table optimize]] \
-			;
-		$menu add command \
-			-label $mc::FitColumns \
-			-command [namespace code [list FitColumns $table fit]] \
-			;
-		$menu add command \
-			-label $mc::SqueezeColumns \
-			-command [namespace code [list FitColumns $table squeeze]] \
-			;
-	} else {
-		$menu add command \
-			-label $mc::OptimizeColumns \
-			-accelerator $mc::AccelOptimizeColumns \
-			-command [namespace code [list FitColumns $table optimize]] \
-			;
-		$menu add command \
-			-label $mc::FitColumns \
-			-accelerator $mc::AccelFitColumns \
-			-command [namespace code [list FitColumns $table fit]] \
-			;
-		$menu add command \
-			-label $mc::SqueezeColumns \
-			-accelerator $mc::AccelSqueezeColumns \
-			-command [namespace code [list FitColumns $table squeeze]] \
-			;
-	}
+	set needsSeparator 0
 
 	if {$tail || [llength $groups]} {
 		set subm [menu $menu.mShowColumn -tearoff false]
 		::bind $subm <Destroy> [list ::tooltip::tooltip clear $subm*]
 		$menu add cascade -menu $subm -label $mc::ShowColumn
-		incr count
+		set needsSeparator 1
 
 		set index 0
 		foreach group $groups {
@@ -1522,20 +1454,20 @@ proc PopupMenu {table x y X Y} {
 		set index 0
 		foreach group $groups {
 			set name [lindex $group 1]
-			foreach id $hidden($name) {
-				if {[llength $Vars(tooltipvar:$id)]} {
-					set text [set $Vars(tooltipvar:$id)]
-				} elseif {[llength $Vars(tooltip:$id)]} {
-					set text $Vars(tooltip:$id)
+			foreach cid $hidden($name) {
+				if {[llength $Vars(tooltipvar:$cid)]} {
+					set text [set $Vars(tooltipvar:$cid)]
+				} elseif {[llength $Vars(tooltip:$cid)]} {
+					set text $Vars(tooltip:$cid)
 				} else {
-					set text [$table.t column cget $id -text]
+					set text [$table.t column cget $cid -text]
 				}
 				if {[string length $name]} {
 					set m $subm.$index
 				} else {
 					set m $subm
 				}
-				$m add command -label $text -command [namespace code [list Show $table $id]]
+				$m add command -label $text -command [namespace code [list Show $table $cid]]
 			}
 			if {[string length $name]} { incr index }
 		}
@@ -1544,10 +1476,95 @@ proc PopupMenu {table x y X Y} {
 		}
 	}
 
-	if {$count} {
-		::bind $menu <<MenuUnpost>> [list event generate $table <<TablePopdown>>]
-		tk_popup $menu $X $Y
+	if {$id ne "tail"} {
+		if {$Options(-removable:$id)} {
+			set needsSeparator 1
+			$menu add command \
+				-label $mc::Hide \
+				-command [namespace code [list Hide $table $id]] \
+				;
+		}
+		if {$Options(-configurable)} {
+			set needsSeparator 1
+			$menu add command \
+				-label "$mc::Configure..." \
+				-command [namespace code [list OpenConfigureDialog $table $id $header]] \
+				;
+		}
 	}
+
+	if {$needsSeparator} { $menu add separator }
+
+	if {$id ne "tail"} {
+		if {	!$Options(-pixels:$id)
+			&& $Options(-optimizable:$id)
+			&& (	$Options(-maxwidth:$id) == 0
+				|| $Options(-maxwidth:$id) >= $Options(-width:$id))} {
+			$menu add command \
+				-label $mc::OptimizeColumn \
+				-command [list $table.t column optimize $id] \
+				;
+			$menu add command \
+				-label $mc::FitColumnWidth \
+				-command [list $table.t column fit $id] \
+				;
+			$menu add command \
+				-label $mc::ExpandColumn \
+				-command [list $table.t column expand $id yes] \
+				;
+		}
+
+		if {	!$Options(-pixels:$id)
+			&& (	($Options(-maxwidth:$id) == 0 && $Options(-minwidth:$id) > 0)
+				|| $Options(-maxwidth:$id) > $Options(-minwidth:$id))} {
+			if {[$menu type end] ne "separator"} { $menu add separator }
+			$menu add check \
+				-label $mc::AutoStretchColumn \
+				-variable [namespace current]::${table}::Options(-stretch:$id) \
+				-command [namespace code [list ToggleStretchable $table $id]] \
+				;
+		}
+	}
+
+	$menu entryconfigure 0 -label $header
+
+	if {$optimize} {
+		if {[$menu type end] ne "separator"} { $menu add separator }
+		if {$Options(-listmode)} {
+			$menu add command \
+				-label $mc::OptimizeColumns \
+				-command [namespace code [list FitColumns $table optimize]] \
+				;
+			$menu add command \
+				-label $mc::FitColumns \
+				-command [namespace code [list FitColumns $table fit]] \
+				;
+			$menu add command \
+				-label $mc::SqueezeColumns \
+				-command [namespace code [list FitColumns $table squeeze]] \
+				;
+		} else {
+			$menu add command \
+				-label $mc::OptimizeColumns \
+				-accelerator $mc::AccelOptimizeColumns \
+				-command [namespace code [list FitColumns $table optimize]] \
+				;
+			$menu add command \
+				-label $mc::FitColumns \
+				-accelerator $mc::AccelFitColumns \
+				-command [namespace code [list FitColumns $table fit]] \
+				;
+			$menu add command \
+				-label $mc::SqueezeColumns \
+				-accelerator $mc::AccelSqueezeColumns \
+				-command [namespace code [list FitColumns $table squeeze]] \
+				;
+		}
+	}
+
+	if {[$menu type end] eq "separator"} { $menu delete end }
+	::bind $menu <<MenuUnpost>> [list event generate $table <<TablePopdown>>]
+	tk_popup $menu $X $Y
 
 	keepFocus $table false
 }

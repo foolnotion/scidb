@@ -2240,6 +2240,7 @@ getPlayerInfo(	int index,
 					char const* database,
 					variant::Type variant,
 					Ratings& ratings,
+					federation::ID federation,
 					bool info,
 					bool idCard)
 {
@@ -2250,7 +2251,7 @@ getPlayerInfo(	int index,
 	if (view >= 0)
 		index = cursor.playerIndex(index, view);
 
-	return tcl::player::getInfo(cursor.database().player(index), ratings, info, idCard);
+	return tcl::player::getInfo(cursor.database().player(index), ratings, federation, info, idCard);
 }
 
 
@@ -2573,7 +2574,7 @@ cmdPlayerInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		player = &base.player(index, color::fromSide(stringFromObj(objc, objv, 4)));
 
 	Ratings ratings(rating::Any, rating::Any);
-	return tcl::player::getInfo(*player, ratings, true, true);
+	return tcl::player::getInfo(*player, ratings, federation::Fide, true, true);
 }
 
 
@@ -2699,6 +2700,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_BlackPlayerInfo:
 			{
 				Ratings ratings(rating::Any, rating::Any);
+				federation::ID federation = federation::Fide;
 
 				bool parseOptions = true;
 				bool idCard			= false;
@@ -2726,6 +2728,10 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
 							--objc;
 						}
+						else if (::strcmp(lastArg, "-federation") == 0)
+						{
+							federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
+						}
 						else
 						{
 							return error(::CmdFetch, nullptr, nullptr, "invalid argument %s", lastArg);
@@ -2740,7 +2746,11 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				color::ID side = idx == Cmd_WhitePlayerInfo ? color::White : color::Black;
-				return tcl::player::getInfo(*info.playerEntry(side), ratings, infoWanted, idCard);
+
+				return tcl::player::getInfo(	*info.playerEntry(side),
+														ratings, federation,
+														infoWanted,
+														idCard);
 			}
 			break;
 
@@ -2913,6 +2923,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_PlayerInfo:
 		{
 			Ratings ratings(rating::Any, rating::Any);
+			federation::ID federation = federation::Fide;
 
 			bool parseOptions = true;
 			bool idCard			= false;
@@ -2940,6 +2951,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						ratings = ::convRatings(stringFromObj(objc, objv, objc - 1));
 						--objc;
 					}
+					else if (::strcmp(lastArg, "-federation") == 0)
+					{
+						federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
+						--objc;
+					}
 					else
 					{
 						return error(::CmdGet, nullptr, nullptr, "invalid argument %s", lastArg);
@@ -2962,7 +2978,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 5);
 
 			if (objc < 7)
-				return getPlayerInfo(index, view, database, variant, ratings, info, idCard);
+				return getPlayerInfo(index, view, database, variant, ratings, federation, info, idCard);
 
 			unsigned which = unsignedFromObj(objc, objv, 6);
 

@@ -53,20 +53,20 @@ set F_DeathYear		"\u2625"
 
 namespace import ::tcl::mathfunc::abs
 
-#		ID   			Adjustment	Min	Max	Width	Stretch	Removable	Elipsis	Color
-#	-------------------------------------------------------------------------------------
+#		ID   			Adjustment	Min	Max	Width	Stretch	Elipsis	Color
+#	----------------------------------------------------------------------------
 set Columns {
-	{ federation		center	 4		5		 5			0			0			0			darkgreen	}
-	{ lastName			left		10		0		40			1			0			1			{}				}
-	{ firstName			left		10		0		30			1			0			1			{}				}
-	{ federationId		right		10		0		12			0			0			1			{}				}
-	{ country			center	 4		5		 5			0			0			0			darkgreen	}
-	{ sex					center	 0		0		18px		0			0			0			{}				}
-	{ rating1			center	 0		0		 6			0			0			1			darkblue		}
-	{ rating2			center	 0		0		 6			0			0			1			darkblue		}
-	{ titles				left		 0		0		12			0			0			1			darkred		}
-	{ birthYear			center	 5		5		 5			0			0			0			darkgreen	}
-	{ deathYear			center	 5		5		 5			0			0			0			darkgreen	}
+	{ federation		center	 4		5		 5			0		0			darkgreen	}
+	{ lastName			left		10		0		40			1		1			{}				}
+	{ firstName			left		10		0		30			1		1			{}				}
+	{ federationId		right		10		0		12			0		1			{}				}
+	{ country			center	 4		5		 5			0		0			darkgreen	}
+	{ sex					center	 0		0		18px		0		0			{}				}
+	{ rating1			center	 0		0		 6			0		1			darkblue		}
+	{ rating2			center	 0		0		 6			0		1			darkblue		}
+	{ titles				left		 0		0		12			0		1			darkred		}
+	{ birthYear			center	 5		5		 5			0		0			darkgreen	}
+	{ deathYear			center	 5		5		 5			0		0			darkgreen	}
 }
 
 array set Options {
@@ -118,6 +118,7 @@ proc open {parent args} {
 	wm withdraw $dlg
 	pack $top -fill both -expand yes
 	bind $top <Destroy> [namespace code Destroy]
+	bind $top <<LanguageChanged>> [namespace code [list LanguageChanged(dictionary) $dlg]]
 
 	set Priv(letter) ""
 
@@ -167,7 +168,7 @@ proc open {parent args} {
 
 	set mc::F_Rating1 $Options(rating1:type)
 	set mc::F_Rating2 $Options(rating2:type)
-	set mc::F_FederationId $Options(federation)
+	set mc::F_FederationId [set ::playertable::mc::F_${Options(federation)}ID]
 
 	RefreshHeader 1
 	RefreshHeader 2
@@ -175,7 +176,7 @@ proc open {parent args} {
 	::scidb::player::dict open player
 
 	foreach column $Columns {
-		lassign $column id adjustment minwidth maxwidth width stretch removable ellipsis color
+		lassign $column id adjustment minwidth maxwidth width stretch ellipsis color
 		lassign {"" "" ""} tvar fvar ivar
 		set menu {}
 
@@ -205,32 +206,31 @@ proc open {parent args} {
 						-value $value \
 					]
 				}
-				lappend menu separator
 			}
 
 			federationId {
 				foreach value {Fide DSB ECF ICCF} {
 					lappend menu [list radiobutton \
 						-command [namespace code [list RefreshFederation $table]] \
-						-label "$value ID" \
+						-label [set ::playertable::mc::F_${value}ID] \
 						-variable [namespace current]::Options(federation) \
 						-value $value \
 					]
 				}
-				lappend menu { separator }
 			}
 
 			rating1 - rating2 {
 				foreach ratType $ratings {
-					set number [string index $id 6]
-					lappend menu [list radiobutton \
-						-command [namespace code [list RefreshRatings $table $number]] \
-						-label $ratType \
-						-variable [namespace current]::Options($id:type) \
-						-value $ratType \
-					]
+					if {$ratType ne "Any"} {
+						set number [string index $id 6]
+						lappend menu [list radiobutton \
+							-command [namespace code [list RefreshRatings $table $number]] \
+							-label $ratType \
+							-variable [namespace current]::Options($id:type) \
+							-value $ratType \
+						]
+					}
 				}
-				lappend menu { separator }
 			}
 		}
 
@@ -274,7 +274,8 @@ proc open {parent args} {
 		lappend opts -maxwidth $maxwidth
 		lappend opts -width $width
 		lappend opts -stretch $stretch
-		lappend opts -removable $removable
+		lappend opts -removable 0
+		lappend opts -optimizable 0
 		lappend opts -ellipsis $ellipsis
 		lappend opts -visible 1
 		lappend opts -foreground $color
@@ -751,7 +752,13 @@ proc SetFilter {table} {
 
 proc LanguageChanged(filter) {top} {
 	$top.lyear configure -text "$mc::BirthYear / $mc::DeathYear"
-	SetDialogHeader [winfo toplevel $top]
+	wm title [winfo toplevel $top] $mc::PlayerFilter
+}
+
+
+proc LanguageChanged(dictionary) {dlg} {
+	SetDialogHeader $dlg
+	UpdateCount
 }
 
 
@@ -945,7 +952,7 @@ proc RefreshRatings {table number} {
 proc RefreshFederation {table} {
 	variable Options
 
-	set mc::F_FederationId $Options(federation)
+	set mc::F_FederationId [set ::playertable::mc::F_${Options(federation)}ID]
 	::scrolledtable::refresh $table
 }
 

@@ -36,7 +36,7 @@ TITLE Novità 
 <NEW>
   <li class="space">HTML file export of tournament table</li>
   <li class="space">New piece sets: "Free Staunton", and "Virtual"</li>
-  <li class="space">New board themes: "Blue Mono", "Staunton", and "Virtual"</li>
+  <li class="space">New board themes: "Blue Theme", "Staunton", and "Virtual"</li>
 </NEW>
   <li class="space">Identificazione automatica del set caratteri durante la codifica delle partite (riguarda i formati si3/si4/cbh)</li>
   <li class="space">Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
@@ -47,7 +47,7 @@ TITLE Novità 
   <li class="space">Interfaccia di configurazione per sfogliare\modificare partite</li>
 <NEW>
   <li class="space">Engine dictionary implemented</li>
-  <li class="space">Player dictionary implemented</li>
+  <li class="space">Player dictionary implemented (with sort and filter functionality)</li>
 </NEW>
   <li class="space">Implementato Drag&amp;Drop nell'interfaccia di selezione dei file</li>
   <li class="space">Implementato Drag&amp;Drop nel selettore di database: in questo modo le partite possono essere copiate da un database a un altro</li>

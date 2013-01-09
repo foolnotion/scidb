@@ -33,7 +33,7 @@ TITLE What's new?
   <li class="space">Spanish help pages added (thanks to Carlos Fernando González)</li>
   <li class="space">HTML file export of tournament table</li>
   <li class="space">New piece sets: "Free Staunton", and "Virtual"</li>
-  <li class="space">New board themes: "Blue Mono", "Staunton", and "Virtual"</li>
+  <li class="space">New board themes: "Blue Theme", "Staunton", and "Virtual"</li>
   <li class="space">Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
   <li class="space">Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
   <li class="space">File selection dialog improved</li>
@@ -42,7 +42,7 @@ TITLE What's new?
   <li class="space">Archiving databases integrated</li>
   <li class="space">Setup dialog for game browser/editor</li>
   <li class="space">Engine dictionary implemented</li>
-  <li class="space">Player dictionary implemented</li>
+  <li class="space">Player dictionary implemented (with sort and filter functionality)</li>
   <li class="space">Drag&amp;Drop in file selection dialog implemented</li>
   <li class="space">Drag&amp;Drop in database switcher implemented: in this way games can be copied between databases</li>
   <li class="space">Database window: docking/undocking of list tabs integrated</li>

@@ -721,7 +721,7 @@ proc showEngineDictionary {parent} {
 		-borderwidth 1 \
 		-relief sunken \
 		-selectmode browse \
-		-stripes #ebf4f5 \
+		-stripes linen \
 		-usescroll yes \
 		-setgrid 1 \
 		-linespace $linespace \
@@ -784,7 +784,7 @@ proc showEngineDictionary {parent} {
 	SetDialogHeader $dlg
 	wm resizable $dlg yes yes
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	wm transient $dlg [winfo toplevel $parent]
+#	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg center [winfo toplevel $parent]
 	wm deiconify $dlg
 
@@ -1319,9 +1319,10 @@ proc SetFilter {lb} {
 	array set Filter_ [array get Filter]
 	set Reply_ ""
 
-	::widget::dialogButtons $dlg {ok revert} -default ok
+	::widget::dialogButtons $dlg {ok reset} -default ok
+	::widget::dialogButtonReplace $dlg reset revert
 	$dlg.ok configure -command [list set [namespace current]::Reply_ ok]
-	$dlg.revert configure -command [namespace code [list ResetFilter $lb]]
+	$dlg.reset configure -command [namespace code [list ResetFilter $lb]]
 	wm resizable $dlg no no
 	wm title $dlg $mc::EngineFilter
 	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::Reply_ cancel]

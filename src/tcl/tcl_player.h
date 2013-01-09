@@ -40,7 +40,12 @@ namespace tcl
 	namespace player
 	{
 		typedef mstl::pair< ::db::rating::Type, ::db::rating::Type> Ratings;
-		int getInfo(::db::NamebasePlayer const& player, Ratings& ratings, bool info, bool idCard);
+
+		int getInfo(::db::NamebasePlayer const& player,
+						Ratings& ratings,
+						::db::federation::ID federation,
+						bool info,
+						bool idCard);
 	}
 }
 

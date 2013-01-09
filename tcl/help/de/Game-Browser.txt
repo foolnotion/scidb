@@ -20,9 +20,9 @@ INDEX Partien-Browser
 TITLE Der Partien-Browser
 
 <p>
-Der Partien-Browser wird mit einer Partie aus einer Partieliste
-geöffnet. Der Browser ist an diese Partieliste gebunden. Wird diese
-Partieliste geschlossen während der Browser noch offen ist, kann
+Der Partien-Browser wird mit einer Partie aus einer Partienliste
+geöffnet. Der Browser ist an diese Partienliste gebunden. Wird diese
+Partienliste geschlossen während der Browser noch offen ist, kann
 keine weitere Partie in diesem Browser geladen werden.
 </p>
 

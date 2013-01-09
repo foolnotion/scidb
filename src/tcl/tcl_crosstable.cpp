@@ -192,7 +192,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				NamebasePlayer const* player = table->getPlayer(ranking - 1);
 				if (!player)
 					return error(CmdGet, nullptr, nullptr, "invalid ranking number %u", ranking);
-				return tcl::player::getInfo(*player, ratings, true, true);
+				return tcl::player::getInfo(*player, ratings, federation::Fide, true, true);
 			}
 			break;
 
