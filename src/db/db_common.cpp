@@ -1388,20 +1388,20 @@ title::add(unsigned titles, ID title)
 	static unsigned Remove[Last] =
 	{
 		/* None	*/ 0,
-		/* GM		*/ ~(Mask_IM | Mask_FM | Mask_CM),
-		/* IM		*/ ~(Mask_FM | Mask_CM),
-		/* FM		*/ ~Mask_CM,
+		/* GM		*/ ~unsigned(Mask_IM | Mask_FM | Mask_CM),
+		/* IM		*/ ~unsigned(Mask_FM | Mask_CM),
+		/* FM		*/ ~unsigned(Mask_CM),
 		/* CM		*/ 0,
-		/* WGM	*/ ~(Mask_WIM | Mask_WFM | Mask_WCM),
-		/* WIM	*/ ~(Mask_WFM | Mask_WCM),
-		/* WFM	*/ ~Mask_WCM,
+		/* WGM	*/ ~unsigned(Mask_WIM | Mask_WFM | Mask_WCM),
+		/* WIM	*/ ~unsigned(Mask_WFM | Mask_WCM),
+		/* WFM	*/ ~unsigned(Mask_WCM),
 		/* WCM	*/ 0,
 		/* HGM	*/ 0,
-		/* CGM	*/ ~(CSIM | Mask_CIM),
+		/* CGM	*/ ~unsigned(CSIM | Mask_CIM),
 		/* CIM	*/ 0,
-		/* CLGM	*/ ~Mask_CILM,
+		/* CLGM	*/ ~unsigned(Mask_CILM),
 		/* CILM	*/ 0,
-		/* CSIM	*/ ~Mask_CIM,
+		/* CSIM	*/ ~unsigned(Mask_CIM),
 	};
 
 	static unsigned Ignore[Last] =

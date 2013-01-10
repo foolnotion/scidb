@@ -70,7 +70,8 @@ MultiBase::MultiBase(mstl::string const& name,
 	else
 	{
 		mstl::auto_ptr<Database> database(new Database(name, encoding, storage, type, variant));
-		m_bases[variant::toIndex(variant)] = m_leader = database.release();
+		m_bases[variant::toIndex(variant)] = m_leader = database.get();
+		database.release();
 	}
 }
 
@@ -83,7 +84,8 @@ MultiBase::MultiBase(mstl::string const& name,
 {
 	::memset(m_bases, 0, sizeof(m_bases));
 	mstl::auto_ptr<Database> database(new Database(name, encoding, mode, progress));
-	m_bases[variant::toIndex(database->variant())] = m_leader = database.release();
+	m_bases[variant::toIndex(database->variant())] = m_leader = database.get();
+	database.release();
 }
 
 

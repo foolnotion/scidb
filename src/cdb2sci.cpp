@@ -335,7 +335,7 @@ printDefaultTagsAndExit(int rc)
 static void
 printUsualTagsAndExit(int rc)
 {
-	for (unsigned i = 0; i < tag::ExtraTag; ++i)
+	for (unsigned i = 0; i < tag::BughouseTag; ++i)
 	{
 		if (i > 0)
 			printf(",");

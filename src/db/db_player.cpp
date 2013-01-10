@@ -716,8 +716,8 @@ findPlayer(mstl::string const& name, Players const& players, country::Code feder
 }
 
 
-Player::EcfID::EcfID() : prefix(0), suffix(0) {}
-Player::EcfID::EcfID(char const* id) { setup(id); }
+Player::EcfID::EcfID() : value(0) {}
+Player::EcfID::EcfID(char const* id) :value(0) { setup(id); }
 
 
 void
