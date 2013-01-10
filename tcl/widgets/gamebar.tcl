@@ -196,6 +196,17 @@ proc insert {gamebar at id tags} {
 		-outline {} \
 		-state hidden \
 		;
+#	$gamebar create image 0 0 \
+#		-anchor nw \
+#		-tags [list eventCountry$id all$id] \
+#		-state hidden \
+#		;
+#	$gamebar create rectangle 0 0 0 0 \
+#		-tags [list eventCountryInput$id all$id] \
+#		-fill {} \
+#		-outline {} \
+#		-state hidden \
+#		;
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-font $Specs(font:$gamebar) \
@@ -980,8 +991,10 @@ proc PrepareAsSunkenButton {gamebar id} {
 	$gamebar itemconfigure line1bg$id -state hidden
 	$gamebar itemconfigure whiteCountry$id -state hidden
 	$gamebar itemconfigure blackCountry$id -state hidden
+#	$gamebar itemconfigure eventCountry$id -state hidden
 	$gamebar itemconfigure whiteCountryInput$id -state hidden
 	$gamebar itemconfigure blackCountryInput$id -state hidden
+#	$gamebar itemconfigure eventCountryInput$id -state hidden
 	$gamebar itemconfigure whiteElo$id -state hidden
 	$gamebar itemconfigure blackElo$id -state hidden
 	if {$Specs(size:$gamebar) > 1} {
@@ -1030,8 +1043,10 @@ proc PrepareAsButton {gamebar id} {
 	$gamebar itemconfigure black$id -font $Specs(font:$gamebar)
 	$gamebar itemconfigure whiteCountry$id -state hidden
 	$gamebar itemconfigure blackCountry$id -state hidden
+#	$gamebar itemconfigure eventCountry$id -state hidden
 	$gamebar itemconfigure whiteCountryInput$id -state hidden
 	$gamebar itemconfigure blackCountryInput$id -state hidden
+#	$gamebar itemconfigure eventCountryInput$id -state hidden
 	$gamebar itemconfigure whiteElo$id -state hidden
 	$gamebar itemconfigure blackElo$id -state hidden
 	$gamebar itemconfigure hyphen$id -state hidden
@@ -1082,8 +1097,10 @@ proc PrepareAsHeader {gamebar id} {
 	if {$Options(separateLines)} { set state normal } else { set state hidden }
 	$gamebar itemconfigure whiteCountry$id -state $state
 	$gamebar itemconfigure blackCountry$id -state $state
+#	$gamebar itemconfigure eventCountry$id -state $state
 	$gamebar itemconfigure whiteCountryInput$id -state $state
 	$gamebar itemconfigure blackCountryInput$id -state $state
+#	$gamebar itemconfigure eventCountryInput$id -state $state
 	$gamebar itemconfigure whiteInput$id -state normal
 	$gamebar itemconfigure blackInput$id -state normal
 	$gamebar itemconfigure lighter$id -fill $darker -outline $darker
@@ -1094,6 +1111,7 @@ proc PrepareAsHeader {gamebar id} {
 	$gamebar raise input$id
 	$gamebar raise whiteCountryInput$id
 	$gamebar raise blackCountryInput$id
+#	$gamebar raise eventCountryInput$id
 	$gamebar raise whitebg$id
 	$gamebar raise white$id
 	$gamebar raise whiteInput$id
@@ -1123,7 +1141,7 @@ proc PrepareSeparateColumn {gamebar id} {
 	$gamebar itemconfigure black-1 -text [$gamebar itemcget black$id -text]
 
 	if {$Options(separateLines)} {
-		foreach {side eloIdx} {white 6 black 7} {
+		foreach {side eloIdx} {white 7 black 8} {
 			set country [$gamebar itemcget ${side}Country${id} -image]
 			if {[string length $country]} {
 				$gamebar itemconfigure ${side}Country-1 -image $country
@@ -1134,9 +1152,17 @@ proc PrepareSeparateColumn {gamebar id} {
 			if {[lindex $Specs(data:$id:$gamebar) $eloIdx]} { set state normal } else { set state hidden }
 			$gamebar itemconfigure ${side}Elo-1 -state $state
 		}
+#		set country [$gamebar itemcget eventCountry${id} -image]
+#		if {[string length $country]} {
+#			$gamebar itemconfigure eventCountry-1 -image $country
+#			$gamebar itemconfigure eventCountry-1 -state normal
+#		} else {
+#			$gamebar itemconfigure eventCountry-1 -state hidden
+#		}
 	} else {
 		$gamebar itemconfigure whiteCountry-1 -state hidden
 		$gamebar itemconfigure blackCountry-1 -state hidden
+#		$gamebar itemconfigure eventCountry-1 -state hidden
 		$gamebar itemconfigure whiteElo-1 -state hidden
 		$gamebar itemconfigure blackElo-1 -state hidden
 	}
@@ -1643,8 +1669,8 @@ proc MakeData {gamebar id tags {update no}} {
 	variable ::scidb::scratchbaseName
 	variable Specs
 
-	lassign {"N.N." "N.N." "?" "?" "" "" "" 0 0} \
-		white black event site date whiteCountry blackCountry whiteElo blackElo
+	lassign {"N.N." "N.N." "?" "?" "" "" "" "" 0 0} \
+		white black event site eventCountry date whiteCountry blackCountry whiteElo blackElo
 	lassign [::scidb::game::link? $id] base _ _
 
 	if {$base eq $scratchbaseName && !$update} {
@@ -1662,11 +1688,12 @@ proc MakeData {gamebar id tags {update no}} {
 			lassign $pair name value
 
 			switch $name {
-				White	{ set white [Normalize [normalizePlayer $value] $white] }
-				Black	{ set black [Normalize [normalizePlayer $value] $black] }
-				Event	{ set event [Normalize $value $event] }
-				Site	{ set site [Normalize $value $site] }
-				Date	{ set date $value }
+				White				{ set white [Normalize [normalizePlayer $value] $white] }
+				Black				{ set black [Normalize [normalizePlayer $value] $black] }
+				Event				{ set event [Normalize $value $event] }
+				Site				{ set site [Normalize $value $site] }
+				Date				{ set date $value }
+				EventCountry	{ set eventCountry $value }
 			}
 		}
 
@@ -1683,7 +1710,7 @@ proc MakeData {gamebar id tags {update no}} {
 		}
 	}
 
-	return [list $white $black $event $site $whiteCountry $blackCountry $whiteElo $blackElo]
+	return [list $white $black $event $site $eventCountry $whiteCountry $blackCountry $whiteElo $blackElo]
 }
 
 
@@ -1699,13 +1726,13 @@ proc Update {gamebar id {update yes}} {
 
 	$gamebar itemconfigure line1$id -text [lindex $data 2]
 	$gamebar itemconfigure line2$id -text [lindex $data 3]
-	$gamebar itemconfigure whiteElo$id -text [lindex $data 6]
-	$gamebar itemconfigure blackElo$id -text [lindex $data 7]
+	$gamebar itemconfigure whiteElo$id -text [lindex $data 7]
+	$gamebar itemconfigure blackElo$id -text [lindex $data 8]
 
 	$gamebar itemconfigure line1-1 -text [lindex $data 2]
 	$gamebar itemconfigure line2-1 -text [lindex $data 3]
-	$gamebar itemconfigure whiteElo-1 -text [lindex $data 6]
-	$gamebar itemconfigure blackElo-1 -text [lindex $data 7]
+	$gamebar itemconfigure whiteElo-1 -text [lindex $data 7]
+	$gamebar itemconfigure blackElo-1 -text [lindex $data 8]
 
 	SetCountryFlag $gamebar $id $data white
 	SetCountryFlag $gamebar $id $data black
@@ -2080,8 +2107,8 @@ proc EnterFlag {gamebar id side} {
 	if {$id eq $sid || $id eq "-1"} {
 		set data $Specs(data:$sid:$gamebar)
 		switch $side {
-			white { set countryCode [lindex $data 4] }
-			black { set countryCode [lindex $data 5] }
+			white { set countryCode [lindex $data 5] }
+			black { set countryCode [lindex $data 6] }
 		}
 		if {[string length $countryCode]} {
 			::tooltip::show $gamebar [::country::name $countryCode]
@@ -2219,7 +2246,7 @@ proc ConfigureElo {gamebar id} {
 		} else {
 			set sid $id
 		}
-		foreach {side index} {white 6 black 7} {
+		foreach {side index} {white 7 black 8} {
 			set elo [lindex $Specs(data:$sid:$gamebar) $index]
 
 			if {$elo} {
@@ -2237,8 +2264,8 @@ proc ConfigureElo {gamebar id} {
 
 proc SetCountryFlag {gamebar id data side} {
 	switch $side {
-		white { set countryCode [lindex $data 4] }
-		black { set countryCode [lindex $data 5] }
+		white { set countryCode [lindex $data 5] }
+		black { set countryCode [lindex $data 6] }
 	}
 	if {[string length $countryCode] == 0} {
 		set icon $::icon::12x12::none
