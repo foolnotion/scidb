@@ -1037,6 +1037,7 @@
 ::gametable::mc::SortOnDate				"Sort on date (descending)"
 ::gametable::mc::SortOnNumber				"Sort on game number (asscending)"
 ::gametable::mc::ReverseOrder				"Reverse order"
+::gametable::mc::CancelSort				"Cancel sort"
 ::gametable::mc::NoMoves					"No moves"
 ::gametable::mc::NoMoreMoves				"No more moves"
 ::gametable::mc::WhiteRating				"White Rating"
@@ -1209,7 +1210,6 @@
 ::playerdict::mc::Titles				"Titles"
 ::playerdict::mc::None					"None"
 ::playerdict::mc::Operation			"Operation"
-::playerdict::mc::CancelSort			"Cancel sort"
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Player Card"

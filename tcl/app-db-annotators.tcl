@@ -86,13 +86,12 @@ proc build {parent} {
 		set menu {}
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $top $id ascending]] \
-			-labelvar ::gametable::mc::SortAscending]
+			-labelvar ::gametable::mc::SortAscending \
+		]
 		lappend menu [list command \
 			-command [namespace code [list SortColumn $top $id descending]] \
-			-labelvar ::gametable::mc::SortDescending]
-		lappend menu [list command \
-			-command [namespace code [list SortColumn $top $id reverse]] \
-			-labelvar ::gametable::mc::ReverseOrder]
+			-labelvar ::gametable::mc::SortDescending \
+		]
 		lappend menu { separator }
 
 		set opts {}
@@ -400,8 +399,8 @@ proc SortColumn {path id dir} {
 	variable ${path}::Vars
 
 	::widget::busyCursor on
-	set base [::scrolledtable::base $path]
-	set variant [::scrolledtable::variant $path]
+	set base [::scrolledtable::base $path.names]
+	set variant [::scrolledtable::variant $path.names]
 	set view $Vars($base:$variant:view)
 	set see 0
 	if {[string length $Vars($base:$variant:annotator)]} {

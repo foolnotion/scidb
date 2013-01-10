@@ -522,9 +522,14 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 
 				case token::Mark:
 					if (data.peek() & 0x80)
-						moveInfo.add().decode(data);
+					{
+						moveInfo.add().decodeVersion92(data);
+					}
 					else
+					{
 						marks.add().decode(data);
+						M_ASSERT(!marks[marks.count() - 1].isEmpty());
+					}
 					hasNote = true;
 					break;
 

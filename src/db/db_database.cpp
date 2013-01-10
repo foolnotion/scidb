@@ -278,6 +278,22 @@ Database::~Database() throw()
 }
 
 
+unsigned
+Database::count(table::Type type) const
+{
+	switch (type)
+	{
+		case table::Games:		return countGames();
+		case table::Players:		return m_namebases(Namebase::Player).used();
+		case table::Events:		return m_namebases(Namebase::Event).used();
+		case table::Sites:		return m_namebases(Namebase::Site).used();
+		case table::Annotators:	return m_namebases(Namebase::Annotator).used();
+	}
+
+	return 0; // satisifes the compiler
+}
+
+
 void
 Database::attach(mstl::string const& filename, util::Progress& progress)
 {

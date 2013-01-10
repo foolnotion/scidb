@@ -160,11 +160,8 @@ Application::Subscriber::~Subscriber() {}
 void
 Application::Subscriber::updateList(unsigned id, mstl::string const& name, variant::Type variant)
 {
-	updateGameList(id, name, variant);
-	updatePlayerList(id, name, variant);
-	updateEventList(id, name, variant);
-	updateSiteList(id, name, variant);
-	updateAnnotatorList(id, name, variant);
+	for (unsigned i = 0; i < table::LAST; ++i)
+		updateList(table::Type(i), id, name, variant);
 }
 
 
@@ -174,11 +171,8 @@ Application::Subscriber::updateList(unsigned id,
 												variant::Type variant,
 												unsigned view)
 {
-	updateGameList(id, name, variant, view);
-	updatePlayerList(id, name, variant, view);
-	updateEventList(id, name, variant, view);
-	updateSiteList(id, name, variant, view);
-	updateAnnotatorList(id, name, variant, view);
+	for (unsigned i = 0; i < table::LAST; ++i)
+		updateList(table::Type(i), id, name, variant, view);
 }
 
 
@@ -862,7 +856,7 @@ Application::closeAllGames(Cursor& cursor)
 GameInfo const&
 Application::gameInfo(unsigned index, unsigned view) const
 {
-	return m_current->base().gameInfo(m_current->gameIndex(index, view));
+	return m_current->base().gameInfo(m_current->index(table::Games, index, view));
 }
 
 
@@ -984,7 +978,7 @@ Application::checksumMoves(unsigned position) const
 NamebasePlayer const&
 Application::player(unsigned index, unsigned view) const
 {
-	return m_current->base().player(m_current->playerIndex(index, view));
+	return m_current->base().player(m_current->index(table::Players, index, view));
 }
 
 
@@ -1066,26 +1060,35 @@ Application::searchGames(Cursor& cursor, Query const& query, unsigned view, unsi
 	v.searchGames(query);
 
 	if (filter & Events)
-		v.filterEvents();
+	{
+		v.filterOnGames(table::Events);
+		v.updateSelector(table::Events);
+	}
 
 	if (filter & Players)
-		v.filterPlayers();
+	{
+		v.filterOnGames(table::Players);
+		v.updateSelector(table::Players);
+	}
 
 	if (filter & Sites)
-		v.filterSites();
+	{
+		v.filterOnGames(table::Sites);
+		v.updateSelector(table::Sites);
+	}
 
 	if (m_subscriber && m_current == &cursor)
 	{
-		m_subscriber->updateGameList(m_updateCount, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(table::Games, m_updateCount, cursor.name(), cursor.variant(), view);
 
 		if (filter & Players)
-			m_subscriber->updatePlayerList(m_updateCount, cursor.name(), cursor.variant(), view);
+			m_subscriber->updateList(table::Players, m_updateCount, cursor.name(), cursor.variant(), view);
 
 		if (filter & Events)
-			m_subscriber->updateEventList(m_updateCount, cursor.name(), cursor.variant(), view);
+			m_subscriber->updateList(table::Events, m_updateCount, cursor.name(), cursor.variant(), view);
 
 		if (filter & Sites)
-			m_subscriber->updateSiteList(m_updateCount, cursor.name(), cursor.variant(), view);
+			m_subscriber->updateList(table::Sites, m_updateCount, cursor.name(), cursor.variant(), view);
 	}
 
 	++m_updateCount;
@@ -1100,9 +1103,10 @@ Application::sort(Cursor& cursor,
 						rating::Type ratingType)
 {
 	cursor.view(view).sort(attr, order, ratingType);
+	cursor.view(view).updateSelector(table::Games);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(m_updateCount++, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(table::Games, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
@@ -1114,9 +1118,10 @@ Application::sort(Cursor& cursor,
 						rating::Type ratingType)
 {
 	cursor.view(view).sort(attr, order, ratingType);
+	cursor.view(view).updateSelector(table::Players);
 
 	if (m_subscriber)
-		m_subscriber->updatePlayerList(m_updateCount++, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(table::Players, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
@@ -1127,9 +1132,10 @@ Application::sort(Cursor& cursor,
 						db::order::ID order)
 {
 	cursor.view(view).sort(attr, order);
+	cursor.view(view).updateSelector(table::Events);
 
 	if (m_subscriber)
-		m_subscriber->updateEventList(m_updateCount++, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(table::Events, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
@@ -1140,9 +1146,10 @@ Application::sort(Cursor& cursor,
 						db::order::ID order)
 {
 	cursor.view(view).sort(attr, order);
+	cursor.view(view).updateSelector(table::Sites);
 
 	if (m_subscriber)
-		m_subscriber->updateSiteList(m_updateCount++, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(table::Sites, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
@@ -1150,59 +1157,38 @@ void
 Application::sort(Cursor& cursor, unsigned view, attribute::annotator::ID attr, order::ID order)
 {
 	cursor.view(view).sort(attr, order);
+	cursor.view(view).updateSelector(table::Annotators);
 
 	if (m_subscriber)
-		m_subscriber->updateAnnotatorList(m_updateCount++, cursor.name(), cursor.variant(), view);
+	{
+		m_subscriber->updateList(	table::Annotators,
+											m_updateCount++,
+											cursor.name(),
+											cursor.variant(),
+											view);
+	}
 }
 
 
 void
-Application::reverse(Cursor& cursor, unsigned view, attribute::game::ID attr)
+Application::reverseOrder(Cursor& cursor, unsigned view, table::Type type)
 {
-	cursor.view(view).reverse(attr);
+	cursor.view(view).reverseOrder(type);
+	cursor.view(view).updateSelector(type);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(m_updateCount++, cursor.name(), cursor.variant(), view);
+		m_subscriber->updateList(type, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
 void
-Application::reverse(Cursor& cursor, unsigned view, attribute::player::ID attr)
+Application::resetOrder(Cursor& cursor, unsigned view, table::Type type)
 {
-	cursor.view(view).reverse(attr);
+	cursor.view(view).resetOrder(type);
+	cursor.view(view).updateSelector(type);
 
-	if (m_subscriber)
-		m_subscriber->updatePlayerList(m_updateCount++, cursor.name(), cursor.variant(), view);
-}
-
-
-void
-Application::reverse(Cursor& cursor, unsigned view, attribute::event::ID attr)
-{
-	cursor.view(view).reverse(attr);
-
-	if (m_subscriber)
-		m_subscriber->updateEventList(m_updateCount++, cursor.name(), cursor.variant(), view);
-}
-
-
-void
-Application::reverse(Cursor& cursor, unsigned view, attribute::site::ID attr)
-{
-	cursor.view(view).reverse(attr);
-
-	if (m_subscriber)
-		m_subscriber->updateSiteList(m_updateCount++, cursor.name(), cursor.variant(), view);
-}
-
-
-void
-Application::reverse(Cursor& cursor, unsigned view, attribute::annotator::ID attr)
-{
-	cursor.view(view).reverse(attr);
-
-	if (m_subscriber)
-		m_subscriber->updateAnnotatorList(m_updateCount++, cursor.name(), cursor.variant(), view);
+	if (m_subscriber && m_current == &cursor)
+		m_subscriber->updateList(type, m_updateCount++, cursor.name(), cursor.variant(), view);
 }
 
 
@@ -1357,15 +1343,20 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 {
 	M_REQUIRE(!cursor.isReadOnly());
 
-	cursor.base().deleteGame(cursor.gameIndex(index, view), flag);
+	cursor.base().deleteGame(cursor.index(table::Games, index, view), flag);
 
 	if (m_subscriber && m_current == &cursor)
 	{
-		m_subscriber->updateGameList(m_updateCount, cursor.name(), cursor.variant(), view, index);
-		m_subscriber->updatePlayerList(m_updateCount, cursor.name(), cursor.variant(), view);
-		m_subscriber->updateEventList(m_updateCount, cursor.name(), cursor.variant(), view);
-		m_subscriber->updateSiteList(m_updateCount, cursor.name(), cursor.variant(), view);
-		m_subscriber->updateAnnotatorList(m_updateCount, cursor.name(), cursor.variant(), view);
+		for (unsigned i = 0; i < table::LAST; ++i)
+		{
+			m_subscriber->updateList(	table::Type(i),
+												m_updateCount,
+												cursor.name(),
+												cursor.variant(),
+												view,
+												index);
+		}
+
 		++m_updateCount;
 	}
 }
@@ -1436,10 +1427,17 @@ Application::setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigne
 {
 	M_REQUIRE(!cursor.isReadOnly());
 
-	cursor.base().setGameFlags(cursor.gameIndex(index, view), flags);
+	cursor.base().setGameFlags(cursor.index(table::Games, index, view), flags);
 
 	if (m_subscriber && m_current == &cursor)
-		m_subscriber->updateGameList(m_updateCount, cursor.name(), cursor.variant(), view, index);
+	{
+		m_subscriber->updateList(	table::Games,
+											m_updateCount,
+											cursor.name(),
+											cursor.variant(),
+											view,
+											index);
+	}
 }
 
 
@@ -1863,10 +1861,11 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 
 					if (m_subscriber && m_referenceBase->hasTreeView())
 					{
-						m_subscriber->updateGameList(	m_updateCount++,
-																m_referenceBase->name(),
-																m_referenceBase->variant(),
-																m_referenceBase->treeViewIdentifier());
+						m_subscriber->updateList(	table::Games,
+															m_updateCount++,
+															m_referenceBase->name(),
+															m_referenceBase->variant(),
+															m_referenceBase->treeViewIdentifier());
 					}
 				}
 			}
@@ -2022,15 +2021,20 @@ Application::saveGame(Cursor& cursor, bool replace)
 					{
 						if (replace)
 						{
-							m_subscriber->updateGameList(	m_updateCount,
-																	db.name(),
-																	db.variant(),
-																	i,
-																	g.game->index());
-							m_subscriber->updatePlayerList(m_updateCount, db.name(), db.variant(), i);
-							m_subscriber->updateEventList(m_updateCount, db.name(), db.variant(), i);
-							m_subscriber->updateSiteList(m_updateCount, db.name(), db.variant(), i);
-							m_subscriber->updateAnnotatorList(m_updateCount, db.name(), db.variant(), i);
+							m_subscriber->updateList(	table::Games,
+																m_updateCount,
+																db.name(),
+																db.variant(),
+																i,
+																g.game->index());
+							m_subscriber->updateList(table::Players, m_updateCount, db.name(), db.variant(), i);
+							m_subscriber->updateList(table::Events, m_updateCount, db.name(), db.variant(), i);
+							m_subscriber->updateList(table::Sites, m_updateCount, db.name(), db.variant(), i);
+							m_subscriber->updateList(	table::Annotators,
+																m_updateCount,
+																db.name(),
+																db.variant(),
+																i);
 						}
 						else
 						{
@@ -2099,7 +2103,7 @@ Application::updateMoves()
 				for (unsigned i = 0; i < cursor.maxViewNumber(); ++i)
 				{
 					if (cursor.isViewOpen(i))
-						m_subscriber->updateGameList(m_updateCount, name, variant, i, g.sourceIndex);
+						m_subscriber->updateList(table::Games, m_updateCount, name, variant, i, g.sourceIndex);
 				}
 
 				++m_updateCount;
@@ -2119,14 +2123,14 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 {
 	M_REQUIRE(cursor.isOpen());
 	M_REQUIRE(!cursor.isReadOnly());
-	M_REQUIRE(index < cursor.countGames());
+	M_REQUIRE(index < cursor.count(table::Games));
 
 	if (cursor.isReferenceBase())
 		cancelUpdateTree();
 
-	unsigned		position = 0; // satisifes the compiler
-	save::State	state = cursor.base().updateCharacteristics(index, tags);
-	EditGame*	game	= findGame(&cursor, index, &position);
+	unsigned		position	= 0; // satisifes the compiler
+	save::State	state		= cursor.base().updateCharacteristics(index, tags);
+	EditGame*	game		= findGame(&cursor, index, &position);
 
 	M_ASSERT(game == 0 || game->index == index);
 
@@ -2160,11 +2164,11 @@ Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const&
 				{
 					if (cursor.isViewOpen(i))
 					{
-						m_subscriber->updateGameList(m_updateCount, name, variant, i, index);
-						m_subscriber->updatePlayerList(m_updateCount, name, variant, i);
-						m_subscriber->updateEventList(m_updateCount, name, variant, i);
-						m_subscriber->updateSiteList(m_updateCount, name, variant, i);
-						m_subscriber->updateAnnotatorList(m_updateCount, name, variant, i);
+						m_subscriber->updateList(table::Games, m_updateCount, name, variant, i, index);
+						m_subscriber->updateList(table::Players, m_updateCount, name, variant, i);
+						m_subscriber->updateList(table::Events, m_updateCount, name, variant, i);
+						m_subscriber->updateList(table::Sites, m_updateCount, name, variant, i);
+						m_subscriber->updateList(table::Annotators, m_updateCount, name, variant, i);
 					}
 				}
 

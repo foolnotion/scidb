@@ -367,7 +367,7 @@ cmdGameIndex(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdGameIndex, nullptr, nullptr, "index out of bounds");
 
 #ifdef SUPPORT_TREE_INFO_FILTER
-	setResult(tree->info(n).firstGameIndex(Scidb->referenceBase().treeView().gameSelector()));
+	setResult(tree->info(n).firstGameIndex(Scidb->referenceBase().treeView().selector(table::Games)));
 #else
 	setResult(tree->info(n).firstGameIndex());
 #endif

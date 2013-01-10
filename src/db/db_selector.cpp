@@ -914,6 +914,13 @@ Selector::reverse(Database const& db)
 }
 
 
+void
+Selector::reset(Database const&)
+{
+	m_map.release();
+}
+
+
 unsigned
 Selector::find(unsigned number) const
 {

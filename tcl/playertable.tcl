@@ -118,7 +118,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
 
-	if {[array size Options] < [array size Defaults]} {
+	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
 		array set Options [array get Defaults]
 	}
 
@@ -145,13 +145,20 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		if {$id ne "firstName"} {
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id ascending]] \
-				-labelvar ::gametable::mc::SortAscending]
+				-labelvar ::gametable::mc::SortAscending \
+			]
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id descending]] \
-				-labelvar ::gametable::mc::SortDescending]
+				-labelvar ::gametable::mc::SortDescending \
+			]
 			lappend menu [list command \
 				-command [namespace code [list SortColumn $path $id reverse]] \
-				-labelvar ::gametable::mc::ReverseOrder]
+				-labelvar ::gametable::mc::ReverseOrder \
+			]
+			lappend menu [list command \
+				-command [namespace code [list SortColumn $path $id cancel]] \
+				-labelvar ::gametable::mc::CancelSort \
+			]
 			lappend menu { separator }
 		}
 
@@ -736,17 +743,23 @@ proc SortColumn {path id dir} {
 	set see 0
 	set selection [::scrolledtable::selection $table]
 	if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $table]} { set see 1 }
-	if {$dir eq "reverse"} {
-		::scidb::db::reverse player $base $variant $view
-	} else {
-		set options [list -ratings $ratings]
-		if {[string match {rating*} $id] && $Options($id:which) eq "latest"} {
-			lappend options -latest
+	switch $dir {
+		reverse {
+			::scidb::db::reverse player $base $variant $view
 		}
-		if {$dir eq "descending"} { lappend options -descending }
-		set column [::scrolledtable::columnNo $table $id]
-		if {$column > 1} { incr column -1 }
-		::scidb::db::sort player $base $variant $column $view {*}$options
+		cancel {
+			set columnNo [::scrolledtable::columnNo $path lastName]
+			::scidb::db::sort player $base $variant $columnNo $view -ascending -reset
+		}
+		default {
+			set options [list -ratings $ratings]
+			if {[string match {rating*} $id] && $Options($id:which) eq "latest"} {
+				lappend options -latest
+			}
+			set columnNo [::scrolledtable::columnNo $table $id]
+			if {$columnNo > 1} { incr column -1 }
+			::scidb::db::sort player $base $variant $columnNo $view {*}$options -$dir
+		}
 	}
 	if {$selection >= 0} {
 		set selection [::scidb::db::get lookupPlayer $selection $view $base $variant]

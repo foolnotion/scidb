@@ -1044,6 +1044,7 @@
 ::gametable::mc::SortOnDate				"Sortera på datum (fallande)"
 ::gametable::mc::SortOnNumber				"Sortera på partinummer (stigande)"
 ::gametable::mc::ReverseOrder				"Omvänd ordning"
+::gametable::mc::CancelSort				"Cancel sort" ;# NEW
 ::gametable::mc::NoMoves					"Inga drag"
 ::gametable::mc::NoMoreMoves				"Inga mer drag"
 ::gametable::mc::WhiteRating				"Vit rating"
@@ -1216,7 +1217,6 @@
 ::playerdict::mc::Titles				"Titles" ;# NEW
 ::playerdict::mc::None					"None" ;# NEW
 ::playerdict::mc::Operation			"Operation" ;# NEW
-::playerdict::mc::CancelSort			"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Spelarkort"

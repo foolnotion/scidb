@@ -158,6 +158,14 @@ GameInfo::eco() const
 
 
 inline
+NamebaseEntry const*
+GameInfo::annotatorEntry() const
+{
+	return hasGameRecordLength() ? 0 : m_annotator;
+}
+
+
+inline
 mstl::string const&
 GameInfo::annotator() const
 {

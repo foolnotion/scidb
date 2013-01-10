@@ -114,6 +114,8 @@ public:
 
 	/// Returns an unique database id.
 	unsigned id() const;
+	/// Count the number of items in table.
+	unsigned count(table::Type type) const;
 	/// Counts the number of games in the database.
 	unsigned countGames() const;
 	/// Count the number of players in the database.

@@ -1040,6 +1040,7 @@
 ::gametable::mc::SortOnDate				"Clasificar por fecha (descendente)"
 ::gametable::mc::SortOnNumber				"Clasificar por número de partida (ascendente)"
 ::gametable::mc::ReverseOrder				"Invertir el orden"
+::gametable::mc::CancelSort				"Cancel sort" ;# NEW
 ::gametable::mc::NoMoves					"Sin jugadas"
 ::gametable::mc::NoMoreMoves				"No hay mas jugadas"
 ::gametable::mc::WhiteRating				"Rating de las Blancas"
@@ -1212,7 +1213,6 @@
 ::playerdict::mc::Titles				"Titles" ;# NEW
 ::playerdict::mc::None					"None" ;# NEW
 ::playerdict::mc::Operation			"Operation" ;# NEW
-::playerdict::mc::CancelSort			"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Tarjeta del Jugador"

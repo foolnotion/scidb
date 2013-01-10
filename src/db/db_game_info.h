@@ -167,6 +167,7 @@ public:
 	Player const* player(color::ID color) const;
 	NamebasePlayer const* playerEntry(color::ID color) const;
 	NamebaseEvent const* eventEntry() const;
+	NamebaseEntry const* annotatorEntry() const;
 	material::si3::Signature material() const;
 	Signature signature() const;							// ChessBase: n/a; Scid: roughly
 	bool isGiveaway() const;

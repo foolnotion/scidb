@@ -1319,6 +1319,23 @@ namespace type
 	};
 }
 
+namespace table
+{
+	enum Type
+	{
+		Players,
+		Sites,
+		Events,
+		Annotators,
+		Games,
+	};
+
+	enum
+	{
+		LAST = Games + 1,
+	};
+}
+
 namespace attribute
 {
 	namespace game

@@ -194,7 +194,7 @@ MultiCursor::copyGames(	MultiCursor& destination,
 
 	for (unsigned v = 0; v < ::db::variant::NumberOfVariants; ++v)
 	{
-		if (m_cursor[v] && m_cursor[v]->countGames() > 0)
+		if (m_cursor[v] && m_cursor[v]->count(table::Games) > 0)
 		{
 			unsigned count = 0;
 
@@ -204,8 +204,8 @@ MultiCursor::copyGames(	MultiCursor& destination,
 
 				count = cursor.base().copyGames(
 					destination.m_cursor[v]->database(),
-					cursor.view(0).gameFilter(),
-					cursor.view(0).gameSelector(),
+					cursor.view(0).filter(table::Games),
+					cursor.view(0).selector(table::Games),
 					allowedTags,
 					allowExtraTags,
 					log,
@@ -215,7 +215,7 @@ MultiCursor::copyGames(	MultiCursor& destination,
 				total += count;
 			}
 
-			rejected[v] += m_cursor[v]->countGames() - count;
+			rejected[v] += m_cursor[v]->count(table::Games) - count;
 		}
 	}
 

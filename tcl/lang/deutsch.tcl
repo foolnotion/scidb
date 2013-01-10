@@ -1038,6 +1038,7 @@
 ::gametable::mc::SortOnDate				"Sortieren nach Datum (absteigend)"
 ::gametable::mc::SortOnNumber				"Sortieren nach Partiennummer (aufsteigend)"
 ::gametable::mc::ReverseOrder				"Sortierung umdrehen"
+::gametable::mc::CancelSort				"Sortierung aufheben"
 ::gametable::mc::NoMoves					"Keine Züge"
 ::gametable::mc::NoMoreMoves				"Keine weiteren Züge"
 ::gametable::mc::WhiteRating				"Wertungszahl Weiß"
@@ -1210,7 +1211,6 @@
 ::playerdict::mc::Titles				"Titel"
 ::playerdict::mc::None					"Keine"
 ::playerdict::mc::Operation			"Verfahren"
-::playerdict::mc::CancelSort			"Sortierung aufheben"
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Spielerkarteikarte"

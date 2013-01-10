@@ -105,6 +105,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			-command [namespace code [list SortColumn $path $id reverse]] \
 			-labelvar ::gametable::mc::ReverseOrder \
 		]
+		lappend menu [list command \
+			-command [namespace code [list SortColumn $path $id cancel]] \
+			-labelvar ::gametable::mc::CancelSort \
+		]
 		lappend menu { separator }
 
 		set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
@@ -449,13 +453,18 @@ proc SortColumn {path id dir {rating {}}} {
 	set see 0
 	set selection [::scrolledtable::selection $path]
 	if {$selection >= 0 && [::scrolledtable::selectionIsVisible? $path]} { set see 1 }
-	if {$dir eq "reverse"} {
-		::scidb::db::reverse site $base $variant $view
-	} else {
-		set options {}
-		if {$dir eq "descending"} { lappend options -descending }
-		set column [::scrolledtable::columnNo $path $id]
-		::scidb::db::sort site $base $variant $column $view {*}$options
+	switch $dir {
+		reverse {
+			::scidb::db::reverse site $base $variant $view
+		}
+		cancel {
+			set columnNo [::scrolledtable::columnNo $path site]
+			::scidb::db::sort site $base $variant $columnNo $view -reset -ascending
+		}
+		default {
+			set columnNo [::scrolledtable::columnNo $path $id]
+			::scidb::db::sort site $base $variant $columnNo $view -$dir
+		}
 	}
 	if {$selection >= 0} {
 		set selection [::scidb::db::get lookupSite $selection $view $base $variant]

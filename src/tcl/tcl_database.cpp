@@ -251,12 +251,12 @@ struct Subscriber : public Application::Subscriber
 {
 	enum Type
 	{
-		DatabaseInfo	= 1 << 0,
-		GameList			= 1 << 1,
-		PlayerList		= 1 << 2,
-		EventList		= 1 << 3,
-		SiteList			= 1 << 4,
-		AnnotatorList	= 1 << 5,
+		GameList			= 1 << table::Games,
+		PlayerList		= 1 << table::Players,
+		EventList		= 1 << table::Events,
+		SiteList			= 1 << table::Sites,
+		AnnotatorList	= 1 << table::Annotators,
+		DatabaseInfo	= 1 << 5,
 		GameInfo			= 1 << 6,
 		GameHistory		= 1 << 7,
 		GameSwitched	= 1 << 8,
@@ -319,44 +319,9 @@ struct Subscriber : public Application::Subscriber
 		}
 	}
 
-	void setDatabaseInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void setListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		setCmd(DatabaseInfo, updateCmd, closeCmd, arg);
-	}
-
-	void setGameListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(GameList, updateCmd, closeCmd, arg);
-	}
-
-	void setPlayerListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(PlayerList, updateCmd, closeCmd, arg);
-	}
-
-	void setEventListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(EventList, updateCmd, closeCmd, arg);
-	}
-
-	void setSiteListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(SiteList, updateCmd, closeCmd, arg);
-	}
-
-	void setAnnotatorListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(AnnotatorList, updateCmd, closeCmd, arg);
-	}
-
-	void setGameInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(GameInfo, updateCmd, closeCmd, arg);
-	}
-
-	void setGameHistoryCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		setCmd(GameHistory, updateCmd, closeCmd, arg);
+		setCmd(Type(1 << type), updateCmd, closeCmd, arg);
 	}
 
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
@@ -364,49 +329,9 @@ struct Subscriber : public Application::Subscriber
 		setCmd(GameSwitched, updateCmd, 0, 0);
 	}
 
-	void setTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
+	void unsetListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		setCmd(Tree, updateCmd, closeCmd, arg);
-	}
-
-	void unsetDatabaseInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(DatabaseInfo, updateCmd, closeCmd, arg);
-	}
-
-	void unsetGameListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(GameList, updateCmd, closeCmd, arg);
-	}
-
-	void unsetPlayerListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(PlayerList, updateCmd, closeCmd, arg);
-	}
-
-	void unsetEventListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(EventList, updateCmd, closeCmd, arg);
-	}
-
-	void unsetSiteListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(SiteList, updateCmd, closeCmd, arg);
-	}
-
-	void unsetAnnotatorListCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(AnnotatorList, updateCmd, closeCmd, arg);
-	}
-
-	void unsetGameInfoCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(GameInfo, updateCmd, closeCmd, arg);
-	}
-
-	void unsetGameHistoryCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
-	{
-		unsetCmd(GameHistory, updateCmd, closeCmd, arg);
+		unsetCmd(Type(1 << type), updateCmd, closeCmd, arg);
 	}
 
 	void unsetTreeCmd(Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
@@ -476,111 +401,28 @@ struct Subscriber : public Application::Subscriber
 		Tcl_DecrRefCount(w);
 	}
 
-	void updateGameList(unsigned id, string const& name, variant::Type variant) override
+	void updateList(table::Type type, unsigned id, string const& name, variant::Type variant) override
 	{
-		updateList(id, name, variant, unsigned(-1), unsigned(-1), GameList);
+		updateList(id, name, variant, unsigned(-1), unsigned(-1), Type(1 << type));
 	}
 
-	void updateGameList(unsigned id, string const& name, variant::Type variant, unsigned view) override
+	void updateList(	table::Type type,
+							unsigned id,
+							string const& name,
+							variant::Type variant,
+							unsigned view) override
 	{
-		updateList(id, name, variant, view, unsigned(-1), GameList);
+		updateList(id, name, variant, view, unsigned(-1), Type(1 << type));
 	}
 
-	void updateGameList(	unsigned id,
-								string const& name,
-								variant::Type variant,
-								unsigned view,
-								unsigned index) override
+	void updateList(	table::Type type,
+							unsigned id,
+							string const& name,
+							variant::Type variant,
+							unsigned view,
+							unsigned index) override
 	{
-		updateList(id, name, variant, view, index, GameList);
-	}
-
-	void updatePlayerList(unsigned id, mstl::string const& name, variant::Type variant) override
-	{
-		updateList(id, name, variant, unsigned(-1), unsigned(-1), PlayerList);
-	}
-
-	void updatePlayerList(	unsigned id,
-									mstl::string const& name,
-									variant::Type variant,
-									unsigned view) override
-	{
-		updateList(id, name, variant, view, unsigned(-1), PlayerList);
-	}
-
-	void updatePlayerList(	unsigned id,
-									mstl::string const& name,
-									variant::Type variant,
-									unsigned view,
-									unsigned index) override
-	{
-		updateList(id, name, variant, view, index, PlayerList);
-	}
-
-	void updateEventList(unsigned id, mstl::string const& name, variant::Type variant) override
-	{
-		updateList(id, name, variant, unsigned(-1), unsigned(-1), EventList);
-	}
-
-	void updateEventList(unsigned id,
-								mstl::string const& name,
-								variant::Type variant,
-								unsigned view) override
-	{
-		updateList(id, name, variant, view, unsigned(-1), EventList);
-	}
-
-	void updateEventList(unsigned id,
-								mstl::string const& name,
-								variant::Type variant,
-								unsigned view,
-								unsigned index) override
-	{
-		updateList(id, name, variant, view, index, EventList);
-	}
-
-	void updateSiteList(unsigned id, mstl::string const& name, variant::Type variant) override
-	{
-		updateList(id, name, variant, unsigned(-1), unsigned(-1), SiteList);
-	}
-
-	void updateSiteList(	unsigned id,
-								mstl::string const& name,
-								variant::Type variant,
-								unsigned view) override
-	{
-		updateList(id, name, variant, view, unsigned(-1), SiteList);
-	}
-
-	void updateSiteList(	unsigned id,
-								mstl::string const& name,
-								variant::Type variant,
-								unsigned view,
-								unsigned index) override
-	{
-		updateList(id, name, variant, view, index, SiteList);
-	}
-
-	void updateAnnotatorList(unsigned id, mstl::string const& name, variant::Type variant) override
-	{
-		updateList(id, name, variant, unsigned(-1), unsigned(-1), AnnotatorList);
-	}
-
-	void updateAnnotatorList(	unsigned id,
-										mstl::string const& name,
-										variant::Type variant,
-										unsigned view) override
-	{
-		updateList(id, name, variant, view, unsigned(-1), AnnotatorList);
-	}
-
-	void updateAnnotatorList(	unsigned id,
-										mstl::string const& name,
-										variant::Type variant,
-										unsigned view,
-										unsigned index) override
-	{
-		updateList(id, name, variant, view, index, AnnotatorList);
+		updateList(id, name, variant, view, index, Type(1 << type));
 	}
 
 	void updateGameInfo(unsigned position) override
@@ -1286,7 +1128,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (cursor.database().format() == format::Scid4)
 				::remapScid4Flags(flags);
 
-			unsigned oldFlags = cursor.database().gameInfo(cursor.gameIndex(index, view)).flags();
+			unsigned oldFlags = cursor.database().gameInfo(cursor.index(table::Games, index, view)).flags();
 			unsigned newFlags = GameInfo::stringToFlags(flags);
 			bool		value		= boolFromObj(objc, objv, 7);
 
@@ -1368,51 +1210,11 @@ countGames(char const* database)
 
 
 static int
-countGames(char const* database, variant::Type variant)
+count(table::Type type, char const* database, variant::Type variant)
 {
 	M_ASSERT(Scidb->contains(database, variant));
 	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
-	::tcl::setResult(cursor.countGames());
-	return TCL_OK;
-}
-
-
-static int
-countPlayers(char const* database, variant::Type variant)
-{
-	M_ASSERT(Scidb->contains(database, variant));
-	Cursor const& cursor = Scidb->cursor(database, variant);
-	::tcl::setResult(cursor.countPlayers());
-	return TCL_OK;
-}
-
-
-static int
-countEvents(char const* database, variant::Type variant)
-{
-	M_ASSERT(Scidb->contains(database, variant));
-	Cursor const& cursor = Scidb->cursor(database, variant);
-	::tcl::setResult(cursor.countEvents());
-	return TCL_OK;
-}
-
-
-static int
-countSites(char const* database, variant::Type variant)
-{
-	M_ASSERT(Scidb->contains(database, variant));
-	Cursor const& cursor = Scidb->cursor(database, variant);
-	::tcl::setResult(cursor.countSites());
-	return TCL_OK;
-}
-
-
-static int
-countAnnotators(char const* database, variant::Type variant)
-{
-	M_ASSERT(Scidb->contains(database, variant));
-	Cursor const& cursor = Scidb->cursor(database, variant);
-	::tcl::setResult(cursor.countAnnotators());
+	::tcl::setResult(cursor.count(type));
 	return TCL_OK;
 }
 
@@ -1463,11 +1265,11 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	switch (index)
 	{
-		case Cmd_Players:		return countPlayers(base, variant);
-		case Cmd_Annotators:	return countAnnotators(base, variant);
-		case Cmd_Games:		return countGames(base, variant);
-		case Cmd_Events:		return countEvents(base, variant);
-		case Cmd_Sites:		return countSites(base, variant);
+		case Cmd_Players:		return count(table::Players, base, variant);
+		case Cmd_Annotators:	return count(table::Annotators, base, variant);
+		case Cmd_Games:		return count(table::Games, base, variant);
+		case Cmd_Events:		return count(table::Events, base, variant);
+		case Cmd_Sites:		return count(table::Sites, base, variant);
 		case Cmd_Total:		return countGames(base);
 	}
 
@@ -1662,7 +1464,7 @@ getGameIndex(int number, int view, char const* database, variant::Type variant)
 	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
 	View const& v = cursor.view(view);
 
-	if (number < int(v.totalGames()))
+	if (number < int(v.total(table::Games)))
 		::tcl::setResult(v.lookupGame(number));
 	else
 		::tcl::setResult(-1);
@@ -1672,39 +1474,15 @@ getGameIndex(int number, int view, char const* database, variant::Type variant)
 
 
 static int
-getPlayerIndex(unsigned index, int view, char const* database, variant::Type variant)
+getIndex(table::Type type, unsigned index, int view, char const* database, variant::Type variant)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database, variant));
 
 	if (database)
-		::tcl::setResult(Scidb->cursor(database, variant).view(view).playerIndex(index));
+		::tcl::setResult(Scidb->cursor(database, variant).view(view).index(type, index));
 	else
-		::tcl::setResult(Scidb->cursor().view(view).playerIndex(index));
+		::tcl::setResult(Scidb->cursor().view(view).index(type, index));
 
-	return TCL_OK;
-}
-
-
-static int
-getEventIndex(unsigned index, int view, char const* database, variant::Type variant)
-{
-	M_ASSERT(database == 0 || Scidb->contains(database, variant));
-
-	if (database)
-		::tcl::setResult(Scidb->cursor(database, variant).view(view).eventIndex(index));
-	else
-		::tcl::setResult(Scidb->cursor().view(view).eventIndex(index));
-
-	return TCL_OK;
-}
-
-
-static int
-getSiteIndex(unsigned index, int view, char const* database, variant::Type variant)
-{
-	M_ASSERT(database);
-	M_ASSERT(Scidb->contains(database, variant));
-	::tcl::setResult(Scidb->cursor(database, variant).view(view).siteIndex(index));
 	return TCL_OK;
 }
 
@@ -1840,7 +1618,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.gameIndex(index, view);
+		index = cursor.index(table::Games, index, view);
 
 	GameInfo const& info = cursor.database().gameInfo(index);
 	Tcl_Obj* obj;
@@ -2174,7 +1952,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant)
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.gameIndex(index, view);
+		index = cursor.index(table::Games, index, view);
 
 	return getGameInfo(cursor.database(), index, Ratings(rating::Elo, rating::DWZ));
 }
@@ -2186,7 +1964,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, Ra
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.gameIndex(index, view);
+		index = cursor.index(table::Games, index, view);
 
 	return getGameInfo(cursor.database(), index, ratings);
 }
@@ -2200,7 +1978,7 @@ getPlayerInfo(int index, int view, char const* database, variant::Type variant, 
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.playerIndex(index, view);
+		index = cursor.index(table::Players, index, view);
 
 	NamebasePlayer const& player = cursor.database().player(index);
 	Tcl_Obj* obj;
@@ -2247,7 +2025,7 @@ getPlayerInfo(	int index,
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.playerIndex(index, view);
+		index = cursor.index(table::Players, index, view);
 
 	return tcl::player::getInfo(cursor.database().player(index), ratings, federation, info, idCard);
 }
@@ -2261,7 +2039,7 @@ getEventInfo(int index, int view, char const* database, variant::Type variant, u
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.eventIndex(index, view);
+		index = cursor.index(table::Events, index, view);
 
 	NamebaseEvent const& event = cursor.database().event(index);
 	Tcl_Obj* obj;
@@ -2301,7 +2079,7 @@ getSiteInfo(int index, int view, char const* database, variant::Type variant, un
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.siteIndex(index, view);
+		index = cursor.index(table::Sites, index, view);
 
 	NamebaseSite const& site = cursor.database().site(index);
 	Tcl_Obj* obj;
@@ -2375,7 +2153,7 @@ getEventInfo(int index, int view, char const* database, variant::Type variant, b
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.eventIndex(index, view);
+		index = cursor.index(table::Events, index, view);
 
 	return getEventInfo(cursor.database().event(index), idCard ? &cursor.database() : nullptr);
 }
@@ -2389,7 +2167,7 @@ getSiteInfo(int index, int view, char const* database, variant::Type variant)
 	Cursor const& cursor = Scidb->cursor(database, variant);
 
 	if (view >= 0)
-		index = cursor.siteIndex(index, view);
+		index = cursor.index(table::Sites, index, view);
 
 	NamebaseSite const& site = cursor.database().site(index);
 
@@ -2419,7 +2197,7 @@ getAnnotator(int index, int view)
 	Cursor const& cursor = Scidb->cursor();
 
 	if (view >= 0)
-		index = cursor.annotatorIndex(index, view);
+		index = cursor.index(table::Annotators, index, view);
 
 	NamebaseEntry const& annotator = cursor.database().annotator(index);
 
@@ -2455,7 +2233,7 @@ getDeleted(int index, int view, char const* database, variant::Type variant)
 	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
 
 	if (view >= 0)
-		index = cursor.gameIndex(index, view);
+		index = cursor.index(table::Games, index, view);
 
 	setResult(cursor.database().gameInfo(index).isDeleted());
 	return TCL_OK;
@@ -3046,10 +2824,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										tcl::game::variantFromObj(objc, objv, 5));
 
 		case Cmd_PlayerIndex:
-			return getPlayerIndex(	unsignedFromObj(objc, objv, 2),
-											objc > 3 ? intFromObj(objc, objv, 3) : -1,
-											objc > 4 ? stringFromObj(objc, objv, 4) : 0,
-											tcl::game::variantFromObj(objc, objv, 5));
+			return getIndex(	table::Players,
+									unsignedFromObj(objc, objv, 2),
+									objc > 3 ? intFromObj(objc, objv, 3) : -1,
+									objc > 4 ? stringFromObj(objc, objv, 4) : 0,
+									tcl::game::variantFromObj(objc, objv, 5));
 
 		case Cmd_LookupPlayer:
 			return getLookupPlayer(	unsignedFromObj(objc, objv, 2),
@@ -3058,16 +2837,18 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											tcl::game::variantFromObj(objc, objv, 5));
 
 		case Cmd_EventIndex:
-			return getEventIndex(	unsignedFromObj(objc, objv, 2),
-											objc > 3 ? intFromObj(objc, objv, 3) : -1,
-											objc > 4 ? stringFromObj(objc, objv, 4) : 0,
-											tcl::game::variantFromObj(objc, objv, 5));
+			return getIndex(	table::Events,
+									unsignedFromObj(objc, objv, 2),
+									objc > 3 ? intFromObj(objc, objv, 3) : -1,
+									objc > 4 ? stringFromObj(objc, objv, 4) : 0,
+									tcl::game::variantFromObj(objc, objv, 5));
 
 		case Cmd_SiteIndex:
-			return getSiteIndex(	unsignedFromObj(objc, objv, 2),
-										objc > 3 ? intFromObj(objc, objv, 3) : -1,
-										objc > 4 ? stringFromObj(objc, objv, 4) : 0,
-										tcl::game::variantFromObj(objc, objv, 5));
+			return getIndex(	table::Sites,
+									unsignedFromObj(objc, objv, 2),
+									objc > 3 ? intFromObj(objc, objv, 3) : -1,
+									objc > 4 ? stringFromObj(objc, objv, 4) : 0,
+									tcl::game::variantFromObj(objc, objv, 5));
 
 		case Cmd_LookupEvent:
 			return getLookupEvent(	unsignedFromObj(objc, objv, 2),
@@ -3198,7 +2979,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				if (objc > 5)
 					variant = tcl::game::variantFromObj(objv[3]);
 
-				index = Scidb->cursor(base, variant).gameIndex(idx, view);
+				index = Scidb->cursor(base, variant).index(table::Games, idx, view);
 			}
 			else
 			{
@@ -3371,35 +3152,35 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_DbInfo:
-			subscriber->setDatabaseInfoCmd(updateCmd, closeCmd, arg);
+			subscriber->setCmd(Subscriber::DatabaseInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameList:
-			subscriber->setGameListCmd(updateCmd, closeCmd, arg);
+			subscriber->setListCmd(table::Games, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_PlayerList:
-			subscriber->setPlayerListCmd(updateCmd, closeCmd, arg);
+			subscriber->setListCmd(table::Players, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_AnnotatorList:
-			subscriber->setAnnotatorListCmd(updateCmd, closeCmd, arg);
+			subscriber->setListCmd(table::Annotators, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_EventList:
-			subscriber->setEventListCmd(updateCmd, closeCmd, arg);
+			subscriber->setListCmd(table::Events, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_SiteList:
-			subscriber->setSiteListCmd(updateCmd, closeCmd, arg);
+			subscriber->setListCmd(table::Sites, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameInfo:
-			subscriber->setGameInfoCmd(updateCmd, closeCmd, arg);
+			subscriber->setCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameHistory:
-			subscriber->setGameHistoryCmd(updateCmd, closeCmd, arg);
+			subscriber->setCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameSwitch:
@@ -3407,7 +3188,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case Cmd_Tree:
-			subscriber->setTreeCmd(updateCmd, closeCmd, arg);
+			subscriber->setCmd(Subscriber::Tree, updateCmd, closeCmd, arg);
 			break;
 
 		default:
@@ -3458,35 +3239,35 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_DbInfo:
-			subscriber->unsetDatabaseInfoCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(Subscriber::DatabaseInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameList:
-			subscriber->unsetGameListCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Games, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_PlayerList:
-			subscriber->unsetPlayerListCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Players, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_EventList:
-			subscriber->unsetEventListCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Events, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_SiteList:
-			subscriber->unsetSiteListCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Sites, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_AnnotatorList:
-			subscriber->unsetAnnotatorListCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetListCmd(table::Annotators, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameInfo:
-			subscriber->unsetGameInfoCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameHistory:
-			subscriber->unsetGameHistoryCmd(updateCmd, closeCmd, arg);
+			subscriber->unsetCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_Tree:
@@ -3558,11 +3339,12 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] = { "gameInfo", "player", "event", "site", "annotator", 0 };
 	static char const* args[] =
 	{
-		"<database> <variant> <column> ?<view>? ?-average? ?-descending? -ratings {<rating type> <rating type>}",
-		"<database> <variant> <column> ?<view>? ?-descending? ?-latest?",
-		"<database> <variant> <column> ?<view>? ?-descending?",
-		"<database> <variant> <column> ?<view>? ?-descending?",
-		"<database> <variant> <column> ?<view>? ?-descending?",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending? ?-average?"
+			" -ratings {<rating type> <rating type>}",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending? ?-latest?",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
+		"<database> <variant> <column> ?<view>? ?-reset? ?-descending? ?-ascending?",
 	};
 	enum { Cmd_GameInfo, Cmd_Player, Cmd_Event, Cmd_Site, Cmd_Annotator };
 
@@ -3575,6 +3357,7 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	variant::Type	variant	= tcl::game::variantFromObj(objv[3]);
 	bool				average	= false;
 	bool				latest	= false;
+	bool				reset		= false;
 	order::ID		order		= order::Ascending;
 	int				optCount	= 0;
 
@@ -3604,8 +3387,12 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				average = true;
 			else if (::strcmp(opt, "-latest") == 0)
 				latest = true;
+			else if (::strcmp(opt, "-ascending") == 0)
+				order = order::Ascending;
 			else if (::strcmp(opt, "-descending") == 0)
 				order = order::Descending;
+			else if (::strcmp(opt, "-reset") == 0)
+				reset = true;
 			else if (::strcmp(opt, "-ratings") != 0)
 				return error(::CmdSort, nullptr, nullptr, "illegal option %s", opt);
 			else if (i == optCount - 1)
@@ -3626,6 +3413,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::game::ID column = lookupGameInfo(objv[4], ratings, average);
 				if (column < 0)
 					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Games);
 				scidb->sort(scidb->cursor(database, variant), view, column, order, ratings.first);
 			}
 			break;
@@ -3635,6 +3424,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::player::ID column = lookupPlayerBase(objv[4], ratings, latest);
 				if (column < 0)
 					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Players);
 				scidb->sort(scidb->cursor(database, variant), view, column, order, ratings.first);
 			}
 			break;
@@ -3644,6 +3435,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::event::ID column = lookupEventBase(objv[4]);
 				if (column < 0)
 					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Events);
 				scidb->sort(scidb->cursor(database, variant), view, column, order);
 			}
 			break;
@@ -3653,6 +3446,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::site::ID column = lookupSiteBase(objv[4]);
 				if (column < 0)
 					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Sites);
 				scidb->sort(scidb->cursor(database, variant), view, column, order);
 			}
 			break;
@@ -3662,6 +3457,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				attribute::annotator::ID column = lookupAnnotatorBase(objv[4]);
 				if (column < 0)
 					return TCL_ERROR;
+				if (reset)
+					scidb->resetOrder(scidb->cursor(database, variant), view, table::Annotators);
 				scidb->sort(scidb->cursor(database, variant), view, column, order);
 			}
 			break;
@@ -3718,32 +3515,19 @@ cmdReverse(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc >= 5 && Tcl_GetIntFromObj(ti, objv[4], &view) != TCL_OK)
 		return error(CmdReverse, nullptr, nullptr, "integer expected for view argument");
 
+	table::Type type;
+
 	switch (index)
 	{
-		case Cmd_GameInfo:
-			scidb->reverse(scidb->cursor(database, variant), view, attribute::game::Number);
-			break;
-
-		case Cmd_Player:
-			scidb->reverse(scidb->cursor(database, variant), view, attribute::player::Name);
-			break;
-
-		case Cmd_Event:
-			scidb->reverse(scidb->cursor(database, variant), view, attribute::event::Title);
-			break;
-
-		case Cmd_Site:
-			scidb->reverse(scidb->cursor(database, variant), view, attribute::site::Site);
-			break;
-
-		case Cmd_Annotator:
-			scidb->reverse(scidb->cursor(database, variant), view, attribute::annotator::Name);
-			break;
-
-		default:
-			return usage(::CmdReverse, nullptr, nullptr, subcommands, args);
+		case Cmd_GameInfo:	type = table::Games; break;
+		case Cmd_Player:		type = table::Players; break;
+		case Cmd_Event:		type = table::Events; break;
+		case Cmd_Site:			type = table::Sites; break;
+		case Cmd_Annotator:	type = table::Annotators; break;
+		default:					return usage(::CmdReverse, nullptr, nullptr, subcommands, args);
 	}
 
+	scidb->reverseOrder(scidb->cursor(database, variant), view, type);
 	return TCL_OK;
 }
 

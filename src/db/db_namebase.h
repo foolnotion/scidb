@@ -58,7 +58,7 @@ public:
 		Site,
 		Event,
 		Annotator,
-		Round,		// used in Scid codec
+		Round,	// used in Scid codec
 	};
 
 	Namebase(Type type);

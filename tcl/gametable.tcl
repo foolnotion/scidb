@@ -48,6 +48,7 @@ set SortOnAverageRating	"Sort on average rating (descending)"
 set SortOnDate				"Sort on date (descending)"
 set SortOnNumber			"Sort on game number (asscending)"
 set ReverseOrder			"Reverse order"
+set CancelSort				"Cancel sort"
 set NoMoves					"No moves"
 set NoMoreMoves			"No (more) moves"
 set WhiteRating			"White Rating"
@@ -291,7 +292,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		positioncmd	{}
 	}
 
-	if {[array size Options] < [array size Defaults]} {
+	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
 		array set Options [array get Defaults]
 	}
 
@@ -428,7 +429,6 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 					-command [namespace code [list SortColumn $path $id descending]] \
 					-labelvar [namespace current]::mc::SortDescending \
 				]
-
 				switch $id {
 					whiteRating1 - blackRating1 - whiteRating2 - blackRating2 {
 						lappend menu [list command \
@@ -437,10 +437,13 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 						]
 					}
 				}
-
 				lappend menu [list command \
 					-command [namespace code [list SortColumn $path $id reverse]] \
 					-labelvar [namespace current]::mc::ReverseOrder \
+				]
+				lappend menu [list command \
+					-command [namespace code [list SortColumn $path $id cancel]] \
+					-labelvar [namespace current]::mc::CancelSort \
 				]
 				lappend menu { separator }
 			}
@@ -1543,16 +1546,13 @@ proc SortColumn {path id dir {rating {}}} {
 		reverse {
 			::scidb::db::reverse gameInfo $base $variant $view
 		}
-
+		cancel {
+			set columnNo [::scrolledtable::columnNo $path number]
+			::scidb::db::sort gameInfo $base $variant $columnNo $view -ascending
+		}
 		default {
-			switch $dir {
-				descending	{ lappend options -descending }
-				average		{ lappend options -average }
-			}
-
 			set columnNo [::scrolledtable::columnNo $path $id]
-			lappend options -ratings $ratings
-			::scidb::db::sort gameInfo $base $variant $columnNo $view {*}$options
+			::scidb::db::sort gameInfo $base $variant $columnNo $view -$dir -ratings $ratings
 		}
 	}
 	if {$selection >= 0} {

@@ -1045,6 +1045,7 @@
 ::gametable::mc::SortOnDate				"Ordina su data (discendente)"
 ::gametable::mc::SortOnNumber				"Ordina su numero partita (ascendente)"
 ::gametable::mc::ReverseOrder				"Inverti ordine"
+::gametable::mc::CancelSort				"Cancel sort" ;# NEW
 ::gametable::mc::NoMoves					"Nessuna mossa"
 ::gametable::mc::NoMoreMoves				"Nessuna altra mossa"
 ::gametable::mc::WhiteRating				"Punteggio Bianco"
@@ -1217,7 +1218,6 @@
 ::playerdict::mc::Titles				"Titles" ;# NEW
 ::playerdict::mc::None					"None" ;# NEW
 ::playerdict::mc::Operation			"Operation" ;# NEW
-::playerdict::mc::CancelSort			"Cancel sort" ;# NEW
 
 ### player-card ########################################################
 ::playercard::mc::PlayerCard					"Informazioni Giocatore"

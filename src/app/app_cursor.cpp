@@ -210,42 +210,10 @@ Cursor::type() const
 
 
 unsigned
-Cursor::countGames() const
+Cursor::count(db::table::Type type) const
 {
 	M_REQUIRE(isOpen());
-	return m_db->countGames();
-}
-
-
-unsigned
-Cursor::countPlayers() const
-{
-	M_REQUIRE(isOpen());
-	return m_db->countPlayers();
-}
-
-
-unsigned
-Cursor::countEvents() const
-{
-	M_REQUIRE(isOpen());
-	return m_db->countEvents();
-}
-
-
-unsigned
-Cursor::countSites() const
-{
-	M_REQUIRE(isOpen());
-	return m_db->countSites();
-}
-
-
-unsigned
-Cursor::countAnnotators() const
-{
-	M_REQUIRE(isOpen());
-	return m_db->countAnnotators();
+	return m_db->count(type);
 }
 
 
@@ -260,52 +228,12 @@ Cursor::gameIndex() const
 
 
 unsigned
-Cursor::gameIndex(unsigned index, unsigned view) const
+Cursor::index(db::table::Type type, unsigned index, unsigned view) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isViewOpen(view));
 
-	return view == BaseView ? index : m_viewList[view + 1]->gameIndex(index);
-}
-
-
-unsigned
-Cursor::playerIndex(unsigned index, unsigned view) const
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(isViewOpen(view));
-
-	return view == BaseView ? index : m_viewList[view + 1]->playerIndex(index);
-}
-
-
-unsigned
-Cursor::eventIndex(unsigned index, unsigned view) const
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(isViewOpen(view));
-
-	return view == BaseView ? index : m_viewList[view + 1]->eventIndex(index);
-}
-
-
-unsigned
-Cursor::siteIndex(unsigned index, unsigned view) const
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(isViewOpen(view));
-
-	return view == BaseView ? index : m_viewList[view + 1]->siteIndex(index);
-}
-
-
-unsigned
-Cursor::annotatorIndex(unsigned index, unsigned view) const
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(isViewOpen(view));
-
-	return view == BaseView ? index : m_viewList[view + 1]->annotatorIndex(index);
+	return view == BaseView ? index : m_viewList[view + 1]->index(type, index);
 }
 
 
@@ -364,7 +292,7 @@ Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
-	M_REQUIRE(index < countGames());
+	M_REQUIRE(index < count(table::Games));
 
 	// TODO: handle return code!
 	m_cursor.app().updateCharacteristics(*this, index, tags);

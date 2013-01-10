@@ -88,30 +88,15 @@ public:
 	/// Return database.
 	db::Database const& database() const;
 
-	UpdateMode gameUpdateMode() const;
-	UpdateMode playerUpdateMode() const;
-	UpdateMode eventUpdateMode() const;
-	UpdateMode siteUpdateMode() const;
-	UpdateMode annotatorUpdateMode() const;
+	/// Return the update mode of the specified table.
+	UpdateMode updateMode(db::table::Type type) const;
 
-	/// Return number of games in filter.
-	unsigned countGames() const;
-	/// Return size of game filter.
-	unsigned totalGames() const;
-	/// Return number of players in filter.
-	unsigned countPlayers() const;
-	/// Return number of annotators.
-	unsigned countAnnotators() const;
-	/// Return number of events in filter.
-	unsigned countEvents() const;
-	/// Return number of sites in filter.
-	unsigned countSites() const;
-	/// Return size of player filter.
-	unsigned totalPlayers() const;
-	/// Return size of event filter.
-	unsigned totalEvents() const;
-	/// Return size of annotator filter.
-	unsigned totalAnnotators() const;
+	/// Return number of items in filter.
+	unsigned count(db::table::Type type) const;
+	/// Return size of filter.
+	unsigned total(db::table::Type type) const;
+	/// Return index according to current selector.
+	unsigned index(db::table::Type type, unsigned index) const;
 
 	/// Return index in current selector of given game number.
 	int lookupGame(unsigned number) const;
@@ -129,16 +114,6 @@ public:
 	int lookupSite(unsigned number) const;
 	/// Return index in current selector of given annotator number.
 	int lookupAnnotator(mstl::string const& name) const;
-	/// Return database index according to current selector.
-	unsigned gameIndex(unsigned index) const;
-	/// Return player index according to current selector.
-	unsigned playerIndex(unsigned index) const;
-	/// Return event index according to current selector.
-	unsigned eventIndex(unsigned index) const;
-	/// Return site index according to current selector.
-	unsigned siteIndex(unsigned index) const;
-	/// Return annotator index according to current selector.
-	unsigned annotatorIndex(unsigned index) const;
 	/// Return index of first matching player.
 	int findPlayer(mstl::string const& name) const;
 	/// Return index of first matching event.
@@ -148,10 +123,10 @@ public:
 	/// Return index of first matching annotator.
 	int findAnnotator(mstl::string const& name) const;
 
-	/// Return current game filter.
-	db::Filter const& gameFilter() const;
-	/// Return current game selector.
-	db::Selector const& gameSelector() const;
+	/// Return current table filter.
+	db::Filter const& filter(db::table::Type type) const;
+	/// Return current table selector.
+	db::Selector const& selector(db::table::Type type) const;
 
 	/// Get PGN (without variations) of given game index.
 	Result dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const;
@@ -175,24 +150,16 @@ public:
 	void sort(db::attribute::site::ID attr, db::order::ID order);
 	/// Sort database (using a selector).
 	void sort(db::attribute::annotator::ID attr, db::order::ID order);
-	/// Reverse database (using a selector).
-	void reverse(db::attribute::game::ID attr);
-	/// Reverse database (using a selector).
-	void reverse(db::attribute::player::ID attr);
-	/// Reverse database (using a selector).
-	void reverse(db::attribute::event::ID attr);
-	/// Reverse database (using a selector).
-	void reverse(db::attribute::site::ID attr);
-	/// Reverse database (using a selector).
-	void reverse(db::attribute::annotator::ID attr);
+	/// Reverse order of table (using a selector).
+	void reverseOrder(db::table::Type type);
+	/// Reset order of table (using a selector).
+	void resetOrder(db::table::Type type);
+	/// Update the modified selector. Must be used after any filter or sorting functions.
+	void updateSelector(db::table::Type type);
 	/// Do a search for games (modifies the filter).
 	void searchGames(db::Query const& query);
-	/// Set player filter according to game filter.
-	void filterPlayers();
-	/// Set event filter according to game filter.
-	void filterEvents();
-	/// Set site filter according to game filter.
-	void filterSites();
+	/// Set table filter according to game filter.
+	void filterOnGames(db::table::Type type);
 
 	/// Reflect database changes (number of games),
 	void update();
@@ -248,20 +215,9 @@ private:
 
 	Application&	m_app;
 	db::Database&	m_db;
-	UpdateMode		m_gameUpdateMode;
-	UpdateMode		m_playerUpdateMode;
-	UpdateMode		m_eventUpdateMode;
-	UpdateMode		m_siteUpdateMode;
-	UpdateMode		m_annotatorUpdateMode;
-	db::Filter		m_gameFilter;
-	db::Filter		m_playerFilter;
-	db::Filter		m_eventFilter;
-	db::Filter		m_siteFilter;
-	db::Selector	m_gameSelector;
-	db::Selector	m_playerSelector;
-	db::Selector	m_eventSelector;
-	db::Selector	m_siteSelector;
-	db::Selector	m_annotatorSelector;	// not yet used
+	UpdateMode		m_updateMode[db::table::LAST];
+	db::Filter		m_filter[db::table::LAST];
+	db::Selector	m_selector[db::table::LAST];
 };
 
 } // namespace app

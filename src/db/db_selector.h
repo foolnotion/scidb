@@ -88,6 +88,7 @@ public:
 					order::ID order = order::Ascending);
 
 	void reverse(Database const& db);
+	void reset(Database const& db);
 	void swap(Selector& selector);
 	void update(Filter const& filter);
 	void update(unsigned newSize);
