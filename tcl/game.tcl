@@ -62,6 +62,7 @@ set GameDecodingChanged			"The database is opened with character set '%base%', b
 set GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited."
 set VariantHasChanged			"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
 set RemoveGameFromHistory		"Remove game from history?"
+set GameNumberDoesNotExist		"Game %number does not exist in '%base'."
 
 } ;# namespace mc
 
@@ -822,6 +823,10 @@ proc openGame {parent index} {
 		if {$variant ni [::scidb::db::get variants $base]} {
 			::dialog::warning -buttons {ok} -parent $parent -message $mc::VariantHasChanged
 			set rc 0
+		} elseif {$number >= [::scidb::db::count games $base $variant]} {
+			set msg [string map [list %number [expr {$number + 1}] %base $base] $mc::GameNumberDoesNotExist]
+			::dialog::error -parent $parent -message $msg
+			set rc 0
 		} else {
 			set pos [new $parent -base $base -number $number -variant $variant]
 			if {$pos >= 0} {
@@ -837,10 +842,10 @@ proc openGame {parent index} {
 			}
 		}
 	} else {
-		set rc 0
+		set rc -1
 	}
 
-	if {!$rc} {
+	if {$rc == 0} {
 		set reply [::dialog::question -parent $parent -message $mc::RemoveGameFromHistory -default yes]
 		if {$reply eq "yes"} {
 			set History [lreplace $History $index $index]
@@ -848,7 +853,7 @@ proc openGame {parent index} {
 		}
 	}
 
-	return $rc
+	return [expr {$rc > 0}]
 }
 
 

@@ -1772,6 +1772,7 @@
 ::game::mc::GameDecodingChangedDetail	"Probably you have opened the database with the wrong character set. Note that the automatic detection of the character set is limited." ;# NEW
 ::game::mc::VariantHasChanged				"Game cannot be opened because the variant of the database has changed and is now different from the game variant." ;# NEW
 ::game::mc::RemoveGameFromHistory		"Remove game from history?" ;# NEW
+::game::mc::GameNumberDoesNotExist		"Game %number does not exist in '%base'."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alla språk"

@@ -1765,6 +1765,7 @@
 ::game::mc::GameDecodingChangedDetail	"Möglicherweise wurde diese Datenbank mit dem falschem Zeichensatz geöffnet. Es ist zu beachten das die automatische Ermittlung des Zeichensatzes nur eingeschränkt funktioniert."
 ::game::mc::VariantHasChanged				"Die Partie kann nicht geöffnet werden weil sich die Schachform der Datenbank geändert hat und nicht mit der Schachform der Partie übereinstimmt."
 ::game::mc::RemoveGameFromHistory		"Die Partie aus der Historie entfernen?"
+::game::mc::GameNumberDoesNotExist		"Die Partie %number existiert nicht in '%base'."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alle Sprachen"

@@ -1091,8 +1091,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										&count);
 
 		n = destination.importGames(reader, progress);
-		if (description && destination.isSingleBase())
-			destination.database()->setDescription(reader.description());
 		stream.close();
 
 		if (progress.interrupted())

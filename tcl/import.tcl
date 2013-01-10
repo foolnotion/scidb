@@ -399,11 +399,10 @@ proc Open {parent file msg encoding type} {
 	set msg [format $mc::ImportingPgnFile [file tail $file]]
 	::log::open $mc::DatabaseImport
 	::log::info $msg
-	set cmd [list ::scidb::db::open $file [namespace current]::Log log]
 	set info "$::mc::File: [file tail $file]"
 	set options [list -message $msg -log yes -interrupt yes -information $info]
 	set cmd [list ::scidb::db::open $file [namespace current]::Log log]
-	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding] $options 0]
+	set cmd [list ::progress::start $parent $cmd [list -encoding $encoding -description 1] $options 0]
 
 	if {[catch { ::util::catchException $cmd result } rc opts]} {
 		::log::error $mc::AbortedDueToInternalError

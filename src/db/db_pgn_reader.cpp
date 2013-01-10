@@ -3726,7 +3726,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		while (c && c != '\n' && c != '\r')
 		{
-			content += c;
+//			content += c;
 			c = get();
 		}
 
@@ -3735,6 +3735,8 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		if (c != '\n')
 			putback(c);
+
+		return prevToken; // skip comment
 	}
 
 	if (m_marks.extractFromComment(content))

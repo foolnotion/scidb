@@ -208,7 +208,7 @@ getInfo(	NamebasePlayer const* player,
 			fideID = p->federationID(federation);
 
 			if (!fideID.empty() && federation == federation::Fide && !idCard)
-				fideID.replace(0u, 0u, "*", 1u);
+				fideID.replace(size_t(0), size_t(0), "*", size_t(1));
 		}
 	}
 
