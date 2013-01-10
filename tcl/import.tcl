@@ -476,7 +476,7 @@ proc Import {parent base files msg encoding} {
 	}
 
 	foreach file $files {
-		::log::info [format $mc::ImportingPgnFile [file tail $file]]
+		::log::info [format $mc::ImportingDatabase [file tail $file]]
 		set info "$::mc::File: [file tail $file]"
 		set options [list -message $msg -log yes -interrupt yes -information $info]
 		set cmd [list ::scidb::db::import $base $file [namespace current]::Log log]

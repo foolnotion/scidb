@@ -797,8 +797,7 @@ static int
 cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	static char const* Usage =
-		"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> "
-		"?-encoding <string>? ?-description <flag>";
+		"<database> <file> <log> <log-arg> <progress-cmd> <progress-arg> ?-encoding <string>?";
 
 	if (objc < 7)
 	{
@@ -808,17 +807,12 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	mstl::string	encoding		= sys::utf8::Codec::utf8();
 	char const*		option		= stringFromObj(objc, objv, objc - 2);
-	bool				description	= false;
 
 	if (*option == '-')
 	{
 		if (::strcmp(option, "-encoding") == 0)
 		{
 			encoding = stringFromObj(objc, objv, objc - 1);
-		}
-		else if (::strcmp(option, "-description") == 0)
-		{
-			description = boolFromObj(objc, objv, objc - 1);
 		}
 		else
 		{
@@ -839,7 +833,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	src(stringFromObj(objc, objv, 2));
 	mstl::string	ext(::util::misc::file::suffix(src));
 	Progress			progress(objv[5], objv[6]);
-	int				n = 0;
+	int				count = 0;
 
 	if (ext == "sci" || ext == "si3" || ext == "si4")
 	{
@@ -863,11 +857,12 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					variant::Type variant = variant::fromIndex(v);
 					Cursor const& source(scidb->cursor(src, variant));
 					Cursor& destination(const_cast<Cursor&>(Scidb->cursor(dst, variant)));
+					unsigned k = destination.database().countGames();
+					unsigned n = destination.importGames(source.database(), log, progress);
 
-					n = destination.importGames(source.database(), log, progress);
-
+					count += n;
 					accepted[v] = n;
-					rejected[v] = source.database().countGames() - n;
+					rejected[v] = source.database().countGames() - n - k;
 				}
 				else if (srcVariants.test(v))
 				{
@@ -894,9 +889,12 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (Scidb->contains(dst, db->variant()))
 			{
 				Cursor& destination(scidb->cursor(dst, db->variant()));
-				n = destination.importGames(*db, log, progress);
+				unsigned k = destination.database().countGames();
+				unsigned n = destination.importGames(*db, log, progress);
+
+				count += n;
 				accepted[variantIndex] = n;
-				rejected[variantIndex] = destination.database().countGames() - n;
+				rejected[variantIndex] = destination.database().countGames() - n - k;
 			}
 			else
 			{
@@ -905,9 +903,9 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		if (progress.interrupted())
-			n = -n - 1;
+			count = -count - 1;
 
-		tcl::PgnReader::setResult(n, accepted, rejected);
+		tcl::PgnReader::setResult(count, accepted, rejected);
 	}
 	else if (ext == "pgn" || ext == "gz" || ext == "zip")
 	{
@@ -920,8 +918,8 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		::db::MultiBase& destination = scidb->multiBase(dst);
-		::db::MultiBase::GameCount count;
-		destination.countGames(count);
+		::db::MultiBase::GameCount gameCount;
+		destination.countGames(gameCount);
 
 		tcl::PgnReader	reader(	stream,
 										variant::Undetermined,
@@ -930,15 +928,15 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										objv[4],
 										tcl::PgnReader::Normalize,
 										tcl::PgnReader::File,
-										&count);
+										&gameCount);
 
-		n = destination.importGames(reader, progress);
+		count = destination.importGames(reader, progress);
 		stream.close();
 
 		if (progress.interrupted())
-			n = -n - 1;
+			count = -count - 1;
 
-		reader.setResult(n);
+		reader.setResult(count);
 	}
 	else
 	{
