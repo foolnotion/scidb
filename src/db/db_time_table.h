@@ -43,6 +43,7 @@ public:
 
 	unsigned size() const;
 
+	void clear();
 	void cut(unsigned newSize);
 	void reserve(unsigned capacity);
 	void add(MoveInfo const& moveInfo);

@@ -49,6 +49,31 @@ using namespace db;
 using namespace util::misc::file;
 
 
+#ifndef NREQ
+static bool
+checkOrdering(unsigned* map, unsigned n)
+{
+	bool m[n];
+	memset(m, 0, sizeof(bool)*n);
+
+	for (unsigned i = 0; i < n; ++i)
+	{
+		if (map[i] >= n)
+			return false;
+		m[map[i]] = true;
+	}
+
+	for (unsigned i = 0; i < n; ++i)
+	{
+		if (!m[i])
+			return false;
+	}
+
+	return true;
+}
+#endif
+
+
 static unsigned
 toVariant(variant::Type variant)
 {
@@ -443,6 +468,9 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	}
 
 	m_engine->m_engine = this;
+
+	for (unsigned i = 0; i < MaxNumVariations; ++i)
+		m_map[i] = i;
 }
 
 
@@ -801,6 +829,9 @@ Engine::snapshot()
 {
 	m_snapshot.m_board = currentBoard();
 	m_snapshot.m_lines = m_lines;
+
+	for (unsigned i = 0; i < m_lines.size(); ++i)
+		m_snapshot.m_map[m_map[i]] = i;
 }
 
 
@@ -817,7 +848,7 @@ MoveList const&
 Engine::snapshotLine(unsigned lineNo) const
 {
 	M_REQUIRE(snapshotExists(lineNo));
-	return m_snapshot.m_lines[m_map[lineNo]];
+	return m_snapshot.m_lines[m_snapshot.m_map[lineNo]];
 }
 
 
@@ -1321,6 +1352,8 @@ Engine::changeNumberOfVariations(unsigned n)
 			}
 		}
 
+		M_ASSERT(::checkOrdering(m_map, countLines()));
+
 		m_wantedMultiPV = n;
 
 		if (isActive())
@@ -1490,6 +1523,8 @@ Engine::reorderKeepStable(unsigned currentNo)
 			mstl::swap(m_map[currentNo], m_map[matchIndex]);
 	}
 
+	M_ASSERT(::checkOrdering(m_map, m_usedMultiPV));
+
 	if (matchIndex >= 0)
 	{
 		m_useBestInfo = false;
@@ -1529,8 +1564,12 @@ Engine::reorderBestFirst(unsigned currentNo)
 			mstl::swap(map[index], map[k]);
 	}
 
+	M_ASSERT(::checkOrdering(map, m_usedMultiPV));
+
 	for (unsigned i = 0; i < m_usedMultiPV; ++i)
 		m_map[map[i]] = i;
+
+	M_ASSERT(::checkOrdering(m_map, m_usedMultiPV));
 
 	if (memcmp(m_map, old, sizeof(old[0])*m_usedMultiPV))
 	{

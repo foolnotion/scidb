@@ -485,6 +485,7 @@ private:
 	{
 		::db::Board	m_board;
 		Variations	m_lines;
+		Map			m_map;
 	};
 
 	class Process;

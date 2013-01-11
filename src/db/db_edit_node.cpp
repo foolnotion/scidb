@@ -64,7 +64,7 @@ struct Node::Spacing
 ;
 	enum Context
 	{
-		None, Comment, Annotation, PreComment, Diagram, Result, StartVariation, EndVariation
+		None, Comment, MoveInfo, Annotation, PreComment, Diagram, Result, StartVariation, EndVariation
 	};
 
 	struct Token
@@ -1042,7 +1042,7 @@ Move::Move(Work& work, MoveNode const* move)
 	mstl::string info;
 	getMoveInfo(work, move, info);
 
-	bool needSpace = false;
+	Node::Spacing::Context context = Node::Spacing::None;
 
 	if (move->hasComment(move::Post))
 	{
@@ -1058,33 +1058,34 @@ Move::Move(Work& work, MoveNode const* move)
 			if (isShort)
 				work.pushSpace();
 			else
-				work.pushSpaceOrParagraph(Spacing::Comment);
+				work.pushSpaceOrParagraph(context = Spacing::Comment);
 
 			work.pop(m_list);
 			m_list.push_back(new Comment(comment, move::Post));
 
 			if (isShort)
 				work.pushSpace();
-			else
-				needSpace = true;
 		}
 	}
 
 	if (!info.empty())
 	{
-		if (needSpace)
-			work.pushSpace();
+		if (context == Node::Spacing::None)
+		{
+			context = Node::Spacing::MoveInfo;
+			work.pushSpaceOrParagraph(context);
+		}
 		else
-			work.pushSpaceOrParagraph(Spacing::Comment);
-
+		{
+			work.pushSpace();
+		}
 		work.pop(m_list);
 		m_list.push_back(new Comment(db::Comment(info, false, false), move::Post, Comment::Finally));
-		needSpace = true;
 	}
 
-	if (needSpace)
+	if (context != Node::Spacing::None)
 	{
-		work.pushSpaceOrParagraph(Spacing::Comment);
+		work.pushSpaceOrParagraph(context);
 		work.needMoveNo = true;
 	}
 }

@@ -475,6 +475,31 @@ Board::hashCastling(color::ID color)
 
 
 void
+Board::hashChecksGiven(color::ID color, unsigned n)
+{
+	M_ASSERT(n < 3);
+
+	uint64_t const* arr = rand64::ChecksGiven[color];
+
+	if (n)
+		m_hash ^= arr[n];
+
+	m_hash ^= arr[n + 1];
+}
+
+
+void
+Board::hashChecksGiven(unsigned white, unsigned black)
+{
+	M_ASSERT(white <= 3);
+	M_ASSERT(black <= 3);
+
+	if (white) m_hash |= rand64::ChecksGiven[White][white];
+	if (black) m_hash |= rand64::ChecksGiven[Black][black];
+}
+
+
+void
 Board::hashHolding(piece::ID piece, Byte count)
 {
 	M_ASSERT(piece != piece::Empty);
@@ -496,7 +521,7 @@ Board::hashHoldingAdd(piece::ID piece, Byte oldCount)
 	M_ASSERT(piece::type(piece) != piece::King);
 	M_ASSERT(oldCount < 20);
 
-	m_hash ^= (oldCount ? setBit(oldCount - 1) : rand64::Holding[piece]);
+	m_hash ^= oldCount ? setBit(oldCount - 1) : rand64::Holding[piece];
 	m_hash ^= setBit(oldCount);
 }
 
@@ -508,8 +533,8 @@ Board::hashHoldingRemove(piece::ID piece, Byte newCount)
 	M_ASSERT(piece::type(piece) != piece::King);
 	M_ASSERT(newCount < 20); // rough check if negative
 
-	m_hash ^= setBit(newCount + 1);
-	m_hash ^= (newCount ? setBit(newCount) : rand64::Holding[piece]);
+	m_hash ^= setBit(newCount);
+	m_hash ^= newCount ? setBit(newCount - 1) : rand64::Holding[piece];
 }
 
 
@@ -714,31 +739,6 @@ Board::removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned colo
 }
 
 } // namespace db
-
-
-void
-Board::hashChecksGiven(color::ID color, unsigned n)
-{
-	M_ASSERT(n < 3);
-
-	uint64_t const* arr = rand64::ChecksGiven[color];
-
-	if (n)
-		m_hash ^= arr[n];
-
-	m_hash ^= arr[n + 1];
-}
-
-
-void
-Board::hashChecksGiven(unsigned white, unsigned black)
-{
-	M_ASSERT(white <= 3);
-	M_ASSERT(black <= 3);
-
-	if (white) m_hash |= rand64::ChecksGiven[White][white];
-	if (black) m_hash |= rand64::ChecksGiven[Black][black];
-}
 
 
 void

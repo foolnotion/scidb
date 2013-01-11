@@ -581,10 +581,19 @@ proc PopupMenu {w} {
 		;
 	set pos [menu $m.pos -tearoff false]
 	$pos add command \
-		-label $::setup::board::mc::StandardPosition \
+		-label " $::setup::board::mc::StandardPosition" \
+		-image $::icon::16x16::home \
+		-compound left \
 		-command [list ::application::pgn::Shuffle Normal] \
 		;
-	::setup::setupShuffleMenu ::application::pgn $pos
+	foreach variant {Chess960 Symm960 Shuffle} {
+		$pos add command \
+			-label " $::setup::mc::Position($variant)" \
+			-image $::icon::16x16::dice \
+			-compound left \
+			-command [list ::application::pgn::Shuffle $variant] \
+			;
+	}
 	$pos add separator
 	::setup::setupPositionMenu ::application::pgn $pos
 	$m add cascade \

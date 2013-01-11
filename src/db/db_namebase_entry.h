@@ -353,6 +353,9 @@ public:
 	void setElo(uint16_t value);
 	void setRating(rating::Type type, uint16_t value);
 	void copyRating(NamebasePlayer const& player);
+#ifdef SCI_NAMEBASE_FIX
+	void clearFideID();
+#endif
 
 private:
 

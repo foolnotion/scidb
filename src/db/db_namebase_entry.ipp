@@ -541,6 +541,16 @@ NamebasePlayer::operator<(Key const& key) const
 }
 
 
+#ifdef SCI_NAMEBASE_FIX
+inline
+void
+NamebasePlayer::clearFideID()
+{
+	m_fideIdFlag = false;
+}
+#endif
+
+
 inline
 uint32_t
 NamebasePlayer::fideID() const

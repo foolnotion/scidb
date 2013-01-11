@@ -1353,7 +1353,7 @@
 ::setup::board::mc::Clear							"Clear"
 ::setup::board::mc::CopyFen						"Copy FEN to clipboard"
 ::setup::board::mc::Shuffle						"Shuffle..."
-::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
+::setup::board::mc::FICSPosition					"FICS Start Position..."
 ::setup::board::mc::StandardPosition			"Standard Position"
 ::setup::board::mc::Chess960Castling			"Chess 960 castling"
 

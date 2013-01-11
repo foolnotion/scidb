@@ -1353,7 +1353,7 @@
 ::setup::board::mc::Clear							"Leeren"
 ::setup::board::mc::CopyFen						"FEN in die Ablage kopieren"
 ::setup::board::mc::Shuffle						"Mischen..."
-::setup::board::mc::FICSPosition					"FICS-Startposition (und weitere)..."
+::setup::board::mc::FICSPosition					"FICS-Startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Schach-960-Rochade"
 

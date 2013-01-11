@@ -35,8 +35,7 @@ set Position(Shuffle)			"Shuffle chess position"
 
 }
 
-set PositionAlt(wild/5)					"Upside down"
-set PositionAlt(pawns/little-game)	"wild/7"
+set PositionAlt(wild/5)			"Upside down"
 
 variable SFRC { 446 462 518 524 534 540 692 708 }
 
@@ -75,6 +74,7 @@ proc setupPositionMenu {ns m} {
 	variable PositionAlt
 
 	foreach {idn name} { 4015 "wild/5"
+								4000 "wild/7"
 								4001 "wild/8"
 								4002 "wild/19"
 								4004 "pawns/pawns-only"
@@ -124,7 +124,7 @@ set ChecksGiven							"Checks Given"
 set Clear									"Clear"
 set CopyFen									"Copy FEN to clipboard"
 set Shuffle									"Shuffle..."
-set FICSPosition							"FICS Start Position (and more)..."
+set FICSPosition							"FICS Start Position..."
 set StandardPosition						"Standard Position"
 set Chess960Castling						"Chess 960 castling"
 

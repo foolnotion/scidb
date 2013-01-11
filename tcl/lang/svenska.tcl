@@ -1359,9 +1359,9 @@
 ::setup::board::mc::ChecksGiven					"Checks Given" ;# NEW
 ::setup::board::mc::Clear							"Rensa"
 ::setup::board::mc::CopyFen						"Kopiera FEN till urklipp"
-::setup::board::mc::Shuffle						"Shuffle..."
-::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
-::setup::board::mc::StandardPosition			"Standardposition"
+::setup::board::mc::Shuffle						"Shuffle..." ;# NEW
+::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
+::setup::board::mc::StandardPosition			"Standardposition" ;# NEW
 ::setup::board::mc::Chess960Castling			"Chess 960 rockad"
 
 ::setup::board::mc::InvalidFen					"Ogiltigt FEN"

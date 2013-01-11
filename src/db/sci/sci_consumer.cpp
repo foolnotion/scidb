@@ -170,6 +170,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_danglingEndMarker = 1;
 	m_lastCommentPos = 0;
 	m_plyCount = 0;
+	m_timeTable.clear();
 
 	return true;
 }

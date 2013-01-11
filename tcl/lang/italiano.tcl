@@ -1361,7 +1361,7 @@
 ::setup::board::mc::Clear							"Pulisci"
 ::setup::board::mc::CopyFen						"Copia FEN a clipboard"
 ::setup::board::mc::Shuffle						"Mischia..."
-::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
+::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posizione Standard"
 ::setup::board::mc::Chess960Castling			"Arrocco da Scacchi 960"
 

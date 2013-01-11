@@ -575,7 +575,15 @@ Namebase::insertPlayer(	mstl::string const& name,
 	{
 		unsigned i = size() - 1;
 
-		// TODO: fix case playerAt(i) == *playerAt(i - 1)
+		if (i > 0 && *playerAt(i) == *playerAt(i - 1))
+		{
+			if (playerAt(i)->fideID())
+				playerAt(i)->clearFideID();
+			else
+				playerAt(i - 1)->clearFideID();
+
+			M_ASSERT(!(*playerAt(i) == *playerAt(i - 1)));
+		}
 
 		while (i > 0 && *playerAt(i) < *playerAt(i - 1))
 		{

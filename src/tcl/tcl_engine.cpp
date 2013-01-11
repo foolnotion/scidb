@@ -283,25 +283,38 @@ public:
 		objs[6] = Tcl_NewIntObj(ordering(line));
 		objs[7] = Tcl_NewStringObj(s, s.size());
 
-		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
-
 		if (bestInfoHasChanged())
 		{
+			Tcl_Obj* objs2[3];
 			Tcl_Obj* v[::app::Engine::MaxNumVariations];
-			unsigned n = numVariations();
+			unsigned n = countLines();
+
+#ifndef NREQ
+			mstl::bitfield<unsigned> _complete;
+#endif
 
 			for (unsigned i = 0; i < n; ++i)
+			{
 				v[ordering(i)] = Tcl_NewBooleanObj(isBestLine(i));
+
+#ifndef NREQ
+				_complete.set(ordering(i));
+#endif
+			}
+
+			M_ASSERT(_complete.count() == n);
 
 			int score = mstl::max(-9900, mstl::min(9900, bestScore()));
 
-			objs[0] = Tcl_NewIntObj(score);
-			objs[1] = Tcl_NewIntObj(shortestMate());
-			objs[2] = Tcl_NewListObj(n, v);
+			objs2[0] = Tcl_NewIntObj(score);
+			objs2[1] = Tcl_NewIntObj(shortestMate());
+			objs2[2] = Tcl_NewListObj(n, v);
 
-			sendInfo(m_bestscore, Tcl_NewListObj(3, objs));
+			sendInfo(m_bestscore, Tcl_NewListObj(3, objs2));
 			resetBestInfoHasChanged();
 		}
+
+		sendInfo(m_pv, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 
 	void updateInfo(db::color::ID sideToMove, board::Status state) override
@@ -351,6 +364,7 @@ public:
 		objs[0] = Tcl_NewIntObj(depth());
 		objs[1] = Tcl_NewIntObj(selectiveDepth());
 		objs[2] = Tcl_NewIntObj(nodes());
+
 		sendInfo(m_depth, Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	}
 

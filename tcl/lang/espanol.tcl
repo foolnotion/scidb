@@ -1356,8 +1356,8 @@
 ::setup::board::mc::ChecksGiven					"Checks Given" ;# NEW
 ::setup::board::mc::Clear							"Vaciar"
 ::setup::board::mc::CopyFen						"Copiar FEN al portapapeles"
-::setup::board::mc::Shuffle						"Shuffle..."
-::setup::board::mc::FICSPosition					"FICS Start Position (and more)..."
+::setup::board::mc::Shuffle						"Shuffle..." ;# NEW
+::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
 

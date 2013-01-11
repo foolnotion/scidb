@@ -1361,9 +1361,9 @@
 ::setup::board::mc::Clear				"Törlés"
 ::setup::board::mc::CopyFen				"FEN másolása a vágólapra"
 ::setup::board::mc::Shuffle				"Keverés..."
-::setup::board::mc::FICSPosition			"FICS Start Position (and more)..."
-::setup::board::mc::StandardPosition			"Standard Position"
-::setup::board::mc::Chess960Castling			"Chess 960 castling"
+::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
+::setup::board::mc::StandardPosition			"Standard Position" ;# NEW
+::setup::board::mc::Chess960Castling			"Chess 960 castling" ;# NEW
 
 ::setup::board::mc::InvalidFen				"Érvénytelen FEN"
 ::setup::board::mc::CastlingWithoutRook			"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
