@@ -54,21 +54,21 @@ using namespace db::board;
 
 namespace bf = mstl::bf;
 
-#define LittleGame_Hash			UINT64_C(0x7bda5dadc845e3c6)
+#define LittleGame_Hash			UINT64_C(0x9e152ca894e0a49b)
 #define PawnsOn4thRank_Hash	UINT64_C(0x6741bdb0888a7d57)
 #define Pyramid_Hash				UINT64_C(0x4bbf887a20755e7a)
-#define KNNvsKP_Hash				UINT64_C(0xdcc896ced83a7ce4)
-#define PawnsOnly_Hash			UINT64_C(0x3a4fd07c22f6a534)
-#define KnightsOnly_Hash		UINT64_C(0x5dbe5ac131c561aa)
-#define BishopsOnly_Hash		UINT64_C(0x41041e489635398e)
-#define RooksOnly_Hash			UINT64_C(0x8f19a07fef9c6f66)
-#define QueensOnly_Hash			UINT64_C(0x45537041bf95eb96)
-#define NoQueens_Hash			UINT64_C(0x93a3e4f6486c3742)
-#define WildFive_Hash			UINT64_C(0xe2272812749517d8)
-#define KBNK_Hash					UINT64_C(0xa2f3dcd8a1b6ffed)
-#define KBBK_Hash					UINT64_C(0x51be7cba98acb392)
+#define KNNvsKP_Hash				UINT64_C(0x3907e7cb849f3b7b)
+#define PawnsOnly_Hash			UINT64_C(0xaa03e51c36cfeee0)
+#define KnightsOnly_Hash		UINT64_C(0x51e7989f475b409c)
+#define BishopsOnly_Hash		UINT64_C(0x8f9b125a68c1a730)
+#define RooksOnly_Hash			UINT64_C(0x38dcdac2a67add65)
+#define QueensOnly_Hash			UINT64_C(0xa01cf1d06a20adc9)
+#define NoQueens_Hash			UINT64_C(0xe6a0500789e03ac9)
+#define WildFive_Hash			UINT64_C(0x726b1d7260ac5c0c)
+#define KBNK_Hash					UINT64_C(0x473cadddfd13b8b0)
+#define KBBK_Hash					UINT64_C(0xae79359d0aa614e0)
 #define Runaway_Hash				UINT64_C(0x548d1ba18e63df59)
-#define QueenVsRooks_Hash		UINT64_C(0x0a4301a374bff9ae)
+#define QueenVsRooks_Hash		UINT64_C(0x58c29dcc97d77774)
 #define UpsideDown_Hash			UINT64_C(0xcfa9f03a9b87134d)
 
 static uint64_t const DarkSquares	= A1 | C1 | E1 | G1
@@ -1317,6 +1317,13 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_kings |= bit;
 			++m_material[color].king;
 			m_ksq[color] = s;
+			if (variant::isAntichessExceptLosers(variant))
+			{
+				if (color == White)
+					m_whiteKing |= m_material[White].king + 1;
+				else
+					m_blackKing |= m_material[Black].king + 1;
+			}
 			break;
 
 		case piece::None:
@@ -1406,6 +1413,13 @@ Board::removeAt(Square s, variant::Type variant)
 			m_ksq[color] = Null;
 			hashCastling(color);
 			destroyCastle(color);
+			if (variant::isAntichessExceptLosers(variant))
+			{
+				if (color == White)
+					m_whiteKing |= m_material[White].king + 1;
+				else
+					m_blackKing |= m_material[Black].king + 1;
+			}
 			break;
 
 		case piece::None:
@@ -2555,7 +2569,7 @@ Board::setup(char const* fen, variant::Type variant)
 					++m_material[Black].pawn;
 					m_matSig.part[Black].pawn |= m_matSig.part[Black].pawn + 1;
 					m_progress.side[Black].add(::flipRank(s));
-					--m_holding[White].pawn;
+					--m_partner->m_holding[White].pawn;
 					break;
 
 				case 'n':
@@ -2565,7 +2579,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					++m_material[Black].knight;
 					m_matSig.part[Black].knight |= m_matSig.part[Black].knight + 1;
-					--m_holding[White].knight;
+					--m_partner->m_holding[White].knight;
 					break;
 
 				case 'b':
@@ -2575,7 +2589,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					++m_material[Black].bishop;
 					m_matSig.part[Black].bishop |= m_matSig.part[Black].bishop + 1;
-					--m_holding[White].bishop;
+					--m_partner->m_holding[White].bishop;
 					break;
 
 				case 'r':
@@ -2585,7 +2599,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					++m_material[Black].rook;
 					m_matSig.part[Black].rook |= m_matSig.part[Black].rook + 1;
-					--m_holding[White].rook;
+					--m_partner->m_holding[White].rook;
 					break;
 
 				case 'q':
@@ -2595,7 +2609,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					++m_material[Black].queen;
 					m_matSig.part[Black].queen |= m_matSig.part[Black].queen + 1;
-					--m_holding[White].queen;
+					--m_partner->m_holding[White].queen;
 					break;
 
 				case 'k':
@@ -2605,6 +2619,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					++m_material[Black].king;
 					m_ksq[Black] = s;
+					m_blackKing |= m_material[Black].king + 1;
 					break;
 
 				case 'P':
@@ -2617,7 +2632,7 @@ Board::setup(char const* fen, variant::Type variant)
 					++m_material[White].pawn;
 					m_matSig.part[White].pawn |= m_matSig.part[White].pawn + 1;
 					m_progress.side[White].add(s);
-					--m_holding[Black].pawn;
+					--m_partner->m_holding[Black].pawn;
 					break;
 
 				case 'N':
@@ -2627,7 +2642,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					++m_material[White].knight;
 					m_matSig.part[White].knight |= m_matSig.part[White].knight + 1;
-					--m_holding[Black].knight;
+					--m_partner->m_holding[Black].knight;
 					break;
 
 				case 'B':
@@ -2637,7 +2652,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					++m_material[White].bishop;
 					m_matSig.part[White].bishop |= m_matSig.part[White].bishop + 1;
-					--m_holding[Black].bishop;
+					--m_partner->m_holding[Black].bishop;
 					break;
 
 				case 'R':
@@ -2647,7 +2662,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					++m_material[White].rook;
 					m_matSig.part[White].rook |= m_matSig.part[White].rook + 1;
-					--m_holding[Black].rook;
+					--m_partner->m_holding[Black].rook;
 					break;
 
 				case 'Q':
@@ -2657,7 +2672,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					++m_material[White].queen;
 					m_matSig.part[White].queen |= m_matSig.part[White].queen + 1;
-					--m_holding[Black].queen;
+					--m_partner->m_holding[Black].queen;
 					break;
 
 				case 'K':
@@ -2667,6 +2682,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					++m_material[White].king;
 					m_ksq[White] = s;
+					if (variant::isAntichessExceptLosers(variant))
+						m_whiteKing |= m_material[White].king + 1;
 					break;
 
 				default:
@@ -2681,7 +2698,7 @@ Board::setup(char const* fen, variant::Type variant)
 		return 0;
 
 	if (variant::isZhouse(variant))
-		hashHolding(m_holding[White], m_holding[Black]);
+		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
 
 	// Set remainder of board data appropriately
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
@@ -4922,8 +4939,11 @@ Board::doMove(Move const& m, variant::Type variant)
 					M_ASSERT(variant::isAntichessExceptLosers(variant));
 					m_kings ^= toMask;
 					m_piece[to] = piece::King;
-					++m_material[m_stm].king;
 					hashPiece(to, ::toPiece(piece::King, m_stm));
+					if (m_stm == White)
+						m_whiteKing = (1 << ++m_material[White].king) - 1;
+					else
+						m_blackKing = (1 << ++m_material[Black].king) - 1;
 					break;
 			}
 			break;
@@ -5075,10 +5095,14 @@ Board::doMove(Move const& m, variant::Type variant)
 			break;
 
 		case piece::King:
+			M_ASSERT(variant::isAntichessExceptLosers(variant));
 			m_halfMoveClock = 0;
 			m_kings ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
-			--m_material[sntm].king;
+			if (sntm == color::White)
+				m_whiteKing = (1 << --m_material[White].king) - 1;
+			else
+				m_blackKing = (1 << --m_material[Black].king) - 1;
 			hashPiece(to, ::toPiece(piece::King, sntm));
 			break;
 
@@ -5354,7 +5378,10 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 				case piece::King:
 					m_kings ^= toMask;
-					--m_material[sntm].king;
+					if (sntm == color::White)
+						m_whiteKing = (1 << --m_material[White].king) - 1;
+					else
+						m_blackKing = (1 << --m_material[Black].king) - 1;
 					hashPiece(to, ::toPiece(piece::King, sntm));
 					break;
 
@@ -5497,7 +5524,10 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::King:
 			m_kings ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			++m_material[m_stm].king;
+			if (m_stm == color::White)
+				m_whiteKing = (1 << ++m_material[White].king) - 1;
+			else
+				m_blackKing = (1 << ++m_material[Black].king) - 1;
 			hashPiece(to, ::toPiece(piece::King, m_stm));
 			break;
 
@@ -6505,20 +6535,6 @@ Board::dump() const
 
 		::printf("\n");
 	}
-
-	::printf("\n---------------------------------------\n");
-	::printf("holding(w): %u %u %u %u %u\n",
-				m_holding[White].queen,
-				m_holding[White].rook,
-				m_holding[White].bishop,
-				m_holding[White].knight,
-				m_holding[White].pawn);
-	::printf("holding(b): %u %u %u %u %u\n",
-				m_holding[Black].queen,
-				m_holding[Black].rook,
-				m_holding[Black].bishop,
-				m_holding[Black].knight,
-				m_holding[Black].pawn);
 	::printf("\n---------------------------------------\n");
 	::fflush(stdout);
 }
@@ -6554,12 +6570,12 @@ Board::initialize()
 	m_emptyBoard.m_holding[Black] = m_emptyBoard.m_holding[White];
 
 	// Standard board
-	m_standardBoard.setup(variant::fen(variant::Standard), variant::Normal);
+	m_standardBoard.setup(variant::fen(variant::Standard), variant::Crazyhouse);
 	::memset(m_standardBoard.m_unambiguous, true, U_NUMBER_OF(m_standardBoard.m_unambiguous));
 	m_antichessBoard.setup(variant::fen(variant::NoCastling), variant::Antichess);
 
 	// Shuffle Chess board
-	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Normal);
+	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Crazyhouse);
 	::memset(m_shuffleChessBoard.m_unambiguous, true, U_NUMBER_OF(m_shuffleChessBoard.m_unambiguous));
 	m_shuffleChessBoard.m_holding[White] = m_standardBoard.m_holding[White];
 	m_shuffleChessBoard.m_holding[Black] = m_standardBoard.m_holding[Black];
@@ -6567,23 +6583,41 @@ Board::initialize()
 	m_shuffleChessBoard.m_material[Black] = m_standardBoard.m_material[Black];
 	m_shuffleChessBoard.m_matSig = m_standardBoard.m_matSig;
 
-	m_littleGame.setup(variant::fen(variant::LittleGame), variant::Normal);
-	m_pawnsOn4thRank.setup(variant::fen(variant::PawnsOn4thRank), variant::Normal);
-	m_pyramid.setup(variant::fen(variant::Pyramid), variant::Normal);
-	m_KNNvsKP.setup(variant::fen(variant::KNNvsKP), variant::Normal);
-	m_pawnsOnly.setup(variant::fen(variant::PawnsOnly), variant::Normal);
-	m_knightsOnly.setup(variant::fen(variant::KnightsOnly), variant::Normal);
-	m_bishopsOnly.setup(variant::fen(variant::BishopsOnly), variant::Normal);
-	m_rooksOnly.setup(variant::fen(variant::RooksOnly), variant::Normal);
-	m_queensOnly.setup(variant::fen(variant::QueensOnly), variant::Normal);
-	m_noQueens.setup(variant::fen(variant::NoQueens), variant::Normal);
-	m_wildFive.setup(variant::fen(variant::WildFive), variant::Normal);
-	m_kbnk.setup(variant::fen(variant::KBNK), variant::Normal);
-	m_kbbk.setup(variant::fen(variant::KBBK), variant::Normal);
-	m_runaway.setup(variant::fen(variant::Runaway), variant::Normal);
-	m_queenVsRooks.setup(variant::fen(variant::QueenVsRooks), variant::Normal);
-	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Normal);
+	m_littleGame.setup(variant::fen(variant::LittleGame), variant::Crazyhouse);
+	m_pawnsOn4thRank.setup(variant::fen(variant::PawnsOn4thRank), variant::Crazyhouse);
+	m_pyramid.setup(variant::fen(variant::Pyramid), variant::Crazyhouse);
+	m_KNNvsKP.setup(variant::fen(variant::KNNvsKP), variant::Crazyhouse);
+	m_pawnsOnly.setup(variant::fen(variant::PawnsOnly), variant::Crazyhouse);
+	m_knightsOnly.setup(variant::fen(variant::KnightsOnly), variant::Crazyhouse);
+	m_bishopsOnly.setup(variant::fen(variant::BishopsOnly), variant::Crazyhouse);
+	m_rooksOnly.setup(variant::fen(variant::RooksOnly), variant::Crazyhouse);
+	m_queensOnly.setup(variant::fen(variant::QueensOnly), variant::Crazyhouse);
+	m_noQueens.setup(variant::fen(variant::NoQueens), variant::Crazyhouse);
+	m_wildFive.setup(variant::fen(variant::WildFive), variant::Crazyhouse);
+	m_kbnk.setup(variant::fen(variant::KBNK), variant::Crazyhouse);
+	m_kbbk.setup(variant::fen(variant::KBBK), variant::Crazyhouse);
+	m_runaway.setup(variant::fen(variant::Runaway), variant::Crazyhouse);
+	m_queenVsRooks.setup(variant::fen(variant::QueenVsRooks), variant::Crazyhouse);
+	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Crazyhouse);
 
+#if 0
+	printf("#define LittleGame_Hash		UINT64_C(0x%016llx)\n", m_littleGame.m_hash);
+	printf("#define PawnsOn4thRank_Hash	UINT64_C(0x%016llx)\n", m_pawnsOn4thRank.m_hash);
+	printf("#define Pyramid_Hash			UINT64_C(0x%016llx)\n", m_pyramid.m_hash);
+	printf("#define KNNvsKP_Hash			UINT64_C(0x%016llx)\n", m_KNNvsKP.m_hash);
+	printf("#define PawnsOnly_Hash		UINT64_C(0x%016llx)\n", m_pawnsOnly.m_hash);
+	printf("#define KnightsOnly_Hash		UINT64_C(0x%016llx)\n", m_knightsOnly.m_hash);
+	printf("#define BishopsOnly_Hash		UINT64_C(0x%016llx)\n", m_bishopsOnly.m_hash);
+	printf("#define RooksOnly_Hash		UINT64_C(0x%016llx)\n", m_rooksOnly.m_hash);
+	printf("#define QueensOnly_Hash		UINT64_C(0x%016llx)\n", m_queensOnly.m_hash);
+	printf("#define NoQueens_Hash			UINT64_C(0x%016llx)\n", m_noQueens.m_hash);
+	printf("#define WildFive_Hash			UINT64_C(0x%016llx)\n", m_wildFive.m_hash);
+	printf("#define KBNK_Hash				UINT64_C(0x%016llx)\n", m_kbnk.m_hash);
+	printf("#define KBBK_Hash				UINT64_C(0x%016llx)\n", m_kbbk.m_hash);
+	printf("#define Runaway_Hash			UINT64_C(0x%016llx)\n", m_runaway.m_hash);
+	printf("#define QueenVsRooks_Hash	UINT64_C(0x%016llx)\n", m_queenVsRooks.m_hash);
+	printf("#define UpsideDown_Hash		UINT64_C(0x%016llx)\n", m_upsideDown.m_hash);
+#else
 	assert(m_littleGame.m_hash == LittleGame_Hash);
 	assert(m_pawnsOn4thRank.m_hash == PawnsOn4thRank_Hash);
 	assert(m_pyramid.m_hash == Pyramid_Hash);
@@ -6600,6 +6634,7 @@ Board::initialize()
 	assert(m_runaway.m_hash == Runaway_Hash);
 	assert(m_queenVsRooks.m_hash == QueenVsRooks_Hash);
 	assert(m_upsideDown.m_hash == UpsideDown_Hash);
+#endif
 }
 
 // vi:set ts=3 sw=3:

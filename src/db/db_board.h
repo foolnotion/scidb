@@ -80,8 +80,9 @@ struct ExactZHPosition : public ExactPosition
 	bool operator==(ExactZHPosition const& position) const;
 	bool operator!=(ExactZHPosition const& position) const;
 
-	Material m_holding[2];
+	Material m_holding[2];				// pieces in hand
 	uint64_t	m_promoted[2];				// positions of promoted pieces
+	uint16_t m_checksGiven[2];			// number of checks given
 }
 __attribute__((packed));
 
@@ -623,9 +624,44 @@ private:
 	Material		m_material[2];				// material count
 	unsigned		m_kingHasMoved[2];		// king has moved?
 
-	// IMPORTANT NOTE: (TODO)
-	// If the variant is three-check this data belongs to the exact position!
-	unsigned		m_checksGiven[2];			// number of checks given (per side)
+	// ========================================================================
+	// NOTE: for (general) position search the following members are relevant:
+	// ========================================================================
+	// ------------------------------------------------------------------------
+	// Position:
+	// ------------------------------------------------------------------------
+	// m_occupiedBy
+	// m_pawns
+	// m_knights
+	// m_bishops
+	// m_rooks
+	// m_queens
+	// m_kings
+	// ------------------------------------------------------------------------
+	// ExactPosition:
+	// ------------------------------------------------------------------------
+	// m_stm
+	// m_castle
+	// m_epSquare
+	// ------------------------------------------------------------------------
+	// ExactZHPosition:
+	// ------------------------------------------------------------------------
+	// m_holding			(Zhouse)
+	// m_promoted			(Zhouse)
+	// m_checksGiven		(Three-Check)
+	// ------------------------------------------------------------------------
+	// Board:
+	// ------------------------------------------------------------------------
+	// m_hash
+	// m_pawnHash
+	// m_material
+	// ------------------------------------------------------------------------
+	// Signature:
+	// ------------------------------------------------------------------------
+	// m_promotions
+	// m_underPromotions
+	// m_castling
+	// ========================================================================
 
 	// Class data
 	static Board m_emptyBoard;

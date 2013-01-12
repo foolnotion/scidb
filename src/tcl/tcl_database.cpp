@@ -960,7 +960,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	mstl::string	encoding		= sys::utf8::Codec::utf8();
+	mstl::string	encoding		= sys::utf8::Codec::automatic();
 	char const*		option		= stringFromObj(objc, objv, objc - 2);
 	bool				description	= false;
 
@@ -992,6 +992,8 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	dst(stringFromObj(objc, objv, 1));
 	mstl::string	ext(::util::misc::file::suffix(dst));
 	Progress			progress(objv[4], objv[5]);
+
+	ext.tolower();
 
 	if (ext != "pgn" && ext != "gz" && ext != "zip")
 	{

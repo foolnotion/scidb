@@ -1011,7 +1011,6 @@ PgnReader::process(Progress& progress)
 				}
 
 				checkVariant();
-				checkResult();
 
 				if (token == kError)
 					unexpectedSymbol(kError, get());
@@ -1046,9 +1045,10 @@ PgnReader::process(Progress& progress)
 
 					if (m_noResult || m_resultMode == InMoveSection)
 					{
-						m_tags.set(Result, m_result);
+						m_tags.set(Result, result::toString(m_result));
+						checkResult();
 					}
-					else
+					else if (checkResult())
 					{
 						result::ID r = result::fromString(m_tags.value(Result));
 
@@ -1170,10 +1170,11 @@ PgnReader::checkVariant()
 }
 
 
-void
+bool
 PgnReader::checkResult()
 {
 	unsigned state = board().checkState(m_variant);
+	bool rc(true);
 
 	if (state & Board::Losing)
 	{
@@ -1184,6 +1185,7 @@ PgnReader::checkResult()
 		{
 			m_tags.set(tag::Result, result::toString(expected));
 			warning(ResultCorrection);
+			rc = false;
 		}
 	}
 	else if (state & (Board::Checkmate | Board::ThreeChecks))
@@ -1198,6 +1200,7 @@ PgnReader::checkResult()
 		{
 			m_tags.set(tag::Result, result::toString(expected));
 			warning(ResultCorrection);
+			rc = false;
 		}
 	}
 	else if (state & Board::Stalemate)
@@ -1237,18 +1240,21 @@ PgnReader::checkResult()
 
 			case variant::Undetermined:
 				// TODO: how should we handle this case?
-				return;
+				// fallthru
 
 			default:
-				return;
+				return true;
 		}
 
 		if (given != expected)
 		{
 			m_tags.set(tag::Result, result::toString(expected));
 			warning(ResultCorrection);
+			rc = false;
 		}
 	}
+
+	return rc;
 }
 
 
@@ -2072,7 +2078,14 @@ PgnReader::searchTag()
 		switch (c)
 		{
 			case '\0':	return kEoi;
-			case '[':	return kTag;
+
+			case '[':
+				if (m_encoding == sys::utf8::Codec::automatic())
+				{
+					delete m_codec;
+					m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
+				}
+				return kTag;
 
 			case 0xef:
 				if ((c = get(true)) == 0xbb)
@@ -2692,6 +2705,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case tag::Site:
+			convertToUtf(value);
 			m_eventCountry = extractCountryFromSite(value);
 			m_isICS = ::equal(value, "ICS:", 4);
 			break;
@@ -2979,7 +2993,8 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				if (res == result::Unknown && (value.size() != 1 || value[0] != '*'))
 				{
 					m_tags.set(Result, "*");
-					warning(InvalidResultTag, m_prevPos, value);
+					if (value != "?")
+						warning(InvalidResultTag, m_prevPos, value);
 					m_noResult = true;
 					return false;
 				}
@@ -3170,6 +3185,10 @@ PgnReader::readTags()
 					m_tags.setExtra(name, value);
 				else
 					addTag(tag, value);
+			}
+			else if (!tag::isMandatory(tag) && (value == "?" || value == "-"))
+			{
+				// skip tag
 			}
 			else if (checkTag(tag, value))
 			{
@@ -4456,29 +4475,32 @@ PgnReader::parseLowercaseP(Token, int)
 
 
 PgnReader::Token
-PgnReader::parseLowercaseO(Token, int)
+PgnReader::parseLowercaseO(Token prevToken, int)
 {
 	// Move suffix: "o^", "oo", "o/o", "o.o", "o..o", "or"
+	// Move: "o-o", "o-o-o"
 
-	m_prevPos = m_currPos;
-
-	switch (get())
+	switch (m_linePos[0])
 	{
 		case '^':
+			advanceLinePos(1);
 			putNag(nag::PassedPawn);
 			break;
 
 		case 'o':
+			advanceLinePos(1);
 			putNag(nag::DoublePawns);
 			break;
 
 		case 'r':
+			advanceLinePos(1);
 			putNag(nag::BetterMove);
 			break;
 
 		case '/':
-			if (get() != 'o')
-				error(UnexpectedSymbol, m_prevPos, "o/");
+			if (m_linePos[1] != 'o')
+				error(UnexpectedSymbol, "o/");
+			advanceLinePos(2);
 			putNag(nag::SeparatedPawns);
 			break;
 
@@ -4486,22 +4508,43 @@ PgnReader::parseLowercaseO(Token, int)
 			switch (get())
 			{
 				case 'o':
+					advanceLinePos(1);
 					putNag(nag::UnitedPawns);
 					break;
 
 				case '.':
-					if (get() != 'o')
-						error(UnexpectedSymbol, m_prevPos, "o..");
+					if (m_linePos[1] != 'o')
+						error(UnexpectedSymbol, "o..");
+					advanceLinePos(2);
 					putNag(nag::UnitedPawns);
 					break;
 
 				default:
-					error(UnexpectedSymbol, m_prevPos, "o.");
+					error(UnexpectedSymbol, "o.");
 			}
 			break;
 
+		case '-':
+			if (equal(m_linePos, "-o-o", 4))
+			{
+				if (doCastling("O-O-O"))
+				{
+					advanceLinePos(4);
+					return kSan;
+				}
+			}
+			else if (equal(m_linePos, "-o", 2))
+			{
+				if (doCastling("O-O"))
+				{
+					advanceLinePos(2);
+					return kSan;
+				}
+			}
+			// fallthru
+
 		default:
-			error(UnexpectedSymbol, m_prevPos, "o");
+			error(UnexpectedSymbol, "o");
 	}
 
 	return kNag;
@@ -4784,67 +4827,59 @@ PgnReader::parseNumberZero(Token prevToken, int c)
 	// Castling: [0O][-]?[0O]([-]?[0O])?
 	//	Result: "0-1", "0:1", "0-0", "0:0"
 
-	m_prevPos = m_currPos;
-	char* s = m_linePos;
-
-	switch (c = get())
+	switch (m_linePos[0])
 	{
 		case '-':
-			switch (c = get())
+			switch (m_linePos[1])
 			{
 				case '1':
+					advanceLinePos(1);
 					return resultToken(result::Black);
 
 				case '0':
+					if (m_linePos[2] == '-')
+						return parseCastling(prevToken, '0');
+
+					if (m_tags.value(Result) != "0-0" && doCastling("O-O"))
 					{
-						switch (c = get(true))
-						{
-							case '\0':
-								return resultToken(result::Lost);
-
-							case '-':
-								advanceLinePos(-2);
-								return parseCastling(prevToken, '0');
-						}
-
-						if (m_tags.value(Result) == "0-0")
-							return resultToken(result::Lost);
-
-						if (doCastling("O-O"))
-							return kSan;
-
-						advanceLinePos(-2);
-						error(InvalidMove, m_prevPos, "O-O");
+						advanceLinePos(2);
+						return kSan;
 					}
+					else
+					{
+						advanceLinePos(2);
+						return resultToken(result::Lost);
+					}
+
+					error(InvalidMove, "O-O");
 					break;
 
 				case 'O':
-					setLinePos(s);
 					return parseCastling(prevToken, '0');
 			}
 
-			error(InvalidToken, m_prevPos, mstl::string(s, m_linePos));
+			error(InvalidToken, mstl::string(m_linePos - 1, m_linePos + 1));
 			// not reached
 
 		case ':':
-			switch ((c = get()))
+			switch (m_linePos[1])
 			{
 				case '0':
+					advanceLinePos(2);
 					return resultToken(result::Lost);
 
 				case '1':
+					advanceLinePos(2);
 					return resultToken(result::Black);
 			}
-			error(InvalidToken, m_prevPos, ::trim(mstl::string("0:") + char(c)));
+			error(InvalidToken, ::trim(mstl::string(m_linePos - 1, m_linePos + 2)));
 			// not reached
 
 		case 'O':
 		case '0':
-			putback(c);
 			return parseCastling(prevToken, '0');
 	}
 
-	putback(c);
 	return parseMoveNumber(prevToken, '0');
 }
 
@@ -4976,7 +5011,7 @@ PgnReader::parseQuestionMark(Token prevToken, int c)
 PgnReader::Token
 PgnReader::parseOpenParen(Token prevToken, int)
 {
-	// Move suffix: "(.)", "(+)", "(?)", "()"
+	// Move suffix: "(.)", "(+)", "(?)", "()", "(ep)", "(e.p.)"
 	// Start of variation
 
 	if (partOfMove(prevToken))
@@ -4988,24 +5023,37 @@ PgnReader::parseOpenParen(Token prevToken, int)
 			return kNag;
 		}
 
-		if (m_linePos[0] && m_linePos[1] == ')')
+		if (m_linePos[0])
 		{
-			switch (m_linePos[0])
+			if (m_linePos[1] == ')')
 			{
-				case '.':
-					advanceLinePos(2);
-					putNag(nag::WhiteIsInZugzwang, nag::BlackIsInZugzwang);
-					return kNag;
+				switch (m_linePos[0])
+				{
+					case '.':
+						advanceLinePos(2);
+						putNag(nag::WhiteIsInZugzwang, nag::BlackIsInZugzwang);
+						return kNag;
 
-				case '+':
-					advanceLinePos(2);
-					putNag(nag::Zeitnot);
-					return kNag;
+					case '+':
+						advanceLinePos(2);
+						putNag(nag::Zeitnot);
+						return kNag;
 
-				case '?':
-					advanceLinePos(2);
-					putNag(nag::QuestionableMove);
-					return kNag;
+					case '?':
+						advanceLinePos(2);
+						putNag(nag::QuestionableMove);
+						return kNag;
+				}
+			}
+			else if (equal(m_linePos, "ep)", 3))
+			{
+				advanceLinePos(3);
+				return prevToken;
+			}
+			else if (equal(m_linePos, "e.p.)", 3))
+			{
+				advanceLinePos(5);
+				return prevToken;
 			}
 		}
 	}

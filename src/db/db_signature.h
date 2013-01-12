@@ -54,6 +54,7 @@ public:
 	castling::Rights castling() const;
 	unsigned hpCount() const;
 	hp::Pawns homePawnsData() const;
+	unsigned countKings(color::ID color) const;
 
 	/// Returns whether current signature can reach final signature \target.
 	bool isReachableFinal(Signature const& target) const;
@@ -64,6 +65,8 @@ public:
 
 	void addCastling(castling::Rights rights);
 	void removeCastling(castling::Rights rights);
+	void addKing(color::ID color);
+	void removeKing(color::ID color);
 
 	void setHomePawns(unsigned hpCount, hp::Pawns data);
 	void clearHomePawns();
@@ -104,10 +107,23 @@ protected:
 	//		- 0011 for under-promotions
 	//		- 1100 for checks given
 
-	uint16_t m_promotions		:4;	// count promotions
-	uint16_t m_underPromotions	:4;	// count under-promotions
-	uint16_t m_castling			:4;	// castling flags / count kings on board (Antichess)
-	uint16_t m_hpCount			:4;	// length of home pawns (in nybbles)
+	union __attribute__((packed))
+	{
+		struct __attribute__((packed))
+		{
+			uint16_t m_promotions		:4;	// count promotions
+			uint16_t m_underPromotions	:4;	// count under-promotions
+			uint16_t m_castling			:4;	// castling flags
+			uint16_t m_hpCount			:4;	// length of home pawns (in nybbles)
+		};
+		struct __attribute__((packed))
+		{
+			uint16_t __skip1				:8;
+			uint16_t m_whiteKing			:2;	// count kings on board (Antichess)
+			uint16_t m_blackKing			:2;	// count kings on board (Antichess)
+			uint16_t __skip2				:4;
+		};
+	};
 }
 __attribute__((packed));
 

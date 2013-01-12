@@ -625,7 +625,7 @@ proc SetType {w id type} {
 
 
 proc GetFileType {file} {
-	switch [set ext [file extension $file]] {
+	switch [set ext [string tolower [file extension $file]]] {
 		.zip		{ set ext .pgn }
 		.pgn.gz	{ set ext .pgn }
 		.bpgn.gz	{ set ext .bpgn }

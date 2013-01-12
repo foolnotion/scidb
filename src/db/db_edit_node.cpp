@@ -390,7 +390,7 @@ Diagram::operator==(Node const* node) const
 	M_ASSERT(m_key == static_cast<Diagram const*>(node)->m_key);
 
 	return	m_fromColor == static_cast<Diagram const*>(node)->m_fromColor
-			&& m_board.isEqualPosition(static_cast<Diagram const*>(node)->m_board);
+			&& m_board.isEqualZHPosition(static_cast<Diagram const*>(node)->m_board);
 }
 
 
@@ -562,7 +562,7 @@ Opening::operator==(Node const* node) const
 
 	return	m_idn == static_cast<Opening const*>(node)->m_idn
 			&& m_eco == static_cast<Opening const*>(node)->m_eco
-			&& m_board.isEqualPosition(static_cast<Opening const*>(node)->m_board);
+			&& m_board.isEqualZHPosition(static_cast<Opening const*>(node)->m_board);
 }
 
 

@@ -1011,7 +1011,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 	unsigned runLength = m_strm.uint16();
 
-	if (position.isEqualPosition(m_position.board()))
+	if (position.isEqualZHPosition(m_position.board()))
 		return nextMove(runLength);
 
 	Move move;
@@ -1023,7 +1023,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 		// unsafeGet() is ok because the block file is buffered with doubled size
 		m_position.doMove(move, decodeMove(m_strm.unsafeGet(), move));
 
-		if (position.isEqualPosition(m_position.board()))
+		if (position.isEqualZHPosition(m_position.board()))
 			return nextMove(runLength - 1);
 
 		if (!m_position.board().signature().isReachablePawns(position.signature()))
@@ -1047,7 +1047,7 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 		{
 			m_position.doMove(move, decodeMove(b, move));
 
-			if (position.isEqualPosition(m_position.board()))
+			if (position.isEqualZHPosition(m_position.board()))
 				return nextMove();
 
 			if (!m_position.board().signature().isReachablePawns(position.signature()))

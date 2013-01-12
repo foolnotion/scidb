@@ -287,7 +287,7 @@ private:
 	bool checkTag(tag::ID tag, mstl::string& value);
 	void addTag(tag::ID tag, mstl::string const& value);
 	void checkVariant();
-	void checkResult();
+	bool checkResult();
 
 	void readTags();
 	bool readTagName(mstl::string& s);
