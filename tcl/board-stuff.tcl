@@ -1062,7 +1062,7 @@ proc MakeDisk {squareSize color} {
 	}
 	set img [image create photo -width $size -height $size]
 	::scidb::tk::image copy $Marks(disk,$color) $img
-	::scidb::tk::image 0.8 $alpha $img -composite overlay
+	::scidb::tk::image alpha 0.8 $img -composite overlay
 	return $img
 }
 

@@ -1027,7 +1027,6 @@ Namebase::nextFreeId()
 	if (id == IdSet::npos)
 	{
 		m_freeSetIsEmpty = true;
-		M_ASSERT(m_nextId + 1 == m_list.size());
 		return m_nextId++;
 	}
 	else

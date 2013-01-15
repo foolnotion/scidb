@@ -159,7 +159,7 @@ protected:
 	virtual void sendTrailingComment(Comment const& comment, bool variationIsEmpty) = 0;
 	virtual void sendComment(Comment const& comment) = 0;
 	virtual void sendMoveInfo(MoveInfoSet const& moveInfo);
-	virtual bool sendMove(	Move const& move) = 0;
+	virtual bool sendMove(Move const& move) = 0;
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,
 									MarkSet const& marks,

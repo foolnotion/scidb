@@ -742,7 +742,7 @@ GameInfo::restore(GameInfo& oldInfo, Namebases& namebases)
 
 
 void
-GameInfo::reallocate(Namebases& namebases)
+GameInfo::reallocate(Namebases& namebases) const
 {
 	static unsigned const Limit = mstl::numeric_limits<unsigned>::max();
 

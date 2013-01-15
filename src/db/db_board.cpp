@@ -543,6 +543,120 @@ namespace db { // GCC will not compile without explicit namespace
 template <>
 inline
 void
+Board::incrMaterial<piece::Pawn>(unsigned color)
+{
+	m_matSig.part[color].pawn = (1 << ++m_material[color].pawn) - 1;
+}
+
+
+template <>
+inline
+void
+Board::incrMaterial<piece::Knight>(unsigned color)
+{
+	m_matSig.part[color].knight = mstl::min(3, (1 << ++m_material[color].knight) - 1);
+}
+
+
+template <>
+inline
+void
+Board::incrMaterial<piece::Bishop>(unsigned color)
+{
+	m_matSig.part[color].bishop = mstl::min(3, (1 << ++m_material[color].bishop) - 1);
+}
+
+
+template <>
+inline
+void
+Board::incrMaterial<piece::Rook>(unsigned color)
+{
+	m_matSig.part[color].rook = mstl::min(3, (1 << ++m_material[color].rook) - 1);
+}
+
+
+template <>
+inline
+void
+Board::incrMaterial<piece::Queen>(unsigned color)
+{
+	m_matSig.part[color].queen = mstl::min(3, (1 << ++m_material[color].queen) - 1);
+}
+
+
+template <>
+inline
+void
+Board::incrMaterial<piece::King>(unsigned color)
+{
+	if (color == White)
+		m_whiteKing = mstl::min(3, (1 << ++m_material[White].king) - 1);
+	else
+		m_blackKing = mstl::min(3, (1 << ++m_material[Black].king) - 1);
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::Pawn>(unsigned color)
+{
+	m_matSig.part[color].pawn = (1 << --m_material[color].pawn) - 1;
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::Knight>(unsigned color)
+{
+	m_matSig.part[color].knight = mstl::min(3, (1 << --m_material[color].knight) - 1);
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::Bishop>(unsigned color)
+{
+	m_matSig.part[color].bishop = mstl::min(3, (1 << --m_material[color].bishop) - 1);
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::Rook>(unsigned color)
+{
+	m_matSig.part[color].rook = mstl::min(3, (1 << --m_material[color].rook) - 1);
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::Queen>(unsigned color)
+{
+	m_matSig.part[color].queen = mstl::min(3, (1 << --m_material[color].queen) - 1);
+}
+
+
+template <>
+inline
+void
+Board::decrMaterial<piece::King>(unsigned color)
+{
+	if (color == White)
+		m_whiteKing = mstl::min(3, (1 << --m_material[White].king) - 1);
+	else
+		m_blackKing = mstl::min(3, (1 << --m_material[Black].king) - 1);
+}
+
+
+template <>
+inline
+void
 Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
@@ -1268,8 +1382,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 				return false;
 			hashPawn(s, p);
 			m_pawns |= bit;
-			++m_material[color].pawn;
-			m_matSig.part[color].pawn |= m_matSig.part[color].pawn + 1;
+			incrMaterial<piece::Pawn>(color);
 			pawnProgressAdd(color, s);
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Pawn>(variant, color);
@@ -1278,8 +1391,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 		case piece::Knight:
 			hashPiece(s, p);
 			m_knights |= bit;
-			++m_material[color].knight;
-			m_matSig.part[color].knight |= m_matSig.part[color].knight + 1;
+			incrMaterial<piece::Knight>(color);
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Knight>(variant, color);
 			break;
@@ -1287,8 +1399,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 		case piece::Bishop:
 			hashPiece(s, p);
 			m_bishops |= bit;
-			++m_material[color].bishop;
-			m_matSig.part[color].bishop |= m_matSig.part[color].bishop + 1;
+			incrMaterial<piece::Bishop>(color);
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Bishop>(variant, color);
 			break;
@@ -1296,8 +1407,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 		case piece::Rook:
 			hashPiece(s, p);
 			m_rooks |= bit;
-			++m_material[color].rook;
-			m_matSig.part[color].rook |= m_matSig.part[color].rook + 1;
+			incrMaterial<piece::Rook>(color);
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Rook>(variant, color);
 			break;
@@ -1305,8 +1415,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 		case piece::Queen:
 			hashPiece(s, p);
 			m_queens |= bit;
-			++m_material[color].queen;
-			m_matSig.part[color].queen |= m_matSig.part[color].queen + 1;
+			incrMaterial<piece::Queen>(color);
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Queen>(variant, color);
 			break;
@@ -1315,15 +1424,11 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			M_ASSERT(::count(kings(color)) == 0 || variant::isAntichessExceptLosers(variant));
 			hashPiece(s, p);
 			m_kings |= bit;
-			++m_material[color].king;
 			m_ksq[color] = s;
 			if (variant::isAntichessExceptLosers(variant))
-			{
-				if (color == White)
-					m_whiteKing |= m_material[White].king + 1;
-				else
-					m_blackKing |= m_material[Black].king + 1;
-			}
+				incrMaterial<piece::King>(color);
+			else
+				++m_material[color].king;
 			break;
 
 		case piece::None:
@@ -1359,7 +1464,7 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::Pawn:
 			hashPiece(s, ::toPiece(piece::Pawn, color));
 			m_pawns ^= bit;
-			m_matSig.part[color].pawn = (1 << --m_material[color].pawn) - 1;
+			decrMaterial<piece::Pawn>(color);
 			pawnProgressRemove(color, s);
 			if (variant::isZhouse(variant))
 				m_partner->addToHolding<piece::Pawn>(variant, color);
@@ -1368,7 +1473,7 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::Knight:
 			hashPiece(s, ::toPiece(piece::Knight, color));
 			m_knights ^= bit;
-			m_matSig.part[color].knight = (1 << --m_material[color].knight) - 1;
+			decrMaterial<piece::Knight>(color);
 			if (variant::isZhouse(variant))
 				m_partner->addToHolding<piece::Knight>(variant, color);
 			break;
@@ -1376,7 +1481,7 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::Bishop:
 			hashPiece(s, ::toPiece(piece::Bishop, color));
 			m_bishops ^= bit;
-			m_matSig.part[color].bishop = (1 << --m_material[color].bishop) - 1;
+			decrMaterial<piece::Bishop>(color);
 			if (variant::isZhouse(variant))
 				m_partner->addToHolding<piece::Bishop>(variant, color);
 			break;
@@ -1384,7 +1489,7 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::Rook:
 			hashPiece(s, ::toPiece(piece::Rook, color));
 			m_rooks ^= bit;
-			m_matSig.part[color].rook = (1 << --m_material[color].rook) - 1;
+			decrMaterial<piece::Rook>(color);
 			{
 				Byte castling = m_destroyCastle[s];
 				if (castling != 0xff)
@@ -1401,7 +1506,7 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::Queen:
 			hashPiece(s, ::toPiece(piece::Queen, color));
 			m_queens ^= bit;
-			m_matSig.part[color].queen = (1 << --m_material[color].queen) - 1;
+			decrMaterial<piece::Queen>(color);
 			if (variant::isZhouse(variant))
 				m_partner->addToHolding<piece::Queen>(variant, color);
 			break;
@@ -1409,17 +1514,13 @@ Board::removeAt(Square s, variant::Type variant)
 		case piece::King:
 			hashPiece(s, ::toPiece(piece::King, color));
 			m_kings ^= bit;
-			--m_material[color].king;
 			m_ksq[color] = Null;
 			hashCastling(color);
 			destroyCastle(color);
 			if (variant::isAntichessExceptLosers(variant))
-			{
-				if (color == White)
-					m_whiteKing |= m_material[White].king + 1;
-				else
-					m_blackKing |= m_material[Black].king + 1;
-			}
+				decrMaterial<piece::King>(color);
+			else
+				--m_material[color].king;
 			break;
 
 		case piece::None:
@@ -2566,8 +2667,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Pawn;
 					m_pawns |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].pawn;
-					m_matSig.part[Black].pawn |= m_matSig.part[Black].pawn + 1;
+					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
 					--m_partner->m_holding[White].pawn;
 					break;
@@ -2577,8 +2677,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Knight;
 					m_knights |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].knight;
-					m_matSig.part[Black].knight |= m_matSig.part[Black].knight + 1;
+					incrMaterial<piece::Knight>(Black);
 					--m_partner->m_holding[White].knight;
 					break;
 
@@ -2587,8 +2686,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Bishop;
 					m_bishops |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].bishop;
-					m_matSig.part[Black].bishop |= m_matSig.part[Black].bishop + 1;
+					incrMaterial<piece::Bishop>(Black);
 					--m_partner->m_holding[White].bishop;
 					break;
 
@@ -2597,8 +2695,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Rook;
 					m_rooks |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].rook;
-					m_matSig.part[Black].rook |= m_matSig.part[Black].rook + 1;
+					incrMaterial<piece::Rook>(Black);
 					--m_partner->m_holding[White].rook;
 					break;
 
@@ -2607,8 +2704,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Queen;
 					m_queens |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].queen;
-					m_matSig.part[Black].queen |= m_matSig.part[Black].queen + 1;
+					incrMaterial<piece::Queen>(Black);
 					--m_partner->m_holding[White].queen;
 					break;
 
@@ -2617,9 +2713,12 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::King;
 					m_kings |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
-					++m_material[Black].king;
 					m_ksq[Black] = s;
 					m_blackKing |= m_material[Black].king + 1;
+					if (variant::isAntichessExceptLosers(variant))
+						incrMaterial<piece::King>(Black);
+					else
+						++m_material[Black].king;
 					break;
 
 				case 'P':
@@ -2629,8 +2728,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Pawn;
 					m_pawns |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].pawn;
-					m_matSig.part[White].pawn |= m_matSig.part[White].pawn + 1;
+					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
 					--m_partner->m_holding[Black].pawn;
 					break;
@@ -2640,8 +2738,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Knight;
 					m_knights |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].knight;
-					m_matSig.part[White].knight |= m_matSig.part[White].knight + 1;
+					incrMaterial<piece::Knight>(White);
 					--m_partner->m_holding[Black].knight;
 					break;
 
@@ -2650,8 +2747,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Bishop;
 					m_bishops |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].bishop;
-					m_matSig.part[White].bishop |= m_matSig.part[White].bishop + 1;
+					incrMaterial<piece::Bishop>(White);
 					--m_partner->m_holding[Black].bishop;
 					break;
 
@@ -2660,8 +2756,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Rook;
 					m_rooks |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].rook;
-					m_matSig.part[White].rook |= m_matSig.part[White].rook + 1;
+					incrMaterial<piece::Rook>(White);
 					--m_partner->m_holding[Black].rook;
 					break;
 
@@ -2670,8 +2765,7 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::Queen;
 					m_queens |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].queen;
-					m_matSig.part[White].queen |= m_matSig.part[White].queen + 1;
+					incrMaterial<piece::Queen>(White);
 					--m_partner->m_holding[Black].queen;
 					break;
 
@@ -2680,10 +2774,11 @@ Board::setup(char const* fen, variant::Type variant)
 					m_piece[s] = piece::King;
 					m_kings |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
-					++m_material[White].king;
 					m_ksq[White] = s;
 					if (variant::isAntichessExceptLosers(variant))
-						m_whiteKing |= m_material[White].king + 1;
+						incrMaterial<piece::King>(White);
+					else
+						++m_material[White].king;
 					break;
 
 				default:
@@ -4895,7 +4990,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_halfMoveClock = 0;
 			m_pawns ^= fromMask;
 			++m_promotions;
-			m_matSig.part[m_stm].pawn = (1 << --m_material[m_stm].pawn) - 1;
+			decrMaterial<piece::Pawn>(m_stm);
 			hashPawn(from, ::toPiece(piece::Pawn, m_stm));
 
 			switch (Byte(m.promoted()))
@@ -4904,7 +4999,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_knights ^= toMask;
 					m_piece[to] = piece::Knight;
 					++m_underPromotions;
-					m_matSig.part[m_stm].knight = (1 << ++m_material[m_stm].knight) - 1;
+					incrMaterial<piece::Knight>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Knight, m_stm), variant);
 					m_promoted[m_stm] ^= toMask;
 					break;
@@ -4913,7 +5008,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_bishops ^= toMask;
 					m_piece[to] = piece::Bishop;
 					++m_underPromotions;
-					m_matSig.part[m_stm].bishop = (1 << ++m_material[m_stm].bishop) - 1;
+					incrMaterial<piece::Bishop>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Bishop, m_stm), variant);
 					m_promoted[m_stm] ^= toMask;
 					break;
@@ -4922,7 +5017,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_rooks ^= toMask;
 					m_piece[to] = piece::Rook;
 					++m_underPromotions;
-					m_matSig.part[m_stm].rook = (1 << ++m_material[m_stm].rook) - 1;
+					incrMaterial<piece::Rook>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Rook, m_stm), variant);
 					m_promoted[m_stm] ^= toMask;
 					break;
@@ -4930,7 +5025,7 @@ Board::doMove(Move const& m, variant::Type variant)
 				case piece::Queen:
 					m_queens ^= toMask;
 					m_piece[to] = piece::Queen;
-					m_matSig.part[m_stm].queen = (1 << ++m_material[m_stm].queen) - 1;
+					incrMaterial<piece::Queen>(m_stm);
 					hashPromotedPiece(to, ::toPiece(piece::Queen, m_stm), variant);
 					m_promoted[m_stm] ^= toMask;
 					break;
@@ -4939,11 +5034,8 @@ Board::doMove(Move const& m, variant::Type variant)
 					M_ASSERT(variant::isAntichessExceptLosers(variant));
 					m_kings ^= toMask;
 					m_piece[to] = piece::King;
+					incrMaterial<piece::King>(m_stm);
 					hashPiece(to, ::toPiece(piece::King, m_stm));
-					if (m_stm == White)
-						m_whiteKing = (1 << ++m_material[White].king) - 1;
-					else
-						m_blackKing = (1 << ++m_material[Black].king) - 1;
 					break;
 			}
 			break;
@@ -4955,7 +5047,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					case piece::Pawn:
 						m_pawns ^= toMask;
 						m_piece[to] = piece::Pawn;
-						m_matSig.part[m_stm].pawn = (1 << ++m_material[m_stm].pawn) - 1;
+						incrMaterial<piece::Pawn>(m_stm);
 						hashPawn(to, ::toPiece(piece::Pawn, m_stm));
 						m_partner->removeFromHolding<piece::Pawn>(variant, sntm);
 						break;
@@ -4963,7 +5055,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					case piece::Knight:
 						m_knights ^= toMask;
 						m_piece[to] = piece::Knight;
-						m_matSig.part[m_stm].knight = (1 << ++m_material[m_stm].knight) - 1;
+						incrMaterial<piece::Knight>(m_stm);
 						hashPiece(to, ::toPiece(piece::Knight, m_stm));
 						m_partner->removeFromHolding<piece::Knight>(variant, sntm);
 						break;
@@ -4971,7 +5063,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					case piece::Bishop:
 						m_bishops ^= toMask;
 						m_piece[to] = piece::Bishop;
-						m_matSig.part[m_stm].bishop = (1 << ++m_material[m_stm].bishop) - 1;
+						incrMaterial<piece::Bishop>(m_stm);
 						hashPiece(to, ::toPiece(piece::Bishop, m_stm));
 						m_partner->removeFromHolding<piece::Bishop>(variant, sntm);
 						break;
@@ -4979,7 +5071,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					case piece::Rook:
 						m_rooks ^= toMask;
 						m_piece[to] = piece::Rook;
-						m_matSig.part[m_stm].rook = (1 << ++m_material[m_stm].rook) - 1;
+						incrMaterial<piece::Rook>(m_stm);
 						hashPiece(to, ::toPiece(piece::Rook, m_stm));
 						m_partner->removeFromHolding<piece::Rook>(variant, sntm);
 						if (!m_kingHasMoved[m_stm])
@@ -5007,7 +5099,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					case piece::Queen:
 						m_queens ^= toMask;
 						m_piece[to] = piece::Queen;
-						m_matSig.part[m_stm].queen = (1 << ++m_material[m_stm].queen) - 1;
+						incrMaterial<piece::Queen>(m_stm);
 						hashPiece(to, ::toPiece(piece::Queen, m_stm));
 						m_partner->removeFromHolding<piece::Queen>(variant, sntm);
 						break;
@@ -5038,7 +5130,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_pawns ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
 			pawnProgressRemove(sntm, to);
-			m_matSig.part[sntm].pawn = (1 << --m_material[sntm].pawn) - 1;
+			decrMaterial<piece::Pawn>(sntm);
 			hashPawn(to, ::toPiece(piece::Pawn, sntm));
 			if (variant::isZhouse(variant))
 				m_partner->addToHolding<piece::Pawn>(variant, sntm);
@@ -5048,7 +5140,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_halfMoveClock = 0;
 			m_knights ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
-			m_matSig.part[sntm].knight = (1 << --m_material[sntm].knight) - 1;
+			decrMaterial<piece::Knight>(sntm);
 			hashPiece(to, ::toPiece(piece::Knight, sntm));
 			if (variant::isZhouse(variant))
 				addToHolding<piece::Knight>(toMask, variant, sntm);
@@ -5058,7 +5150,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_halfMoveClock = 0;
 			m_bishops ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
-			m_matSig.part[sntm].bishop = (1 << --m_material[sntm].bishop) - 1;
+			decrMaterial<piece::Bishop>(sntm);
 			hashPiece(to, ::toPiece(piece::Bishop, sntm));
 			if (variant::isZhouse(variant))
 				addToHolding<piece::Bishop>(toMask, variant, sntm);
@@ -5078,7 +5170,7 @@ Board::doMove(Move const& m, variant::Type variant)
 					m_castleRookCurrent[index] = Null;
 				}
 			}
-			m_matSig.part[sntm].rook = (1 << --m_material[sntm].rook) - 1;
+			decrMaterial<piece::Rook>(sntm);
 			hashPiece(to, ::toPiece(piece::Rook, sntm));
 			if (variant::isZhouse(variant))
 				addToHolding<piece::Rook>(toMask, variant, sntm);
@@ -5088,7 +5180,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_halfMoveClock = 0;
 			m_queens ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
-			m_matSig.part[sntm].queen = (1 << --m_material[sntm].queen) - 1;
+			decrMaterial<piece::Queen>(sntm);
 			hashPiece(to, ::toPiece(piece::Queen, sntm));
 			if (variant::isZhouse(variant))
 				addToHolding<piece::Queen>(toMask, variant, sntm);
@@ -5099,10 +5191,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_halfMoveClock = 0;
 			m_kings ^= toMask;
 			m_occupiedBy[sntm] ^= toMask;
-			if (sntm == color::White)
-				m_whiteKing = (1 << --m_material[White].king) - 1;
-			else
-				m_blackKing = (1 << --m_material[Black].king) - 1;
+			decrMaterial<piece::King>(sntm);
 			hashPiece(to, ::toPiece(piece::King, sntm));
 			break;
 
@@ -5116,7 +5205,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_occupiedL90 ^= MaskL90[to] ^ MaskL90[epsq];
 			m_occupiedL45 ^= MaskL45[to] ^ MaskL45[epsq];
 			m_occupiedR45 ^= MaskR45[to] ^ MaskR45[epsq];
-			m_matSig.part[sntm].pawn = (1 << --m_material[sntm].pawn) - 1;
+			decrMaterial<piece::Pawn>(sntm);
 			pawnProgressRemove(sntm, epsq);
 			hashPawn(epsq, ::toPiece(piece::Pawn, sntm));
 			if (variant::isZhouse(variant))
@@ -5340,7 +5429,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_pawns ^= fromMask;
 			m_piece[from] = piece::Pawn;
 			--m_promotions;
-			m_matSig.part[sntm].pawn = (1 << ++m_material[sntm].pawn) - 1;
+			incrMaterial<piece::Pawn>(sntm);
 			hashPawn(from, ::toPiece(piece::Pawn, sntm));
 
 			switch (m.promoted())
@@ -5348,7 +5437,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 				case piece::Knight:
 					m_knights ^= toMask;
 					--m_underPromotions;
-					m_matSig.part[sntm].knight = (1 << --m_material[sntm].knight) - 1;
+					decrMaterial<piece::Knight>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Knight, sntm), variant);
 					m_promoted[sntm] ^= toMask;
 					break;
@@ -5356,7 +5445,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 				case piece::Bishop:
 					m_bishops ^= toMask;
 					--m_underPromotions;
-					m_matSig.part[sntm].bishop = (1 << --m_material[sntm].bishop) - 1;
+					decrMaterial<piece::Bishop>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Bishop, sntm), variant);
 					m_promoted[sntm] ^= toMask;
 					break;
@@ -5364,24 +5453,21 @@ Board::undoMove(Move const& m, variant::Type variant)
 				case piece::Rook:
 					m_rooks ^= toMask;
 					--m_underPromotions;
-					m_matSig.part[sntm].rook = (1 << --m_material[sntm].rook) - 1;
+					decrMaterial<piece::Rook>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Rook, sntm), variant);
 					m_promoted[sntm] ^= toMask;
 					break;
 
 				case piece::Queen:
 					m_queens ^= toMask;
-					m_matSig.part[sntm].queen = (1 << --m_material[sntm].queen) - 1;
+					decrMaterial<piece::Queen>(sntm);
 					hashPromotedPiece(to, ::toPiece(piece::Queen, sntm), variant);
 					m_promoted[sntm] ^= toMask;
 					break;
 
 				case piece::King:
 					m_kings ^= toMask;
-					if (sntm == color::White)
-						m_whiteKing = (1 << --m_material[White].king) - 1;
-					else
-						m_blackKing = (1 << --m_material[Black].king) - 1;
+					decrMaterial<piece::King>(sntm);
 					hashPiece(to, ::toPiece(piece::King, sntm));
 					break;
 
@@ -5395,28 +5481,28 @@ Board::undoMove(Move const& m, variant::Type variant)
 			{
 				case piece::Pawn:
 					m_pawns ^= toMask;
-					m_matSig.part[sntm].pawn = (1 << --m_material[sntm].pawn) - 1;
+					decrMaterial<piece::Pawn>(sntm);
 					hashPawn(to, ::toPiece(piece::Pawn, sntm));
 					m_partner->addToHolding<piece::Pawn>(variant, m_stm);
 					break;
 
 				case piece::Knight:
 					m_knights ^= toMask;
-					m_matSig.part[sntm].knight = (1 << --m_material[sntm].knight) - 1;
+					decrMaterial<piece::Knight>(sntm);
 					hashPiece(to, ::toPiece(piece::Knight, sntm));
 					m_partner->addToHolding<piece::Knight>(variant, m_stm);
 					break;
 
 				case piece::Bishop:
 					m_bishops ^= toMask;
-					m_matSig.part[sntm].bishop = (1 << --m_material[sntm].bishop) - 1;
+					decrMaterial<piece::Bishop>(sntm);
 					hashPiece(to, ::toPiece(piece::Bishop, sntm));
 					m_partner->addToHolding<piece::Bishop>(variant, m_stm);
 					break;
 
 				case piece::Rook:
 					m_rooks ^= toMask;
-					m_matSig.part[sntm].rook = (1 << --m_material[sntm].rook) - 1;
+					decrMaterial<piece::Rook>(sntm);
 					hashPiece(to, ::toPiece(piece::Rook, sntm));
 					m_partner->addToHolding<piece::Rook>(variant, m_stm);
 					if (!m_kingHasMoved[sntm])
@@ -5443,7 +5529,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 				case piece::Queen:
 					m_queens ^= toMask;
-					m_matSig.part[sntm].queen = (1 << --m_material[sntm].queen) - 1;
+					decrMaterial<piece::Queen>(sntm);
 					hashPiece(to, ::toPiece(piece::Queen, sntm));
 					m_partner->addToHolding<piece::Queen>(variant, m_stm);
 					break;
@@ -5479,7 +5565,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_pawns ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
 			pawnProgressAdd(m_stm, to);
-			m_matSig.part[m_stm].pawn = (1 << ++m_material[m_stm].pawn) - 1;
+			incrMaterial<piece::Pawn>(m_stm);
 			hashPawn(to, ::toPiece(piece::Pawn, m_stm));
 			if (variant::isZhouse(variant))
 				m_partner->removeFromHolding<piece::Pawn>(variant, m_stm);
@@ -5488,7 +5574,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::Knight:
 			m_knights ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			m_matSig.part[m_stm].knight = (1 << ++m_material[m_stm].knight) - 1;
+			incrMaterial<piece::Knight>(m_stm);
 			hashPiece(to, ::toPiece(piece::Knight, m_stm));
 			if (variant::isZhouse(variant))
 				removeFromHolding<piece::Knight>(toMask, variant, m_stm);
@@ -5497,7 +5583,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::Bishop:
 			m_bishops ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			m_matSig.part[m_stm].bishop = (1 << ++m_material[m_stm].bishop) - 1;
+			incrMaterial<piece::Bishop>(m_stm);
 			hashPiece(to, ::toPiece(piece::Bishop, m_stm));
 			if (variant::isZhouse(variant))
 				removeFromHolding<piece::Bishop>(toMask, variant, m_stm);
@@ -5506,7 +5592,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::Rook:
 			m_rooks ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			m_matSig.part[m_stm].rook = (1 << ++m_material[m_stm].rook) - 1;
+			incrMaterial<piece::Rook>(m_stm);
 			hashPiece(to, ::toPiece(piece::Rook, m_stm));
 			if (variant::isZhouse(variant))
 				removeFromHolding<piece::Rook>(toMask, variant, m_stm);
@@ -5515,7 +5601,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::Queen:
 			m_queens ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			m_matSig.part[m_stm].queen = (1 << ++m_material[m_stm].queen) - 1;
+			incrMaterial<piece::Queen>(m_stm);
 			hashPiece(to, ::toPiece(piece::Queen, m_stm));
 			if (variant::isZhouse(variant))
 				removeFromHolding<piece::Queen>(toMask, variant, m_stm);
@@ -5524,10 +5610,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 		case piece::King:
 			m_kings ^= toMask;
 			m_occupiedBy[m_stm] ^= toMask;
-			if (m_stm == color::White)
-				m_whiteKing = (1 << ++m_material[White].king) - 1;
-			else
-				m_blackKing = (1 << ++m_material[Black].king) - 1;
+			incrMaterial<piece::King>(m_stm);
 			hashPiece(to, ::toPiece(piece::King, m_stm));
 			break;
 
@@ -5541,7 +5624,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_occupiedL90 ^= MaskL90[to] ^ MaskL90[epsq];
 			m_occupiedL45 ^= MaskL45[to] ^ MaskL45[epsq];
 			m_occupiedR45 ^= MaskR45[to] ^ MaskR45[epsq];
-			m_matSig.part[m_stm].pawn = (1 << ++m_material[m_stm].pawn) - 1;
+			incrMaterial<piece::Pawn>(m_stm);
 			pawnProgressAdd(m_stm, epsq);
 			hashPawn(epsq, ::toPiece(piece::Pawn, m_stm));
 			if (variant::isZhouse(variant))

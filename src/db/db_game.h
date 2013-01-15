@@ -532,6 +532,8 @@ public:
 	void setLanguages(LanguageSet const& set);
 	/// Set whether game is modified anymore.
 	void setIsModified(bool flag);
+	/// Set whether game is irreversible modified.
+	void setIsIrreversible(bool flag);
 	/// Clear undo stack.
 	void clearUndo();
 

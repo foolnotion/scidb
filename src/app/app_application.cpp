@@ -1363,6 +1363,52 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 
 
 void
+Application::changeVariant(unsigned position, db::variant::Type variant)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(database(position).name() == scratchbaseName());
+	M_REQUIRE(variant::isMainVariant(variant));
+
+	EditGame& 		game					= *m_gameMap[position];
+	variant::Type	originalVariant	= game.cursor->variant();
+
+	if (originalVariant != variant)
+	{
+		Cursor*				scratch		= scratchbase(variant::toMainVariant(variant));
+		Database&			base			= scratch->base();
+		GameInfo const&	info			= game.cursor->base().gameInfo(game.index);
+		unsigned				index			= base.countGames();
+
+		info.reallocate(base.namebases());
+		base.namebases().update();
+		game.game->finishLoad(variant);
+
+		if (!save::isOk(base.newGame(*game.game, info)))
+		{
+			game.game->finishLoad(originalVariant);
+			M_RAISE("unexpected error: couldn't add new game to Scratchbase");
+		}
+
+		TagSet tags;
+		base.getGameTags(index, tags);
+
+		m_indexMap[position] = index;
+
+		game.cursor = scratch;
+		game.index = index;
+		game.crcIndex = base.computeChecksum(index);
+		game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
+		game.sourceBase = base.name();
+		game.sourceIndex = index;
+		game.refresh = 0;
+
+		game.cursor->base().deleteGame(game.index, true);
+		// TODO: compress database
+	}
+}
+
+
+void
 Application::swapGames(unsigned position1, unsigned position2)
 {
 	M_REQUIRE(containsGameAt(position1) || containsGameAt(position2));
@@ -2247,6 +2293,8 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 		releaseGame(position);
 		// TODO: compress scratch base
 	}
+
+	game->game->setIsIrreversible(true);
 
 	if (count > 0 && !trialMode && m_subscriber)
 	{

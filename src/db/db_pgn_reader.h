@@ -174,6 +174,7 @@ public:
 	unsigned accepted(unsigned variant) const;
 	unsigned rejected(unsigned variant) const;
 	Variants const& unsupportedVariants() const;
+	variant::Type detectedVariant() const;
 
 	unsigned process(util::Progress& progress) override;
 

@@ -531,6 +531,13 @@ PgnReader::PgnReader(mstl::istream& stream,
 }
 
 
+variant::Type
+PgnReader::detectedVariant() const
+{
+	return m_variant;
+}
+
+
 PgnReader::~PgnReader() throw()
 {
 	delete m_codec;
@@ -2285,7 +2292,7 @@ PgnReader::checkFen()
 bool
 PgnReader::parseVariant()
 {
-	if (equal(m_variantValue, "wild/", 5))
+	if (::equal(m_variantValue, "wild/", 5))
 	{
 		// wild/0	Reversed queen and king
 		// wild/1	Random shuffle different on each side
@@ -2323,11 +2330,11 @@ PgnReader::parseVariant()
 		switch (*v)
 		{
 			case '1':
-				if (equal(v, "17")) // Losers
+				if (::equal(v, "17")) // Losers
 				{
 					setupVariant(variant::Losers);
 				}
-				else if (equal(v, "19")) // KNN vs. KP
+				else if (::equal(v, "19")) // KNN vs. KP
 				{
 					setupVariant(variant::Normal);
 					m_idn = variant::KNNvsKP;
@@ -2339,22 +2346,22 @@ PgnReader::parseVariant()
 				break;
 
 			case '2':
-				if (equal(v, "2")) // Shuffle chess
+				if (::equal(v, "2")) // Shuffle chess
 					setupVariant(variant::Normal);
-				else if (equal(v, "22") || equal(v, "fr")) // Chess 960
+				else if (::equal(v, "22") || equal(v, "fr")) // Chess 960
 					setupVariant(variant::Normal);
-				else if (equal(v, "23")) // Crazyhouse
+				else if (::equal(v, "23")) // Crazyhouse
 					setupVariant(variant::Crazyhouse);
-				else if (equal(v, "25")) // Three-check
+				else if (::equal(v, "25")) // Three-check
 					setupVariant(variant::ThreeCheck);
-				else if (equal(v, "26")) // Giveaway
+				else if (::equal(v, "26")) // Giveaway
 					setupVariant(variant::Giveaway);
 				else
 					return false;
 				break;
 
 			case '5':
-				if (equal(v, "7")) // Upside down
+				if (::equal(v, "7")) // Upside down
 				{
 					setupVariant(variant::Normal);
 					m_idn = variant::UpsideDown;
@@ -2366,7 +2373,7 @@ PgnReader::parseVariant()
 				break;
 
 			case '7':
-				if (equal(v, "7")) // Three pawns and a king (Little Game)
+				if (::equal(v, "7")) // Three pawns and a king (Little Game)
 				{
 					setupVariant(variant::Normal);
 					m_idn = variant::LittleGame;
@@ -2378,7 +2385,7 @@ PgnReader::parseVariant()
 				break;
 
 			case '8':
-				if (equal(v, "8")) // Pawns start on 4th rank
+				if (::equal(v, "8")) // Pawns start on 4th rank
 				{
 					setupVariant(variant::Normal);
 					m_idn = variant::PawnsOn4thRank;
@@ -2393,7 +2400,7 @@ PgnReader::parseVariant()
 				return false;
 		}
 	}
-	else if (equal(m_variantValue, "misc/", 5))
+	else if (::equal(m_variantValue, "misc/", 5))
 	{
 		// misc/little-game		same as wild/7
 		// misc/pyramid			pyramidal pawn formation
@@ -2412,43 +2419,43 @@ PgnReader::parseVariant()
 		switch (*v)
 		{
 			case 'p':
-				if (equal(v, "pawns-only"))
+				if (::equal(v, "pawns-only"))
 					m_idn = variant::PawnsOnly;
-				else if (equal(v, "pyramid"))
+				else if (::equal(v, "pyramid"))
 					m_idn = variant::Pyramid;
 				break;
 
 			case 'k':
-				if (equal(v, "knights-only"))
+				if (::equal(v, "knights-only"))
 					m_idn = variant::KnightsOnly;
 				break;
 
 			case 'b':
-				if (equal(v, "bishops-only"))
+				if (::equal(v, "bishops-only"))
 					m_idn = variant::BishopsOnly;
 				break;
 
 			case 'r':
-				if (equal(v, "rooks-only"))
+				if (::equal(v, "rooks-only"))
 					m_idn = variant::RooksOnly;
-				else if (equal(v, "runaway"))
+				else if (::equal(v, "runaway"))
 					m_idn = variant::Runaway;
 				break;
 
 			case 'q':
-				if (equal(v, "queens-only"))
+				if (::equal(v, "queens-only"))
 					m_idn = variant::QueensOnly;
-				else if (equal(v, "queen-rooks"))
+				else if (::equal(v, "queen-rooks"))
 					m_idn = variant::QueenVsRooks;
 				break;
 
 			case 'n':
-				if (equal(v, "no-queens"))
+				if (::equal(v, "no-queens"))
 					m_idn = variant::NoQueens;
 				break;
 
 			case 'l':
-				if (equal(v, "little-game"))
+				if (::equal(v, "little-game"))
 					m_idn = variant::LittleGame;
 				break;
 		}
@@ -2458,11 +2465,11 @@ PgnReader::parseVariant()
 
 		setupVariant(variant::Normal);
 	}
-	else if (equal(m_variantValue, "odds/", 5))
+	else if (::equal(m_variantValue, "odds/", 5))
 	{
 		setupVariant(variant::Normal);
 	}
-	else if (equal(m_variantValue, "pawns/", 6))
+	else if (::equal(m_variantValue, "pawns/", 6))
 	{
 		// pawns/little-game		same as wild/7
 		// pawns/pawns-only		standard position with pawns only
@@ -2470,27 +2477,27 @@ PgnReader::parseVariant()
 
 		char const* v = m_variantValue.c_str() + 6;
 
-		if (equal(v, "pawns-only"))
+		if (::equal(v, "pawns-only"))
 			m_idn = variant::PawnsOnly;
-		else if (equal(v, "wild-five"))
+		else if (::equal(v, "wild-five"))
 			m_idn = variant::WildFive;
-		else if (equal(v, "little-game"))
+		else if (::equal(v, "little-game"))
 			m_idn = variant::LittleGame;
 		else
 			return false;
 
 		setupVariant(variant::Normal);
 	}
-	else if (equal(m_variantValue, "endings/", 8))
+	else if (::equal(m_variantValue, "endings/", 8))
 	{
 		// endings/kbnk	KBN vs. K
 		// endibgs/kbbk	KBB vs. K
 
 		char const* v = m_variantValue.c_str() + 8;
 
-		if (equal(v, "kbnk"))
+		if (::equal(v, "kbnk"))
 			m_idn = variant::KBNK;
-		else if (equal(v, "kbbk"))
+		else if (::equal(v, "kbbk"))
 			m_idn = variant::KBBK;
 		else
 			return false;
@@ -2667,7 +2674,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case Event:
-			if (equal(value, "FICS ", 5) || equal(value, "ICS ", 4) || equal(value, "internet ", 8))
+			if (::equal(value, "FICS ", 5) || ::equal(value, "ICS ", 4) || ::equal(value, "internet ", 8))
 			{
 				mstl::string::size_type pos;
 
@@ -3598,7 +3605,7 @@ bool
 PgnReader::doCastling(char const* castle)
 {
 	if (variant::isAntichessExceptLosers(m_variant))
-		error(UnexpectedCastling, m_prevPos, castle);
+		error(UnexpectedCastling, castle);
 
 	putMove();
 	board().parseMove(castle, m_move, m_variant, move::DontAllowIllegalMove);
@@ -3656,7 +3663,7 @@ PgnReader::doCastling(char const* castle)
 
 			m_move = moves[0];
 			m_move.setColor(side);
-			warning(CastlingCorrection, m_prevPos, msg);
+			warning(CastlingCorrection, msg);
 			m_hasCastled = true;
 			return true;
 		}
@@ -3687,14 +3694,14 @@ PgnReader::doCastling(char const* castle)
 //		}
 
 		m_move.setIllegalMove();
-		warning(IllegalCastling, m_prevPos, castle);
+		warning(IllegalCastling, castle);
 	}
 	else if (!m_move.isLegal())
 	{
 		m_warnings.push_back();
 		IllegalMoveWarning& w = m_warnings.back();
 		w.m_variant = m_variant;
-		w.m_pos = m_prevPos;
+		w.m_pos = m_currPos;
 		w.m_move.assign(castle);
 	}
 
@@ -3738,6 +3745,9 @@ PgnReader::parseComment(Token prevToken, int c)
 	}
 	else
 	{
+#if 1
+		skipLine();
+#else
 		// parse comment until end of line
 		do
 			c = get();
@@ -3745,7 +3755,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		while (c && c != '\n' && c != '\r')
 		{
-//			content += c;
+			content += c;
 			c = get();
 		}
 
@@ -3754,7 +3764,7 @@ PgnReader::parseComment(Token prevToken, int c)
 
 		if (c != '\n')
 			putback(c);
-
+#endif
 		return prevToken; // skip comment
 	}
 
@@ -4010,9 +4020,10 @@ PgnReader::parseAtSign(Token prevToken, int c)
 				return parseMove(prevToken, c);
 		}
 
-		if (m_linePos[1] != '@' || m_linePos[2] != '@')
+		if (!equal(m_linePos, "@@@", 3))
 			error(UnexpectedSymbol, "@");
 
+		advanceLinePos(3);
 		setNullMove();
 		return kSan;
 	}
@@ -4027,11 +4038,10 @@ PgnReader::parseBackslash(Token prevToken, int c)
 {
 	// Move suffix: "\/"
 
-	m_prevPos = m_currPos;
+	if (!partOfMove(prevToken) || *m_linePos != '/')
+		error(UnexpectedSymbol, "\\");
 
-	if (!partOfMove(prevToken) || get() != '/')
-		error(UnexpectedSymbol, m_prevPos, "\\");
-
+	advanceLinePos(1);
 	putNag(nag::AimedAgainst);
 	return kNag;
 }
@@ -4045,24 +4055,24 @@ PgnReader::parseCaret(Token prevToken, int c)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "^");
 
-	m_prevPos = m_currPos;
-
-	switch (c = get())
+	switch (*m_linePos)
 	{
 		case '^':
+			advanceLinePos(1);
 			putNag(nag::WhiteHasAPairOfBishops, nag::BlackHasAPairOfBishops);
 			break;
 
 		case '_':
+			advanceLinePos(1);
 			putNag(nag::BishopsOfOppositeColor);
 			break;
 
 		case '=':
+			advanceLinePos(1);
 			putNag(nag::BishopsOfSameColor);
 			break;
 
 		default:
-			putback(c);
 			putNag(nag::WhiteHasTheInitiative, nag::BlackHasTheInitiative);
 			break;
 	}
@@ -4076,8 +4086,6 @@ PgnReader::parseCastling(Token prevToken, int c)
 {
 	// Castling: [0O][-]?[0O]([-]?[0O])?
 	// Move suffix: "O"
-
-	m_prevPos = m_currPos;
 
 	char* e = m_linePos;
 	char const* castle = 0;
@@ -4126,11 +4134,11 @@ PgnReader::parseCastling(Token prevToken, int c)
 			return kNag;
 		}
 
-		error(InvalidToken, m_prevPos, mstl::string(m_linePos - 1, e));
+		error(InvalidToken, mstl::string(m_linePos - 1, e));
 	}
 
 	if (!doCastling(castle))
-		error(InvalidMove, m_prevPos, mstl::string(m_linePos - 1, e));
+		error(InvalidMove, mstl::string(m_linePos - 1, e));
 
 	setLinePos(e);
 	return kSan;
@@ -4151,7 +4159,7 @@ PgnReader::Token
 PgnReader::parseEqualsSign(Token prevToken, int)
 {
 	// Move prefix: "="
-	// Move suffix: "=", "==", "=~", "=&", "=+", "=/+", "=/&", "=/~", "=/&", "=>", "=>/<="
+	// Move suffix: "=", "==", "=~", "=&", "=+", "=/+", "=/&", "=/~", ""=>", "=>/<="
 
 	if (!partOfMove(prevToken))
 	{
@@ -4159,68 +4167,57 @@ PgnReader::parseEqualsSign(Token prevToken, int)
 		return kMovePrefix;
 	}
 
-	char c = get();
-	char d;
-
-	switch (c)
+	switch (m_linePos[0])
 	{
 		case '=':
+			advanceLinePos(1);
 			putNag(nag::EqualChancesQuietPosition);
 			break;
 
 		case '~':
 		case '&':
+			advanceLinePos(1);
 			putNag(nag::EqualChancesActivePosition);
 			break;
 
 		case '+':
+			advanceLinePos(1);
 			putNag(nag::BlackHasASlightAdvantage);
 			break;
 
 		case '/':
-			switch (d = get())
+			switch (m_linePos[1])
 			{
 				case '&':
 				case '~':
+					advanceLinePos(2);
 					putNag(	nag::WhiteHasSufficientCompensationForMaterialDeficit,
 								nag::BlackHasSufficientCompensationForMaterialDeficit);
 					break;
 
 				case '+':
+					advanceLinePos(2);
 					putNag(nag::BlackHasASlightAdvantage);
 					break;
 
 				default:
-					putback(d);
-					putback(c);
 					putNag(nag::DrawishPosition);
 					break;
 			}
 			break;
 
 		case '>':
-			d = get();
-			if (d == '/')
+			if (::equal(m_linePos, ">/<=", 4))
 			{
-				char e = get();
-				if (e == '<')
-				{
-					char f = get();
-					if (f == '=')
-					{
-						putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
-						return kNag;
-					}
-					putback(f);
-				}
-				putback(e);
+				advanceLinePos(4);
+				putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
+				return kNag;
 			}
-			putback(d);
+			advanceLinePos(1);
 			putNag(nag::WhiteHasTheAttack, nag::BlackHasTheAttack);
 			break;
 
 		default:
-			putback(c);
 			putNag(nag::DrawishPosition);
 			break;
 	}
@@ -4237,16 +4234,20 @@ PgnReader::parseExclamationMark(Token prevToken, int)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "!");
 
-	char c = get();
-
-	switch (c)
+	switch (*m_linePos)
 	{
-		case '!': putNag(nag::VeryGoodMove); break;
-		case '?': putNag(nag::SpeculativeMove); break;
+		case '!':
+			advanceLinePos(1);
+			putNag(nag::VeryGoodMove);
+			break;
+
+		case '?':
+			advanceLinePos(1);
+			putNag(nag::SpeculativeMove);
+			break;
 
 		default:
 			putNag(nag::GoodMove);
-			putback(c);
 			break;
 	}
 
@@ -4275,25 +4276,24 @@ PgnReader::parseGreaterThanSign(Token prevToken, int)
 
 	if (partOfMove(prevToken))
 	{
-		int c = get();
-
-		switch (c)
+		switch (*m_linePos)
 		{
 			case '=':
+				advanceLinePos(1);
 				m_prefixAnnotation = nag::BetterMove;
 				return kNag;
 
 			case '>':
+				advanceLinePos(1);
 				putNag(	nag::WhiteHasAModerateKingsideControlAdvantage,
 							nag::BlackHasAModerateKingsideControlAdvantage);
 				return kNag;
 
 			case '<':
+				advanceLinePos(1);
 				putNag(nag::WeakPoint);
 				return kNag;
 		}
-
-		putback(c);
 	}
 
 	m_prefixAnnotation = nag::BetterMove;
@@ -4309,64 +4309,56 @@ PgnReader::parseLessThanSign(Token prevToken, int)
 	// Move suffix: "<=>", "<->", "<=/=>"
 	// Skip: '<' ... '>' (but do not skip newlines)
 
-	char c = get();
-	char d;
-
-	switch (c)
+	switch (m_linePos[0])
 	{
 		case '>':
 			// "<>" is interpreted as null move (used in PalView)
+			advanceLinePos(1);
 			setNullMove();
 			return kSan;
 
 		case '=':
-			d = get();
-			switch (d)
+			switch (m_linePos[1])
 			{
 				case '>':
+					advanceLinePos(2);
 					putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
 					return kNag;
 
 				case '/':
-					char e = get();
-					if (e == '<')
+					if (::equal(m_linePos, "=>", 2))
 					{
-						char f = get();
-						if (f == '=')
-						{
-							putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
-							return kNag;
-						}
-						putback(f);
+						advanceLinePos(2);
+						putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
+						return kNag;
 					}
-					putback(e);
+					break;
 			}
-			if ((d = get()) == '>')
-			{
-			}
-			putback(d);
+			advanceLinePos(1);
 			m_prefixAnnotation = nag::WorseMove;
 			return kMovePrefix;
 
 		case '<':
 			// NOTE: possibly we should use nag::Queenside
+			advanceLinePos(1);
 			putNag(	nag::WhiteHasAModerateQueensideControlAdvantage,
 						nag::BlackHasAModerateQueensideControlAdvantage);
 			return kNag;
 
 		case '-':
-			if ((d = get()) == '>')
+			if (m_linePos[1] == '>')
 			{
+				advanceLinePos(2);
 				putNag(nag::Line);
 				return kNag;
 			}
-			putback(d);
 			break;
 	}
 
 	if (m_modification == Raw)
 	{
-		mstl::string str(1, c);
+		mstl::string str;
+		char c;
 
 		while ((c = get()) != '>')
 			str += c;
@@ -4378,14 +4370,13 @@ PgnReader::parseLessThanSign(Token prevToken, int)
 	// The PGN standard says that '<' is a token, although
 	// it's reserved for future use.
 	// We will skip until first '>', but only in current line.
-	m_prevPos = m_currPos;
+	while (m_linePos < m_lineEnd && *m_linePos != '>')
+		++m_linePos;
 
-	do
-	{
-		if ((c = get()) == '\n')
-			error(UnexpectedSymbol, m_prevPos, "<");
-	}
-	while (c != '>');
+	if (*m_linePos == '>')
+		setLinePos(m_linePos + 1);
+	else
+		error(UnexpectedSymbol, "<");
 
 	return prevToken;
 }
@@ -4427,22 +4418,10 @@ PgnReader::parseLowercaseN(Token, int)
 {
 	// Null move: "null"
 
-	m_prevPos = m_currPos;
+	if (!equal(m_linePos, "ull", 3) || ::isalpha(m_linePos[3]))
+		error(UnexpectedSymbol, "n");
 
-	char c[3];
-
-	c[0] = get();
-	c[1] = get();
-	c[2] = get();
-
-	if (c[0] != 'u' || c[1] != 'l' || c[2] != 'l')
-	{
-		putback(c[2]);
-		putback(c[1]);
-		putback(c[0]);
-		error(UnexpectedSymbol, m_prevPos, "n");
-	}
-
+	advanceLinePos(3);
 	setNullMove();
 	return kSan;
 }
@@ -4453,22 +4432,10 @@ PgnReader::parseLowercaseP(Token, int)
 {
 	// Null move: "pass"
 
-	m_prevPos = m_currPos;
+	if (!equal(m_linePos, "ass", 3) || ::isalpha(m_linePos[3]))
+		error(UnexpectedSymbol, "p");
 
-	char c[3];
-
-	c[0] = get();
-	c[1] = get();
-	c[2] = get();
-
-	if (c[0] != 'a' || c[1] != 's' || c[2] != 's')
-	{
-		putback(c[2]);
-		putback(c[1]);
-		putback(c[0]);
-		error(UnexpectedSymbol, m_prevPos, "p");
-	}
-
+	advanceLinePos(3);
 	setNullMove();
 	return kSan;
 }
@@ -4505,17 +4472,17 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 			break;
 
 		case '.':
-			switch (get())
+			switch (m_linePos[1])
 			{
 				case 'o':
-					advanceLinePos(1);
+					advanceLinePos(2);
 					putNag(nag::UnitedPawns);
 					break;
 
 				case '.':
 					if (m_linePos[1] != 'o')
 						error(UnexpectedSymbol, "o..");
-					advanceLinePos(2);
+					advanceLinePos(3);
 					putNag(nag::UnitedPawns);
 					break;
 
@@ -4525,7 +4492,7 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 			break;
 
 		case '-':
-			if (equal(m_linePos, "-o-o", 4))
+			if (::equal(m_linePos, "-o-o", 4))
 			{
 				if (doCastling("O-O-O"))
 				{
@@ -4533,7 +4500,7 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 					return kSan;
 				}
 			}
-			else if (equal(m_linePos, "-o", 2))
+			else if (::equal(m_linePos, "-o", 2))
 			{
 				if (doCastling("O-O"))
 				{
@@ -4556,11 +4523,10 @@ PgnReader::parseLowercaseZ(Token prevToken, int)
 {
 	// kNag: "zz"
 
-	m_prevPos = m_currPos;
+	if (*m_linePos != 'z')
+		error(UnexpectedSymbol, "z");
 
-	if (get() != 'z')
-		error(UnexpectedSymbol, m_prevPos, "z");
-
+	advanceLinePos(1);
 	putNag(nag::WhiteIsInZugzwang, nag::BlackIsInZugzwang);
 	return kNag;
 }
@@ -4570,13 +4536,12 @@ PgnReader::Token
 PgnReader::parseMate(Token prevToken, int c)
 {
 	// skip "mate"
-	if (::equal(m_linePos, "ate", 3) && !::isalpha(m_linePos[3]))
-	{
-		setLinePos(m_linePos + 3);
-		return prevToken;
-	}
 
-	return unexpectedSymbol(prevToken, c);
+	if (!::equal(m_linePos, "ate", 3) || ::isalpha(m_linePos[3]))
+		return unexpectedSymbol(prevToken, c);
+
+	advanceLinePos(3);
+	return prevToken;
 }
 
 
@@ -4586,71 +4551,56 @@ PgnReader::parseMinusSign(Token prevToken, int)
 	// Move suffix: "-+", "--+", "--++" "-/+", "->", "->/<-"
 	// Null move: "--" (used in ChessBase)
 
-	m_prevPos = m_currPos;
-
-	char c = get();
-	char d;
-
-	switch (c)
+	switch (m_linePos[0])
 	{
 		case '-':
 			if (partOfMove(prevToken))
 			{
-				if ((d = get()) == '+')
+				if (::equal(m_linePos, "-++", 3))
 				{
-					if ((d = get()) == '+')
-					{
-						putNag(nag::BlackHasACrushingAdvantage);
-						return kNag;
-					}
-					putback(d);
-					putNag(nag::BlackHasADecisiveAdvantage);
+					advanceLinePos(3);
+					putNag(nag::BlackHasACrushingAdvantage);
 					return kNag;
 				}
-				putback(d);
+				advanceLinePos(2);
+				putNag(nag::BlackHasADecisiveAdvantage);
+				return kNag;
 			}
+			advanceLinePos(1);
 			setNullMove();
 			return kSan;
 
 		case '+':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, m_prevPos, "-");
+				error(UnexpectedSymbol, "-");
+			advanceLinePos(2);
 			putNag(nag::BlackHasADecisiveAdvantage);
 			return kNag;
 
 		case '/':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, m_prevPos, "/");
-			m_prevPos = m_currPos;
-			if ((c = get()) != '+')
-				error(InvalidToken, m_prevPos, ::trim(mstl::string("-") + '/' + char(c)));
+				error(UnexpectedSymbol, "/");
+			if (m_linePos[1] != '+')
+				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+			advanceLinePos(2);
 			putNag(nag::BlackHasAModerateAdvantage);
 			return kNag;
 
 		case '>':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, m_prevPos, ">");
-			if ((d = get()) == '/')
+				error(UnexpectedSymbol, ">");
+			if (::equal(m_linePos, "-/<-", 4))
 			{
-				char e = get();
-				if (e == '<')
-				{
-					char f = get();
-					if (f == '-')
-					{
-						putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
-						return kNag;
-					}
-					putback(f);
-				}
-				putback(e);
+				advanceLinePos(4);
+				putNag(nag::WhiteHasModerateCounterplay, nag::BlackHasModerateCounterplay);
+				return kNag;
 			}
-			putback(d);
+			advanceLinePos(1);
 			putNag(nag::WhiteHasTheAttack, nag::BlackHasTheAttack);
 			return kNag;
 	}
 
-	error(UnexpectedSymbol, m_prevPos, mstl::string(1, c));
+	error(UnexpectedSymbol, "-");
 	return prevToken;	// satisfies the compiler
 }
 
@@ -4764,16 +4714,9 @@ PgnReader::parseMoveNumber(Token prevToken, int)
 {
 	// Move number: [0-9]+[.]*
 
-	char c;
+	while (::isdigit(*m_linePos) || *m_linePos == '.')
+		advanceLinePos();
 
-	do
-		c = get();
-	while (::isdigit(c));
-
-	while (c == '.')
-		c = get();
-
-	putback(c);
 	return prevToken;
 }
 
@@ -4783,19 +4726,14 @@ PgnReader::parseNag(Token prevToken, int)
 {
 	// Nag value: [$][0-9]+
 
-	unsigned	nag = 0;
-	char		c;
+	if (__builtin_expect(!::isdigit(*m_linePos), 0))
+		error(InvalidToken, ::trim(mstl::string("$") + *m_linePos));
 
-	m_prevPos = m_currPos;
-
-	if (__builtin_expect(!::isdigit(c = get()), 0))
-		error(InvalidToken, m_prevPos, ::trim(mstl::string("$") + char(c)));
+	unsigned nag = 0;
 
 	do
-		nag = nag*10 + c - '0';
-	while (::isdigit(c = get()));
-
-	putback(c);
+		nag = nag*10 + *m_linePos++ - '0';
+	while (::isdigit(*m_linePos));
 
 	nag::ID myNag = nag::fromChessPad(nag::fromScid3(nag::ID(nag)));
 
@@ -4810,7 +4748,7 @@ PgnReader::parseNag(Token prevToken, int)
 	}
 	else if (myNag == nag::Null)
 	{
-		warning(InvalidNag, m_prevPos, mstl::string("$") + ::itos(nag));
+		warning(InvalidNag, mstl::string("$") + ::itos(nag));
 	}
 	else
 	{
@@ -4890,39 +4828,34 @@ PgnReader::parseNumberOne(Token prevToken, int c)
 	// Result: "1-0", "1:0", "1/2-1/2", "1/2:1/2", "1/2"
 	// Move number: [1][0-9]*[.]*
 
-	char d;
-
-	m_prevPos = m_currPos;
-
-	switch (c = get())
+	switch (m_linePos[0])
 	{
 		case '-':
 		case ':':
-			if ((d = get()) == '0')
-				return resultToken(result::White);
-			error(InvalidToken, m_prevPos, ::trim(mstl::string("1") + char(c) + char(d)));
-			// not reached
+			if (m_linePos[1] != '0')
+				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+
+			advanceLinePos(2);
+			return resultToken(result::White);
 
 		case '/':
-			if (((c = get()) != '2'))
-				error(InvalidToken, m_prevPos, ::trim(mstl::string("1/") + char(c)));
+			if (m_linePos[1] != '2')
+				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 
-			if ((c = get()) == '-' || c == ':')
+			if (::equal(m_linePos, "/2-1/2", 6) || ::equal(m_linePos, "/2:1/2", 6))
 			{
-				d = get();
-
-				if (d != '1' || get() != '/' || get() != '2')
-					error(InvalidToken, m_prevPos, ::trim(mstl::string("1/2") + char(c) + d));
+				advanceLinePos(6);
+				return resultToken(result::Draw);
 			}
-			else
+			else if (::equal(m_linePos, "/2", 2))
 			{
-				putback(c);
+				advanceLinePos(2);
+				return resultToken(result::Draw);
 			}
-
-			return resultToken(result::Draw);
+			error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+			// not reached
 	}
 
-	putback(c);
 	return parseMoveNumber(prevToken, '1');
 }
 
@@ -4936,48 +4869,59 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "+");
 
-	m_prevPos = m_currPos;
-
-	switch (c = get())
+	switch (m_linePos[0])
 	{
 		case '-':
-			if ((c = get()) != '-')
-				putback(c);
+			advanceLinePos(m_linePos[1] != '-' ? 2 : 1);
 			putNag(nag::WhiteHasADecisiveAdvantage);
 			prevToken = kNag;
 			break;
 
 		case '=':
+			advanceLinePos(1);
 			putNag(nag::WhiteHasASlightAdvantage);
 			prevToken = kNag;
 			break;
 
 		case '/':
-			switch (c = get())
+			switch (m_linePos[1])
 			{
-				case '-':	putNag(nag::WhiteHasAModerateAdvantage); break;
-				case '=':	putNag(nag::WhiteHasASlightAdvantage); break;
-				default:		error(InvalidToken, m_prevPos, ::trim(mstl::string("+") + '/' + char(c)));
+				case '-':
+					advanceLinePos(2);
+					putNag(nag::WhiteHasAModerateAdvantage);
+					break;
+
+				case '=':
+					advanceLinePos(2);
+					putNag(nag::WhiteHasASlightAdvantage);
+					break;
+
+				default:
+					error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 			}
 
 			prevToken = kNag;
 			break;
 
 		case '+':
-			if ((c = get()) == '-')
+			if (m_linePos[1] == '-')
 			{
-				if ((c = get()) != '-')
-					error(InvalidToken, m_prevPos, "++-");
+				if (m_linePos[2] != '-')
+					error(InvalidToken, "++-");
 
+				advanceLinePos(3);
 				putNag(nag::WhiteHasACrushingAdvantage);
 				prevToken = kNag;
 			}
-			putback(c);
-			// skip double check
+			else
+			{
+				advanceLinePos(1);
+				// skip double check
+			}
 			break;
 
 		default:
-			putback(c);
+			// skip check
 			break;
 	}
 
@@ -4993,14 +4937,20 @@ PgnReader::parseQuestionMark(Token prevToken, int c)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "?");
 
-	switch (c = get())
+	switch (*m_linePos)
 	{
-		case '!': putNag(nag::QuestionableMove); break;
-		case '?': putNag(nag::VeryPoorMove); break;
+		case '!':
+			advanceLinePos(1);
+			putNag(nag::QuestionableMove);
+			break;
+
+		case '?':
+			advanceLinePos(1);
+			putNag(nag::VeryPoorMove);
+			break;
 
 		default:
 			putNag(nag::PoorMove);
-			putback(c);
 			break;
 	}
 
@@ -5018,7 +4968,7 @@ PgnReader::parseOpenParen(Token prevToken, int)
 	{
 		if (m_linePos[0] == ')')
 		{
-			advanceLinePos();
+			advanceLinePos(1);
 			putNag(nag::Space);
 			return kNag;
 		}
@@ -5045,12 +4995,12 @@ PgnReader::parseOpenParen(Token prevToken, int)
 						return kNag;
 				}
 			}
-			else if (equal(m_linePos, "ep)", 3))
+			else if (::equal(m_linePos, "ep)", 3))
 			{
 				advanceLinePos(3);
 				return prevToken;
 			}
-			else if (equal(m_linePos, "e.p.)", 3))
+			else if (::equal(m_linePos, "e.p.)", 5))
 			{
 				advanceLinePos(5);
 				return prevToken;
@@ -5076,14 +5026,21 @@ PgnReader::parseSlash(Token prevToken, int)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, "/");
 
-	m_prevPos = m_currPos;
-
-	switch (get())
+	switch (*m_linePos)
 	{
-		case '\\':	putNag(nag::WithTheIdea); break;
-		case '^':	// fallthru
-		case '/':	putNag(nag::Diagonal); break;
-		default:		error(UnexpectedSymbol, m_prevPos, "/");
+		case '\\':
+			advanceLinePos(1);
+			putNag(nag::WithTheIdea);
+			break;
+
+		case '^': // fallthru
+		case '/':
+			advanceLinePos(1);
+			putNag(nag::Diagonal);
+			break;
+
+		default:
+			error(UnexpectedSymbol, "/");
 	}
 
 	return kNag;
@@ -5098,29 +5055,23 @@ PgnReader::parseTag(Token prevToken, int)
 
 	if (partOfMove(prevToken))
 	{
-		int c = get();
-
-		if (c == ']')
+		switch (m_linePos[0])
 		{
-			putNag(nag::SingularMove);
-			return kNag;
-		}
-		else if (c == '+')
-		{
-			int d = get();
-
-			if (d == ']')
-			{
-				// NOTE: possibly we should use nag::Center
-				putNag(	nag::WhiteHasAModerateCenterControlAdvantage,
-							nag::BlackHasAModerateCenterControlAdvantage);
+			case ']':
+				advanceLinePos(1);
+				putNag(nag::SingularMove);
 				return kNag;
-			}
 
-			putback(d);
+			case '+':
+				if (m_linePos[1] == ']')
+				{
+					// NOTE: possibly we should use nag::Center
+					advanceLinePos(2);
+					putNag(	nag::WhiteHasAModerateCenterControlAdvantage,
+								nag::BlackHasAModerateCenterControlAdvantage);
+					return kNag;
+				}
 		}
-
-		putback(c);
 	}
 
 	return kTag;
@@ -5135,34 +5086,28 @@ PgnReader::parseTilde(Token prevToken, int c)
 	if (!partOfMove(prevToken))
 		error(UnexpectedSymbol, mstl::string(1, c));
 
-	switch (char d = get())
+	switch (m_linePos[0])
 	{
 		case '/':
+			if (m_linePos[1] == '=')
 			{
-				d = get();
-
-				if (d == '=')
-				{
-					putNag(	nag::WhiteHasSufficientCompensationForMaterialDeficit,
-								nag::BlackHasSufficientCompensationForMaterialDeficit);
-				}
-				else
-				{
-					putback(d);
-				}
+				advanceLinePos(2);
+				putNag(	nag::WhiteHasSufficientCompensationForMaterialDeficit,
+							nag::BlackHasSufficientCompensationForMaterialDeficit);
 			}
 			break;
 
 		case '~':
+			advanceLinePos(1);
 			putNag(c == '~' ? nag::UnclearPosition : nag::EqualChancesActivePosition);
 			break;
 
 		case '&':
+			advanceLinePos(1);
 			putNag(c == '&' ? nag::UnclearPosition : nag::EqualChancesActivePosition);
 			break;
 
 		default:
-			putback(d);
 			putNag(nag::UnclearPosition);
 			break;
 	}
@@ -5176,18 +5121,17 @@ PgnReader::parseUnderscore(Token prevToken, int c)
 {
 	// Move suffix: "_|_", "_|"
 
-	m_prevPos = m_currPos;
+	if (!partOfMove(prevToken) || m_linePos[0] != '|')
+		error(UnexpectedSymbol, "_");
 
-	if (!partOfMove(prevToken) || (get() != '|' && get() != '_'))
-		error(UnexpectedSymbol, m_prevPos, "_");
-
-	if ((c = get()) == '_')
+	if (m_linePos[1] == '_')
 	{
+		advanceLinePos(2);
 		putNag(nag::Endgame);
 	}
 	else
 	{
-		putback(c);
+		advanceLinePos(1);
 		putNag(nag::Without);
 	}
 
@@ -5207,8 +5151,8 @@ PgnReader::parseUppercaseB(Token prevToken, int c)
 			case 'B':
 				if (!::isalnum(m_linePos[1]))
 				{
-					putNag(nag::BishopsOfSameColor);
 					advanceLinePos(1);
+					putNag(nag::BishopsOfSameColor);
 					return kNag;
 				}
 				break;
@@ -5216,8 +5160,8 @@ PgnReader::parseUppercaseB(Token prevToken, int c)
 			case 'b':
 				if (!::isalnum(m_linePos[1]))
 				{
-					putNag(nag::BishopsOfOppositeColor);
 					advanceLinePos(1);
+					putNag(nag::BishopsOfOppositeColor);
 					return kNag;
 				}
 				break;
@@ -5233,16 +5177,14 @@ PgnReader::parseUppercaseD(Token, int)
 {
 	// Diagram symbol "D", "D'"
 
-	char c = get();
-
-	if (c == '\'')
+	if (*m_linePos == '\'')
 	{
+		advanceLinePos(1);
 		putNag(nag::DiagramFromBlack);
 	}
 	else
 	{
 		putNag(nag::Diagram);
-		putback(c);
 	}
 
 	return kNag;
@@ -5269,14 +5211,11 @@ PgnReader::parseUppercaseR(Token prevToken, int c)
 {
 	// Move prefix: "RR"
 
-	if (partOfMove(prevToken) && m_linePos[0] != '@')
+	if (partOfMove(prevToken) && m_linePos[0] == 'R')
 	{
-		if (m_linePos[0] == 'R')
-		{
-			m_prefixAnnotation = nag::EditorsRemark;
-			advanceLinePos(1);
-			return kMovePrefix;
-		}
+		advanceLinePos(1);
+		m_prefixAnnotation = nag::EditorsRemark;
+		return kMovePrefix;
 	}
 
 	return parseMove(prevToken, c);
@@ -5302,27 +5241,28 @@ PgnReader::parseVerticalBar(Token prevToken, int)
 {
 	// Move suffix: "|^", "||", "|_"
 
-	m_prevPos = m_currPos;
-
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, m_prevPos, "|");
+		error(UnexpectedSymbol, "|");
 
-	switch (get())
+	switch (*m_linePos)
 	{
 		case '^':
+			advanceLinePos(1);
 			putNag(nag::WhiteHasTheInitiative, nag::BlackHasTheInitiative);
 			break;
 
 		case '/':
+			advanceLinePos(1);
 			putNag(nag::File);
 			break;
 
 		case '_':
+			advanceLinePos(1);
 			putNag(nag::With);
 			break;
 
 		default:
-			error(UnexpectedSymbol, m_prevPos, "|");
+			error(UnexpectedSymbol, "|");
 	}
 
 	return kNag;
@@ -5350,10 +5290,7 @@ PgnReader::skipComment(Token prevToken, int c)
 {
 	// ignore comment until end of line
 
-	do
-		c = get();
-	while (c && c != '\n');
-
+	skipLine();
 	return prevToken;
 }
 
@@ -5538,6 +5475,8 @@ PgnReader::nextToken(Token prevToken)
 
 		if (__builtin_expect(c & 0x80, 0))
 			unexpectedSymbol(prevToken, c);
+
+		m_prevPos = m_currPos;
 
 		if ((prevToken = (this->*Trampolin[c])(prevToken, c)) <= kError)
 			return prevToken;

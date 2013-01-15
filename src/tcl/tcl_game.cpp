@@ -1378,7 +1378,6 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Game&			game			= scidb->game(position);
 	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber());
-	unsigned		flags			= 0;
 
 	if (subscriber == 0)
 	{
@@ -1389,12 +1388,10 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (strcmp(what, "board") == 0)
 	{
 		subscriber->setBoardCmd(objv[3]);
-		flags = Game::UpdateBoard;
 	}
 	else if (strcmp(what, "tree") == 0)
 	{
 		subscriber->setTreeCmd(objv[3]);
-		flags = Game::UpdateBoard;
 	}
 	else if (strcmp(what, "state") == 0)
 	{
@@ -1406,11 +1403,9 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mainlineOnly = boolFromObj(objc, objv, 4);
 
 		subscriber->setPgnCmd(objv[3], mainlineOnly);
-		flags = Game::UpdatePgn | Game::UpdateOpening | Game::UpdateLanguageSet | Game::UpdateIllegalMoves;
+		game.updateSubscriber(
+			Game::UpdatePgn | Game::UpdateOpening | Game::UpdateLanguageSet | Game::UpdateIllegalMoves);
 	}
-
-	if (flags)
-		game.updateSubscriber(flags);
 
 	return TCL_OK;
 }
@@ -2904,9 +2899,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			char const* v = stringFromObj(objc, objv, objc - 1);
 			variant = ::db::variant::fromString(v);
-
-			if (variant == variant::Undetermined)
-				return error(CmdImport, nullptr, nullptr, "invalid variant '%s'", v);
 		}
 		else
 		{
@@ -2934,6 +2926,15 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (asVariation)
 	{
+		if (variant == variant::Undetermined)
+		{
+			return error(	CmdImport,
+								nullptr,
+								nullptr,
+								"invalid variant '%s'",
+								variant::identifier(variant).c_str());
+		}
+
 		mstl::istringstream	stream(stringFromObj(objc, objv, 2));
 		tcl::PgnReader			reader(	stream,
 												variant,
@@ -3002,7 +3003,68 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mode = tcl::PgnReader::Text;
 		}
 
-		int						position(intFromObj(objc, objv, 1));
+		int position(intFromObj(objc, objv, 1));
+
+		if (variant == variant::Undetermined)
+		{
+			struct NullConsumer : public ::db::Consumer
+			{
+				NullConsumer(mstl::string const& encoding)
+					: ::db::Consumer(	::db::format::Pgn,
+											encoding,
+											::db::tag::TagSet(),
+											false)									{}
+				format::Type format() const override						{ return ::db::format::Scidb; }
+				void start() override											{}
+				void finish() override											{}
+				bool beginGame(TagSet const&) override						{ return true; }
+				save::State endGame(TagSet const&) override				{ return save::Ok; }
+
+				void sendPrecedingComment(	Comment const&,
+													Annotation const&,
+													MarkSet const&) override	{}
+				void sendTrailingComment(	Comment const&,
+													bool) override	{}
+				void sendComment(Comment const&) override					{}
+				void sendMoveInfo(MoveInfoSet const&) override			{}
+				bool sendMove(Move const&) override							{ return true; }
+				bool sendMove(	Move const&,
+									Annotation const&,
+									MarkSet const&,
+									Comment const&,
+									Comment const&) override					{ return true; }
+
+				void beginMoveSection() override								{}
+				void endMoveSection(result::ID result) override			{}
+
+				void beginVariation() override								{}
+				void endVariation(bool) override								{}
+			};
+
+			mstl::istringstream	stream(text);
+
+			tcl::PgnReader	reader(	stream,
+											variant,
+											encoding,
+											nullptr,
+											nullptr,
+											::db::PgnReader::Raw,
+											mode,
+											nullptr,
+											lineOffset,
+											true);
+			util::Progress	progress;
+			NullConsumer	consumer(encoding);
+
+			reader.setConsumer(&consumer);
+			reader.process(progress);
+
+			if ((variant = reader.detectedVariant()) == variant::Undetermined)
+				variant = variant::Normal;
+
+			scidb->changeVariant(position, variant);
+		}
+
 		mstl::istringstream	stream(text);
 		tcl::PgnReader			reader(	stream,
 												variant,

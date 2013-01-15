@@ -156,7 +156,7 @@
 ::widget::mc::Ok			"&OK"
 ::widget::mc::Reset		"&Zurücksetzen"
 ::widget::mc::Update		"Akt&ualisieren"
-::widget::mc::Import		"&Importien"
+::widget::mc::Import		"&Importieren"
 ::widget::mc::Revert		"Zurück&kehren"
 ::widget::mc::Previous	"&Vorherige"
 ::widget::mc::Next		"&Nächste"

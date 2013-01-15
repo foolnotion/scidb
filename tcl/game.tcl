@@ -223,13 +223,13 @@ proc new {parent args} {
 
 		set tags [::scidb::game::tags $pos]
 		lappend entry $crc $tags
-		::scidb::game::switch $pos
 		if {$pos == [llength $List]} {
 			lappend List $entry
 		}  else {
 			lset List $pos $entry
 		}
 		::application::pgn::$cmd $pos $base $variant $tags
+		::scidb::game::switch $pos
 		if {$cmd eq "replace"} { stateChanged $pos 0 }
 	}
 

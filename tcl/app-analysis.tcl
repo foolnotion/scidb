@@ -345,7 +345,7 @@ proc build {parent width height} {
 	::toolbar::add $tbControl button \
 		-image $::icon::toolbarSetup \
 		-command [namespace code Setup] \
-		-tooltipvar [namespace current]::mc::Setup \
+		-tooltipvar [::mc::var [namespace current]::mc::Setup "..."] \
 		;
 	::toolbar::addSeparator $tbControl
 	set tbw [::toolbar::add $tbControl checkbutton \

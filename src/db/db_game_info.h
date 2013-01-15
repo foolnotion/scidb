@@ -243,7 +243,7 @@ public:
 	void reset(Namebases& namebases);
 	void resetCharacteristics(Namebases& namebases);
 	void restore(GameInfo& oldInfo, Namebases& namebases);
-	void reallocate(Namebases& namebases);
+	void reallocate(Namebases& namebases) const;
 
 	void debug() const;
 

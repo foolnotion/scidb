@@ -603,6 +603,8 @@ private:
 	void removeFromHolding(variant::Type variant, unsigned color);
 	template <piece::Type Piece>
 	void removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned color);
+	template <piece::Type Piece> void incrMaterial(unsigned color);
+	template <piece::Type Piece> void decrMaterial(unsigned color);
 
 	// Additional board data
 	uint64_t	m_occupied;						// square is empty or holds a piece

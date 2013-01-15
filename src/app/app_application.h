@@ -220,6 +220,7 @@ public:
 
 	void newGame(unsigned position, db::variant::Type variant = db::variant::Normal);
 	void deleteGame(Cursor& cursor, unsigned index, unsigned view = 0, bool flag = true);
+	void changeVariant(unsigned position, db::variant::Type variant);
 	void swapGames(unsigned position1, unsigned position2);
 	void setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigned flags);
 	void releaseGame(unsigned position);

@@ -3564,4 +3564,23 @@ Game::setIsModified(bool flag)
 		m_subscriber->stateChanged(m_wasModified = m_isModified);
 }
 
+
+void
+Game::setIsIrreversible(bool flag)
+{
+	if (flag)
+	{
+		m_isModified = true;
+		m_isIrreversible = true;
+		clearUndo();
+
+		if (m_subscriber && m_isModified != m_wasModified)
+			m_subscriber->stateChanged(m_wasModified = m_isModified);
+	}
+	else
+	{
+		m_isIrreversible = false;
+	}
+}
+
 // vi:set ts=3 sw=3:
