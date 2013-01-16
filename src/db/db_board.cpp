@@ -554,7 +554,7 @@ inline
 void
 Board::incrMaterial<piece::Knight>(unsigned color)
 {
-	m_matSig.part[color].knight = mstl::min(3, (1 << ++m_material[color].knight) - 1);
+	m_matSig.part[color].knight = (1 << ++m_material[color].knight) - 1;
 }
 
 
@@ -563,7 +563,7 @@ inline
 void
 Board::incrMaterial<piece::Bishop>(unsigned color)
 {
-	m_matSig.part[color].bishop = mstl::min(3, (1 << ++m_material[color].bishop) - 1);
+	m_matSig.part[color].bishop = (1 << ++m_material[color].bishop) - 1;
 }
 
 
@@ -572,7 +572,7 @@ inline
 void
 Board::incrMaterial<piece::Rook>(unsigned color)
 {
-	m_matSig.part[color].rook = mstl::min(3, (1 << ++m_material[color].rook) - 1);
+	m_matSig.part[color].rook = (1 << ++m_material[color].rook) - 1;
 }
 
 
@@ -581,7 +581,7 @@ inline
 void
 Board::incrMaterial<piece::Queen>(unsigned color)
 {
-	m_matSig.part[color].queen = mstl::min(3, (1 << ++m_material[color].queen) - 1);
+	m_matSig.part[color].queen = (1 << ++m_material[color].queen) - 1;
 }
 
 
@@ -591,9 +591,9 @@ void
 Board::incrMaterial<piece::King>(unsigned color)
 {
 	if (color == White)
-		m_whiteKing = mstl::min(3, (1 << ++m_material[White].king) - 1);
+		m_whiteKing = (1 << ++m_material[White].king) - 1;
 	else
-		m_blackKing = mstl::min(3, (1 << ++m_material[Black].king) - 1);
+		m_blackKing = (1 << ++m_material[Black].king) - 1;
 }
 
 
@@ -611,7 +611,7 @@ inline
 void
 Board::decrMaterial<piece::Knight>(unsigned color)
 {
-	m_matSig.part[color].knight = mstl::min(3, (1 << --m_material[color].knight) - 1);
+	m_matSig.part[color].knight = (1 << --m_material[color].knight) - 1;
 }
 
 
@@ -620,7 +620,7 @@ inline
 void
 Board::decrMaterial<piece::Bishop>(unsigned color)
 {
-	m_matSig.part[color].bishop = mstl::min(3, (1 << --m_material[color].bishop) - 1);
+	m_matSig.part[color].bishop = (1 << --m_material[color].bishop) - 1;
 }
 
 
@@ -629,7 +629,7 @@ inline
 void
 Board::decrMaterial<piece::Rook>(unsigned color)
 {
-	m_matSig.part[color].rook = mstl::min(3, (1 << --m_material[color].rook) - 1);
+	m_matSig.part[color].rook = (1 << --m_material[color].rook) - 1;
 }
 
 
@@ -638,7 +638,7 @@ inline
 void
 Board::decrMaterial<piece::Queen>(unsigned color)
 {
-	m_matSig.part[color].queen = mstl::min(3, (1 << --m_material[color].queen) - 1);
+	m_matSig.part[color].queen = (1 << --m_material[color].queen) - 1;
 }
 
 
@@ -648,9 +648,9 @@ void
 Board::decrMaterial<piece::King>(unsigned color)
 {
 	if (color == White)
-		m_whiteKing = mstl::min(3, (1 << --m_material[White].king) - 1);
+		m_whiteKing = (1 << --m_material[White].king) - 1;
 	else
-		m_blackKing = mstl::min(3, (1 << --m_material[Black].king) - 1);
+		m_blackKing = (1 << --m_material[Black].king) - 1;
 }
 
 
@@ -2714,7 +2714,6 @@ Board::setup(char const* fen, variant::Type variant)
 					m_kings |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
 					m_ksq[Black] = s;
-					m_blackKing |= m_material[Black].king + 1;
 					if (variant::isAntichessExceptLosers(variant))
 						incrMaterial<piece::King>(Black);
 					else
@@ -2792,8 +2791,8 @@ Board::setup(char const* fen, variant::Type variant)
 	if (s != 8)
 		return 0;
 
-	if (variant::isZhouse(variant))
-		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
+//	if (variant::isZhouse(variant))
+	m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
 
 	// Set remainder of board data appropriately
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
@@ -6400,17 +6399,17 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 		{
 			result += '/';
 
-			for (unsigned i = 0; i < m_holding[White].queen;  ++i) result += 'Q';
-			for (unsigned i = 0; i < m_holding[White].rook;   ++i) result += 'R';
-			for (unsigned i = 0; i < m_holding[White].bishop; ++i) result += 'B';
-			for (unsigned i = 0; i < m_holding[White].knight; ++i) result += 'N';
-			for (unsigned i = 0; i < m_holding[White].pawn;   ++i) result += 'P';
+			result.append(m_holding[White].queen,	'Q');
+			result.append(m_holding[White].rook,	'R');
+			result.append(m_holding[White].bishop,	'B');
+			result.append(m_holding[White].knight,	'N');
+			result.append(m_holding[White].pawn,	'P');
 
-			for (unsigned i = 0; i < m_holding[Black].queen;  ++i) result += 'q';
-			for (unsigned i = 0; i < m_holding[Black].rook;   ++i) result += 'r';
-			for (unsigned i = 0; i < m_holding[Black].bishop; ++i) result += 'b';
-			for (unsigned i = 0; i < m_holding[Black].knight; ++i) result += 'n';
-			for (unsigned i = 0; i < m_holding[Black].pawn;   ++i) result += 'p';
+			result.append(m_holding[Black].queen,	'q');
+			result.append(m_holding[Black].rook,	'r');
+			result.append(m_holding[Black].bishop,	'b');
+			result.append(m_holding[Black].knight,	'n');
+			result.append(m_holding[Black].pawn,	'p');
 		}
 	}
 
@@ -6653,12 +6652,15 @@ Board::initialize()
 	m_emptyBoard.m_holding[Black] = m_emptyBoard.m_holding[White];
 
 	// Standard board
-	m_standardBoard.setup(variant::fen(variant::Standard), variant::Crazyhouse);
+	m_standardBoard.setup(variant::fen(variant::Standard), variant::Normal);
 	::memset(m_standardBoard.m_unambiguous, true, U_NUMBER_OF(m_standardBoard.m_unambiguous));
 	m_antichessBoard.setup(variant::fen(variant::NoCastling), variant::Antichess);
 
 	// Shuffle Chess board
-	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Crazyhouse);
+	m_shuffleChessBoard.setup("8/pppppppp/8/8/8/8/PPPPPPPP/8 w - - 0 1", variant::Normal);
+	// reverse hash of holding
+	m_shuffleChessBoard.hashHolding(	m_shuffleChessBoard.m_holding[White],
+												m_shuffleChessBoard.m_holding[Black]);
 	::memset(m_shuffleChessBoard.m_unambiguous, true, U_NUMBER_OF(m_shuffleChessBoard.m_unambiguous));
 	m_shuffleChessBoard.m_holding[White] = m_standardBoard.m_holding[White];
 	m_shuffleChessBoard.m_holding[Black] = m_standardBoard.m_holding[Black];
@@ -6666,22 +6668,22 @@ Board::initialize()
 	m_shuffleChessBoard.m_material[Black] = m_standardBoard.m_material[Black];
 	m_shuffleChessBoard.m_matSig = m_standardBoard.m_matSig;
 
-	m_littleGame.setup(variant::fen(variant::LittleGame), variant::Crazyhouse);
-	m_pawnsOn4thRank.setup(variant::fen(variant::PawnsOn4thRank), variant::Crazyhouse);
-	m_pyramid.setup(variant::fen(variant::Pyramid), variant::Crazyhouse);
-	m_KNNvsKP.setup(variant::fen(variant::KNNvsKP), variant::Crazyhouse);
-	m_pawnsOnly.setup(variant::fen(variant::PawnsOnly), variant::Crazyhouse);
-	m_knightsOnly.setup(variant::fen(variant::KnightsOnly), variant::Crazyhouse);
-	m_bishopsOnly.setup(variant::fen(variant::BishopsOnly), variant::Crazyhouse);
-	m_rooksOnly.setup(variant::fen(variant::RooksOnly), variant::Crazyhouse);
-	m_queensOnly.setup(variant::fen(variant::QueensOnly), variant::Crazyhouse);
-	m_noQueens.setup(variant::fen(variant::NoQueens), variant::Crazyhouse);
-	m_wildFive.setup(variant::fen(variant::WildFive), variant::Crazyhouse);
-	m_kbnk.setup(variant::fen(variant::KBNK), variant::Crazyhouse);
-	m_kbbk.setup(variant::fen(variant::KBBK), variant::Crazyhouse);
-	m_runaway.setup(variant::fen(variant::Runaway), variant::Crazyhouse);
-	m_queenVsRooks.setup(variant::fen(variant::QueenVsRooks), variant::Crazyhouse);
-	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Crazyhouse);
+	m_littleGame.setup(variant::fen(variant::LittleGame), variant::Normal);
+	m_pawnsOn4thRank.setup(variant::fen(variant::PawnsOn4thRank), variant::Normal);
+	m_pyramid.setup(variant::fen(variant::Pyramid), variant::Normal);
+	m_KNNvsKP.setup(variant::fen(variant::KNNvsKP), variant::Normal);
+	m_pawnsOnly.setup(variant::fen(variant::PawnsOnly), variant::Normal);
+	m_knightsOnly.setup(variant::fen(variant::KnightsOnly), variant::Normal);
+	m_bishopsOnly.setup(variant::fen(variant::BishopsOnly), variant::Normal);
+	m_rooksOnly.setup(variant::fen(variant::RooksOnly), variant::Normal);
+	m_queensOnly.setup(variant::fen(variant::QueensOnly), variant::Normal);
+	m_noQueens.setup(variant::fen(variant::NoQueens), variant::Normal);
+	m_wildFive.setup(variant::fen(variant::WildFive), variant::Normal);
+	m_kbnk.setup(variant::fen(variant::KBNK), variant::Normal);
+	m_kbbk.setup(variant::fen(variant::KBBK), variant::Normal);
+	m_runaway.setup(variant::fen(variant::Runaway), variant::Normal);
+	m_queenVsRooks.setup(variant::fen(variant::QueenVsRooks), variant::Normal);
+	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Normal);
 
 #if 0
 	printf("#define LittleGame_Hash		UINT64_C(0x%016llx)\n", m_littleGame.m_hash);

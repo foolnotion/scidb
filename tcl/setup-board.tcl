@@ -516,6 +516,7 @@ proc open {parent} {
 				;
 			::validate::spinboxInt $spb
 			::theme::configureSpinbox $spb
+			bind $spb <FocusOut> +[namespace code Update]
 			grid $lbl -column $col -row 1
 			grid $spb -column [expr {$col + 2}] -row 1
 			incr col 4
