@@ -23,7 +23,7 @@ INDEX Archive#Database-Archive
 TITLE Database formats
 
 <p>
-Scidb supports following formats:
+Scidb supports the following formats:
 </p>
 
 <ul>
@@ -112,12 +112,12 @@ But with this format you cannot use the full capability of Scidb.
 
 <annotation>
 Scid databases will be opened in read-only mode, the user may switch to
-writeable mode after opening. The last mode will be prerserved while
+writeable mode after opening. The last mode will be prerserved when
 re-opening the database.
 </annotation>
 
 <p>
-In some cases the user has to choose the appropriate encoding while opening
+In some cases the user has to choose the appropriate encoding when opening
 the database, to ensure a correct display of names and other text. Newer
 databases may be <nobr>UTF-8</nobr> encoded, older database may be written with <nobr>Latin-1</nobr>
 (ISO-<nobr>8859-1</nobr>) character set, the Scid format does not provide information
@@ -170,7 +170,7 @@ ChessBase databases cannot be used as reference database.
 
 <p>
 Usually this database is encoded with character set CP1252, but in some cases
-a manual selection of the the character set while opening the database may
+a manual selection of the the character set when opening the database may
 be required, to ensure a correct display of names and other text.
 </p>
 

@@ -35,7 +35,7 @@
 #include "db_game_data.h"
 #include "db_game_info.h"
 #include "db_producer.h"
-#include "db_pgn_reader.h"
+#include "db_reader.h"
 #include "db_eco_table.h"
 #include "db_exception.h"
 
@@ -550,7 +550,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string* encoding)
 	if (data.m_tags.contains(tag::TimeControl) && info.m_event->timeMode() == time::Unknown)
 	{
 		info.m_event->setTimeMode(
-				PgnReader::getTimeModeFromTimeControl(data.m_tags.value(tag::TimeControl)));
+			Reader::getTimeModeFromTimeControl(data.m_tags.value(tag::TimeControl)));
 	}
 
 	if (data.m_tags.contains(tag::Mode))
@@ -1241,7 +1241,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 
 	unsigned rnd, subrnd;
 
-	if (PgnReader::parseRound(round->name(), rnd, subrnd))
+	if (Reader::parseRound(round->name(), rnd, subrnd))
 	{
 		item.m_round = rnd;
 		item.m_subround = subrnd;
@@ -1273,7 +1273,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 
 	if (event->site() == NamebaseEvent::emptySite())
 	{
-		event::Mode mode = PgnReader::getEventMode(event->name(), site->name());
+		event::Mode mode = Reader::getEventMode(event->name(), site->name());
 
 		switch (int(mode))
 		{
@@ -1289,7 +1289,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 	}
 	else if (event->site() != site || event->date() != date)
 	{
-		event::Mode	eventMode	= PgnReader::getEventMode(event->name(), site->name());
+		event::Mode	eventMode	= Reader::getEventMode(event->name(), site->name());
 		time::Mode	timeMode		= time::Unknown;
 
 		switch (int(eventMode))
@@ -1825,22 +1825,22 @@ Codec::readNamebase(	ByteIStream& bstrm,
 
 					tmp.assign(name.c_str(), name.size());
 
-					while (PgnReader::Tag tag = PgnReader::extractPlayerData(tmp, value))
+					while (Reader::Tag tag = Reader::extractPlayerData(tmp, value))
 					{
 						switch (tag)
 						{
-							case PgnReader::Elo:			break; // cannot be used
-							case PgnReader::Country:	country = country::fromString(value); break;
-							case PgnReader::Human:		type = species::Human; break;
-							case PgnReader::Program:	type = species::Program; break;
-							case PgnReader::None:		break;
+							case Reader::Elo:			break; // cannot be used
+							case Reader::Country:	country = country::fromString(value); break;
+							case Reader::Human:		type = species::Human; break;
+							case Reader::Program:	type = species::Program; break;
+							case Reader::None:		break;
 
-							case PgnReader::Title:
+							case Reader::Title:
 								title = title::fromString(value);
 								type = species::Human;
 								break;
 
-							case PgnReader::Sex:
+							case Reader::Sex:
 								sex = sex::fromChar(*value);
 								type = species::Human;
 								break;
@@ -1860,7 +1860,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 			case Namebase::Site:
 				{
 					tmp.assign(name.c_str(), name.size());
-					country::Code country = PgnReader::extractCountryFromSite(tmp);
+					country::Code country = Reader::extractCountryFromSite(tmp);
 					shadowBase.append(str, index, base.insertSite(name, index, country, limit), *m_codec);
 				}
 				break;

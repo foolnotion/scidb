@@ -512,6 +512,8 @@ namespace species
 	char toChar(ID type);
 	mstl::string const& toString(ID type);
 	ID fromString(char const* s);
+	bool isHuman(char const* s, char const* e);
+	bool isProgram(char const* s, char const* e);
 
 } // namespace species
 
@@ -563,6 +565,7 @@ namespace title
 
 	mstl::string const& toString(ID title);
 	ID fromString(char const* title);
+	bool validate(char const* s, char const* e);
 
 	title::ID best(unsigned titles);
 	bool contains(unsigned titles, title::ID title);
@@ -582,6 +585,7 @@ namespace sex
 	mstl::string const& toString(ID sex);
 	ID fromChar(char sex);
 	ID fromString(char const* sex);
+	bool validate(char const* s, char const* e);
 }
 
 namespace rating
@@ -615,6 +619,7 @@ namespace rating
 
 	mstl::string const& toString(Type type);
 	Type fromString(char const* s);
+	bool isElo(char const* s, char const* e);
 }
 
 namespace federation
@@ -1846,6 +1851,7 @@ namespace country
 	unsigned count();
 
 	bool match(Code lhs, Code rhs);
+	bool validate(char const* s, char const* e);
 	int compare(Code lhs, Code rhs);
 }
 

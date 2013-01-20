@@ -49,109 +49,6 @@ class PgnReader : public Reader
 {
 public:
 
-	enum Error
-	{
-		InvalidToken,
-		UnexpectedSymbol,
-		UnexpectedEndOfInput,
-		UnexpectedTag,
-		UnexpectedResultToken,
-		UnexpectedEndOfGame,
-		TagNameExpected,
-		TagValueExpected,
-		InvalidFen,
-		UnterminatedString,
-		UnterminatedVariation,
-		InvalidMove,
-		UnsupportedVariant,
-		TooManyGames,
-		FileSizeExeeded,
-		GameTooLong,
-		TooManyPlayerNames,
-		TooManyEventNames,
-		TooManySiteNames,
-		TooManyRoundNames,
-		TooManyAnnotatorNames,
-		TooManySourceNames,
-		SeemsNotToBePgnText,
-		UnexpectedCastling,
-		ContinuationsNotSupported,
-
-		LastError = SeemsNotToBePgnText,
-	};
-
-	enum Warning
-	{
-		MissingWhitePlayerTag,
-		MissingBlackPlayerTag,
-		MissingPlayerTags,
-		MissingResult,
-		MissingResultTag,
-		InvalidRoundTag,
-		InvalidResultTag,
-		InvalidDateTag,
-		InvalidEventDateTag,
-		InvalidTimeModeTag,
-		InvalidEcoTag,
-		InvalidTagName,
-		InvalidCountryCode,
-		InvalidRating,
-		InvalidNag,
-		BraceSeenOutsideComment,
-		MissingFen,
-		UnknownEventType,
-		UnknownTitle,
-		UnknownPlayerType,
-		UnknownSex,
-		UnknownTermination,
-		RatingTooHigh,
-		UnknownMode,
-		EncodingFailed,
-		TooManyNags,
-		ResultDidNotMatchHeaderResult,
-		IllegalCastling,
-		IllegalMove,
-		CastlingCorrection,
-		ValueTooLong,
-		NotSuicideNotGiveaway,
-		VariantChangedToGiveaway,
-		VariantChangedToSuicide,
-		ResultCorrection,
-		MaximalErrorCountExceeded,
-		MaximalWarningCountExceeded,
-
-		LastWarning = MaximalWarningCountExceeded,
-	};
-
-	enum Tag
-	{
-		None,
-		Elo,
-		Country,
-		Title,
-		Human,
-		Sex,
-		Program,
-	};
-
-	enum ResultMode
-	{
-		UseResultTag,
-		InMoveSection,
-	};
-
-	enum Modification
-	{
-		Normalize,
-		Raw,
-	};
-
-	enum ReadMode
-	{
-		Text,
-		File,
-	};
-
 	typedef mstl::map<mstl::string,unsigned> Variants;
 	typedef unsigned GameCount[variant::NumberOfVariants];
 
@@ -180,30 +77,8 @@ public:
 
 	void setFigurine(mstl::string const& figurine);
 
-	virtual void warning(Warning code,
-								unsigned lineNo,
-								unsigned column,
-								unsigned gameNo,
-								variant::Type variant,
-								mstl::string const& info,
-								mstl::string const& item) = 0;
-	virtual void error(	Error code,
-								unsigned lineNo,
-								unsigned column,
-								unsigned gameNo,
-								variant::Type variant,
-								mstl::string const& message,
-								mstl::string const& info,
-								mstl::string const& item) = 0;
-
-	static bool validateTagName(char* tag, unsigned len);
-	static Tag extractPlayerData(mstl::string& data, mstl::string& value);
-	static country::Code extractCountryFromSite(mstl::string& data);
-	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
-	static termination::Reason getTerminationReason(mstl::string const& value);
-	static event::Mode getEventMode(char const* event, char const* site);
-	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
-	static bool getAttributes(mstl::string const& filename, int& numGames, mstl::string* description = 0);
+	unsigned estimateNumberOfGames() override;
+	static unsigned estimateNumberOfGames(unsigned fileSize);
 
 private:
 
@@ -256,16 +131,16 @@ private:
 	typedef mstl::vector<Comment> Comments;
 	typedef mstl::vector<IllegalMoveWarning> Warnings;
 
-	void error(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string);
-	void error(Error code, mstl::string const& item = mstl::string::empty_string);
+	void sendError(Error code, Pos pos, mstl::string const& item = mstl::string::empty_string);
+	void sendError(Error code, mstl::string const& item = mstl::string::empty_string);
 
 	void fatalError(Error code, Pos const& pos, mstl::string const& item = mstl::string::empty_string)
 		__attribute__((noreturn));
 	void fatalError(Error code, mstl::string const& item = mstl::string::empty_string)
 		__attribute__((noreturn));
 
-	void warning(Warning code, Pos pos, mstl::string const& item = mstl::string::empty_string);
-	void warning(Warning code, mstl::string const& item = mstl::string::empty_string);
+	void sendWarning(Warning code, Pos pos, mstl::string const& item = mstl::string::empty_string);
+	void sendWarning(Warning code, mstl::string const& item = mstl::string::empty_string);
 
 	int get(bool allowEndOfInput = false);
 	void putback(int c);
@@ -305,7 +180,6 @@ private:
 	void setNullMove();
 	void handleError(Error code, mstl::string const& message);
 	void finishGame(bool skip = false);
-	void checkSite();
 	void checkMode();
 	void convertToUtf(mstl::string& s);
 	void replaceFigurineSet(char const* fromSet, char const* toSet, mstl::string& str);
@@ -360,8 +234,6 @@ private:
 	Token skipMateSymbol(Token prevToken, int c);
 	Token skipWhiteSpace(Token prevToken, int c);
 	Token unexpectedSymbol(Token prevToken, int c);
-
-	static void parseDescription(mstl::istream& strm, mstl::string& result);
 
 	mstl::istream&		m_stream;
 	unsigned				m_putback;

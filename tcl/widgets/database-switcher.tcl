@@ -1526,13 +1526,13 @@ proc Properties {w id popup} {
 	} else {
 		set created [::scidb::db::get created? $file]
 		if {[string length $created] == 0} {
-			$f.tcreated configure -text $::mc::NotAvailable
+			$f.tcreated configure -text $::mc::NotAvailableSign
 		} else {
 			$f.tcreated configure -text [::locale::formatTime $created]
 		}
 		set lastModified [::scidb::db::get modified? $file]
 		if {[string length $lastModified] == 0} {
-			$f.tlastModified configure -text $::mc::NotAvailable
+			$f.tlastModified configure -text $::mc::NotAvailableSign
 		} else {
 			$f.tlastModified configure -text [::locale::formatTime $lastModified]
 		}

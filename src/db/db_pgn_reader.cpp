@@ -27,7 +27,6 @@
 #include "db_pgn_reader.h"
 #include "db_consumer.h"
 #include "db_player.h"
-#include "db_site.h"
 #include "db_mark_set.h"
 #include "db_tag_set.h"
 #include "db_date.h"
@@ -36,9 +35,8 @@
 #include "db_pgn_aquarium.h"
 #include "db_exception.h"
 
-#include "u_nul_string.h"
 #include "u_progress.h"
-#include "u_zstream.h"
+#include "u_nul_string.h"
 
 #include "m_algorithm.h"
 #include "m_istream.h"
@@ -46,7 +44,6 @@
 
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
-#include "sys_file.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -216,19 +213,6 @@ total(PgnReader::GameCount& count)
 }
 
 
-inline static
-country::Code
-checkCountry(mstl::string const& site, country::Code original, country::Code possible)
-{
-	db::Site const* p = db::Site::searchSite(site);
-
-	if (p && p->containsCountry(possible) && !p->containsCountry(original))
-		return possible;
-
-	return original;
-}
-
-
 static mstl::string
 quote(mstl::string const& s)
 {
@@ -242,13 +226,6 @@ quote(mstl::string const& s)
 	}
 
 	return t;
-}
-
-
-static bool
-isdelim(char c)
-{
-	return c == '\0' || ispunct(c) || isspace(c);
 }
 
 
@@ -313,107 +290,6 @@ checkScore(mstl::string const& s)
 }
 
 
-static bool
-isElo(char const* s, char const* e)
-{
-	unsigned size = e - s;
-
-	if (size == 3)
-		return '7' <= s[0] && s[0] <= '9' && isdigit(s[1]) && isdigit(s[2]);
-
-	if (size != 4)
-		return false;
-
-	if (s[0] == '0')
-		return '7' <= s[1] && s[1] <= '9' && isdigit(s[2]) && isdigit(s[3]);
-
-	return isdigit(s[0]) && isdigit(s[1]) && isdigit(s[2]);
-}
-
-
-static bool
-isCountry(char const* s, char const* e)
-{
-	return e - s == 3 && country::fromString(s) != country::Unknown;
-}
-
-
-static bool
-isTitle(char const* s, char const* e)
-{
-	return (e - s == 2 || (e - s == 3 && ::isupper(s[2]))) && title::fromString(s) != title::None;
-}
-
-
-static bool
-isHuman(char const* s, char const* e)
-{
-	switch (::tolower(*s))
-	{
-		case 'h': return strncasecmp(s, "human", 5) == 0;
-		case 'm': return strncasecmp(s, "man", 3) == 0;
-	}
-
-	return false;
-}
-
-
-static bool
-isSex(char const* s, char const* e)
-{
-	switch (*s)
-	{
-		case 'f': return e - s == 1;
-
-		case 'm':
-			return	e - s == 1
-					|| (e - s == 3 && equal(s, "man", 3));
-
-		case 'w':
-			return e - s == 5 && equal(s, "woman", 5);
-	}
-
-	return false;
-}
-
-
-static bool
-isProgram(char const* s, char const* e)
-{
-	switch (::tolower(*s))
-	{
-		case 'c': return strncasecmp(s, "comp", 4) == 0;
-		case 'e': return strncasecmp(s, "engine", 6) == 0;
-		case 'p': return strncasecmp(s, "program", 7) == 0;
-	}
-
-	return false;
-}
-
-
-static void
-removeValue(mstl::string& str, char* p, char delim)
-{
-	while (*p != delim)
-		--p;
-	while (p > str.c_str() && ::isspace(p[-1]))
-		--p;
-
-	*p = '\0';
-	str.set_size(p - str.begin());
-}
-
-
-static bool
-matchSuffix(mstl::string const& str, mstl::string const& suffix)
-{
-	if (str.size() < suffix.size())
-		return false;
-
-	return strcasecmp(str.c_str() + suffix.size() - str.size(), suffix) == 0;
-}
-
-
 static mstl::string
 itos(unsigned n)
 {
@@ -438,16 +314,6 @@ appendSpace(mstl::string& str)
 {
 	if (!str.empty() && !isspace(str.back()))
 		str += ' ';
-}
-
-
-static unsigned
-estimateNumberOfGames(unsigned fileSize)
-{
-	if (fileSize == 0)
-		return 0;
-
-	return mstl::max(1u, unsigned(::ceil(fileSize/696.0)));
 }
 
 
@@ -636,7 +502,7 @@ PgnReader::fatalError(Error code, Pos const& pos, mstl::string const& item)
 
 
 void
-PgnReader::error(Error code, Pos pos, mstl::string const& item)
+PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 {
 	if (m_readMode == Text && code == UnexpectedEndOfInput)
 	{
@@ -740,7 +606,7 @@ PgnReader::error(Error code, Pos pos, mstl::string const& item)
 
 
 void
-PgnReader::warning(Warning code, Pos pos, mstl::string const& item)
+PgnReader::sendWarning(Warning code, Pos pos, mstl::string const& item)
 {
 	switch (unsigned(code))
 	{
@@ -800,8 +666,14 @@ PgnReader::warning(Warning code, Pos pos, mstl::string const& item)
 
 
 void PgnReader::fatalError(Error code, mstl::string const& item)	{ fatalError(code, m_currPos, item); }
-void PgnReader::error(Error code, mstl::string const& item)			{ error(code, m_currPos, item); }
-void PgnReader::warning(Warning code, mstl::string const& item)	{ warning(code, m_currPos, item); }
+void PgnReader::sendError(Error code, mstl::string const& item)	{ sendError(code, m_currPos, item); }
+
+
+void
+PgnReader::sendWarning(Warning code, mstl::string const& item)
+{
+	sendWarning(code, m_currPos, item);
+}
 
 
 bool
@@ -843,10 +715,27 @@ PgnReader::setupVariant(variant::Type variant)
 	M_ASSERT(variant != variant::Antichess);
 
 	if (!consumer().supportsVariant(variant))
-		error(UnsupportedVariant, m_currPos, variant::identifier(variant));
+		sendError(UnsupportedVariant, m_currPos, variant::identifier(variant));
 
 	consumer().setVariant(m_variant = variant);
 	m_tags.set(tag::Variant, variant::identifier(variant));
+}
+
+
+unsigned
+PgnReader::estimateNumberOfGames(unsigned fileSize)
+{
+	if (fileSize == 0)
+		return 0;
+
+	return mstl::max(1u, unsigned(::ceil(fileSize/696.0)));
+}
+
+
+unsigned
+PgnReader::estimateNumberOfGames()
+{
+	return estimateNumberOfGames(m_stream.size());
 }
 
 
@@ -859,7 +748,7 @@ PgnReader::process(Progress& progress)
 	{
 		Token		token			= m_readMode == Text ? kTag : searchTag();
 		unsigned	streamSize	= m_stream.size();
-		unsigned	numGames		= ::estimateNumberOfGames(streamSize);
+		unsigned	numGames		= estimateNumberOfGames(streamSize);
 		unsigned	frequency	= progress.frequency(numGames, 1000);
 		unsigned	reportAfter	= frequency;
 		unsigned	count			= 0;
@@ -924,10 +813,10 @@ PgnReader::process(Progress& progress)
 					m_tags.set(tag::Variant, variant::identifier(m_givenVariant = m_variant));
 
 				if (m_variant != variant::Undetermined && !consumer().supportsVariant(m_variant))
-					error(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
+					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
 				if (!consumer().startGame(m_tags))
-					error(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
+					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
 				token = nextToken(kTag);
 				consumer().setVariant(m_variant);
@@ -953,7 +842,7 @@ PgnReader::process(Progress& progress)
 						if (token == kEndVariation)
 						{
 							if (consumer().variationLevel() == 0)
-								error(UnexpectedSymbol, m_prevPos, ")");
+								sendError(UnexpectedSymbol, m_prevPos, ")");
 
 							if (m_hasNote)
 							{
@@ -1012,7 +901,7 @@ PgnReader::process(Progress& progress)
 						if (	!variant::isAntichessExceptLosers(m_variant)
 							|| variant::isAntichessExceptLosers(i->m_variant))
 						{
-							warning(IllegalMove, i->m_pos, i->m_move);
+							sendWarning(IllegalMove, i->m_pos, i->m_move);
 						}
 					}
 				}
@@ -1023,28 +912,28 @@ PgnReader::process(Progress& progress)
 					unexpectedSymbol(kError, get());
 
 				if (consumer().variationLevel() > 0)
-					error(UnterminatedVariation);
+					sendError(UnterminatedVariation);
 
 				if (token == kEoi)
 				{
 					if (m_readMode == Text)
 						return 0;
 
-					error(UnexpectedEndOfInput);
+					sendError(UnexpectedEndOfInput);
 				}
 				else if (token == kTag)
 				{
 					if (m_readMode == Text)
-						error(UnexpectedTag, m_currPos);
+						sendError(UnexpectedTag, m_currPos);
 
 					if (m_currPos.column == 1)
 					{
 						putback('[');
-						error(UnexpectedEndOfGame, m_currPos);
+						sendError(UnexpectedEndOfGame, m_currPos);
 					}
 
 					m_prevPos = m_currPos;
-					error(UnexpectedTag, m_prevPos);
+					sendError(UnexpectedTag, m_prevPos);
 				}
 				else
 				{
@@ -1061,7 +950,7 @@ PgnReader::process(Progress& progress)
 
 						if (m_result != r)
 						{
-							warning(ResultDidNotMatchHeaderResult, m_prevPos, result::toString(m_result));
+							sendWarning(ResultDidNotMatchHeaderResult, m_prevPos, result::toString(m_result));
 							m_result = r;
 						}
 					}
@@ -1127,13 +1016,13 @@ PgnReader::checkVariant()
 								{
 									// side to move wins (international rules),
 									// but side not to move got the point -> cannot be Giveaway
-									warning(NotSuicideNotGiveaway);
+									sendWarning(NotSuicideNotGiveaway);
 								}
 								else
 								{
 									setupVariant(variant::Giveaway);
 									if (m_givenVariant != variant::Giveaway)
-										warning(VariantChangedToGiveaway);
+										sendWarning(VariantChangedToGiveaway);
 								}
 							}
 							break;
@@ -1148,11 +1037,11 @@ PgnReader::checkVariant()
 									// the side with less pieces wins (FICS rules)
 									setupVariant(variant::Suicide);
 									if (m_givenVariant != variant::Giveaway)
-										warning(VariantChangedToSuicide);
+										sendWarning(VariantChangedToSuicide);
 								}
 								else
 								{
-									warning(NotSuicideNotGiveaway);
+									sendWarning(NotSuicideNotGiveaway);
 								}
 							}
 							break;
@@ -1168,7 +1057,7 @@ PgnReader::checkVariant()
 						// must be Suicide
 						setupVariant(variant::Suicide);
 						if (m_givenVariant != variant::Giveaway)
-							warning(VariantChangedToSuicide);
+							sendWarning(VariantChangedToSuicide);
 					}
 					break;
 			}
@@ -1191,7 +1080,7 @@ PgnReader::checkResult()
 		if (given != expected)
 		{
 			m_tags.set(tag::Result, result::toString(expected));
-			warning(ResultCorrection);
+			sendWarning(ResultCorrection);
 			rc = false;
 		}
 	}
@@ -1206,7 +1095,7 @@ PgnReader::checkResult()
 		if (given != expected)
 		{
 			m_tags.set(tag::Result, result::toString(expected));
-			warning(ResultCorrection);
+			sendWarning(ResultCorrection);
 			rc = false;
 		}
 	}
@@ -1256,7 +1145,7 @@ PgnReader::checkResult()
 		if (given != expected)
 		{
 			m_tags.set(tag::Result, result::toString(expected));
-			warning(ResultCorrection);
+			sendWarning(ResultCorrection);
 			rc = false;
 		}
 	}
@@ -1315,165 +1204,6 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 
 void
-PgnReader::checkSite()
-{
-	mstl::string const& site = m_tags.value(tag::Site);
-
-	if (m_eventCountry == country::Unknown)
-	{
-//		db::Site const* s = db::Site::searchSite(site);
-//
-//		if (s && s->countCountries() == 1)
-//			m_eventCountry = s->country(0);
-	}
-	else
-	{
-		// sometimes wrong country codes will be used; we'll try to fix this:
-
-		switch (int(m_eventCountry))
-		{
-			case country::Cambodia:		// CAM: sometimes confused with Cameroon (CMR)
-				m_eventCountry = ::checkCountry(site, country::Cambodia, country::Cameroon);
-				break;
-
-			case country::Antigua:		// ANT: often confused with Netherlands_Antilles (AHO)
-				m_eventCountry = ::checkCountry(site, country::Antigua, country::Netherlands_Antilles);
-				break;
-
-			case country::England:		// ENG: sometimes Gibraltar will be confused with England
-				m_eventCountry = ::checkCountry(site, country::England, country::Gibraltar);
-				break;
-
-			case country::France:		// FRA: sometimes Monaco will be confused with France
-				m_eventCountry = ::checkCountry(site, country::France, country::Monaco);
-				break;
-
-			case country::Ireland:		// IRL: probably it belongs to Northern_Ireland (NIR)
-				m_eventCountry = ::checkCountry(site, country::Ireland, country::Northern_Ireland);
-				break;
-
-			case country::Kiribati:		// KIR: often confused with Kyrgyzstan (KGZ)
-				m_eventCountry = ::checkCountry(site, country::Kiribati, country::Kyrgyzstan);
-				break;
-
-			case country::Lebanon:		// LIB: often confused with Libya (LBA)
-				m_eventCountry = ::checkCountry(site, country::Lebanon, country::Libya);
-				break;
-
-			case country::Monaco:		// MON: sometimes confused with Mongolia (MGL)
-				m_eventCountry = ::checkCountry(site, country::Monaco, country::Mongolia);
-				break;
-
-			case country::Niger:			// NIG: often confused with Nigeria (NGR)
-				m_eventCountry = ::checkCountry(site, country::Niger, country::Nigeria);
-				break;
-
-			case country::Swaziland:	// SWZ: often confused with Switzerland (SUI)
-				m_eventCountry = ::checkCountry(site, country::Swaziland, country::Switzerland);
-				break;
-
-			case country::The_Internet:	// NET: sometimes confused with Netherlands (NED)
-				m_eventCountry = ::checkCountry(site, country::The_Internet, country::Netherlands);
-				break;
-
-			case country::Serbia_and_Montenegro:	// SCG: Scid is confusing this with Yugoslavia (YUG)
-				m_eventCountry = ::checkCountry(	site,
-															country::Serbia_and_Montenegro,
-															country::Bosnia_and_Herzegovina);
-				break;
-
-			case country::United_Arab_Emirates:	// UAE: sometimes Bahrain will be confused with UAE
-				m_eventCountry = ::checkCountry(site, country::United_Arab_Emirates, country::Bahrain);
-				break;
-		}
-
-		if (m_sourceIsPossiblyChessBase)
-		{
-			// ChessBases ignores the PGN standard in case of the country codes.
-			// We try to fix wrong country code mappings (should only happen if
-			// the PGN source is ChessBase).
-			//
-			// We will verify the corrections. We cannot be sure that the source
-			// of the data is ChessBase.
-
-			switch (int(m_eventCountry))
-			{
-#if 0	// already handled
-				case country::Cambodia:			// CAM
-					m_eventCountry = ::checkCountry(site, country::Cambodia, country::Cameroon);
-					break;
-#endif
-
-				case country::Palestine:		// PLE
-					m_eventCountry = ::checkCountry(site, country::Palestine, country::Palau);
-					break;
-
-				case country::El_Salvador:		// SAL
-					m_eventCountry = ::checkCountry(site, country::El_Salvador, country::Solomon_Islands);
-					break;
-
-				case country::Switzerland:		// SUI
-					m_eventCountry = ::checkCountry(	site,
-																country::Switzerland,
-																country::Saint_Vincent_and_the_Grenadines);
-					break;
-
-				case country::Slovenia:			// SVN
-					m_eventCountry = ::checkCountry(site, country::Slovenia, country::Jan_Mayen_and_Svalbard);
-					break;
-
-				case country::Czech_Republic:	// CZE
-					m_eventCountry = ::checkCountry(site, country::Czech_Republic, country::Czechoslovakia);
-					break;
-
-				case country::West_Germany:	// FRG
-					m_eventCountry = ::checkCountry(site, country::Germany, country::French_Guiana);
-					break;
-
-				case country::The_Internet:	// NET
-					m_eventCountry = ::checkCountry(site, country::The_Internet, country::American_Samoa);
-					break;
-
-				case country::DR_Congo:			// ZAR
-					m_eventCountry = ::checkCountry(site, country::DR_Congo, country::Russia);
-					break;
-			}
-
-			// Possibly the mapping of the country code is still incorrect.
-			// Complain this to ChessBase!
-		}
-
-		m_tags.add(EventCountry, country::toString(m_eventCountry));
-	}
-
-// NOTE:
-// The tags "WhiteCountry", "BlackCountry" do not exist if source is "ChessBase".
-//
-//	if (m_tags.contains(Source))
-//	{
-//		if (::strcasecmp(m_tags.value(Source), "chessbase") == 0 || !m_eventCountry.empty())
-//		{
-//			if (m_tags.contains(WhiteCountry))
-//			{
-//				m_tags.set(	WhiteCountry,
-//								country::toString(
-//									country::remapToChessbaseCoding(
-//										country::fromString(m_tags.value(WhiteCountry)))));
-//			}
-//
-//			if (m_tags.contains(BlackCountry))
-//			{
-//				m_tags.set(	BlackCountry,
-//								country::toString(
-//									country::remapToChessbaseCoding(
-//										country::fromString(m_tags.value(BlackCountry)))));
-//			}
-//		}
-//	}
-}
-
-
-void
 PgnReader::checkMode()
 {
 	event::Mode mode = event::Undetermined;
@@ -1516,7 +1246,7 @@ PgnReader::finishGame(bool skip)
 
 	if (m_modification == Normalize)
 	{
-		checkSite();
+		checkSite(m_tags, m_eventCountry, m_sourceIsPossiblyChessBase);
 		checkMode();
 	}
 
@@ -1592,7 +1322,7 @@ PgnReader::convertToUtf(mstl::string& s)
 	{
 		if (!m_encodingFailed)
 		{
-			warning(EncodingFailed, m_prevPos);
+			sendWarning(EncodingFailed, m_prevPos);
 			m_codec->reset();
 			m_encodingFailed = true;
 		}
@@ -1931,7 +1661,7 @@ PgnReader::get(bool allowEndOfInput)
 		else if (m_eof)
 		{
 			if (!allowEndOfInput)
-				error(UnexpectedEndOfInput);
+				sendError(UnexpectedEndOfInput);
 
 			return '\0';
 		}
@@ -2126,38 +1856,6 @@ PgnReader::searchTag()
 
 
 void
-PgnReader::parseDescription(mstl::istream& strm, mstl::string& result)
-{
-	unsigned n = 0;
-
-	while (1)
-	{
-		int c = strm.peek();
-
-		switch (c)
-		{
-			case '\0':
-			case '[':
-				return;
-
-			case EOF:
-				return;
-
-			case '\n':
-				if (++n == 10)
-					return;
-				// fallthru
-
-			default:
-				result.append(c);
-				strm.get();
-				break;
-		}
-	}
-}
-
-
-void
 PgnReader::checkFen()
 {
 	M_ASSERT(m_modification == Normalize);
@@ -2259,14 +1957,14 @@ PgnReader::checkFen()
 		Board board;
 
 		if (!board.setup(fen, m_variant))
-			error(InvalidFen, m_fenPos, fen);
+			sendError(InvalidFen, m_fenPos, fen);
 
 		if (board.validate(m_variant) != Board::Valid)
 		{
 			if (!m_variantValue.empty())
-				error(UnsupportedVariant, m_prevPos, m_variantValue);
+				sendError(UnsupportedVariant, m_prevPos, m_variantValue);
 
-			error(InvalidFen, m_fenPos, fen);
+			sendError(InvalidFen, m_fenPos, fen);
 		}
 
 		if (board.isStandardPosition())
@@ -2529,7 +2227,7 @@ PgnReader::checkTags()
 		if (!m_tags.contains(Black))
 		{
 			m_tags.set(Black, "?");
-			warning(MissingPlayerTags, m_prevPos);
+			sendWarning(MissingPlayerTags, m_prevPos);
 		}
 
 		m_tags.set(White, "?");
@@ -2539,7 +2237,7 @@ PgnReader::checkTags()
 		if (!m_tags.contains(White))
 		{
 			m_tags.set(White, "?");
-			warning(MissingPlayerTags, m_prevPos);
+			sendWarning(MissingPlayerTags, m_prevPos);
 		}
 
 		m_tags.set(Black, "?");
@@ -2547,7 +2245,7 @@ PgnReader::checkTags()
 
 	if (!m_tags.contains(Result))
 	{
-		warning(MissingResultTag, m_prevPos);
+		sendWarning(MissingResultTag, m_prevPos);
 		m_tags.set(Result, "*");
 		m_noResult = true;
 	}
@@ -2703,7 +2401,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					m_variantValue.assign(v, ::skipWord(v));
 
 					if (!parseVariant())
-						error(UnsupportedVariant, m_prevPos, m_variantValue);
+						sendError(UnsupportedVariant, m_prevPos, m_variantValue);
 				}
 
 				m_isICS = true;
@@ -2726,7 +2424,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				if (!parseRound(value, round, subround))
 				{
 					convertToUtf(value);
-					warning(InvalidRoundTag, m_prevPos, value);
+					sendWarning(InvalidRoundTag, m_prevPos, value);
 				}
 				else
 				{
@@ -2749,7 +2447,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (code == country::Unknown)
 				{
-					warning(InvalidCountryCode, m_prevPos, value);
+					sendWarning(InvalidCountryCode, m_prevPos, value);
 					return false;
 				}
 
@@ -2763,7 +2461,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (code == country::Unknown)
 				{
-					warning(InvalidCountryCode, m_prevPos, value);
+					sendWarning(InvalidCountryCode, m_prevPos, value);
 					return false;
 				}
 
@@ -2786,7 +2484,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					switch (time::Mode mode = time::fromString(v))
 					{
 						case time::Unknown:
-							warning(UnknownMode, m_prevPos, v);
+							sendWarning(UnknownMode, m_prevPos, v);
 							break;
 
 						case time::Corr:
@@ -2846,7 +2544,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 						if (mode == time::Unknown)
 						{
-							warning(UnknownEventType, m_prevPos, value);
+							sendWarning(UnknownEventType, m_prevPos, value);
 							m_tags.setExtra(tag::toName(tag), value);
 							return false;
 						}
@@ -2866,7 +2564,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (title == title::None)
 				{
-					warning(UnknownTitle, m_prevPos, value);
+					sendWarning(UnknownTitle, m_prevPos, value);
 					return false;
 				}
 
@@ -2890,7 +2588,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 							break;
 
 						default:
-							warning(UnknownSex, m_prevPos, value);
+							sendWarning(UnknownSex, m_prevPos, value);
 							return false;
 					}
 				}
@@ -2928,7 +2626,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					Date date;
 
 					if (!date.parseFromString(value))
-						warning(InvalidDateTag, m_prevPos, value);
+						sendWarning(InvalidDateTag, m_prevPos, value);
 
 					if (!date)
 						return false;
@@ -2949,7 +2647,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 					Date date;
 
 					if (!date.parseFromString(value))
-						warning(InvalidEventDateTag, m_prevPos, value);
+						sendWarning(InvalidEventDateTag, m_prevPos, value);
 
 					if (!date)
 						return false;
@@ -2974,7 +2672,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (timeMode == time::Unknown)
 				{
-					warning(InvalidTimeModeTag, m_prevPos, value);
+					sendWarning(InvalidTimeModeTag, m_prevPos, value);
 					m_tags.setExtra(tag::toName(tag), value);
 					return false;
 				}
@@ -2987,7 +2685,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (!eco)
 				{
-					warning(InvalidEcoTag, m_prevPos, value);
+					sendWarning(InvalidEcoTag, m_prevPos, value);
 					return false;
 				}
 			}
@@ -3001,7 +2699,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				{
 					m_tags.set(Result, "*");
 					if (value != "?")
-						warning(InvalidResultTag, m_prevPos, value);
+						sendWarning(InvalidResultTag, m_prevPos, value);
 					m_noResult = true;
 					return false;
 				}
@@ -3018,7 +2716,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				m_variantValue = value;
 
 				if (!parseVariant())
-					error(UnsupportedVariant, m_prevPos, value);
+					sendError(UnsupportedVariant, m_prevPos, value);
 			}
 
 			m_variantPos = m_prevPos;
@@ -3031,7 +2729,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (reason == termination::Unknown && ::strcasecmp(value, "unknown") == 0)
 				{
-					warning(UnknownTermination, m_prevPos, value);
+					sendWarning(UnknownTermination, m_prevPos, value);
 					m_tags.setExtra(tag::toName(tag), value);
 					return false;
 				}
@@ -3046,7 +2744,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 				{
 					if (::strcasecmp(value, "unknown") != 0)
 					{
-						warning(UnknownMode, m_prevPos, value);
+						sendWarning(UnknownMode, m_prevPos, value);
 						m_tags.setExtra(tag::toName(tag), value);
 					}
 
@@ -3086,7 +2784,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 		case BlackUSCF:
 			if (!value.empty())
 			{
-				if (::isElo(value.begin(), value.end()))
+				if (rating::isElo(value.begin(), value.end()))
 				{
 					if (value[0] == '0')
 						value.erase(mstl::string::size_type(0), mstl::string::size_type(1));
@@ -3098,13 +2796,13 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 					if (rat > rating::Max_Value)
 					{
-						warning(RatingTooHigh, m_prevPos, value);
+						sendWarning(RatingTooHigh, m_prevPos, value);
 						return false;
 					}
 				}
 				else if (!::checkScore(value))
 				{
-					warning(InvalidRating, m_prevPos, value);
+					sendWarning(InvalidRating, m_prevPos, value);
 					return false;
 				}
 			}
@@ -3172,7 +2870,7 @@ PgnReader::readTags()
 
 			if (value.size() > 255)
 			{
-				warning(ValueTooLong, m_prevPos, value);
+				sendWarning(ValueTooLong, m_prevPos, value);
 				value.set_size(255);
 			}
 
@@ -3182,7 +2880,7 @@ PgnReader::readTags()
 				c = get();
 
 			if (__builtin_expect(c != ']', 0))
-				error(UnexpectedSymbol);
+				sendError(UnexpectedSymbol);
 
 			tag::ID tag = fromName(name);
 
@@ -3272,12 +2970,12 @@ PgnReader::readTags()
 						case BlackType:
 							if (m_modification == Normalize)
 							{
-								if (::isHuman(value.begin(), value.end()))
+								if (species::isHuman(value.begin(), value.end()))
 									m_tags.set(tag, species::toString(species::Human));
-								else if (::isProgram(value.begin(), value.end()))
+								else if (species::isProgram(value.begin(), value.end()))
 									m_tags.set(tag, species::toString(species::Program));
 								else
-									warning(UnknownPlayerType, m_prevPos, value);
+									sendWarning(UnknownPlayerType, m_prevPos, value);
 							}
 							break;
 
@@ -3290,7 +2988,7 @@ PgnReader::readTags()
 		}
 		else
 		{
-			warning(InvalidTagName, m_prevPos, name);
+			sendWarning(InvalidTagName, m_prevPos, name);
 		}
 
 		skipLine();
@@ -3314,32 +3012,6 @@ PgnReader::readTags()
 		name.clear();
 		value.clear();
 	}
-}
-
-
-bool
-PgnReader::validateTagName(char* tag, unsigned len)
-{
-	while (len--)
-	{
-		char c = *tag;
-
-		if (c == '\0')
-			return true;
-
-		// NOTE: Character '-' is not allowed due to the PGN specification, but
-		// is used in some PGN games (e.g. PGN files from www.remoteschach.de).
-		// We replace this character silently to be PGN conform.
-
-		if (c == '-')
-			*tag = '_';
-		else if (!::isalnum(c))
-			return false;
-
-		++tag;
-	}
-
-	return true;
 }
 
 
@@ -3369,7 +3041,7 @@ PgnReader::readTagName(mstl::string& s)
 		while ((c = get(true)) == '[');
 
 		putback(c);
-		error(TagNameExpected, m_prevPos);
+		sendError(TagNameExpected, m_prevPos);
 	}
 
 	return validateTagName(s.data(), s.size());
@@ -3387,7 +3059,7 @@ PgnReader::readTagValue(mstl::string& s)
 	m_prevPos = m_currPos;
 
 	if (c != '"')
-		error(TagValueExpected);
+		sendError(TagValueExpected);
 
 	while (true)
 	{
@@ -3396,7 +3068,7 @@ PgnReader::readTagValue(mstl::string& s)
 		switch (c)
 		{
 			case '\n':
-				error(UnterminatedString, m_prevPos);
+				sendError(UnterminatedString, m_prevPos);
 				// not reached
 
 			case '"':
@@ -3409,7 +3081,7 @@ PgnReader::readTagValue(mstl::string& s)
 			case '\\':
 				{
 					if ((c = get()) == '\n')
-						error(UnterminatedString, m_prevPos);
+						sendError(UnterminatedString, m_prevPos);
 
 					int c2 = get();
 					putback(c2);
@@ -3422,94 +3094,6 @@ PgnReader::readTagValue(mstl::string& s)
 
 		s += char(c);
 	}
-}
-
-
-time::Mode
-PgnReader::getTimeModeFromTimeControl(mstl::string const& value)
-{
-	mstl::string::size_type field = 0;
-
-	unsigned seconds	= 0;
-	unsigned moves		= 0;
-
-	do
-	{
-		if (field >= value.size() || (value[field] == '*' && !::isdigit(value[field + 1])))
-			return time::Unknown;
-
-		unsigned nextDelim = value.find(':', field);
-		unsigned n;
-
-		if ((n = value.find('/', field)) < nextDelim)
-		{
-			moves += ::strtoul(value.c_str() + field, nullptr, 10);
-			seconds += ::strtoul(value.c_str() + n + 1, nullptr, 10);
-		}
-		else
-		{
-			if (value[field] == '*')
-				++field;
-
-			seconds += ::strtoul(value.c_str() + field, nullptr, 10);
-
-			if ((n = value.find('+', field)) < nextDelim)
-			{
-				unsigned increment = ::strtoul(value.c_str() + n + 1, nullptr, 10);
-				seconds += mstl::max(0, 60 - int(moves))*increment;
-			}
-		}
-
-		field = nextDelim;
-	}
-	while (field++ != mstl::string::npos);
-
-	if (seconds == 0)
-		return time::Unknown;
-
-	// Bullet: 1 or 2 minutes per side.
-	if (seconds <= 120)
-		return time::Bullet;
-
-	// Blitz:  All the moves must be made in a fixed time of less
-	//         than 15 minutes for each player; or the allotted time
-	//         + 60 times any increment is less than 15 minutes.
-	if (seconds < 900)
-		return time::Blitz;
-
-	// Rapid:  15 to less than 60 minutes per player, or the
-	//         allotted time + 60 times any increment is at least
-	//         15 minutes, but less than 60 minutes for each player.
-	if (seconds < 3600)
-		return time::Rapid;
-
-	return time::Normal;
-}
-
-
-termination::Reason
-PgnReader::getTerminationReason(mstl::string const& value)
-{
-	termination::Reason reason = termination::fromString(value);
-
-	if (reason == termination::Unknown)
-	{
-		static mstl::string const Resigned("resigned");
-		static mstl::string const WonByResignation("won by resignation");
-
-		if (::matchSuffix(value, Resigned) || ::matchSuffix(value, WonByResignation))
-			return termination::Normal;
-
-		if (value.size() > 1)
-		{
-			mstl::string v(value);
-			v.strip('-');
-
-			return termination::fromString(value);
-		}
-	}
-
-	return reason;
 }
 
 
@@ -3536,7 +3120,7 @@ PgnReader::putNag(nag::ID nag)
 	if (!m_ignoreNags && !m_annotation.contains(nag) && !m_annotation.add(nag))
 	{
 		m_ignoreNags = true;
-		warning(TooManyNags, m_prevPos);
+		sendWarning(TooManyNags, m_prevPos);
 	}
 
 	m_hasNote = true;
@@ -3554,7 +3138,7 @@ PgnReader::Token
 PgnReader::resultToken(result::ID result)
 {
 	if (m_readMode == Text)
-		error(UnexpectedResultToken, m_prevPos);
+		sendError(UnexpectedResultToken, m_prevPos);
 
 	m_result = result;
 	return kResult;
@@ -3605,7 +3189,7 @@ bool
 PgnReader::doCastling(char const* castle)
 {
 	if (variant::isAntichessExceptLosers(m_variant))
-		error(UnexpectedCastling, castle);
+		sendError(UnexpectedCastling, castle);
 
 	putMove();
 	board().parseMove(castle, m_move, m_variant, move::DontAllowIllegalMove);
@@ -3663,7 +3247,7 @@ PgnReader::doCastling(char const* castle)
 
 			m_move = moves[0];
 			m_move.setColor(side);
-			warning(CastlingCorrection, msg);
+			sendWarning(CastlingCorrection, msg);
 			m_hasCastled = true;
 			return true;
 		}
@@ -3694,7 +3278,7 @@ PgnReader::doCastling(char const* castle)
 //		}
 
 		m_move.setIllegalMove();
-		warning(IllegalCastling, castle);
+		sendWarning(IllegalCastling, castle);
 	}
 	else if (!m_move.isLegal())
 	{
@@ -3985,7 +3569,7 @@ PgnReader::parseApostrophe(Token prevToken, int c)
 	// Move suffix: "'"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "'");
+		sendError(UnexpectedSymbol, "'");
 
 	putNag(nag::Without);
 	return kNag;
@@ -4021,7 +3605,7 @@ PgnReader::parseAtSign(Token prevToken, int c)
 		}
 
 		if (!equal(m_linePos, "@@@", 3))
-			error(UnexpectedSymbol, "@");
+			sendError(UnexpectedSymbol, "@");
 
 		advanceLinePos(3);
 		setNullMove();
@@ -4039,7 +3623,7 @@ PgnReader::parseBackslash(Token prevToken, int c)
 	// Move suffix: "\/"
 
 	if (!partOfMove(prevToken) || *m_linePos != '/')
-		error(UnexpectedSymbol, "\\");
+		sendError(UnexpectedSymbol, "\\");
 
 	advanceLinePos(1);
 	putNag(nag::AimedAgainst);
@@ -4053,7 +3637,7 @@ PgnReader::parseCaret(Token prevToken, int c)
 	// Move suffix: "^^", "^_", "^=", "^"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "^");
+		sendError(UnexpectedSymbol, "^");
 
 	switch (*m_linePos)
 	{
@@ -4134,11 +3718,11 @@ PgnReader::parseCastling(Token prevToken, int c)
 			return kNag;
 		}
 
-		error(InvalidToken, mstl::string(m_linePos - 1, e));
+		sendError(InvalidToken, mstl::string(m_linePos - 1, e));
 	}
 
 	if (!doCastling(castle))
-		error(InvalidMove, mstl::string(m_linePos - 1, e));
+		sendError(InvalidMove, mstl::string(m_linePos - 1, e));
 
 	setLinePos(e);
 	return kSan;
@@ -4232,7 +3816,7 @@ PgnReader::parseExclamationMark(Token prevToken, int)
 	// Move suffix: "!", "!?", "!!"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "!");
+		sendError(UnexpectedSymbol, "!");
 
 	switch (*m_linePos)
 	{
@@ -4261,7 +3845,7 @@ PgnReader::parseGraveAccent(Token prevToken, int c)
 	// Move suffix: "`"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "`");
+		sendError(UnexpectedSymbol, "`");
 
 	putNag(nag::Without);
 	return kNag;
@@ -4376,7 +3960,7 @@ PgnReader::parseLessThanSign(Token prevToken, int)
 	if (*m_linePos == '>')
 		setLinePos(m_linePos + 1);
 	else
-		error(UnexpectedSymbol, "<");
+		sendError(UnexpectedSymbol, "<");
 
 	return prevToken;
 }
@@ -4419,7 +4003,7 @@ PgnReader::parseLowercaseN(Token, int)
 	// Null move: "null"
 
 	if (!equal(m_linePos, "ull", 3) || ::isalpha(m_linePos[3]))
-		error(UnexpectedSymbol, "n");
+		sendError(UnexpectedSymbol, "n");
 
 	advanceLinePos(3);
 	setNullMove();
@@ -4433,7 +4017,7 @@ PgnReader::parseLowercaseP(Token, int)
 	// Null move: "pass"
 
 	if (!equal(m_linePos, "ass", 3) || ::isalpha(m_linePos[3]))
-		error(UnexpectedSymbol, "p");
+		sendError(UnexpectedSymbol, "p");
 
 	advanceLinePos(3);
 	setNullMove();
@@ -4466,7 +4050,7 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 
 		case '/':
 			if (m_linePos[1] != 'o')
-				error(UnexpectedSymbol, "o/");
+				sendError(UnexpectedSymbol, "o/");
 			advanceLinePos(2);
 			putNag(nag::SeparatedPawns);
 			break;
@@ -4481,13 +4065,13 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 
 				case '.':
 					if (m_linePos[1] != 'o')
-						error(UnexpectedSymbol, "o..");
+						sendError(UnexpectedSymbol, "o..");
 					advanceLinePos(3);
 					putNag(nag::UnitedPawns);
 					break;
 
 				default:
-					error(UnexpectedSymbol, "o.");
+					sendError(UnexpectedSymbol, "o.");
 			}
 			break;
 
@@ -4511,7 +4095,7 @@ PgnReader::parseLowercaseO(Token prevToken, int)
 			// fallthru
 
 		default:
-			error(UnexpectedSymbol, "o");
+			sendError(UnexpectedSymbol, "o");
 	}
 
 	return kNag;
@@ -4524,7 +4108,7 @@ PgnReader::parseLowercaseZ(Token prevToken, int)
 	// kNag: "zz"
 
 	if (*m_linePos != 'z')
-		error(UnexpectedSymbol, "z");
+		sendError(UnexpectedSymbol, "z");
 
 	advanceLinePos(1);
 	putNag(nag::WhiteIsInZugzwang, nag::BlackIsInZugzwang);
@@ -4572,23 +4156,23 @@ PgnReader::parseMinusSign(Token prevToken, int)
 
 		case '+':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, "-");
+				sendError(UnexpectedSymbol, "-");
 			advanceLinePos(2);
 			putNag(nag::BlackHasADecisiveAdvantage);
 			return kNag;
 
 		case '/':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, "/");
+				sendError(UnexpectedSymbol, "/");
 			if (m_linePos[1] != '+')
-				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+				sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 			advanceLinePos(2);
 			putNag(nag::BlackHasAModerateAdvantage);
 			return kNag;
 
 		case '>':
 			if (!partOfMove(prevToken))
-				error(UnexpectedSymbol, ">");
+				sendError(UnexpectedSymbol, ">");
 			if (::equal(m_linePos, "-/<-", 4))
 			{
 				advanceLinePos(4);
@@ -4600,7 +4184,7 @@ PgnReader::parseMinusSign(Token prevToken, int)
 			return kNag;
 	}
 
-	error(UnexpectedSymbol, "-");
+	sendError(UnexpectedSymbol, "-");
 	return prevToken;	// satisfies the compiler
 }
 
@@ -4653,9 +4237,9 @@ PgnReader::parseMove(Token prevToken, int c)
 					break;
 			}
 
-			error(InvalidToken,
-					m_prevPos,
-					inverseFigurineMapping(mstl::string(m_linePos - 1, ::skipMoveToken(m_linePos))));
+			sendError(	InvalidToken,
+							m_prevPos,
+							inverseFigurineMapping(mstl::string(m_linePos - 1, ::skipMoveToken(m_linePos))));
 		}
 	}
 
@@ -4670,9 +4254,9 @@ PgnReader::parseMove(Token prevToken, int c)
 
 		if (!m_move)
 		{
-			error(InvalidMove,
-					m_prevPos,
-					inverseFigurineMapping(mstl::string(m_linePos - 1, e)));
+			sendError(	InvalidMove,
+							m_prevPos,
+							inverseFigurineMapping(mstl::string(m_linePos - 1, e)));
 		}
 	}
 
@@ -4690,9 +4274,9 @@ PgnReader::parseMove(Token prevToken, int c)
 			else
 #endif
 			{
-				error(InvalidMove,
-						m_prevPos,
-						inverseFigurineMapping(mstl::string(m_linePos - 1, e)));
+				sendError(	InvalidMove,
+								m_prevPos,
+								inverseFigurineMapping(mstl::string(m_linePos - 1, e)));
 			}
 		}
 
@@ -4727,7 +4311,7 @@ PgnReader::parseNag(Token prevToken, int)
 	// Nag value: [$][0-9]+
 
 	if (__builtin_expect(!::isdigit(*m_linePos), 0))
-		error(InvalidToken, ::trim(mstl::string("$") + *m_linePos));
+		sendError(InvalidToken, ::trim(mstl::string("$") + *m_linePos));
 
 	unsigned nag = 0;
 
@@ -4740,7 +4324,7 @@ PgnReader::parseNag(Token prevToken, int)
 	if (!partOfMove(prevToken))
 	{
 		if (myNag != nag::Diagram && myNag != nag::DiagramFromBlack)
-			error(UnexpectedSymbol, "$");
+			sendError(UnexpectedSymbol, "$");
 
 		m_annotation.add(nag::ID(myNag));
 		m_hasNote = true;
@@ -4748,7 +4332,7 @@ PgnReader::parseNag(Token prevToken, int)
 	}
 	else if (myNag == nag::Null)
 	{
-		warning(InvalidNag, mstl::string("$") + ::itos(nag));
+		sendWarning(InvalidNag, mstl::string("$") + ::itos(nag));
 	}
 	else
 	{
@@ -4789,14 +4373,14 @@ PgnReader::parseNumberZero(Token prevToken, int c)
 						return resultToken(result::Lost);
 					}
 
-					error(InvalidMove, "O-O");
+					sendError(InvalidMove, "O-O");
 					break;
 
 				case 'O':
 					return parseCastling(prevToken, '0');
 			}
 
-			error(InvalidToken, mstl::string(m_linePos - 1, m_linePos + 1));
+			sendError(InvalidToken, mstl::string(m_linePos - 1, m_linePos + 1));
 			// not reached
 
 		case ':':
@@ -4810,7 +4394,7 @@ PgnReader::parseNumberZero(Token prevToken, int c)
 					advanceLinePos(2);
 					return resultToken(result::Black);
 			}
-			error(InvalidToken, ::trim(mstl::string(m_linePos - 1, m_linePos + 2)));
+			sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, m_linePos + 2)));
 			// not reached
 
 		case 'O':
@@ -4833,14 +4417,14 @@ PgnReader::parseNumberOne(Token prevToken, int c)
 		case '-':
 		case ':':
 			if (m_linePos[1] != '0')
-				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+				sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 
 			advanceLinePos(2);
 			return resultToken(result::White);
 
 		case '/':
 			if (m_linePos[1] != '2')
-				error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+				sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 
 			if (::equal(m_linePos, "/2-1/2", 6) || ::equal(m_linePos, "/2:1/2", 6))
 			{
@@ -4852,7 +4436,7 @@ PgnReader::parseNumberOne(Token prevToken, int c)
 				advanceLinePos(2);
 				return resultToken(result::Draw);
 			}
-			error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+			sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 			// not reached
 	}
 
@@ -4867,7 +4451,7 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 	// Move suffix: "+-", "+--", "++--", "+/-", "+=", "+/="
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "+");
+		sendError(UnexpectedSymbol, "+");
 
 	switch (m_linePos[0])
 	{
@@ -4897,7 +4481,7 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 					break;
 
 				default:
-					error(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
+					sendError(InvalidToken, ::trim(mstl::string(m_linePos - 1, 3)));
 			}
 
 			prevToken = kNag;
@@ -4907,7 +4491,7 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 			if (m_linePos[1] == '-')
 			{
 				if (m_linePos[2] != '-')
-					error(InvalidToken, "++-");
+					sendError(InvalidToken, "++-");
 
 				advanceLinePos(3);
 				putNag(nag::WhiteHasACrushingAdvantage);
@@ -4935,7 +4519,7 @@ PgnReader::parseQuestionMark(Token prevToken, int c)
 	// Move suffix: "?", "??", "?!"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "?");
+		sendError(UnexpectedSymbol, "?");
 
 	switch (*m_linePos)
 	{
@@ -5010,7 +4594,7 @@ PgnReader::parseOpenParen(Token prevToken, int)
 
 	if (m_linePos[0] == '*')
 	{
-		error(ContinuationsNotSupported, "/");
+		sendError(ContinuationsNotSupported, "/");
 		return skipToEndOfVariation(prevToken);
 	}
 
@@ -5024,7 +4608,7 @@ PgnReader::parseSlash(Token prevToken, int)
 	// Move suffix: "/\", "/^", "//"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "/");
+		sendError(UnexpectedSymbol, "/");
 
 	switch (*m_linePos)
 	{
@@ -5040,7 +4624,7 @@ PgnReader::parseSlash(Token prevToken, int)
 			break;
 
 		default:
-			error(UnexpectedSymbol, "/");
+			sendError(UnexpectedSymbol, "/");
 	}
 
 	return kNag;
@@ -5084,7 +4668,7 @@ PgnReader::parseTilde(Token prevToken, int c)
 	// Move suffix: "~", "~~", "~&", "~/=" "&", "&&", "&~", "&/="
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, mstl::string(1, c));
+		sendError(UnexpectedSymbol, mstl::string(1, c));
 
 	switch (m_linePos[0])
 	{
@@ -5122,7 +4706,7 @@ PgnReader::parseUnderscore(Token prevToken, int c)
 	// Move suffix: "_|_", "_|"
 
 	if (!partOfMove(prevToken) || m_linePos[0] != '|')
-		error(UnexpectedSymbol, "_");
+		sendError(UnexpectedSymbol, "_");
 
 	if (m_linePos[1] == '_')
 	{
@@ -5242,7 +4826,7 @@ PgnReader::parseVerticalBar(Token prevToken, int)
 	// Move suffix: "|^", "||", "|_"
 
 	if (!partOfMove(prevToken))
-		error(UnexpectedSymbol, "|");
+		sendError(UnexpectedSymbol, "|");
 
 	switch (*m_linePos)
 	{
@@ -5262,7 +4846,7 @@ PgnReader::parseVerticalBar(Token prevToken, int)
 			break;
 
 		default:
-			error(UnexpectedSymbol, "|");
+			sendError(UnexpectedSymbol, "|");
 	}
 
 	return kNag;
@@ -5299,7 +4883,7 @@ PgnReader::Token
 PgnReader::skipMateSymbol(Token prevToken, int)
 {
 	if (!(prevToken & kSan))
-		error(UnexpectedSymbol, "#");
+		sendError(UnexpectedSymbol, "#");
 
 	return prevToken;
 }
@@ -5318,12 +4902,12 @@ PgnReader::unexpectedSymbol(Token prevToken, int c)
 	if (c == '}')
 	{
 		// We will not throw an error because Scid is writing invalid PGN files.
-		warning(BraceSeenOutsideComment, m_currPos);
+		sendWarning(BraceSeenOutsideComment, m_currPos);
 		return prevToken;
 	}
 
 	if (!(prevToken & kSan))
-		error(UnexpectedSymbol, m_currPos, mstl::string(::isprint(c) ? 1 : 0, c));
+		sendError(UnexpectedSymbol, m_currPos, mstl::string(::isprint(c) ? 1 : 0, c));
 
 	putback(c);
 	return kError;
@@ -5486,482 +5070,6 @@ PgnReader::nextToken(Token prevToken)
 }
 
 
-bool
-PgnReader::parseRound(mstl::string const& data, unsigned& round, unsigned& subround)
-{
-	char* s = const_cast<char*>(data.c_str());
-
-	if (*s == '?' || *s == '-')
-	{
-		round = subround = 0;
-	}
-	else
-	{
-		while (::isspace(*s))
-			++s;
-
-		if (*s == '\0')
-		{
-			round = subround = 0;
-		}
-		else
-		{
-			if (*s == '(')
-				++s;
-			while (*s == '0')
-				++s;
-
-			if (::isdigit(*s))
-			{
-				round = ::strtoul(s, &s, 10);
-
-				if (round > 255)
-				{
-					round = subround = 0;
-					return false;
-				}
-			}
-			else if (s == data.c_str() || s[-1] != '0')
-			{
-				round = subround = 0;
-				return false;
-			}
-			else
-			{
-				round = subround = 0;
-				return true;
-			}
-
-			if (*s == '.')
-			{
-				subround = ::strtoul(s + 1, &s, 10);
-
-				if (subround > 255)
-				{
-					subround = 0;
-					return false;
-				}
-
-				if (*s == '.')
-				{
-					round = subround;
-					subround = ::strtoul(s + 1, &s, 10);
-
-					if (subround > 255)
-					{
-						round = subround = 0;
-						return false;
-					}
-				}
-
-				if (*s == ')' && data[0] == '(')
-					++s;
-
-				if (*s)
-				{
-					round = subround = 0;
-					return false;
-				}
-			}
-			else
-			{
-				subround = 0;
-			}
-		}
-	}
-
-	return true;
-}
-
-
-country::Code
-PgnReader::extractCountryFromSite(mstl::string& data)
-{
-	if (data.size() < 3)
-		return country::Unknown;
-
-	country::Code country;
-
-	if (data[0] == 'I')
-	{
-		switch (data[1])
-		{
-			case 'n':
-				if (::equal(data, "Internet", 8) && ::isdelim(data[8]))
-					return country::The_Internet;
-				break;
-
-			case 'N':
-				if (data[2] == 'T' && ::isdelim(data[3]))
-					return country::The_Internet;
-				break;
-		}
-	}
-
-	char* e = data.end() - 1;
-	char* s;
-
-	if (*e == ')')
-	{
-		s = e - 3;
-
-		if (s < data.begin())
-			return country::Unknown;
-
-		if (*s == '(')
-		{
-			if ((country = country::fromString(s + 1)) == country::Unknown)
-				return country::Unknown;
-		}
-		else if (s[1] == '(' || s[2] == '(')
-		{
-			return country::Unknown;
-		}
-		else
-		{
-			while (*s != '(')
-			{
-				if (s == data.begin())
-					return country::Unknown;
-
-				--s;
-			}
-
-			util::NulString str(s + 1, e - s - 1);
-			country = Site::findCountryCode(str);
-
-			if (country == country::Unknown)
-				return country::Unknown;
-		}
-	}
-	else
-	{
-		s = e - 2;
-
-		if (s < data.begin())
-			return country::Unknown;
-
-		if (s == data.begin())
-			return country::fromString(s);
-
-		if (::isspace(s[-1]))
-		{
-			if ((country = country::fromString(s)) == country::Unknown)
-				return country::Unknown;
-		}
-		else
-		{
-			while (*s != ',')
-			{
-				if (*s == '/')
-					return country::Unknown;
-
-				if (s == data.begin())
-				{
-					Site const* site = Site::findSite(s);
-					if (site && site->countCountries() == 1)
-					{
-						if (data.size() == 3)
-							data = "";
-						return site->country(0);
-					}
-					return country::Unknown;
-				}
-
-				--s;
-			}
-
-			++s;
-			while (::isspace(*s))
-				++s;
-
-			::util::NulString str(s, e - s + 1);
-
-			Site const* site = Site::findSite(str);
-
-			if (site == 0 || site->countCountries() > 1)
-				return country::Unknown;
-
-			country = site->country(0);
-
-			if (Site::findCountryCode(str) == country::Unknown)
-				return country;
-		}
-	}
-
-	if (s > data.begin())
-	{
-		--s;
-
-		while (s > data.begin() && ::isspace(*s))
-			--s;
-
-		if (*s == '/')
-			return country::Unknown;
-
-		if (*s == ',')
-		{
-			--s;
-
-			while (s > data.begin() && ::isspace(*s))
-				--s;
-		}
-
-		data.set_size(s - data.begin() + 1);
-	}
-
-	return country;
-}
-
-
-PgnReader::Tag
-PgnReader::extractPlayerData(mstl::string& data, mstl::string& value)
-{
-	if (data.size() <= 5)
-		return None;
-
-	if (data.back() == ')')
-	{
-		mstl::string::size_type k = data.rfind('(');
-
-		if (k != mstl::string::npos)
-		{
-			char* s = data.begin() + k + 1;
-			char* e = data.end() - 1;
-
-			while (::isspace(*e))
-				--e;
-			while (::isspace(*s))
-				++s;
-
-			if (s < e)
-			{
-				if (::isElo(s, e) && strtoul(s, nullptr, 10) <= rating::Max_Value)
-				{
-					if (*s == '0')
-						value.hook(s + 1, e - (s + 1));
-					else
-						value.hook(s, e - s);
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Elo;
-				}
-
-				if (::isCountry(s, e))
-				{
-					value.hook(s, e - s);
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Country;
-				}
-
-				if (::isTitle(s, e))
-				{
-					value.hook(s, e - s);
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Title;
-				}
-
-				if (::isHuman(s, e))
-				{
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Human;
-				}
-
-				if (::isSex(s, e))
-				{
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Sex;
-				}
-
-				if (::isProgram(s, e))
-				{
-					::removeValue(data, s, '(');
-					*e = '\0';
-					return Program;
-				}
-			}
-		}
-	}
-	else if (::isupper(data.back()))
-	{
-		char* s = data.end() - 3;
-		char* e = data.end();
-
-		if (::isspace(s[-1]))
-		{
-			if (::isCountry(s, e))
-			{
-				value.hook(s, e - s);
-				::removeValue(data, s, ' ');
-					*e = '\0';
-				return Country;
-			}
-
-			if (::isTitle(s, e))
-			{
-				value.hook(s, e - s);
-				::removeValue(data, s, ' ');
-					*e = '\0';
-				return Title;
-			}
-		}
-
-		if (::isspace(s[0]))
-		{
-			if (::isTitle(++s, e))
-			{
-				value.hook(s, e - s);
-				::removeValue(data, s, ' ');
-					*e = '\0';
-				return Title;
-			}
-		}
-	}
-
-	return None;
-}
-
-
-event::Mode
-PgnReader::getEventMode(char const* event, char const* site)
-{
-	event::Mode mode = event::Undetermined;
-
-	switch (event[0])
-	{
-		case 'F':
-			if (::equal(event, "FICGS_", 6))
-				mode = event::PaperMail;
-			else if (::equal(event, "FICS ", 5))
-				mode = event::Internet;
-			break;
-
-		case 'I':
-			if (::equal(event, "ICS: ", 5))
-				mode = event::Internet;
-			// fallthru
-
-		case 'i':
-			if (::caseEqual(event, "internet", 5) && ::isdelim(event[5]))
-				mode = event::Internet;
-			break;
-
-		case 'w':
-			if (::equal(event, "www.", 4))
-				mode = event::Internet;
-			break;
-
-		case 'E': case 'e':
-			if (::caseEqual(event, "email", 5) && ::isdelim(event[5]))
-				mode = event::Email;
-			break;
-	}
-
-	if (mode == event::Undetermined)
-	{
-		switch (site[0])
-		{
-			case 'A':
-				if (::equal(site, "AJEC", 4) && ::isdelim(site[4]))
-					mode = event::PaperMail;
-				break;
-
-			case 'B':
-				if ((site[1] == 'd' || site[1] == 'D') && site[2] == 'F' && ::isdelim(event[3]))
-					mode = event::PaperMail;
-				break;
-
-			case 'C':
-				switch (site[1])
-				{
-					case 'C':
-						if (::equal(site, "CCLA", 4) && ::isdelim(site[4]))
-					mode = event::PaperMail;
-						break;
-
-					case 'o':
-						if (site[2] == 'r' && site[3] == 'r')
-						{
-							if (::isdelim(site[4]) || ::equal(site + 4, "espondence", 10))
-								mode = event::PaperMail;
-						}
-						break;
-				}
-				break;
-
-			case 'D':
-				switch (site[1])
-				{
-					case 'E':
-						if (::equal(site, "DESC", 4) && ::isdelim(site[4]))
-							mode = event::Email;
-						break;
-
-					case 'I':
-						if (::equal(site, "DICS", 4) && ::isdelim(site[4]))
-							mode = event::Email;
-						break;
-				}
-				break;
-
-			case 'F':
-				if (::equal(site, "FICGS", 5) && ::isdelim(site[5]))
-					mode = event::PaperMail;
-				break;
-
-			case 'I':
-				switch (site[1])
-				{
-					case 'C':
-						if (::equal(site, "ICCF", 4) && ::isdelim(site[4]))
-							mode = event::PaperMail;
-					break;
-
-					case 'E':
-						if (	(::equal(site, "IECC", 4) || ::equal(site, "IECG", 4))
-							&& ::isdelim(site[4]))
-						{
-							mode = event::Email;
-						}
-						break;
-				}
-				break;
-
-			case 'O':
-				if (::equal(site, "OCC", 3) && ::isdelim(site[3]))
-					mode = event::Internet;
-				break;
-
-			case 'U':
-				switch (site[1])
-				{
-					case 'E':
-						if (::equal(site, "UECC", 4) && ::isdelim(site[4]))
-							mode = event::Email;
-						break;
-
-					case 'S':
-						if (::equal(site, "USCF", 4) && ::isdelim(site[4]))
-							mode = event::PaperMail;
-						break;
-				}
-				break;
-
-			case 'W':
-				if (::equal(site, "WCCF", 4) && ::isdelim(site[4]))
-					mode = event::PaperMail;
-				break;
-		}
-	}
-
-	return mode;
-}
-
-
 void
 PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::string& str)
 {
@@ -6103,38 +5211,6 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 			++s;
 		}
 	}
-}
-
-
-bool
-PgnReader::getAttributes(mstl::string const& filename, int& numGames, mstl::string* description)
-{
-	if (description)
-	{
-		ZStream strm(sys::file::internalName(filename), mstl::ios_base::in);
-
-		if (!strm.is_open())
-			return false;
-
-		numGames = strm.size();
-		parseDescription(strm, *description);
-		description->trim();
-		strm.close();
-	}
-	else
-	{
-		int64_t fileSize;
-
-		if (!ZStream::size(sys::file::internalName(filename), fileSize, 0))
-			return false;
-
-		numGames = fileSize;
-	}
-
-	if (numGames >= 0)
-		numGames = ::estimateNumberOfGames(numGames);
-
-	return true;
 }
 
 

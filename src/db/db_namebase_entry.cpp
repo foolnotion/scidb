@@ -89,7 +89,7 @@ NamebasePlayer::findRating(rating::Type type) const
 	if (m_player)
 		return mstl::abs(m_player->highestRating(type));
 
-	return 0;
+	return m_rating[rating::Elo];
 }
 
 
@@ -102,7 +102,7 @@ NamebasePlayer::findRatingType() const
 	if (m_player)
 		return m_player->ratingType();
 
-	return rating::Last;
+	return m_rating[rating::Elo] ? rating::Elo : rating::Last;
 }
 
 

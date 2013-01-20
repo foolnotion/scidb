@@ -3048,7 +3048,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											encoding,
 											nullptr,
 											nullptr,
-											::db::PgnReader::Raw,
+											::db::Reader::Raw,
 											mode,
 											nullptr,
 											lineOffset,
@@ -3056,6 +3056,8 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			util::Progress	progress;
 			NullConsumer	consumer(encoding);
 
+			if (figurine)
+				reader.setFigurine(figurine);
 			reader.setConsumer(&consumer);
 			reader.process(progress);
 

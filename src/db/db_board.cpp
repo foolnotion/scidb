@@ -54,22 +54,22 @@ using namespace db::board;
 
 namespace bf = mstl::bf;
 
-#define LittleGame_Hash			UINT64_C(0x9e152ca894e0a49b)
-#define PawnsOn4thRank_Hash	UINT64_C(0x6741bdb0888a7d57)
-#define Pyramid_Hash				UINT64_C(0x4bbf887a20755e7a)
-#define KNNvsKP_Hash				UINT64_C(0x3907e7cb849f3b7b)
-#define PawnsOnly_Hash			UINT64_C(0xaa03e51c36cfeee0)
-#define KnightsOnly_Hash		UINT64_C(0x51e7989f475b409c)
-#define BishopsOnly_Hash		UINT64_C(0x8f9b125a68c1a730)
-#define RooksOnly_Hash			UINT64_C(0x38dcdac2a67add65)
-#define QueensOnly_Hash			UINT64_C(0xa01cf1d06a20adc9)
-#define NoQueens_Hash			UINT64_C(0xe6a0500789e03ac9)
-#define WildFive_Hash			UINT64_C(0x726b1d7260ac5c0c)
-#define KBNK_Hash					UINT64_C(0x473cadddfd13b8b0)
-#define KBBK_Hash					UINT64_C(0xae79359d0aa614e0)
-#define Runaway_Hash				UINT64_C(0x548d1ba18e63df59)
-#define QueenVsRooks_Hash		UINT64_C(0x58c29dcc97d77774)
-#define UpsideDown_Hash			UINT64_C(0xcfa9f03a9b87134d)
+#define LittleGame_Hash         UINT64_C(0x7bda5dadc845e3c6)
+#define PawnsOn4thRank_Hash     UINT64_C(0x6741bdb0888a7d57)
+#define Pyramid_Hash            UINT64_C(0x4bbf887a20755e7a)
+#define KNNvsKP_Hash            UINT64_C(0xdcc896ced83a7ce4)
+#define PawnsOnly_Hash          UINT64_C(0x3a4fd07c22f6a534)
+#define KnightsOnly_Hash        UINT64_C(0x5dbe5ac131c561aa)
+#define BishopsOnly_Hash        UINT64_C(0x41041e489635398e)
+#define RooksOnly_Hash          UINT64_C(0x8f19a07fef9c6f66)
+#define QueensOnly_Hash         UINT64_C(0x45537041bf95eb96)
+#define NoQueens_Hash           UINT64_C(0x93a3e4f6486c3742)
+#define WildFive_Hash           UINT64_C(0xe2272812749517d8)
+#define KBNK_Hash               UINT64_C(0xa2f3dcd8a1b6ffed)
+#define KBBK_Hash               UINT64_C(0x51be7cba98acb392)
+#define Runaway_Hash            UINT64_C(0x548d1ba18e63df59)
+#define QueenVsRooks_Hash       UINT64_C(0x0a4301a374bff9ae)
+#define UpsideDown_Hash         UINT64_C(0xcfa9f03a9b87134d)
 
 static uint64_t const DarkSquares	= A1 | C1 | E1 | G1
 												| B2 | D2 | F2 | H2
@@ -852,6 +852,71 @@ Board::removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned colo
 	}
 }
 
+
+template <>
+inline
+void
+Board::possiblyRemoveFromHolding<piece::Pawn>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	if (m_holding[color].pawn > 0)
+		hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+}
+
+
+template <>
+inline
+void
+Board::possiblyRemoveFromHolding<piece::Knight>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	if (m_holding[color].knight > 0)
+		hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+}
+
+
+template <>
+inline
+void
+Board::possiblyRemoveFromHolding<piece::Bishop>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	if (m_holding[color].bishop > 0)
+		hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+}
+
+
+template <>
+inline
+void
+Board::possiblyRemoveFromHolding<piece::Rook>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	if (m_holding[color].rook > 0)
+		hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+}
+
+
+template <>
+inline
+void
+Board::possiblyRemoveFromHolding<piece::Queen>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+
+	if (m_holding[color].queen > 0)
+		hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+}
+
 } // namespace db
 
 
@@ -1385,7 +1450,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			incrMaterial<piece::Pawn>(color);
 			pawnProgressAdd(color, s);
 			if (variant::isZhouse(variant))
-				m_partner->removeFromHolding<piece::Pawn>(variant, color);
+				m_partner->possiblyRemoveFromHolding<piece::Pawn>(variant, color);
 			break;
 
 		case piece::Knight:
@@ -1393,7 +1458,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_knights |= bit;
 			incrMaterial<piece::Knight>(color);
 			if (variant::isZhouse(variant))
-				m_partner->removeFromHolding<piece::Knight>(variant, color);
+				m_partner->possiblyRemoveFromHolding<piece::Knight>(variant, color);
 			break;
 
 		case piece::Bishop:
@@ -1401,7 +1466,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_bishops |= bit;
 			incrMaterial<piece::Bishop>(color);
 			if (variant::isZhouse(variant))
-				m_partner->removeFromHolding<piece::Bishop>(variant, color);
+				m_partner->possiblyRemoveFromHolding<piece::Bishop>(variant, color);
 			break;
 
 		case piece::Rook:
@@ -1409,7 +1474,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_rooks |= bit;
 			incrMaterial<piece::Rook>(color);
 			if (variant::isZhouse(variant))
-				m_partner->removeFromHolding<piece::Rook>(variant, color);
+				m_partner->possiblyRemoveFromHolding<piece::Rook>(variant, color);
 			break;
 
 		case piece::Queen:
@@ -1417,7 +1482,7 @@ Board::setAt(Square s, piece::ID p, variant::Type variant)
 			m_queens |= bit;
 			incrMaterial<piece::Queen>(color);
 			if (variant::isZhouse(variant))
-				m_partner->removeFromHolding<piece::Queen>(variant, color);
+				m_partner->possiblyRemoveFromHolding<piece::Queen>(variant, color);
 			break;
 
 		case piece::King:
@@ -2413,7 +2478,7 @@ Board::parseHolding(char const* s)
 {
 	M_ASSERT(s);
 
-	m_holding[White].value = m_holding[Black].value = 0;
+	clearHolding();
 
 	for ( ; ::isalpha(*s); ++s)
 	{
@@ -2618,15 +2683,19 @@ Board::setup(char const* fen, variant::Type variant)
 		{
 			if (s == 8)
 			{
-				if (isalpha(*++p))
+				if (isalpha(*p))
 				{
 					if (!variant::isZhouse(variant))
 						return 0;
 
-					if (!(p = parseHolding(p)))
+					if (!(p = parseHolding(p + 1)))
 						return 0;
 
 					--p;
+				}
+				else if (variant::isZhouse(variant))
+				{
+					clearHolding();
 				}
 				// else:
 				// Some guys are ending the first part with a superfluous '/'.
@@ -2669,7 +2738,11 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
-					--m_partner->m_holding[White].pawn;
+					if (variant::isZhouse(variant))
+					{
+						M_ASSERT(m_partner->m_holding[White].pawn > 0);
+						--m_partner->m_holding[White].pawn;
+					}
 					break;
 
 				case 'n':
@@ -2678,7 +2751,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_knights |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Knight>(Black);
-					--m_partner->m_holding[White].knight;
+					if (variant::isZhouse(variant) && m_partner->m_holding[White].knight)
+						--m_partner->m_holding[White].knight;
 					break;
 
 				case 'b':
@@ -2687,7 +2761,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_bishops |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Bishop>(Black);
-					--m_partner->m_holding[White].bishop;
+					if (variant::isZhouse(variant) && m_partner->m_holding[White].bishop)
+						--m_partner->m_holding[White].bishop;
 					break;
 
 				case 'r':
@@ -2696,7 +2771,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_rooks |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Rook>(Black);
-					--m_partner->m_holding[White].rook;
+					if (variant::isZhouse(variant) && m_partner->m_holding[White].rook)
+						--m_partner->m_holding[White].rook;
 					break;
 
 				case 'q':
@@ -2705,7 +2781,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_queens |= setBit(s);
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Queen>(Black);
-					--m_partner->m_holding[White].queen;
+					if (variant::isZhouse(variant) && m_partner->m_holding[White].queen)
+						--m_partner->m_holding[White].queen;
 					break;
 
 				case 'k':
@@ -2729,7 +2806,11 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
-					--m_partner->m_holding[Black].pawn;
+					if (variant::isZhouse(variant))
+					{
+						M_ASSERT(m_partner->m_holding[Black].pawn > 0);
+						--m_partner->m_holding[Black].pawn;
+					}
 					break;
 
 				case 'N':
@@ -2738,7 +2819,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_knights |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Knight>(White);
-					--m_partner->m_holding[Black].knight;
+					if (variant::isZhouse(variant) && m_partner->m_holding[Black].knight)
+						--m_partner->m_holding[Black].knight;
 					break;
 
 				case 'B':
@@ -2747,7 +2829,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_bishops |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Bishop>(White);
-					--m_partner->m_holding[Black].bishop;
+					if (variant::isZhouse(variant) && m_partner->m_holding[Black].bishop)
+						--m_partner->m_holding[Black].bishop;
 					break;
 
 				case 'R':
@@ -2756,7 +2839,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_rooks |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Rook>(White);
-					--m_partner->m_holding[Black].rook;
+					if (variant::isZhouse(variant) && m_partner->m_holding[Black].rook)
+						--m_partner->m_holding[Black].rook;
 					break;
 
 				case 'Q':
@@ -2765,7 +2849,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_queens |= setBit(s);
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Queen>(White);
-					--m_partner->m_holding[Black].queen;
+					if (variant::isZhouse(variant) && m_partner->m_holding[Black].queen)
+						--m_partner->m_holding[Black].queen;
 					break;
 
 				case 'K':
@@ -2791,8 +2876,10 @@ Board::setup(char const* fen, variant::Type variant)
 	if (s != 8)
 		return 0;
 
-//	if (variant::isZhouse(variant))
-	m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
+	if (variant::isZhouse(variant))
+		m_partner->hashHolding(m_partner->m_holding[White], m_partner->m_holding[Black]);
+	else
+		clearHolding();
 
 	// Set remainder of board data appropriately
 	m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
@@ -2964,6 +3051,7 @@ Board::setup(ExactPosition const& position)
 	// used for playing or validation.
 
 	clear();
+	clearHolding();
 
 	for (unsigned color = 0; color < 2; ++color)
 	{
@@ -6411,6 +6499,10 @@ Board::toFen(mstl::string& result, variant::Type variant, Format format) const
 			result.append(m_holding[Black].knight,	'n');
 			result.append(m_holding[Black].pawn,	'p');
 		}
+		else if (m_material[White].total() + m_material[Black].total() != 32)
+		{
+			result += '/'; // empty holding
+		}
 	}
 
 	// side to move
@@ -6617,7 +6709,19 @@ Board::dump() const
 
 		::printf("\n");
 	}
-	::printf("\n---------------------------------------\n");
+	::printf("\nHolding: ");
+	::printf("Q%u R%u B%u N%u P%u  q%u r%u b%u n%u p%u\n",
+				unsigned(m_holding[0].queen),
+				unsigned(m_holding[0].rook),
+				unsigned(m_holding[0].bishop),
+				unsigned(m_holding[0].knight),
+				unsigned(m_holding[0].pawn),
+				unsigned(m_holding[1].queen),
+				unsigned(m_holding[1].rook),
+				unsigned(m_holding[1].bishop),
+				unsigned(m_holding[1].knight),
+				unsigned(m_holding[1].pawn));
+	::printf("---------------------------------------\n");
 	::fflush(stdout);
 }
 
@@ -6686,22 +6790,22 @@ Board::initialize()
 	m_upsideDown.setup(variant::fen(variant::UpsideDown), variant::Normal);
 
 #if 0
-	printf("#define LittleGame_Hash		UINT64_C(0x%016llx)\n", m_littleGame.m_hash);
-	printf("#define PawnsOn4thRank_Hash	UINT64_C(0x%016llx)\n", m_pawnsOn4thRank.m_hash);
-	printf("#define Pyramid_Hash			UINT64_C(0x%016llx)\n", m_pyramid.m_hash);
-	printf("#define KNNvsKP_Hash			UINT64_C(0x%016llx)\n", m_KNNvsKP.m_hash);
-	printf("#define PawnsOnly_Hash		UINT64_C(0x%016llx)\n", m_pawnsOnly.m_hash);
-	printf("#define KnightsOnly_Hash		UINT64_C(0x%016llx)\n", m_knightsOnly.m_hash);
-	printf("#define BishopsOnly_Hash		UINT64_C(0x%016llx)\n", m_bishopsOnly.m_hash);
-	printf("#define RooksOnly_Hash		UINT64_C(0x%016llx)\n", m_rooksOnly.m_hash);
-	printf("#define QueensOnly_Hash		UINT64_C(0x%016llx)\n", m_queensOnly.m_hash);
-	printf("#define NoQueens_Hash			UINT64_C(0x%016llx)\n", m_noQueens.m_hash);
-	printf("#define WildFive_Hash			UINT64_C(0x%016llx)\n", m_wildFive.m_hash);
-	printf("#define KBNK_Hash				UINT64_C(0x%016llx)\n", m_kbnk.m_hash);
-	printf("#define KBBK_Hash				UINT64_C(0x%016llx)\n", m_kbbk.m_hash);
-	printf("#define Runaway_Hash			UINT64_C(0x%016llx)\n", m_runaway.m_hash);
-	printf("#define QueenVsRooks_Hash	UINT64_C(0x%016llx)\n", m_queenVsRooks.m_hash);
-	printf("#define UpsideDown_Hash		UINT64_C(0x%016llx)\n", m_upsideDown.m_hash);
+	printf("#define LittleGame_Hash     UINT64_C(0x%016llx)\n", m_littleGame.m_hash);
+	printf("#define PawnsOn4thRank_Hash UINT64_C(0x%016llx)\n", m_pawnsOn4thRank.m_hash);
+	printf("#define Pyramid_Hash        UINT64_C(0x%016llx)\n", m_pyramid.m_hash);
+	printf("#define KNNvsKP_Hash        UINT64_C(0x%016llx)\n", m_KNNvsKP.m_hash);
+	printf("#define PawnsOnly_Hash      UINT64_C(0x%016llx)\n", m_pawnsOnly.m_hash);
+	printf("#define KnightsOnly_Hash    UINT64_C(0x%016llx)\n", m_knightsOnly.m_hash);
+	printf("#define BishopsOnly_Hash    UINT64_C(0x%016llx)\n", m_bishopsOnly.m_hash);
+	printf("#define RooksOnly_Hash      UINT64_C(0x%016llx)\n", m_rooksOnly.m_hash);
+	printf("#define QueensOnly_Hash     UINT64_C(0x%016llx)\n", m_queensOnly.m_hash);
+	printf("#define NoQueens_Hash       UINT64_C(0x%016llx)\n", m_noQueens.m_hash);
+	printf("#define WildFive_Hash       UINT64_C(0x%016llx)\n", m_wildFive.m_hash);
+	printf("#define KBNK_Hash           UINT64_C(0x%016llx)\n", m_kbnk.m_hash);
+	printf("#define KBBK_Hash           UINT64_C(0x%016llx)\n", m_kbbk.m_hash);
+	printf("#define Runaway_Hash        UINT64_C(0x%016llx)\n", m_runaway.m_hash);
+	printf("#define QueenVsRooks_Hash   UINT64_C(0x%016llx)\n", m_queenVsRooks.m_hash);
+	printf("#define UpsideDown_Hash     UINT64_C(0x%016llx)\n", m_upsideDown.m_hash);
 #else
 	assert(m_littleGame.m_hash == LittleGame_Hash);
 	assert(m_pawnsOn4thRank.m_hash == PawnsOn4thRank_Hash);

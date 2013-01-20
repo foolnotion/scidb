@@ -30,7 +30,7 @@
 #include "db_producer.h"
 #include "db_game_info.h"
 #include "db_tag_set.h"
-#include "db_pgn_reader.h"
+#include "db_reader.h"
 #include "db_exception.h"
 
 #include "sci_codec.h"
@@ -155,45 +155,45 @@ DatabaseCodec::InfoData::InfoData(TagSet const& tags)
 mstl::string const&
 DatabaseCodec::InfoData::normalizeWhitePlayerName(mstl::string const& name, mstl::string& result)
 {
-	PgnReader::Tag	tag;
+	Reader::Tag		tag;
 	mstl::string	value;
 
 	result.assign(name.c_str(), name.size());
 
-	while ((tag = PgnReader::extractPlayerData(result, value)) != PgnReader::None)
+	while ((tag = Reader::extractPlayerData(result, value)) != Reader::None)
 	{
 		switch (tag)
 		{
-			case PgnReader::Country:
+			case Reader::Country:
 				if (whiteCountry == country::Unknown)
 					whiteCountry = country::fromString(value);
 				break;
 
-			case PgnReader::Title:
+			case Reader::Title:
 				if (whiteTitle == title::None)
 					whiteTitle = title::fromString(value);
 				break;
 
-			case PgnReader::Human:
+			case Reader::Human:
 				if (whiteType == species::Unspecified)
 					whiteType = species::Human;
 				break;
 
-			case PgnReader::Program:
+			case Reader::Program:
 				if (whiteType == species::Unspecified)
 					whiteType = species::Program;
 				break;
 
-			case PgnReader::Sex:
+			case Reader::Sex:
 				if (whiteSex == sex::Unspecified)
 					whiteSex = sex::fromString(value);
 				break;
 
-			case PgnReader::Elo:
+			case Reader::Elo:
 				whiteElo = ::atoi(value);
 				break;
 
-			case PgnReader::None:
+			case Reader::None:
 				break;
 		}
 	}
@@ -205,45 +205,45 @@ DatabaseCodec::InfoData::normalizeWhitePlayerName(mstl::string const& name, mstl
 mstl::string const&
 DatabaseCodec::InfoData::normalizeBlackPlayerName(mstl::string const& name, mstl::string& result)
 {
-	PgnReader::Tag	tag;
+	Reader::Tag	tag;
 	mstl::string	value;
 
 	result.assign(name.c_str(), name.size());
 
-	while ((tag = PgnReader::extractPlayerData(result, value)) != PgnReader::None)
+	while ((tag = Reader::extractPlayerData(result, value)) != Reader::None)
 	{
 		switch (tag)
 		{
-			case PgnReader::Country:
+			case Reader::Country:
 				if (blackCountry == country::Unknown)
 					blackCountry = country::fromString(value);
 				break;
 
-			case PgnReader::Title:
+			case Reader::Title:
 				if (blackTitle == title::None)
 					blackTitle = title::fromString(value);
 				break;
 
-			case PgnReader::Human:
+			case Reader::Human:
 				if (blackType == species::Unspecified)
 					blackType = species::Human;
 				break;
 
-			case PgnReader::Program:
+			case Reader::Program:
 				if (blackType == species::Unspecified)
 					blackType = species::Program;
 				break;
 
-			case PgnReader::Sex:
+			case Reader::Sex:
 				if (blackSex == sex::Unspecified)
 					blackSex = sex::fromString(value);
 				break;
 
-			case PgnReader::Elo:
+			case Reader::Elo:
 				blackElo = ::atoi(value);
 				break;
 
-			case PgnReader::None:
+			case Reader::None:
 				break;
 		}
 	}
@@ -256,7 +256,7 @@ mstl::string const&
 DatabaseCodec::InfoData::normalizeSiteName(mstl::string const& name, mstl::string& result)
 {
 	result.assign(name.c_str(), name.size());
-	country::Code country = PgnReader::extractCountryFromSite(result);
+	country::Code country = Reader::extractCountryFromSite(result);
 	if (eventCountry == country::Unknown)
 		eventCountry = country;
 	return result;
@@ -370,7 +370,7 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 	if (ext == "si3" || ext == "si4")
 		return si3::Codec::getAttributes(filename, numGames, type, description);
 
-	return PgnReader::getAttributes(filename, numGames, description);
+	return Reader::getAttributes(filename, numGames, description);
 }
 
 

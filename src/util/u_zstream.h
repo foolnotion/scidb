@@ -57,6 +57,7 @@ public:
 	void close();
 
 	static bool size(char const* filename, int64_t& size, Type* type = 0);
+	static bool containsSuffix(char const* filename, char const* suffix);
 	static void setZipFileSuffixes(Strings const& suffixes);
 	static Strings const& zipFileSuffixes();
 

@@ -29,11 +29,154 @@
 
 #include "db_producer.h"
 
+namespace mstl { class string; }
+namespace mstl { class istream; }
+
 namespace db {
 
-struct Reader : public Producer
+class TagSet;
+
+class Reader : public Producer
 {
+public:
+
+	enum ReadMode
+	{
+		Text,
+		File,
+	};
+
+	enum ResultMode
+	{
+		UseResultTag,
+		InMoveSection,
+	};
+
+	enum Modification
+	{
+		Normalize,
+		Raw,
+	};
+
+	enum Tag
+	{
+		None,
+		Elo,
+		Country,
+		Title,
+		Human,
+		Sex,
+		Program,
+	};
+
+	enum Error
+	{
+		InvalidToken,
+		UnexpectedSymbol,
+		UnexpectedEndOfInput,
+		UnexpectedTag,
+		UnexpectedResultToken,
+		UnexpectedEndOfGame,
+		TagNameExpected,
+		TagValueExpected,
+		InvalidFen,
+		UnterminatedString,
+		UnterminatedVariation,
+		InvalidMove,
+		UnsupportedVariant,
+		TooManyGames,
+		FileSizeExeeded,
+		GameTooLong,
+		TooManyPlayerNames,
+		TooManyEventNames,
+		TooManySiteNames,
+		TooManyRoundNames,
+		TooManyAnnotatorNames,
+		TooManySourceNames,
+		SeemsNotToBePgnText,
+		UnexpectedCastling,
+		ContinuationsNotSupported,
+
+		LastError = ContinuationsNotSupported,
+	};
+
+	enum Warning
+	{
+		MissingWhitePlayerTag,
+		MissingBlackPlayerTag,
+		MissingPlayerTags,
+		MissingResult,
+		MissingResultTag,
+		InvalidRoundTag,
+		InvalidResultTag,
+		InvalidDateTag,
+		InvalidEventDateTag,
+		InvalidTimeModeTag,
+		InvalidEcoTag,
+		InvalidTagName,
+		InvalidCountryCode,
+		InvalidRating,
+		InvalidNag,
+		BraceSeenOutsideComment,
+		MissingFen,
+		UnknownEventType,
+		UnknownTitle,
+		UnknownPlayerType,
+		UnknownSex,
+		UnknownTermination,
+		RatingTooHigh,
+		UnknownMode,
+		EncodingFailed,
+		TooManyNags,
+		ResultDidNotMatchHeaderResult,
+		IllegalCastling,
+		IllegalMove,
+		CastlingCorrection,
+		ValueTooLong,
+		NotSuicideNotGiveaway,
+		VariantChangedToGiveaway,
+		VariantChangedToSuicide,
+		ResultCorrection,
+		MaximalErrorCountExceeded,
+		MaximalWarningCountExceeded,
+
+		LastWarning = MaximalWarningCountExceeded,
+	};
+
 	Reader(format::Type srcFormat);
+
+	virtual void warning(Warning code,
+								unsigned lineNo,
+								unsigned column,
+								unsigned gameNo,
+								variant::Type variant,
+								mstl::string const& info,
+								mstl::string const& item) = 0;
+	virtual void error(	Error code,
+								unsigned lineNo,
+								unsigned column,
+								unsigned gameNo,
+								variant::Type variant,
+								mstl::string const& message,
+								mstl::string const& info,
+								mstl::string const& item) = 0;
+
+	static bool validateTagName(char* tag, unsigned len);
+	static void checkSite(TagSet& tags, country::Code eventCountry, bool sourceIsPossiblyChessBase);
+
+	static event::Mode getEventMode(char const* event, char const* site);
+	static country::Code extractCountryFromSite(mstl::string& data);
+	static Tag extractPlayerData(mstl::string& data, mstl::string& value);
+	static time::Mode getTimeModeFromTimeControl(mstl::string const& value);
+	static termination::Reason getTerminationReason(mstl::string const& value);
+	static bool parseRound(mstl::string const& data, unsigned& round, unsigned& subround);
+	static bool getAttributes(mstl::string const& filename, int& numGames, mstl::string* description = 0);
+
+	virtual unsigned estimateNumberOfGames() = 0;
+
+protected:
+
+	static void parseDescription(mstl::istream& strm, mstl::string& result);
 };
 
 } // namespace db

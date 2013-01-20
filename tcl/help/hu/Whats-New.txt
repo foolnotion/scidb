@@ -37,7 +37,7 @@ TITLE What's new?
   <li class="space">New board themes: "Blue Theme", "Staunton", and "Virtual"</li>
   <li class="space">Automatic detection of character set while encoding games (regards si3/si4/cbh)</li>
   <li class="space">Game browser: full-screen mode, and also maximize/minimize board, integrated</li>
-  <li class="space">File selection dialog improved</li>
+  <li class="space">File selection dialog improved; Drag&amp;Drop among other things</li>
   <li class="space">Game-Save/Replace dialog improved</li>
   <li class="space">Player notecards implemented</li>
   <li class="space">Archiving databases integrated</li>

@@ -1382,6 +1382,13 @@ append(mstl::string& result, unsigned count, mstl::string const& s)
 }
 
 
+bool
+title::validate(char const* s, char const* e)
+{
+	return (e - s == 2 || (e - s == 3 && ::isupper(s[2]))) && fromString(s) != title::None;
+}
+
+
 unsigned
 title::add(unsigned titles, ID title)
 {
@@ -1501,6 +1508,33 @@ title::ID
 title::best(unsigned titles)
 {
 	return titles ? title::ID(mstl::bf::lsb_index(titles)) : title::None;
+}
+
+
+bool
+species::isHuman(char const* s, char const* e)
+{
+	switch (::tolower(*s))
+	{
+		case 'h': return strncasecmp(s, "human", 5) == 0;
+		case 'm': return strncasecmp(s, "man", 3) == 0;
+	}
+
+	return false;
+}
+
+
+bool
+species::isProgram(char const* s, char const* e)
+{
+	switch (::tolower(*s))
+	{
+		case 'c': return strncasecmp(s, "comp", 4) == 0;
+		case 'e': return strncasecmp(s, "engine", 6) == 0;
+		case 'p': return strncasecmp(s, "program", 7) == 0;
+	}
+
+	return false;
 }
 
 
@@ -1931,6 +1965,24 @@ mark::colorFromString(char const* color)
 }
 
 
+bool
+rating::isElo(char const* s, char const* e)
+{
+	unsigned size = e - s;
+
+	if (size == 3)
+		return '7' <= s[0] && s[0] <= '9' && ::isdigit(s[1]) && ::isdigit(s[2]);
+
+	if (size != 4)
+		return false;
+
+	if (s[0] == '0')
+		return '7' <= s[1] && s[1] <= '9' && ::isdigit(s[2]) && ::isdigit(s[3]);
+
+	return ::isdigit(s[0]) && ::isdigit(s[1]) && ::isdigit(s[2]);
+}
+
+
 tag::ID
 rating::toWhiteTag(rating::Type type)
 {
@@ -2229,6 +2281,13 @@ castling::print(Rights rights, mstl::string& result)
 	if (rights & BlackKingside)	result += "k";
 
 	return result;
+}
+
+
+bool
+country::validate(char const* s, char const* e)
+{
+	return e - s == 3 && fromString(s) != Unknown;
 }
 
 
@@ -4093,6 +4152,20 @@ event::toString(Type type)
 {
 	M_ASSERT(type < int(U_NUMBER_OF(TypeLookup)));
 	return TypeLookup[type];
+}
+
+
+bool
+sex::validate(char const* s, char const* e)
+{
+	switch (*s)
+	{
+		case 'f': return e - s == 1;
+		case 'm': return e - s == 1 || (e - s == 3 && ::strncasecmp(s, "man", 3) == 0);
+		case 'w': return e - s == 5 && ::strncasecmp(s, "woman", 5);
+	}
+
+	return false;
 }
 
 

@@ -123,17 +123,19 @@ playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings
 	ratings[0] = player.playerHighestRating(type);
 	ratings[1] = player.playerLatestRating(type);
 
-	if (idCard && player.isPlayerRating(type))
+	if (player.isPlayerRating(type))
 	{
-		if (uint16_t elo = player.findElo())
+		if (idCard)
 		{
-			type = rating::Elo;
-			ratings[0] = elo;
-			ratings[1] = player.playerLatestRating(type);
+			if (uint16_t elo = player.findElo())
+			{
+				type = rating::Elo;
+				ratings[0] = elo;
+				ratings[1] = player.playerLatestRating(type);
+			}
 		}
 	}
-
-	if (!player.isPlayerRating(type))
+	else
 	{
 		ratings[0] = -ratings[0];
 		ratings[1] = -ratings[1];

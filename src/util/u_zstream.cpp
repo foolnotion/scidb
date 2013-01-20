@@ -29,6 +29,7 @@
 #include <zip.h>
 
 #include <string.h>
+#include <ctype.h>
 
 #ifndef MAX
 # define MAX(a,b) ((a) < (b) ? b : a)
@@ -175,6 +176,29 @@ size(ZStream::Strings const& suffixes, ZZIP_DIR* dir)
 
 
 static bool
+containsSuffix(char const* suffix, ZZIP_DIR* dir)
+{
+	M_ASSERT(suffix);
+
+	ZZIP_DIRENT	entry;
+	unsigned		n(strlen(suffix));
+	bool			result(false);
+
+	while (::zzip_dir_read(dir, &entry))
+	{
+		unsigned len = strlen(entry.d_name);
+
+		if (n < len && strncasecmp(entry.d_name + len - n, suffix, n) == 0)
+			result = true;
+	}
+
+	::zzip_rewinddir(dir);
+
+	return result;
+}
+
+
+static bool
 find(ZZIP_DIR* dir, mstl::string const& name)
 {
 	ZZIP_DIRENT entry;
@@ -196,7 +220,7 @@ find(ZZIP_DIR* dir, mstl::string const& name)
 
 namespace zip {
 
-bool
+static bool
 openNewFile(void* cookie, char const* filename, mstl::ios_base::openmode mode)
 {
 	mstl::string basename(::util::misc::file::rootname(::util::misc::file::basename(filename)));
@@ -325,9 +349,11 @@ write(void* cookie, char const* buf, size_t len)
 }
 
 
-unsigned
+static unsigned
 readUncompressedSize(mstl::ifstream& strm)
 {
+	M_REQUIRE(strm.is_open());
+
 	char buf[4];
 
 	unsigned offs = strm.tellg();
@@ -367,6 +393,7 @@ ZStream::ZStream(char const* filename, Mode mode)
 	:m_size(-1)
 	,m_type(None)
 {
+	M_REQUIRE(filename);
 	open(filename, mode);
 }
 
@@ -375,6 +402,7 @@ ZStream::ZStream(char const* filename, Type type, Mode mode)
 	:m_size(-1)
 	,m_type(type)
 {
+	M_REQUIRE(filename);
 	open(filename, type, mode);
 }
 
@@ -410,6 +438,7 @@ ZStream::goffset()
 void
 ZStream::open(char const* filename, Mode mode)
 {
+	M_REQUIRE(filename);
 	M_REQUIRE(!is_open());
 	M_REQUIRE(mode & mstl::ios_base::in);
 	M_REQUIRE(!(mode & mstl::ios_base::out));
@@ -485,6 +514,7 @@ ZStream::open(char const* filename, Mode mode)
 void
 ZStream::open(char const* filename, Type type, Mode mode)
 {
+	M_REQUIRE(filename);
 	M_REQUIRE(!is_open());
 	M_REQUIRE(mode & mstl::ios_base::out);
 	M_REQUIRE(!(mode & mstl::ios_base::in));
@@ -572,6 +602,8 @@ ZStream::close()
 bool
 ZStream::size(char const* filename, int64_t& size, Type* type)
 {
+	M_REQUIRE(filename);
+
 	mstl::ifstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
 
 	if (!strm)
@@ -608,6 +640,85 @@ ZStream::size(char const* filename, int64_t& size, Type* type)
 	}
 
 	return size != -1;
+}
+
+
+bool
+ZStream::containsSuffix(char const* filename, char const* suffix)
+{
+	mstl::ifstream strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+
+	if (!strm)
+		return false;
+
+	unsigned char buffer[MAX(sizeof(gzipMagic), sizeof(zzipMagic))];
+	memset(buffer, 0, sizeof(buffer));
+
+	strm.read(buffer, sizeof(buffer));
+
+	bool result = false;
+
+	if (::memcmp(buffer, gzipMagic, sizeof(gzipMagic)) == 0)
+	{
+		char const*	q = filename + ::strlen(filename) - 1;
+		unsigned 	n = 0;
+
+		while (q >= filename && *q != '.')
+		{
+			--q;
+			++n;
+		}
+
+		if (*q == '.' && q > filename)
+		{
+			if (n == 2 && ::toupper(q[1]) == 'g' && ::toupper(q[2]) == 'z')
+			{
+				n = 0;
+				--q;
+
+				while (q >= filename && *q != '.')
+				{
+					--q;
+					++n;
+				}
+			}
+
+			if (*q == '.')
+			{
+				unsigned suffLen = ::strlen(suffix);
+
+				if (n == suffLen && ::strncasecmp(q + 1, suffix, suffLen) == 0)
+					result = true;
+			}
+		}
+	}
+	else if (::memcmp(buffer, zzipMagic, sizeof(zzipMagic)) == 0)
+	{
+		Handle	handle;
+		void*		cookie = &handle;
+
+		ZIP_DIR = ::zzip_dir_open(filename, 0);
+
+		if (!ZIP_DIR)
+			return false;
+
+		result = zzip::containsSuffix(suffix, ZIP_DIR);
+		::zzip_dir_close(ZIP_DIR);
+	}
+	else
+	{
+		unsigned len		= ::strlen(filename);
+		unsigned suffLen	= ::strlen(suffix);
+
+		if (	len >= suffLen + 1
+			&& filename[len - suffLen - 1] == '.'
+			&& ::strncasecmp(filename + len - suffLen, suffix, suffLen) == 0)
+		{
+			result = true;
+		}
+	}
+
+	return result;
 }
 
 // vi:set ts=3 sw=3:

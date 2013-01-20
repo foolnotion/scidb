@@ -37,7 +37,8 @@ namespace db {
 
 inline Board::Board() :m_partner(this) {}
 
-inline void Board::Board::clear() { *this = m_emptyBoard; }
+inline void Board::Board::clear()			{ *this = m_emptyBoard; }
+inline void Board::Board::clearHolding()	{ m_holding[0].value = m_holding[1].value = 0; }
 
 inline bool Board::isAttackedBy(unsigned color, Square square) const { return attacks(color, square);}
 

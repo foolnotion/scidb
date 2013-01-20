@@ -35,7 +35,7 @@
 #include "db_comment.h"
 #include "db_move_node.h"
 #include "db_database_codec.h"
-#include "db_pgn_reader.h"
+#include "db_reader.h"
 #include "db_exception.h"
 #include "db_date.h"
 
@@ -450,7 +450,7 @@ Decoder::determineCharsetTags()
 			Byte len = m_strm.get();
 
 			// NOTE: we ignore invalid tags (Scid bug)
-			if (PgnReader::validateTagName(tag, tagLen))
+			if (Reader::validateTagName(tag, tagLen))
 				HandleData(reinterpret_cast<char const*>(m_strm.data()), len);
 
 			m_strm.skip(len);
@@ -488,7 +488,7 @@ Decoder::decodeTags(TagSet& tags)
 			Byte len = m_strm.get();
 
 			// NOTE: we ignore invalid tags (Scid bug)
-			if (PgnReader::validateTagName(tag, tagLen))
+			if (Reader::validateTagName(tag, tagLen))
 			{
 				// look if this is a known tag with an unusual notation
 
@@ -498,7 +498,7 @@ Decoder::decodeTags(TagSet& tags)
 						if (!tags.contains(tag::TimeMode))
 						{
 							util::NulString s(reinterpret_cast<char*>(m_strm.data()), len);
-							time::Mode mode = PgnReader::getTimeModeFromTimeControl(s);
+							time::Mode mode = Reader::getTimeModeFromTimeControl(s);
 
 							if (mode != time::Unknown)
 							{
@@ -545,7 +545,7 @@ Decoder::decodeTags(TagSet& tags)
 					case tag::Termination:
 						{
 							util::NulString v(reinterpret_cast<char*>(m_strm.data()), len);
-							termination::Reason reason = PgnReader::getTerminationReason(v);
+							termination::Reason reason = Reader::getTerminationReason(v);
 							if (reason == termination::Unknown)
 								tags.setExtra(tag, tagLen, v, len);
 							else

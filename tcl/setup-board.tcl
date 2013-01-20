@@ -29,13 +29,13 @@
 namespace eval setup {
 namespace eval mc {
 
-set Position(Chess960)			"Chess 960 position"
-set Position(Symm960)			"Symmetrical chess 960 position"
-set Position(Shuffle)			"Shuffle chess position"
+set Position(Chess960)	"Chess 960 position"
+set Position(Symm960)	"Symmetrical chess 960 position"
+set Position(Shuffle)	"Shuffle chess position"
 
 }
 
-set PositionAlt(wild/5)			"Upside down"
+set PositionAlt(wild/5)	"Upside down"
 
 variable SFRC { 446 462 518 524 534 540 692 708 }
 
@@ -790,8 +790,7 @@ proc SetupPromoted {} {
 	variable Vars
 	variable Marker
 
-	lassign [::scidb::board::analyseFen $Vars(fen)] \
-		error idn notStd not960 castling ep stm moveno halfmoves checksGiven promoted
+	lassign [::scidb::board::analyseFen $Vars(fen)] error idn _ _ _ _ _ _ _ _ promoted
 	if {$idn > 4*960} { set idn 0 }
 
 	::board::diagram::removeAllMarkers $Vars(board)
@@ -846,13 +845,18 @@ proc AnalyseFen {fen {cmd none}} {
 
 	if {$cmd eq "init"} {
 		lassign [::scidb::board::analyseFen $fen] \
-			error idn notStd not960 castling ep stm moveno halfmoves checksGiven promoted
+			error idn _ _ castling ep stm moveno halfmoves checksGiven promoted
 
 		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
 
 		switch -- $error {
-			CastlingWithoutRook - UnsupportedVariant {
+			CastlingWithoutRook -
+			TooManyPiecesInHolding -
+			TooFewPiecesInHolding -
+			TooManyPromotedPieces -
+			TooFewPromotedPieces -
+			UnsupportedVariant {
 				set error ""
 			}
 		}
@@ -877,7 +881,7 @@ proc AnalyseFen {fen {cmd none}} {
 		foreach right {w:short w:long b:short b:long} { append castlingFiles $Vars($right:fyle) }
 
 		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles] \
-			error idn notStd not960 unused ep stm moveno halfmoves checksGiven promoted
+			error idn _ _ _ ep stm moveno halfmoves checksGiven promoted
 		if {$idn > 4*960} { set idn 0 }
 	}
 
@@ -1332,6 +1336,7 @@ proc SwitchFormat {w} {
 
 proc ResetFen {} {
 	variable Vars
+	variable Options
 
 	set Vars(fen) [string trim $Vars(fen)]
 
@@ -1340,6 +1345,13 @@ proc ResetFen {} {
 	}
 
 	if {[string length $Vars(fen)]} {
+		lassign [::scidb::board::analyseFen $Vars(fen)] \
+			error _ _ _ castling ep stm moveno halfmoves _ promoted
+
+		if {$error eq "TooManyPiecesInHolding"} {
+			set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format) -clearholding]
+		}
+
 		if {[AnalyseFen $Vars(fen) init]} {
 			set Vars(pos) [::scidb::board::fenToBoard $Vars(fen)]
 			::board::diagram::update $Vars(board) $Vars(pos)

@@ -21,7 +21,7 @@ TITLE Welcome to Scidb!
 <p>
 This is a preliminary version of Scidb for try-out and testing. The first
 full version will be released after a sufficiently long test period. Please
-consider while experimenting with Scidb:
+consider when experimenting with Scidb:
 </p>
 
 <ol>

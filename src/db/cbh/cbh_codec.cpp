@@ -34,7 +34,7 @@
 #include "cbh_codec.h"
 #include "cbh_decoder.h"
 
-#include "db_pgn_reader.h"
+#include "db_reader.h"
 #include "db_game_data.h"
 #include "db_exception.h"
 
@@ -903,7 +903,7 @@ Codec::readTournamentData(mstl::string const& rootname, util::Progress& progress
 			}
 
 			if (countryCode == country::Unknown)
-				countryCode = PgnReader::extractCountryFromSite(city);
+				countryCode = Reader::extractCountryFromSite(city);
 
 			Byte category = strm.get();
 			strm.get();	// skip

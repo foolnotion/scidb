@@ -167,6 +167,7 @@ if {[file readable [file join $scidb::dir::config load.tcl]]} {
 
 # log will be closed in end.tcl
 ::log::open "Startup" 0
+#set t [clock microseconds]
 
 # --- Load ECO file ----------------------------------------------------
 load::load	[format $load::mc::Loading $load::mc::ECOFile] \
@@ -246,24 +247,25 @@ set msg [format $load::mc::Loading $load::mc::Theme]
 
 # --- Load themes ------------------------------------------------------
 ### Upgrade #######################################
-if {[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]} {
-	catch { file delete [file join $::scidb::dir::user themes BlueMono.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Blue.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Glassy&Red.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Marble.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Marmor.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Mayan-1.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Mayan-2.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Phoenix.dat] }
-	catch { file delete [file join $::scidb::dir::user themes StonyGlass.dat] }
-	catch { file delete [file join $::scidb::dir::user themes Wood.dat] }
-	catch { file delete [file join $::scidb::dir::user themes square Blue.dat] }
-	catch { file delete [file join $::scidb::dir::user themes square BlueMono.dat] }
-	catch { file delete [file join $::scidb::dir::user themes square Marble-Classic.dat] }
-	catch { file delete [file join $::scidb::dir::user themes square Marble-Red.dat] }
-	catch { file delete [file join $::scidb::dir::user themes square Wood-Green.dat] }
-	catch { file delete [file join $::scidb::dir::user themes piece MayanRed.dat] }
-	catch { file delete [file join $::scidb::dir::user themes piece Yellow.dat] }
+if {	[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]
+	|| [file exists [file join $::scidb::dir::user themes Mayan-1.dat]]} {
+	file delete [file join $::scidb::dir::user themes BlueMono.dat]
+	file delete [file join $::scidb::dir::user themes Blue.dat]
+	file delete [file join $::scidb::dir::user themes Glassy&Red.dat]
+	file delete [file join $::scidb::dir::user themes Marble.dat]
+	file delete [file join $::scidb::dir::user themes Marmor.dat]
+	file delete [file join $::scidb::dir::user themes Mayan-1.dat]
+	file delete [file join $::scidb::dir::user themes Mayan-2.dat]
+	file delete [file join $::scidb::dir::user themes Phoenix.dat]
+	file delete [file join $::scidb::dir::user themes StonyGlass.dat]
+	file delete [file join $::scidb::dir::user themes Wood.dat]
+	file delete [file join $::scidb::dir::user themes square Blue.dat]
+	file delete [file join $::scidb::dir::user themes square BlueMono.dat]
+	file delete [file join $::scidb::dir::user themes square Marble-Classic.dat]
+	file delete [file join $::scidb::dir::user themes square Marble-Red.dat]
+	file delete [file join $::scidb::dir::user themes square Wood-Green.dat]
+	file delete [file join $::scidb::dir::user themes piece MayanRed.dat]
+	file delete [file join $::scidb::dir::user themes piece Yellow.dat]
 	::scidb::themes::update
 }
 ###################################################
@@ -279,5 +281,11 @@ if {[file readable $file]} { load::source $file }
 
 # --- Load done --------------------------------------------------------
 ::scidb::app::load done
+
+#puts "[expr {[clock microseconds] - $t}] micro-secs"
+#unset t
+
+# Load time with empty cache: 6.76 s
+# Load time with full cache:  2.68 s
 
 # vi:set ts=3 sw=3:

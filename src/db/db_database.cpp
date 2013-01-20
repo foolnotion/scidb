@@ -1547,7 +1547,7 @@ Database::playerStatistic(NamebasePlayer const& player, PlayerStats& stats) cons
 			stats.addScore(color, info->result());
 if (m_variant == variant::Normal) { // XXX
 			if (info->idn() == variant::Standard)
-				stats.addEco(color, info->ecoKey());
+				stats.addEco(color, info->eco());
 }
 		}
 	}
