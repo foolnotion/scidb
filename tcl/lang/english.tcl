@@ -991,9 +991,12 @@
 ::application::analysis::mc::LinesPerVariation			"Lines per variation"
 ::application::analysis::mc::BestFirstOrder				"Sort by evaluation"
 ::application::analysis::mc::Engine							"Engine"
+::application::analysis::mc::Ply								"ply"
 
-::application::analysis::mc::Seconds						"s"
-::application::analysis::mc::Minutes						"m"
+::application::analysis::mc::Seconds(short)				"s"
+::application::analysis::mc::Seconds(long)				"secs"
+::application::analysis::mc::Minutes(short)				"m"
+::application::analysis::mc::Minutes(long)				"mins"
 
 ::application::analysis::mc::Status(checkmate)			"%s is checkmate"
 ::application::analysis::mc::Status(stalemate)			"%s is stalemate"
@@ -1356,10 +1359,7 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..."
 ::setup::board::mc::StandardPosition			"Standard Position"
 ::setup::board::mc::Chess960Castling			"Chess 960 castling"
-
 ::setup::board::mc::InvalidFen					"Invalid FEN"
-::setup::board::mc::CastlingWithoutRook		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-::setup::board::mc::UnsupportedVariant			"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Change to X-Fen format"
 ::setup::board::mc::ChangeToFormat(shredder)			"Change to Shredder format"
@@ -1383,12 +1383,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Invalid castling file."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding."
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding."
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted."
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 ::setup::board::mc::Error(InvalidEnPassant)			"Unreasonable en passant file."
 ::setup::board::mc::Error(MultiPawnCheck)				"Two or more pawns give check."
 ::setup::board::mc::Error(TripleCheck)					"Three or more pieces give check."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces in holding. Are you sure that this is ok?"
+::setup::board::mc::Warning(CastlingWithoutRook)	"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+::setup::board::mc::Warning(UnsupportedVariant)		"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importing PGN file '%s'"
@@ -1540,7 +1543,8 @@
 ::export::mc::HtmlFiles						"HTML Files"
 ::export::mc::TeXFiles						"LaTeX Files"
 
-::export::mc::ExportDatabase				"Export Database"
+::export::mc::ExportDatabase				"Export database"
+::export::mc::ExportDatabaseVariant		"Export database - variant %s"
 ::export::mc::ExportDatabaseTitle		"Export Database '%s'"
 ::export::mc::ExportingDatabase			"Exporting '%s' to file '%s'"
 ::export::mc::Export							"Export"

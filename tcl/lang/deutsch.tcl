@@ -992,9 +992,12 @@
 ::application::analysis::mc::LinesPerVariation			"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder				"Sortiere nach Bewertung"
 ::application::analysis::mc::Engine							"Motor"
+::application::analysis::mc::Ply								"hz"
 
-::application::analysis::mc::Seconds						"s"
-::application::analysis::mc::Minutes						"m"
+::application::analysis::mc::Seconds(short)				"s"
+::application::analysis::mc::Seconds(long)				"sek."
+::application::analysis::mc::Minutes(short)				"m"
+::application::analysis::mc::Minutes(long)				"min."
 
 ::application::analysis::mc::Status(checkmate)			"%s ist schachmatt"
 ::application::analysis::mc::Status(stalemate)			"%s ist patt"
@@ -1356,10 +1359,7 @@
 ::setup::board::mc::FICSPosition					"FICS-Startposition..."
 ::setup::board::mc::StandardPosition			"Standardposition"
 ::setup::board::mc::Chess960Castling			"Schach-960-Rochade"
-
 ::setup::board::mc::InvalidFen					"Ungültige FEN"
-::setup::board::mc::CastlingWithoutRook		"Ein Rochaderecht wurde gesetzt, aber ein entsprechender Roachadeturm wird vermisst. Sollen die vergebenen Rochaderechte trotzdem akzeptiert werden?"
-::setup::board::mc::UnsupportedVariant			"Diese Position ist zwar eine Startposition, jedoch keine Shuffle-Schach-Startposition. Trotzdem akzeptieren?"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Zum X-Fen-Format wechseln"
 ::setup::board::mc::ChangeToFormat(shredder)			"Zum Shredder-Format wechseln"
@@ -1383,12 +1383,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Ungültige Rochade-Turm-Linie(n)."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Ein Rochaderecht benötigt zur Eindeutigkeit die Angabe einer Rochade-Turm-Linie (möglicherweise wurden sie falsch gesetzt)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Zuviele Figuren in der Rückhand."
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Zuwenige Figuren in der Rückhand."
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Zuviele Figuren als verwandelt gekennzeichnet."
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Zuwenige Figuren als verwandelt gekennzeichnet."
 ::setup::board::mc::Error(InvalidEnPassant)			"Ungültige En-Passant-Line."
 ::setup::board::mc::Error(MultiPawnCheck)				"Zwei oder mehr Bauern bieten Schach."
 ::setup::board::mc::Error(TripleCheck)					"Drei oder mehr Figuren bieten Schach."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Zuwenige Figuren in der Rückhand. Trotzdem akzeptieren?"
+::setup::board::mc::Warning(CastlingWithoutRook)	"Ein Rochaderecht wurde gesetzt, aber ein entsprechender Roachadeturm wird vermisst. Sollen die vergebenen Rochaderechte trotzdem akzeptiert werden?"
+::setup::board::mc::Warning(UnsupportedVariant)		"Diese Position ist zwar eine Startposition, jedoch keine Shuffle-Schach-Startposition. Trotzdem akzeptieren?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"PGN-Datei '%s' importieren"
@@ -1541,6 +1544,7 @@
 ::export::mc::TeXFiles						"LaTeX-Dateien"
 
 ::export::mc::ExportDatabase				"Datenbank exportieren"
+::export::mc::ExportDatabaseVariant		"Datenbank exportieren - Schachform %s"
 ::export::mc::ExportDatabaseTitle		"Datenbank '%s' exportieren"
 ::export::mc::ExportingDatabase			"Exportiere '%s' nach Datei '%s'"
 ::export::mc::Export							"Export"

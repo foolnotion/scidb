@@ -65,6 +65,9 @@ Opens a box displaying various database information.
 <menuitem>%::export::mc::Export%</menuitem>
 Opens a dialog for <a href="Database-Export-Dialog.html">database export</a>
 into other database formats or document formats.
+<note/>If this database contains several chess variants (only possible
+in case of <a href="Clipbase.html">Clipbase</a> or PGN files) only the games
+of the active chess variant will be exported.
 </p>
 
 <p>

@@ -129,8 +129,6 @@ set StandardPosition						"Standard Position"
 set Chess960Castling						"Chess 960 castling"
 
 set InvalidFen								"Invalid FEN"
-set CastlingWithoutRook					"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-set UnsupportedVariant					"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 set ChangeToFormat(xfen)				"Change to X-Fen format"
 set ChangeToFormat(shredder)			"Change to Shredder format"
@@ -154,13 +152,16 @@ set Error(InvalidCastlingRights)		"Unreasonable rook files for castling."
 set Error(InvalidCastlingFile)		"Invalid castling file."
 set Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
 set Error(TooManyPiecesInHolding)	"Too many pieces in holding."
-set Error(TooFewPiecesInHolding)		"Too few pieces in holding."
 set Error(TooManyPromotedPieces)		"Too many pieces marked as promoted."
 set Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 set Error(InvalidEnPassant)			"Unreasonable en passant file."
 set Error(MultiPawnCheck)				"Two or more pawns give check."
 set Error(TripleCheck)					"Three or more pieces give check."
 set Error(InvalidStartPosition)		"Castling rights not allowed in start positions which are not Chess 960 positions."
+
+set Warning(TooFewPiecesInHolding)	"Too few pieces in holding. Are you sure that this is ok?"
+set Warning(CastlingWithoutRook)		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+set Warning(UnsupportedVariant)		"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 } ;# namespace mc
 
@@ -790,7 +791,7 @@ proc SetupPromoted {} {
 	variable Vars
 	variable Marker
 
-	lassign [::scidb::board::analyseFen $Vars(fen)] error idn _ _ _ _ _ _ _ _ promoted
+	lassign [::scidb::board::analyseFen $Vars(fen)] error _ idn _ _ _ _ _ _ _ _ promoted
 	if {$idn > 4*960} { set idn 0 }
 
 	::board::diagram::removeAllMarkers $Vars(board)
@@ -845,7 +846,7 @@ proc AnalyseFen {fen {cmd none}} {
 
 	if {$cmd eq "init"} {
 		lassign [::scidb::board::analyseFen $fen] \
-			error idn _ _ castling ep stm moveno halfmoves checksGiven promoted
+			error _ idn _ _ castling ep stm moveno halfmoves checksGiven promoted
 
 		if {$idn > 4*960} { set idn 0 }
 		AnalyseCastlingRights $fen $castling $idn
@@ -881,29 +882,26 @@ proc AnalyseFen {fen {cmd none}} {
 		foreach right {w:short w:long b:short b:long} { append castlingFiles $Vars($right:fyle) }
 
 		lassign [::scidb::board::analyseFen $fen $castling $castlingFiles] \
-			error idn _ _ _ ep stm moveno halfmoves checksGiven promoted
+			error warnings idn _ _ _ ep stm moveno halfmoves checksGiven promoted
 		if {$idn > 4*960} { set idn 0 }
 	}
 
-	if {$cmd eq "check" && [string length $error]} {
-		switch $error {
-			CastlingWithoutRook - UnsupportedVariant {
-				set answer [::dialog::question \
-									-parent [winfo toplevel $Vars(board)]  \
-									-title "$::scidb::app: $mc::InvalidFen" \
-									-message [set mc::$error] \
-									;]
-				return [expr {$answer eq "yes"}]
-			}
-
-			default {
-				::dialog::error \
-					-parent [winfo toplevel $Vars(board)]  \
-					-title "$::scidb::app: $mc::InvalidFen" \
-					-message $mc::Error($error) \
-					;
-				return 0
-			}
+	if {$cmd eq "check"} {
+		if {[string length $error]} {
+			::dialog::error \
+				-parent [winfo toplevel $Vars(board)]  \
+				-title "$::scidb::app: $mc::InvalidFen" \
+				-message $mc::Error($error) \
+				;
+			return 0
+		}
+		foreach warning $warnings {
+			set answer [::dialog::question \
+				-parent [winfo toplevel $Vars(board)]  \
+				-title "$::scidb::app: $mc::InvalidFen" \
+				-message [set mc::Warning($warning)] \
+			]
+			if {$answer eq "no"} { return 0 }
 		}
 	}
 
@@ -1346,7 +1344,7 @@ proc ResetFen {} {
 
 	if {[string length $Vars(fen)]} {
 		lassign [::scidb::board::analyseFen $Vars(fen)] \
-			error _ _ _ castling ep stm moveno halfmoves _ promoted
+			error _ _ _ _ castling ep stm moveno halfmoves _ promoted
 
 		if {$error eq "TooManyPiecesInHolding"} {
 			set Vars(fen) [::scidb::board::normalizeFen $Vars(fen) $Options(fen:format) -clearholding]

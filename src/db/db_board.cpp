@@ -2683,7 +2683,7 @@ Board::setup(char const* fen, variant::Type variant)
 		{
 			if (s == 8)
 			{
-				if (isalpha(*p))
+				if (isalpha(p[1]))
 				{
 					if (!variant::isZhouse(variant))
 						return 0;
@@ -2699,6 +2699,10 @@ Board::setup(char const* fen, variant::Type variant)
 				}
 				// else:
 				// Some guys are ending the first part with a superfluous '/'.
+			}
+			else if (s < 16)
+			{
+				return 0;
 			}
 			else
 			{

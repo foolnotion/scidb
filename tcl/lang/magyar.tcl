@@ -999,9 +999,13 @@
 ::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW
 ::application::analysis::mc::Engine			"Engine" ;# NEW
+# Note for translators: don't use more than 4 characters
+::application::analysis::mc::Ply			"ply" ;# NEW
 
-::application::analysis::mc::Seconds			"s" ;# NEW
-::application::analysis::mc::Minutes			"m" ;# NEW
+::application::analysis::mc::Seconds(short)		"s" ;# NEW
+::application::analysis::mc::Seconds(long)		"secs" ;# NEW
+::application::analysis::mc::Minutes(short)		"m" ;# NEW
+::application::analysis::mc::Minutes(long)		"mins" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)		"%s is checkmate" ;# NEW
 ::application::analysis::mc::Status(stalemate)		"%s is stalemate" ;# NEW
@@ -1364,10 +1368,7 @@
 ::setup::board::mc::FICSPosition			"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Standard Position" ;# NEW
 ::setup::board::mc::Chess960Castling			"Chess 960 castling" ;# NEW
-
 ::setup::board::mc::InvalidFen				"Érvénytelen FEN"
-::setup::board::mc::CastlingWithoutRook			"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
-::setup::board::mc::UnsupportedVariant			"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 ::setup::board::mc::ChangeToFormat(xfen)		"Change to X-Fen format" ;# NEW
 ::setup::board::mc::ChangeToFormat(shredder)		"Change to Shredder format" ;# NEW
@@ -1391,12 +1392,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Érvénytelen sáncolási vonal."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Castling needs rook files to be disambiguous (possibly they are set wrong)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)	"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
+::setup::board::mc::Warning(UnsupportedVariant)		"Position is a start position but not a Shuffle Chess position. Are you sure?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile			"'%s' PGN file importálása"
@@ -1549,6 +1553,7 @@
 ::export::mc::TeXFiles				"TeX fájlok"
 
 ::export::mc::ExportDatabase			"Adatbázis exportálása"
+::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"'%s' adatbézis exportálása"
 ::export::mc::ExportingDatabase			"'%s' exportálása '%s'fájlba"
 ::export::mc::Export				"Exportálás"

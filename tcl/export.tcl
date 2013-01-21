@@ -85,7 +85,8 @@ set PdfFiles					"PDF Files"
 set HtmlFiles					"HTML Files"
 set TeXFiles					"LaTeX Files"
 
-set ExportDatabase			"Export %s Database"
+set ExportDatabase			"Export database"
+set ExportDatabaseVariant	"Export database - variant %s"
 set ExportDatabaseTitle		"Export Database '%s'"
 set ExportingDatabase		"Exporting %s to file %s"
 set Export						"Export"
@@ -3037,6 +3038,7 @@ proc DoExport {parent dlg file} {
 		pdf  { return [::beta::notYetImplemented $dlg pdf] }
 	
 		tex {
+# XXX temporary
 if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	return [::beta::notYetImplemented $dlg tex]
 }
@@ -3192,7 +3194,13 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 		}
 	}
 
-	set options [list -message $mc::ExportDatabase -interrupt yes]
+	set options {}
+	if {[llength [::scidb::db::get variants $Info(base)]] > 1} {
+		lappend options -message [format $mc::ExportDatabaseVariant $Info(variant)]
+	} else {
+		lappend options -message $mc::ExportDatabase
+	}
+	lappend options -interrupt yes
 	lappend args [namespace current]::Log {}
 
 	# XXX text widget may overflow (too many messages)

@@ -63,6 +63,9 @@ Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
 <menuitem>%::export::mc::Export%</menuitem>
 Öffnet einen Dialog zum <a href="Database-Export-Dialog.html">Datenbankenexport</a>
 in andere Datenbankformate oder in ein Dokumentenformat.
+<note/>Enthält diese Datenbank mehrere Schachformen (nur bei der
+<a href="Clipbase.html">Ablage-Datenbank</a> und bei PGN-Dateien möglich) dann werden
+nur die Partien der aktiven Schachform exportiert.
 </p>
 
 <p>

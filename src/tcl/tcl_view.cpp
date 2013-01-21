@@ -617,7 +617,7 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	View&				v(cursor.view(view));
 	type::ID			type(db.type());
 
-	if (type == type::Temporary)
+	if (type == type::PGNFile)
 		type = type::Unspecific;
 
 	unsigned n = v.exportGames(sys::file::internalName(filename),

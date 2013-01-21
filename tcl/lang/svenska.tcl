@@ -998,9 +998,13 @@
 ::application::analysis::mc::LinesPerVariation			"Rader per variant"
 ::application::analysis::mc::BestFirstOrder				"Sortera på  värdering"
 ::application::analysis::mc::Engine							"Motor" ;# NEW
+# Note for translators: don't use more than 4 characters
+::application::analysis::mc::Ply								"ply" ;# NEW
 
-::application::analysis::mc::Seconds						"s" ;# NEW
-::application::analysis::mc::Minutes						"m" ;# NEW
+::application::analysis::mc::Seconds(short)				"s" ;# NEW
+::application::analysis::mc::Seconds(long)				"secs" ;# NEW
+::application::analysis::mc::Minutes(short)				"m" ;# NEW
+::application::analysis::mc::Minutes(long)				"mins" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)			"%s är matt"
 ::application::analysis::mc::Status(stalemate)			"%s är patt"
@@ -1363,10 +1367,7 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Standardposition" ;# NEW
 ::setup::board::mc::Chess960Castling			"Chess 960 rockad"
-
 ::setup::board::mc::InvalidFen					"Ogiltigt FEN"
-::setup::board::mc::CastlingWithoutRook		"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
-::setup::board::mc::UnsupportedVariant			"Positionen är en startposition men ingen Shuffle Chess position. Är du säker?"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Ändra till X-Fen format"
 ::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"
@@ -1390,12 +1391,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Ogiltig rockadlinje."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"För rockad måste entydiga tornlinjer anges. (Möjligtvis är fel linjer angivna.)"
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)			"Ogiltig en passant-linje."
 ::setup::board::mc::Error(MultiPawnCheck)				"Två eller fler bönder ger schack."
 ::setup::board::mc::Error(TripleCheck)					"Tre eller fler pjäser ger schack."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)	"Du har valt att rockad är tillåten men det saknas minst ett torn. Detta är bara möjligt i partier med handikapp. Är du säker att du valt rätt?"
+::setup::board::mc::Warning(UnsupportedVariant)		"Positionen är en startposition men ingen Shuffle Chess position. Är du säker?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importerar PGN-fil '%s'"
@@ -1548,6 +1552,7 @@
 ::export::mc::TeXFiles						"LaTeX-filer"
 
 ::export::mc::ExportDatabase				"Exportera databas"
+::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"Exportera databas '%s'"
 ::export::mc::ExportingDatabase			"Exporterar '%s' till filen '%s'"
 ::export::mc::Export							"Export"

@@ -53,9 +53,12 @@ set OperationFailed			"Operation '%s' failed due to raise conditions."
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
 set Engine						"Engine"
+set Ply							"ply"
 
-set Seconds						"s"
-set Minutes						"m"
+set Seconds(short)			"s"
+set Seconds(long)				"secs"
+set Minutes(short)			"m"
+set Minutes(long)				"mins"
 
 set Status(checkmate)		"%s is checkmate"
 set Status(stalemate)		"%s is stalemate"
@@ -813,6 +816,7 @@ proc Display(time) {time depth seldepth nodes} {
 	if {$depth} {
 		set txt $depth
 		if {$seldepth} { append txt " (" $seldepth ")" }
+		append txt " " $mc::Ply
 		$Vars(depth) configure -text $txt
 	}
 
@@ -821,11 +825,14 @@ proc Display(time) {time depth seldepth nodes} {
 		set seconds [lindex [split $time .] 0]
 		set minutes [expr {$seconds/60}]
 		if {$minutes} {
-			append txt $minutes " " $mc::Minutes " "
 			set seconds [expr {$seconds % 60}]
-		}
-		if {$seconds} {
-			append txt $seconds " " $mc::Seconds
+			if {$seconds} {
+				append txt $minutes " " $mc::Minutes(short) " " $seconds " " $mc::Seconds(short)
+			} else {
+				append txt $minutes " " $mc::Minutes(long)
+			}
+		} elseif {$seconds} {
+			append txt $seconds " " $mc::Seconds(long)
 		}
 		$Vars(time) configure -text $txt
 	}
@@ -983,6 +990,7 @@ proc PopupMenu {parent args} {
 		if {[lindex $id 0] eq "item"} {
 			set line [$parent item order [lindex $id 1] -visible]
 			if {![::scidb::engine::empty? $Vars(engine:id) $line]} {
+				$Vars(tree) activate [set Vars(current:item) [expr {$line + 1}]]
 				if {[::scidb::engine::snapshot $Vars(engine:id)]} {
 					set state normal
 					set lbl $mc::Add(var)
@@ -1060,18 +1068,20 @@ proc PopupMenu {parent args} {
 		-onvalue 4 \
 		-offvalue 1 \
 		;
-	set sub [menu $menu.lines -tearoff 0]
-	$menu add cascade \
-		-menu $sub \
-		-label $mc::LinesPerVariation \
-		;
-	foreach i {1 2 3 4} {
-		$sub add radiobutton \
-			-label $i \
-			-variable [namespace current]::Options(engine:nlines) \
-			-value $i \
-			-command [namespace code [list SetLinesPerPV $parent]] \
+	if {$Options(engine:multiPV) > 1} {
+		set sub [menu $menu.lines -tearoff 0]
+		$menu add cascade \
+			-menu $sub \
+			-label $mc::LinesPerVariation \
 			;
+		foreach i {1 2 3 4} {
+			$sub add radiobutton \
+				-label $i \
+				-variable [namespace current]::Options(engine:nlines) \
+				-value $i \
+				-command [namespace code [list SetLinesPerPV $parent]] \
+				;
+		}
 	}
 
 	set Vars(keepActive) 1

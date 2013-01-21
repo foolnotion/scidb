@@ -35,6 +35,7 @@
 #include "db_game.h"
 
 #include "m_string.h"
+#include "m_vector.h"
 #include "m_bit_functions.h"
 
 #include <tcl.h>
@@ -54,6 +55,12 @@ static char const* CmdMakeFen				= "::scidb::board::makeFen";
 static char const* CmdTransposeFen		= "::scidb::board::transposeFen";
 static char const* CmdPositionNumber	= "::scidb::board::positionNumber";
 static char const* CmdNormalizeFen		= "::scidb::board::normalizeFen";
+
+
+namespace
+{
+	typedef mstl::vector<char const*> Warnings;
+}
 
 
 mstl::string
@@ -90,6 +97,67 @@ toCastling(Board const& board)
 }
 
 
+static char const*
+toError(db::Board::SetupStatus status)
+{
+	switch (status)
+	{
+		case Board::Valid:						return 0;
+		case Board::EmptyBoard:					return "EmptyBoard";
+		case Board::NoWhiteKing:				return "NoWhiteKing";
+		case Board::NoBlackKing:				return "NoBlackKing";
+		case Board::BothInCheck:				return "BothInCheck";
+		case Board::OppositeCheck:				return "OppositeCheck";
+		case Board::TooManyWhitePawns:		return "TooManyWhitePawns";
+		case Board::TooManyBlackPawns:		return "TooManyBlackPawns";
+		case Board::TooManyWhitePieces:		return "TooManyWhitePieces";
+		case Board::TooManyBlackPieces:		return "TooManyBlackPieces";
+		case Board::PawnsOn18:					return "PawnsOn18";
+		case Board::TooManyKings:				return "TooManyKings";
+		case Board::TooManyWhite:				return "TooManyWhite";
+		case Board::TooManyBlack:				return "TooManyBlack";
+		case Board::BadCastlingRights:		return "BadCastlingRights";
+		case Board::InvalidEnPassant:			return "InvalidEnPassant";
+		case Board::MultiPawnCheck:			return "MultiPawnCheck";
+		case Board::TripleCheck:				return "TripleCheck";
+		case Board::InvalidCastlingRights:	return "InvalidCastlingRights";
+		case Board::AmbiguousCastlingFyles:	return "AmbiguousCastlingFyles";
+		case Board::TooManyPiecesInHolding:	return "TooManyPiecesInHolding";
+		case Board::TooManyPromotedPieces:	return "TooManyPromotedPieces";
+		case Board::TooFewPromotedPieces:	return "TooFewPromotedPieces";
+		case Board::TooFewPiecesInHolding:	return "TooFewPiecesInHolding";
+	}
+
+	return 0; // satisfies the compiler
+}
+
+
+static char const*
+validate(Board const& board, variant::Type variant, Warnings& warnings)
+{
+	char const*					error	= 0;
+	db::Board::SetupStatus status	= board.validate(variant, castling::DontAllowHandicap);
+
+	if (status == Board::BadCastlingRights)
+	{
+		status = board.validate(variant, castling::AllowHandicap);
+
+		if (status != Board::BadCastlingRights)
+			warnings.push_back("CastlingWithoutRook");
+	}
+
+	error = ::toError(status);
+
+	if (status == Board::TooFewPiecesInHolding)
+	{
+		warnings.push_back(error);
+		error = 0;
+	}
+
+	return error;
+}
+
+
 Board::Format
 getFormat(int objc, Tcl_Obj* const* objv, int index)
 {
@@ -101,54 +169,11 @@ getFormat(int objc, Tcl_Obj* const* objv, int index)
 }
 
 
-static char const*
-validate(Board const& board, variant::Type variant)
-{
-	char const* error = 0;
-
-	switch (board.validate(variant, castling::DontAllowHandicap))
-	{
-		case Board::Valid: break;
-
-		case Board::EmptyBoard:					error = "EmptyBoard"; break;
-		case Board::NoWhiteKing:				error = "NoWhiteKing"; break;
-		case Board::NoBlackKing:				error = "NoBlackKing"; break;
-		case Board::BothInCheck:				error = "BothInCheck"; break;
-		case Board::OppositeCheck:				error = "OppositeCheck"; break;
-		case Board::TooManyWhitePawns:		error = "TooManyWhitePawns"; break;
-		case Board::TooManyBlackPawns:		error = "TooManyBlackPawns"; break;
-		case Board::TooManyWhitePieces:		error = "TooManyWhitePieces"; break;
-		case Board::TooManyBlackPieces:		error = "TooManyBlackPieces"; break;
-		case Board::PawnsOn18:					error = "PawnsOn18"; break;
-		case Board::TooManyKings:				error = "TooManyKings"; break;
-		case Board::TooManyWhite:				error = "TooManyWhite"; break;
-		case Board::TooManyBlack:				error = "TooManyBlack"; break;
-		case Board::InvalidEnPassant:			error = "InvalidEnPassant"; break;
-		case Board::MultiPawnCheck:			error = "MultiPawnCheck"; break;
-		case Board::TripleCheck:				error = "TripleCheck"; break;
-		case Board::InvalidCastlingRights:	error = "InvalidCastlingRights"; break;
-		case Board::AmbiguousCastlingFyles:	error = "AmbiguousCastlingFyles"; break;
-		case Board::TooManyPiecesInHolding:	error = "TooManyPiecesInHolding"; break;
-		case Board::TooFewPiecesInHolding:	error = "TooFewPiecesInHolding"; break;
-		case Board::TooManyPromotedPieces:	error = "TooManyPromotedPieces"; break;
-		case Board::TooFewPromotedPieces:	error = "TooFewPromotedPieces"; break;
-
-		case Board::BadCastlingRights:
-			if (board.validate(variant, castling::AllowHandicap) == Board::Valid)
-				error = "CastlingWithoutRook";
-			else
-				error = "BadCastlingRights";
-			break;
-	}
-
-	return error;
-}
-
-
 static int
 cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* error = 0;
+	char const* error		= 0;
+	Warnings		warnings;
 
 	Board board;
 	char const* fen = stringFromObj(objc, objv, 1);
@@ -204,7 +229,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					board.setCastlingFyle(color::Black, sq::Fyle(sq::FyleA + *fyles - 'a'));
 			}
 
-			error = ::validate(board, variant);
+			error = ::validate(board, variant, warnings);
 
 			if (error == 0 && board.castlingRights() != castling::Rights(rights))
 				error = "BadCastlingRights";
@@ -213,11 +238,14 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		if (error == 0)
-			error = ::validate(board, variant);
+		{
+			warnings.clear();
+			error = ::validate(board, variant, warnings);
+		}
 	}
 
 	if (error == 0 && board.isStartPosition() && !board.isShuffleChessPosition())
-		error = "UnsupportedVariant";
+		warnings.push_back("UnsupportedVariant");
 
 	Tcl_Obj* checksGiven[2] =
 	{
@@ -234,19 +262,24 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			promoted[n++] = Tcl_NewIntObj(i);
 	}
 
-	Tcl_Obj* objs[11];
+	Tcl_Obj* w[warnings.size()];
+	for (unsigned i = 0; i < warnings.size(); ++i)
+		w[i] = Tcl_NewStringObj(warnings[i], -1);
+
+	Tcl_Obj* objs[12];
 
 	objs[ 0] = Tcl_NewStringObj(error ? error : "", -1);
-	objs[ 1] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
-	objs[ 2] = Tcl_NewBooleanObj(board.notDerivableFromStandardChess());
-	objs[ 3] = Tcl_NewBooleanObj(board.notDerivableFromChess960());
-	objs[ 4] = Tcl_NewStringObj(toCastling(board), -1);
-	objs[ 5] = Tcl_NewStringObj(sq::printAlgebraic(board.enPassantSquare()), -1);
-	objs[ 6] = Tcl_NewStringObj(color::isWhite(board.sideToMove()) ? "w" : "b", -1);
-	objs[ 7] = Tcl_NewIntObj(board.moveNumber());
-	objs[ 8] = Tcl_NewIntObj(board.halfMoveClock());
-	objs[ 9] = Tcl_NewListObj(2, checksGiven);
-	objs[10] = Tcl_NewListObj(n, promoted);
+	objs[ 1] = Tcl_NewListObj(warnings.size(), w);
+	objs[ 2] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
+	objs[ 3] = Tcl_NewBooleanObj(board.notDerivableFromStandardChess());
+	objs[ 4] = Tcl_NewBooleanObj(board.notDerivableFromChess960());
+	objs[ 5] = Tcl_NewStringObj(toCastling(board), -1);
+	objs[ 6] = Tcl_NewStringObj(sq::printAlgebraic(board.enPassantSquare()), -1);
+	objs[ 7] = Tcl_NewStringObj(color::isWhite(board.sideToMove()) ? "w" : "b", -1);
+	objs[ 8] = Tcl_NewIntObj(board.moveNumber());
+	objs[ 9] = Tcl_NewIntObj(board.halfMoveClock());
+	objs[10] = Tcl_NewListObj(2, checksGiven);
+	objs[11] = Tcl_NewListObj(n, promoted);
 
 	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;

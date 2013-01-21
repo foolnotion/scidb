@@ -994,9 +994,13 @@
 ::application::analysis::mc::LinesPerVariation			"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder				"Ordenar por evaluación"
 ::application::analysis::mc::Engine							"Motor de Análisis"
+# Note for translators: don't use more than 4 characters
+::application::analysis::mc::Ply								"ply" ;# NEW
 
-::application::analysis::mc::Seconds						"s"
-::application::analysis::mc::Minutes						"m"
+::application::analysis::mc::Seconds(short)				"s" ;# NEW
+::application::analysis::mc::Seconds(long)				"secs" ;# NEW
+::application::analysis::mc::Minutes(short)				"m" ;# NEW
+::application::analysis::mc::Minutes(long)				"mins" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)			"%s es jaque mate"
 ::application::analysis::mc::Status(stalemate)			"%s es ahogado"
@@ -1360,10 +1364,7 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posición estándar"
 ::setup::board::mc::Chess960Castling			"Enroque en Chess 960"
-
 ::setup::board::mc::InvalidFen					"FEN no válido"
-::setup::board::mc::CastlingWithoutRook		"Existen derechos de enroque pero al menos una de las torres no está. Esto sólo sucede en partidas con ventaja. ¿Está seguro que los derechos de enroque son correctos?"
-::setup::board::mc::UnsupportedVariant			"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Cambiar a formato X-Fen"
 ::setup::board::mc::ChangeToFormat(shredder)			"Cambiar a formato Shredder"
@@ -1387,12 +1388,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Fila no válida para el enroque."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"El enroque requiere filas con torre para no ser ambiguo (posiblemente estén mal configuradas)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 ::setup::board::mc::Error(InvalidEnPassant)			"Fila al paso no razonable."
 ::setup::board::mc::Error(MultiPawnCheck)				"Dos o más peones dando jaque."
 ::setup::board::mc::Error(TripleCheck)					"Tres o más piezas dando jaque."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)	"Existen derechos de enroque pero al menos una de las torres no está. Esto sólo sucede en partidas con ventaja. ¿Está seguro que los derechos de enroque son correctos?"
+::setup::board::mc::Warning(UnsupportedVariant)		"La posición es una posición de inicio pero no corresponde a una posición de Shuffle Chess. ¿Está seguro?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importar archivo PGN '%s'"
@@ -1545,6 +1549,7 @@
 ::export::mc::TeXFiles						"Archivos LaTeX"
 
 ::export::mc::ExportDatabase				"Exportar base"
+::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"Exportar base '%s'"
 ::export::mc::ExportingDatabase			"Exportando '%s' al archivo '%s'"
 ::export::mc::Export							"Exportar"

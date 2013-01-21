@@ -999,9 +999,13 @@
 ::application::analysis::mc::LinesPerVariation			"Varianti per valutazione"
 ::application::analysis::mc::BestFirstOrder				"Ordina per valutazione"
 ::application::analysis::mc::Engine							"Motore"
+# Note for translators: don't use more than 4 characters
+::application::analysis::mc::Ply								"ply" ;# NEW
 
-::application::analysis::mc::Seconds						"s"
-::application::analysis::mc::Minutes						"m"
+::application::analysis::mc::Seconds(short)				"s" ;# NEW
+::application::analysis::mc::Seconds(long)				"secs" ;# NEW
+::application::analysis::mc::Minutes(short)				"m" ;# NEW
+::application::analysis::mc::Minutes(long)				"mins" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)			"%s is checkmate" ;# NEW
 ::application::analysis::mc::Status(stalemate)			"%s is stalemate" ;# NEW
@@ -1364,10 +1368,7 @@
 ::setup::board::mc::FICSPosition					"FICS Start Position..." ;# NEW
 ::setup::board::mc::StandardPosition			"Posizione Standard"
 ::setup::board::mc::Chess960Castling			"Arrocco da Scacchi 960"
-
 ::setup::board::mc::InvalidFen					"FEN non valido"
-::setup::board::mc::CastlingWithoutRook		"Hai segnato il diritto di arroccare, ma almeno una torre di arrocco manca. Questo può succedere solo in partite con handicap. Sei sicuro che ci sia la possibilità di arroccare?"
-::setup::board::mc::UnsupportedVariant			"La posizione è una posizione iniziale ma non di Scacchi Mischiati - Shuffle Chess. Sei sicuro?"
 
 ::setup::board::mc::ChangeToFormat(xfen)				"Converti a formato X-Fen"
 ::setup::board::mc::ChangeToFormat(shredder)			"Converti a formato Shredder"
@@ -1391,12 +1392,15 @@
 ::setup::board::mc::Error(InvalidCastlingFile)		"Colonna di arrocco non valida."
 ::setup::board::mc::Error(AmbiguousCastlingFyles)	"Per arroccare bisogna disambiguare la colonna della torre (è possibile siano messe male)."
 ::setup::board::mc::Error(TooManyPiecesInHolding)	"Too many pieces in holding." ;# NEW
-::setup::board::mc::Error(TooFewPiecesInHolding)	"Too few pieces in holding." ;# NEW
 ::setup::board::mc::Error(TooManyPromotedPieces)	"Too many pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(TooFewPromotedPieces)		"Too few pieces marked as promoted." ;# NEW
 ::setup::board::mc::Error(InvalidEnPassant)			"Colonna di en passant non ragionevole."
 ::setup::board::mc::Error(MultiPawnCheck)				"Due o più pedoni danno scacco."
 ::setup::board::mc::Error(TripleCheck)					"Tre o più pezzi danno scacco."
+
+::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
+::setup::board::mc::Warning(CastlingWithoutRook)	"Hai segnato il diritto di arroccare, ma almeno una torre di arrocco manca. Questo può succedere solo in partite con handicap. Sei sicuro che ci sia la possibilità di arroccare?"
+::setup::board::mc::Warning(UnsupportedVariant)		"La posizione è una posizione iniziale ma non di Scacchi Mischiati - Shuffle Chess. Sei sicuro?"
 
 ### import #############################################################
 ::import::mc::ImportingPgnFile					"Importando file PGN '%s'"
@@ -1548,7 +1552,8 @@
 ::export::mc::HtmlFiles						"File HTML"
 ::export::mc::TeXFiles						"File LaTeX"
 
-::export::mc::ExportDatabase				"Esporta Database"
+::export::mc::ExportDatabase				"Esporta database"
+::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"Esporta Database '%s'"
 ::export::mc::ExportingDatabase			"Sto esportando '%s' nel file '%s'"
 ::export::mc::Export							"Esporta"

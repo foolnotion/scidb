@@ -256,6 +256,7 @@ Encoder::encodeQueen(Move const& move)
 		putMoveByte(from, sq::fyle(from));
 
 #ifdef CORRECTION
+		M_ASSERT(to < 64);
 		// Now we put the to-square in the next byte. We make sure that it
 		// cannot clash with the special tokens.
 		m_strm.put(to | 64);
