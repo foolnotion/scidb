@@ -26,7 +26,7 @@
 
 #include "db_database.h"
 #include "db_database_codec.h"
-#include "db_pgn_reader.h"
+#include "db_reader.h"
 #include "db_exception.h"
 #include "db_game_info.h"
 #include "db_game.h"
@@ -90,6 +90,7 @@ Database::exportGames<Database>(	Database& destination,
 											Filter const& gameFilter,
 											Selector const& gameSelector,
 											copy::Mode copyMode,
+											unsigned& illegalRejected,
 											Log& log,
 											util::Progress& progress) const;
 template
@@ -98,6 +99,7 @@ Database::exportGames<Consumer>(	Consumer& destination,
 											Filter const& gameFilter,
 											Selector const& gameSelector,
 											copy::Mode copyMode,
+											unsigned& illegalRejected,
 											Log& log,
 											util::Progress& progress) const;
 
@@ -800,83 +802,83 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 
 	if (!format::isScidFormat(consumer.format()) && format::isScidFormat(format()))
 	{
-		PgnReader::Tag tag;
+		Reader::Tag tag;
 
 		mstl::string s;
 		mstl::string v;
 
 		s = tags.value(tag::White);
-		while ((tag = PgnReader::extractPlayerData(s, v)) != PgnReader::None)
+		while ((tag = Reader::extractPlayerData(s, v)) != Reader::None)
 		{
 			switch (tag)
 			{
-				case PgnReader::Country:
+				case Reader::Country:
 					tags.add(tag::WhiteCountry, country::fromString(v));
 					break;
 
-				case PgnReader::Title:
+				case Reader::Title:
 					tags.add(tag::WhiteTitle, title::toString(title::fromString(v)));
 					break;
 
-				case PgnReader::Human:
+				case Reader::Human:
 					tags.add(tag::WhiteType, species::toString(species::Human));
 					break;
 
-				case PgnReader::Program:
+				case Reader::Program:
 					tags.add(tag::WhiteType, species::toString(species::Program));
 					break;
 
-				case PgnReader::Sex:
+				case Reader::Sex:
 					tags.add(tag::WhiteSex, sex::toString(sex::fromString(v)));
 					break;
 
-				case PgnReader::Elo:
+				case Reader::Elo:
 					tags.add(tag::WhiteElo, v);
 					break;
 
-				case PgnReader::None:
+				case Reader::None:
 					break;
 			}
 		}
 		tags.set(tag::White, s);
 
 		s = tags.value(tag::Black);
-		while ((tag = PgnReader::extractPlayerData(s, v)) != PgnReader::None)
+		while ((tag = Reader::extractPlayerData(s, v)) != Reader::None)
 		{
 			switch (tag)
 			{
-				case PgnReader::Country:
+				case Reader::Country:
 					tags.add(tag::BlackCountry, country::fromString(v));
 					break;
 
-				case PgnReader::Title:
+				case Reader::Title:
 					tags.add(tag::BlackTitle, title::toString(title::fromString(v)));
 					break;
 
-				case PgnReader::Human:
+				case Reader::Human:
 					tags.add(tag::BlackType, species::toString(species::Human));
 					break;
 
-				case PgnReader::Program:
+				case Reader::Program:
 					tags.add(tag::BlackType, species::toString(species::Program));
 					break;
 
-				case PgnReader::Sex:
+				case Reader::Sex:
 					tags.add(tag::BlackSex, sex::toString(sex::fromString(v)));
 					break;
 
-				case PgnReader::Elo:
+				case Reader::Elo:
 					tags.add(tag::BlackElo, v);
 					break;
 
-				case PgnReader::None:
+				case Reader::None:
 					break;
 			}
 		}
 		tags.set(tag::Black, s);
 
 		s = tags.value(tag::Site);
-		country::Code code = PgnReader::extractCountryFromSite(s);
+		country::Code code = Reader::extractCountryFromSite(s);
 		if (code != country::Unknown)
 		{
 			tags.add(tag::EventCountry, country::toString(code));
@@ -957,6 +959,7 @@ Database::copyGames(	Database& destination,
 							Selector const& gameSelector,
 							TagBits const& allowedTags,
 							bool allowExtraTags,
+							unsigned& illegalRejected,
 							Log& log,
 							util::Progress& progress) const
 {
@@ -994,7 +997,13 @@ Database::copyGames(	Database& destination,
 
 	if (!useConsumer && allowedTags.complete() && allowExtraTags)
 	{
-		count = exportGames(destination, gameFilter, gameSelector, copyMode, log, progress);
+		count = exportGames(	destination,
+									gameFilter,
+									gameSelector,
+									copyMode,
+									illegalRejected,
+									log,
+									progress);
 	}
 	else
 	{
@@ -1004,7 +1013,13 @@ Database::copyGames(	Database& destination,
 			// XXX do we need the source encoding?
 			sci::Consumer consumer(srcFormat, codecs, allowedTags, allowExtraTags);
 			consumer.setupVariant(m_variant);
-			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
+			count = exportGames(	consumer,
+										gameFilter,
+										gameSelector,
+										copyMode,
+										illegalRejected,
+										log,
+										progress);
 		}
 		else // dstFormat == format::Scid3 || dstFormat == format::Scid4
 		{
@@ -1014,7 +1029,13 @@ Database::copyGames(	Database& destination,
 											allowedTags,
 											allowExtraTags);
 			consumer.setupVariant(variant::Normal);
-			count = exportGames(consumer, gameFilter, gameSelector, copyMode, log, progress);
+			count = exportGames(	consumer,
+										gameFilter,
+										gameSelector,
+										copyMode,
+										illegalRejected,
+										log,
+										progress);
 		}
 	}
 
@@ -1028,6 +1049,7 @@ Database::exportGames(	Destination& destination,
 								Filter const& gameFilter,
 								Selector const& gameSelector,
 								copy::Mode copyMode,
+								unsigned& illegalRejected,
 								Log& log,
 								util::Progress& progress) const
 {
@@ -1038,6 +1060,12 @@ Database::exportGames(	Destination& destination,
 
 	if (size() == 0)
 		return 0;
+
+	format::Type dstFormat = destination.format();
+	format::Type srcFormat = format();
+
+	if (format::isScidFormat(dstFormat))
+		copyMode = copy::ExcludeIllegal;
 
 	unsigned frequency = progress.frequency(gameFilter.count());
 
@@ -1082,12 +1110,12 @@ Database::exportGames(	Destination& destination,
 		{
 			save::State state = exportGame(infoIndex, destination);
 
-			if (destination.format() == format::Scidb && ::format::isScidFormat(format()))
+			if (dstFormat == format::Scidb && ::format::isScidFormat(srcFormat))
 			{
 				unsigned unused;
 				mstl::string const& round = static_cast<si3::Codec const&>(codec()).getRoundEntry(index);
 
-				if (!PgnReader::parseRound(round, unused, unused))
+				if (!Reader::parseRound(round, unused, unused))
 				{
 					log.warning(
 						warnings++ >= MaxWarnings ? Log::MaximalWarningCountExceeded : Log::InvalidRoundTag,
@@ -1099,6 +1127,10 @@ Database::exportGames(	Destination& destination,
 				++numGames;
 			else if (!log.error(state, gameSelector.map(infoIndex)))
 				return numGames;
+		}
+		else
+		{
+			++illegalRejected;
 		}
 	}
 
@@ -1169,7 +1201,7 @@ Database::importGames(Producer& producer, util::Progress& progress)
 
 
 unsigned
-Database::importGames(Database const& db, Log& log, util::Progress& progress)
+Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadOnly());
@@ -1187,7 +1219,7 @@ Database::importGames(Database const& db, Log& log, util::Progress& progress)
 
 	filter.set();
 
-	unsigned n = db.copyGames(*this, filter, selector, allowedTags, true, log, progress);
+	unsigned n = db.copyGames(*this, filter, selector, allowedTags, true, illegalRejected, log, progress);
 
 	if (n > 0)
 		finishImport(oldSize, db.encodingFailed());

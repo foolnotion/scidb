@@ -173,6 +173,7 @@ public:
 	unsigned copyGames(	Cursor& destination,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
+								unsigned& illegalRejected,
 								db::Log& log,
 								util::Progress& progress);
 
@@ -185,6 +186,7 @@ public:
 									db::copy::Mode copyMode,
 									TagBits const& allowedTags,
 									bool allowExtraTags,
+									unsigned& illegalRejected,
 									db::Log& log,
 									util::Progress& progress,
 									FileMode fmode = Create) const;
@@ -204,10 +206,12 @@ private:
 
 	unsigned exportGames(db::Consumer& destination,
 								db::copy::Mode copyMode,
+								unsigned& illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 	unsigned exportGames(db::Database& destination,
 								db::copy::Mode copyMode,
+								unsigned& illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 

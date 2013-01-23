@@ -1561,6 +1561,7 @@
 ::export::mc::DatabaseIsOpen				"La base de datos de destino '%s' se encuentra abierta, esto significa que será vaciada antes de iniciar la exportación. ¿Continuar?"
 ::export::mc::DatabaseIsOpenDetail		"Si lo que desea es agregar debe arrastrar y soltar en el cambiador de bases de datos."
 ::export::mc::ExportGamesFromTo			"Exportar partidas de '%src' a '%dst'"
+::export::mc::IllegalRejected				"%s game(s) rejected due to illegal moves" ;# NEW
 
 ::export::mc::BasicStyle					"Estilo básico"
 ::export::mc::GameInfo						"Información de la partida"

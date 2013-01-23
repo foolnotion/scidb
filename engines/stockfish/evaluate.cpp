@@ -451,6 +451,11 @@ Value do_evaluate(const Position& pos, Value& margin) {
   if (pos.is_three_check())
   {
       assert(pos.checks_given() <= 3);
+      assert(pos.checks_taken() <= 2);
+
+      if (pos.checks_given() == 3)
+		    return VALUE_MATE;
+
       score += ChecksGivenBonus[pos.checks_given()];
       score -= ChecksGivenBonus[pos.checks_taken()];
   }

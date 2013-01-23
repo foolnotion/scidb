@@ -393,13 +393,11 @@ Consumer::putMove(Move const& move,
 			m_moveInfoSet.clear();
 		}
 
-		entry.board.doMove(move, m_useVariant);
-
 		if (isMainline())
 		{
 			if (!move.isLegal())
 			{
-				if (move.isCastling())
+				if (move.isCastling() && !entry.board.isInCheck())
 					m_flags |= GameInfo::Flag_Illegal_Castling;
 				else
 					m_flags |= GameInfo::Flag_Illegal_Move;
@@ -410,6 +408,8 @@ Consumer::putMove(Move const& move,
 			if (m_line.length < opening::Max_Line_Length)
 				m_moveBuffer[m_line.length++] = move.index();
 		}
+
+		entry.board.doMove(move, m_useVariant);
 	}
 	else
 	{
@@ -451,13 +451,11 @@ Consumer::putMove(Move const& move)
 			m_moveInfoSet.clear();
 		}
 
-		entry.board.doMove(move, m_useVariant);
-
 		if (isMainline())
 		{
 			if (!move.isLegal())
 			{
-				if (move.isCastling())
+				if (move.isCastling() && !entry.board.isInCheck())
 					m_flags |= GameInfo::Flag_Illegal_Castling;
 				else
 					m_flags |= GameInfo::Flag_Illegal_Move;
@@ -468,6 +466,8 @@ Consumer::putMove(Move const& move)
 			if (m_line.length < opening::Max_Line_Length)
 				m_moveBuffer[m_line.length++] = move.index();
 		}
+
+		entry.board.doMove(move, m_useVariant);
 	}
 	else
 	{

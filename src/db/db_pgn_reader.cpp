@@ -3294,7 +3294,7 @@ PgnReader::doCastling(char const* castle)
 //		}
 
 		m_move.setIllegalMove();
-		sendWarning(IllegalCastling, castle);
+		sendWarning(this->board().isInCheck() ? IllegalMove : IllegalCastling, castle);
 	}
 	else if (!m_move.isLegal())
 	{

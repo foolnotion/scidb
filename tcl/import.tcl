@@ -354,10 +354,10 @@ proc showOnlyEncodingWarnings {flag} {
 }
 
 
-proc logResult {total emptyText importText accepted rejected {unsupported {}}} {
+proc logResult {total illegal emptyText importText accepted rejected {unsupported {}}} {
 	set count 0
 	foreach acc $accepted rej $rejected { incr count $acc; incr count $rej }
-	set count [expr {$count + [llength $unsupported]/2}]
+	set count [expr {$count + $illegal + [llength $unsupported]/2}]
 	
 	if {$total == 0} {
 		set lastMsg $emptyText
@@ -369,6 +369,10 @@ proc logResult {total emptyText importText accepted rejected {unsupported {}}} {
 		append lastMsg " ($mc::FileIsEmpty)"
 		::log::info $lastMsg
 	} else {
+		if {$illegal} {
+			::log::warning [format $::export::mc::IllegalRejected $illegal]
+		}
+
 		if {$total == 0} { set show 1 } else { set show -1 }
 
 		set detailed yes
@@ -437,7 +441,7 @@ proc Open {parent file msg encoding type} {
 		return 0
 	}
 
-	lassign $result total accepted rejected unsupported
+	lassign $result total illegal accepted rejected unsupported
 
 	if {$total < 0} {
 		::log::warning $mc::UserHasInterrupted
@@ -446,7 +450,7 @@ proc Open {parent file msg encoding type} {
 
 	update idletasks	;# be sure the following will be appended
 	if {$Priv(ok)} {
-		logResult $total $mc::NoGamesImported $mc::ImportedGames $accepted $rejected $unsupported
+		logResult $total $illegal $mc::NoGamesImported $mc::ImportedGames $accepted $rejected $unsupported
 	}
 
 	set cmd [list ::scidb::db::save $file]
@@ -519,7 +523,7 @@ proc Import {parent base files msg encoding} {
 			return 0
 		}
 
-		lassign $result total accepted rejected unsupported
+		lassign $result total illegal accepted rejected unsupported
 
 		if {$total < 0} {
 			::log::warning $mc::UserHasInterrupted
@@ -529,7 +533,8 @@ proc Import {parent base files msg encoding} {
 
 		update idletasks	;# be sure the following will be appended
 		if {$Priv(ok)} {
-			logResult $total $mc::NoGamesImported $mc::ImportedGames $accepted $rejected $unsupported
+			logResult $total $illegal $mc::NoGamesImported \
+				$mc::ImportedGames $accepted $rejected $unsupported
 		}
 		if {$rc == -1} { break }
 	}

@@ -210,6 +210,7 @@ public:
 								Filter const& gameFilter,
 								Selector const& gameSelector,
 								copy::Mode copyMode,
+								unsigned& illegalRejected,
 								Log& log,
 								util::Progress& progress) const;
 	// Copy games from this database to the destination database.
@@ -218,6 +219,7 @@ public:
 								Selector const& gameSelector,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
+								unsigned& illegalRejected,
 								Log& log,
 								util::Progress& progress) const;
 	/// Add new game to database.
@@ -285,7 +287,10 @@ public:
 	/// Import whole database.
 	unsigned importGames(Producer& producer, util::Progress& progress);
 	/// Import whole database.
-	unsigned importGames(Database const& src, Log& log, util::Progress& progress);
+	unsigned importGames(Database const& src,
+								unsigned& illegalRejected,
+								Log& log,
+								util::Progress& progress);
 	/// Called from MultiBase after game import.
 	void finishImport(unsigned oldSize, bool encodingFailed);
 

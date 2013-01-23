@@ -98,6 +98,7 @@ set UnsupportedEncoding		"Cannot use encoding %s for PDF documents. You have to 
 set DatabaseIsOpen			"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?"
 set DatabaseIsOpenDetail	"If you want to append instead you should use a Drag&Drop operation inside the database switcher."
 set ExportGamesFromTo		"Export games from '%src' to '%dst'"
+set IllegalRejected			"%s game(s) rejected due to illegal moves"
 
 set BasicStyle					"Basic Style"
 set GameInfo					"Game Info"
@@ -3228,6 +3229,12 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 		return {*}$opts -rethrow 1 0
 	}
 
+	if {[llength $count] == 2} {
+		lassign $count count illegal
+	} else {
+		set illegal 0
+	}
+
 	if {$rc == 1} {
 		::log::error $::import::mc::AbortedDueToIoError
 		::progress::close
@@ -3244,6 +3251,9 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 
 	update idletasks	;# be sure the following will be appended
 
+	if {$illegal} {
+		::log::warning [format $mc::IllegalRejected $illegal]
+	}
 	if {$count == 0} {
 		::log::info $mc::NoGamesExported
 	} else {

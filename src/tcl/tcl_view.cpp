@@ -574,15 +574,16 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	Cursor& dst = scidb->cursor(destination, variant);
 	unsigned variantIndex = variant::toIndex(variant);
+	unsigned illegalRejected = 0;
 
-	n = view.copyGames(dst, tagBits, extraTags, log, progress);
+	n = view.copyGames(dst, tagBits, extraTags, illegalRejected, log, progress);
 	accepted[variantIndex] = n;
 	rejected[variantIndex] = dst.count(table::Games) - n;
 
 	if (progress.interrupted())
 		n = -n - 1;
 
-	tcl::PgnReader::setResult(n, accepted, rejected);
+	tcl::PgnReader::setResult(n, illegalRejected, accepted, rejected);
 	return TCL_OK;
 }
 
@@ -616,26 +617,32 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Database&		db(cursor.database());
 	View&				v(cursor.view(view));
 	type::ID			type(db.type());
+	unsigned			illegalRejected(0);
 
 	if (type == type::PGNFile)
 		type = type::Unspecific;
 
-	unsigned n = v.exportGames(sys::file::internalName(filename),
-										encoding,
-										db.description(),
-										type,
-										flags,
-										excludeIllegal ? ::db::copy::ExcludeIllegal : ::db::copy::AllGames,
-										tagBits,
-										extraTags,
-										log,
-										progress,
-										mode);
+	int n = v.exportGames(	sys::file::internalName(filename),
+									encoding,
+									db.description(),
+									type,
+									flags,
+									excludeIllegal ? ::db::copy::ExcludeIllegal : ::db::copy::AllGames,
+									tagBits,
+									extraTags,
+									illegalRejected,
+									log,
+									progress,
+									mode);
 
 	if (progress.interrupted())
-		throw InterruptException(n);
+		n = -n - 1;
 
-	setResult(n);
+	Tcl_Obj* objs[2];
+	objs[0] = Tcl_NewIntObj(n);
+	objs[1] = Tcl_NewIntObj(illegalRejected);
+	setResult(2, objs);
+
 	return TCL_OK;
 }
 

@@ -256,19 +256,20 @@ PgnReader::error(	Error code,
 
 
 void
-PgnReader::setResult(int n) const
+PgnReader::setResult(int n, int illegal) const
 {
-	setResult(n, accepted(), rejected(), &unsupportedVariants());
+	setResult(n, illegal, accepted(), rejected(), &unsupportedVariants());
 }
 
 
 void
 PgnReader::setResult(int n,
+							int illegal,
 							GameCount const& accepted,
 							GameCount const& rejected,
 							Variants const* unsupported)
 {
-	Tcl_Obj* objs[4];
+	Tcl_Obj* objs[5];
 	Tcl_Obj* acc[db::variant::NumberOfVariants];
 	Tcl_Obj* rej[db::variant::NumberOfVariants];
 
@@ -279,8 +280,9 @@ PgnReader::setResult(int n,
 		rej[v] = Tcl_NewIntObj(rejected[v]);
 
 	objs[0] = Tcl_NewIntObj(n);
-	objs[1] = Tcl_NewListObj(db::variant::NumberOfVariants, acc);
-	objs[2] = Tcl_NewListObj(db::variant::NumberOfVariants, rej);
+	objs[1] = Tcl_NewIntObj(illegal);
+	objs[2] = Tcl_NewListObj(db::variant::NumberOfVariants, acc);
+	objs[3] = Tcl_NewListObj(db::variant::NumberOfVariants, rej);
 
 	if (unsupported)
 	{
@@ -293,11 +295,11 @@ PgnReader::setResult(int n,
 			uns[mstl::mul2(i) + 1] = Tcl_NewIntObj(item.second);
 		}
 
-		objs[3] = Tcl_NewListObj(mstl::mul2(unsupported->size()), uns);
+		objs[4] = Tcl_NewListObj(mstl::mul2(unsupported->size()), uns);
 	}
 	else
 	{
-		objs[3] = Tcl_NewListObj(0, 0);
+		objs[4] = Tcl_NewListObj(0, 0);
 	}
 
 	::tcl::setResult(U_NUMBER_OF(objs), objs);

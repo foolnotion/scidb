@@ -1447,9 +1447,9 @@ Key Position::compute_key() const {
   if (threeCheck)
   {
       if (st->checksGiven[WHITE])
-          k ^= Zobrist::checks[WHITE][st->checksGiven[WHITE]];
+          k ^= Zobrist::checks[WHITE][st->checksGiven[WHITE] - 1];
       if (st->checksGiven[BLACK])
-          k ^= Zobrist::checks[BLACK][st->checksGiven[BLACK]];
+          k ^= Zobrist::checks[BLACK][st->checksGiven[BLACK] - 1];
   }
 #endif
 
@@ -1647,6 +1647,9 @@ bool Position::pos_is_ok(int* failedStep) const {
   const bool debugPieceCounts     = all || false;
   const bool debugPieceList       = all || false;
   const bool debugCastleSquares   = all || false;
+#ifdef THREECHECK
+  const bool debugChecksGiven     = all || false;
+#endif
 
   *step = 1;
 
@@ -1752,6 +1755,14 @@ bool Position::pos_is_ok(int* failedStep) const {
                   || castleRightsMask[castleRookSquare[c][s]] != cr)
                   return false;
           }
+
+#ifdef THREECHECK
+  if ((*step)++, debugChecksGiven)
+  {
+      if (checks_given() > 3 || checks_taken() > 3)
+          return false;
+  }
+#endif
 
   *step = 0;
   return true;

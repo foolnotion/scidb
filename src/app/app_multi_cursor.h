@@ -91,6 +91,7 @@ public:
 								GameCount& rejected,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
+								unsigned& illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const;
 

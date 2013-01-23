@@ -110,8 +110,8 @@ public:
 	bool hasMoveInfo() const;
 	bool threefoldRepetition() const;
 	bool fiftyMoveRule() const;
-	bool containsIllegalCastlings() const;
-	bool containsIllegalMoves() const;
+	bool containsIllegalCastlings(bool inCheck) const;
+	bool containsIllegalMoves(bool inCheck) const;
 	bool containsEnglishLang() const;
 	bool containsOtherLang() const;
 	bool contains(MoveNode const* node) const;

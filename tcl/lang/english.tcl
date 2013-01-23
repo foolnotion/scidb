@@ -1556,6 +1556,7 @@
 ::export::mc::DatabaseIsOpen				"The destination database '%s' is open, this means that the destination database will be emptied before the export is starting. Export anyway?"
 ::export::mc::DatabaseIsOpenDetail		"If you want to append instead you should use a Drag&Drop operation inside the database switcher."
 ::export::mc::ExportGamesFromTo			"Export games from '%src' to '%dst'"
+::export::mc::IllegalRejected				"%s game(s) rejected due to illegal moves"
 
 ::export::mc::BasicStyle					"Basic Style"
 ::export::mc::GameInfo						"Game Info"

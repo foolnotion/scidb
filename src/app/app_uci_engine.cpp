@@ -271,7 +271,7 @@ uci::Engine::setupPosition(Board const& board)
 	else
 	{
 		db::Board::Format	fmt(m_needChess960 ? Board::Shredder : Board::XFen);
-		mstl::string		fen(board.toFen(variant::Normal, fmt));
+		mstl::string		fen(board.toFen(currentVariant(), fmt));
 
 		m_position.append("fen ", 4);
 		m_position.append(fen);
@@ -575,7 +575,7 @@ uci::Engine::parseBestMove(char const* msg)
 
 	if (move.isLegal())
 	{
-		currentBoard().prepareForPrint(move, variant::Normal);
+		currentBoard().prepareForPrint(move, m_variant);
 		setBestMove(move);
 	}
 	else if (::strncmp(s, "(none)", 6) != 0)
@@ -591,9 +591,9 @@ uci::Engine::parseBestMove(char const* msg)
 	{
 		s = ::skipSpaces(s + 6);
 
-		currentBoard().doMove(move, variant::Normal);
+		currentBoard().doMove(move, m_variant);
 		Move ponder(currentBoard().parseLAN(s));
-		currentBoard().undoMove(move, variant::Normal);
+		currentBoard().undoMove(move, m_variant);
 
 		if (move.isLegal())
 		{
@@ -775,7 +775,7 @@ uci::Engine::parseInfo(char const* s)
 					varno = setVariation(varno, moves);
 					havePv = true;
 
-					if (!haveMate && (board.checkState(variant::Normal) & Board::Checkmate))
+					if (!haveMate && (board.checkState(m_variant) & Board::Checkmate))
 					{
 						int n = board.moveNumber() - currentBoard().moveNumber();
 						mate = board.whiteToMove() ? -n : +n;
@@ -851,7 +851,7 @@ uci::Engine::parseCurrentMove(char const* s)
 		return Move();
 	}
 
-	currentBoard().prepareForPrint(move, variant::Normal);
+	currentBoard().prepareForPrint(move, m_variant);
 	return move;
 }
 
@@ -873,8 +873,8 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 			return 0;
 		}
 
-		board.prepareForPrint(move, variant::Normal);
-		board.doMove(move, variant::Normal);
+		board.prepareForPrint(move, m_variant);
+		board.doMove(move, m_variant);
 		moves.append(move);
 
 		s = ::skipSpaces(next);

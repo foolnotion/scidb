@@ -896,11 +896,13 @@ MoveNode::collectLanguages(LanguageSet& langSet) const
 
 
 bool
-MoveNode::containsIllegalMoves() const
+MoveNode::containsIllegalMoves(bool inCheck) const
 {
 	for (MoveNode const* p = atLineStart() ? m_next : this; p->isBeforeLineEnd(); p = p->m_next)
 	{
-		if (!p->m_move.isLegal() && !p->m_move.isCastling())
+		M_ASSERT(p->m_move.isPrintable());
+
+		if (!p->m_move.isLegal() && (inCheck || !p->m_move.isCastling()))
 			return true;
 
 #ifdef ILLEGAL_MOVES_IN_VARIATIONS
@@ -908,11 +910,13 @@ MoveNode::containsIllegalMoves() const
 		{
 			for (unsigned i = 0; i < p->variationCount(); ++i)
 			{
-				if (p->variation(i)->containsIllegalMoves())
+				if (p->variation(i)->containsIllegalMoves(inCheck))
 					return true;
 			}
 		}
 #endif
+
+		inCheck = p->m_move.givesCheck();
 	}
 
 	return false;
@@ -920,11 +924,13 @@ MoveNode::containsIllegalMoves() const
 
 
 bool
-MoveNode::containsIllegalCastlings() const
+MoveNode::containsIllegalCastlings(bool inCheck) const
 {
 	for (MoveNode const* p = atLineStart() ? m_next : this; p->isBeforeLineEnd(); p = p->m_next)
 	{
-		if (!p->m_move.isLegal() && p->m_move.isCastling())
+		M_ASSERT(p->m_move.isPrintable());
+
+		if (!p->m_move.isLegal() && !inCheck && p->m_move.isCastling())
 			return true;
 
 #ifdef ILLEGAL_MOVES_IN_VARIATIONS
@@ -937,6 +943,8 @@ MoveNode::containsIllegalCastlings() const
 			}
 		}
 #endif
+
+		inCheck = p->m_move.givesCheck();
 	}
 
 	return false;

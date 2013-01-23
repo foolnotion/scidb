@@ -844,6 +844,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		::memset(rejected, 0, sizeof(accepted));
 
 		tcl::Log log(objv[3], objv[4]);
+		unsigned illegalRejected = 0;
 
 		if (scidb->contains(src))
 		{
@@ -858,7 +859,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					Cursor const& source(scidb->cursor(src, variant));
 					Cursor& destination(const_cast<Cursor&>(Scidb->cursor(dst, variant)));
 					unsigned k = destination.database().countGames();
-					unsigned n = destination.importGames(source.database(), log, progress);
+					unsigned n = destination.importGames(source.database(), illegalRejected, log, progress);
 
 					count += n;
 					accepted[v] = n;
@@ -890,7 +891,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			{
 				Cursor& destination(scidb->cursor(dst, db->variant()));
 				unsigned k = destination.database().countGames();
-				unsigned n = destination.importGames(*db, log, progress);
+				unsigned n = destination.importGames(*db, illegalRejected, log, progress);
 
 				count += n;
 				accepted[variantIndex] = n;
@@ -905,7 +906,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (progress.interrupted())
 			count = -count - 1;
 
-		tcl::PgnReader::setResult(count, accepted, rejected);
+		tcl::PgnReader::setResult(count, illegalRejected, accepted, rejected);
 	}
 	else if (ext == "pgn" || ext == "gz" || ext == "zip")
 	{
@@ -936,7 +937,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (progress.interrupted())
 			count = -count - 1;
 
-		reader.setResult(count);
+		reader.setResult(count, 0);
 	}
 	else
 	{
@@ -1035,7 +1036,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (progress.interrupted())
 		n = -n - 1;
 
-	reader.setResult(n);
+	reader.setResult(n, 0);
 	return TCL_OK;
 }
 
@@ -3897,6 +3898,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	try
 	{
 		::db::sci::Codec::remove(filename); // to be sure
+		unsigned illegalRejected = 0;
 
 		setResult(v.exportGames(sys::file::internalName(filename),
 										sys::utf8::Codec::utf8(),
@@ -3906,6 +3908,7 @@ cmdUpgrade(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										::db::copy::AllGames,
 										View::TagBits(true),
 										true,
+										illegalRejected,
 										log,
 										progress,
 										fmode));
@@ -3962,6 +3965,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	tcl::Log				log(logCmd, logArg);
 	unsigned				accepted[variant::NumberOfVariants];
 	unsigned				rejected[variant::NumberOfVariants];
+	unsigned				illegalRejected(0);
 	int					n;
 
 	::memset(accepted, 0, sizeof(accepted));
@@ -3973,13 +3977,14 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			rejected,
 			tagBits,
 			extraTags,
+			illegalRejected,
 			log,
 			progress);
 
 	if (progress.interrupted())
 		n = -n - 1;
 
-	tcl::PgnReader::setResult(n, accepted, rejected);
+	tcl::PgnReader::setResult(n, illegalRejected, accepted, rejected);
 	return TCL_OK;
 }
 

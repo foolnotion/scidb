@@ -278,8 +278,10 @@ template<>
 Move MovePicker::next_move<false>() {
 
 #ifdef THREECHECK
-   if (pos.checks_taken() == 3)
-       return MOVE_NONE;
+  assert(pos.checks_given() < 3);
+
+  if (pos.checks_taken() == 3)
+      return MOVE_NONE;
 #endif
 
   Move move;

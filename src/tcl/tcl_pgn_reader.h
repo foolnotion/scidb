@@ -61,7 +61,7 @@ public:
 	unsigned countWarnings() const;
 	Error lastErrorCode() const;
 
-	void setResult(int n) const;
+	void setResult(int n, int illegal) const;
 
 	void warning(	Warning code,
 						unsigned lineNo,
@@ -80,6 +80,7 @@ public:
 						mstl::string const& item) override;
 
 	static void setResult(	int n,
+									int illegal,
 									GameCount const& accepted,
 									GameCount const& rejected,
 									Variants const* unsupported = 0);

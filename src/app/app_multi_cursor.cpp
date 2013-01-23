@@ -187,6 +187,7 @@ MultiCursor::copyGames(	MultiCursor& destination,
 								GameCount& rejected,
 								TagBits const& allowedTags,
 								bool allowExtraTags,
+								unsigned& illegalRejected,
 								db::Log& log,
 								util::Progress& progress) const
 {
@@ -208,6 +209,7 @@ MultiCursor::copyGames(	MultiCursor& destination,
 					cursor.view(0).selector(table::Games),
 					allowedTags,
 					allowExtraTags,
+					illegalRejected,
 					log,
 					progress);
 
