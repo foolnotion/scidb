@@ -3019,22 +3019,24 @@ Board::setup(char const* fen, variant::Type variant)
 
 	if (variant == variant::ThreeCheck)
 	{
+		char const* q = p;
+
 		if (*p++ != '+')
-			return 0;
+			return q;
 
 		if (!::isdigit(*p))
-			return 0;
+			return q;
 
 		m_checksGiven[White] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
 
 		if (*p++ != '+')
 		{
 			m_checksGiven[White] = 0;
-			return 0;
+			return q;
 		}
 
 		if (!::isdigit(*p))
-			return 0;
+			return q;
 
 		m_checksGiven[Black] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
 		hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);

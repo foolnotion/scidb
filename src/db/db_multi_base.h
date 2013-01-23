@@ -89,6 +89,8 @@ public:
 	void close(variant::Type variant);
 	/// Change the variant.
 	void changeVariant(variant::Type variant);
+	/// Replace single database object.
+	void replace(Database* database);
 	/// Import games from given producer.
 	unsigned importGames(Producer& producer, util::Progress& progress, GameCount* count = 0);
 

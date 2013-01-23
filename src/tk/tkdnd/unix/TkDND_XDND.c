@@ -309,6 +309,7 @@ SetWmFrameAware(Tk_Window path) {
 
 #endif
 
+#if 0
 Window TkDND_GetVirtualRootWindowOfScreen(Tk_Window tkwin) {
   static Screen *screen, *save_screen = (Screen *)0;
   static Window root = (Window)0;
@@ -361,6 +362,7 @@ Window TkDND_GetVirtualRootWindowOfScreen(Tk_Window tkwin) {
   }
   return root;
 }; /* TkDND_GetVirtualRootWindowOfScreen */
+#endif
 
 Tk_Window TkDND_GetToplevelFromWrapper(Tk_Window tkwin) {
 #if 0

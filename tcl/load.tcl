@@ -288,4 +288,7 @@ if {[file readable $file]} { load::source $file }
 # Load time with empty cache: 6.76 s
 # Load time with full cache:  2.68 s
 
+# Load time of ECO file with empty cache: 0.51 s
+# Load time of ECO file with full cache:  0.36 s
+
 # vi:set ts=3 sw=3:

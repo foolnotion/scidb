@@ -1858,7 +1858,6 @@ PgnReader::searchTag()
 void
 PgnReader::checkFen()
 {
-	M_ASSERT(m_modification == Normalize);
 	M_ASSERT(m_tags.contains(Fen));
 
 	mstl::string const& fen = m_tags.value(Fen);
@@ -2221,13 +2220,14 @@ PgnReader::parseVariant()
 void
 PgnReader::checkTags()
 {
-	M_ASSERT(m_modification == Normalize);
-
 	if (m_tags.contains(Fen))
 		checkFen();
 
 	if (m_idn)
 		m_tags.set(Idn, m_idn);
+
+	if (m_modification == Raw)
+		return;
 
 	if (!m_tags.contains(White))
 	{
@@ -2283,101 +2283,98 @@ PgnReader::checkTags()
 bool
 PgnReader::checkTag(ID tag, mstl::string& value)
 {
-	if (m_modification == Raw)
-		return true;
-
 	switch (tag)
 	{
 		case White:
 		case Black:
-			if (value.empty())
-				return true;
-
-			Player::standardizeNames(value);
-
-			// remove trailing chars
-			while (::strchr(" .,", value.back()))
+			if (m_modification == Normalize && !value.empty())
 			{
-				value.resize(value.size() - 1);
+				Player::standardizeNames(value);
 
-				if (value.empty())
-					return true;
-			}
-
-			// extract player data
-			{
-				mstl::string v;
-
-				while (Tag t = extractPlayerData(value, v))
+				// remove trailing chars
+				while (::strchr(" .,", value.back()))
 				{
-					switch (t)
-					{
-						case Elo:
-							m_tags.add(tag == White ? WhiteElo : BlackElo, mstl::string(v, v.size()));
-							break;
-
-						case Country:
-							m_tags.add(tag == White ? WhiteCountry : BlackCountry, mstl::string(v, v.size()));
-							break;
-
-						case Title:
-							m_tags.add(tag == White ? WhiteTitle : BlackTitle, mstl::string(v, v.size()));
-							break;
-
-						case Sex:
-							m_tags.add(tag == White ? WhiteSex : BlackSex, mstl::string(v, v.size()));
-							break;
-
-						case Human:
-							m_tags.add(	tag == White ? WhiteType : BlackType,
-											species::toString(species::Human));
-							break;
-
-						case Program:
-							m_tags.add(	tag == White ? WhiteType : BlackType,
-											species::toString(species::Program));
-							break;
-
-						case None:
-							break;
-					}
-
-					// remove trailing chars
-					while (!value.empty() && ::strchr(" .,", value.back()))
-					{
-						value.resize(value.size() - 1);
-
-						if (value.empty())
-							return true;
-					}
-				}
-			}
-
-			// standardize player names
-			{
-				mstl::string::size_type k = value.find(',');
-
-				if (k != mstl::string::npos)
-				{
-					if (::isupper(value[k + 1]))
-					{
-						value.insert(k + 1, ' ');
-					}
-					else if (value[k + 1] == ' ' && value[k + 2] == ' ')
-					{
-						while (value[k + 2] == ' ')
-							value.erase(k + 2, 1);
-					}
-
-					if (k > 1 && value[k - 1] == ' ' && value[k - 2] != ' ')
-						value.erase(k - 1, 1);
-				}
-
-				while (value.size() > 1 && value.back() == '.')
 					value.resize(value.size() - 1);
-			}
 
-			convertToUtf(value);
+					if (value.empty())
+						return true;
+				}
+
+				// extract player data
+				{
+					mstl::string v;
+
+					while (Tag t = extractPlayerData(value, v))
+					{
+						switch (t)
+						{
+							case Elo:
+								m_tags.add(tag == White ? WhiteElo : BlackElo, mstl::string(v, v.size()));
+								break;
+
+							case Country:
+								m_tags.add(tag == White ? WhiteCountry : BlackCountry, mstl::string(v, v.size()));
+								break;
+
+							case Title:
+								m_tags.add(tag == White ? WhiteTitle : BlackTitle, mstl::string(v, v.size()));
+								break;
+
+							case Sex:
+								m_tags.add(tag == White ? WhiteSex : BlackSex, mstl::string(v, v.size()));
+								break;
+
+							case Human:
+								m_tags.add(	tag == White ? WhiteType : BlackType,
+												species::toString(species::Human));
+								break;
+
+							case Program:
+								m_tags.add(	tag == White ? WhiteType : BlackType,
+												species::toString(species::Program));
+								break;
+
+							case None:
+								break;
+						}
+
+						// remove trailing chars
+						while (!value.empty() && ::strchr(" .,", value.back()))
+						{
+							value.resize(value.size() - 1);
+
+							if (value.empty())
+								return true;
+						}
+					}
+				}
+
+				// standardize player names
+				{
+					mstl::string::size_type k = value.find(',');
+
+					if (k != mstl::string::npos)
+					{
+						if (::isupper(value[k + 1]))
+						{
+							value.insert(k + 1, ' ');
+						}
+						else if (value[k + 1] == ' ' && value[k + 2] == ' ')
+						{
+							while (value[k + 2] == ' ')
+								value.erase(k + 2, 1);
+						}
+
+						if (k > 1 && value[k - 1] == ' ' && value[k - 2] != ' ')
+							value.erase(k - 1, 1);
+					}
+
+					while (value.size() > 1 && value.back() == '.')
+						value.resize(value.size() - 1);
+				}
+
+				convertToUtf(value);
+			}
 			break;
 
 		case Event:
@@ -2415,11 +2412,13 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				m_isICS = true;
 			}
-			convertToUtf(value);
+			if (m_modification == Normalize)
+				convertToUtf(value);
 			break;
 
 		case tag::Site:
-			convertToUtf(value);
+			if (m_modification == Normalize)
+				convertToUtf(value);
 			m_eventCountry = extractCountryFromSite(value);
 			m_isICS = ::equal(value, "ICS:", 4);
 			break;
@@ -2432,7 +2431,8 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 				if (!parseRound(value, round, subround))
 				{
-					convertToUtf(value);
+					if (m_modification == Normalize)
+						convertToUtf(value);
 					sendWarning(InvalidRoundTag, m_prevPos, value);
 				}
 				else
@@ -2447,10 +2447,15 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 						value = '?';
 				}
 			}
+			else if (m_modification == Normalize)
+			{
+				convertToUtf(value);
+			}
 			break;
 
 		case WhiteCountry:
 		case BlackCountry:
+			if (m_modification == Normalize)
 			{
 				country::Code code = country::fromString(value);
 
@@ -2465,6 +2470,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case EventCountry:
+			if (m_modification == Normalize)
 			{
 				country::Code code = country::fromString(value);
 
@@ -2479,7 +2485,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case EventType:
-			if (!value.empty())
+			if (m_modification == Normalize && !value.empty())
 			{
 				if (value.back() == ')')
 				{
@@ -2568,6 +2574,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 		case WhiteTitle:
 		case BlackTitle:
+			if (m_modification == Normalize)
 			{
 				title::ID title = title::fromString(value);
 
@@ -2584,6 +2591,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 		case WhiteSex:
 		case BlackSex:
+			if (m_modification == Normalize)
 			{
 				sex::ID sex = sex::fromChar(value.c_str()[0]);	// safe access
 
@@ -2613,15 +2621,18 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			return false;
 
 		case Fen:
-			// make corrections in first part of FEN:
-			// - replace punctuation with '/'
-			// - remove zeroes
-			for (mstl::string::iterator i = value.begin(); *i && !::isspace(*i); ++i)
+			if (m_modification == Normalize)
 			{
-				if (::ispunct(*i))
-					*i = '/';
-				else if (*i == '0')
-					i = value.erase(i, 1);
+				// make corrections in first part of FEN:
+				// - replace punctuation with '/'
+				// - remove zeroes
+				for (mstl::string::iterator i = value.begin(); *i && !::isspace(*i); ++i)
+				{
+					if (::ispunct(*i))
+						*i = '/';
+					else if (*i == '0')
+						i = value.erase(i, 1);
+				}
 			}
 			if (m_variantValue.empty())
 				m_idn = 0;
@@ -2629,6 +2640,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case tag::Date:
+			if (m_modification == Normalize)
 			{
 				if (value.find_first_not_of("?.") != mstl::string::npos)
 				{
@@ -2650,6 +2662,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case EventDate:
+			if (m_modification == Normalize)
 			{
 				if (value.find_first_not_of("?.") != mstl::string::npos)
 				{
@@ -2701,6 +2714,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case Result:
+			if (m_modification == Normalize)
 			{
 				result::ID res = result::fromString(value);
 
@@ -2732,7 +2746,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			return false;	// we will set this tag later by our own
 
 		case tag::Termination:
-			if (!value.empty() && value != "?" && value != "-")
+			if (m_modification == Normalize && !value.empty() && value != "?" && value != "-")
 			{
 				termination::Reason reason = getTerminationReason(value);
 
@@ -2746,6 +2760,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 			break;
 
 		case Mode:
+			if (m_modification == Normalize)
 			{
 				event::Mode mode = event::modeFromString(value);
 
@@ -2768,12 +2783,13 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 
 		case WhiteClock:
 		case BlackClock:
-		{
-			mstl::string::size_type n = value.find('.');
-			if (n != mstl::string::npos)
-				value.erase(n);
+			if (m_modification == Normalize)
+			{
+				mstl::string::size_type n = value.find('.');
+				if (n != mstl::string::npos)
+					value.erase(n);
+			}
 			break;
-		}
 
 		case WhiteElo:
 		case BlackElo:
@@ -2791,7 +2807,7 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 		case BlackRating:
 		case WhiteUSCF:
 		case BlackUSCF:
-			if (!value.empty())
+			if (m_modification == Normalize && !value.empty())
 			{
 				if (rating::isElo(value.begin(), value.end()))
 				{
@@ -2833,7 +2849,8 @@ PgnReader::checkTag(ID tag, mstl::string& value)
 #endif
 
 		default:
-			convertToUtf(value);
+			if (m_modification == Normalize)
+				convertToUtf(value);
 			break;
 	}
 
@@ -2893,14 +2910,7 @@ PgnReader::readTags()
 
 			tag::ID tag = fromName(name);
 
-			if (m_modification == Raw)
-			{
-				if (tag == ExtraTag)
-					m_tags.setExtra(name, value);
-				else
-					addTag(tag, value);
-			}
-			else if (!tag::isMandatory(tag) && (value == "?" || value == "-"))
+			if (!tag::isMandatory(tag) && (value == "?" || value == "-"))
 			{
 				// skip tag
 			}
@@ -3011,10 +3021,7 @@ PgnReader::readTags()
 		if (c != '[')
 		{
 			putback(c);
-
-			if (m_modification == Normalize)
-				checkTags();
-
+			checkTags();
 			return;
 		}
 

@@ -1,6 +1,15 @@
 [January 2013] ===============================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #631)
+------------------------------------------------------------------------------
+* Memory bug in compaction algorithm fixed.
+
+* Import of PGN game now is working properly with variants.
+
+* Stockfish: Bug in ThreeCheck implementation fixed.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #617)
 ------------------------------------------------------------------------------
 * Player dictionary implementation (almost) finished.

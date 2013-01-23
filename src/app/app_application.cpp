@@ -1534,7 +1534,7 @@ Application::writeGame(	unsigned position,
 
 	game.game->setIndex(m_indexMap[position]);
 	Cursor* scratch = scratchbase(variant::toMainVariant(game.game->variant()));
-	save::State state = scratch->base().updateMoves(*game.game);
+	save::State state = scratch->base().updateGame(*game.game);
 	if (!save::isOk(state))
 		return state;
 

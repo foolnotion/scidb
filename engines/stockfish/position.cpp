@@ -785,7 +785,7 @@ void Position::hash_three_check(Key& key, unsigned checksGiven) {
 
   if (checksGiven)
     key ^= Zobrist::checks[sideToMove][checksGiven - 1];
- 
+
   key ^= Zobrist::checks[sideToMove][checksGiven];
 }
 #endif
@@ -832,11 +832,11 @@ void Position::do_move(Move m, StateInfo& newSt, const CheckInfo& ci, bool moveI
   if (type_of(m) == CASTLE)
   {
       st->key = k;
-      do_castle_move<true>(m);
 #ifdef THREECHECK
-      if (moveIsCheck && threeCheck)
+      if (threeCheck && moveIsCheck)
           hash_three_check(st->key, st->checksGiven[sideToMove]++);
 #endif
+      do_castle_move<true>(m);
       return;
   }
 
@@ -1227,11 +1227,6 @@ void Position::do_castle_move(Move m) {
 
       // Update checkers BB
       st->checkersBB = attackers_to(king_square(~us)) & pieces(us);
-
-#ifdef THREECHECK
-      if (threeCheck)
-          hash_three_check(st->key, st->checksGiven[sideToMove]++);
-#endif
 
       sideToMove = ~sideToMove;
   }

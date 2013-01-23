@@ -34,6 +34,7 @@
 
 namespace db { class MultiBase; }
 namespace db { class Producer; }
+namespace db { class Database; }
 namespace db { class Log; }
 
 namespace util { class Progress; }
@@ -101,6 +102,8 @@ public:
 	void close();
 	/// Change the variant; requires an empty database.
 	void changeVariant(::db::variant::Type variant);
+	/// Replace database object.
+	void replace(db::Database* database);
 
 	static mstl::string const& clipbaseName();
 	static mstl::string const& scratchbaseName();

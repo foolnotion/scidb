@@ -1289,7 +1289,7 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 		-label " $::import::mc::ImportPgnGame" \
 		-image $::icon::16x16::filetypePGN \
 		-compound left \
-		-command [list ::menu::importGame $parent] \
+		-command [list ::application::pgn::importGame $parent] \
 		;
 	
 	if {$addSaveMenu && ![::game::trialMode?]} {
@@ -1398,6 +1398,12 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 			-command ::game::clearHistory \
 			;
 	}
+}
+
+
+proc ImportGame {parent} {
+	set pos [::game::new $parent]
+	if {$pos >= 0} { ::import::openEdit $parent $pos }
 }
 
 

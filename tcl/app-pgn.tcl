@@ -199,7 +199,7 @@ proc build {parent width height} {
 	set Vars(button:import) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPGN \
 		-tooltipvar ::import::mc::ImportPgnGame \
-		-command [namespace code [list ImportGame $Vars(main)]] \
+		-command [namespace code [list importGame $Vars(main)]] \
 	]
 	set tbGameHistory [::toolbar::toolbar $top \
 		-id editor-history \
@@ -436,6 +436,12 @@ proc changeFontSize {incr} {
 		SetAlignment
 		UpdateScrollbar
 	}
+}
+
+
+proc importGame {parent} {
+	set pos [::game::new $parent]
+	if {$pos >= 0} { ::import::openEdit $parent $pos }
 }
 
 
@@ -2431,7 +2437,8 @@ proc PasteClipboardGame {} {
 	variable Vars
 
 	set position $Vars(position)
-	::import::openEdit $Vars(frame:$position) $position game
+	set variant [::scidb::game::query $position variant?]
+	::import::openEdit $Vars(frame:$position) $position -mode game -variant $variant
 }
 
 
@@ -2439,7 +2446,8 @@ proc PasteClipboardVariation {} {
 	variable Vars
 
 	set position $Vars(position)
-	::import::openEdit $Vars(frame:$position) $position variation
+	set variant [::scidb::game::query $position variant?]
+	::import::openEdit $Vars(frame:$position) $position -mode variation -variant $variant
 }
 
 
@@ -2747,12 +2755,6 @@ proc Refresh {var} {
 	set Vars(successor:$Vars(position)) {}
 
 	refresh
-}
-
-
-proc ImportGame {parent} {
-	set pos [::game::new $parent]
-	if {$pos >= 0} { ::import::openEdit $parent $pos }
 }
 
 

@@ -578,7 +578,7 @@ uci::Engine::parseBestMove(char const* msg)
 		currentBoard().prepareForPrint(move, variant::Normal);
 		setBestMove(move);
 	}
-	else
+	else if (::strncmp(s, "(none)", 6) != 0)
 	{
 		mstl::string msg("Illegal best move: ");
 		msg.append(s, ::skipNonSpaces(s));
@@ -600,7 +600,7 @@ uci::Engine::parseBestMove(char const* msg)
 			setPonder(ponder);
 			updateBestMove();
 		}
-		else
+		else if (::strncmp(s, "(none)", 6) != 0)
 		{
 			mstl::string msg("Illegal ponder move: ");
 			msg.append(s, ::skipNonSpaces(s));

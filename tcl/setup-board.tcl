@@ -228,8 +228,6 @@ proc open {parent} {
 	set Vars(skip) 0
 	set Vars(field) ""
 	set Vars(popup) 0
-	set Vars(checks:w) 0
-	set Vars(checks:b) 0
 	set Vars(variant) $variant
 
 	set right [ttk::frame $top.right]
@@ -384,6 +382,7 @@ proc open {parent} {
 	set idn [ttk::labelframe $right.idn \
 		-labelwidget [ttk::label $right.idnlbl -textvar [namespace current]::mc::StartPosition]]
 	
+	set memo $Vars(idn)
 	::ttk::spinbox $idn.value \
 		-from 1 \
 		-to 2880 \
@@ -393,6 +392,7 @@ proc open {parent} {
 		-invalidcommand { bell } \
 		-textvariable [namespace current]::Vars(idn) \
 		;
+	set Vars(idn) $memo
 	::theme::configureSpinbox $idn.value
 	bind $idn.value <ButtonRelease-1> [namespace code StopSelectIdn]
 	bind $idn.value <FocusOut> +[namespace code { CheckIdn }]
@@ -920,12 +920,6 @@ proc AnalyseFen {fen {cmd none}} {
 	set Vars(idn) $idn
 	set Vars(freeze) 0
 
-	if {[info exists Vars(widget:checks:w)]} {
-		if {[llength $idn] == 0} { set state normal } else { set state disabled }
-		$Vars(widget:checks:w) configure -state $state
-		$Vars(widget:checks:b) configure -state $state
-	}
-
 	if {[string length $error] && $cmd ne "init"} { return 0 }
 
 	set Vars(freeze) 1
@@ -936,8 +930,7 @@ proc AnalyseFen {fen {cmd none}} {
 	set Vars(halfmoves) $halfmoves
 
 	if {[llength $idn] == 0} {
-		set Vars(checks:w) [lindex $checksGiven 0]
-		set Vars(checks:b) [lindex $checksGiven 1]
+		lassign $checksGiven Vars(checks:w) Vars(checks:b)
 	}
 
 	set Vars(freeze) 0

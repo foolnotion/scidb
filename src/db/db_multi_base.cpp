@@ -202,6 +202,24 @@ MultiBase::changeVariant(variant::Type variant)
 }
 
 
+void
+MultiBase::replace(Database* database)
+{
+	M_REQUIRE(database);
+	M_REQUIRE(exists(database->variant()));
+
+	unsigned variantIndex = variant::toIndex(database->variant());
+
+	if (m_leader == m_bases[variantIndex])
+		m_leader = database;
+
+	m_bases[variantIndex]->close();
+	delete m_bases[variantIndex];
+
+	m_bases[variantIndex] = database;
+}
+
+
 unsigned
 MultiBase::importGames(Producer& producer, util::Progress& progress, GameCount* count)
 {

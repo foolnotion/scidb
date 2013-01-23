@@ -454,11 +454,9 @@ Cursor::compact(::util::Progress& progress)
 		throw;
 	}
 
-	m_db->close();
-	delete m_db;
-
 	m_db = compacted.release();
 	m_db->rename(orig);
+	m_cursor.replace(m_db);
 
 	ViewList viewList;
 

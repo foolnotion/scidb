@@ -251,4 +251,11 @@ MultiCursor::changeVariant(::db::variant::Type variant)
 	}
 }
 
+
+void
+MultiCursor::replace(db::Database* database)
+{
+	m_base->replace(database);
+}
+
 // vi:set ts=3 sw=3:

@@ -3088,9 +3088,22 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			scidb->bindGameToDatabase(position, database, index);
 
 		if (trialMode)
+		{
 			setResult(reader.lastErrorCode() == tcl::PgnReader::LastError);
+		}
 		else
+		{
 			setResult(::stateToInt(state));
+
+			if (state == load::None)
+			{
+				for (unsigned i = 0; i < variant::NumberOfVariants; ++i)
+				{
+					if (reader.rejected(i))
+						setResult(variant::identifier(variant::fromIndex(i)));
+				}
+			}
+		}
 	}
 
 	return TCL_OK;

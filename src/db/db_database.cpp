@@ -793,7 +793,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(consumer.variant() == variant());
 
-	GameInfo const*	info		= m_gameInfoList[index];
+	GameInfo const*	info = m_gameInfoList[index];
 	TagSet				tags;
 
 	setupTags(index, tags);

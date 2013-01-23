@@ -771,6 +771,7 @@ proc recover {} {
 			}
 		}
 		::dialog::info -parent .application -message $msg
+		::scidb::game::switch 0
 		::application::pgn::select 0
 		::process::setOption "show-board"
 	}

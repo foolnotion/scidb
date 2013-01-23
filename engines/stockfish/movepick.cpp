@@ -278,7 +278,7 @@ template<>
 Move MovePicker::next_move<false>() {
 
 #ifdef THREECHECK
-   if (pos.is_three_check() && (pos.checks_taken() == 3 || pos.checks_given() == 3))
+   if (pos.checks_taken() == 3)
        return MOVE_NONE;
 #endif
 

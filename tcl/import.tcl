@@ -144,26 +144,37 @@ proc open {parent file msg encoding type} {
 }
 
 
-proc openEdit {parent position {mode {}}} {
+proc openEdit {parent position args} {
 	variable Priv
 	variable Background
 	variable SelectBackground
 	variable HiliteBackground
 	variable ::log::colors
 
+	array set opts {
+		-mode		{}
+		-variant	{}
+	}
+	array set opts $args
+
 	set Priv($position:encoding) $::encoding::autoEncoding
 	set Priv($position:encodingVar) $::encoding::mc::AutoDetect
-	if {[string length $mode]} {
+
+	if {[string length $opts(-mode)]} {
 		set used 1
 	} else {
 		set used 0
-		set mode game
+		set opts(-mode) game
 	}
 
 	set dlg [tk::toplevel ${parent}.importOnePgnGame${position} -class Scidb]
 	set top [ttk::frame $dlg.top]
 	set vlb [ttk::label $top.variantsText -textvariable ::mc::Variant]
-	set var [ttk::tcombobox $top.variants -state readonly -showcolumns name -format "%1" -width 26]
+	if {$opts(-mode) eq "game"} {
+		set var [ttk::tcombobox $top.variants -state readonly -showcolumns name -format "%1" -width 26]
+	} else {
+		set var [::ttk::label $top.variants -text $opts(-variant)]
+	}
 	set lbl [ttk::label $top.figurinesText -textvariable ::export::mc::Figurines]
 	set fig [ttk::tcombobox $top.figurines \
 					-state readonly \
@@ -183,9 +194,11 @@ proc openEdit {parent position {mode {}}} {
 	$fig addcol text  -id lang
 	bind $fig <<ComboboxCurrent>> [namespace code [list ShowCountry $fig $position]]
 
-	$var addcol image -id icon
-	$var addcol text  -id name
-	bind $var <<ComboboxCurrent>> [namespace code [list SetVariant $var $position]]
+	if {$opts(-mode) eq "game"} {
+		$var addcol image -id icon
+		$var addcol text  -id name
+		bind $var <<ComboboxCurrent>> [namespace code [list SetVariant $var $position]]
+	}
 
 	set gamebar [::application::pgn::gamebar]
 	set recv [namespace code [list GamebarChanged $dlg $position]]
@@ -234,7 +247,8 @@ proc openEdit {parent position {mode {}}} {
 	set Priv($position:used) $used
 	set Priv($position:sets) {}
 	set Priv($position:variantList) {}
-	set Priv($position:mode) $mode
+	set Priv($position:variant) $opts(-variant)
+	set Priv($position:mode) $opts(-mode)
 	set Priv($position:varno) -1
 	set Priv($position:figurines) $fig
 	set Priv($position:variants) $var
@@ -275,6 +289,10 @@ proc openEdit {parent position {mode {}}} {
 	Clear $position
 	SetFigurines $position
 	SetVariants $position
+
+	if {$opts(-mode) eq "game" && [string length $opts(-variant)]} {
+		$var set $::mc::VariantName($opts(-variant))
+	}
 
 	wm withdraw $dlg
 	::util::place $dlg center [winfo toplevel $parent]
@@ -669,28 +687,34 @@ proc SetVariants {position} {
 	variable Priv
 
 	set w $Priv($position:variants)
-	set index [$w current]
-	if {$index == -1} {
-		set current $::mc::VariantName(Undetermined)
-	} else {
-		set current [lindex $Priv($position:variantList) $index]
-	}
-	set Priv($position:variantList) {}
-	$w clear
 
-	foreach variant $Variants {
-		lappend Priv($position:variantList) $::mc::VariantName($variant)
-		if {[::info exists ::icon::16x16::variant($variant)]} {
-			set icon $::icon::16x16::variant($variant)
+	if {$Priv($position:mode) eq "game"} {
+		set index [$w current]
+		if {$index == -1} {
+			set current $::mc::VariantName(Undetermined)
 		} else {
-			set icon ""
+			set current [lindex $Priv($position:variantList) $index]
 		}
-		$w listinsert [list $icon $::mc::VariantName($variant)]
-	}
+		set Priv($position:variantList) {}
+		$w clear
 
-	set index [lsearch -index 0 -exact $Priv($position:variantList) $current]
-	$w resize
-	$w current $index
+		foreach variant $Variants {
+			lappend Priv($position:variantList) $::mc::VariantName($variant)
+			if {[::info exists ::icon::16x16::variant($variant)]} {
+				set icon $::icon::16x16::variant($variant)
+			} else {
+				set icon ""
+			}
+			$w listinsert [list $icon $::mc::VariantName($variant)]
+		}
+
+		set index [lsearch -index 0 -exact $Priv($position:variantList) $current]
+
+		$w resize
+		$w current $index
+	} else {
+		$w configure -text $::mc::VariantName($Priv($position:variant))
+	}
 }
 
 
@@ -846,8 +870,13 @@ proc DoImport {position dlg} {
 	$log delete 0 end
 	set content [$txt get 1.0 end]
 	set figurine [$Priv($position:figurines) get fig]
-	set variant [lindex $Variants [$Priv($position:variants) current]]
-	if {$Priv($position:mode) eq "game"} { set isVar 0 } else { set isVar 1 }
+	if {$Priv($position:mode) eq "game"} {
+		set isVar 0
+		set variant [lindex $Variants [$Priv($position:variants) current]]
+	} else {
+		set variant $Priv($position:variant)
+		set isVar 1
+	}
 
 	if {$figurine eq $::encoding::mc::AutoDetect} {
 		set content [ConvertPieces $position $content]
@@ -902,34 +931,39 @@ proc DoImport {position dlg} {
 		-varno $Priv($position:varno) \
 		-trial 0 \
 	]
-	
-	if {$isVar && $state >= 0} {
-		set Priv($position:varno) $state
-		set state 1
-	}
-	
-	if {$state <= 0} {
-		if {[string length [string trim $content]] == 0} {
-			Show info $mc::TextIsEmpty
-			$log configure -state disabled -takefocus 0
-		} elseif {[$log index end] == 0} {
-			Show info "$mc::SeemsNotToBePgnText."
-			$log configure -state disabled -takefocus 0
+
+	if {[string is integer -strict $state]} {
+		if {$isVar && $state >= 0} {
+			set Priv($position:varno) $state
+			set state 1
+		}
+		if {$state <= 0} {
+			if {[string length [string trim $content]] == 0} {
+				Show info $mc::TextIsEmpty
+				$log configure -state disabled -takefocus 0
+			} elseif {[$log index end] == 0} {
+				Show info "$mc::SeemsNotToBePgnText."
+				$log configure -state disabled -takefocus 0
+			} else {
+				Show info $mc::ImportAborted
+				$log selection set $Priv(first)
+				ListboxSelect $position
+			}
 		} else {
-			Show info $mc::ImportAborted
-			$log selection set $Priv(first)
-			ListboxSelect $position
+			if {[$log index end] == 0} {
+				Show info $mc::ImportOK
+				$log configure -state disabled -takefocus 0
+				set Priv($position:used) 1
+			} elseif {$Priv(first) >= 0} {
+				$log selection set $Priv(first)
+				ListboxSelect $position
+				set Priv($position:used) 1
+			}
+			::scidb::game::switch $position ;# because the variant may have changed
 		}
 	} else {
-		if {[$log index end] == 0} {
-			Show info $mc::ImportOK
-			$log configure -state disabled -takefocus 0
-			set Priv($position:used) 1
-		} elseif {$Priv(first) >= 0} {
-			$log selection set $Priv(first)
-			ListboxSelect $position
-			set Priv($position:used) 1
-		}
+		Show info [format $mc::UnsupportedVariant $state]
+		$log configure -state disabled -takefocus 0
 	}
 }
 
