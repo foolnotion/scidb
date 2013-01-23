@@ -303,6 +303,10 @@ proc open {parent args} {
 	::bind $table <<TableVisit>>		[namespace code [list TableVisit $table %d]]
 	::bind $table <<TableSelected>>	[namespace code [list TableSelected $table %d]]
 
+	set count [::tk::label $top.size -borderwidth 1 -relief sunken]
+	set Priv(label:size) $count
+	UpdateCount
+
 	set Priv(search) ""
 	set cmd [namespace code [list Search $table]]
 	set lsearch [ttk::label $top.lsearch -textvar [::mc::var ::playertable::mc::Find :]]
@@ -316,15 +320,16 @@ proc open {parent args} {
 	set Priv(search:cmd) [list  [namespace current]::Priv(search) write $cmd]
 	trace add variable {*}$Priv(search:cmd)
 
-	grid $alpha		-row 1 -column 1 -sticky w -columnspan 5
-	grid $table		-row 3 -column 1 -sticky ewns -columnspan 5
-	grid $lsearch	-row 5 -column 1 -sticky w
-	grid $esearch	-row 5 -column 3 -sticky ew
-	grid $bsearch	-row 5 -column 5 -sticky ew
+	grid $alpha		-row 1 -column 1 -sticky w -columnspan 7
+	grid $table		-row 3 -column 1 -sticky ewns -columnspan 7
+	grid $count		-row 5 -column 1 -sticky ew
+	grid $lsearch	-row 5 -column 3 -sticky w
+	grid $esearch	-row 5 -column 5 -sticky ew
+	grid $bsearch	-row 5 -column 7 -sticky ew
 	grid rowconfigure $top {3} -weight 1
-	grid columnconfigure $top {3} -weight 1
-
-	grid columnconfigure $top {0 2 4 6} -minsize $::theme::padx
+	grid columnconfigure $top {5} -weight 1
+	grid columnconfigure $top {0 4 6 8} -minsize $::theme::padx
+	grid columnconfigure $top {2} -minsize $::theme::padX
 	grid rowconfigure $top {0 2 4 6} -minsize $::theme::pady
 
 	::widget::dialogButtons $dlg {close}
@@ -332,11 +337,6 @@ proc open {parent args} {
 	::widget::dialogButtonAdd $dlg filter ::mc::Filter {}
 	$dlg.filter configure -command [namespace code [list SetFilter $table]]
 	$dlg.filter configure -image $::icon::16x16::filter(inactive) -compound left
-
-	set Priv(label:size) [::tk::label $dlg.size]
-	place $Priv(label:size) -in $dlg.__buttons -x $::theme::padx -y $::theme::pady
-	bind $dlg.__buttons <Configure> [namespace code [list Place $Priv(label:size)]]
-	UpdateCount
 
 	update idletasks
 	set minsize [winfo reqwidth $dlg]
@@ -355,13 +355,6 @@ proc open {parent args} {
 	::scrolledtable::update $table "" "" [::scidb::player::count]
 	::scrolledtable::activate $table 0
 	::scrolledtable::focus $table
-}
-
-
-proc Place {w} {
-	set f [winfo parent $w].__buttons
-	set y [expr {([winfo height $f] - [winfo height $w])/2}]
-	place $w -in $f -x $::theme::padx -y $y
 }
 
 
@@ -959,8 +952,9 @@ proc RefreshFederation {table} {
 proc RefreshHeader {number} {
 	variable Options
 
+	set tip $::application::database::players::mc::TooltipRating
 	set mc::F_Rating$number $Options(rating$number:type)
-	set mc::T_Rating$number [format $::playertable::mc::TooltipRating $Options(rating$number:type)]
+	set mc::T_Rating$number [format $tip $Options(rating$number:type)]
 }
 
 

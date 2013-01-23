@@ -10,6 +10,8 @@
 #   )___(     _(____/____(___ __/____(___/____(___/_
 # ======================================================================
 
+include Makefile.in
+
 MAKEFLAGS += --no-print-directory
 
 all: Makefile.in check-mtime
@@ -22,10 +24,11 @@ all: Makefile.in check-mtime
 	@$(MAKE) -C tcl
 	@if [ $$? != 0 ]; then exit 1; fi
 	@echo ""
-	@echo "Now it is recommended to use \"make check-build\"."
-
-check-build: Makefile.in
-	@$(MAKE) -C src check-build
+	@case $(BINDIR) in         \
+		/home/* ) make="make";; \
+		* ) make="sudo make";;  \
+	esac;                      \
+	echo "Now type \"$$make install\" for installation."
 
 check-mtime:
 	@if [ Makefile.in -ot configure ]; then                    \

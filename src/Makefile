@@ -81,29 +81,6 @@ TARGETS = extend_eco dump_eco code2eco eco2code best_move guess_move pawn_progre
 all: check-mtime recursive cbh2si4 cdb2sci $(TK_PROGRAM) $(TCL_PROGRAM)
 tkscidb-only: recursive $(TK_PROGRAM)
 
-check-build:
-	@echo -n "Check build (please wait a bit): ";                        \
-	pwd=`pwd`;                                                           \
-	if [ "`$$pwd/$(TK_PROGRAM) check-build.tcl`" = "OK" ]; then          \
-		echo "OK";                                                        \
-		echo "";                                                          \
-		case $(BINDIR) in                                                 \
-			/home/* ) make="make";;                                        \
-			* ) make="sudo make";;                                         \
-		esac;                                                             \
-		echo "Now type \"$$make install\" for installation.";             \
-	else                                                                 \
-		echo "FAILED";                                                    \
-		echo "";                                                          \
-		echo "The executable is corrupted due to a broken linker.";       \
-		echo "It is recommended to rebuild this program in the";          \
-		echo "following way:";                                            \
-		echo "";                                                          \
-		echo "  > CXXFLAGS=\"-Wall -DBROKEN_LINKER_HACK=1\" ./configure"; \
-		echo "";                                                          \
-		exit 1;                                                           \
-	fi
-
 check-mtime:
 	@if [ -f $(TK_PROGRAM) ]; then                             \
 		if [ $(TK_PROGRAM) -ot ../Makefile.in ]; then           \

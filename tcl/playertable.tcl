@@ -40,8 +40,6 @@ set MostRecentRating			"Most recent rating"
 set DateOfBirth				"Date of birth"
 set DateOfDeath				"Date of death"
 
-set TooltipRating				"Rating: %s"
-
 set ShowPlayerCard			"Show Player Card..."
 
 set F_LastName					"Last Name"
@@ -499,8 +497,9 @@ proc popupMenu {menu base variant info {playerCard {}}} {
 proc RefreshHeader {number} {
 	variable Options
 
+	set tip $::application::database::players::mc::TooltipRating
 	set mc::F_Rating$number $Options(rating$number:type)
-	set mc::T_Rating$number [format $mc::TooltipRating $Options(rating$number:type)]
+	set mc::T_Rating$number [format $tip $Options(rating$number:type)]
 }
 
 
