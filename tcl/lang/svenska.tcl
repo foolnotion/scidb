@@ -450,6 +450,7 @@
 ::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
 ::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
 ::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
+::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"

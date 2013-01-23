@@ -449,6 +449,7 @@
 ::application::database::mc::ReallyCompact					"Really compact database '%s'?"
 ::application::database::mc::ReallyCompactDetail(1)		"Only one game will be deleted."
 ::application::database::mc::ReallyCompactDetail(N)		"%s games will be deleted."
+::application::database::mc::RemoveSpace						"Some empty spaces will be removed."
 ::application::database::mc::SelectVariant					"Select Variant"
 
 ::application::database::mc::RecodingDatabase				"Recoding %base from %from to %to"

@@ -451,7 +451,8 @@
 ::application::database::mc::ReallyCompact				"Biztos össze akarja tömöríteni a(z) %s adatbázist?"
 ::application::database::mc::ReallyCompactDetail(1)	"Egyetlen játszma fog törlődni"  ;#"Only one game will be deleted."  ;#NEW
 ::application::database::mc::ReallyCompactDetail(N)	"%s játszmák fognak törlődni"  ;#"%s games will be deleted."  ;#NEW
-::application::database::mc::SelectVariant			"Select Variant" ;# NEW
+::application::database::mc::RemoveSpace		"Some empty spaces will be removed." ;# NEW
+::application::database::mc::SelectVariant		"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"

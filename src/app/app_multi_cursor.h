@@ -64,7 +64,7 @@ public:
 
 	bool isOpen() const;
 	bool isClosed() const;
-	bool isReadOnly() const;
+	bool isReadonly() const;
 	bool isWriteable() const;
 	bool isClipbase() const;
 	bool isScratchbase() const;

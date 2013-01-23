@@ -1859,7 +1859,7 @@ cmdVariation(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdCurrent(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb->currentPosition());
+	setResult(int(Scidb->currentPosition()));
 	return TCL_OK;
 }
 

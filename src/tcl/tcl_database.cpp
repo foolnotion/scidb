@@ -1170,14 +1170,9 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Readonly:
 			if (objc == 4)
-			{
-				scidb->cursor(
-					stringFromObj(objc, objv, 2)).database().setReadOnly(boolFromObj(objc, objv, 3));
-			}
+				scidb->setReadonly(scidb->cursor(stringFromObj(objc, objv, 2)), boolFromObj(objc, objv, 3));
 			else
-			{
-				scidb->cursor().database().setReadOnly(boolFromObj(objc, objv, 2));
-			}
+				scidb->setReadonly(scidb->cursor(), boolFromObj(objc, objv, 2));
 			break;
 
 		case Cmd_Variant:
@@ -1393,7 +1388,7 @@ getReadonly(char const* database, variant::Type variant)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database, variant));
 	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
-	::tcl::setResult(cursor.database().isReadOnly());
+	::tcl::setResult(cursor.database().isReadonly());
 	return TCL_OK;
 }
 
@@ -2555,7 +2550,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"stats", "readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
 		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum", "idn",
 		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writeable?",
-		"upgrade?", "memoryOnly?", "compress?", "playerKey", "eventKey", "siteKey", "variants", 0
+		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants", 0
 	};
 	static char const* args[] =
 	{
@@ -2603,7 +2598,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* writeable?		*/ "?<database>?",
 		/* upgrade?			*/ "<database>",
 		/* memoryOnly?		*/ "?<database>?",
-		/* compress?		*/ "<database>",
+		/* compact?			*/ "<database>",
 		/* playerKey		*/ "<database> <variant> (<player-index> | <game-index> <side>)",
 		/* eventKey			*/ "<database> <variant> game|event <event>",
 		/* siteKey			*/ "<database> <variant> game|site <site>",
@@ -3121,7 +3116,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|eventList|siteList|gameInfo|"
 			"gameHistory|gameSwitch|tree <update-cmd> ??"
-			"<close-cmd>? <arg>?");
+			"<close-cmd> ?<arg>?");
 		return TCL_ERROR;
 	}
 

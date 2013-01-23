@@ -177,6 +177,7 @@ variable Vars
 
 array set History {
 	Normal		{}
+	ThreeCheck	{}
 	Crazyhouse	{}
 	Antichess	{}
 }
@@ -752,9 +753,8 @@ proc FitBottom {dst src cols} {
 proc Variant? {} {
 	set variant [::scidb::game::query Variant?]
 
-	switch [::scidb::game::query Variant?] {
-		Crazyhouse	{ return "Crazyhouse" }
-		Antichess	{ return "Antichess" }
+	switch $variant {
+		Crazyhouse - Antichess - ThreeCheck { return $variant }
 	}
 
 	return "Normal"

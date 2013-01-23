@@ -450,6 +450,7 @@
 ::application::database::mc::ReallyCompact					"Soll die Datenbank '%s' wirklich kompaktiert werden?"
 ::application::database::mc::ReallyCompactDetail(1)		"Nur eine Partie wird dabei entfernt."
 ::application::database::mc::ReallyCompactDetail(N)		"%s Partien werden dabei entfernt."
+::application::database::mc::RemoveSpace						"Einige Leerräume werden entfernt."
 ::application::database::mc::SelectVariant					"Schachform wählen"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"

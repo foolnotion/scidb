@@ -29,7 +29,7 @@
 namespace db {
 
 inline bool DatabaseCodec::isOpen() const								{ return m_db; }
-inline bool DatabaseCodec::isReadOnly() const						{ return m_db->m_readOnly; }
+inline bool DatabaseCodec::isReadonly() const						{ return m_db->m_readOnly; }
 inline bool DatabaseCodec::shouldCompress() const					{ return m_db->m_shouldCompress; }
 inline void DatabaseCodec::setType(DatabaseContent::Type type) { m_db->m_type = type; }
 inline void DatabaseCodec::setVariant(variant::Type variant)	{ m_db->m_variant = variant; }

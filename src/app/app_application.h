@@ -228,6 +228,7 @@ public:
 	void clearGame(db::Board const* startPosition = 0);
 	void setupGame(db::Board const& startPosition);
 	void setSource(unsigned position, mstl::string const& name, unsigned index);
+	void setReadonly(Cursor& cursor, bool flag);
 	db::save::State writeGame(	unsigned position,
 										mstl::string const& name,
 										mstl::string const& encoding,

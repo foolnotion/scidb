@@ -951,6 +951,19 @@ Application::setSource(unsigned position, mstl::string const& name, unsigned ind
 }
 
 
+void
+Application::setReadonly(Cursor& cursor, bool flag)
+{
+	if (flag != cursor.base().isReadonly())
+	{
+		cursor.base().setReadonly(flag);
+
+		if (m_subscriber)
+			m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
+	}
+}
+
+
 ::util::crc::checksum_t
 Application::checksumIndex(unsigned position) const
 {
@@ -1341,7 +1354,7 @@ Application::releaseGame(unsigned position)
 void
 Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag)
 {
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 
 	cursor.base().deleteGame(cursor.index(table::Games, index, view), flag);
 
@@ -1471,7 +1484,7 @@ Application::swapGames(unsigned position1, unsigned position2)
 void
 Application::setGameFlags(Cursor& cursor, unsigned index, unsigned view, unsigned flags)
 {
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 
 	cursor.base().setGameFlags(cursor.index(table::Games, index, view), flags);
 
@@ -1705,7 +1718,7 @@ Application::moveGamesToScratchbase(Cursor& cursor, bool overtake)
 void
 Application::clearBase(MultiCursor& cursor)
 {
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 
 	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 	{
@@ -1718,7 +1731,7 @@ Application::clearBase(MultiCursor& cursor)
 void
 Application::clearBase(Cursor& cursor)
 {
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(!cursor.isScratchbase());
 
 	moveGamesToScratchbase(cursor);
@@ -1740,7 +1753,7 @@ Application::clearBase(Cursor& cursor)
 void
 Application::compactBase(Cursor& cursor, util::Progress& progress)
 {
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(!cursor.isScratchbase());
 
 	if (cursor.isReferenceBase())
@@ -1998,7 +2011,7 @@ save::State
 Application::saveGame(Cursor& cursor, bool replace)
 {
 	M_REQUIRE(cursor.isOpen());
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(haveCurrentGame());
 
 	EditGame& g = *m_gameMap.find(m_position)->second;
@@ -2108,7 +2121,7 @@ Application::updateMoves()
 {
 	M_REQUIRE(haveCurrentGame());
 	M_REQUIRE(contains(sourceName()));
-	M_REQUIRE(!cursor(sourceName()).isReadOnly());
+	M_REQUIRE(!cursor(sourceName()).isReadonly());
 
 	EditGame& g = *m_gameMap.find(m_position)->second;
 
@@ -2168,7 +2181,7 @@ save::State
 Application::updateCharacteristics(Cursor& cursor, unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(cursor.isOpen());
-	M_REQUIRE(!cursor.isReadOnly());
+	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(index < cursor.count(table::Games));
 
 	if (cursor.isReferenceBase())
@@ -2505,7 +2518,7 @@ void
 Application::save(mstl::string const& name, util::Progress& progress)
 {
 	M_REQUIRE(contains(name));
-//	M_REQUIRE(!cursor(name).isReadOnly());
+//	M_REQUIRE(!cursor(name).isReadonly());
 //	M_REQUIRE(start <= cursor(name).countGames());
 
 	MultiCursor& multiCursor = *m_cursorMap.find(name)->second;

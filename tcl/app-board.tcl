@@ -227,6 +227,12 @@ proc build {w width height} {
 		-command [namespace code LoadFirst] \
 		-state disabled \
 	]
+	::toolbar::addSeparator $tbGame
+	set Vars(game:save) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarSave \
+		-command [namespace code SaveGame] \
+		-state disabled \
+	]
 
 	foreach {action key} {	GotoStart Home
 									FastBack  Prior
@@ -308,6 +314,7 @@ proc build {w width height} {
 	ConfigureBoard $canv
 
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
+	::scidb::db::subscribe dbInfo [namespace current]::UpdateSaveButton {}
 }
 
 
@@ -1233,16 +1240,14 @@ proc GameSwitched {position} {
 	variable ::scidb::scratchbaseName
 	variable Vars
 
-	if {[lindex [::scidb::game::link?] 0] eq $scratchbaseName} {
-		set state disabled
-	} else {
-		set state normal
-	}
+	set Vars(variant) [::scidb::game::query $position variant]
+	set actual [lindex [::scidb::game::link?] 0]
+	if {$actual eq $scratchbaseName} { set state disabled } else { set state normal }
 
 	::toolbar::childconfigure $Vars(crossTable) -state $state
 	UpdateGameControls $position
+	UpdateSaveButton
 
-	set Vars(variant) [::scidb::game::query $position variant]
 	switch $Vars(variant) {
 		Crazyhouse	{ set layout "Crazyhouse" }
 		default		{ set layout "Normal" }
@@ -1250,6 +1255,47 @@ proc GameSwitched {position} {
 	if {$layout ne $Vars(layout)} {
 		set Vars(layout) $layout
 		Apply
+	}
+}
+
+
+proc UpdateSaveButton {args} {
+	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
+	variable Vars
+
+	set position [::scidb::game::current]
+
+	if {$position == 9} {
+		::toolbar::childconfigure $Vars(game:save) -state disabled
+	} elseif {$position >= 0} {
+		set actual [lindex [::scidb::game::link?] 0]
+		if {$actual eq $scratchbaseName} {
+			set replace 0
+			set actual [::scidb::db::get name]
+		} else {
+			set replace 1
+		}
+		if {	$actual eq $scratchbaseName
+			|| $actual eq $clipbaseName
+			|| [::scidb::db::get readonly? $actual]
+			|| $Vars(variant) ni [::scidb::db::get variants $actual]} {
+			set state disabled
+		} else {
+			set state normal
+		}
+		::toolbar::childconfigure $Vars(game:save) -state $state
+		if {$replace} {
+			::toolbar::childconfigure $Vars(game:save) \
+				-image $::icon::toolbarSave \
+				-tooltip [format $::gamebar::mc::ReplaceGame [::util::databaseName $actual]] \
+				;
+		} else {
+			::toolbar::childconfigure $Vars(game:save) \
+				-image $::icon::toolbarSaveAs \
+				-tooltip [format $::gamebar::mc::AddNewGame [::util::databaseName $actual]] \
+				;
+		}
 	}
 }
 
@@ -1352,6 +1398,33 @@ proc ShowCrossTable {parent} {
 }
 
 
+proc SaveGame {} {
+	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
+	variable Vars
+
+	set position [::scidb::game::current]
+
+	if {0 <= $position && $position < 9} {
+		lassign [::scidb::game::link? $position] actual variant index
+		if {$actual eq $scratchbaseName} {
+			set replace 0
+			set actual [::scidb::db::get name]
+		} else {
+			set replace 1
+		}
+		if {	$actual ne $scratchbaseName
+			&& $actual ne $clipbaseName
+			&& ![::scidb::db::get readonly? $actual]
+			&& $variant in [::scidb::db::get variants $actual]} {
+
+			if {$replace} { incr index } else { set index {} }
+			::dialog::save::open $Vars(widget:parent) $actual $variant $position {*}$index
+		}
+	}
+}
+
+
 proc LanguageChanged {} {
 	variable Vars
 	variable mc::Accel
@@ -1394,6 +1467,8 @@ proc LanguageChanged {} {
 		append tip " (" $::mc::Key(Ctrl) "-" $::mc::Key($key) ")"
 		::toolbar::childconfigure $Vars(game:$action) -tooltip $tip
 	}
+
+	UpdateSaveButton
 }
 
 

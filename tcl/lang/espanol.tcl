@@ -451,6 +451,7 @@
 ::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
 ::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida."
 ::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
+::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"

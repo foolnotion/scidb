@@ -32,7 +32,7 @@ namespace db {
 
 inline bool Database::isEmpty() const							{ return m_size == 0; }
 inline bool Database::isOpen() const							{ return m_codec; }
-inline bool Database::isReadOnly() const						{ return m_readOnly; }
+inline bool Database::isReadonly() const						{ return m_readOnly; }
 inline bool Database::isWriteable() const						{ return m_writeable; }
 inline bool Database::shouldUpgrade() const					{ return m_codec->isExpired(); }
 inline bool Database::isMemoryOnly() const					{ return m_memoryOnly; }
@@ -116,7 +116,7 @@ Database::maxDescriptionLength() const
 
 inline
 void
-Database::setReadOnly(bool flag)
+Database::setReadonly(bool flag)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(flag || isWriteable());
@@ -186,7 +186,7 @@ NamebaseEntry const*
 Database::insertPlayer(mstl::string const& name)
 {
 	M_REQUIRE(isOpen());
-	M_ASSERT(!isReadOnly());
+	M_ASSERT(!isReadonly());
 
 	return m_namebases(Namebase::Player).insert(name, m_codec->maxPlayerCount());
 }
@@ -197,7 +197,7 @@ NamebaseEntry const*
 Database::insertEvent(mstl::string const& name)
 {
 	M_REQUIRE(isOpen());
-	M_ASSERT(!isReadOnly());
+	M_ASSERT(!isReadonly());
 
 	return m_namebases(Namebase::Event).insert(name, m_codec->maxEventCount());
 }
@@ -208,7 +208,7 @@ NamebaseEntry const*
 Database::insertSite(mstl::string const& name)
 {
 	M_REQUIRE(isOpen());
-	M_ASSERT(!isReadOnly());
+	M_ASSERT(!isReadonly());
 
 	return m_namebases(Namebase::Site).insert(name, m_codec->maxSiteCount());
 }
@@ -219,7 +219,7 @@ NamebaseEntry const*
 Database::insertAnnotator(mstl::string const& name)
 {
 	M_REQUIRE(isOpen());
-	M_ASSERT(!isReadOnly());
+	M_ASSERT(!isReadonly());
 
 	return m_namebases(Namebase::Annotator).insert(name, m_codec->maxAnnotatorCount());
 }

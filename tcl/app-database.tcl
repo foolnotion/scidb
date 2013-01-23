@@ -77,6 +77,7 @@ set CompactDetail					"All games must be closed before a compaction can be done.
 set ReallyCompact					"Really compact database '%s'?"
 set ReallyCompactDetail(1)		"Only one game will be deleted."
 set ReallyCompactDetail(N)		"%s games will be deleted."
+set RemoveSpace					"Some empty spaces will be removed."
 set SelectVariant					"Select Variant"
 
 set RecodingDatabase				"Recoding %base from %from to %to"
@@ -1221,7 +1222,7 @@ proc PopupMenu {parent x y {base ""}} {
 					-command [namespace code [list StripPGNTags $parent $base]] \
 					-state $state \
 					;
-				if {[::scidb::db::get compress? $base]} { set state normal } else { set state disabled }
+				if {[::scidb::db::get compact? $base]} { set state normal } else { set state disabled }
 				$maint add command \
 					-label " $mc::FileCompact..." \
 					-image $::icon::16x16::none \
@@ -1461,10 +1462,10 @@ proc StripPGNTags {parent file} {
 proc Compact {parent file} {
 	set msg [format $mc::ReallyCompact [::util::databaseName $file]]
 	set n [lindex [::scidb::db::get stats $file] 0]
-	if {$n == 1} {
-		set detail $mc::ReallyCompactDetail(1)
-	} else {
-		set detail [format $mc::ReallyCompactDetail(N) $n]
+	switch $n {
+		0			{ set detail $mc::RemoveSpace }
+		1			{ set detail $mc::ReallyCompactDetail(1) }
+		default	{ set detail [format $mc::ReallyCompactDetail(N) $n] }
 	}
 	set reply [::dialog::question \
 		-parent $parent \

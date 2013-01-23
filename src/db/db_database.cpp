@@ -318,7 +318,7 @@ void
 Database::save(util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 
@@ -351,7 +351,7 @@ void
 Database::writeIndex(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
@@ -366,7 +366,7 @@ void
 Database::writeNamebases(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
@@ -380,7 +380,7 @@ void
 Database::writeGames(mstl::ostream& os, util::Progress& progress)
 {
 	M_REQUIRE(format() == format::Scidb);
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(!isMemoryOnly());
 
 	m_namebases.update();
@@ -441,7 +441,7 @@ Database::remove()
 bool
 Database::shouldCompress() const
 {
-	return !isReadOnly() && format() == format::Scidb && (m_shouldCompress || m_statistic.deleted > 0);
+	return !isReadonly() && format() == format::Scidb && (m_shouldCompress || m_statistic.deleted > 0);
 }
 
 
@@ -474,7 +474,7 @@ Database::clear()
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!usingAsyncReader());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
 	m_gameInfoList.clear();
@@ -590,7 +590,7 @@ save::State
 Database::newGame(Game& game, GameInfo const& info)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(isMemoryOnly());
@@ -617,7 +617,7 @@ save::State
 Database::addGame(Game& game)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
@@ -655,15 +655,17 @@ save::State
 Database::updateGame(Game& game)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 	M_REQUIRE(!usingAsyncReader());
 
 	unsigned char buffer[8192];
-	ByteStream strm(buffer, sizeof(buffer));
-	GameInfo& info(*m_gameInfoList[game.index()]);
+
+	ByteStream	strm(buffer, sizeof(buffer));
+	GameInfo&	info(*m_gameInfoList[game.index()]);
+	unsigned		offset(info.gameOffset());
 
 	if (format() == format::Scidb)
 	{
@@ -685,6 +687,12 @@ Database::updateGame(Game& game)
 		if (!m_memoryOnly)
 			m_codec->update(m_rootname, game.index(), true);
 
+		if (format() == format::Scidb && offset != info.gameOffset())
+		{
+			m_shouldCompress = true;
+			m_codec->updateHeader(m_rootname);
+		}
+
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
 
@@ -701,7 +709,7 @@ save::State
 Database::updateMoves(Game& game)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
@@ -712,14 +720,20 @@ Database::updateMoves(Game& game)
 
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
 
-	save::State state = m_codec->saveMoves(strm, game);
+	GameInfo&	info		= *m_gameInfoList[game.index()];
+	unsigned		offset	= info.gameOffset();
+	save::State	state		= m_codec->saveMoves(strm, game);
 
 	if (save::isOk(state))
 	{
-		GameInfo& info = *m_gameInfoList[game.index()];
-
 		if (format() == format::Scidb)
 		{
+			if (offset != info.gameOffset())
+			{
+				m_shouldCompress = true;
+				m_codec->updateHeader(m_rootname);
+			}
+
 			if (variant::isAntichessExceptLosers(m_variant))
 			{
 				bool illegalMoves = game.containsIllegalMoves();
@@ -762,7 +776,7 @@ save::State
 Database::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
@@ -1142,7 +1156,7 @@ unsigned
 Database::importGame(Producer& producer, unsigned index)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
@@ -1179,7 +1193,7 @@ unsigned
 Database::importGames(Producer& producer, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(	producer.variant() == variant::Undetermined
@@ -1204,7 +1218,7 @@ unsigned
 Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(db.variant() == variant());
@@ -1295,7 +1309,7 @@ void
 Database::deleteGame(unsigned index, bool flag)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 
@@ -1318,7 +1332,7 @@ void
 Database::setGameFlags(unsigned index, unsigned flags)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(index < countGames());
 
@@ -1333,7 +1347,7 @@ void
 Database::setType(Type type)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
 	if (type != m_type)
@@ -1350,7 +1364,7 @@ void
 Database::setDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
 	if (m_description != description)
@@ -1370,7 +1384,7 @@ void
 Database::setVariant(variant::Type variant)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 	M_REQUIRE(isEmpty());
 	M_REQUIRE(variant::isMainVariant(variant));

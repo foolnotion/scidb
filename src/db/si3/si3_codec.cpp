@@ -712,14 +712,14 @@ Codec::save(mstl::string const& rootname, unsigned start, Progress& progress, bo
 	if (!attach)
 		checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::string namebaseFilename(rootname + m_extNamebase);
 	if (!attach)
 		checkPermissions(namebaseFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
 	m_gameData->sync();
@@ -767,13 +767,13 @@ Codec::update(mstl::string const& rootname)
 	mstl::string indexFilename(rootname + m_extIndex);
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::string namebaseFilename(rootname + m_extNamebase);
 	checkPermissions(namebaseFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
 	m_gameData->sync();
@@ -798,7 +798,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 	mstl::string indexFilename(rootname + m_extIndex);
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;
@@ -834,7 +834,7 @@ Codec::updateHeader(mstl::string const& rootname)
 	mstl::string indexFilename(rootname + m_extIndex);
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;

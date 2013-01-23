@@ -617,7 +617,7 @@ proc Build {dlg base variant position number} {
 		ttk::label $top.game-$attr-l -textvar [namespace current]::mc::Label($attr)
 	}
 
-	datebox $top.game-date -minYear $minYear -maxYear $maxYear
+	datebox $top.game-date -minYear $minYear -maxYear $maxYear -usetoday yes
 	resultbox $top.game-result -excludelost $excludelost -textvar ::${dlg}::Priv(game-result)
 	roundbox $top.game-round -width 10 -textvar ::${dlg}::Priv(event-round) -useString $useStringForRound
 	terminationbox $top.game-termination \
@@ -708,6 +708,7 @@ proc Build {dlg base variant position number} {
 	datebox $top.event-eventDate \
 		-minYear $minYear \
 		-maxYear $maxYear \
+		-usetoday yes \
 		-tooltip [namespace current]::mc::SetToGameDate \
 		;
 	set width 0

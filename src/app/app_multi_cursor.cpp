@@ -232,7 +232,7 @@ MultiCursor::changeVariant(::db::variant::Type variant)
 	M_REQUIRE(isEmpty());
 	M_REQUIRE(!isScratchbase());
 	M_REQUIRE(!isClipbase());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
 	if (m_leader->variant() != variant)

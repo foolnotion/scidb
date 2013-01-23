@@ -242,7 +242,7 @@ protected:
 										unsigned prevOffset,
 										unsigned prevRecordLength);
 
-	bool isReadOnly() const;
+	bool isReadonly() const;
 	bool shouldCompress() const;
 	GameInfoList& gameInfoList();
 	GameInfo& gameInfo(unsigned index);

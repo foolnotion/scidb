@@ -87,10 +87,10 @@ bool Cursor::isClipbase() const		{ return m_cursor.isClipbase(); }
 
 
 bool
-Cursor::isReadOnly() const
+Cursor::isReadonly() const
 {
 	M_REQUIRE(isOpen());
-	return m_db->isReadOnly();
+	return m_db->isReadonly();
 }
 
 
@@ -291,7 +291,7 @@ void
 Cursor::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(index < count(table::Games));
 
 	// TODO: handle return code!
@@ -319,7 +319,7 @@ unsigned
 Cursor::importGames(Producer& producer, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 
 	if (m_isRefBase)
 		Application::stopUpdateTree();
@@ -343,7 +343,7 @@ Cursor::importGames(	db::Database const& src,
 							util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 
 	if (m_isRefBase)
 		Application::stopUpdateTree();
@@ -363,7 +363,7 @@ Cursor::importGames(	db::Database const& src,
 void
 Cursor::clearBase()
 {
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 
 	database().clear();
 	updateViews();
@@ -374,22 +374,15 @@ bool
 Cursor::compact(::util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadOnly());
+	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
 	m_db->sync(progress);
 
-	unsigned numGames	= m_db->countGames();
-	unsigned deleted	= 0;
-
-	for (unsigned i = 0; i < numGames; ++i)
-	{
-		if (m_db->gameInfo(i).isDeleted())
-			++deleted;
-	}
-
-	if (deleted == 0)
+	if (!m_db->shouldCompress())
 		return false;
+
+	unsigned numGames = m_db->countGames();
 
 	mstl::string orig(m_db->name());
 	mstl::string name;

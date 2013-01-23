@@ -518,14 +518,14 @@ Codec::save(mstl::string const& rootname, unsigned start, util::Progress& progre
 	if (!attach)
 		checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::string namebaseFilename(rootname + ".scn");
 	if (!attach)
 		checkPermissions(namebaseFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
 	mstl::fstream indexStream;
@@ -569,13 +569,13 @@ Codec::update(mstl::string const& rootname)
 	mstl::string indexFilename(rootname + ".sci");
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::string namebaseFilename(rootname + ".scn");
 	checkPermissions(namebaseFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Namebase, Read_Only, "name-base file '%s' is read-only", namebaseFilename.c_str());
 
 	mstl::fstream indexStream;
@@ -598,7 +598,7 @@ Codec::update(mstl::string const& rootname, unsigned index, bool updateNamebase)
 	mstl::string indexFilename(rootname + ".sci");
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;
@@ -637,7 +637,7 @@ Codec::updateHeader(mstl::string const& rootname)
 	mstl::string indexFilename(rootname + ".sci");
 	checkPermissions(indexFilename);
 
-	if (isReadOnly())
+	if (isReadonly())
 		IO_RAISE(Index, Read_Only, "index file '%s' is read-only", indexFilename.c_str());
 
 	mstl::fstream indexStream;
