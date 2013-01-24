@@ -446,29 +446,25 @@ proc importGame {parent} {
 
 
 proc saveGame {mode} {
+	variable ::scidb::scratchbaseName
 	variable ::scidb::clipbaseName
 	variable Vars
 
-	set position [::gamebar::selected $Vars(gamebar)]
-	lassign [::scidb::game::link? $position] base variant _
+	set position [::scidb::game::current]
+	lassign [::scidb::game::link? $position] base variant index
+
+	if {$base eq $scratchbaseName} {
+		set base [::scidb::db::get name]
+	}
 
 	if {$base eq $clipbaseName} { return }
 	if {[::scidb::db::get readonly? $base $variant]} { return }
-
+	if {$variant ni [::scidb::db::get variants $base]} { return }
 
 	switch $mode {
-		add {
-			::dialog::save::open $Vars(main) $base $variant $position
-		}
-
-		replace {
-			lassign [::scidb::game::link? $position] _ _ index
-			::dialog::save::open $Vars(main) $base $variant $position [expr {$index + 1}]
-		}
-
-		moves {
-			replaceMoves $Vars(main)
-		}
+		add		{ ::dialog::save::open $Vars(main) $base $variant $position }
+		replace	{ ::dialog::save::open $Vars(main) $base $variant $position [expr {$index + 1}] }
+		moves		{ replaceMoves $Vars(main) }
 	}
 }
 

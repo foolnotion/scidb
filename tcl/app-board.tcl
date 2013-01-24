@@ -1406,21 +1406,12 @@ proc SaveGame {} {
 	set position [::scidb::game::current]
 
 	if {0 <= $position && $position < 9} {
-		lassign [::scidb::game::link? $position] actual variant index
-		if {$actual eq $scratchbaseName} {
-			set replace 0
-			set actual [::scidb::db::get name]
+		if {[lindex [::scidb::game::link? $position] 0] eq $scratchbaseName} {
+			set mode add
 		} else {
-			set replace 1
+			set mode replace
 		}
-		if {	$actual ne $scratchbaseName
-			&& $actual ne $clipbaseName
-			&& ![::scidb::db::get readonly? $actual]
-			&& $variant in [::scidb::db::get variants $actual]} {
-
-			if {$replace} { incr index } else { set index {} }
-			::dialog::save::open $Vars(widget:parent) $actual $variant $position {*}$index
-		}
+		[namespace parent]::pgn::saveGame $mode
 	}
 }
 

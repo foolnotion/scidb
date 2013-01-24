@@ -725,13 +725,6 @@ proc Goto {position step} {
 
 	::scidb::game::go $position $step
 
-	lassign [::scidb::pos::inHand? $position] matw matb
-
-	if {[info exists Vars(holding:w)]} {
-		::board::holding::update $Vars(holding:w) $matw
-		::board::holding::update $Vars(holding:b) $matb
-	}
-
 	if {$Vars(autoplay)} {
 		if {[::scidb::game::position $position atEnd?]} {
 			ToggleAutoPlay $position
@@ -1048,6 +1041,11 @@ proc UpdatePGN {position data {w {}}} {
 					set Vars(current) $key
 					if {[llength $previous] && $Vars(active) eq $previous} {
 						EnterMove $w $position $previous
+					}
+					if {[info exists Vars(holding:w)]} {
+						lassign [::scidb::pos::inHand? $position] matw matb
+						::board::holding::update $Vars(holding:w) $matw
+						::board::holding::update $Vars(holding:b) $matb
 					}
 				}
 			}

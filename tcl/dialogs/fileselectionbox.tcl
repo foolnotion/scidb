@@ -334,7 +334,7 @@ proc Open {type args} {
 	if {$data(-embed)} {
 		::ttk::frame $w -class $class -takefocus 0
 		set dlg [winfo toplevel $w]
-		bind $dlg <Destroy> [namespace code [list TraceLastFolder $dlg %W $w $class]]
+		bind $dlg <Destroy> [namespace code [list TraceLastFolder $dlg %W $w $class $data(-class)]]
 	} elseif {$create} {
 		tk::toplevel $w -class $class
 		bind $w <Configure> [namespace code [list RecordGeometry $w %W %w $class]]
@@ -517,9 +517,14 @@ proc LanguageChanged {w} {
 }
 
 
-proc TraceLastFolder {dlg dlg2 w class} {
+proc TraceLastFolder {dlg dlg2 w class tag} {
 	if {$dlg eq $dlg2} {
-		set [namespace current]::Priv(lastFolder:$class) [::fsbox::lastFolder $w.fsbox]
+		set folder [::fsbox::lastFolder $w.fsbox]
+		set [namespace current]::Priv(lastFolder:$class) $folder
+		if {[string length $tag]} {
+			variable LastFolders
+			set LastFolders($class:$tag) $folder
+		}
 	}
 }
 
