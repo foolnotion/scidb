@@ -917,7 +917,10 @@ PgnReader::process(Progress& progress)
 				if (token == kEoi)
 				{
 					if (m_readMode == Text)
+					{
+						finishGame();
 						return 0;
+					}
 
 					sendError(UnexpectedEndOfInput);
 				}
@@ -4773,9 +4776,12 @@ PgnReader::parseUppercaseB(Token prevToken, int c)
 
 
 PgnReader::Token
-PgnReader::parseUppercaseD(Token, int)
+PgnReader::parseUppercaseD(Token prevToken, int c)
 {
 	// Diagram symbol "D", "D'"
+
+	if (::isalnum(*m_linePos))
+		return parseMove(prevToken, c);
 
 	if (*m_linePos == '\'')
 	{
@@ -5071,7 +5077,7 @@ PgnReader::nextToken(Token prevToken)
 
 	while (true)
 	{
-		unsigned char c = get();
+		unsigned char c = get(true);
 
 		if (__builtin_expect(c & 0x80, 0))
 			unexpectedSymbol(prevToken, c);
@@ -5092,138 +5098,93 @@ PgnReader::replaceFigurineSet(char const* fromSet, char const* toSet, mstl::stri
 	char* s = str.begin();
 	char* e = str.end();
 
-	while (s < e)
+	while (true)
 	{
-		if (m_parsingComment)
+		if (s == e)
+			return;
+
+		switch (*s)
 		{
-			if (*s == '}')
-				m_parsingComment = false;
+			case '\0':
+			case ';':
+				return;
 
-			++s;
-		}
-		else if (::isalpha(*s))
-		{
-			char* p = const_cast<char*>(::strchr(toSet, *s));
+			case '{':
+				do
+					++s;
+				while (s < e && *s != '}');
+				// fallthru
 
-			if (p && p - toSet < 5)
-			{
-				// parse: [KQRBN]([a-h][1-8])?[x:-]?[a-h][1-8]
-				// parse: [QRBNP][@][a-h][1-8]
-
-				char*	t			= s + 1;
-				bool	needFyle	= true;
-
-				if (*t == '@')
+			default:
+				while (!::isalpha(*s) || !::isupper(*s))
 				{
-					if (::CharToType[Byte(*(t + 1))] == ::Fyle && ::CharToType[Byte(*(t + 2))] == ::Rank)
-					{
-						*(t - 1) = fromSet[p - toSet];
-						s = t + 3;
-					}
-					else
-					{
-						++s;
-					}
+					if (++s == e)
+						return;
+				}
+				break;
+		}
+
+		char* p = const_cast<char*>(::strchr(toSet, *s));
+
+		if (p && p - toSet < 5)
+		{
+			// parse: [KQRBN]([a-h][1-8])?[x:-]?[a-h][1-8]
+			// parse: [QRBNP][@][a-h][1-8]
+
+			char*	t			= s + 1;
+			bool	needFyle	= true;
+
+			if (*t == '@')
+			{
+				if (::CharToType[Byte(*(t + 1))] == ::Fyle && ::CharToType[Byte(*(t + 2))] == ::Rank)
+				{
+					*(t - 1) = fromSet[p - toSet];
+					s = t + 3;
 				}
 				else
 				{
-					switch (::CharToType[Byte(*t)])
-					{
-						case ::Fyle:
-							needFyle = false;
-							++t;
-							break;
-
-						case ::Rank:
-							++t;
-							break;
-					}
-
-					if (::CharToType[Byte(*t)] == ::Capture)
-					{
-						++t;
-						needFyle = true;
-					}
-
-					if (::CharToType[Byte(*t)] == ::Fyle)
-					{
-						++t;
-						needFyle = false;
-					}
-
-					if (!needFyle && ::CharToType[Byte(*t)] == ::Rank)
-					{
-						*s = fromSet[p - toSet];
-						s = t + 1;
-					}
-					else
-					{
-						++s;
-					}
+					++s;
 				}
 			}
 			else
 			{
-				if (p)
-					++s;
-
-				if (::CharToType[Byte(*s)] == ::Fyle)
+				switch (::CharToType[Byte(*t)])
 				{
-					// parse: [a-h][x:-]?[2-7]
-					// parse: [a-h][1-8][=]?QRBNK
-					// parse: [a-h][1-8][=]?[(][QRBNK][)]
-
-					char*	t = s + 1;
-
-					if (::CharToType[Byte(*t)] == ::Capture)
+					case ::Fyle:
+						needFyle = false;
 						++t;
+						break;
 
-					if (::CharToType[Byte(*t)] == ::Rank)
-					{
-						s = t + 1;
+					case ::Rank:
+						++t;
+						break;
+				}
 
-						if (*t == '1' || *t == '8')
-						{
-							bool delim = false;
+				if (::CharToType[Byte(*t)] == ::Capture)
+				{
+					++t;
+					needFyle = true;
+				}
 
-							if (*t == '=')
-								++t;
+				if (::CharToType[Byte(*t)] == ::Fyle)
+				{
+					++t;
+					needFyle = false;
+				}
 
-							if (*t == '(')
-							{
-								++t;
-								delim = true;
-							}
-
-							if ((p = const_cast<char*>(::strchr(toSet, *t))))
-							{
-								int index = p - toSet;
-
-								if (!delim || t[1] == ')')
-								{
-									*t = fromSet[index];
-									t += (delim ? 2 : 1);
-								}
-							}
-
-							s = t;
-						}
-					}
-					else
-					{
-						++s;
-					}
+				if (!needFyle && ::CharToType[Byte(*t)] == ::Rank)
+				{
+					*s = fromSet[p - toSet];
+					s = t + 1;
+				}
+				else
+				{
+					++s;
 				}
 			}
 		}
 		else
 		{
-			if (*s == ';')
-				return;
-
-			if (*s == '{')
-				m_parsingComment = true;
-
 			++s;
 		}
 	}

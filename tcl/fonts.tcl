@@ -67,8 +67,8 @@ array set SymbolUtfEncoding {
 	 11 "=="
 	 12 "=\u223c"
 	 13 "\u221e"
-	 14 "+/="
-	 15 "=/+"
+	 14 "\u00b1"
+	 15 "\u2213"
 	 16 "+/\u2212"
 	 17 "\u2212/+"
 	 18 "+\u2212"
@@ -241,6 +241,7 @@ array set SymbolDefaultEncoding {
 	184 "\u221e"
 }
 
+# E000 - F8FE
 array set ScidbSymbolTravellerEncoding {
 	  8 "\uf008"
 	 10 "="
@@ -250,8 +251,6 @@ array set ScidbSymbolTravellerEncoding {
 	 15 "\uf00f"
 	 16 "\uf010"
 	 17 "\uf011"
-	 18 "+-"
-	 19 "-+"
 	 22 "\uf016"
 	 23 "\uf017"
 	 36 "\u00c9"
@@ -292,8 +291,8 @@ array set SymbolInformantEncoding {
 	 14 "\u00a2"
 	 15 "\u00a3"
 	 17 "\u00a4"
-	 18 "+\u00bb"
-	 19 "\u00bb+"
+	 18 "+\u2212"
+	 19 "\u2212+"
 	 16 "\u00a5"
 	 32 "\u00b6"
 	 33 "\u00b6"
@@ -1135,7 +1134,6 @@ proc setupChessFonts {} {
 proc useLanguage {lang} {
 	variable ::figurines::langSet
 	variable GraphicMap
-	variable Options
 
 	if {$lang eq "graphic"} {
 		useFigurines yes

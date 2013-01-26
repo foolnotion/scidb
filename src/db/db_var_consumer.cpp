@@ -57,7 +57,13 @@ save::State VarConsumer::endGame(TagSet const&) { return save::Ok; }
 void VarConsumer::start() {}
 void VarConsumer::finish() {}
 void VarConsumer::beginMoveSection() {}
-void VarConsumer::endMoveSection(result::ID) {}
+
+
+void
+VarConsumer::endMoveSection(result::ID)
+{
+	m_current->setNext(new MoveNode);
+}
 
 
 void
@@ -173,6 +179,7 @@ VarConsumer::endVariation(bool isEmpty)
 		sendMove(Move::null());
 #endif
 
+	m_current->setNext(new MoveNode);
 	m_current = m_current->getLineStart();
 	M_ASSERT(m_current->prev());
 	m_current = m_current->prev();

@@ -483,7 +483,7 @@ proc openSetupDialog {parent context position args} {
 	::widget::dialogButtons $dlg {ok apply cancel reset revert}
 	$dlg.ok configure -command [namespace code [list ApplyOptions $context $position yes]]
 	$dlg.apply configure -command [namespace code [list ApplyOptions $context $position no]]
-	$dlg.cancel configure -command [namespace code [list RevertOptions $context $position yes]]
+	$dlg.cancel configure -command [namespace code [list DoClose $context $position]]
 	$dlg.revert configure -command [namespace code [list RevertOptions $context $position no]]
 	$dlg.reset configure -command [namespace code [list ResetOptions $context $position]]
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list RevertOptions $context $position yes]]
@@ -581,15 +581,6 @@ proc RevertOptions {context position close} {
 	variable [namespace parent]::${context}::Colors
 	variable Priv
 
-	if {$Priv(applied)} {
-		set reply [::dialog::question \
-			-parent $Priv(dlg) \
-			-message $mc::DiscardAllChanges \
-			-buttons {yes cancel}
-		]
-		if {$reply eq "cancel"} { return }
-	}
-
 	array set Options [array get Revert_Options]
 	array set Colors [array get Revert_Colors]
 
@@ -600,20 +591,19 @@ proc RevertOptions {context position close} {
 	}
 	::font::useLanguage $lang
 
+	set styles [::font::unregisterTextFonts setup]
+	::font::unregisterFigurineFonts setup
+	::font::unregisterSymbolFonts setup
+
+	array set ::font::Options [array get Revert_Fonts]
+
 	if {$close} {
 		foreach cxt $ContextList { ::pgn::${cxt}::refresh yes }
 		DoClose $context $position
 	} else {
-		set styles [::font::unregisterTextFonts setup]
-		::font::unregisterFigurineFonts setup
-		::font::unregisterSymbolFonts setup
-
-		array set ::font::Options [array get Revert_Fonts]
-
 		::font::registerTextFonts setup $styles
 		::font::registerFigurineFonts setup
 		::font::registerSymbolFonts setup
-
 		FinishReset $context $position
 	}
 }

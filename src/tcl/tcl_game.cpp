@@ -2960,22 +2960,29 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		{
 			setResult(scidb->game().isValidVariation(consumer.result()));
 		}
-		else if (varno < 0)
+		else if (consumer.result()->countHalfMoves() > 0)
 		{
-			if (scidb->game().isEmpty())
+			if (varno < 0)
 			{
-				scidb->game().addMoves(Game::MoveNodeP(consumer.release()));
-				setResult(0);
+				if (scidb->game().isEmpty())
+				{
+					scidb->game().addMoves(Game::MoveNodeP(consumer.release()));
+					setResult(0);
+				}
+				else
+				{
+					setResult(scidb->game().addVariation(Game::MoveNodeP(consumer.release())));
+				}
 			}
 			else
 			{
-				setResult(scidb->game().addVariation(Game::MoveNodeP(consumer.release())));
+				scidb->game().changeVariation(Game::MoveNodeP(consumer.release()), varno);
+				setResult(varno);
 			}
 		}
 		else
 		{
-			scidb->game().changeVariation(Game::MoveNodeP(consumer.release()), varno);
-			setResult(varno);
+			setResult(-1);
 		}
 	}
 	else
