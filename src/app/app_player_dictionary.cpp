@@ -392,7 +392,7 @@ PlayerDictionary::filterLetter(char letter)
 void
 PlayerDictionary::filterName(Operator op, mstl::string const& pattern)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if ((pattern == "*" || pattern == "") && positive)
@@ -416,7 +416,7 @@ PlayerDictionary::filterName(Operator op, mstl::string const& pattern)
 void
 PlayerDictionary::filterFederation(Operator op, country::Code country)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (country != country::Unknown)
@@ -433,7 +433,7 @@ PlayerDictionary::filterFederation(Operator op, country::Code country)
 void
 PlayerDictionary::filterNativeCountry(Operator op, country::Code country)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (country != country::Unknown)
@@ -450,7 +450,7 @@ PlayerDictionary::filterNativeCountry(Operator op, country::Code country)
 void
 PlayerDictionary::filterType(Operator op, species::ID type)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (type != species::Unspecified)
@@ -467,7 +467,7 @@ PlayerDictionary::filterType(Operator op, species::ID type)
 void
 PlayerDictionary::filterSex(Operator op, sex::ID sex)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (sex != sex::Unspecified)
@@ -484,7 +484,7 @@ PlayerDictionary::filterSex(Operator op, sex::ID sex)
 void
 PlayerDictionary::filterTitles(Operator op, unsigned titles)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (titles)
@@ -501,7 +501,7 @@ PlayerDictionary::filterTitles(Operator op, unsigned titles)
 void
 PlayerDictionary::filterFederationID(Operator op, federation::ID federation)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	if (federation != federation::None)
@@ -518,7 +518,7 @@ PlayerDictionary::filterFederationID(Operator op, federation::ID federation)
 void
 PlayerDictionary::filterScore(Operator op, ::db::rating::Type rating, uint16_t min, uint16_t max)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	for (unsigned i = 0; i < m_attrFilter.size(); ++i)
@@ -534,7 +534,7 @@ PlayerDictionary::filterScore(Operator op, ::db::rating::Type rating, uint16_t m
 void
 PlayerDictionary::filterBirthYear(Operator op, uint16_t minYear, uint16_t maxYear)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	for (unsigned i = 0; i < m_attrFilter.size(); ++i)
@@ -551,7 +551,7 @@ PlayerDictionary::filterBirthYear(Operator op, uint16_t minYear, uint16_t maxYea
 void
 PlayerDictionary::filterDeathYear(Operator op, uint16_t minYear, uint16_t maxYear)
 {
-	Setter	setter;
+	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
 	for (unsigned i = 0; i < m_attrFilter.size(); ++i)

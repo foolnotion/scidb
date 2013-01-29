@@ -433,6 +433,7 @@ inline bool NamebasePlayer::Value::operator<(Value value) const { return m_key <
 inline
 NamebasePlayer::Key::Key(NamebasePlayer const& player)
 	:name(player.name())
+	,fideID(player.fideID())
 	,value(player.m_value)
 {
 }

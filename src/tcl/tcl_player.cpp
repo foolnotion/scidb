@@ -664,9 +664,9 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 	else
 	{
-		char const* attr	= stringFromObj(objc, objv, 2);
+		char const* attr = stringFromObj(objc, objv, 2);
 
-		app::PlayerDictionary::Attribute attribute;
+		app::PlayerDictionary::Attribute attribute = app::PlayerDictionary::Name; // g++ complains w/o initialization
 		order::ID ordering = order::Ascending;
 
 		switch (*attr)
