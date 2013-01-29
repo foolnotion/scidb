@@ -3243,9 +3243,9 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 		return 0
 	}
 
-	if {$rc < 0} {
+	if {$count < 0} {
 		::log::warning $::import::mc::UserHasInterrupted
-		set count [expr {-$rc - 2}]
+		set count [expr {-$count - 2}]
 		set rc -1
 	}
 

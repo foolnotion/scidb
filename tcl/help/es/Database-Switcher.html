@@ -117,6 +117,13 @@ This sub-menu provides functionality for the maintenance of databases
 </span>
 
 <p>
+<span class="menuitem">Crear Archivo</span>
+Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
+Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
+para seleccionar un nombre de archivo.
+</p>
+
+<p>
 <span class="menuitem">Cerrar</span>
 La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
 se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
@@ -202,7 +209,11 @@ Crea o cambia la descripción para esta base.
 <span class="NEW">
 <p>
 <span class="menuitem">Strip Move Information</span>
-Not yet implemented.
+Remove a selection of move information (for example
+"Elapsed Move Time") from database.
+This is useful, for example, to remove subsequently unwanted information (here
+"Elapsed Milliseconds") after import
+of FICS games.
 </p>
 
 <p>
@@ -217,13 +228,6 @@ Compactará la base de datos actual; esto significa que todas las partidas
 marcadas para su eliminación se borrarán físicamente y no podrá revertir
 esta acción. Este ítem no está habilitado si la base de datos no contiene
 ninguna partida con un marcador de eliminación.
-</p>
-
-<p>
-<span class="menuitem">Crear Archivo</span>
-Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
-Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
-para seleccionar un nombre de archivo.
 </p>
 
 <h3 id="DND">Arrastrar &amp; Soltar</h3>

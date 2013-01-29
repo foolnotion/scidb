@@ -98,6 +98,13 @@ This sub-menu provides functionality for the maintenance of databases
 </NEW>
 
 <p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
+La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
+si aprirà per permettere la selezione del name dell'archivio.
+</p>
+
+<p>
 <menuitem>%::application::database::mc::FileClose%</menuitem>
 Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
 <note/>Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
@@ -178,12 +185,20 @@ Crea o cambia la descrizione per questo database.
 <NEW>
 <p>
 <menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
-Not yet implemented.
+Remove a selection of move information (for example
+"%::application::database::mc::MoveInfo(elapsedMoveTime)%") from database.
+This is useful, for example, to remove subsequently unwanted information (here
+"%::application::database::mc::MoveInfo(elapsedMilliSecs)%") after import
+of FICS games.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
-Not yet implemented.
+This feature scancs the database for extra PGN tags (such as "WhiteTeam").
+Then, one may strip some of these extra tags from the database. Removing
+unwanted tags will accalerate position search, but not before a compaction
+((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
+of the database is done.
 </p>
 </NEW>
 
@@ -196,13 +211,6 @@ item is disabled if the database does not contain any game with a
 deletion marker.
 </p>
 </NEW>
-
-<p>
-<menuitem>%::application::database::mc::FileCreate%</menuitem>
-Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
-La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
-si aprirà per permettere la selezione del name dell'archivio.
-</p>
 
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 

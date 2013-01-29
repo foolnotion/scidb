@@ -1433,7 +1433,7 @@
 ::import::mc::ImportAborted						"Der Import wurde abgebrochen."
 ::import::mc::TextIsEmpty							"Das PGN-Textfeld ist leer."
 ::import::mc::AbortImport							"PGN-Import abbrechen?"
-::import::mc::UnsupportedVariant					"Nicht unterstütze Schachform '%s' zurückgewiesen"
+::import::mc::UnsupportedVariantRejected		"Nicht unterstütze Schachform '%s' zurückgewiesen"
 ::import::mc::Accepted								"akzeptiert"
 ::import::mc::Rejected								"zurückgewiesen"
 
@@ -1447,6 +1447,7 @@
 ::import::mc::EnterOrPaste-Game					"Partie"
 ::import::mc::EnterOrPaste-Variation			"Variante"
 
+::import::mc::UnsupportedVariant					"Nicht unterstütze Schachform zurückgewiesen"
 ::import::mc::MissingWhitePlayerTag				"Kein weißer Spielername"
 ::import::mc::MissingBlackPlayerTag				"Kein schwarzer Spielername"
 ::import::mc::MissingPlayerTags					"Keine Spielernamen"

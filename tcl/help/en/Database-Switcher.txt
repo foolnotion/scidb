@@ -95,6 +95,13 @@ This sub-menu provides functionality for the maintenance of databases
 </NEW>
 
 <p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Create a <a href="Database-Formats.html#Database-Archive">database archive</a>.
+The <a href="File-Selection-Dialog.html">file selection dialog</a>
+will be opened for the selection of an archive name.
+</p>
+
+<p>
 <menuitem>%::application::database::mc::FileClose%</menuitem>
 The selected database will be closed. If there are changed games in this database,
 which are not yet saved, a security prompt will be done before closing the database.
@@ -179,12 +186,20 @@ Create or change the description for this database.
 <NEW>
 <p>
 <menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
-Not yet implemented.
+Remove a selection of move information (for example
+"%::application::database::mc::MoveInfo(elapsedMoveTime)%") from database.
+This is useful, for example, to remove subsequently unwanted information (here
+"%::application::database::mc::MoveInfo(elapsedMilliSecs)%") after import
+of FICS games.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
-Not yet implemented.
+This feature scancs the database for extra PGN tags (such as "WhiteTeam").
+Then, one may strip some of these extra tags from the database. Removing
+unwanted tags will accalerate position search, but not before a compaction
+((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
+of the database is done.
 </p>
 </NEW>
 
@@ -194,13 +209,6 @@ Compact this database, this means that all games marked for deletion
 wil be deleted physically. You cannot revert this action. This menu
 item is disabled if the database does not contain any game with a
 deletion marker.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::FileCreate%</menuitem>
-Create a <a href="Database-Formats.html#Database-Archive">database archive</a>.
-The <a href="File-Selection-Dialog.html">file selection dialog</a>
-will be opened for the selection of an archive name.
 </p>
 
 <h3 id="DND">Drag &amp; Drop</h3>

@@ -111,6 +111,13 @@ This sub-menu provides functionality for the maintenance of databases
 </span>
 
 <p>
+<span class="menuitem">Crea Archivio</span>
+Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
+La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
+si aprirà per permettere la selezione del name dell'archivio.
+</p>
+
+<p>
 <span class="menuitem">Chiudi</span>
 Il database selezionato sarà chiuso. Se ci sono cambiamenti nelle partite non ancora salvati, un avviso apparirà prima che il databse sia chiuso.
 <br/><img src="../images/note.png" alt="note" /> Chiudere il <a href="Clipbase.html">Clipbase</a> non è possibile.
@@ -191,12 +198,20 @@ Crea o cambia la descrizione per questo database.
 <span class="NEW">
 <p>
 <span class="menuitem">Strip Move Information</span>
-Not yet implemented.
+Remove a selection of move information (for example
+"Elapsed Move Time") from database.
+This is useful, for example, to remove subsequently unwanted information (here
+"Elapsed Milliseconds") after import
+of FICS games.
 </p>
 
 <p>
 <span class="menuitem">Strip PGN Tags</span>
-Not yet implemented.
+This feature scancs the database for extra PGN tags (such as "WhiteTeam").
+Then, one may strip some of these extra tags from the database. Removing
+unwanted tags will accalerate position search, but not before a compaction
+((&#x21d2; <a href="#Compact">Compresso</a>)
+of the database is done.
 </p>
 </span>
 
@@ -209,13 +224,6 @@ item is disabled if the database does not contain any game with a
 deletion marker.
 </p>
 </span>
-
-<p>
-<span class="menuitem">Crea Archivio</span>
-Crea un <a href="Database-Formats.html#Database-Archive">archivio database</a>.
-La <a href="File-Selection-Dialog.html">finestra di selezione file</a>
-si aprirà per permettere la selezione del name dell'archivio.
-</p>
 
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 

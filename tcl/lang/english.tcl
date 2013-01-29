@@ -456,7 +456,7 @@
 ::application::database::mc::EditDescription					"Edit Description"
 ::application::database::mc::EmptyClipbase					"Empty Clipbase"
 
-:application::database::mc::Maintenance						"Maintenance"
+::application::database::mc::Maintenance						"Maintenance"
 ::application::database::mc::StripMoveInfo					"Strip move information from database '%s'"
 ::application::database::mc::StripPGNTags						"Strip PGN tags from database '%s'"
 ::application::database::mc::GamesStripped(0)				"No game stripped."
@@ -1432,7 +1432,7 @@
 ::import::mc::ImportAborted						"Import aborted."
 ::import::mc::TextIsEmpty							"PGN text is empty."
 ::import::mc::AbortImport							"Abort PGN import?"
-::import::mc::UnsupportedVariant					"Unsuported variant '%s' rejected"
+::import::mc::UnsupportedVariantRejected		"Unsuported variant '%s' rejected"
 ::import::mc::Accepted								"accepted"
 ::import::mc::Rejected								"rejected"
 
@@ -1446,6 +1446,7 @@
 ::import::mc::EnterOrPaste-Game					"game"
 ::import::mc::EnterOrPaste-Variation			"variation"
 
+::import::mc::UnsupportedVariant					"Unsuported variant rejected"
 ::import::mc::MissingWhitePlayerTag				"Missing white player"
 ::import::mc::MissingBlackPlayerTag				"Missing black player"
 ::import::mc::MissingPlayerTags					"Missing players"

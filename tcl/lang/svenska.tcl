@@ -1440,7 +1440,7 @@
 ::import::mc::ImportAborted						"Import avbruten."
 ::import::mc::TextIsEmpty							"PGN-text är tom."
 ::import::mc::AbortImport							"Avbryta PGN-import?"
-::import::mc::UnsupportedVariant					"Unsuported variant '%s' rejected" ;# NEW
+::import::mc::UnsupportedVariantRejected		"Unsuported variant '%s' rejected" ;# NEW
 ::import::mc::Accepted								"accepted" ;# NEW
 ::import::mc::Rejected								"rejected" ;# NEW
 
@@ -1450,6 +1450,7 @@
 ::import::mc::CheckImportResult					"Kontrollera om den riktiga figuruppsättningen hittats."
 ::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
+::import::mc::UnsupportedVariant					"Unsuported variant rejected" ;# NEW
 ::import::mc::EnterOrPaste							"Ange eller klistra in ett %s i PGN-format i fönstret ovan.\nFel vid import av %s kommer att visas här."
 ::import::mc::EnterOrPaste-Game					"parti"
 ::import::mc::EnterOrPaste-Variation			"variation"

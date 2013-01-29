@@ -25,7 +25,7 @@ TITLE Der Datenbankumschalter
 <ul><img src="images/database-switcher.png"/></ul>
 
 <p>
-Der Datanbankumschalter ermöglicht den einfachen Wechsel zwischen Datenbanken.
+Der Datenbankumschalter ermöglicht den einfachen Wechsel zwischen Datenbanken.
 Die aktive Datenbank wird durch einen gelben Hintergrund hervorgehoben.
 Alle Datenbanken, die nicht zur Schachform der aktiven Datenbank gehören,
 sind gesperrt (weißer Hintergrund).
@@ -91,6 +91,14 @@ Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten (<see/>
 </p>
 
 <p>
+<menuitem>%::application::database::mc::FileCreate%</menuitem>
+Ein <a href="Database-Formats.html#Database-Archive">Datenbankarchiv</a>
+für die gewählte Datenbank anlegen. Der
+<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geöffnet,
+um den Archivnamen zu wählen.
+</p>
+
+<p>
 <menuitem>%::application::database::mc::FileClose%</menuitem>
 Die gewählte Datenbank wird geschlossen. Sind Partien aus dieser Datenbank bearbeitet,
 aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
@@ -99,7 +107,7 @@ aber noch ungespeichert, erfolgt vor der Schliessung eine Sicherheitsabfrage.
 
 <p>
 <menuitem>%::database::switcher::mc::ReadOnly%</menuitem>
-Diese Datanbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
+Diese Datenbank wird schreibgeschützt bzw. schreibberechtigt gesetzt.
 Dies ist nur für Scidb- und Scid-Datenbanken
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) möglich.
 <note/><abbr>PGN</abbr>-Dateien und ChessBase-Datenbanken
@@ -158,24 +166,32 @@ Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten:
 
 <p>
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>
-Ein neues Piktogramm für diese Datanbank auswählen.
+Ein neues Piktogramm für diese Datenbank auswählen.
 <note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::EditDescription%</menuitem>
-Die Beschreibung dieser Datanbank ändern bzw. neu anlegen.
+Die Beschreibung dieser Datenbank ändern bzw. neu anlegen.
 <note/>Dies ist nicht für die <a href="Clipbase.html">Ablage-Datenbank</a> möglich.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
-Noch nicht implementiert.
+Eine Auswahl von Zuginformationen (wie z.B. "%::application::database::mc::MoveInfo(elapsedMoveTime)%")
+aus der Datenbank entfernen. Dies ist beispielsweise auch nützlich für Importe von
+FICS-Partien, um nachträglich die unerwünschten Informationen (hier
+"%::application::database::mc::MoveInfo(elapsedMilliSecs)%") zu entfernen.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
-Noch nicht implementiert.
+Dieses Funktion durchsucht die Datenbank nach zusätzlichen PGN-Tags
+(wie "WhiteTeam"). Es kann dann eine Auswahl von ihnen aus der Datenbank
+entfernt werden.  Das Entfernen nicht benötigter Tags beschleunigt ein wenig
+die Positionssuche, aber erst wenn nach der Entfernung eine Kompaktierung
+der Datenbank (<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
+geschieht.
 </p>
 
 <p id="Compact">
@@ -184,14 +200,6 @@ Diese Datenbank komprimieren, d.h. die zum Löschen vorgemerkten Partien werden
 physikalisch gelöscht. Diese Aktion kann nicht rückgägngig gemacht werden.
 Dieser Menüpunkt ist gesperrt wenn keine Partien in dieser Datenbank mit einer
 Lösch-Markierung versehen sind.
-</p>
-
-<p>
-<menuitem>%::application::database::mc::FileCreate%</menuitem>
-Ein <a href="Database-Formats.html#Database-Archive">Datenbankarchiv</a>
-für die gewählte Datenbank anlegen. Der
-<a href="File-Selection-Dialog.html">Dateiauswahldialog</a> wird geöffnet,
-um den Archivnamen zu wählen.
 </p>
 
 <h3 id="DND">Drag &amp; Drop</h3>

@@ -1441,7 +1441,7 @@
 ::import::mc::ImportAborted			"Importálás megszakítva."
 ::import::mc::TextIsEmpty			"PGN szöveg üres."
 ::import::mc::AbortImport			"Meg akarja szakítani a PGN importálást?"
-::import::mc::UnsupportedVariant		"Unsuported variant '%s' rejected" ;# NEW
+::import::mc::UnsupportedVariantRejected	"Unsuported variant '%s' rejected" ;# NEW
 ::import::mc::Accepted				"accepted" ;# NEW
 ::import::mc::Rejected				"rejected" ;# NEW
 
@@ -1451,6 +1451,7 @@
 ::import::mc::CheckImportResult			"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve."
 ::import::mc::CheckImportResultDetail		"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 
+::import::mc::UnsupportedVariant		"Unsuported variant rejected" ;# NEW
 ::import::mc::EnterOrPaste			"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
 ::import::mc::EnterOrPaste-Game			"játszma"
 ::import::mc::EnterOrPaste-Variation		"változat"
