@@ -430,7 +430,7 @@ Encoder::encodeMainline(MoveNode const* node)
 {
 	if (node->hasSupplement())
 	{
-		encodeNote(node);
+		encodeNote(node, true);
 		node = node->next();
 	}
 	else
@@ -468,7 +468,7 @@ Encoder::encodeVariation(MoveNode const* node)
 		if (node->hasSupplement())
 		{
 			if (node->hasNote())
-				encodeNote(node);
+				encodeNote(node, false);
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
 			{
@@ -477,7 +477,7 @@ Encoder::encodeVariation(MoveNode const* node)
 				m_position.push();
 				m_strm.put(token::Start_Marker);
 				if (var->hasNote())
-					encodeNote(var);
+					encodeNote(var, false);
 				encodeVariation(var->next());
 				m_position.pop();
 			}
@@ -496,7 +496,7 @@ Encoder::encodeVariation(MoveNode const* node)
 
 
 void
-Encoder::encodeNote(MoveNode const* node)
+Encoder::encodeNote(MoveNode const* node, bool isMainline)
 {
 	if (node->hasAnnotation())
 	{
@@ -526,7 +526,7 @@ Encoder::encodeNote(MoveNode const* node)
 
 		for (unsigned i = 0; i < moveInfo.count(); ++i)
 		{
-			if (!m_hasTimeTable || moveInfo[i].content() != MoveInfo::ElapsedMilliSeconds)
+			if (!isMainline || !m_hasTimeTable || moveInfo[i].content() != MoveInfo::ElapsedMilliSeconds)
 			{
 				m_strm.put(token::Mark);
 				moveInfo[i].encode(m_data);

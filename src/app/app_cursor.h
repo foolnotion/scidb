@@ -163,6 +163,7 @@ private:
 
 	friend class Application;
 	friend class MultiCursor;
+	friend class View;
 
 	typedef mstl::vector<View*>	ViewList;
 	typedef mstl::bitset				IndexSet;

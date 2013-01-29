@@ -157,6 +157,13 @@ MultiCursor::isEmpty() const
 }
 
 
+bool
+MultiCursor::isSingleBase() const
+{
+	return m_base->isSingleBase();
+}
+
+
 unsigned
 MultiCursor::countGames() const
 {

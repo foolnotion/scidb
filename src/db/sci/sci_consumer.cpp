@@ -364,13 +364,16 @@ Consumer::preparseComment(mstl::string& comment)
 			return;
 	}
 
-	InfoConsumer::preparseComment(comment);
-	int i = m_moveInfoSet.findElapsedMilliSeconds();
-
-	if (i >= 0 && (!m_timeTable.isEmpty() || m_plyCount == 0))
+	if (isMainline())
 	{
-		m_timeTable.set(m_plyCount, m_moveInfoSet[i]);
-		m_moveInfoSet.remove(i);
+		InfoConsumer::preparseComment(comment);
+		int i = m_moveInfoSet.findElapsedMilliSeconds();
+
+		if (i >= 0 && (!m_timeTable.isEmpty() || m_plyCount == 0))
+		{
+			m_timeTable.set(m_plyCount, m_moveInfoSet[i]);
+			m_moveInfoSet.remove(i);
+		}
 	}
 }
 

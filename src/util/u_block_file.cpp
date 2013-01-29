@@ -559,11 +559,7 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 				|| offset % blockSize() == 0);										// or starts at block offset 0
 	M_REQUIRE(offset + minSize + (mode() == ReadWriteLength ? 3 : 0) <= this->size());
 
-	unsigned nbytes = buf.size();
-
-	if (nbytes == 0)
-		return 0;
-
+	unsigned nbytes		= buf.size();
 	unsigned blockNo		= blockNumber(offset);
 	unsigned blockOffset	= this->blockOffset(offset);
 
@@ -590,7 +586,7 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 
 		resize(m_view, newSpan);
 		copy(buf, blockOffset, nbytes);
-		::zero(m_view.m_buffer.m_data + blockOffset + minSize, minSize - nbytes);
+		::zero(m_view.m_buffer.m_data + blockOffset + nbytes, minSize - nbytes);
 		m_isDirty = true;
 
 		if (newSpan < oldSpan)
@@ -753,6 +749,87 @@ BlockFile::put(ByteStream const& buf)
 
 	m_view.m_buffer.m_size += nbytes;
 	m_sizeInfo[m_view.m_buffer.m_number + span - 1] = ::modulo(m_view.m_buffer.m_size, m_mask);
+	return offset;
+}
+
+
+unsigned
+BlockFile::shrink(unsigned newSize, unsigned offset, unsigned minSize)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isReadWrite());
+	M_REQUIRE(isInSyncMode());
+	M_REQUIRE(mode() == ReadWriteLength || newSize <= minSize);
+	M_REQUIRE(offset/blockSize() < countBlocks());
+	M_REQUIRE(	(offset + minSize - 1)/blockSize() == offset/blockSize()	// fits into a single block
+				|| offset % blockSize() == 0);										// or starts at block offset 0
+	M_REQUIRE(offset + minSize + (mode() == ReadWriteLength ? 3 : 0) <= this->size());
+
+	unsigned blockNo		= blockNumber(offset);
+	unsigned blockOffset	= this->blockOffset(offset);
+
+	if (m_mode == ReadWriteLength)
+		minSize = retrieve(m_view, blockNo, blockOffset);
+
+	if (newSize > minSize)
+		return SizeTooLarge;
+
+	if (newSize == minSize)
+		return offset;
+
+	if (m_mode == ReadWriteLength)
+		newSize += 3;
+
+	unsigned newSpan = countSpans(newSize);
+	unsigned oldSpan = countSpans(minSize);
+
+	if (m_view.m_buffer.m_number != blockNo)
+	{
+		if (unsigned rc = fetch(m_view, blockNo, oldSpan))
+			return rc;
+	}
+
+	unsigned char* data = m_view.m_buffer.m_data + blockOffset;
+
+	if (m_mode == ReadWriteLength)
+		ByteStream::set(data, ByteStream::uint24_t(newSize));
+
+	::zero(data + newSize, minSize - newSize);
+	m_isDirty = true;
+
+	if (newSpan < oldSpan)
+	{
+		m_view.m_buffer.m_capacity = fileOffset(newSpan);
+		m_view.m_buffer.m_size = newSize;
+		m_view.m_buffer.m_span = newSpan;
+
+		unsigned span = oldSpan - newSpan - 1;
+
+		if (span == 0)
+		{
+			if (m_view.m_buffer.m_number + newSpan == countBlocks())
+			{
+				if (m_sizeInfo[m_view.m_buffer.m_number] == minSize)
+					m_sizeInfo[m_view.m_buffer.m_number + newSpan] = 0;
+
+				m_sizeInfo[m_view.m_buffer.m_number] = newSize;
+			}
+		}
+		else
+		{
+			if (unsigned rc = fetch(m_view, blockNo + newSpan))
+				return rc;
+
+			m_view.m_buffer.m_size = 0;
+			m_view.m_buffer.m_capacity = fileOffset(span);
+			m_sizeInfo[m_view.m_buffer.m_number] = 0;
+		}
+	}
+	else if (m_view.m_buffer.m_size == blockOffset + minSize)
+	{
+		m_sizeInfo[m_view.m_buffer.m_number] = (m_view.m_buffer.m_size -= minSize - newSize);
+	}
+
 	return offset;
 }
 

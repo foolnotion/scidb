@@ -548,6 +548,29 @@ DatabaseCodec::getConsumer(format::Type)
 }
 
 
+bool
+DatabaseCodec::stripMoveInformation(GameInfo const&, unsigned)
+{
+	M_RAISE("should not be used");
+	return false;
+}
+
+
+bool
+DatabaseCodec::stripTags(GameInfo const&, TagMap const&)
+{
+	M_RAISE("should not be used");
+	return false;
+}
+
+
+void
+DatabaseCodec::findTags(GameInfo const&, TagMap&) const
+{
+	M_RAISE("should not be used");
+}
+
+
 void
 DatabaseCodec::checkPermissions(mstl::string const& filename)
 {

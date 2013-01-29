@@ -68,6 +68,7 @@ using namespace tcl::app;
 static char const* CmdClose			= "::scidb::view::close";
 static char const* CmdCopy				= "::scidb::view::copy";
 static char const* CmdCount			= "::scidb::view::count";
+static char const* CmdEnumTags		= "::scidb::view::enumTags";
 static char const* CmdExport			= "::scidb::view::export";
 static char const* CmdFind				= "::scidb::view::find";
 static char const* CmdMap				= "::scidb::view::map";
@@ -75,6 +76,7 @@ static char const* CmdNew				= "::scidb::view::new";
 static char const* CmdOpen				= "::scidb::view::open?";
 static char const* CmdPrint			= "::scidb::view::print";
 static char const* CmdSearch			= "::scidb::view::search";
+static char const* CmdStrip			= "::scidb::view::strip";
 static char const* CmdSubscribe		= "::scidb::view::subscribe";
 static char const* CmdUnsubscribe	= "::scidb::view::unsubscribe";
 
@@ -759,12 +761,12 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* attr = stringFromObj(objc, objv, 1);
-	char const* database(stringFromObj(objc, objv, 2));
-	variant::Type variant = objc > 5 ? tcl::game::variantFromObj(objv[3]) : variant::Undetermined;
-	Cursor const& cursor(Scidb->cursor(database, variant));
-	View const& view = cursor.view(unsignedFromObj(objc, objv, objc > 5 ? 4 : 3));
-	unsigned index = unsignedFromObj(objc, objv, objc > 5 ? 5 : 4);
+	char const*		attr		= stringFromObj(objc, objv, 1);
+	char const*		database	= stringFromObj(objc, objv, 2);
+	variant::Type	variant	= objc > 5 ? tcl::game::variantFromObj(objv[3]) : variant::Undetermined;
+	Cursor const&	cursor	= Scidb->cursor(database, variant);
+	View const&		view		= cursor.view(unsignedFromObj(objc, objv, objc > 5 ? 4 : 3));
+	unsigned			index		= unsignedFromObj(objc, objv, objc > 5 ? 5 : 4);
 
 	if (::strcmp(attr, "player") == 0)
 		setResult(view.lookupPlayer(index));
@@ -827,6 +829,134 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdStrip(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 8)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<what> <database> <variant> <view> <attributes> <progress-cmd> <progress-arg> ");
+		return TCL_ERROR;
+	}
+
+	char const*		what		= stringFromObj(objc, objv, 1);
+	char const*		database	= stringFromObj(objc, objv, 2);
+	variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 3);
+	Cursor&			cursor	= scidb->cursor(database, variant);
+	View&				view		= cursor.view(unsignedFromObj(objc, objv, 4));
+	Tcl_Obj*			attrs		= objectFromObj(objc, objv, 5);
+	Progress			progress(objv[6], objv[7]);
+
+	if (::strcmp(what, "moveInfo") == 0)
+	{
+		Tcl_Obj** objs;
+
+		if (Tcl_ListObjGetElements(ti, attrs, &objc, &objs) != TCL_OK)
+			return error(CmdStrip, 0, 0, "list of attributes expected");
+
+		unsigned types = 0;
+
+		for (int i = 0; i < objc; ++i)
+		{
+			char const* attr = Tcl_GetString(objs[i]);
+
+			if (::strcasecmp(attr, "evaluation") == 0)
+				types |= 1 << MoveInfo::Evaluation;
+			else if (::strcasecmp(attr, "playersClock") == 0)
+				types |= 1 << MoveInfo::PlayersClock;
+			else if (::strcasecmp(attr, "elapsedGameTime") == 0)
+				types |= 1 << MoveInfo::ElapsedGameTime;
+			else if (::strcasecmp(attr, "elapsedMoveTime") == 0)
+				types |= 1 << MoveInfo::ElapsedMoveTime;
+			else if (::strcasecmp(attr, "elapsedMilliSecs") == 0)
+				types |= 1 << MoveInfo::ElapsedMilliSeconds;
+			else if (::strcasecmp(attr, "clockTime") == 0)
+				types |= 1 << MoveInfo::ClockTime;
+			else if (::strcasecmp(attr, "corrChessSent") == 0)
+				types |= 1 << MoveInfo::CorrespondenceChessSent;
+			else if (::strcasecmp(attr, "videoTime") == 0)
+				types |= 1 << MoveInfo::VideoTime;
+			else
+				return error(CmdStrip, 0, 0, "unknown attribute '%s'", attr);
+		}
+
+		setResult(scidb->stripMoveInformation(view, types, progress, Application::DontUpdateGameInfo));
+	}
+	else if (::strcmp(what, "tags") == 0)
+	{
+		typedef Application::TagMap TagMap;
+
+		Tcl_Obj**	objs;
+		TagMap		tags;
+
+		if (Tcl_ListObjGetElements(ti, attrs, &objc, &objs) != TCL_OK)
+			return error(CmdStrip, 0, 0, "list of attributes expected");
+
+		for (int i = 0; i < objc; ++i)
+			tags[Tcl_GetString(objs[i])] = 1;
+
+		setResult(scidb->stripTags(view, tags, progress, Application::UpdateGameInfo));
+	}
+	else
+	{
+		return error(CmdStrip, 0, 0, "unexpected attribute '%s'", what);
+	}
+
+	return TCL_OK;
+}
+
+
+static int
+cmdEnumTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	typedef View::TagMap TagMap;
+
+	if (objc != 6)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<database> <variant> <view> <progress-cmd> <progress-arg> ");
+		return TCL_ERROR;
+	}
+
+	char const*		database	= stringFromObj(objc, objv, 1);
+	variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 2);
+	Cursor&			cursor	= scidb->cursor(database, variant);
+	View&				view		= cursor.view(unsignedFromObj(objc, objv, 3));
+	Progress			progress(objv[4], objv[5]);
+
+	TagMap tags;
+	Scidb->findTags(view, tags, progress);
+
+	if (progress.interrupted())
+	{
+		setResult("interrupted");
+	}
+	else
+	{
+		Tcl_Obj* objs[tags.size()];
+		unsigned n = 0;
+
+		for (TagMap::const_iterator i = tags.begin(); i != tags.end(); ++i)
+		{
+			Tcl_Obj* v[2];
+
+			v[0] = Tcl_NewStringObj(i->first, i->first.size());
+			v[1] = Tcl_NewIntObj(i->second);
+
+			M_ASSERT(n < tags.size());
+			objs[n++] = Tcl_NewListObj(2, v);
+		}
+
+		M_ASSERT(n == tags.size());
+		setResult(tags.size(), objs);
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace view {
 
@@ -836,6 +966,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdClose,			cmdClose);
 	createCommand(ti, CmdCopy,				cmdCopy);
 	createCommand(ti, CmdCount,			cmdCount);
+	createCommand(ti, CmdEnumTags,		cmdEnumTags);
 	createCommand(ti, CmdExport,			cmdExport);
 	createCommand(ti, CmdFind,				cmdFind);
 	createCommand(ti, CmdMap,				cmdMap);
@@ -843,6 +974,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdOpen,				cmdOpen);
 	createCommand(ti, CmdPrint,			cmdPrint);
 	createCommand(ti, CmdSearch,			cmdSearch);
+	createCommand(ti, CmdStrip,				cmdStrip);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 }

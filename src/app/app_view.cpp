@@ -68,9 +68,9 @@ map(View::UpdateMode mode)
 }
 
 
-View::View(Application& app, Database& db)
+View::View(Application& app, Cursor& cursor)
 	:m_app(app)
-	,m_db(db)
+	,m_cursor(cursor)
 {
 	initialize();
 
@@ -79,9 +79,9 @@ View::View(Application& app, Database& db)
 }
 
 
-View::View(View& view, Database& db)
+View::View(View& view)
 	:m_app(view.m_app)
-	,m_db(db)
+	,m_cursor(view.m_cursor)
 {
 	::memcpy(m_updateMode, view.m_updateMode, sizeof(m_updateMode));
 
@@ -94,14 +94,14 @@ View::View(View& view, Database& db)
 
 
 View::View(	Application& app,
-				Database& db,
+				Cursor& cursor,
 				UpdateMode gameUpdateMode,
 				UpdateMode playerUpdateMode,
 				UpdateMode eventUpdateMode,
 				UpdateMode siteUpdateMode,
 				UpdateMode annotatorUpdateMode)
 	:m_app(app)
-	,m_db(db)
+	,m_cursor(cursor)
 {
 	m_updateMode[table::Games		] = gameUpdateMode;
 	m_updateMode[table::Players	] = playerUpdateMode;
@@ -113,6 +113,20 @@ View::View(	Application& app,
 }
 
 
+Database const&
+View::database() const
+{
+	return *m_cursor.m_db;
+}
+
+
+Database&
+View::database()
+{
+	return *m_cursor.m_db;
+}
+
+
 void
 View::initialize()
 {
@@ -120,7 +134,7 @@ View::initialize()
 	{
 		if (i != table::Annotators)
 		{
-			m_filter[i].resize(m_db.count(table::Type(i)), Filter::LeaveEmpty);
+			m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), Filter::LeaveEmpty);
 			m_filter[i].set();
 		}
 	}
@@ -134,8 +148,8 @@ View::update()
 	{
 		if (i != table::Annotators)
 		{
-			m_filter[i].resize(m_db.count(table::Type(i)), ::map(m_updateMode[i]));
-			m_selector[i].update(m_db.count(table::Type(i)));
+			m_filter[i].resize(m_cursor.m_db->count(table::Type(i)), ::map(m_updateMode[i]));
+			m_selector[i].update(m_cursor.m_db->count(table::Type(i)));
 		}
 	}
 }
@@ -145,7 +159,7 @@ unsigned
 View::count(table::Type type) const
 {
 	if (type == table::Annotators)
-		return m_db.countAnnotators();
+		return m_cursor.m_db->countAnnotators();
 
 	return m_filter[type].count();
 }
@@ -155,7 +169,7 @@ unsigned
 View::total(table::Type type) const
 {
 	if (type == table::Annotators)
-		return m_db.countAnnotators();
+		return m_cursor.m_db->countAnnotators();
 
 	return m_filter[type].size();
 }
@@ -180,7 +194,7 @@ View::lookupGame(unsigned number) const
 int
 View::lookupPlayer(mstl::string const& name) const
 {
-	return m_selector[table::Players].findPlayer(m_db, name);
+	return m_selector[table::Players].findPlayer(*m_cursor.m_db, name);
 }
 
 
@@ -194,7 +208,7 @@ View::lookupPlayer(unsigned number) const
 int
 View::lookupEvent(mstl::string const& name) const
 {
-	return m_selector[table::Events].findEvent(m_db, name);
+	return m_selector[table::Events].findEvent(*m_cursor.m_db, name);
 }
 
 
@@ -208,7 +222,7 @@ View::lookupEvent(unsigned number) const
 int
 View::lookupSite(mstl::string const& name) const
 {
-	return m_selector[table::Sites].findSite(m_db, name);
+	return m_selector[table::Sites].findSite(*m_cursor.m_db, name);
 }
 
 
@@ -222,84 +236,84 @@ View::lookupSite(unsigned number) const
 int
 View::lookupAnnotator(mstl::string const& name) const
 {
-	return m_selector[table::Annotators].findAnnotator(m_db, name);
+	return m_selector[table::Annotators].findAnnotator(*m_cursor.m_db, name);
 }
 
 
 int
 View::findPlayer(mstl::string const& name) const
 {
-	return m_selector[table::Players].searchPlayer(m_db, name);
+	return m_selector[table::Players].searchPlayer(*m_cursor.m_db, name);
 }
 
 
 int
 View::findEvent(mstl::string const& title) const
 {
-	return m_selector[table::Events].searchEvent(m_db, title);
+	return m_selector[table::Events].searchEvent(*m_cursor.m_db, title);
 }
 
 
 int
 View::findSite(mstl::string const& title) const
 {
-	return m_selector[table::Sites].searchSite(m_db, title);
+	return m_selector[table::Sites].searchSite(*m_cursor.m_db, title);
 }
 
 
 int
 View::findAnnotator(mstl::string const& name) const
 {
-	return m_selector[table::Annotators].searchAnnotator(m_db, name);
+	return m_selector[table::Annotators].searchAnnotator(*m_cursor.m_db, name);
 }
 
 
 void
 View::sort(attribute::game::ID attr, order::ID order, rating::Type ratingType)
 {
-	m_selector[table::Games].sort(m_db, attr, order, ratingType);
+	m_selector[table::Games].sort(*m_cursor.m_db, attr, order, ratingType);
 }
 
 
 void
 View::sort(attribute::player::ID attr, order::ID order, rating::Type ratingType)
 {
-	m_selector[table::Players].sort(m_db, attr, order, ratingType);
+	m_selector[table::Players].sort(*m_cursor.m_db, attr, order, ratingType);
 }
 
 
 void
 View::sort(attribute::event::ID attr, order::ID order)
 {
-	m_selector[table::Events].sort(m_db, attr, order);
+	m_selector[table::Events].sort(*m_cursor.m_db, attr, order);
 }
 
 
 void
 View::sort(attribute::site::ID attr, order::ID order)
 {
-	m_selector[table::Sites].sort(m_db, attr, order);
+	m_selector[table::Sites].sort(*m_cursor.m_db, attr, order);
 }
 
 
 void
 View::sort(attribute::annotator::ID attr, order::ID order)
 {
-	m_selector[table::Annotators].sort(m_db, attr, order);
+	m_selector[table::Annotators].sort(*m_cursor.m_db, attr, order);
 }
 
 
 void
 View::reverseOrder(table::Type type)
 {
-	m_selector[type].reverse(m_db);
+	m_selector[type].reverse(*m_cursor.m_db);
 }
 
 
 void
 View::resetOrder(table::Type type)
 {
-	m_selector[type].reset(m_db);
+	m_selector[type].reset(*m_cursor.m_db);
 }
 
 
@@ -316,7 +330,7 @@ View::updateSelector(table::Type type)
 void
 View::searchGames(Query const& query)
 {
-	m_filter[table::Games].search(query, m_db.content());
+	m_filter[table::Games].search(query, m_cursor.m_db->content());
 	m_selector[table::Games].update(m_filter[table::Games]);
 }
 
@@ -328,14 +342,14 @@ View::filterOnGames(table::Type type)
 	{
 		case table::Players:
 		{
-			mstl::bitset f(m_db.namebase(Namebase::Player).nextId());
+			mstl::bitset f(m_cursor.m_db->namebase(Namebase::Player).nextId());
 			{
 				Filter& filter = m_filter[table::Games];
 
 				for (int i = filter.next(); i != Filter::Invalid; i = filter.next(i))
 				{
-					f.set(m_db.gameInfo(i).playerEntry(color::White)->id());
-					f.set(m_db.gameInfo(i).playerEntry(color::Black)->id());
+					f.set(m_cursor.m_db->gameInfo(i).playerEntry(color::White)->id());
+					f.set(m_cursor.m_db->gameInfo(i).playerEntry(color::Black)->id());
 				}
 			}
 			{
@@ -343,9 +357,9 @@ View::filterOnGames(table::Type type)
 
 				filter.reset();
 
-				for (unsigned i = 0; i < m_db.countPlayers(); ++i)
+				for (unsigned i = 0; i < m_cursor.m_db->countPlayers(); ++i)
 				{
-					if (f.test(m_db.player(i).id()))
+					if (f.test(m_cursor.m_db->player(i).id()))
 						filter.add(i);
 				}
 			}
@@ -354,21 +368,21 @@ View::filterOnGames(table::Type type)
 
 		case table::Events:
 		{
-			mstl::bitset f(m_db.namebase(Namebase::Event).nextId());
+			mstl::bitset f(m_cursor.m_db->namebase(Namebase::Event).nextId());
 			{
 				Filter& filter = m_filter[table::Games];
 
 				for (int i = filter.next(); i != Filter::Invalid; i = filter.next(i))
-					f.set(m_db.gameInfo(i).eventEntry()->id());
+					f.set(m_cursor.m_db->gameInfo(i).eventEntry()->id());
 			}
 			{
 				Filter& filter = m_filter[table::Events];
 
 				filter.reset();
 
-				for (unsigned i = 0; i < m_db.countEvents(); ++i)
+				for (unsigned i = 0; i < m_cursor.m_db->countEvents(); ++i)
 				{
-					if (f.test(m_db.event(i).id()))
+					if (f.test(m_cursor.m_db->event(i).id()))
 						filter.add(i);
 				}
 			}
@@ -377,21 +391,21 @@ View::filterOnGames(table::Type type)
 
 		case table::Sites:
 		{
-			mstl::bitset f(m_db.namebase(Namebase::Site).nextId());
+			mstl::bitset f(m_cursor.m_db->namebase(Namebase::Site).nextId());
 			{
 				Filter& filter = m_filter[table::Games];
 
 				for (int i = filter.next(); i != Filter::Invalid; i = filter.next(i))
-					f.set(m_db.gameInfo(i).eventEntry()->site()->id());
+					f.set(m_cursor.m_db->gameInfo(i).eventEntry()->site()->id());
 			}
 			{
 				Filter& filter = m_filter[table::Sites];
 
 				filter.reset();
 
-				for (unsigned i = 0; i < m_db.countSites(); ++i)
+				for (unsigned i = 0; i < m_cursor.m_db->countSites(); ++i)
 				{
-					if (f.test(m_db.site(i).id()))
+					if (f.test(m_cursor.m_db->site(i).id()))
 						filter.add(i);
 				}
 			}
@@ -403,14 +417,14 @@ View::filterOnGames(table::Type type)
 
 		case table::Annotators:
 		{
-			mstl::bitset f(m_db.namebase(Namebase::Annotator).nextId());
+			mstl::bitset f(m_cursor.m_db->namebase(Namebase::Annotator).nextId());
 			{
 				Filter& filter = m_filter[table::Games];
 
 				for (int i = filter.next(); i != Filter::Invalid; i = filter.next(i))
 				{
-					M_REQUIRE(m_db.gameInfo(i).annotatorEntry());
-					f.set(m_db.gameInfo(i).annotatorEntry()->id());
+					M_REQUIRE(m_cursor.m_db->gameInfo(i).annotatorEntry());
+					f.set(m_cursor.m_db->gameInfo(i).annotatorEntry()->id());
 				}
 			}
 			{
@@ -418,9 +432,9 @@ View::filterOnGames(table::Type type)
 
 				filter.reset();
 
-				for (unsigned i = 0; i < m_db.countAnnotators(); ++i)
+				for (unsigned i = 0; i < m_cursor.m_db->countAnnotators(); ++i)
 				{
-					if (f.test(m_db.annotator(i).id()))
+					if (f.test(m_cursor.m_db->annotator(i).id()))
 						filter.add(i);
 				}
 			}
@@ -433,7 +447,7 @@ View::filterOnGames(table::Type type)
 void
 View::setGameFilter(Filter const& filter)
 {
-	M_REQUIRE(filter.size() == m_db.countGames());
+	M_REQUIRE(filter.size() == m_cursor.m_db->countGames());
 
 	m_filter[table::Games] = filter;
 	m_selector[table::Games].update(m_filter[table::Games]);
@@ -443,7 +457,28 @@ View::setGameFilter(Filter const& filter)
 TournamentTable*
 View::makeTournamentTable() const
 {
-	return m_db.makeTournamentTable(m_filter[table::Games]);
+	return m_cursor.m_db->makeTournamentTable(m_filter[table::Games]);
+}
+
+
+unsigned
+View::stripMoveInformation(unsigned types, util::Progress& progress)
+{
+	return m_cursor.m_db->stripMoveInformation(m_filter[table::Games], types, progress);
+}
+
+
+unsigned
+View::stripTags(TagMap const& tags, util::Progress& progress)
+{
+	return m_cursor.m_db->stripTags(m_filter[table::Games], tags, progress);
+}
+
+
+void
+View::findTags(TagMap& tags, util::Progress& progress) const
+{
+	m_cursor.m_db->findTags(m_filter[table::Games], tags, progress);
 }
 
 
@@ -452,7 +487,7 @@ View::dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) co
 {
 	Game game;
 
-	load::State state = m_db.loadGame(this->index(table::Games, index), game);
+	load::State state = m_cursor.m_db->loadGame(this->index(table::Games, index), game);
 
 	if (state != load::Ok)
 		return Result(state, 0);
@@ -477,7 +512,7 @@ View::dumpGame(unsigned index,
 	Game game;
 	mstl::string encoding;
 
-	load::State state = m_db.loadGame(this->index(table::Games, index), game);
+	load::State state = m_cursor.m_db->loadGame(this->index(table::Games, index), game);
 
 	if (state != load::Ok)
 		return Result(state, 0);
@@ -556,14 +591,14 @@ View::copyGames(	Cursor& destination,
 {
 	progress.message("copy-game");
 
-	unsigned count = m_db.copyGames(	destination.database(),
-												m_filter[table::Games],
-												m_selector[table::Games],
-												allowedTags,
-												allowExtraTags,
-												illegalRejected,
-												log,
-												progress);
+	unsigned count = m_cursor.m_db->copyGames(	destination.database(),
+															m_filter[table::Games],
+															m_selector[table::Games],
+															allowedTags,
+															allowExtraTags,
+															illegalRejected,
+															log,
+															progress);
 
 	m_app.startUpdateTree(destination);
 	return count;
@@ -577,13 +612,13 @@ View::exportGames(Database& destination,
 						Log& log,
 						util::Progress& progress) const
 {
-	return m_db.exportGames(destination,
-									m_filter[table::Games],
-									m_selector[table::Games],
-									copyMode,
-									illegalRejected,
-									log,
-									progress);
+	return m_cursor.m_db->exportGames(	destination,
+													m_filter[table::Games],
+													m_selector[table::Games],
+													copyMode,
+													illegalRejected,
+													log,
+													progress);
 }
 
 
@@ -594,15 +629,15 @@ View::exportGames(Consumer& destination,
 						Log& log,
 						util::Progress& progress) const
 {
-	destination.setupVariant(m_db.variant());
+	destination.setupVariant(m_cursor.m_db->variant());
 
-	return m_db.exportGames(destination,
-									m_filter[table::Games],
-									m_selector[table::Games],
-									copyMode,
-									illegalRejected,
-									log,
-									progress);
+	return m_cursor.m_db->exportGames(	destination,
+													m_filter[table::Games],
+													m_selector[table::Games],
+													copyMode,
+													illegalRejected,
+													log,
+													progress);
 }
 
 
@@ -624,7 +659,7 @@ View::exportGames(mstl::string const& filename,
 
 	typedef DatabaseCodec::Format Format;
 
-	if (m_db.size() == 0)
+	if (m_cursor.m_db->size() == 0)
 		return 0;
 
 	mstl::string	ext	= util::misc::file::suffix(filename);
@@ -632,11 +667,15 @@ View::exportGames(mstl::string const& filename,
 
 	if (ext == "sci")
 	{
-		Database destination(filename, sys::utf8::Codec::utf8(), storage::OnDisk, type, m_db.variant());
+		Database destination(filename,
+									sys::utf8::Codec::utf8(),
+									storage::OnDisk,
+									type,
+									m_cursor.m_db->variant());
 		destination.setDescription(description);
 		progress.message("write-game");
 
-		if (	m_db.format() == format::Scidb
+		if (	m_cursor.m_db->format() == format::Scidb
 			&& fmode != Upgrade
 			&& allowExtraTags
 			&& (allowedTags | sci::Encoder::infoTags()).any())
@@ -646,7 +685,7 @@ View::exportGames(mstl::string const& filename,
 		else
 		{
 			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
-			sci::Consumer consumer(m_db.format(), codecs, allowedTags, allowExtraTags);
+			sci::Consumer consumer(m_cursor.m_db->format(), codecs, allowedTags, allowExtraTags);
 			count = exportGames(consumer, copyMode, illegalRejected, log, progress);
 		}
 
@@ -656,13 +695,17 @@ View::exportGames(mstl::string const& filename,
 	}
 	else if (ext == "si3" || ext == "si4")
 	{
-		Database destination(filename, sys::utf8::Codec::utf8(), storage::OnDisk, type, m_db.variant());
+		Database destination(filename,
+									sys::utf8::Codec::utf8(),
+									storage::OnDisk,
+									type,
+									m_cursor.m_db->variant());
 		destination.setDescription(description);
 
 //		We do not use speed up because the scid bases created with the Scid application
 //		may contain some broken data. The exporting will fix the data.
-//		if (	m_db.format() == format::Scid
-//			&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_db.codec()).isFormat3()))
+//		if (	m_cursor.m_db->format() == format::Scid
+//			&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
 //		{
 //			count = exportGames(destination, copyMode, illegalRejected, log, progress, "write-game");
 //		}

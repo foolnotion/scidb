@@ -142,6 +142,7 @@ public:
 	void skip(unsigned n);
 	void advance(unsigned n);
 	void skipString();
+	void strip(unsigned offset, unsigned size);
 	void seekg(unsigned offset);
 	void seekp(unsigned offset);
 

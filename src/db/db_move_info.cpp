@@ -305,7 +305,7 @@ MoveInfo::parseEvaluation(char const* s)
 
 	unsigned pawns = ::strtoul(++s, &e, 10);
 
-	if (::isdigit(sign))
+	if (!::isalpha(sign))
 	{
 		if (s == e || *e != '.')
 			return 0;
@@ -399,11 +399,11 @@ MoveInfo::computeChecksum(EngineList const& engines, util::crc::checksum_t crc) 
 void
 MoveInfo::printClock(char const* id, mstl::string& result, Format format) const
 {
-	switch (format)
-	{
-		case Pgn:	result.format("[%%%s ", id); break;
-		case Text:	result.append('(');
-	}
+	if (format == Pgn)
+		result.append("[%", 2);
+
+	result.append(id);
+	result.append(' ');
 
 	result.format(	"%u:%02u:%02u",
 						m_time.m_clock.hour(),
@@ -439,27 +439,25 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 		case ClockTime:			printClock("ct",  result, format); break;
 
 		case ElapsedMilliSeconds:
-			switch (format)
-			{
-				case Pgn:	result.append("[%emt ", 6); break;
-				case Text:	result.append('('); break;
-			}
+			if (format == Pgn)
+				result.append("[%");
+			result.append("emt ", 4);
 			result.format("%u.%u", unsigned(m_elapsed.m_seconds), unsigned(m_elapsed.m_milliSeconds));
 			break;
 
 		case CorrespondenceChessSent:
-			switch (format)
-			{
-				case Pgn:	result.append("[%ccsnt ", 8); break;
-				case Text:	result.append('('); break;
-			}
-			result.format(	"%04u.%02u:%02u",
+			if (format == Pgn)
+				result.append("[%ccsnt ", 8);
+			result.format(	"%04u.%02u.%02u",
 								m_time.m_date.year(),
 								m_time.m_date.month(),
 								m_time.m_date.day());
 			if (!m_time.m_clock.isEmpty())
 			{
-				result.format(",%u", m_time.m_clock.hour());
+				result.append(',');
+				if (format == Text)
+					result.append(' ');
+				result.format("%u", m_time.m_clock.hour());
 				if (m_time.m_clock.minute())
 					result.format(":%02u", m_time.m_clock.minute());
 				if (m_time.m_clock.second())
@@ -469,7 +467,8 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 
 		case VideoTime:
 			if (format == Pgn)
-				result.append("[%vt ", 5);
+				result.append("[%");
+			result.append("vt ", 3);
 			result.format("%u.%u", unsigned(m_centiSeconds/1000), unsigned(m_centiSeconds % 1000));
 			break;
 
@@ -496,25 +495,22 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 			break;
 	}
 
-	switch (format)
-	{
-		case Pgn:	result.append(']'); break;
-		case Text:	result.append(')'); break;
-	}
+	if (format == Pgn)
+		result.append(']');
 }
 
 
 void
 MoveInfo::decode(ByteStream& strm)
 {
-	M_REQUIRE(strm.peek() & 0x80);
+	M_REQUIRE(isMoveInfo(strm.peek()));
 
 	uint8_t	u = strm.get();
 	uint32_t	v;
 
 	switch (m_content = Type(((u >> 4) & 0x07) + 1))
 	{
-		case None:	// should not happen
+		case None:	// cannot happen
 			break;
 
 		case CorrespondenceChessSent:
@@ -564,6 +560,83 @@ MoveInfo::decode(ByteStream& strm)
 		default:
 			IO_RAISE(Game, Corrupted, "corrupted game data");
 	}
+}
+
+
+void
+MoveInfo::skip(ByteStream& strm)
+{
+	M_REQUIRE(isMoveInfo(strm.peek()));
+
+	switch (((strm.get() >> 4) & 0x07) + 1)
+	{
+		case None:	// cannot happen
+			strm.skip(1);
+			break;
+
+		case PlayersClock:
+		case ElapsedGameTime:
+		case ElapsedMoveTime:
+		case ClockTime:
+			strm.skip(3);
+			break;
+
+		case Evaluation:
+		case ElapsedMilliSeconds:
+		case VideoTime:
+			strm.skip(4);
+			break;
+
+		case CorrespondenceChessSent:
+			strm.skip(5);
+			break;
+
+		default:
+			IO_RAISE(Game, Corrupted, "corrupted game data");
+	}
+}
+
+
+unsigned char const*
+MoveInfo::skip(unsigned char const* strm)
+{
+	M_REQUIRE(isMoveInfo(*strm));
+
+	switch (((*strm >> 4) & 0x07) + 1)
+	{
+		case None:	// cannot happen
+			++strm;
+			break;
+
+		case PlayersClock:
+		case ElapsedGameTime:
+		case ElapsedMoveTime:
+		case ClockTime:
+			strm += 3;
+			break;
+
+		case Evaluation:
+		case ElapsedMilliSeconds:
+		case VideoTime:
+			strm += 4;
+			break;
+
+		case CorrespondenceChessSent:
+			strm += 5;
+			break;
+
+		default:
+			IO_RAISE(Game, Corrupted, "corrupted game data");
+	}
+
+	return strm;
+}
+
+
+MoveInfo::Type
+MoveInfo::type(unsigned char const firstType)
+{
+	return Type(((firstType >> 4) & 0x07) + 1);
 }
 
 

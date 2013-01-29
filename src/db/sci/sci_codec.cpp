@@ -1058,10 +1058,54 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 }
 
 
+bool
+Codec::stripMoveInformation(GameInfo const& info, unsigned types)
+{
+	ByteStream	bstrm;
+	Decoder		decoder(bstrm, variant());
+
+	m_gameData->get(bstrm, info.gameOffset());
+
+	if (!decoder.stripMoveInformation(info.plyCount(), types))
+		return false;
+
+	m_gameData->shrink(bstrm.capacity(), info.gameOffset());
+	return true;
+}
+
+
+bool
+Codec::stripTags(GameInfo const& info, TagMap const& tags)
+{
+	ByteStream	bstrm;
+	Decoder		decoder(bstrm, variant());
+
+	m_gameData->get(bstrm, info.gameOffset());
+
+	if (!decoder.stripTags(tags))
+		return false;
+
+	m_gameData->shrink(bstrm.capacity(), info.gameOffset());
+	return true;
+}
+
+
+void
+Codec::findTags(GameInfo const& info, TagMap& tags) const
+{
+	ByteStream	bstrm;
+	Decoder		decoder(bstrm, variant());
+
+	m_gameData->get(bstrm, info.gameOffset());
+	decoder.findTags(tags);
+}
+
+
 void
 Codec::readIndexProgressive(unsigned index)
 {
 	M_ASSERT(m_progressiveStream);
+	M_ASSERT(index < gameInfoList().size());
 
 	char buf[sizeof(IndexEntry)];
 

@@ -40,6 +40,7 @@
 
 namespace util { class Progress; }
 namespace TeXt { class Environment; }
+namespace mstl { template <typename T, typename U> class map; }
 
 namespace db {
 
@@ -68,15 +69,16 @@ public:
 	typedef ::db::tag::TagSet TagBits;
 	typedef db::Byte NagMap[db::nag::Scidb_Last];
 	typedef mstl::string Languages[4];
+	typedef mstl::map<mstl::string,unsigned> TagMap;
 
 	typedef mstl::pair<db::load::State,unsigned> Result;
 
 	static unsigned const DefaultView = 0;
 
-	View(Application& app, db::Database& db);
-	View(View& view, db::Database& db);
+	View(Application& app, Cursor& cursor);
+	View(View& view);
 	View(	Application& app,
-			db::Database& db,
+			Cursor& cursor,
 			UpdateMode gameUpdateMode,
 			UpdateMode playerUpdateMode,
 			UpdateMode eventUpdateMode,
@@ -85,6 +87,10 @@ public:
 
 	/// Return application.
 	Application const& application() const;
+	/// Return cursor.
+	Cursor const& cursor() const;
+	/// Return database.
+	db::Database& database();
 	/// Return database.
 	db::Database const& database() const;
 
@@ -130,6 +136,7 @@ public:
 
 	/// Get PGN (without variations) of given game index.
 	Result dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const;
+	/// Get PGN (without variations) of given game index.
 	Result dumpGame(	unsigned index,
 							unsigned split,
 							mstl::string const& fen,
@@ -160,6 +167,13 @@ public:
 	void searchGames(db::Query const& query);
 	/// Set table filter according to game filter.
 	void filterOnGames(db::table::Type type);
+
+	/// Maintenance: strip move information from all games in view.
+	unsigned stripMoveInformation(unsigned types, util::Progress& progress);
+	/// Maintenance: strip PGN tags from all games in view.
+	unsigned stripTags(TagMap const& tags, util::Progress& progress);
+	/// Maintenance: find all additional tags in database.
+	void findTags(TagMap& tags, util::Progress& progress) const;
 
 	/// Reflect database changes (number of games),
 	void update();
@@ -218,7 +232,7 @@ private:
 	void initialize();
 
 	Application&	m_app;
-	db::Database&	m_db;
+	Cursor&			m_cursor;
 	UpdateMode		m_updateMode[db::table::LAST];
 	db::Filter		m_filter[db::table::LAST];
 	db::Selector	m_selector[db::table::LAST];

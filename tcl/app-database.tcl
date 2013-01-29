@@ -30,116 +30,151 @@ namespace eval application {
 namespace eval database {
 namespace eval mc {
 
-set FileOpen						"Open"
-set FileOpenRecent				"Open Recent"
-set FileNew							"New"
-set FileExport						"Export"
-set FileImport(pgn)				"Import PGN files"
-set FileImport(db)				"Import Databases"
-set FileCreate						"Create Archive"
-set FileClose						"Close"
-set FileMaintenance				"Maintenance"
-set FileCompact					"Compact"
-set FileStripMoveInfo			"Strip Move Information"
-set FileStripPGNTags				"Strip PGN Tags"
-set HelpSwitcher					"Help for Database Switcher"
+set FileOpen							"Open"
+set FileOpenRecent					"Open Recent"
+set FileNew								"New"
+set FileExport							"Export"
+set FileImport(pgn)					"Import PGN files"
+set FileImport(db)					"Import Databases"
+set FileCreate							"Create Archive"
+set FileClose							"Close"
+set FileMaintenance					"Maintenance"
+set FileCompact						"Compact"
+set FileStripMoveInfo				"Strip Move Information"
+set FileStripPGNTags					"Strip PGN Tags"
+set HelpSwitcher						"Help for Database Switcher"
 
-set Games							"&Games"
-set Players							"&Players"
-set Events							"&Events"
-set Sites							"&Sites"
-set Annotators						"&Annotators"
+set Games								"&Games"
+set Players								"&Players"
+set Events								"&Events"
+set Sites								"&Sites"
+set Annotators							"&Annotators"
 
-set File								"File"
-set SymbolSize						"Symbol Size"
-set Large							"Large"
-set Medium							"Medium"
-set Small							"Small"
-set Tiny								"Tiny"
-set LoadMessage					"Opening database '%s'"
-set UpgradeMessage				"Upgrading database '%s'"
-set CompactMessage				"Compacting database '%s'"
-set CannotOpenFile				"Cannot open file '%s'."
-set EncodingFailed				"Encoding %s failed."
-set DatabaseAlreadyOpen			"Database '%s' is already open."
-set Properties						"Properties"
-set Preload							"Preload"
-set MissingEncoding				"Missing encoding %s (using %s instead)"
-set DescriptionTooLarge			"Description is too large."
-set DescrTooLargeDetail			"The entry contains %d characters, but only %d characters are allowed."
-set ClipbaseDescription			"Temporary database, not kept on disk."
-set HardLinkDetected				"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
-set HardLinkDetectedDetail		"If we load this database twice the application may crash due to the usage of threads."
-set OverwriteExistingFiles		"Overwrite exisiting files in directory '%s'?"
-set SelectDatabases				"Select the databases to be opened"
-set ExtractArchive				"Extract archive %s"
-set CompactDetail					"All games must be closed before a compaction can be done."
-set ReallyCompact					"Really compact database '%s'?"
-set ReallyCompactDetail(1)		"Only one game will be deleted."
-set ReallyCompactDetail(N)		"%s games will be deleted."
-set RemoveSpace					"Some empty spaces will be removed."
-set SelectVariant					"Select Variant"
+set File									"File"
+set SymbolSize							"Symbol Size"
+set Large								"Large"
+set Medium								"Medium"
+set Small								"Small"
+set Tiny									"Tiny"
+set LoadMessage						"Opening database '%s'"
+set UpgradeMessage					"Upgrading database '%s'"
+set CompactMessage					"Compacting database '%s'"
+set CannotOpenFile					"Cannot open file '%s'."
+set EncodingFailed					"Encoding %s failed."
+set DatabaseAlreadyOpen				"Database '%s' is already open."
+set Properties							"Properties"
+set Preload								"Preload"
+set MissingEncoding					"Missing encoding %s (using %s instead)"
+set DescriptionTooLarge				"Description is too large."
+set DescrTooLargeDetail				"The entry contains %d characters, but only %d characters are allowed."
+set ClipbaseDescription				"Temporary database, not kept on disk."
+set HardLinkDetected					"Cannot load file '%file1' because it is already loaded as file '%file2'. This can only happen if hard links are involved."
+set HardLinkDetectedDetail			"If we load this database twice the application may crash due to the usage of threads."
+set OverwriteExistingFiles			"Overwrite exisiting files in directory '%s'?"
+set SelectDatabases					"Select the databases to be opened"
+set ExtractArchive					"Extract archive %s"
+set SelectVariant						"Select Variant"
+set Example								"Example"
 
-set RecodingDatabase				"Recoding %base from %from to %to"
-set RecodedGames					"%s game(s) recoded"
+set RecodingDatabase					"Recoding %base from %from to %to"
+set RecodedGames						"%s game(s) recoded"
 
-set ChangeIcon						"Change Icon"
-set Recode							"Recode"
-set EditDescription				"Edit Description"
-set EmptyClipbase					"Empty Clipbase"
+set ChangeIcon							"Change Icon"
+set Recode								"Recode"
+set EditDescription					"Edit Description"
+set EmptyClipbase						"Empty Clipbase"
 
-set T_Unspecific					"Unspecific"
-set T_Temporary					"Temporary"
-set T_Work							"Work"
-set T_Clipbase						"Clipbase"
-set T_MyGames						"My Games"
-set T_Informant					"Informant"
-set T_LargeDatabase				"Large Database"
-set T_CorrespondenceChess		"Correspondence Chess"
-set T_EmailChess					"Email Chess"
-set T_InternetChess				"Internet Chess"
-set T_ComputerChess				"Computer Chess"
-set T_Chess960						"Chess 960"
-set T_PlayerCollection			"Player Collection"
-set T_PlayerCollectionFemale	"Player Collection"
-set T_Tournament					"Tournament"
-set T_TournamentSwiss			"Tournament Swiss"
-set T_GMGames						"GM Games"
-set T_IMGames						"IM Games"
-set T_BlitzGames					"Blitz Games"
-set T_Tactics						"Tactics"
-set T_Endgames						"Endgames"
-set T_Analysis						"Analysis"
-set T_Training						"Training"
-set T_Match							"Match"
-set T_Studies						"Studies"
-set T_Jewels						"Jewels"
-set T_Problems						"Problems"
-set T_Patzer						"Patzer"
-set T_Gambit						"Gambit"
-set T_Important					"Important"
-set T_Openings						"Openings"
-set T_OpeningsWhite				"Openings White"
-set T_OpeningsBlack				"Openings Black"
-set T_PGNFile						"PGN file"
-set T_Bughouse						"Bughouse"
-set T_Antichess					"Antichess"
-set T_ThreeCheck					"Three-check"
-set T_Crazyhouse					"Crazyhouse"
+set Maintenance						"Maintenance"
+set StripMoveInfo						"Strip move information from database '%s'"
+set StripPGNTags						"Strip PGN tags from database '%s'"
+set GamesStripped(0)					"No game stripped"
+set GamesStripped(1)					"One game stripped"
+set GamesStripped(N)					"%s games stripped"
+set GamesRemoved(0)					"No game removed"
+set GamesRemoved(1)					"One game removed"
+set GamesRemoved(N)					"%s games removed"
+set AllGamesMustBeClosed			"All games must be closed before this operation can be done."
+set ReallyCompact						"Really compact database '%s'?"
+set ReallyCompactDetail(1)			"Only one game will be deleted."
+set ReallyCompactDetail(N)			"%s games will be deleted."
+set RemoveSpace						"Some empty spaces will be removed."
+set CompactionRecommended			"It is recommended to compact the database."
+set SearchPGNTags						"Searching for PGN tags"
+set SelectSuperfluousTags			"Select superfluous tags:"
 
-set OpenDatabase					"Open Database"
-set NewDatabase					"New Database"
-set CloseDatabase					"Close Database '%s'"
-set SetReadonly					"Set Database '%s' readonly"
-set SetWriteable					"Set Database '%s' writeable"
+set T_Unspecific						"Unspecific"
+set T_Temporary						"Temporary"
+set T_Work								"Work"
+set T_Clipbase							"Clipbase"
+set T_MyGames							"My Games"
+set T_Informant						"Informant"
+set T_LargeDatabase					"Large Database"
+set T_CorrespondenceChess			"Correspondence Chess"
+set T_EmailChess						"Email Chess"
+set T_InternetChess					"Internet Chess"
+set T_ComputerChess					"Computer Chess"
+set T_Chess960							"Chess 960"
+set T_PlayerCollection				"Player Collection"
+set T_PlayerCollectionFemale		"Player Collection"
+set T_Tournament						"Tournament"
+set T_TournamentSwiss				"Tournament Swiss"
+set T_GMGames							"GM Games"
+set T_IMGames							"IM Games"
+set T_BlitzGames						"Blitz Games"
+set T_Tactics							"Tactics"
+set T_Endgames							"Endgames"
+set T_Analysis							"Analysis"
+set T_Training							"Training"
+set T_Match								"Match"
+set T_Studies							"Studies"
+set T_Jewels							"Jewels"
+set T_Problems							"Problems"
+set T_Patzer							"Patzer"
+set T_Gambit							"Gambit"
+set T_Important						"Important"
+set T_Openings							"Openings"
+set T_OpeningsWhite					"Openings White"
+set T_OpeningsBlack					"Openings Black"
+set T_PGNFile							"PGN file"
+set T_Bughouse							"Bughouse"
+set T_Antichess						"Antichess"
+set T_ThreeCheck						"Three-check"
+set T_Crazyhouse						"Crazyhouse"
 
-set OpenReadonly					"Open readonly"
-set OpenWriteable					"Open writeable"
+set OpenDatabase						"Open Database"
+set NewDatabase						"New Database"
+set CloseDatabase						"Close Database '%s'"
+set SetReadonly						"Set Database '%s' readonly"
+set SetWriteable						"Set Database '%s' writeable"
 
-set UpgradeDatabase				"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
-set UpgradeDatabaseDetail		"\"No\" will open the database readonly, and you cannot set it writeable."
+set OpenReadonly						"Open readonly"
+set OpenWriteable						"Open writeable"
+
+set UpgradeDatabase					"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
+set UpgradeDatabaseDetail			"\"No\" will open the database readonly, and you cannot set it writeable."
+
+set MoveInfo(evaluation)			"Evaluation"
+set MoveInfo(playersClock)			"Players Clock"
+set MoveInfo(elapsedGameTime)		"Elapsed Game Time"
+set MoveInfo(elapsedMoveTime)		"Elapsed Move Time"
+set MoveInfo(elapsedMilliSecs)	"Elapsed Milliseconds"
+set MoveInfo(clockTime)				"Clock Time"
+set MoveInfo(corrChessSent)		"Correspondence Chess Sent"
+set MoveInfo(videoTime)				"Video Time"
 
 }
+
+set MoveInfoExample(evaluation)			{[%eval -6.05]}
+set MoveInfoExample(playersClock)		{[%clk 1:05:23]}
+set MoveInfoExample(elapsedGameTime)	{[%egt 1:25:42]}
+set MoveInfoExample(elapsedMoveTime)	{[%emt 0:05:42]}
+set MoveInfoExample(elapsedMilliSecs)	{[%emt 102.34]}
+set MoveInfoExample(clockTime)			{[%ct 17:10:42]}
+set MoveInfoExample(corrChessSent)		{[%ccsnt 2011.06.16, 17:53:02]}
+set MoveInfoExample(videoTime)			{[%vt 122.44]}
+
+set MoveInfoAttrs {evaluation playersClock elapsedGameTime elapsedMoveTime
+							elapsedMilliSecs clockTime corrChessSent videoTime}
 
 set Variants {Normal ThreeCheck Bughouse Crazyhouse Antichess Losers}
 
@@ -1136,8 +1171,8 @@ proc PopupMenu {parent x y {base ""}} {
 		if {$readonly} { set readonlyState disabled } else { set readonlyState normal }
 		set ext [$Vars(switcher) extension $base]
 		set type [$Vars(switcher) type $base]
-		set isSciFormat [expr {$ext eq "sci"}]
 		set isClipbase [expr {$base eq $clipbaseName}]
+		set isSciFormat [expr {$ext eq "sci" || $isClipbase}]
 		set name [::util::databaseName $base]
 		$menu add command                                    \
 			-label " $name"                                   \
@@ -1205,11 +1240,11 @@ proc PopupMenu {parent x y {base ""}} {
 					;
 			}
 
-			if {$isClipbase || $ext eq "sci"} {
+			if {$isSciFormat} {
 				set count [::scidb::db::count games $base $Vars(variant)]
 				if {$count} { set state $readonlyState } else { set state disabled }
 				$maint add command \
-					-label " $mc::FileStripMoveInfo" \
+					-label " $mc::FileStripMoveInfo..." \
 					-image $::icon::16x16::delete \
 					-compound left \
 					-command [namespace code [list StripMoveInfo $parent $base]] \
@@ -1222,22 +1257,25 @@ proc PopupMenu {parent x y {base ""}} {
 					-command [namespace code [list StripPGNTags $parent $base]] \
 					-state $state \
 					;
-				if {[::scidb::db::get compact? $base]} { set state normal } else { set state disabled }
-				$maint add command \
-					-label " $mc::FileCompact..." \
-					-image $::icon::16x16::none \
-					-compound left \
-					-command [namespace code [list Compact $top $base]] \
-					-state $state \
-			}
 
-			$maint add command \
-				-label " $mc::FileCreate..." \
-				-image $::icon::16x16::filetypeArchive \
-				-compound left \
-				-command [list ::menu::dbCreateArchive $top $base] \
-				;
+				if {!$isClipbase} {
+					if {[::scidb::db::get compact? $base]} { set state normal } else { set state disabled }
+					$maint add command \
+						-label " $mc::FileCompact..." \
+						-image $::icon::16x16::none \
+						-compound left \
+						-command [namespace code [list Compact $top $base]] \
+						-state $state \
+				}
+			}
 		}
+
+		$menu add command \
+			-label " $mc::FileCreate..." \
+			-image $::icon::16x16::filetypeArchive \
+			-compound left \
+			-command [list ::menu::dbCreateArchive $top $base] \
+			;
 
 		if {!$isClipbase} {
 			$menu add command \
@@ -1450,12 +1488,210 @@ proc SetDescription {dlg file} {
 
 
 proc StripMoveInfo {parent file} {
-	return [::beta::notYetImplemented $parent strip-move-info]
+	variable MoveInfoExample
+	variable MoveInfoAttrs
+	variable Vars
+
+	set rc [::game::closeAll \
+		$parent $file $Vars(variant) $mc::FileStripMoveInfo $mc::AllGamesMustBeClosed]
+	if {!$rc} { return }
+
+	set dlg [tk::toplevel $parent.stripMoveInfo]
+	set top [ttk::frame $dlg.top -takefocus 0]
+	set row 1
+
+	foreach attr $MoveInfoAttrs {
+		set Vars(moveInfo:$attr) [expr {$attr ne "videoTime"}]
+		ttk::checkbutton $top.$attr \
+			-text $mc::MoveInfo($attr) \
+			-variable [namespace current]::Vars(moveInfo:$attr) \
+			-command [namespace code [list CheckOkButton $dlg.ok]] \
+			;
+		ttk::label $top.l$attr -text "$mc::Example: $MoveInfoExample($attr)"
+		grid $top.$attr  -row $row -column 1 -sticky w
+		grid $top.l$attr -row $row -column 3 -sticky w
+		grid rowconfigure $top [incr row] -minsize $::theme::pady
+		incr row
+	}
+
+	grid columnconfigure $top {0 4} -minsize $::theme::padx
+	grid columnconfigure $top {2} -minsize $::theme::padX
+	grid rowconfigure $top 0 -minsize $::theme::pady
+	pack $top -fill both
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.ok configure -command [namespace code [list DoStripMoveInfo $dlg $file]]
+
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $mc::FileStripMoveInfo
+	wm resizable $dlg false false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.evaluation
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc CheckOkButton {btn} {
+	variable MoveInfoAttrs
+	variable Vars
+
+	foreach attr $MoveInfoAttrs {
+		if {$Vars(moveInfo:$attr)} {
+			$btn configure -state normal
+			return
+		}
+	}
+
+	$btn configure -state disabled
+}
+
+
+proc DoStripMoveInfo {dlg file} {
+	variable MoveInfoAttrs
+	variable Vars
+
+	set parent [winfo parent $dlg]
+	destroy $dlg
+
+	set attrs {}
+	foreach attr $MoveInfoAttrs {
+		if {$Vars(moveInfo:$attr)} { lappend attrs $attr }
+	}
+
+	set name [::util::databaseName $file]
+	set cmd [list ::scidb::view::strip moveInfo $file $Vars(variant) 0 $attrs]
+	set title [format $mc::StripMoveInfo $name]
+	set options [list -message $title]
+	set n [::progress::start $parent $cmd {} $options]
+	switch $n {
+		0 - 1		{ set info $mc::GamesStripped($n) }
+		default	{ set info $mc::GamesStripped(N) }
+	}
+
+	::log::open $mc::Maintenance
+	::log::info $title
+	::log::info $info
+	::log::close
+
+	set total [::scidb::db::count total $file]
+
+	if {$n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3)} {
+		::dialog::info \
+			-parent $parent \
+			-title "$::scidb::app: $mc::Maintenance" \
+			-message $mc::CompactionRecommended \
+			;
+	}
 }
 
 
 proc StripPGNTags {parent file} {
-	return [::beta::notYetImplemented $parent strip-move-tags]
+	variable Vars
+
+	set cmd [list ::scidb::view::enumTags $file $Vars(variant) 0]
+	set title $mc::SearchPGNTags
+	set options [list -message $title -interrupt yes]
+	set tags [::progress::start $parent $cmd {} $options]
+	if {$tags eq "interrupted"} { return }
+
+	set dlg [tk::toplevel $parent.stripPgnTags]
+	pack [set top [ttk::frame $dlg.top -takefocus 0]] -fill both
+	set row 3
+
+	ttk::label $top.header -text $mc::SelectSuperfluousTags -font TkHeadingFont
+	grid $top.header -row 1 -column 1 -columnspan 3 -sticky w
+
+	foreach pair $tags {
+		lassign $pair name freq
+		set Vars(tag:$name) 0
+		ttk::checkbutton $top.b$name \
+			-text $name \
+			-command [namespace code [list CheckTagSelection $dlg.ok $tags]] \
+			-variable [namespace current]::Vars(tag:$name) \
+			;
+		ttk::label $top.f$name -text [::locale::formatNumber $freq]
+		grid $top.b$name -row $row -column 1 -sticky w
+		grid $top.f$name -row $row -column 3 -sticky e
+		grid rowconfigure $top [incr row] -minsize $::theme::pady
+		incr row
+	}
+
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+	grid columnconfigure $top {0 4} -minsize $::theme::padx
+	grid columnconfigure $top {2} -minsize $::theme::padX
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.ok configure -command [namespace code [list DoStripPGNTags $dlg $file $tags]] -state disabled
+	$dlg.cancel configure -command [list destroy $dlg]
+
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $mc::FileStripPGNTags
+	wm resizable $dlg false false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.b[lindex $tags 0 0]
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc CheckTagSelection {btn tags} {
+	variable Vars
+
+	foreach pair $tags {
+		if {$Vars(tag:[lindex $pair 0])} {
+			return [$btn configure -state normal]
+		}
+	}
+
+	$btn configure -state disabled
+}
+
+
+proc DoStripPGNTags {dlg file tags} {
+	variable Vars
+
+	set parent [winfo parent $dlg]
+	destroy $dlg
+
+	set attrs {}
+	foreach pair $tags {
+		set name [lindex $pair 0]
+		if {$Vars(tag:$name)} { lappend attrs $name }
+	}
+
+	set name [::util::databaseName $file]
+	set cmd [list ::scidb::view::strip tags $file $Vars(variant) 0 $attrs]
+	set title [format $mc::StripPGNTags $name]
+	set options [list -message $title]
+	set n [::progress::start $parent $cmd {} $options]
+	switch $n {
+		0 - 1		{ set info $mc::GamesStripped($n) }
+		default	{ set info $mc::GamesStripped(N) }
+	}
+
+	::log::open $mc::Maintenance
+	::log::info $title
+	::log::info $info
+	::log::close
+
+	set total [::scidb::db::count total $file]
+
+	if {$n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3)} {
+		::dialog::info \
+			-parent $parent \
+			-title "$::scidb::app: $mc::Maintenance" \
+			-message $mc::CompactionRecommended \
+			;
+	}
 }
 
 
@@ -1469,7 +1705,7 @@ proc Compact {parent file} {
 	}
 	set reply [::dialog::question \
 		-parent $parent \
-		-title "$::scidb::app: $mc::FileCompact" \
+		-title "$::scidb::app: $mc::Maintenance" \
 		-message $msg \
 		-detail $detail \
 		-buttons {yes no} \
@@ -1478,13 +1714,22 @@ proc Compact {parent file} {
 	if {$reply eq "yes"} {
 		set variant [::scidb::app::variant]
 
-		if {[::game::closeAll $parent $file $variant $mc::FileCompact $mc::CompactDetail]} {
+		if {[::game::closeAll $parent $file $variant $mc::FileCompact $mc::AllGamesMustBeClosed]} {
 			::browser::closeAll $file $variant
 			::overview::closeAll $file $variant
 			set cmd [list ::scidb::db::compact $file]
 			set name [::util::databaseName $file]
-			set options [list -message [format $mc::CompactMessage $name]]
-			::util::catchException { ::progress::start $parent $cmd {} $options }
+			set title [format $mc::CompactMessage $name]
+			set options [list -message $title]
+			::progress::start $parent $cmd {} $options
+			switch $n {
+				0 - 1		{ set info $mc::GamesRemoved($n) }
+				default	{ set info $mc::GamesRemoved(N) }
+			}
+			::log::open $mc::Maintenance
+			::log::info $title
+			::log::info $info
+			::log::close
 		}
 	}
 }

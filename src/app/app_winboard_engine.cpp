@@ -515,7 +515,7 @@ winboard::Engine::startAnalysis(bool)
 		if (!currentBoard().isStandardPosition())
 			setupBoard(currentBoard());
 	}
-	else if (game->historyIsLegal())
+	else if (game->historyIsLegal(Game::DontAllowNullMoves))
 	{
 		if (!startBoard.isStandardPosition())
 			setupBoard(startBoard);

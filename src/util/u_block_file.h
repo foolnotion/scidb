@@ -84,6 +84,7 @@ public:
 	static unsigned const SyncFailed				= unsigned(-3);
 	static unsigned const ReadError				= unsigned(-4);
 	static unsigned const IllegalOffset			= unsigned(-5);
+	static unsigned const SizeTooLarge			= unsigned(-6);
 
 	BlockFile(mstl::fstream* stream, unsigned blockSize, Mode mode);
 	BlockFile(mstl::fstream* stream, unsigned blockSize, Mode mode, mstl::string const& magic);
@@ -119,6 +120,8 @@ public:
 	unsigned put(ByteStream const& buf);
 	unsigned put(ByteStream const& buf, unsigned offset, unsigned minLength = 0);
 	unsigned get(ByteStream& result, unsigned offset, unsigned length = 0);
+
+	unsigned shrink(unsigned newLength, unsigned offset, unsigned minLength = 0);
 
 	Reader& reader();
 

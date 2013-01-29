@@ -39,6 +39,7 @@
 
 namespace mstl { class fstream; }
 namespace mstl { class ostream; }
+namespace mstl { template <typename T, typename U> class map; }
 namespace util { class Progress; }
 namespace util { class ByteStream; }
 namespace TeXt { class Receptacle; }
@@ -68,6 +69,7 @@ public:
 	typedef type::ID Type;
 	typedef format::Type Format;
 	typedef Consumer::TagBits TagBits;
+	typedef mstl::map<mstl::string,unsigned> TagMap;
 
 	enum Access { GameIndex, MyIndex };
 
@@ -279,8 +281,15 @@ public:
 	/// Set/unset read-only flag.
 	void setReadonly(bool flag = true);
 
+	/// Strip move information from all selected games.
+	unsigned stripMoveInformation(Filter const& filter, unsigned types, util::Progress& progress);
+	/// Strip PGN tags from all selected games.
+	unsigned stripTags(Filter const& filter, TagMap const& tags, util::Progress& progress);
+
 	/// Search for givee position and return following move.
 	Move findExactPositionAsync(unsigned index, Board const& position, bool skipVariations) const;
+	/// Find all used tags in database.
+	void findTags(Filter const& filter, TagMap& tags, util::Progress& progress) const;
 
 	/// Import single game.
 	unsigned importGame(Producer& producer, unsigned index);

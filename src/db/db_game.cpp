@@ -2880,8 +2880,10 @@ Game::dumpMoves(mstl::string& result, unsigned length, unsigned flags)
 
 
 bool
-Game::historyIsLegal() const
+Game::historyIsLegal(Constraint constraint) const
 {
+	Board board(m_currentBoard);
+
 	MoveNode* succ = m_currentNode->next();
 
 	for (MoveNode* node = m_currentNode; node; succ = node, node = node->prev())
@@ -2890,6 +2892,14 @@ Game::historyIsLegal() const
 		{
 			if (!node->move().isLegal())
 				return false;
+
+			if (node->move().isNull() && constraint == DontAllowNullMoves)
+				return false;
+
+			board.undoMove(node->move(), m_variant);
+
+			if (node->move().isCastling() && board.piece(node->move().castlingRookFrom()) != piece::Rook)
+				return false; // handicap game - castling w/o rook
 		}
 	}
 
@@ -2935,7 +2945,7 @@ Game::dumpHistory(mstl::string& result, Style style) const
 
 		Move const& move = hist[i];
 
-		if (style == UCI && m_idn == variant::Standard && move.isCastling())
+		if (style == UCI && move.isCastling())
 		{
 			sq::Fyle fyle = move.isShortCastling() ? sq::FyleG : sq::FyleC;
 

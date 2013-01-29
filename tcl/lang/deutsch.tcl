@@ -446,12 +446,8 @@
 ::application::database::mc::OverwriteExistingFiles		"Die existierenden Dateien im Verzeichnis '%s' überschreiben?"
 ::application::database::mc::SelectDatabases					"Die zu öffnenden Datenbanken selektieren"
 ::application::database::mc::ExtractArchive					"Archiv %s extrahieren"
-::application::database::mc::CompactDetail					"Alle Partien müssen geschlossen sein bevor eine Kompaktierung erfolgen kann."
-::application::database::mc::ReallyCompact					"Soll die Datenbank '%s' wirklich kompaktiert werden?"
-::application::database::mc::ReallyCompactDetail(1)		"Nur eine Partie wird dabei entfernt."
-::application::database::mc::ReallyCompactDetail(N)		"%s Partien werden dabei entfernt."
-::application::database::mc::RemoveSpace						"Einige Leerräume werden entfernt."
 ::application::database::mc::SelectVariant					"Schachform wählen"
+::application::database::mc::Example							"Beispiel"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"
@@ -460,6 +456,24 @@
 ::application::database::mc::Recode								"Umkodierung"
 ::application::database::mc::EditDescription					"Beschreibung bearbeiten"
 ::application::database::mc::EmptyClipbase					"Ablage-Datenbank leeren"
+
+::application::database::mc::Maintenance						"Wartung"
+::application::database::mc::StripMoveInfo					"Zuginformationen entfernen aus der Datenbank '%s'."
+::application::database::mc::StripPGNTags						"PGN-Tags entfernen aus der Datenbank '%s'."
+::application::database::mc::GamesStripped(0)				"Es wurde keine Partie gekürzt"
+
+::application::database::mc::GamesStripped(1)				"Es wurde eine Partie gekürzt."
+::application::database::mc::GamesStripped(N)				"Es wurden %s Partien gekürzt."
+::application::database::mc::GamesRemoved(0)					"Es wurde keine Partie entfernt."
+::application::database::mc::GamesRemoved(1)					"Es wurde eine Partie entfernt."
+::application::database::mc::GamesRemoved(N)					"Es wurden %s Partien entfernt."
+::application::database::mc::AllGamesMustBeClosed			"Alle Partien müssen geschlossen sein bevor diese Operation erfolgen kann."
+::application::database::mc::ReallyCompact					"Soll die Datenbank '%s' wirklich kompaktiert werden?"
+::application::database::mc::ReallyCompactDetail(1)		"Nur eine Partie wird dabei entfernt."
+::application::database::mc::ReallyCompactDetail(N)		"%s Partien werden dabei entfernt."
+::application::database::mc::RemoveSpace						"Einige Leerräume werden entfernt."
+::application::database::mc::CompactionRecommended			"Eine Kompaktierung der Datenbank wird empfohlen."
+::application::database::mc::SearchPGNTags					"Nach PGN-Tags suchen"
 
 ::application::database::mc::T_Unspecific						"Unspezifiziert"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -511,6 +525,15 @@
 
 ::application::database::mc::UpgradeDatabase					"%s ist eine Datenbank im alten Format und kann nicht schreibbar geöffnet werden.\n\nEine Aktualisierung wird eine neue Version der Datenbank erstellen und danach die alten Dateien entfernen.\n\nDieser Vorgang kann eine Zeitlang dauern, muß aber nur einmal durchgeführt werden.\n\nSoll die Aktualisierung der Datenbank jetzt durchgeführt werden?"
 ::application::database::mc::UpgradeDatabaseDetail			"\"Nein\" öffnet die Datenbank schreibgeschützt, und sie kann nicht schreibbar gesetzt werden."
+
+::application::database::mc::MoveInfo(evaluation)			"Bewertung"
+::application::database::mc::MoveInfo(playersClock)		"Spieleruhr"
+::application::database::mc::MoveInfo(elapsedGameTime)	"Verbrauchte Partiezeit"
+::application::database::mc::MoveInfo(elapsedMoveTime)	"Verbrauchte Zugzeit"
+::application::database::mc::MoveInfo(elapsedMilliSecs)	"Verbrauchte Millisekunden"
+::application::database::mc::MoveInfo(clockTime)			"Uhrzeit"
+::application::database::mc::MoveInfo(corrChessSent)		"Korrespondenzschach versendet"
+::application::database::mc::MoveInfo(videoTime)			"Video-Time"
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Steuerung"

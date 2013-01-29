@@ -54,8 +54,8 @@ Cursor::Cursor(MultiCursor& cursor, Database* database)
 {
 	M_REQUIRE(database);
 
-	m_viewList.push_back(new View(m_cursor.app(), *database));	// base view
-	m_viewList.push_back(new View(m_cursor.app(), *database));	// view 0
+	m_viewList.push_back(new View(m_cursor.app(), *this));	// base view
+	m_viewList.push_back(new View(m_cursor.app(), *this));	// view 0
 	m_freeSet.resize(1);
 }
 
@@ -130,7 +130,7 @@ Cursor::newView(	View::UpdateMode gameUpdateMode,
 
 	unsigned	viewId;
 	View*		view = new View(	m_cursor.app(),
-										*m_db,
+										*this,
 										gameUpdateMode,
 										playerUpdateMode,
 										eventUpdateMode,
@@ -460,7 +460,7 @@ Cursor::compact(::util::Progress& progress)
 	{
 		if (m_viewList[i])
 		{
-			viewList.push_back(new View(*m_viewList[i], *m_db));
+			viewList.push_back(new View(*m_viewList[i]));
 			delete m_viewList[i];
 		}
 		else

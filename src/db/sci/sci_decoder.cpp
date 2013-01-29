@@ -61,6 +61,15 @@ throwCorruptData()
 }
 
 
+static Byte const*
+skipString(Byte const* p)
+{
+	while (*p)
+		++p;
+	return p + 1;
+}
+
+
 Decoder::Decoder(ByteStream& strm, variant::Type variant)
 	:m_strm(strm)
 	,m_guaranteedStreamSize(strm.size())
@@ -428,7 +437,7 @@ Decoder::decodeVariation(ByteStream& data)
 				break;
 
 			case token::Mark:
-				if (data.peek() & 0x80)
+				if (MoveInfo::isMoveInfo(data.peek()))
 				{
 					MoveInfo info;
 					info.decode(data);
@@ -607,7 +616,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					break;
 
 				case token::Mark:
-					if (data.peek() & 0x80)
+					if (MoveInfo::isMoveInfo(data.peek()))
 						moveInfo.add().decode(data);
 					else
 						marks.add().decode(data);
@@ -884,13 +893,180 @@ Decoder::doDecoding(GameData& gameData)
 }
 
 
-unsigned
-Decoder::findTags(TagSet& tags)
+Byte const*
+Decoder::skipTags(Byte const* p)
+{
+	for (tag::ID id = tag::ID(*p++); id; id = tag::ID(*p++))
+	{
+		p = ::skipString(p);
+
+		if (id == tag::ExtraTag)
+			p = ::skipString(p);
+	}
+
+	return p;
+}
+
+
+Byte const*
+Decoder::skipEngines(Byte const* p)
+{
+	for (unsigned i = 0, count = *p++; i < count; ++i)
+		p = ::skipString(p);
+
+	return p;
+}
+
+
+Byte const*
+Decoder::skipMoveInfo(Byte const* p)
+{
+	unsigned length = ByteStream::uint16(p);
+
+	for (p += 2; length; length--)
+		p = MoveInfo::skip(p);
+
+	return p;
+}
+
+
+bool
+Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
+{
+	uint16_t flags = m_strm.uint16();
+
+	if ((flags & 0x0fff) == 0)
+		m_strm.skipString();
+
+	unsigned position		= m_strm.tellg();
+	unsigned offset		= m_strm.uint24();
+	unsigned runLength	= m_strm.uint16();
+
+	if (	runLength == halfMoveCount
+		&& (	!(flags & flags::TimeTableSection)
+			|| !(types & (1 << MoveInfo::ElapsedMilliSeconds))))
+	{
+		return false;
+	}
+
+	bool stripped = false;
+
+	Byte const* data = m_strm.base() + offset;
+
+	if (flags & flags::TextSection)
+		data += m_strm.uint24() + 3;
+
+	if (flags & flags::TagSection)
+		data = skipTags(data);
+
+	if (flags & flags::EngineSection)
+		data = skipEngines(data);
+
+	if (flags & flags::TimeTableSection)
+	{
+		Byte const* p = skipMoveInfo(data);
+
+		if (types & (1 << MoveInfo::ElapsedMilliSeconds))
+		{
+			m_strm.strip(data - m_strm.base(), p - data);
+			ByteStream::set(m_strm.base(), uint16_t(flags & ~flags::TimeTableSection));
+			stripped = true;
+		}
+		else
+		{
+			data = p;
+		}
+	}
+
+	if (runLength != halfMoveCount)
+	{
+		Byte const* dp = data;
+		Byte const* dq = dp;
+		Byte const* mp = m_strm.data();
+		Byte const* mq = mp;
+		Byte const* me = m_strm.base() + offset;
+
+		Byte* dr = const_cast<Byte*>(data);
+		Byte* mr = m_strm.data();
+
+		unsigned n;
+
+		while (mq < me)
+		{
+			switch (*mq++)
+			{
+				case token::End_Marker:
+					if (*mq++ == token::Comment)
+						++dq;
+					break;
+
+				case token::Nag:
+					++mq; // TODO: move NAG's to data section
+					break;
+
+				case token::Comment:
+					++dq;
+					break;
+
+				case token::Mark:
+					if (MoveInfo::isMoveInfo(*dq))
+					{
+						if (types & (1 << MoveInfo::type(*dq)))
+						{
+							n = dq - dp;
+							::memmove(dr, dp, n);
+							dr += n;
+							dp = dq = MoveInfo::skip(dq);
+
+							n = mq - mp - 1;
+							::memmove(mr, mp, n);
+							mr += n;
+							mp = mq;
+						}
+						else
+						{
+							dq = MoveInfo::skip(dq);
+						}
+					}
+					else
+					{
+						dq = Mark::skip(dq);
+					}
+					break;
+			}
+		}
+
+		if (mp != m_strm.data())
+		{
+			stripped = true;
+
+			n = mq - mp;
+			::memmove(mr, mp, n);
+			mr += n;
+
+			n = dq - dp;
+			::memmove(dr, dp, n);
+			dr += n;
+
+			n = me - mr;
+			dr -= n;
+			m_strm.strip(mr - m_strm.base(), n);
+			m_strm.strip(dr - m_strm.base(), m_strm.end() - dr);
+			ByteStream::set(m_strm.base() + position, ByteStream::uint24_t(mr - m_strm.base()));
+		}
+	}
+
+	return stripped;
+}
+
+
+void
+Decoder::findTags(TagMap& tags)
 {
 	uint16_t flags = m_strm.uint16();
 
 	if (!(flags & flags::TagSection))
-		return 0;
+		return;
 
 	uint16_t idn = flags & 0x0fff;
 
@@ -902,12 +1078,104 @@ Decoder::findTags(TagSet& tags)
 	if (flags & flags::TextSection)
 		dataSection += ByteStream::uint24(dataSection) + 3;
 
-	ByteStream data(dataSection, m_strm.end());
-	unsigned n = tags.size();
+	ByteStream		data(dataSection, m_strm.end());
+	mstl::string	name;
 
-	decodeTags(data, tags);
+	for (tag::ID id = tag::ID(data.get()); id; id = tag::ID(data.get()))
+	{
+		if (id == tag::ExtraTag)
+		{
+			name.clear();
+			data.get(name);
+			++tags[name];
+		}
+		else
+		{
+			++tags[tag::toName(id)];
+		}
 
-	return tags.size() - n;
+		data.skipString();
+	}
+}
+
+
+bool
+Decoder::stripTags(TagMap const& tags)
+{
+	uint16_t flags = m_strm.uint16();
+
+	if (!(flags & flags::TagSection))
+		return false;
+
+	if ((flags & 0x0fff) == 0)
+		m_strm.skipString();
+
+	bool stripped = false;
+
+	Byte* data = m_strm.base() + m_strm.uint24();
+
+	if (flags & flags::TextSection)
+		data += m_strm.uint24() + 3;
+
+	Byte const*	q = data;
+	Byte const*	p = data;
+	Byte*			r = data;
+
+	mstl::string name;
+
+	for (tag::ID id = tag::ID(*q++); id; id = tag::ID(*q++))
+	{
+		if (id == tag::ExtraTag)
+		{
+			char* s = const_cast<char*>(reinterpret_cast<char const*>(q));
+			name.hook(s, ::strlen(s));
+		}
+		else
+		{
+			mstl::string const& s = tag::toName(id);
+			name.hook(const_cast<mstl::string&>(s).data(), s.size());
+		}
+
+		if (tags.find(name) != tags.end())
+		{
+			unsigned n = q - p - 1;
+
+			stripped = true;
+			::memmove(r, p, n);
+			r += n;
+			q = ::skipString(q);
+
+			if (id == tag::ExtraTag)
+				q = ::skipString(q);
+
+			p = q;
+		}
+		else
+		{
+			q = ::skipString(q);
+
+			if (id == tag::ExtraTag)
+				q = ::skipString(q);
+		}
+	}
+
+	if (stripped)
+	{
+		if (r == data)
+		{
+			m_strm.strip(data - m_strm.base(), q - data);
+			ByteStream::set(m_strm.base(), uint16_t(flags & ~flags::TagSection));
+		}
+		else
+		{
+			unsigned n = q - p;
+			::memmove(r, p, n);
+			r += n;
+			m_strm.strip(r - m_strm.base(), q - r);
+		}
+	}
+
+	return stripped;
 }
 
 
@@ -941,6 +1209,13 @@ Decoder::skipVariations()
 
 				case token::Nag:
 					m_strm.skip(1);
+					break;
+
+				case token::Mark:
+					if (MoveInfo::isMoveInfo(m_strm.peek()))
+						MoveInfo::skip(m_strm);
+					else
+						Mark::skip(m_strm);
 					break;
 			}
 		}
@@ -981,6 +1256,13 @@ Decoder::nextMove(unsigned runLength)
 
 					case token::Nag:
 						m_strm.skip(1);
+						break;
+
+					case token::Mark:
+						if (MoveInfo::isMoveInfo(m_strm.peek()))
+							MoveInfo::skip(m_strm);
+						else
+							Mark::skip(m_strm);
 						break;
 				}
 			}

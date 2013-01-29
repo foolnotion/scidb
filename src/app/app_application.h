@@ -63,6 +63,7 @@ namespace app {
 
 class MultiCursor;
 class Cursor;
+class View;
 class Engine;
 
 class Application
@@ -71,8 +72,15 @@ public:
 
 	typedef util::crc::checksum_t checksum_t;
 	typedef mstl::bitfield<uint32_t> Variants;
+	typedef mstl::map<mstl::string,unsigned> TagMap;
 
 	static unsigned const InvalidPosition = unsigned(-1);
+
+	enum Update
+	{
+		UpdateGameInfo,
+		DontUpdateGameInfo,
+	};
 
 	struct Subscriber : public mstl::ref_counter
 	{
@@ -141,6 +149,7 @@ public:
 	bool switchReferenceBase() const;
 	bool treeIsUpToDate(db::Tree::Key const& key) const;
 	bool engineExists(unsigned id) const;
+	bool isSingleBase(mstl::string const& name) const;
 
 	unsigned countBases() const;
 	unsigned countGames() const;
@@ -248,6 +257,12 @@ public:
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
 	void save(mstl::string const& name, util::Progress& progress);
 	void startUpdateTree(Cursor& cursor);
+	unsigned stripMoveInformation(View& view,
+											unsigned types,
+											util::Progress& progress,
+											Update updateMode);
+	unsigned stripTags(View& view, TagMap const& tags, util::Progress& progress, Update updateMode);
+	void findTags(View const& view, TagMap& tags, util::Progress& progress) const;
 
 	unsigned addEngine(Engine* engine);
 	void removeEngine(unsigned id);
@@ -372,6 +387,7 @@ private:
 	unsigned findUnusedPosition() const;
 	void setActiveBase(Cursor* cursor);
 	void stopAnalysis(db::Game const* game);
+	void updateGameInfo(Cursor const& cursor, db::Database& database);
 
 	Cursor*			m_current;
 	Cursor*			m_clipbase;

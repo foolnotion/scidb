@@ -107,6 +107,9 @@ public:
 	void writeIndex(mstl::ostream& strm, util::Progress& progress);
 	void writeGames(mstl::ostream& strm, util::Progress& progress);
 	void readIndexProgressive(unsigned index) override;
+	bool stripMoveInformation(GameInfo const& info, unsigned types) override;
+	bool stripTags(GameInfo const& info, TagMap const& tags) override;
+	void findTags(GameInfo const& info, TagMap& tags) const override;
 
 	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
 	save::State doDecoding(	db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;

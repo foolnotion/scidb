@@ -136,6 +136,12 @@ public:
 		UCI,
 	};
 
+	enum Constraint
+	{
+		AllowNullMoves,
+		DontAllowNullMoves,
+	};
+
 	typedef mstl::list<mstl::string> StringList;
 	typedef mstl::vector<edit::Node const*> DiffList;
 	typedef mstl::vector<Move> History;
@@ -238,7 +244,7 @@ public:
 	/// Return whether the game contains illegal castlings.
 	bool containsIllegalCastlings() const;
 	/// Returns whether all preceding moves are legal.
-	bool historyIsLegal() const;
+	bool historyIsLegal(Constraint constraint) const;
 
 	// Accessing game information
 

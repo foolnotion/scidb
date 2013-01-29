@@ -446,12 +446,8 @@
 ::application::database::mc::OverwriteExistingFiles		"Skriver över existerande filer i folder '%s'?"
 ::application::database::mc::SelectDatabases					"Välj databaser som ska öppnas"
 ::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
-::application::database::mc::CompactDetail					"Alla partier måste stängas in komprimeringen kan börjas."
-::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
-::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
-::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
-::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
+::application::database::mc::Example							"Example" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
@@ -460,6 +456,23 @@
 ::application::database::mc::Recode								"Omkoda"
 ::application::database::mc::EditDescription					"Redigera beskrivning"
 ::application::database::mc::EmptyClipbase					"Töm Clipbase"
+
+::application::database::mc::Maintenance						"Maintenance" ;# NEW
+::application::database::mc::StripMoveInfo					"Strip move information from database '%s'" ;# NEW
+::application::database::mc::StripPGNTags						"Strip PGN tags from database '%s'" ;# NEW
+::application::database::mc::GamesStripped(0)				"No game stripped." ;# NEW
+::application::database::mc::GamesStripped(1)				"One game stripped." ;# NEW
+::application::database::mc::GamesStripped(N)				"%s games stripped." ;# NEW
+::application::database::mc::GamesRemoved(0)					"No game removed." ;# NEW
+::application::database::mc::GamesRemoved(1)					"One game removed." ;# NEW
+::application::database::mc::GamesRemoved(N)					"%s games removed." ;# NEW
+::application::database::mc::AllGamesMustBeClosed			"All games must been closed before this operation can be done." ;# NEW
+::application::database::mc::ReallyCompact					"Är du säker att databasen '%s' ska komprimeras?"
+::application::database::mc::ReallyCompactDetail(1)		"Endast ett parti kommer bli raderade."
+::application::database::mc::ReallyCompactDetail(N)		"%s partier kommer bli raderade."
+::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
+::application::database::mc::CompactionRecommended			"It is recommended to compact the database." ;# NEW
+::application::database::mc::SearchPGNTags					"Searching for PGN tags" ;# NEW
 
 ::application::database::mc::T_Unspecific						"Ospecifik"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -513,6 +526,15 @@
 
 ::application::database::mc::UpgradeDatabase					"%s är ett gammalt databasformat som inte kan öppnas skrivbart.\n\nEn uppgradering kommer skapa en ny version av databasen och efter det radera orginalfilerna.\n\nDet här kan ta en tid, men behöver bara göras en gång.\n\nVill du uppgradera databasen nu?"
 ::application::database::mc::UpgradeDatabaseDetail			"\"Nej\" kommer öppna databasen skrivskyddat och kan inte göras skrivbar."
+
+::application::database::mc::MoveInfo(evaluation)			"Evaluation" ;# NEW
+::application::database::mc::MoveInfo(playersClock)		"Players Clock" ;# NEW
+::application::database::mc::MoveInfo(elapsedGameTime)	"Elapsed Game Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMoveTime)	"Elapsed Move Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMilliSecs)	"Elapsed Milliseconds" ;# NEW
+::application::database::mc::MoveInfo(clockTime)			"Clock Time" ;# NEW
+::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
+::application::database::mc::MoveInfo(videoTime)			"Video Time" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Kontroll"

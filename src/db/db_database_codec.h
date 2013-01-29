@@ -47,6 +47,7 @@ namespace mstl
 	class ifstream;
 	class ofstream;
 	class ostream;
+	template <typename T, typename U> class map;
 }
 
 namespace util
@@ -76,6 +77,7 @@ public:
 
 	enum Mode { Existing, New };
 
+	typedef mstl::map<mstl::string,unsigned> TagMap;
 	typedef mstl::vector<mstl::string> StringList;
 	typedef tag::TagSet TagBits;
 
@@ -169,6 +171,9 @@ public:
 	virtual void close() = 0;
 	virtual void removeAllFiles(mstl::string const& rootname);
 	virtual void readIndexProgressive(unsigned index);
+	virtual bool stripMoveInformation(GameInfo const& info, unsigned types);
+	virtual bool stripTags(GameInfo const& info, TagMap const& tags);
+	virtual void findTags(GameInfo const& info, TagMap& tags) const;
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 

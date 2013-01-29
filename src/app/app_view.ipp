@@ -24,13 +24,15 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "app_cursor.h"
+
 namespace app {
 
 inline View::UpdateMode View::updateMode(db::table::Type type) const		{ return m_updateMode[type]; }
 inline db::Filter const& View::filter(db::table::Type type) const			{ return m_filter[type]; }
 inline db::Selector const& View::selector(db::table::Type type) const	{ return m_selector[type]; }
 inline Application const& View::application() const							{ return m_app; }
-inline db::Database const& View::database() const								{ return m_db; }
+inline Cursor const& View::cursor() const											{ return m_cursor; }
 
 } // namespace db
 

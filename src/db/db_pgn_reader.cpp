@@ -4165,9 +4165,12 @@ PgnReader::parseMinusSign(Token prevToken, int)
 					putNag(nag::BlackHasACrushingAdvantage);
 					return kNag;
 				}
-				advanceLinePos(2);
-				putNag(nag::BlackHasADecisiveAdvantage);
-				return kNag;
+				else if (::equal(m_linePos, "-+", 2))
+				{
+					advanceLinePos(2);
+					putNag(nag::BlackHasADecisiveAdvantage);
+					return kNag;
+				}
 			}
 			advanceLinePos(1);
 			setNullMove();

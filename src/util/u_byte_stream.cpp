@@ -188,6 +188,20 @@ ByteStream::reserve(unsigned size)
 
 
 void
+ByteStream::strip(unsigned offset, unsigned size)
+{
+	M_REQUIRE(offset < capacity());
+	M_REQUIRE(offset + size <= capacity());
+
+	Byte* dst = m_base + offset;
+	Byte* src = dst + size;
+
+	::memmove(dst, src, m_endp - src);
+	m_endp -= size;
+}
+
+
+void
 ByteStream::provide()
 {
 	m_getp = m_base;

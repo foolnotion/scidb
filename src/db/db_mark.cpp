@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "db_mark.h"
+#include "db_exception.h"
 
 #include "u_byte_stream.h"
 
@@ -534,6 +535,7 @@ void
 Mark::decode(ByteStream& strm)
 {
 	M_REQUIRE(isEmpty());
+	M_REQUIRE(isMark(strm.peek()));
 
 	m_command = mark::Command(strm.get());
 
@@ -572,5 +574,97 @@ Mark::decode(ByteStream& strm)
 		}
 	}
 }
+
+
+void
+Mark::skip(util::ByteStream& strm)
+{
+	M_REQUIRE(isMark(strm.peek()));
+
+	switch (strm.get())
+	{
+		case mark::None:
+			break;
+
+		case mark::Diagram:
+			strm.skipString();
+			break;
+
+		case mark::Draw:
+			strm.skip(2);
+			if (strm.get() & 0x80)
+				strm.skip(1);
+			break;
+
+		default:
+			IO_RAISE(Game, Corrupted, "corrupted game data");
+	}
+}
+
+
+unsigned char const*
+Mark::skip(unsigned char const* stream)
+{
+	M_REQUIRE(isMark(*stream));
+
+	switch (*stream++)
+	{
+		case mark::None:
+			break;
+
+		case mark::Diagram:
+			for ( ; *stream; ++stream)
+				;
+			++stream;
+			break;
+
+		case mark::Draw:
+			stream += 2;
+			if (*stream & 0x80)
+				++stream;
+			break;
+
+		default:
+			IO_RAISE(Game, Corrupted, "corrupted stream");
+	}
+
+	return stream;
+}
+
+
+#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
+
+inline
+Mark::Mark(Mark&& mark)
+	:m_command(mark.m_command)
+	,m_type(mark.m_type)
+	,m_text(mark.m_text)
+	,m_color(mark.m_color)
+	,m_square1(mark.m_square1)
+	,m_square2(mark.m_square2)
+	,m_caption(mstl::move(mark.m_caption))
+{
+}
+
+
+inline
+Mark&
+Mark::operator=(Mark&& mark)
+{
+	if (this != &mark)
+	{
+		m_command = mark.m_command;
+		m_type = mark.m_type;
+		m_text = mark.m_text;
+		m_color = mark.m_color;
+		m_square1 = mark.m_square1;
+		m_square2 = mark.m_square2;
+		m_caption = mstl::move(mark.m_caption);
+	}
+
+	return *this;
+}
+
+#endif
 
 // vi:set ts=3 sw=3:

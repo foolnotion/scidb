@@ -151,6 +151,14 @@ MoveInfo::clear()
 	*this = MoveInfo();
 }
 
+
+inline
+bool
+MoveInfo::isMoveInfo(unsigned char firstByte)
+{
+	return firstByte & 0x80;
+}
+
 } // namespace db
 
 // vi:set ts=3 sw=3:

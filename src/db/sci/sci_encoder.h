@@ -109,7 +109,7 @@ private:
 
 	void encodeMainline(MoveNode const* node);
 	void encodeVariation(MoveNode const* node);
-	void encodeNote(MoveNode const* node);
+	void encodeNote(MoveNode const* node, bool isMainline);
 	void encodeComment(MoveNode const* node);
 
 	uint16_t encodeTextSection();

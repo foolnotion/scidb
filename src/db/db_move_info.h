@@ -105,6 +105,11 @@ public:
 	char const* parseEvaluation(char const* s);
 	char const* parseVideoTime(char const* s);
 
+	static bool isMoveInfo(unsigned char firstByte);
+	static Type type(unsigned char const firstByte);
+	static void skip(util::ByteStream& strm);
+	static unsigned char const* skip(unsigned char const* strm);
+
 private:
 
 	struct TimeInfo

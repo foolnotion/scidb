@@ -447,12 +447,8 @@
 ::application::database::mc::OverwriteExistingFiles		"¿Sobrescribir archivos existentes en el directorio '%s'?"
 ::application::database::mc::SelectDatabases					"Seleccione las bases de datos que se abrirán"
 ::application::database::mc::ExtractArchive					"Extracer archivo %s"
-::application::database::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
-::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
-::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida."
-::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
-::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
+::application::database::mc::Example							"Example" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames						"%s partida(s) recodificadas"
@@ -461,6 +457,23 @@
 ::application::database::mc::Recode								"Recodificar"
 ::application::database::mc::EditDescription					"Editar Descripción"
 ::application::database::mc::EmptyClipbase					"Vaciar Base temporal"
+
+::application::database::mc::Maintenance						"Maintenance" ;# NEW
+::application::database::mc::StripMoveInfo					"Strip move information from database '%s'" ;# NEW
+::application::database::mc::StripPGNTags						"Strip PGN tags from database '%s'" ;# NEW
+::application::database::mc::GamesStripped(0)				"No game stripped." ;# NEW
+::application::database::mc::GamesStripped(1)				"One game stripped." ;# NEW
+::application::database::mc::GamesStripped(N)				"%s games stripped." ;# NEW
+::application::database::mc::GamesRemoved(0)					"No game removed." ;# NEW
+::application::database::mc::GamesRemoved(1)					"One game removed." ;# NEW
+::application::database::mc::GamesRemoved(N)					"%s games removed." ;# NEW
+::application::database::mc::CompactDetail					"Todos los juegos deben cerrarse para poder compactar."
+::application::database::mc::ReallyCompact					"¿Realmente desea compactar la base de datos '%s'?" 
+::application::database::mc::ReallyCompactDetail(1)		"Solamente se borrará una partida."
+::application::database::mc::ReallyCompactDetail(N)		"Se borrarán %s partidas."
+::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
+::application::database::mc::CompactionRecommended			"It is recommended to compact the database."
+::application::database::mc::SearchPGNTags					"Searching for PGN tags" ;# NEW
 
 ::application::database::mc::T_Unspecific						"Inespecífico"
 ::application::database::mc::T_Temporary						"Temporal"
@@ -512,6 +525,15 @@
 
 ::application::database::mc::UpgradeDatabase					"%s es un formato antiguo de base de datos que solo puede abrirse como solo lectura.\n\nActualizarla creará una nueva versión de la base de datos y luego removerá los archivos originales.\n\nEsto puede demorar un poco pero solo debe hacerse una vez.\n\n¿Desea actualizar esta base de datos ahora?"
 ::application::database::mc::UpgradeDatabaseDetail			"\"No\" abrirá la base de datos como solo lectura y no puede marcarse para escritura."
+
+::application::database::mc::MoveInfo(evaluation)			"Evaluation" ;# NEW
+::application::database::mc::MoveInfo(playersClock)		"Players Clock" ;# NEW
+::application::database::mc::MoveInfo(elapsedGameTime)	"Elapsed Game Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMoveTime)	"Elapsed Move Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMilliSecs)	"Elapsed Milliseconds" ;# NEW
+::application::database::mc::MoveInfo(clockTime)			"Clock Time" ;# NEW
+::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
+::application::database::mc::MoveInfo(videoTime)			"Video Time" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"

@@ -83,6 +83,10 @@ public:
 	void decode(util::ByteStream& strm);
 	void encode(util::ByteStream& strm) const;
 
+	static void skip(util::ByteStream& strm);
+	static unsigned char const* skip(unsigned char const* stream);
+	static bool isMark(Byte firstByte);
+
 	void dump();
 
 private:

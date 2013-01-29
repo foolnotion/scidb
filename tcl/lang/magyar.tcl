@@ -447,12 +447,8 @@
 ::application::database::mc::OverwriteExistingFiles	"Felül kívánja írni a %s könyvtárban lévő fájlokat?"
 ::application::database::mc::SelectDatabases				"Válassza ki a megnyitni kívánt adatbázist"
 ::application::database::mc::ExtractArchive				"%s archívum kicsomagolása"
-::application::database::mc::CompactDetail				"Tömörítés előtt minden játszmát be kell zárni"
-::application::database::mc::ReallyCompact				"Biztos össze akarja tömöríteni a(z) %s adatbázist?"
-::application::database::mc::ReallyCompactDetail(1)	"Egyetlen játszma fog törlődni"  ;#"Only one game will be deleted."  ;#NEW
-::application::database::mc::ReallyCompactDetail(N)	"%s játszmák fognak törlődni"  ;#"%s games will be deleted."  ;#NEW
-::application::database::mc::RemoveSpace		"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::SelectVariant		"Select Variant" ;# NEW
+::application::database::mc::Example			"Example" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -461,6 +457,23 @@
 ::application::database::mc::Recode							"Újrakódolás"
 ::application::database::mc::EditDescription				"Leírás szerkesztése"
 ::application::database::mc::EmptyClipbase				"Üres vágólap"
+
+::application::database::mc::Maintenance		"Maintenance" ;# NEW
+::application::database::mc::StripMoveInfo		"Strip move information from database '%s'" ;# NEW
+::application::database::mc::StripPGNTags		"Strip PGN tags from database '%s'" ;# NEW
+::application::database::mc::GamesStripped(0)		"No game stripped." ;# NEW
+::application::database::mc::GamesStripped(1)		"One game stripped." ;# NEW
+::application::database::mc::GamesStripped(N)		"%s games stripped." ;# NEW
+::application::database::mc::GamesRemoved(0)		"No game removed." ;# NEW
+::application::database::mc::GamesRemoved(1)		"One game removed." ;# NEW
+::application::database::mc::GamesRemoved(N)		"%s games removed." ;# NEW
+::application::database::mc::AllGamesMustBeClosed	"All games must been closed before this operation can be done." ;# NEW
+::application::database::mc::ReallyCompact		"Biztos össze akarja tömöríteni a(z) %s adatbázist?"
+::application::database::mc::ReallyCompactDetail(1)	"Egyetlen játszma fog törlődni"  ;#"Only one game will be deleted."  ;#NEW
+::application::database::mc::ReallyCompactDetail(N)	"%s játszmák fognak törlődni"  ;#"%s games will be deleted."  ;#NEW
+::application::database::mc::RemoveSpace		"Some empty spaces will be removed." ;# NEW
+::application::database::mc::CompactionRecommended	"It is recommended to compact the database." ;# NEW
+::application::database::mc::SearchPGNTags		"Searching for PGN tags" ;# NEW
 
 ::application::database::mc::T_Unspecific					"Nem specifikus"
 ::application::database::mc::T_Temporary					"Ideiglenes"
@@ -514,6 +527,15 @@
 
 ::application::database::mc::UpgradeDatabase				"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
 ::application::database::mc::UpgradeDatabaseDetail		"\"Nem\" olvasásra niytja meg az adatbázist."
+
+::application::database::mc::MoveInfo(evaluation)		"Evaluation" ;# NEW
+::application::database::mc::MoveInfo(playersClock)		"Players Clock" ;# NEW
+::application::database::mc::MoveInfo(elapsedGameTime)		"Elapsed Game Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMoveTime)		"Elapsed Move Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMilliSecs)		"Elapsed Milliseconds" ;# NEW
+::application::database::mc::MoveInfo(clockTime)		"Clock Time" ;# NEW
+::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
+::application::database::mc::MoveInfo(videoTime)		"Video Time" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"

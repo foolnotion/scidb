@@ -53,40 +53,12 @@ Mark::clear()
 }
 
 
-#if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
-
 inline
-Mark::Mark(Mark&& mark)
-	:m_command(mark.m_command)
-	,m_type(mark.m_type)
-	,m_text(mark.m_text)
-	,m_color(mark.m_color)
-	,m_square1(mark.m_square1)
-	,m_square2(mark.m_square2)
-	,m_caption(mstl::move(mark.m_caption))
+bool
+Mark::isMark(Byte firstByte)
 {
+	return !(firstByte & 0x80);
 }
-
-
-inline
-Mark&
-Mark::operator=(Mark&& mark)
-{
-	if (this != &mark)
-	{
-		m_command = mark.m_command;
-		m_type = mark.m_type;
-		m_text = mark.m_text;
-		m_color = mark.m_color;
-		m_square1 = mark.m_square1;
-		m_square2 = mark.m_square2;
-		m_caption = mstl::move(mark.m_caption);
-	}
-
-	return *this;
-}
-
-#endif
 
 } // namespace db
 

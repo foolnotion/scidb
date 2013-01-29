@@ -68,6 +68,7 @@ public:
 	bool isWriteable() const;
 	bool isClipbase() const;
 	bool isScratchbase() const;
+	bool isSingleBase() const;
 	bool exists(unsigned variantIndex) const;
 	bool isEmpty(unsigned variantIndex) const;
 	bool isEmpty() const;

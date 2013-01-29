@@ -690,7 +690,9 @@ Database::updateGame(Game& game)
 		if (format() == format::Scidb && offset != info.gameOffset())
 		{
 			m_shouldCompress = true;
-			m_codec->updateHeader(m_rootname);
+
+			if (!m_memoryOnly)
+				m_codec->updateHeader(m_rootname);
 		}
 
 		m_lastChange = sys::time::timestamp();
@@ -731,7 +733,9 @@ Database::updateMoves(Game& game)
 			if (offset != info.gameOffset())
 			{
 				m_shouldCompress = true;
-				m_codec->updateHeader(m_rootname);
+
+				if (!m_memoryOnly)
+					m_codec->updateHeader(m_rootname);
 			}
 
 			if (variant::isAntichessExceptLosers(m_variant))
@@ -1556,6 +1560,7 @@ Database::site(unsigned index, Access access) const
 	return *m_namebases(Namebase::Event).site(0); // never reached
 }
 
+
 void
 Database::emitPlayerCard(TeXt::Receptacle& receptacle, NamebasePlayer const& player) const
 {
@@ -1599,6 +1604,129 @@ if (m_variant == variant::Normal) { // XXX
 	}
 
 	stats.finish();
+}
+
+
+unsigned
+Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadonly());
+	M_REQUIRE(isWriteable());
+	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(format() == format::Scidb);
+
+	unsigned count			= filter.count();
+	unsigned frequency	= progress.frequency(count, 20000);
+	unsigned reportAfter	= frequency;
+	unsigned number		= 0;
+	unsigned numGames		= 0;
+
+	util::ProgressWatcher watcher(progress, count);
+
+	for (int index = filter.next(); index != Filter::Invalid; index = filter.next(index), number++)
+	{
+		if (reportAfter == number)
+		{
+			progress.update(number);
+			reportAfter += frequency;
+		}
+
+		if (m_codec->stripMoveInformation(*m_gameInfoList[index], types))
+			++numGames;
+	}
+
+	if (numGames > 0)
+	{
+		if (!m_shouldCompress)
+		{
+			m_shouldCompress = true;
+
+			if (!isMemoryOnly())
+				m_codec->updateHeader(m_rootname);
+		}
+
+		m_codec->sync();
+	}
+
+	return numGames;
+}
+
+
+unsigned
+Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isReadonly());
+	M_REQUIRE(isWriteable());
+	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(format() == format::Scidb);
+
+	unsigned count			= filter.count();
+	unsigned frequency	= progress.frequency(count, 20000);
+	unsigned reportAfter	= frequency;
+	unsigned number		= 0;
+	unsigned numGames		= 0;
+
+	util::ProgressWatcher watcher(progress, count);
+
+	for (int index = filter.next(); index != Filter::Invalid; index = filter.next(index), number++)
+	{
+		if (reportAfter == number)
+		{
+			progress.update(number);
+			reportAfter += frequency;
+		}
+
+		if (m_codec->stripTags(*m_gameInfoList[index], tags))
+			++numGames;
+	}
+
+	if (numGames > 0)
+	{
+		if (!m_shouldCompress)
+		{
+			m_shouldCompress = true;
+
+			if (!isMemoryOnly())
+				m_codec->updateHeader(m_rootname);
+		}
+
+		m_codec->sync();
+	}
+
+	return numGames;
+}
+
+
+void
+Database::findTags(Filter const& filter, TagMap& tags, util::Progress& progress) const
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(format() == format::Scidb);
+
+	unsigned count			= filter.count();
+	unsigned frequency	= progress.frequency(count, 20000);
+	unsigned reportAfter	= frequency;
+	unsigned number		= 0;
+
+	util::ProgressWatcher watcher(progress, count);
+
+	for (int index = filter.next(); index != Filter::Invalid; index = filter.next(index), number++)
+	{
+		if (reportAfter == number)
+		{
+			progress.update(number);
+
+			if (progress.interrupted())
+				return;
+
+			reportAfter += frequency;
+		}
+
+		m_codec->findTags(*m_gameInfoList[index], tags);
+	}
 }
 
 // vi:set ts=3 sw=3:
