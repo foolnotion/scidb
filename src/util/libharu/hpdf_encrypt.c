@@ -162,8 +162,11 @@ HPDF_MD5Final  (HPDF_BYTE              digest[16],
     MD5ByteReverse (ctx->in, 14);
 
     /* Append length in bits and transform */
-    ((HPDF_UINT32 *) ctx->in)[14] = ctx->bits[0];
-    ((HPDF_UINT32 *) ctx->in)[15] = ctx->bits[1];
+    {
+        HPDF_UINT32* in = (HPDF_UINT32 *) ctx->in;
+        in[14] = ctx->bits[0];
+        in[15] = ctx->bits[1];
+    }
 
     MD5Transform (ctx->buf, (HPDF_UINT32 *) ctx->in);
     MD5ByteReverse ((HPDF_BYTE *) ctx->buf, 4);

@@ -511,6 +511,7 @@ tableColWidthMultiSpan(
          * 'border-spacing' regions that this cell spans and the borders and
          * padding on the cell itself.
          */
+        req.x.iVal = 0; // fixing an obscure compiler warning
         getReqWidth(pNode, &req);
         blockMinMaxWidth(pData->pLayout, pNode, &min, &max);
         min = min - pData->border_spacing * (colspan - 1);

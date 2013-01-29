@@ -6032,7 +6032,8 @@ dbwin("DynamicCO_Get id=%d opt=%p objOffset=%d\n", cd->id, opt, cd->objOffset);
 Tcl_Obj *objPtr = *(Tcl_Obj **) (opt->data + cd->objOffset);
 if (objPtr && objPtr->refCount == 0) panic("DynamicCO_Get refCount=0");
 #endif
-		return *(Tcl_Obj **) (opt->data + cd->objOffset);
+		Tcl_Obj** data = (Tcl_Obj**)(opt->data + cd->objOffset);
+		return *(Tcl_Obj **) data;
 	}
 
 	if (cd->custom->getProc != NULL)
