@@ -609,15 +609,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 		if (::isprint(c))
 		{
-			switch (c)
-			{
-				case '<':	str.append("&lt;",   4); break;
-				case '>':	str.append("&gt;",   4); break;
-				case '&':	str.append("&amp;",  5); break;
-				case '\'':	str.append("&apos;", 6); break;
-				case '"':	str.append("&quot;", 6); break;
-				default:		str += c; break;
-			}
+			str += c; break;
 		}
 		else
 		{
@@ -696,20 +688,40 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 	if (!str.empty())
 	{
+		if (useXml)
+		{
+			mstl::string tmp;
+			tmp.swap(str);
+			str.reserve(2*tmp.size() + 20);
+			str.append("<xml><:", 7);
+			if (lang)
+				str.append(lang);
+			str.append('>');
+
+			for (char const* s = tmp; *s; ++s)
+			{
+				switch (*s)
+				{
+					case '<':	str.append("&lt;",   4); break;
+					case '>':	str.append("&gt;",   4); break;
+					case '&':	str.append("&amp;",  5); break;
+					case '\'':	str.append("&apos;", 6); break;
+					case '"':	str.append("&quot;", 6); break;
+					default:		str.append(*s); break;
+				}
+			}
+
+			str.append("</:", 3);
+			if (lang)
+				str.append(lang);
+			str.append("></xml>", 7);
+		}
+
 		// TODO: use character encoding according to language code ?!
 		m_codec.toUtf8(str);
 
 		if (!sys::utf8::validate(str))
 			m_codec.forceValidUtf8(str);
-
-		if (useXml)
-		{
-			str.insert(str.begin(), mstl::string("<xml><:") + (lang ? lang : "") + '>');
-			str.append("</:");
-			if (lang)
-				str.append(lang);
-			str.append("></xml>");
-		}
 
 		bool isEnglish	= lang && ::strcmp(lang, "en") == 0;
 		bool isOther	= lang && !isEnglish;

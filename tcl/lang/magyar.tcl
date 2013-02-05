@@ -384,16 +384,21 @@
 ::application::board::mc::StopEngine			"Elemzőmodul leállítása"
 ::application::board::mc::InsertNullMove		"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
+::application::board::mc::LoadRandomGame		"Load random game" ;# NEW
 
 ::application::board::mc::Tools				"Eszközök"
 ::application::board::mc::Control			"Kezelés"
 ::application::board::mc::Game				"Játszma"
 ::application::board::mc::GoIntoNextVar			"Következő variáció"
 ::application::board::mc::GoIntPrevVar			"Előző variáció"
+
 ::application::board::mc::LoadGame(next)		"Következő játszma betöltése"
 ::application::board::mc::LoadGame(prev)		"Előző játszma betöltése"
 ::application::board::mc::LoadGame(first)		"Első játszma betöltése"
 ::application::board::mc::LoadGame(last)		"Utolsó játszma betöltése"
+
+::application::board::mc::SwitchView(base)		"Switch to database view" ;# NEW
+::application::board::mc::SwitchView(list)		"Switch to game list view" ;# NEW
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -474,6 +479,7 @@
 ::application::database::mc::RemoveSpace		"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::CompactionRecommended	"It is recommended to compact the database." ;# NEW
 ::application::database::mc::SearchPGNTags		"Searching for PGN tags" ;# NEW
+::application::database::mc::SelectSuperfluousTags	"Select superfluous tags:" ;# NEW
 
 ::application::database::mc::T_Unspecific					"Nem specifikus"
 ::application::database::mc::T_Temporary					"Ideiglenes"
@@ -1340,7 +1346,8 @@
 ::browser::mc::GotoGame(next)		"Goto next game" ;# NEW
 ::browser::mc::GotoGame(prev)		"Goto previous game" ;# NEW
 
-::browser::mc::LoadGame			"Játszma betöltése"
+::browser::mc::LoadGame			"Játszma betöltése into editor" ;# NEW
+::browser::mc::ReloadGame		"Reload game" ;# NEW
 ::browser::mc::MergeGame		"Játszmák összefésülése"
 
 ::browser::mc::IllegalMove		"Szabálytalan lépés"
@@ -1640,6 +1647,7 @@
 ::export::mc::Option(pgn,include_marks)			"Export marks (megjegyzésként)"
 ::export::mc::Option(pgn,use_scidb_import_format)	"Scidb Import Formátum használata"
 ::export::mc::Option(pgn,use_chessbase_format)		"ChessBase formátum használata"
+::export::mc::Option(pgn,use_strict_pgn_standard	"Use PGN standard" ;# NEW
 ::export::mc::Option(pgn,include_ply_count_tag)		"'PlyCount' cimke írása"
 ::export::mc::Option(pgn,include_termination_tag)	"'Termination' cimke írása"
 ::export::mc::Option(pgn,include_mode_tag)		"'Mode' cimke írása"
@@ -1658,6 +1666,7 @@
 ::export::mc::Option(pgn,space_after_move_number)	"Lépésszám után szóköz"
 ::export::mc::Option(pgn,shredder_fen)			"Write Shredder-FEN (default is X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)	"Megjegyzés írása a '0-0'-ás eredményhez"
+::export::mc::Option(pgn,write_any_rating_as_elo)	"Write any rating as ELO" ;# NEW
 ::export::mc::Option(pgn,append_mode_to_event_type)	"Add mode after event type"
 ::export::mc::Option(pgn,comment_to_html)		"Megjegyzés írása HTML stílusban"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Érvénytelen lépést tartalmazó játszmák elvetése"
@@ -2688,6 +2697,7 @@
 ::encoding::mc::Lang(hu)	"magyar"
 ::encoding::mc::Lang(hy)	"örmény"
 ::encoding::mc::Lang(ia)	"Interlingua" ;' NEW
+::encoding::mc::Lang(id)	"Indonesian" ;# NEW
 ::encoding::mc::Lang(is)	"izlandi"
 ::encoding::mc::Lang(it)	"olasz"
 ::encoding::mc::Lang(iu)	"Inuktitut"

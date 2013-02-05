@@ -1003,7 +1003,7 @@ Board::isContactCheck(Move const& move, variant::Type variant) const
 	Board peek(*this);
 	peek.doMove(move, variant);
 
-	if (countChecks() > 1)
+	if (peek.countChecks() > 1)
 		return true; // double check is like a contact check
 
 	return peek.isContactCheck();
@@ -1105,6 +1105,14 @@ Board::status(variant::Type variant) const
 }
 
 
+void
+Board::swapToMove()
+{
+	m_stm ^= 1;
+	hashToMove();
+}
+
+
 uint64_t
 Board::hashNoEP() const
 {
@@ -1115,6 +1123,8 @@ Board::hashNoEP() const
 void
 Board::setEnPassantSquare(color::ID color, Square sq)
 {
+	M_REQUIRE(sq != sq::Null);
+
 // we don't want this check here
 //	M_REQUIRE(sq::rank(sq) == (color::isWhite(color) ? sq::Rank6 : sq::Rank3));
 
@@ -1193,7 +1203,7 @@ Board::removeIllegalTo(Move move, uint64_t& b, variant::Type variant) const
 
 
 Move&
-Board::prepareForPrint(Move& move, variant::Type variant) const
+Board::prepareForPrint(Move& move, variant::Type variant, Representation representation) const
 {
 	M_REQUIRE(isValidMove(move, variant, move::AllowIllegalMove));
 
@@ -1242,8 +1252,7 @@ Board::prepareForPrint(Move& move, variant::Type variant) const
 				others ^= setBit(from);
 				others &= m_occupiedBy[m_stm];
 
-				// Do not disambiguate with moves that put oneself in check.
-				if (others)
+				if (others && representation == InternalRepresentation)
 				{
 					if (!variant::isAntichessExceptLosers(variant))
 					{
@@ -1280,17 +1289,17 @@ Board::prepareForPrint(Move& move, variant::Type variant) const
 							}
 						}
 					}
+				}
 
-					if (others)
-					{
-						if (others & RankMask[::rank(from)])
-							move.setNeedsFyle();
+				if (others)
+				{
+					if (others & RankMask[::rank(from)])
+						move.setNeedsFyle();
 
-						if (others & FyleMask[::fyle(from)])
-							move.setNeedsRank();
-						else
-							move.setNeedsFyle();
-					}
+					if (others & FyleMask[::fyle(from)])
+						move.setNeedsRank();
+					else
+						move.setNeedsFyle();
 				}
 
 				// we may need disambiguation of destination square
@@ -1343,7 +1352,8 @@ Board::prepareForPrint(Move& move, variant::Type variant) const
 						case piece::Queen:	others[1] &= m_queens; break;
 					}
 
-					if (!variant::isAntichessExceptLosers(variant))
+					if (	representation == InternalRepresentation
+						&& !variant::isAntichessExceptLosers(variant))
 					{
 						if (move.isLegal())
 						{
@@ -4633,7 +4643,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						Board peek(*this);
 						peek.doMove(move, variant);
 
-						if (countChecks() > 1)
+						if (peek.countChecks() > 1)
 							return s;
 					}
 				}
@@ -4657,7 +4667,7 @@ Board::parseMove(char const* algebraic, Move& move, variant::Type variant, move:
 						Board peek(*this);
 						peek.doMove(move, variant);
 
-						if (countChecks() > 0)
+						if (peek.countChecks() > 0)
 							return s;
 					}
 				}
@@ -4921,7 +4931,6 @@ Board::doMove(Move const& m, variant::Type variant)
 	switch (m.action())
 	{
 		case Move::Null_Move:
-			hashToMove();
 			swapToMove();
 			++m_plyNumber;
 			return;
@@ -5072,7 +5081,6 @@ Board::doMove(Move const& m, variant::Type variant)
 			m_piece[to] = piece::King;
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
 
-			hashToMove();
 			swapToMove();
 			++m_plyNumber;
 			return;
@@ -5203,7 +5211,6 @@ Board::doMove(Move const& m, variant::Type variant)
 				m_occupiedR45 ^= MaskR45[to];
 				m_occupiedBy[m_stm] ^= toMask;
 				m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
-				hashToMove();
 				swapToMove();
 				++m_plyNumber;
 				return;
@@ -5320,7 +5327,6 @@ Board::doMove(Move const& m, variant::Type variant)
 		hashChecksGiven(m_stm, m_checksGiven[m_stm]++);
 	}
 
-	hashToMove();
 	swapToMove();
 	++m_plyNumber;
 }
@@ -5349,7 +5355,6 @@ Board::undoMove(Move const& m, variant::Type variant)
 	switch (m.action())
 	{
 		case Move::Null_Move:
-			hashToMove();
 			swapToMove();
 			--m_plyNumber;
 			return;
@@ -5511,7 +5516,6 @@ Board::undoMove(Move const& m, variant::Type variant)
 				m_epSquare = Null;
 			}
 
-			hashToMove();
 			swapToMove();
 			--m_plyNumber;
 			return;
@@ -5636,7 +5640,6 @@ Board::undoMove(Move const& m, variant::Type variant)
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
 			restoreCastlingRights(m.prevCastlingRights());
 			restoreStates(m);
-			hashToMove();
 			swapToMove();
 			--m_plyNumber;
 			return;
@@ -5735,7 +5738,6 @@ Board::undoMove(Move const& m, variant::Type variant)
 	restoreCastlingRights(m.prevCastlingRights());
 
 	restoreStates(m);
-	hashToMove();
 	swapToMove();
 	--m_plyNumber;
 }

@@ -53,7 +53,7 @@ using namespace db;
 using namespace db::tag;
 using namespace util;
 
-enum { None, Piece, Fyle, Rank, Capture };
+enum { None, Piece, Fyle, Rank, Capture, Drop };
 
 
 #define _ None
@@ -61,6 +61,7 @@ enum { None, Piece, Fyle, Rank, Capture };
 #define F Fyle
 #define R Rank
 #define C Capture
+#define D Drop
 static char const CharToType[256] =
 {
 	 _, _, _, _, _, _, _, _, _, _, _, _, _, _, _, _,
@@ -70,7 +71,7 @@ static char const CharToType[256] =
 //  0  1  2  3  4  5  6  7  8  9  :  ;  <  =  >  ?
 	 _, R, R, R, R, R, R, R, R, _, C, _, _, _, _, _,
 //  @  A  B  C  D  E  F  G  H  I  J  K  L  M  N  O
-	 _, _, P, _, _, _, _, _, _, _, _, P, _, _, P, _,
+	 D, _, P, _, _, _, _, _, _, _, _, P, _, _, P, _,
 //  P  Q  R  S  T  U  V  W  X  Y  Z  [  \  ]  ^  -
 	 P, P, P, _, _, _, _, _, _, _, _, _, _, _, _, _,
 //  '  a  b  c  d  e  f  g  h  i  j  k  l  m  n  o
@@ -91,6 +92,7 @@ static char const CharToType[256] =
 #undef P
 #undef R
 #undef C
+#undef D
 
 static unsigned const MaxWarnings	= 40;
 static unsigned const MaxErrors		= 40;
@@ -226,6 +228,16 @@ quote(mstl::string const& s)
 	}
 
 	return t;
+}
+
+
+static bool
+isMoveToken(char const* s)
+{
+	while (CharToType[int(*s)] != None)
+		++s;
+
+	return !::isalnum(*s);
 }
 
 
@@ -1865,87 +1877,19 @@ PgnReader::checkFen()
 
 	mstl::string const& fen = m_tags.value(Fen);
 
-	switch (m_idn)
+	if (m_idn > 4*960)
 	{
-		case variant::LittleGame:
-			if (!::equal(fen, "4k3/5ppp/8/8/8/8/PPP5/3K4 w", 27))
-				m_idn = 0;
-			break;
+		mstl::string const& expectedFen = variant::fen(m_idn);
 
-		case variant::PawnsOn4thRank:
-			if (!::equal(fen, "rnbqkbnr/8/8/pppppppp/PPPPPPPP/8/8/RNBQKBNR w", 45))
-				m_idn = 0;
-			break;
+		// NOTE: FICS games do have wrong castling rights,
+		// so we will match FEN w/o castling rights.
 
-		case variant::KNNvsKP:
-			if (!::equal(fen, "8/6k1/4p3/4N3/8/6K1/7N/8 w", 26))
-				m_idn = 0;
-			break;
+		char const* e = ::strchr(expectedFen, ' ');
 
-		case variant::Pyramid:
-			if (!::equal(fen, "rnbqkbnr/p6p/1p4p1/2pPPp2/2PppP2/1P4P1/P6P/RNBQKBNR w", 53))
-				m_idn = 0;
-			break;
+		M_ASSERT(e && e[1] == 'w');
 
-		case variant::PawnsOnly:
-			if (!::equal(fen, "4k3/pppppppp/8/8/8/8/PPPPPPPP/4K3 w", 35))
-				m_idn = 0;
-			break;
-
-		case variant::KnightsOnly:
-			if (!::equal(fen, "1n2k1n1/pppppppp/8/8/8/8/PPPPPPPP/1N2K1N1 w", 43))
-				m_idn = 0;
-			break;
-
-		case variant::BishopsOnly:
-			if (!::equal(fen, "2b1kb2/pppppppp/8/8/8/8/PPPPPPPP/2B1KB2 w", 41))
-				m_idn = 0;
-			break;
-
-		case variant::RooksOnly:
-			if (!::equal(fen, "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/R3K2R w", 53))
-				m_idn = 0;
-			break;
-
-		case variant::QueensOnly:
-			if (!::equal(fen, "3qk3/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w", 37))
-				m_idn = 0;
-			break;
-
-		case variant::NoQueens:
-			if (!::equal(fen, "rnb1kbnr/pppppppp/8/8/8/8/PPPPPPPP/RNB1KBNR w", 45))
-				m_idn = 0;
-			break;
-
-		case variant::WildFive:
-			if (!::equal(fen, "3K4/PPPPPPPP/8/8/8/8/pppppppp/3k4 w", 35))
-				m_idn = 0;
-			break;
-
-		case variant::KBNK:
-			if (!::equal(fen, "4k3/8/8/8/8/8/8/B3K2N w", 23))
-				m_idn = 0;
-			break;
-
-		case variant::KBBK:
-			if (!::equal(fen, "4k3/8/8/8/8/8/8/B3K2B w", 23))
-				m_idn = 0;
-			break;
-
-		case variant::Runaway:
-			if (!::equal(fen, "rnbq1bnr/pppppppp/4k3/8/8/4K3/PPPPPPPP/RNBQ1BNR w", 49))
-				m_idn = 0;
-			break;
-
-		case variant::QueenVsRooks:
-			if (!::equal(fen, "r3k2r/pppppppp/8/8/8/8/PPPPPPPP/3QK3 w", 38))
-				m_idn = 0;
-			break;
-
-		case variant::UpsideDown:
-			if (!::equal(fen, "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr w", 45))
-				m_idn = 0;
-			break;
+		if (!::equal(fen, expectedFen, e - expectedFen.c_str() + 2))
+			m_idn = 0;
 	}
 
 	if (m_idn > 4*960)
@@ -4259,7 +4203,7 @@ PgnReader::parseMove(Token prevToken, int c)
 					break;
 			}
 
-			sendError(	InvalidToken,
+			sendError(	::isMoveToken(m_linePos - 1) ? InvalidMove : InvalidToken,
 							m_prevPos,
 							inverseFigurineMapping(mstl::string(m_linePos - 1, ::skipMoveToken(m_linePos))));
 		}

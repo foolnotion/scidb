@@ -482,12 +482,12 @@ proc openBase {parent file byUser args} {
 		set msg [format $mc::LoadMessage $name]
 		if {[llength $opts(-encoding)] == 0} {
 			switch $ext {
-				sci - si3 - si4 - cbh					{ set opts(-encoding) auto }
+				sci - si3 - si4 - cbh - cbf			{ set opts(-encoding) auto }
 				pgn - pgn.gz - bpgn - bpgn.gz - zip	{ set opts(-encoding) $::encoding::defaultEncoding }
 			}
 		}
 		switch $ext {
-			sci - si3 - si4 - cbh {
+			sci - si3 - si4 - cbh - cbf {
 				set args {}
 				if {$ext ne "sci"} {
 					set opts(-readonly) 1
@@ -706,7 +706,7 @@ proc OpenArchive {parent file byUser args} {
 			lassign $pair attr value
 			if {$attr eq "FileName"} {
 				switch [file extension $value] {
-					.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
+					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 						lappend bases $value
 						if {[file exists $value]} { lappend overwrite "\u26ab [file tail $value]" }
 					}
@@ -1028,7 +1028,11 @@ proc CheckTabState {} {
 
 	if {[winfo toplevel $Vars(annotators)] ne $Vars(annotators)} {
 		set codec [::scidb::db::get codec]
-		if {$codec eq "sci" || $codec eq "cbh"} { set state normal } else { set state hidden }
+		if {$codec eq "sci" || $codec eq "cbh" || $codec eq "cbf"} {
+			set state normal
+		} else {
+			set state hidden
+		}
 		$Vars(contents) tab $Vars(annotators) -state $state
 	}
 }
@@ -1296,7 +1300,7 @@ proc PopupMenu {parent x y {base ""}} {
 				;
 		}
 		switch $ext {
-			si3 - si4 - cbh - pgn - bpgn {
+			si3 - si4 - cbh - cbf - pgn - bpgn {
 				if {[file readable $base]} { set state normal } else { set state disabled }
 				$menu add command \
 					-label " $mc::Recode..." \
@@ -1553,6 +1557,7 @@ proc CheckOkButton {btn} {
 
 
 proc DoStripMoveInfo {dlg file} {
+	variable ::scidb::clipbaseName
 	variable MoveInfoAttrs
 	variable Vars
 
@@ -1581,7 +1586,7 @@ proc DoStripMoveInfo {dlg file} {
 
 	set total [::scidb::db::count total $file]
 
-	if {$n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3)} {
+	if {$file ne $clipbaseName && ($n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3))} {
 		::dialog::info \
 			-parent $parent \
 			-title "$::scidb::app: $mc::Maintenance" \
@@ -1657,6 +1662,7 @@ proc CheckTagSelection {btn tags} {
 
 
 proc DoStripPGNTags {dlg file tags} {
+	variable ::scidb::clipbaseName
 	variable Vars
 
 	set parent [winfo parent $dlg]
@@ -1685,7 +1691,7 @@ proc DoStripPGNTags {dlg file tags} {
 
 	set total [::scidb::db::count total $file]
 
-	if {$n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3)} {
+	if {$file ne $clipbaseName && ($n >= 1000 || ($total > 1000 && $n >= ($total + $n)/3))} {
 		::dialog::info \
 			-parent $parent \
 			-title "$::scidb::app: $mc::Maintenance" \
@@ -1742,10 +1748,10 @@ proc Recode {file parent} {
 
 	set enc [::scidb::db::get encoding $file]
 	set ext [$Vars(switcher) extension $file]
-	if {$ext eq "cbh"} {
-		set defaultEncoding $::encoding::windowsEncoding
-	} else {
-		set defaultEncoding utf-8
+	switch $ext {
+		cbh 		{ set defaultEncoding $::encoding::windowsEncoding }
+		cbf		{ set defaultEncoding $::encoding::dosEncoding }
+		default	{ set defaultEncoding utf-8 }
 	}
 	set encoding [::encoding::choose $parent $enc $defaultEncoding]
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }

@@ -145,8 +145,9 @@ set Option(pgn,include_varations)						"Export variations"
 set Option(pgn,include_comments)							"Export comments"
 set Option(pgn,include_moveinfo)							"Export move information (as comments)"
 set Option(pgn,include_marks)								"Export marks (as comments)"
-set Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
+set Option(pgn,use_scidb_import_format)				"Use Scidb import format"
 set Option(pgn,use_chessbase_format)					"Use ChessBase format"
+set Option(pgn,use_strict_pgn_standard)				"Use strict PGN standard"
 set Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
 #set Option(pgn,include_termination_tag)				"Write tag 'Termination'"
 #set Option(pgn,include_mode_tag)						"Write tag 'Mode'"
@@ -165,6 +166,7 @@ set Option(pgn,convert_null_moves)						"Convert null moves to comments"
 set Option(pgn,space_after_move_number)				"Add space after move numbers"
 set Option(pgn,shredder_fen)								"Write Shredder-FEN (default is X-FEN)"
 set Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
+set Option(pgn,write_any_rating_as_elo)				"Write any rating as ELO"
 set Option(pgn,append_mode_to_event_type)				"Add mode after event type"
 set Option(pgn,comment_to_html)							"Write comment in HTML style"
 set Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
@@ -357,8 +359,10 @@ array set Colors {
 namespace eval si3 {
 	array set DefaultTags {
 		Board					1
+		BughouseDBGameNo	1
 		EventCountry		1
 		EventType			1
+		FICSGamesDBGameNo	1
 		Mode					1
 		Remark				1
 		Source				1
@@ -374,8 +378,10 @@ namespace eval si3 {
 namespace eval sci {
 	array set DefaultTags {
 		Board							1
+		BughouseDBGameNo			1
 		EventCategory				1
 		EventRounds					1
+		FICSGamesDBGameNo			1
 		Remark						1
 		Source						1
 		SourceDate					1
@@ -486,7 +492,9 @@ array set Flags {
 	pgn,use_chessbase_format					26
 	pgn,use_scidb_import_format				27
 	pgn,use_utf8_encoding						28
-	pgn,exclude_games_with_illegal_moves	29
+	pgn,use_strict_pgn_standard				29
+	pgn,write_any_rating_as_elo				30
+	pgn,exclude_games_with_illegal_moves	31
 }
 
 array set Defaults {
@@ -517,6 +525,8 @@ array set Defaults {
 	pgn,flag,comment_to_html						0
 	pgn,flag,use_scidb_import_format				0
 	pgn,flag,use_utf8_encoding						0
+	pgn,flag,use_strict_pgn_standard				0
+	pgn,flag,write_any_rating_as_elo				0
 	pgn,flag,exclude_games_with_illegal_moves	0
 
 	pdf,fonts,embed									1
@@ -619,11 +629,11 @@ set Values(pdf,encoding)		iso8859-1
 array set Fields {
 	pgn	{	include_varations include_comments include_moveinfo include_marks indent_variations
 				indent_comments convert_lost_result_to_comment use_scidb_import_format
-				use_chessbase_format append_mode_to_event_type symbolic_annotation_style
-				extended_symbolic_style shredder_fen column_style convert_null_moves comment_to_html
-				space_after_move_number include_opening_tag include_setup_tag include_variant_tag
-				include_position_tag exclude_extra_tags exclude_games_with_illegal_moves
-				use_utf8_encoding
+				use_chessbase_format use_strict_pgn_standard append_mode_to_event_type
+				symbolic_annotation_style extended_symbolic_style shredder_fen column_style
+				convert_null_moves write_any_rating_as_elo comment_to_html space_after_move_number
+				include_opening_tag include_setup_tag include_variant_tag include_position_tag
+				exclude_extra_tags exclude_games_with_illegal_moves use_utf8_encoding
 			}
 	scid	{}
 }
@@ -846,23 +856,48 @@ proc SetupFlags {w type} {
 	switch $type {
 		pgn {
 			if {$Values(pgn,flag,use_chessbase_format) || $Values(pgn,flag,use_scidb_import_format)} {
-				if {$Values(pgn,flag,use_chessbase_format)} {
-					$w.use_chessbase_format configure -state normal
-					$w.use_scidb_import_format configure -state disabled
-				} else {
+				if {$Values(pgn,flag,use_scidb_import_format)} {
 					$w.use_chessbase_format configure -state disabled
 					$w.use_scidb_import_format configure -state normal
+					$w.use_strict_pgn_standard configure -state disabled
+				} else {
+					$w.use_chessbase_format configure -state normal
+					$w.use_scidb_import_format configure -state disabled
+					$w.use_strict_pgn_standard configure -state disabled
 				}
 				foreach field $Fields(pgn) {
 					switch $field {
 						use_chessbase_format -
 						use_scidb_import_format -
+						use_strict_pgn_standard -
 						exclude_games_with_illegal_moves -
 						column_style -
 						indent_comments -
 						indent_variations -
 						space_after_move_number -
-						include_opening_tag {}
+						include_opening_tag -
+						write_any_rating_as_elo {}
+						default { $w.$field configure -state disabled }
+					}
+				}
+			} elseif {$Values(pgn,flag,use_strict_pgn_standard)} {
+				$w.use_chessbase_format configure -state disabled
+				$w.use_scidb_import_format configure -state disabled
+				$w.use_strict_pgn_standard configure -state normal
+				foreach field $Fields(pgn) {
+					switch $field {
+						include_varations -
+						include_comments -
+						use_chessbase_format -
+						use_scidb_import_format -
+						use_strict_pgn_standard -
+						exclude_games_with_illegal_moves -
+						column_style -
+						indent_comments -
+						indent_variations -
+						space_after_move_number -
+						include_opening_tag -
+						write_any_rating_as_elo {}
 						default { $w.$field configure -state disabled }
 					}
 				}

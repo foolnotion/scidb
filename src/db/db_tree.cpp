@@ -595,7 +595,7 @@ Tree::makeTree(TreeP tree,
 					rating::Type ratingType,
 					util::Progress& progress)
 {
-	M_REQUIRE(base.format() != format::ChessBase);
+	M_REQUIRE(!format::isChessBaseFormat(base.format()));
 	M_REQUIRE(base.variant() == variant::Normal);
 
 	typedef bool (Tree::*BuildMeth)(	unsigned,
@@ -694,7 +694,7 @@ Tree::makeTree(TreeP tree,
 			if (info.move())
 			{
 				info.move().setColor(myPosition.sideToMove());
-				myPosition.prepareForPrint(info.move(), base.variant());
+				myPosition.prepareForPrint(info.move(), base.variant(), Board::InternalRepresentation);
 			}
 
 			if (line.length <= opening::Max_Line_Length && !info.eco() && myIdn == variant::Standard)

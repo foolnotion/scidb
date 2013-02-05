@@ -1538,7 +1538,12 @@ proc BuildMenu {gamebar id side menu} {
 
 		eval $addsep
 		menu $menu.configuration -tearoff no
-		$menu add cascade -label $::mc::Configuration -menu $menu.configuration
+		$menu add cascade \
+			-label " $::mc::Configuration" \
+			-image $icon::16x16::none \
+			-compound left \
+			-menu $menu.configuration \
+			;
 
 		menu $menu.configuration.alignment -tearoff no
 		$menu.configuration add cascade -label $::mc::Alignment -menu $menu.configuration.alignment
@@ -1723,6 +1728,8 @@ proc MakeData {gamebar id tags {update no}} {
 proc Update {gamebar id {update yes}} {
 	variable Specs
 	variable Options
+
+	if {$id >= 9} { return }
 
 	set tags [::scidb::game::tags $id]
 	set data [MakeData $gamebar $id $tags $update]
@@ -2247,18 +2254,17 @@ proc ConfigureElo {gamebar id} {
 	variable Options
 
 	if {$Options(separateLines)} {
-		if {$id eq -1} {
-			set sid $Specs(selected:$gamebar)
-		} else {
-			set sid $id
-		}
+		if {$id eq -1} { set sid $Specs(selected:$gamebar) } else { set sid $id }
+		if {[UseSeparateColumn $gamebar]} { set i -1 } else { set i $id }
+
 		foreach {side index} {white 7 black 8} {
 			set elo [lindex $Specs(data:$sid:$gamebar) $index]
 
 			if {$elo} {
-				$gamebar itemconfigure ${side}Elo${id} -text $elo -state normal
+				$gamebar itemconfigure ${side}Elo${id} -text $elo
+				$gamebar itemconfigure ${side}Elo${i} -state normal
 			} else {
-				$gamebar itemconfigure ${side}Elo${id} -state hidden
+				$gamebar itemconfigure ${side}Elo${i} -state hidden
 			}
 		}
 	} else {

@@ -37,10 +37,6 @@ class PgnWriter : public Writer
 {
 public:
 
-	static unsigned const Mode_PGN_Standard	= 0;
-	static unsigned const Mode_PGN_Extended	= 1;
-	static unsigned const Mode_Extended			= 3;
-
 	static unsigned const Default_Flags =	Flag_Include_Variations
 													 | Flag_Include_Comments
 													 | Flag_Include_Termination_Tag

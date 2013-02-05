@@ -66,6 +66,7 @@ public:
 
 	void convert(char* buf, bool shortForm = false) const;
 	void setup(char const* buf);
+	void setup(char letter, uint16_t number);
 	mstl::string asString() const;
 	mstl::string asShortString() const;
 

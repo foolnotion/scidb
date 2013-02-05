@@ -72,7 +72,7 @@ MoveNode::MoveNode(Board const& board, Move const& move, variant::Type variant)
 //	M_REQUIRE(board.isValidMove(move));
 
 	board.prepareUndo(m_move);
-	board.prepareForPrint(m_move, variant);
+	board.prepareForPrint(m_move, variant, Board::InternalRepresentation);
 }
 
 
@@ -143,7 +143,7 @@ MoveNode::setMove(Board const& board, Move const& move, variant::Type variant)
 
 	m_move = move;
 	board.prepareUndo(m_move);
-	board.prepareForPrint(m_move, variant);
+	board.prepareForPrint(m_move, variant, Board::InternalRepresentation);
 }
 
 
@@ -521,7 +521,7 @@ MoveNode::variationNumber(MoveNode const* node) const
 void
 MoveNode::prepareForPrint(Board const& board, variant::Type variant)
 {
-	board.prepareForPrint(m_move, variant);
+	board.prepareForPrint(m_move, variant, Board::InternalRepresentation);
 }
 
 
@@ -842,7 +842,7 @@ MoveNode::finish(Board const& board, variant::Type variant)
 			node->m_variations[i]->finish(myBoard, variant);
 
 		myBoard.prepareUndo(node->m_move);
-		myBoard.prepareForPrint(node->m_move, variant);
+		myBoard.prepareForPrint(node->m_move, variant, Board::InternalRepresentation);
 		myBoard.doMove(node->m_move, variant);
 	}
 }
@@ -876,6 +876,22 @@ MoveNode::computeChecksum(EngineList const& engines, util::crc::checksum_t crc) 
 
 	for (unsigned i = 0; i < variationCount(); ++i)
 		crc = variation(i)->computeChecksum(engines, crc);
+
+	return crc;
+}
+
+
+util::crc::checksum_t
+MoveNode::computeChecksumOfMainline(util::crc::checksum_t crc) const
+{
+	if (m_move)
+		crc = m_move.computeChecksum(crc);
+
+	if (m_next)
+		crc = m_next->computeChecksumOfMainline(crc);
+
+	for (unsigned i = 0; i < variationCount(); ++i)
+		crc = variation(i)->computeChecksumOfMainline(crc);
 
 	return crc;
 }

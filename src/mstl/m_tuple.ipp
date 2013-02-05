@@ -20,45 +20,54 @@
 
 namespace mstl {
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>::tuple()
+tuple<T0,T1,T2,T3>::tuple()
 {
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>::tuple(T0 const& t0)
-	:m_members(t0, null_type(), null_type())
+tuple<T0,T1,T2,T3>::tuple(T0 const& t0)
+	:m_members(t0, null_type(), null_type(), null_type())
 {
 	static_assert(tl::length<type_list>::Value == 1, "wrong numbers of arguments");
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>::tuple(T0 const& t0, T1 const& t1)
-	:m_members(t0, t1, null_type())
+tuple<T0,T1,T2,T3>::tuple(T0 const& t0, T1 const& t1)
+	:m_members(t0, t1, null_type(), null_type())
 {
 	static_assert(tl::length<type_list>::Value == 2, "wrong numbers of arguments");
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>::tuple(T0 const& t0, T1 const& t1, T2 const& t2)
-	:m_members(t0, t1, t2)
+tuple<T0,T1,T2,T3>::tuple(T0 const& t0, T1 const& t1, T2 const& t2)
+	:m_members(t0, t1, t2, null_type())
 {
 	static_assert(tl::length<type_list>::Value == 3, "wrong numbers of arguments");
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
+inline
+tuple<T0,T1,T2,T3>::tuple(T0 const& t0, T1 const& t1, T2 const& t2, T3 const& t3)
+	:m_members(t0, t1, t2, t3)
+{
+	static_assert(tl::length<type_list>::Value == 4, "wrong numbers of arguments");
+}
+
+
+template <typename T0, typename T1, typename T2, typename T3>
 template <int N>
 inline
-typename tl::type_at<typename tuple<T0,T1,T2>::type_list,N>::result const&
-tuple<T0,T1,T2>::get() const
+typename tl::type_at<typename tuple<T0,T1,T2,T3>::type_list,N>::result const&
+tuple<T0,T1,T2,T3>::get() const
 {
 	static_assert(N >= 0, "negative index is not allowed");
 	static_assert(N < tl::length<type_list>::Value, "index too large");
@@ -67,11 +76,11 @@ tuple<T0,T1,T2>::get() const
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 template <int N>
 inline
-typename tl::type_at<typename tuple<T0,T1,T2>::type_list,N>::result&
-tuple<T0,T1,T2>::get()
+typename tl::type_at<typename tuple<T0,T1,T2,T3>::type_list,N>::result&
+tuple<T0,T1,T2,T3>::get()
 {
 	static_assert(N >= 0, "negative index is not allowed");
 	static_assert(N < tl::length<type_list>::Value, "index too large");
@@ -80,35 +89,35 @@ tuple<T0,T1,T2>::get()
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
 bool
-tuple<T0,T1,T2>::operator==(tuple const& t) const
+tuple<T0,T1,T2,T3>::operator==(tuple const& t) const
 {
-	return get<0>() == t.get<0>() && get<1>() == t.get<1>() && get<2>() == t.get<2>();
+	return m_members.compare(t.m_members);
 }
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
 bool
-tuple<T0,T1,T2>::operator!=(tuple const& t) const
+tuple<T0,T1,T2,T3>::operator!=(tuple const& t) const
 {
-	return !operator==(t);
+	return !m_members.compare(t.m_members);
 }
 
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>::tuple(tuple&& t) : m_members(mstl::move(t.m_members)) {}
+tuple<T0,T1,T2,T3>::tuple(tuple&& t) : m_members(mstl::move(t.m_members)) {}
 
 
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-tuple<T0,T1,T2>&
-tuple<T0,T1,T2>::operator=(tuple&& t)
+tuple<T0,T1,T2,T3>&
+tuple<T0,T1,T2,T3>::operator=(tuple&& t)
 {
 	m_members = mstl::move(t.m_members);
 	return *this;

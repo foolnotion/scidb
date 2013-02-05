@@ -156,6 +156,21 @@ file::open(FILE* fp)
 
 
 void
+file::reopen(char const* mode)
+{
+	M_REQUIRE(!m_filename.empty());
+	M_REQUIRE(is_open());
+
+	if (fileno(m_fp) > 2)
+		::fclose(m_fp);
+
+	m_open = false;
+	m_fp = ::fopen(m_filename, mode);
+	init();
+}
+
+
+void
 file::close()
 {
 	if (!m_open)

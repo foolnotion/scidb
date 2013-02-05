@@ -119,9 +119,12 @@ public:
 	void removeAllFiles(mstl::string const& rootname) override;
 	void writeNamebases(mstl::ostream& stream, util::Progress& progress) override;
 
-	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info) override;
+	save::State doDecoding(	db::Consumer& consumer,
+									TagSet& tags,
+									GameInfo const& info,
+									unsigned gameIndex) override;
 	save::State doDecoding(db::Consumer& consumer, util::ByteStream& strm, TagSet& tags) override;
-	void doDecoding(GameData& data, GameInfo& info, mstl::string* encoding) override;
+	void doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding) override;
 
 	void doEncoding(	util::ByteStream& strm,
 							GameData const& data,
@@ -132,6 +135,7 @@ public:
 
 	void reset() override;
 	void setEncoding(mstl::string const& encoding) override;
+	void setWriteable() override;
 
 	void releaseRoundEntry(unsigned index);
 	bool saveRoundEntry(unsigned index, mstl::string const& value);

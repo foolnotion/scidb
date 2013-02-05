@@ -52,6 +52,7 @@ inline bool Board::blackToMove() const				{ return color::isBlack(sideToMove());
 inline bool Board::hasPartnerBoard() const		{ return m_partner != this; }
 
 inline Square Board::enPassantSquare() const		{ return m_epSquare; }
+inline Square Board::enPassantSquareFen() const	{ return m_epSquareFen; }
 
 inline unsigned Board::halfMoveClock() const		{ return m_halfMoveClock; }
 inline unsigned Board::plyNumber() const			{ return m_plyNumber; }
@@ -84,7 +85,6 @@ inline Board const& Board::emptyBoard()					{ return m_emptyBoard; }
 
 inline void Board::destroyCastle(color::ID color)		{ m_castle &= ~castling::bothSides(color); }
 inline void Board::setToMove(color::ID color)			{ m_stm = color; }
-inline void Board::swapToMove()								{ m_stm ^= 1; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
 inline void Board::setEnPassantSquare(Square sq)		{ setEnPassantSquare(sideToMove(), sq); }
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
@@ -303,7 +303,7 @@ inline
 void
 Board::prepareUndo(Move& move) const
 {
-	move.setUndo(m_halfMoveClock, m_epSquare, m_epSquare != sq::Null, m_castle, m_capturePromoted);
+	move.setUndo(m_halfMoveClock, m_epSquareFen, m_epSquare != sq::Null, m_castle, m_capturePromoted);
 }
 
 

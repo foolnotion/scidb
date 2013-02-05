@@ -306,8 +306,10 @@ public:
 	mstl::string& prefix(mstl::string& result) const;
 	/// Return suffix annotation at current position
 	mstl::string& suffix(mstl::string& result) const;
-	/// Compute checksum.
+	/// Compute checksum of game data.
 	util::crc::checksum_t computeChecksum(util::crc::checksum_t crc = 0) const;
+	/// Compute checksum of mainline only.
+	util::crc::checksum_t computeChecksumOfMainline(util::crc::checksum_t crc = 0) const;
 	/// Counts the number of sub-variations at current ply
 	unsigned variationCount() const;
 	/// Counts the number of sub-variations at next ply

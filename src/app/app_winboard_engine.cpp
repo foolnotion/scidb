@@ -1271,7 +1271,7 @@ winboard::Engine::parseInfo(mstl::string const& msg)
 		{
 			if (move.isLegal())
 			{
-				board.prepareForPrint(move, m_variant);
+				board.prepareForPrint(move, m_variant, Board::InternalRepresentation);
 				board.doMove(move, m_variant);
 				moves.append(move);
 				illegal = 0;
@@ -1378,7 +1378,7 @@ winboard::Engine::parseCurrentMove(char const* s)
 
 		if (move.isLegal())
 		{
-			currentBoard().prepareForPrint(move, m_variant);
+			currentBoard().prepareForPrint(move, m_variant, Board::InternalRepresentation);
 			setCurrentMove(moveNo, moveCount, move);
 			updateCurrMove();
 			setTime((hours*60 + minutes)*60 + seconds);

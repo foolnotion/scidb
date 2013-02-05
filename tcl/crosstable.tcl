@@ -426,8 +426,12 @@ proc open {parent base variant index view source} {
 }
 
 
-proc Close {dlg args} {
-	set [namespace current]::${dlg}::Vars(open) 0
+proc Close {dlg base variant view} {
+	variable ${dlg}::Vars
+
+	if {$Vars(viewId) == $view} {
+		set [namespace current]::${dlg}::Vars(open) 0
+	}
 }
 
 

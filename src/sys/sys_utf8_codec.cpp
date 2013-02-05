@@ -2029,6 +2029,14 @@ Codec::windows()
 
 
 mstl::string const&
+Codec::dos()
+{
+	static mstl::string const Name("cp850");
+	return Name;
+}
+
+
+mstl::string const&
 Codec::ascii()
 {
 	static mstl::string const Name("ascii");

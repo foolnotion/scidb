@@ -440,7 +440,7 @@ proc dbNew {parent variant} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 	]
 	set FileSelBoxInUse 0
 
@@ -456,16 +456,16 @@ proc dbOpen {parent} {
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	set filetypes [list                                                                              \
-		[list $mc::AllScidbFiles			{.sci .si4 .si3 .cbh .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip}] \
-		[list $mc::AllScidbBases			{.sci .si4 .si3 .cbh .scv}]                                  \
-		[list $mc::ScidbBases				{.sci}]                                                      \
-		[list $mc::ScidBases					{.si4 .si3}]                                                 \
-		[list $mc::ChessBaseBases			{.cbh}]                                                      \
-		[list $mc::ScidbArchives			{.scv}]                                                      \
-		[list $mc::PGNFilesArchives		{.pgn .pgn.gz .zip}]                                         \
-		[list $mc::BPGNFilesArchives		{.bpgn .bpgn.gz .zip}]                                       \
-		[list $mc::PGNArchives				{.zip}]                                                      \
+	set filetypes [list                                                                                \
+		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip}] \
+		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                                       \
+		[list $mc::ScidbBases			{.sci}]                                                           \
+		[list $mc::ScidBases				{.si4 .si3}]                                                      \
+		[list $mc::ChessBaseBases		{.cbh .cbf}]                                                      \
+		[list $mc::ScidbArchives		{.scv}]                                                           \
+		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                                              \
+		[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip}]                                            \
+		[list $mc::PGNArchives			{.zip}]                                                           \
 	]
 	set result [::dialog::openFile \
 		-parent $parent \
@@ -478,7 +478,7 @@ proc dbOpen {parent} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 	]
 	set FileSelBoxInUse 0
 
@@ -678,19 +678,19 @@ namespace eval archive {
 proc getName {file} {
 	set ext [file extension $file]
 #	switch $ext {
-#		.sci - .si3 - .si4 - .cbh	{ return $mc::Data(index) }
-#		.scg - .sg3 - .sg4 - .cbg	{ return $mc::Data(game) }
-#		.scn - .sn3 - .sn4			{ return $mc::Data(namebase) }
-#		.ssc								{ return $mc::Data(sorting) }
-#		.pgn - .pgn.gz - .zip		{ return $mc::Data(game) }
-#		.bpgn - .bpgn.gz				{ return $mc::Data(game) }
-#		.cba								{ return $mc::Index(annotation) }
-#		.cbs								{ return $mc::Index(source) }
-#		.cbp								{ return $mc::Index(player) }
-#		.cbc								{ return $mc::Index(annotator) }
-#		.cbt								{ return $mc::Index(team) }
-#		.cbj								{ return $mc::Data(team) }
-#		.ini								{ return $mc::Data(initialization) }
+#		.sci - .si3 - .si4 - .cbh - .cbi	{ return $mc::Data(index) }
+#		.scg - .sg3 - .sg4 - .cbg - .cbf	{ return $mc::Data(game) }
+#		.scn - .sn3 - .sn4					{ return $mc::Data(namebase) }
+#		.ssc										{ return $mc::Data(sorting) }
+#		.pgn - .pgn.gz - .zip				{ return $mc::Data(game) }
+#		.bpgn - .bpgn.gz						{ return $mc::Data(game) }
+#		.cba										{ return $mc::Index(annotation) }
+#		.cbs										{ return $mc::Index(source) }
+#		.cbp										{ return $mc::Index(player) }
+#		.cbc										{ return $mc::Index(annotator) }
+#		.cbt										{ return $mc::Index(team) }
+#		.cbj										{ return $mc::Data(team) }
+#		.ini										{ return $mc::Data(initialization) }
 #	}
 	return [format [set [namespace parent]::mc::Data] $ext]
 }
@@ -709,7 +709,7 @@ proc GetCompressionMethod {ext} {
 
 proc GetCount {file} {
 	switch [file extension $file] {
-		.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
+		.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 			return [::scidb::misc::size $file]
 		}
 	}

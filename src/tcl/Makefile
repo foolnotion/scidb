@@ -200,6 +200,7 @@ tcl_application.o: ../db/db_consumer.ipp
 tcl_application.o: ../db/db_database.ipp
 tcl_application.o: ../db/db_database_codec.h
 tcl_application.o: ../db/db_database_codec.ipp
+tcl_application.o: ../util/u_rkiss.h
 tcl_application.o: ../app/app_application.ipp
 tcl_application.o: ../app/app_cursor.h
 tcl_application.o: ../app/app_view.h
@@ -387,6 +388,7 @@ tcl_board.o: ../db/db_consumer.ipp
 tcl_board.o: ../db/db_database.ipp
 tcl_board.o: ../db/db_database_codec.h
 tcl_board.o: ../db/db_database_codec.ipp
+tcl_board.o: ../util/u_rkiss.h
 tcl_board.o: ../app/app_application.ipp
 tcl_board.o: ../db/db_board_base.h
 tcl_board.o: ../db/db_board_base.ipp
@@ -531,6 +533,7 @@ tcl_crosstable.o: ../db/db_consumer.ipp
 tcl_crosstable.o: ../db/db_database.ipp
 tcl_crosstable.o: ../db/db_database_codec.h
 tcl_crosstable.o: ../db/db_database_codec.ipp
+tcl_crosstable.o: ../util/u_rkiss.h
 tcl_crosstable.o: ../app/app_application.ipp
 tcl_crosstable.o: ../app/app_cursor.h
 tcl_crosstable.o: ../app/app_view.h
@@ -728,6 +731,7 @@ tcl_database.o: ../db/db_tree_cache.ipp
 tcl_database.o: ../db/db_database.ipp
 tcl_database.o: ../db/db_database_codec.h
 tcl_database.o: ../db/db_database_codec.ipp
+tcl_database.o: ../util/u_rkiss.h
 tcl_database.o: ../app/app_application.ipp
 tcl_database.o: ../app/app_multi_cursor.h
 tcl_database.o: ../app/app_multi_cursor.ipp
@@ -932,6 +936,7 @@ tcl_engine.o: ../db/db_consumer.ipp
 tcl_engine.o: ../db/db_database.ipp
 tcl_engine.o: ../db/db_database_codec.h
 tcl_engine.o: ../db/db_database_codec.ipp
+tcl_engine.o: ../util/u_rkiss.h
 tcl_engine.o: ../app/app_application.ipp
 tcl_engine.o: ../db/db_game.h
 tcl_engine.o: ../db/db_game_data.h
@@ -1153,6 +1158,7 @@ tcl_game.o: ../db/db_tree_cache.ipp
 tcl_game.o: ../db/db_database.ipp
 tcl_game.o: ../db/db_database_codec.h
 tcl_game.o: ../db/db_database_codec.ipp
+tcl_game.o: ../util/u_rkiss.h
 tcl_game.o: ../app/app_application.ipp
 tcl_game.o: ../app/app_cursor.h
 tcl_game.o: ../app/app_view.h
@@ -1647,6 +1653,7 @@ tcl_position.o: ../db/db_consumer.ipp
 tcl_position.o: ../db/db_database.ipp
 tcl_position.o: ../db/db_database_codec.h
 tcl_position.o: ../db/db_database_codec.ipp
+tcl_position.o: ../util/u_rkiss.h
 tcl_position.o: ../app/app_application.ipp
 tcl_position.o: ../app/app_cursor.h
 tcl_position.o: ../app/app_view.h
@@ -1825,6 +1832,7 @@ tcl_tree.o: ../db/db_consumer.ipp
 tcl_tree.o: ../db/db_database.ipp
 tcl_tree.o: ../db/db_database_codec.h
 tcl_tree.o: ../db/db_database_codec.ipp
+tcl_tree.o: ../util/u_rkiss.h
 tcl_tree.o: ../app/app_application.ipp
 tcl_tree.o: ../app/app_cursor.h
 tcl_tree.o: ../app/app_view.h
@@ -2003,6 +2011,7 @@ tcl_view.o: ../db/db_tree_cache.ipp
 tcl_view.o: ../db/db_database.ipp
 tcl_view.o: ../db/db_database_codec.h
 tcl_view.o: ../db/db_database_codec.ipp
+tcl_view.o: ../util/u_rkiss.h
 tcl_view.o: ../app/app_application.ipp
 tcl_view.o: ../app/app_cursor.h
 tcl_view.o: ../app/app_view.h

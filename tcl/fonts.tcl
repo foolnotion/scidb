@@ -54,6 +54,78 @@ set DefaultHtmlTextFamilies {
 	Arial {Bitstream Vera Sans} TkTextFont {Nimbus Sans L} Verdana {Lucida Grande} Lucida {DejaVu Sans}
 } 
 
+array set mapCodeToNag {
+	"\u203c"				3
+	"\u2047"				4
+	"\u2049"				5
+	"\u2048"				6
+	"\u25a0"				7
+	"\u25a1"				8
+	"=\u223c"			12
+	"\u221e"				13
+	"\u2a72"				14
+	"\u2a71"				15
+	"\u00b1"				16
+	"\u2213"				17
+	"+\u2212"			18
+	"\u2212+"			19
+	"+\u2212\u2212"	20
+	"\u2212\u2212+"	21
+	"\u21d1"				38
+	"\u21d3"				39
+	"\u223c/\u2212"	42
+	"\u223c/+"			43
+	"\u223c/="			44
+	"=/\u223c"			45
+	"+/\u223c"			46
+	"\u2212/\u223c"	47
+	"\u21c8"				96
+	"\u21ca"				97
+	"\u21c4\u21c4"		134
+	"\u21c6\u21c6"		135
+	"\u2295\u2295"		138
+	"\u2296\u2296"		139
+	"\u25b3"				140
+	"\u2206"				140
+	"\u20e4"				140
+	"\u22c1"				141
+	"\u2228"				141
+	"\u2313"				142
+	"\u2264"				143
+	"\u2715"				147
+	"\u22a5"				148
+	"\u27fa"				149
+	"\u21d4"				149
+	"\u21d7"				150
+	"\u25e8"				153
+	"\u26af"				157
+	"\u26ae"				159
+	"\u26a8"				160
+	"\u230a"				165
+	"\u230b"				166
+	"\u229e"				167
+	"\u2014"				170
+	"\u25dd"				173
+	"\u25ef"				173
+	"\u3007"				173
+	"\u2295"				174
+	"\u21bb"				175
+	"\u2299"				176
+	"\u2192"				178
+	"\u2191"				179
+	"\u21c6"				180
+	"\u221e="			181
+	"\u25eb"				182
+	"\u00bb"				183
+	"\u27eb"				183
+	"\u226b"				183
+	"\u300b"				183
+	"\u00ab"				184
+	"\u27ea"				184
+	"\u226a"				184
+	"\u300a"				184
+}
+
 array set SymbolUtfEncoding {
 	  1 "!"
 	  2 "?"
@@ -69,8 +141,8 @@ array set SymbolUtfEncoding {
 	 13 "\u221e"
 	 14 "\u00b1"
 	 15 "\u2213"
-	 16 "+/\u2212"
-	 17 "\u2212/+"
+	 16 "\u00b1"
+	 17 "\u2213"
 	 18 "+\u2212"
 	 19 "\u2212+"
 	 20 "+\u2212\u2212"
@@ -81,8 +153,8 @@ array set SymbolUtfEncoding {
 	 27 "\u25ef"
 	 28 "\u25ef\u25ef"
 	 29 "\u25ef\u25ef"
-	 32 "\u27f3"
-	 33 "\u27f3"
+	 32 "\u21bb"
+	 33 "\u21bb"
 	 34 "\u21bb\u21bb"
 	 35 "\u21ba\u21ba"
 	 36 "\u2191"
@@ -134,7 +206,7 @@ array set SymbolUtfEncoding {
 	146 "N"
 	147 "\u2715"
 	148 "\u22a5"
-	149 "\u27fa"
+	149 "\u21d4"
 	150 "\u21d7"
 	151 "\u25eb"
 	152 "\u25eb"
@@ -149,11 +221,12 @@ array set SymbolUtfEncoding {
 	165 "\u230a"
 	166 "\u230b"
 	167 "\u229e"
+	168 "||"
 	170 "\u2014"
 	171 "R"
 	173 "\u25ef"
 	174 "\u2295"
-	175 "\u27f3"
+	175 "\u21bb"
 	176 "\u2299"
 	178 "\u2192"
 	179 "\u2191"
@@ -168,24 +241,15 @@ array set SymbolUtfEncoding {
 # ------------------------------------
 #  14: 2A72		not working
 #  15: 2A71		--"--
-#  22: u2299	does not look good
-#  23: u2299	--"--
-#  26: u25cb	smaller circle
-#  27: u25cb	smaller circle
-#  28: u25cb	smaller circle
-#  29: u25cb	smaller circle
-#  32: u21ba	probably this looks better?
-#  33: u21ba	--"__
-# 141: u22c1	probably this looks better?
-# 141: u2228	probably this looks better?
-# 173: u25cb	smaller circle
-# 183: u226b	probably this looks better?
-# 184: u226a	probably this looks better?
-
-array set mapCodeToNag {}
-foreach {nag code} [array get SymbolUtfEncoding] {
-	set mapCodeToNag($code) $nag
-}
+#  22: 2299		does not look good
+#  23: 2299		--"--
+#  32: 21ba		probably this looks better?
+#  33: 21ba		--"__
+# 141: 22c1		probably this looks better?
+# 141: 2228		probably this looks better?
+# 173: 25dd		fat circle
+# 183: 226b		probably this looks better?
+# 184: 226a		probably this looks better?
 
 array set SymbolDefaultEncoding {
 	  8 "\u00f4"

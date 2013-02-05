@@ -382,16 +382,21 @@
 ::application::board::mc::StopEngine					"Stop chess analysis engine"
 ::application::board::mc::InsertNullMove				"Insert null move"
 ::application::board::mc::SelectStartPosition		"Select Start Position"
+::application::board::mc::LoadRandomGame				"Load random game"
 
 ::application::board::mc::Tools							"Tools"
 ::application::board::mc::Control						"Control"
 ::application::board::mc::Game							"Game"
 ::application::board::mc::GoIntoNextVar				"Go into next variation"
 ::application::board::mc::GoIntPrevVar					"Go into previous variation"
+
 ::application::board::mc::LoadGame(next)				"Load next game"
 ::application::board::mc::LoadGame(prev)				"Load previous game"
 ::application::board::mc::LoadGame(first)				"Load first game"
 ::application::board::mc::LoadGame(last)				"Load last game"
+
+::application::board::mc::SwitchView(base)			"Switch to database view"
+::application::board::mc::SwitchView(list)			"Switch to game list view"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -472,6 +477,7 @@
 ::application::database::mc::RemoveSpace						"Some empty spaces will be removed."
 ::application::database::mc::CompactionRecommended			"It is recommended to compact the database."
 ::application::database::mc::SearchPGNTags					"Searching for PGN tags"
+::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:"
 
 ::application::database::mc::T_Unspecific						"Unspecific"
 ::application::database::mc::T_Temporary						"Temporary"
@@ -1331,8 +1337,9 @@
 ::browser::mc::GotoGame(next)		"Goto next game"
 ::browser::mc::GotoGame(prev)		"Goto previous game"
 
-::browser::mc::LoadGame				"Load Game"
-::browser::mc::MergeGame			"Merge Game"
+::browser::mc::LoadGame				"Load game into editor"
+::browser::mc::ReloadGame			"Reload game"
+::browser::mc::MergeGame			"Merge game"
 
 ::browser::mc::IllegalMove			"Illegal move"
 ::browser::mc::NoCastlingRights	"no castling rights"
@@ -1629,8 +1636,9 @@
 ::export::mc::Option(pgn,include_comments)						"Export comments"
 ::export::mc::Option(pgn,include_moveinfo)						"Export move information (as comments)"
 ::export::mc::Option(pgn,include_marks)							"Export marks (as comments)"
-::export::mc::Option(pgn,use_scidb_import_format)				"Use Scidb Import Format"
+::export::mc::Option(pgn,use_scidb_import_format)				"Use Scidb import format"
 ::export::mc::Option(pgn,use_chessbase_format)					"Use ChessBase format"
+::export::mc::Option(pgn,use_strict_pgn_standard				"Use PGN standard"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Write tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Write tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Write tag 'Mode'"
@@ -1649,6 +1657,7 @@
 ::export::mc::Option(pgn,space_after_move_number)				"Add space after move numbers"
 ::export::mc::Option(pgn,shredder_fen)								"Write Shredder-FEN (default is X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Write comment for result '0-0'"
+::export::mc::Option(pgn,write_any_rating_as_elo)				"Write any rating as ELO"
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Add mode after event type"
 ::export::mc::Option(pgn,comment_to_html)							"Write comment in HTML style"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Exclude games with illegal moves"
@@ -2680,6 +2689,7 @@
 ::encoding::mc::Lang(hu)	"Hungarian"
 ::encoding::mc::Lang(hy)	"Armenian"
 ::encoding::mc::Lang(ia)	"Interlingua"
+::encoding::mc::Lang(id)	"Indonesian"
 ::encoding::mc::Lang(is)	"Icelandic"
 ::encoding::mc::Lang(it)	"Italian"
 ::encoding::mc::Lang(iu)	"Inuktitut"

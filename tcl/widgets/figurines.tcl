@@ -61,6 +61,7 @@ array set langSet {
 	fr			{R D T F C P}
 	ga			{R B C E D F}
 	gl			{R D T B C P}
+	hi			{R V H O G P}
 	hr			{K D T L S P}
 	hu			{K V B F H G}
 	is			{K D H B R P}
@@ -96,6 +97,8 @@ array set langSet {
 #	FI			KDTSNP
 #	fy			KDSFHB
 #	hi			RVHOGP
+#	id			RMBGKP
+#	ko			KQRBNP
 # Unused-----------------------------------------
 #	eo			{R D T K C \u0108}	Esperanto
 #	he			{\u05de "\u05d4\u05de" \u05e6 \u05e8 \u05e4 "\u05d9\u05dc\u05d2\u05e8"} Hebraic

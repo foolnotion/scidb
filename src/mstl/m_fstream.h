@@ -31,6 +31,8 @@ public:
 	fstream();
 	fstream(char const* filename, openmode mode = in | out);
 
+	void reopen(openmode mode);
+
 	using ifstream::is_open;
 	using ifstream::is_buffered;
 	using ifstream::is_unbuffered;

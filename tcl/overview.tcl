@@ -37,8 +37,11 @@ set AcceleratorRotate	"R"
 
 namespace import ::tcl::mathfunc::min
 
-set Background	#ebf4f5
-set MinSize		30
+array set Options {
+	background:normal		#ebf4f5
+	background:modified	linen
+	minSize					30
+}
 
 array set Priv {
 	count	0
@@ -82,15 +85,13 @@ proc open {parent base variant info view index {fen {}}} {
 	set boardSize(4) [expr {$boardSize(3) - ($boardSize(1) - $boardSize(3))/2}]
 
 	set nb [::ttk::notebook $dlg.nb -takefocus 1]
-	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
-	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
 
 	bind $dlg <F1>					[list ::help::open .application Game-Overview -parent $dlg]
-	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $nb $base $variant]]
-	bind $dlg <Control-Home>	[namespace code [list GotoGame(first) $nb $base $variant]]
-	bind $dlg <Control-End>		[namespace code [list GotoGame(last) $nb $base $variant]]
-	bind $dlg <Control-Down>	[namespace code [list GotoGame(next) $nb $base $variant]]
-	bind $dlg <Control-Up>		[namespace code [list GotoGame(prev) $nb $base $variant]]
+	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $nb]]
+	bind $dlg <Control-Home>	[namespace code [list GotoGame(first) $nb]]
+	bind $dlg <Control-End>		[namespace code [list GotoGame(last) $nb]]
+	bind $dlg <Control-Down>	[namespace code [list GotoGame(next) $nb]]
+	bind $dlg <Control-Up>		[namespace code [list GotoGame(prev) $nb]]
 
 	namespace eval $nb {}
 	variable ${nb}::Vars
@@ -108,14 +109,16 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(info) $info
 	set Vars(after) {}
 	set Vars(moves) ""
+	set Vars(modified) 0
+	set Vars(text) {}
 
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
 	$nb select $Priv(tab)
 	pack $nb
 
 	bind $nb <Destroy> [namespace code [list Destroy $nb]]
-	$dlg.previous configure -command [namespace code [list NextGame $nb $base $variant -1]]
-	$dlg.next configure -command [namespace code [list NextGame $nb $base $variant +1]]
+	$dlg.previous configure -command [namespace code [list NextGame $nb -1]]
+	$dlg.next configure -command [namespace code [list NextGame $nb +1]]
 
 	SetAccelerator $nb
 
@@ -126,12 +129,18 @@ proc open {parent base variant info view index {fen {}}} {
 	wm deiconify $dlg
 	focus $nb
 
-	NextGame $nb $base $variant
+	NextGame $nb
+	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
+	bind $nb <<LanguageChanged>> [namespace code [list LanguageChanged $nb]]
 
-	set Vars(subscribe:list) [list [namespace current]::Update [namespace current]::Close $nb]
-	set Vars(subscribe:close) [list [namespace current]::Close2 $base [list $nb $variant]]
+	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $nb]
+	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $nb]
+	set Vars(subscribe:data)  [list [namespace current]::UpdateData $nb]
+
 	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
+	::scidb::db::subscribe gameData {*}$Vars(subscribe:data)
 	::scidb::view::subscribe {*}$Vars(subscribe:close)
+
 	if {$variant == [::scidb::app::variant] && $view == [::scidb::tree::view $base]} {
 		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $nb]
 		::scidb::db::subscribe tree {*}$Vars(subscribe:tree)
@@ -158,7 +167,7 @@ proc load {parent base variant info view index windowId} {
 	}
 
 	variable ${windowId}::Vars
-	NextGame $windowId $base $variant {} [expr {$index - $Vars(index)}]
+	NextGame $windowId [expr {$index - $Vars(index)}]
 	return $windowId
 }
 
@@ -211,6 +220,22 @@ proc Update2 {nb} {
 }
 
 
+proc UpdateData {nb id evenMainline} {
+	variable ${nb}::Vars
+	variable Options
+
+	if {$evenMainline} {
+		if {$Vars(link) eq [::scidb::game::link? $id]} {
+			set Vars(modified) 1
+			set background $Options(background:modified)
+			foreach text $Vars(text) {
+				$text configure -background $background -inactiveselectbackground $background
+			}
+		}
+	}
+}
+
+
 proc Close {nb base variant {view {}}} {
 	variable ${nb}::Vars
 
@@ -224,12 +249,6 @@ proc Close {nb base variant {view {}}} {
 }
 
 
-proc Close2 {args base view} {
-	lassign $args bn variant
-	Close $bn $base $variant $view
-}
-
-
 proc UpdateTreeBase {nb base variant} {
 	variable ${nb}::Vars
 
@@ -239,59 +258,64 @@ proc UpdateTreeBase {nb base variant} {
 }
 
 
-proc GotoGame(first) {nb base variant} {
+proc GotoGame(first) {nb} {
 	variable ${nb}::Vars
 
 	if {$Vars(index) > 0} {
 		set Vars(index) 0
-		NextGame $nb $base $variant
+		NextGame $nb
 	}
 }
 
 
-proc GotoGame(last) {nb base variant} {
+proc GotoGame(last) {nb} {
 	variable ${nb}::Vars
 
 	set index [expr {[scidb::view::count games $base $variant $Vars(view)] - 1}]
 
 	if {$Vars(index) < $index} {
 		set Vars(index) $index
-		NextGame $nb $base $variant
+		NextGame $nb
 	}
 }
 
 
-proc GotoGame(next) {nb base variant} {
-	NextGame $nb $base $variant +1
+proc GotoGame(next) {nb} {
+	NextGame $nb +1
 }
 
 
-proc GotoGame(prev) {nb base variant} {
-	NextGame $nb $base $variant -1
+proc GotoGame(prev) {nb} {
+	NextGame $nb -1
 }
 
 
-proc NextGame {nb base variant {step 0}} {
+proc NextGame {nb {step 0}} {
 	variable ${nb}::Vars
+	variable Options
 	variable Priv
 
 	if {$Vars(index) == -1} { return }
 	set number $Vars(number)
+	set base $Vars(base)
+	set variant $Vars(variant)
+	set view $Vars(view)
 	incr Vars(index) $step
 	ConfigureButtons $nb
 
-	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base) $Vars(variant)]
+	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $view $base $variant]
 	set Vars(number) [::gametable::column $Vars(info) number]
 	set dlg [winfo toplevel $nb]
-	set key $Vars(base):$Vars(variant):$number:$Vars(view)
+	set key "$base:$variant:$number:$view"
 	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
-	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
+	set key "$base:$variant:$Vars(number):$view"
+	set Vars(link) [list $base $variant $Vars(index)]
 	lappend Priv($key) $dlg
 
 	SetTitle $nb
-	array unset Vars(result:*)
+	array unset Vars result:*
 	array set Vars { fill:0 1 fill:1 1 fill:2 1 fill:3 1 }
 	set failed 0
 	set index 0
@@ -300,7 +324,7 @@ proc NextGame {nb base variant {step 0}} {
 		if {$failed} { continue }
 		set num [expr {$ncols*$nrows}]
 		set result [::widget::busyOperation \
-			{ ::scidb::game::dump $base $variant $Vars(view) $Vars(index) $Vars(fen) $num }]
+			{ ::scidb::game::dump $base $variant $view $Vars(index) $Vars(fen) $num }]
 		set failed 1
 		switch [lindex $result 0] {
 			 1 { set failed 0 }
@@ -309,6 +333,14 @@ proc NextGame {nb base variant {step 0}} {
 		}
 		set Vars(result:$index) [lreplace $result 0 0]
 		incr index
+	}
+
+	if {$Vars(modified)} {
+		set background $Options(background:normal)
+		foreach text $Vars(text) {
+			$text configure -background $background -inactiveselectbackground $background
+		}
+		set Vars(modified) 0
 	}
 
 	ConfigureTab [$nb select]
@@ -348,11 +380,11 @@ proc SetTitle {nb} {
 
 
 proc BuildTab {nb boardSize sw sh specified} {
-	variable Background
-	variable MinSize
+	variable ${nb}::Vars
+	variable Options
 	variable Priv
 
-	if {$boardSize < $MinSize && [llength [$nb tabs]] >= 2} { return }
+	if {$boardSize < $Options(minSize) && [llength [$nb tabs]] >= 2} { return }
 	set nrows [expr {$sh/(8*$boardSize + 47)}]
 	set ncols [expr {$sw/(8*$boardSize + 12)}]
 	if {!$specified} {
@@ -366,6 +398,7 @@ proc BuildTab {nb boardSize sw sh specified} {
 	$nb add $f -sticky nsew -text "${nrows}x${ncols}"
 	lappend Priv(tabs) $boardSize $nrows $ncols
 	set size [expr {8*$boardSize + 2}]
+	set background $Options(background:normal)
 
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {
@@ -379,11 +412,12 @@ proc BuildTab {nb boardSize sw sh specified} {
 				-state disabled                       \
 				-wrap word                            \
 				-cursor {}                            \
-				-background $Background               \
-				-inactiveselectbackground $Background \
+				-background $background               \
+				-inactiveselectbackground $background \
 				-selectforeground black               \
 				-exportselection no                   \
 			]
+			lappend Vars(text) $text
 			::widget::textPreventSelection $text
 			::widget::bindMouseWheel $text 1
 			grid $board -column [expr {2*($col + 1)}] -row [expr {4*($row + 1)}]
@@ -469,7 +503,7 @@ proc FillTab {nb pane} {
 }
 
 
-proc PopupMenu {nb base variant} {
+proc PopupMenu {nb} {
 	variable ${nb}::Vars
 
 	set menu $nb.__menu__
@@ -477,6 +511,9 @@ proc PopupMenu {nb base variant} {
 	menu $menu -tearoff 0
 	catch { wm attributes $menu -type popup_menu }
 
+	set base $Vars(base)
+	set variant $Vars(variant)
+	set view $Vars(view)
 	if {$Vars(index) == -1} { set state disabled } else { set state normal }
 
 	$menu add command \
@@ -497,15 +534,23 @@ proc PopupMenu {nb base variant} {
 #		-command [namespace code [list MergeGame $nb]] \
 #		-state $state \
 #		;
+	if {!$Vars(modified)} { set state disabled }
+	$menu add command \
+		-label " $::browser::mc::ReloadGame" \
+		-image $::icon::16x16::refresh \
+		-compound left \
+		-command [namespace code [list NextGame $nb 0]] \
+		-state $state \
+		;
 	if {$Vars(index) >= 0} {
 		$menu add separator
-		set count [scidb::view::count games $Vars(base) $Vars(variant) $Vars(view)]
+		set count [scidb::view::count games $base $variant $view]
 		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$menu add command \
 			-label " $::browser::mc::GotoGame(next)" \
 			-image $::icon::16x16::forward \
 			-compound left \
-			-command [namespace code [list GotoGame(next) $nb $base $variant]] \
+			-command [namespace code [list GotoGame(next) $nb]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 			-state $state \
 			;
@@ -514,7 +559,7 @@ proc PopupMenu {nb base variant} {
 			-label " $::browser::mc::GotoGame(prev)" \
 			-image $::icon::16x16::backward \
 			-compound left \
-			-command [namespace code [list GotoGame(prev) $nb $base $variant]] \
+			-command [namespace code [list GotoGame(prev) $nb]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
 			-state $state \
 			;
@@ -523,7 +568,7 @@ proc PopupMenu {nb base variant} {
 			-compound left \
 			-image $::icon::16x16::last \
 			-label " $::browser::mc::GotoGame(last)" \
-			-command [namespace code [list GotoGame(last) $nb $base $variant]] \
+			-command [namespace code [list GotoGame(last) $nb]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
 			-state $state \
 			;
@@ -532,7 +577,7 @@ proc PopupMenu {nb base variant} {
 			-compound left \
 			-image $::icon::16x16::first \
 			-label " $::browser::mc::GotoGame(first)" \
-			-command [namespace code [list GotoGame(first) $nb $base $variant]] \
+			-command [namespace code [list GotoGame(first) $nb]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
 			-state $state \
 			;
@@ -570,12 +615,13 @@ proc Destroy {nb} {
 
 		catch { destroy $nb.__menu__ }
 
-		set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
+		set key "$Vars(base):$Vars(variant):$Vars(number):$Vars(view)"
 		set i [lsearch -exact $Priv($key) [winfo toplevel $nb]]
 		if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 		if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
 		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
+		::scidb::db::unsubscribe gameData {*}$Vars(subscribe:data)
 		::scidb::view::unsubscribe {*}$Vars(subscribe:close)
 		if {[info exists Vars(subscribe:tree)]} {
 			::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
@@ -598,6 +644,7 @@ proc TabChanged {nb} {
 
 proc LoadGame {nb} {
 	variable ${nb}::Vars
+
 	::widget::busyOperation {
 		::game::new $nb \
 			-base $Vars(base) \
@@ -608,12 +655,6 @@ proc LoadGame {nb} {
 			;
 	}
 }	
-
-
-proc MergeGame {nb} {
-	variable ${nb}::Vars
-puts "MergeGame [expr {$Vars(number) - 1}]"	;# TODO
-}
 
 } ;# namespace overview
 

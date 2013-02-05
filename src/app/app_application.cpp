@@ -237,10 +237,12 @@ Application::Iterator::operator++()
 Application::EditGame::EditGame()
 	:cursor(0)
 	,index(0)
+	,viewId(-1)
 	,game(0)
 	,backup(0)
 	,crcIndex(0)
 	,crcMoves(0)
+	,crcMainline(0)
 	,refresh(0)
 	,sourceIndex(0)
 {
@@ -472,6 +474,7 @@ Application::insertScratchGame(unsigned position, db::variant::Type variant)
 	game.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
 	game.crcIndex = base.computeChecksum(index);
 	game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
+	game.crcMainline = game.game->computeChecksumOfMainline();
 	game.sourceBase = base.name();
 	game.sourceIndex = index;
 	game.refresh = 0;
@@ -879,8 +882,8 @@ Application::gameInfoAt(unsigned position) const
 	if (position == InvalidPosition)
 		position = m_position;
 
-	EditGame const& g = *m_gameMap.find(position)->second;
-	return g.cursor->base().gameInfo(g.index);
+	EditGame const& game = *m_gameMap.find(position)->second;
+	return game.cursor->base().gameInfo(game.index);
 }
 
 
@@ -893,6 +896,27 @@ Application::gameIndex(unsigned position) const
 		position = m_position;
 
 	return m_gameMap.find(position)->second->index;
+}
+
+
+unsigned
+Application::gameNumber(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	if (position == InvalidPosition)
+		position = m_position;
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+	return game.cursor->index(table::Games, game.index, 0);
+}
+
+
+Cursor const&
+Application::getGameCursor(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+	return *m_gameMap.find(position)->second->cursor;
 }
 
 
@@ -1010,7 +1034,7 @@ void
 Application::setReferenceBase(Cursor* cursor, bool isUserSet)
 {
 	M_REQUIRE(cursor == 0 || !cursor->isScratchbase());
-	M_REQUIRE(cursor == 0 || cursor->format() != format::ChessBase);
+	M_REQUIRE(cursor == 0 || !format::isChessBaseFormat(cursor->format()));
 	M_REQUIRE(cursor == 0 || cursor->variant() == variant::Normal);
 
 	m_isUserSet = isUserSet;
@@ -1065,14 +1089,17 @@ Application::switchBase(Cursor& cursor)
 	setActiveBase(&cursor);
 
 	if (	(m_switchReference || (!m_isUserSet && m_referenceBase->isClipbase()))
-		&& cursor.format() != format::ChessBase
+		&& !format::isChessBaseFormat(cursor.format())
 		&& cursor.variant() == variant::Normal)
 	{
 		setReferenceBase(m_current, false);
 	}
 
 	if (m_subscriber)
+	{
+		m_subscriber->databaseSwitched(cursor.name(), cursor.variant());
 		m_subscriber->updateList(m_updateCount++, cursor.name(), cursor.variant());
+	}
 }
 
 
@@ -1235,6 +1262,7 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 		case format::Scid3:
 		case format::Scid4:
 		case format::ChessBase:
+		case format::ChessBaseDOS:
 			if (cursor.isReferenceBase())
 				stopUpdateTree();
 			if (base.namebases().isOriginal())
@@ -1286,6 +1314,7 @@ Application::loadGame(	unsigned position,
 
 		game.crcIndex = base.computeChecksum(index);
 		game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
+		game.crcMainline = game.game->computeChecksumOfMainline();
 		game.sourceBase = base.name();
 		game.sourceIndex = index;
 		game.refresh = 0;
@@ -1422,6 +1451,7 @@ Application::changeVariant(unsigned position, db::variant::Type variant)
 		game.index = index;
 		game.crcIndex = base.computeChecksum(index);
 		game.crcMoves = tags.computeChecksum(game.game->computeChecksum());
+		game.crcMainline = game.game->computeChecksumOfMainline();
 		game.sourceBase = base.name();
 		game.sourceIndex = index;
 		game.refresh = 0;
@@ -2069,11 +2099,15 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	if (save::isOk(state))
 	{
+		checksum_t crcMainline	= g.crcMainline;
+		checksum_t crcMoves		= g.crcMoves;
+
 		TagSet tags;
 		db.getGameTags(g.index, tags);
 
 		info.setDirty(false);
 		g.game->setIsModified(false);
+		g.crcMainline = g.game->computeChecksumOfMainline();
 		g.crcMoves = tags.computeChecksum(g.game->computeChecksum());
 		g.crcIndex = cursor.base().computeChecksum(g.index);
 		g.sourceIndex = g.game->index();
@@ -2082,6 +2116,9 @@ Application::saveGame(Cursor& cursor, bool replace)
 		{
 			m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 			m_subscriber->updateGameInfo(m_position);
+
+			if (g.crcMoves != crcMoves || g.crcMainline != crcMainline)
+				m_subscriber->updateGameData(m_position, crcMainline != g.crcMainline);
 
 			if (m_current == &cursor)
 			{
@@ -2160,13 +2197,21 @@ Application::updateMoves()
 
 		if (save::isOk(state))
 		{
+			checksum_t crcMainline	= g.crcMainline;
+			checksum_t crcMoves		= g.crcMoves;
+
 			TagSet tags;
 			cursor.base().getGameTags(g.sourceIndex, tags);
 
 			g.game->setIsModified(false);
 			g.crcMoves = tags.computeChecksum(g.game->computeChecksum());
+			g.crcMainline = g.game->computeChecksumOfMainline();
+
 			m_subscriber->updateDatabaseInfo(name, variant);
 			m_subscriber->updateGameInfo(m_position); // because of changed checksums
+
+			if (g.crcMoves != crcMoves || g.crcMainline != crcMainline)
+				m_subscriber->updateGameData(m_position, crcMainline != g.crcMainline);
 
 			if (m_current == &cursor)
 			{
@@ -2343,6 +2388,35 @@ Application::bindGameToDatabase(unsigned position, mstl::string const& name, uns
 
 	if (m_subscriber)
 		m_subscriber->updateGameInfo(position);
+}
+
+
+void
+Application::bindGameToView(unsigned position, int viewId, Update updateMode)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(viewId == -1 || getGameCursor(position).isViewOpen(viewId));
+
+	m_gameMap.find(position)->second->viewId = viewId;;
+
+	if (updateMode == UpdateGameInfo && m_subscriber)
+		m_subscriber->updateGameInfo(position);
+}
+
+
+void
+Application::viewClosed(Cursor const& cursor, unsigned viewId)
+{
+	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+	{
+		if (i->second->cursor == &cursor && int(viewId) == i->second->viewId)
+		{
+			i->second->viewId = -1;
+
+			if (m_subscriber)
+				m_subscriber->updateGameInfo(i->first);
+		}
+	}
 }
 
 
@@ -2700,6 +2774,82 @@ Application::updateGameInfo(Cursor const& cursor, Database& database)
 			}
 		}
 	}
+}
+
+
+int
+Application::getViewId(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+	return m_gameMap.find(position)->second->viewId;
+}
+
+
+int
+Application::getNextGameIndex(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	if (game.viewId == -1)
+		return -1;
+
+	return game.cursor->view(game.viewId).nextIndex(table::Games, game.index);
+}
+
+
+int
+Application::getPrevGameIndex(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	if (game.viewId == -1)
+		return -1;
+
+	return game.cursor->view(game.viewId).prevIndex(table::Games, game.index);
+}
+
+
+int
+Application::getFirstGameIndex(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	if (game.viewId == -1)
+		return -1;
+
+	return game.cursor->view(game.viewId).firstIndex(table::Games);
+}
+
+
+int
+Application::getLastGameIndex(unsigned position) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	if (game.viewId == -1)
+		return -1;
+
+	return game.cursor->view(game.viewId).lastIndex(table::Games);
+}
+
+
+int
+Application::getRandomGameIndex(unsigned position) const
+{
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	if (game.viewId == -1)
+		return -1;
+
+	return game.cursor->view(game.viewId).randomGameIndex();
 }
 
 // vi:set ts=3 sw=3:

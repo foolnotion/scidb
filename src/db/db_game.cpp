@@ -2054,7 +2054,7 @@ Game::addVariation(MoveNodeP node)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForPrint(n->move(), m_variant);
+		board.prepareForPrint(n->move(), m_variant, Board::InternalRepresentation);
 		board.doMove(n->move(), m_variant);
 	}
 
@@ -2489,7 +2489,7 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
-		board.prepareForPrint(n->move(), m_variant);
+		board.prepareForPrint(n->move(), m_variant, Board::InternalRepresentation);
 		board.doMove(n->move(), m_variant);
 	}
 
@@ -2816,6 +2816,19 @@ Game::computeChecksum(util::crc::checksum_t crc) const
 				reinterpret_cast<unsigned char const*>(&m_startBoard.uniquePosition()),
 				sizeof(board::UniquePosition));
 	crc = m_startNode->computeChecksum(m_engines, crc);
+
+	return crc;
+}
+
+
+util::crc::checksum_t
+Game::computeChecksumOfMainline(util::crc::checksum_t crc) const
+{
+	crc = util::crc::compute(
+				crc,
+				reinterpret_cast<unsigned char const*>(&m_startBoard.uniquePosition()),
+				sizeof(board::UniquePosition));
+	crc = m_startNode->computeChecksumOfMainline(crc);
 
 	return crc;
 }

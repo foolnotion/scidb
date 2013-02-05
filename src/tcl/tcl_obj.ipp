@@ -72,6 +72,9 @@ Obj::operator==(Obj const& obj) const
 	if (obj.m_obj == 0)
 		return false;
 
+	if (m_obj == obj.m_obj)
+		return true;
+
 	return ::strcmp(Tcl_GetStringFromObj(m_obj, 0), Tcl_GetStringFromObj(obj.m_obj, 0)) == 0;
 }
 

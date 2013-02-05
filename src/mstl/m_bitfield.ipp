@@ -645,7 +645,7 @@ inline
 unsigned
 bitfield<Bits>::find_last() const
 {
-	return m_bits == 0u ? npos : bf::msb_index(m_bits);
+	return none() ? npos : bf::msb_index(m_bits);
 }
 
 
@@ -654,7 +654,7 @@ inline
 unsigned
 bitfield<Bits>::find_first() const
 {
-	return m_bits == 0u ? npos : bf::lsb_index(m_bits);
+	return none() ? npos : bf::lsb_index(m_bits);
 }
 
 
@@ -683,7 +683,7 @@ inline
 unsigned
 bitfield<Bits>::find_last_not() const
 {
-	return m_bits == value_type(~0) ? npos : bf::msb_index(~m_bits);
+	return complete() ? npos : bf::msb_index(~m_bits);
 }
 
 
@@ -692,7 +692,7 @@ inline
 unsigned
 bitfield<Bits>::find_first_not() const
 {
-	return m_bits == value_type(~0) ? npos : bf::lsb_index(~m_bits);
+	return complete() ? npos : bf::lsb_index(~m_bits);
 }
 
 

@@ -315,7 +315,7 @@ EcoTable::Node::dump(Codec& codec, Board& board, variant::Type variant, unsigned
 
 		Move move = board.makeMove(b.move);
 
-		board.prepareForPrint(move, variant);
+		board.prepareForPrint(move, variant, Board::ExternalRepresentation);
 		board.prepareUndo(move);
 		board.doMove(move, variant);
 
@@ -378,7 +378,7 @@ EcoTable::Node::print(	Board& board,
 		Branch const&	b		= branches[i];
 		Move				move	= board.makeMove(b.move);
 
-		board.prepareForPrint(move, variant);
+		board.prepareForPrint(move, variant, Board::ExternalRepresentation);
 		board.prepareUndo(move);
 		board.doMove(move, variant);
 		moves.push(move);

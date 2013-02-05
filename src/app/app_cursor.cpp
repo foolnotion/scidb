@@ -172,6 +172,8 @@ Cursor::closeView(unsigned view, bool informUser)
 
 	if (view != 0 && m_viewList[view + 1])
 	{
+		m_cursor.app().viewClosed(*this, view);
+
 		m_freeSet.set(view);
 		delete m_viewList[view + 1];
 		m_viewList[view + 1] = 0;
@@ -180,7 +182,7 @@ Cursor::closeView(unsigned view, bool informUser)
 			m_treeView = -1;
 
 		if (informUser && m_subscriber)
-			m_subscriber->close(view);
+			m_subscriber->close(m_db->name(), m_db->variant(), view);
 	}
 }
 
@@ -259,6 +261,8 @@ Cursor::closeAllViews()
 
 		if (m_viewList[view + 1])
 		{
+			m_cursor.app().viewClosed(*this, view);
+
 			m_freeSet.set(view);
 			delete m_viewList[view + 1];
 			m_viewList[view + 1] = 0;
@@ -267,7 +271,7 @@ Cursor::closeAllViews()
 				m_treeView = -1;
 
 			if (m_subscriber)
-				m_subscriber->close(view);
+				m_subscriber->close(m_db->name(), m_db->variant(), view);
 		}
 	}
 }

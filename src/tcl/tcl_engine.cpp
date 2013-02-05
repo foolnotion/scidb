@@ -51,6 +51,7 @@ using namespace tcl;
 
 static char const* CmdActivate		= "::scidb::engine::activate";
 static char const* CmdAnalyize		= "::scidb::engine::analyze";
+static char const* CmdBind				= "::scidb::engine::bind";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
 static char const* CmdCountLines		= "::scidb::engine::countLines";
 static char const* CmdEmpty			= "::scidb::engine::empty?";
@@ -289,17 +290,12 @@ public:
 			Tcl_Obj* v[::app::Engine::MaxNumVariations];
 			unsigned n = countLines();
 
-#ifndef NREQ
-			mstl::bitfield<unsigned> _complete;
-#endif
+			M_TEST(mstl::bitfield<unsigned> _complete)
 
 			for (unsigned i = 0; i < n; ++i)
 			{
 				v[ordering(i)] = Tcl_NewBooleanObj(isBestLine(i));
-
-#ifndef NREQ
-				_complete.set(ordering(i));
-#endif
+				M_TEST(_complete.set(ordering(i)))
 			}
 
 			M_ASSERT(_complete.count() == n);
@@ -1329,6 +1325,21 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdBind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned id = unsignedFromObj(objc, objv, 1);
+
+	if (tcl::app::scidb->engineExists(id))
+	{
+		::app::Engine* engine = tcl::app::Scidb->engine(id);
+		engine->bind(&tcl::app::scidb->game());
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace engine {
 
@@ -1338,6 +1349,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdActivate,		cmdActivate);
 	createCommand(ti, CmdActive,			cmdActive);
 	createCommand(ti, CmdAnalyize,		cmdAnalyze);
+	createCommand(ti, CmdBind,				cmdBind);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
 	createCommand(ti, CmdCountLines,		cmdCountLines);
 	createCommand(ti, CmdEmpty,				cmdEmpty);

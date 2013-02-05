@@ -500,7 +500,7 @@ inline
 util::crc::checksum_t
 Move::computeChecksum(util::crc::checksum_t crc) const
 {
-	return ::util::crc::compute(crc, reinterpret_cast<char const*>(&m), sizeof(m));
+	return ::util::crc::compute(crc, index());
 }
 
 } // namespace db

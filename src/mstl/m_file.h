@@ -45,6 +45,7 @@ public:
 	void open(char const* filename, char const* mode);
 	void open(int fd, char const* mode);
 	void open(struct _IO_FILE* fp);
+	void reopen(char const* mode);
 	void close();
 
 	void truncate(unsigned length);

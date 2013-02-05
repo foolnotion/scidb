@@ -69,8 +69,9 @@
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
 
-#include "m_vector.h"
 #include "m_utility.h"
+#include "m_bitset.h"
+#include "m_vector.h"
 #include "m_algorithm.h"
 #include "m_limits.h"
 #include "m_tuple.h"
@@ -251,33 +252,67 @@ struct Subscriber : public Application::Subscriber
 {
 	enum Type
 	{
-		GameList			= 1 << table::Games,
-		PlayerList		= 1 << table::Players,
-		EventList		= 1 << table::Events,
-		SiteList			= 1 << table::Sites,
-		AnnotatorList	= 1 << table::Annotators,
-		DatabaseInfo	= 1 << 5,
-		GameInfo			= 1 << 6,
-		GameHistory		= 1 << 7,
-		GameSwitched	= 1 << 8,
-		Tree				= 1 << 9,
+		GameList				= 1 << table::Games,
+		PlayerList			= 1 << table::Players,
+		EventList			= 1 << table::Events,
+		SiteList				= 1 << table::Sites,
+		AnnotatorList		= 1 << table::Annotators,
+		DatabaseInfo		= 1 << 5,
+		GameInfo				= 1 << 6,
+		GameData				= 1 << 7,
+		GameHistory			= 1 << 8,
+		GameSwitched		= 1 << 9,
+		DatabaseSwitched	= 1 << 10,
+		Tree					= 1 << 11,
+		None					= 1 << 12,
 	};
 
 	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
 
 	struct Args
 	{
+		Args() :m_type(GameList), m_tuple(0, 0, 0), m_ref(0) {}
+
 		Args(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 			:m_type(type)
 			,m_tuple(updateCmd, closeCmd, arg ? arg : Tcl_NewListObj(0, 0))
+			,m_ref(0)
 		{
+			static_assert(table::Games      < 5, "index failure");
+			static_assert(table::Players    < 5, "index failure");
+			static_assert(table::Events     < 5, "index failure");
+			static_assert(table::Sites      < 5, "index failure");
+			static_assert(table::Annotators < 5, "index failure");
 		}
 
-		void ref()		{ m_tuple.get<0>().ref(); m_tuple.get<1>().ref(); m_tuple.get<2>().ref(); }
-		void deref()	{ m_tuple.get<0>().deref(); m_tuple.get<1>().deref(); m_tuple.get<2>().deref(); }
+		void ref()
+		{
+			if (m_ref++ == 0)
+			{
+				m_tuple.get<0>().ref();
+				m_tuple.get<1>().ref();
+				m_tuple.get<2>().ref();
+			}
+		}
 
-		Type	m_type;
-		Tuple	m_tuple;
+		void deref()
+		{
+			M_ASSERT(m_ref > 0);
+
+			if (--m_ref == 0)
+			{
+				m_tuple.get<0>().deref();
+				m_tuple.get<1>().deref();
+				m_tuple.get<2>().deref();
+
+				m_type = None;
+				m_tuple = Tuple(0, 0, 0);
+			}
+		}
+
+		Type		m_type;
+		Tuple		m_tuple;
+		unsigned	m_ref;
 
 		bool operator==(Args const& args) const
 		{
@@ -289,19 +324,42 @@ struct Subscriber : public Application::Subscriber
 		Tcl_Obj* getArg() const		{ return m_tuple.get<2>(); }
 	};
 
-	typedef vector<Args> ArgsList;
-	ArgsList m_list;
+	typedef mstl::vector<Args> ArgsList;
+
+	ArgsList			m_list;
+	mstl::bitset	m_used;
+	unsigned			m_last;
 
 	void setCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
-		m_list.push_back(Args(type, updateCmd, closeCmd, arg));
-		m_list.back().ref();
+		Args args(type, updateCmd, closeCmd, arg);
+		ArgsList::iterator i = mstl::find(m_list.begin(), m_list.end(), args);
+
+		if (i == m_list.end())
+		{
+			unsigned index = m_used.find_first_not();
+
+			if (index == m_used.npos)
+			{
+				index = m_list.size();
+				m_list.push_back();
+				m_used.resize(m_list.size());
+			}
+
+			m_list[index] = args;
+			m_list[index].ref();
+			m_used.set(index);
+			m_last = m_used.find_last() + 1;
+		}
+		else
+		{
+			i->ref();
+		}
 	}
 
 	void unsetCmd(Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
 	{
 		Args args(type, updateCmd, closeCmd, arg);
-
 		ArgsList::iterator i = mstl::find(m_list.begin(), m_list.end(), args);
 
 		if (i == m_list.end())
@@ -315,7 +373,8 @@ struct Subscriber : public Application::Subscriber
 		else
 		{
 			i->deref();
-			m_list.erase(i);
+			m_used.reset(i - m_list.begin());
+			m_last = m_used.find_last() + 1;
 		}
 	}
 
@@ -327,6 +386,11 @@ struct Subscriber : public Application::Subscriber
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
 		setCmd(GameSwitched, updateCmd, 0, 0);
+	}
+
+	void setDatabaseSwitchedCmd(Tcl_Obj* updateCmd)
+	{
+		setCmd(DatabaseSwitched, updateCmd, 0, 0);
 	}
 
 	void unsetListCmd(table::Type type, Tcl_Obj* updateCmd, Tcl_Obj* closeCmd, Tcl_Obj* arg)
@@ -346,10 +410,12 @@ struct Subscriber : public Application::Subscriber
 
 		Tcl_IncrRefCount(file);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->getClose())
-				invoke(__func__, i->getClose(), i->getArg(), file, t, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.getClose())
+				invoke(__func__, i.getClose(), i.getArg(), file, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -362,10 +428,12 @@ struct Subscriber : public Application::Subscriber
 
 		Tcl_IncrRefCount(f);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type & DatabaseInfo)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, t, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type & DatabaseInfo)
+				invoke(__func__, i.getUpdate(), i.getArg(), f, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -389,10 +457,12 @@ struct Subscriber : public Application::Subscriber
 		Tcl_IncrRefCount(v);
 		Tcl_IncrRefCount(w);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type & type)
-				invoke(__func__, i->getUpdate(), i->getArg(), n, f, t, v, w, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type & type)
+				invoke(__func__, i.getUpdate(), i.getArg(), n, f, t, v, w, nullptr);
 		}
 
 		Tcl_DecrRefCount(n);
@@ -425,15 +495,37 @@ struct Subscriber : public Application::Subscriber
 		updateList(id, name, variant, view, index, Type(1 << type));
 	}
 
+	void updateGameData(unsigned position, bool evenMainline) override
+	{
+		Tcl_Obj* pos = Tcl_NewIntObj(position);
+		Tcl_Obj* mainline = Tcl_NewBooleanObj(evenMainline);
+
+		Tcl_IncrRefCount(pos);
+		Tcl_IncrRefCount(mainline);
+
+		for (unsigned k = 0; k < m_last; ++k)
+		{
+			Args const& i = m_list[k];
+
+			if (i.m_type == GameData)
+				invoke(__func__, i.getUpdate(), i.getArg(), pos, mainline, nullptr);
+		}
+
+		Tcl_DecrRefCount(pos);
+		Tcl_DecrRefCount(mainline);
+	}
+
 	void updateGameInfo(unsigned position) override
 	{
 		Tcl_Obj* pos = Tcl_NewIntObj(position);
 		Tcl_IncrRefCount(pos);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type == GameInfo)
-				invoke(__func__, i->getUpdate(), i->getArg(), pos, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type == GameInfo)
+				invoke(__func__, i.getUpdate(), i.getArg(), pos, nullptr);
 		}
 
 		Tcl_DecrRefCount(pos);
@@ -448,10 +540,12 @@ struct Subscriber : public Application::Subscriber
 		Tcl_IncrRefCount(f);
 		Tcl_IncrRefCount(w);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type == GameHistory)
-				invoke(__func__, i->getUpdate(), i->getArg(), f, t, w, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type == GameHistory)
+				invoke(__func__, i.getUpdate(), i.getArg(), f, t, w, nullptr);
 		}
 
 		Tcl_DecrRefCount(f);
@@ -463,13 +557,33 @@ struct Subscriber : public Application::Subscriber
 		Tcl_Obj* pos = Tcl_NewIntObj(position);
 		Tcl_IncrRefCount(pos);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type == GameSwitched)
-				invoke(__func__, i->getUpdate(), pos, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type == GameSwitched)
+				invoke(__func__, i.getUpdate(), pos, nullptr);
 		}
 
 		Tcl_DecrRefCount(pos);
+	}
+
+	void databaseSwitched(mstl::string const& name, variant::Type variant) override
+	{
+		Tcl_Obj* f = Tcl_NewStringObj(name, name.size());
+		Tcl_Obj* t = tcl::tree::variantToString(variant);
+
+		Tcl_IncrRefCount(f);
+
+		for (unsigned k = 0; k < m_last; ++k)
+		{
+			Args const& i = m_list[k];
+
+			if (i.m_type == DatabaseSwitched)
+				invoke(__func__, i.getUpdate(), f, t, nullptr);
+		}
+
+		Tcl_DecrRefCount(f);
 	}
 
 	void updateTree(mstl::string const& name, variant::Type variant) override
@@ -487,10 +601,12 @@ struct Subscriber : public Application::Subscriber
 
 		Tcl_IncrRefCount(file);
 
-		for (ArgsList::const_iterator i = m_list.begin(); i != m_list.end(); ++i)
+		for (unsigned k = 0; k < m_last; ++k)
 		{
-			if (i->m_type == Tree)
-				invoke(__func__, i->getUpdate(), i->getArg(), file, t, nullptr);
+			Args const& i = m_list[k];
+
+			if (i.m_type == Tree)
+				invoke(__func__, i.getUpdate(), i.getArg(), file, t, nullptr);
 		}
 
 		Tcl_DecrRefCount(file);
@@ -3115,7 +3231,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|eventList|siteList|gameInfo|"
-			"gameHistory|gameSwitch|tree <update-cmd> ??"
+			"gameData|gameHistory|gameSwitch|databaseSwitch|tree <update-cmd> ??"
 			"<close-cmd> ?<arg>?");
 		return TCL_ERROR;
 	}
@@ -3123,12 +3239,13 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "annotatorList", "eventList", "siteList",
-		"gameInfo", "gameHistory", "gameSwitch", "tree", 0
+		"gameInfo", "gameData", "gameHistory", "gameSwitch", "databaseSwitch", "tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_EventList,
-		Cmd_SiteList, Cmd_GameInfo, Cmd_GameHistory, Cmd_GameSwitch, Cmd_Tree,
+		Cmd_SiteList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch,
+		Cmd_DatabaseSwitched, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -3175,12 +3292,20 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			subscriber->setCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
 			break;
 
+		case Cmd_GameData:
+			subscriber->setCmd(Subscriber::GameData, updateCmd, closeCmd, arg);
+			break;
+
 		case Cmd_GameHistory:
 			subscriber->setCmd(Subscriber::GameHistory, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameSwitch:
 			subscriber->setGameSwitchedCmd(updateCmd);
+			break;
+
+		case Cmd_DatabaseSwitched:
+			subscriber->setDatabaseSwitchedCmd(updateCmd);
 			break;
 
 		case Cmd_Tree:
@@ -3205,7 +3330,8 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
-			"dbInfo|gameList|playerList|annotatorList|eventList|siteList|gameInfo|gameHistory|tree "
+			"dbInfo|gameList|playerList|annotatorList|eventList|"
+			"siteList|gameInfo|gameData|gameHistory|tree "
 			"<update-cmd> ??" "<close-cmd>? <arg>?");
 		return TCL_ERROR;
 	}
@@ -3213,12 +3339,12 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "eventList", "siteList",
-		"annotatorList", "gameInfo", "gameHistory", "tree", 0
+		"annotatorList", "gameInfo", "gameData", "gameHistory", "tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_EventList, Cmd_SiteList,
-		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameHistory, Cmd_Tree
+		Cmd_AnnotatorList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_Tree
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -3260,6 +3386,10 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_GameInfo:
 			subscriber->unsetCmd(Subscriber::GameInfo, updateCmd, closeCmd, arg);
+			break;
+
+		case Cmd_GameData:
+			subscriber->unsetCmd(Subscriber::GameData, updateCmd, closeCmd, arg);
 			break;
 
 		case Cmd_GameHistory:

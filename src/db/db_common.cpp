@@ -175,6 +175,8 @@ static Pair const NameMap[] =
 	{ "WhiteUSCF",				WhiteUSCF },
 };
 
+static tag::ID Ordered[tag::BughouseTag];
+
 static int
 compareTags(void const* lhs, const void* rhs)
 {
@@ -1240,8 +1242,19 @@ namespace tag
 		::memset(NameLookup, 0, sizeof(NameLookup));
 #endif
 
+		unsigned k = 0;
+
 		for (unsigned i = 0; i < U_NUMBER_OF(NameMap); ++i)
-			NameLookup[NameMap[i].id] = &NameMap[i].name;
+		{
+			Pair const& pair = NameMap[i];
+
+			NameLookup[pair.id] = &pair.name;
+
+			if (pair.id < BughouseTag && pair.name != "WhiteBCF" && pair.name != "BlackBCF")
+				Ordered[k++] = pair.id;
+		}
+
+		assert(k == BughouseTag);
 
 #if !defined(NDEBUG) && !__GNUC_PREREQ(4,7)
 		for (int i = 0; i < ExtraTag; ++i)
@@ -1622,6 +1635,13 @@ tag::fromName(char const* name, unsigned length)
 	mstl::string tag;
 	tag.hook(const_cast<char*>(name), length);
 	return fromName(tag);
+}
+
+
+tag::ID
+tag::mapAlphabetic(ID tag)
+{
+	return Ordered[tag];
 }
 
 

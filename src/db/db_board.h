@@ -38,9 +38,6 @@
 #include "m_string.h"
 
 namespace db {
-
-class Move;
-
 namespace board {
 
 class Guess;
@@ -136,6 +133,12 @@ public:
 		TooFewPiecesInHolding,		///< too few pieces in holding
 		TooManyPromotedPieces,		///< too many pieces marked as promoted
 		TooFewPromotedPieces,		///< too many pieces marked as promoted
+	};
+
+	enum Representation
+	{
+		InternalRepresentation,
+		ExternalRepresentation,
 	};
 
 	enum Format { XFen, Shredder };
@@ -341,6 +344,8 @@ public:
 	piece::Type piece(Square s) const;
 	/// Return square where en passant capture may occur, or null square
 	Square enPassantSquare() const;
+	/// Return square where en passant capture may occur according to FEN, or null square
+	Square enPassantSquareFen() const;
 	/// Returns the signature
 	Signature const& signature() const;
 	/// Returns the signature
@@ -389,7 +394,7 @@ public:
 	/// Return a position description based on current board position
 	mstl::string asString() const;
 	/// Prepare move for printing a SAN
-	Move& prepareForPrint(Move& move, variant::Type variant) const;
+	Move& prepareForPrint(Move& move, variant::Type variant, Representation representation) const;
 	/// Returns the IDN (chess 960 unique IDentification Number)
 	unsigned computeIdn() const;
 	/// Returns the material in hand for side to move.
@@ -428,6 +433,11 @@ public:
 	/// Setup castling rook for short castling from given fen
 	void setupLongCastlingRook(color::ID color, char const* fen);
 
+	// Miscellaneous
+
+	/// Swap the side to move
+	void swapToMove();
+
 	// Validation
 
 	/// Check current position and return "Valid" or problem
@@ -438,6 +448,8 @@ public:
 	void setCastlingRights(castling::Rights rights);
 	/// Check (and possibly correct) pieces in holding.
 	void checkHolding();
+
+	// Helpers
 
 	/// Dump board, useful for debugging
 	void dump() const;
@@ -524,8 +536,6 @@ private:
    void filterCheckMoves(Move move, uint64_t& movers, variant::Type variant) const;
    void filterCheckmateMoves(Move move, uint64_t& movers, variant::Type variant) const;
 
-	/// Swap the side to move
-	void swapToMove();
 	/// Revoke all castling rights from the given color
 	void destroyCastle(color::ID color);
 	/// Restore castling rights after undo.

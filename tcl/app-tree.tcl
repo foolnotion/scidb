@@ -582,7 +582,6 @@ proc Update {table base variant} {
 ### VARIANTS ####################################
 if {[::scidb::game::query variant?] eq "Normal"} {
 ::toolbar::childconfigure $Vars(switcher) -state readonly
-$Vars(mw) raise $Vars(info)
 #################################################
 	if {[::scidb::tree::isUpToDate?]} { return }
 
@@ -1312,8 +1311,7 @@ proc LoadFirstGame {table row move} {
 	set variant [::scidb::app::variant]
 	set view [::scidb::tree::view]
 
-	set position [::game::new $table -base $base -variant $variant -view -1 -number $index -fen $fen]
-	[namespace parent]::board::bindGameControls $position $base $variant $view $index
+	set position [::game::new $table -base $base -variant $variant -view $view -number $index -fen $fen]
 }
 
 

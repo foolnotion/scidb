@@ -23,21 +23,40 @@ namespace tl {
 namespace bits {
 
 template <typename Head, typename Tail>
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-member_list< type_list<Head, Tail> >::member_list(T0 const& t0, T1 const& t1, T2 const& t2)
+member_list< type_list<Head, Tail> >::member_list(T0 const& t0, T1 const& t1, T2 const& t2, T3 const& t3)
 	:m_head(t0)
-	,m_tail(t1, t2, null_type())
+	,m_tail(t1, t2, t3, null_type())
 {
 }
 
 template <typename Head>
-template <typename T0, typename T1, typename T2>
+template <typename T0, typename T1, typename T2, typename T3>
 inline
-member_list< type_list<Head, null_type> >::member_list(T0 const& t0, T1 const&, T2 const&)
+member_list< type_list<Head, null_type> >::member_list(T0 const& t0, T1 const&, T2 const&, T3 const&)
 	:m_head(t0)
 {
 }
+
+
+template <typename Head, typename Tail>
+inline
+bool
+member_list< type_list<Head, Tail> >::compare(member_list const& t) const
+{
+	return m_head == t.m_head && m_tail.compare(t.m_tail);
+}
+
+
+template <typename Head>
+inline
+bool
+member_list< type_list<Head, null_type> >::compare(member_list const& t) const
+{
+	return m_head == t.m_head;
+}
+
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR
 
@@ -80,6 +99,7 @@ member_list< type_list<Head, null_type> >::operator=(member_list&& ml)
 
 #endif
 
+
 template <typename MemberList, int N>
 inline
 typename tl::type_at<typename MemberList::type_list_t,N>::result const&
@@ -114,6 +134,71 @@ accessor<MemberList, 0>::get(MemberList& list)
 {
 	return list.m_head;
 }
+
+
+#if 0
+template <int N> struct compare {};
+
+template <>
+struct compare<0>
+{
+	template <typename Tuple>
+	static inline bool
+	cmp(Tuple const& lhs, Tuple const& rhs)
+	{
+		return true;
+	}
+};
+
+template <>
+struct compare<1>
+{
+	template <typename Tuple>
+	static inline bool
+	cmp(Tuple const& lhs, Tuple const& rhs)
+	{
+		return lhs.get<0>() == rhs.get<0>();
+	}
+};
+
+template <>
+struct compare<2>
+{
+	template <typename Tuple>
+	static inline bool
+	cmp(Tuple const& lhs, Tuple const& rhs)
+	{
+		return lhs.get<0>() == rhs.get<0>() && lhs.get<1>() == rhs.get<1>();
+	}
+};
+
+template <>
+struct compare<3>
+{
+	template <typename Tuple>
+	static inline bool
+	cmp(Tuple const& lhs, Tuple const& rhs)
+	{
+		return	lhs.get<0>() == rhs.get<0>()
+				&& lhs.get<1>() == rhs.get<1>()
+				&& lhs.get<2>() == rhs.get<2>();
+	}
+};
+
+template <>
+struct compare<4>
+{
+	template <typename Tuple>
+	static inline bool
+	cmp(Tuple const& lhs, Tuple const& rhs)
+	{
+		return	lhs.get<0>() == rhs.get<0>()
+				&& lhs.get<1>() == rhs.get<1>()
+				&& lhs.get<2>() == rhs.get<2>()
+				&& lhs.get<3>() == rhs.get<3>();
+	}
+};
+#endif
 
 } // namespace bits
 } // namespace tl

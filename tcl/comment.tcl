@@ -103,14 +103,6 @@ variable DingbatSet {
 variable Colors {darkgreen darkred darkblue darkgreen darkred darkblue}
 
 set Symbols [join $::figurines::langSet(graphic) ""]
-foreach section {prefix suffix} {
-	foreach nag $NagSet($section) {
-		set c $::font::SymbolUtfEncoding($nag)
-		if {[string length $c] == 1} {
-			append Symbols $c
-		}
-	}
-}
 
 
 proc open {parent pos lang} {
@@ -153,6 +145,7 @@ proc open {parent pos lang} {
 		-undo no \
 		-maxundo 0 \
 		;
+	::scidb::tk::misc setClass $top.text Comment
 	ttk::scrollbar $top.sb -command [namespace code [list ::widget::textLineScroll $top.text]]
 
 	set font $Fonts(normal)
@@ -174,8 +167,6 @@ proc open {parent pos lang} {
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
 	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
 	bind $top.text <Any-Button>		+[list ::tooltip::tooltip hide]
-	bind $top.text <Tab>					 "focus \[tk_focusNext $top.text]; break"
-	bind $top.text <Shift-Tab>			 "focus \[tk_focusPrev $top.text]; break"
 
 	set butts [ttk::frame $top.buttons]
 	ttk::button $butts.symbol \
@@ -627,7 +618,12 @@ proc PasteText {w str} {
 
 		while {$m > 1} {
 			set s [string range $str $i [expr {$i + $m - 1}]]
-			if {[info exists ::font::mapCodeToNag($s)]} {
+			set nag [::scidb::misc::mapCodeToNag $s]
+			if {$nag > 0} {
+				InsertNag $w $nag
+				incr i $m
+				set m 0
+			} elseif {[info exists ::font::mapCodeToNag($s)]} {
 				InsertNag $w $::font::mapCodeToNag($s)
 				incr i $m
 				set m 0
@@ -640,7 +636,16 @@ proc PasteText {w str} {
 			set k [string first $c $Symbols]
 
 			switch $k {
-				-1 { $w insert insert $c }
+				-1 {
+					set nag [::scidb::misc::mapCodeToNag $c]
+					if {$nag} {
+						InsertNag $w $nag
+					} elseif {[info exists ::font::mapCodeToNag($c)]} {
+						InsertNag $w $::font::mapCodeToNag($c)
+					} else {
+						$w insert insert $c
+					}
+				}
 
 				 0 { InsertFigurine $w K }
 				 1 { InsertFigurine $w Q }
@@ -648,8 +653,6 @@ proc PasteText {w str} {
 				 3 { InsertFigurine $w B }
 				 4 { InsertFigurine $w N }
 				 5 { InsertFigurine $w P }
-
-				default { InsertNag $w $::font::mapCodeToNag($c) }
 			}
 
 			incr i
@@ -1835,15 +1838,300 @@ proc WriteOptions {chan} {
 ::options::hookWriter [namespace current]::WriteOptions
 
 
-bind AddLanguagePopdown <Map>				{ ttk::grabWindow %W }
-bind AddLanguagePopdown <Map>				{+ focus -force %W }
-bind AddLanguagePopdown <Destroy>		{ ttk::releaseGrab %W }
-bind AddLanguagePopdown <ButtonPress>	[namespace code { UnpostPopdown %W }]
-bind AddLanguagePopdown <Escape>			[namespace code { UnpostPopdown %W }]
+proc TextInsert {w s} {
+	variable Vars
 
-switch -- [tk windowingsystem] {
-	win32 {
-		bind AddLanguagePopdown <FocusOut> [namespace code { UnpostPopdown %W }]
+	if {$s eq "" || [$w cget -state] eq "disabled"} { return }
+
+	set compound 0
+
+	if {[llength [set range [$w tag ranges sel]]]} {
+		if {[$w compare [lindex $range 0] <= insert] && [$w compare [lindex $range end] >= insert]} {
+			SetUndoPoint $w
+			$w delete [lindex $range 0] [lindex $range end]
+		}
+	}
+
+	set c [$w get insert]
+
+	if {$s eq "\n"} {
+		SetUndoPoint $w
+		set c [$w get insert]
+		if {$c eq " "} {
+			$w replace insert insert+1c "\u00b6\n"
+		} elseif {$c eq "\n"} {
+			$w insert insert+1c "\u00b6\n"
+		} else {
+			$w insert insert "\u00b6\n"
+		}
+	} else {
+		if {$c eq "\n"} { $w mark set insert insert+1c }
+		$w insert insert $s $Vars(format)
+	}
+
+	$w see insert
+}
+
+
+proc TextButton1 {w x y} {
+	::tk::TextButton1 $w $x $y
+
+	if {[$w compare insert != end-1c]} {
+		set c [$w get insert]
+		if {[lindex [split [$w index insert] .] 1] > 0} {
+			while {$c eq "\n"} {
+				$w mark set insert insert-1c
+				set c [$w get insert]
+			}
+			$w see insert
+		}
+	}
+
+	UpdateFormatButtons $w
+	SetUndoPoint $w
+}
+
+
+proc TextSetCursorExt {w pos {dir -1}} {
+	::tk::TextSetCursor $w $pos
+
+	if {[$w compare insert != end-1c]} {
+		if {$dir > 0} {
+			if {[$w get insert] eq "\n"} {
+				$w mark set insert insert+1c
+				$w see insert
+			}
+		} elseif {[$w compare insert != 1.0]} {
+			if {[$w get insert] eq "\n"} {
+				$w mark set insert insert-1c
+				$w see insert
+			}
+		}
+	}
+
+	SetUndoPoint $w
+	UpdateFormatButtons $w
+}
+
+
+proc TextSetCursor {w pos} {
+	::tk::TextSetCursor $w $pos
+	SetUndoPoint $w
+	UpdateFormatButtons $w
+}
+
+
+proc TextUpDownLine {w n} {
+	variable ::tk::Priv
+
+	set pos [::tk::TextUpDownLine $w $n]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+		set Priv(prevPos) $pos
+	}
+	return $pos
+}
+
+
+proc TextPrevPara {w pos} {
+	set pos [::tk::TextPrevPara $w $pos]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+		set Priv(prevPos) $pos
+	}
+	return $pos
+}
+
+
+proc TextNextPara {w pos} {
+	set pos [::tk::TextNextPara $w $pos]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+		set Priv(prevPos) $pos
+	}
+	return $pos
+}
+
+
+proc TextNextPos {w start op} {
+	set pos [::tk::TextNextPos $w $start $op]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+	}
+	return $pos
+}
+
+
+proc TextPrevPos {w start op} {
+	set pos [::tk::TextPrevPos $w $start $op]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+	}
+	return $pos
+}
+
+
+proc TextBackSpace {w} {
+	if {[$w tag nextrange sel 1.0 end] ne ""} {
+		set c [$w get sel.last]
+		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
+		set c [$w get sel.first]
+		if {$c eq "\n" } { set decr -1c } else { set decr "" }
+		$w delete sel.first$decr sel.last$incr
+	} elseif {[$w compare insert != 1.0]} {
+		set c [$w get insert-1c]
+		if {$c eq "\n"} {
+			if {	[$w compare insert-1c == 1.1]
+				|| [string is space [$w get insert-3c]]
+				|| [string is space [$w get insert]]} {
+				$w delete insert-2c insert
+			} else {
+				$w replace insert-2c insert " "
+			}
+		} elseif {$c eq "\u00b6"} {
+			if {	[$w compare insert == 1.1]
+				|| [string is space [$w get insert-2c]]
+				|| [string is space [$w get insert+1c]]} {
+				$w delete insert-1c insert+1c
+			} else {
+				$w replace insert-1c insert+1c " "
+			}
+			if {[$w compare insert != end-1c]} {
+				$w mark set insert insert-1c
+			}
+		} else {
+			$w delete insert-1c
+		}
+		$w see insert
+	}
+}
+
+
+proc TextDelete {w} {
+	SetUndoPoint $w
+
+	if {[$w tag nextrange sel 1.0 end] ne ""} {
+		set c [$w get sel.last-1c]
+		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
+		set c [$w get sel.first]
+		if {$c eq "\n" } { set decr -1c } else { set decr "" }
+		$w delete sel.first$decr sel.last$incr
+	} else {
+		set c [$w get insert]
+		if {$c eq "\n"} {
+			if {[$w compare insert == end-1c]} {
+				# special case, seems to be a Tk bug
+				$w delete insert-2c insert
+			} elseif {	[$w compare insert == 1.1]
+						|| [string is space [$w get insert-2c]]
+						|| [string is space [$w get insert+1c]]} {
+				$w delete insert-1c insert+1c
+			} else {
+				$w replace insert-1c insert+1c " "
+			}
+		} elseif {$c eq "\u00b6"} {
+			if {	[$w compare insert == 1.0]
+				|| [string is space [$w get insert-1c]]
+				|| [string is space [$w get insert+2c]]} {
+				$w delete insert insert+2c
+			} else {
+				$w replace insert insert+2c " "
+			}
+			if {[$w compare insert != end-1c]} {
+				$w mark set insert insert-1c
+			}
+			if {[$w get insert] eq "\n"} {
+				$w mark set insert insert-1c
+			}
+		} else {
+			$w delete insert
+		}
+		$w see insert
+	}
+}
+
+
+proc TextClear {w} {
+	SetUndoPoint $w
+	set c [$w get sel.last]
+	if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
+	set c [$w get sel.first]
+	if {$c eq "\n" } { set decr -1c } else { set decr "" }
+	$w delete sel.first$decr sel.last$incr
+}
+
+
+proc TextControlD {w} {
+	set c [$w get insert]
+	if {$c eq "\u00b6"} {
+		$w delete insert insert+1c
+	} elseif {$c eq "\n"} {
+		$w delete insert-1c insert
+		$w mark set insert insert-1c
+	}
+
+	$w delete insert
+	$w see insert
+}
+
+
+proc TextPasteSelection {w x y} {
+	$w mark set insert [::tk::TextClosestGap $w $x $y]
+
+	if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
+		set oldSeparator [$w cget -autoseparators]
+		if {$oldSeparator} {
+			$w configure -autoseparators 0
+			$w edit separator
+		}
+		PasteText $w $sel
+		if {$oldSeparator} {
+			$w edit separator
+			$w configure -autoseparators 1
+		}
+	}
+
+	if {[$w cget -state] eq "normal"} {
+		focus $w
+	}
+}
+
+
+proc TextPaste {w} {
+	variable Vars
+
+	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
+		set sel [string map {"\n" "\n\u00b6"} $sel]
+		PasteText $w $sel
+	}
+}
+
+
+proc TextCopy {w} {
+	variable Vars
+
+	if {[llength [$w tag ranges sel]]} {
+		set data [ParseDump [$w dump -tag -text sel.first sel.last]]
+		SetUndoPoint $w
+		clipboard clear -displayof $w
+		clipboard append -displayof $w $data
+		SetUndoPoint $w
+	}
+}
+
+
+proc TextCut {w} {
+	variable Vars
+
+	if {[llength [$w tag ranges sel]]} {
+		set data [ParseDump [$w dump -tag -text sel.first sel.last]]
+		SetUndoPoint $w
+		clipboard clear -displayof $w
+		clipboard append -displayof $w $data
+		if {[$w get sel.first] eq "\n"} { set decr -1c } else { set decr "" }
+		if {[$w get sel.last] eq "\u00b6"} { set incr +1c } else { set incr "" }
+		$w delete sel.first$decr sel.last$incr
+		SetUndoPoint $w
 	}
 }
 
@@ -2137,435 +2425,107 @@ set toolbarUnderline [list $22x22::underline $16x16::underline $32x32::underline
 } ;# namespace comment
 
 
-rename tk_textPaste	tk_textPaste_comment_
-rename tk_textCopy	tk_textCopy_comment_
-rename tk_textCut		tk_textCut_comment_
+bind AddLanguagePopdown <Map> {
+	ttk::grabWindow %W
+	focus -force %W 
+}
 
+bind AddLanguagePopdown <Destroy>		{ ttk::releaseGrab %W }
+bind AddLanguagePopdown <ButtonPress>	{ comment::UnpostPopdown %W }
+bind AddLanguagePopdown <Escape>			{ comment::UnpostPopdown %W }
 
-proc tk_textPaste {w} {
-	variable ::comment::Vars
-
-	if {$w ne $Vars(widget:text)} { return [tk_textPaste_comment_ $w] }
-
-	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
-		set sel [string map {"\n" "\n\u00b6"} $sel]
-		::comment::PasteText $w $sel
+switch -- [tk windowingsystem] {
+	win32 {
+		bind AddLanguagePopdown <FocusOut> { comment::UnpostPopdown %W }
 	}
 }
 
 
-proc tk_textCopy {w} {
-	variable ::comment::Vars
+ttk::copyBindings Text Comment
 
-	if {$w ne $Vars(widget:text)} { return [tk_textCopy_comment_ $w] }
+bind Comment <Control-i>		{ comment::TextInsert %W \t }
+bind Comment <Return>			{ comment::TextInsert %W \n }
+bind Comment <Insert>			{ comment::PasteText %W [::tk::GetSelection %W PRIMARY] }
+bind Comment <KeyPress>			{ comment::TextInsert %W %A }
+bind Comment <Tab>				{ focus [tk_focusNext %W] }
+bind Comment <Shift-Tab>		{ focus [tk_focusPrev %W] }
+bind Comment <BackSpace>		{ comment::TextBackSpace %W }
+bind Comment <Delete>			{ comment::TextDelete %W }
+bind Comment <Control-d>		{ comment::TextControlD %W }
+bind Comment <Left>				{ comment::TextSetCursorExt %W insert-1displayindices }
+bind Comment <Right>				{ comment::TextSetCursorExt %W insert+1displayindices +1 }
+bind Comment <Up>					{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
+bind Comment <Down>				{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
+bind Comment <Prior>				{ comment::TextSetCursorExt %W [comment::TextScrollPages %W -1] }
+bind Comment <Next>				{ comment::TextSetCursorExt %W [comment::TextScrollPages %W 1] }
+bind Comment <End>				{ comment::TextSetCursorExt %W {insert display lineend} }
+bind Comment <Control-Up>		{ comment::TextSetCursorExt %W [comment::TextPrevPara %W insert] }
+bind Comment <Control-Down>	{ comment::TextSetCursorExt %W [comment::TextNextPara %W insert] }
+bind Comment <Control-End>		{ comment::TextSetCursorExt %W {end - 1 indices} }
+bind Comment <Control-b>		{ comment::TextSetCursorExt %W insert-1displayindices }
+bind Comment <Control-e>		{ comment::TextSetCursorExt %W {insert display lineend} }
+bind Comment <Control-f>		{ comment::TextSetCursorExt %W insert+1displayindices +1 }
+bind Comment <Control-n>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
+bind Comment <Control-p>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
+bind Comment <Meta-f>			{ comment::TextSetCursorExt %W [comment::TextNextWord %W insert] }
+bind Comment <Meta-greater>	{ comment::TextSetCursorExt %W end-1c }
+bind Comment <<Undo>>			{ comment::EditUndo }
+bind Comment <<Paste>>			{ comment::TextPaste %W }
+bind Comment <<Copy>>			{ comment::TextCopy %W }
+bind Comment <<Cut>>				{ comment::TextCut %W }
+bind Comment <<Clear>>			{ catch { comment::TextClear %W } }
 
-	if {[llength [$w tag ranges sel]]} {
-		set data [::comment::ParseDump [$w dump -tag -text sel.first sel.last]]
-		::comment::SetUndoPoint $w
-		clipboard clear -displayof $w
-		clipboard append -displayof $w $data
-		::comment::SetUndoPoint $w
+bind Comment <Control-Left> {
+	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
+}
+
+bind Comment <Control-Right> {
+	comment::TextSetCursorExt %W [comment::TextNextWord %W insert]
+}
+
+bind Comment <1> {
+	comment::TextButton1 %W %x %y
+	%W tag remove sel 0.0 end
+}
+
+bind Comment <<PasteSelection>> {
+	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
+		comment::TextPasteSelection %W %x %y
 	}
 }
 
-
-proc tk_textCut {w} {
-	variable ::comment::Vars
-
-	if {$w ne $Vars(widget:text)} { return [tk_textCut_comment_ $w] }
-
-	if {[llength [$w tag ranges sel]]} {
-		set data [::comment::ParseDump [$w dump -tag -text sel.first sel.last]]
-		::comment::SetUndoPoint $w
-		clipboard clear -displayof $w
-		clipboard append -displayof $w $data
-		if {[$w get sel.first] eq "\n"} { set decr -1c } else { set decr "" }
-		if {[$w get sel.last] eq "\u00b6"} { set incr +1c } else { set incr "" }
-		$w delete sel.first$decr sel.last$incr
-		::comment::SetUndoPoint $w
-	}
+bind Comment <Control-Key-y> { ;# the <<Redo>> binding is not working!
+	comment::EditRedo
 }
-
-
-rename tk::TextInsert		tk::TextInsert_comment_
-rename tk::TextButton1		tk::TextButton1_comment_
-rename tk::TextSetCursor	tk::TextSetCursor_comment_
-rename tk::TextUpDownLine	tk::TextUpDownLine_comment_
-rename tk::TextPrevPara		tk::TextPrevPara_comment_
-rename tk::TextNextPara		tk::TextNextPara_comment_
-rename tk::TextNextPos		tk::TextNextPos_comment_
-rename tk::TextPrevPos		tk::TextPrevPos_comment_
-
-namespace eval tk {
-
-proc TextInsert {w s} {
-	variable ::comment::Vars
-
-	if {$w ne $Vars(widget:text)} { return [TextInsert_comment_ $w $s] }
-	if {$s eq "" || [$w cget -state] eq "disabled"} { return }
-
-	set compound 0
-
-	if {[llength [set range [$w tag ranges sel]]]} {
-		if {[$w compare [lindex $range 0] <= insert] && [$w compare [lindex $range end] >= insert]} {
-			::comment::SetUndoPoint $w
-			$w delete [lindex $range 0] [lindex $range end]
-		}
-	}
-
-	set c [$w get insert]
-
-	if {$s eq "\n"} {
-		::comment::SetUndoPoint $w
-		set c [$w get insert]
-		if {$c eq " "} {
-			$w replace insert insert+1c "\u00b6\n"
-		} elseif {$c eq "\n"} {
-			$w insert insert+1c "\u00b6\n"
-		} else {
-			$w insert insert "\u00b6\n"
-		}
-	} else {
-		if {$c eq "\n"} { $w mark set insert insert+1c }
-		$w insert insert $s $Vars(format)
-	}
-
-	$w see insert
-}
-
-
-proc TextButton1 {w x y} {
-	variable ::comment::Vars
-
-	TextButton1_comment_ $w $x $y
-
-	if {$w eq $Vars(widget:text)} {
-		if {[$w compare insert != end-1c]} {
-			set c [$w get insert]
-			if {[lindex [split [$w index insert] .] 1] > 0} {
-				while {$c eq "\n"} {
-					$w mark set insert insert-1c
-					set c [$w get insert]
-				}
-				$w see insert
-			}
-		}
-		::comment::UpdateFormatButtons $w
-	}
-
-	if {$w eq $Vars(widget:text)} {
-		::comment::SetUndoPoint $w
-	}
-}
-
-
-proc TextSetCursorExt {w pos {dir -1}} {
-	variable ::comment::Vars
-
-	TextSetCursor $w $pos
-
-	if {$w eq $Vars(widget:text)} {
-		if {[$w compare insert != end-1c]} {
-			if {$dir > 0} {
-				if {[$w get insert] eq "\n"} {
-					$w mark set insert insert+1c
-					$w see insert
-				}
-			} elseif {[$w compare insert != 1.0]} {
-				if {[$w get insert] eq "\n"} {
-					$w mark set insert insert-1c
-					$w see insert
-				}
-			}
-		}
-	}
-}
-
-
-proc TextSetCursor {w pos} {
-	variable ::comment::Vars
-
-	TextSetCursor_comment_ $w $pos
-
-	if {$w eq $Vars(widget:text)} {
-		::comment::SetUndoPoint $w
-		::comment::UpdateFormatButtons $w
-	}
-}
-
-
-proc TextUpDownLine {w n} {
-	variable ::tk::Priv
-	variable ::comment::Vars
-
-	set pos [TextUpDownLine_comment_ $w $n]
-	if {$w eq $Vars(widget:text) && [$w compare $pos != 1.0]} {
-		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
-		set Priv(prevPos) $pos
-	}
-	return $pos
-}
-
-
-proc TextPrevPara {w pos} {
-	variable ::comment::Vars
-
-	set pos [TextPrevPara_comment_ $w $pos]
-	if {$w eq $Vars(widget:text) && [$w compare $pos != 1.0]} {
-		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
-		set Priv(prevPos) $pos
-	}
-	return $pos
-}
-
-
-proc TextNextPara {w pos} {
-	variable ::comment::Vars
-
-	set pos [TextNextPara_comment_ $w $pos]
-	if {$w eq $Vars(widget:text) && [$w compare $pos != 1.0]} {
-		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
-		set Priv(prevPos) $pos
-	}
-	return $pos
-}
-
-
-proc TextNextPos {w start op} {
-	variable ::comment::Vars
-
-	set pos [TextNextPos_comment_ $w $start $op]
-	if {$w eq $Vars(widget:text) && [$w compare $pos != 1.0]} {
-		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
-	}
-	return $pos
-}
-
-
-proc TextPrevPos {w start op} {
-	variable ::comment::Vars
-
-	set pos [TextPrevPos_comment_ $w $start $op]
-	if {$w eq $Vars(widget:text) && [$w compare $pos != 1.0]} {
-		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
-	}
-	return $pos
-}
-
-
-proc TextBackSpace {w} {
-	variable ::comment::Vars
-
-	if {$w eq $Vars(widget:text)} {
-		if {[$w tag nextrange sel 1.0 end] ne ""} {
-			set c [$w get sel.last]
-			if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
-			set c [$w get sel.first]
-			if {$c eq "\n" } { set decr -1c } else { set decr "" }
-			$w delete sel.first$decr sel.last$incr
-		} elseif {[$w compare insert != 1.0]} {
-			set c [$w get insert-1c]
-			if {$c eq "\n"} {
-				if {	[$w compare insert-1c == 1.1]
-					|| [string is space [$w get insert-3c]]
-					|| [string is space [$w get insert]]} {
-					$w delete insert-2c insert
-				} else {
-					$w replace insert-2c insert " "
-				}
-			} elseif {$c eq "\u00b6"} {
-				if {	[$w compare insert == 1.1]
-					|| [string is space [$w get insert-2c]]
-					|| [string is space [$w get insert+1c]]} {
-					$w delete insert-1c insert+1c
-				} else {
-					$w replace insert-1c insert+1c " "
-				}
-				if {[$w compare insert != end-1c]} {
-					$w mark set insert insert-1c
-				}
-			} else {
-				$w delete insert-1c
-			}
-			$w see insert
-		}
-	} else {
-		if {[$w tag nextrange sel 1.0 end] ne ""} {
-			$w delete sel.first sel.last
-		} elseif {[$w compare insert != 1.0]} {
-			$w delete insert-1c
-			$w see insert
-		}
-	}
-}
-
-
-proc TextDelete {w} {
-	variable ::comment::Vars
-
-	if {$w eq $Vars(widget:text)} {
-		::comment::SetUndoPoint $w
-		if {[$w tag nextrange sel 1.0 end] ne ""} {
-			set c [$w get sel.last-1c]
-			if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
-			set c [$w get sel.first]
-			if {$c eq "\n" } { set decr -1c } else { set decr "" }
-			$w delete sel.first$decr sel.last$incr
-		} else {
-			set c [$w get insert]
-			if {$c eq "\n"} {
-				if {[$w compare insert == end-1c]} {
-					# special case, seems to be a Tk bug
-					$w delete insert-2c insert
-				} elseif {	[$w compare insert == 1.1]
-							|| [string is space [$w get insert-2c]]
-							|| [string is space [$w get insert+1c]]} {
-					$w delete insert-1c insert+1c
-				} else {
-					$w replace insert-1c insert+1c " "
-				}
-			} elseif {$c eq "\u00b6"} {
-				if {	[$w compare insert == 1.0]
-					|| [string is space [$w get insert-1c]]
-					|| [string is space [$w get insert+2c]]} {
-					$w delete insert insert+2c
-				} else {
-					$w replace insert insert+2c " "
-				}
-				if {[$w compare insert != end-1c]} {
-					$w mark set insert insert-1c
-				}
-				if {[$w get insert] eq "\n"} {
-					$w mark set insert insert-1c
-				}
-			} else {
-				$w delete insert
-			}
-			$w see insert
-		}
-	} else {
-		if {[$w tag nextrange sel 1.0 end] ne ""} {
-			$w delete sel.first sel.last
-		} else {
-			$w delete insert
-			$w see insert
-		}
-	}
-}
-
-
-proc TextClear {w} {
-	variable ::comment::Vars
-
-	if {$w eq $Vars(widget:text)} {
-		::comment::SetUndoPoint $w
-		set c [$w get sel.last]
-		if {$c eq "\u00b6"} { set incr +1c } else { set incr "" }
-		set c [$w get sel.first]
-		if {$c eq "\n" } { set decr -1c } else { set decr "" }
-		$w delete sel.first$decr sel.last$incr
-	} else {
-		$w delete sel.first sel.last
-	}
-}
-
-
-proc TextControlD {w} {
-	variable ::comment::Vars
-
-	if {$w eq $Vars(widget:text)} {
-		set c [$w get insert]
-		if {$c eq "\u00b6"} {
-			$w delete insert insert+1c
-		} elseif {$c eq "\n"} {
-			$w delete insert-1c insert
-			$w mark set insert insert-1c
-		}
-	}
-	$w delete insert
-	$w see insert
-}
-
-} ;# namespace tk
-
-
-bind Text <BackSpace>		{ tk::TextBackSpace %W }
-bind Text <Delete>			{ tk::TextDelete %W }
-bind Text <<Clear>>			{ catch { tk::TextClear %W } }
-bind Text <Control-d>		{ tk::TextControlD %W }
-bind Text <Left>				{ tk::TextSetCursorExt %W insert-1displayindices }
-bind Text <Right>				{ tk::TextSetCursorExt %W insert+1displayindices +1 }
-bind Text <Up>					{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W -1] }
-bind Text <Down>				{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W 1] }
-bind Text <Prior>				{ tk::TextSetCursorExt %W [tk::TextScrollPages %W -1] }
-bind Text <Next>				{ tk::TextSetCursorExt %W [tk::TextScrollPages %W 1] }
-bind Text <End>				{ tk::TextSetCursorExt %W {insert display lineend} }
-bind Text <Control-Left>	{ tk::TextSetCursorExt %W [tk::TextPrevPos %W insert tcl_startOfPreviousWord]}
-bind Text <Control-Right>	{ tk::TextSetCursorExt %W [tk::TextNextWord %W insert] }
-bind Text <Control-Up>		{ tk::TextSetCursorExt %W [tk::TextPrevPara %W insert] }
-bind Text <Control-Down>	{ tk::TextSetCursorExt %W [tk::TextNextPara %W insert] }
-bind Text <Control-End>		{ tk::TextSetCursorExt %W {end - 1 indices} }
-bind Text <Control-b>		{ tk::TextSetCursorExt %W insert-1displayindices }
-bind Text <Control-e>		{ tk::TextSetCursorExt %W {insert display lineend} }
-bind Text <Control-f>		{ tk::TextSetCursorExt %W insert+1displayindices +1 }
-bind Text <Control-n>		{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W 1] }
-bind Text <Control-p>		{ tk::TextSetCursorExt %W [tk::TextUpDownLine %W -1] }
-bind Text <Meta-f>			{ tk::TextSetCursorExt %W [tk::TextNextWord %W insert] }
-bind Text <Meta-greater>	{ tk::TextSetCursorExt %W end-1c }
-
-
-bind Text <<Undo>> {
-	if {"%W" eq $::comment::Vars(widget:text)} {
-		::comment::EditUndo
-	} else {
-		catch { %W edit undo }
-	}
-}
-
-
-bind Text <Control-Key-y> { ;# the <<Redo>> binding is not working!
-	if {"%W" eq $::comment::Vars(widget:text)} {
-		::comment::EditRedo
-	} else {
-		catch { %W edit redo }
-	}
-}
-
 
 if {[tk windowingsystem] eq "x11"} {
-	bind Text <Control-Key-Z> { ;# the <<Redo>> binding is not working!
-		if {"%W" eq $::comment::Vars(widget:text)} {
-			::comment::EditRedo
-		} else {
-			catch { %W edit redo }
-		}
+	bind Comment <Control-Key-Z> { ;# the <<Redo>> binding is not working!
+		comment::EditRedo
 	}
 }
 
-
-bind Text <Meta-b> {
-	if {!$tk_strictMotif} {
-		tk::TextSetCursorExt %W [tk::TextPrevPos %W insert tcl_startOfPreviousWord]
-	}
+bind Comment <Meta-b> {
+	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
 }
-
 
 if {[tk windowingsystem] eq "aqua"} {
 
-bind Text <Option-Left>		{ tk::TextSetCursorExt %W [tk::TextPrevPos %W insert tcl_startOfPreviousWord]}
-bind Text <Option-Right>	{ tk::TextSetCursorExt %W [tk::TextNextWord %W insert] +1 }
-bind Text <Option-Up>		{ tk::TextSetCursorExt %W [tk::TextPrevPara %W insert] }
-bind Text <Option-Down>		{ tk::TextSetCursorExt %W [tk::TextNextPara %W insert] +1 }
+bind Comment <Option-Left> {
+	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
+}
+
+bind Comment <Option-Right>	{ comment::TextSetCursorExt %W [comment::TextNextWord %W insert] +1 }
+bind Comment <Option-Up>		{ comment::TextSetCursorExt %W [comment::TextPrevPara %W insert] }
+bind Comment <Option-Down>		{ comment::TextSetCursorExt %W [comment::TextNextPara %W insert] +1 }
 
 } ;# End of Mac only bindings
 
-
 # TODO
-bind Text <Control-k> {#}
-bind Text <Meta-d> {#}
-bind Text <Meta-BackSpace> {#}
-bind Text <Meta-Delete> {#}
-bind Text <Control-h> {#}
-bind Text <Control-o> {#}
+bind Comment <Control-k> {#}
+bind Comment <Meta-d> {#}
+bind Comment <Meta-BackSpace> {#}
+bind Comment <Meta-Delete> {#}
+bind Comment <Control-h> {#}
+bind Comment <Control-o> {#}
 
 # vi:set ts=3 sw=3:

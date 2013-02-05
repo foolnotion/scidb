@@ -75,6 +75,10 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	,m_needPostComment(false)
 	,m_hasPrecedingComment(false)
 {
+	M_REQUIRE(test(Flag_Use_Scidb_Import_Format) != test(Flag_Use_ChessBase_Format));
+	M_REQUIRE(test(Flag_Use_Scidb_Import_Format) != test(Flag_Strict_PGN_Standard));
+	M_REQUIRE(test(Flag_Use_ChessBase_Format) != test(Flag_Strict_PGN_Standard));
+
 	if (test(Flag_Use_Scidb_Import_Format))
 	{
 		addFlag(Flag_Include_Variations);
@@ -126,13 +130,24 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		removeFlag(Flag_Append_Mode_To_Event_Type);
 		removeFlag(Flag_Use_Scidb_Import_Format);
 	}
-
-	if (	test(Flag_Write_UTF8_BOM)
-		&& !test(Mode_PGN_Standard)
-		&& encoding == sys::utf8::Codec::utf8())
+	else if (test(Flag_Strict_PGN_Standard))
 	{
-		m_strm.write("\xef\xbb\xbf\n"); // UTF-8 BOM
+		addFlag(Flag_Convert_Null_Moves_To_Comments);
+		addFlag(Flag_Convert_Lost_Result_To_Comment);
+
+		removeFlag(Flag_Include_Move_Info);
+		removeFlag(Flag_Include_Marks);
+		removeFlag(Flag_Include_Move_Info);
+		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
+		removeFlag(Flag_Use_Shredder_FEN);
+		removeFlag(Flag_Comment_To_Html);
+		removeFlag(Flag_Use_ChessBase_Format);
+		removeFlag(Flag_Use_Scidb_Import_Format);
+		removeFlag(Flag_Write_UTF8_BOM);
 	}
+
+	if (test(Flag_Write_UTF8_BOM) && encoding == sys::utf8::Codec::utf8())
+		m_strm.write("\xef\xbb\xbf\n"); // UTF-8 BOM
 }
 
 

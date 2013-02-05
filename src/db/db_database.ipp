@@ -101,7 +101,7 @@ Time
 Database::modified() const
 {
 	M_REQUIRE(isOpen());
-	return m_codec->modified(m_rootname);
+	return m_codec->modified();
 }
 
 
@@ -111,17 +111,6 @@ Database::maxDescriptionLength() const
 {
 	M_REQUIRE(isOpen());
 	return m_codec->maxDescriptionLength();
-}
-
-
-inline
-void
-Database::setReadonly(bool flag)
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(flag || isWriteable());
-
-	m_readOnly = flag;
 }
 
 

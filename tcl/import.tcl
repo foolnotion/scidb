@@ -498,7 +498,10 @@ proc Import {parent base files msg encoding} {
 		}
 	}
 
+	set logCount 0
+
 	foreach file $files {
+		if {[incr logCount] > 1} { ::log::newline }
 		::log::info [format $mc::ImportingDatabase [file tail $file]]
 		set info "$::mc::File: [file tail $file]"
 		set options [list -message $msg -log yes -interrupt yes -information $info]

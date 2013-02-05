@@ -276,7 +276,7 @@ namespace {
 
 struct TagLookup
 {
-	TagLookup()
+	static void initialize()
 	{
 		m_lookup.set(tag::Event);
 		m_lookup.set(tag::Site);
@@ -528,6 +528,8 @@ Codec::Codec()
 	,m_progressCount(0)
 {
 	static_assert(U_NUMBER_OF(m_lookup) <= Namebase::Round, "index out of range");
+
+	::TagLookup::initialize();
 
 	m_magicGameFile = MagicGameFile;
 	m_magicGameFile.resize(MagicGameFile.size() + 2);
@@ -825,7 +827,7 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
@@ -843,7 +845,7 @@ Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
+Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);

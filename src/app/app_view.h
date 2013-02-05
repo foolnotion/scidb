@@ -134,6 +134,17 @@ public:
 	/// Return current table selector.
 	db::Selector const& selector(db::table::Type type) const;
 
+	/// Compute next index in filter according to ordering.
+	int nextIndex(db::table::Type type, unsigned index) const;
+	/// Compute previous index in filter according to ordering.
+	int prevIndex(db::table::Type type, unsigned index) const;
+	/// Compute first index in filter according to ordering.
+	int firstIndex(db::table::Type type) const;
+	/// Compute last index in filter according to ordering.
+	int lastIndex(db::table::Type type) const;
+	/// Compute random game index in filter.
+	int randomGameIndex() const;
+
 	/// Get PGN (without variations) of given game index.
 	Result dumpGame(unsigned index, mstl::string const& fen, mstl::string& result) const;
 	/// Get PGN (without variations) of given game index.
@@ -236,6 +247,8 @@ private:
 	UpdateMode		m_updateMode[db::table::LAST];
 	db::Filter		m_filter[db::table::LAST];
 	db::Selector	m_selector[db::table::LAST];
+
+	mutable mstl::bitset m_used;
 };
 
 } // namespace app

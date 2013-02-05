@@ -123,10 +123,7 @@ Filter::resize(unsigned newSize, ResizeMode mode)
 		m_count -= m_set.count(newSize, size - 1);
 	}
 
-	m_set.resize(newSize);
-
-	if (mode == AddNewIndices && newSize > size)
-		m_set.set(size, newSize - 1);
+	m_set.resize(newSize, mode == AddNewIndices);
 
 	M_ASSERT(checkClassInvariance());
 }

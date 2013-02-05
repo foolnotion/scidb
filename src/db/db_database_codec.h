@@ -135,41 +135,37 @@ public:
 	virtual void filterTags(TagSet& tags, Section section) const = 0;
 	virtual mstl::string const& extension() const = 0;
 	virtual mstl::string const& encoding() const = 0;
-	virtual Time modified(mstl::string const& rootname) const;
+	virtual Time modified() const;
 	uint32_t created() const;
 	virtual util::crc::checksum_t computeChecksum(GameInfo const& info, unsigned crc) const;
 
-	virtual void updateHeader(mstl::string const& rootname);
+	void updateHeader();
 	virtual void setEncoding(mstl::string const& encoding) = 0;
+	virtual void setWriteable();
 	virtual void reset() = 0;
 
 	unsigned produce(Producer& producer, Consumer& consumer, util::Progress& progress);
 
 	void open(DatabaseContent* db, mstl::string const& encoding);
-	void open(DatabaseContent* db, mstl::string const& rootname, mstl::string const& encoding);
-	void open(	DatabaseContent* db,
-					mstl::string const& rootname,
-					mstl::string const& encoding,
-					util::Progress& progress);
+	void open(DatabaseContent* db, mstl::string const& encoding, util::Progress& progress);
 	void open(	DatabaseContent* db,
 					mstl::string const& encoding,
 					Producer& producer,
 					util::Progress& progress);
-	unsigned openProgressive(	DatabaseContent* db,
-										mstl::string const& rootname,
-										mstl::string const& encoding);
-	void clear(mstl::string const& rootname = mstl::string::empty_string);
+	unsigned openProgressive(DatabaseContent* db, mstl::string const& encoding);
+	void clear();
 	void rename(mstl::string const& oldName, mstl::string const& newName);
-	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
+
+	void save(unsigned start, util::Progress& progress);
 	virtual void writeNamebases(mstl::ostream& os, util::Progress& progress);
 	virtual void writeIndex(mstl::ostream& os, util::Progress& progress);
 	virtual void writeGames(mstl::ostream& os, util::Progress& progress);
-	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
-	virtual void attach(mstl::string const& rootname, util::Progress& progress);
-	virtual void reloadDescription(mstl::string const& rootname);
-	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
+	void update(unsigned index, bool updateNamebase);
+	void attach(util::Progress& progress);
+	void reloadDescription();
+	void reloadNamebases(util::Progress& progress);
 	virtual void close() = 0;
-	virtual void removeAllFiles(mstl::string const& rootname);
+	void removeAllFiles();
 	virtual void readIndexProgressive(unsigned index);
 	virtual bool stripMoveInformation(GameInfo const& info, unsigned types);
 	virtual bool stripTags(GameInfo const& info, TagMap const& tags);
@@ -177,7 +173,7 @@ public:
 
 	unsigned importGames(Producer& producer, util::Progress& progress, int startIndex = -1);
 
-	void decodeGame(GameData& data, GameInfo& info, mstl::string* encoding = 0);
+	void decodeGame(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding = 0);
 	void encodeGame(util::ByteStream& strm, GameData const& data, Signature const& signature);
 	void encodeGame(	util::ByteStream& strm,
 							GameData const& data,
@@ -185,7 +181,7 @@ public:
 							TagBits const& allowedTags,
 							bool allowExtraTags);
 
-	save::State exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info);
+	save::State exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex);
 	save::State exportGame(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
 
 	virtual util::ByteStream getGame(GameInfo const& info);
@@ -199,7 +195,7 @@ public:
 	virtual void useAsyncReader(bool flag);
 	virtual Move findExactPositionAsync(GameInfo const& info,
 													Board const& position,
-													bool skipVariations) = 0;
+													bool skipVariations);
 
 	GameInfo* allocGameInfo();
 
@@ -226,6 +222,14 @@ protected:
 
 	virtual Consumer* getConsumer(format::Type srcFormat);
 
+	virtual void updateHeader(mstl::string const& rootname);
+	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);
+	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
+	virtual void attach(mstl::string const& rootname, util::Progress& progress);
+	virtual void reloadDescription(mstl::string const& rootname);
+	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
+	virtual void removeAllFiles(mstl::string const& rootname);
+
 	virtual void doOpen(mstl::string const& encoding);
 	virtual void doOpen(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doOpen(	mstl::string const& rootname,
@@ -234,9 +238,15 @@ protected:
 	virtual unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doClear(mstl::string const& rootname);
 
-	virtual void doDecoding(GameData& data, GameInfo& info, mstl::string* encoding) = 0;
+	virtual void doDecoding(GameData& data,
+									GameInfo& info,
+									unsigned gameIndex,
+									mstl::string* encoding) = 0;
 	virtual save::State doDecoding(Consumer& consumer, util::ByteStream& strm, TagSet& tags);
-	virtual save::State doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info) = 0;
+	virtual save::State doDecoding(	Consumer& consumer,
+												TagSet& tags,
+												GameInfo const& info,
+												unsigned gameIndex) = 0;
 	virtual void doEncoding(util::ByteStream& strm,
 									GameData const& data,
 									Signature const& signature,

@@ -526,7 +526,7 @@ unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxSiteCount() const			{ return (1 << 24) - 1; }
 unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
 unsigned Codec::minYear() const					{ return 0; }
-unsigned Codec::maxYear() const					{ return mstl::max(Date::MaxYear, uint16_t(4094)); }
+unsigned Codec::maxYear() const					{ return mstl::min(Date::MaxYear, uint16_t(4094)); }
 unsigned Codec::maxDescriptionLength() const	{ return mstl::numeric_limits<uint32_t>::max() - 1; }
 
 
@@ -591,6 +591,11 @@ Codec::~Codec() throw()
 
 	for (unsigned i = 0; i < m_teamBase.size(); ++i)
 		delete m_teamBase[i];
+
+	BaseMap::container_type const& sourceList = m_sourceMap2.container();
+
+	for (unsigned i = 0; i < sourceList.size(); ++i)
+		delete sourceList[i].second;
 }
 
 
@@ -1925,7 +1930,8 @@ Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
 	GameInfoList& infoList = gameInfoList();
 
 	infoList.reserve(m_numGames);
-	m_sourceMap.reserve(unsigned(m_numGames*(100/SourceMap::Load)));
+	if (!m_sourceMap2.empty())
+		m_sourceMap.reserve(m_numGames);
 	if (m_teamRecords)
 		m_gameIndexLookup.reserve(m_numGames);
 
@@ -2362,8 +2368,9 @@ Codec::decodeIndex(ByteStream& strm, GameInfo& info)
 
 	if (NamebaseEntry* annotator = getAnnotator(strm.uint24()))
 		info.m_annotator = annotator;
-	if (Source* source = getSource(strm.uint24()))
-		m_sourceMap[&info] = source;
+
+	if (!m_sourceMap2.empty())
+		m_sourceMap.push_back(getSource(strm.uint24()));
 
 	Date date;
 	::setDate(date, strm.uint24());
@@ -2503,16 +2510,17 @@ Codec::startDecoding(ByteStream& gameStream,
 
 
 void
-Codec::addSourceTags(TagSet& tags, GameInfo const& info)
+Codec::addSourceTags(TagSet& tags, unsigned index)
 {
-	if (SourceMap::const_pointer s = m_sourceMap.find(&info))
+	if (!m_sourceMap.empty())
 	{
-		Source const* source = *s;
+		if (Source const* source = m_sourceMap[index])
+		{
+			tags.set(tag::Source, source->name());
 
-		tags.set(tag::Source, source->name());
-
-		if (source->date)
-			tags.set(tag::SourceDate, source->date.asString());
+			if (source->date)
+				tags.set(tag::SourceDate, source->date.asString());
+		}
 	}
 }
 
@@ -2592,7 +2600,7 @@ Codec::addTeamTags(TagSet& tags, GameInfo const& info)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
+Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*)
 {
 	Byte buf[2][32768];
 
@@ -2603,7 +2611,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 
 	startDecoding(gStrm, aStrm, info, isChess960);
 
-	addSourceTags(data.m_tags, info);
+	addSourceTags(data.m_tags, gameIndex);
 	addEventTags(data.m_tags, info);
 	addTeamTags(data.m_tags, info);
 
@@ -2613,7 +2621,7 @@ Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
 
 
 save::State
-Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex)
 {
 	Byte buf[2][32768];
 
@@ -2624,7 +2632,7 @@ Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
 
 	startDecoding(gStrm, aStrm, info, isChess960);
 
-	addSourceTags(tags, info);
+	addSourceTags(tags, gameIndex);
 	addEventTags(tags, info);
 	addTeamTags(tags, info);
 

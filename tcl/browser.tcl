@@ -53,8 +53,9 @@ set GotoGame(last)		"Goto last game"
 set GotoGame(next)		"Goto next game"
 set GotoGame(prev)		"Goto previous game"
 
-set LoadGame				"Load Game"
-set MergeGame				"Merge Game"
+set LoadGame				"Load game into editor"
+set ReloadGame				"Reload game"
+set MergeGame				"Merge game"
 
 } ;# namespace mc
 
@@ -80,6 +81,7 @@ array set Options {
 	repeat:interval		300
 	background:header		#ebf4f5
 	background:hilite		cornflowerblue
+	background:modified	linen
 	foreground:hilite		white
 }
 
@@ -195,9 +197,19 @@ proc open {parent base variant info view index {fen {}}} {
 		;
 	set Vars(control:autoplay) $controls.autoplay
 	grid $controls.autoplay -row 0 -column 11
+	set Vars(control:help) [tk::button $controls.help \
+		-takefocus 0 \
+		-background $background \
+		-image $::icon::22x22::help \
+		-command [list ::help::open .application Game-Browser -parent $dlg] \
+	]
+	::tooltip::tooltip $controls.help "$::help::mc::Help (F1)"
+	grid $controls.help -row 0 -column 13
+
 	grid columnconfigure $controls {1 10} -minsize 10
-	grid columnconfigure $controls {2 12} -minsize 22
-	grid columnconfigure $controls {3 13} -weight 1
+	grid columnconfigure $controls {2} -minsize 26
+	grid columnconfigure $controls {3} -weight 2
+	grid columnconfigure $controls {12 14} -weight 1
 
 	# PGN side
 	tk::text $rt.header \
@@ -231,8 +243,6 @@ proc open {parent base variant info view index {fen {}}} {
 		::widget::dialogButtonsSetup $buttons $cmd ::widget::mc::$var close
 		grid $w -row 0 -column $column -sticky ns
 	}
-#	bind $buttons.LoadGame <ButtonRelease-1>   [list focus $buttons.close]
-#	bind $buttons.MergeGame <ButtonRelease-1>  [list focus $buttons.close]
 	grid columnconfigure $buttons {1 3} -minsize $::theme::padding
 	$buttons.close configure -command [list destroy $dlg]
 	$buttons.backward configure -command [namespace code [list NextGame $dlg $position -1]]
@@ -291,11 +301,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(fullscreen) 0
 	set Vars(next) {}
 	set Vars(next:move) {}
-
-	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
-	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
-	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
-	set Vars(subscribe:close) [list [namespace current]::Close2 $base [list $position $variant]]
+	set Vars(modified) 0
 
 	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
 	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
@@ -345,10 +351,19 @@ proc open {parent base variant info view index {fen {}}} {
 
 	SetupStyle $position no
 
+	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
+	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
+	set Vars(subscribe:info)  [list [namespace current]::UpdateInfo $position]
+	set Vars(subscribe:data)  [list [namespace current]::UpdateData $position]
+	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
+	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $position]]
+
 	::scidb::game::subscribe board {*}$Vars(subscribe:board)
 	::scidb::game::subscribe pgn {*}$Vars(subscribe:pgn)
-	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
 	::scidb::view::subscribe {*}$Vars(subscribe:close)
+	::scidb::db::subscribe gameList {*}$Vars(subscribe:list)
+	::scidb::db::subscribe gameInfo {*}$Vars(subscribe:info)
+	::scidb::db::subscribe gameData {*}$Vars(subscribe:data)
 
 	if {$variant == [::scidb::app::variant] && $view == [::scidb::tree::view $base]} {
 		set Vars(subscribe:tree) [list [namespace current]::UpdateTreeBase {} $position]
@@ -617,6 +632,28 @@ proc Update2 {position} {
 }
 
 
+proc UpdateInfo {position id} {
+	variable ${position}::Vars
+	variable Options
+
+	if {[::scidb::game::link? $position] eq [::scidb::game::link? $id]} {
+		set Vars(modified) 1
+		$Vars(header) configure -background $Options(background:modified)
+	}
+}
+
+
+proc UpdateData {position id evenMainline} {
+	variable ${position}::Vars
+	variable Options
+
+	if {$evenMainline && [::scidb::game::link? $position] eq [::scidb::game::link? $id]} {
+		set Vars(modified) 1
+		$Vars(header) configure -background $Options(background:modified)
+	}
+}
+
+
 proc Close {position base variant {view {}}} {
 	variable ${position}::Vars
 
@@ -627,12 +664,6 @@ proc Close {position base variant {view {}}} {
 		ConfigureButtons $position
 		SetTitle $position
 	}
-}
-
-
-proc Close2 {args base view} {
-	lassign $args position variant
-	Close $position $base $variant $view
 }
 
 
@@ -679,6 +710,7 @@ proc GotoGame(prev) {parent position} {
 
 proc NextGame {parent position {step 0}} {
 	variable ${position}::Vars
+	variable Options
 	variable Priv
 
 	if {$Vars(index) == -1} { return }
@@ -690,18 +722,22 @@ proc NextGame {parent position {step 0}} {
 	set Vars(info) [::scidb::db::get gameInfo $index $Vars(view) $Vars(base) $Vars(variant)]
 	set Vars(result) [list [::util::formatResult [::gametable::column $Vars(info) result]] ""]
 	set Vars(number) [::gametable::column $Vars(info) number]
-	set key $Vars(base):$Vars(variant):$number:$Vars(view)
+	set key "$Vars(base):$Vars(variant):$number:$Vars(view)"
 	set i [lsearch -exact $Priv($key) $parent]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
-	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
+	set key "$Vars(base):$Vars(variant):$Vars(number):$Vars(view)"
 	lappend Priv($key) [winfo toplevel $parent]
 	ConfigureButtons $position
 	SetTitle $position
 	set number [::scidb::db::get gameNumber $Vars(base) $Vars(variant) $index $Vars(view)]
-	::widget::busyOperation \
-		{ ::game::load $parent $position $Vars(base) -number $number -variant $Vars(variant) }
+	::widget::busyOperation { ::game::load $parent $position $Vars(base) \
+		-number $number -variant $Vars(variant) -view $Vars(view) }
 	::scidb::game::go $position position $Vars(fen)
+	if {$Vars(modified)} {
+		$Vars(header) configure -background $Options(background:header)
+		set Vars(modified) 0
+	}
 	UpdateHeader $position
 }
 
@@ -757,6 +793,8 @@ proc SetupControlButtons {position} {
 	variable ${position}::Vars
 	variable Accelerator
 
+	::tooltip::tooltip $Vars(control:help) "$::help::mc::Help (F1)"
+
 	foreach {control var} {	Home	GotoStartOfGame
 									Prior	GoBackFast
 									Left	GoBackward
@@ -791,6 +829,8 @@ proc UpdateHeader {position} {
 	$text configure -state normal
 
 	$text delete 1.0 end
+	foreach tag [$text tag names] { $text tag delete $tag }
+
 	foreach id {white black event site date annotator} {
 		set $id [::gametable::column $Vars(info) $id]
 	}
@@ -824,17 +864,21 @@ proc UpdateHeader {position} {
 	$text insert end " \u2013 " bold
 	$text insert end $black {bold black}
 
-	$text tag bind event <Any-Enter>			[namespace code [list EnterItem $position event]]
-	$text tag bind event <Any-Leave>			[namespace code [list LeaveItem $position event]]
-	$text tag bind event <ButtonPress-2>	[namespace code [list ShowEvent $position]]
-	$text tag bind event <ButtonRelease-2>	[namespace code [list HideEvent $position]]
+	if {[string length $event] > 1} {
+		$text tag bind event <Any-Enter>			[namespace code [list EnterItem $position event]]
+		$text tag bind event <Any-Leave>			[namespace code [list LeaveItem $position event]]
+		$text tag bind event <ButtonPress-2>	[namespace code [list ShowEvent $position]]
+		$text tag bind event <ButtonRelease-2>	[namespace code [list HideEvent $position]]
+	}
 
 	foreach side {white black} {
-		$text tag bind $side <Any-Enter>			[namespace code [list EnterItem $position $side]]
-		$text tag bind $side <Any-Leave>			[namespace code [list LeaveItem $position $side]]
-		$text tag bind $side <ButtonPress-1>	[namespace code [list ShowPlayerCard $position $side]]
-		$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayerInfo $position $side]]
-		$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayerInfo $position $side]]
+		if {[string length [set $side]] > 1} {
+			$text tag bind $side <Any-Enter>			[namespace code [list EnterItem $position $side]]
+			$text tag bind $side <Any-Leave>			[namespace code [list LeaveItem $position $side]]
+			$text tag bind $side <ButtonPress-1>	[namespace code [list ShowPlayerCard $position $side]]
+			$text tag bind $side <ButtonPress-2>	[namespace code [list ShowPlayerInfo $position $side]]
+			$text tag bind $side <ButtonRelease-2>	[namespace code [list HidePlayerInfo $position $side]]
+		}
 	}
 
 	set variant [::scidb::game::query $position variant?]
@@ -867,6 +911,7 @@ proc UpdateHeader {position} {
 proc ShowEvent {position} {
 	variable ${position}::Vars
 
+	if {$Vars(modified)} { return }
 	if {$Vars(closed)} { return }
 
 	set index [expr {$Vars(number) - 1}]
@@ -878,6 +923,8 @@ proc ShowEvent {position} {
 
 proc HideEvent {position} {
 	variable ${position}::Vars
+
+	if {$Vars(modified)} { return }
 	::eventtable::popdownInfo $Vars(header)
 }
 
@@ -886,6 +933,7 @@ proc EnterItem {position item {locked no}} {
 	variable ${position}::Vars
 	variable Options
 
+	if {$Vars(modified)} { return }
 	set Vars(locked) $locked
 	if {$Vars(closed)} { return }
 
@@ -900,6 +948,7 @@ proc LeaveItem {position item {force no}} {
 	variable ${position}::Vars
 	variable Options
 
+	if {$Vars(modified)} { return }
 	if {$force} { set Vars(locked) no }
 	if {$Vars(closed)} { return }
 
@@ -912,6 +961,7 @@ proc LeaveItem {position item {force no}} {
 proc ShowPlayerCard {position side} {
 	variable ${position}::Vars
 
+	if {$Vars(modified)} { return }
 	if {$Vars(closed)} { return }
 	::playercard::show $Vars(base) $Vars(variant) [expr {$Vars(number) - 1}] $side
 }
@@ -920,6 +970,7 @@ proc ShowPlayerCard {position side} {
 proc ShowPlayerInfo {position side} {
 	variable ${position}::Vars
 
+	if {$Vars(modified)} { return }
 	if {$Vars(closed)} { return }
 
 	set base $Vars(base)
@@ -933,6 +984,8 @@ proc ShowPlayerInfo {position side} {
 
 proc HidePlayerInfo {position side} {
 	variable ${position}::Vars
+
+	if {$Vars(modified)} { return }
 	::playercard::popdownInfo $Vars(header)
 }
 
@@ -1197,6 +1250,7 @@ proc Destroy {dlg w position} {
 #	XXX
 #	::scidb::game::unsubscribe board {*}$Vars(subscribe:board)
 #	::scidb::game::unsubscribe pgn {*}$Vars(subscribe:pgn)
+	::scidb::db::unsubscribe gameInfo {*}$Vars(subscribe:info)
 	::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
 	::scidb::view::unsubscribe {*}$Vars(subscribe:close)
 
@@ -1204,7 +1258,7 @@ proc Destroy {dlg w position} {
 		::scidb::db::unsubscribe tree {*}$Vars(subscribe:tree)
 	}
 
-	set key $Vars(base):$Vars(variant):$Vars(number):$Vars(view)
+	set key "$Vars(base):$Vars(variant):$Vars(number):$Vars(view)"
 	set i [lsearch -exact $Priv($key) $dlg]
 	if {$i >= 0} { set Priv($key) [lreplace $Priv($key) $i $i] }
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
@@ -1309,6 +1363,14 @@ proc PopupMenu {parent board position {what ""}} {
 #		-command [namespace code [list MergeGame $dlg $position]] \
 #		-state $state \
 #		;
+		if {!$Vars(modified)} { set state disabled }
+		$menu add command \
+			-label " $mc::ReloadGame" \
+			-image $::icon::16x16::refresh \
+			-compound left \
+			-command [namespace code [list ReloadGame $dlg $position]] \
+			-state $state \
+			;
 		$menu add separator
 		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$menu add command \
@@ -1432,7 +1494,7 @@ proc PopupMenu {parent board position {what ""}} {
 		-label " $::help::mc::Help" \
 		-image $::icon::16x16::help \
 		-compound left \
-		-command [list ::help::open .application Game-Browser -parent $dlg ] \
+		-command [list ::help::open .application Game-Browser -parent $dlg] \
 		-accelerator "F1" \
 		;
 
@@ -1467,6 +1529,7 @@ proc ViewFullscreen {position board} {
 
 proc LoadGame {parent position fen} {
 	variable ${position}::Vars
+
 	::widget::busyOperation {
 		::game::new $parent \
 			-base $Vars(base) \
@@ -1476,11 +1539,26 @@ proc LoadGame {parent position fen} {
 			-fen $fen \
 			;
 	}
-}	
+}
 
 
-proc MergeGame {parent position} {
+proc ReloadGame {parent position} {
 	variable ${position}::Vars
+	variable Options
+
+	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base) $Vars(variant)]
+	UpdateHeader $position
+
+	::widget::busyOperation {
+		::game::load $parent $position $Vars(base) \
+			-variant $Vars(variant) \
+			-view $Vars(view) \
+			-number [expr {$Vars(number) - 1}] \
+			;
+	}
+
+	set Vars(modified) 0
+	$Vars(header) configure -background $Options(background:header)
 }
 
 

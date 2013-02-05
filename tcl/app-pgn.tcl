@@ -549,17 +549,18 @@ proc ensureScratchGame {} {
 	variable ::scidb::scratchbaseName
 	variable Vars
 
-	if {[::gamebar::empty? $Vars(gamebar)]} {
-		::scidb::game::switch 9
-		set fen [::scidb::pos::fen]
-		::scidb::game::new 0
-		::scidb::game::switch 0
-		::scidb::pos::setup $fen
-		set tags [::scidb::game::tags 0]
-		::game::setFirst $scratchbaseName Normal $tags
-		add 0 $scratchbaseName Normal $tags
-		select 0
-	}
+	if {![::gamebar::empty? $Vars(gamebar)]} { return 0 }
+
+	::scidb::game::switch 9
+	set fen [::scidb::pos::fen]
+	::scidb::game::new 0
+	::scidb::game::switch 0
+	::scidb::pos::setup $fen
+	set tags [::scidb::game::tags 0]
+	::game::setFirst $scratchbaseName Normal $tags
+	add 0 $scratchbaseName Normal $tags
+	select 0
+	return 1
 }
 
 

@@ -133,11 +133,7 @@ Decoder::decodeQueen(sq::ID from, Byte nybble)
 		return m_position.makeQueenMove(from, sq::make(sq::Fyle(nybble), sq::rank(from)));
 
 	// diagonal move: coded in two bytes
-#ifdef CORRECTION
 	return m_position.makeQueenMove(from, m_strm.get() & 63);
-#else
-	return m_position.makeQueenMove(from, (int(m_strm.get()) - 64) & 63);
-#endif
 }
 
 
@@ -193,6 +189,7 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		{
 			if (from > sq::h2)
 			{
+				M_ASSERT(variant::isAntichessExceptLosers(m_variant));
 				// Promotion to king (Antichess).
 				Square to = (from + m_strm.get()) & 63;
 				return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));
@@ -222,6 +219,7 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 	{
 		if (from < sq::a7)
 		{
+			M_ASSERT(variant::isAntichessExceptLosers(m_variant));
 			// Promotion to king (Antichess).
 			Square to = (from - m_strm.get()) & 63;
 			return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));
@@ -251,48 +249,27 @@ Decoder::decodeZhouseMove(Move& move)
 {
 	unsigned value = m_strm.get();
 
-#ifdef CORRECTION
 	if (value == token::Special_Move)
-#else
-	if (value == 0)
-#endif
 	{
 		move = Move::null();
 		return 0;
 	}
 
-#ifdef CORRECTION
 	M_ASSERT(value > token::Special_Move);
-#endif
 
 	unsigned pieceNum = (value >> 4);
 
 	if (pieceNum == 0)
 	{
-#ifdef CORRECTION
 		pieceNum = m_strm.get() & 63;
-#else
-		pieceNum = m_strm.get();
-#endif
 
 		if (m_position.blackToMove())
 			pieceNum |= 0x10;
 
-#ifdef CORRECTION
 		if ((value &= 7) < piece::Queen)
 			throwCorruptData();
-#else
-		value &= 15;
 
-		if (value < piece::Queen || piece::Pawn < value)
-			throwCorruptData();
-#endif
-
-#ifdef CORRECTION
 		move = m_position.makePieceDropMove(m_strm.get() & 63, piece::Type(value));
-#else
-		move = m_position.makePieceDropMove(m_strm.get(), piece::Type(value));
-#endif
 	}
 	else
 	{
@@ -395,46 +372,51 @@ Decoder::decodeVariation(ByteStream& data)
 		switch (b)
 		{
 			case token::End_Marker:
+			{
+				MoveNode* node = new MoveNode;
+				m_currentNode->setNext(node);
+
+				switch (m_strm.get())
 				{
-					MoveNode* node = new MoveNode;
-					m_currentNode->setNext(node);
+					case token::Comment:
+						node->setCommentFlag(data.get());
+						break;
 
-					switch (m_strm.get())
-					{
-						case token::Comment:
-							node->setCommentFlag(data.get());
-							break;
-
-						case token::End_Marker: break;
-						default: IO_RAISE(Game, Corrupted, "unexpected token");
-					}
+					case token::End_Marker: break;
+					default: IO_RAISE(Game, Corrupted, "unexpected token");
 				}
 				return;
+			}
 
 			case token::Start_Marker:
-				{
-					MoveNode* current = m_currentNode;
+			{
+				if (!move)
+					throwCorruptData();
 
-					m_position.push();
-					m_position.board().undoMove(move, m_variant);
-					current->addVariation(m_currentNode = new MoveNode);
-					decodeVariation(data);
-					m_currentNode = current;
-					m_position.pop();
-				}
+				MoveNode* current = m_currentNode;
+
+				m_position.push();
+				m_position.board().undoMove(move, m_variant);
+				current->addVariation(m_currentNode = new MoveNode);
+				decodeVariation(data);
+				m_currentNode = current;
+				m_position.pop();
 				break;
+			}
 
 			case token::Nag:
+			{
 				static_assert(Annotation::Max_Nags >= 7, "Scidb needs at least seven entries");
-				{
-					nag::ID nag = nag::ID(m_strm.get());
 
-					if (nag == 0)
-						move.setLegalMove(false);
-					else
-						m_currentNode->addAnnotation(nag);
-				}
+				nag::ID nag = nag::ID(data.get());
+
+				if (nag == 0)
+					move.setLegalMove(false);
+				else
+					m_currentNode->addAnnotation(nag);
+
 				break;
+			}
 
 			case token::Mark:
 				if (MoveInfo::isMoveInfo(data.peek()))
@@ -589,6 +571,9 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 						move.clear();
 					}
 
+					if (!lastMove)
+						throwCorruptData();
+
 					M_ASSERT(!hasNote);
 
 					m_position.push();
@@ -601,7 +586,7 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 
 				case token::Nag:
 					{
-						nag::ID nag = nag::ID(m_strm.get());
+						nag::ID nag = nag::ID(data.get());
 
 						if (nag == 0)
 						{
@@ -624,26 +609,26 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 					break;
 
 				case token::Comment:
+				{
+					uint8_t flag = data.get();
+
+					if (flag & comm::Ante)
 					{
-						uint8_t flag = data.get();
-
-						if (flag & comm::Ante)
-						{
-							buf.clear();
-							text.get(buf);
-							preComment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
-						}
-
-						if (flag & comm::Post)
-						{
-							buf.clear();
-							text.get(buf);
-							comment.swap(buf, bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
-						}
-
-						hasNote = true;
+						buf.clear();
+						text.get(buf);
+						preComment.swap(buf, bool(flag & comm::Ante_Eng), bool(flag & comm::Ante_Oth));
 					}
+
+					if (flag & comm::Post)
+					{
+						buf.clear();
+						text.get(buf);
+						comment.swap(buf, bool(flag & comm::Post_Eng), bool(flag & comm::Post_Oth));
+					}
+
+					hasNote = true;
 					break;
+				}
 			}
 		}
 	}
@@ -954,7 +939,7 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 	Byte const* data = m_strm.base() + offset;
 
 	if (flags & flags::TextSection)
-		data += m_strm.uint24() + 3;
+		data += ByteStream::uint24(data) + 3;
 
 	if (flags & flags::TagSection)
 		data = skipTags(data);
@@ -1001,9 +986,6 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 					break;
 
 				case token::Nag:
-					++mq; // TODO: move NAG's to data section
-					break;
-
 				case token::Comment:
 					++dq;
 					break;
@@ -1115,7 +1097,7 @@ Decoder::stripTags(TagMap const& tags)
 	Byte* data = m_strm.base() + m_strm.uint24();
 
 	if (flags & flags::TextSection)
-		data += m_strm.uint24() + 3;
+		data += ByteStream::uint24(data) + 3;
 
 	Byte const*	q = data;
 	Byte const*	p = data;
@@ -1206,17 +1188,6 @@ Decoder::skipVariations()
 					else
 						return;
 					break;
-
-				case token::Nag:
-					m_strm.skip(1);
-					break;
-
-				case token::Mark:
-					if (MoveInfo::isMoveInfo(m_strm.peek()))
-						MoveInfo::skip(m_strm);
-					else
-						Mark::skip(m_strm);
-					break;
 			}
 		}
 	}
@@ -1252,17 +1223,6 @@ Decoder::nextMove(unsigned runLength)
 
 					case token::Start_Marker:
 						skipVariations();
-						break;
-
-					case token::Nag:
-						m_strm.skip(1);
-						break;
-
-					case token::Mark:
-						if (MoveInfo::isMoveInfo(m_strm.peek()))
-							MoveInfo::skip(m_strm);
-						else
-							Mark::skip(m_strm);
 						break;
 				}
 			}
@@ -1359,10 +1319,6 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 
 						m_strm.skip(1);
 					}
-					break;
-
-				case token::Nag:
-					m_strm.skip(1);
 					break;
 			}
 		}

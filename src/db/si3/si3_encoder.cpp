@@ -517,7 +517,6 @@ void
 Encoder::putComment(mstl::string& buf)
 {
 	m_codec.fromUtf8(buf);
-//	PgnWriter::convertExtensions(buf, PgnWriter::Mode_Extended);
 	m_strm.put(buf, buf.size() + 1);
 	buf.clear();
 }

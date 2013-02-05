@@ -532,8 +532,13 @@ main(int argc, char* argv[])
 
 	mstl::string cbhPath(argv[i++]);
 
-	if (cbhPath.size() < 4 || strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbh") != 0)
+	if (	cbhPath.size() < 4
+		|| (	strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbh") != 0
+			&& strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".cbf") != 0
+			&& strcmp(cbhPath.c_str() + cbhPath.size() - 4, ".CBF") != 0))
+	{
 		cbhPath.append(".cbh");
+	}
 
 	mstl::ifstream	stream(cbhPath);
 
@@ -557,8 +562,13 @@ main(int argc, char* argv[])
 		if (n != mstl::string::npos)
 			si4Path.erase(mstl::string::size_type(0), n + 1);
 
-		if (si4Path.size() < 4 || strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbh") == 0)
+		if (	si4Path.size() < 4
+			|| (	strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbh") == 0
+				&& strcmp(si4Path.c_str() + si4Path.size() - 4, ".cbf") == 0
+				&& strcmp(si4Path.c_str() + si4Path.size() - 4, ".CBF") == 0))
+		{
 			si4Path.erase(si4Path.size() - 4);
+		}
 	}
 
 	if (si4Path.empty())

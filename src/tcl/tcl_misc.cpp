@@ -60,6 +60,7 @@
 using namespace tcl;
 
 static char const* CmdAttributes				= "::scidb::misc::attributes";
+static char const* CmdContainsUnicodeChar	= "::scidb::misc::containsUnicodeChar";
 static char const* CmdCrc32					= "::scidb::misc::crc32";
 static char const* CmdDebug					= "::scidb::misc::debug?";
 static char const* CmdEncoding				= "::scidb::misc::encoding";
@@ -70,6 +71,7 @@ static char const* CmdHardLinked				= "::scidb::misc::hardLinked?";
 static char const* CmdHtml						= "::scidb::misc::html";
 static char const* CmdIsAscii					= "::scidb::misc::isAscii?";
 static char const* CmdLookup					= "::scidb::misc::lookup";
+static char const* CmdMapCodeToNag			= "::scidb::misc::mapCodeToNag";
 static char const* CmdMapExtension			= "::scidb::misc::mapExtension";
 static char const* CmdMapWindow				= "::scidb::misc::mapWindow";
 static char const* CmdMaxYear					= "::scidb::misc::maxYear";
@@ -777,7 +779,7 @@ cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMapExtension(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* Extensions[] = { "sci", "si3", "si4", "cbh" };
+	static char const* Extensions[] = { "sci", "si3", "si4", "cbh", "cbf" };
 
 	char const* extension = stringFromObj(objc, objv, 1);
 
@@ -1096,6 +1098,33 @@ cmdMaxYear(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[
 }
 
 
+static int
+cmdMapCodeToNag(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(int(::db::nag::fromSymbol(stringFromObj(objc, objv, 1))));
+	return TCL_OK;
+}
+
+
+static int
+cmdContainsUnicodeChar(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* s = stringFromObj(objc, objv, 1);
+
+	for ( ; *s; ++s)
+	{
+		if (static_cast<unsigned char>(*s) >= 0x80)
+		{
+			setResult(true);
+			return TCL_OK;
+		}
+	}
+
+	setResult(false);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -1103,6 +1132,7 @@ void
 init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdAttributes,				cmdAttributes);
+	createCommand(ti, CmdContainsUnicodeChar,	cmdContainsUnicodeChar);
 	createCommand(ti, CmdCrc32,					cmdCrc32);
 	createCommand(ti, CmdDebug,					cmdDebug);
 	createCommand(ti, CmdEncoding,				cmdEncoding);
@@ -1113,6 +1143,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdHtml,						cmdHtml);
 	createCommand(ti, CmdIsAscii,					cmdIsAscii);
 	createCommand(ti, CmdLookup,					cmdLookup);
+	createCommand(ti, CmdMapCodeToNag,			cmdMapCodeToNag);
 	createCommand(ti, CmdMapExtension,			cmdMapExtension);
 	createCommand(ti, CmdMapWindow,				cmdMapWindow);
 	createCommand(ti, CmdMaxYear,					cmdMaxYear);

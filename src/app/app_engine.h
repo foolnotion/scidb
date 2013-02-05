@@ -390,6 +390,7 @@ public:
 	void updateOptions();
 	void invokeOption(mstl::string const& name);
 	void updateConfiguration(mstl::string const& script);
+	void bind(db::Game* game);
 
 	void addFeature(unsigned feature);
 	void removeFeature(unsigned feature);

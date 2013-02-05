@@ -49,7 +49,7 @@ using namespace db;
 using namespace util::misc::file;
 
 
-#ifndef NREQ
+#ifdef M_CHECK
 static bool
 checkOrdering(unsigned* map, unsigned n)
 {
@@ -1137,7 +1137,7 @@ Engine::probe(unsigned timeout)
 
 
 bool
-Engine::startAnalysis(db::Game* game)
+Engine::startAnalysis(Game* game)
 {
 	M_REQUIRE(game);
 	M_REQUIRE(isActive());
@@ -1286,6 +1286,18 @@ Engine::stopAnalysis()
 
 	m_game = 0;
 	return rc;
+}
+
+
+void
+Engine::bind(Game* game)
+{
+	M_REQUIRE(game);
+	M_REQUIRE(	!currentGame()
+				|| currentGame()->currentBoard().exactZHPosition()
+						== game->currentBoard().exactZHPosition());
+
+	m_game = game;
 }
 
 

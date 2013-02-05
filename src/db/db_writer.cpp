@@ -183,74 +183,73 @@ Writer::writeTag(tag::ID tag, mstl::string const& value)
 bool
 Writer::beginGame(TagSet const& tags)
 {
-	static mstl::string const query("?");
-	static mstl::string const one("1");
+	static mstl::string const Date("????.??.??");
+	static mstl::string const Query("?");
+	static mstl::string const One("1");
 
 	writeBeginGame(++m_count);
 	m_needSpace = false;
 
-	// TODO: the PGN standard sasy that additional tags (non-STR tags) have
-	// to be exported in ASCII order by tag name.
+	bool whiteElo = false;
+	bool blackElo = false;
 
-	for (int i = 0; i < tag::ExtraTag; ++i)
+	writeTag(tag::Event, tags.contains(tag::Event) ? tags.value(tag::Event) : Query);
+	writeTag(tag::Site,  tags.contains(tag::Site)  ? tags.value(tag::Site)  : Query);
+	writeTag(tag::Date,  tags.contains(tag::Date)  ? tags.value(tag::Date)  : Date);
+	writeTag(tag::Round, tags.contains(tag::Round) ? tags.value(tag::Round) : Query);
+	writeTag(tag::White, tags.contains(tag::White) ? tags.value(tag::White) : Query);
+	writeTag(tag::Black, tags.contains(tag::Black) ? tags.value(tag::Black) : Query);
+
 	{
-		bool isEmpty = !tags.contains(tag::ID(i));
-		mstl::string const& value = tags.value(tag::ID(i));
+		mstl::string const& value = tags.value(tag::Result);
 
-		switch (i)
+		m_result = result::fromString(value);
+
+		if (m_result == result::Lost && test(Flag_Convert_Lost_Result_To_Comment))
+			writeTag(tag::Result, result::toString(result::Unknown));
+		else
+			writeTag(tag::Result, value);
+	}
+
+	for (unsigned i = 0; i < tag::BughouseTag; ++i)
+	{
+		tag::ID tag = tag::mapAlphabetic(tag::ID(i));
+		bool isEmpty = !tags.contains(tag);
+		mstl::string const& value = tags.value(tag);
+
+		switch (tag)
 		{
-			case tag::Event: case tag::Site: case tag::Date: case tag::Round:
-				writeTag(tag::ID(i), isEmpty ? query : value);
-				break;
-
-			case tag::Result:
-				m_result = result::fromString(value);
-
-				if (m_result == result::Lost && test(Flag_Convert_Lost_Result_To_Comment))
-					writeTag(tag::ID(i), result::toString(result::Unknown));
-				else
-					writeTag(tag::ID(i), value);
-				break;
-
-			case tag::White:
-			case tag::Black:
-				if (isEmpty)
-					writeTag(tag::ID(i), query);
-				else
-					writeTag(tag::ID(i), value);
-				break;
-
 			case tag::WhiteCountry:
 			case tag::BlackCountry:
 				if (!isEmpty)
 				{
 					if (test(Flag_Use_ChessBase_Format))
-						writeTag(tag::ID(i), country::toChessBaseCode(country::fromString(value)));
+						writeTag(tag, country::toChessBaseCode(country::fromString(value)));
 					else
-						writeTag(tag::ID(i), value);
+						writeTag(tag, value);
 				}
 				break;
 
 			case tag::SetUp:
 				if (!isEmpty && test(Flag_Include_Setup_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::Fen:
 				if (!isEmpty)
 				{
 					if (!tags.contains(tag::SetUp) && test(Flag_Include_Setup_Tag))
-						writeTag(tag::toName(tag::SetUp), one);
+						writeTag(tag::toName(tag::SetUp), One);
 
 					if (test(Flag_Use_Shredder_FEN))
 					{
 						mstl::string fen;
 						startBoard().toFen(fen, variant(), Board::Shredder);
-						writeTag(tag::ID(i), fen);
+						writeTag(tag, fen);
 					}
 					else
 					{
-						writeTag(tag::ID(i), value);
+						writeTag(tag, value);
 					}
 				}
 				break;
@@ -264,29 +263,29 @@ Writer::beginGame(TagSet const& tags)
 					{
 						mstl::string buf;
 						buf.format(	"%s %s", value.c_str(), shuffle::position(idn).c_str());
-						writeTag(tag::ID(i), buf);
+						writeTag(tag, buf);
 					}
 				}
 				break;
 
 			case tag::TimeMode:
 				if (!isEmpty && test(Flag_Include_Time_Mode_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::Variant:
 				if (!isEmpty && test(Flag_Include_Variant_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::Termination:
 				if (!isEmpty && test(Flag_Include_Termination_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::Mode:
 				if (!isEmpty && test(Flag_Include_Mode_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::EventType:
@@ -307,37 +306,70 @@ Writer::beginGame(TagSet const& tags)
 					}
 					else
 					{
-						writeTag(tag::ID(i), value);
+						writeTag(tag, value);
 					}
 				}
 				break;
 
 			case tag::Opening:
 				if (!isEmpty && test(Flag_Include_Opening_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::Variation:
 				if (!isEmpty && test(Flag_Include_Variation_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::SubVariation:
 				if (!isEmpty && test(Flag_Include_Sub_Variation_Tag))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			case tag::PlyCount:
 				if (!isEmpty && test(Flag_Use_ChessBase_Format))
-					writeTag(tag::ID(i), value);
+					writeTag(tag, value);
 				break;
 
 			default:
-				if (!isEmpty && !test(Flag_Exclude_Extra_Tags))
-					writeTag(tag::ID(i), value);
+				if (tag::isWhiteRatingTag(tag))
+				{
+					if (!whiteElo)
+					{
+						if (	tag == tag::WhiteElo
+							|| (	test(Flag_Write_Any_Rating_As_ELO)
+								&& !tags.contains(tag::WhiteElo)
+								&& (tag == tag::WhiteRating || !tags.contains(tag::WhiteRating))))
+						{
+							writeTag(tag, value);
+							whiteElo = true;
+						}
+					}
+				}
+				else if (tag::isBlackRatingTag(tag))
+				{
+					if (!blackElo)
+					{
+						if (	tag == tag::BlackElo
+							|| (	test(Flag_Write_Any_Rating_As_ELO)
+								&& !tags.contains(tag::BlackElo)
+								&& (tag == tag::BlackRating || !tags.contains(tag::BlackRating))))
+						{
+							writeTag(tag, value);
+							blackElo = true;
+						}
+					}
+				}
+				else if (!isEmpty && !test(Flag_Exclude_Extra_Tags))
+				{
+					writeTag(tag, value);
+				}
 				break;
 		}
 	}
+
+	// TODO: the PGN standard sasy that additional tags (non-STR tags) have
+	// to be exported in ASCII order by tag name.
 
 	if (!test(Flag_Exclude_Extra_Tags))
 	{
@@ -347,7 +379,6 @@ Writer::beginGame(TagSet const& tags)
 
 	return true;
 }
-
 
 
 save::State
@@ -423,7 +454,7 @@ Writer::writeMove(Move const& move,
 	if (!move.isPrintable())
 	{
 		Move m(move);
-		board().prepareForPrint(m, variant());
+		board().prepareForPrint(m, variant(), Board::ExternalRepresentation);
 		writeMove(m, m_moveNumber, annotation, marks, preComment, comment);
 	}
 	else

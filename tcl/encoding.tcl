@@ -65,6 +65,7 @@ set Lang(hr)	"Croatian"				;# scr
 set Lang(hu)	"Hungarian"				;# hun
 set Lang(hy)	"Armenian"				;# hye
 set Lang(ia)	"Interlingua"			;# ina
+set Lang(id)	"Indonesian"			;# ind
 set Lang(is)	"Icelandic"				;# ice
 set Lang(it)	"Italian"				;# ita
 set Lang(iu)	"Inuktitut"				;# iku
@@ -213,6 +214,7 @@ variable Encodings {
 variable autoEncoding auto
 variable defaultEncoding iso8859-1
 variable windowsEncoding cp1252
+variable dosEncoding cp850
 variable macEncoding macRoman
 variable systemEncoding [encoding system]
 

@@ -1176,6 +1176,7 @@ tkscidb.o: db/db_consumer.ipp
 tkscidb.o: db/db_database.ipp
 tkscidb.o: db/db_database_codec.h
 tkscidb.o: db/db_database_codec.ipp
+tkscidb.o: util/u_rkiss.h
 tkscidb.o: app/app_application.ipp
 tkscidb.o: tk/tk_init.h
 tkscidb.o: tcl/tcl_base.h

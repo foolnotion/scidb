@@ -40,8 +40,43 @@ inline DatabaseContent::Type DatabaseCodec::type() const			{ return m_db->m_type
 inline variant::Type DatabaseCodec::variant() const				{ return m_db->m_variant; }
 inline uint32_t DatabaseCodec::created() const						{ return m_db->m_created; }
 inline Namebases& DatabaseCodec::namebases()							{ return m_db->m_namebases; }
+inline void DatabaseCodec::updateHeader()								{ updateHeader(m_db->m_rootname); }
+inline void DatabaseCodec::reloadDescription()						{ reloadDescription(m_db->m_rootname); }
+inline void DatabaseCodec::removeAllFiles()							{ removeAllFiles(m_db->m_rootname); }
 
 inline void DatabaseCodec::setDescription(char const* description) { m_db->m_description = description; }
+
+
+inline
+void
+DatabaseCodec::save(unsigned start, util::Progress& progress)
+{
+	save(m_db->m_rootname, start, progress);
+}
+
+
+inline
+void
+DatabaseCodec::update(unsigned index, bool updateNamebase)
+{
+	update(m_db->m_rootname, index, updateNamebase);
+}
+
+
+inline
+void
+DatabaseCodec::attach(util::Progress& progress)
+{
+	attach(m_db->m_rootname, progress);
+}
+
+
+inline
+void
+DatabaseCodec::reloadNamebases(util::Progress& progress)
+{
+	reloadNamebases(m_db->m_rootname, progress);
+}
 
 
 inline

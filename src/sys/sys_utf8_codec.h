@@ -62,6 +62,7 @@ public:
 	static mstl::string const& utf8();
 	static mstl::string const& latin1();
 	static mstl::string const& windows();
+	static mstl::string const& dos();
 	static mstl::string const& ascii();
 
 	static bool is7BitAscii(mstl::string const& s);

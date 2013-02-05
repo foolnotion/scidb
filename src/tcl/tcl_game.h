@@ -46,6 +46,7 @@ int convertTags(	::db::TagSet& tags,
 
 ::db::variant::Type variantFromObj(Tcl_Obj* obj);
 ::db::variant::Type variantFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
+Tcl_Obj* objFromVariant(::db::variant::Type variant);
 
 } // namespace game
 } // namespace tcl

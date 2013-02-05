@@ -58,6 +58,7 @@ public:
 	Namebase& namebase(Namebase::Type type);
 	Namebase const& namebase(Namebase::Type type) const;
 
+	mstl::string	m_rootname;
 	GameInfoList	m_gameInfoList;
 	Namebases		m_namebases;
 	Type				m_type;

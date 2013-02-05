@@ -24,6 +24,28 @@
 using namespace mstl;
 
 
+static void
+makeModeString(char modestr[4], ios_base::openmode mode)
+{
+	::memcpy(modestr, "w\0\0\0", 4);
+
+	switch (mode & ~ios_base::binary)
+	{
+		case ios_base::out | ios_base::app:							::strcpy(modestr, "a"); break;
+		case ios_base::in:												::strcpy(modestr, "r"); break;
+		case ios_base::in | ios_base::out:							::strcpy(modestr, "r+"); break;
+		case ios_base::in | ios_base::out | ios_base::app:		::strcpy(modestr, "a+"); break;
+		case ios_base::in | ios_base::out | ios_base::trunc:	::strcpy(modestr, "w+"); break;
+	}
+
+	if (mode & ios_base::binary)
+	{
+		modestr[2] = modestr[1];
+		modestr[1] = 'b';
+	}
+}
+
+
 fstream::fstream() {}
 fstream::fstream(char const* filename, openmode mode) { open(filename, mode); }
 
@@ -41,23 +63,8 @@ fstream::open(char const* filename, openmode mode)
 				|| (mode & ~binary) == (mode & (in | out | app))
 				|| (mode & ~binary) == (mode & (in | out | trunc)));
 
-	char modestr[4] = { 'w', 0, 0, 0 };
-
-	switch (mode & ~binary)
-	{
-		case out | app:			::strcpy(modestr, "a"); break;
-		case in:						::strcpy(modestr, "r"); break;
-		case in | out:				::strcpy(modestr, "r+"); break;
-		case in | out | app:		::strcpy(modestr, "a+"); break;
-		case in | out | trunc:	::strcpy(modestr, "w+"); break;
-	}
-
-	if (mode & binary)
-	{
-		modestr[2] = modestr[1];
-		modestr[1] = 'b';
-	}
-
+	char modestr[4];
+	::makeModeString(modestr, mode);
 	setmode(mode);
 	bits::file::open(filename, modestr);
 }
@@ -67,6 +74,25 @@ void
 fstream::open(char const* filename)
 {
 	open(filename, in | out);
+}
+
+
+void
+fstream::reopen(openmode mode)
+{
+	M_REQUIRE(is_open());
+	M_REQUIRE(	(mode & ~binary) == (mode & out)
+				|| (mode & ~binary) == (mode & (out | app))
+				|| (mode & ~binary) == (mode & (out | trunc))
+				|| (mode & ~binary) == (mode & in)
+				|| (mode & ~binary) == (mode & (in | out))
+				|| (mode & ~binary) == (mode & (in | out | app))
+				|| (mode & ~binary) == (mode & (in | out | trunc)));
+
+	char modestr[4];
+	::makeModeString(modestr, mode);
+	setmode(mode);
+	bits::file::reopen(modestr);
 }
 
 // vi:set ts=3 sw=3:

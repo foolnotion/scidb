@@ -27,6 +27,7 @@ SRC_CXX = \
 	u_path.cpp \
 	u_piped_progress.cpp \
 	u_progress.cpp \
+	u_rkiss.cpp \
 	u_zlib_ostream.cpp\
 	u_zstream.cpp \
 
@@ -301,6 +302,23 @@ u_progress.o: ../mstl/m_bit_functions.ipp
 u_progress.o: ../mstl/m_uint128_t.h
 u_progress.o: ../mstl/m_uint128.h
 u_progress.o: ../mstl/m_assert.h
+u_rkiss.o: u_rkiss.h
+u_rkiss.o: ../mstl/m_types.h
+u_rkiss.o: ../sys/sys_time.h
+u_rkiss.o: u_base.h
+u_rkiss.o: ../mstl/m_utility.h
+u_rkiss.o: ../mstl/m_type_traits.h
+u_rkiss.o: ../mstl/m_type_traits.ipp
+u_rkiss.o: ../mstl/m_utility.ipp
+u_rkiss.o: ../mstl/m_limits.h
+u_rkiss.o: ../mstl/m_bit_functions.h
+u_rkiss.o: ../mstl/m_bit_functions.ipp
+u_rkiss.o: ../mstl/m_uint128_t.h
+u_rkiss.o: ../mstl/m_uint128.h
+u_rkiss.o: ../mstl/m_assert.h
+u_rkiss.o: ../mstl/m_exception.h
+u_rkiss.o: ../mstl/m_backtrace.h
+u_rkiss.o: ../mstl/m_exception.ipp
 u_zlib_ostream.o: u_zlib_ostream.h
 u_zlib_ostream.o: ../mstl/m_ostream.h
 u_zlib_ostream.o: ../mstl/m_ios.h

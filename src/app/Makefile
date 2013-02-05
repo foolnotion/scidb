@@ -184,6 +184,7 @@ app_application.o: ../db/db_consumer.ipp
 app_application.o: ../db/db_database.ipp
 app_application.o: ../db/db_database_codec.h
 app_application.o: ../db/db_database_codec.ipp
+app_application.o: ../util/u_rkiss.h
 app_application.o: app_application.ipp
 app_application.o: app_multi_cursor.h
 app_application.o: app_multi_cursor.ipp
@@ -378,6 +379,7 @@ app_cursor.o: ../db/db_tree_cache.ipp
 app_cursor.o: ../db/db_database.ipp
 app_cursor.o: ../db/db_database_codec.h
 app_cursor.o: ../db/db_database_codec.ipp
+app_cursor.o: ../util/u_rkiss.h
 app_cursor.o: app_application.ipp
 app_cursor.o: ../db/db_exception.h
 app_cursor.o: ../util/u_exception.h
@@ -933,6 +935,7 @@ app_view.o: ../db/db_tree_cache.ipp
 app_view.o: ../db/db_database.ipp
 app_view.o: ../db/db_database_codec.h
 app_view.o: ../db/db_database_codec.ipp
+app_view.o: ../util/u_rkiss.h
 app_view.o: app_application.ipp
 app_view.o: ../db/db_game.h
 app_view.o: ../db/db_game_data.h

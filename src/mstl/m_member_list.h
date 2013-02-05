@@ -33,8 +33,8 @@ struct member_list< type_list<Head, Tail> >
 	typedef member_list<Tail> tail;
 	typedef type_list<Head, Tail> type_list_t;
 
-	template <typename T0, typename T1, typename T2>
-	member_list(T0 const& t0, T1 const& t1, T2 const& t2);
+	template <typename T0, typename T1, typename T2, typename T3>
+	member_list(T0 const& t0, T1 const& t1, T2 const& t2, T3 const& t3);
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	member_list(member_list const&) = default;
@@ -45,6 +45,8 @@ struct member_list< type_list<Head, Tail> >
 	member_list(member_list&& ml);
 	member_list& operator=(member_list&& ml);
 #endif
+
+	bool compare(member_list const& t) const;
 
 	head m_head;
 	tail m_tail;
@@ -57,8 +59,8 @@ struct member_list< type_list<Head, null_type> >
 	typedef Head head;
 	typedef type_list<Head, null_type> type_list_t;
 
-	template <typename T0, typename T1, typename T2>
-	member_list(T0 const& t0, T1 const&, T2 const&);
+	template <typename T0, typename T1, typename T2, typename T3>
+	member_list(T0 const& t0, T1 const& t1, T2 const& t2, T3 const& t3);
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	member_list(member_list const&) = default;
@@ -69,6 +71,8 @@ struct member_list< type_list<Head, null_type> >
 	member_list(member_list&& ml);
 	member_list& operator=(member_list&& ml);
 #endif
+
+	bool compare(member_list const& t) const;
 
 	head m_head;
 };

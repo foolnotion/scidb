@@ -1231,7 +1231,7 @@ proc OpenUri {w uriFiles} {
 	variable ${w}::Vars
 
 	set parent $w.content
-	set allowedExtensions {.sci .scv .si3 .si4 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip}
+	set allowedExtensions {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip}
 	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions open]
 
 	# take into account that the application is currently loading a database

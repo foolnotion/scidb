@@ -61,7 +61,7 @@ public:
 	struct Subscriber : public mstl::ref_counter
 	{
 		virtual ~Subscriber() throw();
-		virtual void close(unsigned view) = 0;
+		virtual void close(mstl::string const& name, ::db::variant::Type variant, unsigned view) = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;

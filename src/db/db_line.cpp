@@ -67,7 +67,7 @@ Line::print(mstl::string& result, variant::Type variant, encoding::CharSet charS
 		if ((i & 1) == 0)
 			result.format("%u.", mstl::div2(i) + 1);
 
-		board.prepareForPrint(m, variant);
+		board.prepareForPrint(m, variant, Board::ExternalRepresentation);
 		m.printSan(result, charSet);
 		board.doMove(m, variant);
 	}

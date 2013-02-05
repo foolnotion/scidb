@@ -35,9 +35,11 @@ class GameInfo;
 
 namespace sci { namespace v91  { class Codec; } }
 namespace sci { namespace v92  { class Codec; } }
+namespace sci { namespace v93  { class Codec; } }
 namespace sci { class Codec; }
 namespace si3 { class Codec; }
 namespace cbh { class Codec; }
+namespace cbf { class Codec; }
 
 class Signature
 {
@@ -86,9 +88,11 @@ public:
 
 	friend class sci::v91::Codec;
 	friend class sci::v92::Codec;
+	friend class sci::v93::Codec;
 	friend class sci::Codec;
 	friend class si3::Codec;
 	friend class cbh::Codec;
+	friend class cbf::Codec;
 
 protected:
 

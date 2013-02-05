@@ -193,6 +193,7 @@ public:
 	void updateFromTimeTable(TimeTable const& timeTable);
 
 	util::crc::checksum_t computeChecksum(EngineList const& engines, util::crc::checksum_t crc = 0) const;
+	util::crc::checksum_t computeChecksumOfMainline(util::crc::checksum_t crc = 0) const;
 	void collectLanguages(LanguageSet& langSet) const;
 
 	MoveNode* removeNext();

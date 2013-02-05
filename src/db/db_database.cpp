@@ -108,7 +108,6 @@ Database::Database(Database const& db, mstl::string const& name)
 	:DatabaseContent(db)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
-	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
@@ -116,10 +115,8 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
 {
-	if (m_memoryOnly)
-		m_codec->open(this, m_encoding);
-	else
-		m_codec->open(this, m_rootname, m_encoding);
+	m_rootname = file::rootname(name);
+	m_codec->open(this, m_encoding);
 }
 
 
@@ -127,7 +124,6 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	:DatabaseContent(encoding, type::Unspecific)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::Existing))
 	,m_name(name)
-	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
@@ -139,13 +135,14 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 
 	// NOTE: we assume normalized (unique) file names.
 
+	m_rootname = file::rootname(name);
 	m_type = type::Unspecific;
 	m_memoryOnly = false;
 	m_temporary = true;
 	m_created = sys::time::time();
 	m_readOnly = true;
 	m_writeable = false;
-	m_size = m_codec->openProgressive(this, m_rootname, encoding);
+	m_size = m_codec->openProgressive(this, encoding);
 	m_namebases.setModified(true);
 }
 
@@ -158,7 +155,6 @@ Database::Database(	mstl::string const& name,
 	:DatabaseContent(encoding, type)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
-	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
@@ -173,6 +169,7 @@ Database::Database(	mstl::string const& name,
 
 	// NOTE: we assume normalized (unique) file names.
 
+	m_rootname = file::rootname(name);
 	m_type = type;
 	m_memoryOnly = storage == storage::MemoryOnly;
 	m_temporary = false;
@@ -181,10 +178,11 @@ Database::Database(	mstl::string const& name,
 
 	switch (m_codec->format())
 	{
-		case format::Scidb:		m_variant = variant; break;
-		case format::Scid3:		// fallthru
-		case format::Scid4:		m_variant = variant::Normal; break;
-		case format::ChessBase:	m_variant = variant::Normal; break;
+		case format::Scidb:			m_variant = variant; break;
+		case format::Scid3:			// fallthru
+		case format::Scid4:			// fallthru
+		case format::ChessBase:		// fallthru
+		case format::ChessBaseDOS:	m_variant = variant::Normal; break;
 
 		default: M_ASSERT(!"unexpected format");
 	}
@@ -192,11 +190,7 @@ Database::Database(	mstl::string const& name,
 	if (!m_codec->isWriteable())
 		m_writeable = false;
 
-	if (m_memoryOnly)
-		m_codec->open(this, encoding);
-	else
-		m_codec->open(this, m_rootname, encoding);
-
+	m_codec->open(this, encoding);
 	m_size = m_gameInfoList.size();
 	m_namebases.setModified(true);
 }
@@ -209,7 +203,6 @@ Database::Database(	mstl::string const& name,
 	:DatabaseContent(encoding)
 	,m_codec(0)
 	,m_name(name)
-	,m_rootname(file::rootname(name))
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
@@ -224,6 +217,7 @@ Database::Database(	mstl::string const& name,
 
 	mstl::string ext = file::suffix(m_name);
 
+	m_rootname = file::rootname(name);
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 
@@ -238,7 +232,7 @@ Database::Database(	mstl::string const& name,
 	if (!m_codec->isWriteable())
 		m_writeable = false;
 
-	m_codec->open(this, m_rootname, m_encoding, progress);
+	m_codec->open(this, m_encoding, progress);
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
@@ -251,7 +245,6 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	:DatabaseContent(producer.encoding())
 	,m_codec(0)
 	,m_name(name)
-	,m_rootname(name)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
@@ -261,6 +254,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 {
 	// NOTE: we assume normalized (unique) file names.
 
+	m_rootname = name;
 	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec->isWriteable());
@@ -307,7 +301,7 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 	// NOTE: we assume normalized (unique) file names.
 
 	m_rootname = file::rootname(filename);
-	m_codec->attach(m_rootname, progress);
+	m_codec->attach(progress);
 	M_ASSERT(m_codec->isWriteable());
 	m_readOnly = false;
 	m_memoryOnly = false;
@@ -332,8 +326,8 @@ Database::save(util::Progress& progress)
 	if (!isMemoryOnly())
 	{
 		m_codec->reset();
-		m_codec->save(m_rootname, start, progress);
-		m_codec->updateHeader(m_rootname);
+		m_codec->save(start, progress);
+		m_codec->updateHeader();
 		setEncodingFailed(m_codec->encodingFailed());
 	}
 
@@ -428,7 +422,7 @@ Database::remove()
 		m_codec->close(); // we don't need sync()
 
 	if (!isMemoryOnly())
-		m_codec->removeAllFiles(m_rootname);
+		m_codec->removeAllFiles();
 
 	if (m_codec)
 	{
@@ -487,11 +481,7 @@ Database::clear()
 	m_lastChange = sys::time::timestamp();
 	m_codec->reset();
 	m_treeCache.clear();
-
-	if (m_memoryOnly)
-		m_codec->clear();
-	else
-		m_codec->clear(m_rootname);
+	m_codec->clear();
 }
 
 
@@ -517,7 +507,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec);
-	m_codec->open(this, m_rootname, m_encoding, progress);
+	m_codec->open(this, m_encoding, progress);
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -565,7 +555,7 @@ Database::loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::str
 
 	try
 	{
-		m_codec->decodeGame(game, *info, encoding);
+		m_codec->decodeGame(game, *info, index, encoding);
 	}
 	catch (DecodingFailedException const& exc)
 	{
@@ -637,8 +627,8 @@ Database::addGame(Game& game)
 	{
 		if (!m_memoryOnly)
 		{
-			m_codec->update(m_rootname, m_gameInfoList.size() - 1, true);
-			m_codec->updateHeader(m_rootname);
+			m_codec->update(m_gameInfoList.size() - 1, true);
+			m_codec->updateHeader();
 		}
 
 		m_size = m_gameInfoList.size();
@@ -685,14 +675,14 @@ Database::updateGame(Game& game)
 	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
-			m_codec->update(m_rootname, game.index(), true);
+			m_codec->update(game.index(), true);
 
 		if (format() == format::Scidb && offset != info.gameOffset())
 		{
 			m_shouldCompress = true;
 
 			if (!m_memoryOnly)
-				m_codec->updateHeader(m_rootname);
+				m_codec->updateHeader();
 		}
 
 		m_lastChange = sys::time::timestamp();
@@ -735,7 +725,7 @@ Database::updateMoves(Game& game)
 				m_shouldCompress = true;
 
 				if (!m_memoryOnly)
-					m_codec->updateHeader(m_rootname);
+					m_codec->updateHeader();
 			}
 
 			if (variant::isAntichessExceptLosers(m_variant))
@@ -747,7 +737,7 @@ Database::updateMoves(Game& game)
 					info.setIllegalMove(illegalMoves);
 
 					if (!m_memoryOnly)
-						m_codec->update(m_rootname, game.index(), false);
+						m_codec->update(game.index(), false);
 				}
 			}
 			else
@@ -762,7 +752,7 @@ Database::updateMoves(Game& game)
 					info.setIllegalMove(illegalMoves);
 
 					if (!m_memoryOnly)
-						m_codec->update(m_rootname, game.index(), false);
+						m_codec->update(game.index(), false);
 				}
 			}
 		}
@@ -792,7 +782,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
-			m_codec->update(m_rootname, index, true);
+			m_codec->update(index, true);
 
 		m_gameInfoList[index]->setDirty(false);
 		m_lastChange = sys::time::timestamp();
@@ -915,7 +905,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 
 	try
 	{
-		rc = m_codec->exportGame(consumer, tags, *info);
+		rc = m_codec->exportGame(consumer, tags, *info, index);
 	}
 	catch (DecodingFailedException const& exc)
 	{
@@ -924,7 +914,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 
 #ifdef DEBUG_SI4
 //	if (	info->idn() == 518
-//		&& m_codec->format() != format::ChessBase
+//		&& !format::isChessBase(m_codec->format())
 //		&& (format::isScidFormat/consumer.sourceFormat()))
 //	{
 //		Eco opening;
@@ -1181,8 +1171,8 @@ Database::importGame(Producer& producer, unsigned index)
 
 		if (!isMemoryOnly())
 		{
-			m_codec->update(m_rootname, index, true);
-			m_codec->updateHeader(m_rootname);
+			m_codec->update(index, true);
+			m_codec->updateHeader();
 			m_size = m_gameInfoList.size();
 		}
 
@@ -1276,8 +1266,8 @@ Database::recode(mstl::string const& encoding, util::Progress& progress)
 	m_encodingFailed = false;
 
 	m_codec->setEncoding(m_encoding = encoding);
-	m_codec->reloadDescription(m_rootname);
-	m_codec->reloadNamebases(m_rootname, progress);
+	m_codec->reloadDescription();
+	m_codec->reloadNamebases(progress);
 
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -1326,7 +1316,7 @@ Database::deleteGame(unsigned index, bool flag)
 		++m_statistic.deleted;
 
 	if (!m_memoryOnly)
-		m_codec->update(m_rootname, index, false);
+		m_codec->update(index, false);
 
 	m_lastChange = sys::time::timestamp();
 }
@@ -1343,7 +1333,7 @@ Database::setGameFlags(unsigned index, unsigned flags)
 	gameInfo(index).setFlags(flags);
 
 	if (!m_memoryOnly)
-		m_codec->update(m_rootname, index, false);
+		m_codec->update(index, false);
 }
 
 
@@ -1359,7 +1349,7 @@ Database::setType(Type type)
 		m_type = type;
 
 		if (!m_memoryOnly)
-			m_codec->updateHeader(m_rootname);
+			m_codec->updateHeader();
 	}
 }
 
@@ -1379,7 +1369,7 @@ Database::setDescription(mstl::string const& description)
 			m_description.set_size(m_codec->maxDescriptionLength());
 
 		if (!m_memoryOnly)
-			m_codec->updateHeader(m_rootname);
+			m_codec->updateHeader();
 	}
 }
 
@@ -1398,7 +1388,7 @@ Database::setVariant(variant::Type variant)
 		m_variant = variant;
 
 		if (!m_memoryOnly)
-			m_codec->updateHeader(m_rootname);
+			m_codec->updateHeader();
 	}
 }
 
@@ -1643,7 +1633,7 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 			m_shouldCompress = true;
 
 			if (!isMemoryOnly())
-				m_codec->updateHeader(m_rootname);
+				m_codec->updateHeader();
 		}
 
 		m_codec->sync();
@@ -1689,7 +1679,7 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 			m_shouldCompress = true;
 
 			if (!isMemoryOnly())
-				m_codec->updateHeader(m_rootname);
+				m_codec->updateHeader();
 		}
 
 		m_codec->sync();
@@ -1726,6 +1716,25 @@ Database::findTags(Filter const& filter, TagMap& tags, util::Progress& progress)
 		}
 
 		m_codec->findTags(*m_gameInfoList[index], tags);
+	}
+}
+
+
+void
+Database::setReadonly(bool flag)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(flag || isWriteable());
+
+	if (flag != m_readOnly)
+	{
+		if (!m_readOnly)
+			m_codec->sync();
+
+		m_readOnly = flag;
+
+		if (!m_readOnly)
+			m_codec->setWriteable();
 	}
 }
 

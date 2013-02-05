@@ -54,6 +54,9 @@ inline void Application::setSwitchReferenceBase(bool flag)			{ m_switchReference
 inline void Application::setReferenceBase(Cursor* cursor)			{ setReferenceBase(cursor, true); }
 inline void Application::freezeTree(bool flag)							{ m_treeIsFrozen = flag; }
 
+inline uint32_t Application::rand32() const				{ return m_rand.rand32(); }
+inline uint32_t Application::rand32(uint32_t n) const	{ return m_rand.rand32(n); }
+
 
 inline
 Cursor&

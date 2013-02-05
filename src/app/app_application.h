@@ -31,6 +31,7 @@
 #include "db_tree.h"
 
 #include "u_crc.h"
+#include "u_rkiss.h"
 
 #include "m_map.h"
 #include "m_vector.h"
@@ -116,8 +117,10 @@ public:
 												db::variant::Type variant,
 												unsigned index) = 0;
 		virtual void updateGameInfo(unsigned position) = 0;
+		virtual void updateGameData(unsigned position, bool evenMainline) = 0;
 
 		virtual void gameSwitched(unsigned position) = 0;
+		virtual void databaseSwitched(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void updateTree(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void closeDatabase(mstl::string const& name, db::variant::Type variant) = 0;
 	};
@@ -196,6 +199,14 @@ public:
 	Cursor const& cursor(mstl::string const& name) const;
 	Cursor const& cursor(mstl::string const& name, db::variant::Type variant) const;
 	Cursor const& cursor(unsigned databaseId) const;
+	Cursor const& getGameCursor(unsigned position) const;
+
+	int getViewId(unsigned position = InvalidPosition) const;
+	int getNextGameIndex(unsigned position = InvalidPosition) const;
+	int getPrevGameIndex(unsigned position = InvalidPosition) const;
+	int getFirstGameIndex(unsigned position = InvalidPosition) const;
+	int getLastGameIndex(unsigned position = InvalidPosition) const;
+	int getRandomGameIndex(unsigned position = InvalidPosition) const;
 
 	MultiCursor& multiCursor(mstl::string const& name);
 	db::MultiBase& multiBase(mstl::string const& name);
@@ -208,6 +219,7 @@ public:
 	db::NamebasePlayer const& player(unsigned index, unsigned view = 0) const;
 	Subscriber* subscriber() const;
 	unsigned gameIndex(unsigned position = InvalidPosition) const;
+	unsigned gameNumber(unsigned position = InvalidPosition) const;
 	unsigned sourceIndex(unsigned position = InvalidPosition) const;
 	db::Database const& database(unsigned position = InvalidPosition) const;
 	mstl::string const& databaseName(unsigned position = InvalidPosition) const;
@@ -255,6 +267,7 @@ public:
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
+	void bindGameToView(unsigned position, int viewId, Update updateMode = UpdateGameInfo);
 	void save(mstl::string const& name, util::Progress& progress);
 	void startUpdateTree(Cursor& cursor);
 	unsigned stripMoveInformation(View& view,
@@ -263,6 +276,7 @@ public:
 											Update updateMode);
 	unsigned stripTags(View& view, TagMap const& tags, util::Progress& progress, Update updateMode);
 	void findTags(View const& view, TagMap& tags, util::Progress& progress) const;
+	void viewClosed(Cursor const& cursor, unsigned viewId);
 
 	unsigned addEngine(Engine* engine);
 	void removeEngine(unsigned id);
@@ -323,6 +337,9 @@ public:
 
 	void setSubscriber(SubscriberP subscriber);
 
+	uint32_t rand32() const;
+	uint32_t rand32(uint32_t n) const;
+
 	bool initialize(mstl::string const& ecoPath);
 
 	static mstl::string const& clipbaseName();
@@ -337,10 +354,12 @@ private:
 
 		Cursor*			cursor;
 		unsigned			index;
+		int				viewId;
 		db::Game*		game;
 		db::Game*		backup;
 		checksum_t		crcIndex;
 		checksum_t		crcMoves;
+		checksum_t		crcMainline;
 		unsigned			refresh;
 		mstl::string	sourceBase;
 		unsigned			sourceIndex;
@@ -406,6 +425,8 @@ private:
 	mstl::ostream*	m_engineLog;
 	bool				m_isClosed;
 	bool				m_treeIsFrozen;
+
+	mutable util::RKiss m_rand;
 
 	mutable SubscriberP m_subscriber;
 

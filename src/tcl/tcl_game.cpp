@@ -56,6 +56,7 @@
 
 #include "m_sstream.h"
 #include "m_vector.h"
+#include "m_bitset.h"
 
 #include <tcl.h>
 
@@ -118,6 +119,7 @@ static char const* CmdUndoSetup		= "::scidb::game::undoSetup";
 static char const* CmdUnsubscribe	= "::scidb::game::unsubscribe";
 static char const* CmdUpdate			= "::scidb::game::update";
 static char const* CmdVariation		= "::scidb::game::variation";
+static char const* CmdView				= "::scidb::game::view";
 
 
 static char const*
@@ -218,6 +220,37 @@ tcl::game::variantFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 		return variantFromObj(objv[index]);
 
 	return variant::Undetermined;
+}
+
+
+Tcl_Obj*
+tcl::game::objFromVariant(::db::variant::Type variant)
+{
+	static mstl::vector<Tcl_Obj*> m_variants;
+
+	if (size_t(variant) >= m_variants.size() || m_variants[variant] == 0)
+	{
+		char const* s;
+
+		switch (variant)
+		{
+			case ::db::variant::Normal:			s = "Normal"; break;
+			case ::db::variant::Bughouse:			s = "Bughouse"; break;
+			case ::db::variant::Crazyhouse:		s = "Crazyhouse"; break;
+			case ::db::variant::ThreeCheck:		s = "ThreeCheck"; break;
+			case ::db::variant::Suicide:			s = "Suicide"; break;
+			case ::db::variant::Giveaway:			s = "Giveaway"; break;
+			case ::db::variant::Losers:			s = "Losers"; break;
+			case ::db::variant::Antichess:		s = "Antichess"; break;
+			case ::db::variant::Undetermined:	s = "Undetermined"; break;
+		}
+
+		m_variants.resize(variant + 1, 0);
+		m_variants[variant] = Tcl_NewStringObj(s, -1);
+		Tcl_IncrRefCount(m_variants[variant]);
+	}
+
+	return m_variants[variant];
 }
 
 
@@ -830,8 +863,8 @@ struct Subscriber : public Game::Subscriber
 {
 	typedef mstl::vector<Tcl_Obj*> CmdList;
 
-	CmdList		m_board;
-	CmdList		m_tree;
+	CmdList	m_board;
+	CmdList	m_tree;
 	Tcl_Obj*	m_pgn;
 	Tcl_Obj*	m_state;
 	Tcl_Obj*	m_position;
@@ -1269,6 +1302,23 @@ cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	int view = -1;
+
+	while (objc > 2 && *Tcl_GetString(objv[objc - 2]) == '-')
+	{
+		char const* option = Tcl_GetString(objv[objc - 2]);
+
+		if (::strcmp(option, "-view") == 0)
+		{
+			view = intFromObj(objc, objv, objc - 1);
+			objc -= 2;
+		}
+		else
+		{
+			return error(::CmdSubscribe, nullptr, nullptr, "unexpected option '%s'", option);
+		}
+	}
+
 	unsigned			position	= unsignedFromObj(objc, objv, 1);
 	char const*		database	= stringFromObj(objc, objv, 2);
 	variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 3);
@@ -1285,6 +1335,10 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	setResult(::stateToInt(scidb->loadGame(position, scidb->cursor(database, variant), number, pfen)));
+
+	if (view >= 0)
+		scidb->bindGameToView(position, view, Application::DontUpdateGameInfo);
+
 	return TCL_OK;
 }
 
@@ -2668,7 +2722,7 @@ cmdTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdNumber(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb->gameIndex(objc > 1 ? intFromObj(objc, objv, 1) : -1) + 1);
+	setResult(Scidb->gameNumber(objc > 1 ? intFromObj(objc, objv, 1) : -1));
 	return TCL_OK;
 }
 
@@ -3177,6 +3231,39 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	static char const* subcommands[] = { "id", "next", "prev", "first", "last", "random", 0 };
+	enum { Cmd_Id, Cmd_Next, Cmd_Prev, Cmd_First, Cmd_Last, Cmd_Random };
+
+	if (objc != 3)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<position> action>");
+		return TCL_ERROR;
+	}
+
+	unsigned		position	= unsignedFromObj(objc, objv, 1);
+	int			index		= -1;
+
+	switch (tcl::uniqueMatchObj(objv[2], subcommands))
+	{
+		case Cmd_Id:		index = Scidb->getViewId(position); break;
+		case Cmd_Next:		index = Scidb->getNextGameIndex(position); break;
+		case Cmd_Prev:		index = Scidb->getPrevGameIndex(position); break;
+		case Cmd_First:	index = Scidb->getFirstGameIndex(position); break;
+		case Cmd_Last:		index = Scidb->getLastGameIndex(position); break;
+		case Cmd_Random:	index = Scidb->getRandomGameIndex(position); break;
+
+		default:
+			return error(CmdView, nullptr, nullptr, "unexpected command '%s'", Tcl_GetString(objv[2]));
+	}
+
+	setResult(index);
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace game {
 
@@ -3224,6 +3311,8 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSink_,			cmdSink_);
 	createCommand(ti, CmdStrip,			cmdStrip);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);
+	createCommand(ti, CmdSwap,				cmdSwap);
+	createCommand(ti, CmdSwitch,			cmdSwitch);
 	createCommand(ti, CmdTags,				cmdTags);
 	createCommand(ti, CmdTranspose,		cmdTranspose);
 	createCommand(ti, CmdTrial,			cmdTrial);
@@ -3231,8 +3320,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 	createCommand(ti, CmdUpdate,			cmdUpdate);
 	createCommand(ti, CmdVariation,		cmdVariation);
-	createCommand(ti, CmdSwap,				cmdSwap);
-	createCommand(ti, CmdSwitch,			cmdSwitch);
+	createCommand(ti, CmdView,				cmdView);
 }
 
 } // namespace game

@@ -323,7 +323,6 @@ private:
 
 	DatabaseCodec*	m_codec;
 	mstl::string	m_name;
-	mstl::string	m_rootname;
 	unsigned			m_id;
 	unsigned			m_size;
 	uint64_t			m_lastChange;

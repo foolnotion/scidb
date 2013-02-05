@@ -102,6 +102,16 @@ Eco::setup(char const* s)
 
 
 void
+Eco::setup(char letter, uint16_t number)
+{
+	M_REQUIRE('A' <= letter && letter <= 'E');
+	M_REQUIRE(number <= 99);
+
+	m_code = (100*(letter - 'A') + number) << Sub_Code_Bits;
+}
+
+
+void
 Eco::convert(char* buf, bool shortForm) const
 {
 	M_REQUIRE(buf);	// require: #buf >= 9

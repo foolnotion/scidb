@@ -51,6 +51,19 @@ proc error {args}		{ Print Error 1 {*}$args }
 proc info {args}		{ Print Information 0 {*}$args }
 
 
+proc newline {} {
+	variable Log
+
+	if {[winfo exists $Log]} {
+		set t $Log.top.text
+		$t configure -state normal
+		$t insert end \n
+		$t configure -state disabled
+		$t yview moveto 1.0
+	}
+}
+
+
 proc open {callee {show 1}} {
 	variable Priv
 	variable Log

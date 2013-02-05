@@ -97,6 +97,8 @@ namespace sq
 	Rank pawnRank(db::color::ID color);
 
 	bool isValid(char const* s);
+	bool isValidFyle(Byte fyle);
+	bool isValidRank(Byte rank);
 	bool isAdjacent(ID a, ID b);
 
 	char printFyle(Square square);
@@ -495,6 +497,8 @@ namespace tag
 	ID fromName(mstl::string const& tag);
 	ID fromName(char const* name, unsigned length);
 
+	ID mapAlphabetic(ID tag);
+
 	void initialize();		// only a hack for corrupted systems like Debian Wheezy
 	bool initializeIsOk();	// only a hack for g++-4.7
 
@@ -855,6 +859,7 @@ namespace piece
 
 	bool isWhite(ID piece);
 	bool isBlack(ID piece);
+	bool longStepPiece(ID piece);
 	bool canPromoteTo(Type type, variant::Type variant);
 
 	Type type(ID piece);
@@ -945,17 +950,19 @@ namespace format
 {
 	enum Type
 	{
-		Scidb			= 1 << 0,
-		Scid3			= 1 << 1,
-		Scid4			= 1 << 2,
-		ChessBase	= 1 << 3,
-		Pgn			= 1 << 4,
-		LaTeX			= 1 << 5,
+		Scidb				= 1 << 0,
+		Scid3				= 1 << 1,
+		Scid4				= 1 << 2,
+		ChessBase		= 1 << 3,
+		ChessBaseDOS	= 1 << 4,
+		Pgn				= 1 << 5,
+		LaTeX				= 1 << 6,
 
-		Invalid		= LaTeX, // makes sense if used for input format
+		Invalid			= LaTeX, // makes sense if used for input format
 	};
 
 	bool isScidFormat(Type type);
+	bool isChessBaseFormat(Type type);
 }
 
 namespace encoding

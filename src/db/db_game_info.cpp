@@ -969,7 +969,7 @@ GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 
 #ifdef GAME_INFO_PLYCOUNT
 	// IMPORTANT NOTE:
-	// The ply count may be slightly incorrect if the source is .cbh!
+	// The ply count may be slightly incorrect if the source is .cbh or .cbf!
 	// The tag value will be corrected afterwards (after loading).
 	tags.set(tag::PlyCount, m_plyCount);
 #endif

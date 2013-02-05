@@ -549,6 +549,14 @@ Codec::setEncoding(mstl::string const& encoding)
 
 
 void
+Codec::setWriteable()
+{
+	if (!m_gameStream.is_writable())
+		m_gameStream.reopen(mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);
+}
+
+
+void
 Codec::filterTags(TagSet& tags, Section section) const
 {
 	tag::TagSet infoTags = Encoder::infoTags();
@@ -769,7 +777,7 @@ Codec::getConsumer(format::Type srcFormat)
 
 
 save::State
-Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info)
+Codec::doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);
@@ -787,7 +795,7 @@ Codec::doDecoding(db::Consumer& consumer, ByteStream& strm, TagSet& tags)
 
 
 void
-Codec::doDecoding(GameData& data, GameInfo& info, mstl::string*)
+Codec::doDecoding(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string*)
 {
 	ByteStream strm;
 	getGameRecord(info, m_gameData->reader(), strm);

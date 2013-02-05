@@ -93,6 +93,7 @@ set FileIcons [list                           \
 	.si3		$::icon::16x16::filetypeScid3Base \
 	.scv 		$::icon::16x16::filetypeArchive   \
 	.cbh		$::icon::16x16::filetypeChessBase \
+	.cbf		$::icon::16x16::filetypeChessBase \
 	.pgn		$::icon::16x16::filetypePGN       \
 	.pgn.gz	$::icon::16x16::filetypePGN       \
 	.bpgn		$::icon::16x16::filetypeBPGN      \
@@ -111,6 +112,7 @@ set FileEncodings [list                    \
 	.si3 		1 utf-8                        \
 	.scv 		0 utf-8                        \
 	.cbh 		1 $::encoding::windowsEncoding \
+	.cbf 		1 $::encoding::dosEncoding     \
 	.pgn 		1 $::encoding::defaultEncoding \
 	.bpgn 	1 $::encoding::defaultEncoding \
 	.pgn.gz  1 $::encoding::defaultEncoding \
@@ -127,6 +129,7 @@ array set FileType [list             \
 	.si3		ScidDatabase             \
 	.scv 		ScidbArchive             \
 	.cbh		ChessBaseDatabase        \
+	.cbf		ChessBaseDatabase        \
 	.pgn		PortableGameFile         \
 	.pgn.gz	PortableGameFile         \
 	.bpgn		BughousePortableGameFile \
@@ -222,7 +225,7 @@ proc dragCursors {{ext ""}} {
 	if {![info exists DragCursor]} {
 		set DragCursor {}
 
-		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} db
+		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip} db
 											{.pdf .html .htm .tex .ltx .bin .txt} document
 											{.ppm .png .gif .jpg .jpeg} image } {
 			if {[tk windowingsystem] eq "x11"} {
@@ -644,7 +647,7 @@ proc IsUsed {file} {
 			# no action
 		}
 
-		.sci - .si3 - .si4 - .cbh {
+		.sci - .si3 - .si4 - .cbh - .cbf {
 			if {[::scidb::db::get open? [file normalize $file]]} { return yes }
 		}
 	}
@@ -662,7 +665,7 @@ proc MapExtension {extension} {
 	set result [::scidb::misc::mapExtension $extension]
 	if {[string length $result]} { set result ".$result" }
 	if {$result ne $extension} { return $result }
-	if {$result in {.sci .scv .si3 .si4 .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip}} { return $result }
+	if {$result in {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip}} { return $result }
 	return ""
 }
 
@@ -687,7 +690,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
 				tk::label $f.lname -text "$::fsbox::mc::Name:"
 				tk::label $f.tname -text [file tail $filename]
-				tk::label $f.ltype -text "$::application::database::mc::Type:"
+				tk::label $f.ltype -text "$::database::switcher::mc::Type:"
 				tk::label $f.ttype -text $fileType
 				if {$type eq "link"} {
 					tk::label $f.ltarget -text "$mc::LinkTarget:"
@@ -706,10 +709,11 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				set size [::locale::formatFileSize $stat(size)]
 				set fileType [set mc::$FileType($ext)]
 				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
+				if {$ext eq ".cbf"} { append fileType " (DOS)" }
 
 				tk::label $f.lname -text "$::fsbox::mc::Name:"
 				tk::label $f.tname -text [file tail $filename]
-				tk::label $f.ltype -text "$::application::database::mc::Type:"
+				tk::label $f.ltype -text "$::database::switcher::mc::Type:"
 				tk::label $f.ttype -text $fileType
 				if {$type eq "link"} {
 					tk::label $f.ltarget -text "$mc::LinkTarget:"
@@ -717,11 +721,11 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				}
 				tk::label $f.lsize -text "$::fsbox::mc::Size:"
 				tk::label $f.tsize -text $size
-				tk::label $f.lcreated -text "$::application::database::mc::Created:"
+				tk::label $f.lcreated -text "$::database::switcher::mc::Created:"
 				tk::label $f.tcreated -text $ctime
 
 				switch $ext {
-					.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
+					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 						lassign [::scidb::misc::attributes $filename] numGames type created descr
 						if {[string length $descr] == 0} { set descr "\u2014" }
 #						set type [set ::application::database::mc::T_$type]
@@ -742,7 +746,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 						}
 						tk::label $f.lused -text "$mc::Open:"
 						tk::label $f.tused -text $open
-						tk::label $f.ldescr -text "$::application::database::mc::Description:"
+						tk::label $f.ldescr -text "$::database::switcher::mc::Description:"
 						tk::label $f.tdescr -text $descr -wraplength 200 -justify left
 					}
 					.scv {
@@ -760,7 +764,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 								lassign $pair attr value
 								if {$attr eq "FileName"} {
 									switch [file extension $value] {
-										.sci - .si3 - .si4 - .cbh - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
+										.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 											if {[string length $bases] > 0} { append bases \n }
 											set file [file tail $value]
 											append bases $file

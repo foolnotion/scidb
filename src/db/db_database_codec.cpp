@@ -36,6 +36,7 @@
 #include "sci_codec.h"
 #include "si3_codec.h"
 #include "cbh_codec.h"
+#include "cbf_codec.h"
 
 #include "u_byte_stream.h"
 #include "u_block_file.h"
@@ -315,7 +316,7 @@ bool DatabaseCodec::upgradeIndexOnly() { return sci::Codec::upgradeIndexOnly(); 
 bool
 DatabaseCodec::hasCodecFor(mstl::string const& suffix)
 {
-	return suffix == "sci" || suffix == "si3" || suffix == "si4" || suffix == "cbh";
+	return suffix == "sci" || suffix == "si3" || suffix == "si4" || suffix == "cbh" || suffix == "cbf";
 }
 
 
@@ -337,6 +338,9 @@ DatabaseCodec::makeCodec(mstl::string const& name, Mode mode)
 
 	if (ext == "cbh")
 		return new cbh::Codec;
+
+	if (ext == "cbf")
+		return new cbf::Codec;
 
 	if (ext == "sci" && mode == Existing)
 		return sci::Codec::makeCodec(name);
@@ -367,6 +371,9 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 	if (ext == "cbh")
 		return cbh::Codec::getAttributes(filename, numGames, type, description);
 
+	if (ext == "cbf")
+		return cbf::Codec::getAttributes(filename, numGames, type, description);
+
 	if (ext == "si3" || ext == "si4")
 		return si3::Codec::getAttributes(filename, numGames, type, description);
 
@@ -388,6 +395,8 @@ DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 		sci::Codec::getSuffixes(filename, result);
 	else if (ext == "cbh")
 		cbh::Codec::getSuffixes(filename, result);
+	else if (ext == "cbf")
+		cbf::Codec::getSuffixes(filename, result);
 	else if (ext == "si3" || ext == "si4")
 		si3::Codec::getSuffixes(filename, result);
 	else
@@ -572,6 +581,21 @@ DatabaseCodec::findTags(GameInfo const&, TagMap&) const
 
 
 void
+DatabaseCodec::setWriteable()
+{
+	M_RAISE("should not be used");
+}
+
+
+Move
+DatabaseCodec::findExactPositionAsync(GameInfo const&, Board const&, bool)
+{
+	M_RAISE("should not be used");
+	return Move();
+}
+
+
+void
 DatabaseCodec::checkPermissions(mstl::string const& filename)
 {
 	M_ASSERT(isOpen());
@@ -678,10 +702,10 @@ DatabaseCodec::rename(mstl::string const& oldName, mstl::string const& newName)
 
 
 Time
-DatabaseCodec::modified(mstl::string const& rootname) const
+DatabaseCodec::modified() const
 {
 	uint32_t time;
-	sys::file::changed(rootname + "." + extension(), time);
+	sys::file::changed(m_db->m_rootname + "." + extension(), time);
 	return Time(time);
 }
 
@@ -699,30 +723,21 @@ DatabaseCodec::open(DatabaseContent* db, mstl::string const& encoding)
 	M_REQUIRE(db);
 
 	m_db = db;
-	doOpen(encoding);
+
+	if (m_db->m_memoryOnly)
+		doOpen(encoding);
+	else
+		doOpen(m_db->m_rootname, encoding);
 }
 
 
 void
-DatabaseCodec::open(DatabaseContent* db, mstl::string const& rootname, mstl::string const& encoding)
+DatabaseCodec::open(DatabaseContent* db, mstl::string const& encoding, util::Progress& progress)
 {
 	M_REQUIRE(db);
 
 	m_db = db;
-	doOpen(rootname, encoding);
-}
-
-
-void
-DatabaseCodec::open(	DatabaseContent* db,
-							mstl::string const& rootname,
-							mstl::string const& encoding,
-							util::Progress& progress)
-{
-	M_REQUIRE(db);
-
-	m_db = db;
-	doOpen(rootname, encoding, progress);
+	doOpen(m_db->m_rootname, encoding, progress);
 }
 
 
@@ -741,30 +756,28 @@ DatabaseCodec::open(	DatabaseContent* db,
 
 
 unsigned
-DatabaseCodec::openProgressive(	DatabaseContent* db,
-											mstl::string const& rootname,
-											mstl::string const& encoding)
+DatabaseCodec::openProgressive(DatabaseContent* db, mstl::string const& encoding)
 {
 	M_REQUIRE(db);
 
 	m_db = db;
-	return doOpenProgressive(rootname, encoding);
+	return doOpenProgressive(m_db->m_rootname, encoding);
 }
 
 
 void
-DatabaseCodec::clear(mstl::string const& rootname)
+DatabaseCodec::clear()
 {
 	M_REQUIRE(isOpen());
 
-	if (rootname.empty())
+	if (m_db->m_memoryOnly)
 	{
 		close();
 		doOpen(encoding());
 	}
 	else
 	{
-		doClear(rootname);
+		doClear(m_db->m_rootname);
 	}
 }
 
@@ -814,10 +827,10 @@ DatabaseCodec::sync()
 
 
 void
-DatabaseCodec::decodeGame(GameData& data, GameInfo& info, mstl::string* encoding)
+DatabaseCodec::decodeGame(GameData& data, GameInfo& info, unsigned gameIndex, mstl::string* encoding)
 {
 	M_REQUIRE(isOpen());
-	doDecoding(data, info, encoding);
+	doDecoding(data, info, gameIndex, encoding);
 }
 
 
@@ -829,7 +842,7 @@ DatabaseCodec::encodeGame(	util::ByteStream& strm,
 									bool allowExtraTags)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(format() != format::ChessBase);
+	M_REQUIRE(!format::isChessBaseFormat(format()));
 
 	doEncoding(strm, data, signature, allowedTags, allowExtraTags);
 }
@@ -843,9 +856,9 @@ DatabaseCodec::exportGame(Consumer& consumer, ByteStream& strm, TagSet& tags)
 
 
 save::State
-DatabaseCodec::exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info)
+DatabaseCodec::exportGame(Consumer& consumer, TagSet& tags, GameInfo const& info, unsigned gameIndex)
 {
-	return doDecoding(consumer, tags, info);
+	return doDecoding(consumer, tags, info, gameIndex);
 }
 
 
@@ -932,6 +945,7 @@ DatabaseCodec::saveMoves(util::ByteStream const& gameData, Provider const& provi
 	}
 
 	info->setup(gameOffset, gameData.size());
+	update(m_db->m_rootname, provider.index(), false);
 	sync();
 
 	return save::Ok;

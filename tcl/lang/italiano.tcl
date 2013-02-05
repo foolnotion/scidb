@@ -383,16 +383,21 @@
 ::application::board::mc::StopEngine					"Ferma il motore di analisi"
 ::application::board::mc::InsertNullMove				"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
+::application::board::mc::LoadRandomGame				"Load random game" ;# NEW
 
 ::application::board::mc::Tools							"Strumenti"
 ::application::board::mc::Control						"Controllo"
 ::application::board::mc::Game							"Partita"
 ::application::board::mc::GoIntoNextVar				"Vai alla prossima variante"
 ::application::board::mc::GoIntPrevVar					"Vai alla precedente variante"
+
 ::application::board::mc::LoadGame(next)				"Carica la prossima partita"
 ::application::board::mc::LoadGame(prev)				"Carica la partita precedente"
 ::application::board::mc::LoadGame(first)				"Carica la prima partita"
 ::application::board::mc::LoadGame(last)				"Carica l'ultima partita"
+
+::application::board::mc::SwitchView(base)			"Switch to database view" ;# NEW
+::application::board::mc::SwitchView(list)			"Switch to game list view" ;# NEW
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -473,6 +478,7 @@
 ::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::CompactionRecommended			"It is recommended to compact the database." ;# NEW
 ::application::database::mc::SearchPGNTags					"Searching for PGN tags" ;# NEW
+::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:" ;# NEW
 
 ::application::database::mc::T_Unspecific						"Non specificato"
 ::application::database::mc::T_Temporary						"Temporaneo"
@@ -1340,7 +1346,8 @@
 ::browser::mc::GotoGame(next)		"Vai alla prossima partita"
 ::browser::mc::GotoGame(prev)		"Vai alla partita precedente"
 
-::browser::mc::LoadGame				"Carica partita"
+::browser::mc::LoadGame				"Carica partita into editor" ;# NEW
+::browser::mc::ReloadGame			"Reload game" ;# NEW
 ::browser::mc::MergeGame			"Unisci partita"
 
 ::browser::mc::IllegalMove			"Mossa illegale"
@@ -1640,6 +1647,7 @@
 ::export::mc::Option(pgn,include_marks)							"Esporta codici (come commenti)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Usa formato importazione Scidb" ;# [chessbase?]
 ::export::mc::Option(pgn,use_chessbase_format)					"Usa formato ChessBase"
+::export::mc::Option(pgn,use_strict_pgn_standard				"Use PGN standard" ;# NEW
 ::export::mc::Option(pgn,include_ply_count_tag)					"Scrivi tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Scrivi tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Scrivi tag 'Mode'"
@@ -1658,6 +1666,7 @@
 ::export::mc::Option(pgn,space_after_move_number)				"Aggiungi spazio dopo numero mossa"
 ::export::mc::Option(pgn,shredder_fen)								"Scrivi in Shredder-FEN (default è X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Scrivi commento per risultato '0-0'"
+::export::mc::Option(pgn,write_any_rating_as_elo)				"Write any rating as ELO" ;# NEW
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Aggiungi modalità dopo il tipo dell'evento"
 ::export::mc::Option(pgn,comment_to_html)							"Scrivi commento in stile HTML"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Escludi partite con mosse illegali"
@@ -2689,6 +2698,7 @@
 ::encoding::mc::Lang(hu)	"Ungherese"
 ::encoding::mc::Lang(hy)	"Armeno"
 ::encoding::mc::Lang(ia)	"Interlingua"
+::encoding::mc::Lang(id)	"Indonesian" ;# NEW
 ::encoding::mc::Lang(is)	"Islandese"
 ::encoding::mc::Lang(it)	"Italiano"
 ::encoding::mc::Lang(iu)	"Inuktitut"

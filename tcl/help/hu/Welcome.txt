@@ -38,7 +38,7 @@ Ez egy előzetes verzió tesztelés és ismerkedés céljaira. Az első teljes v
 -->
 
   <li class="space">
-    Az aktuális Scidb formátum (.sci) legkésőbb az első teljes verzió megjelenésekor véglesedik (Ami az 1.0-ás verzió lesz. A jelenlegi verziószám 0.93). Mindazonáltal a jelenlegi formátum már teljes értékű és a későbbi változatások csupán új funkciók hozzáadására korlátozódnak.
+    Az aktuális Scidb formátum (.sci) legkésőbb az első teljes verzió megjelenésekor véglesedik (Ami az 1.0-ás verzió lesz. A jelenlegi verziószám 0.94). Mindazonáltal a jelenlegi formátum már teljes értékű és a későbbi változatások csupán új funkciók hozzáadására korlátozódnak.
   </li>
 
   <li class="space">

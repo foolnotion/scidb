@@ -349,7 +349,7 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 
 }
 
-set Extensions		{.sci .si4 .si3 .cbh .pgn .zip}
+set Extensions		{.sci .si4 .si3 .cbh .cbf .pgn .zip}
 set clipbaseName	Clipbase
 
 switch [tk windowingsystem] {

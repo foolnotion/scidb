@@ -383,16 +383,21 @@
 ::application::board::mc::StopEngine					"Stoppa analysmotor"
 ::application::board::mc::InsertNullMove				"Insert null move" ;# NEW
 ::application::board::mc::SelectStartPosition		"Select Start Position" ;# NEW
+::application::board::mc::LoadRandomGame				"Load random game" ;# NEW
 
 ::application::board::mc::Tools							"Verktyg"
 ::application::board::mc::Control						"Kontroll"
 ::application::board::mc::Game							"Parti"
 ::application::board::mc::GoIntoNextVar				"Gå in i nästa variant"
 ::application::board::mc::GoIntPrevVar					"Gå in i föregående variant"
+
 ::application::board::mc::LoadGame(next)				"Ladda nästa parti"
 ::application::board::mc::LoadGame(prev)				"Ladda föregående parti"
 ::application::board::mc::LoadGame(first)				"Ladda första parti"
 ::application::board::mc::LoadGame(last)				"Ladda sista parti"
+
+::application::board::mc::SwitchView(base)			"Switch to database view" ;# NEW
+::application::board::mc::SwitchView(list)			"Switch to game list view" ;# NEW
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"C"
@@ -473,6 +478,7 @@
 ::application::database::mc::RemoveSpace						"Some empty spaces will be removed." ;# NEW
 ::application::database::mc::CompactionRecommended			"It is recommended to compact the database." ;# NEW
 ::application::database::mc::SearchPGNTags					"Searching for PGN tags" ;# NEW
+::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:" ;# NEW
 
 ::application::database::mc::T_Unspecific						"Ospecifik"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -1339,7 +1345,8 @@
 ::browser::mc::GotoGame(next)		"Gå till nästa parti"
 ::browser::mc::GotoGame(prev)		"Gå till föregående parti"
 
-::browser::mc::LoadGame				"Ladda parti"
+::browser::mc::LoadGame				"Ladda parti into editor" ;# NEW
+::browser::mc::ReloadGame			"Reload game" ;# NEW
 ::browser::mc::MergeGame			"Sammanfoga parti"
 
 ::browser::mc::IllegalMove			"Ogiltigt drag"
@@ -1639,6 +1646,7 @@
 ::export::mc::Option(pgn,include_marks)							"Exportera markeringar (som kommentarer)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Använd Scidb-importformat"
 ::export::mc::Option(pgn,use_chessbase_format)					"Använd ChessBase-format"
+::export::mc::Option(pgn,use_strict_pgn_standard				"Use PGN standard" ;# NEW
 ::export::mc::Option(pgn,include_ply_count_tag)					"Skriv tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Skriv tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Skriv tag 'Mode'"
@@ -1657,6 +1665,7 @@
 ::export::mc::Option(pgn,space_after_move_number)				"Infoga mellanslag efter dragnummer"
 ::export::mc::Option(pgn,shredder_fen)								"Använd Shredder-FEN (standard är X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Skriv kommentar för resultat '0-0'"
+::export::mc::Option(pgn,write_any_rating_as_elo)				"Write any rating as ELO" ;# NEW
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Lägg till modus efter tävlingstyp"
 ::export::mc::Option(pgn,comment_to_html)							"Skriv kommentar i HTML-format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Uteslut partier med ogiltiga drag"
@@ -2688,6 +2697,7 @@
 ::encoding::mc::Lang(hu)	"Ungerska"
 ::encoding::mc::Lang(hy)	"Armenian"
 ::encoding::mc::Lang(ia)	"Interlingua"
+::encoding::mc::Lang(id)	"Indonesian" ;# NEW
 ::encoding::mc::Lang(is)	"Isländska"
 ::encoding::mc::Lang(it)	"Italian"
 ::encoding::mc::Lang(iu)	"Inuktitut"

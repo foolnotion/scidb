@@ -359,6 +359,9 @@ Reader::extractCountryFromSite(mstl::string& data)
 event::Mode
 Reader::getEventMode(char const* event, char const* site)
 {
+	M_REQUIRE(event);
+	M_REQUIRE(site);
+
 	event::Mode mode = event::Undetermined;
 
 	switch (event[0])

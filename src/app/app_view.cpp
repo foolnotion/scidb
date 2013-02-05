@@ -60,6 +60,9 @@ using namespace db;
 using namespace app;
 
 
+enum { MaxRandom = 2097152 };
+
+
 inline
 static Filter::ResizeMode
 map(View::UpdateMode mode)
@@ -795,6 +798,99 @@ View::printGames(	TeXt::Environment& environment,
 	}
 
 	return count;
+}
+
+
+int
+View::nextIndex(db::table::Type type, unsigned index) const
+{
+	if (index >= m_filter[type].size())
+		return -1;
+
+	int i = lookupGame(index);
+
+	if (i == -1 || i + 1 == int(m_filter[type].count()))
+		return -1;
+
+	return m_selector[type].lookup(i + 1);
+}
+
+
+int
+View::prevIndex(db::table::Type type, unsigned index) const
+{
+	if (index >= m_filter[type].size())
+		return -1;
+
+	int i = lookupGame(index);
+
+	if (i <= 0)
+		return -1;
+
+	return m_selector[type].lookup(i - 1);
+}
+
+
+int
+View::firstIndex(db::table::Type type) const
+{
+	if (m_filter[type].isEmpty())
+		return -1;
+
+	return m_selector[type].lookup(0);
+}
+
+
+int
+View::lastIndex(db::table::Type type) const
+{
+	unsigned count = m_filter[type].count();
+
+	if (count == 0)
+		return -1;
+
+	return m_selector[type].lookup(count - 1);
+}
+
+
+int
+View::randomGameIndex() const
+{
+	unsigned count = m_filter[table::Games].count();
+
+	if (count == 0)
+		return -1;
+
+	if (count == 1)
+		return 0;
+
+	unsigned index;
+
+	if (count > MaxRandom)
+	{
+		index = m_app.rand32(count);
+	}
+	else
+	{
+		if (m_used.size() != count)
+			m_used.resize(count, true);
+
+		unsigned free = m_used.count();
+
+		if (free == 0)
+		{
+			m_used.set();
+			index = m_app.rand32(count);
+		}
+		else
+		{
+			index = m_used.index(m_app.rand32(free));
+		}
+
+		m_used.reset(index);
+	}
+
+	return m_filter[table::Games].toIndex(index);
 }
 
 // vi:set ts=3 sw=3:

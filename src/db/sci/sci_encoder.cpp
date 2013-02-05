@@ -136,9 +136,7 @@ Encoder::putMoveByte(Square from, Byte value)
 		pieceNum &= 0x0f;
 	}
 
-#ifdef CORRECTION
 	M_ASSERT(((pieceNum << 4) | value) > token::Special_Move);
-#endif
 
    m_strm.put((pieceNum << 4) | value);
 }
@@ -157,17 +155,11 @@ Encoder::encodePieceDrop(Move const& move)
 		pieceNum |= 0x20;
 	}
 
-#ifdef CORRECTION
 	M_ASSERT(pieceNum < 64);
 	// Make sure that it cannot clash with the special tokens.
 	m_strm.put(move.dropped() | 8);
 	m_strm.put(pieceNum | 64);
 	m_strm.put(move.to() | 64);
-#else
-	m_strm.put(move.dropped());
-	m_strm.put(pieceNum);
-	m_strm.put(move.to());
-#endif
 }
 
 
@@ -182,11 +174,7 @@ Encoder::encodeNullOrDropMove(Move const& move)
 	if (variant::isZhouse(m_variant))
 	{
 		if (move.isNull())
-#ifdef CORRECTION
 			m_strm.put(token::Special_Move);
-#else
-			m_strm.put(0);
-#endif
 		else
 			encodePieceDrop(move);
 	}
@@ -255,18 +243,10 @@ Encoder::encodeQueen(Move const& move)
 		// is illegal of course) to indicate it is NOT a rooklike move.
 		putMoveByte(from, sq::fyle(from));
 
-#ifdef CORRECTION
 		M_ASSERT(to < 64);
 		// Now we put the to-square in the next byte. We make sure that it
 		// cannot clash with the special tokens.
 		m_strm.put(to | 64);
-#else
-		// Now we put the to-square in the next byte. We add a 64 to it
-		// to make sure that it cannot clash with the special tokens (which
-		// are in the range 0 to 15, since they are special King moves).
-		static_assert(token::Special_Move < 64, "decoding cannot work");
-		m_strm.put(to + 64);
-#endif
 	}
 }
 
@@ -419,7 +399,7 @@ Encoder::encodeMove(Move const& move)
 		return true;
 
 	m_strm.put(token::Nag);
-	m_strm.put(0);
+	m_data.put(0);
 
 	return false;
 }
@@ -505,7 +485,7 @@ Encoder::encodeNote(MoveNode const* node, bool isMainline)
 		for (unsigned i = 0; i < annotation.count(); ++i)
 		{
 			m_strm.put(token::Nag);
-			m_strm.put(annotation[i]);
+			m_data.put(annotation[i]);
 		}
 	}
 
@@ -782,51 +762,6 @@ Encoder::doEncoding(	Signature const&,
 	encodeMainline(data.m_startNode);
 	encodeDataSection(data.m_tags, allowedTags, allowExtraTags, data.m_engines, data.m_timeTable);
 }
-
-
-#ifdef TODO
-void
-Encoder::writeTags(TagSet const& tags)
-{
-	uint16_t flags = ByteStream::uint16(m_strm.base());
-
-	if (m_strm.tellp() >= (1 << 24))
-		IO_RAISE(Game, Encoding_Failed, "move data section is too large");
-
-	ByteStream::set(m_strm.base() + m_offset, uint24_t(m_strm.tellp()));
-	ByteStream::set(m_strm.base() + m_offset + 3, uint16_t(m_runLength));
-
-	flags |= encodeTextSection();
-	flags |= encodeTagSection(tags, allowedTags, allowExtraTags);
-	flags |= encodeEngineSection(engines);
-
-	ByteStream::set(m_strm.base(), flags);
-	m_strm.put(m_data.base(), m_data.tellp());
-	m_strm.provide();
-
-////////////////////////////////////////////////////////////////
-
-	uint16_t flags = m_strm.uint16();
-
-	if (!(flags & flags::TagSection))
-		return;
-
-	uint16_t idn = flags & 0x0fff;
-
-	if (idn == 0)
-		m_strm.skipString();
-
-	Byte* dataSection = m_strm.base() + m_strm.uint24();
-
-	if (flags & flags::TextSection)
-		dataSection += ByteStream::uint24(dataSection) + 3;
-
-	ByteStream data(dataSection, m_strm.end() - dataSection);
-	TagSet myTags;
-
-	Decoder::decodeTags(data, myTags);
-}
-#endif
 
 
 void

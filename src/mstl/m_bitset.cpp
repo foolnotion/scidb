@@ -104,7 +104,7 @@ bitset::~bitset()
 void
 bitset::reset_unused()
 {
-	if (m_bits > 0 && bitfield::word_index(m_size))
+	if (m_bits && bitfield::word_index(m_size))
 		m_bits[count_words() - 1].reset(bitfield::word_index(m_size), bitfield::nbits - 1);
 }
 
@@ -571,7 +571,7 @@ bitset::find_next(size_type prev) const
 		while ((k = m_bits[i].find_first()) == npos);
 	}
 
-	return k + (i << ((bitfield::nbits + 128)>>5));	// 64 bit safe
+	return k + (i << ((bitfield::nbits + 128)>>5)); // 64 bit safe
 }
 
 
@@ -634,7 +634,10 @@ bitset::find_last_not() const
 	for (int i = nwords - 1; i >= 0; --i)
 	{
 		if (!m_bits[i].complete())
-			return (bitfield::nbits*i) + m_bits[i].find_last_not();
+		{
+			size_type n = (bitfield::nbits*i) + m_bits[i].find_last_not();
+			return n < m_size ? n : npos;
+		}
 	}
 
 	return npos;
@@ -651,7 +654,10 @@ bitset::find_first_not() const
 	for (size_type i = 0; i < nwords; ++i)
 	{
 		if (!m_bits[i].complete())
-			return (bitfield::nbits*i) + m_bits[i].find_first_not();
+		{
+			size_type n = (bitfield::nbits*i) + m_bits[i].find_first_not();
+			return n < m_size ? n : npos;
+		}
 	}
 
 	return npos;
@@ -715,36 +721,56 @@ bitset::find_next_not(size_type prev) const
 		while ((k = m_bits[i].find_first_not()) == npos);
 	}
 
-	return k + (i << ((bitfield::nbits + 128)>>5));	// 64 bit safe
+	size_type n = k + (i << ((bitfield::nbits + 128)>>5)); // 64 bit safe
+	return n < m_size ? n : npos;
 }
 
 
 void
-bitset::resize(size_type nbits)
+bitset::resize(size_type nbits, bool set)
 {
 	M_REQUIRE(!compressed());
 
-	size_type new_word_count = count_words(nbits);
-	size_type old_word_count = count_words();
+#ifdef M_CHECK
+		size_type old_count = count();
+		size_type old_size  = m_size;
+#endif
 
-	if (m_words < new_word_count)
+	size_type words = count_words(nbits);
+
+	if (m_words < words)
 	{
-		bitfield* bits = new bitfield[new_word_count];
-		mstl::uninitialized_copy(m_bits, m_bits + mstl::min(old_word_count, new_word_count), bits);
+		bitfield* bits = new bitfield[words];
+		mstl::uninitialized_copy(m_bits, m_bits + mstl::min(m_words, words), bits);
 		mstl::swap(m_bits, bits);
-		fill(m_words + (bitfield::word_index(nbits) ? 1 : 0), new_word_count, 0);
-		m_words = new_word_count;
+		if (set)
+		{
+			fill(m_words, words, 0xff);
+			if (bitfield::word_index(m_size))
+				m_bits[m_words - 1].set(bitfield::word_index(m_size), bitfield::nbits - 1);
+		}
+		else
+		{
+			fill(m_words, words, 0);
+		}
+		m_words = words;
 		delete [] bits;
 	}
-	else if (new_word_count == 0)
+	else if (words == 0)
 	{
 		delete [] m_bits;
 		m_bits = 0;
 		m_words = 0;
 	}
+	else if (set && nbits > m_size && bitfield::word_index(m_size))
+	{
+		m_bits[m_words - 1].set(bitfield::word_index(m_size), bitfield::nbits - 1);
+	}
 
 	m_size = nbits;
 	reset_unused();
+
+	M_ASSERT(old_size > m_size || count() == old_count + (set ? 1 : 0)*(m_size - old_size));
 }
 
 

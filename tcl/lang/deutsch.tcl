@@ -383,16 +383,21 @@
 ::application::board::mc::StopEngine					"Schachanalyse-Motor beenden"
 ::application::board::mc::InsertNullMove				"Nullzug einfügen"
 ::application::board::mc::SelectStartPosition		"Startposition wählen"
+::application::board::mc::LoadRandomGame				"Zufällige Partie laden"
 
 ::application::board::mc::Tools							"Werkzeuge"
 ::application::board::mc::Control						"Steuerung"
 ::application::board::mc::Game							"Partie"
 ::application::board::mc::GoIntoNextVar				"Zur nächsten Variante"
 ::application::board::mc::GoIntPrevVar					"Zur vorhergehenden Variante"
+
 ::application::board::mc::LoadGame(next)				"Nächste Partie laden"
 ::application::board::mc::LoadGame(prev)				"Vorhergehende Partie laden"
 ::application::board::mc::LoadGame(first)				"Erste Partie laden"
 ::application::board::mc::LoadGame(last)				"Letzte Partie laden"
+
+::application::board::mc::SwitchView(base)			"Zur Datenbanksicht wechseln"
+::application::board::mc::SwitchView(list)			"Zur Partielistensicht wechseln"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
 ::application::board::mc::Accel(edit-comment)		"K"
@@ -474,6 +479,7 @@
 ::application::database::mc::RemoveSpace						"Einige Leerräume werden entfernt."
 ::application::database::mc::CompactionRecommended			"Eine Kompaktierung der Datenbank wird empfohlen."
 ::application::database::mc::SearchPGNTags					"Nach PGN-Tags suchen"
+::application::database::mc::SelectSuperfluousTags			"Unerwünschte Tags auswählen:"
 
 ::application::database::mc::T_Unspecific						"Unspezifiziert"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -908,7 +914,7 @@
 ::engine::mc::Variant(suicide)		"Schlagschach"
 ::engine::mc::Variant(giveaway)		"Schlagschach"
 ::engine::mc::Variant(losers)			"Schlagschach"
-::engine::mc::Variant(3check)			"Dreischach"
+::engine::mc::Variant(3check)			"Dreimal-Schach"
 
 ::engine::mc::Edit						"Bearbeiten"
 ::engine::mc::View						"Ansicht"
@@ -1332,7 +1338,8 @@
 ::browser::mc::GotoGame(next)		"Zur nächsten Partie"
 ::browser::mc::GotoGame(prev)		"Zur vorhergehenden Partie"
 
-::browser::mc::LoadGame				"Partie laden"
+::browser::mc::LoadGame				"Partie in den Editor laden"
+::browser::mc::ReloadGame			"Partie neu laden"
 ::browser::mc::MergeGame			"Partie kombinieren"	;# einfügen
 
 ::browser::mc::IllegalMove			"Regelwidriger Zug"
@@ -1632,6 +1639,7 @@
 ::export::mc::Option(pgn,include_marks)							"Markierungen exportieren (als Kommentar)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Scidb-Import-Format benutzen"
 ::export::mc::Option(pgn,use_chessbase_format)					"ChessBase-Format benutzen"
+::export::mc::Option(pgn,use_strict_pgn_standard)				"PGN-Standard benutzen"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Tag 'PlyCount' schreiben"
 ::export::mc::Option(pgn,include_termination_tag)				"Tag 'Termination' schreiben"
 ::export::mc::Option(pgn,include_mode_tag)						"Tag 'Mode' schreiben"
@@ -1650,6 +1658,7 @@
 ::export::mc::Option(pgn,space_after_move_number)				"Leerzeichen nach Zugnummern einfügen"
 ::export::mc::Option(pgn,shredder_fen)								"Benutze Shredder-FEN (Standard ist X-FEN)"
 ::export::mc::Option(pgn,convert_lost_result_to_comment)		"Schreibe Kommentar für Ergebnis '0-0'"
+::export::mc::Option(pgn,write_any_rating_as_elo)				"Schreibe jegliche Wertung als ELO"
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Modus an Ereignistyp anhängen"
 ::export::mc::Option(pgn,comment_to_html)							"Schreibe Kommentar im HTML-Format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Partien mit regelwidrigen Zügen ausschliessen"
@@ -2681,6 +2690,7 @@
 ::encoding::mc::Lang(hu)	"Ungarisch"
 ::encoding::mc::Lang(hy)	"Armenisch"
 ::encoding::mc::Lang(ia)	"Interlingua"
+::encoding::mc::Lang(id)	"Indonesisch"
 ::encoding::mc::Lang(is)	"Isländisch"
 ::encoding::mc::Lang(it)	"Italienisch"
 ::encoding::mc::Lang(iu)	"Inuktitut"

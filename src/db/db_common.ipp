@@ -114,6 +114,9 @@ inline Rank pawnRank(db::color::ID color) { return color == db::color::White ? R
 
 inline bool isAdjacent(ID a, ID b) { return distance(a, b) > 1; }
 
+inline bool isValidFyle(Byte fyle) { return fyle <= FyleH; }
+inline bool isValidRank(Byte rank) { return rank <= Rank8; }
+
 inline bool
 isValid(char const* s)
 {
@@ -140,6 +143,18 @@ inline bool isBlack(ID piece) { return color(piece); }
 
 inline ID piece(Type type, db::color::ID color) { return ID(type | (color << 3)); }
 inline ID swap(ID piece) { return ID(piece & (1 << 3) ? piece & 7 : piece | (1 << 3)); }
+
+inline
+bool
+longStepPiece(ID piece)
+{
+	return (1 << piece) & (	(1 << WhiteQueen)
+								 | (1 << BlackQueen)
+								 | (1 << WhiteRook)
+								 | (1 << BlackRook)
+								 | (1 << WhiteBishop)
+								 | (1 << BlackBishop));
+}
 
 inline
 char
@@ -509,7 +524,8 @@ inline bool isOk(State state) { return state == Ok || state == TooManyRoundNames
 
 namespace format {
 
-inline bool isScidFormat(Type type) { return type & (Scid3 | Scid4); }
+inline bool isScidFormat(Type type)			{ return type & (Scid3 | Scid4); }
+inline bool isChessBaseFormat(Type type)	{ return type & (ChessBase | ChessBaseDOS); }
 
 } // namespace format
 

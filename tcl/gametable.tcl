@@ -777,15 +777,15 @@ proc addGameFlagsMenuEntry {menu base variant view index} {
 	variable Columns
 	variable _Flags
 
-	set item [lsearch -exact -index 0 $Columns flags]
-	set info [::scidb::db::get gameInfo $index $view $base $variant $item]
-	set flags [::scidb::db::get gameFlags $base $variant]
+	set item     [lsearch -exact -index 0 $Columns flags]
+	set myFlags  [lindex [::scidb::db::get gameInfo $index $view $base $variant] $item]
+	set allFlags [::scidb::db::get gameFlags $base $variant]
 
-	foreach flag $flags	{ set _Flags($flag) 0 }
-	foreach flag $item	{ set _Flags($flag) 1 }
+	foreach flag $allFlags { set _Flags($flag) 0 }
+	foreach flag $myFlags  { set _Flags($flag) 1 }
 
 	menu $menu.gameflags
-	foreach flag $flags {
+	foreach flag $allFlags {
 		if {[info exist ::icon::12x12::gameflag($flag)]} {
 			set img $::icon::12x12::gameflag($flag)
 		} else {
@@ -1095,7 +1095,7 @@ proc TableFill {path args} {
 					}
 
 					promotion - underPromo {
-						if {$codec eq "cbh"} {
+						if {$codec eq "cbh" || $codec eq "cbf"} {
 							lappend text [list @ $NotAvailable]
 						} else {
 							# TODO: only for 12pt; use U+2714 for other sizes
@@ -1190,7 +1190,7 @@ proc TableFill {path args} {
 					}
 
 					annotator {
-						if {$codec eq "sci" || $codec eq "cbh"} {
+						if {$codec eq "sci" || $codec eq "cbh" || $codec eq "cbf"} {
 							lappend text $item
 						} else {
 							lappend text $::mc::NotAvailableSign
@@ -1237,7 +1237,7 @@ proc TableFill {path args} {
 					}
 
 					material {
-						if {$codec eq "cbh"} {
+						if {$codec eq "cbh" || $codec eq "cbf"} {
 							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [::font::translate [string map {: " - "} $item]]
@@ -1245,7 +1245,7 @@ proc TableFill {path args} {
 					}
 
 					key {
-						if {$codec eq "cbh"} {
+						if {$codec eq "cbh" || $codec eq "cbf"} {
 							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text $item
@@ -1261,7 +1261,7 @@ proc TableFill {path args} {
 					}
 
 					overview {
-						if {$codec eq "cbh"} {
+						if {$codec eq "cbh" || $codec eq "cbf"} {
 							lappend text $::mc::NotAvailableSign
 						} else {
 							lappend text [::font::translate $item]
@@ -1323,7 +1323,7 @@ proc TableFill {path args} {
 						}
 					}
 
-					wgite - black - event - site {
+					white - black - event - site {
 						if {[string length $item] == 0} {
 							lappend text "-"
 						} else {
@@ -1370,7 +1370,7 @@ proc TableVisit {table data} {
 	set codec [::scidb::db::get codec $base $variant]
 
 	switch $id {
-		acv - key - overview - opening { if {$codec eq "cbh"} { return } }
+		acv - key - overview - opening { if {$codec eq "cbh" || $codec eq "cbf"} { return } }
 		idn - termination { if {$codec ne "sci"} { return } }
 		eventType { if {[string match si? $codec]} { return } }
 		eco - eventMode - timeMode - flags {}

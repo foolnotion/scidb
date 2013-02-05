@@ -35,16 +35,21 @@ set StartEngine				"Start chess analysis engine"
 set StopEngine					"Stop chess analysis engine"
 set InsertNullMove			"Insert null move"
 set SelectStartPosition		"Select Start Position"
+set LoadRandomGame			"Load random game"
 
 set Tools						"Tools"
 set Control						"Control"
 set Game							"Game"
 set GoIntoNextVar				"Go into next variation"
 set GoIntPrevVar				"Go into previous variation"
+
 set LoadGame(next)			"Load next game"
 set LoadGame(prev)			"Load previous game"
 set LoadGame(first)			"Load first game"
 set LoadGame(last)			"Load last game"
+
+set SwitchView(base)			"Switch to database view"
+set SwitchView(list)			"Switch to game list view"
 
 set Accel(edit-annotation)	"A"
 set Accel(edit-comment)		"C"
@@ -109,7 +114,10 @@ proc build {w width height} {
 	set Vars(material) {}
 	set Vars(registered) {}
 	set Vars(subscribe:list) {}
+	set Vars(subscribe:info) {}
+	set Vars(subscribe:close) {}
 	set Vars(current:game) {}
+	set Vars(load:method) base
 	foreach layout $Layouts { set Vars(inuse:$layout) {}; set Vars(registered:$layout) 0 }
 
 	$board configure -cursor crosshair
@@ -208,23 +216,33 @@ proc build {w width height} {
 
 	set Vars(game:next) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarNext \
-		-command [namespace code LoadNext] \
+		-command [namespace code [list LoadGame(any) next]] \
 		-state disabled \
 	]
 	set Vars(game:prev) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPrev \
-		-command [namespace code LoadPrevious] \
+		-command [namespace code [list LoadGame(any) prev]] \
 		-state disabled \
 	]
-	::toolbar::add $tbGame separator
 	set Vars(game:last) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarBack \
-		-command [namespace code LoadLast] \
+		-command [namespace code [list LoadGame(any) last]] \
 		-state disabled \
 	]
 	set Vars(game:first) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarFront \
-		-command [namespace code LoadFirst] \
+		-command [namespace code [list LoadGame(any) first]] \
+		-state disabled \
+	]
+	set Vars(game:view) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarDatabase \
+		-command [namespace code SwitchGameButtons] \
+		-tooltipvar [namespace current]::mc::SwitchView(list) \
+	]
+	set Vars(game:random) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarDiceGreen \
+		-command [namespace code [list LoadGame(any) random]] \
+		-tooltipvar [namespace current]::mc::LoadRandomGame \
 		-state disabled \
 	]
 	::toolbar::addSeparator $tbGame
@@ -257,38 +275,46 @@ proc build {w width height} {
 		-image [set ::icon::toolbarCtrlLeaveVar] \
 		-command [namespace code GoUp]]
 	
-	bind <Key-space>		::move::nextGuess
-	bind <Left>				[namespace code GoLeft]
-	bind <Right>			[namespace code GoRight]
-	bind <Prior>			[namespace code GoPrior]
-	bind <Next>				[namespace code GoNext]
-	bind <Home>				[namespace code GoHome]
-	bind <End>				[namespace code GoEnd]
-	bind <Down>				[namespace code GoDown]
-	bind <Up>				[namespace code GoUp]
-	bind <Control-Down>	[namespace code LoadNext]
-	bind <Control-Up>		[namespace code LoadPrevious]
-	bind <Control-Home>	[namespace code LoadFirst]
-	bind <Control-End>	[namespace code LoadLast]
-	bind <Control-0>		[namespace code InsertNullMove]
-	bind <<Undo>>			[namespace parent]::pgn::undo
-	bind <<Redo>>			[namespace parent]::pgn::redo
-	bind <BackSpace>		[namespace parent]::pgn::undoLastMove
-	bind <Delete>			[list ::scidb::game::strip truncate]
-	bind <ButtonPress-3>	[namespace code { PopupMenu %W }]
+	bind <Key-space>				::move::nextGuess
+	bind <Left>						[namespace code GoLeft]
+	bind <Right>					[namespace code GoRight]
+	bind <Prior>					[namespace code GoPrior]
+	bind <Next>						[namespace code GoNext]
+	bind <Home>						[namespace code GoHome]
+	bind <End>						[namespace code GoEnd]
+	bind <Down>						[namespace code GoDown]
+	bind <Up>						[namespace code GoUp]
+	bind <Control-Down>			[namespace code [list LoadGame(list) next]]
+	bind <Control-Up>				[namespace code [list LoadGame(list) prev]]
+	bind <Control-Home>			[namespace code [list LoadGame(list) first]]
+	bind <Control-End>			[namespace code [list LoadGame(list) last]]
+	bind <Shift-Control-Down>	[namespace code [list LoadGame(base) next]]
+	bind <Shift-Control-Up>		[namespace code [list LoadGame(base) prev]]
+	bind <Shift-Control-Home>	[namespace code [list LoadGame(base) first]]
+	bind <Shift-Control-End>	[namespace code [list LoadGame(base) last]]
+	bind <Shift-Up>				[list [namespace parent]::pgn::scroll -1 units]
+	bind <Shift-Down>				[list [namespace parent]::pgn::scroll +1 units]
+	bind <Shift-Prior>			[list [namespace parent]::pgn::scroll -1 pages]
+	bind <Shift-Next>				[list [namespace parent]::pgn::scroll +1 pages]
+	bind <Shift-Home>				[list [namespace parent]::pgn::scroll -9999 pages]
+	bind <Shift-End>				[list [namespace parent]::pgn::scroll +9999 pages]
+	bind <Control-0>				[namespace code InsertNullMove]
+	bind <<Undo>>					[namespace parent]::pgn::undo
+	bind <<Redo>>					[namespace parent]::pgn::redo
+	bind <BackSpace>				[namespace parent]::pgn::undoLastMove
+	bind <Delete>					[list ::scidb::game::strip truncate]
+	bind <ButtonPress-3>			[namespace code { PopupMenu %W }]
+	bind <Control-plus>			[list ::application::pgn::changeFontSize +1]
+	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
+	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
+	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
+	bind <<LanguageChanged>>	[namespace code LanguageChanged]
 
 	for {set i 1} {$i <= 9} {incr i} {
 		bind <Key-$i>    [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 		# NOTE: the working of the following depends on actual keyboard bindings!
 		bind <Key-KP_$i> [namespace code [list [namespace parent]::pgn::selectAt [expr {$i - 1}]]]
 	}
-
-	bind <Shift-Up>		[list [namespace parent]::pgn::scroll -1 units]
-	bind <Shift-Down>		[list [namespace parent]::pgn::scroll +1 units]
-	bind <Shift-Prior>	[list [namespace parent]::pgn::scroll -1 pages]
-	bind <Shift-Next>		[list [namespace parent]::pgn::scroll +1 pages]
-	bind <Shift-Home>		[list [namespace parent]::pgn::scroll -9999 pages]
-	bind <Shift-End>		[list [namespace parent]::pgn::scroll +9999 pages]
 
 	set Vars(after) {}
 	foreach key [array names Accel] { set Vars(key:$key) $Accel($key) }
@@ -303,18 +329,12 @@ proc build {w width height} {
 	set Vars(cmd:trial-mode)			::game::flipTrialMode
 
 	LanguageChanged
-
-	bind <<LanguageChanged>>	[namespace code LanguageChanged]
-	bind <Control-plus>			[list ::application::pgn::changeFontSize +1]
-	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
-	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
-	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
-
 	BuildBoard $canv
 	ConfigureBoard $canv
 
 	::scidb::db::subscribe gameSwitch [namespace current]::GameSwitched
-	::scidb::db::subscribe dbInfo [namespace current]::UpdateSaveButton {}
+	::scidb::db::subscribe databaseSwitch [namespace current]::DatabaseSwitched
+	::scidb::db::subscribe dbInfo [namespace current]::UpdateInfo
 }
 
 
@@ -452,22 +472,12 @@ proc bind {key cmd} {
 }
 
 
-proc bindGameControls {position base variant view number} {
+proc unbindGameControls {position base variant} {
 	variable Vars
 
-	set Vars(current:game) [list $position $base $variant $view $number]
-
-	if {[llength $Vars(subscribe:list)]} {
-		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
-		set Vars(subscribe:list) {}
-		foreach action {next prev first last} {
-			::toolbar::childconfigure $Vars(game:$action) -state disabled
-		}
-	}
-
-	set cmd [list [namespace current]::UpdateGameList [namespace current]::CloseGameList $position]
-	::scidb::db::subscribe gameList {*}$cmd
-	set Vars(subscribe:list) $cmd
+	Unsubscribe $position
+	set Vars(current:game) {}
+	UpdateGameButtonState(list) $position
 }
 
 
@@ -481,41 +491,87 @@ proc GoDown		{} { goto down }
 proc GoUp		{} { goto up }
 
 
-proc LoadNext		{} { LoadGame next }
-proc LoadPrevious	{} { LoadGame prev }
-proc LoadFirst		{} { LoadGame first }
-proc LoadLast		{} { LoadGame last }
+proc LoadGame(any) {incr} {
+	LoadGame([set [namespace current]::Vars(load:method)]) $incr
+}
 
 
-proc LoadGame {incr} {
+proc LoadGame(list) {incr} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] <= 1} { return }
-	lassign $Vars(current:game) position base variant view number
-	set numGames [scidb::view::count games $base $variant $view]
-	if {$numGames <= 1} { return }
-	set index [::scidb::db::get gameIndex $number $view $base $variant]
-	if {$index == -1} { return }
+	if {[llength $Vars(current:game)] > 1} {
+		set number [LoadGame(all) {*}$Vars(current:game) $incr]
+		lset Vars(current:game) 4 $number
+		UpdateGameButtonState(list) [lindex $$Vars(current:game) 0]
+	}
+}
 
-	switch $incr {
-		next	{
-			if {$index + 1 == $numGames} { return }
-			incr index +1
-		}
-		prev	{
-			if {$index == 0} { return }
-			incr index -1
-		}
-		first {
-			set index 0
-		}
-		last {
-			set index [expr {$numGames - 1}]
-		}
+
+proc LoadGame(base) {incr} {
+	set position [::scidb::game::current]
+	lassign [::scidb::game::link? $position] base variant index
+	set currentBase [::scidb::db::get name]
+	set currentVariant [::scidb::app::variant]
+
+	if {$index >= 0 && $currentBase eq $base && $currentVariant eq $variant} {
+		set number [::scidb::db::get gameNumber $base $variant $index 0]
+	} else {
+		set number -1
 	}
 
-	set number [::scidb::db::get gameNumber $base $variant $index $view]
-	lset Vars(current:game) 4 $number
+	LoadGame(all) $position $currentBase $currentVariant -1 $number $incr
+	UpdateGameButtonState(base) $currentBase $currentVariant
+}
+
+
+proc LoadGame(all) {position base variant view number incr} {
+	variable Vars
+
+	if {$view >= 0} {
+		set number [scidb::game::view $position $incr]
+	} else {
+		set numGames [scidb::view::count games $base $variant $view]
+		if {$numGames == 0} { return }
+
+		if {$incr eq "random"} {
+			if {$numGames == 1} {
+				set index 0
+			} else {
+				set index [::scidb::db::get gameIndex $number $view $base $variant]
+				do { set i [expr {int(rand()*$numGames)}] } while {$i == $index}
+				set index $i
+			}
+		} elseif {$number == -1} {
+			switch $incr {
+				next - first	{ set index 0 }
+				prev - last		{ set index [expr {$numGames - 1}] }
+			}
+		} else {
+			if {$numGames <= 1} { return }
+			set index [::scidb::db::get gameIndex $number $view $base $variant]
+			if {$index == -1} { return }
+
+			switch $incr {
+				next	{
+					if {$index + 1 == $numGames} { return }
+					incr index +1
+				}
+				prev	{
+					if {$index == 0} { return }
+					incr index -1
+				}
+				first {
+					set index 0
+				}
+				last {
+					set index [expr {$numGames - 1}]
+				}
+			}
+		}
+
+		set number [::scidb::db::get gameNumber $base $variant $index $view]
+	}
+
 	if {[::scidb::tree::isRefBase? $base] && $view == [::scidb::tree::view]} {
 		set fen [::scidb::tree::position]
 	} else {
@@ -523,7 +579,37 @@ proc LoadGame {incr} {
 	}
 
 	::game::new .application -base $base -variant $variant -view $view -number $number -fen $fen
-	UpdateGameButtonState
+	return $number
+}
+
+
+proc SwitchView {view} {
+	variable Vars
+
+	if {$Vars(load:method) ne $view} {
+		set v $Vars(load:method)
+		set Vars(load:method) $view
+		::toolbar::childconfigure $Vars(game:view) -tooltipvar [namespace current]::mc::SwitchView($v)
+
+		switch $view {
+			list {
+				UpdateGameButtonState(list) [::scidb::game::current]
+				::toolbar::childconfigure $Vars(game:view) -image $::icon::toolbarList
+			}
+			base {
+				UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
+				::toolbar::childconfigure $Vars(game:view) -image $::icon::toolbarDatabase
+			}
+		}
+	}
+}
+
+
+proc SwitchGameButtons {} {
+	variable Vars
+
+	if {$Vars(load:method) eq "list"} { set view base } else { set view list }
+	SwitchView $view
 }
 
 
@@ -1240,18 +1326,27 @@ proc GameSwitched {position} {
 	variable ::scidb::scratchbaseName
 	variable Vars
 
-	set Vars(variant) [::scidb::game::query $position variant]
-	set actual [lindex [::scidb::game::link?] 0]
-	if {$actual eq $scratchbaseName} { set state disabled } else { set state normal }
+	# reset if position is 9 (all games closed)
+
+	set variant [::scidb::game::query $position variant]
+	set base [lindex [::scidb::game::link?] 0]
+	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
+	set Vars(variant) $variant
+
+	set view [::scidb::game::view $position id]
+	if {$view >= 0} {
+		Unsubscribe $position
+		set Vars(current:game) [list $position $base $variant $view 0]
+		SwitchView list
+		Subscribe $position $base $variant
+	}
 
 	::toolbar::childconfigure $Vars(crossTable) -state $state
 	UpdateGameControls $position
+	UpdateGameButtonState(list) $position
 	UpdateSaveButton
 
-	switch $Vars(variant) {
-		Crazyhouse	{ set layout "Crazyhouse" }
-		default		{ set layout "Normal" }
-	}
+	if {$variant eq "Crazyhouse"} { set layout Crazyhouse } else { set layout Normal }
 	if {$layout ne $Vars(layout)} {
 		set Vars(layout) $layout
 		Apply
@@ -1259,7 +1354,18 @@ proc GameSwitched {position} {
 }
 
 
-proc UpdateSaveButton {args} {
+proc UpdateInfo {_ base variant} {
+	DatabaseSwitched $base $variant
+}
+
+
+proc DatabaseSwitched {base variant} {
+	UpdateGameButtonState(base) $base $variant
+	UpdateSaveButton
+}
+
+
+proc UpdateSaveButton {} {
 	variable ::scidb::scratchbaseName
 	variable ::scidb::clipbaseName
 	variable Vars
@@ -1278,6 +1384,7 @@ proc UpdateSaveButton {args} {
 		}
 		if {	$actual eq $scratchbaseName
 			|| $actual eq $clipbaseName
+			|| ![::scidb::db::get open? $actual]
 			|| [::scidb::db::get readonly? $actual]
 			|| $Vars(variant) ni [::scidb::db::get variants $actual]} {
 			set state disabled
@@ -1303,56 +1410,71 @@ proc UpdateSaveButton {args} {
 proc UpdateGameControls {position} {
 	variable Vars
 
-	if {[llength $Vars(subscribe:list)]} {
-		::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
-		set Vars(subscribe:list) {}
-	}
+	if {$Vars(load:method) eq "base" || $position >= 9} { return }
 
+	Unsubscribe $position
 	set Vars(current:game) {}
+	set info [::game::getSourceInfo $position]
 
-	if {$position != 9} {
-		set Vars(current:game) [list $position {*}[::game::getSourceInfo $position]]
-		if {[llength $Vars(current:game)]} {
-			set view [lindex $Vars(current:game) 3]
-			if {$view >= 0} {
-				UpdateGameButtonState
-				set cmd [list [namespace current]::UpdateGameList \
-					[namespace current]::CloseGameList $position]
-				::scidb::db::subscribe gameList {*}$cmd
-				set Vars(subscribe:list) $cmd
-			}
-		}
-	}
-
-	if {[llength $Vars(current:game)] <= 1} {
-		foreach action {next prev first last} {
-			::toolbar::childconfigure $Vars(game:$action) -state disabled
+	if {[llength $info]} {
+		lassign $info base variant view number
+		if {$view >= 0} {
+			set Vars(current:game) [list $position $base $variant $view $number]
+			Subscribe $position $base $variant
+			SwitchView list
+		} else {
+			set Vars(current:game) {}
 		}
 	}
 }
 
 
-proc UpdateGameButtonState {} {
+proc UpdateGameButtonState(list) {position} {
 	variable Vars
 
-	lassign $Vars(current:game) position base variant view number
-	set numGames [scidb::view::count games $base $variant $view]
+	if {$Vars(load:method) eq "base"} { return }
+	array set state { random disabled prev disabled next disabled first disabled last disabled }
 
-	if {$numGames > 1} {
-		set index [::scidb::db::get gameIndex $number $view $base $variant]
-		if {$index >= 0} {
-			if {$index == 0} { set state disabled } else { set state normal }
-			::toolbar::childconfigure $Vars(game:prev) -state $state
-			::toolbar::childconfigure $Vars(game:first) -state $state
-			if {$index + 1 == $numGames} { set state disabled } else { set state normal }
-			::toolbar::childconfigure $Vars(game:next) -state $state
-			::toolbar::childconfigure $Vars(game:last) -state $state
-			return
+	if {[llength $Vars(current:game)] > 1 && $position < 9} {
+		lassign $Vars(current:game) position base variant view number
+		set numGames [scidb::view::count games $base $variant $view]
+		if {$numGames > 1} {
+			if {[::scidb::game::view $position next] >= 0} {
+				array set state { next normal last normal }
+				set state(random) normal
+			}
+			if {[::scidb::game::view $position prev] >= 0} {
+				array set state { prev normal first normal }
+				set state(random) normal
+			}
 		}
 	}
 
-	foreach action {next prev first last} {
-		::toolbar::childconfigure $Vars(game:$action) -state disabled
+	foreach action {next prev first last random} {
+		::toolbar::childconfigure $Vars(game:$action) -state $state($action)
+	}
+}
+
+
+proc UpdateGameButtonState(base) {base variant} {
+	variable Vars
+
+	if {$Vars(load:method) eq "list"} { return }
+
+	set position [::scidb::game::current]
+	set numGames [scidb::view::count games $base $variant 0]
+	array set state { random disabled prev disabled next disabled first disabled last disabled }
+
+	if {$numGames > 0} {
+		set state(random) normal
+		lassign [::scidb::game::link? $position] myBase myVariant index
+		if {$myBase ne $base || $myVariant ne $variant} { set index -1 }
+		if {$index > 0} { array set state { prev normal first normal } }
+		if {$index + 1 < $numGames} { array set state { next normal last normal } }
+	}
+
+	foreach action {next prev first last random} {
+		::toolbar::childconfigure $Vars(game:$action) -state $state($action)
 	}
 }
 
@@ -1360,32 +1482,72 @@ proc UpdateGameButtonState {} {
 proc UpdateGameList {position id base variant {view -1} {index -1}} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] <= 1} { return }
-	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
+	if {[llength $Vars(current:game)] <= 1} {
+		UpdateGameButtonState(list) $position
+	} else {
+		lassign $Vars(current:game) currPos currBase currVariant currView currNumber
 
-	if {$currBase eq $base && $variant eq $currVariant && ($currView == $view || $currView == 0)} {
-		UpdateGameButtonState
+		if {$currBase eq $base && $variant eq $currVariant && ($currView == $view || $currView == 0)} {
+			UpdateGameButtonState(list) $position
+		}
 	}
 }
 
 
-proc CloseGameList {position base variant {view {}}} {
+proc CloseView {position base variant view} {
 	variable Vars
 
-	if {[llength $Vars(current:game)] <= 1} { return }
-	lassign $Vars(current:game) currPos currBase currVariant currView currNumber
-
-	if {$base eq $currBase && $variant eq $currVariant && ([llength $view] == 0 || $view == $currView)} {
-		if {[llength $Vars(subscribe:list)]} {
-			::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)
-			set Vars(subscribe:list) {}
+	if {[llength $Vars(current:game)]} {
+		lassign $Vars(current:game) currPos currBase currVariant currView currNumber
+		if {	$currPos == $position
+			&& $currBase == $base
+			&& $currVariant == $variant
+			&& $currView == $view} {
+			Unsubscribe $position
+			set Vars(current:game) {}
+			SwitchView base
 		}
+	}
+}
 
-		set Vars(current:game) {}
 
-		foreach action {next prev first last} {
-			::toolbar::childconfigure $Vars(game:$action) -state disabled
+proc UpdateGameInfo {position id} {
+	variable Vars
+
+	if {$position == $id && [llength $Vars(current:game)]} {
+		if {[lindex $Vars(current:game) 0] == $position} {
+			Unsubscribe $position
+			set Vars(current:game) {}
+			SwitchView base
 		}
+	}
+}
+
+
+proc Subscribe {position base variant} {
+	variable Vars
+
+	set cmd [list [namespace current]::UpdateGameList {} $position]
+	after idle [list ::scidb::db::subscribe gameList {*}$cmd]
+	set Vars(subscribe:list) $cmd
+
+	set cmd [list [namespace current]::UpdateGameInfo $position]
+	after idle [list ::scidb::db::subscribe gameInfo {*}$cmd]
+	set Vars(subscribe:info) $cmd
+}
+
+
+proc Unsubscribe {position} {
+	variable Vars
+
+	if {[llength $Vars(subscribe:list)]} {
+		after idle [list ::scidb::db::unsubscribe gameList {*}$Vars(subscribe:list)]
+		set Vars(subscribe:list) {}
+	}
+
+	if {[llength $Vars(subscribe:info)]} {
+		after idle [list ::scidb::db::unsubscribe gameInfo {*}$Vars(subscribe:info)]
+		set Vars(subscribe:info) {}
 	}
 }
 

@@ -41,10 +41,10 @@
 #include <ctype.h>
 #include <string.h>
 
-#ifdef NREQ
-# define DEBUG(x)
-#else
+#ifdef M_CHECK
 # define DEBUG(x) x
+#else
+# define DEBUG(x)
 #endif
 
 
@@ -245,7 +245,7 @@ Consumer::writeComment(	Comment const& preComment,
 		for (unsigned i = 0; i < annotation.count(); ++i)
 		{
 			m_strm.put(token::Nag);
-			m_strm.put(annotation[i]);
+			m_data.put(annotation[i]);
 		}
 
 		m_endOfRun = true;

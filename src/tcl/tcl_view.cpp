@@ -85,22 +85,22 @@ namespace {
 
 struct Subscriber : public Cursor::Subscriber
 {
-	typedef mstl::tuple<Obj,Obj,Obj> Tuple;
+	typedef mstl::tuple<Obj,Obj,Obj,variant::Type> Tuple;
 
-	void addProc(Tcl_Obj* base, Tcl_Obj* proc, Tcl_Obj* arg)
+	void addProc(Tcl_Obj* base, variant::Type variant, Tcl_Obj* proc, Tcl_Obj* arg)
 	{
 		M_ASSERT(base);
 		M_ASSERT(proc);
 
-		m_list.push_back(Tuple(base, proc, arg));
+		m_list.push_back(Tuple(proc, arg, base, variant));
 		m_list.back().get<0>().ref();
 		m_list.back().get<1>().ref();
 		m_list.back().get<2>().ref();
 	}
 
-	void removeProc(Tcl_Obj* base, Tcl_Obj* proc, Tcl_Obj* arg)
+	void removeProc(Tcl_Obj* base, variant::Type variant, Tcl_Obj* proc, Tcl_Obj* arg)
 	{
-		List::iterator i = mstl::find(m_list.begin(), m_list.end(), Tuple(base, proc, arg));
+		List::iterator i = mstl::find(m_list.begin(), m_list.end(), Tuple(proc, arg, base, variant));
 
 		if (i == m_list.end())
 		{
@@ -115,19 +115,24 @@ struct Subscriber : public Cursor::Subscriber
 		}
 	}
 
-	void close(unsigned view) override
+	void close(mstl::string const& name, variant::Type variant, unsigned view) override
 	{
+		Tcl_Obj* u = tcl::game::objFromVariant(variant);
 		Tcl_Obj* v = Tcl_NewIntObj(view);
+
 		Tcl_IncrRefCount(v);
 
 		for (unsigned i = 0; i < m_list.size(); ++i)
 		{
 			Tuple const& data = m_list[i];
 
-			if (data.get<2>())
-				invoke(__func__, data.get<0>()(), data.get<2>()(), data.get<1>()(), v, nullptr);
-			else
-				invoke(__func__, data.get<0>()(), data.get<1>()(), v, nullptr);
+			if (name == Tcl_GetString(data.get<2>()) && variant == data.get<3>())
+			{
+				if (data.get<1>())
+					invoke(__func__, data.get<0>()(), data.get<1>()(), data.get<2>()(), u, v, nullptr);
+				else
+					invoke(__func__, data.get<0>()(), data.get<2>()(), u, v, nullptr);
+			}
 		}
 
 		Tcl_DecrRefCount(v);
@@ -786,9 +791,10 @@ cmdMap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Tcl_Obj* proc	= objectFromObj(objc, objv, 1);
-	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
-	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
+	Tcl_Obj*			proc		= objectFromObj(objc, objv, 1);
+	Tcl_Obj*			base		= objectFromObj(objc, objv, 2);
+	variant::Type	variant	= game::variantFromObj(objc, objv, 3);
+	Tcl_Obj*			arg		= objc > 4 ? objv[4] : 0;
 
 	mstl::string basename(Tcl_GetString(base));
 	Cursor const& cursor = Scidb->cursor(basename); // don't cancel tree search
@@ -801,7 +807,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		const_cast<Cursor&>(cursor).setSubscriber(subscriber);
 	}
 
-	subscriber->addProc(proc, base, arg);
+	subscriber->addProc(base, variant, proc, arg);
 
 	return TCL_OK;
 }
@@ -810,16 +816,17 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Tcl_Obj* proc	= objectFromObj(objc, objv, 1);
-	Tcl_Obj* base	= objectFromObj(objc, objv, 2);
-	Tcl_Obj* arg = objc > 3 ? objv[3] : 0;
+	Tcl_Obj*			proc		= objectFromObj(objc, objv, 1);
+	Tcl_Obj*			base		= objectFromObj(objc, objv, 2);
+	variant::Type	variant	= game::variantFromObj(objc, objv, 3);
+	Tcl_Obj*			arg		= objc > 4 ? objv[4] : 0;
 
 	mstl::string basename(Tcl_GetString(base));
 	SubscriberMap::iterator i = ::subscriberMap.find(basename);
 
 	if (i != subscriberMap.end())
 	{
-		i->second->removeProc(proc, base, arg);
+		i->second->removeProc(base, variant, proc, arg);
 
 		if (i->second->m_list.empty())
 			::subscriberMap.erase(i);
