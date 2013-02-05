@@ -230,7 +230,7 @@ tcl::game::objFromVariant(::db::variant::Type variant)
 
 	if (size_t(variant) >= m_variants.size() || m_variants[variant] == 0)
 	{
-		char const* s;
+		char const* s = 0;
 
 		switch (variant)
 		{

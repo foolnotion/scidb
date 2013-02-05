@@ -140,7 +140,9 @@ extractRoundNumber(mstl::string& str, unsigned& round, unsigned& subround)
 static bool
 extractAnnotator(mstl::string& source, mstl::string& annotator)
 {
-	char* s = ::strchr(source, '[');
+	char* s = source.data();
+
+	s = ::strchr(s, '[');
 
 	if (s)
 	{
@@ -600,7 +602,7 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 		int letter	= (code - 1)/100 + 'A';
 		int number	= (code - 1) % 100;
 
-		if ('A' <= letter & letter <= 'E' && number <= 99)
+		if ('A' <= letter && letter <= 'E' && number <= 99)
 		{
 			Eco eco;
 			eco.setup(letter, number);
