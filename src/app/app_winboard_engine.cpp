@@ -481,11 +481,15 @@ winboard::Engine::startAnalysis(bool)
 		::sys::signal::sendInterrupt(pid());
 
 	send("new");
+	send("force");
 
 	if (m_featureVariant)
 	{
 		if (isChess960Position())
 		{
+			if (m_variant != variant::Normal)
+				error(app::Engine::Chess_960_Not_Supported);
+
 			v = m_chess960Variant;
 		}
 		else
@@ -507,8 +511,6 @@ winboard::Engine::startAnalysis(bool)
 
 		send("variant " + v);
 	}
-
-	send("force");
 
 	if (moves.empty())
 	{

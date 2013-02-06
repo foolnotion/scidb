@@ -75,9 +75,9 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	,m_needPostComment(false)
 	,m_hasPrecedingComment(false)
 {
-	M_REQUIRE(test(Flag_Use_Scidb_Import_Format) != test(Flag_Use_ChessBase_Format));
-	M_REQUIRE(test(Flag_Use_Scidb_Import_Format) != test(Flag_Strict_PGN_Standard));
-	M_REQUIRE(test(Flag_Use_ChessBase_Format) != test(Flag_Strict_PGN_Standard));
+	M_REQUIRE(!test(Flag_Use_Scidb_Import_Format) || !test(Flag_Use_ChessBase_Format));
+	M_REQUIRE(!test(Flag_Use_Scidb_Import_Format) || !test(Flag_Strict_PGN_Standard));
+	M_REQUIRE(!test(Flag_Use_ChessBase_Format) || !test(Flag_Strict_PGN_Standard));
 
 	if (test(Flag_Use_Scidb_Import_Format))
 	{

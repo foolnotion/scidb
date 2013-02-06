@@ -26,6 +26,8 @@
 
 #include "cbf_decoder_position.h"
 
+#include "db_board_base.h"
+
 #include "u_byte_stream.h"
 
 #include "m_utility.h"
@@ -168,21 +170,77 @@ Position::doMove(unsigned moveNumber)
 
 					for (unsigned j = 0; j < iteration; ++j)
 					{
-						if (!sq::isValidFyle(f += moveGen->df))
-							break;
+						if (type == piece::King && mstl::abs(moveGen->df) == 2 && f == sq::FyleE)
+						{
+							if (sideToMove == color::White)
+							{
+								if (r != sq::Rank1)
+									break;
 
-						if (piece == piece::BlackPawn)
-							r -= moveGen->dr;
+								if (moveGen->df == 2)
+								{
+									if (	board.pieceAt(sq::h1) != piece::WhiteRook
+										|| board.anyOccupied(board::F1 | board::G1))
+									{
+										break;
+									}
+								}
+								else
+								{
+									if (	board.pieceAt(sq::a1) != piece::WhiteRook
+										|| board.anyOccupied(board::B1 | board::C1 | board::D1))
+									{
+										break;
+									}
+								}
+							}
+							else
+							{
+								if (r != sq::Rank8)
+									break;
+
+								if (moveGen->df == 2)
+								{
+									if (	board.pieceAt(sq::h8) != piece::BlackRook
+										|| board.anyOccupied(board::F8 | board::G8))
+									{
+										break;
+									}
+								}
+								else
+								{
+									if (	board.pieceAt(sq::a8) != piece::BlackRook
+										|| board.anyOccupied(board::B8 | board::C8 | board::D8))
+									{
+										break;
+									}
+								}
+							}
+
+							move = board.makeMove(sq, sq::make(f + moveGen->df, r), piece::None);
+							M_ASSERT(move);
+						}
 						else
-							r += moveGen->dr;
+						{
+							if (!sq::isValidFyle(f += moveGen->df))
+								break;
 
-						if (!sq::isValidRank(r))
-							break;
+							if (piece == piece::BlackPawn)
+								r -= moveGen->dr;
+							else
+								r += moveGen->dr;
 
-						move = board.prepareMove(sq, sq::make(f, r), variant::Normal, move::AllowIllegalMove);
+							if (!sq::isValidRank(r))
+								break;
 
-						if (!move || (move.isEnPassant() != moveGen->epIndex))
-							break;
+							move = board.prepareMove(	sq,
+																sq::make(f, r),
+																variant::Normal,
+																move::AllowIllegalMove);
+
+							if (!move || (move.isEnPassant() != moveGen->epIndex))
+								break;
+						}
 
 						count += move.isPromotion() ? 4 : 1;
 

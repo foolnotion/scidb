@@ -164,14 +164,14 @@ set MoveInfo(videoTime)				"Video Time"
 
 }
 
-set MoveInfoExample(evaluation)			{[%eval -6.05]}
-set MoveInfoExample(playersClock)		{[%clk 1:05:23]}
-set MoveInfoExample(elapsedGameTime)	{[%egt 1:25:42]}
-set MoveInfoExample(elapsedMoveTime)	{[%emt 0:05:42]}
-set MoveInfoExample(elapsedMilliSecs)	{[%emt 102.34]}
-set MoveInfoExample(clockTime)			{[%ct 17:10:42]}
-set MoveInfoExample(corrChessSent)		{[%ccsnt 2011.06.16, 17:53:02]}
-set MoveInfoExample(videoTime)			{[%vt 122.44]}
+set MoveInfoExample(evaluation)			{ {[%eval -6.05]}		{-6.05} }
+set MoveInfoExample(playersClock)		{ {[%clk 1:05:23]}	{clk 1:05:23} }
+set MoveInfoExample(elapsedGameTime)	{ {[%egt 1:25:42]}	{egt 1:25:42} }
+set MoveInfoExample(elapsedMoveTime)	{ {[%emt 0:05:42]}	{emt 0:05:42} }
+set MoveInfoExample(elapsedMilliSecs)	{ {[%emt 102.34]}		{emt 102.34} }
+set MoveInfoExample(clockTime)			{ {[%ct 17:10:42]}	{ct 17:10:42} }
+set MoveInfoExample(corrChessSent)		{ {[%ccsnt 2011.06.16, 17:53:02]} {2011.06.16, 17:53:02} }
+set MoveInfoExample(videoTime)			{ {[%vt 122.44]}		{vt 122.44} }
 
 set MoveInfoAttrs {evaluation playersClock elapsedGameTime elapsedMoveTime
 							elapsedMilliSecs clockTime corrChessSent videoTime}
@@ -1511,14 +1511,16 @@ proc StripMoveInfo {parent file} {
 			-variable [namespace current]::Vars(moveInfo:$attr) \
 			-command [namespace code [list CheckOkButton $dlg.ok]] \
 			;
-		ttk::label $top.l$attr -text "$mc::Example: $MoveInfoExample($attr)"
-		grid $top.$attr  -row $row -column 1 -sticky w
-		grid $top.l$attr -row $row -column 3 -sticky w
+		ttk::label $top.l1$attr -text "$mc::Example: \"[lindex $MoveInfoExample($attr) 1]\""
+		ttk::label $top.l2$attr -text [lindex $MoveInfoExample($attr) 0]
+		grid $top.$attr   -row $row -column 1 -sticky we
+		grid $top.l1$attr -row $row -column 3 -sticky w
+		grid $top.l2$attr -row $row -column 5 -sticky w
 		grid rowconfigure $top [incr row] -minsize $::theme::pady
 		incr row
 	}
 
-	grid columnconfigure $top {0 4} -minsize $::theme::padx
+	grid columnconfigure $top {0 4 6} -minsize $::theme::padx
 	grid columnconfigure $top {2} -minsize $::theme::padX
 	grid rowconfigure $top 0 -minsize $::theme::pady
 	pack $top -fill both
@@ -1621,7 +1623,7 @@ proc StripPGNTags {parent file} {
 			-variable [namespace current]::Vars(tag:$name) \
 			;
 		ttk::label $top.f$name -text [::locale::formatNumber $freq]
-		grid $top.b$name -row $row -column 1 -sticky w
+		grid $top.b$name -row $row -column 1 -sticky we
 		grid $top.f$name -row $row -column 3 -sticky e
 		grid rowconfigure $top [incr row] -minsize $::theme::pady
 		incr row

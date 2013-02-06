@@ -1022,12 +1022,10 @@
 ::application::analysis::mc::LinesPerVariation			"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder				"Sortiere nach Bewertung"
 ::application::analysis::mc::Engine							"Motor"
-::application::analysis::mc::Ply								"hz"
 
-::application::analysis::mc::Seconds(short)				"s"
-::application::analysis::mc::Seconds(long)				"sek."
-::application::analysis::mc::Minutes(short)				"m"
-::application::analysis::mc::Minutes(long)				"min."
+::application::analysis::mc::Ply								"hz"
+::application::analysis::mc::Seconds						"sek"
+::application::analysis::mc::Minutes						"min"
 
 ::application::analysis::mc::Status(checkmate)			"%s ist schachmatt"
 ::application::analysis::mc::Status(stalemate)			"%s ist patt"

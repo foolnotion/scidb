@@ -797,4 +797,11 @@ Codec::getSuffixes(mstl::string const&, StringList& result)
 	result.push_back("cpo");
 }
 
+
+void
+Codec::reloadDescription(mstl::string const& rootname)
+{
+	// no action
+}
+
 // vi:set ts=3 sw=3:

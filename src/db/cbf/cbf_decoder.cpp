@@ -90,8 +90,10 @@ Decoder::decodeAnnotation(ByteStream& strm)
 			nag::BetterMove,
 		};
 
-		if (evaluation < U_NUMBER_OF(Lookup))
-			m_currentNode->addAnnotation(Lookup[evaluation]);
+		if (evaluation <= U_NUMBER_OF(Lookup))
+			m_currentNode->addAnnotation(Lookup[evaluation - 1]);
+		else if (evaluation == 0xff)
+			return;
 	}
 
 	if (Byte estimation = strm.get())
@@ -115,8 +117,10 @@ Decoder::decodeAnnotation(ByteStream& strm)
 			nag::ForcedMove,
 		};
 
-		if (estimation < U_NUMBER_OF(Lookup))
-			m_currentNode->addAnnotation(Lookup[estimation]);
+		if (estimation <= U_NUMBER_OF(Lookup))
+			m_currentNode->addAnnotation(Lookup[estimation - 1]);
+		else if (estimation == 0xff)
+			return;
 	}
 
 	if (Byte remark = strm.get())
@@ -132,17 +136,22 @@ Decoder::decodeAnnotation(ByteStream& strm)
 			// we will ignore "Break"
 		};
 
-		if (remark < U_NUMBER_OF(Lookup))
-			m_currentNode->addAnnotation(Lookup[remark]);
+		if (remark <= U_NUMBER_OF(Lookup))
+			m_currentNode->addAnnotation(Lookup[remark - 1]);
+		else if (remark == 0xff)
+			return;
 	}
 
-	mstl::string str;
-
-	bool useXml(false);
 	Byte c(strm.get());
+
+	if (c == 0xff)
+		return;
 
 	while (c == 0 && strm.remaining())
 		c = strm.get();
+
+	mstl::string str;
+	bool useXml(false);
 
 	for ( ; c != 0xff && strm.remaining(); c = strm.get())
 	{
@@ -198,20 +207,12 @@ Decoder::decodeAnnotation(ByteStream& strm)
 
 
 void
-Decoder::decodeVariation(ByteStream& moves, ByteStream& text, unsigned& remaining)
+Decoder::decodeVariation(ByteStream& moves, ByteStream& text)
 {
 	Move move;
 
-	for ( ; remaining; --remaining)
+	while (moves.remaining())
 	{
-		if (moves.remaining() == 0)
-		{
-			if (m_position.variationLevel() > 0)
-				throwCorruptData();
-
-			return; // end of game (bug in ChessBase?)
-		}
-
 		Byte b = moves.get();
 
 		switch (b)
@@ -226,7 +227,7 @@ Decoder::decodeVariation(ByteStream& moves, ByteStream& text, unsigned& remainin
 				m_position.push();
 				m_position.board().undoMove(move, variant::Normal);
 				current->addVariation(m_currentNode = new MoveNode);
-				decodeVariation(moves, text, remaining);
+				decodeVariation(moves, text);
 				m_currentNode = current;
 				m_position.pop();
 				break;
@@ -260,20 +261,12 @@ Decoder::decodeVariation(ByteStream& moves, ByteStream& text, unsigned& remainin
 
 
 void
-Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text, unsigned& remaining)
+Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text)
 {
 	Move move;
 
-	for ( ; remaining; --remaining)
+	while (moves.remaining())
 	{
-		if (moves.remaining() == 0)
-		{
-			if (m_position.variationLevel() > 0)
-				throwCorruptData();
-
-			return; // end of game (bug in ChessBase?)
-		}
-
 		Byte b = moves.get();
 
 		switch (b)
@@ -286,7 +279,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 				m_position.push();
 				m_position.board().undoMove(move, variant::Normal);
 				consumer.startVariation();
-				decodeVariation(moves, text, remaining);
+				decodeVariation(consumer, moves, text);
 				consumer.finishVariation();
 				m_position.pop();
 				break;
@@ -297,7 +290,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 
 			default:
 				if ((b & 0x7f) == 0)
-					return; // unexpected end of game (error)
+					return; // end of game (bug in ChessBase?)
 
 				move = m_position.doMove(b & 0x7f);
 
@@ -314,7 +307,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 											node.comment(move::Ante),
 											node.comment(move::Post),
 											node.marks());
-					if (!node.moveInfo().isEmpty())
+					if (node.hasMoveInfo())
 						consumer.putMoveInfo(node.moveInfo());
 				}
 				else
@@ -327,7 +320,7 @@ Decoder::decodeVariation(Consumer& consumer, ByteStream& moves, ByteStream& text
 }
 
 
-unsigned
+void
 Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
 {
 	Byte* buf = m_strm.base();
@@ -337,8 +330,8 @@ Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
 	unsigned sourceLen		= buf[5] & 0x3f;
 	unsigned totalMoveNum	= (buf[2] << 8) + buf[3];
 	unsigned movePos			= playersLen + sourceLen + 14;
-	unsigned textPos			= movePos + totalMoveNum - 1;
-	unsigned boardPos			= textPos + (buf[6] << 8) + buf[7];
+	unsigned textPos			= movePos + totalMoveNum;
+	unsigned boardPos			= textPos + (buf[6] << 8) + buf[7] - 1;
 	unsigned endPos			= buf[10] & 1 ? boardPos + 33 : boardPos;
 
 	if (endPos > m_strm.size())
@@ -350,13 +343,13 @@ Decoder::prepareDecoding(ByteStream& moveArea, ByteStream& textArea)
 	textArea.setup(m_strm.base() + textPos, boardPos - textPos);
 	moveArea.setup(m_strm.base() + movePos, textPos - movePos);
 
-	if (moveAreaLength == 0)
-		return 0;
+	if (moveAreaLength > 0)
+	{
+		if (moveAreaLength > 1)
+			::xorBuffer(moveArea.base() + 1, moveAreaLength - 2, 49*moveAreaLength);
 
-	if (moveAreaLength > 1)
-		::xorBuffer(moveArea.base() + 1, moveAreaLength - 2, 49*moveAreaLength);
-
-	return moveAreaLength - 1;
+		moveArea.reset(mstl::min(moveAreaLength - 1, moveArea.size()));
+	}
 }
 
 
@@ -364,11 +357,11 @@ void
 Decoder::doDecoding(GameData& data)
 {
 	ByteStream moves, text;
-	unsigned moveAreaLength = prepareDecoding(moves, text);
 
+	prepareDecoding(moves, text);
 	data.m_startBoard = m_position.board();
 	m_currentNode = data.m_startNode;
-	decodeVariation(moves, text, moveAreaLength);
+	decodeVariation(moves, text);
 	m_currentNode->setNext(new MoveNode);
 }
 
@@ -377,11 +370,11 @@ save::State
 Decoder::doDecoding(Consumer& consumer, TagSet& tags)
 {
 	ByteStream moves, text;
-	unsigned moveAreaLength = prepareDecoding(moves, text);
 
+	prepareDecoding(moves, text);
 	consumer.startGame(tags, m_position.board());
 	consumer.startMoveSection();
-	decodeVariation(moves, text, moveAreaLength);
+	decodeVariation(consumer, moves, text);
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 
 	return consumer.finishGame(tags);

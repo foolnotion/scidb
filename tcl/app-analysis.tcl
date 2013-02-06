@@ -53,12 +53,10 @@ set OperationFailed			"Operation '%s' failed due to raise conditions."
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
 set Engine						"Engine"
-set Ply							"ply"
 
-set Seconds(short)			"s"
-set Seconds(long)				"secs"
-set Minutes(short)			"m"
-set Minutes(long)				"mins"
+set Ply							"ply"
+set Seconds						"sec"
+set Minutes						"min"
 
 set Status(checkmate)		"%s is checkmate"
 set Status(stalemate)		"%s is stalemate"
@@ -826,13 +824,11 @@ proc Display(time) {time depth seldepth nodes} {
 		set minutes [expr {$seconds/60}]
 		if {$minutes} {
 			set seconds [expr {$seconds % 60}]
-			if {$seconds} {
-				append txt $minutes " " $mc::Minutes(short) " " $seconds " " $mc::Seconds(short)
-			} else {
-				append txt $minutes " " $mc::Minutes(long)
-			}
+			append txt $minutes ":"
+			if {[string length $seconds] == 1} { append txt "0" }
+			append txt $seconds " " $mc::Minutes
 		} elseif {$seconds} {
-			append txt $seconds " " $mc::Seconds(long)
+			append txt $seconds " " $mc::Seconds
 		}
 		$Vars(time) configure -text $txt
 	}

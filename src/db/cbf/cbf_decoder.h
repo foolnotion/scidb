@@ -58,14 +58,11 @@ private:
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);
 
-	unsigned prepareDecoding(util::ByteStream& moveArea, util::ByteStream& textArea);
+	void prepareDecoding(util::ByteStream& moveArea, util::ByteStream& textArea);
 
 	void decodeAnnotation(util::ByteStream& strm);
-	void decodeVariation(util::ByteStream& moves, util::ByteStream& text, unsigned& remaining);
-	void decodeVariation(db::Consumer& consumer,
-								util::ByteStream& moves,
-								util::ByteStream& text,
-								unsigned& remaining);
+	void decodeVariation(util::ByteStream& moves, util::ByteStream& text);
+	void decodeVariation(db::Consumer& consumer, util::ByteStream& moves, util::ByteStream& text);
 
 	::db::MoveNode*	m_currentNode;
 	util::ByteStream&	m_strm;

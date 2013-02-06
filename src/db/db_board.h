@@ -317,8 +317,10 @@ public:
 	bool hasBishopOnDark(color::ID side) const;
 	/// Returns whether given side has a bishop on lite squares
 	bool hasBishopOnLite(color::ID side) const;
-	/// Returns whether the partner board (Bughouse) is set.
+	/// Returns whether the partner board (Bughouse) is set
 	bool hasPartnerBoard() const;
+	/// Returns whether any of the given squares is occupied
+	bool anyOccupied(uint64_t squares) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
 	unsigned checkState(variant::Type variant) const;

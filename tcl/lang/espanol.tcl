@@ -1023,13 +1023,11 @@
 ::application::analysis::mc::LinesPerVariation			"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder				"Ordenar por evaluación"
 ::application::analysis::mc::Engine							"Motor de Análisis"
+
 # Note for translators: don't use more than 4 characters
 ::application::analysis::mc::Ply								"ply" ;# NEW
-
-::application::analysis::mc::Seconds(short)				"s" ;# NEW
-::application::analysis::mc::Seconds(long)				"secs" ;# NEW
-::application::analysis::mc::Minutes(short)				"m" ;# NEW
-::application::analysis::mc::Minutes(long)				"mins" ;# NEW
+::application::analysis::mc::Seconds						"sec" ;# NEW
+::application::analysis::mc::Minutes						"min" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)			"%s es jaque mate"
 ::application::analysis::mc::Status(stalemate)			"%s es ahogado"

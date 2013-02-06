@@ -1027,13 +1027,11 @@
 ::application::analysis::mc::LinesPerVariation			"Rader per variant"
 ::application::analysis::mc::BestFirstOrder				"Sortera på  värdering"
 ::application::analysis::mc::Engine							"Motor" ;# NEW
+
 # Note for translators: don't use more than 4 characters
 ::application::analysis::mc::Ply								"ply" ;# NEW
-
-::application::analysis::mc::Seconds(short)				"s" ;# NEW
-::application::analysis::mc::Seconds(long)				"secs" ;# NEW
-::application::analysis::mc::Minutes(short)				"m" ;# NEW
-::application::analysis::mc::Minutes(long)				"mins" ;# NEW
+::application::analysis::mc::Seconds						"sec" ;# NEW
+::application::analysis::mc::Minutes						"min" ;# NEW
 
 ::application::analysis::mc::Status(checkmate)			"%s är matt"
 ::application::analysis::mc::Status(stalemate)			"%s är patt"

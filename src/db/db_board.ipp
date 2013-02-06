@@ -92,6 +92,14 @@ inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number;
 
 
 inline
+bool
+Board::anyOccupied(uint64_t squares) const
+{
+	return m_occupied & squares;
+}
+
+
+inline
 void
 Board::setStandardPosition()
 {
