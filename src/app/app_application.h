@@ -120,6 +120,7 @@ public:
 		virtual void updateGameData(unsigned position, bool evenMainline) = 0;
 
 		virtual void gameSwitched(unsigned position) = 0;
+		virtual void gameClosed(unsigned position) = 0;
 		virtual void databaseSwitched(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void updateTree(mstl::string const& name, db::variant::Type variant) = 0;
 		virtual void closeDatabase(mstl::string const& name, db::variant::Type variant) = 0;

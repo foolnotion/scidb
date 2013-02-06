@@ -262,9 +262,10 @@ struct Subscriber : public Application::Subscriber
 		GameData				= 1 << 7,
 		GameHistory			= 1 << 8,
 		GameSwitched		= 1 << 9,
-		DatabaseSwitched	= 1 << 10,
-		Tree					= 1 << 11,
-		None					= 1 << 12,
+		GameClosed			= 1 << 10,
+		DatabaseSwitched	= 1 << 11,
+		Tree					= 1 << 12,
+		None					= 1 << 13,
 	};
 
 	typedef mstl::tuple<Obj, Obj, Obj> Tuple;
@@ -386,6 +387,11 @@ struct Subscriber : public Application::Subscriber
 	void setGameSwitchedCmd(Tcl_Obj* updateCmd)
 	{
 		setCmd(GameSwitched, updateCmd, 0, 0);
+	}
+
+	void setGameClosedCmd(Tcl_Obj* updateCmd)
+	{
+		setCmd(GameClosed, updateCmd, 0, 0);
 	}
 
 	void setDatabaseSwitchedCmd(Tcl_Obj* updateCmd)
@@ -562,6 +568,22 @@ struct Subscriber : public Application::Subscriber
 			Args const& i = m_list[k];
 
 			if (i.m_type == GameSwitched)
+				invoke(__func__, i.getUpdate(), pos, nullptr);
+		}
+
+		Tcl_DecrRefCount(pos);
+	}
+
+	void gameClosed(unsigned position) override
+	{
+		Tcl_Obj* pos = Tcl_NewIntObj(position);
+		Tcl_IncrRefCount(pos);
+
+		for (unsigned k = 0; k < m_last; ++k)
+		{
+			Args const& i = m_list[k];
+
+			if (i.m_type == GameClosed)
 				invoke(__func__, i.getUpdate(), pos, nullptr);
 		}
 
@@ -3231,7 +3253,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"dbInfo|gameList|playerList|annotatorList|eventList|siteList|gameInfo|"
-			"gameData|gameHistory|gameSwitch|databaseSwitch|tree <update-cmd> ??"
+			"gameData|gameHistory|gameSwitch|gameClose|databaseSwitch|tree <update-cmd> ??"
 			"<close-cmd> ?<arg>?");
 		return TCL_ERROR;
 	}
@@ -3239,13 +3261,14 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	static char const* subcommands[] =
 	{
 		"dbInfo", "gameList", "playerList", "annotatorList", "eventList", "siteList",
-		"gameInfo", "gameData", "gameHistory", "gameSwitch", "databaseSwitch", "tree", 0
+		"gameInfo", "gameData", "gameHistory", "gameSwitch", "gameClose", "databaseSwitch",
+		"tree", 0
 	};
 	enum
 	{
 		Cmd_DbInfo, Cmd_GameList, Cmd_PlayerList, Cmd_AnnotatorList, Cmd_EventList,
 		Cmd_SiteList, Cmd_GameInfo, Cmd_GameData, Cmd_GameHistory, Cmd_GameSwitch,
-		Cmd_DatabaseSwitched, Cmd_Tree,
+		Cmd_GameClose, Cmd_DatabaseSwitched, Cmd_Tree,
 	};
 
 	Subscriber* subscriber = static_cast<Subscriber*>(scidb->subscriber());
@@ -3302,6 +3325,10 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_GameSwitch:
 			subscriber->setGameSwitchedCmd(updateCmd);
+			break;
+
+		case Cmd_GameClose:
+			subscriber->setGameClosedCmd(updateCmd);
 			break;
 
 		case Cmd_DatabaseSwitched:
