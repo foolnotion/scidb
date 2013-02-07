@@ -6,7 +6,7 @@
 *********************************************************************** -->
 
 <!-- **********************************************************************
-* Copyright: (C) 2012 Gregor Cramer
+* Copyright: (C) 2012-2013 Gregor Cramer
 *********************************************************************** -->
 
 <!-- **********************************************************************
@@ -33,11 +33,6 @@ sich insbesondere zum Sichten einer Partienliste.
 </p>
 
 <p>
-Zur Einstellung der Textausgabe steht ein kontextsensitives Menü
-bereit.
-</p>
-
-<p>
 Der Partienkopf enthält drei Schaltflächen: das Ereignis und die
 Spielernamen. Durch Klicken und Halten der mittleren Maustaste auf
 einer Schaltfläche wird eine Informationsbox angezeigt. Durch
@@ -46,9 +41,128 @@ geöffnet.
 </p>
 
 <p>
+Wechselt die Farbe des Partienkopfs von blau auf rot, so signalisiert
+dies, daß die vorliegende Partie zwischenzeitlich in der Datenbank
+geändert wurde. Sie kann erneut geladen werden, um die aktuelle Partie
+zu sehen (<see/> <a href="#ReloadGame">%::browser::mc::ReloadGame%</a>
+im kontextsensitiven Menü).
+</p>
+
+<p>
 Wird der Mauszeiger ausserhalb des Textfensters (mit den Partiezügen)
 positioniert, aber noch innerhalb des Dialogs, kann das Mausrad zum
 Vorspielen der Züge eingesetzt werden.
+</p>
+
+<p>
+Durch Klicken und Halten der mittleren Maustaste auf einem Partiezug
+wird die zugehörige Brettstellung angezeigt. Wird gleichzeitig
+<key>Shift</key> gehalten während des Klicks, so wird nur die
+Bauernstruktur gezeigt.
+</p>
+
+<p>
+Der Browser bietet folgendes kontextsensitives Menü:
+</p>
+
+<dir><img src="images/game-browser-menu.png" alt="folder" /></dir>
+
+<p>
+<menuitem>%::browser::mc::LoadGame%</menuitem>
+Lade die aktuelle Partie in den Partieneditor. Die aktuelle Partie
+im Editor wird durch diese Partie ersetzt, sofern sie nicht gesperrt
+oder modifiziert ist, andernfalls wird eine neue Partie im Editor
+geöffnet.
+</p>
+
+<p id="ReloadGame">
+<menuitem>%::browser::mc::ReloadGame%</menuitem>
+Aktualisiert die aktuelle Partie durch erneutes Laden. Dieser Menüpunkt
+isr nur dann aktiv, wenn die vorliegende Partie zwischenzeitlich in der
+Datenbank geändert wurde. Das eine veränderte Partie in der Datenbank
+vorliegt wird durch einen roten Partienkopf signalisiert (sonst blau).
+</p>
+
+<p>
+<menuitem>%::browser::mc::GotoGame(next)%</menuitem>
+Die nächste Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<menuitem>%::browser::mc::GotoGame(prev)%</menuitem>
+Die vorhergehende Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<menuitem>%::browser::mc::GotoGame(last)%</menuitem>
+Die letzte Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<menuitem>%::browser::mc::GotoGame(first)%</menuitem>
+Die erste Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<menuitem>%::browser::mc::IncreaseBoardSize%</menuitem>
+Das Schachbrett vergrößern, und damit auch den Dialog.
+</p>
+
+<p>
+<menuitem>%::browser::mc::IncreaseBoardSize%</menuitem>
+Das Schachbrett verkleinern, und damit auch den Dialog.
+</p>
+
+<p>
+<menuitem>%::browser::mc::MaximizeBoardSize%</menuitem>
+Die Schachbrettgröße maximieren, und damit auch den Dialog
+(jedoch kein Vollbild).
+</p>
+
+<p>
+<menuitem>%::browser::mc::MinimizeBoardSize%</menuitem>
+Die Schachbrettgröße minimieren, und damit auch den Dialog
+(jedoch nicht ikonifizieren).
+</p>
+
+<p>
+<menuitem>%::menu::mc::Fullscreen%</menuitem>
+Vollbild benutzen, d.h. der gesamte Bildschirm wird genutzt.
+Diese Funktion steht nicht bei jeder Bildschirmauflösung zur
+Verfügung.
+</p>
+
+<p>
+<menuitem>%::font::mc::IncreaseFontSize%</menuitem>
+Den Zeichensatz für die Textdarstellung vergrößern.
+</p>
+
+<p>
+<menuitem>%::font::mc::DecreaseFontSize%</menuitem>
+Den Zeichensatz für die Textdarstellung verkleinern.
+</p>
+
+<p>
+<menuitem>%::pgn::setup::mc::ParLayout(column-style)%</menuitem>
+Ein/Ausschalten der Spaltenformatierung im Partiefenster.
+</p>
+
+<p>
+<menuitem>%::application::pgn::mc::MoveNotation%</menuitem>
+Im zugehörigen Untermenü kann die Zugnotation ausgewählt werden:
+</p>
+
+INCLUDE ../Move-Notation.txt
+
+<p>
+<menuitem>%::pgn::setup::mc::Configure(browser)%</menuitem>
+Öffnet eine Dialog, der eine umfangreiche Konfiguration der Textausgabe
+anbietet.
+</p>
+
+<p>
+<menuitem>%::help::mc::Help%</menuitem>
+Öffnet diese Hilfeseite.
 </p>
 
 END

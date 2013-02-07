@@ -44,6 +44,7 @@
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
 #include "sys_info.h"
+#include "sys_vfs.h"
 
 #include "u_crc.h"
 #include "u_html.h"
@@ -75,6 +76,8 @@ static char const* CmdMapCodeToNag			= "::scidb::misc::mapCodeToNag";
 static char const* CmdMapExtension			= "::scidb::misc::mapExtension";
 static char const* CmdMapWindow				= "::scidb::misc::mapWindow";
 static char const* CmdMaxYear					= "::scidb::misc::maxYear";
+static char const* CmdMemFree					= "::scidb::misc::memFree";
+static char const* CmdMemTotal				= "::scidb::misc::memTotal";
 static char const* CmdMinYear					= "::scidb::misc::minYear";
 static char const* CmdNumberOfProcessors	= "::scidb::misc::numberOfProcessors";
 static char const* CmdPredPow2				= "::scidb::misc::predPow2";
@@ -1125,6 +1128,22 @@ cmdContainsUnicodeChar(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj*
 }
 
 
+static int
+cmdMemFree(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Tcl_NewWideIntObj(::sys::info::memFree()));
+	return TCL_OK;
+}
+
+
+static int
+cmdMemTotal(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Tcl_NewWideIntObj(::sys::info::memTotal()));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -1147,6 +1166,8 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdMapExtension,			cmdMapExtension);
 	createCommand(ti, CmdMapWindow,				cmdMapWindow);
 	createCommand(ti, CmdMaxYear,					cmdMaxYear);
+	createCommand(ti, CmdMemFree,					cmdMemFree);
+	createCommand(ti, CmdMemTotal,					cmdMemTotal);
 	createCommand(ti, CmdMinYear,					cmdMinYear);
 	createCommand(ti, CmdNumberOfProcessors,	cmdNumberOfProcessors);
 	createCommand(ti, CmdPredPow2,				cmdPredPow2);

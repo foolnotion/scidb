@@ -241,7 +241,7 @@ Process::Process(mstl::string const& command, mstl::string const& directory)
 	,m_calledExited(false)
 {
 #ifndef __WIN32__
-	// trap child events like crashes
+	// trap child events, e.g. crashes
 	if (!::m_childHandlerHooked)
 	{
 		signal(SIGCHLD, ::trapChildEvent);
@@ -478,7 +478,7 @@ Process::closeHandler(void* clientData)
 void
 Process::signalExited(int status)
 {
-	DEBUG(fprintf(stderr, "engine exited with error status %d\n", status));
+	DEBUG(fprintf(stderr, "process exited with error status %d\n", status));
 	m_running = false;
 	m_exitStatus = status;
 }
@@ -487,7 +487,7 @@ Process::signalExited(int status)
 void
 Process::signalCrashed()
 {
-	DEBUG(fprintf(stderr, "engine core dumped\n"));
+	DEBUG(fprintf(stderr, "process core dumped\n"));
 	m_running = false;
 	m_signalCrashed = true;
 }
@@ -496,7 +496,7 @@ Process::signalCrashed()
 void
 Process::signalKilled(char const* signal)
 {
-	DEBUG(fprintf(stderr, "engine is killed by signal %s\n", signal));
+	DEBUG(fprintf(stderr, "process is killed by signal %s\n", signal));
 	m_running = false;
 	m_signalKilled = true;
 }
@@ -505,7 +505,7 @@ Process::signalKilled(char const* signal)
 void
 Process::signalStopped()
 {
-	DEBUG(fprintf(stderr, "engine stopped\n"));
+	DEBUG(fprintf(stderr, "process stopped\n"));
 	m_stopped = true;
 	Tcl_DoWhenIdle(callStopped, this);
 }
@@ -514,7 +514,7 @@ Process::signalStopped()
 void
 Process::signalResumed()
 {
-	DEBUG(fprintf(stderr, "engine resumed\n"));
+	DEBUG(fprintf(stderr, "process resumed\n"));
 	m_stopped = false;
 	Tcl_DoWhenIdle(callResumed, this);
 }

@@ -35,7 +35,7 @@ sys::vfs::freeSize(mstl::string const& path)
 	return result ? availableForUser : int64_t(-1);
 }
 
-#elif defined(__unix__)
+#elif defined(__unix__) || defined(__MacOSX__)
 
 # if defined(HAVE_STATVFS)
 

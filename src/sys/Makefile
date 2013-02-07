@@ -89,6 +89,7 @@ sys_dl.o: ../mstl/m_exception.h
 sys_dl.o: ../mstl/m_backtrace.h
 sys_dl.o: ../mstl/m_exception.ipp
 sys_info.o: sys_info.h
+sys_info.o: ../mstl/m_types.h
 sys_fam.o: sys_fam.h
 sys_fam.o: ../mstl/m_string.h
 sys_fam.o: ../mstl/m_types.h

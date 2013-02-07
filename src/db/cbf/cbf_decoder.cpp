@@ -133,7 +133,7 @@ Decoder::decodeAnnotation(ByteStream& strm)
 			nag::EquivalentMove,
 			nag::BetterMove,
 			nag::WorseMove,
-			// we will ignore "Break"
+			nag::Null,	// ignore "Break"
 		};
 
 		if (remark <= U_NUMBER_OF(Lookup))

@@ -176,7 +176,7 @@ Scidb.
 <span class="NEW">Likewise any saved game list (file suffix <code>.txt</code>) will be
 disregarded.</span></p>
 
-<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>)</h2>
+<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
 
 <p>
 La compañía ChessBase mantiene su formato en secreto, motivo por el cual sólo se 
@@ -190,7 +190,8 @@ Las bases de datos ChessBase no podrán utilizarse como bases de referencia.
 </div>
 
 <p>
-Habitualmente estas bases se codifican con el grupo de caracteres CP1252, pero en algunos casos
+Habitualmente estas bases se codifican con el grupo de caracteres CP1252
+<span class="NEW">(or CP850 with old format)</span>, pero en algunos casos
 puede requerirse una selección manual del grupo de caracteres al abrir la base de datos para 
 asegurar una correcta exhibición de los nombres y de otro tipo de texto.
 </p>
@@ -211,11 +212,28 @@ los cuales son:
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbt &nbsp;=&nbsp;</kbd></td><td>Índice de torneos</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Índice de equipos</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Información de los equipos</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Archivo de inicialización de la base de 
     datos</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>Carpeta de documentos HTML</td></tr>
   </table>
 </div>
+
+<span class="NEW">
+<p>
+A database in old format consists of only four files:
+</p>
+
+<div class="box">
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Game data and moves</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Index data</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
+  </table>
+</div>
+</span>
 
 <h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 

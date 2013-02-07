@@ -1353,6 +1353,7 @@ tcl_misc.o: ../sys/sys_utf8_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.ipp
 tcl_misc.o: ../sys/sys_file.h
 tcl_misc.o: ../sys/sys_info.h
+tcl_misc.o: ../sys/sys_vfs.h
 tcl_misc.o: ../util/u_html.h
 tcl_misc.o: ../util/u_html.ipp
 tcl_pgn_reader.o: tcl_pgn_reader.h

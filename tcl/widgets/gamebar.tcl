@@ -1299,6 +1299,7 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 		$m add separator
 		set position [::scidb::game::current]
 		lassign [::scidb::game::link? $position] base variant index
+		set variant [::util::toMainVariant $variant]
 		unset -nocomplain state
 
 		set actual [::scidb::db::get name]
@@ -1415,12 +1416,14 @@ proc PopupEventMenu {gamebar id} {
 	menu $menu -tearoff 0
 
 	lassign [::scidb::game::link? $id] base variant _
+	set variant [::util::toMainVariant $variant]
 
 	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(event:locked) 1
 		set name [GetEventName $gamebar $id]
 		if {[string length $name]} {
 			lassign [::scidb::game::sink? $id] base variant index
+			set variant [::util::toMainVariant $variant]
 			::eventtable::popupMenu $gamebar $menu $base $variant 0 $index game
 			$menu add separator
 		}
@@ -1438,6 +1441,7 @@ proc PopupPlayerMenu {gamebar id side} {
 	menu $menu -tearoff 0
 
 	lassign [::scidb::game::link? $id] base variant _
+	set variant [::util::toMainVariant $variant]
 
 	if {[::scidb::db::get open? $base $variant]} {
 		set Specs(player:locked) 1
@@ -1446,6 +1450,7 @@ proc PopupPlayerMenu {gamebar id side} {
 		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
 			lassign [::scidb::game::sink? $id] base variant gameIndex
+			set variant [::util::toMainVariant $variant]
 			::playertable::popupMenu $menu $base $variant $info [list $gameIndex $side]
 			$menu add separator
 		}
@@ -1482,6 +1487,7 @@ proc BuildMenu {gamebar id side menu} {
 	
 		if {$current && [lindex [::scidb::game::sink? $id] 0] ne $::scidb::scratchbaseName} {
 			lassign [::scidb::game::link? $id] base variant index
+			set variant [::util::toMainVariant $variant]
 			if {[::scidb::db::get open? $base $variant] && ![::scidb::db::get readonly? $base $variant]} {
 				set flag [::scidb::db::get deleted? $index -1 $base]
 				if {$flag} { set var UndeleteGame } else { set var DeleteGame }
@@ -2140,6 +2146,7 @@ proc LeaveFlag {gamebar id} {
 
 proc GetEventInfo {gamebar id} {
 	lassign [::scidb::game::sink? $id] base variant index
+	set variant [::util::toMainVariant $variant]
 	return [scidb::db::fetch eventInfo $index $base $variant -card]
 }
 
@@ -2183,6 +2190,7 @@ proc HideEvent {gamebar id} {
 
 proc GetPlayerInfo {gamebar id side} {
 	lassign [::scidb::game::sink? $id] base variant index
+	set variant [::util::toMainVariant $variant]
 	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Any Any}]
 }
 
@@ -2204,6 +2212,7 @@ proc ShowPlayerCard {gamebar id side} {
 
 	if {[string length $name]} {
 		lassign [::scidb::game::sink? $id] base variant index
+		set variant [::util::toMainVariant $variant]
 		::playercard::show $base $variant $index $side
 	}
 }

@@ -1262,15 +1262,17 @@ proc PopupMenu {parent x y {base ""}} {
 					-state $state \
 					;
 
-				if {!$isClipbase} {
-					if {[::scidb::db::get compact? $base]} { set state normal } else { set state disabled }
-					$maint add command \
-						-label " $mc::FileCompact..." \
-						-image $::icon::16x16::none \
-						-compound left \
-						-command [namespace code [list Compact $top $base]] \
-						-state $state \
+				if {[::scidb::db::get compact? $base $Vars(variant)]} {
+					set state normal
+				} else {
+					set state disabled
 				}
+				$maint add command \
+					-label " $mc::FileCompact..." \
+					-image $::icon::16x16::none \
+					-compound left \
+					-command [namespace code [list Compact $top $base]] \
+					-state $state \
 			}
 		}
 

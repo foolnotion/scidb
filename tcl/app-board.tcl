@@ -511,6 +511,7 @@ proc LoadGame(list) {incr} {
 proc LoadGame(base) {incr} {
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
+	set variant [::util::toMainVariant $variant]
 	set currentBase [::scidb::db::get name]
 	set currentVariant [::scidb::app::variant]
 
@@ -1329,7 +1330,7 @@ proc GameSwitched {position} {
 
 	# reset if position is 9 (all games closed)
 
-	set variant [::scidb::game::query $position variant]
+	set variant [::scidb::game::query $position mainvariant?]
 	set base [lindex [::scidb::game::link?] 0]
 	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
 	set Vars(variant) $variant
@@ -1427,6 +1428,7 @@ proc UpdateGameControls {position} {
 	if {[llength $info]} {
 		lassign $info base variant view number
 		if {$view >= 0} {
+			set variant [::util::toMainVariant $variant]
 			set Vars(current:game) [list $position $base $variant $view $number]
 			Subscribe $position $base $variant
 			SwitchView list
@@ -1476,6 +1478,7 @@ proc UpdateGameButtonState(base) {base variant} {
 	if {$numGames > 0} {
 		set state(random) normal
 		lassign [::scidb::game::link? $position] myBase myVariant index
+		set myVariant [::util::toMainVariant $myVariant]
 		if {$myBase ne $base || $myVariant ne $variant} { set index -1 }
 		if {$index > 0} { array set state { prev normal first normal } }
 		if {$index + 1 < $numGames} { array set state { next normal last normal } }

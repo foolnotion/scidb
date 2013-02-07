@@ -439,6 +439,12 @@ proc databasePath {file} {
 }
 
 
+proc toMainVariant {variant} {
+	switch $variant { Suicide - Giveaway { return "Antichess" } }
+	return $variant
+}
+
+
 proc catchException {cmd {resultVar {}}} {
 	if {[catch { uplevel 1 $cmd } result options]} {
 		array set opts $options

@@ -580,7 +580,7 @@ proc Update {table base variant} {
 	variable Options
 
 ### VARIANTS ####################################
-if {[::scidb::game::query variant?] eq "Normal"} {
+if {[::scidb::game::query mainvariant?] eq "Normal"} {
 ::toolbar::childconfigure $Vars(switcher) -state readonly
 #################################################
 	if {[::scidb::tree::isUpToDate?]} { return }
@@ -616,7 +616,7 @@ proc DoSearch {table} {
 	variable Defaults
 
 ### VARIANTS ####################################
-if {[::scidb::game::query variant?] ne "Normal"} { return }
+if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 #################################################
 
 	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode)]} {
@@ -640,7 +640,7 @@ proc StartSearch {table} {
 	variable Vars
 
 ### VARIANTS ####################################
-if {[::scidb::game::query variant?] ne "Normal"} { return }
+if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 #################################################
 
 	if {[llength [::scidb::tree::get]] == 0} {
@@ -909,7 +909,7 @@ proc FetchResult {table {force false}} {
 	variable Vars
 
 ### VARIANTS ####################################
-if {[::scidb::game::query variant?] ne "Normal"} { return }
+if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 if {$Vars(force)} { set force true }
 #################################################
 

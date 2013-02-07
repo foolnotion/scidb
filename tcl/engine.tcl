@@ -462,7 +462,7 @@ proc openSetup {parent} {
 	set lf [ttk::labelframe $top.engine -text $mc::Select(engine)]
 	set rf [ttk::labelframe $top.profile -text $mc::Select(profile)]
 
-	set memory [::system::memAvailable]
+	set memory [::scidb::misc::memFree]
 	if {$memory == -1} {
 		set memory 256
 	} else {
@@ -477,7 +477,7 @@ proc openSetup {parent} {
 	set Vars(current:name) ""
 	set Vars(current:protocol) UCI
 	set Vars(current:memory) $memory
-	set Vars(current:cores) [expr {[::system::ncpus] - 1}]
+	set Vars(current:cores) [expr {[::scidb::misc::numberOfProcessors] - 1}]
 	set Vars(current:priority) normal
 	set Vars(current:profile) Default
 
@@ -1483,7 +1483,7 @@ proc SetPriority {} {
 
 
 proc MemTotal {} {
-	set mem [::system::memTotal]
+	set mem [::scidb::misc::memTotal]
 	if {$mem <= 0} { return 2048 }
 	return [::scidb::misc::predPow2 [expr {$mem/1048576}]]
 }
@@ -1544,7 +1544,7 @@ proc UseEngine {list item profileList} {
 			set min2 [expr {max(4, [::scidb::misc::succPow2 $min])}]
 			set nmin [expr {$min2 + $min2/2}]
 			if {$nmin <= $min} { set min $nmin } else { set min $min2 }
-			set avail [::system::memAvailable]
+			set avail [::scidb::misc::memFree]
 			if {$avail >= 0} {
 				set avail [expr {$avail/1048576}]
 				if {$max > 0 } { set avail [expr {min($avail, $max)}] }
@@ -1569,7 +1569,7 @@ proc UseEngine {list item profileList} {
 	}
 
 	if {[info exists features(smp)] || [info exists features(threads)]} {
-		set ncpus [::system::ncpus]
+		set ncpus [::scidb::misc::numberOfProcessors]
 		if {[info exists features(threads)]} {
 			lassign $features(threads) min max
 			set ncpus [expr {min($max, $ncpus)}]

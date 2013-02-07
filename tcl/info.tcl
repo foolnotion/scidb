@@ -455,7 +455,7 @@ proc BuildSystemFrame {w} {
 	global tcl_platform
 
 	set padding 40
-	set total [::system::memTotal]
+	set total [::scidb::misc::memTotal]
 	if {$total == -1} { set total "" }
 	
 	set xft ""

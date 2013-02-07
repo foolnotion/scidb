@@ -172,6 +172,10 @@ array set compiler {
     no-gzoffset     {}
 }
 
+array set warnings {
+    -Wno-unused-result {}
+}
+
 array set option {
     EXTRA_CXXFLAGS  {}
     HAVE_XFT        {}
@@ -1604,6 +1608,13 @@ proc checkGCC {cc} {
                 set compiler($opt) $opt
             }
         }
+        foreach opt {-Wno-unused-result} {
+            set script [regsub -all %FLAG% $TestCompilerFlag $opt]
+            set script [regsub -all __CC__ $script $environment($cc)]
+            if {[Probe testCompilerFlag $script]} {
+                set warnings($opt) $opt
+            }
+        }
     }
     return $version
 }
@@ -1740,7 +1751,8 @@ proc detectCores {} {
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
 proc writeMakefile {{type ""}} {
-    global option defaults environment package compiler feature configure subdir tcl_platform engines
+    global option defaults environment package compiler warnings
+    global feature configure subdir tcl_platform engines
 
     set extra_c_flags "-pipe -Wno-format-security"
     foreach opt [array names compiler -*] {
@@ -1748,6 +1760,8 @@ proc writeMakefile {{type ""}} {
             Append extra_c_flags $compiler($opt)
         }
     }
+
+    set option(NO_UNUSED_RESULT) $warnings(-Wno-unused-result)
 
     Append option(EXTRA_CXXFLAGS) $extra_c_flags
     Append option(EXTRA_CFLAGS) $extra_c_flags

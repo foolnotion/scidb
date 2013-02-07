@@ -202,7 +202,10 @@ size_t
 istream::readsome(char* buf, size_t size)
 {
 	if (eof())
+	{
+		setstate(failbit);
 		return 0;
+	}
 
 	size_t bytes_read = fread(buf, 1, size, m_fp);
 

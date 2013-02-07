@@ -93,6 +93,9 @@ set HtmlMapping {
 
 	<see/>			&#x21d2;
 
+	<chess>			{<span class="chess">}
+	</chess>			</span>
+
 	<NEW>				{<span class="NEW">}
 	</NEW>			{</span>}
 

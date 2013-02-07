@@ -1168,27 +1168,22 @@ Decoder::skipVariations()
 
 	while (true)
 	{
-		Byte b = m_strm.get();
-
-		if (__builtin_expect(b < token::Special_Move, 0))
+		switch (m_strm.get())
 		{
-			switch (b)
-			{
-				case token::Start_Marker:
-					++count;
-					break;
+			case token::Start_Marker:
+				++count;
+				break;
 
-				case token::End_Marker:
+			case token::End_Marker:
+				m_strm.skip(1);
+
+				if (count > 0)
+					--count;
+				else if (m_strm.peek() == token::Start_Marker)
 					m_strm.skip(1);
-
-					if (count > 0)
-						--count;
-					else if (m_strm.peek() == token::Start_Marker)
-						m_strm.skip(1);
-					else
-						return;
-					break;
-			}
+				else
+					return;
+				break;
 		}
 	}
 }

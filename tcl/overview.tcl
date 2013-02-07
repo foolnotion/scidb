@@ -225,7 +225,9 @@ proc UpdateData {nb id evenMainline} {
 	variable Options
 
 	if {$evenMainline} {
-		if {$Vars(link) eq [::scidb::game::link? $id]} {
+		lassign [::scidb::game::link? $id] base variant index
+		set link [list $base [::util::toMainVariant $variant] $index]
+		if {$Vars(link) eq $link} {
 			set Vars(modified) 1
 			set background $Options(background:modified)
 			foreach text $Vars(text) {

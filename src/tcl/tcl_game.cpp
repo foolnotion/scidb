@@ -1373,6 +1373,9 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc > 2)
 		type = tcl::game::variantFromObj(objv[2]);
 
+	if (type == variant::Antichess)
+		type = variant::Suicide;
+
 	scidb->newGame(view, type);
 	return TCL_OK;
 }

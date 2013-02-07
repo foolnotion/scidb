@@ -19,10 +19,15 @@
 #ifndef _sys_info_included
 #define _sys_info_included
 
+#include "m_types.h"
+
 namespace sys {
 namespace info {
 
 unsigned numberOfProcessors();
+
+int64_t memFree();
+int64_t memTotal();
 
 } // namespace info
 } // namespace sys

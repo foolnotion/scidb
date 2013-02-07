@@ -23,7 +23,6 @@ SOURCES = \
 	utils/tcl_bugs.tcl \
 	utils/place.tcl \
 	splash.tcl \
-	utils/system.tcl \
 	utils/archive.tcl \
 	dialogs/messagebox.tcl \
 	dialogs/progressbar.tcl \

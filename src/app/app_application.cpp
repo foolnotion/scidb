@@ -1086,9 +1086,6 @@ Application::switchBase(Cursor& cursor)
 	M_REQUIRE(contains(cursor));
 	M_REQUIRE(!cursor.isScratchbase());
 
-	if (m_current == &cursor)
-		return;
-
 	setActiveBase(&cursor);
 
 	if (	(m_switchReference || (!m_isUserSet && m_referenceBase->isClipbase()))

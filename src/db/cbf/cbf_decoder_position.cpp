@@ -115,13 +115,14 @@ static const piece::Type PromotionTbl[] =
 
 Position::Position()
 {
-	static_assert(piece::None == 0, "table not working");
-	static_assert(piece::King == 1, "table not working");
-	static_assert(piece::Queen == 2, "table not working");
-	static_assert(piece::Rook == 3, "table not working");
-	static_assert(piece::Bishop == 4, "table not working");
-	static_assert(piece::Knight == 5, "table not working");
-	static_assert(piece::Pawn == 6, "table not working");
+	static_assert(		piece::None   == 0
+						&& piece::King   == 1
+						&& piece::Queen  == 2
+						&& piece::Rook   == 3
+						&& piece::Bishop == 4
+						&& piece::Knight == 5
+						&& piece::Pawn   == 6,
+						"table not working");
 
 	m_stack.reserve(10);
 	m_stack.push();
@@ -301,10 +302,7 @@ Position::setup(ByteStream& strm, Byte h10, Byte h11)
 	if (h10 & 1)
 	{
 		M_ASSERT(strm.size() >= 33);
-
-		static_assert(sq::a1 == 0, "iteration loop not working");
-		static_assert(sq::b1 == 1, "iteration loop not working");
-		static_assert(sq::h8 == 63, "iteration loop not working");
+		static_assert(sq::a1 == 0 && sq::b1 == 1 && sq::h8 == 63, "iteration loop not working");
 
 		Board& board = this->board();
 		board.clear();

@@ -7299,8 +7299,9 @@ cbf/cbf_codec.o: db_time_table.h
 cbf/cbf_codec.o: db_time_table.ipp
 cbf/cbf_codec.o: db_consumer.ipp
 cbf/cbf_codec.o: db_reader.ipp
-cbf/cbf_codec.o: ../util/u_byte_stream.h
+cbf/cbf_codec.o: db_exception.h
 cbf/cbf_codec.o: ../util/u_exception.h
+cbf/cbf_codec.o: ../util/u_byte_stream.h
 cbf/cbf_codec.o: ../util/u_byte_stream.ipp
 cbf/cbf_codec.o: ../util/u_progress.h
 cbf/cbf_codec.o: ../util/u_progress.ipp
@@ -7456,6 +7457,8 @@ cbf/cbf_decoder_position.o: ../mstl/m_algobase.ipp
 cbf/cbf_decoder_position.o: ../mstl/m_construct.h
 cbf/cbf_decoder_position.o: ../mstl/m_construct.ipp
 cbf/cbf_decoder_position.o: cbf/cbf_decoder_position.ipp
+cbf/cbf_decoder_position.o: db_board_base.h
+cbf/cbf_decoder_position.o: db_board_base.ipp
 cbf/cbf_decoder_position.o: ../util/u_byte_stream.h
 cbf/cbf_decoder_position.o: ../util/u_exception.h
 cbf/cbf_decoder_position.o: ../util/u_byte_stream.ipp

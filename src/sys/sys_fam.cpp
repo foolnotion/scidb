@@ -155,6 +155,8 @@ Monitor::isSupported()
 
 #elif !defined(HAVE_INOTIFY) && defined(HAVE_LIBFAM) ////////////////////
 
+// IMPORTANT NOTE: FAM should not be used because some FAM libraries are broken.
+
 #include <fam.h>
 #include <errno.h>
 
