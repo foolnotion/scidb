@@ -1533,6 +1533,7 @@ proc checkGCC {cc} {
     global environment
     global configure
     global compiler
+    global warnings
     global option
 
     # TODO: we want some more test:
