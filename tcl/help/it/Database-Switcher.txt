@@ -17,11 +17,9 @@
 *********************************************************************** -->
 
 INDEX Selezionatore di Database
-<!-- NEW
-INDEX Compress#Compact
-INDEX Compress database#Compact
-INDEX Administrate database#Administration
--->
+INDEX Comprimi#Compact
+INDEX Compressione database#Compact
+INDEX Amministrazione database#Administration
 
 TITLE Il Selezionatore di Database
 
@@ -30,10 +28,7 @@ TITLE Il Selezionatore di Database
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
 Il database attivo sarà evidenziato con uno sfondo giallo.
-<NEW>
-All databases not belonging to the chess variant of the active
-database are disabled (white background).
-</NEW>
+Tutti i database che non appartengono alla variante di scacchi del database attivo sono disabilitati (sfondo bianco).
 </p>
 
 <p>
@@ -46,9 +41,7 @@ Fuinzionalità del selezionatore di Database:
 
 <ul>
   <li><a href="#Administration">Amministrazione</a></li>
-<NEW>
   <li><a href="#Maintenance">%::application::database::mc::FileMaintenance%</a></li>
-</NEW>
   <li><a href="#DND">Trascinamento (Drag &amp; Drop)</a></li>
 </ul>
 
@@ -69,11 +62,7 @@ Apre una finestra che mostra diverse informazioni sul database.
 <menuitem>%::export::mc::Export%</menuitem>
 Apre un'interfaccia per <a href="Database-Export-Dialog.html">l'esporazione del database</a>
 in altri formati database o documenti.
-<NEW>
-<note/>If this database contains several chess variants (only possible
-in case of <a href="Clipbase.html">Clipbase</a> or PGN files) only the games
-of the active chess variant will be exported.
-</NEW>
+<note/>Se il database contiene diverse varianti di scacchi (solo possibile nel caso di un <a href="Clipbase.html">Clipbase</a> o file PGN) solo le partite relative alla variante attiva saranno esportate.
 </p>
 
 <p>
@@ -89,13 +78,11 @@ selezionare più database allo stesso tempo.
 Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
 </p>
 
-<NEW>
 <p>
 <menuitem>%::application::database::mc::FileMaintenance%</menuitem>
-This sub-menu provides functionality for the maintenance of databases
+Questo sotto-menu fornisce funzionalità per il mantenimento dei database
 (<see/> <a href="#Maintenance">%::application::database::mc::FileMaintenance%</a>).
 </p>
-</NEW>
 
 <p>
 <menuitem>%::application::database::mc::FileCreate%</menuitem>
@@ -131,17 +118,12 @@ Apre un database dallo storico dei database aperti.
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
 Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
-<NEW>
-If the database should store games of any chess variant please use the next menu item.
-</NEW>
+Se il database contiene partite di una variante eterodossa degli scacchi, per favore usa il prossimo elemento nel menu.
 </p>
 
-<NEW>
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
-Create a new database of any chess variant. Only Scidb databases
-can be created in this case.
-</NEW>
+Crea un nuovo database di qualsiasi variante eterodossa degli scacchi. Solo database con formato Scidb possono essere creati in questo caso.
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>
@@ -160,13 +142,11 @@ Apri la finestra di aiuto riguardante il selezionatore di database.
 <note/>Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
 
-<NEW>
 <h3 id="Maintenance">%::application::database::mc::FileMaintenance%</h3>
 
 <p>
-This sub-menu provides functionality for the maintenance of databases.
+Questo sotto-menu fornisce funzionalità di manutenzione del database.
 </p>
-</NEW>
 
 <ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
 
@@ -182,35 +162,25 @@ Crea o cambia la descrizione per questo database.
 <note/>Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
 </p>
 
-<NEW>
 <p>
 <menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
-Remove a selection of move information (for example
-"%::application::database::mc::MoveInfo(elapsedMoveTime)%") from database.
-This is useful, for example, to remove subsequently unwanted information (here
-"%::application::database::mc::MoveInfo(elapsedMilliSecs)%") after import
-of FICS games.
+Rimuovi un'informazione mossa selezionata (per esempio
+"%::application::database::mc::MoveInfo(elapsedMoveTime)%") dal database.
+Questo è utile, ad esempio, per rimuovere informazioni non desiderate (qui
+"%::application::database::mc::MoveInfo(elapsedMilliSecs)%") dopo l'importazione di partite da FICS.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
-This feature scancs the database for extra PGN tags (such as "WhiteTeam").
-Then, one may strip some of these extra tags from the database. Removing
-unwanted tags will accalerate position search, but not before a compaction
-((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
-of the database is done.
+Questa funzionalità scansiona il database per ulteriori tag PGN (come "WhiteTeam").
+Quindi, si possono rimuovere questi ulteriori tag dal database. Rimuovendo tag non desiderati accelerarerà la ricerca per posizione, ma non prima della compressione ((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
+del database.
 </p>
-</NEW>
 
-<NEW>
 <p id="Compact">
 <menuitem>%::application::database::mc::FileCompact%</menuitem>
-Compact this database, this means that all games marked for deletion
-wil be deleted physically. You cannot revert this action. This menu
-item is disabled if the database does not contain any game with a
-deletion marker.
+Comprime questo database, questo significa che tutte le partite segnate come da eliminare saranno eliminate fisicamente. Non si può tornare indietro. Questo elemento menu è disabilitato se non ci sono partite segnate per l'eliminazione.
 </p>
-</NEW>
 
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 
@@ -221,19 +191,13 @@ uno sfondo colorato sarà indicherà che il trascinamento di questo elemento è 
 In questo modo potrai parire i database con l'aiuto di un gestore file esterno.
 </p>
 
-<NEW>
 <p>
-The list of files may also be dropped over a database field. In this case 
-the games will be copied into the destination database.
+La lista di file può anche essere trascinata nell'area del database. In questo caso le partite saranno copiate nel database di destinazione.
 </p>
 
 <p>
-To copy all games (of one chess variant) of one database to another, drag the
-games while holding the left mouse button and drop the games into the destination
-field. It is required that the destination database is writeable and not disabled.
-This is an important way to manage and copy games within databases.
+Per copiare tutte le partite (o una variante degli scacchi) da un database all'altro, trascina le partite tenendo premuto il tasto sinistro del mouse e lascia le partite nell'area di destinazione. È richiesto che il database di destinazione abbia permessi di scrittura e non disabilitato. Questo è un modo importanto per gestire e copiare partite tra database.
 </p>
-</NEW>
 
 END
 

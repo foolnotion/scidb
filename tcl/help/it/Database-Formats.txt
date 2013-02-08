@@ -22,11 +22,9 @@ INDEX Archivio Database#Archivio-Database
 INDEX Archivio#Archivio-Database
 TITLE Formati Database
 
-<NEW>
 <p>
-Scidb supports following formats:
+Scidb supporta i seguenti formati:
 </p>
-</NEW>
 
 <ul>
   <li><a href="#Scidb">Scidb</a></li>
@@ -40,17 +38,15 @@ Scidb supports following formats:
 
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
 
-<NEW>
 <p>
-Only Scidb's format (and PGN format) is storing games of various chess variants,
-currently this is:
+Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse varianti degli scacchi, al momento queste sono:
 </p>
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>%::mc::VariantName(Normal)%</td>
-      <td>(including %::mc::VariantName(Chess960)%, %::mc::VariantName(Shuffle)%)</td>
+      <td>(con %::mc::VariantName(Chess960)%, %::mc::VariantName(Shuffle)%)</td>
     </tr>
     <tr>
       <td>%::mc::VariantName(Crazyhouse)%</td>
@@ -62,7 +58,7 @@ currently this is:
     </tr>
     <tr>
       <td>%::mc::VariantName(Losers)%</td>
-      <td>(variant of %::mc::VariantName(Antichess)%)</td>
+      <td>(variante di %::mc::VariantName(Antichess)%)</td>
     </tr>
     <tr>
       <td>%::mc::VariantName(ThreeCheck)%</td>
@@ -72,10 +68,9 @@ currently this is:
 </box>
 
 </p>
-A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
-is an exception).
+Un database può contenere solo una variante degli scacchi (la <a href="Clipbase.html">Clipbase</a>
+è un'eccezione).
 </p>
-</NEW>
 
 <p>
 I database Scidb sono sempre codificati con il set caratteri <nobr>UTF-8</nobr>. Per questo
@@ -84,22 +79,22 @@ le localizzazioni.
 </p>
 
 <p>
-A database in Scidb's format is divided into several files:
+Un database nel formato Scidb è diviso in diversi file:
 </p>
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
-      <td>Game data</td>
+      <td>Informazioni partita</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scg =&nbsp;</kbd></td>
-      <td>Game moves, commentaries, annotations, move information, and PGN tags</td>
+      <td>Mosse, commenti, annotazioni, informazioni sulla mossa e tag PGN</td>
     </tr>
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.scn =&nbsp;</kbd></td>
-      <td>Player/Event/Site/Annotator data</td>
+      <td>Informazioni su Giocatore/Evento/Sito/Commentatore</td>
     </tr>
   </table>
 </box>
@@ -152,8 +147,7 @@ Questo formato ricorda per struttura il formato Scidb:
 <code>.sor</code> (Scid Repertoire File), e <code>.stm</code>
 (Scid Tree Mask File) non appartengono esplicitamente al database
 e non saranno considerati da Scidb.
-<NEW>Likewise any saved game list (file suffix <code>.txt</code>) will be
-disregarded.</NEW></note>
+Allo stesso modo ogni lista di partite salvate (suffisso <code>.txt</code>) non sarà considerata.</note>
 
 <h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
 
@@ -168,7 +162,7 @@ I database ChessBase non possono essere usati come databases di riferimento.
 
 <p>
 Generalmente, questo database ha codifica con set caratteri CP1252
-<NEW>(or CP850 with old format)</NEW>, ma in alcuni casi una selezione manuale del
+(o CP850 con vecchi formati), ma in alcuni casi una selezione manuale del
 set caratteri durante l'apertura del database può essere necessaria, per assicurare
 una corretta visualizzazione dei nomi e di altro testo.
 </p>
@@ -195,20 +189,18 @@ Il formato database di ChessBase è diviso in diversi file separati, quelli più
   </table>
 </box>
 
-<NEW>
 <p>
-A database in old format consists of only four files:
+Un database nel vecchio formato consiste di quattro file:
 </p>
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Game data and moves</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Index data</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo &nbsp;=&nbsp;</kbd></td><td>Opening keys</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Dati partita e mosse</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Indice</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo &nbsp;=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
   </table>
 </box>
-</NEW>
 
 <h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
@@ -223,11 +215,9 @@ Ma se un file PGN comincia con un marcatore <nobr>UTF-8</nobr>
 (in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
 </p>
 
-<NEW>
 <p>
-Only the following variants will be accepted if reading FICS games:
+Solo le seguenti varianti saranno accettate se si stanno leggendo partite da FICS:
 </p>
-</NEW>
 
 INCLUDE ../FICS-Variants.txt
 

@@ -21,11 +21,9 @@ TITLE Piano di Sviluppo
 <h2>Funzioni per le prossime release</h2>
 
 <ul>
-<NEW>
-  <li>Download/upload/update/load databases via the internet</li>
-  <li>Supporting attachments of documents to a database. The main reason
-      is that Chessbase databases have attached documents.</li>
-</NEW>
+  <li>Download/upload/update/caricamento databases da internet</li>
+  <li>Supporto di documenti allegati al database. La ragione principale è che
+      i database Chessbase hanno documenti allegati.</li>
   <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
   <li>Funzioni di Filtro: filtro partita, giocatore</li>
   <li>Layout flessibile per le finestre</li>
