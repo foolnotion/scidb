@@ -296,6 +296,8 @@ public:
 	void setSquares(uint32_t from, uint32_t to);
 	/// Transpose fyle.
 	void transpose();
+	/// Reset en passant marker.
+	void unsetEnPassant();
 
 	/// Returns an empty move.
 	static Move const& empty();

@@ -176,7 +176,7 @@ proc enableScale {scale {enable true}} {
 }
 
 
-proc configureRadioEntry {menu index} {
+proc configureRadioEntry {menu {index end}} {
 	set entry [$menu index $index]
 	$menu entryconfigure $entry \
 		-indicatoron off \

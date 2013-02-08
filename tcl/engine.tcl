@@ -725,6 +725,7 @@ proc showEngineDictionary {parent} {
 		-usescroll yes \
 		-setgrid 1 \
 		-linespace $linespace \
+		-selectbackground #ebf4f5 \
 	]
 
 	bind $dlg <Any-Key> [namespace code [list Search $lb %K]]
@@ -1167,18 +1168,21 @@ proc PopupMenu {lb x y} {
 		-variable [namespace current]::Priv(sort) \
 		-value name \
 		;
+	::theme::configureRadioEntry $m
 	$m add radiobutton \
 		-label $mc::SortElo \
 		-command [namespace code [list SortEngines $lb]] \
 		-variable [namespace current]::Priv(sort) \
 		-value elo \
 		;
+	::theme::configureRadioEntry $m
 	$m add radiobutton \
 		-label $mc::SortRating \
 		-command [namespace code [list SortEngines $lb]] \
 		-variable [namespace current]::Priv(sort) \
 		-value rating \
 		;
+	::theme::configureRadioEntry $m
 
 	tk_popup $m {*}[winfo pointerxy $lb]
 }

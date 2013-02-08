@@ -150,8 +150,8 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
 							storage::Type storage,
-							Type type,
-							variant::Type variant)
+							variant::Type variant,
+							Type type)
 	:DatabaseContent(encoding, type)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)

@@ -106,6 +106,7 @@ inline void Move::setNeedsFyle()					{ u |= Bit_Fyle; }
 inline void Move::setNeedsRank()					{ u |= Bit_Rank; }
 inline void Move::setNeedsDestinationSquare(){ m |= Bit_Destination; }
 inline void Move::setPrintable()					{ u |= Bit_Printable; }
+inline void Move::unsetEnPassant()				{ m &= ~Bit_EnPassant; }
 
 
 inline

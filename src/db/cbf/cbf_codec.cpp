@@ -137,6 +137,7 @@ extractRoundNumber(mstl::string& str, unsigned& round, unsigned& subround)
 }
 
 
+#if 0
 static bool
 extractAnnotator(mstl::string& source, mstl::string& annotator)
 {
@@ -150,7 +151,7 @@ extractAnnotator(mstl::string& source, mstl::string& annotator)
 
 		if (e)
 		{
-			annotator.assign(s + 1, e - 1);
+			annotator.assign(s + 1, e);
 			annotator.trim();
 
 			if (!annotator.empty() && isalpha(annotator[0]))
@@ -158,7 +159,8 @@ extractAnnotator(mstl::string& source, mstl::string& annotator)
 				if (s > source.begin() && isspace(s[-1]) && isspace(e[1]))
 					++e;
 
-				source.erase(s, e);
+				source.erase(s, e + 1);
+				source.trim();
 				return true;
 			}
 		}
@@ -166,6 +168,7 @@ extractAnnotator(mstl::string& source, mstl::string& annotator)
 
 	return false;
 }
+#endif
 
 
 unsigned Codec::maxGameRecordLength() const	{ return 0xffff; }
@@ -613,18 +616,19 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 	unsigned playersLen	= hdr[4] & 0x3f;
 	unsigned sourceLen	= hdr[5] & 0x3f;
 	unsigned totalLen		= playersLen + sourceLen;
-	unsigned round;
-	unsigned subround;
+	unsigned round			= 0;
+	unsigned subround		= 0;
 
 	if (!m_gameStream.read(buf, totalLen))
 		IO_RAISE(Game, Corrupted, "unexpected end of file");
 
 	::xorBuffer(buf, totalLen, 3*totalLen);
 
-	mstl::string players(reinterpret_cast<char const*>(buf),
-								reinterpret_cast<char const*>(buf) + playersLen);
-	mstl::string source(	reinterpret_cast<char const*>(buf) + playersLen,
-								reinterpret_cast<char const*>(buf) + totalLen);
+	char const* playerStr	= reinterpret_cast<char const*>(buf);
+	char const* eventStr		= playerStr + playersLen;
+
+	mstl::string players(playerStr, playerStr + playersLen);
+	mstl::string source(eventStr, eventStr + sourceLen);
 
 	toUtf8(source);
 
@@ -634,9 +638,11 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 		info.m_subround = subround;
 	}
 
+#if 0
 	mstl::string annotator;
 	if (::extractAnnotator(source, annotator))
 		info.m_annotator = namebases()(Namebase::Annotator).insert(annotator);
+#endif
 
 	mstl::string player[2];
 

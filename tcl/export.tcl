@@ -3257,6 +3257,7 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	::log::info $msg
 
 	set cmd [list ::progress::start $parent $cmd $args $options $close]
+	set count {}
 	if {[catch { ::util::catchException $cmd count } rc opts]} {
 		::log::error $::import::mc::AbortedDueToInternalError
 		::progress::close

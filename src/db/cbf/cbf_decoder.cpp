@@ -75,6 +75,9 @@ Decoder::Decoder(util::ByteStream& strm, sys::utf8::Codec& codec)
 void
 Decoder::decodeAnnotation(ByteStream& strm)
 {
+	if (!strm.remaining())
+		return; // Cb3.exe: "Formaterror in annotations"
+
 	if (Byte evaluation = strm.get())
 	{
 		static nag::ID Lookup[] =
@@ -114,7 +117,7 @@ Decoder::decodeAnnotation(ByteStream& strm)
 			nag::Initiative,
 			nag::Attack,
 			nag::Zeitnot,
-			nag::ForcedMove,
+			nag::SingularMove,
 		};
 
 		if (estimation <= U_NUMBER_OF(Lookup))

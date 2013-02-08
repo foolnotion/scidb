@@ -1,6 +1,14 @@
 [March 2013] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #655)
+------------------------------------------------------------------------------
+* CBF decoder enhanced; now tested with more than 1860 databases. Our decoder
+now can decode games which even ChessBase (cb3.exe) cannot decode correctly;
+one example is game #288 from
+<ftp://ftp.pitt.edu/group/student-activities/chess/PGN/Players/kburg-pg.zip>.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #648)
 ------------------------------------------------------------------------------
 * CBF decoder integrated (and tested).
@@ -13,8 +21,8 @@ Scidb 1.0 BETA (rev. #648)
 Scidb 1.0 BETA (rev. #647)
 ------------------------------------------------------------------------------
 * New database format version 0.94
-  - some corrections in ZH encoding
-  - NAG's moved to data section
+- some corrections in ZH encoding
+- NAG's moved to data section
 
 * Comment editor revised.
 
@@ -46,7 +54,7 @@ Scidb 1.0 BETA (rev. #617)
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #609)
 ------------------------------------------------------------------------------
-* Player dictionary implemented (app:PlayerDictionary).
+* Player dictionary implemented (app::PlayerDictionary).
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #602)
@@ -110,7 +118,7 @@ variants.
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #568)
 ------------------------------------------------------------------------------
-* Bug in Elo performance table fixed (thanks to Steve for testing)
+* Bug in Elo performance table fixed (thanks to Steve for testing).
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #544)
@@ -216,7 +224,7 @@ runtime type information.
 1. This is a conflict to optimizations with -fno-rtti.
 2. It's a runtime performance lack.
 3. The clang compiler is not compiling with this conflict.
-4. The GNU compiler is silentry ignoring this problem.
+4. The GNU compiler is silenty ignoring this problem.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #436)

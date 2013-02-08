@@ -50,7 +50,7 @@
 
 void  nsSJISProber::Reset(void)
 {
-  mCodingSM->Reset(); 
+  mCodingSM->Reset();
   mState = eDetecting;
   mContextAnalyser.Reset(mIsPreferredLanguage);
   mDistributionAnalyser.Reset(mIsPreferredLanguage);
@@ -97,6 +97,12 @@ nsProbingState nsSJISProber::HandleData(const char* aBuf, PRUint32 aLen)
 
 float nsSJISProber::GetConfidence(void)
 {
+  // XXX Grgor Cramer
+  // Sometimes this prober is detecting incorrectly.
+  // Does this hack solve the problem?
+  if (mState != eFoundIt)
+    return 0.0;
+
   float contxtCf = mContextAnalyser.GetConfidence();
   float distribCf = mDistributionAnalyser.GetConfidence();
 

@@ -27,6 +27,7 @@
 #include "db_eco_table.h"
 #include "db_database.h"
 #include "db_pgn_reader.h"
+#include "db_exception.h"
 #include "db_log.h"
 
 #include "si3/si3_consumer.h"
@@ -46,10 +47,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <tcl.h>
-
-//#ifndef BROKEN_LINKER_HACK
-//# define BROKEN_LINKER_HACK
-//#endif
 
 #ifdef BROKEN_LINKER_HACK
 # include "db_board.h"
@@ -108,6 +105,7 @@ struct Log : public db::Log
 			case save::TooManyAnnotatorNames:	return true; // cannot happen
 		}
 
+		::fflush(stdout);
 		::fprintf(	stderr,
 						"%s: %s (#%u)\n",
 						code == db::save::GameTooLong ? "Warning" : "Error",
@@ -179,13 +177,13 @@ printHelpAndExit(int rc)
 	printf("  --force         Overwrite existing destination files\n");
 	printf("  --convertto <encoding>\n");
 	printf("                  Use this encoding for output database\n");
-	printf("                  (default is %s)\n", ConvertTo);
+	printf("                  (default is '%s')\n", ConvertTo);
 	printf("  --convertfrom <encoding>\n");
 	printf("                  The encoding of the ChessBase database\n");
-	printf("                  (default is %s)\n", ::ConvertFrom);
+	printf("                  (default is '%s')\n", ::ConvertFrom);
 	printf("  --tags <comma-separated-tag-list>\n");
 	printf("                  Export only the tags given with this list\n");
-	printf("                  (but mandatory tags are always exported)\n");
+	printf("                  (but mandatory tags will be always exported)\n");
 	printf("  --unusual-tags  Export unusual tags (otherwise ignore these tags)\n");
 	printf("  --all-tags      Export all tags (overrules option --tags)\n");
 	printf("                  (but ignore unusual tags except --unusual-tags is given)\n");
@@ -207,7 +205,8 @@ printHelpAndExit(int rc)
 static bool
 isForbiddenEncoding(mstl::string const& encoding)
 {
-	return	encoding == "identity"
+	return	encoding == "ascii"
+			|| encoding == "identity"
 			|| encoding == "dingbats"
 			|| encoding == "ebcdic"
 			|| encoding == "symbol"
@@ -376,6 +375,67 @@ setTagList(TagBits& result, mstl::string const& tagList)
 }
 
 
+static void
+logIOError(IOException const& exc, unsigned gameNumber = 0)
+{
+	char const* error	= 0;
+	char const* file	= 0;
+
+	switch (exc.errorType())
+	{
+		case IOException::Open_Failed:			error = "open failed"; break;
+		case IOException::Unknown_Error_Type:	error = "unknown error type"; break;
+		case IOException::Unknown_Version:		error = "unknown file version"; break;
+		case IOException::Unexpected_Version:	error = "unexpected file version"; break;
+		case IOException::Corrupted:				error = "corrupted data"; break;
+		case IOException::Invalid_Data:			error = "invalid data (file possibly corrupted)"; break;
+		case IOException::Read_Error:				error = "read error"; break;
+		case IOException::Load_Failed:			error = "load failed (too many event entries)"; break;
+
+		case IOException::Read_Only:
+		case IOException::Write_Failed:
+		case IOException::Encoding_Failed:
+		case IOException::Max_File_Size_Exceeded:
+			return; // cannot happen
+	}
+
+	switch (exc.fileType())
+	{
+		case IOException::Unspecified:	break;
+		case IOException::Index:			file = "index"; break;
+		case IOException::Game:				file = "game"; break;
+		case IOException::Namebase:		file = "namebase"; break;
+		case IOException::Annotation:		file = "annotation"; break;
+	}
+
+	mstl::string msg("Error");
+
+	if (file)
+	{
+		msg.append(" in ");
+		msg.append(file);
+		msg.append(" file");
+	}
+
+	msg.append(": ");
+	msg.append(error);
+
+	if (gameNumber > 0)
+		msg.format(" (#%d)", gameNumber);
+
+	fflush(stdout);
+	printf("\n");
+	fflush(stdout);
+	fprintf(stderr, "%s\n", msg.c_str());
+
+	if (exc.errorType() == IOException::Read_Error)
+	{
+		fprintf(stderr, "Abort.\n");
+		exit(1);
+	}
+}
+
+
 static unsigned
 exportGames(Database& src, Consumer& dst, Progress& progress)
 {
@@ -398,12 +458,19 @@ exportGames(Database& src, Consumer& dst, Progress& progress)
 			reportAfter += progress.frequency();
 		}
 
-		save::State state = src.exportGame(i, dst);
+		try
+		{
+			save::State state = src.exportGame(i, dst);
 
-		if (state == save::Ok)
-			++countGames;
-		else if (!log.error(state, i))
-			return countGames;
+			if (state == save::Ok)
+				++countGames;
+			else if (!log.error(state, i + 1))
+				return countGames;
+		}
+		catch (IOException const& exc)
+		{
+			logIOError(exc, i + 1);
+		}
 	}
 
 	return countGames;
@@ -605,7 +672,7 @@ main(int argc, char* argv[])
 		Progress	progress;
 
 		Database	src(cbhPath, convertfrom, permission::ReadOnly, progress);
-		Database	dst(si4Path, convertto, storage::OnDisk);
+		Database	dst(si4Path, convertto, storage::OnDisk, variant::Normal);
 		si3::Consumer consumer(	format::Scid4,
 										dynamic_cast<si3::Codec&>(dst.codec()),
 										convertto,
@@ -613,6 +680,7 @@ main(int argc, char* argv[])
 										extraTags);
 
 		dst.setType(src.type());
+		printf("Convert '%s' to '%s'\n", cbhPath.c_str(), si4Path.c_str());
 		unsigned numGames = exportGames(src, consumer, progress);
 		dst.save(progress);
 		printf("\n%u game(s) written.\n", numGames);
@@ -621,6 +689,11 @@ main(int argc, char* argv[])
 		fflush(stdout);
 		dst.close();
 		src.close();
+	}
+	catch (IOException const& exc)
+	{
+		logIOError(exc);
+		exit(1);
 	}
 	catch (mstl::exception const& exc)
 	{

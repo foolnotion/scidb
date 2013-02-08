@@ -27,6 +27,7 @@
 #include "cbf_decoder_position.h"
 
 #include "db_board_base.h"
+#include "db_exception.h"
 
 #include "u_byte_stream.h"
 
@@ -94,7 +95,7 @@ static const MoveGenEntry MoveGenTable[] =
 	{ piece::None,		 0,  0, false },
 };
 
-static const unsigned PieceOffset[] =
+static const unsigned TableOffset[] =
 {
 	 0, // piece::None
 	 0, // piece::King
@@ -111,6 +112,9 @@ static const piece::Type PromotionTbl[] =
 };
 
 } // namespace
+
+
+Position::Entry::Entry() :epFake(false) {}
 
 
 Position::Position()
@@ -132,7 +136,8 @@ Position::Position()
 Move
 Position::doMove(unsigned moveNumber)
 {
-	Board&		board			= this->board();
+	Entry&		top			= m_stack.top();
+	Board&		board			= top.board;
 	color::ID	sideToMove	= board.sideToMove();
 	unsigned		count			= 0;
 	Move			move;
@@ -147,7 +152,7 @@ Position::doMove(unsigned moveNumber)
 			if (piece != piece::Empty && piece::color(piece) == sideToMove)
 			{
 				piece::Type				type			= piece::type(piece);
-				MoveGenEntry const*	moveGen		= MoveGenTable + PieceOffset[type];
+				MoveGenEntry const*	moveGen		= MoveGenTable + TableOffset[type];
 				unsigned					iteration	= piece::longStepPiece(piece) ? 7 : 1;
 
 				for ( ; moveGen->type == type; ++moveGen)
@@ -234,13 +239,48 @@ Position::doMove(unsigned moveNumber)
 							if (!sq::isValidRank(r))
 								break;
 
-							move = board.prepareMove(	sq,
-																sq::make(f, r),
-																variant::Normal,
-																move::AllowIllegalMove);
+							sq::ID to = sq::make(f, r);
 
-							if (!move || (move.isEnPassant() != moveGen->epIndex))
+							move = board.prepareMove(sq, to, variant::Normal, move::AllowIllegalMove);
+
+							if (!move)
+							{
+								if (moveGen->epIndex && to == board.enPassantSquare() && top.epFake)
+								{
+									// Imitating the strange behaviour of ChessBase:
+									// ---------------------------------------------------
+									// Wow! In case of an restored e.p. right (see below)
+									// en passant moves will be counted even if the target
+									// is occupied by an own piece. Try game #6813 from
+									// <ftp://ftp.pitt.edu/group/student-activities/chess/CB/Openings/sisch-cb.zip>.
+									++count;
+								}
+
 								break;
+							}
+
+							bool isEnPassant = move.isEnPassant();
+
+							if (isEnPassant && !moveGen->epIndex)
+							{
+								// Probably it's not an en passant move due to wrong e.p. rights.
+								// See hack below.
+								if (board.piece(move.to()) != piece::None)
+									move.unsetEnPassant();
+							}
+
+							if (move.isEnPassant() != moveGen->epIndex)
+								break;
+
+							if (isEnPassant && top.epFake && board.piece(move.to()) == piece::None)
+							{
+								// Wow! We can decode games which even ChessBase (cb3.exe)
+								// cannot decode correctly! It's a severe encoding/decoding
+								// bug in ChessBase. Try game #288 from
+								// <ftp://ftp.pitt.edu/group/student-activities/chess/PGN/Players/kburg-pg.zip>.
+								++count;
+								break;
+							}
 						}
 
 						count += move.isPromotion() ? 4 : 1;
@@ -253,6 +293,9 @@ Position::doMove(unsigned moveNumber)
 								move.setPromotionPiece(PromotionTbl[3 - (count - moveNumber)]);
 							}
 
+							if (!board.isValidMove(move, variant::Normal, move::AllowIllegalMove))
+								IO_RAISE(Game, Corrupted, "corrupted game data");
+
 							Square epSq = board.enPassantSquareFen();
 
 							board.prepareUndo(move);
@@ -262,7 +305,7 @@ Position::doMove(unsigned moveNumber)
 							// ------------------------------------------------
 							// We restore the en passant square of previous ply
 							// if the last ply is a castling.
-							if (move.isCastling() && epSq != sq::Null)
+							if ((top.epFake = move.isCastling() && epSq != sq::Null))
 								board.setEnPassantFyle(board.sideToMove(), sq::fyle(epSq));
 
 							return move;
@@ -325,9 +368,9 @@ Position::setup(ByteStream& strm, Byte h10, Byte h11)
 			{
 				static piece::Type PieceMap[] =
 				{
-					piece::King, piece::Queen, piece::Knight,
-					piece::Bishop, piece::Rook, piece::Pawn,
-					piece::None
+					piece::King,	piece::Queen,	piece::Knight,
+					piece::Bishop,	piece::Rook,	piece::Pawn,
+					piece::None,	piece::None,	piece::None,
 				};
 
 				piece::Type	piece = PieceMap[(byte < 0x09 ? byte : byte - 0x08) - 1];

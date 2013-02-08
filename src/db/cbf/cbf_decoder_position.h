@@ -59,7 +59,15 @@ public:
 
 private:
 
-	typedef mstl::stack<Board> Stack;
+	struct Entry
+	{
+		Entry();
+
+		Board	board;
+		bool	epFake;
+	};
+
+	typedef mstl::stack<Entry> Stack;
 
 	void reset();
 

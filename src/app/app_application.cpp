@@ -463,6 +463,7 @@ Application::insertScratchGame(unsigned position, db::variant::Type variant)
 	}
 	else
 	{
+		game.game->finishLoad(variant);
 		index = i->second;
 	}
 

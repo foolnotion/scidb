@@ -79,8 +79,8 @@ public:
 	Database(mstl::string const& name,
 				mstl::string const& encoding,
 				storage::Type storage,
-				Type type = type::Unspecific,
-				variant::Type variant = variant::Undetermined);
+				variant::Type variant,
+				Type type = type::Unspecific);
 	Database(mstl::string const& name,
 				mstl::string const& encoding,
 				permission::Mode mode,

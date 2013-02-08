@@ -55,21 +55,21 @@ MultiBase::MultiBase(mstl::string const& name,
 	if (variant == variant::Undetermined)
 	{
 		m_bases[variant::Index_Normal] = m_leader = new Database(
-			name, encoding, storage, type, variant::Normal);
+			name, encoding, storage, variant::Normal, type);
 		m_bases[variant::Index_Crazyhouse] = new Database(
-			name, encoding, storage, type, variant::Crazyhouse);
+			name, encoding, storage, variant::Crazyhouse, type);
 		m_bases[variant::Index_Bughouse] = new Database(
-			name, encoding, storage, type, variant::Bughouse);
+			name, encoding, storage, variant::Bughouse, type);
 		m_bases[variant::Index_ThreeCheck] = new Database(
-			name, encoding, storage, type, variant::ThreeCheck);
+			name, encoding, storage, variant::ThreeCheck, type);
 		m_bases[variant::Index_Antichess] = new Database(
-			name, encoding, storage, type, variant::Antichess);
+			name, encoding, storage, variant::Antichess, type);
 		m_bases[variant::Index_Losers] = new Database(
-			name, encoding, storage, type, variant::Losers);
+			name, encoding, storage, variant::Losers, type);
 	}
 	else
 	{
-		mstl::auto_ptr<Database> database(new Database(name, encoding, storage, type, variant));
+		mstl::auto_ptr<Database> database(new Database(name, encoding, storage, variant, type));
 		m_bases[variant::toIndex(variant)] = m_leader = database.get();
 		database.release();
 	}

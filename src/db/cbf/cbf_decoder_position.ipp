@@ -33,8 +33,8 @@ inline unsigned Position::variationLevel() const { return m_stack.size() - 1; }
 inline void Position::push()						{ m_stack.dup(); }
 inline void Position::pop()						{ m_stack.pop(); }
 
-inline Board const& Position::board() const	{ return m_stack.top(); }
-inline Board& Position::board()					{ return m_stack.top(); }
+inline Board const& Position::board() const	{ return m_stack.top().board; }
+inline Board& Position::board()					{ return m_stack.top().board; }
 
 } // namespace decoder
 } // namespace cbf
