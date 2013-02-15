@@ -603,6 +603,9 @@ proc open {parent} {
 
 		set Vars(widget:checks:w) $checks.valw
 		set Vars(widget:checks:b) $checks.valb
+	} else {
+		set Vars(checks:w) 0
+		set Vars(checks:b) 0
 	}
 
 	# layout controls #########################################
