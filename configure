@@ -911,14 +911,8 @@ proc SystemHasInotify {} {
     if {$result} {
         set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
     } elseif {$tcl_platform(os) eq "Linux"} {
-        set version $tcl_platform(osVersion)
-        set i 0
-        set c [string index $version 0]
-        while {$c eq "." || [string is digit -strict $c]} {
-            set c [string index $version [incr i]]
-        }
-        set version [string range $version 0 [incr i -1]]
-        if {$version >= "2.6.13"} {
+        scan $tcl_platform(osVersion) "%d.%d.%d" v1 v2 v3
+        if {$v1 > 2 || ($v1 == 2 && ($v2 > 6 || ($v2 == 6 && $v3 >= 13)))} {
             set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
             set testinotify [regsub -all __pwd__ $testinotify [pwd]]
             flush stdout
@@ -2180,29 +2174,20 @@ if {[string length $gxxVer]} {
         # (like Debian Wheezy, or Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        if {[string match Debian* $insaneRelease]} {
-            puts "The call of sub-processes is not working properly on"
-            puts "this system, you may not get a proper error message"
-            puts "in case of an exception."
-        } else { ;# Ubuntu, Linux Mint
-            puts "You're about to build Scidb on an insane distribution"
-            puts "($insaneRelease - the linker is broken - among other"
-            puts "severe problems)."
-            puts "Also the call of sub-processes is not working properly"
-            puts "on this system, you may not get a proper error message"
-            puts "in case of an exception."
-        }
+        puts "The call of sub-processes is not working properly on"
+        puts "this system, you may not get a proper error message"
+        puts "in case of an exception, the application is crashing"
+        puts "instead."
         puts "Furthermore the distributed Tk library is broken, some"
         puts "windows of the application will be frozen, or the problem"
         puts "with endless loops inside the Tk library will occur."
-        puts "You have to use a self-compiled Tk library if you like"
+        puts "You have to use a self-compiled Tk library if you want"
         puts "to avoid this problem."
         puts "It is highly recommended to build Scidb on a working Unix"
-        puts "system, your installed system is only a pseudo-Unix system."
-        puts "It is broken and distorted due to the \"kernel hardening\""
-        puts "paranoia, which assumes that every software is an attacker."
-        puts "But Scidb is definitively not an attacker and requires a"
-        puts "sane Unix system."
+        puts "system. This system is broken and distorted due to the"
+        puts "\"kernel hardening\" paranoia, which assumes that every"
+        puts "software is an attacker. But Scidb is definitively not an"
+        puts "attacker and requires a sane system."
     }
 
     exit 0
