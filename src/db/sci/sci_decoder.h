@@ -33,6 +33,8 @@
 #include "db_move.h"
 #include "db_eco.h"
 
+//#define SCI_IGNORE_DECODING_ERRORS
+
 namespace mstl { template <typename T, typename U> class map; }
 
 namespace sys { namespace utf8 { class Codec; } }
@@ -100,6 +102,11 @@ private:
 	static void decodeEngines(util::ByteStream& strm, EngineList& engines);
 	static void decodeTags(util::ByteStream& strm, TagSet& tags);
 	static void decodeTimeTable(util::ByteStream& strm, TimeTable& timeTable);
+
+#ifdef SCI_IGNORE_DECODING_ERRORS
+	void skipEndOfVariation(util::ByteStream& data);
+	void skipEndOfVariation(Consumer& consumer, util::ByteStream& data, util::ByteStream& text, db::Move& move);
+#endif
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);

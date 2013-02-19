@@ -53,6 +53,19 @@ using namespace db::sci;
 using namespace util;
 
 
+#ifdef SCI_IGNORE_DECODING_ERRORS
+
+# define BEGIN_IGNORE_ERRORS				try {
+# define END_IGNORE_ERRORS(args...)		} catch (...) { skipEndOfVariation(args); }
+
+#else
+
+# define BEGIN_IGNORE_ERRORS
+# define END_IGNORE_ERRORS(args...)
+
+#endif
+
+
 __attribute__((noreturn))
 inline static void
 throwCorruptData()
@@ -362,11 +375,15 @@ Decoder::decodeVariation(ByteStream& data)
 			if (move)
 				m_position.doMove(move, pieceNum);
 
+			BEGIN_IGNORE_ERRORS
+
 			pieceNum = decodeMove(b, move);
 
 			MoveNode* node = new MoveNode(move);
 			m_currentNode->setNext(node);
 			m_currentNode = node;
+
+			END_IGNORE_ERRORS(data)
 		}
 
 		switch (b)
@@ -441,8 +458,57 @@ Decoder::decodeVariation(ByteStream& data)
 }
 
 
+#ifdef SCI_IGNORE_DECODING_ERRORS
 void
-Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream& text)
+Decoder::skipEndOfVariation(ByteStream& data)
+{
+	unsigned level = 1;
+
+	MoveNode* node = new MoveNode(Move::null());
+	m_currentNode->setNext(node);
+	m_currentNode->setComment(Comment(mstl::string("<broken game stream...>"), false, false), move::Post);
+	m_currentNode = node;
+
+	while (level > 0)
+	{
+		switch (m_strm.peek())
+		{
+			case token::Start_Marker:
+				m_strm.skip(1);
+				++level;
+				break;
+
+			case token::End_Marker:
+				--level;
+				break;
+
+			case token::Mark:
+				m_strm.skip(1);
+				if (MoveInfo::isMoveInfo(data.peek()))
+					MoveInfo::skip(data);
+				else
+					Mark::skip(data);
+				break;
+
+			case token::Comment:
+				node = new MoveNode(Move::null());
+				m_currentNode->setNext(node);
+				m_currentNode = node;
+				m_currentNode->setCommentFlag(data.get());
+				m_strm.skip(1);
+				break;
+
+			default:
+				m_strm.skip(1);
+				break;
+		}
+	}
+}
+#endif
+
+
+void
+Decoder::decodeVariation(Consumer& consumer, ByteStream& data, ByteStream& text)
 {
 	MarkSet			marks;
 	MoveInfoSet		moveInfo;
@@ -502,7 +568,11 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 				}
 			}
 
+			BEGIN_IGNORE_ERRORS
+
 			pieceNum = decodeMove(b, move);
+
+			END_IGNORE_ERRORS(consumer, data, text, move)
 		}
 		else
 		{
@@ -635,6 +705,54 @@ Decoder::decodeVariation(Consumer& consumer, util::ByteStream& data, ByteStream&
 }
 
 
+#ifdef SCI_IGNORE_DECODING_ERRORS
+void
+Decoder::skipEndOfVariation(Consumer& consumer, ByteStream& data, ByteStream& text, Move& move)
+{
+	Comment comment(mstl::string("<broken game stream...>"), false, false);
+	mstl::string buf;
+
+	unsigned level = 1;
+
+	consumer.putMove(Move::null(), Annotation(), Comment(), comment, MarkSet());
+	move.clear();
+
+	while (level > 0)
+	{
+		switch (m_strm.peek())
+		{
+			case token::Start_Marker:
+				m_strm.skip(1);
+				++level;
+				break;
+
+			case token::End_Marker:
+				--level;
+				break;
+
+			case token::Mark:
+				m_strm.skip(1);
+				if (MoveInfo::isMoveInfo(data.peek()))
+					MoveInfo::skip(data);
+				else
+					Mark::skip(data);
+				break;
+
+			case token::Comment:
+				text.get(buf);
+				data.skip(1);
+				m_strm.skip(1);
+				break;
+
+			default:
+				m_strm.skip(1);
+				break;
+		}
+	}
+}
+#endif
+
+
 void
 Decoder::decodeRun(unsigned count)
 {
@@ -734,7 +852,7 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 
 
 void
-Decoder::decodeTimeTable(util::ByteStream& strm, TimeTable& timeTable)
+Decoder::decodeTimeTable(ByteStream& strm, TimeTable& timeTable)
 {
 	uint16_t length = strm.uint16();
 

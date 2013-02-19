@@ -891,6 +891,7 @@ fi
 proc SystemHasInotify {} {
     global TestInotify
     global TestInotifySys
+    global tcl_platform
     global environment
     global option
 
@@ -909,27 +910,35 @@ proc SystemHasInotify {} {
 
     if {$result} {
         set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
-    } else {
-# Seems to be to dangerous!
-#       set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
-#       set testinotify [regsub -all __pwd__ $testinotify [pwd]]
-#       flush stdout
-#       if {[catch {open testinotify.sh w} f]} { return 0 }
-#       puts $f $testinotify
-#       close $f
-#       if {![catch {exec sh testinotify.sh} err]} { set result 2 }
-#       if {$result} {
-#           if {[catch { exec ./testinotify } r]} {
-#               set result 0
-#           } else {
-#               set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
-#               set option(SYS_INOTIFY) "-DSYS_INOTIFY=1"
-#           }
-#       }
+    } elseif {$tcl_platform(os) eq "Linux"} {
+        set version $tcl_platform(osVersion)
+        set i 0
+        set c [string index $version 0]
+        while {$c eq "." || [string is digit -strict $c]} {
+            set c [string index $version [incr i]]
+        }
+        set version [string range $version 0 [incr i -1]]
+        if {$version >= "2.6.13"} {
+            set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
+            set testinotify [regsub -all __pwd__ $testinotify [pwd]]
+            flush stdout
+            if {[catch {open testinotify.sh w} f]} { return 0 }
+            puts $f $testinotify
+            close $f
+            if {![catch {exec sh testinotify.sh} err]} { set result 2 }
+            if {$result} {
+                if {[catch { exec ./testinotify } r]} {
+                    set result 0
+                } else {
+                    set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
+                    set option(SYS_INOTIFY) "-DSYS_INOTIFY=1"
+                }
+            }
 
-#       catch { file delete -force testinotify.sh }
-#       catch { file delete -force testinotify.c }
-#       catch { file delete -force testinotify }
+            catch { file delete -force testinotify.sh }
+            catch { file delete -force testinotify.c }
+            catch { file delete -force testinotify }
+        }
     }
  
     return $result

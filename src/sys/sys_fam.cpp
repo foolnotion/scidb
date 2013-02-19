@@ -135,7 +135,7 @@ Monitor::signalCreated(unsigned id, char const* filename) const
 bool
 Monitor::isSupported()
 {
-#if defined(HAVE_INOTIFY) || defined(HAVE_LIBFAM)
+#if defined(HAVE_INOTIFY) || defined(HAVE_LIBFAM) // || (defined(__linux__) && defined(F_NOTIFY))
 	return true;
 #else
 	return false;
@@ -558,7 +558,7 @@ cancelMonitorFAM(Request& req)
 	}
 }
 
-#elif defined(__linux__) && defined(F_NOTIFY)
+#elif defined(__linux__) && defined(F_NOTIFY) && 0 // XXX not yet working
 
 #include <stdio.h>
 #include <unistd.h>
@@ -602,7 +602,7 @@ static int fcntlSignal = -1;
 
 struct FcntlRequest
 {
-	FcntlRequest(int fd) :m_fd(fd), m_ref(0) {}
+	FcntlRequest(int fd) :m_fd(fd), m_ref(1) {}
 
 	int		m_fd;
 	unsigned	m_ref;
@@ -646,6 +646,8 @@ static void
 fcntlSignalHandler(int signum, siginfo_t* info, void*)
 {
 	int size = 0;
+
+	// XXX not working, because info->si_fd is referring a directory.
 
 	if (ioctl(info->si_fd, FIONREAD, &size) == -1)
 	{
@@ -709,7 +711,7 @@ initFAM(mstl::string& error)
 {
 	if (fcntlSignal == -1)
 	{
-		fcntlSignal = SIGRTMIN;
+		fcntlSignal = SIGRTMIN + 1;
 
 		if (fcntlSignal > SIGRTMAX)
 		{
@@ -783,18 +785,24 @@ monitorFAM(mstl::string const& path, Request& req, file::Type type, unsigned sta
 			return false;
 		}
 
-		long mask = 0;
+		long events = DN_MULTISHOT;
 
 		if (states & FileAlterationMonitor::StateChanged)
-			mask |= DN_MODIFY | DN_ATTRIB;
+			events |= DN_MODIFY | DN_ATTRIB;
 		if (states & FileAlterationMonitor::StateDeleted)
-			mask |= DN_CREATE | DN_RENAME;
+			events |= DN_DELETE | DN_CREATE | DN_RENAME;
 		if (states & FileAlterationMonitor::StateCreated)
-			mask |= DN_CREATE;
+			events |= DN_CREATE;
 
-		if (fcntl(fd, mask | DN_MULTISHOT) == -1 || fcntl(fd, F_SETSIG, long(fcntlSignal)) == -1)
+		if (fcntl(fd, F_SETSIG, long(fcntlSignal)) == -1)
 		{
-			error.format("fcntl(): unexpected error %d\n", errno);
+			error.format("fcntl(F_SETSIG): unexpected error %d\n", errno);
+			return false;
+		}
+
+		if (fcntl(fd, F_NOTIFY, events) == -1)
+		{
+			error.format("fcntl(F_NOTIFY): unexpected error %d\n", errno);
 			return false;
 		}
 
