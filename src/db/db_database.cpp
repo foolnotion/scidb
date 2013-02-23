@@ -105,7 +105,7 @@ Database::exportGames<Consumer>(	Consumer& destination,
 
 
 Database::Database(Database const& db, mstl::string const& name)
-	:DatabaseContent(db)
+	:DatabaseContent(name, db)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
 	,m_id(Counter++)
@@ -115,13 +115,19 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
 {
-	m_rootname = file::rootname(name);
-	m_codec->open(this, m_encoding);
+	try
+	{
+		m_codec->open(this, m_encoding);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		IO_RAISE(Unspecified, Open_Failed, "create failed");
+	}
 }
 
 
 Database::Database(mstl::string const& name, mstl::string const& encoding)
-	:DatabaseContent(encoding, type::Unspecific)
+	:DatabaseContent(name, encoding, type::Unspecific)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::Existing))
 	,m_name(name)
 	,m_id(Counter++)
@@ -135,8 +141,6 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 
 	// NOTE: we assume normalized (unique) file names.
 
-	m_rootname = file::rootname(name);
-	m_type = type::Unspecific;
 	m_memoryOnly = false;
 	m_temporary = true;
 	m_created = sys::time::time();
@@ -152,7 +156,7 @@ Database::Database(	mstl::string const& name,
 							storage::Type storage,
 							variant::Type variant,
 							Type type)
-	:DatabaseContent(encoding, type)
+	:DatabaseContent(name, encoding, type)
 	,m_codec(DatabaseCodec::makeCodec(name, DatabaseCodec::New))
 	,m_name(name)
 	,m_id(Counter++)
@@ -169,8 +173,6 @@ Database::Database(	mstl::string const& name,
 
 	// NOTE: we assume normalized (unique) file names.
 
-	m_rootname = file::rootname(name);
-	m_type = type;
 	m_memoryOnly = storage == storage::MemoryOnly;
 	m_temporary = false;
 	m_created = sys::time::time();
@@ -190,7 +192,15 @@ Database::Database(	mstl::string const& name,
 	if (!m_codec->isWriteable())
 		m_writeable = false;
 
-	m_codec->open(this, encoding);
+	try
+	{
+		m_codec->open(this, encoding);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		IO_RAISE(Unspecified, Open_Failed, "create failed");
+	}
+
 	m_size = m_gameInfoList.size();
 	m_namebases.setModified(true);
 }
@@ -200,7 +210,7 @@ Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
 							permission::Mode mode,
 							util::Progress& progress)
-	:DatabaseContent(encoding)
+	:DatabaseContent(name, encoding)
 	,m_codec(0)
 	,m_name(name)
 	,m_id(Counter++)
@@ -215,24 +225,29 @@ Database::Database(	mstl::string const& name,
 
 	// NOTE: we assume normalized (unique) file names.
 
-	mstl::string ext = file::suffix(m_name);
-
-	m_rootname = file::rootname(name);
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 
 	if (m_codec == 0)
 	{
-		if (ext.empty())
+		if (m_suffix.empty())
 			DB_RAISE("no file suffix given");
 
-		DB_RAISE("unknown file format (.%s)", ext.c_str());
+		DB_RAISE("unknown file format (.%s)", m_suffix.c_str());
 	}
 
 	if (!m_codec->isWriteable())
 		m_writeable = false;
 
-	m_codec->open(this, m_encoding, progress);
+	try
+	{
+		m_codec->open(this, m_encoding, progress);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		IO_RAISE(Unspecified, Open_Failed, "open failed");
+	}
+
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
@@ -242,7 +257,7 @@ Database::Database(	mstl::string const& name,
 
 
 Database::Database(mstl::string const& name, Producer& producer, util::Progress& progress)
-	:DatabaseContent(producer.encoding())
+	:DatabaseContent(name, producer.encoding())
 	,m_codec(0)
 	,m_name(name)
 	,m_id(Counter++)
@@ -254,11 +269,19 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 {
 	// NOTE: we assume normalized (unique) file names.
 
-	m_rootname = name;
 	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec->isWriteable());
-	m_codec->open(this, sys::utf8::Codec::utf8(), producer, progress);
+
+	try
+	{
+		m_codec->open(this, sys::utf8::Codec::utf8(), producer, progress);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		IO_RAISE(Unspecified, Open_Failed, "open failed");
+	}
+
 	m_size = m_gameInfoList.size();
 	m_readOnly = true;
 	setEncodingFailed(producer.encodingFailed());
@@ -507,7 +530,16 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec);
-	m_codec->open(this, m_encoding, progress);
+
+	try
+	{
+		m_codec->open(this, m_encoding, progress);
+	}
+	catch (mstl::ios_base::failure const& exc)
+	{
+		IO_RAISE(Unspecified, Open_Failed, "re-open failed");
+	}
+
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -1736,6 +1768,19 @@ Database::setReadonly(bool flag)
 		if (!m_readOnly)
 			m_codec->setWriteable();
 	}
+}
+
+
+variant::Type
+Database::variant(unsigned index) const
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(index < countGames());
+
+	if (variant::isAntichessExceptLosers(m_variant))
+		return m_gameInfoList[index]->isGiveaway() ? variant::Giveaway : variant::Suicide;
+
+	return m_variant;
 }
 
 // vi:set ts=3 sw=3:

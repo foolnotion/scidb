@@ -74,9 +74,12 @@ public:
 	void filterTags(TagSet& tags, Section section) const override;
 
 	void doOpen(mstl::string const& rootname,
+					mstl::string const& originalSuffix,
 					mstl::string const& encoding,
 					util::Progress& progress) override;
-	void reloadNamebases(mstl::string const& rootname, util::Progress& progress) override;
+	void reloadNamebases(mstl::string const& rootname,
+								mstl::string const& originalSuffix,
+								util::Progress& progress) override;
 	void reloadDescription(mstl::string const& rootname) override;
 
 	void close() override;
@@ -100,9 +103,9 @@ private:
 
 	typedef mstl::vector<unsigned> RecordLengths;
 
-	void preloadIndexData(mstl::string const& rootname, util::Progress& progress);
+	void preloadIndexData(mstl::string const& indexFilename, util::Progress& progress);
 	void preloadIndexData(unsigned offset);
-	void readIndexData(mstl::string const& rootname, util::Progress& progress);
+	void readIndexData(mstl::string const& indexFilename, util::Progress& progress);
 	void decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site);
 	void prepareDecoding(GameInfo const& info, unsigned gameIndex, util::ByteStream& strm);
 

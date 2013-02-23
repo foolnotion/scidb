@@ -48,7 +48,6 @@ class TagSet;
 class MarkSet;
 class MoveInfo;
 class EngineList;
-class TimeTable;
 class Annotation;
 class Move;
 class Producer;
@@ -93,9 +92,9 @@ public:
 	sys::utf8::Codec& codec() const;
 	MoveInfoSet const& moveInfo() const;
 	EngineList const& engines() const;
-	TimeTable& timeTable();
-	TimeTable const& timeTable() const;
+	EngineList& engines();
 	TagBits const& allowedTags() const;
+	TimeTable& timeTable();
 
 	Board const& getFinalBoard() const override;
 	Board const& getStartBoard() const override;
@@ -128,7 +127,7 @@ public:
 	void startVariation();
 	void finishVariation();
 
-	virtual void preparseComment(mstl::string& comment);
+	virtual bool preparseComment(mstl::string& comment);
 	void setEngines(EngineList const& engines);
 	void swapEngines(EngineList& engines);
 	void swapMoveInfo(MoveInfoSet& moveInfo);
@@ -158,7 +157,7 @@ protected:
 													MarkSet const& marks) = 0;
 	virtual void sendTrailingComment(Comment const& comment, bool variationIsEmpty) = 0;
 	virtual void sendComment(Comment const& comment) = 0;
-	virtual void sendMoveInfo(MoveInfoSet const& moveInfo);
+	virtual void sendMoveInfo(MoveInfoSet const& moveInfoSet);
 	virtual bool sendMove(Move const& move) = 0;
 	virtual bool sendMove(	Move const& move,
 									Annotation const& annotation,
@@ -178,10 +177,12 @@ protected:
 	variant::Type getVariant() const;
 	void setStartBoard(Board const& board);
 	void addMoveInfo(MoveInfo const& info);
+	unsigned mainlineLength() const;
 
 	MoveInfoSet	m_moveInfoSet;
 	EngineList	m_engines;
 	TimeTable	m_timeTable;
+	TimeTable	m_sendTimeTable;
 
 private:
 
@@ -198,6 +199,7 @@ private:
 	void setup(Board const& startPosition);
 	void setup(mstl::string const& fen);
 	void setup(unsigned idn);
+	void afterSendMove(Entry& entry);
 
 	friend class Producer;
 

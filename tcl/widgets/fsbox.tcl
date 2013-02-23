@@ -654,7 +654,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 			set onlyexecutables [lindex $entry 0]
 		} else {
 			lappend list $entry
-			set filetypeList [concat $filetypeList [lindex $entry 1]]
+			set filetypeList [concat $filetypeList [lindex $entry 1] [lindex $entry 2]]
 		}
 	}
 	set filetypes $list
@@ -662,7 +662,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 
 	set Vars(defaultextension) $defaultextension
 	set Vars(filetypes) $filetypes
-	set Vars(extensions) [lindex $filetypes 0 1]
+	set Vars(extensions) [concat [lindex $filetypes 0 1] [lindex $filetypes 0 2]]
 
 	if {[llength $filetypes] && [string length $Vars(defaultextension)] == 0} {
 		set Vars(defaultextension) [lindex $filetypes 0 1 0]
@@ -682,8 +682,9 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 	set Vars(file:type:list) {}
 
 	foreach entry $filetypes {
-		lassign $entry name extensions
-		set Vars(file:type:list) [concat $Vars(file:type:list) $extensions]
+		set uppercaseExtensions {}
+		lassign $entry name extensions uppercaseExtensions
+		set Vars(file:type:list) [concat $Vars(file:type:list) $extensions $uppercaseExtensions]
 		set iconList {}
 		foreach ext $extensions {
 			if {$ext in $fileIconTypes} {
@@ -986,6 +987,7 @@ proc CheckEncoding {w file} {
 	if {[llength $Vars(selectencodingcommand)]} {
 		if {[string length $Vars(encodingUser)] == 0} {
 			set Vars(encodingVar) $Vars(defaultencoding)
+			set file [string tolower $file]
 
 			foreach {ext enable encoding} $Vars(fileencodings) {
 				if {[string match *$ext $file]} {
@@ -1046,7 +1048,7 @@ proc SelectFileTypes {w combo} {
 	set i [string last " (" $selection]
 	set selection [string range $selection 0 [expr {$i - 1}]]
 	set i [lsearch -index 0 -exact $Vars(filetypes) $selection]
-	set Vars(extensions) [lindex $Vars(filetypes) $i 1]
+	set Vars(extensions) [concat [lindex $Vars(filetypes) $i 1] [lindex $Vars(filetypes) $i 2]]
 
 	UpdateFileTypesState $w
 	SetFileTypes $w
@@ -1897,7 +1899,7 @@ proc HandleDragEvent {w src types x y} {
 	lassign [filelist::GetCurrentSelection $w] type _ file
 	if {$type eq "folder"} { return {} }
 	set files {}
-	set ext [file extension $file]
+	set ext [string tolower [file extension $file]]
 
 	if {[string length $Vars(deletecommand)]} {
 		foreach f [{*}$Vars(deletecommand) $file] {
@@ -2180,7 +2182,7 @@ proc AskFileAction {w old new} {
 	if {[file isdirectory $old]} {
 		set icon $icon::16x16::folder
 	} else {
-		set icon $Vars(fti:[file extension $new])
+		set icon $Vars(fti:[string tolower [file extension $new]])
 	}
 
 	set oldTime [file mtime $old]
@@ -3865,7 +3867,7 @@ proc ConfigureButtons {w} {
 
 	if {[info exists Vars(button:custom)]} {
 		if {	[llength $Vars(selected:files)] == 1
-			&& [file extension $Vars(initialfile)] in $Vars(customfiletypes)} {
+			&& [string tolower [file extension $Vars(initialfile)]] in $Vars(customfiletypes)} {
 			if {$Vars(glob) eq "Files"} {
 				set Vars(state:custom) normal
 			} else {
@@ -4641,7 +4643,7 @@ proc PopupMenu {w x y} {
 			if {	[llength $Vars(customcommand)]
 				&& [llength $Vars(customtooltip)]
 				&& $Vars(state:custom) eq "normal"
-				&& [file extension $file] in $Vars(customfiletypes)} {
+				&& [string tolower [file extension $file]] in $Vars(customfiletypes)} {
 				incr count
 				$m add command                                           \
 					-compound left                                        \

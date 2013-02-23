@@ -1346,6 +1346,7 @@ proc GameSwitched {position} {
 	::toolbar::childconfigure $Vars(crossTable) -state $state
 	UpdateGameControls $position
 	UpdateGameButtonState(list) $position
+	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
 	UpdateSaveButton
 
 	if {$variant eq "Crazyhouse"} { set layout Crazyhouse } else { set layout Normal }
@@ -1479,9 +1480,10 @@ proc UpdateGameButtonState(base) {base variant} {
 		set state(random) normal
 		lassign [::scidb::game::link? $position] myBase myVariant index
 		set myVariant [::util::toMainVariant $myVariant]
-		if {$myBase ne $base || $myVariant ne $variant} { set index -1 }
-		if {$index > 0} { array set state { prev normal first normal } }
-		if {$index + 1 < $numGames} { array set state { next normal last normal } }
+		if {$myBase eq $base && $myVariant eq $variant} {
+			if {$index > 0} { array set state { prev normal first normal } }
+			if {$index + 1 < $numGames} { array set state { next normal last normal } }
+		}
 	}
 
 	foreach action {next prev first last random} {

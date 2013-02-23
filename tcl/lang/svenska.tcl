@@ -126,8 +126,8 @@
 ::mc::VariantName(Normal)			"Normal Chess" ;# NEW
 ::mc::VariantName(Bughouse)		"Bughouse Chess" ;# NEW
 ::mc::VariantName(Crazyhouse)		"Crazyhouse Chess" ;# NEW
-::mc::VariantName(ThreeCheck)		"Three-check Chess" ;# NEW
-::mc::VariantName(Antichess)		"Antichess" ;# NEW
+::mc::VariantName(ThreeCheck)		"Tre-schack"
+::mc::VariantName(Antichess)		"Slagschack"
 ::mc::VariantName(Suicide)			"Suicide" ;# NEW
 ::mc::VariantName(Giveaway)		"Giveaway" ;# NEW
 ::mc::VariantName(Losers)			"Losers" ;# NEW
@@ -251,7 +251,7 @@
 
 # Extras
 ::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
-::menu::mc::OpenEngineLog				"Öppna &motor konsol"
+::menu::mc::OpenEngineLog				"Öppna &motorkonsol"
 
 # Tools
 ::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
@@ -352,7 +352,7 @@
 ::util::photos::mc::Detail(noconnect)			"Troligen har du inte en internetförbindelse."
 ::util::photos::mc::Detail(badhost)				"En annan möjlighet är en dålig 'host', eller en dålig 'port'."
 
-::util::photos::mc::Log(started)					"Installationen/uppdateringen av fotfiler började %s."
+::util::photos::mc::Log(started)					"Installationen/uppdateringen av fotofiler började %s."
 ::util::photos::mc::Log(finished)				"Installationen/uppdateringen av fotofiler avslutade  %s."
 ::util::photos::mc::Log(destination)			"Folder för nerladdade fotofiler är '%s'."
 ::util::photos::mc::Log(created:1)				"%s fil skapad."
@@ -416,10 +416,10 @@
 ::application::database::mc::FileImport(db)					"Importera databas"
 ::application::database::mc::FileCreate						"Skapa arkiv"
 ::application::database::mc::FileClose							"Stäng"
-::application::database::mc::FileMaintenance					"Maintenance" ;# NEW
+::application::database::mc::FileMaintenance					"Underhåll"
 ::application::database::mc::FileCompact						"Komprimera"
-::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
-::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
+::application::database::mc::FileStripMoveInfo				"Avlägsna draginformation"
+::application::database::mc::FileStripPGNTags				"Avlägsna PGN-taggar"
 ::application::database::mc::HelpSwitcher						"Hjälp om databasväljare"
 
 ::application::database::mc::Games								"&Partier"
@@ -518,7 +518,7 @@
 ::application::database::mc::T_Bughouse						"Chock"
 ::application::database::mc::T_Antichess						"Slagschack"
 ::application::database::mc::T_PGNFile							"PGN fil"
-::application::database::mc::T_ThreeCheck						"Three-check" ;# NEW
+::application::database::mc::T_ThreeCheck						"Tre-schack"
 ::application::database::mc::T_Crazyhouse						"Crazyhouse" ;# NEW
 
 ::application::database::mc::OpenDatabase						"Öppna databas"
@@ -832,7 +832,7 @@
 ::pgn::setup::mc::ResetSettings					"Återställ till fabriksinställningar"
 ::pgn::setup::mc::DiscardAllChanges				"Kasta bort alla ändringar?"
 ::pgn::setup::mc::ThreefoldRepetition			"Threefold repetition" ;# NEW
-::pgn::setup::mc::FiftyMoveRule					"50 move rule" ;# NEW
+::pgn::setup::mc::FiftyMoveRule					"50 drags regelen"
 
 ::pgn::setup::mc::Setup(Appearance)				"Utseende"
 ::pgn::setup::mc::Setup(Layout)					"Layout"
@@ -954,16 +954,16 @@
 ::engine::mc::EngineLog					"Engine Console" ;# NEW
 ::engine::mc::Probing					"Probing" ;# NEW
 ::engine::mc::NeverUsed					"Aldrig använd"
-::engine::mc::OpenFsbox					"Open File Selection Dialog" ;# NEW
+::engine::mc::OpenFsbox					"Öppna filvalsdialog"
 ::engine::mc::ResetToDefault			"Återställ till standard"
 ::engine::mc::ShowInfo					"Visa \"Info\""
-::engine::mc::TotalUsage				"%s times in total" ;# NEW
-::engine::mc::Memory						"Memory (MB)" ;# NEW
+::engine::mc::TotalUsage				"%s gånger totalt"
+::engine::mc::Memory						"Minne (MB)"
 ::engine::mc::CPUs						"CPUs" ;# NEW
 ::engine::mc::Priority					"CPU prioritet"
 ::engine::mc::ClearHash					"Rensa hashtabeller"
 
-::engine::mc::ConfirmNewEngine		"Confirm new engine" ;# NEW
+::engine::mc::ConfirmNewEngine		"Bekräfta ny motor"
 ::engine::mc::EngineAlreadyExists	"An entry with this engine already exists." ;# NEW
 ::engine::mc::CopyFromEngine			"Make a copy of entry" ;# NEW
 ::engine::mc::CannotOpenProcess		"Cannot start process." ;# NEW
@@ -1035,7 +1035,7 @@
 
 ::application::analysis::mc::Status(checkmate)			"%s är matt"
 ::application::analysis::mc::Status(stalemate)			"%s är patt"
-::application::analysis::mc::Status(threechecks)		"%s got three checks" ;# NEW
+::application::analysis::mc::Status(threechecks)		"%s har 3 schackar"
 ::application::analysis::mc::Status(losing)				"%s lost all pieces" ;# NEW
 
 ::application::analysis::mc::NotSupported(standard)	"Den här motorn har inte stöd för vanligt schack."
@@ -1145,7 +1145,7 @@
 ::gametable::mc::T_Deleted					"Raderad"
 ::gametable::mc::T_EngFlag					"Engelsk språkflagga"
 ::gametable::mc::T_OthFlag					"Övrig språkflagga"
-::gametable::mc::T_Idn						"Chess 960 Position Number"
+::gametable::mc::T_Idn						"Schack960 positionsnummer"
 ::gametable::mc::T_Annotations			"Schacktecken"
 ::gametable::mc::T_Comments				"Kommentarer"
 ::gametable::mc::T_Variations				"Varianter"
@@ -1306,20 +1306,26 @@
 ::gamebar::mc::NewGameFstPart			"Nytt"
 ::gamebar::mc::NewGameSndPart			"parti"
 
-::gamebar::mc::LockGame					"Lås partiet"
-::gamebar::mc::UnlockGame				"Lås upp partiet"
-::gamebar::mc::CloseGame				"Stäng partiet"
+::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
+::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
+::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
+::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
+::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
 
-::gamebar::mc::GameNew					"Nytt parti"
-::gamebar::mc::AddNewGame				"Spara: Lägg till nytt parti till %s..."
-::gamebar::mc::ReplaceGame				"Spara: Ersätt parti i %s..."
-::gamebar::mc::ReplaceMoves			"Spara: Ersätt bara dragen i partiet..."
+::gamebar::mc::LockGame							"Lås partiet"
+::gamebar::mc::UnlockGame						"Lås upp partiet"
+::gamebar::mc::CloseGame						"Stäng partiet"
 
-::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
-::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
-::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
+::gamebar::mc::GameNew							"Nytt parti"
+::gamebar::mc::AddNewGame						"Spara: Lägg till nytt parti till %s..."
+::gamebar::mc::ReplaceGame						"Spara: Ersätt parti i %s..."
+::gamebar::mc::ReplaceMoves					"Spara: Ersätt bara dragen i partiet..."
+
+::gamebar::mc::Tip(Antichess)			"Det finns ingen schack, ingen rockad, kungen\ntas som en vanlig pjäs." ;# NEW
+::gamebar::mc::Tip(Suicide)			"Om patt kommer spelaren med färre\npjäser att vinna (enligt FICS regler)." ;# NEW
+::gamebar::mc::Tip(Giveaway)			"Om patt kommer spelaren som är\npatt att vinna (enligt internationella regler)." ;# NEW
  ;# NEW
-::gamebar::mc::Tip(Losers)				"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+::gamebar::mc::Tip(Losers)						"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Titta igenom partiet"
@@ -1370,9 +1376,9 @@
 ::encoding::mc::SystemEncoding		"Systemkodning:"
 
 ### setup ##############################################################
-::setup::mc::Position(Chess960)	"Chess 960 position"
-::setup::mc::Position(Symm960)	"Symmetrisk chess 960 position"
-::setup::mc::Position(Shuffle)	"Shuffle chess position"
+::setup::mc::Chess960Position			"Schack960 position"
+::setup::mc::SymmChess960Position	"Symmetrisk schack960 position"
+::setup::mc::ShuffleChessPosition	"Shuffleschack position"
 
 ### setup board ########################################################
 ::setup::position::mc::SetStartPosition		"Sätt startposition"
@@ -1401,7 +1407,7 @@
 ::setup::board::mc::ChangeToFormat(shredder)			"Ändra till Shredder format"
 
 ::setup::board::mc::Error(InvalidFen)					"FEN är ogiltigt."
-::setup::board::mc::Error(EmptyBoard)					"Board is empty." ;# NEW
+::setup::board::mc::Error(EmptyBoard)					"Brädet är tomt."
 ::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."
 ::setup::board::mc::Error(NoBlackKing)					"Svart kung saknas."
 ::setup::board::mc::Error(DoubleCheck)					"Båda kungar står i schack."
@@ -1439,15 +1445,15 @@
 ::import::mc::NoGamesImported						"Inga partier importerade"
 ::import::mc::FileIsEmpty							"Filen är kanske tom"
 ::import::mc::DatabaseImport						"Databas-import"
-::import::mc::ImportPgnGame						"Import PGN-parti"
-::import::mc::ImportPgnVariation					"Import PGN-variation"
+::import::mc::ImportPgnGame						"Importera PGN-parti"
+::import::mc::ImportPgnVariation					"Importera PGN-variation"
 ::import::mc::ImportOK								"PGN-text importerad utan fel eller varningar."
 ::import::mc::ImportAborted						"Import avbruten."
 ::import::mc::TextIsEmpty							"PGN-text är tom."
 ::import::mc::AbortImport							"Avbryta PGN-import?"
-::import::mc::UnsupportedVariantRejected		"Unsuported variant '%s' rejected" ;# NEW
-::import::mc::Accepted								"accepted" ;# NEW
-::import::mc::Rejected								"rejected" ;# NEW
+::import::mc::UnsupportedVariant					"Varianten '%s' stöds inte, avvisades"
+::import::mc::Accepted								"accepterat"
+::import::mc::Rejected								"avvisat"
 
 ::import::mc::DifferentEncoding					"Den valda kodningen %src överensstämmer inte med filkodningen %dst."
 ::import::mc::DifferentEncodingDetails			"Databasen kan därefter inte omkoderas."
@@ -1505,7 +1511,7 @@
 ::import::mc::UnexpectedResultToken				"Oväntad resultattecken"
 ::import::mc::UnexpectedTag						"Oväntad tag inuti parti"
 ::import::mc::UnexpectedEndOfGame				"Oväntad slut av parti (saknar resultat)"
-::import::mc::UnexpectedCastling					"Unexpected castling (not allowed in this chess variant)" ;# NEW
+::import::mc::UnexpectedCastling					"Oväntad rockad (inte tillåten i den här schackvarianten)"
 ::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
 ::import::mc::TagNameExpected						"Syntaxfel: Tag name expected"
 ::import::mc::TagValueExpected					"Syntaxfel: Tag value expected"
@@ -1527,16 +1533,16 @@
 ::import::mc::UserHasInterrupted					"Avbrutit av användare"
 
 ### export #############################################################
-::export::mc::FileSelection				"&File Selection"
-::export::mc::OptionsSetup					"&Options"
-::export::mc::PageSetup						"&Page Setup"
-::export::mc::DiagramSetup					"&Diagram Setup"
-::export::mc::StyleSetup					"Sty&le"
-::export::mc::EncodingSetup				"&Encoding"
-::export::mc::TagsSetup						"&Tags"
+::export::mc::FileSelection				"&Filer"
+::export::mc::OptionsSetup					"&Alternativ"
+::export::mc::PageSetup						"&Utskriftsformat"
+::export::mc::DiagramSetup					"&Diagramformat"
+::export::mc::StyleSetup					"&Format"
+::export::mc::EncodingSetup				"&Kodning"
+::export::mc::TagsSetup						"&Taggar"
 ::export::mc::NotationSetup				"&Notation"
-::export::mc::AnnotationSetup				"&Annotation"
-::export::mc::CommentsSetup				"&Comments"
+::export::mc::AnnotationSetup				"&Schacktecken"
+::export::mc::CommentsSetup				"&Kommentarer"
 
 ::export::mc::Visibility					"Synlighet"
 ::export::mc::HideDiagrams					"Dölj diagram"
@@ -1558,12 +1564,12 @@
 ::export::mc::FontHandling					"Fonthantering"
 ::export::mc::DiagramStyle					"Diagramstil"
 ::export::mc::UseImagesForDiagram		"Använd schabloner för diagramgenerering"
-::export::mc::EmebedTruetypeFonts		"Embed TrueType fonts"
+::export::mc::EmebedTruetypeFonts		"Bädda in TrueType-fonter"
 ::export::mc::UseBuiltinFonts				"Använd inbyggda fonter"
-::export::mc::SelectExportedTags			"Val av exporterade fonter"
-::export::mc::ExcludeAllTags				"Uteslut alla tags"
-::export::mc::IncludeAllTags				"Inkludera alla tags"
-::export::mc::ExtraTags						"Alla andra extra tags"
+::export::mc::SelectExportedTags			"Val av exporterade taggar"
+::export::mc::ExcludeAllTags				"Avmarkera allt"
+::export::mc::IncludeAllTags				"Markera allt"
+::export::mc::ExtraTags						"Alla andra extra taggar"
 ::export::mc::NoComments					"Ingen kommentar"
 ::export::mc::AllLanguages					"Alla språk"
 ::export::mc::Significant					"Signifikant"
@@ -1648,12 +1654,12 @@
 ::export::mc::Option(pgn,include_ply_count_tag)					"Skriv tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Skriv tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Skriv tag 'Mode'"
-::export::mc::Option(pgn,include_opening_tag)					"Skriv tags 'Opening', 'Variation', 'Subvariation'"
+::export::mc::Option(pgn,include_opening_tag)					"Skriv taggar 'Opening', 'Variation', 'Subvariation'"
 ::export::mc::Option(pgn,include_setup_tag)						"Skriv tag 'Setup' (om nödvändigt)"
 ::export::mc::Option(pgn,include_variant_tag)					"Skriv tag 'Variant' (om nödvändigt)"
 ::export::mc::Option(pgn,include_position_tag)					"Skriv tag 'Position' (om nödvändigt)"
 ::export::mc::Option(pgn,include_time_mode_tag)					"Skriv tag 'TimeMode' (om nödvändigt)"
-::export::mc::Option(pgn,exclude_extra_tags)						"Uteslut extra tags"
+::export::mc::Option(pgn,exclude_extra_tags)						"Uteslut extra taggar"
 ::export::mc::Option(pgn,indent_variations)						"Indrag för varianter"
 ::export::mc::Option(pgn,indent_comments)							"Indrag för kommentarer"
 ::export::mc::Option(pgn,column_style)								"Spaltformatering (ett drag per rad)"
@@ -1692,16 +1698,16 @@
 ::dialog::save::mc::GameData						"Partidata"
 ::dialog::save::mc::Event							"Tävling"
 
-::dialog::save::mc::MatchesExtraTags			"Matches / Extra Tags"
+::dialog::save::mc::MatchesExtraTags			"Matcher / Extra Taggar"
 ::dialog::save::mc::PressToSelect				"Tryck Ctrl+0 till Ctrl+9 (eller vänster musknapp) för att välja"
 ::dialog::save::mc::PressForWhole				"Tryck Alt-0 till Alt-9 (eller mellersta musknappen) för helt dataset"
-::dialog::save::mc::EditTags						"Bearbeta tags"
+::dialog::save::mc::EditTags						"Bearbeta taggar"
 ::dialog::save::mc::RemoveThisTag				"Radera tag '%s'?"
 ::dialog::save::mc::TagAlreadyExists			"Tagnamnet '%s' finns redan."
 ::dialog::save::mc::TagRemoved					"Extra tag '%s' (aktuellt värde: '%s') kommer att raderas."
 ::dialog::save::mc::TagNameIsReserved			"Tagnamnet '%s' är reserverat."
 ::dialog::save::mc::Locked							"Spärrad"
-::dialog::save::mc::OtherTag						"Fler tags"
+::dialog::save::mc::OtherTag						"Fler taggar"
 ::dialog::save::mc::NewTag							"Ny tag"
 ::dialog::save::mc::RemoveTag						"Radera tag"
 ::dialog::save::mc::SetToGameDate				"Ange partidatum"
@@ -1716,8 +1722,8 @@
 ::dialog::save::mc::EnglishName					"E&ngelskt namn"
 ::dialog::save::mc::ShowRatingType				"Visa &rating"
 ::dialog::save::mc::EcoCode						"&ECO-code"
-::dialog::save::mc::Matches						"&Matches"
-::dialog::save::mc::Tags							"&Tags"
+::dialog::save::mc::Matches						"&Matcher"
+::dialog::save::mc::Tags							"&Taggar"
 
 ::dialog::save::mc::Label(name)					"Namn"
 ::dialog::save::mc::Label(fideID)				"Fide-ID"
@@ -1963,12 +1969,12 @@
 ::crosstable::mc::Knockout						"Knockout"
 ::crosstable::mc::RankingList					"Rankinglista"
 
-::crosstable::mc::Order							"Order"
-::crosstable::mc::Type							"Table Type"
-::crosstable::mc::Score							"Score"
-::crosstable::mc::Alphabetical				"Alfabetisk"
-::crosstable::mc::Rating						"Rating"
-::crosstable::mc::Federation					"Nation"
+::crosstable::mc::Order						"Ordning"
+::crosstable::mc::Type						"Tabelltyp"
+::crosstable::mc::Score						"Poäng"
+::crosstable::mc::Alphabetical			"Alfabetisk"
+::crosstable::mc::Rating					"Rating"
+::crosstable::mc::Federation				"Nation"
 
 ::crosstable::mc::Debugging					"Debugging"
 ::crosstable::mc::Display						"Display"
@@ -2210,8 +2216,8 @@
 ::dialog::choosefont::mc::Apply				"&Verkställ"
 ::dialog::choosefont::mc::Cancel				"&Avbryt"
 ::dialog::choosefont::mc::Continue			"Forts&ätt"
-::dialog::choosefont::mc::FixedOnly			"&Enbart teckensnitt med fast bredd"
-::dialog::choosefont::mc::Family				"Fam&ilj"
+::dialog::choosefont::mc::FixedOnly			"&Enbart fonter med fast bredd"
+::dialog::choosefont::mc::Family				"&Fonter"
 ::dialog::choosefont::mc::Font				"&Font"
 ::dialog::choosefont::mc::Ok					"&OK"
 ::dialog::choosefont::mc::Reset				"&Återställ"
@@ -2229,7 +2235,7 @@
 ::dialog::choosefont::mc::Effects			"Effekter"
 ::dialog::choosefont::mc::Filter				"Filter"
 ::dialog::choosefont::mc::Sample				"Exempel"
-::dialog::choosefont::mc::SearchTitle		"Söker efter teckensnitt med fast bredd."
+::dialog::choosefont::mc::SearchTitle		"Söker efter fonter med fast bredd."
 ::dialog::choosefont::mc::SeveralMinutes	"Denna operation kan ta ungefär %d minuter."
 ::dialog::choosefont::mc::FontSelection	"Font Selection"
 ::dialog::choosefont::mc::Wait				"Vänta"
@@ -2290,7 +2296,7 @@
 ::fsbox::mc::DirectoryRemoved				"Kan inte byta till foldern \"%s\".\nFoldern är borttagen."
 ::fsbox::mc::DeleteFailed					"Det gick inte att radera '%s'."
 ::fsbox::mc::RestoreFailed					"Det gick inte att återställa '%s'."
-::fsbox::mc::CommandFailed					"Command '%s' failed."
+::fsbox::mc::CommandFailed					"Kommmandot '%s' misslyckades."
 ::fsbox::mc::CopyFailed						"Det gick inte att kopiera filen '%s': åtkomst nekad."
 ::fsbox::mc::CannotCopy						"Kan inte skapa en kopia, filen '%s' finns redan."
 ::fsbox::mc::CannotDuplicate				"Kan inte duplicera filen '%s'. Tillstånd att läsa saknas."
@@ -2324,10 +2330,10 @@
 ::fsbox::mc::CannotOpenTrashFiles		"Kan inte öppna filer från papperskorgen:"
 ::fsbox::mc::CannotOpenRemoteFiles		"Kan inte öppna fjärrfiler:"
 ::fsbox::mc::OperationAborted				"Åtgärden avbröts."
-::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
+::fsbox::mc::ApplyOnDirectories			"Är du säker på att du vill använda den valda åtgärden på (följande) folder?"
 ::fsbox::mc::EntryAlreadyExists			"Post finns redan"
-::fsbox::mc::AnEntryAlreadyExists		"An entry '%s' already exists." ;# NEW
-::fsbox::mc::SourceDirectoryIs			"The source directories is '%s'." ;# NEW
+::fsbox::mc::AnEntryAlreadyExists		"En post '%s' finns redan."
+::fsbox::mc::SourceDirectoryIs			"Källfoldern är '%s'."
 ::fsbox::mc::NewName							"Nytt namn"
 
 ::fsbox::mc::ReallyMove(file,w)			"Är du säker att filen '%s' ska flyttas till papperskorgen?"

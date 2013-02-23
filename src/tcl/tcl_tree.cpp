@@ -403,7 +403,7 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			mstl::string const& most = info.mostFrequentPlayer().name();
 
 			if (info.move())
-				info.move().printSan(move, encoding::Utf8);
+				info.move().printSan(move, protocol::Scidb, encoding::Utf8);
 			else if (i < objc)
 				move = "end";
 
@@ -475,7 +475,7 @@ cmdMove(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			if (board.isValidMove(info.move(), game.variant(), move::DontAllowIllegalMove))
 			{
 				mstl::string s;
-				info.move().printSan(s);
+				info.move().printSan(s, protocol::Standard, encoding::Latin1);
 				setResult(s);
 			}
 		}

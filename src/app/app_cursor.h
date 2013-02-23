@@ -71,6 +71,7 @@ public:
 
 	bool isOpen() const;
 	bool isClosed() const;
+	bool isEmpty() const;
 	bool isReadonly() const;
 	bool isWriteable() const;
 	bool isActive() const;

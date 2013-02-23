@@ -279,7 +279,7 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
 {
 	mstl::string info;
 
-	moveInfo.print(m_engines, info, MoveInfo::Text);
+	moveInfo.print(m_engines, info, MoveInfo::Pgn);
 	sendComment(Comment(info, false, false));
 
 	if (!m_appendComment)
@@ -338,7 +338,7 @@ Consumer::checkMove(Move const& move)
 	Move m(move);
 
 	board.prepareForPrint(m, variant::Normal, Board::ExternalRepresentation);
-	m.printSan(msg);
+	m.printSan(msg, protocol::Standard, encoding::Latin1);
 	m_strm.put(token::Comment);
 	m_comments.push_back(Comment(msg, false, false)); // set english flag?
 

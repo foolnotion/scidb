@@ -58,6 +58,8 @@ public:
 		ClockTime,
 		CorrespondenceChessSent,
 		VideoTime,
+
+		LAST = VideoTime,
 	};
 
 	enum Format
@@ -106,7 +108,8 @@ public:
 	char const* parseVideoTime(char const* s);
 
 	static bool isMoveInfo(unsigned char firstByte);
-	static Type type(unsigned char const firstByte);
+	static Type type(unsigned char firstByte);
+	static unsigned length(unsigned char firstByte);
 	static void skip(util::ByteStream& strm);
 	static unsigned char const* skip(unsigned char const* strm);
 

@@ -75,7 +75,8 @@ public:
 	typedef mstl::bitfield<uint32_t> Variants;
 	typedef mstl::map<mstl::string,unsigned> TagMap;
 
-	static unsigned const InvalidPosition = unsigned(-1);
+	static unsigned const InvalidPosition	= unsigned(-1);
+	static unsigned const ReservedPosition	= unsigned(-2);
 
 	enum Update
 	{
@@ -278,6 +279,11 @@ public:
 	unsigned stripTags(View& view, TagMap const& tags, util::Progress& progress, Update updateMode);
 	void findTags(View const& view, TagMap& tags, util::Progress& progress) const;
 	void viewClosed(Cursor const& cursor, unsigned viewId);
+	void exportGameToClipbase(unsigned position);
+	void pasteLastClipbaseGame(unsigned position);
+	bool mergeLastClipbaseGame(unsigned position);
+	void pasteGame(unsigned from, unsigned to);
+	bool mergeGame(unsigned from, unsigned to);
 
 	unsigned addEngine(Engine* engine);
 	void removeEngine(unsigned id);

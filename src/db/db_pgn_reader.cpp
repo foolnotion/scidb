@@ -404,6 +404,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	if (m_readMode == File)
 	{
 		parseDescription(stream, m_description);
+		convertToUtf(m_description);
 		m_description.trim();
 	}
 }
@@ -1190,7 +1191,7 @@ PgnReader::handleError(Error code, mstl::string const& message)
 
 			if (m_move && !board().isValidMove(m_move, m_variant))
 			{
-				m_move.printSan(msg);
+				m_move.printSan(msg, protocol::Standard, encoding::Latin1);
 				msg += ' ';
 			}
 
@@ -4123,7 +4124,7 @@ PgnReader::parseMinusSign(Token prevToken, int)
 		case '+':
 			if (!partOfMove(prevToken))
 				sendError(UnexpectedSymbol, "-");
-			advanceLinePos(2);
+			advanceLinePos(1);
 			putNag(nag::BlackHasADecisiveAdvantage);
 			return kNag;
 
@@ -4422,7 +4423,7 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 	switch (m_linePos[0])
 	{
 		case '-':
-			advanceLinePos(m_linePos[1] != '-' ? 2 : 1);
+			advanceLinePos(m_linePos[1] == '-' ? 2 : 1);
 			putNag(nag::WhiteHasADecisiveAdvantage);
 			prevToken = kNag;
 			break;
@@ -4469,12 +4470,9 @@ PgnReader::parsePlusSign(Token prevToken, int c)
 				// skip double check
 			}
 			break;
-
-		default:
-			// skip check
-			break;
 	}
 
+	// skip check sign
 	return prevToken;
 }
 

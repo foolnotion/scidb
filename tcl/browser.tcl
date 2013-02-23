@@ -633,6 +633,8 @@ proc Update2 {position} {
 
 
 proc UpdateInfo {position id} {
+	if {![info exists ${position}::Vars]} { return }
+
 	variable ${position}::Vars
 	variable Options
 
@@ -644,6 +646,8 @@ proc UpdateInfo {position id} {
 
 
 proc UpdateData {position id evenMainline} {
+	if {![info exists ${position}::Vars]} { return }
+
 	variable ${position}::Vars
 	variable Options
 

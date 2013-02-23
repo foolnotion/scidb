@@ -31,6 +31,7 @@
 
 #include "db_common.h"
 #include "db_move.h"
+#include "db_engine_list.h"
 #include "db_eco.h"
 
 #ifdef DEBUG_SI4
@@ -103,6 +104,7 @@ private:
 	MoveNode*			m_currentNode;
 	Move					m_move;
 	bool					m_hasVariantTag;
+	EngineList			m_engines;
 
 #ifdef DEBUG_SI4
 	HomePawns m_homePawns;

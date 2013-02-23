@@ -190,6 +190,7 @@ array set Vars {
 	showDisabled	0
 	pressed			0
 	dragging			0
+	mintabs			3
 	taborder			{games players events sites annotators}
 }
 
@@ -852,7 +853,7 @@ proc TabChanged {} {
 
 	set tabs [$Vars(contents) tabs]
 	foreach t $tabs {
-		if {[$Vars(contents) select] eq $t && [llength $tabs] > 2} {
+		if {[$Vars(contents) select] eq $t && [llength $tabs] > $Vars(mintabs)} {
 			set icon $icon::16x16::undock
 		} elseif {$Vars(showDisabled)} {
 			set icon $icon::16x16::undock_disabled
@@ -1026,14 +1027,20 @@ proc Switch {filename {variant Undetermined}} {
 proc CheckTabState {} {
 	variable Vars
 
+	set codec [::scidb::db::get codec]
+
 	if {[winfo toplevel $Vars(annotators)] ne $Vars(annotators)} {
-		set codec [::scidb::db::get codec]
-		if {$codec eq "sci" || $codec eq "cbh" || $codec eq "cbf"} {
+		if {$codec eq "sci" || $codec eq "cbh"} {
 			set state normal
 		} else {
 			set state hidden
 		}
 		$Vars(contents) tab $Vars(annotators) -state $state
+	}
+
+	if {[winfo toplevel $Vars(sites)] ne $Vars(sites)} {
+		if {$codec eq "cbf"} { set state hidden } else { set state normal }
+		$Vars(contents) tab $Vars(sites) -state $state
 	}
 }
 
@@ -2000,7 +2007,7 @@ proc Identify {nb x y} {
 proc Motion {nb x y {showTooltip 1}} {
 	variable Vars
 
-	if {[llength [$nb tabs]] == 2} { return }
+	if {[llength [$nb tabs]] == $Vars(mintabs)} { return }
 	lassign [Identify $nb $x $y] index what
 	if {$index == -1} { set what "label" }
 
@@ -2046,7 +2053,7 @@ proc Motion {nb x y {showTooltip 1}} {
 proc Enter {nb} {
 	variable Vars
 
-	if {[llength [$nb tabs]] == 2} { return }
+	if {[llength [$nb tabs]] == $Vars(mintabs)} { return }
 
 	if {$Vars(motion) >= 0 && $Vars(motion) < [llength [$nb tabs]]} {
 		set icon [$nb tab $Vars(motion) -image]
@@ -2063,7 +2070,7 @@ proc Leave {nb} {
 	variable Vars
 
 	::tooltip::hide
-	if {[llength [$nb tabs]] == 2} { return }
+	if {[llength [$nb tabs]] == $Vars(mintabs)} { return }
 
 	if {$Vars(motion) >= 0} {
 		foreach t [$nb tabs] {
@@ -2086,11 +2093,11 @@ proc ButtonPress {nb x y} {
 
 	switch $what {
 		icon {
-			if {[llength [$nb tabs]] == 2} { return }
+			if {[llength [$nb tabs]] == $Vars(mintabs)} { return }
 			if {[$nb tab $index -image] eq $icon::16x16::undock_disabled} { return }
 			$nb tab $index -image $icon::16x16::undock_sunken
 			set Vars(pressed) 1
-	}
+		}
 
 		label {
 			set Vars(current) $index
@@ -2108,7 +2115,7 @@ proc ButtonRelease {nb x y} {
 	set current $Vars(current)
 	set Vars(current) -1
 
-	if {[llength [$nb tabs]] == 2} { return }
+	if {[llength [$nb tabs]] == $Vars(mintabs)} { return }
 	lassign [Identify $nb $x $y] index what
 	if {$index == -1} { set index $Vars(motion) }
 
@@ -2165,7 +2172,7 @@ proc Undock {nb index {geometry {}}} {
 proc Dock {nb w} {
 	variable Vars
 
-	if {[llength [$nb tabs]] == 2} {
+	if {[llength [$nb tabs]] == $Vars(mintabs)} {
 		$nb tab [$nb select] -image $icon::16x16::undock
 	}
 	::scidb::tk::twm capture $w

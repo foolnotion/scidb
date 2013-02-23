@@ -102,6 +102,13 @@ Cursor::isWriteable() const
 }
 
 
+bool
+Cursor::Cursor::isEmpty() const
+{
+	M_REQUIRE(isOpen());
+	return m_db->isEmpty();
+}
+
 
 void
 Cursor::setDescription(mstl::string const& description)

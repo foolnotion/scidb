@@ -82,10 +82,13 @@ public:
 	void filterTags(db::TagSet& tags, Section section) const override;
 
 	void doOpen(mstl::string const& rootname,
+					mstl::string const& originalSuffix,
 					mstl::string const& encoding,
 					util::Progress& progress) override;
 	void reloadDescription(mstl::string const& rootname) override;
-	void reloadNamebases(mstl::string const& rootname, util::Progress& progress) override;
+	void reloadNamebases(mstl::string const& rootname,
+								mstl::string const& originalSuffix,
+								util::Progress& progress) override;
 
 	void close() override;
 

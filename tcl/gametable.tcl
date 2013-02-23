@@ -831,6 +831,7 @@ proc TableSelected {path index} {
 
 	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 	set number [expr {[column $info number] - 1}]
+	set variant [::scidb::db::get variant? $base $number]
 
 	set pos [::widget::busyOperation { ::game::new $path \
 		-base $base -variant $variant -view $view -number $number -fen $fen }]
@@ -1020,31 +1021,35 @@ proc TableFill {path args} {
 				
 				switch $id {
 					acv {
-						if {$Options(transparent)} {
-							set image [lindex $unused $count]
+						if {$codec eq "cbf"} {
+							lappend text $::mc::NotAvailableSign
 						} else {
-							set image $Vars(crosshand)
-						}
-						set usage 0
-						foreach j {0 1 2} {
-							if {[lindex $item $j] == 0} {
-								::scidb::tk::image alpha 0 $image -area {*}$Vars(area:$j)
-							} else {
-								set a [expr {([lindex $item $j]*17)/255.0}]
-#								set a [expr {sqrt([lindex $item $j]*4335)/255.0}]
-								::scidb::tk::image alpha $a $image -area {*}$Vars(area:$j)
-								incr usage
-							}
-						}
-						if {$usage} {
-							if {!$Options(transparent)} {
+							if {$Options(transparent)} {
 								set image [lindex $unused $count]
-								::scidb::tk::image recolor white $image -composite set
-								$image copy $Vars(crosshand)
+							} else {
+								set image $Vars(crosshand)
 							}
-							lappend text [list @ $image]
-						} else {
-							lappend text [list @ {}]
+							set usage 0
+							foreach j {0 1 2} {
+								if {[lindex $item $j] == 0} {
+									::scidb::tk::image alpha 0 $image -area {*}$Vars(area:$j)
+								} else {
+									set a [expr {([lindex $item $j]*17)/255.0}]
+#								set a [expr {sqrt([lindex $item $j]*4335)/255.0}]
+									::scidb::tk::image alpha $a $image -area {*}$Vars(area:$j)
+									incr usage
+								}
+							}
+							if {$usage} {
+								if {!$Options(transparent)} {
+									set image [lindex $unused $count]
+									::scidb::tk::image recolor white $image -composite set
+									$image copy $Vars(crosshand)
+								}
+								lappend text [list @ $image]
+							} else {
+								lappend text [list @ {}]
+							}
 						}
 					}
 
@@ -1190,7 +1195,7 @@ proc TableFill {path args} {
 					}
 
 					annotator {
-						if {$codec eq "sci" || $codec eq "cbh" || $codec eq "cbf"} {
+						if {$codec eq "sci" || $codec eq "cbh"} {
 							lappend text $item
 						} else {
 							lappend text $::mc::NotAvailableSign
@@ -1217,7 +1222,9 @@ proc TableFill {path args} {
 					}
 
 					flags {
-						if {[llength $item]} {
+						if {$codec eq "cbf"} {
+							lappend text $::mc::NotAvailableSign
+						} elseif {[llength $item]} {
 							if {![info exist GameFlags($item)]} {
 								set n [llength $item]
 								set width [expr {$n*12 + ($n ? ($n - 1)*2 : 0)}]

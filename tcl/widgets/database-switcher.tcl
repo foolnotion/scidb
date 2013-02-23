@@ -1231,7 +1231,7 @@ proc OpenUri {w uriFiles} {
 	variable ${w}::Vars
 
 	set parent $w.content
-	set allowedExtensions {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip}
+	set allowedExtensions {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip .CBF .PGN .ZIP}
 	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions open]
 
 	# take into account that the application is currently loading a database
@@ -1249,7 +1249,7 @@ proc OpenUri {w uriFiles} {
 
 
 proc ImportDatabases {parent uriFiles destination variant x y} {
-	set allowedExtensions {.sci .si3 .si4 .pgn .pgn.gz .bpgn .bpgn.gz .zip}
+	set allowedExtensions {.sci .si3 .si4 .pgn .pgn.gz .bpgn .bpgn.gz .zip .PGN .ZIP}
 	set databaseList [ParseUriFiles $parent $uriFiles $allowedExtensions import]
 	set reply no
 

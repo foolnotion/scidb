@@ -86,6 +86,7 @@ public:
 	void doOpen(mstl::string const& encoding) override;
 	void doOpen(mstl::string const& rootname, mstl::string const& encoding) override;
 	void doOpen(mstl::string const& rootname,
+					mstl::string const& originalSuffix,
 					mstl::string const& encoding,
 					util::Progress& progress) override;
 	void doClear(mstl::string const& rootname) override;

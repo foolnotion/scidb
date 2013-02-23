@@ -519,8 +519,7 @@ Reader::parseDescription(mstl::istream& strm, mstl::string& result)
 				// fallthru
 
 			default:
-				result.append(c);
-				strm.get();
+				result.append(strm.get());
 				break;
 		}
 	}
@@ -558,12 +557,12 @@ Reader::getAttributes(mstl::string const& filename, int& numGames, mstl::string*
 
 		if (ext == "gz")
 			ext = util::misc::file::suffix(util::misc::file::rootname(filename));
-		else if (ext == "zip" && util::ZStream::containsSuffix(filename, "pgn"))
+		else if ((ext == "zip" || ext == "ZIP") && util::ZStream::containsSuffix(filename, "pgn"))
 			ext = "pgn";
 
 		if (ext == "bpgn")
 			numGames = BpgnReader::estimateNumberOfGames(numGames);
-		else // if (ext == "pgn" || ext == "zip")
+		else // if (ext == "pgn" || ext == "zip" || ext == "PGN" || ext == "ZIP")
 			numGames = PgnReader::estimateNumberOfGames(numGames);
 	}
 

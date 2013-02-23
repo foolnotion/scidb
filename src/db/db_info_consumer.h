@@ -44,7 +44,7 @@ public:
 						bool allowExtraTags);
 
 	void sendComment(Comment const& comment);
-	void preparseComment(mstl::string& comment) override;
+	bool preparseComment(mstl::string& comment) override;
 };
 
 } // namespace db

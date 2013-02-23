@@ -59,6 +59,7 @@ struct Line
 
 	mstl::string& print(	mstl::string& result,
 								variant::Type variant,
+								protocol::ID protocol,
 								encoding::CharSet charSet = encoding::Latin1) const;
 	void dump() const;
 

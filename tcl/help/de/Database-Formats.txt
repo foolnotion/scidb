@@ -197,7 +197,7 @@ Eine Datenbank im neuen ChessBase-Format besteht aus sehr vielen Dateien, die wi
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbe &nbsp;=&nbsp;</kbd></td><td>Teamindex</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbj &nbsp;=&nbsp;</kbd></td><td>Teaminformation</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Eröffnungsschlüssel</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cko &nbsp;=&nbsp;</kbd></td><td>Eröffnungsschlüssel</td></tr>
+    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo &nbsp;=&nbsp;</kbd></td><td>Eröffnungsschlüssel</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.ini &nbsp;=&nbsp;</kbd></td><td>Datenbankinitialisierungsdatei</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.html =&nbsp;</kbd></td><td>HTML-Dokumentenverzeichnis</td></tr>
   </table>

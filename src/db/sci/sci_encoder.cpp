@@ -117,7 +117,6 @@ Encoder::Encoder(ByteStream& strm, variant::Type variant)
 	,m_text(m_buffer[1], sizeof(m_buffer[1]))
 	,m_runLength(0)
 	,m_variant(variant)
-	,m_hasTimeTable(false)
 {
 }
 
@@ -406,40 +405,33 @@ Encoder::encodeMove(Move const& move)
 
 
 void
-Encoder::encodeMainline(MoveNode const* node)
+Encoder::encodeMainline(MoveNode const* node, TimeTable const& timeTable)
 {
 	if (node->hasSupplement())
 	{
-		encodeNote(node, true);
-		node = node->next();
+		encodeNote(node, &timeTable);
+		encodeVariation(node->next(), timeTable);
 	}
 	else
 	{
-		node = node->next();
-
-		for ( ; node->isBeforeLineEnd(); node = node->next())
+		for (node = node->next(); node->isBeforeLineEnd(); node = node->next())
 		{
 			if (node->hasSupplement())
-				return encodeVariation(node);
+				return encodeVariation(node, timeTable);
 
-			if (doEncoding(node->move()))
-			{
-				++m_runLength;
-			}
-			else
-			{
-				encodeVariation(node->next());
-				return;
-			}
+			if (!doEncoding(node->move()))
+				return encodeVariation(node->next(), timeTable);
+
+			++m_runLength;
 		}
-	}
 
-	encodeVariation(node);
+		encodeVariation(node, timeTable);
+	}
 }
 
 
 void
-Encoder::encodeVariation(MoveNode const* node)
+Encoder::encodeVariation(MoveNode const* node, TimeTable const& timeTable)
 {
 	for ( ; node->isBeforeLineEnd(); node = node->next())
 	{
@@ -448,7 +440,7 @@ Encoder::encodeVariation(MoveNode const* node)
 		if (node->hasSupplement())
 		{
 			if (node->hasNote())
-				encodeNote(node, false);
+				encodeNote(node, &timeTable);
 
 			for (unsigned i = 0; i < node->variationCount(); ++i)
 			{
@@ -457,8 +449,8 @@ Encoder::encodeVariation(MoveNode const* node)
 				m_position.push();
 				m_strm.put(token::Start_Marker);
 				if (var->hasNote())
-					encodeNote(var, false);
-				encodeVariation(var->next());
+					encodeNote(var);
+				encodeVariation(var->next(), timeTable);
 				m_position.pop();
 			}
 		}
@@ -476,7 +468,7 @@ Encoder::encodeVariation(MoveNode const* node)
 
 
 void
-Encoder::encodeNote(MoveNode const* node, bool isMainline)
+Encoder::encodeNote(MoveNode const* node, TimeTable const* timeTable)
 {
 	if (node->hasAnnotation())
 	{
@@ -502,14 +494,16 @@ Encoder::encodeNote(MoveNode const* node, bool isMainline)
 
 	if (node->hasMoveInfo())
 	{
-		MoveInfoSet const& moveInfo = node->moveInfo();
+		MoveInfoSet const& moveInfoSet = node->moveInfo();
 
-		for (unsigned i = 0; i < moveInfo.count(); ++i)
+		for (unsigned i = 0; i < moveInfoSet.count(); ++i)
 		{
-			if (!isMainline || !m_hasTimeTable || moveInfo[i].content() != MoveInfo::ElapsedMilliSeconds)
+			MoveInfo const& info = moveInfoSet[i];
+
+			if (timeTable == 0 || timeTable->size(info.content() - 1) == 0)
 			{
 				m_strm.put(token::Mark);
-				moveInfo[i].encode(m_data);
+				info.encode(m_data);
 			}
 		}
 	}
@@ -573,7 +567,7 @@ Encoder::isExtraTag(tag::ID tag)
 
 
 void
-Encoder::setup(Board const& board, uint16_t idn, variant::Type variant, bool hasTimeTable)
+Encoder::setup(Board const& board, uint16_t idn, variant::Type variant)
 {
 	uint16_t flags = idn;
 
@@ -604,15 +598,13 @@ Encoder::setup(Board const& board, uint16_t idn, variant::Type variant, bool has
 		board.toFen(fen, variant);
 		m_strm.put(fen);
 	}
-
-	m_hasTimeTable = hasTimeTable;
 }
 
 
 void
-Encoder::setup(Board const& board, variant::Type variant, bool hasTimeTable)
+Encoder::setup(Board const& board, variant::Type variant)
 {
-	setup(board, board.computeIdn(), variant, hasTimeTable);
+	setup(board, board.computeIdn(), variant);
 }
 
 
@@ -620,12 +612,12 @@ void
 Encoder::setup(GameData const& data)
 {
 	M_ASSERT(data.m_idn == data.m_startBoard.computeIdn());
-	setup(data.m_startBoard, data.m_idn, data.m_variant, !data.m_timeTable.isEmpty());
+	setup(data.m_startBoard, data.m_idn, data.m_variant);
 }
 
 
 uint16_t
-Encoder::encodeTagSection(TagSet const& tags, db::Consumer::TagBits allowedTags, bool allowExtraTags)
+Encoder::encodeTagSection(TagSet const& tags, tag::TagSet allowedTags, bool allowExtraTags)
 {
 	bool haveTags = false;
 
@@ -688,10 +680,26 @@ Encoder::encodeTimeTableSection(TimeTable const& timeTable)
 	if (timeTable.isEmpty())
 		return 0;
 
-	m_strm << uint16_t(timeTable.size());
+	for (unsigned col = 0; col < MoveInfo::LAST; ++col)
+	{
+		if (unsigned size = timeTable.size(col))
+		{
+			while (size >= 255)
+			{
+				m_strm << uint8_t(255);
+				size -= 255;
+			}
 
-	for (unsigned i = 0; i < timeTable.size(); ++i)
-		timeTable[i].encode(m_strm);
+			m_strm << uint8_t(size);
+
+			size = timeTable.size(col);
+
+			for (unsigned i = 0; i < size; ++i)
+				timeTable[i][col].encode(m_strm);
+		}
+	}
+
+	m_strm << uint8_t(0);
 
 	return flags::TimeTableSection;
 }
@@ -727,7 +735,7 @@ Encoder::prepareEncoding()
 
 void
 Encoder::encodeDataSection(TagSet const& tags,
-									db::Consumer::TagBits const& allowedTags,
+									tag::TagSet const& allowedTags,
 									bool allowExtraTags,
 									EngineList const& engines,
 									TimeTable const& timeTable)
@@ -754,12 +762,12 @@ Encoder::encodeDataSection(TagSet const& tags,
 void
 Encoder::doEncoding(	Signature const&,
 							GameData const& data,
-							db::Consumer::TagBits const& allowedTags,
+							tag::TagSet const& allowedTags,
 							bool allowExtraTags)
 {
 	setup(data);
 	prepareEncoding();
-	encodeMainline(data.m_startNode);
+	encodeMainline(data.m_startNode, data.m_timeTable);
 	encodeDataSection(data.m_tags, allowedTags, allowExtraTags, data.m_engines, data.m_timeTable);
 }
 

@@ -249,9 +249,9 @@ Position::doMove(unsigned moveNumber)
 								{
 									// Imitating the strange behaviour of ChessBase:
 									// ---------------------------------------------------
-									// Wow! In case of an restored e.p. right (see below)
-									// en passant moves will be counted even if the target
-									// is occupied by an own piece. Try game #6813 from
+									// Unbelievable! In case of an restored e.p. right (see below)
+									// en passant moves will be counted even if the target is occupied
+									// by an own piece. Try game #6813 from
 									// <ftp://ftp.pitt.edu/group/student-activities/chess/CB/Openings/sisch-cb.zip>.
 									++count;
 								}
@@ -274,9 +274,9 @@ Position::doMove(unsigned moveNumber)
 
 							if (isEnPassant && top.epFake && board.piece(move.to()) == piece::None)
 							{
-								// Wow! We can decode games which even ChessBase (cb3.exe)
-								// cannot decode correctly! It's a severe encoding/decoding
-								// bug in ChessBase. Try game #288 from
+								// Wow! We can decode games which even ChessBase cannot decode
+								// correctly! It's a severe encoding/decoding bug in ChessBase.
+								// Try game #288 from
 								// <ftp://ftp.pitt.edu/group/student-activities/chess/PGN/Players/kburg-pg.zip>.
 								++count;
 								break;

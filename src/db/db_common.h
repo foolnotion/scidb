@@ -970,6 +970,11 @@ namespace encoding
 	enum CharSet { Latin1, Utf8 };
 }
 
+namespace protocol
+{
+	enum ID { Scidb, Standard, UCI };
+}
+
 namespace nag
 {
 	enum ID

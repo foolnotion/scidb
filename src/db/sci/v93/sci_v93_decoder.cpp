@@ -755,11 +755,11 @@ Decoder::decodeTimeTable(util::ByteStream& strm, TimeTable& timeTable)
 
 	timeTable.reserve(length);
 
-	for ( ; length; length--)
+	for (unsigned i = 0; i < length; ++i)
 	{
 		MoveInfo info;
 		info.decode(strm);
-		timeTable.add(info);
+		timeTable.set(i, info);
 	}
 }
 

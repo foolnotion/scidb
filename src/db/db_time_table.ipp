@@ -24,6 +24,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_assert.h"
+
 namespace db {
 
 inline bool TimeTable::isEmpty() const					{ return m_table.empty(); }
@@ -32,8 +34,26 @@ inline unsigned TimeTable::size() const				{ return m_table.size(); }
 
 inline void TimeTable::reserve(unsigned capacity)	{ m_table.reserve(capacity); }
 inline void TimeTable::clear()							{ m_table.clear(); }
+inline void TimeTable::swap(TimeTable& table)		{ m_table.swap(table.m_table); }
 
-inline MoveInfo const& TimeTable::operator[](unsigned index) const { return m_table[index]; }
+inline MoveInfoSet const& TimeTable::operator[](unsigned index) const { return m_table[index]; }
+
+
+inline
+MoveInfo const&
+TimeTable::get(unsigned index, MoveInfo::Type type) const
+{
+	return m_table[index][type - 1];
+}
+
+
+inline
+unsigned
+TimeTable::size(unsigned col) const
+{
+	M_REQUIRE(col < MoveInfo::LAST);
+	return m_size[col];
+}
 
 } // namespace db
 

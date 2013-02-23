@@ -586,7 +586,7 @@ cmdSan(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		mstl::string san;
 		Scidb->game().currentBoard().prepareForPrint(
 			move, Scidb->game().variant(), Board::InternalRepresentation);
-		move.printSan(san);
+		move.printSan(san, protocol::Standard, encoding::Latin1);
 		setResult(san);
 	}
 

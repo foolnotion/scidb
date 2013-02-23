@@ -221,6 +221,8 @@ proc Update2 {nb} {
 
 
 proc UpdateData {nb id evenMainline} {
+	if {![info exists ${nb}::Vars]} { return }
+
 	variable ${nb}::Vars
 	variable Options
 

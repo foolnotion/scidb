@@ -26,36 +26,97 @@
 
 #include "db_time_table.h"
 
+#include "m_utility.h"
+#include "m_bit_functions.h"
 #include "m_assert.h"
 
+#include <string.h>
+
 using namespace db;
+
+
+TimeTable::TimeTable()
+	:m_types(0)
+{
+	::memset(m_size, 0, sizeof(m_size));
+}
 
 
 void
 TimeTable::cut(unsigned newSize)
 {
 	M_REQUIRE(newSize <= size());
+
 	m_table.resize(newSize);
+	::memset(m_size, 0, sizeof(m_size));
+
+	for (unsigned i = 0; i < m_table.size(); ++i)
+	{
+		for (unsigned t = 0; t < MoveInfo::LAST; ++t)
+		{
+			if (!m_table[i][t].isEmpty())
+				m_size[t] = i + 1;
+		}
+	}
 }
 
 
 void
-TimeTable::add(MoveInfo const& moveInfo)
+TimeTable::ensure(unsigned size)
 {
-	M_REQUIRE(moveInfo.content() == MoveInfo::ElapsedMilliSeconds);
-	m_table.push_back(moveInfo);
+	m_table.reserve(size);
+
+	while (m_table.size() < size)
+	{
+		m_table.push_back();
+		m_table.back().resize(MoveInfo::LAST);
+	}
 }
 
 
 void
 TimeTable::set(unsigned index, MoveInfo const& moveInfo)
 {
-	M_REQUIRE(moveInfo.content() == MoveInfo::ElapsedMilliSeconds);
+	M_REQUIRE(index < size());
+
+	unsigned col = moveInfo.content() - 1;
+
+	m_table[index][col] = moveInfo;
+	m_size[col] = mstl::max(m_size[col], index + 1);
+	m_types |= 1 << col;
+}
+
+
+void
+TimeTable::set(unsigned index, MoveInfoSet const& moveInfoSet)
+{
+	unsigned size = index + 1;
 
 	if (index <= m_table.size())
-		m_table.resize(index + 1);
+		m_table.resize(size);
 
-	m_table[index] = moveInfo;
+	MoveInfoSet& set = m_table.back();
+
+	set.resize(MoveInfo::LAST);
+
+	for (unsigned i = 0; i < moveInfoSet.count(); ++i)
+	{
+		static_assert(MoveInfo::None == 0, "wrong index access");
+
+		MoveInfo const&	info	= moveInfoSet[i];
+		unsigned				col	= info.content() - 1;
+
+		set[col] = info;
+		m_size[col] = mstl::max(m_size[col], size);
+		m_types |= 1 << col;
+	}
+}
+
+
+unsigned
+TimeTable::columns() const
+{
+	return mstl::bf::count_bits(m_types);
 }
 
 // vi:set ts=3 sw=3:

@@ -514,6 +514,8 @@ cbh2si4.o: db/db_mark.ipp
 cbh2si4.o: db/db_mark_set.ipp
 cbh2si4.o: db/db_comment.h
 cbh2si4.o: db/db_comment.ipp
+cbh2si4.o: db/db_exception.h
+cbh2si4.o: util/u_exception.h
 cbh2si4.o: db/db_log.h
 cbh2si4.o: db/si3/si3_consumer.h
 cbh2si4.o: db/si3/si3_encoder.h
@@ -522,7 +524,6 @@ cbh2si4.o: db/si3/si3_encoder_position.ipp
 cbh2si4.o: db/si3/si3_encoder.ipp
 cbh2si4.o: db/si3/si3_common.h
 cbh2si4.o: util/u_byte_stream.h
-cbh2si4.o: util/u_exception.h
 cbh2si4.o: util/u_byte_stream.ipp
 cbh2si4.o: db/si3/si3_encoder.h
 cbh2si4.o: db/si3/si3_codec.h
@@ -671,13 +672,14 @@ cdb2sci.o: db/db_mark.ipp
 cdb2sci.o: db/db_mark_set.ipp
 cdb2sci.o: db/db_comment.h
 cdb2sci.o: db/db_comment.ipp
+cdb2sci.o: db/db_exception.h
+cdb2sci.o: util/u_exception.h
 cdb2sci.o: db/db_log.h
 cdb2sci.o: db/sci/sci_consumer.h
 cdb2sci.o: db/sci/sci_encoder.h
 cdb2sci.o: db/sci/sci_encoder_position.h
 cdb2sci.o: db/sci/sci_encoder_position.ipp
 cdb2sci.o: util/u_byte_stream.h
-cdb2sci.o: util/u_exception.h
 cdb2sci.o: util/u_byte_stream.ipp
 cdb2sci.o: db/sci/sci_encoder.ipp
 cdb2sci.o: db/sci/sci_common.h

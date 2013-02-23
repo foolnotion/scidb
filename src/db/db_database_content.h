@@ -47,8 +47,10 @@ public:
 	typedef type::ID Type;
 	typedef mstl::chunk_allocator<GameInfo> Allocator;
 
-	DatabaseContent(mstl::string const& encoding, Type type = type::Unspecific);
-	DatabaseContent(DatabaseContent const& content);
+	DatabaseContent(	mstl::string const& filename,
+							mstl::string const& encoding,
+							Type type = type::Unspecific);
+	DatabaseContent(mstl::string const& filename, DatabaseContent const& content);
 	virtual ~DatabaseContent() throw();
 
 	typedef mstl::vector<GameInfo*> GameInfoList;
@@ -59,6 +61,7 @@ public:
 	Namebase const& namebase(Namebase::Type type) const;
 
 	mstl::string	m_rootname;
+	mstl::string	m_suffix;
 	GameInfoList	m_gameInfoList;
 	Namebases		m_namebases;
 	Type				m_type;

@@ -233,6 +233,7 @@ protected:
 	virtual void doOpen(mstl::string const& encoding);
 	virtual void doOpen(mstl::string const& rootname, mstl::string const& encoding);
 	virtual void doOpen(	mstl::string const& rootname,
+								mstl::string const& originalSuffix,
 								mstl::string const& encoding,
 								util::Progress& progress) = 0;
 	virtual unsigned doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding);

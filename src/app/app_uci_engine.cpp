@@ -324,7 +324,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 		if (game->startBoard().plyNumber() != currentBoard().plyNumber())
 		{
 			m_position.append(" moves", 6);
-			game->dumpHistory(m_position, m_needChess960 ? Game::Standard : Game::UCI);
+			game->dumpHistory(m_position, m_needChess960 ? protocol::Scidb : protocol::UCI);
 		}
 	}
 	else

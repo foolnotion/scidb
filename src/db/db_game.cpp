@@ -56,6 +56,15 @@
 using namespace db;
 
 
+#ifdef DB_DEBUG_GAME
+# define BEGIN_BACKUP	beginBackup();
+# define END_BACKUP		endBackup();
+#else
+# define BEGIN_BACKUP
+# define END_BACKUP
+#endif
+
+
 namespace {
 
 struct Position
@@ -254,6 +263,9 @@ Game::Game()
 	,m_linebreakMinCommentLength(0)
 	,m_displayStyle(display::CompactStyle)
 	,m_moveStyle(move::ShortAlgebraic)
+#ifdef DB_DEBUG_GAME
+	,m_backupNode(0)
+#endif
 {
 }
 
@@ -263,6 +275,9 @@ Game::Game(Game const& game)
 	,GameData()
 	,m_editNode(0)
 	,m_line(m_lineBuf[0])
+#ifdef DB_DEBUG_GAME
+	,m_backupNode(0)
+#endif
 {
 	*this = game;
 	m_tags = game.m_tags;
@@ -274,6 +289,10 @@ Game::~Game() throw()
 {
 	delete m_editNode;
 
+#ifdef DB_DEBUG_GAME
+	delete m_backupNode;
+#endif
+
 	for (unsigned i = 0; i < m_undoList.size(); ++i)
 		delete m_undoList[i];
 }
@@ -284,6 +303,9 @@ Game::operator=(Game const& game)
 {
 	if (this != &game)
 	{
+		delete m_startNode;
+		delete m_editNode;
+
 		m_startNode							= game.m_startNode ? game.m_startNode->clone() : 0;
 		m_startBoard						= game.m_startBoard;
 		m_currentBoard						= game.m_startBoard;
@@ -292,8 +314,10 @@ Game::operator=(Game const& game)
 		m_editNode							= 0;
 		m_currentKey						= edit::Key(game.m_startBoard.plyNumber());
 		m_variant							= game.m_variant;
+		m_tags								= game.m_tags;
 		m_idn									= game.m_idn;
 		m_eco									= game.m_eco;
+		m_engines							= game.m_engines;
 		m_languageSet						= game.m_languageSet;
 		m_wantedLanguages					= game.m_wantedLanguages;
 		m_isIrreversible					= false;
@@ -315,7 +339,13 @@ Game::operator=(Game const& game)
 		m_displayStyle						= game.m_displayStyle;
 		m_moveStyle							= game.m_moveStyle;
 
+#ifdef DB_DEBUG_GAME
+		delete m_backupNode;
+		m_backupNode = 0;
+#endif
+
 		m_line.copy(game.m_line);
+		m_timeTable = game.m_timeTable;
 
 		for (unsigned i = 0; i < m_undoList.size(); ++i)
 			delete m_undoList[i];
@@ -1104,7 +1134,7 @@ Game::printMove(	Board const& board,
 
 	// move
 	if (flags & ExportFormat)
-		move.print(result, form, encoding::Latin1);
+		move.print(result, form, protocol::Standard, encoding::Latin1);
 	else
 		move.printForDisplay(result, form);
 }
@@ -1866,6 +1896,8 @@ Game::replaceNode(MoveNode* newNode, Command command)
 {
 	M_ASSERT(newNode);
 
+	BEGIN_BACKUP;
+
 	bool truncate = m_currentNode->next()->isEmptyLine();
 
 	if (truncate)
@@ -1874,6 +1906,8 @@ Game::replaceNode(MoveNode* newNode, Command command)
 		insertUndo(Replace_Node, command, m_currentNode->removeNext());
 
 	m_currentNode->setNext(newNode);
+
+	END_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateBoard;
 
@@ -1891,6 +1925,8 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 	M_ASSERT(!atLineStart());
 //	M_ASSERT(isBeforeLineEnd());
 
+	BEGIN_BACKUP;
+
 	mstl::auto_ptr<MoveNode> node(variation);
 
 	insertUndo(Remove_Variation, RemoveVariation, number);
@@ -1898,6 +1934,8 @@ Game::insertVariation(MoveNode* variation, unsigned number)
 	node->fold(false);
 	m_currentNode->addVariation(node.release());
 	m_currentNode->swapVariations(number, m_currentNode->variationCount() - 1);
+
+	END_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet | UpdateBoard;
 
@@ -1977,8 +2015,12 @@ Game::addMoves(MoveNodeP node)
 	if (node->countHalfMoves() == 0)
 		return;
 
+	BEGIN_BACKUP;
+
 	insertUndo(Truncate_Variation, AddMoves);
 	m_currentNode->setNext(node->removeNext());
+
+	END_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
 
@@ -2045,6 +2087,8 @@ Game::addVariation(MoveNodeP node)
 	M_REQUIRE(node->countHalfMoves() > 0);
 	M_REQUIRE(isValidVariation(node.get()));
 
+	BEGIN_BACKUP;
+
 	forward();
 	insertUndo(Remove_Variation, AddVariation, m_currentNode->variationCount());
 	backward();
@@ -2061,6 +2105,9 @@ Game::addVariation(MoveNodeP node)
 	MoveNode* varNode = node.release();
 	varNode->setFolded(false);
 	m_currentNode->next()->addVariation(varNode);
+
+	END_BACKUP;
+
 	updateSubscriber(UpdatePgn | UpdateBoard);
 
 	return m_currentNode->next()->variationCount() - 1;
@@ -2073,6 +2120,8 @@ Game::addVariation(MoveList const& moves)
 	M_REQUIRE(!moves.isEmpty());
 	M_REQUIRE(isBeforeLineEnd());
 	M_REQUIRE(isValidVariation(moves));
+
+	BEGIN_BACKUP;
 
 	forward();
 	insertUndo(Remove_Variation, AddVariation, m_currentNode->variationCount());
@@ -2096,6 +2145,9 @@ Game::addVariation(MoveList const& moves)
 	MoveNode* varNode = node.release();
 	varNode->setFolded(false);
 	m_currentNode->next()->addVariation(varNode);
+
+	END_BACKUP;
+
 	updateSubscriber(UpdatePgn | UpdateBoard);
 
 	return m_currentNode->next()->variationCount() - 1;
@@ -2128,6 +2180,8 @@ Game::newMainline(MoveNode* node)
 {
 	M_REQUIRE(isBeforeLineEnd());
 
+	BEGIN_BACKUP;
+
 	edit::Key currentKey = m_currentKey;
 
 	forward();
@@ -2137,6 +2191,9 @@ Game::newMainline(MoveNode* node)
 	unsigned varNo = m_currentNode->variationCount() - 1;
 	promoteVariation(varNo, varNo, false);
 	moveTo(currentKey);
+
+	END_BACKUP;
+
 	updateSubscriber(UpdateAll);
 }
 
@@ -2166,6 +2223,8 @@ Game::removeMainline()
 	M_ASSERT(!atLineStart());
 	M_ASSERT(m_currentNode->variationCount());
 
+	BEGIN_BACKUP;
+
 	unsigned varNo = m_currentNode->variationCount() - 1;
 	promoteVariation(varNo, varNo, false);
 	MoveNode* node = m_currentNode->removeVariation(varNo);
@@ -2173,6 +2232,8 @@ Game::removeMainline()
 	backward();
 	insertUndo(New_Mainline, NewMainline, node, varNo);
 	forward();
+
+	END_BACKUP;
 
 	updateSubscriber(UpdateAll);
 }
@@ -2248,6 +2309,8 @@ Game::moveVariation(unsigned from, unsigned to, Command command)
 	if (from == to)
 		return;
 
+	BEGIN_BACKUP;
+
 	insertUndo(Swap_Variations, command, to, from);
 
 	if (from < to)
@@ -2260,6 +2323,8 @@ Game::moveVariation(unsigned from, unsigned to, Command command)
 		for (unsigned i = from; i > to; --i)
 			m_currentNode->swapVariations(i, i - 1);
 	}
+
+	END_BACKUP;
 
 	updateSubscriber(UpdatePgn | UpdateBoard);
 }
@@ -2281,6 +2346,8 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 	M_ASSERT(oldVariationNumber < variationCount());
 	M_ASSERT(newVariationNumber < variationCount());
 	M_ASSERT(!m_currentNode->variation(oldVariationNumber)->isOneBeforeLineEnd());
+
+	BEGIN_BACKUP;
 
 	MoveNode* variation	= m_currentNode->removeVariation(oldVariationNumber);
 	MoveNode* parent		= m_currentNode->prev();
@@ -2307,6 +2374,8 @@ Game::promoteVariation(unsigned oldVariationNumber, unsigned newVariationNumber,
 		next->swapVariations(i - 1, i);
 
 	moveTo(m_currentKey);
+
+	END_BACKUP;
 
 	if (update)
 	{
@@ -2337,9 +2406,14 @@ Game::removeVariation(unsigned variationNumber)
 {
 	M_REQUIRE(variationNumber < variationCount());
 
+	BEGIN_BACKUP;
+
 	MoveNode* node = m_currentNode->removeVariation(variationNumber);
 	node->setFolded(false);
 	insertUndo(Insert_Variation, RemoveVariation, node, variationNumber);
+
+	END_BACKUP;
+
 	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves);
 }
 
@@ -2352,6 +2426,8 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 
 	if (m_currentNode->variation(variationNumber)->countHalfMoves() == 0)
 		return true;
+
+	BEGIN_BACKUP;
 
 	Board board(m_currentBoard);
 	board.undoMove(m_currentNode->move(), m_variant);
@@ -2376,6 +2452,8 @@ Game::insertMoves(unsigned variationNumber, Force flag)
 	m_currentNode->setNext(node);
 	moveTo(m_currentKey);
 
+	END_BACKUP;
+
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
 
 	if (isMainline())
@@ -2397,6 +2475,8 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 
 	if (movesToExchange == 0)
 		return insertMoves(variationNumber);
+
+	BEGIN_BACKUP;
 
 	Board board(m_currentBoard);
 	board.undoMove(m_currentNode->move(), m_variant);
@@ -2430,6 +2510,8 @@ Game::exchangeMoves(unsigned variationNumber, unsigned movesToExchange, Force fl
 	m_currentNode->setNext(line);
 	moveTo(m_currentKey);
 
+	END_BACKUP;
+
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateIllegalMoves;
 
 	if (isMainline())
@@ -2448,6 +2530,8 @@ Game::truncateVariation(move::Position position)
 
 	if (atLineEnd())
 		return;
+
+	BEGIN_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateIllegalMoves | UpdateLanguageSet;
 
@@ -2472,6 +2556,8 @@ Game::truncateVariation(move::Position position)
 		m_currentNode->setNext(node->getLineEnd()->clone());
 	}
 
+	END_BACKUP;
+
 	updateSubscriber(flags);
 }
 
@@ -2486,6 +2572,8 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 
 	Board board(m_currentBoard);
 
+	BEGIN_BACKUP;
+
 	for (MoveNode* n = node->next(); n->isBeforeLineEnd(); n = n->next())
 	{
 		board.prepareUndo(n->move());
@@ -2496,6 +2584,8 @@ Game::changeVariation(MoveNodeP node, unsigned variationNumber)
 	MoveNode* varNode = node.release();
 	varNode->setFolded(false);
 	delete m_currentNode->next()->replaceVariation(variationNumber, varNode);
+
+	END_BACKUP;
 
 	updateSubscriber(UpdatePgn | UpdateBoard | UpdateIllegalMoves | UpdateLanguageSet);
 }
@@ -2537,10 +2627,14 @@ Game::stripMoves(move::Position position)
 	if (atLineStart())
 		return false;
 
+	BEGIN_BACKUP;
+
 	insertUndo(Strip_Moves, StripMoves, m_startNode->removeNext(), m_startBoard);
 	m_startNode->setNext(m_currentNode->removeNext());
 	m_startBoard = m_currentBoard;
 	moveTo(m_currentKey);
+
+	END_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves;
 
@@ -2557,6 +2651,8 @@ Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const
 {
 	M_ASSERT(startNode->next());
 
+	BEGIN_BACKUP;
+
 	MoveNode* last = startNode->getLineEnd();
 
 	startNode->setFolded(false);
@@ -2565,6 +2661,8 @@ Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const
 	m_startBoard = startBoard;
 	moveTo(key);
 	insertUndo(Unstrip_Moves, StripMoves);
+
+	END_BACKUP;
 
 	unsigned flags = UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves;
 
@@ -2700,10 +2798,15 @@ Game::stripVariations()
 	if (m_startNode->countVariations() == 0)
 		return false;
 
+	BEGIN_BACKUP;
+
 	insertUndo(Revert_Game, StripVariations, m_startNode);
 	m_startNode = m_startNode->clone();
 	m_startNode->stripVariations();
 	moveTo(m_currentKey);
+
+	END_BACKUP;
+
 	updateSubscriber(UpdatePgn | UpdateBoard | UpdateLanguageSet | UpdateIllegalMoves);
 
 	return true;
@@ -2713,6 +2816,8 @@ Game::stripVariations()
 void
 Game::revertGame(MoveNode* startNode, Command command)
 {
+	BEGIN_BACKUP;
+
 	insertUndo(Revert_Game, command, m_startNode);
 	m_startNode = startNode;
 	startNode->setFolded(false);
@@ -2726,6 +2831,9 @@ Game::revertGame(MoveNode* startNode, Command command)
 	}
 
 	moveTo(m_currentKey);
+
+	END_BACKUP;
+
 	updateLanguageSet();
 	updateSubscriber(UpdateAll);
 }
@@ -2944,7 +3052,7 @@ Game::getHistory(History& result) const
 
 
 unsigned
-Game::dumpHistory(mstl::string& result, Style style) const
+Game::dumpHistory(mstl::string& result, protocol::ID protocol) const
 {
 	History hist;
 	getHistory(hist);
@@ -2956,20 +3064,7 @@ Game::dumpHistory(mstl::string& result, Style style) const
 		if (!result.empty())
 			result.append(' ');
 
-		Move const& move = hist[i];
-
-		if (style == UCI && move.isCastling())
-		{
-			sq::Fyle fyle = move.isShortCastling() ? sq::FyleG : sq::FyleC;
-
-			// UCI requires "e1g1" instead of our notation "e1h1"
-			result += sq::printAlgebraic(move.from());
-			result += sq::printAlgebraic(sq::make(fyle, sq::rank(move.to())));
-		}
-		else
-		{
-			move.printAlgebraic(result);
-		}
+		hist[i].printAlgebraic(result, protocol, encoding::Latin1);
 	}
 
 	return hist.size();
@@ -3401,6 +3496,15 @@ Game::setSubscriber(SubscriberP subscriber)
 }
 
 
+Game::SubscriberP
+Game::releaseSubscriber()
+{
+	SubscriberP subscriber = m_subscriber;
+	m_subscriber.release();
+	return subscriber;
+}
+
+
 void
 Game::setLanguages(LanguageSet const& set)
 {
@@ -3445,6 +3549,37 @@ Game::refreshSubscriber(unsigned actions)
 }
 
 
+#ifdef DB_DEBUG_GAME
+void
+Game::beginBackup()
+{
+	delete m_backupNode;
+	m_backupNode = m_startNode->clone();
+	m_backupKey = m_currentKey;
+}
+
+
+void
+Game::endBackup()
+{
+	if (m_backupNode == 0)
+		return;
+
+	Board board(m_startBoard);
+
+	if (!checkConsistency(m_startNode->next(), board, OnlyIfRemainsConsistent))
+	{
+		delete m_startNode;
+		m_startNode = m_backupNode;
+		m_backupNode = 0;
+		moveTo(m_backupKey);
+
+		M_RAISE("error in edit action occurred; last action ignored");
+	}
+}
+#endif
+
+
 void
 Game::updateSubscriber(unsigned action)
 {
@@ -3453,17 +3588,20 @@ Game::updateSubscriber(unsigned action)
 
 	if (action & UpdateIllegalMoves)
 	{
-		bool inCheck = m_startBoard.isInCheck();
+		bool inCheck = variant::isAntichessExceptLosers(m_variant) ? false : m_startBoard.isInCheck();
 
 		if (m_startNode->containsIllegalMoves(inCheck))
 			m_flags |= GameInfo::Flag_Illegal_Move;
 		else
 			m_flags &= ~GameInfo::Flag_Illegal_Move;
 
-		if (m_startNode->containsIllegalCastlings(inCheck))
-			m_flags |= GameInfo::Flag_Illegal_Castling;
-		else
-			m_flags &= ~GameInfo::Flag_Illegal_Castling;
+		if (!variant::isAntichessExceptLosers(m_variant))
+		{
+			if (m_startNode->containsIllegalCastlings(inCheck))
+				m_flags |= GameInfo::Flag_Illegal_Castling;
+			else
+				m_flags &= ~GameInfo::Flag_Illegal_Castling;
+		}
 
 		::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
 	}
@@ -3606,6 +3744,62 @@ Game::setIsIrreversible(bool flag)
 	{
 		m_isIrreversible = false;
 	}
+}
+
+
+bool
+Game::findPosition(Board const& wanted, edit::Key& key, Board& board, MoveNode* node) const
+{
+	for ( ; !node->atLineEnd() ; node = node->next())
+	{
+		if (!node->atLineStart())
+		{
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+			{
+				Board b(board);
+
+				key.addVariation(i);
+				key.addPly(board.plyNumber());
+
+				if (findPosition(wanted, key, b, node->variation(i)))
+					return true;
+
+				key.removePly();
+				key.removeVariation();
+			}
+
+			board.doMove(node->move(), m_variant);
+			key.exchangePly(board.plyNumber());
+		}
+
+		if (wanted.isEqualZHPosition(board))
+			return true;
+	}
+
+	return false;
+}
+
+
+bool
+Game::merge(Game const& game)
+{
+	typedef mstl::vector<MoveNode*>	MoveList;
+	typedef mstl::vector<MoveList>	Variants;
+
+	edit::Key	currentPos(m_currentKey);
+	edit::Key	pos(m_startBoard.plyNumber());
+	Board			tmp(m_startBoard);
+
+	if (!findPosition(game.m_currentBoard, pos, tmp, game.m_currentNode))
+		return false;
+
+	Variants variants;
+
+	moveTo(pos);
+//	::splitForMerge(variants, game.m_currentNode, m_variant);
+	moveTo(currentPos);
+
+	return true;
 }
 
 // vi:set ts=3 sw=3:

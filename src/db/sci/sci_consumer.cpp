@@ -131,7 +131,6 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
 	,m_lastCommentPos(0)
-	,m_plyCount(0)
 {
 //	M_REQUIRE(!codecs.isEmpty());
 }
@@ -159,7 +158,7 @@ Consumer::beginGame(TagSet const& tags)
 
 	m_stream.reset(sizeof(m_buffer));
 	m_stream.resetp();
-	Encoder::setup(board(), variant(), !timeTable().isEmpty());
+	Encoder::setup(board(), variant());
 	Encoder::changeVariant(variant());
 	m_data.resetp();
 	m_text.resetp();
@@ -169,7 +168,6 @@ Consumer::beginGame(TagSet const& tags)
 	m_danglingPop = false;
 	m_danglingEndMarker = 1;
 	m_lastCommentPos = 0;
-	m_plyCount = 0;
 	m_timeTable.clear();
 
 	return true;
@@ -184,7 +182,7 @@ Consumer::endGame(TagSet const& tags)
 	if (!m_codecs.supports(variant))
 		return save::UnsupportedVariant;
 
-	encodeDataSection(tags, allowedTags(), allowExtraTags(), engines(), timeTable());
+	encodeDataSection(tags, allowedTags(), allowExtraTags(), engines(), m_timeTable);
 	return m_codecs[variant].addGame(m_stream, tags, *this);
 }
 
@@ -334,7 +332,7 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
 }
 
 
-void
+bool
 Consumer::preparseComment(mstl::string& comment)
 {
 	char const* str = comment;
@@ -351,7 +349,7 @@ Consumer::preparseComment(mstl::string& comment)
 		if (str[6] == '\0')
 		{
 			comment.clear();
-			return;
+			return false;
 		}
 
 		str += 6;
@@ -361,20 +359,19 @@ Consumer::preparseComment(mstl::string& comment)
 		comment.erase(comment.begin(), str);
 
 		if (comment.empty())
-			return;
+			return false;
 	}
 
-	if (isMainline())
+	if (InfoConsumer::preparseComment(comment))
 	{
-		InfoConsumer::preparseComment(comment);
-		int i = m_moveInfoSet.findElapsedMilliSeconds();
-
-		if (i >= 0 && (!m_timeTable.isEmpty() || m_plyCount == 0))
+		if (isMainline() && (!m_timeTable.isEmpty() || mainlineLength() == 0))
 		{
-			m_timeTable.set(m_plyCount, m_moveInfoSet[i]);
-			m_moveInfoSet.remove(i);
+			m_timeTable.set(mainlineLength(), m_moveInfoSet);
+			m_moveInfoSet.clear();
 		}
 	}
+
+	return false;
 }
 
 
@@ -456,7 +453,6 @@ Consumer::sendMove(Move const& move)
 	if (!m_endOfRun)
 		++m_runLength;
 
-	m_plyCount++;
 	return true;
 }
 
@@ -486,7 +482,6 @@ Consumer::sendMove(	Move const& move,
 	if (!m_endOfRun)
 		++m_runLength;
 
-	m_plyCount++;
 	return true;
 }
 

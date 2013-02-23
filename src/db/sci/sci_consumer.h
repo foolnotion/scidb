@@ -42,6 +42,7 @@ namespace db {
 class TagSet;
 class MarkSet;
 class Annotation;
+class TimeTable;
 
 namespace sci {
 
@@ -109,7 +110,7 @@ private:
 							MarkSet const& marks);
 	Byte writeComment(Byte position, Comment const& comment);
 
-	void preparseComment(mstl::string& comment) override;
+	bool preparseComment(mstl::string& comment) override;
 	void beginMoveSection() override;
 	void endMoveSection(result::ID result) override;
 	void beginVariation() override;
@@ -125,7 +126,6 @@ private:
 	bool					m_danglingPop;
 	unsigned				m_danglingEndMarker;
 	unsigned				m_lastCommentPos;
-	unsigned				m_plyCount;
 };
 
 } // namespace sci

@@ -37,6 +37,7 @@
 
 #include "m_assert.h"
 
+#include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 
@@ -200,6 +201,7 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 	m_moveInfoSet.clear();
 	m_engines.clear();
 	m_homePawns.clear();
+	m_sendTimeTable.clear();
 
 	if (board)
 	{
@@ -385,36 +387,9 @@ Consumer::putMove(Move const& move,
 	entry.board.prepareUndo(entry.move);
 
 	if (sendMove(entry.move, annotation, marks, preComment, comment))
-	{
-		if (!m_moveInfoSet.isEmpty())
-		{
-			sendMoveInfo(m_moveInfoSet);
-			m_moveInfoCount += m_moveInfoSet.count();
-			m_moveInfoSet.clear();
-		}
-
-		if (isMainline())
-		{
-			if (!move.isLegal())
-			{
-				if (move.isCastling() && !entry.board.isInCheck())
-					m_flags |= GameInfo::Flag_Illegal_Castling;
-				else
-					m_flags |= GameInfo::Flag_Illegal_Move;
-			}
-
-			m_homePawns.move(move);
-
-			if (m_line.length < opening::Max_Line_Length)
-				m_moveBuffer[m_line.length++] = move.index();
-		}
-
-		entry.board.doMove(move, m_useVariant);
-	}
+		afterSendMove(entry);
 	else
-	{
 		m_terminated = true;
-	}
 }
 
 
@@ -443,36 +418,48 @@ Consumer::putMove(Move const& move)
 	entry.board.prepareUndo(entry.move);
 
 	if (sendMove(entry.move))
+		afterSendMove(entry);
+	else
+		m_terminated = true;
+}
+
+
+void
+Consumer::afterSendMove(Entry& entry)
+{
+	Move const& move = entry.move;
+
+	if (!m_moveInfoSet.isEmpty())
 	{
-		if (!m_moveInfoSet.isEmpty())
+		sendMoveInfo(m_moveInfoSet);
+		m_moveInfoCount += m_moveInfoSet.count();
+		m_moveInfoSet.clear();
+	}
+
+	if (isMainline())
+	{
+		if (!m_sendTimeTable.isEmpty())
 		{
+			MoveInfoSet const& m_moveInfoSet = m_sendTimeTable[m_line.length];
 			sendMoveInfo(m_moveInfoSet);
 			m_moveInfoCount += m_moveInfoSet.count();
-			m_moveInfoSet.clear();
 		}
 
-		if (isMainline())
+		if (!move.isLegal())
 		{
-			if (!move.isLegal())
-			{
-				if (move.isCastling() && !entry.board.isInCheck())
-					m_flags |= GameInfo::Flag_Illegal_Castling;
-				else
-					m_flags |= GameInfo::Flag_Illegal_Move;
-			}
-
-			m_homePawns.move(move);
-
-			if (m_line.length < opening::Max_Line_Length)
-				m_moveBuffer[m_line.length++] = move.index();
+			if (move.isCastling() && !entry.board.isInCheck())
+				m_flags |= GameInfo::Flag_Illegal_Castling;
+			else
+				m_flags |= GameInfo::Flag_Illegal_Move;
 		}
 
-		entry.board.doMove(move, m_useVariant);
+		m_homePawns.move(move);
+
+		if (m_line.length < opening::Max_Line_Length)
+			m_moveBuffer[m_line.length++] = move.index();
 	}
-	else
-	{
-		m_terminated = true;
-	}
+
+	entry.board.doMove(move, m_useVariant);
 }
 
 
@@ -515,10 +502,10 @@ Consumer::setStartBoard(Board const& board)
 }
 
 
-void
+bool
 Consumer::preparseComment(mstl::string&)
 {
-	// no action
+	return false;
 }
 
 
@@ -537,10 +524,10 @@ Consumer::swapEngines(EngineList& engines)
 
 
 void
-Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
+Consumer::sendMoveInfo(MoveInfoSet const& moveInfoSet)
 {
 	mstl::string info;
-	moveInfo.print(m_engines, info);
+	moveInfoSet.print(m_engines, info);
 	sendComment(Comment(info, false, false));
 	++m_commentCount;
 }

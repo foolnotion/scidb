@@ -484,7 +484,7 @@ proc Import {parent base files msg encoding} {
 	::log::open $mc::DatabaseImport
 	switch $codec {
 		si3 - si4 {
-			set fileEncoding [::scidb::db::get encoding]
+			set fileEncoding [::scidb::db::get encoding $base]
 			if {$encoding ne $::encoding::autoEncoding && $encoding ne $fileEncoding} {
 				set ask [string map [list %src $encoding %dst $fileEncoding] $mc::DifferentEncoding]
 				set reply [::dialog::warning \

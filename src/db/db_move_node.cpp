@@ -1065,13 +1065,17 @@ MoveNode::updateFromTimeTable(TimeTable const& timeTable)
 
 	unsigned i = 0;
 
-	for (MoveNode* p = m_next; p; p = p->m_next, ++i)
+	for (MoveNode* p = m_next; p && i < timeTable.size(); p = p->m_next, ++i)
 	{
-		if (i == timeTable.size())
-			return;
+		MoveInfoSet const& moveInfoSet = timeTable[i];
 
-		if (!timeTable[i].isEmpty())
-			p->addMoveInfo(timeTable[i]);
+		for (unsigned i = 0; i < MoveInfo::LAST; ++i)
+		{
+			MoveInfo const& moveInfo = moveInfoSet[i];
+
+			if (!moveInfo.isEmpty())
+				p->addMoveInfo(moveInfo);
+		}
 	}
 }
 

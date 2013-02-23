@@ -140,6 +140,8 @@ public:
 	Type type() const;
 	/// Return the variant of this database (may be undetermined if database is empty)
 	variant::Type variant() const;
+	/// Return the variant of specified game number
+	variant::Type variant(unsigned index) const;
 	/// Returns the (decoding) format of database
 	Format format() const;
 	/// Returns the encoding of database

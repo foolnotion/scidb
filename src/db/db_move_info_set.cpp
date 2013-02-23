@@ -339,7 +339,6 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 			if (e && ::isDelim(::skipSpaces(e)))
 			{
-				add(info);
 				s = e;
 				rc = true;
 			}
@@ -445,27 +444,6 @@ MoveInfoSet::computeChecksum(EngineList const& engines, util::crc::checksum_t cr
 		crc = m_row[i].computeChecksum(engines, crc);
 
 	return crc;
-}
-
-
-int
-MoveInfoSet::findElapsedMilliSeconds() const
-{
-	for (unsigned i = 0; i < m_row.size(); ++i)
-	{
-		if (m_row[i].content() == MoveInfo::ElapsedMilliSeconds)
-			return i;
-	}
-
-	return -1;
-}
-
-
-void
-MoveInfoSet::remove(unsigned n)
-{
-	M_REQUIRE(n < count());
-	m_row.erase(m_row.begin() + n);
 }
 
 // vi:set ts=3 sw=3:

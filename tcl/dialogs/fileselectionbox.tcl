@@ -189,7 +189,7 @@ proc currentDialog {} {
 proc fileIcon {ext} {
 	variable FileIcons
 
-	set i [lsearch $FileIcons $ext]
+	set i [lsearch $FileIcons [string tolower $ext]]
 	return [lindex $FileIcons [expr {$i + 1}]]
 }
 
@@ -254,7 +254,7 @@ proc dragCursors {{ext ""}} {
 
 proc estimateNumberOfGames {filename} {
 	set count [NumGames $filename]
-	if {[file extension $filename] in {.pgn .pgn.gz .bpgn .bpgn.gz .zip}} {
+	if {[string tolower [file extension $filename]] in {.pgn .pgn.gz .bpgn .bpgn.gz .zip}} {
 		set count [expr {-[RoundNumGames $count]}]
 	}
 	return $count
@@ -622,7 +622,7 @@ proc RoundNumGames {count} {
 proc FormatNumGames {filename count} {
 	set result ""
 	if {$count > 0} {
-		switch [file extension $filename] {
+		switch [string tolower [file extension $filename]] {
 			.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 				set count [RoundNumGames $count]
 				append result "~ "
@@ -642,7 +642,7 @@ proc GetNumGames {filename mtime} {
 
 
 proc IsUsed {file} {
-	switch [file extension $file] {
+	switch [string tolower [file extension $file]] {
 		.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 			# no action
 		}
@@ -665,7 +665,9 @@ proc MapExtension {extension} {
 	set result [::scidb::misc::mapExtension $extension]
 	if {[string length $result]} { set result ".$result" }
 	if {$result ne $extension} { return $result }
-	if {$result in {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip}} { return $result }
+	if {$result in {.sci .scv .si3 .si4 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip .CBF .PGN .ZIP}} {
+		return $result
+	}
 	return ""
 }
 
@@ -699,7 +701,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
 				tk::label $f.tmodified -text $mtime
 			} else {
-				set ext [file extension $filename]
+				set ext [string tolower [file extension $filename]]
 				if {![info exists FileType($ext)]} {
 					if {[string length $ext] > 0 || ![file executable $filename]} { return }
 					set ext .exe
@@ -763,7 +765,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 							foreach pair $entry {
 								lassign $pair attr value
 								if {$attr eq "FileName"} {
-									switch [file extension $value] {
+									switch [string tolower [file extension $value]] {
 										.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 											if {[string length $bases] > 0} { append bases \n }
 											set file [file tail $value]

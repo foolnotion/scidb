@@ -184,7 +184,7 @@ proc Show {} {
 		}
 	}
 
-	after idle [focus $Log.close]
+	focus $Log.close
 }
 
 

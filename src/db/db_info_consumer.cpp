@@ -47,10 +47,10 @@ InfoConsumer::sendComment(Comment const&)
 }
 
 
-void
+bool
 InfoConsumer::preparseComment(mstl::string& comment)
 {
-	m_moveInfoSet.extractFromComment(m_engines, comment);
+	return m_moveInfoSet.extractFromComment(m_engines, comment);
 }
 
 // vi:set ts=3 sw=3:

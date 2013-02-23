@@ -323,7 +323,7 @@ EcoTable::Node::dump(Codec& codec, Board& board, variant::Type variant, unsigned
 			::printf("| ");
 
 		::printf("%s: %c%s%c",
-					move.printSan(s).c_str(),
+					move.printSan(s, protocol::Standard, encoding::Latin1).c_str(),
 					b.transposition ? '[' : '(',
 					b.node->eco.asString().c_str(),
 					b.transposition ? ']' : ')');
@@ -436,7 +436,7 @@ EcoTable::Node::print(variant::Type variant)
 
 				::printf(" ");
 				if ((k & 1) == 0) ::printf("%u.", (k + 2)/2);
-				::printf("%s", v->moves[k].printSan(str).c_str());
+				::printf("%s", v->moves[k].printSan(str, protocol::Standard, encoding::Latin1).c_str());
 			}
 
 			for (unsigned k = 0; k < v->branches.size(); ++k)
@@ -447,7 +447,7 @@ EcoTable::Node::print(variant::Type variant)
 				else
 					::printf(" (%s) ", v->codes[k].asString().c_str());
 				if ((v->moves.size() & 1) == 0) ::printf("%u.", (v->moves.size() + 2)/2);
-				::printf("%s", v->branches[k].printSan(str).c_str());
+				::printf("%s", v->branches[k].printSan(str, protocol::Standard, encoding::Latin1).c_str());
 			}
 
 			printf("\n");

@@ -57,12 +57,12 @@ public:
 
 	void doEncoding(	Signature const& signature,
 							GameData const& data,
-							db::Consumer::TagBits const& allowedTags,
+							tag::TagSet const& allowedTags,
 							bool allowExtraTags);
 	void doEncoding(	Signature const& signature,
 							GameData const& data1,
 							GameData const& data2,
-							db::Consumer::TagBits const& allowedTags,
+							tag::TagSet const& allowedTags,
 							bool allowExtraTags);
 
 	void changeVariant(db::variant::Type variant);
@@ -76,12 +76,12 @@ protected:
 
 	typedef encoder::Position Position;
 
-	void setup(Board const& board, db::variant::Type variant, bool hasTimeTable);
+	void setup(Board const& board, db::variant::Type variant);
 
 	void prepareEncoding();
 	void finishMoveSection(uint16_t runLength);
 	void encodeDataSection(	TagSet const& tags,
-									db::Consumer::TagBits const& allowedTags,
+									tag::TagSet const& allowedTags,
 									bool allowExtraTags,
 									EngineList const& engines,
 									TimeTable const& timeTable);
@@ -107,25 +107,24 @@ private:
 	void encodePawn(Move const& move);
 	void encodePieceDrop(Move const& move);
 
-	void encodeMainline(MoveNode const* node);
-	void encodeVariation(MoveNode const* node);
-	void encodeNote(MoveNode const* node, bool isMainline);
+	void encodeMainline(MoveNode const* node, TimeTable const& timeTable);
+	void encodeVariation(MoveNode const* node, TimeTable const& timeTable);
+	void encodeNote(MoveNode const* node, TimeTable const* timeTable = 0);
 	void encodeComment(MoveNode const* node);
 
 	uint16_t encodeTextSection();
 	uint16_t encodeTagSection(	TagSet const& tags,
-										db::Consumer::TagBits allowedTags,
+										tag::TagSet allowedTags,
 										bool allowExtraTags);
 	uint16_t encodeEngineSection(EngineList const& engines);
 	uint16_t encodeTimeTableSection(TimeTable const& timeTable);
 
 	void setup(GameData const& data);
-	void setup(Board const& board, uint16_t idn, db::variant::Type variant, bool hasTimeTable);
+	void setup(Board const& board, uint16_t idn, db::variant::Type variant);
 	void putMoveByte(Square from, Byte value);
 
 	unsigned				m_offset;
 	db::variant::Type	m_variant;
-	bool					m_hasTimeTable;
 	unsigned char		m_buffer[2][4096];
 };
 

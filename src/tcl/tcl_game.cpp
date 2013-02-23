@@ -88,12 +88,14 @@ static char const* CmdLevel			= "::scidb::game::level";
 static char const* CmdLink				= "::scidb::game::link?";
 static char const* CmdLoad				= "::scidb::game::load";
 static char const* CmdMaterial		= "::scidb::game::material";
+static char const* CmdMerge			= "::scidb::game::merge";
 static char const* CmdModified		= "::scidb::game::modified";
 static char const* CmdMove				= "::scidb::game::move";
 static char const* CmdMoveto			= "::scidb::game::moveto";
 static char const* CmdNew				= "::scidb::game::new";
 static char const* CmdNext				= "::scidb::game::next";
 static char const* CmdNumber			= "::scidb::game::number";
+static char const* CmdPaste			= "::scidb::game::paste";
 static char const* CmdPly				= "::scidb::game::ply";
 static char const* CmdPop				= "::scidb::game::pop";
 static char const* CmdPosition		= "::scidb::game::position";
@@ -3213,22 +3215,35 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* src = stringFromObj(objc, objv, 1);
-	char const* dst = stringFromObj(objc, objv, 2);
+	char const* cmd = stringFromObj(objc, objv, 1);
 
-	bool strip = false;
-
-	if (objc == 5)
+	if (::strcmp(cmd, "comments") == 0)
 	{
-		char const* option = stringFromObj(objc, objv, 3);
+		char const* src = stringFromObj(objc, objv, 2);
+		char const* dst = stringFromObj(objc, objv, 3);
 
-		if (::strcmp(option, "-strip") != 0)
-			return error(CmdCopy, nullptr, nullptr, "unexpected option '%s'", option);
+		bool strip = false;
 
-		strip = boolFromObj(objc, objv, 4);
+		if (objc == 6)
+		{
+			char const* option = stringFromObj(objc, objv, 4);
+
+			if (::strcmp(option, "-strip") != 0)
+				return error(CmdCopy, nullptr, nullptr, "unexpected option '%s'", option);
+
+			strip = boolFromObj(objc, objv, 5);
+		}
+
+		scidb->game().copyComments(src, dst, strip);
 	}
-
-	scidb->game().copyComments(src, dst, strip);
+	else if (::strcmp(cmd, "clipbase") == 0)
+	{
+		scidb->exportGameToClipbase(unsignedFromObj(objc, objv, 2));
+	}
+	else
+	{
+		return error(CmdView, nullptr, nullptr, "unexpected command '%s'", cmd);
+	}
 
 	return TCL_OK;
 }
@@ -3267,6 +3282,48 @@ cmdView(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdPaste(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* arg = stringFromObj(objc, objv, 1);
+
+	if (::strcmp(arg, "clipbase") == 0)
+	{
+		scidb->pasteLastClipbaseGame(unsignedFromObj(objc, objv, 2));
+	}
+	else
+	{
+		unsigned from	= unsignedFromObj(objc, objv, 1);
+		unsigned to		= unsignedFromObj(objc, objv, 2);
+
+		scidb->pasteGame(from, to);
+	}
+
+	return TCL_OK;
+}
+
+
+static int
+cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* arg = stringFromObj(objc, objv, 1);
+
+	if (::strcmp(arg, "clipbase") == 0)
+	{
+		setResult(scidb->mergeLastClipbaseGame(unsignedFromObj(objc, objv, 1)));
+	}
+	else
+	{
+		unsigned from	= unsignedFromObj(objc, objv, 1);
+		unsigned to		= unsignedFromObj(objc, objv, 2);
+
+		setResult(scidb->mergeGame(from, to));
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace game {
 
@@ -3292,12 +3349,14 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdLink,				cmdLink);
 	createCommand(ti, CmdLoad,				cmdLoad);
 	createCommand(ti, CmdMaterial,		cmdMaterial);
+	createCommand(ti, CmdMerge,			cmdMerge);
 	createCommand(ti, CmdModified,		cmdModified);
 	createCommand(ti, CmdMove,				cmdMove);
 	createCommand(ti, CmdMoveto,			cmdMoveto);
 	createCommand(ti, CmdNew,				cmdNew);
 	createCommand(ti, CmdNext,				cmdNext);
 	createCommand(ti, CmdNumber,			cmdNumber);
+	createCommand(ti, CmdPaste, 			cmdPaste);
 	createCommand(ti, CmdPly,				cmdPly);
 	createCommand(ti, CmdPop,				cmdPop);
 	createCommand(ti, CmdPosition,		cmdPosition);

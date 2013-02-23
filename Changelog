@@ -1,7 +1,18 @@
 [March 2013] =================================================================
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #655)
+Scidb 1.0 BETA (rev. #660)
+------------------------------------------------------------------------------
+* Severe bug in class BlockFile fixed.
+
+* Modified the .scg file structure a bit: now time tables will be used for all
+types of move info starting with first ply.
+
+* Configure script changed: now inotify with syscall interface will be used if
+Linux kernel is >= 2.6.13.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #656)
 ------------------------------------------------------------------------------
 * CBF decoder enhanced; now tested with more than 1860 databases. Our decoder
 now can decode games which even ChessBase (cb3.exe) cannot decode correctly;

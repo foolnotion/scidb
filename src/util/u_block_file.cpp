@@ -236,6 +236,13 @@ BlockFile::size() const
 }
 
 
+unsigned
+BlockFile::computeCapacity(unsigned span) const
+{
+	return m_stream ? mstl::mul2(fileOffset(span)) : fileOffset(span);
+}
+
+
 void
 BlockFile::deallocate() throw()
 {
@@ -442,12 +449,15 @@ BlockFile::resize(View& view, unsigned span)
 	// If the block file is on disk we have to use a double sized buffer. This allows
 	// some optimizations (on user side).
 
-	unsigned capacity = m_stream ? mstl::mul2(fileOffset(span)) : fileOffset(span);
+	unsigned capacity = computeCapacity(span);
 
 	if (view.m_buffer.m_capacity < capacity)
 	{
-		delete [] view.m_buffer.m_data;
-		view.m_buffer.m_data = new Byte[view.m_buffer.m_capacity = capacity];
+		unsigned char* data = view.m_buffer.m_data;
+		view.m_buffer.m_data = new Byte[capacity];
+		::memcpy(view.m_buffer.m_data, data, view.m_buffer.m_capacity);
+		view.m_buffer.m_capacity = capacity;
+		delete [] data;
 	}
 }
 
@@ -591,7 +601,7 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 
 		if (newSpan < oldSpan)
 		{
-			m_view.m_buffer.m_capacity = fileOffset(newSpan);
+			m_view.m_buffer.m_capacity = computeCapacity(newSpan);
 			m_view.m_buffer.m_size = nbytes;
 			m_view.m_buffer.m_span = newSpan;
 
@@ -613,7 +623,7 @@ BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 					return rc;
 
 				m_view.m_buffer.m_size = 0;
-				m_view.m_buffer.m_capacity = fileOffset(span);
+				m_view.m_buffer.m_capacity = computeCapacity(span);
 				m_sizeInfo[m_view.m_buffer.m_number] = 0;
 			}
 		}
@@ -799,7 +809,7 @@ BlockFile::shrink(unsigned newSize, unsigned offset, unsigned minSize)
 
 	if (newSpan < oldSpan)
 	{
-		m_view.m_buffer.m_capacity = fileOffset(newSpan);
+		m_view.m_buffer.m_capacity = computeCapacity(newSpan);
 		m_view.m_buffer.m_size = newSize;
 		m_view.m_buffer.m_span = newSpan;
 
@@ -821,7 +831,7 @@ BlockFile::shrink(unsigned newSize, unsigned offset, unsigned minSize)
 				return rc;
 
 			m_view.m_buffer.m_size = 0;
-			m_view.m_buffer.m_capacity = fileOffset(span);
+			m_view.m_buffer.m_capacity = computeCapacity(span);
 			m_sizeInfo[m_view.m_buffer.m_number] = 0;
 		}
 	}

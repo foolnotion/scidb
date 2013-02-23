@@ -142,7 +142,7 @@ MoveList::print(mstl::string& result, unsigned halfMoveNo) const
 	if (mstl::is_odd(halfMoveNo))
 		result.append("..", 2);
 
-	move.printSan(result, encoding::Utf8);
+	move.printSan(result, protocol::Scidb, encoding::Utf8);
 	++halfMoveNo;
 
 	for (unsigned i = 1; i < m_size; ++i, ++halfMoveNo)
@@ -157,7 +157,7 @@ MoveList::print(mstl::string& result, unsigned halfMoveNo) const
 			result.append('.');
 		}
 
-		move.printSan(result, encoding::Utf8);
+		move.printSan(result, protocol::Scidb, encoding::Utf8);
 	}
 }
 

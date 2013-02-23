@@ -73,18 +73,35 @@ Move::transpose()
 
 
 mstl::string&
-Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
+Move::printAlgebraic(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 
 	if (isNull())
 	{
-		s.append("0000", 4);	// conforms to UCI protocol
+		char const* t = 0;
+
+		switch (protocol)
+		{
+			case protocol::Scidb:		t = "----"; break;
+			case protocol::UCI:			t = "0000"; break; // conforms to UCI protocol
+			case protocol::Standard:	t = "null"; break; // conforms to WinBoard protocol
+		}
+
+		s.append(t, 4);
 	}
 	else if (isPieceDrop())
 	{
 		s += sq::printAlgebraic(to());
 		::printPiece(s, dropped(), charSet, ::tolower);
+	}
+	else if (isCastling() && protocol != protocol::Scidb)
+	{
+		sq::Fyle fyle = isShortCastling() ? sq::FyleG : sq::FyleC;
+
+		// UCI/WinBoard requires "e1g1" instead of our notation "e1h1"
+		s += sq::printAlgebraic(from());
+		s += sq::printAlgebraic(sq::make(fyle, sq::rank(to())));
 	}
 	else if (!isEmpty())
 	{
@@ -92,7 +109,7 @@ Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
 		s += sq::printAlgebraic(to());
 
 		if (isPromotion())
-			::printPiece(s, promoted(), charSet, ::tolower); // the UCI protocoll requires lower case
+			::printPiece(s, promoted(), charSet, protocol == protocol::UCI ? ::tolower : ::toupper);
 	}
 
 	return s;
@@ -100,7 +117,7 @@ Move::printAlgebraic(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
-Move::printSan(mstl::string& s, encoding::CharSet charSet) const
+Move::printSan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable() || isEmpty());
@@ -119,7 +136,7 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 		}
 		else if (isPieceDrop())
 		{
-			if (charSet != encoding::Utf8 || dropped() != piece::Pawn)
+			if (protocol != protocol::Scidb || dropped() != piece::Pawn)
 				::printPiece(s, dropped(), charSet, ::toupper);
 
 			s += '@';
@@ -158,10 +175,13 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 			}
 		}
 
-		if (givesMate())
-			s += '#';
-		else if (givesCheck())
-			s += '+';
+		if (protocol == protocol::Scidb)
+		{
+			if (givesMate())
+				s += '#';
+			else if (givesCheck())
+				s += '+';
+		}
 	}
 
 	return s;
@@ -169,7 +189,7 @@ Move::printSan(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
-Move::printLan(mstl::string& s, encoding::CharSet charSet) const
+Move::printLan(mstl::string& s, protocol::ID protocol, encoding::CharSet charSet) const
 {
 	M_REQUIRE(!isInvalid());
 	M_REQUIRE(isPrintable());
@@ -205,10 +225,13 @@ Move::printLan(mstl::string& s, encoding::CharSet charSet) const
 			}
 		}
 
-		if (givesMate())
-			s += '#';
-		else if (givesCheck())
-			s += '+';
+		if (protocol == protocol::Scidb)
+		{
+			if (givesMate())
+				s += '#';
+			else if (givesCheck())
+				s += '+';
+		}
 	}
 
 	return s;
@@ -346,13 +369,16 @@ Move::printAlphabetic(mstl::string& s, encoding::CharSet charSet) const
 
 
 mstl::string&
-Move::print(mstl::string& s, move::Notation style, encoding::CharSet charSet) const
+Move::print(mstl::string& s,
+				move::Notation style,
+				protocol::ID protocol,
+				encoding::CharSet charSet) const
 {
 	switch (style)
 	{
-		case move::Algebraic:		printAlgebraic(s, charSet); break;
-		case move::ShortAlgebraic:	printSan(s, charSet); break;
-		case move::LongAlgebraic:	printLan(s, charSet); break;
+		case move::Algebraic:		printAlgebraic(s, protocol, charSet); break;
+		case move::ShortAlgebraic:	printSan(s, protocol, charSet); break;
+		case move::LongAlgebraic:	printLan(s, protocol, charSet); break;
 		case move::Descriptive:		printDescriptive(s); break;
 		case move::Correspondence:	printNumeric(s); break;
 		case move::Telegraphic:		printAlphabetic(s, charSet); break;
@@ -365,7 +391,7 @@ Move::print(mstl::string& s, move::Notation style, encoding::CharSet charSet) co
 mstl::string&
 Move::printForDisplay(mstl::string& s, move::Notation style) const
 {
-	print(s, style, encoding::Utf8);
+	print(s, style, protocol::Scidb, encoding::Utf8);
 
 	if (style == move::ShortAlgebraic || style == move::LongAlgebraic)
 	{

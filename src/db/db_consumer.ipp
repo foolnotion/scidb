@@ -24,6 +24,8 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_assert.h"
+
 namespace db {
 
 inline bool Consumer::isMainline() const								{ return m_stack.size() == 2; }
@@ -50,9 +52,10 @@ inline uint32_t Consumer::flags() const								{ return m_flags; }
 inline Consumer* Consumer::consumer() const							{ return m_consumer; }
 inline MoveInfoSet const& Consumer::moveInfo() const				{ return m_moveInfoSet; }
 inline EngineList const& Consumer::engines() const					{ return m_engines; }
-inline TimeTable& Consumer::timeTable()								{ return m_timeTable; }
-inline TimeTable const& Consumer::timeTable() const				{ return m_timeTable; }
+inline EngineList& Consumer::engines()									{ return m_engines; }
 inline Consumer::TagBits const& Consumer::allowedTags() const	{ return m_allowedTags; }
+inline TimeTable& Consumer::timeTable()								{ return m_sendTimeTable; }
+inline unsigned Consumer::mainlineLength() const					{ return m_line.length; }
 
 inline void Consumer::setFlags(uint32_t flags)						{ m_flags = flags; }
 inline void Consumer::setConsumer(Consumer* consumer)				{ m_consumer = consumer; }

@@ -363,18 +363,14 @@ winboard::Engine::doMove(Move const& move)
 
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
-//	else if (m_featureSan)
-//		move.printSan(s);		// the engine may not understand check signs
+	else if (m_featureSan)
+		move.printSan(s, protocol::Standard, encoding::Latin1);
 	else if (move.isPieceDrop())
 		::printPieceDrop(move, s);
-	else if (!move.isCastling())
-		move.printAlgebraic(s);
-	else if (m_mustUseChess960)
-		::printCastling(move, s);
-	else if (move.isShortCastling())
-		s.append(color::isWhite(move.color()) ? "e1g1" : "e8g8", 4);
+	else if (move.isCastling() && m_mustUseChess960)
+		::printCastling(move, s); // print SAN w/o check signs
 	else
-		s.append(color::isWhite(move.color()) ? "e1c1" : "e8c8", 4);
+		move.printAlgebraic(s, protocol::Standard, encoding::Latin1);
 
 	send(s);
 }

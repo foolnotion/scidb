@@ -456,16 +456,18 @@ proc dbOpen {parent} {
 	if {$FileSelBoxInUse} { return }
 	set FileSelBoxInUse 1
 
-	set filetypes [list                                                                                \
-		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip}] \
-		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .scv}]                                       \
-		[list $mc::ScidbBases			{.sci}]                                                           \
-		[list $mc::ScidBases				{.si4 .si3}]                                                      \
-		[list $mc::ChessBaseBases		{.cbh .cbf}]                                                      \
-		[list $mc::ScidbArchives		{.scv}]                                                           \
-		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]                                              \
-		[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip}]                                            \
-		[list $mc::PGNArchives			{.zip}]                                                           \
+#		[list $mc::AllScidbFiles	{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
+#											{.CBF .PGN .ZIP}]
+#		[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip} {.ZIP}]
+	set filetypes [list                                                                                  \
+		[list $mc::AllScidbFiles		{.sci .si4 .si3 .cbh .cbf .scv .pgn .pgn.gz .zip} {.CBF .PGN .ZIP}] \
+		[list $mc::AllScidbBases		{.sci .si4 .si3 .cbh .cbf .scv} {.CBF}]                             \
+		[list $mc::ScidbBases			{.sci}]                                                             \
+		[list $mc::ScidBases				{.si4 .si3}]                                                        \
+		[list $mc::ChessBaseBases		{.cbh .cbf} {.CBF}]                                                 \
+		[list $mc::ScidbArchives		{.scv}]                                                             \
+		[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip} {.ZIP}]                                         \
+		[list $mc::PGNArchives			{.zip} {.ZIP}]                                                      \
 	]
 	set result [::dialog::openFile \
 		-parent $parent \
@@ -478,7 +480,7 @@ proc dbOpen {parent} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip .CBF .PGN .ZIP} \
 	]
 	set FileSelBoxInUse 0
 
@@ -572,12 +574,12 @@ proc dbImport {parent base fileTypes} {
 			]
 		}
 		pgn {
-			set filetypes [list                                     \
-				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip}]   \
-				[list $mc::PGNFiles				{.pgn .pgn.gz}]        \
-				[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip}] \
-				[list $mc::BPGNFiles				{.bpgn .bpgn.gz}]      \
-				[list $mc::PGNArchives			{.zip}]                \
+#				[list $mc::BPGNFilesArchives	{.bpgn .bpgn.gz .zip} {.ZIP}]
+#				[list $mc::BPGNFiles				{.bpgn .bpgn.gz}]
+			set filetypes [list                                               \
+				[list $mc::PGNFilesArchives	{.pgn .pgn.gz .zip} {.PGN .ZIP}] \
+				[list $mc::PGNFiles				{.pgn .pgn.gz} {.PGN}]           \
+				[list $mc::PGNArchives			{.zip} {.ZIP}]                   \
 			]
 		}
 	}
@@ -676,7 +678,7 @@ namespace eval archive {
 # }
 
 proc getName {file} {
-	set ext [file extension $file]
+	set ext [string tolower [file extension $file]]
 #	switch $ext {
 #		.sci - .si3 - .si4 - .cbh - .cbi	{ return $mc::Data(index) }
 #		.scg - .sg3 - .sg4 - .cbg - .cbf	{ return $mc::Data(game) }
@@ -697,7 +699,7 @@ proc getName {file} {
 
 
 proc GetCompressionMethod {ext} {
-	switch $ext {
+	switch [string tolower $ext] {
 		pgn.gz - bpgn.gz - zip	{ set method raw  }
 		png - jpg - jpeg - gif	{ set method raw  }
 		default						{ set method zlib }
@@ -708,7 +710,7 @@ proc GetCompressionMethod {ext} {
 
 
 proc GetCount {file} {
-	switch [file extension $file] {
+	switch [string tolower [file extension $file]] {
 		.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 			return [::scidb::misc::size $file]
 		}

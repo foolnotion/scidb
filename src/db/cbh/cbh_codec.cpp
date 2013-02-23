@@ -748,9 +748,12 @@ Codec::close()
 
 void
 Codec::doOpen(	mstl::string const& rootname,
+					mstl::string const& originalSuffix,
 					mstl::string const& encoding,
 					util::Progress& progress)
 {
+	M_ASSERT(originalSuffix == "cbh");
+
 	ProgressWatcher watcher(progress, 0);
 
 	setEncoding(encoding);
@@ -1342,8 +1345,12 @@ Codec::reloadDescription(mstl::string const& rootname)
 
 
 void
-Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
+Codec::reloadNamebases(	mstl::string const& rootname,
+								mstl::string const& originalSuffix,
+								Progress& progress)
 {
+	M_ASSERT(originalSuffix == "cbh");
+
 	ProgressWatcher watcher(progress, 0);
 
 	namebases().setReadonly(false);
@@ -2667,6 +2674,8 @@ Codec::getAttributes(mstl::string const& filename,
 							db::type::ID& type,
 							mstl::string* description)
 {
+	M_REQUIRE(util::misc::file::suffix(filename) == "cbh");
+
 	mstl::fstream strm(sys::file::internalName(filename), mstl::ios_base::in | mstl::ios_base::binary);
 	mstl::string rootname(misc::file::rootname(filename));
 

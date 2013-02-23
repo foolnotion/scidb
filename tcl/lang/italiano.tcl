@@ -1295,31 +1295,38 @@
 ::font::mc::DecreaseFontSize						"Diminuisci Grandezza Font"
 
 ### gamebar ############################################################
-::gamebar::mc::StartPosition			"Posizione di partenza"
-::gamebar::mc::Players					"Giocatori"
-::gamebar::mc::Event						"Eventi"
-::gamebar::mc::Site						"Sito"
-::gamebar::mc::SeparateHeader			"Separa intestazione"
-::gamebar::mc::ShowActiveAtBottom	"Mostra partita attiva in basso"
-::gamebar::mc::ShowPlayersOnSeparateLines	"Mostra giocatori su righe separate"
-::gamebar::mc::DiscardChanges			"Questa partita è stata modificata.\n\nVuoi davvero annullare i cambiamenti fatti?"
-::gamebar::mc::DiscardNewGame			"Vuoi davvero buttare via questa partita?"
-::gamebar::mc::NewGameFstPart			"Nuovo"
-::gamebar::mc::NewGameSndPart			"Partita"
+::gamebar::mc::StartPosition					"Posizione di partenza"
+::gamebar::mc::Players							"Giocatori"
+::gamebar::mc::Event								"Eventi"
+::gamebar::mc::Site								"Sito"
+::gamebar::mc::SeparateHeader					"Separa intestazione"
+::gamebar::mc::ShowActiveAtBottom			"Mostra partita attiva in basso"
+::gamebar::mc::ShowPlayersOnSeparateLines			"Mostra giocatori su righe separate"
+::gamebar::mc::DiscardChanges					"Questa partita è stata modificata.\n\nVuoi davvero annullare i cambiamenti fatti?"
+::gamebar::mc::DiscardNewGame					"Vuoi davvero buttare via questa partita?"
+::gamebar::mc::NewGameFstPart					"Nuovo"
+::gamebar::mc::NewGameSndPart					"Partita"
 
-::gamebar::mc::LockGame					"Blocca Partita"
-::gamebar::mc::UnlockGame				"Sblocca Partita"
-::gamebar::mc::CloseGame				"Chiudi Partita"
+::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
+::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
+::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
+::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
+::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
 
-::gamebar::mc::GameNew					"Nuova Partita"
-::gamebar::mc::AddNewGame				"Salva: Aggiunti nuova partita a %s..."
-::gamebar::mc::ReplaceGame				"Salva: Rimpiazza partita in %s..."
-::gamebar::mc::ReplaceMoves			"Salva: Sostituisci solo mosse nella partita..."
+::gamebar::mc::LockGame							"Blocca Partita"
+::gamebar::mc::UnlockGame						"Sblocca Partita"
+::gamebar::mc::CloseGame						"Chiudi Partita"
 
-::gamebar::mc::Tip(Antichess)			"Non ci sono scacchi né arrocchi, il re viene catturato come un pezzo qualunque"
-::gamebar::mc::Tip(Suicide)			"In caso di stallo il lato con minor pezzi vince (secondo le regole di FISC)."
-::gamebar::mc::Tip(Giveaway)			"In caso di stallo il lato che si trova in stallo vince (secondo le regole internazionali)"
-::gamebar::mc::Tip(Losers)				"Il re si comporta come negli scacchi ortodossi e puoi vincere prendendo scacco matto o stallo."
+<<<<<<< .mine
+::gamebar::mc::GameNew							"Nuova Partita"
+::gamebar::mc::AddNewGame						"Salva: Aggiunti nuova partita a %s..."
+::gamebar::mc::ReplaceGame						"Salva: Rimpiazza partita in %s..."
+::gamebar::mc::ReplaceMoves					"Salva: Sostituisci solo mosse nella partita..."
+
+::gamebar::mc::Tip(Antichess)					"Non ci sono scacchi né arrocchi, il re viene catturato come un pezzo qualunque"
+::gamebar::mc::Tip(Suicide)					"In caso di stallo il lato con minor pezzi vince (secondo le regole di FISC)."
+::gamebar::mc::Tip(Giveaway)					"In caso di stallo il lato che si trova in stallo vince (secondo le regole internazionali)"
+::gamebar::mc::Tip(Losers)						"Il re si comporta come negli scacchi ortodossi e puoi vincere prendendo scacco matto o stallo."
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"
@@ -1644,7 +1651,7 @@
 ::export::mc::Option(pgn,include_marks)							"Esporta codici (come commenti)"
 ::export::mc::Option(pgn,use_scidb_import_format)				"Usa formato importazione Scidb" ;# [chessbase?]
 ::export::mc::Option(pgn,use_chessbase_format)					"Usa formato ChessBase"
-::export::mc::Option(pgn,use_strict_pgn_standard				"Usa standard PGN"
+::export::mc::Option(pgn,use_strict_pgn_standard)				"Usa standard PGN"
 ::export::mc::Option(pgn,include_ply_count_tag)					"Scrivi tag 'PlyCount'"
 ::export::mc::Option(pgn,include_termination_tag)				"Scrivi tag 'Termination'"
 ::export::mc::Option(pgn,include_mode_tag)						"Scrivi tag 'Mode'"

@@ -854,16 +854,54 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 void
 Decoder::decodeTimeTable(ByteStream& strm, TimeTable& timeTable)
 {
-	uint16_t length = strm.uint16();
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+if (strm.peek() == 0)
+{
+	unsigned length = strm.uint16();
 
-	timeTable.reserve(length);
+	timeTable.ensure(length);
 
-	for ( ; length; length--)
+	for (unsigned i = 0; i < length; ++i)
 	{
 		MoveInfo info;
 		info.decode(strm);
-		timeTable.add(info);
+		timeTable.set(i, info);
 	}
+}
+else
+{
+#endif
+	unsigned n = strm.uint8();
+
+	while (n > 0)
+	{
+		unsigned length = 0;
+
+		while (n == 255)
+		{
+			length += 255;
+			n = strm.uint8();
+		}
+
+		length += n;
+
+		if (length == 0)
+			throwCorruptData();
+
+		timeTable.ensure(length);
+
+		for (unsigned i = 0; i < length; ++i)
+		{
+			MoveInfo info;
+			info.decode(strm);
+			timeTable.set(i, info);
+		}
+
+		n = strm.uint8();
+	}
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+}
+#endif
 }
 
 
@@ -1024,10 +1062,32 @@ Decoder::skipEngines(Byte const* p)
 Byte const*
 Decoder::skipMoveInfo(Byte const* p)
 {
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+if (*p == 0)
+{
 	unsigned length = ByteStream::uint16(p);
 
 	for (p += 2; length; length--)
 		p = MoveInfo::skip(p);
+}
+else
+{
+#endif
+	while (*p)
+	{
+		unsigned length = 0;
+
+		for ( ; *p == 255; ++p)
+			length += 255;
+
+		length += *p++;
+
+		while (length--)
+			p = MoveInfo::skip(p);
+	}
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+}
+#endif
 
 	return p;
 }
@@ -1045,12 +1105,8 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 	unsigned offset		= m_strm.uint24();
 	unsigned runLength	= m_strm.uint16();
 
-	if (	runLength == halfMoveCount
-		&& (	!(flags & flags::TimeTableSection)
-			|| !(types & (1 << MoveInfo::ElapsedMilliSeconds))))
-	{
+	if (runLength == halfMoveCount && !(flags & flags::TimeTableSection))
 		return false;
-	}
 
 	bool stripped = false;
 
@@ -1067,6 +1123,9 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 
 	if (flags & flags::TimeTableSection)
 	{
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+	if (*data == 0)
+	{
 		Byte const* p = skipMoveInfo(data);
 
 		if (types & (1 << MoveInfo::ElapsedMilliSeconds))
@@ -1079,6 +1138,62 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 		{
 			data = p;
 		}
+	}
+	else
+	{
+#endif
+		if (mstl::bf::count_bits(types) == MoveInfo::LAST)
+		{
+			m_strm.strip(data - m_strm.base(), skipMoveInfo(data) - data);
+			ByteStream::set(m_strm.base(), uint16_t(flags & ~flags::TimeTableSection));
+			stripped = true;
+		}
+		else
+		{
+			Byte const* r = data;
+			Byte const* p = data;
+			Byte const* q = 0;
+
+			while (*p)
+			{
+				unsigned length = 0;
+				for ( ; *p == 255; ++p)
+					length += 255;
+				length += *p++;
+
+				MoveInfo::Type type = MoveInfo::type(*p);
+				p += length*MoveInfo::length(*p);
+
+				if (types & (1 << type))
+				{
+					q = p;
+				}
+				else if (q)
+				{
+					unsigned size = q - data;
+					m_strm.strip(data - m_strm.base(), size);
+					data = (p -= size);
+					stripped = true;
+					q = 0;
+				}
+			}
+
+			if (q)
+			{
+				unsigned size = q - data;
+				m_strm.strip(data - m_strm.base(), size);
+				p -= size;
+				stripped = true;
+			}
+
+			data = p;
+
+			if (r == data)
+				ByteStream::set(m_strm.base(), uint16_t(flags & ~flags::TimeTableSection));
+		}
+#ifndef DONT_SUPPORT_DEPRECATED_FORMAT
+	}
+#endif
 	}
 
 	if (runLength != halfMoveCount)

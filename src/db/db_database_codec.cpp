@@ -316,7 +316,12 @@ bool DatabaseCodec::upgradeIndexOnly() { return sci::Codec::upgradeIndexOnly(); 
 bool
 DatabaseCodec::hasCodecFor(mstl::string const& suffix)
 {
-	return suffix == "sci" || suffix == "si3" || suffix == "si4" || suffix == "cbh" || suffix == "cbf";
+	return	suffix == "sci"
+			|| suffix == "si3"
+			|| suffix == "si4"
+			|| suffix == "cbh"
+			|| suffix == "cbf"
+			|| suffix == "CBF";
 }
 
 
@@ -339,7 +344,7 @@ DatabaseCodec::makeCodec(mstl::string const& name, Mode mode)
 	if (ext == "cbh")
 		return new cbh::Codec;
 
-	if (ext == "cbf")
+	if (ext == "cbf" || ext == "CBF")
 		return new cbf::Codec;
 
 	if (ext == "sci" && mode == Existing)
@@ -371,7 +376,7 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 	if (ext == "cbh")
 		return cbh::Codec::getAttributes(filename, numGames, type, description);
 
-	if (ext == "cbf")
+	if (ext == "cbf" || ext == "CBF")
 		return cbf::Codec::getAttributes(filename, numGames, type, description);
 
 	if (ext == "si3" || ext == "si4")
@@ -392,15 +397,34 @@ DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 		ext = file::suffix(filename);
 
 	if (ext == "sci")
+	{
 		sci::Codec::getSuffixes(filename, result);
+	}
 	else if (ext == "cbh")
+	{
 		cbh::Codec::getSuffixes(filename, result);
+	}
 	else if (ext == "cbf")
+	{
 		cbf::Codec::getSuffixes(filename, result);
+	}
+	else if (ext == "CBF")
+	{
+		unsigned start = result.size();
+
+		cbf::Codec::getSuffixes(filename, result);
+
+		for (unsigned i = start; i < result.size(); ++i)
+			result[i].toupper();
+	}
 	else if (ext == "si3" || ext == "si4")
+	{
 		si3::Codec::getSuffixes(filename, result);
+	}
 	else
+	{
 		result.push_back(ext);
+	}
 }
 
 
@@ -667,7 +691,7 @@ DatabaseCodec::openFile(mstl::fstream& stream,
 		char buf[magic.size()];
 
 		if (!stream.read(buf, magic.size()))
-			IO_RAISE(Unspecified, Write_Failed, "unexpected end of file: %s", filename.c_str());
+			IO_RAISE(Unspecified, Open_Failed, "unexpected end of file: %s", filename.c_str());
 
 		if (::memcmp(buf, magic.c_str(), magic.size()) != 0)
 			IO_RAISE(Unspecified, Open_Failed, "bad magic: %s", filename.c_str());
@@ -737,7 +761,7 @@ DatabaseCodec::open(DatabaseContent* db, mstl::string const& encoding, util::Pro
 	M_REQUIRE(db);
 
 	m_db = db;
-	doOpen(m_db->m_rootname, encoding, progress);
+	doOpen(m_db->m_rootname, m_db->m_suffix, encoding, progress);
 }
 
 

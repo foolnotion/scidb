@@ -45,6 +45,8 @@
 #include "m_ref_counter.h"
 #include "m_auto_ptr.h"
 
+#define DB_DEBUG_GAME
+
 namespace db {
 
 namespace edit { class Root; }
@@ -128,12 +130,6 @@ public:
 		MoveComments,
 		Clear,
 		Transpose,
-	};
-
-	enum Style
-	{
-		Standard,
-		UCI,
 	};
 
 	enum Constraint
@@ -479,6 +475,8 @@ public:
 	/// Removes all variations and mainline moves before next move,
 	/// or before the current position if @p position == BeforeMove
 	bool stripMoves(move::Position position = move::Post);
+	/// Merge given game (at current position) into current game.
+	bool merge(Game const& game);
 	/// Remove all annotations.
 	bool stripAnnotations();
 	/// Remove all comments.
@@ -524,6 +522,8 @@ public:
 	void setStartPosition(unsigned idn);
 	/// Set the subscriber for this game (normally a PGN display)
 	void setSubscriber(SubscriberP subscriber);
+	/// Release subscriber for this game.
+	SubscriberP releaseSubscriber();
 	/// Traverse whole game.
 	void updateSubscriber(unsigned action = UpdateBoard | UpdatePgn);
 	/// Traverse whole game.
@@ -563,7 +563,7 @@ public:
 
 	unsigned dumpMoves(mstl::string& result, unsigned flags);
 	unsigned dumpMoves(mstl::string& result, unsigned length, unsigned flags);
-	unsigned dumpHistory(mstl::string& result, Style style = Standard) const;
+	unsigned dumpHistory(mstl::string& result, protocol::ID protocol) const;
 	void getHistory(History& result) const;
 
 	bool finishLoad(variant::Type variant, mstl::string const* fen = 0);
@@ -650,6 +650,7 @@ private:
 	bool updateLanguageSet();
 	void incrementChangeCounter();
 	bool checkConsistency(MoveNode* node, Board& board, Force flag) const;
+	bool findPosition(Board const& wanted, edit::Key& key, Board& board, MoveNode* node) const;
 
 	Move parseMove(mstl::string const& san) const;
 
@@ -684,6 +685,13 @@ private:
 	unsigned			m_linebreakMinCommentLength;
 	unsigned			m_displayStyle;
 	move::Notation	m_moveStyle;
+
+#ifdef DB_DEBUG_GAME
+	MoveNode* m_backupNode;
+	edit::Key m_backupKey;
+	void beginBackup();
+	void endBackup();
+#endif
 
 	static unsigned m_gameId;
 };

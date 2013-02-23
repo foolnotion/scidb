@@ -29,33 +29,38 @@
 namespace eval gamebar {
 namespace eval mc {
 
-set StartPosition			"Start Position"
-set Players					"Players"
-set Event					"Event"
-set Site						"Site"
-set SeparateHeader		"Separate header"
-set ShowActiveAtBottom	"Show active game at bottom"
-set ShowPlayersOnSeparateLines "Show players on separate lines"
-set DiscardChanges		"This game has altered.\n\nDo you really want to discard the changes made to it?"
-set DiscardNewGame		"Do you really want to throw away this game?"
-set NewGameFstPart		"New"
-set NewGameSndPart		"Game"
+set StartPosition						"Start Position"
+set Players								"Players"
+set Event								"Event"
+set Site									"Site"
+set SeparateHeader					"Separate header"
+set ShowActiveAtBottom				"Show active game at bottom"
+set ShowPlayersOnSeparateLines	"Show players on separate lines"
+set DiscardChanges					"This game has altered.\n\nDo you really want to discard the changes made to it?"
+set DiscardNewGame					"Do you really want to throw away this game?"
+set NewGameFstPart					"New"
+set NewGameSndPart					"Game"
 
-set LockGame				"Lock Game"
-set UnlockGame				"Unlock Game"
-set CloseGame				"Close Game"
+set CopyThisGameToClipbase			"Copy this game to Clipbase"
+set PasteLastClipbaseGame			"Paste last Clipbase game"
+set MergeLastClipbaseGame			"Merge last Clipbase game"
+set PasteGameFrom						"Paste game"
+set MergeGameFrom						"Merge game"
 
-set GameNew					"New Game"
+set LockGame							"Lock Game"
+set UnlockGame							"Unlock Game"
+set CloseGame							"Close Game"
 
-set AddNewGame				"Save: Add New Game to %s..."
-set ReplaceGame			"Save: Replace Game in %s..."
-set ReplaceMoves			"Save: Replace Moves Only in Game..."
+set GameNew								"New Game"
 
-set Tip(Antichess)		"There is no check, no castling, the king\nis captured like an ordinary piece."
-set Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)."
-set Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)."
-#set Tip(AISE)				"In case of stalemate the game is remis\n(according to AISE rules)."
-set Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated."
+set AddNewGame							"Save: Add New Game to %s..."
+set ReplaceGame						"Save: Replace Game in %s..."
+set ReplaceMoves						"Save: Replace Moves Only in Game..."
+
+set Tip(Antichess)					"There is no check, no castling, the king\nis captured like an ordinary piece."
+set Tip(Suicide)						"In case of stalemate the side with fewer\npieces will win (according to FICS rules)."
+set Tip(Giveaway)						"In case of stalemate the side which is\nstalemate wins (according to international rules)."
+set Tip(Losers)						"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated."
 
 } ;# namespace mc
 
@@ -630,11 +635,11 @@ proc normalizePlayer {player} {
 }
 
 
-proc popupMenu {parent {addGameHistory 1} {remove -1}} {
+proc popupMenu {gamebar parent {addGameHistory 1} {remove -1}} {
 	set menu $parent._gamebar_menu_
 	catch { destroy $menu }
 	menu $menu -tearoff 0
-	AddGameMenuEntries $menu 0 $addGameHistory 2 $remove
+	AddGameMenuEntries $gamebar $menu 0 $addGameHistory 2 $remove
 	tk_popup $menu {*}[winfo pointerxy .]
 }
 
@@ -1198,8 +1203,10 @@ proc ShowSeparateColumn {gamebar {flag -1}} {
 }
 
 
-proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
+proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remove} {
 	variable ::game::history::mc::GameHistory
+	variable ::scidb::clipbaseName
+	variable icon::15x15::digit
 
 	if {[::game::historyIsEmpty?]} {
 		set clearHistory 0
@@ -1291,14 +1298,15 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 		-compound left \
 		-command [list ::application::pgn::importGame $parent] \
 		;
+
+	set position [::scidb::game::current]
+	lassign [::scidb::game::link? $position] base variant index
 	
 	if {$addSaveMenu && ![::game::trialMode?]} {
 		variable ::scidb::scratchbaseName
 		variable ::scidb::clipbaseName
 
 		$m add separator
-		set position [::scidb::game::current]
-		lassign [::scidb::game::link? $position] base variant index
 		set variant [::util::toMainVariant $variant]
 		unset -nocomplain state
 
@@ -1382,6 +1390,67 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 			;
 	}
 
+	if {$position < 9} {
+		$m add separator
+		set idList [lsort -integer [getIdList $gamebar]]
+		foreach id $idList {
+			append players($id) [lindex [GetPlayerInfo $gamebar $id white] 0]
+			append players($id) " \u2013 "
+			append players($id) [lindex [GetPlayerInfo $gamebar $id black] 0]
+		}
+		$m add command \
+			-label " $mc::CopyThisGameToClipbase" \
+			-command [list ::scidb::game::copy clipbase $position] \
+			;
+		if {[::scidb::db::count games $clipbaseName $variant] == 0} {
+			set state disabled
+		} else {
+			set state normal }
+		$m add command \
+			-label " $mc::PasteLastClipbaseGame" \
+			-command [namespace code [list PasteFromClipbase $gamebar $position]] \
+			-state $state \
+			;
+#		$m add command \
+#			-label " $mc::MergeLastClipbaseGame" \
+#			-command [list ::scidb::game::merge clipbase $position] \
+#			-state $state \
+#			;
+		if {[llength $idList] <= 1} { set state disabled } else { set state normal }
+		set sub [menu $m.pasteFrom]
+		foreach id $idList {
+			if {$id != $position} {
+				$sub add command \
+					-label " $players($id)" \
+					-image $digit([expr {$id + 1}]) \
+					-compound left \
+					-command [namespace code [list PasteGameFrom $parent $id $position]] \
+					;
+			}
+		}
+		$m add cascade \
+			-menu $sub \
+			-label " $mc::PasteGameFrom" \
+			-state $state \
+			;
+#		set sub [menu $m.mergeFrom]
+#		foreach id $idList {
+#			if {$id != $position} {
+#				$sub add command \
+#					-label " $players($id)" \
+#					-image $digit([expr {$id + 1}]) \
+#					-compound left \
+#					-command [list ::scidb::game::merge $id $position] \
+#					;
+#			}
+#		}
+#		$m add cascade \
+#			-menu $sub \
+#			-label " $mc::MergeGameFrom" \
+#			-state $state \
+#			;
+	}
+
 	if {$clearHistory == 2} {
 		$m add separator
 		if {$remove >= 0} {
@@ -1399,6 +1468,23 @@ proc AddGameMenuEntries {m addSaveMenu addGameHistory clearHistory remove} {
 			-command ::game::clearHistory \
 			;
 	}
+}
+
+
+proc CheckIfModified {parent position} {
+	if {![::scidb::game::query $position modified?]} { return false }
+	set reply [::dialog::question -parent $parent -message $mc::DiscardChanges]
+	return [expr {$reply eq "no"}]
+}
+
+
+proc PasteFromClipbase {parent position} {
+	if {![CheckIfModified $parent $position]} { ::scidb::game::paste clipbase $position }
+}
+
+
+proc PasteGameFrom {parent from to} {
+	if {![CheckIfModified $parent $to]} { ::scidb::game::paste $from $to }
 }
 
 
@@ -1478,7 +1564,7 @@ proc BuildMenu {gamebar id side menu} {
 	set addsep {}
 
 	set end [$menu index end]
-	AddGameMenuEntries $menu [expr {$current && $Specs(size:$gamebar) > 0}] 1 0 -1
+	AddGameMenuEntries $gamebar $menu [expr {$current && $Specs(size:$gamebar) > 0}] 1 0 -1
 	if {[$menu index end] ne $end} { set addsep [list $menu add separator] }
 
 	if {$Specs(size:$gamebar) > 0} {
@@ -1666,10 +1752,9 @@ proc UpdateLine {gamebar id} {
 	set black [lindex $Specs(data:$id:$gamebar) 1]
 	if {$black eq ""} { set text "?" }
 	$gamebar itemconfigure white$id -text $white
+	$gamebar itemconfigure black$id -text $black
 
-	if {![UseSeparateColumn $gamebar] && $id eq $Specs(selected:$gamebar)} {
-		$gamebar itemconfigure black$id -text $black
-	} else {
+	if {[UseSeparateColumn $gamebar] || $id ne $Specs(selected:$gamebar)} {
 		$gamebar itemconfigure black$id -state $state
 		$gamebar itemconfigure blackbg$id -state $state
 		$gamebar itemconfigure blackInput$id -state $state

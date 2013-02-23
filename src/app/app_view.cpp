@@ -705,35 +705,39 @@ View::exportGames(mstl::string const& filename,
 									type);
 		destination.setDescription(description);
 
-//		We do not use speed up because the scid bases created with the Scid application
-//		may contain some broken data. The exporting will fix the data.
-//		if (	m_cursor.m_db->format() == format::Scid
-//			&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
-//		{
-//			count = exportGames(destination, copyMode, illegalRejected, log, progress, "write-game");
-//		}
-//		else
+		if (m_cursor.m_db->variant() == variant::Normal)
 		{
-			format::Type format(ext == "si3" ? format::Scid3 : format::Scid4);
-			si3::Consumer consumer(	format,
-											dynamic_cast<si3::Codec&>(destination.codec()),
-											encoding,
-											allowedTags,
-											allowExtraTags);
-			progress.message("write-game");
-			count = exportGames(consumer, copyMode, illegalRejected, log, progress);
+//			We do not use speed up because the scid bases created with the Scid application
+//			may contain some broken data. The exporting will fix the data.
+//			if (	m_cursor.m_db->format() == format::Scid
+//				&& (ext == "si4" || dynamic_cast<si3::Codec&>(m_cursor.m_db->codec()).isFormat3()))
+//			{
+//				count = exportGames(destination, copyMode, illegalRejected, log, progress, "write-game");
+//			}
+//			else
+			{
+				format::Type format(ext == "si3" ? format::Scid3 : format::Scid4);
+				si3::Consumer consumer(	format,
+												dynamic_cast<si3::Codec&>(destination.codec()),
+												encoding,
+												allowedTags,
+												allowExtraTags);
+				progress.message("write-game");
+				count = exportGames(consumer, copyMode, illegalRejected, log, progress);
+			}
 		}
 
 		progress.message("write-index");
 		destination.save(progress);
 		destination.close();
 	}
-	else if (ext == "pgn" || ext == "gz" || ext == "zip")
+	else if (ext == "pgn" || ext == "gz" || ext == "zip" || ext == "PGN" || ext == "ZIP")
 	{
 		util::ZStream::Type type;
 
 		if (ext == "gz")			type = util::ZStream::GZip;
 		else if (ext == "zip")	type = util::ZStream::Zip;
+		else if (ext == "ZIP")	type = util::ZStream::Zip;
 		else							type = util::ZStream::Text;
 
 		mstl::ios_base::openmode mode = mstl::ios_base::out;

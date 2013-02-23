@@ -162,8 +162,8 @@ public:
 	void set_size(size_type n);
 	void make_writable();
 
-	string& tolower();
-	string& toupper();
+	string& tolower(size_type pos = 0, size_type len = npos);
+	string& toupper(size_type pos = 0, size_type len = npos);
 
 	iterator erase(const_iterator start, size_type n = 1);
 	iterator erase(const_iterator first, const_iterator last);

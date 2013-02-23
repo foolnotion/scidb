@@ -151,6 +151,7 @@ private:
 	unsigned blockNumber(unsigned fileOffset) const;
 	unsigned blockOffset(unsigned fileOffset) const;
 	unsigned fileOffset(unsigned blockNumber) const;
+	unsigned computeCapacity(unsigned span) const;
 
 	void computeBlockCount();
 	unsigned fetch(View& view, unsigned blockNumber, unsigned span = 1);

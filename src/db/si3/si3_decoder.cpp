@@ -765,6 +765,7 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 				mstl::string	content;
 				Comment			comment;
 				MarkSet			marks;
+				MoveInfoSet		moveInfoSet;
 
 				m_strm.get(content);
 				marks.extractFromComment(content);
@@ -812,24 +813,16 @@ Decoder::decodeComments(MoveNode* node, Consumer* consumer)
 				mstl::string	content;
 				Comment			comment;
 				MarkSet			marks;
+				MoveInfoSet		moveInfo;
 
 				buffer.clear();
 				m_strm.get(content);
 				marks.extractFromComment(content);
 				node->swapMarks(marks);
 
-				if (consumer)
-				{
-					consumer->preparseComment(content);
-
-					if (!consumer->moveInfo().isEmpty())
-					{
-						MoveInfoSet moveInfo;
-
-						consumer->swapMoveInfo(moveInfo);
-						node->swapMoveInfo(moveInfo);
-					}
-				}
+				moveInfo.extractFromComment(m_engines, content);
+				if (!moveInfo.isEmpty())
+					node->swapMoveInfo(moveInfo);
 
 				if (!content.empty())
 				{
@@ -935,6 +928,7 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 
 	decodeComments(&start, &consumer);
 	decodeVariation(consumer, &start);
+	m_engines.swap(consumer.engines());
 	consumer.finishMoveSection(result::fromString(tags.value(tag::Result)));
 
 	if (m_codec->failed())
@@ -1000,6 +994,7 @@ Decoder::doDecoding(GameData& data)
 	DataEnd();
 
 	decodeComments(data.m_startNode);
+	data.m_engines.swap(m_engines);
 
 	if (m_codec->failed())
 		m_givenCodec->setFailed();

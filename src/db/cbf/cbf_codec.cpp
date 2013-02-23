@@ -366,21 +366,26 @@ Codec::close()
 
 void
 Codec::doOpen(	mstl::string const& rootname,
+					mstl::string const& originalSuffix,
 					mstl::string const& encoding,
 					util::Progress& progress)
 {
+	M_ASSERT(originalSuffix == "cbf" || originalSuffix == "CBF");
+
 	ProgressWatcher watcher(progress, 0);
 
 	setEncoding(encoding);
 	setVariant(variant::Normal);
 
-	mstl::string filename(rootname + ".cbf");
-	checkPermissions(filename);
-	openFile(m_gameStream, filename, Readonly);
+	mstl::string gameFilename(rootname + "." + originalSuffix);
+	mstl::string indexFilename(rootname + (::isupper(originalSuffix[0]) ? ".CBI" : ".cbi"));
+
+	checkPermissions(gameFilename);
+	openFile(m_gameStream, gameFilename, Readonly);
 
 	if (!m_codec->hasEncoding())
 	{
-		preloadIndexData(rootname, progress);
+		preloadIndexData(indexFilename, progress);
 		DataEnd();
 
 		if (m_encoding == sys::utf8::Codec::automatic())
@@ -390,7 +395,7 @@ Codec::doOpen(	mstl::string const& rootname,
 	}
 
 	progress.message("read-init");
-	readIndexData(rootname, progress);
+	readIndexData(indexFilename, progress);
 	namebases().setReadonly();
 
 	namebases().setReadonly(false);
@@ -401,26 +406,31 @@ Codec::doOpen(	mstl::string const& rootname,
 
 
 void
-Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
+Codec::reloadNamebases(	mstl::string const& rootname,
+								mstl::string const& originalSuffix,
+								Progress& progress)
 {
+	M_ASSERT(originalSuffix == "cbf" || originalSuffix == "CBF");
+
+	mstl::string indexFilename(rootname + (::isupper(originalSuffix[0]) ? ".CBI" : ".cbi"));
+
 	gameInfoList().clear();
 
 	namebases().setReadonly(false);
 	namebases().clear();
-	readIndexData(rootname, progress);
+	readIndexData(indexFilename, progress);
 	namebases().setReadonly(true);
 }
 
 
 void
-Codec::preloadIndexData(mstl::string const& rootname, util::Progress& progress)
+Codec::preloadIndexData(mstl::string const& indexFilename, util::Progress& progress)
 {
-	mstl::string	filename(rootname + ".cbi");
-	mstl::fstream	strm;
+	mstl::fstream strm;
 
 	Byte record[4];
 
-	openFile(strm, filename, Readonly);
+	openFile(strm, indexFilename, Readonly);
 	strm.read(record, sizeof(record));
 
 	if ((m_numGames = ByteStream::uint32(record)) > 0)
@@ -484,14 +494,13 @@ Codec::preloadIndexData(unsigned offset)
 
 
 void
-Codec::readIndexData(mstl::string const& rootname, util::Progress& progress)
+Codec::readIndexData(mstl::string const& indexFilename, util::Progress& progress)
 {
-	mstl::string	filename(rootname + ".cbi");
-	mstl::fstream	strm;
+	mstl::fstream strm;
 
 	Byte record[4];
 
-	openFile(strm, filename, Readonly);
+	openFile(strm, indexFilename, Readonly);
 
 	if (!strm.read(record, sizeof(record)))
 		IO_RAISE(Index, Corrupted, "unexpected end of file");
@@ -773,8 +782,10 @@ Codec::getAttributes(mstl::string const& filename,
 							db::type::ID& type,
 							mstl::string* description)
 {
+	M_REQUIRE(util::misc::file::suffix(filename) == "cbf" || util::misc::file::suffix(filename) == "CBF");
+
 	mstl::string fname(util::misc::file::rootname(filename));
-	fname.append(".cbi");
+	fname.append(::isupper(filename.back()) ? ".CBI" : ".cbi");
 
 	mstl::fstream strm(sys::file::internalName(fname), mstl::ios_base::in | mstl::ios_base::binary);
 

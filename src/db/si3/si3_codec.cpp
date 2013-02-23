@@ -599,8 +599,12 @@ Codec::doOpen(mstl::string const& encoding)
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
+Codec::doOpen(	mstl::string const& rootname,
+					mstl::string const& originalSuffix,
+					mstl::string const& encoding,
+					util::Progress& progress)
 {
+	M_ASSERT(originalSuffix == "si3" || originalSuffix == "si4");
 	M_ASSERT(	m_codec == 0
 				|| encoding == sys::utf8::Codec::automatic()
 				|| encoding == m_codec->encoding());
@@ -1449,8 +1453,12 @@ Codec::reloadDescription(mstl::string const& rootname)
 
 
 void
-Codec::reloadNamebases(mstl::string const& rootname, Progress& progress)
+Codec::reloadNamebases(	mstl::string const& rootname,
+								mstl::string const& originalSuffix,
+								Progress& progress)
 {
+	M_ASSERT(originalSuffix == "si3" || originalSuffix == "si4");
+
 	mstl::string	filename(rootname + m_extNamebase);
 	mstl::fstream	stream;
 
@@ -2215,6 +2223,8 @@ Codec::getAttributes(mstl::string const& filename,
 							db::type::ID& type,
 							mstl::string* description)
 {
+	M_REQUIRE(util::misc::file::suffix(filename) == "si3" || util::misc::file::suffix(filename) == "si4");
+
 	mstl::fstream strm(sys::file::internalName(filename), mstl::ios_base::in | mstl::ios_base::binary);
 
 	if (!strm)

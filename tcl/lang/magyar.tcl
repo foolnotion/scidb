@@ -1307,6 +1307,12 @@
 ::gamebar::mc::NewGameFstPart			"Új"
 ::gamebar::mc::NewGameSndPart			"Játszma"
 
+::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
+::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
+::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
+::gamebar::mc::PasteGameFrom			"Paste game" ;# NEW
+::gamebar::mc::MergeGameFrom			"Merge game" ;# NEW
+
 ::gamebar::mc::LockGame				"Játszma zárolása"
 ::gamebar::mc::UnlockGame			"Zárolás feloldása"
 ::gamebar::mc::CloseGame			"Játszma bezárása"
@@ -1319,7 +1325,6 @@
 ::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
 ::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
 ::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
- ;# NEW
 ::gamebar::mc::Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
 
 ### browser ############################################################

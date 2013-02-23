@@ -1290,33 +1290,39 @@
 ::font::mc::DecreaseFontSize						"Disminuir el tamaño de la fuente"
 
 ### gamebar ############################################################
-::gamebar::mc::StartPosition			"Iniciar posición"
-::gamebar::mc::Players					"Jugadores"
-::gamebar::mc::Event						"Evento"
-::gamebar::mc::Site						"Lugar"
-::gamebar::mc::SeparateHeader			"Encabezado separado"
-::gamebar::mc::ShowActiveAtBottom	"Mostrar la partida activa al pie"
-::gamebar::mc::ShowPlayersOnSeparateLines	"Mostrar los jugadores en líneas separadas"
-::gamebar::mc::DiscardChanges			"Esta partida ha cambiado.\n\n¿Realmente desea descartar los cambios realizados?"
-::gamebar::mc::DiscardNewGame			"¿Realmente desea descartar esta partida?"
-::gamebar::mc::NewGameFstPart			"Nueva"
-::gamebar::mc::NewGameSndPart			"Partida"
+::gamebar::mc::StartPosition					"Iniciar posición"
+::gamebar::mc::Players							"Jugadores"
+::gamebar::mc::Event								"Evento"
+::gamebar::mc::Site								"Lugar"
+::gamebar::mc::SeparateHeader					"Encabezado separado"
+::gamebar::mc::ShowActiveAtBottom			"Mostrar la partida activa al pie"
+::gamebar::mc::ShowPlayersOnSeparateLines			"Mostrar los jugadores en líneas separadas"
+::gamebar::mc::DiscardChanges					"Esta partida ha cambiado.\n\n¿Realmente desea descartar los cambios realizados?"
+::gamebar::mc::DiscardNewGame					"¿Realmente desea descartar esta partida?"
+::gamebar::mc::NewGameFstPart					"Nueva"
+::gamebar::mc::NewGameSndPart					"Partida"
 
-::gamebar::mc::LockGame					"Bloquear Juego"
-::gamebar::mc::UnlockGame				"Desbloquear Juego"
-::gamebar::mc::CloseGame				"Cerrar Juego"
+::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
+::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
+::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
+::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
+::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
 
-::gamebar::mc::GameNew					"Nueva partida"
+::gamebar::mc::LockGame							"Bloquear Juego"
+::gamebar::mc::UnlockGame						"Desbloquear Juego"
+::gamebar::mc::CloseGame						"Cerrar Juego"
 
-::gamebar::mc::AddNewGame				"Guardar: Agregar nueva partida a %s..."
-::gamebar::mc::ReplaceGame				"Guardar: Reemplazar partida en %s..."
-::gamebar::mc::ReplaceMoves			"Guardar: Reemplazar jugadas sólo en la partida"
+::gamebar::mc::GameNew							"Nueva partida"
 
-::gamebar::mc::Tip(Antichess)			"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
-::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
-::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
+::gamebar::mc::AddNewGame						"Guardar: Agregar nueva partida a %s..."
+::gamebar::mc::ReplaceGame						"Guardar: Reemplazar partida en %s..."
+::gamebar::mc::ReplaceMoves					"Guardar: Reemplazar jugadas sólo en la partida"
+
+::gamebar::mc::Tip(Antichess)					"There is no check, no castling, the king\nis captured like an ordinary piece." ;# NEW
+::gamebar::mc::Tip(Suicide)					"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
+::gamebar::mc::Tip(Giveaway)					"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
  ;# NEW
-::gamebar::mc::Tip(Losers)				"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+::gamebar::mc::Tip(Losers)						"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Buscar partida"

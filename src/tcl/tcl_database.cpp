@@ -1046,7 +1046,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		tcl::PgnReader::setResult(count, illegalRejected, accepted, rejected);
 	}
-	else if (ext == "pgn" || ext == "gz" || ext == "zip")
+	else if (ext == "pgn" || ext == "gz" || ext == "zip" || ext == "PGN" || ext == "ZIP")
 	{
 		util::ZStream stream(sys::file::internalName(src), ios_base::in);
 
@@ -1134,7 +1134,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	ext.tolower();
 
-	if (ext != "pgn" && ext != "gz" && ext != "zip")
+	if (ext != "pgn" && ext != "gz" && ext != "zip" && ext != "PGN" && ext != "ZIP")
 	{
 		appendResult("unsupported extension '%s'", ext.c_str());
 		return TCL_ERROR;
@@ -1202,7 +1202,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	mstl::string suffix(util::misc::file::suffix(path));
 
-	if (suffix == "pgn" || suffix == "gz" || suffix == "zip")
+	if (suffix == "pgn" || suffix == "gz" || suffix == "zip" || suffix == "PGN" || suffix == "ZIP")
 	{
 		// currently we do not support charset detection for PGN files
 		if (encoding.empty() || encoding == sys::utf8::Codec::automatic())
@@ -1554,6 +1554,15 @@ getVariant(char const* database = 0)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database));
 	::tcl::setResult(tcl::tree::variantToString(Scidb->cursor(database).database().variant()));
+	return TCL_OK;
+}
+
+
+static int
+getVariant(char const* database, unsigned number)
+{
+	M_ASSERT(database == 0 || Scidb->contains(database));
+	::tcl::setResult(tcl::tree::variantToString(Scidb->cursor(database).database().variant(number)));
 	return TCL_OK;
 }
 
@@ -1990,7 +1999,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	if (info.idn() == variant::Standard)
 	{
 		if (eop)
-			ecoTable.getLine(eop).print(overview, variant::Normal, encoding::Utf8);
+			ecoTable.getLine(eop).print(overview, variant::Normal, protocol::Scidb, encoding::Utf8);
 	}
 	else if (variant::isShuffleChess(info.idn()))
 	{
@@ -2712,7 +2721,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* siteIndex		*/ "<number> ?<view>? ?<database>? ?<variant>?",
 		/* annotatorIndex	*/ "<number> ?<view>? ?<database>? ?<variant>?",
 		/* description		*/ "?<database>?",
-		/* variant			*/ "?<database>?",
+		/* variant?			*/ "?<database> ?<number>??",
 		/* stats				*/ "<database>",
 		/* readonly?		*/ "?<database>?",
 		/* encodingState	*/ "?<database>?",
@@ -3010,7 +3019,9 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		case Cmd_Variant:
 			if (objc < 3)
 				return getVariant();
-			return getVariant(Tcl_GetString(objv[2]));
+			if (objc < 4)
+				return getVariant(Tcl_GetString(objv[2]));
+			return getVariant(Tcl_GetString(objv[2]), unsignedFromObj(objc, objv, 3));
 
 		case Cmd_Stats:
 			return getStats(stringFromObj(objc, objv, 2));
@@ -4234,7 +4245,8 @@ tcl::db::getPlayerStats(Database const& database, NamebasePlayer const& player)
 		Tcl_Obj* argv[2];
 		mstl::string line;
 
-		ecoTable.getLine(stats.ecoLine(color::White, i)).print(line, variant::Normal, encoding::Utf8);
+		ecoTable.getLine(stats.ecoLine(color::White, i)).
+			print(line, variant::Normal, protocol::Scidb, encoding::Utf8);
 		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::White, i));
 		argv[1] = Tcl_NewStringObj(line, line.size());
 		Tcl_ListObjAppendElement(0, objs[0], Tcl_NewListObj(2, argv));
@@ -4245,7 +4257,8 @@ tcl::db::getPlayerStats(Database const& database, NamebasePlayer const& player)
 		Tcl_Obj* argv[2];
 		mstl::string line;
 
-		ecoTable.getLine(stats.ecoLine(color::Black, i)).print(line, variant::Normal, encoding::Utf8);
+		ecoTable.getLine(stats.ecoLine(color::Black, i)).
+			print(line, variant::Normal, protocol::Scidb, encoding::Utf8);
 		argv[0] = Tcl_NewIntObj(stats.ecoCount(color::Black, i));
 		argv[1] = Tcl_NewStringObj(line, line.size());
 		Tcl_ListObjAppendElement(0, objs[1], Tcl_NewListObj(2, argv));

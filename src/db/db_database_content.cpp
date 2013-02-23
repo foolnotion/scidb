@@ -27,14 +27,19 @@
 #include "db_database_content.h"
 #include "db_game_info.h"
 
+#include "u_misc.h"
+
 using namespace db;
+namespace file = util::misc::file;
 
 
 DatabaseContent::~DatabaseContent() throw() {}
 
 
-DatabaseContent::DatabaseContent(mstl::string const& encoding, Type type)
-	:m_type(type)
+DatabaseContent::DatabaseContent(mstl::string const& filename, mstl::string const& encoding, Type type)
+	:m_rootname(file::rootname(filename))
+	,m_suffix(file::suffix(filename))
+	,m_type(type)
 	,m_variant(variant::Undetermined)
 	,m_created(0)
 	,m_readOnly(false)
@@ -48,8 +53,10 @@ DatabaseContent::DatabaseContent(mstl::string const& encoding, Type type)
 }
 
 
-DatabaseContent::DatabaseContent(DatabaseContent const& content)
-	:m_type(content.m_type)
+DatabaseContent::DatabaseContent(mstl::string const& filename, DatabaseContent const& content)
+	:m_rootname(file::rootname(filename))
+	,m_suffix(file::suffix(filename))
+	,m_type(content.m_type)
 	,m_variant(content.m_variant)
 	,m_created(content.m_created)
 	,m_readOnly(content.m_readOnly)

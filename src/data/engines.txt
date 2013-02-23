@@ -10,6 +10,7 @@
 	3D Schach							----	----	GBR
 ## A #########################################################################################################
 	Abrok									----	----	GER	WB/UCI	N				http://romankorba.homepage.t-online.de/
+*	Abulafia								----	----	---	UCI		N				https://github.com/nionita/Abulafia
 	Ace									----	----	FRA	UCI		N				http://code.google.com/p/ace-chess/
 	Achilles								----	----	SRB
 =	Axon
@@ -44,6 +45,7 @@
  	AnMon									2547	2618	FRA	WB/UCI	N
 =	Anmon
 	Ant									2333	2405	NED	WB			N
+*	Apep									----	----	---	WB			N				https://github.com/tildedave/apep-chess-engine
 *	ApilChess							----	----	GER	UCI		N				http://wwwcs.upb.de/fachbereich/AG/monien/PERSONAL/FLULO/APIL/APILchess.html
 *	Arabian Knight						----	----	POL	WB			N				http://wbec-ridderkerk.nl/html/details1/ArabianKnight.html
 	Arasan								2600	2691	USA	WB/UCI	N				http://www.arasanchess.org/
@@ -71,6 +73,7 @@
 *	BabyChess							----	----	GER	WB			N				http://user.cs.tu-berlin.de/~kunegis/babychess/
 *	BACE									----	----	USA	WB			N				http://wiki.bowron.us/index.php/Main_Page
 *	BaChess								----	----	GER	WB			N				http://www.schlagmueller.de/studium/projekte/chess.htm
+*	Bagatur								2300	2149	---	UCI		N				http://sourceforge.net/projects/bagaturchess/
 *	BamBam								----	----	AUT	WB			N
 *	BBChess								2456	2588	SLO	UCI		N				http://labraj.uni-mb.si/raj/en/index.php/Chess_program_BBChess
 	Beaches								1811	----	USA	WB			N				http://www.geocities.com/chessbeaches/
@@ -80,6 +83,7 @@
 	Belofte								----	----	BEL	WB			N				http://www.internetcontact.be/~macchess/dev-belofte.html
 *	Belzebub								----	----	POL	WB			N				http://sq2foa.republika.pl/
 *	BeoWulf								----	----	ENG	WB			N				http://www.frayn.net/beowulf/
+*	BeRoChess							----	----	---	WB/UCI	N				http://www.rosseaux.net/page29_BeRoChess.html
 	Berta									----	----	GER	?			N
 	Bestia								2030	----	UKR	WB			N				http://www.geocities.com/lyapko/winboard.htm
  	Betsabé II							----	----	ESP	WB			N				http://jim-ablett.co.de/
@@ -92,17 +96,20 @@
 *	BikJump								2104	2175	NED	UCI		N				http://www.aartbik.com/MISC/chess.html
 	Bionic								----	----	BEL	WB			N
 =	Bionic Impakt
+	Bismark								----	----	---	UCI		N				http://www.sdchess.ru/download_engines.htm
 	Bison									----	2828	RUS	UCI		N				http://sourceforge.net/projects/bison/
 *	BlackBishop							2160	2317	GER	WB/UCI	N				http://brettspiele.gmxhome.de/BlackBishop/
 *	BliksKottel							----	----	RSA	WB			N				http://www.oellermann.com/blikskottel
 *	BlitzKibitz							----	----	ROU	WB			N				http://code.google.com/p/blitzkibitz/
 *	Blitzter								----	----	USA	WB			N				http://www.blitzter.com/
+	Blunderer							----	----	---	UCI		N				http://sourceforge.net/projects/blunder/
 	Bodo									----	----	AUS	WB			N
 *	Booot									2942	2796	UKR	WB/UCI	N				http://sdchess.narod.ru/download_engines.htm
 *	Braincrack							----	----	GER	WB			N				http://sourceforge.net/projects/braincrack/
 *	Brainless							1823	----	CAN	WB			N				http://cyberfish.wecheer.com/Brainless/
 	Brama									----	----	ITA	WB			N
 *	BremboCE								----	----	ITA	WB			N				http://web.tiscali.it/BremboCE
+=	Brembo
 	Bright								----	2883	NED	UCI		N				http://members.ziggo.nl/allard.siemelink/bright/
 	Bruja									----	2556	USA	WB			N
  	Brutus Chess						2729	2556	NED	WB/UCI	N
@@ -250,6 +257,8 @@
 *	DarkFUSc#							----	----	GER	UCI		N			http://www.fuschmotor.de.vu/
 *	Deep Rybka							3124	----	USA	UCI		NF			http://www.rybkachess.com
 =	FUSc#
+*	DarkTemplar							----	----	---	WB			N			https://sites.google.com/site/darktemplarchess/
+*	Darky									1700	----	---	UCI		N			http://chessprograms.260mb.com/
 	Darmenios							2374	----	POL	WB			N			http://darczech.ovh.org/lpps/
 *	Daydreamer							----	2815	USA	UCI		NF			https://github.com/AaronBecker/daydreamer/downloads
 *	DChess								----	----	USA	WB			N			http://www.geocities.com/SiliconValley/Mouse/3246/
@@ -275,8 +284,8 @@
  	Der Bringer							----	----	GER	WB			N
 =	Bringer
 	Desperado							----	----	AUS	?			N
-	Deuterium							2671	2698	PHI	WB			N
-*	Deuterium Milan					----	----	PHI	WB			N
+	Deuterium							2671	2698	PHI	WB			N			https://sites.google.com/site/deuteriumengine/home
+*	Deuterium Milan					----	----	PHI	WB			N			https://sites.google.com/site/deuteriumengine/home
 	Diablo								2393	2514	USA	UCI		N			http://www.geocities.com/prewarski/
 	Diep									----	----	NED	WB			N
 	Dika									----	----	FRA	WB			N
@@ -366,6 +375,7 @@
 	Fritz									----	2977	GER	UCI		N			http://www.chessbase.de/
 *	Fritz Bilbao						---	2801	GER	UCI		N			http://www.chessbase.de/
 	Fruit									2968	2888	FRA	UCI		NF			http://www.fruitchess.com
+	Fruitfly								----	----	---	UCI		NF			https://github.com/ZirconiumX/fruitfly
 ## G #########################################################################################################
 	Gaïa									2383	2510	FRA	UCI		N			http://gaiachess.free.fr/
 =	Gaia
@@ -471,8 +481,10 @@
 	Imp									----	----	LTU	?			N
 *	InmiChess							----	----	AUT	WB			N
 *	Insomniac							----	----	USA	?			N
+*	IntelliChess						----	----	---	WB			N			http://sourceforge.net/projects/intellichess/
 	Inuyasha								----	----	ITA	UCI		N
 =	JRCP
+	Iota									----	----	---	UCI		N
 	Ippolit								----	----	USA	?			N
 *	IsiChess								----	----	GER	?			N
 *	IvanHoe								----	----	USA	UCI		N
@@ -505,11 +517,13 @@
 	Kanguruh								----	----	AUS	WB			N			http://home.pacific.net.au/~tommyinoz/
 *	KasparovX							----	----	PUR	WB			N
 *	KCChess								----	----	RUS	WB			N			http://sourceforge.net/projects/kcchess/
+	Kenny									----	----	---	WB			N			https://github.com/kenshinthebattosai/kenny
 	Kerostave							----	----	---	?			N
 *	Killer Queen						----	----	ITA	WB/UC		N
 *	King of Kings						----	----	CAN	WB			N
 *	King's Out							1983	----	GER	WB			N
 *	Kingzilla							----	----	---	?			N
+*	Kitteneitor							----	----	ESP	WB			N			https://github.com/pocopito/kitteneitor/
 	Kiwi									----	2553	ITA	WB			N			http://www.ascotti.org/programming/chess/chess.htm
 *	KKFChess								----	----	HKG	WB/UCI	CSL		http://freespace.virgin.net/andrew.fankk/
 *	KMTChess								2201	2257	ESP	WB			N			http://sourceforge.net/projects/kmtchess/
@@ -538,6 +552,7 @@
 =	Sinobyl
 	Laurifer								1961	----	POL	WB			N
 *	LChess								----	----	NED	?			N
+	Leonidas 							----	----	NED	WB/UCI	N			http://www.eglebbk.dds.nl/program/chess-download.html
 *	LearningLemming					2609	----	USA	?			N
 	Leila									2419	----	ITA	WB/UC		N
 	Lemming								----	2687	---	?			N
@@ -557,6 +572,7 @@
 *	Little Thought						2511	2487	AUS	UCI		N			http://members.optusnet.com.au/~nathanthom/
 	Lodocase								1735	----	BEL	WB			N			http://users.skynet.be/lodocase/index.html
 *	LoopMP								----	----	GER	UCI		N
+	Lopez									----	----	---	WB			N			https://github.com/flatline/lopez
 *	Lord King							----	----	ITA	WB			N
 =	Caiozzz
 =	Quartax
@@ -708,7 +724,7 @@
 *	MiniMax								----	----	GER	WB			N			http://home.pacific.net.au/~tommyinoz
 	MiniRoque							----	----	ESP	WB			N			https://sites.google.com/site/roquechess/download
 	Mint									----	----	SWE	WB			N
-	Mizar									----	----	ITA	WB			N			http://www.mizar.zendurl.com/
+	Mizar									----	1750	ITA	WB			N			https://sites.google.com/site/mizarchess/mizarchessengine-temporarywebsite
 	Moga									----	----	---	?			N
 	Monarch								----	2136	ENG	WB/UCI	N			http://www.monarchchess.com/
 	Monik									----	----	CAN	WB			N			http://analyseprogrammation.com/echecs/monik
@@ -741,6 +757,8 @@
 *	Neophyte								----	----	ENG	WB			N			http://neophyte.sourceforge.net/
 	Nero									1361	----	FIN	WB			N
 	Nesik									----	----	POL	WB			N			http://republika.pl/nesik/index.html
+*	NeuroGrape							----	----	---	UCI		N			https://github.com/m00natic/neuroGrape
+*	NeuroStock							----	----	---	UCI		N			https://github.com/m00natic/neuroStock
 	Neurone								1101	----	ITA	WB			N			http://www.lissandrello.it/?p=524
 	Neurosis								2161	2302	NED	WB			N
 	Nimrod								2380	----	???	?			N
@@ -764,6 +782,7 @@
 *	Octochess							----	----	USA	UCI		N			http://octochess.org/
 *	OldBlindDog							----	----	USA	?			N
 *	OliThink								----	2464	GER	WB			N			http://home.arcor.de/dreamlike/
+*	OliveChess							----	----	---	UCI		N			https://code.google.com/p/olivechess/
 	Olympus								----	----	USA	?			N
 	Omar									----	----	ESP	WB			N			http://vroddon.sdf-eu.org/ajedrez/ajedrez.html
 	Onno									----	2907	GER	UCI		N			http://www.onnochess.com/index.html
@@ -856,6 +875,7 @@
 *	Requiem								----	----	FIN	WB			N			http://webusers.siba.fi/~ssalmine/requiem.html
 	Resp									2405	----	GER	WB			N
 	Revati								----	----	GER	WB			N			http://www.free-space.at/cpruell/index.html
+*	Rhetoric								----	----	---	UCI		N			http://www.chessrhetoric.com/
 	Rick48								----	3072	USA	WB			N			http://rick48.com/
 =	Rick48-v4
 	Rinko									----	----	ITA	?			N
@@ -957,6 +977,7 @@
 	Surprise								1816	1996	GER	WB			N			http://www.schuelebln.de/chess/
 	Symbolic								----	----	USA	?			N
 ## T #########################################################################################################
+	Tadyak								----	----	---	UCI		N			https://sites.google.com/site/deuteriumengine/downloads-1
 *	Taktix								----	----	CMR	WB/UCI	NF			http://www.w2410tmq9.homepage.t-online.de/
 *	Talvmenni							----	----	FAI	WB			N			http://talvmenni.sourceforge.net/
 	Tamerlane							----	----	ITA	WB			N
@@ -1009,6 +1030,7 @@
 =	Tom Kerrigan's Simple Chess Program
 	Tucano								----	----	BRA	WB			N			https://sites.google.com/site/tucanochess/
 	Turing								----	----	GER	?			N
+	Tursas								----	----	---	WB			N			https://github.com/zmyrgel/tursas
 *	TuttiFruity							----	----	---	?			N
 *	Tuxedo								----	----	---	?			N
 *	Twilight Chess						----	----	FRA	?			N
@@ -1034,6 +1056,7 @@
 =	Virtual Chess X
 =	Virtual Chess 2
 =	VirtuaChess
+	Virutor								----	----	---	UCI		N			https://sites.google.com/site/virutor/
 *	Vlad Tepes							----	----	NED	?			N
 *	Voayager								----	----	SUI	?			N
 ## W #########################################################################################################
@@ -1053,6 +1076,7 @@
 *	WJChess								----	----	FRA	WB/UCI	N			http://wjchess.jeffprod.com/
 	Wombat								1819	----	???	?			N
 *	Woodpecker							----	----	RUS	WB			N			http://evgeniy-korniloff.narod.ru/download.html
+*	WSpeirs								----	----	---	UCI		N			https://github.com/wspeirs/chess
 ## X #########################################################################################################
 	Xadreco								----	----	BRA	WB			N			http://xadreco.wikispaces.com/
 *	XBomb									----	----	PHI	?			N
@@ -1083,10 +1107,12 @@
 	Zephyr								----	----	GER	WB			N
 	Zeta									----	----	GER	?			N
 	Zeus									2335	2414	RUS	WB			N
+	Ziggurat								----	----	---	UCI		N			http://mysite.verizon.net/vze16nq0r/index.html
 	Zilch									----	----	USA	?			N
 *	ZL Chess								----	----	PUR	WB			N			http://www.zlchess.cjb.net/
 =	ZL
 	Zochova								----	----	HUN	WB			N			http://sourceforge.net/projects/zochova/
+	Zoe									----	----	---	WB			N			https://github.com/jes/zoe
 	Zoidberg								1715	----	ESP	WB			N			https://sites.google.com/site/manuelalza2/
 	Zotron								----	----	USA	WB			N			http://home.earthlink.net/~slowthought/
 *	Zzzzzz								----	----	NED	?			N

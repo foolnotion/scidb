@@ -107,16 +107,12 @@ proc build {parent width height} {
 	pack $top -fill both -expand yes
 	pack $main -fill both -expand yes
 
-	set popupcmd [namespace code [list ::gamebar::popupMenu $top no]]
-
 	$main add $hist $logo $games
-	bind $main <Button-3> $popupcmd
 	$hist bind <Button-3> [namespace code [list PopupHistoryMenu $hist]]
 	bind $hist <<GameHistorySelection>> [namespace code HistorySelectionChanged]
 
 	# logo pane --------------------------------------------------------------------------------
 	$main paneconfigure $logo -sticky ""
-	bind $logo <Button-3> $popupcmd
 
 	tk::label $logo.icon -image $::icon::64x64::logo -background white
 	tk::label $logo.logo \
@@ -128,12 +124,7 @@ proc build {parent width height} {
 	grid $logo.icon -row 1 -column 1
 	grid $logo.logo -row 2 -column 1
 
-	foreach child [winfo children $logo] {
-		bind $child <Button-3> $popupcmd
-	}
-
 	# games pane -------------------------------------------------------------------------------
-	bind $games <Button-3> [namespace code [list ::gamebar::popupMenu $top]]
 	set edit [::tk::frame $games.edit -borderwidth 0]
 	pack $edit -expand yes -fill both
 	bind $edit <Configure> [namespace code { Configure %h }]
@@ -144,6 +135,12 @@ proc build {parent width height} {
 	grid $panes   -row 2 -column 1 -sticky nsew
 
 	::gamebar::addReceiver $gamebar [namespace code GameBarEvent]
+
+	set popupcmd [namespace code [list ::gamebar::popupMenu $gamebar $top no]]
+	bind $main <Button-3> $popupcmd
+	bind $logo <Button-3> $popupcmd
+	bind $games <Button-3> [list ::gamebar::popupMenu $gamebar $top]
+	foreach child [winfo children $logo] { bind $child <Button-3> $popupcmd }
 
 	set Vars(frame) $edit
 	set Vars(delta) 0
@@ -1968,13 +1965,24 @@ proc PopupMenu {parent position} {
 			set varno [::scidb::game::variation current]
 			if {$varno > 1} {
 				$menu add command \
-					-label "$mc::Command(variation:first)" \
+					-label " $mc::Command(variation:first)" \
+					-image $::icon::16x16::promote \
+					-compound left \
 					-command [namespace code FirstVariation] \
 					;
 			}
-			foreach {action cmd} {promote PromoteVariation remove RemoveVariation} {
-				$menu add command -label $mc::Command(variation:$action) -command [namespace code $cmd]
-			}
+			$menu add command \
+				-label " $mc::Command(variation:promote)" \
+				-image $::icon::16x16::arrowUp \
+				-compound left \
+				-command [namespace code PromoteVariation] \
+				;
+			$menu add command \
+				-label " $mc::Command(variation:remove)" \
+				-image $::fsbox::filelist::icon::16x16::delete \
+				-compound left \
+				-command [namespace code RemoveVariation] \
+				;
 			if {[::scidb::game::variation length] % 2} {
 				set state disabled
 			} else {
@@ -1982,11 +1990,15 @@ proc PopupMenu {parent position} {
 			}
 			$menu add command \
 				-state $state \
-				-label $mc::Command(variation:insert) \
+				-label " $mc::Command(variation:insert)" \
+				-image $::icon::16x16::plus \
+				-compound left \
 				-command [namespace code [list InsertMoves $parent]] \
 				;
 			$menu add command \
-				-label "$mc::Command(variation:exchange)..." \
+				-label " $mc::Command(variation:exchange)..." \
+				-image $::icon::16x16::exchange \
+				-compound left \
 				-command [namespace code [list ExchangeMoves $parent]] \
 				;
 			$menu add separator
@@ -2411,7 +2423,8 @@ proc PopupMenu {parent position} {
 
 
 proc PopupHistoryMenu {parent} {
-	::gamebar::popupMenu $parent no [$parent selection]
+	variable Vars
+	::gamebar::popupMenu $Vars(gamebar) $parent no [$parent selection]
 }
 
 
@@ -2557,7 +2570,7 @@ proc DoCopyComments {dlg} {
 	set countryList [::country::makeCountryList]
 	set srcCode [lindex $countryList [lsearch -exact -index 1 $countryList $Vars(lang:src)] 2]
 	set dstCode [lindex $countryList [lsearch -exact -index 1 $countryList $Vars(lang:dst)] 2]
-	::scidb::game::copy $srcCode $dstCode -strip $Vars(strip:orig)
+	::scidb::game::copy comments $srcCode $dstCode -strip $Vars(strip:orig)
 	destroy $dlg
 }
 

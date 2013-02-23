@@ -1320,9 +1320,9 @@ Application::loadGame(	unsigned position,
 		game.sourceIndex = index;
 		game.refresh = 0;
 
-		if (!cursor.isScratchbase())
+		if (position != ReservedPosition && !cursor.isScratchbase())
 		{
-			game.game->updateSubscriber(Game::UpdateAll);
+			refreshGame(position);
 
 			if (m_subscriber && !isNew)
 				m_subscriber->updateGameInfo(position);
@@ -1612,6 +1612,7 @@ Application::writeGame(	unsigned position,
 void
 Application::switchGame(unsigned position)
 {
+	M_REQUIRE(position != ReservedPosition);
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
@@ -2369,9 +2370,9 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 
 	game->game->setIsIrreversible(true);
 
-	if (count > 0 && !trialMode && m_subscriber)
+	if (position != ReservedPosition && count > 0 && !trialMode && m_subscriber)
 	{
-		game->game->updateSubscriber(Game::UpdateAll);
+		refreshGame(position);
 		m_subscriber->updateGameInfo(rememberPosition);
 	}
 
@@ -2854,6 +2855,132 @@ Application::getRandomGameIndex(unsigned position) const
 		return -1;
 
 	return game.cursor->view(game.viewId).randomGameIndex();
+}
+
+
+void
+Application::exportGameToClipbase(unsigned position)
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const&	game			= *m_gameMap.find(position)->second;
+	Cursor&				destination	= *clipbase(variant::toMainVariant(game.game->variant()));
+	Database&			database		= destination.base();
+	save::State			state			__attribute__((unused));
+	util::Progress		progress;
+
+	if (m_referenceBase == &destination)
+		stopUpdateTree();
+
+	state = game.cursor->database().exportGame(game.index, database);
+	M_ASSERT(state == save::Ok);
+	database.save(progress);
+	destination.updateViews();
+
+	if (m_subscriber)
+	{
+		if (m_current == &destination)
+			m_subscriber->updateList(m_updateCount++, destination.name(), destination.variant());
+
+		m_subscriber->updateDatabaseInfo(destination.name(), destination.variant());
+
+		if (!m_treeIsFrozen)
+			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+	}
+}
+
+
+void
+Application::pasteGame(unsigned from, unsigned to)
+{
+	M_REQUIRE(containsGameAt(from));
+	M_REQUIRE(containsGameAt(to));
+
+	Game const&	src = game(from);
+	Game&			dst = game(to);
+
+	Game::SubscriberP subscriber = dst.releaseSubscriber();
+
+	dst = src;
+	dst.setSubscriber(subscriber);
+
+	if (to != ReservedPosition)
+	{
+		if (m_subscriber)
+			m_subscriber->updateGameInfo(to);
+
+		refreshGame(to);
+	}
+}
+
+
+void
+Application::pasteLastClipbaseGame(unsigned position)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(position != ReservedPosition);
+	M_REQUIRE(!cursor(clipbaseName(), variant::toMainVariant(game(position).variant())).isEmpty());
+
+	variant::Type	variant	= variant::toMainVariant(game(position).variant());
+	Cursor&			source	= *clipbase(variant);
+	unsigned			index		= source.count(table::Games) - 1;
+	unsigned			current	= m_position;
+	load::State		state		__attribute__((unused));
+
+	state = loadGame(ReservedPosition, source, index);
+	M_ASSERT(state == load::Ok);
+	swapGames(ReservedPosition, position);
+	game(position).setSubscriber(game(ReservedPosition).releaseSubscriber());
+	releaseGame(ReservedPosition);
+	m_position = current; // swapGames() is modifying m_position
+
+	if (m_subscriber)
+		m_subscriber->updateGameInfo(position);
+
+	refreshGame(position);
+}
+
+
+bool
+Application::mergeGame(unsigned from, unsigned to)
+{
+	M_REQUIRE(containsGameAt(from));
+	M_REQUIRE(containsGameAt(to));
+
+	if (!game(to).merge(game(from)))
+		return false;
+
+	if (to != ReservedPosition)
+	{
+		if (m_subscriber)
+			m_subscriber->updateGameInfo(to);
+
+		refreshGame(to);
+	}
+
+	return true;
+}
+
+
+bool
+Application::mergeLastClipbaseGame(unsigned position)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(position != ReservedPosition);
+	M_REQUIRE(!cursor(clipbaseName(), variant::toMainVariant(game(position).variant())).isEmpty());
+
+	variant::Type	variant	= variant::toMainVariant(game(position).variant());
+	Cursor&			source	= *clipbase(variant);
+	unsigned			index		= source.count(table::Games) - 1;
+	load::State		state		__attribute__((unused));
+
+	state = loadGame(ReservedPosition, source, index);
+	M_ASSERT(state == load::Ok);
+
+	bool rc = mergeGame(ReservedPosition, position);
+
+	releaseGame(ReservedPosition);
+	return rc;
 }
 
 // vi:set ts=3 sw=3:

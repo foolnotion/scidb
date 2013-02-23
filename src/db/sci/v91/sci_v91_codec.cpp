@@ -713,7 +713,10 @@ Codec::doOpen(mstl::string const& encoding)
 
 
 void
-Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding, util::Progress& progress)
+Codec::doOpen(	mstl::string const& rootname,
+					mstl::string const& originalSuffix,
+					mstl::string const& encoding,
+					util::Progress& progress)
 {
 //	M_REQUIRE(encoding == sys::utf8::Codec::utf8());
 	M_ASSERT(m_gameData == 0);

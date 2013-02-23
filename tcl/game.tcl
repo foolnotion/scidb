@@ -346,10 +346,11 @@ proc load {parent position base args} {
 
 	if {$base eq $scratchbaseName} {
 		set Vars(lookup:$position) {}
-		::scidb::game::new $position $opts(-variant)
+		set variant [::util::toMainVariant $opts(-variant)]
+		::scidb::game::new $position $variant
 		set rc 1
 	} else {
-		set variant $opts(-variant)
+		set variant [::util::toMainVariant $opts(-variant)]
 		set parent [winfo toplevel $parent]
 		set options {}
 		if {$opts(-view) >= 0} { lappend options -view $opts(-view) }
@@ -1052,7 +1053,7 @@ proc UpdateHistory {_ base variant index} {
 
 			lset History $i 0 $info
 			lset History $i 2 [list [::scidb::db::get checksum $index $base $variant] [lindex $crcHist 1]]
-			lset History $i 3 [::scidb::db::get encoding $base $variant]
+			lset History $i 3 [::scidb::db::get encoding $base]
 		}
 	}
 }
@@ -1074,7 +1075,7 @@ proc UpdateHistoryEntry {pos base variant tags} {
 		set lookup($name) $value
 	}
 	set info {}
-	set encoding [::scidb::db::get encoding $base $variant]
+	set encoding [::scidb::db::get encoding $base]
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
 	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
 

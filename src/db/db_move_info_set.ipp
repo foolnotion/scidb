@@ -24,9 +24,9 @@
 // (at your option) any later version.
 // ======================================================================
 
-namespace db {
+#include "m_assert.h"
 
-inline MoveInfoSet::MoveInfoSet() {}
+namespace db {
 
 inline bool MoveInfoSet::isEmpty() const		{ return m_row.empty(); }
 

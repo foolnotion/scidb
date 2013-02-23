@@ -500,6 +500,14 @@ MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) 
 }
 
 
+MoveInfo::Type
+MoveInfo::type(unsigned char firstByte)
+{
+	M_REQUIRE(isMoveInfo(firstByte));
+	return Type(((firstByte >> 4) & 0x07) + 1);
+}
+
+
 void
 MoveInfo::decode(ByteStream& strm)
 {
@@ -508,7 +516,7 @@ MoveInfo::decode(ByteStream& strm)
 	uint8_t	u = strm.get();
 	uint32_t	v;
 
-	switch (m_content = Type(((u >> 4) & 0x07) + 1))
+	switch (m_content = type(u))
 	{
 		case None:	// cannot happen
 			break;
@@ -556,9 +564,6 @@ MoveInfo::decode(ByteStream& strm)
 			m_analysis.m_pawns      = ((v >>  7) & 0x03ff);
 			m_analysis.m_centipawns = ((v      ) & 0x007f);
 			break;
-
-		default:
-			IO_RAISE(Game, Corrupted, "corrupted game data");
 	}
 }
 
@@ -567,76 +572,29 @@ void
 MoveInfo::skip(ByteStream& strm)
 {
 	M_REQUIRE(isMoveInfo(strm.peek()));
-
-	switch (((strm.get() >> 4) & 0x07) + 1)
-	{
-		case None:	// cannot happen
-			strm.skip(1);
-			break;
-
-		case PlayersClock:
-		case ElapsedGameTime:
-		case ElapsedMoveTime:
-		case ClockTime:
-			strm.skip(3);
-			break;
-
-		case Evaluation:
-		case ElapsedMilliSeconds:
-		case VideoTime:
-			strm.skip(4);
-			break;
-
-		case CorrespondenceChessSent:
-			strm.skip(5);
-			break;
-
-		default:
-			IO_RAISE(Game, Corrupted, "corrupted game data");
-	}
+	strm.skip(length(strm.peek()));
 }
 
 
-unsigned char const*
-MoveInfo::skip(unsigned char const* strm)
+unsigned
+MoveInfo::length(unsigned char firstByte)
 {
-	M_REQUIRE(isMoveInfo(*strm));
+	M_REQUIRE(isMoveInfo(firstByte));
 
-	switch (((*strm >> 4) & 0x07) + 1)
+	switch (type(firstByte))
 	{
-		case None:	// cannot happen
-			++strm;
-			break;
-
-		case PlayersClock:
-		case ElapsedGameTime:
-		case ElapsedMoveTime:
-		case ClockTime:
-			strm += 3;
-			break;
-
-		case Evaluation:
-		case ElapsedMilliSeconds:
-		case VideoTime:
-			strm += 4;
-			break;
-
-		case CorrespondenceChessSent:
-			strm += 5;
-			break;
-
-		default:
-			IO_RAISE(Game, Corrupted, "corrupted game data");
+		case None:							return 1;
+		case PlayersClock:				// fallthru
+		case ElapsedGameTime:			// fallthru
+		case ElapsedMoveTime:			// fallthru
+		case ClockTime:					return 3;
+		case Evaluation:					// fallthru
+		case ElapsedMilliSeconds:		// fallthru
+		case VideoTime:					return 4;
+		case CorrespondenceChessSent:	return 5;
 	}
 
-	return strm;
-}
-
-
-MoveInfo::Type
-MoveInfo::type(unsigned char const firstType)
-{
-	return Type(((firstType >> 4) & 0x07) + 1);
+	return 1; // never reached
 }
 
 
