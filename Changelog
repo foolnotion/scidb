@@ -1,7 +1,7 @@
-[March 2013] =================================================================
+[February 2013] ==============================================================
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #660)
+Scidb 1.0 BETA (rev. #661)
 ------------------------------------------------------------------------------
 * Severe bug in class BlockFile fixed.
 
@@ -10,6 +10,9 @@ types of move info starting with first ply.
 
 * Configure script changed: now inotify with syscall interface will be used if
 Linux kernel is >= 2.6.13.
+
+* Added "Copy this game to clipbase", "Paste last Clipbase game", and
+"Paste game" to game bar.
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #656)
@@ -36,8 +39,6 @@ Scidb 1.0 BETA (rev. #647)
 - NAG's moved to data section
 
 * Comment editor revised.
-
-[February 2013] ==============================================================
 
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #643)

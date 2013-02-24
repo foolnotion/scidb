@@ -2191,7 +2191,7 @@ proc PopupMenu {parent position} {
 
 					set nags {}
 					for {set nag $from} {$nag <= $to} {incr nag} {
-						if {!$isStmNag($nag)} {
+						if {(14 <= $nag && $nag <= 21) || !$isStmNag($nag)} {
 							set symbol [::font::mapNagToUtfSymbol $nag]
 							if {$symbol ne $nag} {
 								$sub add command -label $symbol -command "$cmd $type $nag"

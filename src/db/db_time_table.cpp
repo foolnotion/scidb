@@ -92,10 +92,10 @@ TimeTable::set(unsigned index, MoveInfoSet const& moveInfoSet)
 {
 	unsigned size = index + 1;
 
-	if (index <= m_table.size())
-		m_table.resize(size);
+	if (m_table.size() < size)
+		ensure(size);
 
-	MoveInfoSet& set = m_table.back();
+	MoveInfoSet& set = m_table[index];
 
 	set.resize(MoveInfo::LAST);
 

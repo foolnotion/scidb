@@ -711,7 +711,7 @@ initFAM(mstl::string& error)
 {
 	if (fcntlSignal == -1)
 	{
-		fcntlSignal = SIGRTMIN + 1;
+		fcntlSignal = SIGRTMIN + 4; // LinuxThreads is using the first three
 
 		if (fcntlSignal > SIGRTMAX)
 		{

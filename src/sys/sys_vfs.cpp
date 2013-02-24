@@ -45,8 +45,6 @@ sys::vfs::freeSize(mstl::string const& path)
 int64_t
 sys::vfs::freeSize(mstl::string const& path)
 {
-	M_REQUIRE(path);
-
 	struct ::statvfs vfs;
 
 	if (::statvfs(path, &vfs) == -1)
