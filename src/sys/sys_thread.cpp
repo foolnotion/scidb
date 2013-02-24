@@ -456,7 +456,7 @@ startRoutine(void* arg)
 {
 	startRoutine(static_cast<Runnable*>(arg));
 	atomic_cmpxchg(&m_cancel, 0, 1);
-	return 0;
+	pthread_exit(0); // never returns
 }
 
 
