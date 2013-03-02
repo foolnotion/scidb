@@ -1459,7 +1459,7 @@
 ::import::mc::DifferentEncoding					"La codifica selezionata %src non corrisponde alla codifica del file %dst."
 ::import::mc::DifferentEncodingDetails			"La ricodifica del database non avrà più successo dopo questa azione."
 ::import::mc::CannotDetectFigurineSet			"Impossibile auto-rilevare un set figurine adatto."
-::import::mc::CheckImportResult					"Per favore controlla che un set figurine adatto sia stato rilevato."
+::import::mc::CheckImportResult					"Per favore controlla che un set figurine adatto sia stato rilevato: %s."
 ::import::mc::CheckImportResultDetail			"In rari casi l'auto-rilevamento fallisce per ambiguità."
 
 ::import::mc::EnterOrPaste							"Inserisci o incolla un PGN %s nel campo in alto.\nErrori legati all'importazione di %s saranno mostrati qui."

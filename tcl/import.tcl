@@ -51,7 +51,7 @@ set Rejected								"rejected"
 set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
 set CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set."
-set CheckImportResult					"Please check whether the right figurine set is detected."
+set CheckImportResult					"Please check whether the right figurine set is detected: %s."
 set CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
 set EnterOrPaste							"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
@@ -887,6 +887,8 @@ proc DoImport {position dlg} {
 		set isVar 1
 	}
 
+	array set figset {}
+
 	if {$figurine eq $::encoding::mc::AutoDetect} {
 		set content [ConvertPieces $position $content]
 		set found {}
@@ -905,10 +907,15 @@ proc DoImport {position dlg} {
 				-varno $Priv($position:varno) \
 				-trial 1 \
 			]
-			if {$state == 0 || $state == 1} {
+
+			if {$state == 1} {
 				set successfull 1
 				if {$code eq "en"} { break }
-				lappend found $code
+				set f [string range $figurine 0 end-1]
+				if {![::info exists figset($f)]} {
+					lappend found $code
+					set figset($f) 1
+				}
 			}
 		}
 
@@ -917,14 +924,22 @@ proc DoImport {position dlg} {
 		}
 
 		if {[llength $found] >= 1} {
+			set currentCode [lindex $found 0]
+			set f $::figurines::langSet($currentCode)
+			set s ""
+			append s "[lindex $f 0]=$::mc::King, "
+			append s "[lindex $f 1]=$::mc::Queen, "
+			append s "[lindex $f 2]=$::mc::Rook, "
+			append s "[lindex $f 3]=$::mc::Bishop, "
+			append s "[lindex $f 4]=$::mc::Knight"
 			if {[llength $found] > 1} {
 				::dialog::warning \
 					-parent $dlg \
-					-message $mc::CheckImportResult \
+					-buttons {ok} \
+					-message [format $mc::CheckImportResult $s] \
 					-detail $mc::CheckImportResultDetail \
 					;
 			}
-			set currentCode [lindex $found 0]
 		} else {
 			set currentCode en
 		}

@@ -4265,8 +4265,14 @@ PgnReader::parseMoveNumber(Token prevToken, int)
 {
 	// Move number: [0-9]+[.]*
 
-	while (::isdigit(*m_linePos) || *m_linePos == '.')
-		advanceLinePos();
+	if (m_linePos[0] != '0' || m_linePos[1] != '-')
+	{
+		while (::isdigit(*m_linePos))
+			advanceLinePos();
+
+		if (*m_linePos == '.')
+			advanceLinePos();
+	}
 
 	return prevToken;
 }

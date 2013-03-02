@@ -1458,7 +1458,7 @@
 ::import::mc::DifferentEncoding					"Den valda kodningen %src överensstämmer inte med filkodningen %dst."
 ::import::mc::DifferentEncodingDetails			"Databasen kan därefter inte omkoderas."
 ::import::mc::CannotDetectFigurineSet			"Kan inte hitta någon passande figuruppsättning."
-::import::mc::CheckImportResult					"Kontrollera om den riktiga figuruppsättningen hittats."
+::import::mc::CheckImportResult					"Kontrollera om den riktiga figuruppsättningen hittats: %s."
 ::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
 ::import::mc::UnsupportedVariant					"Unsuported variant rejected" ;# NEW

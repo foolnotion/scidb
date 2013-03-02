@@ -1455,7 +1455,7 @@
 ::import::mc::DifferentEncoding					"La codificación seleccinada %src no coincide con la codificación del archivo %dst."
 ::import::mc::DifferentEncodingDetails			"Recodificar la base de datos no funcionará más despué de esta acción."
 ::import::mc::CannotDetectFigurineSet			"No puede auto-detectarse un juego de piezas adecuado."
-::import::mc::CheckImportResult					"Por favor revise si se ha detectado el juego de piezas correcto."
+::import::mc::CheckImportResult					"Por favor revise si se ha detectado el juego de piezas correcto: %s."
 ::import::mc::CheckImportResultDetail			"En algunos casos la auto-detección falla debido a ambiguedades."
 
 ::import::mc::EnterOrPaste							"Ingrese o pegue en formato PGN %s en el cuadro de arriba.\nCualquier falla al importar el %s se mostrará aquí."

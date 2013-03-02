@@ -1451,7 +1451,7 @@
 ::import::mc::DifferentEncoding					"Die ausgewählte Enkodierung %src stimmt nicht mit der Dateienkodierung %dst überein."
 ::import::mc::DifferentEncodingDetails			"Eine Umkodierung wird danach nicht mehr erfolgreich sein."
 ::import::mc::CannotDetectFigurineSet			"Es konnte kein geeigneter Figurensatz ermittelt werden."
-::import::mc::CheckImportResult					"Bitte prüfen ob der richtige Figurensatz ermittelt wurde."
+::import::mc::CheckImportResult					"Bitte prüfen ob der richtige Figurensatz ermittelt wurde: %s."
 ::import::mc::CheckImportResultDetail			"In seltenen Fällen scheitert die automatische Ermittlung aufgrund von Mehrdeutigkeiten."
 
 ::import::mc::EnterOrPaste							"Eingabe oder Kopieren einer %s im PGN-Format in das obige Textfenster.\nHier werden die Fehler beim Importieren der %s angezeigt."
