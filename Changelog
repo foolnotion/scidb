@@ -3,6 +3,12 @@
 ------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #661)
 ------------------------------------------------------------------------------
+* ChessBase allows invalid e.p. squares, we will ignore the e.p. rights
+silently in such cases.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #661)
+------------------------------------------------------------------------------
 * Severe bug in class BlockFile fixed.
 
 * Modified the .scg file structure a bit: now time tables will be used for all

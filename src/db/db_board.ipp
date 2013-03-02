@@ -86,7 +86,6 @@ inline Board const& Board::emptyBoard()					{ return m_emptyBoard; }
 inline void Board::destroyCastle(color::ID color)		{ m_castle &= ~castling::bothSides(color); }
 inline void Board::setToMove(color::ID color)			{ m_stm = color; }
 inline void Board::setPlyNumber(unsigned number)		{ m_plyNumber = number; }
-inline void Board::setEnPassantSquare(Square sq)		{ setEnPassantSquare(sideToMove(), sq); }
 inline void Board::setEnPassantFyle(sq::Fyle fyle)		{ setEnPassantFyle(sideToMove(), fyle); }
 inline void Board::setHalfMoveClock(unsigned number)	{ m_halfMoveClock = number; }
 

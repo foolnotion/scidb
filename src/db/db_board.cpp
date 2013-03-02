@@ -1128,6 +1128,9 @@ Board::setEnPassantSquare(color::ID color, Square sq)
 // we don't want this check here
 //	M_REQUIRE(sq::rank(sq) == (color::isWhite(color) ? sq::Rank6 : sq::Rank3));
 
+	if (m_epSquare != sq::Null)
+		hashEnPassant();
+
 	if (PawnAttacks[color ^ 1][sq] & m_occupiedBy[color] & m_pawns)
 	{
 		m_epSquare = sq;
@@ -1139,6 +1142,23 @@ Board::setEnPassantSquare(color::ID color, Square sq)
 	}
 
 	m_epSquareFen = sq;
+}
+
+
+void
+Board::setEnPassantSquare(Square sq)
+{
+	if (sq == Null)
+	{
+		if (m_epSquare != sq::Null)
+			hashEnPassant();
+
+		m_epSquare = m_epSquareFen = Null;
+	}
+	else
+	{
+		setEnPassantSquare(sideToMove(), sq);
+	}
 }
 
 

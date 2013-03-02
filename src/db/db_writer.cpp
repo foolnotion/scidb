@@ -360,7 +360,7 @@ Writer::beginGame(TagSet const& tags)
 						}
 					}
 				}
-				else if (!isEmpty && !test(Flag_Exclude_Extra_Tags))
+				else if (!tag::isMandatory(tag) && !isEmpty && !test(Flag_Exclude_Extra_Tags))
 				{
 					writeTag(tag, value);
 				}
