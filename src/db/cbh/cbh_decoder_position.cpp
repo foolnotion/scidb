@@ -416,8 +416,10 @@ Position::setup(BitStream& strm)
 	{
 		// ChessBase allows invalid e.p. squares: we will fix this silently.
 		board.setEnPassantSquare(sq::Null);
+		status = board.validate(variant::Normal);
 	}
-	else if (status != Board::Valid)
+
+	if (status != Board::Valid)
 	{
 		IO_RAISE(Game,
 					Corrupted,

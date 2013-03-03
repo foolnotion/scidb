@@ -305,7 +305,7 @@ Position::doMove(unsigned moveNumber)
 							// ------------------------------------------------
 							// We restore the en passant square of previous ply
 							// if the last ply is a castling.
-							if ((top.epFake = move.isCastling() && epSq != sq::Null))
+							if ((top.epFake = (move.isCastling() && epSq != sq::Null)))
 								board.setEnPassantFyle(board.sideToMove(), sq::fyle(epSq));
 
 							return move;
@@ -393,6 +393,8 @@ Position::setup(ByteStream& strm, Byte h10, Byte h11)
 			board.setCastleLong(color::Black);
 		if (h10 & 0x20)
 			board.setCastleShort(color::Black);
+		if (h10 & (0x04 | 0x08 | 0x10 | 0x20))
+			board.fixBadCastlingRights();
 
 		if (h11 & 0x0f)
 		{
@@ -401,6 +403,18 @@ Position::setup(ByteStream& strm, Byte h10, Byte h11)
 
 			board.setEnPassantFyle(sq::Fyle(((h11 & 0x0f) - 1)));
 		}
+
+		Board::SetupStatus status = board.validate(variant::Normal);
+
+		if (status == Board::InvalidEnPassant)
+		{
+			// ChessBase may allow invalid e.p. squares: we will fix this silently.
+			board.setEnPassantSquare(sq::Null);
+			status = board.validate(variant::Normal);
+		}
+
+		if (status != Board::Valid)
+			IO_RAISE(Game, Corrupted, "illegal start position");
 	}
 	else
 	{

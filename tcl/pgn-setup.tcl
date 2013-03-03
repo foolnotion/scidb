@@ -287,9 +287,9 @@ proc configureText {path {fontContext ""}} {
 
 	if {$context eq "editor"} {
 		$w tag configure main -font $::font::text($fontContext:$bold)
-		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure italic -font $::font::text($fontContext:italic)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
+		$w tag configure bold -font $::font::text($fontContext:bold)
 
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold)
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)

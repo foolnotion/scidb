@@ -48,6 +48,7 @@
 
 #include "u_crc.h"
 #include "u_html.h"
+#include "u_zstream.h"
 
 #include "m_backtrace.h"
 #include "m_string.h"
@@ -90,6 +91,7 @@ static char const* CmdSuffixes				= "::scidb::misc::suffixes";
 static char const* CmdToAscii					= "::scidb::misc::toAscii";
 static char const* CmdVersion					= "::scidb::misc::version";
 static char const* CmdXml						= "::scidb::misc::xml";
+static char const* CmdZipContent				= "::scidb::misc::zipContent";
 
 static unsigned cacheCount = 0;
 
@@ -764,6 +766,24 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdZipContent(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	util::ZStream::Strings result = util::ZStream::zipContent(stringFromObj(objc, objv, 1));
+
+	Tcl_Obj* objs[result.size()];
+
+	for (unsigned i = 0; i < result.size(); ++i)
+	{
+		mstl::string const& file = result[i];
+		objs[i] = Tcl_NewStringObj(file, file.size());
+	}
+
+	setResult(result.size(), objs);
+	return TCL_OK;
+}
+
+
+static int
 cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	::db::DatabaseCodec::StringList result;
@@ -1180,6 +1200,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdToAscii,					cmdToAscii);
 	createCommand(ti, CmdVersion,					cmdVersion);
 	createCommand(ti, CmdXml,						cmdXml);
+	createCommand(ti, CmdZipContent,				cmdZipContent);
 }
 
 } // namespace misc

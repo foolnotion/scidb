@@ -263,8 +263,6 @@ proc open {parent base variant info view index {fen {}}} {
 	grid columnconfigure $bot 3 -weight 1
 	grid rowconfigure $bot {0 2} -minsize $::theme::padding
 
-	$rt.header tag configure bold -font $::font::text(browser:bold)
-	$rt.header tag configure figurine -font $::font::figurine(text:normal)
 	foreach t {white black event} {
 		$rt.header tag bind $t <ButtonPress-3> [namespace code [list PopupMenu $dlg $board $position $t]]
 	}
@@ -344,12 +342,12 @@ proc open {parent base variant info view index {fen {}}} {
 	wm deiconify $dlg
 	focus $buttons.close
 
+	SetupStyle $position no
+	$rt.header tag configure bold -font $::font::text(browser:bold)
 	NextGame $dlg $position	;# too early for ::scidb::game::go
 
 	bind $rt.header <<LanguageChanged>> [namespace code [list LanguageChanged $position]]
 	bind $rt.header <Configure> [namespace code [list ConfigureHeader $position]]
-
-	SetupStyle $position no
 
 	set Vars(subscribe:board) [list $position [namespace current]::UpdateBoard]
 	set Vars(subscribe:pgn)   [list $position [namespace current]::UpdatePGN true]
@@ -742,7 +740,7 @@ proc NextGame {parent position {step 0}} {
 		$Vars(header) configure -background $Options(background:header)
 		set Vars(modified) 0
 	}
-	UpdateHeader $position
+	::scidb::game::refresh $position -immediate
 }
 
 
@@ -833,16 +831,12 @@ proc UpdateHeader {position} {
 	$text configure -state normal
 
 	$text delete 1.0 end
-	foreach tag [$text tag names] { $text tag delete $tag }
 
 	foreach id {white black event site date annotator} {
 		set $id [::gametable::column $Vars(info) $id]
 	}
 
-	set data {}
-	foreach id {idn position eco opening variation subvar} {
-		lappend data [::gametable::column $Vars(info) $id]
-	}
+	set data $Vars(data)
 
 	if {[lindex $data 0] == 0} {
 		lset data 1 [::scidb::game::query $position fen]
@@ -864,9 +858,9 @@ proc UpdateHeader {position} {
 		$text insert end $evline event
 		$text insert end \n
 	}
-	$text insert end $white {bold white}
+	$text insert end $white {white bold}
 	$text insert end " \u2013 " bold
-	$text insert end $black {bold black}
+	$text insert end $black {black bold}
 
 	if {[string length $event] > 1} {
 		$text tag bind event <Any-Enter>			[namespace code [list EnterItem $position event]]
@@ -1027,6 +1021,22 @@ proc UpdatePGN {position data {w {}}} {
 				set Vars(active) {}
 				set Vars(next) {}
 				set Vars(next:move) {}
+			}
+
+			header {
+				if {[info exists Vars(header)]} {
+					foreach pair [lindex $node 1] {
+						lassign $pair name value
+						switch $name {
+							idn		{ set idn $value }
+							eco		{ set eco $value }
+							position { set pos $value }
+							opening	{ set opg $value }
+						}
+					}
+					set Vars(data) [list $idn $pos $eco {*}$opg]
+					UpdateHeader $position
+				}
 			}
 
 			move {
@@ -1551,7 +1561,6 @@ proc ReloadGame {parent position} {
 	variable Options
 
 	set Vars(info) [::scidb::db::get gameInfo $Vars(index) $Vars(view) $Vars(base) $Vars(variant)]
-	UpdateHeader $position
 
 	::widget::busyOperation {
 		::game::load $parent $position $Vars(base) \
@@ -1563,6 +1572,7 @@ proc ReloadGame {parent position} {
 
 	set Vars(modified) 0
 	$Vars(header) configure -background $Options(background:header)
+	::scidb::game::refresh $position -immediate
 }
 
 

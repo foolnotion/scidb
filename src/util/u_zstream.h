@@ -60,6 +60,7 @@ public:
 	static bool containsSuffix(char const* filename, char const* suffix);
 	static void setZipFileSuffixes(Strings const& suffixes);
 	static Strings const& zipFileSuffixes();
+	static Strings zipContent(char const* filename);
 
 	// is public due to technical reasons
 	struct Handle

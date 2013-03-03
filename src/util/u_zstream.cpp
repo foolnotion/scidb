@@ -216,6 +216,28 @@ find(ZZIP_DIR* dir, mstl::string const& name)
 	return false;
 }
 
+
+static void
+content(ZStream::Strings const& suffixes, ZZIP_DIR* dir, ZStream::Strings& result)
+{
+	ZZIP_DIRENT entry;
+
+	while (::zzip_dir_read(dir, &entry))
+	{
+		unsigned len = strlen(entry.d_name);
+
+		for (ZStream::Strings::const_iterator i = suffixes.begin(); i != suffixes.end(); ++i)
+		{
+			unsigned n = strlen(*i);
+
+			if (n < len && strncasecmp(entry.d_name + len - n, *i, n) == 0)
+				result.push_back(entry.d_name);
+		}
+	}
+
+	::zzip_rewinddir(dir);
+}
+
 } // namespace zzip
 
 namespace zip {
@@ -715,6 +737,33 @@ ZStream::containsSuffix(char const* filename, char const* suffix)
 			&& ::strncasecmp(filename + len - suffLen, suffix, suffLen) == 0)
 		{
 			result = true;
+		}
+	}
+
+	return result;
+}
+
+
+ZStream::Strings
+ZStream::zipContent(char const* filename)
+{
+	M_REQUIRE(	::util::misc::file::suffix(filename) == "zip"
+				|| ::util::misc::file::suffix(filename) == "ZIP");
+
+	mstl::ifstream		strm(filename, mstl::ios_base::in | mstl::ios_base::binary);
+	ZStream::Strings	result;
+
+	if (strm)
+	{
+		Handle	handle;
+		void*		cookie = &handle;
+
+		ZIP_DIR = ::zzip_dir_open(filename, 0);
+
+		if (ZIP_DIR)
+		{
+			zzip::content(m_suffixes, ZIP_DIR, result);
+			::zzip_dir_close(ZIP_DIR);
 		}
 	}
 
