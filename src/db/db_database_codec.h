@@ -227,7 +227,9 @@ protected:
 	virtual void update(mstl::string const& rootname, unsigned index, bool updateNamebase);
 	virtual void attach(mstl::string const& rootname, util::Progress& progress);
 	virtual void reloadDescription(mstl::string const& rootname);
-	virtual void reloadNamebases(mstl::string const& rootname, util::Progress& progress);
+	virtual void reloadNamebases(	mstl::string const& rootname,
+											mstl::string const& originalSuffix,
+											util::Progress& progress);
 	virtual void removeAllFiles(mstl::string const& rootname);
 
 	virtual void doOpen(mstl::string const& encoding);

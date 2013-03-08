@@ -517,7 +517,7 @@ DatabaseCodec::attach(mstl::string const&, Progress&)
 
 
 void
-DatabaseCodec::reloadNamebases(mstl::string const&, util::Progress&)
+DatabaseCodec::reloadNamebases(mstl::string const&, mstl::string const&, util::Progress&)
 {
 	M_RAISE("should not be used");
 }

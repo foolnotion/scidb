@@ -75,7 +75,7 @@ inline
 void
 DatabaseCodec::reloadNamebases(util::Progress& progress)
 {
-	reloadNamebases(m_db->m_rootname, progress);
+	reloadNamebases(m_db->m_rootname, m_db->m_suffix, progress);
 }
 
 
