@@ -46,16 +46,27 @@ que la capacidad de esta base de datos es limitada. El nombre predefinido para e
 de datos es <b>Base temporal</b>.
 </p>
  
+<!-- p>
 La base temporal es útil como una base de datos temporal, para unificar los resultados de
 búsquedas en múltiples bases de datos, o para tratar los resultados como una base de datos
 independiente. 
-</p>
-   
+</p -->
+ 
 <p>
 La Base temporal no puede cerrarse. Existe una función de menú para vaciarla
 (&#x21d2; <a href="Database-Switcher.html#Empty-Clipbase">
 Vaciar Base temporal</a>).
 </p>
+
+<span class="NEW">
+<p>
+The Clipbase keeps data in Scidb's native format and is an exception, because
+it may contain various variants concurrently. But administrative operations
+(&#x21d2; <a href="Database-Switcher.html#Maintenance">
+Maintenance</a>) can be applied to only one
+variant.
+</p>
+</span>
 
 </body>
 </html>
