@@ -38,7 +38,6 @@ The Clipbase cannot be closed. It exists a menu function for emptying the Clipba
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 
-<NEW>
 <p>
 The Clipbase keeps data in Scidb's native format and is an exception, because
 it may contain various variants concurrently. But administrative operations
@@ -46,7 +45,6 @@ it may contain various variants concurrently. But administrative operations
 %::application::database::mc::FileMaintenance%</a>) can be applied to only one
 variant.
 </p>
-</NEW>
 
 END
 

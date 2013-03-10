@@ -1,0 +1,50 @@
+<!-- ***************************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+BEGIN
+<box>
+  <table>
+    <tr>
+      <td>%::notation::mc::MoveForm(san)%</td>
+      <td>&#x2001; &Knight;f3</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(lan)%</td>
+      <td>&#x2001; &Knight;g1&#x2212;f3</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(alg)%</td>
+      <td>&#x2001; g1f3</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(eng)%</td>
+      <td>&#x2001; N&#x2212;KB3</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(cor)%</td>
+      <td>&#x2001; 7163</td>
+    </tr>
+    <tr>
+      <td>%::notation::mc::MoveForm(tel)%</td>
+      <td>&#x2001; KAHI</td>
+    </tr>
+  </table>
+</box>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

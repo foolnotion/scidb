@@ -27,10 +27,8 @@ TITLE The Database switcher
 <p>
 The database switcher provides easy navigation between databases.
 The active database will be highlighted with a yellow background.
-<NEW>
 All databases not belonging to the chess variant of the active
 database are disabled (white background).
-</NEW>
 </p>
 
 <p>
@@ -86,13 +84,11 @@ All games will be appended at the end of the database. You may
 select multiple databases simultaneously.
 </p>
 
-<NEW>
 <p>
 <menuitem>%::application::database::mc::FileMaintenance%</menuitem>
 This sub-menu provides functionality for the maintenance of databases
 (<see/> <a href="#Maintenance">%::application::database::mc::FileMaintenance%</a>).
 </p>
-</NEW>
 
 <p>
 <menuitem>%::application::database::mc::FileCreate%</menuitem>
@@ -132,17 +128,13 @@ Open a database via the database history.
 Create a new database. Only Scidb and Scid databases
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 can be created.
-<NEW>
 If the database should store games of any chess variant please use the next menu item.
-</NEW>
 </p>
 
-</NEW>
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
 Create a new database of any chess variant. Only Scidb databases
 can be created in this case.
-</NEW>
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>
@@ -161,13 +153,11 @@ Open the help dialog about the database switcher.
 <note/>This menu entry will be provided only for the
 <a href="Clipbase.html">Clipbase</a>.
 
-<NEW>
 <h3 id="Maintenance">%::application::database::mc::FileMaintenance%</h3>
 
 <p>
 This sub-menu provides functionality for the maintenance of databases.
 </p>
-</NEW>
 
 <ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
 
@@ -183,7 +173,6 @@ Create or change the description for this database.
 <note/>This is not possible for the <a href="Clipbase.html">Clipbase</a>.
 </p>
 
-<NEW>
 <p>
 <menuitem>%::application::database::mc::FileStripMoveInfo%</menuitem>
 Remove a selection of move information (for example
@@ -195,13 +184,12 @@ of FICS games.
 
 <p>
 <menuitem>%::application::database::mc::FileStripPGNTags%</menuitem>
-This feature scancs the database for extra PGN tags (such as "WhiteTeam").
+This feature scans the database for extra PGN tags (such as "WhiteTeam").
 Then, one may strip some of these extra tags from the database. Removing
 unwanted tags will accalerate position search, but not before a compaction
 ((<see/> <a href="#Compact">%::application::database::mc::FileCompact%</a>)
 of the database is done.
 </p>
-</NEW>
 
 <p id="Compact">
 <menuitem>%::application::database::mc::FileCompact%</menuitem>
