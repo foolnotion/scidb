@@ -43,10 +43,7 @@
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
 Il database attivo sarà evidenziato con uno sfondo giallo.
-<span class="NEW">
-All databases not belonging to the chess variant of the active
-database are disabled (white background).
-</span>
+Tutti i database che non appartengono alla variante di scacchi del database attivo sono disabilitati (sfondo bianco).
 </p>
 
 <p>
@@ -59,9 +56,7 @@ Fuinzionalità del selezionatore di Database:
 
 <ul>
   <li><a href="#Administration">Amministrazione</a></li>
-<span class="NEW">
-  <li><a href="#Maintenance">Maintenance</a></li>
-</span>
+  <li><a href="#Maintenance">Manutenzione</a></li>
   <li><a href="#DND">Trascinamento (Drag &amp; Drop)</a></li>
 </ul>
 
@@ -82,11 +77,7 @@ Apre una finestra che mostra diverse informazioni sul database.
 <span class="menuitem">Esporta</span>
 Apre un'interfaccia per <a href="Database-Export-Dialog.html">l'esporazione del database</a>
 in altri formati database o documenti.
-<span class="NEW">
-<br/><img src="../images/note.png" alt="note" /> If this database contains several chess variants (only possible
-in case of <a href="Clipbase.html">Clipbase</a> or PGN files) only the games
-of the active chess variant will be exported.
-</span>
+<br/><img src="../images/note.png" alt="note" /> Se il database contiene diverse varianti di scacchi (solo possibile nel caso di un <a href="Clipbase.html">Clipbase</a> o file PGN) solo le partite relative alla variante attiva saranno esportate.
 </p>
 
 <p>
@@ -102,13 +93,11 @@ selezionare più database allo stesso tempo.
 Apre la <a href="File-Selection-Dialog.html">interfaccia di selezione file</a> per la selezione di file <abbr>PGN</abbr> per l'importazione. È possibile scegliere diversi file <abbr>PGN</abbr> simultaneamente. Le partite saranno aggiunte alla fine del database.
 </p>
 
-<span class="NEW">
 <p>
-<span class="menuitem">Maintenance</span>
-This sub-menu provides functionality for the maintenance of databases
-(&#x21d2; <a href="#Maintenance">Maintenance</a>).
+<span class="menuitem">Manutenzione</span>
+Questo sotto-menu fornisce funzionalità per il mantenimento dei database
+(&#x21d2; <a href="#Maintenance">Manutenzione</a>).
 </p>
-</span>
 
 <p>
 <span class="menuitem">Crea Archivio</span>
@@ -144,17 +133,12 @@ Apre un database dallo storico dei database aperti.
 <p>
 <span class="menuitem">Nuovo Database</span>
 Crea un nuovo database. Solo database in formato Scidb o Scid (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>) possono essere creati.
-<span class="NEW">
-If the database should store games of any chess variant please use the next menu item.
-</span>
+Se il database contiene partite di una variante eterodossa degli scacchi, per favore usa il prossimo elemento nel menu.
 </p>
 
-<span class="NEW">
 <p>
 <span class="menuitem">Nuovo Database</span>
-Create a new database of any chess variant. Only Scidb databases
-can be created in this case.
-</span>
+Crea un nuovo database di qualsiasi variante eterodossa degli scacchi. Solo database con formato Scidb possono essere creati in questo caso.
 
 <p>
 <span class="menuitem">Grandezza simbolo</span>
@@ -173,13 +157,11 @@ Svuota Clipbase</span>
 <br/><img src="../images/note.png" alt="note" /> Questa funzione sarà disponibile solo per il
 <a href="Clipbase.html">Clipbase</a>.
 
-<span class="NEW">
-<h3 id="Maintenance">Maintenance</h3>
+<h3 id="Maintenance">Manutenzione</h3>
 
 <p>
-This sub-menu provides functionality for the maintenance of databases.
+Questo sotto-menu fornisce funzionalità di manutenzione del database.
 </p>
-</span>
 
 <ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
 
@@ -195,35 +177,25 @@ Crea o cambia la descrizione per questo database.
 <br/><img src="../images/note.png" alt="note" /> Questo non è possibile per il <a href="Clipbase.html">Clipbase</a>.
 </p>
 
-<span class="NEW">
 <p>
-<span class="menuitem">Strip Move Information</span>
-Remove a selection of move information (for example
-"Elapsed Move Time") from database.
-This is useful, for example, to remove subsequently unwanted information (here
-"Elapsed Milliseconds") after import
-of FICS games.
+<span class="menuitem">Rimuovi Informazioni Mossa</span>
+Rimuovi un'informazione mossa selezionata (per esempio
+"Tempo per mossa utilizzato") dal database.
+Questo è utile, ad esempio, per rimuovere informazioni non desiderate (qui
+"Tempo utilizzato in millisecondi") dopo l'importazione di partite da FICS.
 </p>
 
 <p>
-<span class="menuitem">Strip PGN Tags</span>
-This feature scancs the database for extra PGN tags (such as "WhiteTeam").
-Then, one may strip some of these extra tags from the database. Removing
-unwanted tags will accalerate position search, but not before a compaction
-((&#x21d2; <a href="#Compact">Compresso</a>)
-of the database is done.
+<span class="menuitem">Rimuovi Tag PGN</span>
+Questa funzionalità scansiona il database per ulteriori tag PGN (come "WhiteTeam").
+Quindi, si possono rimuovere questi ulteriori tag dal database. Rimuovendo tag non desiderati accelerarerà la ricerca per posizione, ma non prima della compressione ((&#x21d2; <a href="#Compact">Compresso</a>)
+del database.
 </p>
-</span>
 
-<span class="NEW">
 <p id="Compact">
 <span class="menuitem">Compresso</span>
-Compact this database, this means that all games marked for deletion
-wil be deleted physically. You cannot revert this action. This menu
-item is disabled if the database does not contain any game with a
-deletion marker.
+Comprime questo database, questo significa che tutte le partite segnate come da eliminare saranno eliminate fisicamente. Non si può tornare indietro. Questo elemento menu è disabilitato se non ci sono partite segnate per l'eliminazione.
 </p>
-</span>
 
 <h3 id="DND">Trascinamento (Drag &amp; Drop)</h3>
 
@@ -234,19 +206,13 @@ uno sfondo colorato sarà indicherà che il trascinamento di questo elemento è 
 In questo modo potrai parire i database con l'aiuto di un gestore file esterno.
 </p>
 
-<span class="NEW">
 <p>
-The list of files may also be dropped over a database field. In this case 
-the games will be copied into the destination database.
+La lista di file può anche essere trascinata nell'area del database. In questo caso le partite saranno copiate nel database di destinazione.
 </p>
 
 <p>
-To copy all games (of one chess variant) of one database to another, drag the
-games while holding the left mouse button and drop the games into the destination
-field. It is required that the destination database is writeable and not disabled.
-This is an important way to manage and copy games within databases.
+Per copiare tutte le partite (o una variante degli scacchi) da un database all'altro, trascina le partite tenendo premuto il tasto sinistro del mouse e lascia le partite nell'area di destinazione. È richiesto che il database di destinazione abbia permessi di scrittura e non disabilitato. Questo è un modo importanto per gestire e copiare partite tra database.
 </p>
-</span>
 
 </body>
 </html>

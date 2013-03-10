@@ -50,6 +50,7 @@
 
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
+#include "sys_info.h"
 
 #include "m_vector.h"
 #include "m_assert.h"
@@ -741,19 +742,45 @@ View::exportGames(mstl::string const& filename,
 		else							type = util::ZStream::Text;
 
 		mstl::ios_base::openmode mode = mstl::ios_base::out;
+		mstl::string internalName(sys::file::internalName(filename));
 
 		if (fmode == Append)
 		{
-			int64_t size;
+			if (type != util::ZStream::Zip)
+			{
+				int64_t size = 0;
+				util::ZStream::size(internalName, size);
 
-			if (type != util::ZStream::Zip && util::ZStream::size(filename, size) > 0)
 				flags |= PgnWriter::Flag_Append_Games;
+
+				if (size >= 4)
+				{
+					util::ZStream strm(internalName);
+
+					char buf[3];
+					strm.seekg(0, mstl::ios_base::beg);
+
+					if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
+						flags |= PgnWriter::Flag_Use_UTF8;
+					else
+						flags &= ~PgnWriter::Flag_Use_UTF8;
+				}
+			}
 
 			mode |= mstl::ios_base::app;
 		}
 
-		util::ZStream strm(sys::file::internalName(filename), type, mode);
-		PgnWriter writer(format::Pgn, strm, encoding, flags);
+		mstl::string useEncoding;
+
+		if (flags & PgnWriter::Flag_Use_UTF8)
+			useEncoding = sys::utf8::Codec::utf8();
+		else if (encoding == sys::utf8::Codec::utf8())
+			useEncoding = sys::utf8::Codec::latin1();
+		else
+			useEncoding = encoding;
+
+		util::ZStream strm(internalName, type, mode);
+		PgnWriter writer(format::Pgn, strm, useEncoding, flags);
 		progress.message("write-game");
 		count = exportGames(writer, copyMode, illegalRejected, log, progress);
 	}

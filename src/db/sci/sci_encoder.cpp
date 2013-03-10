@@ -691,7 +691,6 @@ Encoder::encodeTimeTableSection(TimeTable const& timeTable)
 			}
 
 			m_strm << uint8_t(size);
-
 			size = timeTable.size(col);
 
 			for (unsigned i = 0; i < size; ++i)

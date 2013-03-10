@@ -118,8 +118,10 @@ public:
 		FirstVariation,
 		PromoteVariation,
 		RemoveVariation,
+		RemoveVariations,
 		InsertMoves,
 		ExchangeMoves,
+		Merge,
 		StripMoves,
 		StripAnnotations,
 		StripComments,
@@ -379,10 +381,6 @@ public:
 	mstl::string startKey() const;
 	/// Get key of position after current position (empty if at end of main line).
 	mstl::string successorKey() const;
-	/// Get current undo action.
-	Command undoCommand() const;
-	/// Get current redo action.
-	Command redoCommand() const;
 
 	// Moving through game using subscriber
 
@@ -476,7 +474,13 @@ public:
 	/// or before the current position if @p position == BeforeMove
 	bool stripMoves(move::Position position = move::Post);
 	/// Merge given game (at current position) into current game.
-	bool merge(Game const& game);
+	bool merge(Game const& game, position::ID startPosition, move::Order order, unsigned variationDepth);
+	/// Merge given games into current game.
+	bool merge(	Game const& game1,
+					Game const& game2,
+					position::ID startPosition,
+					move::Order order,
+					unsigned variationDepth);
 	/// Remove all annotations.
 	bool stripAnnotations();
 	/// Remove all comments.
@@ -544,6 +548,19 @@ public:
 	void setIsIrreversible(bool flag);
 	/// Clear undo stack.
 	void clearUndo();
+
+	// undo - redo
+
+	/// Get current undo action.
+	Command undoCommand() const;
+	/// Get current redo action.
+	Command redoCommand() const;
+	/// Get current rollback command.
+	Command rollbackCommand() const;
+	/// Start undo/rollback point.
+	void startUndoPoint(Command command);
+	/// End undo/rollback point.
+	void endUndoPoint(unsigned action = UpdatePgn | UpdateBoard);
 
 	void setup(	unsigned linebreakThreshold,
 					unsigned linebreakMaxLineLengthMain,
@@ -650,7 +667,11 @@ private:
 	bool updateLanguageSet();
 	void incrementChangeCounter();
 	bool checkConsistency(MoveNode* node, Board& board, Force flag) const;
-	bool findPosition(Board const& wanted, edit::Key& key, Board& board, MoveNode* node) const;
+	MoveNode* findPosition(	Board wanted,
+									MoveNode* node,
+									Board board,
+									unsigned depth,
+									bool ignoreEnPassant) const;
 
 	Move parseMove(mstl::string const& san) const;
 
@@ -671,6 +692,7 @@ private:
 	unsigned			m_combinePredecessingMoves;
 	Command			m_undoCommand;
 	Command			m_redoCommand;
+	Command			m_rollbackCommand;
 	uint32_t			m_flags;
 	bool				m_isIrreversible;
 	bool				m_isModified;
@@ -694,6 +716,7 @@ private:
 #endif
 
 	static unsigned m_gameId;
+	static mstl::string m_delim;
 };
 
 } // namebase db

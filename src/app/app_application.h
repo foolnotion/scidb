@@ -281,9 +281,27 @@ public:
 	void viewClosed(Cursor const& cursor, unsigned viewId);
 	void exportGameToClipbase(unsigned position);
 	void pasteLastClipbaseGame(unsigned position);
-	bool mergeLastClipbaseGame(unsigned position);
+	bool mergeLastClipbaseGame(unsigned position,
+										db::position::ID startPosition,
+										db::move::Order moveOrder,
+										unsigned variationDepth);
+	bool mergeLastClipbaseGame(unsigned position,
+										unsigned destination,
+										db::position::ID startPosition,
+										db::move::Order moveOrder,
+										unsigned variationDepth);
+	bool mergeGame(unsigned from,
+						unsigned to,
+						db::position::ID startPosition,
+						db::move::Order moveOrder,
+						unsigned variationDepth);
+	bool mergeGame(unsigned source1,
+						unsigned source2,
+						unsigned destination,
+						db::position::ID startPosition,
+						db::move::Order moveOrder,
+						unsigned variationDepth);
 	void pasteGame(unsigned from, unsigned to);
-	bool mergeGame(unsigned from, unsigned to);
 
 	unsigned addEngine(Engine* engine);
 	void removeEngine(unsigned id);

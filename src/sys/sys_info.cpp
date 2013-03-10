@@ -219,4 +219,15 @@ sys::info::memTotal()
 
 #endif
 
+
+bool
+sys::info::isWindows()
+{
+#if defined(WIN32) || defined(WIN64)
+	return true;
+#else
+	return false;
+#endif
+}
+
 // vi:set ts=3 sw=3:

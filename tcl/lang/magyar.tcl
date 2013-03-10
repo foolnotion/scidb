@@ -583,6 +583,7 @@
 ::application::pgn::mc::Command(variation:first)		"Első változattá emelés"
 ::application::pgn::mc::Command(variation:promote)		"Változat főváltozattá emelése"
 ::application::pgn::mc::Command(variation:remove)		"változat törlése"
+::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Új főváltozat"
 ::application::pgn::mc::Command(variation:insert)		"Lépések beszúrása"
 ::application::pgn::mc::Command(variation:exchange)	"Lépések cseréje"
@@ -596,6 +597,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Megjegyzések másolása"
 ::application::pgn::mc::Command(move:comments)			"Megjegyzések áthelyezése"
 ::application::pgn::mc::Command(game:clear)				"Játszma törlése"
+::application::pgn::mc::Command(game:merge)				"Merge Game" ;# NEW
 ::application::pgn::mc::Command(game:transpose)			"Transpose Game"
 
 ::application::pgn::mc::StartTrialMode						"Start Trial Mode"
@@ -1306,12 +1308,22 @@
 ::gamebar::mc::DiscardNewGame			"Tényleg el akarod vetni ezt a játszmát?"
 ::gamebar::mc::NewGameFstPart			"Új"
 ::gamebar::mc::NewGameSndPart			"Játszma"
+::gamebar::mc::EnterGameNumber			"Enter game number" ;# NEW
 
 ::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
 ::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
 ::gamebar::mc::PasteGameFrom			"Paste game" ;# NEW
 ::gamebar::mc::MergeGameFrom			"Merge game" ;# NEW
+::gamebar::mc::LoadGameNumber			"Load game number" ;# NEW
+::gamebar::mc::ReloadCurrentGame		"Re-load current game" ;# NEW
+::gamebar::mc::MergeWithCurrentGame		"Merge with current game" ;# NEW
+::gamebar::mc::CreateNewGame			"Create new game" ;# NEW
+::gamebar::mc::StartFromCurrentPosition		"Start merge from current position" ;# NEW
+::gamebar::mc::StartFromInitialPosition		"Start merge from initial position" ;# NEW
+::gamebar::mc::NoTranspositions			"No transpositions" ;# NEW
+::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
+::gamebar::mc::VariationDepth			"Variation depth" ;# NEW
 
 ::gamebar::mc::LockGame				"Játszma zárolása"
 ::gamebar::mc::UnlockGame			"Zárolás feloldása"
@@ -1326,6 +1338,9 @@
 ::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
 ::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
 ::gamebar::mc::Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+
+### validate ###########################################################
+::validate::mc::Unlimited	"unlimited" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame		"Játszma áttekintése"

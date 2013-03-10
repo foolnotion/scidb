@@ -494,6 +494,7 @@ namespace {
             if (    depth >= 12
                 && !stop
                 && (   (bestMoveNeverChanged &&  pos.captured_piece_type())
+					     || RootMoves.size() == 1
                     || Time::now() - SearchTime > (TimeMgr.available_time() * 40) / 100))
             {
                 Value rBeta = bestValue - EasyMoveMargin;

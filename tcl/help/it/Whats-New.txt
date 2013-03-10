@@ -38,6 +38,9 @@ TITLE Novità 
   <li class="space">Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
   <li class="space">Migliorata finestra di selezione file</li>
   <li class="space">Migliorata finestra di salvataggio/sovrascrittura partite</li>
+<NEW>
+  <li class="space">Merge of games including move transpositions (optional)</li>
+</NEW>
   <li class="space">Ora il vecchio formato ChessBase (.cbf) è supportato</li>
   <li class="space">Scheda giocatore implementata</li>
   <li class="space">Archiviazione database integrata</li>

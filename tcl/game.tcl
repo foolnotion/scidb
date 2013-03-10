@@ -319,6 +319,26 @@ proc stateChanged {position modified} {
 }
 
 
+proc lock {position} {
+	variable List
+	variable MaxPosition
+
+	set rc [::application::pgn::lock $position]
+	if {$rc && $position < $MaxPosition} { lset List $position 2 1 }
+	return $rc
+}
+
+
+proc unlock {position} {
+	variable List
+	variable MaxPosition
+
+	set rc [::application::pgn::unlock $position]
+	if {$rc && $position < $MaxPosition} { lset List $position 2 0 }
+	return $rc
+}
+
+
 proc lockChanged {position locked} {
 	variable List
 	variable MaxPosition

@@ -47,7 +47,7 @@ public:
 													 | Flag_Indent_Variations
 													 | Flag_Convert_Lost_Result_To_Comment;
 
-	static unsigned const Flag_Append_Games = Flag_LAST << 4;
+	static unsigned const Flag_Append_Games = Flag_LAST << 1;
 
 	PgnWriter(	format::Type srcFormat,
 					mstl::ostream& strm,

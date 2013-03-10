@@ -120,7 +120,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Include_Position_Tag);
 		addFlag(Flag_Include_Time_Mode_Tag);
 		addFlag(Flag_Use_Shredder_FEN);
-		addFlag(Flag_Write_UTF8_BOM);
+		addFlag(Flag_Use_UTF8);
 
 		removeFlag(Flag_Exclude_Extra_Tags);
 		removeFlag(Flag_Symbolic_Annotation_Style);
@@ -143,10 +143,10 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		removeFlag(Flag_Comment_To_Html);
 		removeFlag(Flag_Use_ChessBase_Format);
 		removeFlag(Flag_Use_Scidb_Import_Format);
-		removeFlag(Flag_Write_UTF8_BOM);
+		removeFlag(Flag_Use_UTF8);
 	}
 
-	if (test(Flag_Write_UTF8_BOM) && encoding == sys::utf8::Codec::utf8())
+	if (test(Flag_Use_UTF8) && !test(Flag_Append_Games) && encoding == sys::utf8::Codec::utf8())
 		m_strm.write("\xef\xbb\xbf\n"); // UTF-8 BOM
 }
 

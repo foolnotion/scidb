@@ -582,6 +582,7 @@
 ::application::pgn::mc::Command(variation:first)		"Rendi prima variante"
 ::application::pgn::mc::Command(variation:promote)		"Promuovi variante a linea principale"
 ::application::pgn::mc::Command(variation:remove)		"Elimina variante"
+::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Nuova linea principale"
 ::application::pgn::mc::Command(variation:insert)		"Inserisci mosse"
 ::application::pgn::mc::Command(variation:exchange)	"Cambia mosse"
@@ -595,6 +596,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Copia Commenti"
 ::application::pgn::mc::Command(move:comments)			"Muovi Commenti"
 ::application::pgn::mc::Command(game:clear)				"Pulisci partita"
+::application::pgn::mc::Command(game:merge)				"Merge Game" ;# NEW
 ::application::pgn::mc::Command(game:transpose)			"Trasponi Partita"
 
 ::application::pgn::mc::StartTrialMode						"Inizia modalità di prova"
@@ -1306,12 +1308,22 @@
 ::gamebar::mc::DiscardNewGame					"Vuoi davvero buttare via questa partita?"
 ::gamebar::mc::NewGameFstPart					"Nuovo"
 ::gamebar::mc::NewGameSndPart					"Partita"
+::gamebar::mc::EnterGameNumber				"Enter game number" ;# NEW
 
 ::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
 ::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
 ::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
 ::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
+::gamebar::mc::LoadGameNumber					"Load game number" ;# NEW
+::gamebar::mc::ReloadCurrentGame				"Re-load current game" ;# NEW
+::gamebar::mc::MergeWithCurrentGame			"Merge with current game" ;# NEW
+::gamebar::mc::CreateNewGame					"Create new game" ;# NEW
+::gamebar::mc::StartFromCurrentPosition	"Start merge from current position" ;# NEW
+::gamebar::mc::StartFromInitialPosition	"Start merge from initial position" ;# NEW
+::gamebar::mc::NoTranspositions				"No transpositions" ;# NEW
+::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
+::gamebar::mc::VariationDepth					"Variation depth" ;# NEW
 
 ::gamebar::mc::LockGame							"Blocca Partita"
 ::gamebar::mc::UnlockGame						"Sblocca Partita"
@@ -1327,6 +1339,9 @@
 ::gamebar::mc::Tip(Suicide)					"In caso di stallo il lato con minor pezzi vince (secondo le regole di FISC)."
 ::gamebar::mc::Tip(Giveaway)					"In caso di stallo il lato che si trova in stallo vince (secondo le regole internazionali)"
 ::gamebar::mc::Tip(Losers)						"Il re si comporta come negli scacchi ortodossi e puoi vincere prendendo scacco matto o stallo."
+
+### validate ###########################################################
+::validate::mc::Unlimited	"unlimited" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"

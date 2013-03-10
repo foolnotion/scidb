@@ -582,6 +582,7 @@
 ::application::pgn::mc::Command(variation:first)		"Ange som huvudvariant"
 ::application::pgn::mc::Command(variation:promote)		"Flytta upp variant till huvudlinje"
 ::application::pgn::mc::Command(variation:remove)		"Radera variant"
+::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
 ::application::pgn::mc::Command(variation:mainline)	"Ny huvudlinje"
 ::application::pgn::mc::Command(variation:insert)		"Infoga drag"
 ::application::pgn::mc::Command(variation:exchange)	"Byt ut drag"
@@ -595,6 +596,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Kopiera kommentarer"
 ::application::pgn::mc::Command(move:comments)			"Flytta kommentarer"
 ::application::pgn::mc::Command(game:clear)				"Rensa parti"
+::application::pgn::mc::Command(game:merge)				"Merge Game" ;# NEW
 ::application::pgn::mc::Command(game:transpose)			"Transponera parti"
 
 ::application::pgn::mc::StartTrialMode						"Starta testmode"
@@ -1294,23 +1296,33 @@
 ::font::mc::DecreaseFontSize						"Minska fontstorlek"
 
 ### gamebar ############################################################
-::gamebar::mc::StartPosition			"Startposition"
-::gamebar::mc::Players					"Spelare"
-::gamebar::mc::Event						"Tävling"
-::gamebar::mc::Site						"Plats"
-::gamebar::mc::SeparateHeader			"Separat rubrik"
-::gamebar::mc::ShowActiveAtBottom	"Visa aktivt parti längst ned"
+::gamebar::mc::StartPosition					"Startposition"
+::gamebar::mc::Players							"Spelare"
+::gamebar::mc::Event								"Tävling"
+::gamebar::mc::Site								"Plats"
+::gamebar::mc::SeparateHeader					"Separat rubrik"
+::gamebar::mc::ShowActiveAtBottom			"Visa aktivt parti längst ned"
 ::gamebar::mc::ShowPlayersOnSeparateLines	"Visa spelare på skilda rader"
-::gamebar::mc::DiscardChanges			"Partiet har ändrats.\n\nÄr du säker att ändringarna inte ska sparas?"
-::gamebar::mc::DiscardNewGame			"Vill du verkligen kasta bort det här partiet?"
-::gamebar::mc::NewGameFstPart			"Nytt"
-::gamebar::mc::NewGameSndPart			"parti"
+::gamebar::mc::DiscardChanges					"Partiet har ändrats.\n\nÄr du säker att ändringarna inte ska sparas?"
+::gamebar::mc::DiscardNewGame					"Vill du verkligen kasta bort det här partiet?"
+::gamebar::mc::NewGameFstPart					"Nytt"
+::gamebar::mc::NewGameSndPart					"parti"
+::gamebar::mc::EnterGameNumber				"Enter game number" ;# NEW
 
 ::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
 ::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
 ::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
 ::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
+::gamebar::mc::LoadGameNumber					"Load game number" ;# NEW
+::gamebar::mc::ReloadCurrentGame				"Re-load current game" ;# NEW
+::gamebar::mc::MergeWithCurrentGame			"Merge with current game" ;# NEW
+::gamebar::mc::CreateNewGame					"Create new game" ;# NEW
+::gamebar::mc::StartFromCurrentPosition	"Start merge from current position" ;# NEW
+::gamebar::mc::StartFromInitialPosition	"Start merge from initial position" ;# NEW
+::gamebar::mc::NoTranspositions				"No transpositions" ;# NEW
+::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
+::gamebar::mc::VariationDepth					"Variation depth" ;# NEW
 
 ::gamebar::mc::LockGame							"Lås partiet"
 ::gamebar::mc::UnlockGame						"Lås upp partiet"
@@ -1321,11 +1333,14 @@
 ::gamebar::mc::ReplaceGame						"Spara: Ersätt parti i %s..."
 ::gamebar::mc::ReplaceMoves					"Spara: Ersätt bara dragen i partiet..."
 
-::gamebar::mc::Tip(Antichess)			"Det finns ingen schack, ingen rockad, kungen\ntas som en vanlig pjäs." ;# NEW
-::gamebar::mc::Tip(Suicide)			"Om patt kommer spelaren med färre\npjäser att vinna (enligt FICS regler)." ;# NEW
-::gamebar::mc::Tip(Giveaway)			"Om patt kommer spelaren som är\npatt att vinna (enligt internationella regler)." ;# NEW
+::gamebar::mc::Tip(Antichess)					"Det finns ingen schack, ingen rockad, kungen\ntas som en vanlig pjäs." ;# NEW
+::gamebar::mc::Tip(Suicide)					"Om patt kommer spelaren med färre\npjäser att vinna (enligt FICS regler)." ;# NEW
+::gamebar::mc::Tip(Giveaway)					"Om patt kommer spelaren som är\npatt att vinna (enligt internationella regler)." ;# NEW
  ;# NEW
 ::gamebar::mc::Tip(Losers)						"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+
+### validate ###########################################################
+::validate::mc::Unlimited	"unlimited" ;# NEW
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Titta igenom partiet"

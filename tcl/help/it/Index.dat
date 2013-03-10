@@ -1,7 +1,7 @@
 set Index {
   { A
     {
-      {{Administrate database} {Database-Switcher.html} {Administration}}
+      {{Amministrazione database} {Database-Switcher.html} {Administration}}
       {{Archivio} {Database-Formats.html} {Archivio-Database}}
       {{Archivio Database} {Database-Formats.html} {Archivio-Database}}
     }
@@ -9,8 +9,8 @@ set Index {
   { C
     {
       {{Clipbase} {Clipbase.html} {}}
-      {{Compress} {Database-Switcher.html} {Compact}}
-      {{Compress database} {Database-Switcher.html} {Compact}}
+      {{Compressione database} {Database-Switcher.html} {Compact}}
+      {{Comprimi} {Database-Switcher.html} {Compact}}
       {{Contatti} {Contact-Information.html} {}}
     }
   }

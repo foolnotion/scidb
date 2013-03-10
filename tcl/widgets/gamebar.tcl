@@ -40,12 +40,22 @@ set DiscardChanges					"This game has altered.\n\nDo you really want to discard 
 set DiscardNewGame					"Do you really want to throw away this game?"
 set NewGameFstPart					"New"
 set NewGameSndPart					"Game"
+set EnterGameNumber					"Enter game number"
 
 set CopyThisGameToClipbase			"Copy this game to Clipbase"
 set PasteLastClipbaseGame			"Paste last Clipbase game"
 set MergeLastClipbaseGame			"Merge last Clipbase game"
 set PasteGameFrom						"Paste game"
 set MergeGameFrom						"Merge game"
+set LoadGameNumber					"Load game number"
+set ReloadCurrentGame				"Re-load current game"
+set MergeWithCurrentGame			"Merge with current game"
+set CreateNewGame						"Create new game"
+set StartFromCurrentPosition		"Start merge from current position"
+set StartFromInitialPosition		"Start merge from initial position"
+set NoTranspositions					"No transpositions"
+set IncludeTranspositions			"Include transpositions"
+set VariationDepth					"Variation depth"
 
 set LockGame							"Lock Game"
 set UnlockGame							"Unlock Game"
@@ -524,13 +534,21 @@ proc setEmphasized {gamebar flag} {
 proc lock {gamebar id} {
 	variable Specs
 
-	if {!$Specs(locked:$id:$gamebar)} {
-		variable icon::15x15::close
+	if {$Specs(locked:$id:$gamebar)} { return 0 }
+	if {$Specs(modified:$id:$gamebar)} { set state modified } else { set state locked }
+	set Specs(locked:$id:$gamebar) 1
+	SetState $gamebar $id $state
+	return 1
+}
 
-		if {$Specs(modified:$id:$gamebar)} { set state modified } else { set state locked }
-		set Specs(locked:$id:$gamebar) 1
-		SetState $gamebar $id $state
-	}
+
+proc unlock {gamebar id} {
+	variable Specs
+
+	if {$Specs(modified:$id:$gamebar)} { return 0 }
+	set Specs(locked:$id:$gamebar) 0
+	SetState $gamebar $id unlocked
+	return 1
 }
 
 
@@ -564,6 +582,12 @@ proc getIndex {gamebar id} {
 
 proc locked? {gamebar id} {
 	return [set [namespace current]::Specs(locked:$id:$gamebar)]
+}
+
+
+proc unlocked? {gamebar id} {
+	variable Specs
+	return [expr {$Specs(state:$id:$gamebar) eq "unlocked"}]
 }
 
 
@@ -1206,6 +1230,7 @@ proc ShowSeparateColumn {gamebar {flag -1}} {
 proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remove} {
 	variable ::game::history::mc::GameHistory
 	variable ::scidb::clipbaseName
+	variable ::scidb::scratchbaseName
 	variable icon::15x15::digit
 
 	if {[::game::historyIsEmpty?]} {
@@ -1291,7 +1316,19 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		-image $::icon::16x16::document \
 		-compound left \
 		;
-
+	set actual [::scidb::db::get name]
+	if {$actual eq $scratchbaseName || [::scidb::db::count games] == 0} {
+		set state disabled
+	} else {
+		set state normal
+	}
+	$m add command \
+		-label " $mc::LoadGameNumber..." \
+		-image $::icon::16x16::none \
+		-compound left \
+		-command [namespace code [list LoadGameNumber $parent]] \
+		-state $state
+		;
 	$m add command \
 		-label " $::import::mc::ImportPgnGame" \
 		-image $::icon::16x16::filetypePGN \
@@ -1303,9 +1340,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 	lassign [::scidb::game::link? $position] base variant index
 	
 	if {$addSaveMenu && ![::game::trialMode?]} {
-		variable ::scidb::scratchbaseName
-		variable ::scidb::clipbaseName
-
 		$m add separator
 		set variant [::util::toMainVariant $variant]
 		unset -nocomplain state
@@ -1388,9 +1422,20 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-compound left \
 			-state $state \
 			;
+
+		if {$base ne $scratchbaseName} {
+			if {[::scidb::game::query modified?]} { set state normal } else { set state disabled }
+			$m add command \
+				-label " $mc::ReloadCurrentGame" \
+				-image $::icon::16x16::reload \
+				-compound left \
+				-command [namespace code [list ReloadCurrentGame $parent]] \
+				-state $state \
+				;
+		}
 	}
 
-	if {$position < 9} {
+	if {$position < 9 && $addSaveMenu} {
 		$m add separator
 		set idList [lsort -integer [getIdList $gamebar]]
 		foreach id $idList {
@@ -1400,6 +1445,8 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		}
 		$m add command \
 			-label " $mc::CopyThisGameToClipbase" \
+			-image $::icon::16x16::none \
+			-compound left \
 			-command [list ::scidb::game::copy clipbase $position] \
 			;
 		if {[::scidb::db::count games $clipbaseName $variant] == 0} {
@@ -1408,14 +1455,19 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			set state normal }
 		$m add command \
 			-label " $mc::PasteLastClipbaseGame" \
+			-image $::icon::16x16::none \
+			-compound left \
 			-command [namespace code [list PasteFromClipbase $gamebar $position]] \
 			-state $state \
 			;
-#		$m add command \
-#			-label " $mc::MergeLastClipbaseGame" \
-#			-command [list ::scidb::game::merge clipbase $position] \
-#			-state $state \
-#			;
+		set cmd [namespace code [list MergeGame $parent $mc::MergeLastClipbaseGame clipbase $position]]
+		$m add command \
+			-label " $mc::MergeLastClipbaseGame..." \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command $cmd \
+			-state $state \
+			;
 		if {[llength $idList] <= 1} { set state disabled } else { set state normal }
 		set sub [menu $m.pasteFrom]
 		foreach id $idList {
@@ -1431,24 +1483,28 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		$m add cascade \
 			-menu $sub \
 			-label " $mc::PasteGameFrom" \
+			-image $::icon::16x16::none \
+			-compound left \
 			-state $state \
 			;
-#		set sub [menu $m.mergeFrom]
-#		foreach id $idList {
-#			if {$id != $position} {
-#				$sub add command \
-#					-label " $players($id)" \
-#					-image $digit([expr {$id + 1}]) \
-#					-compound left \
-#					-command [list ::scidb::game::merge $id $position] \
-#					;
-#			}
-#		}
-#		$m add cascade \
-#			-menu $sub \
-#			-label " $mc::MergeGameFrom" \
-#			-state $state \
-#			;
+		set sub [menu $m.mergeFrom]
+		foreach id $idList {
+			if {$id != $position} {
+				$sub add command \
+					-label " $players($id)" \
+					-image $digit([expr {$id + 1}]) \
+					-compound left \
+					-command [namespace code [list MergeGame $parent $mc::MergeGameFrom $id $position]] 
+					;
+			}
+		}
+		$m add cascade \
+			-menu $sub \
+			-label " $mc::MergeGameFrom..." \
+			-image $::icon::16x16::none \
+			-compound left \
+			-state $state \
+			;
 	}
 
 	if {$clearHistory == 2} {
@@ -1488,9 +1544,200 @@ proc PasteGameFrom {parent from to} {
 }
 
 
+proc MergeGame {parent title from to} {
+	variable Merge_
+	variable Position_
+	variable Transposition_
+	variable Depth_
+	variable Action_
+
+	set dlg [tk::toplevel $parent.descr -class Dialog]
+	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
+	pack $top -fill both
+
+	set Merge_ current
+	set Action_ cancel
+	set Position_ initial
+	set Transposition_ ignore
+	set Depth_ ""
+
+	ttk::radiobutton $top.mergeCurrent \
+		-text $mc::MergeWithCurrentGame \
+		-variable [namespace current]::Merge_ \
+		-value current \
+		;
+	ttk::radiobutton $top.mergeNewGame \
+		-text $mc::CreateNewGame \
+		-variable [namespace current]::Merge_ \
+		-value new \
+		;
+	ttk::separator $top.sep1
+	ttk::radiobutton $top.posInitial \
+		-text $mc::StartFromInitialPosition \
+		-variable [namespace current]::Position_ \
+		-value initial \
+		;
+	ttk::radiobutton $top.posCurrent \
+		-text $mc::StartFromCurrentPosition \
+		-variable [namespace current]::Position_ \
+		-value current \
+		;
+	ttk::separator $top.sep2
+	ttk::radiobutton $top.ignoreTrans \
+		-text $mc::NoTranspositions \
+		-variable [namespace current]::Transposition_ \
+		-value ignore \
+		;
+	ttk::radiobutton $top.considerTrans \
+		-text $mc::IncludeTranspositions \
+		-variable [namespace current]::Transposition_ \
+		-value consider \
+		;
+	ttk::separator $top.sep3
+	ttk::label $top.ldepth -text "$mc::VariationDepth:"
+	ttk::spinbox $top.depth \
+		-textvar [namespace current]::Depth_ \
+		-from 0 \
+		-to 9999999999 \
+		-width 12 \
+		-exportselection false \
+		;
+	::validate::spinboxInt $top.depth -clamp no -unlimited 1
+	::theme::configureSpinbox $top.depth
+	grid $top.mergeCurrent  -row  1 -column 1 -columnspan 3 -sticky ew
+	grid $top.mergeNewGame  -row  3 -column 1 -columnspan 3 -sticky ew
+	grid $top.sep1          -row  5 -column 0 -columnspan 5 -sticky ew
+	grid $top.posInitial    -row  7 -column 1 -columnspan 3 -sticky ew
+	grid $top.posCurrent    -row  9 -column 1 -columnspan 3 -sticky ew
+	grid $top.sep2          -row 11 -column 0 -columnspan 5 -sticky ew
+	grid $top.ignoreTrans   -row 13 -column 1 -columnspan 3 -sticky ew
+	grid $top.considerTrans -row 15 -column 1 -columnspan 3 -sticky ew
+	grid $top.sep3          -row 17 -column 0 -columnspan 5 -sticky ew
+	grid $top.ldepth        -row 19 -column 1
+	grid $top.depth         -row 19 -column 3 -sticky w
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid columnconfigure $top {3} -weight 1
+	grid rowconfigure $top {0 2 4 6 8 10 12 14 16 18 20} -minsize $::theme::pady
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.cancel configure -command [list set [namespace current]::Action_ "cancel"]
+	$dlg.ok configure -command [list set [namespace current]::Action_ "ok"]
+
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $title
+	wm resizable $dlg false false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.mergeCurrent
+	::ttk::grabWindow $dlg
+	tkwait variable [namespace current]::Action_
+	::ttk::releaseGrab $dlg
+	::widget::busyCursor on
+
+	if {$Action_ eq "ok"} {
+		if {$Merge_ eq "new"} {
+			set unlockedFrom [::game::lock $from]
+			set unlockedTo [::game::lock $to]
+			set newpos [::game::new [winfo parent $dlg] -variant [::scidb::db::get variant?]]
+			set rc 0
+			if {$newpos >= 0} {
+				set rc [::scidb::game::merge $from $to $Position_ $Transposition_ $Depth_ $newpos]
+			}
+			if {!$rc} {
+				if {$unlockedFrom} { ::game::unlock $from }
+				if {$unlockedTo }  { ::game::unlock $to }
+			}
+		} else {
+			::scidb::game::merge $from $to $Position_ $Transposition_ $Depth_
+		}
+	}
+
+	::widget::busyCursor off
+	destroy $dlg
+}
+
+
 proc ImportGame {parent} {
 	set pos [::game::new $parent]
 	if {$pos >= 0} { ::import::openEdit $parent $pos }
+}
+
+
+proc ReloadCurrentGame {parent} {
+	set reply [::dialog::question -parent $parent -message $::engine::mc::ThrowAwayChanges]
+	if {$reply eq "yes"} { ::scidb::game::reload }
+}
+
+
+proc LoadGameNumber {parent} {
+	variable Action_
+
+	set dlg [tk::toplevel $parent.descr -class Dialog]
+	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
+	pack $top -fill both
+
+	ttk::label $top.enter -text "$mc::EnterGameNumber:"
+	set max [::scidb::db::count games [::scidb::db::get variant?]]
+	set cmd [namespace code [list CheckOkButton $dlg $max]]
+	::ttk::spinbox $top.number -from 1 -to $max -width 10 -exportselection false 
+	$top.number delete 0 end
+	$top.number insert 0 1
+	::validate::spinboxInt $top.number -clamp no -vcmd $cmd
+	::theme::configureSpinbox $top.number
+
+	grid $top.enter  -row 1 -column 1
+	grid $top.number -row 1 -column 3
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.cancel configure -command [list set [namespace current]::Action_ "cancel"]
+	$dlg.ok configure -command [list set [namespace current]::Action_ "ok"]
+
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $mc::LoadGameNumber
+	wm resizable $dlg false false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.number
+	::ttk::grabWindow $dlg
+	tkwait variable [namespace current]::Action_
+	::ttk::releaseGrab $dlg
+	::widget::busyCursor on
+
+	if {$Action_ eq "ok"} {
+		set number [string trim [$top.number get]]
+		set dlg [winfo toplevel $top.number]
+		set position [::scidb::game::current]
+		if {[::application::pgn::unlocked? $position]} {
+			set view [lindex [::game::getSourceInfo $position] 2]
+		} else {
+			set view -1
+		}
+		::game::new [winfo parent $dlg] \
+			-base [::scidb::db::get name] \
+			-variant [::scidb::db::get variant?] \
+			-number [expr {$number - 1}] \
+			-view $view \
+			;
+	}
+
+	::widget::busyCursor off
+	destroy $dlg
+}
+
+
+proc CheckOkButton {dlg max value valid} {
+	if {$valid && [string is integer -strict $value] && $value >= 1 && $value <= $max} {
+		set state normal
+	} else {
+		set state disabled
+	}
+	$dlg.ok configure -state $state
 }
 
 

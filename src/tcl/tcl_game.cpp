@@ -103,6 +103,7 @@ static char const* CmdPush				= "::scidb::game::push";
 static char const* CmdQuery			= "::scidb::game::query";
 static char const* CmdRefresh			= "::scidb::game::refresh";
 static char const* CmdRelease			= "::scidb::game::release";
+static char const* CmdReload			= "::scidb::game::reload";
 static char const* CmdReplace			= "::scidb::game::replace";
 static char const* CmdSave				= "::scidb::game::save";
 static char const* CmdSetup			= "::scidb::game::setup";
@@ -160,6 +161,7 @@ toString(Game::Command command)
 		case Game::FirstVariation:		return "variation:first";
 		case Game::PromoteVariation:	return "variation:promote";
 		case Game::RemoveVariation:	return "variation:remove";
+		case Game::RemoveVariations:	return "variation:remove:n";
 		case Game::NewMainline:			return "variation:mainline";
 		case Game::InsertMoves:			return "variation:insert";
 		case Game::ExchangeMoves:		return "variation:exchange";
@@ -172,6 +174,7 @@ toString(Game::Command command)
 		case Game::CopyComments:		return "copy:comments";
 		case Game::MoveComments:		return "move:comments";
 		case Game::Clear:					return "game:clear";
+		case Game::Merge:					return "game:merge";
 		case Game::Transpose:			return "game:transpose";
 	}
 
@@ -1341,6 +1344,15 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (view >= 0)
 		scidb->bindGameToView(position, view, Application::DontUpdateGameInfo);
 
+	return TCL_OK;
+}
+
+
+static int
+cmdReload(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
+	setResult(::stateToInt(scidb->loadGame(position)));
 	return TCL_OK;
 }
 
@@ -3306,18 +3318,59 @@ cmdPaste(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* arg = stringFromObj(objc, objv, 1);
+	char const* arg	= stringFromObj(objc, objv, 1);
+	char const* pos	= stringFromObj(objc, objv, 3);
+	char const* trans	= stringFromObj(objc, objv, 4);
 
-	if (::strcmp(arg, "clipbase") == 0)
+	unsigned variationDepth = unsigned(-1);
+
+	if (isdigit(*stringFromObj(objc, objv, 5)))
+		variationDepth = unsignedFromObj(objc, objv, 5);
+
+	position::ID	startPosition;
+	move::Order		moveOrder;
+
+	if (::strcmp(pos, "initial") == 0)
+		startPosition = position::Initial;
+	else if (::strcmp(pos, "current") == 0)
+		startPosition = position::Current;
+	else
+		return error(CmdMerge, nullptr, nullptr, "unexpected position '%s'", pos);
+
+	if (::strcmp(trans, "ignore") == 0)
+		moveOrder = move::Strict;
+	else if (::strcmp(trans, "consider") == 0)
+		moveOrder = move::Transposition;
+	else
+		return error(CmdMerge, nullptr, nullptr, "unexpected order '%s'", trans);
+
+	unsigned from = unsignedFromObj(objc, objv, 1);
+
+	if (objc > 6)
 	{
-		setResult(scidb->mergeLastClipbaseGame(unsignedFromObj(objc, objv, 1)));
+		unsigned target = unsignedFromObj(objc, objv, 6);
+
+		if (::strcmp(arg, "clipbase") == 0)
+		{
+			setResult(scidb->mergeLastClipbaseGame(from, target, startPosition, moveOrder, variationDepth));
+		}
+		else
+		{
+			unsigned to = unsignedFromObj(objc, objv, 2);
+			setResult(scidb->mergeGame(from, to, target, startPosition, moveOrder, variationDepth));
+		}
 	}
 	else
 	{
-		unsigned from	= unsignedFromObj(objc, objv, 1);
-		unsigned to		= unsignedFromObj(objc, objv, 2);
-
-		setResult(scidb->mergeGame(from, to));
+		if (::strcmp(arg, "clipbase") == 0)
+		{
+			setResult(scidb->mergeLastClipbaseGame(from, startPosition, moveOrder, variationDepth));
+		}
+		else
+		{
+			unsigned to = unsignedFromObj(objc, objv, 2);
+			setResult(scidb->mergeGame(from, to, startPosition, moveOrder, variationDepth));
+		}
 	}
 
 	return TCL_OK;
@@ -3364,6 +3417,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdQuery,			cmdQuery);
 	createCommand(ti, CmdRefresh,			cmdRefresh);
 	createCommand(ti, CmdRelease,			cmdRelease);
+	createCommand(ti, CmdReload,			cmdReload);
 	createCommand(ti, CmdReplace,			cmdReplace);
 	createCommand(ti, CmdSave,				cmdSave);
 	createCommand(ti, CmdSetup,			cmdSetup);

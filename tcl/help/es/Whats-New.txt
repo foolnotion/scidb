@@ -47,6 +47,7 @@ TITLE Novedades
   <li class="space">Diálogo de selección de archivos mejorado</li>
   <li class="space">Diálogo de Guardar/Reemplazar partida mejorado</li>
 <NEW>
+  <li class="space">Merge of games including move transpositions (optional)</li>
   <li class="space">Old ChessBase format (.cbf) is now supported as well</li>
 </NEW>
   <li class="space">Implementación de las Fichas de los jugadores</li>

@@ -581,6 +581,7 @@
 ::application::pgn::mc::Command(variation:first)		"Als erste Variante setzen"
 ::application::pgn::mc::Command(variation:promote)		"Variante als Hauptfortsetzung"
 ::application::pgn::mc::Command(variation:remove)		"Variante entfernen"
+::application::pgn::mc::Command(variation:remove:n)	"Varianten entfernen"
 ::application::pgn::mc::Command(variation:mainline)	"Neue Hauptvariante"
 ::application::pgn::mc::Command(variation:insert)		"Züge einfügen"
 ::application::pgn::mc::Command(variation:exchange)	"Züge austauschen"
@@ -594,6 +595,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Kommentare kopieren"
 ::application::pgn::mc::Command(move:comments)			"Kommentare verschieben"
 ::application::pgn::mc::Command(game:clear)				"Partie leeren"
+::application::pgn::mc::Command(game:merge)				"Partie zusammenfügen"
 ::application::pgn::mc::Command(game:transpose)			"Partie transponieren"
 
 ::application::pgn::mc::StartTrialMode						"Starte Variantentest"
@@ -1299,12 +1301,22 @@
 ::gamebar::mc::DiscardNewGame					"Soll diese Partie tatsächlich verworfen werden?"
 ::gamebar::mc::NewGameFstPart					"Neue"
 ::gamebar::mc::NewGameSndPart					"Partie"
+::gamebar::mc::EnterGameNumber				"Eingabe der Partienummer"
 
 ::gamebar::mc::CopyThisGameToClipbase		"Diese Partie in die Ablage-Datenbank kopieren"
 ::gamebar::mc::PasteLastClipbaseGame		"Letzte Partie aus Ablage-Datenbank einfügen"
 ::gamebar::mc::MergeLastClipbaseGame		"Mit letzter Partie aus Ablage-Datenbank zusammenfügen"
 ::gamebar::mc::PasteGameFrom					"Partie einfügen"
 ::gamebar::mc::MergeGameFrom					"Mit Partie zusammenfügen"
+::gamebar::mc::LoadGameNumber					"Lade Partie Nummer"
+::gamebar::mc::ReloadCurrentGame				"Partie neu laden"
+::gamebar::mc::MergeWithCurrentGame			"In die aktuelle Partie einfügen"
+::gamebar::mc::CreateNewGame					"Eine neue Partie kreieren"
+::gamebar::mc::StartFromCurrentPosition	"Einfügen von der aktuellen Position starten"
+::gamebar::mc::StartFromInitialPosition	"Einfügen von der Anfangsposition starten"
+::gamebar::mc::NoTranspositions				"Keine Zugumstellungen"
+::gamebar::mc::IncludeTranspositions		"Zugumstellungen miteinbeziehen"
+::gamebar::mc::VariationDepth					"Variantentiefe"
 
 ::gamebar::mc::LockGame							"Partie sperren"
 ::gamebar::mc::UnlockGame						"Partie freigeben"
@@ -1319,6 +1331,9 @@
 ::gamebar::mc::Tip(Suicide)					"Im Falle von Patt gewinnt die Seite mit den wenigeren\nFiguren (gemäß den FICS-Regeln)."
 ::gamebar::mc::Tip(Giveaway)					"Im Falle von Patt gewinnt die pattgesetzte Seite\n(gemäß den internationalen Regeln)."
 ::gamebar::mc::Tip(Losers)						"Der König verhält sich wie im normalen Schach, und man\nkann gewinnen indem man Matt oder Patt wird."
+
+### validate ###########################################################
+::validate::mc::Unlimited	"unbeschränkt"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Partien-Browser"

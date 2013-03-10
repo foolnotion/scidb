@@ -38,6 +38,7 @@ TITLE Was ist neu?
   <li class="space">Partien-Browser: Vollbild-Modus, sowie Maximieren/Minimieren des Brettes, hinzugefügt</li>
   <li class="space">Dateiauswahldialog erweitert und verbessert</li>
   <li class="space">Partie-Speichern/Ersetzen-Dialog verbessert</li>
+  <li class="space">Verschmelzen von Partien mit optionaler Einbezugnahme von Zugumstellungen</li>
   <li class="space">Das alte ChessBase-Format (.cbf) wird nun ebenfalls unterstützt</li>
   <li class="space">Spieler-Karteikarten implementiert</li>
   <li class="space">Datenbankarchivierung integriert</li>

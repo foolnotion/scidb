@@ -34,6 +34,7 @@ inline Eco const& Game::ecoCode() const				{ return m_eco; }
 inline uint32_t Game::flags() const						{ return m_flags; }
 inline edit::Key const& Game::currentKey() const	{ return m_currentKey; }
 inline move::Notation Game::moveStyle() const		{ return m_moveStyle; }
+inline Game::Command Game::rollbackCommand() const	{ return m_rollbackCommand; }
 
 inline bool Game::isMainline() const					{ return m_currentKey.level() == 0; }
 inline bool Game::isVariation() const					{ return m_currentKey.level() > 0; }

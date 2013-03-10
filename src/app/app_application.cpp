@@ -1345,6 +1345,9 @@ Application::loadGame(unsigned position)
 {
 	M_REQUIRE(containsGameAt(position));
 
+	if (position == InvalidPosition)
+		position = m_position;
+
 	EditGame const& game = *m_gameMap.find(position)->second;
 	return loadGame(position, *game.cursor, game.index);
 }
@@ -1479,7 +1482,7 @@ Application::swapGames(unsigned position1, unsigned position2)
 
 	if (!containsGameAt(position1))
 	{
-		GameP copy = m_gameMap[position1];
+		GameP& copy = m_gameMap[position1];
 		GameMap::iterator i = m_gameMap.find(position2);
 
 		copy = i->second;
@@ -2942,20 +2945,22 @@ Application::pasteLastClipbaseGame(unsigned position)
 
 
 bool
-Application::mergeGame(unsigned from, unsigned to)
+Application::mergeGame(	unsigned from,
+								unsigned to,
+								position::ID startPosition,
+								move::Order moveOrder,
+								unsigned variationDepth)
 {
 	M_REQUIRE(containsGameAt(from));
 	M_REQUIRE(containsGameAt(to));
 
-	if (!game(to).merge(game(from)))
+	if (!game(to).merge(game(from), startPosition, moveOrder, variationDepth))
 		return false;
 
 	if (to != ReservedPosition)
 	{
 		if (m_subscriber)
 			m_subscriber->updateGameInfo(to);
-
-		refreshGame(to);
 	}
 
 	return true;
@@ -2963,7 +2968,35 @@ Application::mergeGame(unsigned from, unsigned to)
 
 
 bool
-Application::mergeLastClipbaseGame(unsigned position)
+Application::mergeGame(	unsigned source1,
+								unsigned source2,
+								unsigned destination,
+								position::ID startPosition,
+								move::Order moveOrder,
+								unsigned variationDepth)
+{
+	M_REQUIRE(containsGameAt(source1));
+	M_REQUIRE(containsGameAt(source2));
+	M_REQUIRE(containsGameAt(destination));
+
+	if (!game(destination).merge(game(source1), game(source2), startPosition, moveOrder, variationDepth))
+		return false;
+
+	if (destination != ReservedPosition)
+	{
+		if (m_subscriber)
+			m_subscriber->updateGameInfo(destination);
+	}
+
+	return true;
+}
+
+
+bool
+Application::mergeLastClipbaseGame(	unsigned position,
+												position::ID startPosition,
+												move::Order moveOrder,
+												unsigned variationDepth)
 {
 	M_REQUIRE(containsGameAt(position));
 	M_REQUIRE(position != ReservedPosition);
@@ -2977,7 +3010,45 @@ Application::mergeLastClipbaseGame(unsigned position)
 	state = loadGame(ReservedPosition, source, index);
 	M_ASSERT(state == load::Ok);
 
-	bool rc = mergeGame(ReservedPosition, position);
+	bool rc = mergeGame(ReservedPosition, position, startPosition, moveOrder, variationDepth);
+
+	releaseGame(ReservedPosition);
+	return rc;
+}
+
+
+bool
+Application::mergeLastClipbaseGame(	unsigned position,
+												unsigned destination,
+												position::ID startPosition,
+												move::Order moveOrder,
+												unsigned variationDepth)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(containsGameAt(destination));
+	M_REQUIRE(position != ReservedPosition);
+	M_REQUIRE(!cursor(clipbaseName(), variant::toMainVariant(game(position).variant())).isEmpty());
+
+	variant::Type	variant	= variant::toMainVariant(game(position).variant());
+	Cursor&			source	= *clipbase(variant);
+	unsigned			index		= source.count(table::Games) - 1;
+	load::State		state		__attribute__((unused));
+
+	state = loadGame(ReservedPosition, source, index);
+	M_ASSERT(state == load::Ok);
+
+	bool rc = mergeGame(	ReservedPosition,
+								position,
+								destination,
+								startPosition,
+								moveOrder,
+								variationDepth);
+
+	if (destination != ReservedPosition)
+	{
+		if (m_subscriber)
+			m_subscriber->updateGameInfo(destination);
+	}
 
 	releaseGame(ReservedPosition);
 	return rc;

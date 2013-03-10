@@ -37,6 +37,7 @@
 
 #include "m_ofstream.h"
 #include "m_string.h"
+#include "m_vector.h"
 #include "m_assert.h"
 
 #include <stdio.h>
@@ -1305,10 +1306,20 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						for (unsigned line = 0; engine->snapshotExists(line); ++line)
 						{
 							if (!engine->snapshotLine(line).isEmpty())
-							{
-								game->addVariation(engine->snapshotLine(line));
 								rc = true;
+						}
+
+						if (rc)
+						{
+							game->startUndoPoint(Game::RemoveVariations);
+
+							for (unsigned line = 0; engine->snapshotExists(line); ++line)
+							{
+								if (!engine->snapshotLine(line).isEmpty())
+									game->addVariation(engine->snapshotLine(line));
 							}
+
+							game->endUndoPoint(Game::UpdatePgn);
 						}
 					}
 					else

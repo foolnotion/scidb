@@ -129,7 +129,6 @@ public:
 	unsigned countComments() const;
 	unsigned countComments(mstl::string const& lang) const;
 	unsigned countVariations() const;
-	unsigned count() const;
 
 	MoveNode* getLineStart();
 	MoveNode* getLineEnd();
@@ -168,6 +167,7 @@ public:
 	void replaceMarks(MarkSet const& marks);
 	void swapComment(Comment& comment, move::Position position);
 	void setComment(Comment const& comment, move::Position position);
+	void merge(MoveNode const* node);
 	void setInfoFlag(bool flag = true);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
 	void setThreefoldRepetition(bool flag);
@@ -201,6 +201,12 @@ public:
 	MoveNode* replaceVariation(unsigned varNo, MoveNode* node);
 
 	MoveNode* clone() const;
+	MoveNode* cloneThis() const;
+
+#ifndef NDEBUG
+	void dump() const;
+	void dump(unsigned level) const;
+#endif
 
 private:
 

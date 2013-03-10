@@ -248,6 +248,7 @@ array set release {
 
 
 set instableTkLibrary ""
+
 set MinGCCVersion "3.4"
 set MinClangVersion "3.1"
 
@@ -343,6 +344,10 @@ proc detectUnixDistribution {} {
         AIX {
             set distribution(revision) [exec oslevel]
         }
+        HP-UX {
+            set distribution(os) "HP-UX"
+            set distribution(revision) [exec uname -v]
+        }
         Linux {
             if {[file readable /etc/lsb-release]} {
                 DetectDebian
@@ -359,6 +364,7 @@ proc detectUnixDistribution {} {
                 set fd [open /etc/debian_version r]; gets $fd line; close $fd
                 set distribution(revision) $line
             }
+
         }
     }
 
@@ -503,7 +509,7 @@ proc FindTclTkPathsAqua {} {
 #    Returns 1 on success, 0 on failure.
 #
 proc findTclTkPaths {} {
-    global tclv tclv_nodot configure package tcl_platform
+    global tclv tclv_nodot configure package tcl_platform bitmode
 
     if {$tcl_platform(os) eq "Darwin" && [FindTclTkPathsAqua]} {
         # Frameworks found, stop looking for paths:
@@ -541,17 +547,34 @@ proc findTclTkPaths {} {
     # NOTE: All these entries below are required for the corrupted Unix
     # systems (Ubuntu >= 11.04, and others). Sane Unix systems have
     # common links (like above).
-    foreach dir {alpha-linux-gnu
-                 arm-linux-gnueabi arm-linux-gnueabihf
-                 i386-gnu i386-kfreebsd-gnu i386-linux-gnu
-                 ia64-linux-gnu
-                 mips-linux-gnu
-                 mipsel-linux-gnu
-                 powerpc-linux-gnu powerpc-linux-gnuspe
-                 s390-linux-gnu s390x-linux-gnu
-                 sh4-linux-gnu
-                 sparc-linux-gnu sparc64-linux-gnu
-                 x86_64-kfreebsd-gnu x86_64-linux-gnu} {
+    switch [expr {8*$tcl_platform(wordSize)}] {
+        32 { set dirs { i386-linux-gnu
+                        i386-gnu
+                        i386-kfreebsd-gnu
+                        hppa-linux-gnu
+                        mips-linux-gnu
+                        ppc-linux-gnu
+                        s390-linux-gnu
+                        sparc-linux-gnu} }
+        64 { set dirs { x86_64-linux-gnu
+                        x86_64-gnu
+                        x86_64-kfreebsd-gnu
+                        hppa64-linux-gnu
+                        ia64-linux-gnu
+                        mips64-linux-gnu
+                        ppc64-linux-gnu
+                        s390x-linux-gnu
+                        sparc64-linux-gnu} }
+    }
+    set dirs [lappend dirs                     \
+        alpha-linux-gnu                        \
+        arm-linux-gnueabi arm-linux-gnueabihf  \
+        m68k-linux-gnu                         \
+        mips-linux-gnu mipsel-linux-gnu        \
+        powerpc-linux-gnu powerpc-linux-gnuspe \
+        sh4-linux-gnu                          \
+    ]
+    foreach dir $dirs {
         lappend path(x,libraries,usr) /usr/lib/$dir
         lappend path(x,libraries,local) /usr/local/lib/$dir
     }
@@ -1603,8 +1626,8 @@ proc checkGCC {cc} {
         #
         # We use "Wno-cpp" to suppress this stupid "Attemot to use
         # kernel headers from user space" warning (the inventor
-        # of this warning is without any serious experience in
-        # software development).
+        # of this warning has no serious experience in software
+        # development).
         foreach opt {-fno-stack-protector -Wno-cpp} {
             set script [regsub -all %FLAG% $TestCompilerFlag $opt]
             set script [regsub -all __CC__ $script $environment($cc)]
@@ -1756,7 +1779,7 @@ proc detectCores {} {
 #
 proc writeMakefile {{type ""}} {
     global option defaults environment package compiler warnings
-    global feature configure subdir tcl_platform engines
+    global feature configure subdir tcl_platform engines bitmode
 
     set extra_c_flags "-pipe -Wno-format-security"
     foreach opt [array names compiler -*] {

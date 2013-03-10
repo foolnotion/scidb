@@ -1425,7 +1425,7 @@ proc MakeSymbolMenu {w menu} {
 			set nags {}
 			for {set nag $from} {$nag <= $to} {incr nag} {
 				if {$nag in $nagSet} {
-					set symbol [::font::mapNagToSymbol $nag]
+					set symbol [::font::mapNagToUtfSymbol $nag]
 					$sub add command -label $symbol -command [namespace code [list InsertNag $w $nag]]
 					lappend nags $nag
 				}

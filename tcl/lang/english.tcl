@@ -579,6 +579,7 @@
 ::application::pgn::mc::Command(variation:first)		"Make First Variation"
 ::application::pgn::mc::Command(variation:promote)		"Promote Variation to Main Line"
 ::application::pgn::mc::Command(variation:remove)		"Delete Variation"
+::application::pgn::mc::Command(variation:remove:n)	"Delete Variations"
 ::application::pgn::mc::Command(variation:mainline)	"New Mainline"
 ::application::pgn::mc::Command(variation:insert)		"Insert Moves"
 ::application::pgn::mc::Command(variation:exchange)	"Exchange Moves"
@@ -592,6 +593,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Copy Comments"
 ::application::pgn::mc::Command(move:comments)			"Move Comments"
 ::application::pgn::mc::Command(game:clear)				"Clear Game"
+::application::pgn::mc::Command(game:merge)				"Merge Game"
 ::application::pgn::mc::Command(game:transpose)			"Transpose Game"
 
 ::application::pgn::mc::StartTrialMode						"Start Trial Mode"
@@ -1297,12 +1299,22 @@
 ::gamebar::mc::DiscardNewGame					"Do you really want to throw away this game?"
 ::gamebar::mc::NewGameFstPart					"New"
 ::gamebar::mc::NewGameSndPart					"Game"
+::gamebar::mc::EnterGameNumber				"Enter game number"
 
 ::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase"
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game"
 ::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game"
 ::gamebar::mc::PasteGameFrom					"Paste game"
 ::gamebar::mc::MergeGameFrom					"Merge game"
+::gamebar::mc::LoadGameNumber					"Load game number"
+::gamebar::mc::ReloadCurrentGame				"Re-load current game"
+::gamebar::mc::MergeWithCurrentGame			"Merge with current game"
+::gamebar::mc::CreateNewGame					"Create new game"
+::gamebar::mc::StartFromCurrentPosition	"Start merge from current position"
+::gamebar::mc::StartFromInitialPosition	"Start merge from initial position"
+::gamebar::mc::NoTranspositions				"No transpositions"
+::gamebar::mc::IncludeTranspositions		"Include transpositions"
+::gamebar::mc::VariationDepth					"Variation depth"
 
 ::gamebar::mc::LockGame							"Lock Game"
 ::gamebar::mc::UnlockGame						"Unlock Game"
@@ -1318,6 +1330,9 @@
 ::gamebar::mc::Tip(Giveaway)					"In case of stalemate the side which is\nstalemate wins (according to international rules)."
 
 ::gamebar::mc::Tip(Losers)						"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated."
+
+### validate ###########################################################
+::validate::mc::Unlimited	"unlimited"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Browse Game"

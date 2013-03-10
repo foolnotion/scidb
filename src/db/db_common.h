@@ -361,6 +361,7 @@ namespace castling
 namespace move
 {
 	enum Constraint	{ DontAllowIllegalMove, AllowIllegalMove };
+	enum Order			{ Strict, Transposition };
 	enum Position		{ Ante, Post };
 
 	enum Notation
@@ -923,6 +924,11 @@ namespace permission
 		ReadWrite,
 		ReadOnly,
 	};
+}
+
+namespace position
+{
+	enum ID { Initial, Current };
 }
 
 namespace mark

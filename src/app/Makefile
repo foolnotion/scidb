@@ -1009,6 +1009,7 @@ app_view.o: ../util/u_progress.ipp
 app_view.o: ../sys/sys_utf8_codec.h
 app_view.o: ../sys/sys_utf8_codec.ipp
 app_view.o: ../sys/sys_file.h
+app_view.o: ../sys/sys_info.h
 app_winboard_engine.o: app_winboard_engine.h
 app_winboard_engine.o: app_engine.h
 app_winboard_engine.o: ../db/db_move_list.h

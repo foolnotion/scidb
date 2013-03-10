@@ -38,6 +38,7 @@
 
 #include <string.h>
 #include <ctype.h>
+#include <stdio.h>
 
 using namespace db;
 
@@ -500,6 +501,29 @@ MoveNode::clone(MoveNode* prev) const
 	}
 
 	return root;
+}
+
+
+MoveNode*
+MoveNode::cloneThis() const
+{
+	MoveNode* node = new MoveNode;
+
+	if (!m_annotation->isEmpty())
+		node->setupAnnotation(*m_annotation);
+
+	if (!m_marks->isEmpty())
+		node->m_marks = new MarkSet(*m_marks);
+
+	if (!m_moveInfo->isEmpty())
+		node->m_moveInfo = new MoveInfoSet(*m_moveInfo);
+
+	node->m_comment[0] = m_comment[0];
+	node->m_comment[1] = m_comment[1];
+	node->m_move = m_move;
+	node->m_flags = m_flags & HasNote;
+
+	return node;
 }
 
 
@@ -1078,6 +1102,48 @@ MoveNode::updateFromTimeTable(TimeTable const& timeTable)
 		}
 	}
 }
+
+
+#ifndef NDEBUG
+void
+MoveNode::dump(unsigned level) const
+{
+	mstl::string s;
+
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		s.clear();
+
+		if (n->move())
+		{
+			s.clear();
+			n->move().printSan(s, protocol::Standard, encoding::Latin1);
+			::printf("%s ", s.c_str());
+		}
+
+		if (n->hasVariation())
+		{
+			printf("\n");
+
+			for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			{
+				::printf("%s(", mstl::string(2*(level + 1), ' ').c_str());
+				n->m_variations[i]->dump(level + 1);
+				::printf(")\n");
+			}
+		}
+	}
+
+	printf("\n");
+}
+
+
+void
+MoveNode::dump() const
+{
+	dump(0);
+}
+#endif
 
 
 bool MoveNode::checkHasMark() const			{ return !m_marks->isEmpty(); }

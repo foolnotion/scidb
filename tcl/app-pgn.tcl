@@ -40,6 +40,7 @@ set Command(variation:truncate)	"Truncate Variation"
 set Command(variation:first)		"Make First Variation"
 set Command(variation:promote)	"Promote Variation"
 set Command(variation:remove)		"Delete Variation"
+set Command(variation:remove:n)	"Delete Variations"
 set Command(variation:mainline)	"New Mainline"
 set Command(variation:insert)		"Insert Moves"
 set Command(variation:exchange)	"Exchange Moves"
@@ -53,6 +54,7 @@ set Command(strip:variations)		"Variations"
 set Command(copy:comments)			"Copy Comments"
 set Command(move:comments)			"Move Comments"
 set Command(game:clear)				"Clear Game"
+set Command(game:merge)				"Merge"
 set Command(game:transpose)		"Transpose Game"
 
 set LanguageSelection				"Language Selection"
@@ -407,7 +409,17 @@ proc selectAt {index} {
 
 
 proc lock {position} {
-	::gamebar::lock [set [namespace current]::Vars(gamebar)] $position
+	return [::gamebar::lock [set [namespace current]::Vars(gamebar)] $position]
+}
+
+
+proc unlock {position} {
+	return [::gamebar::unlock [set [namespace current]::Vars(gamebar)] $position]
+}
+
+
+proc unlocked? {position} {
+	return [::gamebar::unlocked? [set [namespace current]::Vars(gamebar)] $position]
 }
 
 
@@ -2679,7 +2691,7 @@ proc ExchangeMoves {parent} {
 		-exportselection false \
 		-justify right \
 		;
-	::validate::spinboxInt $top.sblength no
+	::validate::spinboxInt $top.sblength -clamp no
 	::theme::configureSpinbox $top.sblength
 	$top.sblength selection range 0 end
 	$top.sblength icursor end
@@ -2739,7 +2751,7 @@ proc VerifyNumberOfMoves {dlg length} {
 		set Length_ $length
 		$dlg.top.sblength selection range 0 end
 		$dlg.top.sblength icursor end
-		::validate::spinboxInt $dlg.top.sblength off
+		::validate::spinboxInt $dlg.top.sblength -clamp no
 		focus $dlg.top.sblength
 	} else {
 		destroy $dlg

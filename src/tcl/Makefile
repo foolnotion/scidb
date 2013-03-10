@@ -1356,6 +1356,8 @@ tcl_misc.o: ../sys/sys_info.h
 tcl_misc.o: ../sys/sys_vfs.h
 tcl_misc.o: ../util/u_html.h
 tcl_misc.o: ../util/u_html.ipp
+tcl_misc.o: ../util/u_zstream.h
+tcl_misc.o: ../mstl/m_iostream.h
 tcl_pgn_reader.o: tcl_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_reader.h

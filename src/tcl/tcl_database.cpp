@@ -1362,11 +1362,11 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	};
 	static char const* args[] =
 	{
-		"?<database>? <variant>",
-		"?<database>? <variant>",
-		"?<database>? <variant>",
-		"?<database>? <variant>",
-		"?<database>? <variant>",
+		"?\?<database>? <variant>?",
+		"?\?<database>? <variant>?",
+		"?\?<database>? <variant>?",
+		"?\?<database>? <variant>?",
+		"?\?<database>? <variant>?",
 		"?<database>?",
 	};
 	enum { Cmd_Games, Cmd_Players, Cmd_Annotators, Cmd_Events, Cmd_Sites, Cmd_Total };
@@ -1384,9 +1384,10 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 	{
 		if (objc < 3)
-			return usage(::CmdCount, nullptr, nullptr, subcommands, args);
-
-		if (objc == 3)
+		{
+			variant = Scidb->currentVariant();
+		}
+		else if (objc == 3)
 		{
 			variant = tcl::game::variantFromObj(objc, objv, 2);
 		}
