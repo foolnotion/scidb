@@ -118,7 +118,7 @@ MoveInfo::compare(MoveInfo const& mi) const
 			break;
 
 		case ElapsedMilliSeconds:
-			if (int cmp = int(m_elapsed.m_seconds)      - int(mi.m_elapsed.m_seconds)    ) return cmp;
+			if (int cmp = int(m_elapsed.m_seconds)      - int(mi.m_elapsed.m_seconds     )) return cmp;
 			if (int cmp = int(m_elapsed.m_milliSeconds) - int(mi.m_elapsed.m_milliSeconds)) return cmp;
 			break;
 
@@ -126,9 +126,9 @@ MoveInfo::compare(MoveInfo const& mi) const
 			return int(m_centiSeconds) - int(mi.m_centiSeconds);
 
 		case Evaluation:
-			if (int cmp = int(m_analysis.m_depth)      - int(mi.m_analysis.m_depth)     ) return cmp;
-			if (int cmp = int(m_analysis.m_sign)       - int(mi.m_analysis.m_sign)      ) return cmp;
-			if (int cmp = int(m_analysis.m_pawns)      - int(mi.m_analysis.m_pawns)     ) return cmp;
+			if (int cmp = int(m_analysis.m_depth)      - int(mi.m_analysis.m_depth     )) return cmp;
+			if (int cmp = int(m_analysis.m_sign)       - int(mi.m_analysis.m_sign      )) return cmp;
+			if (int cmp = int(m_analysis.m_pawns)      - int(mi.m_analysis.m_pawns     )) return cmp;
 			if (int cmp = int(m_analysis.m_centipawns) - int(mi.m_analysis.m_centipawns)) return cmp;
 			break;
 	}

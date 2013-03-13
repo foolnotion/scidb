@@ -533,9 +533,10 @@ proc PopupMenu {nb} {
 		-command [namespace code [list LoadGame $nb]] \
 		-state $state \
 		;
+#	if {[::scidb::game::current] == -1} { sert state disabled } else { set state normal }
 #	$menu add command \
 #		-label $::browser::mc::MergeGame \
-#		-command [namespace code [list MergeGame $nb]] \
+#		-command [list gamebar::mergeGame $nb $position] \
 #		-state $state \
 #		;
 	if {!$Vars(modified)} { set state disabled }

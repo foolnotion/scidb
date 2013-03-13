@@ -527,16 +527,26 @@ proc addActionsToMenu {m command {extraActions {}}} {
 
 
 proc doDestructiveCommand {parent action cmd yesAction noAction} {
-	if {![eval $cmd]} {
+	if {![{*}$cmd]} {
 		set rc [;;dialog::question -parent $parent -message [format $mc::GameWillBeTruncated $action]]
 		if {$rc eq "no"} {
-			eval $noAction
+			if {[llength $noAction]} {
+				{*}$noAction
+			}
 			return
 		}
-		eval {*}$cmd -force
+		if {[string match *widget::busyOperation [lindex $cmd 0]]} {
+			lassign $cmd cmd args
+			set cmd [list $cmd [list {*}$args -force]]
+		} else {
+			lappend $cmd -force
+		}
+		{*}$cmd
 	}
 
-	eval $yesAction
+	if {[llength $yesAction]} {
+		{*}$yesAction
+	}
 }
 
 

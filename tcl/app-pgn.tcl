@@ -500,7 +500,11 @@ proc editComment {pos {position -1} {key {}} {lang {}}} {
 	variable Vars
 
 	if {$position == -1} { set position $Vars(position) }
-	if {[llength $key] == 0 && $pos eq "a" && [::scidb::game::position $position atStart?]} { return }
+
+	if {$pos == "a" && [::scidb::game::position $position atStart?]} {
+		if {[llength $key] == 0} { return }
+		set pos s
+	}
 
 	if {[llength $lang] == 0} {
 		set lang ""
@@ -787,7 +791,7 @@ proc SetLanguages {position} {
 			lappend langSet $lang
 		}
 	}
-	::scidb::game::langSet $position $langSet
+	after idle [list ::scidb::game::langSet $position $langSet]
 }
 
 
@@ -1685,6 +1689,10 @@ proc PrintTextualAnnotation {position w level key nags} {
 proc EditComment {position key pos lang} {
 	variable Vars
 
+	if {[llength $key]} {
+		GotoMove $position $key
+	}
+
 	set w $Vars(pgn:$position)
 	set Vars(edit:comment) 1
 	editComment $pos $position $key $lang
@@ -1704,8 +1712,8 @@ proc Mark {w key} {
 
 
 proc EnterMove {position key} {
-	variable Vars
 	variable ::pgn::editor::Colors
+	variable Vars
 
 	if {$Vars(current:$position) ne $key} {
 		$Vars(pgn:$position) tag configure $key -background $Colors(hilite:move)
@@ -1717,8 +1725,8 @@ proc EnterMove {position key} {
 
 
 proc LeaveMove {position key} {
-	variable Vars
 	variable ::pgn::editor::Colors
+	variable Vars
 
 	set Vars(active:$position) {}
 
@@ -1752,7 +1760,6 @@ proc LeaveMark {w tag} {
 
 proc EnterBracket {w key} {
 	variable Counter
-	variable Vars
 
 	if {[::scidb::game::variation folded? $key]} {
 		set cursor $cursor::expand
@@ -1779,7 +1786,6 @@ proc SetCursor {w cursor counter} {
 
 
 proc LeaveBracket {w} {
-	variable Vars
 	variable Counter
 
 	incr Counter

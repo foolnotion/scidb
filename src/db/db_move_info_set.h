@@ -43,9 +43,14 @@ class MoveInfoSet
 {
 public:
 
+	bool operator==(MoveInfoSet const& info) const;
+	bool operator!=(MoveInfoSet const& info) const;
+
 	bool isEmpty() const;
+	bool contains(MoveInfo const& info) const;
 
 	unsigned count() const;
+	int find(MoveInfo const& info) const;
 
 	::util::crc::checksum_t computeChecksum(EngineList const& engines, util::crc::checksum_t crc) const;
 

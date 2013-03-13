@@ -60,8 +60,8 @@ public:
 	bool contains(Mark const& mark) const;
 
 	unsigned count() const;
-	int find(Mark const& mark)const;
-	int match(Mark const& mark)const;
+	int find(Mark const& mark) const;
+	int match(Mark const& mark) const;
 	::util::crc::checksum_t computeChecksum(util::crc::checksum_t crc) const;
 
 	Mark const& operator[](unsigned index) const;

@@ -416,6 +416,18 @@ MoveNode::swapVariations(unsigned varNo1, unsigned varNo2)
 }
 
 
+bool
+MoveNode::operator==(MoveNode const& node) const
+{
+	return	(m_flags & HasNote) == (node.m_flags & HasNote)
+			&& *m_annotation == *node.m_annotation
+			&& m_comment[0] == node.m_comment[0]
+			&& m_comment[1] == node.m_comment[1]
+			&& *m_marks == *node.m_marks
+			&& *m_moveInfo == *node.m_moveInfo;
+}
+
+
 void
 MoveNode::swapData(MoveNode* node)
 {
@@ -427,6 +439,27 @@ MoveNode::swapData(MoveNode* node)
 	mstl::swap(m_moveInfo,		node->m_moveInfo);
 	mstl::swap(m_comment[0],	node->m_comment[0]);
 	mstl::swap(m_comment[1],	node->m_comment[1]);
+}
+
+
+void
+MoveNode::copyData(MoveNode const* node)
+{
+	M_REQUIRE(node);
+
+	if (!node->m_annotation->isEmpty())
+		setupAnnotation(*node->m_annotation);
+
+	if (!node->m_marks->isEmpty())
+		m_marks = new MarkSet(*node->m_marks);
+
+	if (!node->m_moveInfo->isEmpty())
+		m_moveInfo = new MoveInfoSet(*node->m_moveInfo);
+
+	m_comment[0] = node->m_comment[0];
+	m_comment[1] = node->m_comment[1];
+
+	m_flags = node->m_flags & HasNote;
 }
 
 
@@ -481,20 +514,8 @@ MoveNode::clone(MoveNode* prev) const
 		}
 
 		prev = node;
-
-		if (!n->m_annotation->isEmpty())
-			node->setupAnnotation(*n->m_annotation);
-
-		if (!n->m_marks->isEmpty())
-			node->m_marks = new MarkSet(*n->m_marks);
-
-		if (!n->m_moveInfo->isEmpty())
-			node->m_moveInfo = new MoveInfoSet(*n->m_moveInfo);
-
-		node->m_comment[0] = n->m_comment[0];
-		node->m_comment[1] = n->m_comment[1];
+		node->copyData(n);
 		node->m_move = n->m_move;
-		node->m_flags = n->m_flags;
 
 		for (unsigned i = 0; i < n->m_variations.size(); ++i)
 			node->addVariation(n->m_variations[i]->clone());
@@ -509,19 +530,8 @@ MoveNode::cloneThis() const
 {
 	MoveNode* node = new MoveNode;
 
-	if (!m_annotation->isEmpty())
-		node->setupAnnotation(*m_annotation);
-
-	if (!m_marks->isEmpty())
-		node->m_marks = new MarkSet(*m_marks);
-
-	if (!m_moveInfo->isEmpty())
-		node->m_moveInfo = new MoveInfoSet(*m_moveInfo);
-
-	node->m_comment[0] = m_comment[0];
-	node->m_comment[1] = m_comment[1];
+	node->copyData(this);
 	node->m_move = m_move;
-	node->m_flags = m_flags & HasNote;
 
 	return node;
 }

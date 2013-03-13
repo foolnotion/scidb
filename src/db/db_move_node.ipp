@@ -64,6 +64,14 @@ inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << 
 
 
 inline
+bool
+MoveNode::operator!=(MoveNode const& node) const
+{
+	return !operator==(node);
+}
+
+
+inline
 void
 MoveNode::setCommentFlag(Byte flag)
 {

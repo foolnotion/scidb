@@ -70,6 +70,9 @@ public:
 
 	MoveInfo();
 
+	bool operator==(MoveInfo const& info) const;
+	bool operator!=(MoveInfo const& info) const;
+
 	bool isEmpty() const;
 	bool hasTimeInfo() const;
 	bool hasEvaluationInfo() const;

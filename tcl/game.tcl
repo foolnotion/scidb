@@ -777,7 +777,7 @@ proc recover {} {
 						::scidb::game::sink $count $base $index
 						::application::pgn::add $count $base $variant $tags
 						::application::pgn::setModified $count
-						::scidb::game::modified $count
+						::scidb::game::modified $count -irreversible yes
 						incr count
 					}
 				}

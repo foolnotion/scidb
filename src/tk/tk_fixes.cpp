@@ -94,6 +94,16 @@ Sync(Display *display)
 # endif // __unix__ && !__MacOSX__
 
 
+#define GRAB_GLOBAL        1
+#define GRAB_TEMP_GLOBAL   4
+
+
+typedef struct {
+    Display *display;      /* Display from which to discard events. */
+    unsigned int serial;   /* Serial number with which to compare. */
+} GrabInfo;
+
+
 static Tk_RestrictAction
 GrabRestrictProc(
     ClientData arg,

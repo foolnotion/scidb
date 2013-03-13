@@ -28,9 +28,10 @@
 
 namespace db {
 
-inline bool MoveInfoSet::isEmpty() const		{ return m_row.empty(); }
+inline bool MoveInfoSet::isEmpty() const									{ return m_row.empty(); }
+inline bool MoveInfoSet::contains(MoveInfo const& info) const		{ return find(info) >= 0; }
 
-inline unsigned MoveInfoSet::count() const	{ return m_row.size(); }
+inline unsigned MoveInfoSet::count() const								{ return m_row.size(); }
 
 inline MoveInfo const& MoveInfoSet::operator[](unsigned n) const	{ return m_row[n]; }
 inline MoveInfo& MoveInfoSet::operator[](unsigned n)					{ return m_row[n]; }
@@ -39,6 +40,14 @@ inline void MoveInfoSet::resize(unsigned n)		{ m_row.resize(n); }
 inline void MoveInfoSet::reserve(unsigned n)		{ m_row.reserve(n); }
 inline void MoveInfoSet::swap(MoveInfoSet& row)	{ m_row.swap(row.m_row); }
 inline void MoveInfoSet::clear()						{ m_row.clear(); }
+
+
+inline
+bool
+MoveInfoSet::operator!=(MoveInfoSet const& info) const
+{
+	return !operator==(info);
+}
 
 
 inline

@@ -401,6 +401,50 @@ struct Split : public Comment::Callback
 		result.append(::suffix);
 	}
 
+	static void merge(mstl::string& result,
+							LangMap const& lhs,
+							LangMap const& rhs,
+							LanguageSet const& leadingLanguageSet)
+	{
+		result.assign(::prefix);
+
+		LanguageSet langSet;
+
+		for (LangMap::const_iterator i = lhs.begin(); i != lhs.end(); ++i)
+			langSet[i->first] = 1;
+		for (LangMap::const_iterator i = rhs.begin(); i != rhs.end(); ++i)
+			langSet[i->first] = 1;
+
+		for (unsigned i = 0; i < langSet.container().size(); ++i)
+		{
+			mstl::string const& lang = langSet.container()[i].first;
+
+			LangMap::const_iterator	p = lhs.find(lang);
+
+			result.append("<:", 2);
+			result.append(lang);
+			result.append('>');
+
+			if (p != lhs.end())
+			{
+				result.append(p->second);
+			}
+			else if (leadingLanguageSet.find(lang) == leadingLanguageSet.end())
+			{
+				LangMap::const_iterator	q = rhs.find(lang);
+
+				if (q != rhs.end())
+					result.append(q->second);
+			}
+
+			result.append("</:", 3);
+			result.append(lang);
+			result.append('>');
+		}
+
+		result.append(::suffix);
+	}
+
 	LangMap m_result;
 	mstl::string* m_current;
 };
@@ -1318,7 +1362,8 @@ Comment::append(Comment const& comment, char delim)
 			Split::LangMap thatMap;
 
 			parse(thisSplit);
-			thatMap[mstl::string::empty_string] = comment.content();
+			if (!comment.m_content.empty())
+				thatMap[mstl::string::empty_string] = comment.m_content;
 			Split::join(m_content, thisSplit.m_result, thatMap, delim);
 			m_languageSet.clear();
 		}
@@ -1328,7 +1373,8 @@ Comment::append(Comment const& comment, char delim)
 			Split::LangMap thisMap;
 
 			comment.parse(thatSplit);
-			thisMap[mstl::string::empty_string].swap(m_content);
+			if (!m_content.empty())
+				thisMap[mstl::string::empty_string].swap(m_content);
 			Split::join(m_content, thisMap, thatSplit.m_result, delim);
 			m_languageSet.clear();
 		}
@@ -1337,6 +1383,54 @@ Comment::append(Comment const& comment, char delim)
 			::appendDelim(m_content, delim);
 			m_content.append(comment);
 		}
+	}
+}
+
+
+void
+Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
+{
+	if (comment.isEmpty())
+		return;
+
+	bool thisIsXml = isXml();
+	bool thatIsXml = comment.isXml();
+
+	if (thisIsXml && thatIsXml)
+	{
+		Split thisSplit;
+		Split thatSplit;
+
+		parse(thisSplit);
+		comment.parse(thatSplit);
+		Split::merge(m_content, thisSplit.m_result, thatSplit.m_result, leadingLanguageSet);
+		m_languageSet.clear();
+	}
+	else if (thisIsXml)
+	{
+		Split thisSplit;
+		Split::LangMap thatMap;
+
+		parse(thisSplit);
+		if (!comment.m_content.empty())
+			thatMap[mstl::string::empty_string] = comment.m_content;
+		Split::merge(m_content, thisSplit.m_result, thatMap, leadingLanguageSet);
+		m_languageSet.clear();
+	}
+	else if (thatIsXml)
+	{
+		Split thatSplit;
+		Split::LangMap thisMap;
+
+		comment.parse(thatSplit);
+		if (!m_content.empty())
+			thisMap[mstl::string::empty_string].swap(m_content);
+		Split::merge(m_content, thisMap, thatSplit.m_result, leadingLanguageSet);
+		m_languageSet.clear();
+	}
+	else if (leadingLanguageSet.find(mstl::string::empty_string) == leadingLanguageSet.end())
+	{
+		*this = comment;
 	}
 }
 
@@ -1409,7 +1503,7 @@ bool
 Comment::containsLanguage(mstl::string const& lang) const
 {
 	if (m_content.empty())
-		return 0;
+		return false;
 
 	if (m_languageSet.empty())
 		collect();
@@ -1597,17 +1691,37 @@ Comment::remove(mstl::string const& lang)
 
 	if (isXml())
 	{
-		LanguageSet set;
-		collectLanguages(set);
-		set.erase(lang);
-		strip(set);
+		collect();
+		m_languageSet.erase(lang);
+		strip(m_languageSet);
 	}
 	else if (lang.empty())
 	{
 		m_content.clear();
+		m_languageSet.clear();
 	}
+}
 
-	m_languageSet.erase(lang);
+
+void
+Comment::remove(LanguageSet const& languageSet)
+{
+	if (m_content.empty())
+		return;
+
+	if (isXml())
+	{
+		if (m_languageSet.empty())
+			collect();
+		for (LanguageSet::const_iterator i = languageSet.begin(); i != languageSet.end(); ++i)
+			m_languageSet.erase(i->first);
+		strip(m_languageSet);
+	}
+	else if (languageSet.find(mstl::string::empty_string) != languageSet.end())
+	{
+		m_content.clear();
+		m_languageSet.clear();
+	}
 }
 
 

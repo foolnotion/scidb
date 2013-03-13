@@ -186,27 +186,27 @@ splitForMerge(	Variants& variants,
 
 
 static bool
-mergeComments(MoveNode* dst, MoveNode const* src, MoveNode::LanguageSet const& languageSet)
+mergeComments(MoveNode* dst, MoveNode const* src, MoveNode::LanguageSet const& leadingLanguageSet)
 {
 	M_ASSERT(dst);
 	M_ASSERT(src);
 
 	bool changed = false;
 
-	if (!languageSet.empty())
+	for (unsigned i = 0; i < 2; ++i)
 	{
-		for (unsigned i = 0; i < 2; ++i)
-		{
-			move::Position pos = i ? move::Post : move::Ante;
-			Comment comment = src->comment(pos);
-			comment.strip(languageSet);
+		move::Position pos = i ? move::Post : move::Ante;
 
-			if (!comment.isEmpty())
+		Comment srcComment(src->comment(pos));
+
+		if (!srcComment.isEmpty())
+		{
+			Comment dstComment(dst->comment(pos));
+			dstComment.merge(srcComment, leadingLanguageSet);
+
+			if (dstComment.content() != dst->comment(pos).content())
 			{
-				Comment c(dst->comment(pos));
-				c.append(comment, '\n');
-				c.normalize();
-				dst->setComment(c, move::Ante);
+				dst->setComment(dstComment, pos);
 				changed = true;
 			}
 		}
@@ -227,8 +227,12 @@ stripComments(MoveNode* node, MoveNode::LanguageSet const& languageSet)
 		{
 			move::Position pos = i ? move::Post : move::Ante;
 			Comment comment(node->comment(pos));
-			comment.strip(languageSet);
-			node->setComment(comment, move::Ante);
+
+			if (!comment.isEmpty())
+			{
+				comment.remove(languageSet);
+				node->setComment(comment, pos);
+			}
 		}
 	}
 }
@@ -237,7 +241,7 @@ stripComments(MoveNode* node, MoveNode::LanguageSet const& languageSet)
 static MoveNode*
 makeVariation(	MoveNode* const* first,
 					MoveNode* const* last,
-					MoveNode::LanguageSet const& languageSet,
+					MoveNode::LanguageSet const* leadingLanguageSet,
 					TagSet const& tags,
 					mstl::string const& delim)
 {
@@ -249,8 +253,12 @@ makeVariation(	MoveNode* const* first,
 	for ( ; first != last; ++first, n = n->next())
 	{
 		n->setNext((*first)->cloneThis());
-		stripComments(n->next(), languageSet);
+
+		if (leadingLanguageSet)
+			stripComments(n->next(), *leadingLanguageSet);
 	}
+
+	n->setNext((*(first - 1))->next()->cloneThis());
 
 	if (!delim.empty() && (tags.value(tag::White).size() > 1 || tags.value(tag::Black).size() > 1))
 	{
@@ -290,8 +298,6 @@ makeVariation(	MoveNode* const* first,
 		n->setComment(c1, move::Post);
 	}
 
-	n->setNext(new MoveNode);
-
 	return r;
 }
 
@@ -300,9 +306,10 @@ static bool
 merge(MoveNode* node,
 		MoveNode* const* first,
 		MoveNode* const* last,
-		MoveNode::LanguageSet const& languageSet,
+		MoveNode::LanguageSet const* leadingLanguageSet,
 		TagSet const& tags,
-		mstl::string const& delim)
+		mstl::string const& delim,
+		bool append)
 {
 	M_ASSERT(node);
 	M_ASSERT(first);
@@ -311,20 +318,60 @@ merge(MoveNode* node,
 	bool changed = false;
 
 	if (node->atLineStart())
+	{
+		MoveNode* n = (*first)->prev();
+
+		if (n && n->atLineStart())
+		{
+			if (leadingLanguageSet)
+			{
+				if (mergeComments(node, n, *leadingLanguageSet))
+					changed = true;
+			}
+			else if (*node != *n)
+			{
+				node->copyData(n);
+				changed = true;
+			}
+		}
+
 		node = node->next();
+	}
 
 	while (node->move() == (*first)->move())
 	{
-		if (mergeComments(node, *first, languageSet))
+		if (leadingLanguageSet && mergeComments(node, *first, *leadingLanguageSet))
 			changed = true;
 
 		if ((node = node->next())->atLineEnd())
 		{
-			if (last - first <= 1)
-				return false;
+			if (last - first > 1)
+			{
+				if (append)
+				{
+					MoveNode* variation	= makeVariation(first + 1, last, leadingLanguageSet, tags, delim);
+					MoveNode* prev			= node->prev();
+					MoveNode* end			= prev->removeNext();
 
-			node->prev()->addVariation(makeVariation(first, last, languageSet, tags, delim));
-			return true;
+					prev->setNext(variation->removeNext());
+					prev = prev->getLineEnd()->prev();
+
+					if ( leadingLanguageSet && mergeComments(end, prev->next(), *leadingLanguageSet))
+						changed = true;
+
+					prev->deleteNext();
+					prev->setNext(end);
+					delete variation;
+				}
+				else
+				{
+					node->prev()->addVariation(makeVariation(first, last, leadingLanguageSet, tags, delim));
+				}
+
+				changed = true;
+			}
+
+			return changed;
 		}
 
 		if (++first == last)
@@ -333,28 +380,33 @@ merge(MoveNode* node,
 
 	for (unsigned i = 0; i < node->variationCount(); ++i)
 	{
-		MoveNode* n = node->variation(i)->next();
+		MoveNode* n = node->variation(i);
 
-		if (n->move() == (*first)->move())
-			return merge(n, first, last, languageSet, tags, delim);
+		if (n->next()->move() == (*first)->move())
+			return merge(n, first, last, leadingLanguageSet, tags, delim, true);
 	}
 
-	MoveNode* variation = makeVariation(first, last, languageSet, tags, delim);
-
-	if (node->atLineEnd())
+	if (first < last)
 	{
-		MoveNode* prev = node->prev();
+		MoveNode* variation = makeVariation(first, last, leadingLanguageSet, tags, delim);
 
-		prev->deleteNext();
-		prev->setNext(variation->removeNext());
-		delete variation;
-	}
-	else
-	{
-		node->addVariation(makeVariation(first, last, languageSet, tags, delim));
+		if (node->atLineEnd())
+		{
+			MoveNode* prev = node->prev();
+
+			prev->deleteNext();
+			prev->setNext(variation->removeNext());
+			delete variation;
+		}
+		else
+		{
+			node->addVariation(makeVariation(first, last, leadingLanguageSet, tags, delim));
+		}
+
+		changed = true;
 	}
 
-	return true;
+	return changed;
 }
 
 
@@ -4211,7 +4263,7 @@ Game::merge(Game const& game, position::ID startPosition, move::Order order, uns
 
 	for (Variants::const_iterator i = variants.begin(); i != variants.end(); ++i)
 	{
-		if (::merge(startNode, i->begin(), i->end(), m_languageSet, game.m_tags, delim))
+		if (::merge(startNode, i->begin(), i->end(), &m_languageSet, game.m_tags, delim, false))
 			changed = true;
 	}
 
@@ -4222,8 +4274,9 @@ Game::merge(Game const& game, position::ID startPosition, move::Order order, uns
 
 	if (changed)
 	{
+		updateLanguageSet();
 		insertUndo(Revert_Game, Merge, clone.release());
-		updateSubscriber(UpdatePgn | UpdateOpening | UpdateLanguageSet | UpdateIllegalMoves);
+		updateSubscriber(UpdateAll);
 	}
 
 	return true;
@@ -4275,9 +4328,10 @@ Game::merge(Game const& game1,
 		::merge(	m_startNode,
 					i->begin(),
 					i->end(),
-					game2.m_languageSet,
+					nullptr,
 					game1.m_tags,
-					mstl::string::empty_string);
+					mstl::string::empty_string,
+					true);
 	}
 
 	mstl::string delim(game2.isModified() ? mstl::string::empty_string : m_delim);
@@ -4286,18 +4340,18 @@ Game::merge(Game const& game1,
 	if (node2)
 	{
 		for (Variants::const_iterator i = variants2.begin(); i != variants2.end(); ++i)
-			::merge(node2, i->begin(), i->end(), game1.m_languageSet, game2.m_tags, delim);
+			::merge(node2, i->begin(), i->end(), &game1.m_languageSet, game2.m_tags, delim, true);
 	}
 
-	if (order == move::Transposition)
-		m_startNode->finish(m_startBoard, m_variant);
+	m_startNode->finish(m_startBoard, m_variant);
 
 	END_BACKUP;
 
 	if (!isEmpty())
 	{
 		m_isIrreversible = m_isModified = true;
-		updateSubscriber(UpdatePgn | UpdateOpening | UpdateLanguageSet | UpdateIllegalMoves);
+		updateLanguageSet();
+		updateSubscriber(UpdateAll);
 	}
 
 	return true;

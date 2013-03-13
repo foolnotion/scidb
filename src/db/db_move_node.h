@@ -94,6 +94,9 @@ public:
 	explicit MoveNode(Annotation* set = 0);
 	~MoveNode();
 
+	bool operator==(MoveNode const& node) const;
+	bool operator!=(MoveNode const& node) const;
+
 	bool atLineStart() const;
 	bool atLineEnd() const;
 	bool isBeforeLineEnd() const;
@@ -182,6 +185,7 @@ public:
 	void clearAnnotation();
 	void clearMarks();
 	void swapData(MoveNode* node);
+	void copyData(MoveNode const* node);
 
 	void stripAnnotations();
 	void stripMoveInfo();

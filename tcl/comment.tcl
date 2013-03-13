@@ -1691,22 +1691,25 @@ proc CopyText {fromLang toLang} {
 
 	SetUndoPoint $Vars(widget:text) $toLang
 
-	if {[llength $Vars(content:$toLang)]} {
-		set reply [::dialog::question \
-			-parent [winfo toplevel $Vars(widget:text)] \
-			-title $::scidb::app \
-			-message $mc::OverwriteContent \
-			-detail $mc::AppendContent \
-			-default no \
-		]
-		if {$reply eq "yes"} {
-			set Vars(content:$toLang) {}
+	if {[info exists Vars(content:$toLang)]} {
+		if {[string length $Vars(content:$toLang)]} {
+			set reply [::dialog::question \
+				-parent [winfo toplevel $Vars(widget:text)] \
+				-title $::scidb::app \
+				-message $mc::OverwriteContent \
+				-detail $mc::AppendContent \
+				-default no \
+			]
+			if {$reply eq "yes"} {
+				set Vars(content:$toLang) {}
+			}
+		}
+
+		if {[string length $Vars(content:$toLang)]} {
+			lappend Vars(content:$toLang) {str \n}
 		}
 	}
 
-	if {[llength $Vars(content:$toLang)]} {
-		lappend Vars(content:$toLang) {str \n}
-	}
 	lappend Vars(content:$toLang) {*}$Vars(content:$fromLang)
 }
 

@@ -27,6 +27,8 @@
 #include "db_move_info_set.h"
 #include "db_engine_list.h"
 
+#include "m_algorithm.h"
+
 #include <ctype.h>
 #include <string.h>
 
@@ -141,6 +143,30 @@ static int
 compare(void const* lhs, void const* rhs)
 {
 	return static_cast<MoveInfo const*>(lhs)->compare(*static_cast<MoveInfo const*>(rhs));
+}
+
+
+bool
+MoveInfoSet::operator==(MoveInfoSet const& info) const
+{
+	if (count() != info.count())
+		return false;
+
+	for (unsigned i = 0; i < count(); ++i)
+	{
+		if (!info.contains(m_row[i]))
+			return false;
+	}
+
+	return true;
+}
+
+
+int
+MoveInfoSet::find(MoveInfo const& info) const
+{
+	Row::const_iterator i = mstl::find(m_row.begin(), m_row.end(), info);
+	return i == m_row.end() ? -1 : i - m_row.begin();
 }
 
 

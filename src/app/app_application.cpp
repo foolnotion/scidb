@@ -262,7 +262,7 @@ Application::Application()
 	,m_referenceBase(0)
 	,m_switchReference(true)
 	,m_isUserSet(false)
-	,m_position(InvalidPosition)
+	,m_currentPosition(InvalidPosition)
 	,m_fallbackPosition(InvalidPosition)
 	,m_updateCount(0)
 	,m_numEngines(0)
@@ -547,7 +547,7 @@ bool
 Application::containsGameAt(unsigned position) const
 {
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	if (position == InvalidPosition)
 		return false;
@@ -565,7 +565,7 @@ Application::isScratchGame(unsigned position) const
 		return false;
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	EditGame const& g = *m_gameMap.find(position)->second;
 	return g.cursor == scratchbase(variant::toMainVariant(g.game->variant()));
@@ -578,9 +578,9 @@ Application::hasTrialMode(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
-	return m_gameMap.find(m_position)->second->backup != 0;
+	return m_gameMap.find(m_currentPosition)->second->backup != 0;
 }
 
 
@@ -680,7 +680,7 @@ Application::encoding(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->encoding;
 }
@@ -858,8 +858,8 @@ Application::closeAllGames(Cursor& cursor)
 			stopAnalysis(game.game);
 			i = m_gameMap.erase(i);
 
-			if (m_position == position)
-				m_position = InvalidPosition;
+			if (m_currentPosition == position)
+				m_currentPosition = InvalidPosition;
 		}
 	}
 
@@ -881,7 +881,7 @@ Application::gameInfoAt(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	EditGame const& game = *m_gameMap.find(position)->second;
 	return game.cursor->base().gameInfo(game.index);
@@ -894,7 +894,7 @@ Application::gameIndex(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->index;
 }
@@ -906,7 +906,7 @@ Application::gameNumber(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	EditGame const& game = *m_gameMap.find(position)->second;
 	return game.cursor->index(table::Games, game.index, 0);
@@ -927,7 +927,7 @@ Application::sourceIndex(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->sourceIndex;
 }
@@ -939,7 +939,7 @@ Application::database(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->cursor->database();
 }
@@ -958,7 +958,7 @@ Application::sourceName(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->sourceBase;
 }
@@ -970,7 +970,7 @@ Application::variant(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->cursor->variant();
 }
@@ -1006,7 +1006,7 @@ Application::checksumIndex(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->crcIndex;
 }
@@ -1018,7 +1018,7 @@ Application::checksumMoves(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return m_gameMap.find(position)->second->crcMoves;
 }
@@ -1346,7 +1346,7 @@ Application::loadGame(unsigned position)
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	EditGame const& game = *m_gameMap.find(position)->second;
 	return loadGame(position, *game.cursor, game.index);
@@ -1380,7 +1380,7 @@ void
 Application::releaseGame(unsigned position)
 {
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	if (!containsGameAt(position))
 		return;
@@ -1390,8 +1390,8 @@ Application::releaseGame(unsigned position)
 	m_gameMap.erase(position);
 	m_indexMap.erase(position);
 
-	if (m_position == position)
-		m_position = m_fallbackPosition;
+	if (m_currentPosition == position)
+		m_currentPosition = m_fallbackPosition;
 
 	if (m_subscriber)
 		m_subscriber->gameClosed(position);
@@ -1522,10 +1522,10 @@ Application::swapGames(unsigned position1, unsigned position2)
 		}
 	}
 
-	if (m_position == position1)
-		m_position = position2;
-	else if (m_position == position2)
-		m_position = position1;
+	if (m_currentPosition == position1)
+		m_currentPosition = position2;
+	else if (m_currentPosition == position2)
+		m_currentPosition = position1;
 }
 
 
@@ -1553,7 +1553,7 @@ Application::setupGame(Board const& startPosition)
 {
 	M_REQUIRE(haveCurrentGame());
 
-	EditGame& game = *m_gameMap[m_position];
+	EditGame& game = *m_gameMap[m_currentPosition];
 
 	game.game->setup(startPosition);
 	game.game->updateSubscriber(Game::UpdateBoard | Game::UpdatePgn);
@@ -1568,7 +1568,7 @@ Application::clearGame(Board const* startPosition)
 {
 	M_REQUIRE(haveCurrentGame());
 
-	EditGame& game = *m_gameMap[m_position];
+	EditGame& game = *m_gameMap[m_currentPosition];
 
 	game.game->clear(startPosition);
 	game.game->updateSubscriber(Game::UpdateBoard);
@@ -1625,7 +1625,7 @@ Application::switchGame(unsigned position)
 
 	EditGame& game = *m_gameMap[position];
 
-	m_position = position;
+	m_currentPosition = position;
 
 	if (game.refresh)
 	{
@@ -1656,7 +1656,7 @@ Application::startTrialMode()
 {
 	M_REQUIRE(!hasTrialMode());
 
-	EditGame& game = *m_gameMap[m_position];
+	EditGame& game = *m_gameMap[m_currentPosition];
 
 	game.backup = game.game;
 	game.game = new Game(*game.backup);
@@ -1669,7 +1669,7 @@ Application::endTrialMode()
 {
 	M_REQUIRE(hasTrialMode());
 
-	EditGame& game = *m_gameMap[m_position];
+	EditGame& game = *m_gameMap[m_currentPosition];
 
 	delete game.game;
 	game.game = game.backup;
@@ -1695,11 +1695,11 @@ Application::refreshGame(unsigned position, bool immediate)
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	EditGame& game = *m_gameMap.find(position)->second;
 
-	if (position == m_position || immediate)
+	if (position == m_currentPosition || immediate)
 		game.game->refreshSubscriber(Game::UpdateAll);
 	else
 		game.refresh = 2;
@@ -1712,7 +1712,7 @@ Application::game(unsigned position)
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return *m_gameMap.find(position)->second->game;
 }
@@ -1724,7 +1724,7 @@ Application::game(unsigned position) const
 	M_REQUIRE(containsGameAt(position));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	return *m_gameMap.find(position)->second->game;
 }
@@ -1829,7 +1829,7 @@ Application::treeIsUpToDate(Tree::Key const& key) const
 
 	M_ASSERT(m_referenceBase->hasTreeView());
 
-	EditGame const& g	= *m_gameMap.find(m_position)->second;
+	EditGame const& g	= *m_gameMap.find(m_currentPosition)->second;
 	Database& base		= m_referenceBase->base();
 
 	Runnable::TreeP tree(Tree::lookup(base, g.game->currentBoard(), key.mode(), key.ratingType()));
@@ -1851,7 +1851,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 
 	sys::thread::stop();
 
-	EditGame const& g	= *m_gameMap.find(m_position)->second;
+	EditGame const& g	= *m_gameMap.find(m_currentPosition)->second;
 	Database& base		= m_referenceBase->base();
 
 	if (::runnable)
@@ -2063,7 +2063,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 	M_REQUIRE(!cursor.isReadonly());
 	M_REQUIRE(haveCurrentGame());
 
-	EditGame& g = *m_gameMap.find(m_position)->second;
+	EditGame& g = *m_gameMap.find(m_currentPosition)->second;
 
 	save::State	state;
 
@@ -2123,10 +2123,10 @@ Application::saveGame(Cursor& cursor, bool replace)
 		if (m_subscriber)
 		{
 			m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
-			m_subscriber->updateGameInfo(m_position);
+			m_subscriber->updateGameInfo(m_currentPosition);
 
 			if (g.crcMoves != crcMoves || g.crcMainline != crcMainline)
-				m_subscriber->updateGameData(m_position, crcMainline != g.crcMainline);
+				m_subscriber->updateGameData(m_currentPosition, crcMainline != g.crcMainline);
 
 			if (m_current == &cursor)
 			{
@@ -2179,7 +2179,7 @@ Application::updateMoves()
 	M_REQUIRE(contains(sourceName()));
 	M_REQUIRE(!cursor(sourceName()).isReadonly());
 
-	EditGame& g = *m_gameMap.find(m_position)->second;
+	EditGame& g = *m_gameMap.find(m_currentPosition)->second;
 
 	if (!g.game->isModified())
 		return save::Ok;
@@ -2216,10 +2216,10 @@ Application::updateMoves()
 			g.crcMainline = g.game->computeChecksumOfMainline();
 
 			m_subscriber->updateDatabaseInfo(name, variant);
-			m_subscriber->updateGameInfo(m_position); // because of changed checksums
+			m_subscriber->updateGameInfo(m_currentPosition); // because of changed checksums
 
 			if (g.crcMoves != crcMoves || g.crcMainline != crcMainline)
-				m_subscriber->updateGameData(m_position, crcMainline != g.crcMainline);
+				m_subscriber->updateGameData(m_currentPosition, crcMainline != g.crcMainline);
 
 			if (m_current == &cursor)
 			{
@@ -2335,7 +2335,7 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 	M_REQUIRE(contains(scratchbaseName()));
 
 	if (position == InvalidPosition)
-		position = m_position;
+		position = m_currentPosition;
 
 	GameP game	= m_gameMap.find(position)->second;
 	GameP myGame	= game;
@@ -2927,7 +2927,7 @@ Application::pasteLastClipbaseGame(unsigned position)
 	variant::Type	variant	= variant::toMainVariant(game(position).variant());
 	Cursor&			source	= *clipbase(variant);
 	unsigned			index		= source.count(table::Games) - 1;
-	unsigned			current	= m_position;
+	unsigned			current	= m_currentPosition;
 	load::State		state		__attribute__((unused));
 
 	state = loadGame(ReservedPosition, source, index);
@@ -2935,7 +2935,7 @@ Application::pasteLastClipbaseGame(unsigned position)
 	swapGames(ReservedPosition, position);
 	game(position).setSubscriber(game(ReservedPosition).releaseSubscriber());
 	releaseGame(ReservedPosition);
-	m_position = current; // swapGames() is modifying m_position
+	m_currentPosition = current; // swapGames() is modifying m_currentPosition
 
 	if (m_subscriber)
 		m_subscriber->updateGameInfo(position);
@@ -2945,22 +2945,26 @@ Application::pasteLastClipbaseGame(unsigned position)
 
 
 bool
-Application::mergeGame(	unsigned from,
-								unsigned to,
+Application::mergeGame(	unsigned primary,
+								unsigned secondary,
 								position::ID startPosition,
 								move::Order moveOrder,
 								unsigned variationDepth)
 {
-	M_REQUIRE(containsGameAt(from));
-	M_REQUIRE(containsGameAt(to));
+	M_REQUIRE(containsGameAt(primary));
+	M_REQUIRE(containsGameAt(secondary));
+	M_REQUIRE(primary != secondary);
 
-	if (!game(to).merge(game(from), startPosition, moveOrder, variationDepth))
+	if (!game(primary).merge(game(secondary), startPosition, moveOrder, variationDepth))
 		return false;
 
-	if (to != ReservedPosition)
+	if (primary != ReservedPosition)
 	{
 		if (m_subscriber)
-			m_subscriber->updateGameInfo(to);
+			m_subscriber->updateGameInfo(primary);
+
+		if (m_currentPosition != primary)
+			refreshGame(primary);
 	}
 
 	return true;
@@ -2968,24 +2972,34 @@ Application::mergeGame(	unsigned from,
 
 
 bool
-Application::mergeGame(	unsigned source1,
-								unsigned source2,
+Application::mergeGame(	unsigned primary,
+								unsigned secondary,
 								unsigned destination,
 								position::ID startPosition,
 								move::Order moveOrder,
 								unsigned variationDepth)
 {
-	M_REQUIRE(containsGameAt(source1));
-	M_REQUIRE(containsGameAt(source2));
+	M_REQUIRE(containsGameAt(primary));
+	M_REQUIRE(containsGameAt(secondary));
 	M_REQUIRE(containsGameAt(destination));
+	M_REQUIRE(primary != secondary);
 
-	if (!game(destination).merge(game(source1), game(source2), startPosition, moveOrder, variationDepth))
+	if (!game(destination).merge(	game(primary),
+											game(secondary),
+											startPosition,
+											moveOrder,
+											variationDepth))
+	{
 		return false;
+	}
 
 	if (destination != ReservedPosition)
 	{
 		if (m_subscriber)
 			m_subscriber->updateGameInfo(destination);
+
+		if (m_currentPosition != destination)
+			refreshGame(destination);
 	}
 
 	return true;
@@ -3010,7 +3024,10 @@ Application::mergeLastClipbaseGame(	unsigned position,
 	state = loadGame(ReservedPosition, source, index);
 	M_ASSERT(state == load::Ok);
 
-	bool rc = mergeGame(ReservedPosition, position, startPosition, moveOrder, variationDepth);
+	bool rc = mergeGame(position, ReservedPosition, startPosition, moveOrder, variationDepth);
+
+	if (m_currentPosition != position)
+		refreshGame(position);
 
 	releaseGame(ReservedPosition);
 	return rc;
@@ -3037,8 +3054,8 @@ Application::mergeLastClipbaseGame(	unsigned position,
 	state = loadGame(ReservedPosition, source, index);
 	M_ASSERT(state == load::Ok);
 
-	bool rc = mergeGame(	ReservedPosition,
-								position,
+	bool rc = mergeGame(	position,
+								ReservedPosition,
 								destination,
 								startPosition,
 								moveOrder,
@@ -3048,6 +3065,9 @@ Application::mergeLastClipbaseGame(	unsigned position,
 	{
 		if (m_subscriber)
 			m_subscriber->updateGameInfo(destination);
+
+		if (m_currentPosition != destination)
+			refreshGame(destination);
 	}
 
 	releaseGame(ReservedPosition);

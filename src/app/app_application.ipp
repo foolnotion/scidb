@@ -33,7 +33,7 @@ inline unsigned Application::countGames() const			{ return m_gameMap.size(); }
 inline unsigned Application::countEngines() const		{ return m_numEngines; }
 inline unsigned Application::maxEngineId() const		{ return m_engineList.size(); }
 
-inline bool Application::haveCurrentGame() const		{ return m_position != InvalidPosition; }
+inline bool Application::haveCurrentGame() const		{ return m_currentPosition != InvalidPosition; }
 inline bool Application::haveCurrentBase() const		{ return m_current; }
 inline bool Application::haveReferenceBase() const		{ return m_referenceBase; }
 inline bool Application::switchReferenceBase() const	{ return m_switchReference; }
@@ -46,7 +46,7 @@ inline Cursor const& Application::clipBase() const		{ return cursor(clipbaseName
 inline Cursor& Application::clipBase()						{ return cursor(clipbaseName()); }
 
 inline Application::Subscriber* Application::subscriber() const	{ return m_subscriber.get(); }
-inline unsigned Application::currentPosition() const					{ return m_position; }
+inline unsigned Application::currentPosition() const					{ return m_currentPosition; }
 inline db::Tree const* Application::currentTree() const				{ return m_currentTree.get(); }
 inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }
 

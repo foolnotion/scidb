@@ -579,10 +579,10 @@ dumpAscii(	Board& board,
 		mstl::string s;
 
 		board.prepareUndo(move);
-		board.prepareForPrint(move, variant::Normal);
+		board.prepareForPrint(move, variant::Normal, Board::InternalRepresentation);
 		board.doMove(move, variant::Normal);
 		for (unsigned k = 0; k < level; ++k) printf("| ");
-		printf("%s: ", move.printSan(s).c_str());
+		printf("%s: ", move.printSan(s, protocol::Scidb, encoding::Latin1).c_str());
 		dumpAscii(board, done, i->node, level + 1, i->transposition, ply + 1);
 		board.undoMove(move, variant::Normal);
 	}

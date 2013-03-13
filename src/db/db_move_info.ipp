@@ -35,6 +35,23 @@ inline unsigned MoveInfo::centiSeconds() const	{ return m_centiSeconds; }
 
 inline
 bool
+MoveInfo::operator==(MoveInfo const& info) const
+{
+	return compare(info) == 0;
+}
+
+
+inline
+bool
+MoveInfo::operator!=(MoveInfo const& info) const
+{
+	return compare(info) != 0;
+}
+
+
+
+inline
+bool
 MoveInfo::hasEvaluationInfo() const
 {
 	return m_content == Evaluation;

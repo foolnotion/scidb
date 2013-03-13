@@ -1361,11 +1361,30 @@ static int
 cmdModified(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	bool flag = true;
+	bool irreversible = false;
+
+	while (objc > 3 && *Tcl_GetString(objv[objc - 2]) == '-')
+	{
+		char const* option = stringFromObj(objc, objv, objc - 2);
+
+		if (strcmp(option, "-irreversible") == 0)
+			irreversible = boolFromObj(objc, objv, objc - 1);
+		else
+			return error(::CmdSubscribe, nullptr, nullptr, "unexpected option '%s'", option);
+
+		objc -= 2;
+	}
 
 	if (objc > 2)
 		flag = boolFromObj(objc, objv, 2);
 
-	scidb->game(unsignedFromObj(objc, objv, 1)).setIsModified(flag);
+	Game& game = scidb->game(unsignedFromObj(objc, objv, 1));
+
+	if (irreversible)
+		game.setIsIrreversible(flag);
+	else
+		game.setIsModified(flag);
+
 	return TCL_OK;
 }
 
@@ -1661,15 +1680,15 @@ cmdPosition(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	switch (index)
 	{
 		case Cmd_AtStart:
-			appendResult("%d", Scidb->game(position).atLineStart());
+			setResult(Scidb->game(position).atLineStart());
 			break;
 
 		case Cmd_AtEnd:
-			appendResult("%d", Scidb->game(position).atLineEnd());
+			setResult(Scidb->game(position).atLineEnd());
 			break;
 
 		case Cmd_IsMainline:
-			appendResult("%d", Scidb->game(position).isMainline());
+			setResult(Scidb->game(position).isMainline());
 			break;
 
 		case Cmd_Key:
@@ -2299,10 +2318,10 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					}
 					break;
 
-				case 'a':			// marks
+				case 'a':
 					switch (cmd[2])
 					{
-						case 'r':	// marsk
+						case 'r':	// marks
 						if (nextArg < objc)
 						{
 							mstl::string key(stringFromObj(objc, objv, nextArg));
@@ -3318,7 +3337,7 @@ cmdPaste(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* arg	= stringFromObj(objc, objv, 1);
+	char const* arg	= stringFromObj(objc, objv, 2);
 	char const* pos	= stringFromObj(objc, objv, 3);
 	char const* trans	= stringFromObj(objc, objv, 4);
 
@@ -3327,13 +3346,13 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (isdigit(*stringFromObj(objc, objv, 5)))
 		variationDepth = unsignedFromObj(objc, objv, 5);
 
-	position::ID	startPosition;
+	position::ID	startPos;
 	move::Order		moveOrder;
 
 	if (::strcmp(pos, "initial") == 0)
-		startPosition = position::Initial;
+		startPos = position::Initial;
 	else if (::strcmp(pos, "current") == 0)
-		startPosition = position::Current;
+		startPos = position::Current;
 	else
 		return error(CmdMerge, nullptr, nullptr, "unexpected position '%s'", pos);
 
@@ -3344,7 +3363,7 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	else
 		return error(CmdMerge, nullptr, nullptr, "unexpected order '%s'", trans);
 
-	unsigned from = unsignedFromObj(objc, objv, 1);
+	unsigned primary = unsignedFromObj(objc, objv, 1);
 
 	if (objc > 6)
 	{
@@ -3352,24 +3371,24 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		if (::strcmp(arg, "clipbase") == 0)
 		{
-			setResult(scidb->mergeLastClipbaseGame(from, target, startPosition, moveOrder, variationDepth));
+			setResult(scidb->mergeLastClipbaseGame(primary, target, startPos, moveOrder, variationDepth));
 		}
 		else
 		{
-			unsigned to = unsignedFromObj(objc, objv, 2);
-			setResult(scidb->mergeGame(from, to, target, startPosition, moveOrder, variationDepth));
+			unsigned secondary = unsignedFromObj(objc, objv, 2);
+			setResult(scidb->mergeGame(primary, secondary, target, startPos, moveOrder, variationDepth));
 		}
 	}
 	else
 	{
 		if (::strcmp(arg, "clipbase") == 0)
 		{
-			setResult(scidb->mergeLastClipbaseGame(from, startPosition, moveOrder, variationDepth));
+			setResult(scidb->mergeLastClipbaseGame(primary, startPos, moveOrder, variationDepth));
 		}
 		else
 		{
 			unsigned to = unsignedFromObj(objc, objv, 2);
-			setResult(scidb->mergeGame(from, to, startPosition, moveOrder, variationDepth));
+			setResult(scidb->mergeGame(primary, to, startPos, moveOrder, variationDepth));
 		}
 	}
 

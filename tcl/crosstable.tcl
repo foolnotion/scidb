@@ -1133,7 +1133,12 @@ proc Mouse3Down {dlg node} {
 			-label " $::browser::mc::LoadGame" \
 			-command [namespace code [list Open $dlg pgn $gameIndex]] \
 			;
-		# TODO: add Merge Game
+#		if {[::scidb::game::current] == -1} { sert state disabled } else { set state normal }
+#		$menu add command \
+#			-label " $::browser::mc::MergeGame" \
+#			-command [list gamebar::mergeGame $dlg $position] \
+#			-state $state \
+#			;
 	}
 
 	if {[info exists m]} {
