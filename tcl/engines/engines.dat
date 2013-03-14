@@ -61,28 +61,4 @@ set ::engine::Engines {
 		ProfileType Script
 		Profiles:WB { Default {{# Sjeng does not have specific options}} }
 	}
-	{
-		Name Crafty
-		Identifier Crafty-23.4
-		Author "Dr. Robert M. Hyatt"
-		Command crafty-scidb
-		Protocol WB
-		Variants standard
-		Features:WB {smp true playOther true analyze true hashSize {}}
-		ProfileType Script
-		Profiles:WB {
-			Default {
-				"# users options:"
-				"# ----------------------------------------"
-				"# <option> <value>"
-				"#"
-				"# standard options (should not be changed)"
-				"# ----------------------------------------"
-				"log off           # disable logging"
-				"display moves     # display current move"
-				"display variation # display multi-pv"
-				"linelength 100000 # don't break lines"
-			}
-		}
-	}
 }

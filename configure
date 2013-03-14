@@ -184,7 +184,7 @@ array set option {
     HAVE_INOTIFY    {}
     SYS_INOTIFY     {}
     HAVE_STATVFS    {}
-    ENGINES         {stockfish Sjeng crafty}
+    ENGINES         {stockfish Sjeng}
 }
 
 array set defaults {
