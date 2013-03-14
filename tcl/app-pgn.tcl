@@ -984,6 +984,14 @@ proc DoLayout {position data {w {}}} {
 
 					clear {
 						$w delete m-start m-0
+						# delete superfluous tags, this will speed up the text widget
+						set tags {}
+						foreach tag [$w tag names] {
+							if {[string match {m-[0-9]*} $tag]} { lappend tags $tag }
+						}
+						if {[llength $tags]} {
+							$w tag delete {*}$tags
+						}
 						$w insert m-0 "\u200b"
 					}
 

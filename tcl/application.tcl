@@ -146,6 +146,7 @@ proc open {} {
 
 	# setup
 	::move::setup
+	::tcl::mathfunc::srand [clock milliseconds]
 	set app .application
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus

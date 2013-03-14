@@ -501,14 +501,17 @@ proc LoadGame(list) {incr} {
 	variable Vars
 
 	if {[llength $Vars(current:game)] > 1} {
+		::widget::busyCursor on
 		set number [LoadGame(all) {*}$Vars(current:game) $incr]
 		lset Vars(current:game) 4 $number
 		UpdateGameButtonState(list) [lindex $$Vars(current:game) 0]
+		::widget::busyCursor off
 	}
 }
 
 
 proc LoadGame(base) {incr} {
+	::widget::busyCursor on
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
 	set variant [::util::toMainVariant $variant]
@@ -523,6 +526,7 @@ proc LoadGame(base) {incr} {
 
 	LoadGame(all) $position $currentBase $currentVariant -1 $number $incr
 	UpdateGameButtonState(base) $currentBase $currentVariant
+	::widget::busyCursor off
 }
 
 
@@ -538,9 +542,11 @@ proc LoadGame(all) {position base variant view number incr} {
 		if {$incr eq "random"} {
 			if {$numGames == 1} {
 				set index 0
+			} elseif {$number == -1} {
+				set index [expr {min($numGames - 1, int(rand()*$numGames))}]
 			} else {
 				set index [::scidb::db::get gameIndex $number $view $base $variant]
-				do { set i [expr {int(rand()*$numGames)}] } while {$i == $index}
+				do { set i [expr {min($numGames - 1, int(rand()*$numGames))}] } while {$i == $index}
 				set index $i
 			}
 		} elseif {$number == -1} {
