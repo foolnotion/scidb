@@ -518,7 +518,7 @@ int save_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
   fname[5] = xpiece_char[b1_man];
   fname[6] = xpiece_char[b2_man];
   
-  if(!(f = fopen((char*)fname,"w"))) return 0;
+  if(!(f = fopen((char const*)fname,"w"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {
@@ -979,7 +979,7 @@ int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t)
   fname[5]= xpiece_char[b1_man];
   fname[6]= xpiece_char[b2_man];
   
-  if(!(f = fopen((char*)fname,"r"))) return 0;
+  if(!(f = fopen((char const*)fname,"r"))) return 0;
   
   for(i = 0; i < THREE_PIECE_SIZE; i += IO_BUFSIZE) 
     {

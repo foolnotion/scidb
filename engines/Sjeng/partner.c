@@ -25,7 +25,7 @@
 #include "protos.h"
 #include "extvars.h"
 
-#if 0 // original values
+#ifdef ORIGINAL
 int hand_value[] = { 0, 100, -100, 210, -210, 0, 0, 250, -250, 450, -450, 230, -230 }; 
 int std_hand_value[] = { 0, 100, -100, 210, -210, 0, 0, 250, -250, 450, -450, 230, -230 };
 #else

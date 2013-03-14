@@ -356,7 +356,7 @@ merge(MoveNode* node,
 					prev->setNext(variation->removeNext());
 					prev = prev->getLineEnd()->prev();
 
-					if ( leadingLanguageSet && mergeComments(end, prev->next(), *leadingLanguageSet))
+					if (leadingLanguageSet && mergeComments(end, prev->next(), *leadingLanguageSet))
 						changed = true;
 
 					prev->deleteNext();
@@ -393,7 +393,6 @@ merge(MoveNode* node,
 		if (node->atLineEnd())
 		{
 			MoveNode* prev = node->prev();
-
 			prev->deleteNext();
 			prev->setNext(variation->removeNext());
 			delete variation;

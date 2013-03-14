@@ -121,17 +121,6 @@ void init_egtb(void)
 #endif
 }
 
-#if 0 /* unused */
-const static int EGTranslate(int sqidx)
-{
-  int r;
-
-  r = (((rank(sqidx)-1)*8)+(file(sqidx)-1));
-  
-  return r;
-}
-#endif
-
 int probe_egtb(void)
 {
 #ifdef USE_EGTB

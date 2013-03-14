@@ -30,7 +30,7 @@ int Material;	// pawn, knight, king, rook, queen, bishop
 
 int std_material[] = { 0, 100, -100, 310, -310, 4000, -4000, 500, -500, 900, -900, 325, -325, 0 }; 
 
-#if 0 // original values
+#ifdef ORIGINAL
 int suicide_material[] = { 0, 15, -15, 150, -150, 500, -500, 150, -150, 50, -50, 0, 0, 0 };
 int losers_material[] = { 0, 80, -80, 320, -320, 1000, -1000, 350, -350, 400, -400, 270, -270, 0 }; 
 int zh_material[] = { 0, 100, -100, 210, -210, 4000, -4000, 250, -250, 450, -450, 230, -230, 0 }; 
