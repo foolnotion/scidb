@@ -193,31 +193,40 @@ proc update {} {
 	if {$Updated} { return }
 	set Updated 1
 
-	array set found { {} {} piece {} square {} }
-
 	foreach dir {piece square {}} {
 		set themesDir [file join $::scidb::dir::user themes $dir]
 		foreach file [glob -nocomplain -directory [file join $::scidb::dir::share themes $dir] *.dat] {
-			set path [file join $themesDir [file tail $file]]
-			if {[file exists $path]} {
-				set exisiting 0
-				set f [open $path r]
-				while {[gets $f line] >= 0} {
-					if {[string match *identifier* $line]} {
-						if {	[regexp {[{](.*)[}]} $line _ identifier]
-							|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
-							if {[llength $identifier] == 1} {
-								set identifier [lindex $identifier 0]
-							}
-							if {$identifier in $identifiers($dir)} { set exisiting 1 }
-						}
+			set ignore 1
+			set f [open $file r]
+			while {[gets $f line] >= 0} {
+				if {[string match *identifier* $line]} {
+					if {	[regexp {[{](.*)[}]} $line _ identifier]
+						|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
+						if {$identifier in $identifiers($dir)} { set ignore 0 }
 					}
 				}
-				if {!$exisiting} {
-					puts stderr [format $mc::CannotOverwriteTheme $path]
+			}
+			close $f
+			if {!$ignore} {
+				set path [file join $themesDir [file tail $file]]
+				if {[file exists $path]} {
+					set exisiting 0
+					set f [open $path r]
+					while {[gets $f line] >= 0} {
+						if {[string match *identifier* $line]} {
+							if {	[regexp {[{](.*)[}]} $line _ identifier]
+								|| [regexp {identifier[ \t]+([^ \t]+)} $line _ identifier]} {
+								if {$identifier in $identifiers($dir)} { set exisiting 1 }
+							}
+						}
+					}
+					if {!$exisiting} {
+						puts stderr [format $mc::CannotOverwriteTheme $path]
+					}
+					close $f
+				} else {
+					catch { file copy -force $file $path }
 				}
-			} else {
-				catch { file copy -force $file $path }
 			}
 		}
 	}
