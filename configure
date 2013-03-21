@@ -69,6 +69,7 @@ proc findBestTclVersion {} {
         /usr/local/X11/include   \
         /usr/local/X11R6/include \
         /opt/tcltk/include       \
+        /opt/mytcltk/include     \
         /opt/include             \
         ;
 
@@ -92,6 +93,7 @@ proc findBestTclVersion {} {
             }
         }
     }
+
     if {[llength $results] > 0} {
         return [lindex [lsort $results] 0]
     }
@@ -606,6 +608,7 @@ proc findTclTkPaths {} {
         /usr/X11R6/include                                    \
         /usr/local/X11/include                                \
         /opt/tcltk/include                                    \
+        /opt/mytcltk/include                                  \
         /opt/include                                          \
         /usr/X11R/include                                     \
         /usr/$configure(exec-prefix)/tcl${tclv}/generic       \
@@ -648,6 +651,7 @@ proc findTclTkPaths {} {
         /usr/lib64                                         \
         /usr/X11R6/lib                                     \
         /opt/tcltk/lib                                     \
+        /opt/mytcltk/lib                                   \
         /opt/lib                                           \
     ]
 
