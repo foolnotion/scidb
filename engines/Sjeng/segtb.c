@@ -117,7 +117,6 @@ cache_data table_cache[CACHE_SIZE];
 int temp_key;
 
 int SEGTB;
-
 int load_2piece();
 int load_3piece(int w1_man, int b1_man, int b2_man, signed char *t);
 
