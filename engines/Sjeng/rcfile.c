@@ -36,8 +36,6 @@ int PBSize;
 int cfg_booklearn;
 int cfg_razordrop;
 int cfg_cutdrop;
-int cfg_ksafety[15][9];
-int cfg_tropism[5][7];
 int havercfile;
 int cfg_futprune;
 int cfg_devscale;
@@ -46,6 +44,36 @@ int cfg_recap;
 int cfg_smarteval;
 int cfg_attackeval;
 float cfg_scalefac;
+
+// taken from rc-file
+int cfg_tropism[5][7] =
+{
+	{  40,  20,  10,   3,   1,   1,   0 },
+	{  50,  25,  15,   5,   2,   2,   2 },
+	{  50,  70,  35,  10,   2,   1,   0 },
+	{  50,  40,  15,   5,   1,   1,   0 },
+	{ 100,  60,  20,   5,   2,   0,   0 },
+};
+
+// taken from rc-file
+int cfg_ksafety[15][9] =
+{
+	{  -5,   5,  10,  15,  50,  80, 150, 150, 150 },
+	{  -5,  15,  20,  25,  70, 150, 200, 200, 200 },
+	{  -5,  15,  30,  30, 100, 200, 300, 300, 300 },
+	{ -10,  20,  40,  40, 100, 200, 300, 300, 400 },
+	{ -10,  30,  50,  80, 150, 300, 400, 400, 500 },
+	{ -10,  35,  60, 100, 200, 250, 400, 400, 500 },
+	{ -10,  40,  70, 110, 210, 300, 500, 500, 600 },
+	{ -10,  45,  75, 125, 215, 300, 500, 600, 700 },
+	{ -10,  60,  90, 130, 240, 350, 500, 600, 700 },
+	{ -15,  60,  95, 145, 260, 350, 500, 600, 700 },
+	{ -15,  60, 100, 150, 270, 350, 500, 600, 700 },
+	{ -15,  60, 110, 160, 280, 400, 600, 700, 800 },
+	{ -20,  70, 115, 165, 290, 400, 600, 700, 800 },
+	{ -20,  80, 120, 170, 300, 450, 700, 800, 900 },
+	{ -20,  80, 125, 175, 310, 450, 700, 800, 900 },
+};
 
 void read_rcfile (void) 
 {
@@ -56,9 +84,9 @@ void read_rcfile (void)
     {
       printf("No configuration file!\n");
 
-      TTSize = 300000;
-      ECacheSize = 200000;
-      PBSize = 200000;
+      TTSize = 256;					// intial:  300000 entries
+      ECacheSize = 200000;			// rc-file: 4000
+      PBSize = 10000000;			// intial:  200000
       EGTBCacheSize = 0;
       strcpy(EGTBDir, "TB");
       
@@ -68,7 +96,11 @@ void read_rcfile (void)
       cfg_cutdrop = 0;
       cfg_futprune = 1;
       cfg_smarteval = 1;
-      cfg_attackeval = 0;
+      cfg_attackeval = 1;     // intial:  0
+
+		cfg_booklearn = 1;
+		cfg_onerep = 1;
+		cfg_recap = 1;
 
       havercfile = 0;
 

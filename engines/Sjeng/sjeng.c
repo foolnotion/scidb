@@ -89,6 +89,7 @@ FILE *lrn_standard;
 FILE *lrn_zh;
 FILE *lrn_suicide;
 FILE *lrn_losers;
+
 extern int init_segtb();
 
 int main (int argc, char *argv[]) {
@@ -182,9 +183,8 @@ int main (int argc, char *argv[]) {
 
   initialize_hash();
   clear_tt();
+  reset_ecache();
   
-  init_egtb();
-
   if (init_segtb())
     SEGTB = TRUE;
   else
@@ -730,6 +730,7 @@ int main (int argc, char *argv[]) {
 	    printf("Move number : %d\n", move_number);
 	if (move_number > 0)
 	  {
+	    ply = 1;
 	    path_x[0] = game_history_x[--move_number];
 	    unmake(&game_history[move_number], 0);
 	    reset_piece_square();
@@ -739,10 +740,12 @@ int main (int argc, char *argv[]) {
       else if (!strncmp (input, "remove", 5)) {
 	if (move_number > 1)
 	  {
+	    ply = 1;
 	    path_x[0] = game_history_x[--move_number];
 	    unmake(&game_history[move_number], 0);
 	    reset_piece_square();
 
+	    ply = 1;
 	    path_x[0] = game_history_x[--move_number];
 	    unmake(&game_history[move_number], 0);
 	    reset_piece_square();
@@ -885,7 +888,7 @@ int main (int argc, char *argv[]) {
 	continue;
       }
       else if (!strncmp (input, "protover", 8)) {
-	printf("feature ping=1 setboard=1 playother=0 san=0 usermove=0 time=1\n");
+	printf("feature ping=1 setboard=1 playother=0 san=0 usermove=0 time=1 memory=1\n");
 	printf("feature draw=0 sigint=0 sigterm=0 reuse=1 analyze=1\n");
 	printf("feature myname=\"Sjeng " VERSION "\"\n");
 	printf("feature variants=\"normal,bughouse,crazyhouse,suicide,giveaway,losers\"\n");
@@ -933,6 +936,29 @@ int main (int argc, char *argv[]) {
 	       "you may at your option offer warranty protection in exchange for a fee.\n\n");
 
 	}
+      else if (!strncmp (input, "memory", 6)) {
+	int newTTSize;
+	if (sscanf(input+6, "%d", &newTTSize) == 1 && newTTSize > 0) {
+	  if (newTTSize != TTSize) {
+	    TTSize = newTTSize;
+	    printf("New size of hash table: %d MB\n", newTTSize);
+	    free_hash();
+	    alloc_hash();
+	    initialize_hash();
+	    clear_tt();
+	  }
+	}
+      }
+      else if (!strncmp (input, "kingsafety", 10)) {
+	float scalefac;
+	if (sscanf(input+9, "%f", &scalefac) == 1 && scalefac != cfg_scalefac && scalefac > 0.0) {
+	   cfg_scalefac = scalefac;
+	   printf("New king safety factor: %f\n", cfg_scalefac);
+	   initialize_eval();
+	   if (Variant == Bughouse || Variant == Crazyhouse)
+	     clear_tt();
+	}
+      }
       else if (!strcmp (input, "help")) {
 	printf ("\n%s\n\n", divider);
 	printf ("diagram/d:       toggle diagram display\n");

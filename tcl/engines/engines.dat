@@ -57,8 +57,8 @@ set ::engine::Engines {
 		Command /usr/local/games/sjeng-scidb
 		Protocol WB
 		Variants {standard bughouse crazyhouse suicide giveaway losers}
-		Features:WB {analyze true}
+		Features:WB {analyze true hashSize {}}
 		ProfileType Script
-		Profiles:WB { Default {{# Sjeng does not have specific options}} }
+		Profiles:WB { Default { "kingsafety 1.0 # crazyhouse/bughouse only" } }
 	}
 }

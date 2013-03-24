@@ -37,9 +37,9 @@ unsigned long TTStores;
 typedef struct 
 {
   signed char Depth;  
+  unsigned char OnMove:1, Threat:1, Type:2;
   /* unsigned char may be a bit small for bughouse/crazyhouse */
   unsigned short Bestmove;
-  unsigned OnMove:1, Threat:1, Type:2;
   unsigned long Hash;
   unsigned long Hold_hash;
   signed long Bound;
@@ -48,8 +48,8 @@ TType;
 
 typedef struct
 {
+  unsigned short OnMove:1, Type:2;
   unsigned short Bestmove;
-  unsigned OnMove:1, Type:2;
   unsigned long Hash;
   unsigned long Hold_hash;
   signed long Bound;
@@ -68,6 +68,7 @@ void clear_tt(void)
 {
   memset(DP_TTable, 0, sizeof(TType) * TTSize);
   memset(AS_TTable, 0, sizeof(TType) * TTSize);
+  memset(QS_TTable, 0, sizeof(QTType) * TTSize);
 };
 
 void clear_dp_tt(void)
@@ -357,9 +358,11 @@ int QProbeTT(int *score, int alpha, int beta, int *best)
 
 void alloc_hash(void)
 {
-  AS_TTable = (TType *) malloc(sizeof(TType) * TTSize);
-  DP_TTable = (TType *) malloc(sizeof(TType) * TTSize);
-  QS_TTable = (QTType *) malloc(sizeof(QTType) * TTSize);
+  int numentries = (TTSize*1024*1024)/(2*sizeof(TType) + sizeof(QTType));
+ 
+  AS_TTable = (TType *) malloc(sizeof(TType) * numentries);
+  DP_TTable = (TType *) malloc(sizeof(TType) * numentries);
+  QS_TTable = (QTType *) malloc(sizeof(QTType) * numentries);
 
   if (AS_TTable == NULL || DP_TTable == NULL || QS_TTable == NULL)
   {
@@ -368,9 +371,9 @@ void alloc_hash(void)
   }
   
   printf("Allocated 2*%d hash entries, totalling %lu bytes.\n",
-          TTSize, (unsigned long)(2*sizeof(TType)*TTSize));
+          numentries, (unsigned long)(2*sizeof(TType)*numentries));
   printf("Allocated %d quiescenthash entries, totalling %lu bytes.\n",
-          TTSize, (unsigned long)(sizeof(QTType)*TTSize));
+          numentries, (unsigned long)(sizeof(QTType)*numentries));
   return; 
 }
 

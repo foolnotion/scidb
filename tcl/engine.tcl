@@ -865,7 +865,6 @@ proc setup {} {
 							foreach {profile options} $newEngine(Profiles:WB) {
 								if {$profile eq "Default"} { set newEngine(Script:Default) $options }
 							}
-							set newEngine(Profiles:WB) $oldEngine(Profiles:WB)
 						}
 						set newEntry [array get newEngine]
 						lset Engines $index $newEntry
@@ -3619,7 +3618,17 @@ proc LoadSharedConfiguration {file} {
 
 
 proc WriteEngineOptions {chan} {
+	variable Engines
+
+	set engines $Engines
+	set Engines {}
+	foreach entry $engines {
+		array set arr $entry
+		array unset arr Script:Default
+		lappend Engines [array get arr]
+	}
 	::options::writeList $chan [namespace current]::Engines
+	set Engines $engines
 }
 
 

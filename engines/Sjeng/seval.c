@@ -146,8 +146,9 @@ static int black_saccers(int square)
       f = TRUE;
     }
   else if (rank(square) == 4 &&
-	   board[square + 35] == bpawn ||
-	   board[square + 37] == bpawn)
+	   (board[square + 35] == bpawn
+	   ||
+	   board[square + 37] == bpawn))
     {
       f = TRUE;
     }
@@ -228,8 +229,9 @@ static int white_saccers(int square)
       f = TRUE;
     }
   else if (rank(square) == 5 &&
-	   board[square - 35] == wpawn ||
-	   board[square - 37] == wpawn)
+	   (board[square - 35] == wpawn
+	   ||
+	   board[square - 37] == wpawn))
     {
       f = TRUE;
     }
