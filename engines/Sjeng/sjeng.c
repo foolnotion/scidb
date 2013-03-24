@@ -951,12 +951,16 @@ int main (int argc, char *argv[]) {
       }
       else if (!strncmp (input, "kingsafety", 10)) {
 	float scalefac;
-	if (sscanf(input+9, "%f", &scalefac) == 1 && scalefac != cfg_scalefac && scalefac > 0.0) {
-	   cfg_scalefac = scalefac;
-	   printf("New king safety factor: %f\n", cfg_scalefac);
-	   initialize_eval();
-	   if (Variant == Bughouse || Variant == Crazyhouse)
-	     clear_tt();
+	if (sscanf(input+9, "%f", &scalefac) == 1 && scalefac != cfg_scalefac) {
+	  if (scalefac < 0.0)
+	    scalefac = 0.0;
+	  else if (scalefac > 2.5)
+	    scalefac = 2.5;
+	  cfg_scalefac = scalefac;
+	  printf("New king safety factor: %f\n", cfg_scalefac);
+	  initialize_eval();
+	  if (Variant == Bughouse || Variant == Crazyhouse)
+	    clear_tt();
 	}
       }
       else if (!strcmp (input, "help")) {
