@@ -35,7 +35,6 @@ set Index {
   { F
     {
       {{File formats} {Database-Formats.html} {}}
-      {{File Selection Dialog} {File-Selection-Dialog.html} {}}
     }
   }
   { G
@@ -60,11 +59,6 @@ set Index {
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
     }
   }
-  { P
-    {
-      {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
-    }
-  }
   { T
     {
       {{Toolbars} {Toolbar-Usage.html} {}}
@@ -73,11 +67,6 @@ set Index {
   { W
     {
       {{Website} {Contact-Information.html} {Homepage}}
-    }
-  }
-  { Ü
-    {
-      {{Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
 }

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/Game-Browser.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Hilfe: Der Partien-Browser</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Der Partien-Browser</h1>
+</div>
+
+<p>
+Der Partien-Browser wird mit einer Partie aus einer Partienliste
+geöffnet. Der Browser ist an diese Partienliste gebunden. Wird diese
+Partienliste geschlossen während der Browser noch offen ist, kann
+keine weitere Partie in diesem Browser geladen werden.
+</p>
+
+<p>
+Der Partien-Browser zeigt Partien in einfacher Form, d.h. ohne
+Anmerkungen, Kommentare und Untervarianten. Der Browser eignet
+sich insbesondere zum Sichten einer Partienliste.
+</p>
+
+<p>
+Der Partienkopf enthält drei Schaltflächen: das Ereignis und die
+Spielernamen. Durch Klicken und Halten der mittleren Maustaste auf
+einer Schaltfläche wird eine Informationsbox angezeigt. Durch
+Anklicken eines Spielernamens wird die Karteikarte dieses Spielers
+geöffnet.
+</p>
+
+<p>
+Wechselt die Farbe des Partienkopfs von blau auf rot, so signalisiert
+dies, daß die vorliegende Partie zwischenzeitlich in der Datenbank
+geändert wurde. Sie kann erneut geladen werden, um die aktuelle Partie
+zu sehen (&#x21d2; <a href="#ReloadGame">Partie neu laden</a>
+im kontextsensitiven Menü).
+</p>
+
+<p>
+Wird der Mauszeiger ausserhalb des Textfensters (mit den Partiezügen)
+positioniert, aber noch innerhalb des Dialogs, kann das Mausrad zum
+Vorspielen der Züge eingesetzt werden.
+</p>
+
+<p>
+Durch Klicken und Halten der mittleren Maustaste auf einem Partiezug
+wird die zugehörige Brettstellung angezeigt. Wird gleichzeitig
+<kbd class='key'>Umschalt</kbd> gehalten während des Klicks, so wird nur die
+Bauernstruktur gezeigt.
+</p>
+
+<p>
+Der Browser bietet folgendes kontextsensitives Menü:
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/game-browser-menu.png" alt="folder" /></li></ul>
+
+<p>
+<span class="menuitem">Partie in den Editor laden</span>
+Lade die aktuelle Partie in den Partieneditor. Die aktuelle Partie
+im Editor wird durch diese Partie ersetzt, sofern sie nicht gesperrt
+oder modifiziert ist, andernfalls wird eine neue Partie im Editor
+geöffnet.
+</p>
+
+<p id="ReloadGame">
+<span class="menuitem">Partie neu laden</span>
+Aktualisiert die aktuelle Partie durch erneutes Laden. Dieser Menüpunkt
+isr nur dann aktiv, wenn die vorliegende Partie zwischenzeitlich in der
+Datenbank geändert wurde. Das eine veränderte Partie in der Datenbank
+vorliegt wird durch einen roten Partienkopf signalisiert (sonst blau).
+</p>
+
+<p>
+<span class="menuitem">Zur nächsten Partie</span>
+Die nächste Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<span class="menuitem">Zur vorhergehenden Partie</span>
+Die vorhergehende Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<span class="menuitem">Zur letzten Partie</span>
+Die letzte Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<span class="menuitem">Zur ersten Partie</span>
+Die erste Partie aus der zugrundeliegenden Partienliste laden.
+</p>
+
+<p>
+<span class="menuitem">Brett vergößern</span>
+Das Schachbrett vergrößern, und damit auch den Dialog.
+</p>
+
+<p>
+<span class="menuitem">Brett vergößern</span>
+Das Schachbrett verkleinern, und damit auch den Dialog.
+</p>
+
+<p>
+<span class="menuitem">Brett maximieren</span>
+Die Schachbrettgröße maximieren, und damit auch den Dialog
+(jedoch kein Vollbild).
+</p>
+
+<p>
+<span class="menuitem">Brett minimieren</span>
+Die Schachbrettgröße minimieren, und damit auch den Dialog
+(jedoch nicht ikonifizieren).
+</p>
+
+<p>
+<span class="menuitem">Vollbild</span>
+Vollbild benutzen, d.h. der gesamte Bildschirm wird genutzt.
+Diese Funktion steht nicht bei jeder Bildschirmauflösung zur
+Verfügung.
+</p>
+
+<p>
+<span class="menuitem">Zeichensatz vergrößern</span>
+Den Zeichensatz für die Textdarstellung vergrößern.
+</p>
+
+<p>
+<span class="menuitem">Zeichensatz verkleinern</span>
+Den Zeichensatz für die Textdarstellung verkleinern.
+</p>
+
+<p>
+<span class="menuitem">Spaltenformatierung einschalten</span>
+Ein/Ausschalten der Spaltenformatierung im Partiefenster.
+</p>
+
+<p>
+<span class="menuitem">Zugnotation</span>
+Im zugehörigen Untermenü kann die Zugnotation ausgewählt werden:
+</p>
+
+<div class="box">
+  <table>
+    <tr>
+      <td>Algebraisch - Kurzform</td>
+      <td>&#x2001; <span class="chess">&#x2658;</span>f3</td>
+    </tr>
+    <tr>
+      <td>Algebraisch - Langform</td>
+      <td>&#x2001; <span class="chess">&#x2658;</span>g1&#x2212;f3</td>
+    </tr>
+    <tr>
+      <td>Algebraisch</td>
+      <td>&#x2001; g1f3</td>
+    </tr>
+    <tr>
+      <td>Englisch</td>
+      <td>&#x2001; N&#x2212;KB3</td>
+    </tr>
+    <tr>
+      <td>Korrespondenz</td>
+      <td>&#x2001; 7163</td>
+    </tr>
+    <tr>
+      <td>Telegraphie</td>
+      <td>&#x2001; KAHI</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+<span class="menuitem">Textausgabe konfigurieren</span>
+Öffnet eine Dialog, der eine umfangreiche Konfiguration der Textausgabe
+anbietet.
+</p>
+
+<p>
+<span class="menuitem">Hilfe</span>
+Öffnet diese Hilfeseite.
+</p>
+
+</body>
+</html>

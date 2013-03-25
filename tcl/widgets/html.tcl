@@ -468,8 +468,14 @@ proc WidgetProc {w command args} {
 			}
 			variable Margin
 			set height [lindex [$w.sub.html bbox [$w.sub.html node]] 3]
-			set y [expr {max(0, [lindex $args 0] - $Margin)}]
-			set fraction [expr {double($y)/double($height)}]
+			if {$height > 0 } {
+				set y [expr {max(0, [lindex $args 0] - $Margin)}]
+				# Adjust the position because we like to see a small margin at top
+				if {$y > 2} { set y [expr {$y - 2}] }
+				set fraction [expr {double($y)/double($height)}]
+			} else {
+				set fraction 0
+			}
 			return [$w.sub.html yview moveto $fraction]
 		}
 

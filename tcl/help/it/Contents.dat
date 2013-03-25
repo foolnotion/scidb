@@ -8,7 +8,7 @@ set Contents {
     {{{Uso dell'interfaccia di selezione dei file} {File-Selection-Dialog.html}}}
     {{{Uso delle barre degli strumenti} {Toolbar-Usage.html}}}
     {{{Il Clipbase} {Clipbase.html}}}
-    {{{How to set the default browser} {How-To-Set-Default-Browser.html}}}
+    {{{Come ipostare il browser di default} {How-To-Set-Default-Browser.html}}}
   }
   {
     {{{Finestre di liste in Scidb} {Overview.html} {list-windows}}}

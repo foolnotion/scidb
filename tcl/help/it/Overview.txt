@@ -25,7 +25,7 @@ TITLE Benvenuti a Scidb-Help
   <li><a href="File-Selection-Dialog.html">Uso dell'interfaccia di selezione dei file</a></li>
   <li><a href="Toolbar-Usage.html">Uso delle barre degli strumenti</a></li>
   <li><a href="Clipbase.html">Il Clipbase</a></li>
-  <li><a href="How-To-Set-Default-Browser.html">How to set the default browser</a></li>
+  <li><a href="How-To-Set-Default-Browser.html">Come ipostare il browser di default</a></li>
 </ul>
 
 <h2 id="list-windows">Finestre di liste in Scidb</h2>
