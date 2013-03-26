@@ -306,6 +306,8 @@ proc open {parent base variant position {number 0}} {
 	set Priv(codec) $codec
 	set Priv(white-score) 0
 	set Priv(black-score) 0
+	set Priv(white-elo) 0
+	set Priv(black-elo) 0
 	set Priv(white-rating) Elo
 	set Priv(black-rating) Elo
 	set Priv(base) $base
