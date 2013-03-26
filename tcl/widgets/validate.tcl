@@ -125,6 +125,8 @@ proc validateFloat {value {callback {}}} {
 
 proc formatFloat {w} {
 	set var [$w cget -textvariable]
+	if {![info exists $var]} { return }
+
 	set val [string trimleft [string trim [set $var]] "0"]
 	set val [string map {, .} $val]
 
@@ -143,7 +145,7 @@ proc ValidateUnsigned {w value maxlen callback unlimited} {
 	set valid 1
 	set value [string trim $value]
 	if {[string length $value] == 0} {
-		set valid $unlimited
+		set valid 1
 	} elseif {	([string length $value] > $maxlen && !$unlimited)
 				|| ![regexp {[0-9]*} $value result]
 				|| [string length $value] != [string length $result]} {
@@ -158,7 +160,7 @@ proc ValidateInteger {w value maxlen callback unlimited} {
 	set valid 1
 	set value [string trim $value]
 	if {[string length $value] == 0} {
-		set valid $unlimited
+		set valid 1
 	} elseif {	([string length $value] > $maxlen && !$unlimited)
 				|| ![regexp {[+-]?[0-9]*} $value result]
 				|| [string length $value] != [string length $result]} {
@@ -192,6 +194,8 @@ proc CheckMinValue {w x y} {
 
 proc ClampInt {w {unlimited 0}} {
 	set var [$w cget -textvariable]
+	if {![info exists $var]} { return }
+
 	set val [string trim [set $var]]
 	if {$val ne "0"} { set val [string trimleft $val "0"] }
 
@@ -232,9 +236,11 @@ proc ClampInt {w {unlimited 0}} {
 
 
 proc ClampFloat {w} {
+	set var [$w cget -textvariable]
+	if {![info exists $var]} { return }
+
 	set min [$w cget -from]
 	set max [$w cget -to]
-	set var [$w cget -textvariable]
 	set val [string trimleft [string trim [set $var]] "0"]
 
 	if {$val == ""} { set val 0.0 }
