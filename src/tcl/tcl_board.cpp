@@ -244,7 +244,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 	}
 
-	if (error == 0 && board.isStartPosition() && !board.isShuffleChessPosition())
+	if (error == 0 && board.isStartPosition() && !board.isShuffleChessPosition(variant))
 		warnings.push_back("UnsupportedVariant");
 
 	Tcl_Obj* checksGiven[2] =
@@ -270,7 +270,7 @@ cmdAnalyseFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	objs[ 0] = Tcl_NewStringObj(error ? error : "", -1);
 	objs[ 1] = Tcl_NewListObj(warnings.size(), w);
-	objs[ 2] = Tcl_NewIntObj(error ? 0 : board.computeIdn());
+	objs[ 2] = Tcl_NewIntObj(error ? 0 : board.computeIdn(variant));
 	objs[ 3] = Tcl_NewBooleanObj(board.notDerivableFromStandardChess());
 	objs[ 4] = Tcl_NewBooleanObj(board.notDerivableFromChess960());
 	objs[ 5] = Tcl_NewStringObj(toCastling(board), -1);
@@ -376,15 +376,16 @@ cmdFenToBoard(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdIdnToFen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned idn = unsignedFromObj(objc, objv, 1);
+	unsigned			idn(unsignedFromObj(objc, objv, 1));
+	variant::Type	variant(Scidb->game().variant());
 
 	Board board;
-	board.setup(idn);
+	board.setup(idn, variant);
 	mstl::string result;
 
 	Tcl_Obj* objs[2];
 
-	objs[0] = Tcl_NewStringObj(board.toFen(Scidb->game().variant(), getFormat(objc, objv, 2)), -1);
+	objs[0] = Tcl_NewStringObj(board.toFen(variant, getFormat(objc, objv, 2)), -1);
 	objs[1] = Tcl_NewStringObj(toCastling(board), -1);
 
 	setResult(U_NUMBER_OF(objs), objs);

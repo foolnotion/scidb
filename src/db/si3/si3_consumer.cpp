@@ -112,7 +112,7 @@ Consumer::endGame(TagSet const& tags)
 		str.clear();
 	}
 
-	if (!startBoard().isStandardPosition())
+	if (!startBoard().isStandardPosition(variant::Normal))
 		m_stream[m_flagPos] |= flags::Non_Standard_Start;
 
 	if (board().signature().hasPromotion())

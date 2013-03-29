@@ -35,6 +35,58 @@
 using namespace db;
 
 
+// taken from "Communications of the ACM", Vol 6, No 8, p 444 (Aug 1963)
+// this function is not valid before 14 Sep 1752
+static unsigned
+computeJulian(unsigned y, unsigned m, unsigned d)
+{
+	if (m > 2)
+	{
+		m -= 3;
+	}
+	else
+	{
+		m += 9;
+		++y;
+	}
+
+	unsigned c = y/100;
+
+	return 1721119 + d + ((146097*c)>>2) + ((1461*(y - 100*c))>>2) + (153*m + 2)/5;
+}
+
+
+// taken from "Communications of the ACM", Vol 6, No 8, p 444 (Aug 1963)
+// this function is not valid before 14 Sep 1752
+static bool
+computeDate(Date& date, unsigned julian)
+{
+	int j = julian - 1721119;
+	int y, m, d, t;
+
+	y = ((j<<2) - 1)/146097;
+	j = (j<<2) - 146097*y - 1;
+	t = j>>2;
+	j = ((t<<2) + 3)/1461;
+	y = 100*y + j;
+	t = 5*(((t<<2) - 1461*j + 7)>>2);
+	m = (t - 3)/153;
+	d = (t - 153*m + 2)/5;
+
+	if (m < 10)
+	{
+		m += 3;
+	}
+	else
+	{
+		m -= 9;
+		++y;
+	}
+
+	return date.setYMD(y, m, d);
+}
+
+
 inline
 bool
 isLeapYear(unsigned y)
@@ -462,6 +514,100 @@ Date::compare(Date const& lhs, Date const& rhs)
 		return res;
 
 	return int(lhs.day()) - int(rhs.day());
+}
+
+
+bool
+Date::addYears(int n)
+{
+	M_REQUIRE(year() > 0);
+
+	if (n)
+	{
+		int y = int(m_year) + n;
+
+		if (y < int(MinYear) || int(MaxYear) < y)
+			return false;
+		
+		m_year = y;
+
+		if (m_day)
+		{
+			if (!checkDay(m_year, m_month, m_day))
+				--m_day;
+
+			M_ASSERT(checkDay(m_year, m_month, m_day));
+		}
+	}
+
+	return true;
+}
+
+
+bool
+Date::addMonths(int n)
+{
+	M_REQUIRE(month() > 0);
+
+	if (n)
+	{
+		int sign;
+
+		if (n > 0)
+		{
+			sign = 1;
+		}
+		else
+		{
+			sign = -1;
+			n = -n;
+		}
+
+		int years = n/12;
+
+		if (n %= 12)
+		{
+			if (sign == -1 ? m_month > n : m_month + n > 12)
+			{
+				++years;
+				n = 12 - n;
+			}
+		}
+
+		if (years)
+		{
+			int y = int(m_year) + sign*years;
+
+			if (y < int(MinYear) || int(MaxYear) < y)
+				return false;
+
+			m_year = y;
+		}
+
+		m_month += sign*n;
+		M_ASSERT(0 < m_month && m_month <= 12);
+
+		if (!checkDay(m_year, m_month, m_day))
+			--m_day;
+
+		M_ASSERT(checkDay(m_year, m_month, m_day));
+	}
+
+	return true;
+}
+
+
+bool
+Date::addDays(int n)
+{
+	M_REQUIRE(day() > 0);
+
+	unsigned julian = ::computeJulian(m_year, m_month, m_day);
+
+	if (n > int(julian))
+		return false;
+
+	return ::computeDate(*this, julian + n);
 }
 
 // vi:set ts=3 sw=3:

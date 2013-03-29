@@ -695,8 +695,10 @@ proc PopupMenu {w} {
 			-command [list ::application::pgn::Shuffle $variant] \
 			;
 	}
-	$pos add separator
-	::setup::setupPositionMenu ::application::pgn $pos
+	if {[::scidb::game::query variant?] eq "Normal"} {
+		$pos add separator
+		::setup::setupPositionMenu ::application::pgn $pos
+	}
 	$m add cascade \
 		-menu $pos \
 		-compound left \
@@ -1484,11 +1486,15 @@ proc UpdateGameButtonState(base) {base variant} {
 
 	if {$numGames > 0} {
 		set state(random) normal
-		lassign [::scidb::game::link? $position] myBase myVariant index
-		set myVariant [::util::toMainVariant $myVariant]
-		if {$myBase eq $base && $myVariant eq $variant} {
-			if {$index > 0} { array set state { prev normal first normal } }
-			if {$index + 1 < $numGames} { array set state { next normal last normal } }
+		if {$position < 9} {
+			lassign [::scidb::game::link? $position] myBase myVariant index
+			set myVariant [::util::toMainVariant $myVariant]
+			if {$myBase eq $base && $myVariant eq $variant} {
+				if {$index > 0} { array set state { prev normal first normal } }
+				if {$index + 1 < $numGames} { array set state { next normal last normal } }
+			}
+		} else {
+			array set state { prev normal next normal first normal last normal }
 		}
 	}
 

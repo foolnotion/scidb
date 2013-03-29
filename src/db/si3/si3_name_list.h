@@ -88,6 +88,8 @@ public:
 	void resetMaxFrequency();
 	void updateMaxFrequency(unsigned freq);
 
+	unsigned nextId();
+
 private:
 
 	typedef mstl::vector<Node*> List;

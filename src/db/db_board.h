@@ -178,7 +178,7 @@ public:
 	/// Parse given FEN, return true if loaded properly otherwise false
 	char const* setup(char const* fen, variant::Type variant);
 	/// Setup board from given IDN (unique IDentification Number)
-	void setup(unsigned idn);
+	void setup(unsigned idn, variant::Type variant);
 	/// Setup board from given position (only usable for standard chess).
 	void setup(ExactPosition const& position);
 	/// Setup board from given position
@@ -261,10 +261,10 @@ public:
 	bool isInCheck() const;
 	/// Return true if given side is in check
 	bool isInCheck(color::ID color) const;
-	/// Return true if side not to move gives a contact check (cannot be blocked by a piece)
+	/// Return true if given move is a contact check or double check
+	bool isUnblockableCheck(Move const& move, variant::Type variant) const;
+	/// Return true if side not to move gives a contact check
 	bool isContactCheck() const;
-	/// Return true if given move is a contact check (or double check)
-	bool isContactCheck(Move const& move, variant::Type variant) const;
 	/// Return true if side to move is mate
 	bool isMate(variant::Type variant) const;
 	/// Return true if side not to move is in check
@@ -282,13 +282,13 @@ public:
 	/// Return whether side next to move is black
 	bool blackToMove() const;
 	/// Return true if the standard start position is on the board
-	bool isStandardPosition() const;
+	bool isStandardPosition(variant::Type variant) const;
 	/// Return true if a start position is on the board
 	bool isStartPosition() const;
 	/// Return true if a chess 960 start position is on the board
-	bool isChess960Position() const;
+	bool isChess960Position(variant::Type variant) const;
 	/// Returns true is a shuffle chess start position (without castling rights) is on the board
-	bool isShuffleChessPosition() const;
+	bool isShuffleChessPosition(variant::Type variant) const;
 	/// Return whether opponent side is not in check (then last move is legal)
 	bool isLegal() const;
 	/// Return whether the move is valid (and legal)
@@ -398,7 +398,7 @@ public:
 	/// Prepare move for printing a SAN
 	Move& prepareForPrint(Move& move, variant::Type variant, Representation representation) const;
 	/// Returns the IDN (chess 960 unique IDentification Number)
-	unsigned computeIdn() const;
+	unsigned computeIdn(variant::Type variant) const;
 	/// Returns the material in hand for side to move.
 	Material holding() const;
 	/// Returns the material in hand for given color.
@@ -434,6 +434,29 @@ public:
 	void setupShortCastlingRook(color::ID color, char const* fen);
 	/// Setup castling rook for short castling from given fen
 	void setupLongCastlingRook(color::ID color, char const* fen);
+
+	// Bit fields
+
+	/// Return all sqaures occupied by any piece of any color
+	uint64_t pieces() const;
+	/// Return all sqaures occupied by any piece of given color
+	uint64_t pieces(color::ID color) const;
+	/// Return all sqaures occupied by kings of given color
+	uint64_t kings(color::ID color) const;
+	/// Return all sqaures occupied by queens of given color
+	uint64_t queens(color::ID color) const;
+	/// Return all sqaures occupied by rooks of given color
+	uint64_t rooks(color::ID color) const;
+	/// Return all sqaures occupied by bishops of given color
+	uint64_t bishops(color::ID color) const;
+	/// Return all sqaures occupied by knights of given color
+	uint64_t knights(color::ID color) const;
+	/// Return all sqaures occupied by pawns of given color
+	uint64_t pawns(color::ID color) const;
+	/// Return all empty squares
+	uint64_t empty() const;
+	/// Return all squares attacked by any piece of given color on given square
+	uint64_t attacks(unsigned color, Square square) const;
 
 	// Miscellaneous
 
@@ -475,13 +498,6 @@ private:
 	typedef Byte (*ChangeSide)(Byte);
 
 	uint64_t king(color::ID color) const;
-	uint64_t kings(color::ID color) const;
-	uint64_t queens(color::ID color) const;
-	uint64_t rooks(color::ID color) const;
-	uint64_t bishops(color::ID color) const;
-	uint64_t knights(color::ID color) const;
-	uint64_t pawns(color::ID color) const;
-	uint64_t pieces(color::ID color) const;
 
 	uint64_t whitePieces() const;
 	uint64_t blackPieces() const;
@@ -491,6 +507,8 @@ private:
 	bool enPassantMoveExists(Byte color) const;
 	bool checkShuffleChessPosition() const;
 
+	/// Return true if side not to move gives a contact check (cannot be blocked by a piece)
+	bool checkContactCheck() const;
 	/// Return true if the given square is attacked by the given color
 	bool isAttackedBy(unsigned color, Square square) const;
 	/// Return true if the given squares are attacked by the given color
@@ -499,6 +517,8 @@ private:
 	bool checkIfLegalMove(Move& move) const;
 	/// Return whether check cannot be blocked with a pawn
 	bool checkNotBlockableWithPawn() const;
+	/// Return true if a chess 960 start position is on the board
+	bool isChess960Position() const;
 
 	uint64_t rankAttacks(Square square, uint64_t occupied) const;
 	uint64_t fyleAttacks(Square square, uint64_t occupied) const;
@@ -525,8 +545,6 @@ private:
 	uint64_t queenAttacks(Square square) const;
 	/// Return all squares attacked by a king on given square
 	uint64_t kingAttacks(Square square) const;
-	/// Return all squares attacked by any piece of given color on given square
-	uint64_t attacks(unsigned color, Square square) const;
 
 	/// Remove impossible moves from given board to aid disambiguation
 	void removeIllegalTo(Move move, uint64_t& b, variant::Type variant) const;

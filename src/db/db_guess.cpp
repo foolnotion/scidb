@@ -716,7 +716,7 @@ db::Guess::SEARCH(MoveList& moves, unsigned depth, int alpha, int beta, bool all
 			}
 			else if (move.isPieceDrop())
 			{
-				if (isCheckEvasion || isContactCheck(move, m_variant))
+				if (isCheckEvasion || isUnblockableCheck(move, m_variant))
 				{
 					scores[k] = 200;
 				}

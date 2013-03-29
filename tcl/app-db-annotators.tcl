@@ -37,7 +37,6 @@ set F_Frequency	"Frequency"
 set Find				"Find"
 set FindAnnotator	"Find annotator"
 set ClearEntries	"Clear entries"
-set NotFound		"Not found."
 
 } ;# namespace mc
 
@@ -449,7 +448,7 @@ proc Find {path combo} {
 		::scrolledtable::see $path.names $i
 		::scrolledtable::focus $path.names
 	} else {
-		::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
+		::dialog::info -parent [::toolbar::lookupChild $combo] -message $::playertable::mc::NotFound
 	}
 }
 

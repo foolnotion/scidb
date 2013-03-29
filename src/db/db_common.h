@@ -91,6 +91,7 @@ namespace sq
 	ID flipFyle(ID s);
 	ID flipRank(ID s);
 
+	Fyle flipFyle(Fyle rank);
 	Rank flipRank(Rank rank);
 
 	Rank homeRank(db::color::ID color);

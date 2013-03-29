@@ -957,9 +957,9 @@ Board::isIntoCheck(Move const& move, variant::Type variant) const
 
 
 bool
-Board::isContactCheck() const
+Board::checkContactCheck() const
 {
-	// IMPORTANT NOTE: this function assumes that no double check is given!
+	// IMPORTANT NOTE: this function assumes that a check, but no double check, is given!
 
 	sq::ID ksq = sq::ID(m_ksq[m_stm]);
 
@@ -998,7 +998,47 @@ Board::isContactCheck() const
 
 
 bool
-Board::isContactCheck(Move const& move, variant::Type variant) const
+Board::isContactCheck() const
+{
+	if (!isInCheck())
+		return false;
+
+	sq::ID ksq = sq::ID(m_ksq[m_stm]);
+
+	// a pawn is always giving a contact check
+	if (count(PawnAttacks[m_stm][ksq] & m_pawns))
+		return true;
+
+	// a knight is always giving a contact check
+	if (count(knightAttacks(ksq) & m_knights))
+		return true;
+
+	uint64_t attacks;
+
+	attacks = rankAttacks(ksq) & (m_rooks | m_queens);
+
+	while (attacks)
+	{
+		if (sq::rankDistance(sq::ID(lsbClear(attacks)), ksq) == 1)
+			return true;
+	}
+
+	attacks = bishopAttacks(ksq) & (m_bishops | m_queens);
+
+	while (attacks)
+	{
+		sq::ID sq = sq::ID(lsbClear(attacks));
+
+		if (sq::rankDistance(sq, ksq) + sq::fyleDistance(sq, ksq) == 2)
+			return true;
+	}
+
+	return false;
+}
+
+
+bool
+Board::isUnblockableCheck(Move const& move, variant::Type variant) const
 {
 	Board peek(*this);
 	peek.doMove(move, variant);
@@ -1053,7 +1093,7 @@ Board::checkState(variant::Type variant) const
 		switch (variant)
 		{
 			case variant::Bughouse:
-				if ((state & DoubleCheck) || ((state & Check) && isContactCheck()))
+				if ((state & DoubleCheck) || ((state & Check) && checkContactCheck()))
 					state |= Checkmate;
 				break;
 
@@ -1066,7 +1106,7 @@ Board::checkState(variant::Type variant) const
 				{
 					if (	m_holding[m_stm].total() == 0
 						|| (m_holding[m_stm].pieces() == 0 && checkNotBlockableWithPawn())
-						|| isContactCheck())
+						|| checkContactCheck())
 					{
 						state |= Checkmate;
 					}
@@ -2073,7 +2113,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 			}
 		}
 
-//		if (isStartPosition() && !isChess960Position() && m_castle)
+//		if (isStartPosition() && !isChess960Position(variant) && m_castle)
 //		{
 //			// we do not allow start positions with castle rights except
 //			// the start position is a Chess 960 position.
@@ -3199,6 +3239,16 @@ Board::checkShuffleChessPosition() const
 
 
 bool
+Board::isStandardPosition(variant::Type variant) const
+{
+	if (variant::isAntichessExceptLosers(variant))
+		return isEqualPosition(m_antichessBoard);
+
+	return isEqualPosition(m_standardBoard);
+}
+
+
+bool
 Board::isStartPosition() const
 {
 	if (m_epSquareFen != Null || m_stm == Black)
@@ -3227,14 +3277,35 @@ Board::isChess960Position() const
 
 
 bool
-Board::isShuffleChessPosition() const
+Board::isChess960Position(variant::Type variant) const
 {
-	return m_castle == NoRights ? checkShuffleChessPosition() : isChess960Position();
+	if (variant::isAntichessExceptLosers(variant))
+		return checkShuffleChessPosition();
+
+	return	m_castle == AllRights
+			&& checkShuffleChessPosition()
+			// check whether king is between the rooks
+			&& lsb(rooks(White)) < m_ksq[White] && m_ksq[White] < msb(rooks(White));
+}
+
+
+bool
+Board::isShuffleChessPosition(variant::Type variant) const
+{
+	if (!checkShuffleChessPosition())
+		return false;
+
+	if (variant::isAntichessExceptLosers(variant))
+		return true;
+
+	return m_castle == AllRights
+			// check whether king is between the rooks
+			&& lsb(rooks(White)) < m_ksq[White] && m_ksq[White] < msb(rooks(White));
 }
 
 
 unsigned
-Board::computeIdn() const
+Board::computeIdn(variant::Type variant) const
 {
 #define __ -1
 	static int8_t const BishopTable[8][8] =
@@ -3260,16 +3331,16 @@ Board::computeIdn() const
 	};
 #undef _
 
-	if (!kingOnBoard(White) || !kingOnBoard(Black))
+	if (!variant::isAntichessExceptLosers(variant) && (!kingOnBoard(White) || !kingOnBoard(Black)))
 		return 0;
 
 	// firstly handle the most common case
-	if (isStandardPosition())
+	if (isStandardPosition(variant))
 		return variant::Standard;
 
 	unsigned idn = 0;
 
-	if (isShuffleChessPosition())
+	if (isShuffleChessPosition(variant))
 	{
 		uint64_t bishops	= this->bishops(White);
 		uint64_t knights	= this->knights(White);
@@ -3315,7 +3386,7 @@ Board::computeIdn() const
 		else if (m_castle == NoRights)
 			idn += 3*960;
 	}
-	else
+	else if (!variant::isAntichessExceptLosers(variant))
 	{
 		switch (m_hash)
 		{
@@ -3406,7 +3477,7 @@ Board::computeIdn() const
 
 
 void
-Board::setup(unsigned idn)
+Board::setup(unsigned idn, variant::Type variant)
 {
 	M_REQUIRE(idn > 0);
 
@@ -3437,7 +3508,7 @@ Board::setup(unsigned idn)
 	{
 		bool frcCastling;
 
-		if (idn <= 960)
+		if (!variant::isAntichessExceptLosers(variant) && idn <= 960)
 		{
 			frcCastling = true;
 		}
@@ -3536,8 +3607,8 @@ Board::setup(unsigned idn)
 		}
 
 		// simple validation
-		M_ASSERT(frcCastling ? isChess960Position() : isShuffleChessPosition());
-		M_ASSERT(computeIdn() == (idn <= 960 && !frcCastling) ? idn + 3*960 : idn);
+		M_ASSERT(frcCastling ? isChess960Position(variant) : isShuffleChessPosition(variant));
+		M_ASSERT(computeIdn(variant) == (idn <= 960 && !frcCastling) ? idn + 3*960 : idn);
 	}
 }
 

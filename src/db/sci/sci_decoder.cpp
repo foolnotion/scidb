@@ -929,7 +929,7 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{
@@ -988,7 +988,7 @@ Decoder::doDecoding(GameData& gameData)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{
@@ -1142,7 +1142,7 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 	else
 	{
 #endif
-		if (mstl::bf::count_bits(types) == MoveInfo::LAST)
+		if (mstl::bf::count_bits(types & ~(1 << MoveInfo::None)) == MoveInfo::LAST)
 		{
 			m_strm.strip(data - m_strm.base(), skipMoveInfo(data) - data);
 			ByteStream::set(m_strm.base(), uint16_t(flags & ~flags::TimeTableSection));
@@ -1468,7 +1468,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{
@@ -1522,6 +1522,10 @@ Decoder::searchForPosition(Board const& position, bool skipVariations)
 
 			if (!m_position.board().signature().isReachablePawns(position.signature()))
 				return Move::invalid();
+#if 0
+			if (!m_position.board().signature().isReachableFinal(position.signature()))
+				return Move::invalid();
+#endif
 		}
 		else
 		{

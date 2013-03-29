@@ -281,7 +281,7 @@ Tree::buildTree518(	unsigned myIdn,
 	typedef EcoTable::EcoSet EcoSet;
 
 	M_ASSERT(myIdn == variant::Standard);
-	M_ASSERT(!myPosition.isStandardPosition());
+	M_ASSERT(!myPosition.isStandardPosition(base.variant()));
 
 	unsigned				reportAfter = m_index + frequency;
 	Successors			successors;
@@ -369,7 +369,7 @@ Tree::buildTree960(	unsigned myIdn,
 
 	M_ASSERT(myIdn != 0);
 	M_ASSERT(myIdn != variant::Standard);
-	M_ASSERT(!myPosition.isStandardPosition());
+	M_ASSERT(!myPosition.isStandardPosition(base.variant()));
 
 	unsigned reportAfter = m_index + frequency;
 
@@ -480,7 +480,7 @@ Tree::buildTreeStandard(unsigned myIdn,
 	typedef EcoTable::EcoSet EcoSet;
 
 	M_ASSERT(myIdn == variant::Standard);
-	M_ASSERT(myPosition.isStandardPosition());
+	M_ASSERT(myPosition.isStandardPosition(base.variant()));
 
 	unsigned		reportAfter = m_index + frequency;
 	Successors	successors;
@@ -614,7 +614,7 @@ Tree::makeTree(TreeP tree,
 
 	if (myIdn == 0)
 		buildMeth = &Tree::buildTree0;
-	else if (myPosition.isStandardPosition())
+	else if (myPosition.isStandardPosition(base.variant()))
 		buildMeth = &Tree::buildTreeStandard;
 	else if (myPosition.isStartPosition())
 		buildMeth = &Tree::buildTreeStart;

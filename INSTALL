@@ -10,24 +10,12 @@
 ==============================================================================
 UNIX
 ==============================================================================
-A normal unix installation is made in three or four steps (after you've
+A normal unix installation is made in three or three steps (after you've
 unpacked the source archive):
 
    ./configure
    make
-   make check-build
    make install
-
-Note: if the step with "make check-build" fails, please re-configure and build
-again:
-
-   CXXFLAGS="-Wall -DBROKEN_LINKER_HACK=1" ./configure
-   make clean
-   make
-   make install
-
-This "broken linker hack" is required on many modern Linux/Unix distributions
-because the newer version of GNU linker is broken.
 
 You probably need to be root when doing the last command. An alternative is to
 use the "sudo" command for the installation:
@@ -49,7 +37,6 @@ install in your own home directory:
 
    ./configure --prefix=$HOME
    make
-   make check-build
    make install
 
 The configure script always tries to find a working Tcl/Tk library unless

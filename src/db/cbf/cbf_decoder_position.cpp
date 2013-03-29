@@ -245,7 +245,7 @@ Position::doMove(unsigned moveNumber)
 
 							if (!move)
 							{
-								if (moveGen->epIndex && to == board.enPassantSquare() && top.epFake)
+								if (moveGen->epIndex && top.epFake && to == board.enPassantSquare())
 								{
 									// Imitating the strange behaviour of ChessBase:
 									// ---------------------------------------------------

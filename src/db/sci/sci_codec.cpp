@@ -442,20 +442,27 @@ ByteOStream::flush()
 } // namespace
 
 
-unsigned Codec::maxGameRecordLength() const	{ return (1 << 20) - 1; }
-unsigned Codec::maxGameLength() const			{ return (1 << 12) - 1; }
-unsigned Codec::maxGameCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxPlayerCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxSiteCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxEventCount() const			{ return (1 << 24) - 1; }
-unsigned Codec::maxAnnotatorCount() const		{ return (1 << 24) - 1; }
+unsigned Codec::maxGameRecordLength() const	{ return (1u << 20) - 1; }
+unsigned Codec::maxGameLength() const			{ return (1u << 12) - 1; }
+unsigned Codec::maxPlayerCount() const			{ return (1u << 24) - 1; }
+unsigned Codec::maxSiteCount() const			{ return (1u << 24) - 1; }
+unsigned Codec::maxEventCount() const			{ return (1u << 24) - 1; }
+unsigned Codec::maxAnnotatorCount() const		{ return (1u << 24) - 1; }
 unsigned Codec::minYear() const					{ return Date::MinYear; }
 unsigned Codec::maxYear() const					{ return Date::MaxYear; }
-unsigned Codec::maxDescriptionLength() const	{ return 107; }
+unsigned Codec::maxDescriptionLength() const	{ return 107u; }
 mstl::string const& Codec::extension() const	{ return Extension; }
 mstl::string const& Codec::encoding() const	{ return sys::utf8::Codec::utf8(); }
 bool Codec::encodingFailed() const				{ return false; }
 void Codec::reset()									{}
+
+
+unsigned
+Codec::maxGameCount() const
+{
+	static_assert((1u << 24) - 1 <= (1u << 31)/sizeof(IndexEntry), "2 GB exceeded");
+	return (1u << 24) - 1;
+}
 
 
 unsigned

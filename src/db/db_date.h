@@ -107,6 +107,13 @@ public:
 	/// Reset to empty date,
 	void clear();
 
+	/// Add given years to date; returns whether resulting date is valid.
+	bool addYears(int n);
+	/// Add given months to date; returns whether resulting date is valid.
+	bool addMonths(int n);
+	/// Add given days to date; returns whether resulting date is valid.
+	bool addDays(int n);
+
 	static bool isValid(char const* s, unsigned len = 0);
 	static bool isValid(mstl::string const& s);
 	static bool isValid(unsigned y, unsigned m, unsigned d);

@@ -43,7 +43,7 @@ public:
 	Position();
 
 	void setup(char const* fen, db::variant::Type variant);
-	void setup(uint16_t idn);
+	void setup(uint16_t idn, db::variant::Type variant);
 
 	void push();
 	void pop();
@@ -81,8 +81,8 @@ private:
 
 	typedef mstl::stack<Lookup> Stack;
 
-	void setupBoard(Board const& board);
-	void setupBoard(uint16_t idn);
+	void setupBoard(Board const& board, db::variant::Type variant);
+	void setupBoard(uint16_t idn, db::variant::Type variant);
 	void reset();
 
 	Stack	m_stack;

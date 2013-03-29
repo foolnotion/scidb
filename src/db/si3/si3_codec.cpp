@@ -302,7 +302,7 @@ Codec::~Codec() throw()
 unsigned Codec::maxGameRecordLength() const	{ return m_blockSize - 1; }
 unsigned Codec::maxGameLength() const			{ return (1 << 10) - 1; }
 // IMPORTANT NOTE:
-// Scid-vs-PC supports 2^(3*8)-2 games, but mainline Scid supports only 16,000,000 games.
+// Scid-vs-PC supports 2^24-2 games, but mainline Scid supports only 16,000,000 games.
 unsigned Codec::maxGameCount() const			{ return (1 << 24) - 2; }
 unsigned Codec::maxPlayerCount() const			{ return (1 << 20) - 1; }
 unsigned Codec::maxEventCount() const			{ return (1 << 19) - 1; }
@@ -1312,16 +1312,18 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 				break;
 		}
 
-		event = namebase(Namebase::Event).insertEvent(	event->name(),
-																		namebase(Namebase::Event).size(),
-																		date.year(),
-																		date.month(),
-																		date.day(),
-																		event->type(),
-																		timeMode,
-																		eventMode,
-																		maxEventCount(),
-																		site);
+		Namebase& namebase = this->namebase(Namebase::Event);
+
+		event = namebase.insertEvent(	event->name(),
+												m_eventList->nextId(),
+												date.year(),
+												date.month(),
+												date.day(),
+												event->type(),
+												timeMode,
+												eventMode,
+												maxEventCount(),
+												site);
 
 		if (event == 0)
 		{
@@ -1330,6 +1332,7 @@ Codec::decodeIndex(ByteStream& strm, unsigned index)
 		}
 
 		m_eventList->addEntry(eventId, event);
+		namebase.setNextId(mstl::max(event->id() + 1, namebase.nextId()));
 	}
 
 	if (event->frequency() == 0)

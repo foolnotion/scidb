@@ -106,7 +106,6 @@ static char const* CmdRelease			= "::scidb::game::release";
 static char const* CmdReload			= "::scidb::game::reload";
 static char const* CmdReplace			= "::scidb::game::replace";
 static char const* CmdSave				= "::scidb::game::save";
-static char const* CmdSetup			= "::scidb::game::setup";
 static char const* CmdSetupNags		= "::scidb::game::setupNags";
 static char const* CmdSetupStyle		= "::scidb::game::setupStyle";
 static char const* CmdSink				= "::scidb::game::sink";
@@ -2498,8 +2497,8 @@ cmdCount(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	fen = stringFromObj(objc, objv, 1);
-	int			idn = 0;
+	variant::Type	variant	= Scidb->game().variant();
+	int				idn		= 0;
 
 	Board board;
 
@@ -2508,42 +2507,18 @@ cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (idn < 1 || 4*960 < idn)
 			error(CmdClear, nullptr, nullptr, "invalid IDN %d", idn);
 
-		board.setup(unsigned(idn));
+		board.setup(unsigned(idn), variant);
 	}
 	else
 	{
-		if (!board.setup(fen, Scidb->game().variant()))
+		char const* fen = stringFromObj(objc, objv, 1);
+
+		if (!board.setup(fen, variant))
 			error(CmdClear, nullptr, nullptr, "invalid FEN '%s'", fen);
 	}
 
 	scidb->clearGame(&board);
 
-	return TCL_OK;
-}
-
-
-static int
-cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
-{
-	char const*	fen = stringFromObj(objc, objv, 2);
-	int			idn = 0;
-
-	Board board;
-
-	if (Tcl_GetIntFromObj(interp(), objv[1], &idn) == TCL_OK)
-	{
-		if (idn < 1 || 4*960 < idn)
-			error(CmdClear, nullptr, nullptr, "invalid IDN %d", idn);
-
-		board.setup(unsigned(idn));
-	}
-	else
-	{
-		if (!board.setup(fen, Scidb->game().variant()))
-			error(CmdClear, nullptr, nullptr, "invalid FEN '%s'", fen);
-	}
-
-	scidb->setupGame(board);
 	return TCL_OK;
 }
 
@@ -3439,7 +3414,6 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdReload,			cmdReload);
 	createCommand(ti, CmdReplace,			cmdReplace);
 	createCommand(ti, CmdSave,				cmdSave);
-	createCommand(ti, CmdSetup,			cmdSetup);
 	createCommand(ti, CmdSetupNags,		cmdSetupNags);
 	createCommand(ti, CmdSetupStyle,		cmdSetupStyle);
 	createCommand(ti, CmdSink,				cmdSink);

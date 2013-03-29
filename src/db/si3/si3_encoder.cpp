@@ -122,7 +122,7 @@ Encoder::Encoder(ByteStream& strm, sys::utf8::Codec& codec)
 void
 Encoder::setup(Board const& board)
 {
-	if (!board.isStandardPosition())
+	if (!board.isStandardPosition(variant::Normal))
 	{
 		mstl::string fen;
 		board.toFen(fen, variant::Normal);
@@ -144,7 +144,7 @@ Encoder::doEncoding(	Signature const& signature,
 {
 	Byte flags = 0;
 
-	if (!data.m_startBoard.isStandardPosition())
+	if (!data.m_startBoard.isStandardPosition(variant::Normal))
 		flags |= flags::Non_Standard_Start;
 	if (signature.hasPromotion())
 		flags |= flags::Promotion;

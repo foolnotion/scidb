@@ -566,7 +566,6 @@
 ::application::database::annotators::mc::Find				"Buscar"
 ::application::database::annotators::mc::FindAnnotator	"Buscar comentarista"
 ::application::database::annotators::mc::ClearEntries		"Vaciar entradas"
-::application::database::annotators::mc::NotFound			"No se encontró."
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Agregar comentario"
@@ -1020,7 +1019,6 @@
 ::application::analysis::mc::IllegalPosition				"Posición ilegal - No puede analizarse"
 ::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze" ;# NEW
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
-::application::analysis::mc::OperationFailed				"Operation '%s' failed due to raise conditions."
 
 ::application::analysis::mc::LinesPerVariation			"Líneas por variación"
 ::application::analysis::mc::BestFirstOrder				"Ordenar por evaluación"

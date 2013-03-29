@@ -788,7 +788,7 @@ Decoder::doDecoding(db::Consumer& consumer, TagSet& tags)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{
@@ -847,7 +847,7 @@ Decoder::doDecoding(GameData& gameData)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{
@@ -1280,7 +1280,7 @@ Decoder::findExactPosition(Board const& position, bool skipVariations)
 
 	if (idn)
 	{
-		m_position.setup(idn);
+		m_position.setup(idn, m_variant);
 	}
 	else
 	{

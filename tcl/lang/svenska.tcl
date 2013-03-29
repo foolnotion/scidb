@@ -567,7 +567,6 @@
 ::application::database::annotators::mc::Find				"Sök"
 ::application::database::annotators::mc::FindAnnotator	"Sök kommentator"
 ::application::database::annotators::mc::ClearEntries		"Rensa poster"
-::application::database::annotators::mc::NotFound			"Hittades ej."
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Sätt kommentar"
@@ -1024,7 +1023,6 @@
 ::application::analysis::mc::IllegalPosition				"Ogiltig ställning - Kan inte analysera"
 ::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze" ;# NEW
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
-::application::analysis::mc::OperationFailed				"Operation '%s' failed due to raise conditions."
 
 ::application::analysis::mc::LinesPerVariation			"Rader per variant"
 ::application::analysis::mc::BestFirstOrder				"Sortera på  värdering"

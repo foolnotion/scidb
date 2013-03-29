@@ -714,13 +714,16 @@ GameInfo::resetCharacteristics(Namebases& namebases)
 	if (!hasGameRecordLength())
 		namebases(Namebase::Annotator).deref(m_annotator);
 
-	m_dateYear	= Date::Zero10Bits;
-	m_dateMonth	= 0;
-	m_dateDay	= 0;
-	m_result		= result::Unknown;
-	m_eco			= Eco();
-	m_round		= 0;
-	m_subround	= 0;
+	m_dateYear		= Date::Zero10Bits;
+	m_dateMonth		= 0;
+	m_dateDay		= 0;
+	m_result			= result::Unknown;
+	m_termination	= termination::Unknown;
+	m_eco				= Eco();
+	m_round			= 0;
+	m_subround		= 0;
+	m_pd[0].value	= 0;
+	m_pd[1].value	= 0;
 }
 
 
@@ -980,8 +983,8 @@ void
 GameInfo::setupTags(TagSet& tags, Provider const& provider)
 {
 	mstl::string opening, variation, subvariation;
-	unsigned idn = provider.getStartBoard().computeIdn();
 	variant::Type variant = provider.variant();
+	unsigned idn = provider.getStartBoard().computeIdn(variant);
 
 	if (idn)
 	{
@@ -1281,7 +1284,10 @@ GameInfo::mapFlag(uint32_t flag)
 	M_REQUIRE(flag <= Flag_Illegal_Move);
 	M_REQUIRE(flag > Flag_Deleted);
 
-	return GameFlagMap[mstl::bf::lsb_index(flag) - 1];
+	M_ASSERT(mstl::bf::lsb_index(flag) > 0);
+	M_ASSERT(mstl::bf::lsb_index(flag) < U_NUMBER_OF(::GameFlagMap));
+
+	return ::GameFlagMap[mstl::bf::lsb_index(flag) - 1];
 }
 
 
@@ -1320,6 +1326,19 @@ GameInfo::flagsToString(uint32_t flags, mstl::string& result)
 
 
 unsigned
+GameInfo::charToFlag(char c)
+{
+	for (unsigned i = 0; i < U_NUMBER_OF(::GameFlagMap); ++i)
+	{
+		if (c == ::GameFlagMap[i])
+			return (1 << (i + 1));
+	}
+
+	return 0;
+}
+
+
+unsigned
 GameInfo::stringToFlags(char const* str)
 {
 	unsigned result = 0;
@@ -1327,13 +1346,7 @@ GameInfo::stringToFlags(char const* str)
 	for ( ; *str; ++str)
 	{
 		if (!::isspace(*str))
-		{
-			for (unsigned i = 0; i < U_NUMBER_OF(::GameFlagMap); ++i)
-			{
-				if (*str == GameFlagMap[i])
-					result |= (1 << (i + 1));
-			}
-		}
+			result |= charToFlag(*str);
 	}
 
 	return result;

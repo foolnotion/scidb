@@ -641,7 +641,7 @@ Codec::decodeIndexData(GameInfo& info, unsigned offset, NamebaseSite* site)
 
 	toUtf8(source);
 
-	if (::extractRoundNumber(players, round, subround) || ::extractRoundNumber(source, round, subround))
+	if (::extractRoundNumber(source, round, subround))
 	{
 		info.m_round = round;
 		info.m_subround = subround;

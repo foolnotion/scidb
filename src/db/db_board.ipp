@@ -46,7 +46,6 @@ inline color::ID Board::sideToMove() const		{ return color::ID(m_stm); }
 inline color::ID Board::notToMove() const			{ return color::ID(m_stm ^ 1); }
 
 inline bool Board::isEmpty() const					{ return m_hash == 0; }
-inline bool Board::isStandardPosition() const	{ return isEqualPosition(m_standardBoard); }
 inline bool Board::whiteToMove() const				{ return color::isWhite(sideToMove()); }
 inline bool Board::blackToMove() const				{ return color::isBlack(sideToMove()); }
 inline bool Board::hasPartnerBoard() const		{ return m_partner != this; }
@@ -68,6 +67,8 @@ inline unsigned Board::checksGiven(color::ID color) const				{ return m_checksGi
 inline Board::Material Board::holding() const								{ return m_holding[m_stm]; }
 inline Board::Material Board::holding(color::ID color) const			{ return m_holding[color]; }
 
+inline uint64_t Board::pieces() const						{ return m_occupied; }
+inline uint64_t Board::empty() const						{ return ~m_occupied; }
 inline uint64_t Board::whitePieces() const				{ return m_occupiedBy[color::White]; }
 inline uint64_t Board::blackPieces() const				{ return m_occupiedBy[color::Black]; }
 inline uint64_t Board::kings(color::ID side) const		{ return m_occupiedBy[side] & m_kings; }
@@ -110,8 +111,7 @@ inline
 void
 Board::setStandardPosition(variant::Type variant)
 {
-	M_REQUIRE(variant::isMainVariant(variant));
-	*this = variant == variant::Antichess ? m_antichessBoard : m_standardBoard;
+	*this = variant::isAntichessExceptLosers(variant) ? m_antichessBoard : m_standardBoard;
 }
 
 

@@ -162,6 +162,7 @@ public:
 								mstl::string const& item) = 0;
 
 	static bool validateTagName(char* tag, unsigned len);
+	static bool validateTagName(char const* s, char const* e);
 	static void checkSite(TagSet& tags, country::Code eventCountry, bool sourceIsPossiblyChessBase);
 
 	static event::Mode getEventMode(char const* event, char const* site);

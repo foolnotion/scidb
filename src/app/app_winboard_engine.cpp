@@ -44,25 +44,6 @@ using namespace app::winboard;
 using namespace db;
 
 
-static void
-printPieceDrop(Move const& move, mstl::string& s)
-{
-	s += ::toupper(piece::print(move.dropped()));
-	s += '@';
-	s += sq::printAlgebraic(move.to());
-}
-
-
-static void
-printCastling(Move const& move, mstl::string& s)
-{
-	s.append("O-O", 3);
-
-	if (move.isLongCastling())
-		s.append("-O", 2);
-}
-
-
 static mstl::string
 toStr(unsigned value)
 {
@@ -172,6 +153,44 @@ skipMoveNumber(char const* s)
 	}
 
 	return s;
+}
+
+
+mstl::string&
+removeHolding(mstl::string& fen)
+{
+	unsigned count = 0;
+
+	for (char const* s = fen; *s && !::isspace(*s); ++s)
+	{
+		if (*s == '/' && ++count == 8)
+		{
+			char const* t = s + 1;
+
+			while (*t && !::isspace(*t))
+				++t;
+
+			fen.erase(s, t);
+			break;
+		}
+	}
+
+	return fen;
+}
+
+
+mstl::string
+toHolding(material::Count holding)
+{
+	mstl::string str;
+
+	if (holding.pawn)		str.append(holding.pawn,	'P');
+	if (holding.knight)	str.append(holding.knight,	'N');
+	if (holding.bishop)	str.append(holding.bishop,	'B');
+	if (holding.rook)		str.append(holding.rook,	'R');
+	if (holding.queen)	str.append(holding.queen,	'Q');
+
+	return str;
 }
 
 
@@ -363,12 +382,8 @@ winboard::Engine::doMove(Move const& move)
 
 	if (move.isNull())
 		s.append("@@@@", 4);	// alternatives: "pass", "null", "--"
-	else if (m_featureSan)
+	else if (/*m_featureSan || */move.isPieceDrop() || (move.isCastling() && m_mustUseChess960))
 		move.printSan(s, protocol::Standard, encoding::Latin1);
-	else if (move.isPieceDrop())
-		::printPieceDrop(move, s);
-	else if (move.isCastling() && m_mustUseChess960)
-		::printCastling(move, s); // print SAN w/o check signs
 	else
 		move.printAlgebraic(s, protocol::Standard, encoding::Latin1);
 
@@ -388,7 +403,10 @@ winboard::Engine::setupBoard(Board const& board)
 		// IMPORTANT NOTE:
 		// The "setboard" command might not be appropriate,
 		// because it might clear the hash tables.
-		send("setboard " + board.toFen(m_variant));
+		mstl::string fen(board.toFen(m_variant));
+
+		::removeHolding(fen);
+		send("setboard " + fen);
 
 		if (m_isCrafty)
 		{
@@ -427,6 +445,16 @@ winboard::Engine::setupBoard(Board const& board)
 		}
 
 		send(".");	// leave edit mode
+	}
+
+	if (variant::isZhouse(m_variant))
+	{
+		mstl::string str("holding [");
+		str.append(::toHolding(board.holding(color::White)));
+		str.append("] [");
+		str.append(::toHolding(board.holding(color::Black)));
+		str.append("]");
+		send(str);
 	}
 }
 
@@ -510,12 +538,12 @@ winboard::Engine::startAnalysis(bool)
 
 	if (moves.empty())
 	{
-		if (!currentBoard().isStandardPosition())
+		if (!currentBoard().isStandardPosition(m_variant))
 			setupBoard(currentBoard());
 	}
 	else if (game->historyIsLegal(Game::DontAllowNullMoves))
 	{
-		if (!startBoard.isStandardPosition())
+		if (!startBoard.isStandardPosition(m_variant))
 			setupBoard(startBoard);
 
 		for (int i = moves.size() - 1; i >= 0; --i)

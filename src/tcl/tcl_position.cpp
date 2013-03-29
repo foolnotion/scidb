@@ -279,7 +279,7 @@ cmdSetup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdIdn(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	setResult(Scidb->game().currentBoard().computeIdn());
+	setResult(Scidb->game().currentBoard().computeIdn(Scidb->game().variant()));
 	return TCL_OK;
 }
 

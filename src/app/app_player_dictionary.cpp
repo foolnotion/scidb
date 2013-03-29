@@ -331,7 +331,7 @@ void
 PlayerDictionary::negateFilter()
 {
 	m_attrFilter.flip();
-	m_attrFilter & m_baseFilter;
+	m_attrFilter &= m_baseFilter;
 }
 
 

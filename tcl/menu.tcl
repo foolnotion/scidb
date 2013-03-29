@@ -613,8 +613,8 @@ proc dbClose {parent} {
 
 proc gameNew {parent {variant Normal}} {
 	if {[::game::new $parent -variant $variant] >= 0} {
-		set idn [::scidb::game::query 9 fen]
-		::scidb::game::setup $variant $idn
+		set fen [::scidb::game::query 9 fen]
+		::scidb::game::clear $fen
 		::application::switchTab board
 	}
 }

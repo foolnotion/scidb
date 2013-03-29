@@ -418,6 +418,7 @@ proc isInsaneUnixRelease {} {
             Debian*     { if {$distribution(revision) >= "7.0"   } { set insaneRelease 1 } }
             LinuxMint*  { if {$distribution(revision) >= "12"    } { set insaneRelease 1 } }
             Ubuntu*     { if {$distribution(revision) >= "11.10" } { set insaneRelease 1 } }
+            Snowlinux*  { if {$distribution(revision) >= "3.0"   } { set insaneRelease 1 } }
         }
     }
  
@@ -2206,10 +2207,9 @@ if {[string length $gxxVer]} {
         puts "in case of an exception, the application is crashing"
         puts "instead."
         puts "Furthermore the distributed Tk library is broken, some"
-        puts "windows of the application will be frozen, or the problem"
-        puts "with endless loops inside the Tk library will occur."
+        puts "windows of the application will be frozen."
         puts "You have to use a self-compiled Tk library if you want"
-        puts "to avoid this problem."
+        puts "to avoid this problem (see INSTALL)."
         puts "It is highly recommended to build Scidb on a working Unix"
         puts "system. This system is broken and distorted due to the"
         puts "\"kernel hardening\" paranoia, which assumes that every"

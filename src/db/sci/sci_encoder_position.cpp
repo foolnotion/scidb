@@ -122,9 +122,9 @@ Position::doMove(Lookup& lookup, Move const& move)
 
 
 void
-Position::setupZero(Board const& board)
+Position::setupZero(Board const& board, variant::Type variant)
 {
-	M_ASSERT(!board.isShuffleChessPosition());
+	M_ASSERT(!board.isShuffleChessPosition(variant));
 
 	Square shortCastlingRook[2];
 	Square longCastlingRook[2];
@@ -223,7 +223,7 @@ Position::setupZero(Board const& board)
 
 
 void
-Position::setupShuffle(Board const& board)
+Position::setupShuffle(Board const& board, variant::Type variant)
 {
 	static Lookup::Numbers const PawnPieceNumbers =
 	{
@@ -237,7 +237,7 @@ Position::setupShuffle(Board const& board)
 		__, __, __, __, __, __, __, __, // a8,..,h8
 	};
 
-	M_REQUIRE(board.isShuffleChessPosition());
+	M_REQUIRE(board.isShuffleChessPosition(variant));
 
 	Square shortCastlingRook[2];
 	Square longCastlingRook[2];

@@ -733,6 +733,9 @@ Reader::parseRound(mstl::string const& data, unsigned& round, unsigned& subround
 bool
 Reader::validateTagName(char* tag, unsigned len)
 {
+	if (len == 0)
+		return false;
+
 	while (len--)
 	{
 		char c = *tag;
@@ -750,6 +753,31 @@ Reader::validateTagName(char* tag, unsigned len)
 			return false;
 
 		++tag;
+	}
+
+	return true;
+}
+
+
+bool
+Reader::validateTagName(char const* s, char const* e)
+{
+	if (s == e)
+		return false;
+
+	for ( ; s < e; ++s)
+	{
+		char c = *s;
+
+		if (c == '\0')
+			return true;
+
+		// NOTE: Character '-' is not allowed due to the PGN specification, but
+		// is used in some PGN games (e.g. PGN files from www.remoteschach.de).
+		// We replace this character silently to be PGN conform.
+
+		if (c != '_' && !::isalnum(c))
+			return false;
 	}
 
 	return true;

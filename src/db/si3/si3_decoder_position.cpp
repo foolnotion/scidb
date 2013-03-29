@@ -188,7 +188,7 @@ Position::setup(char const* fen)
 		IO_RAISE(Game, Invalid_Data, "invalid FEN (%s)", fen);
 
 // WARNING: flags::Non_Standard_Start is possibly set wrong (Scid bug)
-//	M_ASSERT(!board().isStandardPosition());
+//	M_ASSERT(!board().isStandardPosition(variant::Normal));
 
 	unsigned whitePieceNum = 0;
 	unsigned blackPieceNum = 0x10;

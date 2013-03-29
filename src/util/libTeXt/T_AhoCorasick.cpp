@@ -51,7 +51,7 @@ struct Edge
 };
 
 
-inline bool
+static inline bool
 operator<(Alpha alpha, Edge const& edge)
 {
 	return alpha < edge.m_alpha;

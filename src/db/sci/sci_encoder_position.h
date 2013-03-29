@@ -62,8 +62,8 @@ public:
 
 	Position();
 
-	void setupShuffle(Board const& board);
-	void setupZero(Board const& board);
+	void setupShuffle(Board const& board, ::db::variant::Type variant);
+	void setupZero(Board const& board, ::db::variant::Type variant);
 	void setupStandard();
 	void setup(uint16_t idn);
 

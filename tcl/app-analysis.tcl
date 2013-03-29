@@ -48,7 +48,6 @@ set SearchDepth				"Search depth in plies (Selective search depth)"
 set IllegalPosition			"Illegal position - Cannot analyze"
 set IllegalMoves				"Illegal moves in game - Cannot analyze"
 set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
-set OperationFailed			"Operation '%s' failed due to raise conditions."
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -957,13 +956,9 @@ proc InsertMoves {parent what line operation} {
 		::scidb::engine::bind $Vars(engine:id)
 	}
 
-	if {![::scidb::engine::snapshot $Vars(engine:id) $what $line]} {
-		# in seldom cases (raise conditions) the operation may fail
-		dialog::error \
-			-parent $parent \
-			-message [format $mc::OperationFailed $operation] \
-			;
-	}
+	# don't care about errors, may happen if the user is
+	# double clicking or in seldom cases due to raise conditions
+	::scidb::engine::snapshot $Vars(engine:id) $what $line
 }
 
 

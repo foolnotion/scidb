@@ -161,7 +161,7 @@ Position::undoMove(Move const& move)
 void
 Position::setup(Board const& board)
 {
-	M_ASSERT(!board.isStandardPosition());
+	M_ASSERT(!board.isStandardPosition(variant::Normal));
 
 	while (m_stack.size() > 1)
 		m_stack.pop();

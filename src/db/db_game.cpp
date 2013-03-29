@@ -265,13 +265,27 @@ makeVariation(	MoveNode* const* first,
 		mstl::string s;
 
 		s.append(tags.value(tag::White));
+
+		if (tags.contains(tag::WhiteElo))
+			s.format(" (%u)", unsigned(tags.asInt(tag::WhiteElo)));
+
 		s.append(" - ", 3);
 		s.append(tags.value(tag::Black));
+
+		if (tags.contains(tag::BlackElo))
+			s.format(" (%u)", unsigned(tags.asInt(tag::BlackElo)));
 
 		if (tags.value(tag::Event).size() > 1)
 		{
 			s.append(delim);
 			s.append(tags.value(tag::Event));
+
+			if (tags.contains(tag::Round))
+			{
+				s.append(" (");
+				s.append(tags.value(tag::Round));
+				s.append(')');
+			}
 		}
 
 		if (tags.value(tag::Site).size() > 1)
@@ -3390,7 +3404,7 @@ Game::setStartPosition(unsigned idn)
 	M_REQUIRE(idn <= 4*960);
 
 	Board board;
-	board.setup(idn);
+	board.setup(idn, m_variant);
 	setup(board);
 
 	M_DEBUG(m_startBoard.validate(m_variant) == Board::Valid);
@@ -3604,7 +3618,7 @@ Game::updateLine()
 	if (m_timeTable.size() > length)
 		m_timeTable.cut(length);
 
-	unsigned idn = m_startBoard.computeIdn();
+	unsigned idn = m_startBoard.computeIdn(m_variant);
 
 	bool update = m_idn != idn;
 

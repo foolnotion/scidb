@@ -1353,30 +1353,38 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 
 	switch (::toupper(*s))
 	{
+		case 'B':
+			if (::matchEndOfSentence(s, "Black mates", 11))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "Both players ran out of time", 28))
+				return ::setTermination(m_tags, termination::TimeForfeitBoth);
+			if (::matchEndOfSentence(s, "Bare king", 9))
+				return ::setTermination(m_tags, termination::Normal);
+			break;
+
+		case 'D':
+			if (::matchEndOfSentence(s, "Draw", 4))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "Draw agreed", 11))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::equal(s, "Draw claim: ", 12))
+			{
+				s += 12;
+
+				if (	::equal(s, "50-move rule", 12)
+					|| ::equal(s, "3-fold repetition", 17)
+					|| ::equal(s, "insufficient mating material", 28))
+				{
+					return ::setTermination(m_tags, termination::Normal);
+				}
+			}
+			break;
+
 		case 'F':
 			if (::matchEndOfSentence(s, "Forfeits on time", 16))
 				return ::setTermination(m_tags, termination::TimeForfeit);
 			if (::matchEndOfSentence(s, "Forfeits by disconnection", 25))
 				return ::setTermination(m_tags, termination::Disconnection);
-			break;
-
-		case 'G':
-			if (::matchEndOfSentence(s, "Game drawn because both players ran out of time", 47))
-				return ::setTermination(m_tags, termination::TimeForfeitBoth);
-			if (::matchEndOfSentence(s, "Game drawn by mutual agreement", 30))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by stalemate", 23))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by repetition", 24))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by the 50 move rule", 30))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by stalemate (equal material)", 40))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by stalemate (opposite color bishops)", 48))
-				return ::setTermination(m_tags, termination::Normal);
-			if (::matchEndOfSentence(s, "Game drawn by adjudication", 26))
-				return ::setTermination(m_tags, termination::Adjudication);
 			break;
 
 		case 'N':
@@ -1388,16 +1396,50 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 			if (::matchEndOfSentence(s, "Time forfeits", 13))
 				return ::setTermination(m_tags, termination::TimeForfeit);
 			break;
+
+		case 'W':
+			if (::matchEndOfSentence(s, "White mates", 11))
+				return ::setTermination(m_tags, termination::Normal);
+			break;
+
+		case 'X':
+			if (::equal(s, "Xboard adjudication: ", 21))
+				return ::setTermination(m_tags, termination::Normal);
+			break;
 	}
 
 	while (::isalnum(*s)) ++s;
 	while (::isspace(*s)) ++s;
 
-	switch (*s)
+	switch (::tolower(*s))
 	{
+		case 'a':
+			if (::matchEndOfSentence(s, "aborted", 7))
+				return ::setTermination(m_tags, termination::Unterminated);
+			break;
+
 		case 'c':
 			if (::matchEndOfSentence(s, "checkmated", 10))
 				return ::setTermination(m_tags, termination::Normal);
+			break;
+
+		case 'd':
+			if (::matchEndOfSentence(s, "drawn because both players ran out of time", 42))
+				return ::setTermination(m_tags, termination::TimeForfeitBoth);
+			if (::matchEndOfSentence(s, "drawn by mutual agreement", 25))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by stalemate", 18))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by repetition", 19))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by the 50 move rule", 25))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by stalemate (equal material)", 35))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by stalemate (opposite color bishops)", 43))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn by adjudication", 21))
+				return ::setTermination(m_tags, termination::Adjudication);
 			break;
 
 		case 'f':
@@ -1429,11 +1471,15 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 			break;
 
 		case 'w':
+			if (::matchEndOfSentence(s, "wins on time", 12))
+				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "wins by adjudication", 20))
 				return ::setTermination(m_tags, termination::Adjudication);
 			if (::matchEndOfSentence(s, "wins by stalemate", 17))
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "wins by losing all material", 27))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "wins by having less material", 28))
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "wins by having less material (stalemate)", 40))
 				return ::setTermination(m_tags, termination::Normal);
@@ -1914,7 +1960,7 @@ PgnReader::checkFen()
 			sendError(InvalidFen, m_fenPos, fen);
 		}
 
-		if (board.isStandardPosition())
+		if (board.isStandardPosition(m_variant))
 		{
 			m_tags.remove(Fen);
 			m_tags.remove(SetUp);
@@ -1922,7 +1968,7 @@ PgnReader::checkFen()
 		}
 		else
 		{
-			m_idn = board.computeIdn();
+			m_idn = board.computeIdn(m_variant);
 			m_tags.remove(tag::Eco);
 
 			if (m_idn == 0)

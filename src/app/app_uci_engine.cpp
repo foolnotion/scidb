@@ -264,7 +264,7 @@ uci::Engine::setupPosition(Board const& board)
 {
 	m_position.assign("position ", 9);
 
-	if (board.isStandardPosition())
+	if (board.isStandardPosition(currentGame()->variant()))
 	{
 		m_position.append("startpos", 8);
 	}

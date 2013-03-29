@@ -533,7 +533,7 @@ View::dumpGame(unsigned index,
 		lengths.push_back(0);
 		result.resize(1);
 	}
-	else if (!fen.empty() || game.startBoard().isStandardPosition())
+	else if (!fen.empty() || game.startBoard().isStandardPosition(game.variant()))
 	{
 		unsigned	size	= mstl::min(moves, split);
 		double	delta	= double(moves)/double(size);

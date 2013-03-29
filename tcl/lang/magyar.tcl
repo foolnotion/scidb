@@ -568,7 +568,6 @@
 ::application::database::annotators::mc::Find				"Keres"
 ::application::database::annotators::mc::FindAnnotator	"Elemző keresése"
 ::application::database::annotators::mc::ClearEntries		"Bejegyzések törlése"
-::application::database::annotators::mc::NotFound			"Nem található."
 
 ### application::pgn ###################################################
 ::application::pgn::mc::Command(move:comment)			"Megjegyzés hozzáadása"
@@ -1025,7 +1024,6 @@
 ::application::analysis::mc::IllegalPosition		"Illegal position - Cannot analyze" ;# NEW
 ::application::analysis::mc::IllegalMoves		"Illegal moves in game - Cannot analyze" ;# NEW
 ::application::analysis::mc::DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted" ;# NEW
-::application::analysis::mc::OperationFailed		"Operation '%s' failed due to raise conditions."
 
 ::application::analysis::mc::LinesPerVariation		"Lines per variation" ;# NEW
 ::application::analysis::mc::BestFirstOrder		"Sort by evaluation" ;# NEW

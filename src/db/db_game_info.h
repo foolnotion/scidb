@@ -252,6 +252,7 @@ public:
 	static void setupTags(TagSet& tags, Provider const& provider);
 	static mstl::string& flagsToString(uint32_t flags, mstl::string& result);
 	static unsigned stringToFlags(char const* str);
+	static unsigned charToFlag(char c);
 	static char mapFlag(uint32_t flag);
 
 private:

@@ -999,10 +999,17 @@ dumpColorTable(HtmlTree *pTree)
         pEntry = Tcl_NextHashEntry(&search)
     ) {
         HtmlColor *pColor = Tcl_GetHashValue(pEntry);
+#if TCL_MAJOR_VERSION > 8 || (TCL_MAJOR_VERSION == 8 && TCL_MINOR_VERSION >= 6)
+        printf("%p -> {%s (%d) %p}\n",
+            Tcl_GetHashKey(&pTree->aColor, pEntry),
+            pColor->zColor, pColor->nRef, pColor->xcolor
+        );
+#else
         printf("%s -> {%s (%d) %p}\n",
             Tcl_GetHashKey(&pTree->aColor, pEntry),
             pColor->zColor, pColor->nRef, pColor->xcolor
         );
+#endif
         iRet++;
     }
     return iRet;

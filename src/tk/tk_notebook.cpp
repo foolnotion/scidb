@@ -86,7 +86,6 @@ typedef struct Slave
 	 Tcl_Obj*	minwidthObj;
 	 Tcl_Obj*	minheightObj;
 	 Tcl_Obj*	underlineObj;
-	 Tcl_Obj*	paddingObj;
 	 Tcl_Obj*	textObj;
 	 Padding		padding;
     int			width;		// Slave width.
@@ -126,7 +125,6 @@ typedef struct Notebook
     int					relief;			// 3D border effect (TK_RELIEF_RAISED, etc)
     Tcl_Obj*			widthObj;		// Tcl_Obj rep for width.
     Tcl_Obj*			heightObj;		// Tcl_Obj rep for height.
-	 Tcl_Obj*			paddingObj;
 	 Padding				padding;
     int					width;			// Width of the widget.
 	 int					height;			// Height of the widget.
@@ -230,6 +228,7 @@ static Tk_ObjCustomOption paddingOption =
 #define DEF_NOTEBOOK_HIGHLIGHT_BG	"#678db2"
 #define DEF_NOTEBOOK_HIGHLIGHT_FG	"#ffffff"
 #define DEF_NOTEBOOK_BG_MONO			"#ffffff"
+#define DEF_NOTEBOOK_FG					"#ffffff"
 #define DEF_NOTEBOOK_BORDERWIDTH		"1"
 #define DEF_NOTEBOOK_FONT				"TkDefaultFont"
 #define DEF_NOTEBOOK_OVERLAY			"0"
@@ -257,6 +256,8 @@ static const Tk_OptionSpec optionSpecs[] =
    {TK_OPTION_CURSOR, "-cursor", "cursor", "Cursor",
 	 DEF_NOTEBOOK_CURSOR, -1, Tk_Offset(Notebook, cursor),
 	 TK_OPTION_NULL_OK, 0, 0},
+   {TK_OPTION_COLOR, "-foreground", "foreground", "Foreground",
+    DEF_NOTEBOOK_FG, -1, Tk_Offset(Notebook, normalFg), 0, 0, 0},
 	{TK_OPTION_FONT, "-font", "font", "Font",
 	 DEF_NOTEBOOK_FONT, -1, Tk_Offset(Notebook, tkfont), 0, 0, 0},
    {TK_OPTION_PIXELS, "-height", "height", "Height",
@@ -271,8 +272,8 @@ static const Tk_OptionSpec optionSpecs[] =
 	{TK_OPTION_BOOLEAN, "-overlay", "overlay", "Overlay",
 	 DEF_NOTEBOOK_OVERLAY, -1, Tk_Offset(Notebook, overlay),
 	 0, 0, 0},
-	{TK_OPTION_STRING, "-padding", "padding", "Padding", "0",
-	 Tk_Offset(Notebook, paddingObj), -1, 0,
+	{TK_OPTION_CUSTOM, "-padding", "padding", "Padding", "0",
+	 -1, Tk_Offset(Notebook, padding), 0,
 	 (ClientData)&paddingOption, GEOMETRY },
    {TK_OPTION_RELIEF, "-relief", "relief", "Relief",
 	 DEF_NOTEBOOK_RELIEF, -1, Tk_Offset(Notebook, relief), 0, 0, 0},
@@ -313,8 +314,8 @@ static const Tk_OptionSpec paneOptionSpecs[] =
    {TK_OPTION_PIXELS, "-minheight", nullptr, nullptr,
 	 "0", Tk_Offset(Slave, minheightObj),
 	 Tk_Offset(Slave, minheight), TK_OPTION_NULL_OK, 0, 0},
-	{TK_OPTION_STRING, "-padding", nullptr, nullptr, "0",
-	 Tk_Offset(Slave, paddingObj), -1, 0,
+	{TK_OPTION_CUSTOM, "-padding", nullptr, nullptr, "2 2 2 2",
+	 -1, Tk_Offset(Slave, padding), 0,
 	 (ClientData)&paddingOption, GEOMETRY },
    {TK_OPTION_CUSTOM, "-sticky", nullptr, nullptr,
 	 DEF_NOTEBOOK_PANE_STICKY, -1, Tk_Offset(Slave, sticky), 0,
@@ -326,7 +327,7 @@ static const Tk_OptionSpec paneOptionSpecs[] =
 	 -1, 0, 0, GEOMETRY },
    {TK_OPTION_PIXELS, "-width", nullptr, nullptr,
 	 DEF_NOTEBOOK_PANE_WIDTH, Tk_Offset(Slave, widthObj),
-	Tk_Offset(Slave, width), TK_OPTION_NULL_OK, 0, 0},
+	Tk_Offset(Slave, width), TK_OPTION_NULL_OK, 0, GEOMETRY},
    {TK_OPTION_END}
 };
 
@@ -534,8 +535,20 @@ SetPadding(	ClientData clientData,
 
 		for (i = 0; i < padc; ++i)
 		{
-			if (Tk_GetPixelsFromObj(interp, tkwin, padv[i], &pixels[i]) != TCL_OK)
+			if (Tcl_GetIntFromObj(interp, padv[i], &pixels[i]) != TCL_OK || pixels[i] < 0)
 				return TCL_ERROR;
+		}
+
+		switch (padc)
+		{
+			case 1:
+				pixels[1] = pixels[2] = pixels[3] = pixels[0];
+				break;
+
+			case 2:
+				pixels[3] = pixels[2] = pixels[1];
+				pixels[1] = pixels[0];
+				break;
 		}
 
 		padding.left   = pixels[0];
@@ -759,7 +772,6 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 }
 
 
-#if 0
 //----------------------------------------------------------------------
 //
 // LayoutTabs --
@@ -776,15 +788,12 @@ AdjustForSticky(	int sticky,				// Sticky value; see top of file for definition
 static void
 LayoutTabs(Notebook* nb)
 {
-	int i;
-	int textHeight;
 	Tk_FontMetrics fmt;
-	int tabHeight = 0;
-
 	Tk_GetFontMetrics(nb->tkfont, &fmt);
-	textHeight = fmt.linespace;
 
-	for (i = 0; i < nb->numSlaves; ++i)
+	nb->tabHeight = 0;
+
+	for (int i = 0; i < nb->numSlaves; ++i)
 	{
 		Slave* slave = nb->slaves[i];
 
@@ -795,13 +804,10 @@ LayoutTabs(Notebook* nb)
 			int textWidth = Tk_TextWidth(nb->tkfont, str, len);
 
 			slave->tabWidth = slave->padding.left + textWidth + slave->padding.right;
-			tabHeight = MAX(tabHeight, slave->padding.top + textHeight + slave->padding.bottom);
+			nb->tabHeight = MAX(nb->tabHeight, slave->padding.top + fmt.linespace + slave->padding.bottom);
 		}
 	}
-
-	nb->tabHeight = tabHeight;
 }
-#endif
 
 
 //----------------------------------------------------------------------
@@ -866,7 +872,6 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 	int slaveHeight;
 	int slaveX;
 	int slaveY;
-//	int tabrowWidth;
 
 	Slave* slave;
 
@@ -879,7 +884,7 @@ ArrangePane(ClientData clientData)	// Structure describing parent whose slaves a
 		return;
 
 	Tcl_Preserve((ClientData)nb);
-//	ComputeTabrowSize(nb, &tabrowWidth);
+	LayoutTabs(nb);
 
 	slave = nb->slaves[nb->currentIndex];
 	doubleBw = 2*Tk_Changes(slave->tkwin)->border_width;
@@ -1010,12 +1015,12 @@ DrawTab(Slave* slave, Pixmap pixmap, int x, int y, int height, int selected)
 	GC				flatGC		= Tk_3DBorderGC(tkwin, nb->tabBackground, TK_3D_FLAT_GC);
 	XSegment		segments[5];
 
-	if (slave->underlineObj)
-		Tcl_GetIntFromObj(0, slave->underlineObj, &underline);
-
-	gc = selected && nb->state == TK_STATE_NORMAL ? nb->highlightGC : nb->tabGC;
+	gc = selected && nb->state == TK_STATE_NORMAL ? nb->highlightGC : flatGC;
 	XFillRectangle(display, pixmap, gc, x, y, width - 1, height - 1);
 
+#if 0
+	// probably use TabElementDraw (ttkClamTheme.c, ttkElements.c)
+#elif 1
 	// draw frame
 	setSegment(segments + 0, x,					y,				x + width,		y);					// top
 	setSegment(segments + 1, MAX(x - 1, 0),	y + height,	x + width - 2,	y + height);		// bottom
@@ -1034,6 +1039,7 @@ DrawTab(Slave* slave, Pixmap pixmap, int x, int y, int height, int selected)
 
 		XDrawSegments(display, pixmap, nb->gc, segments, 4);
 	}
+#endif
 
 	// draw content
 	if (nb->state == TK_STATE_DISABLED)
@@ -1047,6 +1053,9 @@ DrawTab(Slave* slave, Pixmap pixmap, int x, int y, int height, int selected)
 	y += slave->padding.top + 2;
 
 	Tk_DrawChars(display, pixmap, gc, nb->tkfont, str, len, x, y);
+
+	if (slave->underlineObj)
+		Tcl_GetIntFromObj(0, slave->underlineObj, &underline);
 
 	if (underline >= 0)
 		Tk_UnderlineChars(display, pixmap, gc, nb->tkfont, str, x, y, underline, underline + 1);
@@ -1288,6 +1297,7 @@ ComputeGeometry(Notebook* nb)		// Pointer to the Notebook structure
 	int tabrowWidth;
 	int internalBw;
 
+	LayoutTabs(nb);
 	ComputeTabrowSize(nb, &tabrowWidth);
 
 	nb->flags |= REQUESTED_RELAYOUT;
@@ -1814,7 +1824,8 @@ NotebookWorldChanged(ClientData instanceData)	// Information about the notebook
 	if (nb->tabGC != None)
 		Tk_FreeGC(Tk_Display(nb->tkwin), nb->tabGC);
 	gcValues.background = Tk_3DBorderColor(nb->tabBackground)->pixel;
-	nb->tabGC = Tk_GetGC(nb->tkwin, GCBackground, &gcValues);
+	gcValues.foreground = nb->normalFg->pixel;
+	nb->tabGC = Tk_GetGC(nb->tkwin, GCForeground | GCBackground | GCFont, &gcValues);
 
 	// Allocate the highlight graphics context
 	gcValues.foreground = nb->highlightFgColor->pixel;
@@ -1999,27 +2010,7 @@ NotebookWidgetObjCmd(ClientData clientData,	// Information about square widget
 			}
 			else
 			{
-				Tk_Window slaveWindow = Tk_NameToWindow(interp, Tcl_GetString(objv[2]), nb->tkwin);
-
-				if (!slaveWindow)
-				{
-					result = ConfigureSlaves(nb, interp, objc, objv);
-				}
-				else
-				{
-					int index = GetIndex(nb, slaveWindow);
-
-					if (index != -1 && nb->slaves[index]->hide)
-					{
-						 nb->slaves[index]->hide = 0;
-
-						if (Tk_IsMapped(nb->tkwin) && !(nb->flags & (REDRAW_PENDING | REDRAW_TABS_PENDING)))
-						{
-							Tcl_DoWhenIdle(DisplayTabs, (ClientData)nb);
-							nb->flags |= REDRAW_TABS_PENDING;
-						}
-					}
-				}
+				result = ConfigureSlaves(nb, interp, objc, objv);
 			}
 			break;
 

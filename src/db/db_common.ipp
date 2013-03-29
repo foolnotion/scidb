@@ -107,6 +107,7 @@ inline int distance(ID a, ID b) { return mstl::max(fyleDistance(a, b), rankDista
 inline ID flipFyle(ID s)	{ return make(Fyle(Rank8 - fyle(s)), rank(s)); }
 inline ID flipRank(ID s)	{ return make(fyle(s), Rank(Rank8 - rank(s))); }
 
+inline Fyle flipFyle(Fyle fyle)	{ return Fyle(FyleH - fyle); }
 inline Rank flipRank(Rank rank)	{ return Rank(Rank8 - rank); }
 
 inline Rank homeRank(db::color::ID color) { return color == db::color::White ? Rank1 : Rank8; }

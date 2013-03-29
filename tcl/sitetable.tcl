@@ -494,7 +494,7 @@ proc Find {path combo args} {
 			::scrolledtable::see $path $i
 			::scrolledtable::focus $path
 		} else {
-			::dialog::info -parent [::toolbar::lookupChild $combo] -message $mc::NotFound
+			::dialog::info -parent [::toolbar::lookupChild $combo] -message $::playertable::mc::NotFound
 		}
 	} elseif {$i >= 0} {
 		::scrolledtable::see $path $i
