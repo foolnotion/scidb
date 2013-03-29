@@ -533,7 +533,7 @@ struct GameFlags : public Match
 
 	bool match(GameInfo const& info, unsigned gameNumber) override
 	{
-		return info.flags() & m_flags == m_flags;
+		return (info.flags() & m_flags) == m_flags;
 	}
 
 	unsigned m_flags;
@@ -812,7 +812,7 @@ struct State : public Match
 
 	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
 	{
-		return board.checkState(variant) & m_states == m_states;
+		return (board.checkState(variant) & m_states) == m_states;
 	}
 
 	unsigned m_states;
@@ -922,7 +922,7 @@ struct EndGame : public Match
 		material::Count w = board.materialCount(White);
 		material::Count b = board.materialCount(Black);
 
-		return	(	w.queen | b.queen == 0
+		return	(	(w.queen | b.queen) == 0
 					&& w.rook + w.bishop + w.knight <= 3
 					&& b.rook + b.bishop + b.knight <= 3)
 				|| (	w.queen == 1
@@ -2894,12 +2894,12 @@ Designator::pieces(Board const& board, color::ID color) const
 {
 	my::Pieces const& pieces = m_pos.pieces[color];
 
-	return	board.kings(color)		& pieces.kings
-			 | board.queens(color)		& pieces.queens
-			 | board.rooks(color)		& pieces.rooks
-			 | board.bishops(color)		& pieces.bishops
-			 | board.knights(color)		& pieces.knights
-			 | board.pawns(color)		& pieces.pawns;
+	return	(board.kings(color)		& pieces.kings)
+			 | (board.queens(color)		& pieces.queens)
+			 | (board.rooks(color)		& pieces.rooks)
+			 | (board.bishops(color)	& pieces.bishops)
+			 | (board.knights(color)	& pieces.knights)
+			 | (board.pawns(color)		& pieces.pawns);
 }
 
 
@@ -3380,7 +3380,7 @@ Match::parseBlackElo(char const* s, Error& error)
 char const*
 Match::parseBlackGender(char const* s, Error& error)
 {
-	sex::ID sex;
+	sex::ID sex = sex::Unspecified;
 
 	s = ::parseGender(s, error, sex);
 
@@ -4117,7 +4117,7 @@ Match::parseWhiteElo(char const* s, Error& error)
 char const*
 Match::parseWhiteGender(char const* s, Error& error)
 {
-	sex::ID sex;
+	sex::ID sex = sex::Unspecified;
 
 	s = ::parseGender(s, error, sex);
 

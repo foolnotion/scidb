@@ -117,126 +117,126 @@ template <unsigned> bool match(my::Position const&, Board const&);
 
 
 template <>
-inline static bool
+inline bool
 match<WK>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].kings, board.kings(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<BK>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].kings, board.kings(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<WQ>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].queens, board.queens(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<BQ>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[Black].queens, board.queens(Black));
 }
 
 template <>
-inline static bool
+inline bool
 match<WR>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].rooks, board.rooks(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<BR>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[Black].rooks, board.rooks(Black));
 }
 
 template <>
-inline static bool
+inline bool
 match<WB>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].bishops, board.bishops(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<BB>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[Black].bishops, board.bishops(Black));
 }
 
 template <>
-inline static bool
+inline bool
 match<WN>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].knights, board.knights(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<WP>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].pawns, board.pawns(White));
 }
 
 template <>
-inline static bool
+inline bool
 match<BP>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[Black].pawns, board.pawns(Black));
 }
 
 template <>
-inline static bool
+inline bool
 match<WI>(my::Position const& pos, Board const& board)
 {
 	return match<WB>(pos, board) || match<WN>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<BI>(my::Position const& pos, Board const& board)
 {
 	return match<BB>(pos, board) || match<BN>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<WM>(my::Position const& pos, Board const& board)
 {
 	return match<WQ>(pos, board) || match<WR>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<BM>(my::Position const& pos, Board const& board)
 {
 	return match<BQ>(pos, board) || match<BR>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<WA>(my::Position const& pos, Board const& board)
 {
 	return match<WM>(pos, board) && match<WI>(pos, board) && match<WP>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<BA>(my::Position const& pos, Board const& board)
 {
 	return match<BM>(pos, board) && match<BI>(pos, board) && match<BP>(pos, board);
 }
 
 template <>
-inline static bool
+inline bool
 match<E>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.empty, board.empty());
@@ -244,7 +244,7 @@ match<E>(my::Position const& pos, Board const& board)
 
 #define MATCH(P1,P2)                                         \
 	template <>                                               \
-	inline static bool                                        \
+	inline bool                                        \
 	match<P1|P2>(my::Position const& pos, Board const& board) \
 	{                                                         \
 		return match<P1>(pos, board) && match<P2>(pos, board); \
