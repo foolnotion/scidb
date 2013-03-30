@@ -58,7 +58,7 @@ TITLE Novità 
   <li class="space">Tabella tornei: visualizzazione opzionale di vincite/patte/perse</li>
   <li class="space">Supportato scorrimento con rotella del mouse per tutte le liste e la scacchiera</li>
   <li class="space">Notazione delle mosse disponibile per Algebrica (normal, breve e completa), Inglese, Corrispondenza e Telegrafo</li>
-  <li class="space">L'editor delle partite ha alcune funzioni in più: mostra i commenti NAG invece dei simboli NAG se l'annotazione è più inusuale</li>re unusual</li>
+  <li class="space">L'editor delle partite ha alcune funzioni in più: mostra i commenti NAG invece dei simboli NAG se l'annotazione è più inusuale</li>
   <li class="space">Ora è possibile importare dei database senza aprirli prima</li>
   <li class="space">Risolto il problema di performance nell'apertura di database ChessBase</li>
 <NEW>

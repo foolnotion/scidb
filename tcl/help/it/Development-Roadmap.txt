@@ -27,6 +27,10 @@ TITLE Piano di Sviluppo
   <li>Funzioni di Ricerca: cerca per testata, posizione etc.</li>
   <li>Funzioni di Filtro: filtro partita, giocatore</li>
   <li>Layout flessibile per le finestre</li>
+<NEW>
+  <li>Support of variant Bughouse</li>
+  <li>Support of variants in opening tree</li>
+</NEW>
   <li>Generazione documenti: esportazione in LaTeX</li>
   <li>Supporto per il sistema operativo Windows</li>
   <li>Inserimento mosse tramite tastiera</li>

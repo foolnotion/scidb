@@ -124,6 +124,7 @@ Se il database contiene partite di una variante eterodossa degli scacchi, per fa
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
 Crea un nuovo database di qualsiasi variante eterodossa degli scacchi. Solo database con formato Scidb possono essere creati in questo caso.
+</p>
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>

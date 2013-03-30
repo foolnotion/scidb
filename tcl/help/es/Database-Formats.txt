@@ -72,7 +72,7 @@ currently this is:
   </table>
 </box>
 
-</p>
+<p>
 A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
 is an exception).
 </p>

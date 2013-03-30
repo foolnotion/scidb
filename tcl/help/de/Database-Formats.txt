@@ -72,7 +72,7 @@ zur Zeit sind dies:
   </table>
 </box>
 
-</p>
+<p>
 Eine Datenbank ist auf eine Schachform festgelegt (die
 <a href="Clipbase.html">Ablage-Datenbank</a> ist eine Ausnahme).
 </p>

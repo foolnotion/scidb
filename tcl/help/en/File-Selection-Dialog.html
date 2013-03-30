@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/File-Selection-Dialog.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Help: File Selection Dialog</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">File Selection Dialog</h1>
+</div>
+
+<p>
+The file selection dialog is basically composed of six divisions:
+</p>
+
+<ul>
+  <li><a href="#Navigation">Directory navigation</a></li>
+  <li><a href="#Bookmarks">Bookmarks</a></li>
+  <li><a href="#FileList">File list</a></li>
+  <li><a href="#FileName">Filename entry</a></li>
+  <li><a href="#FilesType">File type selection</a></li>
+  <li><a href="#Encoding">Encoding selection</a></li>
+</ul>
+
+<p>
+The file list is supporting Drag &amp; Drop:
+</p>
+
+<ul><li><a href="#DND">Drag &amp; Drop</a></li></ul>
+
+<h3 id="Navigation">Directory navigation</h3>
+
+<p>
+This bar is displaying the path to the actual directory, and it provides a quick change
+to higher directories, as well as to child directories.
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-navigation-folder.png" alt="folder" /></li></ul>
+
+<p>
+The higher directories will be selected by clicking the directory buttons.
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-navigation-arrow.png" alt="arrow" /></li></ul>
+
+<p>
+Clicking the related arrow buttons will list the child directories.
+</p>
+
+<h3 id="Bookmarks">Bookmarks</h3>
+
+<p>
+Inside this division the user may create or delete bookmarks (links) to directories,
+For this purpose either the context sensitive menu or the toolbar will be used.
+While pressing the middle mouse button over a bookmark the related path will be
+shown.
+</p>
+
+<p>
+There are predefined bookmarks which are undeletable:
+</p>
+
+<h4><img src="../images/fsbox-favorites.png" alt="favorites" /> Favorites</h4>
+
+<p>
+This folder is containing the most popular directories.
+</p>
+
+<h4><img src="../images/fsbox-visited.png" alt="visited" /> Last Visited</h4>
+
+<p>
+Inside this folder the last visited directories will be found.
+</p>
+
+<h4><img src="../images/fsbox-filesystem.png" alt="filesystem" /> File System</h4>
+
+<p>
+This provides direct selection of the root file system.
+</p>
+
+<h4><img src="../images/fsbox-desktop.png" alt="desktop" /> Desktop</h4>
+
+<p>
+This folder is listing all created file links in <code>~/</code><code>Desktop/</code>.
+Normally these are the links which you can see on your desktop as icons.
+<br/><img src="../images/note.png" alt="note" /> This bokmark is available only if the directory <code>~/</code><code>Desktop/</code>
+is exisiting.
+</p>
+
+<h4><img src="../images/fsbox-trash.png" alt="trash" /> Trash</h4>
+
+<p>
+Using this bookmark the whole content of the trash will be listed.
+<br/><img src="../images/note.png" alt="note" /> This bookmark is available only under KDE/Unix.
+</p>
+
+<h4><img src="../images/fsbox-home.png" alt="home" /> Home</h4>
+
+<p>
+This allows a direct selection of the home directory.
+</p>
+
+<h3 id="FileList">File list</h3>
+
+<p>
+This file list is specialized for Scidb files, meaning that all operations will be
+executed on all related files of a database, although only the leading file (usually
+the index file) wil be listed. In this way the user doesn't take care about the details
+of the <a href="Database-Formats.html">database formats</a>.
+</p>
+
+<p>
+While pressing the middle mouse button over a file entry an information box about the file
+will be displayed.
+</p>
+
+<p>
+The database operations in detail:
+</p>
+
+<h4><img src="../images/fsbox-delete.png" alt="delete" /> Delete</h4>
+
+<p>
+Removing the selected database. Under KDE/Unix it will be moved to the trash,
+otherwise a physical deletion will be done which cannot be undone. In any case
+you have to confirm this operation in a dialog.
+</p>
+
+<h4><img src="../images/fsbox-rename.png" alt="rename" /> Rename</h4>
+
+<p>
+Renaming the select database. You may interrupt this operation without any effect
+if pressing <kbd class='key'>Esc</kbd>. It will be checked whether the new file name is
+legal, taking into account the characteristics of all supported operating systems.
+In this way an exchange of databases between different operating systems will be
+provided.
+</p>
+
+<h4><img src="../images/fsbox-duplicate.png" alt="duplicate" /> Duplicate</h4>
+
+<p>
+Duplicating the selected database, however only after entering a new file name.
+This operation can be interrupted with <kbd class='key'>Esc</kbd>. It is not possible to
+overwrite an exisiting database.
+</p>
+
+<h4><img src="../images/fsbox-archive.png" alt="archive" /> Create Archive</h4>
+
+<p>
+The actual selected database will be archived. The archive name will be determined
+with another file selection dialog.
+</p>
+
+<h4><img src="../images/fsbox-newfolder.png" alt="newfolder" /> New Folder</h4>
+
+<p>
+Creating a new subdirectory but only after the name of the directory has been entered.
+This operation can be interrupted without any effect if pressing <kbd class='key'>Esc</kbd>. It is
+not possible to override an existing entry.
+</p>
+
+<h3 id="FileName">Filename entry</h3>
+
+<p>
+Entering a file name directly, optional with an appropriate file extension for the wanted
+database format. If no valid file extension is specified the default format will be
+chosen, which is the first format in the currently selected file type list.
+</p>
+
+<h3 id="FilesType">File type selection</h3>
+
+<p>
+Here you can restrict the selection of database formats. An overview about the
+file extensions is provided on the page about
+<a href="Database-Formats.html">database formats</a>.
+</p>
+
+<h3 id="Encoding">Encoding selection</h3>
+
+<ul style="list-style-type: none"><li><img src="images/file-selection-box-encoding.png" alt="encoding" /></li></ul>
+
+<p>
+The selection of the appropriate encoding depends on the database format.
+Further information will be found on the page about
+<a href="Database-Formats.html">database formats</a>. But in most cases
+the preselected automatic detection is appropriate (&#x21d2;
+<a href="Database-Formats.html">database formats</a>).
+</p>
+
+<h3 id="DND">Drag &amp; Drop</h3>
+
+<p>
+The file list is supporting Drag &amp; Drop. In this way databases can be
+moved (or copied, or linked) with the assistance of an additionally file
+selection dialog. Furthermore with this support it is possible to open
+multiple databases without re-opening the dialog; dropping the database
+into the <a href="Database-Switcher.html">database switcher</a>.
+</p>
+
+<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+All Drag &amp; Drop actions are operating on the whole database, this means
+all corrsponding files (&#x21d2; <a href="Database-Formats.html">database formats</a>)
+are involved.
+</div>
+
+</body>
+</html>

@@ -20,7 +20,7 @@ INDEX Database switcher
 INDEX Compress#Compact
 INDEX Compress database#Compact
 INDEX Administrate database#Administration
-TITLE The Database switcher
+TITLE The database switcher
 
 <ul><img src="images/database-switcher.png"/></ul>
 
@@ -135,6 +135,7 @@ If the database should store games of any chess variant please use the next menu
 <menuitem>%::application::database::mc::FileNew%</menuitem>
 Create a new database of any chess variant. Only Scidb databases
 can be created in this case.
+</p>
 
 <p>
 <menuitem>%::application::database::mc::SymbolSize%</menuitem>

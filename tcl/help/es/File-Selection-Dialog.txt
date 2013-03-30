@@ -37,7 +37,6 @@ Soporte de Arrastrar &amp; Soltar en el Listado de archivos:
 </p>
 
 <ul><li><a href="#DND">Arrastrar &amp; Soltar</a></li></ul>
-</ul>
 
 <h3 id="Navigation">Navegación de directorios</h3>
 

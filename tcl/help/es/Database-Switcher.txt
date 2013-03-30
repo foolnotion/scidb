@@ -145,11 +145,12 @@ If the database should store games of any chess variant please use the next menu
 </NEW>
 </p>
 
-</NEW>
+<NEW>
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
 Create a new database of any chess variant. Only Scidb databases
 can be created in this case.
+</p>
 </NEW>
 
 <p>
