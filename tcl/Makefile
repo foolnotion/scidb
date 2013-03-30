@@ -161,12 +161,12 @@ build-help:
 install-config:
 	@echo "Install configuration files"
 	@install -m 755 -d $(SHAREDIR)/engines
-	@install -m 644 -p engines/engines.dat $(SHAREDIR)/engines
+	@install -m 644 -p engines/*.dat $(SHAREDIR)/engines
 
 uninstall-config:
 	@echo "Uninstall configuration files"
 	@if [ -d $(SHAREDIR)/engines ]; then                                                        \
-		rm -f $(SHAREDIR)/engines/engines.dat;                                                   \
+		for f in `ls engines/*.dat`; do rm -f $(SHAREDIR)/$$f; done;                             \
 		if [ "`find $(SHAREDIR)/engines -type d -empty`" = "`ls -d $(SHAREDIR)/engines`" ]; then \
 			rmdir $(SHAREDIR)/engines;                                                            \
 		fi;                                                                                      \

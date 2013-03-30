@@ -3122,6 +3122,18 @@ proc ProbeEngine {parent entry} {
 	set dir [string map {" " "-"} $engine(ShortId)]
 	set engine(Directory) [file join $::scidb::dir::user engines $dir]
 
+	if {	"WB" in $engine(Protocol)
+		&& [lindex $engine(Profiles:WB) 0] eq "Default"
+		&& [string length [lindex $engine(Profiles:WB) 1]] == 0} {
+		set sharedir [file join $::scidb::dir::share engines]
+		set script [file join $::scidb::dir::share engines $engine(ShortId).dat]
+		if {[file readable $script]} {
+			set f [open $script "r"]
+			lset engine(Profiles:WB) 1 [read $f]
+			close $f
+		}
+	}
+
 	return [array get engine]
 }
 

@@ -33,6 +33,7 @@
 #include "m_algorithm.h"
 #include "m_utility.h"
 #include "m_pvector.h"
+#include "m_auto_ptr.h"
 #include "m_assert.h"
 
 #include <stdlib.h>
@@ -942,6 +943,29 @@ struct EndGame : public Match
 	}
 };
 
+
+struct Sequence : public Match
+{
+	typedef mstl::vector<cql::Match::Position*> PositionList;
+
+	Sequence() :m_info(0), m_index(0) {}
+	~Sequence() { ::deleteAll(m_list.begin(), m_list.end()); }
+
+	cql::Match::Position& pushBack(variant::Type variant);
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+
+	GameInfo const*	m_info;
+	unsigned				m_index;
+	PositionList		m_list;
+};
+
+
+struct GappedSequence : public Sequence
+{
+	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+};
+
 } // namespace board
 
 namespace move {
@@ -1110,8 +1134,7 @@ struct Match : virtual public move::Match, virtual public board::Match
 
 	~Match() { ::deleteAll(m_list.begin(), m_list.end()); }
 
-	cql::Match::Position& back() { return *m_list.back(); }
-	void pushBack(variant::Type variant);
+	cql::Match::Position& pushBack(variant::Type variant);
 
 	PositionList m_list;
 };
@@ -1753,12 +1776,11 @@ Match::Position::parseAnd(Match& match, char const* s, Error& error)
 
 	s = ::skipSpaces(t);
 
-	logical::And list;
+	mstl::auto_ptr<logical::And> list(new logical::And);
 
 	do
 	{
-		list.pushBack(m_variant);
-		s = list.back().parse(match, s, error);
+		s = list->pushBack(m_variant).parse(match, s, error);
 
 		if (error != No_Error)
 			return s;
@@ -1773,7 +1795,8 @@ Match::Position::parseAnd(Match& match, char const* s, Error& error)
 	}
 	while (*s != ')');
 
-	return s;
+	m_boardMatchList.push_back(list.release());
+	return s + 1;
 }
 
 
@@ -2289,12 +2312,11 @@ Match::Position::parseOr(Match& match, char const* s, Error& error)
 
 	s = ::skipSpaces(t);
 
-	logical::Or list;
+	mstl::auto_ptr<logical::Or> list(new logical::Or);
 
 	do
 	{
-		list.pushBack(m_variant);
-		s = list.back().parse(match, s, error);
+		s = list->pushBack(m_variant).parse(match, s, error);
 
 		if (error != No_Error)
 			return s;
@@ -2309,7 +2331,8 @@ Match::Position::parseOr(Match& match, char const* s, Error& error)
 	}
 	while (*s != ')');
 
-	return s;
+	m_boardMatchList.push_back(list.release());
+	return s + 1;
 }
 
 
@@ -2486,8 +2509,51 @@ Match::Position::parseResult(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseSequence(Match& match, char const* s, Error& error)
 {
-	// TODO
-	return s;
+	if (*s != '(')
+	{
+		error = Left_Parenthesis_Expected;
+		return s;
+	}
+
+	s = ::skipSpaces(s + 1);
+
+	if (*s != '(')
+	{
+		error = Position_Expected;
+		return s;
+	}
+
+	char const* t = ::skipToDelim(::skipSpaces(s + 1));
+
+	if (t - s != 8 || ::strncmp(s, "position", 8) != 0)
+	{
+		error = Position_Expected;
+		return s;
+	}
+
+	s = ::skipSpaces(t);
+
+	mstl::auto_ptr<board::Sequence> seq(new board::Sequence);
+
+	do
+	{
+		s = seq->pushBack(m_variant).parse(match, s, error);
+
+		if (error != No_Error)
+			return s;
+
+		s = ::skipSpaces(s);
+
+		if (*s != '(' && *s != ')')
+		{
+			error = Position_Expected;
+			return s;
+		}
+	}
+	while (*s != ')');
+
+	m_boardMatchList.push_back(seq.release());
+	return s + 1;
 }
 
 
@@ -2810,11 +2876,72 @@ Match::Position::parse(Match& match, char const* s, Error& error)
 }
 
 
+cql::Match::Position&
+db::cql::board::Sequence::pushBack(variant::Type variant)
+{
+	m_list.push_back(new cql::Match::Position(variant));
+	return *m_list.back();
+}
 
-void
+
+bool
+db::cql::board::Sequence::match(GameInfo const& info, Board const& board, variant::Type variant)
+{
+	if (&info != m_info)
+	{
+		if (!m_list[0]->match(info, board, variant))
+			return false;
+
+		if (m_list.size() == 1)
+			return true;
+
+		m_info = &info;
+		m_index = 1;
+
+		return false;
+	}
+
+	if (m_list[m_index]->match(info, board, variant))
+		return ++m_index == m_list.size();
+	
+	if (m_list[0]->match(info, board, variant))
+		m_index = 1;
+	else
+		m_info = 0;
+
+	return false;
+}
+
+
+bool
+db::cql::board::GappedSequence::match(GameInfo const& info, Board const& board, variant::Type variant)
+{
+	if (&info != m_info)
+	{
+		if (!m_list[0]->match(info, board, variant))
+			return false;
+
+		if (m_list.size() == 1)
+			return true;
+
+		m_info = &info;
+		m_index = 1;
+
+		return false;
+	}
+
+	if (m_list[m_index]->match(info, board, variant))
+		return ++m_index == m_list.size();
+	
+	return false;
+}
+
+
+cql::Match::Position&
 logical::Match::pushBack(variant::Type variant)
 {
 	m_list.push_back(new cql::Match::Position(variant));
+	return *m_list.back();
 }
 
 

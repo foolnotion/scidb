@@ -202,7 +202,9 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 		{
 			if (from > sq::h2)
 			{
-				M_ASSERT(variant::isAntichessExceptLosers(m_variant));
+				if (!variant::isAntichessExceptLosers(m_variant))
+					throwCorruptData();
+
 				// Promotion to king (Antichess).
 				Square to = (from + m_strm.get()) & 63;
 				return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));
@@ -232,7 +234,9 @@ Decoder::decodePawn(sq::ID from, Byte nybble)
 	{
 		if (from < sq::a7)
 		{
-			M_ASSERT(variant::isAntichessExceptLosers(m_variant));
+			if (!variant::isAntichessExceptLosers(m_variant))
+				throwCorruptData();
+
 			// Promotion to king (Antichess).
 			Square to = (from - m_strm.get()) & 63;
 			return Move::genCapturePromote(from, to, piece::King, m_position.piece(to));

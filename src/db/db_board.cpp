@@ -3391,82 +3391,82 @@ Board::computeIdn(variant::Type variant) const
 		switch (m_hash)
 		{
 			case LittleGame_Hash:
-				if (m_littleGame.exactPosition() == exactPosition())
+				if (m_littleGame.exactZHPosition() == exactZHPosition())
 					idn = variant::LittleGame;
 				break;
 
 			case PawnsOn4thRank_Hash:
-				if (m_pawnsOn4thRank.exactPosition() == exactPosition())
+				if (m_pawnsOn4thRank.exactZHPosition() == exactZHPosition())
 					idn = variant::PawnsOn4thRank;
 				break;
 
 			case Pyramid_Hash:
-				if (m_pyramid.exactPosition() == exactPosition())
+				if (m_pyramid.exactZHPosition() == exactZHPosition())
 					idn = variant::Pyramid;
 				break;
 
 			case KNNvsKP_Hash:
-				if (m_KNNvsKP.exactPosition() == exactPosition())
+				if (m_KNNvsKP.exactZHPosition() == exactZHPosition())
 					idn = variant::KNNvsKP;
 				break;
 
 			case PawnsOnly_Hash:
-				if (m_pawnsOnly.exactPosition() == exactPosition())
+				if (m_pawnsOnly.exactZHPosition() == exactZHPosition())
 					idn = variant::PawnsOnly;
 				break;
 
 			case KnightsOnly_Hash:
-				if (m_knightsOnly.exactPosition() == exactPosition())
+				if (m_knightsOnly.exactZHPosition() == exactZHPosition())
 					idn = variant::KnightsOnly;
 				break;
 
 			case BishopsOnly_Hash:
-				if (m_bishopsOnly.exactPosition() == exactPosition())
+				if (m_bishopsOnly.exactZHPosition() == exactZHPosition())
 					idn = variant::BishopsOnly;
 				break;
 
 			case RooksOnly_Hash:
-				if (m_rooksOnly.exactPosition() == exactPosition())
+				if (m_rooksOnly.exactZHPosition() == exactZHPosition())
 					idn = variant::RooksOnly;
 				break;
 
 			case QueensOnly_Hash:
-				if (m_queensOnly.exactPosition() == exactPosition())
+				if (m_queensOnly.exactZHPosition() == exactZHPosition())
 					idn = variant::QueensOnly;
 				break;
 
 			case NoQueens_Hash:
-				if (m_noQueens.exactPosition() == exactPosition())
+				if (m_noQueens.exactZHPosition() == exactZHPosition())
 					idn = variant::NoQueens;
 				break;
 
 			case WildFive_Hash:
-				if (m_wildFive.exactPosition() == exactPosition())
+				if (m_wildFive.exactZHPosition() == exactZHPosition())
 					idn = variant::WildFive;
 				break;
 
 			case KBNK_Hash:
-				if (m_kbnk.exactPosition() == exactPosition())
+				if (m_kbnk.exactZHPosition() == exactZHPosition())
 					idn = variant::KBNK;
 				break;
 
 			case KBBK_Hash:
-				if (m_kbbk.exactPosition() == exactPosition())
+				if (m_kbbk.exactZHPosition() == exactZHPosition())
 					idn = variant::KBBK;
 				break;
 
 			case Runaway_Hash:
-				if (m_runaway.exactPosition() == exactPosition())
+				if (m_runaway.exactZHPosition() == exactZHPosition())
 					idn = variant::Runaway;
 				break;
 
 			case QueenVsRooks_Hash:
-				if (m_queenVsRooks.exactPosition() == exactPosition())
+				if (m_queenVsRooks.exactZHPosition() == exactZHPosition())
 					idn = variant::QueenVsRooks;
 				break;
 
 			case UpsideDown_Hash:
-				if (m_upsideDown.exactPosition() == exactPosition())
+				if (m_upsideDown.exactZHPosition() == exactZHPosition())
 					idn = variant::UpsideDown;
 				break;
 		}
