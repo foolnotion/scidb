@@ -415,10 +415,7 @@ proc isInsaneUnixRelease {} {
     if {![info exists insaneRelease]} {
         set insaneRelease 0
         switch -glob -nocase -- $distribution(distributor) {
-            Debian*     { if {$distribution(revision) >= "7.0"   } { set insaneRelease 1 } }
-            LinuxMint*  { if {$distribution(revision) >= "12"    } { set insaneRelease 1 } }
             Ubuntu*     { if {$distribution(revision) >= "11.10" } { set insaneRelease 1 } }
-            Snowlinux*  { if {$distribution(revision) >= "3.0"   } { set insaneRelease 1 } }
         }
     }
  
@@ -2199,7 +2196,7 @@ if {[string length $gxxVer]} {
 
     if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {
         # it seems that we build on an insane Unix system
-        # (like Debian Wheezy, or Ubuntu Oneiric)
+        # (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
         puts "The call of sub-processes is not working properly on"
