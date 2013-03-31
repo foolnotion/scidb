@@ -51,7 +51,7 @@ clean:
 	@echo ""
 	@echo "Now you may use \"make\" to build the program."
 
-install: check-mtime install-subdirs install-engines # update-etc-magic
+install: check-mtime install-subdirs install-engines update-magic
 
 uninstall:
 	@$(MAKE) -C man uninstall
@@ -80,24 +80,28 @@ uninstall-engines:
 
 update-magic:
 	@echo "Update magic file"
-	@if [ -f /usr/share/file/magic ]; then                                     \
-		if [ -z "`cat /usr/share/file/magic | grep Scidb`" ]; then              \
-			if [[ ! -r /etc/magic || -z "`cat /etc/magic | grep Scidb`" ]]; then \
-				if [ "`id -u`" -eq 0 ]; then                                      \
-					magic="/etc/magic";                                            \
-				else                                                              \
-					magic="$(HOME)/.magic";                                        \
-				fi;                                                               \
-				if [ ! -a $$magic ]; then                                         \
-					touch $$magic;                                                 \
-				fi;                                                               \
-				if [ -w $$magic ]; then                                           \
-					if [ -z "`cat $$magic | grep Scidb`" ]; then                   \
-						cat magic >> $$magic;                                       \
-					fi;                                                            \
-				fi;                                                               \
-			fi;                                                                  \
-		fi;                                                                     \
+	@if [ ! -r /etc/magic ] || [ -z "`cat /etc/magic | grep Scidb`" ]; then \
+		magic="$(HOME)/.magic";                                              \
+		if [ ! -r $$magic ] || [ -z "`cat $$magic | grep Scidb`" ]; then     \
+			done=0;                                                           \
+			if [ "`id -u`" -eq 0 ]; then                                      \
+				if [ -f /etc/magic ]; then                                     \
+					echo "" >> /etc/magic;                                      \
+					cat magic >> /etc/magic;                                    \
+					done=1;                                                     \
+				fi;                                                            \
+			fi;                                                               \
+			if [ $$done = 0 ]; then                                           \
+				if [ ! -r $$magic ]; then                                      \
+					touch $$magic;                                              \
+				elif [ -w $$magic ]; then                                      \
+					 echo "" >> $$magic;                                        \
+				fi;                                                            \
+				if [ -w $$magic ]; then                                        \
+					cat magic >> $$magic;                                       \
+				fi;                                                            \
+			fi;                                                               \
+		fi;                                                                  \
 	fi
 
 # vi:set ts=3 sw=3:

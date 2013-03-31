@@ -28,7 +28,7 @@
 
 namespace eval scidb {
 
-set revision [::scidb::misc::revision]
+set revision 83 ;# first revision ever
 
 variable clipbaseName		[::scidb::db::get clipbase name]
 variable scratchbaseName	[::scidb::db::get scratchbase name]

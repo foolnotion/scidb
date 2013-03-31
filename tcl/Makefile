@@ -495,8 +495,8 @@ install-fonts:
 	fi
 
 uninstall-fonts:
+	echo "Uninstall fonts"
 	@if [ 1 ]; then                                                 \
-		echo "Uninstall fonts";                                      \
 		if [ "`id -u`" -eq 0 ]; then                                 \
 			fontdir="$(FONTDIR)";                                     \
 		else                                                         \
@@ -513,7 +513,7 @@ uninstall-fonts:
 				rm -f $$fontdir/`basename $$f`;                        \
 			fi;                                                       \
 		done;                                                        \
-		if [ $$recache == 1 ]; then                                  \
+		if [ $$recache = 1 ]; then                                   \
 			if [ ! -z "`which fc-cache`" ]; then                      \
 				fc-cache -f $$fontdir;                                 \
 			fi;                                                       \
