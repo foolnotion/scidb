@@ -35,3 +35,11 @@
 0	string		\x00\x00\x24\x00\x2e\x01	ChessBase header file,
 >6	ubelong-1	x				%d game(s)
 
+#------------------------------------------------------------------------------
+# polyglot:  file(1) magic polyglot chess opening book files
+#
+# From Michel Van den Bergh 
+
+0		string	\x00\x00\x00\x00\x00\x00\x00\x00@PG@\x0a	Polyglot chess opening book
+>13	string	1.0\x00\x00\x00\x00\x00\x00\x00\x00\x0a	(version 1.0)
+
