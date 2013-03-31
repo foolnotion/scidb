@@ -178,24 +178,22 @@ log::finishLayout
 # prevent errors while parsing old config files (as long as we have a beta version)
 proc dialog::fsbox::setBookmarks {args} {}
 
-catch {
-	if {$::scidb::revision < 569} {
-		array set histarr_ [array get ::setup::board::History]
+if {[file readable $::scidb::file::options]} {
+	if {[catch {
+			::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8 -throw 1
+		}]} {
 		unset ::setup::board::History
+		set ::setup::board::History {}
+		catch { source -encoding utf-8 $::scidb::file::options }
 	}
 }
 
-if {[file readable $::scidb::file::options]} {
-	::load::source $::scidb::file::options -message $::load::mc::ReadingFile(options) -encoding utf-8
-}
-
 if {[catch {
-	if {$::scidb::revision < 569} {
+	if {![array exists ::setup::board::History]} {
 		set history_ $::setup::board::History
-		unset ::setup::board::History 
-		array set ::setup::board::History [array get histarr_]
+		unset ::setup::board::History
 		set ::setup::board::History(Normal) $history_
-		unset histarr_ history_
+		unset history_
 	}
 
 	if {$::scidb::revision < [::scidb::misc::revision]} {
