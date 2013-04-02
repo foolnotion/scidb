@@ -24,6 +24,7 @@ set Index {
   }
   { F
     {
+      {{FEN (Forsyth-Edwards-Notation)} {FEN.html} {}}
       {{Funktionsleisten} {Toolbar-Usage.html} {}}
     }
   }
@@ -57,6 +58,12 @@ set Index {
       {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
+  { S
+    {
+      {{Shredder-FEN} {FEN.html} {}}
+      {{Stellungseingabe} {Board-Setup-Dialog.html} {}}
+    }
+  }
   { U
     {
       {{Übersichts-Browser} {Game-Overview.html} {}}
@@ -65,6 +72,11 @@ set Index {
   { W
     {
       {{Webseite} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { X
+    {
+      {{X-FEN (Erweiterte Forsyth-Edwards-Notation)} {FEN.html} {}}
     }
   }
 }

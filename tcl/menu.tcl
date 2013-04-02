@@ -440,7 +440,7 @@ proc dbNew {parent variant} {
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \
-		-customfiletypes {.sci .si4 .si3 .cbh .cbh .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
+		-customfiletypes {.sci .si4 .si3 .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip} \
 	]
 	set FileSelBoxInUse 0
 

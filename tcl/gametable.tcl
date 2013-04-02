@@ -831,7 +831,6 @@ proc TableSelected {path index} {
 
 	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 	set number [expr {[column $info number] - 1}]
-	set variant [::scidb::db::get variant? $base $number]
 
 	set pos [::widget::busyOperation { ::game::new $path \
 		-base $base -variant $variant -view $view -number $number -fen $fen }]

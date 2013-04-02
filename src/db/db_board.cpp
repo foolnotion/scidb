@@ -2812,11 +2812,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[Black] |= setBit(s);
 					incrMaterial<piece::Pawn>(Black);
 					m_progress.side[Black].add(::flipRank(s));
-					if (variant::isZhouse(variant))
-					{
-						M_ASSERT(m_partner->m_holding[White].pawn > 0);
+					if (variant::isZhouse(variant) && m_partner->m_holding[White].pawn > 0)
 						--m_partner->m_holding[White].pawn;
-					}
 					break;
 
 				case 'n':
@@ -2880,11 +2877,8 @@ Board::setup(char const* fen, variant::Type variant)
 					m_occupiedBy[White] |= setBit(s);
 					incrMaterial<piece::Pawn>(White);
 					m_progress.side[White].add(s);
-					if (variant::isZhouse(variant))
-					{
-						M_ASSERT(m_partner->m_holding[Black].pawn > 0);
+					if (variant::isZhouse(variant) && m_partner->m_holding[Black].pawn > 0)
 						--m_partner->m_holding[Black].pawn;
-					}
 					break;
 
 				case 'N':
@@ -3296,6 +3290,9 @@ Board::isShuffleChessPosition(variant::Type variant) const
 		return false;
 
 	if (variant::isAntichessExceptLosers(variant))
+		return true;
+	
+	if (m_castle == NoRights)
 		return true;
 
 	return m_castle == AllRights

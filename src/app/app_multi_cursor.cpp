@@ -111,7 +111,7 @@ MultiCursor::MultiCursor(	Application& app,
 		{
 			if (!m_base->isEmpty(v))
 			{
-				m_cursor[v] = new Cursor(*this, m_base->database(v));
+				(m_cursor[v] = new Cursor(*this, m_base->database(v)))->database().setReadonly();
 				if (m_leader == 0)
 					m_leader = m_cursor[v];
 			}
@@ -121,6 +121,7 @@ MultiCursor::MultiCursor(	Application& app,
 	{
 		m_leader = m_cursor[variant::Index_Normal] =
 			new Cursor(*this, m_base->database(variant::Index_Normal));
+		m_leader->database().setReadonly();
 	}
 }
 

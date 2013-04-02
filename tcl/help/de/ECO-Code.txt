@@ -391,4 +391,4 @@ und bewertet, auf Worte wird verzichtet, so dass die Ausgaben international vers
 
 END
 
-# vi:set ts=2 sw=2 et filetype=html:
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

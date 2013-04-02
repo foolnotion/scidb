@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/Board-Setup-Dialog.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Hilfe: Stellungseingabe</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Stellungseingabe</h1>
+</div>
+
+<p>
+Dieser Dialog dient zur Eingabe einer Startposition und ist einfach zu
+bedienen, deshalb werden nur die Besonderheiten erwähnt.
+</p>
+
+<ul>
+  <li><a href="#PieceSelection">Figurenauswahl</a></li>
+  <li><a href="#StartPosition">Startposition</a></li>
+  <li><a href="#Crazyhouse">Einsetzschach</a></li>
+  <li><a href="#ThreeCheck">Dreimal-Schach</a></li>
+</ul>
+
+<h2 id="PieceSelection">Figurenauswahl</h2>
+
+<p>
+Befindet sich der Mauszeiger über dem Brett - in diesem Fall zeigt der
+Cursor die gewählte Figuren - dient die mittlere Maustaste, um
+die nächste Figur auszuwählen, und die rechte Maustaste, um die Farbe
+der Figur zu wechseln. Ein Feld wird geleert, indem die vorhandene
+Figur noch einmal auf dieses Feld gesetzt wird.
+</p>
+
+<h2 id="StartPosition">Startposition</h2>
+
+<p>
+Scidb unterstützt Schach-960-Positionen. Schach-960 erlaubt 960
+verschiedene Startpositionen, die nach einem weltweit anerkannten Schema -
+entwickelt von Reinhard Scharnagl - numeriert werden. Die Standardposition
+hat in diesem Schema die Nummer 518. Mit der Eingabe einer Nummer wird
+die entsprechende Position aufgebaut. Zu weiteren Einzelheiten der
+Numerierung siehe
+<a href="http://www.chesstigers.de/download/chess960_regeln.pdf">
+Chess960 Startpositionen &amp; Regeln</a>.
+</p>
+
+<p>
+Scidb unterstützt zudem Shuffle-Schach-Positionen. Shuffle-Schach enthält
+alle Schach-960-Positionen, mit und ohne Rochaderecht. Weiterhin erlaubt
+Shuffle-Schach Positionen, in denen eine Rochade unmöglich ist, weil
+die Schach-960-Bedingung, daß sich links und rechts vom König ein Turm
+befinden muß, nicht erfüllt wird. Diese Positionen werden ebenfalls
+durchnumeriert - mit einer Erweiterung des Scharnagl-Schemas - es gibt
+im Shuffle-Schach 2880 verschiedene Positionen. Alle Schach-960-Positionen,
+ob mit oder ohne Rochaderechte, behalten ihre Positionsnummer.
+</p>
+
+<p>
+Zudem unterstützt Scidb besondere Startpositionen, die unter dem FICS
+Server angeboten werden (als besondere Schachformen). Sie können mittels
+der Schaltfläche <img src="../images/fics-start-position-menu-button.png"/>
+ausgewählt werden. Es werden nur die Positionen angeboten, die auch von
+Scidb unterstützt werden können.
+</p>
+
+<h2 id="Crazyhouse">Einsetzschach</h2>
+
+<p>
+In dieser Schachform ist es erforderlich, daß die in der Rückhand
+befindlichen Figuren ebenfalls ausgewählt werden.
+</p>
+
+<p>
+Zudem existiert eine besondere Schaltfläche:
+</p>
+
+<ul style="list-style-type: none"><li><img src="images/set-start-board-marker.png"</li></ul>
+
+<p>
+Mit diesem Symbol wird ein Feld ausgezeichnet, auf dem sich eine Figur
+befindet, die infolge einer Bauernumwandlung enstand. Dies ist
+unerläßlich, denn im Einsetzschach wird ein verwandelter Bauer wieder
+als Bauer an den Mitspieler weitergegeben.
+</p>
+
+
+<h2 id="ThreeCheck">Dreimal-Schach</h2>
+
+<p>
+In dieser Schachform gehört zur Positionseingabe, daß die Schachgebote
+angegeben werden; wie oft Weiß Schach geboten hat, und wie oft Schwarz
+dies tat.
+</p>
+
+</body>
+</html>

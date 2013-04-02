@@ -86,6 +86,7 @@ static Pair const NameMap[] =
 	{ "BlackBType",			BlackBType },
 	{ "BlackClock",			BlackClock },
 	{ "BlackCountry",			BlackCountry },
+	{ "BlackDays",				BlackDays },
 	{ "BlackDWZ",				BlackDWZ },
 	{ "BlackECF",				BlackECF },
 	{ "BlackElo",				BlackElo} ,
@@ -113,6 +114,7 @@ static Pair const NameMap[] =
 	{ "EventType",				EventType },
 	{ "FEN",						Fen },
 	{ "FICSGamesDBGameNo",	FICSGamesDBGameNo },
+	{ "Lag",						Lag },
 	{ "Mode",					Mode },
 	{ "Opening",				Opening },
 	{ "PlyCount",				PlyCount },
@@ -158,6 +160,7 @@ static Pair const NameMap[] =
 	{ "WhiteBType",			WhiteBType },
 	{ "WhiteClock",			WhiteClock },
 	{ "WhiteCountry",			WhiteCountry },
+	{ "WhiteDays",				WhiteDays },
 	{ "WhiteDWZ",				WhiteDWZ },
 	{ "WhiteECF",				WhiteECF },
 	{ "WhiteElo",				WhiteElo },
@@ -173,6 +176,17 @@ static Pair const NameMap[] =
 	{ "WhiteTitle",			WhiteTitle },
 	{ "WhiteType",				WhiteType },
 	{ "WhiteUSCF",				WhiteUSCF },
+	{ "~RESERVED_69",			RESERVED_69 },
+	{ "~RESERVED_70",			RESERVED_70 },
+	{ "~RESERVED_71",			RESERVED_71 },
+	{ "~RESERVED_72",			RESERVED_72 },
+	{ "~RESERVED_73",			RESERVED_73 },
+	{ "~RESERVED_74",			RESERVED_74 },
+	{ "~RESERVED_75",			RESERVED_75 },
+	{ "~RESERVED_76",			RESERVED_76 },
+	{ "~RESERVED_77",			RESERVED_77 },
+	{ "~RESERVED_78",			RESERVED_78 },
+	{ "~RESERVED_79",			RESERVED_79 },
 };
 
 static tag::ID Ordered[tag::BughouseTag];
@@ -1234,7 +1248,7 @@ namespace tag
 	initialized = true;
 #endif
 
-		// NOTE: White/blackECF has two entries:
+		// NOTE: White/BlackECF has two entries:
 		static_assert(U_NUMBER_OF(NameMap) - 2 == ExtraTag, "NameMap expired");
 		static_assert(int(ExtraTag) <= int(TagSetSize), "BitField size exceeded");
 

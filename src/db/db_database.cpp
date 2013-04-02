@@ -335,9 +335,9 @@ void
 Database::save(util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
-	M_REQUIRE(!usingAsyncReader());
+	M_REQUIRE(isMemoryOnly() || !isReadonly());
+	M_REQUIRE(isMemoryOnly() || isWriteable());
+	M_REQUIRE(isMemoryOnly() || !usingAsyncReader());
 
 	if (m_size == m_gameInfoList.size())
 		return;
@@ -1390,8 +1390,8 @@ void
 Database::setDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isMemoryOnly() || !isReadonly());
+	M_REQUIRE(isMemoryOnly() || isWriteable());
 
 	if (m_description != description)
 	{

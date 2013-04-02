@@ -42,6 +42,8 @@ set Contents {
     {{{Specification of database archive (English)} {../en/Database-Archive.html}}}
     {{{Command line options} {Command-Line-Options.html}}}
     {{{NAG annotation values} {NAG-Comments.html}}}
+    {{{ECO-Code} {ECO-Code.html}}}
+	 {{{FEN (Forsyth-Edwards-Notation)} {FEN.html}}}
     {{{Contact information} {Contact-Information.html}}}
     {{{Development roadmap} {Development-Roadmap.html}}}
     {{{What's new?} {Whats-New.html}}}

@@ -446,15 +446,30 @@ namespace tag
 		WhiteTeamCountry,		BlackTeamCountry,	///< ChessBase team information
 
 		// miscellaneous
-		Annotator,				///< Identifies the annotator or annotators of the game
-		Mode,						///< Playing mode of the game (e.g. "OTB" over the board)
-		Source,					///< The provider of the game annotation (e.g. "ChessBase")
-		SourceDate,				///< The date when the game is provided
-		PlyCount,				///< The number of ply (moves) in the game
-		Remark,					///< Any comment to this game
-		Board,					///< The board number
-		FICSGamesDBGameNo,	///< FICS game identifier
-		BughouseDBGameNo,		///< bughouse-db.org game identifier
+		Annotator,					///< Identifies the annotator or annotators of the game
+		Mode,							///< Playing mode of the game (e.g. "OTB" over the board)
+		Source,						///< The provider of the game annotation (e.g. "ChessBase")
+		SourceDate,					///< The date when the game is provided
+		PlyCount,					///< The number of ply (moves) in the game
+		Remark,						///< Any comment to this game
+		Board,						///< The board number
+		FICSGamesDBGameNo,		///< FICS game identifier
+		BughouseDBGameNo,			///< bughouse-db.org game identifier
+		WhiteDays, BlackDays,	///< Remaining days for white/black; used on myschach.de
+		Lag,							///< Time lag per move in milliseconds (used in BPGN)
+
+		// Reserved
+		RESERVED_69 = 69,
+		RESERVED_70 = 70,
+		RESERVED_71 = 71,
+		RESERVED_72 = 72,
+		RESERVED_73 = 73,
+		RESERVED_74 = 74,
+		RESERVED_75 = 75,
+		RESERVED_76 = 76,
+		RESERVED_77 = 77,
+		RESERVED_78 = 78,
+		RESERVED_79 = 79,
 
 		// BPGN (Bughouse)
 		WhiteA,					WhiteB,

@@ -1,0 +1,106 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Stellungseingabe
+TITLE Stellungseingabe
+
+<p>
+Dieser Dialog dient zur Eingabe einer Startposition und ist einfach zu
+bedienen, deshalb werden nur die Besonderheiten erwähnt.
+</p>
+
+<ul>
+  <li><a href="#PieceSelection">Figurenauswahl</a></li>
+  <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
+  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
+</ul>
+
+<h2 id="PieceSelection">Figurenauswahl</h2>
+
+<p>
+Befindet sich der Mauszeiger über dem Brett - in diesem Fall zeigt der
+Cursor die gewählte Figuren - dient die mittlere Maustaste, um
+die nächste Figur auszuwählen, und die rechte Maustaste, um die Farbe
+der Figur zu wechseln. Ein Feld wird geleert, indem die vorhandene
+Figur noch einmal auf dieses Feld gesetzt wird.
+</p>
+
+<h2 id="StartPosition">%::setup::board::mc::StartPosition%</h2>
+
+<p>
+Scidb unterstützt Schach-960-Positionen. Schach-960 erlaubt 960
+verschiedene Startpositionen, die nach einem weltweit anerkannten Schema -
+entwickelt von Reinhard Scharnagl - numeriert werden. Die Standardposition
+hat in diesem Schema die Nummer 518. Mit der Eingabe einer Nummer wird
+die entsprechende Position aufgebaut. Zu weiteren Einzelheiten der
+Numerierung siehe
+<a href="http://www.chesstigers.de/download/chess960_regeln.pdf">
+Chess960 Startpositionen &amp; Regeln</a>.
+</p>
+
+<p>
+Scidb unterstützt zudem Shuffle-Schach-Positionen. Shuffle-Schach enthält
+alle Schach-960-Positionen, mit und ohne Rochaderecht. Weiterhin erlaubt
+Shuffle-Schach Positionen, in denen eine Rochade unmöglich ist, weil
+die Schach-960-Bedingung, daß sich links und rechts vom König ein Turm
+befinden muß, nicht erfüllt wird. Diese Positionen werden ebenfalls
+durchnumeriert - mit einer Erweiterung des Scharnagl-Schemas - es gibt
+im Shuffle-Schach 2880 verschiedene Positionen. Alle Schach-960-Positionen,
+ob mit oder ohne Rochaderechte, behalten ihre Positionsnummer.
+</p>
+
+<p>
+Zudem unterstützt Scidb besondere Startpositionen, die unter dem FICS
+Server angeboten werden (als besondere Schachformen). Sie können mittels
+der Schaltfläche <img src="../images/fics-start-position-menu-button.png"/>
+ausgewählt werden. Es werden nur die Positionen angeboten, die auch von
+Scidb unterstützt werden können.
+</p>
+
+<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+
+<p>
+In dieser Schachform ist es erforderlich, daß die in der Rückhand
+befindlichen Figuren ebenfalls ausgewählt werden.
+</p>
+
+<p>
+Zudem existiert eine besondere Schaltfläche:
+</p>
+
+<dir><img src="images/set-start-board-marker.png"</dir>
+
+<p>
+Mit diesem Symbol wird ein Feld ausgezeichnet, auf dem sich eine Figur
+befindet, die infolge einer Bauernumwandlung enstand. Dies ist
+unerläßlich, denn im Einsetzschach wird ein verwandelter Bauer wieder
+als Bauer an den Mitspieler weitergegeben.
+</p>
+
+
+<h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
+
+<p>
+In dieser Schachform gehört zur Positionseingabe, daß die Schachgebote
+angegeben werden; wie oft Weiß Schach geboten hat, und wie oft Schwarz
+dies tat.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

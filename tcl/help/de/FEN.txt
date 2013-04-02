@@ -1,0 +1,94 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX FEN (Forsyth-Edwards-Notation)
+INDEX X-FEN (Erweiterte Forsyth-Edwards-Notation)
+INDEX Shredder-FEN
+
+TITLE FEN (Forsyth-Edwards-Notation)
+
+<p>
+Die Forsyth-Edwards-Notation (FEN) oder in der erweiterten Form (X-FEN)
+ist eine Kurznotation, mit der jede beliebige Brettstellung im Schach
+niedergeschrieben werden kann.  Die FEN wird ausführlich unter
+<a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
+Wikipedia</a> beschrieben.
+</p>
+
+<p>
+Zu erwähnen ist, daß Scidb auch die Shredder-FEN verarbeiten kann.
+</p>
+
+<p>
+Für einige Schachformen benutzt Scidb notwendigerweise Erweiterungen:
+</p>
+
+<ul>
+  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
+</ul>
+
+<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+
+<p>
+Scidb benutzt eine erweiterte FEN (bzw. X-FEN, oder Shredder-FEN)
+für Einsetzschach, die vom BPGN-Standard (<see/>
+<a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
+BPGN - Bughouse Portable Game Notation</a>) abgeleitet wurde. Die
+in der Rückhand befindlichen Figuren werden an das Ende des ersten
+Feldes angefügt; zum Beispiel
+</p>
+
+<dir><code>
+r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
+</code></dir>
+
+<p>
+<code>NNPPbnp</code> gibt an, daß Weiß zwei Springer und zwei Bauern
+in der Rückhand hält, und Schwarz einen Läufer, einen Springer, und
+einen Bauern.
+</p>
+
+<p>
+Die Figuren, die aus einer Bauernumwandlung enstanden, werden mit der
+Tilde ausgezeichnet. Beispiel:
+</p>
+
+<dir><code>
+rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
+</code></dir>
+
+<p>
+Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
+</p>
+
+<h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
+
+Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
+ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
+
+<dir><code>
+rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
+</code></dir>
+
+<code>+0+2</code> bedeutet:
+Weiß gab kein einziges Mal Schach, und Schwarz gab Weiß bisher genau
+zwei Schachgebote.
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->
