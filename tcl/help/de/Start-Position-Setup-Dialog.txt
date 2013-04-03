@@ -1,0 +1,33 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Startpositionseingabe
+TITLE Startpositionseingabe
+
+<p>
+Dieser Dialog vereinfacht die Eingabe einer Schach-960 bzw.
+Shuffle-Schach-Startposition. Dazu werden einfach nur die Figuren der
+weißen Grundreihe aufgestellt. Die %::widget::mc::Ok%-Schaltfläche wird
+nur dann freigegeben, wenn eine gültige Startposition vorliegt. Ist die
+Nummer der Startposition bekannt, so sollte der
+<a href="Board-Setup-Dialog.html">Stellungseingabe-Dialog</a>
+zur direkten Eingabe der Positionsnummer vorgezogen werden.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

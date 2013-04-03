@@ -43,6 +43,8 @@ class MoveInfoSet
 {
 public:
 
+	MoveInfoSet();
+
 	bool operator==(MoveInfoSet const& info) const;
 	bool operator!=(MoveInfoSet const& info) const;
 

@@ -77,6 +77,7 @@ static char const* CmdMapCodeToNag			= "::scidb::misc::mapCodeToNag";
 static char const* CmdMapExtension			= "::scidb::misc::mapExtension";
 static char const* CmdMapWindow				= "::scidb::misc::mapWindow";
 static char const* CmdMaxYear					= "::scidb::misc::maxYear";
+static char const* CmdMemAvail				= "::scidb::misc::memAvail";
 static char const* CmdMemFree					= "::scidb::misc::memFree";
 static char const* CmdMemTotal				= "::scidb::misc::memTotal";
 static char const* CmdMinYear					= "::scidb::misc::minYear";
@@ -1149,6 +1150,14 @@ cmdContainsUnicodeChar(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj*
 
 
 static int
+cmdMemAvail(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(Tcl_NewWideIntObj(::sys::info::memAvail()));
+	return TCL_OK;
+}
+
+
+static int
 cmdMemFree(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	setResult(Tcl_NewWideIntObj(::sys::info::memFree()));
@@ -1186,8 +1195,9 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdMapExtension,			cmdMapExtension);
 	createCommand(ti, CmdMapWindow,				cmdMapWindow);
 	createCommand(ti, CmdMaxYear,					cmdMaxYear);
+	createCommand(ti, CmdMemAvail,				cmdMemAvail);
 	createCommand(ti, CmdMemFree,					cmdMemFree);
-	createCommand(ti, CmdMemTotal,					cmdMemTotal);
+	createCommand(ti, CmdMemTotal,				cmdMemTotal);
 	createCommand(ti, CmdMinYear,					cmdMinYear);
 	createCommand(ti, CmdNumberOfProcessors,	cmdNumberOfProcessors);
 	createCommand(ti, CmdPredPow2,				cmdPredPow2);

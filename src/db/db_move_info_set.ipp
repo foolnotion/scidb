@@ -28,6 +28,8 @@
 
 namespace db {
 
+inline MoveInfoSet::MoveInfoSet() {}
+
 inline bool MoveInfoSet::isEmpty() const									{ return m_row.empty(); }
 inline bool MoveInfoSet::contains(MoveInfo const& info) const		{ return find(info) >= 0; }
 

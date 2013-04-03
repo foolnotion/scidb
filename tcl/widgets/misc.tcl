@@ -50,7 +50,8 @@ set Control(close)		"Close"
 set Priv(busy:state) 0
 
 
-set ButtonOrder { new delete save previous next clear update close ok apply cancel revert reset help }
+set ButtonOrder \
+	{ new delete save previous next clear update close ok apply cancel revert reset help hlp }
 	
 
 proc focusNext {w next} { set [namespace current]::Priv(next:$w) $next }
@@ -257,7 +258,7 @@ proc dialogButtons {dlg buttons args} {
 		set w [::ttk::button $dlg.$type -class TButton]
 
 		switch -- $type {
-			ok			{
+			ok {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} {
 					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
@@ -284,7 +285,7 @@ proc dialogButtons {dlg buttons args} {
 			delete	{ set var [namespace current]::mc::Delete }
 			start		{ set var [namespace current]::mc::Start }
 
-			help		{
+			help - hlp {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} {
 					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
@@ -294,10 +295,8 @@ proc dialogButtons {dlg buttons args} {
 				set var [namespace current]::mc::Help
 			}
 
-			default	{
-				if {[string length $var] == 0} {
-					return -code error "unknown button type $type"
-				}
+			default {
+				return -code error "unknown button type $type"
 			}
 		}
 
@@ -320,8 +319,10 @@ proc dialogButtonReplace {dlg type iconType} {
 proc dialogButtonSetIcons {dlg} {
 	foreach w [winfo children $dlg] {
 		if {[winfo class $w] eq "TButton"} {
-			set icon [GetIcon [lindex [split $w .] end]]
-			if {[llength $icon]} { $w configure -compound left -image $icon }
+			set type [lindex [split $w .] end]
+			set icon [GetIcon $type]
+			if {$type eq "hlp"} { set compound image } else { set compound left }
+			if {[llength $icon]} { $w configure -compound $compound -image $icon }
 		}
 	}
 }
@@ -447,19 +448,25 @@ proc dialogFullscreenButtons {parent} {
 
 
 proc buttonSetText {w var args} {
-	if {[$w cget -compound] eq "left"} {
-		::tk::SetAmpText $w " [set $var]"
-	} else {
-		::tk::SetAmpText $w [set $var]
-	}
+	set type [lindex [split $w .] end]
 
-	set cmd "[namespace current]::buttonSetText $w $var"
-	trace add variable $var write $cmd
-	bind $w <Destroy> "+
-		if {\"$w\" eq \"%W\"} {
-			trace remove variable $var write \"$cmd\"
+	if {$type eq "hlp"} {
+		::tooltip::tooltip $w [mc::stripped $var]
+	} else {
+		if {[$w cget -compound] eq "left"} {
+			::tk::SetAmpText $w " [set $var]"
+		} else {
+			::tk::SetAmpText $w [set $var]
 		}
-	"
+
+		set cmd "[namespace current]::buttonSetText $w $var"
+		trace add variable $var write $cmd
+		bind $w <Destroy> "+
+			if {\"$w\" eq \"%W\"} {
+				trace remove variable $var write \"$cmd\"
+			}
+		"
+	}
 }
 
 
@@ -623,23 +630,23 @@ proc DoAlignment {dlg} {
 
 proc GetIcon {type} {
 	switch $type {
-		ok			{ return $::icon::iconOk }
-		cancel	{ return $::icon::iconCancel }
-		apply		{ return $::icon::iconApply }
-		update	{ return $::icon::iconUpdate }
-		reset		{ return $::icon::iconSetup }
-		clear		{ return $::icon::iconClear }
-		close		{ return $::icon::iconClose }
-		revert	{ return $::icon::iconReset }
-		previous	{ return $::icon::iconBackward }
-		next		{ return $::icon::iconForward }
-		first		{ return $::icon::iconFirst }
-		last		{ return $::icon::iconLast }
-		new		{ return $::icon::16x16::plus }
-		save		{ return $::icon::iconSave }
-		delete	{ return $::icon::16x16::delete }
-		help		{ return $::icon::16x16::help }
-		start		{ return $::icon::16x16::run }
+		ok				{ return $::icon::iconOk }
+		cancel		{ return $::icon::iconCancel }
+		apply			{ return $::icon::iconApply }
+		update		{ return $::icon::iconUpdate }
+		reset			{ return $::icon::iconSetup }
+		clear			{ return $::icon::iconClear }
+		close			{ return $::icon::iconClose }
+		revert		{ return $::icon::iconReset }
+		previous		{ return $::icon::iconBackward }
+		next			{ return $::icon::iconForward }
+		first			{ return $::icon::iconFirst }
+		last			{ return $::icon::iconLast }
+		new			{ return $::icon::16x16::plus }
+		save			{ return $::icon::iconSave }
+		delete		{ return $::icon::16x16::delete }
+		help - hlp	{ return $::icon::16x16::help }
+		start			{ return $::icon::16x16::run }
 	}
 }
 

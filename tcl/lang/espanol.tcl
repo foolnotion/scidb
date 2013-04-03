@@ -1420,7 +1420,7 @@
 ::setup::board::mc::Error(EmptyBoard)					"El tablero está vacío."
 ::setup::board::mc::Error(NoWhiteKing)					"Sin rey blanco."
 ::setup::board::mc::Error(NoBlackKing)					"Sin rey negro."
-::setup::board::mc::Error(DoubleCheck)					"Ambos reyes en jaque."
+::setup::board::mc::Error(BothInCheck)					"Ambos reyes en jaque."
 ::setup::board::mc::Error(OppositeCheck)				"El lado que no mueve está en jaque."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Demasiados peones blancos."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Demasiados peones negros."

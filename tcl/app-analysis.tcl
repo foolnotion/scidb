@@ -470,6 +470,11 @@ proc activate {w flag} {
 }
 
 
+proc clearHash {} {
+	Display(hash) 0
+}
+
+
 proc Pause {tree} {
 	variable Vars
 

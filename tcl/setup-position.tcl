@@ -76,8 +76,9 @@ proc open {parent} {
 	set Vars(board) $rank
 	set Vars(idn:text) ""
 
+#	set selectbg $::board::square::style(hilite,selected)
+	set selectbg [::theme::getSelectBackgroundColor]
 	set activebg [::theme::getActiveBackgroundColor]
-	set selectbg $::board::square::style(hilite,selected)
 	if {[string length $activebg] == 0} {
 		tk::button $top.temp
 		set activebg [$top.temp cget -activebackground]
@@ -222,9 +223,12 @@ proc open {parent} {
 	grid rowconfigure $top 4 -minsize [expr {2*$::theme::padding}]
 	grid rowconfigure $top {0 2 6} -minsize $::theme::padding
 
-	::widget::dialogButtons $dlg {ok cancel}
+	::widget::dialogButtons $dlg {ok cancel hlp}
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.ok configure -command [namespace code [list Accept $dlg]] -state disabled
+	$dlg.hlp configure -command [list ::help::open .application Start-Position-Setup-Dialog -parent $dlg]
+
+	bind $dlg <F1> [$dlg.hlp cget -command]
 
 	if {$state eq "normal"} { set focus $top.control.castling } else { set focus $top.control.idn }
 

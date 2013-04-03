@@ -1485,10 +1485,25 @@ proc SetPriority {} {
 }
 
 
+proc RoundMem {mem} {
+	set m [::scidb::misc::predPow2 $mem]
+	set m2 [expr {$m + $m/2}]
+	if {$m2 <= $mem} { return $m2 }
+	return $m
+}
+
+
+proc MemAvail {} {
+	set mem [::scidb::misc::memAvail]
+	if {$mem <= 0} { return 2048 }
+	return [RoundMem [expr {$mem/1048576}]]
+}
+
+
 proc MemTotal {} {
 	set mem [::scidb::misc::memTotal]
 	if {$mem <= 0} { return 2048 }
-	return [::scidb::misc::predPow2 [expr {$mem/1048576}]]
+	return [RoundMem [expr {$mem/1048576}]]
 }
 
 
@@ -1540,24 +1555,25 @@ proc UseEngine {list item profileList} {
 	if {[info exists features(hashSize)]} {
 		$Vars(widget:memory) clear
 		if {[llength $features(hashSize)] == 0} {
-			set min 4
-			set max [MemTotal]
+			set min 16
+			set max [MemAvail]
 		} else {
 			lassign $features(hashSize) min max
-			set min2 [expr {max(4, [::scidb::misc::succPow2 $min])}]
+			set min2 [expr {max(16, [::scidb::misc::succPow2 $min])}]
 			set nmin [expr {$min2 + $min2/2}]
 			if {$nmin <= $min} { set min $nmin } else { set min $min2 }
-			set avail [::scidb::misc::memFree]
-			if {$avail >= 0} {
-				set avail [expr {$avail/1048576}]
-				if {$max > 0 } { set avail [expr {min($avail, $max)}] }
-				set max [::scidb::misc::predPow2 $avail]
-				set nmax [expr {$max + $max/2}]
-				if {$nmax <= $max} { set max $nmax }
-			}
+			set max [expr {min($max, [MemAvail])}]
+		}
+		set avail [::scidb::misc::memFree]
+		if {$avail >= 0} {
+			set avail [expr {$avail/1048576}]
+			if {$max > 0 } { set avail [expr {min($avail, $max)}] }
+			set avail [RoundMem $avail]
 		}
 		while {$min <= $max} {
-			$Vars(widget:memory) listinsert $min
+			set options {}
+			if {$min > $avail} { lappend options -foreground gray20 }
+			$Vars(widget:memory) listinsert $min {*}$options
 			set incr [expr {[::scidb::misc::predPow2 $min]/2}]
 			incr min $incr
 		}
@@ -2689,6 +2705,7 @@ proc ClearHash {} {
 	if {$Vars(active:id) == -1} { return }
 	if {![::scidb::engine::active? $Vars(active:id)]} { return }
 	::scidb::engine::clearHash $Vars(active:id)
+	::application::analysis::clearHash
 }
 
 

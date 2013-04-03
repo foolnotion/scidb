@@ -109,6 +109,13 @@ sys::info::memFree()
 
 
 int64_t
+sys::info::memAvail()
+{
+	return ::readProcInfo("CommitLimit:");
+}
+
+
+int64_t
 sys::info::memTotal()
 {
 	long numPages = ::sysconf(_SC_PHYS_PAGES);
@@ -139,6 +146,14 @@ sys::info::memFree()
 	status.dwLength = sizeof(status);
 	GlobalMemoryStatusEx(&status);
 	return status.ullAvailPhys;
+}
+
+
+int64_t
+sys::info::memAvail()
+{
+	// TODO
+	return memFree();
 }
 
 
@@ -199,6 +214,14 @@ sys::info::memFree()
 	}
 
 	return int64_t(vmStats.free_count)*int64_t(pageSize);
+}
+
+
+int64_t
+sys::info::memAvail()
+{
+	// TODO
+	return memFree();
 }
 
 

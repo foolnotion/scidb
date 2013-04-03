@@ -1423,7 +1423,7 @@
 ::setup::board::mc::Error(EmptyBoard)			"Board is empty." ;# NEW
 ::setup::board::mc::Error(NoWhiteKing)			"Világos király hiányzik."
 ::setup::board::mc::Error(NoBlackKing)			"Sötét király hiányzik."
-::setup::board::mc::Error(DoubleCheck)			"Mindkét király sakkban áll."
+::setup::board::mc::Error(BothInCheck)			"Mindkét király sakkban áll."
 ::setup::board::mc::Error(OppositeCheck)		"A nem lépésre jövő fél királya sakkban áll."
 ::setup::board::mc::Error(TooManyWhitePawns)		"Túl sok világos gyalog."
 ::setup::board::mc::Error(TooManyBlackPawns)		"Túl sok sötét gyalog."

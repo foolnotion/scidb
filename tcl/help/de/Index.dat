@@ -61,6 +61,7 @@ set Index {
   { S
     {
       {{Shredder-FEN} {FEN.html} {}}
+      {{Startpositionseingabe} {Start-Position-Setup-Dialog.html} {}}
       {{Stellungseingabe} {Board-Setup-Dialog.html} {}}
     }
   }

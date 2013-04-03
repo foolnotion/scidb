@@ -236,6 +236,7 @@ proc open {parent} {
 	set edge 20
 
 #	set selectbg $::board::square::style(hilite,selected)
+	set selectbg [::theme::getSelectBackgroundColor]
 	set activebg [::theme::getActiveBackgroundColor]
 
 	# castling rights #########################################
@@ -691,10 +692,10 @@ proc open {parent} {
 				-value $fig \
 				-variable [namespace current]::Vars(piece) \
 				-activebackground $activebg \
+				-selectcolor $selectbg \
 				-takefocus 0 \
 				-command [namespace code [list SetCursor $side$piece]] \
 				;
-#				-selectcolor $selectbg
 			::theme::configureBackground $panel.$fig
 			grid $panel.$fig -row $row -column $col
 			incr col 2
@@ -724,10 +725,13 @@ proc open {parent} {
 	grid columnconfigure $top {2 4} -minsize 10
 	grid rowconfigure $top 0 -minsize $::theme::padding
 
-	::widget::dialogButtons $dlg {ok cancel revert}
+	::widget::dialogButtons $dlg {ok cancel revert help}
 	$dlg.cancel configure -command [list destroy $dlg]
 	$dlg.revert configure -command [namespace code Reset]
 	$dlg.ok configure -command [namespace code Accept]
+	$dlg.help configure -command [list ::help::open .application Board-Setup-Dialog -parent $dlg]
+
+	bind $dlg <F1> [$dlg.help cget -command]
 
 	SetupPromoted
 	Update

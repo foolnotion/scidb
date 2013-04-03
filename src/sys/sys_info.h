@@ -27,6 +27,7 @@ namespace info {
 unsigned numberOfProcessors();
 
 int64_t memFree();
+int64_t memAvail();
 int64_t memTotal();
 
 bool isWindows();

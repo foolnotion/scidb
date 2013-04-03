@@ -113,6 +113,7 @@ match(my::Position const& pos, Board const& board)
 }
 
 
+#if 0
 template <unsigned> bool match(my::Position const&, Board const&);
 
 
@@ -177,6 +178,13 @@ inline bool
 match<WN>(my::Position const& pos, Board const& board)
 {
 	return matchAny(pos.pieces[White].knights, board.knights(White));
+}
+
+template <>
+inline bool
+match<BN>(my::Position const& pos, Board const& board)
+{
+	return matchAny(pos.pieces[Black].knights, board.knights(Black));
 }
 
 template <>
@@ -272,6 +280,8 @@ MATCH(WB,WM)
 MATCH(WN,WP)
 MATCH(WN,WI)
 MATCH(WN,WM)
+MATCH(WP,WI)
+MATCH(WP,WM)
 
 MATCH(BK,BQ)
 MATCH(BK,BR)
@@ -294,7 +304,9 @@ MATCH(BB,BI)
 MATCH(BB,BM)
 MATCH(BN,BP)
 MATCH(BN,BI)
-MATCH(BN,WM)
+MATCH(BN,BM)
+MATCH(BP,BI)
+MATCH(BP,BM)
 
 MATCH(WK,BK)
 MATCH(WQ,BQ)
@@ -358,5 +370,6 @@ MATCH(WK,WQ|WB|WP)
 MATCH(BK,BQ|BB|BP)
 
 #undef MATCH
+#endif
 
 // vi:set ts=3 sw=3:

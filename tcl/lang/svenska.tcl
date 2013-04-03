@@ -1423,7 +1423,7 @@
 ::setup::board::mc::Error(EmptyBoard)					"Brädet är tomt."
 ::setup::board::mc::Error(NoWhiteKing)					"Vit kung saknas."
 ::setup::board::mc::Error(NoBlackKing)					"Svart kung saknas."
-::setup::board::mc::Error(DoubleCheck)					"Båda kungar står i schack."
+::setup::board::mc::Error(BothInCheck)					"Båda kungar står i schack."
 ::setup::board::mc::Error(OppositeCheck)				"Spelaren som inte är vid draget står i schack."
 ::setup::board::mc::Error(TooManyWhitePawns)			"För många vita bönder."
 ::setup::board::mc::Error(TooManyBlackPawns)			"För många svarta bönder."

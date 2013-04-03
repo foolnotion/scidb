@@ -1415,7 +1415,7 @@
 ::setup::board::mc::Error(EmptyBoard)					"Board is empty."
 ::setup::board::mc::Error(NoWhiteKing)					"Missing white king."
 ::setup::board::mc::Error(NoBlackKing)					"Missing black king."
-::setup::board::mc::Error(DoubleCheck)					"Both kings are in check."
+::setup::board::mc::Error(BothInCheck)					"Both kings are in check."
 ::setup::board::mc::Error(OppositeCheck)				"Side not to move is in check."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Too many white pawns."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Too many black pawns."

@@ -1424,7 +1424,7 @@
 ::setup::board::mc::Error(EmptyBoard)					"La scacchiera è vuota"
 ::setup::board::mc::Error(NoWhiteKing)					"Manca il re bianco."
 ::setup::board::mc::Error(NoBlackKing)					"Manca il re nero."
-::setup::board::mc::Error(DoubleCheck)					"Entrambi i re sono sotto scacco."
+::setup::board::mc::Error(BothInCheck)					"Entrambi i re sono sotto scacco."
 ::setup::board::mc::Error(OppositeCheck)				"Il lato senza tratto è sotto scacco."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Troppi pedoni bianchi."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Troppi pedoni neri."

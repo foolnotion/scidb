@@ -1416,7 +1416,7 @@
 ::setup::board::mc::Error(EmptyBoard)					"Das Brett ist leer."
 ::setup::board::mc::Error(NoWhiteKing)					"Ein weißer König wird vermisst."
 ::setup::board::mc::Error(NoBlackKing)					"Ein schwarzer König wird vermißt."
-::setup::board::mc::Error(DoubleCheck)					"Beide Könige befinden sich im Schach."
+::setup::board::mc::Error(BothInCheck)					"Beide Könige befinden sich im Schach."
 ::setup::board::mc::Error(OppositeCheck)				"Die Seite ohne Zugrecht befindet sich im Schach."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Zuviele weiße Bauern."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Zuviele schwarze Bauern."
