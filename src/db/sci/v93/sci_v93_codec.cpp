@@ -1180,7 +1180,6 @@ void
 Codec::readIndexProgressive(unsigned index)
 {
 	M_ASSERT(m_progressiveStream);
-	M_ASSERT(index < gameInfoList().size());
 
 	char buf[sizeof(IndexEntry)];
 

@@ -296,6 +296,27 @@ static mstl::string const Lookup[] = { "", "normal", "rapid", "blitz", "bullet",
 
 }
 
+namespace variant {
+
+static mstl::string const IdLittleGame("pawns/little-game");
+static mstl::string const IdPawnsOn4thRank("wild/8");
+static mstl::string const IdKNNvsKP("wild/19");
+static mstl::string const IdPyramid("misc/pyramid");
+static mstl::string const IdPawnsOnly("pawns/pawns-only");
+static mstl::string const IdKnightsOnly("misc/knights-only");
+static mstl::string const IdBishopsOnly("misc/bishops-only");
+static mstl::string const IdRooksOnly("misc/rooks-only");
+static mstl::string const IdQueensOnly("misc/queens-only");
+static mstl::string const IdNoQueens("misc/no-queens");
+static mstl::string const IdWildFive("pawns/wild-five");
+static mstl::string const IdKBNK("endings/kbnk");
+static mstl::string const IdKBBK("endings/kbbk");
+static mstl::string const IdRunaway("misc/runaway");
+static mstl::string const IdQueenVsRooks("misc/queen-rooks");
+static mstl::string const IdUpsideDown("wild/5");
+
+} // namespace variant
+
 namespace chess960 {
 
 static mstl::string const PositionTable[961] =
@@ -4437,26 +4458,115 @@ variant::fen(uint16_t idn)
 }
 
 
+variant::Idn
+variant::idnFromString(mstl::string const& ficsPosition)
+{
+	char const* s = ficsPosition;
+
+	switch (s[0])
+	{
+		case 'e':
+			if (ficsPosition == IdKBNK)
+				return KBNK;
+			if (ficsPosition == IdKBBK)
+				return KBNK;
+			break;
+
+		case 'm':
+			if (::strncmp(s, "misc/", 5) == 0)
+			{
+				switch (s[5])
+				{
+					case 'b':
+						if (ficsPosition == IdBishopsOnly)
+							return BishopsOnly;
+						break;
+
+					case 'k':
+						if (ficsPosition == IdKnightsOnly)
+							return KnightsOnly;
+
+					case 'n':
+						if (ficsPosition == IdNoQueens)
+							return NoQueens;
+						break;
+
+					case 'p':
+						if (ficsPosition == IdPyramid)
+							return Pyramid;
+						break;
+
+					case 'q':
+						if (ficsPosition == IdQueensOnly)
+							return QueensOnly;
+						if (ficsPosition == IdQueenVsRooks)
+							return QueenVsRooks;
+						break;
+
+					case 'r':
+						if (ficsPosition == IdRooksOnly)
+							return RooksOnly;
+						if (ficsPosition == IdRunaway)
+							return Runaway;
+						break;
+				}
+			}
+			break;
+
+		case 'p':
+			if (::strncmp(s, "pawns/", 6) == 0)
+			{
+				switch (s[6])
+				{
+					case 'l':
+						if (ficsPosition == IdLittleGame)
+							return LittleGame;
+						break;
+
+					case 'p':
+						if (ficsPosition == IdPawnsOnly)
+							return PawnsOnly;
+						break;
+
+					case 'w':
+						if (ficsPosition == IdWildFive)
+							return WildFive;
+						break;
+				}
+			}
+			break;
+
+		case 'w':
+			if (::strncmp(s, "wild/", 5) == 0)
+			{
+				switch (s[5])
+				{
+					case '1':
+						if (ficsPosition == IdKNNvsKP)
+							return KNNvsKP;
+						break;
+
+					case '5':
+						if (ficsPosition == IdUpsideDown)
+							return UpsideDown;
+						break;
+
+					case '8':
+						if (ficsPosition == IdPawnsOn4thRank)
+							return PawnsOn4thRank;
+						break;
+				}
+			}
+			break;
+	}
+
+	return None;
+}
+
+
 mstl::string const&
 variant::ficsIdentifier(uint16_t idn)
 {
-	static mstl::string const IdLittleGame("pawns/little-game");
-	static mstl::string const IdPawnsOn4thRank("wild/8");
-	static mstl::string const IdKNNvsKP("wild/19");
-	static mstl::string const IdPyramid("misc/pyramid");
-	static mstl::string const IdPawnsOnly("pawns/pawns-only");
-	static mstl::string const IdKnightsOnly("misc/knights-only");
-	static mstl::string const IdBishopsOnly("misc/bishops-only");
-	static mstl::string const IdRooksOnly("misc/rooks-only");
-	static mstl::string const IdQueensOnly("misc/queens-only");
-	static mstl::string const IdNoQueens("misc/no-queens");
-	static mstl::string const IdWildFive("pawns/wild-five");
-	static mstl::string const IdKBNK("endings/kbnk");
-	static mstl::string const IdKBBK("endings/kbbk");
-	static mstl::string const IdRunaway("misc/runaway");
-	static mstl::string const IdQueenVsRooks("misc/queen-rooks");
-	static mstl::string const IdUpsideDown("wild/5");
-
 	M_REQUIRE(idn);
 	M_REQUIRE(!isShuffleChess(idn));
 

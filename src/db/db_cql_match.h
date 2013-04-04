@@ -25,6 +25,7 @@
 // ======================================================================
 
 #include "db_board.h"
+#include "db_board_base.h"
 #include "db_common.h"
 
 using namespace db;
@@ -368,6 +369,278 @@ MATCH(BN,BP|BM)
 
 MATCH(WK,WQ|WB|WP)
 MATCH(BK,BQ|BB|BP)
+#endif
+
+
+inline static bool countAny(uint64_t lhs, uint64_t rhs) { return db::board::count(lhs & rhs); }
+
+
+static bool
+count(my::Position const& pos, Board const& board)
+{
+	return	countAny(pos.pieces[White].pawns, board.pawns(White))
+			 + countAny(pos.pieces[White].knights, board.knights(White))
+			 + countAny(pos.pieces[White].bishops, board.bishops(White))
+			 + countAny(pos.pieces[White].rooks, board.rooks(White))
+			 + countAny(pos.pieces[White].queens, board.queens(White))
+			 + countAny(pos.pieces[White].kings, board.kings(White))
+			 + countAny(pos.pieces[Black].pawns, board.pawns(Black))
+			 + countAny(pos.pieces[Black].knights, board.knights(Black))
+			 + countAny(pos.pieces[Black].bishops, board.bishops(Black))
+			 + countAny(pos.pieces[Black].rooks, board.rooks(Black))
+			 + countAny(pos.pieces[Black].queens, board.queens(Black))
+			 + countAny(pos.pieces[Black].kings, board.kings(Black));
+}
+
+
+#if 0
+template <unsigned> unsigned count(my::Position const&, Board const&);
+
+
+template <>
+inline unsigned
+count<WK>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].kings, board.kings(White));
+}
+
+template <>
+inline unsigned
+count<BK>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].kings, board.kings(White));
+}
+
+template <>
+inline unsigned
+count<WQ>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].queens, board.queens(White));
+}
+
+template <>
+inline unsigned
+count<BQ>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[Black].queens, board.queens(Black));
+}
+
+template <>
+inline unsigned
+count<WR>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].rooks, board.rooks(White));
+}
+
+template <>
+inline unsigned
+count<BR>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[Black].rooks, board.rooks(Black));
+}
+
+template <>
+inline unsigned
+count<WB>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].bishops, board.bishops(White));
+}
+
+template <>
+inline unsigned
+count<BB>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[Black].bishops, board.bishops(Black));
+}
+
+template <>
+inline unsigned
+count<WN>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].knights, board.knights(White));
+}
+
+template <>
+inline unsigned
+count<WP>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[White].pawns, board.pawns(White));
+}
+
+template <>
+inline unsigned
+count<BP>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.pieces[Black].pawns, board.pawns(Black));
+}
+
+template <>
+inline unsigned
+count<WI>(my::Position const& pos, Board const& board)
+{
+	return count<WB>(pos, board) + count<WN>(pos, board);
+}
+
+template <>
+inline unsigned
+count<BI>(my::Position const& pos, Board const& board)
+{
+	return count<BB>(pos, board) + count<BN>(pos, board);
+}
+
+template <>
+inline unsigned
+count<WM>(my::Position const& pos, Board const& board)
+{
+	return count<WQ>(pos, board) + count<WR>(pos, board);
+}
+
+template <>
+inline unsigned
+count<BM>(my::Position const& pos, Board const& board)
+{
+	return count<BQ>(pos, board) + count<BR>(pos, board);
+}
+
+template <>
+inline unsigned
+count<WA>(my::Position const& pos, Board const& board)
+{
+	return count<WM>(pos, board) + count<WI>(pos, board) + count<WP>(pos, board);
+}
+
+template <>
+inline unsigned
+count<BA>(my::Position const& pos, Board const& board)
+{
+	return count<BM>(pos, board) + count<BI>(pos, board) + count<BP>(pos, board);
+}
+
+template <>
+inline unsigned
+count<E>(my::Position const& pos, Board const& board)
+{
+	return countAny(pos.empty, board.empty());
+}
+
+#define COUNT(P1,P2)                                         \
+	template <>                                               \
+	inline unsigned                                           \
+	count<P1|P2>(my::Position const& pos, Board const& board) \
+	{                                                         \
+		return count<P1>(pos, board) + count<P2>(pos, board);  \
+	}
+
+COUNT(WK,WQ)
+COUNT(WK,WR)
+COUNT(WK,WB)
+COUNT(WK,WN)
+COUNT(WK,WP)
+COUNT(WK,WI)
+COUNT(WK,WM)
+COUNT(WQ,WB)
+COUNT(WQ,WN)
+COUNT(WQ,WP)
+COUNT(WQ,WI)
+COUNT(WR,WB)
+COUNT(WR,WN)
+COUNT(WR,WP)
+COUNT(WR,WI)
+COUNT(WR,WM)
+COUNT(WB,WP)
+COUNT(WB,WI)
+COUNT(WB,WM)
+COUNT(WN,WP)
+COUNT(WN,WI)
+COUNT(WN,WM)
+COUNT(WP,WI)
+COUNT(WP,WM)
+
+COUNT(BK,BQ)
+COUNT(BK,BR)
+COUNT(BK,BB)
+COUNT(BK,BN)
+COUNT(BK,BP)
+COUNT(BK,BI)
+COUNT(BK,BM)
+COUNT(BQ,BB)
+COUNT(BQ,BN)
+COUNT(BQ,BP)
+COUNT(BQ,BI)
+COUNT(BR,BB)
+COUNT(BR,BN)
+COUNT(BR,BP)
+COUNT(BR,BI)
+COUNT(BR,BM)
+COUNT(BB,BP)
+COUNT(BB,BI)
+COUNT(BB,BM)
+COUNT(BN,BP)
+COUNT(BN,BI)
+COUNT(BN,BM)
+COUNT(BP,BI)
+COUNT(BP,BM)
+
+COUNT(WK,BK)
+COUNT(WQ,BQ)
+COUNT(WR,BR)
+COUNT(WB,BB)
+COUNT(WN,BN)
+COUNT(WP,BP)
+COUNT(WI,BI)
+COUNT(WM,BM)
+COUNT(WA,BA)
+
+COUNT(WK,WQ|WB)
+COUNT(WK,WQ|WN)
+COUNT(WK,WQ|WP)
+COUNT(WK,WQ|WI)
+COUNT(WK,WR|WB)
+COUNT(WK,WR|WN)
+COUNT(WK,WR|WP)
+COUNT(WK,WR|WI)
+COUNT(WK,WB|WP)
+COUNT(WK,WB|WM)
+COUNT(WK,WN|WP)
+COUNT(WK,WN|WM)
+COUNT(WK,WP|WI)
+COUNT(WK,WP|WM)
+COUNT(WQ,WB|WP)
+COUNT(WQ,WB|WI)
+COUNT(WQ,WN|WP)
+COUNT(WQ,WN|WI)
+COUNT(WR,WB|WP)
+COUNT(WR,WN|WP)
+COUNT(WR,WI|WP)
+COUNT(WB,WP|WM)
+COUNT(WN,WP|WM)
+
+COUNT(BK,BQ|BB)
+COUNT(BK,BQ|BN)
+COUNT(BK,BQ|BP)
+COUNT(BK,BQ|BI)
+COUNT(BK,BR|BB)
+COUNT(BK,BR|BN)
+COUNT(BK,BR|BP)
+COUNT(BK,BR|BI)
+COUNT(BK,BB|BP)
+COUNT(BK,BB|BM)
+COUNT(BK,BN|BP)
+COUNT(BK,BN|BM)
+COUNT(BK,BP|BI)
+COUNT(BK,BP|BM)
+COUNT(BQ,BB|BP)
+COUNT(BQ,BB|BI)
+COUNT(BQ,BN|BP)
+COUNT(BQ,BN|BI)
+COUNT(BR,BB|BP)
+COUNT(BR,BN|BP)
+COUNT(BR,BI|BP)
+COUNT(BB,BP|BM)
+COUNT(BN,BP|BM)
+
+COUNT(WK,WQ|WB|WP)
+COUNT(BK,BQ|BB|BP)
 
 #undef MATCH
 #endif

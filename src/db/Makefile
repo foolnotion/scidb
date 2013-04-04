@@ -614,6 +614,10 @@ db_cql.o: ../mstl/m_pvector.h
 db_cql.o: ../mstl/m_pointer_iterator.h
 db_cql.o: ../mstl/m_pointer_iterator.ipp
 db_cql.o: ../mstl/m_pvector.ipp
+db_cql.o: ../mstl/m_hash.h
+db_cql.o: ../mstl/m_hash.ipp
+db_cql.o: ../mstl/m_auto_ptr.h
+db_cql.o: ../mstl/m_auto_ptr.ipp
 db_database.o: db_database.h
 db_database.o: db_database_content.h
 db_database.o: db_namebases.h

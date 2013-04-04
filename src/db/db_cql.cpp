@@ -33,6 +33,8 @@
 #include "m_algorithm.h"
 #include "m_utility.h"
 #include "m_pvector.h"
+#include "m_list.h"
+#include "m_hash.h"
 #include "m_auto_ptr.h"
 #include "m_assert.h"
 
@@ -196,6 +198,9 @@ struct Designator
 	typedef Match::Position Position;
 
 	bool match(Board const& board, variant::Type variant);
+	unsigned powerWhite(Board const& board, variant::Type variant);
+	unsigned powerBlack(Board const& board, variant::Type variant);
+	unsigned count(Board const& board);
 
 	/// Reflect about the main diagonal a1 to h8.
 	void flipdiagonal(Position& position) const;
@@ -613,6 +618,19 @@ struct PlyCount : public Match
 };
 
 
+struct PositionNumber : public Match
+{
+	PositionNumber(unsigned idn) :m_idn(idn) {}
+
+	bool match(GameInfo const& info, unsigned gameNumber) override
+	{
+		return info.idn() == m_idn;
+	}
+
+	unsigned m_idn;
+};
+
+
 struct Result : public Match
 {
 	Result(unsigned results) :m_results(results) {}
@@ -717,6 +735,7 @@ struct Year : public Match
 	unsigned m_max;
 };
 
+
 } // namespace gameinfo
 
 namespace board {
@@ -724,7 +743,7 @@ namespace board {
 struct Match
 {
 	virtual ~Match() {}
-	virtual bool match(GameInfo const& info, Board const& board, variant::Type variant) = 0;
+	virtual bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) = 0;
 };
 
 
@@ -740,7 +759,7 @@ struct AttackCount : public Match
 		m_color[Black] = bool(m_fst.pieces(Black)) && bool(m_snd.pieces(White));
 	}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		color::ID sideToMove = board.sideToMove();
 
@@ -771,25 +790,43 @@ struct AttackCount : public Match
 
 struct Check : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return board.isInCheck();
 	}
 };
 
 
+struct DoubleCheck : public Match
+{
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		return board.isInCheck() && (board.checkState(variant) & Board::DoubleCheck);
+	}
+};
+
+
 struct NoCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return !board.isInCheck();
 	}
 };
 
 
+struct NoDoubleCheck : public Match
+{
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		return !board.isInCheck() && (board.checkState(variant) & Board::DoubleCheck) == 0;
+	}
+};
+
+
 struct ContactCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return board.isContactCheck();
 	}
@@ -798,7 +835,7 @@ struct ContactCheck : public Match
 
 struct NoContactCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return !board.isContactCheck();
 	}
@@ -807,16 +844,19 @@ struct NoContactCheck : public Match
 
 struct State : public Match
 {
-	State() :m_states(0) {}
+	State() :m_and(0), m_not(0) {}
 
-	void add(unsigned state) { m_states |= state; }
+	void add(unsigned state) { m_and |= state; }
+	void sub(unsigned state) { m_not |= state; }
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
-		return (board.checkState(variant) & m_states) == m_states;
+		unsigned states = board.checkState(variant);
+		return (states & m_and) == m_and && (states & m_not) == 0;
 	}
 
-	unsigned m_states;
+	unsigned m_and;
+	unsigned m_not;
 };
 
 
@@ -824,7 +864,7 @@ struct ToMove : public Match
 {
 	ToMove(color::ID color) :m_color(color) {}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return board.sideToMove() == m_color;
 	}
@@ -837,7 +877,7 @@ struct Fen : public Match
 {
 	Fen(Board const& board, bool includeZhouse) :m_board(board), m_includeZhouse(includeZhouse) {}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return m_includeZhouse ? board.isEqualZHPosition(m_board) : board.isEqualPosition(m_board);
 	}
@@ -849,18 +889,9 @@ struct Fen : public Match
 
 struct FiftyMoveRule : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		return board.halfMoveClock() >= 50;
-	}
-};
-
-
-struct NotMate : public Match
-{
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
-	{
-		return board.isInCheck() && (board.checkState(variant) & Board::Checkmate);
 	}
 };
 
@@ -880,7 +911,7 @@ struct CheckCount : public Match
 		}
 	}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		if (m_color != -1)
 			return board.checksGiven(color::ID(m_color)) == m_count;
@@ -903,7 +934,7 @@ struct Rating : public Match
 	{
 	}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
 	{
 		uint16_t rating = info.findRating(m_color, m_ratingType);
 		return m_minScore <= rating && rating <= m_maxScore;
@@ -918,7 +949,7 @@ struct Rating : public Match
 
 struct EndGame : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override
+	bool isEndGame(Board const& board, variant::Type variant)
 	{
 		material::Count w = board.materialCount(White);
 		material::Count b = board.materialCount(Black);
@@ -941,6 +972,20 @@ struct EndGame : public Match
 					&& b.bishop + b.knight <= 1
 					&& ::power(w, variant) <= 16);
 	}
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		return isEndGame(board, variant);
+	}
+};
+
+
+struct NoEndGame : public EndGame
+{
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		return !isEndGame(board, variant);
+	}
 };
 
 
@@ -953,7 +998,7 @@ struct Sequence : public Match
 
 	cql::Match::Position& pushBack(variant::Type variant);
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override;
 
 	GameInfo const*	m_info;
 	unsigned				m_index;
@@ -963,7 +1008,124 @@ struct Sequence : public Match
 
 struct GappedSequence : public Sequence
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override;
+};
+
+
+struct PieceCount : public Match
+{
+	PieceCount() :m_min(0), m_max(unsigned(-1)) {}
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		unsigned count = m_designator.count(board);
+		return m_min <= count && count <= m_max;
+	}
+
+	Designator	m_designator;
+	unsigned		m_min;
+	unsigned		m_max;
+};
+
+
+struct Power : public Match
+{
+	Power() :m_min(0), m_max(unsigned(-1)) {}
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		unsigned power = m_designator.powerWhite(board, variant) + m_designator.powerBlack(board, variant);
+		return m_min <= power && power <= m_max;
+	}
+
+	Designator	m_designator;
+	unsigned		m_min;
+	unsigned		m_max;
+};
+
+
+struct PowerDifference : public Match
+{
+	PowerDifference() :m_min(INT_MIN), m_max(INT_MAX) {}
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		int diff = int(m_designator.powerWhite(board, variant))
+					- int(m_designator.powerBlack(board, variant));
+
+		return m_min <= diff && diff <= m_max;
+	}
+
+	Designator	m_designator;
+	int			m_min;
+	int			m_max;
+};
+
+
+struct Repetition : public Match
+{
+	struct Position
+	{
+		Position() :m_count(1) {}
+		Position(::db::board::ExactZHPosition const& board) :m_board(board), m_count(1) {}
+
+		::db::board::ExactZHPosition m_board;
+		unsigned m_count;
+	};
+
+	typedef mstl::list<Position> PositionBucket;
+	typedef mstl::hash<uint64_t,PositionBucket> RepetitionMap;
+
+	Repetition() :m_info(0) {}
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		// NOTE: this algorithm is not working with sub-variations.
+
+		if (m_info != &info)
+		{
+			m_map.clear();
+			m_info = &info;
+		}
+
+		PositionBucket& bucket = m_map[board.hash()];
+
+		PositionBucket::iterator i = bucket.begin();
+		PositionBucket::iterator e = bucket.end();
+
+		while (i != e && i->m_board != board.exactZHPosition())
+			++i;
+
+		if (i == e)
+			bucket.push_back(board.exactZHPosition());
+		else if (++i->m_count == 3)
+			return true;
+
+		return false;
+	}
+
+	GameInfo const*	m_info;
+	RepetitionMap		m_map;
+};
+
+
+struct Ray : public Match
+{
+	typedef mstl::list<Designator> Designators;
+
+	Ray() :m_min(1), m_max(1000) {}
+
+	void add(Designator const& designator) { m_designators.push_back(designator); }
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override
+	{
+		// TODO
+		return false;
+	}
+
+	Designators	m_designators;
+	unsigned		m_min;
+	unsigned		m_max;
 };
 
 } // namespace board
@@ -1142,14 +1304,14 @@ struct Match : virtual public move::Match, virtual public board::Match
 
 struct And : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override;
 	bool match(Board const& board, Move const& move) override;
 };
 
 
 struct Or : public Match
 {
-	bool match(GameInfo const& info, Board const& board, variant::Type variant) override;
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal) override;
 	bool match(Board const& board, Move const& move) override;
 };
 
@@ -1262,6 +1424,143 @@ skipToDelim(char const* s)
 }
 
 
+// Relation ---------------------------------------------------------------------------
+//		Pair("changesidetomove",			&Relation::parseChangeSideToMove),
+//		Pair("flip",							&Relation::parseFlip),
+//		Pair("ignoresidetomove",			&Relation::parseIgnoreSideToMove),
+//		Pair("missingpiececount",			&Relation::parseMissingPiececount),
+//		Pair("newpiececount",				&Relation::parseNewPieceCount),
+//		Pair("originaldifferentcount",	&Relation::parseOriginalDifferentCount),
+//		Pair("originalsamecount",			&Relation::parseOriginalSameCount),
+//		Pair("pattern",						&Relation::parsePattern),
+//		Pair("samesidetomove",				&Relation::parseSameSideToMove),
+//		Pair("shift",							&Relation::parseShift),
+//		Pair("variations",					&Relation::parseVariations),
+//		Pair("variationsonly",				&Relation::parseVariationsOnly),
+
+
+class Match::Position
+{
+public:
+
+	Position(variant::Type variant);
+	~Position();
+
+	Designator const& last() const;
+
+	bool match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal);
+	bool match(Board const& board, Move const& move);
+
+	void add(Designator& designator);
+
+	char const* parse(Match& match, char const* s, Error& error);
+
+private:
+
+	typedef mstl::list<Designator> Designators;
+	typedef mstl::vector<board::Match*> BoardMatchList;
+	typedef mstl::vector<move::Match*> MoveMatchList;
+	typedef mstl::pvector<Position> PositionList;
+
+	bool doMatch(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal);
+	bool doMatch(Board const& board, Move const& move);
+
+	char const* parseAccumulate(Match& match, char const* s, Error& error);
+	char const* parseAnd(Match& match, char const* s, Error& error);
+	char const* parseAttackCount(Match& match, char const* s, Error& error);
+	char const* parseBlackElo(Match& match, char const* s, Error& error);
+	char const* parseBlackRating(Match& match, char const* s, Error& error);
+	char const* parseBlackToMove(Match& match, char const* s, Error& error);
+	char const* parseIsCastling(Match& match, char const* s, Error& error);
+	char const* parseCheck(Match& match, char const* s, Error& error);
+	char const* parseCheckCount(Match& match, char const* s, Error& error);
+	char const* parseContactCheck(Match& match, char const* s, Error& error);
+	char const* parseDoubleCheck(Match& match, char const* s, Error& error);
+	char const* parseElo(Match& match, char const* s, Error& error);
+	char const* parseEndGame(Match& match, char const* s, Error& error);
+	char const* parseEnPassant(Match& match, char const* s, Error& error);
+	char const* parseFen(Match& match, char const* s, Error& error);
+	char const* parseFiftyMoveRule(Match& match, char const* s, Error& error);
+	char const* parseFlip(Match& match, char const* s, Error& error);
+	char const* parseFlipColor(Match& match, char const* s, Error& error);
+	char const* parseFlipDiagonal(Match& match, char const* s, Error& error);
+	char const* parseFlipDihedral(Match& match, char const* s, Error& error);
+	char const* parseFlipHorizontal(Match& match, char const* s, Error& error);
+	char const* parseFlipOffDiagonal(Match& match, char const* s, Error& error);
+	char const* parseFlipVertical(Match& match, char const* s, Error& error);
+	char const* parseGappedSequence(Match& match, char const* s, Error& error);
+	char const* parseInitial(Match& match, char const* s, Error& error);
+	char const* parseInside(Match& match, char const* s, Error& error);
+	char const* parseLosing(Match& match, char const* s, Error& error);
+	char const* parseMatchCount(Match& match, char const* s, Error& error);
+	char const* parseMate(Match& match, char const* s, Error& error);
+	char const* parseMaxSwapValue(Match& match, char const* s, Error& error);
+	char const* parseMoveFrom(Match& match, char const* s, Error& error);
+	char const* parseMoveNumber(Match& match, char const* s, Error& error);
+	char const* parseMoveTo(Match& match, char const* s, Error& error);
+	char const* parseNoAnnotate(Match& match, char const* s, Error& error);
+	char const* parseNoCheck(Match& match, char const* s, Error& error);
+	char const* parseNoContactCheck(Match& match, char const* s, Error& error);
+	char const* parseNoDoubleCheck(Match& match, char const* s, Error& error);
+	char const* parseNoEndGame(Match& match, char const* s, Error& error);
+	char const* parseNoEnpassant(Match& match, char const* s, Error& error);
+	char const* parseNoMate(Match& match, char const* s, Error& error);
+	char const* parseNoStalemate(Match& match, char const* s, Error& error);
+	char const* parseNot(Match& match, char const* s, Error& error);
+	char const* parseOr(Match& match, char const* s, Error& error);
+	char const* parsePattern(Match& match, char const* s, Error& error);
+	char const* parsePieceCount(Match& match, char const* s, Error& error);
+	char const* parsePieceDrop(Match& match, char const* s, Error& error);
+	char const* parsePower(Match& match, char const* s, Error& error);
+	char const* parsePowerDifference(Match& match, char const* s, Error& error);
+	char const* parsePreTransformMatchCount(Match& match, char const* s, Error& error);
+	char const* parsePromote(Match& match, char const* s, Error& error);
+	char const* parseRating(Match& match, char const* s, Error& error);
+	char const* parseRay(Match& match, char const* s, Error& error);
+	char const* parseRayAttack(Match& match, char const* s, Error& error);
+	char const* parseRayDiagonal(Match& match, char const* s, Error& error);
+	char const* parseRayHorizontal(Match& match, char const* s, Error& error);
+	char const* parseRayOrthogonal(Match& match, char const* s, Error& error);
+	char const* parseRayVertical(Match& match, char const* s, Error& error);
+	char const* parseRelation(Match& match, char const* s, Error& error);
+	char const* parseRepetition(Match& match, char const* s, Error& error);
+	char const* parseResult(Match& match, char const* s, Error& error);
+	char const* parseSequence(Match& match, char const* s, Error& error);
+	char const* parseShift(Match& match, char const* s, Error& error);
+	char const* parseShiftDiagonal(Match& match, char const* s, Error& error);
+	char const* parseShiftHorizontal(Match& match, char const* s, Error& error);
+	char const* parseShiftMainDiagonal(Match& match, char const* s, Error& error);
+	char const* parseShiftOffDiagonal(Match& match, char const* s, Error& error);
+	char const* parseShiftVertical(Match& match, char const* s, Error& error);
+	char const* parseStalemate(Match& match, char const* s, Error& error);
+	char const* parseSumRange(Match& match, char const* s, Error& error);
+	char const* parseTagMatch(Match& match, char const* s, Error& error);
+	char const* parseTerminal(Match& match, char const* s, Error& error);
+	char const* parseThreeChecks(Match& match, char const* s, Error& error);
+	char const* parseVariations(Match& match, char const* s, Error& error);
+	char const* parseVariationsOnly(Match& match, char const* s, Error& error);
+	char const* parseWhiteElo(Match& match, char const* s, Error& error);
+	char const* parseWhiteRating(Match& match, char const* s, Error& error);
+	char const* parseWhiteToMove(Match& match, char const* s, Error& error);
+
+	Designators		m_designators;
+	BoardMatchList	m_boardMatchList;
+	MoveMatchList	m_moveMatchList;
+	PositionList	m_positionList;
+	board::State*	m_state;
+	board::State*	m_finalState;
+	bool				m_includeMainline;
+	bool				m_includeVariations;
+	bool				m_not;
+	variant::Type	m_variant;
+	unsigned			m_matchCount;
+	unsigned			m_minMatchCount;
+	unsigned			m_maxMatchCount;
+	unsigned			m_minMoveNumber;
+	unsigned			m_maxMoveNumber;
+};
+
+
 static char const*
 parseDate(char const* s, Error& error, Date& date)
 {
@@ -1359,7 +1658,7 @@ parseEco(char const* s, Error& error, Eco& eco)
 }
 
 
-char const*
+static char const*
 parseRatingType(char const* s, Error& error, rating::Type& ratingType)
 {
 	ratingType = rating::fromString(s);
@@ -1383,8 +1682,8 @@ parseRatingType(char const* s, Error& error, rating::Type& ratingType)
 }
 
 
-char const*
-parseScores(char const* s, Error& error, unsigned& min, unsigned& max)
+static char const*
+parseUnsignedRange(char const* s, Error& error, unsigned& min, unsigned& max)
 {
 	if (!::isdigit(*s))
 	{
@@ -1394,7 +1693,7 @@ parseScores(char const* s, Error& error, unsigned& min, unsigned& max)
 	{
 		char* e;
 
-		unsigned min = ::strtoul(s, &e, 10);
+		min = ::strtoul(s, &e, 10);
 
 		s = ::skipSpaces(e);
 
@@ -1404,8 +1703,7 @@ parseScores(char const* s, Error& error, unsigned& min, unsigned& max)
 		}
 		else
 		{
-			s = skipSpaces(s + 2);
-			unsigned max = mstl::min(4000u, unsigned(::strtoul(s, &e, 10)));
+			max = ::strtoul(s, &e, 10);
 
 			if (min > max)
 				mstl::swap(min, max);
@@ -1418,7 +1716,71 @@ parseScores(char const* s, Error& error, unsigned& min, unsigned& max)
 }
 
 
-char const*
+static char const*
+parseSignedRange(char const* s, Error& error, int& min, int& max)
+{
+	if (!::isdigit(s[0]) && ((s[0] != '-' && s[1] != '+') || !::isdigit(s[1])))
+	{
+		error = Integer_Expected;
+	}
+	else
+	{
+		char* e;
+		int sign;
+
+		if (*s == '-')
+		{
+			sign = -1;
+			++s;
+		}
+		else if (*s == '+')
+		{
+			sign = 1;
+			++s;
+		}
+		else
+		{
+			sign = 1;
+		}
+
+		min = sign*::strtoul(s, &e, 10);
+		s = ::skipSpaces(e);
+
+		if (!::isdigit(s[0]) && ((s[0] != '-' && s[1] != '+') || !::isdigit(s[1])))
+		{
+			error = Integer_Expected;
+		}
+		else
+		{
+			if (*s == '-')
+			{
+				sign = -1;
+				++s;
+			}
+			else if (*s == '+')
+			{
+				sign = 1;
+				++s;
+			}
+			else
+			{
+				sign = 1;
+			}
+
+			max = sign*::strtoul(s, &e, 10);
+
+			if (min > max)
+				mstl::swap(min, max);
+
+			s = e;
+		}
+	}
+
+	return s;
+}
+
+
+static char const*
 parseCountryCode(char const* s, Error& error, country::Code& code)
 {
 	if (	!::isalpha(s[0]) || !::isupper(s[0])
@@ -1441,7 +1803,7 @@ parseCountryCode(char const* s, Error& error, country::Code& code)
 }
 
 
-char const*
+static char const*
 parseGender(char const* s, Error& error, sex::ID sex)
 {
 	sex = sex::fromChar(*s);
@@ -1455,7 +1817,7 @@ parseGender(char const* s, Error& error, sex::ID sex)
 }
 
 
-char const*
+static char const*
 parseTitle(char const* s, Error& error, unsigned& titles)
 {
 	if (*s == ',')
@@ -1493,144 +1855,70 @@ parseTitle(char const* s, Error& error, unsigned& titles)
 }
 
 
-// Relation ---------------------------------------------------------------------------
-//		Pair("changesidetomove",			&Relation::parseChangeSideToMove),
-//		Pair("flip",							&Relation::parseFlip),
-//		Pair("ignoresidetomove",			&Relation::parseIgnoreSideToMove),
-//		Pair("missingpiececount",			&Relation::parseMissingPiececount),
-//		Pair("newpiececount",				&Relation::parseNewPieceCount),
-//		Pair("originaldifferentcount",	&Relation::parseOriginalDifferentCount),
-//		Pair("originalsamecount",			&Relation::parseOriginalSameCount),
-//		Pair("pattern",						&Relation::parsePattern),
-//		Pair("samesidetomove",				&Relation::parseSameSideToMove),
-//		Pair("shift",							&Relation::parseShift),
-//		Pair("variations",					&Relation::parseVariations),
-//		Pair("variationsonly",				&Relation::parseVariationsOnly),
-
-
-class Match::Position
+static char const*
+parseSequence(	db::cql::board::Sequence& seq,
+					variant::Type variant,
+					Match& match,
+					char const* s,
+					Error& error)
 {
-public:
+	if (*s != '(')
+	{
+		error = Left_Parenthesis_Expected;
+		return s;
+	}
 
-	Position(variant::Type variant);
-	~Position();
+	s = ::skipSpaces(s + 1);
 
-	Designator const& last() const;
+	if (*s != '(')
+	{
+		error = Position_Expected;
+		return s;
+	}
 
-	bool match(GameInfo const& info, Board const& board, variant::Type variant);
-	bool match(Board const& board, Move const& move);
+	char const* t = ::skipToDelim(::skipSpaces(s + 1));
 
-	void add(Designator& designator);
+	if (t - s != 8 || ::strncmp(s, "position", 8) != 0)
+	{
+		error = Position_Expected;
+		return s;
+	}
 
-	char const* parse(Match& match, char const* s, Error& error);
+	s = ::skipSpaces(t);
 
-private:
+	do
+	{
+		s = seq.pushBack(variant).parse(match, s, error);
 
-	typedef mstl::list<Designator> Designators;
-	typedef mstl::vector<board::Match*> BoardMatchList;
-	typedef mstl::vector<move::Match*> MoveMatchList;
-	typedef mstl::pvector<Position> PositionList;
+		if (error != No_Error)
+			return s;
 
-	bool doMatch(GameInfo const& info, Board const& board, variant::Type variant);
-	bool doMatch(Board const& board, Move const& move);
+		s = ::skipSpaces(s);
 
-	char const* parseAccumulate(Match& match, char const* s, Error& error);
-	char const* parseAnd(Match& match, char const* s, Error& error);
-	char const* parseAttackCount(Match& match, char const* s, Error& error);
-	char const* parseBlackElo(Match& match, char const* s, Error& error);
-	char const* parseBlackRating(Match& match, char const* s, Error& error);
-	char const* parseBlackToMove(Match& match, char const* s, Error& error);
-	char const* parseIsCastling(Match& match, char const* s, Error& error);
-	char const* parseCheck(Match& match, char const* s, Error& error);
-	char const* parseCheckCount(Match& match, char const* s, Error& error);
-	char const* parseContactCheck(Match& match, char const* s, Error& error);
-	char const* parseDoubleCheck(Match& match, char const* s, Error& error);
-	char const* parseElo(Match& match, char const* s, Error& error);
-	char const* parseEndGame(Match& match, char const* s, Error& error);
-	char const* parseEnPassant(Match& match, char const* s, Error& error);
-	char const* parseFen(Match& match, char const* s, Error& error);
-	char const* parseFiftyMoveRule(Match& match, char const* s, Error& error);
-	char const* parseFlip(Match& match, char const* s, Error& error);
-	char const* parseFlipColor(Match& match, char const* s, Error& error);
-	char const* parseFlipDiagonal(Match& match, char const* s, Error& error);
-	char const* parseFlipDihedral(Match& match, char const* s, Error& error);
-	char const* parseFlipHorizontal(Match& match, char const* s, Error& error);
-	char const* parseFlipOffDiagonal(Match& match, char const* s, Error& error);
-	char const* parseFlipVertical(Match& match, char const* s, Error& error);
-	char const* parseGappedSequence(Match& match, char const* s, Error& error);
-	char const* parseInitial(Match& match, char const* s, Error& error);
-	char const* parseInside(Match& match, char const* s, Error& error);
-	char const* parseLosing(Match& match, char const* s, Error& error);
-	char const* parseMatchCount(Match& match, char const* s, Error& error);
-	char const* parseMate(Match& match, char const* s, Error& error);
-	char const* parseMaxSwapValue(Match& match, char const* s, Error& error);
-	char const* parseMoveFrom(Match& match, char const* s, Error& error);
-	char const* parseMoveNumber(Match& match, char const* s, Error& error);
-	char const* parseMoveTo(Match& match, char const* s, Error& error);
-	char const* parseNoAnnotate(Match& match, char const* s, Error& error);
-	char const* parseNoCheck(Match& match, char const* s, Error& error);
-	char const* parseNoContactCheck(Match& match, char const* s, Error& error);
-	char const* parseNoEndGame(Match& match, char const* s, Error& error);
-	char const* parseNoEnpassant(Match& match, char const* s, Error& error);
-	char const* parseNoMate(Match& match, char const* s, Error& error);
-	char const* parseNoStalemate(Match& match, char const* s, Error& error);
-	char const* parseNot(Match& match, char const* s, Error& error);
-	char const* parseOr(Match& match, char const* s, Error& error);
-	char const* parsePattern(Match& match, char const* s, Error& error);
-	char const* parsePieceCount(Match& match, char const* s, Error& error);
-	char const* parsePieceDrop(Match& match, char const* s, Error& error);
-	char const* parsePlyNumber(Match& match, char const* s, Error& error);
-	char const* parsePosition(Match& match, char const* s, Error& error);
-	char const* parsePower(Match& match, char const* s, Error& error);
-	char const* parsePowerDifference(Match& match, char const* s, Error& error);
-	char const* parsePreTransformMatchCount(Match& match, char const* s, Error& error);
-	char const* parsePromote(Match& match, char const* s, Error& error);
-	char const* parseRating(Match& match, char const* s, Error& error);
-	char const* parseRay(Match& match, char const* s, Error& error);
-	char const* parseRayAttack(Match& match, char const* s, Error& error);
-	char const* parseRayDiagonal(Match& match, char const* s, Error& error);
-	char const* parseRayHorizontal(Match& match, char const* s, Error& error);
-	char const* parseRayOrthogonal(Match& match, char const* s, Error& error);
-	char const* parseRayVertical(Match& match, char const* s, Error& error);
-	char const* parseRelation(Match& match, char const* s, Error& error);
-	char const* parseRepetition(Match& match, char const* s, Error& error);
-	char const* parseResult(Match& match, char const* s, Error& error);
-	char const* parseSequence(Match& match, char const* s, Error& error);
-	char const* parseShift(Match& match, char const* s, Error& error);
-	char const* parseShiftDiagonal(Match& match, char const* s, Error& error);
-	char const* parseShiftHorizontal(Match& match, char const* s, Error& error);
-	char const* parseShiftMainDiagonal(Match& match, char const* s, Error& error);
-	char const* parseShiftOffDiagonal(Match& match, char const* s, Error& error);
-	char const* parseShiftVertical(Match& match, char const* s, Error& error);
-	char const* parseStalemate(Match& match, char const* s, Error& error);
-	char const* parseSumrange(Match& match, char const* s, Error& error);
-	char const* parseTagMatch(Match& match, char const* s, Error& error);
-	char const* parseTerminal(Match& match, char const* s, Error& error);
-	char const* parseThreeChecks(Match& match, char const* s, Error& error);
-	char const* parseVariations(Match& match, char const* s, Error& error);
-	char const* parseVariationsOnly(Match& match, char const* s, Error& error);
-	char const* parseWhiteElo(Match& match, char const* s, Error& error);
-	char const* parseWhiteRating(Match& match, char const* s, Error& error);
-	char const* parseWhiteToMove(Match& match, char const* s, Error& error);
+		if (*s != '(' && *s != ')')
+		{
+			error = Position_Expected;
+			return s;
+		}
+	}
+	while (*s != ')');
 
-	Designators		m_designators;
-	BoardMatchList	m_boardMatchList;
-	MoveMatchList	m_moveMatchList;
-	PositionList	m_positionList;
-	board::State*	m_state;
-	bool				m_includeMainline;
-	bool				m_includeVariations;
-	bool				m_not;
-	variant::Type	m_variant;
-};
+	return s;
+}
 
 
 Match::Position::Position(variant::Type variant)
 	:m_state(0)
+	,m_finalState(0)
 	,m_includeMainline(true)
 	,m_includeVariations(false)
 	,m_not(false)
 	,m_variant(variant)
+	,m_matchCount(0)
+	,m_minMatchCount(1)
+	,m_maxMatchCount(unsigned(-1))
+	,m_minMoveNumber(0)
+	,m_maxMoveNumber(unsigned(-1))
 {
 }
 
@@ -1659,8 +1947,14 @@ Match::Position::add(Designator& designator)
 
 
 bool
-Match::Position::doMatch(GameInfo const& info, Board const& board, variant::Type variant)
+Match::Position::doMatch(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal)
 {
+	if (m_finalState)
+	{
+		if (!m_finalState->match(info, board, variant, isFinal))
+			return false;
+	}
+
 	{
 		Designators::iterator i = m_designators.begin();
 		Designators::iterator e = m_designators.end();
@@ -1678,7 +1972,7 @@ Match::Position::doMatch(GameInfo const& info, Board const& board, variant::Type
 
 		for ( ; i != e; ++i)
 		{
-			if (!(*i)->match(info, board, variant))
+			if (!(*i)->match(info, board, variant, isFinal))
 				return false;
 		}
 	}
@@ -1689,7 +1983,7 @@ Match::Position::doMatch(GameInfo const& info, Board const& board, variant::Type
 
 		for ( ; i != e; ++i)
 		{
-			if (!i->match(info, board, variant))
+			if (!i->match(info, board, variant, isFinal))
 				return false;
 		}
 	}
@@ -1726,16 +2020,36 @@ Match::Position::doMatch(Board const& board, Move const& move)
 
 
 bool
-Match::Position::match(GameInfo const& info, Board const& board, variant::Type variant)
+Match::Position::match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal)
 {
-	bool match = doMatch(info, board, variant);
-	return m_not ? !match : match;
+	unsigned moveNumber = board.moveNumber();
+
+	if (m_maxMoveNumber > moveNumber || moveNumber > m_minMoveNumber)
+		return false;
+	
+	bool match = doMatch(info, board, variant, isFinal);
+
+	if (m_not)
+		match = !match;
+
+	if (match)
+		++m_matchCount;
+
+	if (!isFinal)
+		return match;
+
+	return m_minMatchCount <= m_matchCount && m_matchCount <= m_maxMatchCount;
 }
 
 
 bool
 Match::Position::match(Board const& board, Move const& move)
 {
+	unsigned moveNumber = board.moveNumber();
+
+	if (m_maxMoveNumber > moveNumber || moveNumber > m_minMoveNumber)
+		return false;
+
 	bool match = doMatch(board, move);
 	return m_not ? !match : match;
 }
@@ -1844,7 +2158,7 @@ Match::Position::parseBlackElo(Match& match, char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 		m_boardMatchList.push_back(new board::Rating(rating::Elo, min, max, color::Black));
@@ -1863,7 +2177,7 @@ Match::Position::parseBlackRating(Match& match, char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 			m_boardMatchList.push_back(new board::Rating(ratingType, min, max, color::Black));
@@ -1953,7 +2267,7 @@ Match::Position::parseElo(Match& match, char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 	{
@@ -2127,7 +2441,10 @@ Match::Position::parseFlipVertical(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseGappedSequence(Match& match, char const* s, Error& error)
 {
-	// TODO
+	mstl::auto_ptr<board::GappedSequence> seq(new board::GappedSequence);
+	::parseSequence(*seq, m_variant, match, s, error);
+	if (error == No_Error)
+		m_boardMatchList.push_back(seq.release());
 	return s;
 }
 
@@ -2151,13 +2468,10 @@ Match::Position::parseInside(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseLosing(Match& match, char const* s, Error& error)
 {
-	if (m_state == 0)
-	{
-		m_state = new board::State;
-		m_boardMatchList.push_back(m_state);
-	}
+	if (m_finalState == 0)
+		m_finalState = new board::State;
 
-	m_state->add(Board::Losing);
+	m_finalState->add(Board::Losing);
 	return s;
 }
 
@@ -2165,21 +2479,17 @@ Match::Position::parseLosing(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseMatchCount(Match& match, char const* s, Error& error)
 {
-	// TODO
-	return s;
+	return parseUnsignedRange(s, error, m_minMatchCount, m_maxMatchCount);
 }
 
 
 char const*
 Match::Position::parseMate(Match& match, char const* s, Error& error)
 {
-	if (m_state == 0)
-	{
-		m_state = new board::State;
-		m_boardMatchList.push_back(m_state);
-	}
+	if (m_finalState == 0)
+		m_finalState = new board::State;
 
-	m_state->add(Board::Checkmate);
+	m_finalState->add(Board::Checkmate);
 	return s;
 }
 
@@ -2206,8 +2516,7 @@ Match::Position::parseMoveFrom(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseMoveNumber(Match& match, char const* s, Error& error)
 {
-	// TODO
-	return s;
+	return parseUnsignedRange(s, error, m_minMoveNumber, m_maxMoveNumber);
 }
 
 
@@ -2246,9 +2555,23 @@ Match::Position::parseNoContactCheck(Match& match, char const* s, Error& error)
 
 
 char const*
+Match::Position::parseNoDoubleCheck(Match& match, char const* s, Error& error)
+{
+	if (m_state == 0)
+	{
+		m_state = new board::State;
+		m_boardMatchList.push_back(m_state);
+	}
+
+	m_state->sub(Board::DoubleCheck);
+	return s;
+}
+
+
+char const*
 Match::Position::parseNoEndGame(Match& match, char const* s, Error& error)
 {
-	// TODO
+	m_boardMatchList.push_back(new board::NoEndGame);
 	return s;
 }
 
@@ -2264,7 +2587,10 @@ Match::Position::parseNoEnpassant(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseNoMate(Match& match, char const* s, Error& error)
 {
-	m_boardMatchList.push_back(new board::NotMate);
+	if (m_finalState == 0)
+		m_finalState = new board::State;
+
+	m_finalState->sub(Board::Checkmate);
 	return s;
 }
 
@@ -2272,7 +2598,10 @@ Match::Position::parseNoMate(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseNoStalemate(Match& match, char const* s, Error& error)
 {
-	// TODO
+	if (m_finalState == 0)
+		m_finalState = new board::State;
+
+	m_finalState->sub(Board::Stalemate);
 	return s;
 }
 
@@ -2339,7 +2668,16 @@ Match::Position::parseOr(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parsePieceCount(Match& match, char const* s, Error& error)
 {
-	// TODO
+	mstl::auto_ptr<board::PieceCount> count(new board::PieceCount);
+
+	s = count->m_designator.parse(s, error);
+
+	if (error == No_Error)
+	{
+		s = ::parseUnsignedRange(s, error, count->m_min, count->m_max);
+		m_boardMatchList.push_back(count.release());
+	}
+
 	return s;
 }
 
@@ -2356,25 +2694,18 @@ Match::Position::parsePieceDrop(Match& match, char const* s, Error& error)
 
 
 char const*
-Match::Position::parsePlyNumber(Match& match, char const* s, Error& error)
-{
-	// TODO
-	return s;
-}
-
-
-char const*
-Match::Position::parsePosition(Match& match, char const* s, Error& error)
-{
-	// TODO
-	return s;
-}
-
-
-char const*
 Match::Position::parsePower(Match& match, char const* s, Error& error)
 {
-	// TODO
+	mstl::auto_ptr<board::Power> power(new board::Power);
+
+	s = power->m_designator.parse(s, error);
+
+	if (error == No_Error)
+	{
+		s = ::parseUnsignedRange(s, error, power->m_min, power->m_max);
+		m_boardMatchList.push_back(power.release());
+	}
+
 	return s;
 }
 
@@ -2382,7 +2713,16 @@ Match::Position::parsePower(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parsePowerDifference(Match& match, char const* s, Error& error)
 {
-	// TODO
+	mstl::auto_ptr<board::PowerDifference> powerDiff(new board::PowerDifference);
+
+	s = powerDiff->m_designator.parse(s, error);
+
+	if (error == No_Error)
+	{
+		s = ::parseSignedRange(s, error, powerDiff->m_min, powerDiff->m_max);
+		m_boardMatchList.push_back(powerDiff.release());
+	}
+
 	return s;
 }
 
@@ -2421,7 +2761,7 @@ Match::Position::parseRating(Match& match, char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 		{
@@ -2437,7 +2777,48 @@ Match::Position::parseRating(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseRay(Match& match, char const* s, Error& error)
 {
-	// TODO
+	if (*s != '(')
+	{
+		error = Left_Parenthesis_Expected;
+		return s;
+	}
+
+	mstl::auto_ptr<board::Ray> ray(new board::Ray);
+
+	s = ::skipSpaces(s);
+
+	while (*s != ')')
+	{
+		Designator designator;
+		s = designator.parse(s, error);
+
+		if (error == No_Error)
+			return s;
+
+		ray->add(designator);
+		s = ::skipSpaces(s);
+	}
+
+	s = ::skipSpaces(s + 1);
+
+	if (::isdigit(*s))
+	{
+		char* e;
+		ray->m_min = ::strtoul(s, &e, 10);
+		s = ::skipSpaces(e);
+
+		if (::isdigit(*s))
+		{
+			ray->m_max = ::strtoul(s, &e, 10);
+
+			if (ray->m_min > ray->m_max)
+				mstl::swap(ray->m_min, ray->m_max);
+
+			s = e;
+		}
+	}
+
+	m_boardMatchList.push_back(ray.release());
 	return s;
 }
 
@@ -2493,7 +2874,7 @@ Match::Position::parseRelation(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseRepetition(Match& match, char const* s, Error& error)
 {
-	// TODO
+	m_boardMatchList.push_back(new board::Repetition);
 	return s;
 }
 
@@ -2509,50 +2890,10 @@ Match::Position::parseResult(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseSequence(Match& match, char const* s, Error& error)
 {
-	if (*s != '(')
-	{
-		error = Left_Parenthesis_Expected;
-		return s;
-	}
-
-	s = ::skipSpaces(s + 1);
-
-	if (*s != '(')
-	{
-		error = Position_Expected;
-		return s;
-	}
-
-	char const* t = ::skipToDelim(::skipSpaces(s + 1));
-
-	if (t - s != 8 || ::strncmp(s, "position", 8) != 0)
-	{
-		error = Position_Expected;
-		return s;
-	}
-
-	s = ::skipSpaces(t);
-
 	mstl::auto_ptr<board::Sequence> seq(new board::Sequence);
-
-	do
-	{
-		s = seq->pushBack(m_variant).parse(match, s, error);
-
-		if (error != No_Error)
-			return s;
-
-		s = ::skipSpaces(s);
-
-		if (*s != '(' && *s != ')')
-		{
-			error = Position_Expected;
-			return s;
-		}
-	}
-	while (*s != ')');
-
-	m_boardMatchList.push_back(seq.release());
+	::parseSequence(*seq, m_variant, match, s, error);
+	if (error == No_Error)
+		m_boardMatchList.push_back(seq.release());
 	return s + 1;
 }
 
@@ -2638,19 +2979,16 @@ Match::Position::parseShiftVertical(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseStalemate(Match& match, char const* s, Error& error)
 {
-	if (m_state == 0)
-	{
-		m_state = new board::State;
-		m_boardMatchList.push_back(m_state);
-	}
+	if (m_finalState == 0)
+		m_finalState = new board::State;
 
-	m_state->add(Board::Stalemate);
+	m_finalState->add(Board::Stalemate);
 	return s;
 }
 
 
 char const*
-Match::Position::parseSumrange(Match& match, char const* s, Error& error)
+Match::Position::parseSumRange(Match& match, char const* s, Error& error)
 {
 	// TODO
 	return s;
@@ -2676,13 +3014,10 @@ Match::Position::parseTerminal(Match& match, char const* s, Error& error)
 char const*
 Match::Position::parseThreeChecks(Match& match, char const* s, Error& error)
 {
-	if (m_state == 0)
-	{
-		m_state = new board::State;
-		m_boardMatchList.push_back(m_state);
-	}
+	if (m_finalState == 0)
+		m_finalState = new board::State;
 
-	m_state->add(Board::ThreeChecks);
+	m_finalState->add(Board::ThreeChecks);
 	return s;
 }
 
@@ -2708,7 +3043,7 @@ Match::Position::parseWhiteElo(Match& match, char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 		m_boardMatchList.push_back(new board::Rating(rating::Elo, min, max, color::White));
@@ -2727,7 +3062,7 @@ Match::Position::parseWhiteRating(Match& match, char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 			m_boardMatchList.push_back(new board::Rating(ratingType, min, max, color::White));
@@ -2785,6 +3120,7 @@ Match::Position::parse(Match& match, char const* s, Error& error)
 		Pair("noannotate",					&Position::parseNoAnnotate),
 		Pair("nocheck",						&Position::parseNoCheck),
 		Pair("nocontactcheck",				&Position::parseNoContactCheck),
+		Pair("nodoublecheck",				&Position::parseNoDoubleCheck),					// extension
 		Pair("noendgame",						&Position::parseNoEndGame),						// extension
 		Pair("noenpassant",					&Position::parseNoEnpassant),
 		Pair("nomate",							&Position::parseNoMate),
@@ -2793,8 +3129,6 @@ Match::Position::parse(Match& match, char const* s, Error& error)
 		Pair("or",								&Position::parseOr),
 		Pair("piececount",					&Position::parsePieceCount),
 		Pair("piecedrop",						&Position::parsePieceDrop),						// extension
-		Pair("plynumber",						&Position::parsePlyNumber),						// extension
-		Pair("position",						&Position::parsePosition),
 		Pair("power",							&Position::parsePower),
 		Pair("powerdifference",				&Position::parsePowerDifference),
 		Pair("pretransformmatchcount",	&Position::parsePreTransformMatchCount),
@@ -2815,7 +3149,7 @@ Match::Position::parse(Match& match, char const* s, Error& error)
 		Pair("shiftoffdiagonal",			&Position::parseShiftOffDiagonal),
 		Pair("shiftvertical",				&Position::parseShiftVertical),
 		Pair("stalemate",						&Position::parseStalemate),
-		Pair("sumrange",						&Position::parseSumrange),
+		Pair("sumrange",						&Position::parseSumRange),
 		Pair("tagmatch",						&Position::parseTagMatch),
 		Pair("terminal",						&Position::parseTerminal),
 		Pair("threechecks",					&Position::parseThreeChecks),						// extension
@@ -2885,11 +3219,14 @@ db::cql::board::Sequence::pushBack(variant::Type variant)
 
 
 bool
-db::cql::board::Sequence::match(GameInfo const& info, Board const& board, variant::Type variant)
+db::cql::board::Sequence::match(	GameInfo const& info,
+											Board const& board,
+											variant::Type variant, bool
+											isFinal)
 {
 	if (&info != m_info)
 	{
-		if (!m_list[0]->match(info, board, variant))
+		if (!m_list[0]->match(info, board, variant, isFinal))
 			return false;
 
 		if (m_list.size() == 1)
@@ -2901,10 +3238,10 @@ db::cql::board::Sequence::match(GameInfo const& info, Board const& board, varian
 		return false;
 	}
 
-	if (m_list[m_index]->match(info, board, variant))
+	if (m_list[m_index]->match(info, board, variant, isFinal))
 		return ++m_index == m_list.size();
 	
-	if (m_list[0]->match(info, board, variant))
+	if (m_list[0]->match(info, board, variant, isFinal))
 		m_index = 1;
 	else
 		m_info = 0;
@@ -2914,11 +3251,14 @@ db::cql::board::Sequence::match(GameInfo const& info, Board const& board, varian
 
 
 bool
-db::cql::board::GappedSequence::match(GameInfo const& info, Board const& board, variant::Type variant)
+db::cql::board::GappedSequence::match(	GameInfo const& info,
+													Board const& board,
+													variant::Type variant,
+													bool isFinal)
 {
 	if (&info != m_info)
 	{
-		if (!m_list[0]->match(info, board, variant))
+		if (!m_list[0]->match(info, board, variant, isFinal))
 			return false;
 
 		if (m_list.size() == 1)
@@ -2930,7 +3270,7 @@ db::cql::board::GappedSequence::match(GameInfo const& info, Board const& board, 
 		return false;
 	}
 
-	if (m_list[m_index]->match(info, board, variant))
+	if (m_list[m_index]->match(info, board, variant, isFinal))
 		return ++m_index == m_list.size();
 	
 	return false;
@@ -2946,14 +3286,14 @@ logical::Match::pushBack(variant::Type variant)
 
 
 bool
-logical::And::match(GameInfo const& info, Board const& board, variant::Type variant)
+logical::And::match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal)
 {
 	PositionList::iterator i = m_list.begin();
 	PositionList::iterator e = m_list.end();
 
 	for ( ; i != e; ++i)
 	{
-		if (!(*i)->match(info, board, variant))
+		if (!(*i)->match(info, board, variant, isFinal))
 			return false;
 	}
 
@@ -2978,14 +3318,14 @@ logical::And::match(Board const& board, Move const& move)
 
 
 bool
-logical::Or::match(GameInfo const& info, Board const& board, variant::Type variant)
+logical::Or::match(GameInfo const& info, Board const& board, variant::Type variant, bool isFinal)
 {
 	PositionList::iterator i = m_list.begin();
 	PositionList::iterator e = m_list.end();
 
 	for ( ; i != e; ++i)
 	{
-		if ((*i)->match(info, board, variant))
+		if ((*i)->match(info, board, variant, isFinal))
 			return true;
 	}
 
@@ -3054,6 +3394,45 @@ bool
 Designator::match(Board const& board, variant::Type variant)
 {
 	return ::match(m_pos, board);
+}
+
+
+unsigned
+Designator::count(Board const& board)
+{
+	return ::count(m_pos, board);
+}
+
+
+unsigned
+Designator::powerWhite(Board const& board, variant::Type variant)
+{
+	material::Count count;
+
+	count.pawn		= ::countAny(m_pos.pieces[White].pawns,	board.pawns(White));
+	count.knight	= ::countAny(m_pos.pieces[White].knights,	board.knights(White));
+	count.bishop	= ::countAny(m_pos.pieces[White].bishops,	board.bishops(White));
+	count.rook		= ::countAny(m_pos.pieces[White].rooks,	board.rooks(White));
+	count.queen		= ::countAny(m_pos.pieces[White].queens,	board.queens(White));
+	count.king		= ::countAny(m_pos.pieces[White].kings,	board.kings(White));
+
+	return ::power(count, variant);
+}
+
+
+unsigned
+Designator::powerBlack(Board const& board, variant::Type variant)
+{
+	material::Count count;
+
+	count.pawn		= ::countAny(m_pos.pieces[Black].pawns,	board.pawns(Black));
+	count.knight	= ::countAny(m_pos.pieces[Black].knights,	board.knights(Black));
+	count.bishop	= ::countAny(m_pos.pieces[Black].bishops,	board.bishops(Black));
+	count.rook		= ::countAny(m_pos.pieces[Black].rooks,	board.rooks(Black));
+	count.queen		= ::countAny(m_pos.pieces[Black].queens,	board.queens(Black));
+	count.king		= ::countAny(m_pos.pieces[Black].kings,	board.kings(Black));
+
+	return ::power(count, variant);
 }
 
 
@@ -3460,6 +3839,13 @@ void Match::setInitial()	{ m_initial = true; }
 void Match::setFinal()		{ m_final = true; }
 
 
+void
+Match::addPosition(Position* position)
+{
+	m_matchPositionList.push_back(position);
+}
+
+
 char const*
 Match::parseAnnotator(char const* s, Error& error)
 {
@@ -3495,7 +3881,7 @@ Match::parseBlackElo(char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 		m_matchGameInfoList.push_back(new gameinfo::Rating(rating::Elo, min, max, color::Black));
@@ -3559,7 +3945,7 @@ Match::parseBlackRating(char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 			m_matchGameInfoList.push_back(new gameinfo::Rating(ratingType, min, max, color::Black));
@@ -3643,7 +4029,7 @@ Match::parseDate(char const* s, Error& error)
 
 	Date max(min);
 
-	if (s[0] == '.' && s[1] == '.')
+	if (::isdigit(*s))
 	{
 		s = ::parseDate(s, error, max);
 
@@ -3670,7 +4056,7 @@ Match::parseEco(char const* s, Error& error)
 
 	Eco max(min);
 
-	if (s[0] == '.' && s[1] == '.')
+	if ('A' <= *s && *s <= 'E')
 	{
 		s = ::parseEco(s, error, max);
 
@@ -3688,7 +4074,7 @@ Match::parseElo(char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 	{
@@ -3966,12 +4352,58 @@ Match::parsePlyCount(char const* s, Error& error)
 
 
 char const*
+Match::parsePositionNumber(char const* s, Error& error)
+{
+	char const*	t;
+	unsigned		idn;
+
+	if (::isdigit(*s))
+	{
+		idn = ::strtoul(s, const_cast<char**>(&t), 10);
+
+		if (idn == 0)
+		{
+			idn = 960;
+		}
+		else if (idn > 4*960)
+		{
+			error = Invalid_IDN;
+		}
+	}
+	else if (::isalpha(*s))
+	{
+		mstl::string pos(s, t = ::skipToDelim(s));
+
+		if (pos == "standard")
+			idn = isAntichessExceptLosers(m_variant) ? variant::NoCastling : variant::Standard;
+		else
+			idn = variant::idnFromString(pos);
+
+		if (idn == variant::None)
+			error = Invalid_FICS_Position;
+	}
+	else
+	{
+		error = Position_Number_Expected;
+	}
+
+	if (error == No_Error)
+	{
+		s = t;
+		m_matchGameInfoList.push_back(new gameinfo::PositionNumber(idn));
+	}
+
+	return s;
+}
+
+
+char const*
 Match::parsePosition(char const* s, Error& error)
 {
-	Position position(m_variant);
-	s = position.parse(*this, s, error);
+	mstl::auto_ptr<Position> position(new Position(m_variant));
+	s = position->parse(*this, s, error);
 	if (error != No_Error)
-		m_matchPositionList.push_back(new Position(position));
+		addPosition(position.release());
 	return s;
 }
 
@@ -3986,7 +4418,7 @@ Match::parseRating(char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 		{
@@ -4232,7 +4664,7 @@ Match::parseWhiteElo(char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 		m_matchGameInfoList.push_back(new gameinfo::Rating(rating::Elo, min, max, color::White));
@@ -4297,7 +4729,7 @@ Match::parseWhiteRating(char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		s = ::parseScores(s, error, min, max);
+		s = ::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
 			m_matchGameInfoList.push_back(new gameinfo::Rating(ratingType, min, max, color::White));
@@ -4326,7 +4758,7 @@ Match::parseYear(char const* s, Error& error)
 {
 	unsigned min, max;
 
-	s = ::parseScores(s, error, min, max);
+	s = ::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
 		m_matchGameInfoList.push_back(new gameinfo::Year(min, max));
@@ -4372,6 +4804,7 @@ Match::parse(char const* s, Error& error)
 		Pair("player",					&Match::parsePlayer),
 		Pair("plycount",				&Match::parsePlyCount),				// extension
 		Pair("position",				&Match::parsePosition),				// extension
+		Pair("positionnumber",		&Match::parsePositionNumber),		// extension
 		Pair("rating",					&Match::parseRating),				// extension
 		Pair("result",					&Match::parseResult),
 		Pair("round",					&Match::parseRound),
@@ -4415,14 +4848,13 @@ Match::parse(char const* s, Error& error)
 						return s;
 					}
 
-					m_matchPositionList.push_back();
-					s = m_matchPositionList.back()->parse(*this, t, error);
+					mstl::auto_ptr<Position> position(new Position(m_variant));
+					position->parse(*this, t, error);
 
 					if (error != No_Error)
-					{
-						m_matchPositionList.pop_back();
 						return s;
-					}
+
+					addPosition(position.release());
 				}
 				else
 				{
@@ -4489,18 +4921,24 @@ Match::match(GameInfo const& info, unsigned gameNo)
 bool
 Match::match(GameInfo const& info, Board const& board, bool isInitial, bool isFinal)
 {
-	if (m_initial && !isInitial)
-		return false;
+	if (!isInitial)
+	{
+	}
+	else
+	{
+		if (m_initial)
+			return false;
+	}
 
 	if (m_final && !isFinal)
 		return false;
-
+	
 	MatchPositionList::iterator i = m_matchPositionList.begin();
 	MatchPositionList::iterator e = m_matchPositionList.end();
 
 	for ( ; i != e; ++i)
 	{
-		if (!(*i)->match(info, board, m_variant))
+		if (!(*i)->match(info, board, m_variant, isFinal))
 			return false;
 	}
 

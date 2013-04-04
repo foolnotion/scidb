@@ -451,7 +451,11 @@ proc buttonSetText {w var args} {
 	set type [lindex [split $w .] end]
 
 	if {$type eq "hlp"} {
-		::tooltip::tooltip $w [mc::stripped $var]
+		if {[string first "&" [set $var]] >= 0} {
+			set var [mc::stripped $var]
+		}
+		::tooltip::tooltip $w "[set $var] <F1>"
+		bind $w <<LanguageChanged>> [list buttonSetText $w $var]
 	} else {
 		if {[$w cget -compound] eq "left"} {
 			::tk::SetAmpText $w " [set $var]"

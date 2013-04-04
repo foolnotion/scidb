@@ -24,6 +24,9 @@
 // (at your option) any later version.
 // ======================================================================
 
+#ifndef _db_board_base_included
+#define _db_board_base_included
+
 #include "db_common.h"
 
 namespace db {
@@ -181,5 +184,7 @@ namespace base { void initialize(); }
 } // namespace db
 
 #include "db_board_base.ipp"
+
+#endif // _db_board_base_included
 
 // vi:set ts=3 sw=3:

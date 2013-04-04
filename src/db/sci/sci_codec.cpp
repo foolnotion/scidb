@@ -515,8 +515,13 @@ Codec::~Codec() throw()
 	if (m_asyncReader)
 		m_gameData->closeAsyncReader(m_asyncReader);
 
+	if (m_progressiveStream)
+	{
+		m_progressiveStream->close();
+		delete m_progressiveStream;
+	}
+
 	delete m_gameData;
-	delete m_progressiveStream;
 }
 
 
@@ -1126,7 +1131,6 @@ void
 Codec::readIndexProgressive(unsigned index)
 {
 	M_ASSERT(m_progressiveStream);
-	M_ASSERT(index < gameInfoList().size());
 
 	char buf[sizeof(IndexEntry)];
 

@@ -821,6 +821,7 @@ namespace variant
 	mstl::string const& identifier(uint16_t idn);
 	mstl::string const& identifier(Type type);
 	mstl::string const& ficsIdentifier(uint16_t idn);
+	Idn idnFromString(mstl::string const& ficsPosition);
 
 	mstl::string const& fen(Idn idn);
 	mstl::string fen(uint16_t idn);

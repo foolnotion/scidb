@@ -257,6 +257,7 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_extGame(customFlags ? ".sg4" : ".sg3")
 	,m_extNamebase(customFlags ? ".sn4" : ".sn3")
 	,m_blockSize(customFlags ? 131072 : 32768)
+	,m_progressiveStream(0)
 	,m_codec(0)
 	,m_encoding(sys::utf8::Codec::latin1()) // utf8() should be preferred?
 	,m_customFlags(customFlags)
@@ -289,6 +290,12 @@ Codec::~Codec() throw()
 {
 	if (m_asyncReader)
 		m_gameData->closeAsyncReader(m_asyncReader);
+
+	if (m_progressiveStream)
+	{
+		m_progressiveStream->close();
+		delete m_progressiveStream;
+	}
 
 	delete m_gameData;
 	delete m_codec;
@@ -681,6 +688,40 @@ Codec::doOpen(mstl::string const& rootname, mstl::string const& encoding)
 
 	writeNamebases(namebaseStream);
 	writeIndexHeader(indexStream);
+}
+
+
+unsigned
+Codec::doOpenProgressive(mstl::string const& rootname, mstl::string const& encoding)
+{
+	M_ASSERT(m_progressiveStream == 0);
+
+	m_codec = new sys::utf8::Codec(encoding);
+
+	mstl::string indexFilename(rootname + m_extIndex);
+	mstl::string gameFilename(rootname + m_extGame);
+	mstl::string namebaseFilename(rootname + m_extNamebase);
+
+	mstl::fstream namebaseStream;
+
+	m_progressiveStream = new mstl::fstream;
+	m_gameStream.set_unbuffered();
+
+	openFile(m_gameStream, gameFilename, Readonly);
+	openFile(*m_progressiveStream, indexFilename, MagicIndexFile, Readonly);
+	openFile(namebaseStream, namebaseFilename, MagicNamebase, Readonly);
+
+	unsigned numGames;
+
+	readIndexHeader(*m_progressiveStream, &numGames);
+	m_roundLookup.resize(numGames);
+
+	::util::Progress progress;
+	readNamebases(namebaseStream, progress);
+	namebaseStream.close();
+	m_gameData = new BlockFile(&m_gameStream, m_blockSize, BlockFile::RequireLength, m_magicGameFile);
+
+	return numGames;
 }
 
 
@@ -1103,8 +1144,8 @@ Codec::encodeIndex(GameInfo const& item, unsigned index, ByteStream& buf)
 }
 
 
-void
-Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
+uint16_t
+Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 {
 	char header[MaxIndexHeaderSize];
 
@@ -1123,11 +1164,20 @@ Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
 	setType(Decoder::decodeType(bstrm.uint32()));
 
 	GameInfoList& infoList = gameInfoList();
+	unsigned numGames = bstrm.uint24();
 
-	unsigned size = bstrm.uint24();
-	infoList.resize(size);
-	for (unsigned i = 0; i < size; ++i)
-		infoList[i] = allocGameInfo();
+	if (retNumGames)
+	{
+		infoList.resize(1);
+		infoList[0] = allocGameInfo();
+		*retNumGames = numGames;
+	}
+	else
+	{
+		infoList.resize(numGames);
+		for (unsigned i = 0; i < numGames; ++i)
+			infoList[i] = allocGameInfo();
+	}
 
 	m_autoLoad = bstrm.uint24();
 
@@ -1137,6 +1187,19 @@ Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
 	setDescription(description);
 
 	setVariant(variant::Normal);
+
+	return version;
+}
+
+
+void
+Codec::readIndex(mstl::fstream& fstrm, util::Progress& progress)
+{
+	uint16_t version = readIndexHeader(fstrm, 0);
+
+	if (version != m_fileVersion)
+		IO_RAISE(Index, Unknown_Version, "unsupported Scid version (%u)", unsigned(version));
+
 	decodeIndex(fstrm, progress);
 	fstrm.close();
 }
@@ -1187,6 +1250,24 @@ Codec::decodeIndex(mstl::fstream &fstrm, util::Progress& progress)
 		ByteStream bstrm(buf, m_indexEntrySize);
 		decodeIndex(bstrm, i);
 	}
+}
+
+
+void
+Codec::readIndexProgressive(unsigned index)
+{
+	M_ASSERT(m_progressiveStream);
+
+	char buf[MaxIndexEntrySize];
+
+	if (!m_progressiveStream->seekg(index*m_indexEntrySize + m_headerSize + 8, mstl::ios_base::beg))
+		IO_RAISE(Index, Corrupted, "seek failed");
+
+	if (__builtin_expect(!m_progressiveStream->read(buf, m_indexEntrySize), 0))
+		IO_RAISE(Index, Corrupted, "unexpected end of index file");
+
+	ByteStream bstrm(buf, m_indexEntrySize);
+	decodeIndex(bstrm, 0);
 }
 
 

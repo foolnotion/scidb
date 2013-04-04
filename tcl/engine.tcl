@@ -1572,7 +1572,7 @@ proc UseEngine {list item profileList} {
 		}
 		while {$min <= $max} {
 			set options {}
-			if {$min > $avail} { lappend options -foreground gray20 }
+			if {$min > $avail} { lappend options -foreground gray40 }
 			$Vars(widget:memory) listinsert $min {*}$options
 			set incr [expr {[::scidb::misc::predPow2 $min]/2}]
 			incr min $incr

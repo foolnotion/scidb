@@ -50,6 +50,7 @@ enum Error
 	Invalid_Keyword,
 	Range_Expected,
 	Pattern_Expected,
+	Integer_Expected,
 	Positive_Integer_Expected,
 	Double_Quote_Expected,
 	Unterminated_String,
@@ -73,6 +74,9 @@ enum Error
 	Invalid_Variant,
 	Invalid_Fen,
 	Invalid_Promotion_Ranks,
+	Invalid_FICS_Position,
+	Invalid_IDN,
+	Position_Number_Expected,
 	Integer_Out_Of_Range,
 	Unexpected_Token,
 	Left_Parenthesis_Expected,
@@ -98,7 +102,9 @@ public:
 	Match(variant::Type variant);
 	~Match();
 
+	// Use this method at start of game. Returns false if never matching.
 	bool match(GameInfo const& info, unsigned gameNo);
+
 	bool match(GameInfo const& info, Board const& board, bool isInitial, bool isFinal);
 	bool match(Board const& board, Move const& move);
 
@@ -111,6 +117,7 @@ public:
 	void setFinal();
 
 	class Position;
+	void addPosition(Position* position);
 
 private:
 
@@ -148,6 +155,7 @@ private:
 	char const* parsePlayer(char const* s, Error& error);
 	char const* parsePlyCount(char const* s, Error& error);
 	char const* parsePosition(char const* s, Error& error);
+	char const* parsePositionNumber(char const* s, Error& error);
 	char const* parseRating(char const* s, Error& error);
 	char const* parseResult(char const* s, Error& error);
 	char const* parseRound(char const* s, Error& error);
@@ -169,6 +177,7 @@ private:
 	variant::Type		m_variant;
 	bool					m_initial;
 	bool					m_final;
+	unsigned				m_idn;
 	MatchGameInfoList	m_matchGameInfoList;
 	MatchCommentList	m_matchCommentList;
 	MatchPositionList	m_matchPositionList;
