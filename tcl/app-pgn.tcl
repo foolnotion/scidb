@@ -1519,9 +1519,10 @@ proc PrintComment {position w level key pos data} {
 					lassign [::font::splitAnnotation $text] value sym tag
 					set nagTag nag$text
 					if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
-					if {[string is digit $sym]} { set text "{\$$text}" }
 					lappend tag $langTag $nagTag
-					$w insert current $sym $tag
+					set sym [::font::mapNagToUtfSymbol $sym]
+					if {[string is integer $sym]} { set sym "{\$$sym}" }
+					$w insert current [::font::mapNagToUtfSymbol $sym] $tag
 					incr count
 				}
 				str {

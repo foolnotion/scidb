@@ -102,12 +102,12 @@
 ::mc::White					"Blancas"
 ::mc::Yes					"Sí"
 
-::mc::King					"Rey"
-::mc::Queen					"Dama"
-::mc::Rook					"Torre"
-::mc::Bishop				"Alfil"
-::mc::Knight				"Caballo"
-::mc::Pawn					"Peón"
+::mc::Piece(K)				"Rey"
+::mc::Piece(Q)				"Dama"
+::mc::Piece(R)				"Torre"
+::mc::Piece(B)				"Alfil"
+::mc::Piece(N)				"Caballo"
+::mc::Piece(P)				"Peón"
 
 ::mc::Logical(reset)		"Restablecer"
 ::mc::Logical(or)			"O"

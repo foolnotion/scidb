@@ -445,7 +445,7 @@ proc open {parent} {
 	# buttons #################################################
 	if {![info exists [namespace current]::_MirrorSide]} {
 		proc SetupVars {args} {
-			set [namespace current]::_MirrorSide "$::mc::King \u2194 $::mc::Queen"
+			set [namespace current]::_MirrorSide "$::mc::Piece(K) \u2194 $::mc::Piece(Q)"
 			set [namespace current]::_FlipSide "$::mc::White \u2194 $::mc::Black"
 		}
 

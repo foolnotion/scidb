@@ -220,12 +220,13 @@ proc open {parent pos lang} {
 	grid rowconfigure $butts {4 6} -minsize $::theme::pady
 	grid rowconfigure $butts 2 -weight 1
 
-	::widget::dialogButtons $dlg {ok apply cancel}
+	::widget::dialogButtons $dlg {ok apply cancel hlp}
 	bind $dlg <Return> {}
 
 	$dlg.apply	configure -command [namespace code Apply]
 	$dlg.ok		configure -command [namespace code [list Ok $dlg]]
 	$dlg.cancel	configure -command [namespace code [list Close $dlg]]
+	$dlg.hlp		configure -command [list ::help::open .application Comment-Editor-Dialog -parent $dlg]
 
 	set tb [::toolbar::toolbar $dlg \
 		-id comment-languages \
@@ -268,6 +269,7 @@ proc open {parent pos lang} {
 	
 	::update idletasks
 	bind $dlg <Configure> [namespace code [list RecordGeometry $dlg $parent]]
+	bind $dlg <F1> [$dlg.hlp cget -command]
 	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
 		incr h 3 ;# XXX why is it to small?
 		wm minsize $dlg $w $h
@@ -689,7 +691,7 @@ proc ParseDump {dump} {
 						set nag $Vars(symbol:$num)
 						set symbol [::font::mapNagToSymbol $nag]
 						if {[string is digit -strict $symbol]} {
-							append content "${"
+							append content "\${"
 							append content $symbol
 							append content "}"
 						} else {
@@ -1233,13 +1235,24 @@ proc PopupMenu {parent} {
 	
 	set count 0
 	set lang $Vars(lang)
+	set accel "$::mc::Key(Ctrl)-"
 
 	if {$state eq "normal"} {
 		$m add command \
 			-compound left \
 			-image $::icon::16x16::clipboardIn \
 			-label " $::mc::Copy" \
+			-accelerator ${accel}C \
 			-command [list tk_textCopy $w] \
+			-state $state \
+			;
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::clipboardIn \
+			-label " $::mc::Cut" \
+			-accelerator ${accel}X \
+			-command [list tk_textCut $w] \
+			-state $state \
 			;
 		incr count
 	}
@@ -1248,6 +1261,7 @@ proc PopupMenu {parent} {
 			-compound left \
 			-image $::icon::16x16::clipboardOut \
 			-label " $::mc::Paste" \
+			-accelerator ${accel}V \
 			-command [namespace code [list PasteText $w $sel]] \
 			;
 		incr count
@@ -1308,13 +1322,12 @@ proc PopupMenu {parent} {
 	$m add separator
 
 	if {$Vars(undoStackIndex:$lang) == 0} { set state disabled } else { set state normal }
-	set accel "$::mc::Key(Ctrl)-"
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::undo \
 		-label $::mc::Undo \
-		-command [namespace code EditUndo] \
 		-accelerator ${accel}Z \
+		-command [namespace code EditUndo] \
 		-state $state \
 		;
 	if {$Vars(undoStackIndex:$lang) < [llength $Vars(undoStack:$lang)] - 1} {
@@ -1326,8 +1339,8 @@ proc PopupMenu {parent} {
 		-compound left \
 		-image $::icon::16x16::redo \
 		-label $::mc::Redo \
-		-command [namespace code EditRedo] \
 		-accelerator ${accel}Y \
+		-command [namespace code EditRedo] \
 		-state $state \
 		;
 	$m add command \

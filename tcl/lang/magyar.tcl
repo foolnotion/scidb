@@ -100,12 +100,12 @@
 ::mc::White			"Világos"
 ::mc::Yes			"igen"
 
-::mc::King			"Király"
-::mc::Queen			"Vezér"
-::mc::Rook			"Bástya"
-::mc::Bishop			"Futó"
-::mc::Knight			"Huszár"
-::mc::Pawn			"Gyalog"
+::mc::Piece(K)			"Király"
+::mc::Piece(Q)			"Vezér"
+::mc::Piece(R)			"Bástya"
+::mc::Piece(B)			"Futó"
+::mc::Piece(N)			"Huszár"
+::mc::Piece(P)			"Gyalog"
 
 ::mc::Logical(reset)		"Reset" ;# NEW
 ::mc::Logical(or)		"Vagy"

@@ -288,7 +288,7 @@ proc dialogButtons {dlg buttons args} {
 			help - hlp {
 				set n [llength [pack slaves $dlg.__buttons]]
 				if {$n > 0} {
-					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 20]
+					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 10]
 					PackDialogButton $dlg $sep left
 					set Specs(justify:$sep) $opts(-justify)
 				}

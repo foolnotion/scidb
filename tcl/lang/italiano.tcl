@@ -101,12 +101,12 @@
 ::mc::White					"Bianco"
 ::mc::Yes					"sì"
 
-::mc::King					"Re"
-::mc::Queen					"Donna"
-::mc::Rook					"Torre"
-::mc::Bishop				"Alfiere"
-::mc::Knight				"Cavallo"
-::mc::Pawn					"Pedone"
+::mc::Piece(K)				"Re"
+::mc::Piece(Q)				"Donna"
+::mc::Piece(R)				"Torre"
+::mc::Piece(B)				"Alfiere"
+::mc::Piece(N)				"Cavallo"
+::mc::Piece(P)				"Pedone"
 
 ::mc::Logical(reset)		"Reset"
 ::mc::Logical(or)			"OR"

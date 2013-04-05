@@ -100,12 +100,12 @@
 ::mc::White					"Weiß"
 ::mc::Yes					"ja"
 
-::mc::King					"König"
-::mc::Queen					"Dame"
-::mc::Rook					"Turm"
-::mc::Bishop				"Läufer"
-::mc::Knight				"Springer"
-::mc::Pawn					"Bauer"
+::mc::Piece(K)				"König"
+::mc::Piece(Q)				"Dame"
+::mc::Piece(R)				"Turm"
+::mc::Piece(B)				"Läufer"
+::mc::Piece(N)				"Springer"
+::mc::Piece(P)				"Bauer"
 
 ::mc::Logical(reset)		"Zurücksetzen"
 ::mc::Logical(or)			"Oder"

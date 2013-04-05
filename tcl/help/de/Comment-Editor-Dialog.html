@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/Comment-Editor-Dialog.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Hilfe: Kommentareditor</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Kommentareditor</h1>
+</div>
+
+<h2>Textormatierung</h2>
+
+<p>
+Kommentare können formatiert werden: Fettschrift, Kursivschrift, und Unterstrichen.
+Es sind alle Kombinationen dieser Formatierungen erlaubt. Das Setzen einer
+Formatierungen wirkt auf den selektierten Bereich.
+</p>
+
+<p>
+Diese Formatierungen können nur im
+<a href="Database-Formats.html#Scidb">Scidb-Datenbankformat</a>
+gespeichert werden. Bei der Konvertierung in das
+<a href="Database-Formats.html#Scid">Scid-Format</a>,
+oder beim Export in das
+<a href="Database-Formats.html#PGN">PGN-Format</a> (Ausnahme:
+die Option <i>Schreibe Kommentar im HTML-Format</i> wird benutzt)
+gehen alle Formatierungen verloren.
+</p>
+
+<h2>Tastaturkürzel</h2>
+
+<p>
+Im Textfeld dienen die nachfolgenden Tastaturkürzel zum Einfügen einer Figur:
+</p>
+
+<div class="box">
+  <table>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>K</kbd>  </td><td><span class="chess">&#x2654;</span>  </td></tr>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>D</kbd> </td><td><span class="chess">&#x2655;</span> </td></tr>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>T</kbd>  </td><td><span class="chess">&#x2656;</span>  </td></tr>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>L</kbd></td><td><span class="chess">&#x2657;</span></td></tr>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>S</kbd></td><td><span class="chess">&#x2658;</span></td></tr>
+    <tr><td><kbd class='key'>Strg</kbd><kbd class='key'>Umschalt</kbd><kbd class='key'>B</kbd>  </td><td><span class="chess">&#x2659;</span>  </td></tr>
+  </table>
+</div>
+
+Ausserdem sind folgende Standardtastaturkürzel an das Textfeld gebunden:
+
+<div class="box">
+  <table>
+    <tr>
+      <td valign="top"><kbd class='key'>Strg</kbd><kbd class='key'>C</kbd>
+      </td><td>Markierten Text in die Zwischenablage kopieren</td>
+    </tr>
+    <tr>
+      <td valign="top"><kbd class='key'>Strg</kbd><kbd class='key'>X</kbd>
+      </td><td>Markierten Text löschen und in die Zwischenablage kopieren</td>
+    </tr>
+    <tr>
+      <td valign="top"><kbd class='key'>Strg</kbd><kbd class='key'>V</kbd></td>
+      <td>Text aus der Zwischenablage an der Cursorposition einfügen</td>
+    </tr>
+    <tr>
+      <td valign="top"><kbd class='key'>Strg</kbd><kbd class='key'>Z</kbd>
+      </td><td>Letzte Aktion im Textbereich zurücknehmen</td>
+    </tr>
+    <tr>
+      <td valign="top"><kbd class='key'>Strg</kbd><kbd class='key'>Y</kbd></td>
+      <td>Vorhergehende Rücknahme wieder aufheben</td>
+    </tr>
+  </table>
+</div>
+
+<h2>Zeilenumruch</h2>
+
+<p>
+Eine besondere Bedeuting hat <kbd class='key'>⏎</kbd>, mit dieser Taste können
+Zeilenumbrüche erzwungen werden. Im Textfeld werden die erzwungenen
+Zeilenumbrüche mit dem Absatzsymbol &#x00b6; gekennzeichnet.
+</p>
+
+<h2>Kontextsensitives Menü</h2>
+
+Das kontextsensitive Menü bietet folgende Funktionen:
+
+<ul style="list-style-type: none"><li><img src="images/comment-editor-menu.png"></li></ul>
+
+<p>
+<span class="menuitem">Kopieren</span>
+Markierten Text in die Zwischenablage kopieren.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+markiert ist.
+</p>
+
+<p>
+<span class="menuitem">Ausschneiden</span>
+Markierten Text löschen und in die Zwischenablage kopieren.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+markiert ist.
+</p>
+
+<p>
+<span class="menuitem">Einfügen</span>
+Text aus der Zwischenablage an der Cursorposition einfügen.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text in
+der Zwischenablage vorhanden ist.
+</p>
+
+<p>
+<span class="menuitem">Symbol einfügen</span>
+Ein Symbol aus den Untermenüs an der Cursorposition einfügen.
+</p>
+
+<p>
+<span class="menuitem">Text formatieren</span>
+Den markierten Text formatieren: Fettschrift, Kursivschrift,
+oder Unterstrichen.
+</p>
+
+<p>
+<span class="menuitem">Text kopieren nach</span>
+Den gesamten Text in einen anderen Sprachbereich kopieren.
+Der Text wird an den evt. bereits vorhandenen Text angefügt.
+</p>
+
+<p>
+<span class="menuitem">Rückgängig</span>
+Letzte Aktion im Textbereich zurücknehmen (außer Formatierungen).
+</p>
+
+<p>
+<span class="menuitem">Wiederherstellen</span>
+Vorhergehende Rücknahme (&#x21d2; <span class="menuitem">Rückgängig</span>)
+wieder aufheben.
+</p>
+
+<p>
+<span class="menuitem">Löschen</span>
+Den gesamten Text löschen.
+</p>
+
+<p>
+<span class="menuitem">Zurückkehren</span>
+Den ursprünglichen Text - entweder den Starttext,
+oder den Text nach dem letzten Speichern - wiederherstellen.
+</p>
+
+<p>
+<span class="menuitem">Sprache wechseln</span>
+Andere Sprache auswählen.
+</p>
+
+<p>
+<span class="menuitem">Sprache hinzufügen</span>
+Eine Sprache hinzufügen.
+</p>
+
+</body>
+</html>

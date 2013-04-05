@@ -101,12 +101,12 @@
 ::mc::White					"Vit"
 ::mc::Yes					"ja"
 
-::mc::King					"Kung"
-::mc::Queen					"Dam"
-::mc::Rook					"Torn"
-::mc::Bishop				"Löpare"
-::mc::Knight				"Springare"
-::mc::Pawn					"Bonde"
+::mc::Piece(K)				"Kung"
+::mc::Piece(Q)				"Dam"
+::mc::Piece(R)				"Torn"
+::mc::Piece(B)				"Löpare"
+::mc::Piece(N)				"Springare"
+::mc::Piece(P)				"Bonde"
 
 ::mc::Logical(reset)		"Återställ"
 ::mc::Logical(or)			"Eller"

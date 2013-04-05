@@ -116,7 +116,7 @@ kbd.key {
 	border-width:		0.2em;
 	border-style:		solid;
 	border-color:		#dddddd #bbbbbb #bbbbbb #dddddd;
-	padding:				0 0;
+	padding:				0 0.15em;
 	background:			#eeeeee;
 	white-space:		nowrap;
 }

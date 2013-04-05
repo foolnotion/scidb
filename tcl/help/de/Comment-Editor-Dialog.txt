@@ -1,0 +1,161 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Kommentareditor
+TITLE Kommentareditor
+
+<h2>Textormatierung</h2>
+
+<p>
+Kommentare können formatiert werden: Fettschrift, Kursivschrift, und Unterstrichen.
+Es sind alle Kombinationen dieser Formatierungen erlaubt. Das Setzen einer
+Formatierungen wirkt auf den selektierten Bereich.
+</p>
+
+<p>
+Diese Formatierungen können nur im
+<a href="Database-Formats.html#Scidb">Scidb-Datenbankformat</a>
+gespeichert werden. Bei der Konvertierung in das
+<a href="Database-Formats.html#Scid">Scid-Format</a>,
+oder beim Export in das
+<a href="Database-Formats.html#PGN">PGN-Format</a> (Ausnahme:
+die Option <i>%::export::mc::Option(pgn,comment_to_html)%</i> wird benutzt)
+gehen alle Formatierungen verloren.
+</p>
+
+<h2>Tastaturkürzel</h2>
+
+<p>
+Im Textfeld dienen die nachfolgenden Tastaturkürzel zum Einfügen einer Figur:
+</p>
+
+INCLUDE ../Comment-Editor-Pieces.txt
+
+Ausserdem sind folgende Standardtastaturkürzel an das Textfeld gebunden:
+
+<box>
+  <table>
+    <tr>
+      <td valign="top"><key>Ctrl</key><key>C</key>
+      </td><td>Markierten Text in die Zwischenablage kopieren</td>
+    </tr>
+    <tr>
+      <td valign="top"><key>Ctrl</key><key>X</key>
+      </td><td>Markierten Text löschen und in die Zwischenablage kopieren</td>
+    </tr>
+    <tr>
+      <td valign="top"><key>Ctrl</key><key>V</key></td>
+      <td>Text aus der Zwischenablage an der Cursorposition einfügen</td>
+    </tr>
+    <tr>
+      <td valign="top"><key>Ctrl</key><key>Z</key>
+      </td><td>Letzte Aktion im Textbereich zurücknehmen</td>
+    </tr>
+    <tr>
+      <td valign="top"><key>Ctrl</key><key>Y</key></td>
+      <td>Vorhergehende Rücknahme wieder aufheben</td>
+    </tr>
+  </table>
+</box>
+
+<h2>Zeilenumruch</h2>
+
+<p>
+Eine besondere Bedeuting hat <key>Enter</key>, mit dieser Taste können
+Zeilenumbrüche erzwungen werden. Im Textfeld werden die erzwungenen
+Zeilenumbrüche mit dem Absatzsymbol &#x00b6; gekennzeichnet.
+</p>
+
+<h2>Kontextsensitives Menü</h2>
+
+Das kontextsensitive Menü bietet folgende Funktionen:
+
+<dir><img src="images/comment-editor-menu.png"></dir>
+
+<p>
+<menuitem>%::mc::Copy%</menuitem>
+Markierten Text in die Zwischenablage kopieren.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+markiert ist.
+</p>
+
+<p>
+<menuitem>%::mc::Cut%</menuitem>
+Markierten Text löschen und in die Zwischenablage kopieren.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+markiert ist.
+</p>
+
+<p>
+<menuitem>%::mc::Paste%</menuitem>
+Text aus der Zwischenablage an der Cursorposition einfügen.
+Dieser Menüpunkt steht nur zur Verfügung, wenn Text in
+der Zwischenablage vorhanden ist.
+</p>
+
+<p>
+<menuitem>%::comment::mc::InsertSymbol%</menuitem>
+Ein Symbol aus den Untermenüs an der Cursorposition einfügen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::FormatText%</menuitem>
+Den markierten Text formatieren: Fettschrift, Kursivschrift,
+oder Unterstrichen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::CopyText%</menuitem>
+Den gesamten Text in einen anderen Sprachbereich kopieren.
+Der Text wird an den evt. bereits vorhandenen Text angefügt.
+</p>
+
+<p>
+<menuitem>%::mc::Undo%</menuitem>
+Letzte Aktion im Textbereich zurücknehmen (außer Formatierungen).
+</p>
+
+<p>
+<menuitem>%::mc::Redo%</menuitem>
+Vorhergehende Rücknahme (<see/> <menuitem>%::mc::Undo%</menuitem>)
+wieder aufheben.
+</p>
+
+<p>
+<menuitem>%::widget::mc::Clear%</menuitem>
+Den gesamten Text löschen.
+</p>
+
+<p>
+<menuitem>%::widget::mc::Revert%</menuitem>
+Den ursprünglichen Text - entweder den Starttext,
+oder den Text nach dem letzten Speichern - wiederherstellen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::SwitchLanguage%</menuitem>
+Andere Sprache auswählen.
+</p>
+
+<p>
+<menuitem>%::comment::mc::AddLanguage%</menuitem>
+Eine Sprache hinzufügen.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

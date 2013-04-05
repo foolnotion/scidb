@@ -609,7 +609,7 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 		if (::isprint(c))
 		{
-			str += c; break;
+			str += c;
 		}
 		else
 		{
@@ -623,12 +623,12 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 						++i;
 					break;
 
-				case 0xa2: str.append("<sym>K</sym>", 12); useXml = true; break;
-				case 0xa3: str.append("<sym>Q</sym>", 12); useXml = true; break;
-				case 0xa4: str.append("<sym>N</sym>", 12); useXml = true; break;
-				case 0xa5: str.append("<sym>B</sym>", 12); useXml = true; break;
-				case 0xa6: str.append("<sym>R</sym>", 12); useXml = true; break;
-				case 0xa7: str.append("<sym>P</sym>", 12); useXml = true; break;
+				case 0xa2: str.append(char(0x01)); useXml = true; break;
+				case 0xa3: str.append(char(0x02)); useXml = true; break;
+				case 0xa4: str.append(char(0x03)); useXml = true; break;
+				case 0xa5: str.append(char(0x04)); useXml = true; break;
+				case 0xa6: str.append(char(0x05)); useXml = true; break;
+				case 0xa7: str.append(char(0x06)); useXml = true; break;
 
 				case 0x82: nag = nag::Attack; break; 								// "->"
 				case 0x83: nag = nag::Initiative; break;							// "|^"
@@ -672,19 +672,22 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 						m_aStrm.skip(1);
 						return; // seems to be a special instruction
 					}
-					str += c;
+					if (Byte(c) > 0x07)
+						str += c;
 					break;
 			}
 
 			if (nag != nag::Null)
 			{
-				str.format("<nag>%u</nag>", unsigned(nag));
+				str.append(char(0x07));
+				str.append(char(nag));
 				useXml = true;
 			}
 		}
 	}
 
-	str.rtrim();
+	while (!str.empty() && ::isspace(str.back()) && (str.size() == 1 || *(str.end() - 2) != 0x07))
+		str.resize(str.size() - 1);
 
 	if (!str.empty())
 	{
@@ -702,6 +705,13 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 			{
 				switch (*s)
 				{
+					case 0x01:	str.append("<sym>K</sym>", 12); break;
+					case 0x02:	str.append("<sym>Q</sym>", 12); break;
+					case 0x03:	str.append("<sym>R</sym>", 12); break;
+					case 0x04:	str.append("<sym>B</sym>", 12); break;
+					case 0x05:	str.append("<sym>N</sym>", 12); break;
+					case 0x06:	str.append("<sym>P</sym>", 12); break;
+					case 0x07:	str.format("<nag>%u</nag>", unsigned(Byte(*++s))); break;
 					case '<':	str.append("&lt;",   4); break;
 					case '>':	str.append("&gt;",   4); break;
 					case '&':	str.append("&amp;",  5); break;
@@ -728,17 +738,18 @@ Decoder::decodeComment(MoveNode* node, unsigned length, move::Position position)
 
 		Comment comment;
 		comment.swap(str, isEnglish, isOther);
-		comment.normalize();
 
 		if (node->hasComment(position))
 		{
 			Comment c;
 			node->swapComment(c, position);
 			c.append(comment, '\n');
+			c.normalize();
 			node->swapComment(c, position);
 		}
 		else
 		{
+			comment.normalize();
 			node->setComment(comment, position);
 		}
 	}
