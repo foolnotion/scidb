@@ -215,14 +215,14 @@ proc build {menu} {
 		-image $::icon::16x16::setup \
 		;
 	lassign [::tk::UnderlineAmpersand $mc::Engines] text ul
-	set cmd [namespace code [list ::engine::openAdmininstration .application]]
+	set cmd [list ::engine::openAdmininstration .application]
 	$m add command \
 		-label " $text" \
 		-underline [incr ul] -command $cmd \
 		;
 if {0} {
 	lassign [::tk::UnderlineAmpersand $mc::PrivatePlayerCard] text ul
-	set cmd [namespace code [list ::playercard::setupPrivateCard .application]]
+	set cmd [list ::playercard::setupPrivateCard .application]
 	$m add command \
 		-label " $text" \
 		-underline [incr ul] \

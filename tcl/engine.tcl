@@ -186,6 +186,7 @@ set EmptyEngine {
 	Profiles:UCI	{}
 	Profiles:WB		{}
 	ProfileType		Options
+	Script:Default	{}
 	Timestamp		0
 	FileTime			0
 	UserDefined		1
@@ -203,6 +204,12 @@ array set Logo { width 100 height 54 }
 
 
 proc openAdmininstration {parent} {
+	if {	$parent ne ".setupEngine"
+		&& [winfo exists .setupEngine]
+		&& [wm state .setupEngine] ne "withdrawn"} {
+		return [OpenAdministration .setupEngine]
+	}
+
 	variable Engines
 	variable Priv
 	variable Option
@@ -1741,14 +1748,12 @@ proc Select {list item} {
 proc DiscardChanges {list} {
 	variable Var
 	variable Var_
-	variable Option
-	variable Option_
 	variable Engines
 	variable Priv
 
 	if {[llength $Engines] == 0} { return 1 }
 
-	if {![arrayEqual Var Var_] || ![arrayEqual Option Option_]} {
+	if {![arrayEqual Var Var_]} {
 		set rc [::dialog::question -parent [winfo toplevel $list] -message $mc::DiscardChanges]
 		if {$rc eq "no"} { return 0 }
 	}
@@ -2690,6 +2695,7 @@ proc SaveOptions {dlg} {
 		lappend newOptions $opt
 	}
 
+	array set Options_ [array get Options]
 	lset profiles $k $newOptions
 	set engine(Profiles:$protocol) $profiles
 	lset Engines $i [array get engine]
@@ -3054,9 +3060,7 @@ proc ProbeEngine {parent entry} {
 
 		# setup information
 		array set engine $info
-		if {[info exists engine(Author)]} {
-			set engine(Author) [string map [list " and " " & "] $engine(Author)]
-		}
+		set engine(Author) [string map [list " and " " & "] $engine(Author)]
 		if {[llength $options]} {
 			set engine(Profiles:$prot) [list Default $options]
 		} else {
@@ -3111,7 +3115,7 @@ proc ProbeEngine {parent entry} {
 
 	array unset result
 	set result {}
-	if {[info exists engine(Name)] && [string length $engine(Name)]} {
+	if {[string length $engine(Name)]} {
 		set result [::scidb::engine::info $engine(Name)]
 	} else {
 		set engine(Name) $engine(Identifier)
@@ -3128,11 +3132,11 @@ proc ProbeEngine {parent entry} {
 			}
 		}
 		set engine(Name) $shortName
-		if {![info exists engine(CCRL)]} { set engine(CCRL) $ccrl }
-		if {![info exists engine(Country)]} { set engine(Country) $country }
-		if {![info exists engine(Url)]} { set engine(Url) $url }
+		if {$engine(CCRL) == 0} { set engine(CCRL) $ccrl }
+		if {[string length $engine(Country)] == 0} { set engine(Country) $country }
+		if {[string length $engine(Url)] == 0} { set engine(Url) $url }
 	}
-	if {![info exists engine(ShortId)]} {
+	if {[string length $engine(ShortId)] == 0} {
 		set engine(ShortId) $engine(Name)
 	}
 
@@ -3385,7 +3389,8 @@ proc NewEngine {list} {
 		if {$Index_ >= 0} { set newEntry [lindex $entries $Index_] }
 	}
 
-	array unset engine
+	array set engine {}
+	array set engine $EmptyEngine
 	array set engine $newEntry
 	set engine(Command) $file
 	set newEntry [ProbeEngine $parent [array get engine]]
@@ -3461,12 +3466,12 @@ proc MakePhotos {logo file} {
 	set w [image width $img]
 	set h [image height $img]
 	if {$h > $Logo(height) || $w > $Logo(width)} {
-		if {$w > $Logo(width)
-			set h [expr {ceil((double($h)*$Logo(width))/double($w))}]
+		if {$w > $Logo(width)} {
+			set h [expr {int(ceil((double($h)*$Logo(width))/double($w)))}]
 			set w $Logo(width)
 		}
 		if {$h > $Logo(height)} {
-			set w [expr {ceil((double($w)*$Logo(height))/double($h))}]
+			set w [expr {int(ceil((double($w)*$Logo(height))/double($h)))}]
 			set h $Logo(height)
 		}
 		set tmp [image create photo -width $w -height $h]
