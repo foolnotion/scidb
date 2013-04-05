@@ -46,23 +46,24 @@ Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse va
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>%::mc::VariantName(Normal)%</td>
-      <td>(con %::mc::VariantName(Chess960)%, %::mc::VariantName(Shuffle)%)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Crazyhouse)%</td>
+      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Antichess)%</td>
-      <td>(%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%)</td>
+      <td><a href="http://pil.phys.uniroma1.it/~zapperi/chess/vinciperdi.htm">
+          %::mc::VariantName(Antichess)%</a></td>
+      <td>(<a href="http://suicidechess.ca/index.php?lg=en">Suicide</a>,
+          <a href="http://www6.chessclub.com/help/Giveaway">Giveaway</a>)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Losers)%</td>
+      <td><a href="http://loserschess.org/">Losers</a></td>
       <td>(variante di %::mc::VariantName(Antichess)%)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(ThreeCheck)%</td>
-      <td></td>
+      <td>%::mc::VariantName(ThreeCheck)%</a></td>
+      <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-Check Chess</a>)</td>
     </tr>
   </table>
 </box>
@@ -71,6 +72,16 @@ Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse va
 Un database può contenere solo una variante degli scacchi (la <a href="Clipbase.html">Clipbase</a>
 è un'eccezione).
 </p>
+
+<NEW>
+<p>
+Furthermore this format is supporting
+<a href="http://it.wikipedia.org/wiki/Scacchi960">%::mc::VariantName(Chess960)%</a>,
+and
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a> positions,
+in all chess variants.
+</p>
+</NEW>
 
 <p>
 I database Scidb sono sempre codificati con il set caratteri <nobr>UTF-8</nobr>. Per questo

@@ -51,22 +51,24 @@ currently this is:
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>%::mc::VariantName(Normal)%</td>
-      <td>(including %::mc::VariantName(Chess960)%, %::mc::VariantName(Shuffle)%)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Crazyhouse)%</td>
+      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
       <td></td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Antichess)%</td>
-      <td>(%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%)</td>
+      <td><a href="http://en.wikipedia.org/wiki/Antichess">%::mc::VariantName(Antichess)%</a></td>
+      <td>(<a href="http://ajedrez.about.com/od/chessvariants/a/Suicide-Chess.htm">
+          %::mc::VariantName(Suicide)%</a>,
+          <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Losers)%</td>
+      <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
       <td>(variant of %::mc::VariantName(Antichess)%)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(ThreeCheck)%</td>
+      <td><a href="http://en.wikipedia.org/wiki/Three-check_chess">
+          %::mc::VariantName(ThreeCheck)%</a></td>
       <td></td>
     </tr>
   </table>
@@ -75,6 +77,14 @@ currently this is:
 <p>
 A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
 is an exception).
+</p>
+
+<p>
+Furthermore this format is supporting
+<a href="http://es.wikipedia.org/wiki/Ajedrez_aleatorio_de_Fischer">%::mc::VariantName(Chess960)%</a>,
+and
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a> positions,
+in all chess variants.
 </p>
 </NEW>
 

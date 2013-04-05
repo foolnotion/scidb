@@ -51,23 +51,24 @@ zur Zeit sind dies:
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>%::mc::VariantName(Normal)%</td>
-      <td>(inklusive %::mc::VariantName(Chess960)% und %::mc::VariantName(Shuffle)%)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Crazyhouse)%</td>
-      <td>(Crazyhouse)</td>
+      <td><a href="http://de.wikipedia.org/wiki/Schachvarianten#Crazyhouse_oder_Einsetzschach">
+          %::mc::VariantName(Crazyhouse)%</a></td>
+      <td>(<a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse</a>)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Antichess)%</td>
-      <td>(%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%)</td>
+      <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">%::mc::VariantName(Antichess)%</a></td>
+      <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
+          <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Losers)%</td>
+      <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
       <td>(Schlagschachvariante)</td>
     </tr>
     <tr>
       <td>%::mc::VariantName(ThreeCheck)%</td>
-      <td>(Three-Check)</td>
+      <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-Check</a>)</td>
     </tr>
   </table>
 </box>
@@ -75,6 +76,14 @@ zur Zeit sind dies:
 <p>
 Eine Datenbank ist auf eine Schachform festgelegt (die
 <a href="Clipbase.html">Ablage-Datenbank</a> ist eine Ausnahme).
+</p>
+
+<p>
+Zudem unterstützt dieses Format
+<a href="http://de.wikipedia.org/wiki/Chess960">%::mc::VariantName(Chess960)%</a>
+sowie
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a>-Positionen,
+und zwar in allen Schachformen.
 </p>
 
 <p>
