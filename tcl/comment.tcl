@@ -141,6 +141,7 @@ proc open {parent pos lang} {
 		-font $Fonts(normal) \
 		-wrap word \
 		-setgrid 1 \
+		-font $::font::text(editor:normal) \
 		-yscrollcommand [list ::scrolledframe::sbset $top.sb] \
 		-undo no \
 		-maxundo 0 \

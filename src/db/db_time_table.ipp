@@ -33,7 +33,6 @@ inline bool TimeTable::isEmpty() const					{ return m_table.empty(); }
 inline unsigned TimeTable::size() const				{ return m_table.size(); }
 
 inline void TimeTable::reserve(unsigned capacity)	{ m_table.reserve(capacity); }
-inline void TimeTable::clear()							{ m_table.clear(); }
 inline void TimeTable::swap(TimeTable& table)		{ m_table.swap(table.m_table); }
 
 inline MoveInfoSet const& TimeTable::operator[](unsigned index) const { return m_table[index]; }

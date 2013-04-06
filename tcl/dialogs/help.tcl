@@ -342,7 +342,8 @@ proc CheckLanguage {parent helpFile} {
 		bind $top.$code <Return> { event generate %W <Key-space>; break }
 	}
 	::widget::dialogButtons $dlg cancel
-	$dlg.cancel configure -command [list destroy $dlg]
+	$dlg.cancel configure -command [list set [namespace current]::Lang {}]
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
 	wm resizable $dlg no no
 	wm title $dlg $mc::SelectLanguage
 	::util::place $dlg center $parent

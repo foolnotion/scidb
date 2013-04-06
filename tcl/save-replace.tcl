@@ -3038,10 +3038,11 @@ proc CheckFields {top title fields} {
 proc SetPlayerFromDict {dlg side info} {
 	variable ::${dlg}::Priv
 	lassign $info Priv(${side}-name) Priv(${side}-fideID)
-	::widget::dialogRaise $dlg
 	focus -force $dlg.top.$side-name
 	$dlg.top.$side-name icursor end
 	::playerdict::unsetReceiver
+	lower .playerDict
+	raise $dlg
 }
 
 

@@ -411,6 +411,7 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Abrir Base"
 ::application::database::mc::FileOpenRecent					"Abrir Recientes"
+::application::database::mc::FileOpenURL						"Open URL" ;# NEW
 ::application::database::mc::FileNew							"Nueva Base"
 ::application::database::mc::FileExport						"Exportar"
 ::application::database::mc::FileImport(pgn)					"Importar archivos PGN"
@@ -454,6 +455,8 @@
 ::application::database::mc::ExtractArchive					"Extracer archivo %s"
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 ::application::database::mc::Example							"Example" ;# NEW
+::application::database::mc::EnterURL							"Enter URL" ;# NEW
+::application::database::mc::Protocol							"Protocol" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames						"%s partida(s) recodificadas"

@@ -409,19 +409,20 @@
 ::application::board::mc::Accel(trial-mode)		"T" ;# NEW
 
 ### application::database ##############################################
-::application::database::mc::FileOpen						"Fájl megnyitása"
+::application::database::mc::FileOpen					"Fájl megnyitása"
 ::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
-::application::database::mc::FileNew						"Új"
+::application::database::mc::FileOpenURL				"Open URL" ;# NEW
+::application::database::mc::FileNew					"Új"
 ::application::database::mc::FileExport					"Exportálás"
 ::application::database::mc::FileImport(pgn)				"PGN fájlok importálás..."
 ::application::database::mc::FileImport(db)				"Adatbázis importálása "
 ::application::database::mc::FileCreate					"Archívum létrehozása"
-::application::database::mc::FileClose						"Bezárás"
-::application::database::mc::FileMaintenance					"Karbantartás"
-::application::database::mc::FileCompact					"Kompakt"
+::application::database::mc::FileClose					"Bezárás"
+::application::database::mc::FileMaintenance				"Karbantartás"
+::application::database::mc::FileCompact				"Kompakt"
 ::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
 ::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
-::application::database::mc::HelpSwitcher					"Adatbázis váltó(?) Súgó"
+::application::database::mc::HelpSwitcher				"Adatbázis váltó(?) Súgó"
 
 ::application::database::mc::Games							"&Játszmák"
 ::application::database::mc::Players						"Já&tékosok"
@@ -429,31 +430,33 @@
 ::application::database::mc::Sites							"&Helyszín"  ;#NEW
 ::application::database::mc::Annotators					"&Elemző"
 
-::application::database::mc::File							"Fájl"
-::application::database::mc::SymbolSize					"Szimvólum méret"
-::application::database::mc::Large							"Nagy"
-::application::database::mc::Medium							"Közepes"
-::application::database::mc::Small							"Kicsi"
-::application::database::mc::Tiny							"Apró"
-::application::database::mc::LoadMessage					"Adatbázis megnyitása: %s"
-::application::database::mc::UpgradeMessage				"Adatbázis frissítése %s"
-::application::database::mc::CompactMessage				"%s adatbázis tömörítése"
-::application::database::mc::CannotOpenFile				"A fájl nem nyitható meg olvasásra: '%s'."
-::application::database::mc::EncodingFailed				"%s kódolása sikertelen."
-::application::database::mc::DatabaseAlreadyOpen		"Az '%s' adatbázis már meg van nyitva."
-::application::database::mc::Properties					"Tulajdonságok"
-::application::database::mc::Preload						"Előtöltés"
-::application::database::mc::MissingEncoding				"Hiányos kódolás %s (használd inkább %s-t)"
-::application::database::mc::DescriptionTooLarge		"Túl hosszú leírás."
-::application::database::mc::DescrTooLargeDetail		"A mező %d karaktert tartalmaz, de csak %d megengedett."
-::application::database::mc::ClipbaseDescription		"Ideiglenes adatbázis, nincs elmentve a lemezre."
-::application::database::mc::HardLinkDetected			"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. Ez csak \"hard linkek\" esetén történhet meg."
+::application::database::mc::File			"Fájl"
+::application::database::mc::SymbolSize			"Szimvólum méret"
+::application::database::mc::Large			"Nagy"
+::application::database::mc::Medium			"Közepes"
+::application::database::mc::Small			"Kicsi"
+::application::database::mc::Tiny			"Apró"
+::application::database::mc::LoadMessage		"Adatbázis megnyitása: %s"
+::application::database::mc::UpgradeMessage		"Adatbázis frissítése %s"
+::application::database::mc::CompactMessage		"%s adatbázis tömörítése"
+::application::database::mc::CannotOpenFile		"A fájl nem nyitható meg olvasásra: '%s'."
+::application::database::mc::EncodingFailed		"%s kódolása sikertelen."
+::application::database::mc::DatabaseAlreadyOpen	"Az '%s' adatbázis már meg van nyitva."
+::application::database::mc::Properties			"Tulajdonságok"
+::application::database::mc::Preload			"Előtöltés"
+::application::database::mc::MissingEncoding		"Hiányos kódolás %s (használd inkább %s-t)"
+::application::database::mc::DescriptionTooLarge	"Túl hosszú leírás."
+::application::database::mc::DescrTooLargeDetail	"A mező %d karaktert tartalmaz, de csak %d megengedett."
+::application::database::mc::ClipbaseDescription	"Ideiglenes adatbázis, nincs elmentve a lemezre."
+::application::database::mc::HardLinkDetected		"'%file1' betöltése sikertelen. Már '%file2'-ként betöltődött. Ez csak \"hard linkek\" esetén történhet meg."
 ::application::database::mc::HardLinkDetectedDetail	"If we load this database twice the application may crash due to the usage of threads."  ;#NEW
 ::application::database::mc::OverwriteExistingFiles	"Felül kívánja írni a %s könyvtárban lévő fájlokat?"
-::application::database::mc::SelectDatabases				"Válassza ki a megnyitni kívánt adatbázist"
-::application::database::mc::ExtractArchive				"%s archívum kicsomagolása"
+::application::database::mc::SelectDatabases		"Válassza ki a megnyitni kívánt adatbázist"
+::application::database::mc::ExtractArchive		"%s archívum kicsomagolása"
 ::application::database::mc::SelectVariant		"Select Variant" ;# NEW
 ::application::database::mc::Example			"Example" ;# NEW
+::application::database::mc::EnterURL			"Enter URL" ;# NEW
+::application::database::mc::Protocol			"Protocol" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"

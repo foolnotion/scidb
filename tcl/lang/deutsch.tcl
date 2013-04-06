@@ -410,6 +410,7 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Datenbank öffnen"
 ::application::database::mc::FileOpenRecent					"Öffne zuvorige"
+::application::database::mc::FileOpenURL						"Öffne URL"
 ::application::database::mc::FileNew							"Neue Datenbank anlegen"
 ::application::database::mc::FileExport						"Export"
 ::application::database::mc::FileImport(pgn)					"PGN-Dateien importieren"
@@ -453,6 +454,8 @@
 ::application::database::mc::ExtractArchive					"Archiv %s extrahieren"
 ::application::database::mc::SelectVariant					"Schachform wählen"
 ::application::database::mc::Example							"Beispiel"
+::application::database::mc::EnterURL							"URL eingeben"
+::application::database::mc::Protocol							"Protokoll"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"

@@ -43,6 +43,14 @@ TimeTable::TimeTable()
 
 
 void
+TimeTable::clear()
+{
+	m_table.clear();
+	::memset(m_size, 0, sizeof(m_size));
+}
+
+
+void
 TimeTable::cut(unsigned newSize)
 {
 	M_REQUIRE(newSize <= size());

@@ -409,6 +409,7 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Open Database"
 ::application::database::mc::FileOpenRecent					"Open Recent"
+::application::database::mc::FileOpenURL						"Open URL"
 ::application::database::mc::FileNew							"New Database"
 ::application::database::mc::FileExport						"Export"
 ::application::database::mc::FileImport(pgn)					"Import PGN files"
@@ -452,6 +453,8 @@
 ::application::database::mc::ExtractArchive					"Extract archive %s"
 ::application::database::mc::SelectVariant					"Select Variant"
 ::application::database::mc::Example							"Example"
+::application::database::mc::EnterURL							"Enter URL"
+::application::database::mc::Protocol							"Protocol"
 
 ::application::database::mc::RecodingDatabase				"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames						"%s game(s) recoded"

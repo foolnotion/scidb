@@ -32,6 +32,7 @@ namespace eval mc {
 
 set FileOpen							"Open"
 set FileOpenRecent					"Open Recent"
+set FileOpenURL						"Open URL"
 set FileNew								"New"
 set FileExport							"Export"
 set FileImport(pgn)					"Import PGN files"
@@ -75,6 +76,8 @@ set SelectDatabases					"Select the databases to be opened"
 set ExtractArchive					"Extract archive %s"
 set SelectVariant						"Select Variant"
 set Example								"Example"
+set EnterURL							"Enter URL"
+set Protocol							"Protocol"
 
 set RecodingDatabase					"Recoding %base from %from to %to"
 set RecodedGames						"%s game(s) recoded"
@@ -213,6 +216,7 @@ array set Options {
 
 variable PreOpen			{}
 variable RecentFiles		{}
+variable RecentURL		{}
 variable MaxHistory		10
 
 array set Positions		{}
@@ -1356,6 +1360,12 @@ proc PopupMenu {parent x y {base ""}} {
 		;
 
 	$menu add command \
+		-label " $mc::FileOpenURL..." \
+		-image $::icon::16x16::internet \
+		-compound left \
+		-command [namespace code [list OpenURL $top]] \
+		;
+	$menu add command \
 		-label " $mc::FileNew ($::mc::VariantName(Normal))..." \
 		-image $::icon::16x16::databaseNew \
 		-compound left \
@@ -1406,6 +1416,71 @@ proc PopupMenu {parent x y {base ""}} {
 
 	::tooltip::hide
 	tk_popup $menu $x $y
+}
+
+
+proc OpenURL {parent} {
+	variable URL_
+	variable Protocol_
+	variable RecentURL
+
+	set dlg $parent.url
+	toplevel $dlg -class Scidb
+	pack [set top [ttk::frame $dlg.top]] -fill both
+	ttk::label $top.lenter -text "$mc::EnterURL:"
+	ttk::combobox $top.center \
+		-textvar [namespace current]::URL_ \
+		-values $RecentURL \
+		-width 40 \
+		;
+	ttk::label $top.lprotocol -text "$mc::Protocol:"
+	ttk::combobox $top.cprotocol \
+		-values {HTTP FTP} \
+		-state readonly \
+		-textvar [namespace current]::Protocol_ \
+		;
+	set Protocol_ HTTP
+	set URL_ ""
+
+	grid $top.lenter    -row 1 -column 1 -sticky w
+	grid $top.center    -row 1 -column 3 -sticky w
+	grid $top.lprotocol -row 3 -column 1 -sticky ew
+	grid $top.cprotocol -row 3 -column 3 -sticky ew
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2 4 6} -minsize $::theme::pady
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.ok configure -command [namespace code [list DoOpenURL $dlg]]
+	$dlg.cancel configure -command [list destroy $dlg]
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg "$mc::FileOpenURL"
+	wm resizable $dlg false false
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.center
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc DoOpenURL {dlg} {
+	variable RecentURL
+	variable URL_
+
+	if {$URL_ in $RecentURL} {
+		set i [lsearch $RecentURL $URL_]
+		set RecentURL [lreplace $RecentURL $i $i]
+	} elseif {[llength $RecentURL] > 15} {
+		set RecentURL [lreplace $RecentURL end end]
+	}
+	set RecentURL [concat $URL_ $RecentURL]
+
+	// TODO
+
+	destroy $dlg
 }
 
 
@@ -1467,7 +1542,7 @@ proc EditDescription {parent file} {
 	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list SetDescription $dlg $file]]
 	$dlg.cancel configure -command [list destroy $dlg]
-	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
 	wm transient $dlg [winfo toplevel $parent]
 	wm withdraw $dlg
 	wm title $dlg "$mc::EditDescription ([::util::databaseName $file])"
