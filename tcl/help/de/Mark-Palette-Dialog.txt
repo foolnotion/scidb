@@ -24,7 +24,7 @@ TITLE Feldmarkierungspalette
 Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel
 <nobr><key>Ctrl</key><key>%::application::board::mc::Accel(edit-marks)%</key></nobr>
 oder über das kontextsensitive Menü des Partieneditors (<see/>
-<menuitem>%::marks::mc::MarksPalette%</menuitem>).
+<menuitem>%::marks::mc::MarksPalette%</menuitem>) geöffnet werden.
 </p>
 
 <p>
