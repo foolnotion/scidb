@@ -64,7 +64,6 @@ proc build {path columns args} {
 	array set opts $args
 
 	ttk::frame $path -takefocus 0
-	pack $path -fill both -expand yes
 	set top [ttk::frame $path.top -takefocus 0]
 	pack $top -fill both -expand yes
 

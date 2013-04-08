@@ -161,6 +161,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	}
 #	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
+	pack $path -fill both -expand yes
 
 	::bind $path <<TableFill>>			[namespace code [list TableFill $path %d]]
 	::bind $path <<TableSelected>>	[namespace code [list TableSelected $path %d]]
