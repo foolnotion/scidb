@@ -1,0 +1,43 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Feldmarkierungspalette
+TITLE Feldmarkierungspalette
+
+<dir><img src="images/marks-palette.png"</dir>
+
+<p>
+Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel
+<nobr><key>Ctrl</key><key>%::application::board::mc::Accel(edit-marks)%</key></nobr>
+oder über das kontextsensitive Menü des Partieneditors (<see/>
+<menuitem>%::marks::mc::MarksPalette%</menuitem>).
+</p>
+
+<p>
+Die Palette erlaubt die Auswahl der Farbe der Markierung,
+sowie den Markierungstyp. Die Farb- und Typauswahl wurde
+identisch zur Schachdatenbankapplikation
+<a href="scid.sourceforge.net">Scid</a> gehalten.
+</p>
+
+<p>
+Die Palette ist nur sichtbar, wenn das Schachbrettfenster aktiv ist.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

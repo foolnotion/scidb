@@ -24,6 +24,7 @@ set Index {
   }
   { F
     {
+      {{Feldmarkierungspalette} {Mark-Palette-Dialog.html} {}}
       {{FEN (Forsyth-Edwards-Notation)} {FEN.html} {}}
       {{Funktionsleisten} {Toolbar-Usage.html} {}}
     }
@@ -43,7 +44,7 @@ set Index {
   }
   { M
     {
-      {{Markierungen} {Game-Flags.html} {}}
+      {{Markierungen (Partie-Flags)} {Game-Flags.html} {}}
     }
   }
   { N

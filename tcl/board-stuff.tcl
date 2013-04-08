@@ -1075,7 +1075,7 @@ proc DrawDisk {w square color} {
 		set Board(image,disk,$color) [MakeDisk $Board(size) $color]
 	}
 
-	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$color) $tags
+	SetImage $w.c $Board(size) {*}[$w.c coords square:$square] $Board(image,disk,$color)
 }
 
 

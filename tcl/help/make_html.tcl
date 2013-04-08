@@ -344,7 +344,7 @@ proc readContents {chan file} {
 
 		set line [string map $HtmlMapping $line]
 
-		while {[regexp {<key>([a-zA-Z]*)</key>} $line _ key]} {
+		while {[regexp {<key>([a-zA-Z%:\(\)-]*)</key>} $line _ key]} {
 			switch $key {
 				King		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 0]</kbd>" }
 				Queen		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 1]</kbd>" }
@@ -354,13 +354,14 @@ proc readContents {chan file} {
 				Pawn		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 5]</kbd>" }
 
 				default {
-					if {[string length $key] == 1} {
+					if {[string length $key] == 1 || [string index $key 0] == "%"} {
 						set expr "<kbd class='key'>$key</kbd>"
 					} else {
 						set expr "<kbd class='key'>$::mc::Key($key)</kbd>"
 					}
 				}
 			}
+			set key [string map {( "\\(" ) "\\)"} $key]
 			set line [regsub -all "<key>$key</key>" $line $expr]
 		}
 

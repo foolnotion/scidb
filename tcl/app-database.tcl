@@ -1359,12 +1359,12 @@ proc PopupMenu {parent x y {base ""}} {
 		-state $state \
 		;
 
-	$menu add command \
-		-label " $mc::FileOpenURL..." \
-		-image $::icon::16x16::internet \
-		-compound left \
-		-command [namespace code [list OpenURL $top]] \
-		;
+#	$menu add command \
+#		-label " $mc::FileOpenURL..." \
+#		-image $::icon::16x16::internet \
+#		-compound left \
+#		-command [namespace code [list OpenURL $top]] \
+#		;
 	$menu add command \
 		-label " $mc::FileNew ($::mc::VariantName(Normal))..." \
 		-image $::icon::16x16::databaseNew \

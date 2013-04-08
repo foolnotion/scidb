@@ -532,17 +532,19 @@ proc findTclTkPaths {} {
     # X library path: List of possible locations of X library.
     set path(x,libraries,local) {
         /usr/local/lib
-        /usr/local/lib64
         /usr/local/X11/lib
         /usr/local/X11R6/lib
         /usr/local/X/lib
     }
     set path(x,libraries,usr) {
         /usr/lib
-        /usr/lib64
         /usr/X11/lib
         /usr/X11R6/lib
         /usr/X/lib
+    }
+    if {8*$tcl_platform(wordSize) == 64} {
+        set path(x,libraries,local) [linsert $path(x,libraries,local) 0 /usr/local/lib64]
+        set path(x,libraries,usr) [linsert $path(x,libraries,usr) 0 /usr/lib64]
     }
     # NOTE: All these entries below are required for the corrupted Unix
     # systems (Ubuntu >= 11.04, and others). Sane Unix systems have
@@ -1947,9 +1949,7 @@ proc writeMakefile {{type ""}} {
             puts ""
             puts "Possibly you have to install Tcl/Tk. On Ubuntu/Debian systems use:"
             puts "  sudo apt-get install tcl${configure(tcl-version)}"
-            puts "  sudo apt-get install tcl${configure(tcl-version)}-dev"
             puts "  sudo apt-get install tk${configure(tk-version)}"
-            puts "  sudo apt-get install tk${configure(tk-version)}-dev"
         }
     }
 }
