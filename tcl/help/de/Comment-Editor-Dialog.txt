@@ -30,19 +30,20 @@ TITLE Kommentareditor
 <p>
 Kommentare können formatiert werden: Fettschrift, Kursivschrift, und Unterstrichen.
 Es sind alle Kombinationen dieser Formatierungen erlaubt. Das Setzen einer
-Formatierungen wirkt auf den selektierten Bereich.
+Formatierung wirkt auf den selektierten Bereich.
 </p>
 
-<p>
+<annotation>
 Diese Formatierungen können nur im
 <a href="Database-Formats.html#Scidb">Scidb-Datenbankformat</a>
 gespeichert werden. Bei der Konvertierung in das
 <a href="Database-Formats.html#Scid">Scid-Format</a>,
 oder beim Export in das
 <a href="Database-Formats.html#PGN">PGN-Format</a> (Ausnahme:
-die Option <i>%::export::mc::Option(pgn,comment_to_html)%</i> wird benutzt)
-gehen alle Formatierungen verloren.
-</p>
+eine der Optionen <i>%::export::mc::Option(pgn,comment_to_html)%</i>
+oder <i>%::export::mc::Option(pgn,use_scidb_import_format)%</i>
+wird verwendet) gehen alle Formatierungen verloren.
+</annotation>
 
 <h2 id="Shortcuts">Tastaturkürzel</h2>
 
