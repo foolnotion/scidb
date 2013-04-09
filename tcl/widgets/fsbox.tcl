@@ -212,6 +212,7 @@ proc fsbox {w type args} {
 		-okcommand					{}
 		-cancelcommand				{}
 		-inspectcommand			{}
+		-filetypecommand			{}
 		-mapextcommand				{}
 		-customcommand				{}
 		-customfiletypes			{}
@@ -233,9 +234,9 @@ proc fsbox {w type args} {
 							inactivebackground inactiveforeground filetypes fileencodings
 							fileicons filecursors showhidden sizecommand selectencodingcommand
 							validatecommand deletecommand renamecommand duplicatecommand okcommand
-							cancelcommand inspectcommand initialfile bookmarkswidth customcommand
-							customicon customtooltip customfiletypes helpcommand helpicon helplabel
-							isusedcommand actions mapextcommand formattimecmd checkexistence} {
+							cancelcommand inspectcommand filetypecommand initialfile bookmarkswidth
+							customcommand customicon customtooltip customfiletypes helpcommand helpicon
+							helplabel isusedcommand actions mapextcommand formattimecmd checkexistence} {
 		set Vars($option) $opts(-$option)
 		array unset opts -$option
 	}
@@ -499,6 +500,7 @@ proc reset {w type args} {
 		-okcommand					{}
 		-cancelcommand				{}
 		-inspectcommand			{}
+		-filetypecommand			{}
 		-mapextcommand				{}
 		-customcommand				{}
 		-customfiletypes			{}
@@ -519,8 +521,9 @@ proc reset {w type args} {
 	foreach option {	multiple defaultextension defaultencoding filetypes fileicons
 							filecursors fileencodings showhidden sizecommand validatecommand
 							selectencodingcommand deletecommand renamecommand duplicatecommand
-							okcommand cancelcommand inspectcommand mapextcommand initialfile
-							checkexistence customcommand customfiletypes customicon customtooltip} {
+							okcommand cancelcommand inspectcommand filetypecommand mapextcommand
+							initialfile checkexistence customcommand customfiletypes customicon
+							customtooltip} {
 		if {[info exists opts(-$option)]} {
 			set Vars($option) $opts(-$option)
 		}
@@ -1088,6 +1091,9 @@ proc SetFileTypes {w {index -1}} {
 					}
 					$t coords ft:$i $x $y
 					$t itemconfigure ft:$i -image $img -state normal
+					if {[llength $Vars(filetypecommand)]} {
+						::tooltip::tooltip $t -item ft:$i [{*}$Vars(filetypecommand) $ext]
+					}
 					lappend icons $img
 					incr x [image width $img]
 					incr i

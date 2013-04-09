@@ -634,9 +634,13 @@ private:
 	template <piece::Type Piece>
 	void addToHolding(uint64_t toMask, variant::Type variant, unsigned color);
 	template <piece::Type Piece>
+	void addToMyHolding(variant::Type variant, unsigned color);
+	template <piece::Type Piece>
 	void removeFromHolding(variant::Type variant, unsigned color);
 	template <piece::Type Piece>
 	void removeFromHolding(uint64_t fromMask, variant::Type variant, unsigned color);
+	template <piece::Type Piece>
+	void removeFromMyHolding(variant::Type variant, unsigned color);
 	template <piece::Type Piece>
 	void possiblyRemoveFromHolding(variant::Type variant, unsigned color);
 	template <piece::Type Piece> void incrMaterial(unsigned color);

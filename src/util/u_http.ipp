@@ -18,7 +18,9 @@
 
 namespace util {
 
-inline mstl::string const& Http::host() const { return m_host; }
+inline mstl::string const& Http::host() const	{ return m_host; }
+inline int Http::contentSize() const				{ return m_contentSize; }
+inline bool Http::isOpen() const						{ return m_sock; }
 
 } // namespace util
 

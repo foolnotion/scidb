@@ -289,6 +289,15 @@ proc checkForUpdate {informProc} {
 }
 
 
+proc pleaseInstallHttp {parent} {
+	::dialog::error \
+		-parent $parent \
+		-message $mc::Error(nohttp) \
+		-detail [format $mc::Detail(nohttp) {"sudo apt-get install tclhttp"}] \
+		;
+}
+
+
 proc CheckForUpdateResponse {informProc token} {
 	set shared [InstallDir 1]
 	set local [InstallDir 0]
@@ -385,13 +394,7 @@ proc Download {parent dlg} {
 	set result [downloadFiles [namespace code [list ProcessUpdate $parent]] $Shared $parent]
 
 	switch $result {
-		nohhtp {
-			::dialog::error \
-				-parent $dlg \
-				-message $mc::Error(nohttp) \
-				-detail [format $mc::Detail(nohttp) {"sudo apt-get install tclhttp"}] \
-				;
-		}
+		nohhtp	{ pleaseInstallHttp $dlg }
 		failed	{ ::dialog::error -parent $dlg -message $mc::Error(failed) }
 		passwd	{ ::dialog::error -parent $dlg -message $mc::Error(passwd) }
 		nosudo	{ ::dialog::error -parent $dlg -message $mc::Error(nosudo) -detail $mc::Detail(nosudo) }

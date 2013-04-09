@@ -1424,6 +1424,10 @@ proc OpenURL {parent} {
 	variable Protocol_
 	variable RecentURL
 
+	if {[catch {package require http 2.7}]} {
+		return [::util::photos::pleaseInstallHttp $parent]
+	}
+
 	set dlg $parent.url
 	toplevel $dlg -class Scidb
 	pack [set top [ttk::frame $dlg.top]] -fill both
@@ -1478,7 +1482,7 @@ proc DoOpenURL {dlg} {
 	}
 	set RecentURL [concat $URL_ $RecentURL]
 
-	// TODO
+	# TODO
 
 	destroy $dlg
 }

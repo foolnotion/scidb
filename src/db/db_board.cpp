@@ -657,11 +657,8 @@ Board::decrMaterial<piece::King>(unsigned color)
 template <>
 inline
 void
-Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
+Board::addToMyHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
-	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
-
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
@@ -676,11 +673,8 @@ Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
 template <>
 inline
 void
-Board::addToHolding<piece::Knight>(variant::Type variant, unsigned color)
+Board::addToMyHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
-	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
-
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
@@ -695,11 +689,8 @@ Board::addToHolding<piece::Knight>(variant::Type variant, unsigned color)
 template <>
 inline
 void
-Board::addToHolding<piece::Bishop>(variant::Type variant, unsigned color)
+Board::addToMyHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
-	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
-
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
@@ -714,11 +705,8 @@ Board::addToHolding<piece::Bishop>(variant::Type variant, unsigned color)
 template <>
 inline
 void
-Board::addToHolding<piece::Rook>(variant::Type variant, unsigned color)
+Board::addToMyHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
-	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
-
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
@@ -733,11 +721,8 @@ Board::addToHolding<piece::Rook>(variant::Type variant, unsigned color)
 template <>
 inline
 void
-Board::addToHolding<piece::Queen>(variant::Type variant, unsigned color)
+Board::addToMyHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
-	if (variant == variant::Crazyhouse)
-		color = color ^ 1;
-
 // catch GCC bug:
 // "internal compiler error: in expand_expr_addr_expr_1, at expr.c:7597"
 #if __GNUC_PREREQ(4,5)
@@ -752,13 +737,116 @@ Board::addToHolding<piece::Queen>(variant::Type variant, unsigned color)
 template <>
 inline
 void
+Board::addToHolding<piece::Pawn>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+	addToMyHolding<piece::Pawn>(variant, color);
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Knight>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+	addToMyHolding<piece::Knight>(variant, color);
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Bishop>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+	addToMyHolding<piece::Bishop>(variant, color);
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Rook>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+	addToMyHolding<piece::Rook>(variant, color);
+}
+
+
+template <>
+inline
+void
+Board::addToHolding<piece::Queen>(variant::Type variant, unsigned color)
+{
+	if (variant == variant::Crazyhouse)
+		color = color ^ 1;
+	addToMyHolding<piece::Queen>(variant, color);
+}
+
+
+template <>
+inline
+void
+Board::removeFromMyHolding<piece::Pawn>(variant::Type variant, unsigned color)
+{
+	M_ASSERT(m_holding[color].pawn > 0);
+	hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+}
+
+
+template <>
+inline
+void
+Board::removeFromMyHolding<piece::Knight>(variant::Type variant, unsigned color)
+{
+	M_ASSERT(m_holding[color].knight > 0);
+	hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+}
+
+
+template <>
+inline
+void
+Board::removeFromMyHolding<piece::Bishop>(variant::Type variant, unsigned color)
+{
+	M_ASSERT(m_holding[color].bishop > 0);
+	hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+}
+
+
+template <>
+inline
+void
+Board::removeFromMyHolding<piece::Rook>(variant::Type variant, unsigned color)
+{
+	M_ASSERT(m_holding[color].rook > 0);
+	hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+}
+
+
+template <>
+inline
+void
+Board::removeFromMyHolding<piece::Queen>(variant::Type variant, unsigned color)
+{
+	M_ASSERT(m_holding[color].queen > 0);
+	hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+}
+
+
+template <>
+inline
+void
 Board::removeFromHolding<piece::Pawn>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
 		color = color ^ 1;
-
-	M_ASSERT(m_holding[color].pawn > 0);
-	hashHoldingRemove(::toPiece(piece::Pawn, color), --m_holding[color].pawn);
+	removeFromMyHolding<piece::Pawn>(variant, color);
 }
 
 
@@ -769,9 +857,7 @@ Board::removeFromHolding<piece::Knight>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
 		color = color ^ 1;
-
-	M_ASSERT(m_holding[color].knight > 0);
-	hashHoldingRemove(::toPiece(piece::Knight, color), --m_holding[color].knight);
+	removeFromMyHolding<piece::Knight>(variant, color);
 }
 
 
@@ -782,9 +868,7 @@ Board::removeFromHolding<piece::Bishop>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
 		color = color ^ 1;
-
-	M_ASSERT(m_holding[color].bishop > 0);
-	hashHoldingRemove(::toPiece(piece::Bishop, color), --m_holding[color].bishop);
+	removeFromMyHolding<piece::Bishop>(variant, color);
 }
 
 
@@ -795,9 +879,7 @@ Board::removeFromHolding<piece::Rook>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
 		color = color ^ 1;
-
-	M_ASSERT(m_holding[color].rook > 0);
-	hashHoldingRemove(::toPiece(piece::Rook, color), --m_holding[color].rook);
+	removeFromMyHolding<piece::Rook>(variant, color);
 }
 
 
@@ -808,9 +890,7 @@ Board::removeFromHolding<piece::Queen>(variant::Type variant, unsigned color)
 {
 	if (variant == variant::Crazyhouse)
 		color = color ^ 1;
-
-	M_ASSERT(m_holding[color].queen > 0);
-	hashHoldingRemove(::toPiece(piece::Queen, color), --m_holding[color].queen);
+	removeFromMyHolding<piece::Queen>(variant, color);
 }
 
 
@@ -3035,6 +3115,9 @@ Board::setup(char const* fen, variant::Type variant)
 		}
 	}
 
+	m_kingHasMoved[White] = ((m_castle & (WhiteQS | WhiteKS)) ? 0 : 1);
+	m_kingHasMoved[Black] = ((m_castle & (BlackQS | BlackKS)) ? 0 : 1);
+
 	while (*p == ' ')
 		++p;
 
@@ -3291,7 +3374,7 @@ Board::isShuffleChessPosition(variant::Type variant) const
 
 	if (variant::isAntichessExceptLosers(variant))
 		return true;
-	
+
 	if (m_castle == NoRights)
 		return true;
 
@@ -5238,7 +5321,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						m_piece[to] = piece::Pawn;
 						incrMaterial<piece::Pawn>(m_stm);
 						hashPawn(to, ::toPiece(piece::Pawn, m_stm));
-						m_partner->removeFromHolding<piece::Pawn>(variant, sntm);
+						removeFromMyHolding<piece::Pawn>(variant, m_stm);
 						break;
 
 					case piece::Knight:
@@ -5246,7 +5329,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						m_piece[to] = piece::Knight;
 						incrMaterial<piece::Knight>(m_stm);
 						hashPiece(to, ::toPiece(piece::Knight, m_stm));
-						m_partner->removeFromHolding<piece::Knight>(variant, sntm);
+						removeFromMyHolding<piece::Knight>(variant, m_stm);
 						break;
 
 					case piece::Bishop:
@@ -5254,7 +5337,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						m_piece[to] = piece::Bishop;
 						incrMaterial<piece::Bishop>(m_stm);
 						hashPiece(to, ::toPiece(piece::Bishop, m_stm));
-						m_partner->removeFromHolding<piece::Bishop>(variant, sntm);
+						removeFromMyHolding<piece::Bishop>(variant, m_stm);
 						break;
 
 					case piece::Rook:
@@ -5262,8 +5345,8 @@ Board::doMove(Move const& m, variant::Type variant)
 						m_piece[to] = piece::Rook;
 						incrMaterial<piece::Rook>(m_stm);
 						hashPiece(to, ::toPiece(piece::Rook, m_stm));
-						m_partner->removeFromHolding<piece::Rook>(variant, sntm);
-						if (!m_kingHasMoved[m_stm])
+						removeFromMyHolding<piece::Rook>(variant, m_stm);
+						if (m_kingHasMoved[m_stm] == 0)
 						{
 							unsigned index = ::kingSideIndex(m_stm);
 							if (to == m_castleRookAtStart[index])
@@ -5290,7 +5373,7 @@ Board::doMove(Move const& m, variant::Type variant)
 						m_piece[to] = piece::Queen;
 						incrMaterial<piece::Queen>(m_stm);
 						hashPiece(to, ::toPiece(piece::Queen, m_stm));
-						m_partner->removeFromHolding<piece::Queen>(variant, sntm);
+						removeFromMyHolding<piece::Queen>(variant, m_stm);
 						break;
 				}
 
@@ -5331,7 +5414,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			decrMaterial<piece::Knight>(sntm);
 			hashPiece(to, ::toPiece(piece::Knight, sntm));
 			if (variant::isZhouse(variant))
-				addToHolding<piece::Knight>(toMask, variant, sntm);
+				m_partner->addToHolding<piece::Knight>(toMask, variant, sntm);
 			break;
 
 		case piece::Bishop:
@@ -5341,7 +5424,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			decrMaterial<piece::Bishop>(sntm);
 			hashPiece(to, ::toPiece(piece::Bishop, sntm));
 			if (variant::isZhouse(variant))
-				addToHolding<piece::Bishop>(toMask, variant, sntm);
+				m_partner->addToHolding<piece::Bishop>(toMask, variant, sntm);
 			break;
 
 		case piece::Rook:
@@ -5361,7 +5444,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			decrMaterial<piece::Rook>(sntm);
 			hashPiece(to, ::toPiece(piece::Rook, sntm));
 			if (variant::isZhouse(variant))
-				addToHolding<piece::Rook>(toMask, variant, sntm);
+				m_partner->addToHolding<piece::Rook>(toMask, variant, sntm);
 			break;
 
 		case piece::Queen:
@@ -5371,7 +5454,7 @@ Board::doMove(Move const& m, variant::Type variant)
 			decrMaterial<piece::Queen>(sntm);
 			hashPiece(to, ::toPiece(piece::Queen, sntm));
 			if (variant::isZhouse(variant))
-				addToHolding<piece::Queen>(toMask, variant, sntm);
+				m_partner->addToHolding<piece::Queen>(toMask, variant, sntm);
 			break;
 
 		case piece::King:
@@ -5584,26 +5667,8 @@ Board::undoMove(Move const& m, variant::Type variant)
 
 			m_piece[from] = piece::King;
 			m_occupied = m_occupiedBy[White] | m_occupiedBy[Black];
-
-			uint8_t castling = prevCastlingRights ^ m_castle;
-
-			while (castling)
-				hashCastling(Index(lsbClear(castling)));
-
-			m_castle = prevCastlingRights;
-			m_halfMoveClock = m.prevHalfMoves();
-			m_epSquareFen = m.prevEpSquare();
-
-			if (m.prevEpSquareExists())
-			{
-				m_epSquare = m_epSquareFen;
-				hashEnPassant();
-			}
-			else
-			{
-				m_epSquare = Null;
-			}
-
+			restoreCastlingRights(m.prevCastlingRights());
+			restoreStates(m);
 			swapToMove();
 			--m_plyNumber;
 			return;
@@ -5668,29 +5733,29 @@ Board::undoMove(Move const& m, variant::Type variant)
 					m_pawns ^= toMask;
 					decrMaterial<piece::Pawn>(sntm);
 					hashPawn(to, ::toPiece(piece::Pawn, sntm));
-					m_partner->addToHolding<piece::Pawn>(variant, m_stm);
+					addToMyHolding<piece::Pawn>(variant, sntm);
 					break;
 
 				case piece::Knight:
 					m_knights ^= toMask;
 					decrMaterial<piece::Knight>(sntm);
 					hashPiece(to, ::toPiece(piece::Knight, sntm));
-					m_partner->addToHolding<piece::Knight>(variant, m_stm);
+					addToMyHolding<piece::Knight>(variant, sntm);
 					break;
 
 				case piece::Bishop:
 					m_bishops ^= toMask;
 					decrMaterial<piece::Bishop>(sntm);
 					hashPiece(to, ::toPiece(piece::Bishop, sntm));
-					m_partner->addToHolding<piece::Bishop>(variant, m_stm);
+					addToMyHolding<piece::Bishop>(variant, sntm);
 					break;
 
 				case piece::Rook:
 					m_rooks ^= toMask;
 					decrMaterial<piece::Rook>(sntm);
 					hashPiece(to, ::toPiece(piece::Rook, sntm));
-					m_partner->addToHolding<piece::Rook>(variant, m_stm);
-					if (!m_kingHasMoved[sntm])
+					addToMyHolding<piece::Rook>(variant, sntm);
+					if (m_kingHasMoved[sntm] == 0)
 					{
 						unsigned index = ::kingSideIndex(sntm);
 						if (to == m_castleRookAtStart[index])
@@ -5716,7 +5781,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 					m_queens ^= toMask;
 					decrMaterial<piece::Queen>(sntm);
 					hashPiece(to, ::toPiece(piece::Queen, sntm));
-					m_partner->addToHolding<piece::Queen>(variant, m_stm);
+					addToMyHolding<piece::Queen>(variant, sntm);
 					break;
 			}
 
@@ -5761,7 +5826,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			incrMaterial<piece::Knight>(m_stm);
 			hashPiece(to, ::toPiece(piece::Knight, m_stm));
 			if (variant::isZhouse(variant))
-				removeFromHolding<piece::Knight>(toMask, variant, m_stm);
+				m_partner->removeFromHolding<piece::Knight>(toMask, variant, m_stm);
 			break;
 
 		case piece::Bishop:
@@ -5770,7 +5835,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			incrMaterial<piece::Bishop>(m_stm);
 			hashPiece(to, ::toPiece(piece::Bishop, m_stm));
 			if (variant::isZhouse(variant))
-				removeFromHolding<piece::Bishop>(toMask, variant, m_stm);
+				m_partner->removeFromHolding<piece::Bishop>(toMask, variant, m_stm);
 			break;
 
 		case piece::Rook:
@@ -5779,7 +5844,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			incrMaterial<piece::Rook>(m_stm);
 			hashPiece(to, ::toPiece(piece::Rook, m_stm));
 			if (variant::isZhouse(variant))
-				removeFromHolding<piece::Rook>(toMask, variant, m_stm);
+				m_partner->removeFromHolding<piece::Rook>(toMask, variant, m_stm);
 			break;
 
 		case piece::Queen:
@@ -5788,7 +5853,7 @@ Board::undoMove(Move const& m, variant::Type variant)
 			incrMaterial<piece::Queen>(m_stm);
 			hashPiece(to, ::toPiece(piece::Queen, m_stm));
 			if (variant::isZhouse(variant))
-				removeFromHolding<piece::Queen>(toMask, variant, m_stm);
+				m_partner->removeFromHolding<piece::Queen>(toMask, variant, m_stm);
 			break;
 
 		case piece::King:
@@ -6799,14 +6864,14 @@ Board::dump() const
 	{
 		for (unsigned f = 0; f < 8; ++f)
 		{
-			Square s = (r - 1)*8 + f;
-			::printf("%c", pieceAt(s) == piece::Empty ? '-' : piece::print(pieceAt(s)));
+			piece::ID piece = pieceAt((r - 1)*8 + f);
+			::printf("%c", piece == piece::Empty ? '-' : piece::print(piece));
 		}
 
 		::printf("\n");
 	}
 	::printf("\nHolding: ");
-	::printf("Q%u R%u B%u N%u P%u  q%u r%u b%u n%u p%u\n",
+	::printf("Q%u R%u B%u N%u P%u  q%u r%u b%u n%u p%u",
 				unsigned(m_holding[0].queen),
 				unsigned(m_holding[0].rook),
 				unsigned(m_holding[0].bishop),
@@ -6817,7 +6882,21 @@ Board::dump() const
 				unsigned(m_holding[1].bishop),
 				unsigned(m_holding[1].knight),
 				unsigned(m_holding[1].pawn));
-	::printf("---------------------------------------\n");
+	if (m_promoted[White] || m_promoted[Black])
+	{
+		::printf("\nPromoted:");
+		for (unsigned i = 0; i < 2; i++)
+		{
+			uint64_t promoted = m_promoted[i];
+			while (promoted)
+			{
+				Square sq = lsbClear(promoted);
+				piece::ID piece = pieceAt(sq);
+				::printf(" %c%s", piece::print(piece), sq::printAlgebraic(sq));
+			}
+		}
+	}
+	::printf("\n---------------------------------------\n");
 	::fflush(stdout);
 }
 

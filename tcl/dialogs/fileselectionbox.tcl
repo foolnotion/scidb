@@ -387,10 +387,12 @@ proc Open {type args} {
 			-renamecommand [namespace code RenameFile] \
 			-duplicatecommand [namespace code DuplicateFile] \
 			-inspectcommand [namespace code Inspect] \
+			-filetypecommand [namespace code GetFileType] \
 			-mapextcommand [namespace code MapExtension] \
 			-isusedcommand [namespace code IsUsed] \
 	} elseif {$knownFileType} {
 		lappend options -inspectcommand [namespace code Inspect]
+		lappend options -filetypecommand [namespace code GetFileType]
 	}
 
 	if {$create} {
@@ -669,6 +671,14 @@ proc MapExtension {extension} {
 		return $result
 	}
 	return ""
+}
+
+
+proc GetFileType {extension} {
+	variable FileType
+
+	if {![info exists FileType($extension)]} { return "" }
+	return [set mc::$FileType($extension)]
 }
 
 

@@ -376,6 +376,8 @@ copyURL(mstl::string const& src, mstl::string& dst)
 Http::Http()
 	:m_hideUserAgent(false)
 	,m_timeout(DefaultReadTimout)
+	,m_contentSize(-1)
+	,m_sock(0)
 {
 	setup();
 }
@@ -384,9 +386,17 @@ Http::Http()
 Http::Http(char const* host)
 	:m_hideUserAgent(false)
 	,m_timeout(DefaultReadTimout)
+	,m_contentSize(-1)
+	,m_sock(0)
 {
 	setup();
 	setHost(host);
+}
+
+
+Http::~Http()
+{
+	delete m_sock;
 }
 
 
@@ -414,17 +424,7 @@ Http::hideUserAgent(bool flag)
 
 
 int
-Http::get(char const* url, mstl::string& result)
-{
-	mstl::ostringstream stream;
-	int rc = get(url, stream);
-	result = stream.str();
-	return rc;
-}
-
-
-int
-Http::get(char const* url, mstl::ostream& stream)
+Http::open(char const* url)
 {
 	M_REQUIRE(url);
 	M_REQUIRE(!*url);
@@ -432,10 +432,11 @@ Http::get(char const* url, mstl::ostream& stream)
 
 	mstl::string	myurl;
 	mstl::string	header;
-	Socket			sock;
 	unsigned			redirectsFollowed = 0;
 
 	::copyURL(url, myurl);
+	delete m_sock;
+	m_sock = new Socket;
 
 	// This loop allows us to follow redirects if need be.
 	do
@@ -447,18 +448,18 @@ Http::get(char const* url, mstl::ostream& stream)
 
 		myurl.clear();
 
-		int rc = sock.connect(m_proxyServer.empty() ? m_host : m_proxyServer);
+		int rc = m_sock->connect(m_proxyServer.empty() ? m_host : m_proxyServer);
 
 		if (rc < 0)
 			return rc;
 
-		rc = sock.send(request, request.size());
+		rc = m_sock->send(request, request.size());
 
 		if (rc < int(request.size()))
 			return Write_Failed;
 
 		// Grab enough of the response to get the metadata.
-		rc = readLine(sock, header);
+		rc = readLine(header);
 
 		if (rc < 0)
 			return rc;
@@ -526,7 +527,7 @@ Http::get(char const* url, mstl::ostream& stream)
 	}
 	while (redirectsFollowed < DefaultRedirects);
 
-	int contentSize = -1;
+	m_contentSize = -1;
 
 	// Parse out about how big the data segment is.
 	//	Note that under current HTTP standards (1.1 and prior), the
@@ -534,7 +535,7 @@ Http::get(char const* url, mstl::ostream& stream)
 	// Note that some servers use different capitalization.
 	do
 	{
-		int rc = readLine(sock, header);
+		int rc = readLine(header);
 
 		if (rc < 0)
 			return rc;
@@ -542,25 +543,55 @@ Http::get(char const* url, mstl::ostream& stream)
 		for (char* p = header.data(); *p && *p != ':'; ++p)
 			*p = ::tolower(*p);
 
-		::sscanf(header, "content-length: %d", &contentSize);
+		::sscanf(header, "content-length: %d", &m_contentSize);
 	}
 	while (!header.empty());
 
-	if (contentSize < 0)
+	if (m_contentSize < 0)
 		return Invalid_Response;
 
+	return m_contentSize;
+}
+
+
+int
+Http::get(mstl::string& result)
+{
+	M_REQUIRE(isOpen());
+
+	if (m_contentSize < 0)
+		return Invalid_Response;
+
+	mstl::ostringstream stream;
+	int rc = get(stream);
+	result = stream.str();
+	return rc;
+}
+
+
+int
+Http::get(mstl::ostream& stream)
+{
+	M_REQUIRE(isOpen());
+
+	if (m_contentSize < 0)
+		return Invalid_Response;
+
+	M_ASSERT(m_sock);
+
 	int bytesRead = 0;
+	int contentSize = m_contentSize;
 
 	while (contentSize > 0)
 	{
-		int rc = sock.waitForInput(m_timeout);
+		int rc = m_sock->waitForInput(m_timeout);
 
 		if (rc < 0)
 			return rc;
 
 		char buffer[500];
 
-		rc = sock.recv(mstl::min(sizeof(buffer), size_t(contentSize)), buffer);
+		rc = m_sock->recv(mstl::min(sizeof(buffer), size_t(contentSize)), buffer);
 
 		if (rc <= 0)
 			return rc == 0 ? bytesRead : rc;
@@ -574,21 +605,41 @@ Http::get(char const* url, mstl::ostream& stream)
 }
 
 
+int
+Http::get(char const* url, mstl::string& result)
+{
+	if (int rc = open(url) <= 0)
+		return rc;
+	return get(result);
+}
+
+
+int
+Http::get(char const* url, mstl::ostream& stream)
+{
+	if (int rc = open(url) <= 0)
+		return rc;
+	return get(stream);
+}
+
+
 // Reads the metadata of an HTTP response.
 int
-Http::readLine(Socket& sock, mstl::string& result)
+Http::readLine(mstl::string& result)
 {
+	M_ASSERT(m_sock);
+
 	result.clear();
 
 	while (result.size() < 1024)
 	{
-		int	rc = sock.waitForInput(m_timeout);
+		int	rc = m_sock->waitForInput(m_timeout);
 		char	c;
 
 		if (rc < 0)
 			return rc;
 
-		rc = sock.recv(1, &c);
+		rc = m_sock->recv(1, &c);
 
 		if (rc < 0)
 			return rc;
