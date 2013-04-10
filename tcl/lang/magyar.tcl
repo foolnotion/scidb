@@ -411,7 +411,6 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen					"Fájl megnyitása"
 ::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
-::application::database::mc::FileOpenURL				"Open URL" ;# NEW
 ::application::database::mc::FileNew					"Új"
 ::application::database::mc::FileExport					"Exportálás"
 ::application::database::mc::FileImport(pgn)				"PGN fájlok importálás..."
@@ -455,8 +454,6 @@
 ::application::database::mc::ExtractArchive		"%s archívum kicsomagolása"
 ::application::database::mc::SelectVariant		"Select Variant" ;# NEW
 ::application::database::mc::Example			"Example" ;# NEW
-::application::database::mc::EnterURL			"Enter URL" ;# NEW
-::application::database::mc::Protocol			"Protocol" ;# NEW
 
 ::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames					"%s game(s) recoded"
@@ -611,6 +608,7 @@
 ::application::pgn::mc::StripOriginalComments			"Eredeti megjegyzések törlése"
 
 ::application::pgn::mc::LanguageSelection				"Nyelvek" ;# NEW change to "Language Selection"
+::application::pgn::mc::MoveInfoSelection				"Move Info Selection" ;# NEW
 ::application::pgn::mc::MoveNotation					"Lépésjegyzés"
 ::application::pgn::mc::CollapseVariations				"Változatok elrejtése"
 ::application::pgn::mc::ExpandVariations					"Változatok kibontása"
@@ -634,6 +632,12 @@
 ::application::pgn::mc::EditMarks							"Jelek szerkesztése (?Edit marks)"
 ::application::pgn::mc::Display								"Megjelenítés"
 ::application::pgn::mc::None									"none"
+
+::application::pgn::mc::MoveInfo(eval)					"Evaluation" ;# NEW
+::application::pgn::mc::MoveInfo(clk)					"Players Clock" ;# NEW
+::application::pgn::mc::MoveInfo(emt)					"Elapsed Time" ;# NEW
+::application::pgn::mc::MoveInfo(ccsnt)					"Correspondence Chess Sent" ;# NEW
+::application::pgn::mc::MoveInfo(video)					"Video Time" ;# NEW
 
 ### application::tree ##################################################
 ::application::tree::mc::Total							"Teljes"

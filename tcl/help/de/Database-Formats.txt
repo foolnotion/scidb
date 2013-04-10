@@ -26,13 +26,28 @@ TITLE Datenbankformate
 Scidb unterstützt folgende Formate:
 </p>
 
-<ul>
-  <li><a href="#Scidb">Scidb</a></li>
-  <li><a href="#Scid">Scid</a></li>
-  <li><a href="#ChessBase">ChessBase</a></li>
-  <li><a href="#PGN">PGN</a></li>
-  <li><a href="#Database-Archive">Datenbankarchiv</a></li>
-</ul>
+<dir>
+  <li>
+    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <a href="#Scidb">Scidb</a>
+  </li>
+  <li>
+    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <a href="#Scid">Scid</a>
+  </li>
+  <li>
+    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <a href="#ChessBase">ChessBase</a>
+  </li>
+  <li>
+    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <a href="#PGN">PGN</a>
+  </li>
+  <li>
+    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <a href="#Database-Archive">Datenbankarchiv</a>
+  </li>
+</dir>
 
 <h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
@@ -121,9 +136,7 @@ der volle Umfang von Scidb genutzt werden.
 </p>
 
 <annotation>
-Scid-Datenbanken werden im Lesemodus geöffnet, können dann aber schreibbar gesetzt
-werden. Beim erneuten Öffnen bleibt der zuletzt eingestellte Lese/Schreibmodus
-erhalten.
+Scid-Datenbanken werden nur im Lesemodus geöffnet.
 </annotation>
 
 <p>

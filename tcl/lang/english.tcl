@@ -409,7 +409,6 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Open Database"
 ::application::database::mc::FileOpenRecent					"Open Recent"
-::application::database::mc::FileOpenURL						"Open URL"
 ::application::database::mc::FileNew							"New Database"
 ::application::database::mc::FileExport						"Export"
 ::application::database::mc::FileImport(pgn)					"Import PGN files"
@@ -453,8 +452,6 @@
 ::application::database::mc::ExtractArchive					"Extract archive %s"
 ::application::database::mc::SelectVariant					"Select Variant"
 ::application::database::mc::Example							"Example"
-::application::database::mc::EnterURL							"Enter URL"
-::application::database::mc::Protocol							"Protocol"
 
 ::application::database::mc::RecodingDatabase				"Recoding %base from %from to %to"
 ::application::database::mc::RecodedGames						"%s game(s) recoded"
@@ -607,6 +604,7 @@
 ::application::pgn::mc::StripOriginalComments			"Strip original comments"
 
 ::application::pgn::mc::LanguageSelection					"Language Selection"
+::application::pgn::mc::MoveInfoSelection					"Move Info Selection"
 ::application::pgn::mc::MoveNotation						"Move Notation"
 ::application::pgn::mc::CollapseVariations				"Collapse Variations"
 ::application::pgn::mc::ExpandVariations					"Expand Variations"
@@ -630,6 +628,12 @@
 ::application::pgn::mc::EditMarks							"Edit marks"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"none"
+
+::application::pgn::mc::MoveInfo(eval)						"Evaluation"
+::application::pgn::mc::MoveInfo(clk)						"Players Clock"
+::application::pgn::mc::MoveInfo(emt)						"Elapsed Time"
+::application::pgn::mc::MoveInfo(ccsnt)					"Correspondence Chess Sent"
+::application::pgn::mc::MoveInfo(video)					"Video Time"
 
 ### application::tree ##################################################
 ::application::tree::mc::Total								"Total"

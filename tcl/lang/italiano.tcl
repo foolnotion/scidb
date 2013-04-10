@@ -410,7 +410,6 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Apri Database"
 ::application::database::mc::FileOpenRecent					"Apri Recente"
-::application::database::mc::FileOpenURL						"Open URL" ;# NEW
 ::application::database::mc::FileNew							"Nuovo Database"
 ::application::database::mc::FileExport						"Esporta"
 ::application::database::mc::FileImport(pgn)					"Importa file PGN"
@@ -454,8 +453,6 @@
 ::application::database::mc::ExtractArchive					"Estrai l'archivio %s"
 ::application::database::mc::SelectVariant					"Selezione Variante"
 ::application::database::mc::Example							"Esempio"
-::application::database::mc::EnterURL							"Enter URL" ;# NEW
-::application::database::mc::Protocol							"Protocol" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"
@@ -610,6 +607,7 @@
 ::application::pgn::mc::StripOriginalComments			"Rimuovi commenti originali"
 
 ::application::pgn::mc::LanguageSelection					"Selezione Lingue"
+::application::pgn::mc::MoveInfoSelection					"Move Info Selection" ;# NEW
 ::application::pgn::mc::MoveNotation						"Muovi Notazione"
 ::application::pgn::mc::CollapseVariations				"Comprimi Varianti"
 ::application::pgn::mc::ExpandVariations					"Espandi Varianti"
@@ -633,6 +631,12 @@
 ::application::pgn::mc::EditMarks							"Modifica codici"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"nessuno"
+
+::application::pgn::mc::MoveInfo(eval)						"Evaluation" ;# NEW
+::application::pgn::mc::MoveInfo(clk)						"Players Clock" ;# NEW
+::application::pgn::mc::MoveInfo(emt)						"Elapsed Time" ;# NEW
+::application::pgn::mc::MoveInfo(ccsnt)					"Correspondence Chess Sent" ;# NEW
+::application::pgn::mc::MoveInfo(video)					"Video Time" ;# NEW
 
 ### application::tree ##################################################
 ::application::tree::mc::Total								"Totale"

@@ -628,6 +628,23 @@ MoveNode::countMoveInfo() const
 
 
 unsigned
+MoveNode::countMoveInfo(unsigned moveInfoTypes) const
+{
+	unsigned result = 0;
+
+	for (MoveNode const* n = this; n; n = n->m_next)
+	{
+		result += n->m_moveInfo->count(moveInfoTypes);
+
+		for (unsigned i = 0; i < n->m_variations.size(); ++i)
+			result += n->m_variations[i]->countMoveInfo(moveInfoTypes);
+	}
+
+	return result;
+}
+
+
+unsigned
 MoveNode::countMarks() const
 {
 	unsigned result = 0;

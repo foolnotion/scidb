@@ -410,7 +410,6 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Datenbank öffnen"
 ::application::database::mc::FileOpenRecent					"Öffne zuvorige"
-::application::database::mc::FileOpenURL						"Öffne URL"
 ::application::database::mc::FileNew							"Neue Datenbank anlegen"
 ::application::database::mc::FileExport						"Export"
 ::application::database::mc::FileImport(pgn)					"PGN-Dateien importieren"
@@ -454,8 +453,6 @@
 ::application::database::mc::ExtractArchive					"Archiv %s extrahieren"
 ::application::database::mc::SelectVariant					"Schachform wählen"
 ::application::database::mc::Example							"Beispiel"
-::application::database::mc::EnterURL							"URL eingeben"
-::application::database::mc::Protocol							"Protokoll"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"
@@ -609,6 +606,7 @@
 ::application::pgn::mc::StripOriginalComments			"Ursprungskommentare entfernen"
 
 ::application::pgn::mc::LanguageSelection					"Sprachauswahl"
+::application::pgn::mc::MoveInfoSelection					"Zuginformationsauswahl"
 ::application::pgn::mc::MoveNotation						"Zugnotation"
 ::application::pgn::mc::CollapseVariations				"Alle Varianten zusammenfalten"
 ::application::pgn::mc::ExpandVariations					"Alle Varianten auffalten"
@@ -632,6 +630,12 @@
 ::application::pgn::mc::EditMarks							"Markierungen bearbeiten"
 ::application::pgn::mc::Display								"Anzeige"
 ::application::pgn::mc::None									"keine"
+
+::application::pgn::mc::MoveInfo(eval)						"Einschätzung"
+::application::pgn::mc::MoveInfo(clk)						"Spieleruhr"
+::application::pgn::mc::MoveInfo(emt)						"Verbrauchte Zeit"
+::application::pgn::mc::MoveInfo(ccsnt)					"Korrespondenzschach gesendet"
+::application::pgn::mc::MoveInfo(video)					"Videozeitgeber"
 
 ### application::tree ##################################################
 ::application::tree::mc::Total								"Summe"
@@ -2345,10 +2349,10 @@
 ::fsbox::mc::SourceDirectoryIs			"Das Quellverzeichnis ist '%s'."
 ::fsbox::mc::NewName							"Neuer Name"
 
-::fsbox::mc::ReallyMove(file,w)			"Soll tatsächlich die Datei '%s' in den Papierkorb verschoben werden?"
-::fsbox::mc::ReallyMove(file,r)			"Soll tatsächlich die schreibgeschützte Datei '%s' in den Papierkorb verschoben werden?"
-::fsbox::mc::ReallyMove(folder,w)		"Soll tatsächlich der Ordner '%s' in den Papierkorb verschoben werden?"
-::fsbox::mc::ReallyMove(folder,r)		"Soll tatsächlich der schreibgeschützte Ordner '%s' in den Papierkorb verschoben werden?"
+::fsbox::mc::ReallyMove(file,w)			"Soll tatsächlich die Datei '%s' in den Müllkorb verschoben werden?"
+::fsbox::mc::ReallyMove(file,r)			"Soll tatsächlich die schreibgeschützte Datei '%s' in den Müllkorb verschoben werden?"
+::fsbox::mc::ReallyMove(folder,w)		"Soll tatsächlich der Ordner '%s' in den Müllkorb verschoben werden?"
+::fsbox::mc::ReallyMove(folder,r)		"Soll tatsächlich der schreibgeschützte Ordner '%s' in den Müllkorb verschoben werden?"
 ::fsbox::mc::ReallyDelete(file,w)		"Soll tatsächlich die Datei '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::ReallyDelete(file,r)		"Soll tatsächlich die schreibgeschützte Datei '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::ReallyDelete(link,w)		"Soll tatsächlich der Link zu '%s' gelöscht werden?"

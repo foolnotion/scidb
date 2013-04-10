@@ -186,7 +186,8 @@ public:
 									unsigned linebreakMaxLineLength,
 									unsigned linebreakMaxLineLengthVar,
 									unsigned linebreakMinCommentLength,
-									unsigned displayStyle);
+									unsigned displayStyle,
+									unsigned moveInfoTypes);
 
 	Node* newAction(Action::Command command) const;
 	Node* newAction(Action::Command command, unsigned level) const;

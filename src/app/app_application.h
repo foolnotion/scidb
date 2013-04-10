@@ -265,6 +265,7 @@ public:
 						unsigned linebreakMaxLineLengthVar,
 						unsigned linebreakMinCommentLength,
 						unsigned displayStyle,
+						unsigned moveInfoTypes,
 						db::move::Notation moveStyle);
 	void setupGameUndo(unsigned undoLevel, unsigned combinePredecessingMoves);
 	db::load::State importGame(db::Producer& producer, unsigned position, bool trialMode = false);

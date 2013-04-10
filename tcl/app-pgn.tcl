@@ -58,6 +58,7 @@ set Command(game:merge)				"Merge"
 set Command(game:transpose)		"Transpose Game"
 
 set LanguageSelection				"Language Selection"
+set MoveInfoSelection				"Move Info Selection"
 set MoveNotation						"Move Notation"
 set CollapseVariations				"Collapse Variations"
 set ExpandVariations					"Expand Variations"
@@ -90,11 +91,25 @@ set EditTrailingComment				"Edit trailing comment"
 set Display								"Display"
 set None									"none"
 
+set MoveInfo(eval)					"Evaluation"
+set MoveInfo(clk)						"Players Clock"
+set MoveInfo(emt)						"Elapsed Time"
+set MoveInfo(ccsnt)					"Correspondence Chess Sent"
+set MoveInfo(video)					"Video Time"
+
 } ;# namespace mc
 
 variable Vars
 variable CharLimit 250
 variable Counter 0
+
+array set MoveInfoPGN {
+	eval	"%eval"
+	clk	"%clk, %ct"
+	emt	"%emt, %egt"
+	ccsnt	"%ccsnt"
+	video	"%video"
+}
 
 
 proc build {parent width height} {
@@ -1947,10 +1962,22 @@ proc ResetGame {position tags} {
 }
 
 
+proc HasMoveInfo {} {
+	variable ::pgn::setup::ShowMoveInfo
+
+	set showMoveInfo {}
+	foreach {type use} [array get ShowMoveInfo] {
+		if {$use} { lappend showMoveInfo $type }
+	}
+
+	return [::scidb::game::query moveInfo? $showMoveInfo]
+}
+
+
 proc UpdateButtons {} {
 	variable Vars
 
-	if {[::scidb::game::query moveInfo?]} {
+	if {[HasMoveInfo]} {
 		::toolbar::add $Vars(button:show:moveinfo)
 	} else {
 		::toolbar::remove $Vars(button:show:moveinfo)
@@ -1973,6 +2000,7 @@ proc PopupMenu {parent position} {
 	variable ::annotation::LastNag
 	variable ::scidb::scratchbaseName
 	variable ::notation::moveStyles
+	variable MoveInfoPGN
 	variable Vars
 
 	set menu $parent.__menu__
@@ -2434,6 +2462,16 @@ proc PopupMenu {parent position} {
 		}
 	}
 
+	menu $menu.display.moveinfo -tearoff no
+	$menu.display add cascade -menu $menu.display.moveinfo -label $mc::MoveInfoSelection
+	foreach type {eval clk emt ccsnt video} {
+		$menu.display.moveinfo add checkbutton \
+			-label "$mc::MoveInfo($type) ($MoveInfoPGN($type))" \
+			-variable ::pgn::setup::ShowMoveInfo($type) \
+			-command [namespace code [list Refresh moveinfo:$type]] \
+			;
+	}
+
 	$menu.display add separator
 	
 	$menu.display add command \
@@ -2780,7 +2818,7 @@ proc VerifyNumberOfMoves {dlg length} {
 proc Refresh {var} {
 	variable Vars
 
-	switch $var {
+	switch -glob $var {
 		weight:mainline {
 			variable _BoldTextForMainlineMoves
 			variable ::pgn::editor::Options
@@ -2788,6 +2826,12 @@ proc Refresh {var} {
 		}
 		show:nagtext {
 			::pgn::setup::setupNags editor
+		}
+		moveinfo:* {
+			variable ::pgn::setup::ShowMoveInfo
+			variable ::pgn::editor::Options
+			set type [lindex [split $var :] 1]
+			if {$ShowMoveInfo($type) && [HasMoveInfo]} { set Options(show:moveinfo) 1 }
 		}
 	}
 

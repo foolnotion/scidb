@@ -2520,6 +2520,11 @@ db_move_info_set.o: ../mstl/m_pair.h
 db_move_info_set.o: ../mstl/m_pair.ipp
 db_move_info_set.o: ../mstl/m_map.ipp
 db_move_info_set.o: db_engine_list.ipp
+db_move_info_set.o: db_common.h
+db_move_info_set.o: ../mstl/m_bitfield.h
+db_move_info_set.o: ../mstl/m_bitfield.ipp
+db_move_info_set.o: ../mstl/m_bitfield128.h
+db_move_info_set.o: db_common.ipp
 db_move_info_set.o: ../mstl/m_algorithm.h
 db_move_info_set.o: ../mstl/m_algorithm.ipp
 db_move_list.o: db_move_list.h

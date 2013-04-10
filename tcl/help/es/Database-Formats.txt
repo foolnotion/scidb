@@ -26,13 +26,28 @@ Scidb supports following formats:
 </p>
 </NEW>
 
-<ul>
-  <li><a href="#Scidb">Scidb</a></li>
-  <li><a href="#Scid">Scid</a></li>
-  <li><a href="#ChessBase">ChessBase</a></li>
-  <li><a href="#PGN">PGN</a></li>
-  <li><a href="#Database-Archive">Archivo de base de datos</a></li>
-</ul>
+<dir>
+  <li>
+    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <a href="#Scidb">Scidb</a>
+  </li>
+  <li>
+    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <a href="#Scid">Scid</a>
+  </li>
+  <li>
+    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <a href="#ChessBase">ChessBase</a>
+  </li>
+  <li>
+    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <a href="#PGN">PGN</a>
+  </li>
+  <li>
+    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <a href="#Database-Archive">Archivo de base de datos</a>
+  </li>
+</dir>
 
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
@@ -122,9 +137,9 @@ adopción, pero con este formato usted no utilizará todas las capacidades de Sc
 </p>
 
 <annotation>
-Las bases de datos Scid sólo pueden abrirse en modo de sólo-lectura; el usuario podrá
-cambiar a un modo editable luego de abiertas. Al reabrir dicha base se mantendrá el modo
-utilizado al cerrarla por última vez.
+<NEW>
+Scid databases will be opened only in read-only mode.
+</NEW>
 </annotation>
 
 <p>

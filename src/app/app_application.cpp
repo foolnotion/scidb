@@ -2434,6 +2434,7 @@ Application::setupGame(	unsigned linebreakThreshold,
 								unsigned linebreakMaxLineLengthVar,
 								unsigned linebreakMinCommentLength,
 								unsigned displayStyle,
+								unsigned moveInfoTypes,
 								move::Notation moveStyle)
 {
 	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
@@ -2447,6 +2448,7 @@ Application::setupGame(	unsigned linebreakThreshold,
 										linebreakMaxLineLengthVar,
 										linebreakMinCommentLength,
 										displayStyle,
+										moveInfoTypes,
 										moveStyle);
 
 		i->second->refresh = 1;

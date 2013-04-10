@@ -1156,10 +1156,9 @@ Engine::startAnalysis(Game* game)
 		return true;
 	}
 
-	bool isNew = m_game ? game->id() != m_gameId : true;
-
-	m_usedMultiPV = 0;
 	m_restart = false;
+
+	bool isNew = m_game ? game->id() != m_gameId : true;
 
 	if (isNew)
 	{
@@ -1199,6 +1198,7 @@ Engine::startAnalysis(Game* game)
 			return true;
 	}
 
+	m_usedMultiPV = 0;
 	m_gameId = game->id();
 
 	if (m_engine->isReady())

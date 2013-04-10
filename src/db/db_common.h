@@ -998,6 +998,19 @@ namespace protocol
 	enum ID { Scidb, Standard, UCI };
 }
 
+namespace moveinfo {
+
+	enum ID
+	{
+		Evaluation	= 1 << 0,
+		Clock			= 1 << 1,
+		ElapsedTime	= 1 << 2,
+		CorrSent		= 1 << 3,
+		Video			= 1 << 4,
+	};
+
+}
+
 namespace nag
 {
 	enum ID

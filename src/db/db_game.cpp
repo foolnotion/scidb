@@ -653,6 +653,7 @@ Game::Game()
 	,m_linebreakMaxLineLengthVar(0)
 	,m_linebreakMinCommentLength(0)
 	,m_displayStyle(display::CompactStyle)
+	,m_moveInfoTypes(unsigned(-1))
 	,m_moveStyle(move::ShortAlgebraic)
 #ifdef DB_DEBUG_GAME
 	,m_backupNode(0)
@@ -704,6 +705,7 @@ Game::operator=(Game const& game)
 		m_currentNode						= m_startNode;
 		m_editNode							= 0;
 		m_currentKey						= edit::Key(game.m_startBoard.plyNumber());
+		m_previousKey						= edit::Key();
 		m_variant							= game.m_variant;
 		m_tags								= game.m_tags;
 		m_idn									= game.m_idn;
@@ -728,6 +730,7 @@ Game::operator=(Game const& game)
 		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
 		m_linebreakMinCommentLength	= game.m_linebreakMinCommentLength;
 		m_displayStyle						= game.m_displayStyle;
+		m_moveInfoTypes					= game.m_moveInfoTypes;
 		m_moveStyle							= game.m_moveStyle;
 
 #ifdef DB_DEBUG_GAME
@@ -1826,10 +1829,11 @@ Game::exitToMainline()
 void
 Game::goToCurrentMove() const
 {
-	if (m_subscriber)
+	if (m_subscriber && m_previousKey != m_currentKey)
 	{
 		m_subscriber->boardSetup(m_currentBoard);
 		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
+		m_previousKey = m_currentKey;
 	}
 }
 
@@ -1845,6 +1849,7 @@ Game::goToCurrentMove(bool forward) const
 
 		m_subscriber->boardMove(m_currentBoard, move, forward);
 		m_subscriber->gotoMove(m_currentKey.id(), successorKey());
+		m_previousKey = m_currentKey;
 	}
 }
 
@@ -2002,6 +2007,13 @@ unsigned
 Game::countMoveInfo() const
 {
 	return m_startNode->countMoveInfo();
+}
+
+
+unsigned
+Game::countMoveInfo(unsigned moveInfoTypes) const
+{
+	return m_startNode->countMoveInfo(moveInfoTypes);
 }
 
 
@@ -3336,6 +3348,7 @@ Game::resetForNextLoad()
 	m_startNode->setNext(new MoveNode);
 	m_editNode = 0;
 	m_currentKey.clear();
+	m_previousKey.clear();
 	m_undoList.clear();
 	m_languageSet.clear();
 	m_undoIndex = 0;
@@ -4083,7 +4096,8 @@ Game::updateSubscriber(unsigned action)
 															m_linebreakMaxLineLengthMain,
 															m_linebreakMaxLineLengthVar,
 															m_linebreakMinCommentLength,
-															m_displayStyle));
+															m_displayStyle,
+															m_moveInfoTypes));
 
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
@@ -4137,6 +4151,7 @@ Game::setup(unsigned linebreakThreshold,
 				unsigned linebreakMaxLineLengthVar,
 				unsigned linebreakMinCommentLength,
 				unsigned displayStyle,
+				unsigned moveInfoTypes,
 				move::Notation moveStyle)
 {
 	M_REQUIRE(displayStyle & (display::CompactStyle | display::ColumnStyle));
@@ -4148,6 +4163,7 @@ Game::setup(unsigned linebreakThreshold,
 	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
 	m_linebreakMinCommentLength	= linebreakMinCommentLength;
 	m_displayStyle						= displayStyle;
+	m_moveInfoTypes					= moveInfoTypes;
 	m_moveStyle							= moveStyle;
 }
 

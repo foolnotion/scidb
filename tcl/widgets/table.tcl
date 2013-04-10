@@ -364,9 +364,8 @@ proc addcol {table id args} {
 		set maxwidth [expr {max($minwidth, $maxwidth)}]
 	}
 	if {$opts(-stretch)} { lassign {{} 1} width weight } else { set weight 0 }
-	if {$opts(-lastwidth)} {
-		set width $opts(-lastwidth)
-	}
+	if {[llength $opts(-lastwidth)] == 0} { set opts(-lastwidth) 0 }
+	if {$opts(-lastwidth) > 0} { set width $opts(-lastwidth) }
 	set stripes $opts(-stripes)
 	if {[llength $stripes] == 0} { set stripes $Options(-stripes) }
 	if {[llength $stripes]} {
@@ -744,7 +743,6 @@ proc used {table id} {
 
 proc clear {table {first -1} {last -1}} {
 	variable ${table}::Vars
-	variable ${table}::Options
 
 	if {$first < 0} {
 		set first 0
@@ -854,7 +852,6 @@ proc scroll {table dir} {
 
 proc select {table row} {
 	variable ${table}::Vars
-	variable ${table}::Options
 
 	if {$row eq "none"} { set row -1 }
 	if {$row == $Vars(selection)} { return }
@@ -943,7 +940,6 @@ proc SbSet {sb first last} {
 
 proc Configure {table w h} {
 	variable ${table}::Vars
-	variable ${table}::Options
 
 	if {$w <= 1} { return }
 
@@ -1066,7 +1062,6 @@ proc MoveColumn {table column before} {
 
 
 proc Activate {table row force send} {
-	variable ${table}::Options
 	variable ${table}::Vars
 
 	if {$Vars(keep)} { return }
@@ -1111,7 +1106,6 @@ proc FocusOut {table} {
 
 proc Highlight {table x y} {
 	variable ${table}::Vars
-	variable ${table}::Options
 
 	focus $table
 	::tooltip::hide
@@ -1749,8 +1743,6 @@ proc OpenConfigureDialog {table id header} {
 
 
 proc ConfigureDialog {table id dlg} {
-	variable ${table}::Options
-
 	set col $dlg.f.col
 	set tbl $dlg.f.tbl
 

@@ -236,7 +236,7 @@ public:
 	/// Return whether the game contains variations.
 	bool hasVariations() const;
 	/// Return whether the game contains move information.
-	bool hasMoveInfo() const;
+	bool hasMoveInfo(unsigned moveInfoTypes = unsigned(-1)) const;
 	/// Return whether the game contains illegal moves (except illegal castlings).
 	bool containsIllegalMoves() const;
 	/// Return whether the game contains illegal castlings.
@@ -324,6 +324,8 @@ public:
 	unsigned countAnnotations() const override;
 	/// Counts the number of move information
 	unsigned countMoveInfo() const override;
+	/// Counts the number of move information for specified types
+	unsigned countMoveInfo(unsigned moveInfoTypes) const;
 	/// Counts the number of marks
 	unsigned countMarks() const override;
 	/// Counts the number of comments
@@ -567,6 +569,7 @@ public:
 					unsigned linebreakMaxLineLengthVar,
 					unsigned linebreakMinCommentLength,
 					unsigned displayStyle,
+					unsigned moveInfoTypes,
 					move::Notation moveStyle);
 
 	Board const& getFinalBoard() const override;
@@ -677,36 +680,38 @@ private:
 
 	mutable SubscriberP m_subscriber;
 
-	unsigned			m_id;
-	MoveNode*		m_currentNode;
-	edit::Root*		m_editNode;
-	Board				m_currentBoard;
-	mutable Board	m_finalBoard;
-	edit::Key		m_currentKey;
-	Eco				m_eco;
-	UndoList			m_undoList;
-	LanguageSet		m_languageSet;
-	LanguageSet		m_wantedLanguages;
-	unsigned			m_undoIndex;
-	unsigned			m_maxUndoLevel;
-	unsigned			m_combinePredecessingMoves;
-	Command			m_undoCommand;
-	Command			m_redoCommand;
-	Command			m_rollbackCommand;
-	uint32_t			m_flags;
-	bool				m_isIrreversible;
-	bool				m_isModified;
-	bool				m_wasModified;
-	mutable bool	m_threefoldRepetionDetected;
-	FinalState		m_termination;
-	uint16_t			m_lineBuf[opening::Max_Line_Length][2];
-	mutable Line	m_line;
-	unsigned			m_linebreakThreshold;
-	unsigned			m_linebreakMaxLineLengthMain;
-	unsigned			m_linebreakMaxLineLengthVar;
-	unsigned			m_linebreakMinCommentLength;
-	unsigned			m_displayStyle;
-	move::Notation	m_moveStyle;
+	unsigned				m_id;
+	MoveNode*			m_currentNode;
+	edit::Root*			m_editNode;
+	Board					m_currentBoard;
+	mutable Board		m_finalBoard;
+	edit::Key			m_currentKey;
+	mutable edit::Key	m_previousKey;
+	Eco					m_eco;
+	UndoList				m_undoList;
+	LanguageSet			m_languageSet;
+	LanguageSet			m_wantedLanguages;
+	unsigned				m_undoIndex;
+	unsigned				m_maxUndoLevel;
+	unsigned				m_combinePredecessingMoves;
+	Command				m_undoCommand;
+	Command				m_redoCommand;
+	Command				m_rollbackCommand;
+	uint32_t				m_flags;
+	bool					m_isIrreversible;
+	bool					m_isModified;
+	bool					m_wasModified;
+	mutable bool		m_threefoldRepetionDetected;
+	FinalState			m_termination;
+	uint16_t				m_lineBuf[opening::Max_Line_Length][2];
+	mutable Line		m_line;
+	unsigned				m_linebreakThreshold;
+	unsigned				m_linebreakMaxLineLengthMain;
+	unsigned				m_linebreakMaxLineLengthVar;
+	unsigned				m_linebreakMinCommentLength;
+	unsigned				m_displayStyle;
+	unsigned				m_moveInfoTypes;
+	move::Notation		m_moveStyle;
 
 #ifdef DB_DEBUG_GAME
 	MoveNode* m_backupNode;

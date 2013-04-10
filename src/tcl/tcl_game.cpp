@@ -196,6 +196,38 @@ stateToInt(load::State state)
 }
 
 
+static unsigned
+getMoveInfoTypes(char const* cmd, char const* subcmd, Tcl_Obj* moveInfo, unsigned& moveInfoTypes)
+{
+	int nentries;
+	Tcl_Obj** objs;
+	if (Tcl_ListObjGetElements(nullptr, moveInfo, &nentries, &objs) != TCL_OK)
+		return error(cmd, subcmd, nullptr, "list of move info types expected");
+
+	moveInfoTypes = 0;
+
+	for (int i = 0; i < nentries; ++i)
+	{
+		char const* type = Tcl_GetString(objs[i]);
+
+		if (::strcmp(type, "eval") == 0)
+			moveInfoTypes |= moveinfo::Evaluation;
+		else if (::strcmp(type, "clk") == 0)
+			moveInfoTypes |= moveinfo::Clock;
+		else if (::strcmp(type, "emt") == 0)
+			moveInfoTypes |= moveinfo::ElapsedTime;
+		else if (::strcmp(type, "ccsnt") == 0)
+			moveInfoTypes |= moveinfo::CorrSent;
+		else if (::strcmp(type, "video") == 0)
+			moveInfoTypes |= moveinfo::Video;
+		else
+			return error(cmd, subcmd, nullptr, "unknown move info type '%s'", type);
+	}
+
+	return TCL_OK;
+}
+
+
 ::db::variant::Type
 tcl::game::variantFromObj(Tcl_Obj* obj)
 {
@@ -2312,7 +2344,20 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							break;
 
 						case 'v':	// moveInfo?
-							setResult(Scidb->game(pos).hasMoveInfo());
+							if (nextArg < objc)
+							{
+								Tcl_Obj* moveInfo = objectFromObj(objc, objv, nextArg);
+								unsigned moveInfoTypes;
+
+								if (getMoveInfoTypes(::CmdQuery, "moveInfo?", moveInfo, moveInfoTypes) != TCL_OK)
+									return TCL_ERROR;
+
+								setResult(Scidb->game(pos).hasMoveInfo(moveInfoTypes));
+							}
+							else
+							{
+								setResult(Scidb->game(pos).hasMoveInfo());
+							}
 							break;
 					}
 					break;
@@ -2612,9 +2657,13 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const*	moveStyle						= stringFromObj(objc, objv, 7);
 	bool			paragraphSpacing				= boolFromObj(objc, objv, 8);
 	bool			showDiagram						= boolFromObj(objc, objv, 9);
-	bool			showMoveInfo					= boolFromObj(objc, objv, 10);
+	Tcl_Obj*		showMoveInfo					= objectFromObj(objc, objv, 10);
 	bool			showVariationNumbers			= boolFromObj(objc, objv, 11);
 	unsigned		displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
+	unsigned		moveInfoTypes;
+
+	if (getMoveInfoTypes(::CmdSetupStyle, 0, showMoveInfo, moveInfoTypes) != TCL_OK)
+		return TCL_ERROR;
 
 	move::Notation moveForm;
 
@@ -2622,7 +2671,7 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		displayStyle |= display::ShowDiagrams;
 	if (paragraphSpacing)
 		displayStyle |= display::ParagraphSpacing;
-	if (showMoveInfo)
+	if (moveInfoTypes)
 		displayStyle |= display::ShowMoveInfo;
 	if (showVariationNumbers)
 		displayStyle |= display::ShowVariationNumbers;
@@ -2649,6 +2698,7 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												linebreakMaxLineLengthVar,
 												linebreakMinCommentLength,
 												displayStyle,
+												moveInfoTypes,
 												moveForm);
 	}
 	else
@@ -2658,6 +2708,7 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								linebreakMaxLineLengthVar,
 								linebreakMinCommentLength,
 								displayStyle,
+								moveInfoTypes,
 								moveForm);
 	}
 

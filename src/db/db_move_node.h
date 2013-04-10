@@ -128,6 +128,7 @@ public:
 	unsigned countNodes() const;
 	unsigned countAnnotations() const;
 	unsigned countMoveInfo() const;
+	unsigned countMoveInfo(unsigned moveInfoTypes) const;
 	unsigned countMarks() const;
 	unsigned countComments() const;
 	unsigned countComments(mstl::string const& lang) const;

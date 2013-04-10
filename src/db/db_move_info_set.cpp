@@ -26,6 +26,7 @@
 
 #include "db_move_info_set.h"
 #include "db_engine_list.h"
+#include "db_common.h"
 
 #include "m_algorithm.h"
 
@@ -175,6 +176,32 @@ MoveInfoSet::sort()
 {
 	::qsort(m_row.begin(), m_row.size(), sizeof(Row::value_type), ::compare);
 }
+
+
+unsigned
+MoveInfoSet::count(unsigned types) const
+{
+	unsigned n = 0;
+
+	for (unsigned i = 0; i < m_row.size(); ++i)
+	{
+		switch (m_row[i].content())
+		{
+			case MoveInfo::None:								break;
+			case MoveInfo::Evaluation:						if (types & moveinfo::Evaluation) ++n; break;
+			case MoveInfo::ClockTime:						// fallthru
+			case MoveInfo::PlayersClock:					if (types & moveinfo::Clock) ++n; break;
+			case MoveInfo::ElapsedMilliSeconds:			// fallthru
+			case MoveInfo::ElapsedGameTime:				// fallthru
+			case MoveInfo::ElapsedMoveTime:				if (types & moveinfo::ElapsedTime) ++n; break;
+			case MoveInfo::CorrespondenceChessSent:	if (types & moveinfo::CorrSent) ++n; break;
+			case MoveInfo::VideoTime:						if (types & moveinfo::Video) ++n; break;
+		}
+	}
+
+	return n;
+}
+
 
 
 // Extract move information from comments:
@@ -446,7 +473,10 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 
 
 void
-MoveInfoSet::print(EngineList const& engines, mstl::string& result, MoveInfo::Format format) const
+MoveInfoSet::print(	EngineList const& engines,
+							mstl::string& result,
+							MoveInfo::Format format,
+							unsigned types) const
 {
 	char const delim = format == MoveInfo::Text ? ';' : ' ';
 
@@ -454,10 +484,28 @@ MoveInfoSet::print(EngineList const& engines, mstl::string& result, MoveInfo::Fo
 	{
 		if (!m_row[i].isEmpty())
 		{
-			if (!result.empty() && !result.back() != delim)
-				result.append(delim);
+			bool print;
 
-			m_row[i].print(engines, result, format);
+			switch (m_row[i].content())
+			{
+				case MoveInfo::None:								print = false; break;
+				case MoveInfo::Evaluation:						print = bool(types & moveinfo::Evaluation); break;
+				case MoveInfo::ClockTime:						// fallthru
+				case MoveInfo::PlayersClock:					print = bool(types & moveinfo::Clock); break;
+				case MoveInfo::ElapsedMilliSeconds:			// fallthru
+				case MoveInfo::ElapsedGameTime:				// fallthru
+				case MoveInfo::ElapsedMoveTime:				print = bool(types & moveinfo::ElapsedTime); break;
+				case MoveInfo::CorrespondenceChessSent:	print = bool(types & moveinfo::CorrSent); break;
+				case MoveInfo::VideoTime:						print = bool(types & moveinfo::Video); break;
+			}
+
+			if (print)
+			{
+				if (!result.empty() && !result.back() != delim)
+					result.append(delim);
+
+				m_row[i].print(engines, result, format);
+			}
 		}
 	}
 }

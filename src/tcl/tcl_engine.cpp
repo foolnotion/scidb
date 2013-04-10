@@ -1094,6 +1094,8 @@ cmdCountLines(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (tcl::app::scidb->engineExists(id))
 		setResult(tcl::app::scidb->engine(id)->countLines());
+	else
+		setResult(0);
 
 	return TCL_OK;
 }

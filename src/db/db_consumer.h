@@ -177,7 +177,6 @@ protected:
 	variant::Type getVariant() const;
 	void setStartBoard(Board const& board);
 	void addMoveInfo(MoveInfo const& info);
-	unsigned mainlineLength() const;
 
 	MoveInfoSet	m_moveInfoSet;
 	EngineList	m_engines;

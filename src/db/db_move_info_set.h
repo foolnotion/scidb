@@ -52,6 +52,7 @@ public:
 	bool contains(MoveInfo const& info) const;
 
 	unsigned count() const;
+	unsigned count(unsigned moveInfoTypes) const;
 	int find(MoveInfo const& info) const;
 
 	::util::crc::checksum_t computeChecksum(EngineList const& engines, util::crc::checksum_t crc) const;
@@ -71,7 +72,8 @@ public:
 	bool extractFromComment(EngineList& engineList, mstl::string& comment);
 	void print(	EngineList const& engines,
 					mstl::string& result,
-					MoveInfo::Format format = MoveInfo::Pgn) const;
+					MoveInfo::Format format = MoveInfo::Pgn,
+					unsigned moveInfoTypes = unsigned(-1)) const;
 
 private:
 

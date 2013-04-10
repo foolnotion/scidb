@@ -127,6 +127,7 @@ Consumer::Consumer(	format::Type srcFormat,
 	,db::InfoConsumer(srcFormat, sys::utf8::Codec::utf8(), allowedTags, allowExtraTags)
 	,m_stream(m_buffer, sizeof(m_buffer))
 	,m_codecs(codecs)
+	,m_plyCount(0)
 	,m_endOfRun(false)
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
@@ -169,6 +170,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_danglingEndMarker = 1;
 	m_lastCommentPos = 0;
 	m_timeTable.clear();
+	m_plyCount = 0;
 
 	return true;
 }
@@ -332,6 +334,7 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
 }
 
 
+#include <stdio.h> // XXX
 bool
 Consumer::preparseComment(mstl::string& comment)
 {
@@ -364,9 +367,9 @@ Consumer::preparseComment(mstl::string& comment)
 
 	if (InfoConsumer::preparseComment(comment))
 	{
-		if (isMainline() && (!m_timeTable.isEmpty() || mainlineLength() == 0))
+		if (isMainline() && (!m_timeTable.isEmpty() || m_plyCount == 0))
 		{
-			m_timeTable.set(mainlineLength(), m_moveInfoSet);
+			m_timeTable.set(m_plyCount, m_moveInfoSet);
 			m_moveInfoSet.clear();
 		}
 	}
@@ -453,6 +456,9 @@ Consumer::sendMove(Move const& move)
 	if (!m_endOfRun)
 		++m_runLength;
 
+	if (isMainline())
+		++m_plyCount;
+
 	return true;
 }
 
@@ -481,6 +487,9 @@ Consumer::sendMove(	Move const& move,
 
 	if (!m_endOfRun)
 		++m_runLength;
+
+	if (isMainline())
+		++m_plyCount;
 
 	return true;
 }

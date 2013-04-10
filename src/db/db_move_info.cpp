@@ -413,7 +413,9 @@ MoveInfo::printClock(char const* id, mstl::string& result, Format format) const
 
 
 void
-MoveInfo::print(EngineList const& engines, mstl::string& result, Format format) const
+MoveInfo::print(	EngineList const& engines,
+						mstl::string& result,
+						Format format) const
 {
 	if (m_engine)
 	{
@@ -653,7 +655,7 @@ MoveInfo::encode(ByteStream& strm) const
 			);
 			strm << uint24_t
 			(
-				  (uint32_t(m_elapsed.m_seconds << 10) & 0x0003fff)	// 14 bits
+				  (uint32_t(m_elapsed.m_seconds & 0x0003fff) << 10)	// 14 bits
 				| (uint32_t(m_elapsed.m_milliSeconds))						// 10 bits
 			);
 			break;

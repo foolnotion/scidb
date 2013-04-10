@@ -43,7 +43,6 @@ inline bool Game::hasUndo() const						{ return m_undoIndex > 0; }
 inline bool Game::hasRedo() const						{ return m_undoIndex < m_undoList.size(); }
 inline bool Game::isModified() const					{ return m_isModified || m_undoIndex > 0; }
 inline bool Game::hasVariations() const				{ return countVariations() > 0; }
-inline bool Game::hasMoveInfo() const					{ return countMoveInfo() > 0; }
 
 inline unsigned Game::variationLevel() const			{ return m_currentKey.level(); }
 inline color::ID Game::sideToMove() const				{ return m_currentBoard.sideToMove(); }
@@ -56,6 +55,14 @@ inline void Game::setFlags(unsigned flags)			{ m_flags = flags; }
 inline Game::Subscriber* Game::subscriber() const	{ return m_subscriber.get(); }
 
 inline Game::LanguageSet const& Game::languageSet() const { return m_languageSet; }
+
+
+inline
+bool
+Game::hasMoveInfo(unsigned moveInfoTypes) const
+{
+	return countMoveInfo(moveInfoTypes) > 0;
+}
 
 
 inline

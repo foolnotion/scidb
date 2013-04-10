@@ -26,13 +26,28 @@ TITLE Database formats
 Scidb supports the following formats:
 </p>
 
-<ul>
-  <li><a href="#Scidb">Scidb</a></li>
-  <li><a href="#Scid">Scid</a></li>
-  <li><a href="#ChessBase">ChessBase</a></li>
-  <li><a href="#PGN">PGN</a></li>
-  <li><a href="#Database-Archive">Database archive</a></li>
-</ul>
+<dir>
+  <li>
+    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <a href="#Scidb">Scidb</a>
+  </li>
+  <li>
+    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <a href="#Scid">Scid</a>
+  </li>
+  <li>
+    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <a href="#ChessBase">ChessBase</a>
+  </li>
+  <li>
+    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <a href="#PGN">PGN</a>
+  </li>
+  <li>
+    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <a href="#Database-Archive">Database archive</a>
+  </li>
+</dir>
 
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
@@ -120,9 +135,7 @@ But with this format you cannot use the full capability of Scidb.
 </p>
 
 <annotation>
-Scid databases will be opened in read-only mode, the user may switch to
-writeable mode after opening. The last mode will be prerserved when
-re-opening the database.
+Scid databases will be opened only in read-only mode.
 </annotation>
 
 <p>

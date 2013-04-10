@@ -98,6 +98,14 @@ set Diagrams(indentation)		"Indent Width"
 
 }
 
+array set ShowMoveInfo {
+	eval	1
+	clk	1
+	emt	1
+	ccsnt	1
+	video	0
+}
+
 set StyleLayout {
 	{ 0 0 Appearance }
 		{ 1 0 Layout }
@@ -331,18 +339,25 @@ proc configureText {path {fontContext ""}} {
 
 proc setupStyle {context {position -1}} {
 	variable [namespace parent]::${context}::Options
+	variable ShowMoveInfo
 
 	if {$Options(style:column)} { set thresholds {0 0 0 0} } else { set thresholds {240 80 60 0} }
 
 	if {$context eq "editor"} {
 		set paragraphSpacing $Options(spacing:paragraph)
 		set diagramShow $Options(show:diagram)
-		set showMoveInfo $Options(show:moveinfo)
+		set showMoveInfo {}
 		set showVariationNumbers $Options(show:varnumbers)
+
+		if {$Options(show:moveinfo)} {
+			foreach {type show} [array get ShowMoveInfo] {
+				if {$show} { lappend showMoveInfo $type }
+			}
+		}
 	} else {
 		set paragraphSpacing no
 		set diagramShow no
-		set showMoveInfo no
+		set showMoveInfo {}
 		set showVariationNumbers no
 	}
 
@@ -1715,6 +1730,8 @@ proc WriteOptions {chan} {
 	if {[array names Timestamp] > 0} {
 		::options::writeItem $chan [namespace current]::Timestamp
 	}
+
+	::options::writeItem $chan [namespace current]::ShowMoveInfo
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

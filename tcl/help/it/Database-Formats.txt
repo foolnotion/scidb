@@ -26,13 +26,28 @@ TITLE Formati Database
 Scidb supporta i seguenti formati:
 </p>
 
-<ul>
-  <li><a href="#Scidb">Scidb</a></li>
-  <li><a href="#Scid">Scid</a></li>
-  <li><a href="#ChessBase">ChessBase</a></li>
-  <li><a href="#PGN">PGN</a></li>
-  <li><a href="#Database-Archive">Archivio Database</a></li>
-</ul>
+<dir>
+  <li>
+    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <a href="#Scidb">Scidb</a>
+  </li>
+  <li>
+    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <a href="#Scid">Scid</a>
+  </li>
+  <li>
+    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <a href="#ChessBase">ChessBase</a>
+  </li>
+  <li>
+    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <a href="#PGN">PGN</a>
+  </li>
+  <li>
+    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <a href="#Database-Archive">Archivio Database</a>
+  </li>
+</dir>
 
 <h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
@@ -115,8 +130,9 @@ Un database nel formato Scidb è diviso in diversi file:
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
 <annotation>
-I database Scid saranno aperti in modalità sola-lettura, l'utente può passare alla modalità
-in scrittura dopo l'apertura. L'ultima modalità di utilizzo sarà preservata alla prossima apertura.
+<NEW>
+Scid databases will be opened only in read-only mode.
+</NEW>
 </annotation>
 
 <p>

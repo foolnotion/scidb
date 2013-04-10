@@ -122,6 +122,7 @@ private:
 	Byte					m_buffer[Block_Size];
 	Codecs				m_codecs;
 	Move					m_move;
+	unsigned				m_plyCount;
 	bool					m_endOfRun;
 	bool					m_danglingPop;
 	unsigned				m_danglingEndMarker;

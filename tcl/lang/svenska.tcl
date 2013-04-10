@@ -410,7 +410,6 @@
 ### application::database ##############################################
 ::application::database::mc::FileOpen							"Öppna databas"
 ::application::database::mc::FileOpenRecent					"Öppna senaste"
-::application::database::mc::FileOpenURL						"Open URL" ;# NEW
 ::application::database::mc::FileNew							"Ny databas"
 ::application::database::mc::FileExport						"Exportera"
 ::application::database::mc::FileImport(pgn)					"Importera PGN fil"
@@ -454,8 +453,6 @@
 ::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 ::application::database::mc::Example							"Example" ;# NEW
-::application::database::mc::EnterURL							"Enter URL" ;# NEW
-::application::database::mc::Protocol							"Protocol" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
@@ -610,6 +607,7 @@
 ::application::pgn::mc::StripOriginalComments			"Rensa original kommentarer"
 
 ::application::pgn::mc::LanguageSelection					"Språkval" ;# NEW change to "Language Selection"
+::application::pgn::mc::MoveInfoSelection					"Move Info Selection" ;# NEW
 ::application::pgn::mc::MoveNotation						"Notation"
 ::application::pgn::mc::CollapseVariations				"Dölj varianter"
 ::application::pgn::mc::ExpandVariations					"Visa varianter"
@@ -633,6 +631,12 @@
 ::application::pgn::mc::EditMarks							"Redigera markeringar"
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"ingen"
+
+::application::pgn::mc::MoveInfo(eval)						"Evaluation" ;# NEW
+::application::pgn::mc::MoveInfo(clk)						"Players Clock" ;# NEW
+::application::pgn::mc::MoveInfo(emt)						"Elapsed Time" ;# NEW
+::application::pgn::mc::MoveInfo(ccsnt)					"Correspondence Chess Sent" ;# NEW
+::application::pgn::mc::MoveInfo(video)					"Video Time" ;# NEW
 
 ### application::tree ##################################################
 ::application::tree::mc::Total								"Total"
