@@ -203,7 +203,6 @@ setNonZeroValue(mstl::string& s, unsigned value)
 uci::Engine::Engine()
 	:m_state(None)
 	,m_variant(variant::Normal)
-	,m_needChess960(false)
 	,m_uciok(false)
 	,m_isReady(false)
 	,m_hasMultiPV(false)
@@ -270,7 +269,7 @@ uci::Engine::setupPosition(Board const& board)
 	}
 	else
 	{
-		db::Board::Format	fmt(m_needChess960 ? Board::Shredder : Board::XFen);
+		db::Board::Format	fmt(isChess960Position() ? Board::Shredder : Board::XFen);
 		mstl::string		fen(board.toFen(currentVariant(), fmt));
 
 		m_position.append("fen ", 4);
@@ -324,7 +323,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 		if (game->startBoard().plyNumber() != currentBoard().plyNumber())
 		{
 			m_position.append(" moves", 6);
-			game->dumpHistory(m_position, m_needChess960 ? protocol::Scidb : protocol::UCI);
+			game->dumpHistory(m_position, isChess960Position() ? protocol::Scidb : protocol::UCI);
 		}
 	}
 	else

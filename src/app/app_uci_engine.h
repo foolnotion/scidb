@@ -98,7 +98,6 @@ private:
 	mstl::string	m_value;
 	State				m_state;
 	Variant			m_variant;
-	bool				m_needChess960;
 	bool				m_uciok;
 	bool				m_isReady;
 	bool				m_hasMultiPV;
