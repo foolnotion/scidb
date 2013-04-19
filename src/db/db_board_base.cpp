@@ -62,6 +62,9 @@ uint64_t board::MaskPassedPawnConnected[64];
 uint64_t board::MaskPassedPawn[2][64];
 uint64_t board::MaskProtectedPawn[2][64];
 uint64_t board::MaskR45[64];
+uint64_t board::MaskVertical[64][64];
+uint64_t board::MaskDiagonal[64];
+uint64_t board::MaskOffDiagonal[64];
 uint64_t board::Minus1Dir[64];
 uint64_t board::Minus7Dir[64];
 uint64_t board::Minus8Dir[64];
@@ -666,6 +669,53 @@ board::base::initialize()
 	{
 		NextRank[White][i] = PrevRank[Black][i] = (i + 8) & 63;
 		NextRank[Black][i] = PrevRank[White][i] = (i - 8) & 63;
+	}
+
+	// Vertical mask (for ray attacks)
+	memset(MaskVertical, 0, sizeof(MaskVertical));
+
+	for (unsigned f = 0; f < 8; ++f)
+	{
+		for (unsigned r = 0; r < 8; ++r)
+		{
+			Square s = sq::make(f, r);
+			Square t = s;
+
+			uint64_t mask = 0;
+
+			for (unsigned r2 = r; r2 < 8; ++r2, t += 8)
+			{
+				mask |= setBit(t);
+				MaskVertical[s][t] = MaskVertical[t][s] |= mask;
+			}
+		}
+	}
+
+	// Diagonal masks (for ray attacks)
+	memset(MaskDiagonal, 0, sizeof(MaskDiagonal));
+	memset(MaskOffDiagonal, 0, sizeof(MaskOffDiagonal));
+
+	for (unsigned s = 0; s < 64; ++s)
+	{
+		uint64_t rmask = 0;
+		uint64_t lmask = 0;
+
+		int f = fyle(s);
+
+		for (int q = s; q < 64 && fyle(q) >= f; q += 9)
+		{
+			rmask |= setBit(q);
+			lmask |= setBit(flipFyle(sq::ID(q)));
+		}
+
+		for (int q = s; q >= 0 && fyle(q) <= f; q -= 9)
+		{
+			rmask |= setBit(q);
+			lmask |= setBit(flipFyle(sq::ID(q)));
+		}
+
+		MaskDiagonal[s] = rmask;
+		MaskOffDiagonal[flipFyle(sq::ID(s))] = lmask;
 	}
 }
 

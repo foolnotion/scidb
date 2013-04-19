@@ -1869,7 +1869,7 @@
 ::terminationbox::mc::Reason(Unplayed)					"Game is unplayed"
 ::terminationbox::mc::Reason(Abandoned)				"Game is abandoned"
 ::terminationbox::mc::Reason(Adjudication)			"Adjudication"
-::terminationbox::mc::Reason(Death)						""
+::terminationbox::mc::Reason(Disconnection)			"Disconnection"
 ::terminationbox::mc::Reason(Emergency)				"Abandoned due to an emergency"
 ::terminationbox::mc::Reason(RulesInfraction)		"Decided due to a rules infraction"
 ::terminationbox::mc::Reason(TimeForfeit)				"%s forfeits on time"

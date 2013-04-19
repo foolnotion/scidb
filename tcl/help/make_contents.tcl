@@ -92,13 +92,22 @@ puts "set Contents \{"
 puts "  \{"
 puts "     {{{$title} {$file}}}"
 
+set indent 4
+
 while {[gets $src line] >= 0} {
 	if {[regexp {<h[1-6] id=\"(.*)\">(.*)</h[1-6]>} $line _ href section]} {
 		puts "  \}"
 		puts "  \{"
 		puts "    {{{$section} {$file} {$href}}}"
+	} elseif {[regexp {<li><a href=\"(.*)\">(.*)</a>$} $line _ href title]} {
+		puts "[string repeat " " $indent]\{"
+		incr indent 2
+		puts "[string repeat " " $indent]{{{$title} {$href}}}"
+	} elseif {[regexp {^\s*</li>$} $line]} {
+		incr indent -2
+		puts "[string repeat " " $indent]\}"
 	} elseif {[regexp {<a href=\"(.*)\">(.*)</a>} $line _ href title]} {
-		puts "    {{{$title} {$href}}}"
+		puts "[string repeat " " $indent]{{{$title} {$href}}}"
 	}
 }
 

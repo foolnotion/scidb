@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "m_utility.h"
+#include "m_construct.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -130,6 +131,8 @@ inline
 void
 list<T>::iterator::advance(int n)
 {
+	M_ASSERT(m_node);
+
 	if (n < 0)
 	{
 		for ( ; n < 0; ++n)
@@ -318,6 +321,8 @@ inline
 void
 list<T>::const_iterator::advance(int n)
 {
+	M_ASSERT(m_node);
+
 	if (n < 0)
 	{
 		for ( ; n < 0; ++n)
@@ -494,6 +499,15 @@ list<T>::end() const
 
 template <typename T>
 inline
+bool
+list<T>::empty() const
+{
+	return m_size == 0;
+}
+
+
+template <typename T>
+inline
 typename list<T>::reference
 list<T>::front()
 {
@@ -530,40 +544,6 @@ list<T>::back() const
 	M_REQUIRE(!empty());
 	return static_cast<node const*>(m_node.m_prev)->m_data;
 }
-
-
-#if 0
-template <typename T>
-inline
-typename list<T>::reference
-list<T>::operator[](size_type n)
-{
-	M_REQUIRE(n < size());
-
-	node* curr = static_cast<node*>(m_node.m_next);
-
-	for ( ; n > 0; --n)
-		curr = static_cast<node*>(curr->m_next);
-
-	return curr->m_data;
-}
-
-
-template <typename T>
-inline
-typename list<T>::const_reference
-list<T>::operator[](size_type n) const
-{
-	M_REQUIRE(n < size());
-
-	node const* curr = static_cast<node const*>(m_node.m_next);
-
-	for ( ; n > 0; --n)
-		curr = static_cast<node const*>(curr->m_next);
-
-	return curr->m_data;
-}
-#endif
 
 
 template <typename T>
@@ -688,6 +668,9 @@ inline
 void
 list<T>::resize(size_type n, const_reference v)
 {
+	if (n == size())
+		return;
+
 	iterator		i		= begin();
 	size_type	len	= 0;
 
@@ -735,6 +718,7 @@ void
 list<T>::swap(list& v)
 {
 	m_node.swap(v.m_node);
+	swap(m_size, v.m_size);
 }
 
 
@@ -781,8 +765,6 @@ list<T>::operator=(list&& v)
 template <typename T> inline void swap(list<T>& lhs, list<T>& rhs) { lhs.swap(rhs); }
 
 template <typename T> inline list<T>::list() { init(); }
-
-template <typename T> inline bool list<T>::empty() const { return m_node.m_next == &m_node; }
 
 } // namespace mstl
 

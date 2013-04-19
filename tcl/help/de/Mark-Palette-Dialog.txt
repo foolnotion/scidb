@@ -22,7 +22,7 @@ TITLE Feldmarkierungspalette
 
 <p>
 Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel
-<nobr><key>Ctrl</key><key>%::application::board::mc::Accel(edit-marks)%</key></nobr>
+<nobr><key>Ctrl</key> <key>%::application::board::mc::Accel(edit-marks)%</key></nobr>
 oder über das kontextsensitive Menü des Partieneditors (<see/>
 <menuitem>%::marks::mc::MarksPalette%</menuitem>) geöffnet werden.
 </p>
@@ -34,9 +34,9 @@ identisch zur Schachdatenbankapplikation
 <a href="scid.sourceforge.net">Scid</a> gehalten.
 </p>
 
-<p>
+<note>
 Die Palette ist nur sichtbar, wenn das Schachbrettfenster aktiv ist.
-</p>
+</note>
 
 END
 

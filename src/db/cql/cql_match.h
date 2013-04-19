@@ -24,109 +24,121 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_cql_included
-#define _db_cql_included
+#ifndef _cql_match_included
+#define _cql_match_included
 
-#include "db_common.h"
-#include "db_date.h"
-#include "db_eco.h"
+#include "cql_common.h"
 
+#include "m_match.h"
 #include "m_list.h"
 #include "m_vector.h"
-#include "m_string.h"
+#include "m_pair.h"
 
-namespace db {
-
-class GameInfo;
-class Board;
-class Move;
+namespace db
+{
+	class GameInfo;
+	class Board;
+	class Move;
+}
 
 namespace cql {
 
-enum Error
-{
-	No_Error,
-	Position_Expected,
-	Invalid_Keyword,
-	Range_Expected,
-	Pattern_Expected,
-	Integer_Expected,
-	Positive_Integer_Expected,
-	Double_Quote_Expected,
-	Unterminated_String,
-	Empty_String_Not_Allowed,
-	Invalid_Date,
-	Illegal_Date,
-	Illegal_Date_Offset,
-	Invalid_Eco_Code,
-	Invalid_Rating_Type,
-	Invalid_Country_Code,
-	Illegal_Country_Code,
-	Invalid_Event_Mode,
-	Invalid_Event_Type,
-	Invalid_Game_Flag,
-	Invalid_Tag_Name,
-	Invalid_Gender,
-	Invalid_Result,
-	Invalid_Termination,
-	Invalid_Time_Mode,
-	Invalid_Title,
-	Invalid_Variant,
-	Invalid_Fen,
-	Invalid_Promotion_Ranks,
-	Invalid_FICS_Position,
-	Invalid_IDN,
-	Position_Number_Expected,
-	Integer_Out_Of_Range,
-	Unexpected_Token,
-	Left_Parenthesis_Expected,
-	Right_Parenthesis_Expected,
-	Trailing_Characters,
-	Keyword_Match_Expected,
-	Unmatched_Bracket,
-	Empty_Piece_Designator,
-	Any_Fyle_Not_Allowed_In_Range,
-	Any_Rank_Not_Allowed_In_Range,
-	Invalid_Fyle_In_Square_Designator,
-	Invalid_Rank_In_Square_Designator,
-};
+namespace info { class Match; }
 
-
-namespace gameinfo { class Match; }
-
+class Position;
 
 class Match
 {
 public:
 
-	Match(variant::Type variant);
+	enum Section
+	{
+		Section_None		= 0,
+		Section_GameInfo	= 1 << 0,
+		Section_Moves		= 1 << 1,
+		Section_Positions	= 1 << 2,
+		Section_Comments	= 1 << 3,
+		Section_Flags		= 1 << 4,
+	};
+
+	typedef mstl::pair<char const*, char const*> Range;
+	typedef mstl::vector<Range> Ranges;
+	typedef error::Type Error;
+
+	Match();
 	~Match();
 
+	// Returns the affected sections for this search.
+	// May be zero if search is empty.
+	unsigned sections() const;
+
+	// Returns whether given expression complies with CQL standard.
+	bool isStandard() const;
+
+	// Use this method after match of initial board position. Returns false if never matching.
+	bool proceed() const;
+
+	// Returns true if any comment should be matched.
+	// Do only use if comment section is involved.
+	bool matchComments() const;
+
+	// Use this method only if any comment should be matched.
+	// Do only use if comment section is involved.
+	bool matchComments(char const* data, unsigned length);
+
 	// Use this method at start of game. Returns false if never matching.
-	bool match(GameInfo const& info, unsigned gameNo);
+	// Do only use if game information section is involved.
+	bool match(db::GameInfo const& info, db::variant::Type variant, unsigned gameNo);
 
-	bool match(GameInfo const& info, Board const& board, bool isInitial, bool isFinal);
-	bool match(Board const& board, Move const& move);
+	// Use this method for intial board and each board position after making
+	// a move. Set parameter 'isFinal' to true only for final board position.
+	// Do only use if board (position) section is involved.
+	bool match(db::GameInfo const& info, db::Board const& board, db::variant::Type variant, bool isFinal);
 
+	// Use this method before matching board position after move.
+	// Do only use if move section is involved.
+	bool match(db::Board const& board, db::Move const& move);
+
+	// Use this method after starting a variation. Returns false if
+	// variation cannot match.
 	bool beginVariation();
+
+	// Use this method before ending a variation.
 	void endVariation();
 
+	// Parse given expression, and either return the string position
+	// where first error is detected, or the position after expression.
 	char const* parse(char const* s, Error& error);
 
-	void setInitial();
-	void setFinal();
+	// Returns all sub-expressions which do not comply with CQL standard.
+	Ranges const& nonStandardRanges() const;
 
-	class Position;
-	void addPosition(Position* position);
+	friend class Position;
+	class Logical;
 
 private:
 
-	typedef mstl::vector<gameinfo::Match*> MatchGameInfoList;
-	typedef mstl::list<mstl::string> MatchCommentList;
+	typedef mstl::list<mstl::pattern> MatchCommentList;
+	typedef mstl::vector<info::Match*> MatchGameInfoList;
 	typedef mstl::vector<Position*> MatchPositionList;
+	typedef mstl::vector<Match::Logical*> MatchLogicalList;
 
+	Match(bool isTopLevel);
+
+	bool doMatchComments(char const* data, unsigned length);
+	bool doMatch(db::GameInfo const& info, db::variant::Type variant, unsigned gameNo);
+
+	void reset();
+	void setInitial();
+	void setFinal();
+	void addPosition(Position* position);
+
+	char const* parseAnd(char const* s, Error& error);
 	char const* parseAnnotator(char const* s, Error& error);
+	char const* parseBirthYear(char const* s, Error& error);
+	char const* parseBlackBirthYear(char const* s, Error& error);
 	char const* parseBlackCountry(char const* s, Error& error);
+	char const* parseBlackDeathYear(char const* s, Error& error);
 	char const* parseBlackElo(char const* s, Error& error);
 	char const* parseBlackGender(char const* s, Error& error);
 	char const* parseBlackIsComputer(char const* s, Error& error);
@@ -135,7 +147,9 @@ private:
 	char const* parseBlackRating(char const* s, Error& error);
 	char const* parseBlackTitle(char const* s, Error& error);
 	char const* parseComment(char const* s, Error& error);
+	char const* parseCountry(char const* s, Error& error);
 	char const* parseDate(char const* s, Error& error);
+	char const* parseDeathYear(char const* s, Error& error);
 	char const* parseEco(char const* s, Error& error);
 	char const* parseElo(char const* s, Error& error);
 	char const* parseEvent(char const* s, Error& error);
@@ -150,21 +164,29 @@ private:
 	char const* parseHasFlags(char const* s, Error& error);     
 	char const* parseHasVariations(char const* s, Error& error);
 	char const* parseIsChess960(char const* s, Error& error);
+	char const* parseIsComputer(char const* s, Error& error);
+	char const* parseIsHuman(char const* s, Error& error);
 	char const* parseIsShuffleChess(char const* s, Error& error);
+	char const* parseIsStandardPosition(char const* s, Error& error);
+	char const* parseIsStartPosition(char const* s, Error& error);
 	char const* parseLanguage(char const* s, Error& error);
+	char const* parseNot(char const* s, Error& error);
+	char const* parseOr(char const* s, Error& error);
 	char const* parsePlayer(char const* s, Error& error);
 	char const* parsePlyCount(char const* s, Error& error);
 	char const* parsePosition(char const* s, Error& error);
-	char const* parsePositionNumber(char const* s, Error& error);
 	char const* parseRating(char const* s, Error& error);
 	char const* parseResult(char const* s, Error& error);
 	char const* parseRound(char const* s, Error& error);
 	char const* parseSite(char const* s, Error& error);
+	char const* parseStartPosition(char const* s, Error& error);
 	char const* parseTermination(char const* s, Error& error);
 	char const* parseTimeMode(char const* s, Error& error);
 	char const* parseTitle(char const* s, Error& error);
 	char const* parseVariant(char const* s, Error& error);
+	char const* parseWhiteBirthYear(char const* s, Error& error);
 	char const* parseWhiteCountry(char const* s, Error& error);
+	char const* parseWhiteDeathYear(char const* s, Error& error);
 	char const* parseWhiteElo(char const* s, Error& error);
 	char const* parseWhiteGender(char const* s, Error& error);
 	char const* parseWhiteIsComputer(char const* s, Error& error);
@@ -174,18 +196,24 @@ private:
 	char const* parseWhiteTitle(char const* s, Error& error);
 	char const* parseYear(char const* s, Error& error);
 
-	variant::Type		m_variant;
-	bool					m_initial;
-	bool					m_final;
-	unsigned				m_idn;
-	MatchGameInfoList	m_matchGameInfoList;
-	MatchCommentList	m_matchCommentList;
-	MatchPositionList	m_matchPositionList;
+	bool						m_isTopLevel;
+	bool						m_not;
+	bool						m_initialOnly;
+	bool						m_finalOnly;
+	bool						m_isStandard;
+	unsigned					m_sections;
+	unsigned					m_idn;
+	MatchLogicalList		m_matchLogicalList;
+	MatchGameInfoList		m_matchGameInfoList;
+	MatchCommentList		m_matchCommentList;
+	MatchPositionList		m_matchPositionList;
+	Ranges					m_ranges;
 };
 
 } // namespace cql
-} // namespace db
 
-#endif // _db_cql_included
+#include "cql_match.ipp"
+
+#endif // _cql_match_included
 
 // vi:set ts=3 sw=3:

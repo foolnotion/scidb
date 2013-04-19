@@ -23,8 +23,8 @@ TITLE Game markers
 <p>
 A <em>marker</em> is an indicator of some chess characteristic that can be turned
 on or off for each game in the database. There are 21 user-settable markers that
-markers that one may set for each game.  These markers will be used used mainly as
-part of complex searches in the database, or for game list filter purposes.  Since all
+markers that one may set for each game. These markers will be used used mainly as
+part of complex searches in the database, or for game list filter purposes. Since all
 the user-settable markers have no significance, you can use them for any purpose that
 suits your needs.
 </p>

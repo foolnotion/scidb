@@ -34,6 +34,7 @@ namespace export makePieceSelectionFrame updatePieceSet
 
 variable Listbox
 variable FigurineDict [dict create]
+variable Figurines Cases
 
 variable RegExpBBox				{scidb:bbox=\"([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+),([+-]?[0-9]*[.]?[0-9]+)\"}
 variable RegExpPieceScale		{scidb:scale=\"([0-9]*[.]?[0-9]+)\"}
@@ -80,7 +81,6 @@ proc makePieces {size {pieces all}} {
 	##########################################################################################
 	# NOTE: this hack is neccessary as long as the Skulls font will not be rendered accurately
 	if {$pieceSet eq "Skulls"} {
-
 		if {	!$style(gradient,w,use)
 			&& [llength $style(color,w,fill)] == 0
 			&& [llength $style(color,w,texture)] == 0} {
@@ -189,27 +189,42 @@ proc unregisterFigurines {size dontUseContour} {
 
 
 proc MakeFigurines {size dontUseContour} {
+	variable Figurines
+
 	set pieceList {wk bk wq wr wb wn wp bq br bb bn bp}
-	set pieceSet [lindex $::board_PieceSet [lsearch -exact -index 0 $::board_PieceSet Cases]]
+	set pieceSet [lindex $::board_PieceSet [lsearch -exact -index 0 $::board_PieceSet $Figurines]]
 	set prefix figurine,$dontUseContour
 	if {$dontUseContour} { set contour 0.0 } else { set contour 1.0 }
-	MakePieces             \
-		$prefix,            \
-		$pieceSet           \
-		$pieceList          \
-		$size               \
-		1.2                 \
-		$contour            \
-		yes                 \
-		0.07333333333333333 \
-		{{} {}}             \
-		{{} {}}             \
-		{{} {}}             \
-		{#ffffff #eeeeee}   \
-		{{} {}}             \
-		0.5019607843137255  \
-		linear              \
-		no                  \
+	switch $Figurines {
+		Burnett {
+			set boostContour no
+			set shadow 0.05
+		}
+		Cases {
+			set boostContour yes
+			set shadow 0.07
+		}
+		default {
+			return -code error "MakeFigurines: not designed for $Figurines"
+		}
+	}
+	MakePieces           \
+		$prefix,          \
+		$pieceSet         \
+		$pieceList        \
+		$size             \
+		1.2               \
+		$contour          \
+		$boostContour     \
+		$shadow           \
+		{{} {}}           \
+		{{} {}}           \
+		{{} {}}           \
+		{#ffffff #eeeeee} \
+		{{} {}}           \
+		0.5               \
+		linear            \
+		no                \
 		;
 }
 

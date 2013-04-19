@@ -12,11 +12,16 @@ set Index {
   }
   { C
     {
+      {{Chess Query Language} {CQL-Index.html} {}}
       {{Clipbase} {Clipbase.html} {}}
       {{Command line options} {Command-Line-Options.html} {}}
+      {{Compound square designators (CQL)} {CQL-Square-Designators.html} {Compound}}
       {{Compress} {Database-Switcher.html} {Compact}}
       {{Compress database} {Database-Switcher.html} {Compact}}
       {{Contact information} {Contact-Information.html} {}}
+      {{CQL Manual} {CQL-Index.html} {}}
+      {{CQL Match List} {CQL-Match-List.html} {}}
+      {{CQL Syntax} {CQL-Syntax.html} {}}
     }
   }
   { D
@@ -52,6 +57,7 @@ set Index {
   { M
     {
       {{Markers} {Game-Flags.html} {}}
+      {{Match List (CQL)} {CQL-Match-List.html} {}}
     }
   }
   { N
@@ -63,11 +69,24 @@ set Index {
   { P
     {
       {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
+      {{Pattern matching} {Pattern-Matching.html} {}}
+      {{Piece designators (CQL)} {CQL-Piece-Designators.html} {}}
+    }
+  }
+  { R
+    {
+      {{Range specifiers (CQL)} {CQL-Range-Specifiers.html} {}}
+    }
+  }
+  { S
+    {
+      {{Square designators (CQL)} {CQL-Square-Designators.html} {}}
     }
   }
   { T
     {
       {{Toolbars} {Toolbar-Usage.html} {}}
+      {{Transforms of piece designators (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }
   { W

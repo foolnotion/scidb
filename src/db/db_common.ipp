@@ -147,7 +147,7 @@ inline ID swap(ID piece) { return ID(piece & (1 << 3) ? piece & 7 : piece | (1 <
 
 inline
 bool
-longStepPiece(ID piece)
+isLongStepPiece(ID piece)
 {
 	return (1 << piece) & (	(1 << WhiteQueen)
 								 | (1 << BlackQueen)
@@ -155,6 +155,47 @@ longStepPiece(ID piece)
 								 | (1 << BlackRook)
 								 | (1 << WhiteBishop)
 								 | (1 << BlackBishop));
+}
+
+inline
+bool
+isOrthogonalLongStepPiece(ID piece)
+{
+	return (1 << piece) & (	(1 << WhiteQueen)
+								 | (1 << BlackQueen)
+								 | (1 << WhiteRook)
+								 | (1 << BlackRook));
+}
+
+inline
+bool
+isDiagonalLongStepPiece(ID piece)
+{
+	return (1 << piece) & (	(1 << WhiteQueen)
+								 | (1 << BlackQueen)
+								 | (1 << WhiteBishop)
+								 | (1 << BlackBishop));
+}
+
+inline
+bool
+isLongStepPiece(Type piece)
+{
+	return (1 << piece) & ((1 << Queen) | (1 << Rook) | (1 << Bishop));
+}
+
+inline
+bool
+isOrthogonalLongStepPiece(Type piece)
+{
+	return (1 << piece) & ((1 << Queen) | (1 << Rook));
+}
+
+inline
+bool
+isDiagonalLongStepPiece(Type piece)
+{
+	return (1 << piece) & ((1 << Queen) | (1 << Bishop));
 }
 
 inline

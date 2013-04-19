@@ -49,7 +49,7 @@ Scidb supporta i seguenti formati:
   </li>
 </dir>
 
-<h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente raccomandato, dato che le funzioni di Scidb sono pienamente supportate solo in questo formato e fornirà un'ottima velocità nell'uso.
 
@@ -125,7 +125,7 @@ Un database nel formato Scidb è diviso in diversi file:
   </table>
 </box>
 
-<h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
@@ -176,7 +176,7 @@ Questo formato ricorda per struttura il formato Scidb:
 e non saranno considerati da Scidb.
 Allo stesso modo ogni lista di partite salvate (suffisso <code>.txt</code>) non sarà considerata.</note>
 
-<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
+<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
 
 L'azienda <a href="http://www.chessbase.de">ChessBase</a> mantiene questo formato segreto,
 per questo solo la lettura è supportata. Non tutti i dati della partita possono essere
@@ -229,7 +229,7 @@ Un database nel vecchio formato consiste di quattro file:
   </table>
 </box>
 
-<h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> PGN (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
 Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per lo scambio di partite di scacchi. L'apertura di un file <abbr>PGN</abbr> è permessa in sola lettura. Se si hanno grandi collezioni di partite in questo formato si consiglia di convertirle nel formato di Scidb.
 

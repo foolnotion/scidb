@@ -448,7 +448,24 @@ proc WidgetProc {w command args} {
 		}
 
 		viewbox {
-			return [$w.sub viewbox]
+			return [$w.sub.html viewbox]
+		}
+
+		visbbox {
+			return [$w.sub.html visbbox]
+		}
+
+		node {
+			return [$w.sub.html node {*}$args]
+		}
+
+		nearest {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <y>"
+			}
+			set node [FindNearest $w.sub.html {*}$args]
+			if {[llength $node] == 0} { return $node }
+			return [GetInnerNode $w.sub.html $node]
 		}
 
 		size {
@@ -467,11 +484,9 @@ proc WidgetProc {w command args} {
 				error "wrong # args: should be \"[namespace current] $command <px>\""
 			}
 			variable Margin
-			set height [lindex [$w.sub.html bbox [$w.sub.html node]] 3]
+			set height [lindex [$w.sub.html visbbox] 3]
 			if {$height > 0 } {
 				set y [expr {max(0, [lindex $args 0] - $Margin)}]
-				# Adjust the position because we like to see a small margin at top
-				if {$y > 2} { set y [expr {$y - 2}] }
 				set fraction [expr {double($y)/double($height)}]
 			} else {
 				set fraction 0
@@ -612,6 +627,47 @@ proc CombineBox {box1 box2} {
 	lassign $box2 x21 y21 x22 y22
 
 	return [list [min $x11 $x21] [min $y11 $y21] [max $x12 $x22] [max $y12 $y22]]
+}
+
+
+proc FindNearest {w ypos} {
+	set node [$w node 5 5]
+	if {[llength $node] == 0} { set node [$w node] }
+	set bbox [$w bbox $node]
+	if {[llength $bbox] == 0} { return $node }
+	return [FindNearestNode $w $ypos [expr {abs([lindex $bbox 1] - $ypos)}] $node]
+}
+
+
+proc FindNearestNode {w ypos delta node} {
+	set candidate $node
+	foreach n [$node children] {
+		set bbox [$w bbox $n]
+		if {[llength $bbox]} {
+			lassign $bbox _ y0 _ y1
+			set d [expr {min(abs($y0 - $ypos), abs($y1 - $ypos))}]
+			if {$d < $delta} {
+				set candidate $n
+				set delta $d
+			}
+		}
+	}
+	if {$candidate ne $node} {
+		set candidate [FindNearestNode $w $ypos $delta $candidate]
+	}
+	return $candidate
+}
+
+
+proc GetInnerNode {w node} {
+	set y0 [lindex [$w bbox $node] 1]
+
+	foreach n [$node children] {
+		set y1 [lindex [$w bbox $n] 1]
+		if {$y1 == $y0} { return [GetInnerNode $w $n] }
+	}
+
+	return $node
 }
 
 

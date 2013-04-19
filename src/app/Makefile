@@ -706,6 +706,8 @@ app_player_dictionary.o: ../db/db_query.ipp
 app_player_dictionary.o: ../db/db_search.h
 app_player_dictionary.o: ../mstl/m_ref_counter.h
 app_player_dictionary.o: ../mstl/m_ref_counter.ipp
+app_player_dictionary.o: ../mstl/m_match.h
+app_player_dictionary.o: ../mstl/m_match.ipp
 app_uci_engine.o: app_uci_engine.h
 app_uci_engine.o: app_engine.h
 app_uci_engine.o: ../db/db_move_list.h

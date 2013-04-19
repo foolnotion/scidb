@@ -1874,7 +1874,7 @@
 ::terminationbox::mc::Reason(Unplayed)					"La partida no se jugó"
 ::terminationbox::mc::Reason(Abandoned)				"Se abandonó la partida"
 ::terminationbox::mc::Reason(Adjudication)			"Adjudicado"
-::terminationbox::mc::Reason(Death)						""
+::terminationbox::mc::Reason(Disconnection)			"Disconnection" ;# NEW
 ::terminationbox::mc::Reason(Emergency)				"Abandonado por una emergencia"
 ::terminationbox::mc::Reason(RulesInfraction)		"Decidido debido a infracción de las reglas"
 ::terminationbox::mc::Reason(TimeForfeit)				"%s pierde por tiempo"

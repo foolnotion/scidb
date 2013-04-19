@@ -32,6 +32,7 @@
 #include "db_player.h"
 #include "db_namebase_entry.h"
 
+#include "m_match.h"
 #include "m_utility.h"
 
 #include <tcl.h>
@@ -555,7 +556,7 @@ cmdFilter(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					break;
 
 				case 'n': // name
-					m_dictionary->filterName(op, Tcl_GetString(val));
+					m_dictionary->filterName(op, mstl::pattern(Tcl_GetString(val)));
 					break;
 
 				case 's': // sex

@@ -21,7 +21,7 @@ TITLE Welcome to Scidb-Help
 <NEW>
 <h2 id="general">General help</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Formats.html">Database formats</a></li>
   <li><a href="File-Selection-Dialog.html">Usage of the file selection dialog</a></li>
   <li><a href="Toolbar-Usage.html">Usage of the toolbars</a></li>
@@ -31,7 +31,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="list-windows">Scidb list windows</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-List-Window.html">Game list</a></li>
   <li><a href="Player-List-Window.html">Player list</a></li>
   <li><a href="Event-List-Window.html">Event List</a></li>
@@ -41,7 +41,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="windows-and-dialogs">Scidb-Windows und dialogs</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Switcher.html">Database switcher</a></li>
   <li><a href="Game-Browser.html">Game browser</a></li>
   <li><a href="Game-Overview.html">Game overview browser</a></li>
@@ -61,7 +61,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="further-information">Further information</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-Flags.html">Game markers</a></li>
   <!-- NOTE for translators: this page is only available in English (do not remove this note) -->
   <li><a href="../en/Database-Archive.html">Specification of database archive (English)</a>

@@ -19,7 +19,6 @@
 #ifndef _mstl_list_included
 #define _mstl_list_included
 
-#include "m_vector.h"
 #include "m_list_node.h"
 
 namespace mstl {
@@ -30,7 +29,6 @@ class list
 public:
 
 	typedef T						value_type;
-	typedef vector<T*>			vector_type;
 	typedef list<T>				list_type;
 	typedef value_type*			pointer;
 	typedef value_type const*	const_pointer;

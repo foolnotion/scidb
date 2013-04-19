@@ -39,15 +39,14 @@ set Contents {
   {
     {{{Further information} {Overview.html} {further-information}}}
     {{{Game markers} {Game-Flags.html}}}
-    {{{Specification of database archive (English)} {../en/Database-Archive.html}}}
-    {{{Command line options} {Command-Line-Options.html}}}
-    {{{NAG annotation values} {NAG-Comments.html}}}
-    {{{ECO-Code} {ECO-Code.html}}}
-	 {{{FEN (Forsyth-Edwards-Notation)} {FEN.html}}}
-    {{{Contact information} {Contact-Information.html}}}
-    {{{Development roadmap} {Development-Roadmap.html}}}
-    {{{What's new?} {Whats-New.html}}}
-    {{{Üdvözöljük a Scidb-ben!} {Welcome.html}}}
+    {
+      {{{Specification of database archive (English)} {../en/Database-Archive.html}}}
+      {{{Command line options} {Command-Line-Options.html}}}
+      {{{NAG annotation values} {NAG-Comments.html}}}
+      {{{Contact information} {Contact-Information.html}}}
+      {{{Development roadmap} {Development-Roadmap.html}}}
+      {{{What's new?} {Whats-New.html}}}
+      {{{Üdvözöljük a Scidb-ben!} {Welcome.html}}}
   }
 }
 

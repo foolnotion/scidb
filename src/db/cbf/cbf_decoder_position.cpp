@@ -153,7 +153,7 @@ Position::doMove(unsigned moveNumber)
 			{
 				piece::Type				type			= piece::type(piece);
 				MoveGenEntry const*	moveGen		= MoveGenTable + TableOffset[type];
-				unsigned					iteration	= piece::longStepPiece(piece) ? 7 : 1;
+				unsigned					iteration	= piece::isLongStepPiece(piece) ? 7 : 1;
 
 				for ( ; moveGen->type == type; ++moveGen)
 				{

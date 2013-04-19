@@ -32,8 +32,11 @@ body { text-align: left; }
 h1 { font-size: 140%; background: #eeffff; }
 h2 { font-size: 140%; background-color: #e5eeff; }
 h3 { font-size: 110%; background-color: #e5eeff; }
+h4 { background-color: #e5eeff; }
 
 h1.title { text-align: center; background-color: #6495ed; }
+
+ul.index { margin: 5px; }
 
 span.chess { font-family: Scidb Chess Traveller; font-size: 90% }
 
@@ -63,6 +66,25 @@ div.box {
 	padding-right:		1em;
 }
 
+div.verb {
+	background:			#f5f5f5;
+	border:				1px solid black;
+	border-radius:		0.5em;
+	margin-top:			1em;
+	margin-bottom:		1em;
+	margin-left:		1em;
+	margin-right:		1em;
+	padding-top:		0.25em;
+	padding-bottom:	0.25em;
+	padding-left:		1em;
+	padding-right:		1em;
+}
+
+div.dir {
+	margin-left: 	1em;
+	margin-right:	1em;
+}
+
 div.annotation {
 /*	color:				black; */
 	background:			#eedd82;
@@ -90,6 +112,14 @@ table.standard {
 	background:			#f5f5f5;
 }
 
+table.stripes {
+	border:			1px solid gray;
+}
+
+tr.stripes {
+	background: #d3e4e5;
+}
+
 td.standard {
 	padding-top:		0.5em;
 	padding-bottom:	0.5em;
@@ -97,18 +127,19 @@ td.standard {
 	padding-right:		0.5em;
 }
 
-table.eco {
-	white-space:	nowrap;
-	border:			1px solid gray;
+td.l {
+	padding-left:	0.2em;
+	padding-right:	0.5em;
 }
 
-td.eco {
+td.m {
 	padding-left:	0.5em;
 	padding-right:	0.5em;
 }
 
-tr.stripes {
-	background: #d3e4e5;
+td.r {
+	padding-left:	0.5em;
+	padding-right:	0.2em;
 }
 
 kbd.key {

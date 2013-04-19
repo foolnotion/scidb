@@ -31,6 +31,7 @@
 #include "db_date.h"
 
 #include "m_utility.h"
+#include "m_match.h"
 #include "m_assert.h"
 
 #include <string.h>
@@ -125,48 +126,6 @@ static int
 cmpTitles(void const* lhs, void const* rhs)
 {
 	return m_sign*(int(title::best(PLAYER(lhs).titles())) - int(title::best(PLAYER(rhs).titles())));
-}
-
-
-static bool
-match(char const* pattern, char const* s)
-{
-	while (true)
-	{
-		switch (*pattern)
-		{
-			case '\0':
-				return *s == '\0';
-
-			case '?':
-				if (*s == '\0')
-					return false;
-				break;
-
-			case '*':
-				while (pattern[1] == '*')
-					++pattern;
-				if (pattern[1] == '\0')
-					return true;
-				while (*s)
-				{
-					if (match(pattern + 1, s))
-						return true;
-					++s;
-				}
-				return false;
-
-			default:
-				if (*pattern != *s)
-					return false;
-				break;
-		}
-
-		++pattern;
-		++s;
-	}
-
-	return false;
 }
 
 
@@ -390,12 +349,12 @@ PlayerDictionary::filterLetter(char letter)
 
 
 void
-PlayerDictionary::filterName(Operator op, mstl::string const& pattern)
+PlayerDictionary::filterName(Operator op, mstl::pattern const& pattern)
 {
 	Setter	setter(&mstl::bitset::set); // g++ complains w/o initialization
 	bool		positive = prepareForOp(op, setter);
 
-	if ((pattern == "*" || pattern == "") && positive)
+	if ((pattern.match_any() || pattern.match_none()) && positive)
 	{
 		if (positive)
 			m_attrFilter = m_baseFilter;
@@ -406,7 +365,7 @@ PlayerDictionary::filterName(Operator op, mstl::string const& pattern)
 	{
 		for (unsigned i = 0; i < m_attrFilter.size(); ++i)
 		{
-			if (m_baseFilter.test(i) && ::match(pattern, Player::getPlayer(i).asciiName()) == positive)
+			if (m_baseFilter.test(i) && pattern.match(Player::getPlayer(i).asciiName()) == positive)
 				(m_attrFilter.*setter)(i);
 		}
 	}

@@ -58,23 +58,23 @@ Ausserdem sind folgende Standardtastaturkürzel an das Textfeld gebunden:
 <box>
   <table>
     <tr>
-      <td valign="top"><key>Ctrl</key><key>C</key>
+      <td valign="top"><key>Ctrl</key> <key>C</key>
       </td><td>Markierten Text in die Zwischenablage kopieren</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key><key>X</key>
+      <td valign="top"><key>Ctrl</key> <key>X</key>
       </td><td>Markierten Text löschen und in die Zwischenablage kopieren</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key><key>V</key></td>
+      <td valign="top"><key>Ctrl</key> <key>V</key></td>
       <td>Text aus der Zwischenablage an der Cursorposition einfügen</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key><key>Z</key>
+      <td valign="top"><key>Ctrl</key> <key>Z</key>
       </td><td>Letzte Aktion im Textbereich zurücknehmen</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key><key>Y</key></td>
+      <td valign="top"><key>Ctrl</key> <key>Y</key></td>
       <td>Vorhergehende Rücknahme wieder aufheben</td>
     </tr>
   </table>

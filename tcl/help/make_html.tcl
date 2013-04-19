@@ -76,6 +76,8 @@ set HtmlH1 {<div class="title">
 </div>
 }
 
+set HtmlDefs {}
+
 set HtmlMapping {
 	<menuitem>		{<span class="menuitem">}
 	</menuitem>		{</span>}
@@ -89,6 +91,12 @@ set HtmlMapping {
 
 	<box>				{<div class="box">}
 	</box>			{</div>}
+
+	<expr>			{<span style="white-space:nowrap;"><code>}
+	</expr>			{</code></span>}
+
+	<verb>			{<div class="verb"><code>}
+	</verb>			{</code></div>}
 
 	<verbatim>		{<div class="box"><pre><code>}
 	</verbatim>		{</code></pre></div>}
@@ -253,10 +261,15 @@ while {[gets $src line] >= 0} {
 	if {[string match TITLE* $line]} {
 		set title [getArg $line]
 		break
-	}
-	if {[string match CHARSET* $line]} {
+	} elseif {[string match CHARSET* $line]} {
 		set charset [getArg $line]
 		chan configure $src -encoding $charset
+	} elseif {[string match {DEFINE *} $line]} {
+		if {[regexp {DEFINE\s+(<[a-z/]+>)\s+(.*)} $line _ var subst]} {
+			lappend HtmlDefs $var $subst
+		} else {
+			puts stderr "Error([info script]): DEFINE statement invalid"
+		}
 	}
 }
 
@@ -303,6 +316,7 @@ proc formatUrl {url} {
 
 proc readContents {chan file} {
 	variable HtmlMapping
+	variable HtmlDefs
 	variable Pieces
 	variable charset
 	variable lang
@@ -342,6 +356,17 @@ proc readContents {chan file} {
 			set line $newline
 		}
 
+		while {[regexp -indices {<cql>[^/]*</cql>} $line location]} {
+			lassign $location i k
+			lassign [split [string range $line [expr {$i + 5}] [expr {$k - 6}]] :] section keyword
+			set Section [string toupper $section 0 0]
+			set newline [string range $line 0 [expr {$i - 1}]]
+			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\">:$keyword</a>"
+			append newline [string range $line [expr {$k + 1}] end]
+			set line $newline
+		}
+
+		set line [string map $HtmlDefs $line]
 		set line [string map $HtmlMapping $line]
 
 		while {[regexp {<key>([a-zA-Z%:\(\)-]*)</key>} $line _ key]} {

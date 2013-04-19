@@ -36,6 +36,7 @@ SRC_CXX = \
 	m_ifstream.cpp \
 	m_ios.cpp \
 	m_istream.cpp \
+	m_match.cpp \
 	m_ofstream.cpp \
 	m_ostream.cpp \
 	m_sstream.cpp \
@@ -406,6 +407,24 @@ m_istream.o: m_uint128_t.h
 m_istream.o: m_uint128.h
 m_istream.o: m_assert.h
 m_istream.o: m_stdio.h
+m_match.o: m_match.h
+m_match.o: m_string.h
+m_match.o: m_types.h
+m_match.o: m_string.ipp
+m_match.o: m_utility.h
+m_match.o: m_type_traits.h
+m_match.o: m_type_traits.ipp
+m_match.o: m_utility.ipp
+m_match.o: m_limits.h
+m_match.o: m_bit_functions.h
+m_match.o: m_bit_functions.ipp
+m_match.o: m_uint128_t.h
+m_match.o: m_uint128.h
+m_match.o: m_assert.h
+m_match.o: m_exception.h
+m_match.o: m_backtrace.h
+m_match.o: m_exception.ipp
+m_match.o: m_match.ipp
 m_ofstream.o: m_ofstream.h
 m_ofstream.o: m_ostream.h
 m_ofstream.o: m_ios.h

@@ -31,6 +31,7 @@
 #include <tcl.h>
 #include <ctype.h>
 #include <string.h>
+#include <stdlib.h>
 
 using namespace sys::utf8;
 using namespace tcl;

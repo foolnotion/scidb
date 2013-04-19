@@ -32,6 +32,8 @@
 #include "m_bitset.h"
 #include "m_vector.h"
 
+namespace mstl { class pattern; }
+
 namespace db { class Player; }
 namespace db { class Query; }
 namespace db { class Date; }
@@ -99,7 +101,7 @@ public:
 	void resetFilter();
 	void negateFilter();
 	void filterLetter(char letter);
-	void filterName(Operator op, mstl::string const& pattern);
+	void filterName(Operator op, mstl::pattern const& pattern);
 	void filterFederation(Operator op, ::db::country::Code country);
 	void filterNativeCountry(Operator op, ::db::country::Code country);
 	void filterType(Operator op, ::db::species::ID type);

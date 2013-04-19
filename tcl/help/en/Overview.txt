@@ -20,7 +20,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="general">General help</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Formats.html">Database formats</a></li>
   <li><a href="File-Selection-Dialog.html">Usage of the file selection dialog</a></li>
   <li><a href="Toolbar-Usage.html">Usage of the toolbars</a></li>
@@ -30,7 +30,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="list-windows">Scidb list windows</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-List-Window.html">Game list</a></li>
   <li><a href="Player-List-Window.html">Player list</a></li>
   <li><a href="Event-List-Window.html">Event List</a></li>
@@ -40,7 +40,7 @@ TITLE Welcome to Scidb-Help
 
 <h2 id="windows-and-dialogs">Scidb-Windows und dialogs</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Switcher.html">Database switcher</a></li>
   <li><a href="Game-Browser.html">Game browser</a></li>
   <li><a href="Game-Overview.html">Game overview browser</a></li>
@@ -58,9 +58,23 @@ TITLE Welcome to Scidb-Help
   <li><a href="Database-Export-Dialog.html">Database export</a></li>
 </ul>
 
+<h2 id="cql-manual">CQL (Chess Query Language)</h2>
+
+<ul class="index">
+  <li><a href="CQL-Syntax.html">Syntax</a>
+    <ul class="index">
+      <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
+      <li><a href="CQL-Piece-Designator-Transforms.html">Transforms of piece designators</a></li>
+      <li><a href="CQL-Square-Designators.html">Square designators</a></li>
+      <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+    </ul>
+  </li>
+  <li><a href="CQL-Match-List.html">The match list</a></li>
+</ul>
+
 <h2 id="further-information">Further information</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-Flags.html">Game markers</a></li>
   <li><a href="Database-Archive.html">Specification of database archive</a></li>
   <li><a href="Command-Line-Options.html">Command line options</a></li>

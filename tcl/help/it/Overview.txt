@@ -20,7 +20,7 @@ TITLE Benvenuti a Scidb-Help
 
 <h2 id="general">Informazioni Generali</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Formats.html">Formato Database</a></li>
   <li><a href="File-Selection-Dialog.html">Uso dell'interfaccia di selezione dei file</a></li>
   <li><a href="Toolbar-Usage.html">Uso delle barre degli strumenti</a></li>
@@ -30,7 +30,7 @@ TITLE Benvenuti a Scidb-Help
 
 <h2 id="list-windows">Finestre di liste in Scidb</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-List-Window.html">Lista Partite</a></li>
   <li><a href="Player-List-Window.html">Lista Giocatori</a></li>
   <li><a href="Event-List-Window.html">Lista Eventi</a></li>
@@ -40,7 +40,7 @@ TITLE Benvenuti a Scidb-Help
 
 <h2 id="windows-and-dialogs">Scidb- finestre e interfacce</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Database-Switcher.html">Cambio Database</a></li>
   <li><a href="Game-Browser.html">Browser Partite</a></li>
   <li><a href="Game-Overview.html">Browser di panoramica fama</a></li>
@@ -60,7 +60,7 @@ TITLE Benvenuti a Scidb-Help
 
 <h2 id="further-information">Ulteriori Informazioni</h2>
 
-<ul>
+<ul class="index">
   <li><a href="Game-Flags.html">Codici Partita</a></li>
   <!-- NOTE for translators: this page is only available in English (do not remove this note) -->
   <li><a href="../en/Database-Archive.html">Specifiche sull'archivio database (Inglese)</a></li>

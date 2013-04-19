@@ -43,7 +43,6 @@ set Contents {
     {{{Opciones de la línea de comandos} {Command-Line-Options.html}}}
     {{{Valores de las anotaciones NAG} {NAG-Comments.html}}}
     {{{Código ECO} {ECO-Code.html}}}
-	 {{{FEN (Forsyth-Edwards-Notation)} {FEN.html}}}
     {{{Información de contacto} {Contact-Information.html}}}
     {{{Mapa de ruta del desarrollo} {Development-Roadmap.html}}}
     {{{Novedades} {Whats-New.html}}}

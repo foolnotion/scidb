@@ -1877,7 +1877,7 @@
 ::terminationbox::mc::Reason(Unplayed)					"Parti är ospelat"
 ::terminationbox::mc::Reason(Abandoned)				"Parti är avbrutit"
 ::terminationbox::mc::Reason(Adjudication)			"Avdömt"
-::terminationbox::mc::Reason(Death)						"Death" ;# NEW
+::terminationbox::mc::Reason(Disconnection)			"Disconnection" ;# NEW
 ::terminationbox::mc::Reason(Emergency)				"Avbrutit pga nödsituation"
 ::terminationbox::mc::Reason(RulesInfraction)		"Avdömt pga regelbrott"
 ::terminationbox::mc::Reason(TimeForfeit)				"%s tidsförlust"

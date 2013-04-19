@@ -37,13 +37,23 @@ set Contents {
     {{{Database export} {Database-Export-Dialog.html}}}
   }
   {
+    {{{CQL (Chess Query Language)} {Overview.html} {cql-manual}}}
+    {
+      {{{Syntax} {CQL-Syntax.html}}}
+      {{{Piece designators} {CQL-Piece-Designators.html}}}
+      {{{Transforms of piece designators} {CQL-Piece-Designator-Transforms.html}}}
+      {{{Square designators} {CQL-Square-Designators.html}}}
+      {{{Range specifiers} {CQL-Range-Specifiers.html}}}
+    }
+    {{{The match list} {CQL-Match-List.html}}}
+  }
+  {
     {{{Further information} {Overview.html} {further-information}}}
     {{{Game markers} {Game-Flags.html}}}
     {{{Specification of database archive} {Database-Archive.html}}}
     {{{Command line options} {Command-Line-Options.html}}}
     {{{NAG annotation values} {NAG-Comments.html}}}
     {{{ECO-Code} {ECO-Code.html}}}
-	 {{{FEN (Forsyth-Edwards-Notation)} {FEN.html}}}
     {{{Contact information} {Contact-Information.html}}}
     {{{Development roadmap} {Development-Roadmap.html}}}
     {{{What's new?} {Whats-New.html}}}

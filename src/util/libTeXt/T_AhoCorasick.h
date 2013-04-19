@@ -27,7 +27,7 @@ class AhoCorasick
 {
 public:
 
-	enum Method { LongestMatchOnly, AllMatches };
+	enum Method { LongestMatchOnly, AllMatches, AnyMatch };
 
 	AhoCorasick();
 	virtual ~AhoCorasick();

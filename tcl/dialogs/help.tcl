@@ -156,13 +156,13 @@ proc open {parent {file {}} args} {
 	set buttons [ttk::frame $control.buttons]
 	ttk::button $buttons.back \
 		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlBackward] \
-		-command [namespace code GoBack] \
+		-command [namespace code history::back] \
 		-state disabled \
 		;
 	set Priv(button:back) $buttons.back
 	ttk::button $buttons.forward \
 		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlForward] \
-		-command [namespace code GoForward] \
+		-command [namespace code history::forward] \
 		-state disabled \
 		;
 	ttk::button $buttons.expand \
@@ -205,8 +205,8 @@ proc open {parent {file {}} args} {
 	grid rowconfigure $control 3 -weight 1
 	grid rowconfigure $control 2 -minsize $::theme::padding
 
-	bind $dlg <Alt-Left>			[namespace code GoBack]
-	bind $dlg <Alt-Right>		[namespace code GoForward]
+	bind $dlg <Alt-Left>			[namespace code history::back]
+	bind $dlg <Alt-Right>		[namespace code history::forward]
 	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $dlg $pw.control]]
 
 	bind $nb <<LanguageChanged>> [namespace code Update]
@@ -393,8 +393,8 @@ proc BuildFrame {w} {
 	set Priv(contents:tree) $w
 
 	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
-	bind $w <Alt-Left>	[namespace parent]::GoBack
-	bind $w <Alt-Right>	[namespace parent]::GoForward
+	bind $w <Alt-Left>	[namespace parent]::history::back
+	bind $w <Alt-Right>	[namespace parent]::history::forward
 	bind $w <Alt-Left>	{+ break }
 	bind $w <Alt-Right>	{+ break }
 
@@ -414,6 +414,7 @@ proc FillContents {t contents {depth 0}} {
 	foreach group $contents {
 		set e 0
 		set d $depth
+		set first 1
 		foreach entry $group {
 			if {[llength $entry] == 1} {
 				set topic [lindex $entry 0]
@@ -437,7 +438,11 @@ proc FillContents {t contents {depth 0}} {
 					if {$d == 0} { set icon $library } else { set icon $document }
 				} else {
 					set collapse yes
-					set icon [list $bookClosed {!open} $bookOpen {open}]
+					if {$d == 0} {
+						set icon [list $bookClosed {!open} $bookOpen {open}]
+					} else {
+						set icon $document
+					}
 				}
 				$t add $d \
 					-text $title \
@@ -446,9 +451,9 @@ proc FillContents {t contents {depth 0}} {
 					-collapse $collapse \
 					-tag $tag \
 					;
-				if {[llength $topic] != 2} { incr d }
+				if {$first} { incr d; set first 0 }
 			} else {
-				FillContents $t $entry [expr {$depth + 1}]
+				FillContents $t [list $entry] [expr {$depth + 1}]
 			}
 			incr e
 		}
@@ -910,14 +915,14 @@ proc PopupMenu {dlg tab} {
 
 		*.html.* {
 			$m add command \
-				-command [namespace code GoBack] \
+				-command [namespace code history::back] \
 				-label " $mc::GoBack" \
 				-image $::icon::16x16::backward \
 				-compound left \
 				-state [$Priv(button:back) cget -state]
 				;
 			$m add command \
-				-command [namespace code GoForward] \
+				-command [namespace code history::forward] \
 				-label " $mc::GoForward" \
 				-image $::icon::16x16::forward \
 				-compound left \
@@ -1014,6 +1019,8 @@ proc ShowIndex {} {
 proc BuildHtmlFrame {dlg w} {
 	variable Priv
 
+	set Priv(html:track:width) 0
+
 	# setup css script
 	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 
@@ -1042,12 +1049,24 @@ proc BuildHtmlFrame {dlg w} {
 	$w onmouseout  [namespace current]::MouseLeave
 	$w onmouseup1  [namespace current]::Mouse1Up
 
+	bind $w <Configure> [namespace code [list TrackConfigure $w %w]]
+
 	set dlg [winfo toplevel $dlg]
 
 	bind $dlg <FocusIn>	[list $w focusin]
 	bind $dlg <FocusOut>	[list $w focusout]
 
 	return [$w drawable]
+}
+
+
+proc TrackConfigure {w width} {
+	variable Priv
+
+	if {$width != $Priv(html:track:width)} {
+		history::updateNodes resize
+		set Priv(html:track:width) $width
+	}
 }
 
 
@@ -1218,7 +1237,7 @@ proc ReloadCurrentPage {} {
 	}
 
 	set Priv(history) {}
-	set Priv(history:index) -2
+	set Priv(history:index) -1
 	set Priv(current:file) ""
 
 	set Links($file) [Load [FullPath [file tail $file]]]
@@ -1228,62 +1247,260 @@ proc ReloadCurrentPage {} {
 proc Goto {position} {
 	variable Priv
 
+	lassign [$Priv(html) viewbox] _ view0 _ view1
+
 	if {[string length $position] == 0} {
+		set changed [expr {$view0 > 10}]
 		set position 0
 	} elseif {![string is integer -strict $position]} {
 		if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
 		set selector [format {[id="%s"]} $position]
 		set node [lindex [$Priv(html) search $selector] 0]
 		if {[llength $node] == 0} { return }
-		set position [lindex [$Priv(html) bbox $node] 1]
+		set bbox [$Priv(html) bbox $node]
+		lassign $bbox _ y0 _ y1
+		set changed [expr {(max($view0, $y0) > min($view1, $y1))}] ;# no intersection
+		set position [lindex $bbox 1]
 	}
 
 	$Priv(html) scrollto $position
+	return $changed
 }
+
+
+namespace eval history {
+
+proc addCurrentNode {} {
+	variable [namespace parent]::Priv
+
+	set Priv(history) [lrange $Priv(history) 0 $Priv(history:index)]
+	lappend Priv(history) [list $Priv(current:file) {*}[MakeEntry]]
+	incr Priv(history:index)
+	SetupButtons
+}
+
+
+proc updateNodes {reason} {
+	variable [namespace parent]::Priv
+
+	if {![info exists Priv(history)]} { return }
+
+	switch $reason {
+		reload {
+			for {set i 0} {$i < [llength $Priv(history)]} {incr i} {
+				lset Priv(history) $i 6 1
+			}
+		}
+
+		resize {
+			for {set i 0} {$i < [llength $Priv(history)]} {incr i} {
+				lset Priv(history) $i 5 {}
+			}
+		}
+	}
+}
+
+
+proc back {} {
+	variable [namespace parent]::Priv
+
+	if {$Priv(history:index) <= 0} { return }
+	set index $Priv(history:index)
+
+	while {$Priv(history:index) > 2 && [IsVisible [expr {$Priv(history:index) - 1}]]} {
+		decr Priv(history:index)
+	}
+
+	RefreshCurrentNode $index
+	set file [lindex $Priv(history) [expr {$Priv(history:index) - 1}] 0]
+
+	if {[[namespace parent]::Parse $file]} {
+		MoveTo [decr Priv(history:index)]
+	}
+
+	SetupButtons
+}
+
+
+proc forward {} {
+	variable [namespace parent]::Priv
+
+	if {$Priv(history:index) + 1 >= [llength $Priv(history)]} { return }
+	set index $Priv(history:index)
+
+	while {	$Priv(history:index) + 2 < [llength $Priv(history)]
+			&& [IsVisible [expr {$Priv(history:index) + 1}]]} {
+		incr Priv(history:index)
+	}
+
+	RefreshCurrentNode $index
+	set file [lindex $Priv(history) [expr {$Priv(history:index) + 1}] 0]
+
+	if {[[namespace parent]::Parse $file]} {
+		MoveTo [incr Priv(history:index)]
+	}
+
+	SetupButtons
+}
+
+
+proc refresh {} {
+	variable [namespace parent]::Priv
+
+	if {$Priv(history:index) >= 0} {
+		RefreshCurrentNode $Priv(history:index)
+	}
+}
+
+
+proc IsVisible {index} {
+	variable [namespace parent]::Priv
+
+	lassign [lindex $Priv(history) $index] file _ node frac coord _ resolve
+
+	if {$resolve} { return 0 }
+	if {$file ne $Priv(current:file)} { return 0 }
+
+	lassign [$Priv(html) viewbox] _ view0 _ view1
+	lassign [$Priv(html) bbox $node] _ y0 _ y1
+
+	return [expr {(max($view0, $y0) <= min($view1, $y1))}] ;# intersects?
+}
+
+
+proc MoveTo {index} {
+	variable [namespace parent]::Priv
+
+	lassign [lindex $Priv(history) $index] _ trace node frac coord yview resolve
+
+	if {[llength $yview] == 0} {
+		if {$resolve} {
+			set node [ResolveTrace $trace [$Priv(html) root]]
+			lset Priv(history) $index 2 $node
+			lset Priv(history) $index 5 0
+		}
+
+		lassign [$Priv(html) visbbox] _ v0 _ v1
+
+		set y [lindex [$Priv(html) bbox $node] $coord]
+		set y [expr {$y + int($frac*($v1 - $v0) + 0.5)}]
+
+		$Priv(html) scrollto $y
+	} else {
+		$Priv(html) yview moveto $yview
+	}
+}
+
+
+proc MakeEntry {} {
+	variable [namespace parent]::Priv
+
+	lassign [$Priv(html) visbbox] _ v0 _ v1
+	set ypos [lindex [$Priv(html) viewbox] 1]
+	set node [$Priv(html) nearest [expr {$ypos + 5}]]
+	set bbox [$Priv(html) bbox $node]
+	lassign $bbox _ y0 _ y1
+
+	if {abs($y0 - $ypos) < abs($y1 - $ypos)} {
+		set coord 1
+	} else {
+		set coord 3
+		set y0 $y1
+	}
+
+	set frac [expr {ceil($y0 - $ypos - 8)/($v1 - $v0)}]
+	set trace [lreverse [BuildTrace $node]]
+	set yview [lindex [$Priv(html) yview] 0]
+
+	return [list $trace $node $frac $coord $yview 0]
+}
+
+
+proc SetupButtons {} {
+	variable [namespace parent]::Priv
+
+	set back [expr {$Priv(history:index) > 0}]
+	set fwd  [expr {$Priv(history:index) + 1 < [llength $Priv(history)]}]
+	[namespace parent]::SetupButtons $back $fwd
+}
+
+
+proc RefreshCurrentNode {index} {
+	variable [namespace parent]::Priv
+	lset Priv(history) $index [list [lindex $Priv(history) $index 0] {*}[MakeEntry]]
+}
+
+
+proc BuildTrace {node {trace {}}} {
+	set parent [$node parent]
+	if {[llength $parent] == 0} { return $trace }
+	set i 0
+	foreach n [$parent children] {
+		if {$n == $node} {
+			lappend trace $i
+			return [BuildTrace $parent $trace]
+		}
+		incr i
+	}
+	return $trace
+}
+
+
+proc ResolveTrace {trace node} {
+	for {set i 0} {$i < [llength $trace]} {incr i} {
+		set k [lindex $trace $i]
+		set childs [$node children]
+		if {$k >= [llength $childs]} { return $node }
+		set node [lindex $childs $k]
+	}
+
+	return $node
+}
+
+} ;# namespace history
 
 
 proc Load {file {wantedFile {}} {match {}} {position {}}} {
 	variable Priv
 
-	if {[string length $file] == 0 || $Priv(current:file) eq $file} {
+	set remember [expr {$Priv(current:file) ne $file}]
+	history::refresh
+
+	if {$remember && [string length $file] > 0} {
+		if {![Parse $file $wantedFile $match]} {
+			return 0
+		}
+
+		if {[string length $match] == 0} {
+			Goto $position
+		}
+		if {[file tail $file] ni $Priv(recent)} {
+			if {[llength $Priv(recent)] > 4} { set Priv(recent) [lrange $Priv(recent) 0 4] }
+			set Priv(recent) [linsert $Priv(recent) 0 [file tail $file]]
+		}
+	} else {
 		if {[llength $match]} {
 			SeeNode [$Priv(html) root]
 		} else {
-			Goto $position
+			set remember [Goto $position]
 		}
-		return 1
 	}
 
-	set rc [Parse $file $wantedFile 0 $match]
-
-	if {[string length $match] == 0} {
-		Goto $position
+	if {$remember && [llength $match] == 0} {
+		history::addCurrentNode
 	}
 
-	incr Priv(history:index)
-	set Priv(history) [lrange $Priv(history) 0 $Priv(history:index)]
-	lappend Priv(history) [list $file 0 $rc]
-	if {$rc && [file tail $file] ni $Priv(recent)} {
-		if {[llength $Priv(recent)] > 4} { set Priv(recent) [lrange $Priv(recent) 0 4] }
-		set Priv(recent) [linsert $Priv(recent) 0 [file tail $file]]
-	}
-
-	SetupButtons
-	return $rc
+	return 1
 }
 
 
-proc Parse {file wantedFile moveto {match {}}} {
+proc Parse {file {wantedFile {}} {match {}}} {
 	variable Colors
 	variable Nodes
 	variable Priv
 
-	if {$Priv(current:file) eq $file} { return }
-
-	set index [expr {$Priv(history:index) + 1}]
-	if {$index >= 0 && $index < [llength $Priv(history)]} {
-		lset Priv(history) $index 1 [lindex [$Priv(html) yview] 0]
-		SetupButtons
+	if {$Priv(current:file) eq $file} {
+		return 1
 	}
 
 	array unset Nodes
@@ -1338,7 +1555,7 @@ proc Parse {file wantedFile moveto {match {}}} {
 			append content "</dl></blockquote></div>"
 		}
 		append content "
-			<br/><p><a href='script(GoBack)'>${mc::GoBack}</a></p>
+			<br/><p><a href='script(history::back)'>${mc::GoBack}</a></p>
 			</body></html>"
 		set match {}
 		set rc 0
@@ -1367,10 +1584,10 @@ proc Parse {file wantedFile moveto {match {}}} {
 	[$Priv(html) drawable] configure -cursor {}
 	$Priv(html) parse $content
 	update idletasks
-	$Priv(html) yview moveto $moveto
 
 	if {[string length $wantedFile] == 0} { set wantedFile $file }
 	set Priv(current:file) $wantedFile
+	history::updateNodes reload
 
 	if {[llength $match]} { SeeNode [$Priv(html) root] }
 
@@ -1400,68 +1617,15 @@ proc SeeNode {node} {
 }
 
 
-proc GetGoBackIndex {} {
-	variable Priv
-
-	set index $Priv(history:index)
-	while {$index >= 0} {
-		if {[lindex $Priv(history) $index 2]} { break }
-		incr index -1
-	}
-
-	return $index
-}
-
-
-proc GoBack {} {
-	variable Priv
-
-	set index [GetGoBackIndex]
-
-	if {$index >= 0} {
-		set entry [lindex $Priv(history) $index]
-		Parse [lindex $entry 0] {} [lindex $entry 1]
-		set Priv(history:index) [expr {$index - 1}]
-		SetupButtons
-	}
-}
-
-
-proc GoForward {} {
-	variable Priv
-
-	set index [expr {$Priv(history:index) + 2}]
-	while {$index < [llength $Priv(history)]} {
-		if {[lindex $Priv(history) $index 2]} { break }
-		incr index
-	}
-
-	if {$index < [llength $Priv(history)]} {
-		set entry [lindex $Priv(history) $index]
-		Parse [lindex $entry 0] {} [lindex $entry 1]
-		set Priv(history:index) [expr {$index - 1}]
-		SetupButtons
-	}
-}
-
-
-proc SetupButtons {} {
+proc SetupButtons {back fwd} {
 	variable Priv
 
 	if {![info exists Priv(button:forward)]} { return }
 
-	if {$Priv(history:index) + 2 < [llength $Priv(history)]} {
-		set state normal
-	} else {
-		set state disabled
-	}
+	if {$fwd} { set state normal } else { set state disabled }
 	$Priv(button:forward) configure -state $state
 
-	if {$Priv(history:index) >= 0} {
-		set state normal
-	} else {
-		set state disabled
-	}
+	if {$back} { set state normal } else { set state disabled }
 	$Priv(button:back) configure -state $state
 }
 

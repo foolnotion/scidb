@@ -1527,6 +1527,8 @@ tcl_player.o: ../mstl/m_list.ipp
 tcl_player.o: ../db/db_player.ipp
 tcl_player.o: ../db/db_namebase_entry.h
 tcl_player.o: ../db/db_namebase_entry.ipp
+tcl_player.o: ../mstl/m_match.h
+tcl_player.o: ../mstl/m_match.ipp
 tcl_position.o: tcl_position.h
 tcl_position.o: ../db/db_common.h
 tcl_position.o: ../util/u_base.h

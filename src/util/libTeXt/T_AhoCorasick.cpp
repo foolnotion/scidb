@@ -316,26 +316,38 @@ AhoCorasick::Impl::search(AhoCorasick& base, mstl::string const& text, Method me
 
 				matchFound = true;
 
-				if (method == LongestMatchOnly)
+				switch (method)
 				{
-					Match match(0, 0);
-
-					for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
+					case LongestMatchOnly:
 					{
-						Match const& m = m_current->m_indices[i];
+						Match match(0, 0);
 
-						if (m.m_length > match.m_length)
-							match = m;
+						for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
+						{
+							Match const& m = m_current->m_indices[i];
+
+							if (m.m_length > match.m_length)
+								match = m;
+						}
+
+						base.match(position + m_basePosition, match.m_index, match.m_length);
+						break;
 					}
 
-					base.match(position + m_basePosition, match.m_index, match.m_length);
-				}
-				else
-				{
-					for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
+					case AllMatches:
+						for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
+						{
+							Match const& match = m_current->m_indices[i];
+							base.match(position + m_basePosition, match.m_index, match.m_length);
+						}
+						break;
+
+					case AnyMatch:
 					{
-						Match const& match = m_current->m_indices[i];
+						Match const& match = m_current->m_indices[0];
 						base.match(position + m_basePosition, match.m_index, match.m_length);
+						m_basePosition += position;
+						return true;
 					}
 				}
 			}
@@ -357,10 +369,24 @@ AhoCorasick::Impl::search(AhoCorasick& base, mstl::string const& text, Method me
 }
 
 
-AhoCorasick::AhoCorasick() :m_impl(new Impl), m_isPrepared(false) {}
-AhoCorasick::~AhoCorasick() { delete m_impl; }
+AhoCorasick::AhoCorasick()
+	:m_impl(new Impl)
+	,m_isPrepared(false)
+{
+}
 
-bool AhoCorasick::isPrepared() const { return m_isPrepared; }
+
+AhoCorasick::~AhoCorasick()
+{
+	delete m_impl;
+}
+
+
+bool
+AhoCorasick::isPrepared() const
+{
+	return m_isPrepared;
+}
 
 
 bool
