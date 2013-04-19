@@ -501,10 +501,10 @@ ToMove::match(GameInfo const& info, Board const& board, Variant variant, bool is
 Fen::Fen(Board const& board)
 	:m_board(board)
 {
-	m_includeHolding	= board.checksGiven(White) > 0
-							| board.checksGiven(Black) > 0
-							| board.holding(White).total() > 0
-							| board.holding(Black).total() > 0;
+	m_includeHolding	=  board.checksGiven(White) > 0
+							|| board.checksGiven(Black) > 0
+							|| board.holding(White).total() > 0
+							|| board.holding(Black).total() > 0;
 }
 
 

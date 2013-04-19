@@ -83,13 +83,13 @@ match(cql::Board const& pos, db::Board const& board)
 				|| matchAny(pos.pieces[White].bishops, board.bishops(White))
 				|| matchAny(pos.pieces[White].rooks, board.rooks(White))
 				|| matchAny(pos.pieces[White].queens, board.queens(White))
-				|| matchAny(pos.pieces[White].kings, board.kings(White)))
+				|| matchAny(pos.pieces[White].kings, board.kings(White))
 				|| matchAny(pos.pieces[Black].pawns, board.pawns(Black))
 				|| matchAny(pos.pieces[Black].knights, board.knights(Black))
 				|| matchAny(pos.pieces[Black].bishops, board.bishops(Black))
 				|| matchAny(pos.pieces[Black].rooks, board.rooks(Black))
 				|| matchAny(pos.pieces[Black].queens, board.queens(Black))
-				|| matchAny(pos.pieces[Black].kings, board.kings(Black));
+				|| matchAny(pos.pieces[Black].kings, board.kings(Black)));
 }
 
 
@@ -1574,7 +1574,7 @@ Designator::parse(char const* s, Error& error)
 
 		s = t + 1;
 	}
-	else if (*t == '?' || 'a' <= *t && *t <= 'h')
+	else if (*t == '?' || ('a' <= *t && *t <= 'h'))
 	{
 		s = parseRange(t, error, squares);
 

@@ -364,7 +364,7 @@ pattern::search(char const* s, char const* e) const
 	unsigned size = e - s;
 
 	if (size < m_min_length)
-		return false;
+		return 0;
 	
 	if (!m_is_plain)
 		return ::search(m_pattern, s, e - m_min_length);
@@ -390,7 +390,7 @@ pattern::search(string const& s) const
 		return 0;
 
 	if (s.size() < m_min_length)
-		return false;
+		return 0;
 	
 	if (!m_is_plain)
 		return ::search(m_pattern, s.begin(), s.end() - m_min_length);

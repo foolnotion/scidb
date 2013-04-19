@@ -1614,7 +1614,7 @@ Position::finish(Match& match)
 
 	mstl::auto_ptr<Position> flipped;
 
-	if ((m_transformations & (Flip | Shift | Flip_Color)) == Flip | Shift | Flip_Color)
+	if ((m_transformations & (Flip | Shift | Flip_Color)) == (Flip | Shift | Flip_Color))
 	{
 	}
 
