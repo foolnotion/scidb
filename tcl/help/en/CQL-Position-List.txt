@@ -1,0 +1,521 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Position List (CQL)
+INDEX CQL Position List
+
+DEFINE <nonstd/> <note>This keyword is not part of the CQL standard.</note>
+
+TITLE CQL - The position list
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#simple">Simple keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#transform">Transformation keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#piece">Piece configuration keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#move">Move keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#sequence">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#game">Game related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation">Relation between positions</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#matching">Matching count keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#accumulator">Accumulator keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#tagging">Tagging keywords</a></td></tr>
+  </table>
+</dir>
+
+<h2 id="index">Index</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:accumulate">:accumulate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:btm">:btm</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:castling">:castling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:check">:check</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:elo">:elo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:endgame">:endgame</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fen">:fen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flip">:flip</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:initial">:initial</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:inside">:inside</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:inside">:inside</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:losing">:losing</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:markall">:markall</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:mate">:mate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:maxswapvalue">:maxswapvalue</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:moveto">:moveto</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:or">:or</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piececount">:piececount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:power">:power</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:promote">:promote</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rating">:rating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:ray">:ray</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:repetition">:repetition</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:reset">:reset</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:result">:result</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sequence">:sequence</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal*">:shifthorizontal*</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shift">:shift</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:terminal">:terminal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:threechecks">:threechecks</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:variations">:variations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:wtm">:wtm</a></td></tr>
+  </table>
+</dir>
+
+<h2 id="simple">Simple keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:btm">:btm</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:check">:check</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:castling">:castling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:endgame">:endgame</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fen">:fen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:initial">:initial</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:inside">:inside</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:losing">:losing</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:markall">:markall</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:mate">:mate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:repetition">:repetition</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:terminal">:terminal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:variations">:variations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:wtm">:wtm</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:btm">:btm</h3>
+
+
+<h3 id="position:check">:check</h3>
+
+
+<h3 id="position:castling">:castling</h3>
+
+
+<h3 id="position:contactcheck">:contactcheck</h3>
+
+
+<h3 id="position:doublecheck">:doublecheck</h3>
+
+
+<h3 id="position:endgame">:endgame</h3>
+
+
+<h3 id="position:fen">:fen</h3>
+
+
+<h3 id="position:fiftymoverule">:fiftymoverule</h3>
+
+
+<h3 id="position:initial">:initial</h3>
+
+
+<h3 id="position:inside">:inside</h3>
+
+
+<h3 id="position:losing">:losing</h3>
+
+
+<h3 id="position:markall">:markall</h3>
+
+
+<h3 id="position:mate">:mate</h3>
+
+
+<h3 id="position:noannotate">:noannotate</h3>
+
+
+<h3 id="position:nocheck">:nocheck</h3>
+
+
+<h3 id="position:nocontactcheck">:nocontactcheck</h3>
+
+
+<h3 id="position:nodoublecheck">:nodoublecheck</h3>
+
+
+<h3 id="position:noendgame">:noendgame</h3>
+
+
+<h3 id="position:nostalemate">:nostalemate</h3>
+
+
+<h3 id="position:repetition">:repetition</h3>
+
+
+<h3 id="position:stalemate">:stalemate</h3>
+
+
+<h3 id="position:terminal">:terminal</h3>
+
+
+<h3 id="position:variations">:variations</h3>
+
+
+<h3 id="position:variationsonly">:variationsonly</h3>
+
+
+<h3 id="position:wtm">:wtm</h3>
+
+
+<h2 id="transform">Transformation keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:flip">:flip</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:inside">:inside</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shift">:shift</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal*">:shifthorizontal*</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:flip">:flip</h3>
+
+
+<h3 id="position:flipcolor">:flipcolor</h3>
+
+
+<h3 id="position:flipdiagonal">:flipdiagonal</h3>
+
+
+<h3 id="position:flipdihedral">:flipdihedral</h3>
+
+
+<h3 id="position:fliphorizontal">:fliphorizontal</h3>
+
+
+<h3 id="position:flipvertical">:flipvertical</h3>
+
+
+<h3 id="position:inside">:inside</h3>
+
+
+<h3 id="position:shift">:shift</h3>
+
+
+<h3 id="position:shiftdiagonal">:shiftdiagonal</h3>
+
+
+<h3 id="position:shifthorizontal">:shifthorizontal</h3>
+
+
+<h3 id="position:shifthorizontal*">:shifthorizontal*</h3>
+
+
+<h3 id="position:shiftmaindiagonal">:shiftmaindiagonal</h3>
+
+
+<h3 id="position:shiftoffdiagonal">:shiftoffdiagonal</h3>
+
+
+<h3 id="position:shiftvertical">:shiftvertical</h3>
+
+
+<h2 id="piece">Piece configuration keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:maxswapvalue">:maxswapvalue</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piececount">:piececount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:power">:power</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:ray">:ray</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:attackcount">:attackcount</h3>
+
+
+<h3 id="position:maxswapvalue">:maxswapvalue</h3>
+
+
+<h3 id="position:piececount">:piececount</h3>
+
+
+<h3 id="position:power">:power</h3>
+
+
+<h3 id="position:powerdifference">:powerdifference</h3>
+
+
+<h3 id="position:ray">:ray</h3>
+
+
+<h3 id="position:rayattack">:rayattack</h3>
+
+
+<h3 id="position:raydiagonal">:raydiagonal</h3>
+
+
+<h3 id="position:rayhorizontal">:rayhorizontal</h3>
+
+
+<h3 id="position:rayorthogonal">:rayorthogonal</h3>
+
+
+<h3 id="position:rayvertical">:rayvertical</h3>
+
+
+<h2 id="move">Move keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:moveto">:moveto</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:promote">:promote</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:threechecks">:threechecks</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:enpassant">:enpassant</h3>
+
+
+<h3 id="position:iscastling">:iscastling</h3>
+
+
+<h3 id="position:movefrom">:movefrom</h3>
+
+
+<h3 id="position:movenumber">:movenumber</h3>
+
+
+<h3 id="position:moveto">:moveto</h3>
+
+
+<h3 id="position:noenpassant">:noenpassant</h3>
+
+
+<h3 id="position:piecedrop">:piecedrop</h3>
+
+
+<h3 id="position:promote">:promote</h3>
+
+
+<h3 id="position:threechecks">:threechecks</h3>
+
+
+<h2 id="logical">Logical keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:or">:or</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:and">:and</h3>
+
+
+<h3 id="position:not">:not</h3>
+
+
+<h3 id="position:or">:or</h3>
+
+
+<h2 id="sequence">Sequence keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sequence">:sequence</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:gappedsequence">:gappedsequence</h3>
+
+
+<h3 id="position:sequence">:sequence</h3>
+
+
+<h2 id="game">Game related keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:elo">:elo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rating">:rating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:result">:result</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:blackelo">:blackelo</h3>
+
+
+<h3 id="position:blackrating">:blackrating</h3>
+
+
+<h3 id="position:elo">:elo</h3>
+
+
+<h3 id="position:rating">:rating</h3>
+
+
+<h3 id="position:result">:result</h3>
+
+
+<h3 id="position:whiteelo">:whiteelo</h3>
+
+
+<h3 id="position:whiterating">:whiterating</h3>
+
+
+<h2 id="relation">Relation between positions</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:relation">:relation</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:relation">:relation</h3>
+
+<h2 id="matching">Matching count keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:checkcount">:checkcount</h3>
+
+
+<h3 id="position:matchcount">:matchcount</h3>
+
+
+<h3 id="position:pretransformmatchcount">:pretransformmatchcount</h3>
+
+
+<h2 id="accumulator">Accumulator keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:accumulate">:accumulate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:reset">:reset</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:accumulate">:accumulate</h3>
+
+
+<h3 id="position:reset">:reset</h3>
+
+
+<h3 id="position:sumrange">:sumrange</h3>
+
+
+<h2 id="tagging">Tagging keywords</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:tagmatch">:tagmatch</h3>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -1931,6 +1931,8 @@
 ::help::mc::CurrentPageOnly		"Sök endast på aktuell sida"
 ::help::mc::GoBack					"Gå bakåt en sida"
 ::help::mc::GoForward				"Gå framåt en sida"
+::help::mc::GoHome					"Go to top of page" ;# NEW
+::help::mc::GoEnd						"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Gå till sida '%s'"
 ::help::mc::ExpandAllItems			"Visa alla objekt"
 ::help::mc::CollapseAllItems		"Dölj alla objekt"

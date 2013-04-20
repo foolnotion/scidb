@@ -44,15 +44,30 @@ Scidb supports following formats:
 </p>
 </span>
 
-<ul>
-  <li><a href="#Scidb">Scidb</a></li>
-  <li><a href="#Scid">Scid</a></li>
-  <li><a href="#ChessBase">ChessBase</a></li>
-  <li><a href="#PGN">PGN</a></li>
-  <li><a href="#Database-Archive">Archivo de base de datos</a></li>
-</ul>
+<ul style="list-style-type: none"><li>
+  <li>
+    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <a href="#Scidb">Scidb</a>
+  </li>
+  <li>
+    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <a href="#Scid">Scid</a>
+  </li>
+  <li>
+    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <a href="#ChessBase">ChessBase</a>
+  </li>
+  <li>
+    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <a href="#PGN">PGN</a>
+  </li>
+  <li>
+    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <a href="#Database-Archive">Archivo de base de datos</a>
+  </li>
+</li></ul>
 
-<h2><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
 
 <p>
 Este es el formato de bases de datos propietario de Scidb. Se recomienda decididamente utilizar 
@@ -132,7 +147,7 @@ Una base en formato Scidb está conformada por varios archivos:
   </table>
 </div>
 
-<h2><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
 
 <p>
 El formato de bases de datos Scid está completamente soportado debido a su amplia
@@ -140,9 +155,9 @@ adopción, pero con este formato usted no utilizará todas las capacidades de Sc
 </p>
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-Las bases de datos Scid sólo pueden abrirse en modo de sólo-lectura; el usuario podrá
-cambiar a un modo editable luego de abiertas. Al reabrir dicha base se mantendrá el modo
-utilizado al cerrarla por última vez.
+<span class="NEW">
+Scid databases will be opened only in read-only mode.
+</span>
 </div>
 
 <p>
@@ -186,7 +201,7 @@ Scidb.
 <span class="NEW">Likewise any saved game list (file suffix <code>.txt</code>) will be
 disregarded.</span></p>
 
-<h2><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
+<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
 
 <p>
 La compañía ChessBase mantiene su formato en secreto, motivo por el cual sólo se 
@@ -245,7 +260,7 @@ A database in old format consists of only four files:
 </div>
 </span>
 
-<h2><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
 
 <p>
 El formato <abbr>PGN</abbr> (Portable Game Notation) es un estándar común para la

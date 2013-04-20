@@ -40,7 +40,9 @@ set MatchCase					"Match case"
 set TitleOnly					"Search in titles only"
 set CurrentPageOnly			"Search in current page only"
 set GoBack						"Go back one page"
-set GoForward					"Go forward one page (Alt-Right)"
+set GoForward					"Go forward one page"
+set GotoHome					"Go to top of page"
+set GotoEnd						"Go to end of page"
 set GotoPage					"Go to page '%s'"
 set ExpandAllItems			"Expand all items"
 set CollapseAllItems			"Collapse all items"
@@ -154,8 +156,30 @@ proc open {parent {file {}} args} {
 	### Left side ########################################
 	set control [ttk::frame $pw.control]
 	set Priv(control) $control
-
 	set buttons [ttk::frame $control.buttons]
+
+	ttk::button $buttons.expand \
+		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::collapse] \
+		-command [namespace code ExpandAllItems] \
+		;
+	set Priv(button:expand) $buttons.expand
+	::tooltip::tooltip $buttons.expand [namespace current]::mc::ExpandAllItems
+	ttk::button $buttons.collapse \
+		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::expand] \
+		-command [namespace code CollapseAllItems] \
+		;
+	set Priv(button:collapse) $buttons.collapse
+	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
+	ttk::button $buttons.home \
+		-image $::icon::16x16::controlFastBackward \
+		-command [namespace code [list Goto @home]] \
+		;
+	set Priv(button:home) $buttons.home
+	ttk::button $buttons.end \
+		-image $::icon::16x16::controlFastForward \
+		-command [namespace code [list Goto @end]] \
+		;
+	set Priv(button:end) $buttons.end
 	ttk::button $buttons.back \
 		-image [::icon::makeStateSpecificIcons $::icon::16x16::controlBackward] \
 		-command [namespace code history::back] \
@@ -167,26 +191,18 @@ proc open {parent {file {}} args} {
 		-command [namespace code history::forward] \
 		-state disabled \
 		;
-	ttk::button $buttons.expand \
-		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::collapse] \
-		-command [namespace code ExpandAllItems] \
-		;
-	set Priv(button:collapse) $buttons.collapse
-	::tooltip::tooltip $buttons.expand [namespace current]::mc::ExpandAllItems
-	ttk::button $buttons.collapse \
-		-image [::icon::makeStateSpecificIcons $::treetable::icon::16x16::expand] \
-		-command [namespace code CollapseAllItems] \
-		;
-	set Priv(button:expand) $buttons.expand
-	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
 	set Priv(button:forward) $buttons.forward
+
 	grid $buttons.expand   -row 1 -column 1
 	grid $buttons.collapse -row 1 -column 3
-	grid $buttons.back     -row 1 -column 5
-	grid $buttons.forward  -row 1 -column 7
-	grid columnconfigure $buttons {0 2 4 6 8} -minsize $::theme::padding
-	grid columnconfigure $buttons 4 -weight 1
-	grid rowconfigure $buttons {0 2} -minsize $::theme::padding
+	grid $buttons.home     -row 1 -column 5
+	grid $buttons.end      -row 1 -column 7
+	grid $buttons.back     -row 1 -column 9
+	grid $buttons.forward  -row 1 -column 11
+	grid columnconfigure $buttons {0 2 4 6 10 12} -minsize $::theme::padx
+	grid columnconfigure $buttons {8} -minsize $::theme::padX
+	grid columnconfigure $buttons {4} -weight 1
+	grid rowconfigure $buttons {0 2} -minsize $::theme::pady
 
 	set nb [ttk::notebook $control.nb -takefocus 1 -width 320]
 	::ttk::notebook::enableTraversal $nb
@@ -212,6 +228,8 @@ proc open {parent {file {}} args} {
 
 	bind $dlg <Alt-Left>			[namespace code history::back]
 	bind $dlg <Alt-Right>		[namespace code history::forward]
+	bind $dlg <Alt-Home>			[namespace code [list Goto @home]]
+	bind $dlg <Alt-End>			[namespace code [list Goto @end]]
 	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $dlg $pw.control]]
 
 	bind $nb <<LanguageChanged>> [namespace code Update]
@@ -228,16 +246,6 @@ proc open {parent {file {}} args} {
 	$pw add $html -sticky nswe -stretch always -minsize 500
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
-
-#	switch [tk windowingsystem] {
-#		win32 - aqua {
-#			bind $dlg <MouseWheel> [list event generate $html <MouseWheel> -delta %D]
-#		}
-#		x11 {
-#			bind $dlg <ButtonPress-4> [list event generate $html <ButtonPress-4>]
-#			bind $dlg <ButtonPress-5> [list event generate $html <ButtonPress-5>]
-#		}
-#	}
 
 	if {$opts(-transient)} {
 		wm transient $dlg [winfo toplevel $parent]
@@ -398,11 +406,7 @@ proc BuildFrame {w} {
 	set Priv(contents:tree) $w
 
 	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
-	bind $w <Alt-Left>	[namespace parent]::history::back
-	bind $w <Alt-Right>	[namespace parent]::history::forward
-	bind $w <Alt-Left>	{+ break }
-	bind $w <Alt-Right>	{+ break }
-
+	[namespace parent]::StandardBindings $w
 	Update
 }
 
@@ -440,7 +444,12 @@ proc FillContents {t contents {depth 0}} {
 				set icon ""
 				if {[llength $topic] == 2} {
 					set Priv(topic:$file) $title
-					if {$d == 0} { set icon $library } else { set icon $document }
+					if {$d == 0} {
+						set icon $library
+					} else {
+						set icon $document
+						set collapse yes
+					}
 				} else {
 					set collapse yes
 					if {$d == 0} {
@@ -538,8 +547,11 @@ proc BuildFrame {w type} {
 	set Priv($type:changed) 0
 	set Priv($type:tree) $w
 	::treetable $w -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
+
 	bind $w <<TreeTableSelection>> [namespace code [list LoadPage $type %d]]
-	bind $w <Any-KeyPress> [namespace code { Select $type %W %A }]
+	$w bind <Any-KeyPress> [namespace code [list Select $type %W %A]]
+
+	[namespace parent]::StandardBindings $w
 	Update $type
 }
 
@@ -563,12 +575,13 @@ proc Update {type} {
 	set font [$t cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
 	array unset Priv $type:path:*
-	array unset Priv key:*
+	array unset Priv $type:key:*
 
 	foreach group $Index {
 		lassign $group alph entries
 
 		$t add 0 -text $alph -fill red4 -font $bold -enabled no -tag $alph -collapse no
+		set Priv($type:key:$alph) $alph
 		set count 0
 
 		foreach entry $entries {
@@ -577,9 +590,11 @@ proc Update {type} {
 			$t add 1 -text $topic -tag $tag
 			set path [[namespace parent]::FullPath $file]
 			set Priv($type:path:$tag) [list $path $fragment]
-			if {$count == 0} { set Priv(key:$alph) $tag }
+			if {$count == 0} { set Priv($type:first:$alph) $tag }
 			incr count
 		}
+
+		if {$count > 1} { set Priv($type:last:$alph) $tag }
 	}
 
 	catch { $t activate 2 }
@@ -605,10 +620,14 @@ proc Select {type t key} {
 
 	set key [string toupper $key]
 
-	if {[info exists Priv($type:key:$key)]} {
-		set item $Priv($type:key:$key)
-		$t activate $item
+	if {[info exists Priv($type:last:$key)]} {
+		set item $Priv($type:last:$key)
 		$t see $item
+	}
+
+	if {[info exists Priv($type:key:$key)]} {
+		$t activate $Priv($type:first:$key)
+		$t see $Priv($type:key:$key)
 	}
 }
 
@@ -806,6 +825,19 @@ proc Update {} {
 } ;# namespace search
 
 
+proc StandardBindings {w} {
+	$w bind <Alt-Left>	[namespace code history::back]
+	$w bind <Alt-Right>	[namespace code history::forward]
+	$w bind <Alt-Left>	{+ break }
+	$w bind <Alt-Right>	{+ break }
+
+	$w bind <Alt-Home>	[namespace code [list Goto @home]]
+	$w bind <Alt-End>		[namespace code [list Goto @end]]
+	$w bind <Alt-Home>	{+ break }
+	$w bind <Alt-End>		{+ break }
+}
+
+
 proc TabChanged {nb} {
 	variable Priv
 
@@ -849,6 +881,11 @@ proc UpdateTitle {} {
 	::tooltip::tooltip $Priv(button:back) $tip
 	set tip "$mc::GoForward ($::mc::Key(Alt)-$::mc::Key(Right))"
 	::tooltip::tooltip $Priv(button:forward) $tip
+
+	set tip "$mc::GoHome ($::mc::Key(Alt)-$::mc::Key(Home))"
+	::tooltip::tooltip $Priv(button:home) $tip
+	set tip "$mc::GoEnd ($::mc::Key(Alt)-$::mc::Key(End))"
+	::tooltip::tooltip $Priv(button:end) $tip
 }
 
 
@@ -1260,10 +1297,15 @@ proc Goto {position} {
 	variable Priv
 
 	lassign [$Priv(html) viewbox] _ view0 _ view1
+	set changed 0
 
 	if {[string length $position] == 0} {
-		set changed [expr {$view0 > 10}]
+		set changed [expr {$view0 > 30}]
 		set position 0
+	} elseif {$position eq "@home"} {
+		set position 0
+	} elseif {$position eq "@end"} {
+		set position 1000000
 	} elseif {![string is integer -strict $position]} {
 		if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
 		set selector [format {[id="%s"]} $position]

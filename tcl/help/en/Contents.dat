@@ -46,6 +46,9 @@ set Contents {
       {{{Range specifiers} {CQL-Range-Specifiers.html}}}
     }
     {{{The match list} {CQL-Match-List.html}}}
+    {{{The position list} {CQL-Position-List.html}}}
+    {{{The relation list} {CQL-Relation-List.html}}}
+    {{{Tagging} {CQL-Tagging.html}}}
   }
   {
     {{{Further information} {Overview.html} {further-information}}}

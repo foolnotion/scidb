@@ -8,6 +8,7 @@
 <!-- **********************************************************************
 * Copyright: (C) 2013 Gregor Cramer
 *********************************************************************** -->
+
 <!-- **********************************************************************
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,14 +16,14 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX FEN (Forsyth-Edwards-Notation)
-INDEX X-FEN (Erweiterte Forsyth-Edwards-Notation)
-INDEX Shredder-FEN
+INDEX FEN (Forsyth-Edwards Notation)
+INDEX X-FEN (Extended Forsyth-Edwards Notation)
+INDEX Shredder FEN
 
-TITLE FEN (Forsyth-Edwards-Notation)
+TITLE FEN (Forsyth-Edwards Notation)
 
 <p>
-Forsyth-Edwards Notation (FEN) &em; or X-FEN in extended form &em;
+Forsyth-Edwards Notation (FEN) &ndash; or X-FEN in extended form &ndash;
 is a standard notation for describing a particular board position of a
 chess game. The purpose of FEN is to provide all the necessary information
 to restart a game from a particular position. In fact this notation has
@@ -67,14 +68,13 @@ r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
 
 <p>
 <code>NNPPbnp</code> is describing that the white player has two
-knights and two pawns in holding, and the black player has one
+knights, and two pawns in holding; and the black player has one
 bishop, one knight, and one pawn in holding.
 </p>
 
 <p>
-For pieces 
-Die Figuren, die aus einer Bauernumwandlung enstanden, werden mit der
-Tilde ausgezeichnet. Beispiel:
+For pieces resulted from a pawn promotion the character tilde is
+tagging this piece. Example:
 </p>
 
 <dir><code>
@@ -82,21 +82,27 @@ rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
 </code></dir>
 
 <p>
-Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
+The white queen (<code>Q~</code>) was originated from a pawn
+promotion.
 </p>
 
 <h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
 
-Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
-ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
+<p>
+For this chess variant an additional field will be appended to the FEN
+(X-FEN, or Shredder FEN) for a description of the given checks.
+Example:
+</p>
 
 <dir><code>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 </code></dir>
 
-<code>+0+2</code> bedeutet:
-Weiß gab kein einziges Mal Schach, und Schwarz gab Weiß bisher genau
-zwei Schachgebote.
+<p>
+<code>+0+2</code> means:
+the white player does not gave check at all to black, and the black
+player gave check to white king exactly two times.
+</p>
 
 END
 

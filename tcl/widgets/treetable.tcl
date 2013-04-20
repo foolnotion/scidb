@@ -188,7 +188,7 @@ proc WidgetProc {t command args} {
 			$t item enabled $item $enabled
 			$t item lastchild $Vars($depth:lastchild) $item
 			set Vars([expr {$depth + 1}]:lastchild) $item
-			return
+			return $item
 		}
 
 		resize {
@@ -251,6 +251,13 @@ proc WidgetProc {t command args} {
 
 		itemheight? {
 			return $Vars(itemheight)
+		}
+
+		bind {
+			if {[llength $args] > 2} {
+				error "wrong # args: should be \"bind ?pattern? ?command?\""
+			}
+			return [bind $t {*}$args]
 		}
 	}
 

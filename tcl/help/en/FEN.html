@@ -3,14 +3,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- Generated from tcl/help/de/FEN.txt -->
+<!-- Generated from tcl/help/en/FEN.txt -->
 
-<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
 <head>
   <meta http-equiv="content-type"
            content="text/html; charset=utf-8" />
   <meta http-equiv="content-language"
-           content="de" />
+           content="en" />
   <meta http-equiv="content-style-type"
            content="text/css" />
 
@@ -29,45 +29,53 @@
       media="screen"
        href="../styles/help.css" />
 
-  <title>Hilfe: FEN (Forsyth-Edwards-Notation)</title>
+  <title>Help: FEN (Forsyth-Edwards Notation)</title>
 </head>
 
 <body>
 
 <div class="title">
-  <h1 class="title">FEN (Forsyth-Edwards-Notation)</h1>
+  <h1 class="title">FEN (Forsyth-Edwards Notation)</h1>
 </div>
 
 <p>
-Die Forsyth-Edwards-Notation (FEN) oder in der erweiterten Form (X-FEN)
-ist eine Kurznotation, mit der jede beliebige Brettstellung im Schach
-niedergeschrieben werden kann.  Die FEN wird ausführlich unter
-<a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
-Wikipedia</a> beschrieben.
+Forsyth-Edwards Notation (FEN) &ndash; or X-FEN in extended form &ndash;
+is a standard notation for describing a particular board position of a
+chess game. The purpose of FEN is to provide all the necessary information
+to restart a game from a particular position. In fact this notation has
+one weakness: it is not describing how many times the described position
+was repeated.  A detailed description is available online:
+</p>
+
+<!-- Not for translators: please replace with local Wikipedia link. -->
+<ul>
+  <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
+    ForsythEdwards Notation - Wikipedia</a></li>
+  <li><a href="http://en.wikipedia.org/wiki/X-FEN">X-FEN - Wikipedia</a>
+ </ul>
+
+<p>
+Also, it should be noted that Scidb can handle the Shredder FEN.
 </p>
 
 <p>
-Zu erwähnen ist, daß Scidb auch die Shredder-FEN verarbeiten kann.
-</p>
-
-<p>
-Für einige Schachformen benutzt Scidb notwendigerweise Erweiterungen:
+For other chess variants Scidb is using some required extensions:
 </p>
 
 <ul>
-  <li><a href="#Crazyhouse">Einsetzschach</a></li>
-  <li><a href="#ThreeCheck">Dreimal-Schach</a></li>
+  <li><a href="#Crazyhouse">Crazyhouse Chess</a></li>
+  <li><a href="#ThreeCheck">Three-check Chess</a></li>
 </ul>
 
-<h2 id="Crazyhouse">Einsetzschach</h2>
+<h2 id="Crazyhouse">Crazyhouse Chess</h2>
 
 <p>
-Scidb benutzt eine erweiterte FEN (bzw. X-FEN, oder Shredder-FEN)
-für Einsetzschach, die vom BPGN-Standard (&#x21d2;
+Scidb is using an extended FEN (X-FEN, or Shredder FEN) for Crazyhouse,
+derived from BPGN standard (&#x21d2;
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
-BPGN - Bughouse Portable Game Notation</a>) abgeleitet wurde. Die
-in der Rückhand befindlichen Figuren werden an das Ende des ersten
-Feldes angefügt; zum Beispiel
+BPGN - Bughouse Portable Game Notation</a>).
+The pieces in holding will be added at the end of first field; for
+example:
 </p>
 
 <ul style="list-style-type: none"><li><code>
@@ -75,14 +83,14 @@ r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
 </code></li></ul>
 
 <p>
-<code>NNPPbnp</code> gibt an, daß Weiß zwei Springer und zwei Bauern
-in der Rückhand hält, und Schwarz einen Läufer, einen Springer, und
-einen Bauern.
+<code>NNPPbnp</code> is describing that the white player has two
+knights, and two pawns in holding; and the black player has one
+bishop, one knight, and one pawn in holding.
 </p>
 
 <p>
-Die Figuren, die aus einer Bauernumwandlung enstanden, werden mit der
-Tilde ausgezeichnet. Beispiel:
+For pieces resulted from a pawn promotion the character tilde is
+tagging this piece. Example:
 </p>
 
 <ul style="list-style-type: none"><li><code>
@@ -90,21 +98,27 @@ rkn2Q~N1/pppq4/5P2/8/1P1P1n2/5B1P/PPPN1PpP/R3K1R1/RBBBPPq b Q - 0 43
 </code></li></ul>
 
 <p>
-Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
+The white queen (<code>Q~</code>) was originated from a pawn
+promotion.
 </p>
 
-<h2 id="ThreeCheck">Dreimal-Schach</h2>
+<h2 id="ThreeCheck">Three-check Chess</h2>
 
-Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
-ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
+<p>
+For this chess variant an additional field will be appended to the FEN
+(X-FEN, or Shredder FEN) for a description of the given checks.
+Example:
+</p>
 
 <ul style="list-style-type: none"><li><code>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 </code></li></ul>
 
-<code>+0+2</code> bedeutet:
-Weiß gab kein einziges Mal Schach, und Schwarz gab Weiß bisher genau
-zwei Schachgebote.
+<p>
+<code>+0+2</code> means:
+the white player does not gave check at all to black, and the black
+player gave check to white king exactly two times.
+</p>
 
 </body>
 </html>

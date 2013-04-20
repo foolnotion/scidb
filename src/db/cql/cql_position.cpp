@@ -561,6 +561,14 @@ Position::parseBlackToMove(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseCastling(Match& match, char const* s, Error& error)
+{
+	// TODO
+	return s;
+}
+
+
+char const*
 Position::parseIsCastling(Match& match, char const* s, Error& error)
 {
 	m_moveMatchList.push_back(new cql::move::IsCastling);
@@ -1457,6 +1465,7 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("and",								&Position::parseAnd),
 		Pair("attackcount",					&Position::parseAttackCount),
 		Pair("btm",								&Position::parseBlackToMove),
+		Pair("castling",						&Position::parseCastling),
 		Pair("check",							&Position::parseCheck),
 		Pair("checkcount",					&Position::parseCheckCount),
 		Pair("contactcheck",					&Position::parseContactCheck),

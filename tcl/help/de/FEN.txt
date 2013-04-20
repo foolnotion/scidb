@@ -8,6 +8,7 @@
 <!-- **********************************************************************
 * Copyright: (C) 2013 Gregor Cramer
 *********************************************************************** -->
+
 <!-- **********************************************************************
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -80,16 +81,20 @@ Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
 
 <h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
 
+<p>
 Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
 ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
+</p>
 
 <dir><code>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 </code></dir>
 
+<p>
 <code>+0+2</code> bedeutet:
 Weiß gab kein einziges Mal Schach, und Schwarz gab Weiß bisher genau
 zwei Schachgebote.
+</p>
 
 END
 

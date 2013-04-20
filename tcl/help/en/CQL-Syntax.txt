@@ -157,6 +157,15 @@ simply selects all games:
 (match (position))
 </verb>
 
+<p>
+In Scidb this script can be written even more simpler, because in Scidb
+the match list must not contain position lists:
+</p>
+
+<verb>
+(match)
+</verb>
+
 <h2>Comments in a CQL file</h2>
 
 <p>

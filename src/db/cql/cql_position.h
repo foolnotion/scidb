@@ -96,6 +96,7 @@ private:
 	char const* parseBlackElo(Match& match, char const* s, Error& error);
 	char const* parseBlackRating(Match& match, char const* s, Error& error);
 	char const* parseBlackToMove(Match& match, char const* s, Error& error);
+	char const* parseCastling(Match& match, char const* s, Error& error);
 	char const* parseIsCastling(Match& match, char const* s, Error& error);
 	char const* parseCheck(Match& match, char const* s, Error& error);
 	char const* parseCheckCount(Match& match, char const* s, Error& error);

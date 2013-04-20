@@ -21,7 +21,10 @@ set Index {
       {{Contact information} {Contact-Information.html} {}}
       {{CQL Manual} {CQL-Index.html} {}}
       {{CQL Match List} {CQL-Match-List.html} {}}
+      {{CQL Position List} {CQL-Position-List.html} {}}
+      {{CQL Relation List} {CQL-Relation-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
+      {{CQL Tagging} {CQL-Tagging.html} {}}
     }
   }
   { D
@@ -39,6 +42,7 @@ set Index {
   }
   { F
     {
+      {{FEN (Forsyth-Edwards Notation)} {FEN.html} {}}
       {{File formats} {Database-Formats.html} {}}
       {{File Selection Dialog} {File-Selection-Dialog.html} {}}
     }
@@ -68,23 +72,26 @@ set Index {
   }
   { P
     {
-      {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
       {{Pattern matching} {Pattern-Matching.html} {}}
       {{Piece designators (CQL)} {CQL-Piece-Designators.html} {}}
+      {{Position List (CQL)} {CQL-Position-List.html} {}}
     }
   }
   { R
     {
       {{Range specifiers (CQL)} {CQL-Range-Specifiers.html} {}}
+      {{Relation List (CQL)} {CQL-Relation-List.html} {}}
     }
   }
   { S
     {
+      {{Shredder FEN} {FEN.html} {}}
       {{Square designators (CQL)} {CQL-Square-Designators.html} {}}
     }
   }
   { T
     {
+      {{Tagging (CQL)} {CQL-Tagging.html} {}}
       {{Toolbars} {Toolbar-Usage.html} {}}
       {{Transforms of piece designators (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
@@ -94,9 +101,9 @@ set Index {
       {{Website} {Contact-Information.html} {Homepage}}
     }
   }
-  { Ü
+  { X
     {
-      {{Übersichts-Browser} {Game-Overview.html} {}}
+      {{X-FEN (Extended Forsyth-Edwards Notation)} {FEN.html} {}}
     }
   }
 }

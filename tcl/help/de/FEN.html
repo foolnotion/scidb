@@ -41,8 +41,10 @@
 <p>
 Die Forsyth-Edwards-Notation (FEN) oder in der erweiterten Form (X-FEN)
 ist eine Kurznotation, mit der jede beliebige Brettstellung im Schach
-niedergeschrieben werden kann.  Die FEN wird ausführlich unter
-<a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
+niedergeschrieben werden kann. Tatsächlich besitzt diese Notation eine
+Schwäche: sie macht keine Aussage, wie oft die beschriebene Stellung
+möglicherweise wiederholt wurde.  Die FEN (bzw. X-FEN) wird ausführlich
+unter <a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
 Wikipedia</a> beschrieben.
 </p>
 
@@ -95,16 +97,20 @@ Die weiße Dame (<code>Q~</code>) enstand aus einer Bauernumwandlung.
 
 <h2 id="ThreeCheck">Dreimal-Schach</h2>
 
+<p>
 Für diese Schachform wird an die FEN (bzw. X-FEN, oder Shredder-FEN)
 ein weiteres Feld angefügt, um die Schachgebote zu notieren. Beispiel:
+</p>
 
 <ul style="list-style-type: none"><li><code>
 rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 </code></li></ul>
 
+<p>
 <code>+0+2</code> bedeutet:
 Weiß gab kein einziges Mal Schach, und Schwarz gab Weiß bisher genau
 zwei Schachgebote.
+</p>
 
 </body>
 </html>

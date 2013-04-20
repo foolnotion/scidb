@@ -1932,6 +1932,8 @@
 ::help::mc::CurrentPageOnly		"Cerca solo nella pagina corrente"
 ::help::mc::GoBack					"Vai indietro una pagina"
 ::help::mc::GoForward				"Vai avanti una pagina"
+::help::mc::GoHome					"Go to top of page" ;# NEW
+::help::mc::GoEnd						"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Vai alla pagina '%s'"
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"

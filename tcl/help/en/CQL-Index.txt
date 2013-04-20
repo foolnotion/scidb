@@ -29,8 +29,23 @@ players to search for games, problems, and studies that match specific themes
 
 <p>
 Scidb is using an extended set of CQL as a basis for all complex search
-functions,
+functions.
 </p>
+
+<ul>
+  <li><a href="CQL-Syntax.html">Syntax</a>
+    <ul class="index">
+      <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
+      <li><a href="CQL-Piece-Designator-Transforms.html">Transforms of piece designators</a></li>
+      <li><a href="CQL-Square-Designators.html">Square designators</a></li>
+      <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+    </ul>
+  </li>
+  <li><a href="CQL-Match-List.html">The match list</a></li>
+  <li><a href="CQL-Position-List.html">The position list</a></li>
+  <li><a href="CQL-Relation-List.html">The relation list</a></li>
+  <li><a href="CQL-Tagging.html">Tagging</a></li>
+</ul>
 
 END
 

@@ -1,0 +1,165 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Tagging (CQL)
+INDEX CQL Tagging
+
+TITLE Tagging
+
+<p>
+It is possible to track the identity of a particular piece. Each piece
+in the initial position of the game is assigned a unique nonnegative
+integer, called its mark. Promotion does not change the mark of a piece.
+A tag is a named mark. We say that a tag is bound to the value of a mark.
+A tag represents the particular piece whose mark equals the mark of the
+tag. The following keywords manipulate the mark:
+</p>
+
+<h2><code>:forany</code> in the match list</h2>
+
+<p>
+A tag is defined via the <expr>forany</expr> keyword in a match list.
+The <expr>:forany</expr> keyword takes two parameters: the alphanumeric
+name of a tag and a piece designator.
+</p>
+
+<p>
+The match filter is then conceptually run once in which each tag is bound
+to each possible mark, such that two conditions hold:
+</p>
+
+<ul>
+  <li>
+    No two tags may be bound to the same mark.
+  </li>
+  <li>
+    A tag may only be bound to a mark that represents a piece that either
+    matches, or eventually matches, the piece designator associated with that
+    tag. Square information associated with that piece designator is ignored. 
+  </li>
+</ul>
+
+<p>
+At most two tags may be contained inside a match list. Tags may not be used
+in a matchlist if a <cql>position:relation</cql> occurs in a position list
+inside that match list.
+</p>
+
+<h2><code>:tagmatch</code> in the position list</h2>
+
+<p>
+A <expr>:tagmatch</expr> keyword in a position list takes two parameters, the
+name of a tag and a piece designator. The position list match fails on the
+current position if the piece and square corresponding to the mark of the tag
+does not match the given piece designator. For example, assuming there is a
+tag named "foo", this position will only match if "foo" is a white pawn:
+</p>
+
+<verb>
+(position :tagmatch foo P)
+</verb>
+
+<h2>Piece designators and tags</h2>
+
+<p>
+A piece designator can have a piecetype designator that is the name of a tag
+preceded by the character '$'. Such a piecetype represents the particular
+piece represented by the named tag. Because tag names are alphanumeric, square
+designators in such a piece designator must be enclosed in brackets. Example:
+
+<verb>
+(position $foo[a1,d4])
+</verb>
+
+<p>
+The piece represented by the tag named "foo" must be on a1 or d4.
+</p>
+
+<h2>Longer examples</h2>
+
+<p>
+Consider the problem of recognizing all games in which the same rook visits all
+four corners of the board:
+</p>
+
+<verbatim>
+(match
+  :forany rook [rR] ; loop over the possible rooks
+  (position $rook[a1]) 
+  (position $rook[h1])
+  (position $rook[h8])
+  (position $rook[a8]))
+</verbatim>
+
+<p>
+Here, the <expr>:forany</expr> keyword in the match list introduces a tag named
+rook which is constrained to range over white or black rooks, or over pawns that
+eventually promote to one of those.
+</p>
+
+<p>
+The first position list matches games in which there is a position such that the
+tag rook represents a rook on a1. The next position list matches games in which
+there is a postiion such that the tag represents a rook on h1. The tag represents
+the same mark, that is, the same piece, between the position lists. The
+<expr>:forany</expr> keyword will sequentially bind the tag to each allowed mark.
+</p>
+
+<p>
+Since a match list matches a game only if all its constituent position filters
+match it, the code does what we want here.
+</p>
+
+<p>
+Second example, the excelsior theme: a pawn starts at the second rank and then
+promotes.
+</p>
+
+<verbatim>
+(match
+  :forany pawn [Pp]
+  (position
+    :initial
+    :tagmatch pawn P?2
+    :gappedsequence((position :movefrom $pawn :promote U))
+    :flipcolor))
+</verbatim>
+
+<p>
+<expr>:tagmatch</expr> is matching pawns on second rank, and
+the position sequence of <expr>:gappedsequence</expr> is matching if
+the tagged pawn is promoting in any subsequent game position.
+</p>
+
+<p>
+Third example: the same piece delivers at least 30 checks in the game.
+</p>
+
+<verbatim>
+(match
+  :forany checker A
+  (position
+    :btm
+    :attackcount $checker k 1
+    :matchcount 30 1000
+    :flipcolor))
+</verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

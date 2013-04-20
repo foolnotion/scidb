@@ -1216,14 +1216,14 @@ bind Html <Shift-Triple-ButtonPress-1>	[namespace code { WrapExtendSelection %W 
 
 switch [tk windowingsystem] {
 	win32 {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-60] units; break }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D/-30] units; break }
 	}
 	aqua {
-		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-2] units; break }
+		bind Html <MouseWheel> { [winfo parent %W] yview scroll [expr %D*-4] units; break }
 	}
 	x11 {
-		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -2 units; break }
-		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +2 units; break }
+		bind Html <ButtonPress-4> { [winfo parent %W] yview scroll -4 units; break }
+		bind Html <ButtonPress-5> { [winfo parent %W] yview scroll +4 units; break }
 	}
 }
 

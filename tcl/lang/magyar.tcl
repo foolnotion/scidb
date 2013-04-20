@@ -1931,6 +1931,8 @@
 ::help::mc::CurrentPageOnly		"Keresés csak a jelenlegi oldalon"
 ::help::mc::GoBack			"Egy oldallal vissza"
 ::help::mc::GoForward			"Egy oldallal előre"
+::help::mc::GoHome			"Go to top of page" ;# NEW
+::help::mc::GoEnd			"Go to end of page" ;# NEW
 ::help::mc::GotoPage			"Menj a '%s'-dik oldalra"
 ::help::mc::ExpandAllItems		"Kibontás"
 ::help::mc::CollapseAllItems		"Összecsukás"

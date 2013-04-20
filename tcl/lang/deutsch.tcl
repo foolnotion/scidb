@@ -1924,6 +1924,8 @@
 ::help::mc::CurrentPageOnly		"Nur auf der aktuellen Seite suchen"
 ::help::mc::GoBack					"Eine Seite zurück"
 ::help::mc::GoForward				"Eine Seite vorwärts"
+::help::mc::GoHome					"Zum Seitenanfang"
+::help::mc::GoEnd						"Zum Seiteneende"
 ::help::mc::GotoPage					"Wechsle zur Seite '%s'"
 ::help::mc::ExpandAllItems			"Alle Elemente expandieren"
 ::help::mc::CollapseAllItems		"Alle Elemente zusammenfalten"
