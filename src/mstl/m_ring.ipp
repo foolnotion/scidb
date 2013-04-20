@@ -616,7 +616,7 @@ ring<T>::prepare(size_type k)
 template <typename T>
 inline
 void
-ring<T>::reserve(unsigned n)
+ring<T>::reserve(size_type n)
 {
 	size_type k = m_list.size();
 

@@ -158,7 +158,7 @@ private:
 	struct node : public bits::node_base
 	{
 		T m_data;
-		unsigned m_index;
+		size_type m_index;
 	};
 
 	void init(size_type capacity);
