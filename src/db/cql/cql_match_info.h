@@ -32,8 +32,10 @@
 #include "db_common.h"
 
 #include "m_match.h"
+#include "m_bitset.h"
 
-namespace db { class GameInfo; }
+namespace db   { class GameInfo; }
+namespace mstl { class bitset; }
 
 namespace cql {
 namespace info {
@@ -158,13 +160,13 @@ class EventCountry : public Match
 {
 public:
 
-	EventCountry(db::country::Code country);
+	EventCountry(mstl::bitset const& countries);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::country::Code m_country;
+	mstl::bitset m_countries;
 };
 
 
@@ -187,13 +189,13 @@ class EventMode : public Match
 {
 public:
 
-	EventMode(db::event::Mode mode);
+	EventMode(unsigned modes);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::event::Mode m_mode;
+	unsigned m_modes;
 };
 
 
@@ -201,13 +203,13 @@ class EventType : public Match
 {
 public:
 
-	EventType(db::event::Type type);
+	EventType(unsigned types);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::event::Type m_type;
+	unsigned m_types;
 };
 
 
@@ -215,14 +217,14 @@ class Country : public Match
 {
 public:
 
-	Country(db::country::Code country, db::color::ID color);
+	Country(mstl::bitset const& countries, db::color::ID color);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::country::Code	m_country;
-	db::color::ID		m_color;
+	mstl::bitset 	m_countries;
+	db::color::ID	m_color;
 };
 
 
@@ -276,14 +278,14 @@ class Gender : public Match
 {
 public:
 
-	Gender(db::sex::ID sex, db::color::ID color);
+	Gender(db::sex::ID sex, unsigned colors);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::sex::ID		m_sex;
-	db::color::ID	m_color;
+	db::sex::ID	m_sex;
+	unsigned		m_colors;
 };
 
 
@@ -430,14 +432,14 @@ class Title : public Match
 {
 public:
 
-	Title(unsigned titles, db::color::ID color);
+	Title(unsigned titles, unsigned colors);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	unsigned			m_titles;
-	db::color::ID	m_color;
+	unsigned m_titles;
+	unsigned m_colors;
 };
 
 
@@ -474,15 +476,15 @@ class BirthYear : public Match
 {
 public:
 
-	BirthYear(db::color::ID color, unsigned min, unsigned max);
+	BirthYear(unsigned colors, unsigned min, unsigned max);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::color::ID	m_color;
-	unsigned			m_min;
-	unsigned			m_max;
+	unsigned m_colors;
+	unsigned m_min;
+	unsigned m_max;
 };
 
 

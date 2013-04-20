@@ -1,0 +1,126 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Square designators (CQL)
+INDEX Compound square designators (CQL)#Compound
+
+TITLE CQL - Square designators
+
+<h2>Square designators</h2>
+
+<p>
+A square designator defines a set of squares.
+</p>
+
+<p>
+An empty square designator denotes all 64 squares of the board. For example:
+the piece designator <expr>R</expr> has an empty square designator. Hence,
+this piece designator denotes a white rook anywhere on the board.
+</p>
+
+<p>
+A simple square designator comprises two characters, the first of which is
+a file, and the second a rank, in the usual chess notation. If the file
+character is <expr>?</expr> then files a through h are designated. If the
+rank character is <expr>?</expr> then ranks 1 through 8 are designated.
+For example: the piece designator <expr>bb3</expr> has a simple square
+designator denoting the square b3, and denotes a black bishop on b3.
+</p>
+
+<h2 id="Compound">Compound square designators</h2>
+
+<p>
+A compound square designator can denote more than one square. One type of
+compound square designator comprises a file designator followed by a rank
+designator. A file designator comprises either the name of a file or the
+names of two files separated by hyphens. A rank designator comprises either
+the name of a rank or the name of two ranks separated by hyphens. A
+three-character file designator denotes all the files inclusive between the
+files designated by its first and last characters. A three-character rank
+designator denotes all the ranks inclusive between the ranks designated by
+its first and last characters. A compound square designator can also comprise
+a sequence of square designators separated by commas. The set of squares so
+represented is the union of the sets of squares represented by each of the
+constituent square designators.
+</p>
+
+<p>
+Any compound square designator not contained in brackets must be contained in brackets.
+</p>
+
+<h3>Examples of compound square designators</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[a-c1]</expr></td>
+    <td class="right">denotes the three squares a1, b1, and c1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[b3-5]</expr></td>
+    <td class="right">denotes the squares b3, b4, and b5.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[f-h6-8]</expr></td>
+    <td class="right">denotes the squares f6, f7, f8, g6, g7, g8, h6, h7, and h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[a1,c4]</expr></td>
+    <td class="right">denotes the squares a1 and c4.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[a-h1-2,a8,h8]</expr></td>
+    <td class="right">denotes the first two ranks plus a8 and h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[]</expr></td>
+    <td class="right">denotes no squares at all. This is very different from the empty
+        square designator, which designates all squares.</td>
+  </tr>
+</table>
+
+<h3>Examples of piece designators</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>Ia1</expr></td>
+    <td class="right">denotes a white minor piece on a1. It will match any position
+        with a white bishop or white knight on a1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>R[a-h1-2]</expr></td>
+    <td class="right">will match any position with a white rook on the first two ranks.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[Ar][a-h1-2,a8,h8]</expr></td>
+    <td class="right">will match any position that has a white piece or a black rook on
+        the first two ranks or the corners.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[RBNQP][a1,h1,a8,h8]</expr></td>
+    <td class="right">will match any position with a white non-king piece at the corners.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>B[]</expr></td>
+    <td class="right">denotes a white bishop on an empty set of squares. This can never match
+        any position of course.</td>
+  </tr>
+</table>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

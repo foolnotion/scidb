@@ -1,0 +1,118 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Piece designators (CQL)
+
+TITLE CQL - Piece designators
+
+<p>
+A piece designator is a string that denotes a set of pieces, each of which
+can be on a set of squares. A piece designator comprises a piecetype
+designator followed by a square designator. The piecetype designator denotes
+a set of pieces and the square designator denotes a set of squares. The set
+of pieces may include the "empty square piece" which denotes an empty square.
+</p>
+
+<p>
+A piece designator matches a position if there is a square in the set of
+squares denoted by that piece designator which contains a piece in the set
+of piecetypes denoted by the piece designator.
+</p>
+
+<h3>Examples of piece designators</h3>
+
+<p>
+The piece designator <expr>Ra2</expr> denotes a white rook on a2. The piecetype
+designator is <expr>R</expr> and the square designator is <expr>a2</expr>. It
+will match any position with a white rook on a2.
+</p>
+
+<p>
+The piece designator <expr>bc1</expr> denotes a black bishop on c1. The
+piecetype designator is <expr>b</expr> and the square designator is
+<expr>c1</expr>. It will match any position with a black bishop on c1.
+</p>
+
+<p>
+The piece designator <expr>[Rb]d1</expr> denotes either a white rook or a
+black bishop on d1. The piecetype designator is <expr>[Rb]</expr> and the
+square designator is <expr>d1</expr>. It will match any position that has either
+a white rook or a black bishop on d1.
+</p>
+
+<p>
+The piece designator <expr>[Qr][d1,h3]</expr> denotes either a white queen or
+a black rook on either d1 or h3. The piecetype designator is <expr>[QR]</expr>
+and the square designator is <expr>[d1,h3]</expr>. It will match any position
+that has either a white queen or a black rook on either d1 or h3. (Of course,
+the position can also have a white queen or black rook on both d1 and h3).
+</p>
+
+<h2>Allowed piecetype designators</h2>
+
+<p>
+These are the allowed piecetype designators:
+</p>
+
+<h3>Standard piecetype designators</h3>
+
+<box>
+  <table>
+    <tr><td><expr>K&emsp;</expr></td><td>white king</td></tr>
+    <tr><td><expr>k&emsp;</expr></td><td>black king</td></tr>
+    <tr><td><expr>N&emsp;</expr></td><td>white knight</td></tr>
+    <tr><td><expr>n&emsp;</expr></td><td>black knight</td></tr>
+    <tr><td><expr>B&emsp;</expr></td><td>white bishop</td></tr>
+    <tr><td><expr>b&emsp;</expr></td><td>black bishop</td></tr>
+    <tr><td><expr>P&emsp;</expr></td><td>white pawn</td></tr>
+    <tr><td><expr>p&emsp;</expr></td><td>black pawn</td></tr>
+    <tr><td><expr>R&emsp;</expr></td><td>white rook</td></tr>
+    <tr><td><expr>r&emsp;</expr></td><td>black rook</td></tr>
+    <tr><td><expr>Q&emsp;</expr></td><td>white queen</td></tr>
+    <tr><td><expr>q&emsp;</expr></td><td>black queen</td></tr>
+   </table>
+</box>
+
+<h3>Additional piecetype designators</h3>
+
+<box>
+  <table>
+    <tr><td><expr>.&emsp;</expr></td><td>empty square</td></tr>
+    <tr><td><expr>A&emsp;</expr></td><td>any white piece</td></tr>
+    <tr><td><expr>a&emsp;</expr></td><td>any black piece</td></tr>
+    <tr><td><expr>M&emsp;</expr></td><td>white major piece</td></tr>
+    <tr><td><expr>m&emsp;</expr></td><td>black major piece</td></tr>
+    <tr><td><expr>I&emsp;</expr></td><td>white minor piece</td></tr>
+    <tr><td><expr>i&emsp;</expr></td><td>black minor piece</td></tr>
+    <tr><td><expr>U&emsp;</expr></td><td>any piece at all</td></tr>
+    <tr><td><expr>?&emsp;</expr></td><td>any piece or an empty square</td></tr>
+   </table>
+</box>
+
+<h3>Tagging piecetype designators</h3>
+
+<p>
+Anywhere a piecetype designator may occur, a tag name preceded by a
+<expr>$</expr> may occur. This piecetype represents the exact piece
+represented by the named tag. For more information, see the section on
+<a href="CQL-Tagging.html">tagging</a>.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

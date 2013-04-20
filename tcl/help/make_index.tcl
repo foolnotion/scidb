@@ -37,7 +37,6 @@ proc getArg {line} {
 	return [string range $line $n end]
 }
 
-
 proc readTranslationFile {file encoding} {
 	set f [open $file r]
 	chan configure $f -encoding $encoding
@@ -54,7 +53,6 @@ proc readTranslationFile {file encoding} {
 
 	close $f
 }
-
 
 encoding system utf-8
 set lang [file tail [pwd]] 

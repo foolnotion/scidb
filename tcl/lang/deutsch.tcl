@@ -1914,6 +1914,7 @@
 ### help ###############################################################
 ::help::mc::Contents					"&Inhalt"
 ::help::mc::Index						"Inde&x"
+::help::mc::CQL						"C&QL"
 ::help::mc::Search					"&Suche"
 
 ::help::mc::Help						"Hilfe"

@@ -17,6 +17,7 @@ include ../../../Makefile.in
 TARGETS 	= $(SOURCES:.txt=.html)
 CONTENTS	= Contents.dat
 INDEX   	= Index.dat
+CQL		= CQL.dat
 
 all:
 	@echo "SOURCES = `ls *.txt | sed ':a;N;$$!ba;s/\n/ /g'`" >  Makefile.tmp
@@ -27,7 +28,7 @@ all:
 	@make -f Makefile.tmp targets
 	@rm -f Makefile.tmp
 
-targets: $(TARGETS) $(INDEX) $(CONTENTS)
+targets: $(TARGETS) $(INDEX) $(CQL) $(CONTENTS)
 
 .txt.html:
 	@echo "Generating $@"
@@ -36,6 +37,10 @@ targets: $(TARGETS) $(INDEX) $(CONTENTS)
 $(INDEX): $(SOURCES) ../make_index.tcl
 	@echo "Generating $@"
 	@tclsh$(TCL_VERSION) ../make_index.tcl > $@
+
+$(CQL): $(SOURCES) ../make_cql.tcl
+	@echo "Generating $@"
+	@tclsh$(TCL_VERSION) ../make_cql.tcl > $@
 
 $(CONTENTS): Overview.txt ../make_contents.tcl
 	@echo "Generating $@"

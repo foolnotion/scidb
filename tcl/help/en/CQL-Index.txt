@@ -8,6 +8,7 @@
 <!-- **********************************************************************
 * Copyright: (C) 2013 Gregor Cramer
 *********************************************************************** -->
+
 <!-- **********************************************************************
 * This program is free software; you can redistribute it and/or modify
 * it under the terms of the GNU General Public License as published by
@@ -15,29 +16,22 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Feldmarkierungspalette
-TITLE Feldmarkierungspalette
+INDEX CQL Manual
+INDEX Chess Query Language
 
-<dir><img src="images/marks-palette.png"</dir>
+TITLE CQL - Chess Query Language
 
 <p>
-Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel
-<nobr><key>Ctrl</key> <key>%::application::board::mc::Accel(edit-marks)%</key></nobr>
-oder über das kontextsensitive Menü des Partieneditors (<see/>
-<menuitem>%::marks::mc::MarksPalette%</menuitem>) geöffnet werden.
+Chess Query Language (CQL) was designed to allow researchers, authors, and
+players to search for games, problems, and studies that match specific themes
+(<see/> <a href="http://www.rbnn.com/cql/">CQLManual</a>).
 </p>
 
 <p>
-Die Palette erlaubt die Auswahl der Farbe der Markierung,
-sowie den Markierungstyp. Die Farb- und Typauswahl wurde
-identisch zur Schachdatenbankapplikation
-<a href="http://scid.sourceforge.net">Scid</a> gehalten.
+Scidb is using an extended set of CQL as a basis for all complex search
+functions,
 </p>
-
-<note>
-Die Palette ist nur sichtbar, wenn das Schachbrettfenster aktiv ist.
-</note>
 
 END
 
-<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

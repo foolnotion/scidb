@@ -1,0 +1,184 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX CQL Syntax
+TITLE CQL Syntax
+
+<p>
+A CQL script has the following generic structure:
+</p>
+
+<verbatim>
+(match
+  (position ... )
+  (position ... )
+  (position ... )
+  ...)
+</verbatim>
+
+<p>
+In this example, the "..." represent various keywords and commands to be
+defined below.
+</p>
+
+<p>
+For example, here is a simple CQL script to find quadrupled pawns, but only
+in games played in year 2013:
+</p>
+
+<verbatim>
+(match
+  :year 2013
+  (position
+    :piececount P[b2-7] 4
+    :shifthorizontal
+    :flipcolor))
+</verbatim>
+
+<p>
+In order to understand the format of CQL, some basic syntactic terminology
+will be defined.
+</p>
+
+<p>
+A list is a finite sequence of items, separated by whitespace, and enclosed
+in parentheses. Each item is either a string of characters without whitespace
+or another list.
+</p>
+
+<p>
+For example
+<p>
+
+<verb>
+(position :shifthorizontal :flipcolor)
+</verb>
+
+<p>
+is a list whose three elements are the strings <expr>position</expr>,
+<cql>position:shifthorizontal</cql>, and <cql>position:flipcolor</cql>.
+</p>
+
+<p>
+Similarly, the list beginning <code>(match</expr> above has six
+elements, the last of which is itself a list containing six elements whose
+first element is <expr>position</expr> and whose last element is
+<cql>position:flipcolor</cql>.
+</p>
+
+<p>
+A keyword is a string beginning with <expr>:</expr>. For example, the match
+list above has keyword <cql>match:year</cql>.
+</p>
+
+<p>
+A keyword parameter is a list or string immediately following a keyword that
+accepts a keyword parameter. Some keywords accept multiple parameters,
+one after the other. 
+</p>
+
+<h2>Example of keyword parameter</h2>
+
+<p>
+In the list
+</p>
+
+<verbatim>
+(match
+  (position
+    :piececount P[b2-7] 4
+    :shifthorizontal
+    :flipcolor))
+</verbatim>
+
+<p>
+<cql>position:piececount</cql> has keyword parameters <expr>P[b2-7]</expr>
+and <expr>4</expr>. The other keywords <cql>position:shifthorizontal</cql>
+and <cql>position:flipcolor</cql> do not take keyword parameters. A list
+whose first element is <expr>match</expr> is called a match list and defines
+a match filter.
+</p>
+
+<p>
+A list whose first element is <expr>position</expr> is called a position list
+and defines a position filter. 
+</p>
+
+<h2>Overall functioning of CQL</h2>
+
+<p>
+To determine whether a match filter matches a game, CQL acts as follows.
+It plays through each move in the game, optionally descending as well into
+the variations. Each time a position is reached, each of the position filters
+defined in the match filter is applied to that position.
+</p>
+
+<p>
+Example:
+In a 40 move game in which white makes the first move and black the last move,
+if there are no variations then CQL will examine exactly 80 positions in the
+game.
+</p>
+
+<p>
+If each of the position filters in the match filter match some position in the
+game, then the match filter is said to match the game.
+</p>
+
+<p>
+The simplest position filter is defined by the simplest position list:
+</p>
+
+<verb>
+(position)
+</verb>
+
+<p>
+This position filter matches every position. Hence, the following CQL script
+simply selects all games:
+</p>
+
+<verb>
+(match (position))
+</verb>
+
+<h2>Comments in a CQL file</h2>
+
+<p>
+Any characters following a semicolon are ignored in a CQL script. Example:
+</p>
+
+<verbatim>
+; A CQL script that matches all games
+(match 
+  (position) ; a position filter matching anything
+)
+</verbatim>
+
+<h2>Some basic elements</h2>
+
+<ul>
+  <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
+  <li><a href="CQL-Transforms-Of-Piece-Designators.html">Transforms of piece designators</a></li>
+  <li><a href="CQL-Square-Designators.html">Square designators</a></li>
+  <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -31,6 +31,7 @@ namespace eval mc {
 
 set Contents					"&Contents"
 set Index						"&Index"
+set CQL							"C&QL"
 set Search						"&Search"
 
 set Help							"Help"
@@ -106,6 +107,7 @@ proc open {parent {file {}} args} {
 
 	set Priv(check:lang) [CheckLanguage $opts(-parent) $file]
 	if {$Priv(check:lang) eq "none"} { return "" }
+	set Priv(current:status) ok
 
 	if {[string length $file] == 0} {
 		set Priv(current:file) ""
@@ -190,14 +192,17 @@ proc open {parent {file {}} args} {
 	::ttk::notebook::enableTraversal $nb
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	contents::BuildFrame $nb.contents
-	index::BuildFrame $nb.index
+	index::BuildFrame $nb.index index
+	index::BuildFrame $nb.cql cql
 	search::BuildFrame $nb.search
 	$nb add $nb.contents -sticky nsew -padding $::theme::padding
 	$nb add $nb.index -sticky nsew -padding $::theme::padding
+	$nb add $nb.cql -sticky nsew -padding $::theme::padding
 	$nb add $nb.search -sticky nsew -padding $::theme::padding
 	::widget::notebookTextvarHook $nb 0 [namespace current]::mc::Contents
 	::widget::notebookTextvarHook $nb 1 [namespace current]::mc::Index
-	::widget::notebookTextvarHook $nb 2 [namespace current]::mc::Search
+	::widget::notebookTextvarHook $nb 2 [namespace current]::mc::CQL
+	::widget::notebookTextvarHook $nb 3 [namespace current]::mc::Search
 
 	grid $buttons -row 1 -column 1 -sticky we
 	grid $nb      -row 3 -column 1 -sticky nsew
@@ -527,32 +532,37 @@ proc LoadPage {item} {
 
 namespace eval index {
 
-proc BuildFrame {w} {
+proc BuildFrame {w type} {
 	variable [namespace parent]::Priv
 
-	set Priv(index:changed) 0
-	set Priv(index:tree) $w
+	set Priv($type:changed) 0
+	set Priv($type:tree) $w
 	::treetable $w -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
-	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
-	bind $w <Any-KeyPress> [namespace code { Select %W %A }]
-	Update
+	bind $w <<TreeTableSelection>> [namespace code [list LoadPage $type %d]]
+	bind $w <Any-KeyPress> [namespace code { Select $type %W %A }]
+	Update $type
 }
 
 
-proc Update {} {
+proc Update {type} {
 	variable [namespace parent]::Priv
 
-	set t $Priv(index:tree)
+	set t $Priv($type:tree)
 	if {![winfo exists $t]} { return }
 
+	switch $type {
+		index	{ set file Index.dat }
+		cql	{ set file CQL.dat }
+	}
+
 	set Index {}
-	set file [[namespace parent]::FullPath Index.dat]
+	set file [[namespace parent]::FullPath $file]
 	if {![file readable $file]} { return }
 	catch { source -encoding utf-8 $file }
 	$t clear
 	set font [$t cget -font]
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
-	array unset Priv index:path:*
+	array unset Priv $type:path:*
 	array unset Priv key:*
 
 	foreach group $Index {
@@ -566,7 +576,7 @@ proc Update {} {
 			set tag "$alph-$count"
 			$t add 1 -text $topic -tag $tag
 			set path [[namespace parent]::FullPath $file]
-			set Priv(index:path:$tag) [list $path $fragment]
+			set Priv($type:path:$tag) [list $path $fragment]
 			if {$count == 0} { set Priv(key:$alph) $tag }
 			incr count
 		}
@@ -576,11 +586,11 @@ proc Update {} {
 }
 
 
-proc LoadPage {item} {
+proc LoadPage {type item} {
 	variable [namespace parent]::Priv
 
 	if {[string length $item] == 0} { return }
-	lassign $Priv(index:path:$item) path fragment
+	lassign $Priv($type:path:$item) path fragment
 
 	if {[string match http* $path] || [string match ftp* $path]} {
 		::web::open $Priv(html) $path
@@ -590,13 +600,13 @@ proc LoadPage {item} {
 }
 
 
-proc Select {t key} {
+proc Select {type t key} {
 	variable [namespace parent]::Priv
 
 	set key [string toupper $key]
 
-	if {[info exists Priv(key:$key)]} {
-		set item $Priv(key:$key)
+	if {[info exists Priv($type:key:$key)]} {
+		set item $Priv($type:key:$key)
 		$t activate $item
 		$t see $item
 	}
@@ -804,6 +814,7 @@ proc TabChanged {nb} {
 	switch -glob -- [$nb select] {
 		*contents	{ set mode contents }
 		*index		{ set mode index }
+		*cql			{ set mode cql }
 		*search		{ set mode search }
 	}
 
@@ -844,7 +855,8 @@ proc UpdateTitle {} {
 proc Update {} {
 	UpdateTitle
 	ReloadCurrentPage
-	index::Update
+	index::Update index
+	index::Update cql
 	contents::Update
 	search::Update
 }
@@ -1304,6 +1316,10 @@ proc updateNodes {reason} {
 proc back {} {
 	variable [namespace parent]::Priv
 
+	if {$Priv(current:status) eq "notfound"} {
+		incr Priv(history:index)
+	}
+
 	if {$Priv(history:index) <= 0} { return }
 	set index $Priv(history:index)
 
@@ -1311,7 +1327,10 @@ proc back {} {
 		decr Priv(history:index)
 	}
 
-	RefreshCurrentNode $index
+	if {$Priv(current:status) eq "ok"} {
+		RefreshCurrentNode $index
+	}
+
 	set file [lindex $Priv(history) [expr {$Priv(history:index) - 1}] 0]
 
 	if {[[namespace parent]::Parse $file]} {
@@ -1427,7 +1446,10 @@ proc SetupButtons {} {
 
 proc RefreshCurrentNode {index} {
 	variable [namespace parent]::Priv
-	lset Priv(history) $index [list [lindex $Priv(history) $index 0] {*}[MakeEntry]]
+
+	if {$index < [llength $Priv(history)]} {
+		lset Priv(history) $index [list [lindex $Priv(history) $index 0] {*}[MakeEntry]]
+	}
 }
 
 
@@ -1499,6 +1521,8 @@ proc Parse {file {wantedFile {}} {match {}}} {
 	variable Nodes
 	variable Priv
 
+	set Priv(current:status) ok
+
 	if {$Priv(current:file) eq $file} {
 		return 1
 	}
@@ -1557,6 +1581,8 @@ proc Parse {file {wantedFile {}} {match {}}} {
 		append content "
 			<br/><p><a href='script(history::back)'>${mc::GoBack}</a></p>
 			</body></html>"
+		set Priv(current:status) notfound
+		SetupButtons on off
 		set match {}
 		set rc 0
 	} elseif {[llength $match]} {

@@ -1913,6 +1913,7 @@
 ### help ###############################################################
 ::help::mc::Contents					"&Contents"
 ::help::mc::Index						"&Index"
+::help::mc::CQL						"C&QL"
 ::help::mc::Search					"&Search"
 
 ::help::mc::Help						"Help"

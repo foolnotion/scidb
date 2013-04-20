@@ -159,6 +159,7 @@ private:
 	char const* parseEventType(char const* s, Error& error);
 	char const* parseForAny(char const* s, Error& error);
 	char const* parseGameNumber(char const* s, Error& error);
+	char const* parseGender(char const* s, Error& error);
 	char const* parseHasAnnotation(char const* s, Error& error);
 	char const* parseHasComments(char const* s, Error& error);
 	char const* parseHasFlags(char const* s, Error& error);     

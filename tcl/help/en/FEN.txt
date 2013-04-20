@@ -22,21 +22,27 @@ INDEX Shredder-FEN
 TITLE FEN (Forsyth-Edwards-Notation)
 
 <p>
-Die Forsyth-Edwards-Notation (FEN) oder in der erweiterten Form (X-FEN)
-ist eine Kurznotation, mit der jede beliebige Brettstellung im Schach
-niedergeschrieben werden kann. Tatsächlich besitzt diese Notation eine
-Schwäche: sie macht keine Aussage, wie oft die beschriebene Stellung
-möglicherweise wiederholt wurde.  Die FEN (bzw. X-FEN) wird ausführlich
-unter <a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
-Wikipedia</a> beschrieben.
+Forsyth-Edwards Notation (FEN) &em; or X-FEN in extended form &em;
+is a standard notation for describing a particular board position of a
+chess game. The purpose of FEN is to provide all the necessary information
+to restart a game from a particular position. In fact this notation has
+one weakness: it is not describing how many times the described position
+was repeated.  A detailed description is available online:
+</p>
+
+<!-- Not for translators: please replace with local Wikipedia link. -->
+<ul>
+  <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
+    ForsythEdwards Notation - Wikipedia</a></li>
+  <li><a href="http://en.wikipedia.org/wiki/X-FEN">X-FEN - Wikipedia</a>
+ </ul>
+
+<p>
+Also, it should be noted that Scidb can handle the Shredder FEN.
 </p>
 
 <p>
-Zu erwähnen ist, daß Scidb auch die Shredder-FEN verarbeiten kann.
-</p>
-
-<p>
-Für einige Schachformen benutzt Scidb notwendigerweise Erweiterungen:
+For other chess variants Scidb is using some required extensions:
 </p>
 
 <ul>
@@ -47,12 +53,12 @@ Für einige Schachformen benutzt Scidb notwendigerweise Erweiterungen:
 <h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
 
 <p>
-Scidb benutzt eine erweiterte FEN (bzw. X-FEN, oder Shredder-FEN)
-für Einsetzschach, die vom BPGN-Standard (<see/>
+Scidb is using an extended FEN (X-FEN, or Shredder FEN) for Crazyhouse,
+derived from BPGN standard (<see/>
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
-BPGN - Bughouse Portable Game Notation</a>) abgeleitet wurde. Die
-in der Rückhand befindlichen Figuren werden an das Ende des ersten
-Feldes angefügt; zum Beispiel
+BPGN - Bughouse Portable Game Notation</a>).
+The pieces in holding will be added at the end of first field; for
+example:
 </p>
 
 <dir><code>
@@ -60,12 +66,13 @@ r2q1rk1/ppp2ppp/5p2/b7/8/P1NPB2b/1PP1QP1P/R3R1K1/NNPPbnp b - - 0 16
 </code></dir>
 
 <p>
-<code>NNPPbnp</code> gibt an, daß Weiß zwei Springer und zwei Bauern
-in der Rückhand hält, und Schwarz einen Läufer, einen Springer, und
-einen Bauern.
+<code>NNPPbnp</code> is describing that the white player has two
+knights and two pawns in holding, and the black player has one
+bishop, one knight, and one pawn in holding.
 </p>
 
 <p>
+For pieces 
 Die Figuren, die aus einer Bauernumwandlung enstanden, werden mit der
 Tilde ausgezeichnet. Beispiel:
 </p>

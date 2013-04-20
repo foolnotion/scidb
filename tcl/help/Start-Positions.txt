@@ -1,0 +1,74 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2012-2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+BEGIN
+<table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+  <tr>
+    <td>misc/bishops-only</td>
+    <td>&#x2001;</td>
+    <td>endings/kbbk</td>
+  </tr>
+  <tr>
+    <td>misc/knights-only</td>
+    <td>&#x2001;</td>
+    <td>endings/kbnk</td>
+  </tr>
+  <tr>
+    <td>misc/little-game</td>
+    <td>&#x2001;</td>
+    <td>pawns/pawns-only</td>
+  </tr>
+  <tr>
+    <td>misc/no-queens</td>
+    <td>&#x2001;</td>
+    <td>pawns/wild-five</td>
+  </tr>
+  <tr>
+    <td>misc/pawns-only</td>
+    <td>&#x2001;</td>
+    <td>wild/19</td>
+  </tr>
+  <tr>
+    <td>misc/pyramid</td>
+    <td>&#x2001;</td>
+    <td>wild/5</td>
+  </tr>
+  <tr>
+    <td>misc/queen-rooks</td>
+    <td>&#x2001;</td>
+    <td>wild/8</td>
+  </tr>
+  <tr>
+    <td>misc/queens-only</td>
+    <td>&#x2001;</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>misc/rooks-only</td>
+    <td>&#x2001;</td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>misc/runaway</td>
+    <td>&#x2001;</td>
+    <td></td>
+  </tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

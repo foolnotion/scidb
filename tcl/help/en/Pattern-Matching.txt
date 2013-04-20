@@ -1,0 +1,78 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Pattern matching
+TITLE Pattern matching
+
+<p>
+Pattern matching is matching a string case-insensitive.
+</p>
+
+<p>
+A pattern is a string which may contain the following special characters:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><expr>*</expr></td>
+      <td class="r">
+        Matches any sequence of characters in string,
+        including a null string.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>?</expr></td>
+      <td class="r">
+        Matches any single character in string.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>\x</expr></td>
+      <td class="r">
+        Matches the single character x. This provides a way of avoiding
+        the special interpretation of the characters <expr>*?\</expr> in
+        pattern.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2 id="examples">Examples</h2>
+
+<verb>
+Polgar, J*
+</verb>
+
+This pattern is matching the following strings: <nobr>"Polgar,</nobr>
+<nobr>J"</nobr>, and <nobr>"Polgar,</nobr> <nobr>Judit"</nobr>.
+
+<verb>
+A?erba?h
+</verb>
+
+<p>
+This will match the following names:
+<nobr>"Averbakh"</nobr> (English spelling), and <nobr>"Awerbach"</nobr> 
+(German spelling).
+</p>
+
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

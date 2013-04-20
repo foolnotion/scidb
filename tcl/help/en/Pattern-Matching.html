@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/Pattern-Matching.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Help: Pattern matching</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Pattern matching</h1>
+</div>
+
+<p>
+Pattern matching is matching a string case-insensitive.
+</p>
+
+<p>
+A pattern is a string which may contain the following special characters:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><span style="white-space:nowrap;"><code>*</code></span></td>
+      <td class="r">
+        Matches any sequence of characters in string,
+        including a null string.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style="white-space:nowrap;"><code>?</code></span></td>
+      <td class="r">
+        Matches any single character in string.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style="white-space:nowrap;"><code>\x</code></span></td>
+      <td class="r">
+        Matches the single character x. This provides a way of avoiding
+        the special interpretation of the characters <span style="white-space:nowrap;"><code>*?\</code></span> in
+        pattern.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<h2 id="examples">Examples</h2>
+
+<div class="verb"><code>
+Polgar, J*
+</code></div>
+
+This pattern is matching the following strings: <span style="white-space:nowrap;">"Polgar,</span>
+<span style="white-space:nowrap;">J"</span>, and <span style="white-space:nowrap;">"Polgar,</span> <span style="white-space:nowrap;">Judit"</span>.
+
+<div class="verb"><code>
+A?erba?h
+</code></div>
+
+<p>
+This will match the following names:
+<span style="white-space:nowrap;">"Averbakh"</span> (English spelling), and <span style="white-space:nowrap;">"Awerbach"</span> 
+(German spelling).
+</p>
+
+</body>
+</html>

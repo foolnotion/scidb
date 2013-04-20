@@ -1919,38 +1919,39 @@
 ::timemodebox::mc::Mode(corr)	"Levelezési"
 
 ### help ###############################################################
-::help::mc::Contents					"&Tartalom"
-::help::mc::Index						"&Tárgymutató"
-::help::mc::Search					"&Keresés"
+::help::mc::Contents			"&Tartalom"
+::help::mc::Index			"&Tárgymutató"
+::help::mc::CQL				"C&QL"
+::help::mc::Search			"&Keresés"
 
-::help::mc::Help						"Súgó"
+::help::mc::Help			"Súgó"
 ::help::mc::MatchEntireWord		"Teljes szó keresése"
-::help::mc::MatchCase				"Match case" ;# NEW
-::help::mc::TitleOnly				"Keresés csak a címek között"
+::help::mc::MatchCase			"Match case" ;# NEW
+::help::mc::TitleOnly			"Keresés csak a címek között"
 ::help::mc::CurrentPageOnly		"Keresés csak a jelenlegi oldalon"
-::help::mc::GoBack					"Egy oldallal vissza"
-::help::mc::GoForward				"Egy oldallal előre"
-::help::mc::GotoPage					"Menj a '%s'-dik oldalra"
-::help::mc::ExpandAllItems			"Kibontás"
+::help::mc::GoBack			"Egy oldallal vissza"
+::help::mc::GoForward			"Egy oldallal előre"
+::help::mc::GotoPage			"Menj a '%s'-dik oldalra"
+::help::mc::ExpandAllItems		"Kibontás"
 ::help::mc::CollapseAllItems		"Összecsukás"
-::help::mc::SelectLanguage			"Nyelv választás"
+::help::mc::SelectLanguage		"Nyelv választás"
 ::help::mc::NoHelpAvailable		"Nincs elérhető súgó fájl magyar nyelven.\nVálaszz másik nyelvet\na súgó számára."
 ::help::mc::NoHelpAvailableAtAll	"Ehhez a témához még nem létezik súgó fájl."
-::help::mc::KeepLanguage			"Őrizzem meg a %s nyelvet a következő alkalmakra is?"
-::help::mc::ParserError				"Error while parsing file %s." ;# NEW
-::help::mc::NoMatch					"Nincs találat"
+::help::mc::KeepLanguage		"Őrizzem meg a %s nyelvet a következő alkalmakra is?"
+::help::mc::ParserError			"Error while parsing file %s." ;# NEW
+::help::mc::NoMatch			"Nincs találat"
 ::help::mc::MaxmimumExceeded		"Túl sok találat néhány oldalon."
 ::help::mc::OnlyFirstMatches		"Csak az első %s találat jelenik meg."
-::help::mc::HideIndex				"Tárgymutató elrejtése"
-::help::mc::ShowIndex				"Tárgymutató mutatása"
+::help::mc::HideIndex			"Tárgymutató elrejtése"
+::help::mc::ShowIndex			"Tárgymutató mutatása"
 
-::help::mc::FileNotFound			"Fájl nem található."
-::help::mc::CantFindFile			"Fájl nem található %s könyvtárban."
-::help::mc::IncompleteHelpFiles	"Úgy tűnik, hogy a súgó fájlok még nem véglegesek. Bocs!"
+::help::mc::FileNotFound		"Fájl nem található."
+::help::mc::CantFindFile		"Fájl nem található %s könyvtárban."
+::help::mc::IncompleteHelpFiles		"Úgy tűnik, hogy a súgó fájlok még nem véglegesek. Bocs!"
 ::help::mc::ProbablyTheHelp		"Valószínűleg egy más nylevű súgó segíthet"
 ::help::mc::PageNotAvailable		"Ez az oldal nem elérhető"
 
-::help::mc::Overview					"Áttekintés"
+::help::mc::Overview			"Áttekintés"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Verseny tabella"

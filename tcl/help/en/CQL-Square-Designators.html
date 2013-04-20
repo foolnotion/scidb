@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-Square-Designators.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Help: CQL - Square designators</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Square designators</h1>
+</div>
+
+<h2>Square designators</h2>
+
+<p>
+A square designator defines a set of squares.
+</p>
+
+<p>
+An empty square designator denotes all 64 squares of the board. For example:
+the piece designator <span style="white-space:nowrap;"><code>R</code></span> has an empty square designator. Hence,
+this piece designator denotes a white rook anywhere on the board.
+</p>
+
+<p>
+A simple square designator comprises two characters, the first of which is
+a file, and the second a rank, in the usual chess notation. If the file
+character is <span style="white-space:nowrap;"><code>?</code></span> then files a through h are designated. If the
+rank character is <span style="white-space:nowrap;"><code>?</code></span> then ranks 1 through 8 are designated.
+For example: the piece designator <span style="white-space:nowrap;"><code>bb3</code></span> has a simple square
+designator denoting the square b3, and denotes a black bishop on b3.
+</p>
+
+<h2 id="Compound">Compound square designators</h2>
+
+<p>
+A compound square designator can denote more than one square. One type of
+compound square designator comprises a file designator followed by a rank
+designator. A file designator comprises either the name of a file or the
+names of two files separated by hyphens. A rank designator comprises either
+the name of a rank or the name of two ranks separated by hyphens. A
+three-character file designator denotes all the files inclusive between the
+files designated by its first and last characters. A three-character rank
+designator denotes all the ranks inclusive between the ranks designated by
+its first and last characters. A compound square designator can also comprise
+a sequence of square designators separated by commas. The set of squares so
+represented is the union of the sets of squares represented by each of the
+constituent square designators.
+</p>
+
+<p>
+Any compound square designator not contained in brackets must be contained in brackets.
+</p>
+
+<h3>Examples of compound square designators</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>[a-c1]</code></span></td>
+    <td class="right">denotes the three squares a1, b1, and c1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style="white-space:nowrap;"><code>[b3-5]</code></span></td>
+    <td class="right">denotes the squares b3, b4, and b5.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>[f-h6-8]</code></span></td>
+    <td class="right">denotes the squares f6, f7, f8, g6, g7, g8, h6, h7, and h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style="white-space:nowrap;"><code>[a1,c4]</code></span></td>
+    <td class="right">denotes the squares a1 and c4.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>[a-h1-2,a8,h8]</code></span></td>
+    <td class="right">denotes the first two ranks plus a8 and h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style="white-space:nowrap;"><code>[]</code></span></td>
+    <td class="right">denotes no squares at all. This is very different from the empty
+        square designator, which designates all squares.</td>
+  </tr>
+</table>
+
+<h3>Examples of piece designators</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>Ia1</code></span></td>
+    <td class="right">denotes a white minor piece on a1. It will match any position
+        with a white bishop or white knight on a1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style="white-space:nowrap;"><code>R[a-h1-2]</code></span></td>
+    <td class="right">will match any position with a white rook on the first two ranks.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>[Ar][a-h1-2,a8,h8]</code></span></td>
+    <td class="right">will match any position that has a white piece or a black rook on
+        the first two ranks or the corners.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><span style="white-space:nowrap;"><code>[RBNQP][a1,h1,a8,h8]</code></span></td>
+    <td class="right">will match any position with a white non-king piece at the corners.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><span style="white-space:nowrap;"><code>B[]</code></span></td>
+    <td class="right">denotes a white bishop on an empty set of squares. This can never match
+        any position of course.</td>
+  </tr>
+</table>
+
+</body>
+</html>

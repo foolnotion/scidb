@@ -1918,6 +1918,7 @@
 ### help ###############################################################
 ::help::mc::Contents					"&Contenido"
 ::help::mc::Index						"&Indice"
+::help::mc::CQL						"C&QL"
 ::help::mc::Search					"Bu&scar"
 
 ::help::mc::Help						"Ayuda"

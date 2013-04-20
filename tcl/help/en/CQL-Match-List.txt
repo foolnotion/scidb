@@ -1,0 +1,1760 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Match List (CQL)
+INDEX CQL Match List
+
+DEFINE <nonstd/> <note>This keyword is not part of the CQL standard.</note>
+
+TITLE CQL - The match list
+
+<p>
+Any CQL file must have exactly one match list at top level. The match list
+contains keyword parameters that control the matching of each game.
+The match list contains one or more position lists, each of which must
+match at least one position in the game in order for the match list to match
+that game. Scidb allows an additional feature: the match list may contain
+logical keywords (<cql>match:and</cql>, <cql>match:or</cql>,
+<cql>match:not</cql>) with sub-matches.
+</p>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#event">Event search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#player">Player search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#header">Game header search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#data">Game data search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#tagging">Tagging related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#meaningless">Meaningless keywords</a></td></tr>
+  </table>
+</dir>
+
+<h2 id="index">Index</h2>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:country">:country</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:player">:player</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:rating">:rating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:title">:title</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+  </table>
+</dir>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="logical">Logical keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:and">:and</h3>
+
+<p>
+Takes a list of sub-match lists and matches only if each of them match.
+Note that a sub-match cannot contain position matches.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verbatim>
+(match
+  :and(
+    (match :isshufflechess)
+    (match :ischess960 :not)))
+</verbatim>
+
+<p>
+Search for Shuffle Chess games, not including Chess 960 positions. This example
+is identical to the following:
+</p>
+
+<verbatim>
+(match :isshufflechess :not(match :ischess960))
+</verbatim>
+
+<p>
+In fact this keyword is somewhat superfluous, but included for completeness.
+</p>
+
+<h3 id="match:not">:not</h3>
+
+<p>
+This keyword can be used in two forms: either it is included in a match list,
+or it has a sub-match list as argument. In former case: match if the containing
+match list would not match without the :not. In latter case: negate the result
+of the sub-match list match.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+(match :isshufflechess :not)
+</verb>
+
+<p>
+Search for games which do not start with a Shuffle Chess position. This
+example may be written in the second form:
+</p>
+
+<verb>
+(match :not(match :isshufflechess))
+</verb>
+
+<h3 id="match:or">:or</h3>
+
+<p>
+Takes a list of sub-match lists and matches if at least one of them matches.
+Note that a sub-match cannot contain position matches.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verbatim>
+(match
+  :or(
+    (match :whitebirthyear 2000 3000)
+    (match :blackbirthyear 2000 3000)))
+</verbatim>
+
+<p>
+Search for games where one of the players is born in year 2000 or later.
+</p>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="event">Event search related keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:event">:event</h3>
+
+<p>
+Search for games where the event matches given pattern.
+</p>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<nonstd/>
+
+<h3 id="match:eventcountry">:eventcountry</h3>
+
+<p>
+Match all games where the country of the event is matching one of the given
+countries in the comma-separated list.
+Country is either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:eventcountry dk,no,se
+</verb>
+
+<p>
+Search for games played in Scandinavian events.
+</p>
+
+<p>
+See also: <cql>match:site</cql>.
+</p>
+
+<h3 id="match:eventdate">:eventdate</h3>
+
+<p>
+This takes a range specifier denoting the range of dates
+that the event of the game must match.
+</p>
+
+<p>
+For a detailed description of the date range see
+<cql>match:date</cql>.
+</p>
+
+<nonstd/>
+
+<h3 id="match:eventmode">:eventmode</h3>
+
+<p>
+Match all games where the event mode is matching one
+of the modes in the given comma-separated list.
+</p>
+
+<p>
+The event mode is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><expr>unknown</expr></td>
+      <td class="r">Event mode is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>otb</expr></td>
+      <td class="r">%::eventmodebox::mc::OTB%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>corr</expr></td>
+      <td class="r">%::eventmodebox::mc::PM%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>email</expr></td>
+      <td class="r">%::eventmodebox::mc::EM%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>internet</expr></td>
+      <td class="r">%::eventmodebox::mc::ICS%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>tele</expr></td>
+      <td class="r">%::eventmodebox::mc::TC%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>analysis</expr></td>
+      <td class="r">%::eventmodebox::mc::Analysis%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>composition</expr></td>
+      <td class="r">%::eventmodebox::mc::Composition%</td>
+    </tr>
+  </table>
+</div>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:eventmode corr,email
+</verb>
+
+<p>
+Search for correspondence chess games, or games played via E-mail.
+</p>
+
+<h3 id="match:eventtype">:eventtype</h3>
+
+<p>
+Match all games where the event type is matching one of the types
+in the given comma-separated list.
+</p>
+
+<p>
+The event type is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><expr>unknown</expr></td>
+      <td class="r">Event type is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>game</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(game)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>match</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(match)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>tourn</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(tourn)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>swiss</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(swiss)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>team</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(team)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>knockout</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(k.o.)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>simul</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(simul)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>schev</expr></td>
+      <td class="r">%::eventtypebox::mc::Type(schev)%</td>
+    </tr>
+  </table>
+</div>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:eventtype tourn,swiss
+</verb>
+
+<h3 id="match:site">:site</h3>
+
+<p>
+Search for games where the site matches given pattern.
+</p>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:eventcountry</cql>.
+</p>
+
+<h3 id="match:timemode">:timemode</h3>
+
+<p>
+Search for games where the time mode is matching one of the modes
+in the given comma-separated list.
+</p>
+
+<nonstd/>
+
+<p>
+Time mode is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><expr>unknown</expr></td>
+      <td class="r">Time mode is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>normal</expr></td>
+      <td class="r">%::timemodebox::mc::Mode(normal)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>rapid</expr></td>
+      <td class="r">%::timemodebox::mc::Mode(rapid)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>blitz</expr></td>
+      <td class="r">%::timemodebox::mc::Mode(blitz)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>bullet</expr></td>
+      <td class="r">%::timemodebox::mc::Mode(bullet)%</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>corr</expr></td>
+      <td class="r">%::timemodebox::mc::Mode(corr)%</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Example:
+</p>
+
+<verb>
+:timemode blitz,bullet
+</verb>
+
+<p>
+Search for blitz and bullet games.
+</p>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="player">Player search related keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:country">:country</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:player">:player</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:rating">:rating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:title">:title</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:birthyear">:birthyear</h3>
+
+<p>
+Search for games where one of the players is born in a year between the
+given ranges (inclusive).
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:birthyear 1990-2020
+</verb>
+
+<p>
+Search for games with at least one young player, born 1990 or later.
+</p>
+
+<p>
+See also: <cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+<cql>match:deathyear</cql>.
+</p>
+
+<h3 id="match:blackbirthyear">:blackbirthyear</h3>
+
+<p>
+Search for games where the black player was born in a year between the
+given ranges.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:whitebirthyear</cql>, <cql>match:birthyear</cql>,
+<cql>match:blackdeathyear</cql>, <cql>match:whitedeathyear</cql>,
+<cql>match:deathyear</cql>.
+</p>
+
+<h3 id="match:blackcountry">:blackcountry</h3>
+
+<p>
+Match all games where the nationality of the black player is matching one of
+the countries in given comma-separated list. A country will be specified either
+as <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
+or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
+</p>
+
+<nonstd/>
+
+<p>
+For examples see <cql>match:country</cql>.
+</p>
+
+<p>
+See also: <cql>match:country</cql>, <cql>match:whitecountry</cql>.
+</p>
+
+<h3 id="match:blackdeathyear">:blackdeathyear</h3>
+
+<p>
+Search for games where the black player died in a year between the
+given ranges.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:whitedeathyear</cql>, <cql>match:deathyear</cql>,
+<cql>match:blackbirthyear</cql>, <cql>match:whitebirthyear</cql>,
+<cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:blackgender">:blackgender</h3>
+
+<p>
+Match all games where the gender of the black player is matching given gender.
+Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
+female also <expr>w</expr> (woman) may be used.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:blackgender f
+</verb>
+
+<p>
+Only search for games where the black player is female.
+</p>
+
+<p>
+See also: <cql>match:whitegender</cql>, <cql>match:gender</cql>.
+</p>
+
+<h3 id="match:blackiscomputer">:blackiscomputer</h3>
+
+<p>
+Search for games where the black player is an engine.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:iscomputer</cql>, <cql>match:whiteiscomputer</cql>.
+</p>
+
+<h3 id="match:blackishuman">:blackishuman</h3>
+
+<p>
+Search for games where the black player is a human.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:ishuman</cql>, <cql>match:whiteishuman</cql>.
+</p>
+
+<h3 id="match:blackplayer">:blackplayer</h3>
+
+<p>
+Search for games where the black player matches given name.
+</p>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+See <cql>match:player</cql> for a detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:player</cql>, <cql>match:whiteplayer</cql>.
+</p>
+
+<h3 id="match:blackrating">:blackrating</h3>
+
+<p>
+Match all games where the given rating is between given score range of the
+black player. For a detailed description see <cql>match:rating</cql>.
+</p>
+
+<nonstd/>
+
+<h3 id="match:blacktitle">:blacktitle</h3>
+
+<p>
+Match all games where the title of the black player is matching
+one of the titles in the given comma-separated list.
+See <cql>match:title</cql> for a more detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:title</cql>, <cql>match:whitetitle</cql>.
+
+<h3 id="match:country">:country</h3>
+
+<p>
+Match all games where the nationality of both players is matching given
+country, either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
+</p>
+
+<nonstd/>
+
+<p>
+Examples:
+</p>
+
+<verb>
+:country GER<br/>
+:country de
+</verb>
+
+<p>
+In both examples, match alle games where both players are Germans.
+</p>
+
+<p>
+See also: <cql>match:whitecountry</cql>, <cql>match:blackcountry</cql>.
+</p>
+
+<h3 id="match:deathyear">:deathyear</h3>
+
+<p>
+Search for games where both players are died in a year between the
+given ranges.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:deathyear 1800 1950
+</verb>
+
+<p>
+Search for games with ancient players, both are died between 1800 and 1950.
+</p>
+
+<p>
+See also: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
+<cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+<cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:iscomputer">:iscomputer</h3>
+
+<p>
+Search for games where both players are engines.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:whiteiscomputer</cql>, <cql>match:blackiscomputer</cql>.
+</p>
+
+<h3 id="match:ishuman">:ishuman</h3>
+
+<p>
+Search for games where both players are humans.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:whiteishuman</cql>, <cql>match:blackishuman</cql>.
+</p>
+
+<h3 id="match:player">:player</h3>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+</p>
+
+<p>
+<b>Un-quoted string</b>: Only games at least one of whose players names
+has as substring the given parameter will match. The string matching is
+case-insensitive. This form complies with the CQL standard.
+</p>
+
+<p>
+Example:
+</p>
+
+<verb>
+:player coeff
+</verb>
+
+<p>
+Match all games where one of the player names has as substring
+<nobr>"coeff"</nobr>.
+</p>
+
+<p>
+<b>Quoted pattern:</b> Only games at least one of whose players names
+are matching the pattern will be found.
+For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+</p>
+
+<note>The form with quoted patterns do not comply with the CQL standard.</note>
+
+<p>
+Examples:
+</p>
+
+<verb>
+:player "*coeff*"
+</verb>
+
+<p>
+This is identical to "<code><nobr>:player</nobrf> <nobr>coeff</nobr></code>".
+</p>
+
+<p>
+For more examples see
+<a href="Pattern-Matching.html#examples">Pattern Matching</a>.
+</p>
+
+<p>
+See also: <cql>match:whiteplayer</cql>, <cql>match:blackplayer</cql>.
+</p>
+
+<h3 id="match:rating">:rating</h3>
+
+<p>
+Match all games where the given rating is between given score range of both
+players. Rating is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><expr>ELO</expr></td>
+      <td class="r">FIDE Rating</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>DWZ</expr></td>
+      <td class="r">German Rating (Deutsche Wertungszahl)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>ECF</expr></td>
+      <td class="r">English Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>Rapid</expr></td>
+      <td class="r">English Chess Federation Rapid Rating</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>ICCF</expr></td>
+      <td class="r">International Correspondence Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>USCF</expr></td>
+      <td class="r">United States Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>IPS</expr></td>
+      <td class="r">Individual Player Strength (Chess 960 Rating)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>Other</expr></td>
+      <td class="r">Any other rating type</td>
+    </tr>
+  </table>
+</div>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:rating ELO 2000 3000
+</verb>
+
+<p>
+Match all games where both players have an ELO rating between 2000 and 3000.
+</p>
+
+<p>
+See also: <cql>match:whiterating</cql>, <cql>match:blackrating</cql>.
+</p>
+
+<h3 id="match:title">:title</h3>
+
+<p>
+Match all games where the given title is matching the title of both players.
+The argument may be a comma separated list of titles. Title is one of:
+</p>
+
+<div class="dir">
+INCLUDE ../Player-Titles.txt
+</div>
+
+<nonstd/>
+
+<p>
+Examples:
+</p>
+
+<verb>
+:title GM,IM
+</verb>
+
+<p>
+Search for all games where both players are GM or IM.
+</p>
+
+<verb>
+:title None
+</verb>
+
+<p>
+Search for all games where both don't have a title.
+</p>
+
+<h3 id="match:whitebirthyear">:whitebirthyear</h3>
+
+<p>
+Search for games where the white player was birn in a year between the
+given ranges.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:blackbirthyear</cql>, <cql>match:birthyear</cql>,
+<cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
+<cql>match:deathyear</cql>.
+</p>
+
+<h3 id="match:whitecountry">:whitecountry</h3>
+
+<p>
+Match all games where the nationality of the white player is matching given
+country, either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:country</cql>, <cql>match:blackcountry</cql>.
+</p>
+
+<h3 id="match:whitedeathyear">:whitedeathyear</h3>
+
+<p>
+Search for games where the white player died in a year between the
+given ranges.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
+<cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
+<cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:whitegender">:whitegender</h3>
+
+<p>
+Match all games where the gender of the white player is matching given gender.
+Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male). For
+female also <expr>w</expr> may be used.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:whitegender f
+</verb>
+
+<p>
+Only search for games where the white player is female.
+</p>
+
+<p>
+See also: <cql>match:blackgender</cql>, <cql>match:gender</cql>.
+</p>
+
+<h3 id="match:whiteiscomputer">:whiteiscomputer</h3>
+
+<p>
+Search for games where the white player is an engine.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:iscomputer</cql>, <cql>match:blackiscomputer</cql>.
+</p>
+
+<h3 id="match:whiteishuman">:whiteishuman</h3>
+
+<p>
+Search for games where the white player is a human.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:ishuman</cql>, <cql>match:blackishuman</cql>.
+</p>
+
+<h3 id="match:whiteplayer">:whiteplayer</h3>
+
+<p>
+Search for games where the white player matches given name.
+</p>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+See <cql>match:player</cql> for a detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:player</cql>, <cql>match:blackplayer</cql>.
+</p>
+
+<h3 id="match:whiterating">:whiterating</h3>
+
+<p>
+Match all games where the given rating is between given score range of the
+white player. For a detailed description see <cql>match:rating</cql>.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:rating</cql>, <cql>match:whiterating</cql>.
+</p>
+
+<h3 id="match:whitetitle">:whitetitle</h3>
+
+<p>
+Match all games where the given title is matching the title of the white
+player. See <cql>match:title</cql> for a more detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:title</cql>, <cql>match:blacktitle</cql>.
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="header">Game header search related keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:annotator">:annotator</h3>
+
+<p>
+Search for games where the annotator matches given name.
+</p>
+
+<p>
+This takes one parameter, either a quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:annotator Anand
+</verb>
+
+<h3 id="match:date">:date</h3>
+
+<p>
+This takes a range specifier denoting the range of dates
+that the game must match.
+</p>
+
+<nonstd/>
+
+<p>
+The range specifier has one of the following forms:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><expr>2010-10-27</expr></td>
+      <td class="r">denoting a single date</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>2010-10-01 2010-10-31</expr></td>
+      <td class="r">denoting a range of dates, inclusive the ranges</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>2010-10-01 .. 2010-11-01</expr></td>
+      <td class="r">denoting a range of dates, inclusive the former date,
+          exlusive the latter date</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+A date has the following syntax:
+</p>
+
+<div class="dir">
+  <p><code>
+  &lt;year&gt;-&lt;month&gt;-&lt;day&gt;(&lt;sign&gt;?&lt;num&gt;'y')?(&lt;sign&gt;?&lt;num&gt;'m')?(&lt;sign&gt;?&lt;num&gt;'d')?
+  </code></p>
+
+  <table>
+    <tr valign="top">
+      <td class="l"><expr>&lt;year&gt;</expr></td>
+      <td class="r">specifies the year (four digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>&lt;month&gt;</expr></td>
+      <td class="r">specifies the month (two digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>&lt;day&gt;</expr></td>
+      <td class="r">specifies the day of the month (two digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>&lt;sign&gt;</expr></td>
+      <td class="r">is either '&#x2212;' or '+'</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>&lt;num&gt;</expr></td>
+      <td class="r">is any positive number, denoting an increment</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Examples:
+</p>
+
+<verb>
+date: 2010-10-01
+</verb>
+
+<p>
+Search for all games played on October 1, 2010.
+</p>
+
+<verb>
+date: 2010-10-01 .. 2010-11-01
+</verb>
+
+<p>
+Search for all games played in October 2010: between October 1, 2010
+(inclusive), and November 1, 2010 (exclusive).
+</p>
+
+<verb>
+date: 2010-10-01 .. 2010-10-01+1m
+</verb>
+
+<p>
+Also search for all games played between October 1, 2010 (inclusive), and 
+November 1, 2010 (exclusive). <code>+1m</code> denotes the increment for
+the month.
+</p>
+
+<verb>
+date: 2010-10-27 .. 2010-10-27-43d
+</verb>
+
+<p>
+Search for all games between September 14, 2010 (exclusive;
+<expr>2010-10-27-43d</expr> is 2010-09-14), and
+October 27, 2010 (inclusive). This is an example for the following
+case: we know that the tournament has finished on 2010-10-27,
+and the duration of this tournament was exact 43 days. This example
+is exploiting that the first date specifier of a range
+can be greater than the last date specifier.
+</p>
+
+<p>
+See also: <cql>match:year</cql>.
+</p>
+
+<h3 id="match:eco">:eco</h3>
+
+<p>
+This takes a range specifier denoting the <a href="ECO-Code.html">ECO code</a>
+range that the game must match.
+</p>
+
+<nonstd/>
+
+<p>
+Examples:
+</p>
+
+<verb>
+eco: A00
+</verb>
+
+Search all games with ECO code A00.
+
+<verb>
+eco: A00 A99
+</verb>
+
+Search all games  with an ECO code between A00 and A99 (inclusive the ranges).
+
+<h3 id="match:gamenumber">:gamenumber</h3>
+
+<p>
+This takes a range specifier. Only games whose number within the database lies
+within the range specifier (inclusive the range) are considered.
+</p>
+
+<p>
+Examples:
+</p>
+
+<verb>
+:gamenumber 1000<br/>
+:gamenumber 1 100
+</verb>
+
+<h3 id="match:hasmarkers">:hasmarkers</h3>
+
+<p>
+Search for games which has one of the markers set specified in the given
+comma-separated list (<see/> <a href="Game-Flags.html">Game markers</a>).
+</p>
+
+<nonstd/>
+
+<p>
+A marker is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr><td class="l">*</td><td class="r">Any marker</td></tr>
+    <tr><td class="l">w</td><td class="r">%::gametable::mc::GameFlags(w)%</td></tr>
+    <tr><td class="l">b</td><td class="r">%::gametable::mc::GameFlags(b)%</td></tr>
+    <tr><td class="l">m</td><td class="r">%::gametable::mc::GameFlags(m)%</td></tr>
+    <tr><td class="l">e</td><td class="r">%::gametable::mc::GameFlags(e)%</td></tr>
+    <tr><td class="l">N</td><td class="r">%::gametable::mc::GameFlags(N)%</td></tr>
+    <tr><td class="l">p</td><td class="r">%::gametable::mc::GameFlags(p)%</td></tr>
+    <tr><td class="l">T</td><td class="r">%::gametable::mc::GameFlags(T)%</td></tr>
+    <tr><td class="l">K</td><td class="r">%::gametable::mc::GameFlags(K)%</td></tr>
+    <tr><td class="l">Q</td><td class="r">%::gametable::mc::GameFlags(Q)%</td></tr>
+    <tr><td class="l">!</td><td class="r">%::gametable::mc::GameFlags(!)%</td></tr>
+    <tr><td class="l">?</td><td class="r">%::gametable::mc::GameFlags(?)%</td></tr>
+    <tr><td class="l">U</td><td class="r">%::gametable::mc::GameFlags(U)%</td></tr>
+    <tr><td class="l">*</td><td class="r">%::gametable::mc::GameFlags(*)%</td></tr>
+    <tr><td class="l">D</td><td class="r">%::gametable::mc::GameFlags(D)%</td></tr>
+    <tr><td class="l">G</td><td class="r">%::gametable::mc::GameFlags(G)%</td></tr>
+    <tr><td class="l">S</td><td class="r">%::gametable::mc::GameFlags(S)%</td></tr>
+    <tr><td class="l">^</td><td class="r">%::gametable::mc::GameFlags(^)%</td></tr>
+    <tr><td class="l">~</td><td class="r">%::gametable::mc::GameFlags(~)%</td></tr>
+    <tr><td class="l">=</td><td class="r">%::gametable::mc::GameFlags(=)%</td></tr>
+    <tr><td class="l">M</td><td class="r">%::gametable::mc::GameFlags(M)%</td></tr>
+    <tr><td class="l">P</td><td class="r">%::gametable::mc::GameFlags(P)%</td></tr>
+    <tr><td class="l">t</td><td class="r">%::gametable::mc::GameFlags(t)%</td></tr>
+    <tr><td class="l">s</td><td class="r">%::gametable::mc::GameFlags(s)%</td></tr>
+  </table>
+</div>
+
+<p>
+Example:
+</p>
+
+<verb>
+:hasmarkers w,b
+</verb>
+
+<p>
+Only search for games with marker <i>%::gametable::mc::GameFlags(w)%</i>
+or <i>%::gametable::mc::GameFlags(b)%</i>.
+</p>
+
+<verb>
+:hasmarkers *
+</verb>
+
+<p>
+Only search for games with any marker set.
+</p>
+
+<h3 id="match:hasspecialmarkers">:hasspecialmarkers</h3>
+
+<p>
+Search for games which has one of the special markers set specified in the given
+comma-separated list.
+</p>
+
+<nonstd/>
+
+<p>
+A special marker is one of:
+</p>
+
+<table>
+  <tr>
+    <td class="l"><expr>deleted</expr></td>
+    <td class="r">Game marked for deletion</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>illegalmove</expr></td>
+    <td class="r">Game contains illegal castling move.</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>illegalcastling</expr></td>
+    <td class="r">Game contains illegal move (not castling).</td>
+  </tr>
+</table>
+
+<p>
+Example:
+</p>
+
+<verb>
+:not (match :hasspecialmarkers illegalmove)
+</verb>
+
+<p>
+Search does not include games containing illegal moves, except it is
+an illegal castling.
+</p>
+
+<h3 id="match:plycount">:plycount</h3>
+
+<p>
+Search for games with a ply count between the given range.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+:plycount 40-60
+</verb>
+
+<p>
+This is matching short games, with no less than 20 moves, and no
+more than 30 moves.
+</p>
+
+<h3 id="match:result">:result</h3>
+
+<p>
+This takes a single parameter specifying the required result of the game.
+The allowed parameters are:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><expr>1/2-1/2</expr></td>
+      <td class="r">drawn game</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>1-0</expr></td>
+      <td class="r">game in which white wins</td>
+    </tr>
+    <tr>
+      <td class="l"><expr><expr>0-1</expr></td>
+      <td class="r">game in which black wins</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>*</expr></td>
+      <td class="r">game with unknown result (not part of CQL standard)</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>0-0</expr></td>
+      <td class="r">game lost for both players (not part of CQL standard)</expr></td>
+    </tr>
+  </table>
+</div>
+
+<note>The parameter <expr>1/2-1/2</expr> may be abbreviated to
+<expr>1/2</expr>.</note>
+
+<p>
+Match all drawn games.
+</p>
+
+<p>
+Example:
+</p>
+
+<verb>
+:result 1/2
+</verb>
+
+<h3 id="match:termination">:termination</h3>
+
+<p>
+Match all games where the termination reason is matching one of
+the reasons in the given comma-separated list.
+</p>
+
+<nonstd/>
+
+<p>
+The termination reason is one of:
+</p>
+
+<table>
+	<tr>
+		<td class="l"><expr>unknown</expr></td>
+    <td class="r">Termination reason is unknown</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>normal</expr></td>
+    <td class="r">Game terminated in a normal fashion</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>unplayed</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Unplayed)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>abandoned</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Abandoned)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>adjudication</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Adjudication)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>disconnection</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Disconnection)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>emergency</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Emergency)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>rulesinfraction</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(RulesInfraction)%</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>timeforfeit</expr></td>
+    <td class="r">One or both players forfeits on time</td>
+	</tr>
+	<tr>
+		<td class="l"><expr>unterminated</expr></td>
+    <td class="r">%::terminationbox::mc::Reason(Unterminated)%</td>
+	</tr>
+</table>
+
+<p>
+Example:
+</p>
+
+<verb>
+:termination unknown,normal
+</verb>
+
+<p>
+Search all games with normal termination.
+</p>
+
+<h3 id="match:variant">:variant</h3>
+
+<p>
+Only search in games matching any chess variant of given comma-separated list.
+</p>
+
+<nonstd/>
+
+<p>
+Supported variants are:
+</p>
+
+<table>
+  <tr>
+    <td class="l"><expr>normal</expr></td>
+    <td class="r">%::mc::VariantName(Normal)%</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>threecheck</expr></td>
+    <td class="r">%::mc::VariantName(ThreeCheck)%</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>crazyhouse</expr></td>
+    <td class="r">%::mc::VariantName(Crazyhouse)%</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>suicide</expr></td>
+    <td class="r">%::mc::VariantName(Suicide)%</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>giveaway</expr></td>
+    <td class="r">%::mc::VariantName(Giveaway)%</td>
+  </tr>
+  <tr>
+    <td class="l"><expr>losers</expr></td>
+    <td class="r">%::mc::VariantName(Losers)%</td>
+  </tr>
+</table>
+
+<p>
+Example:
+</p>
+
+<verb>
+:variant suicide,giveaway,losers
+</verb>
+
+<p>
+Restrict the search to Antichess games.
+</p>
+
+<h3 id="match:year">:year</h3>
+
+<p>
+This takes a range specifier denoting the range of years (inclusive the range)
+that the game must match.
+</p>
+
+<p>
+Examples:
+</p>
+
+<verb>
+:year 2000<br/>
+:year 2000 20001
+</verb>
+
+<p>
+See also: <cql>match:date</cql>.
+</p>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="data">Game data search related keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:comment">:comment</h3>
+
+<p>
+Match all games which are containing the given pattern as a substring in
+any comment.
+For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+</p>
+
+<nonstd/>
+
+<h3 id="match:hasannotation">:hasannotation</h3>
+
+<p>
+Search for annotated games (does not include comments).
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:hascomments</cql>, <cql>match:hasvariations</cql>.
+
+<h3 id="match:hascomments">:hascomments</h3>
+
+<p>
+Search for commented games.
+</p>
+
+<nonstd/>
+
+See also: <cql>match:hasannotation</cql>, <cql>match:hasvariations</cql>.
+
+<h3 id="match:hasvariations">:hasvariations</h3>
+
+<p>
+Search for games containing sub-variations.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:hasannotation</cql>, <cql>match:hascomments</cql>.
+</p>
+
+<h3 id="match:ischess960">:ischess960</h3>
+
+<p>
+Search for games starting with a Chess 960 position.
+This includes the standard start position.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:isshufflechess</cql>.
+</p>
+
+<h3 id="match:isshufflechess">:isshufflechess</h3>
+
+<p>
+Search for games starting with a Shuffle Chess position.
+This includes Chess 960 positions.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:ischess960</cql>.
+</p>
+
+<p>
+This takes one parameter which denotes the name of a file.
+</p>
+
+<h3 id="match:startposition">:startposition</h3>
+
+<p>
+This will take a comma-separated list of start positions. A start
+position is either a position number, or a FICS variant identifier.
+</p>
+
+<nonstd/>
+
+<p>
+If the position number is zero then games not beginning with a
+start position will be matched. Otherwise the position number
+between 1 and 3840 is denoting a Shuffle Chess position. If the
+number is less or equal than 960, it is a Chess 960 position
+number.
+</p>
+
+<p>
+The Shuffle Chess position number is derived from the Chess 960
+position number in the following way:
+</p>
+
+<ol style="margin-left: 0">
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is between the two rooks, and all castling rights
+    are given: this is a Chess 960 position. Thus the position
+    number is between 1 and 960.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is right from the rooks: the range for this Shuffle
+    Chess position is between 961 and 1920.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is left from the rooks: the range for this Shuffle
+    Chess position is between 1921 and 2880.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is between the two rooks, but no castling rights is
+    given: add 3*960 to the corresponding Chess 960 position,
+    thus the position number is between 2881 and 3840.
+  </li>
+</ol>
+
+<p>
+It is also possible to specifiy a FICS variant identifier for
+the start position. The supported positions are:
+</p>
+
+<div class="dir">
+<code>
+INCLUDE ../Start-Positions.txt
+</code>
+</div>
+
+<p>
+Exmaples:
+</p>
+
+<verb>
+:startposition 518,3398
+</verb>
+
+<p>
+Search for games with a standard start position, with or
+without castling rights.
+</p>
+
+<verb>
+:startposition misc/runaway
+</verb>
+
+<p>
+Search for games with variant <expr>misc/runaway</expr>.
+</p>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="tagging">Tagging related keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:forany">:forany</h3>
+
+<p>
+This takes two parameters, a tag name and a piece designator (<see/>
+<a href="CQL-Tagging">Tagging</a>).
+</p>
+
+<!-- ------------------------------------------------------------------------- -->
+<h2 id="meaningless">Meaningless keywords</h2>
+<!-- ------------------------------------------------------------------------- -->
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="match:output">:output</h3>
+
+<p>
+This keyword is supported to be compatible with CQL standard, and does
+not have any meaning in Scidb.
+</p>
+
+<p>
+This takes one parameter which denotes the name of a file.
+</p>
+
+<h3 id="match:pgn">:pgn</h3>
+
+<p>
+This keyword is supported to be compatible with CQL standard, and does
+not have any meaning in Scidb.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

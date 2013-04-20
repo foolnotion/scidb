@@ -1,0 +1,130 @@
+set Index {
+  { A
+    {
+      {{and : match} {CQL-Match-List.html} {match:and}}
+      {{annotator : match} {CQL-Match-List.html} {match:annotator}}
+    }
+  }
+  { B
+    {
+      {{birthyear : match} {CQL-Match-List.html} {match:birthyear}}
+      {{blackbirthyear : match} {CQL-Match-List.html} {match:blackbirthyear}}
+      {{blackcountry : match} {CQL-Match-List.html} {match:blackcountry}}
+      {{blackdeathyear : match} {CQL-Match-List.html} {match:blackdeathyear}}
+      {{blackgender : match} {CQL-Match-List.html} {match:blackgender}}
+      {{blackiscomputer : match} {CQL-Match-List.html} {match:blackiscomputer}}
+      {{blackishuman : match} {CQL-Match-List.html} {match:blackishuman}}
+      {{blackplayer : match} {CQL-Match-List.html} {match:blackplayer}}
+      {{blackrating : match} {CQL-Match-List.html} {match:blackrating}}
+      {{blacktitle : match} {CQL-Match-List.html} {match:blacktitle}}
+    }
+  }
+  { C
+    {
+      {{comment : match} {CQL-Match-List.html} {match:comment}}
+      {{country : match} {CQL-Match-List.html} {match:country}}
+    }
+  }
+  { D
+    {
+      {{date : match} {CQL-Match-List.html} {match:date}}
+      {{deathyear : match} {CQL-Match-List.html} {match:deathyear}}
+    }
+  }
+  { E
+    {
+      {{eco : match} {CQL-Match-List.html} {match:eco}}
+      {{event : match} {CQL-Match-List.html} {match:event}}
+      {{eventcountry : match} {CQL-Match-List.html} {match:eventcountry}}
+      {{eventdate : match} {CQL-Match-List.html} {match:eventdate}}
+      {{eventmode : match} {CQL-Match-List.html} {match:eventmode}}
+      {{eventtype : match} {CQL-Match-List.html} {match:eventtype}}
+    }
+  }
+  { F
+    {
+      {{forany : match} {CQL-Match-List.html} {match:forany}}
+    }
+  }
+  { G
+    {
+      {{gamenumber : match} {CQL-Match-List.html} {match:gamenumber}}
+    }
+  }
+  { H
+    {
+      {{hasannotation : match} {CQL-Match-List.html} {match:hasannotation}}
+      {{hascomments : match} {CQL-Match-List.html} {match:hascomments}}
+      {{hasmarkers : match} {CQL-Match-List.html} {match:hasmarkers}}
+      {{hasspecialmarkers : match} {CQL-Match-List.html} {match:hasspecialmarkers}}
+      {{hasvariations : match} {CQL-Match-List.html} {match:hasvariations}}
+    }
+  }
+  { I
+    {
+      {{iscomputer : match} {CQL-Match-List.html} {match:iscomputer}}
+      {{ishuman : match} {CQL-Match-List.html} {match:ishuman}}
+      {{isshufflechess : match} {CQL-Match-List.html} {match:isshufflechess}}
+    }
+  }
+  { N
+    {
+      {{not : match} {CQL-Match-List.html} {match:not}}
+    }
+  }
+  { O
+    {
+      {{or : match} {CQL-Match-List.html} {match:or}}
+      {{output : match} {CQL-Match-List.html} {match:output}}
+    }
+  }
+  { P
+    {
+      {{pgn : match} {CQL-Match-List.html} {match:pgn}}
+      {{player : match} {CQL-Match-List.html} {match:player}}
+      {{plycount : match} {CQL-Match-List.html} {match:plycount}}
+    }
+  }
+  { R
+    {
+      {{rating : match} {CQL-Match-List.html} {match:rating}}
+      {{result : match} {CQL-Match-List.html} {match:result}}
+    }
+  }
+  { S
+    {
+      {{site : match} {CQL-Match-List.html} {match:site}}
+      {{startposition : match} {CQL-Match-List.html} {match:startposition}}
+    }
+  }
+  { T
+    {
+      {{termination : match} {CQL-Match-List.html} {match:termination}}
+      {{timemode : match} {CQL-Match-List.html} {match:timemode}}
+      {{title : match} {CQL-Match-List.html} {match:title}}
+    }
+  }
+  { V
+    {
+      {{variant : match} {CQL-Match-List.html} {match:variant}}
+    }
+  }
+  { W
+    {
+      {{whitebirthyear : match} {CQL-Match-List.html} {match:whitebirthyear}}
+      {{whitecountry : match} {CQL-Match-List.html} {match:whitecountry}}
+      {{whitedeathyear : match} {CQL-Match-List.html} {match:whitedeathyear}}
+      {{whitegender : match} {CQL-Match-List.html} {match:whitegender}}
+      {{whiteiscomputer : match} {CQL-Match-List.html} {match:whiteiscomputer}}
+      {{whiteishuman : match} {CQL-Match-List.html} {match:whiteishuman}}
+      {{whiteplayer : match} {CQL-Match-List.html} {match:whiteplayer}}
+      {{whiterating : match} {CQL-Match-List.html} {match:whiterating}}
+      {{whitetitle : match} {CQL-Match-List.html} {match:whitetitle}}
+    }
+  }
+  { Y
+    {
+      {{year : match} {CQL-Match-List.html} {match:year}}
+    }
+  }
+}

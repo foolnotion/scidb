@@ -1,0 +1,70 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+BEGIN
+<table>
+  <tr valign="top">
+    <td class="left"><expr>None</expr></td><td>%::playerdict::mc::None%  </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>GM  </expr></td><td>%::titlebox::mc::Title(GM)%  </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>IM  </expr></td><td>%::titlebox::mc::Title(IM)%  </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>FM  </expr></td><td>%::titlebox::mc::Title(FM)%  </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CM  </expr></td><td>%::titlebox::mc::Title(CM)%  </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>WGM </expr></td><td>%::titlebox::mc::Title(WGM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>WIM </expr></td><td>%::titlebox::mc::Title(WIM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>WFM </expr></td><td>%::titlebox::mc::Title(WFM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>WCM </expr></td><td>%::titlebox::mc::Title(WCM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>HGM </expr></td><td>%::titlebox::mc::Title(HGM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CGM </expr></td><td>%::titlebox::mc::Title(CGM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CIM </expr></td><td>%::titlebox::mc::Title(CIM)% </td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CLGM</expr></td><td>%::titlebox::mc::Title(CLGM)%</td></td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CILM</expr></td><td>%::titlebox::mc::Title(CILM)%</td></td>
+  </tr>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>CSIM</expr></td><td>%::titlebox::mc::Title(CSIM)%</td></td>
+  </tr>
+</table>
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

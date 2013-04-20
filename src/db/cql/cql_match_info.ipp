@@ -32,12 +32,12 @@ inline Event::Event(char const* s, char const* e) :m_pattern(s, e) {}
 inline Site::Site(char const* s, char const* e) :m_pattern(s, e) {}
 inline Date::Date(db::Date const& min, db::Date const& max) :m_min(min), m_max(max) {}
 inline Eco::Eco(db::Eco min, db::Eco max) :m_min(min), m_max(max) {}
-inline EventCountry::EventCountry(db::country::Code country) :m_country(country) {}
-inline EventMode::EventMode(db::event::Mode mode) :m_mode(mode) {}
-inline EventType::EventType(db::event::Type type) :m_type(type) {}
+inline EventCountry::EventCountry(mstl::bitset const& countries) :m_countries(countries) {}
+inline EventMode::EventMode(unsigned modes) :m_modes(modes) {}
+inline EventType::EventType(unsigned types) :m_types(types) {}
 inline GameNumber::GameNumber(unsigned number) :m_number(number) {}
 inline GameFlags::GameFlags(unsigned flags) :m_flags(flags) {}
-inline Gender::Gender(db::sex::ID sex, db::color::ID color) :m_sex(sex), m_color(color) {}
+inline Gender::Gender(db::sex::ID sex, unsigned colors) :m_sex(sex), m_colors(colors) {}
 inline IsComputer::IsComputer(db::color::ID color) :m_color(color) {}
 inline IsHuman::IsHuman(db::color::ID color) :m_color(color) {}
 inline PlyCount::PlyCount(unsigned min, unsigned max) :m_min(min), m_max(max) {}
@@ -47,14 +47,14 @@ inline Round::Round(unsigned round) :m_round(round), m_subround(0) {}
 inline Termination::Termination(unsigned reasons) :m_reasons(reasons) {}
 inline Round::Round(unsigned round, unsigned subround) :m_round(round), m_subround(subround) {}
 inline TimeMode::TimeMode(unsigned modes) :m_modes(modes) {}
-inline Title::Title(unsigned titles, db::color::ID color) :m_titles(titles), m_color(color) {}
+inline Title::Title(unsigned titles, unsigned colors) :m_titles(titles), m_colors(colors) {}
 inline Variant::Variant(db::variant::Type variant) :m_variant(variant) {}
 inline Year::Year(unsigned min, unsigned max) :m_min(min), m_max(max) {}
 
 
 inline
-BirthYear::BirthYear(db::color::ID color, unsigned min, unsigned max)
-	:m_color(color)
+BirthYear::BirthYear(unsigned colors, unsigned min, unsigned max)
+	:m_colors(colors)
 	,m_min(min)
 	,m_max(max)
 {
@@ -87,8 +87,8 @@ EventDate::EventDate(db::Date const& min, db::Date const& max)
 
 
 inline
-Country::Country(db::country::Code country, db::color::ID color)
-	:m_country(country)
+Country::Country(mstl::bitset const& countries, db::color::ID color)
+	:m_countries(countries)
 	,m_color(color)
 {
 }

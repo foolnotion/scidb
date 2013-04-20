@@ -1,0 +1,132 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Transforms of piece designators (CQL)
+TITLE CQL - Transforms of piece designators
+
+<p>
+Certain transforms are defined on piece designators.
+</p>
+
+<p>
+A <b>diagonal flip transformation</b>, applied to a piece designator, reflects each square
+in its square set about the main diagonal.
+</p>
+
+<p>
+For example, the diagonal flip of <expr>Ra8</expr> is <expr>Ra1</expr>. The
+diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
+<expr>[Aa][a-b1-8,f6,g8]</expr>.
+</p>
+
+<p>
+A <b>off-diagonal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the a8 to h1 diagonal.
+</p>
+
+<p>
+For example, the off-diagonal flip of <expr>Ra8</expr> is <expr>Ra8</expr>.
+The off-diagonal flip of <expr>[Pp][a1-8]</expr>, denoting a pawn on the a
+file, is <expr>[Pp][a-h8]</expr>, denoting a pawn on the eight rank.
+</p>
+
+<p>
+A <b>vertical flip transformation</b> applied to a piece designator reflects
+each square in its square set about the vertical bisector of the board. For
+example, the vertical flip of <expr>Uf6</expr>, denoting a piece on f6, is
+<expr>Uc6</expr>.
+</p>
+
+<p>
+A <b>horizontal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the horizontal bisector of
+the board. For example, the horizontal flip of <expr>Uf6</expr> is
+<expr>Uf3</expr>.
+</p>
+
+<p>
+A <b>dihedral transformation</b> of a piece designator is either a flip
+transformation or a rotation by 90 degrees of the chessboard followed by
+a flip transformation or the identity transformation. There are 8 distinct
+dihedral transformations of the board. For example, the results of
+applying the 8 dihedral transformations to the piece designator
+<expr>Qc2</expr> is the 8 piece designators <expr>Qc2</expr>,
+<expr>Qb3</expr>, <expr>Qf2</expr>, <expr>Qg3</expr>, <expr>Qf7</expr>,
+<expr>Qg6</expr>, <expr>Qb6</expr>, and <expr>Qc7</expr>.
+</p>
+
+<p>
+A <b>unit right shift transformation</b>, applied to a piece designator,
+shifts each square in its square set over to the right one square. If a
+square is already at the right edge of the board, it is removed from the
+square set. If a square is at the left edge of the board, it is also added
+to the new square set.
+</p>
+
+<p>
+For example, the unit right shift transformation of <expr>Qd4</expr> is
+<expr>Qe4</expr>. The unit right shift transformation of <expr>Q[c2,h2]</expr>
+is <expr>Qd2</expr>. The unit right shift transformation of
+<expr>Q[a2,c2,h2]</expr> is <expr>Q[a2,b2,d2]</expr>.
+</p>
+
+<p>
+The definitions of <b>unit left shift</b> transformation, <b>unit up shift</b>
+transformation and <b>unit down shift</b> transformation are similar to that
+of unit right shift transformation, with of course the location of the
+appropriate board edges altering mutatis mutandis.
+</p>
+
+<p>
+A <b>right transformation</b> is a composition of zero or more unit right
+transformations. For example, the right transformation comprising three
+successive unit right transformations applied to <expr>Qa4</expr> is
+<expr>Q[a4,b4,c4,d4]</expr>, since squares on the left edge of the board are
+always included in the new set. The result of applying this right
+transformation to <expr>Qd4</expr> is <expr>Qg4</expr>.
+</p>
+
+<p>
+Similar definitions apply for left, up, and down transformation.
+</p>
+
+A <b>horizontal shift transformation</b> is either a left or a right
+transformation. A <b>vertical shift transformation</b> is either a down
+or an up transformation.
+</p>
+
+<p>
+A <b>shift transformation</b> is a transformation that can be written as
+zero or more horizontal shift transformations followed by zero or more
+vertical shift transformations. There is exactly one shift transformation
+that sends a given square to another given square. One possible shift
+transformation of <expr>Q[b3,c4]</expr> is <expr>Q[d4,e5]</expr>.
+</p>
+
+<p>
+A <b>color flip transformation</b> of a piece designator switches the colors
+of each piecetype in the piece set of the piece designator, and then applies
+a horizontal flip to the piece designator. For example, the color flip
+transformation applied to <expr>[Rbp][a2,c2]</expr>, either a white rook,
+a black bishop, or a black pawn on either c2 or a2, is
+<expr>[rBP][a7,c7]</expr>.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

@@ -1922,7 +1922,8 @@
 ### help ###############################################################
 ::help::mc::Contents					"&Contenuti"
 ::help::mc::Index						"&Indice"
-::help::mc::Search					"&Cerca"
+::help::mc::CQL						"C&QL"
+::help::mc::Search					"Ce&rca"
 
 ::help::mc::Help						"Aiuto"
 ::help::mc::MatchEntireWord		"Corrispondi intera parola"

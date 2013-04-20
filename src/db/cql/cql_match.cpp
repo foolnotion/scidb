@@ -37,6 +37,7 @@
 #include "m_bit_functions.h"
 #include "m_string.h"
 #include "m_vector.h"
+#include "m_bitset.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -335,22 +336,26 @@ parseEco(char const* s, error::Type& error, Eco& eco)
 
 
 static char const*
-parseCountryCode(char const* s, error::Type& error, db::country::Code& code)
+parseCountryCodes(char const* s, error::Type& error, mstl::bitset& codes)
 {
 	mstl::string str;
+	char const* t;
 
-	char const* t = s;
+	do
+	{
+		s = t = skipSpaces(s);
+		str.clear();
 
-	while (::isalpha(*t))
-		str += *t++;
-	
-	if (!::isDelim(*t))
-	{
-		error = Invalid_Country_Code;
-	}
-	else
-	{
-		code = db::country::Unknown;
+		while (::isalpha(*t))
+			str += *t++;
+		
+		if (!::isDelim(*t))
+		{
+			error = Invalid_Country_Code;
+			return s;
+		}
+
+		db::country::Code code = db::country::Unknown;
 
 		switch (str.size())
 		{
@@ -366,10 +371,18 @@ parseCountryCode(char const* s, error::Type& error, db::country::Code& code)
 		}
 
 		if (code == db::country::Unknown)
+		{
 			error = Illegal_Country_Code;
-		else
-			s = t;
+			return s;
+		}
+
+		codes.set(code);
+		t = skipSpaces(t);
+
+		if (*t == ',')
+			++t;
 	}
+	while (t[-1] == ',');
 
 	return s;
 }
@@ -390,21 +403,13 @@ parseGender(char const* s, error::Type& error, sex::ID sex)
 
 
 static char const*
-parseTitle(char const* s, error::Type& error, unsigned& titles)
+parseTitles(char const* s, error::Type& error, unsigned& titles)
 {
-	if (*s == ',')
-	{
-		error = Invalid_Result;
-		return s;
-	}
-
 	titles = 0;
 
 	do
 	{
-		if (*s == ',')
-			++s;
-
+		s = skipSpaces(s);
 		char const* t = ::skipToDelim(s);
 		mstl::string result(s, t);
 
@@ -419,9 +424,12 @@ parseTitle(char const* s, error::Type& error, unsigned& titles)
 		}
 
 		titles |= title::fromID(title);
-		s = t;
+
+		s = ::skipSpaces(t);
+		if (*s == ',')
+			++s;
 	}
-	while (*s == ',');
+	while (s[-1] == ',');
 
 	return s;
 }
@@ -583,10 +591,7 @@ Match::parseBirthYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-	{
-		m_matchGameInfoList.push_back(new info::BirthYear(White, min, max));
-		m_matchGameInfoList.push_back(new info::BirthYear(Black, min, max));
-	}
+		m_matchGameInfoList.push_back(new info::BirthYear((1 << White) | (1 << Black), min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -601,7 +606,7 @@ Match::parseBlackBirthYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::BirthYear(Black, min, max));
+		m_matchGameInfoList.push_back(new info::BirthYear(1 << Black, min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -611,12 +616,12 @@ Match::parseBlackBirthYear(char const* s, Error& error)
 char const*
 Match::parseBlackCountry(char const* s, Error& error)
 {
-	db::country::Code country;
+	mstl::bitset countries(db::country::LAST);
 
-	s = parseCountryCode(s, error, country);
+	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Country(country, Black));
+		m_matchGameInfoList.push_back(new info::Country(countries, Black));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -663,7 +668,7 @@ Match::parseBlackGender(char const* s, Error& error)
 	s = ::parseGender(s, error, sex);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Gender(sex, Black));
+		m_matchGameInfoList.push_back(new info::Gender(sex, 1 << Black));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -735,7 +740,7 @@ Match::parseBlackTitle(char const* s, Error& error)
 {
 	unsigned titles = 0;
 
-	s = ::parseTitle(s, error, titles);
+	s = ::parseTitles(s, error, titles);
 
 	if (error == No_Error)
 		m_matchGameInfoList.push_back(new info::Title(titles, Black));
@@ -797,14 +802,14 @@ Match::parseComment(char const* s, Error& error)
 char const*
 Match::parseCountry(char const* s, Error& error)
 {
-	db::country::Code country;
+	mstl::bitset countries(db::country::LAST);
 
-	s = parseCountryCode(s, error, country);
+	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
 	{
-		m_matchGameInfoList.push_back(new info::Country(country, White));
-		m_matchGameInfoList.push_back(new info::Country(country, Black));
+		m_matchGameInfoList.push_back(new info::Country(countries, White));
+		m_matchGameInfoList.push_back(new info::Country(countries, Black));
 	}
 
 	m_isStandard = false;
@@ -929,12 +934,12 @@ Match::parseEvent(char const* s, Error& error)
 char const*
 Match::parseEventCountry(char const* s, Error& error)
 {
-	db::country::Code country;
+	mstl::bitset countries(db::country::LAST);
 
-	s = parseCountryCode(s, error, country);
+	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::EventCountry(country));
+		m_matchGameInfoList.push_back(new info::EventCountry(countries));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -972,28 +977,41 @@ Match::parseEventDate(char const* s, Error& error)
 char const*
 Match::parseEventMode(char const* s, Error& error)
 {
-	event::Mode mode = event::modeFromString(s);
+	unsigned modes = 0;
 
-	if (mode == event::Undetermined)
+	do
 	{
-		error = Invalid_Event_Mode;
-	}
-	else
-	{
-		mstl::string const& str = event::toString(mode);
+		s = skipSpaces(s);
+
 		char const* t = ::skipToDelim(s);
+		mstl::string str(s, t);
 
-		if (unsigned(t - s) != str.size() || ::strncasecmp(s, str, str.size()) != 0)
+		str.tolower();
+
+		if (str == "unknown")
 		{
-			error = Invalid_Event_Mode;
+			modes |= 1u << event::Undetermined;
 		}
 		else
 		{
-			s += str.size();
-			m_matchGameInfoList.push_back(new info::EventMode(mode));
-		}
-	}
+			event::Mode mode = event::modeFromString(str);
 
+			if (mode == event::Undetermined)
+			{
+				error = Invalid_Event_Mode;
+				return s;
+			}
+
+			modes |= 1u << mode;
+		}
+
+		s = skipSpaces(t);
+		if (*s == ',')
+			++s;
+	}
+	while (s[-1] == ',');
+
+	m_matchGameInfoList.push_back(new info::EventMode(modes));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1003,28 +1021,41 @@ Match::parseEventMode(char const* s, Error& error)
 char const*
 Match::parseEventType(char const* s, Error& error)
 {
-	event::Type type = event::typeFromString(s);
+	unsigned types = 0;
 
-	if (type == event::Unknown)
+	do
 	{
-		error = Invalid_Event_Type;
-	}
-	else
-	{
-		mstl::string const& str = event::toString(type);
+		s = skipSpaces(s);
+
 		char const* t = ::skipToDelim(s);
+		mstl::string str(s, t);
 
-		if (unsigned(t - s) != str.size() || ::strncasecmp(s, str, str.size()) != 0)
+		str.tolower();
+
+		if (str == "unknown")
 		{
-			error = Invalid_Event_Type;
+			types |= 1u << event::Unknown;
 		}
 		else
 		{
-			s += str.size();
-			m_matchGameInfoList.push_back(new info::EventType(type));
-		}
-	}
+			event::Type type = event::typeFromString(str);
 
+			if (type == event::Unknown)
+			{
+				error = Invalid_Event_Type;
+				return s;
+			}
+
+			types |= 1u << type;
+		}
+
+		s = skipSpaces(t);
+		if (*s == ',')
+			++s;
+	}
+	while (s[-1] == ',');
+
+	m_matchGameInfoList.push_back(new info::EventType(types));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1058,6 +1089,21 @@ Match::parseGameNumber(char const* s, Error& error)
 	return s;
 }
 
+
+char const*
+Match::parseGender(char const* s, Error& error)
+{
+	sex::ID sex = sex::Unspecified;
+
+	s = ::parseGender(s, error, sex);
+
+	if (error == No_Error)
+		m_matchGameInfoList.push_back(new info::Gender(sex, (1 << White) | (1 << Black)));
+
+	m_isStandard = false;
+	m_sections |= Section_GameInfo;
+	return s;
+}
 
 
 char const*
@@ -1543,26 +1589,35 @@ Match::parseTermination(char const* s, Error& error)
 
 	do
 	{
-		if (*s == ',')
-			++s;
+		s = skipSpaces(s);
 
 		char const* t = ::skipToDelim(s);
-		mstl::string result(s, t);
+		mstl::string str(s, t);
 
-		result.toupper();
+		str.tolower();
 
-		termination::Reason reason = termination::fromString(s);
-
-		if (reason == termination::Unknown || result != termination::toString(reason))
+		if (str == "unknown")
 		{
-			error = Invalid_Termination;
-			return s;
+			reasons |= 1u << termination::Unknown;
+		}
+		else
+		{
+			termination::Reason reason = termination::fromString(str);
+
+			if (reason == termination::Unknown || str != termination::toString(reason))
+			{
+				error = Invalid_Termination;
+				return s;
+			}
+
+			reasons |= 1u << reason;
 		}
 
-		reasons |= 1u << reason;
-		s = t;
+		s = ::skipSpaces(t);
+		if (*s == ',')
+			++s;
 	}
-	while (*s == ',');
+	while (s[-1] == ',');
 
 	m_matchGameInfoList.push_back(new info::Termination(reasons));
 	m_isStandard = false;
@@ -1578,26 +1633,35 @@ Match::parseTimeMode(char const* s, Error& error)
 
 	do
 	{
-		if (*s == ',')
-			++s;
+		s = skipSpaces(s);
 
 		char const* t = ::skipToDelim(s);
-		mstl::string mode(s, t);
+		mstl::string str(s, t);
 
-		mode.tolower();
+		str.tolower();
 
-		time::Mode m = time::fromString(s);
-
-		if (m == time::Unknown || mode != time::toString(m))
+		if (str == "unknown")
 		{
-			error = Invalid_Time_Mode;
-			return s;
+			modes |= 1u << time::Unknown;
+		}
+		else
+		{
+			time::Mode mode = time::fromString(s);
+
+			if (mode == time::Unknown || str != time::toString(mode))
+			{
+				error = Invalid_Time_Mode;
+				return s;
+			}
+
+			modes |= 1u << mode;
 		}
 
-		modes |= 1u << m;
-		s = t;
+		s = ::skipSpaces(t);
+		if (*s == ',')
+			++s;
 	}
-	while (*s == ',');
+	while (s[-1] == ',');
 
 	m_matchGameInfoList.push_back(new info::TimeMode(modes));
 	m_isStandard = false;
@@ -1611,13 +1675,10 @@ Match::parseTitle(char const* s, Error& error)
 {
 	unsigned titles = 0;
 
-	s = ::parseTitle(s, error, titles);
+	s = ::parseTitles(s, error, titles);
 
 	if (error == No_Error)
-	{
-		m_matchGameInfoList.push_back(new info::Title(titles, White));
-		m_matchGameInfoList.push_back(new info::Title(titles, Black));
-	}
+		m_matchGameInfoList.push_back(new info::Title(titles, (1 << White) | (1 << Black)));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -1664,7 +1725,7 @@ Match::parseWhiteBirthYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::BirthYear(White, min, max));
+		m_matchGameInfoList.push_back(new info::BirthYear(1 << White, min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1674,12 +1735,12 @@ Match::parseWhiteBirthYear(char const* s, Error& error)
 char const*
 Match::parseWhiteCountry(char const* s, Error& error)
 {
-	db::country::Code country;
+	mstl::bitset countries(db::country::LAST);
 
-	s = parseCountryCode(s, error, country);
+	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Country(country, White));
+		m_matchGameInfoList.push_back(new info::Country(countries, White));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1726,7 +1787,7 @@ Match::parseWhiteGender(char const* s, Error& error)
 	s = ::parseGender(s, error, sex);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Gender(sex, White));
+		m_matchGameInfoList.push_back(new info::Gender(sex, 1 << White));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1799,10 +1860,10 @@ Match::parseWhiteTitle(char const* s, Error& error)
 {
 	unsigned titles = 0;
 
-	s = ::parseTitle(s, error, titles);
+	s = ::parseTitles(s, error, titles);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Title(titles, White));
+		m_matchGameInfoList.push_back(new info::Title(titles, 1 << White));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1858,6 +1919,7 @@ Match::parse(char const* s, Error& error)
 		Pair("eventtype",				&Match::parseEventType),
 		Pair("forany",					&Match::parseForAny),
 		Pair("gamenumber",			&Match::parseGameNumber),
+		Pair("gender",					&Match::parseGender),
 		Pair("hasannotation",		&Match::parseHasAnnotation),
 		Pair("hascomments",			&Match::parseHasComments),
 		Pair("hasflags",				&Match::parseHasFlags),

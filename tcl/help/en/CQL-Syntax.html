@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-Syntax.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Help: CQL Syntax</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL Syntax</h1>
+</div>
+
+<p>
+A CQL script has the following generic structure:
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  (position ... )
+  (position ... )
+  (position ... )
+  ...)<!--
+--></code></pre></div>
+
+<p>
+In this example, the "..." represent various keywords and commands to be
+defined below.
+</p>
+
+<p>
+For example, here is a simple CQL script to find quadrupled pawns, but only
+in games played in year 2013:
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  :year 2013
+  (position
+    :piececount P[b2-7] 4
+    :shifthorizontal
+    :flipcolor))<!--
+--></code></pre></div>
+
+<p>
+In order to understand the format of CQL, some basic syntactic terminology
+will be defined.
+</p>
+
+<p>
+A list is a finite sequence of items, separated by whitespace, and enclosed
+in parentheses. Each item is either a string of characters without whitespace
+or another list.
+</p>
+
+<p>
+For example
+<p>
+
+<div class="verb"><code>
+(position :shifthorizontal :flipcolor)
+</code></div>
+
+<p>
+is a list whose three elements are the strings <span style="white-space:nowrap;"><code>position</code></span>,
+<a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>, and <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>.
+</p>
+
+<p>
+Similarly, the list beginning <code>(match</code></span> above has six
+elements, the last of which is itself a list containing six elements whose
+first element is <span style="white-space:nowrap;"><code>position</code></span> and whose last element is
+<a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>.
+</p>
+
+<p>
+A keyword is a string beginning with <span style="white-space:nowrap;"><code>:</code></span>. For example, the match
+list above has keyword <a href="CQL-Match-List.html#match:year">:year</a>.
+</p>
+
+<p>
+A keyword parameter is a list or string immediately following a keyword that
+accepts a keyword parameter. Some keywords accept multiple parameters,
+one after the other. 
+</p>
+
+<h2>Example of keyword parameter</h2>
+
+<p>
+In the list
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  (position
+    :piececount P[b2-7] 4
+    :shifthorizontal
+    :flipcolor))<!--
+--></code></pre></div>
+
+<p>
+<a href="CQL-Position-List.html#position:piececount">:piececount</a> has keyword parameters <span style="white-space:nowrap;"><code>P[b2-7]</code></span>
+and <span style="white-space:nowrap;"><code>4</code></span>. The other keywords <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
+and <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a> do not take keyword parameters. A list
+whose first element is <span style="white-space:nowrap;"><code>match</code></span> is called a match list and defines
+a match filter.
+</p>
+
+<p>
+A list whose first element is <span style="white-space:nowrap;"><code>position</code></span> is called a position list
+and defines a position filter. 
+</p>
+
+<h2>Overall functioning of CQL</h2>
+
+<p>
+To determine whether a match filter matches a game, CQL acts as follows.
+It plays through each move in the game, optionally descending as well into
+the variations. Each time a position is reached, each of the position filters
+defined in the match filter is applied to that position.
+</p>
+
+<p>
+Example:
+In a 40 move game in which white makes the first move and black the last move,
+if there are no variations then CQL will examine exactly 80 positions in the
+game.
+</p>
+
+<p>
+If each of the position filters in the match filter match some position in the
+game, then the match filter is said to match the game.
+</p>
+
+<p>
+The simplest position filter is defined by the simplest position list:
+</p>
+
+<div class="verb"><code>
+(position)
+</code></div>
+
+<p>
+This position filter matches every position. Hence, the following CQL script
+simply selects all games:
+</p>
+
+<div class="verb"><code>
+(match (position))
+</code></div>
+
+<h2>Comments in a CQL file</h2>
+
+<p>
+Any characters following a semicolon are ignored in a CQL script. Example:
+</p>
+
+<div class="box"><pre><code><!--
+-->; A CQL script that matches all games
+(match 
+  (position) ; a position filter matching anything
+)<!--
+--></code></pre></div>
+
+<h2>Some basic elements</h2>
+
+<ul>
+  <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
+  <li><a href="CQL-Transforms-Of-Piece-Designators.html">Transforms of piece designators</a></li>
+  <li><a href="CQL-Square-Designators.html">Square designators</a></li>
+  <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+</ul>
+
+</body>
+</html>

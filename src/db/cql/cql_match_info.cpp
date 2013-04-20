@@ -28,9 +28,12 @@
 
 #include "db_game_info.h"
 
+#include "m_utility.h"
+
 using namespace cql;
 using namespace cql::info;
 using namespace db;
+using namespace db::color;
 
 
 Match::~Match() {}
@@ -94,7 +97,7 @@ info::Eco::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 EventCountry::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_country == info.eventCountry();
+	return m_countries.test(info.eventCountry());
 }
 
 
@@ -108,21 +111,21 @@ EventDate::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 EventMode::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_mode == info.eventMode();
+	return bool(m_modes | (1 << info.eventMode()));
 }
 
 
 bool
 EventType::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_type == info.eventType();
+	return bool(m_types | (1 << info.eventType()));
 }
 
 
 bool
 Country::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_country == info.federation(m_color);
+	return m_countries.test(info.eventCountry());
 }
 
 
@@ -164,7 +167,15 @@ GameFlags::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 Gender::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_sex == info.sex(m_color);
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && (info.sex(db::color::ID(i)) & m_sex))
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -261,7 +272,15 @@ TimeMode::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 Title::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_titles & title::fromID(info.title(m_color));
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && (m_titles & title::fromID(info.title(db::color::ID(i)))))
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -289,14 +308,20 @@ Year::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 BirthYear::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	db::Date const& date = info.player(m_color)->dateOfBirth();
+	static_assert((White | Black) == 1, "loop not working");
 
-	if (!date)
-		return false;
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if (m_colors & (1 << i))
+		{
+			db::Date const& date = info.player(db::color::ID(i))->dateOfBirth();
 
-	unsigned year = date.year();
+			if (date && mstl::is_between(unsigned(date.year()), m_min, m_max))
+				return true;
+		}
+	}
 
-	return m_min <= year && year <= m_max;
+	return false;
 }
 
 

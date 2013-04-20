@@ -1920,7 +1920,8 @@
 
 ### help ###############################################################
 ::help::mc::Contents					"&Innehåll"
-::help::mc::Index						"&Index"
+::help::mc::Index						"Inde&x"
+::help::mc::CQL						"C&QL"
 ::help::mc::Search					"&Sök"
 
 ::help::mc::Help						"Hjälp"
