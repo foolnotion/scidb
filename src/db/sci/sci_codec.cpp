@@ -1321,6 +1321,8 @@ Codec::writeIndexHeader(mstl::ostream& strm)
 
 	bstrm.put(::MagicIndexFile, 8);
 	bstrm << uint16_t(FileVersion);						// Scidb version
+	// TODO increase to 32 bit, because for administrative tasks a higher limit may be useful
+	// TODO thus we have to decrease the description length by one byte
 	bstrm << uint24_t(gameInfoList().size());			// number of games
 	bstrm << uint8_t(variant::toIndex(variant()));	// chess variant in this base
 	bstrm << uint8_t(type());								// base type

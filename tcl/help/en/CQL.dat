@@ -63,7 +63,6 @@ set Index {
       {{flip : position} {CQL-Position-List.html} {position:flip}}
       {{flip : relation} {CQL-Relation-List.html} {relation:flip}}
       {{flipcolor : position} {CQL-Position-List.html} {position:flipcolor}}
-      {{flipcolor : position} {CQL-Position-List.html} {position:flipcolor}}
       {{flipdiagonal : position} {CQL-Position-List.html} {position:flipdiagonal}}
       {{flipdihedral : position} {CQL-Position-List.html} {position:flipdihedral}}
       {{fliphorizontal : position} {CQL-Position-List.html} {position:fliphorizontal}}
