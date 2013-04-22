@@ -161,7 +161,7 @@ Example:
 
 <div class="box"><pre><code><!--
 -->(match
-  <span color="darkred">:and</span> (
+  <span class="keyword">:and</span> (
     (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>)
     (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))))<!--
 --></code></pre></div>
@@ -196,7 +196,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <span color="darkred">:not</span>)
+(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <span class="keyword">:not</span>)
 </code></div>
 
 <p>
@@ -205,7 +205,7 @@ example may be written in the clearer second form:
 </p>
 
 <div class="verb"><code>
-(match <span color="darkred">:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>))
+(match <span class="keyword">:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>))
 </code></div>
 
 <h3 id="match:or">:or</h3>
@@ -223,7 +223,7 @@ Example:
 
 <div class="box"><pre><code><!--
 -->(match
-  <span color="darkred">:or</span> (
+  <span class="keyword">:or</span> (
     (match <a href="CQL-Match-List.html#match:event">:event</a> "FIDE-Wch*"
     (match <a href="CQL-Match-List.html#match:event">:event</a> "PCA-World Championchip*"))))<!--
 --></code></pre></div>
@@ -280,7 +280,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:eventcountry</span> dk,no,se
+<span class="keyword">:eventcountry</span> dk,no,se
 </code></div>
 
 <p>
@@ -360,7 +360,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:eventmode</span> corr,email
+<span class="keyword">:eventmode</span> corr,email
 </code></div>
 
 <p>
@@ -426,7 +426,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:eventtype</span> tourn,swiss
+<span class="keyword">:eventtype</span> tourn,swiss
 </code></div>
 
 <h3 id="match:site">:site</h3>
@@ -493,7 +493,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:timemode</span> blitz,bullet
+<span class="keyword">:timemode</span> blitz,bullet
 </code></div>
 
 <p>
@@ -550,7 +550,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:birthyear</span> 1990-2020
+<span class="keyword">:birthyear</span> 1990-2020
 </code></div>
 
 <p>
@@ -629,7 +629,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:blackgender</span> f
+<span class="keyword">:blackgender</span> f
 </code></div>
 
 <p>
@@ -722,8 +722,8 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:country</span> GER<br/>
-<span color="darkred">:country</span> de
+<span class="keyword">:country</span> GER<br/>
+<span class="keyword">:country</span> de
 </code></div>
 
 <p>
@@ -748,7 +748,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:deathyear</span> 1800 1950
+<span class="keyword">:deathyear</span> 1800 1950
 </code></div>
 
 <p>
@@ -802,7 +802,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:player</span> coeff
+<span class="keyword">:player</span> coeff
 </code></div>
 
 <p>
@@ -823,7 +823,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:player</span> "*coeff*"
+<span class="keyword">:player</span> "*coeff*"
 </code></div>
 
 <p>
@@ -890,7 +890,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:rating</span> ELO 2000 3000
+<span class="keyword">:rating</span> ELO 2000 3000
 </code></div>
 
 <p>
@@ -966,7 +966,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:title</span> GM,IM
+<span class="keyword">:title</span> GM,IM
 </code></div>
 
 <p>
@@ -974,7 +974,7 @@ Search for all games where one player is GM or IM.
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:title</span> None
+<span class="keyword">:title</span> None
 </code></div>
 
 <p>
@@ -1044,7 +1044,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:whitegender</span> f
+<span class="keyword">:whitegender</span> f
 </code></div>
 
 <p>
@@ -1159,14 +1159,14 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:annotator</span> Capablanca
+<span class="keyword">:annotator</span> Capablanca
 </code></div>
 
 Search for games where one of the player names has a sub-string matching
 the name <span style="white-space:nowrap;">"Capablanca"</span>.
 
 <div class="verb"><code>
-<span color="darkred">:annotator</span> "*"
+<span class="keyword">:annotator</span> "*"
 </code></div>
 
 <p>
@@ -1270,7 +1270,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:date</span> 2010-10-01
+<span class="keyword">:date</span> 2010-10-01
 </code></div>
 
 <p>
@@ -1278,7 +1278,7 @@ Search for all games played on October 1, 2010.
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:date</span> 2010-10-01 .. 2010-11-01
+<span class="keyword">:date</span> 2010-10-01 .. 2010-11-01
 </code></div>
 
 <p>
@@ -1287,7 +1287,7 @@ Search for all games played in October 2010: between October 1, 2010
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:date</span> 2010-10-01 .. 2010-10-01+1m
+<span class="keyword">:date</span> 2010-10-01 .. 2010-10-01+1m
 </code></div>
 
 <p>
@@ -1297,7 +1297,7 @@ Also search for all games played in October 2010; the latter range
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:date</span> 2010-10-27 .. 2010-10-27-43d
+<span class="keyword">:date</span> 2010-10-27 .. 2010-10-27-43d
 </code></div>
 
 <p>
@@ -1328,13 +1328,13 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:eco</span> A00
+<span class="keyword">:eco</span> A00
 </code></div>
 
 Search all games with ECO code A00.
 
 <div class="verb"><code>
-<span color="darkred">:eco</span> A00 A99
+<span class="keyword">:eco</span> A00 A99
 </code></div>
 
 Search all games with an ECO code between A00 and A99 (inclusive the ranges).
@@ -1352,8 +1352,8 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:gamenumber</span> 1000<br/>
-<span color="darkred">:gamenumber</span> 1 100
+<span class="keyword">:gamenumber</span> 1000<br/>
+<span class="keyword">:gamenumber</span> 1 100
 </code></div>
 
 <h3 id="match:hasmarkers">:hasmarkers</h3>
@@ -1403,7 +1403,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:hasmarkers</span> w,b
+<span class="keyword">:hasmarkers</span> w,b
 </code></div>
 
 <p>
@@ -1412,7 +1412,7 @@ or <i>Black Opening</i>.
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:hasmarkers</span> #
+<span class="keyword">:hasmarkers</span> #
 </code></div>
 
 <p>
@@ -1453,7 +1453,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<a href="CQL-Match-List.html#match:not">:not</a> (match <span color="darkred">:hasspecialmarkers</span> illegalmove)
+<a href="CQL-Match-List.html#match:not">:not</a> (match <span class="keyword">:hasspecialmarkers</span> illegalmove)
 </code></div>
 
 <p>
@@ -1475,7 +1475,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:plycount</span> 40 60
+<span class="keyword">:plycount</span> 40 60
 </code></div>
 
 <p>
@@ -1523,7 +1523,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:result</span> 1/2
+<span class="keyword">:result</span> 1/2
 </code></div>
 
 <p>
@@ -1593,7 +1593,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:termination</span> unknown,normal
+<span class="keyword">:termination</span> unknown,normal
 </code></div>
 
 <p>
@@ -1647,7 +1647,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:variant</span> suicide,giveaway,losers
+<span class="keyword">:variant</span> suicide,giveaway,losers
 </code></div>
 
 <p>
@@ -1666,8 +1666,8 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:year</span> 2000<br/>
-<span color="darkred">:year</span> 2000 2010
+<span class="keyword">:year</span> 2000<br/>
+<span class="keyword">:year</span> 2000 2010
 </code></div>
 
 <p>
@@ -1872,7 +1872,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:startposition</span> 518,3398
+<span class="keyword">:startposition</span> 518,3398
 </code></div>
 
 <p>
@@ -1881,7 +1881,7 @@ without castling rights.
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:startposition</span> misc/runaway
+<span class="keyword">:startposition</span> misc/runaway
 </code></div>
 
 <p>
@@ -1889,7 +1889,7 @@ Search for games with variant <span style="white-space:nowrap;"><code>misc/runaw
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:startposition</span> 0
+<span class="keyword">:startposition</span> 0
 </code></div>
 
 <p>
@@ -1898,7 +1898,7 @@ that the first game position is not a Shuffle Chess position.
 </p>
 
 <div class="verb"><code>
-<span color="darkred">:startposition</span> -1
+<span class="keyword">:startposition</span> -1
 </code></div>
 
 <p>

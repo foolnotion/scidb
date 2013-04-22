@@ -54,7 +54,7 @@ match any position with a white passed pawn:
 </p>
 
 <div class="box"><pre><code><!--
---><span color="darkgreen">; match a position with a white passed pawn</span>
+--><span class="comment">; match a position with a white passed pawn</span>
 (position
   Pd2
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
@@ -67,7 +67,7 @@ Now, to find at least 3 white passed pawns, we add in some accumulation code:
 </p>
 
 <div class="box"><pre><code><!--
---><span color="darkgreen">; match a position with at least three white passed pawns</span>
+--><span class="comment">; match a position with at least three white passed pawns</span>
 (position
   Pd2
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
@@ -83,7 +83,7 @@ We can use:
 </p>
 
 <div class="box"><pre><code><!--
---><span color="darkgreen">;match a position with at least two black passed pawns</span>
+--><span class="comment">;match a position with at least two black passed pawns</span>
 (position
   pd7 
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
@@ -99,8 +99,8 @@ white passers, we combine these lists:
 </p>
 
 <div class="box"><pre><code><!--
---><span color="darkgreen">; match a position with at least three white</span>
-<span color="darkgreen">; and at least two black passers</span>
+--><span class="comment">; match a position with at least three white</span>
+<span class="comment">; and at least two black passers</span>
 (position
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8 
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8

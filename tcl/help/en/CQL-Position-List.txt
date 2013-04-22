@@ -149,12 +149,12 @@ TITLE CQL - The position list
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
     </tr>
     <tr>

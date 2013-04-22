@@ -107,10 +107,10 @@ set HtmlMapping {
 	<dir>				{<ul style="list-style-type: none"><li>}
 	</dir>			{</li></ul>}
 
-	<comment>		{<span color="darkgreen">}
+	<comment>		{<span class="comment">}
 	</comment>		{</span>}
 
-	<keyword>		{<span color="darkred">}
+	<keyword>		{<span class="keyword">}
 	</keyword>		{</span>}
 
 	<see/>			&#x21d2;

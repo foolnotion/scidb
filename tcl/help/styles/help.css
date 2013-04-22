@@ -101,8 +101,15 @@ div.annotation {
 }
 
 span.NEW {
-	color: darkgreen;
-/*	background-color: #ff9bff; */
+	color: #005400;
+}
+
+span.comment {
+	color: #006400;
+}
+
+span.keyword {
+	color: #8b0000;
 }
 
 table.standard {

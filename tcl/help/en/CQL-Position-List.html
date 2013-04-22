@@ -161,12 +161,12 @@
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
     </tr>
     <tr>
@@ -217,7 +217,7 @@ Example:
 -->(position 
   <a href="CQL-Position-List.html#position:wtm">:wtm</a>
   <a href="CQL-Position-List.html#position:check">:check</a>
-  <span color="darkred">:and</span> (
+  <span class="keyword">:and</span> (
     (position Ke2 kg2 <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a>)
     (position Ne2)))<!--
 --></code></pre></div>
@@ -245,21 +245,21 @@ Examples:
 <div class="box"><pre><code><!--
 -->(match
   (position
-    ; <span color="darkgreen">we are searching for both colors</span>
+    ; <span class="comment">we are searching for both colors</span>
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>
-    <span color="darkgreen">; the mating position must match each criterion below</span>
+    <span class="comment">; the mating position must match each criterion below</span>
     <a href="CQL-Position-List.html#position:and">:and</a> (
-      <span color="darkgreen">; the black king is surrounded by empty squares and</span>
-      <span color="darkgreen">; is attacked once and is in mate</span>
+      <span class="comment">; the black king is surrounded by empty squares and</span>
+      <span class="comment">; is attacked once and is in mate</span>
       (position
         <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k . 8
         <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A k 1
         <a href="CQL-Position-List.html#position:mate">:mate</a>
         <a href="CQL-Position-List.html#position:btm">:btm</a>)
-      <span color="darkgreen">; check that no neighbor of the black king is</span>
-      <span color="darkgreen">; attacked more than once</span>
+      <span class="comment">; check that no neighbor of the black king is</span>
+      <span class="comment">; attacked more than once</span>
       (position
-        <span color="darkred">:not</span>
+        <span class="keyword">:not</span>
         <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k .e4 1
         <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A .e4 2 100
         <a href="CQL-Position-List.html#position:shift">:shift</a>))))<!--
@@ -270,7 +270,7 @@ This finds all mating positions in which the king is surrounded by empty squares
 </p>
 
 <div class="verb"><code>
-(position Ra3 <span color="darkred">:not</span>)
+(position Ra3 <span class="keyword">:not</span>)
 </code></div>
 
 <p>
@@ -294,7 +294,7 @@ Example:
 <div class="box"><pre><code><!--
 -->(match
   (position
-    <span color="darkred">:or</span> (
+    <span class="keyword">:or</span> (
       (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
         B[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9 )
@@ -421,7 +421,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:checkcount</span> 2)
+(position <span class="keyword">:checkcount</span> 2)
 </code></div>
 
 <p>
@@ -429,7 +429,7 @@ Match any side has given second check.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:checkcount</span> +0+3)
+(position <span class="keyword">:checkcount</span> +0+3)
 </code></div>
 
 <p>
@@ -437,7 +437,7 @@ Match if black has given third check to white. This must be a final position.
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:not">:not</a> <span color="darkred">:checkcount</span> +0+0)
+(position <a href="CQL-Position-List.html#position:not">:not</a> <span class="keyword">:checkcount</span> +0+0)
 </code></div>
 
 <p>
@@ -492,7 +492,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:castling</span> K)
+(position <span class="keyword">:castling</span> K)
 </code></div>
 
 <p>
@@ -500,7 +500,7 @@ White has kingside castling availability.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:castling</span> [KQ])
+(position <span class="keyword">:castling</span> [KQ])
 </code></div>
 
 <p>
@@ -508,7 +508,7 @@ White has either kingside or queenside castling availability.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:castling</span> K <span color="darkred">:castling</span> Q)
+(position <span class="keyword">:castling</span> K <span class="keyword">:castling</span> Q)
 </code></div>
 
 <p>
@@ -630,7 +630,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:mate</span> <a href="CQL-Position-List.html#position:movenumber">:movenumber</a> 1 20)
+(position <span class="keyword">:mate</span> <a href="CQL-Position-List.html#position:movenumber">:movenumber</a> 1 20)
 </code></div>
 
 <p>
@@ -843,7 +843,7 @@ To find one of tripled pawns placed on the main diagonal we design the query
 
 <div class="box"><pre><code><!--
 -->(position
-  <span color="darkred">:inside</span> P[b2-7] [b2,c3,d4,e5,f6,g7]
+  <span class="keyword">:inside</span> P[b2-7] [b2,c3,d4,e5,f6,g7]
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[b2-7] 3
   <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
 --></code></pre></div>
@@ -931,7 +931,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:attackcount</span> A k 2)
+(position <span class="keyword">:attackcount</span> A k 2)
 </code></div>
 
 <p>
@@ -939,7 +939,7 @@ Matches any position in which white has a double attack on the black king.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:attackcount</span> A k 2 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
+(position <span class="keyword">:attackcount</span> A k 2 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
 <p>
@@ -947,7 +947,7 @@ Matches any position in which a king is under double attack.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:attackcount</span> A .h3 1)
+(position <span class="keyword">:attackcount</span> A .h3 1)
 </code></div>
 
 <p>
@@ -955,7 +955,7 @@ Matches a position in which exactly one white piece attacks an empty h3 square.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:attackcount</span> [RB][a-c8] ??1 5 9
+(position <span class="keyword">:attackcount</span> [RB][a-c8] ??1 5 9
 </code></div>
 
 <p>
@@ -965,7 +965,7 @@ inclusive.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:attackcount</span> n [KRQ] 3 100) 
+(position <span class="keyword">:attackcount</span> n [KRQ] 3 100) 
 </code></div>
 
 <p>
@@ -1007,7 +1007,7 @@ winning some material:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:maxswapvalue</span> A a 1 1000)
+(position <span class="keyword">:maxswapvalue</span> A a 1 1000)
 </code></div>
 
 <p>
@@ -1016,7 +1016,7 @@ without a material loss.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:maxswapvalue</span> Q?1-7 ??8 0 1000)
+(position <span class="keyword">:maxswapvalue</span> Q?1-7 ??8 0 1000)
 </code></div>
 
 <h3 id="position:piececount">:piececount</h3>
@@ -1032,7 +1032,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:piececount</span> R 2)
+(position <span class="keyword">:piececount</span> R 2)
 </code></div>
 
 <p>
@@ -1042,8 +1042,8 @@ three white rooks would fail to match.
 
 <div class="box"><pre><code><!--
 -->(position 
-  <span color="darkred">:piececount</span> [Rr][a1-8] 1 3 
-  <span color="darkred">:piececount</span> [Qq][a-h8] 4 
+  <span class="keyword">:piececount</span> [Rr][a1-8] 1 3 
+  <span class="keyword">:piececount</span> [Qq][a-h8] 4 
   Nd4)<!--
 --></code></pre></div>
 
@@ -1056,8 +1056,8 @@ to write this position list is:
 <div class="box"><pre><code><!--
 -->(position 
   Nd4
-  <span color="darkred">:piececount</span> [Rr][a?] 1 3 
-  <span color="darkred">:piececount</span> [Qq][?8] 4)<!--
+  <span class="keyword">:piececount</span> [Rr][a?] 1 3 
+  <span class="keyword">:piececount</span> [Qq][?8] 4)<!--
 --></code></pre></div>
 
 <h3 id="position:power">:power</h3>
@@ -1123,7 +1123,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:power</span> a 6)
+(position <span class="keyword">:power</span> a 6)
 </code></div>
 
 <p>
@@ -1132,7 +1132,7 @@ board equals 6.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:power</span> Aa-h1-4 10 25)
+(position <span class="keyword">:power</span> Aa-h1-4 10 25)
 </code></div>
 
 <p>
@@ -1156,7 +1156,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:powerdifference</span> U 4)
+(position <span class="keyword">:powerdifference</span> U 4)
 </code></div>
 
 <p>
@@ -1165,7 +1165,7 @@ greater than the black pieces.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:powerdifference</span> [Rr] -5 10)
+(position <span class="keyword">:powerdifference</span> [Rr] -5 10)
 </code></div>
 
 <p>
@@ -1174,7 +1174,7 @@ rooks than black.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:powerdifference</span> [RrBbNn] -1000 -2)
+(position <span class="keyword">:powerdifference</span> [RrBbNn] -1000 -2)
 </code></div>
 
 <p>
@@ -1187,19 +1187,19 @@ This matches positions in which black is up at least an exchange.
     <a href="CQL-Match-List.html#match:result">:result</a> 1-0
     <a href="CQL-Position-List.html#position:sequence">:sequence</a> (
       (position
-        <span color="darkred">:powerdifference</span> [Qq] -1000 -9
-        <span color="darkred">:powerdifference</span> U -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9)
-      (position <span color="darkred">:powerdifference</span> [Qq] -1000 -9))
+        <span class="keyword">:powerdifference</span> [Qq] -1000 -9
+        <span class="keyword">:powerdifference</span> U -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9))
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
@@ -1241,7 +1241,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:ray</span> (k Q)) 
+(position <span class="keyword">:ray</span> (k Q)) 
 </code></div>
 
 <p>
@@ -1249,7 +1249,7 @@ Matches a position in which a white queen attacks the black king.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:ray</span> (Qa? n k[?4-8]))
+(position <span class="keyword">:ray</span> (Qa? n k[?4-8]))
 </code></div>
 
 <p>
@@ -1258,7 +1258,7 @@ to the black king on the last four ranks.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:ray</span> (Qa? Qc? Qe? kg?))
+(position <span class="keyword">:ray</span> (Qa? Qc? Qe? kg?))
 </code></div>
 
 <p>
@@ -1270,7 +1270,7 @@ the a, c, and e files.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:ray</span> (Q n k) 2 4)
+(position <span class="keyword">:ray</span> (Q n k) 2 4)
 </code></div>
 
 <p>
@@ -1291,7 +1291,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:rayattack</span> (A a k))
+(position <span class="keyword">:rayattack</span> (A a k))
 </code></div>
 
 <p>
@@ -1299,7 +1299,7 @@ Matches a position in which a black piece is pinned to the black king.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:rayattack</span> (Ad5 a [rk][a-h1-4]) 3)
+(position <span class="keyword">:rayattack</span> (Ad5 a [rk][a-h1-4]) 3)
 </code></div>
 
 <p>
@@ -1308,7 +1308,7 @@ d5 against either a black rook or king in the first four ranks.
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:stalemate">:stalemate</a> <span color="darkred">:rayattack</span>
+(position <a href="CQL-Position-List.html#position:stalemate">:stalemate</a> <span class="keyword">:rayattack</span>
 (A a k) 2 8 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
@@ -1412,7 +1412,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:movefrom</span> Ra3)
+(position <span class="keyword">:movefrom</span> Ra3)
 </code></div>
 
 <p>
@@ -1420,7 +1420,7 @@ Matches a position in which the next move is of a white rook on a3.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:movefrom</span> U?8)
+(position <span class="keyword">:movefrom</span> U?8)
 </code></div>
 
 <p>
@@ -1440,7 +1440,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:movenumber</span> 10 20 <a href="CQL-Position-List.html#position:check">:check</a>)
+(position <span class="keyword">:movenumber</span> 10 20 <a href="CQL-Position-List.html#position:check">:check</a>)
 </code></div>
 
 <p>
@@ -1448,7 +1448,7 @@ Matches a position in which there is a check between moves 10 and 20.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:movenumber</span> 35 <a href="CQL-Position-List.html#position:mate">:mate</a>)
+(position <span class="keyword">:movenumber</span> 35 <a href="CQL-Position-List.html#position:mate">:mate</a>)
 </code></div>
 
 <p>
@@ -1467,7 +1467,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:moveto</span> .a3)
+(position <span class="keyword">:moveto</span> .a3)
 </code></div>
 
 <p>
@@ -1475,7 +1475,7 @@ Matches a position in which the next move is to an empty square on a3.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:moveto</span> R[b1-8])
+(position <span class="keyword">:moveto</span> R[b1-8])
 </code></div>
 
 <p>
@@ -1487,7 +1487,7 @@ would be done via:
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> R <span color="darkred">:moveto</span> ?b?)
+(position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> R <span class="keyword">:moveto</span> ?b?)
 </code></div>
 
 <p>
@@ -1530,7 +1530,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:piecedrop</span> [Nn])
+(position <span class="keyword">:piecedrop</span> [Nn])
 </code></div>
 
 <p>
@@ -1538,7 +1538,7 @@ The next move is not a piece drop which is dropping a knight.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:piecedrop</span> [])
+(position <span class="keyword">:piecedrop</span> [])
 </code></div>
 
 <p>
@@ -1558,7 +1558,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:promote</span> [RBN])
+(position <span class="keyword">:promote</span> [RBN])
 </code></div>
 
 <p>
@@ -1566,7 +1566,7 @@ Matches a position whose next move is a white underpromotion.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:promote</span> [BN]a8)
+(position <span class="keyword">:promote</span> [BN]a8)
 </code></div>
 
 <p>
@@ -1574,7 +1574,7 @@ Matches a position whose next move is a white promotion to bishop or knight.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:promote</span> [Re8] <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Pf7 <a href="CQL-Position-List.html#position:moveto">:moveto</a> q)
+(position <span class="keyword">:promote</span> [Re8] <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Pf7 <a href="CQL-Position-List.html#position:moveto">:moveto</a> q)
 </code></div>
 
 <p>
@@ -1583,7 +1583,7 @@ queen on e8 and promoting to a rook.
 </p>
 
 <div class="verb"><code>
-(position <span color="darkred">:promote</span> [])
+(position <span class="keyword">:promote</span> [])
 </code></div>
 
 <p>
@@ -1642,7 +1642,7 @@ Examples:
 
 <div class="box"><pre><code><!--
 -->(position
-  <span color="darkred">:gappedsequence</span> (
+  <span class="keyword">:gappedsequence</span> (
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Ra3)
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Rb4)))<!--
 --></code></pre></div>
@@ -1658,7 +1658,7 @@ In consequence the same effect can be obtained much more efficiently via:
 <div class="box"><pre><code><!--
 -->(position 
   <a href="CQL-Position-List.html#position:initial">:initial</a>
-  <span color="darkred">:gappedsequence</span> (
+  <span class="keyword">:gappedsequence</span> (
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Ra3)
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Rb4)))<!--
 --></code></pre></div>
@@ -1670,7 +1670,7 @@ some point in the game after that position:
 
 <div class="box"><pre><code><!--
 -->(position
-  <span color="darkred">:gappedsequence</span> (
+  <span class="keyword">:gappedsequence</span> (
     (position)
     (position Nd4))) <!--
 --></code></pre></div>
@@ -1708,7 +1708,7 @@ Example:
 <div class="box"><pre><code><!--
 -->(position
   Re8 
-  <span color="darkred">:sequence</span> (
+  <span class="keyword">:sequence</span> (
     (position Qf3 .g2)
     (position .f3 Qg2)))<!--
 --></code></pre></div>
@@ -1737,7 +1737,7 @@ staircase checking maneuvers by either side:
 <div class="box"><pre><code><!--
 -->(position 
   <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a> <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>
-  <span color="darkred">:sequence</span> (
+  <span class="keyword">:sequence</span> (
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qa2) 
     (position <a href="CQL-Position-List.html#position:check">:check</a>) 
     (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qb2) 
@@ -1820,7 +1820,7 @@ Example:
 
 <div class="box"><pre><code><!--
 -->(position 
-  <span color="darkred">:result</span> 1-0 
+  <span class="keyword">:result</span> 1-0 
   <a href="CQL-Position-List.html#position:whiteelo">:whiteelo</a> 0 2300
   <a href="CQL-Position-List.html#position:blackelo">:blackelo</a> 2600 3000
   <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)<!--
@@ -1889,7 +1889,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:moveto">:moveto</a> [Qq] <span color="darkred">position:matchcount</span> 4 100)
+(position <a href="CQL-Position-List.html#position:moveto">:moveto</a> [Qq] <span class="keyword">position:matchcount</span> 4 100)
 </code></div>
 
 <p>
@@ -1915,7 +1915,7 @@ Example:
 <div class="box"><pre><code><!--
 -->(position
   <a href="CQL-Position-List.html#position:movetoy">:movetoy</a> [Aa]d4 
-  <span color="darkred">:pretransformmatchcount</span> 12 1000
+  <span class="keyword">:pretransformmatchcount</span> 12 1000
   <a href="CQL-Position-List.html#position:shift">:shift</a>))<!--
 --></code></pre></div>
 
@@ -1985,7 +1985,7 @@ Tripled pawns can be found by the query:
 
 <div class="box"><pre><code><!--
 -->(position
-  <span color="darkred">:reset</span> acc
+  <span class="keyword">:reset</span> acc
   Pe2
   <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> acc
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> acc 3
