@@ -209,12 +209,12 @@ Example:
 <verbatim>
 (match
   <keyword>:or</keyword> (
-    (match <cql>match<cql>match:whitebirthyear</cql></cql> 2000 3000)
-    (match <cql>match<cql>match:blackbirthyear</cql></cql> 2000 3000)))
+    (match <cql>match:event</cql> "FIDE-Wch*"
+    (match <cql>match:event</cql> "PCA-World Championchip*"))))
 </verbatim>
 
 <p>
-Search for games where one of the players is born in year 2000 or later.
+Search for world championchip games.
 </p>
 
 <!-- ------------------------------------------------------------------------- -->
