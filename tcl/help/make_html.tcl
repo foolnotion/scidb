@@ -107,6 +107,12 @@ set HtmlMapping {
 	<dir>				{<ul style="list-style-type: none"><li>}
 	</dir>			{</li></ul>}
 
+	<comment>		{<span color="darkgreen">}
+	</comment>		{</span>}
+
+	<keyword>		{<span color="darkred">}
+	</keyword>		{</span>}
+
 	<see/>			&#x21d2;
 
 	<chess>			{<span class="chess">}
@@ -265,7 +271,7 @@ while {[gets $src line] >= 0} {
 		set charset [getArg $line]
 		chan configure $src -encoding $charset
 	} elseif {[string match {DEFINE *} $line]} {
-		if {[regexp {DEFINE\s+(<[a-z/]+>)\s+(.*)} $line _ var subst]} {
+		if {[regexp {DEFINE\s+(<[a-z0-9/]+>)\s+(.*)} $line _ var subst]} {
 			lappend HtmlDefs $var $subst
 		} else {
 			puts stderr "Error([info script]): DEFINE statement invalid"
@@ -322,6 +328,7 @@ proc readContents {chan file} {
 	variable lang
 
 	set contents {}
+	set indices {}
 	set linePref ""
 
 	while {[gets $chan line] >= 0} {
@@ -358,16 +365,54 @@ proc readContents {chan file} {
 
 		while {[regexp -indices {<cql>[^/]*</cql>} $line location]} {
 			lassign $location i k
-			lassign [split [string range $line [expr {$i + 5}] [expr {$k - 6}]] :] section keyword
+			set parts [split [string range $line [expr {$i + 5}] [expr {$k - 6}]] :]
+			set section [lindex $parts 0]
+			set keyword [string trim [lindex $parts 1]]
+			set text [join [lrange $parts 1 end] ":"]
 			set Section [string toupper $section 0 0]
 			set newline [string range $line 0 [expr {$i - 1}]]
-			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\">:$keyword</a>"
+			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\">:$text</a>"
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}
 
 		set line [string map $HtmlDefs $line]
 		set line [string map $HtmlMapping $line]
+
+		if {[llength $indices]} {
+			if {[regexp -indices {.*</a>} $line indices]} {
+				lassign $indices s e
+				set newline [string range $line 0 [expr {$e - 4}]]
+				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline [string range $line [expr {$e + 1}] end]
+				set line $newline
+				set indices {}
+			}
+		} else {
+			set e 0
+			while {[regexp -indices {<a[^>]*href=.http[^>]*>[^<]*</a>} $line indices]} {
+				lassign $indices s e
+				set newline [string range $line 0 [expr {$e - 4}]]
+				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline [string range $line [expr {$e + 1}] end]
+				set line $newline
+			}
+			while {[regexp -indices {<a[^>]*href=.ftp[^>]*>[^<]*</a>} $line indices]} {
+				lassign $indices s e
+				set newline [string range $line 0 [expr {$e - 4}]]
+				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline [string range $line [expr {$e + 1}] end]
+				set line $newline
+			}
+			set indices {}
+			regexp -indices -start $e {<a[^>]*href=.http} $line indices
+			if {[llength $indices] == 0} {
+				regexp -indices -start $e {<a[^>]*href=.ftp} $line indices
+			}
+			if {[llength $indices]} {
+				set href $line
+			}
+		}
 
 		while {[regexp {<key>([a-zA-Z%:\(\)-]*)</key>} $line _ key]} {
 			switch $key {
@@ -407,6 +452,10 @@ proc readContents {chan file} {
 		}
 	}
 
+	if {[llength $indices]} {
+		puts stderr "unmatched <a href=...>: $href"
+	}
+
 	if {![string match END* $line]} {
 		puts stderr "Error([info script]): Missing mandatory END."
 		example stderr
@@ -442,6 +491,8 @@ readTranslationFile $transFile $nagFile $charsetName
 proc processContents {contents} {
 	variable body
 	variable charset
+
+	set indices {}
 
 	foreach line $contents {
 		if {[string match {INCLUDE *} $line]} {

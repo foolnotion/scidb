@@ -65,7 +65,7 @@ Bauernstruktur gezeigt.
 Der Browser bietet folgendes kontextsensitives Menü:
 </p>
 
-<dir><img src="images/game-browser-menu.png" alt="folder" /></dir>
+<dir><img src="images/game-browser-menu.png" /></dir>
 
 <p>
 <menuitem>%::browser::mc::LoadGame%</menuitem>

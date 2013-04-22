@@ -44,28 +44,31 @@ Scidb supports the following formats:
 
 <ul style="list-style-type: none"><li>
   <li>
-    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <img src="../images/ft-scidb.png" />
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <img src="../images/ft-scid.png" />
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <img src="../images/ft-chessbase.png" />
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <img src="../images/ft-pgn.png" />
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <img src="../images/ft-archive.png" />
     <a href="#Database-Archive">Database archive</a>
   </li>
 </li></ul>
 
-<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<h2 id="Scidb">
+<img src="../images/ft-scidb.png" />
+Scidb (<abbr>.sci</abbr>)
+</h2>
 
 <p>
 This is Scidb's own database format. Use of this format is strongly
@@ -83,21 +86,21 @@ currently this is:
       <td>Normal Chess</td>
     </tr>
     <tr>
-      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse Chess</a></td>
+      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse Chess<span class="awesome"/>&nbsp;&#xf08e;</span></a></td>
       <td></td>
     </tr>
     <tr>
-      <td><a href="http://en.wikipedia.org/wiki/Antichess">Antichess</a></td>
-      <td>(<a href="http://suicidechess.ca/index.php?lg=en">Suicide</a>,
-          <a href="http://www6.chessclub.com/help/Giveaway">Giveaway</a>)</td>
+      <td><a href="http://en.wikipedia.org/wiki/Antichess">Antichess<span class="awesome"/>&nbsp;&#xf08e;</span></a></td>
+      <td>(<a href="http://suicidechess.ca/index.php?lg=en">Suicide<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
+          <a href="http://www6.chessclub.com/help/Giveaway">Giveaway<span class="awesome"/>&nbsp;&#xf08e;</span></a>)</td>
     </tr>
     <tr>
-      <td><a href="http://loserschess.org/">Losers</a></td>
+      <td><a href="http://loserschess.org/">Losers<span class="awesome"/>&nbsp;&#xf08e;</span></a></td>
       <td>(variant of Antichess)</td>
     </tr>
     <tr>
       <td><a href="http://en.wikipedia.org/wiki/Three-check_chess">
-          Three-check Chess</a></td>
+          Three-check Chess<span class="awesome"/>&nbsp;&#xf08e;</span></a></td>
       <td></td>
     </tr>
   </table>
@@ -110,9 +113,9 @@ is an exception).
 
 <p>
 Furthermore this format is supporting
-<a href="http://de.wikipedia.org/wiki/Chess960">Chess 960</a>,
+<a href="http://de.wikipedia.org/wiki/Chess960">Chess 960<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
 and
-<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">Shuffle Chess</a> positions,
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">Shuffle Chess<span class="awesome"/>&nbsp;&#xf08e;</span></a> positions,
 in all chess variants.
 </p>
 
@@ -143,7 +146,10 @@ A database in Scidb's format is divided into several files:
   </table>
 </div>
 
-<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid">
+<img src="../images/ft-scid.png" />
+Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
+</h2>
 
 <p>
 Scid's database format is fully supported because of it's wide adoption.
@@ -194,14 +200,17 @@ This format resembles structurally Scidb's format:
 not be regarded by Scidb. Likewise any saved game list (file suffix
 <code>.txt</code>) will be disregarded.</p>
 
-<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
+<h2 id="ChessBase">
+<img src="../images/ft-chessbase.png" />
+ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
+</h2>
 
 <p>
 Both formats will be supported; the new format <abbr>.cbh</abbr> and the old format <abbr>.cbf</abbr>.
 </p>
 
 <p>
-The company <a href="http://www.chessbase.de">ChessBase</a> keeps this format secret,
+The company <a href="http://www.chessbase.de">ChessBase<span class="awesome"/>&nbsp;&#xf08e;</span></a> keeps this format secret,
 therefore only the reading mode is supported. Not all game data can be read correctly,
 with some games the message of failed decoding will appear.
 </p>
@@ -252,7 +261,10 @@ A database in old format consists of only four files:
   </table>
 </div>
 
-<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN">
+<img src="../images/ft-pgn.png" />
+<abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
+</h2>
 
 <p>
 The <abbr>PGN</abbr> format (Portable Game Notation) is a common standard for transfering
@@ -262,11 +274,11 @@ chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. Wi
 
 <p>
 According to the
-<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN standard</a>
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN standard<span class="awesome"/>&nbsp;&#xf08e;</span></a>
 a PGN file is encoded with character set <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
 But if a PGN file is starting with an <span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM:
 byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encoding will be expected (according to
-<a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ</a>).
+<a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ<span class="awesome"/>&nbsp;&#xf08e;</span></a>).
 </p>
 
 <p>
@@ -358,10 +370,13 @@ Only the following variants will be accepted if reading FICS games:
 <p>
 A complete specification of this format will be found at
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
-Standard: Portable Game Notation Specification and Implementation Guide</a>.
+Standard: Portable Game Notation Specification and Implementation Guide<span class="awesome"/>&nbsp;&#xf08e;</span></a>.
 </p>
 
-<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Database archive (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive">
+<img src="../images/ft-archive.png" />
+Database archive (<abbr>.scv</abbr>)
+</h2>
 
 <p>
 Scidb's database archive is based on an independent archive format,

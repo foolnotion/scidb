@@ -99,7 +99,7 @@ four corners of the board:
 
 <verbatim>
 (match
-  :forany rook [rR] ; loop over the possible rooks
+  <cql>match:forany</cql> rook [rR] <comment>; loop over the possible rooks</comment>
   (position $rook[a1]) 
   (position $rook[h1])
   (position $rook[h8])
@@ -132,12 +132,12 @@ promotes.
 
 <verbatim>
 (match
-  :forany pawn [Pp]
+  <cql>match:forany</cql> pawn [Pp]
   (position
-    :initial
-    :tagmatch pawn P?2
-    :gappedsequence((position :movefrom $pawn :promote U))
-    :flipcolor))
+    <cql>position:initial</cql>
+    <cql>position:tagmatch</cql> pawn P?2
+    <cql>position:gappedsequence</cql>((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> U))
+    <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
@@ -152,12 +152,12 @@ Third example: the same piece delivers at least 30 checks in the game.
 
 <verbatim>
 (match
-  :forany checker A
+  <cql>match:forany</cql> checker A
   (position
-    :btm
-    :attackcount $checker k 1
-    :matchcount 30 1000
-    :flipcolor))
+    <cql>position:btm</cql>
+    <cql>position:attackcount</cql> $checker k 1
+    <cql>position:matchcount</cql> 30 1000
+    <cql>position:flipcolor</cql>))
 </verbatim>
 
 END

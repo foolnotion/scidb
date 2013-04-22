@@ -43,11 +43,11 @@ in games played in year 2013:
 
 <verbatim>
 (match
-  :year 2013
+  <cql>match:year</cql> 2013
   (position
-    :piececount P[b2-7] 4
-    :shifthorizontal
-    :flipcolor))
+    <cql>position:piececount</cql> P[b2-7] 4
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
@@ -66,7 +66,7 @@ For example
 <p>
 
 <verb>
-(position :shifthorizontal :flipcolor)
+(position <cql>position:shifthorizontal</cql> <cql>position:flipcolor</cql>)
 </verb>
 
 <p>
@@ -101,9 +101,9 @@ In the list
 <verbatim>
 (match
   (position
-    :piececount P[b2-7] 4
-    :shifthorizontal
-    :flipcolor))
+    <cql>position:piececount</cql> P[b2-7] 4
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
@@ -173,9 +173,9 @@ Any characters following a semicolon are ignored in a CQL script. Example:
 </p>
 
 <verbatim>
-; A CQL script that matches all games
+<comment>; A CQL script that matches all games</comment>
 (match 
-  (position) ; a position filter matching anything
+  (position) <comment>; a position filter matching anything</comment>
 )
 </verbatim>
 

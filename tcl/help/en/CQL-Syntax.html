@@ -62,11 +62,11 @@ in games played in year 2013:
 
 <div class="box"><pre><code><!--
 -->(match
-  :year 2013
+  <a href="CQL-Match-List.html#match:year">:year</a> 2013
   (position
-    :piececount P[b2-7] 4
-    :shifthorizontal
-    :flipcolor))<!--
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[b2-7] 4
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
@@ -85,7 +85,7 @@ For example
 <p>
 
 <div class="verb"><code>
-(position :shifthorizontal :flipcolor)
+(position <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a> <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
 <p>
@@ -120,9 +120,9 @@ In the list
 <div class="box"><pre><code><!--
 -->(match
   (position
-    :piececount P[b2-7] 4
-    :shifthorizontal
-    :flipcolor))<!--
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[b2-7] 4
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
@@ -192,9 +192,9 @@ Any characters following a semicolon are ignored in a CQL script. Example:
 </p>
 
 <div class="box"><pre><code><!--
--->; A CQL script that matches all games
+--><span color="darkgreen">; A CQL script that matches all games</span>
 (match 
-  (position) ; a position filter matching anything
+  (position) <span color="darkgreen">; a position filter matching anything</span>
 )<!--
 --></code></pre></div>
 

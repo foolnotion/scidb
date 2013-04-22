@@ -49,6 +49,7 @@ set Contents {
     {{{The position list} {CQL-Position-List.html}}}
     {{{The relation list} {CQL-Relation-List.html}}}
     {{{Tagging} {CQL-Tagging.html}}}
+    {{{Examples} {CQL-Examples.html}}}
   }
   {
     {{{Further information} {Overview.html} {further-information}}}

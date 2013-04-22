@@ -27,8 +27,7 @@ TITLE Valores de las anotaciones NAG
 </annotation>
 
 <p>
-El <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
-estándar PGN</a>
+El <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">estándar PGN</a>
 define los siguientes valores <acronym>NAG</acronym>:
 </p>
 

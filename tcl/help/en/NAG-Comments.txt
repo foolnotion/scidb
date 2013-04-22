@@ -27,9 +27,8 @@ TITLE NAG annotation values
 </annotation>
 
 <p>
-The <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">
-PGN-Standard</a>
-defines the following <acronym>NAG</acronym> values:
+The <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">
+PGN-Standard</a> defines the following <acronym>NAG</acronym> values:
 </p>
 
 <box>

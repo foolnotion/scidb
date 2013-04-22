@@ -149,6 +149,8 @@ array set fontFamilies {
 		{DejaVu LGC Sans}
 		{Liberation Sans}
 		{Arial}
+		{Helvetica Neue}
+		{Helvetica Neue LT Std}
 		{Verdana}
 		{Albany AMT}
 		{Nimbus Sans L}

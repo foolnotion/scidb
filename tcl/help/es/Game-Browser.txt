@@ -64,7 +64,7 @@ during the click will show only the pawn structure.
 The browser is providing the following context-sensitive menu:
 </p>
 
-<dir><img src="images/game-browser-menu.png" alt="folder" /></dir>
+<dir><img src="images/game-browser-menu.png" /></dir>
 
 <p>
 <menuitem>%::browser::mc::LoadGame%</menuitem>

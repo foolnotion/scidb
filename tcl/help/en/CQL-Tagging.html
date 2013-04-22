@@ -116,7 +116,7 @@ four corners of the board:
 
 <div class="box"><pre><code><!--
 -->(match
-  :forany rook [rR] ; loop over the possible rooks
+  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [rR] <span color="darkgreen">; loop over the possible rooks</span>
   (position $rook[a1]) 
   (position $rook[h1])
   (position $rook[h8])
@@ -149,12 +149,12 @@ promotes.
 
 <div class="box"><pre><code><!--
 -->(match
-  :forany pawn [Pp]
+  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [Pp]
   (position
-    :initial
-    :tagmatch pawn P?2
-    :gappedsequence((position :movefrom $pawn :promote U))
-    :flipcolor))<!--
+    <a href="CQL-Position-List.html#position:initial">:initial</a>
+    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn P?2
+    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a>((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
@@ -169,12 +169,12 @@ Third example: the same piece delivers at least 30 checks in the game.
 
 <div class="box"><pre><code><!--
 -->(match
-  :forany checker A
+  <a href="CQL-Match-List.html#match:forany">:forany</a> checker A
   (position
-    :btm
-    :attackcount $checker k 1
-    :matchcount 30 1000
-    :flipcolor))<!--
+    <a href="CQL-Position-List.html#position:btm">:btm</a>
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker k 1
+    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 1000
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 </body>

@@ -1,0 +1,126 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX CQL - Examples
+TITLE CQL - Examples
+
+<h2 id="accumulator">Using accumulators to count passed pawns</h2>
+
+<p>
+We will show how to use <cql>position:accumulate</cql> and
+<cql>position:sumrange</cql> to look for games that have at least 3 white
+passed pawns in a position. First, we give a position filter that will
+match any position with a white passed pawn:
+</p>
+
+<verbatim>
+<comment>; match a position with a white passed pawn</comment>
+(position
+  Pd2
+  <cql>position:piececount</cql> [pP][d3-7] 0
+  <cql>position:piececount</cql> p[c3-7,e3-7] 0
+  <cql>position:shift</cql>)
+</verbatim>
+
+<p>
+Now, to find at least 3 white passed pawns, we add in some accumulation code:
+</p>
+
+<verbatim>
+<comment>; match a position with at least three white passed pawns</comment>
+(position
+  Pd2
+  <cql>position:piececount</cql> [pP][d3-7] 0
+  <cql>position:piececount</cql> p[c3-7,e3-7] 0
+  <cql>position:shift</cql>
+  <cql>position:accumulate</cql> white_passer_counter
+  <cql>position:sumrange</cql> white_passer_counter 3 8)
+</verbatim>
+
+<p>
+Now suppose we want to find positions with at least two black passed pawns.
+We can use:
+</p>
+
+<verbatim>
+<comment>;match a position with at least two black passed pawns</comment>
+(position
+  pd7 
+  <cql>position:piececount</cql> [pP][d2-6] 0
+  <cql>position:piececount</cql> P[c2-6,e2-6] 0
+  <cql>position:shift</cql>
+  <cql>position:accumulate</cql> black_passer_counter
+  <cql>position:sumrange</cql> black_passer_counter 2 8)
+</verbatim>
+
+<p>
+Finally, to find positions with at least two black passers and at least three
+white passers, we combine these lists:
+</p>
+
+<verbatim>
+<comment>; match a position with at least three white</comment>
+<comment>; and at least two black passers</comment>
+(position
+  <cql>position:sumrange</cql> white_passer_counter 3 8 
+  <cql>position:sumrange</cql> black_passer_counter 2 8
+  <cql>position:and</cql> (
+    (position
+      Pd2 
+      <cql>position:piececount</cql> [pP][d3-7] 0
+      <cql>position:piececount</cql> p[c3-7,e3-7] 0
+      <cql>position:shift</cql>
+      <cql>position:accumulate</cql> white_passer_counter)
+    (position
+      pd7 
+      <cql>position:piececount</cql> [pP][d2-6] 0
+      <cql>position:piececount</cql> P[c2-6,e2-6] 0
+      <cql>position:shift</cql>
+      <cql>position:accumulate</cql> black_passer_counter)))
+</verbatim>
+
+<h2>Miscellaneous examples</h2>
+
+<p>
+At least 3 white passed pawns and at least two black passed pawns in the same
+position:
+</p>
+
+<verbatim>
+(match
+  (position 
+    <cql>position:sumrange</cql> whitecount 3 8 
+    <cql>position:sumrange</cql> blackcount 2 8
+    <cql>position:and</cql> (
+      (position
+        Pd2 
+        <cql>position:piececount</cql> [pP][d3-7] 0
+        <cql>position:piececount</cql> p[c3-7,e3-7] 0
+        <cql>position:shift</cql>
+        <cql>position:accumulate</cql> whitecount)
+      (position
+        pd7 
+        <cql>position:piececount</cql> [pP][d2-6] 0
+        <cql>position:piececount</cql> P[c2-6,e2-6] 0
+        <cql>position:shift</cql>
+        <cql>position:accumulate</cql> blackcount))))
+</verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

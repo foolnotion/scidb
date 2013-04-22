@@ -893,6 +893,16 @@ Position::parseNoAnnotate(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseNoCastling(Match& match, char const* s, Error& error)
+{
+	m_moveMatchList.push_back(new cql::move::NoCastling);
+	match.m_isStandard = false;
+	match.m_sections |= Match::Section_Moves;
+	return s;
+}
+
+
+char const*
 Position::parseNoCheck(Match& match, char const* s, Error& error)
 {
 	m_boardMatchList.push_back(new cql::board::NoCheck);
@@ -1386,19 +1396,6 @@ Position::parseTerminal(Match& match, char const* s, Error& error)
 
 
 char const*
-Position::parseThreeChecks(Match& match, char const* s, Error& error)
-{
-	if (m_finalState == 0)
-		m_finalState = new cql::board::State;
-
-	m_finalState->add(Board::ThreeChecks);
-	match.m_isStandard = false;
-	match.m_sections |= Match::Section_Positions;
-	return s;
-}
-
-
-char const*
 Position::parseVariations(Match& match, char const* s, Error& error)
 {
 	m_includeVariations = true;
@@ -1494,6 +1491,7 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("movenumber",					&Position::parseMoveNumber),
 		Pair("moveto",							&Position::parseMoveTo),
 		Pair("noannotate",					&Position::parseNoAnnotate),
+		Pair("nocastling",					&Position::parseNoCastling),
 		Pair("nocheck",						&Position::parseNoCheck),
 		Pair("nocontactcheck",				&Position::parseNoContactCheck),
 		Pair("nodoublecheck",				&Position::parseNoDoubleCheck),
@@ -1528,7 +1526,6 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("sumrange",						&Position::parseSumRange),
 		Pair("tagmatch",						&Position::parseTagMatch),
 		Pair("terminal",						&Position::parseTerminal),
-		Pair("threechecks",					&Position::parseThreeChecks),
 		Pair("variations",					&Position::parseVariations),
 		Pair("variationsonly",				&Position::parseVariationsOnly),
 		Pair("wtm",								&Position::parseWhiteToMove),

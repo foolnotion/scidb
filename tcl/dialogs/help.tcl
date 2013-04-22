@@ -882,9 +882,9 @@ proc UpdateTitle {} {
 	set tip "$mc::GoForward ($::mc::Key(Alt)-$::mc::Key(Right))"
 	::tooltip::tooltip $Priv(button:forward) $tip
 
-	set tip "$mc::GoHome ($::mc::Key(Alt)-$::mc::Key(Home))"
+	set tip "$mc::GotoHome ($::mc::Key(Alt)-$::mc::Key(Home))"
 	::tooltip::tooltip $Priv(button:home) $tip
-	set tip "$mc::GoEnd ($::mc::Key(Alt)-$::mc::Key(End))"
+	set tip "$mc::GotoEnd ($::mc::Key(Alt)-$::mc::Key(End))"
 	::tooltip::tooltip $Priv(button:end) $tip
 }
 
@@ -1145,6 +1145,7 @@ proc A_NodeHandler {node} {
 
 	if {[string match http* $href] || [string match ftp* $href]} {
 		$node dynamic set user
+		$node attribute class external
 		set file $href
 
 		if {[info exists ExternalLinks($file)]} {

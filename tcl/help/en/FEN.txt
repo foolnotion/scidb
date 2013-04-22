@@ -34,7 +34,7 @@ was repeated.  A detailed description is available online:
 <!-- Not for translators: please replace with local Wikipedia link. -->
 <ul>
   <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
-    ForsythEdwards Notation - Wikipedia</a></li>
+        ForsythEdwards Notation - Wikipedia</a></li>
   <li><a href="http://en.wikipedia.org/wiki/X-FEN">X-FEN - Wikipedia</a>
  </ul>
 

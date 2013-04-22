@@ -66,6 +66,12 @@ struct IsCastling : public Match
 };
 
 
+struct NoCastling : public Match
+{
+	bool match(Board const& board, Move const& move) override;
+};
+
+
 class MoveFrom : public Match
 {
 public:

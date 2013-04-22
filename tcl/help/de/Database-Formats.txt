@@ -28,28 +28,31 @@ Scidb unterstützt folgende Formate:
 
 <dir>
   <li>
-    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <img src="../images/ft-scidb.png" />
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <img src="../images/ft-scid.png" />
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <img src="../images/ft-chessbase.png" />
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <img src="../images/ft-pgn.png" />
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <img src="../images/ft-archive.png" />
     <a href="#Database-Archive">Datenbankarchiv</a>
   </li>
 </dir>
 
-<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<h2 id="Scidb">
+<img src="../images/ft-scidb.png" />
+Scidb (<abbr>.sci</abbr>)
+</h2>
 
 <p>
 Dies ist Scidb's eigenes Datenbankformat und wird ausdrücklich
@@ -69,11 +72,12 @@ zur Zeit sind dies:
     </tr>
     <tr>
       <td><a href="http://de.wikipedia.org/wiki/Schachvarianten#Crazyhouse_oder_Einsetzschach">
-          %::mc::VariantName(Crazyhouse)%</a></td>
+         %::mc::VariantName(Crazyhouse)%</a></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse</a>)</td>
     </tr>
     <tr>
-      <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">%::mc::VariantName(Antichess)%</a></td>
+      <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">
+        %::mc::VariantName(Antichess)%</a></td>
       <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
           <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
     </tr>
@@ -127,7 +131,10 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
   </table>
 </box>
 
-<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid">
+<img src="../images/ft-scid.png" />
+Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
+</h2>
 
 <p>
 Dies ist Scid's Datenbankformat und wird aufgrund des hohen
@@ -179,7 +186,10 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 von Scidb nicht beachtet. Ebenso bleiben auch gespeicherte Partienlisten (Endung
 <code>.txt</code>) unbeachtet.</note>
 
-<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
+<h2 id="ChessBase">
+<img src="../images/ft-chessbase.png" />
+ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
+</h2>
 
 <p>
 Es werden beide Formate unterstützt; das neue Format <abbr>.cbh</abbr> sowie das alte Format <abbr>.cbf</abbr>.
@@ -238,7 +248,10 @@ Das alte Datenbankformat besteht nur aus vier Dateien:
   </table>
 </box>
 
-<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN">
+<img src="../images/ft-pgn.png" />
+<abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
+</h2>
 
 <p>
 Das <abbr>PGN</abbr>-Format (Portable Game Notation) ist ein verbreiteter Standard zum
@@ -249,7 +262,7 @@ Scidb-Format empfohlen.
 
 <p>
 Gemäß dem
-<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN-Standard</a>
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN-Standard</a>
 ist eine PGN-Datei mit dem Zeichensatz <nobr>Latin-1</nobr>
 (ISO-<nobr>8859-1</nobr>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
 <nobr>UTF-8</nobr>-Markierung (<nobr>UTF-8</nobr>-BOM: Bytesequenz EF BB BF) so wird
@@ -269,7 +282,10 @@ Eine vollständige Beschreibung dieses Formats findet man unter
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Datenbankarchiv (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive">
+<img src="../images/ft-archive.png" />
+Datenbankarchiv (<abbr>.scv</abbr>)
+</h2>
 
 <p>
 Scidb's Datenbankarchiv stützt sich auf ein unabhängiges Archivformat, und

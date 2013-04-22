@@ -29,7 +29,8 @@ niedergeschrieben werden kann. Tatsächlich besitzt diese Notation eine
 Schwäche: sie macht keine Aussage, wie oft die beschriebene Stellung
 möglicherweise wiederholt wurde.  Die FEN (bzw. X-FEN) wird ausführlich
 unter <a href="https://de.wikipedia.org/wiki/Forsyth-Edwards-Notation">
-Wikipedia</a> beschrieben.
+Wikipedia</a>
+beschrieben.
 </p>
 
 <p>
@@ -51,7 +52,8 @@ Für einige Schachformen benutzt Scidb notwendigerweise Erweiterungen:
 Scidb benutzt eine erweiterte FEN (bzw. X-FEN, oder Shredder-FEN)
 für Einsetzschach, die vom BPGN-Standard (<see/>
 <a href="http://bughousedb.com/Lieven_BPGN_Standard.txt">
-BPGN - Bughouse Portable Game Notation</a>) abgeleitet wurde. Die
+BPGN - Bughouse Portable Game Notation</a>)
+abgeleitet wurde. Die
 in der Rückhand befindlichen Figuren werden an das Ende des ersten
 Feldes angefügt; zum Beispiel
 </p>

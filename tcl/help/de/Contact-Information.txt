@@ -48,7 +48,7 @@ So kann eine Nachricht gesendet werden:
    <li><p>
       Eine Mitgliedschaft bei Sourceforge ist erforderlich
       (<a href="https://sourceforge.net/account/registration">Account Registration</a>).
-      Die Mitgliedschaft ist Gebuehren- und Verpflichtungsfrei.
+      Die Mitgliedschaft ist Gebühren- und Verpflichtungsfrei.
     </p></li>
     <li><p>
       <a href="https://sourceforge.net/sendmessage.php?touser=2321037">Send an Email</a>

@@ -340,9 +340,12 @@ símbolos, sin utilizar palabras, de modo que puedan ser comprendidas en cualqui
 <h2 id="Links">Enlaces relacionados</h2>
 
 <ul>
-  <li><a href="http://es.wikipedia.org/wiki/Enciclopedia_de_aperturas_de_ajedrez">Enciclopedia de Aperturas de Ajedrez</a></li>
-  <li><a href="http://www.geocities.com/siliconvalley/lab/7378/eco.htm">List of ECO-Codes</a></li>
-  <li><a href="http://es.wikipedia.org/wiki/Categoría:Aperturas_de_ajedrez">Categoría: Aperturas de Ajedrez</a></li>
+  <li><a href="http://es.wikipedia.org/wiki/Enciclopedia_de_aperturas_de_ajedrez">
+        Enciclopedia de Aperturas de Ajedrez</a></li>
+  <li><a href="http://www.geocities.com/siliconvalley/lab/7378/eco.htm">
+        List of ECO-Codes</a></li>
+  <li><a href="http://es.wikipedia.org/wiki/Categoría:Aperturas_de_ajedrez">
+        Categoría: Aperturas de Ajedrez</a></li>
 </ul>
 
 END

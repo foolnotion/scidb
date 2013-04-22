@@ -23,7 +23,7 @@ all:
 	@echo "SOURCES = `ls *.txt | sed ':a;N;$$!ba;s/\n/ /g'`" >  Makefile.tmp
 	@echo "include ../Makefile" >> Makefile.tmp
 	@for f in `ls *.txt`; do \
-		echo "`basename $$f .txt`.html: $$f ../make_html.tcl ../styles/help.css" >> Makefile.tmp; \
+		echo "`basename $$f .txt`.html: $$f ../make_html.tcl" >> Makefile.tmp; \
 	done
 	@make -f Makefile.tmp targets
 	@rm -f Makefile.tmp

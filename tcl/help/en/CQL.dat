@@ -90,7 +90,6 @@ set Index {
       {{ignoresidetomove : relation} {CQL-Relation-List.html} {relation:ignoresidetomove}}
       {{initial : position} {CQL-Position-List.html} {position:initial}}
       {{inside : position} {CQL-Position-List.html} {position:inside}}
-      {{inside : position} {CQL-Position-List.html} {position:inside}}
       {{iscastling : position} {CQL-Position-List.html} {position:iscastling}}
       {{iscomputer : match} {CQL-Match-List.html} {match:iscomputer}}
       {{ishuman : match} {CQL-Match-List.html} {match:ishuman}}
@@ -118,6 +117,7 @@ set Index {
     {
       {{newpiececount : relation} {CQL-Relation-List.html} {relation:newpiececount}}
       {{noannotate : position} {CQL-Position-List.html} {position:noannotate}}
+      {{nocastling : position} {CQL-Position-List.html} {position:nocastling}}
       {{nocheck : position} {CQL-Position-List.html} {position:nocheck}}
       {{nocontactcheck : position} {CQL-Position-List.html} {position:nocontactcheck}}
       {{nodoublecheck : position} {CQL-Position-List.html} {position:nodoublecheck}}
@@ -176,7 +176,6 @@ set Index {
       {{shift : relation} {CQL-Relation-List.html} {relation:shift}}
       {{shiftdiagonal : position} {CQL-Position-List.html} {position:shiftdiagonal}}
       {{shifthorizontal : position} {CQL-Position-List.html} {position:shifthorizontal}}
-      {{shifthorizontal* : position} {CQL-Position-List.html} {position:shifthorizontal*}}
       {{shiftmaindiagonal : position} {CQL-Position-List.html} {position:shiftmaindiagonal}}
       {{shiftoffdiagonal : position} {CQL-Position-List.html} {position:shiftoffdiagonal}}
       {{shiftvertical : position} {CQL-Position-List.html} {position:shiftvertical}}
@@ -191,7 +190,6 @@ set Index {
       {{tagmatch : position} {CQL-Position-List.html} {position:tagmatch}}
       {{terminal : position} {CQL-Position-List.html} {position:terminal}}
       {{termination : match} {CQL-Match-List.html} {match:termination}}
-      {{threechecks : position} {CQL-Position-List.html} {position:threechecks}}
       {{timemode : match} {CQL-Match-List.html} {match:timemode}}
       {{title : match} {CQL-Match-List.html} {match:title}}
     }

@@ -121,10 +121,9 @@ proc defaultCSS {monoFamilies textFamilies} {
 	append css ":link    { color: blue2; text-decoration: none; }" \n
 	append css ":visited { color: purple; text-decoration: none; }" \n
 	append css ":visited { color: purple; text-decoration: none; }" \n
-#	append css ":user  { color: red3; text-decoration: none; }" \n
-	append css ":user    { color: blue2; text-decoration: underline; }   /* http link */" \n
-	append css ":user2   { color: purple; text-decoration: underline; }  /* http visited */" \n
-	append css ":user3   { color: black; text-decoration: underline; }   /* invalid link */" \n
+	append css ":user    { color: blue2; text-decoration: none; }   /* http link */" \n
+	append css ":user2   { color: purple; text-decoration: none; }  /* http visited */" \n
+	append css ":user3   { color: black; text-decoration: none; }   /* invalid link */" \n
 	append css ":hover   { text-decoration: underline; background: yellow; }" \n
 	append css ".match   { background: yellow; color: black; }" \n
 	append css [monoStyle $monoFamilies] \n
@@ -270,8 +269,9 @@ proc Build {w args} {
 	if {$opts(-usevertscroll)} { set shrink no } else { set shrink yes }
 	__html_widget $html {*}$htmlOptions -shrink $shrink
 	$html handler script style [namespace code [list StyleHandler $html]]
+	$html handler node a [namespace code [list RefHandler $html]]
 	if {[string length $Priv(importdir)]} {
-		$html handler node link [list [namespace current]::LinkHandler $html]
+		$html handler node link [namespace code [list LinkHandler $html]]
 	}
 
 	if {$opts(-usehorzscroll)} {
@@ -318,6 +318,11 @@ proc StyleHandler {w node contents} {
 		-importcmd [namespace code [list ImportHandler $w]] \
 		-urlcmd [namespace code [list UrlHandler $w]] \
 		$contents
+}
+
+
+proc RefHandler {w node} {
+	puts "[$node attribute href]"
 }
 
 

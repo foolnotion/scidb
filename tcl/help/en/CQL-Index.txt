@@ -41,10 +41,12 @@ functions.
       <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
     </ul>
   </li>
+  <li><a href="CQL-Transformations.html">Transformations</li>
   <li><a href="CQL-Match-List.html">The match list</a></li>
   <li><a href="CQL-Position-List.html">The position list</a></li>
   <li><a href="CQL-Relation-List.html">The relation list</a></li>
   <li><a href="CQL-Tagging.html">Tagging</a></li>
+  <li><a href="CQL-Examples.html">Examples</a></li>
 </ul>
 
 END

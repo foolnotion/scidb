@@ -28,28 +28,31 @@ Scidb supports the following formats:
 
 <dir>
   <li>
-    <img src="../images/ft-scidb.png" alt="ft-scidb" />
+    <img src="../images/ft-scidb.png" />
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="ft-scid" />
+    <img src="../images/ft-scid.png" />
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="ft-chessbase" />
+    <img src="../images/ft-chessbase.png" />
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="ft-pgn" />
+    <img src="../images/ft-pgn.png" />
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="ft-archive" />
+    <img src="../images/ft-archive.png" />
     <a href="#Database-Archive">Database archive</a>
   </li>
 </dir>
 
-<h2 id="Scidb"><img src="../images/ft-scidb.png" alt="ft-scidb" /> Scidb (<abbr>.sci</abbr>)</h2>
+<h2 id="Scidb">
+<img src="../images/ft-scidb.png" />
+Scidb (<abbr>.sci</abbr>)
+</h2>
 
 <p>
 This is Scidb's own database format. Use of this format is strongly
@@ -127,7 +130,10 @@ A database in Scidb's format is divided into several files:
   </table>
 </box>
 
-<h2 id="Scid"><img src="../images/ft-scid.png" alt="ft-scid" /> Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)</h2>
+<h2 id="Scid">
+<img src="../images/ft-scid.png" />
+Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
+</h2>
 
 <p>
 Scid's database format is fully supported because of it's wide adoption.
@@ -178,7 +184,10 @@ This format resembles structurally Scidb's format:
 not be regarded by Scidb. Likewise any saved game list (file suffix
 <code>.txt</code>) will be disregarded.</note>
 
-<h2 id="ChessBase"><img src="../images/ft-chessbase.png" alt="ft-chessbase" /> ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)</h2>
+<h2 id="ChessBase">
+<img src="../images/ft-chessbase.png" />
+ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
+</h2>
 
 <p>
 Both formats will be supported; the new format <abbr>.cbh</abbr> and the old format <abbr>.cbf</abbr>.
@@ -236,7 +245,10 @@ A database in old format consists of only four files:
   </table>
 </box>
 
-<h2 id="PGN"><img src="../images/ft-pgn.png" alt="ft-pgn" /> <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)</h2>
+<h2 id="PGN">
+<img src="../images/ft-pgn.png" />
+<abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
+</h2>
 
 <p>
 The <abbr>PGN</abbr> format (Portable Game Notation) is a common standard for transfering
@@ -246,7 +258,7 @@ chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. Wi
 
 <p>
 According to the
-<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="_blank">PGN standard</a>
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN standard</a>
 a PGN file is encoded with character set <nobr>Latin-1</nobr> (ISO-<nobr>8859-1</nobr>).
 But if a PGN file is starting with an <nobr>UTF-8</nobr> mark (<nobr>UTF-8</nobr>-BOM:
 byte sequence EF BB BF) an <nobr>UTF-8</nobr> encoding will be expected (according to
@@ -265,7 +277,10 @@ A complete specification of this format will be found at
 Standard: Portable Game Notation Specification and Implementation Guide</a>.
 </p>
 
-<h2 id="Database-Archive"><img src="../images/ft-archive.png" alt="ft-archive" /> Database archive (<abbr>.scv</abbr>)</h2>
+<h2 id="Database-Archive">
+<img src="../images/ft-archive.png" />
+Database archive (<abbr>.scv</abbr>)
+</h2>
 
 <p>
 Scidb's database archive is based on an independent archive format,

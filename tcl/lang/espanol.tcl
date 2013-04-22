@@ -1928,8 +1928,8 @@
 ::help::mc::CurrentPageOnly		"Buscar solamente en la página actual"
 ::help::mc::GoBack					"Retroceder una página"
 ::help::mc::GoForward				"Avanzar una página"
-::help::mc::GoHome					"Go to top of page" ;# NEW
-::help::mc::GoEnd						"Go to end of page" ;# NEW
+::help::mc::GotoHome					"Go to top of page" ;# NEW
+::help::mc::GotoEnd					"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Ir a la página '%s'"
 ::help::mc::ExpandAllItems			"Expandir todo"
 ::help::mc::CollapseAllItems		"Colapsar todo"

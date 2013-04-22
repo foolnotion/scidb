@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-Examples.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Help: CQL - Examples</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Examples</h1>
+</div>
+
+<h2 id="accumulator">Using accumulators to count passed pawns</h2>
+
+<p>
+We will show how to use <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> and
+<a href="CQL-Position-List.html#position:sumrange">:sumrange</a> to look for games that have at least 3 white
+passed pawns in a position. First, we give a position filter that will
+match any position with a white passed pawn:
+</p>
+
+<div class="box"><pre><code><!--
+--><span color="darkgreen">; match a position with a white passed pawn</span>
+(position
+  Pd2
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+  <a href="CQL-Position-List.html#position:shift">:shift</a>)<!--
+--></code></pre></div>
+
+<p>
+Now, to find at least 3 white passed pawns, we add in some accumulation code:
+</p>
+
+<div class="box"><pre><code><!--
+--><span color="darkgreen">; match a position with at least three white passed pawns</span>
+(position
+  Pd2
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+  <a href="CQL-Position-List.html#position:shift">:shift</a>
+  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8)<!--
+--></code></pre></div>
+
+<p>
+Now suppose we want to find positions with at least two black passed pawns.
+We can use:
+</p>
+
+<div class="box"><pre><code><!--
+--><span color="darkgreen">;match a position with at least two black passed pawns</span>
+(position
+  pd7 
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
+  <a href="CQL-Position-List.html#position:shift">:shift</a>
+  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8)<!--
+--></code></pre></div>
+
+<p>
+Finally, to find positions with at least two black passers and at least three
+white passers, we combine these lists:
+</p>
+
+<div class="box"><pre><code><!--
+--><span color="darkgreen">; match a position with at least three white</span>
+<span color="darkgreen">; and at least two black passers</span>
+(position
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8 
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8
+  <a href="CQL-Position-List.html#position:and">:and</a> (
+    (position
+      Pd2 
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+      <a href="CQL-Position-List.html#position:shift">:shift</a>
+      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter)
+    (position
+      pd7 
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
+      <a href="CQL-Position-List.html#position:shift">:shift</a>
+      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter)))<!--
+--></code></pre></div>
+
+<h2>Miscellaneous examples</h2>
+
+<p>
+At least 3 white passed pawns and at least two black passed pawns in the same
+position:
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  (position 
+    <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> whitecount 3 8 
+    <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> blackcount 2 8
+    <a href="CQL-Position-List.html#position:and">:and</a> (
+      (position
+        Pd2 
+        <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
+        <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+        <a href="CQL-Position-List.html#position:shift">:shift</a>
+        <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> whitecount)
+      (position
+        pd7 
+        <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
+        <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
+        <a href="CQL-Position-List.html#position:shift">:shift</a>
+        <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> blackcount))))<!--
+--></code></pre></div>
+
+</body>
+</html>

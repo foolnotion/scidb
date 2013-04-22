@@ -58,64 +58,64 @@ a script which complies with the standard.
 
 <dir>
   <table>
-    <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:country">:country</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:country">:country</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:gender">:gender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:player">:player</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:player">:player</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:rating">:rating</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:rating">:rating</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:title">:title</a></td>
+    <tr><td>      &#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:title">:title</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:year">:year</a></td></tr>
   </table>
 </dir>
 
@@ -146,9 +146,9 @@ Example:
 
 <verbatim>
 (match
-  :and(
-    (match :isshufflechess)
-    (match :ischess960 :not)))
+  <keyword>:and</keyword> (
+    (match <cql>match:isshufflechess</cql>)
+    (match <cql>match:ischess960</cql> <cql>match:not</cql>))))
 </verbatim>
 
 <p>
@@ -157,7 +157,7 @@ is identical to the following:
 </p>
 
 <verbatim>
-(match :isshufflechess :not(match :ischess960))
+(match <cql>match:isshufflechess</cql> <cql>match:not</cql>(match <cql>match:ischess960</cql>))
 </verbatim>
 
 <p>
@@ -168,7 +168,7 @@ In fact this keyword is somewhat superfluous, but included for completeness.
 
 <p>
 This keyword can be used in two forms: either it is included in a match list,
-or it has a sub-match list as argument. In former case: match if the containing
+or it has a sub-match list as argument. In former case match if the containing
 match list would not match without the :not. In latter case: negate the result
 of the sub-match list match. The former case is defined only to be conform
 with CQL standard of keyword <cql>position:not</cql> of position match.
@@ -181,7 +181,7 @@ Example:
 </p>
 
 <verb>
-(match :isshufflechess :not)
+(match <cql>match:isshufflechess</cql> <keyword>:not</keyword>)
 </verb>
 
 <p>
@@ -190,7 +190,7 @@ example may be written in the clearer second form:
 </p>
 
 <verb>
-(match :not(match :isshufflechess))
+(match <keyword>:not</keyword> (match <cql>match:isshufflechess</cql>))
 </verb>
 
 <h3 id="match:or">:or</h3>
@@ -208,9 +208,9 @@ Example:
 
 <verbatim>
 (match
-  :or(
-    (match :whitebirthyear 2000 3000)
-    (match :blackbirthyear 2000 3000)))
+  <keyword>:or</keyword> (
+    (match <cql>match<cql>match:whitebirthyear</cql></cql> 2000 3000)
+    (match <cql>match<cql>match:blackbirthyear</cql></cql> 2000 3000)))
 </verbatim>
 
 <p>
@@ -265,7 +265,7 @@ Example:
 </p>
 
 <verb>
-:eventcountry dk,no,se
+<keyword>:eventcountry</keyword> dk,no,se
 </verb>
 
 <p>
@@ -345,7 +345,7 @@ Example:
 </p>
 
 <verb>
-:eventmode corr,email
+<keyword>:eventmode</keyword> corr,email
 </verb>
 
 <p>
@@ -411,7 +411,7 @@ Example:
 </p>
 
 <verb>
-:eventtype tourn,swiss
+<keyword>:eventtype</keyword> tourn,swiss
 </verb>
 
 <h3 id="match:site">:site</h3>
@@ -478,7 +478,7 @@ Example:
 </p>
 
 <verb>
-:timemode blitz,bullet
+<keyword>:timemode</keyword> blitz,bullet
 </verb>
 
 <p>
@@ -535,7 +535,7 @@ Example:
 </p>
 
 <verb>
-:birthyear 1990-2020
+<keyword>:birthyear</keyword> 1990-2020
 </verb>
 
 <p>
@@ -614,7 +614,7 @@ Example:
 </p>
 
 <verb>
-:blackgender f
+<keyword>:blackgender</keyword> f
 </verb>
 
 <p>
@@ -707,8 +707,8 @@ Examples:
 </p>
 
 <verb>
-:country GER<br/>
-:country de
+<keyword>:country</keyword> GER<br/>
+<keyword>:country</keyword> de
 </verb>
 
 <p>
@@ -733,7 +733,7 @@ Example:
 </p>
 
 <verb>
-:deathyear 1800 1950
+<keyword>:deathyear</keyword> 1800 1950
 </verb>
 
 <p>
@@ -787,7 +787,7 @@ Example:
 </p>
 
 <verb>
-:player coeff
+<keyword>:player</keyword> coeff
 </verb>
 
 <p>
@@ -808,7 +808,7 @@ Examples:
 </p>
 
 <verb>
-:player "*coeff*"
+<keyword>:player</keyword> "*coeff*"
 </verb>
 
 <p>
@@ -875,7 +875,7 @@ Example:
 </p>
 
 <verb>
-:rating ELO 2000 3000
+<keyword>:rating</keyword> ELO 2000 3000
 </verb>
 
 <p>
@@ -904,7 +904,7 @@ Examples:
 </p>
 
 <verb>
-:title GM,IM
+<keyword>:title</keyword> GM,IM
 </verb>
 
 <p>
@@ -912,7 +912,7 @@ Search for all games where one player is GM or IM.
 </p>
 
 <verb>
-:title None
+<keyword>:title</keyword> None
 </verb>
 
 <p>
@@ -982,7 +982,7 @@ Example:
 </p>
 
 <verb>
-:whitegender f
+<keyword>:whitegender</keyword> f
 </verb>
 
 <p>
@@ -1097,14 +1097,14 @@ Examples:
 </p>
 
 <verb>
-:annotator Capablanca
+<keyword>:annotator</keyword> Capablanca
 </verb>
 
 Search for games where one of the player names has a sub-string matching
 the name <nobr>"Capablanca"</nobr>.
 
 <verb>
-:annotator "*"
+<keyword>:annotator</keyword> "*"
 </verb>
 
 <p>
@@ -1208,7 +1208,7 @@ Examples:
 </p>
 
 <verb>
-date: 2010-10-01
+<keyword>:date</keyword> 2010-10-01
 </verb>
 
 <p>
@@ -1216,7 +1216,7 @@ Search for all games played on October 1, 2010.
 </p>
 
 <verb>
-date: 2010-10-01 .. 2010-11-01
+<keyword>:date</keyword> 2010-10-01 .. 2010-11-01
 </verb>
 
 <p>
@@ -1225,7 +1225,7 @@ Search for all games played in October 2010: between October 1, 2010
 </p>
 
 <verb>
-date: 2010-10-01 .. 2010-10-01+1m
+<keyword>:date</keyword> 2010-10-01 .. 2010-10-01+1m
 </verb>
 
 <p>
@@ -1235,7 +1235,7 @@ Also search for all games played in October 2010; the latter range
 </p>
 
 <verb>
-date: 2010-10-27 .. 2010-10-27-43d
+<keyword>:date</keyword> 2010-10-27 .. 2010-10-27-43d
 </verb>
 
 <p>
@@ -1266,13 +1266,13 @@ Examples:
 </p>
 
 <verb>
-eco: A00
+<keyword>:eco</keyword> A00
 </verb>
 
 Search all games with ECO code A00.
 
 <verb>
-eco: A00 A99
+<keyword>:eco</keyword> A00 A99
 </verb>
 
 Search all games with an ECO code between A00 and A99 (inclusive the ranges).
@@ -1290,8 +1290,8 @@ Examples:
 </p>
 
 <verb>
-:gamenumber 1000<br/>
-:gamenumber 1 100
+<keyword>:gamenumber</keyword> 1000<br/>
+<keyword>:gamenumber</keyword> 1 100
 </verb>
 
 <h3 id="match:hasmarkers">:hasmarkers</h3>
@@ -1341,7 +1341,7 @@ Example:
 </p>
 
 <verb>
-:hasmarkers w,b
+<keyword>:hasmarkers</keyword> w,b
 </verb>
 
 <p>
@@ -1350,7 +1350,7 @@ or <i>%::gametable::mc::GameFlags(b)%</i>.
 </p>
 
 <verb>
-:hasmarkers #
+<keyword>:hasmarkers</keyword> #
 </verb>
 
 <p>
@@ -1391,7 +1391,7 @@ Example:
 </p>
 
 <verb>
-:not (match :hasspecialmarkers illegalmove)
+<cql>match:not</cql> (match <keyword>:hasspecialmarkers</keyword> illegalmove)
 </verb>
 
 <p>
@@ -1413,7 +1413,7 @@ Example:
 </p>
 
 <verb>
-:plycount 40 60
+<keyword>:plycount</keyword> 40 60
 </verb>
 
 <p>
@@ -1461,7 +1461,7 @@ Example:
 </p>
 
 <verb>
-:result 1/2
+<keyword>:result</keyword> 1/2
 </verb>
 
 <p>
@@ -1531,7 +1531,7 @@ Example:
 </p>
 
 <verb>
-:termination unknown,normal
+<keyword>:termination</keyword> unknown,normal
 </verb>
 
 <p>
@@ -1585,7 +1585,7 @@ Example:
 </p>
 
 <verb>
-:variant suicide,giveaway,losers
+<keyword>:variant</keyword> suicide,giveaway,losers
 </verb>
 
 <p>
@@ -1604,8 +1604,8 @@ Examples:
 </p>
 
 <verb>
-:year 2000<br/>
-:year 2000 20001
+<keyword>:year</keyword> 2000<br/>
+<keyword>:year</keyword> 2000 2010
 </verb>
 
 <p>
@@ -1755,11 +1755,11 @@ INCLUDE ../Start-Positions.txt
 </div>
 
 <p>
-Exmaples:
+Examples:
 </p>
 
 <verb>
-:startposition 518,3398
+<keyword>:startposition</keyword> 518,3398
 </verb>
 
 <p>
@@ -1768,7 +1768,7 @@ without castling rights.
 </p>
 
 <verb>
-:startposition misc/runaway
+<keyword>:startposition</keyword> misc/runaway
 </verb>
 
 <p>
@@ -1776,7 +1776,7 @@ Search for games with variant <expr>misc/runaway</expr>.
 </p>
 
 <verb>
-:startposition 0
+<keyword>:startposition</keyword> 0
 </verb>
 
 <p>
@@ -1785,7 +1785,7 @@ that the first game position is not a Shuffle Chess position.
 </p>
 
 <verb>
-:startposition -1
+<keyword>:startposition</keyword> -1
 </verb>
 
 <p>

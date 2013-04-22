@@ -62,6 +62,13 @@ IsCastling::match(Board const& board, Move const& move)
 
 
 bool
+NoCastling::match(Board const& board, Move const& move)
+{
+	return !move.isCastling();
+}
+
+
+bool
 MoveFrom::match(Board const& board, Move const& move)
 {
 	if (!move.isPieceDrop())

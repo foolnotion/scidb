@@ -38,7 +38,7 @@ years in which the game in question must lie in order for a match to occur.
 </p>
 
 <verb>
-:year 1934
+<cql>match:year</cql> 1934
 </verb>
 
 <p>
@@ -46,7 +46,7 @@ denotes the year 1934. <code>1934</code> is the range specifier.
 </p>
 
 <verb>
-:year 1934 2000
+<cql>match:year</cql> 1934 2000
 </verb>
 
 <p>

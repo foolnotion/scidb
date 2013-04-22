@@ -51,7 +51,7 @@ set DefaultHtmlFixedFamilies {
 	{Arial Monospaced} {Bitstream Vera Sans Mono} TkFixedFont {Nimbus Monoe L} {Lucida Typewriter}
 }
 set DefaultHtmlTextFamilies {
-	Arial {Bitstream Vera Sans} TkTextFont {Nimbus Sans L} Verdana {Lucida Grande} Lucida {DejaVu Sans}
+	Arial {Bitstream Vera Sans} TkTextFont {Helvetica Neue} {Helvetica Neue LT Std} {Nimbus Sans L} Verdana {Lucida Grande} Lucida {DejaVu Sans}
 } 
 
 array set mapCodeToNag {

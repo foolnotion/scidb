@@ -126,6 +126,7 @@ private:
 	char const* parseMoveNumber(Match& match, char const* s, Error& error);
 	char const* parseMoveTo(Match& match, char const* s, Error& error);
 	char const* parseNoAnnotate(Match& match, char const* s, Error& error);
+	char const* parseNoCastling(Match& match, char const* s, Error& error);
 	char const* parseNoCheck(Match& match, char const* s, Error& error);
 	char const* parseNoContactCheck(Match& match, char const* s, Error& error);
 	char const* parseNoDoubleCheck(Match& match, char const* s, Error& error);
@@ -164,7 +165,6 @@ private:
 	char const* parseSumRange(Match& match, char const* s, Error& error);
 	char const* parseTagMatch(Match& match, char const* s, Error& error);
 	char const* parseTerminal(Match& match, char const* s, Error& error);
-	char const* parseThreeChecks(Match& match, char const* s, Error& error);
 	char const* parseVariations(Match& match, char const* s, Error& error);
 	char const* parseVariationsOnly(Match& match, char const* s, Error& error);
 	char const* parseWhiteElo(Match& match, char const* s, Error& error);

@@ -48,8 +48,7 @@ verschiedene Startpositionen, die nach einem weltweit anerkannten Schema -
 entwickelt von Reinhard Scharnagl - numeriert werden. Die Standardposition
 hat in diesem Schema die Nummer 518. Mit der Eingabe einer Nummer wird
 die entsprechende Position aufgebaut. Zu weiteren Einzelheiten der
-Numerierung siehe
-<a href="http://www.chesstigers.de/download/chess960_regeln.pdf">
+Numerierung siehe <a href="http://www.chesstigers.de/download/chess960_regeln.pdf">
 Chess960 Startpositionen &amp; Regeln</a>.
 </p>
 

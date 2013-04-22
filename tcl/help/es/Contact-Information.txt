@@ -50,8 +50,7 @@ Cómo debe enviarse un mensaje:
       La membresía es gratuita.
     </p></li>
     <li><p>
-      Abra <a href="https://sourceforge.net/sendmessage.php?touser=2321037">Enviar un 
-      E-mail</a>,
+      Abra <a href="https://sourceforge.net/sendmessage.php?touser=2321037">Enviar un E-mail</a>,
       ingrese con su nombre de usuario y envíe el mensaje.
     </p></li>
 </ol>
@@ -63,7 +62,7 @@ Cómo debe enviarse un mensaje:
 Los usuarios de Scidb hallarán interesantes los siguientes sitios web:
 </p>
 
-<dir>
+<ul>
   <li><p>
     <a href="http://sourceforge.net/tracker/?atid=1294800&amp;group_id=307371&amp;func=browse"
        style="line-height: 150%;">
@@ -148,7 +147,7 @@ Los usuarios de Scidb hallarán interesantes los siguientes sitios web:
     Código ECO</a><br/>
     Una visión de conjunto acerca del código ECO.
   </p></li>
-</dir>
+</ul>
 
 END
 
