@@ -61,6 +61,7 @@ TITLE Welcome to Scidb-Help
 <h2 id="cql-manual">CQL (Chess Query Language)</h2>
 
 <ul class="index">
+  <li><a href="CQL-Index.html">Introduction</a></li>
   <li><a href="CQL-Syntax.html">Syntax</a>
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>

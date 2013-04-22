@@ -23,6 +23,44 @@ TITLE CQL - The relation list
 
 <dir>
   <table>
+    <tr><td>&#x2022;</td><td><a href="#relation">The :relation keyword</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#keywords">Relation keywords</a></td></tr>
+  </table>
+</dir>
+
+<h2 id="relation">The :relation keyword</h2>
+
+<p>
+The :relation keyword occurs in a position list. It takes one parameter, a
+relation specifier. A relation specifier is a list denoting parameters to
+the relation keyword.
+</p>
+
+<p>
+Example:
+</p>
+
+<verb>
+(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> A 1 100))
+</verb>
+
+<p>
+This position list searches for games in which two positions are the same
+except that the later one is missing one or more white pieces.
+</p>
+
+<p>
+The operation of the :relation tag is as follows. A position list with a
+relation tag matches a position P1 if and only if at some later point in the
+current game there is a position P2 such that the relationship between P1 and
+P2 matches the parameters defined in the relation specifier.
+</p>
+
+<h2 id="index">Index</h2>
+
+<dir>
+  <table>
     <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
@@ -33,23 +71,131 @@ TITLE CQL - The relation list
     <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
   </table>
 </dir>
 
+<h2 id="keywords">Relation keywords</h2>
+
 <h3 id="relation:changesidetomove">:changesidetomove</h3>
+
+<p>
+P2 must have a different side to move as does P1.
+</p>
+
+<p>
+Example:
+</p>
+
+<p>
+To search games in which the same position occurs with white and black to move
+- for example, this is useful in looking for mutual zugzwangs - use:
+</p>
+
+<verb>
+position <cql>position:relation</cql> (<keyword>:changesidetomove</keyword>))
+</verb>
+
 <h3 id="relation:flip">:flip</h3>
+
+<p>
+Allow P2 to be flipped before the comparison. However, in no case is P2
+allowed to have a different piece on a square than P1 after the transform
+is applied.
+</p>
+
 <h3 id="relation:ignoresidetomove">:ignoresidetomove</h3>
+
+<p>
+Side to move information is ignored.
+</p>
+
 <h3 id="relation:missingpiececount">:missingpiececount</h3>
+
+<p>
+This keyword takes the same parameters as does the :piececount keyword in a
+position list: a pieced designator followed by a range. A missing piece is a
+piece that occurs in P1 on a square that is empty on P2. P2 matches if the
+number of these missing pieces lies within the range specifier. Unlike the
+case of the <cql>position:pieccount</cql> keyowrd, at most one
+:missingpiececount specifier can occur. No shift or flip transformation
+specifiers in the containing position list affect the piece designator in this
+keyword.
+</p>
+
+<p>
+The default piece designator for :missingpiececount is U and the default range
+is zero. That is, by default there can be no missing pieces. 
+</p>
+
 <h3 id="relation:newpiececount">:newpiececount</h3>
+
+<p>
+This keyword takes the same parameters as does the <cql>position:piececount</cql>
+keyword in a position list: a pieced designator followed by a range. A new piece
+is a piece that occurs in P2 on a square that is empty on P1. P2 matches if the
+number of these new pieces lies within the range specifier. Unlike the case of
+the <cql>position:pieccount</cql> keyowrd, at most one :newpiececount specifier
+can occur. No shift or flip transformation specifiers in the containing position
+list affect the piece designator in this keyword.
+</p>
+
+<p>
+The default piece designator for :newiececount is U and the default range is
+zero. That is, by default there can be no new pieces. 
+</p>
+
 <h3 id="relation:originaldifferentcount">:originaldifferentcount</h3>
+
+<p>
+This parameter takes a range specifier. It matches if the number of
+allowable squares that are different between P1 and P2 lies within the range
+specifier.
+</p>
+
 <h3 id="relation:originalsamecount">:originalsamecount</h3>
+
+<p>
+This parameter takes a range specifier. It matches if the number of nonempty
+allowable squares that are the same between P1 and P2 lies within the range
+specifier.
+</p>
+
 <h3 id="relation:pattern">:pattern</h3>
+
+<p>
+The :pattern keyword signifies that all piece designators that occur at the
+top level of the position list that encloses the current relation list define
+the allowable squares. Only allowable squares are considered in the
+comparisons. By default all squares are allowable.
+</p>
+
 <h3 id="relation:samesidetomove">:samesidetomove</h3>
+
+<p>
+P2 must have the same side to move as P1. This is the default.
+</p>
+
 <h3 id="relation:shift">:shift</h3>
-<h3 id="relation:variationsonly">:variationsonly</h3>
+
+<p>
+Allow P2 to be shifted before the comparison. However, in no case is P2 allowed
+to have a different piece on a square than P1 after the transform is applied.
+</p>
+
 <h3 id="relation:variations">:variations</h3>
+
+<p>
+Search for P2 within variations and in the main line. By default, P2 must be
+in the main line.
+</p>
+
+<h3 id="relation:variationsonly">:variationsonly</h3>
+
+<p>
+Search for P2 only within variations.
+</p>
 
 END
 

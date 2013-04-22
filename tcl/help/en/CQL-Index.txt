@@ -32,6 +32,11 @@ Scidb is using an extended set of CQL as a basis for all complex search
 functions.
 </p>
 
+<p>
+Note that some parts of this documentation are taken from
+<a href="http://www.rbnn.com/cql/">CQLManual</a>.
+</p>
+
 <ul>
   <li><a href="CQL-Syntax.html">Syntax</a>
     <ul class="index">

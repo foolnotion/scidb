@@ -19,6 +19,12 @@
 INDEX CQL - Examples
 TITLE CQL - Examples
 
+<ul>
+  <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
+  <li><a href="#relation">Relation list example</a></li>
+  <li><a href="#more">More examples</a></li>
+</ul>
+
 <h2 id="accumulator">Using accumulators to count passed pawns</h2>
 
 <p>
@@ -94,10 +100,46 @@ white passers, we combine these lists:
       <cql>position:accumulate</cql> black_passer_counter)))
 </verbatim>
 
-<h2>Miscellaneous examples</h2>
+<h2 id="relation">Relation list example</h2>
 
 <p>
-At least 3 white passed pawns and at least two black passed pawns in the same
+The following position list searches for games in which the configuration
+</p>
+
+<dir><code>
+Ke6 be7 be4 nd5
+</code></dir>
+
+<p>
+occurs shifted or flipped, but in which no pieces from the original position
+are on the same square as the pattern:
+</p>
+
+<verbatim>
+(position
+  Ke6 be7 be4 nd5
+  <cql>position:shift</cql>
+  <cql>position:flip</cql>
+  <cql>position:relation</cql> (
+    <cql>relation:pattern</cql>
+    <cql>relation:shift</cql>
+    <cql>relation:flip</cql>
+    <cql>relation:originalsamecount</cql> 0
+    <cql>relation:samesidetomove</cql>
+    <cql>relation:variations</cql>))
+</verbatim>
+
+<p>
+If one modified the <cql>relation:originalsamecount</cql> parameter to, say,
+<expr>0 3</expr> from its current value of 1, then the pattern in the second
+position would be allowed to overlap with at most three squares of the pattern
+in the original position. 
+</p>
+
+<h2 id="more">More examples</h2>
+
+<p>
+3 white passed pawns and at least two black passed pawns in the same
 position:
 </p>
 
@@ -119,6 +161,21 @@ position:
         <cql>position:piececount</cql> P[c2-6,e2-6] 0
         <cql>position:shift</cql>
         <cql>position:accumulate</cql> blackcount))))
+</verbatim>
+
+<p>
+Knight gives mate with its first move:
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> knight N
+  (position
+    <cql>position:movefrom</cql> $knight
+    <cql>position:matchcount</cql> 1)
+  (position
+    <cql>position:mate</cql>
+    <cql>position:attackcount</cql> $knight k 1)) 
 </verbatim>
 
 END

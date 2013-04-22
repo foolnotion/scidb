@@ -38,6 +38,12 @@
   <h1 class="title">CQL - Examples</h1>
 </div>
 
+<ul>
+  <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
+  <li><a href="#relation">Relation list example</a></li>
+  <li><a href="#more">More examples</a></li>
+</ul>
+
 <h2 id="accumulator">Using accumulators to count passed pawns</h2>
 
 <p>
@@ -113,10 +119,46 @@ white passers, we combine these lists:
       <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter)))<!--
 --></code></pre></div>
 
-<h2>Miscellaneous examples</h2>
+<h2 id="relation">Relation list example</h2>
 
 <p>
-At least 3 white passed pawns and at least two black passed pawns in the same
+The following position list searches for games in which the configuration
+</p>
+
+<ul style="list-style-type: none"><li><code>
+Ke6 be7 be4 nd5
+</code></li></ul>
+
+<p>
+occurs shifted or flipped, but in which no pieces from the original position
+are on the same square as the pattern:
+</p>
+
+<div class="box"><pre><code><!--
+-->(position
+  Ke6 be7 be4 nd5
+  <a href="CQL-Position-List.html#position:shift">:shift</a>
+  <a href="CQL-Position-List.html#position:flip">:flip</a>
+  <a href="CQL-Position-List.html#position:relation">:relation</a> (
+    <a href="CQL-Relation-List.html#relation:pattern">:pattern</a>
+    <a href="CQL-Relation-List.html#relation:shift">:shift</a>
+    <a href="CQL-Relation-List.html#relation:flip">:flip</a>
+    <a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</a> 0
+    <a href="CQL-Relation-List.html#relation:samesidetomove">:samesidetomove</a>
+    <a href="CQL-Relation-List.html#relation:variations">:variations</a>))<!--
+--></code></pre></div>
+
+<p>
+If one modified the <a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</a> parameter to, say,
+<span style="white-space:nowrap;"><code>0 3</code></span> from its current value of 1, then the pattern in the second
+position would be allowed to overlap with at most three squares of the pattern
+in the original position. 
+</p>
+
+<h2 id="more">More examples</h2>
+
+<p>
+3 white passed pawns and at least two black passed pawns in the same
 position:
 </p>
 
@@ -138,6 +180,21 @@ position:
         <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
         <a href="CQL-Position-List.html#position:shift">:shift</a>
         <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> blackcount))))<!--
+--></code></pre></div>
+
+<p>
+Knight gives mate with its first move:
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  <a href="CQL-Match-List.html#match:forany">:forany</a> knight N
+  (position
+    <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $knight
+    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 1)
+  (position
+    <a href="CQL-Position-List.html#position:mate">:mate</a>
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $knight k 1)) <!--
 --></code></pre></div>
 
 </body>

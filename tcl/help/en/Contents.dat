@@ -38,6 +38,7 @@ set Contents {
   }
   {
     {{{CQL (Chess Query Language)} {Overview.html} {cql-manual}}}
+    {{{Introduction} {CQL-Index.html}}}
     {
       {{{Syntax} {CQL-Syntax.html}}}
       {{{Piece designators} {CQL-Piece-Designators.html}}}
