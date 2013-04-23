@@ -782,6 +782,20 @@ See also: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
 <cql>match:birthyear</cql>.
 </p>
 
+<h3 id="match:gender">:gender</h3>
+
+<p>
+Match all games where the gender of one player is matching given gender.
+Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
+female also <expr>w</expr> (woman) may be used.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>match:blackgender</cql>, <cql>match:whitegender</cql>.
+</p>
+
 <h3 id="match:iscomputer">:iscomputer</h3>
 
 <p>
@@ -1008,8 +1022,8 @@ See also: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
 
 <p>
 Match all games where the gender of the white player is matching given gender.
-Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male). For
-female also <expr>w</expr> may be used.
+Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
+female also <expr>w</expr> (woman) may be used.
 </p>
 
 <nonstd/>

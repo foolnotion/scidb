@@ -74,6 +74,7 @@ set Index {
     {
       {{gamenumber : match} {CQL-Match-List.html} {match:gamenumber}}
       {{gappedsequence : position} {CQL-Position-List.html} {position:gappedsequence}}
+      {{gender : match} {CQL-Match-List.html} {match:gender}}
     }
   }
   { H
