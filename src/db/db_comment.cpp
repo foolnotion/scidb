@@ -1754,22 +1754,24 @@ Comment::strip(LanguageSet const& set)
 void
 Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal)
 {
-	if (fromLang != toLang)
+	M_REQUIRE(isXml());
+
+	if (fromLang == toLang)
+		return;
+
+	if (stripOriginal)
 	{
-		if (stripOriginal)
-		{
-			if (m_languageSet.empty())
-				collect();
-			m_languageSet.erase(fromLang);
-			Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', &m_languageSet, &fromLang, &toLang);
-			parse(normalize);
-		}
-		else
-		{
-			Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', nullptr, &fromLang, &toLang);
-			parse(normalize);
-			m_languageSet.clear();
-		}
+		if (m_languageSet.empty())
+			collect();
+		m_languageSet.erase(fromLang);
+		Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', &m_languageSet, &fromLang, &toLang);
+		parse(normalize);
+	}
+	else
+	{
+		Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', nullptr, &fromLang, &toLang);
+		parse(normalize);
+		m_languageSet.clear();
 	}
 }
 
