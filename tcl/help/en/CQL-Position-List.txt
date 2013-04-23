@@ -100,32 +100,32 @@ TITLE CQL - The position list
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>

@@ -3300,6 +3300,7 @@ Game::resetGame(MoveNode* startNode, Board const& startBoard, edit::Key const&)
 	startNode->setFolded(false);
 	m_startNode = startNode;
 	m_startBoard = startBoard;
+	m_previousKey.clear();
 	insertUndo(Set_Start_Position, Clear, node, board);
 	moveToMainlineStart();
 	updateSubscriber(UpdateAll);
@@ -3320,6 +3321,8 @@ Game::clear(Board const* startPosition)
 
 	if (startPosition)
 		setup(*startPosition);
+
+	m_previousKey.clear();
 	updateSubscriber(UpdateAll);
 }
 
@@ -3335,6 +3338,7 @@ Game::setup(Board const& startPosition)
 		m_startBoard.removeCastlingRights();
 
 	m_currentBoard = m_startBoard;
+	m_previousKey.clear();
 }
 
 
@@ -3560,6 +3564,7 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	updateLanguageSet();
 	m_wantedLanguages = m_languageSet;
 	m_startNode->updateFromTimeTable(m_timeTable);
+	m_previousKey.clear();
 
 	return ok;
 }
@@ -3830,6 +3835,7 @@ Game::transpose(Force flag)
 
 	insertUndo(Revert_Game, Transpose, m_startNode);
 
+	m_previousKey.clear();
 	m_startNode = root.release();
 	m_idn = chess960::twin(m_idn);
 	m_startBoard.transpose(m_variant);

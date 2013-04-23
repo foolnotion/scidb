@@ -1571,7 +1571,6 @@ Application::clearGame(Board const* startPosition)
 	EditGame& game = *m_gameMap[m_currentPosition];
 
 	game.game->clear(startPosition);
-	game.game->updateSubscriber(Game::UpdateBoard);
 
 	if (m_subscriber && m_referenceBase && !m_treeIsFrozen)
 		m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());

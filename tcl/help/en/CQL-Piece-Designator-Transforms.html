@@ -47,9 +47,21 @@ A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
 each square in its square set about the main diagonal.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span> about the main diagonal.
+    </td>
+  </tr>
+</table>
+
 <p>
-For example, the diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a1</code></span>. The
-diagonal flip of <span style="white-space:nowrap;"><code>[Aa][a-h1-2,f6,h7]</code></span> is
+For example, the diagonal flip of <span style="white-space:nowrap;"><code>[Aa][a-h1-2,f6,h7]</code></span> is
 <span style="white-space:nowrap;"><code>[Aa][a-b1-8,f6,g8]</code></span>.
 </p>
 
@@ -58,10 +70,23 @@ An <b>off-diagonal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the a8 to h1 diagonal.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Off-diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2657;</span>b2</code></span> about the a8 to h1 diagonal.
+    </td>
+  </tr>
+</table>
+
 <p>
 For example, the off-diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span>.
-The off-diagonal flip of <span style="white-space:nowrap;"><code>[<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>][a1-8]</code></span>, denoting a pawn on the a
-file, is <span style="white-space:nowrap;"><code>[<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>][a-h8]</code></span>, denoting a pawn on the eight rank.
+The off-diagonal flip of <span style="white-space:nowrap;"><code>[<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a1-8]</code></span>, denoting a bishop on the
+a file, is <span style="white-space:nowrap;"><code>[<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a-h8]</code></span>, denoting a bishop on the eight rank.
 </p>
 
 <p>
@@ -71,12 +96,38 @@ example, the vertical flip of <span style="white-space:nowrap;"><code>Uf6</code>
 <span style="white-space:nowrap;"><code>Uc6</code></span>.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertical flip of <span style="white-space:nowrap;"><code><span class="chess">&#x265d;</span>f6</code></span> about the vertical bisector.
+    </td>
+  </tr>
+</table>
+
 <p>
 A <b>horizontal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the horizontal bisector of
 the board. For example, the horizontal flip of <span style="white-space:nowrap;"><code>Uf6</code></span> is
 <span style="white-space:nowrap;"><code>Uf3</code></span>.
 </p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x265d;</span>f6</code></span> about the horizontal bisector.
+    </td>
+  </tr>
+</table>
 
 <p>
 A <b>dihedral transformation</b> of a piece designator is either a flip
@@ -85,9 +136,26 @@ a flip transformation or the identity transformation. There are 8 distinct
 dihedral transformations of the board. For example, the results of
 applying the 8 dihedral transformations to the piece designator
 <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c2</code></span> are the 8 piece designators <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c2</code></span>,
-<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b3</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f2</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g3</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f7</code></span>,
-<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g6</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b6</code></span>, and <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c7</code></span>.
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b3</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b6</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c7</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f7</code></span>,
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g6</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g3</code></span>, and <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f2</code></span>.
 </p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Dihedral transformation of <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c2</code></span>.<br/>
+      This is the sequence: diagonal flip (to b3),<br/>
+      horizontal flip (to b6), off-diagonal flip (to c7),<br/>
+      vertical flip (to f7), diagonal flip (to g6),<br/>
+      horizontal flip (to g3), off-diagonal flip (to f2).</br>
+    </td>
+  </tr>
+</table>
 
 <p>
 A <b>unit right shift transformation</b>, applied to a piece designator,

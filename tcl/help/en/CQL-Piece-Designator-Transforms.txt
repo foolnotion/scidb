@@ -28,9 +28,21 @@ A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
 each square in its square set about the main diagonal.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonal flip of <expr>&R;a8</expr> about the main diagonal.
+    </td>
+  </tr>
+</table>
+
 <p>
-For example, the diagonal flip of <expr>&R;a8</expr> is <expr>&R;a1</expr>. The
-diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
+For example, the diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
 <expr>[Aa][a-b1-8,f6,g8]</expr>.
 </p>
 
@@ -39,10 +51,23 @@ An <b>off-diagonal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the a8 to h1 diagonal.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Off-diagonal flip of <expr>&B;b2</expr> about the a8 to h1 diagonal.
+    </td>
+  </tr>
+</table>
+
 <p>
 For example, the off-diagonal flip of <expr>&R;a8</expr> is <expr>&R;a8</expr>.
-The off-diagonal flip of <expr>[&P;&p;][a1-8]</expr>, denoting a pawn on the a
-file, is <expr>[&P;&p;][a-h8]</expr>, denoting a pawn on the eight rank.
+The off-diagonal flip of <expr>[&B;&b;][a1-8]</expr>, denoting a bishop on the
+a file, is <expr>[&B;&b;][a-h8]</expr>, denoting a bishop on the eight rank.
 </p>
 
 <p>
@@ -52,12 +77,38 @@ example, the vertical flip of <expr>Uf6</expr>, denoting a piece on f6, is
 <expr>Uc6</expr>.
 </p>
 
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertical flip of <expr>&b;f6</expr> about the vertical bisector.
+    </td>
+  </tr>
+</table>
+
 <p>
 A <b>horizontal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the horizontal bisector of
 the board. For example, the horizontal flip of <expr>Uf6</expr> is
 <expr>Uf3</expr>.
 </p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontal flip of <expr>&b;f6</expr> about the horizontal bisector.
+    </td>
+  </tr>
+</table>
 
 <p>
 A <b>dihedral transformation</b> of a piece designator is either a flip
@@ -66,9 +117,26 @@ a flip transformation or the identity transformation. There are 8 distinct
 dihedral transformations of the board. For example, the results of
 applying the 8 dihedral transformations to the piece designator
 <expr>&Q;c2</expr> are the 8 piece designators <expr>&Q;c2</expr>,
-<expr>&Q;b3</expr>, <expr>&Q;f2</expr>, <expr>&Q;g3</expr>, <expr>&Q;f7</expr>,
-<expr>&Q;g6</expr>, <expr>&Q;b6</expr>, and <expr>&Q;c7</expr>.
+<expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
+<expr>&Q;g6</expr>, <expr>&Q;g3</expr>, and <expr>&Q;f2</expr>.
 </p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Dihedral transformation of <expr>&Q;c2</expr>.<br/>
+      This is the sequence: diagonal flip (to b3),<br/>
+      horizontal flip (to b6), off-diagonal flip (to c7),<br/>
+      vertical flip (to f7), diagonal flip (to g6),<br/>
+      horizontal flip (to g3), off-diagonal flip (to f2).</br>
+    </td>
+  </tr>
+</table>
 
 <p>
 A <b>unit right shift transformation</b>, applied to a piece designator,
