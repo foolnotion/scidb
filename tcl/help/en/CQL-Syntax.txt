@@ -63,7 +63,7 @@ or another list.
 
 <p>
 For example
-<p>
+</p>
 
 <verb>
 (position <cql>position:shifthorizontal</cql> <cql>position:flipcolor</cql>)

@@ -81,6 +81,7 @@ A piece designator can have a piecetype designator that is the name of a tag
 preceded by the character '$'. Such a piecetype represents the particular
 piece represented by the named tag. Because tag names are alphanumeric, square
 designators in such a piece designator must be enclosed in brackets. Example:
+</p>
 
 <verb>
 (position $foo[a1,d4])

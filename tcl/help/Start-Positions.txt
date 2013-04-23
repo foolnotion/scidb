@@ -19,54 +19,54 @@
 BEGIN
 <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
   <tr>
-    <td>misc/bishops-only</td>
-    <td>&#x2001;</td>
-    <td>endings/kbbk</td>
+    <td><expr>misc/bishops-only</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>endings/kbbk</expr></td>
   </tr>
   <tr>
-    <td>misc/knights-only</td>
-    <td>&#x2001;</td>
-    <td>endings/kbnk</td>
+    <td><expr>misc/knights-only</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>endings/kbnk</expr></td>
   </tr>
   <tr>
-    <td>misc/little-game</td>
-    <td>&#x2001;</td>
-    <td>pawns/pawns-only</td>
+    <td><expr>misc/little-game</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>pawns/pawns-only</expr></td>
   </tr>
   <tr>
-    <td>misc/no-queens</td>
-    <td>&#x2001;</td>
-    <td>pawns/wild-five</td>
+    <td><expr>misc/no-queens</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>pawns/wild-five</expr></td>
   </tr>
   <tr>
-    <td>misc/pawns-only</td>
-    <td>&#x2001;</td>
-    <td>wild/19</td>
+    <td><expr>misc/pawns-only</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>wild/19</expr></td>
   </tr>
   <tr>
-    <td>misc/pyramid</td>
-    <td>&#x2001;</td>
-    <td>wild/5</td>
+    <td><expr>misc/pyramid</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>wild/5</expr></td>
   </tr>
   <tr>
-    <td>misc/queen-rooks</td>
-    <td>&#x2001;</td>
-    <td>wild/8</td>
+    <td><expr>misc/queen-rooks</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr>wild/8</expr></td>
   </tr>
   <tr>
-    <td>misc/queens-only</td>
-    <td>&#x2001;</td>
-    <td></td>
+    <td><expr>misc/queens-only</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr></expr></td>
   </tr>
   <tr>
-    <td>misc/rooks-only</td>
-    <td>&#x2001;</td>
-    <td></td>
+    <td><expr>misc/rooks-only</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr></expr></td>
   </tr>
   <tr>
-    <td>misc/runaway</td>
-    <td>&#x2001;</td>
-    <td></td>
+    <td><expr>misc/runaway</expr></td>
+    <td><expr>&#x2001;</expr></td>
+    <td><expr></expr></td>
   </tr>
 </table>
 END

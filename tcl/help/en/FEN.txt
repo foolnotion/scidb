@@ -35,8 +35,8 @@ was repeated.  A detailed description is available online:
 <ul>
   <li><a href="http://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation">
         ForsythEdwards Notation - Wikipedia</a></li>
-  <li><a href="http://en.wikipedia.org/wiki/X-FEN">X-FEN - Wikipedia</a>
- </ul>
+  <li><a href="http://en.wikipedia.org/wiki/X-FEN">X-FEN - Wikipedia</a></li>
+</ul>
 
 <p>
 Also, it should be noted that Scidb can handle the Shredder FEN.

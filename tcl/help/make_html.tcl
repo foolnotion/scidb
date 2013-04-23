@@ -388,11 +388,20 @@ proc readContents {chan file} {
 			lassign $location i k
 			set parts [split [string range $line [expr {$i + 5}] [expr {$k - 6}]] :]
 			set section [lindex $parts 0]
-			set keyword [string trim [lindex $parts 1]]
+			set keyword [string trim [lindex [split [lindex $parts 1] " "] 0]]
 			set text [join [lrange $parts 1 end] ":"]
 			set Section [string toupper $section 0 0]
 			set newline [string range $line 0 [expr {$i - 1}]]
 			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\">:$text</a>"
+			append newline [string range $line [expr {$k + 1}] end]
+			set line $newline
+		}
+
+		while {[regexp {<img\s*src=[\"\']([^\"\']*)[\"\']\s*/>} $line _ src]} {
+			regexp -indices {<img\s*src=[\"\'][^\"\']*[\"\']\s*/>} $line location
+			lassign $location i k
+			set newline [string range $line 0 [expr {$i - 1}]]
+			append newline "<img src=\"$src\" alt=\"\" />"
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}
@@ -404,7 +413,7 @@ proc readContents {chan file} {
 			if {[regexp -indices {.*</a>} $line indices]} {
 				lassign $indices s e
 				set newline [string range $line 0 [expr {$e - 4}]]
-				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 				set indices {}
@@ -414,14 +423,14 @@ proc readContents {chan file} {
 			while {[regexp -indices {<a[^>]*href=.http[^>]*>[^<]*</a>} $line indices]} {
 				lassign $indices s e
 				set newline [string range $line 0 [expr {$e - 4}]]
-				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}
 			while {[regexp -indices {<a[^>]*href=.ftp[^>]*>[^<]*</a>} $line indices]} {
 				lassign $indices s e
 				set newline [string range $line 0 [expr {$e - 4}]]
-				append newline "<span class=\"awesome\"/>&nbsp;&#xf08e;</span></a>"
+				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}

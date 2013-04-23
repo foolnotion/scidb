@@ -21,8 +21,7 @@ INDEX CQL Position List
 
 DEFINE <nonstd/> <note>This keyword is not part of the CQL standard.</note>
 
-DEFINE <ca9/>  <note>This keyword is borrowed from Chess Assistant 9 (<see/> <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>).
-</note>
+DEFINE <ca9/>  <note>This keyword is borrowed from Chess Assistant 9 (<see/> <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>). </note>
 
 TITLE CQL - The position list
 
@@ -399,7 +398,7 @@ If the parameter has the form <expr>+&lt;n&#x2081;&gt;+&lt;n&#x2082;&gt;</expr>,
 where <expr>&lt;n&#x2093;&gt;</expr> is a number between 0 and 3,
 it is matching all positions where white has given n&#x2081;-th check
 to black, and black has given n&#x2082;-th check to white.
-<p>
+</p>
 
 <note>
 This search is working only in chess variant %::mc::VariantName(ThreeCheck)%,
@@ -1067,7 +1066,7 @@ variant:
 </p>
 
 <dir>
-  <table cellpadding="3px">
+  <table cellpadding="3">
     <tr>
       <td align="right"></td>
       <td align="right">&King;</td>
@@ -1086,6 +1085,7 @@ variant:
       <td align="right"> 3</td>
       <td align="right"> 1</td>
     </tr>
+    <tr>
       <td>%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%</td>
       <td align="right"> 0</td>
       <td align="right"> 5</td>
@@ -1519,7 +1519,7 @@ The next move is not an en-passant capture.
 
 <p>
 See also: <cql>position:enpassant</cql>.
-</cql>
+</p>
 
 <h3 id="position:piecedrop">:piecedrop</h3>
 
@@ -1613,6 +1613,7 @@ Takes one argument, a list of position lists. A position list A is said to be
 a refinement of a position list B if A may be formed from B by inserting zero or
 more position lists of the form (position) into the top level of B. For
 example:
+</p>
 
 <verb>
 ((position &N;a4) (position) (position &R;b2))
@@ -1757,7 +1758,7 @@ there are successively moves by queens on the indicated squares giving check;
 the <cql>position:shift</cql>, <cql>position:flip</cql>, and
 <cql>position:flipcolor</cql> search for this variation reflected or
 rotated anywhere on the board.
-<p>
+</p>
 
 <h2 id="game">Game related keywords</h2>
 
@@ -1981,7 +1982,7 @@ accumulator associated with this name after applying a transformation.
 Example:
 </p>
 
-</p>
+<p>
 Tripled pawns can be found by the query:
 </p>
 

@@ -408,7 +408,7 @@ Search::stringFirstCmd(char const* haystack, unsigned haystackLen)
 					++match;
 			}
 
-			if (unsigned(pos) + m_length < haystackLen - 1)
+			if (unsigned(pos) + m_length < haystackLen)
 			{
 				if (!sys::utf8::isAlpha(sys::utf8::getChar(haystack + pos + m_length)))
 					++match;
@@ -441,10 +441,10 @@ Search::htmlStartElement(void* cbData, XML_Char const* elem, char const** attr)
 
 	switch (toupper(elem[0]))
 	{
-		case 'A':
-			if (elem[1] == '\0')
-				++static_cast<Search*>(cbData)->m_skip;
-			break;
+//		case 'A':
+//			if (elem[1] == '\0')
+//				++static_cast<Search*>(cbData)->m_skip;
+//			break;
 
 		case 'H':
 		{
@@ -477,10 +477,10 @@ Search::htmlEndElement(void* cbData, XML_Char const* elem)
 
 	switch (toupper(elem[0]))
 	{
-		case 'A':
-			if (elem[1] == '\0')
-				--static_cast<Search*>(cbData)->m_skip;
-			break;
+//		case 'A':
+//			if (elem[1] == '\0')
+//				--static_cast<Search*>(cbData)->m_skip;
+//			break;
 
 		case 'H':
 		{

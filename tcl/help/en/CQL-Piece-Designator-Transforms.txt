@@ -133,7 +133,7 @@ applying the 8 dihedral transformations to the piece designator
       This is the sequence: diagonal flip (to b3),<br/>
       horizontal flip (to b6), off-diagonal flip (to c7),<br/>
       vertical flip (to f7), diagonal flip (to g6),<br/>
-      horizontal flip (to g3), off-diagonal flip (to f2).</br>
+      horizontal flip (to g3), off-diagonal flip (to f2).<br/>
     </td>
   </tr>
 </table>
@@ -174,6 +174,7 @@ Similar definitions apply for <b>left transformation</b>, <b>up
 transformation</b>, and <b>down transformation</b>.
 </p>
 
+<p>
 A <b>horizontal shift transformation</b> is either a left or a right
 transformation. A <b>vertical shift transformation</b> is either a down
 or an up transformation.
