@@ -19,7 +19,7 @@ set Index {
       {{Compress} {Database-Switcher.html} {Compact}}
       {{Compress database} {Database-Switcher.html} {Compact}}
       {{Contact information} {Contact-Information.html} {}}
-      {{CQL - Examples} {CQL-Examples.html} {}}
+      {{CQL Examples} {CQL-Examples.html} {}}
       {{CQL Manual} {CQL-Index.html} {}}
       {{CQL Match List} {CQL-Match-List.html} {}}
       {{CQL Position List} {CQL-Position-List.html} {}}
@@ -74,7 +74,6 @@ set Index {
   }
   { P
     {
-      {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
       {{Pattern matching} {Pattern-Matching.html} {}}
       {{Piece designators (CQL)} {CQL-Piece-Designators.html} {}}
       {{Position List (CQL)} {CQL-Position-List.html} {}}
@@ -108,11 +107,6 @@ set Index {
   { X
     {
       {{X-FEN (Extended Forsyth-Edwards Notation)} {FEN.html} {}}
-    }
-  }
-  { Ü
-    {
-      {{Übersichts-Browser} {Game-Overview.html} {}}
     }
   }
 }

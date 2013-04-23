@@ -19,50 +19,50 @@
 BEGIN
 <table>
   <tr valign="top">
-    <td class="left"><expr>None</expr></td><td>%::playerdict::mc::None%  </td></td>
+    <td class="l"><expr>None</expr></td><td class="r">%::playerdict::mc::None%  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>GM  </expr></td><td>%::titlebox::mc::Title(GM)%  </td></td>
+    <td class="l"><expr>GM  </expr></td><td class="r">%::titlebox::mc::Title(GM)%  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>IM  </expr></td><td>%::titlebox::mc::Title(IM)%  </td></td>
+    <td class="l"><expr>IM  </expr></td><td class="r">%::titlebox::mc::Title(IM)%  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>FM  </expr></td><td>%::titlebox::mc::Title(FM)%  </td></td>
+    <td class="l"><expr>FM  </expr></td><td class="r">%::titlebox::mc::Title(FM)%  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CM  </expr></td><td>%::titlebox::mc::Title(CM)%  </td></td>
+    <td class="l"><expr>CM  </expr></td><td class="r">%::titlebox::mc::Title(CM)%  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>WGM </expr></td><td>%::titlebox::mc::Title(WGM)% </td></td>
+    <td class="l"><expr>WGM </expr></td><td class="r">%::titlebox::mc::Title(WGM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>WIM </expr></td><td>%::titlebox::mc::Title(WIM)% </td></td>
+    <td class="l"><expr>WIM </expr></td><td class="r">%::titlebox::mc::Title(WIM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>WFM </expr></td><td>%::titlebox::mc::Title(WFM)% </td></td>
+    <td class="l"><expr>WFM </expr></td><td class="r">%::titlebox::mc::Title(WFM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>WCM </expr></td><td>%::titlebox::mc::Title(WCM)% </td></td>
+    <td class="l"><expr>WCM </expr></td><td class="r">%::titlebox::mc::Title(WCM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>HGM </expr></td><td>%::titlebox::mc::Title(HGM)% </td></td>
+    <td class="l"><expr>HGM </expr></td><td class="r">%::titlebox::mc::Title(HGM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CGM </expr></td><td>%::titlebox::mc::Title(CGM)% </td></td>
+    <td class="l"><expr>CGM </expr></td><td class="r">%::titlebox::mc::Title(CGM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CIM </expr></td><td>%::titlebox::mc::Title(CIM)% </td></td>
+    <td class="l"><expr>CIM </expr></td><td class="r">%::titlebox::mc::Title(CIM)% </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CLGM</expr></td><td>%::titlebox::mc::Title(CLGM)%</td></td>
+    <td class="l"><expr>CLGM</expr></td><td class="r">%::titlebox::mc::Title(CLGM)%</td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CILM</expr></td><td>%::titlebox::mc::Title(CILM)%</td></td>
+    <td class="l"><expr>CILM</expr></td><td class="r">%::titlebox::mc::Title(CILM)%</td></td>
   </tr>
   </tr>
   <tr valign="top">
-    <td class="left"><expr>CSIM</expr></td><td>%::titlebox::mc::Title(CSIM)%</td></td>
+    <td class="l"><expr>CSIM</expr></td><td class="r">%::titlebox::mc::Title(CSIM)%</td></td>
   </tr>
 </table>
 END

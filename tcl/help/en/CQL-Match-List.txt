@@ -26,10 +26,10 @@ TITLE CQL - The match list
 <p>
 Any CQL file must have exactly one match list at top level. The match list
 contains keyword parameters that control the matching of each game.
-The match list contains zero or more position lists (the CQL standard
-requires at least one position list).  A game will be matched only if
-all conditions in the match list are fullfilled. If positions lists are
-given, each of which must match at least one position in the game in order
+The match list contains zero or more position lists. (Note that the CQL
+standard requires at least one position list).  A game will be matched
+only if all conditions in the match list are fullfilled. If positions lists
+are given, each of which must match at least one position in the game in order
 for the match list to match that game. Scidb allows an additional feature:
 the match list may contain logical keywords (<cql>match:and</cql>,
 <cql>match:or</cql>, <cql>match:not</cql>) with sub-matches.
@@ -157,7 +157,7 @@ is identical to the following:
 </p>
 
 <verbatim>
-(match <cql>match:isshufflechess</cql> <cql>match:not</cql>(match <cql>match:ischess960</cql>))
+(match <cql>match:isshufflechess</cql> (match <cql>match:ischess960</cql> <cql>match:not</cql>))
 </verbatim>
 
 <p>
@@ -254,14 +254,14 @@ countries in the given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
-and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
+of the event is unknown.
 </p>
 
 <nonstd/>
 
 <p>
-Example:
+Examples:
 </p>
 
 <verb>
@@ -270,6 +270,14 @@ Example:
 
 <p>
 Search for games played in Scandinavian events.
+</p>
+
+<verb>
+<keyword>:eventcountry</keyword> xx
+</verb>
+
+<p>
+Search for games where the country of the event is unknown.
 </p>
 
 <p>
@@ -417,11 +425,11 @@ Example:
 <h3 id="match:site">:site</h3>
 
 <p>
-Search for games where the site matches given pattern.
+Search for games where the site of the event matches given pattern.
 </p>
 
 <p>
-This takes one parameter, either a duuble-quoted pattern, or a un-quoted string.
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
@@ -570,8 +578,8 @@ the countries in given comma-separated list. A country will be specified either
 as <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
 or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
-and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
+of the black player is unknown.
 </p>
 
 <nonstd/>
@@ -675,6 +683,10 @@ black player. For a detailed description see <cql>match:rating</cql>.
 
 <nonstd/>
 
+<p>
+See also: <cql>match:whiterating</cql>, <cql>match:rating</cql>.
+</p>
+
 <h3 id="match:blacktitle">:blacktitle</h3>
 
 <p>
@@ -686,7 +698,7 @@ See <cql>match:title</cql> for a more detailed description.
 <nonstd/>
 
 <p>
-See also: <cql>match:title</cql>, <cql>match:whitetitle</cql>.
+See also: <cql>match:whitetitle</cql>, <cql>match:title</cql>.
 
 <h3 id="match:country">:country</h3>
 
@@ -696,8 +708,8 @@ country in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
-and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
+of one player is unknown.
 </p>
 
 <nonstd/>
@@ -712,7 +724,7 @@ Examples:
 </verb>
 
 <p>
-In both examples, match alle games where both players are Germans.
+In both examples, match all games where both players are Germans.
 </p>
 
 <p>
@@ -722,7 +734,7 @@ See also: <cql>match:whitecountry</cql>, <cql>match:blackcountry</cql>.
 <h3 id="match:deathyear">:deathyear</h3>
 
 <p>
-Search for games where both players are died in a year between the
+Search for games where one of the players died in a year between the
 given ranges (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
@@ -737,7 +749,8 @@ Example:
 </verb>
 
 <p>
-Search for games with ancient players, both are died between 1800 and 1950.
+Search for games with ancient players, at least one of them died between
+1800 and 1950.
 </p>
 
 <p>
@@ -749,7 +762,7 @@ See also: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
 <h3 id="match:iscomputer">:iscomputer</h3>
 
 <p>
-Search for games where both players are engines.
+Search for games where one of the players is a engine.
 </p>
 
 <nonstd/>
@@ -761,7 +774,7 @@ See also: <cql>match:whiteiscomputer</cql>, <cql>match:blackiscomputer</cql>.
 <h3 id="match:ishuman">:ishuman</h3>
 
 <p>
-Search for games where both players are humans.
+Search for games where one of the players is a human.
 </p>
 
 <nonstd/>
@@ -778,7 +791,7 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 
 <p>
 <b>Un-quoted string</b>: Only games at least one of whose players names
-has as substring the given parameter will match. The string matching is
+has as sub-string the given parameter will match. The string matching is
 case-insensitive. This form complies with the CQL standard.
 </p>
 
@@ -791,7 +804,7 @@ Example:
 </verb>
 
 <p>
-Match all games where one of the player names has as substring
+Match all games where one of the player names has as sub-string
 <nobr>"coeff"</nobr>.
 </p>
 
@@ -827,8 +840,9 @@ See also: <cql>match:whiteplayer</cql>, <cql>match:blackplayer</cql>.
 <h3 id="match:rating">:rating</h3>
 
 <p>
-Match all games where the given rating is between given score range of both
-players. Rating is one of:
+Match all games where one of the players has a score of given rating type
+which is between the specified score range.
+Rating is one of:
 </p>
 
 <div class="dir">
@@ -942,14 +956,14 @@ in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
-and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
+of the white player is unknown.
 </p>
 
 <nonstd/>
 
 <p>
-See also: <cql>match:country</cql>, <cql>match:blackcountry</cql>.
+See also: <cql>match:blackcountry</cql>, <cql>match:country</cql>.
 </p>
 
 <h3 id="match:whitedeathyear">:whitedeathyear</h3>
@@ -1031,7 +1045,7 @@ See <cql>match:player</cql> for a detailed description.
 <nonstd/>
 
 <p>
-See also: <cql>match:player</cql>, <cql>match:blackplayer</cql>.
+See also: <cql>match:blackplayer</cql>, <cql>match:player</cql>.
 </p>
 
 <h3 id="match:whiterating">:whiterating</h3>
@@ -1044,20 +1058,21 @@ white player. For a detailed description see <cql>match:rating</cql>.
 <nonstd/>
 
 <p>
-See also: <cql>match:rating</cql>, <cql>match:whiterating</cql>.
+See also: <cql>match:whiterating</cql>, <cql>match:rating</cql>.
 </p>
 
 <h3 id="match:whitetitle">:whitetitle</h3>
 
 <p>
-Match all games where the given title is matching the title of the white
-player. See <cql>match:title</cql> for a more detailed description.
+Match all games where the title of the white player is matching
+one of the titles in the given comma-separated list.
+See <cql>match:title</cql> for a more detailed description.
 </p>
 
 <nonstd/>
 
 <p>
-See also: <cql>match:title</cql>, <cql>match:blacktitle</cql>.
+See also: <cql>match:blacktitle</cql>, <cql>match:title</cql>.
 
 <!-- ------------------------------------------------------------------------- -->
 <h2 id="header">Game header search related keywords</h2>
@@ -1160,7 +1175,7 @@ A date has the following syntax:
 
 <div class="dir">
   <p><expr>
-  &lt;year&gt;-&lt;month&gt;-&lt;day&gt;(&lt;sign&gt;?&lt;num&gt;'y')?(&lt;sign&gt;?&lt;num&gt;'m')?(&lt;sign&gt;?&lt;num&gt;'d')?
+  &lt;year&gt;'&#x2212;'&lt;month&gt;'&#x2212;'&lt;day&gt;(&lt;sign&gt;&lt;num&gt;'y')?(&lt;sign&gt;&lt;num&gt;'m')?(&lt;sign&gt;&lt;num&gt;'d')?
   </expr></p>
 
   <table>
@@ -1182,11 +1197,7 @@ A date has the following syntax:
     </tr>
     <tr valign="top">
       <td class="l"><expr>&lt;num&gt;</expr></td>
-      <td class="r">is any positive number, denoting an increment</td>
-    </tr>
-    <tr valign="top">
-      <td class="l"><expr>&lt;num&gt;</expr></td>
-      <td class="r">is any positive number, denoting an increment</td>
+      <td class="r">is any positive number, denoting an increment or decrement</td>
     </tr>
     <tr valign="top">
       <td class="l"><expr>d</expr></td>
@@ -1197,7 +1208,7 @@ A date has the following syntax:
       <td class="r">specifies to increment/decrement the month</td>
     </tr>
     <tr valign="top">
-      <td class="l"><expr>&lt;num&gt;</expr></td>
+      <td class="l"><expr>y</expr></td>
       <td class="r">specifies to increment/decrement the year</td>
     </tr>
   </table>
@@ -1282,7 +1293,7 @@ Search all games with an ECO code between A00 and A99 (inclusive the ranges).
 <p>
 This takes a range specifier. Only games whose number within the database lies
 within the range specifier (<see/>
-<a href="CQL-Range-Specifiers.html">range specifiers</a>).
+<a href="CQL-Range-Specifiers.html">range specifiers</a>) are considered.
 </p>
 
 <p>
@@ -1345,7 +1356,7 @@ Example:
 </verb>
 
 <p>
-Only search for games with marker <i>%::gametable::mc::GameFlags(w)%</i>
+Search for games with marker <i>%::gametable::mc::GameFlags(w)%</i>
 or <i>%::gametable::mc::GameFlags(b)%</i>.
 </p>
 
@@ -1354,7 +1365,7 @@ or <i>%::gametable::mc::GameFlags(b)%</i>.
 </verb>
 
 <p>
-Only search for games with any marker set; this means games without any
+Search for games with any marker set; this means games without any
 game marker are excluded.
 </p>
 
@@ -1535,7 +1546,7 @@ Example:
 </verb>
 
 <p>
-Search all games where it is not known that the game did terminate
+Search all games where it is not known that the game did not terminate
 in an abnormal fashion.
 </p>
 
@@ -1631,7 +1642,7 @@ See also: <cql>match:date</cql>.
 <h3 id="match:comment">:comment</h3>
 
 <p>
-Match all games which are containing the given pattern as a substring in
+Match all games which are containing the given pattern as a sub-string in
 any comment.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
 </p>

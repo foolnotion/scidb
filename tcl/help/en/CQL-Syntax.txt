@@ -70,19 +70,19 @@ For example
 </verb>
 
 <p>
-is a list whose three elements are the strings <expr>position</expr>,
-<cql>position:shifthorizontal</cql>, and <cql>position:flipcolor</cql>.
+is a list whose three elements are the strings "position",
+":shifthorizontal", and ":flipcolor".
 </p>
 
 <p>
-Similarly, the list beginning <code>(match</expr> above has six
+Similarly, the list beginning "(match" above has six
 elements, the last of which is itself a list containing six elements whose
-first element is <expr>position</expr> and whose last element is
-<cql>position:flipcolor</cql>.
+first element is "position" and whose last element is
+":flipcolor".
 </p>
 
 <p>
-A keyword is a string beginning with <expr>:</expr>. For example, the match
+A keyword is a string beginning with ":". For example, the match
 list above has keyword <cql>match:year</cql>.
 </p>
 
@@ -110,12 +110,12 @@ In the list
 <cql>position:piececount</cql> has keyword parameters <expr>P[b2-7]</expr>
 and <expr>4</expr>. The other keywords <cql>position:shifthorizontal</cql>
 and <cql>position:flipcolor</cql> do not take keyword parameters. A list
-whose first element is <expr>match</expr> is called a match list and defines
+whose first element is "match" is called a match list and defines
 a match filter.
 </p>
 
 <p>
-A list whose first element is <expr>position</expr> is called a position list
+A list whose first element is "position" is called a position list
 and defines a position filter. 
 </p>
 
@@ -183,8 +183,8 @@ Any characters following a semicolon are ignored in a CQL script. Example:
 
 <ul>
   <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
-  <li><a href="CQL-Transforms-Of-Piece-Designators.html">Transforms of piece designators</a></li>
   <li><a href="CQL-Square-Designators.html">Square designators</a></li>
+  <li><a href="CQL-Transforms-Of-Piece-Designators.html">Transforms of piece designators</a></li>
   <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
 </ul>
 

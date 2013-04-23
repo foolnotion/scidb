@@ -16,7 +16,7 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX CQL - Examples
+INDEX CQL Examples
 TITLE CQL - Examples
 
 <ul>

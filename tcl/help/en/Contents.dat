@@ -42,10 +42,12 @@ set Contents {
     {
       {{{Syntax} {CQL-Syntax.html}}}
       {{{Piece designators} {CQL-Piece-Designators.html}}}
-      {{{Transforms of piece designators} {CQL-Piece-Designator-Transforms.html}}}
       {{{Square designators} {CQL-Square-Designators.html}}}
+      {{{Transforms of piece designators} {CQL-Piece-Designator-Transforms.html}}}
       {{{Range specifiers} {CQL-Range-Specifiers.html}}}
+      {{{Pattern matching} {Pattern-Matching.html}}}
     }
+    {{{Transformations} {CQL-Transformations.html}}}
     {{{The match list} {CQL-Match-List.html}}}
     {{{The position list} {CQL-Position-List.html}}}
     {{{The relation list} {CQL-Relation-List.html}}}

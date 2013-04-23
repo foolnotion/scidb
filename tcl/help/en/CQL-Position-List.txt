@@ -222,8 +222,8 @@ This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
 match if the containing match list would not match without the :not. In
 latter case negate the result of the sub-position list match. The former
-case is conform with CQL standard of keyword <cql>position:not</cql> of
-position match, the second form is an extension.
+case is conform with CQL standard of keyword <cql>position:not</cql>,
+the second form is an extension.
 </p>
 
 <p>
@@ -255,6 +255,10 @@ Examples:
 
 <p>
 This finds all mating positions in which the king is surrounded by empty squares.
+</p>
+
+<p>
+The follwing position match
 </p>
 
 <verb>
@@ -413,7 +417,7 @@ Examples:
 </verb>
 
 <p>
-Match any side has given second check.
+Match if any side has given second check.
 </p>
 
 <verb>
@@ -439,9 +443,9 @@ rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 
 <p>
 This game would match (note keyword :not), because black has already
-given second check to white. With other words, this example is searching
-for games starting with an advanced position, where one side has already
-  given a check.
+given second check to white in first position of the game. With other
+words, this example is searching for games starting with an advanced
+position, where one side has already given a check.
 </p>
 
 <h3 id="position:castling">:castling</h3>
@@ -758,7 +762,7 @@ Match only if white is to move.
 <h3 id="position:flip">:flip</h3>
 
 <p>
-Same as <cql>position:flipdihedral</cql> (<see/>.
+Same as <cql>position:flipdihedral</cql> (<see/>
 <a href="CQL-Transformations.html">Transformations</a>).
 </p>
 
@@ -968,7 +972,7 @@ This keyword allows to estimate exchange values of possible moves. It takes
 as arguments two piece designators followed by a range specifier. The first
 argument specifies moving pieces, the second one specifies target squares.
 For each possible moves we compute an integer value that is a material benefit
-of the move (in pawns, like in case of the <cql>position:power</cwl> keyword)
+of the move (in pawns, like in case of the <cql>position:power</cql> keyword)
 according to possible piece exchanges on the target square after the move.
 After that we
 select the maximum of all computed values.
@@ -976,14 +980,18 @@ select the maximum of all computed values.
 
 <p>
 The keyword match the position if this value lies in the specified range. The
-exchange function does not return the exact evaluation of the move because 
-does not take into account that exchanged pieces may be pinned or defending
-other pieces. The value of the function does not depend on which side is to
-move.
+exchange function is taking into account that exchanged pieces may be pinned
+or defended by other pieces. The value of the function depends on which side
+is to move.
 </p>
 
 <nonstd/>
-<ca9/>
+
+<note>This keyword is borrowed from Chess Assistant 9 (<see/>
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>),
+but implemented in a different way, so it is not conform to the
+implementation of Chess Assistant.
+</note>
 
 <p>
 Examples:
@@ -1011,7 +1019,7 @@ without a material loss.
 
 <p>
 This keyword takes a piece designator argument followed by a range specifier.
-It matches the position if and only the number of occurrences of the piece
+It matches the position if and only if the number of occurrences of the piece
 designator in the position is given by the range specifier.
 </p>
 
@@ -1054,7 +1062,8 @@ to write this position list is:
 This keyword takes as argument a piece designator followed by a range
 specifier. It matches positions for which the total power of all pieces
 in the position matching the piece designator lies within the range specifier.
-The power of a piece is their chess material power:
+The power of a piece is their chess material power, depending on the chess
+variant:
 </p>
 
 <dir>
@@ -1265,6 +1274,10 @@ the a, c, and e files.
 Between two and for black knights are pinned to the black king.
 </p>
 
+<p>
+See also: <cql>position:rayattack</cql>.
+</p>
+
 <h3 id="position:rayattack">:rayattack</h3>
 
 <p>
@@ -1302,6 +1315,10 @@ d5 against either a black rook or king in the first four ranks.
 
 <p>
 Finds multiple-pin stalemates.
+</p>
+
+<p>
+See also: <cql>position:ray</cql>.
 </p>
 
 <h3 id="position:raydiagonal">:raydiagonal</h3>
@@ -1522,7 +1539,7 @@ Examples:
 </verb>
 
 <p>
-The next move is not a piece drop which is dropping a knight.
+The next move is a piece drop which is dropping a knight.
 </p>
 
 <verb>
@@ -1577,10 +1594,6 @@ queen on e8 and promoting to a rook.
 <p>
 Matches a position in which the next move is not a promotion (because the
 piece designator is empty).
-</p>
-
-<p>
-See also: <cql>position:nopromote</cql>.
 </p>
 
 <h2 id="sequence">Sequence keywords</h2>
@@ -1750,8 +1763,8 @@ rotated anywhere on the board.
 <p>
 Several keywords relate to the game parameters and are not affected by the
 contents of the position; they are included as position list keywords instead
-of match list keywords so the <cql>position:flipcolor</cql> can be used withi
-them. hese are:
+of match list keywords so the <cql>position:flipcolor</cql> can be used with
+them. these are:
 </p>
 
 <dir>
@@ -1760,8 +1773,8 @@ them. hese are:
         <td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#position:rating">:rating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td></tr>
+        <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#position:result">:result</a></td></tr>
   </table>
 </dir>
@@ -1776,8 +1789,8 @@ within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a
 <h3 id="position:blackrating">:blackrating</h3>
 
 <p>
-Match all games where the given rating is between given score range of the
-black player. For a detailed description see <cql>match:rating : match</cql>.
+Match all games where the specified rating score of black player is between
+given range.  For a detailed description see <cql>match:rating (match)</cql>.
 </p>
 
 <h3 id="position:elo">:elo</h3>
@@ -1791,15 +1804,15 @@ players must lie within the specified range (<see/>
 <h3 id="position:rating">:rating</h3>
 
 <p>
-Match all games where the given rating is between given score range of both
-players. For a detailed description see <cql>match:rating : match</cql>.
+Match all games where the specified rating score of one player is between
+given range.  For a detailed description see <cql>match:rating (match)</cql>.
 </p>
 
 <h3 id="position:result">:result</h3>
 
 <p>
 This keyword takes one argument, the same as the argument to
-<cql>match:result : match</cql> in a match list.
+<cql>match:result (match)</cql> in a match list.
 </p>
 
 <p>
@@ -1829,8 +1842,8 @@ within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a
 <h3 id="position:whiterating">:whiterating</h3>
 
 <p>
-Match all games where the given rating is between given score range of the
-white player. For a detailed description see <cql>match:rating : match</cql>.
+Match all games where the specified rating score of white player is between
+given range.  For a detailed description see <cql>match:rating (match)</cql>.
 </p>
 
 <h2 id="relation">Relation between positions</h2>
@@ -1877,7 +1890,7 @@ Example:
 </p>
 
 <verb>
-(position <cql>position:moveto</cql> [Qq] <keyword>position:matchcount</keyword> 4 100)
+(position <cql>position:moveto</cql> [Qq] <keyword>:matchcount</keyword> 4 100)
 </verb>
 
 <p>
@@ -1887,7 +1900,7 @@ Matches any game in which at least four queen captures have occurred.
 <h3 id="position:pretransformmatchcount">:pretransformmatchcount</h3>
 
 <p>
-Has the same syntax <cql>position:matchcount</cql>. It matches a position if
+Has the same syntax as <cql>position:matchcount</cql>. It matches a position if
 and only if there is some transform in the transformation set associated with
 the position list in which it occurs such that, were the position list
 replaced by a new position list formed from the first by deleting all
@@ -1940,8 +1953,8 @@ This takes one parameter, the name of an accumulator. Each time the application
 of some element of the transform set of the position list matches a position,
 the accumulator associated with this name is incremented. The accumulator is
 cleared when a new position is reached (and in consequence :accumulate should
-not be used inside of <cql>position:not</not> or the
-<cql>position:sequence</cql>, and <cql>position:gappedsequence</cql> keywords.
+not be used inside of <cql>position:not</cql>, or the
+<cql>position:sequence</cql>, and <cql>position:gappedsequence</cql> keywords).
 This keyword inhibits short-circuiting of logical keywords
 <cql>position:and</cql>, and <cql>position:or</cql>. Note that
 <cql>position:flipcolor</cql> likely has unexpected results when used with
@@ -1990,7 +2003,7 @@ A much better way is:
 
 <verbatim>
 (position
-  <cql>position:piececount</cql> Pa[3-7] 3 5
+  <cql>position:piececount</cql> Pa[3-7] 3 6
   <cql>position:shifthorizontal</cql>
   <cql>position:flipcolor</cql>))
 </verbatim>
@@ -1998,7 +2011,7 @@ A much better way is:
 <h3 id="position:sumrange">:sumrange</h3>
 
 <p>
-This takes a parameter the name of an accumulator and a range specifer.
+This takes as parameter the name of an accumulator and a range specifer.
 It matches a position if the value of the given accumulator lies within
 the range specifier.
 </p>

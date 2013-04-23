@@ -41,10 +41,10 @@
 <p>
 Any CQL file must have exactly one match list at top level. The match list
 contains keyword parameters that control the matching of each game.
-The match list contains zero or more position lists (the CQL standard
-requires at least one position list).  A game will be matched only if
-all conditions in the match list are fullfilled. If positions lists are
-given, each of which must match at least one position in the game in order
+The match list contains zero or more position lists. (Note that the CQL
+standard requires at least one position list).  A game will be matched
+only if all conditions in the match list are fullfilled. If positions lists
+are given, each of which must match at least one position in the game in order
 for the match list to match that game. Scidb allows an additional feature:
 the match list may contain logical keywords (<a href="CQL-Match-List.html#match:and">:and</a>,
 <a href="CQL-Match-List.html#match:or">:or</a>, <a href="CQL-Match-List.html#match:not">:not</a>) with sub-matches.
@@ -172,7 +172,7 @@ is identical to the following:
 </p>
 
 <div class="box"><pre><code><!--
--->(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <a href="CQL-Match-List.html#match:not">:not</a>(match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a>))<!--
+-->(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))<!--
 --></code></pre></div>
 
 <p>
@@ -269,14 +269,14 @@ countries in the given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>.
 Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the event is unknown.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-Example:
+Examples:
 </p>
 
 <div class="verb"><code>
@@ -285,6 +285,14 @@ Example:
 
 <p>
 Search for games played in Scandinavian events.
+</p>
+
+<div class="verb"><code>
+<span class="keyword">:eventcountry</span> xx
+</code></div>
+
+<p>
+Search for games where the country of the event is unknown.
 </p>
 
 <p>
@@ -432,11 +440,11 @@ Example:
 <h3 id="match:site">:site</h3>
 
 <p>
-Search for games where the site matches given pattern.
+Search for games where the site of the event matches given pattern.
 </p>
 
 <p>
-This takes one parameter, either a duuble-quoted pattern, or a un-quoted string.
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
@@ -585,8 +593,8 @@ the countries in given comma-separated list. A country will be specified either
 as <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
 or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>.
 Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the black player is unknown.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -690,6 +698,10 @@ black player. For a detailed description see <a href="CQL-Match-List.html#match:
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
+<p>
+See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
+</p>
+
 <h3 id="match:blacktitle">:blacktitle</h3>
 
 <p>
@@ -701,7 +713,7 @@ See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed des
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:title">:title</a>, <a href="CQL-Match-List.html#match:whitetitle">:whitetitle</a>.
+See also: <a href="CQL-Match-List.html#match:whitetitle">:whitetitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
 
 <h3 id="match:country">:country</h3>
 
@@ -711,8 +723,8 @@ country in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>.
 Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of one player is unknown.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -727,7 +739,7 @@ Examples:
 </code></div>
 
 <p>
-In both examples, match alle games where both players are Germans.
+In both examples, match all games where both players are Germans.
 </p>
 
 <p>
@@ -737,7 +749,7 @@ See also: <a href="CQL-Match-List.html#match:whitecountry">:whitecountry</a>, <a
 <h3 id="match:deathyear">:deathyear</h3>
 
 <p>
-Search for games where both players are died in a year between the
+Search for games where one of the players died in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
@@ -752,7 +764,8 @@ Example:
 </code></div>
 
 <p>
-Search for games with ancient players, both are died between 1800 and 1950.
+Search for games with ancient players, at least one of them died between
+1800 and 1950.
 </p>
 
 <p>
@@ -764,7 +777,7 @@ See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>
 <h3 id="match:iscomputer">:iscomputer</h3>
 
 <p>
-Search for games where both players are engines.
+Search for games where one of the players is a engine.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -776,7 +789,7 @@ See also: <a href="CQL-Match-List.html#match:whiteiscomputer">:whiteiscomputer</
 <h3 id="match:ishuman">:ishuman</h3>
 
 <p>
-Search for games where both players are humans.
+Search for games where one of the players is a human.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -793,7 +806,7 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 
 <p>
 <b>Un-quoted string</b>: Only games at least one of whose players names
-has as substring the given parameter will match. The string matching is
+has as sub-string the given parameter will match. The string matching is
 case-insensitive. This form complies with the CQL standard.
 </p>
 
@@ -806,7 +819,7 @@ Example:
 </code></div>
 
 <p>
-Match all games where one of the player names has as substring
+Match all games where one of the player names has as sub-string
 <span style="white-space:nowrap;">"coeff"</span>.
 </p>
 
@@ -842,8 +855,9 @@ See also: <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>, <a h
 <h3 id="match:rating">:rating</h3>
 
 <p>
-Match all games where the given rating is between given score range of both
-players. Rating is one of:
+Match all games where one of the players has a score of given rating type
+which is between the specified score range.
+Rating is one of:
 </p>
 
 <div class="dir">
@@ -911,50 +925,50 @@ the title of one player.  Title is one of:
 <div class="dir">
 <table>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>None</code></span></td><td>None  </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>None</code></span></td><td class="r">None  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>GM  </code></span></td><td>Grandmaster (FIDE)  </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>GM  </code></span></td><td class="r">Grandmaster (FIDE)  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>IM  </code></span></td><td>International Master (FIDE)  </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>IM  </code></span></td><td class="r">International Master (FIDE)  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>FM  </code></span></td><td>Fide Master (FIDE)  </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>FM  </code></span></td><td class="r">Fide Master (FIDE)  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CM  </code></span></td><td>Candidate Master (FIDE)  </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CM  </code></span></td><td class="r">Candidate Master (FIDE)  </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>WGM </code></span></td><td>Woman Grandmaster (FIDE) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>WGM </code></span></td><td class="r">Woman Grandmaster (FIDE) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>WIM </code></span></td><td>Woman International Master (FIDE) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>WIM </code></span></td><td class="r">Woman International Master (FIDE) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>WFM </code></span></td><td>Woman Fide Master (FIDE) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>WFM </code></span></td><td class="r">Woman Fide Master (FIDE) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>WCM </code></span></td><td>Woman Candidate Master (FIDE) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>WCM </code></span></td><td class="r">Woman Candidate Master (FIDE) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>HGM </code></span></td><td>Honorary Grandmaster (FIDE) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>HGM </code></span></td><td class="r">Honorary Grandmaster (FIDE) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CGM </code></span></td><td>Correspondence Grandmaster (ICCF) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CGM </code></span></td><td class="r">Correspondence Grandmaster (ICCF) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CIM </code></span></td><td>Correspondence International Master (ICCF) </td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CIM </code></span></td><td class="r">Correspondence International Master (ICCF) </td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CLGM</code></span></td><td>Correspondence Lady Grandmaster (ICCF)</td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CLGM</code></span></td><td class="r">Correspondence Lady Grandmaster (ICCF)</td></td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CILM</code></span></td><td>Correspondence Lady International Master (ICCF)</td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CILM</code></span></td><td class="r">Correspondence Lady International Master (ICCF)</td></td>
   </tr>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>CSIM</code></span></td><td>Correspondence Senior International Master (ICCF)</td></td>
+    <td class="l"><span style="white-space:nowrap;"><code>CSIM</code></span></td><td class="r">Correspondence Senior International Master (ICCF)</td></td>
   </tr>
 </table>
 </div>
@@ -1004,14 +1018,14 @@ in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome"/>&nbsp;&#xf08e;</span></a>.
 Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country code
-is unknown.
+and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the white player is unknown.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:country">:country</a>, <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>.
+See also: <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>, <a href="CQL-Match-List.html#match:country">:country</a>.
 </p>
 
 <h3 id="match:whitedeathyear">:whitedeathyear</h3>
@@ -1093,7 +1107,7 @@ See <a href="CQL-Match-List.html#match:player">:player</a> for a detailed descri
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:player">:player</a>, <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>.
+See also: <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>, <a href="CQL-Match-List.html#match:player">:player</a>.
 </p>
 
 <h3 id="match:whiterating">:whiterating</h3>
@@ -1106,20 +1120,21 @@ white player. For a detailed description see <a href="CQL-Match-List.html#match:
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:rating">:rating</a>, <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>.
+See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
 <h3 id="match:whitetitle">:whitetitle</h3>
 
 <p>
-Match all games where the given title is matching the title of the white
-player. See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
+Match all games where the title of the white player is matching
+one of the titles in the given comma-separated list.
+See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:title">:title</a>, <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>.
+See also: <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
 
 <!-- ------------------------------------------------------------------------- -->
 <h2 id="header">Game header search related keywords</h2>
@@ -1222,7 +1237,7 @@ A date has the following syntax:
 
 <div class="dir">
   <p><span style="white-space:nowrap;"><code>
-  &lt;year&gt;-&lt;month&gt;-&lt;day&gt;(&lt;sign&gt;?&lt;num&gt;'y')?(&lt;sign&gt;?&lt;num&gt;'m')?(&lt;sign&gt;?&lt;num&gt;'d')?
+  &lt;year&gt;'&#x2212;'&lt;month&gt;'&#x2212;'&lt;day&gt;(&lt;sign&gt;&lt;num&gt;'y')?(&lt;sign&gt;&lt;num&gt;'m')?(&lt;sign&gt;&lt;num&gt;'d')?
   </code></span></p>
 
   <table>
@@ -1244,11 +1259,7 @@ A date has the following syntax:
     </tr>
     <tr valign="top">
       <td class="l"><span style="white-space:nowrap;"><code>&lt;num&gt;</code></span></td>
-      <td class="r">is any positive number, denoting an increment</td>
-    </tr>
-    <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;num&gt;</code></span></td>
-      <td class="r">is any positive number, denoting an increment</td>
+      <td class="r">is any positive number, denoting an increment or decrement</td>
     </tr>
     <tr valign="top">
       <td class="l"><span style="white-space:nowrap;"><code>d</code></span></td>
@@ -1259,7 +1270,7 @@ A date has the following syntax:
       <td class="r">specifies to increment/decrement the month</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;num&gt;</code></span></td>
+      <td class="l"><span style="white-space:nowrap;"><code>y</code></span></td>
       <td class="r">specifies to increment/decrement the year</td>
     </tr>
   </table>
@@ -1344,7 +1355,7 @@ Search all games with an ECO code between A00 and A99 (inclusive the ranges).
 <p>
 This takes a range specifier. Only games whose number within the database lies
 within the range specifier (&#x21d2;
-<a href="CQL-Range-Specifiers.html">range specifiers</a>).
+<a href="CQL-Range-Specifiers.html">range specifiers</a>) are considered.
 </p>
 
 <p>
@@ -1407,7 +1418,7 @@ Example:
 </code></div>
 
 <p>
-Only search for games with marker <i>White Opening</i>
+Search for games with marker <i>White Opening</i>
 or <i>Black Opening</i>.
 </p>
 
@@ -1416,7 +1427,7 @@ or <i>Black Opening</i>.
 </code></div>
 
 <p>
-Only search for games with any marker set; this means games without any
+Search for games with any marker set; this means games without any
 game marker are excluded.
 </p>
 
@@ -1597,7 +1608,7 @@ Example:
 </code></div>
 
 <p>
-Search all games where it is not known that the game did terminate
+Search all games where it is not known that the game did not terminate
 in an abnormal fashion.
 </p>
 
@@ -1693,7 +1704,7 @@ See also: <a href="CQL-Match-List.html#match:date">:date</a>.
 <h3 id="match:comment">:comment</h3>
 
 <p>
-Match all games which are containing the given pattern as a substring in
+Match all games which are containing the given pattern as a sub-string in
 any comment.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
 </p>

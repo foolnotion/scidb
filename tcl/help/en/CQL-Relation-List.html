@@ -131,19 +131,19 @@ Side to move information is ignored.
 <h3 id="relation:missingpiececount">:missingpiececount</h3>
 
 <p>
-This keyword takes the same parameters as does the :piececount keyword in a
-position list: a pieced designator followed by a range. A missing piece is a
-piece that occurs in P1 on a square that is empty on P2. P2 matches if the
-number of these missing pieces lies within the range specifier. Unlike the
-case of the <a href="CQL-Position-List.html#position:pieccount">:pieccount</a> keyowrd, at most one
-:missingpiececount specifier can occur. No shift or flip transformation
-specifiers in the containing position list affect the piece designator in this
-keyword.
+This keyword takes the same parameters as does the
+<a href="CQL-Position-List.html#position:piececount">:piececount</a> keyword in a position list: a pieced
+designator followed by a range. A missing piece is a piece that occurs in
+P1 on a square that is empty on P2. P2 matches if the number of these
+missing pieces lies within the range specifier. Unlike the case of the
+<a href="CQL-Position-List.html#position:pieccount">:pieccount</a> keyowrd, at most one :missingpiececount
+specifier can occur. No shift or flip transformation specifiers in the
+containing position list affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for :missingpiececount is U and the default range
-is zero. That is, by default there can be no missing pieces. 
+The default piece designator for :missingpiececount is <code>U</code> and
+the default range is zero. That is, by default there can be no missing pieces. 
 </p>
 
 <h3 id="relation:newpiececount">:newpiececount</h3>

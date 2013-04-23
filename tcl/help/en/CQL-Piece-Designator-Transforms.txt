@@ -35,7 +35,7 @@ diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
 </p>
 
 <p>
-A <b>off-diagonal flip transformation</b> applied to a piece designator
+An <b>off-diagonal flip transformation</b> applied to a piece designator
 reflects each square in its square set about the a8 to h1 diagonal.
 </p>
 
@@ -65,7 +65,7 @@ transformation or a rotation by 90 degrees of the chessboard followed by
 a flip transformation or the identity transformation. There are 8 distinct
 dihedral transformations of the board. For example, the results of
 applying the 8 dihedral transformations to the piece designator
-<expr>Qc2</expr> is the 8 piece designators <expr>Qc2</expr>,
+<expr>Qc2</expr> are the 8 piece designators <expr>Qc2</expr>,
 <expr>Qb3</expr>, <expr>Qf2</expr>, <expr>Qg3</expr>, <expr>Qf7</expr>,
 <expr>Qg6</expr>, <expr>Qb6</expr>, and <expr>Qc7</expr>.
 </p>
@@ -82,7 +82,7 @@ to the new square set.
 For example, the unit right shift transformation of <expr>Qd4</expr> is
 <expr>Qe4</expr>. The unit right shift transformation of <expr>Q[c2,h2]</expr>
 is <expr>Qd2</expr>. The unit right shift transformation of
-<expr>Q[a2,c2,h2]</expr> is <expr>Q[a2,b2,d2]</expr>.
+<expr>Q[a2,c2,h2]</expr> is <expr>Q[b2,d2]</expr>.
 </p>
 
 <p>
@@ -102,7 +102,8 @@ transformation to <expr>Qd4</expr> is <expr>Qg4</expr>.
 </p>
 
 <p>
-Similar definitions apply for left, up, and down transformation.
+Similar definitions apply for <b>left transformation</b>, <b>up
+transformation</b>, and <b>down transformation</b>.
 </p>
 
 A <b>horizontal shift transformation</b> is either a left or a right

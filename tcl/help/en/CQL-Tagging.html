@@ -47,11 +47,11 @@ A tag represents the particular piece whose mark equals the mark of the
 tag. The following keywords manipulate the mark:
 </p>
 
-<h2><code>:forany</code> in the match list</h2>
+<h2>:forany in the match list</h2>
 
 <p>
-A tag is defined via the <span style="white-space:nowrap;"><code>forany</code></span> keyword in a match list.
-The <span style="white-space:nowrap;"><code>:forany</code></span> keyword takes two parameters: the alphanumeric
+A tag is defined via the :forany keyword in a match list.
+The :forany keyword takes two parameters: the alphanumeric
 name of a tag and a piece designator.
 </p>
 
@@ -60,11 +60,11 @@ The match filter is then conceptually run once in which each tag is bound
 to each possible mark, such that two conditions hold:
 </p>
 
-<ul>
-  <li>
+<ul style="padding: 0;">
+  <li class="space">
     No two tags may be bound to the same mark.
   </li>
-  <li>
+  <li class="space">
     A tag may only be bound to a mark that represents a piece that either
     matches, or eventually matches, the piece designator associated with that
     tag. Square information associated with that piece designator is ignored. 
@@ -77,10 +77,10 @@ in a matchlist if a <a href="CQL-Position-List.html#position:relation">:relation
 inside that match list.
 </p>
 
-<h2><code>:tagmatch</code> in the position list</h2>
+<h2>:tagmatch in the position list</h2>
 
 <p>
-A <span style="white-space:nowrap;"><code>:tagmatch</code></span> keyword in a position list takes two parameters, the
+A :tagmatch keyword in a position list takes two parameters, the
 name of a tag and a piece designator. The position list match fails on the
 current position if the piece and square corresponding to the mark of the tag
 does not match the given piece designator. For example, assuming there is a
@@ -124,7 +124,7 @@ four corners of the board:
 --></code></pre></div>
 
 <p>
-Here, the <span style="white-space:nowrap;"><code>:forany</code></span> keyword in the match list introduces a tag named
+Here, the <a href="CQL-Position-List.html#position:forany">:forany</a> keyword in the match list introduces a tag named
 rook which is constrained to range over white or black rooks, or over pawns that
 eventually promote to one of those.
 </p>
@@ -134,7 +134,7 @@ The first position list matches games in which there is a position such that the
 tag rook represents a rook on a1. The next position list matches games in which
 there is a postiion such that the tag represents a rook on h1. The tag represents
 the same mark, that is, the same piece, between the position lists. The
-<span style="white-space:nowrap;"><code>:forany</code></span> keyword will sequentially bind the tag to each allowed mark.
+<a href="CQL-Position-List.html#position:forany">:forany</a> keyword will sequentially bind the tag to each allowed mark.
 </p>
 
 <p>
@@ -153,13 +153,13 @@ promotes.
   (position
     <a href="CQL-Position-List.html#position:initial">:initial</a>
     <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn P?2
-    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a>((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
+    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
-<span style="white-space:nowrap;"><code>:tagmatch</code></span> is matching pawns on second rank, and
-the position sequence of <span style="white-space:nowrap;"><code>:gappedsequence</code></span> is matching if
+<a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> is matching pawns on second rank, and
+the position sequence of <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> is matching if
 the tagged pawn is promoting in any subsequent game position.
 </p>
 

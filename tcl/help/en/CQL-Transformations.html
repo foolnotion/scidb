@@ -60,8 +60,8 @@ To apply a transformation to a position list we apply the transformation to
 each piece designator that occurs in the position, and we recursively apply
 the transformation to any other position lists contained in that position
 list. If the transformation is a color flip translation, then we also flip
-interchange any <a href="CQL-Position-List.html#position:">::btm</a> keywords with <a href="CQL-Position-List.html#position:">::wtm</a>
-ones, and we flip the <a href="CQL-Position-List.html#position:">::result</a> keyword arguments
+interchange any <a href="CQL-Position-List.html#position:btm">:btm</a> keywords with <a href="CQL-Position-List.html#position:wtm">:wtm</a>
+ones, and we flip the <a href="CQL-Position-List.html#position:result">:result</a> keyword arguments
 appropriately.
 </p>
 
@@ -252,8 +252,8 @@ When multiple transformation keywords occur, the associated transformation
 set is any transformation that can be expressed as a composition of
 transformations from the corresponding transformation sets. This feature
 is most often used when looking for a piece configuration that can occur
-anywhere on the board, possibly rotated or reflected: adding :shift :flip
-to the position specifier does this.
+anywhere on the board, possibly rotated or reflected: adding
+<span style="white-space:nowrap;"><code>:shift</code></span> <span style="white-space:nowrap;"><code>:flip</code></span> to the position specifier does this.
 </p>
 
 <p>
@@ -265,7 +265,7 @@ For example, this position list
 </code></div>
 
 <p>
-matches any position in which a white knight attacks a black King, while
+matches any position in which a white knight attacks a black king, while
 </p>
 
 <div class="verb"><code>

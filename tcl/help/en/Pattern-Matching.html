@@ -39,10 +39,6 @@
 </div>
 
 <p>
-Pattern matching is matching a string case-insensitive.
-</p>
-
-<p>
 A pattern is a string which may contain the following special characters:
 </p>
 
@@ -72,6 +68,10 @@ A pattern is a string which may contain the following special characters:
   </table>
 </div>
 
+<p>
+Pattern matching is matching a string case-insensitive.
+</p>
+
 <h2 id="examples">Examples</h2>
 
 <div class="verb"><code>
@@ -92,12 +92,12 @@ This will match the following names:
 </p>
 
 <div class="verb"><code>
-really wanted\?
+really intended\?
 </code></div>
 
-Is only matching the string "really wanted?". The character <code>?</code>
+Is only matching the string "really intended?". The character <code>?</code>
 in the pattern does not have a special meaning because it is escaped. This
-means that the string "really wanted!" is not matching the pattern.
+means that this pattern is not matching the string "really intended!".
 
 </body>
 </html>
