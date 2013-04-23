@@ -71,7 +71,7 @@ tag named "foo", this position will only match if "foo" is a white pawn:
 </p>
 
 <verb>
-(position :tagmatch foo P)
+(position :tagmatch foo &P;)
 </verb>
 
 <h2>Piece designators and tags</h2>
@@ -99,7 +99,7 @@ four corners of the board:
 
 <verbatim>
 (match
-  <cql>match:forany</cql> rook [rR] <comment>; loop over the possible rooks</comment>
+  <cql>match:forany</cql> rook [&r;&R;] <comment>; loop over the possible rooks</comment>
   (position $rook[a1]) 
   (position $rook[h1])
   (position $rook[h8])
@@ -132,10 +132,10 @@ promotes.
 
 <verbatim>
 (match
-  <cql>match:forany</cql> pawn [Pp]
+  <cql>match:forany</cql> pawn [&P;&p;]
   (position
     <cql>position:initial</cql>
-    <cql>position:tagmatch</cql> pawn P?2
+    <cql>position:tagmatch</cql> pawn &P;?2
     <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> U))
     <cql>position:flipcolor</cql>))
 </verbatim>
@@ -155,7 +155,7 @@ Third example: the same piece delivers at least 30 checks in the game.
   <cql>match:forany</cql> checker A
   (position
     <cql>position:btm</cql>
-    <cql>position:attackcount</cql> $checker k 1
+    <cql>position:attackcount</cql> $checker &k; 1
     <cql>position:matchcount</cql> 30 1000
     <cql>position:flipcolor</cql>))
 </verbatim>

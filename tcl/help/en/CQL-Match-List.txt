@@ -313,34 +313,42 @@ The event mode is one of:
   <table>
     <tr>
       <td class="l"><expr>unknown</expr></td>
+      <td class="m"></td>
       <td class="r">Event mode is unknown</td>
     </tr>
     <tr>
       <td class="l"><expr>otb</expr></td>
+      <td class="m"><img src="../images/eventmode_OTB.png"/></td>
       <td class="r">%::eventmodebox::mc::OTB%</td>
     </tr>
     <tr>
       <td class="l"><expr>corr</expr></td>
+      <td class="m"><img src="../images/eventmode_PM.png"/></td>
       <td class="r">%::eventmodebox::mc::PM%</td>
     </tr>
     <tr>
       <td class="l"><expr>email</expr></td>
+      <td class="m"><img src="../images/eventmode_EM.png"/></td>
       <td class="r">%::eventmodebox::mc::EM%</td>
     </tr>
     <tr>
       <td class="l"><expr>internet</expr></td>
+      <td class="m"><img src="../images/eventmode_ICS.png"/></td>
       <td class="r">%::eventmodebox::mc::ICS%</td>
     </tr>
     <tr>
       <td class="l"><expr>tele</expr></td>
+      <td class="m"><img src="../images/eventmode_TC.png"/></td>
       <td class="r">%::eventmodebox::mc::TC%</td>
     </tr>
     <tr>
       <td class="l"><expr>analysis</expr></td>
+      <td class="m"><img src="../images/eventmode_Analysis.png"/></td>
       <td class="r">%::eventmodebox::mc::Analysis%</td>
     </tr>
     <tr>
       <td class="l"><expr>composition</expr></td>
+      <td class="m"><img src="../images/eventmode_Composition.png"/></td>
       <td class="r">%::eventmodebox::mc::Composition%</td>
     </tr>
   </table>
@@ -375,38 +383,47 @@ The event type is one of:
   <table>
     <tr>
       <td class="l"><expr>unknown</expr></td>
+      <td class="m"></td>
       <td class="r">Event type is unknown</td>
     </tr>
     <tr>
       <td class="l"><expr>game</expr></td>
+      <td class="m"><img src="../images/eventtype_game.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(game)%</td>
     </tr>
     <tr>
       <td class="l"><expr>match</expr></td>
+      <td class="m"><img src="../images/eventtype_match.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(match)%</td>
     </tr>
     <tr>
       <td class="l"><expr>tourn</expr></td>
+      <td class="m"><img src="../images/eventtype_tourn.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(tourn)%</td>
     </tr>
     <tr>
       <td class="l"><expr>swiss</expr></td>
+      <td class="m"><img src="../images/eventtype_swiss.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(swiss)%</td>
     </tr>
     <tr>
       <td class="l"><expr>team</expr></td>
+      <td class="m"><img src="../images/eventtype_team.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(team)%</td>
     </tr>
     <tr>
       <td class="l"><expr>knockout</expr></td>
+      <td class="m"><img src="../images/eventtype_ko.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(k.o.)%</td>
     </tr>
     <tr>
       <td class="l"><expr>simul</expr></td>
+      <td class="m"><img src="../images/eventtype_simul.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(simul)%</td>
     </tr>
     <tr>
       <td class="l"><expr>schev</expr></td>
+      <td class="m"><img src="../images/eventtype_schev.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(schev)%</td>
     </tr>
   </table>
@@ -456,26 +473,32 @@ Time mode is one of:
   <table>
     <tr>
       <td class="l"><expr>unknown</expr></td>
+      <td class="m"></td>
       <td class="r">Time mode is unknown</td>
     </tr>
     <tr>
       <td class="l"><expr>normal</expr></td>
+      <td class="m"><img src="../images/timemode_normal.png"/></td>
       <td class="r">%::timemodebox::mc::Mode(normal)%</td>
     </tr>
     <tr>
       <td class="l"><expr>rapid</expr></td>
+      <td class="m"><img src="../images/timemode_rapid.png"/></td>
       <td class="r">%::timemodebox::mc::Mode(rapid)%</td>
     </tr>
     <tr>
       <td class="l"><expr>blitz</expr></td>
+      <td class="m"><img src="../images/timemode_blitz.png"/></td>
       <td class="r">%::timemodebox::mc::Mode(blitz)%</td>
     </tr>
     <tr>
       <td class="l"><expr>bullet</expr></td>
+      <td class="m"><img src="../images/timemode_bullet.png"/></td>
       <td class="r">%::timemodebox::mc::Mode(bullet)%</td>
     </tr>
     <tr>
       <td class="l"><expr>corr</expr></td>
+      <td class="m"><img src="../images/timemode_corr.png"/></td>
       <td class="r">%::timemodebox::mc::Mode(corr)%</td>
     </tr>
   </table>
@@ -1320,30 +1343,116 @@ A marker is one of:
 
 <div class="dir">
   <table>
-    <tr><td class="l">#</td><td class="r">Any marker</td></tr>
-    <tr><td class="l">w</td><td class="r">%::gametable::mc::GameFlags(w)%</td></tr>
-    <tr><td class="l">b</td><td class="r">%::gametable::mc::GameFlags(b)%</td></tr>
-    <tr><td class="l">m</td><td class="r">%::gametable::mc::GameFlags(m)%</td></tr>
-    <tr><td class="l">e</td><td class="r">%::gametable::mc::GameFlags(e)%</td></tr>
-    <tr><td class="l">N</td><td class="r">%::gametable::mc::GameFlags(N)%</td></tr>
-    <tr><td class="l">p</td><td class="r">%::gametable::mc::GameFlags(p)%</td></tr>
-    <tr><td class="l">T</td><td class="r">%::gametable::mc::GameFlags(T)%</td></tr>
-    <tr><td class="l">K</td><td class="r">%::gametable::mc::GameFlags(K)%</td></tr>
-    <tr><td class="l">Q</td><td class="r">%::gametable::mc::GameFlags(Q)%</td></tr>
-    <tr><td class="l">!</td><td class="r">%::gametable::mc::GameFlags(!)%</td></tr>
-    <tr><td class="l">?</td><td class="r">%::gametable::mc::GameFlags(?)%</td></tr>
-    <tr><td class="l">U</td><td class="r">%::gametable::mc::GameFlags(U)%</td></tr>
-    <tr><td class="l">*</td><td class="r">%::gametable::mc::GameFlags(*)%</td></tr>
-    <tr><td class="l">D</td><td class="r">%::gametable::mc::GameFlags(D)%</td></tr>
-    <tr><td class="l">G</td><td class="r">%::gametable::mc::GameFlags(G)%</td></tr>
-    <tr><td class="l">S</td><td class="r">%::gametable::mc::GameFlags(S)%</td></tr>
-    <tr><td class="l">^</td><td class="r">%::gametable::mc::GameFlags(^)%</td></tr>
-    <tr><td class="l">~</td><td class="r">%::gametable::mc::GameFlags(~)%</td></tr>
-    <tr><td class="l">=</td><td class="r">%::gametable::mc::GameFlags(=)%</td></tr>
-    <tr><td class="l">M</td><td class="r">%::gametable::mc::GameFlags(M)%</td></tr>
-    <tr><td class="l">P</td><td class="r">%::gametable::mc::GameFlags(P)%</td></tr>
-    <tr><td class="l">t</td><td class="r">%::gametable::mc::GameFlags(t)%</td></tr>
-    <tr><td class="l">s</td><td class="r">%::gametable::mc::GameFlags(s)%</td></tr>
+    <tr>
+      <td class="l">#</td>
+      <td class="m"></td>
+      <td class="r">Any marker</td>
+    </tr>
+    <tr>
+      <td class="l">w</td>
+      <td class="m"><img src="../images/gameflag-White-Opening.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(w)%</td>
+    </tr>
+    <tr>
+      <td class="l">b</td>
+      <td class="m"><img src="../images/gameflag-Black-Opening.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(b)%</td>
+    </tr>
+    <tr>
+      <td class="l">m</td>
+      <td class="m"><img src="../images/gameflag-Middle-Game.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(m)%</td>
+    </tr>
+    <tr>
+      <td class="l">e</td>
+      <td class="m"><img src="../images/gameflag-End-Game.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(e)%</td>
+    </tr>
+    <tr>
+      <td class="l">N</td>
+      <td class="m"><img src="../images/gameflag-Novelty.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(N)%</td>
+    </tr>
+    <tr>
+      <td class="l">p</td>
+      <td class="m"><img src="../images/gameflag-Pawn-Structure.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(p)%</td>
+    </tr>
+    <tr>
+      <td class="l">T</td>
+      <td class="m"><img src="../images/gameflag-Tactics.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(T)%</td>
+    </tr>
+    <tr>
+      <td class="l">K</td>
+      <td class="m"><img src="../images/gameflag-King-Side.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(K)%</td>
+    </tr>
+    <tr>
+      <td class="l">Q</td>
+      <td class="m"><img src="../images/gameflag-Queen-Side.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(Q)%</td>
+    </tr>
+    <tr>
+      <td class="l">!</td>
+      <td class="m"><img src="../images/gameflag-Brilliancy.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(!)%</td>
+    </tr>
+    <tr>
+      <td class="l">?</td>
+      <td class="m"><img src="../images/gameflag-Blunder.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(?)%</td>
+    </tr>
+    <tr>
+      <td class="l">U</td>
+      <td class="m"><img src="../images/gameflag-User.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(U)%</td>
+    </tr>
+    <tr>
+      <td class="l">*</td>
+      <td class="m"><img src="../images/gameflag-Best-Game.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(*)%</td>
+    </tr>
+    <tr>
+      <td class="l">D</td>
+      <td class="m"><img src="../images/gameflag-Decided-Tournament.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(D)%</td>
+    </tr>
+    <tr>
+      <td class="l">G</td>
+      <td class="m"><img src="../images/gameflag-Model-Game.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(G)%</td>
+    </tr>
+    <tr>
+      <td class="l">S</td>
+      <td class="m"><img src="../images/gameflag-Strategy.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(S)%</td>
+    </tr>
+    <tr>
+      <td class="l">^</td>
+      <td class="m"><img src="../images/gameflag-With-Attack.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(^)%</td>
+    </tr>
+    <tr>
+      <td class="l">~</td>
+      <td class="m"><img src="../images/gameflag-Sacrifice.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(~)%</td>
+    </tr>
+    <tr>
+      <td class="l">=</td>
+      <td class="m"><img src="../images/gameflag-Defense.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(=)%</td>
+    </tr>
+    <tr>
+      <td class="l">M</td>
+      <td class="m"><img src="../images/gameflag-Material.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(M)%</td>
+    </tr>
+    <tr>
+      <td class="l">P</td>
+      <td class="m"><img src="../images/gameflag-Piece-Play.png"/></td>
+      <td class="r">%::gametable::mc::GameFlags(P)%</td>
+    </tr>
   </table>
 </div>
 
@@ -1385,14 +1494,17 @@ A special marker is one of:
 <table>
   <tr>
     <td class="l"><expr>deleted</expr></td>
+    <td class="m"><img src="../images/game_deleted.png"/></td>
     <td class="r">Game marked for deletion</td>
   </tr>
   <tr>
     <td class="l"><expr>illegalmove</expr></td>
+    <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
     <td class="r">Game contains illegal castling move.</td>
   </tr>
   <tr>
     <td class="l"><expr>illegalcastling</expr></td>
+    <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
     <td class="r">Game contains illegal move (not castling).</td>
   </tr>
 </table>
@@ -1496,42 +1608,52 @@ The termination reason is one of:
   <table>
     <tr>
       <td class="l"><expr>unknown</expr></td>
+      <td class="m"></td>
       <td class="r">Termination reason is unknown</td>
     </tr>
     <tr>
       <td class="l"><expr>normal</expr></td>
+      <td class="m"><img src="../images/termination_reason_Normal.png"/></td>
       <td class="r">Game terminated in a normal fashion</td>
     </tr>
     <tr>
       <td class="l"><expr>unplayed</expr></td>
+      <td class="m"><img src="../images/termination_reason_Unplayed.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Unplayed)%</td>
     </tr>
     <tr>
       <td class="l"><expr>abandoned</expr></td>
+      <td class="m"><img src="../images/termination_reason_Abandoned.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Abandoned)%</td>
     </tr>
     <tr>
       <td class="l"><expr>adjudication</expr></td>
+      <td class="m"><img src="../images/termination_reason_Adjudication.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Adjudication)%</td>
     </tr>
     <tr>
       <td class="l"><expr>disconnection</expr></td>
+      <td class="m"><img src="../images/termination_reason_Disconnection.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Disconnection)%</td>
     </tr>
     <tr>
       <td class="l"><expr>emergency</expr></td>
+      <td class="m"><img src="../images/termination_reason_Emergency.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Emergency)%</td>
     </tr>
     <tr>
       <td class="l"><expr>rulesinfraction</expr></td>
+      <td class="m"><img src="../images/termination_reason_RulesInfraction.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(RulesInfraction)%</td>
     </tr>
     <tr>
       <td class="l"><expr>timeforfeit</expr></td>
+      <td class="m"><img src="../images/termination_reason_TimeForfeit.png"/></td>
       <td class="r">One or both players forfeits on time</td>
     </tr>
     <tr>
       <td class="l"><expr>unterminated</expr></td>
+      <td class="m"><img src="../images/termination_reason_Unterminated.png"/></td>
       <td class="r">%::terminationbox::mc::Reason(Unterminated)%</td>
     </tr>
   </table>

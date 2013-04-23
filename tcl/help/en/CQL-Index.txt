@@ -37,6 +37,31 @@ Note that some parts of this documentation are taken from
 <a href="http://www.rbnn.com/cql/">CQLManual</a>.
 </p>
 
+<p>
+We are using graphical figurine for the notation of chess pieces, due to
+internalization reasons. The CQL editor is working with graphical figurine,
+although the CQL files will be saved with the corresponding English letters:
+</p>
+
+<dir>
+  <table>
+    <tr><td>&K;</td><td>=</td><td>K</td><td>=</td><td>white king  </td></tr>
+    <tr><td>&Q;</td><td>=</td><td>Q</td><td>=</td><td>white queen </td></tr>
+    <tr><td>&R;</td><td>=</td><td>R</td><td>=</td><td>white rook  </td></tr>
+    <tr><td>&B;</td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
+    <tr><td>&K;</td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
+    <tr><td>&P;</td><td>=</td><td>P</td><td>=</td><td>white pawn  </td></tr>
+    <tr><td>&k;</td><td>=</td><td>k</td><td>=</td><td>black king  </td></tr>
+    <tr><td>&q;</td><td>=</td><td>q</td><td>=</td><td>black queen </td></tr>
+    <tr><td>&r;</td><td>=</td><td>r</td><td>=</td><td>black rook  </td></tr>
+    <tr><td>&b;</td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
+    <tr><td>&k;</td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
+    <tr><td>&p;</td><td>=</td><td>p</td><td>=</td><td>black pawn  </td></tr>
+  </table>
+</dir>
+
+<h2>Index</h2>
+
 <ul>
   <li><a href="CQL-Syntax.html">Syntax</a>
     <ul class="index">

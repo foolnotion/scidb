@@ -56,9 +56,9 @@ match any position with a white passed pawn:
 <div class="box"><pre><code><!--
 --><span class="comment">; match a position with a white passed pawn</span>
 (position
-  Pd2
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+  <span class="chess">&#x2659;</span>d2
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265f;</span><span class="chess">&#x2659;</span>][d3-7] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x265f;</span>[c3-7,e3-7] 0
   <a href="CQL-Position-List.html#position:shift">:shift</a>)<!--
 --></code></pre></div>
 
@@ -69,9 +69,9 @@ Now, to find at least 3 white passed pawns, we add in some accumulation code:
 <div class="box"><pre><code><!--
 --><span class="comment">; match a position with at least three white passed pawns</span>
 (position
-  Pd2
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+  <span class="chess">&#x2659;</span>d2
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265f;</span><span class="chess">&#x2659;</span>][d3-7] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x265f;</span>[c3-7,e3-7] 0
   <a href="CQL-Position-List.html#position:shift">:shift</a>
   <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8)<!--
@@ -85,9 +85,9 @@ We can use:
 <div class="box"><pre><code><!--
 --><span class="comment">;match a position with at least two black passed pawns</span>
 (position
-  pd7 
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
+  <span class="chess">&#x265f;</span>d7 
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265f;</span><span class="chess">&#x2659;</span>][d2-6] 0
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[c2-6,e2-6] 0
   <a href="CQL-Position-List.html#position:shift">:shift</a>
   <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8)<!--
@@ -106,15 +106,15 @@ white passers, we combine these lists:
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8
   <a href="CQL-Position-List.html#position:and">:and</a> (
     (position
-      Pd2 
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
+      <span class="chess">&#x2659;</span>d2 
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265f;</span><span class="chess">&#x2659;</span>][d3-7] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x265f;</span>[c3-7,e3-7] 0
       <a href="CQL-Position-List.html#position:shift">:shift</a>
       <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter)
     (position
-      pd7 
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
+      <span class="chess">&#x265f;</span>d7 
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265f;</span><span class="chess">&#x2659;</span>][d2-6] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[c2-6,e2-6] 0
       <a href="CQL-Position-List.html#position:shift">:shift</a>
       <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter)))<!--
 --></code></pre></div>
@@ -126,7 +126,7 @@ The following position list searches for games in which the configuration
 </p>
 
 <ul style="list-style-type: none"><li><code>
-Ke6 be7 be4 nd5
+<span class="chess">&#x2654;</span>e6 <span class="chess">&#x265d;</span>e7 <span class="chess">&#x265d;</span>e4 <span class="chess">&#x265e;</span>d5
 </code></li></ul>
 
 <p>
@@ -136,7 +136,7 @@ are on the same square as the pattern:
 
 <div class="box"><pre><code><!--
 -->(position
-  Ke6 be7 be4 nd5
+  <span class="chess">&#x2654;</span>e6 <span class="chess">&#x265d;</span>e7 <span class="chess">&#x265d;</span>e4 <span class="chess">&#x265e;</span>d5
   <a href="CQL-Position-List.html#position:shift">:shift</a>
   <a href="CQL-Position-List.html#position:flip">:flip</a>
   <a href="CQL-Position-List.html#position:relation">:relation</a> (
@@ -158,43 +158,18 @@ in the original position.
 <h2 id="more">More examples</h2>
 
 <p>
-3 white passed pawns and at least two black passed pawns in the same
-position:
-</p>
-
-<div class="box"><pre><code><!--
--->(match
-  (position 
-    <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> whitecount 3 8 
-    <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> blackcount 2 8
-    <a href="CQL-Position-List.html#position:and">:and</a> (
-      (position
-        Pd2 
-        <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d3-7] 0
-        <a href="CQL-Position-List.html#position:piececount">:piececount</a> p[c3-7,e3-7] 0
-        <a href="CQL-Position-List.html#position:shift">:shift</a>
-        <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> whitecount)
-      (position
-        pd7 
-        <a href="CQL-Position-List.html#position:piececount">:piececount</a> [pP][d2-6] 0
-        <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[c2-6,e2-6] 0
-        <a href="CQL-Position-List.html#position:shift">:shift</a>
-        <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> blackcount))))<!--
---></code></pre></div>
-
-<p>
 Knight gives mate with its first move:
 </p>
 
 <div class="box"><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> knight N
+  <a href="CQL-Match-List.html#match:forany">:forany</a> knight <span class="chess">&#x2658;</span>
   (position
     <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $knight
     <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 1)
   (position
     <a href="CQL-Position-List.html#position:mate">:mate</a>
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $knight k 1)) <!--
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $knight <span class="chess">&#x265a;</span> 1)) <!--
 --></code></pre></div>
 
 </body>

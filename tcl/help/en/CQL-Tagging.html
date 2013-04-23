@@ -88,7 +88,7 @@ tag named "foo", this position will only match if "foo" is a white pawn:
 </p>
 
 <div class="verb"><code>
-(position :tagmatch foo P)
+(position :tagmatch foo <span class="chess">&#x2659;</span>)
 </code></div>
 
 <h2>Piece designators and tags</h2>
@@ -116,7 +116,7 @@ four corners of the board:
 
 <div class="box"><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [rR] <span class="comment">; loop over the possible rooks</span>
+  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [<span class="chess">&#x265c;</span><span class="chess">&#x2656;</span>] <span class="comment">; loop over the possible rooks</span>
   (position $rook[a1]) 
   (position $rook[h1])
   (position $rook[h8])
@@ -149,10 +149,10 @@ promotes.
 
 <div class="box"><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [Pp]
+  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>]
   (position
     <a href="CQL-Position-List.html#position:initial">:initial</a>
-    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn P?2
+    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn <span class="chess">&#x2659;</span>?2
     <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
@@ -172,7 +172,7 @@ Third example: the same piece delivers at least 30 checks in the game.
   <a href="CQL-Match-List.html#match:forany">:forany</a> checker A
   (position
     <a href="CQL-Position-List.html#position:btm">:btm</a>
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker k 1
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker <span class="chess">&#x265a;</span> 1
     <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 1000
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>

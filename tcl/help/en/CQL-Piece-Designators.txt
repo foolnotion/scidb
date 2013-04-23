@@ -37,27 +37,27 @@ of piecetypes denoted by the piece designator.
 <h3>Examples of piece designators</h3>
 
 <p>
-The piece designator <expr>Ra2</expr> denotes a white rook on a2. The piecetype
-designator is <expr>R</expr> and the square designator is <expr>a2</expr>. It
-will match any position with a white rook on a2.
+The piece designator <expr>&R;a2</expr> denotes a white rook on a2. The
+piecetype designator is &R; and the square designator is <expr>a2</expr>.
+It will match any position with a white rook on a2.
 </p>
 
 <p>
-The piece designator <expr>bc1</expr> denotes a black bishop on c1. The
-piecetype designator is <expr>b</expr> and the square designator is
+The piece designator <expr>&b;c1</expr> denotes a black bishop on c1. The
+piecetype designator is &b; and the square designator is
 <expr>c1</expr>. It will match any position with a black bishop on c1.
 </p>
 
 <p>
-The piece designator <expr>[Rb]d1</expr> denotes either a white rook or a
-black bishop on d1. The piecetype designator is <expr>[Rb]</expr> and the
+The piece designator <expr>[&R;&b;]d1</expr> denotes either a white rook or a
+black bishop on d1. The piecetype designator is <expr>[&R;&b;]</expr> and the
 square designator is <expr>d1</expr>. It will match any position that has either
 a white rook or a black bishop on d1.
 </p>
 
 <p>
-The piece designator <expr>[Qr][d1,h3]</expr> denotes either a white queen or
-a black rook on either d1 or h3. The piecetype designator is <expr>[QR]</expr>
+The piece designator <expr>[&Q;&r;][d1,h3]</expr> denotes either a white queen or
+a black rook on either d1 or h3. The piecetype designator is [&Q;&R;]
 and the square designator is <expr>[d1,h3]</expr>. It will match any position
 that has either a white queen or a black rook on either d1 or h3. (Of course,
 the position can also have a white queen or black rook on both d1 and h3).
@@ -73,18 +73,18 @@ These are the allowed piecetype designators:
 
 <box>
   <table>
-    <tr><td><expr>K&emsp;</expr></td><td>white king</td></tr>
-    <tr><td><expr>k&emsp;</expr></td><td>black king</td></tr>
-    <tr><td><expr>N&emsp;</expr></td><td>white knight</td></tr>
-    <tr><td><expr>n&emsp;</expr></td><td>black knight</td></tr>
-    <tr><td><expr>B&emsp;</expr></td><td>white bishop</td></tr>
-    <tr><td><expr>b&emsp;</expr></td><td>black bishop</td></tr>
-    <tr><td><expr>P&emsp;</expr></td><td>white pawn</td></tr>
-    <tr><td><expr>p&emsp;</expr></td><td>black pawn</td></tr>
-    <tr><td><expr>R&emsp;</expr></td><td>white rook</td></tr>
-    <tr><td><expr>r&emsp;</expr></td><td>black rook</td></tr>
-    <tr><td><expr>Q&emsp;</expr></td><td>white queen</td></tr>
-    <tr><td><expr>q&emsp;</expr></td><td>black queen</td></tr>
+    <tr><td><expr>&K;&emsp;</expr></td><td>white king</td></tr>
+    <tr><td><expr>&k;&emsp;</expr></td><td>black king</td></tr>
+    <tr><td><expr>&N;&emsp;</expr></td><td>white knight</td></tr>
+    <tr><td><expr>&n;&emsp;</expr></td><td>black knight</td></tr>
+    <tr><td><expr>&B;&emsp;</expr></td><td>white bishop</td></tr>
+    <tr><td><expr>&b;&emsp;</expr></td><td>black bishop</td></tr>
+    <tr><td><expr>&P;&emsp;</expr></td><td>white pawn</td></tr>
+    <tr><td><expr>&p;&emsp;</expr></td><td>black pawn</td></tr>
+    <tr><td><expr>&R;&emsp;</expr></td><td>white rook</td></tr>
+    <tr><td><expr>&r;&emsp;</expr></td><td>black rook</td></tr>
+    <tr><td><expr>&Q;&emsp;</expr></td><td>white queen</td></tr>
+    <tr><td><expr>&q;&emsp;</expr></td><td>black queen</td></tr>
    </table>
 </box>
 

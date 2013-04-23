@@ -367,10 +367,10 @@ set Type(tourn) [image create photo -data {
 	AElFTkSuQmCC
 }]
 
-set Type(swiss) [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAgMAAAArG7R0AAAADFBMVEUAAAAAAAD////YGADE
-	zaH2AAAAGklEQVQI12P4//8/Axi/RuBfq9aDMbIYVB0AMnMiEa20/TkAAAAASUVORK5CYII=
-}]
+# set Type(swiss) [image create photo -data {
+# 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMAgMAAAArG7R0AAAADFBMVEUAAAAAAAD////YGADE
+# 	zaH2AAAAGklEQVQI12P4//8/Axi/RuBfq9aDMbIYVB0AMnMiEa20/TkAAAAASUVORK5CYII=
+# }]
 
 set Type(swiss) [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QAAAAAAAD5Q7t/AAAA

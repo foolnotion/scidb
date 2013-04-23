@@ -24,12 +24,12 @@ Certain transforms are defined on piece designators.
 </p>
 
 <p>
-A <b>diagonal flip transformation</b>, applied to a piece designator, reflects each square
-in its square set about the main diagonal.
+A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
+each square in its square set about the main diagonal.
 </p>
 
 <p>
-For example, the diagonal flip of <expr>Ra8</expr> is <expr>Ra1</expr>. The
+For example, the diagonal flip of <expr>&R;a8</expr> is <expr>&R;a1</expr>. The
 diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
 <expr>[Aa][a-b1-8,f6,g8]</expr>.
 </p>
@@ -40,9 +40,9 @@ reflects each square in its square set about the a8 to h1 diagonal.
 </p>
 
 <p>
-For example, the off-diagonal flip of <expr>Ra8</expr> is <expr>Ra8</expr>.
-The off-diagonal flip of <expr>[Pp][a1-8]</expr>, denoting a pawn on the a
-file, is <expr>[Pp][a-h8]</expr>, denoting a pawn on the eight rank.
+For example, the off-diagonal flip of <expr>&R;a8</expr> is <expr>&R;a8</expr>.
+The off-diagonal flip of <expr>[&P;&p;][a1-8]</expr>, denoting a pawn on the a
+file, is <expr>[&P;&p;][a-h8]</expr>, denoting a pawn on the eight rank.
 </p>
 
 <p>
@@ -65,9 +65,9 @@ transformation or a rotation by 90 degrees of the chessboard followed by
 a flip transformation or the identity transformation. There are 8 distinct
 dihedral transformations of the board. For example, the results of
 applying the 8 dihedral transformations to the piece designator
-<expr>Qc2</expr> are the 8 piece designators <expr>Qc2</expr>,
-<expr>Qb3</expr>, <expr>Qf2</expr>, <expr>Qg3</expr>, <expr>Qf7</expr>,
-<expr>Qg6</expr>, <expr>Qb6</expr>, and <expr>Qc7</expr>.
+<expr>&Q;c2</expr> are the 8 piece designators <expr>&Q;c2</expr>,
+<expr>&Q;b3</expr>, <expr>&Q;f2</expr>, <expr>&Q;g3</expr>, <expr>&Q;f7</expr>,
+<expr>&Q;g6</expr>, <expr>&Q;b6</expr>, and <expr>&Q;c7</expr>.
 </p>
 
 <p>
@@ -79,10 +79,10 @@ to the new square set.
 </p>
 
 <p>
-For example, the unit right shift transformation of <expr>Qd4</expr> is
-<expr>Qe4</expr>. The unit right shift transformation of <expr>Q[c2,h2]</expr>
-is <expr>Qd2</expr>. The unit right shift transformation of
-<expr>Q[a2,c2,h2]</expr> is <expr>Q[b2,d2]</expr>.
+For example, the unit right shift transformation of <expr>&Q;d4</expr> is
+<expr>&Q;e4</expr>. The unit right shift transformation of <expr>&Q;[c2,h2]</expr>
+is <expr>&Q;d2</expr>. The unit right shift transformation of
+<expr>&Q;[a2,c2,h2]</expr> is <expr>&Q;[b2,d2]</expr>.
 </p>
 
 <p>
@@ -95,10 +95,10 @@ appropriate board edges altering mutatis mutandis.
 <p>
 A <b>right transformation</b> is a composition of zero or more unit right
 transformations. For example, the right transformation comprising three
-successive unit right transformations applied to <expr>Qa4</expr> is
-<expr>Q[a4,b4,c4,d4]</expr>, since squares on the left edge of the board are
+successive unit right transformations applied to <expr>&Q;a4</expr> is
+<expr>&Q;[a4,b4,c4,d4]</expr>, since squares on the left edge of the board are
 always included in the new set. The result of applying this right
-transformation to <expr>Qd4</expr> is <expr>Qg4</expr>.
+transformation to <expr>&Q;d4</expr> is <expr>&Q;g4</expr>.
 </p>
 
 <p>
@@ -116,16 +116,16 @@ A <b>shift transformation</b> is a transformation that can be written as
 zero or more horizontal shift transformations followed by zero or more
 vertical shift transformations. There is exactly one shift transformation
 that sends a given square to another given square. One possible shift
-transformation of <expr>Q[b3,c4]</expr> is <expr>Q[d4,e5]</expr>.
+transformation of <expr>&Q;[b3,c4]</expr> is <expr>&Q;[d4,e5]</expr>.
 </p>
 
 <p>
 A <b>color flip transformation</b> of a piece designator switches the colors
 of each piecetype in the piece set of the piece designator, and then applies
 a horizontal flip to the piece designator. For example, the color flip
-transformation applied to <expr>[Rbp][a2,c2]</expr>, either a white rook,
+transformation applied to <expr>[&R;&b;&p;][a2,c2]</expr>, either a white rook,
 a black bishop, or a black pawn on either c2 or a2, is
-<expr>[rBP][a7,c7]</expr>.
+<expr>[&r;&B;&P;][a7,c7]</expr>.
 </p>
 
 END

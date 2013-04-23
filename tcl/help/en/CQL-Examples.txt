@@ -37,9 +37,9 @@ match any position with a white passed pawn:
 <verbatim>
 <comment>; match a position with a white passed pawn</comment>
 (position
-  Pd2
-  <cql>position:piececount</cql> [pP][d3-7] 0
-  <cql>position:piececount</cql> p[c3-7,e3-7] 0
+  &P;d2
+  <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+  <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
   <cql>position:shift</cql>)
 </verbatim>
 
@@ -50,9 +50,9 @@ Now, to find at least 3 white passed pawns, we add in some accumulation code:
 <verbatim>
 <comment>; match a position with at least three white passed pawns</comment>
 (position
-  Pd2
-  <cql>position:piececount</cql> [pP][d3-7] 0
-  <cql>position:piececount</cql> p[c3-7,e3-7] 0
+  &P;d2
+  <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+  <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
   <cql>position:shift</cql>
   <cql>position:accumulate</cql> white_passer_counter
   <cql>position:sumrange</cql> white_passer_counter 3 8)
@@ -66,9 +66,9 @@ We can use:
 <verbatim>
 <comment>;match a position with at least two black passed pawns</comment>
 (position
-  pd7 
-  <cql>position:piececount</cql> [pP][d2-6] 0
-  <cql>position:piececount</cql> P[c2-6,e2-6] 0
+  &p;d7 
+  <cql>position:piececount</cql> [&p;&P;][d2-6] 0
+  <cql>position:piececount</cql> &P;[c2-6,e2-6] 0
   <cql>position:shift</cql>
   <cql>position:accumulate</cql> black_passer_counter
   <cql>position:sumrange</cql> black_passer_counter 2 8)
@@ -87,15 +87,15 @@ white passers, we combine these lists:
   <cql>position:sumrange</cql> black_passer_counter 2 8
   <cql>position:and</cql> (
     (position
-      Pd2 
-      <cql>position:piececount</cql> [pP][d3-7] 0
-      <cql>position:piececount</cql> p[c3-7,e3-7] 0
+      &P;d2 
+      <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+      <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
       <cql>position:shift</cql>
       <cql>position:accumulate</cql> white_passer_counter)
     (position
-      pd7 
-      <cql>position:piececount</cql> [pP][d2-6] 0
-      <cql>position:piececount</cql> P[c2-6,e2-6] 0
+      &p;d7 
+      <cql>position:piececount</cql> [&p;&P;][d2-6] 0
+      <cql>position:piececount</cql> &P;[c2-6,e2-6] 0
       <cql>position:shift</cql>
       <cql>position:accumulate</cql> black_passer_counter)))
 </verbatim>
@@ -107,7 +107,7 @@ The following position list searches for games in which the configuration
 </p>
 
 <dir><code>
-Ke6 be7 be4 nd5
+&K;e6 &b;e7 &b;e4 &n;d5
 </code></dir>
 
 <p>
@@ -117,7 +117,7 @@ are on the same square as the pattern:
 
 <verbatim>
 (position
-  Ke6 be7 be4 nd5
+  &K;e6 &b;e7 &b;e4 &n;d5
   <cql>position:shift</cql>
   <cql>position:flip</cql>
   <cql>position:relation</cql> (
@@ -139,43 +139,18 @@ in the original position.
 <h2 id="more">More examples</h2>
 
 <p>
-3 white passed pawns and at least two black passed pawns in the same
-position:
-</p>
-
-<verbatim>
-(match
-  (position 
-    <cql>position:sumrange</cql> whitecount 3 8 
-    <cql>position:sumrange</cql> blackcount 2 8
-    <cql>position:and</cql> (
-      (position
-        Pd2 
-        <cql>position:piececount</cql> [pP][d3-7] 0
-        <cql>position:piececount</cql> p[c3-7,e3-7] 0
-        <cql>position:shift</cql>
-        <cql>position:accumulate</cql> whitecount)
-      (position
-        pd7 
-        <cql>position:piececount</cql> [pP][d2-6] 0
-        <cql>position:piececount</cql> P[c2-6,e2-6] 0
-        <cql>position:shift</cql>
-        <cql>position:accumulate</cql> blackcount))))
-</verbatim>
-
-<p>
 Knight gives mate with its first move:
 </p>
 
 <verbatim>
 (match
-  <cql>match:forany</cql> knight N
+  <cql>match:forany</cql> knight &N;
   (position
     <cql>position:movefrom</cql> $knight
     <cql>position:matchcount</cql> 1)
   (position
     <cql>position:mate</cql>
-    <cql>position:attackcount</cql> $knight k 1)) 
+    <cql>position:attackcount</cql> $knight &k; 1)) 
 </verbatim>
 
 END

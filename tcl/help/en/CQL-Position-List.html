@@ -218,8 +218,8 @@ Example:
   <a href="CQL-Position-List.html#position:wtm">:wtm</a>
   <a href="CQL-Position-List.html#position:check">:check</a>
   <span class="keyword">:and</span> (
-    (position Ke2 kg2 <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a>)
-    (position Ne2)))<!--
+    (position <span class="chess">&#x2654;</span>e2 <span class="chess">&#x265a;</span>g2 <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a>)
+    (position <span class="chess">&#x2658;</span>e2)))<!--
 --></code></pre></div>
 
 <p>
@@ -252,15 +252,15 @@ Examples:
       <span class="comment">; the black king is surrounded by empty squares and</span>
       <span class="comment">; is attacked once and is in mate</span>
       (position
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k . 8
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A k 1
+        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class="chess">&#x265a;</span> . 8
+        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A <span class="chess">&#x265a;</span> 1
         <a href="CQL-Position-List.html#position:mate">:mate</a>
         <a href="CQL-Position-List.html#position:btm">:btm</a>)
       <span class="comment">; check that no neighbor of the black king is</span>
       <span class="comment">; attacked more than once</span>
       (position
         <span class="keyword">:not</span>
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k .e4 1
+        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class="chess">&#x265a;</span> .e4 1
         <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A .e4 2 100
         <a href="CQL-Position-List.html#position:shift">:shift</a>))))<!--
 --></code></pre></div>
@@ -274,7 +274,7 @@ The follwing position match
 </p>
 
 <div class="verb"><code>
-(position Ra3 <span class="keyword">:not</span>)
+(position <span class="chess">&#x2656;</span>a3 <span class="keyword">:not</span>)
 </code></div>
 
 <p>
@@ -282,7 +282,7 @@ is equivalent to
 </p>
 
 <div class="verb"><code>
-(position [aQBNPK.]a3)
+(position [a<span class="chess">&#x2655;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span><span class="chess">&#x2659;</span><span class="chess">&#x2654;</span>.]a3)
 </code></div>
 
 <h3 id="position:or">:or</h3>
@@ -300,16 +300,16 @@ Example:
   (position
     <span class="keyword">:or</span> (
       (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
-        B[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        <span class="chess">&#x2657;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9 )
       (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
-        b[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        <span class="chess">&#x265d;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
       (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
-        b[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        <span class="chess">&#x265d;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9)
       (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
-        B[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        <span class="chess">&#x2657;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9))))<!--
 --></code></pre></div>
 
@@ -469,20 +469,20 @@ argument a piecetype designator, letters of which have the following meanings:
 
 <ul style="list-style-type: none"><li>
   <table>
-    <tr><td class="l">
-      <span style="white-space:nowrap;"><code>K</code></span></td>
+    <tr>
+      <td class="l"><span style="white-space:nowrap;"><code><span class="chess">&#x2654;</span></code></span></td>
       <td class="r">White has kingside castling availability</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>Q</code></span></td>
+      <td class="l"><span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span></code></span></td>
       <td class="r">White has queenside castling availability</td>
     </tr>
-    <tr><td class="l">
-      <span style="white-space:nowrap;"><code>k</code></span></td>
+    <tr>
+      <td class="l"><span style="white-space:nowrap;"><code><span class="chess">&#x265a;</span></code></span></td>
       <td class="r">Black has kingside castling availability</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>q</code></span></td>
+      <td class="l"><span style="white-space:nowrap;"><code><span class="chess">&#x265b;</span></code></span></td>
       <td class="r">Black has queenside castling availability</td>
     </tr>
   </table>
@@ -496,7 +496,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:castling</span> K)
+(position <span class="keyword">:castling</span> <span class="chess">&#x2654;</span>)
 </code></div>
 
 <p>
@@ -504,7 +504,7 @@ White has kingside castling availability.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:castling</span> [KQ])
+(position <span class="keyword">:castling</span> [<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span>])
 </code></div>
 
 <p>
@@ -512,7 +512,7 @@ White has either kingside or queenside castling availability.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:castling</span> K <span class="keyword">:castling</span> Q)
+(position <span class="keyword">:castling</span> <span class="chess">&#x2654;</span> <span class="keyword">:castling</span> <span class="chess">&#x2655;</span>)
 </code></div>
 
 <p>
@@ -558,20 +558,20 @@ query:
 -->  (position
     <a href="CQL-Position-List.html#position:or">:or</a> (
       (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [Qq] 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [RBN] 0 3
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [rbn] 0 3)
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>] 0 3
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x265c;</span><span class="chess">&#x265d;</span><span class="chess">&#x265e;</span>] 0 3)
     (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> Q 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> q 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [Rr] 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x265b;</span> 1
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2656;</span><span class="chess">&#x265c;</span>] 0
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> I 0 1
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> i 0 1)
     (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> Q 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> R 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2656;</span> 0
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> I 0 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> q 0
+      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x265b;</span> 0
       <a href="CQL-Position-List.html#position:power">:power</a> [rbn] 0 16
       <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)))<!--
 --></code></pre></div>
@@ -837,7 +837,7 @@ We use the following query to find tripled pawns:
 
 <div class="box"><pre><code><!--
 -->(position
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[b2-7] 3
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[b2-7] 3
   <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
 --></code></pre></div>
 
@@ -847,8 +847,8 @@ To find one of tripled pawns placed on the main diagonal we design the query
 
 <div class="box"><pre><code><!--
 -->(position
-  <span class="keyword">:inside</span> P[b2-7] [b2,c3,d4,e5,f6,g7]
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> P[b2-7] 3
+  <span class="keyword">:inside</span> <span class="chess">&#x2659;</span>[b2-7] [b2,c3,d4,e5,f6,g7]
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[b2-7] 3
   <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
 --></code></pre></div>
 
@@ -935,7 +935,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:attackcount</span> A k 2)
+(position <span class="keyword">:attackcount</span> A <span class="chess">&#x265a;</span> 2)
 </code></div>
 
 <p>
@@ -943,7 +943,7 @@ Matches any position in which white has a double attack on the black king.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:attackcount</span> A k 2 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
+(position <span class="keyword">:attackcount</span> A <span class="chess">&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
 <p>
@@ -959,7 +959,7 @@ Matches a position in which exactly one white piece attacks an empty h3 square.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:attackcount</span> [RB][a-c8] ??1 5 9
+(position <span class="keyword">:attackcount</span> [<span class="chess">&#x2656;</span><span class="chess">&#x2657;</span>][a-c8] ??1 5 9
 </code></div>
 
 <p>
@@ -969,7 +969,7 @@ inclusive.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:attackcount</span> n [KRQ] 3 100) 
+(position <span class="keyword">:attackcount</span> <span class="chess">&#x265e;</span> [<span class="chess">&#x2654;</span><span class="chess">&#x2656;</span><span class="chess">&#x2655;</span>] 3 100) 
 </code></div>
 
 <p>
@@ -1024,7 +1024,7 @@ without a material loss.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:maxswapvalue</span> Q?1-7 ??8 0 1000)
+(position <span class="keyword">:maxswapvalue</span> <span class="chess">&#x2655;</span>?1-7 ??8 0 1000)
 </code></div>
 
 <h3 id="position:piececount">:piececount</h3>
@@ -1040,7 +1040,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:piececount</span> R 2)
+(position <span class="keyword">:piececount</span> <span class="chess">&#x2656;</span> 2)
 </code></div>
 
 <p>
@@ -1050,9 +1050,9 @@ three white rooks would fail to match.
 
 <div class="box"><pre><code><!--
 -->(position 
-  <span class="keyword">:piececount</span> [Rr][a1-8] 1 3 
-  <span class="keyword">:piececount</span> [Qq][a-h8] 4 
-  Nd4)<!--
+  <span class="keyword">:piececount</span> [<span class="chess">&#x2656;</span><span class="chess">&#x265c;</span>][a1-8] 1 3 
+  <span class="keyword">:piececount</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>][a-h8] 4 
+  <span class="chess">&#x2658;</span>d4)<!--
 --></code></pre></div>
 
 <p>
@@ -1063,9 +1063,9 @@ to write this position list is:
 
 <div class="box"><pre><code><!--
 -->(position 
-  Nd4
-  <span class="keyword">:piececount</span> [Rr][a?] 1 3 
-  <span class="keyword">:piececount</span> [Qq][?8] 4)<!--
+  <span class="chess">&#x2658;</span>d4
+  <span class="keyword">:piececount</span> [<span class="chess">&#x2656;</span><span class="chess">&#x265c;</span>][a?] 1 3 
+  <span class="keyword">:piececount</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>][?8] 4)<!--
 --></code></pre></div>
 
 <h3 id="position:power">:power</h3>
@@ -1174,7 +1174,7 @@ greater than the black pieces.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:powerdifference</span> [Rr] -5 10)
+(position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2656;</span><span class="chess">&#x265c;</span>] -5 10)
 </code></div>
 
 <p>
@@ -1183,7 +1183,7 @@ rooks than black.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:powerdifference</span> [RrBbNn] -1000 -2)
+(position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2656;</span><span class="chess">&#x265c;</span><span class="chess">&#x2657;</span><span class="chess">&#x265d;</span><span class="chess">&#x2658;</span><span class="chess">&#x265e;</span>] -1000 -2)
 </code></div>
 
 <p>
@@ -1196,19 +1196,19 @@ This matches positions in which black is up at least an exchange.
     <a href="CQL-Match-List.html#match:result">:result</a> 1-0
     <a href="CQL-Position-List.html#position:sequence">:sequence</a> (
       (position
-        <span class="keyword">:powerdifference</span> [Qq] -1000 -9
+        <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9
         <span class="keyword">:powerdifference</span> U -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9)
-      (position <span class="keyword">:powerdifference</span> [Qq] -1000 -9))
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9)
+      (position <span class="keyword">:powerdifference</span> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] -1000 -9))
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
@@ -1250,7 +1250,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:ray</span> (k Q)) 
+(position <span class="keyword">:ray</span> (<span class="chess">&#x265a;</span> <span class="chess">&#x2655;</span>)) 
 </code></div>
 
 <p>
@@ -1258,7 +1258,7 @@ Matches a position in which a white queen attacks the black king.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:ray</span> (Qa? n k[?4-8]))
+(position <span class="keyword">:ray</span> (<span class="chess">&#x2655;</span>a? <span class="chess">&#x265e;</span> <span class="chess">&#x265a;</span>[?4-8]))
 </code></div>
 
 <p>
@@ -1267,7 +1267,7 @@ to the black king on the last four ranks.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:ray</span> (Qa? Qc? Qe? kg?))
+(position <span class="keyword">:ray</span> (<span class="chess">&#x2655;</span>a? <span class="chess">&#x2655;</span>c? <span class="chess">&#x2655;</span>e? <span class="chess">&#x265a;</span>g?))
 </code></div>
 
 <p>
@@ -1279,7 +1279,7 @@ the a, c, and e files.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:ray</span> (Q n k) 2 4)
+(position <span class="keyword">:ray</span> (<span class="chess">&#x2655;</span> <span class="chess">&#x265e;</span> <span class="chess">&#x265a;</span>) 2 4)
 </code></div>
 
 <p>
@@ -1304,7 +1304,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:rayattack</span> (A a k))
+(position <span class="keyword">:rayattack</span> (A a <span class="chess">&#x265a;</span>))
 </code></div>
 
 <p>
@@ -1312,7 +1312,7 @@ Matches a position in which a black piece is pinned to the black king.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:rayattack</span> (Ad5 a [rk][a-h1-4]) 3)
+(position <span class="keyword">:rayattack</span> (Ad5 a [<span class="chess">&#x265c;</span><span class="chess">&#x265a;</span>][a-h1-4]) 3)
 </code></div>
 
 <p>
@@ -1322,7 +1322,7 @@ d5 against either a black rook or king in the first four ranks.
 
 <div class="verb"><code>
 (position <a href="CQL-Position-List.html#position:stalemate">:stalemate</a> <span class="keyword">:rayattack</span>
-(A a k) 2 8 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
+(A a <span class="chess">&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
 <p>
@@ -1376,7 +1376,7 @@ if any.
 
 <p>
 For example, the to designation of a white rook on a4 capturing a black knight
-on d4 is nd4, and its from designation is Ra4. The to designation of a move to
+on d4 is <span class="chess">&#x265e;</span>d4, and its from designation is <span class="chess">&#x2656;</span>a4. The to designation of a move to
 e4 that is not a capture is .e4. 
 </p>
 
@@ -1429,7 +1429,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:movefrom</span> Ra3)
+(position <span class="keyword">:movefrom</span> <span class="chess">&#x2656;</span>a3)
 </code></div>
 
 <p>
@@ -1492,7 +1492,7 @@ Matches a position in which the next move is to an empty square on a3.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:moveto</span> R[b1-8])
+(position <span class="keyword">:moveto</span> <span class="chess">&#x2656;</span>[b1-8])
 </code></div>
 
 <p>
@@ -1504,7 +1504,7 @@ would be done via:
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> R <span class="keyword">:moveto</span> ?b?)
+(position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <span class="keyword">:moveto</span> ?b?)
 </code></div>
 
 <p>
@@ -1547,7 +1547,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:piecedrop</span> [Nn])
+(position <span class="keyword">:piecedrop</span> [<span class="chess">&#x2658;</span><span class="chess">&#x265e;</span>])
 </code></div>
 
 <p>
@@ -1575,7 +1575,7 @@ Examples:
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:promote</span> [RBN])
+(position <span class="keyword">:promote</span> [<span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>])
 </code></div>
 
 <p>
@@ -1583,7 +1583,7 @@ Matches a position whose next move is a white underpromotion.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:promote</span> [BN]a8)
+(position <span class="keyword">:promote</span> [<span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>]a8)
 </code></div>
 
 <p>
@@ -1591,7 +1591,8 @@ Matches a position whose next move is a white promotion to bishop or knight.
 </p>
 
 <div class="verb"><code>
-(position <span class="keyword">:promote</span> [Re8] <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Pf7 <a href="CQL-Position-List.html#position:moveto">:moveto</a> q)
+(position <span class="keyword">:promote</span> [<span class="chess">&#x2656;</span>e8]
+<a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2659;</span>f7 <a href="CQL-Position-List.html#position:moveto">:moveto</a> <span class="chess">&#x265b;</span>)
 </code></div>
 
 <p>
@@ -1626,7 +1627,7 @@ more position lists of the form (position) into the top level of B. For
 example:
 
 <div class="verb"><code>
-((position Na4) (position) (position Rb2))
+((position <span class="chess">&#x2658;</span>a4) (position) (position <span class="chess">&#x2656;</span>b2))
 </code></div>
 
 <p>
@@ -1634,7 +1635,7 @@ refines
 </p>
 
 <div class="verb"><code>
-((position Na4) (position Rb2))
+((position <span class="chess">&#x2658;</span>a4) (position <span class="chess">&#x2656;</span>b2))
 </code></div>
 
 <p>
@@ -1656,8 +1657,8 @@ Examples:
 <div class="box"><pre><code><!--
 -->(position
   <span class="keyword">:gappedsequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Ra3)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Rb4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span>b4)))<!--
 --></code></pre></div>
 
 <p>
@@ -1672,8 +1673,8 @@ In consequence the same effect can be obtained much more efficiently via:
 -->(position 
   <a href="CQL-Position-List.html#position:initial">:initial</a>
   <span class="keyword">:gappedsequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Ra3)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Rb4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span>b4)))<!--
 --></code></pre></div>
 
 <p>
@@ -1685,7 +1686,7 @@ some point in the game after that position:
 -->(position
   <span class="keyword">:gappedsequence</span> (
     (position)
-    (position Nd4))) <!--
+    (position <span class="chess">&#x2658;</span>d4))) <!--
 --></code></pre></div>
 
 <p>
@@ -1720,10 +1721,10 @@ Example:
 
 <div class="box"><pre><code><!--
 -->(position
-  Re8 
+  <span class="chess">&#x2656;</span>e8 
   <span class="keyword">:sequence</span> (
-    (position Qf3 .g2)
-    (position .f3 Qg2)))<!--
+    (position <span class="chess">&#x2655;</span>f3 .g2)
+    (position .f3 <span class="chess">&#x2655;</span>g2)))<!--
 --></code></pre></div>
 
 This position list matches exactly those positions with a white rook on e8
@@ -1739,7 +1740,7 @@ In consequence, this position list is identical in effect to
 </p>
 
 <div class="verb"><code>
-(position Re8 <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qf3 <a href="CQL-Position-List.html#position:moveto">:moveto</a> .g2)
+(position <span class="chess">&#x2656;</span>e8 <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>f3 <a href="CQL-Position-List.html#position:moveto">:moveto</a> .g2)
 </code></div>
 
 <p>
@@ -1751,15 +1752,15 @@ staircase checking maneuvers by either side:
 -->(position 
   <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a> <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>
   <span class="keyword">:sequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qa2) 
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>a2) 
     (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qb2) 
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>b2) 
     (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qb3) 
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>b3) 
     (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qc3)
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>c3)
     (position <a href="CQL-Position-List.html#position:check">:check</a>)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> Qc4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2655;</span>c4)))<!--
 --></code></pre></div>
 
 <p>
@@ -1902,7 +1903,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-(position <a href="CQL-Position-List.html#position:moveto">:moveto</a> [Qq] <span class="keyword">:matchcount</span> 4 100)
+(position <a href="CQL-Position-List.html#position:moveto">:moveto</a> [<span class="chess">&#x2655;</span><span class="chess">&#x265b;</span>] <span class="keyword">:matchcount</span> 4 100)
 </code></div>
 
 <p>
@@ -1999,7 +2000,7 @@ Tripled pawns can be found by the query:
 <div class="box"><pre><code><!--
 -->(position
   <span class="keyword">:reset</span> acc
-  Pe2
+  <span class="chess">&#x2659;</span>e2
   <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> acc
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> acc 3
   <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>
@@ -2015,7 +2016,7 @@ A much better way is:
 
 <div class="box"><pre><code><!--
 -->(position
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> Pa[3-7] 3 6
+  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>a[3-7] 3 6
   <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
   <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>

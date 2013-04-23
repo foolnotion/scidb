@@ -127,6 +127,27 @@ set HtmlMapping {
 	&Bishop;			{<span class="chess">&#x2657;</span>}
 	&Knight;			{<span class="chess">&#x2658;</span>}
 	&Pawn;			{<span class="chess">&#x2659;</span>}
+
+	&king;			{<span class="chess">&#x265a;</span>}
+	&queen;			{<span class="chess">&#x265b;</span>}
+	&rook;			{<span class="chess">&#x265c;</span>}
+	&bishop;			{<span class="chess">&#x265d;</span>}
+	&knight;			{<span class="chess">&#x265e;</span>}
+	&pawn;			{<span class="chess">&#x265f;</span>}
+
+	&K;				{<span class="chess">&#x2654;</span>}
+	&Q;				{<span class="chess">&#x2655;</span>}
+	&R;				{<span class="chess">&#x2656;</span>}
+	&B;				{<span class="chess">&#x2657;</span>}
+	&N;				{<span class="chess">&#x2658;</span>}
+	&P;				{<span class="chess">&#x2659;</span>}
+
+	&k;				{<span class="chess">&#x265a;</span>}
+	&q;				{<span class="chess">&#x265b;</span>}
+	&r;				{<span class="chess">&#x265c;</span>}
+	&b;				{<span class="chess">&#x265d;</span>}
+	&n;				{<span class="chess">&#x265e;</span>}
+	&p;				{<span class="chess">&#x265f;</span>}
 }
 
 set f [open ../../../Makefile.in r]

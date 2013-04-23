@@ -45,7 +45,7 @@ in games played in year 2013:
 (match
   <cql>match:year</cql> 2013
   (position
-    <cql>position:piececount</cql> P[b2-7] 4
+    <cql>position:piececount</cql> &P;[b2-7] 4
     <cql>position:shifthorizontal</cql>
     <cql>position:flipcolor</cql>))
 </verbatim>
@@ -101,13 +101,13 @@ In the list
 <verbatim>
 (match
   (position
-    <cql>position:piececount</cql> P[b2-7] 4
+    <cql>position:piececount</cql> &P;[b2-7] 4
     <cql>position:shifthorizontal</cql>
     <cql>position:flipcolor</cql>))
 </verbatim>
 
 <p>
-<cql>position:piececount</cql> has keyword parameters <expr>P[b2-7]</expr>
+<cql>position:piececount</cql> has keyword parameters <expr>&P;[b2-7]</expr>
 and <expr>4</expr>. The other keywords <cql>position:shifthorizontal</cql>
 and <cql>position:flipcolor</cql> do not take keyword parameters. A list
 whose first element is "match" is called a match list and defines

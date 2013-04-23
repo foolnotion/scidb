@@ -70,7 +70,7 @@ For example, consider the position list
 </p>
 
 <div class="verb"><code>
-(position Rc2 Bh8 :wtm)
+(position <span class="chess">&#x2656;</span>c2 <span class="chess">&#x2657;</span>h8 :wtm)
 </code></div>
 
 <p>
@@ -80,7 +80,7 @@ this position list is the new position list:
 </p>
 
 <div class="verb"><code>
-(position Rb2 Bg8 :wtm)
+(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 :wtm)
 </code></div>
 
 <p>
@@ -94,7 +94,7 @@ the position list:
 </p>
 
 <div class="verb"><code>
-(position Rb8 Bg1 :wtm)
+(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 :wtm)
 </code></div>
 
 <p>
@@ -102,7 +102,7 @@ The result of applying a color flip transformation to the
 </p>
 
 <div class="verb"><code>
-(position Rb2 Bg8 :wtm)
+(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 :wtm)
 </code></div>
 
 <p>
@@ -110,7 +110,7 @@ is thus
 </p>
 
 <div class="verb"><code>
-(position Rb8 Bg1 :btm)
+(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 :btm)
 </code></div>
 
 <p>
@@ -119,7 +119,7 @@ For example the result of applying a unit up shift to this position list:
 </p>
 
 <div class="verb"><code>
-(position R[a1,a8,h1,a8])
+(position <span class="chess">&#x2656;</span>[a1,a8,h1,a8])
 </code></div>
 
 <p>
@@ -127,7 +127,7 @@ is the position list:
 </p>
 
 <div class="verb"><code>
-(position R[a1,a2,h1,h2])
+(position <span class="chess">&#x2656;</span>[a1,a2,h1,h2])
 </code></div>
 
 <p>
@@ -149,7 +149,7 @@ For the transformation keywords see:
 <h2 id="examples">Examples of transformation keyword uses</h2>
 
 <div class="verb"><code>
-(position Rc3 qg3)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3)
 </code></div>
 
 <p>
@@ -158,7 +158,7 @@ queen on g3. We can add a :shifthorizontal keyword:
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :shifthorizontal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shifthorizontal)
 </code></div>
 
 <p>
@@ -166,10 +166,10 @@ The set of transformed position lists is:
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3)<br/>
-(position Rb3 qf3)<br/>
-(position Ra3 qe3)<br/>
-(position Rd3 qh3)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3)<br/>
+(position <span class="chess">&#x2656;</span>b3 <span class="chess">&#x265b;</span>f3)<br/>
+(position <span class="chess">&#x2656;</span>a3 <span class="chess">&#x265b;</span>e3)<br/>
+(position <span class="chess">&#x2656;</span>d3 <span class="chess">&#x265b;</span>h3)
 </code></div>
 
 <p>
@@ -179,7 +179,7 @@ of the black queen.
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :shiftvertical)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shiftvertical)
 </code></div>
 
 <p>
@@ -189,7 +189,7 @@ file and the queen on the g file.
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :shift)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shift)
 </code></div>
 
 <p>
@@ -199,7 +199,7 @@ of the black queen.
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :fliphorizontal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :fliphorizontal)
 </code></div>
 
 <p>
@@ -209,7 +209,7 @@ black queen on g6.
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :flipdiagonal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :flipdiagonal)
 </code></div>
 
 <p>
@@ -219,7 +219,7 @@ queen is on c7.
 </p>
 
 <div class="verb"><code>
-(position Rc3 qg3 :flip)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :flip)
 </code></div>
 
 <p>
@@ -228,7 +228,7 @@ somewhere behind a white pawn on the c file:
 </p>
 
 <div class="verb"><code>
-(position Pc2 Rc1 :shiftvertical)
+(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 :shiftvertical)
 </code></div>
 
 <p>
@@ -242,7 +242,7 @@ same file, use:
 </p>
 
 <div class="verb"><code>
-(position Pc2 Rc1 :shift)
+(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 :shift)
 </code></div>
 
 <h2 id="multiple">Multiple transformation keywords</h2>
@@ -261,7 +261,7 @@ For example, this position list
 </p>
 
 <div class="verb"><code>
-(position Nd4 kf3 :shift :flip)
+(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 :shift :flip)
 </code></div>
 
 <p>
@@ -269,7 +269,7 @@ matches any position in which a white knight attacks a black king, while
 </p>
 
 <div class="verb"><code>
-(position Nd4 kf3 :shift :flip :flipcolor)
+(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 :shift :flip :flipcolor)
 </code></div>
 
 <p>
@@ -281,7 +281,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <div class="verb"><code>
-(position :attackcount N k 1 100 :flipcolor)
+(position :attackcount <span class="chess">&#x2658;</span> <span class="chess">&#x265a;</span> 1 100 :flipcolor)
 </code></div>
 
 <p>

@@ -43,12 +43,12 @@ Certain transforms are defined on piece designators.
 </p>
 
 <p>
-A <b>diagonal flip transformation</b>, applied to a piece designator, reflects each square
-in its square set about the main diagonal.
+A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
+each square in its square set about the main diagonal.
 </p>
 
 <p>
-For example, the diagonal flip of <span style="white-space:nowrap;"><code>Ra8</code></span> is <span style="white-space:nowrap;"><code>Ra1</code></span>. The
+For example, the diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a1</code></span>. The
 diagonal flip of <span style="white-space:nowrap;"><code>[Aa][a-h1-2,f6,h7]</code></span> is
 <span style="white-space:nowrap;"><code>[Aa][a-b1-8,f6,g8]</code></span>.
 </p>
@@ -59,9 +59,9 @@ reflects each square in its square set about the a8 to h1 diagonal.
 </p>
 
 <p>
-For example, the off-diagonal flip of <span style="white-space:nowrap;"><code>Ra8</code></span> is <span style="white-space:nowrap;"><code>Ra8</code></span>.
-The off-diagonal flip of <span style="white-space:nowrap;"><code>[Pp][a1-8]</code></span>, denoting a pawn on the a
-file, is <span style="white-space:nowrap;"><code>[Pp][a-h8]</code></span>, denoting a pawn on the eight rank.
+For example, the off-diagonal flip of <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a8</code></span>.
+The off-diagonal flip of <span style="white-space:nowrap;"><code>[<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>][a1-8]</code></span>, denoting a pawn on the a
+file, is <span style="white-space:nowrap;"><code>[<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>][a-h8]</code></span>, denoting a pawn on the eight rank.
 </p>
 
 <p>
@@ -84,9 +84,9 @@ transformation or a rotation by 90 degrees of the chessboard followed by
 a flip transformation or the identity transformation. There are 8 distinct
 dihedral transformations of the board. For example, the results of
 applying the 8 dihedral transformations to the piece designator
-<span style="white-space:nowrap;"><code>Qc2</code></span> are the 8 piece designators <span style="white-space:nowrap;"><code>Qc2</code></span>,
-<span style="white-space:nowrap;"><code>Qb3</code></span>, <span style="white-space:nowrap;"><code>Qf2</code></span>, <span style="white-space:nowrap;"><code>Qg3</code></span>, <span style="white-space:nowrap;"><code>Qf7</code></span>,
-<span style="white-space:nowrap;"><code>Qg6</code></span>, <span style="white-space:nowrap;"><code>Qb6</code></span>, and <span style="white-space:nowrap;"><code>Qc7</code></span>.
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c2</code></span> are the 8 piece designators <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c2</code></span>,
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b3</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f2</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g3</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>f7</code></span>,
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g6</code></span>, <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>b6</code></span>, and <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>c7</code></span>.
 </p>
 
 <p>
@@ -98,10 +98,10 @@ to the new square set.
 </p>
 
 <p>
-For example, the unit right shift transformation of <span style="white-space:nowrap;"><code>Qd4</code></span> is
-<span style="white-space:nowrap;"><code>Qe4</code></span>. The unit right shift transformation of <span style="white-space:nowrap;"><code>Q[c2,h2]</code></span>
-is <span style="white-space:nowrap;"><code>Qd2</code></span>. The unit right shift transformation of
-<span style="white-space:nowrap;"><code>Q[a2,c2,h2]</code></span> is <span style="white-space:nowrap;"><code>Q[b2,d2]</code></span>.
+For example, the unit right shift transformation of <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>d4</code></span> is
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>e4</code></span>. The unit right shift transformation of <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[c2,h2]</code></span>
+is <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>d2</code></span>. The unit right shift transformation of
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[a2,c2,h2]</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[b2,d2]</code></span>.
 </p>
 
 <p>
@@ -114,10 +114,10 @@ appropriate board edges altering mutatis mutandis.
 <p>
 A <b>right transformation</b> is a composition of zero or more unit right
 transformations. For example, the right transformation comprising three
-successive unit right transformations applied to <span style="white-space:nowrap;"><code>Qa4</code></span> is
-<span style="white-space:nowrap;"><code>Q[a4,b4,c4,d4]</code></span>, since squares on the left edge of the board are
+successive unit right transformations applied to <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>a4</code></span> is
+<span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[a4,b4,c4,d4]</code></span>, since squares on the left edge of the board are
 always included in the new set. The result of applying this right
-transformation to <span style="white-space:nowrap;"><code>Qd4</code></span> is <span style="white-space:nowrap;"><code>Qg4</code></span>.
+transformation to <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>d4</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>g4</code></span>.
 </p>
 
 <p>
@@ -135,16 +135,16 @@ A <b>shift transformation</b> is a transformation that can be written as
 zero or more horizontal shift transformations followed by zero or more
 vertical shift transformations. There is exactly one shift transformation
 that sends a given square to another given square. One possible shift
-transformation of <span style="white-space:nowrap;"><code>Q[b3,c4]</code></span> is <span style="white-space:nowrap;"><code>Q[d4,e5]</code></span>.
+transformation of <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[b3,c4]</code></span> is <span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>[d4,e5]</code></span>.
 </p>
 
 <p>
 A <b>color flip transformation</b> of a piece designator switches the colors
 of each piecetype in the piece set of the piece designator, and then applies
 a horizontal flip to the piece designator. For example, the color flip
-transformation applied to <span style="white-space:nowrap;"><code>[Rbp][a2,c2]</code></span>, either a white rook,
+transformation applied to <span style="white-space:nowrap;"><code>[<span class="chess">&#x2656;</span><span class="chess">&#x265d;</span><span class="chess">&#x265f;</span>][a2,c2]</code></span>, either a white rook,
 a black bishop, or a black pawn on either c2 or a2, is
-<span style="white-space:nowrap;"><code>[rBP][a7,c7]</code></span>.
+<span style="white-space:nowrap;"><code>[<span class="chess">&#x265c;</span><span class="chess">&#x2657;</span><span class="chess">&#x2659;</span>][a7,c7]</code></span>.
 </p>
 
 </body>

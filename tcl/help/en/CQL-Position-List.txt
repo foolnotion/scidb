@@ -206,8 +206,8 @@ Example:
   <cql>position:wtm</cql>
   <cql>position:check</cql>
   <keyword>:and</keyword> (
-    (position Ke2 kg2 <cql>position:shift</cql> <cql>position:flip</cql>)
-    (position Ne2)))
+    (position &K;e2 &k;g2 <cql>position:shift</cql> <cql>position:flip</cql>)
+    (position &N;e2)))
 </verbatim>
 
 <p>
@@ -240,15 +240,15 @@ Examples:
       <comment>; the black king is surrounded by empty squares and</comment>
       <comment>; is attacked once and is in mate</comment>
       (position
-        <cql>position:attackcount</cql> k . 8
-        <cql>position:attackcount</cql> A k 1
+        <cql>position:attackcount</cql> &k; . 8
+        <cql>position:attackcount</cql> A &k; 1
         <cql>position:mate</cql>
         <cql>position:btm</cql>)
       <comment>; check that no neighbor of the black king is</comment>
       <comment>; attacked more than once</comment>
       (position
         <keyword>:not</keyword>
-        <cql>position:attackcount</cql> k .e4 1
+        <cql>position:attackcount</cql> &k; .e4 1
         <cql>position:attackcount</cql> A .e4 2 100
         <cql>position:shift</cql>))))
 </verbatim>
@@ -262,7 +262,7 @@ The follwing position match
 </p>
 
 <verb>
-(position Ra3 <keyword>:not</keyword>)
+(position &R;a3 <keyword>:not</keyword>)
 </verb>
 
 <p>
@@ -270,7 +270,7 @@ is equivalent to
 </p>
 
 <verb>
-(position [aQBNPK.]a3)
+(position [a&Q;&B;&N;&P;&K;.]a3)
 </verb>
 
 <h3 id="position:or">:or</h3>
@@ -288,16 +288,16 @@ Example:
   (position
     <keyword>:or</keyword> (
       (position <cql>position:piececount</cql>
-        B[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        &B;[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9 )
       (position <cql>position:piececount</cql>
-        b[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        &b;[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
       (position <cql>position:piececount</cql>
-        b[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        &b;[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9)
       (position <cql>position:piececount</cql>
-        B[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        &B;[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9))))
 </verbatim>
 
@@ -457,20 +457,20 @@ argument a piecetype designator, letters of which have the following meanings:
 
 <dir>
   <table>
-    <tr><td class="l">
-      <expr>K</expr></td>
+    <tr>
+      <td class="l"><expr>&K;</expr></td>
       <td class="r">White has kingside castling availability</td>
     </tr>
     <tr>
-      <td class="l"><expr>Q</expr></td>
+      <td class="l"><expr>&Q;</expr></td>
       <td class="r">White has queenside castling availability</td>
     </tr>
-    <tr><td class="l">
-      <expr>k</expr></td>
+    <tr>
+      <td class="l"><expr>&k;</expr></td>
       <td class="r">Black has kingside castling availability</td>
     </tr>
     <tr>
-      <td class="l"><expr>q</expr></td>
+      <td class="l"><expr>&q;</expr></td>
       <td class="r">Black has queenside castling availability</td>
     </tr>
   </table>
@@ -484,7 +484,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:castling</keyword> K)
+(position <keyword>:castling</keyword> &K;)
 </verb>
 
 <p>
@@ -492,7 +492,7 @@ White has kingside castling availability.
 </p>
 
 <verb>
-(position <keyword>:castling</keyword> [KQ])
+(position <keyword>:castling</keyword> [&K;&Q;])
 </verb>
 
 <p>
@@ -500,7 +500,7 @@ White has either kingside or queenside castling availability.
 </p>
 
 <verb>
-(position <keyword>:castling</keyword> K <keyword>:castling</keyword> Q)
+(position <keyword>:castling</keyword> &K; <keyword>:castling</keyword> &Q;)
 </verb>
 
 <p>
@@ -546,20 +546,20 @@ query:
   (position
     <cql>position:or</cql> (
       (position
-      <cql>position:piececount</cql> [Qq] 0
-      <cql>position:piececount</cql> [RBN] 0 3
-      <cql>position:piececount</cql> [rbn] 0 3)
+      <cql>position:piececount</cql> [&Q;&q;] 0
+      <cql>position:piececount</cql> [&R;&B;&N;] 0 3
+      <cql>position:piececount</cql> [&r;&b;&n;] 0 3)
     (position
-      <cql>position:piececount</cql> Q 1
-      <cql>position:piececount</cql> q 1
-      <cql>position:piececount</cql> [Rr] 0
+      <cql>position:piececount</cql> &Q; 1
+      <cql>position:piececount</cql> &q; 1
+      <cql>position:piececount</cql> [&R;&r;] 0
       <cql>position:piececount</cql> I 0 1
       <cql>position:piececount</cql> i 0 1)
     (position
-      <cql>position:piececount</cql> Q 1
-      <cql>position:piececount</cql> R 0
+      <cql>position:piececount</cql> &Q; 1
+      <cql>position:piececount</cql> &R; 0
       <cql>position:piececount</cql> I 0 1
-      <cql>position:piececount</cql> q 0
+      <cql>position:piececount</cql> &q; 0
       <cql>position:power</cql> [rbn] 0 16
       <cql>position:flipcolor</cql>)))
 </verbatim>
@@ -825,7 +825,7 @@ We use the following query to find tripled pawns:
 
 <verbatim>
 (position
-  <cql>position:piececount</cql> P[b2-7] 3
+  <cql>position:piececount</cql> &P;[b2-7] 3
   <cql>position:shifthorizontal</cql>)
 </verbatim>
 
@@ -835,8 +835,8 @@ To find one of tripled pawns placed on the main diagonal we design the query
 
 <verbatim>
 (position
-  <keyword>:inside</keyword> P[b2-7] [b2,c3,d4,e5,f6,g7]
-  <cql>position:piececount</cql> P[b2-7] 3
+  <keyword>:inside</keyword> &P;[b2-7] [b2,c3,d4,e5,f6,g7]
+  <cql>position:piececount</cql> &P;[b2-7] 3
   <cql>position:shifthorizontal</cql>)
 </verbatim>
 
@@ -923,7 +923,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> A k 2)
+(position <keyword>:attackcount</keyword> A &k; 2)
 </verb>
 
 <p>
@@ -931,7 +931,7 @@ Matches any position in which white has a double attack on the black king.
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> A k 2 <cql>position:flipcolor</cql>)
+(position <keyword>:attackcount</keyword> A &k; 2 <cql>position:flipcolor</cql>)
 </verb>
 
 <p>
@@ -947,7 +947,7 @@ Matches a position in which exactly one white piece attacks an empty h3 square.
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> [RB][a-c8] ??1 5 9
+(position <keyword>:attackcount</keyword> [&R;&B;][a-c8] ??1 5 9
 </verb>
 
 <p>
@@ -957,7 +957,7 @@ inclusive.
 </p>
 
 <verb>
-(position <keyword>:attackcount</keyword> n [KRQ] 3 100) 
+(position <keyword>:attackcount</keyword> &n; [&K;&R;&Q;] 3 100) 
 </verb>
 
 <p>
@@ -1012,7 +1012,7 @@ without a material loss.
 </p>
 
 <verb>
-(position <keyword>:maxswapvalue</keyword> Q?1-7 ??8 0 1000)
+(position <keyword>:maxswapvalue</keyword> &Q;?1-7 ??8 0 1000)
 </verb>
 
 <h3 id="position:piececount">:piececount</h3>
@@ -1028,7 +1028,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:piececount</keyword> R 2)
+(position <keyword>:piececount</keyword> &R; 2)
 </verb>
 
 <p>
@@ -1038,9 +1038,9 @@ three white rooks would fail to match.
 
 <verbatim>
 (position 
-  <keyword>:piececount</keyword> [Rr][a1-8] 1 3 
-  <keyword>:piececount</keyword> [Qq][a-h8] 4 
-  Nd4)
+  <keyword>:piececount</keyword> [&R;&r;][a1-8] 1 3 
+  <keyword>:piececount</keyword> [&Q;&q;][a-h8] 4 
+  &N;d4)
 </verbatim>
 
 <p>
@@ -1051,9 +1051,9 @@ to write this position list is:
 
 <verbatim>
 (position 
-  Nd4
-  <keyword>:piececount</keyword> [Rr][a?] 1 3 
-  <keyword>:piececount</keyword> [Qq][?8] 4)
+  &N;d4
+  <keyword>:piececount</keyword> [&R;&r;][a?] 1 3 
+  <keyword>:piececount</keyword> [&Q;&q;][?8] 4)
 </verbatim>
 
 <h3 id="position:power">:power</h3>
@@ -1162,7 +1162,7 @@ greater than the black pieces.
 </p>
 
 <verb>
-(position <keyword>:powerdifference</keyword> [Rr] -5 10)
+(position <keyword>:powerdifference</keyword> [&R;&r;] -5 10)
 </verb>
 
 <p>
@@ -1171,7 +1171,7 @@ rooks than black.
 </p>
 
 <verb>
-(position <keyword>:powerdifference</keyword> [RrBbNn] -1000 -2)
+(position <keyword>:powerdifference</keyword> [&R;&r;&B;&b;&N;&n;] -1000 -2)
 </verb>
 
 <p>
@@ -1184,19 +1184,19 @@ This matches positions in which black is up at least an exchange.
     <cql>match:result</cql> 1-0
     <cql>position:sequence</cql> (
       (position
-        <keyword>:powerdifference</keyword> [Qq] -1000 -9
+        <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9
         <keyword>:powerdifference</keyword> U -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [Qq] -1000 -9))
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9))
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -1238,7 +1238,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:ray</keyword> (k Q)) 
+(position <keyword>:ray</keyword> (&k; &Q;)) 
 </verb>
 
 <p>
@@ -1246,7 +1246,7 @@ Matches a position in which a white queen attacks the black king.
 </p>
 
 <verb>
-(position <keyword>:ray</keyword> (Qa? n k[?4-8]))
+(position <keyword>:ray</keyword> (&Q;a? &n; &k;[?4-8]))
 </verb>
 
 <p>
@@ -1255,7 +1255,7 @@ to the black king on the last four ranks.
 </p>
 
 <verb>
-(position <keyword>:ray</keyword> (Qa? Qc? Qe? kg?))
+(position <keyword>:ray</keyword> (&Q;a? &Q;c? &Q;e? &k;g?))
 </verb>
 
 <p>
@@ -1267,7 +1267,7 @@ the a, c, and e files.
 </p>
 
 <verb>
-(position <keyword>:ray</keyword> (Q n k) 2 4)
+(position <keyword>:ray</keyword> (&Q; &n; &k;) 2 4)
 </verb>
 
 <p>
@@ -1292,7 +1292,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:rayattack</keyword> (A a k))
+(position <keyword>:rayattack</keyword> (A a &k;))
 </verb>
 
 <p>
@@ -1300,7 +1300,7 @@ Matches a position in which a black piece is pinned to the black king.
 </p>
 
 <verb>
-(position <keyword>:rayattack</keyword> (Ad5 a [rk][a-h1-4]) 3)
+(position <keyword>:rayattack</keyword> (Ad5 a [&r;&k;][a-h1-4]) 3)
 </verb>
 
 <p>
@@ -1310,7 +1310,7 @@ d5 against either a black rook or king in the first four ranks.
 
 <verb>
 (position <cql>position:stalemate</cql> <keyword>:rayattack</keyword>
-(A a k) 2 8 <cql>position:flipcolor</cql>)
+(A a &k;) 2 8 <cql>position:flipcolor</cql>)
 </verb>
 
 <p>
@@ -1364,7 +1364,7 @@ if any.
 
 <p>
 For example, the to designation of a white rook on a4 capturing a black knight
-on d4 is nd4, and its from designation is Ra4. The to designation of a move to
+on d4 is &n;d4, and its from designation is &R;a4. The to designation of a move to
 e4 that is not a capture is .e4. 
 </p>
 
@@ -1417,7 +1417,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:movefrom</keyword> Ra3)
+(position <keyword>:movefrom</keyword> &R;a3)
 </verb>
 
 <p>
@@ -1480,7 +1480,7 @@ Matches a position in which the next move is to an empty square on a3.
 </p>
 
 <verb>
-(position <keyword>:moveto</keyword> R[b1-8])
+(position <keyword>:moveto</keyword> &R;[b1-8])
 </verb>
 
 <p>
@@ -1492,7 +1492,7 @@ would be done via:
 </p>
 
 <verb>
-(position <cql>position:movefrom</cql> R <keyword>:moveto</keyword> ?b?)
+(position <cql>position:movefrom</cql> &R; <keyword>:moveto</keyword> ?b?)
 </verb>
 
 <p>
@@ -1535,7 +1535,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:piecedrop</keyword> [Nn])
+(position <keyword>:piecedrop</keyword> [&N;&n;])
 </verb>
 
 <p>
@@ -1563,7 +1563,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:promote</keyword> [RBN])
+(position <keyword>:promote</keyword> [&R;&B;&N;])
 </verb>
 
 <p>
@@ -1571,7 +1571,7 @@ Matches a position whose next move is a white underpromotion.
 </p>
 
 <verb>
-(position <keyword>:promote</keyword> [BN]a8)
+(position <keyword>:promote</keyword> [&B;&N;]a8)
 </verb>
 
 <p>
@@ -1579,7 +1579,8 @@ Matches a position whose next move is a white promotion to bishop or knight.
 </p>
 
 <verb>
-(position <keyword>:promote</keyword> [Re8] <cql>position:movefrom</cql> Pf7 <cql>position:moveto</cql> q)
+(position <keyword>:promote</keyword> [&R;e8]
+<cql>position:movefrom</cql> &P;f7 <cql>position:moveto</cql> &q;)
 </verb>
 
 <p>
@@ -1614,7 +1615,7 @@ more position lists of the form (position) into the top level of B. For
 example:
 
 <verb>
-((position Na4) (position) (position Rb2))
+((position &N;a4) (position) (position &R;b2))
 </verb>
 
 <p>
@@ -1622,7 +1623,7 @@ refines
 </p>
 
 <verb>
-((position Na4) (position Rb2))
+((position &N;a4) (position &R;b2))
 </verb>
 
 <p>
@@ -1644,8 +1645,8 @@ Examples:
 <verbatim>
 (position
   <keyword>:gappedsequence</keyword> (
-    (position <cql>position:movefrom</cql> Ra3)
-    (position <cql>position:movefrom</cql> Rb4)))
+    (position <cql>position:movefrom</cql> &R;a3)
+    (position <cql>position:movefrom</cql> &R;b4)))
 </verbatim>
 
 <p>
@@ -1660,8 +1661,8 @@ In consequence the same effect can be obtained much more efficiently via:
 (position 
   <cql>position:initial</cql>
   <keyword>:gappedsequence</keyword> (
-    (position <cql>position:movefrom</cql> Ra3)
-    (position <cql>position:movefrom</cql> Rb4)))
+    (position <cql>position:movefrom</cql> &R;a3)
+    (position <cql>position:movefrom</cql> &R;b4)))
 </verbatim>
 
 <p>
@@ -1673,7 +1674,7 @@ some point in the game after that position:
 (position
   <keyword>:gappedsequence</keyword> (
     (position)
-    (position Nd4))) 
+    (position &N;d4))) 
 </verbatim>
 
 <p>
@@ -1708,10 +1709,10 @@ Example:
 
 <verbatim>
 (position
-  Re8 
+  &R;e8 
   <keyword>:sequence</keyword> (
-    (position Qf3 .g2)
-    (position .f3 Qg2)))
+    (position &Q;f3 .g2)
+    (position .f3 &Q;g2)))
 </verbatim>
 
 This position list matches exactly those positions with a white rook on e8
@@ -1727,7 +1728,7 @@ In consequence, this position list is identical in effect to
 </p>
 
 <verb>
-(position Re8 <cql>position:movefrom</cql> Qf3 <cql>position:moveto</cql> .g2)
+(position &R;e8 <cql>position:movefrom</cql> &Q;f3 <cql>position:moveto</cql> .g2)
 </verb>
 
 <p>
@@ -1739,15 +1740,15 @@ staircase checking maneuvers by either side:
 (position 
   <cql>position:shift</cql> <cql>position:flip</cql> <cql>position:flipcolor</cql>
   <keyword>:sequence</keyword> (
-    (position <cql>position:movefrom</cql> Qa2) 
+    (position <cql>position:movefrom</cql> &Q;a2) 
     (position <cql>position:check</cql>) 
-    (position <cql>position:movefrom</cql> Qb2) 
+    (position <cql>position:movefrom</cql> &Q;b2) 
     (position <cql>position:check</cql>) 
-    (position <cql>position:movefrom</cql> Qb3) 
+    (position <cql>position:movefrom</cql> &Q;b3) 
     (position <cql>position:check</cql>) 
-    (position <cql>position:movefrom</cql> Qc3)
+    (position <cql>position:movefrom</cql> &Q;c3)
     (position <cql>position:check</cql>)
-    (position <cql>position:movefrom</cql> Qc4)))
+    (position <cql>position:movefrom</cql> &Q;c4)))
 </verbatim>
 
 <p>
@@ -1890,7 +1891,7 @@ Example:
 </p>
 
 <verb>
-(position <cql>position:moveto</cql> [Qq] <keyword>:matchcount</keyword> 4 100)
+(position <cql>position:moveto</cql> [&Q;&q;] <keyword>:matchcount</keyword> 4 100)
 </verb>
 
 <p>
@@ -1987,7 +1988,7 @@ Tripled pawns can be found by the query:
 <verbatim>
 (position
   <keyword>:reset</keyword> acc
-  Pe2
+  &P;e2
   <cql>position:accumulate</cql> acc
   <cql>position:sumrange</cql> acc 3
   <cql>position:shiftvertical</cql>
@@ -2003,7 +2004,7 @@ A much better way is:
 
 <verbatim>
 (position
-  <cql>position:piececount</cql> Pa[3-7] 3 6
+  <cql>position:piececount</cql> &P;a[3-7] 3 6
   <cql>position:shifthorizontal</cql>
   <cql>position:flipcolor</cql>))
 </verbatim>
