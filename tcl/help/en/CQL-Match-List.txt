@@ -1900,7 +1900,7 @@ Note that for chess variants %::mc::VariantName(Suicide)%, and
 number N is also matching <nobr>N&#x2212;3&#x00d7;960</nobr> if
 <nobr>N &gt; 3&#x00d7;960</nobr>. This is simplifying the search for standard
 start positions; see example below. Note that a position in these chess
-variants cannot have a position number greater than <nobr>3&#x00d7;960</nobr>.
+variants cannot have a position number equal or less than 960.
 </p>
 
 <p>
