@@ -581,7 +581,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span class="keyword">:birthyear</span> 1990-2020
+<span class="keyword">:birthyear</span> 1990 2020
 </code></div>
 
 <p>
@@ -649,8 +649,8 @@ See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>
 
 <p>
 Match all games where the gender of the black player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), or <span style="white-space:nowrap;"><code>m</code></span> (male, man). For
-female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
+<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -665,6 +665,14 @@ Example:
 
 <p>
 Only search for games where the black player is female.
+</p>
+
+<div class="verb"><code>
+<span class="keyword">:blackgender</span> x
+</code></div>
+
+<p>
+Only search for games where the gender is unknown.
 </p>
 
 <p>
@@ -802,11 +810,15 @@ See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>
 
 <p>
 Match all games where the gender of one player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), or <span style="white-space:nowrap;"><code>m</code></span> (male, man). For
-female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
+<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
+
+<p>
+For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
+</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:whitegender">:whitegender</a>.
@@ -1084,23 +1096,15 @@ See also: <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>
 
 <p>
 Match all games where the gender of the white player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), or <span style="white-space:nowrap;"><code>m</code></span> (male, man). For
-female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
+<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
-Example:
-</p>
-
-<div class="verb"><code>
-<span class="keyword">:whitegender</span> f
-</code></div>
-
+For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
 <p>
-Only search for games where the white player is female.
-</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:gender">:gender</a>.
@@ -1409,7 +1413,8 @@ Examples:
 
 <p>
 Search for games which has one of the markers set specified in the given
-comma-separated list (&#x21d2; <a href="Game-Flags.html">game markers</a>).
+string (&#x21d2; <a href="Game-Flags.html">game markers</a>). If no parameter
+is given, we will search for any marker.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -1420,11 +1425,6 @@ A marker is one of:
 
 <div class="dir">
   <table>
-    <tr>
-      <td class="l">#</td>
-      <td class="m"></td>
-      <td class="r">Any marker</td>
-    </tr>
     <tr>
       <td class="l">w</td>
       <td class="m"><img src="../images/gameflag-White-Opening.png" alt="" /></td>
@@ -1538,7 +1538,7 @@ Example:
 </p>
 
 <div class="verb"><code>
-<span class="keyword">:hasmarkers</span> w,b
+<span class="keyword">:hasmarkers</span> wb
 </code></div>
 
 <p>
@@ -1547,7 +1547,7 @@ or <i>Black Opening</i>.
 </p>
 
 <div class="verb"><code>
-<span class="keyword">:hasmarkers</span> #
+<span class="keyword">:hasmarkers</span>
 </code></div>
 
 <p>
@@ -1559,7 +1559,8 @@ game marker are excluded.
 
 <p>
 Search for games which has one of the special markers set specified in the given
-comma-separated list.
+comma-separated list. If no list is given, we will search for any special
+marker.
 </p>
 
 <p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
@@ -1955,6 +1956,15 @@ position number in the following way:
 </ol>
 
 <p>
+Note that for chess variants Suicide, and
+Giveaway a special rule will be applied: a position
+number N is also matching <span style="white-space:nowrap;">N&#x2212;3&#x00d7;960</span> if
+<span style="white-space:nowrap;">N &gt; 3&#x00d7;960</span>. This is simplifying the search for standard
+start positions; see example below. Note that a position in these chess
+variants cannot have a position number greater than <span style="white-space:nowrap;">3&#x00d7;960</span>.
+</p>
+
+<p>
 It is also possible to specifiy a FICS variant identifier for
 the start position. The supported positions are:
 </p>
@@ -2019,6 +2029,17 @@ Examples:
 </p>
 
 <div class="verb"><code>
+<span class="keyword">:startposition</span> 518
+</code></div>
+
+<p>
+Search for games beginning with a standard start position. In case
+of chess variants Suicide, or
+Giveaway this will also match position
+number 3398.
+</p>
+
+<div class="verb"><code>
 <span class="keyword">:startposition</span> 518,3398
 </code></div>
 
@@ -2036,22 +2057,22 @@ Search for games with variant <span style="white-space:nowrap;"><code>misc/runaw
 </p>
 
 <div class="verb"><code>
-<span class="keyword">:startposition</span> 0
+<span class="keyword">:startposition</span> 0 <a href="CQL-Match-List.html#match:not">:not</a>
 </code></div>
 
 <p>
-Search for games not starting with a start position: this means
-that the first game position is not a Shuffle Chess position.
+Search for games beginning with a start position: this means
+that the first game position is a Shuffle Chess position.
 </p>
 
 <div class="verb"><code>
-<span class="keyword">:startposition</span> -1
+<span class="keyword">:startposition</span> -1 <a href="CQL-Match-List.html#match:not">:not</a>
 </code></div>
 
 <p>
-Search for games not starting with any supported start position:
-this means that the first game position is neither a Shuffle Chess
-position, nor a (supported) FICS variant.
+Search for games beginning with any supported start position:
+this means that the first game position is either a Shuffle Chess
+position, or a (supported) FICS variant.
 </p>
 
 <!-- ############################################################################## -->

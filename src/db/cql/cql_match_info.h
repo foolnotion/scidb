@@ -68,7 +68,7 @@ class Player : public Match
 {
 public:
 
-	Player(char const* s, char const* e, db::color::ID c);
+	Player(char const* s, char const* e, unsigned colors);
 
 	mstl::pattern const& pattern() const;
 
@@ -77,7 +77,7 @@ public:
 private:
 
 	mstl::pattern	m_pattern;
-	db::color::ID	m_color;
+	unsigned			m_colors;
 };
 
 
@@ -232,13 +232,14 @@ class GameNumber : public Match
 {
 public:
 
-	GameNumber(unsigned number);
+	GameNumber(unsigned min, unsigned max);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	unsigned m_number;
+	unsigned m_min;
+	unsigned m_max;
 };
 
 
@@ -260,11 +261,11 @@ struct HasVariation : public Match
 };
 
 
-class GameFlags : public Match
+class GameMarkers : public Match
 {
 public:
 
-	GameFlags(unsigned flags);
+	GameMarkers(unsigned flags);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
@@ -329,18 +330,6 @@ struct IsShuffleChess : public Match
 };
 
 
-struct IsStandardPosition : public Match
-{
-	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
-};
-
-
-struct IsStartPosition : public Match
-{
-	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
-};
-
-
 class PlyCount : public Match
 {
 public:
@@ -360,13 +349,16 @@ class StartPosition : public Match
 {
 public:
 
-	StartPosition(unsigned idn);
+	typedef mstl::bitset Positions;
+
+	StartPosition(Positions positions);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	unsigned m_idn;
+	Positions	m_positions;
+	bool			m_none;
 };
 
 
@@ -397,6 +389,20 @@ private:
 
 	unsigned m_round;
 	unsigned m_subround;
+};
+
+
+class SpecialGameMarkers : public Match
+{
+public:
+
+	SpecialGameMarkers(unsigned flags);
+
+	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
+
+private:
+
+	unsigned m_flags;
 };
 
 
@@ -447,13 +453,13 @@ class Variant : public Match
 {
 public:
 
-	Variant(Match::Variant variant);
+	Variant(unsigned variants);
 
 	bool match(GameInfo const& info, Match::Variant variant, unsigned gameNumber) override;
 
 private:
 
-	Match::Variant m_variant;
+	unsigned m_variants;
 };
 
 

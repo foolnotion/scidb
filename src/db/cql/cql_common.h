@@ -38,6 +38,8 @@ namespace error
 	enum Type
 	{
 		No_Error,
+		Unexpected_Comma,
+		Missing_Parameter,
 		Invalid_Keyword,
 		Invalid_Relation_Keyword,
 		Range_Expected,
@@ -49,6 +51,8 @@ namespace error
 		Unterminated_String,
 		Empty_String_Not_Allowed,
 		Invalid_Date,
+		Syntax_Error_In_Date,
+		Empty_Date_Range,
 		Illegal_Date,
 		Illegal_Date_Offset,
 		Invalid_Eco_Code,
@@ -69,6 +73,7 @@ namespace error
 		Invalid_Promotion_Ranks,
 		Invalid_FICS_Position,
 		Invalid_IDN,
+		Invalid_Special_Marker,
 		Position_Number_Expected,
 		Integer_Out_Of_Range,
 		Unexpected_Token,
@@ -77,6 +82,7 @@ namespace error
 		Trailing_Characters,
 		Keyword_Match_Expected,
 		Keyword_Position_Expected,
+		Position_List_Expected,
 		Keyword_Match_Or_Position_Expected,
 		Relation_List_Expected,
 		Unmatched_Bracket,

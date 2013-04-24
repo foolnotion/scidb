@@ -105,6 +105,15 @@ GameInfo::isGiveaway() const
 
 inline
 bool
+GameInfo::isSuicide() const
+{
+	// NOTE: should be used only for Suicide/Giveaway games
+	return !isGiveaway();
+}
+
+
+inline
+bool
 GameInfo::hasStandardPosition(variant::Type variant) const
 {
 	return variant::isStandardChess(m_positionId, variant);

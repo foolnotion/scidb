@@ -173,6 +173,7 @@ public:
 	material::si3::Signature material() const;
 	Signature signature() const;							// ChessBase: n/a; Scid: roughly
 	bool isGiveaway() const;
+	bool isSuicide() const;
 
 	// Scid 3.x: possibly n/a until game is loaded
 	Date eventDate() const;

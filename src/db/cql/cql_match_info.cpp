@@ -52,7 +52,15 @@ Annotator::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 info::Player::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_pattern.match(info.playerEntry(m_color)->name());
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && m_pattern.match(info.playerEntry(color::ID(i))->name()))
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -132,7 +140,7 @@ Country::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 GameNumber::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_number == gameNumber;
+	return m_min <= gameNumber && gameNumber <= m_max;
 }
 
 
@@ -158,7 +166,7 @@ HasVariation::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 
 
 bool
-GameFlags::match(GameInfo const& info, Variant variant, unsigned gameNumber)
+GameMarkers::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
 	return (info.flags() & m_flags) == m_flags;
 }
@@ -171,7 +179,7 @@ Gender::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 
 	for (unsigned i = 0; i < 2; ++i)
 	{
-		if ((m_colors & (1 << i)) && (info.sex(db::color::ID(i)) & m_sex))
+		if ((m_colors & (1 << i)) && info.sex(db::color::ID(i)) == m_sex)
 			return true;
 	}
 
@@ -208,20 +216,6 @@ IsShuffleChess::match(GameInfo const& info, Variant variant, unsigned gameNumber
 
 
 bool
-IsStandardPosition::match(GameInfo const& info, Variant variant, unsigned gameNumber)
-{
-	return variant::isStandardChess(info.idn(), variant);
-}
-
-
-bool
-IsStartPosition::match(GameInfo const& info, Variant variant, unsigned gameNumber)
-{
-	return info.idn() > 0;
-}
-
-
-bool
 PlyCount::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
 	return m_min <= info.plyCount() && info.plyCount() <= m_max;
@@ -231,10 +225,22 @@ PlyCount::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 StartPosition::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	if (m_idn == 0 || !isAntichessExceptLosers(variant))
-		return info.idn() == m_idn;
+	if (m_none)
+		return info.idn() == 0;
+	
+	if (m_positions.test(0))
+		return info.idn() == 0 || info.idn() > 4*960;
 
-	return info.idn() == (m_idn <= 960) ? m_idn + 3*960 : m_idn;
+	if (m_positions.test(info.idn()))
+		return true;
+	
+	if (!isAntichessExceptLosers(variant))
+		return false;
+
+	if (info.idn() > 3*960)
+		return m_positions.test(info.idn() - 3*960);
+	
+	return false;
 }
 
 
@@ -252,6 +258,15 @@ Round::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 		return false;
 
 	return m_round == info.round();
+}
+
+
+bool
+SpecialGameMarkers::match(GameInfo const& info, Variant variant, unsigned gameNumber)
+{
+	return	((m_flags & GameInfo::Flag_Deleted) && info.isDeleted())
+			|| ((m_flags & GameInfo::Flag_Illegal_Castling) && info.containsIllegalCastlings())
+			|| ((m_flags & GameInfo::Flag_Illegal_Move) && info.containsIllegalMoves());
 }
 
 
@@ -287,13 +302,21 @@ Title::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 Variant::match(GameInfo const& info, Match::Variant variant, unsigned gameNumber)
 {
-	switch (int(m_variant))
+	if (isAntichessExceptLosers(variant))
 	{
-		case variant::Giveaway:	return info.isGiveaway();
-		case variant::Suicide:	return !info.isGiveaway();
+		if ((m_variants & variant::Giveaway) && info.isGiveaway())
+			return true;
+
+		if ((m_variants & variant::Suicide) && info.isSuicide())
+			return true;
+	}
+	else
+	{
+		if (m_variants & variant)
+			return true;
 	}
 
-	return true;
+	return false;
 }
 
 

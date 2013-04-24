@@ -162,14 +162,13 @@ private:
 	char const* parseGender(char const* s, Error& error);
 	char const* parseHasAnnotation(char const* s, Error& error);
 	char const* parseHasComments(char const* s, Error& error);
-	char const* parseHasFlags(char const* s, Error& error);     
+	char const* parseHasMarkers(char const* s, Error& error);     
+	char const* parseHasSpecialMarkers(char const* s, Error& error);     
 	char const* parseHasVariations(char const* s, Error& error);
 	char const* parseIsChess960(char const* s, Error& error);
 	char const* parseIsComputer(char const* s, Error& error);
 	char const* parseIsHuman(char const* s, Error& error);
 	char const* parseIsShuffleChess(char const* s, Error& error);
-	char const* parseIsStandardPosition(char const* s, Error& error);
-	char const* parseIsStartPosition(char const* s, Error& error);
 	char const* parseLanguage(char const* s, Error& error);
 	char const* parseNot(char const* s, Error& error);
 	char const* parseOr(char const* s, Error& error);

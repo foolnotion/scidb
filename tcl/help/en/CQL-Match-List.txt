@@ -566,7 +566,7 @@ Example:
 </p>
 
 <verb>
-<keyword>:birthyear</keyword> 1990-2020
+<keyword>:birthyear</keyword> 1990 2020
 </verb>
 
 <p>
@@ -634,8 +634,8 @@ See also: <cql>match:whitedeathyear</cql>, <cql>match:deathyear</cql>,
 
 <p>
 Match all games where the gender of the black player is matching given gender.
-Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
-female also <expr>w</expr> (woman) may be used.
+Gender is one of <expr>f</expr> (female), <expr>m</expr> (male, man), or
+<expr>x</expr> (unknown). For female also <expr>w</expr> (woman) may be used.
 </p>
 
 <nonstd/>
@@ -650,6 +650,14 @@ Example:
 
 <p>
 Only search for games where the black player is female.
+</p>
+
+<verb>
+<keyword>:blackgender</keyword> x
+</verb>
+
+<p>
+Only search for games where the gender is unknown.
 </p>
 
 <p>
@@ -787,11 +795,15 @@ See also: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
 
 <p>
 Match all games where the gender of one player is matching given gender.
-Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
-female also <expr>w</expr> (woman) may be used.
+Gender is one of <expr>f</expr> (female), <expr>m</expr> (male, man), or
+<expr>x</expr> (unknown). For female also <expr>w</expr> (woman) may be used.
 </p>
 
 <nonstd/>
+
+<p>
+For examples see <cql>match:blackgender</cql>.
+</p>
 
 <p>
 See also: <cql>match:blackgender</cql>, <cql>match:whitegender</cql>.
@@ -1023,23 +1035,15 @@ See also: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
 
 <p>
 Match all games where the gender of the white player is matching given gender.
-Gender is one of <expr>f</expr> (female), or <expr>m</expr> (male, man). For
-female also <expr>w</expr> (woman) may be used.
+Gender is one of <expr>f</expr> (female), <expr>m</expr> (male, man), or
+<expr>x</expr> (unknown). For female also <expr>w</expr> (woman) may be used.
 </p>
 
 <nonstd/>
 
 <p>
-Example:
-</p>
-
-<verb>
-<keyword>:whitegender</keyword> f
-</verb>
-
+For examples see <cql>match:blackgender</cql>.
 <p>
-Only search for games where the white player is female.
-</p>
 
 <p>
 See also: <cql>match:blackgender</cql>, <cql>match:gender</cql>.
@@ -1348,7 +1352,8 @@ Examples:
 
 <p>
 Search for games which has one of the markers set specified in the given
-comma-separated list (<see/> <a href="Game-Flags.html">game markers</a>).
+string (<see/> <a href="Game-Flags.html">game markers</a>). If no parameter
+is given, we will search for any marker.
 </p>
 
 <nonstd/>
@@ -1359,11 +1364,6 @@ A marker is one of:
 
 <div class="dir">
   <table>
-    <tr>
-      <td class="l">#</td>
-      <td class="m"></td>
-      <td class="r">Any marker</td>
-    </tr>
     <tr>
       <td class="l">w</td>
       <td class="m"><img src="../images/gameflag-White-Opening.png"/></td>
@@ -1477,7 +1477,7 @@ Example:
 </p>
 
 <verb>
-<keyword>:hasmarkers</keyword> w,b
+<keyword>:hasmarkers</keyword> wb
 </verb>
 
 <p>
@@ -1486,7 +1486,7 @@ or <i>%::gametable::mc::GameFlags(b)%</i>.
 </p>
 
 <verb>
-<keyword>:hasmarkers</keyword> #
+<keyword>:hasmarkers</keyword>
 </verb>
 
 <p>
@@ -1498,7 +1498,8 @@ game marker are excluded.
 
 <p>
 Search for games which has one of the special markers set specified in the given
-comma-separated list.
+comma-separated list. If no list is given, we will search for any special
+marker.
 </p>
 
 <nonstd/>
@@ -1894,6 +1895,15 @@ position number in the following way:
 </ol>
 
 <p>
+Note that for chess variants %::mc::VariantName(Suicide)%, and
+%::mc::VariantName(Giveaway)% a special rule will be applied: a position
+number N is also matching <nobr>N&#x2212;3&#x00d7;960</nobr> if
+<nobr>N &gt; 3&#x00d7;960</nobr>. This is simplifying the search for standard
+start positions; see example below. Note that a position in these chess
+variants cannot have a position number greater than <nobr>3&#x00d7;960</nobr>.
+</p>
+
+<p>
 It is also possible to specifiy a FICS variant identifier for
 the start position. The supported positions are:
 </p>
@@ -1904,6 +1914,17 @@ INCLUDE ../Start-Positions.txt
 
 <p>
 Examples:
+</p>
+
+<verb>
+<keyword>:startposition</keyword> 518
+</verb>
+
+<p>
+Search for games beginning with a standard start position. In case
+of chess variants %::mc::VariantName(Suicide)%, or
+%::mc::VariantName(Giveaway)% this will also match position
+number 3398.
 </p>
 
 <verb>
@@ -1924,22 +1945,22 @@ Search for games with variant <expr>misc/runaway</expr>.
 </p>
 
 <verb>
-<keyword>:startposition</keyword> 0
+<keyword>:startposition</keyword> 0 <cql>match:not</cql>
 </verb>
 
 <p>
-Search for games not starting with a start position: this means
-that the first game position is not a Shuffle Chess position.
+Search for games beginning with a start position: this means
+that the first game position is a Shuffle Chess position.
 </p>
 
 <verb>
-<keyword>:startposition</keyword> -1
+<keyword>:startposition</keyword> -1 <cql>match:not</cql>
 </verb>
 
 <p>
-Search for games not starting with any supported start position:
-this means that the first game position is neither a Shuffle Chess
-position, nor a (supported) FICS variant.
+Search for games beginning with any supported start position:
+this means that the first game position is either a Shuffle Chess
+position, or a (supported) FICS variant.
 </p>
 
 <!-- ############################################################################## -->

@@ -185,7 +185,7 @@ isEqual(char const* s, char const* e, char const* str, unsigned len)
 inline static bool
 isDelim(char c)
 {
-	return isspace(c) || c == '\0' || c == '(' || c == ')' || c == ';';
+	return isspace(c) || c == '\0' || c == '(' || c == ')' || c == ';' || c == ',';
 }
 
 
@@ -282,7 +282,7 @@ parseDate(char const* s, error::Type& error, Date& date)
 		}
 
 		char* e;
-		int offs = ::strtoul(t, &e, 10);
+		int offs = ::strtoul(t + 1, &e, 10)*(t[-1] == '+' ? +1 : -1);
 		t = e;
 
 		switch (*t)
@@ -318,6 +318,56 @@ parseDate(char const* s, error::Type& error, Date& date)
 	}
 
 	return t;
+}
+
+
+static char const*
+parseDates(char const* s, error::Type& error, Date& min, Date& max)
+{
+	bool exclude = false;
+
+	char const* t = s;
+
+	s = parseDate(skipSpaces(s), error, min);
+
+	if (s[0] == '.' && s[1] == '.')
+	{
+		if (isspace(s[2]) || isdigit(s[2]))
+		{
+			exclude = true;
+		}
+		else
+		{
+			error = Syntax_Error_In_Date;
+			return s;
+		}
+	}
+
+	max = min;
+
+	if (isdigit(*s))
+	{
+		s = parseDate(s, error, max);
+
+		if (error != No_Error)
+			return s;
+	}
+
+	if (exclude)
+	{
+		if (min == max)
+		{
+			error = Empty_Date_Range;
+			return t;
+		}
+
+		max.addDays(-1);
+	}
+
+	if (max > min)
+		mstl::swap(min, max);
+
+	return s;
 }
 
 
@@ -361,19 +411,23 @@ parseCountryCodes(char const* s, error::Type& error, mstl::bitset& codes)
 		{
 			case 2:
 				str.tolower();
-				code = cql::country::lookupIso3166_2(str);
+
+				if (str != "xx" && (code = cql::country::lookupIso3166_2(str)) == db::country::Unknown)
+				{
+					error = Illegal_Country_Code;
+					return s;
+				}
 				break;
 
 			case 3:
 				str.toupper();
-				code = db::country::fromString(str);
-				break;
-		}
 
-		if (code == db::country::Unknown)
-		{
-			error = Illegal_Country_Code;
-			return s;
+				if (str != "UNK" && (code = db::country::fromString(str)) == db::country::Unknown)
+				{
+					error = Illegal_Country_Code;
+					return s;
+				}
+				break;
 		}
 
 		codes.set(code);
@@ -393,7 +447,7 @@ parseGender(char const* s, error::Type& error, sex::ID sex)
 {
 	sex = sex::fromChar(*s);
 
-	if (sex == sex::Unspecified || !::isDelim(s[1]))
+	if ((sex == sex::Unspecified && *s != 'x') || !::isDelim(s[1]))
 		error = Invalid_Gender;
 	else
 		++s;
@@ -415,12 +469,17 @@ parseTitles(char const* s, error::Type& error, unsigned& titles)
 
 		result.toupper();
 
-		title::ID title = title::fromString(s);
+		title::ID title = title::None;
 
-		if (title == title::None || result != title::toString(title))
+		if (result != "NONE")
 		{
-			error = Invalid_Title;
-			return s;
+			title::ID title = title::fromString(s);
+
+			if (title == title::None || result != title::toString(title))
+			{
+				error = Invalid_Title;
+				return s;
+			}
 		}
 
 		titles |= title::fromID(title);
@@ -510,7 +569,7 @@ Match::parseAnd(char const* s, Error& error)
 
 	if (*s != '(')
 	{
-		error = Keyword_Position_Expected;
+		error = Position_List_Expected;
 		return s;
 	}
 
@@ -821,24 +880,12 @@ Match::parseCountry(char const* s, Error& error)
 char const*
 Match::parseDate(char const* s, Error& error)
 {
-	Date min;
+	Date min, max;
 
-	s = ::parseDate(s, error, min);
+	s = ::parseDates(s, error, min, max);
 
 	if (error != No_Error)
 		return s;
-
-	s = ::skipSpaces(s);
-
-	Date max(min);
-
-	if (::isdigit(*s))
-	{
-		s = ::parseDate(s, error, max);
-
-		if (error != No_Error)
-			return s;
-	}
 
 	m_matchGameInfoList.push_back(new info::Date(min, max));
 	m_isStandard = false;
@@ -950,22 +997,12 @@ Match::parseEventCountry(char const* s, Error& error)
 char const*
 Match::parseEventDate(char const* s, Error& error)
 {
-	Date min;
+	Date min, max;
 
-	s = ::parseDate(s, error, min);
+	s = ::parseDates(s, error, min, max);
 
 	if (error != No_Error)
 		return s;
-
-	Date max(min);
-
-	if (s[0] == '.' && s[1] == '.')
-	{
-		s = ::parseDate(s, error, max);
-
-		if (error != No_Error)
-			return s;
-	}
 
 	m_matchGameInfoList.push_back(new info::EventDate(min, max));
 	m_isStandard = false;
@@ -1073,17 +1110,12 @@ Match::parseForAny(char const* s, Error& error)
 char const*
 Match::parseGameNumber(char const* s, Error& error)
 {
-	if (!::isdigit(*s))
-	{
-		error = Positive_Integer_Expected;
-	}
-	else
-	{
-		char* e;
-		unsigned number = ::strtoul(s, &e, 10);
-		s = e;
-		m_matchGameInfoList.push_back(new info::GameNumber(number));
-	}
+	unsigned min, max;
+
+	s = Position::parseUnsignedRange(s, error, min, max);
+
+	if (error == No_Error)
+		m_matchGameInfoList.push_back(new info::GameNumber(min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1127,13 +1159,13 @@ Match::parseHasComments(char const* s, Error& error)
 
 
 char const*
-Match::parseHasFlags(char const* s, Error& error)
+Match::parseHasMarkers(char const* s, Error& error)
 {
 	unsigned flags = 0;
 
-	while (!::isDelim(*s))
+	for ( ; !::isDelim(*s); ++s)
 	{
-		unsigned flag = GameInfo::charToFlag(*(s++));
+		unsigned flag = GameInfo::charToFlag(*s);
 
 		if (flag == 0)
 		{
@@ -1144,7 +1176,62 @@ Match::parseHasFlags(char const* s, Error& error)
 		flags |= flag;
 	}
 
-	m_matchGameInfoList.push_back(new info::GameFlags(flags));
+	if (flags == 0)
+		flags = unsigned(-1);
+
+	m_matchGameInfoList.push_back(new info::GameMarkers(flags));
+	m_isStandard = false;
+	m_sections |= Section_GameInfo | Section_Flags;
+	return s;
+}
+
+
+char const*
+Match::parseHasSpecialMarkers(char const* s, Error& error)
+{
+	unsigned flags = 0;
+
+	s = ::skipSpaces(s);
+
+	if (!::isDelim(*s))
+	{
+		do
+		{
+			char const* t = ::skipToDelim(s = ::skipSpaces(s));
+
+			mstl::string marker(s, t);
+			marker.tolower();
+
+			if (marker == "deleted")
+			{
+				flags |= GameInfo::Flag_Deleted;
+			}
+			else if (marker == "illegalmove")
+			{
+				flags |= GameInfo::Flag_Illegal_Move;
+			}
+			else if (marker == "illegalcastling")
+			{
+				flags |= GameInfo::Flag_Illegal_Castling;
+			}
+			else
+			{
+				error = Invalid_Special_Marker;
+				return s;
+			}
+
+			s = ::skipSpaces(t);
+
+			if (*s == ',')
+				++s;
+		}
+		while (s[-1] == ',');
+	}
+
+	if (flags == 0)
+		flags = unsigned(-1);
+
+	m_matchGameInfoList.push_back(new info::SpecialGameMarkers(flags));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo | Section_Flags;
 	return s;
@@ -1204,26 +1291,6 @@ Match::parseIsShuffleChess(char const* s, Error& error)
 
 
 char const*
-Match::parseIsStandardPosition(char const* s, Error& error)
-{
-	m_matchGameInfoList.push_back(new info::IsStandardPosition);
-	m_isStandard = false;
-	m_sections |= Section_GameInfo;
-	return s;
-}
-
-
-char const*
-Match::parseIsStartPosition(char const* s, Error& error)
-{
-	m_matchGameInfoList.push_back(new info::IsStartPosition);
-	m_isStandard = false;
-	m_sections |= Section_GameInfo;
-	return s;
-}
-
-
-char const*
 Match::parseLanguage(char const* s, Error& error)
 {
 	M_ASSERT(!"not yet implemented");
@@ -1270,7 +1337,7 @@ Match::parseOr(char const* s, Error& error)
 
 	if (*s != '(')
 	{
-		error = Keyword_Position_Expected;
+		error = Position_List_Expected;
 		return s;
 	}
 
@@ -1336,12 +1403,11 @@ Match::parsePlayer(char const* s, Error& error)
 		return s;
 	}
 
-	info::Player* match[2] = { new info::Player(s, t, White), new info::Player(s, t, Black) };
+	info::Player* match = new info::Player(s, t, 1 << White | 1 << Black);
 
-	m_matchGameInfoList.push_back(match[0]);
-	m_matchGameInfoList.push_back(match[1]);
+	m_matchGameInfoList.push_back(match);
 
-	if (match[0]->pattern().is_utf8())
+	if (match->pattern().is_utf8())
 		m_isStandard = false;
 
 	m_sections |= Section_GameInfo;
@@ -1352,35 +1418,12 @@ Match::parsePlayer(char const* s, Error& error)
 char const*
 Match::parsePlyCount(char const* s, Error& error)
 {
-	if (!::isdigit(*s))
-	{
-		error = Positive_Integer_Expected;
-	}
-	else
-	{
-		char* e;
-		unsigned min = ::strtoul(s, &e, 10);
-		s = ::skipSpaces(e);
+	unsigned min, max;
 
-		unsigned max = min;
+	s = Position::parseUnsignedRange(s, error, min, max);
 
-		if (s[0] == '.' && s[1] == '.')
-		{
-			s = ::skipSpaces(s);
-
-			if (!::isdigit(*(++s)))
-			{
-				error = Positive_Integer_Expected;
-			}
-			else
-			{
-				max = ::strtoul(s, &e, 10);
-				s = e;
-			}
-		}
-
+	if (error == No_Error)
 		m_matchGameInfoList.push_back(new info::PlyCount(min, max));
-	}
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1432,18 +1475,9 @@ Match::parseResult(char const* s, Error& error)
 {
 	unsigned results = 0;
 
-	if (*s == ',')
-	{
-		error = Invalid_Result;
-		return s;
-	}
-
 	do
 	{
-		if (*s == ',')
-			++s;
-
-		char const* t = ::skipToDelim(s);
+		char const* t = ::skipToDelim(::skipSpaces(s));
 		mstl::string result(s, t);
 
 		if (	result == "*"
@@ -1463,9 +1497,11 @@ Match::parseResult(char const* s, Error& error)
 			return s;
 		}
 
-		s = t;
+		s = ::skipSpaces(t);
+		if (*s == ',')
+			++s;
 	}
-	while (*s == ',');
+	while (s[-1] == ',');
 
 	if (mstl::bf::count_bits(results) > 1 || (results & (1 << result::Lost)))
 		m_isStandard = false;
@@ -1540,41 +1576,59 @@ Match::parseSite(char const* s, Error& error)
 char const*
 Match::parseStartPosition(char const* s, Error& error)
 {
+	mstl::bitset positions(4096);
 	char const*	t;
-	unsigned		idn = 0;
 
-	if (::isdigit(*s))
+	do
 	{
-		idn = ::strtoul(s, const_cast<char**>(&t), 10);
+		int idn = 0;
 
-		if (idn == 0)
+		if (*s == '-' || ::isdigit(*s))
 		{
-			idn = 960;
+			idn = ::strtol(s, const_cast<char**>(&t), 10);
+
+			if (idn == 0)
+			{
+				positions.set(0);
+			}
+			else if (idn == -1)
+			{
+				positions.reset();
+			}
+			else if (-1 < idn || idn > 4*960)
+			{
+				error = Invalid_IDN;
+				return s;
+			}
 		}
-		else if (idn > 4*960)
+		else if (::isalpha(*s))
 		{
-			error = Invalid_IDN;
+			mstl::string pos(s, t = ::skipToDelim(s));
+
+			idn = pos == "standard" ? variant::Standard : variant::idnFromString(pos);
+
+			if (idn == variant::None)
+			{
+				error = Invalid_FICS_Position;
+				return s;
+			}
+
+			positions.set(idn);
 		}
-	}
-	else if (::isalpha(*s))
-	{
-		mstl::string pos(s, t = ::skipToDelim(s));
+		else
+		{
+			error = Position_Number_Expected;
+			return s;
+		}
 
-		idn = pos == "standard" ? variant::Standard : variant::idnFromString(pos);
-
-		if (idn == variant::None)
-			error = Invalid_FICS_Position;
+		s = t;
+		if (*s == ',')
+			++s;
 	}
-	else
-	{
-		error = Position_Number_Expected;
-	}
+	while (s[-1] == ',');
 
 	if (error == No_Error)
-	{
-		s = t;
-		m_matchGameInfoList.push_back(new info::StartPosition(idn));
-	}
+		m_matchGameInfoList.push_back(new info::StartPosition(positions));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1689,27 +1743,34 @@ Match::parseTitle(char const* s, Error& error)
 char const*
 Match::parseVariant(char const* s, Error& error)
 {
-	variant::Type variant = variant::fromString(s);
+	unsigned variants = variant::Undetermined;
 
-	if (variant == variant::Undetermined)
+	do
 	{
-		error = Invalid_Variant;
-	}
-	else
-	{
-		mstl::string const& str = variant::identifier(variant);
-		char const* t = ::skipToDelim(s);
+		char const* t = ::skipToDelim(::skipSpaces(s));
+		mstl::string str(s, t);
+		str.tolower();
 
-		if (unsigned(t - s) != str.size() || ::strncasecmp(s, str, str.size()) != 0)
+		variant::Type variant = variant::fromString(str);
+
+		if (variant == variant::Undetermined || variant::identifier(variant) != str)
 		{
 			error = Invalid_Variant;
+			return s;
 		}
-		else
-		{
-			s += str.size();
-			m_matchGameInfoList.push_back(new info::Variant(variant));
-		}
+
+		variants |= toIndex(variant);
+
+		s = t;
+		if (*s == ',')
+			++s;
 	}
+	while (s[-1] == ',');
+
+	if (variants == variant::Undetermined)
+		error = Missing_Parameter;
+	else
+		m_matchGameInfoList.push_back(new info::Variant(variants));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1922,14 +1983,13 @@ Match::parse(char const* s, Error& error)
 		Pair("gender",					&Match::parseGender),
 		Pair("hasannotation",		&Match::parseHasAnnotation),
 		Pair("hascomments",			&Match::parseHasComments),
-		Pair("hasflags",				&Match::parseHasFlags),
+		Pair("hasmarkers",			&Match::parseHasMarkers),
+		Pair("hasspecialmarkers",	&Match::parseHasSpecialMarkers),
 		Pair("hasvariations",		&Match::parseHasVariations),
 		Pair("ischess960",			&Match::parseIsChess960),
 		Pair("iscomputer",			&Match::parseIsComputer),
 		Pair("ishuman",				&Match::parseIsHuman),
 		Pair("isshufflechess",		&Match::parseIsShuffleChess),
-		Pair("isstandardposition",	&Match::parseIsStandardPosition),
-		Pair("isstartposition",		&Match::parseIsStartPosition),
 		Pair("language",				&Match::parseLanguage),
 		Pair("not",						&Match::parseNot),
 		Pair("or",						&Match::parseOr),

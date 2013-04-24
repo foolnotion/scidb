@@ -35,20 +35,20 @@ inline Eco::Eco(db::Eco min, db::Eco max) :m_min(min), m_max(max) {}
 inline EventCountry::EventCountry(mstl::bitset const& countries) :m_countries(countries) {}
 inline EventMode::EventMode(unsigned modes) :m_modes(modes) {}
 inline EventType::EventType(unsigned types) :m_types(types) {}
-inline GameNumber::GameNumber(unsigned number) :m_number(number) {}
-inline GameFlags::GameFlags(unsigned flags) :m_flags(flags) {}
+inline GameNumber::GameNumber(unsigned min, unsigned max) :m_min(min), m_max(max) {}
+inline GameMarkers::GameMarkers(unsigned flags) :m_flags(flags) {}
 inline Gender::Gender(db::sex::ID sex, unsigned colors) :m_sex(sex), m_colors(colors) {}
 inline IsComputer::IsComputer(db::color::ID color) :m_color(color) {}
 inline IsHuman::IsHuman(db::color::ID color) :m_color(color) {}
 inline PlyCount::PlyCount(unsigned min, unsigned max) :m_min(min), m_max(max) {}
-inline StartPosition::StartPosition(unsigned idn) :m_idn(idn) {}
+inline SpecialGameMarkers::SpecialGameMarkers(unsigned flags) :m_flags(flags) {}
 inline Result::Result(unsigned results) :m_results(results) {}
 inline Round::Round(unsigned round) :m_round(round), m_subround(0) {}
 inline Termination::Termination(unsigned reasons) :m_reasons(reasons) {}
 inline Round::Round(unsigned round, unsigned subround) :m_round(round), m_subround(subround) {}
 inline TimeMode::TimeMode(unsigned modes) :m_modes(modes) {}
 inline Title::Title(unsigned titles, unsigned colors) :m_titles(titles), m_colors(colors) {}
-inline Variant::Variant(db::variant::Type variant) :m_variant(variant) {}
+inline Variant::Variant(unsigned variants) :m_variants(variants) {}
 inline Year::Year(unsigned min, unsigned max) :m_min(min), m_max(max) {}
 
 
@@ -71,9 +71,9 @@ DeathYear::DeathYear(db::color::ID color, unsigned min, unsigned max)
 
 
 inline
-Player::Player(char const* s, char const* e, db::color::ID c)
+Player::Player(char const* s, char const* e, unsigned colors)
 	:m_pattern(s, e)
-	,m_color(c)
+	,m_colors(colors)
 {
 }
 
@@ -100,6 +100,14 @@ Rating::Rating(db::rating::Type ratingType, uint16_t minScore, uint16_t maxScore
 	,m_color(color)
 	,m_minScore(minScore)
 	,m_maxScore(maxScore)
+{
+}
+
+
+inline
+StartPosition::StartPosition(Positions positions)
+	:m_positions(positions)
+	,m_none(positions.none())
 {
 }
 
