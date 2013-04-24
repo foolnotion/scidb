@@ -67,6 +67,7 @@ set PageNotAvailable			"This page is not available"
 
 variable Geometry {}
 variable Lang {}
+variable FontTable {8 9 10 11 13 15 17} ;# xx-small x-small small medium large x-large xx-large
 
 array set Colors {
 	foreground:gray		#999999
@@ -226,11 +227,15 @@ proc open {parent {file {}} args} {
 	grid rowconfigure $control 3 -weight 1
 	grid rowconfigure $control 2 -minsize $::theme::padding
 
-	bind $dlg <Alt-Left>			[namespace code history::back]
-	bind $dlg <Alt-Right>		[namespace code history::forward]
-	bind $dlg <Alt-Home>			[namespace code [list Goto @home]]
-	bind $dlg <Alt-End>			[namespace code [list Goto @end]]
-	bind $dlg <ButtonPress-3>	[namespace code [list PopupMenu $dlg $pw.control]]
+	bind $dlg <Alt-Left>					[namespace code history::back]
+	bind $dlg <Alt-Right>				[namespace code history::forward]
+	bind $dlg <Alt-Home>					[namespace code [list Goto @home]]
+	bind $dlg <Alt-End>					[namespace code [list Goto @end]]
+	bind $dlg <Control-plus>			[namespace code [list ChangeFontSize +1]]
+	bind $dlg <Control-KP_Add>			[namespace code [list ChangeFontSize +1]]
+	bind $dlg <Control-minus>			[namespace code [list ChangeFontSize -1]]
+	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeFontSize -1]]
+	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $pw.control]]
 
 	bind $nb <<LanguageChanged>> [namespace code Update]
 	$nb select $nb.$Priv(tab)
@@ -996,6 +1001,22 @@ proc PopupMenu {dlg tab} {
 				}
 			}
 			if {$count > 0} { $m add separator }
+
+			$m add command \
+				-command [namespace code [list ChangeFontSize +1]] \
+				-label " $::font::mc::IncreaseFontSize" \
+				-image $::icon::16x16::font(incr) \
+				-compound left \
+				-accel "$::mc::Key(Ctrl) +" \
+				;
+			$m add command \
+				-command [namespace code [list ChangeFontSize -1]] \
+				-label " $::font::mc::DecreaseFontSize" \
+				-image $::icon::16x16::font(decr) \
+				-compound left \
+				-accel "$::mc::Key(Ctrl) \u2212" \
+				;
+			$m add separator
 		}
 
 		*.tree	{}
@@ -1024,6 +1045,32 @@ proc PopupMenu {dlg tab} {
 
 	bind $m <<MenuUnpost>> +::tooltip::hide
 	tk_popup $m {*}$cursor
+}
+
+
+proc ChangeFontSize {incr} {
+	variable FontTable
+	variable Priv
+
+	lassign $FontTable xxsmall xsmall small medium large xlarge xxlarge
+	incr medium $incr
+
+	if {$medium <  8} {set medium  8}
+	if {$medium > 14} {set medium 14}
+
+	if {$medium == [lindex $FontTable 3]} { return }
+
+	switch $medium {
+		 8 { set FontTable { 5  6  7  8 10 12 14} }
+		 9 { set FontTable { 6  7  8  9 11 13 15} }
+		10 { set FontTable { 7  8  9 10 12 14 16} }
+		11 { set FontTable { 8  9 10 11 13 15 17} }
+		12 { set FontTable { 9 10 11 12 14 16 18} }
+		13 { set FontTable {10 11 12 13 15 17 19} }
+		14 { set FontTable {11 12 13 14 16 18 20} }
+	}
+
+	$Priv(html) fonttable $FontTable
 }
 
 
@@ -1066,6 +1113,7 @@ proc ShowIndex {} {
 
 
 proc BuildHtmlFrame {dlg w} {
+	variable FontTable
 	variable Priv
 
 	set Priv(html:track:width) 0
@@ -1079,7 +1127,7 @@ proc BuildHtmlFrame {dlg w} {
 		-imagecmd [namespace code GetImage] \
 		-center no \
 		-fittowidth yes \
-		-width 600 \
+		-width 650 \
 		-height $height \
 		-cursor left_ptr \
 		-borderwidth 1 \
@@ -1089,6 +1137,7 @@ proc BuildHtmlFrame {dlg w} {
 		-css $css \
 		-showhyphens 1 \
 		-latinligatures $Priv(latinligatures) \
+		-fonttable $FontTable \
 		;
 
 	$w handler node link [namespace current]::LinkHandler
@@ -1701,6 +1750,7 @@ proc SetupButtons {back fwd} {
 
 proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Lang
+	::options::writeItem $chan [namespace current]::FontTable
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

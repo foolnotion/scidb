@@ -127,32 +127,32 @@ TITLE CQL - The position list
     	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:not">:not</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:or">:or</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:piececount">:piececount</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
     </tr>

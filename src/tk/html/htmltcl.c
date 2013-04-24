@@ -1527,7 +1527,7 @@ configureCmd(
                 rc = TCL_ERROR;
             } else {
                 memcpy(pTree->aFontSizeTable, aFontSize, sizeof(aFontSize));
-                mask |= S_MASK;
+                mask |= S_MASK|F_MASK;
             }
         }
 

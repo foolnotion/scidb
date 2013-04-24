@@ -121,6 +121,28 @@ flatten(mstl::string const& src, mstl::string& dst)
 }
 
 
+static void
+escapeString(mstl::string const& src, mstl::string& dst)
+{
+	M_ASSERT(dst.empty());
+
+	dst.reserve(2*src.size());
+
+	for (mstl::string::const_iterator i = src.begin(); i != src.end(); ++i)
+	{
+		switch (*i)
+		{
+			case '&':	dst.append("&amp;",  5); break;
+			case '<':	dst.append("&lt;",   4); break;
+			case '>':	dst.append("&gt;",   4); break;
+			case '\'':	dst.append("&apos;", 6); break;
+			case '"':	dst.append("&quot;", 6); break;
+			default:		dst.append(*i); break;
+		}
+	}
+}
+
+
 namespace {
 
 struct XmlData
@@ -1363,7 +1385,11 @@ Comment::append(Comment const& comment, char delim)
 
 			parse(thisSplit);
 			if (!comment.m_content.empty())
-				thatMap[mstl::string::empty_string] = comment.m_content;
+			{
+				mstl::string content;
+				::escapeString(comment.m_content, content);
+				thatMap[mstl::string::empty_string].swap(content);
+			}
 			Split::join(m_content, thisSplit.m_result, thatMap, delim);
 			m_languageSet.clear();
 		}
@@ -1374,7 +1400,11 @@ Comment::append(Comment const& comment, char delim)
 
 			comment.parse(thatSplit);
 			if (!m_content.empty())
-				thisMap[mstl::string::empty_string].swap(m_content);
+			{
+				mstl::string content;
+				::escapeString(m_content, content);
+				thisMap[mstl::string::empty_string].swap(content);
+			}
 			Split::join(m_content, thisMap, thatSplit.m_result, delim);
 			m_languageSet.clear();
 		}
@@ -1413,7 +1443,11 @@ Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
 
 		parse(thisSplit);
 		if (!comment.m_content.empty())
-			thatMap[mstl::string::empty_string] = comment.m_content;
+		{
+			mstl::string content;
+			::escapeString(comment.m_content, content);
+			thatMap[mstl::string::empty_string].swap(content);
+		}
 		Split::merge(m_content, thisSplit.m_result, thatMap, leadingLanguageSet);
 		m_languageSet.clear();
 	}
@@ -1424,7 +1458,11 @@ Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
 
 		comment.parse(thatSplit);
 		if (!m_content.empty())
-			thisMap[mstl::string::empty_string].swap(m_content);
+		{
+			mstl::string content;
+			::escapeString(m_content, content);
+			thisMap[mstl::string::empty_string].swap(content);
+		}
 		Split::merge(m_content, thisMap, thatSplit.m_result, leadingLanguageSet);
 		m_languageSet.clear();
 	}

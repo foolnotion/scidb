@@ -170,6 +170,7 @@ proc Build {w args} {
 		-delay				0
 		-css					{}
 		-importdir			{}
+		-fonttable			{}
 	}
 
 	array set opts $args
@@ -183,7 +184,7 @@ proc Build {w args} {
 
 			-imagecmd - -doublebuffer - -latinligatures - -exportselection -
 			-selectbackground - -selectforeground - -inactiveselectbackground -
-			-inactiveselectforeground - -width - -height {
+			-inactiveselectforeground - -width - -height - -fonttable {
 				set value $opts($name)
 				if {[llength $value]} { lappend htmlOptions $name $value }
 			}
@@ -254,6 +255,7 @@ proc Build {w args} {
 	set Priv(bw)    			$opts(-borderwidth)
 	set Priv(css)   			$opts(-css)
 	set Priv(importdir)		$opts(-importdir)
+	set Priv(fontsize)		{}
 	set Priv(minbbox)			{}
 	set Priv(styleCount)		0
 
@@ -379,7 +381,7 @@ proc WidgetProc {w command args} {
 				$w.sub.html configure -fixedwidth $MaxWidth
 			}
 			$w.sub.html parse -final [lindex $args 0]
-			if {[string length $Priv(css)]} { $w.sub.html style -id user $Priv(css) }
+			SetupCSS $w
 			set Priv(minbbox) {}
 			if {$Priv(center) || !$Priv(fittowidth)} {
 				set bbox [$w minbbox]
@@ -499,6 +501,19 @@ proc WidgetProc {w command args} {
 			return [$w.sub.html yview moveto $fraction]
 		}
 
+		fonttable {
+			if {[llength $args] == 0} {
+				return [$w.sub.html cget -fonttable]
+			}
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <font sizes>"
+			}
+			$w.sub.html configure -fonttable {*}$args
+			set Priv(fontsize) "body { font-size: [lindex $args 0 3]pt; }"
+			SetupCSS $w
+			return
+		}
+
 		root {
 			return [$w.sub.html node]
 		}
@@ -531,6 +546,16 @@ proc WidgetProc {w command args} {
 	}
 
 	return [$w.__html__ $command {*}$args]
+}
+
+
+proc SetupCSS {w} {
+	variable ${w}::Priv
+
+	set css $Priv(css)
+	append css "\n$Priv(fontsize)"
+	set css [string trim $css]
+	if {[string length $css]} { $w.sub.html style -id user $css }
 }
 
 

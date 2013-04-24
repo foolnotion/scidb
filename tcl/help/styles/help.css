@@ -38,7 +38,19 @@ h1.title { text-align: center; background-color: #6495ed; }
 
 ul.index { margin: 5px; }
 
-span.chess { font-family: 'Scidb Chess Traveller'; font-size: 90% }
+span.chess {
+	font-family: 'Scidb Chess Traveller';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 90%;
+}
+
+span.awesome {
+	font-family: 'FontAwesome';
+	font-weight: normal;
+	font-style: normal;
+	font-size: 80%;
+}
 
 div.title {
   color:					white;
@@ -173,12 +185,5 @@ a:link    { text-decoration: none; }
 a:visited { text-decoration: none; }
 a:hover   { text-decoration: underline; background: #ffff00; }
 a:active  { text-decoration: underline; }
-
-span.awesome {
-	font-family: 'FontAwesome';
-	font-weight: normal;
-	font-style: normal;
-	font-size: 12px;
-}
 
 /* vi:set ts=3 sw=3: */
