@@ -111,72 +111,8 @@ The piece represented by the tag named "foo" must be on a1 or d4.
 <h2>Longer examples</h2>
 
 <p>
-Consider the problem of recognizing all games in which the same rook visits all
-four corners of the board:
+For longer examples see: <a href="CQL-Examples.html#tagging">Examples for tagging</a>.
 </p>
-
-<div class="box"><pre><code><!--
--->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [<span class="chess">&#x265c;</span><span class="chess">&#x2656;</span>] <span class="comment">; loop over the possible rooks</span>
-  (position $rook[a1]) 
-  (position $rook[h1])
-  (position $rook[h8])
-  (position $rook[a8]))<!--
---></code></pre></div>
-
-<p>
-Here, the <a href="CQL-Position-List.html#position:forany">:forany</a> keyword in the match list introduces a tag named
-rook which is constrained to range over white or black rooks, or over pawns that
-eventually promote to one of those.
-</p>
-
-<p>
-The first position list matches games in which there is a position such that the
-tag rook represents a rook on a1. The next position list matches games in which
-there is a postiion such that the tag represents a rook on h1. The tag represents
-the same mark, that is, the same piece, between the position lists. The
-<a href="CQL-Position-List.html#position:forany">:forany</a> keyword will sequentially bind the tag to each allowed mark.
-</p>
-
-<p>
-Since a match list matches a game only if all its constituent position filters
-match it, the code does what we want here.
-</p>
-
-<p>
-Second example, the excelsior theme: a pawn starts at the second rank and then
-promotes.
-</p>
-
-<div class="box"><pre><code><!--
--->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>]
-  (position
-    <a href="CQL-Position-List.html#position:initial">:initial</a>
-    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn <span class="chess">&#x2659;</span>?2
-    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
---></code></pre></div>
-
-<p>
-<a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> is matching pawns on second rank, and
-the position sequence of <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> is matching if
-the tagged pawn is promoting in any subsequent game position.
-</p>
-
-<p>
-Third example: the same piece delivers at least 30 checks in the game.
-</p>
-
-<div class="box"><pre><code><!--
--->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> checker A
-  (position
-    <a href="CQL-Position-List.html#position:btm">:btm</a>
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker <span class="chess">&#x265a;</span> 1
-    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 1000
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
---></code></pre></div>
 
 </body>
 </html>

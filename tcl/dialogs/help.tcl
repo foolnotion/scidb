@@ -628,11 +628,13 @@ proc Select {type t key} {
 	if {[info exists Priv($type:last:$key)]} {
 		set item $Priv($type:last:$key)
 		$t see $item
+		$t yview scroll 1 unit
 	}
 
 	if {[info exists Priv($type:key:$key)]} {
-		$t activate $Priv($type:first:$key)
 		$t see $Priv($type:key:$key)
+		$t see $Priv($type:first:$key)
+		$t activate $Priv($type:first:$key)
 	}
 }
 

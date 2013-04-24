@@ -53,7 +53,7 @@ For example, consider the position list
 </p>
 
 <verb>
-(position &R;c2 &B;h8 :wtm)
+(position &R;c2 &B;h8 <cql>position:wtm</cql>)
 </verb>
 
 <p>
@@ -63,7 +63,7 @@ this position list is the new position list:
 </p>
 
 <verb>
-(position &R;b2 &B;g8 :wtm)
+(position &R;b2 &B;g8 <cql>position:wtm</cql>)
 </verb>
 
 <p>
@@ -77,7 +77,7 @@ the position list:
 </p>
 
 <verb>
-(position &R;b8 &B;g1 :wtm)
+(position &R;b8 &B;g1 <cql>position:wtm</cql>)
 </verb>
 
 <p>
@@ -85,7 +85,7 @@ The result of applying a color flip transformation to the
 </p>
 
 <verb>
-(position &R;b2 &B;g8 :wtm)
+(position &R;b2 &B;g8 <cql>position:wtm</cql>)
 </verb>
 
 <p>
@@ -93,7 +93,7 @@ is thus
 </p>
 
 <verb>
-(position &R;b8 &B;g1 :btm)
+(position &R;b8 &B;g1 <cql>position:btm</cql>)
 </verb>
 
 <p>
@@ -141,7 +141,7 @@ queen on g3. We can add a :shifthorizontal keyword:
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :shifthorizontal)
+(position &R;c3 &q;g3 <keyword>:shifthorizontal</keyword>)
 </verb>
 
 <p>
@@ -162,7 +162,7 @@ of the black queen.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :shiftvertical)
+(position &R;c3 &q;g3 <keyword>:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -172,7 +172,7 @@ file and the queen on the g file.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :shift)
+(position &R;c3 &q;g3 <keyword>:shift</keyword>)
 </verb>
 
 <p>
@@ -182,7 +182,7 @@ of the black queen.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :fliphorizontal)
+(position &R;c3 &q;g3 <keyword>:fliphorizontal</keyword>)
 </verb>
 
 <p>
@@ -192,7 +192,7 @@ black queen on g6.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :flipdiagonal)
+(position &R;c3 &q;g3 <keyword>:flipdiagonal</keyword>)
 </verb>
 
 <p>
@@ -202,7 +202,7 @@ queen is on c7.
 </p>
 
 <verb>
-(position &R;c3 &q;g3 :flip)
+(position &R;c3 &q;g3 <keyword>:flip</keyword>)
 </verb>
 
 <p>
@@ -211,7 +211,7 @@ somewhere behind a white pawn on the c file:
 </p>
 
 <verb>
-(position &P;c2 &R;c1 :shiftvertical)
+(position &P;c2 &R;c1 <keyword>:shiftvertical</keyword>)
 </verb>
 
 <p>
@@ -225,7 +225,7 @@ same file, use:
 </p>
 
 <verb>
-(position &P;c2 &R;c1 :shift)
+(position &P;c2 &R;c1 <keyword>:shift</keyword>)
 </verb>
 
 <h2 id="multiple">Multiple transformation keywords</h2>
@@ -244,7 +244,7 @@ For example, this position list
 </p>
 
 <verb>
-(position &N;d4 &k;f3 :shift :flip)
+(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword>)
 </verb>
 
 <p>
@@ -252,7 +252,7 @@ matches any position in which a white knight attacks a black king, while
 </p>
 
 <verb>
-(position &N;d4 &k;f3 :shift :flip :flipcolor)
+(position &N;d4 &k;f3 <keyword>:shift</keyword> <keyword>:flip</keyword> <keyword>:flipcolor</keyword>)
 </verb>
 
 <p>
@@ -264,7 +264,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <verb>
-(position :attackcount &N; &k; 1 100 :flipcolor)
+(position <cql>position:attackcount</cql> &N; &k; 1 100 <keyword>:flipcolor</keyword>)
 </verb>
 
 <p>

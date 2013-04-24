@@ -22,6 +22,7 @@ TITLE CQL - Examples
 <ul>
   <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
   <li><a href="#relation">Relation list example</a></li>
+  <li><a href="#tagging">Examples for tagging</a></li>
   <li><a href="#more">More examples</a></li>
 </ul>
 
@@ -136,10 +137,78 @@ position would be allowed to overlap with at most three squares of the pattern
 in the original position. 
 </p>
 
-<h2 id="more">More examples</h2>
+<h2 id="tagging">Examples for tagging</h2>
 
 <p>
-Knight gives mate with its first move:
+Consider the problem of recognizing all games in which the same rook visits all
+four corners of the board:
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> rook [&r;&R;] <comment>; loop over the possible rooks</comment>
+  (position $rook[a1]) 
+  (position $rook[h1])
+  (position $rook[h8])
+  (position $rook[a8]))
+</verbatim>
+
+<p>
+Here, the <cql>position:forany</cql> keyword in the match list introduces a tag named
+rook which is constrained to range over white or black rooks, or over pawns that
+eventually promote to one of those.
+</p>
+
+<p>
+The first position list matches games in which there is a position such that the
+tag rook represents a rook on a1. The next position list matches games in which
+there is a postiion such that the tag represents a rook on h1. The tag represents
+the same mark, that is, the same piece, between the position lists. The
+<cql>position:forany</cql> keyword will sequentially bind the tag to each allowed mark.
+</p>
+
+<p>
+Since a match list matches a game only if all its constituent position filters
+match it, the code does what we want here.
+</p>
+
+<p>
+Second example, the excelsior theme: a pawn starts at the second rank and then
+promotes.
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> pawn [&P;&p;]
+  (position
+    <cql>position:initial</cql>
+    <cql>position:tagmatch</cql> pawn &P;?2
+    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> U))
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+<cql>position:tagmatch</cql> is matching pawns on second rank, and
+the position sequence of <cql>position:gappedsequence</cql> is matching if
+the tagged pawn is promoting in any subsequent game position.
+</p>
+
+<p>
+Third example: the same piece delivers at least 30 checks in the game.
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> checker A
+  (position
+    <cql>position:btm</cql>
+    <cql>position:attackcount</cql> $checker &k; 1
+    <cql>position:matchcount</cql> 30 1000
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+Fourth example: knight gives mate with its first move.
 </p>
 
 <verbatim>
@@ -151,6 +220,44 @@ Knight gives mate with its first move:
   (position
     <cql>position:mate</cql>
     <cql>position:attackcount</cql> $knight &k; 1)) 
+</verbatim>
+
+<h2 id="more">More examples</h2>
+
+<verbatim>
+<comment>; Match isolated triple pawns on connected squares</comment>
+<comment>; Example: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</comment>
+
+(match
+  (position
+    &P;b2 &P;b3 &P;b4
+    [.&K;&Q;&R;&B;&N;][a2] [.&K;&Q;&R;&B;&N;][a3] [.&K;&Q;&R;&B;&N;][a5]
+    [.&K;&Q;&R;&B;&N;][c2] [.&K;&Q;&R;&B;&N;][c3] [.&K;&Q;&R;&B;&N;][c5]
+    :piececount Pb? 3 6
+    :shiftvertical
+    :shifthorizontal
+    :flipcolor))
+</verbatim>
+
+<verbatim>
+<comment>; Multiple consecutive rook checks followed by king moving to</comment>
+<comment>; empty square; usually to avoid stalemate if rook is captured.</comment>
+
+(match
+  :result 1/2
+  (position 
+    :wtm
+    :sequence (  
+      (position :movefrom &R; :moveto .)
+      (position :movefrom &k; :check)
+      (position :movefrom &R; :moveto .)
+      (position :movefrom &k; :check)
+      (position :movefrom &R; :moveto .)
+      (position :movefrom &k; :check)
+      (position :movefrom &R; :moveto .)
+      (position :movefrom &k; :check)
+      (position :movefrom &R; :moveto .)
+      (position :movefrom &k; :check))))
 </verbatim>
 
 END

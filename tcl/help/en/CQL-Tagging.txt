@@ -94,72 +94,8 @@ The piece represented by the tag named "foo" must be on a1 or d4.
 <h2>Longer examples</h2>
 
 <p>
-Consider the problem of recognizing all games in which the same rook visits all
-four corners of the board:
+For longer examples see: <a href="CQL-Examples.html#tagging">Examples for tagging</a>.
 </p>
-
-<verbatim>
-(match
-  <cql>match:forany</cql> rook [&r;&R;] <comment>; loop over the possible rooks</comment>
-  (position $rook[a1]) 
-  (position $rook[h1])
-  (position $rook[h8])
-  (position $rook[a8]))
-</verbatim>
-
-<p>
-Here, the <cql>position:forany</cql> keyword in the match list introduces a tag named
-rook which is constrained to range over white or black rooks, or over pawns that
-eventually promote to one of those.
-</p>
-
-<p>
-The first position list matches games in which there is a position such that the
-tag rook represents a rook on a1. The next position list matches games in which
-there is a postiion such that the tag represents a rook on h1. The tag represents
-the same mark, that is, the same piece, between the position lists. The
-<cql>position:forany</cql> keyword will sequentially bind the tag to each allowed mark.
-</p>
-
-<p>
-Since a match list matches a game only if all its constituent position filters
-match it, the code does what we want here.
-</p>
-
-<p>
-Second example, the excelsior theme: a pawn starts at the second rank and then
-promotes.
-</p>
-
-<verbatim>
-(match
-  <cql>match:forany</cql> pawn [&P;&p;]
-  (position
-    <cql>position:initial</cql>
-    <cql>position:tagmatch</cql> pawn &P;?2
-    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $pawn <cql>position:promote</cql> U))
-    <cql>position:flipcolor</cql>))
-</verbatim>
-
-<p>
-<cql>position:tagmatch</cql> is matching pawns on second rank, and
-the position sequence of <cql>position:gappedsequence</cql> is matching if
-the tagged pawn is promoting in any subsequent game position.
-</p>
-
-<p>
-Third example: the same piece delivers at least 30 checks in the game.
-</p>
-
-<verbatim>
-(match
-  <cql>match:forany</cql> checker A
-  (position
-    <cql>position:btm</cql>
-    <cql>position:attackcount</cql> $checker &k; 1
-    <cql>position:matchcount</cql> 30 1000
-    <cql>position:flipcolor</cql>))
-</verbatim>
 
 END
 

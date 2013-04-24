@@ -70,7 +70,7 @@ For example, consider the position list
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c2 <span class="chess">&#x2657;</span>h8 :wtm)
+(position <span class="chess">&#x2656;</span>c2 <span class="chess">&#x2657;</span>h8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
 </code></div>
 
 <p>
@@ -80,7 +80,7 @@ this position list is the new position list:
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 :wtm)
+(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
 </code></div>
 
 <p>
@@ -94,7 +94,7 @@ the position list:
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 :wtm)
+(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
 </code></div>
 
 <p>
@@ -102,7 +102,7 @@ The result of applying a color flip transformation to the
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 :wtm)
+(position <span class="chess">&#x2656;</span>b2 <span class="chess">&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
 </code></div>
 
 <p>
@@ -110,7 +110,7 @@ is thus
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 :btm)
+(position <span class="chess">&#x2656;</span>b8 <span class="chess">&#x2657;</span>g1 <a href="CQL-Position-List.html#position:btm">:btm</a>)
 </code></div>
 
 <p>
@@ -158,7 +158,7 @@ queen on g3. We can add a :shifthorizontal keyword:
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shifthorizontal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:shifthorizontal</span>)
 </code></div>
 
 <p>
@@ -179,7 +179,7 @@ of the black queen.
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shiftvertical)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:shiftvertical</span>)
 </code></div>
 
 <p>
@@ -189,7 +189,7 @@ file and the queen on the g file.
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :shift)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:shift</span>)
 </code></div>
 
 <p>
@@ -199,7 +199,7 @@ of the black queen.
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :fliphorizontal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:fliphorizontal</span>)
 </code></div>
 
 <p>
@@ -209,7 +209,7 @@ black queen on g6.
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :flipdiagonal)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:flipdiagonal</span>)
 </code></div>
 
 <p>
@@ -219,7 +219,7 @@ queen is on c7.
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 :flip)
+(position <span class="chess">&#x2656;</span>c3 <span class="chess">&#x265b;</span>g3 <span class="keyword">:flip</span>)
 </code></div>
 
 <p>
@@ -228,7 +228,7 @@ somewhere behind a white pawn on the c file:
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 :shiftvertical)
+(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 <span class="keyword">:shiftvertical</span>)
 </code></div>
 
 <p>
@@ -242,7 +242,7 @@ same file, use:
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 :shift)
+(position <span class="chess">&#x2659;</span>c2 <span class="chess">&#x2656;</span>c1 <span class="keyword">:shift</span>)
 </code></div>
 
 <h2 id="multiple">Multiple transformation keywords</h2>
@@ -261,7 +261,7 @@ For example, this position list
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 :shift :flip)
+(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 <span class="keyword">:shift</span> <span class="keyword">:flip</span>)
 </code></div>
 
 <p>
@@ -269,7 +269,7 @@ matches any position in which a white knight attacks a black king, while
 </p>
 
 <div class="verb"><code>
-(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 :shift :flip :flipcolor)
+(position <span class="chess">&#x2658;</span>d4 <span class="chess">&#x265a;</span>f3 <span class="keyword">:shift</span> <span class="keyword">:flip</span> <span class="keyword">:flipcolor</span>)
 </code></div>
 
 <p>
@@ -281,7 +281,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <div class="verb"><code>
-(position :attackcount <span class="chess">&#x2658;</span> <span class="chess">&#x265a;</span> 1 100 :flipcolor)
+(position <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class="chess">&#x2658;</span> <span class="chess">&#x265a;</span> 1 100 <span class="keyword">:flipcolor</span>)
 </code></div>
 
 <p>

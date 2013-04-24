@@ -402,6 +402,11 @@ The event type is one of:
       <td class="r">%::eventtypebox::mc::Type(tourn)%</td>
     </tr>
     <tr>
+      <td class="l"><expr>knockout</expr></td>
+      <td class="m"><img src="../images/eventtype_ko.png"/></td>
+      <td class="r">%::eventtypebox::mc::Type(k.o.)%</td>
+    </tr>
+    <tr>
       <td class="l"><expr>swiss</expr></td>
       <td class="m"><img src="../images/eventtype_swiss.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(swiss)%</td>
@@ -412,19 +417,14 @@ The event type is one of:
       <td class="r">%::eventtypebox::mc::Type(team)%</td>
     </tr>
     <tr>
-      <td class="l"><expr>knockout</expr></td>
-      <td class="m"><img src="../images/eventtype_ko.png"/></td>
-      <td class="r">%::eventtypebox::mc::Type(k.o.)%</td>
+      <td class="l"><expr>schev</expr></td>
+      <td class="m"><img src="../images/eventtype_schev.png"/></td>
+      <td class="r">%::eventtypebox::mc::Type(schev)%</td>
     </tr>
     <tr>
       <td class="l"><expr>simul</expr></td>
       <td class="m"><img src="../images/eventtype_simul.png"/></td>
       <td class="r">%::eventtypebox::mc::Type(simul)%</td>
-    </tr>
-    <tr>
-      <td class="l"><expr>schev</expr></td>
-      <td class="m"><img src="../images/eventtype_schev.png"/></td>
-      <td class="r">%::eventtypebox::mc::Type(schev)%</td>
     </tr>
   </table>
 </dir>

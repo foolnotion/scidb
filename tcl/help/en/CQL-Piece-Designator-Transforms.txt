@@ -154,8 +154,8 @@ is <expr>&Q;d2</expr>. The unit right shift transformation of
 </p>
 
 <p>
-The definitions of <b>unit left shift</b> transformation, <b>unit up shift</b>
-transformation and <b>unit down shift</b> transformation are similar to that
+The definitions of <b>unit left shift transformation</b>, <b>unit up shift
+transformation</b> and <b>unit down shift transformation</b> are similar to that
 of unit right shift transformation, with of course the location of the
 appropriate board edges altering mutatis mutandis.
 </p>

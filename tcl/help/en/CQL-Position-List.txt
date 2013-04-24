@@ -1202,7 +1202,8 @@ This matches positions in which black is up at least an exchange.
 
 <p>
 This example shows how to search for queen sacrifices using
-<code>:powerdifference</code>.
+<code>:powerdifference</code>. One side sacrifices a queen, and remains at
+least 9 points down in material for at least 12 moves, and then wins.
 </p>
 
 <h3 id="position:ray">:ray</h3>
@@ -1364,8 +1365,8 @@ if any.
 
 <p>
 For example, the to designation of a white rook on a4 capturing a black knight
-on d4 is &n;d4, and its from designation is &R;a4. The to designation of a move to
-e4 that is not a capture is .e4. 
+on d4 is <expr>&n;d4</expr>, and its from designation is <expr>&R;a4</expr>. The
+to designation of a move to e4 that is not a capture is <expr>.e4</expr>. 
 </p>
 
 <dir>
@@ -1524,7 +1525,8 @@ See also: <cql>position:enpassant</cql>.
 <h3 id="position:piecedrop">:piecedrop</h3>
 
 <p>
-The next move is a piece drop (possible only in chess variants
+The next move is a piece drop, if dropping a piece matching the
+given piece designator (possible only in chess variants
 %::mc::VariantName(Crazyhouse)%, and %::mc::VariantName(Bughouse)%).
 </p>
 

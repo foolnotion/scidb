@@ -41,6 +41,7 @@
 <ul>
   <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
   <li><a href="#relation">Relation list example</a></li>
+  <li><a href="#tagging">Examples for tagging</a></li>
   <li><a href="#more">More examples</a></li>
 </ul>
 
@@ -155,10 +156,78 @@ position would be allowed to overlap with at most three squares of the pattern
 in the original position. 
 </p>
 
-<h2 id="more">More examples</h2>
+<h2 id="tagging">Examples for tagging</h2>
 
 <p>
-Knight gives mate with its first move:
+Consider the problem of recognizing all games in which the same rook visits all
+four corners of the board:
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [<span class="chess">&#x265c;</span><span class="chess">&#x2656;</span>] <span class="comment">; loop over the possible rooks</span>
+  (position $rook[a1]) 
+  (position $rook[h1])
+  (position $rook[h8])
+  (position $rook[a8]))<!--
+--></code></pre></div>
+
+<p>
+Here, the <a href="CQL-Position-List.html#position:forany">:forany</a> keyword in the match list introduces a tag named
+rook which is constrained to range over white or black rooks, or over pawns that
+eventually promote to one of those.
+</p>
+
+<p>
+The first position list matches games in which there is a position such that the
+tag rook represents a rook on a1. The next position list matches games in which
+there is a postiion such that the tag represents a rook on h1. The tag represents
+the same mark, that is, the same piece, between the position lists. The
+<a href="CQL-Position-List.html#position:forany">:forany</a> keyword will sequentially bind the tag to each allowed mark.
+</p>
+
+<p>
+Since a match list matches a game only if all its constituent position filters
+match it, the code does what we want here.
+</p>
+
+<p>
+Second example, the excelsior theme: a pawn starts at the second rank and then
+promotes.
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [<span class="chess">&#x2659;</span><span class="chess">&#x265f;</span>]
+  (position
+    <a href="CQL-Position-List.html#position:initial">:initial</a>
+    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn <span class="chess">&#x2659;</span>?2
+    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
+--></code></pre></div>
+
+<p>
+<a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> is matching pawns on second rank, and
+the position sequence of <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> is matching if
+the tagged pawn is promoting in any subsequent game position.
+</p>
+
+<p>
+Third example: the same piece delivers at least 30 checks in the game.
+</p>
+
+<div class="box"><pre><code><!--
+-->(match
+  <a href="CQL-Match-List.html#match:forany">:forany</a> checker A
+  (position
+    <a href="CQL-Position-List.html#position:btm">:btm</a>
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker <span class="chess">&#x265a;</span> 1
+    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 1000
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
+--></code></pre></div>
+
+<p>
+Fourth example: knight gives mate with its first move.
 </p>
 
 <div class="box"><pre><code><!--
@@ -170,6 +239,44 @@ Knight gives mate with its first move:
   (position
     <a href="CQL-Position-List.html#position:mate">:mate</a>
     <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $knight <span class="chess">&#x265a;</span> 1)) <!--
+--></code></pre></div>
+
+<h2 id="more">More examples</h2>
+
+<div class="box"><pre><code><!--
+--><span class="comment">; Match isolated triple pawns on connected squares</span>
+<span class="comment">; Example: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</span>
+
+(match
+  (position
+    <span class="chess">&#x2659;</span>b2 <span class="chess">&#x2659;</span>b3 <span class="chess">&#x2659;</span>b4
+    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a2] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a3] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a5]
+    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c2] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c3] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c5]
+    :piececount Pb? 3 6
+    :shiftvertical
+    :shifthorizontal
+    :flipcolor))<!--
+--></code></pre></div>
+
+<div class="box"><pre><code><!--
+--><span class="comment">; Multiple consecutive rook checks followed by king moving to</span>
+<span class="comment">; empty square; usually to avoid stalemate if rook is captured.</span>
+
+(match
+  :result 1/2
+  (position 
+    :wtm
+    :sequence (  
+      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
+      (position :movefrom <span class="chess">&#x265a;</span> :check)
+      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
+      (position :movefrom <span class="chess">&#x265a;</span> :check)
+      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
+      (position :movefrom <span class="chess">&#x265a;</span> :check)
+      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
+      (position :movefrom <span class="chess">&#x265a;</span> :check)
+      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
+      (position :movefrom <span class="chess">&#x265a;</span> :check))))<!--
 --></code></pre></div>
 
 </body>
