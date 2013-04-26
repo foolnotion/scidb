@@ -44,6 +44,7 @@
 #include "m_hash.h"
 
 #include <string.h>
+#include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 
@@ -853,6 +854,12 @@ load(mstl::istream& strm)
 		{
 			if (!strm.getline(buf))
 			{
+				if (root == 0)
+				{
+					fprintf(stderr, "corruped input file\n");
+					exit(1);
+				}
+
 				for (unsigned i = 0; i < resolve.size(); ++i)
 				{
 					Resolve const& r = resolve[i];

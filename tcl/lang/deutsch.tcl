@@ -1883,7 +1883,8 @@
 ::terminationbox::mc::Termination(bishops)			"Parte remis durch patt (verschiedenfarbige Läufer)"
 ::terminationbox::mc::Termination(fifty)				"Parte remis aufgrund der 50-Züge-Regel"
 ::terminationbox::mc::Termination(threefold)			"Parte remis aufgrund dreifacher Stellungswiederholung"
-::terminationbox::mc::Termination(mating)				"Kein Spieler hat noch Mattmaterial"
+::terminationbox::mc::Termination(nomating)			"Kein Spieler hat noch Mattmaterial"
+::terminationbox::mc::Termination(nocheck)			"Kein Spieler kann noch Schachgebote geben"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Am Brett"

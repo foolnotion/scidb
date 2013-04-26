@@ -203,7 +203,7 @@ Third example: the same piece delivers at least 30 checks in the game.
   (position
     <cql>position:btm</cql>
     <cql>position:attackcount</cql> $checker &k; 1
-    <cql>position:matchcount</cql> 30 1000
+    <cql>position:matchcount</cql> 30 unlimited
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -230,13 +230,13 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    &P;b2 &P;b3 &P;b4
-    [.&K;&Q;&R;&B;&N;][a2] [.&K;&Q;&R;&B;&N;][a3] [.&K;&Q;&R;&B;&N;][a5]
-    [.&K;&Q;&R;&B;&N;][c2] [.&K;&Q;&R;&B;&N;][c3] [.&K;&Q;&R;&B;&N;][c5]
-    :piececount Pb? 3 6
-    :shiftvertical
-    :shifthorizontal
-    :flipcolor))
+    &P;[b2-4]
+    [.&K;&Q;&R;&B;&N;][a2,a3,a5]
+    [.&K;&Q;&R;&B;&N;][c2,c3,c5]
+    <cql>position:piececount</cql> &P;b? 3 6
+    <cql>position:shiftvertical</cql>
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
 </verbatim>
 
 <verbatim>
@@ -244,20 +244,37 @@ Fourth example: knight gives mate with its first move.
 <comment>; empty square; usually to avoid stalemate if rook is captured.</comment>
 
 (match
-  :result 1/2
+  <cql>match:result</cql> 1/2
   (position 
-    :wtm
-    :sequence (  
-      (position :movefrom &R; :moveto .)
-      (position :movefrom &k; :check)
-      (position :movefrom &R; :moveto .)
-      (position :movefrom &k; :check)
-      (position :movefrom &R; :moveto .)
-      (position :movefrom &k; :check)
-      (position :movefrom &R; :moveto .)
-      (position :movefrom &k; :check)
-      (position :movefrom &R; :moveto .)
-      (position :movefrom &k; :check))))
+    <cql>position:wtm</cql>
+    <cql>position:sequence</cql> (  
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>))))
+</verbatim>
+
+<verbatim>
+<comment>; Smothered Mate</comment>
+
+<comment>; A smothered mate is a checkmate delivered by a knight</comment>
+<comment>; in which the mated king is unable to move because he is</comment>
+<comment>; surrounded (or smothered) by his own pieces.</comment>
+
+(match
+  (position
+    <cql>position:flipcolor</cql>            ; either color
+    <cql>position:shiftvertical</cql>        ; independent from file
+    <cql>position:shifthorizontal</cql>      ; and rank
+    <cql>position:attackcount</cql> &N; &k;g7 1 ; only the knight gives check
+    a[f6-8,h6-8,g6,g8]    ; king is smothered by own pieces
+    <cql>position:mate</cql>))
 </verbatim>
 
 END

@@ -469,6 +469,27 @@ NoDoubleCheck::match(GameInfo const& info, Board const& board, Variant variant, 
 }
 
 
+Castling::Castling(Designator const& designator)
+	:m_castling(0)
+{
+	if (designator.kings(White))
+		m_castling |= castling::WhiteKingside;
+	if (designator.kings(Black))
+		m_castling |= castling::BlackKingside;
+	if (designator.queens(White))
+		m_castling |= castling::WhiteQueenside;
+	if (designator.queens(Black))
+		m_castling |= castling::BlackQueenside;
+}
+
+
+bool
+Castling::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+{
+	return bool(board.signature().castling() & m_castling);
+}
+
+
 bool
 ContactCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
 {
@@ -521,31 +542,27 @@ Fen::match(GameInfo const& info, Board const& board, Variant variant, bool isFin
 bool
 FiftyMoveRule::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
 {
-	return board.halfMoveClock() >= 50;
+	return board.halfMoveClock() >= 100;
 }
 
 
-CheckCount::CheckCount(unsigned count, char side)
-	:m_count(count)
-	,m_color(-1)
+bool
+HalfmoveClockLimit::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
 {
-	static_assert(White != -1 && Black != -1, "invalid initialization value");
-
-	switch (side)
-	{
-		case 'w': m_color = White; break;
-		case 'b': m_color = Black; break;
-	}
+	return board.halfMoveClock() <= m_limit;
 }
 
 
 bool
 CheckCount::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
 {
-	if (m_color != -1)
-		return board.checksGiven(color::ID(m_color)) == m_count;
+	if (variant != variant::ThreeCheck)
+		return false;
 
-	return board.checksGiven(White) == m_count || board.checksGiven(Black) == m_count;
+	if (m_bcount < 4)
+		return board.checksGiven(White) == m_wcount || board.checksGiven(Black) == m_wcount;
+
+	return board.checksGiven(White) == m_wcount && board.checksGiven(Black) == m_bcount;
 }
 
 
@@ -644,6 +661,36 @@ GappedSequence::match(GameInfo const& info, Board const& board, Variant variant,
 	// XXX not working if combined with not.
 	// XXX in this case we have to return 'probably'; that means: don't stop matching
 	return false;
+}
+
+
+bool
+MatingMaterial::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+{
+	return board.neitherPlayerHasMatingMaterial(variant) == !m_negate;
+}
+
+
+bool
+MaxSwapEvaluation::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+{
+	MoveList moves;
+	int maxScore = INT_MIN;
+
+	board.generateMoves(variant, moves);
+	board.filterLegalMoves(moves, variant);
+
+	for (MoveList::const_iterator i = moves.begin(); i != moves.end(); ++i)
+	{
+		if ((m_from.pieces(White) & setBit(i->from())) && (m_to.pieces(White) & setBit(i->to())))
+		{
+			int score = board.staticExchangeEvaluator(*i, Designator::pieceValues(variant));
+			if (score > maxScore)
+				maxScore = score;
+		}
+	}
+
+	return mstl::is_between(maxScore, m_minScore, m_maxScore);
 }
 
 

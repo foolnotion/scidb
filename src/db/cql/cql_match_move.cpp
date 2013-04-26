@@ -29,7 +29,10 @@
 
 #include "db_board.h"
 #include "db_board_base.h"
+#include "db_guess.h"
 #include "db_move.h"
+
+#include "m_utility.h"
 
 using namespace cql;
 using namespace cql::move;
@@ -41,35 +44,43 @@ Match::~Match() {}
 
 
 bool
-EnPassant::match(Board const& board, Move const& move)
+EnPassant::match(Board const& board, Move const& move, Variant variant)
 {
 	return move.isEnPassant();
 }
 
 
 bool
-NoEnPassant::match(Board const& board, Move const& move)
+NoEnPassant::match(Board const& board, Move const& move, Variant variant)
 {
 	return !move.isEnPassant();
 }
 
 
 bool
-IsCastling::match(Board const& board, Move const& move)
+ExchangeEvaluation::match(Board const& board, Move const& move, Variant variant)
+{
+	int score = board.staticExchangeEvaluator(move, Designator::pieceValues(variant));
+	return mstl::is_between(score, m_minScore, m_maxScore);
+}
+
+
+bool
+IsCastling::match(Board const& board, Move const& move, Variant variant)
 {
 	return move.isCastling();
 }
 
 
 bool
-NoCastling::match(Board const& board, Move const& move)
+NoCastling::match(Board const& board, Move const& move, Variant variant)
 {
 	return !move.isCastling();
 }
 
 
 bool
-MoveFrom::match(Board const& board, Move const& move)
+MoveFrom::match(Board const& board, Move const& move, Variant variant)
 {
 	if (!move.isPieceDrop())
 	{
@@ -93,7 +104,7 @@ MoveFrom::match(Board const& board, Move const& move)
 
 
 bool
-MoveTo::match(Board const& board, Move const& move)
+MoveTo::match(Board const& board, Move const& move, Variant variant)
 {
 	if (!move.isPieceDrop())
 	{
@@ -116,7 +127,7 @@ MoveTo::match(Board const& board, Move const& move)
 
 
 bool
-PieceDrop::match(Board const& board, Move const& move)
+PieceDrop::match(Board const& board, Move const& move, Variant variant)
 {
 	M_ASSERT(board.sideToMove() == move.color());
 
@@ -142,7 +153,7 @@ PieceDrop::match(Board const& board, Move const& move)
 
 
 bool
-Promote::match(Board const& board, Move const& move)
+Promote::match(Board const& board, Move const& move, Variant variant)
 {
 	if (move.isPromotion())
 	{

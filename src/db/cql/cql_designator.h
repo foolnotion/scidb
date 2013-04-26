@@ -78,6 +78,7 @@ public:
 	typedef unsigned (*CountFunc)(cql::Board const& pos, db::Board const& board);
 	typedef uint64_t (*FindFunc)(cql::Board const& pos, db::Board const& board);
 	typedef unsigned (*DiffFunc)(cql::Board const& pos, db::Board const& p1, db::Board const& p2);
+	typedef const int PieceValues[7];
 
 	typedef error::Type Error;
 
@@ -123,6 +124,7 @@ public:
 	void finish();
 
 	static unsigned power(db::material::Count m, db::variant::Type variant);
+	static int const* pieceValues(db::variant::Type variant);
 
 private:
 
@@ -141,6 +143,8 @@ private:
 	FindFunc		m_find;
 	DiffFunc		m_diff;
 	DiffFunc		m_same;
+
+	static int const* m_pieceValues[db::variant::NumberOfVariants];
 };
 
 } // namespace cql

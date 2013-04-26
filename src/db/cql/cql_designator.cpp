@@ -43,6 +43,37 @@ namespace {
 
 enum
 {
+	Normal_King_Value		= 0,
+	Normal_Queen_Value	= 9,
+	Normal_Rook_Value		= 5,
+	Normal_Bishop_Value	= 3,
+	Normal_Knight_Value	= 3,
+	Normal_Pawn_Value		= 1,
+
+	Zhouse_King_Value		= 0,
+	Zhouse_Queen_Value	= 5,
+	Zhouse_Rook_Value		= 3,
+	Zhouse_Bishop_Value	= 3,
+	Zhouse_Knight_Value	= 3,
+	Zhouse_Pawn_Value		= 1,
+
+	Losers_King_Value		= 0,
+	Losers_Queen_Value	= 5,
+	Losers_Rook_Value		= 4,
+	Losers_Bishop_Value	= 3,
+	Losers_Knight_Value	= 4,
+	Losers_Pawn_Value		= 1,
+
+	Suicide_King_Value	= 30,
+	Suicide_Queen_Value	= 3,
+	Suicide_Rook_Value	= 9,
+	Suicide_Bishop_Value	= 0,
+	Suicide_Knight_Value	= 9,
+	Suicide_Pawn_Value	= 1,
+};
+
+enum
+{
 	WK = 1 << 0,	// white king
 	WQ = 1 << 1,	// white queen
 	WR = 1 << 2,	// white rook
@@ -1206,6 +1237,61 @@ getFuncs(cql::Board const& pos,
 } // namespace
 
 
+static int const NormalPieceValues[7] =
+{
+	0,
+	Normal_King_Value,
+	Normal_Queen_Value,
+	Normal_Rook_Value,
+	Normal_Bishop_Value,
+	Normal_Knight_Value,
+	Normal_Pawn_Value,
+};
+
+static int const ZhousePieceValues[] =
+{
+	0,
+	Zhouse_King_Value,
+	Zhouse_Queen_Value,
+	Zhouse_Rook_Value,
+	Zhouse_Bishop_Value,
+	Zhouse_Knight_Value,
+	Zhouse_Pawn_Value,
+};
+
+static int const SuicidePieceValues[] =
+{
+	0,
+	Suicide_King_Value,
+	Suicide_Queen_Value,
+	Suicide_Rook_Value,
+	Suicide_Bishop_Value,
+	Suicide_Knight_Value,
+	Suicide_Pawn_Value,
+};
+
+static int const LosersPieceValues[] =
+{
+	0,
+	Losers_King_Value,
+	Losers_Queen_Value,
+	Losers_Rook_Value,
+	Losers_Bishop_Value,
+	Losers_Knight_Value,
+	Losers_Pawn_Value,
+};
+
+int const* Designator::m_pieceValues[variant::NumberOfVariants] =
+{
+	NormalPieceValues,
+	ZhousePieceValues,
+	ZhousePieceValues,
+	NormalPieceValues,
+	SuicidePieceValues,
+	LosersPieceValues,
+};
+
+
 static bool
 isDelim(char c)
 {
@@ -1314,7 +1400,25 @@ static bool shiftmaindiagonal(uint64_t& value, int step)	{ return shift(value, s
 static bool shiftoffdiagonal(uint64_t& value, int step)	{ return shift(value, -step, step); }
 
 
-Designator::Designator() :m_match(::match), m_count(::count), m_find(::find) {}
+Designator::Designator()
+	:m_match(::match)
+	,m_count(::count),
+	m_find(::find)
+{
+	static_assert(variant::Index_Normal     == 0, "initialization not working");
+	static_assert(variant::Index_Bughouse   == 1, "initialization not working");
+	static_assert(variant::Index_Crazyhouse == 2, "initialization not working");
+	static_assert(variant::Index_ThreeCheck == 3, "initialization not working");
+	static_assert(variant::Index_Antichess  == 4, "initialization not working");
+	static_assert(variant::Index_Losers     == 5, "initialization not working");
+
+	static_assert(piece::King   == 1, "initialization not working");
+	static_assert(piece::Queen  == 2, "initialization not working");
+	static_assert(piece::Rook   == 3, "initialization not working");
+	static_assert(piece::Bishop == 4, "initialization not working");
+	static_assert(piece::Knight == 5, "initialization not working");
+	static_assert(piece::Pawn   == 6, "initialization not working");
+}
 
 
 uint64_t
@@ -1795,18 +1899,45 @@ Designator::power(material::Count m, variant::Type variant)
 	{
 		case variant::Normal:
 		case variant::ThreeCheck:
-			return 9*m.queen + 5*m.rook + 3*(m.bishop + m.knight) + m.pawn;
+			static_assert(Normal_King_Value == 0, "computation not working");
+			static_assert(Normal_Bishop_Value == Normal_Knight_Value, "computation not working");
+			static_assert(Normal_Pawn_Value == 1, "computation not working");
+
+			return	Normal_Queen_Value*m.queen
+					 + Normal_Rook_Value*m.rook
+					 + Normal_Bishop_Value*(m.bishop + m.knight)
+					 + m.pawn;
 
 		case variant::Crazyhouse:
 		case variant::Bughouse:
-			return 5*m.queen + 3*(m.rook + m.bishop + m.knight) + m.pawn;
+			static_assert(Zhouse_King_Value == 0, "computation not working");
+			static_assert(Zhouse_Rook_Value == Zhouse_Knight_Value, "computation not working");
+			static_assert(Zhouse_Pawn_Value == 1, "computation not working");
+
+			return	Zhouse_Queen_Value*m.queen
+					 + Zhouse_Rook_Value*(m.rook + m.knight)
+					 + Zhouse_Bishop_Value*m.bishop
+					 + m.pawn;
+
+		case variant::Losers:
+			static_assert(Losers_King_Value == 0, "computation not working");
+			static_assert(Losers_Rook_Value == Losers_Knight_Value, "computation not working");
+			static_assert(Losers_Pawn_Value == 1, "computation not working");
+
+			return	Losers_Queen_Value*m.queen
+					 + Losers_Rook_Value*(m.rook + m.knight)
+					 + Losers_Bishop_Value*m.bishop
+					 + m.pawn;
 
 		case variant::Suicide:
 		case variant::Giveaway:
-			return 30*m.king + 3*m.queen + 9*(m.rook + m.knight) + m.pawn;
+			static_assert(Suicide_Rook_Value == Suicide_Knight_Value, "computation not working");
+			static_assert(Suicide_Pawn_Value == 1, "computation not working");
 
-		case variant::Losers:
-			return 5*m.queen + 4*(m.rook + m.knight) + 3*m.bishop + m.pawn;
+			return	Suicide_King_Value*m.king
+					 + Suicide_Queen_Value*m.queen
+					 + Suicide_Rook_Value*(m.rook + m.knight)
+					 + m.pawn;
 
 		case variant::Undetermined:
 		case variant::Antichess:
@@ -1815,6 +1946,13 @@ Designator::power(material::Count m, variant::Type variant)
 	}
 
 	return 0; // never reached
+}
+
+
+int const*
+Designator::pieceValues(db::variant::Type variant)
+{
+	return m_pieceValues[variant::toIndex(variant)];
 }
 
 // vi:set ts=3 sw=3:

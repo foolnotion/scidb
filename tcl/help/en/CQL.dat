@@ -12,6 +12,7 @@ set Index {
     {
       {{birthyear : match} {CQL-Match-List.html} {match:birthyear}}
       {{blackbirthyear : match} {CQL-Match-List.html} {match:blackbirthyear}}
+      {{blackcannotwin : position} {CQL-Position-List.html} {position:blackcannotwin}}
       {{blackcountry : match} {CQL-Match-List.html} {match:blackcountry}}
       {{blackdeathyear : match} {CQL-Match-List.html} {match:blackdeathyear}}
       {{blackelo : position} {CQL-Position-List.html} {position:blackelo}}
@@ -22,6 +23,7 @@ set Index {
       {{blackrating : match} {CQL-Match-List.html} {match:blackrating}}
       {{blackrating : position} {CQL-Position-List.html} {position:blackrating}}
       {{blacktitle : match} {CQL-Match-List.html} {match:blacktitle}}
+      {{btm : position} {CQL-Position-List.html} {position:btm}}
       {{btm : position} {CQL-Position-List.html} {position:btm}}
     }
   }
@@ -34,6 +36,7 @@ set Index {
       {{comment : match} {CQL-Match-List.html} {match:comment}}
       {{contactcheck : position} {CQL-Position-List.html} {position:contactcheck}}
       {{country : match} {CQL-Match-List.html} {match:country}}
+      {{cut : position} {CQL-Position-List.html} {position:cut}}
     }
   }
   { D
@@ -49,11 +52,14 @@ set Index {
       {{elo : position} {CQL-Position-List.html} {position:elo}}
       {{endgame : position} {CQL-Position-List.html} {position:endgame}}
       {{enpassant : position} {CQL-Position-List.html} {position:enpassant}}
+      {{evaluation : position} {CQL-Position-List.html} {position:evaluation}}
       {{event : match} {CQL-Match-List.html} {match:event}}
       {{eventcountry : match} {CQL-Match-List.html} {match:eventcountry}}
       {{eventdate : match} {CQL-Match-List.html} {match:eventdate}}
       {{eventmode : match} {CQL-Match-List.html} {match:eventmode}}
       {{eventtype : match} {CQL-Match-List.html} {match:eventtype}}
+      {{exchangeevaluation : position} {CQL-Position-List.html} {position:exchangeevaluation}}
+      {{exclude : position} {CQL-Position-List.html} {position:exclude}}
     }
   }
   { F
@@ -72,6 +78,7 @@ set Index {
   }
   { G
     {
+      {{gameisover : position} {CQL-Position-List.html} {position:gameisover}}
       {{gamenumber : match} {CQL-Match-List.html} {match:gamenumber}}
       {{gappedsequence : position} {CQL-Position-List.html} {position:gappedsequence}}
       {{gender : match} {CQL-Match-List.html} {match:gender}}
@@ -79,6 +86,7 @@ set Index {
   }
   { H
     {
+      {{halfmoveclocklimit : position} {CQL-Position-List.html} {position:halfmoveclocklimit}}
       {{hasannotation : match} {CQL-Match-List.html} {match:hasannotation}}
       {{hascomments : match} {CQL-Match-List.html} {match:hascomments}}
       {{hasmarkers : match} {CQL-Match-List.html} {match:hasmarkers}}
@@ -107,8 +115,10 @@ set Index {
       {{markall : position} {CQL-Position-List.html} {position:markall}}
       {{matchcount : position} {CQL-Position-List.html} {position:matchcount}}
       {{mate : position} {CQL-Position-List.html} {position:mate}}
-      {{maxswapvalue : position} {CQL-Position-List.html} {position:maxswapvalue}}
+      {{matingmaterial : position} {CQL-Position-List.html} {position:matingmaterial}}
+      {{maxswapevaluation : position} {CQL-Position-List.html} {position:maxswapevaluation}}
       {{missingpiececount : relation} {CQL-Relation-List.html} {relation:missingpiececount}}
+      {{moveevaluation : position} {CQL-Position-List.html} {position:moveevaluation}}
       {{movefrom : position} {CQL-Position-List.html} {position:movefrom}}
       {{movenumber : position} {CQL-Position-List.html} {position:movenumber}}
       {{moveto : position} {CQL-Position-List.html} {position:moveto}}
@@ -124,6 +134,8 @@ set Index {
       {{nodoublecheck : position} {CQL-Position-List.html} {position:nodoublecheck}}
       {{noendgame : position} {CQL-Position-List.html} {position:noendgame}}
       {{noenpassant : position} {CQL-Position-List.html} {position:noenpassant}}
+      {{nomate : position} {CQL-Position-List.html} {position:nomate}}
+      {{nomatingmaterial : position} {CQL-Position-List.html} {position:nomatingmaterial}}
       {{nostalemate : position} {CQL-Position-List.html} {position:nostalemate}}
       {{not : match} {CQL-Match-List.html} {match:not}}
       {{not : position} {CQL-Position-List.html} {position:not}}
@@ -148,6 +160,7 @@ set Index {
       {{plycount : match} {CQL-Match-List.html} {match:plycount}}
       {{power : position} {CQL-Position-List.html} {position:power}}
       {{powerdifference : position} {CQL-Position-List.html} {position:powerdifference}}
+      {{preceding : position} {CQL-Position-List.html} {position:preceding}}
       {{pretransformmatchcount : position} {CQL-Position-List.html} {position:pretransformmatchcount}}
       {{promote : position} {CQL-Position-List.html} {position:promote}}
     }
@@ -207,6 +220,7 @@ set Index {
   { W
     {
       {{whitebirthyear : match} {CQL-Match-List.html} {match:whitebirthyear}}
+      {{whitecannotwin : position} {CQL-Position-List.html} {position:whitecannotwin}}
       {{whitecountry : match} {CQL-Match-List.html} {match:whitecountry}}
       {{whitedeathyear : match} {CQL-Match-List.html} {match:whitedeathyear}}
       {{whiteelo : position} {CQL-Position-List.html} {position:whiteelo}}

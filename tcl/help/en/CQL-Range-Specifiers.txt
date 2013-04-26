@@ -30,6 +30,18 @@ If a range specifier has one integer, it denotes that integer. Otherwise
 it denotes all the integers between its first and second integers inclusive.
 </p>
 
+<p>
+A special meaning has the value "unlimited". If "unlimited" is a
+single argument, the range is completely unlimited, this means all
+values are included. If the lower range is "unlimited", the meaning
+is negative unlimited. If the upper range is "unlimited", the meaning is
+positive unlimited.
+</p>
+
+<note>
+The special range "unlimited" is not part of the CQL standard.
+</note>
+
 <h3>Examples</h3>
 
 <p>
@@ -42,7 +54,7 @@ years in which the game in question must lie in order for a match to occur.
 </verb>
 
 <p>
-denotes the year 1934. <code>1934</code> is the range specifier.
+Denotes the year 1934. <code>1934</code> is the range specifier.
 </p>
 
 <verb>
@@ -50,8 +62,32 @@ denotes the year 1934. <code>1934</code> is the range specifier.
 </verb>
 
 <p>
-denotes the years between 1934 and 2000 inclusive. The range specifier is
+Denotes the years between 1934 and 2000 inclusive. The range specifier is
 <code>1934 2000</code>.
+</p>
+
+<verb>
+<cql>match:year</cql> 1934 unlimited
+</verb>
+
+<p>
+Denotes all the years after 1933.
+</p>
+
+<verb>
+<cql>match:year</cql> unlimited 1934
+</verb>
+
+<p>
+Denotes all the years before 1935.
+</p>
+
+<verb>
+<cql>match:elo</cql> unlimited
+</verb>
+
+<p>
+Match all games where one player has an ELO rating.
 </p>
 
 END

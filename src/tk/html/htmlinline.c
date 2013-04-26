@@ -591,13 +591,13 @@ fixLineBreak(InlineContext *p, char CONST *zText, int nText)
                 Tcl_UtfToUniChar(zText, &ch);
 
                 if (strchr("{([", zLast[nLast - 1])) {
-                    if (isAlnum(ch)) {
+                    if (isAlnum(ch) || strchr("{([", ch)) {
                         InlineBox *pBox = &p->aInline[p->nInline - 1];
                         pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
                     }
                 } else if (strchr("})]", zText[0])) {
                     Tcl_UtfToUniChar(Tcl_UtfPrev(zLast + nLast, zLast), &ch);
-                    if (Tcl_UniCharIsPunct(ch) || isAlnum(ch) || ch == '/') {
+                    if (Tcl_UniCharIsPunct(ch) || isAlnum(ch) || ch == '/' || strchr("})]", ch)) {
                         InlineBox *pBox = &p->aInline[p->nInline - 1];
                         pBox->eWhitespace = pPrevBox->eWhitespace = CSS_CONST_NOWRAP;
                     }

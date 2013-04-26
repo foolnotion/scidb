@@ -482,8 +482,8 @@ proc showNext {w position flag} {
 }
 
 
-proc makeResult {result state toMove termination reason} {
-	set reasonText [::terminationbox::buildText $reason $state $result $toMove $termination]
+proc makeResult {result state toMove termination reason variant} {
+	set reasonText [::terminationbox::buildText $reason $state $result $toMove $termination $variant]
 	set result [::util::formatResult $result]
 	if {$result ne "*"} { set r1 $result } else { set r1 "" }
 	if {[string length $reasonText]} { set r2 $reasonText } else { set r2 "" }
@@ -1075,7 +1075,7 @@ proc UpdatePGN {position data {w {}}} {
 
 			result {
 				set reason [::scidb::game::query $position termination]
-				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason]
+				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason $Vars(variant)]
 				PrintResult $w $position
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Colors(background) }

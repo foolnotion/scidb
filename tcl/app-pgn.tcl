@@ -1046,7 +1046,8 @@ proc DoLayout {position data {w {}}} {
 					$w mark set current m-0
 					set prevChar [$w get current-1c]
 					$w delete current end
-					set result [::browser::makeResult {*}[lrange $resultList 0 end-1]]
+					set variant [::scidb::game::query $position variant]
+					set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
 					if {[llength $result]} {
 						lassign $result result reason
 						if {$Options(spacing:paragraph)} { $w insert current \n }

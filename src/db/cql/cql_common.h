@@ -87,6 +87,7 @@ namespace error
 		Relation_List_Expected,
 		Unmatched_Bracket,
 		Empty_Piece_Designator,
+		Invalid_Designator,
 		Any_Fyle_Not_Allowed_In_Range,
 		Any_Rank_Not_Allowed_In_Range,
 		Invalid_Fyle_In_Square_Designator,

@@ -6861,6 +6861,226 @@ Board::hasBishopOnLite(color::ID side) const
 }
 
 
+bool
+Board::drawnDueToBishopsOfOppositeColors(variant::Type variant) const
+{
+	if (variant != variant::Normal)
+		return false;
+
+	return	materialCount(White).total() == 2
+			&& materialCount(Black).total() == 2
+			&& materialCount(White).bishop == 1
+			&& materialCount(Black).bishop == 1
+			&& hasBishopOnLite(White) == hasBishopOnDark(Black);
+}
+
+
+bool
+Board::neitherPlayerHasMatingMaterial(variant::Type variant) const
+{
+	if (variant::isAntichess(variant) || variant::isZhouse(variant))
+		return false;
+	
+	material::Count wmat = materialCount(White);
+	material::Count bmat = materialCount(Black);
+
+	unsigned wtotal = wmat.total();
+	unsigned btotal = bmat.total();
+	
+	if (wtotal == 1 && btotal == 1)
+		return true;
+
+	if (variant == variant::ThreeCheck)
+		return false;
+
+	if (wtotal == 2 && btotal == 1 && wmat.minor() == 1)
+		return true;
+	
+	if (btotal == 2 && wtotal == 1 && bmat.minor() == 1)
+		return true;
+	
+	return	wtotal == 2
+			&& btotal == 2
+			&& wmat.bishop == 1
+			&& bmat.bishop == 1
+			&& hasBishopOnLite(White) == hasBishopOnLite(Black);
+}
+
+
+bool
+Board::cannotWin(color::ID color, variant::Type variant) const
+{
+	if (variant::isAntichess(variant) || variant::isZhouse(variant))
+		return false;
+
+	material::Count material = materialCount(color);
+
+	unsigned total = material.total();
+	
+	if (total == 1)
+		return true;
+	
+	if (variant == variant::ThreeCheck)
+		return false;
+	
+	return total == 2 && material.minor() == 1;
+}
+
+
+// ------------------------------------------------------------------------
+// adopted from crafty-15.17/swap.c:SwapXray()
+// ------------------------------------------------------------------------
+// addXrayPiece() is used to determine if a piece is "behind" the piece on
+// <from>, and this piece would attack <target> if the piece on <from> were
+// moved (as in playing out sequences of swaps). If so, this indirect
+// attacker is added to the list of attackers bearing to <target>.
+uint64_t
+Board::addXrayPiece(unsigned from, unsigned target) const
+{
+	switch (::Directions[target][from])
+	{
+		case  1: return rankAttacks(from) & (m_rooks | m_queens) & Plus1Dir[from];
+		case  7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Plus7Dir[from];
+		case  8: return fyleAttacks(from) & (m_rooks | m_queens) & Plus8Dir[from];
+		case  9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Plus9Dir[from];
+		case -1: return rankAttacks(from) & (m_queens | m_rooks) & Minus1Dir[from];
+		case -7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Minus7Dir[from];
+		case -8: return fyleAttacks(from) & (m_rooks | m_queens) & Minus8Dir[from];
+		case -9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Minus9Dir[from];
+	}
+
+	return 0;
+}
+
+
+// ------------------------------------------------------------------------
+// adopted from crafty-15.17/swap.c:Swap()
+// ------------------------------------------------------------------------
+// A Static Exchange Evaluator (or SEE for short).
+//
+// SSE is used to analyze capture moves to see whether or not they appear
+// to be profitable. The basic algorithm is extremely fast since it uses the
+// bitmaps to determine which squares are attacking the <target> square.
+//
+// The algorithm is quite simple. Using the attack bitmaps, we enumerate all
+// the pieces that are attacking <target> for either side. Then we simply
+// use the lowest piece (value) for the correct side to capture on <target>.
+// We continually "flip" sides taking the lowest piece each time.
+//
+// As a piece is used, if it is a sliding piece (pawn, bishop, rook or queen)
+// we "peek" behind it to see if it is attacked by a sliding piece in the
+// direction away from the piece being captured. If so, and that sliding
+// piece moves in this direction, then it is added to the list of attackers
+// since its attack has been "uncovered" by moving the capturing piece.
+int
+Board::staticExchangeEvaluator(Move const& move, int const* pieceValues) const
+{
+	M_REQUIRE(pieceValues);
+
+	int attackedPiece;
+	int swapList[65];
+
+	// Initialize by placing the piece on target first in
+	// the list as it is being captured to start things off.
+	if (move.isPromotion())
+	{
+		attackedPiece = pieceValues[move.promoted()];
+		swapList[0] = attackedPiece - pieceValues[piece::Pawn];
+	}
+	else
+	{
+		attackedPiece = pieceValues[move.pieceMoved()];
+		swapList[0] = pieceValues[move.capturedOrDropped()];
+	}
+
+	int target	= move.to();
+	int n			= 1;
+
+	uint64_t fromMask		= ::setBit(move.from());
+	uint64_t occupied		= m_occupiedBy[m_stm ^ 1] & ~fromMask;
+	uint64_t occupied2	= m_occupiedBy[m_stm] & ~fromMask;
+	uint64_t pawns			= PawnAttacks[m_stm][target] & m_pawns;
+	uint64_t pawns2		= PawnAttacks[m_stm ^ 1][target] & m_pawns;
+	uint64_t knights		= knightAttacks(target) & m_knights;
+	uint64_t bishops		= bishopAttacks(target) & m_bishops;
+	uint64_t rooks			= rookAttacks(target) & m_rooks;
+	uint64_t queens		= queenAttacks(target) & m_queens;
+	uint64_t kings			= kingAttacks(target) & m_kings;
+
+	occupied |= addXrayPiece(move.from(), target);
+
+	// Now pick out the least valuable piece for the correct
+	// side that is bearing on <target>. As we find one, we
+	// call addXrayPiece() to add the piece behind this piece
+	// that is indirectly bearing on <target> (if any).
+	for ( ; occupied; ++n)
+	{
+		if (pawns & occupied)
+		{
+			int square = lsb(pawns & occupied);
+			occupied &= ~::setBit(square);
+			occupied |= addXrayPiece(square, target);
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::Pawn];
+		}
+		else if (knights & occupied)
+		{
+			occupied &= ~::setBit(lsb(knights & occupied));
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::Knight];
+		}
+		else if (bishops & occupied)
+		{
+			int square = lsb(bishops & occupied);
+			occupied &= ~::setBit(square);
+			occupied |= addXrayPiece(square, target);
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::Bishop];
+		}
+		else if (rooks & occupied)
+		{
+			int square = lsb(rooks & occupied);
+			occupied &= ~::setBit(square);
+			occupied |= addXrayPiece(square, target);
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::Rook];
+		}
+		else if (queens & occupied)
+		{
+			int square = lsb(queens & occupied);
+			occupied &= ~::setBit(square);
+			occupied |= addXrayPiece(square, target);
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::Queen];
+		}
+		else if (kings & occupied)
+		{
+			occupied &= ~::setBit(lsb(kings & occupied));
+			swapList[n] = -swapList[n - 1] + attackedPiece;
+			attackedPiece = pieceValues[piece::King];
+		}
+		else
+		{
+			break;
+		}
+
+		mstl::swap(occupied, occupied2);
+		mstl::swap(pawns, pawns2);
+	}
+
+	// Starting at the end of the sequence of values, use a
+	// "minimax" like procedure to decide where the captures
+	// will stop.
+	while (--n)
+	{
+		if (swapList[n] > -swapList[n - 1])
+			swapList[n - 1] = -swapList[n];
+	}
+
+	return swapList[0];
+}
+
+
 void
 Board::dump() const
 {

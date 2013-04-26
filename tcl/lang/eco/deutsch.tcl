@@ -293,6 +293,7 @@
 "Outflank Variation"											"Überlistungsvariante"
 "Oxford Variation"											"Oxforder Variante"
 "Paleface Attack"												"Bleichgesicht-Variante"
+"Paris Defence"												"Pariser Verteidigung"
 "Patzer Opening"												"Patzereröffnung"
 "Pawn Center Variation"										"Bauernzentrumvariante"
 "Pawn Push Variation"										"Bauernvorstoßvariante"
@@ -503,6 +504,8 @@
 "Exchange"														"Abtausch"
 "Extension"														"Verlängerung"
 "Fool's Mate"													"Narrenmatt"
+"Légal Mate"													"Légal's Matt"
+"Scholar's Mate"												"Schäfermatt"
 "Franco"															"Franko"
 "Fried Fox"														"Gebratener-Fuchs"	;# ???
 "Gambit Line"													"Gambitabspiel"

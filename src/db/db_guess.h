@@ -165,8 +165,8 @@ private:
 	bool boardIsLegal() const;
 	int evaluateNoMoves() const;
 	int countAllPieces(color::ID side) const;
-	int staticExchangeEvaluator(Move const& move);
-	uint64_t addXrayPiece(unsigned from, unsigned target);
+	int staticExchangeEvaluator(Move const& move) const;
+	uint64_t addXrayPiece(unsigned from, unsigned target) const;
 
 	// normal chess evaluation
 	void preEvaluate();

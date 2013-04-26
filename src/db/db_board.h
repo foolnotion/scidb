@@ -321,6 +321,12 @@ public:
 	bool hasPartnerBoard() const;
 	/// Returns whether any of the given squares is occupied
 	bool anyOccupied(uint64_t squares) const;
+	/// Returns whether this game is drawn due to bishops of opposite colors
+	bool drawnDueToBishopsOfOppositeColors(variant::Type variant) const;
+	/// Returns whether neither player has mating material
+	bool neitherPlayerHasMatingMaterial(variant::Type variant) const;
+	/// Returns whether given side cannot win.
+	bool cannotWin(color::ID color, variant::Type variant) const;
 
 	/// Returns current board state (check mate, stale mate, ...)
 	unsigned checkState(variant::Type variant) const;
@@ -463,6 +469,9 @@ public:
 	/// Swap the side to move
 	void swapToMove();
 
+	/// Static Exchange Evaluator (SSE): is used to analyze capture moves.
+	int staticExchangeEvaluator(Move const& move, int const* pieceValues) const;
+
 	// Validation
 
 	/// Check current position and return "Valid" or problem
@@ -601,6 +610,8 @@ private:
 	bool findAnyLegalMove(variant::Type variant) const;
 	bool containsAnyLegalMove(MoveList const& moves, variant::Type variant) const;
 
+	uint64_t addXrayPiece(unsigned from, unsigned target) const;
+
 	char const* parsePieceDrop(char const* s,
 										Move& move,
 										variant::Type variant,
@@ -735,11 +746,11 @@ namespace mstl {
 
 template <typename T> struct is_pod;
 
-template <> struct is_pod<db::Board> 								{ enum { value = 1 }; };
-template <> struct is_pod<db::board::Position>					{ enum { value = 1 }; };
-template <> struct is_pod<db::board::ExactPosition>			{ enum { value = 1 }; };
+template <> struct is_pod<db::Board> 						{ enum { value = 1 }; };
+template <> struct is_pod<db::board::Position>			{ enum { value = 1 }; };
+template <> struct is_pod<db::board::ExactPosition>	{ enum { value = 1 }; };
 template <> struct is_pod<db::board::ExactZHPosition>	{ enum { value = 1 }; };
-template <> struct is_pod<db::board::UniquePosition>			{ enum { value = 1 }; };
+template <> struct is_pod<db::board::UniquePosition>	{ enum { value = 1 }; };
 
 } // namespace mstl
 

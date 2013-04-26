@@ -750,8 +750,8 @@ snapshotZero(HtmlTree *pTree)
     HtmlDrawSnapshotFree(pTree, pTree->cb.pSnapshot);
     pTree->cb.pSnapshot = HtmlDrawSnapshotZero(pTree);
     for (p = pTree->pMapped; p ; p = p->pNext) {
-        p->iCanvasX = -10000;
-        p->iCanvasY = -10000;
+        p->iCanvasX = -1000000;
+        p->iCanvasY = -1000000;
     }
 }
 
@@ -986,7 +986,7 @@ HtmlCallbackDamage(HtmlTree *pTree, int x, int y, int w, int h)
         rect.width = w;
         rect.height = h;
 
-        if (w != 10000 || h != 10000)
+        if (w != 1000000 || h != 1000000)
         {
             rect.x += pTree->iScrollX;
             rect.y += pTree->iScrollY;

@@ -3722,42 +3722,19 @@ Game::updateLine()
 	{
 		m_termination = termination::FiftyMoveRuleExceeded;
 	}
-	else if (	variant::isAntichessExceptLosers(m_variant)
-				&& m_finalBoard.materialCount(color::White).total() == 1
-				&& m_finalBoard.materialCount(color::Black).total() == 1
-				&& m_finalBoard.materialCount(color::White).bishop == 1
-				&& m_finalBoard.materialCount(color::Black).bishop == 1
-				&& m_finalBoard.hasBishopOnLite(color::White) == m_finalBoard.hasBishopOnDark(color::Black))
+	else if (m_finalBoard.drawnDueToBishopsOfOppositeColors(m_variant))
 	{
 		m_termination = termination::BishopsOfOppositeColor;
 	}
-	else if (	!variant::isAntichessExceptLosers(m_variant)
-				&& !variant::isZhouse(m_variant)
-				&& m_finalBoard.materialCount(color::White).total() == 1
-				&& m_finalBoard.materialCount(color::Black).total() == 1)
+	else if (m_finalBoard.neitherPlayerHasMatingMaterial(m_variant))
 	{
 		m_termination = termination::NeitherPlayerHasMatingMaterial;
 	}
-	else if (	!variant::isAntichessExceptLosers(m_variant)
-				&& !variant::isZhouse(m_variant)
-				&& m_finalBoard.materialCount(color::White).total() <= 2
-				&& m_finalBoard.materialCount(color::Black).total() <= 2
-				&& m_finalBoard.materialCount(color::White).minor() <= 1
-				&& m_finalBoard.materialCount(color::Black).minor() <= 1)
-	{
-		m_termination = termination::NobodyCanWin;
-	}
-	else if (	!variant::isAntichessExceptLosers(m_variant)
-				&& !variant::isZhouse(m_variant)
-				&& m_finalBoard.materialCount(color::White).total() <= 2
-				&& m_finalBoard.materialCount(color::White).minor() <= 1)
+	else if (m_finalBoard.cannotWin(color::White, m_variant))
 	{
 		m_termination = termination::WhiteCannotWin;
 	}
-	else if (	!variant::isAntichessExceptLosers(m_variant)
-				&& !variant::isZhouse(m_variant)
-				&& m_finalBoard.materialCount(color::Black).total() <= 2
-				&& m_finalBoard.materialCount(color::Black).minor() <= 1)
+	else if (m_finalBoard.cannotWin(color::Black, m_variant))
 	{
 		m_termination = termination::BlackCannotWin;
 	}

@@ -1882,7 +1882,8 @@
 ::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)"
 ::terminationbox::mc::Termination(fifty)				"Game drawn by the 50 move rule"
 ::terminationbox::mc::Termination(threefold)			"Game drawn by threefold repetition"
-::terminationbox::mc::Termination(mating)				"Neither player has mating material"
+::terminationbox::mc::Termination(nomating)			"Neither player has mating material"
+::terminationbox::mc::Termination(nocheck)			"Neither player can give check"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"Over the board"

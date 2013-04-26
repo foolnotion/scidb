@@ -169,7 +169,7 @@ printMove(unsigned ply, Move const& move)
 	printf(" ");
 	if ((ply & 1) == 0)
 		printf("%u.", (ply + 2) >> 1);
-	printf("%s", move.printSan(s).c_str());
+	printf("%s", move.printSan(s, protocol::Standard, encoding::Latin1).c_str());
 }
 
 
@@ -241,7 +241,7 @@ extend()
 
 			for (unsigned k = 0; k < moves.size(); ++k)
 			{
-				board.prepareForPrint(moves[k], variant::Normal);
+				board.prepareForPrint(moves[k], variant::Normal, Board::ExternalRepresentation);
 				board.doMove(moves[k], variant::Normal);
 			}
 
@@ -255,7 +255,7 @@ extend()
 				__attribute__((unused)) uint64_t h = board.hashNoEP();
 
 				board.prepareUndo(more[k]);
-				board.prepareForPrint(more[k], variant::Normal);
+				board.prepareForPrint(more[k], variant::Normal, Board::ExternalRepresentation);
 				board.doMove(more[k], variant::Normal);
 
 				if (board.isLegal())
@@ -374,7 +374,7 @@ prepare()
 				Move move = Move(line[k]);
 
 				moves.append(move);
-				board.prepareForPrint(move, variant::Normal);
+				board.prepareForPrint(move, variant::Normal, Board::ExternalRepresentation);
 				board.doMove(move, variant::Normal);
 
 				if (k + 1 < line.size())

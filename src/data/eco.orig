@@ -8082,7 +8082,10 @@ C20 1.e4 e5 2.a3 "Mengarini Opening" {1}
 C20 1.e4 e5 2.f3 "King's Head Opening" {1}
 C20 1.e4 e5 2.f3 Nf6 "Walkerling Variation" {2}
 C20 1.e4 e5 2.Qh5 "Patzer Opening (Wayward Queen Attack)" {1}
+C20 1.e4 e5 2.Qh5 Nc6
+C20 1.e4 e5 2.Qh5 Nc6 3.Bc4
 C20 1.e4 e5 2.Qh5 Nc6 3.Bc4 Nh6 4.d3 g6 5.Qf3 f6 6.Ne2 d5 "Mellon Gambit" {2}
+C20 1.e4 e5 2.Qh5 Nc6 3.Bc4 Nf6 4.Qxf7# "Scholar's Mate" {2}
 C20 1.e4 e5 2.Qf3 "Napoleon's Opening" {1}
 C20 1.e4 e5 2.d3 "Indian Opening (Clam Variation)" {1}
 C20 1.e4 e5 2.d3 d5
@@ -9439,7 +9442,9 @@ C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 "Italian Game" "Italian" {0}
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 f5 "Rousseau Gambit" {1}
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 Nd4 "Blackburne-Shilling Gambit" {1}
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 Nd4 4.Nxe5 Qg5 5.Nxf7 Qxg2 6.Rf1 Qxe4+ 7.Be2 Nf3# "Blackburne-Shilling Trap" {1}
-C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 "Semi-Italian" {1}
+C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 "Semi-Italian (Paris Defence)" {1}
+C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 4.Nc3
+C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 d6 4.Nc3 Bg4 5.h3 Bh5 6.Nxe5 Bxd1 7.Bxf7+ Ke7 8.Nd5# "Légal Mate" {2}
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 Be7 "Hungarian Defence" {0}
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 Be7 4.d4
 C50 1.e4 e5 2.Nf3 Nc6 3.Bc4 Be7 4.d4 exd4

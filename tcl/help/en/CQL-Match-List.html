@@ -1319,6 +1319,11 @@ A date has the following syntax:
 </div>
 
 <p>
+In case of the second form the special date "unlimited" may be used; see
+<a href="CQL-Range-Specifiers.html">range specifiers</a> for a description.
+</p>
+
+<p>
 Examples:
 </p>
 
@@ -1337,6 +1342,14 @@ Search for all games played on October 1, 2010.
 <p>
 Search for all games played in October 2010: between October 1, 2010
 (inclusive), and November 1, 2010 (exclusive).
+</p>
+
+<div class="verb"><code>
+<span class="keyword">:date</span> 2010-10-01 unlimited
+</code></div>
+
+<p>
+Search for all games played after September 30, 2010.
 </p>
 
 <div class="verb"><code>

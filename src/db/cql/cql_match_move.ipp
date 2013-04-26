@@ -32,6 +32,13 @@ inline MoveTo::MoveTo(Designator const& designator) :m_designator(designator) {}
 inline PieceDrop::PieceDrop(Designator const& designator) :m_designator(designator) {}
 inline Promote::Promote(Designator const& designator) :m_designator(designator) {}
 
+inline
+ExchangeEvaluation::ExchangeEvaluation(int minScore, int maxScore)
+	:m_minScore(minScore)
+	,m_maxScore(maxScore)
+{
+}
+
 } // namespace move
 } // namespace cql
 

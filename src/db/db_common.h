@@ -687,7 +687,6 @@ namespace termination
 		ThreefoldRepetition,
 		FiftyMoveRuleExceeded,
 		NeitherPlayerHasMatingMaterial,
-		NobodyCanWin,
 		WhiteCannotWin,
 		BlackCannotWin,
 	};

@@ -351,7 +351,6 @@ public:
 			Tcl_IncrRefCount(m_threefold		= Tcl_NewStringObj("threefold",			-1));
 			Tcl_IncrRefCount(m_fifty			= Tcl_NewStringObj("fifty",				-1));
 			Tcl_IncrRefCount(m_mating			= Tcl_NewStringObj("mating",				-1));
-			Tcl_IncrRefCount(m_nobody			= Tcl_NewStringObj("nobody",				-1));
 			Tcl_IncrRefCount(m_empty			= Tcl_NewStringObj("",						-1));
 			Tcl_IncrRefCount(m_number			= Tcl_NewStringObj("[",						-1));
 			Tcl_IncrRefCount(m_leave			= Tcl_NewStringObj("]",						-1));
@@ -401,7 +400,6 @@ public:
 			case termination::ThreefoldRepetition:					term = m_threefold; break;
 			case termination::FiftyMoveRuleExceeded:				term = m_fifty; break;
 			case termination::NeitherPlayerHasMatingMaterial:	term = m_mating; break;
-			case termination::NobodyCanWin:							term = m_nobody; break;
 			case termination::WhiteCannotWin:						term = m_white; break;
 			case termination::BlackCannotWin:						term = m_black; break;
 		}
@@ -822,7 +820,6 @@ public:
 	static Tcl_Obj* m_threefold;
 	static Tcl_Obj* m_fifty;
 	static Tcl_Obj* m_mating;
-	static Tcl_Obj* m_nobody;
 	static Tcl_Obj* m_empty;
 	static Tcl_Obj* m_number;
 	static Tcl_Obj* m_leave;
@@ -879,7 +876,6 @@ Tcl_Obj* Visitor::m_bishops			= 0;
 Tcl_Obj* Visitor::m_threefold			= 0;
 Tcl_Obj* Visitor::m_fifty				= 0;
 Tcl_Obj* Visitor::m_mating				= 0;
-Tcl_Obj* Visitor::m_nobody				= 0;
 Tcl_Obj* Visitor::m_empty				= 0;
 Tcl_Obj* Visitor::m_number				= 0;
 Tcl_Obj* Visitor::m_leave				= 0;

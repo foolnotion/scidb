@@ -28,6 +28,7 @@
 
 #include "m_list.h"
 #include "m_vector.h"
+#include "m_function.h"
 
 namespace db
 {
@@ -63,7 +64,7 @@ public:
 	void reset();
 
 	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal);
-	bool match(Board const& board, Move const& move);
+	bool match(Board const& board, Move const& move, Variant variant);
 
 	char const* parse(Match& match, char const* s, Error& error);
 	void finish(Match& match);
@@ -81,12 +82,10 @@ private:
 	typedef mstl::vector<board::Match*> BoardMatchList;
 	typedef mstl::vector<move::Match*> MoveMatchList;
 	typedef mstl::vector<Position*> PositionList;
+	typedef mstl::function<void ()> CutFunc;
 
-	bool doMatch(	GameInfo const& info,
-						Board const& board,
-						Variant variant,
-						bool isFinal);
-	bool doMatch(Board const& board, Move const& move);
+	bool doMatch(GameInfo const& info, Board const& board, Variant variant, bool isFinal);
+	bool doMatch(Board const& board, Move const& move, Variant variant);
 
 	char const* adopt(Match& match, char const* s, Error& error);
 
@@ -97,6 +96,7 @@ private:
 	char const* parseBlackRating(Match& match, char const* s, Error& error);
 	char const* parseBlackToMove(Match& match, char const* s, Error& error);
 	char const* parseCastling(Match& match, char const* s, Error& error);
+	char const* parseCut(Match& match, char const* s, Error& error);
 	char const* parseIsCastling(Match& match, char const* s, Error& error);
 	char const* parseCheck(Match& match, char const* s, Error& error);
 	char const* parseCheckCount(Match& match, char const* s, Error& error);
@@ -105,6 +105,8 @@ private:
 	char const* parseElo(Match& match, char const* s, Error& error);
 	char const* parseEndGame(Match& match, char const* s, Error& error);
 	char const* parseEnPassant(Match& match, char const* s, Error& error);
+	char const* parseExchangeEvaluation(Match& match, char const* s, Error& error);
+	char const* parseExclude(Match& match, char const* s, Error& error);
 	char const* parseFen(Match& match, char const* s, Error& error);
 	char const* parseFiftyMoveRule(Match& match, char const* s, Error& error);
 	char const* parseFlip(Match& match, char const* s, Error& error);
@@ -114,14 +116,17 @@ private:
 	char const* parseFlipHorizontal(Match& match, char const* s, Error& error);
 	char const* parseFlipOffDiagonal(Match& match, char const* s, Error& error);
 	char const* parseFlipVertical(Match& match, char const* s, Error& error);
+	char const* parseGameIsOver(Match& match, char const* s, Error& error);
 	char const* parseGappedSequence(Match& match, char const* s, Error& error);
+	char const* parseHalfmoveClockLimit(Match& match, char const* s, Error& error);
 	char const* parseInitial(Match& match, char const* s, Error& error);
 	char const* parseInside(Match& match, char const* s, Error& error);
 	char const* parseLosing(Match& match, char const* s, Error& error);
 	char const* parseMarkAll(Match& match, char const* s, Error& error);
 	char const* parseMatchCount(Match& match, char const* s, Error& error);
 	char const* parseMate(Match& match, char const* s, Error& error);
-	char const* parseMaxSwapValue(Match& match, char const* s, Error& error);
+	char const* parseMatingMaterial(Match& match, char const* s, Error& error);
+	char const* parseMaxSwapEvaluation(Match& match, char const* s, Error& error);
 	char const* parseMoveFrom(Match& match, char const* s, Error& error);
 	char const* parseMoveNumber(Match& match, char const* s, Error& error);
 	char const* parseMoveTo(Match& match, char const* s, Error& error);
@@ -133,6 +138,7 @@ private:
 	char const* parseNoEndGame(Match& match, char const* s, Error& error);
 	char const* parseNoEnpassant(Match& match, char const* s, Error& error);
 	char const* parseNoMate(Match& match, char const* s, Error& error);
+	char const* parseNoMatingMaterial(Match& match, char const* s, Error& error);
 	char const* parseNoStalemate(Match& match, char const* s, Error& error);
 	char const* parseNot(Match& match, char const* s, Error& error);
 	char const* parseOr(Match& match, char const* s, Error& error);
@@ -177,12 +183,15 @@ private:
 	MoveMatchList			m_moveMatchList;
 	PositionList			m_positionList;
 	Relation*				m_relation;
+	Position*				m_cutExpression;
 	board::Designators*	m_designators;
 	board::State*			m_state;
 	board::State*			m_finalState;
 	bool						m_includeMainline;
 	bool						m_includeVariations;
 	bool						m_not;
+	bool						m_preceding;
+	CutFunc					m_cutFunc;
 	unsigned					m_matchCount;
 	unsigned					m_minMatchCount;
 	unsigned					m_maxMatchCount;

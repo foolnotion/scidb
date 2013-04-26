@@ -408,6 +408,8 @@
 "Fishing Pole Variation"					"Variante del pescador polaco"
 "Folkestone (Swedish) Variation"				"Variante Folkestone (sueca)"
 "Fool's Mate"							"Mate del loco"
+"Légal Mate"							"Mate de Légal"
+"Scholar's Mate"						"Mate del pastor"
 "Fort Knox Variation"						"Variante Fort Knox"
 "Four Knights Game"						"Apertura de los cuatro caballos"
 "Four Knights (Tarrasch) Variation"				"Variante de los cuatro caballos (Tarrasch)"

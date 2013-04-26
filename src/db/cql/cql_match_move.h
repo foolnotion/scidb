@@ -42,33 +42,49 @@ struct Match
 {
 	typedef db::Board Board;
 	typedef db::Move Move;
+	typedef db::variant::Type Variant;
 
 	virtual ~Match() = 0;
-	virtual bool match(Board const& board, Move const& move) = 0;
+	virtual bool match(Board const& board, Move const& move, Variant variant) = 0;
 };
 
 
 struct EnPassant : public Match
 {
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 };
 
 
 struct NoEnPassant : public Match
 {
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 };
 
 
 struct IsCastling : public Match
 {
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 };
 
 
 struct NoCastling : public Match
 {
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
+};
+
+
+class ExchangeEvaluation : public Match
+{
+public:
+
+	ExchangeEvaluation(int min, int max);
+
+	bool match(Board const& board, Move const& move, Variant variant) override;
+
+private:
+
+	int m_minScore;
+	int m_maxScore;
 };
 
 
@@ -78,7 +94,7 @@ public:
 
 	MoveFrom(Designator const& designator);
 
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 
 private:
 
@@ -92,7 +108,7 @@ public:
 
 	MoveTo(Designator const& designator);
 
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 
 private:
 
@@ -106,7 +122,7 @@ public:
 
 	PieceDrop(Designator const& designator);
 
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 
 private:
 
@@ -120,7 +136,7 @@ public:
 
 	Promote(Designator const& designator);
 
-	bool match(Board const& board, Move const& move) override;
+	bool match(Board const& board, Move const& move, Variant variant) override;
 
 private:
 

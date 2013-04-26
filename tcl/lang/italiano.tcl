@@ -1891,7 +1891,8 @@
 ::terminationbox::mc::Termination(bishops)			"Partita patta per stallo (alfieri di colore opposto)"
 ::terminationbox::mc::Termination(fifty)				"Partita patta per la regola delle 50 mosse"
 ::terminationbox::mc::Termination(threefold)			"Partita patta per triplice ripetizione"
-::terminationbox::mc::Termination(mating)				"Partita patta per insufficienza di materiale"
+::terminationbox::mc::Termination(nomating)			"Partita patta per insufficienza di materiale"
+::terminationbox::mc::Termination(nocheck)			"Neither player can give check" ;# NEW
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"A tavolino"

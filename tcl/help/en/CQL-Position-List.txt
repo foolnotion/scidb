@@ -29,6 +29,7 @@ TITLE CQL - The position list
   <table>
     <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#control">Controlling keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#simple">Simple keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#transform">Transformation keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#piece">Piece configuration keywords</a></td></tr>
@@ -37,6 +38,7 @@ TITLE CQL - The position list
     <tr><td>&#x2022;</td><td><a href="#game">Game related keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation">Relation between positions</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#matching">Matching count keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#evaluation">Analyzing keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#accumulator">Accumulator keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#tagging">Tagging keywords</a></td></tr>
   </table>
@@ -48,133 +50,155 @@ TITLE CQL - The position list
   <table>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:accumulate">:accumulate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:losing">:losing</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:inside">:inside</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:and">:and</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:markall">:markall</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:promote">:promote</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:losing">:losing</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rating">:rating</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:mate">:mate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td>
-    </tr>
-    <tr>
-    	<td>      &#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:maxswapvalue">:maxswapvalue</a></td>
+      <td>      &#x2022;</td><td><a href="#position:blackcannotwin">:blackcannotwin</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:markall">:markall</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:ray">:ray</a></td>
     </tr>
     <tr>
+    	<td>      &#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:mate">:mate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td>
+    </tr>
+    <tr>
     	<td>      &#x2022;</td><td><a href="#position:btm">:btm</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:matingmaterial">:matingmaterial</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:castling">:castling</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td>
-      <td>&emsp;&#x2022;</td><td><a href="#position:relation">:relation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:maxswapevaluation">:maxswapevaluation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:check">:check</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:moveevaluation">:moveevaluation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:relation">:relation</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:cut">:cut</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:moveto">:moveto</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:reset">:reset</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:check">:check</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:result">:result</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:nocastling">:nocastling</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:sequence">:sequence</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
+      <td>      &#x2022;</td><td><a href="#position:evaluation">:evaluation</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td>
+      <td>      &#x2022;</td><td><a href="#position:exchangeevaluation">:exchangeevaluation</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
+      <td>      &#x2022;</td><td><a href="#position:exclude">:exclude</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nolosing">:nolosing</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:not">:not</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomate">:nomate</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:or">:or</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomatingmaterial">:nomatingmaterial</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:piececount">:piececount</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:not">:not</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
     </tr>
     <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:or">:or</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
+    </tr>
+    <tr>
     	<td>      &#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:piececount">:piececount</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td>
+      <td>      &#x2022;</td><td><a href="#position:gameisover">:gameisover</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:initial">:initial</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:promote">:promote</a></td>
+    	<td>      &#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:inside">:inside</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rating">:rating</a></td>
+      <td>      &#x2022;</td><td><a href="#position:halfmoveclocklimit">:halfmoveclocklimit</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:preceding">:preceding</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
     </tr>
     <tr>
-    	<td>      &#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td>
-      <td></td><td></td>
     </tr>
   </table>
 </dir>
@@ -306,10 +330,145 @@ bishops, two dark-squared white bishops, two dark-square black
 bishops. or two light-square black bishops.
 </p>
 
+<h2 id="control">Controlling keywords</h2>
+
+<p>
+With the help of the controlling keywords <cql>position:cut</cql> or
+<cql>position:exclude</cql> unwanted positions or even games can be
+excluded. Keyword <cql>position:preceding</cql> gives the predecessing
+position of a match.
+</p>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:cut">:cut</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:exclude">:exclude</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:preceding">:preceding</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:cut">:cut</h3>
+
+<p>
+This keyword can be used in two forms: either it is included in a position
+match list, or it has a sub-position list as argument. In former case:
+stop position search as soon as the match of containing position list succeeeds.
+In latter case stop position search as soon as the match of the sub-position
+list succeeeds. This keyword is never failing, with other words: it is not
+influencing the result of all other position lists (see example).
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verbatim>
+(match
+  (position ...)
+  (position <keyword>:cut</keyword> <cql>position:check</cql>))
+</verbatim>
+
+<p>
+We are not interested in consequent positions as soon as one side has
+given a check. This means: as soon as a check is given stop the search, but
+don't exclude current position if <expr>(position ...)</expr> is matching.
+<expr>(position ...)</expr> has higher precedence than the :cut expression.
+</p>
+
+<p>
+If even the :cut position should be excluded, use keyword
+<cql>position:preceding</cql>:
+</p>
+
+<verbatim>
+(match
+  (position ...)
+  (position <keyword>:cut</keyword> <cql>:preceding</cql> <cql>position:check</cql>))
+</verbatim>
+
+<h3 id="position:exclude">:exclude</h3>
+
+<p>
+This keyword can be used in two forms: either it is included in a position
+match list, or it has a sub-position list as argument. In former case:
+exclude this game if the match of containing position list succeeeds.
+In latter case exclude this game if the match of the sub-position list
+succeeeds. This keyword is not influencing the result of the position
+match (see example).
+</p>
+
+<p>
+This keyword will exclude games even if one of the position matches
+has succeeded.
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verbatim>
+(match
+  (position ...)
+  (position <keyword>:exclude</keyword> <cql>position:check</cql> <cql>position:not</cql>))
+</verbatim>
+
+<p>
+Exclude this game if neither side is given a check in whole game, independent
+from the result of <expr>(position ...)</expr>. But the query succeeds if
+<expr>(position ...)</expr> succeeds, and if the :exclude expression is never
+matching (this means: if either side is giving a check in this game).
+</p>
+
+<h3 id="position:preceding">:preceding</h3>
+
+<p>
+This keyword gives the preceding position of a match, if any. If the start
+position is matching, the match of this position will be ignored, and the
+search is continuing. The keyword :preceding can be used only on top level.
+</p>
+
+<p>
+If this keyword is used combined with <cql>position:cut</cql>, the result
+of the first position where the :cut condition succeeds will be ignored
+(see example of keyword <cql>position:cut</cql>).
+</p>
+
+<nonstd/>
+
+<p>
+Examples:
+</p>
+
+<verb>
+position <cql>position:check</cql> <keyword>:preceding</keyword>
+</verb>
+
+<p>
+The result of this match is the predecessor of first position where one
+side has given a check. Of course this can be expressed without this keyword:
+</p>
+
+<verb>
+position <cql>position:sequence</cql>
+((position <cql>position:nocheck</cql>) (position <cql>position:check</cql>))
+</verb>
+
+<p>
+But the usage of :preceding is easier and the search is faster.
+</p>
+
 <h2 id="simple">Simple keywords</h2>
 
 <dir>
   <table>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:blackcannotwin">:blackcannotwin</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:matingmaterial">:matingmaterial</a></td>
+    </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:btm">:btm</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td>
@@ -332,18 +491,26 @@ bishops. or two light-square black bishops.
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomate">:nomate</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomatingmaterial">:nomatingmaterial</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:gameisover">:gameisover</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:halfmoveclocklimit">:halfmoveclocklimit</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
     </tr>
     <tr>
@@ -356,13 +523,44 @@ bishops. or two light-square black bishops.
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:markall">:markall</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:mate">:mate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
     </tr>
   </table>
 </dir>
+
+<h3 id="position:blackcannotwin">:blackcannotwin</h3>
+
+<p>
+Match only if black cannot win in this position.
+</p>
+
+<p>
+Normally this is equivalent to following query:
+</p>
+
+<verbatim>
+<cql>position:or</cql> (
+  <comment>; black king only</comment>
+  (<cql>position:piececount</cql> a 1)
+  <comment>; black king and black minor piece only</comment>
+  (<cql>position:piececount</cql> a 2 <cql>position:piececount</cql> i 1))
+</verbatim>
+
+<p>
+In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
+black has no more pieces than the king, and in all other chess variants this
+query has no meaning and is always failing.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>position:whitecannotwin</cql>
+</p>
 
 <h3 id="position:btm">:btm</h3>
 
@@ -401,8 +599,8 @@ to black, and black has given n&#x2082;-th check to white.
 </p>
 
 <note>
-This search is working only in chess variant %::mc::VariantName(ThreeCheck)%,
-it is ignored in other chess variants.
+This query is working only in chess variant %::mc::VariantName(ThreeCheck)%,
+in other chess variants it fails always.
 </note>
 
 <nonstd/>
@@ -559,7 +757,7 @@ query:
       <cql>position:piececount</cql> &R; 0
       <cql>position:piececount</cql> I 0 1
       <cql>position:piececount</cql> &q; 0
-      <cql>position:power</cql> [rbn] 0 16
+      <cql>position:power</cql> [&r;&b;&n;] 0 16
       <cql>position:flipcolor</cql>)))
 </verbatim>
 
@@ -588,10 +786,63 @@ moved in previous fifty consecutive moves.
 
 <nonstd/>
 
+<p>
+See also: <cql>position:halfmoveclocklimit</cql>.
+</p>
+
+<h3 id="position:gameisover">:gameisover</h3>
+
+<p>
+This is an abbreviation for:
+</p>
+
+<verbatim>
+  <cql>position:or</cql> (
+    (position <cql>position:mate</cql>)
+    (position <cql>position:stalemate</cql>)
+    (position <cql>position:losing</cql>)
+    (position <cql>position:checkcount 3</cql>)
+    (position <cql>position:nomatingmaterial</cql>))
+</verbatim>
+
+<nonstd/>
+
 <h3 id="position:initial">:initial</h3>
 
 <p>
 This is the first position in the game.
+</p>
+
+<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit</h3>
+
+<p>
+This keyword is matching a position where the halfmove clock is equal
+or less given limit.
+</p>
+
+<p>
+Halfmove clock: This is the number of halfmoves since the last pawn
+advance or capture. This is also used to determine if a draw can be
+claimed under the fifty-move rule (<see/> <cql>position:fiftymoverule</cql>).
+</p>
+
+<nonstd/>
+
+<p>
+Example:
+</p>
+
+<verb>
+<keyword>:halfmoveclocklimit</keyword> 30
+</verb>
+
+<p>
+Exclude all positions where no capture has been made and no pawn has been
+moved in previous thirty halfmoves (15 moves by each side).
+</p>
+
+<p>
+See also: <cql>position:fiftymoverule</cql>.
 </p>
 
 <h3 id="position:losing">:losing</h3>
@@ -602,6 +853,10 @@ This is possible only in Antichess games.
 </p>
 
 <nonstd/>
+
+<p>
+See also: <cql>position:nolosing</cql>.
+</p>
 
 <h3 id="position:markall">:markall</h3>
 
@@ -616,6 +871,12 @@ not have any meaning in Scidb.
 Match only if the position is a mate.
 </p>
 
+<annotation>
+If searching for mate positions this keyword should always be used even if
+this keyword might be superfluous because other conditions are ensuring a
+mate position, it is accelerating the search (only testing final positions).
+</annotation>
+
 <p>
 Example:
 </p>
@@ -626,6 +887,23 @@ Example:
 
 <p>
 Only matches if one side is mated in first 20 moves.
+</p>
+
+<p>
+See also: <cql>position:nomate</cql>.
+</p>
+
+<h3 id="position:matingmaterial">:matingmaterial</h3>
+
+<p>
+Match a position if either player has mating material (<see/>
+<cql>position:nomatingmaterial</cql>).
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>position:nomatingmaterial</cql>.
 </p>
 
 <h3 id="position:noannotate">:noannotate</h3>
@@ -673,10 +951,59 @@ Neither side is in check, or it is not a double check.
 
 <p>
 The position is not an endgame position (<see/>
-<cql>position:noendgame</cql>).
+<cql>position:endgame</cql>).
 </p>
 
 <nonstd/>
+
+<p>
+See also: <cql>position:endgame</cql>.
+</p>
+
+<h3 id="position:nomate">:nomate</h3>
+
+<p>
+Match only if the position is not mate.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>position:mate</cql>.
+</p>
+
+<h3 id="position:nomatingmaterial">:nomatingmaterial</h3>
+
+<p>
+Match a position if neither player has mating material.
+</p>
+
+<p>
+Normally this is equivalent to this query:
+</p>
+
+<verbatim>
+<cql>position:or</cql> (
+  <comment>; king versus king</comment>
+  (<cql>position:piececount</cql> U 2)
+  <comment>; king and minor piece versus king</comment>
+  (<cql>position:piececount</cql> U 3 <cql>position:piececount</cql> [Ii] 1)
+  <comment>; king and bishop versus king and bishop with the bishops on the same color</comment>
+  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
+  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))
+</verbatim>
+
+<p>
+In variant %::mc::VariantName(ThreeCheck)% this query only succeeds if only
+kings are on board, and in all other chess variants this keyword has no
+meaning and is always failing.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>position:matingmaterial</cql>.
+</p>
 
 <h3 id="position:nostalemate">:nostalemate</h3>
 
@@ -693,9 +1020,10 @@ See also: <cql>position:stalemate</cql>,
 <h3 id="position:repetition">:repetition</h3>
 
 <p>
-Matches positions which occurred the third time in this game.
-The repeated positions need not occur in succession. This accords
-with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
+Matches positions which occurred the third time in this game, with same
+player to move, and each player has the same castling and en passant
+capturing rights. The repeated positions need not occur in succession. This
+accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
 threefold repetition rule</a>.
 </p>
 
@@ -731,6 +1059,46 @@ Look in the variations to find matches.
 Look only in the variations to find matches, not in the main line.
 </p>
 
+<h3 id="position:whitecannotwin">:whitecannotwin</h3>
+
+<p>
+Match only if white cannot win in this position.
+</p>
+
+<p>
+Normally this is equivalent to following query:
+</p>
+
+<verbatim>
+<cql>position:or</cql> (
+  <comment>; white king only</comment>
+  (<cql>position:piececount</cql> A 1)
+  <comment>; white king and white minor piece only</comment>
+  (<cql>position:piececount</cql> A 2 <cql>position:piececount</cql> I 1))
+</verbatim>
+
+<p>
+In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
+white has no more pieces than the king, and in all other chess variants this
+query has no meaning and is always failing.
+</p>
+
+<nonstd/>
+
+<p>
+See also: <cql>position:blackcannotwin</cql>
+</p>
+
+<h3 id="position:btm">:btm</h3>
+
+<p>
+Match only if black is to move.
+</p>
+
+<p>
+See also: <cql>position:wtm</cql>.
+</p>
+
 <h3 id="position:wtm">:wtm</h3>
 
 <p>
@@ -751,7 +1119,6 @@ Match only if white is to move.
     <tr><td>&#x2022;</td><td><a href="#position:shift">:shift</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal*">:shifthorizontal*</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td></tr>
@@ -886,7 +1253,6 @@ The vertical shift transformations (<see/>
 <dir>
   <table>
     <tr><td>&#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#position:maxswapvalue">:maxswapvalue</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:piececount">:piececount</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:power">:power</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td></tr>
@@ -964,56 +1330,6 @@ Matches position for which the number of times a black knight attacks a white
 King or white major piece is at least 3.
 </p>
 
-<h3 id="position:maxswapvalue">:maxswapvalue</h3>
-
-<p>
-This keyword allows to estimate exchange values of possible moves. It takes
-as arguments two piece designators followed by a range specifier. The first
-argument specifies moving pieces, the second one specifies target squares.
-For each possible moves we compute an integer value that is a material benefit
-of the move (in pawns, like in case of the <cql>position:power</cql> keyword)
-according to possible piece exchanges on the target square after the move.
-After that we
-select the maximum of all computed values.
-</p>
-
-<p>
-The keyword match the position if this value lies in the specified range. The
-exchange function is taking into account that exchanged pieces may be pinned
-or defended by other pieces. The value of the function depends on which side
-is to move.
-</p>
-
-<nonstd/>
-
-<note>This keyword is borrowed from Chess Assistant 9 (<see/>
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>),
-but implemented in a different way, so it is not conform to the
-implementation of Chess Assistant.
-</note>
-
-<p>
-Examples:
-</p>
-
-<p>
-The following query selects positions in which white threatens with
-winning some material:
-</p>
-
-<verb>
-(position <keyword>:maxswapvalue</keyword> A a 1 1000)
-</verb>
-
-<p>
-The following query selects positions in which a white queen can invade rank 8
-without a material loss.
-</p>
-
-<verb>
-(position <keyword>:maxswapvalue</keyword> &Q;?1-7 ??8 0 1000)
-</verb>
-
 <h3 id="position:piececount">:piececount</h3>
 
 <p>
@@ -1077,7 +1393,7 @@ variant:
       <td align="right">&Pawn;</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Normal)%, %::mc::VariantName(ThreeCheck)%</td>
+      <td>%::mc::VariantName(Normal)%, %::mc::VariantName(ThreeCheck)%&emsp;</td>
       <td align="right"> 0</td>
       <td align="right"> 9</td>
       <td align="right"> 5</td>
@@ -1086,7 +1402,7 @@ variant:
       <td align="right"> 1</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%</td>
+      <td>%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%&emsp;</td>
       <td align="right"> 0</td>
       <td align="right"> 5</td>
       <td align="right"> 3</td>
@@ -1095,7 +1411,7 @@ variant:
       <td align="right"> 1</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Losers)%</td>
+      <td>%::mc::VariantName(Losers)%&emsp;</td>
       <td align="right"> 0</td>
       <td align="right"> 5</td>
       <td align="right"> 4</td>
@@ -1104,7 +1420,7 @@ variant:
       <td align="right"> 1</td>
     </tr>
     <tr>
-      <td>%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%</td>
+      <td>%::mc::VariantName(Suicide)%, %::mc::VariantName(Giveaway)%&emsp;</td>
       <td align="right">30</td>
       <td align="right"> 3</td>
       <td align="right"> 9</td>
@@ -1129,7 +1445,7 @@ board equals 6.
 </p>
 
 <verb>
-(position <keyword>:power</keyword> Aa-h1-4 10 25)
+(position <keyword>:power</keyword> A[a-h1-4] 10 25)
 </verb>
 
 <p>
@@ -1171,7 +1487,7 @@ rooks than black.
 </p>
 
 <verb>
-(position <keyword>:powerdifference</keyword> [&R;&r;&B;&b;&N;&n;] -1000 -2)
+(position <keyword>:powerdifference</keyword> [&R;&r;&B;&b;&N;&n;] unlimited -2)
 </verb>
 
 <p>
@@ -1184,19 +1500,19 @@ This matches positions in which black is up at least an exchange.
     <cql>match:result</cql> 1-0
     <cql>position:sequence</cql> (
       (position
-        <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9
-        <keyword>:powerdifference</keyword> U -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9)
-      (position <keyword>:powerdifference</keyword> [&Q;&q;] -1000 -9))
+        <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9
+        <keyword>:powerdifference</keyword> U unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9)
+      (position <keyword>:powerdifference</keyword> [&Q;&q;] unlimited -9))
     <cql>position:flipcolor</cql>))
 </verbatim>
 
@@ -1228,10 +1544,10 @@ the ray are empty.
 
 <p>
 The :ray keyword takes a ray specifier and an optional range
-specifier. If the range specifier is absent, it is taken to be 1 1000.
-Otherwise, :ray matches a position if the number of rays in the
-position valid with respect to the ray specifier lies within the range
-specifier.
+specifier. If the range specifier is absent, it is taken to be
+<expr>1 unlimited</expr>.  Otherwise, :ray matches a position if the number
+of rays in the position valid with respect to the ray specifier lies within
+the range specifier.
 </p>
 
 <p>
@@ -1473,11 +1789,19 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:moveto</keyword> .a3)
+(position <keyword>:moveto</keyword> U)
 </verb>
 
 <p>
-Matches a position in which the next move is to an empty square on a3.
+Is matching a position where next move is a capture move.
+</p>
+
+<verb>
+(position <keyword>:moveto</keyword> .)
+</verb>
+
+<p>
+Is matching a position where next move is not a capture move.
 </p>
 
 <verb>
@@ -1497,7 +1821,7 @@ would be done via:
 </verb>
 
 <p>
-which matches a move of the white rook to the b file.
+Matches a move of the white rook to the b file.
 </p>
 
 <h3 id="position:nocastling">:nocastling</h3>
@@ -1773,13 +2097,19 @@ them. these are:
 
 <dir>
   <table>
-    <tr><td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#position:rating">:rating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
-        <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td></tr>
-    <tr><td>      &#x2022;</td><td><a href="#position:result">:result</a></td></tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:rating">:rating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:result">:result</a></td>
+    </tr>
   </table>
 </dir>
 
@@ -1920,7 +2250,7 @@ Example:
 <verbatim>
 (position
   <cql>position:movetoy</cql> [Aa]d4 
-  <keyword>:pretransformmatchcount</keyword> 12 1000
+  <keyword>:pretransformmatchcount</keyword> 12 unlimited
   <cql>position:shift</cql>))
 </verbatim>
 
@@ -1929,6 +2259,300 @@ This would match any game in which at least 12 captures occur on the same
 square. Were the :pretransformmatchcount replaced by
 <cql>position:matchcount</cql>, the position list would match games in which
 at least 12 captures occurred.
+</p>
+
+<h2 id="evaluation">Analyzing keywords</h2>
+
+<p>
+The following keywords are analyzing positions. <cql>position:evaluation</cql> and
+<cql>position:moveevaluation</cql> should be used with care, these are very slow
+operations. In some cases the keywords <cql>position:exchangeevaluation</cql> and
+<cql>position:maxswapevaluation</cql> might be an alternative, these functions are
+quite faster, although quite time consuming.
+</p>
+
+<dir>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:evaluation">:evaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:exchangeevaluation">:exchangeevaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:maxswapevaluation">:maxswapevaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:moveevaluation">:moveevaluation</a></td></tr>
+  </table>
+</dir>
+
+<h3 id="position:evaluation">:evaluation</h3>
+
+<p>
+This keyword is evaluating the current position with the help of an
+external chess engine (with UCI protocol). The number of parameters
+depends on the search mode. There are three search modes:
+</p>
+
+<dir>
+  <table>
+    <!-- UCI:  "go depth <x>" -->
+    <tr>
+      <td class="l"><expr>depth &lt;d&gt;</expr></td>
+      <td class="r">search &lt;d&gt; plies only</td>
+    </tr>
+
+    <!-- UCI:  "go movetime <x>" -->
+    <tr>
+      <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
+      <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
+    </tr>
+
+    <!-- UCI:  "go mate <x>" -->
+    <tr>
+      <td class="l"><expr>mate &lt;n&gt;</expr></td>
+      <td class="r">search for a mate in &lt;n&gt; moves</td>
+    </tr>
+  </table>
+</dir>
+
+<p>
+The first two modes (depth and movetime) are taking three additional parameters.
+The third parameter denotes the lower bound, the fourth parameter
+denotes the upper bound, both scores are in centi-pawns. The query succeeds
+if the estimation is within the specified bounds (inclusive the ranges). If
+the lower-bound value is specified with <i>unlimited</i>, it means negative
+unlimited. If the upper-bound value is specified with <i>unlimited</i>, it means
+positive unlimited. The fifth parameter is either <i>sidetomove</i> or <i>absolute</i>.
+<i>sidetomove</i> means that the evaluation value depends on side to move, and
+<i>absolute</i> means that the evaluation value is independent from side to move.
+</p>
+
+<nonstd/>
+
+<annotation>
+This is a very slow operation and should be restricted; for example to
+terminal positions.
+</annotation>
+
+<p>
+Examples:
+</p>
+
+<verb>
+<keyword>:evaluate</keyword> depth 4 2.5 unlimited sidetomove
+</verb>
+
+<p>
+Side to move has (possibly) a winning position, because he is
+at least 2.5 pawn units ahead.
+</p>
+
+<verb>
+<keyword>:evaluate</keyword> depth 4 unlimited -2.5 sidetomove
+</verb>
+
+<p>
+Side to move has (possibly) a losing position, because he is
+at least 2.5 pawn units behind.
+</p>
+
+<verb>
+<keyword>:evaluate</keyword> movetime 3000 unlimited -3.0 absolute
+</verb>
+
+<p>
+Black is (possibly) losing, because he is at least 3 pawn units behind.
+</p>
+
+<verb>
+<keyword>:evaluate</keyword> mate 3
+</verb>
+
+<p>
+Either side is mate in maximal 3 moves.
+</p>
+
+<h3 id="position:exchangeevaluation">:exchangeevaluation</h3>
+
+<p>
+This keyword is analyzing capture moves to see whether or not they appear
+to be profitable.
+</p>
+
+<p>
+The keyword match the current move if this value is in the specified range
+(a lower and an upper value). Only capture moves will be evaluated.
+If lower range is specified with <i>unlimited</i>, it means negative unlimited.
+If the lower range is specified with <i>unlimited</i>, it means positive unlimited.
+The exchange function is taking into account that exchanged pieces may be
+pinned or defended by other pieces. The value of the function does not depend
+on which side is to move.
+</p>
+
+<p>
+Concerning the piece values see <cql>position:power</cql>.
+</p>
+
+<p>
+Note that this function is not evaluating the position, instead it is
+estimating the exchange values.
+</p>
+
+<nonstd/>
+
+<p>
+Examples:
+</p>
+
+<verb>
+<keyword>:exchangeevaluation</keyword> unlimited 3
+</verb>
+
+<p>
+This move is (possibly) a blunder.
+</p>
+
+<h3 id="position:maxswapevaluation">:maxswapevaluation</h3>
+
+<p>
+This keyword allows to estimate exchange values of possible moves. It takes
+as arguments two piece designators followed by a range specifier. The first
+argument specifies moving pieces, the second one specifies target squares.
+For each possible moves we compute an integer value that is a material benefit
+of the move (in pawns, like in case of the <cql>position:power</cql> keyword)
+according to possible piece exchanges on the target square after the move.
+After that the maximum of all computed values will be selected.
+</p>
+
+<p>
+The keyword match the position if this value lies in the specified range
+(a lower and an upper value). If lower range is specified with <i>unlimited</i>,
+it means negative unlimited. If the lower range is specified with <i>unlimited</i>,
+it means positive unlimited. The exchange function is taking into account that
+exchanged pieces may be pinned or defended by other pieces. The value of the
+function does not depend on which side is to move.
+</p>
+
+<p>
+Note that this function is not evaluating the position, instead it is
+estimating the exchange values.
+</p>
+
+<p>
+Concerning the piece values see <cql>position:power</cql>.
+</p>
+
+<nonstd/>
+
+<note>
+This keyword is alike the keyword <expr>:maxswapvalue</expr> from Chess
+Assistant 9 (<see/>
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>),
+but quite different implemented.
+</note>
+
+<p>
+Examples:
+</p>
+
+<verb>
+(position <keyword>:maxswapevaluation</keyword> A a 1 unlimited)
+</verb>
+
+<p>
+This query selects positions in which white threatens with
+winning some material:
+</p>
+
+<verb>
+(position <keyword>:maxswapevaluation</keyword> &Q;?1-7 ??8 0 unlimited)
+</verb>
+
+<p>
+This query selects positions in which a white queen can invade rank 8
+without a material loss.
+</p>
+
+<h3 id="position:moveevaluation">:moveevaluation</h3>
+
+<p>
+This keyword is matching the difference between the evaluation of the current
+position and the evaluation of the preceding position. The evaluation will be
+done with the help of an external chess engine (with UCI protocol). It takes
+seven parameters. The first and second parameter are piece designators. The
+former is specifies moving pieces, the second one specifies target squares.
+The third and fourth are depending on the search mode:
+</p>
+
+<dir>
+  <table>
+    <!-- UCI:  "go depth <x>" -->
+    <tr>
+      <td class="l"><expr>depth &lt;d&gt;</expr></td>
+      <td class="r">search &lt;d&gt; plies only</td>
+    </tr>
+
+    <!-- UCI:  "go movetime <x>" -->
+    <tr>
+      <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
+      <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
+    </tr>
+  </table>
+</dir>
+
+<p>
+The fifth parameter denotes the lower bound score, the sixth parameter denotes
+the upper bound score, both scores are in centi-pawns. If the lower-bound value
+is specified with <i>unlimited</i>, it means negative unlimited. If the upper-bound
+value is specified with <i>unlimited</i>, it means positive unlimited. The query
+succeeds if the scoring of this move is within the given bounds (inclusive the
+ranges). The score of this move is the difference between the score of the
+current board and the score of the last board. In case of mating positions
+the difference will be always greater than 10.000.
+<p>
+
+<p>
+The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
+<i>sidetomove</i> means that the evaluation value depends on side to move, and
+<i>absolute</i> means that the evaluation value is independent from side to move.
+</p>
+
+<nonstd/>
+
+<annotation>
+This is a very slow operation and should not be used with huge databases,
+or the moving pieces or the target squares should be restricted.
+</annotation>
+
+<p>
+Example:
+</p>
+
+<verb>
+<keyword>:moveevaluation</keyword> U ? depth 4 3.0 unlimited sidetomove
+</verb>
+
+<p>
+Match first position were the evaluation score is at least 3.0 pawn units.
+This means that last move was (possibly) a blunder.
+</p>
+
+<verb>
+<keyword>:moveevaluation</keyword> A a depth 4 unlimited -3.0 absolute
+</verb>
+
+<p>
+Match first position were the evaluation score is at least 3.0 pawn units
+better for black. This means that last white move was (possibly) a blunder.
+Only capture moves will be evaluated.
+</p>
+
+<verbatim>
+(match
+  (position <keyword>:moveevaluation</keyword> [&P;&p;] ?[a-h1,a-h8]
+             unlimited 0.0 movetime 5000 absolute)
+  (position <cql>position:promotion</cql> U <cql>position:cut</cql>)))
+</verbatim>
+
+<p>
+Search for positions where side to move is doing first promotion in game, but
+without gaining a better score. We are ensuring that only promoting moves will
+will be evaluated.
 </p>
 
 <h2 id="accumulator">Accumulator keywords</h2>

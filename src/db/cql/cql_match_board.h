@@ -99,9 +99,39 @@ private:
 };
 
 
+class Castling : public Match
+{
+public:
+
+	Castling(Designator const& designator);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+
+private:
+
+	unsigned m_castling;
+};
+
+
 struct Check : public Match
 {
 	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+};
+
+
+class CheckCount : public Match
+{
+public:
+
+	CheckCount(unsigned count);
+	CheckCount(unsigned wcount, unsigned bcount);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+
+private:
+
+	unsigned m_wcount;
+	unsigned m_bcount;
 };
 
 
@@ -188,18 +218,17 @@ struct FiftyMoveRule : public Match
 };
 
 
-class CheckCount : public Match
+class HalfmoveClockLimit : public Match
 {
 public:
 
-	CheckCount(unsigned count, char side);
+	HalfmoveClockLimit(unsigned limit);
 
 	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
 
 private:
 
-	unsigned	m_count;
-	int		m_color;
+	unsigned m_limit;
 };
 
 
@@ -209,7 +238,7 @@ class EndGame : public Match
 };
 
 
-struct NoEndGame : public EndGame
+struct NoEndGame : public Match
 {
 	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
 };
@@ -249,6 +278,37 @@ private:
 	Stack m_stack;
 };
 
+
+class MatingMaterial : public Match
+{
+public:
+
+	MatingMaterial(bool negate);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+
+private:
+
+	bool m_negate;
+};
+
+
+
+class MaxSwapEvaluation : public MatchMinMax
+{
+public:
+
+	MaxSwapEvaluation(Designator const& from, Designator const& to, int minScore, int maxScore);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+
+private:
+
+	Designator	m_from;
+	Designator	m_to;
+	int			m_minScore;
+	int			m_maxScore;
+};
 
 class PieceCount : public MatchMinMax
 {

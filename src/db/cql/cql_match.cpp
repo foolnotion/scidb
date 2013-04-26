@@ -524,6 +524,7 @@ Match::Match()
 	,m_initialOnly(false)
 	,m_finalOnly(false)
 	,m_isStandard(true)
+	,m_proceed(true)
 	,m_sections(0)
 	,m_idn(0)
 {
@@ -2170,7 +2171,7 @@ Match::match(GameInfo const& info, db::Board const& board, variant::Type variant
 
 
 bool
-Match::match(db::Board const& board, Move const& move)
+Match::match(db::Board const& board, Move const& move, variant::Type variant)
 {
 	M_ASSERT(board.sideToMove() == move.color());
 
@@ -2179,7 +2180,7 @@ Match::match(db::Board const& board, Move const& move)
 
 	for ( ; i != e; ++i)
 	{
-		if (!(*i)->match(board, move))
+		if (!(*i)->match(board, move, variant))
 			return false;
 	}
 

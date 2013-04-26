@@ -1055,6 +1055,32 @@ db::Guess::quiesce(int alpha, int beta)
 
 
 // ------------------------------------------------------------------------
+// adopted from crafty-15.17/swap.c:SwapXray()
+// ------------------------------------------------------------------------
+// addXrayPiece() is used to determine if a piece is "behind" the piece on
+// <from>, and this piece would attack <target> if the piece on <from> were
+// moved (as in playing out sequences of swaps). If so, this indirect
+// attacker is added to the list of attackers bearing to <target>.
+uint64_t
+db::Guess::addXrayPiece(unsigned from, unsigned target) const
+{
+	switch (::Directions[target][from])
+	{
+		case  1: return rankAttacks(from) & (m_rooks | m_queens) & Plus1Dir[from];
+		case  7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Plus7Dir[from];
+		case  8: return fyleAttacks(from) & (m_rooks | m_queens) & Plus8Dir[from];
+		case  9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Plus9Dir[from];
+		case -1: return rankAttacks(from) & (m_queens | m_rooks) & Minus1Dir[from];
+		case -7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Minus7Dir[from];
+		case -8: return fyleAttacks(from) & (m_rooks | m_queens) & Minus8Dir[from];
+		case -9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Minus9Dir[from];
+	}
+
+	return 0;
+}
+
+
+// ------------------------------------------------------------------------
 // adopted from crafty-15.17/swap.c:Swap()
 // ------------------------------------------------------------------------
 // A Static Exchange Evaluator (or SEE for short).
@@ -1074,7 +1100,7 @@ db::Guess::quiesce(int alpha, int beta)
 // piece moves in this direction, then it is added to the list of attackers
 // since its attack has been "uncovered" by moving the capturing piece.
 int
-db::Guess::staticExchangeEvaluator(Move const& move)
+db::Guess::staticExchangeEvaluator(Move const& move) const
 {
 	int attackedPiece;
 	int swapList[65];
@@ -1190,32 +1216,6 @@ db::Guess::staticExchangeEvaluator(Move const& move)
 
 	TRACE(::printf("(%d): SEE(%s) = %d\n", m_ply, move.asString().c_str(), swapList[0]));
 	return swapList[0];
-}
-
-
-// ------------------------------------------------------------------------
-// adopted from crafty-15.17/swap.c:SwapXray()
-// ------------------------------------------------------------------------
-// addXrayPiece() is used to determine if a piece is "behind" the piece on
-// <from>, and this piece would attack <target> if the piece on <from> were
-// moved (as in playing out sequences of swaps). If so, this indirect
-// attacker is added to the list of attackers bearing to <target>.
-uint64_t
-db::Guess::addXrayPiece(unsigned from, unsigned target)
-{
-	switch (::Directions[target][from])
-	{
-		case  1: return rankAttacks(from) & (m_rooks | m_queens) & Plus1Dir[from];
-		case  7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Plus7Dir[from];
-		case  8: return fyleAttacks(from) & (m_rooks | m_queens) & Plus8Dir[from];
-		case  9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Plus9Dir[from];
-		case -1: return rankAttacks(from) & (m_queens | m_rooks) & Minus1Dir[from];
-		case -7: return diagA1H8Attacks(from) & (m_bishops | m_queens) & Minus7Dir[from];
-		case -8: return fyleAttacks(from) & (m_rooks | m_queens) & Minus8Dir[from];
-		case -9: return diagH1A8Attacks(from) & (m_bishops | m_queens) & Minus9Dir[from];
-	}
-
-	return 0;
 }
 
 

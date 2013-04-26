@@ -281,6 +281,10 @@ cql/cql_match.o: ../mstl/m_byte_order.ipp
 cql/cql_match.o: db_date.ipp
 cql/cql_match.o: db_eco.h
 cql/cql_match.o: db_eco.ipp
+cql/cql_match.o: ../mstl/m_bitset.h
+cql/cql_match.o: ../mstl/m_bitset_iterator.h
+cql/cql_match.o: ../mstl/m_bitset_iterator.ipp
+cql/cql_match.o: ../mstl/m_bitset.ipp
 cql/cql_match.o: cql/cql_match_info.ipp
 cql/cql_match.o: cql/cql_position.h
 cql/cql_match.o: cql/cql_designator.h
@@ -414,6 +418,10 @@ cql/cql_match_info.o: ../mstl/m_bitfield128.h
 cql/cql_match_info.o: db_common.ipp
 cql/cql_match_info.o: ../mstl/m_match.h
 cql/cql_match_info.o: ../mstl/m_match.ipp
+cql/cql_match_info.o: ../mstl/m_bitset.h
+cql/cql_match_info.o: ../mstl/m_bitset_iterator.h
+cql/cql_match_info.o: ../mstl/m_bitset_iterator.ipp
+cql/cql_match_info.o: ../mstl/m_bitset.ipp
 cql/cql_match_info.o: cql/cql_match_info.ipp
 cql/cql_match_info.o: db_game_info.h
 cql/cql_match_info.o: db_signature.h
@@ -488,6 +496,8 @@ cql/cql_match_move.o: db_signature.ipp
 cql/cql_match_move.o: db_board.ipp
 cql/cql_match_move.o: db_board_base.h
 cql/cql_match_move.o: db_board_base.ipp
+cql/cql_match_move.o: db_guess.h
+cql/cql_match_move.o: db_guess.ipp
 cql/cql_match_relation.o: cql/cql_match_relation.h
 cql/cql_match_relation.o: cql/cql_designator.h
 cql/cql_match_relation.o: cql/cql_board.h
@@ -610,6 +620,10 @@ cql/cql_position.o: db_date.h
 cql/cql_position.o: db_date.ipp
 cql/cql_position.o: db_eco.h
 cql/cql_position.o: db_eco.ipp
+cql/cql_position.o: ../mstl/m_bitset.h
+cql/cql_position.o: ../mstl/m_bitset_iterator.h
+cql/cql_position.o: ../mstl/m_bitset_iterator.ipp
+cql/cql_position.o: ../mstl/m_bitset.ipp
 cql/cql_position.o: cql/cql_match_info.ipp
 cql/cql_position.o: db_board_base.h
 cql/cql_position.o: db_board_base.ipp

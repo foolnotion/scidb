@@ -222,7 +222,7 @@ Third example: the same piece delivers at least 30 checks in the game.
   (position
     <a href="CQL-Position-List.html#position:btm">:btm</a>
     <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker <span class="chess">&#x265a;</span> 1
-    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 1000
+    <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 unlimited
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
@@ -249,13 +249,13 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <span class="chess">&#x2659;</span>b2 <span class="chess">&#x2659;</span>b3 <span class="chess">&#x2659;</span>b4
-    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a2] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a3] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a5]
-    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c2] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c3] [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c5]
-    :piececount Pb? 3 6
-    :shiftvertical
-    :shifthorizontal
-    :flipcolor))<!--
+    <span class="chess">&#x2659;</span>[b2-4]
+    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][a2,a3,a5]
+    [.<span class="chess">&#x2654;</span><span class="chess">&#x2655;</span><span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span>][c2,c3,c5]
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>b? 3 6
+    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <div class="box"><pre><code><!--
@@ -263,20 +263,37 @@ Fourth example: knight gives mate with its first move.
 <span class="comment">; empty square; usually to avoid stalemate if rook is captured.</span>
 
 (match
-  :result 1/2
+  <a href="CQL-Match-List.html#match:result">:result</a> 1/2
   (position 
-    :wtm
-    :sequence (  
-      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
-      (position :movefrom <span class="chess">&#x265a;</span> :check)
-      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
-      (position :movefrom <span class="chess">&#x265a;</span> :check)
-      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
-      (position :movefrom <span class="chess">&#x265a;</span> :check)
-      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
-      (position :movefrom <span class="chess">&#x265a;</span> :check)
-      (position :movefrom <span class="chess">&#x2656;</span> :moveto .)
-      (position :movefrom <span class="chess">&#x265a;</span> :check))))<!--
+    <a href="CQL-Position-List.html#position:wtm">:wtm</a>
+    <a href="CQL-Position-List.html#position:sequence">:sequence</a> (  
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <a href="CQL-Position-List.html#position:moveto">:moveto</a> .)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x265a;</span> <a href="CQL-Position-List.html#position:check">:check</a>)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <a href="CQL-Position-List.html#position:moveto">:moveto</a> .)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x265a;</span> <a href="CQL-Position-List.html#position:check">:check</a>)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <a href="CQL-Position-List.html#position:moveto">:moveto</a> .)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x265a;</span> <a href="CQL-Position-List.html#position:check">:check</a>)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <a href="CQL-Position-List.html#position:moveto">:moveto</a> .)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x265a;</span> <a href="CQL-Position-List.html#position:check">:check</a>)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x2656;</span> <a href="CQL-Position-List.html#position:moveto">:moveto</a> .)
+      (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class="chess">&#x265a;</span> <a href="CQL-Position-List.html#position:check">:check</a>))))<!--
+--></code></pre></div>
+
+<div class="box"><pre><code><!--
+--><span class="comment">; Smothered Mate</span>
+
+<span class="comment">; A smothered mate is a checkmate delivered by a knight</span>
+<span class="comment">; in which the mated king is unable to move because he is</span>
+<span class="comment">; surrounded (or smothered) by his own pieces.</span>
+
+(match
+  (position
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>            ; either color
+    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>        ; independent from file
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>      ; and rank
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class="chess">&#x2658;</span> <span class="chess">&#x265a;</span>g7 1 ; only the knight gives check
+    a[f6-8,h6-8,g6,g8]    ; king is smothered by own pieces
+    <a href="CQL-Position-List.html#position:mate">:mate</a>))<!--
 --></code></pre></div>
 
 </body>

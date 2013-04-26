@@ -1392,6 +1392,13 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 				return ::setTermination(m_tags, termination::Normal);
 			break;
 
+		case 'P':
+			if (::matchEndOfSentence(s, "Partners' game drawn", 20))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "Partners' game aborted", 20))
+				return ::setTermination(m_tags, termination::Abandoned);
+			break;
+
 		case 'T':
 			if (::matchEndOfSentence(s, "Time forfeits", 13))
 				return ::setTermination(m_tags, termination::TimeForfeit);
@@ -1413,14 +1420,43 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 
 	switch (::tolower(*s))
 	{
+		case '\'':
+			if (::matchEndOfSentence(s, "'s partner won", 14))
+				return ::setTermination(m_tags, termination::Normal);
+			break;
+
 		case 'a':
+			if (::matchEndOfSentence(s, "aborted by adjudication", 23))
+				return ::setTermination(m_tags, termination::Adjudication);
+			if (::matchEndOfSentence(s, "aborted by mutual agreement", 27))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "aborted on move 1", 27))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "aborted by simul holder", 23))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "aborted by server shutdown", 23))
+				return ::setTermination(m_tags, termination::Disconnection);
 			if (::matchEndOfSentence(s, "aborted", 7))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "adjourned by mutual agreement", 34))
+				return ::setTermination(m_tags, termination::Unterminated);
+			if (::matchEndOfSentence(s, "adjourned by server shutdown", 33))
+				return ::setTermination(m_tags, termination::Disconnection);
+			if (::matchEndOfSentence(s, "adjourned by simul holder", 25))
 				return ::setTermination(m_tags, termination::Unterminated);
 			break;
 
 		case 'c':
 			if (::matchEndOfSentence(s, "checkmated", 10))
 				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "courtesyaborted by White", 24))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "courtesyaborted by Black", 24))
+				return ::setTermination(m_tags, termination::Abandoned);
+			if (::matchEndOfSentence(s, "courtesyaborted by White", 24))
+				return ::setTermination(m_tags, termination::Unterminated);
+			if (::matchEndOfSentence(s, "courtesyaborted by Black", 24))
+				return ::setTermination(m_tags, termination::Unterminated);
 			break;
 
 		case 'd':
@@ -1440,6 +1476,10 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "drawn by adjudication", 21))
 				return ::setTermination(m_tags, termination::Adjudication);
+			if (::matchEndOfSentence(s, "drawn by mate on both boards", 28))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "drawn due to length", 28))
+				return ::setTermination(m_tags, termination::Normal);
 			break;
 
 		case 'f':
@@ -1447,6 +1487,20 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 				return ::setTermination(m_tags, termination::TimeForfeit);
 			 if (::matchEndOfSentence(s, "forfeits by disconnection", 25))
 				return ::setTermination(m_tags, termination::Disconnection);
+			break;
+
+		case 'l':
+			if (::matchEndOfSentence(s, "lost connection; game adjourned", 13))
+				return ::setTermination(m_tags, termination::Disconnection);
+			if (::matchEndOfSentence(s, "lost connection and too few moves; game aborted", 47))
+				return ::setTermination(m_tags, termination::Disconnection);
+			if (::matchEndOfSentence(s, "lost connection", 15))
+				return ::setTermination(m_tags, termination::Disconnection);
+			break;
+
+		case 'p':
+			if (::matchEndOfSentence(s, "Partners' game adjourned", 24))
+				return ::setTermination(m_tags, termination::Unterminated);
 			break;
 
 		case 'r':
@@ -1471,6 +1525,14 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 			break;
 
 		case 'w':
+			if (::matchEndOfSentence(s, "won", 3))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "was drawn", 9))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "was adjourned", 13))
+				return ::setTermination(m_tags, termination::Unterminated);
+			if (::matchEndOfSentence(s, "was sent for adjudication", 25))
+				return ::setTermination(m_tags, termination::Unterminated);
 			if (::matchEndOfSentence(s, "wins on time", 12))
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "wins by adjudication", 20))
@@ -1482,6 +1544,8 @@ PgnReader::parseFinalComment(mstl::string const& comment)
 			if (::matchEndOfSentence(s, "wins by having less material", 28))
 				return ::setTermination(m_tags, termination::Normal);
 			if (::matchEndOfSentence(s, "wins by having less material (stalemate)", 40))
+				return ::setTermination(m_tags, termination::Normal);
+			if (::matchEndOfSentence(s, "went on to win", 14))
 				return ::setTermination(m_tags, termination::Normal);
 			break;
 	}
