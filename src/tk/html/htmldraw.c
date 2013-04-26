@@ -4791,8 +4791,8 @@ HtmlWidgetSetViewport(
         int iShiftY;
         int iShiftX;
 
-        scroll_x = scroll_x%25000;
-        scroll_y = scroll_y%25000;
+        scroll_x = scroll_x; /* %25000; */
+        scroll_y = scroll_y; /* %25000; */
         iShiftY = Tk_Y(pTree->docwin) - scroll_y;
         iShiftX = Tk_X(pTree->docwin) - scroll_x;
 
