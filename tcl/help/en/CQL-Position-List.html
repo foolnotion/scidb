@@ -1002,8 +1002,10 @@ Normally this is equivalent to this query:
   <span class="comment">; king and minor piece versus king</span>
   (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 3 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [Ii] 1)
   <span class="comment">; king and bishop versus king and bishop with the bishops on the same color</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
+  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
+                      d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
+  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class="chess">&#x2657;</span><span class="chess">&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
+                      d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
 --></code></pre></div>
 
 <p>
@@ -2529,7 +2531,7 @@ The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 
 <div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
 This is a very slow operation and should not be used with huge databases,
-or the moving pieces or the target squares should be restricted.
+or the moving pieces and the target squares should be restricted.
 </div>
 
 <p>
@@ -2565,7 +2567,7 @@ Only capture moves will be evaluated.
 <p>
 Search for positions where side to move is doing first promotion in game, but
 without gaining a better score. We are ensuring that only promoting moves will
-will be evaluated.
+be evaluated.
 </p>
 
 <h2 id="accumulator">Accumulator keywords</h2>

@@ -2843,7 +2843,7 @@ newWidget(
         return TCL_ERROR;
     }
     Tk_MakeWindowExist(pTree->docwin);
-    Tk_ResizeWindow(pTree->docwin, 12000, 30000);
+    Tk_ResizeWindow(pTree->docwin, 12000, 40000);
 #ifndef FIX_EVENT_HANDLING
     Tk_MapWindow(pTree->docwin);
 #endif
