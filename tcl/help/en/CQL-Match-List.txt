@@ -1043,7 +1043,7 @@ Gender is one of <expr>f</expr> (female), <expr>m</expr> (male, man), or
 
 <p>
 For examples see <cql>match:blackgender</cql>.
-<p>
+</p>
 
 <p>
 See also: <cql>match:blackgender</cql>, <cql>match:gender</cql>.

@@ -24,7 +24,6 @@ set Index {
       {{blackrating : position} {CQL-Position-List.html} {position:blackrating}}
       {{blacktitle : match} {CQL-Match-List.html} {match:blacktitle}}
       {{btm : position} {CQL-Position-List.html} {position:btm}}
-      {{btm : position} {CQL-Position-List.html} {position:btm}}
     }
   }
   { C

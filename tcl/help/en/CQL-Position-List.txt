@@ -198,8 +198,6 @@ TITLE CQL - The position list
       <td>&emsp;&#x2022;</td><td><a href="#position:preceding">:preceding</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
     </tr>
-    <tr>
-    </tr>
   </table>
 </dir>
 
@@ -1089,16 +1087,6 @@ query has no meaning and is always failing.
 
 <p>
 See also: <cql>position:blackcannotwin</cql>
-</p>
-
-<h3 id="position:btm">:btm</h3>
-
-<p>
-Match only if black is to move.
-</p>
-
-<p>
-See also: <cql>position:wtm</cql>.
 </p>
 
 <h3 id="position:wtm">:wtm</h3>
@@ -2506,7 +2494,7 @@ succeeds if the scoring of this move is within the given bounds (inclusive the
 ranges). The score of this move is the difference between the score of the
 current board and the score of the last board. In case of mating positions
 the difference will be always greater than 10.000.
-<p>
+</p>
 
 <p>
 The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
