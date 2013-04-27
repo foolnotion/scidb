@@ -1379,13 +1379,10 @@ proc ReloadCurrentPage {{reload yes}} {
 		if {![file readable [FullPath [file tail $file]]]} { return }
 	}
 
+	set yview [lindex [$Priv(html) yview] 0]
 	set Priv(current:file) ""
 	set Links($file) [Load [FullPath [file tail $file]] {} {} {} $reload]
-
-	if {$Priv(history:index) >= 0} {
-		set Priv(current:status) notfound
-		history::back
-	}
+	if {$reload} { $Priv(html) yview moveto $yview }
 }
 
 
