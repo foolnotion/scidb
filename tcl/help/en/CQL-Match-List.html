@@ -52,11 +52,16 @@ the match list may contain logical keywords (<a href="CQL-Match-List.html#match:
 
 <p>
 Note that most examples on this page are not conform to the CQL standard,
-you have to insert an empty position list <span style="white-space:nowrap;"><code>(position)</code></span> to build
+you have to insert an empty position list <span style='white-space:nowrap;'><code>(position)</code></span> to build
 a script which complies with the standard.
 </p>
 
-<ul style="list-style-type: none"><li>
+<p>
+The symbol <img src="../images/ft-scidb-tiny.png" alt="" />  in the title denotes that
+this keyword is an extension, it is not part of the CQL standard.
+</p>
+
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
@@ -71,7 +76,7 @@ a script which complies with the standard.
 
 <h2 id="index">Index</h2>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>      &#x2022;</td><td><a href="#match:and">:and</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
@@ -138,7 +143,7 @@ a script which complies with the standard.
 <h2 id="logical">Logical keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
@@ -146,22 +151,20 @@ a script which complies with the standard.
   </table>
 </li></ul>
 
-<h3 id="match:and">:and</h3>
+<h3 id="match:and">:and&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Takes a list of sub-match lists and matches only if each of them match.
 Note that a sub-match cannot contain position matches.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match
-  <span class="keyword">:and</span> (
+  <span class='keyword'>:and</span> (
     (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>)
     (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))))<!--
 --></code></pre></div>
@@ -171,7 +174,7 @@ Search for Shuffle Chess games, not including Chess 960 positions. This example
 is identical to the following:
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))<!--
 --></code></pre></div>
 
@@ -179,7 +182,7 @@ is identical to the following:
 In fact this keyword is somewhat superfluous, but included for completeness.
 </p>
 
-<h3 id="match:not">:not</h3>
+<h3 id="match:not">:not&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 This keyword can be used in two forms: either it is included in a match list,
@@ -189,14 +192,12 @@ of the sub-match list match. The former case is defined only to be conform
 with CQL standard of keyword <a href="CQL-Position-List.html#position:not">:not</a> of position match.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <span class="keyword">:not</span>)
+<div class='verb'><code>
+(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <span class='keyword'>:not</span>)
 </code></div>
 
 <p>
@@ -204,26 +205,24 @@ Search for games which do not start with a Shuffle Chess position. This
 example may be written in the clearer second form:
 </p>
 
-<div class="verb"><code>
-(match <span class="keyword">:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>))
+<div class='verb'><code>
+(match <span class='keyword'>:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>))
 </code></div>
 
-<h3 id="match:or">:or</h3>
+<h3 id="match:or">:or&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Takes a list of sub-match lists and matches if at least one of them matches.
 Note that a sub-match cannot contain position matches.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match
-  <span class="keyword">:or</span> (
+  <span class='keyword'>:or</span> (
     (match <a href="CQL-Match-List.html#match:event">:event</a> "FIDE-Wch*"
     (match <a href="CQL-Match-List.html#match:event">:event</a> "PCA-World Championchip*"))))<!--
 --></code></pre></div>
@@ -236,7 +235,7 @@ Search for world championchip games.
 <h2 id="event">Event search related keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
@@ -248,7 +247,7 @@ Search for world championchip games.
   </table>
 </li></ul>
 
-<h3 id="match:event">:event</h3>
+<h3 id="match:event">:event&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the event matches given pattern.
@@ -259,36 +258,32 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
-<h3 id="match:eventcountry">:eventcountry</h3>
+<h3 id="match:eventcountry">:eventcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the country of the event is matching one of the
 countries in the given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
-Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the event is unknown.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:eventcountry</span> dk,no,se
+<div class='verb'><code>
+<span class='keyword'>:eventcountry</span> dk,no,se
 </code></div>
 
 <p>
 Search for games played in Scandinavian events.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:eventcountry</span> xx
+<div class='verb'><code>
+<span class='keyword'>:eventcountry</span> xx
 </code></div>
 
 <p>
@@ -299,7 +294,7 @@ Search for games where the country of the event is unknown.
 See also: <a href="CQL-Match-List.html#match:site">:site</a>.
 </p>
 
-<h3 id="match:eventdate">:eventdate</h3>
+<h3 id="match:eventdate">:eventdate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 This takes a range specifier denoting the range of dates
@@ -311,9 +306,7 @@ For a detailed description of the date range see
 <a href="CQL-Match-List.html#match:date">:date</a>.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
-<h3 id="match:eventmode">:eventmode</h3>
+<h3 id="match:eventmode">:eventmode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the event mode is matching one
@@ -324,66 +317,64 @@ of the modes in the given comma-separated list.
 The event mode is one of:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unknown</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
       <td class="m"></td>
       <td class="r">Event mode is unknown</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>otb</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>otb</code></span></td>
       <td class="m"><img src="../images/eventmode_OTB.png" alt="" /></td>
       <td class="r">Over the board</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>corr</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>corr</code></span></td>
       <td class="m"><img src="../images/eventmode_PM.png" alt="" /></td>
       <td class="r">Correspondence</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>email</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>email</code></span></td>
       <td class="m"><img src="../images/eventmode_EM.png" alt="" /></td>
       <td class="r">E-mail</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>internet</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>internet</code></span></td>
       <td class="m"><img src="../images/eventmode_ICS.png" alt="" /></td>
       <td class="r">Internet Chess Server</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>tele</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>tele</code></span></td>
       <td class="m"><img src="../images/eventmode_TC.png" alt="" /></td>
       <td class="r">Telecommunication</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>analysis</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>analysis</code></span></td>
       <td class="m"><img src="../images/eventmode_Analysis.png" alt="" /></td>
       <td class="r">Analysis</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>composition</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>composition</code></span></td>
       <td class="m"><img src="../images/eventmode_Composition.png" alt="" /></td>
       <td class="r">Composition</td>
     </tr>
   </table>
 </li></ul>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:eventmode</span> corr,email
+<div class='verb'><code>
+<span class='keyword'>:eventmode</span> corr,email
 </code></div>
 
 <p>
 Search for correspondence chess games, or games played via E-mail.
 </p>
 
-<h3 id="match:eventtype">:eventtype</h3>
+<h3 id="match:eventtype">:eventtype&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the event type is matching one of the types
@@ -394,67 +385,65 @@ in the given comma-separated list.
 The event type is one of:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unknown</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
       <td class="m"></td>
       <td class="r">Event type is unknown</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>game</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>game</code></span></td>
       <td class="m"><img src="../images/eventtype_game.png" alt="" /></td>
       <td class="r">Individual Game</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>match</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>match</code></span></td>
       <td class="m"><img src="../images/eventtype_match.png" alt="" /></td>
       <td class="r">Match</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>tourn</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>tourn</code></span></td>
       <td class="m"><img src="../images/eventtype_tourn.png" alt="" /></td>
       <td class="r">Round Robin</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>knockout</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>knockout</code></span></td>
       <td class="m"><img src="../images/eventtype_ko.png" alt="" /></td>
       <td class="r">Knockout Tournament</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>swiss</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>swiss</code></span></td>
       <td class="m"><img src="../images/eventtype_swiss.png" alt="" /></td>
       <td class="r">Swiss-System Tournament</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>team</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>team</code></span></td>
       <td class="m"><img src="../images/eventtype_team.png" alt="" /></td>
       <td class="r">Team Tournament</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>schev</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>schev</code></span></td>
       <td class="m"><img src="../images/eventtype_schev.png" alt="" /></td>
       <td class="r">Scheveningen-System Tournament</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>simul</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>simul</code></span></td>
       <td class="m"><img src="../images/eventtype_simul.png" alt="" /></td>
       <td class="r">Simultaneous Tournament</td>
     </tr>
   </table>
 </li></ul>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:eventtype</span> tourn,swiss
+<div class='verb'><code>
+<span class='keyword'>:eventtype</span> tourn,swiss
 </code></div>
 
-<h3 id="match:site">:site</h3>
+<h3 id="match:site">:site&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the site of the event matches given pattern.
@@ -465,54 +454,50 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:eventcountry">:eventcountry</a>.
 </p>
 
-<h3 id="match:timemode">:timemode</h3>
+<h3 id="match:timemode">:timemode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the time mode is matching one of the modes
 in the given comma-separated list.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Time mode is one of:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unknown</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
       <td class="m"></td>
       <td class="r">Time mode is unknown</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>normal</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
       <td class="m"><img src="../images/timemode_normal.png" alt="" /></td>
       <td class="r">Normal</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>rapid</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>rapid</code></span></td>
       <td class="m"><img src="../images/timemode_rapid.png" alt="" /></td>
       <td class="r">Rapid</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>blitz</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>blitz</code></span></td>
       <td class="m"><img src="../images/timemode_blitz.png" alt="" /></td>
       <td class="r">Blitz</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>bullet</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>bullet</code></span></td>
       <td class="m"><img src="../images/timemode_bullet.png" alt="" /></td>
       <td class="r">Bullet</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>corr</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>corr</code></span></td>
       <td class="m"><img src="../images/timemode_corr.png" alt="" /></td>
       <td class="r">Correspondence</td>
     </tr>
@@ -523,8 +508,8 @@ Time mode is one of:
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:timemode</span> blitz,bullet
+<div class='verb'><code>
+<span class='keyword'>:timemode</span> blitz,bullet
 </code></div>
 
 <p>
@@ -535,7 +520,7 @@ Search for blitz and bullet games.
 <h2 id="player">Player search related keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
@@ -567,21 +552,19 @@ Search for blitz and bullet games.
   </table>
 </li></ul>
 
-<h3 id="match:birthyear">:birthyear</h3>
+<h3 id="match:birthyear">:birthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where one of the players is born in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:birthyear</span> 1990 2020
+<div class='verb'><code>
+<span class='keyword'>:birthyear</span> 1990 2020
 </code></div>
 
 <p>
@@ -593,14 +576,12 @@ See also: <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>
 <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
 </p>
 
-<h3 id="match:blackbirthyear">:blackbirthyear</h3>
+<h3 id="match:blackbirthyear">:blackbirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the black player was born in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>, <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>,
@@ -608,19 +589,17 @@ See also: <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>
 <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
 </p>
 
-<h3 id="match:blackcountry">:blackcountry</h3>
+<h3 id="match:blackcountry">:blackcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the nationality of the black player is matching one of
 the countries in given comma-separated list. A country will be specified either
 as <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
 or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
-Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the black player is unknown.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 For examples see <a href="CQL-Match-List.html#match:country">:country</a>.
@@ -630,14 +609,12 @@ For examples see <a href="CQL-Match-List.html#match:country">:country</a>.
 See also: <a href="CQL-Match-List.html#match:country">:country</a>, <a href="CQL-Match-List.html#match:whitecountry">:whitecountry</a>.
 </p>
 
-<h3 id="match:blackdeathyear">:blackdeathyear</h3>
+<h3 id="match:blackdeathyear">:blackdeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the black player died in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>, <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>,
@@ -645,30 +622,28 @@ See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>
 <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
 </p>
 
-<h3 id="match:blackgender">:blackgender</h3>
+<h3 id="match:blackgender">:blackgender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the gender of the black player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
-<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:blackgender</span> f
+<div class='verb'><code>
+<span class='keyword'>:blackgender</span> f
 </code></div>
 
 <p>
 Only search for games where the black player is female.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:blackgender</span> x
+<div class='verb'><code>
+<span class='keyword'>:blackgender</span> x
 </code></div>
 
 <p>
@@ -679,31 +654,27 @@ Only search for games where the gender is unknown.
 See also: <a href="CQL-Match-List.html#match:whitegender">:whitegender</a>, <a href="CQL-Match-List.html#match:gender">:gender</a>.
 </p>
 
-<h3 id="match:blackiscomputer">:blackiscomputer</h3>
+<h3 id="match:blackiscomputer">:blackiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the black player is an engine.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:iscomputer">:iscomputer</a>, <a href="CQL-Match-List.html#match:whiteiscomputer">:whiteiscomputer</a>.
 </p>
 
-<h3 id="match:blackishuman">:blackishuman</h3>
+<h3 id="match:blackishuman">:blackishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the black player is a human.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:ishuman">:ishuman</a>, <a href="CQL-Match-List.html#match:whiteishuman">:whiteishuman</a>.
 </p>
 
-<h3 id="match:blackplayer">:blackplayer</h3>
+<h3 id="match:blackplayer">:blackplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the black player matches given name.
@@ -714,26 +685,22 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted
 string.  See <a href="CQL-Match-List.html#match:player">:player</a> for a detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:player">:player</a>, <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>.
 </p>
 
-<h3 id="match:blackrating">:blackrating</h3>
+<h3 id="match:blackrating">:blackrating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the given rating is between given score range of the
 black player. For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
-<h3 id="match:blacktitle">:blacktitle</h3>
+<h3 id="match:blacktitle">:blacktitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the title of the black player is matching
@@ -741,33 +708,29 @@ one of the titles in the given comma-separated list.
 See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:whitetitle">:whitetitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
 </p>
 
-<h3 id="match:country">:country</h3>
+<h3 id="match:country">:country&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the nationality one of the players is matching any
 country in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
-Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of one player is unknown.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:country</span> GER<br/>
-<span class="keyword">:country</span> de
+<div class='verb'><code>
+<span class='keyword'>:country</span> GER<br/>
+<span class='keyword'>:country</span> de
 </code></div>
 
 <p>
@@ -778,21 +741,19 @@ In both examples, match all games where both players are Germans.
 See also: <a href="CQL-Match-List.html#match:whitecountry">:whitecountry</a>, <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>.
 </p>
 
-<h3 id="match:deathyear">:deathyear</h3>
+<h3 id="match:deathyear">:deathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where one of the players died in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:deathyear</span> 1800 1950
+<div class='verb'><code>
+<span class='keyword'>:deathyear</span> 1800 1950
 </code></div>
 
 <p>
@@ -806,15 +767,13 @@ See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>
 <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
 </p>
 
-<h3 id="match:gender">:gender</h3>
+<h3 id="match:gender">:gender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the gender of one player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
-<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
@@ -824,25 +783,21 @@ For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a
 See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:whitegender">:whitegender</a>.
 </p>
 
-<h3 id="match:iscomputer">:iscomputer</h3>
+<h3 id="match:iscomputer">:iscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where one of the players is a engine.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:whiteiscomputer">:whiteiscomputer</a>, <a href="CQL-Match-List.html#match:blackiscomputer">:blackiscomputer</a>.
 </p>
 
-<h3 id="match:ishuman">:ishuman</h3>
+<h3 id="match:ishuman">:ishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where one of the players is a human.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:whiteishuman">:whiteishuman</a>, <a href="CQL-Match-List.html#match:blackishuman">:blackishuman</a>.
@@ -864,13 +819,13 @@ case-insensitive. This form complies with the CQL standard.
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:player</span> coeff
+<div class='verb'><code>
+<span class='keyword'>:player</span> coeff
 </code></div>
 
 <p>
 Match all games where one of the player names has as sub-string
-<span style="white-space:nowrap;">"coeff"</span>.
+<span style='white-space:nowrap;'>"coeff"</span>.
 </p>
 
 <p>
@@ -879,18 +834,18 @@ are matching the pattern will be found.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> The form with double-quoted patterns does not comply with the CQL standard.</p>
+<p><img src='../images/note.png' alt='note' /> The form with double-quoted patterns does not comply with the CQL standard.</p>
 
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:player</span> "*coeff*"
+<div class='verb'><code>
+<span class='keyword'>:player</span> "*coeff*"
 </code></div>
 
 <p>
-This is identical to "<code><span style="white-space:nowrap;">:player</span> <span style="white-space:nowrap;">coeff</span></code>".
+This is identical to "<code><span style='white-space:nowrap;'>:player</span> <span style='white-space:nowrap;'>coeff</span></code>".
 </p>
 
 <p>
@@ -902,7 +857,7 @@ For more examples see
 See also: <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>, <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>.
 </p>
 
-<h3 id="match:rating">:rating</h3>
+<h3 id="match:rating">:rating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where one of the players has a score of given rating type
@@ -913,48 +868,46 @@ Rating is one of:
 <div class="dir">
   <table>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>ELO</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>ELO</code></span></td>
       <td class="r">FIDE Rating</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>DWZ</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>DWZ</code></span></td>
       <td class="r">German Rating (Deutsche Wertungszahl)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>ECF</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>ECF</code></span></td>
       <td class="r">English Chess Federation</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>Rapid</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>Rapid</code></span></td>
       <td class="r">English Chess Federation Rapid Rating</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>ICCF</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>ICCF</code></span></td>
       <td class="r">International Correspondence Chess Federation</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>USCF</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>USCF</code></span></td>
       <td class="r">United States Chess Federation</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>IPS</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>IPS</code></span></td>
       <td class="r">Individual Player Strength (Chess 960 Rating)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>Other</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>Other</code></span></td>
       <td class="r">Any other rating type</td>
     </tr>
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:rating</span> ELO 2000 3000
+<div class='verb'><code>
+<span class='keyword'>:rating</span> ELO 2000 3000
 </code></div>
 
 <p>
@@ -965,7 +918,7 @@ Match all games where both players have an ELO rating between 2000 and 3000.
 See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:blackrating">:blackrating</a>.
 </p>
 
-<h3 id="match:title">:title</h3>
+<h3 id="match:title">:title&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where any title in the given comma-separated list is matching
@@ -975,83 +928,79 @@ the title of one player.  Title is one of:
 <div class="dir">
 <table>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>None</code></span></td><td class="r">None     </td>
+    <td class="l"><span style='white-space:nowrap;'><code>None</code></span></td><td class="r">None     </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>GM  </code></span></td><td class="r">Grandmaster (FIDE)  </td>
+    <td class="l"><span style='white-space:nowrap;'><code>GM  </code></span></td><td class="r">Grandmaster (FIDE)  </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>IM  </code></span></td><td class="r">International Master (FIDE)  </td>
+    <td class="l"><span style='white-space:nowrap;'><code>IM  </code></span></td><td class="r">International Master (FIDE)  </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>FM  </code></span></td><td class="r">Fide Master (FIDE)  </td>
+    <td class="l"><span style='white-space:nowrap;'><code>FM  </code></span></td><td class="r">Fide Master (FIDE)  </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CM  </code></span></td><td class="r">Candidate Master (FIDE)  </td>
+    <td class="l"><span style='white-space:nowrap;'><code>CM  </code></span></td><td class="r">Candidate Master (FIDE)  </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>WGM </code></span></td><td class="r">Woman Grandmaster (FIDE) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>WGM </code></span></td><td class="r">Woman Grandmaster (FIDE) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>WIM </code></span></td><td class="r">Woman International Master (FIDE) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>WIM </code></span></td><td class="r">Woman International Master (FIDE) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>WFM </code></span></td><td class="r">Woman Fide Master (FIDE) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>WFM </code></span></td><td class="r">Woman Fide Master (FIDE) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>WCM </code></span></td><td class="r">Woman Candidate Master (FIDE) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>WCM </code></span></td><td class="r">Woman Candidate Master (FIDE) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>HGM </code></span></td><td class="r">Honorary Grandmaster (FIDE) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>HGM </code></span></td><td class="r">Honorary Grandmaster (FIDE) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CGM </code></span></td><td class="r">Correspondence Grandmaster (ICCF) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>CGM </code></span></td><td class="r">Correspondence Grandmaster (ICCF) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CIM </code></span></td><td class="r">Correspondence International Master (ICCF) </td>
+    <td class="l"><span style='white-space:nowrap;'><code>CIM </code></span></td><td class="r">Correspondence International Master (ICCF) </td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CLGM</code></span></td><td class="r">Correspondence Lady Grandmaster (ICCF)</td>
+    <td class="l"><span style='white-space:nowrap;'><code>CLGM</code></span></td><td class="r">Correspondence Lady Grandmaster (ICCF)</td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CILM</code></span></td><td class="r">Correspondence Lady International Master (ICCF)</td>
+    <td class="l"><span style='white-space:nowrap;'><code>CILM</code></span></td><td class="r">Correspondence Lady International Master (ICCF)</td>
   </tr>
   <tr valign="top">
-    <td class="l"><span style="white-space:nowrap;"><code>CSIM</code></span></td><td class="r">Correspondence Senior International Master (ICCF)</td>
+    <td class="l"><span style='white-space:nowrap;'><code>CSIM</code></span></td><td class="r">Correspondence Senior International Master (ICCF)</td>
   </tr>
 </table>
 </div>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:title</span> GM,IM
+<div class='verb'><code>
+<span class='keyword'>:title</span> GM,IM
 </code></div>
 
 <p>
 Search for all games where one player is GM or IM.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:title</span> None
+<div class='verb'><code>
+<span class='keyword'>:title</span> None
 </code></div>
 
 <p>
 Search for all games where both don't have a title.
 </p>
 
-<h3 id="match:whitebirthyear">:whitebirthyear</h3>
+<h3 id="match:whitebirthyear">:whitebirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the white player was born in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>, <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>,
@@ -1059,32 +1008,28 @@ See also: <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>
 <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
 </p>
 
-<h3 id="match:whitecountry">:whitecountry</h3>
+<h3 id="match:whitecountry">:whitecountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the nationality of the white player is matching any country
 in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
-Furthermore the special country codes <span style="white-space:nowrap;"><code>UNK</code></span> (IOC form),
-and <span style="white-space:nowrap;"><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the white player is unknown.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>, <a href="CQL-Match-List.html#match:country">:country</a>.
 </p>
 
-<h3 id="match:whitedeathyear">:whitedeathyear</h3>
+<h3 id="match:whitedeathyear">:whitedeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the white player died in a year between the
 given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>, <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>,
@@ -1092,15 +1037,13 @@ See also: <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>
 <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
 </p>
 
-<h3 id="match:whitegender">:whitegender</h3>
+<h3 id="match:whitegender">:whitegender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the gender of the white player is matching given gender.
-Gender is one of <span style="white-space:nowrap;"><code>f</code></span> (female), <span style="white-space:nowrap;"><code>m</code></span> (male, man), or
-<span style="white-space:nowrap;"><code>x</code></span> (unknown). For female also <span style="white-space:nowrap;"><code>w</code></span> (woman) may be used.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
@@ -1110,31 +1053,27 @@ For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a
 See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:gender">:gender</a>.
 </p>
 
-<h3 id="match:whiteiscomputer">:whiteiscomputer</h3>
+<h3 id="match:whiteiscomputer">:whiteiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the white player is an engine.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:iscomputer">:iscomputer</a>, <a href="CQL-Match-List.html#match:blackiscomputer">:blackiscomputer</a>.
 </p>
 
-<h3 id="match:whiteishuman">:whiteishuman</h3>
+<h3 id="match:whiteishuman">:whiteishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the white player is a human.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:ishuman">:ishuman</a>, <a href="CQL-Match-List.html#match:blackishuman">:blackishuman</a>.
 </p>
 
-<h3 id="match:whiteplayer">:whiteplayer</h3>
+<h3 id="match:whiteplayer">:whiteplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the white player matches given name.
@@ -1145,34 +1084,28 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="CQL-Match-List.html#match:player">:player</a> for a detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>, <a href="CQL-Match-List.html#match:player">:player</a>.
 </p>
 
-<h3 id="match:whiterating">:whiterating</h3>
+<h3 id="match:whiterating">:whiterating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the given rating is between given score range of the
 white player. For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
-<h3 id="match:whitetitle">:whitetitle</h3>
+<h3 id="match:whitetitle">:whitetitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the title of the white player is matching
 one of the titles in the given comma-separated list.
 See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 See also: <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
@@ -1182,7 +1115,7 @@ See also: <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>, <a hre
 <h2 id="header">Game header search related keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
@@ -1198,7 +1131,7 @@ See also: <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>, <a hre
   </table>
 </li></ul>
 
-<h3 id="match:annotator">:annotator</h3>
+<h3 id="match:annotator">:annotator&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games where the annotator matches given name.
@@ -1209,21 +1142,19 @@ This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:annotator</span> Capablanca
+<div class='verb'><code>
+<span class='keyword'>:annotator</span> Capablanca
 </code></div>
 
 Search for games where one of the player names has a sub-string matching
-the name <span style="white-space:nowrap;">"Capablanca"</span>.
+the name <span style='white-space:nowrap;'>"Capablanca"</span>.
 
-<div class="verb"><code>
-<span class="keyword">:annotator</span> "*"
+<div class='verb'><code>
+<span class='keyword'>:annotator</span> "*"
 </code></div>
 
 <p>
@@ -1235,14 +1166,12 @@ annotator are excluded.
 See also: <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>.
 </p>
 
-<h3 id="match:date">:date</h3>
+<h3 id="match:date">:date&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 This takes a range specifier denoting the range of dates
 that the game must match.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 The range specifier has one of the following forms:
@@ -1251,15 +1180,15 @@ The range specifier has one of the following forms:
 <div class="dir">
   <table>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>2010-10-27</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-27</code></span></td>
       <td class="r">denoting a single date</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>2010-10-01 2010-10-31</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 2010-10-31</code></span></td>
       <td class="r">denoting a range of dates, inclusive the ranges</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>2010-10-01 .. 2010-11-01</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 .. 2010-11-01</code></span></td>
       <td class="r">denoting a range of dates, inclusive the former date,
           exlusive the latter date</td>
     </tr>
@@ -1269,7 +1198,7 @@ The range specifier has one of the following forms:
 <p>
 Note that in third form it is not required that the former date is less than the
 latter date. Also note that the empty range (for example
-<code><span style="white-space:nowrap;">2010-10-01</span> <span style="white-space:nowrap;">..</span> <span style="white-space:nowrap;">2010-10-01</span></code>)
+<code><span style='white-space:nowrap;'>2010-10-01</span> <span style='white-space:nowrap;'>..</span> <span style='white-space:nowrap;'>2010-10-01</span></code>)
 is not allowed.
 </p>
 
@@ -1278,41 +1207,41 @@ A date has the following syntax:
 </p>
 
 <div class="dir">
-  <p><span style="white-space:nowrap;"><code>
+  <p><span style='white-space:nowrap;'><code>
   &lt;year&gt;'&#x2212;'&lt;month&gt;'&#x2212;'&lt;day&gt;(&lt;sign&gt;&lt;num&gt;'y')?(&lt;sign&gt;&lt;num&gt;'m')?(&lt;sign&gt;&lt;num&gt;'d')?
   </code></span></p>
 
   <table>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;year&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;year&gt;</code></span></td>
       <td class="r">specifies the year (four digits)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;month&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;month&gt;</code></span></td>
       <td class="r">specifies the month (two digits)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;day&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;day&gt;</code></span></td>
       <td class="r">specifies the day of the month (two digits)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;sign&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;sign&gt;</code></span></td>
       <td class="r">is either '&#x2212;' or '+'</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>&lt;num&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;num&gt;</code></span></td>
       <td class="r">is any positive number, denoting an increment or decrement</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>d</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>d</code></span></td>
       <td class="r">specifies to increment/decrement the day</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>m</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>m</code></span></td>
       <td class="r">specifies to increment/decrement the month</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>y</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>y</code></span></td>
       <td class="r">specifies to increment/decrement the year</td>
     </tr>
   </table>
@@ -1327,16 +1256,16 @@ In case of the second form the special date "unlimited" may be used; see
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:date</span> 2010-10-01
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01
 </code></div>
 
 <p>
 Search for all games played on October 1, 2010.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:date</span> 2010-10-01 .. 2010-11-01
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 .. 2010-11-01
 </code></div>
 
 <p>
@@ -1344,31 +1273,31 @@ Search for all games played in October 2010: between October 1, 2010
 (inclusive), and November 1, 2010 (exclusive).
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:date</span> 2010-10-01 unlimited
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 unlimited
 </code></div>
 
 <p>
 Search for all games played after September 30, 2010.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:date</span> 2010-10-01 .. 2010-10-01+1m
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 .. 2010-10-01+1m
 </code></div>
 
 <p>
 Also search for all games played in October 2010; the latter range
-(<span style="white-space:nowrap;"><code>2010-10-01+1m</code></span> is November 1, 2010) is excluded.
-<span style="white-space:nowrap;"><code>+1m</code></span> denotes the increment for the month.
+(<span style='white-space:nowrap;'><code>2010-10-01+1m</code></span> is November 1, 2010) is excluded.
+<span style='white-space:nowrap;'><code>+1m</code></span> denotes the increment for the month.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:date</span> 2010-10-27 .. 2010-10-27-43d
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-27 .. 2010-10-27-43d
 </code></div>
 
 <p>
 Search for all games between September 14, 2010 (exclusive;
-<span style="white-space:nowrap;"><code>2010-10-27-43d</code></span> is 2010-09-14), and
+<span style='white-space:nowrap;'><code>2010-10-27-43d</code></span> is 2010-09-14), and
 October 27, 2010 (inclusive). This is an example for the following
 case: we know that the tournament has finished on 2010-10-27,
 and the duration of this tournament was exact 43 days. This example
@@ -1380,27 +1309,25 @@ can be greater than the last date specifier.
 See also: <a href="CQL-Match-List.html#match:year">:year</a>.
 </p>
 
-<h3 id="match:eco">:eco</h3>
+<h3 id="match:eco">:eco&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 This takes a range specifier denoting the <a href="ECO-Code.html">ECO code</a>
 range that the game must match.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:eco</span> A00
+<div class='verb'><code>
+<span class='keyword'>:eco</span> A00
 </code></div>
 
 Search all games with ECO code A00.
 
-<div class="verb"><code>
-<span class="keyword">:eco</span> A00 A99
+<div class='verb'><code>
+<span class='keyword'>:eco</span> A00 A99
 </code></div>
 
 Search all games with an ECO code between A00 and A99 (inclusive the ranges).
@@ -1417,20 +1344,18 @@ within the range specifier (&#x21d2;
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:gamenumber</span> 1000<br/>
-<span class="keyword">:gamenumber</span> 1 100
+<div class='verb'><code>
+<span class='keyword'>:gamenumber</span> 1000<br/>
+<span class='keyword'>:gamenumber</span> 1 100
 </code></div>
 
-<h3 id="match:hasmarkers">:hasmarkers</h3>
+<h3 id="match:hasmarkers">:hasmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games which has one of the markers set specified in the given
 string (&#x21d2; <a href="Game-Flags.html">game markers</a>). If no parameter
 is given, we will search for any marker.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 A marker is one of:
@@ -1550,8 +1475,8 @@ A marker is one of:
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:hasmarkers</span> wb
+<div class='verb'><code>
+<span class='keyword'>:hasmarkers</span> wb
 </code></div>
 
 <p>
@@ -1559,8 +1484,8 @@ Search for games with marker <i>White Opening</i>
 or <i>Black Opening</i>.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:hasmarkers</span>
+<div class='verb'><code>
+<span class='keyword'>:hasmarkers</span>
 </code></div>
 
 <p>
@@ -1568,7 +1493,7 @@ Search for games with any marker set; this means games without any
 game marker are excluded.
 </p>
 
-<h3 id="match:hasspecialmarkers">:hasspecialmarkers</h3>
+<h3 id="match:hasspecialmarkers">:hasspecialmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games which has one of the special markers set specified in the given
@@ -1576,25 +1501,23 @@ comma-separated list. If no list is given, we will search for any special
 marker.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 A special marker is one of:
 </p>
 
 <table>
   <tr>
-    <td class="l"><span style="white-space:nowrap;"><code>deleted</code></span></td>
+    <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
     <td class="m"><img src="../images/game_deleted.png" alt="" /></td>
     <td class="r">Game marked for deletion</td>
   </tr>
   <tr>
-    <td class="l"><span style="white-space:nowrap;"><code>illegalmove</code></span></td>
+    <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
     <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
     <td class="r">Game contains illegal castling move.</td>
   </tr>
   <tr>
-    <td class="l"><span style="white-space:nowrap;"><code>illegalcastling</code></span></td>
+    <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
     <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
     <td class="r">Game contains illegal move (not castling).</td>
   </tr>
@@ -1604,8 +1527,8 @@ A special marker is one of:
 Example:
 </p>
 
-<div class="verb"><code>
-<a href="CQL-Match-List.html#match:not">:not</a> (match <span class="keyword">:hasspecialmarkers</span> illegalmove)
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:not">:not</a> (match <span class='keyword'>:hasspecialmarkers</span> illegalmove)
 </code></div>
 
 <p>
@@ -1613,21 +1536,19 @@ Search does not include games containing illegal moves, except it is
 an illegal castling.
 </p>
 
-<h3 id="match:plycount">:plycount</h3>
+<h3 id="match:plycount">:plycount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games with a ply count between the given range
 (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:plycount</span> 40 60
+<div class='verb'><code>
+<span class='keyword'>:plycount</span> 40 60
 </code></div>
 
 <p>
@@ -1645,51 +1566,49 @@ The allowed parameters are:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>1/2-1/2</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>1/2-1/2</code></span></td>
       <td class="r">drawn game</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>1-0</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>1-0</code></span></td>
       <td class="r">game in which white wins</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>0-1</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>0-1</code></span></td>
       <td class="r">game in which black wins</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>*</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
       <td class="r">game with unknown result (not part of CQL standard)</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>0-0</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>0-0</code></span></td>
       <td class="r">game lost for both players (not part of CQL standard)</td>
     </tr>
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> The parameter <span style="white-space:nowrap;"><code>1/2-1/2</code></span> may be abbreviated to
-<span style="white-space:nowrap;"><code>1/2</code></span>.</p>
+<p><img src='../images/note.png' alt='note' /> The parameter <span style='white-space:nowrap;'><code>1/2-1/2</code></span> may be abbreviated to
+<span style='white-space:nowrap;'><code>1/2</code></span>.</p>
 
 <p>
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:result</span> 1/2
+<div class='verb'><code>
+<span class='keyword'>:result</span> 1/2
 </code></div>
 
 <p>
 Match all drawn games.
 </p>
 
-<h3 id="match:termination">:termination</h3>
+<h3 id="match:termination">:termination&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games where the termination reason is matching one of
 the reasons in the given comma-separated list.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 The termination reason is one of:
@@ -1698,52 +1617,52 @@ The termination reason is one of:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unknown</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
       <td class="m"></td>
       <td class="r">Termination reason is unknown</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>normal</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
       <td class="m"><img src="../images/termination_reason_Normal.png" alt="" /></td>
       <td class="r">Game terminated in a normal fashion</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unplayed</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unplayed</code></span></td>
       <td class="m"><img src="../images/termination_reason_Unplayed.png" alt="" /></td>
       <td class="r">Game is unplayed</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>abandoned</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>abandoned</code></span></td>
       <td class="m"><img src="../images/termination_reason_Abandoned.png" alt="" /></td>
       <td class="r">Game is abandoned</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>adjudication</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>adjudication</code></span></td>
       <td class="m"><img src="../images/termination_reason_Adjudication.png" alt="" /></td>
       <td class="r">Adjudication</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>disconnection</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>disconnection</code></span></td>
       <td class="m"><img src="../images/termination_reason_Disconnection.png" alt="" /></td>
       <td class="r">Disconnection</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>emergency</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>emergency</code></span></td>
       <td class="m"><img src="../images/termination_reason_Emergency.png" alt="" /></td>
       <td class="r">Abandoned due to an emergency</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>rulesinfraction</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>rulesinfraction</code></span></td>
       <td class="m"><img src="../images/termination_reason_RulesInfraction.png" alt="" /></td>
       <td class="r">Decided due to a rules infraction</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>timeforfeit</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>timeforfeit</code></span></td>
       <td class="m"><img src="../images/termination_reason_TimeForfeit.png" alt="" /></td>
       <td class="r">One or both players forfeits on time</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>unterminated</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>unterminated</code></span></td>
       <td class="m"><img src="../images/termination_reason_Unterminated.png" alt="" /></td>
       <td class="r">Unterminated</td>
     </tr>
@@ -1754,8 +1673,8 @@ The termination reason is one of:
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:termination</span> unknown,normal
+<div class='verb'><code>
+<span class='keyword'>:termination</span> unknown,normal
 </code></div>
 
 <p>
@@ -1763,13 +1682,11 @@ Search all games where it is not known that the game did not terminate
 in an abnormal fashion.
 </p>
 
-<h3 id="match:variant">:variant</h3>
+<h3 id="match:variant">:variant&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Only search in games matching any chess variant in given comma-separated list.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 Supported variants are:
@@ -1778,27 +1695,27 @@ Supported variants are:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>normal</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
       <td class="r">Normal Chess</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>threecheck</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>threecheck</code></span></td>
       <td class="r">Three-check Chess</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>crazyhouse</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>crazyhouse</code></span></td>
       <td class="r">Crazyhouse Chess</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>suicide</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>suicide</code></span></td>
       <td class="r">Suicide</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>giveaway</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>giveaway</code></span></td>
       <td class="r">Giveaway</td>
     </tr>
     <tr>
-      <td class="l"><span style="white-space:nowrap;"><code>losers</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>losers</code></span></td>
       <td class="r">Losers</td>
     </tr>
   </table>
@@ -1808,8 +1725,8 @@ Supported variants are:
 Example:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:variant</span> suicide,giveaway,losers
+<div class='verb'><code>
+<span class='keyword'>:variant</span> suicide,giveaway,losers
 </code></div>
 
 <p>
@@ -1827,9 +1744,9 @@ This takes a range specifier denoting the range of years that the game must matc
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:year</span> 2000<br/>
-<span class="keyword">:year</span> 2000 2010
+<div class='verb'><code>
+<span class='keyword'>:year</span> 2000<br/>
+<span class='keyword'>:year</span> 2000 2010
 </code></div>
 
 <p>
@@ -1840,7 +1757,7 @@ See also: <a href="CQL-Match-List.html#match:date">:date</a>.
 <h2 id="data">Game data search related keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
@@ -1852,7 +1769,7 @@ See also: <a href="CQL-Match-List.html#match:date">:date</a>.
   </table>
 </li></ul>
 
-<h3 id="match:comment">:comment</h3>
+<h3 id="match:comment">:comment&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match all games which are containing the given pattern as a sub-string in
@@ -1860,77 +1777,63 @@ any comment.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
-<h3 id="match:hasannotation">:hasannotation</h3>
+<h3 id="match:hasannotation">:hasannotation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for annotated games (does not include comments).
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>, <a href="CQL-Match-List.html#match:hasvariations">:hasvariations</a>.
 </p>
 
-<h3 id="match:hascomments">:hascomments</h3>
+<h3 id="match:hascomments">:hascomments&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for commented games. Note that a commented game must not have
 an annotator (&#x21d2; <a href="CQL-Match-List.html#match:annotator">:annotator</a>).
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 See also: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>, <a href="CQL-Match-List.html#match:hasvariations">:hasvariations</a>.
 
-<h3 id="match:hasvariations">:hasvariations</h3>
+<h3 id="match:hasvariations">:hasvariations&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games containing sub-variations.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>, <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>.
 </p>
 
-<h3 id="match:ischess960">:ischess960</h3>
+<h3 id="match:ischess960">:ischess960&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games starting with a Chess 960 position.
 This includes the standard start position.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>.
 </p>
 
-<h3 id="match:isshufflechess">:isshufflechess</h3>
+<h3 id="match:isshufflechess">:isshufflechess&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for games starting with a Shuffle Chess position.
 This includes Chess 960 positions.
 </p>
 
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
-
 <p>
 See also: <a href="CQL-Match-List.html#match:ischess960">:ischess960</a>.
 </p>
 
-<h3 id="match:startposition">:startposition</h3>
+<h3 id="match:startposition">:startposition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 This will take a comma-separated list of start positions. A start
 position is either a position number, or a FICS variant identifier.
 </p>
-
-<p><img src="../images/note.png" alt="note" /> This keyword is not part of the CQL standard.</p>
 
 <p>
 If the position number is zero then games not beginning with a
@@ -1971,8 +1874,8 @@ position number in the following way:
 <p>
 Note that for chess variants Suicide, and
 Giveaway a special rule will be applied: a position
-number N is also matching <span style="white-space:nowrap;">N&#x2212;3&#x00d7;960</span> if
-<span style="white-space:nowrap;">N &gt; 3&#x00d7;960</span>. This is simplifying the search for standard
+number N is also matching <span style='white-space:nowrap;'>N&#x2212;3&#x00d7;960</span> if
+<span style='white-space:nowrap;'>N &gt; 3&#x00d7;960</span>. This is simplifying the search for standard
 start positions; see example below. Note that a position in these chess
 variants cannot have a position number equal or less than 960.
 </p>
@@ -1985,54 +1888,54 @@ the start position. The supported positions are:
 <div class="dir">
 <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/bishops-only</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>endings/kbbk</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/bishops-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>endings/kbbk</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/knights-only</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>endings/kbnk</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/knights-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>endings/kbnk</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/little-game</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>pawns/pawns-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/little-game</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>pawns/pawns-only</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/no-queens</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>pawns/wild-five</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/no-queens</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>pawns/wild-five</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/pawns-only</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>wild/19</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/pawns-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/19</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/pyramid</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>wild/5</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/pyramid</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/5</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/queen-rooks</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code>wild/8</code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/queen-rooks</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/8</code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/queens-only</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code></code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/queens-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/rooks-only</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code></code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/rooks-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
   </tr>
   <tr>
-    <td><span style="white-space:nowrap;"><code>misc/runaway</code></span></td>
-    <td><span style="white-space:nowrap;"><code>&#x2001;</code></span></td>
-    <td><span style="white-space:nowrap;"><code></code></span></td>
+    <td><span style='white-space:nowrap;'><code>misc/runaway</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
   </tr>
 </table>
 </div>
@@ -2041,8 +1944,8 @@ the start position. The supported positions are:
 Examples:
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:startposition</span> 518
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 518
 </code></div>
 
 <p>
@@ -2052,8 +1955,8 @@ Giveaway this will also match position
 number 3398.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:startposition</span> 518,3398
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 518,3398
 </code></div>
 
 <p>
@@ -2061,16 +1964,16 @@ Search for games beginning with a standard start position, with or
 without castling rights.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:startposition</span> misc/runaway
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> misc/runaway
 </code></div>
 
 <p>
-Search for games with variant <span style="white-space:nowrap;"><code>misc/runaway</code></span>.
+Search for games with variant <span style='white-space:nowrap;'><code>misc/runaway</code></span>.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:startposition</span> 0 <a href="CQL-Match-List.html#match:not">:not</a>
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 0 <a href="CQL-Match-List.html#match:not">:not</a>
 </code></div>
 
 <p>
@@ -2078,8 +1981,8 @@ Search for games beginning with a start position: this means
 that the first game position is a Shuffle Chess position.
 </p>
 
-<div class="verb"><code>
-<span class="keyword">:startposition</span> -1 <a href="CQL-Match-List.html#match:not">:not</a>
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> -1 <a href="CQL-Match-List.html#match:not">:not</a>
 </code></div>
 
 <p>
@@ -2092,7 +1995,7 @@ position, or a (supported) FICS variant.
 <h2 id="tagging">Tagging related keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
   </table>
@@ -2109,7 +2012,7 @@ This feature is described on page <a href="CQL-Tagging">Tagging</a>.
 <h2 id="meaningless">Meaningless keywords</h2>
 <!-- ############################################################################## -->
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
     <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>

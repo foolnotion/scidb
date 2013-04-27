@@ -42,31 +42,31 @@
 Scidb supporta i seguenti formati:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <li>
-    <img src="../images/ft-scidb.png" alt="" />
+    <img src="../images/ft-scidb.png" alt="" /> 
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="" />
+    <img src="../images/ft-scid.png" alt="" /> 
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="" />
+    <img src="../images/ft-chessbase.png" alt="" /> 
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="" />
+    <img src="../images/ft-pgn.png" alt="" /> 
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="" />
+    <img src="../images/ft-archive.png" alt="" /> 
     <a href="#Database-Archive">Archivio Database</a>
   </li>
 </li></ul>
 
 <h2 id="Scidb">
-<img src="../images/ft-scidb.png" alt="" />
+<img src="../images/ft-scidb.png" alt="" /> 
 Scidb (<abbr>.sci</abbr>)
 </h2>
 
@@ -76,7 +76,7 @@ Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente rac
 Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse varianti degli scacchi, al momento queste sono:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>Scacchi Ortodossi</td>
@@ -107,7 +107,7 @@ Un database può contenere solo una variante degli scacchi (la <a href="Clipbase
 è un'eccezione).
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
 Furthermore this format is supporting
 <a href="http://it.wikipedia.org/wiki/Scacchi960">Scacchi 960<span class="awesome">&nbsp;&#xf08e;</span></a>,
@@ -118,7 +118,7 @@ in all chess variants.
 </span>
 
 <p>
-I database Scidb sono sempre codificati con il set caratteri <span style="white-space:nowrap;">UTF-8</span>. Per questo
+I database Scidb sono sempre codificati con il set caratteri <span style='white-space:nowrap;'>UTF-8</span>. Per questo
 i database possono essere usati senza complicazioni su tutti i sistemi e con tutte
 le localizzazioni.
 </p>
@@ -127,7 +127,7 @@ le localizzazioni.
 Un database nel formato Scidb è diviso in diversi file:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
@@ -145,14 +145,14 @@ Un database nel formato Scidb è diviso in diversi file:
 </div>
 
 <h2 id="Scid">
-<img src="../images/ft-scid.png" alt="" />
+<img src="../images/ft-scid.png" alt="" /> 
 Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
 </h2>
 
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
-<span class="NEW">
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+<span class='NEW'>
 Scid databases will be opened only in read-only mode.
 </span>
 </div>
@@ -160,9 +160,9 @@ Scid databases will be opened only in read-only mode.
 <p>
 In alcuni casi l'utente deve scegliere la codifica appropriata nell'aprire il
 database, per assicurare una corretta visualizzazione dei nomi e di altro testo.
-I database più recenti potrebbero avere codifica <span style="white-space:nowrap;">UTF-8</span>, database più
-vecchi potrebbero essere scritti con  il set di caratteri <span style="white-space:nowrap;">Latin-1</span>
-(ISO-<span style="white-space:nowrap;">8859-1</span>), il formato Scid non fornisce informazioni sulla codifica
+I database più recenti potrebbero avere codifica <span style='white-space:nowrap;'>UTF-8</span>, database più
+vecchi potrebbero essere scritti con  il set di caratteri <span style='white-space:nowrap;'>Latin-1</span>
+(ISO-<span style='white-space:nowrap;'>8859-1</span>), il formato Scid non fornisce informazioni sulla codifica
 utilizzata. In alcuni casi tuttavia l'identificazione automatica del set caratteri dovrebbe
 avere successo.
 </p>
@@ -171,7 +171,7 @@ avere successo.
 Questo formato ricorda per struttura il formato Scidb:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.si4 =&nbsp;</kbd></td>
@@ -192,14 +192,14 @@ Questo formato ricorda per struttura il formato Scidb:
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> I file con estensione <code>.sso</code> (Scid Search Option File),
+<p><img src='../images/note.png' alt='note' /> I file con estensione <code>.sso</code> (Scid Search Option File),
 <code>.sor</code> (Scid Repertoire File), e <code>.stm</code>
 (Scid Tree Mask File) non appartengono esplicitamente al database
 e non saranno considerati da Scidb.
 Allo stesso modo ogni lista di partite salvate (suffisso <code>.txt</code>) non sarà considerata.</p>
 
 <h2 id="ChessBase">
-<img src="../images/ft-chessbase.png" alt="" />
+<img src="../images/ft-chessbase.png" alt="" /> 
 ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
 </h2>
 
@@ -208,7 +208,7 @@ per questo solo la lettura è supportata. Non tutti i dati della partita possono
 letti correttamente, con alcune partite apparirà il messaggio che comunica la non riuscita
 dell'operazione di decodifica.
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 I database ChessBase non possono essere usati come databases di riferimento.
 </div>
 
@@ -223,7 +223,7 @@ una corretta visualizzazione dei nomi e di altro testo.
 Il formato database di ChessBase è diviso in diversi file separati, quelli più importanti sono:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Dati partita</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Mosse e varianti</td></tr>
@@ -245,7 +245,7 @@ Il formato database di ChessBase è diviso in diversi file separati, quelli più
 Un database nel vecchio formato consiste di quattro file:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Dati partita e mosse</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Indice</td></tr>
@@ -255,7 +255,7 @@ Un database nel vecchio formato consiste di quattro file:
 </div>
 
 <h2 id="PGN">
-<img src="../images/ft-pgn.png" alt="" />
+<img src="../images/ft-pgn.png" alt="" /> 
 <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
 </h2>
 
@@ -264,9 +264,9 @@ Il formato <abbr>PGN</abbr> (Portable Game Notation) è uno standard comune per 
 <p>
 Secondo lo
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">standard PGN<span class="awesome">&nbsp;&#xf08e;</span></a>
-un file PGN ha codifica <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
-Ma se un file PGN comincia con un marcatore <span style="white-space:nowrap;">UTF-8</span>
-(<span style="white-space:nowrap;">UTF-8</span>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <span style="white-space:nowrap;">UTF-8</span>
+un file PGN ha codifica <span style='white-space:nowrap;'>Latin-1</span> (ISO-<span style='white-space:nowrap;'>8859-1</span>).
+Ma se un file PGN comincia con un marcatore <span style='white-space:nowrap;'>UTF-8</span>
+(<span style='white-space:nowrap;'>UTF-8</span>-BOM: byte sequence EF BB BF) ci si aspetterà un encoding <span style='white-space:nowrap;'>UTF-8</span>
 (in osservanza a <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ<span class="awesome">&nbsp;&#xf08e;</span></a>).
 </p>
 
@@ -274,7 +274,7 @@ Ma se un file PGN comincia con un marcatore <span style="white-space:nowrap;">UT
 Solo le seguenti varianti saranno accettate se si stanno leggendo partite da FICS:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td>wild/2 </td>
@@ -363,7 +363,7 @@ Standard: Portable Game Notation Specification and Implementation Guide<span cla
 </p>
 
 <h2 id="Database-Archive">
-<img src="../images/ft-archive.png" alt="" />
+<img src="../images/ft-archive.png" alt="" /> 
 Archivio Database (<abbr>.scv</abbr>)
 </h2>
 

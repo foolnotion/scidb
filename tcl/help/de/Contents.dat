@@ -37,6 +37,24 @@ set Contents {
     {{{Datenbankenexport} {Database-Export-Dialog.html}}}
   }
   {
+    {{{CQL (Chess Query Language)} {Overview.html} {cql-manual}}}
+    {{{Einführung} {CQL-Index.html}}}
+    {
+      {{{Syntax} {CQL-Syntax.html}}}
+      {{{Figurenbezeichner} {CQL-Piece-Designators.html}}}
+      {{{Felderbezeichner} {CQL-Square-Designators.html}}}
+      {{{Tranformation der Figurenbezeichner} {CQL-Piece-Designator-Transforms.html}}}
+      {{{Bereichsangaben} {CQL-Range-Specifiers.html}}}
+      {{{Musterabgleich (Pattern-Matching)} {Pattern-Matching.html}}}
+    }
+    {{{Tranformationen} {CQL-Transformations.html}}}
+    {{{Die Match-Liste} {CQL-Match-List.html}}}
+    {{{Die Position-Liste} {CQL-Position-List.html}}}
+    {{{Die Relation-Liste} {CQL-Relation-List.html}}}
+    {{{Markierung} {CQL-Tagging.html}}}
+    {{{Beispiele} {CQL-Examples.html}}}
+  }
+  {
     {{{Weitere Informationen} {Overview.html} {further-information}}}
     {{{Partiemarkierungen} {Game-Flags.html}}}
     {{{Spezifikation des Datenbankarchivs} {Database-Archive.html}}}

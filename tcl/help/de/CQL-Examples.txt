@@ -1,0 +1,287 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX CQL Beispiele
+TITLE CQL - Beispiele
+
+<ul>
+  <li><a href="#accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</a></li>
+  <li><a href="#relation">Beispiele zur Relationenliste</a></li>
+  <li><a href="#tagging">Beispiele für Markierungen</a></li>
+  <li><a href="#more">Noch mehr Beispiele</a></li>
+</ul>
+
+<h2 id="accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</h2>
+
+<p>
+Wir werden zeigen wie <cql>position:accumulate</cql> und
+<cql>position:sumrange</cql> zu verwenden sind um nach Partien
+mit mindestens 3 weißen Freibauern in einer Position zu suchen.
+Zuerst schreiben wir einen Positionsfilter, der jede Position
+findet mit einem weißen Freibauern:
+</p>
+
+<verbatim>
+<comment>; finde eine Position mit einem weißen Freibauern</comment>
+(position
+  &P;d2
+  <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+  <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
+  <cql>position:shift</cql>)
+</verbatim>
+
+<p>
+Um mindestens 3 weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
+</p>
+
+<verbatim>
+<comment>; finde eine Position mit mindestens drei weißen Freibauern</comment>
+(position
+  &P;d2
+  <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+  <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
+  <cql>position:shift</cql>
+  <cql>position:accumulate</cql> weisse_freibauern_zaehler
+  <cql>position:sumrange</cql> weisse_freibauern_zaehler 3 8)
+</verbatim>
+
+<p>
+Nun wollen wir Positionen finden mit mindestens zwei schwarzen Freibauern:
+</p>
+
+<verbatim>
+<comment>;finde eine Position mit mindestens zwei schwarzen Freibauern</comment>
+(position
+  &p;d7 
+  <cql>position:piececount</cql> [&p;&P;][d2-6] 0
+  <cql>position:piececount</cql> &P;[c2-6,e2-6] 0
+  <cql>position:shift</cql>
+  <cql>position:accumulate</cql> schwarze_freibauern_zaehler
+  <cql>position:sumrange</cql> schwarze_freibauern_zaehler 2 8)
+</verbatim>
+
+<p>
+Letzendlich kombinieren wir diese Listen, um Positionen mit mindestens zwei
+schwarzen und drei weißen Freibauern zu finden:
+</p>
+
+<verbatim>
+<comment>; match a position with at least three white</comment>
+<comment>; finde eine Position mit mindestens drei</comment>
+<comment>; weissen und zwei schwarzen Freibauern</comment>
+(position
+  <cql>position:sumrange</cql> weisse_freibauern_zaehler 3 8 
+  <cql>position:sumrange</cql> schwarze_freibauern_zaehler 2 8
+  <cql>position:and</cql> (
+    (position
+      &P;d2 
+      <cql>position:piececount</cql> [&p;&P;][d3-7] 0
+      <cql>position:piececount</cql> &p;[c3-7,e3-7] 0
+      <cql>position:shift</cql>
+      <cql>position:accumulate</cql> weisse_freibauern_zaehler)
+    (position
+      &p;d7 
+      <cql>position:piececount</cql> [&p;&P;][d2-6] 0
+      <cql>position:piececount</cql> &P;[c2-6,e2-6] 0
+      <cql>position:shift</cql>
+      <cql>position:accumulate</cql> schwarze_freibauern_zaehler)))
+</verbatim>
+
+<h2 id="relation">Beispiele zur Relationenliste</h2>
+
+<p>
+Die folgende Positionsliste sucht nach Partien, in denen die Anordnung
+</p>
+
+<dir><code>
+&K;e6 &b;e7 &b;e4 &n;d5
+</code></dir>
+
+<p>
+versetzt oder gespiegelt enthalten ist, aber keine der Figuren der
+Originalanordnung auf denselben Feldern steht:
+</p>
+
+<verbatim>
+(position
+  &K;e6 &b;e7 &b;e4 &n;d5
+  <cql>position:shift</cql>
+  <cql>position:flip</cql>
+  <cql>position:relation</cql> (
+    <cql>relation:pattern</cql>
+    <cql>relation:shift</cql>
+    <cql>relation:flip</cql>
+    <cql>relation:originalsamecount</cql> 0
+    <cql>relation:samesidetomove</cql>
+    <cql>relation:variations</cql>))
+</verbatim>
+
+<p>
+Wird der Parameter für <cql>relation:originalsamecount</cql> verändert,
+beispielsweise vom derzeitigen Wert <expr>1</expr> auf <expr>0 3</expr>,
+dann würde das Muster in der zweiten Positionsliste eine Überlappung
+mit höchstens drei Feldern der Originalanordnung erlauben.
+</p>
+
+<h2 id="tagging">Beispiele für Markierungen</h2>
+
+<p>
+Wir untersuchen das Problem, alle Partien zu erkennen, in denen der gleiche Turm
+alle vier Ecken des Bretts besucht:
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> turm [&r;&R;] <comment>; über alle Türme iterieren</comment>
+  (position $turm[a1]) 
+  (position $turm[h1])
+  (position $turm[h8])
+  (position $turm[a8]))
+</verbatim>
+
+<p>
+In diesem Beipiel definiert das Schlüsselwort <cql>position:forany</cql> eine
+Markierung mit dem Namen "turm", die an weiße oder schwarze Türme gebunden wird,
+(die auch aus einer Bauernumwandlung enstanden sein konnten).
+</p>
+
+<p>
+Die erste Positionsliste findet Partien in denen eine Position vorliegt, in der
+die Merkierung "turm" einen Turm auf a1 repräsentiert. Die nächste Positionsliste
+findet Partien in denen eine Position vorliegt, in der die Merkierung "turm"
+einen Turm auf h1 repräsentiert. Die Markierung repräsentiert die gleiche Figur
+zwischen den Positionslisten. Das Schlüsselwort <cql>position:forany</cql>
+bindet nacheinander die Markierung an alle erlaubten Figuren.
+</p>
+
+<p>
+Da eine Suchliste nur Partien findet, wenn jeder einzelne Positionsfilter diese
+Partien gefunden hat, findet dieses Skript was wir suchten.
+</p>
+
+<p>
+Zweites Beispiel, das Excelsior-Thema: ein Bauer startet auf der zweiten Reihe
+und verwandelt sich dann.
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> bauer [&P;&p;]
+  (position
+    <cql>position:initial</cql>
+    <cql>position:tagmatch</cql> bauer &P;?2
+    <cql>position:gappedsequence</cql> ((position <cql>position:movefrom</cql> $bauer <cql>position:promote</cql> U))
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+<cql>position:tagmatch</cql> findet Bauern auf der zweiten Reihe, und die
+mit <cql>position:gappedsequence</cql> definierte Positionsreihe ist
+erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden
+Position verwandelt.
+</p>
+
+<p>
+Drittes Beispiel: die gleiche Figur bietet mindestens 30 mal Schach in einer
+Partie.
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> schachgeber A
+  (position
+    <cql>position:btm</cql>
+    <cql>position:attackcount</cql> $schachgeber &k; 1
+    <cql>position:matchcount</cql> 30 unlimited
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
+</p>
+
+<verbatim>
+(match
+  <cql>match:forany</cql> springer &N;
+  (position
+    <cql>position:movefrom</cql> $springer
+    <cql>position:matchcount</cql> 1)
+  (position
+    <cql>position:mate</cql>
+    <cql>position:attackcount</cql> $springer &k; 1)) 
+</verbatim>
+
+<h2 id="more">Noch mehr Beispiele</h2>
+
+<verbatim>
+<comment>; Finde isolierte Triplebauern auf verbundenen Feldern</comment>
+<comment>; Beispiel: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</comment>
+
+(match
+  (position
+    &P;[b2-4]
+    [.a&K;&Q;&R;&B;&N;][a1-8]
+    [.a&K;&Q;&R;&B;&N;][c1-8]
+    <cql>position:piececount</cql> &P;b? 3 6
+    <cql>position:shiftvertical</cql>
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<verbatim>
+<comment>; Mehrere aufeinanderfolgende Turmschachgebote jeweils gefolgt von</comment>
+<comment>; einem Königszug auf ein freies Feld; normalerweise um Patt zu</comment>
+<comment>; vermeiden wenn der Turm geschlagen wird.</comment>
+
+(match
+  <cql>match:result</cql> 1/2
+  (position 
+    <cql>position:wtm</cql>
+    <cql>position:sequence</cql> (  
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>)
+      (position <cql>position:movefrom</cql> &R; <cql>position:moveto</cql> .)
+      (position <cql>position:movefrom</cql> &k; <cql>position:check</cql>))))
+</verbatim>
+
+<verbatim>
+<comment>; Ersticktes Matt</comment>
+
+<comment>; Ein ersticktes Matt liegt vor, wenn ein Springer Matt</comment>
+<comment>; setzt und der König nicht entweichen kann, weil er</comment>
+<comment>; von eigenen Figuren umgeben (erstickt) ist.</comment>
+
+(match
+  (position
+    <cql>position:flipcolor</cql>           ; Jede Farbe
+    <cql>position:shiftvertical</cql>       ; Unabhängig von Linie
+    <cql>position:shifthorizontal</cql>     ; und Reihe
+    <cql>position:attackcount</cql> &N; &k;g7 1 ; Nur Springer bietet Schach
+    a[f6-8,h6-8,g6,g8]   ; König ist von eigenen Figuren umgeben
+    <cql>position:mate</cql>))              ; und ist matt
+</verbatim>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

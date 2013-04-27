@@ -49,7 +49,7 @@ spezielle Dateiendung "<abbr>.scv</abbr>". Dieses Archivformat enthält Informat
 Dieses Archivformat hat folgende Syntax (vereinfachte EBNF):
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -150,7 +150,7 @@ nicht erreichbar ist. Dann muß allerdings auch wieder das Attribute
   <li>Keine Verwechslung mit einer gewöhnlichen Textdatei.</li>
 </ul>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Texteditor
 (der binäre Daten verkraftet) gelesen und bearbeitet werden kann.
 </div>
@@ -159,7 +159,7 @@ Das Archivformat ist insgeamt so aufgebaut, daß es mit einem geeigneten Textedi
 <b><code>UserInfo</code></b> ist im "<abbr>.scv</abbr>"-Format folgendermaßen definiert:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
@@ -201,7 +201,7 @@ und <code>&lt;Type&gt;</code> ist beliebig.
 Zum Abschluß zwei einfache Beispiele für Archive:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
@@ -236,7 +236,7 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0<!--
 --></code></pre></div>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi

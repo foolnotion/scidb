@@ -46,16 +46,16 @@ A square designator defines a set of squares.
 
 <p>
 An empty square designator denotes all 64 squares of the board. For example:
-the piece designator <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span></code></span> has an empty square designator. Hence,
+the piece designator <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span></code></span> has an empty square designator. Hence,
 this piece designator denotes a white rook anywhere on the board.
 </p>
 
 <p>
 A simple square designator comprises two characters, the first of which is
 a file, and the second a rank, in the usual chess notation. If the file
-character is <span style="white-space:nowrap;"><code>?</code></span> then files a through h are designated. If the
-rank character is <span style="white-space:nowrap;"><code>?</code></span> then ranks 1 through 8 are designated.
-For example: the piece designator <span style="white-space:nowrap;"><code><span class="chess">&#x265d;</span>b3</code></span> has a simple square
+character is <span style='white-space:nowrap;'><code>?</code></span> then files a through h are designated. If the
+rank character is <span style='white-space:nowrap;'><code>?</code></span> then ranks 1 through 8 are designated.
+For example: the piece designator <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>b3</code></span> has a simple square
 designator denoting the square b3, and denotes a black bishop on b3.
 </p>
 
@@ -84,27 +84,27 @@ Any compound square designator not contained in brackets must be contained in br
 
 <table class="stripes">
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code>[a-c1]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[a-c1]</code></span></td>
     <td class="right">denotes the three squares a1, b1, and c1.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>[b3-5]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[b3-5]</code></span></td>
     <td class="right">denotes the squares b3, b4, and b5.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code>[f-h6-8]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[f-h6-8]</code></span></td>
     <td class="right">denotes the squares f6, f7, f8, g6, g7, g8, h6, h7, and h8.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>[a1,c4]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[a1,c4]</code></span></td>
     <td class="right">denotes the squares a1 and c4.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code>[a-h1-2,a8,h8]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[a-h1-2,a8,h8]</code></span></td>
     <td class="right">denotes the first two ranks plus a8 and h8.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>[]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[]</code></span></td>
     <td class="right">denotes no squares at all. This is very different from the empty
         square designator, which designates all squares.</td>
   </tr>
@@ -114,25 +114,25 @@ Any compound square designator not contained in brackets must be contained in br
 
 <table class="stripes">
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code>Ia1</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>Ia1</code></span></td>
     <td class="right">denotes a white minor piece on a1. It will match any position
         with a white bishop or white knight on a1.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>[a-h1-2]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>[a-h1-2]</code></span></td>
     <td class="right">will match any position with a white rook on the first two ranks.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code>[A<span class="chess">&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[A<span class='piece'>&#x265c;</span>][a-h1-2,a8,h8]</code></span></td>
     <td class="right">will match any position that has a white piece or a black rook on
         the first two ranks or the corners.</td>
   </tr>
   <tr valign="top">
-    <td class="left"><span style="white-space:nowrap;"><code>[<span class="chess">&#x2656;</span><span class="chess">&#x2657;</span><span class="chess">&#x2658;</span><span class="chess">&#x2655;</span><span class="chess">&#x2659;</span>][a1,h1,a8,h8]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2659;</span>][a1,h1,a8,h8]</code></span></td>
     <td class="right">will match any position with a white non-king piece at the corners.</td>
   </tr>
   <tr valign="top" class="stripes">
-    <td class="left"><span style="white-space:nowrap;"><code><span class="chess">&#x2657;</span>[]</code></span></td>
+    <td class="left"><span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>[]</code></span></td>
     <td class="right">denotes a white bishop on an empty set of squares. This can never match
         any position of course.</td>
   </tr>

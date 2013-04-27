@@ -42,31 +42,31 @@
 Scidb supports the following formats:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <li>
-    <img src="../images/ft-scidb.png" alt="" />
+    <img src="../images/ft-scidb.png" alt="" /> 
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="" />
+    <img src="../images/ft-scid.png" alt="" /> 
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="" />
+    <img src="../images/ft-chessbase.png" alt="" /> 
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="" />
+    <img src="../images/ft-pgn.png" alt="" /> 
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="" />
+    <img src="../images/ft-archive.png" alt="" /> 
     <a href="#Database-Archive">Database archive</a>
   </li>
 </li></ul>
 
 <h2 id="Scidb">
-<img src="../images/ft-scidb.png" alt="" />
+<img src="../images/ft-scidb.png" alt="" /> 
 Scidb (<abbr>.sci</abbr>)
 </h2>
 
@@ -80,7 +80,7 @@ Only Scidb's format (and PGN format) is storing games of various chess variants,
 currently this is:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>Normal Chess</td>
@@ -120,7 +120,7 @@ in all chess variants.
 </p>
 
 <p>
-Scidb databases are always encoded with character set <span style="white-space:nowrap;">UTF-8</span>. Hence
+Scidb databases are always encoded with character set <span style='white-space:nowrap;'>UTF-8</span>. Hence
 these databases can be used without any complications under all systems
 and locations.
 </p>
@@ -129,7 +129,7 @@ and locations.
 A database in Scidb's format is divided into several files:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
@@ -147,7 +147,7 @@ A database in Scidb's format is divided into several files:
 </div>
 
 <h2 id="Scid">
-<img src="../images/ft-scid.png" alt="" />
+<img src="../images/ft-scid.png" alt="" /> 
 Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
 </h2>
 
@@ -156,15 +156,15 @@ Scid's database format is fully supported because of it's wide adoption.
 But with this format you cannot use the full capability of Scidb.
 </p>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 Scid databases will be opened only in read-only mode.
 </div>
 
 <p>
 In some cases the user has to choose the appropriate encoding when opening
 the database, to ensure a correct display of names and other text. Newer
-databases may be <span style="white-space:nowrap;">UTF-8</span> encoded, older database may be written with <span style="white-space:nowrap;">Latin-1</span>
-(ISO-<span style="white-space:nowrap;">8859-1</span>) character set, the Scid format does not provide information
+databases may be <span style='white-space:nowrap;'>UTF-8</span> encoded, older database may be written with <span style='white-space:nowrap;'>Latin-1</span>
+(ISO-<span style='white-space:nowrap;'>8859-1</span>) character set, the Scid format does not provide information
 about this. But in many cases the automatic detection of the character set
 should be successful.
 </p>
@@ -173,7 +173,7 @@ should be successful.
 This format resembles structurally Scidb's format:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.si4 =&nbsp;</kbd></td>
@@ -194,14 +194,14 @@ This format resembles structurally Scidb's format:
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> The files with suffixes <code>.sso</code> (Scid Search Option File),
+<p><img src='../images/note.png' alt='note' /> The files with suffixes <code>.sso</code> (Scid Search Option File),
 <code>.sor</code> (Scid Repertoire File), and <code>.stm</code>
 (Scid Tree Mask File), do not belong explicitely to a database and will
 not be regarded by Scidb. Likewise any saved game list (file suffix
 <code>.txt</code>) will be disregarded.</p>
 
 <h2 id="ChessBase">
-<img src="../images/ft-chessbase.png" alt="" />
+<img src="../images/ft-chessbase.png" alt="" /> 
 ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
 </h2>
 
@@ -215,7 +215,7 @@ therefore only the reading mode is supported. Not all game data can be read corr
 with some games the message of failed decoding will appear.
 </p>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 ChessBase databases cannot be used as reference database.
 </div>
 
@@ -230,7 +230,7 @@ names and other text.
 A database in ChessBase format is divided into many separate files, the important ones are:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Game data</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Game moves and variations</td></tr>
@@ -252,7 +252,7 @@ A database in ChessBase format is divided into many separate files, the importan
 A database in old format consists of only four files:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Game data and moves</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Index data</td></tr>
@@ -262,7 +262,7 @@ A database in old format consists of only four files:
 </div>
 
 <h2 id="PGN">
-<img src="../images/ft-pgn.png" alt="" />
+<img src="../images/ft-pgn.png" alt="" /> 
 <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
 </h2>
 
@@ -275,9 +275,9 @@ chess games. Opening a <abbr>PGN</abbr> file is allowed in reading mode only. Wi
 <p>
 According to the
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN standard<span class="awesome">&nbsp;&#xf08e;</span></a>
-a PGN file is encoded with character set <span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>).
-But if a PGN file is starting with an <span style="white-space:nowrap;">UTF-8</span> mark (<span style="white-space:nowrap;">UTF-8</span>-BOM:
-byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encoding will be expected (according to
+a PGN file is encoded with character set <span style='white-space:nowrap;'>Latin-1</span> (ISO-<span style='white-space:nowrap;'>8859-1</span>).
+But if a PGN file is starting with an <span style='white-space:nowrap;'>UTF-8</span> mark (<span style='white-space:nowrap;'>UTF-8</span>-BOM:
+byte sequence EF BB BF) an <span style='white-space:nowrap;'>UTF-8</span> encoding will be expected (according to
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode FAQ<span class="awesome">&nbsp;&#xf08e;</span></a>).
 </p>
 
@@ -285,7 +285,7 @@ byte sequence EF BB BF) an <span style="white-space:nowrap;">UTF-8</span> encodi
 Only the following variants will be accepted if reading FICS games:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td>wild/2 </td>
@@ -374,7 +374,7 @@ Standard: Portable Game Notation Specification and Implementation Guide<span cla
 </p>
 
 <h2 id="Database-Archive">
-<img src="../images/ft-archive.png" alt="" />
+<img src="../images/ft-archive.png" alt="" /> 
 Database archive (<abbr>.scv</abbr>)
 </h2>
 

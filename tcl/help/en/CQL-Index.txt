@@ -33,32 +33,53 @@ functions.
 </p>
 
 <p>
-Note that some parts of this documentation are taken from
-<a href="http://www.rbnn.com/cql/">CQLManual</a>.
+Note that some parts of this manual are taken from
+<a href="http://www.rbnn.com/cql/">CQL Manual</a>.
 </p>
 
 <p>
-We are using graphical figurine for the notation of chess pieces, due to
-internalization reasons. The CQL editor is working with graphical figurine,
-although the CQL files will be saved with the corresponding English letters:
+Per default graphical figurine for the notation of chess pieces will be used,
+due to internalization reasons. The CQL editor is also working with graphical
+figurine, although the CQL files will be saved with the corresponding English
+letters:
 </p>
 
 <dir>
   <table>
-    <tr><td>&K;</td><td>=</td><td>K</td><td>=</td><td>white king  </td></tr>
-    <tr><td>&Q;</td><td>=</td><td>Q</td><td>=</td><td>white queen </td></tr>
-    <tr><td>&R;</td><td>=</td><td>R</td><td>=</td><td>white rook  </td></tr>
+    <tr><td>&K;</td><td>=</td><td>K</td><td>=</td><td>white king</td></tr>
+    <tr><td>&Q;</td><td>=</td><td>Q</td><td>=</td><td>white queen</td></tr>
+    <tr><td>&R;</td><td>=</td><td>R</td><td>=</td><td>white rook</td></tr>
     <tr><td>&B;</td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
     <tr><td>&N;</td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
-    <tr><td>&P;</td><td>=</td><td>P</td><td>=</td><td>white pawn  </td></tr>
-    <tr><td>&k;</td><td>=</td><td>k</td><td>=</td><td>black king  </td></tr>
-    <tr><td>&q;</td><td>=</td><td>q</td><td>=</td><td>black queen </td></tr>
-    <tr><td>&r;</td><td>=</td><td>r</td><td>=</td><td>black rook  </td></tr>
+    <tr><td>&P;</td><td>=</td><td>P</td><td>=</td><td>white pawn</td></tr>
+    <tr><td>&k;</td><td>=</td><td>k</td><td>=</td><td>black king</td></tr>
+    <tr><td>&q;</td><td>=</td><td>q</td><td>=</td><td>black queen</td></tr>
+    <tr><td>&r;</td><td>=</td><td>r</td><td>=</td><td>black rook</td></tr>
     <tr><td>&b;</td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
     <tr><td>&n;</td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
-    <tr><td>&p;</td><td>=</td><td>p</td><td>=</td><td>black pawn  </td></tr>
+    <tr><td>&p;</td><td>=</td><td>p</td><td>=</td><td>black pawn</td></tr>
   </table>
 </dir>
+
+<p>
+If you prefer to see piece letters, please select one of the options
+(not working in web browser):
+</p>
+
+<table>
+  <tr>
+    <td><span class="button"><a href="script(pieces::english)">Use English piece letters</a></td>
+    <td>K Q R B N P k q r b n p (used in CQL files)</td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::regional)">Use regional piece letters</a></td>
+    <td><whitepieceletters/> <blackpieceletters/></td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::designators)">Revert to designators</a></td>
+    <td>&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+  </tr>
+</table>
 
 <h2>Index</h2>
 

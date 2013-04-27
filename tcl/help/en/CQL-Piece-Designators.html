@@ -55,28 +55,28 @@ of piecetypes denoted by the piece designator.
 <h3>Examples of piece designators</h3>
 
 <p>
-The piece designator <span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>a2</code></span> denotes a white rook on a2. The
-piecetype designator is <span class="chess">&#x2656;</span> and the square designator is <span style="white-space:nowrap;"><code>a2</code></span>.
+The piece designator <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a2</code></span> denotes a white rook on a2. The
+piecetype designator is <span class='piece'>&#x2656;</span> and the square designator is <span style='white-space:nowrap;'><code>a2</code></span>.
 It will match any position with a white rook on a2.
 </p>
 
 <p>
-The piece designator <span style="white-space:nowrap;"><code><span class="chess">&#x265d;</span>c1</code></span> denotes a black bishop on c1. The
-piecetype designator is <span class="chess">&#x265d;</span> and the square designator is
-<span style="white-space:nowrap;"><code>c1</code></span>. It will match any position with a black bishop on c1.
+The piece designator <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>c1</code></span> denotes a black bishop on c1. The
+piecetype designator is <span class='piece'>&#x265d;</span> and the square designator is
+<span style='white-space:nowrap;'><code>c1</code></span>. It will match any position with a black bishop on c1.
 </p>
 
 <p>
-The piece designator <span style="white-space:nowrap;"><code>[<span class="chess">&#x2656;</span><span class="chess">&#x265d;</span>]d1</code></span> denotes either a white rook or a
-black bishop on d1. The piecetype designator is <span style="white-space:nowrap;"><code>[<span class="chess">&#x2656;</span><span class="chess">&#x265d;</span>]</code></span> and the
-square designator is <span style="white-space:nowrap;"><code>d1</code></span>. It will match any position that has either
+The piece designator <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span>]d1</code></span> denotes either a white rook or a
+black bishop on d1. The piecetype designator is <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span>]</code></span> and the
+square designator is <span style='white-space:nowrap;'><code>d1</code></span>. It will match any position that has either
 a white rook or a black bishop on d1.
 </p>
 
 <p>
-The piece designator <span style="white-space:nowrap;"><code>[<span class="chess">&#x2655;</span><span class="chess">&#x265c;</span>][d1,h3]</code></span> denotes either a white queen or
-a black rook on either d1 or h3. The piecetype designator is [<span class="chess">&#x2655;</span><span class="chess">&#x2656;</span>]
-and the square designator is <span style="white-space:nowrap;"><code>[d1,h3]</code></span>. It will match any position
+The piece designator <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2655;</span><span class='piece'>&#x265c;</span>][d1,h3]</code></span> denotes either a white queen or
+a black rook on either d1 or h3. The piecetype designator is [<span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span>]
+and the square designator is <span style='white-space:nowrap;'><code>[d1,h3]</code></span>. It will match any position
 that has either a white queen or a black rook on either d1 or h3. (Of course,
 the position can also have a white queen or black rook on both d1 and h3).
 </p>
@@ -89,36 +89,36 @@ These are the allowed piecetype designators:
 
 <h3>Standard piecetype designators</h3>
 
-<div class="box">
+<div class='box'>
   <table>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2654;</span>&emsp;</code></span></td><td>white king</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265a;</span>&emsp;</code></span></td><td>black king</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2658;</span>&emsp;</code></span></td><td>white knight</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265e;</span>&emsp;</code></span></td><td>black knight</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2657;</span>&emsp;</code></span></td><td>white bishop</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265d;</span>&emsp;</code></span></td><td>black bishop</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2659;</span>&emsp;</code></span></td><td>white pawn</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265f;</span>&emsp;</code></span></td><td>black pawn</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2656;</span>&emsp;</code></span></td><td>white rook</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265c;</span>&emsp;</code></span></td><td>black rook</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x2655;</span>&emsp;</code></span></td><td>white queen</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code><span class="chess">&#x265b;</span>&emsp;</code></span></td><td>black queen</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span>&emsp;</code></span></td><td>white king</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265a;</span>&emsp;</code></span></td><td>black king</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>&emsp;</code></span></td><td>white knight</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265e;</span>&emsp;</code></span></td><td>black knight</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>&emsp;</code></span></td><td>white bishop</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>&emsp;</code></span></td><td>black bishop</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2659;</span>&emsp;</code></span></td><td>white pawn</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265f;</span>&emsp;</code></span></td><td>black pawn</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>&emsp;</code></span></td><td>white rook</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265c;</span>&emsp;</code></span></td><td>black rook</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>&emsp;</code></span></td><td>white queen</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265b;</span>&emsp;</code></span></td><td>black queen</td></tr>
    </table>
 </div>
 
 <h3>Additional piecetype designators</h3>
 
-<div class="box">
+<div class='box'>
   <table>
-    <tr><td><span style="white-space:nowrap;"><code>.&emsp;</code></span></td><td>empty square</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>A&emsp;</code></span></td><td>any white piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>a&emsp;</code></span></td><td>any black piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>M&emsp;</code></span></td><td>white major piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>m&emsp;</code></span></td><td>black major piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>I&emsp;</code></span></td><td>white minor piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>i&emsp;</code></span></td><td>black minor piece</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>U&emsp;</code></span></td><td>any piece at all</td></tr>
-    <tr><td><span style="white-space:nowrap;"><code>?&emsp;</code></span></td><td>any piece or an empty square</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>.&emsp;</code></span></td><td>empty square</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>A&emsp;</code></span></td><td>any white piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>a&emsp;</code></span></td><td>any black piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>M&emsp;</code></span></td><td>white major piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>m&emsp;</code></span></td><td>black major piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>I&emsp;</code></span></td><td>white minor piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>i&emsp;</code></span></td><td>black minor piece</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>U&emsp;</code></span></td><td>any piece at all</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>?&emsp;</code></span></td><td>any piece or an empty square</td></tr>
    </table>
 </div>
 
@@ -126,7 +126,7 @@ These are the allowed piecetype designators:
 
 <p>
 Anywhere a piecetype designator may occur, a tag name preceded by a
-<span style="white-space:nowrap;"><code>$</code></span> may occur. This piecetype represents the exact piece
+<span style='white-space:nowrap;'><code>$</code></span> may occur. This piecetype represents the exact piece
 represented by the named tag. For more information, see the section on
 <a href="CQL-Tagging.html">tagging</a>.
 </p>

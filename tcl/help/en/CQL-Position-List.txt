@@ -19,11 +19,21 @@
 INDEX Position List (CQL)
 INDEX CQL Position List
 
-DEFINE <nonstd/> <note>This keyword is not part of the CQL standard.</note>
-
-DEFINE <ca9/>  <note>This keyword is borrowed from Chess Assistant 9 (<see/> <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>). </note>
+DEFINE <extension/> &ensp;<img src="../images/ft-scidb-tiny.png" />
 
 TITLE CQL - The position list
+
+<p>
+The symbol <img src="../images/ft-scidb-tiny.png" /> in the title denotes that
+this keyword is an extension, it is not part of the CQL standard.
+</p>
+
+<p>
+The keywords <cql>position:castling</cql>, <cql>position:endgame</cql>,
+<cql>position:inside</cql>, and <cql>position:reset</cql> are borrowed from
+Chess Assistant 9 (<see/>
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>).
+</p>
 
 <dir>
   <table>
@@ -310,7 +320,7 @@ Example:
     <keyword>:or</keyword> (
       (position <cql>position:piececount</cql>
         &B;[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
-        e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9 )
+        e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
       (position <cql>position:piececount</cql>
         &b;[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
@@ -345,7 +355,7 @@ position of a match.
   </table>
 </dir>
 
-<h3 id="position:cut">:cut</h3>
+<h3 id="position:cut">:cut<extension/></h3>
 
 <p>
 This keyword can be used in two forms: either it is included in a position
@@ -356,23 +366,21 @@ list succeeeds. This keyword is never failing, with other words: it is not
 influencing the result of all other position lists (see example).
 </p>
 
-<nonstd/>
-
 <p>
 Example:
 </p>
 
 <verbatim>
 (match
-  (position ...)
+  (position &lt;query&gt;)
   (position <keyword>:cut</keyword> <cql>position:check</cql>))
 </verbatim>
 
 <p>
 We are not interested in consequent positions as soon as one side has
 given a check. This means: as soon as a check is given stop the search, but
-don't exclude current position if <expr>(position ...)</expr> is matching.
-<expr>(position ...)</expr> has higher precedence than the :cut expression.
+don't exclude current position if &lt;query&gt; is matching.
+<expr>&lt;query&gt;</expr> has higher precedence than the :cut expression.
 </p>
 
 <p>
@@ -382,11 +390,11 @@ If even the :cut position should be excluded, use keyword
 
 <verbatim>
 (match
-  (position ...)
+  (position &lt;query&gt;)
   (position <keyword>:cut</keyword> <cql>:preceding</cql> <cql>position:check</cql>))
 </verbatim>
 
-<h3 id="position:exclude">:exclude</h3>
+<h3 id="position:exclude">:exclude<extension/></h3>
 
 <p>
 This keyword can be used in two forms: either it is included in a position
@@ -401,8 +409,6 @@ match (see example).
 This keyword will exclude games even if one of the position matches
 has succeeded.
 </p>
-
-<nonstd/>
 
 <p>
 Example:
@@ -421,7 +427,7 @@ from the result of <expr>(position ...)</expr>. But the query succeeds if
 matching (this means: if either side is giving a check in this game).
 </p>
 
-<h3 id="position:preceding">:preceding</h3>
+<h3 id="position:preceding">:preceding<extension/></h3>
 
 <p>
 This keyword gives the preceding position of a match, if any. If the start
@@ -434,8 +440,6 @@ If this keyword is used combined with <cql>position:cut</cql>, the result
 of the first position where the :cut condition succeeds will be ignored
 (see example of keyword <cql>position:cut</cql>).
 </p>
-
-<nonstd/>
 
 <p>
 Examples:
@@ -530,7 +534,7 @@ But the usage of :preceding is easier and the search is faster.
   </table>
 </dir>
 
-<h3 id="position:blackcannotwin">:blackcannotwin</h3>
+<h3 id="position:blackcannotwin">:blackcannotwin<extension/></h3>
 
 <p>
 Match only if black cannot win in this position.
@@ -553,8 +557,6 @@ In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
 black has no more pieces than the king, and in all other chess variants this
 query has no meaning and is always failing.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:whitecannotwin</cql>
@@ -582,7 +584,7 @@ See also: <cql>position:nocheck</cql>, <cql>position:doublecheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:checkcount">:checkcount</h3>
+<h3 id="position:checkcount">:checkcount<extension/></h3>
 
 <p>
 If the parameter is a single number (between 0 and 3 is allowed), it is
@@ -600,8 +602,6 @@ to black, and black has given n&#x2082;-th check to white.
 This query is working only in chess variant %::mc::VariantName(ThreeCheck)%,
 in other chess variants it fails always.
 </note>
-
-<nonstd/>
 
 <p>
 Examples:
@@ -643,7 +643,7 @@ words, this example is searching for games starting with an advanced
 position, where one side has already given a check.
 </p>
 
-<h3 id="position:castling">:castling</h3>
+<h3 id="position:castling">:castling<extension/></h3>
 
 <p>
 This keyword specifies castling availabilities for both sides. It takes as an
@@ -670,9 +670,6 @@ argument a piecetype designator, letters of which have the following meanings:
     </tr>
   </table>
 </dir>
-
-<nonstd/>
-<ca9/>
 
 <p>
 Examples:
@@ -702,13 +699,11 @@ White has either kingside or queenside castling availability.
 White has both kingside and queenside castling availabilities.
 </p>
 
-<h3 id="position:contactcheck">:contactcheck</h3>
+<h3 id="position:contactcheck">:contactcheck<extension/></h3>
 
 <p>
 One side is in check, and it is a contact check.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
@@ -716,13 +711,11 @@ See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:doublecheck">:doublecheck</h3>
+<h3 id="position:doublecheck">:doublecheck<extension/></h3>
 
 <p>
 One side is in check, and it is a double check.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
@@ -730,7 +723,7 @@ See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:endgame">:endgame</h3>
+<h3 id="position:endgame">:endgame<extension/></h3>
 
 <p>
 The position is an endgame position. The keyword is equivalent to the following
@@ -759,36 +752,29 @@ query:
       <cql>position:flipcolor</cql>)))
 </verbatim>
 
-<nonstd/>
-<ca9/>
-
 <p>
 See also: <cql>position:noendgame</cql>.
 </p>
 
-<h3 id="position:fen">:fen</h3>
+<h3 id="position:fen">:fen<extension/></h3>
 
 <p>
 The position is equal to the described position in given
 <a href="FEN.html">FEN</a>.
 </p>
 
-<nonstd/>
-
-<h3 id="position:fiftymoverule">:fiftymoverule</h3>
+<h3 id="position:fiftymoverule">:fiftymoverule<extension/></h3>
 
 <p>
 First position in game where no capture has been made and no pawn has been
 moved in previous fifty consecutive moves.
 </p>
 
-<nonstd/>
-
 <p>
 See also: <cql>position:halfmoveclocklimit</cql>.
 </p>
 
-<h3 id="position:gameisover">:gameisover</h3>
+<h3 id="position:gameisover">:gameisover<extension/></h3>
 
 <p>
 This is an abbreviation for:
@@ -803,15 +789,13 @@ This is an abbreviation for:
     (position <cql>position:nomatingmaterial</cql>))
 </verbatim>
 
-<nonstd/>
-
 <h3 id="position:initial">:initial</h3>
 
 <p>
 This is the first position in the game.
 </p>
 
-<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit</h3>
+<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit<extension/></h3>
 
 <p>
 This keyword is matching a position where the halfmove clock is equal
@@ -823,8 +807,6 @@ Halfmove clock: This is the number of halfmoves since the last pawn
 advance or capture. This is also used to determine if a draw can be
 claimed under the fifty-move rule (<see/> <cql>position:fiftymoverule</cql>).
 </p>
-
-<nonstd/>
 
 <p>
 Example:
@@ -843,14 +825,12 @@ moved in previous thirty halfmoves (15 moves by each side).
 See also: <cql>position:fiftymoverule</cql>.
 </p>
 
-<h3 id="position:losing">:losing</h3>
+<h3 id="position:losing">:losing<extension/></h3>
 
 <p>
 Matches the final position if one side has lost all pieces.
 This is possible only in Antichess games.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:nolosing</cql>.
@@ -891,14 +871,12 @@ Only matches if one side is mated in first 20 moves.
 See also: <cql>position:nomate</cql>.
 </p>
 
-<h3 id="position:matingmaterial">:matingmaterial</h3>
+<h3 id="position:matingmaterial">:matingmaterial<extension/></h3>
 
 <p>
 Match a position if either player has mating material (<see/>
 <cql>position:nomatingmaterial</cql>).
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:nomatingmaterial</cql>.
@@ -923,13 +901,11 @@ See also: <cql>position:check</cql>, <cql>position:doublecheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:nocontactcheck">:nocontactcheck</h3>
+<h3 id="position:nocontactcheck">:nocontactcheck<extension/></h3>
 
 <p>
 Neither side is in check, or it is not a contact check.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
@@ -937,40 +913,34 @@ See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:contactcheck</cql>.
 </p>
 
-<h3 id="position:nodoublecheck">:nodoublecheck</h3>
+<h3 id="position:nodoublecheck">:nodoublecheck<extension/></h3>
 
 <p>
 Neither side is in check, or it is not a double check.
 </p>
 
-<nonstd/>
-
-<h3 id="position:noendgame">:noendgame</h3>
+<h3 id="position:noendgame">:noendgame<extension/></h3>
 
 <p>
 The position is not an endgame position (<see/>
 <cql>position:endgame</cql>).
 </p>
 
-<nonstd/>
-
 <p>
 See also: <cql>position:endgame</cql>.
 </p>
 
-<h3 id="position:nomate">:nomate</h3>
+<h3 id="position:nomate">:nomate<extension/></h3>
 
 <p>
 Match only if the position is not mate.
 </p>
 
-<nonstd/>
-
 <p>
 See also: <cql>position:mate</cql>.
 </p>
 
-<h3 id="position:nomatingmaterial">:nomatingmaterial</h3>
+<h3 id="position:nomatingmaterial">:nomatingmaterial<extension/></h3>
 
 <p>
 Match a position if neither player has mating material.
@@ -999,25 +969,21 @@ kings are on board, and in all other chess variants this keyword has no
 meaning and is always failing.
 </p>
 
-<nonstd/>
-
 <p>
 See also: <cql>position:matingmaterial</cql>.
 </p>
 
-<h3 id="position:nostalemate">:nostalemate</h3>
+<h3 id="position:nostalemate">:nostalemate<extension/></h3>
 
 <p>
 Match only if the position is not a stalemate.
 </p>
 
-<nonstd/>
-
 <p>
 See also: <cql>position:stalemate</cql>,
 </p>
 
-<h3 id="position:repetition">:repetition</h3>
+<h3 id="position:repetition">:repetition<extension/></h3>
 
 <p>
 Matches positions which occurred the third time in this game, with same
@@ -1026,8 +992,6 @@ capturing rights. The repeated positions need not occur in succession. This
 accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
 threefold repetition rule</a>.
 </p>
-
-<nonstd/>
 
 <h3 id="position:stalemate">:stalemate</h3>
 
@@ -1039,13 +1003,11 @@ Match only if the position is a stalemate.
 See also: <cql>position:nostalemate</cql>,
 </p>
 
-<h3 id="position:terminal">:terminal</h3>
+<h3 id="position:terminal">:terminal<extension/></h3>
 
 <p>
 This is the last position in the game.
 </p>
-
-<nonstd/>
 
 <h3 id="position:variations">:variations</h3>
 
@@ -1059,7 +1021,7 @@ Look in the variations to find matches.
 Look only in the variations to find matches, not in the main line.
 </p>
 
-<h3 id="position:whitecannotwin">:whitecannotwin</h3>
+<h3 id="position:whitecannotwin">:whitecannotwin<extension/></h3>
 
 <p>
 Match only if white cannot win in this position.
@@ -1082,8 +1044,6 @@ In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
 white has no more pieces than the king, and in all other chess variants this
 query has no meaning and is always failing.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:blackcannotwin</cql>
@@ -1157,7 +1117,7 @@ The vertical flip transformation (<see/>
 <a href="CQL-Transformations.html">Transformations</a>).
 </p>
 
-<h3 id="position:inside">:inside</h3>
+<h3 id="position:inside">:inside<extension/></h3>
 
 <p>
 This keyword filters shift transformations in order to some matching pieces
@@ -1167,9 +1127,6 @@ only the first argument. A shift transformation match :inside limitation if
 at least one piece matching the first argument (taking into account the
 transformation) is placed on a square matching the second argument.
 </p>
-
-<nonstd/>
-<ca9/>
 
 <p>
 Example:
@@ -1700,13 +1657,11 @@ The next move is an en-passant capture.
 See also: <cql>position:noenpassant</cql>
 </p>
 
-<h3 id="position:iscastling">:iscastling</h3>
+<h3 id="position:iscastling">:iscastling<extension/></h3>
 
 <p>
 The next move is a castling move.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:nocastling</cql>.
@@ -1814,13 +1769,11 @@ would be done via:
 Matches a move of the white rook to the b file.
 </p>
 
-<h3 id="position:nocastling">:nocastling</h3>
+<h3 id="position:nocastling">:nocastling<extension/></h3>
 
 <p>
 The next move is not a castling move.
 </p>
-
-<nonstd/>
 
 <p>
 See also: <cql>position:iscastling</cql>.
@@ -1836,15 +1789,13 @@ The next move is not an en-passant capture.
 See also: <cql>position:enpassant</cql>.
 </p>
 
-<h3 id="position:piecedrop">:piecedrop</h3>
+<h3 id="position:piecedrop">:piecedrop<extension/></h3>
 
 <p>
 The next move is a piece drop, if dropping a piece matching the
 given piece designator (possible only in chess variants
 %::mc::VariantName(Crazyhouse)%, and %::mc::VariantName(Bughouse)%).
 </p>
-
-<nonstd/>
 
 <p>
 Examples:
@@ -2110,7 +2061,7 @@ This parameter takes a range specifier; the ELO of the black player must lie
 within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<h3 id="position:blackrating">:blackrating</h3>
+<h3 id="position:blackrating">:blackrating<extension/></h3>
 
 <p>
 Match all games where the specified rating score of black player is between
@@ -2125,7 +2076,7 @@ players must lie within the specified range (<see/>
 <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
-<h3 id="position:rating">:rating</h3>
+<h3 id="position:rating">:rating<extension/></h3>
 
 <p>
 Match all games where the specified rating score of one player is between
@@ -2163,7 +2114,7 @@ This parameter takes a range specifier; the ELO of the white player must lie
 within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<h3 id="position:whiterating">:whiterating</h3>
+<h3 id="position:whiterating">:whiterating<extension/></h3>
 
 <p>
 Match all games where the specified rating score of white player is between
@@ -2270,7 +2221,7 @@ quite faster, although quite time consuming.
   </table>
 </dir>
 
-<h3 id="position:evaluation">:evaluation</h3>
+<h3 id="position:evaluation">:evaluation<extension/></h3>
 
 <p>
 This keyword is evaluating the current position with the help of an
@@ -2311,8 +2262,6 @@ positive unlimited. The fifth parameter is either <i>sidetomove</i> or <i>absolu
 <i>sidetomove</i> means that the evaluation value depends on side to move, and
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
-
-<nonstd/>
 
 <annotation>
 This is a very slow operation and should be restricted; for example to
@@ -2357,7 +2306,7 @@ Black is (possibly) losing, because he is at least 3 pawn units behind.
 Either side is mate in maximal 3 moves.
 </p>
 
-<h3 id="position:exchangeevaluation">:exchangeevaluation</h3>
+<h3 id="position:exchangeevaluation">:exchangeevaluation<extension/></h3>
 
 <p>
 This keyword is analyzing capture moves to see whether or not they appear
@@ -2383,8 +2332,6 @@ Note that this function is not evaluating the position, instead it is
 estimating the exchange values.
 </p>
 
-<nonstd/>
-
 <p>
 Examples:
 </p>
@@ -2397,7 +2344,7 @@ Examples:
 This move is (possibly) a blunder.
 </p>
 
-<h3 id="position:maxswapevaluation">:maxswapevaluation</h3>
+<h3 id="position:maxswapevaluation">:maxswapevaluation<extension/></h3>
 
 <p>
 This keyword allows to estimate exchange values of possible moves. It takes
@@ -2426,8 +2373,6 @@ estimating the exchange values.
 <p>
 Concerning the piece values see <cql>position:power</cql>.
 </p>
-
-<nonstd/>
 
 <note>
 This keyword is alike the keyword <expr>:maxswapvalue</expr> from Chess
@@ -2458,7 +2403,7 @@ This query selects positions in which a white queen can invade rank 8
 without a material loss.
 </p>
 
-<h3 id="position:moveevaluation">:moveevaluation</h3>
+<h3 id="position:moveevaluation">:moveevaluation<extension/></h3>
 
 <p>
 This keyword is matching the difference between the evaluation of the current
@@ -2501,8 +2446,6 @@ The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 <i>sidetomove</i> means that the evaluation value depends on side to move, and
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
-
-<nonstd/>
 
 <annotation>
 This is a very slow operation and should not be used with huge databases,
@@ -2581,18 +2524,15 @@ This keyword inhibits short-circuiting of logical keywords
 
 <p>
 For examples see:
-<a href="CQL-Examples#accumulator">Using accumulators to count passed pawns</a>.
+<a href="CQL-Examples.html#accumulator">Using accumulators to count passed pawns</a>.
 </p>
 
-<h3 id="position:reset">:reset</h3>
+<h3 id="position:reset">:reset<extension/></h3>
 
 <p>
 This keyword takes as a parameter the name of an accumulator. It clears the
 accumulator associated with this name after applying a transformation.
 </p>
-
-<nonstd/>
-<ca9/>
 
 <p>
 Example:
@@ -2626,7 +2566,7 @@ A much better way is:
   <cql>position:flipcolor</cql>))
 </verbatim>
 
-<h3 id="position:sumrange">:sumrange</h3>
+<h3 id="position:sumrange">:sumrange<extension/></h3>
 
 <p>
 This takes as parameter the name of an accumulator and a range specifer.
@@ -2636,7 +2576,7 @@ the range specifier.
 
 <p>
 For examples see:
-<a href="CQL-Examples#accumulator">Using accumulators to count passed pawns</a>.
+<a href="CQL-Examples.html#accumulator">Using accumulators to count passed pawns</a>.
 </p>
 
 <h2 id="tagging">Tagging keywords</h2>
@@ -2647,7 +2587,7 @@ For examples see:
   </table>
 </dir>
 
-<h3 id="position:tagmatch">:tagmatch</h3>
+<h3 id="position:tagmatch">:tagmatch<extension/></h3>
 
 <p>
 The :tagmatch keyword takes two parameters, the name of a tag and a piece

@@ -79,75 +79,75 @@ set HtmlH1 {<div class="title">
 set HtmlDefs {}
 
 set HtmlMapping {
-	<menuitem>		{<span class="menuitem">}
+	<menuitem>		{<span class='menuitem'>}
 	</menuitem>		{</span>}
 
-	<note/>			{<br/><img src="../images/note.png" alt="note" /> }
-	<note>			{<p><img src="../images/note.png" alt="note" /> }
+	<note/>			{<br/><img src='../images/note.png' alt='note' /> }
+	<note>			{<p><img src='../images/note.png' alt='note' /> }
 	</note>			{</p>}
 
-	<nobr>			{<span style="white-space:nowrap;">}
+	<nobr>			{<span style='white-space:nowrap;'>}
 	</nobr>			{</span>}
 
-	<box>				{<div class="box">}
+	<box>				{<div class='box'>}
 	</box>			{</div>}
 
-	<expr>			{<span style="white-space:nowrap;"><code>}
+	<expr>			{<span style='white-space:nowrap;'><code>}
 	</expr>			{</code></span>}
 
-	<verb>			{<div class="verb"><code>}
+	<verb>			{<div class='verb'><code>}
 	</verb>			{</code></div>}
 
-	<verbatim>		{<div class="box"><pre><code>}
+	<verbatim>		{<div class='box'><pre><code>}
 	</verbatim>		{</code></pre></div>}
 
-	<annotation>	{<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />}
+	<annotation>	{<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />}
 	</annotation>	{</div>}
 
-	<dir>				{<ul style="list-style-type: none"><li>}
+	<dir>				{<ul style='list-style-type: none'><li>}
 	</dir>			{</li></ul>}
 
-	<comment>		{<span class="comment">}
+	<comment>		{<span class='comment'>}
 	</comment>		{</span>}
 
-	<keyword>		{<span class="keyword">}
+	<keyword>		{<span class='keyword'>}
 	</keyword>		{</span>}
 
 	<see/>			&#x21d2;
 
-	<chess>			{<span class="chess">}
+	<chess>			{<span class='chess'>}
 	</chess>			</span>
 
-	<NEW>				{<span class="NEW">}
+	<NEW>				{<span class='NEW'>}
 	</NEW>			{</span>}
 
-	&King;			{<span class="chess">&#x2654;</span>}
-	&Queen;			{<span class="chess">&#x2655;</span>}
-	&Rook;			{<span class="chess">&#x2656;</span>}
-	&Bishop;			{<span class="chess">&#x2657;</span>}
-	&Knight;			{<span class="chess">&#x2658;</span>}
-	&Pawn;			{<span class="chess">&#x2659;</span>}
+	&King;			{<span class='chess'>&#x2654;</span>}
+	&Queen;			{<span class='chess'>&#x2655;</span>}
+	&Rook;			{<span class='chess'>&#x2656;</span>}
+	&Bishop;			{<span class='chess'>&#x2657;</span>}
+	&Knight;			{<span class='chess'>&#x2658;</span>}
+	&Pawn;			{<span class='chess'>&#x2659;</span>}
 
-	&king;			{<span class="chess">&#x265a;</span>}
-	&queen;			{<span class="chess">&#x265b;</span>}
-	&rook;			{<span class="chess">&#x265c;</span>}
-	&bishop;			{<span class="chess">&#x265d;</span>}
-	&knight;			{<span class="chess">&#x265e;</span>}
-	&pawn;			{<span class="chess">&#x265f;</span>}
+	&king;			{<span class='chess'>&#x265a;</span>}
+	&queen;			{<span class='chess'>&#x265b;</span>}
+	&rook;			{<span class='chess'>&#x265c;</span>}
+	&bishop;			{<span class='chess'>&#x265d;</span>}
+	&knight;			{<span class='chess'>&#x265e;</span>}
+	&pawn;			{<span class='chess'>&#x265f;</span>}
 
-	&K;				{<span class="chess">&#x2654;</span>}
-	&Q;				{<span class="chess">&#x2655;</span>}
-	&R;				{<span class="chess">&#x2656;</span>}
-	&B;				{<span class="chess">&#x2657;</span>}
-	&N;				{<span class="chess">&#x2658;</span>}
-	&P;				{<span class="chess">&#x2659;</span>}
+	&K;				{<span class='piece'>&#x2654;</span>}
+	&Q;				{<span class='piece'>&#x2655;</span>}
+	&R;				{<span class='piece'>&#x2656;</span>}
+	&B;				{<span class='piece'>&#x2657;</span>}
+	&N;				{<span class='piece'>&#x2658;</span>}
+	&P;				{<span class='piece'>&#x2659;</span>}
 
-	&k;				{<span class="chess">&#x265a;</span>}
-	&q;				{<span class="chess">&#x265b;</span>}
-	&r;				{<span class="chess">&#x265c;</span>}
-	&b;				{<span class="chess">&#x265d;</span>}
-	&n;				{<span class="chess">&#x265e;</span>}
-	&p;				{<span class="chess">&#x265f;</span>}
+	&k;				{<span class='piece'>&#x265a;</span>}
+	&q;				{<span class='piece'>&#x265b;</span>}
+	&r;				{<span class='piece'>&#x265c;</span>}
+	&b;				{<span class='piece'>&#x265d;</span>}
+	&n;				{<span class='piece'>&#x265e;</span>}
+	&p;				{<span class='piece'>&#x265f;</span>}
 }
 
 set f [open ../../../Makefile.in r]
@@ -305,6 +305,9 @@ if {![string match TITLE* $line]} {
 	example stderr
 }
 
+lappend HtmlMapping "<whitepieceletters/>" $Pieces($lang)
+lappend HtmlMapping "<blackpieceletters/>" [string tolower $Pieces($lang)]
+
 proc formatPath {path} {
 	set parts {}
 	set components [split $path "/"]
@@ -397,16 +400,21 @@ proc readContents {chan file} {
 			set line $newline
 		}
 
-		while {[regexp {<img\s*src=[\"\']([^\"\']*)[\"\']\s*/>} $line _ src]} {
-			regexp -indices {<img\s*src=[\"\'][^\"\']*[\"\']\s*/>} $line location
+		set line [string map $HtmlDefs $line]
+
+		set reImg {<img ([^>]*)src=[\"\']([^\"\']*)[\"\']([^>]*)/>}
+
+		while {	[regexp $reImg $line _ extra1 src extra2]
+				&& ![string match *alt=* $extra1]
+				&& ![string match *alt=* $extra2]} {
+			regexp -indices $reImg $line location
 			lassign $location i k
 			set newline [string range $line 0 [expr {$i - 1}]]
-			append newline "<img src=\"$src\" alt=\"\" />"
+			append newline "<img ${extra1}src=\"${src}\" alt=\"\" />${extra2}"
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}
 
-		set line [string map $HtmlDefs $line]
 		set line [string map $HtmlMapping $line]
 
 		if {[llength $indices]} {

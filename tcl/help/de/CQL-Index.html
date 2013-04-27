@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Index.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Hilfe: CQL - Chess Query Language</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Chess Query Language</h1>
+</div>
+
+<p>
+Chess Query Language (CQL) wurde entwickelt um Rechercheuren, Autoren und
+Spielern die Suche nach Partien, Problemen und Studien, die zu speziellen
+Themen passen, zu erlauben
+(&#x21d2; <a href="http://www.rbnn.com/cql/">CQLManual<span class="awesome">&nbsp;&#xf08e;</span></a>).
+</p>
+
+<p>
+Scidb benutzt ein erweitertes CQL als Basis für alle komplexen
+Suchfunktionen.
+</p>
+
+<p>
+Einige Teile dieses Handbuchs wurden der Seite
+<a href="http://www.rbnn.com/cql/">CQL Manual<span class="awesome">&nbsp;&#xf08e;</span></a> entnommen.
+</p>
+
+<p>
+Standardmäßig wird zur Internationalisierung die figurine Notation der
+Schachfiguren verwendet. Der CQL-Editor arbeitet ebenfalls mit Figurensymbolen,
+allerdings werden die CQL-Dateien mit den entsprechenden englischen Buchstaben
+gespeichert:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td><span class='piece'>&#x2654;</span></td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
+    <tr><td><span class='piece'>&#x2655;</span></td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
+    <tr><td><span class='piece'>&#x2656;</span></td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
+    <tr><td><span class='piece'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
+    <tr><td><span class='piece'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
+    <tr><td><span class='piece'>&#x2659;</span></td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
+    <tr><td><span class='piece'>&#x265a;</span></td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
+    <tr><td><span class='piece'>&#x265b;</span></td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
+    <tr><td><span class='piece'>&#x265c;</span></td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
+    <tr><td><span class='piece'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
+    <tr><td><span class='piece'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
+    <tr><td><span class='piece'>&#x265f;</span></td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
+  </table>
+</li></ul>
+
+<p>
+Sollten Bezeichner für die Anzeige der Figuren gewünscht werden, so ist einer der
+folgenden Optionen auszuwählen (dies funktioniert nicht im Web-Browser):
+</p>
+
+<table>
+  <tr>
+    <td><span class="button"><a href="script(pieces::english)">Englische Bezeichner verwenden</a></td>
+    <td>K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::regional)">Regionale Bezeichner verwenden</a></td>
+    <td>K D T L S B k d t l s b</td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::designators)">Zurück zu Figurensymbolen</a></td>
+    <td><span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
+  </tr>
+</table>
+
+<h2>Index</h2>
+
+<ul>
+  <li><a href="CQL-Syntax.html">Syntax</a>
+    <ul class="index">
+      <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
+      <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
+      <li><a href="CQL-Piece-Designator-Transforms.html">Tranformation der Figurenbezeichner</a></li>
+      <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
+      <li><a href="Pattern-Matching.html">Musterabgleich (Pattern-Matching)</a></li>
+    </ul>
+  </li>
+  <li><a href="CQL-Transformations.html">Transformationen</a></li>
+  <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
+  <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
+  <li><a href="CQL-Relation-List.html">Die Relationenliste</a></li>
+  <li><a href="CQL-Tagging.html">Markierung</a></li>
+  <li><a href="CQL-Examples.html">Beispiele</a></li>
+</ul>
+
+</body>
+</html>

@@ -38,12 +38,12 @@
   <h1 class="title">El intercambiador de bases de datos</h1>
 </div>
 
-<ul style="list-style-type: none"><li><img src="images/database-switcher.png" alt="" /></li></ul>
+<ul style='list-style-type: none'><li><img src="images/database-switcher.png" alt="" /></li></ul>
 
 <p>
 El intercambiador de bases de datos provee una navegación fácil entre las bases de datos.
 La base de datos activa se resaltará con un trasfondo amarillo.
-<span class="NEW">
+<span class='NEW'>
 All databases not belonging to the chess variant of the active
 database are disabled (white background).
 </span>
@@ -60,7 +60,7 @@ Funciones del intercambiador de bases de datos:
 
 <ul>
   <li><a href="#Administration">Administración</a></li>
-<span class="NEW">
+<span class='NEW'>
   <li><a href="#Maintenance">Maintenance</a></li>
 </span>
   <li><a href="#DND">Arrastrar &amp; Soltar</a></li>
@@ -72,35 +72,35 @@ Funciones del intercambiador de bases de datos:
 Se encuentra disponible un menú contextual para la administración de la base de datos:
 </p>
 
-<ul style="list-style-type: none"><li><img src="images/database-switcher-menu.png" alt="" /></li></ul>
+<ul style='list-style-type: none'><li><img src="images/database-switcher-menu.png" alt="" /></li></ul>
 
 <p>
-<span class="menuitem">Propiedades</span>
+<span class='menuitem'>Propiedades</span>
 Abre una caja que muestra información variada sobre la base de datos.
 </p>
 
 <p>
-<span class="menuitem">Exportar</span>
+<span class='menuitem'>Exportar</span>
 Abre el diálogo <a href="Database-Export-Dialog.html">exportar base</a> para exportar la base
 a otros formatos de base de datos o formatos de documento.
-<span class="NEW">
-<br/><img src="../images/note.png" alt="note" /> If this database contains several chess variants (only possible
+<span class='NEW'>
+<br/><img src='../images/note.png' alt='note' /> If this database contains several chess variants (only possible
 in case of <a href="Clipbase.html">Clipbase</a> or PGN files) only the games
 of the active chess variant will be exported.
 </span>
 </p>
 
 <p>
-<span class="menuitem">Importar archivos PGN</span>
+<span class='menuitem'>Importar archivos PGN</span>
 Abre <a href="File-Selection-Dialog.html">elegir archivo</a> para
 la selección de archivos <abbr>PGN</abbr> para importar. Es posible seleccionar múltiples
 archivos <abbr>PGN</abbr> simultáneamente. Las partidas se agregarán al final de la base
 de datos.
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
-<span class="menuitem">Importar Bases de Datos</span>
+<span class='menuitem'>Importar Bases de Datos</span>
 The databases for import will be selected with the
 <a href="File-Selection-Dialog.html">file selection dialog</a>.
 All games will be appended at the end of the database. You may
@@ -108,84 +108,84 @@ select multiple databases simultaneously.
 </p>
 </span>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
-<span class="menuitem">Maintenance</span>
+<span class='menuitem'>Maintenance</span>
 This sub-menu provides functionality for the maintenance of databases
 (&#x21d2; <a href="#Maintenance">Maintenance</a>).
 </p>
 </span>
 
 <p>
-<span class="menuitem">Crear Archivo</span>
+<span class='menuitem'>Crear Archivo</span>
 Crea un <a href="Database-Formats.html#Database-Archive">Archivo de bases de datos</a>.
 Se abrirá <a href="File-Selection-Dialog.html">Elegir archivo</a>
 para seleccionar un nombre de archivo.
 </p>
 
 <p>
-<span class="menuitem">Cerrar</span>
+<span class='menuitem'>Cerrar</span>
 La base de datos seleccionada se cerrará. Si hay partidas cambiadas en la base que aún no 
 se han guardado se mostrará un aviso de seguridad antes de cerrar la base.
-<br/><img src="../images/note.png" alt="note" /> No es posible cerrar la <a href="Clipbase.html">Base temporal</a>.
+<br/><img src='../images/note.png' alt='note' /> No es posible cerrar la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
 <p>
-<span class="menuitem">Sólo lectura</span>
+<span class='menuitem'>Sólo lectura</span>
 Establecer esta base como de sólo-lectura o editable.
 Esto sólo es posible para las bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
-<br/><img src="../images/note.png" alt="note" /> Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
-<br/><img src="../images/note.png" alt="note" /> La <a href="Clipbase.html">Base temporal</a> no puede establecerse como de sólo-lectura.
+<br/><img src='../images/note.png' alt='note' /> Los archivos <abbr>PGN</abbr> y las bases ChessBase siempre son de sólo-lectura.
+<br/><img src='../images/note.png' alt='note' /> La <a href="Clipbase.html">Base temporal</a> no puede establecerse como de sólo-lectura.
 </p>
 
 <p>
-<span class="menuitem">Abrir Base</span>
+<span class='menuitem'>Abrir Base</span>
 Abre otra base de datos.
 </p>
 
 <p>
-<span class="menuitem">Abrir Recientes</span>
+<span class='menuitem'>Abrir Recientes</span>
 Abre una base de datos a través del historial de bases de datos.
 </p>
 
 <p>
-<span class="menuitem">Nueva Base</span>
+<span class='menuitem'>Nueva Base</span>
 Crea una nueva base de datos. Sólo pueden crearse bases Scidb y Scid
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>).
-<span class="NEW">
+<span class='NEW'>
 If the database should store games of any chess variant please use the next menu item.
 </span>
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
-<span class="menuitem">Nueva Base</span>
+<span class='menuitem'>Nueva Base</span>
 Create a new database of any chess variant. Only Scidb databases
 can be created in this case.
 </p>
 </span>
 
 <p>
-<span class="menuitem">Tamaño del símbolo</span>
+<span class='menuitem'>Tamaño del símbolo</span>
 Selecciona el tamaño de los símbolos de base de datos.
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
-<span class="menuitem">Ayuda con el Cambiador de Bases de Datos</span>
+<span class='menuitem'>Ayuda con el Cambiador de Bases de Datos</span>
 Open the help dialog about the database switcher.
 </p>
 </span>
 
-<ul style="list-style-type: none"><li><img src="images/clipbase-menu.png" name="Empty-Clipbase"/></li></ul>
+<ul style='list-style-type: none'><li><img src="images/clipbase-menu.png" alt="" /> name="Empty-Clipbase"</li></ul>
 
-<span class="menuitem">
+<span class='menuitem'>
 Vaciar Base temporal</span>
-<br/><img src="../images/note.png" alt="note" /> Esta entrada de menú sólo se proporcionará para la
+<br/><img src='../images/note.png' alt='note' /> Esta entrada de menú sólo se proporcionará para la
 <a href="Clipbase.html">Base temporal</a>.
 
-<span class="NEW">
+<span class='NEW'>
 <h3 id="Maintenance">Maintenance</h3>
 
 <p>
@@ -196,20 +196,20 @@ This sub-menu provides functionality for the maintenance of databases.
 <ul><img src="images/database-switcher-menu-maintenance.png" alt="" /></ul>
 
 <p>
-<span class="menuitem">Cambiar ícono</span>
+<span class='menuitem'>Cambiar ícono</span>
 Selecciona un ícono para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
+<br/><img src='../images/note.png' alt='note' /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
 <p>
-<span class="menuitem">Editar Descripción</span>
+<span class='menuitem'>Editar Descripción</span>
 Crea o cambia la descripción para esta base.
-<br/><img src="../images/note.png" alt="note" /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
+<br/><img src='../images/note.png' alt='note' /> Esto no es posible para la <a href="Clipbase.html">Base temporal</a>.
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
-<span class="menuitem">Strip Move Information</span>
+<span class='menuitem'>Strip Move Information</span>
 Remove a selection of move information (for example
 "Elapsed Move Time") from database.
 This is useful, for example, to remove subsequently unwanted information (here
@@ -218,13 +218,13 @@ of FICS games.
 </p>
 
 <p>
-<span class="menuitem">Strip PGN Tags</span>
+<span class='menuitem'>Strip PGN Tags</span>
 Not yet implemented.
 </p>
 </span>
 
 <p id="Compact">
-<span class="menuitem">Compactar</span>
+<span class='menuitem'>Compactar</span>
 Compactará la base de datos actual; esto significa que todas las partidas
 marcadas para su eliminación se borrarán físicamente y no podrá revertir
 esta acción. Este ítem no está habilitado si la base de datos no contiene
@@ -240,7 +240,7 @@ intercambiador de bases de datos, un trasfondo coloreado indicará que es posibl
 De esta manera usted podrá abrir bases de datos con la ayuda de un administrador de archivos externo.
 </p>
 
-<span class="NEW">
+<span class='NEW'>
 <p>
 The list of files may also be dropped over a database field. In this case 
 the games will be copied into the destination database.

@@ -49,7 +49,7 @@ archivos incluidos, tal como el nombre, el tamaño, el método de compresión, e
 Este formato de archivo tiene la siguiente sintaxis (EBNF simplificado):
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -154,7 +154,7 @@ de todos modos.
   <li>Que no se confunda con un archivo de texto ordinario.</li>
 </ul>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 Todo el formato de archivo está diseñado de modo que sea legible y editable con cualquier editor
 de texto adecuado (que permita los datos binarios).
 </div>
@@ -164,7 +164,7 @@ En el formato "<abbr>.scv</abbr>" el atributo <b><code>UserInfo</code></b> tiene
 siguiente definición:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
@@ -204,7 +204,7 @@ y <code>&lt;Type&gt;</code> es arbitrario.
 Al final, dos ejemplos simples de los Archivos:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
@@ -238,7 +238,7 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0<!--
 --></code></pre></div>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi

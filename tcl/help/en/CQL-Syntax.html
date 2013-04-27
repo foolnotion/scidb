@@ -42,7 +42,7 @@
 A CQL script has the following generic structure:
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match
   (position ... )
   (position ... )
@@ -60,11 +60,11 @@ For example, here is a simple CQL script to find quadrupled pawns, but only
 in games played in year 2013:
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match
   <a href="CQL-Match-List.html#match:year">:year</a> 2013
   (position
-    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[b2-7] 4
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b2-7] 4
     <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
@@ -84,7 +84,7 @@ or another list.
 For example
 </p>
 
-<div class="verb"><code>
+<div class='verb'><code>
 (position <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a> <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
 </code></div>
 
@@ -117,17 +117,17 @@ one after the other.
 In the list
 </p>
 
-<div class="box"><pre><code><!--
+<div class='box'><pre><code><!--
 -->(match
   (position
-    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class="chess">&#x2659;</span>[b2-7] 4
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b2-7] 4
     <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
-<a href="CQL-Position-List.html#position:piececount">:piececount</a> has keyword parameters <span style="white-space:nowrap;"><code><span class="chess">&#x2659;</span>[b2-7]</code></span>
-and <span style="white-space:nowrap;"><code>4</code></span>. The other keywords <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
+<a href="CQL-Position-List.html#position:piececount">:piececount</a> has keyword parameters <span style='white-space:nowrap;'><code><span class='piece'>&#x2659;</span>[b2-7]</code></span>
+and <span style='white-space:nowrap;'><code>4</code></span>. The other keywords <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
 and <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a> do not take keyword parameters. A list
 whose first element is "match" is called a match list and defines
 a match filter.
@@ -163,7 +163,7 @@ game, then the match filter is said to match the game.
 The simplest position filter is defined by the simplest position list:
 </p>
 
-<div class="verb"><code>
+<div class='verb'><code>
 (position)
 </code></div>
 
@@ -172,7 +172,7 @@ This position filter matches every position. Hence, the following CQL script
 simply selects all games:
 </p>
 
-<div class="verb"><code>
+<div class='verb'><code>
 (match (position))
 </code></div>
 
@@ -181,7 +181,7 @@ In Scidb this script can be written even more simpler, because in Scidb
 the match list must not contain position lists:
 </p>
 
-<div class="verb"><code>
+<div class='verb'><code>
 (match)
 </code></div>
 
@@ -191,10 +191,10 @@ the match list must not contain position lists:
 Any characters following a semicolon are ignored in a CQL script. Example:
 </p>
 
-<div class="box"><pre><code><!--
---><span class="comment">; A CQL script that matches all games</span>
+<div class='box'><pre><code><!--
+--><span class='comment'>; A CQL script that matches all games</span>
 (match 
-  (position) <span class="comment">; a position filter matching anything</span>
+  (position) <span class='comment'>; a position filter matching anything</span>
 )<!--
 --></code></pre></div>
 

@@ -65,9 +65,12 @@ set PageNotAvailable			"This page is not available"
 
 } ;# namespace mc
 
-variable Geometry {}
-variable Lang {}
-variable FontTable {8 9 10 11 13 15 17} ;# xx-small x-small small medium large x-large xx-large
+array set Options {
+	fonttable	{8 9 10 11 13 15 17}
+	piecelang	graphic
+	geometry		""
+	lang			""
+}
 
 array set Colors {
 	foreground:gray		#999999
@@ -88,18 +91,18 @@ array set Priv {
 
 
 proc helpLanguage {} {
-	variable Lang
+	variable Options
 
-	if {[string length $Lang]} { return $Lang }
+	if {[string length $Options(lang)]} { return $Options(lang) }
 	return $::mc::langID
 }
 
 
 proc open {parent {file {}} args} {
+	variable Options
 	variable Priv
 	variable Links
 	variable ExternalLinks
-	variable Geometry
 
 	array set opts {
 		-transient	no
@@ -119,6 +122,8 @@ proc open {parent {file {}} args} {
 		append file .html
 	}
 
+	SetupPieceLetters
+
 	set dlg .help
 	if {[winfo exists $dlg]} {
 		if {[string length $file] == 0} { ShowIndex }
@@ -126,7 +131,7 @@ proc open {parent {file {}} args} {
 		focus $dlg
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
-		ReloadCurrentPage
+		ReloadCurrentPage no
 		return $dlg
 	}
 
@@ -140,6 +145,8 @@ proc open {parent {file {}} args} {
 	set Priv(minsize) 260
 	set Priv(recent) {}
 	set Priv(grab) {}
+	set Priv(history) {}
+	set Priv(history:index) -1
 
 	::scidb::misc::html cache on
 
@@ -235,6 +242,8 @@ proc open {parent {file {}} args} {
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeFontSize -1]]
 	bind $dlg <Control-KP_Subtract>	[namespace code [list ChangeFontSize -1]]
+	bind $dlg <Control-R>				[namespace code Update]
+	bind $dlg <Control-r>				[namespace code Update]
 	bind $dlg <ButtonPress-3>			[namespace code [list PopupMenu $dlg $pw.control]]
 
 	bind $nb <<LanguageChanged>> [namespace code Update]
@@ -257,12 +266,12 @@ proc open {parent {file {}} args} {
 	}
 	wm minsize $dlg 600 300
 	if {[string length $file] == 0} {
-		if {[llength $Geometry] == 0} {
+		if {[llength $Options(geometry)] == 0} {
 			update idletasks
-			set Geometry [winfo reqwidth $dlg]x[winfo reqheight $dlg]
+			set Options(geometry) [winfo reqwidth $dlg]x[winfo reqheight $dlg]
 			focus $Priv($Priv(tab):tree)
 		}
-		wm geometry $dlg $Geometry
+		wm geometry $dlg $Options(geometry)
 	} else {
 		::util::place $dlg center $parent
 	}
@@ -271,7 +280,7 @@ proc open {parent {file {}} args} {
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
 	}
-	ReloadCurrentPage
+	ReloadCurrentPage no
 	wm deiconify $dlg
 	return $dlg
 }
@@ -296,8 +305,8 @@ proc FullPath {file} {
 
 
 proc CheckLanguage {parent helpFile} {
-	variable Lang
 	variable ::country::icon::flag
+	variable Options
 
 	if {[string length $helpFile] > 0 && ![string match *.html $helpFile]} {
 		append helpFile .html
@@ -313,12 +322,12 @@ proc CheckLanguage {parent helpFile} {
 	set lang $::mc::langID
 	set file [file normalize [file join $::scidb::dir::help $lang $helpFile]]
 	if {[file readable $file]} {
-		set Lang {}
+		set Options(lang) {}
 		return "found"
 	}
 
-	if {[string length $Lang]} {
-		set file [file normalize [file join $::scidb::dir::help $Lang $helpFile]]
+	if {[string length $Options(lang)]} {
+		set file [file normalize [file join $::scidb::dir::help $Options(lang) $helpFile]]
 		if {[file readable $file]} { return "found" }
 	}
 
@@ -336,7 +345,7 @@ proc CheckLanguage {parent helpFile} {
 		return "none"
 	}
 
-	set Lang {}
+	set Options(lang) {}
 	set dlg $parent.lang
 	tk::toplevel $dlg -class Scidb
 	wm withdraw $dlg
@@ -360,7 +369,7 @@ proc CheckLanguage {parent helpFile} {
 		bind $top.$code <Return> { event generate %W <Key-space>; break }
 	}
 	::widget::dialogButtons $dlg cancel
-	$dlg.cancel configure -command [list set [namespace current]::Lang {}]
+	$dlg.cancel configure -command [list set [namespace current]::Options(lang) {}]
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
 	wm resizable $dlg no no
 	wm title $dlg $mc::SelectLanguage
@@ -369,30 +378,59 @@ proc CheckLanguage {parent helpFile} {
 	update idletasks
 	focus $dlg.cancel
 	::ttk::grabWindow $dlg
-	vwait [namespace current]::Lang
+	vwait [namespace current]::Options(lang)
 	::ttk::releaseGrab $dlg
 	catch { destroy $dlg }
 
-	if {[string length $Lang] == 0} { return "none" }
+	if {[string length $Options(lang)] == 0} { return "none" }
 	return $rc
 }
 
 
 proc SetupLang {code} {
-	set [namespace current]::Lang $code
+	set [namespace current]::Options(lang) $code
+}
+
+
+proc SetupPieceLetters {} {
+	variable Options
+	variable Priv
+
+	if {$Options(piecelang) == "graphic"} {
+		set Priv(pieceletters) {}
+	} else {
+		set lang $Options(piecelang)
+		if {[string length $lang] == 0} { set lang $::mc::langID }
+		set letters $::figurines::langSet($lang)
+
+		set Priv(pieceletters) [list \
+			"<span class='piece'>&#x2654;</span>" [lindex $letters 0] \
+			"<span class='piece'>&#x2655;</span>" [lindex $letters 1] \
+			"<span class='piece'>&#x2656;</span>" [lindex $letters 2] \
+			"<span class='piece'>&#x2657;</span>" [lindex $letters 3] \
+			"<span class='piece'>&#x2658;</span>" [lindex $letters 4] \
+			"<span class='piece'>&#x2659;</span>" [lindex $letters 5] \
+			"<span class='piece'>&#x265a;</span>" [string tolower [lindex $letters 0]] \
+			"<span class='piece'>&#x265b;</span>" [string tolower [lindex $letters 1]] \
+			"<span class='piece'>&#x265c;</span>" [string tolower [lindex $letters 2]] \
+			"<span class='piece'>&#x265d;</span>" [string tolower [lindex $letters 3]] \
+			"<span class='piece'>&#x265e;</span>" [string tolower [lindex $letters 4]] \
+			"<span class='piece'>&#x265f;</span>" [string tolower [lindex $letters 5]] \
+		]
+	}
 }
 
 
 proc Destroy {} {
+	variable Options
 	variable Priv
-	variable Lang
 
 	if {$Priv(check:lang) eq "substitution"} {
-		set language $::encoding::mc::Lang($Lang)
+		set language $::encoding::mc::Lang($Options(lang))
 		set reply [::dialog::question -parent $Priv(dlg) -message [format $mc::KeepLanguage $language]]
-		if {$reply eq "no"} { set Lang "" }
+		if {$reply eq "no"} { set Options(lang) "" }
 	} elseif {$Priv(check:lang) eq "temporary"} {
-		set Lang ""
+		set Options(lang) ""
 	}
 
 	destroy $Priv(dlg)
@@ -897,23 +935,27 @@ proc UpdateTitle {} {
 
 
 proc Update {} {
+	variable Priv
+
+	set Priv(current:lang) [helpLanguage]
+
 	UpdateTitle
-	ReloadCurrentPage
 	index::Update index
 	index::Update cql
 	contents::Update
 	search::Update
+	ReloadCurrentPage no
 }
 
 
 proc RecordGeometry {pw} {
+	variable Options
 	variable Priv
-	variable Geometry
 
 	set dlg [winfo toplevel $pw]
 
 	lassign {0 0} x y
-	scan $Geometry "%dx%d%d%d" _ _ x y
+	scan $Options(geometry) "%dx%d%d%d" _ _ x y
 	scan [wm geometry $dlg] "%dx%d%d%d" w h x y
 	if {$x < 0} { set x 0 }
 	if {$y < 0} { set y 0 }
@@ -924,7 +966,7 @@ proc RecordGeometry {pw} {
 		set Priv(minsize) [winfo width [lindex [$pw panes] 0]]
 	}
 
-	set Geometry "${w}x${h}+${x}+${y}"
+	set Options(geometry) "${w}x${h}+${x}+${y}"
 }
 
 
@@ -1051,28 +1093,28 @@ proc PopupMenu {dlg tab} {
 
 
 proc ChangeFontSize {incr} {
-	variable FontTable
+	variable Options
 	variable Priv
 
-	lassign $FontTable xxsmall xsmall small medium large xlarge xxlarge
+	lassign $Options(fonttable) xxsmall xsmall small medium large xlarge xxlarge
 	incr medium $incr
 
 	if {$medium <  8} {set medium  8}
 	if {$medium > 14} {set medium 14}
 
-	if {$medium == [lindex $FontTable 3]} { return }
+	if {$medium == [lindex $Options(fonttable) 3]} { return }
 
 	switch $medium {
-		 8 { set FontTable { 5  6  7  8 10 12 14} }
-		 9 { set FontTable { 6  7  8  9 11 13 15} }
-		10 { set FontTable { 7  8  9 10 12 14 16} }
-		11 { set FontTable { 8  9 10 11 13 15 17} }
-		12 { set FontTable { 9 10 11 12 14 16 18} }
-		13 { set FontTable {10 11 12 13 15 17 19} }
-		14 { set FontTable {11 12 13 14 16 18 20} }
+		 8 { set Options(fonttable) { 5  6  7  8 10 12 14} }
+		 9 { set Options(fonttable) { 6  7  8  9 11 13 15} }
+		10 { set Options(fonttable) { 7  8  9 10 12 14 16} }
+		11 { set Options(fonttable) { 8  9 10 11 13 15 17} }
+		12 { set Options(fonttable) { 9 10 11 12 14 16 18} }
+		13 { set Options(fonttable) {10 11 12 13 15 17 19} }
+		14 { set Options(fonttable) {11 12 13 14 16 18 20} }
 	}
 
-	$Priv(html) fonttable $FontTable
+	$Priv(html) fonttable $Options(fonttable)
 }
 
 
@@ -1115,7 +1157,7 @@ proc ShowIndex {} {
 
 
 proc BuildHtmlFrame {dlg w} {
-	variable FontTable
+	variable Options
 	variable Priv
 
 	set Priv(html:track:width) 0
@@ -1139,7 +1181,7 @@ proc BuildHtmlFrame {dlg w} {
 		-css $css \
 		-showhyphens 1 \
 		-latinligatures $Priv(latinligatures) \
-		-fonttable $FontTable \
+		-fonttable $Options(fonttable) \
 		;
 
 	$w handler node link [namespace current]::LinkHandler
@@ -1323,7 +1365,7 @@ proc Mouse1Up {node} {
 }
 
 
-proc ReloadCurrentPage {} {
+proc ReloadCurrentPage {{reload yes}} {
 	variable Priv
 	variable Links
 
@@ -1337,11 +1379,13 @@ proc ReloadCurrentPage {} {
 		if {![file readable [FullPath [file tail $file]]]} { return }
 	}
 
-	set Priv(history) {}
-	set Priv(history:index) -1
 	set Priv(current:file) ""
+	set Links($file) [Load [FullPath [file tail $file]] {} {} {} $reload]
 
-	set Links($file) [Load [FullPath [file tail $file]]]
+	if {$Priv(history:index) >= 0} {
+		set Priv(current:status) notfound
+		history::back
+	}
 }
 
 
@@ -1390,8 +1434,6 @@ proc addCurrentNode {} {
 
 proc updateNodes {reason} {
 	variable [namespace parent]::Priv
-
-	if {![info exists Priv(history)]} { return }
 
 	switch $reason {
 		reload {
@@ -1578,11 +1620,42 @@ proc ResolveTrace {trace node} {
 } ;# namespace history
 
 
-proc Load {file {wantedFile {}} {match {}} {position {}}} {
+namespace eval pieces {
+
+proc designators {} {
+	variable [namespace parent]::Options
+
+	set Options(piecelang) graphic
+	[namespace parent]::SetupPieceLetters
+	[namespace parent]::ReloadCurrentPage
+}
+
+
+proc english {} {
+	variable [namespace parent]::Options
+
+	set Options(piecelang) en
+	[namespace parent]::SetupPieceLetters
+	[namespace parent]::ReloadCurrentPage
+}
+
+
+proc regional {} {
+	variable [namespace parent]::Options
+
+	set Options(piecelang) ""
+	[namespace parent]::SetupPieceLetters
+	[namespace parent]::ReloadCurrentPage
+}
+
+}
+
+
+proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 	variable Priv
 
 	set remember [expr {$Priv(current:file) ne $file}]
-	history::refresh
+	if {!$reload} { history::refresh }
 
 	if {$remember && [string length $file] > 0} {
 		if {![Parse $file $wantedFile $match]} {
@@ -1604,7 +1677,7 @@ proc Load {file {wantedFile {}} {match {}} {position {}}} {
 		}
 	}
 
-	if {$remember && [llength $match] == 0} {
+	if {!$reload && $remember && [llength $match] == 0} {
 		history::addCurrentNode
 	}
 
@@ -1700,6 +1773,9 @@ proc Parse {file {wantedFile {}} {match {}}} {
 	}
 
 	set lang [lindex [file split $file] end-1]
+	if {[llength $Priv(pieceletters)]} {
+		set content [string map $Priv(pieceletters) $content]
+	}
 	set content [::html::hyphenate $lang $content]
 	if {$Priv(latinligatures)} { set content [::scidb::misc::html ligatures $content] }
 
@@ -1753,8 +1829,7 @@ proc SetupButtons {back fwd} {
 
 
 proc WriteOptions {chan} {
-	::options::writeItem $chan [namespace current]::Lang
-	::options::writeItem $chan [namespace current]::FontTable
+	::options::writeItem $chan [namespace current]::Options
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

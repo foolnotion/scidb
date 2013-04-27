@@ -5,6 +5,13 @@ set Index {
       {{Archiv} {Database-Formats.html} {Database-Archive}}
     }
   }
+  { C
+    {
+      {{Chess Query Language} {CQL-Index.html} {}}
+      {{CQL Beispiele} {CQL-Examples.html} {}}
+      {{CQL Handbuch} {CQL-Index.html} {}}
+    }
+  }
   { D
     {
       {{Dateiauswahldialog} {File-Selection-Dialog.html} {}}

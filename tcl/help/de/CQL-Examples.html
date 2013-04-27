@@ -3,14 +3,14 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
-<!-- Generated from tcl/help/en/CQL-Examples.txt -->
+<!-- Generated from tcl/help/de/CQL-Examples.txt -->
 
-<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
 <head>
   <meta http-equiv="content-type"
            content="text/html; charset=utf-8" />
   <meta http-equiv="content-language"
-           content="en" />
+           content="de" />
   <meta http-equiv="content-style-type"
            content="text/css" />
 
@@ -29,33 +29,34 @@
       media="screen"
        href="../styles/help.css" />
 
-  <title>Help: CQL - Examples</title>
+  <title>Hilfe: CQL - Beispiele</title>
 </head>
 
 <body>
 
 <div class="title">
-  <h1 class="title">CQL - Examples</h1>
+  <h1 class="title">CQL - Beispiele</h1>
 </div>
 
 <ul>
-  <li><a href="#accumulator">Using accumulators to count passed pawns</a></li>
-  <li><a href="#relation">Relation list example</a></li>
-  <li><a href="#tagging">Examples for tagging</a></li>
-  <li><a href="#more">More examples</a></li>
+  <li><a href="#accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</a></li>
+  <li><a href="#relation">Beispiele zur Relationenliste</a></li>
+  <li><a href="#tagging">Beispiele für Markierungen</a></li>
+  <li><a href="#more">Noch mehr Beispiele</a></li>
 </ul>
 
-<h2 id="accumulator">Using accumulators to count passed pawns</h2>
+<h2 id="accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</h2>
 
 <p>
-We will show how to use <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> and
-<a href="CQL-Position-List.html#position:sumrange">:sumrange</a> to look for games that have at least 3 white
-passed pawns in a position. First, we give a position filter that will
-match any position with a white passed pawn:
+Wir werden zeigen wie <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> und
+<a href="CQL-Position-List.html#position:sumrange">:sumrange</a> zu verwenden sind um nach Partien
+mit mindestens 3 weißen Freibauern in einer Position zu suchen.
+Zuerst schreiben wir einen Positionsfilter, der jede Position
+findet mit einem weißen Freibauern:
 </p>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; match a position with a white passed pawn</span>
+--><span class='comment'>; finde eine Position mit einem weißen Freibauern</span>
 (position
   <span class='piece'>&#x2659;</span>d2
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
@@ -64,66 +65,66 @@ match any position with a white passed pawn:
 --></code></pre></div>
 
 <p>
-Now, to find at least 3 white passed pawns, we add in some accumulation code:
+Um mindestens 3 weiße Feibauern zu finden fügen wir die Akkumulation hinzu:
 </p>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; match a position with at least three white passed pawns</span>
+--><span class='comment'>; finde eine Position mit mindestens drei weißen Freibauern</span>
 (position
   <span class='piece'>&#x2659;</span>d2
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
   <a href="CQL-Position-List.html#position:shift">:shift</a>
-  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter
-  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8)<!--
+  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> weisse_freibauern_zaehler
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> weisse_freibauern_zaehler 3 8)<!--
 --></code></pre></div>
 
 <p>
-Now suppose we want to find positions with at least two black passed pawns.
-We can use:
+Nun wollen wir Positionen finden mit mindestens zwei schwarzen Freibauern:
 </p>
 
 <div class='box'><pre><code><!--
---><span class='comment'>;match a position with at least two black passed pawns</span>
+--><span class='comment'>;finde eine Position mit mindestens zwei schwarzen Freibauern</span>
 (position
   <span class='piece'>&#x265f;</span>d7 
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
   <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
   <a href="CQL-Position-List.html#position:shift">:shift</a>
-  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter
-  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8)<!--
+  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> schwarze_freibauern_zaehler
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> schwarze_freibauern_zaehler 2 8)<!--
 --></code></pre></div>
 
 <p>
-Finally, to find positions with at least two black passers and at least three
-white passers, we combine these lists:
+Letzendlich kombinieren wir diese Listen, um Positionen mit mindestens zwei
+schwarzen und drei weißen Freibauern zu finden:
 </p>
 
 <div class='box'><pre><code><!--
 --><span class='comment'>; match a position with at least three white</span>
-<span class='comment'>; and at least two black passers</span>
+<span class='comment'>; finde eine Position mit mindestens drei</span>
+<span class='comment'>; weissen und zwei schwarzen Freibauern</span>
 (position
-  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> white_passer_counter 3 8 
-  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> black_passer_counter 2 8
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> weisse_freibauern_zaehler 3 8 
+  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> schwarze_freibauern_zaehler 2 8
   <a href="CQL-Position-List.html#position:and">:and</a> (
     (position
       <span class='piece'>&#x2659;</span>d2 
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d3-7] 0
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x265f;</span>[c3-7,e3-7] 0
       <a href="CQL-Position-List.html#position:shift">:shift</a>
-      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> white_passer_counter)
+      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> weisse_freibauern_zaehler)
     (position
       <span class='piece'>&#x265f;</span>d7 
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265f;</span><span class='piece'>&#x2659;</span>][d2-6] 0
       <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[c2-6,e2-6] 0
       <a href="CQL-Position-List.html#position:shift">:shift</a>
-      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> black_passer_counter)))<!--
+      <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> schwarze_freibauern_zaehler)))<!--
 --></code></pre></div>
 
-<h2 id="relation">Relation list example</h2>
+<h2 id="relation">Beispiele zur Relationenliste</h2>
 
 <p>
-The following position list searches for games in which the configuration
+Die folgende Positionsliste sucht nach Partien, in denen die Anordnung
 </p>
 
 <ul style='list-style-type: none'><li><code>
@@ -131,8 +132,8 @@ The following position list searches for games in which the configuration
 </code></li></ul>
 
 <p>
-occurs shifted or flipped, but in which no pieces from the original position
-are on the same square as the pattern:
+versetzt oder gespiegelt enthalten ist, aber keine der Figuren der
+Originalanordnung auf denselben Feldern steht:
 </p>
 
 <div class='box'><pre><code><!--
@@ -150,102 +151,105 @@ are on the same square as the pattern:
 --></code></pre></div>
 
 <p>
-If one modified the <a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</a> parameter to, say,
-<span style='white-space:nowrap;'><code>0 3</code></span> from its current value of 1, then the pattern in the second
-position would be allowed to overlap with at most three squares of the pattern
-in the original position. 
+Wird der Parameter für <a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</a> verändert,
+beispielsweise vom derzeitigen Wert <span style='white-space:nowrap;'><code>1</code></span> auf <span style='white-space:nowrap;'><code>0 3</code></span>,
+dann würde das Muster in der zweiten Positionsliste eine Überlappung
+mit höchstens drei Feldern der Originalanordnung erlauben.
 </p>
 
-<h2 id="tagging">Examples for tagging</h2>
+<h2 id="tagging">Beispiele für Markierungen</h2>
 
 <p>
-Consider the problem of recognizing all games in which the same rook visits all
-four corners of the board:
+Wir untersuchen das Problem, alle Partien zu erkennen, in denen der gleiche Turm
+alle vier Ecken des Bretts besucht:
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> rook [<span class='piece'>&#x265c;</span><span class='piece'>&#x2656;</span>] <span class='comment'>; loop over the possible rooks</span>
-  (position $rook[a1]) 
-  (position $rook[h1])
-  (position $rook[h8])
-  (position $rook[a8]))<!--
+  <a href="CQL-Match-List.html#match:forany">:forany</a> turm [<span class='piece'>&#x265c;</span><span class='piece'>&#x2656;</span>] <span class='comment'>; über alle Türme iterieren</span>
+  (position $turm[a1]) 
+  (position $turm[h1])
+  (position $turm[h8])
+  (position $turm[a8]))<!--
 --></code></pre></div>
 
 <p>
-Here, the <a href="CQL-Position-List.html#position:forany">:forany</a> keyword in the match list introduces a tag named
-"rook" which is constrained to range over white or black rooks, or over pawns that
-eventually promote to one of those.
+In diesem Beipiel definiert das Schlüsselwort <a href="CQL-Position-List.html#position:forany">:forany</a> eine
+Markierung mit dem Namen "turm", die an weiße oder schwarze Türme gebunden wird,
+(die auch aus einer Bauernumwandlung enstanden sein konnten).
 </p>
 
 <p>
-The first position list matches games in which there is a position such that the
-tag "rook" represents a rook on a1. The next position list matches games in which
-there is a position such that the tag represents a rook on h1. The tag represents
-the same mark, that is, the same piece, between the position lists. The
-<a href="CQL-Position-List.html#position:forany">:forany</a> keyword will sequentially bind the tag to each allowed mark.
+Die erste Positionsliste findet Partien in denen eine Position vorliegt, in der
+die Merkierung "turm" einen Turm auf a1 repräsentiert. Die nächste Positionsliste
+findet Partien in denen eine Position vorliegt, in der die Merkierung "turm"
+einen Turm auf h1 repräsentiert. Die Markierung repräsentiert die gleiche Figur
+zwischen den Positionslisten. Das Schlüsselwort <a href="CQL-Position-List.html#position:forany">:forany</a>
+bindet nacheinander die Markierung an alle erlaubten Figuren.
 </p>
 
 <p>
-Since a match list matches a game only if all its constituent position filters
-match it, the code does what we want here.
+Da eine Suchliste nur Partien findet, wenn jeder einzelne Positionsfilter diese
+Partien gefunden hat, findet dieses Skript was wir suchten.
 </p>
 
 <p>
-Second example, the excelsior theme: a pawn starts at the second rank and then
-promotes.
+Zweites Beispiel, das Excelsior-Thema: ein Bauer startet auf der zweiten Reihe
+und verwandelt sich dann.
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> pawn [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>]
+  <a href="CQL-Match-List.html#match:forany">:forany</a> bauer [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>]
   (position
     <a href="CQL-Position-List.html#position:initial">:initial</a>
-    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> pawn <span class='piece'>&#x2659;</span>?2
-    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $pawn <a href="CQL-Position-List.html#position:promote">:promote</a> U))
+    <a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> bauer <span class='piece'>&#x2659;</span>?2
+    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> ((position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $bauer <a href="CQL-Position-List.html#position:promote">:promote</a> U))
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
-<a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> is matching pawns on second rank, and
-the position sequence of <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> is matching if
-the tagged "pawn" is promoting in any subsequent game position.
+<a href="CQL-Position-List.html#position:tagmatch">:tagmatch</a> findet Bauern auf der zweiten Reihe, und die
+mit <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> definierte Positionsreihe ist
+erfolgreich, wenn die Markierung "bauer" in irgendeiner nachfolgenden
+Position verwandelt.
 </p>
 
 <p>
-Third example: the same piece delivers at least 30 checks in the game.
+Drittes Beispiel: die gleiche Figur bietet mindestens 30 mal Schach in einer
+Partie.
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> checker A
+  <a href="CQL-Match-List.html#match:forany">:forany</a> schachgeber A
   (position
     <a href="CQL-Position-List.html#position:btm">:btm</a>
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $checker <span class='piece'>&#x265a;</span> 1
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $schachgeber <span class='piece'>&#x265a;</span> 1
     <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 30 unlimited
     <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
 --></code></pre></div>
 
 <p>
-Fourth example: knight gives mate with its first move.
+Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  <a href="CQL-Match-List.html#match:forany">:forany</a> knight <span class='piece'>&#x2658;</span>
+  <a href="CQL-Match-List.html#match:forany">:forany</a> springer <span class='piece'>&#x2658;</span>
   (position
-    <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $knight
+    <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> $springer
     <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 1)
   (position
     <a href="CQL-Position-List.html#position:mate">:mate</a>
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $knight <span class='piece'>&#x265a;</span> 1)) <!--
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> $springer <span class='piece'>&#x265a;</span> 1)) <!--
 --></code></pre></div>
 
-<h2 id="more">More examples</h2>
+<h2 id="more">Noch mehr Beispiele</h2>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Match isolated triple pawns on connected squares</span>
-<span class='comment'>; Example: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</span>
+--><span class='comment'>; Finde isolierte Triplebauern auf verbundenen Feldern</span>
+<span class='comment'>; Beispiel: 8/p4pk1/8/2R1P1N1/6P1/6P1/2P2KP1/1r5r w - - 0 1</span>
 
 (match
   (position
@@ -259,8 +263,9 @@ Fourth example: knight gives mate with its first move.
 --></code></pre></div>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Multiple consecutive rook checks followed by king moving to</span>
-<span class='comment'>; empty square; usually to avoid stalemate if rook is captured.</span>
+--><span class='comment'>; Mehrere aufeinanderfolgende Turmschachgebote jeweils gefolgt von</span>
+<span class='comment'>; einem Königszug auf ein freies Feld; normalerweise um Patt zu</span>
+<span class='comment'>; vermeiden wenn der Turm geschlagen wird.</span>
 
 (match
   <a href="CQL-Match-List.html#match:result">:result</a> 1/2
@@ -280,20 +285,20 @@ Fourth example: knight gives mate with its first move.
 --></code></pre></div>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Smothered Mate</span>
+--><span class='comment'>; Ersticktes Matt</span>
 
-<span class='comment'>; A smothered mate is a checkmate delivered by a knight</span>
-<span class='comment'>; in which the mated king is unable to move because he is</span>
-<span class='comment'>; surrounded (or smothered) by his own pieces.</span>
+<span class='comment'>; Ein ersticktes Matt liegt vor, wenn ein Springer Matt</span>
+<span class='comment'>; setzt und der König nicht entweichen kann, weil er</span>
+<span class='comment'>; von eigenen Figuren umgeben (erstickt) ist.</span>
 
 (match
   (position
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>           ; either color
-    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>       ; independent from file
-    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>     ; and rank
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span>g7 1 ; only the knight gives check
-    a[f6-8,h6-8,g6,g8]   ; king is smothered by own pieces
-    <a href="CQL-Position-List.html#position:mate">:mate</a>))              ; and is mate<!--
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>           ; Jede Farbe
+    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>       ; Unabhängig von Linie
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>     ; und Reihe
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span>g7 1 ; Nur Springer bietet Schach
+    a[f6-8,h6-8,g6,g8]   ; König ist von eigenen Figuren umgeben
+    <a href="CQL-Position-List.html#position:mate">:mate</a>))              ; und ist matt<!--
 --></code></pre></div>
 
 </body>

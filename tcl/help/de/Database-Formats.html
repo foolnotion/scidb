@@ -42,31 +42,31 @@
 Scidb unterstützt folgende Formate:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <li>
-    <img src="../images/ft-scidb.png" alt="" />
+    <img src="../images/ft-scidb.png" alt="" /> 
     <a href="#Scidb">Scidb</a>
   </li>
   <li>
-    <img src="../images/ft-scid.png" alt="" />
+    <img src="../images/ft-scid.png" alt="" /> 
     <a href="#Scid">Scid</a>
   </li>
   <li>
-    <img src="../images/ft-chessbase.png" alt="" />
+    <img src="../images/ft-chessbase.png" alt="" /> 
     <a href="#ChessBase">ChessBase</a>
   </li>
   <li>
-    <img src="../images/ft-pgn.png" alt="" />
+    <img src="../images/ft-pgn.png" alt="" /> 
     <a href="#PGN">PGN</a>
   </li>
   <li>
-    <img src="../images/ft-archive.png" alt="" />
+    <img src="../images/ft-archive.png" alt="" /> 
     <a href="#Database-Archive">Datenbankarchiv</a>
   </li>
 </li></ul>
 
 <h2 id="Scidb">
-<img src="../images/ft-scidb.png" alt="" />
+<img src="../images/ft-scidb.png" alt="" /> 
 Scidb (<abbr>.sci</abbr>)
 </h2>
 
@@ -81,7 +81,7 @@ Nur das Scidb-Format (sowie das PGN-Format) speichert Partien verschiedener Scha
 zur Zeit sind dies:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>
       <td>Normalschach</td>
@@ -122,7 +122,7 @@ und zwar in allen Schachformen.
 </p>
 
 <p>
-Datenbanken im Scidb-Format sind immer im <span style="white-space:nowrap;">UTF-8</span> Zeichensatz enkodiert und damit
+Datenbanken im Scidb-Format sind immer im <span style='white-space:nowrap;'>UTF-8</span> Zeichensatz enkodiert und damit
 unter jedem System und jeder Lokation problemlos verwendbar.
 </p>
 
@@ -130,7 +130,7 @@ unter jedem System und jeder Lokation problemlos verwendbar.
 Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.sci =&nbsp;</kbd></td>
@@ -148,7 +148,7 @@ Eine Datenbank im Scidb-Format besteht aus mehreren Dateien:
 </div>
 
 <h2 id="Scid">
-<img src="../images/ft-scid.png" alt="" />
+<img src="../images/ft-scid.png" alt="" /> 
 Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
 </h2>
 
@@ -158,15 +158,15 @@ Verbreitungsgrades vollständig unterstützt. Es kann mit diesem Format jedoch n
 der volle Umfang von Scidb genutzt werden.
 </p>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 Scid-Datenbanken werden nur im Lesemodus geöffnet.
 </div>
 
 <p>
 Beim Öffnen einer Scid-Datenbank muß eventuell die passende Enkodierung gewählt
 werden, damit alle Namen und Texte richtig dargestellt werden. Neuere Datenbanken
-sind mit großer Wahrscheinlichkeit <span style="white-space:nowrap;">UTF-8</span> enkodiert, ältere evt. im
-<span style="white-space:nowrap;">Latin-1</span> (ISO-<span style="white-space:nowrap;">8859-1</span>) Zeichensatz, das Scid-Format gibt
+sind mit großer Wahrscheinlichkeit <span style='white-space:nowrap;'>UTF-8</span> enkodiert, ältere evt. im
+<span style='white-space:nowrap;'>Latin-1</span> (ISO-<span style='white-space:nowrap;'>8859-1</span>) Zeichensatz, das Scid-Format gibt
 keine Auskunft darüber. In vielen Fällen sollte aber die programmeigene, automatische
 Ermittlung des Zeichensatzes erfolgreich sein.
 </p>
@@ -175,7 +175,7 @@ Ermittlung des Zeichensatzes erfolgreich sein.
 Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td nowrap="nowrap" valign="top"><kbd>.si4 =&nbsp;</kbd></td>
@@ -196,14 +196,14 @@ Dieses Datenbankformat ähnelt strukturell dem Scidb-Format:
   </table>
 </div>
 
-<p><img src="../images/note.png" alt="note" /> Die Dateien mit den Endungen <code>.sso</code> (Scid-Suchoptionendatei),
+<p><img src='../images/note.png' alt='note' /> Die Dateien mit den Endungen <code>.sso</code> (Scid-Suchoptionendatei),
 <code>.sor</code> (Scid-Repertoire-Datei), und <code>.stm</code>
 (Scid-Zugbaum-Masken-Datei) gehören nicht explizit zu einer Datenbank und werden
 von Scidb nicht beachtet. Ebenso bleiben auch gespeicherte Partienlisten (Endung
 <code>.txt</code>) unbeachtet.</p>
 
 <h2 id="ChessBase">
-<img src="../images/ft-chessbase.png" alt="" />
+<img src="../images/ft-chessbase.png" alt="" /> 
 ChessBase (<abbr>.cbh</abbr>, <abbr>.cbf</abbr>)
 </h2>
 
@@ -218,7 +218,7 @@ Partiedaten können korrekt gelesen werden; bei manchen Partien kommt es zur Mel
 daß die Partie nicht dekodiert werden konnte.
 </p>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 ChessBase-Datenbanken können nicht als Referenzdatenbank verwendet werden.
 </div>
 
@@ -233,7 +233,7 @@ damit alle Namen und Texte korrekt dargestellt werden.
 Eine Datenbank im neuen ChessBase-Format besteht aus sehr vielen Dateien, die wichtigsten sind:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbh &nbsp;=&nbsp;</kbd></td><td>Partiedaten</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbg &nbsp;=&nbsp;</kbd></td><td>Partiezüge und Varianten</td></tr>
@@ -255,7 +255,7 @@ Eine Datenbank im neuen ChessBase-Format besteht aus sehr vielen Dateien, die wi
 Das alte Datenbankformat besteht nur aus vier Dateien:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbf &nbsp;=&nbsp;</kbd></td><td>Partiedaten und Partiezüge</td></tr>
     <tr><td nowrap="nowrap" valign="top"><kbd>.cbi &nbsp;=&nbsp;</kbd></td><td>Indexdaten</td></tr>
@@ -265,7 +265,7 @@ Das alte Datenbankformat besteht nur aus vier Dateien:
 </div>
 
 <h2 id="PGN">
-<img src="../images/ft-pgn.png" alt="" />
+<img src="../images/ft-pgn.png" alt="" /> 
 <abbr>PGN</abbr> (<abbr>.pgn</abbr>, <abbr>.pgn.gz</abbr>, <abbr>.zip</abbr>)
 </h2>
 
@@ -279,10 +279,10 @@ Scidb-Format empfohlen.
 <p>
 Gemäß dem
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN-Standard<span class="awesome">&nbsp;&#xf08e;</span></a>
-ist eine PGN-Datei mit dem Zeichensatz <span style="white-space:nowrap;">Latin-1</span>
-(ISO-<span style="white-space:nowrap;">8859-1</span>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
-<span style="white-space:nowrap;">UTF-8</span>-Markierung (<span style="white-space:nowrap;">UTF-8</span>-BOM: Bytesequenz EF BB BF) so wird
-eine <span style="white-space:nowrap;">UTF-8</span>-Enkodierung angenommen (gemäß
+ist eine PGN-Datei mit dem Zeichensatz <span style='white-space:nowrap;'>Latin-1</span>
+(ISO-<span style='white-space:nowrap;'>8859-1</span>) enkodiert. Beginnt jedoch eine PGN-Datei mit einer
+<span style='white-space:nowrap;'>UTF-8</span>-Markierung (<span style='white-space:nowrap;'>UTF-8</span>-BOM: Bytesequenz EF BB BF) so wird
+eine <span style='white-space:nowrap;'>UTF-8</span>-Enkodierung angenommen (gemäß
 <a href="http://www.unicode.org/faq/utf_bom.html#BOM">Unicode-FAQ<span class="awesome">&nbsp;&#xf08e;</span></a>).
 </p>
 
@@ -290,7 +290,7 @@ eine <span style="white-space:nowrap;">UTF-8</span>-Enkodierung angenommen (gem�
 Beim Lesen von FICS-Partien werden nur die folgenden Varianten akzeptiert:
 </p>
 
-<div class="box">
+<div class='box'>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
     <tr>
       <td>wild/2 </td>
@@ -379,7 +379,7 @@ Standard: Portable Game Notation Specification and Implementation Guide<span cla
 </p>
 
 <h2 id="Database-Archive">
-<img src="../images/ft-archive.png" alt="" />
+<img src="../images/ft-archive.png" alt="" /> 
 Datenbankarchiv (<abbr>.scv</abbr>)
 </h2>
 

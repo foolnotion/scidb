@@ -49,7 +49,7 @@ file like name, size, compression method, etc.
 This archive format has the following syntax (simplified EBNF):
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->Archive     = Magic [ ArchInfo ] [ UserInfo ] { File } ;
 Magic       = 'iveArch' LF ;
 File        = Header BinaryData ;
@@ -150,7 +150,7 @@ has to be specified anyway.
   <li>No confusion with an ordinary text file.</li>
 </ul>
 
-<div class="annotation"><img src="../images/annotation.png" style="float:left; margin:0 1em 0 0" alt="annotation" />
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
 The whole archive format is designed in a way so that it is readable and editable
 with any suitable text editor (which allows binary data).
 </div>
@@ -160,7 +160,7 @@ In "<abbr>.scv</abbr>" format the attribute <b><code>UserInfo</code></b> has the
 following definition:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->UserInfo    = { LF Attributes } ;
 Attributes  =
   "&lt;Format&gt;" { Space } Formats
@@ -200,7 +200,7 @@ and <code>&lt;Type&gt;</code> is arbitrary.
 At least two simple examples for archives:
 </p>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;TotalSize&gt; 468
 &lt;Count&gt; 1
@@ -234,7 +234,7 @@ Qf6 7.e5 Qe7 8.a3 cxb2 9.Bxb2 Bc5 10.Nc3 d6 11.Nd5 Qd8
 12.exd6 Bxd6 13.Bxg7 Bg4 14.Re1+ Nge7 15.Nf6# 1-0<!--
 --></code></pre></div>
 
-<div class="box"><pre><code><!-- don't translate --><!--
+<div class='box'><pre><code><!-- don't translate --><!--
 -->iveArch
 &lt;Format&gt; pgn
 &lt;Type&gt; multi

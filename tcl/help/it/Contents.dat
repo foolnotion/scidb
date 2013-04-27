@@ -37,6 +37,24 @@ set Contents {
     {{{Esporta Database} {Database-Export-Dialog.html}}}
   }
   {
+    {{{CQL (Chess Query Language)} {Overview.html} {cql-manual}}}
+    {{{Introduction} {CQL-Index.html}}}
+    {
+      {{{Syntax} {CQL-Syntax.html}}}
+      {{{Piece designators} {CQL-Piece-Designators.html}}}
+      {{{Square designators} {CQL-Square-Designators.html}}}
+      {{{Transforms of piece designators} {CQL-Piece-Designator-Transforms.html}}}
+      {{{Range specifiers} {CQL-Range-Specifiers.html}}}
+      {{{Pattern matching} {Pattern-Matching.html}}}
+    }
+    {{{Transformations} {CQL-Transformations.html}}}
+    {{{The match list} {CQL-Match-List.html}}}
+    {{{The position list} {CQL-Position-List.html}}}
+    {{{The relation list} {CQL-Relation-List.html}}}
+    {{{Tagging} {CQL-Tagging.html}}}
+    {{{Examples} {CQL-Examples.html}}}
+  }
+  {
     {{{Ulteriori Informazioni} {Overview.html} {further-information}}}
     {{{Codici Partita} {Game-Flags.html}}}
     {{{Specifiche sull'archivio database (Inglese)} {../en/Database-Archive.html}}}

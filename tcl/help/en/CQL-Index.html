@@ -50,32 +50,53 @@ functions.
 </p>
 
 <p>
-Note that some parts of this documentation are taken from
-<a href="http://www.rbnn.com/cql/">CQLManual<span class="awesome">&nbsp;&#xf08e;</span></a>.
+Note that some parts of this manual are taken from
+<a href="http://www.rbnn.com/cql/">CQL Manual<span class="awesome">&nbsp;&#xf08e;</span></a>.
 </p>
 
 <p>
-We are using graphical figurine for the notation of chess pieces, due to
-internalization reasons. The CQL editor is working with graphical figurine,
-although the CQL files will be saved with the corresponding English letters:
+Per default graphical figurine for the notation of chess pieces will be used,
+due to internalization reasons. The CQL editor is also working with graphical
+figurine, although the CQL files will be saved with the corresponding English
+letters:
 </p>
 
-<ul style="list-style-type: none"><li>
+<ul style='list-style-type: none'><li>
   <table>
-    <tr><td><span class="chess">&#x2654;</span></td><td>=</td><td>K</td><td>=</td><td>white king  </td></tr>
-    <tr><td><span class="chess">&#x2655;</span></td><td>=</td><td>Q</td><td>=</td><td>white queen </td></tr>
-    <tr><td><span class="chess">&#x2656;</span></td><td>=</td><td>R</td><td>=</td><td>white rook  </td></tr>
-    <tr><td><span class="chess">&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
-    <tr><td><span class="chess">&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
-    <tr><td><span class="chess">&#x2659;</span></td><td>=</td><td>P</td><td>=</td><td>white pawn  </td></tr>
-    <tr><td><span class="chess">&#x265a;</span></td><td>=</td><td>k</td><td>=</td><td>black king  </td></tr>
-    <tr><td><span class="chess">&#x265b;</span></td><td>=</td><td>q</td><td>=</td><td>black queen </td></tr>
-    <tr><td><span class="chess">&#x265c;</span></td><td>=</td><td>r</td><td>=</td><td>black rook  </td></tr>
-    <tr><td><span class="chess">&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
-    <tr><td><span class="chess">&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
-    <tr><td><span class="chess">&#x265f;</span></td><td>=</td><td>p</td><td>=</td><td>black pawn  </td></tr>
+    <tr><td><span class='piece'>&#x2654;</span></td><td>=</td><td>K</td><td>=</td><td>white king</td></tr>
+    <tr><td><span class='piece'>&#x2655;</span></td><td>=</td><td>Q</td><td>=</td><td>white queen</td></tr>
+    <tr><td><span class='piece'>&#x2656;</span></td><td>=</td><td>R</td><td>=</td><td>white rook</td></tr>
+    <tr><td><span class='piece'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
+    <tr><td><span class='piece'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
+    <tr><td><span class='piece'>&#x2659;</span></td><td>=</td><td>P</td><td>=</td><td>white pawn</td></tr>
+    <tr><td><span class='piece'>&#x265a;</span></td><td>=</td><td>k</td><td>=</td><td>black king</td></tr>
+    <tr><td><span class='piece'>&#x265b;</span></td><td>=</td><td>q</td><td>=</td><td>black queen</td></tr>
+    <tr><td><span class='piece'>&#x265c;</span></td><td>=</td><td>r</td><td>=</td><td>black rook</td></tr>
+    <tr><td><span class='piece'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
+    <tr><td><span class='piece'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
+    <tr><td><span class='piece'>&#x265f;</span></td><td>=</td><td>p</td><td>=</td><td>black pawn</td></tr>
   </table>
 </li></ul>
+
+<p>
+If you prefer to see piece letters, please select one of the options
+(not working in web browser):
+</p>
+
+<table>
+  <tr>
+    <td><span class="button"><a href="script(pieces::english)">Use English piece letters</a></td>
+    <td>K Q R B N P k q r b n p (used in CQL files)</td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::regional)">Use regional piece letters</a></td>
+    <td>K Q R B N P k q r b n p</td>
+  </tr>
+  <tr>
+    <td><span class="button"><a href="script(pieces::designators)">Revert to designators</a></td>
+    <td><span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
+  </tr>
+</table>
 
 <h2>Index</h2>
 

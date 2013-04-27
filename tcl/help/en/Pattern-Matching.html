@@ -45,23 +45,23 @@ A pattern is a string which may contain the following special characters:
 <div class="dir">
   <table>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>*</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
       <td class="r">
         Matches any sequence of characters in string,
         including a null string.
       </td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>?</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>?</code></span></td>
       <td class="r">
         Matches any single character in string.
       </td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style="white-space:nowrap;"><code>\x</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>\x</code></span></td>
       <td class="r">
         Matches the single character x. This provides a way of avoiding
-        the special interpretation of the characters <span style="white-space:nowrap;"><code>*?\</code></span> in
+        the special interpretation of the characters <span style='white-space:nowrap;'><code>*?\</code></span> in
         pattern.
       </td>
     </tr>
@@ -74,24 +74,24 @@ Pattern matching is matching a string case-insensitive.
 
 <h2 id="examples">Examples</h2>
 
-<div class="verb"><code>
+<div class='verb'><code>
 Polgar, J*
 </code></div>
 
-This pattern is matching the following strings: <span style="white-space:nowrap;">"Polgar,</span>
-<span style="white-space:nowrap;">J"</span>, and <span style="white-space:nowrap;">"Polgar,</span> <span style="white-space:nowrap;">Judit"</span>.
+This pattern is matching the following strings: <span style='white-space:nowrap;'>"Polgar,</span>
+<span style='white-space:nowrap;'>J"</span>, and <span style='white-space:nowrap;'>"Polgar,</span> <span style='white-space:nowrap;'>Judit"</span>.
 
-<div class="verb"><code>
+<div class='verb'><code>
 A?erba?h
 </code></div>
 
 <p>
 This will match the following names:
-<span style="white-space:nowrap;">"Averbakh"</span> (English spelling), and <span style="white-space:nowrap;">"Awerbach"</span> 
+<span style='white-space:nowrap;'>"Averbakh"</span> (English spelling), and <span style='white-space:nowrap;'>"Awerbach"</span> 
 (German spelling).
 </p>
 
-<div class="verb"><code>
+<div class='verb'><code>
 really intended\?
 </code></div>
 
