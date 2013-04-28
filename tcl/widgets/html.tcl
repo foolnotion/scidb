@@ -282,7 +282,7 @@ proc Build {w args} {
 		} else {
 			set cmd [namespace code [list SbSet $w.h]]
 		}
-		$html configure -xscrollcommand $cmd -xscrollincrement 10
+		$html configure -xscrollcommand $cmd -xscrollincrement 30
 	}
 	if {$opts(-usevertscroll)} {
 		if {$opts(-keepvertscroll)} {
@@ -290,7 +290,7 @@ proc Build {w args} {
 		} else {
 			set cmd [namespace code [list SbSet $w.v]]
 		}
-		$html configure -yscrollcommand $cmd -yscrollincrement 10
+		$html configure -yscrollcommand $cmd -yscrollincrement 15
 	}
 
 	if {$Priv(center)} {

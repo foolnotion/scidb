@@ -288,12 +288,9 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>           ; either color
-    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>       ; independent from file
-    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>     ; and rank
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span>g7 1 ; only the knight gives check
-    a[f6-8,h6-8,g6,g8]   ; king is smothered by own pieces
-    <a href="CQL-Position-List.html#position:mate">:mate</a>))              ; and is mate<!--
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>            ; either color
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k [A.] 0 ; king is smothered by own pieces
+    <a href="CQL-Position-List.html#position:mate">:mate</a>))               ; and is mate<!--
 --></code></pre></div>
 
 </body>

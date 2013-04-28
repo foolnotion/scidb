@@ -1382,7 +1382,7 @@ proc ReloadCurrentPage {{reload yes}} {
 	set yview [lindex [$Priv(html) yview] 0]
 	set Priv(current:file) ""
 	set Links($file) [Load [FullPath [file tail $file]] {} {} {} $reload]
-	if {$reload} { $Priv(html) yview moveto $yview }
+	$Priv(html) yview moveto $yview
 }
 
 

@@ -24,15 +24,16 @@ DEFINE <extension/> &ensp;<img src="../images/ft-scidb-tiny.png" />
 TITLE CQL - The position list
 
 <p>
-The symbol <img src="../images/ft-scidb-tiny.png" /> in the title denotes that
-this keyword is an extension, it is not part of the CQL standard.
+The symbol <img src="../images/ft-scidb-tiny.png" /> in the title of a
+keyword description denotes that this keyword is an extension, it is not
+part of the CQL standard.
 </p>
 
 <p>
 The keywords <cql>position:castling</cql>, <cql>position:endgame</cql>,
 <cql>position:inside</cql>, and <cql>position:reset</cql> are borrowed from
-Chess Assistant 9 (<see/>
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>).
+Chess Assistant 9. The description of these keywords are taken from
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>.
 </p>
 
 <dir>
@@ -347,6 +348,12 @@ excluded. Keyword <cql>position:preceding</cql> gives the predecessing
 position of a match.
 </p>
 
+<p>
+Actually these keywords are not extending the capability of CQL, each of
+them can be replaced, but the use of this keywords may improve the search
+time considerably, and the expression may have a clearer form.
+</p>
+
 <dir>
   <table>
     <tr><td>&#x2022;</td><td><a href="#position:cut">:cut</a></td></tr>
@@ -360,54 +367,81 @@ position of a match.
 <p>
 This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
-stop position search as soon as the match of containing position list succeeeds.
-In latter case stop position search as soon as the match of the sub-position
-list succeeeds. This keyword is never failing, with other words: it is not
-influencing the result of all other position lists (see example).
+stop position search for this game as soon as the match of containing position
+list succeeds. In latter case stop position search as soon as the match of
+the sub-position list succeeds. This keyword is never failing, with other
+words: it is not influencing the result of all other position lists.
 </p>
 
 <p>
-Example:
+The :cut position match has lower precedence than all other position matches.
+This means that the position, where all position lists are succeeding, is
+matching. If the :cut position match should have highest precedende, use
+keyword <cql>position:preceding</cql>, see examples:
+</p>
+
+<verb>
+(match (position &lt;A&gt; <keyword>:cut</keyword> (&lt;B&gt;))
+</verb>
+
+<p>
+Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
+case the match succeeds.
+</p>
+
+<verb>
+(match (position &lt;A&gt; <keyword>:cut</keyword> (<cql>position:preceding</cql>  &lt;B&gt;)))
+</verb>
+
+<p>
+Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
+case the match fails.
+</p>
+
+<p>
+Examples:
 </p>
 
 <verbatim>
 (match
-  (position &lt;query&gt;)
-  (position <keyword>:cut</keyword> <cql>position:check</cql>))
+  (position
+    <cql>position:mate</cql>
+    <keyword>:cut</keyword> (<cql>position:check</cql>)))
 </verbatim>
 
 <p>
-We are not interested in consequent positions as soon as one side has
-given a check. This means: as soon as a check is given stop the search, but
-don't exclude current position if &lt;query&gt; is matching.
-<expr>&lt;query&gt;</expr> has higher precedence than the :cut expression.
-</p>
-
-<p>
-If even the :cut position should be excluded, use keyword
-<cql>position:preceding</cql>:
+Search for games ending with mate, and neither side has ever given
+a check before. Actually keyword :cut is not required for this search,
+see next example:
 </p>
 
 <verbatim>
 (match
-  (position &lt;query&gt;)
-  (position <keyword>:cut</keyword> <cql>:preceding</cql> <cql>position:check</cql>))
+  (position <cql>position:mate</cql>)
+  (position <cql>position:check</cql> <cql>position:matchcount</cql> 1))
 </verbatim>
+
+<p>
+But this version has to search the whole game, and the former version with
+:cut fails as soon as first check occurs. In complex searches the use of
+keyword :cut may be much faster than the use of :matchcount.
+</p>
 
 <h3 id="position:exclude">:exclude<extension/></h3>
 
 <p>
 This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
-exclude this game if the match of containing position list succeeeds.
+exclude this game if the match of containing position list succeeds.
 In latter case exclude this game if the match of the sub-position list
-succeeeds. This keyword is not influencing the result of the position
+succeeds. This keyword is not influencing the result of the position
 match (see example).
 </p>
 
 <p>
 This keyword will exclude games even if one of the position matches
-has succeeded.
+will succeed before the :exclude expression will succeed.
+Keyword :exclude is excluding games under certain conditions.
 </p>
 
 <p>
@@ -416,15 +450,31 @@ Example:
 
 <verbatim>
 (match
-  (position ...)
-  (position <keyword>:exclude</keyword> <cql>position:check</cql> <cql>position:not</cql>))
+  (position
+    &lt;A&gt;
+    <keyword>:exclude</keyword> (position &lt;B&gt;)))
 </verbatim>
 
 <p>
-Exclude this game if neither side is given a check in whole game, independent
-from the result of <expr>(position ...)</expr>. But the query succeeds if
-<expr>(position ...)</expr> succeeds, and if the :exclude expression is never
-matching (this means: if either side is giving a check in this game).
+Search for games matching expression <expr>&lt;A&gt;</expr>, but not if
+expression <expr>&lt;B&gt;</expr> is matching any position in this game.
+Actually this match can be written without the use of keyword :exclude,
+in the following way:
+</p>
+
+<verbatim>
+(match
+  (position
+    <cql>position:gappedsequence</cql> (
+      (position &lt;B&gt; <cql>position:not</cql>)
+      (position &lt;A&gt;)
+      (position &lt;B&gt; <cql>position:not</cql>))))
+</verbatim>
+
+<p>
+But the use of keyword :exclude is simpler, and the search is faster, because
+the latter version has to search the whole game, and the former version with
+keyword :exclude terminates as soon as <expr>&lt;B&gt;</expr> is matching.
 </p>
 
 <h3 id="position:preceding">:preceding<extension/></h3>
@@ -436,9 +486,8 @@ search is continuing. The keyword :preceding can be used only on top level.
 </p>
 
 <p>
-If this keyword is used combined with <cql>position:cut</cql>, the result
-of the first position where the :cut condition succeeds will be ignored
-(see example of keyword <cql>position:cut</cql>).
+This keyword has a special meaning if combined with keyword
+<cql>position:cut</cql>.
 </p>
 
 <p>
@@ -2223,15 +2272,20 @@ quite faster, although quite time consuming.
 
 <h3 id="position:evaluation">:evaluation<extension/></h3>
 
+<annotation>
+This is a very slow operation and should be restricted.
+</annotation>
+
 <p>
 This keyword is evaluating the current position with the help of an
-external chess engine (with UCI protocol). The number of parameters
-depends on the search mode. There are three search modes:
+external chess engine. The number of parameters depends on the search mode.
+There are three search modes:
 </p>
 
 <dir>
   <table>
     <!-- UCI:  "go depth <x>" -->
+    <!-- WB:   "st <x>"       -->
     <tr>
       <td class="l"><expr>depth &lt;d&gt;</expr></td>
       <td class="r">search &lt;d&gt; plies only</td>
@@ -2252,7 +2306,7 @@ depends on the search mode. There are three search modes:
 </dir>
 
 <p>
-The first two modes (depth and movetime) are taking three additional parameters.
+The modes "depth" and "movetime" are taking three additional parameters.
 The third parameter denotes the lower bound, the fourth parameter
 denotes the upper bound, both scores are in centi-pawns. The query succeeds
 if the estimation is within the specified bounds (inclusive the ranges). If
@@ -2263,10 +2317,11 @@ positive unlimited. The fifth parameter is either <i>sidetomove</i> or <i>absolu
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
 
-<annotation>
-This is a very slow operation and should be restricted; for example to
-terminal positions.
-</annotation>
+<note>
+Please note that the modes "depth" and "mate" are available only if the engine
+supports the UCI protocol. An engine restricted to the WinBoard/XBoard protocol
+does only support the "movetime" mode.
+</note>
 
 <p>
 Examples:
@@ -2405,13 +2460,17 @@ without a material loss.
 
 <h3 id="position:moveevaluation">:moveevaluation<extension/></h3>
 
+<annotation>
+This is a very slow operation and should be restricted.
+</annotation>
+
 <p>
 This keyword is matching the difference between the evaluation of the current
 position and the evaluation of the preceding position. The evaluation will be
-done with the help of an external chess engine (with UCI protocol). It takes
-seven parameters. The first and second parameter are piece designators. The
-former is specifies moving pieces, the second one specifies target squares.
-The third and fourth are depending on the search mode:
+done with the help of an external chess engine. It takes seven parameters.
+The first and second parameter are piece designators. The former is specifies
+moving pieces, the second one specifies target squares.  The third and fourth
+are depending on the search mode:
 </p>
 
 <dir>
@@ -2423,6 +2482,7 @@ The third and fourth are depending on the search mode:
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
+    <!-- WB:   "st <x>"       -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
@@ -2441,16 +2501,17 @@ current board and the score of the last board. In case of mating positions
 the difference will be always greater than 10.000.
 </p>
 
+<note>
+Please note that the mode "depth" is available only if the engine suppoprts the
+UCI protocol. An engine restricted to the WinBoard/XBoard protocol does only
+support the "movetime" mode.
+</note>
+
 <p>
 The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 <i>sidetomove</i> means that the evaluation value depends on side to move, and
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
-
-<annotation>
-This is a very slow operation and should not be used with huge databases,
-or the moving pieces and the target squares should be restricted.
-</annotation>
 
 <p>
 Example:
