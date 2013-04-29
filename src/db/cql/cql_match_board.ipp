@@ -36,6 +36,7 @@ Repetition::Position::Position(::db::board::ExactZHPosition const& board)
 {
 }
 
+inline CannotWin::CannotWin(db::color::ID color) :m_color(color) {}
 inline CheckCount::CheckCount(unsigned count) :m_wcount(count), m_bcount(4) {}
 inline CheckCount::CheckCount(unsigned wcount, unsigned bcount) :m_wcount(wcount), m_bcount(bcount) {}
 inline HalfmoveClockLimit::HalfmoveClockLimit(unsigned limit) :m_limit(limit) {}

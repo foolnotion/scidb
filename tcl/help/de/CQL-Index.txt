@@ -62,25 +62,29 @@ gespeichert:
   </table>
 </dir>
 
+<!-- begin: exclude in web browser -->
+
 <p>
 Sollten Bezeichner für die Anzeige der Figuren gewünscht werden, so ist einer der
-folgenden Optionen auszuwählen (dies funktioniert nicht im Web-Browser):
+folgenden Optionen auszuwählen:
 </p>
 
 <table>
   <tr>
-    <td><span class="button"><a href="script(pieces::english)">Englische Bezeichner verwenden</a></td>
+    <td><span class="button"><a href="script(pieces::english)">Englische Bezeichner verwenden</a></span></td>
     <td>K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
   </tr>
   <tr>
-    <td><span class="button"><a href="script(pieces::regional)">Regionale Bezeichner verwenden</a></td>
+    <td><span class="button"><a href="script(pieces::regional)">Regionale Bezeichner verwenden</a></span></td>
     <td><whitepieceletters/> <blackpieceletters/></td>
   </tr>
   <tr>
-    <td><span class="button"><a href="script(pieces::designators)">Zurück zu Figurensymbolen</a></td>
+    <td><span class="button"><a href="script(pieces::designators)">Zurück zu Figurensymbolen</a></span></td>
     <td>&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
   </tr>
 </table>
+
+<!-- end: exclude in web browser -->
 
 <h2>Index</h2>
 
@@ -89,16 +93,18 @@ folgenden Optionen auszuwählen (dies funktioniert nicht im Web-Browser):
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
       <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Tranformation der Figurenbezeichner</a></li>
+      <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
       <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
-      <li><a href="Pattern-Matching.html">Musterabgleich (Pattern-Matching)</a></li>
+      <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
     </ul>
   </li>
+<!--
   <li><a href="CQL-Transformations.html">Transformationen</a></li>
   <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
   <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
   <li><a href="CQL-Relation-List.html">Die Relationenliste</a></li>
   <li><a href="CQL-Tagging.html">Markierung</a></li>
+-->
   <li><a href="CQL-Examples.html">Beispiele</a></li>
 </ul>
 

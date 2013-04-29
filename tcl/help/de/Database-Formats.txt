@@ -73,20 +73,24 @@ zur Zeit sind dies:
     <tr>
       <td><a href="http://de.wikipedia.org/wiki/Schachvarianten#Crazyhouse_oder_Einsetzschach">
          %::mc::VariantName(Crazyhouse)%</a></td>
+      <td></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse</a>)</td>
     </tr>
     <tr>
       <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">
         %::mc::VariantName(Antichess)%</a></td>
+      <td></td>
       <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
           <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
     </tr>
     <tr>
       <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
+      <td></td>
       <td>(Schlagschachvariante)</td>
     </tr>
     <tr>
       <td>%::mc::VariantName(ThreeCheck)%</td>
+      <td></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-Check</a>)</td>
     </tr>
   </table>

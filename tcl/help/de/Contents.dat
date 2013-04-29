@@ -43,7 +43,7 @@ set Contents {
       {{{Syntax} {CQL-Syntax.html}}}
       {{{Figurenbezeichner} {CQL-Piece-Designators.html}}}
       {{{Felderbezeichner} {CQL-Square-Designators.html}}}
-      {{{Tranformation der Figurenbezeichner} {CQL-Piece-Designator-Transforms.html}}}
+      {{{Transformation der Figurenbezeichner} {CQL-Piece-Designator-Transforms.html}}}
       {{{Bereichsangaben} {CQL-Range-Specifiers.html}}}
       {{{Musterabgleich (Pattern-Matching)} {Pattern-Matching.html}}}
     }

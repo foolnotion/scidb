@@ -5,11 +5,17 @@ set Index {
       {{Archiv} {Database-Formats.html} {Database-Archive}}
     }
   }
+  { B
+    {
+      {{Bereichsangaben (CQL)} {CQL-Range-Specifiers.html} {}}
+    }
+  }
   { C
     {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{CQL Beispiele} {CQL-Examples.html} {}}
       {{CQL Handbuch} {CQL-Index.html} {}}
+      {{CQL Syntax} {CQL-Syntax.html} {}}
     }
   }
   { D
@@ -31,8 +37,11 @@ set Index {
   }
   { F
     {
+      {{Felderbezeichner (CQL)} {CQL-Square-Designators.html} {}}
+      {{Felderbezeichnerverbund (CQL)} {CQL-Square-Designators.html} {compound}}
       {{Feldmarkierungspalette} {Mark-Palette-Dialog.html} {}}
       {{FEN (Forsyth-Edwards-Notation)} {FEN.html} {}}
+      {{Figurenbezeichner (CQL)} {CQL-Piece-Designators.html} {}}
       {{Funktionsleisten} {Toolbar-Usage.html} {}}
     }
   }
@@ -72,6 +81,12 @@ set Index {
       {{Shredder-FEN} {FEN.html} {}}
       {{Startpositionseingabe} {Start-Position-Setup-Dialog.html} {}}
       {{Stellungseingabe} {Board-Setup-Dialog.html} {}}
+      {{Suchmusterabgleich (Pattern-Matching)} {Pattern-Matching.html} {}}
+    }
+  }
+  { T
+    {
+      {{Transformationen der Figurenbezeichner (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }
   { U

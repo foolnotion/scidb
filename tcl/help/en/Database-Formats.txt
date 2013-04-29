@@ -71,21 +71,21 @@ currently this is:
     </tr>
     <tr>
       <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
-      <td></td>
     </tr>
     <tr>
       <td><a href="http://en.wikipedia.org/wiki/Antichess">%::mc::VariantName(Antichess)%</a></td>
+      <td></td>
       <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
           <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
     </tr>
     <tr>
       <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
+      <td></td>
       <td>(variant of %::mc::VariantName(Antichess)%)</td>
     </tr>
     <tr>
       <td><a href="http://en.wikipedia.org/wiki/Three-check_chess">
           %::mc::VariantName(ThreeCheck)%</a></td>
-      <td></td>
     </tr>
   </table>
 </box>

@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Piece-Designator-Transforms.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Transformationen der Figurenbezeichner</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Transformationen der Figurenbezeichner</h1>
+</div>
+
+<p>
+Einige Transformationen für Figurenbezeichner werden hier definiert.
+</p>
+
+<p>
+Eine <b>diagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+Hauptdiagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> an der Hauptdiagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die diagonale Spiegelung von <span style='white-space:nowrap;'><code>[Aa][a-h1-2,f6,h7]</code></span>
+gleich <span style='white-space:nowrap;'><code>[Aa][a-b1-8,f6,g8]</code></span>.
+</p>
+
+<p>
+Eine <b>gegendiagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+a8-h1-Diagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Gegendiagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>b2</code></span> an der a8-h1-Diagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die gegendiagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> gleich
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span>. Die gegendiagonale Spiegelung von
+<span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1-8]</code></span>, kennzeichnend einen Läufer auf der a-Linie,
+ist <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a-h8]</code></span>, kennzeichnend einen Läufer auf der achten
+Reihe.
+</p>
+
+<p>
+Eine <b>vertikale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+vertikalen Halbierungslinie des Schachbretts. Beispielsweise ist die vertikale
+Spiegelung von <span style='white-space:nowrap;'><code>Uf6</code></span>, kennzeichnend eine Figur auf f6, gleich
+<span style='white-space:nowrap;'><code>Uc6</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertikale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> an der vertikalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>horizontale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+horizontalen Halbierungslinie des Schachbretts. Beispielsweise ist die horizontale
+Spiegelung von <span style='white-space:nowrap;'><code>Uf6</code></span> gleich <span style='white-space:nowrap;'><code>Uf3</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> an der horizontalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>V-förmige Transformation</b>, angewendet auf einen
+Figurenbezeichner, ist entweder eine Spiegelungstransformation oder eine
+Rotation von 90 Grad auf dem Schachbrett gefolgt von einer
+Spiegelungstransformation oder der identischen Transformation. Es gibt
+8 unterschiedliche V-förmige Transformationen auf dem Schachbrett.
+Beispielsweise ist das Resultat einer Anwendung aller 8 V-förmigen
+Transformationen auf den Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> die Menge
+der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b3</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c7</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f7</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g3</code></span> und <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f2</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Alle V-förmigen Transformationen von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>.<br/>
+      Dies ist die Sequenz:
+      diagonale Spiegelung (nach b3),<br/>
+      horizontale Spiegelung (nach b6),
+      gegendiagonale Spiegelung (nach c7),<br/>
+      vertikale Spiegelung (nach f7),
+      diagonale Spiegelung (nach g6),<br/>
+      horizontale Spiegelung (nach g3),
+      gegendiagonale Spiegelung (nach f2).<br/>
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>einstellige rechtsschiebende Transformation</b>, angewendet auf einen
+Figurenbezeichner, verschiebt jedes Feld in der Feldermenge ein Feld nach
+rechts. Ist ein Feld bereits auf dem rechten Brettrand, so wird es von der
+Feldermenge entfernt. Ein Feld auf dem linken Brettrand ist auch wieder in der
+neuen Menge enthalten.
+</p>
+
+<p>
+Beispielsweise ist die einstellige rechtsschiebende Transformation von
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> gleich <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>e4</code></span>. Die einstellige rechtsschiebende
+Transformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[c2,h2]</code></span> ist <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d2</code></span>. Die
+einstellige rechtsschiebende Transformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,c2,h2]</code></span> ist
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,b2,d2]</code></span>.
+</p>
+
+<p>
+Die Definitionen der <b>einstelligen linksschiebenden Transformation</b>,
+<b>einstelligen hochschiebenden Transformation</b>, sowie der <b>einstelligen
+runterschiebenden Transformation</b>, sind analog zur einstelligen
+rechtsschiebenden Transformation. Die Randfelderbesonderheiten sind in
+der enstprechenden Veränderung zu sehen.
+</p>
+
+<p>
+Eine <b>Rechtswärtstransformation</b> ist eine Komposition von Null oder
+mehr einstelligen rechtsschiebenden Transformationen. Beispielsweise ergibt
+die drei aufeinanderfolgenden einstelligen rechtsschiebenden Transformationen
+umfassende Rechtswärtstransformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>a4</code></span> die Menge
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a4,b4,c4,d4]</code></span>, denn die Felder am linken Brettrand sind
+immer auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser
+Rechtswärtstransformation auf <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> ergibt <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g4</code></span>.
+</p>
+
+<p>
+Die Definitionen der <b>Linkswärtstransformation</b>,
+<b>Hochwärtstransformation</b>, und <b>Runterwärtstransformation</b> sind
+entsprechend.
+</p>
+
+<p>
+Eine <b>horizontale Verschiebungstransformation</b> ist entweder eine
+Linkswärtstransformation oder eine Rechtswärtstransformation. Eine
+<b>vertikale Verschiebungstransformation</b> ist entweder eine
+Runterwärtstransformation oder eine Hochwärtstransformation.
+</p>
+
+<p>
+Eine <b>Verschiebungstransformation</b> ist eine Transformationen, die als
+Folge von Null oder mehr horizontalen Verschiebungstransformationen,
+gefolgt von Null oder mehr vertikalen Verschiebungstransformationen,
+ausgedrückt werden kann. Es gibt exakt eine Verschiebungstransformation,
+die ein gegebenes Feld auf ein anderes gegebenes Feld verschiebt. Eine
+mögliche Verschiebung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[b3,c4]</code></span> ist <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[d4,e5]</code></span>.
+</p>
+
+<p>
+Eine <b>Farbwechseltransformation</b>, angewendet auf einen Felderbezeichner,
+wechselt die Farbe der Figurenmenge des Felderbezeichners, und wendet dann
+eine horizontale Verschiebung auf den Figurenbezeichner an. Beispiel:
+die Farbwechseltransformation angewendet auf <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265f;</span>][a2,c2]</code></span>,
+entweder ein weißer Turm, ein schwarzer Läufer, oder ein schwarzer Bauer auf
+c2 oder a2, ergibt die Menge <span style='white-space:nowrap;'><code>[<span class='piece'>&#x265c;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2659;</span>][a7,c7]</code></span>.
+</p>
+
+</body>
+</html>

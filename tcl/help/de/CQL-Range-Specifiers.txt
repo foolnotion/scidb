@@ -1,0 +1,98 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Bereichsangaben (CQL)
+TITLE CQL - Bereichsangaben
+
+<p>
+Viele Schlüsselworte erwarten eine optionale Bereichsangabe. Eine
+Bereichsangabe besteht entweder nur aus einer Zahl, oder aus zwei
+Zahlen, separiert durch Leerzeichen.
+</p>
+
+<p>
+Besteht eine Bereichsangabe nur aus einer Zahl, so bezeichnet sie den
+Bereich. ansonsten bezeichnen beide Zahlen den Bereich zwischen diesen
+Zahlen, einschließlich der beiden Zahlenangaben.
+</p>
+
+<p>
+Eine spezielle Bedeutung hat der Wert "unlimited". Ist "unlimited"
+die einzige Zahl, ist der Bereich grenzenlos, d.h. er bezeichnet
+alle Werte. Ist der niedrigere Wert "unlimited", so ist der Bereich
+nach unten grenzenlos. Ist der höhere Wert "unlimited", so ist der
+Bereich nach oben grenzenlos.
+</p>
+
+<note>
+Der spezielle Wert "unlimited" ist nicht Bestandteil des CQL-Standards.
+</note>
+
+<h3>Beispiele</h3>
+
+<p>
+Die Suchliste kann das Schlüsselwort <cql>:year</cql> enthalten, mit dem
+der Bereich der Jahre spezifiziert wird, in dem die in Frage kommende Partie
+liegen muß, um aufgefunden zu werden.
+</p>
+
+<verb>
+<cql>match:year</cql> 1934
+</verb>
+
+<p>
+Bezeichnet das Jahr 1934, <code>1934</code> ist die Bereichsangabe.
+</p>
+
+<verb>
+<cql>match:year</cql> 1934 2000
+</verb>
+
+<p>
+Bezeichnet die Jahre von 1934 bis 2000. Die Bereichsangabe ist
+<code>1934 2000</code>.
+</p>
+
+<verb>
+<cql>match:year</cql> 1934 unlimited
+</verb>
+
+<p>
+Bezeichnet alle Jahre ab 1934.
+</p>
+
+<verb>
+<cql>match:year</cql> unlimited 1934
+</verb>
+
+<p>
+Bezeichnet alle Jahre vor 1935.
+</p>
+
+<verb>
+<cql>match:elo</cql> unlimited
+</verb>
+
+<p>
+Finde alle Partien, in denen ein Spieler eine (d.h. irgendeine) ELO-Wertung
+besitzt.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

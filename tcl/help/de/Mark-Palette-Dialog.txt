@@ -18,7 +18,7 @@
 INDEX Feldmarkierungspalette
 TITLE Feldmarkierungspalette
 
-<dir><img src="images/marks-palette.png"</dir>
+<dir><img src="images/marks-palette.png" /></dir>
 
 <p>
 Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel

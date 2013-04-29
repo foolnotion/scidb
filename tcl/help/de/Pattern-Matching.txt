@@ -1,0 +1,88 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Suchmusterabgleich (Pattern-Matching)
+TITLE Suchmusterabgleich (Pattern-Matching)
+
+<p>
+Ein Suchuster (Pattern) ist eine Zeichenkette, die folgende Spezialzeichen
+enthalten kann:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><expr>*</expr></td>
+      <td class="r">
+        Diese Stelle im Suchmuster kann eine beliebige Anzahl von Zeichen
+        ersetzen, inklusive der leeren Zeichenkette.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>?</expr></td>
+      <td class="r">
+        Diese Stelle im Suchmuster kann ein beliebiges Zeichen ersetzen.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><expr>\x</expr></td>
+      <td class="r">
+        Bezeichnet das Zeichen x. Dies bietet einen Weg um die
+        spezielle Interpreation der Zeichen <expr>*?\</expr> im
+        Suchmuster zu unterdrücken.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Der Suchmusterabgleich unterscheidet nicht zwischen Groß- und
+Kleinschreibung.
+</p>
+
+<h2 id="examples">Beispiele</h2>
+
+<verb>
+Polgar, J*
+</verb>
+
+Dieses Suchuster kann folgende Zeichenketten ersetzen: <nobr>"Polgar,</nobr>
+<nobr>J"</nobr>, und <nobr>"Polgar,</nobr> <nobr>Judit"</nobr>.
+
+<verb>
+A?erba?h
+</verb>
+
+<p>
+Dies kann folgende Namen ersetzen:
+<nobr>"Averbakh"</nobr> (englische Schreibweise), und <nobr>"Awerbach"</nobr> 
+(deutsche Schreibweise).
+</p>
+
+<verb>
+wirklich beabsichtigt\?
+</verb>
+
+Dies kann nur durch die Zeichenkette "wirklich beabsichtigt?" ersetzt werden.
+Das Zeichen <code>?</code> im Suchuster hat keine spezielle Bedeutung, denn es
+wurde mit dem Schrägstrich davon ausgenommen. Das heißt, daß die
+Zeichenkette "wirklich beabsichtigt!" nicht mit diesem Suchmuster gefunden
+werden kann.
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

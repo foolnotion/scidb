@@ -14,6 +14,8 @@
   <meta http-equiv="content-style-type"
            content="text/css" />
 
+  <meta name="author"
+     content="scidb.sourceforge.net" />
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
@@ -29,7 +31,7 @@
       media="screen"
        href="../styles/help.css" />
 
-  <title>Help: CQL Syntax</title>
+  <title>Scidb Help: CQL Syntax</title>
 </head>
 
 <body>
@@ -142,16 +144,19 @@ and defines a position filter.
 
 <p>
 To determine whether a match filter matches a game, CQL acts as follows.
-It plays through each move in the game, optionally descending as well into
-the variations. Each time a position is reached, each of the position filters
-defined in the match filter is applied to that position.
+Each of the position filters defined in the match filter is applied to
+the start position. (The CQL standard omits the start position).
+Next It plays through each move in the game, optionally descending as well into
+the variations. Each time a position is reached, again each of the position
+filters is applied to that position.
 </p>
 
 <p>
 Example:
 In a 40 move game in which white makes the first move and black the last move,
-if there are no variations then CQL will examine exactly 80 positions in the
-game.
+if there are no variations then CQL will examine exactly 81 positions in the
+game, inclusive the start positions. (The CQL standard omits the start
+position).
 </p>
 
 <p>
@@ -185,7 +190,7 @@ the match list must not contain position lists:
 (match)
 </code></div>
 
-<h2>Comments in a CQL file</h2>
+<h2>Comments in a CQL script</h2>
 
 <p>
 Any characters following a semicolon are ignored in a CQL script. Example:

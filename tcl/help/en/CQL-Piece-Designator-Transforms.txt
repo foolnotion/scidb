@@ -129,7 +129,7 @@ applying the 8 dihedral transformations to the piece designator
   </tr>
   <tr>
     <td align="center">
-      Dihedral transformation of <expr>&Q;c2</expr>.<br/>
+      All dihedral transformations of <expr>&Q;c2</expr>.<br/>
       This is the sequence: diagonal flip (to b3),<br/>
       horizontal flip (to b6), off-diagonal flip (to c7),<br/>
       vertical flip (to f7), diagonal flip (to g6),<br/>
@@ -150,7 +150,7 @@ to the new square set.
 For example, the unit right shift transformation of <expr>&Q;d4</expr> is
 <expr>&Q;e4</expr>. The unit right shift transformation of <expr>&Q;[c2,h2]</expr>
 is <expr>&Q;d2</expr>. The unit right shift transformation of
-<expr>&Q;[a2,c2,h2]</expr> is <expr>&Q;[b2,d2]</expr>.
+<expr>&Q;[a2,c2,h2]</expr> is <expr>&Q;[a2,b2,d2]</expr>.
 </p>
 
 <p>

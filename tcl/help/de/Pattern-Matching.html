@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/Pattern-Matching.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: Suchmusterabgleich (Pattern-Matching)</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">Suchmusterabgleich (Pattern-Matching)</h1>
+</div>
+
+<p>
+Ein Suchuster (Pattern) ist eine Zeichenkette, die folgende Spezialzeichen
+enthalten kann:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
+      <td class="r">
+        Diese Stelle im Suchmuster kann eine beliebige Anzahl von Zeichen
+        ersetzen, inklusive der leeren Zeichenkette.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>?</code></span></td>
+      <td class="r">
+        Diese Stelle im Suchmuster kann ein beliebiges Zeichen ersetzen.
+      </td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>\x</code></span></td>
+      <td class="r">
+        Bezeichnet das Zeichen x. Dies bietet einen Weg um die
+        spezielle Interpreation der Zeichen <span style='white-space:nowrap;'><code>*?\</code></span> im
+        Suchmuster zu unterdrücken.
+      </td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Der Suchmusterabgleich unterscheidet nicht zwischen Groß- und
+Kleinschreibung.
+</p>
+
+<h2 id="examples">Beispiele</h2>
+
+<div class='verb'><code>
+Polgar, J*
+</code></div>
+
+Dieses Suchuster kann folgende Zeichenketten ersetzen: <span style='white-space:nowrap;'>"Polgar,</span>
+<span style='white-space:nowrap;'>J"</span>, und <span style='white-space:nowrap;'>"Polgar,</span> <span style='white-space:nowrap;'>Judit"</span>.
+
+<div class='verb'><code>
+A?erba?h
+</code></div>
+
+<p>
+Dies kann folgende Namen ersetzen:
+<span style='white-space:nowrap;'>"Averbakh"</span> (englische Schreibweise), und <span style='white-space:nowrap;'>"Awerbach"</span> 
+(deutsche Schreibweise).
+</p>
+
+<div class='verb'><code>
+wirklich beabsichtigt\?
+</code></div>
+
+Dies kann nur durch die Zeichenkette "wirklich beabsichtigt?" ersetzt werden.
+Das Zeichen <code>?</code> im Suchuster hat keine spezielle Bedeutung, denn es
+wurde mit dem Schrägstrich davon ausgenommen. Das heißt, daß die
+Zeichenkette "wirklich beabsichtigt!" nicht mit diesem Suchmuster gefunden
+werden kann.
+
+</body>
+</html>

@@ -52,6 +52,8 @@ set HtmlHead {<head>
   <meta http-equiv="content-style-type"
            content="text/css" />
 
+  <meta name="author"
+     content="scidb.sourceforge.net" />
   <meta name="generator"
      content="scidb.sourceforge.net" />
   <meta name="description"
@@ -167,7 +169,7 @@ if {"%scidb%" ni $HtmlMapping} {
 proc print {chan source title body} {
 	variable lang
 
-	set headerMap [list %TITLE% $title %HELP% $::help::mc::Help %LANG% $lang]
+	set headerMap [list %TITLE% $title %HELP% "Scidb $::help::mc::Help" %LANG% $lang]
 
 	puts $chan $::HtmlDocType
 	puts $chan "<!-- Generated from $source -->"

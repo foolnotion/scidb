@@ -82,7 +82,7 @@ befindlichen Figuren ebenfalls ausgewählt werden.
 Zudem existiert eine besondere Schaltfläche:
 </p>
 
-<dir><img src="images/set-start-board-marker.png"</dir>
+<dir><img src="images/set-start-board-marker.png" /></dir>
 
 <p>
 Mit diesem Symbol wird ein Feld ausgezeichnet, auf dem sich eine Figur

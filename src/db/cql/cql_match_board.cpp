@@ -442,6 +442,13 @@ AttackCount::match(GameInfo const& info, Board const& board, Variant variant, bo
 
 
 bool
+CannotWin::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+{
+	return board.cannotWin(m_color, variant);
+}
+
+
+bool
 Check::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
 {
 	return board.isInCheck();

@@ -50,7 +50,7 @@ A pattern is a string which may contain the following special characters:
 </div>
 
 <p>
-Pattern matching is matching a string case-insensitive.
+Pattern matching is always case-insensitive.
 </p>
 
 <h2 id="examples">Examples</h2>
@@ -77,8 +77,9 @@ really intended\?
 </verb>
 
 Is only matching the string "really intended?". The character <code>?</code>
-in the pattern does not have a special meaning because it is escaped. This
-means that this pattern is not matching the string "really intended!".
+in the pattern does not have a special meaning because it is escaped with
+Backslash. This means that this pattern is not matching the string
+"really intended!".
 
 END
 

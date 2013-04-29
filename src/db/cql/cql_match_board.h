@@ -99,6 +99,20 @@ private:
 };
 
 
+class CannotWin : public Match
+{
+public:
+
+	CannotWin(db::color::ID color);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+
+private:
+
+	db::color::ID m_color;
+};
+
+
 class Castling : public Match
 {
 public:

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Range-Specifiers.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Bereichsangaben</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Bereichsangaben</h1>
+</div>
+
+<p>
+Viele Schlüsselworte erwarten eine optionale Bereichsangabe. Eine
+Bereichsangabe besteht entweder nur aus einer Zahl, oder aus zwei
+Zahlen, separiert durch Leerzeichen.
+</p>
+
+<p>
+Besteht eine Bereichsangabe nur aus einer Zahl, so bezeichnet sie den
+Bereich. ansonsten bezeichnen beide Zahlen den Bereich zwischen diesen
+Zahlen, einschließlich der beiden Zahlenangaben.
+</p>
+
+<p>
+Eine spezielle Bedeutung hat der Wert "unlimited". Ist "unlimited"
+die einzige Zahl, ist der Bereich grenzenlos, d.h. er bezeichnet
+alle Werte. Ist der niedrigere Wert "unlimited", so ist der Bereich
+nach unten grenzenlos. Ist der höhere Wert "unlimited", so ist der
+Bereich nach oben grenzenlos.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Der spezielle Wert "unlimited" ist nicht Bestandteil des CQL-Standards.
+</p>
+
+<h3>Beispiele</h3>
+
+<p>
+Die Suchliste kann das Schlüsselwort <a href="CQL--List.html#:year">:year</a> enthalten, mit dem
+der Bereich der Jahre spezifiziert wird, in dem die in Frage kommende Partie
+liegen muß, um aufgefunden zu werden.
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:year">:year</a> 1934
+</code></div>
+
+<p>
+Bezeichnet das Jahr 1934, <code>1934</code> ist die Bereichsangabe.
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:year">:year</a> 1934 2000
+</code></div>
+
+<p>
+Bezeichnet die Jahre von 1934 bis 2000. Die Bereichsangabe ist
+<code>1934 2000</code>.
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:year">:year</a> 1934 unlimited
+</code></div>
+
+<p>
+Bezeichnet alle Jahre ab 1934.
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:year">:year</a> unlimited 1934
+</code></div>
+
+<p>
+Bezeichnet alle Jahre vor 1935.
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:elo">:elo</a> unlimited
+</code></div>
+
+<p>
+Finde alle Partien, in denen ein Spieler eine (d.h. irgendeine) ELO-Wertung
+besitzt.
+</p>
+
+</body>
+</html>

@@ -15,7 +15,7 @@ set Index {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{Clipbase} {Clipbase.html} {}}
       {{Command line options} {Command-Line-Options.html} {}}
-      {{Compound square designators (CQL)} {CQL-Square-Designators.html} {Compound}}
+      {{Compound square designators (CQL)} {CQL-Square-Designators.html} {compound}}
       {{Compress} {Database-Switcher.html} {Compact}}
       {{Compress database} {Database-Switcher.html} {Compact}}
       {{Contact information} {Contact-Information.html} {}}
@@ -53,6 +53,7 @@ set Index {
     {
       {{Game Browser} {Game-Browser.html} {}}
       {{Game markers} {Game-Flags.html} {}}
+      {{Game Overview Browser} {Game-Overview.html} {}}
     }
   }
   { H
@@ -70,6 +71,11 @@ set Index {
     {
       {{NAG annotation values} {NAG-Comments.html} {}}
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
+    }
+  }
+  { O
+    {
+      {{Overview Browser} {Game-Overview.html} {}}
     }
   }
   { P

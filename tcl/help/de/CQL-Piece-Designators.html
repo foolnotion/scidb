@@ -1,0 +1,137 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Piece-Designators.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/images/scidb.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Figurenbezeichner</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Figurenbezeichner</h1>
+</div>
+
+<p>
+Ein Figurenbezeichner ist ein Zeichenkette, die eine Menge von Figuren
+beschreibt, die sich auf den Schachfeldern befinden. Ein Figurenbezeichner
+umfasst einen Figurenartbezeichner gefolgt von einem Felderbezeichner. Der 
+Figurenartbezeichner kennzeichnet eine Menge von Figuren, und der
+Felderbezeichner kennzeichnet eine Menge von Feldern. Die Menge der
+Figuren kann die "Leerfeldfigur" beinhalten, die ein leeres Feld beschreibt.
+</p>
+
+<p>
+Ein Figurenbezeichner findet eine Position wenn es in der Menge der Felder,
+die mit dem Figurenbezeichner bestimmt wird, ein Feld gibt mit einer Figur,
+die im Figurenartbezeichner enthalten ist.
+</p>
+
+<h3>Beispiele für den Figurenbezeichner</h3>
+
+<p>
+Der Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a2</code></span> kennzeichnet einen weißen Turm auf
+a2. Der Figurenartbezeichner is <span class='piece'>&#x2656;</span>, und der Felderbezeichner ist
+<span style='white-space:nowrap;'><code>a2</code></span>. Er findet jede Position mit einem weißen Turm auf a2.
+</p>
+
+<p>
+Der Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>c1</code></span>  kennzeichnet einen schwarzen Läufer
+auf c1. Der Figurenartbezeichner ist <span class='piece'>&#x265d;</span>, und der Felderbezeichner is
+<span style='white-space:nowrap;'><code>c1</code></span>. Er findet jede Position mit einem schwarzen Läufer auf c1.
+</p>
+
+<p>
+Der Figurenbezeichner <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span>]d1</code></span> kennzeichnet wahlweise einen
+weißen Turm oder einen schwarzen Läufer auf d1. Der Figurenartbezeichner ist
+<span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span>]</code></span>, und der Felderbezeichner ist <span style='white-space:nowrap;'><code>d1</code></span>. Er findet
+jede Position entweder mit einen weißen Turm oder mit einen schwarzen Läufer
+auf d1.
+</p>
+
+<p>
+Der Figurenbezeichner <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2655;</span><span class='piece'>&#x265c;</span>][d1,h3]</code></span> kennzeichnet wahlweise eine
+weiße Dame oder einen schwarzen Turm auf d1 oder h3. Der Figurenartbezeichner
+ist <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span>]</code></span>, und der Felderbezeichner ist <span style='white-space:nowrap;'><code>[d1,h3]</code></span>.
+Er findet jede Position entweder mit einer weißen Dame oder einem schwarzen
+Turm auf d1 oder h3. (Die Position kann auch eine weiße Dame oder schwarzen
+Turm auf beiden Feldern d1 und h3 haben.)
+</p>
+
+<h2>Erlaubte Figurenartbezeichner</h2>
+
+<p>
+Dies sind die erlaubten Figurenartbezeichner:
+</p>
+
+<div class='box'>
+  <p><b>Standardfigurenartbezeichner</b></p>
+  <table>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span>&emsp;</code></span></td><td>weißer König</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265a;</span>&emsp;</code></span></td><td>schwarzer König</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>&emsp;</code></span></td><td>weiße Dame</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265b;</span>&emsp;</code></span></td><td>schwarze Dame</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>&emsp;</code></span></td><td>weißer Turm</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265c;</span>&emsp;</code></span></td><td>schwarzer Turm</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>&emsp;</code></span></td><td>weißer Läufer</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>&emsp;</code></span></td><td>schwarzer Läufer</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2658;</span>&emsp;</code></span></td><td>weißer Springer</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265e;</span>&emsp;</code></span></td><td>schwarzer Springer</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x2659;</span>&emsp;</code></span></td><td>weißer Bauer</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code><span class='piece'>&#x265f;</span>&emsp;</code></span></td><td>schwarzer Bauer</td></tr>
+  </table>
+
+  <p><b>Zusätzliche Figurenartbezeichner</b></p>
+  <table>
+    <tr><td><span style='white-space:nowrap;'><code>.&emsp;</code></span></td><td>Leerfeld</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>A&emsp;</code></span></td><td>beliebige weiße Figur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>a&emsp;</code></span></td><td>beliebige schwarze Figur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>M&emsp;</code></span></td><td>weiße Schwerfigur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>m&emsp;</code></span></td><td>schwarze Schwerfigur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>I&emsp;</code></span></td><td>weiße Leichtfigur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>i&emsp;</code></span></td><td>schwarze Leichtfigur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>U&emsp;</code></span></td><td>irgendeine Figur</td></tr>
+    <tr><td><span style='white-space:nowrap;'><code>?&emsp;</code></span></td><td>irgendeine Figur oder ein Leerfeld</td></tr>
+   </table>
+   <p></p>
+</div>
+
+<h3>Figurenartbezeichner markieren</h3>
+
+<p>
+Überall wo ein Figurenartbezeichner auftritt kann auch ein Markierungsname,
+der mit dem Zeichen <span style='white-space:nowrap;'><code>$</code></span> beginnt, auftreten. Diese Figurenart
+vertritt exakt die Figur, die durch den Markierungnamen vertreten wird.
+Für weitere Informationen siehe Seite <a href="CQL-Tagging.html">Markierung</a>.
+</p>
+
+</body>
+</html>

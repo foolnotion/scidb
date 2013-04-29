@@ -67,20 +67,22 @@ Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse va
     </tr>
     <tr>
       <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
-      <td></td>
     </tr>
     <tr>
       <td><a href="http://pil.phys.uniroma1.it/~zapperi/chess/vinciperdi.htm">
           %::mc::VariantName(Antichess)%</a></td>
+      <td></td>
       <td>(<a href="http://suicidechess.ca/index.php?lg=en">Suicide</a>,
           <a href="http://www6.chessclub.com/help/Giveaway">Giveaway</a>)</td>
     </tr>
     <tr>
       <td><a href="http://loserschess.org/">Losers</a></td>
+      <td></td>
       <td>(variante di %::mc::VariantName(Antichess)%)</td>
     </tr>
     <tr>
       <td>%::mc::VariantName(ThreeCheck)%</a></td>
+      <td></td>
       <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-Check Chess</a>)</td>
     </tr>
   </table>

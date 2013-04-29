@@ -24,7 +24,7 @@ TITLE CQL - Chess Query Language
 <p>
 Chess Query Language (CQL) was designed to allow researchers, authors, and
 players to search for games, problems, and studies that match specific themes
-(<see/> <a href="http://www.rbnn.com/cql/">CQLManual</a>).
+(<see/> <a href="http://www.rbnn.com/cql/">CQL Manual</a>).
 </p>
 
 <p>
@@ -61,25 +61,28 @@ letters:
   </table>
 </dir>
 
+<!-- begin: exclude in web browser -->
+
 <p>
-If you prefer to see piece letters, please select one of the options
-(not working in web browser):
+If you prefer to see piece letters, please select one of the options:
 </p>
 
 <table>
   <tr>
-    <td><span class="button"><a href="script(pieces::english)">Use English piece letters</a></td>
+    <td><span class="button"><a href="script(pieces::english)">Use English piece letters</a></span></td>
     <td>K Q R B N P k q r b n p (used in CQL files)</td>
   </tr>
   <tr>
-    <td><span class="button"><a href="script(pieces::regional)">Use regional piece letters</a></td>
+    <td><span class="button"><a href="script(pieces::regional)">Use regional piece letters</a></span></td>
     <td><whitepieceletters/> <blackpieceletters/></td>
   </tr>
   <tr>
-    <td><span class="button"><a href="script(pieces::designators)">Revert to designators</a></td>
+    <td><span class="button"><a href="script(pieces::designators)">Revert to designators</a></span></td>
     <td>&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
   </tr>
 </table>
+
+<!-- end: exclude in web browser -->
 
 <h2>Index</h2>
 

@@ -17,7 +17,7 @@
 *********************************************************************** -->
 
 INDEX Square designators (CQL)
-INDEX Compound square designators (CQL)#Compound
+INDEX Compound square designators (CQL)#compound
 
 TITLE CQL - Square designators
 
@@ -42,7 +42,7 @@ For example: the piece designator <expr>&b;b3</expr> has a simple square
 designator denoting the square b3, and denotes a black bishop on b3.
 </p>
 
-<h2 id="Compound">Compound square designators</h2>
+<h2 id="compound">Compound square designators</h2>
 
 <p>
 A compound square designator can denote more than one square. One type of

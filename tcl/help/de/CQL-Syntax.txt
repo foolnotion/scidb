@@ -1,0 +1,197 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX CQL Syntax
+TITLE CQL Syntax
+
+<p>
+Ein CQL-Skript hat die folgende generische Struktur:
+</p>
+
+<verbatim>
+(match
+  (position ... )
+  (position ... )
+  (position ... )
+  ...)
+</verbatim>
+
+<p>
+In diesem Beispiel repräsentiert "..." verschiedene Schlüsselwörter und
+Befehle, die nachfolgend noch definiert werden.
+</p>
+
+<p>
+Beispielsweise folgt hier ein einfaches CQL-Skript um vierfach
+hintereinanderstehende Bauern aufzufinden, aber nur in Partien gespielt
+im Jahr 2013:
+</p>
+
+<verbatim>
+(match
+  <cql>match:year</cql> 2013
+  (position
+    <cql>position:piececount</cql> &P;[b2-7] 4
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+Um die einzelenen Bestandteile von CQL zu verstehen, werden einige syntaktische
+Termina definiert.
+</p>
+
+<p>
+Eine Liste ist eine endliche Folge von Elementen, separiert mit Leerzeichen,
+und eingeschlossen in Klammern. Jedes Element ist entweder eine Zeichenkette,
+die keine Leerzeichen enthält, oder eine weitere Liste.
+</p>
+
+<p>
+Beispielsweise ist
+</p>
+
+<verb>
+(position <cql>position:shifthorizontal</cql> <cql>position:flipcolor</cql>)
+</verb>
+
+<p>
+eine Liste deren drei Elemente die Zeichenketten "position",
+":shifthorizontal", und ":flipcolor" sind.
+</p>
+
+<p>
+Die obige Liste, beginnend mit "(match", hat sechs Elemente. Das letzte
+Element ist selbst eine Liste mit sechs Elementen, dessen erstes Element
+"position", und dessen letztes Element ":flipcolor" ist.
+</p>
+
+<p>
+Ein Schlüsselwort ist eine Zeichenkette beginnend mit ":". Beispielsweise
+beinhaltet die obige Suchliste das Schlüsselwörter <cql>match:year</cql>.
+</p>
+
+<p>
+Ein Schlüsselwortparameter ist eine Liste, oder eine Zeichenkette, unmittelbar
+hinter dem Schlüsselwort, das einen Parameter erwartet. Einige
+Schlüsselwörter erwarten mehrere Parameter, eines hinter dem anderen.
+</p>
+
+<h2>Beispiele für Schlüsselwörterparameter</h2>
+
+<p>
+In der Liste
+</p>
+
+<verbatim>
+(match
+  (position
+    <cql>position:piececount</cql> &P;[b2-7] 4
+    <cql>position:shifthorizontal</cql>
+    <cql>position:flipcolor</cql>))
+</verbatim>
+
+<p>
+erhält <cql>position:piececount</cql> die Parameter <expr>&P;[b2-7]</expr>
+und <expr>4</expr>. Die anderen Schlüsselwörter
+<cql>position:shifthorizontal</cql> und <cql>position:flipcolor</cql> erwarten
+keine Parameter. Eine Liste mit dem ersten Element "match" wird eine Suchliste
+genannt und definiert einen Suchfilter.
+</p>
+
+<p>
+Eine Liste mit dem ersten Element "position" wird eine Positionsliste
+genannt und definiert einen Positionsfilter.
+</p>
+
+<h2>Funktionsweise von CQL</h2>
+
+<p>
+Um zu bestimmen ob ein Suchfilter eine Partie filtert (findet), agiert
+CQL wie folgendermaßen beschrieben. Es wendet jeden einzelnen Positionsfilter,
+der in der Suchliste definiert ist, auf die Startposition an. (Der
+CQL-Standardposition läßt die Startposition aus). Danach spielt es jeden Zug
+der Partie, gegebenfalls auch die der Varianten. Nach jedem Zug wird wiederum
+jeder einzelne Positionsfilter auf die enstandene Position angewendet.
+</p>
+
+<p>
+Beispiel:
+In einer Partie mit 40 Zügen ohne Untervarianten, in der Weiß den ersten Zug
+macht und Schwarz den letzten, werden genau 81 Positionen von CQL untersucht,
+inklusive der Startposition. (Der CQL-Standard läßt die Startposition aus.)
+</p>
+
+<p>
+Sobald alle Positionsfilter der Suchliste eine Position in der Partie filtern
+(auffinden), genau dann filtert diese Suchliste diese Partie.
+</p>
+
+<p>
+Der einfachste Positionsfilter ist:
+</p>
+
+<verb>
+(position)
+</verb>
+
+<p>
+Dieser Positionsfilter filtert jede Partie. Folglich filtert das folgende
+Skript alle Partien:
+</p>
+
+<verb>
+(match (position))
+</verb>
+
+<p>
+In Scidb kann dieses Skript noch einfacher formuliert werden, denn in
+Scidb muß die Suchliste keine Positionsliste enthalten:
+</p>
+
+<verb>
+(match)
+</verb>
+
+<h2>Kommentare in einem CQL-Skript</h2>
+
+<p>
+Alle Zeichen hinter einem Semikolon in einem CQL-Skript werden ignoriert.
+Beispiel:
+</p>
+
+<verbatim>
+<comment>; Ein CQL-Skript das alle Partien filtert</comment>
+(match 
+  (position) <comment>; ein Positionsfilter der alles filtert</comment>
+)
+</verbatim>
+
+<h2>Einige Basiselement</h2>
+
+<ul>
+    <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
+    <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
+    <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
+    <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
+    <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
+</ul>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

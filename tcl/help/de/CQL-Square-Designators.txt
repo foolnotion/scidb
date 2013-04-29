@@ -1,0 +1,130 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Felderbezeichner (CQL)
+INDEX Felderbezeichnerverbund (CQL)#compound
+
+TITLE CQL - Felderbezeichner
+
+<h2>Felderbezeichner</h2>
+
+<p>
+Ein Felderbezeichner definiert eine Menge von Feldern.
+</p>
+
+<p>
+Ein Leerfeldbezeichner kennzeichnet alle 64 Felder auf dem Schachbrett.
+Beispiel: der Figurenbezeichner <expr>&R;</expr> hat einen Leerfeldbezeichner.
+Folglich kennzeichnet dieser Figurenbezeichner einen weißen Turm irgendwo
+auf dem Schachbrett.
+</p>
+
+<p>
+Ein einfacher Felderbezeichner umfaßt zwei Zeichen, das erste ist die Linie,
+und das zweite die Reihe; in der üblichen Schachnotation. Mit <expr>?</expr>
+als Zeichen für die Linie werden alle Linien a bis h bezeichnet. Mit
+<expr>?</expr> als Zeichen für die Reihe werden alle Reihen 1 bis 8
+bezeichnet. Beispiel: der Figurenbezeichner <expr>&b;b3</expr> hat einen
+einfachen Felderbezeichner, der das Feld b3 kennzeichnet, und bezeichnet
+einen schwarzen Läufer auf b3.
+</p>
+
+<h2 id="compound">Felderbezeichnerverbünde</h2>
+
+<p>
+Ein Felderbezeichnerverbund kann mehr als ein Feld bezeichnen. Ein Typ der
+Felderbezeichnerverbund umfaßt einen Linienbezeichner gefolgt von einem
+Reihenbezeichner. Ein Linienbezeichner umfaßt entweder ein Zeichen für die
+Linie, oder aber zwei Zeichen für zwei Linien, separiert mit einem Bindestrich.
+Ein Reihenbezeichner umfaßt entweder ein Zeichen für die Reihe, oder aber
+zwei Zeichen für zwei Reihen, separiert mit einem Bindestrich. Ein
+Linienbezeichner mit drei Zeichen kennzeichnet alle zwischenliegenden Linien
+inklusive der durch die Zeichen gekennzeichneten Linien. Ein Reihenbezeichner
+mit drei Zeichen kennzeichnet alle zwischenliegenden Reihen inklusive der durch
+die Zeichen gekennzeichneten Reihen. Ein Felderbezeichnerverbund kann eine
+durch Kommata separierte Folge von Felderbezeichner umfassen. Die durch einen
+Felderbezeichnerverbund gekennzeichnete Feldermenge ist die Vereinigung aller
+enthaltenen Felderbezeichner.
+</p>
+
+<p>
+Ein Felderbezeichnerverbund muß syntaktisch in Klammern eingechlossen sein.
+</p>
+
+<h3>Beispiele für Felderbezeichnerverbünde</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[a-c1]</expr></td>
+    <td class="right">kennzeichnet die drei Felder a1, b1, und c1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[b3-5]</expr></td>
+    <td class="right">kennzeichnet die Felder b3, b4, und b5.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[f-h6-8]</expr></td>
+    <td class="right">kennzeichnet die Felder f6, f7, f8, g6, g7, g8, h6, h7, und h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[a1,c4]</expr></td>
+    <td class="right">kennzeichnet die Felder a1 und c4.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[a-h1-2,a8,h8]</expr></td>
+    <td class="right">kennzeichnet die ersten beiden Reihen plus a8 and h8.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[]</expr></td>
+    <td class="right">kennzeichnet eine leere Menge von Feldern. Dies ist absolut
+        verschieden vom Leerfeldbezeichner, der alle Felder kennzeichnet.</td>
+  </tr>
+</table>
+
+<h3>Beispiele für Figurenbezeichner</h3>
+
+<table class="stripes">
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>Ia1</expr></td>
+    <td class="right">kennzeichnet eine weiße Leichtfigur auf a1. Er findet jede
+        Position mit einem weißen Läufer oder einem weißen Springer auf a1.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>&R;[a-h1-2]</expr></td>
+    <td class="right">findet jede Position mit einem weißen Turm auf den ersten
+        beiden Reihen.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>[A&r;][a-h1-2,a8,h8]</expr></td>
+    <td class="right">findet jede Position mit einer weißen Figur oder einem schwarzen
+        Turm auf den ersten beiden Reihen oder in den Ecken.</td>
+  </tr>
+  <tr valign="top">
+    <td class="left"><expr>[&R;&B;&N;&Q;&P;][a1,h1,a8,h8]</expr></td>
+    <td class="right">findet jede Position mit einem weißen Nicht-König in den Ecken.</td>
+  </tr>
+  <tr valign="top" class="stripes">
+    <td class="left"><expr>&B;[]</expr></td>
+    <td class="right">kennzeichnet einen weißen Läufer auf einem freien Feld. Dies
+        kann natürlich nicht aufgefunden werden.</td>
+  </tr>
+</table>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

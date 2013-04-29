@@ -1,0 +1,219 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Transformationen der Figurenbezeichner (CQL)
+TITLE CQL - Transformationen der Figurenbezeichner
+
+<p>
+Einige Transformationen für Figurenbezeichner werden hier definiert.
+</p>
+
+<p>
+Eine <b>diagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+Hauptdiagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonale Spiegelung von <expr>&R;a8</expr> an der Hauptdiagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die diagonale Spiegelung von <expr>[Aa][a-h1-2,f6,h7]</expr>
+gleich <expr>[Aa][a-b1-8,f6,g8]</expr>.
+</p>
+
+<p>
+Eine <b>gegendiagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+a8-h1-Diagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Gegendiagonale Spiegelung von <expr>&B;b2</expr> an der a8-h1-Diagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die gegendiagonale Spiegelung von <expr>&R;a8</expr> gleich
+<expr>&R;a8</expr>. Die gegendiagonale Spiegelung von
+<expr>[&B;&b;][a1-8]</expr>, kennzeichnend einen Läufer auf der a-Linie,
+ist <expr>[&B;&b;][a-h8]</expr>, kennzeichnend einen Läufer auf der achten
+Reihe.
+</p>
+
+<p>
+Eine <b>vertikale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+vertikalen Halbierungslinie des Schachbretts. Beispielsweise ist die vertikale
+Spiegelung von <expr>Uf6</expr>, kennzeichnend eine Figur auf f6, gleich
+<expr>Uc6</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertikale Spiegelung von <expr>&b;f6</expr> an der vertikalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>horizontale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+horizontalen Halbierungslinie des Schachbretts. Beispielsweise ist die horizontale
+Spiegelung von <expr>Uf6</expr> gleich <expr>Uf3</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontale Spiegelung von <expr>&b;f6</expr> an der horizontalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>V-förmige Transformation</b>, angewendet auf einen
+Figurenbezeichner, ist entweder eine Spiegelungstransformation oder eine
+Rotation von 90 Grad auf dem Schachbrett gefolgt von einer
+Spiegelungstransformation oder der identischen Transformation. Es gibt
+8 unterschiedliche V-förmige Transformationen auf dem Schachbrett.
+Beispielsweise ist das Resultat einer Anwendung aller 8 V-förmigen
+Transformationen auf den Figurenbezeichner <expr>&Q;c2</expr> die Menge
+der 8 Figurenbezeichner <expr>&Q;c2</expr>,
+<expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
+<expr>&Q;g6</expr>, <expr>&Q;g3</expr> und <expr>&Q;f2</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Alle V-förmigen Transformationen von <expr>&Q;c2</expr>.<br/>
+      Dies ist die Sequenz:
+      diagonale Spiegelung (nach b3),<br/>
+      horizontale Spiegelung (nach b6),
+      gegendiagonale Spiegelung (nach c7),<br/>
+      vertikale Spiegelung (nach f7),
+      diagonale Spiegelung (nach g6),<br/>
+      horizontale Spiegelung (nach g3),
+      gegendiagonale Spiegelung (nach f2).<br/>
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>einstellige rechtsschiebende Transformation</b>, angewendet auf einen
+Figurenbezeichner, verschiebt jedes Feld in der Feldermenge ein Feld nach
+rechts. Ist ein Feld bereits auf dem rechten Brettrand, so wird es von der
+Feldermenge entfernt. Ein Feld auf dem linken Brettrand ist auch wieder in der
+neuen Menge enthalten.
+</p>
+
+<p>
+Beispielsweise ist die einstellige rechtsschiebende Transformation von
+<expr>&Q;d4</expr> gleich <expr>&Q;e4</expr>. Die einstellige rechtsschiebende
+Transformation von <expr>&Q;[c2,h2]</expr> ist <expr>&Q;d2</expr>. Die
+einstellige rechtsschiebende Transformation von <expr>&Q;[a2,c2,h2]</expr> ist
+<expr>&Q;[a2,b2,d2]</expr>.
+</p>
+
+<p>
+Die Definitionen der <b>einstelligen linksschiebenden Transformation</b>,
+<b>einstelligen hochschiebenden Transformation</b>, sowie der <b>einstelligen
+runterschiebenden Transformation</b>, sind analog zur einstelligen
+rechtsschiebenden Transformation. Die Randfelderbesonderheiten sind in
+der enstprechenden Veränderung zu sehen.
+</p>
+
+<p>
+Eine <b>Rechtswärtstransformation</b> ist eine Komposition von Null oder
+mehr einstelligen rechtsschiebenden Transformationen. Beispielsweise ergibt
+die drei aufeinanderfolgenden einstelligen rechtsschiebenden Transformationen
+umfassende Rechtswärtstransformation von <expr>&Q;a4</expr> die Menge
+<expr>&Q;[a4,b4,c4,d4]</expr>, denn die Felder am linken Brettrand sind
+immer auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser
+Rechtswärtstransformation auf <expr>&Q;d4</expr> ergibt <expr>&Q;g4</expr>.
+</p>
+
+<p>
+Die Definitionen der <b>Linkswärtstransformation</b>,
+<b>Hochwärtstransformation</b>, und <b>Runterwärtstransformation</b> sind
+entsprechend.
+</p>
+
+<p>
+Eine <b>horizontale Verschiebungstransformation</b> ist entweder eine
+Linkswärtstransformation oder eine Rechtswärtstransformation. Eine
+<b>vertikale Verschiebungstransformation</b> ist entweder eine
+Runterwärtstransformation oder eine Hochwärtstransformation.
+</p>
+
+<p>
+Eine <b>Verschiebungstransformation</b> ist eine Transformationen, die als
+Folge von Null oder mehr horizontalen Verschiebungstransformationen,
+gefolgt von Null oder mehr vertikalen Verschiebungstransformationen,
+ausgedrückt werden kann. Es gibt exakt eine Verschiebungstransformation,
+die ein gegebenes Feld auf ein anderes gegebenes Feld verschiebt. Eine
+mögliche Verschiebung von <expr>&Q;[b3,c4]</expr> ist <expr>&Q;[d4,e5]</expr>.
+</p>
+
+<p>
+Eine <b>Farbwechseltransformation</b>, angewendet auf einen Felderbezeichner,
+wechselt die Farbe der Figurenmenge des Felderbezeichners, und wendet dann
+eine horizontale Verschiebung auf den Figurenbezeichner an. Beispiel:
+die Farbwechseltransformation angewendet auf <expr>[&R;&b;&p;][a2,c2]</expr>,
+entweder ein weißer Turm, ein schwarzer Läufer, oder ein schwarzer Bauer auf
+c2 oder a2, ergibt die Menge <expr>[&r;&B;&P;][a7,c7]</expr>.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

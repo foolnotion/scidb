@@ -1,0 +1,118 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Figurenbezeichner (CQL)
+
+TITLE CQL - Figurenbezeichner
+
+<p>
+Ein Figurenbezeichner ist ein Zeichenkette, die eine Menge von Figuren
+beschreibt, die sich auf den Schachfeldern befinden. Ein Figurenbezeichner
+umfasst einen Figurenartbezeichner gefolgt von einem Felderbezeichner. Der 
+Figurenartbezeichner kennzeichnet eine Menge von Figuren, und der
+Felderbezeichner kennzeichnet eine Menge von Feldern. Die Menge der
+Figuren kann die "Leerfeldfigur" beinhalten, die ein leeres Feld beschreibt.
+</p>
+
+<p>
+Ein Figurenbezeichner findet eine Position wenn es in der Menge der Felder,
+die mit dem Figurenbezeichner bestimmt wird, ein Feld gibt mit einer Figur,
+die im Figurenartbezeichner enthalten ist.
+</p>
+
+<h3>Beispiele für den Figurenbezeichner</h3>
+
+<p>
+Der Figurenbezeichner <expr>&R;a2</expr> kennzeichnet einen weißen Turm auf
+a2. Der Figurenartbezeichner is &R;, und der Felderbezeichner ist
+<expr>a2</expr>. Er findet jede Position mit einem weißen Turm auf a2.
+</p>
+
+<p>
+Der Figurenbezeichner <expr>&b;c1</expr>  kennzeichnet einen schwarzen Läufer
+auf c1. Der Figurenartbezeichner ist &b;, und der Felderbezeichner is
+<expr>c1</expr>. Er findet jede Position mit einem schwarzen Läufer auf c1.
+</p>
+
+<p>
+Der Figurenbezeichner <expr>[&R;&b;]d1</expr> kennzeichnet wahlweise einen
+weißen Turm oder einen schwarzen Läufer auf d1. Der Figurenartbezeichner ist
+<expr>[&R;&b;]</expr>, und der Felderbezeichner ist <expr>d1</expr>. Er findet
+jede Position entweder mit einen weißen Turm oder mit einen schwarzen Läufer
+auf d1.
+</p>
+
+<p>
+Der Figurenbezeichner <expr>[&Q;&r;][d1,h3]</expr> kennzeichnet wahlweise eine
+weiße Dame oder einen schwarzen Turm auf d1 oder h3. Der Figurenartbezeichner
+ist <expr>[&Q;&R;]</expr>, und der Felderbezeichner ist <expr>[d1,h3]</expr>.
+Er findet jede Position entweder mit einer weißen Dame oder einem schwarzen
+Turm auf d1 oder h3. (Die Position kann auch eine weiße Dame oder schwarzen
+Turm auf beiden Feldern d1 und h3 haben.)
+</p>
+
+<h2>Erlaubte Figurenartbezeichner</h2>
+
+<p>
+Dies sind die erlaubten Figurenartbezeichner:
+</p>
+
+<box>
+  <p><b>Standardfigurenartbezeichner</b></p>
+  <table>
+    <tr><td><expr>&K;&emsp;</expr></td><td>weißer König</td></tr>
+    <tr><td><expr>&k;&emsp;</expr></td><td>schwarzer König</td></tr>
+    <tr><td><expr>&Q;&emsp;</expr></td><td>weiße Dame</td></tr>
+    <tr><td><expr>&q;&emsp;</expr></td><td>schwarze Dame</td></tr>
+    <tr><td><expr>&R;&emsp;</expr></td><td>weißer Turm</td></tr>
+    <tr><td><expr>&r;&emsp;</expr></td><td>schwarzer Turm</td></tr>
+    <tr><td><expr>&B;&emsp;</expr></td><td>weißer Läufer</td></tr>
+    <tr><td><expr>&b;&emsp;</expr></td><td>schwarzer Läufer</td></tr>
+    <tr><td><expr>&N;&emsp;</expr></td><td>weißer Springer</td></tr>
+    <tr><td><expr>&n;&emsp;</expr></td><td>schwarzer Springer</td></tr>
+    <tr><td><expr>&P;&emsp;</expr></td><td>weißer Bauer</td></tr>
+    <tr><td><expr>&p;&emsp;</expr></td><td>schwarzer Bauer</td></tr>
+  </table>
+
+  <p><b>Zusätzliche Figurenartbezeichner</b></p>
+  <table>
+    <tr><td><expr>.&emsp;</expr></td><td>Leerfeld</td></tr>
+    <tr><td><expr>A&emsp;</expr></td><td>beliebige weiße Figur</td></tr>
+    <tr><td><expr>a&emsp;</expr></td><td>beliebige schwarze Figur</td></tr>
+    <tr><td><expr>M&emsp;</expr></td><td>weiße Schwerfigur</td></tr>
+    <tr><td><expr>m&emsp;</expr></td><td>schwarze Schwerfigur</td></tr>
+    <tr><td><expr>I&emsp;</expr></td><td>weiße Leichtfigur</td></tr>
+    <tr><td><expr>i&emsp;</expr></td><td>schwarze Leichtfigur</td></tr>
+    <tr><td><expr>U&emsp;</expr></td><td>irgendeine Figur</td></tr>
+    <tr><td><expr>?&emsp;</expr></td><td>irgendeine Figur oder ein Leerfeld</td></tr>
+   </table>
+   <p></p>
+</box>
+
+<h3>Figurenartbezeichner markieren</h3>
+
+<p>
+Überall wo ein Figurenartbezeichner auftritt kann auch ein Markierungsname,
+der mit dem Zeichen <expr>$</expr> beginnt, auftreten. Diese Figurenart
+vertritt exakt die Figur, die durch den Markierungnamen vertreten wird.
+Für weitere Informationen siehe Seite <a href="CQL-Tagging.html">Markierung</a>.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html: -->

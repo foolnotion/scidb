@@ -549,6 +549,16 @@ Position::parseAttackCount(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseBlackCannotWin(Match& match, char const* s, Error& error)
+{
+	m_boardMatchList.push_back(new cql::board::CannotWin(color::Black));
+	match.m_isStandard = false;
+	match.m_sections |= Match::Section_Positions;
+	return s;
+}
+
+
+char const*
 Position::parseBlackElo(Match& match, char const* s, Error& error)
 {
 	return adopt(match, match.parseBlackElo(s, error), error);
@@ -1597,6 +1607,16 @@ Position::parseVariationsOnly(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseWhiteCannotWin(Match& match, char const* s, Error& error)
+{
+	m_boardMatchList.push_back(new cql::board::CannotWin(color::White));
+	match.m_isStandard = false;
+	match.m_sections |= Match::Section_Positions;
+	return s;
+}
+
+
+char const*
 Position::parseWhiteElo(Match& match, char const* s, Error& error)
 {
 	return adopt(match, match.parseWhiteElo(s, error), error);
@@ -1646,6 +1666,7 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("accumulate",					&Position::parseAccumulate),
 		Pair("and",								&Position::parseAnd),
 		Pair("attackcount",					&Position::parseAttackCount),
+		Pair("blackcannotwin",				&Position::parseBlackCannotWin),
 		Pair("btm",								&Position::parseBlackToMove),
 		Pair("castling",						&Position::parseCastling),
 		Pair("cut",								&Position::parseCut),
@@ -1727,6 +1748,7 @@ Position::parse(Match& match, char const* s, Error& error)
  		Pair("rating",							&Position::parseRating),
 		Pair("reset",							&Position::parseReset),
  		Pair("result",							&Position::parseResult),
+		Pair("whitecannotwin",				&Position::parseWhiteCannotWin),
  		Pair("whiteelo",						&Position::parseWhiteElo),
  		Pair("whiterating",					&Position::parseWhiteRating),
 	};
