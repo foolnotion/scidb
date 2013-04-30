@@ -41,17 +41,17 @@
 </div>
 
 <ul>
-  <li><a href="#accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</a></li>
+  <li><a href="#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a></li>
   <li><a href="#relation">Beispiele zur Relationenliste</a></li>
   <li><a href="#tagging">Beispiele für Markierungen</a></li>
   <li><a href="#more">Noch mehr Beispiele</a></li>
 </ul>
 
-<h2 id="accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</h2>
+<h2 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h2>
 
 <p>
 Wir werden zeigen wie <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> und
-<a href="CQL-Position-List.html#position:sumrange">:sumrange</a> zu verwenden sind um nach Partien
+<a href="CQL-Position-List.html#position:sumrange">:sumrange</a> zu verwenden sind, um nach Partien
 mit mindestens 3 weißen Freibauern in einer Position zu suchen.
 Zuerst schreiben wir einen Positionsfilter, der jede Position
 findet mit einem weißen Freibauern:
@@ -102,8 +102,7 @@ schwarzen und drei weißen Freibauern zu finden:
 </p>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; match a position with at least three white</span>
-<span class='comment'>; finde eine Position mit mindestens drei</span>
+--><span class='comment'>; finde eine Position mit mindestens drei</span>
 <span class='comment'>; weissen und zwei schwarzen Freibauern</span>
 (position
   <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> weisse_freibauern_zaehler 3 8 
@@ -154,9 +153,9 @@ Originalanordnung auf denselben Feldern steht:
 
 <p>
 Wird der Parameter für <a href="CQL-Relation-List.html#relation:originalsamecount">:originalsamecount</a> verändert,
-beispielsweise vom derzeitigen Wert <span style='white-space:nowrap;'><code>1</code></span> auf <span style='white-space:nowrap;'><code>0 3</code></span>,
-dann würde das Muster in der zweiten Positionsliste eine Überlappung
-mit höchstens drei Feldern der Originalanordnung erlauben.
+beispielsweise vom derzeitigen Wert <span style='white-space:nowrap;'><code>0</code></span> auf den Bereich
+<span style='white-space:nowrap;'><code>0 3</code></span>, dann wäre eine Überlappung mit bis zu drei Feldern der
+Originalanordnung erlaubt.
 </p>
 
 <h2 id="tagging">Beispiele für Markierungen</h2>
@@ -191,8 +190,8 @@ bindet nacheinander die Markierung an alle erlaubten Figuren.
 </p>
 
 <p>
-Da eine Suchliste nur Partien findet, wenn jeder einzelne Positionsfilter diese
-Partien gefunden hat, findet dieses Skript was wir suchten.
+Da eine Suchliste nur dann Partien filtert, wenn jeder einzelne Positionsfilter
+diese Partien gefiltert hat, findet dieses Skript was wir suchen.
 </p>
 
 <p>
@@ -295,12 +294,9 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>           ; Jede Farbe
-    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>       ; Unabhängig von Linie
-    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>     ; und Reihe
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span>g7 1 ; Nur Springer bietet Schach
-    a[f6-8,h6-8,g6,g8]   ; König ist von eigenen Figuren umgeben
-    <a href="CQL-Position-List.html#position:mate">:mate</a>))              ; und ist matt<!--
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>            ; Jede Farbe
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k [A.] 0 ; König ist von eigenen Figuren umzingelt
+    <a href="CQL-Position-List.html#position:mate">:mate</a>))               ; und ist matt<!--
 --></code></pre></div>
 
 </body>

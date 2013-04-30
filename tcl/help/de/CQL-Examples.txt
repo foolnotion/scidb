@@ -20,17 +20,17 @@ INDEX CQL Beispiele
 TITLE CQL - Beispiele
 
 <ul>
-  <li><a href="#accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</a></li>
+  <li><a href="#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a></li>
   <li><a href="#relation">Beispiele zur Relationenliste</a></li>
   <li><a href="#tagging">Beispiele für Markierungen</a></li>
   <li><a href="#more">Noch mehr Beispiele</a></li>
 </ul>
 
-<h2 id="accumulator">Benutzung von Akkumulatoren um Freibauern zu zählen</h2>
+<h2 id="accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</h2>
 
 <p>
 Wir werden zeigen wie <cql>position:accumulate</cql> und
-<cql>position:sumrange</cql> zu verwenden sind um nach Partien
+<cql>position:sumrange</cql> zu verwenden sind, um nach Partien
 mit mindestens 3 weißen Freibauern in einer Position zu suchen.
 Zuerst schreiben wir einen Positionsfilter, der jede Position
 findet mit einem weißen Freibauern:
@@ -81,7 +81,6 @@ schwarzen und drei weißen Freibauern zu finden:
 </p>
 
 <verbatim>
-<comment>; match a position with at least three white</comment>
 <comment>; finde eine Position mit mindestens drei</comment>
 <comment>; weissen und zwei schwarzen Freibauern</comment>
 (position
@@ -133,9 +132,9 @@ Originalanordnung auf denselben Feldern steht:
 
 <p>
 Wird der Parameter für <cql>relation:originalsamecount</cql> verändert,
-beispielsweise vom derzeitigen Wert <expr>1</expr> auf <expr>0 3</expr>,
-dann würde das Muster in der zweiten Positionsliste eine Überlappung
-mit höchstens drei Feldern der Originalanordnung erlauben.
+beispielsweise vom derzeitigen Wert <expr>0</expr> auf den Bereich
+<expr>0 3</expr>, dann wäre eine Überlappung mit bis zu drei Feldern der
+Originalanordnung erlaubt.
 </p>
 
 <h2 id="tagging">Beispiele für Markierungen</h2>
@@ -170,8 +169,8 @@ bindet nacheinander die Markierung an alle erlaubten Figuren.
 </p>
 
 <p>
-Da eine Suchliste nur Partien findet, wenn jeder einzelne Positionsfilter diese
-Partien gefunden hat, findet dieses Skript was wir suchten.
+Da eine Suchliste nur dann Partien filtert, wenn jeder einzelne Positionsfilter
+diese Partien gefiltert hat, findet dieses Skript was wir suchen.
 </p>
 
 <p>
@@ -274,12 +273,9 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    <cql>position:flipcolor</cql>           ; Jede Farbe
-    <cql>position:shiftvertical</cql>       ; Unabhängig von Linie
-    <cql>position:shifthorizontal</cql>     ; und Reihe
-    <cql>position:attackcount</cql> &N; &k;g7 1 ; Nur Springer bietet Schach
-    a[f6-8,h6-8,g6,g8]   ; König ist von eigenen Figuren umgeben
-    <cql>position:mate</cql>))              ; und ist matt
+    <cql>position:flipcolor</cql>            ; Jede Farbe
+    <cql>position:attackcount</cql> k [A.] 0 ; König ist von eigenen Figuren umzingelt
+    <cql>position:mate</cql>))               ; und ist matt
 </verbatim>
 
 END

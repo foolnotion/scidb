@@ -65,7 +65,7 @@ gespeichert:
 <!-- begin: exclude in web browser -->
 
 <p>
-Sollten Bezeichner für die Anzeige der Figuren gewünscht werden, so ist einer der
+Sollten Bezeichner für die Anzeige der Figuren vorgezogen werden, so ist einer der
 folgenden Optionen auszuwählen:
 </p>
 

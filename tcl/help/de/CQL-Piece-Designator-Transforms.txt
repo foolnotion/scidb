@@ -150,7 +150,7 @@ der 8 Figurenbezeichner <expr>&Q;c2</expr>,
 </table>
 
 <p>
-Eine <b>einstellige rechtsschiebende Transformation</b>, angewendet auf einen
+Eine <b>einschrittige rechtsschiebende Transformation</b>, angewendet auf einen
 Figurenbezeichner, verschiebt jedes Feld in der Feldermenge ein Feld nach
 rechts. Ist ein Feld bereits auf dem rechten Brettrand, so wird es von der
 Feldermenge entfernt. Ein Feld auf dem linken Brettrand ist auch wieder in der
@@ -158,25 +158,25 @@ neuen Menge enthalten.
 </p>
 
 <p>
-Beispielsweise ist die einstellige rechtsschiebende Transformation von
-<expr>&Q;d4</expr> gleich <expr>&Q;e4</expr>. Die einstellige rechtsschiebende
+Beispielsweise ist die einschrittige rechtsschiebende Transformation von
+<expr>&Q;d4</expr> gleich <expr>&Q;e4</expr>. Die einschrittige rechtsschiebende
 Transformation von <expr>&Q;[c2,h2]</expr> ist <expr>&Q;d2</expr>. Die
-einstellige rechtsschiebende Transformation von <expr>&Q;[a2,c2,h2]</expr> ist
+einschrittige rechtsschiebende Transformation von <expr>&Q;[a2,c2,h2]</expr> ist
 <expr>&Q;[a2,b2,d2]</expr>.
 </p>
 
 <p>
-Die Definitionen der <b>einstelligen linksschiebenden Transformation</b>,
-<b>einstelligen hochschiebenden Transformation</b>, sowie der <b>einstelligen
-runterschiebenden Transformation</b>, sind analog zur einstelligen
+Die Definitionen der <b>einschrittigen linksschiebenden Transformation</b>,
+<b>einschrittigen hochschiebenden Transformation</b>, sowie der <b>einschrittigen
+runterschiebenden Transformation</b>, sind analog zur einschrittigen
 rechtsschiebenden Transformation. Die Randfelderbesonderheiten sind in
 der enstprechenden Veränderung zu sehen.
 </p>
 
 <p>
 Eine <b>Rechtswärtstransformation</b> ist eine Komposition von Null oder
-mehr einstelligen rechtsschiebenden Transformationen. Beispielsweise ergibt
-die drei aufeinanderfolgenden einstelligen rechtsschiebenden Transformationen
+mehr einschrittigen rechtsschiebenden Transformationen. Beispielsweise ergibt
+die drei aufeinanderfolgenden einschrittigen rechtsschiebenden Transformationen
 umfassende Rechtswärtstransformation von <expr>&Q;a4</expr> die Menge
 <expr>&Q;[a4,b4,c4,d4]</expr>, denn die Felder am linken Brettrand sind
 immer auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser

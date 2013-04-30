@@ -23,7 +23,7 @@ INDEX Shredder-FEN
 TITLE FEN (Forsyth-Edwards-Notation)
 
 <p>
-Die Forsyth-Edwards-Notation (FEN) oder in der erweiterten Form (X-FEN)
+Die Forsyth-Edwards-Notation (FEN), oder in der erweiterten Form (X-FEN),
 ist eine Kurznotation, mit der jede beliebige Brettstellung im Schach
 niedergeschrieben werden kann. Tatsächlich besitzt diese Notation eine
 Schwäche: sie macht keine Aussage, wie oft die beschriebene Stellung

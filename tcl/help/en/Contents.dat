@@ -19,7 +19,7 @@ set Contents {
     {{{Annotator list} {Annotator-List-Window.html}}}
   }
   {
-    {{{Scidb-Windows und dialogs} {Overview.html} {windows-and-dialogs}}}
+    {{{Scidb-Windows and dialogs} {Overview.html} {windows-and-dialogs}}}
     {{{Database switcher} {Database-Switcher.html}}}
     {{{Game browser} {Game-Browser.html}}}
     {{{Game overview browser} {Game-Overview.html}}}

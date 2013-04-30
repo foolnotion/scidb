@@ -68,6 +68,7 @@ set PageNotAvailable			"This page is not available"
 array set Options {
 	fonttable	{8 9 10 11 13 15 17}
 	piecelang	graphic
+	treewidth	-1
 	geometry		""
 	lang			""
 }
@@ -212,9 +213,12 @@ proc open {parent {file {}} args} {
 	grid columnconfigure $buttons {4} -weight 1
 	grid rowconfigure $buttons {0 2} -minsize $::theme::pady
 
-	set nb [ttk::notebook $control.nb -takefocus 1 -width 320]
+	set width $Options(treewidth)
+	if {$width <= 0} { set width 320 }
+	set nb [ttk::notebook $control.nb -takefocus 1 -width $width]
 	::ttk::notebook::enableTraversal $nb
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
+	bind $nb <Configure> [namespace code [list RecordTreeWidth $nb %w]]
 	contents::BuildFrame $nb.contents
 	index::BuildFrame $nb.index index
 	index::BuildFrame $nb.cql cql
@@ -619,6 +623,7 @@ proc Update {type} {
 	set bold [list [list [font configure $font -family] [font configure $font -size] bold]]
 	array unset Priv $type:path:*
 	array unset Priv $type:key:*
+	array unset Priv $type:last:*
 
 	foreach group $Index {
 		lassign $group alph entries
@@ -945,6 +950,11 @@ proc Update {} {
 	contents::Update
 	search::Update
 	ReloadCurrentPage no
+}
+
+
+proc RecordTreeWidth {nb width} {
+	set [namespace current]::Options(treewidth) $width
 }
 
 

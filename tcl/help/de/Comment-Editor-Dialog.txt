@@ -92,7 +92,7 @@ Zeilenumbrüche mit dem Absatzsymbol &#x00b6; gekennzeichnet.
 
 Das kontextsensitive Menü im Textfeld bietet folgende Funktionen:
 
-<dir><img src="images/comment-editor-menu.png"></dir>
+<dir><img src="images/comment-editor-menu.png" /></dir>
 
 <p>
 <menuitem>%::mc::Copy%</menuitem>
