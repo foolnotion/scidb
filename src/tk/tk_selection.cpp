@@ -181,7 +181,7 @@ mapToUnixNewline(char* s, char const* e)
 
 
 static unsigned
-quoteChars(char* src, char const* end, char* dst)
+quoteChars(char const* src, char const* end, char* dst)
 {
 	char* buf = dst;
 

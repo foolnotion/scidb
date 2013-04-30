@@ -38,6 +38,11 @@ h1.title { text-align: center; background-color: #6495ed; }
 
 ul.index { margin: 5px; }
 
+span.normal {
+	font-weight: normal;
+	font-style: normal;
+}
+
 span.chess {
 	font-family: 'Scidb Chess Traveller';
 	font-weight: normal;

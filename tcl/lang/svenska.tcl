@@ -2102,6 +2102,7 @@
 ::log::mc::Information	"Info"
 
 ### titlebox ############################################################
+::titlebox::mc::None				"No title" ;# NEW
 ::titlebox::mc::Title(GM)		"Stormästare (FIDE)"
 ::titlebox::mc::Title(IM)		"Internationell mästare (FIDE)"
 ::titlebox::mc::Title(FM)		"Fide-mästare (FIDE)"

@@ -120,6 +120,9 @@ set HtmlMapping {
 	<chess>			{<span class='chess'>}
 	</chess>			</span>
 
+	<n>				{<span class='normal'>}
+	</n>				</span>
+
 	<NEW>				{<span class='NEW'>}
 	</NEW>			{</span>}
 

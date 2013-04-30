@@ -1317,7 +1317,7 @@ proc MouseEnter {node} {
 		if {[$node dynamic get user3]} {
 			::tooltip::show $Priv(html) $mc::PageNotAvailable
 		} elseif {[$node dynamic get user]} {
-			::tooltip::show $Priv(html) [$node attribute href]
+			::tooltip::show $Priv(html) [::scidb::misc::url unescape [$node attribute href]]
 		}
 	}
 }

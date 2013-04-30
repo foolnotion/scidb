@@ -2101,6 +2101,7 @@
 ::log::mc::Information		"Információ"
 
 ### titlebox ############################################################
+::titlebox::mc::None		"No title" ;# NEW
 ::titlebox::mc::Title(GM)	"Nagymester (FIDE)"
 ::titlebox::mc::Title(IM)	"Nemzetközo mester (FIDE)"
 ::titlebox::mc::Title(FM)	"FIDE mester (FIDE)"

@@ -2094,6 +2094,7 @@
 ::log::mc::Information	"Info"
 
 ### titlebox ############################################################
+::titlebox::mc::None				"No title"
 ::titlebox::mc::Title(GM)		"Grandmaster (FIDE)"
 ::titlebox::mc::Title(IM)		"International Master (FIDE)"
 ::titlebox::mc::Title(FM)		"Fide Master (FIDE)"

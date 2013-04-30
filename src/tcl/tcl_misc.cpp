@@ -58,6 +58,7 @@
 #include <tcl.h>
 #include <tk.h>
 #include <string.h>
+#include <ctype.h>
 
 using namespace tcl;
 
@@ -90,11 +91,26 @@ static char const* CmdSort						= "::scidb::misc::sort";
 static char const* CmdSuccPow2				= "::scidb::misc::succPow2";
 static char const* CmdSuffixes				= "::scidb::misc::suffixes";
 static char const* CmdToAscii					= "::scidb::misc::toAscii";
+static char const* CmdUrl						= "::scidb::misc::url";
 static char const* CmdVersion					= "::scidb::misc::version";
 static char const* CmdXml						= "::scidb::misc::xml";
 static char const* CmdZipContent				= "::scidb::misc::zipContent";
 
 static unsigned cacheCount = 0;
+
+
+inline char
+valToXDigit(unsigned v)
+{
+	return char(v + (v < 10 ? unsigned('0') : unsigned('A' - 10)));
+}
+
+
+inline unsigned
+xdigitToVal(unsigned char c)
+{
+	return isdigit(c) ? c - '0' : toupper(c) - 'A' + 10;
+}
 
 
 static void
@@ -1033,6 +1049,79 @@ cmdHtml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdUrlEscape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* p = stringFromObj(objc, objv, 1);
+	char const* e = p + ::strlen(p);
+
+	mstl::string url;
+
+	for ( ; p < e; ++p)
+	{
+		if ((unsigned char)(*p) > 127 || isspace(*p) || !isgraph(*p))
+		{
+			url += '%';
+			url += valToXDigit(*p >> 4);
+			url += valToXDigit(*p & 0xf0);
+		}
+		else
+		{
+			url += *p;
+		}
+	}
+
+	setResult(url);
+	return TCL_OK;
+}
+
+
+static int
+cmdUrlUnescape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* p = stringFromObj(objc, objv, 1);
+	char const* e = p + ::strlen(p);
+
+	mstl::string url;
+
+	while (p < e)
+	{
+		if (*p != '%')
+		{
+			url += *p++;
+		}
+		else if (isxdigit(p[1]) && isxdigit(p[2]))
+		{
+			url += char((xdigitToVal(p[1]) << 4) + xdigitToVal(p[2]));
+			p += 3;
+		}
+		else
+		{
+			// Ooops, this shouldn't happen.
+			url += *p++;
+		}
+	}
+
+	setResult(url);
+	return TCL_OK;
+}
+
+
+static int
+cmdUrl(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const* command = stringFromObj(objc, objv, 1);
+
+	if (strcmp(command, "escape") == 0)
+		return cmdUrlEscape(clientData, ti, objc - 1, objv + 1);
+
+	if (strcmp(command, "unescape") == 0)
+		return cmdUrlUnescape(clientData, ti, objc - 1, objv + 1);
+
+	return error(CmdHtml, 0, 0, "unknown command '%s'", command);
+}
+
+
+static int
 cmdSetModTime(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* filename = stringFromObj(objc, objv, 1);
@@ -1208,6 +1297,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSuccPow2,				cmdSuccPow2);
 	createCommand(ti, CmdSuffixes,				cmdSuffixes);
 	createCommand(ti, CmdToAscii,					cmdToAscii);
+	createCommand(ti, CmdUrl,						cmdUrl);
 	createCommand(ti, CmdVersion,					cmdVersion);
 	createCommand(ti, CmdXml,						cmdXml);
 	createCommand(ti, CmdZipContent,				cmdZipContent);

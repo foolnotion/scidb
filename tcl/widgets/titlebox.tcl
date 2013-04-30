@@ -34,6 +34,8 @@ proc titlebox {w args} {
 namespace eval titlebox {
 namespace eval mc {
 
+set None				"No title"
+
 set Title(GM)		"Grandmaster (FIDE)"
 set Title(IM)		"International Master (FIDE)"
 set Title(FM)		"Fide Master (FIDE)"

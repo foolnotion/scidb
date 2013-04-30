@@ -27,8 +27,9 @@ variable Excluded {}
 
 
 proc open {parent url} {
-	regsub -all " " $url "%20" url
+	variable Escape
 
+	set url [::scidb::misc::url escape $url]
 	::widget::busyCursor on
 
 	switch -- [tk windowingsystem] {

@@ -24,10 +24,10 @@ DEFINE <extension/> &ensp;<img src="../images/ft-scidb-tiny.png" />
 TITLE CQL - The match list
 
 <p>
-Any CQL file must have exactly one match list at top level. The match list
+Any CQL script must have exactly one match list at top level. The match list
 contains keyword parameters that control the matching of each game.
 The match list contains zero or more position lists. (Note that the CQL
-standard requires at least one position list).  A game will be matched
+standard requires at least one position list.)  A game will be matched
 only if all conditions in the match list are fullfilled. If positions lists
 are given, each of which must match at least one position in the game in order
 for the match list to match that game. Scidb allows an additional feature:
@@ -172,9 +172,9 @@ In fact this keyword is somewhat superfluous, but included for completeness.
 
 <p>
 This keyword can be used in two forms: either it is included in a match list,
-or it has a sub-match list as argument. In former case match if the containing
+or it has a sub-match list as parameter. In former case match if the containing
 match list would not match without the :not. In latter case: negate the result
-of the sub-match list match. The former case is defined only to be conform
+of the sub-match list match. The former form is defined only to be conform
 with CQL standard of keyword <cql>position:not</cql> of position match.
 </p>
 
@@ -261,7 +261,7 @@ Examples:
 </p>
 
 <verb>
-<keyword>:eventcountry</keyword> dk,no,se
+<keyword>:eventcountry</keyword> dk,fi,no,se
 </verb>
 
 <p>
@@ -550,11 +550,11 @@ Example:
 </p>
 
 <verb>
-<keyword>:birthyear</keyword> 1990 2020
+<keyword>:birthyear</keyword> 1990 unlimited
 </verb>
 
 <p>
-Search for games with at least one young player, born 1990 or later.
+Search for games with at least one younger player, born 1990 or later.
 </p>
 
 <p>
@@ -633,7 +633,7 @@ Only search for games where the black player is female.
 </verb>
 
 <p>
-Only search for games where the gender is unknown.
+Only search for games where the gender is unknown for at least one player.
 </p>
 
 <p>
@@ -720,7 +720,7 @@ Examples:
 </verb>
 
 <p>
-In both examples, match all games where both players are Germans.
+In both examples, match all games where one of the players are Germans.
 </p>
 
 <p>
@@ -792,6 +792,7 @@ See also: <cql>match:whiteishuman</cql>, <cql>match:blackishuman</cql>.
 <h3 id="match:player">:player</h3>
 
 <p>
+Search for games where one of the players matches given name.
 This takes one parameter, either a double-quoted pattern, or a un-quoted string.
 </p>
 
@@ -815,7 +816,7 @@ Match all games where one of the player names has as sub-string
 </p>
 
 <p>
-<b>Quoted pattern:</b> Only games at least one of whose players names
+<b>Double-quoted pattern:</b> Only games at least one of whose players names
 are matching the pattern will be found.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
 </p>
@@ -831,7 +832,7 @@ Examples:
 </verb>
 
 <p>
-This is identical to "<code><nobr>:player</nobr> <nobr>coeff</nobr></code>".
+This is identical to "<expr>:player</expr> <expr>coeff</expr>".
 </p>
 
 <p>
@@ -848,6 +849,9 @@ See also: <cql>match:whiteplayer</cql>, <cql>match:blackplayer</cql>.
 <p>
 Match all games where one of the players has a score of given rating type
 which is between the specified score range.
+</p>
+
+<p>
 Rating is one of:
 </p>
 
@@ -897,7 +901,7 @@ Example:
 </verb>
 
 <p>
-Match all games where both players have an ELO rating between 2000 and 3000.
+Match all games where one of the players has an ELO rating between 2000 and 3000.
 </p>
 
 <p>
@@ -908,7 +912,7 @@ See also: <cql>match:whiterating</cql>, <cql>match:blackrating</cql>.
 
 <p>
 Match all games where any title in the given comma-separated list is matching
-the title of one player.  Title is one of:
+the title of one player. Title is one of:
 </p>
 
 <div class="dir">
@@ -924,7 +928,7 @@ Examples:
 </verb>
 
 <p>
-Search for all games where one player is GM or IM.
+Search for all games with al least one GM or IM.
 </p>
 
 <verb>
@@ -958,6 +962,10 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
 and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
 of the white player is unknown.
+</p>
+
+<p>
+For examples see <cql>match:country</cql>.
 </p>
 
 <p>

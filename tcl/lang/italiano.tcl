@@ -2103,6 +2103,7 @@
 ::log::mc::Information	"Info"
 
 ### titlebox ############################################################
+::titlebox::mc::None				"No title" ;# NEW
 ::titlebox::mc::Title(GM)		"Grande Maestro (FIDE)"
 ::titlebox::mc::Title(IM)		"Maestro Internazionale (FIDE)"
 ::titlebox::mc::Title(FM)		"Maestro Fide (FIDE)"

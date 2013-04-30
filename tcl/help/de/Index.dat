@@ -15,6 +15,7 @@ set Index {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{CQL Beispiele} {CQL-Examples.html} {}}
       {{CQL Handbuch} {CQL-Index.html} {}}
+      {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
     }
   }
@@ -81,6 +82,7 @@ set Index {
       {{Shredder-FEN} {FEN.html} {}}
       {{Startpositionseingabe} {Start-Position-Setup-Dialog.html} {}}
       {{Stellungseingabe} {Board-Setup-Dialog.html} {}}
+      {{Suchliste (CQL)} {CQL-Match-List.html} {}}
       {{Suchmusterabgleich (Pattern-Matching)} {Pattern-Matching.html} {}}
     }
   }

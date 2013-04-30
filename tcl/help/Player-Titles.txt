@@ -19,7 +19,7 @@
 BEGIN
 <table>
   <tr valign="top">
-    <td class="l"><expr>None</expr></td><td class="r">%::playerdict::mc::None%     </td>
+    <td class="l"><expr>None</expr></td><td class="r">%::titlebox::mc::None%     </td>
   </tr>
   <tr valign="top">
     <td class="l"><expr>GM  </expr></td><td class="r">%::titlebox::mc::Title(GM)%  </td>
