@@ -250,13 +250,12 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <span class='piece'>&#x2659;</span>[b2-4]
-    [.a<span class='piece'>&#x2654;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>][a1-8]
-    [.a<span class='piece'>&#x2654;</span><span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>][c1-8]
-    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>b? 3 6
-    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>
-    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
+    <span class='piece'>&#x2659;</span>[c2-4]                ; pawns on connected squares
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>c? 3 6    ; at least three pawns 
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b?,d?] 0 ; the triple pawns are isolated
+    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>         ; any rank
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>       ; any file
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))           ; any side<!--
 --></code></pre></div>
 
 <div class='box'><pre><code><!--

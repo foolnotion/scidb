@@ -17,6 +17,7 @@ set Index {
       {{CQL Handbuch} {CQL-Index.html} {}}
       {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
+      {{CQL Transformationen} {CQL-Transformations.html} {}}
     }
   }
   { D
@@ -88,6 +89,7 @@ set Index {
   }
   { T
     {
+      {{Transformationen (CQL)} {CQL-Transformations.html} {}}
       {{Transformationen der Figurenbezeichner (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }

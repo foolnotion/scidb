@@ -229,13 +229,12 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    &P;[b2-4]
-    [.a&K;&Q;&R;&B;&N;][a1-8]
-    [.a&K;&Q;&R;&B;&N;][c1-8]
-    <cql>position:piececount</cql> &P;b? 3 6
-    <cql>position:shiftvertical</cql>
-    <cql>position:shifthorizontal</cql>
-    <cql>position:flipcolor</cql>))
+    &P;[c2-4]                ; pawns on connected squares
+    <cql>position:piececount</cql> &P;c? 3 6    ; at least three pawns 
+    <cql>position:piececount</cql> &P;[b?,d?] 0 ; the triple pawns are isolated
+    <cql>position:shiftvertical</cql>         ; any rank
+    <cql>position:shifthorizontal</cql>       ; any file
+    <cql>position:flipcolor</cql>))           ; any side
 </verbatim>
 
 <verbatim>

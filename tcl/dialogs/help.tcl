@@ -1368,7 +1368,9 @@ proc Mouse1Up {node} {
 			lassign [split $href \#] href fragment
 			set file [FullPath $href]
 			set wref [$node attribute -default {} wref]
+			set pref [$node attribute -default {} pref]
 			if {[llength $wref] == 0} { set wref $file }
+			if {[llength $pref] >  0} { set fragment $pref }
 			set Links($wref) [Load $file $wref {} $fragment]
 		}
 	}
@@ -1665,7 +1667,7 @@ proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 	if {!$reload} { history::refresh }
 
 	if {$remember && [string length $file] > 0} {
-		if {![Parse $file $wantedFile $match]} {
+		if {![Parse $file $wantedFile $match $position]} {
 			return 0
 		}
 
@@ -1692,7 +1694,7 @@ proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 }
 
 
-proc Parse {file {wantedFile {}} {match {}}} {
+proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 	variable Colors
 	variable Nodes
 	variable Priv
@@ -1750,7 +1752,7 @@ proc Parse {file {wantedFile {}} {match {}}} {
 			append content "<dl>"
 			foreach alt $alternatives {
 				lassign $alt icon href lang
-				append content "<dt>$icon&ensp;<a href='$href' wref='$file'>$lang</a></dt>"
+				append content "<dt>$icon&ensp;<a href='$href' wref='$file' pref='$position'>$lang</a></dt>"
 			}
 			append content "</dl></blockquote></div>"
 		}

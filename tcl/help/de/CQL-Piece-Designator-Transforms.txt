@@ -174,12 +174,12 @@ der enstprechenden Veränderung zu sehen.
 </p>
 
 <p>
-Eine <b>Rechtswärtstransformation</b> ist eine Komposition von Null oder
-mehr einschrittigen rechtsschiebenden Transformationen. Beispielsweise ergibt
-die drei aufeinanderfolgenden einschrittigen rechtsschiebenden Transformationen
-umfassende Rechtswärtstransformation von <expr>&Q;a4</expr> die Menge
-<expr>&Q;[a4,b4,c4,d4]</expr>, denn die Felder am linken Brettrand sind
-immer auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser
+Eine <b>Rechtswärtstransformation</b> ist eine Hintereinanderausführung von
+Null oder mehr einstelligen rechtsschiebenden Transformationen. Beispielsweise
+ergibt die drei aufeinanderfolgenden einstelligen rechtsschiebenden
+Transformationen umfassende Rechtswärtstransformation von <expr>&Q;a4</expr>
+die Menge <expr>&Q;[a4,b4,c4,d4]</expr>, denn die Felder am linken Brettrand
+sind immer auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser
 Rechtswärtstransformation auf <expr>&Q;d4</expr> ergibt <expr>&Q;g4</expr>.
 </p>
 

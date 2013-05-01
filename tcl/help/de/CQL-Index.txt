@@ -25,7 +25,7 @@ TITLE CQL - Chess Query Language
 Chess Query Language (CQL) wurde entwickelt um Rechercheuren, Autoren und
 Spielern die Suche nach Partien, Problemen und Studien, die zu speziellen
 Themen passen, zu erlauben
-(<see/> <a href="http://www.rbnn.com/cql/">CQLManual</a>).
+(<see/> <a href="http://www.rbnn.com/cql/">CQL Manual</a>).
 </p>
 
 <p>
@@ -98,9 +98,9 @@ folgenden Optionen auszuwählen:
       <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
     </ul>
   </li>
-<!--
   <li><a href="CQL-Transformations.html">Transformationen</a></li>
   <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
+<!--
   <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
   <li><a href="CQL-Relation-List.html">Die Relationenliste</a></li>
   <li><a href="CQL-Tagging.html">Markierung</a></li>

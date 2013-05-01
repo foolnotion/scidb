@@ -233,13 +233,12 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    &P;[b2-4]
-    [.a&K;&Q;&R;&B;&N;][a1-8]
-    [.a&K;&Q;&R;&B;&N;][c1-8]
-    <cql>position:piececount</cql> &P;b? 3 6
-    <cql>position:shiftvertical</cql>
-    <cql>position:shifthorizontal</cql>
-    <cql>position:flipcolor</cql>))
+    &P;[c2-4]                ; Bauern auf verbundenen Feldern
+    <cql>position:piececount</cql> &P;c? 3 6    ; midestens drei Beuern
+    <cql>position:piececount</cql> &P;[b?,d?] 0 ; Bauern sind isoliert
+    <cql>position:shiftvertical</cql>         ; beliebige Reihe
+    <cql>position:shifthorizontal</cql>       ; beliebige Linie
+    <cql>position:flipcolor</cql>))           ; beliebige Seite
 </verbatim>
 
 <verbatim>

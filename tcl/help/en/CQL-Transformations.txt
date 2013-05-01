@@ -264,7 +264,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <verb>
-(position <cql>position:attackcount</cql> &N; &k; 1 100 <keyword>:flipcolor</keyword>)
+(position <cql>position:attackcount</cql> &N; &k; 1 unlimited <keyword>:flipcolor</keyword>)
 </verb>
 
 <p>

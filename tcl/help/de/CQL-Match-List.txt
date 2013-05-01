@@ -1248,7 +1248,7 @@ Ein Datum hat die folgende Form:
 <p>
 Es ist zudem das spezielle Datum "unlimited" erlaubt -
 siehe <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> für eine
-Beschreibung - jedoch nicht ale rechte Schranke in der dritten Form.
+Beschreibung - jedoch nicht als rechte Schranke in der dritten Form.
 </p>
 
 <p>
@@ -1316,7 +1316,7 @@ Suche nach Partien, die kein Partiedatum haben.
 Siehe auch: <cql>match:year</cql>.
 </p>
 
-<h3 id="match:eco">:eco<extension/></n></h3>
+<h3 id="match:eco">:eco<extension/></h3>
 
 <p>
 Erwartet eine <a href="ECO-Code.html">ECO-Code</a>-Bereich, und filtert alle
@@ -1880,7 +1880,7 @@ beinhaltet Schach-960-Positionen.
 Siehe auch: <cql>match:ischess960</cql>.
 </p>
 
-<h3 id="match:startposition">:startposition<extension/></n></h3>
+<h3 id="match:startposition">:startposition<extension/></h3>
 
 <p>
 Erwartet eine kommaseparierte Liste von Startpositionen. Eine Startposition
@@ -2035,7 +2035,7 @@ Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
 zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
 </p>
 
-<h3 id="match:pgn">:pgn</n></h3>
+<h3 id="match:pgn">:pgn</h3>
 
 <p>
 Erwartet einen Parameter, der einen Dateinamen bezeichnet.
