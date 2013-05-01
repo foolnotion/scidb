@@ -679,7 +679,8 @@ See also: <cql>match:player</cql>, <cql>match:whiteplayer</cql>.
 
 <p>
 Match all games where the given rating is between given score range of the
-black player. For a detailed description see <cql>match:rating</cql>.
+black player. The first parameter is the rating type, then the score range
+follows. For a detailed description see <cql>match:rating</cql>.
 </p>
 
 <p>
@@ -706,7 +707,7 @@ country in given comma-separated list. Country is either an
 <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes">IOC country code</a>,
 or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>.
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
-and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
+and <expr>xx</expr> (ISO 3166-2 form) are matching games where the nationality
 of one player is unknown.
 </p>
 
@@ -720,7 +721,8 @@ Examples:
 </verb>
 
 <p>
-In both examples, match all games where one of the players are Germans.
+In both examples, match all games where one of the players has a German
+nationality.
 </p>
 
 <p>
@@ -832,7 +834,7 @@ Examples:
 </verb>
 
 <p>
-This is identical to "<expr>:player</expr> <expr>coeff</expr>".
+This is identical to preceding example (un-quoted string).
 </p>
 
 <p>
@@ -849,6 +851,7 @@ See also: <cql>match:whiteplayer</cql>, <cql>match:blackplayer</cql>.
 <p>
 Match all games where one of the players has a score of given rating type
 which is between the specified score range.
+The first parameter is the rating type, then the score range follows.
 </p>
 
 <p>
@@ -1040,11 +1043,12 @@ See also: <cql>match:blackplayer</cql>, <cql>match:player</cql>.
 
 <p>
 Match all games where the given rating is between given score range of the
-white player. For a detailed description see <cql>match:rating</cql>.
+white player. The first parameter is the rating type, then the score range
+follows.  For a detailed description see <cql>match:rating</cql>.
 </p>
 
 <p>
-See also: <cql>match:whiterating</cql>, <cql>match:rating</cql>.
+See also: <cql>match:blackrating</cql>, <cql>match:rating</cql>.
 </p>
 
 <h3 id="match:whitetitle">:whitetitle<extension/></h3>
@@ -1196,8 +1200,9 @@ A date has the following syntax:
 </div>
 
 <p>
-In case of the second form the special date "unlimited" may be used; see
-<a href="CQL-Range-Specifiers.html">range specifiers</a> for a description.
+Moreover the special date "unlimited" is allowed - see
+<a href="CQL-Range-Specifiers.html">range specifiers</a> for a description -
+but not as right barrier in the third form.
 </p>
 
 <p>
@@ -1213,20 +1218,20 @@ Search for all games played on October 1, 2010.
 </p>
 
 <verb>
+<keyword>:date</keyword> 2010-10-01 unlimited
+</verb>
+
+<p>
+Search for all games played after September 30, 2010.
+</p>
+
+<verb>
 <keyword>:date</keyword> 2010-10-01 .. 2010-11-01
 </verb>
 
 <p>
 Search for all games played in October 2010: between October 1, 2010
 (inclusive), and November 1, 2010 (exclusive).
-</p>
-
-<verb>
-<keyword>:date</keyword> 2010-10-01 unlimited
-</verb>
-
-<p>
-Search for all games played after September 30, 2010.
 </p>
 
 <verb>
@@ -1245,12 +1250,20 @@ Also search for all games played in October 2010; the latter range
 
 <p>
 Search for all games between September 14, 2010 (exclusive;
-<expr>2010-10-27-43d</expr> is 2010-09-14), and
+<expr>2010-10-27-43d</expr> is September 14, 2010), and
 October 27, 2010 (inclusive). This is an example for the following
-case: we know that the tournament has finished on 2010-10-27,
+case: we know that the tournament has finished on October 27, 2010,
 and the duration of this tournament was exact 43 days. This example
 is exploiting that the first date specifier of a range
 can be greater than the last date specifier.
+</p>
+
+<verb>
+<keyword>:date</keyword> unlimited <cql>position:not</cql>
+</verb>
+
+<p>
+Search for games which are blank dated.
 </p>
 
 <p>
@@ -1261,7 +1274,8 @@ See also: <cql>match:year</cql>.
 
 <p>
 This takes a range specifier denoting the <a href="ECO-Code.html">ECO code</a>
-range that the game must match.
+range that the game must match. It is allowed that the range consists of
+a single code.
 </p>
 
 <p>
@@ -1272,13 +1286,17 @@ Examples:
 <keyword>:eco</keyword> A00
 </verb>
 
+<p>
 Search all games with ECO code A00.
+</p>
 
 <verb>
 <keyword>:eco</keyword> A00 A99
 </verb>
 
+<p>
 Search all games with an ECO code between A00 and A99 (inclusive the ranges).
+</p>
 
 <h3 id="match:gamenumber">:gamenumber</h3>
 
@@ -1301,12 +1319,12 @@ Examples:
 
 <p>
 Search for games which has one of the markers set specified in the given
-string (<see/> <a href="Game-Flags.html">game markers</a>). If no parameter
-is given, we will search for any marker.
+string of tokens (<see/> <a href="Game-Flags.html">game markers</a>). If no
+parameter is given, we will search for any marker.
 </p>
 
 <p>
-A marker is one of:
+A token is one of:
 </p>
 
 <div class="dir">
@@ -1420,7 +1438,7 @@ A marker is one of:
 </div>
 
 <p>
-Example:
+Examples:
 </p>
 
 <verb>
@@ -1429,7 +1447,7 @@ Example:
 
 <p>
 Search for games with marker <i>%::gametable::mc::GameFlags(w)%</i>
-or <i>%::gametable::mc::GameFlags(b)%</i>.
+or <i>%::gametable::mc::GameFlags(b)%</i> (or both).
 </p>
 
 <verb>
@@ -1445,8 +1463,7 @@ game marker are excluded.
 
 <p>
 Search for games which has one of the special markers set specified in the given
-comma-separated list. If no list is given, we will search for any special
-marker.
+comma-separated list.
 </p>
 
 <p>
@@ -1467,9 +1484,13 @@ A special marker is one of:
   <tr>
     <td class="l"><expr>illegalcastling</expr></td>
     <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
-    <td class="r">Game contains illegal move (not castling).</td>
+    <td class="r">Game contains illegal castling.</td>
   </tr>
 </table>
+
+<p>
+Note that <expr>illegalmove</expr> is not including illegal castlings.
+</p>
 
 <p>
 Example:
@@ -1480,8 +1501,7 @@ Example:
 </verb>
 
 <p>
-Search does not include games containing illegal moves, except it is
-an illegal castling.
+Search for games without illegal moves, but illegal castling moves are allowed.
 </p>
 
 <h3 id="match:plycount">:plycount<extension/></h3>
@@ -1507,8 +1527,16 @@ more than 30 moves.
 <h3 id="match:result">:result</h3>
 
 <p>
-This takes a single parameter specifying the required result of the game.
-The allowed parameters are:
+Match all games where the result of the game is matching one of the results in the
+given comma-separated list.
+</p>
+
+<note>
+The CQL standard does allow only a single result as parameter.
+</note>
+
+<p>
+Result is one of:
 </p>
 
 <div class="dir">
@@ -1526,21 +1554,22 @@ The allowed parameters are:
       <td class="r">game in which black wins</td>
     </tr>
     <tr>
-      <td class="l"><expr>*</expr></td>
-      <td class="r">game with unknown result (not part of CQL standard)</td>
-    </tr>
-    <tr>
       <td class="l"><expr>0-0</expr></td>
       <td class="r">game lost for both players (not part of CQL standard)</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>*</expr></td>
+      <td class="r">game with unknown result (not part of CQL standard)</td>
     </tr>
   </table>
 </div>
 
-<note>The parameter <expr>1/2-1/2</expr> may be abbreviated to
-<expr>1/2</expr>.</note>
+<note>
+The parameter <expr>1/2-1/2</expr> may be abbreviated to <expr>1/2</expr>.
+</note>
 
 <p>
-Example:
+Examples:
 </p>
 
 <verb>
@@ -1549,6 +1578,15 @@ Example:
 
 <p>
 Match all drawn games.
+</p>
+
+<verb>
+<keyword>:result</keyword> 1-0,0-1
+</verb>
+
+<p>
+Match all games in which one side has won. This example is not conform
+to the CQL standard.
 </p>
 
 <h3 id="match:termination">:termination<extension/></h3>
@@ -1720,9 +1758,23 @@ See also: <cql>match:date</cql>.
 <h3 id="match:comment">:comment<extension/></h3>
 
 <p>
-Match all games which are containing the given pattern as a sub-string in
-any comment.
+Search all games containing at least one comment with a sub-string which
+is matching the given pattern.
 For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+The pattern must be enclosed in double quotes.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<verb>
+<keyword>:comment</keyword> "decisive game"
+</verb>
+
+<p>
+This will find a game, for example, which contains the commentary
+"This decisive game started with a suprise.".
 </p>
 
 <h3 id="match:hasannotation">:hasannotation<extension/></h3>
@@ -1787,9 +1839,9 @@ position is either a position number, or a FICS variant identifier.
 If the position number is zero then games not beginning with a
 Shuffle Chess position will be matched. Otherwise the position
 number between 1 and 3840 is denoting a Shuffle Chess position.
-If the number is less or equal than 960, it is a Chess 960
-position number. A special meaning has position number -1:
-this number is excluding Shuffle Chess positions and
+If the number is less or equal than 960 (but not null), then it
+is a Chess 960 position number. A special meaning has position
+number -1: this number is excluding Shuffle Chess positions and
 (supported) FICS variants (see below).
 </p>
 
@@ -1805,11 +1857,11 @@ position number in the following way:
     number is between 1 and 960.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is right from the rooks: the range for this Shuffle
+    The king is right from the rooks: the number for this Shuffle
     Chess position is between 961 and 1920.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is left from the rooks: the range for this Shuffle
+    The king is left from the rooks: the number for this Shuffle
     Chess position is between 1921 and 2880.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
@@ -1820,11 +1872,11 @@ position number in the following way:
 </ol>
 
 <p>
-Note that for chess variants %::mc::VariantName(Suicide)%, and
-%::mc::VariantName(Giveaway)% a special rule will be applied: a position
-number N is also matching <nobr>N&#x2212;3&#x00d7;960</nobr> if
+For chess variants %::mc::VariantName(Suicide)% and
+%::mc::VariantName(Giveaway)% a special rule applies: in this case a position
+number N is also matching <nobr>N&#x2212;3&#x00d7;960</nobr>, if
 <nobr>N &gt; 3&#x00d7;960</nobr>. This is simplifying the search for standard
-start positions; see example below. Note that a position in these chess
+start positions; see example below. Note that a start position in these chess
 variants cannot have a position number equal or less than 960.
 </p>
 
@@ -1847,7 +1899,7 @@ Examples:
 
 <p>
 Search for games beginning with a standard start position. In case
-of chess variants %::mc::VariantName(Suicide)%, or
+of chess variants %::mc::VariantName(Suicide)% and
 %::mc::VariantName(Giveaway)% this will also match position
 number 3398.
 </p>
@@ -1858,7 +1910,9 @@ number 3398.
 
 <p>
 Search for games beginning with a standard start position, with or
-without castling rights.
+without castling rights. Here the search will also find in
+%::mc::VariantName(Normal)% the start position 3398, in contrast
+to preceding example.
 </p>
 
 <verb>
@@ -1866,7 +1920,7 @@ without castling rights.
 </verb>
 
 <p>
-Search for games with variant <expr>misc/runaway</expr>.
+Search for games with FICS variant <expr>misc/runaway</expr>.
 </p>
 
 <verb>
@@ -1874,8 +1928,9 @@ Search for games with variant <expr>misc/runaway</expr>.
 </verb>
 
 <p>
-Search for games beginning with a start position: this means
-that the first game position is a Shuffle Chess position.
+Search for games beginning with any start position: this means
+that the first game position of these games must be a Shuffle Chess
+position.
 </p>
 
 <verb>
@@ -1884,8 +1939,8 @@ that the first game position is a Shuffle Chess position.
 
 <p>
 Search for games beginning with any supported start position:
-this means that the first game position is either a Shuffle Chess
-position, or a (supported) FICS variant.
+this means that the first game position in these games is either a
+Shuffle Chess position, or a (supported) FICS variant.
 </p>
 
 <!-- ############################################################################## -->

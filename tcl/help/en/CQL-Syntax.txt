@@ -32,8 +32,8 @@ A CQL script has the following generic structure:
 </verbatim>
 
 <p>
-In this example, the "..." represent various keywords and commands to be
-defined below.
+In this example, the "<expr>...</expr>" represent various keywords and
+commands to be defined below.
 </p>
 
 <p>

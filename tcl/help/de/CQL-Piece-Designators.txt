@@ -39,13 +39,13 @@ die im Figurenartbezeichner enthalten ist.
 
 <p>
 Der Figurenbezeichner <expr>&R;a2</expr> kennzeichnet einen weißen Turm auf
-a2. Der Figurenartbezeichner is &R;, und der Felderbezeichner ist
+a2. Der Figurenartbezeichner ist &R;, und der Felderbezeichner ist
 <expr>a2</expr>. Er findet jede Position mit einem weißen Turm auf a2.
 </p>
 
 <p>
 Der Figurenbezeichner <expr>&b;c1</expr>  kennzeichnet einen schwarzen Läufer
-auf c1. Der Figurenartbezeichner ist &b;, und der Felderbezeichner is
+auf c1. Der Figurenartbezeichner ist &b;, und der Felderbezeichner ist
 <expr>c1</expr>. Er findet jede Position mit einem schwarzen Läufer auf c1.
 </p>
 

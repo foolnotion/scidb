@@ -613,8 +613,8 @@ Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>,
 oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>.
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
-<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern deren
-Turnieraustragungsland unbekannt ist.
+<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
+Nationalität des schwarzen Spielers unbekannt ist.
 </p>
 
 <p>
@@ -715,6 +715,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:player">:player</a>, <a href="CQL
 Suche alle Partien, in denen die Wertungszahl des schwarzen Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
 Für eine detaillierte Beschreibung siehe <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
@@ -744,8 +745,8 @@ Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>,
 oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>.
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
-<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern deren
-Turnieraustragungsland unbekannt ist.
+<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen
+die Nationalität einer der Spieler unbekannt ist.
 </p>
 
 <p>
@@ -758,8 +759,8 @@ Beispiele:
 </code></div>
 
 <p>
-In beiden Beispielen werden all Partien gefiltert, in denen einer
-der Spieler ein Deutscher ist.
+In beiden Beispielen werden alle Partien gefiltert, in denen einer
+der Spieler eine deutsche Nationalität besitzt.
 </p>
 
 <p>
@@ -782,7 +783,7 @@ Beispiel:
 </code></div>
 
 <p>
-Scuhe nach Partien mit Spielern aus alter Zeit, mindestens einer der
+Suche nach Partien mit Spielern aus alter Zeit, mindestens einer der
 Spieler vestarb zwischen 1800 und 1950.
 </p>
 
@@ -860,7 +861,7 @@ Filtere alle Partien, in denen einer der Spielernamen eine Teilzeichenkette
 
 <p>
 <b>Suchmuster in doppelten Anführungszeichen:</b> Nur Partien, in denen
-mindestens einer der Spielernamen durch das Suchmuster ersetzt weren kann,
+mindestens einer der Spielernamen durch das Suchmuster ersetzt werden kann,
 werden aufgefunden. Für eine Beschreibung der Suchmuster siehe
 <a href="Pattern-Matching.html">Suchmusterabgleich</a>.
 </p>
@@ -879,7 +880,7 @@ Beispiele:
 </code></div>
 
 <p>
-Dies ist identisch zu "<span style='white-space:nowrap;'><code>:player</code></span> <span style='white-space:nowrap;'><code>coeff</code></span>".
+Dies ist identisch zum vorigen Beispiel (ohne Anführungszeichen).
 </p>
 
 <p>
@@ -897,6 +898,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>, <a
 Suche alle Partien, in denen die Wertungszahl einer der Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
 </p>
 
 <p>
@@ -1061,8 +1063,8 @@ Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>,
 oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>.
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
-<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern deren
-Turnieraustragungsland unbekannt ist.
+<span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
+Nationalität des weißen Spielers unbekannt ist.
 </p>
 
 <p>
@@ -1147,11 +1149,12 @@ Siehe auch: <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>, <a
 Suche alle Partien, in denen die Wertungszahl des weißen Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
 Für eine detaillierte Beschreibung siehe <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
 <p>
-Siehe auch: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
+Siehe auch: <a href="CQL-Match-List.html#match:blackrating">:blackrating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
 </p>
 
 <h3 id="match:whitetitle">:whitetitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Titel - weißer Spieler)</span></h3>
@@ -1255,9 +1258,9 @@ Der Datumsbereich muß einer der folgenden Syntaxformen genügen:
 
 <p>
 In der dritten Syntaxform ist es nicht erforderlich, daß die linke
-Schranke kleiner ist als die rechte Scharanke. Der leere Datumsbereich
+Schranke kleiner ist als die rechte Schranke. Der leere Datumsbereich
 (z.B.  <code><span style='white-space:nowrap;'>2010-10-01</span> <span style='white-space:nowrap;'>..</span> <span style='white-space:nowrap;'>2010-10-01</span></code>)
-is nicht erlaubt.
+ist nicht erlaubt.
 </p>
 
 <p>
@@ -1266,28 +1269,28 @@ Ein Datum hat die folgende Form:
 
 <div class="dir">
   <p><span style='white-space:nowrap;'><code>
-  &lt;year&gt;'&#x2212;'&lt;month&gt;'&#x2212;'&lt;day&gt;(&lt;sign&gt;&lt;num&gt;'y')?(&lt;sign&gt;&lt;num&gt;'m')?(&lt;sign&gt;&lt;num&gt;'d')?
+  &lt;jahr&gt;'&#x2212;'&lt;monat&gt;'&#x2212;'&lt;tag&gt;(&lt;signum&gt;&lt;zahl&gt;'y')?(&lt;signum&gt;&lt;zahl&gt;'m')?(&lt;signum&gt;&lt;zahl&gt;'d')?
   </code></span></p>
 
   <table>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>&lt;year&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;jahr&gt;</code></span></td>
       <td class="r">bezeichnet das Jahr (vierstellig)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>&lt;month&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;monat&gt;</code></span></td>
       <td class="r">bezeichnet den Monat (zweistellig)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>&lt;day&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;tag&gt;</code></span></td>
       <td class="r">bezeichnet den Tag des Monats (zweistellig)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>&lt;sign&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;signum&gt;</code></span></td>
       <td class="r">ist entweder '&#x2212;' oder '+'</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>&lt;num&gt;</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;zahl&gt;</code></span></td>
       <td class="r">ist eine positive Zahl, und bezeichnet ein Inkrement oder ein Dekrement</td>
     </tr>
     <tr valign="top">
@@ -1306,9 +1309,9 @@ Ein Datum hat die folgende Form:
 </div>
 
 <p>
-Im fall der zweiten Syntaxform ist das spezielle Datum "unlimited" erlaubt;
+Es ist zudem das spezielle Datum "unlimited" erlaubt -
 siehe <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> für eine
-Beschreibung.
+Beschreibung - jedoch nicht ale rechte Schranke in der dritten Form.
 </p>
 
 <p>
@@ -1324,6 +1327,14 @@ Suche nach allen Partien gespielt am 1. Oktober 2010.
 </p>
 
 <div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 unlimited
+</code></div>
+
+<p>
+Suche nach allen Partien gespielt nach dem 30. September 2010.
+</p>
+
+<div class='verb'><code>
 <span class='keyword'>:date</span> 2010-10-01 .. 2010-11-01
 </code></div>
 
@@ -1333,21 +1344,13 @@ Suche nach allen Partien gespielt im Oktober 2010: zwischen dem
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:date</span> 2010-10-01 unlimited
-</code></div>
-
-<p>
-Suche nach allen Partien gespielt nach dem 30. September 2010.
-</p>
-
-<div class='verb'><code>
 <span class='keyword'>:date</span> 2010-10-01 .. 2010-10-01+1m
 </code></div>
 
 <p>
 Suche ebenfalls nach allen Partien gespielt im Oktober 2010; die
-rechte Datumesangabe (<span style='white-space:nowrap;'><code>2010-10-01+1m</code></span> ist der
-1. November 2010) is ausgeschlossen.
+rechte Datumsangabe (<span style='white-space:nowrap;'><code>2010-10-01+1m</code></span> ist der
+1. November 2010) ist ausgeschlossen.
 <span style='white-space:nowrap;'><code>+1m</code></span> bezeichnet das Inkrement für den Monat.
 </p>
 
@@ -1357,11 +1360,19 @@ rechte Datumesangabe (<span style='white-space:nowrap;'><code>2010-10-01+1m</cod
 
 <p>
 Suche nach allen Partien gespielt zwischen dem 14. September 2010
-(exklusive; <span style='white-space:nowrap;'><code>2010-10-27-43d</code></span> ist 2010-09-14) und dem
-27. Oktober 2010 (inklusive). Dies ist ein Beispiel für den folgenden
-Fall: wir wissen das das Turnier am 27.10.2010 endete, und die
-Turnierdauer war exakt 43 Tage. Dieses Beispiel stellt heraus das
+(exklusive; <span style='white-space:nowrap;'><code>2010-10-27-43d</code></span> ist der 14. September 2010) und
+dem 27. Oktober 2010 (inklusive). Dies ist ein Beispiel für den folgenden
+Fall: wir wissen daß das Turnier am 27.10.2010 endete, und die
+Turnierdauer war exakt 43 Tage. Dieses Beispiel stellt heraus daß
 die linke Datumsschranke größer sein kann als die rechte Datumsschranke.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> unlimited <a href="CQL-Position-List.html#position:not">:not</a>
+</code></div>
+
+<p>
+Suche nach Partien, die kein Partiedatum haben.
 </p>
 
 <p>
@@ -1371,36 +1382,42 @@ Siehe auch: <a href="CQL-Match-List.html#match:year">:year</a>.
 <h3 id="match:eco">:eco&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </span></h3>
 
 <p>
-This takes a range specifier denoting the <a href="ECO-Code.html">ECO code</a>
-range that the game must match.
+Erwartet eine <a href="ECO-Code.html">ECO-Code</a>-Bereich, und filtert alle
+Partien mit einem ECO-Code, der in diesem Bereich liegt. Der Bereich kann
+auch aus einem einzelnem ECO-Code bestehen.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <div class='verb'><code>
 <span class='keyword'>:eco</span> A00
 </code></div>
 
-Search all games with ECO code A00.
+<p>
+Suche alle Partien mit ECO-Code A00.
+</p>
 
 <div class='verb'><code>
 <span class='keyword'>:eco</span> A00 A99
 </code></div>
 
-Search all games with an ECO code between A00 and A99 (inclusive the ranges).
+<p>
+Suche alle Partien mit einem ECO-Code zwischen A00 und A99 (inklusive der
+Schranken).
+</p>
 
 <h3 id="match:gamenumber">:gamenumber&emsp;<span class='normal'>(Partiennummer)</span></h3>
 
 <p>
-This takes a range specifier. Only games whose number within the database lies
-within the range specifier (&#x21d2;
-<a href="CQL-Range-Specifiers.html">range specifiers</a>) are considered.
+Erwartet eine <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>, und filtert
+nur die Partien, deren Nummer in der Datanbank innerhalb des gegebenen Bereichs
+liegt.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <div class='verb'><code>
@@ -1411,13 +1428,15 @@ Examples:
 <h3 id="match:hasmarkers">:hasmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Partiemarkierung?)</span></h3>
 
 <p>
-Search for games which has one of the markers set specified in the given
-string (&#x21d2; <a href="Game-Flags.html">game markers</a>). If no parameter
-is given, we will search for any marker.
+Suche nach Partien, in denen mindestens eine Partiemarkierung (&#x21d2;
+<a href="Game-Flags.html">Partiemarkierungen</a>) gesetzt ist, die in der
+gegebenen Zeichenkette mit ihrem Kürzel aufgeführt wird. Wenn kein Parameter
+vorhanden ist, so wird nach Partien gesucht, in denen irgendeine
+Partiemarkierung gesetzt wurde.
 </p>
 
 <p>
-A marker is one of:
+Die Kürzel für Partiemarkierungen sind:
 </p>
 
 <div class="dir">
@@ -1531,7 +1550,7 @@ A marker is one of:
 </div>
 
 <p>
-Example:
+Beispiele:
 </p>
 
 <div class='verb'><code>
@@ -1539,8 +1558,8 @@ Example:
 </code></div>
 
 <p>
-Search for games with marker <i>Weiße Eröffnung</i>
-or <i>Schwarze Eröffnung</i>.
+Suche nach Partien mit den Markierung <i>Weiße Eröffnung</i>
+oder <i>Schwarze Eröffnung</i> (oder beiden).
 </p>
 
 <div class='verb'><code>
@@ -1548,42 +1567,45 @@ or <i>Schwarze Eröffnung</i>.
 </code></div>
 
 <p>
-Search for games with any marker set; this means games without any
-game marker are excluded.
+Suche nach Partien, in denen irgendeine Markierung gesetzt wurde; d.h. alle
+Partien ohne eine Markierung sind ausgeschlossen.
 </p>
 
 <h3 id="match:hasspecialmarkers">:hasspecialmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Spezielle Partiemarkierung?)</span></h3>
 
 <p>
-Search for games which has one of the special markers set specified in the given
-comma-separated list. If no list is given, we will search for any special
-marker.
+Suche nach Partien, in denen mindestens eine der speziellen Markierungen
+gesetzt ist, die in der gegebenen kommaseparierten Liste aufgeführt sind.
 </p>
 
 <p>
-A special marker is one of:
+Eine spezielle Markierung wird folgendermaßen spezifiziert:
 </p>
 
 <table>
   <tr>
     <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
     <td class="m"><img src="../images/game_deleted.png" alt="" /></td>
-    <td class="r">Game marked for deletion</td>
+    <td class="r">Die Partie ist markiert zum Löschen.</td>
   </tr>
   <tr>
     <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
     <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
-    <td class="r">Game contains illegal castling move.</td>
+    <td class="r">Die Partie enthält unerlaubte Züge.</td>
   </tr>
   <tr>
     <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
     <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
-    <td class="r">Game contains illegal move (not castling).</td>
+    <td class="r">Die Partie enthält unerlaubte Rochaden.</td>
   </tr>
 </table>
 
 <p>
-Example:
+Beachte das <span style='white-space:nowrap;'><code>illegalmove</code></span> keine unerlaubten Rochaden beinhaltet.
+</p>
+
+<p>
+Beispiel:
 </p>
 
 <div class='verb'><code>
@@ -1591,19 +1613,18 @@ Example:
 </code></div>
 
 <p>
-Search does not include games containing illegal moves, except it is
-an illegal castling.
+Suche nach Partien ohne unerlaubte Züge, unerlaubte Rochaden sind jedoch erlaubt.
 </p>
 
 <h3 id="match:plycount">:plycount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Halbzugzähler)</span></h3>
 
 <p>
-Search for games with a ply count between the given range
-(&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+Suche nach Partien, deren Halbzugzahl innerhalb der gegebenen
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <div class='verb'><code>
@@ -1611,47 +1632,56 @@ Example:
 </code></div>
 
 <p>
-This is matching short games, with no less than 20 moves, and no
-more than 30 moves.
+Dies findet kurze Partien auf, mit nicht weniger als 20, und nicht mehr
+als 30 Züge.
 </p>
 
 <h3 id="match:result">:result&emsp;<span class='normal'>(Ergebnis)</span></h3>
 
 <p>
-This takes a single parameter specifying the required result of the game.
-The allowed parameters are:
+Suche nach Partien, deren Ergebnis mit einem in der gegebenen
+kommaseparierten Liste von Ergebnissen übereinstimmt.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Der CQL-Standard erlaubt nur ein einziges Ergebnis als Parameter.
+</p>
+
+<p>
+Erlaubte Ergebnisse sind:
 </p>
 
 <div class="dir">
   <table>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>1/2-1/2</code></span></td>
-      <td class="r">drawn game</td>
+      <td class="r">Remis</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>1-0</code></span></td>
-      <td class="r">game in which white wins</td>
+      <td class="r">Weiß gewinnt</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>0-1</code></span></td>
-      <td class="r">game in which black wins</td>
-    </tr>
-    <tr>
-      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
-      <td class="r">game with unknown result (not part of CQL standard)</td>
+      <td class="r">Schwarz gewinnt</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>0-0</code></span></td>
-      <td class="r">game lost for both players (not part of CQL standard)</td>
+      <td class="r">Für beide Partien verloren (nicht Bestandteil des CQL-Standards)</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
+      <td class="r">Ergebnis ist nicht bekannt (nicht Bestandteil des CQL-Standards)</td>
     </tr>
   </table>
 </div>
 
-<p><img src='../images/note.png' alt='note' /> The parameter <span style='white-space:nowrap;'><code>1/2-1/2</code></span> may be abbreviated to
-<span style='white-space:nowrap;'><code>1/2</code></span>.</p>
+<p><img src='../images/note.png' alt='note' /> 
+Das Ergebnis <span style='white-space:nowrap;'><code>1/2-1/2</code></span> kann mit <span style='white-space:nowrap;'><code>1/2</code></span> abgekürzt werden.
+</p>
 
 <p>
-Example:
+Beispiele:
 </p>
 
 <div class='verb'><code>
@@ -1659,18 +1689,27 @@ Example:
 </code></div>
 
 <p>
-Match all drawn games.
+Finde alle Remispartien.
 </p>
 
-<h3 id="match:termination">:termination&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Terminierung)</span></h3>
+<div class='verb'><code>
+<span class='keyword'>:result</span> 1-0,0-1
+</code></div>
 
 <p>
-Match all games where the termination reason is matching one of
-the reasons in the given comma-separated list.
+Finde alle Partien, in denen eine Seite gewann. Dieses Beispiel ist nicht
+konform zum CQL-Standard.
+</p>
+
+<h3 id="match:termination">:termination&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Beendigung)</span></h3>
+
+<p>
+Filtere alle Partien, in denen die Beendigungsursache mit einer der in der
+gegebenen kommaseparierten Liste von Ursachen übereinstimmt.
 </p>
 
 <p>
-The termination reason is one of:
+Erlaubte Beendigungsursachen sind:
 </p>
 
 <div class="dir">
@@ -1678,12 +1717,12 @@ The termination reason is one of:
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
       <td class="m"></td>
-      <td class="r">Termination reason is unknown</td>
+      <td class="r">Die Beendigungsursache ist nicht bekannt</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
       <td class="m"><img src="../images/termination_reason_Normal.png" alt="" /></td>
-      <td class="r">Game terminated in a normal fashion</td>
+      <td class="r">Die Partie endete auf normale Weise</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>unplayed</code></span></td>
@@ -1718,7 +1757,7 @@ The termination reason is one of:
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>timeforfeit</code></span></td>
       <td class="m"><img src="../images/termination_reason_TimeForfeit.png" alt="" /></td>
-      <td class="r">One or both players forfeits on time</td>
+      <td class="r">Ein Spieler, oder sogar beide, überschritten die Zeit</td>
     </tr>
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>unterminated</code></span></td>
@@ -1729,7 +1768,7 @@ The termination reason is one of:
 </div>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <div class='verb'><code>
@@ -1737,18 +1776,19 @@ Example:
 </code></div>
 
 <p>
-Search all games where it is not known that the game did not terminate
-in an abnormal fashion.
+Suche alle Partien, von denen bekannt ist, daß sie nicht in einer unnormalen
+Weise beendet wurden.
 </p>
 
 <h3 id="match:variant">:variant&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Schachform)</span></h3>
 
 <p>
-Only search in games matching any chess variant in given comma-separated list.
+Suche nur nach Partien deren Schachform mit einer der Schachformen in der
+gegebenen kommaseparierten Liste übereinstimmt.
 </p>
 
 <p>
-Supported variants are:
+Erlaubte Schachformen sind:
 </p>
 
 <div class="dir">
@@ -1781,7 +1821,7 @@ Supported variants are:
 </div>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <div class='verb'><code>
@@ -1789,18 +1829,19 @@ Example:
 </code></div>
 
 <p>
-Restrict the search to Antichess games.
+Schränke die Suche auf Schlagschachpartien ein.
 </p>
 
 <h3 id="match:year">:year&emsp;<span class='normal'>(Jahr)</span></h3>
 
 <p>
-This takes a range specifier denoting the range of years that the game must match
-(&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+Erwartet eine <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> und
+filtert alle Partien, deren Jahr des Partiedatums innerhalb des gegebenen
+Bereichs liegt.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <div class='verb'><code>
@@ -1831,15 +1872,30 @@ Siehe auch: <a href="CQL-Match-List.html#match:date">:date</a>.
 <h3 id="match:comment">:comment&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Kommentar)</span></h3>
 
 <p>
-Match all games which are containing the given pattern as a sub-string in
-any comment.
-For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+Filtere alle Partien, in denen mindestens ein Kommentar eine Teilzeichenkette
+enthält, die vom gegebenen Suchmuster ersetzt werden kann (&#x21d2;
+<a href="Pattern-Matching.html">Suchmusterabgleich</a>). Das Suchmuster
+muß in doppelten Anführungszeichen eingeschlossen sein.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:comment</span> "entscheidungspartie"
+</code></div>
+
+<p>
+Dies findet beispielsweise eine Partie auf, die als Kommentierung
+den Satz "Diese Entscheidungspartie begann mit einer Überraschung."
+enthält.
 </p>
 
 <h3 id="match:hasannotation">:hasannotation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Anmerkung?)</span></h3>
 
 <p>
-Search for annotated games (does not include comments).
+Suche nach Partien mit Anmerkungen (dies sind nicht Kommentare).
 </p>
 
 <p>
@@ -1849,8 +1905,8 @@ Siehe auch: <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>, <a
 <h3 id="match:hascomments">:hascomments&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Kommentar?)</span></h3>
 
 <p>
-Search for commented games. Note that a commented game must not have
-an annotator (&#x21d2; <a href="CQL-Match-List.html#match:annotator">:annotator</a>).
+Suche nach kommentierten Partien. Beachte das eine kommentierte Partie keinen
+Kommentator (&#x21d2; <a href="CQL-Match-List.html#match:annotator">:annotator</a>) haben muß.
 </p>
 
 Siehe auch: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>, <a href="CQL-Match-List.html#match:hasvariations">:hasvariations</a>.
@@ -1858,7 +1914,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>
 <h3 id="match:hasvariations">:hasvariations&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Varianten?)</span></h3>
 
 <p>
-Search for games containing sub-variations.
+Suche nach Partien mit Untervarianten.
 </p>
 
 <p>
@@ -1868,8 +1924,8 @@ Siehe auch: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>
 <h3 id="match:ischess960">:ischess960&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Schach-960?)</span></h3>
 
 <p>
-Search for games starting with a Chess 960 position.
-This includes the standard start position.
+Suche nach Partien beginnend mit einer Schach-960-Position. Dies beinhaltet
+die Standardstartposition.
 </p>
 
 <p>
@@ -1879,8 +1935,8 @@ Siehe auch: <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</
 <h3 id="match:isshufflechess">:isshufflechess&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Shuffle-Schach?)</span></h3>
 
 <p>
-Search for games starting with a Shuffle Chess position.
-This includes Chess 960 positions.
+Suche nach Partien beginnend mit einer Schuffle-Schach-Position. Dies
+beinhaltet Schach-960-Positionen.
 </p>
 
 <p>
@@ -1890,58 +1946,59 @@ Siehe auch: <a href="CQL-Match-List.html#match:ischess960">:ischess960</a>.
 <h3 id="match:startposition">:startposition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </span></h3>
 
 <p>
-This will take a comma-separated list of start positions. A start
-position is either a position number, or a FICS variant identifier.
+Erwartet eine kommaseparierte Liste von Startpositionen. Eine Startposition
+ist entweder eine Positionsnummer, oder eine FICS-Variantenbezeichnung.
 </p>
 
 <p>
-If the position number is zero then games not beginning with a
-Shuffle Chess position will be matched. Otherwise the position
-number between 1 and 3840 is denoting a Shuffle Chess position.
-If the number is less or equal than 960, it is a Chess 960
-position number. A special meaning has position number -1:
-this number is excluding Shuffle Chess positions and
-(supported) FICS variants (see below).
+Im Falle der Positionsnummer Null werden alle Partien gefiltert, die nicht
+mit einer Shuffle-Schach-Positionen beginnen. Eine Positionsnummer zwischen
+1 und 3840 bezeichnet eine Shuffle-Schach-Position. Ist die Nummer kleiner
+oder gleich 960 (aber nicht Null), dann ist es eine Schach-960-Positionsnummer.
+Eine spezielle Bedeutung hat die Nummer -1: diese Nummer schliesst alle
+Shuffle-Schach-Positionen und alle (unterstützten) FICS-Varianten aus.
 </p>
 
 <p>
-The Shuffle Chess position number is derived from the Chess 960
-position number in the following way:
+Die Shuffle-Schach-Positionsnummer ist von der Schach-960-Positionsnummer
+in der folgenden Weise abgeleitet:
 </p>
 
 <ol style="margin-left: 0">
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is between the two rooks, and all castling rights
-    are given: this is a Chess 960 position. Thus the position
-    number is between 1 and 960.
+    Der König befindet sich zwischen zwei Türmen, und alle
+    Rochaderechte sind gegeben: dies ist eine Schach-960-Position.
+    Folglich ist die Nummer zwischen 1 und 960.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is right from the rooks: the range for this Shuffle
-    Chess position is between 961 and 1920.
+    Der König befindet sich rechts von den Türmen: die Nummer
+    dieser Shuffle-Schach-Position ist zwischen 961 und 1920.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is left from the rooks: the range for this Shuffle
-    Chess position is between 1921 and 2880.
+    Der König befindet sich links von den Türmen: die Nummer
+    dieser Shuffle-Schach-Position ist zwischen 1921 und 2880.
   </li>
   <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    The king is between the two rooks, but no castling rights are
-    given: add 3&#x00d7;960 to the corresponding Chess 960 position,
-    thus the position number is between 2881 and 3840.
+    Der König befindet sich zwischen den beiden Türmen, hat aber
+    keine Rochaderechte: addiere 3&#x00d7;960 zur entsprechenden
+    Schach-960-Positionsnummer, folglich ist diese Nummer zwischen
+    2881 und 3840.
   </li>
 </ol>
 
 <p>
-Note that for chess variants Suicide, and
-Giveaway a special rule will be applied: a position
-number N is also matching <span style='white-space:nowrap;'>N&#x2212;3&#x00d7;960</span> if
-<span style='white-space:nowrap;'>N &gt; 3&#x00d7;960</span>. This is simplifying the search for standard
-start positions; see example below. Note that a position in these chess
-variants cannot have a position number equal or less than 960.
+Für die Schachformen Suicide und
+Giveaway gilt eine spezielle Regel:
+hier ist die Positionsnummer N equivalent zur Positionsnummer
+<span style='white-space:nowrap;'><code>N&#x2212;3&#x00d7;960</code></span>, wenn <span style='white-space:nowrap;'>N &gt; 3&#x00d7;960</span>.
+Dies vereinfacht die Suche nach Standardpositionen; siehe untenstehendes
+Beispiel. Beachte das eine Startposition in diesen Schachformen keine
+Positionsnummer haben kann, die kleiner oder gleich 960 ist.
 </p>
 
 <p>
-It is also possible to specifiy a FICS variant identifier for
-the start position. The supported positions are:
+Es ist auch möglich eine FICS-Variantenbezeichnung für die Startposition
+anzugeben. Unterstützte Positionen sind:
 </p>
 
 <div class="dir">
@@ -2000,7 +2057,7 @@ the start position. The supported positions are:
 </div>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <div class='verb'><code>
@@ -2008,10 +2065,10 @@ Examples:
 </code></div>
 
 <p>
-Search for games beginning with a standard start position. In case
-of chess variants Suicide, or
-Giveaway this will also match position
-number 3398.
+Suche nach Partien beginnend mit einer Standardstartposition. Im Falle
+der Schachformen Suicide und
+Giveaway findet dies auch Startpositionen mit
+der Nummer 3398.
 </p>
 
 <div class='verb'><code>
@@ -2019,8 +2076,9 @@ number 3398.
 </code></div>
 
 <p>
-Search for games beginning with a standard start position, with or
-without castling rights.
+Suche nach Partien beginnend mit einer Standardstartposition, mit oder
+ohne Rochaderechte. Hier wird auch in der Normalschachform die
+Startpositionen 3398 aufgefunden, im Unterschied zum vorigen Beispiel.
 </p>
 
 <div class='verb'><code>
@@ -2028,7 +2086,7 @@ without castling rights.
 </code></div>
 
 <p>
-Search for games with variant <span style='white-space:nowrap;'><code>misc/runaway</code></span>.
+Suche nach Partien der FICS-Variante <span style='white-space:nowrap;'><code>misc/runaway</code></span>.
 </p>
 
 <div class='verb'><code>
@@ -2036,8 +2094,9 @@ Search for games with variant <span style='white-space:nowrap;'><code>misc/runaw
 </code></div>
 
 <p>
-Search for games beginning with a start position: this means
-that the first game position is a Shuffle Chess position.
+Suche nach Partien beginnend mit einer beliebigen Startposition:
+dies bedeutet das die erste Position dieser Partien eine
+Schuffle-Schach-Position sein muß.
 </p>
 
 <div class='verb'><code>
@@ -2045,9 +2104,9 @@ that the first game position is a Shuffle Chess position.
 </code></div>
 
 <p>
-Search for games beginning with any supported start position:
-this means that the first game position is either a Shuffle Chess
-position, or a (supported) FICS variant.
+Suche nach Partien beginnend mit irgendeiner unterstützen Startposition:
+dies bedeuetet das die erste Position dieser Partien entweder eine
+Schuffle-Schach-Position ist, oder eine der unterstützen FICS-Varianten.
 </p>
 
 <!-- ############################################################################## -->
@@ -2063,8 +2122,9 @@ position, or a (supported) FICS variant.
 <h3 id="match:forany">:forany&emsp;<span class='normal'>(Für jede)</span></h3>
 
 <p>
-This takes two parameters, a tag name and a piece designator.
-This feature is described on page <a href="CQL-Tagging">Tagging</a>.
+Erwartet zwei Parameter, einen Markierungsnamen und einen Figurenbezeichner.
+Dieses Funktionalität wird auf der Seite <a href="CQL-Tagging">Tagging</a>
+beschrieben.
 </p>
 
 <!-- ############################################################################## -->
@@ -2081,23 +2141,23 @@ This feature is described on page <a href="CQL-Tagging">Tagging</a>.
 <h3 id="match:output">:output&emsp;<span class='normal'>(Ausgabe)</span></h3>
 
 <p>
-This takes one parameter which denotes the name of a file.
+Erwartet einen Parameter, der einen Dateinamen bezeichnet.
 </p>
 
 <p>
-This keyword is supported to be compatible with CQL standard, and does
-not have any meaning in Scidb.
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
 </p>
 
 <h3 id="match:pgn">:pgn</span></h3>
 
 <p>
-This takes one parameter which denotes the name of a file.
+Erwartet einen Parameter, der einen Dateinamen bezeichnet.
 </p>
 
 <p>
-This keyword is supported to be compatible with CQL standard, and does
-not have any meaning in Scidb.
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
 </p>
 
 </body>

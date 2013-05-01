@@ -1418,7 +1418,7 @@ proc Goto {position} {
 		lassign $bbox _ y0 _ y1
 		# seems to be too confusing
 		# set changed [expr {(max($view0, $y0) > min($view1, $y1))}] ;# no intersection
-		set changed [expr {$y0 - $view0 > 30}]
+		set changed [expr {abs($y0 - $view0) > 30}]
 		set position [lindex $bbox 1]
 	}
 
