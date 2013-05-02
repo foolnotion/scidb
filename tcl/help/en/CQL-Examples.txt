@@ -229,12 +229,12 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    &P;[c2-4]                ; pawns on connected squares
-    <cql>position:piececount</cql> &P;c? 3 6    ; at least three pawns 
-    <cql>position:piececount</cql> &P;[b?,d?] 0 ; the triple pawns are isolated
-    <cql>position:shiftvertical</cql>         ; any rank
-    <cql>position:shifthorizontal</cql>       ; any file
-    <cql>position:flipcolor</cql>))           ; any side
+    &P;[c2-4]                <comment>; pawns on connected squares</comment>
+    <cql>position:piececount</cql> &P;c? 3 6    <comment>; at least three pawns </comment>
+    <cql>position:piececount</cql> &P;[b?,d?] 0 <comment>; the triple pawns are isolated</comment>
+    <cql>position:shiftvertical</cql>         <comment>; any rank</comment>
+    <cql>position:shifthorizontal</cql>       <comment>; any file</comment>
+    <cql>position:flipcolor</cql>))           <comment>; any side</comment>
 </verbatim>
 
 <verbatim>
@@ -267,9 +267,9 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <cql>position:flipcolor</cql>            ; either color
-    <cql>position:attackcount</cql> k [A.] 0 ; king is smothered by own pieces
-    <cql>position:mate</cql>))               ; and is mate
+    <cql>position:flipcolor</cql>            <comment>; either color</comment>
+    <cql>position:attackcount</cql> k [A.] 0 <comment>; king is smothered by own pieces</comment>
+    <cql>position:mate</cql>))               <comment>; and is mate</comment>
 </verbatim>
 
 END

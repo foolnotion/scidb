@@ -250,12 +250,12 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <span class='piece'>&#x2659;</span>[c2-4]                ; pawns on connected squares
-    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>c? 3 6    ; at least three pawns 
-    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b?,d?] 0 ; the triple pawns are isolated
-    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>         ; any rank
-    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>       ; any file
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))           ; any side<!--
+    <span class='piece'>&#x2659;</span>[c2-4]                <span class='comment'>; pawns on connected squares</span>
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>c? 3 6    <span class='comment'>; at least three pawns </span>
+    <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b?,d?] 0 <span class='comment'>; the triple pawns are isolated</span>
+    <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>         <span class='comment'>; any rank</span>
+    <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>       <span class='comment'>; any file</span>
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))           <span class='comment'>; any side</span><!--
 --></code></pre></div>
 
 <div class='box'><pre><code><!--
@@ -288,9 +288,9 @@ Fourth example: knight gives mate with its first move.
 
 (match
   (position
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>            ; either color
-    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k [A.] 0 ; king is smothered by own pieces
-    <a href="CQL-Position-List.html#position:mate">:mate</a>))               ; and is mate<!--
+    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>            <span class='comment'>; either color</span>
+    <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> k [A.] 0 <span class='comment'>; king is smothered by own pieces</span>
+    <a href="CQL-Position-List.html#position:mate">:mate</a>))               <span class='comment'>; and is mate</span><!--
 --></code></pre></div>
 
 </body>

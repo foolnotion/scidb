@@ -233,12 +233,12 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    &P;[c2-4]                ; Bauern auf verbundenen Feldern
-    <cql>position:piececount</cql> &P;c? 3 6    ; midestens drei Beuern
-    <cql>position:piececount</cql> &P;[b?,d?] 0 ; Bauern sind isoliert
-    <cql>position:shiftvertical</cql>         ; beliebige Reihe
-    <cql>position:shifthorizontal</cql>       ; beliebige Linie
-    <cql>position:flipcolor</cql>))           ; beliebige Seite
+    &P;[c2-4]                <comment>; Bauern auf verbundenen Feldern</comment>
+    <cql>position:piececount</cql> &P;c? 3 6    <comment>; midestens drei Beuern</comment>
+    <cql>position:piececount</cql> &P;[b?,d?] 0 <comment>; Bauern sind isoliert</comment>
+    <cql>position:shiftvertical</cql>         <comment>; beliebige Reihe</comment>
+    <cql>position:shifthorizontal</cql>       <comment>; beliebige Linie</comment>
+    <cql>position:flipcolor</cql>))           <comment>; beliebige Seite</comment>
 </verbatim>
 
 <verbatim>
@@ -272,9 +272,9 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 
 (match
   (position
-    <cql>position:flipcolor</cql>            ; Jede Farbe
-    <cql>position:attackcount</cql> k [A.] 0 ; König ist von eigenen Figuren umzingelt
-    <cql>position:mate</cql>))               ; und ist matt
+    <cql>position:flipcolor</cql>            <comment>; Jede Farbe</comment>
+    <cql>position:attackcount</cql> k [A.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
+    <cql>position:mate</cql>))               <comment>; und ist matt</comment>
 </verbatim>
 
 END
