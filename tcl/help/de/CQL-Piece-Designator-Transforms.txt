@@ -116,12 +116,12 @@ Spiegelung von <expr>Uf6</expr> gleich <expr>Uf3</expr>.
 </table>
 
 <p>
-Eine <b>V-förmige Transformation</b>, angewendet auf einen
+Eine <b>diedrische Transformation</b>, angewendet auf einen
 Figurenbezeichner, ist entweder eine Spiegelungstransformation oder eine
 Rotation von 90 Grad auf dem Schachbrett gefolgt von einer
 Spiegelungstransformation oder der identischen Transformation. Es gibt
-8 unterschiedliche V-förmige Transformationen auf dem Schachbrett.
-Beispielsweise ist das Resultat einer Anwendung aller 8 V-förmigen
+8 unterschiedliche diedrische Transformationen auf dem Schachbrett.
+Beispielsweise ist das Resultat einer Anwendung aller 8 diedrischen
 Transformationen auf den Figurenbezeichner <expr>&Q;c2</expr> die Menge
 der 8 Figurenbezeichner <expr>&Q;c2</expr>,
 <expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
@@ -136,7 +136,7 @@ der 8 Figurenbezeichner <expr>&Q;c2</expr>,
   </tr>
   <tr>
     <td align="center">
-      Alle V-förmigen Transformationen von <expr>&Q;c2</expr>.<br/>
+      Alle diedrischen Transformationen von <expr>&Q;c2</expr>.<br/>
       Dies ist die Sequenz:
       diagonale Spiegelung (nach b3),<br/>
       horizontale Spiegelung (nach b6),
