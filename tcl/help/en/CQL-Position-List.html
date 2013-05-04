@@ -22,10 +22,10 @@
      content="Scidb Help Page" />
 
   <link rel="icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico"
+       href="http://scidb.sourceforge.net/favicon.ico"
        type="image/x-icon" />
   <link rel="shortcut icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico" />
+       href="http://scidb.sourceforge.net/favicon.ico" />
   <link rel="stylesheet"
        type="text/css"
       media="screen"
@@ -47,8 +47,8 @@ part of the CQL standard.
 </p>
 
 <p>
-The keywords <a href="CQL-Position-List.html#position:castling">:castling</a>, <a href="CQL-Position-List.html#position:endgame">:endgame</a>,
-<a href="CQL-Position-List.html#position:inside">:inside</a>, and <a href="CQL-Position-List.html#position:reset">:reset</a> are borrowed from
+The keywords <a href="CQL-Position-List.html#position:castling"><span style='white-space:nowrap;'>:castling</span></a>, <a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>,
+<a href="CQL-Position-List.html#position:inside"><span style='white-space:nowrap;'>:inside</span></a>, and <a href="CQL-Position-List.html#position:reset"><span style='white-space:nowrap;'>:reset</span></a> are borrowed from
 Chess Assistant 9. The description of these keywords are taken from
 <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>.
 </p>
@@ -62,7 +62,7 @@ Chess Assistant 9. The description of these keywords are taken from
     <tr><td>&#x2022;</td><td><a href="#transform">Transformation keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#piece">Piece configuration keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#move">Move keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#sequence">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#sequence">Sequence keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#game">Game related keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation">Relation between positions</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#matching">Matching count keywords</a></td></tr>
@@ -252,10 +252,10 @@ Example:
 
 <div class='box'><pre><code><!--
 -->(position 
-  <a href="CQL-Position-List.html#position:wtm">:wtm</a>
-  <a href="CQL-Position-List.html#position:check">:check</a>
+  <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>
+  <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>
   <span class='keyword'>:and</span> (
-    (position <span class='piece'>&#x2654;</span>e2 <span class='piece'>&#x265a;</span>g2 <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a>)
+    (position <span class='piece'>&#x2654;</span>e2 <span class='piece'>&#x265a;</span>g2 <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>)
     (position <span class='piece'>&#x2658;</span>e2)))<!--
 --></code></pre></div>
 
@@ -271,8 +271,8 @@ This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
 match if the containing match list would not match without the :not. In
 latter case negate the result of the sub-position list match. The former
-case is conform with CQL standard of keyword <a href="CQL-Position-List.html#position:not">:not</a>,
-the second form is an extension.
+case is conform with CQL standard of keyword :not, the second form is an
+extension.
 </p>
 
 <p>
@@ -283,23 +283,23 @@ Examples:
 -->(match
   (position
     ; <span class='comment'>we are searching for both colors</span>
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>
+    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>
     <span class='comment'>; the mating position must match each criterion below</span>
-    <a href="CQL-Position-List.html#position:and">:and</a> (
+    <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> (
       <span class='comment'>; the black king is surrounded by empty squares and</span>
       <span class='comment'>; is attacked once and is in mate</span>
       (position
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x265a;</span> . 8
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A <span class='piece'>&#x265a;</span> 1
-        <a href="CQL-Position-List.html#position:mate">:mate</a>
-        <a href="CQL-Position-List.html#position:btm">:btm</a>)
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> . 8
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> A <span class='piece'>&#x265a;</span> 1
+        <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
+        <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
       <span class='comment'>; check that no neighbor of the black king is</span>
       <span class='comment'>; attacked more than once</span>
       (position
         <span class='keyword'>:not</span>
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x265a;</span> .e4 1
-        <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> A .e4 2 100
-        <a href="CQL-Position-List.html#position:shift">:shift</a>))))<!--
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> .e4 1
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> A .e4 2 100
+        <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>))))<!--
 --></code></pre></div>
 
 <p>
@@ -336,16 +336,16 @@ Example:
 -->(match
   (position
     <span class='keyword'>:or</span> (
-      (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
         <span class='piece'>&#x2657;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
-      (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
         <span class='piece'>&#x265d;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
         e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
-      (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
         <span class='piece'>&#x265d;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9)
-      (position <a href="CQL-Position-List.html#position:piececount">:piececount</a>
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
         <span class='piece'>&#x2657;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
         e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9))))<!--
 --></code></pre></div>
@@ -359,9 +359,9 @@ bishops. or two light-square black bishops.
 <h2 id="control">Controlling keywords</h2>
 
 <p>
-With the help of the controlling keywords <a href="CQL-Position-List.html#position:cut">:cut</a> or
-<a href="CQL-Position-List.html#position:exclude">:exclude</a> unwanted positions or even games can be
-excluded. Keyword <a href="CQL-Position-List.html#position:preceding">:preceding</a> gives the predecessing
+With the help of the controlling keywords <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a> or
+<a href="CQL-Position-List.html#position:exclude"><span style='white-space:nowrap;'>:exclude</span></a> unwanted positions or even games can be
+excluded. Keyword <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a> gives the predecessing
 position of a match.
 </p>
 
@@ -385,34 +385,36 @@ time considerably, and the expression may have a clearer form.
 This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
 stop position search for this game as soon as the match of containing position
-list succeeds. In latter case stop position search as soon as the match of
-the sub-position list succeeds. This keyword is never failing, with other
-words: it is not influencing the result of all other position lists.
+list succeeds. In latter case stop position of this game search as soon as the
+match of the sub-position list succeeds. This keyword is never failing, with
+other words: it is not influencing the result of all other matches.
 </p>
 
 <p>
 The :cut position match has lower precedence than all other position matches.
-This means that the position, where all position lists are succeeding, is
-matching. If the :cut position match should have highest precedende, use
-keyword <a href="CQL-Position-List.html#position:preceding">:preceding</a>, see examples:
+This means that a position is matching, if all other position lists are matching
+this position, independent from the result of the :cut. If the :cut position
+match should have highest precedende, use keyword <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a>.
+In this case the search will stop with a negative resultat, independent from
+all other matches. Consider the following examples:
 </p>
 
 <div class='verb'><code>
-(match (position &lt;A&gt; <span class='keyword'>:cut</span> (&lt;B&gt;))
+(match (position &lt;A&gt; <span class='keyword'>:cut</span> (position &lt;B&gt;))
 </code></div>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
-case the match succeeds.
+Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
+this case the match of this game succeeds.
 </p>
 
 <div class='verb'><code>
-(match (position &lt;A&gt; <span class='keyword'>:cut</span> (<a href="CQL-Position-List.html#position:preceding">:preceding</a>  &lt;B&gt;)))
+(match (position &lt;A&gt; <span class='keyword'>:cut</span> (position <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a>  &lt;B&gt;)))
 </code></div>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
-case the match fails.
+Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
+this case the match of this game fails.
 </p>
 
 <p>
@@ -422,20 +424,20 @@ Examples:
 <div class='box'><pre><code><!--
 -->(match
   (position
-    <a href="CQL-Position-List.html#position:mate">:mate</a>
-    <span class='keyword'>:cut</span> (<a href="CQL-Position-List.html#position:check">:check</a>)))<!--
+    <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
+    <span class='keyword'>:cut</span> (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)))<!--
 --></code></pre></div>
 
 <p>
 Search for games ending with mate, and neither side has ever given
-a check before. Actually keyword :cut is not required for this search,
-see next example:
+a check before. Actually keyword :cut is not required for this search
+criterion, see next example:
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
-  (position <a href="CQL-Position-List.html#position:mate">:mate</a>)
-  (position <a href="CQL-Position-List.html#position:check">:check</a> <a href="CQL-Position-List.html#position:matchcount">:matchcount</a> 1))<!--
+  (position <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
+  (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a> <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 1))<!--
 --></code></pre></div>
 
 <p>
@@ -457,8 +459,8 @@ match (see example).
 
 <p>
 This keyword will exclude games even if one of the position matches
-will succeed before the :exclude expression will succeed.
-Keyword :exclude is excluding games under certain conditions.
+will succeed before the :exclude expression will succeed. In short:
+keyword :exclude is excluding games completely under certain conditions.
 </p>
 
 <p>
@@ -473,25 +475,22 @@ Example:
 --></code></pre></div>
 
 <p>
-Search for games matching expression <span style='white-space:nowrap;'><code>&lt;A&gt;</code></span>, but not if
-expression <span style='white-space:nowrap;'><code>&lt;B&gt;</code></span> is matching any position in this game.
-Actually this match can be written without the use of keyword :exclude,
-in the following way:
+Search for games containg a position which is matching expression
+<span style='white-space:nowrap;'><code>&lt;A&gt;</code></span>, but not if expression <span style='white-space:nowrap;'><code>&lt;B&gt;</code></span> is
+matching any position in this game. Actually this match can be written
+without the use of keyword :exclude, in the following way:
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
   (position
-    <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> (
-      (position &lt;B&gt; <a href="CQL-Position-List.html#position:not">:not</a>)
+    <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> (
       (position &lt;A&gt;)
-      (position &lt;B&gt; <a href="CQL-Position-List.html#position:not">:not</a>))))<!--
+      (position &lt;B&gt; <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 0))))<!--
 --></code></pre></div>
 
 <p>
-But the use of keyword :exclude is simpler, and the search is faster, because
-the latter version has to search the whole game, and the former version with
-keyword :exclude terminates as soon as <span style='white-space:nowrap;'><code>&lt;B&gt;</code></span> is matching.
+But the use of keyword :exclude is simpler and clearer.
 </p>
 
 <h3 id="position:preceding">:preceding&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -504,7 +503,7 @@ search is continuing. The keyword :preceding can be used only on top level.
 
 <p>
 This keyword has a special meaning if combined with keyword
-<a href="CQL-Position-List.html#position:cut">:cut</a>.
+<a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a>.
 </p>
 
 <p>
@@ -512,7 +511,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-position <a href="CQL-Position-List.html#position:check">:check</a> <span class='keyword'>:preceding</span>
+position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a> <span class='keyword'>:preceding</span>
 </code></div>
 
 <p>
@@ -521,8 +520,8 @@ side has given a check. Of course this can be expressed without this keyword:
 </p>
 
 <div class='verb'><code>
-position <a href="CQL-Position-List.html#position:sequence">:sequence</a>
-((position <a href="CQL-Position-List.html#position:nocheck">:nocheck</a>) (position <a href="CQL-Position-List.html#position:check">:check</a>))
+position <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>
+((position <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>) (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>))
 </code></div>
 
 <p>
@@ -611,21 +610,21 @@ Normally this is equivalent to following query:
 </p>
 
 <div class='box'><pre><code><!--
---><a href="CQL-Position-List.html#position:or">:or</a> (
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; black king only</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> a 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> a 1)
   <span class='comment'>; black king and black minor piece only</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> a 2 <a href="CQL-Position-List.html#position:piececount">:piececount</a> i 1))<!--
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> a 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> i 1))<!--
 --></code></pre></div>
 
 <p>
-In chess variant Three-check Chess this query succeeds only if
-black has no more pieces than the king, and in all other chess variants this
-query has no meaning and is always failing.
+In chess variant Three-check Chess the query with :blackcannotwin
+succeeds only if black has no more pieces than the king, and in all other chess
+variants this query has no meaning and is always failing.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:whitecannotwin">:whitecannotwin</a>
+See also: <a href="CQL-Position-List.html#position:whitecannotwin"><span style='white-space:nowrap;'>:whitecannotwin</span></a>
 </p>
 
 <h3 id="position:btm">:btm</h3>
@@ -635,7 +634,7 @@ Match only if black is to move.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:wtm">:wtm</a>.
+See also: <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>.
 </p>
 
 <h3 id="position:check">:check</h3>
@@ -645,9 +644,9 @@ One side is in check.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nocheck">:nocheck</a>, <a href="CQL-Position-List.html#position:doublecheck">:doublecheck</a>,
-<a href="CQL-Position-List.html#position:nodoublecheck">:nodoublecheck</a>, <a href="CQL-Position-List.html#position:contactcheck">:contactcheck</a>,
-<a href="CQL-Position-List.html#position:nocontactcheck">:nocontactcheck</a>.
+See also: <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>, <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
 </p>
 
 <h3 id="position:checkcount">:checkcount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -660,13 +659,14 @@ matching all positions where last move is giving n-th check to other side.
 <p>
 If the parameter has the form <span style='white-space:nowrap;'><code>+&lt;n&#x2081;&gt;+&lt;n&#x2082;&gt;</code></span>,
 where <span style='white-space:nowrap;'><code>&lt;n&#x2093;&gt;</code></span> is a number between 0 and 3,
-it is matching all positions where white has given n&#x2081;-th check
-to black, and black has given n&#x2082;-th check to white.
+it is matching first position where white has given n&#x2081; times check
+to black, and black has given n&#x2082; times check to white.
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
 This query is working only in chess variant Three-check Chess,
-in other chess variants it fails always.
+in other chess variants it fails always (except all values in given parameter
+are zero).
 </p>
 
 <p>
@@ -678,7 +678,7 @@ Examples:
 </code></div>
 
 <p>
-Match if any side has given second check.
+Match as soon as any side has given second check.
 </p>
 
 <div class='verb'><code>
@@ -686,15 +686,16 @@ Match if any side has given second check.
 </code></div>
 
 <p>
-Match if black has given third check to white. This must be a final position.
+Match if black has given third check to white king. This must be a final
+position.
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:not">:not</a> <span class='keyword'>:checkcount</span> +0+0)
+(position <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a> <span class='keyword'>:checkcount</span> +0+0)
 </code></div>
 
 <p>
-This is in fact a useful match. Assume that a game is starting with the
+This is in fact a useful query. Assume that a game is starting with the
 following position (described with <a href="FEN.html">FEN</a>):
 </p>
 
@@ -704,9 +705,9 @@ rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 
 <p>
 This game would match (note keyword :not), because black has already
-given second check to white in first position of the game. With other
-words, this example is searching for games starting with an advanced
-position, where one side has already given a check.
+given second check to white king. With other words, this query is
+searching for games starting with an advanced position, where one side
+has already given a check.
 </p>
 
 <h3 id="position:castling">:castling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -754,7 +755,8 @@ White has kingside castling availability.
 </code></div>
 
 <p>
-White has either kingside or queenside castling availability.
+White has either kingside or queenside castling availability
+(but not both).
 </p>
 
 <div class='verb'><code>
@@ -772,9 +774,22 @@ One side is in check, and it is a contact check.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:check">:check</a>, <a href="CQL-Position-List.html#position:nocheck">:nocheck</a>,
-<a href="CQL-Position-List.html#position:doublecheck">:doublecheck</a>, <a href="CQL-Position-List.html#position:nodoublecheck">:nodoublecheck</a>,
-<a href="CQL-Position-List.html#position:nocontactcheck">:nocontactcheck</a>.
+This is equivalent to:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  :or (
+    (position <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>)
+    (position <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> [<span class='piece'>&#x2658;</span><span class='piece'>&#x2659;</span>] <span class='piece'>&#x265a;</span> 1 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+    (position [<span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span>]d4 <span class='piece'>&#x265a;</span>e4 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>)
+    (position [<span class='piece'>&#x2655;</span><span class='piece'>&#x2657;</span>]d4 <span class='piece'>&#x265a;</span>e5 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>)))<!--
+--></code></pre></div>
+
+<p>
+See also: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>, <a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
 </p>
 
 <h3 id="position:doublecheck">:doublecheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -784,9 +799,9 @@ One side is in check, and it is a double check.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:check">:check</a>, <a href="CQL-Position-List.html#position:nocheck">:nocheck</a>,
-<a href="CQL-Position-List.html#position:nodoublecheck">:nodoublecheck</a>, <a href="CQL-Position-List.html#position:contactcheck">:contactcheck</a>,
-<a href="CQL-Position-List.html#position:nocontactcheck">:nocontactcheck</a>.
+See also: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
 </p>
 
 <h3 id="position:endgame">:endgame&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -798,35 +813,35 @@ query:
 
 <div class='box'><pre><code><!--
 -->  (position
-    <a href="CQL-Position-List.html#position:or">:or</a> (
+    <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
       (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>] 0 3
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 3)
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>] 0 3
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 3)
     (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2655;</span> 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x265b;</span> 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>] 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> I 0 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> i 0 1)
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265b;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>] 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 0 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> i 0 1)
     (position
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2655;</span> 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2656;</span> 0
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> I 0 1
-      <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x265b;</span> 0
-      <a href="CQL-Position-List.html#position:power">:power</a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 16
-      <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)))<!--
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2656;</span> 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 0 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265b;</span> 0
+      <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 16
+      <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)))<!--
 --></code></pre></div>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:noendgame">:noendgame</a>.
+See also: <a href="CQL-Position-List.html#position:noendgame"><span style='white-space:nowrap;'>:noendgame</span></a>.
 </p>
 
 <h3 id="position:fen">:fen&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
-The position is equal to the described position in given
-<a href="FEN.html">FEN</a>.
+The position is equal to the described position in given argument.
+This argument must be a valid <a href="FEN.html">FEN</a>.
 </p>
 
 <h3 id="position:fiftymoverule">:fiftymoverule&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -837,7 +852,7 @@ moved in previous fifty consecutive moves.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:halfmoveclocklimit">:halfmoveclocklimit</a>.
+See also: <a href="CQL-Position-List.html#position:halfmoveclocklimit"><span style='white-space:nowrap;'>:halfmoveclocklimit</span></a>.
 </p>
 
 <h3 id="position:gameisover">:gameisover&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -847,18 +862,18 @@ This is an abbreviation for:
 </p>
 
 <div class='box'><pre><code><!--
--->  <a href="CQL-Position-List.html#position:or">:or</a> (
-    (position <a href="CQL-Position-List.html#position:mate">:mate</a>)
-    (position <a href="CQL-Position-List.html#position:stalemate">:stalemate</a>)
-    (position <a href="CQL-Position-List.html#position:losing">:losing</a>)
-    (position <a href="CQL-Position-List.html#position:checkcount">:checkcount 3</a>)
-    (position <a href="CQL-Position-List.html#position:nomatingmaterial">:nomatingmaterial</a>))<!--
+-->  <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+    (position <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
+    (position <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a>)
+    (position <a href="CQL-Position-List.html#position:losing"><span style='white-space:nowrap;'>:losing</span></a>)
+    (position <a href="CQL-Position-List.html#position:checkcount"><span style='white-space:nowrap;'>:checkcount 3</span></a>)
+    (position <a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>))<!--
 --></code></pre></div>
 
 <h3 id="position:initial">:initial</h3>
 
 <p>
-This is the first position in the game.
+This is the first position in the game (before first move).
 </p>
 
 <h3 id="position:halfmoveclocklimit">:halfmoveclocklimit&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -871,7 +886,7 @@ or less given limit.
 <p>
 Halfmove clock: This is the number of halfmoves since the last pawn
 advance or capture. This is also used to determine if a draw can be
-claimed under the fifty-move rule (&#x21d2; <a href="CQL-Position-List.html#position:fiftymoverule">:fiftymoverule</a>).
+claimed under the fifty-move rule (&#x21d2; <a href="CQL-Position-List.html#position:fiftymoverule"><span style='white-space:nowrap;'>:fiftymoverule</span></a>).
 </p>
 
 <p>
@@ -888,7 +903,7 @@ moved in previous thirty halfmoves (15 moves by each side).
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:fiftymoverule">:fiftymoverule</a>.
+See also: <a href="CQL-Position-List.html#position:fiftymoverule"><span style='white-space:nowrap;'>:fiftymoverule</span></a>.
 </p>
 
 <h3 id="position:losing">:losing&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -899,7 +914,7 @@ This is possible only in Antichess games.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nolosing">:nolosing</a>.
+See also: <a href="CQL-Position-List.html#position:nolosing"><span style='white-space:nowrap;'>:nolosing</span></a>.
 </p>
 
 <h3 id="position:markall">:markall</h3>
@@ -926,7 +941,7 @@ Example:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:mate</span> <a href="CQL-Position-List.html#position:movenumber">:movenumber</a> 1 20)
+(position <span class='keyword'>:mate</span> <a href="CQL-Position-List.html#position:movenumber"><span style='white-space:nowrap;'>:movenumber</span></a> 1 20)
 </code></div>
 
 <p>
@@ -934,18 +949,18 @@ Only matches if one side is mated in first 20 moves.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nomate">:nomate</a>.
+See also: <a href="CQL-Position-List.html#position:nomate"><span style='white-space:nowrap;'>:nomate</span></a>.
 </p>
 
 <h3 id="position:matingmaterial">:matingmaterial&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Match a position if either player has mating material (&#x21d2;
-<a href="CQL-Position-List.html#position:nomatingmaterial">:nomatingmaterial</a>).
+<a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>).
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nomatingmaterial">:nomatingmaterial</a>.
+See also: <a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>.
 </p>
 
 <h3 id="position:noannotate">:noannotate</h3>
@@ -962,21 +977,22 @@ Neither side is in check.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:check">:check</a>, <a href="CQL-Position-List.html#position:doublecheck">:doublecheck</a>,
-<a href="CQL-Position-List.html#position:nodoublecheck">:nodoublecheck</a>, <a href="CQL-Position-List.html#position:contactcheck">:contactcheck</a>,
-<a href="CQL-Position-List.html#position:nocontactcheck">:nocontactcheck</a>.
+See also: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
 </p>
 
 <h3 id="position:nocontactcheck">:nocontactcheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
-Neither side is in check, or it is not a contact check.
+Neither side is in check, or it is not a contact check (&#x21d2;
+<a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>).
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:check">:check</a>, <a href="CQL-Position-List.html#position:nocheck">:nocheck</a>,
-<a href="CQL-Position-List.html#position:doublecheck">:doublecheck</a>, <a href="CQL-Position-List.html#position:nodoublecheck">:nodoublecheck</a>,
-<a href="CQL-Position-List.html#position:contactcheck">:contactcheck</a>.
+See also: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>, <a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>,
+<a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>.
 </p>
 
 <h3 id="position:nodoublecheck">:nodoublecheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -989,11 +1005,11 @@ Neither side is in check, or it is not a double check.
 
 <p>
 The position is not an endgame position (&#x21d2;
-<a href="CQL-Position-List.html#position:endgame">:endgame</a>).
+<a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>).
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:endgame">:endgame</a>.
+See also: <a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>.
 </p>
 
 <h3 id="position:nomate">:nomate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1003,7 +1019,7 @@ Match only if the position is not mate.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:mate">:mate</a>.
+See also: <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>.
 </p>
 
 <h3 id="position:nomatingmaterial">:nomatingmaterial&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1017,16 +1033,16 @@ Normally this is equivalent to this query:
 </p>
 
 <div class='box'><pre><code><!--
---><a href="CQL-Position-List.html#position:or">:or</a> (
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; king versus king</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 2)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 2)
   <span class='comment'>; king and minor piece versus king</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 3 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [Ii] 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 3 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [Ii] 1)
   <span class='comment'>; king and bishop versus king and bishop with the bishops on the same color</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
-                      d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> U 4 <a href="CQL-Position-List.html#position:piececount">:piececount</a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
-                      d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 4 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,
+     c7,d2,d4,d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 4 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,
+     c8,d1,d3,d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
 --></code></pre></div>
 
 <p>
@@ -1036,7 +1052,7 @@ meaning and is always failing.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:matingmaterial">:matingmaterial</a>.
+See also: <a href="CQL-Position-List.html#position:matingmaterial"><span style='white-space:nowrap;'>:matingmaterial</span></a>.
 </p>
 
 <h3 id="position:nostalemate">:nostalemate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1046,14 +1062,14 @@ Match only if the position is not a stalemate.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:stalemate">:stalemate</a>,
+See also: <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a>,
 </p>
 
 <h3 id="position:repetition">:repetition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
-Matches positions which occurred the third time in this game, with same
-player to move, and each player has the same castling and en passant
+Match first position of mainline which occurred the third time in this game,
+with same player to move, and each player has the same castling and en passant
 capturing rights. The repeated positions need not occur in succession. This
 accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
 threefold repetition rule<span class="awesome">&nbsp;&#xf08e;</span></a>.
@@ -1066,7 +1082,7 @@ Match only if the position is a stalemate.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nostalemate">:nostalemate</a>,
+See also: <a href="CQL-Position-List.html#position:nostalemate"><span style='white-space:nowrap;'>:nostalemate</span></a>,
 </p>
 
 <h3 id="position:terminal">:terminal&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1078,7 +1094,8 @@ This is the last position in the game.
 <h3 id="position:variations">:variations</h3>
 
 <p>
-Look in the variations to find matches.
+Look in the variations to find matches. Without this keyword the variations
+will be skipped.
 </p>
 
 <h3 id="position:variationsonly">:variationsonly</h3>
@@ -1098,11 +1115,11 @@ Normally this is equivalent to following query:
 </p>
 
 <div class='box'><pre><code><!--
---><a href="CQL-Position-List.html#position:or">:or</a> (
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
   <span class='comment'>; white king only</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> A 1)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> A 1)
   <span class='comment'>; white king and white minor piece only</span>
-  (<a href="CQL-Position-List.html#position:piececount">:piececount</a> A 2 <a href="CQL-Position-List.html#position:piececount">:piececount</a> I 1))<!--
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> A 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 1))<!--
 --></code></pre></div>
 
 <p>
@@ -1112,7 +1129,7 @@ query has no meaning and is always failing.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:blackcannotwin">:blackcannotwin</a>
+See also: <a href="CQL-Position-List.html#position:blackcannotwin"><span style='white-space:nowrap;'>:blackcannotwin</span></a>
 </p>
 
 <h3 id="position:wtm">:wtm</h3>
@@ -1144,7 +1161,7 @@ Match only if white is to move.
 <h3 id="position:flip">:flip</h3>
 
 <p>
-Same as <a href="CQL-Position-List.html#position:flipdihedral">:flipdihedral</a> (&#x21d2;
+Same as <a href="CQL-Position-List.html#position:flipdihedral"><span style='white-space:nowrap;'>:flipdihedral</span></a> (&#x21d2;
 <a href="CQL-Transformations.html">Transformations</a>).
 </p>
 
@@ -1204,8 +1221,8 @@ We use the following query to find tripled pawns:
 
 <div class='box'><pre><code><!--
 -->(position
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b2-7] 3
-  <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 3
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
 --></code></pre></div>
 
 <p>
@@ -1215,8 +1232,8 @@ To find one of tripled pawns placed on the main diagonal we design the query
 <div class='box'><pre><code><!--
 -->(position
   <span class='keyword'>:inside</span> <span class='piece'>&#x2659;</span>[b2-7] [b2,c3,d4,e5,f6,g7]
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>[b2-7] 3
-  <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 3
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
 --></code></pre></div>
 
 <h3 id="position:shift">:shift</h3>
@@ -1250,7 +1267,7 @@ The main-diagonal shift transformations (&#x21d2;
 <h3 id="position:shiftoffdiagonal">:shiftoffdiagonal</h3>
 
 <p>
-The off-diagonal shift transformations. (&#x21d2;
+The off-diagonal shift transformations (&#x21d2;
 <a href="CQL-Transformations.html">Transformations</a>).
 </p>
 
@@ -1305,15 +1322,18 @@ Examples:
 </code></div>
 
 <p>
-Matches any position in which white has a double attack on the black king.
+Matches any position in which white has a double attack on the black king
+(note that the use of <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a> combined with
+<a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a> should be preferred).
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:attackcount</span> A <span class='piece'>&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
+(position <span class='keyword'>:attackcount</span> A <span class='piece'>&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
 </code></div>
 
 <p>
-Matches any position in which a king is under double attack.
+Matches any position in which a king is under double attack
+(again the use of <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a> should be preferred).
 </p>
 
 <div class='verb'><code>
@@ -1471,7 +1491,7 @@ white half of the board is between 10 and 25 inclusive.
 <p>
 This keyword takes as argument a piece designator followed by a range
 specifier. It matches positions in which the difference in power (&#x21d2;
-<a href="CQL-Position-List.html#position:power">:power</a>) between the white and black pieces matching the
+<a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>) between the white and black pieces matching the
 piece designator (that is, the numeric value of the power of the matching
 black pieces subtracted from the power of the matching white pieces) lies
 within the range specifier.
@@ -1496,7 +1516,7 @@ greater than the black pieces.
 
 <p>
 This matches positions in which white has between one fewer and two more
-rooks than black.
+rooks than black (although this is not applicable to chess variants).
 </p>
 
 <div class='verb'><code>
@@ -1504,14 +1524,15 @@ rooks than black.
 </code></div>
 
 <p>
-This matches positions in which black is up at least an exchange.
+This matches positions in which black is up at least an exchange
+(also this is not applicable to chess variants).
 </p>
 
 <div class='box'><pre><code><!--
 -->(match
   (position
-    <a href="CQL-Match-List.html#match:result">:result</a> 1-0
-    <a href="CQL-Position-List.html#position:sequence">:sequence</a> (
+    <a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result</span></a> 1-0
+    <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> (
       (position
         <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9
         <span class='keyword'>:powerdifference</span> U unlimited -9)
@@ -1526,13 +1547,13 @@ This matches positions in which black is up at least an exchange.
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
       (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9))
-    <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
+    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
 --></code></pre></div>
 
 <p>
-This example shows how to search for queen sacrifices using
+This example shows a way how to search for queen sacrifices using
 <code>:powerdifference</code>. One side sacrifices a queen, and remains at
-least 9 points down in material for at least 12 moves, and then wins.
+least 9 pawns down in material for at least 12 moves, and finally wins.
 </p>
 
 <h3 id="position:ray">:ray</h3>
@@ -1545,22 +1566,21 @@ diagonal, or the a8-h8 diagonal.
 
 <p>
 Let R by a ray with ordered set of squares in a contiguous line
-S&#x2081;, S&#x2082;,...,S&#x2090;. Suppose spec is a ray specifier
-(G&#x2081;, G&#x2082;,...,G&#x2093;) where each G&#x2081;,...,G&#x2093;
-is a piece designator. The ray R is valid with respect to the ray specifier
-if G&#x2081; matches the piece on S&#x2081;, and if G&#x2093; matches the
-piece on S&#x2090;, and if the remaining G's can be paired to some subset
-of the squares in the ray in an order-preserving way such that each G matches
-the piece on its corresponding square and such that all unpaired squares in
-the ray are empty.
+S&#x2081;, S&#x2082;,...,S&#x2090;. Suppose a given ray specifier
+(G&#x2081;, G&#x2082;,...,G&#x2093;) where each G is a piece designator.
+The ray R is valid with respect to the ray specifier if G&#x2081; matches
+the piece on S&#x2081;, and if G&#x2093; matches the piece on S&#x2090;, and
+if the remaining G's can be paired to some subset of the squares in the ray
+in an order-preserving way such that each G matches the piece on its
+corresponding square and such that all unpaired squares in the ray are empty.
 </p>
 
 <p>
 The :ray keyword takes a ray specifier and an optional range
 specifier. If the range specifier is absent, it is taken to be
-<span style='white-space:nowrap;'><code>1 unlimited</code></span>.  Otherwise, :ray matches a position if the number
-of rays in the position valid with respect to the ray specifier lies within
-the range specifier.
+<span style='white-space:nowrap;'><code>1</code> <code>unlimited</code></span>. Otherwise, :ray matches
+a position if the number of rays in the position valid with respect to the
+ray specifier lies within the range specifier.
 </p>
 
 <p>
@@ -1589,11 +1609,11 @@ to the black king on the last four ranks.
 </code></div>
 
 <p>
-Matches a position in which either three queens and the black king are on the
-same rank, with exactly one empty square between them, and one of the queens
-is on the a-file, or a position in which the three queens and king form a
-diagonal with one empty squares between successive pieces and the queens on
-the a, c, and e files.
+Matches a position in which either three white queens and the black king are
+on the same rank, with exactly one empty square between them, and one of the
+queens is on the a-file, or a position in which the three white queens and
+black king form a diagonal with one empty squares between successive pieces,
+and the queens on the a, c, and e files in both cases.
 </p>
 
 <div class='verb'><code>
@@ -1605,14 +1625,14 @@ Between two and for black knights are pinned to the black king.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:rayattack">:rayattack</a>.
+See also: <a href="CQL-Position-List.html#position:rayattack"><span style='white-space:nowrap;'>:rayattack</span></a>.
 </p>
 
 <h3 id="position:rayattack">:rayattack</h3>
 
 <p>
-Has the same syntax as <a href="CQL-Position-List.html#position:ray">:ray</a>. It has the semantics of
-<a href="CQL-Position-List.html#position:ray">:ray</a>, except that only orthogonal rays that start on
+Has the same syntax as <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>. It has the semantics of
+<a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>, except that only orthogonal rays that start on
 a square containing a rook or queen are included, and only diagonal rays
 starting on a square containing a bishop or queen are included.
 </p>
@@ -1634,13 +1654,13 @@ Matches a position in which a black piece is pinned to the black king.
 </code></div>
 
 <p>
-Matches positions in which there are three black pinned by a white piece on
-d5 against either a black rook or king in the first four ranks.
+Matches positions in which there are three black pieces pinned by a white
+piece on d5 against either a black rook or king in the first four ranks.
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:stalemate">:stalemate</a> <span class='keyword'>:rayattack</span>
-(A a <span class='piece'>&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)
+(position <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a> <span class='keyword'>:rayattack</span>
+(A a <span class='piece'>&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
 </code></div>
 
 <p>
@@ -1648,13 +1668,13 @@ Finds multiple-pin stalemates.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:ray">:ray</a>.
+See also: <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>.
 </p>
 
 <h3 id="position:raydiagonal">:raydiagonal</h3>
 
 <p>
-This keyword function exactly like <a href="CQL-Position-List.html#position:ray">:ray</a> but the given rays
+This keyword function exactly like <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a> but the given rays
 are restricted to being diagonal. A diagonal ray is a ray that is not vertical
 or horizontal.
 </p>
@@ -1662,14 +1682,14 @@ or horizontal.
 <h3 id="position:rayhorizontal">:rayhorizontal</h3>
 
 <p>
-This keyword function exactly like <a href="CQL-Position-List.html#position:ray">:ray</a> but the given rays
+This keyword function exactly like <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a> but the given rays
 are restricted to being horizontal. A horizontal ray is a ray that is horizontal.
 </p>
 
 <h3 id="position:rayorthogonal">:rayorthogonal</h3>
 
 <p>
-This keyword function exactly like <a href="CQL-Position-List.html#position:ray">:ray</a> but the given rays
+This keyword function exactly like <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a> but the given rays
 are restricted to being orthogonal. A orthogonal ray is a ray that is not
 diagonal.
 </p>
@@ -1677,7 +1697,7 @@ diagonal.
 <h3 id="position:rayvertical">:rayvertical</h3>
 
 <p>
-This keyword function exactly like <a href="CQL-Position-List.html#position:ray">:ray</a> but the given rays
+This keyword function exactly like <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a> but the given rays
 are restricted to being vertical. A vertical ray is a ray that is vertical.
 </p>
 
@@ -1720,7 +1740,7 @@ The next move is an en-passant capture.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:noenpassant">:noenpassant</a>
+See also: <a href="CQL-Position-List.html#position:noenpassant"><span style='white-space:nowrap;'>:noenpassant</span></a>
 </p>
 
 <h3 id="position:iscastling">:iscastling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1730,7 +1750,7 @@ The next move is a castling move.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:nocastling">:nocastling</a>.
+See also: <a href="CQL-Position-List.html#position:nocastling"><span style='white-space:nowrap;'>:nocastling</span></a>.
 </p>
 
 <h3 id="position:movefrom">:movefrom</h3>
@@ -1773,7 +1793,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:movenumber</span> 10 20 <a href="CQL-Position-List.html#position:check">:check</a>)
+(position <span class='keyword'>:movenumber</span> 10 20 <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
 </code></div>
 
 <p>
@@ -1781,7 +1801,7 @@ Matches a position in which there is a check between moves 10 and 20.
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:movenumber</span> 35 <a href="CQL-Position-List.html#position:mate">:mate</a>)
+(position <span class='keyword'>:movenumber</span> 35 <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
 </code></div>
 
 <p>
@@ -1828,7 +1848,7 @@ would be done via:
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2656;</span> <span class='keyword'>:moveto</span> ?b?)
+(position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <span class='keyword'>:moveto</span> ?b?)
 </code></div>
 
 <p>
@@ -1842,7 +1862,7 @@ The next move is not a castling move.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:iscastling">:iscastling</a>.
+See also: <a href="CQL-Position-List.html#position:iscastling"><span style='white-space:nowrap;'>:iscastling</span></a>.
 </p>
 
 <h3 id="position:noenpassant">:noenpassant</h3>
@@ -1852,7 +1872,7 @@ The next move is not an en-passant capture.
 </p>
 
 <p>
-See also: <a href="CQL-Position-List.html#position:enpassant">:enpassant</a>.
+See also: <a href="CQL-Position-List.html#position:enpassant"><span style='white-space:nowrap;'>:enpassant</span></a>.
 </p>
 
 <h3 id="position:piecedrop">:piecedrop&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1913,7 +1933,7 @@ Matches a position whose next move is a white promotion to bishop or knight.
 
 <div class='verb'><code>
 (position <span class='keyword'>:promote</span> [<span class='piece'>&#x2656;</span>e8]
-<a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2659;</span>f7 <a href="CQL-Position-List.html#position:moveto">:moveto</a> <span class='piece'>&#x265b;</span>)
+<a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2659;</span>f7 <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> <span class='piece'>&#x265b;</span>)
 </code></div>
 
 <p>
@@ -1966,9 +1986,9 @@ because it was formed by inserting a single position list into the latter list.
 
 <p>
 A :gappedsequence with argument B matches a position if and only if there is a
-refinement A of B such that a <a href="CQL-Position-List.html#position:sequence">:sequence</a> with argument A
+refinement A of B such that a <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> with argument A
 would match that position. That is, :gappedsequence is like
-<a href="CQL-Position-List.html#position:sequence">:sequence</a> except that the sequence of matching positions
+<a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> except that the sequence of matching positions
 may include intervening positions from the game.
 </p>
 
@@ -1979,8 +1999,8 @@ Examples:
 <div class='box'><pre><code><!--
 -->(position
   <span class='keyword'>:gappedsequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2656;</span>a3)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2656;</span>b4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>b4)))<!--
 --></code></pre></div>
 
 <p>
@@ -1993,10 +2013,10 @@ In consequence the same effect can be obtained much more efficiently via:
 
 <div class='box'><pre><code><!--
 -->(position 
-  <a href="CQL-Position-List.html#position:initial">:initial</a>
+  <a href="CQL-Position-List.html#position:initial"><span style='white-space:nowrap;'>:initial</span></a>
   <span class='keyword'>:gappedsequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2656;</span>a3)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2656;</span>b4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>b4)))<!--
 --></code></pre></div>
 
 <p>
@@ -2023,10 +2043,10 @@ visited at least twenty different squares.
 </p>
 
 <p>
-The total number of <a href="CQL-Position-List.html#position:sequence">:sequence</a> and :gappedsequence position
+The total number of <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> and :gappedsequence position
 lists that can occur at the top level of a position list cannot exceed one. To
-get the effect of both a :gappedequence and <a href="CQL-Position-List.html#position:sequence">:sequence</a>
-keywords in one position list, use <a href="CQL-Position-List.html#position:and">:and</a>.
+get the effect of both a :gappedequence and <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>
+keywords in one position list, use <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a>.
 </p>
 
 <h3 id="position:sequence">:sequence</h3>
@@ -2062,7 +2082,7 @@ In consequence, this position list is identical in effect to
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>e8 <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>f3 <a href="CQL-Position-List.html#position:moveto">:moveto</a> .g2)
+(position <span class='piece'>&#x2656;</span>e8 <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>f3 <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .g2)
 </code></div>
 
 <p>
@@ -2072,24 +2092,24 @@ staircase checking maneuvers by either side:
 
 <div class='box'><pre><code><!--
 -->(position 
-  <a href="CQL-Position-List.html#position:shift">:shift</a> <a href="CQL-Position-List.html#position:flip">:flip</a> <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>
+  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a> <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>
   <span class='keyword'>:sequence</span> (
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>a2) 
-    (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>b2) 
-    (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>b3) 
-    (position <a href="CQL-Position-List.html#position:check">:check</a>) 
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>c3)
-    (position <a href="CQL-Position-List.html#position:check">:check</a>)
-    (position <a href="CQL-Position-List.html#position:movefrom">:movefrom</a> <span class='piece'>&#x2655;</span>c4)))<!--
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>a2) 
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>) 
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>b2) 
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>) 
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>b3) 
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>) 
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>c3)
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>c4)))<!--
 --></code></pre></div>
 
 <p>
 This position list matches any position with a white queen on a2 for which
 there are successively moves by queens on the indicated squares giving check;
-the <a href="CQL-Position-List.html#position:shift">:shift</a>, <a href="CQL-Position-List.html#position:flip">:flip</a>, and
-<a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a> search for this variation reflected or
+the <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>, <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>, and
+<a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> search for this variation reflected or
 rotated anywhere on the board.
 </p>
 
@@ -2098,7 +2118,7 @@ rotated anywhere on the board.
 <p>
 Several keywords relate to the game parameters and are not affected by the
 contents of the position; they are included as position list keywords instead
-of match list keywords so the <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a> can be used with
+of match list keywords so the <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> can be used with
 them. these are:
 </p>
 
@@ -2131,7 +2151,7 @@ within its range (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers<
 
 <p>
 Match all games where the specified rating score of black player is between
-given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating (match)</a>.
+given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating (match)</span></a>.
 </p>
 
 <h3 id="position:elo">:elo</h3>
@@ -2146,14 +2166,14 @@ players must lie within the specified range (&#x21d2;
 
 <p>
 Match all games where the specified rating score of one player is between
-given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating (match)</a>.
+given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating (match)</span></a>.
 </p>
 
 <h3 id="position:result">:result</h3>
 
 <p>
 This keyword takes one argument, the same as the argument to
-<a href="CQL-Match-List.html#match:result">:result (match)</a> in a match list.
+<a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result (match)</span></a> in a match list.
 </p>
 
 <p>
@@ -2163,9 +2183,9 @@ Example:
 <div class='box'><pre><code><!--
 -->(position 
   <span class='keyword'>:result</span> 1-0 
-  <a href="CQL-Position-List.html#position:whiteelo">:whiteelo</a> 0 2300
-  <a href="CQL-Position-List.html#position:blackelo">:blackelo</a> 2600 3000
-  <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>)<!--
+  <a href="CQL-Position-List.html#position:whiteelo"><span style='white-space:nowrap;'>:whiteelo</span></a> 0 2300
+  <a href="CQL-Position-List.html#position:blackelo"><span style='white-space:nowrap;'>:blackelo</span></a> 2600 3000
+  <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)<!--
 --></code></pre></div>
 
 <p>
@@ -2184,7 +2204,7 @@ within its range (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers<
 
 <p>
 Match all games where the specified rating score of white player is between
-given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating (match)</a>.
+given range.  For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating (match)</span></a>.
 </p>
 
 <h2 id="relation">Relation between positions</h2>
@@ -2231,7 +2251,7 @@ Example:
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:moveto">:moveto</a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] <span class='keyword'>:matchcount</span> 4 100)
+(position <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] <span class='keyword'>:matchcount</span> 4 100)
 </code></div>
 
 <p>
@@ -2241,12 +2261,12 @@ Matches any game in which at least four queen captures have occurred.
 <h3 id="position:pretransformmatchcount">:pretransformmatchcount</h3>
 
 <p>
-Has the same syntax as <a href="CQL-Position-List.html#position:matchcount">:matchcount</a>. It matches a position if
+Has the same syntax as <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a>. It matches a position if
 and only if there is some transform in the transformation set associated with
 the position list in which it occurs such that, were the position list
 replaced by a new position list formed from the first by deleting all
 transformation keywords, applying the transform to that position list, and
-changing this keyword to <a href="CQL-Position-List.html#position:matchcount">:matchcount</a>, then the position
+changing this keyword to <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a>, then the position
 list would match the position.
 </p>
 
@@ -2256,25 +2276,25 @@ Example:
 
 <div class='box'><pre><code><!--
 -->(position
-  <a href="CQL-Position-List.html#position:movetoy">:movetoy</a> [Aa]d4 
+  <a href="CQL-Position-List.html#position:movetoy"><span style='white-space:nowrap;'>:movetoy</span></a> [Aa]d4 
   <span class='keyword'>:pretransformmatchcount</span> 12 unlimited
-  <a href="CQL-Position-List.html#position:shift">:shift</a>))<!--
+  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>))<!--
 --></code></pre></div>
 
 <p>
 This would match any game in which at least 12 captures occur on the same
 square. Were the :pretransformmatchcount replaced by
-<a href="CQL-Position-List.html#position:matchcount">:matchcount</a>, the position list would match games in which
+<a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a>, the position list would match games in which
 at least 12 captures occurred.
 </p>
 
 <h2 id="evaluation">Analyzing keywords</h2>
 
 <p>
-The following keywords are analyzing positions. <a href="CQL-Position-List.html#position:evaluation">:evaluation</a> and
-<a href="CQL-Position-List.html#position:moveevaluation">:moveevaluation</a> should be used with care, these are very slow
-operations. In some cases the keywords <a href="CQL-Position-List.html#position:exchangeevaluation">:exchangeevaluation</a> and
-<a href="CQL-Position-List.html#position:maxswapevaluation">:maxswapevaluation</a> might be an alternative, these functions are
+The following keywords are analyzing positions. <a href="CQL-Position-List.html#position:evaluation"><span style='white-space:nowrap;'>:evaluation</span></a> and
+<a href="CQL-Position-List.html#position:moveevaluation"><span style='white-space:nowrap;'>:moveevaluation</span></a> should be used with care, these are very slow
+operations. In some cases the keywords <a href="CQL-Position-List.html#position:exchangeevaluation"><span style='white-space:nowrap;'>:exchangeevaluation</span></a> and
+<a href="CQL-Position-List.html#position:maxswapevaluation"><span style='white-space:nowrap;'>:maxswapevaluation</span></a> might be an alternative, these functions are
 quite faster, although quite time consuming.
 </p>
 
@@ -2396,7 +2416,7 @@ on which side is to move.
 </p>
 
 <p>
-Concerning the piece values see <a href="CQL-Position-List.html#position:power">:power</a>.
+Concerning the piece values see <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>.
 </p>
 
 <p>
@@ -2423,7 +2443,7 @@ This keyword allows to estimate exchange values of possible moves. It takes
 as arguments two piece designators followed by a range specifier. The first
 argument specifies moving pieces, the second one specifies target squares.
 For each possible moves we compute an integer value that is a material benefit
-of the move (in pawns, like in case of the <a href="CQL-Position-List.html#position:power">:power</a> keyword)
+of the move (in pawns, like in case of the <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a> keyword)
 according to possible piece exchanges on the target square after the move.
 After that the maximum of all computed values will be selected.
 </p>
@@ -2443,7 +2463,7 @@ estimating the exchange values.
 </p>
 
 <p>
-Concerning the piece values see <a href="CQL-Position-List.html#position:power">:power</a>.
+Concerning the piece values see <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>.
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
@@ -2557,7 +2577,7 @@ Only capture moves will be evaluated.
 -->(match
   (position <span class='keyword'>:moveevaluation</span> [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>] ?[a-h1,a-h8]
              unlimited 0.0 movetime 5000 absolute)
-  (position <a href="CQL-Position-List.html#position:promotion">:promotion</a> U <a href="CQL-Position-List.html#position:cut">:cut</a>)))<!--
+  (position <a href="CQL-Position-List.html#position:promotion"><span style='white-space:nowrap;'>:promotion</span></a> U <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a>)))<!--
 --></code></pre></div>
 
 <p>
@@ -2592,11 +2612,11 @@ This takes one parameter, the name of an accumulator. Each time the application
 of some element of the transform set of the position list matches a position,
 the accumulator associated with this name is incremented. The accumulator is
 cleared when a new position is reached (and in consequence :accumulate should
-not be used inside of <a href="CQL-Position-List.html#position:not">:not</a>, or the
-<a href="CQL-Position-List.html#position:sequence">:sequence</a>, and <a href="CQL-Position-List.html#position:gappedsequence">:gappedsequence</a> keywords).
+not be used inside of <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a>, or the
+<a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>, and <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> keywords).
 This keyword inhibits short-circuiting of logical keywords
-<a href="CQL-Position-List.html#position:and">:and</a>, and <a href="CQL-Position-List.html#position:or">:or</a>. Note that
-<a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a> likely has unexpected results when used with
+<a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a>, and <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a>. Note that
+<a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> likely has unexpected results when used with
 :accumulate, because the accumulator is not cleared between color flips.
 </p>
 
@@ -2624,10 +2644,10 @@ Tripled pawns can be found by the query:
 -->(position
   <span class='keyword'>:reset</span> acc
   <span class='piece'>&#x2659;</span>e2
-  <a href="CQL-Position-List.html#position:accumulate">:accumulate</a> acc
-  <a href="CQL-Position-List.html#position:sumrange">:sumrange</a> acc 3
-  <a href="CQL-Position-List.html#position:shiftvertical">:shiftvertical</a>
-  <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>)<!--
+  <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> acc
+  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> acc 3
+  <a href="CQL-Position-List.html#position:shiftvertical"><span style='white-space:nowrap;'>:shiftvertical</span></a>
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
 --></code></pre></div>
 
 <p>
@@ -2639,9 +2659,9 @@ A much better way is:
 
 <div class='box'><pre><code><!--
 -->(position
-  <a href="CQL-Position-List.html#position:piececount">:piececount</a> <span class='piece'>&#x2659;</span>a[3-7] 3 6
-  <a href="CQL-Position-List.html#position:shifthorizontal">:shifthorizontal</a>
-  <a href="CQL-Position-List.html#position:flipcolor">:flipcolor</a>))<!--
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>a[3-7] 3 6
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>
+  <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
 --></code></pre></div>
 
 <h3 id="position:sumrange">:sumrange&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>

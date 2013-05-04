@@ -342,6 +342,8 @@ public:
 	color::ID sideToMove() const;
 	/// Return opponent color of side next to move
 	color::ID notToMove() const;
+	/// Return current castling rights
+	castling::Rights currentCastlingRights() const;
 	/// Return the castling rights data
 	castling::Rights castlingRights() const;
 	/// Return the castling rights data for given color

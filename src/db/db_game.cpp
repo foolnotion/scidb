@@ -91,6 +91,9 @@ checkThreefoldRepetitions(	Board board,
 									RepetitionMap map,
 									variant::Type variant,
 									MoveNode* node,
+#ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
+									castling::Rights currentCastlingRights,
+#endif
 									bool haveRepetition)
 {
 	while (true)
@@ -102,16 +105,6 @@ checkThreefoldRepetitions(	Board board,
 
 		if (!node->atLineStart())
 		{
-//			for (unsigned i = 0; i < node->variationCount(); ++i)
-//			{
-//				checkThreefoldRepetitions(
-//					board,
-//					map,
-//					variant,
-//					node->variation(i),
-//					haveRepetition);
-//			}
-
 			board.doMove(node->move(), variant);
 
 			PositionBucket& bucket = map[board.hash()];
@@ -128,6 +121,27 @@ checkThreefoldRepetitions(	Board board,
 			else if (++i->m_count == 3)
 				flag = true;
 
+#ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
+			// Positions ... are considered the same, if the same player has the
+			// move, pieces of the same kind and colour occupy the same squares,
+			// and the possible moves of all the pieces of both players are the
+			// same.
+			//
+			// Positions are not the same if a pawn that could have been captured
+			// en passant can no longer be captured in this manner. When a king or
+			// a rook is forced to move, it will lose its castling rights, if any,
+			// only after it is moved.
+			//
+			// (FIDE 2008, Article 9.2)
+			if (currentCastlingRights != board.currentCastlingRights())
+			{
+				for (i = bucket.begin(), e = bucket.end(); i != e; ++i)
+					i->m_count = 1;
+
+				flag = false;
+			}
+#endif
+
 			node->setThreefoldRepetition(flag && !haveRepetition);
 			node->setFiftyMoveRule(board.halfMoveClock() == 100);
 
@@ -143,7 +157,14 @@ checkThreefoldRepetitions(	Board board,
 static void
 checkThreefoldRepetitions(Board const& startBoard, variant::Type variant, MoveNode* node)
 {
-	checkThreefoldRepetitions(startBoard, RepetitionMap(), variant, node, false);
+	checkThreefoldRepetitions(	startBoard,
+										RepetitionMap(),
+										variant,
+										node,
+#ifdef CASTLING_RIGHTS_CHANGED_TEMPORARILY
+										startBoard.currentCastlingRights(),
+#endif
+										false);
 }
 
 

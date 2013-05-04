@@ -6927,6 +6927,24 @@ Board::cannotWin(color::ID color, variant::Type variant) const
 }
 
 
+castling::Rights
+Board::currentCastlingRights() const
+{
+	unsigned rights = castlingRights();
+
+	if ((rights & castling::WhiteQueenside) && !canCastleLong(White))
+		rights &= ~WhiteQueenside;
+	if ((rights & castling::WhiteKingside) && !canCastleShort(White))
+		rights &= ~WhiteKingside;
+	if ((rights & castling::BlackQueenside) && !canCastleLong(Black))
+		rights &= ~BlackQueenside;
+	if ((rights & castling::BlackKingside) && !canCastleShort(Black))
+		rights &= ~BlackKingside;
+
+	return castling::Rights(rights);
+}
+
+
 // ------------------------------------------------------------------------
 // adopted from crafty-15.17/swap.c:SwapXray()
 // ------------------------------------------------------------------------

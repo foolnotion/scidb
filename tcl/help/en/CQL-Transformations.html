@@ -22,10 +22,10 @@
      content="Scidb Help Page" />
 
   <link rel="icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico"
+       href="http://scidb.sourceforge.net/favicon.ico"
        type="image/x-icon" />
   <link rel="shortcut icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico" />
+       href="http://scidb.sourceforge.net/favicon.ico" />
   <link rel="stylesheet"
        type="text/css"
       media="screen"
@@ -51,7 +51,7 @@
 <p>
 Certain keywords within a position list specify that the position list should
 match a position if some transformation of the position list matches the
-position. For example, the <a href="CQL-Position-List.html#position:fliphorizontal">:fliphorizontal</a> keyword
+position. For example, the <a href="CQL-Position-List.html#position:fliphorizontal"><span style='white-space:nowrap;'>:fliphorizontal</span></a> keyword
 specifies that the position list matches a position if either the original
 position list matches the position, or if the position list, when flipped
 about the horizontal bisector, matches the position.
@@ -62,8 +62,8 @@ To apply a transformation to a position list we apply the transformation to
 each piece designator that occurs in the position, and we recursively apply
 the transformation to any other position lists contained in that position
 list. If the transformation is a color flip translation, then we also flip
-interchange any <a href="CQL-Position-List.html#position:btm">:btm</a> keywords with <a href="CQL-Position-List.html#position:wtm">:wtm</a>
-ones, and we flip the <a href="CQL-Position-List.html#position:result">:result</a> keyword arguments
+interchange any <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a> keywords with <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>
+ones, and we flip the <a href="CQL-Position-List.html#position:result"><span style='white-space:nowrap;'>:result</span></a> keyword arguments
 appropriately.
 </p>
 
@@ -72,7 +72,7 @@ For example, consider the position list
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>c2 <span class='piece'>&#x2657;</span>h8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
+(position <span class='piece'>&#x2656;</span>c2 <span class='piece'>&#x2657;</span>h8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
 </code></div>
 
 <p>
@@ -82,7 +82,7 @@ this position list is the new position list:
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
 </code></div>
 
 <p>
@@ -96,7 +96,7 @@ the position list:
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
 </code></div>
 
 <p>
@@ -104,7 +104,7 @@ The result of applying a color flip transformation to the
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm">:wtm</a>)
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
 </code></div>
 
 <p>
@@ -112,7 +112,7 @@ is thus
 </p>
 
 <div class='verb'><code>
-(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:btm">:btm</a>)
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
 </code></div>
 
 <p>
@@ -283,7 +283,7 @@ Note: This example can be written much more efficiently as
 </p>
 
 <div class='verb'><code>
-(position <a href="CQL-Position-List.html#position:attackcount">:attackcount</a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span> 1 unlimited <span class='keyword'>:flipcolor</span>)
+(position <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span> 1 unlimited <span class='keyword'>:flipcolor</span>)
 </code></div>
 
 <p>

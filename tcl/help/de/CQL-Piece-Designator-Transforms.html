@@ -22,10 +22,10 @@
      content="Scidb Help Page" />
 
   <link rel="icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico"
+       href="http://scidb.sourceforge.net/favicon.ico"
        type="image/x-icon" />
   <link rel="shortcut icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico" />
+       href="http://scidb.sourceforge.net/favicon.ico" />
   <link rel="stylesheet"
        type="text/css"
       media="screen"
@@ -137,14 +137,14 @@ Spiegelung von <span style='white-space:nowrap;'><code>Uf6</code></span> gleich 
 </table>
 
 <p>
-Eine <b>diedrische Transformation</b>, angewendet auf einen
-Figurenbezeichner, ist entweder eine Spiegelungstransformation oder eine
-Rotation von 90 Grad auf dem Schachbrett gefolgt von einer
-Spiegelungstransformation oder der identischen Transformation. Es gibt
-8 unterschiedliche diedrische Transformationen auf dem Schachbrett.
-Beispielsweise ist das Resultat einer Anwendung aller 8 diedrischen
-Transformationen auf den Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> die Menge
-der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
+Eine <b>diedrische Transformation</b>, angewendet auf einen Figurenbezeichner,
+ist eine Spiegelungstransformation gefolgt von einer Spiegelungstransformation
+oder der identischen Transformation (es können statt der ersten
+Spiegelungstransformation auch Rotationen von 90, 180, oder 270 Grad eingesetzt
+werden).  Es gibt 8 unterscheidbare diedrische Transformationen des
+Schachbretts.  Beispielsweise ist das Resultat einer Anwendung aller
+diedrischen Transformationen auf den Figurenbezeichner
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> die Menge der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
 <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b3</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c7</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f7</code></span>,
 <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g3</code></span> und <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f2</code></span>.
 </p>
@@ -157,15 +157,15 @@ der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='pie
   </tr>
   <tr>
     <td align="center">
-      Alle diedrischen Transformationen von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>.<br/>
-      Dies ist die Sequenz:
-      diagonale Spiegelung (nach b3),<br/>
-      horizontale Spiegelung (nach b6),
-      gegendiagonale Spiegelung (nach c7),<br/>
-      vertikale Spiegelung (nach f7),
-      diagonale Spiegelung (nach g6),<br/>
-      horizontale Spiegelung (nach g3),
-      gegendiagonale Spiegelung (nach f2).<br/>
+      Diedrische Transformationen von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>, beispielsweise:<br/>
+      diagonale Spiegelung + diagonale Spiegelung (nach c2)<br/>
+      diagonale Spiegelung + identische Transformation (nach b3)<br/>
+      diagonale Spiegelung + horizontale Spiegelung (nach b6)<br/>
+      horizontale Spiegelung + identische Transformation (nach c7)<br/>
+      horizontale Spiegelung + vertikale Spiegelung (nach f7)<br/>
+      gegendiagonale Spiegelung + identische Transformation (nach g6)<br/>
+      gegendiagonale Spiegelung + horizontale Spiegelung (nach g3)<br/>
+      vertikale Spiegelung + identische Transformation (nach f2)<br/>
     </td>
   </tr>
 </table>

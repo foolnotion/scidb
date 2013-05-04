@@ -15,8 +15,10 @@ set Index {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{CQL Beispiele} {CQL-Examples.html} {}}
       {{CQL Handbuch} {CQL-Index.html} {}}
+      {{CQL Positionsliste} {CQL-Position-List.html} {}}
       {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
+      {{CQL Transformationen} {CQL-Transformations.html} {}}
     }
   }
   { D
@@ -75,6 +77,7 @@ set Index {
       {{Partiemarkierungen} {Game-Flags.html} {}}
       {{Partien-Browser} {Game-Browser.html} {}}
       {{Partien-Übersichts-Browser} {Game-Overview.html} {}}
+      {{Positionsliste (CQL)} {CQL-Position-List.html} {}}
     }
   }
   { S
@@ -88,6 +91,7 @@ set Index {
   }
   { T
     {
+      {{Transformationen (CQL)} {CQL-Transformations.html} {}}
       {{Transformationen der Figurenbezeichner (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }

@@ -1473,7 +1473,7 @@ A special marker is one of:
 <table>
   <tr>
     <td class="l"><expr>deleted</expr></td>
-    <td class="m"><img src="../images/game_deleted.png"/></td>
+    <td class="m"><img src="../images/gameflag-Deleted.png"/></td>
     <td class="r">Game marked for deletion</td>
   </tr>
   <tr>

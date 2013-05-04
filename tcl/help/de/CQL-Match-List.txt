@@ -51,7 +51,7 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
 <dir>
   <table>
     <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#logical">Logische Schlüsselwörter</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Schlüsselwörter für die Kontrolllogik</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#event">Schlüsselwörter für die Turniersuche</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#player">Schlüsselwörter für die Spielersuche</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#header">Schlüsselwörter für die Partieinformationssuche</a></td></tr>
@@ -127,7 +127,7 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
 </dir>
 
 <!-- ############################################################################## -->
-<h2 id="logical">Logische Schlüsselwörte</h2>
+<h2 id="logical">Schlüsselwörter für die Kontrolllogik</h2>
 <!-- ############################################################################## -->
 
 <dir>
@@ -203,9 +203,9 @@ Dieses Beispiel kann klarer mit der zweiten Form formuliert werden:
 <h3 id="match:or">:or<extension/>&emsp;<n>(oder)</n></h3>
 
 <p>
-Erwartet eine Liste von Untersuchlisten und filtert nur dann, wenn mindestens
-eine von ihnen filtert. Eine Untersuchliste kann keine Positionslisten
-enthalten.
+Erwartet eine Liste von Untersuchlisten und filtert nur dann eine Partie, wenn
+mindestens eine von ihnen filtert diese Partie filtert.. Eine Untersuchliste kann
+keine Positionslisten enthalten.
 </p>
 
 <p>
@@ -1522,7 +1522,7 @@ Eine spezielle Markierung wird folgendermaßen spezifiziert:
 <table>
   <tr>
     <td class="l"><expr>deleted</expr></td>
-    <td class="m"><img src="../images/game_deleted.png"/></td>
+    <td class="m"><img src="../images/gameflag-Deleted.png"/></td>
     <td class="r">Die Partie ist markiert zum Löschen.</td>
   </tr>
   <tr>

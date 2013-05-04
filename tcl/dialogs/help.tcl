@@ -240,6 +240,8 @@ proc open {parent {file {}} args} {
 
 	bind $dlg <Alt-Left>					[namespace code history::back]
 	bind $dlg <Alt-Right>				[namespace code history::forward]
+	bind $dlg <Alt-Prior>				[namespace code [list Goto @prior]]
+	bind $dlg <Alt-Next>					[namespace code [list Goto @next]]
 	bind $dlg <Alt-Home>					[namespace code [list Goto @home]]
 	bind $dlg <Alt-End>					[namespace code [list Goto @end]]
 	bind $dlg <Control-plus>			[namespace code [list ChangeFontSize +1]]
@@ -881,6 +883,8 @@ proc StandardBindings {w} {
 	$w bind <Alt-Left>	{+ break }
 	$w bind <Alt-Right>	{+ break }
 
+	$w bind <Alt-Prior>	[namespace code [list Goto @prior]]
+	$w bind <Alt-Next>	[namespace code [list Goto @next]]
 	$w bind <Alt-Home>	[namespace code [list Goto @home]]
 	$w bind <Alt-End>		[namespace code [list Goto @end]]
 	$w bind <Alt-Home>	{+ break }
@@ -1411,6 +1415,12 @@ proc Goto {position} {
 		set position 0
 	} elseif {$position eq "@end"} {
 		set position 1000000
+	} elseif {$position eq "@prior"} {
+		$Priv(html) yview scroll -1 page
+		return 1
+	} elseif {$position eq "@next"} {
+		$Priv(html) yview scroll +1 page
+		return 1
 	} elseif {![string is integer -strict $position]} {
 		if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
 		set selector [format {[id="%s"]} $position]

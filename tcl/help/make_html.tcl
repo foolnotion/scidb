@@ -60,10 +60,10 @@ set HtmlHead {<head>
      content="Scidb Help Page" />
 
   <link rel="icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico"
+       href="http://scidb.sourceforge.net/favicon.ico"
        type="image/x-icon" />
   <link rel="shortcut icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico" />
+       href="http://scidb.sourceforge.net/favicon.ico" />
   <link rel="stylesheet"
        type="text/css"
       media="screen"
@@ -400,7 +400,7 @@ proc readContents {chan file} {
 			set text [join [lrange $parts 1 end] ":"]
 			set Section [string toupper $section 0 0]
 			set newline [string range $line 0 [expr {$i - 1}]]
-			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\">:$text</a>"
+			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\"><nobr>:$text</nobr></a>"
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}

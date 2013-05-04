@@ -53,7 +53,6 @@ set Index {
     {
       {{Game Browser} {Game-Browser.html} {}}
       {{Game markers} {Game-Flags.html} {}}
-      {{Game Overview Browser} {Game-Overview.html} {}}
     }
   }
   { H
@@ -71,11 +70,6 @@ set Index {
     {
       {{NAG annotation values} {NAG-Comments.html} {}}
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
-    }
-  }
-  { O
-    {
-      {{Overview Browser} {Game-Overview.html} {}}
     }
   }
   { P

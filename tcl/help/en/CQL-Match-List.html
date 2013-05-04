@@ -22,10 +22,10 @@
      content="Scidb Help Page" />
 
   <link rel="icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico"
+       href="http://scidb.sourceforge.net/favicon.ico"
        type="image/x-icon" />
   <link rel="shortcut icon"
-       href="http://scidb.sourceforge.net/images/scidb.ico" />
+       href="http://scidb.sourceforge.net/favicon.ico" />
   <link rel="stylesheet"
        type="text/css"
       media="screen"
@@ -48,8 +48,8 @@ standard requires at least one position list.)  A game will be matched
 only if all conditions in the match list are fullfilled. If positions lists
 are given, each of which must match at least one position in the game in order
 for the match list to match that game. Scidb allows an additional feature:
-the match list may contain logical keywords (<a href="CQL-Match-List.html#match:and">:and</a>,
-<a href="CQL-Match-List.html#match:or">:or</a>, <a href="CQL-Match-List.html#match:not">:not</a>) with sub-matches.
+the match list may contain logical keywords (<a href="CQL-Match-List.html#match:and"><span style='white-space:nowrap;'>:and</span></a>,
+<a href="CQL-Match-List.html#match:or"><span style='white-space:nowrap;'>:or</span></a>, <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>) with sub-matches.
 </p>
 
 <p>
@@ -168,8 +168,8 @@ Example:
 <div class='box'><pre><code><!--
 -->(match
   <span class='keyword'>:and</span> (
-    (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>)
-    (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))))<!--
+    (match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>)
+    (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>))))<!--
 --></code></pre></div>
 
 <p>
@@ -178,7 +178,7 @@ is identical to the following:
 </p>
 
 <div class='box'><pre><code><!--
--->(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> (match <a href="CQL-Match-List.html#match:ischess960">:ischess960</a> <a href="CQL-Match-List.html#match:not">:not</a>))<!--
+-->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>))<!--
 --></code></pre></div>
 
 <p>
@@ -192,7 +192,7 @@ This keyword can be used in two forms: either it is included in a match list,
 or it has a sub-match list as parameter. In former case match if the containing
 match list would not match without the :not. In latter case: negate the result
 of the sub-match list match. The former form is defined only to be conform
-with CQL standard of keyword <a href="CQL-Position-List.html#position:not">:not</a> of position match.
+with CQL standard of keyword <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a> of position match.
 </p>
 
 <p>
@@ -200,7 +200,7 @@ Example:
 </p>
 
 <div class='verb'><code>
-(match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a> <span class='keyword'>:not</span>)
+(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> <span class='keyword'>:not</span>)
 </code></div>
 
 <p>
@@ -209,7 +209,7 @@ example may be written in the clearer second form:
 </p>
 
 <div class='verb'><code>
-(match <span class='keyword'>:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>))
+(match <span class='keyword'>:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>))
 </code></div>
 
 <h3 id="match:or">:or&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -226,8 +226,8 @@ Example:
 <div class='box'><pre><code><!--
 -->(match
   <span class='keyword'>:or</span> (
-    (match <a href="CQL-Match-List.html#match:event">:event</a> "FIDE-Wch*"
-    (match <a href="CQL-Match-List.html#match:event">:event</a> "PCA-World Championchip*"))))<!--
+    (match <a href="CQL-Match-List.html#match:event"><span style='white-space:nowrap;'>:event</span></a> "FIDE-Wch*"
+    (match <a href="CQL-Match-List.html#match:event"><span style='white-space:nowrap;'>:event</span></a> "PCA-World Championchip*"))))<!--
 --></code></pre></div>
 
 <p>
@@ -294,7 +294,7 @@ Search for games where the country of the event is unknown.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:site">:site</a>.
+See also: <a href="CQL-Match-List.html#match:site"><span style='white-space:nowrap;'>:site</span></a>.
 </p>
 
 <h3 id="match:eventdate">:eventdate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -306,7 +306,7 @@ that the event of the game must match.
 
 <p>
 For a detailed description of the date range see
-<a href="CQL-Match-List.html#match:date">:date</a>.
+<a href="CQL-Match-List.html#match:date"><span style='white-space:nowrap;'>:date</span></a>.
 </p>
 
 <h3 id="match:eventmode">:eventmode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -458,7 +458,7 @@ See <a href="#match:player">:player</a> for a detailed description.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:eventcountry">:eventcountry</a>.
+See also: <a href="CQL-Match-List.html#match:eventcountry"><span style='white-space:nowrap;'>:eventcountry</span></a>.
 </p>
 
 <h3 id="match:timemode">:timemode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -575,8 +575,8 @@ Search for games with at least one younger player, born 1990 or later.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>, <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>,
-<a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
+See also: <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
 </p>
 
 <h3 id="match:blackbirthyear">:blackbirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -587,9 +587,9 @@ given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>, <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>,
-<a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>, <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>,
-<a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
+See also: <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>,
+<a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>, <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
 </p>
 
 <h3 id="match:blackcountry">:blackcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -605,11 +605,11 @@ of the black player is unknown.
 </p>
 
 <p>
-For examples see <a href="CQL-Match-List.html#match:country">:country</a>.
+For examples see <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:country">:country</a>, <a href="CQL-Match-List.html#match:whitecountry">:whitecountry</a>.
+See also: <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>, <a href="CQL-Match-List.html#match:whitecountry"><span style='white-space:nowrap;'>:whitecountry</span></a>.
 </p>
 
 <h3 id="match:blackdeathyear">:blackdeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -620,9 +620,9 @@ given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>, <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>,
-<a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>, <a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>,
-<a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
+See also: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>,
+<a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>, <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
 </p>
 
 <h3 id="match:blackgender">:blackgender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -654,7 +654,7 @@ Only search for games where the gender is unknown for at least one player.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitegender">:whitegender</a>, <a href="CQL-Match-List.html#match:gender">:gender</a>.
+See also: <a href="CQL-Match-List.html#match:whitegender"><span style='white-space:nowrap;'>:whitegender</span></a>, <a href="CQL-Match-List.html#match:gender"><span style='white-space:nowrap;'>:gender</span></a>.
 </p>
 
 <h3 id="match:blackiscomputer">:blackiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -664,7 +664,7 @@ Search for games where the black player is an engine.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:iscomputer">:iscomputer</a>, <a href="CQL-Match-List.html#match:whiteiscomputer">:whiteiscomputer</a>.
+See also: <a href="CQL-Match-List.html#match:iscomputer"><span style='white-space:nowrap;'>:iscomputer</span></a>, <a href="CQL-Match-List.html#match:whiteiscomputer"><span style='white-space:nowrap;'>:whiteiscomputer</span></a>.
 </p>
 
 <h3 id="match:blackishuman">:blackishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -674,7 +674,7 @@ Search for games where the black player is a human.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:ishuman">:ishuman</a>, <a href="CQL-Match-List.html#match:whiteishuman">:whiteishuman</a>.
+See also: <a href="CQL-Match-List.html#match:ishuman"><span style='white-space:nowrap;'>:ishuman</span></a>, <a href="CQL-Match-List.html#match:whiteishuman"><span style='white-space:nowrap;'>:whiteishuman</span></a>.
 </p>
 
 <h3 id="match:blackplayer">:blackplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -685,11 +685,11 @@ Search for games where the black player matches given name.
 
 <p>
 This takes one parameter, either a double-quoted pattern, or a un-quoted
-string.  See <a href="CQL-Match-List.html#match:player">:player</a> for a detailed description.
+string.  See <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a> for a detailed description.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:player">:player</a>, <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>.
+See also: <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a>, <a href="CQL-Match-List.html#match:whiteplayer"><span style='white-space:nowrap;'>:whiteplayer</span></a>.
 </p>
 
 <h3 id="match:blackrating">:blackrating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -697,11 +697,11 @@ See also: <a href="CQL-Match-List.html#match:player">:player</a>, <a href="CQL-M
 <p>
 Match all games where the given rating is between given score range of the
 black player. The first parameter is the rating type, then the score range
-follows. For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating</a>.
+follows. For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
+See also: <a href="CQL-Match-List.html#match:whiterating"><span style='white-space:nowrap;'>:whiterating</span></a>, <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
 </p>
 
 <h3 id="match:blacktitle">:blacktitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -709,11 +709,11 @@ See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a h
 <p>
 Match all games where the title of the black player is matching
 one of the titles in the given comma-separated list.
-See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
+See <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> for a more detailed description.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitetitle">:whitetitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
+See also: <a href="CQL-Match-List.html#match:whitetitle"><span style='white-space:nowrap;'>:whitetitle</span></a>, <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a>.
 </p>
 
 <h3 id="match:country">:country&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -743,7 +743,7 @@ nationality.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitecountry">:whitecountry</a>, <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>.
+See also: <a href="CQL-Match-List.html#match:whitecountry"><span style='white-space:nowrap;'>:whitecountry</span></a>, <a href="CQL-Match-List.html#match:blackcountry"><span style='white-space:nowrap;'>:blackcountry</span></a>.
 </p>
 
 <h3 id="match:deathyear">:deathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -767,9 +767,9 @@ Search for games with ancient players, at least one of them died between
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>, <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>,
-<a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>, <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>,
-<a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
+See also: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>,
+<a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
 </p>
 
 <h3 id="match:gender">:gender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -781,11 +781,11 @@ Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female
 </p>
 
 <p>
-For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
+For examples see <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:whitegender">:whitegender</a>.
+See also: <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>, <a href="CQL-Match-List.html#match:whitegender"><span style='white-space:nowrap;'>:whitegender</span></a>.
 </p>
 
 <h3 id="match:iscomputer">:iscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -795,7 +795,7 @@ Search for games where one of the players is a engine.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whiteiscomputer">:whiteiscomputer</a>, <a href="CQL-Match-List.html#match:blackiscomputer">:blackiscomputer</a>.
+See also: <a href="CQL-Match-List.html#match:whiteiscomputer"><span style='white-space:nowrap;'>:whiteiscomputer</span></a>, <a href="CQL-Match-List.html#match:blackiscomputer"><span style='white-space:nowrap;'>:blackiscomputer</span></a>.
 </p>
 
 <h3 id="match:ishuman">:ishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -805,7 +805,7 @@ Search for games where one of the players is a human.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whiteishuman">:whiteishuman</a>, <a href="CQL-Match-List.html#match:blackishuman">:blackishuman</a>.
+See also: <a href="CQL-Match-List.html#match:whiteishuman"><span style='white-space:nowrap;'>:whiteishuman</span></a>, <a href="CQL-Match-List.html#match:blackishuman"><span style='white-space:nowrap;'>:blackishuman</span></a>.
 </p>
 
 <h3 id="match:player">:player</h3>
@@ -860,7 +860,7 @@ For more examples see
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whiteplayer">:whiteplayer</a>, <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>.
+See also: <a href="CQL-Match-List.html#match:whiteplayer"><span style='white-space:nowrap;'>:whiteplayer</span></a>, <a href="CQL-Match-List.html#match:blackplayer"><span style='white-space:nowrap;'>:blackplayer</span></a>.
 </p>
 
 <h3 id="match:rating">:rating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -925,7 +925,7 @@ Match all games where one of the players has an ELO rating between 2000 and 3000
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:whiterating">:whiterating</a>, <a href="CQL-Match-List.html#match:blackrating">:blackrating</a>.
+See also: <a href="CQL-Match-List.html#match:whiterating"><span style='white-space:nowrap;'>:whiterating</span></a>, <a href="CQL-Match-List.html#match:blackrating"><span style='white-space:nowrap;'>:blackrating</span></a>.
 </p>
 
 <h3 id="match:title">:title&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1013,9 +1013,9 @@ given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>, <a href="CQL-Match-List.html#match:birthyear">:birthyear</a>,
-<a href="CQL-Match-List.html#match:whitedeathyear">:whitedeathyear</a>, <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>,
-<a href="CQL-Match-List.html#match:deathyear">:deathyear</a>.
+See also: <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>, <a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>,
+<a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
 </p>
 
 <h3 id="match:whitecountry">:whitecountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1031,11 +1031,11 @@ of the white player is unknown.
 </p>
 
 <p>
-For examples see <a href="CQL-Match-List.html#match:country">:country</a>.
+For examples see <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackcountry">:blackcountry</a>, <a href="CQL-Match-List.html#match:country">:country</a>.
+See also: <a href="CQL-Match-List.html#match:blackcountry"><span style='white-space:nowrap;'>:blackcountry</span></a>, <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
 </p>
 
 <h3 id="match:whitedeathyear">:whitedeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1046,9 +1046,9 @@ given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackdeathyear">:blackdeathyear</a>, <a href="CQL-Match-List.html#match:deathyear">:deathyear</a>,
-<a href="CQL-Match-List.html#match:whitebirthyear">:whitebirthyear</a>, <a href="CQL-Match-List.html#match:blackbirthyear">:blackbirthyear</a>,
-<a href="CQL-Match-List.html#match:birthyear">:birthyear</a>.
+See also: <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>, <a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>,
+<a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
 </p>
 
 <h3 id="match:whitegender">:whitegender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1060,11 +1060,11 @@ Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female
 </p>
 
 <p>
-For examples see <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>.
+For examples see <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackgender">:blackgender</a>, <a href="CQL-Match-List.html#match:gender">:gender</a>.
+See also: <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>, <a href="CQL-Match-List.html#match:gender"><span style='white-space:nowrap;'>:gender</span></a>.
 </p>
 
 <h3 id="match:whiteiscomputer">:whiteiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1074,7 +1074,7 @@ Search for games where the white player is an engine.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:iscomputer">:iscomputer</a>, <a href="CQL-Match-List.html#match:blackiscomputer">:blackiscomputer</a>.
+See also: <a href="CQL-Match-List.html#match:iscomputer"><span style='white-space:nowrap;'>:iscomputer</span></a>, <a href="CQL-Match-List.html#match:blackiscomputer"><span style='white-space:nowrap;'>:blackiscomputer</span></a>.
 </p>
 
 <h3 id="match:whiteishuman">:whiteishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1084,7 +1084,7 @@ Search for games where the white player is a human.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:ishuman">:ishuman</a>, <a href="CQL-Match-List.html#match:blackishuman">:blackishuman</a>.
+See also: <a href="CQL-Match-List.html#match:ishuman"><span style='white-space:nowrap;'>:ishuman</span></a>, <a href="CQL-Match-List.html#match:blackishuman"><span style='white-space:nowrap;'>:blackishuman</span></a>.
 </p>
 
 <h3 id="match:whiteplayer">:whiteplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1095,11 +1095,11 @@ Search for games where the white player matches given name.
 
 <p>
 This takes one parameter, either a double-quoted pattern, or a un-quoted string.
-See <a href="CQL-Match-List.html#match:player">:player</a> for a detailed description.
+See <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a> for a detailed description.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>, <a href="CQL-Match-List.html#match:player">:player</a>.
+See also: <a href="CQL-Match-List.html#match:blackplayer"><span style='white-space:nowrap;'>:blackplayer</span></a>, <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a>.
 </p>
 
 <h3 id="match:whiterating">:whiterating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1107,11 +1107,11 @@ See also: <a href="CQL-Match-List.html#match:blackplayer">:blackplayer</a>, <a h
 <p>
 Match all games where the given rating is between given score range of the
 white player. The first parameter is the rating type, then the score range
-follows.  For a detailed description see <a href="CQL-Match-List.html#match:rating">:rating</a>.
+follows.  For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blackrating">:blackrating</a>, <a href="CQL-Match-List.html#match:rating">:rating</a>.
+See also: <a href="CQL-Match-List.html#match:blackrating"><span style='white-space:nowrap;'>:blackrating</span></a>, <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
 </p>
 
 <h3 id="match:whitetitle">:whitetitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1119,11 +1119,11 @@ See also: <a href="CQL-Match-List.html#match:blackrating">:blackrating</a>, <a h
 <p>
 Match all games where the title of the white player is matching
 one of the titles in the given comma-separated list.
-See <a href="CQL-Match-List.html#match:title">:title</a> for a more detailed description.
+See <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> for a more detailed description.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:blacktitle">:blacktitle</a>, <a href="CQL-Match-List.html#match:title">:title</a>.
+See also: <a href="CQL-Match-List.html#match:blacktitle"><span style='white-space:nowrap;'>:blacktitle</span></a>, <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a>.
 </p>
 
 <!-- ############################################################################## -->
@@ -1178,7 +1178,7 @@ annotator are excluded.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>.
+See also: <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>.
 </p>
 
 <h3 id="match:date">:date&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1322,7 +1322,7 @@ can be greater than the last date specifier.
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:date</span> unlimited <a href="CQL-Position-List.html#position:not">:not</a>
+<span class='keyword'>:date</span> unlimited <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a>
 </code></div>
 
 <p>
@@ -1330,7 +1330,7 @@ Search for games which are blank dated.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:year">:year</a>.
+See also: <a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a>.
 </p>
 
 <h3 id="match:eco">:eco&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1536,7 +1536,7 @@ A special marker is one of:
 <table>
   <tr>
     <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
-    <td class="m"><img src="../images/game_deleted.png" alt="" /></td>
+    <td class="m"><img src="../images/gameflag-Deleted.png" alt="" /></td>
     <td class="r">Game marked for deletion</td>
   </tr>
   <tr>
@@ -1560,7 +1560,7 @@ Example:
 </p>
 
 <div class='verb'><code>
-<a href="CQL-Match-List.html#match:not">:not</a> (match <span class='keyword'>:hasspecialmarkers</span> illegalmove)
+<a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a> (match <span class='keyword'>:hasspecialmarkers</span> illegalmove)
 </code></div>
 
 <p>
@@ -1799,7 +1799,7 @@ Examples:
 </code></div>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:date">:date</a>.
+See also: <a href="CQL-Match-List.html#match:date"><span style='white-space:nowrap;'>:date</span></a>.
 </p>
 
 <!-- ############################################################################## -->
@@ -1847,17 +1847,17 @@ Search for annotated games (does not include comments).
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>, <a href="CQL-Match-List.html#match:hasvariations">:hasvariations</a>.
+See also: <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>, <a href="CQL-Match-List.html#match:hasvariations"><span style='white-space:nowrap;'>:hasvariations</span></a>.
 </p>
 
 <h3 id="match:hascomments">:hascomments&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
 Search for commented games. Note that a commented game must not have
-an annotator (&#x21d2; <a href="CQL-Match-List.html#match:annotator">:annotator</a>).
+an annotator (&#x21d2; <a href="CQL-Match-List.html#match:annotator"><span style='white-space:nowrap;'>:annotator</span></a>).
 </p>
 
-See also: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>, <a href="CQL-Match-List.html#match:hasvariations">:hasvariations</a>.
+See also: <a href="CQL-Match-List.html#match:hasannotation"><span style='white-space:nowrap;'>:hasannotation</span></a>, <a href="CQL-Match-List.html#match:hasvariations"><span style='white-space:nowrap;'>:hasvariations</span></a>.
 
 <h3 id="match:hasvariations">:hasvariations&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
@@ -1866,7 +1866,7 @@ Search for games containing sub-variations.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:hasannotation">:hasannotation</a>, <a href="CQL-Match-List.html#match:hascomments">:hascomments</a>.
+See also: <a href="CQL-Match-List.html#match:hasannotation"><span style='white-space:nowrap;'>:hasannotation</span></a>, <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>.
 </p>
 
 <h3 id="match:ischess960">:ischess960&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1877,7 +1877,7 @@ This includes the standard start position.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:isshufflechess">:isshufflechess</a>.
+See also: <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>.
 </p>
 
 <h3 id="match:isshufflechess">:isshufflechess&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -1888,7 +1888,7 @@ This includes Chess 960 positions.
 </p>
 
 <p>
-See also: <a href="CQL-Match-List.html#match:ischess960">:ischess960</a>.
+See also: <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a>.
 </p>
 
 <h3 id="match:startposition">:startposition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -2038,7 +2038,7 @@ Search for games with FICS variant <span style='white-space:nowrap;'><code>misc/
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:startposition</span> 0 <a href="CQL-Match-List.html#match:not">:not</a>
+<span class='keyword'>:startposition</span> 0 <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>
 </code></div>
 
 <p>
@@ -2048,7 +2048,7 @@ position.
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:startposition</span> -1 <a href="CQL-Match-List.html#match:not">:not</a>
+<span class='keyword'>:startposition</span> -1 <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>
 </code></div>
 
 <p>

@@ -75,8 +75,8 @@ TITLE Willkommen zur Scidb-Hilfe
   </li>
   <li><a href="CQL-Transformations.html">Tranformationen</a></li>
   <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
+  <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
 <!--
-  <li><a href="CQL-Position-List.html">Die Position-Liste</a></li>
   <li><a href="CQL-Relation-List.html">Die Relation-Liste</a></li>
   <li><a href="CQL-Tagging.html">Markierung</a></li>
 -->

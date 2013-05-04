@@ -111,11 +111,11 @@ the board. For example, the horizontal flip of <expr>Uf6</expr> is
 </table>
 
 <p>
-A <b>dihedral transformation</b> of a piece designator is either a flip
-transformation or a rotation by 90 degrees of the chessboard followed by
-a flip transformation or the identity transformation. There are 8 distinct
-dihedral transformations of the board. For example, the results of
-applying the 8 dihedral transformations to the piece designator
+A <b>dihedral transformation</b> of a piece designator is a flip transformation
+followed by a flip transformation or the identity transformation (the first
+flip transformation could be replaced by rotations by 90, 180, or 270 degrees).
+There are 8 distinct dihedral transformations of the board. For example, the
+results of applying all dihedral transformations to the piece designator
 <expr>&Q;c2</expr> are the 8 piece designators <expr>&Q;c2</expr>,
 <expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
 <expr>&Q;g6</expr>, <expr>&Q;g3</expr>, and <expr>&Q;f2</expr>.
@@ -129,11 +129,15 @@ applying the 8 dihedral transformations to the piece designator
   </tr>
   <tr>
     <td align="center">
-      All dihedral transformations of <expr>&Q;c2</expr>.<br/>
-      This is the sequence: diagonal flip (to b3),<br/>
-      horizontal flip (to b6), off-diagonal flip (to c7),<br/>
-      vertical flip (to f7), diagonal flip (to g6),<br/>
-      horizontal flip (to g3), off-diagonal flip (to f2).<br/>
+      Dihedral transformations of <expr>&Q;c2</expr>, for example:<br/>
+      diagonal flip + diagonal flip (to c2)<br/>
+      diagonal flip + identity transformation (to b3)<br/>
+      diagonal flip + horizontal flip (to b6)<br/>
+      horizontal flip + identity transformation (to c7)<br/>
+      horizontal flip + vertical flip (to f7)<br/>
+      off-diagonal flip + identity transformation (to g6)<br/>
+      off-diagonal flip + horizontal flip (to g3)<br/>
+      vertical flip + identity transformation (to f2)<br/>
     </td>
   </tr>
 </table>

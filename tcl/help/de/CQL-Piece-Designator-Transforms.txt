@@ -116,14 +116,14 @@ Spiegelung von <expr>Uf6</expr> gleich <expr>Uf3</expr>.
 </table>
 
 <p>
-Eine <b>diedrische Transformation</b>, angewendet auf einen
-Figurenbezeichner, ist entweder eine Spiegelungstransformation oder eine
-Rotation von 90 Grad auf dem Schachbrett gefolgt von einer
-Spiegelungstransformation oder der identischen Transformation. Es gibt
-8 unterschiedliche diedrische Transformationen auf dem Schachbrett.
-Beispielsweise ist das Resultat einer Anwendung aller 8 diedrischen
-Transformationen auf den Figurenbezeichner <expr>&Q;c2</expr> die Menge
-der 8 Figurenbezeichner <expr>&Q;c2</expr>,
+Eine <b>diedrische Transformation</b>, angewendet auf einen Figurenbezeichner,
+ist eine Spiegelungstransformation gefolgt von einer Spiegelungstransformation
+oder der identischen Transformation (es können statt der ersten
+Spiegelungstransformation auch Rotationen von 90, 180, oder 270 Grad eingesetzt
+werden).  Es gibt 8 unterscheidbare diedrische Transformationen des
+Schachbretts.  Beispielsweise ist das Resultat einer Anwendung aller
+diedrischen Transformationen auf den Figurenbezeichner
+<expr>&Q;c2</expr> die Menge der 8 Figurenbezeichner <expr>&Q;c2</expr>,
 <expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
 <expr>&Q;g6</expr>, <expr>&Q;g3</expr> und <expr>&Q;f2</expr>.
 </p>
@@ -136,15 +136,15 @@ der 8 Figurenbezeichner <expr>&Q;c2</expr>,
   </tr>
   <tr>
     <td align="center">
-      Alle diedrischen Transformationen von <expr>&Q;c2</expr>.<br/>
-      Dies ist die Sequenz:
-      diagonale Spiegelung (nach b3),<br/>
-      horizontale Spiegelung (nach b6),
-      gegendiagonale Spiegelung (nach c7),<br/>
-      vertikale Spiegelung (nach f7),
-      diagonale Spiegelung (nach g6),<br/>
-      horizontale Spiegelung (nach g3),
-      gegendiagonale Spiegelung (nach f2).<br/>
+      Diedrische Transformationen von <expr>&Q;c2</expr>, beispielsweise:<br/>
+      diagonale Spiegelung + diagonale Spiegelung (nach c2)<br/>
+      diagonale Spiegelung + identische Transformation (nach b3)<br/>
+      diagonale Spiegelung + horizontale Spiegelung (nach b6)<br/>
+      horizontale Spiegelung + identische Transformation (nach c7)<br/>
+      horizontale Spiegelung + vertikale Spiegelung (nach f7)<br/>
+      gegendiagonale Spiegelung + identische Transformation (nach g6)<br/>
+      gegendiagonale Spiegelung + horizontale Spiegelung (nach g3)<br/>
+      vertikale Spiegelung + identische Transformation (nach f2)<br/>
     </td>
   </tr>
 </table>

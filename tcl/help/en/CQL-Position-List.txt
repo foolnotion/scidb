@@ -45,7 +45,7 @@ Chess Assistant 9. The description of these keywords are taken from
     <tr><td>&#x2022;</td><td><a href="#transform">Transformation keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#piece">Piece configuration keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#move">Move keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#sequence">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#sequence">Sequence keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#game">Game related keywords</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#relation">Relation between positions</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#matching">Matching count keywords</a></td></tr>
@@ -254,8 +254,8 @@ This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
 match if the containing match list would not match without the :not. In
 latter case negate the result of the sub-position list match. The former
-case is conform with CQL standard of keyword <cql>position:not</cql>,
-the second form is an extension.
+case is conform with CQL standard of keyword :not, the second form is an
+extension.
 </p>
 
 <p>
@@ -368,34 +368,36 @@ time considerably, and the expression may have a clearer form.
 This keyword can be used in two forms: either it is included in a position
 match list, or it has a sub-position list as argument. In former case:
 stop position search for this game as soon as the match of containing position
-list succeeds. In latter case stop position search as soon as the match of
-the sub-position list succeeds. This keyword is never failing, with other
-words: it is not influencing the result of all other position lists.
+list succeeds. In latter case stop position of this game search as soon as the
+match of the sub-position list succeeds. This keyword is never failing, with
+other words: it is not influencing the result of all other matches.
 </p>
 
 <p>
 The :cut position match has lower precedence than all other position matches.
-This means that the position, where all position lists are succeeding, is
-matching. If the :cut position match should have highest precedende, use
-keyword <cql>position:preceding</cql>, see examples:
+This means that a position is matching, if all other position lists are matching
+this position, independent from the result of the :cut. If the :cut position
+match should have highest precedende, use keyword <cql>position:preceding</cql>.
+In this case the search will stop with a negative resultat, independent from
+all other matches. Consider the following examples:
 </p>
 
 <verb>
-(match (position &lt;A&gt; <keyword>:cut</keyword> (&lt;B&gt;))
+(match (position &lt;A&gt; <keyword>:cut</keyword> (position &lt;B&gt;))
 </verb>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
-case the match succeeds.
+Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
+this case the match of this game succeeds.
 </p>
 
 <verb>
-(match (position &lt;A&gt; <keyword>:cut</keyword> (<cql>position:preceding</cql>  &lt;B&gt;)))
+(match (position &lt;A&gt; <keyword>:cut</keyword> (position <cql>position:preceding</cql>  &lt;B&gt;)))
 </verb>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; succeeds, both the first time. In this
-case the match fails.
+Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
+this case the match of this game fails.
 </p>
 
 <p>
@@ -406,13 +408,13 @@ Examples:
 (match
   (position
     <cql>position:mate</cql>
-    <keyword>:cut</keyword> (<cql>position:check</cql>)))
+    <keyword>:cut</keyword> (position <cql>position:check</cql>)))
 </verbatim>
 
 <p>
 Search for games ending with mate, and neither side has ever given
-a check before. Actually keyword :cut is not required for this search,
-see next example:
+a check before. Actually keyword :cut is not required for this search
+criterion, see next example:
 </p>
 
 <verbatim>
@@ -440,8 +442,8 @@ match (see example).
 
 <p>
 This keyword will exclude games even if one of the position matches
-will succeed before the :exclude expression will succeed.
-Keyword :exclude is excluding games under certain conditions.
+will succeed before the :exclude expression will succeed. In short:
+keyword :exclude is excluding games completely under certain conditions.
 </p>
 
 <p>
@@ -456,25 +458,22 @@ Example:
 </verbatim>
 
 <p>
-Search for games matching expression <expr>&lt;A&gt;</expr>, but not if
-expression <expr>&lt;B&gt;</expr> is matching any position in this game.
-Actually this match can be written without the use of keyword :exclude,
-in the following way:
+Search for games containg a position which is matching expression
+<expr>&lt;A&gt;</expr>, but not if expression <expr>&lt;B&gt;</expr> is
+matching any position in this game. Actually this match can be written
+without the use of keyword :exclude, in the following way:
 </p>
 
 <verbatim>
 (match
   (position
-    <cql>position:gappedsequence</cql> (
-      (position &lt;B&gt; <cql>position:not</cql>)
+    <cql>position:and</cql> (
       (position &lt;A&gt;)
-      (position &lt;B&gt; <cql>position:not</cql>))))
+      (position &lt;B&gt; <cql>position:matchcount</cql> 0))))
 </verbatim>
 
 <p>
-But the use of keyword :exclude is simpler, and the search is faster, because
-the latter version has to search the whole game, and the former version with
-keyword :exclude terminates as soon as <expr>&lt;B&gt;</expr> is matching.
+But the use of keyword :exclude is simpler and clearer.
 </p>
 
 <h3 id="position:preceding">:preceding<extension/></h3>
@@ -602,9 +601,9 @@ Normally this is equivalent to following query:
 </verbatim>
 
 <p>
-In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
-black has no more pieces than the king, and in all other chess variants this
-query has no meaning and is always failing.
+In chess variant %::mc::VariantName(ThreeCheck)% the query with :blackcannotwin
+succeeds only if black has no more pieces than the king, and in all other chess
+variants this query has no meaning and is always failing.
 </p>
 
 <p>
@@ -643,13 +642,14 @@ matching all positions where last move is giving n-th check to other side.
 <p>
 If the parameter has the form <expr>+&lt;n&#x2081;&gt;+&lt;n&#x2082;&gt;</expr>,
 where <expr>&lt;n&#x2093;&gt;</expr> is a number between 0 and 3,
-it is matching all positions where white has given n&#x2081;-th check
-to black, and black has given n&#x2082;-th check to white.
+it is matching first position where white has given n&#x2081; times check
+to black, and black has given n&#x2082; times check to white.
 </p>
 
 <note>
 This query is working only in chess variant %::mc::VariantName(ThreeCheck)%,
-in other chess variants it fails always.
+in other chess variants it fails always (except all values in given parameter
+are zero).
 </note>
 
 <p>
@@ -661,7 +661,7 @@ Examples:
 </verb>
 
 <p>
-Match if any side has given second check.
+Match as soon as any side has given second check.
 </p>
 
 <verb>
@@ -669,7 +669,8 @@ Match if any side has given second check.
 </verb>
 
 <p>
-Match if black has given third check to white. This must be a final position.
+Match if black has given third check to white king. This must be a final
+position.
 </p>
 
 <verb>
@@ -677,7 +678,7 @@ Match if black has given third check to white. This must be a final position.
 </verb>
 
 <p>
-This is in fact a useful match. Assume that a game is starting with the
+This is in fact a useful query. Assume that a game is starting with the
 following position (described with <a href="FEN.html">FEN</a>):
 </p>
 
@@ -687,9 +688,9 @@ rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 
 <p>
 This game would match (note keyword :not), because black has already
-given second check to white in first position of the game. With other
-words, this example is searching for games starting with an advanced
-position, where one side has already given a check.
+given second check to white king. With other words, this query is
+searching for games starting with an advanced position, where one side
+has already given a check.
 </p>
 
 <h3 id="position:castling">:castling<extension/></h3>
@@ -737,7 +738,8 @@ White has kingside castling availability.
 </verb>
 
 <p>
-White has either kingside or queenside castling availability.
+White has either kingside or queenside castling availability
+(but not both).
 </p>
 
 <verb>
@@ -753,6 +755,19 @@ White has both kingside and queenside castling availabilities.
 <p>
 One side is in check, and it is a contact check.
 </p>
+
+<p>
+This is equivalent to:
+</p>
+
+<verbatim>
+(position
+  :or (
+    (position <cql>position:doublecheck</cql>)
+    (position <cql>position:attackcount</cql> [&N;&P;] &k; 1 <cql>position:flipcolor</cql>)
+    (position [&Q;&R;]d4 &k;e4 <cql>position:flipcolor</cql> <cql>position:flip</cql>)
+    (position [&Q;&B;]d4 &k;e5 <cql>position:flipcolor</cql> <cql>position:flip</cql>)))
+</verbatim>
 
 <p>
 See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
@@ -808,8 +823,8 @@ See also: <cql>position:noendgame</cql>.
 <h3 id="position:fen">:fen<extension/></h3>
 
 <p>
-The position is equal to the described position in given
-<a href="FEN.html">FEN</a>.
+The position is equal to the described position in given argument.
+This argument must be a valid <a href="FEN.html">FEN</a>.
 </p>
 
 <h3 id="position:fiftymoverule">:fiftymoverule<extension/></h3>
@@ -841,7 +856,7 @@ This is an abbreviation for:
 <h3 id="position:initial">:initial</h3>
 
 <p>
-This is the first position in the game.
+This is the first position in the game (before first move).
 </p>
 
 <h3 id="position:halfmoveclocklimit">:halfmoveclocklimit<extension/></h3>
@@ -953,7 +968,8 @@ See also: <cql>position:check</cql>, <cql>position:doublecheck</cql>,
 <h3 id="position:nocontactcheck">:nocontactcheck<extension/></h3>
 
 <p>
-Neither side is in check, or it is not a contact check.
+Neither side is in check, or it is not a contact check (<see/>
+<cql>position:contactcheck</cql>).
 </p>
 
 <p>
@@ -1006,10 +1022,10 @@ Normally this is equivalent to this query:
   <comment>; king and minor piece versus king</comment>
   (<cql>position:piececount</cql> U 3 <cql>position:piececount</cql> [Ii] 1)
   <comment>; king and bishop versus king and bishop with the bishops on the same color</comment>
-  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
-                      d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
-  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
-                      d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))
+  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,
+     c7,d2,d4,d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
+  (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,
+     c8,d1,d3,d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))
 </verbatim>
 
 <p>
@@ -1035,8 +1051,8 @@ See also: <cql>position:stalemate</cql>,
 <h3 id="position:repetition">:repetition<extension/></h3>
 
 <p>
-Matches positions which occurred the third time in this game, with same
-player to move, and each player has the same castling and en passant
+Match first position of mainline which occurred the third time in this game,
+with same player to move, and each player has the same castling and en passant
 capturing rights. The repeated positions need not occur in succession. This
 accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
 threefold repetition rule</a>.
@@ -1061,7 +1077,8 @@ This is the last position in the game.
 <h3 id="position:variations">:variations</h3>
 
 <p>
-Look in the variations to find matches.
+Look in the variations to find matches. Without this keyword the variations
+will be skipped.
 </p>
 
 <h3 id="position:variationsonly">:variationsonly</h3>
@@ -1233,7 +1250,7 @@ The main-diagonal shift transformations (<see/>
 <h3 id="position:shiftoffdiagonal">:shiftoffdiagonal</h3>
 
 <p>
-The off-diagonal shift transformations. (<see/>
+The off-diagonal shift transformations (<see/>
 <a href="CQL-Transformations.html">Transformations</a>).
 </p>
 
@@ -1288,7 +1305,9 @@ Examples:
 </verb>
 
 <p>
-Matches any position in which white has a double attack on the black king.
+Matches any position in which white has a double attack on the black king
+(note that the use of <cql>position:doublecheck</cql> combined with
+<cql>position:btm</cql> should be preferred).
 </p>
 
 <verb>
@@ -1296,7 +1315,8 @@ Matches any position in which white has a double attack on the black king.
 </verb>
 
 <p>
-Matches any position in which a king is under double attack.
+Matches any position in which a king is under double attack
+(again the use of <cql>position:doublecheck</cql> should be preferred).
 </p>
 
 <verb>
@@ -1479,7 +1499,7 @@ greater than the black pieces.
 
 <p>
 This matches positions in which white has between one fewer and two more
-rooks than black.
+rooks than black (although this is not applicable to chess variants).
 </p>
 
 <verb>
@@ -1487,7 +1507,8 @@ rooks than black.
 </verb>
 
 <p>
-This matches positions in which black is up at least an exchange.
+This matches positions in which black is up at least an exchange
+(also this is not applicable to chess variants).
 </p>
 
 <verbatim>
@@ -1513,9 +1534,9 @@ This matches positions in which black is up at least an exchange.
 </verbatim>
 
 <p>
-This example shows how to search for queen sacrifices using
+This example shows a way how to search for queen sacrifices using
 <code>:powerdifference</code>. One side sacrifices a queen, and remains at
-least 9 points down in material for at least 12 moves, and then wins.
+least 9 pawns down in material for at least 12 moves, and finally wins.
 </p>
 
 <h3 id="position:ray">:ray</h3>
@@ -1528,22 +1549,21 @@ diagonal, or the a8-h8 diagonal.
 
 <p>
 Let R by a ray with ordered set of squares in a contiguous line
-S&#x2081;, S&#x2082;,...,S&#x2090;. Suppose spec is a ray specifier
-(G&#x2081;, G&#x2082;,...,G&#x2093;) where each G&#x2081;,...,G&#x2093;
-is a piece designator. The ray R is valid with respect to the ray specifier
-if G&#x2081; matches the piece on S&#x2081;, and if G&#x2093; matches the
-piece on S&#x2090;, and if the remaining G's can be paired to some subset
-of the squares in the ray in an order-preserving way such that each G matches
-the piece on its corresponding square and such that all unpaired squares in
-the ray are empty.
+S&#x2081;, S&#x2082;,...,S&#x2090;. Suppose a given ray specifier
+(G&#x2081;, G&#x2082;,...,G&#x2093;) where each G is a piece designator.
+The ray R is valid with respect to the ray specifier if G&#x2081; matches
+the piece on S&#x2081;, and if G&#x2093; matches the piece on S&#x2090;, and
+if the remaining G's can be paired to some subset of the squares in the ray
+in an order-preserving way such that each G matches the piece on its
+corresponding square and such that all unpaired squares in the ray are empty.
 </p>
 
 <p>
 The :ray keyword takes a ray specifier and an optional range
 specifier. If the range specifier is absent, it is taken to be
-<expr>1 unlimited</expr>.  Otherwise, :ray matches a position if the number
-of rays in the position valid with respect to the ray specifier lies within
-the range specifier.
+<nobr><code>1</code> <code>unlimited</code></nobr>. Otherwise, :ray matches
+a position if the number of rays in the position valid with respect to the
+ray specifier lies within the range specifier.
 </p>
 
 <p>
@@ -1572,11 +1592,11 @@ to the black king on the last four ranks.
 </verb>
 
 <p>
-Matches a position in which either three queens and the black king are on the
-same rank, with exactly one empty square between them, and one of the queens
-is on the a-file, or a position in which the three queens and king form a
-diagonal with one empty squares between successive pieces and the queens on
-the a, c, and e files.
+Matches a position in which either three white queens and the black king are
+on the same rank, with exactly one empty square between them, and one of the
+queens is on the a-file, or a position in which the three white queens and
+black king form a diagonal with one empty squares between successive pieces,
+and the queens on the a, c, and e files in both cases.
 </p>
 
 <verb>
@@ -1617,8 +1637,8 @@ Matches a position in which a black piece is pinned to the black king.
 </verb>
 
 <p>
-Matches positions in which there are three black pinned by a white piece on
-d5 against either a black rook or king in the first four ranks.
+Matches positions in which there are three black pieces pinned by a white
+piece on d5 against either a black rook or king in the first four ranks.
 </p>
 
 <verb>
