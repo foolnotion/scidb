@@ -47,22 +47,21 @@ gespeichert:
 
 <dir>
   <table>
-    <tr><td>&K;</td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
-    <tr><td>&Q;</td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
-    <tr><td>&R;</td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
-    <tr><td>&B;</td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
-    <tr><td>&N;</td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
-    <tr><td>&P;</td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
-    <tr><td>&k;</td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
-    <tr><td>&q;</td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
-    <tr><td>&r;</td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
-    <tr><td>&b;</td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
-    <tr><td>&n;</td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
-    <tr><td>&p;</td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
+    <!-- Note to translators: don't translate English piece letters in third column -->
+    <tr><td>&King;  </td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
+    <tr><td>&Queen; </td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
+    <tr><td>&Rook;  </td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
+    <tr><td>&Bishop;</td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
+    <tr><td>&Knight;</td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
+    <tr><td>&Pawn;  </td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
+    <tr><td>&king;  </td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
+    <tr><td>&queen; </td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
+    <tr><td>&rook;  </td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
+    <tr><td>&bishop;</td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
+    <tr><td>&knight;</td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
+    <tr><td>&pawn;  </td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
   </table>
 </dir>
-
-<!-- begin: exclude in web browser -->
 
 <p>
 Sollten Bezeichner für die Anzeige der Figuren vorgezogen werden, so ist einer der
@@ -70,21 +69,35 @@ folgenden Optionen auszuwählen:
 </p>
 
 <table>
-  <tr>
-    <td><span class="button"><a href="script(pieces::english)">Englische Bezeichner verwenden</a></span></td>
-    <td>K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang en text "Englische Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::regional)">Regionale Bezeichner verwenden</a></span></td>
-    <td><whitepieceletters/> <blackpieceletters/></td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang regional text "Regionale Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;<whitepieceletters/> <blackpieceletters/></td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::designators)">Zurück zu Figurensymbolen</a></span></td>
-    <td>&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang graphic text "Zurück zu Figurensymbolen"'
+           style="display: inline;">
+        Standard im Web-Browser
+      </div>
+    </td>
+    <td nowrap>&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+    </td>
   </tr>
 </table>
-
-<!-- end: exclude in web browser -->
 
 <h2>Index</h2>
 

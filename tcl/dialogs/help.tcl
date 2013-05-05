@@ -398,6 +398,12 @@ proc SetupLang {code} {
 }
 
 
+proc RefreshPieceLetters {args} {
+	SetupPieceLetters
+#	ReloadCurrentPage
+}
+
+
 proc SetupPieceLetters {} {
 	variable Options
 	variable Priv
@@ -406,7 +412,7 @@ proc SetupPieceLetters {} {
 		set Priv(pieceletters) {}
 	} else {
 		set lang $Options(piecelang)
-		if {[string length $lang] == 0} { set lang $::mc::langID }
+		if {$lang eq "regional"} { set lang $::mc::langID }
 		set letters $::figurines::langSet($lang)
 
 		set Priv(pieceletters) [list \
@@ -1639,37 +1645,6 @@ proc ResolveTrace {trace node} {
 } ;# namespace history
 
 
-namespace eval pieces {
-
-proc designators {} {
-	variable [namespace parent]::Options
-
-	set Options(piecelang) graphic
-	[namespace parent]::SetupPieceLetters
-	[namespace parent]::ReloadCurrentPage
-}
-
-
-proc english {} {
-	variable [namespace parent]::Options
-
-	set Options(piecelang) en
-	[namespace parent]::SetupPieceLetters
-	[namespace parent]::ReloadCurrentPage
-}
-
-
-proc regional {} {
-	variable [namespace parent]::Options
-
-	set Options(piecelang) ""
-	[namespace parent]::SetupPieceLetters
-	[namespace parent]::ReloadCurrentPage
-}
-
-}
-
-
 proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 	variable Priv
 
@@ -1789,6 +1764,27 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 			set from [expr {$pos + $len}]
 		}
 		append content [string range $str $from end]
+	}
+
+	while {[regexp -indices {[[:<:]]embed='[^']*'} $content location]} {
+		lassign $location s e
+		set args [string range $content [expr {$s + 7}] [expr {$e - 1}]]
+		array set opts $args
+		set newcontent [string range $content 0 [expr {$s - 1}]]
+		if {[info exists opts(piecelang)]} {
+			set widgetcmd "htmlwidget='radiobutton $Priv(html).$opts(piecelang)"
+			append widgetcmd " -background white"
+			append widgetcmd " -variable [namespace current]::Options(piecelang)"
+			append widgetcmd " -value $opts(piecelang)"
+			append widgetcmd " -text \"$opts(text)\""
+			append widgetcmd " -command [namespace current]::RefreshPieceLetters"
+			append widgetcmd "'"
+			append newcontent $widgetcmd
+		} else {
+			puts stderr "Cannot handle embedding: $args"
+		}
+		append newcontent [string range $content $e end]
+		set content $newcontent
 	}
 
 	set lang [lindex [file split $file] end-1]

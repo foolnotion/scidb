@@ -66,22 +66,21 @@ gespeichert:
 
 <ul style='list-style-type: none'><li>
   <table>
-    <tr><td><span class='piece'>&#x2654;</span></td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
-    <tr><td><span class='piece'>&#x2655;</span></td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
-    <tr><td><span class='piece'>&#x2656;</span></td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
-    <tr><td><span class='piece'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
-    <tr><td><span class='piece'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
-    <tr><td><span class='piece'>&#x2659;</span></td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
-    <tr><td><span class='piece'>&#x265a;</span></td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
-    <tr><td><span class='piece'>&#x265b;</span></td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
-    <tr><td><span class='piece'>&#x265c;</span></td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
-    <tr><td><span class='piece'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
-    <tr><td><span class='piece'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
-    <tr><td><span class='piece'>&#x265f;</span></td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
+    <!-- Note to translators: don't translate English piece letters in third column -->
+    <tr><td><span class='chess'>&#x2654;</span>  </td><td>=</td><td>K</td><td>=</td><td>weißer König</td></tr>
+    <tr><td><span class='chess'>&#x2655;</span> </td><td>=</td><td>Q</td><td>=</td><td>weiße Dame</td></tr>
+    <tr><td><span class='chess'>&#x2656;</span>  </td><td>=</td><td>R</td><td>=</td><td>weißer Turm</td></tr>
+    <tr><td><span class='chess'>&#x2657;</span></td><td>=</td><td>B</td><td>=</td><td>weißer Läufer</td></tr>
+    <tr><td><span class='chess'>&#x2658;</span></td><td>=</td><td>N</td><td>=</td><td>weißer Springer</td></tr>
+    <tr><td><span class='chess'>&#x2659;</span>  </td><td>=</td><td>P</td><td>=</td><td>weißer Bauer</td></tr>
+    <tr><td><span class='chess'>&#x265a;</span>  </td><td>=</td><td>k</td><td>=</td><td>schwarzer König</td></tr>
+    <tr><td><span class='chess'>&#x265b;</span> </td><td>=</td><td>q</td><td>=</td><td>schwarze Dame</td></tr>
+    <tr><td><span class='chess'>&#x265c;</span>  </td><td>=</td><td>r</td><td>=</td><td>schwarzer Turm</td></tr>
+    <tr><td><span class='chess'>&#x265d;</span></td><td>=</td><td>b</td><td>=</td><td>schwarzer Läufer</td></tr>
+    <tr><td><span class='chess'>&#x265e;</span></td><td>=</td><td>n</td><td>=</td><td>schwarzer Springer</td></tr>
+    <tr><td><span class='chess'>&#x265f;</span>  </td><td>=</td><td>p</td><td>=</td><td>schwarzer Bauer</td></tr>
   </table>
 </li></ul>
-
-<!-- begin: exclude in web browser -->
 
 <p>
 Sollten Bezeichner für die Anzeige der Figuren vorgezogen werden, so ist einer der
@@ -89,21 +88,35 @@ folgenden Optionen auszuwählen:
 </p>
 
 <table>
-  <tr>
-    <td><span class="button"><a href="script(pieces::english)">Englische Bezeichner verwenden</a></span></td>
-    <td>K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang en text "Englische Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::regional)">Regionale Bezeichner verwenden</a></span></td>
-    <td>K D T L S B k d t l s b</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang regional text "Regionale Bezeichner verwenden"'
+           style="display: inline;">
+        (Nicht verfügbar im Web-Browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;K D T L S B k d t l s b</td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::designators)">Zurück zu Figurensymbolen</a></span></td>
-    <td><span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang graphic text "Zurück zu Figurensymbolen"'
+           style="display: inline;">
+        Standard im Web-Browser
+      </div>
+    </td>
+    <td nowrap>&emsp;<span class='chess'>&#x2654;</span> <span class='chess'>&#x2655;</span> <span class='chess'>&#x2656;</span> <span class='chess'>&#x2657;</span> <span class='chess'>&#x2658;</span> <span class='chess'>&#x2659;</span> <span class='chess'>&#x265a;</span> <span class='chess'>&#x265b;</span> <span class='chess'>&#x265c;</span> <span class='chess'>&#x265d;</span> <span class='chess'>&#x265e;</span> <span class='chess'>&#x265f;</span></td>
+    </td>
   </tr>
 </table>
-
-<!-- end: exclude in web browser -->
 
 <h2>Index</h2>
 

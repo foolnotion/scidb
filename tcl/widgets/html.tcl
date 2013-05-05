@@ -243,6 +243,7 @@ proc Build {w args} {
 		afterId			{}
 		request			{}
 		bbox				{}
+		widgets			{}
 		pointer			{0 0}
 		focus				0
 		sel:state		0
@@ -382,6 +383,7 @@ proc WidgetProc {w command args} {
 			}
 			$w.sub.html parse -final [lindex $args 0]
 			SetupCSS $w
+			EvalWidgetCommands $w
 			set Priv(minbbox) {}
 			if {$Priv(center) || !$Priv(fittowidth)} {
 				set bbox [$w minbbox]
@@ -556,6 +558,35 @@ proc SetupCSS {w} {
 	append css "\n$Priv(fontsize)"
 	set css [string trim $css]
 	if {[string length $css]} { $w.sub.html style -id user $css }
+}
+
+
+proc EvalWidgetCommands {w} {
+	variable ${w}::Priv
+
+	foreach widget $Priv(widgets) {
+		if {[winfo exists $widget]} { destroy $widget }
+	}
+
+	set Priv(widgets) {}
+
+	foreach node [$w search {[htmlwidget]}] {
+		set widget [{*}[$node attr htmlwidget]]
+		$node replace $widget -configurecmd [namespace code [list ConfigureWidget $widget]]
+		lappend Priv(widgets) $widget
+	}
+}
+
+
+proc ConfigureWidget {w options} {
+	array set opts $options
+
+	if {[info exists opts(font)]} {
+		catch { $w configure -font $opts(font) }
+	}
+	if {[info exists opts(color)]} {
+		catch { $w configure -foreground $opts(color) }
+	}
 }
 
 

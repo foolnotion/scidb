@@ -46,43 +46,56 @@ letters:
 
 <dir>
   <table>
-    <tr><td>&K;</td><td>=</td><td>K</td><td>=</td><td>white king</td></tr>
-    <tr><td>&Q;</td><td>=</td><td>Q</td><td>=</td><td>white queen</td></tr>
-    <tr><td>&R;</td><td>=</td><td>R</td><td>=</td><td>white rook</td></tr>
-    <tr><td>&B;</td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
-    <tr><td>&N;</td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
-    <tr><td>&P;</td><td>=</td><td>P</td><td>=</td><td>white pawn</td></tr>
-    <tr><td>&k;</td><td>=</td><td>k</td><td>=</td><td>black king</td></tr>
-    <tr><td>&q;</td><td>=</td><td>q</td><td>=</td><td>black queen</td></tr>
-    <tr><td>&r;</td><td>=</td><td>r</td><td>=</td><td>black rook</td></tr>
-    <tr><td>&b;</td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
-    <tr><td>&n;</td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
-    <tr><td>&p;</td><td>=</td><td>p</td><td>=</td><td>black pawn</td></tr>
+    <!-- Note to translators: don't translate English piece letters in third column -->
+    <tr><td>&King;  </td><td>=</td><td>K</td><td>=</td><td>white king</td></tr>
+    <tr><td>&Queen; </td><td>=</td><td>Q</td><td>=</td><td>white queen</td></tr>
+    <tr><td>&Rook;  </td><td>=</td><td>R</td><td>=</td><td>white rook</td></tr>
+    <tr><td>&Bishop;</td><td>=</td><td>B</td><td>=</td><td>white bishop</td></tr>
+    <tr><td>&Knight;</td><td>=</td><td>N</td><td>=</td><td>white knight</td></tr>
+    <tr><td>&Pawn;  </td><td>=</td><td>P</td><td>=</td><td>white pawn</td></tr>
+    <tr><td>&king;  </td><td>=</td><td>k</td><td>=</td><td>black king</td></tr>
+    <tr><td>&queen; </td><td>=</td><td>q</td><td>=</td><td>black queen</td></tr>
+    <tr><td>&rook;  </td><td>=</td><td>r</td><td>=</td><td>black rook</td></tr>
+    <tr><td>&bishop;</td><td>=</td><td>b</td><td>=</td><td>black bishop</td></tr>
+    <tr><td>&knight;</td><td>=</td><td>n</td><td>=</td><td>black knight</td></tr>
+    <tr><td>&pawn;  </td><td>=</td><td>p</td><td>=</td><td>black pawn</td></tr>
   </table>
 </dir>
-
-<!-- begin: exclude in web browser -->
 
 <p>
 If you prefer to see piece letters, please select one of the options:
 </p>
 
 <table>
-  <tr>
-    <td><span class="button"><a href="script(pieces::english)">Use English piece letters</a></span></td>
-    <td>K Q R B N P k q r b n p (used in CQL files)</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang en text "Use English piece letters"'
+           style="display: inline;">
+        (Not working in web browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;K Q R B N P k q r b n p (will be used in CQL files)</td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::regional)">Use regional piece letters</a></span></td>
-    <td><whitepieceletters/> <blackpieceletters/></td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang regional text "Use regional letters"'
+           style="display: inline;">
+        (Not working in web browser)
+      </div>
+    </td>
+    <td nowrap>&emsp;<whitepieceletters/> <blackpieceletters/></td>
   </tr>
-  <tr>
-    <td><span class="button"><a href="script(pieces::designators)">Revert to designators</a></span></td>
-    <td>&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+  <tr valign="top">
+    <td>
+      <div embed='piecelang graphic text "Revert to designators"'
+           style="display: inline;">
+        Default in web browser
+      </div>
+    </td>
+    <td nowrap>&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
+    </td>
   </tr>
 </table>
-
-<!-- end: exclude in web browser -->
 
 <h2>Index</h2>
 
