@@ -16,42 +16,42 @@
 * (at your option) any later version.
 *********************************************************************** -->
 
-INDEX Position List (CQL)
-INDEX CQL Position List
+INDEX Positionsliste (CQL)
+INDEX CQL Positionsliste
 
 DEFINE <extension/> &ensp;<img src="../images/ft-scidb-tiny.png" />
 
-TITLE CQL - The position list
+TITLE CQL - Die Positionsliste
 
 <p>
-The symbol <img src="../images/ft-scidb-tiny.png" /> in the title of a
-keyword description denotes that this keyword is an extension, it is not
-part of the CQL standard.
+Das Symbol <img src="../images/ft-scidb-tiny.png" /> im Titel einer
+Schlüsselwortdefinition kennzeichnet, daß dieses Schlüsselwort eine
+Erweiterung ist, also nicht zum CQL-Standard gehört.
 </p>
 
 <p>
-The keywords <cql>position:castling</cql>, <cql>position:endgame</cql>,
-<cql>position:inside</cql>, and <cql>position:reset</cql> are borrowed from
-Chess Assistant 9. The description of these keywords are taken from
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>.
+Die Schlüsselwörter <cql>position:castling</cql>, <cql>position:endgame</cql>,
+<cql>position:inside</cql>, and <cql>position:reset</cql> sind von Chess
+Assistant 9 entlehnt worden. Die Beschreibung dieser Schlüsselwörter entstammt
+dem Dokument <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>.
 </p>
 
 <dir>
   <table>
     <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#control">Controlling keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#simple">Simple keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#transform">Transformation keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#piece">Piece configuration keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#move">Move keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#sequence">Sequence keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#game">Game related keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#relation">Relation between positions</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#matching">Matching count keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#evaluation">Analyzing keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#accumulator">Accumulator keywords</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#tagging">Tagging keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Schlüsselwörter für die Kontrolllogik</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#control">Schlüsselwörter für die Steuerung</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#simple">Einfache Schlüsselwörter</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#transform">Transformierende Schlüsselwörter</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#piece">Schlüsselwörte für die Figurenanalyse</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#move">Schlüsselwörter für die Zuganalyse</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#sequence">Schlüsselwörter für Sequenzen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#game">Schlüsselwörter für die Partieinformationen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation">Relationen zwischen den Positionen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#matching">Schlüsselwörter zur Zählung</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#evaluation">Schlüsselwörter für die Stellungsbeurteilung</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#accumulator">Schlüsselwörter für Akkumulationen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#tagging">Schlüsselwörter für das Markieren</a></td></tr>
   </table>
 </dir>
 
@@ -215,7 +215,7 @@ Chess Assistant 9. The description of these keywords are taken from
   </table>
 </dir>
 
-<h2 id="logical">Logical keywords</h2>
+<h2 id="logical">Schlüsselwörter für die Kontrolllogik</h2>
 
 <dir>
   <table>
@@ -225,15 +225,15 @@ Chess Assistant 9. The description of these keywords are taken from
   </table>
 </dir>
 
-<h3 id="position:and">:and</h3>
+<h3 id="position:and">:and&emsp;<n>(und)</n></h3>
 
 <p>
-Takes a list of position lists and matches a position only if each of them
-match the position.
+Erwartet eine Liste von Positionslisten, und filtert genau dann eine Position,
+wenn jede von ihnen diese Position filtert.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verbatim>
@@ -246,41 +246,41 @@ Example:
 </verbatim>
 
 <p>
-Matches positions in which the kings are in opposition, there is a white knight
-on e2, and white is in check.
+Filtert Positionen in denen die Könige in Opposition stehen, ein Springer auf
+e2 platziert ist, und der weiße König steht im Schach.
 </p>
 
-<h3 id="position:not">:not</h3>
+<h3 id="position:not">:not&emsp;<n>(nicht)</n></h3>
 
 <p>
-This keyword can be used in two forms: either it is included in a position
-match list, or it has a sub-position list as argument. In former case:
-match if the containing match list would not match without the :not. In
-latter case negate the result of the sub-position list match. The former
-case is conform with CQL standard of keyword :not, the second form is an
-extension.
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+Im ersten Fall filtert dieses Schlüsselwort, wenn die Positionsliste ohne dieses
+Schlüsselwort nicht filtern würde. Im zweiten Fall: das Resultat des
+Arguments wird negiert. Die erste Form ist konform mit dem CQL-Standard des
+Schlüsselwortes :not, die zweite Form ist eine Erweiterung.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verbatim>
 (match
   (position
-    ; <comment>we are searching for both colors</comment>
+    ; <comment>wir suchen für beide Seiten</comment>
     <cql>position:flipcolor</cql>
-    <comment>; the mating position must match each criterion below</comment>
+    <comment>; die Mattposition muß alle folgenden Kriterien erfüllen</comment>
     <cql>position:and</cql> (
-      <comment>; the black king is surrounded by empty squares and</comment>
-      <comment>; is attacked once and is in mate</comment>
+      <comment>; der König ist von Leerfeldern umgeben, wird einmal</comment>
+      <comment>; attackiert, und ist matt</comment>
       (position
         <cql>position:attackcount</cql> &k; . 8
         <cql>position:attackcount</cql> A &k; 1
         <cql>position:mate</cql>
         <cql>position:btm</cql>)
-      <comment>; check that no neighbor of the black king is</comment>
-      <comment>; attacked more than once</comment>
+      <comment>; überprüfe daß kein Nachbar des schwarzen Königs</comment>
+      <comment>; mehr als einmal attackiert wird</comment>
       (position
         <keyword>:not</keyword>
         <cql>position:attackcount</cql> &k; .e4 1
@@ -289,11 +289,11 @@ Examples:
 </verbatim>
 
 <p>
-This finds all mating positions in which the king is surrounded by empty squares.
+Dies findet alle Mattpositionen, in denen der König von Leerfeldern umgeben ist.
 </p>
 
 <p>
-The follwing position match
+Die folgende Positionsliste
 </p>
 
 <verb>
@@ -301,21 +301,22 @@ The follwing position match
 </verb>
 
 <p>
-is equivalent to
+ist equivalent zu
 </p>
 
 <verb>
 (position [a&Q;&B;&N;&P;&K;.]a3)
 </verb>
 
-<h3 id="position:or">:or</h3>
+<h3 id="position:or">:or&emsp;<n>(oder)</n></h3>
 
 <p>
-Takes a list of position lists and matches a position only if at least one of them matches the position.
+Erwartet eine Liste von Positionslisten, und filter genau dann eine Position,
+wenn mindestens eine von ihnen diese Position filtert.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verbatim>
@@ -337,24 +338,26 @@ Example:
 </verbatim>
 
 <p>
-Searching for games with that have either two light-squared white
-bishops, two dark-squared white bishops, two dark-square black
-bishops. or two light-square black bishops.
+Suche nach Partien, die Positionen mit entweder zwei weißfeldrigen weißen
+Läufern, zwei schwarzfeldrigen weißen Läufern, zwei schwarzfeldrigen schwarzen
+Läufern, oder aber zwei weißfeldrigen schwarzen Läufern haben.
 </p>
 
-<h2 id="control">Controlling keywords</h2>
+<h2 id="control">Schlüsselwörter für die Steuerung</h2>
 
 <p>
-With the help of the controlling keywords <cql>position:cut</cql> or
-<cql>position:exclude</cql> unwanted positions or even games can be
-excluded. Keyword <cql>position:preceding</cql> gives the predecessing
-position of a match.
+Mit Hilfe der steuernden Schlüsselwörter <cql>position:cut</cql> und
+<cql>position:exclude</cql> können unerwünschte Positionen oder sogar
+Partien ausgeschlossen werden. Das Schlüsselwörter
+<cql>position:preceding</cql> liefert den Vorgänger einer aufgefundenen
+Position.
 </p>
 
 <p>
-Actually these keywords are not extending the capability of CQL, each of
-them can be replaced, but the use of this keywords may improve the search
-time considerably, and the expression may have a clearer form.
+Tatsächlich erweitern diese Schlüsselwörter die Mächtigkeit von CQL nicht,
+jedes von ihnen kann ersetzt werden, aber der Gebrauch dieser Schlüsselwörter
+kann die Suchzeit beträchtlich verkürzen, und der Suchausdruck ist
+möglicherweise klarer definiert.
 </p>
 
 <dir>
@@ -365,24 +368,26 @@ time considerably, and the expression may have a clearer form.
   </table>
 </dir>
 
-<h3 id="position:cut">:cut<extension/></h3>
+<h3 id="position:cut">:cut<extension/>&emsp;<n>(beschneiden)</n></h3>
 
 <p>
-This keyword can be used in two forms: either it is included in a position
-match list, or it has a sub-position list as argument. In former case:
-stop position search for this game as soon as the match of containing position
-list succeeds. In latter case stop position of this game search as soon as the
-match of the sub-position list succeeds. This keyword is never failing, with
-other words: it is not influencing the result of all other matches.
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+In der ersten Form wird die Positionssuche in der aktuellen Partie abgebrochen
+sobald die Bedingung der Positionsliste aufgefunden wird. In der zweiten Form
+bricht die Suche in der aktuellen Partie ab sobald die Bedingung des
+Arguments aufgefunden wird. Dieses Schlüsselwort ist immer erfolgreich,
+mit anderen Worten: es beeinflußt nicht das Resultat der anderen Filter.
 </p>
 
 <p>
-The :cut position match has lower precedence than all other position matches.
-This means that a position is matching, if all other position lists are matching
-this position, independent from the result of the :cut. If the :cut position
-match should have highest precedende, use keyword <cql>position:preceding</cql>.
-In this case the search will stop with a negative resultat, independent from
-all other matches. Consider the following examples:
+Der :cut-Filter hat niedrigere Priorität als alle anderen Filter. Das heißt,
+daß eine Position gefiltert wird, wenn alle anderen Filter diese Position
+akzeptieren, unabhängig vom Resultat des :cut-Filters. Soll der :cut-Filter
+höchste Priorität haben, dann ist das Schlüsselwort
+<cql>position:preceding</cql> anzuwenden. In diesem Fall bricht die Erfüllung
+der :cut-Bedingung mit einem negativen Resultat ab, unanhängig vom Resultat
+aller anderen Bedingungen. Siehe dazu nachfolgende Beispiele:
 </p>
 
 <verb>
@@ -390,21 +395,23 @@ all other matches. Consider the following examples:
 </verb>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
-this case the match of this game succeeds.
+Wir nehmen an das &lt;A&gt; und &lt;B&gt; von einer Position erfüllt werden,
+und beide Bedingungen zum erstem Mal. In diesem Fall ist die Suche in dieser
+Partie erfolgreich.
 </p>
 
 <verb>
-(match (position &lt;A&gt; <keyword>:cut</keyword> (position <cql>position:preceding</cql>  &lt;B&gt;)))
+(match (position &lt;A&gt; <keyword>:cut</keyword> (position <cql>position:preceding</cql> &lt;B&gt;)))
 </verb>
 
 <p>
-Suppose &lt;A&gt; and &lt;B&gt; is matching a position, both the first time. In
-this case the match of this game fails.
+Wir nehmen an das &lt;A&gt; und &lt;B&gt; von einer Position erfüllt werden,
+und beide Bedingungen zum erstem Mal. In diesem Fall ist die Suche in dieser
+Partie negativ.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verbatim>
@@ -415,9 +422,9 @@ Examples:
 </verbatim>
 
 <p>
-Search for games ending with mate, and neither side has ever given
-a check before. Actually keyword :cut is not required for this search
-criterion, see next example:
+Suche nach Partien die mit einem Matt enden, und keine der beiden Seiten hat
+jemals zuvor Schach geboten. Tatsächlich ist das Schlüsselwort :cut für
+diese Suchkriterien nicht erforderlich, wie folgende Umformung zeigt:
 </p>
 
 <verbatim>
@@ -427,30 +434,33 @@ criterion, see next example:
 </verbatim>
 
 <p>
-But this version has to search the whole game, and the former version with
-:cut fails as soon as first check occurs. In complex searches the use of
-keyword :cut may be much faster than the use of :matchcount.
+Aber diese Version durchsucht die gesamte Partie, und die vorhergehende Version
+mit :cut schlägt bereits fehl sobald das erste Schachgebot erfolgt. In
+komplexen Fällen kann der Gebrauch des Schlüsselwortes :cut viel effizienter
+sein als der Gebrauch von :matchcount.
 </p>
 
-<h3 id="position:exclude">:exclude<extension/></h3>
+<h3 id="position:exclude">:exclude<extension/>&emsp;<n>(ausschliessen)</n></h3>
 
 <p>
-This keyword can be used in two forms: either it is included in a position
-match list, or it has a sub-position list as argument. In former case:
-exclude this game if the match of containing position list succeeds.
-In latter case exclude this game if the match of the sub-position list
-succeeds. This keyword is not influencing the result of the position
-match (see example).
-</p>
-
-<p>
-This keyword will exclude games even if one of the position matches
-will succeed before the :exclude expression will succeed. In short:
-keyword :exclude is excluding games completely under certain conditions.
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+In der ersten Form wird die Partie ausgeschlossen wenn eine Position von
+der Positionsliste gefiltert wird. In der zweiten Form wird eine Partie
+ausgeschlossen, wenn das Resultat des Arguments positiv ist. Diese
+Schlüsselwort beeinflußt nicht das Resultat der anderen Filter (siehe
+dazu das Besipiel).
 </p>
 
 <p>
-Example:
+Dieses Schlüsselwort schließt selbst dann Partien aus, wenn eine Position
+gefiltert wurde bevor die :exclude-Bedingungen erfüllt wurden. Kurz gesagt:
+:exclude schließt unter gewissen Bedingungen Partien vollständig aus der Suche
+aus.
+</p>
+
+<p>
+Beispiel:
 </p>
 
 <verbatim>
@@ -461,10 +471,11 @@ Example:
 </verbatim>
 
 <p>
-Search for games containg a position which is matching expression
-<expr>&lt;A&gt;</expr>, but not if expression <expr>&lt;B&gt;</expr> is
-matching any position in this game. Actually this match can be written
-without the use of keyword :exclude, in the following way:
+Suche nach Partien die eine Position enthalten, die Bedingung
+<expr>&lt;A&gt;</expr> erfüllen, aber nicht wenn es in dieser Partie
+eine Position gibt, die die Bedingung <expr>&lt;B&gt;</expr> erfüllt.
+Dieses Suchkrierium kann auch ohne den Gebrauch des Schlüsselwortes
+:exclude formuliert werden:
 </p>
 
 <verbatim>
@@ -476,24 +487,25 @@ without the use of keyword :exclude, in the following way:
 </verbatim>
 
 <p>
-But the use of keyword :exclude is simpler and clearer.
+Aber der Gebrauch von :exclude ist einfacher und klarer.
 </p>
 
-<h3 id="position:preceding">:preceding<extension/></h3>
+<h3 id="position:preceding">:preceding<extension/>&emsp;<n>(vorhergehende)</n></h3>
 
 <p>
-This keyword gives the preceding position of a match, if any. If the start
-position is matching, the match of this position will be ignored, and the
-search is continuing. The keyword :preceding can be used only on top level.
-</p>
-
-<p>
-This keyword has a special meaning if combined with keyword
-<cql>position:cut</cql>.
+Dieses Schlüsselwort liefert die vorhergehende Position des Filters, sofern
+ein Ergebnis vorliegt. Ist die Startposition gefiltert worden, dann wird
+diese Position übergangen, und die Suche läuft weiter. Das Schlüsselwort
+kann nur auf oberster Ebene verwendet werden.
 </p>
 
 <p>
-Examples:
+Diese Schlüsselwort hat eine spezielle Bedeutung wenn es mit dem
+Schlüsselwort <cql>position:cut</cql> kombiniert wird.
+</p>
+
+<p>
+Beispiele:
 </p>
 
 <verb>
@@ -501,8 +513,9 @@ position <cql>position:check</cql> <keyword>:preceding</keyword>
 </verb>
 
 <p>
-The result of this match is the predecessor of first position where one
-side has given a check. Of course this can be expressed without this keyword:
+Das Resultat dieser Suche ist die Vorgängerposition der ersten gefundenen
+Position, in der einer der Seiten Schach bietet. Dies kann auch ohne dieses
+Schlüsselwort formuliert werden:
 </p>
 
 <verb>
@@ -511,10 +524,10 @@ position <cql>position:sequence</cql>
 </verb>
 
 <p>
-But the usage of :preceding is easier and the search is faster.
+Aber der Gebrauch von :preceding ist einfacher, und die Suche ist effizienter.
 </p>
 
-<h2 id="simple">Simple keywords</h2>
+<h2 id="simple">Einfache Schlüsselwörter</h2>
 
 <dir>
   <table>
@@ -585,78 +598,80 @@ But the usage of :preceding is easier and the search is faster.
   </table>
 </dir>
 
-<h3 id="position:blackcannotwin">:blackcannotwin<extension/></h3>
+<h3 id="position:blackcannotwin">:blackcannotwin<extension/>&emsp;<n>(Schwarz kann nicht gewinnen)</n></h3>
 
 <p>
-Match only if black cannot win in this position.
+Filtere nur dann wenn der schwarze Spieler keine Gewinnmöglichkeit mehr hat.
 </p>
 
 <p>
-Normally this is equivalent to following query:
+Normalerweise ist dies equivalent zu folgender Abfrage:
 </p>
 
 <verbatim>
 <cql>position:or</cql> (
-  <comment>; black king only</comment>
+  <comment>; nur schwarzer König</comment>
   (<cql>position:piececount</cql> a 1)
-  <comment>; black king and black minor piece only</comment>
+  <comment>; nur schwarzer König und schwarze Leichtfigur</comment>
   (<cql>position:piececount</cql> a 2 <cql>position:piececount</cql> i 1))
 </verbatim>
 
 <p>
-In chess variant %::mc::VariantName(ThreeCheck)% the query with :blackcannotwin
-succeeds only if black has no more pieces than the king, and in all other chess
-variants this query has no meaning and is always failing.
+In der Schachform %::mc::VariantName(ThreeCheck)% filtert die Suche
+mit :blackcannotwin nur dann, wenn Schwarz nur noch den König besitzt,
+und in allen anderen Schachformen hat dieses Schlüsselwort keine
+Bedeutung und ist immer erfolglos.
 </p>
 
 <p>
-See also: <cql>position:whitecannotwin</cql>
+Siehe auch: <cql>position:whitecannotwin</cql>
 </p>
 
-<h3 id="position:btm">:btm</h3>
+<h3 id="position:btm">:btm&emsp;<n>(Schwarz am Zug)</n></h3>
 
 <p>
-Match only if black is to move.
-</p>
-
-<p>
-See also: <cql>position:wtm</cql>.
-</p>
-
-<h3 id="position:check">:check</h3>
-
-<p>
-One side is in check.
+Filtere nur wenn Schwarz am Zug ist.
 </p>
 
 <p>
-See also: <cql>position:nocheck</cql>, <cql>position:doublecheck</cql>,
+Siehe auch: <cql>position:wtm</cql>.
+</p>
+
+<h3 id="position:check">:check&emsp;<n>(Schachgebot)</n></h3>
+
+<p>
+Eine Seite befindet sich im Schach.
+</p>
+
+<p>
+Siehe auch: <cql>position:nocheck</cql>, <cql>position:doublecheck</cql>,
 <cql>position:nodoublecheck</cql>, <cql>position:contactcheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:checkcount">:checkcount<extension/></h3>
+<h3 id="position:checkcount">:checkcount<extension/>&emsp;<n>(Schachgebotszähler)</n></h3>
 
 <p>
-If the parameter is a single number (between 0 and 3 is allowed), it is
-matching all positions where last move is giving n-th check to other side.
+Ist der Parameter eine einzelner Wert (zwischen 0 und 3 ist erlaubt),
+dann werden alle Position gefiltert in denen der letzte Zug der anderen
+Seite zum n-ten mal Schach bot.
 </p>
 
 <p>
-If the parameter has the form <expr>+&lt;n&#x2081;&gt;+&lt;n&#x2082;&gt;</expr>,
-where <expr>&lt;n&#x2093;&gt;</expr> is a number between 0 and 3,
-it is matching first position where white has given n&#x2081; times check
-to black, and black has given n&#x2082; times check to white.
+Hat der Parameter die Form <expr>+&lt;n&#x2081;&gt;+&lt;n&#x2082;&gt;</expr>,
+wobei <expr>&lt;n&#x2093;&gt;</expr> ein Wert zwischen 0 und 3 ist, so wird
+die erste Position gefiltert, in der Weiß dem Schwarzen n&#x2081; Schachgebote
+gab, und Schwarz dem Weißen n&#x2082; Schachgebote.
 </p>
 
 <note>
-This query is working only in chess variant %::mc::VariantName(ThreeCheck)%,
-in other chess variants it fails always (except all values in given parameter
-are zero).
+Diese Abfrage ist nur sinnvoll in der Schachform %::mc::VariantName(ThreeCheck)%,
+in allen anderen Schachformen schlägt diese Abfrage immer fehl (ausgenommen
+alle Parameterwerte sind Null).
 </note>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -664,7 +679,7 @@ Examples:
 </verb>
 
 <p>
-Match as soon as any side has given second check.
+Filtere sobald eine der Seiten dem anderen sein zweites Schach bot.
 </p>
 
 <verb>
@@ -672,8 +687,8 @@ Match as soon as any side has given second check.
 </verb>
 
 <p>
-Match if black has given third check to white king. This must be a final
-position.
+Filtere wenn Schwarz dem weißen König zum dritten Mal Schach bot. Dies kann nur
+eine Endstellung sein.
 </p>
 
 <verb>
@@ -681,8 +696,9 @@ position.
 </verb>
 
 <p>
-This is in fact a useful query. Assume that a game is starting with the
-following position (described with <a href="FEN.html">FEN</a>):
+Dies isr tatsächlich eine sinnvolle Abfrage. Wir nehmen an, daß eine
+der Partien mit folgender Position beginnt (beschrieben mit einer
+<a href="FEN.html">FEN</a>):
 </p>
 
 <dir><code>
@@ -690,42 +706,43 @@ rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
 </code></dir>
 
 <p>
-This game would match (note keyword :not), because black has already
-given second check to white king. With other words, this query is
-searching for games starting with an advanced position, where one side
-has already given a check.
+Diese Partie würde gefiltert werden (das Schlüsselwort :not ist zu beachten),
+denn Schwarz hat dem weißen König bereits zweimal Schach geboten. Mit anderen
+Worten: diese Abfrage sucht nach Partien die mit einer fortgeschrittenen
+Stellung beginnen, wobei eine Seite der anderen bereits ein Schachgebot gab.
 </p>
 
-<h3 id="position:castling">:castling<extension/></h3>
+<h3 id="position:castling">:castling<extension/>&emsp;<n>(Rochade)</n></h3>
 
 <p>
-This keyword specifies castling availabilities for both sides. It takes as an
-argument a piecetype designator, letters of which have the following meanings:
+Dieses Schlüsselwort spezifiziert die Rochademöglichkeiten beider Seiten.
+Es erwartet als Argument einen Figurenartbezeichner, wobei die Figurenarten
+folgende Bedeutung haben:
 </p>
 
 <dir>
   <table>
     <tr>
       <td class="l"><expr>&K;</expr></td>
-      <td class="r">White has kingside castling availability</td>
+      <td class="r">Weiß besitzt das Recht zur kurzen Rochade</td>
     </tr>
     <tr>
       <td class="l"><expr>&Q;</expr></td>
-      <td class="r">White has queenside castling availability</td>
+      <td class="r">Weiß besitzt das Recht zur langen Rochade</td>
     </tr>
     <tr>
       <td class="l"><expr>&k;</expr></td>
-      <td class="r">Black has kingside castling availability</td>
+      <td class="r">Schwarz besitzt das Recht zur kurzen Rochade</td>
     </tr>
     <tr>
       <td class="l"><expr>&q;</expr></td>
-      <td class="r">Black has queenside castling availability</td>
+      <td class="r">Schwarz besitzt das Recht zur langen Rochade</td>
     </tr>
   </table>
 </dir>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -733,7 +750,7 @@ Examples:
 </verb>
 
 <p>
-White has kingside castling availability.
+Weiß hast das Recht zu kurzen Rochade.
 </p>
 
 <verb>
@@ -741,8 +758,8 @@ White has kingside castling availability.
 </verb>
 
 <p>
-White has either kingside or queenside castling availability
-(but not both).
+Weiß has das Recht entweder für die kurze oder für die lange Rochade
+(aber nicht für beide).
 </p>
 
 <verb>
@@ -750,22 +767,23 @@ White has either kingside or queenside castling availability
 </verb>
 
 <p>
-White has both kingside and queenside castling availabilities.
+Weiß hat das Recht für kurze und lange Rochade.
 </p>
 
-<h3 id="position:contactcheck">:contactcheck<extension/></h3>
+<h3 id="position:contactcheck">:contactcheck<extension/>&emsp;<n>(Kontaktschachgebot)</n></h3>
 
 <p>
-One side is in check, and it is a contact check.
+Eine Seite befindet sich im Schach, und es ist ein Kontaktschachgebot
+(kein Zwischensetzen einer Figur möglich, auch nicht theoretisch).
 </p>
 
 <p>
-This is equivalent to:
+Dies ist equivalent zu:
 </p>
 
 <verbatim>
 (position
-  <cql>position:check</cql> <comment>; exclude Antichess games</comment>
+  <cql>position:check</cql> <comment>; um Schlagschachpartien auszufiltern</comment>
   <cql>position:or</cql> (
     (position <cql>position:doublecheck</cql>)
     (position <cql>position:attackcount</cql> [&N;&P;] &k; 1 <cql>position:flipcolor</cql>)
@@ -774,28 +792,28 @@ This is equivalent to:
 </verbatim>
 
 <p>
-See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
+Siehe auch: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:doublecheck</cql>, <cql>position:nodoublecheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:doublecheck">:doublecheck<extension/></h3>
+<h3 id="position:doublecheck">:doublecheck<extension/>&emsp;<n>(Doppelschachgebot)</n></h3>
 
 <p>
-One side is in check, and it is a double check.
+Eine Seite befindet sich im Schach, und es ist ein Doppelschachgebot.
 </p>
 
 <p>
-See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
+Siehe auch: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:nodoublecheck</cql>, <cql>position:contactcheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:endgame">:endgame<extension/></h3>
+<h3 id="position:endgame">:endgame<extension/>&emsp;<n>(Endspiel)</n></h3>
 
 <p>
-The position is an endgame position. The keyword is equivalent to the following
-query:
+Die Position ist eine Endspielposition. Dieses Schlüsselwort ist equivalent
+zur folgenden Abfrage:
 </p>
 
 <verbatim>
@@ -821,31 +839,31 @@ query:
 </verbatim>
 
 <p>
-See also: <cql>position:noendgame</cql>.
+Siehe auch: <cql>position:noendgame</cql>.
 </p>
 
 <h3 id="position:fen">:fen<extension/></h3>
 
 <p>
-The position is equal to the described position in given argument.
-This argument must be a valid <a href="FEN.html">FEN</a>.
+Die Position ist identisch zur beschriebenen Position im Argument. Dieses
+Argument muß eine gültige <a href="FEN.html">FEN</a> sein.
 </p>
 
-<h3 id="position:fiftymoverule">:fiftymoverule<extension/></h3>
+<h3 id="position:fiftymoverule">:fiftymoverule<extension/>&emsp;<n>(Fünfzig-Züge-Regel)</n></h3>
 
 <p>
-First position in game where no capture has been made and no pawn has been
-moved in previous fifty consecutive moves.
+Die erste Position in der Partie, in der in den letzten 50 aufeinanderfolgenden
+Zügen kein Stein geschlagen und auch kein Bauer gezogen wurde.
 </p>
 
 <p>
-See also: <cql>position:halfmoveclocklimit</cql>.
+Siehe auch: <cql>position:halfmoveclocklimit</cql>.
 </p>
 
-<h3 id="position:gameisover">:gameisover<extension/></h3>
+<h3 id="position:gameisover">:gameisover<extension/>&emsp;<n>(Partie ist beendet)</n></h3>
 
 <p>
-This is an abbreviation for:
+Dies ist eine Kurzschreibweise für:
 </p>
 
 <verbatim>
@@ -857,27 +875,28 @@ This is an abbreviation for:
     (position <cql>position:nomatingmaterial</cql>))
 </verbatim>
 
-<h3 id="position:initial">:initial</h3>
+<h3 id="position:initial">:initial&emsp;<n>(Startposition)</n></h3>
 
 <p>
-This is the first position in the game (before first move).
+Dies ist die erste Position in der Partie (vor dem ersten Zug).
 </p>
 
-<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit<extension/></h3>
+<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit<extension/>&emsp;<n>(Halbzugzähler)</n></h3>
 
 <p>
-This keyword is matching a position where the halfmove clock is equal
-or less given limit.
-</p>
-
-<p>
-Halfmove clock: This is the number of halfmoves since the last pawn
-advance or capture. This is also used to determine if a draw can be
-claimed under the fifty-move rule (<see/> <cql>position:fiftymoverule</cql>).
+Dieses Schlüsselwort filtert Positionen, in denen der Halbzugzähler kleiner
+oder gleich dem gegebenen Limit ist.
 </p>
 
 <p>
-Example:
+Halbzugzähler: Das ist die Anzahl der Halbzüge seit dem letzten Zug, in dem
+ein Bauer zog oder eine Figur geschlagen wurde. Dieser Zähler entscheidet
+auch, ob eine Seite ein Remis reklamieren kann aufgrund der 50-Züge-Regel
+(<see/> <cql>position:fiftymoverule</cql>).
+</p>
+
+<p>
+Beispiel:
 </p>
 
 <verb>
@@ -885,46 +904,47 @@ Example:
 </verb>
 
 <p>
-Exclude all positions where no capture has been made and no pawn has been
-moved in previous thirty halfmoves (15 moves by each side).
+Schließe alle Positionen aus, in denen in den letzten 30 Halbzügen (15 Züge
+auf jeder Seite) kein Bauernzug erfolgte und auch kein Stein geschlagen
+wurde.
 </p>
 
 <p>
-See also: <cql>position:fiftymoverule</cql>.
+Siehe auch: <cql>position:fiftymoverule</cql>.
 </p>
 
-<h3 id="position:losing">:losing<extension/></h3>
+<h3 id="position:losing">:losing<extension/>&emsp;<n>(Verlust)</n></h3>
 
 <p>
-Matches the final position if one side has lost all pieces.
-This is possible only in Antichess games.
+Filtere alle Endstellungen, in denen eine der Seiten alle Figuren verlor.
+Dies ist nur in Schlagschachpartien möglich.
 </p>
 
 <p>
-See also: <cql>position:nolosing</cql>.
+Siehe auch: <cql>position:nolosing</cql>.
 </p>
 
-<h3 id="position:markall">:markall</h3>
+<h3 id="position:markall">:markall&emsp;<n>(Alles markieren)</n></h3>
 
 <p>
-This keyword is supported to be compatible with CQL standard, and does
-not have any meaning in Scidb.
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
 </p>
 
-<h3 id="position:mate">:mate</h3>
+<h3 id="position:mate">:mate&emsp;<n>(Schachmatt)</n></h3>
 
 <p>
-Match only if the position is a mate.
+Filtere nur dann, wenn es eine Mattstellung ist.
 </p>
 
 <annotation>
-If searching for mate positions this keyword should always be used even if
-this keyword might be superfluous because other conditions are ensuring a
-mate position, it is accelerating the search (only testing final positions).
-</annotation>
+Wenn nach Mattstellungen gesucht wird, dann sollte stets auch dieses
+Schlüsselwort mitverwendet werden auch wenn es aufgrund anderer
+Bedingungen überflüssig erscheint, denn es beschleunigt die Suche (nur
+Endstellungen werden geprüft).  </annotation>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verb>
@@ -932,100 +952,103 @@ Example:
 </verb>
 
 <p>
-Only matches if one side is mated in first 20 moves.
+Filtere nur dann wenn eine Seite in den ersten 20 Zügen mattgesetzt wurde.
 </p>
 
 <p>
-See also: <cql>position:nomate</cql>.
+Siehe auch: <cql>position:nomate</cql>.
 </p>
 
-<h3 id="position:matingmaterial">:matingmaterial<extension/></h3>
+<h3 id="position:matingmaterial">:matingmaterial<extension/>&emsp;<n>(Mattmaterial)</n></h3>
 
 <p>
-Match a position if either player has mating material (<see/>
-<cql>position:nomatingmaterial</cql>).
-</p>
-
-<p>
-See also: <cql>position:nomatingmaterial</cql>.
-</p>
-
-<h3 id="position:noannotate">:noannotate</h3>
-
-<p>
-This keyword is supported to be compatible with CQL standard, and does
-not have any meaning in Scidb.
-</p>
-
-<h3 id="position:nocheck">:nocheck</h3>
-
-<p>
-Neither side is in check.
+Filtere Positionen, in denen einer der Spieler noch über Mattmaterial verfügt
+(<see/> <cql>position:nomatingmaterial</cql>).
 </p>
 
 <p>
-See also: <cql>position:check</cql>, <cql>position:doublecheck</cql>,
+Siehe auch: <cql>position:nomatingmaterial</cql>.
+</p>
+
+<h3 id="position:noannotate">:noannotate&emsp;<n>(nicht kommentieren)</n></h3>
+
+<p>
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
+</p>
+
+<h3 id="position:nocheck">:nocheck&emsp;<n>(kein Schachgebot)</n></h3>
+
+<p>
+Keine Seite befindet sich im Schach.
+</p>
+
+<p>
+Siehe auch: <cql>position:check</cql>, <cql>position:doublecheck</cql>,
 <cql>position:nodoublecheck</cql>, <cql>position:contactcheck</cql>,
 <cql>position:nocontactcheck</cql>.
 </p>
 
-<h3 id="position:nocontactcheck">:nocontactcheck<extension/></h3>
+<h3 id="position:nocontactcheck">:nocontactcheck<extension/>&emsp;<n>(kein Kontaktschachgebot)</n></h3>
 
 <p>
-Neither side is in check, or it is not a contact check (<see/>
-<cql>position:contactcheck</cql>).
+Keine Seite befindet sich im Schach, oder aber es ist kein
+Kontaktschachgebot (<see/> <cql>position:contactcheck</cql>).
 </p>
 
 <p>
-See also: <cql>position:check</cql>, <cql>position:nocheck</cql>,
+Siehe auch: <cql>position:check</cql>, <cql>position:nocheck</cql>,
 <cql>position:doublecheck</cql>, <cql>position:nodoublecheck</cql>,
 <cql>position:contactcheck</cql>.
 </p>
 
-<h3 id="position:nodoublecheck">:nodoublecheck<extension/></h3>
+<h3 id="position:nodoublecheck">:nodoublecheck<extension/>&emsp;<n>(kein Doppelschachgebot)</n></h3>
 
 <p>
-Neither side is in check, or it is not a double check.
+Keine der Seiten befindet sich im Schach, oder aber es ist kein
+Doppelschachgebot.
 </p>
 
-<h3 id="position:noendgame">:noendgame<extension/></h3>
+<h3 id="position:noendgame">:noendgame<extension/>&emsp;<n>(kein Endspiel)</n></h3>
 
 <p>
-The position is not an endgame position (<see/>
+Diese Position ist keine Endspielposition (<see/>
 <cql>position:endgame</cql>).
 </p>
 
 <p>
-See also: <cql>position:endgame</cql>.
+Siehe auch: <cql>position:endgame</cql>.
 </p>
 
-<h3 id="position:nomate">:nomate<extension/></h3>
+<h3 id="position:nomate">:nomate<extension/>&emsp;<n>(kein Schachmatt)</n></h3>
 
 <p>
-Match only if the position is not mate.
-</p>
-
-<p>
-See also: <cql>position:mate</cql>.
-</p>
-
-<h3 id="position:nomatingmaterial">:nomatingmaterial<extension/></h3>
-
-<p>
-Match a position if neither player has mating material.
+Schließe alle Mattstellungen aus.
 </p>
 
 <p>
-Normally this is equivalent to this query:
+Siehe auch: <cql>position:mate</cql>.
+</p>
+
+<h3 id="position:nomatingmaterial">:nomatingmaterial<extension/>&emsp;<n>(kein Mattmaterial)</n></h3>
+
+<p>
+Filtere alle Position, in denen keiner der Spieler noch über Mattmaterial
+verfügt.
+</p>
+
+<p>
+Normalerweise ist dies equivalent zur folgenden Abfrage:
 </p>
 
 <verbatim>
 <cql>position:or</cql> (
-  <comment>; king versus king</comment>
+  <comment>; König gegen König</comment>
   (<cql>position:piececount</cql> U 2)
-  <comment>; king and minor piece versus king</comment>
+  <comment>; König und Leichtfigur gegen König</comment>
   (<cql>position:piececount</cql> U 3 <cql>position:piececount</cql> [Ii] 1)
-  <comment>; king and bishop versus king and bishop with the bishops on the same color</comment>
+  <comment>; king and Läufer gegen König und Läufer,</comment>
+  <comment>; beide Läufer entweder weiß- oder schwarzfeldrig</comment>
   (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,
      c7,d2,d4,d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
   (<cql>position:piececount</cql> U 4 <cql>position:piececount</cql> [&B;&b;][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,
@@ -1033,99 +1056,102 @@ Normally this is equivalent to this query:
 </verbatim>
 
 <p>
-In variant %::mc::VariantName(ThreeCheck)% this query only succeeds if only
-kings are on board, and in all other chess variants this keyword has no
-meaning and is always failing.
+In der Schachform %::mc::VariantName(ThreeCheck)% filtert die Suche
+mit :nomatingmaterial nur dann, wenn nur noch Könige auf dem Schachbrett
+sind, und in allen anderen Schachformen hat dieses Schlüsselwort keine
+Bedeutung und ist immer erfolglos.
 </p>
 
 <p>
-See also: <cql>position:matingmaterial</cql>.
+Siehe auch: <cql>position:matingmaterial</cql>.
 </p>
 
-<h3 id="position:nostalemate">:nostalemate<extension/></h3>
+<h3 id="position:nostalemate">:nostalemate<extension/>&emsp;<n>(kein Patt)</n></h3>
 
 <p>
-Match only if the position is not a stalemate.
-</p>
-
-<p>
-See also: <cql>position:stalemate</cql>,
-</p>
-
-<h3 id="position:repetition">:repetition<extension/></h3>
-
-<p>
-Match first position of mainline which occurred the third time in this game,
-with same player to move, and each player has the same castling and en passant
-capturing rights. The repeated positions need not occur in succession. This
-accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
-threefold repetition rule</a>.
-</p>
-
-<h3 id="position:stalemate">:stalemate</h3>
-
-<p>
-Match only if the position is a stalemate.
+Filtere nur Positionen in denen niemand patt ist.
 </p>
 
 <p>
-See also: <cql>position:nostalemate</cql>,
+Siehe auch: <cql>position:stalemate</cql>,
 </p>
 
-<h3 id="position:terminal">:terminal<extension/></h3>
+<h3 id="position:repetition">:repetition<extension/>&emsp;<n>(Stellungswiederholung)</n></h3>
 
 <p>
-This is the last position in the game.
+Filtere die erste Position in der Hauptvariante, die zum dritten Mal in der
+Partie wiederholt wurden, mit der gleichen Seite am Zug, und den gleichen
+Rochade- und En-Passant-Rechten. Diese Wiederholung muß nicht aufeinanderfolgen.
+Dies stimmt mit der FIDE-Regelung der
+<a href="http://de.wikipedia.org/wiki/Stellungswiederholung">
+Stellungswiederholung</a> überein.
 </p>
 
-<h3 id="position:variations">:variations</h3>
+<h3 id="position:stalemate">:stalemate&emsp;<n>(Patt)</n></h3>
 
 <p>
-Look in the variations to find matches. Without this keyword the variations
-will be skipped.
-</p>
-
-<h3 id="position:variationsonly">:variationsonly</h3>
-
-<p>
-Look only in the variations to find matches, not in the main line.
-</p>
-
-<h3 id="position:whitecannotwin">:whitecannotwin<extension/></h3>
-
-<p>
-Match only if white cannot win in this position.
+Filtert alle Pattstellungen.
 </p>
 
 <p>
-Normally this is equivalent to following query:
+Siehe auch: <cql>position:nostalemate</cql>,
+</p>
+
+<h3 id="position:terminal">:terminal<extension/>&emsp;<n>(Endstellung)</n></h3>
+
+<p>
+Diese ist die letzte Position in der Partie.
+</p>
+
+<h3 id="position:variations">:variations&emsp;<n>(Varianten)</n></h3>
+
+<p>
+Ziehe die Untervarianten in die Suche mit ein. Ohne diese Angabe werden
+die Untervarianten bei der Suche ausgelassen.
+</p>
+
+<h3 id="position:variationsonly">:variationsonly&emsp;<n>(nur die Varianten)</n></h3>
+
+<p>
+Suche nur in den Untervarianten, nicht in der Hauptvariante.
+</p>
+
+<h3 id="position:whitecannotwin">:whitecannotwin<extension/>&emsp;<n>(Weiß kann nicht gewinnen)</n></h3>
+
+<p>
+Filtert nur dann wenn Weiß keine Gewinnmöglichkeit mehr hat.
+</p>
+
+<p>
+Normalerweise ist dies equivalent zur folgenden Abfrage:
 </p>
 
 <verbatim>
 <cql>position:or</cql> (
-  <comment>; white king only</comment>
+  <comment>; nur weißer König</comment>
   (<cql>position:piececount</cql> A 1)
-  <comment>; white king and white minor piece only</comment>
+  <comment>; nur weißer König und weiße Leichtfigur</comment>
   (<cql>position:piececount</cql> A 2 <cql>position:piececount</cql> I 1))
 </verbatim>
 
 <p>
-In chess variant %::mc::VariantName(ThreeCheck)% this query succeeds only if
-white has no more pieces than the king, and in all other chess variants this
-query has no meaning and is always failing.
+In der Schachform %::mc::VariantName(ThreeCheck)% filtert die Suche
+mit :whitecannotwin nur dann, wenn Weiß nur noch den König besitzt,
+und in allen anderen Schachformen hat dieses Schlüsselwort keine
+Bedeutung und ist immer erfolglos.
 </p>
 
 <p>
-See also: <cql>position:blackcannotwin</cql>
+Siehe auch: <cql>position:blackcannotwin</cql>
 </p>
 
-<h3 id="position:wtm">:wtm</h3>
+<h3 id="position:wtm">:wtm&emsp;<n>(Weiß am Zug)</n></h3>
 
 <p>
-Match only if white is to move.
+Filtert nur wenn Weiß am Zug ist.
 </p>
 
-<h2 id="transform">Transformation keywords</h2>
+<h2 id="transform">Transformierende Schlüsselwörter</h2>
 
 <dir>
   <table>
@@ -1145,65 +1171,68 @@ Match only if white is to move.
   </table>
 </dir>
 
-<h3 id="position:flip">:flip</h3>
+<h3 id="position:flip">:flip&emsp;<n>(Spiegelung)</n></h3>
 
 <p>
-Same as <cql>position:flipdihedral</cql> (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Dies ist identisch zu <cql>position:flipdihedral</cql> (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:flipcolor">:flipcolor</h3>
+<h3 id="position:flipcolor">:flipcolor&emsp;<n>(Farbwechsel)</n></h3>
 
 <p>
-The color flip transformation (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die Farbwecheseltransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:flipdiagonal">:flipdiagonal</h3>
+<h3 id="position:flipdiagonal">:flipdiagonal&emsp;<n>(Diagonale Spiegelung)</n></h3>
 
 <p>
-The diagonal flip transformation (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die diagonale und gegendiagonale Spiegelungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:flipdihedral">:flipdihedral</h3>
+<h3 id="position:flipdihedral">:flipdihedral&emsp;<n>(Diedrische Transformation)</n></h3>
 
 <p>
-All dihedral transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Alle diahedralen Transformationen (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:fliphorizontal">:fliphorizontal</h3>
+<h3 id="position:fliphorizontal">:fliphorizontal&emsp;<n>(Horizontale Spiegelung)</n></h3>
 
 <p>
-The horizontal flip transformation (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die horizontale Spiegelungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:flipvertical">:flipvertical</h3>
+<h3 id="position:flipvertical">:flipvertical&emsp;<n>(Vertikale Spiegelung)</n></h3>
 
 <p>
-The vertical flip transformation (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Dei vertikale Spiegelungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:inside">:inside<extension/></h3>
+<h3 id="position:inside">:inside<extension/>&emsp;<n>(innerhalb)</n></h3>
 
 <p>
-This keyword filters shift transformations in order to some matching pieces
-will stay inside a specified region of the board. It takes two arguments, a
-piece designator and a square designator. Any shift transformation affects
-only the first argument. A shift transformation match :inside limitation if
-at least one piece matching the first argument (taking into account the
-transformation) is placed on a square matching the second argument.
+Dieses Schlüsselwort filtert Verschiebungstransformation, bei denen
+die involvierten Figuren innerhalb einer bestimmten Region auf dem
+Schachbrett verbleiben. Es werden zwei Argumente erwartet, ein
+Figurenbezeichner und ein Felderbezeichner. Jegliche
+Verschiebungstransformation beinflußt nur das erste Argument.
+Eine Verschiebungstransformation wird von der :inside-Beschränkung
+gefiltert, wenn mindestens eine Figur, die mit dem ersten Argument
+bezeichnet wird (wobei die Transformation mit einbezogen ist), auf einem
+Feld steht das vom zweiten Argument bezeichnet wird.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <p>
-We use the following query to find tripled pawns:
+Wir formulieren die folgende Abfrage um Trippelbauern aufzufinden:
 </p>
 
 <verbatim>
@@ -1213,7 +1242,8 @@ We use the following query to find tripled pawns:
 </verbatim>
 
 <p>
-To find one of tripled pawns placed on the main diagonal we design the query
+Um Trippelbauern auf der Hauptdiagonalen (a1-h8) aufzufinden, erweitern
+wir diese Abfrage:
 </p>
 
 <verbatim>
@@ -1223,49 +1253,49 @@ To find one of tripled pawns placed on the main diagonal we design the query
   <cql>position:shifthorizontal</cql>)
 </verbatim>
 
-<h3 id="position:shift">:shift</h3>
+<h3 id="position:shift">:shift&emsp;<n>(Verschiebungstransformation)</n></h3>
 
 <p>
-The shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die Verschiebungstransformationen (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:shiftdiagonal">:shiftdiagonal</h3>
+<h3 id="position:shiftdiagonal">:shiftdiagonal&emsp;<n>(Diagonale Verschiebung)</n></h3>
 
 <p>
-The off-diagonal and main-diagonal shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die (haupt-)diagonale und gegendiagonale Verschiebungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:shifthorizontal">:shifthorizontal</h3>
+<h3 id="position:shifthorizontal">:shifthorizontal&emsp;<n>(Horizontale Verschiebung)</n></h3>
 
 <p>
-The horizontal shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die horizontale Verschiebungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:shiftmaindiagonal">:shiftmaindiagonal</h3>
+<h3 id="position:shiftmaindiagonal">:shiftmaindiagonal&emsp;<n>(Hauptdiagonale Verschiebung)</n></h3>
 
 <p>
-The main-diagonal shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die (haupt-)diagonale Verschiebungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:shiftoffdiagonal">:shiftoffdiagonal</h3>
+<h3 id="position:shiftoffdiagonal">:shiftoffdiagonal&emsp;<n>(Gegendiagonale Verschiebung)</n></h3>
 
 <p>
-The off-diagonal shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die gegendiagonale Verschiebungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h3 id="position:shiftvertical">:shiftvertical</h3>
+<h3 id="position:shiftvertical">:shiftvertical&emsp;<n>(Vertikale Verschiebung)</n></h3>
 
 <p>
-The vertical shift transformations (<see/>
-<a href="CQL-Transformations.html">Transformations</a>).
+Die vertikale Verschiebungstransformation (<see/>
+<a href="CQL-Transformations.html">Transformationen</a>).
 </p>
 
-<h2 id="piece">Piece configuration keywords</h2>
+<h2 id="piece">Schlüsselwörter für die Figurenanalyse</h2>
 
 <dir>
   <table>
@@ -1282,26 +1312,33 @@ The vertical shift transformations (<see/>
   </table>
 </dir>
 
-<h3 id="position:attackcount">:attackcount</h3>
+<h3 id="position:attackcount">:attackcount&emsp;<n>(Angriffs-Zähler)</n></h3>
 
 <p>
-This keyword takes as arguments two piece designators followed by a range
-specifier. The first piece designator is the attacker piece designator.
-The second piece designator is the attacked piece designator. An attack by
-a piece to a square occurs if the piece could move to that square were it
-empty and disregarding any possible checks. A valid attack is an attack by
-a piece on a square that matches the attacker piece designator to a square
-on which is a piece that matches the attacking piece designator.
+Dieses Schlüsselwort erwartet als Argumente zwei Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Der erste
+ist der Figurenbezeichner der attackierenden Figuren, der zweite ist
+der Figurenbezeichner der angegriffenen Figuren. Ein Angriff einer Figur
+auf ein Feld liegt vor, wenn die bezeichnete Figur auf dieses Feld ziehen kann.
+:attackcount zählt alle gültigen Züge (Angriffe), deren Ausgangsfeld vom ersten
+Argument bezeichnet wird, und deren Zielfeld vom zweiten Argument bezeichnet
+wird.
 </p>
 
 <p>
-The :attackcount keyword matches a position if the total number
-of valid attacks in the position lies with the range given by its range
-specifier.
+<img src="../images/gameflag-Illegal-Move.png">
+<a href="http://www.rbnn.com/cql/">CQL Manual</a> sagt aus:
+"disregarding any possible checks"; dies ergibt keinen Sinn.
 </p>
 
 <p>
-Examples:
+Das Schlüsselwort :attackcount filtert eine Position, wenn dir Gesamtzahl
+aller gültigen Angriffe in dieser Position innerhalb der gegebenen
+Bereichsangabe liegt.
+</p>
+
+<p>
+Beispiele:
 </p>
 
 <verb>
@@ -1309,9 +1346,10 @@ Examples:
 </verb>
 
 <p>
-Matches any position in which white has a double attack on the black king
-(note that the use of <cql>position:doublecheck</cql> combined with
-<cql>position:btm</cql> should be preferred).
+Filtert jede Position mit einem Doppelangriff weißer Figuren auf den
+schwarzen König (jedoch sollte für diese Abfrage 
+<cql>position:doublecheck</cql> in Verbindung mit <cql>position:btm</cql>
+vorgezogen werden).
 </p>
 
 <verb>
@@ -1319,8 +1357,8 @@ Matches any position in which white has a double attack on the black king
 </verb>
 
 <p>
-Matches any position in which a king is under double attack
-(again the use of <cql>position:doublecheck</cql> should be preferred).
+Filtert jede Position mit einem Doppelangriff auf einen König
+(auch hier sollte <cql>position:doublecheck</cql> vorgezogen werden).
 </p>
 
 <verb>
@@ -1328,7 +1366,8 @@ Matches any position in which a king is under double attack
 </verb>
 
 <p>
-Matches a position in which exactly one white piece attacks an empty h3 square.
+Filtert eine Position, in der genau eine weiße Figur auf das freie Feld h3
+ziehen kann.
 </p>
 
 <verb>
@@ -1336,9 +1375,9 @@ Matches a position in which exactly one white piece attacks an empty h3 square.
 </verb>
 
 <p>
-Matches a position in which the number of times a white rook or white bishop
-on a8, b8, or c8 attacks a square on the first rank is between 5 and 9
-inclusive.
+Filtert eine Position, in der die Anzahl der Möglichkeiten, daß ein weißer
+Turm oder ein weißer Läufer auf den Feldern a8, b8, oder c8 auf ein Feld
+der ersten Reihe ziehen kann, zwischen 5 und 9 liegt (inklusive).
 </p>
 
 <verb>
@@ -1346,20 +1385,21 @@ inclusive.
 </verb>
 
 <p>
-Matches position for which the number of times a black knight attacks a white
-King or white major piece is at least 3.
+Filtert eine Position, in der es genau drei Möglichkeiten gibt, daß ein
+schwarzer Springer den weißen König oder eine weiße Schwerfigur attackiert.
 </p>
 
-<h3 id="position:piececount">:piececount</h3>
+<h3 id="position:piececount">:piececount&emsp;<n>(Figurenzähler)</n></h3>
 
 <p>
-This keyword takes a piece designator argument followed by a range specifier.
-It matches the position if and only if the number of occurrences of the piece
-designator in the position is given by the range specifier.
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert
+eine Position genau dann, wenn die Anzahl der Vorkommen einer bezeichneten
+Figur in dieser Position innerhalb der gegebenen Bereichsangabe liegt.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1367,8 +1407,8 @@ Examples:
 </verb>
 
 <p>
-This will match any position with exactly two white rooks - a position with
-three white rooks would fail to match.
+Dies wird jede Position filtern mit exakt zwei weißen Türmen - eine Position
+mit drei weißen Türmen würde nicht gefiltert werden.
 </p>
 
 <verbatim>
@@ -1379,9 +1419,9 @@ three white rooks would fail to match.
 </verbatim>
 
 <p>
-This will match any position with a white knight on d4, between one and three
-rooks on the a file, and exactly four queens on the eight rank. Another way
-to write this position list is:
+Dies wird jede Position filtern mit einem weißen Springer auf d4, ein bis drei
+Türmen auf eine Linie, und exakt vier Damen auf der achten Reihe. Ein alternative
+Schreibweise dieser Abfrage ist:
 </p>
 
 <verbatim>
@@ -1391,14 +1431,14 @@ to write this position list is:
   <keyword>:piececount</keyword> [&Q;&q;][?8] 4)
 </verbatim>
 
-<h3 id="position:power">:power</h3>
+<h3 id="position:power">:power&emsp;<n>(Figurenpotential)</n></h3>
 
 <p>
-This keyword takes as argument a piece designator followed by a range
-specifier. It matches positions for which the total power of all pieces
-in the position matching the piece designator lies within the range specifier.
-The power of a piece is their chess material power, depending on the chess
-variant:
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es wird
+jede Position gefiltert, in der das Gesamtfigurenpotential in dieser Position
+innerhalb der gegebenen Bereichsangabe liegt. Das Potential einer Figur
+ist sein Materialwert, abhängig von der Schachform:
 </p>
 
 <dir>
@@ -1452,7 +1492,7 @@ variant:
 </dir>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1460,8 +1500,8 @@ Examples:
 </verb>
 
 <p>
-This will match positions in which the total power of the black pieces on the
-board equals 6.
+Dies wird Positionen finden deren Gesamtfigurenpotential aller schwarzen
+Figuren genau den Wert 6 hat.
 </p>
 
 <verb>
@@ -1469,23 +1509,25 @@ board equals 6.
 </verb>
 
 <p>
-This will match positions in which the total power of the white pieces on the
-white half of the board is between 10 and 25 inclusive.
+Dies wird Positionen finden deren Gesamtfigurenpotential aller weißen
+Figuren in der weißen Hälfte einen Wert zwischen 10 und 25 hat (inklusive).
 </p>
 
-<h3 id="position:powerdifference">:powerdifference</h3>
+<h3 id="position:powerdifference">:powerdifference&emsp;<n>(Figurenpotentialdifferenz)</n></h3>
 
 <p>
-This keyword takes as argument a piece designator followed by a range
-specifier. It matches positions in which the difference in power (<see/>
-<cql>position:power</cql>) between the white and black pieces matching the
-piece designator (that is, the numeric value of the power of the matching
-black pieces subtracted from the power of the matching white pieces) lies
-within the range specifier.
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert
+Positionen in denen die Differenz des Figurenpotentials (<see/>
+<cql>position:power</cql>) der weißen und schwarzen Figuren, die vom ersten
+Argument bezeichnet werden, innerhalb der gegebenen Bereichsangabe liegt.
+D.h. das Figurenpotential aller bezeichneten weißen Figuren minus dem
+Figurenpotential aller bezeichneten schwarzen Figuren muß innerhalb der
+Bereichsangabe liegen.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1493,8 +1535,8 @@ Examples:
 </verb>
 
 <p>
-This matches positions in which the white pieces have power precisely 4
-greater than the black pieces.
+Dies filtert Positionen, in denen das Potential der weißen Figuren genau
+um 4 größer ist als das Potential der schwarzen Figuren.
 </p>
 
 <verb>
@@ -1502,8 +1544,9 @@ greater than the black pieces.
 </verb>
 
 <p>
-This matches positions in which white has between one fewer and two more
-rooks than black (although this is not applicable to chess variants).
+Diese filtert Positionen, in denen Weiß ein Potential zwischen einem Turm
+Materialnachteil und zwei Türmen Materialvorteil besitzt (wobei diese
+Formulierung nicht auf andere Schachformen zutrifft).
 </p>
 
 <verb>
@@ -1511,8 +1554,8 @@ rooks than black (although this is not applicable to chess variants).
 </verb>
 
 <p>
-This matches positions in which black is up at least an exchange
-(also this is not applicable to chess variants).
+Dies filtert Positionen, in denen Schwarz mindestens eine Qualität Vorteil hat
+(auch diese Formulierung trifft nicht auf andere Schachformen zu).
 </p>
 
 <verbatim>
@@ -1538,40 +1581,45 @@ This matches positions in which black is up at least an exchange
 </verbatim>
 
 <p>
-This example shows a way how to search for queen sacrifices using
-<code>:powerdifference</code>. One side sacrifices a queen, and remains at
-least 9 pawns down in material for at least 12 moves, and finally wins.
+Dieses Beispiel zeigt eine Möglichkeit auf, wie mit Hilfe von :powerdifference
+nach Damenopfern gesucht wird. Eine Seite opfert eine Dame, und verbleibt
+mindestens 12 Züge lang mit mindestens 9 Bauern Materialnachteil, um
+letztendlich zu gewinnen.
 </p>
 
-<h3 id="position:ray">:ray</h3>
+<h3 id="position:ray">:ray&emsp;<n>(Strahl)</n></h3>
 
 <p>
-A ray specifier is a list of piece designators. A ray is a contiguous set of
-squares on a straight line on the chessboard parallel to an axis, the a1-h1
-diagonal, or the a8-h8 diagonal.
-</p>
-
-<p>
-Let R by a ray with ordered set of squares in a contiguous line
-S&#x2081;, S&#x2082;,...,S&#x2090;. Suppose a given ray specifier
-(G&#x2081;, G&#x2082;,...,G&#x2093;) where each G is a piece designator.
-The ray R is valid with respect to the ray specifier if G&#x2081; matches
-the piece on S&#x2081;, and if G&#x2093; matches the piece on S&#x2090;, and
-if the remaining G's can be paired to some subset of the squares in the ray
-in an order-preserving way such that each G matches the piece on its
-corresponding square and such that all unpaired squares in the ray are empty.
+Ein Strahl bezeichnet eine Liste von Figurenbezeichnern. Es ist eine
+zusammenhängende Menge von Feldern entweder auf einer Linie, einer Reihe,
+oder einer Diagonalen auf dem Schachbrett.
 </p>
 
 <p>
-The :ray keyword takes a ray specifier and an optional range
-specifier. If the range specifier is absent, it is taken to be
-<nobr><code>1</code> <code>unlimited</code></nobr>. Otherwise, :ray matches
-a position if the number of rays in the position valid with respect to the
-ray specifier lies within the range specifier.
+Sei R ein Felderstrahl mit einer geordneten Menge von Feldern in einer
+zusammenhängenden Linie, Reihe, oder Diagonalen
+S&#x2081;, S&#x2082;,...,S&#x2090;. Gegeben sei eine Strahlendefinition
+(G&#x2081;, G&#x2082;,...,G&#x2093;), wobei jedes G einen Figurenbezeichner
+definiert. Der Felderstrahl R ist gültig in Bezug auf die gegebene
+Strahlendefinition wenn G&#x2081; eine Figur auf dem Feld S&#x2081;
+bezeichnet, G&#x2093; eine Figur auf dem Feld S&#x2090; bezeichnet, und wenn
+alle anderen G's jeweils mit einem Feld einer Untermenge des Felderstrahls
+gepaart werden können ohne die Reihenfolge zu verletzen, so daß jedes G eine
+Figur auf dem zugeordneten Feld bezeichnet, und alle ungepaarten Felder leer
+sind.
 </p>
 
 <p>
-Examples:
+Das Schlüsselwort :ray erwartet eine Strahlendefinition und eine optionale
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Wenn die Bereichsangabe
+nicht vorhanden ist, so wird <nobr><code>1</code>
+<code>unlimited</code></nobr> als Bereich angenommen. :ray filtert eine Position
+wenn die Anzahl der Felderstrahlen in dieser Position, die in Bezug auf die
+Strahlendefinition gültig sind, innerhalb der Bereichsangabe liegen.
+</p>
+
+<p>
+Beispiele:
 </p>
 
 <verb>
@@ -1579,7 +1627,7 @@ Examples:
 </verb>
 
 <p>
-Matches a position in which a white queen attacks the black king.
+Filtert eine Position, in der eine weiße Dame den schwarzen König attackiert.
 </p>
 
 <verb>
@@ -1587,8 +1635,8 @@ Matches a position in which a white queen attacks the black king.
 </verb>
 
 <p>
-Matches a position in which a white queen on the a file pins a black knight
-to the black king on the last four ranks.
+Filtert eine Position, in der eine weiße Dame auf der a-Linie einen schwarzen
+Springer fesselt, und der schwarze König auf den letzten vier Reihen steht.
 </p>
 
 <verb>
@@ -1596,11 +1644,11 @@ to the black king on the last four ranks.
 </verb>
 
 <p>
-Matches a position in which either three white queens and the black king are
-on the same rank, with exactly one empty square between them, and one of the
-queens is on the a-file, or a position in which the three white queens and
-black king form a diagonal with one empty squares between successive pieces,
-and the queens on the a, c, and e files in both cases.
+Filtert entweder eine Position, in der alle drei weißen Damen und der schwarze
+König auf der gleichen Reihe stehen mit jeweils exakt einem Leerfeld zwischen
+diesen Figuren, oder eine Position, in der alle drei weißen Damen und der
+schwarze König eine Diagonale formen mit jeweils einem Leerfeld zwischen diesen
+Figuren, und die Damen stehen in beiden Fällen auf den a, c, und e-Linien.
 </p>
 
 <verb>
@@ -1608,24 +1656,24 @@ and the queens on the a, c, and e files in both cases.
 </verb>
 
 <p>
-Between two and for black knights are pinned to the black king.
+Zwei bis vier schwarze Springer sind gefesselt.
 </p>
 
 <p>
-See also: <cql>position:rayattack</cql>.
+Siehe auch: <cql>position:rayattack</cql>.
 </p>
 
-<h3 id="position:rayattack">:rayattack</h3>
+<h3 id="position:rayattack">:rayattack&emsp;<n>(Strahlenangriff)</n></h3>
 
 <p>
-Has the same syntax as <cql>position:ray</cql>. It has the semantics of
-<cql>position:ray</cql>, except that only orthogonal rays that start on
-a square containing a rook or queen are included, and only diagonal rays
-starting on a square containing a bishop or queen are included.
+Hat die gleiche Syntax wie <cql>position:ray</cql>. Es hat auch die gleiche
+Semantik, außer das nur orthogonale Strahlen, die auf einem Feld mit einer
+Schwerfigur starten, sowie diagonale Strahlen, die auf einem Feld mit einer
+diagonal ziehenden Figur (Dame oder Läufer) starten, eingeschlossen sind.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1633,7 +1681,7 @@ Examples:
 </verb>
 
 <p>
-Matches a position in which a black piece is pinned to the black king.
+Filtert eine Position, in der eine schwarze Figur gefesselt ist.
 </p>
 
 <verb>
@@ -1641,8 +1689,9 @@ Matches a position in which a black piece is pinned to the black king.
 </verb>
 
 <p>
-Matches positions in which there are three black pieces pinned by a white
-piece on d5 against either a black rook or king in the first four ranks.
+Filtert Positionen, in denen drei schwarze Figuren von einer weißen Figur auf
+d5 gefesselt werden, wobei ein schwarzer Turm und der schwarze König auf den
+ersten vier Reihen stehen.
 </p>
 
 <verb>
@@ -1651,61 +1700,64 @@ piece on d5 against either a black rook or king in the first four ranks.
 </verb>
 
 <p>
-Finds multiple-pin stalemates.
+Findet Pattstellungen mit Mehrfachfesselungen auf.
 </p>
 
 <p>
-See also: <cql>position:ray</cql>.
+Siehe auch: <cql>position:ray</cql>.
 </p>
 
-<h3 id="position:raydiagonal">:raydiagonal</h3>
+<h3 id="position:raydiagonal">:raydiagonal&emsp;<n>(Diagonalstrahl)</n></h3>
 
 <p>
-This keyword function exactly like <cql>position:ray</cql> but the given rays
-are restricted to being diagonal. A diagonal ray is a ray that is not vertical
-or horizontal.
+Dieses Schlüsselwort arbeitet genauso wie <cql>position:ray</cql>, nur daß die
+Strahlen auf diagonale Linien beschränkt sind. Ein diagonaler Strahl arbeitet
+auf der Diagonalen.
 </p>
 
-<h3 id="position:rayhorizontal">:rayhorizontal</h3>
+<h3 id="position:rayhorizontal">:rayhorizontal&emsp;<n>(Horizontaler Strahl)</n></h3>
 
 <p>
-This keyword function exactly like <cql>position:ray</cql> but the given rays
-are restricted to being horizontal. A horizontal ray is a ray that is horizontal.
+Dieses Schlüsselwort arbeitet genauso wie <cql>position:ray</cql>, nur daß die
+Strahlen auf horizontale Linien beschränkt sind. Ein horizontaler Strahl
+arbeitet auf der Horizontalen.
 </p>
 
-<h3 id="position:rayorthogonal">:rayorthogonal</h3>
+<h3 id="position:rayorthogonal">:rayorthogonal&emsp;<n>(Othogonaler Strahl)</n></h3>
 
 <p>
-This keyword function exactly like <cql>position:ray</cql> but the given rays
-are restricted to being orthogonal. A orthogonal ray is a ray that is not
-diagonal.
+Dieses Schlüsselwort arbeitet genauso wie <cql>position:ray</cql>, nur daß die
+Strahlen auf vertikale und horizontale Linien beschränkt sind. Ein orthogonaler
+Strahl arbeitet auf der Horizontalen und Vertikalen.
 </p>
 
-<h3 id="position:rayvertical">:rayvertical</h3>
+<h3 id="position:rayvertical">:rayvertical&emsp;<n>(Vertikaler Strahl)</n></h3>
 
 <p>
-This keyword function exactly like <cql>position:ray</cql> but the given rays
-are restricted to being vertical. A vertical ray is a ray that is vertical.
+Dieses Schlüsselwort arbeitet genauso wie <cql>position:ray</cql>, nur daß die
+Strahlen auf  vertikale Linien beschränkt sind. Ein vertikaler Strahl arbeitet
+auf der Vertikalen.
 </p>
 
-<h2 id="move">Move keywords</h2>
+<h2 id="move">Schlüsselwörter für die Zuganalyse</h2>
 
 <p>
-In a position, the next move is the move about to be played, if any. A move has
-three characteristics: its origin square designator, its destination square
-designator and its promotion designator. These refer respectivelyto the piece
-and square from which the piece moves; to the piece and square to which it is
-going to move (but before it actually moves there), and to the piece and square
-to which it promotes, if any. In chess variants %::mc::VariantName(Crazyhouse)%
-and %::mc::VariantName(Bughouse)% there is a fourth characteristic: the
-piecedrop designator. It refers to the piecetype which will be dropped, if any.
+Ein Zug hat drei Ausprägungen: einen Herkunftsbezeichner, einen
+Zielbezeichner, und einen Bauernumwandlungsbezeichner. Diese beziehen
+sich auf die Figur und das Feld von der dieser Zug weggeht; die Figur und
+das Feld wohin dieser Zug geht (aber bevor dieser Zug tatsächlich erfolgt),
+und die Figur und das Feld wo eine Bauernumwandlung stattfindet, sofern eine
+solche vorhanden. In den Schachformen %::mc::VariantName(Crazyhouse)% und
+%::mc::VariantName(Bughouse)% hat ein Zug noch eine vierte Ausprägung: den
+Figurenartbezeichner für die Einsetzfigur. Er bezieht sich auf die Figurenart die
+eingesetzt wird, sofern eine solche vorhanden.
 </p>
 
 <p>
-For example, the destination designation of a white rook on a4 capturing a black
-knight on d4 is <expr>&n;d4</expr>, and its origin designation is
-<expr>&R;a4</expr>. The destination designation of a move to e4 that is not a
-capture is <expr>.e4</expr>. 
+Beispielsweise ist der Zielbezeichner für einen weißen Turm auf a4, der
+einen schwarzen Springer auf d4 schlägt: <expr>&n;d4</expr>, und der
+Herkunftsbezeichner ist <expr>&R;a4</expr>. Der Zielbezeichner eines
+Zuges nach e4, der keine Figur schlägt, ist <expr>.e4</expr>.
 </p>
 
 <dir>
@@ -1726,32 +1778,33 @@ capture is <expr>.e4</expr>.
 <h3 id="position:enpassant">:enpassant</h3>
 
 <p>
-The next move is an en-passant capture.
+Der nächste Zug ist ein en passant (Schlag-)Zug.
 </p>
 
 <p>
-See also: <cql>position:noenpassant</cql>
+Siehe auch: <cql>position:noenpassant</cql>
 </p>
 
-<h3 id="position:iscastling">:iscastling<extension/></h3>
+<h3 id="position:iscastling">:iscastling<extension/>&emsp;<n>(Rochadezug?)</n></h3>
 
 <p>
-The next move is a castling move.
-</p>
-
-<p>
-See also: <cql>position:nocastling</cql>.
-</p>
-
-<h3 id="position:movefrom">:movefrom</h3>
-
-<p>
-Takes a single parameter, a piece designator. It matches a move whose from
-designator matches that piece designator.
+Der nächste Zug ist eine Rochade.
 </p>
 
 <p>
-Examples:
+Siehe auch: <cql>position:nocastling</cql>.
+</p>
+
+<h3 id="position:movefrom">:movefrom&emsp;<n>(Zug von)</n></h3>
+
+<p>
+Erwartet als Parameter eine Figurenbezeichner. Eine Position wird gefiltert,
+wenn dieser Figurenbezeichner den Herkunftsbezeichner des nächsten Zuges
+beinhaltet.
+</p>
+
+<p>
+Beispiele:
 </p>
 
 <verb>
@@ -1759,7 +1812,7 @@ Examples:
 </verb>
 
 <p>
-Matches a position in which the next move is of a white rook on a3.
+Filter eine Position, in der der nächste Zug ein Turmzug von a3 ist.
 </p>
 
 <verb>
@@ -1767,19 +1820,23 @@ Matches a position in which the next move is of a white rook on a3.
 </verb>
 
 <p>
-Matches a position in the next move is of some piece on the 8th rank.
+Filter eine Position, in der die Figurenart des nächsten Zug einer Figurenart
+auf der achten Reihe gleicht.
 </p>
 
-<h3 id="position:movenumber">:movenumber</h3>
+<h3 id="position:movenumber">:movenumber&emsp;<n>(Zugnummer)</n></h3>
 
 <p>
-:movenumber takes a range specifier as parameter and matches positions only
-if the current move number is within the specified range. The move number
-computation assumes white moves first, and might be one off otherwise.
+:movenumber erwartet als Argument eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>, und filtert eine
+Position nur dann, wenn die aktuelle Zugnummer innerhalb des gegebenen
+Bereichs liegt. Die Zugnummernzählung geht von einem Anzugsrecht der
+weißen Seite aus, und könnte deshalb um eine Nummer niedriger sein, wenn
+Scharz das Anzugsrecht hat.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1787,7 +1844,8 @@ Examples:
 </verb>
 
 <p>
-Matches a position in which there is a check between moves 10 and 20.
+Filtert eine Position, in der ein Schachgebot zwischen dem 10. und dem
+20. Zug erfolgt.
 </p>
 
 <verb>
@@ -1795,18 +1853,18 @@ Matches a position in which there is a check between moves 10 and 20.
 </verb>
 
 <p>
-Matches a position in which move 35 is mate.
+Filtert eine Position, in der im 35. Zug mattgesetzt wird.
 </p>
 
-<h3 id="position:moveto">:moveto</h3>
+<h3 id="position:moveto">:moveto&emsp;<n>(Zug nach)</n></h3>
 
 <p>
-Takes a single parameter, a piece designator. It matches a move whose
-destination designator matches its parameter.
+Erwartet ale Argument einen Figurenbezeichner. Es filtert einen Zug
+wenn dieses Argument den Zielbezeichner des Zuges beinhaltet.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1814,7 +1872,7 @@ Examples:
 </verb>
 
 <p>
-Is matching a position where next move is a capture move.
+Filtert eine Position dessen nächster Zug ein Schlagzug ist.
 </p>
 
 <verb>
@@ -1822,7 +1880,7 @@ Is matching a position where next move is a capture move.
 </verb>
 
 <p>
-Is matching a position where next move is not a capture move.
+Filtert eine Position dessen nächster Zug kein Schlagzug ist.
 </p>
 
 <verb>
@@ -1830,11 +1888,12 @@ Is matching a position where next move is not a capture move.
 </verb>
 
 <p>
-Matches a position in which the next move is to capture a white rook on
-the b file. Note that this is quite different from the natural
-<a href="http://de.wikipedia.org/wiki/Portable_Game_Notation">PGN</a>
-interpration of its being a move of a white rook to the b file. That
-would be done via:
+Filtert eine Position, in der der nächste Zug einen weißen Turm auf der
+f-Linie schlagen wird. Beachte das dies sehr verschieden ist von der
+Interpretation einer Zugbeschreibung in
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN</a>&#x2006;:
+dort würde dies als ein Turmzug auf die b-Linie interpretiert werden.
+Und dies wiederum geschieht in CQL auf diese Weise:
 </p>
 
 <verb>
@@ -1842,40 +1901,41 @@ would be done via:
 </verb>
 
 <p>
-Matches a move of the white rook to the b file.
+Filtert einen Zug, in dem der weiße Turm auf die b-Linie zieht.
 </p>
 
-<h3 id="position:nocastling">:nocastling<extension/></h3>
+<h3 id="position:nocastling">:nocastling<extension/>&emsp;<n>(kein Rochadezug?)</n></h3>
 
 <p>
-The next move is not a castling move.
-</p>
-
-<p>
-See also: <cql>position:iscastling</cql>.
-</p>
-
-<h3 id="position:noenpassant">:noenpassant</h3>
-
-<p>
-The next move is not an en-passant capture.
+Der nächste Zug ist keine Rochade.
 </p>
 
 <p>
-See also: <cql>position:enpassant</cql>.
+Siehe auch: <cql>position:iscastling</cql>.
 </p>
 
-<h3 id="position:piecedrop">:piecedrop<extension/></h3>
+<h3 id="position:noenpassant">:noenpassant&emsp;<n>(kein En-Passant-Zug?)</n></h3>
 
 <p>
-The next move is a piece drop, where the piecedrop designator is matching
-the given piecetype designator. For a nonempty piecetype designator this
-is possible only in chess variants %::mc::VariantName(Crazyhouse)%, and
-%::mc::VariantName(Bughouse)%.
+Der nächste Zug ist kein en passant (Schlag-)Zug.
 </p>
 
 <p>
-Examples:
+Siehe auch: <cql>position:enpassant</cql>.
+</p>
+
+<h3 id="position:piecedrop">:piecedrop<extension/>&emsp;<n>(Einsetzzug)</n></h3>
+
+<p>
+Der nächste Zug ist ein Einsetzzug, wobei der im Argument gebenene
+Figurenartbezeichner den Figurenartbezeichner für die Einsetzfigur des
+nächsten Zuges beinhalten muß. Dies ist bei einem nichtleeren
+Figurenartbezeichner nur möglich in den Schachformen
+%::mc::VariantName(Crazyhouse)% und %::mc::VariantName(Bughouse)%).
+</p>
+
+<p>
+Beispiele:
 </p>
 
 <verb>
@@ -1883,7 +1943,7 @@ Examples:
 </verb>
 
 <p>
-The next move is a piece drop which is dropping a knight.
+Der nächste Zug ist ein Einsetzzug, der einen Springer einsetzen wird.
 </p>
 
 <verb>
@@ -1891,19 +1951,20 @@ The next move is a piece drop which is dropping a knight.
 </verb>
 
 <p>
-The next move is not a piece drop (because the piecetype designator
-is empty).
+Der nächste Zug ist kein Einsetzzug (denn der Figurenartbezeichner ist
+leer).
 </p>
 
-<h3 id="position:promote">:promote</h3>
+<h3 id="position:promote">:promote&emsp;<n>(Bauernumwandlung)</n></h3>
 
 <p>
-Takes a single parameter, a piece designator. It matches a move if that move
-is a promotion whose promotion designator matches its parameter.
+Erwartet als argument einen Figurenbezeichner. Ein Zug wird gefiltert wenn
+es sich um eine Bauernumwandlung handelt, und der gegebene Figurenbezeichner
+den Bauernumwandlungsbezeichner des Zuges beinhaltet.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -1911,7 +1972,7 @@ Examples:
 </verb>
 
 <p>
-Matches a position whose next move is a white underpromotion.
+Filtert eine Position dessen nächster Zug eine weiße Unterverwandlung ist.
 </p>
 
 <verb>
@@ -1919,7 +1980,8 @@ Matches a position whose next move is a white underpromotion.
 </verb>
 
 <p>
-Matches a position whose next move is a white promotion to bishop or knight.
+Filtert eine Position dessen nächster Zug eine weiße Bauernumwandlung in
+eine Leichtfigur ist.
 </p>
 
 <verb>
@@ -1928,8 +1990,9 @@ Matches a position whose next move is a white promotion to bishop or knight.
 </verb>
 
 <p>
-Matches a position in which the next move is of a pawn on f7 capturing a black
-queen on e8 and promoting to a rook.
+Filtert eine Position, in der der nächster Zug einen Bauern von f7 nach e8
+zieht, wobei eine schwarze Dame geschlagen wird und eine Bauernumwandlung
+in einen Turm geschieht.
 </p>
 
 <verb>
@@ -1937,11 +2000,11 @@ queen on e8 and promoting to a rook.
 </verb>
 
 <p>
-Matches a position in which the next move is not a promotion (because the
-piece designator is empty).
+Filtert eine Position, in der der nächster Zug keine Bauernumwandlung ist
+(denn der Figurenbezeichner ist leer).
 </p>
 
-<h2 id="sequence">Sequence keywords</h2>
+<h2 id="sequence">Schlüsselwörter für Sequenzen</h2>
 
 <dir>
   <table>
@@ -1950,13 +2013,13 @@ piece designator is empty).
   </table>
 </dir>
 
-<h3 id="position:gappedsequence">:gappedsequence</h3>
+<h3 id="position:gappedsequence">:gappedsequence&emsp;<n>(Folge)</n></h3>
 
 <p>
-Takes one argument, a list of position lists. A position list A is said to be
-a refinement of a position list B if A may be formed from B by inserting zero or
-more position lists of the form <expr>(position)</expr> into the top level of B.
-For example:
+Erwartet als Argument eine Liste von Positionslisten. Eine Positionsliste A
+wird als eine Verfeinerung einer Positionsliste B definiert, wenn A aus B
+geformt werden kann durch das Einfügen von beliebig vielen (einschließlich Null)
+Listen der Form <expr>(position)</expr> auf oberster Ebene in B. Zum Beispiel:
 </p>
 
 <verb>
@@ -1964,7 +2027,7 @@ For example:
 </verb>
 
 <p>
-refines
+verfeinert
 </p>
 
 <verb>
@@ -1972,19 +2035,21 @@ refines
 </verb>
 
 <p>
-because it was formed by inserting a single position list into the latter list.
+denn es wurde geformt durch das Einfügen einer einzelnen Position in die
+letztere Liste.
 </p>
 
 <p>
-A :gappedsequence with argument B matches a position if and only if there is a
-refinement A of B such that a <cql>position:sequence</cql> with argument A
-would match that position. That is, :gappedsequence is like
-<cql>position:sequence</cql> except that the sequence of matching positions
-may include intervening positions from the game.
+Eine Folge (:gappedsequence) mit Argument B filtert eine Position genau dann,
+wenn es eine Verfeinerung A von B gibt, so daß eine Aufeinanderfolge
+(<cql>position:sequence</cql>) mit Argument A diese Position filtern würde.
+D.h., :gappedsequence ist wie <cql>position:sequence</cql>, außer das die
+Aufeinanderfolge von filternden Positionen dazwischenliegende Positionen
+der Partie enthalten kann.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verbatim>
@@ -1995,11 +2060,16 @@ Examples:
 </verbatim>
 
 <p>
-This will match any position for which the positions that occur successively
-in the game starting with that position comprise zero or more positions,
-followed by a position from which a white rook on a3 moves, followed by zero
-or more positions, followed by a position from which a white rook on b4 moves.
-In consequence the same effect can be obtained much more efficiently via:
+Diese wird jede Position filtern, die mit der ersten Position in der Liste
+von :gappedsequence startet, und nach Null oder mehr weiteren
+aufeinanderfolgenden Positionen in der Partie die zweite Position von
+:gappedsequence auffindet. Dasselbe Ergebnis kann viel effektiver auf
+folgende Weise ermittelt werden:
+</p>
+
+<p>
+<img src="../images/gameflag-Illegal-Move.png">
+Das ist zu prüfen!
 </p>
 
 <verbatim>
@@ -2011,8 +2081,8 @@ In consequence the same effect can be obtained much more efficiently via:
 </verbatim>
 
 <p>
-The following position list matches a position in which a knight is on d4 at
-some point in the game after that position:
+Die folgende Positionsliste filtert eine Position, in der der Springer auf d4
+steht in irgendeiner Partiestellung, aber nach der gefundenen Position:
 </p>
 
 <verbatim>
@@ -2023,44 +2093,52 @@ some point in the game after that position:
 </verbatim>
 
 <p>
-Note that the first element of the argument to :gappedsequence,
-<expr>(position)</expr>, is used to ensure that only knights on d4 in
-positions that occur after the position to be matched are considered.
-To this a complete example:
+Beachte daß das erste Element des Arguments von :gappedsequence, nämlich
+<expr>(position)</expr>, nur benutzt wird, um zu erreichen das nur Springer
+auf d4 in Positionen gefunden werden, die nach der gefilterten Position
+liegen. Dazu ein vollständiges Beispiel:
 </p>
 
 <verbatim>
 (match
-  <comment>; loop for each possible knight</comment>
+  <comment>; iteriere über alle in Frage kommenden Springer</comment>
   <cql>position:forany</cql> knight [Nn]
   (position
-    <comment>; tagged piece is actually a knight on d4,</comment>
-    <comment>; not a promoted pawn</comment>
+    <comment>; die markierte Figur ist tatsächlich ein Springer</comment>
+    <comment>; auf d4, kein umgewandelter Bauer</comment>
     <cql>position:tagmatch</cql> knight [Nn]d4
-    <comment>; make sure this is the last such occurrence</comment>
+    <comment>; sorge dafür das es das letzte derartige Vorkommen ist</comment>
     <cql>position:not</cql> (position <keyword>:gappedsequence</keyword>
       ((position) (position $knight[d4])))
-    <comment>; now repeat, with other squares instead of d4</comment>
+    <comment>; nun wiederhole mit anderen Feldern außer e4</comment>
     <cql>position:shift</cql>
-    <comment>; match when at least 20 distinct squares found</comment>
+    <comment>; filtere wenn mindestens 20 verschiedene Felder gefunden wurden</comment>
     <cql>position:matchcount</cql> 20 65))
 </verbatim>
 
 <p>
-Find games in which some knight has visited at least twenty different squares.
-This works by counting positions such that the knight will not again visit the
-square on which it currently sits. Squares visited by a pawn that promotes to 
-a knight are not included in the count.
+Finde Partien, in denen ein Springer mindestens 20 verschiedene Felder
+besuchte. Dies wird bewerkstelligt durch das Zählen von Positionen, die vom
+Springer nicht noch ein zweites Mal besucht werden. Felder die von einem
+Bauern besucht werden, der später in einen Springer verwandelt, sind nicht
+in der Zählung enthalten.
 </p>
 
 <p>
-The total number of <cql>position:sequence</cql> and :gappedsequence position
-lists that can occur at the top level of a position list cannot exceed one. To
-get the effect of both a :gappedequence and <cql>position:sequence</cql>
-keywords in one position list, use <cql>position:and</cql>.
+Die Gesamtzahl von <cql>position:sequence</cql> und :gappedsequence
+Positionslisten, die auf oberster Ebene einer Positionsliste auftreten
+können, darf Eins nicht überschreiten. Um die Wirkung von beiden
+Schlüsselwörtern in einer Positionsliste zu erhalten, wird mit dem
+Gebrauch von <cql>position:and</cql> bewerkstelligt.
 </p>
 
-<h3 id="position:sequence">:sequence</h3>
+<p>
+<img src="../images/gameflag-Illegal-Move.png">
+Diese Einschränkung ist zu prüfen!
+</p>
+
+<NEW>
+<h3 id="position:sequence">:sequence&emsp;<n>(Aufeinanderfolge)</n></h3>
 
 <p>
 Takes a single argument that is a list of position lists. It matches a given
@@ -2069,7 +2147,7 @@ current position, match each corresponding element in its argument.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verbatim>
@@ -2124,7 +2202,7 @@ the <cql>position:shift</cql>, <cql>position:flip</cql>, and
 rotated anywhere on the board.
 </p>
 
-<h2 id="game">Game related keywords</h2>
+<h2 id="game">Schlüsselwörter für die Partieinformationen</h2>
 
 <p>
 Several keywords relate to the game parameters and are not affected by the
@@ -2145,23 +2223,23 @@ them. these are:
       <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
     </tr>
-    <tr>
+  <tr>
       <td>      &#x2022;</td><td><a href="#position:result">:result</a></td>
-    </tr>
+  </tr>
   <tr>
       <td>      &#x2022;</td><td><a href="#position:variant">:variant</a></td>
   </tr>
   </table>
 </dir>
 
-<h3 id="position:blackelo">:blackelo</h3>
+<h3 id="position:blackelo">:blackelo&emsp;<n>(ELO - Schwarz)</n></h3>
 
 <p>
 This parameter takes a range specifier; the ELO of the black player must lie
 within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<h3 id="position:blackrating">:blackrating<extension/></h3>
+<h3 id="position:blackrating">:blackrating<extension/>&emsp;<n>(Wertungszahl - Schwarz)</n></h3>
 
 <p>
 Match all games where the specified rating score of black player is between
@@ -2176,14 +2254,14 @@ players must lie within the specified range (<see/>
 <a href="CQL-Range-Specifiers.html">range specifiers</a>)
 </p>
 
-<h3 id="position:rating">:rating<extension/></h3>
+<h3 id="position:rating">:rating<extension/>&emsp;<n>(Wertungszahl)</n></h3>
 
 <p>
 Match all games where the specified rating score of one player is between
 given range.  For a detailed description see <cql>match:rating (match)</cql>.
 </p>
 
-<h3 id="position:result">:result</h3>
+<h3 id="position:result">:result&emsp;<n>(Ergebnis)</n></h3>
 
 <p>
 This keyword takes one argument, the same as the argument to
@@ -2191,7 +2269,7 @@ This keyword takes one argument, the same as the argument to
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verbatim>
@@ -2210,26 +2288,27 @@ or above.
 <h3 id="position:variant">:variant</h3>
 
 <p>
-for a description see identically named keyword <cql>match:variant (match)</cql>
-in match list. This keyword is added for the possibility to distinguish between
-different chess variants in each position list.
+Für eine Beschreibung dieses Schlüsselwortes siehe beim gleichnamigen
+Schlüsselwort <cql>match:variant (match)</cql> der Suchliste. Dieses
+Schlüsselwort wird hier bereitgestellt, um bei einzelnen Positionslisten
+eine Unterscheidung zwischen den Schachformen treffen zu können.
 </p>
 
-<h3 id="position:whiteelo">:whiteelo</h3>
+<h3 id="position:whiteelo">:whiteelo&emsp;<n>(ELO - Weiß)</n></h3>
 
 <p>
 This parameter takes a range specifier; the ELO of the white player must lie
 within its range (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 </p>
 
-<h3 id="position:whiterating">:whiterating<extension/></h3>
+<h3 id="position:whiterating">:whiterating<extension/>&emsp;<n>(Wertungszahl - Weiß)</n></h3>
 
 <p>
 Match all games where the specified rating score of white player is between
 given range.  For a detailed description see <cql>match:rating (match)</cql>.
 </p>
 
-<h2 id="relation">Relation between positions</h2>
+<h2 id="relation">Relationen zwischen den Positionen</h2>
 
 <dir>
   <table>
@@ -2246,7 +2325,7 @@ pairs of positions P1 and P2 that satisfy certain properties. See
 the relation specification keywords.
 </p>
 
-<h2 id="matching">Matching count keywords</h2>
+<h2 id="matching">Schlüsselwörter zur Zählung</h2>
 
 <p>
 Two keywords pertain to the number of positions which a position list matches.
@@ -2261,7 +2340,7 @@ position list at the top level of a match list.
   </table>
 </dir>
 
-<h3 id="position:matchcount">:matchcount</h3>
+<h3 id="position:matchcount">:matchcount&emsp;<n>(Übereinstimmungszähler)</n></h3>
 
 <p>
 Matches if and only if the number of times this position list matches a
@@ -2269,7 +2348,7 @@ position in the current game lies within the range specifier.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verb>
@@ -2280,7 +2359,7 @@ Example:
 Matches any game in which at least four queen captures have occurred.
 </p>
 
-<h3 id="position:pretransformmatchcount">:pretransformmatchcount</h3>
+<h3 id="position:pretransformmatchcount">:pretransformmatchcount&emsp;<n>(Transformationsinvarianter Übereinstimmungszähler)</n></h3>
 
 <p>
 Has the same syntax as <cql>position:matchcount</cql>. It matches a position if
@@ -2293,7 +2372,7 @@ list would match the position.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verbatim>
@@ -2310,7 +2389,7 @@ square. Were the :pretransformmatchcount replaced by
 at least 12 captures occurred.
 </p>
 
-<h2 id="evaluation">Analyzing keywords</h2>
+<h2 id="evaluation">Schlüsselwörter für die Stellungsbeurteilun</h2>
 
 <p>
 The following keywords are analyzing positions. <cql>position:evaluation</cql> and
@@ -2329,7 +2408,7 @@ quite faster, although quite time consuming.
   </table>
 </dir>
 
-<h3 id="position:evaluation">:evaluation<extension/></h3>
+<h3 id="position:evaluation">:evaluation<extension/>&emsp;<n>(Bewertung)</n></h3>
 
 <annotation>
 This is a very slow operation and should be restricted.
@@ -2383,7 +2462,7 @@ does only support the "movetime" mode.
 </note>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -2420,7 +2499,7 @@ Black is (possibly) losing, because he is at least 3 pawn units behind.
 Either side is mate in maximal 3 moves.
 </p>
 
-<h3 id="position:exchangeevaluation">:exchangeevaluation<extension/></h3>
+<h3 id="position:exchangeevaluation">:exchangeevaluation<extension/>&emsp;<n>(Figurentauschbewertung)</n></h3>
 
 <p>
 This keyword is analyzing capture moves to see whether or not they appear
@@ -2447,7 +2526,7 @@ estimating the exchange values.
 </p>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -2458,7 +2537,7 @@ Examples:
 This move is (possibly) a blunder.
 </p>
 
-<h3 id="position:maxswapevaluation">:maxswapevaluation<extension/></h3>
+<h3 id="position:maxswapevaluation">:maxswapevaluation<extension/>&emsp;<n>(Maximum einer Schlagabtauschbewertung)</n></h3>
 
 <p>
 This keyword allows to estimate exchange values of possible moves. It takes
@@ -2496,7 +2575,7 @@ but quite different implemented.
 </note>
 
 <p>
-Examples:
+Beispiele:
 </p>
 
 <verb>
@@ -2517,7 +2596,7 @@ This query selects positions in which a white queen can invade rank 8
 without a material loss.
 </p>
 
-<h3 id="position:moveevaluation">:moveevaluation<extension/></h3>
+<h3 id="position:moveevaluation">:moveevaluation<extension/>&emsp;<n>(Zugbewertung)</n></h3>
 
 <annotation>
 This is a very slow operation and should be restricted.
@@ -2573,7 +2652,7 @@ The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <verb>
@@ -2608,7 +2687,7 @@ without gaining a better score. We are ensuring that only promoting moves will
 be evaluated.
 </p>
 
-<h2 id="accumulator">Accumulator keywords</h2>
+<h2 id="accumulator">Schlüsselwörter für Akkumulationen</h2>
 
 <p>
 There are mainly two accumulator keywords, :accumulate and :sumrange. These
@@ -2627,7 +2706,7 @@ is within a certain range.
   </table>
 </dir>
 
-<h3 id="position:accumulate">:accumulate</h3>
+<h3 id="position:accumulate">:accumulate&emsp;<n>(Akkumulieren)</n></h3>
 
 <p>
 This takes one parameter, the name of an accumulator. Each time the application
@@ -2647,7 +2726,7 @@ For examples see:
 <a href="CQL-Examples.html#accumulator">Using accumulators to count passed pawns</a>.
 </p>
 
-<h3 id="position:reset">:reset<extension/></h3>
+<h3 id="position:reset">:reset<extension/>&emsp;<n>(Zurücksetzen)</n></h3>
 
 <p>
 This keyword takes as a parameter the name of an accumulator. It clears the
@@ -2655,7 +2734,7 @@ accumulator associated with this name after applying a transformation.
 </p>
 
 <p>
-Example:
+Beispiel:
 </p>
 
 <p>
@@ -2686,7 +2765,7 @@ A much better way is:
   <cql>position:flipcolor</cql>))
 </verbatim>
 
-<h3 id="position:sumrange">:sumrange<extension/></h3>
+<h3 id="position:sumrange">:sumrange<extension/>&emsp;<n>(Ergebnisbereich)</n></h3>
 
 <p>
 This takes as parameter the name of an accumulator and a range specifer.
@@ -2699,7 +2778,7 @@ For examples see:
 <a href="CQL-Examples.html#accumulator">Using accumulators to count passed pawns</a>.
 </p>
 
-<h2 id="tagging">Tagging keywords</h2>
+<h2 id="tagging">Schlüsselwörter für das Markieren</h2>
 
 <dir>
   <table>
@@ -2707,7 +2786,7 @@ For examples see:
   </table>
 </dir>
 
-<h3 id="position:tagmatch">:tagmatch<extension/></h3>
+<h3 id="position:tagmatch">:tagmatch<extension/>&emsp;<n>(Markierungsvergleich)</n></h3>
 
 <p>
 The :tagmatch keyword takes two parameters, the name of a tag and a piece
@@ -2715,7 +2794,8 @@ designator. It matches only if the piece corresonding to the named tag
 matches the given piece designator. For more information, see the section
 on <a href="CQL-Tagging.html">tagging</a>.
 </p>
+</NEW>
 
 END
 
-<!-- vi:set ts=2 sw=2 et filetype=html: -->
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

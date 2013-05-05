@@ -399,6 +399,14 @@ proc hilited {w which} {
 }
 
 
+proc clearMarks {w} {
+	variable ${w}::Board
+
+	set Board(marks) {}
+	$w.c delete mark
+}
+
+
 proc updateMarks {w marks} {
 	variable ${w}::Board
 

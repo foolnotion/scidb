@@ -437,6 +437,7 @@ proc update {position cmd data} {
 		move	{ ::board::diagram::move $board $data }
 	}
 
+	::board::diagram::clearMarks $board
 	UpdateSideToMove $Vars(widget:frame)
 	DrawMaterialValues $Vars(widget:frame)
 	UpdateControls

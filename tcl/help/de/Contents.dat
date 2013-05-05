@@ -50,7 +50,7 @@ set Contents {
     {{{Tranformationen} {CQL-Transformations.html}}}
     {{{Die Suchliste} {CQL-Match-List.html}}}
     {{{Die Positionsliste} {CQL-Position-List.html}}}
-    {{{Die Relationsliste} {CQL-Relation-List.html}}}
+    {{{Die Relation-Liste} {CQL-Relation-List.html}}}
     {{{Markierung} {CQL-Tagging.html}}}
     {{{Beispiele} {CQL-Examples.html}}}
   }

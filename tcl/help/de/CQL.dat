@@ -200,6 +200,7 @@ set Index {
   { V
     {
       {{variant : match} {CQL-Match-List.html} {match:variant}}
+      {{variant : position} {CQL-Position-List.html} {position:variant}}
       {{variations : position} {CQL-Position-List.html} {position:variations}}
       {{variationsonly : position} {CQL-Position-List.html} {position:variationsonly}}
     }

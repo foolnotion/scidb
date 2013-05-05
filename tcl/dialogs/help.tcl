@@ -1771,15 +1771,20 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 		set args [string range $content [expr {$s + 7}] [expr {$e - 1}]]
 		array set opts $args
 		set newcontent [string range $content 0 [expr {$s - 1}]]
-		if {[info exists opts(piecelang)]} {
-			set widgetcmd "htmlwidget='radiobutton $Priv(html).$opts(piecelang)"
-			append widgetcmd " -background white"
-			append widgetcmd " -variable [namespace current]::Options(piecelang)"
-			append widgetcmd " -value $opts(piecelang)"
-			append widgetcmd " -text \"$opts(text)\""
-			append widgetcmd " -command [namespace current]::RefreshPieceLetters"
-			append widgetcmd "'"
-			append newcontent $widgetcmd
+		if {[info exists opts(piecelang)] && [info exists opts(text)]} {
+			set btn $Priv(html).$opts(piecelang)
+			set Priv(widget:$btn) 0
+			if {![winfo exists $btn]} {
+				set btn [radiobutton $btn \
+					-background white \
+					-overrelief raised \
+					-variable [namespace current]::Options(piecelang) \
+					-value $opts(piecelang) \
+					 -text "$opts(text) " \
+					 -command [namespace current]::RefreshPieceLetters \
+				]
+			}
+			append newcontent "htmlwidget='$btn'"
 		} else {
 			puts stderr "Cannot handle embedding: $args"
 		}

@@ -1629,15 +1629,15 @@ Application::switchGame(unsigned position)
 	if (game.refresh)
 	{
 		if (game.refresh == 2)
-			game.game->refreshSubscriber(Game::UpdateAll);
+			game.game->refreshSubscriber(Game::UpdateAll | Game::UpdateNewPosition);
 		else
-			game.game->updateSubscriber(Game::UpdateBoard | Game::UpdatePgn | Game::UpdateOpening);
+			game.game->updateSubscriber(Game::UpdateNewPosition | Game::UpdatePgn | Game::UpdateOpening);
 
 		game.refresh = 0;
 	}
 	else
 	{
-		game.game->updateSubscriber(Game::UpdateBoard);
+		game.game->updateSubscriber(Game::UpdateNewPosition);
 	}
 
 	if (m_subscriber)
@@ -1699,7 +1699,7 @@ Application::refreshGame(unsigned position, bool immediate)
 	EditGame& game = *m_gameMap.find(position)->second;
 
 	if (position == m_currentPosition || immediate)
-		game.game->refreshSubscriber(Game::UpdateAll);
+		game.game->refreshSubscriber(Game::UpdateAll | Game::UpdateNewPosition);
 	else
 		game.refresh = 2;
 }

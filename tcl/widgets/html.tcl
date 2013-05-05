@@ -564,17 +564,25 @@ proc SetupCSS {w} {
 proc EvalWidgetCommands {w} {
 	variable ${w}::Priv
 
-	foreach widget $Priv(widgets) {
-		if {[winfo exists $widget]} { destroy $widget }
-	}
-
-	set Priv(widgets) {}
+	set widgets {}
+	set nodes {}
 
 	foreach node [$w search {[htmlwidget]}] {
-		set widget [{*}[$node attr htmlwidget]]
-		$node replace $widget -configurecmd [namespace code [list ConfigureWidget $widget]]
-		lappend Priv(widgets) $widget
+		lappend nodes $node
+		lappend widgets [$node attr htmlwidget]
 	}
+
+	foreach widget $Priv(widgets) {
+		if {$widget ni $widgets && [winfo exists $widget]} {
+			destroy $widget
+		}
+	}
+
+	foreach widget $widgets node $nodes {
+		$node replace $widget -configurecmd [namespace code [list ConfigureWidget $widget]]
+	}
+
+	set Priv(widgets) $widgets
 }
 
 

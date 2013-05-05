@@ -93,9 +93,11 @@ public:
 		UpdateBoard				= 1 << 0,
 		UpdatePgn				= 1 << 1,
 		UpdateOpening			= 1 << 2,
-		UpdateLanguageSet		= 1 << 4,
-		UpdateIllegalMoves	= 1 << 5,
-		UpdateAll				= ~(1 << 6),
+		UpdateLanguageSet		= 1 << 3,
+		UpdateIllegalMoves	= 1 << 4,
+		UpdateAll				= (1 << 5) - 1,
+
+		UpdateNewPosition		= 1 << 6,
 	};
 
 	enum Force

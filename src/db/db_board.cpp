@@ -366,6 +366,7 @@ bool
 Board::isEqualPosition(Board const& target) const
 {
 	// NOTE: we cannot use ExactZHPosition, because the fen is not supporting pieces in hand
+	// NOTE: do not use for Three-check Chess games
 	return m_hash == target.m_hash && target.exactPosition() == exactPosition();
 }
 
