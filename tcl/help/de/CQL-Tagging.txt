@@ -1,0 +1,115 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Markierung (CQL)
+INDEX CQL Markierung
+
+TITLE CQL - Markierung
+
+<p>
+Es ist möglich den Verlauf einer bestimmten Figur zu verfolgen. Jeder Figur
+in der Ausgangsstellung der Partie ist eine eindeutige Identität zugewiesen.
+Bauernumwandlungen ändern die Identität der Figur nicht. Eine Markierung
+ist eine benamte Identität, sie ist an die Identität gebunden. Eine Markierung
+repräsentiert eine einzelne Figur, deren Identität mit dieser Markierung
+verbunden ist.
+</p>
+
+<ul>
+  <li><a href="#forany">:forany in der Suchliste</a></li>
+  <li><a href="#tagmatch">:tagmatch in der Positionsliste</a></li>
+  <li><a href="#designators">Figurenbezeichner und Markierungen</a></li>
+  <li><a href="#examples">Ausführlichere Beispiele</a></li>
+</ul>
+
+<h2 id="forany">:forany in der Suchliste</h2>
+
+<p>
+Eine Markierung wird mit dem Schlüsselwort <cql>:forany</cql> in einer
+Suchliste definiert. Dieses Schlüsselwort erwartet zwei Argumente: den
+alphanumerischen Namen einer Markierung und einen Figurenartbezeichner.
+</p>
+
+<p>
+Gedanklich filtert der Suchfilter nun für jede an eine Identität gebundene
+Markierung, so daß folgende Bedingungen erfüllt sind:
+</p>
+
+<ul style="padding: 0;">
+  <li class="space">
+    An eine Identität kann nicht mehr als eine Markierung gebunden werden.
+  </li>
+  <li class="space">
+    Eine Markierung kann nur an eine Figur gebunden werden, die vom
+    assoziierten Figurenartbezeichner zugelassen wurde.
+  </li>
+</ul>
+
+<p>
+Markierungen können nicht verwendet werden, wenn das Schlüsselwort
+<cql>position:relation</cql> in einer der Positionslisten vorhanden ist.
+<br/><img src="../images/gameflag-Illegal-Move.png" /> Beides ist zu prüfen!
+</p>
+
+<h2 id="tagmatch">:tagmatch in der Positionsliste</h2>
+
+<p>
+Das Schlüsselwort <cql>:tagmatch</cql> in einer Positionsliste erwartet zwei
+Argumente, den Namen einer Markierung und einen Figurenbezeichner. Die
+Filterung der Positionsliste schlägt in einer Position fehl, wenn die zur
+Markierung gehörenden Figur- und Feldinformationen nicht mit dem gegebenen
+Figurenbezeichner übereinstimmen.
+</p>
+
+<p>
+Als Beispiel nehmen wir an, wir haben eine Markierung "foo", und eine
+Position soll nur dann gefiltert werden, wenn "foo" ein weißer Bauer ist:
+</p>
+
+<verb>
+(position <keyword>:tagmatch</keyword> foo &P;)
+</verb>
+
+<h2 id="designators">Figurenbezeichner und Markierungen</h2>
+
+<p>
+Eine Figurenbezeichner kann als Figurenartbezeichner den Namen einer Markierung
+erhalten, wobei das Zeichen '$' der Markierung vorangestellt wird. Solch ein
+Figurenartbezeichner repräsentiert die an diese Markierung gebundene Figur.
+Weil die Markierungsnamen alphanumerisch sind, müssen Felderbezeichner in solch
+einem Figurenbezeichner in Klammern eingeschlossen werden. Beispiel:
+</p>
+
+<verb>
+(position $foo[a1])
+</verb>
+
+<p>
+Die durch den Markierungsnamen repräsentierte Figur "foo" muß auf a1 stehen.
+</p>
+
+<h2 id="examples">Ausführlichere Beispiele</h2>
+
+<p>
+Für ausführlichere  Beispiele siehe:
+<a href="CQL-Examples.html#tagging">Beispiele für Markierungen</a>.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

@@ -74,7 +74,7 @@ im Jahr 2013:
 --></code></pre></div>
 
 <p>
-Um die einzelenen Bestandteile von CQL zu verstehen, werden einige syntaktische
+Um die einzelnen Bestandteile von CQL zu verstehen, werden einige syntaktische
 Terminologien definiert.
 </p>
 
@@ -93,14 +93,15 @@ Beispielsweise ist
 </code></div>
 
 <p>
-eine Liste deren drei Elemente die Zeichenketten "position",
-":shifthorizontal", und ":flipcolor" sind.
+eine Liste deren drei Elemente die Zeichenketten <span style='white-space:nowrap;'>"position"</span>,
+<span style='white-space:nowrap;'>":shifthorizontal"</span>, und <span style='white-space:nowrap;'>":flipcolor"</span> sind.
 </p>
 
 <p>
-Die obige Liste, beginnend mit "(match", hat sechs Elemente. Das letzte
-Element ist selbst eine Liste mit sechs Elementen, dessen erstes Element
-"position", und dessen letztes Element ":flipcolor" ist.
+Die obige Liste, beginnend mit <span style='white-space:nowrap;'>"(match"</span>, hat sechs Elemente.
+Das letzte Element ist selbst eine Liste mit sechs Elementen, dessen erstes
+Element <span style='white-space:nowrap;'>"position"</span>, und dessen letztes Element
+<span style='white-space:nowrap;'>":flipcolor"</span> ist.
 </p>
 
 <p>
@@ -132,13 +133,13 @@ In der Liste
 erhält <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> die Parameter <span style='white-space:nowrap;'><code><span class='piece'>&#x2659;</span>[b2-7]</code></span>
 und <span style='white-space:nowrap;'><code>4</code></span>. Die anderen Schlüsselwörter
 <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a> und <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> erwarten
-keine Parameter. Eine Liste mit dem ersten Element "match" wird eine Suchliste
-genannt und definiert einen Suchfilter.
+keine Parameter. Eine Liste mit dem ersten Element <span style='white-space:nowrap;'>"match"</span> wird eine
+Suchliste genannt und definiert einen Suchfilter.
 </p>
 
 <p>
-Eine Liste mit dem ersten Element "position" wird eine Positionsliste
-genannt und definiert einen Positionsfilter.
+Eine Liste mit dem ersten Element <span style='white-space:nowrap;'>"position"</span> wird eine
+Positionsliste genannt und definiert einen Positionsfilter.
 </p>
 
 <h2>Funktionsweise von CQL</h2>
@@ -173,7 +174,7 @@ Der einfachste Positionsfilter ist:
 </code></div>
 
 <p>
-Dieser Positionsfilter filtert jede Partie. Folglich filtert das folgende
+Dieser Positionsfilter filtert jede Position. Folglich filtert das folgende
 Skript alle Partien:
 </p>
 
@@ -183,7 +184,8 @@ Skript alle Partien:
 
 <p>
 In Scidb kann dieses Skript noch einfacher formuliert werden, denn in
-Scidb muß die Suchliste keine Positionsliste enthalten:
+Scidb muß die Suchliste, abweichend vom CQL-Standard, keine Positionsliste
+enthalten:
 </p>
 
 <div class='verb'><code>
@@ -204,12 +206,11 @@ Beispiel:
 )<!--
 --></code></pre></div>
 
-<h2>Einige Basiselement</h2>
+<h2>Einige Basiselemente</h2>
 
 <ul>
     <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
     <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-    <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
     <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
     <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
 </ul>

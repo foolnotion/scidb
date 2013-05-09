@@ -68,7 +68,6 @@ TITLE Welcome to Scidb-Help
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
       <li><a href="CQL-Square-Designators.html">Square designators</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Transforms of piece designators</a></li>
       <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
       <li><a href="Pattern-Matching.html">Pattern matching</a></li>
     </ul>
@@ -85,6 +84,7 @@ TITLE Welcome to Scidb-Help
 
 <ul class="index">
   <li><a href="Game-Flags.html">Game markers</a></li>
+  <li><a href="Chess-Variants.html">Supported chess variants</a></li>
   <li><a href="Database-Archive.html">Specification of database archive</a></li>
   <li><a href="Command-Line-Options.html">Command line options</a></li>
   <li><a href="NAG-Comments.html">NAG annotation values</a></li>

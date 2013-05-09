@@ -22,12 +22,204 @@ INDEX Transformations (CQL)
 TITLE CQL - Transformations
 
 <ul>
-  <li><a href="#tranforms">Transformation keywords in a position list</a></li>
+  <li><a href="#transforms">Transforms of piece designators</a></li>
+  <li><a href="#keywords">Transformation keywords in a position list</a></li>
   <li><a href="#examples">Examples of transformation keyword uses</a></li>
   <li><a href="#multiple">Multiple transformation keywords</a></li>
 </ul>
 
-<h2 id="tranforms">Transformation keywords in a position list</h2>
+<h2 id="transforms">Transforms of piece designators</h2>
+
+<p>
+Certain transforms are defined on piece designators.
+</p>
+
+<p>
+A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
+each square in its square set about the main diagonal.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonal flip of <expr>&R;a8</expr> about the main diagonal.
+    </td>
+  </tr>
+</table>
+
+<p>
+For example, the diagonal flip of <expr>[Aa][a-h1-2,f6,h7]</expr> is
+<expr>[Aa][a-b1-8,f6,g8]</expr>.
+</p>
+
+<p>
+An <b>off-diagonal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the a8 to h1 diagonal.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Off-diagonal flip of <expr>&B;b2</expr> about the a8 to h1 diagonal.
+    </td>
+  </tr>
+</table>
+
+<p>
+For example, the off-diagonal flip of <expr>&R;a8</expr> is <expr>&R;a8</expr>.
+The off-diagonal flip of <expr>[&B;&b;][a1-8]</expr>, denoting a bishop on the
+a file, is <expr>[&B;&b;][a-h8]</expr>, denoting a bishop on the eight rank.
+</p>
+
+<p>
+A <b>vertical flip transformation</b> applied to a piece designator reflects
+each square in its square set about the vertical bisector of the board. For
+example, the vertical flip of <expr>Uf6</expr>, denoting a piece on f6, is
+<expr>Uc6</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertical flip of <expr>&b;f6</expr> about the vertical bisector.
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>horizontal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the horizontal bisector of
+the board. For example, the horizontal flip of <expr>Uf6</expr> is
+<expr>Uf3</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontal flip of <expr>&b;f6</expr> about the horizontal bisector.
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>dihedral transformation</b> of a piece designator is a flip transformation
+followed by a flip transformation or the identity transformation (the first
+flip transformation could be replaced by rotations by 90, 180, or 270 degrees).
+There are 8 distinct dihedral transformations of the board. For example, the
+results of applying all dihedral transformations to the piece designator
+<expr>&Q;c2</expr> are the 8 piece designators <expr>&Q;c2</expr>,
+<expr>&Q;b3</expr>, <expr>&Q;b6</expr>, <expr>&Q;c7</expr>, <expr>&Q;f7</expr>,
+<expr>&Q;g6</expr>, <expr>&Q;g3</expr>, and <expr>&Q;f2</expr>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png"/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Dihedral transformations of <expr>&Q;c2</expr>, for example:<br/>
+      diagonal flip + diagonal flip (to c2)<br/>
+      diagonal flip + identity transformation (to b3)<br/>
+      diagonal flip + horizontal flip (to b6)<br/>
+      horizontal flip + identity transformation (to c7)<br/>
+      horizontal flip + vertical flip (to f7)<br/>
+      off-diagonal flip + identity transformation (to g6)<br/>
+      off-diagonal flip + horizontal flip (to g3)<br/>
+      vertical flip + identity transformation (to f2)<br/>
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>unit right shift transformation</b>, applied to a piece designator,
+shifts each square in its square set over to the right one square. If a
+square is already at the right edge of the board, it is removed from the
+square set. If a square is at the left edge of the board, it is also added
+to the new square set.
+</p>
+
+<p>
+For example, the unit right shift transformation of <expr>&Q;d4</expr> is
+<expr>&Q;e4</expr>. The unit right shift transformation of <expr>&Q;[c2,h2]</expr>
+is <expr>&Q;d2</expr>. The unit right shift transformation of
+<expr>&Q;[a2,c2,h2]</expr> is <expr>&Q;[a2,b2,d2]</expr>.
+</p>
+
+<p>
+The definitions of <b>unit left shift transformation</b>, <b>unit up shift
+transformation</b> and <b>unit down shift transformation</b> are similar to that
+of unit right shift transformation, with of course the location of the
+appropriate board edges altering mutatis mutandis.
+</p>
+
+<p>
+A <b>right transformation</b> is a composition of zero or more unit right
+transformations. For example, the right transformation comprising three
+successive unit right transformations applied to <expr>&Q;a4</expr> is
+<expr>&Q;[a4,b4,c4,d4]</expr>, since squares on the left edge of the board are
+always included in the new set. The result of applying this right
+transformation to <expr>&Q;d4</expr> is <expr>&Q;g4</expr>.
+</p>
+
+<p>
+Similar definitions apply for <b>left transformation</b>, <b>up
+transformation</b>, and <b>down transformation</b>.
+</p>
+
+<p>
+A <b>horizontal shift transformation</b> is either a left or a right
+transformation. A <b>vertical shift transformation</b> is either a down
+or an up transformation.
+</p>
+
+<p>
+A <b>maindiagonal shift</b> is a transformation that can be be written as
+zero or more combinations of unit right shift and unit up shift transformations.
+An <b>off-diagonal shift</b> is a transformation that can be be written as
+zero or more combinations of unit right shift and unit down shift transformations.
+</p>
+
+<p>
+A <b>shift transformation</b> is a transformation that can be written as
+zero or more horizontal shift transformations followed by zero or more
+vertical shift transformations. There is exactly one shift transformation
+that sends a given square to another given square. One possible shift
+transformation of <expr>&Q;[b3,c4]</expr> is <expr>&Q;[d4,e5]</expr>.
+</p>
+
+<p>
+A <b>color flip transformation</b> of a piece designator switches the colors
+of each piecetype in the piece set of the piece designator, and then applies
+a horizontal flip to the piece designator. For example, the color flip
+transformation applied to <expr>[&R;&b;&p;][a2,c2]</expr>, either a white rook,
+a black bishop, or a black pawn on either c2 or a2, is
+<expr>[&r;&B;&P;][a7,c7]</expr>.
+</p>
+
+<h2 id="keywords">Transformation keywords in a position list</h2>
 
 <p>
 Certain keywords within a position list specify that the position list should

@@ -29,6 +29,7 @@ set Index {
   { C
     {
       {{castling : position} {CQL-Position-List.html} {position:castling}}
+      {{changesidetomove : relation} {CQL-Relation-List.html} {relation:changesidetomove}}
       {{check : position} {CQL-Position-List.html} {position:check}}
       {{checkcount : position} {CQL-Position-List.html} {position:checkcount}}
       {{comment : match} {CQL-Match-List.html} {match:comment}}
@@ -49,6 +50,7 @@ set Index {
       {{eco : match} {CQL-Match-List.html} {match:eco}}
       {{elo : position} {CQL-Position-List.html} {position:elo}}
       {{endgame : position} {CQL-Position-List.html} {position:endgame}}
+      {{endmost : position} {CQL-Position-List.html} {position:endmost}}
       {{enpassant : position} {CQL-Position-List.html} {position:enpassant}}
       {{evaluation : position} {CQL-Position-List.html} {position:evaluation}}
       {{event : match} {CQL-Match-List.html} {match:event}}
@@ -65,11 +67,13 @@ set Index {
       {{fen : position} {CQL-Position-List.html} {position:fen}}
       {{fiftymoverule : position} {CQL-Position-List.html} {position:fiftymoverule}}
       {{flip : position} {CQL-Position-List.html} {position:flip}}
+      {{flip : relation} {CQL-Relation-List.html} {relation:flip}}
       {{flipcolor : position} {CQL-Position-List.html} {position:flipcolor}}
       {{flipdiagonal : position} {CQL-Position-List.html} {position:flipdiagonal}}
       {{flipdihedral : position} {CQL-Position-List.html} {position:flipdihedral}}
       {{fliphorizontal : position} {CQL-Position-List.html} {position:fliphorizontal}}
       {{flipvertical : position} {CQL-Position-List.html} {position:flipvertical}}
+      {{following : position} {CQL-Position-List.html} {position:following}}
       {{forany : match} {CQL-Match-List.html} {match:forany}}
     }
   }
@@ -93,6 +97,7 @@ set Index {
   }
   { I
     {
+      {{ignoresidetomove : relation} {CQL-Relation-List.html} {relation:ignoresidetomove}}
       {{initial : position} {CQL-Position-List.html} {position:initial}}
       {{inside : position} {CQL-Position-List.html} {position:inside}}
       {{iscastling : position} {CQL-Position-List.html} {position:iscastling}}
@@ -113,6 +118,7 @@ set Index {
       {{mate : position} {CQL-Position-List.html} {position:mate}}
       {{matingmaterial : position} {CQL-Position-List.html} {position:matingmaterial}}
       {{maxswapevaluation : position} {CQL-Position-List.html} {position:maxswapevaluation}}
+      {{missingpiececount : relation} {CQL-Relation-List.html} {relation:missingpiececount}}
       {{moveevaluation : position} {CQL-Position-List.html} {position:moveevaluation}}
       {{movefrom : position} {CQL-Position-List.html} {position:movefrom}}
       {{movenumber : position} {CQL-Position-List.html} {position:movenumber}}
@@ -121,6 +127,7 @@ set Index {
   }
   { N
     {
+      {{newpiececount : relation} {CQL-Relation-List.html} {relation:newpiececount}}
       {{noannotate : position} {CQL-Position-List.html} {position:noannotate}}
       {{nocastling : position} {CQL-Position-List.html} {position:nocastling}}
       {{nocheck : position} {CQL-Position-List.html} {position:nocheck}}
@@ -139,11 +146,14 @@ set Index {
     {
       {{or : match} {CQL-Match-List.html} {match:or}}
       {{or : position} {CQL-Position-List.html} {position:or}}
+      {{originaldifferentcount : relation} {CQL-Relation-List.html} {relation:originaldifferentcount}}
+      {{originalsamecount : relation} {CQL-Relation-List.html} {relation:originalsamecount}}
       {{output : match} {CQL-Match-List.html} {match:output}}
     }
   }
   { P
     {
+      {{pattern : relation} {CQL-Relation-List.html} {relation:pattern}}
       {{pgn : match} {CQL-Match-List.html} {match:pgn}}
       {{piececount : position} {CQL-Position-List.html} {position:piececount}}
       {{piecedrop : position} {CQL-Position-List.html} {position:piecedrop}}
@@ -175,8 +185,10 @@ set Index {
   }
   { S
     {
+      {{samesidetomove : relation} {CQL-Relation-List.html} {relation:samesidetomove}}
       {{sequence : position} {CQL-Position-List.html} {position:sequence}}
       {{shift : position} {CQL-Position-List.html} {position:shift}}
+      {{shift : relation} {CQL-Relation-List.html} {relation:shift}}
       {{shiftdiagonal : position} {CQL-Position-List.html} {position:shiftdiagonal}}
       {{shifthorizontal : position} {CQL-Position-List.html} {position:shifthorizontal}}
       {{shiftmaindiagonal : position} {CQL-Position-List.html} {position:shiftmaindiagonal}}
@@ -202,7 +214,9 @@ set Index {
       {{variant : match} {CQL-Match-List.html} {match:variant}}
       {{variant : position} {CQL-Position-List.html} {position:variant}}
       {{variations : position} {CQL-Position-List.html} {position:variations}}
+      {{variations : relation} {CQL-Relation-List.html} {relation:variations}}
       {{variationsonly : position} {CQL-Position-List.html} {position:variationsonly}}
+      {{variationsonly : relation} {CQL-Relation-List.html} {relation:variationsonly}}
     }
   }
   { W

@@ -180,12 +180,12 @@ Beispiel ist identisch zu:
 </p>
 
 <div class='box'><pre><code><!--
--->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>))<!--
+-->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a>))<!--
 --></code></pre></div>
 
 <p>
-Tatsächlich ist dieses Schlüsselwort entbehrlich, aber der Vollständigkeit
-wegen enthalten.
+Scheinbar ist dieses Schlüsselwort entbehrlich, doch es kann innerhalb von
+<a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> oder <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> benötigt werden.
 </p>
 
 <h3 id="match:not">:not&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(nicht)</span></h3>
@@ -210,7 +210,7 @@ Beispiel:
 
 <p>
 Suche nach Partien, die nicht mit einer Shuffle-Schach-Position starten.
-Dieses Beispiel kann klarer mit der zweiten Form formuliert werden:
+Dieses Beispiel kann auch mit der zweiten Form formuliert werden:
 </p>
 
 <div class='verb'><code>
@@ -221,7 +221,7 @@ Dieses Beispiel kann klarer mit der zweiten Form formuliert werden:
 
 <p>
 Erwartet eine Liste von Untersuchlisten und filtert nur dann eine Partie, wenn
-mindestens eine von ihnen filtert diese Partie filtert.. Eine Untersuchliste kann
+mindestens eine von ihnen diese Partie filtert. Eine Untersuchliste kann
 keine Positionslisten enthalten.
 </p>
 
@@ -259,20 +259,20 @@ Suche nach Weltmeisterschaftspartien.
 <h3 id="match:event">:event&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Turnier)</span></h3>
 
 <p>
-Suche nach Partien deren Turnierbezeichnung mit dem gegebenen Suchmuster
+Suche nach Partien deren Turnierbezeichnung mit dem gegebenen Muster
 übereinstimmt.
 </p>
 
 <p>
-Ein Parameter wird erwartet, entweder ein Suchmuster in doppelten
-Anführungszeichen, oder eine einfache Zeichenkette.
+Als Argument wird entweder ein Suchmuster in doppelten
+Anführungszeichen, oder eine einfache Zeichenkette erwartet.
 Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
 </p>
 
 <h3 id="match:eventcountry">:eventcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Turnieraustragungsland)</span></h3>
 
 <p>
-Filtere alle Partien, deren Turnieraustragungsland mit einem der in
+Filtere nur Partien, deren Turnieraustragungsland mit einem der in
 der kommaseparierten Liste gegebenen Ländercodes übereinstimmt.
 Ein Ländercode ist entweder ein
 <a href="http://de.wikipedia.org/wiki/Liste_der_olympischen_Mannschaftsk%C3%BCrzel">IOC-Ländercode<span class="awesome">&nbsp;&#xf08e;</span></a>,
@@ -280,6 +280,7 @@ oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercod
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
 <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern deren
 Turnieraustragungsland unbekannt ist.
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
 
 <p>
@@ -321,12 +322,12 @@ Für eine detaillierte Beschreibung des Datumsbereich siehe
 <h3 id="match:eventmode">:eventmode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Turniermodus)</span></h3>
 
 <p>
-Filtere alle Partien, deren Turniermodus mit einem der Modi in der
+Filtere nur Partien, deren Turniermodus mit einem der Modi in der
 gegebenen kommaseparierten Liste übereinstimmt.
 </p>
 
 <p>
-Der Eventmodus ist eine der folgenden Modi:
+Der Turniermodus ist eine der folgenden Modi:
 </p>
 
 <ul style='list-style-type: none'><li>
@@ -375,6 +376,10 @@ Der Eventmodus ist eine der folgenden Modi:
 </li></ul>
 
 <p>
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Turniermodi.
+</p>
+
+<p>
 Beispiel:
 </p>
 
@@ -389,7 +394,7 @@ Suche nach Fernpartien, oder nach via Email gespielten Partien.
 <h3 id="match:eventtype">:eventtype&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Turniertyp)</span></h3>
 
 <p>
-Filtere alle Partien, deren Turniertyp mit einem der in der gegebenen
+Filtere nur Partien, deren Turniertyp mit einem der in der gegebenen
 kommaseparierten Liste von Turniertypen übereinstimmt.
 </p>
 
@@ -448,6 +453,10 @@ Der Turniertyp ist einer der folgenden Typen:
 </li></ul>
 
 <p>
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Turniertypen.
+</p>
+
+<p>
 Beispiel:
 </p>
 
@@ -458,12 +467,12 @@ Beispiel:
 <h3 id="match:site">:site&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Turnierort)</span></h3>
 
 <p>
-Suche nach Partien, deren Turnierort mit dem gegebenen Suchmuster übereinstimmt.
+Suche nach Partien, deren Turnierort mit dem gegebenen Muster übereinstimmt.
 </p>
 
 <p>
-Ein Parameter wird erwartet, entweder ein Suchmuster in doppelten
-Anführungszeichen, oder eine einfache Zeichenkette.
+Als Argument wird entweder ein Suchmuster in doppelten
+Anführungszeichen, oder eine einfache Zeichenkette erwartet.
 Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
 </p>
 
@@ -516,6 +525,10 @@ Der Zeitmodus ist einer der folgenden Modi:
     </tr>
   </table>
 </li></ul>
+
+<p>
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Zeitmodi.
+</p>
 
 <p>
 Beispiel:
@@ -606,7 +619,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whitebirthyear"><span style='whit
 <h3 id="match:blackcountry">:blackcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Land - schwarzer Spieler)</span></h3>
 
 <p>
-Filtere alle Partien, in denen die Nationalität des schwarzen Spielers mit einem
+Filtere nur Partien, in denen die Nationalität des schwarzen Spielers mit einem
 der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
@@ -615,6 +628,7 @@ oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercod
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
 <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
 Nationalität des schwarzen Spielers unbekannt ist.
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
 
 <p>
@@ -641,9 +655,9 @@ Siehe auch: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='whit
 <h3 id="match:blackgender">:blackgender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Geschlecht - schwarzer Spieler)</span></h3>
 
 <p>
-Filtere alle Partien, in denen das Geschlecht des schwarzer Spielers mit dem
+Filtere nur Partien, in denen das Geschlecht des schwarzer Spielers mit dem
 gegebenen Geschlecht übereinstimmt. Die Geschlechtsangabe ist: <span style='white-space:nowrap;'><code>f</code></span>
-(feminin), <span style='white-space:nowrap;'><code>m</code></span> (masculin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
+(feminin), <span style='white-space:nowrap;'><code>m</code></span> (maskulin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
 Anstatt <span style='white-space:nowrap;'><code>f</code></span> (feminin) kann auch <span style='white-space:nowrap;'><code>w</code></span> (weiblich) verwendet
 werden.
 </p>
@@ -700,8 +714,8 @@ Suche nach Partien, in denen der schwarze Spielername mit dem gegebenen Muster
 </p>
 
 <p>
-Ein Parameter wird erwartet, entweder ein Suchmuster in doppelten
-Anführungszeichen, oder eine einfache Zeichenkette.
+Als Argument wird entweder ein Suchmuster in doppelten
+Anführungszeichen, oder eine einfache Zeichenkette erwartet.
 Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
 </p>
 
@@ -712,7 +726,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:player"><span style='white-space:
 <h3 id="match:blackrating">:blackrating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Wertungszahl - schwarzer Spieler)</span></h3>
 
 <p>
-Suche alle Partien, in denen die Wertungszahl des schwarzen Spielers für
+Suche nur nach Partien, in denen die Wertungszahl des schwarzen Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
 Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
@@ -726,7 +740,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whiterating"><span style='white-s
 <h3 id="match:blacktitle">:blacktitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Titel - schwarzer Spieler)</span></h3>
 
 <p>
-Suche alle Partien, in denen der Titel des schwarzen Spielers mit einem
+Suche nur nach Partien, in denen der Titel des schwarzen Spielers mit einem
 in der gegebenen kommaseparierten Liste von Titeln übereinstimmt.
 Siehe <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> für eine detailliertere Beschreibung.
 </p>
@@ -738,7 +752,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whitetitle"><span style='white-sp
 <h3 id="match:country">:country&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Land)</span></h3>
 
 <p>
-Filtere alle Partien, in denen die Nationalität eines Spielers mit einem
+Filtere nur Partien, in denen die Nationalität eines Spielers mit einem
 der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
@@ -747,6 +761,7 @@ oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercod
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
 <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen
 die Nationalität einer der Spieler unbekannt ist.
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
 
 <p>
@@ -759,7 +774,7 @@ Beispiele:
 </code></div>
 
 <p>
-In beiden Beispielen werden alle Partien gefiltert, in denen einer
+In beiden Beispielen werden nur Partien gefiltert, in denen einer
 der Spieler eine deutsche Nationalität besitzt.
 </p>
 
@@ -796,9 +811,9 @@ Siehe auch: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='whit
 <h3 id="match:gender">:gender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Geschlecht)</span></h3>
 
 <p>
-Filtere alle Partien, in denen das Geschlecht einer der Spieler mit dem
+Filtere nur Partien, in denen das Geschlecht einer der Spieler mit dem
 gegebenen Geschlecht übereinstimmt. Die Geschlechtsangabe ist: <span style='white-space:nowrap;'><code>f</code></span>
-(feminin), <span style='white-space:nowrap;'><code>m</code></span> (masculin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
+(feminin), <span style='white-space:nowrap;'><code>m</code></span> (maskulin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
 Anstatt <span style='white-space:nowrap;'><code>f</code></span> (feminin) kann auch <span style='white-space:nowrap;'><code>w</code></span> (weiblich) verwendet
 werden.
 </p>
@@ -834,9 +849,9 @@ Siehe auch: <a href="CQL-Match-List.html#match:whiteishuman"><span style='white-
 <h3 id="match:player">:player&emsp;<span class='normal'>(Spieler)</span></h3>
 
 <p>
-Suche nach Partien, in denen der schwarze Spielername mit dem gegebenen Muster
-übereinstimmt.  Ein Parameter wird erwartet, entweder ein Suchmuster in
-doppelten Anführungszeichen, oder eine einfache Zeichenkette.
+Suche nach Partien, in denen der schwarze Spielername mit dem gegebenen Argument
+übereinstimmt: entweder ein Suchmuster in doppelten Anführungszeichen, oder eine
+einfache Zeichenkette.
 </p>
 
 <p>
@@ -855,7 +870,7 @@ Beispiel:
 </code></div>
 
 <p>
-Filtere alle Partien, in denen einer der Spielernamen eine Teilzeichenkette
+Filtere nur Partien, in denen einer der Spielernamen eine Teilzeichenkette
 <span style='white-space:nowrap;'>"coeff"</span> enthält.
 </p>
 
@@ -863,7 +878,7 @@ Filtere alle Partien, in denen einer der Spielernamen eine Teilzeichenkette
 <b>Suchmuster in doppelten Anführungszeichen:</b> Nur Partien, in denen
 mindestens einer der Spielernamen durch das Suchmuster ersetzt werden kann,
 werden aufgefunden. Für eine Beschreibung der Suchmuster siehe
-<a href="Pattern-Matching.html">Suchmusterabgleich</a>.
+<a href="Pattern-Matching.html#examples">Suchmusterabgleich</a>.
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
@@ -895,7 +910,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whiteplayer"><span style='white-s
 <h3 id="match:rating">:rating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Wertungszahl)</span></h3>
 
 <p>
-Suche alle Partien, in denen die Wertungszahl einer der Spielers für
+Suche nur nach Partien, in denen die Wertungszahl einer der Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
 Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
@@ -939,7 +954,7 @@ Der Wertungstyp ist einer der folgenden Typen:
       <td class="r">Schach-960-Wertung (Individual Player Strength)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>Other</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>Rating</code></span></td>
       <td class="r">Jeder andere Wertungstyp</td>
     </tr>
   </table>
@@ -954,7 +969,7 @@ Beispiel:
 </code></div>
 
 <p>
-Filtere alle Partien, in denen einer der Spieler eine ELO-Wertung
+Filtere nur Partien, in denen einer der Spieler eine ELO-Wertung
 zwischen 2000 und 3000 besitzt.
 </p>
 
@@ -965,7 +980,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:whiterating"><span style='white-s
 <h3 id="match:title">:title&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Titel)</span></h3>
 
 <p>
-Suche alle Partien, in denen der Titel einer der Spieler mit einem
+Suche nur nach Partien, in denen der Titel einer der Spieler mit einem
 in der gegebenen kommaseparierten Liste von Titeln übereinstimmt.
 Ein Titel ist einer der folgenden:
 </p>
@@ -1029,7 +1044,7 @@ Beispiele:
 </code></div>
 
 <p>
-Suche alle Partien mit mindestens einem GM oder IM.
+Suche nur nach Partien mit mindestens einem GM oder IM.
 </p>
 
 <div class='verb'><code>
@@ -1037,7 +1052,7 @@ Suche alle Partien mit mindestens einem GM oder IM.
 </code></div>
 
 <p>
-Suche alle Partien, in denen keiner der Spieler einen Titel besitzt.
+Suche nur nach Partien, in denen keiner der Spieler einen Titel besitzt.
 </p>
 
 <h3 id="match:whitebirthyear">:whitebirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Geburtsjahr - weißer Spieler)</span></h3>
@@ -1056,7 +1071,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:blackbirthyear"><span style='whit
 <h3 id="match:whitecountry">:whitecountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Land - weißer Spieler)</span></h3>
 
 <p>
-Filtere alle Partien, in denen die Nationalität des weißen Spielers mit einem
+Filtere nur Partien, in denen die Nationalität des weißen Spielers mit einem
 der Ländercodes in der gegebenen kommaseparierten Liste von Ländercodes
 übereinstimmt.
 Ein Ländercode ist entweder ein
@@ -1065,6 +1080,7 @@ oder ein <a href="http://de.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2-Ländercod
 Weiterhin sind die speziellen Ländercodes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC-Form) und
 <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2-Form) erlaubt, die Partien filtern, in denen die
 Nationalität des weißen Spielers unbekannt ist.
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von Ländercodes.
 </p>
 
 <p>
@@ -1091,9 +1107,9 @@ Siehe auch: <a href="CQL-Match-List.html#match:blackdeathyear"><span style='whit
 <h3 id="match:whitegender">:whitegender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Geschlecht - weißer Spieler)</span></h3>
 
 <p>
-Filtere alle Partien, in denen das Geschlecht des weißen Spielers mit dem
+Filtere nur Partien, in denen das Geschlecht des weißen Spielers mit dem
 gegebenen Geschlecht übereinstimmt. Die Geschlechtsangabe ist: <span style='white-space:nowrap;'><code>f</code></span>
-(feminin), <span style='white-space:nowrap;'><code>m</code></span> (masculin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
+(feminin), <span style='white-space:nowrap;'><code>m</code></span> (maskulin, männlich), oder <span style='white-space:nowrap;'><code>x</code></span> (unbekannt).
 Anstatt <span style='white-space:nowrap;'><code>f</code></span> (feminin) kann auch <span style='white-space:nowrap;'><code>w</code></span> (weiblich) verwendet
 werden.
 </p>
@@ -1134,8 +1150,8 @@ Suche nach Partien, in denen der weiße Spielername mit dem gegebenen Muster
 </p>
 
 <p>
-Ein Parameter wird erwartet, entweder ein Suchmuster in doppelten
-Anführungszeichen, oder eine einfache Zeichenkette.
+Ein Argument wird entweder ein Suchmuster in doppelten Anführungszeichen, oder
+eine einfache Zeichenkette erwartet.
 Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
 </p>
 
@@ -1146,7 +1162,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:blackplayer"><span style='white-s
 <h3 id="match:whiterating">:whiterating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Wertungszahl - weißer Spieler)</span></h3>
 
 <p>
-Suche alle Partien, in denen die Wertungszahl des weißen Spielers für
+Suche nur nach Partien, in denen die Wertungszahl des weißen Spielers für
 den gegebenen Wertungstyp innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
 Der erste Parameter ist der Wertungstyp, dann folgt der Wertebereich.
@@ -1160,7 +1176,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:blackrating"><span style='white-s
 <h3 id="match:whitetitle">:whitetitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Titel - weißer Spieler)</span></h3>
 
 <p>
-Suche alle Partien, in denen der Titel des weißen Spielers mit einem
+Suche nur nach Partien, in denen der Titel des weißen Spielers mit einem
 in der gegebenen kommaseparierten Liste von Titeln übereinstimmt.
 Siehe <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> für eine detailliertere Beschreibung.
 </p>
@@ -1197,8 +1213,8 @@ gegebenen Suchmuster übereinstimmt.
 </p>
 
 <p>
-Ein Parameter wird erwartet, entweder ein Suchmuster in doppelten
-Anführungszeichen, oder eine einfache Zeichenkette.
+Als Argument wird entweder ein Suchmuster in doppelten Anführungszeichen, oder
+eine einfache Zeichenkette erwartet.
 Siehe <a href="#match:player">:player</a> für eine detaillierte Beschreibung.
 </p>
 
@@ -1229,7 +1245,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:hascomments"><span style='white-s
 <h3 id="match:date">:date&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Partiedatum)</span></h3>
 
 <p>
-Ein Datumsbereich wird als Parameter erwartet, mit dem alle
+Ein Datumsbereich wird als Parameter erwartet, mit dem nur
 Partien gefiltert werden, deren Partiedatum innerhalb dieses
 Bereichs liegt.
 </p>
@@ -1246,11 +1262,11 @@ Der Datumsbereich muß einer der folgenden Syntaxformen genügen:
     </tr>
     <tr valign="top">
       <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 2010-10-31</code></span></td>
-      <td class="r">bezeichnet einen Datumsbereiche, inklusive der Schranken</td>
+      <td class="r">bezeichnet einen Datumsbereich, inklusive der Schranken</td>
     </tr>
     <tr valign="top">
       <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 .. 2010-11-01</code></span></td>
-      <td class="r">bezeichnet einen Datumsbereiche, inklusive der
+      <td class="r">bezeichnet einen Datumsbereich, inklusive der
           linken Schranke, aber exklusive der rechten Schranke</td>
     </tr>
   </table>
@@ -1363,8 +1379,8 @@ Suche nach allen Partien gespielt zwischen dem 14. September 2010
 (exklusive; <span style='white-space:nowrap;'><code>2010-10-27-43d</code></span> ist der 14. September 2010) und
 dem 27. Oktober 2010 (inklusive). Dies ist ein Beispiel für den folgenden
 Fall: wir wissen daß das Turnier am 27.10.2010 endete, und die
-Turnierdauer war exakt 43 Tage. Dieses Beispiel stellt heraus daß
-die linke Datumsschranke größer sein kann als die rechte Datumsschranke.
+Turnierdauer war exakt 43 Tage. Dieses Beispiel stellt noch einmal heraus,
+daß die linke Datumsschranke größer sein darf als die rechte Datumsschranke.
 </p>
 
 <div class='verb'><code>
@@ -1382,7 +1398,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:year"><span style='white-space:no
 <h3 id="match:eco">:eco&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
-Erwartet eine <a href="ECO-Code.html">ECO-Code</a>-Bereich, und filtert alle
+Erwartet eine <a href="ECO-Code.html">ECO-Code</a>-Bereich, und filtert nur
 Partien mit einem ECO-Code, der in diesem Bereich liegt. Der Bereich kann
 auch aus einem einzelnem ECO-Code bestehen.
 </p>
@@ -1396,7 +1412,7 @@ Beispiele:
 </code></div>
 
 <p>
-Suche alle Partien mit ECO-Code A00.
+Suche nur nach Partien mit ECO-Code A00.
 </p>
 
 <div class='verb'><code>
@@ -1404,7 +1420,7 @@ Suche alle Partien mit ECO-Code A00.
 </code></div>
 
 <p>
-Suche alle Partien mit einem ECO-Code zwischen A00 und A99 (inklusive der
+Suche nur nach Partien mit einem ECO-Code zwischen A00 und A99 (inklusive der
 Schranken).
 </p>
 
@@ -1412,8 +1428,15 @@ Schranken).
 
 <p>
 Erwartet eine <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>, und filtert
-nur die Partien, deren Nummer in der Datanbank innerhalb des gegebenen Bereichs
+nur die Partien, deren Nummer in der Datenbank innerhalb des gegebenen Bereichs
 liegt.
+</p>
+
+<p>
+Beachte daß im Falle von PGN-Datenbanken eine Partienummer mehrmals vorkommen
+kann, nämlich in verschiedenen <a href="Chess-Variants.html">Schachformen</a>.
+Evt. ist die Suche mit dem Schlüsselwort <a href="CQL-Match-List.html#match:variant"><span style='white-space:nowrap;'>:variant</span></a>
+einzuschränken.
 </p>
 
 <p>
@@ -1431,7 +1454,7 @@ Beispiele:
 Suche nach Partien, in denen mindestens eine Partiemarkierung (&#x21d2;
 <a href="Game-Flags.html">Partiemarkierungen</a>) gesetzt ist, die in der
 gegebenen Zeichenkette mit ihrem Kürzel aufgeführt wird. Wenn kein Parameter
-vorhanden ist, so wird nach Partien gesucht, in denen irgendeine
+vorhanden ist so wird nach Partien gesucht, in denen irgendeine
 Partiemarkierung gesetzt wurde.
 </p>
 
@@ -1550,6 +1573,11 @@ Die Kürzel für Partiemarkierungen sind:
 </div>
 
 <p>
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von
+Partiemarkierungen.
+</p>
+
+<p>
 Beispiele:
 </p>
 
@@ -1582,26 +1610,30 @@ gesetzt ist, die in der gegebenen kommaseparierten Liste aufgeführt sind.
 Eine spezielle Markierung wird folgendermaßen spezifiziert:
 </p>
 
-<table>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
-    <td class="m"><img src="../images/gameflag-Deleted.png" alt="" /></td>
-    <td class="r">Die Partie ist markiert zum Löschen.</td>
-  </tr>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
-    <td class="r">Die Partie enthält unerlaubte Züge.</td>
-  </tr>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
-    <td class="r">Die Partie enthält unerlaubte Rochaden.</td>
-  </tr>
-</table>
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
+      <td class="m"><img src="../images/gameflag-Deleted.png" alt="" /></td>
+      <td class="r">Die Partie ist markiert zum Löschen.</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
+      <td class="r">Die Partie enthält unerlaubte Züge.</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
+      <td class="r">Die Partie enthält unerlaubte Rochaden.</td>
+    </tr>
+  </table>
+</div>
 
 <p>
 Beachte das <span style='white-space:nowrap;'><code>illegalmove</code></span> keine unerlaubten Rochaden beinhaltet.
+Der CQL-Editor biete eine Hilfe zur Unterstützung der Eingabe von
+speziellen Markierungen.
 </p>
 
 <p>
@@ -1613,7 +1645,8 @@ Beispiel:
 </code></div>
 
 <p>
-Suche nach Partien ohne unerlaubte Züge, unerlaubte Rochaden sind jedoch erlaubt.
+Suche nach Partien ohne unerlaubte Züge, unerlaubte Rochaden sind jedoch
+zulässig.
 </p>
 
 <h3 id="match:plycount">:plycount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Halbzugzähler)</span></h3>
@@ -1654,7 +1687,7 @@ Erlaubte Ergebnisse sind:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><span style='white-space:nowrap;'><code>1/2-1/2</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>1/2</code></span></td>
       <td class="r">Remis</td>
     </tr>
     <tr>
@@ -1676,8 +1709,8 @@ Erlaubte Ergebnisse sind:
   </table>
 </div>
 
-<p><img src='../images/note.png' alt='note' /> 
-Das Ergebnis <span style='white-space:nowrap;'><code>1/2-1/2</code></span> kann mit <span style='white-space:nowrap;'><code>1/2</code></span> abgekürzt werden.
+<p>
+Das Ergebnis <span style='white-space:nowrap;'><code>1/2</code></span> kann mit <span style='white-space:nowrap;'><code>1/2-1/2</code></span> ausgeschrieben werden.
 </p>
 
 <p>
@@ -1697,14 +1730,14 @@ Finde alle Remispartien.
 </code></div>
 
 <p>
-Finde alle Partien, in denen eine Seite gewann. Dieses Beispiel ist nicht
+Finde nur Partien, in denen eine Seite gewann. Dieses Beispiel ist nicht
 konform zum CQL-Standard.
 </p>
 
 <h3 id="match:termination">:termination&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Beendigung)</span></h3>
 
 <p>
-Filtere alle Partien, in denen die Beendigungsursache mit einer der in der
+Filtere nur Partien, in denen die Beendigungsursache mit einer der in der
 gegebenen kommaseparierten Liste von Ursachen übereinstimmt.
 </p>
 
@@ -1776,15 +1809,16 @@ Beispiel:
 </code></div>
 
 <p>
-Suche alle Partien, von denen bekannt ist, daß sie nicht in einer unnormalen
+Suche nur nach Partien, von denen bekannt ist, daß sie nicht in einer unnormalen
 Weise beendet wurden.
 </p>
 
 <h3 id="match:variant">:variant&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Schachform)</span></h3>
 
 <p>
-Suche nur nach Partien deren Schachform mit einer der Schachformen in der
-gegebenen kommaseparierten Liste übereinstimmt.
+Suche nur nach Partien deren Schachform mit einer der
+<a href="Chess-Variants.html">Schachformen</a> in der gegebenen
+kommaseparierten Liste übereinstimmt.
 </p>
 
 <p>
@@ -1836,7 +1870,7 @@ Schränke die Suche auf Schlagschachpartien ein.
 
 <p>
 Erwartet eine <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> und
-filtert alle Partien, deren Jahr des Partiedatums innerhalb des gegebenen
+filtert nur Partien, deren Jahr des Partiedatums innerhalb des gegebenen
 Bereichs liegt.
 </p>
 
@@ -1872,7 +1906,7 @@ Siehe auch: <a href="CQL-Match-List.html#match:date"><span style='white-space:no
 <h3 id="match:comment">:comment&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> &emsp;<span class='normal'>(Kommentar)</span></h3>
 
 <p>
-Filtere alle Partien, in denen mindestens ein Kommentar eine Teilzeichenkette
+Filtere nur Partien, in denen mindestens ein Kommentar eine Teilzeichenkette
 enthält, die vom gegebenen Suchmuster ersetzt werden kann (&#x21d2;
 <a href="Pattern-Matching.html">Suchmusterabgleich</a>). Das Suchmuster
 muß in doppelten Anführungszeichen eingeschlossen sein.
@@ -1951,7 +1985,7 @@ ist entweder eine Positionsnummer, oder eine FICS-Variantenbezeichnung.
 </p>
 
 <p>
-Im Falle der Positionsnummer Null werden alle Partien gefiltert, die nicht
+Im Falle der Positionsnummer Null werden nur Partien gefiltert, die nicht
 mit einer Shuffle-Schach-Positionen beginnen. Eine Positionsnummer zwischen
 1 und 3840 bezeichnet eine Shuffle-Schach-Position. Ist die Nummer kleiner
 oder gleich 960 (aber nicht Null), dann ist es eine Schach-960-Positionsnummer.
@@ -2068,7 +2102,8 @@ Beispiele:
 Suche nach Partien beginnend mit einer Standardstartposition. Im Falle
 der Schachformen Suicide und
 Giveaway findet dies auch Startpositionen mit
-der Nummer 3398.
+der Nummer 3398 (dies ist die Standardstartposition von
+Suicide- und Giveaway-Partien).
 </p>
 
 <div class='verb'><code>
@@ -2122,8 +2157,8 @@ Schuffle-Schach-Position ist, oder eine der unterstützen FICS-Varianten.
 <h3 id="match:forany">:forany&emsp;<span class='normal'>(Für jede)</span></h3>
 
 <p>
-Erwartet zwei Parameter, einen Markierungsnamen und einen Figurenbezeichner.
-Dieses Funktionalität wird auf der Seite <a href="CQL-Tagging">Tagging</a>
+Erwartet zwei Parameter, einen Markierungsnamen und einen Figurenartbezeichner.
+Diese Funktionalität wird auf der Seite <a href="CQL-Tagging">Tagging</a>
 beschrieben.
 </p>
 

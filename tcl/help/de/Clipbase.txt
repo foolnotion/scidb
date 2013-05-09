@@ -42,8 +42,8 @@ der Ablage (<see/> <a href="Database-Switcher.html#Empty-Clipbase">
 
 <p>
 Die Ablage hält die Daten intern im Scidb-Format und ist insofern eine Ausnahme, weil
-sie Partien verschiedener Schachformen gleichzeitig halten kann. Jedoch können
-administrative Operationen (<see/>
+sie Partien verschiedener <a href="Chess-Variants.html">Schachformen</a> gleichzeitig
+halten kann. Jedoch können administrative Operationen (<see/>
 <a href="Database-Switcher.html#Maintenance">
 %::application::database::mc::FileMaintenance%</a>)
 immer nur auf jeweils eine Schachform angewendet werden.

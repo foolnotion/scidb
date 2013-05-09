@@ -74,7 +74,7 @@ If you prefer to see piece letters, please select one of the options:
         (Not working in web browser)
       </div>
     </td>
-    <td nowrap>&emsp;K Q R B N P k q r b n p (will be used in CQL files)</td>
+    <td nowrap="true">&emsp;K Q R B N P k q r b n p (will be used in CQL files)</td>
   </tr>
   <tr valign="top">
     <td>
@@ -83,7 +83,7 @@ If you prefer to see piece letters, please select one of the options:
         (Not working in web browser)
       </div>
     </td>
-    <td nowrap>&emsp;<whitepieceletters/> <blackpieceletters/></td>
+    <td nowrap="true">&emsp;<whitepieceletters/> <blackpieceletters/></td>
   </tr>
   <tr valign="top">
     <td>
@@ -92,8 +92,7 @@ If you prefer to see piece letters, please select one of the options:
         Default in web browser
       </div>
     </td>
-    <td nowrap>&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
-    </td>
+    <td nowrap="true">&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
   </tr>
 </table>
 
@@ -104,7 +103,6 @@ If you prefer to see piece letters, please select one of the options:
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
       <li><a href="CQL-Square-Designators.html">Square designators</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Transforms of piece designators</a></li>
       <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
       <li><a href="Pattern-Matching.html">Pattern-Matching</a></li>
     </ul>

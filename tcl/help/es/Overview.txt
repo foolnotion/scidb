@@ -67,7 +67,6 @@ TITLE Bienvenido a la Ayuda de Scidb
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
       <li><a href="CQL-Square-Designators.html">Square designators</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Transforms of piece designators</a></li>
       <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
       <li><a href="Pattern-Matching.html">Pattern matching</a></li>
     </ul>
@@ -85,6 +84,7 @@ TITLE Bienvenido a la Ayuda de Scidb
 
 <ul class="index">
   <li><a href="Game-Flags.html">Marcadores de partida</a></li>
+  <!--<li><a href="Chess-Variants.html">Supported chess variants</a></li>-->
   <!-- NOTE for translators: this page is only available in English (do not remove this note) -->
   <li><a href="../en/Database-Archive.html">Especificación de Archivos de base de datos (ingl�s)</a></li>
   <li><a href="Command-Line-Options.html">Opciones de la línea de comandos</a></li>

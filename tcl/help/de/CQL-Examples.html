@@ -182,8 +182,8 @@ Markierung mit dem Namen "turm", die an weiße oder schwarze Türme gebunden wir
 
 <p>
 Die erste Positionsliste findet Partien in denen eine Position vorliegt, in der
-die Merkierung "turm" einen Turm auf a1 repräsentiert. Die nächste Positionsliste
-findet Partien in denen eine Position vorliegt, in der die Merkierung "turm"
+die Markierung "turm" einen Turm auf a1 repräsentiert. Die nächste Positionsliste
+findet Partien in denen eine Position vorliegt, in der die Markierung "turm"
 einen Turm auf h1 repräsentiert. Die Markierung repräsentiert die gleiche Figur
 zwischen den Positionslisten. Das Schlüsselwort <a href="CQL-Position-List.html#position:forany"><span style='white-space:nowrap;'>:forany</span></a>
 bindet nacheinander die Markierung an alle erlaubten Figuren.
@@ -263,9 +263,10 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 --></code></pre></div>
 
 <div class='box'><pre><code><!--
---><span class='comment'>; Mehrere aufeinanderfolgende Turmschachgebote jeweils gefolgt von</span>
-<span class='comment'>; einem Königszug auf ein freies Feld; normalerweise um Patt zu</span>
-<span class='comment'>; vermeiden wenn der Turm geschlagen wird.</span>
+--><span class='comment'>; Mehrere aufeinanderfolgende Turmschachgebote jeweils</span>
+<span class='comment'>; gefolgt von einem Königszug auf ein freies Feld;</span>
+<span class='comment'>; normalerweise um Patt zu vermeiden wenn der Turm</span>
+<span class='comment'>; geschlagen wird.</span>
 
 (match
   <a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result</span></a> 1/2

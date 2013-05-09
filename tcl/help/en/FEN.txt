@@ -43,7 +43,8 @@ Also, it should be noted that Scidb can handle the Shredder FEN.
 </p>
 
 <p>
-For other chess variants Scidb is using some required extensions:
+For other <a href="Chess-Variants.html">chess variants</a> Scidb is using some
+required extensions:
 </p>
 
 <ul>

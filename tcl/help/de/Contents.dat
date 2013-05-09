@@ -43,20 +43,20 @@ set Contents {
       {{{Syntax} {CQL-Syntax.html}}}
       {{{Figurenbezeichner} {CQL-Piece-Designators.html}}}
       {{{Felderbezeichner} {CQL-Square-Designators.html}}}
-      {{{Transformation der Figurenbezeichner} {CQL-Piece-Designator-Transforms.html}}}
       {{{Bereichsangaben} {CQL-Range-Specifiers.html}}}
-      {{{Musterabgleich (Pattern-Matching)} {Pattern-Matching.html}}}
+      {{{Suchmusterabgleich (Pattern-Matching)} {Pattern-Matching.html}}}
     }
     {{{Tranformationen} {CQL-Transformations.html}}}
     {{{Die Suchliste} {CQL-Match-List.html}}}
     {{{Die Positionsliste} {CQL-Position-List.html}}}
-    {{{Die Relation-Liste} {CQL-Relation-List.html}}}
+    {{{Die Relationsliste} {CQL-Relation-List.html}}}
     {{{Markierung} {CQL-Tagging.html}}}
     {{{Beispiele} {CQL-Examples.html}}}
   }
   {
     {{{Weitere Informationen} {Overview.html} {further-information}}}
     {{{Partiemarkierungen} {Game-Flags.html}}}
+    {{{Unterstützte Schachformen} {Chess-Variants.html}}}
     {{{Spezifikation des Datenbankarchivs} {Database-Archive.html}}}
     {{{Kommandozeilenoptionen} {Command-Line-Options.html}}}
     {{{NAG-Kommentarwerte} {NAG-Comments.html}}}

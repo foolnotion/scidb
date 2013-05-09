@@ -68,18 +68,15 @@ TITLE Willkommen zur Scidb-Hilfe
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
       <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
       <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
-      <li><a href="Pattern-Matching.html">Musterabgleich (Pattern-Matching)</a></li>
+      <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
     </ul>
   </li>
   <li><a href="CQL-Transformations.html">Tranformationen</a></li>
   <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
   <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
-<!--
-  <li><a href="CQL-Relation-List.html">Die Relation-Liste</a></li>
+  <li><a href="CQL-Relation-List.html">Die Relationsliste</a></li>
   <li><a href="CQL-Tagging.html">Markierung</a></li>
--->
   <li><a href="CQL-Examples.html">Beispiele</a></li>
 </ul>
 
@@ -87,6 +84,7 @@ TITLE Willkommen zur Scidb-Hilfe
 
 <ul class="index">
   <li><a href="Game-Flags.html">Partiemarkierungen</a></li>
+  <li><a href="Chess-Variants.html">Unterstützte Schachformen</a></li>
   <li><a href="Database-Archive.html">Spezifikation des Datenbankarchivs</a></li>
   <li><a href="Command-Line-Options.html">Kommandozeilenoptionen</a></li>
   <li><a href="NAG-Comments.html">NAG-Kommentarwerte</a></li>

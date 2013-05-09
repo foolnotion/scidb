@@ -1,0 +1,236 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Relation-List.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Die Relationsliste</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Die Relationsliste</h1>
+</div>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#relation">Das Schlüsselwort :relation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#keywords">Schlüsselwörter der Relationsliste</a></td></tr>
+  </table>
+</li></ul>
+
+<h2 id="relation">Das Schlüsselwort :relation</h2>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:relation</span> kann in einer Positionsliste verwendet
+werden. Es erwartet als Argument eine Relationenspezifikation. Eine
+Relationenspezifikation ist eine Liste von Argumenten für dieses Schlüsselwort.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:relation</span> (<a href="CQL-Relation-List.html#relation:missingpiececount"><span style='white-space:nowrap;'>:missingpiececount</span></a> A 1 unlimited))
+</code></div>
+
+<p>
+Diese Positionsliste sucht nach Partien, in denen zwei Positionen identisch
+sind bis auf das Fehlen von einer oder mehreren weißen Figuren in der
+späteren Position.
+</p>
+
+<p>
+Die Operation <span style='white-space:nowrap;'>:relation</span> arbeitet wie folgt. Eine Positionsliste
+mit einem <span style='white-space:nowrap;'>:relation</span>-Schlüsselwort filtert eine Position P1 genau
+dann, wenn zu einem späteren Zeitpunkt in der aktuellen Partie eine Position
+P2 aufgefunden wird, so daß die Beziehung zwischen P1 und P2 mit der
+Relationenspezifikation übereinstimmt.
+</p>
+
+<h2 id="index">Index</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#relation:changesidetomove">:changesidetomove</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:flip">:flip</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:ignoresidetomove">:ignoresidetomove</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:missingpiececount">:missingpiececount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:newpiececount">:newpiececount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:originaldifferentcount">:originaldifferentcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:originalsamecount">:originalsamecount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:pattern">:pattern</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:samesidetomove">:samesidetomove</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:shift">:shift</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:variations">:variations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
+  </table>
+</li></ul>
+
+<h2 id="keywords">Schlüsselwörter der Relationsliste</h2>
+
+<h3 id="relation:changesidetomove">:changesidetomove&emsp;<span class='normal'>(Zugrecht umwandeln)</span></h3>
+
+<p>
+P2 muß ein von P1 verschiedenes Zugrecht haben.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<p>
+Wird verwendet um Partien zu suchen, in denen die gleiche Position sowohl mit
+Weiß als auch mit Schwarz am Zug enthalten ist. Dies ist beispielsweise
+sinnvoll bei der Suche nach beidseitigem Zugwzang, wie folgt:
+</p>
+
+<div class='verb'><code>
+position <a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> (<span class='keyword'>:changesidetomove</span>))
+</code></div>
+
+<h3 id="relation:flip">:flip&emsp;<span class='normal'>(Spiegelung)</span></h3>
+
+<p>
+Erlaubt einen Stellungsvergleich unter Einbeziehung von diedrischen
+Transformationen. Jedoch ist P2 auf keinen Fall erlaubt, nach der
+Transformation von P1 verschiedene Figuren auf den Feldern zu haben.
+</p>
+
+<h3 id="relation:ignoresidetomove">:ignoresidetomove&emsp;<span class='normal'>(Zugrecht ignorieren)</span></h3>
+
+<p>
+Das Zugrecht wird ignoriert beim Stellungsvergleich.
+</p>
+
+<h3 id="relation:missingpiececount">:missingpiececount&emsp;<span class='normal'>(Fehlende Figuren zählen)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet die gleichen Argumente wie das Schlüsselwort
+<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> in der Positionsliste: einen
+Figurenbezeichner gefolgt von einer
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Eine fehlende Figur
+ist eine Figur, die in P1 auf einem Feld steht das in P2 leerstehend ist.
+P2 wird gefiltert wenn die Anzahl der fehlenden Figuren innerhalb des
+gegebenen Bereichs liegt. Anders als im Fall des Schlüsselworts
+<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> kann <span style='white-space:nowrap;'>:missingpiececount</span> nur
+einmalig innerhalb der Relationsliste verwendet werden. Keine diedrische
+Transformation und auch keine Translation in der beinhaltenden Positionsliste
+beeinflußt den Figurenbezeichner dieses Schlüsselworts.
+</p>
+
+<p>
+Der Standardfigurenbezeichner für <span style='white-space:nowrap;'>:missingpiececount</span> ist
+<code>U</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+es keine fehlenden Figuren geben.
+</p>
+
+<h3 id="relation:newpiececount">:newpiececount&emsp;<span class='normal'>(Zusätzliche Figuren zählen)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet die gleichen Argument wie das Schlüsselwort
+<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> in der Positionsliste: einen Figurenbezeichner
+gefolget von einer
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Eine zusätzliche Figur
+ist eine Figur, die in P2 auf einem Feld steht das in P1 leerstehend ist.
+P2 wird gefiltert wenn die Anzahl der zusätzlichen Figuren innerhalb des
+gegebenen Bereichs liegt. Anders als im Fall des Schlüsselworts
+<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> kann <span style='white-space:nowrap;'>:newpiececount</span> nur
+einmalig innerhalb der Relationsliste verwendet werden. Keine diedrische
+Transformation und auch keine Translation in der beinhaltenden Positionsliste
+beeinflußt den Figurenbezeichner dieses Schlüsselworts.
+</p>
+
+<p>
+Der Standardfigurenbezeichner für <span style='white-space:nowrap;'>:newpiececount</span> ist
+<code>U</code>, und der Standardbereich ist Null. D.h. standardmäßig darf
+es keine zusätzlichen Figuren geben.
+</p>
+
+<h3 id="relation:originaldifferentcount">:originaldifferentcount&emsp;<span class='normal'>(Abweichung zum Original ermitteln)</span></h3>
+
+<p>
+Dies erwartet als Argument eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert wenn die
+Anzahl der erlaubten Felder, die zwischen P1 und P2 verschieden besetzt sein
+dürfen, innerhalb des gegebenen Bereichs liegt.
+</p>
+
+<h3 id="relation:originalsamecount">:originalsamecount&emsp;<span class='normal'>(Übereinstimmung zum Original ermitteln)</span></h3>
+
+<p>
+Dies erwartet als Argument eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert wenn die
+Anzahl der nichtleeren erlaubten Felder, die bei P1 und P2 gleich besetzt sind,
+innerhalb des gegebenen Bereichs liegt.
+</p>
+
+<h3 id="relation:pattern">:pattern&emsp;<span class='normal'>(Vorlage)</span></h3>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:pattern</span> signalisiert, daß von allen
+Figurenbezeichnern, die auf oberster Ebene in der Positionsliste, in der
+die vorliegende Relationsliste enthalten ist, die erlaubten Felder definiert
+werden. Nur diese zulässigen Felder werden beim Vergleich betrachtet.
+Standardmäßig sind alle Felder zulässig.
+</p>
+
+<h3 id="relation:samesidetomove">:samesidetomove&emsp;<span class='normal'>(Gleiches Zugrecht)</span></h3>
+
+<p>
+P2 muß das gleiche Zugrecht aufweisen wie P1, Dies ist als Standard vorgegeben.
+</p>
+
+<h3 id="relation:shift">:shift&emsp;<span class='normal'>(Translation)</span></h3>
+
+<p>
+Erlaubt einen Stellungsvergleich unter Einbeziehung von Translationen.
+Jedoch ist P2 auf keinen Fall erlaubt, nach der Transformation von P1
+verschiedene Figuren auf den Feldern zu haben.
+</p>
+
+<h3 id="relation:variations">:variations&emsp;<span class='normal'>(Varianten)</span></h3>
+
+<p>
+Suche nach P2 innerhalb von Untervarianten und in der Hauptvariante.
+Standardmäßig wird nur in der Hauptvariante gesucht.
+</p>
+
+<h3 id="relation:variationsonly">:variationsonly&emsp;<span class='normal'>(Nur die Varianten)</span></h3>
+
+<p>
+Suche nach P2 nur innerhalb der Untervarianten.
+</p>
+
+</body>
+</html>

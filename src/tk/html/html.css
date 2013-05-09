@@ -143,9 +143,9 @@ VAR, ADDRESS    { font-style: italic }
 PRE, TT, CODE,
 KBD, SAMP       { font-family: courier }
 BIG             { font-size: 1.17em }
-SMALL, SUB, SUP { font-size: .83em }
-SUB             { vertical-align: sub }
-SUP             { vertical-align: super }
+SMALL           { font-size: .83em }
+SUB             { font-size: 0.67em; vertical-align: sub }
+SUP             { font-size: 0.67em; vertical-align: super }
 S, STRIKE, DEL  { text-decoration: line-through }
 OL              { list-style-type: decimal }
 OL UL, UL OL,

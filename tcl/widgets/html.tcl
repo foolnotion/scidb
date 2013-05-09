@@ -291,7 +291,7 @@ proc Build {w args} {
 		} else {
 			set cmd [namespace code [list SbSet $w.v]]
 		}
-		$html configure -yscrollcommand $cmd -yscrollincrement 15
+		$html configure -yscrollcommand $cmd -yscrollincrement 18
 	}
 
 	if {$Priv(center)} {

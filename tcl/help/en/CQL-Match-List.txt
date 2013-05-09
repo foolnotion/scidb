@@ -161,11 +161,12 @@ is identical to the following:
 </p>
 
 <verbatim>
-(match <cql>match:isshufflechess</cql> (match <cql>match:ischess960</cql> <cql>match:not</cql>))
+(match <cql>match:isshufflechess</cql> <cql>match:not</cql> (match <cql>match:ischess960</cql>))
 </verbatim>
 
 <p>
-In fact this keyword is somewhat superfluous, but included for completeness.
+This keyword seems to be superfluous, but it may be useful inside
+<cql>position:or</cql> or <cql>position:and</cql>.
 </p>
 
 <h3 id="match:not">:not<extension/></h3>
@@ -188,7 +189,7 @@ Example:
 
 <p>
 Search for games which do not start with a Shuffle Chess position. This
-example may be written in the clearer second form:
+example may be written in the second form:
 </p>
 
 <verb>
@@ -254,6 +255,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
 and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
 of the event is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -349,6 +351,10 @@ The event mode is one of:
 </dir>
 
 <p>
+The CQL editor provides a feature for the input of event modes.
+</p>
+
+<p>
 Example:
 </p>
 
@@ -422,6 +428,10 @@ The event type is one of:
 </dir>
 
 <p>
+The CQL editor provides a feature for the input of event types.
+</p>
+
+<p>
 Example:
 </p>
 
@@ -489,6 +499,10 @@ Time mode is one of:
     </tr>
   </table>
 </dir>
+
+<p>
+The CQL editor provides a feature for the input of time modes.
+</p>
 
 <p>
 Example:
@@ -585,6 +599,7 @@ or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code</a>
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
 and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
 of the black player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -709,6 +724,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
 and <expr>xx</expr> (ISO 3166-2 form) are matching games where the nationality
 of one player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -889,7 +905,7 @@ Rating is one of:
       <td class="r">Individual Player Strength (Chess 960 Rating)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><expr>Other</expr></td>
+      <td class="l"><expr>Rating</expr></td>
       <td class="r">Any other rating type</td>
     </tr>
   </table>
@@ -965,6 +981,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <expr>UNK</expr> (IOC form),
 and <expr>xx</expr> (ISO 3166-2 form) are matching games where the country
 of the white player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -1307,6 +1324,12 @@ within the range specifier (<see/>
 </p>
 
 <p>
+Note that in case of PGN databases the game number may occur more than once,
+because of <a href="Chess-Variants.html">chess variants</a>. Possibly the
+search should be restricted with keyword <cql>match:variant</cql>.
+</p>
+
+<p>
 Examples:
 </p>
 
@@ -1438,6 +1461,10 @@ A token is one of:
 </div>
 
 <p>
+The CQL editor provides a feature for the input of game markers.
+</p>
+
+<p>
 Examples:
 </p>
 
@@ -1470,26 +1497,29 @@ comma-separated list.
 A special marker is one of:
 </p>
 
-<table>
-  <tr>
-    <td class="l"><expr>deleted</expr></td>
-    <td class="m"><img src="../images/gameflag-Deleted.png"/></td>
-    <td class="r">Game marked for deletion</td>
-  </tr>
-  <tr>
-    <td class="l"><expr>illegalmove</expr></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
-    <td class="r">Game contains illegal castling move.</td>
-  </tr>
-  <tr>
-    <td class="l"><expr>illegalcastling</expr></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
-    <td class="r">Game contains illegal castling.</td>
-  </tr>
-</table>
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><expr>deleted</expr></td>
+      <td class="m"><img src="../images/gameflag-Deleted.png"/></td>
+      <td class="r">Game marked for deletion</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>illegalmove</expr></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
+      <td class="r">Game contains illegal castling move.</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>illegalcastling</expr></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
+      <td class="r">Game contains illegal castling.</td>
+    </tr>
+  </table>
+</div>
 
 <p>
 Note that <expr>illegalmove</expr> is not including illegal castlings.
+The CQL editor provides a feature for the input of special markers.
 </p>
 
 <p>
@@ -1542,7 +1572,7 @@ Result is one of:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><expr>1/2-1/2</expr></td>
+      <td class="l"><expr>1/2</expr></td>
       <td class="r">drawn game</td>
     </tr>
     <tr>
@@ -1564,9 +1594,9 @@ Result is one of:
   </table>
 </div>
 
-<note>
-The parameter <expr>1/2-1/2</expr> may be abbreviated to <expr>1/2</expr>.
-</note>
+<p>
+The parameter <expr>1/2</expr> may be written-out with <expr>1/2-1/2</expr>.
+</p>
 
 <p>
 Examples:
@@ -1671,7 +1701,8 @@ in an abnormal fashion.
 <h3 id="match:variant">:variant<extension/></h3>
 
 <p>
-Only search in games matching any chess variant in given comma-separated list.
+Only search in games matching any <a href="Chess-Variants.html">chess variant</a>
+in given comma-separated list.
 </p>
 
 <p>
@@ -1901,7 +1932,8 @@ Examples:
 Search for games beginning with a standard start position. In case
 of chess variants %::mc::VariantName(Suicide)% and
 %::mc::VariantName(Giveaway)% this will also match position
-number 3398.
+number 3398 (this is the standard start position for
+%::mc::VariantName(Suicide)% and %::mc::VariantName(Giveaway)% games).
 </p>
 
 <verb>
@@ -1956,7 +1988,7 @@ Shuffle Chess position, or a (supported) FICS variant.
 <h3 id="match:forany">:forany</h3>
 
 <p>
-This takes two parameters, a tag name and a piece designator.
+This takes two parameters, a tag name and a piecetype designator.
 This feature is described on page <a href="CQL-Tagging">Tagging</a>.
 </p>
 

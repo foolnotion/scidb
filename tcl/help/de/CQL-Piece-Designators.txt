@@ -30,7 +30,7 @@ Figuren kann die "Leerfeldfigur" beinhalten, die ein leeres Feld beschreibt.
 </p>
 
 <p>
-Ein Figurenbezeichner findet eine Position wenn es in der Menge der Felder,
+Ein Figurenbezeichner findet eine Position, wenn es in der Menge der Felder,
 die mit dem Figurenbezeichner bestimmt wird, ein Feld gibt mit einer Figur,
 die im Figurenartbezeichner enthalten ist.
 </p>
@@ -39,14 +39,14 @@ die im Figurenartbezeichner enthalten ist.
 
 <p>
 Der Figurenbezeichner <expr>&R;a2</expr> kennzeichnet einen weißen Turm auf
-a2. Der Figurenartbezeichner ist &R;, und der Felderbezeichner ist
-<expr>a2</expr>. Er findet jede Position mit einem weißen Turm auf a2.
+a2. Der Figurenartbezeichner ist <expr>&R;</expr>, und der Felderbezeichner
+ist <expr>a2</expr>. Er findet jede Position mit einem weißen Turm auf a2.
 </p>
 
 <p>
-Der Figurenbezeichner <expr>&b;c1</expr>  kennzeichnet einen schwarzen Läufer
-auf c1. Der Figurenartbezeichner ist &b;, und der Felderbezeichner ist
-<expr>c1</expr>. Er findet jede Position mit einem schwarzen Läufer auf c1.
+Der Figurenbezeichner <expr>&b;c1</expr> kennzeichnet einen schwarzen Läufer
+auf c1. Der Figurenartbezeichner ist <expr>&b;</expr>, und der Felderbezeichner
+ist <expr>c1</expr>. Er findet jede Position mit einem schwarzen Läufer auf c1.
 </p>
 
 <p>
@@ -108,11 +108,11 @@ Dies sind die erlaubten Figurenartbezeichner:
 
 <p>
 Überall wo ein Figurenartbezeichner auftritt kann auch ein Markierungsname,
-der mit dem Zeichen <expr>$</expr> beginnt, auftreten. Diese Figurenart
+beginnend mit dem Zeichen <expr>$</expr>, auftreten. Diese Figurenart
 vertritt exakt die Figur, die durch den Markierungnamen vertreten wird.
 Für weitere Informationen siehe Seite <a href="CQL-Tagging.html">Markierung</a>.
 </p>
 
 END
 
-<!-- vi:set ts=2 sw=2 et filetype=html: -->
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

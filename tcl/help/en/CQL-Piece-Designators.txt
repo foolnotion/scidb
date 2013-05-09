@@ -38,13 +38,13 @@ of piecetypes denoted by the piece designator.
 
 <p>
 The piece designator <expr>&R;a2</expr> denotes a white rook on a2. The
-piecetype designator is &R; and the square designator is <expr>a2</expr>.
-It will match any position with a white rook on a2.
+piecetype designator is <expr>&R;</expr> and the square designator is
+<expr>a2</expr>. It will match any position with a white rook on a2.
 </p>
 
 <p>
 The piece designator <expr>&b;c1</expr> denotes a black bishop on c1. The
-piecetype designator is &b; and the square designator is
+piecetype designator is <expr>&b;</expr> and the square designator is
 <expr>c1</expr>. It will match any position with a black bishop on c1.
 </p>
 

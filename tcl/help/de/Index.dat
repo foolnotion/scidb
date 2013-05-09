@@ -15,7 +15,9 @@ set Index {
       {{Chess Query Language} {CQL-Index.html} {}}
       {{CQL Beispiele} {CQL-Examples.html} {}}
       {{CQL Handbuch} {CQL-Index.html} {}}
+      {{CQL Markierung} {CQL-Tagging.html} {}}
       {{CQL Positionsliste} {CQL-Position-List.html} {}}
+      {{CQL Relationsliste} {CQL-Relation-List.html} {}}
       {{CQL Suchliste} {CQL-Match-List.html} {}}
       {{CQL Syntax} {CQL-Syntax.html} {}}
       {{CQL Transformationen} {CQL-Transformations.html} {}}
@@ -30,11 +32,13 @@ set Index {
       {{Datenbankarchiv} {Database-Formats.html} {Database-Archive}}
       {{Datenbankformate} {Database-Formats.html} {}}
       {{Datenbankumschalter} {Database-Switcher.html} {}}
+      {{Dreimal-Schach} {Chess-Variants.html} {}}
     }
   }
   { E
     {
       {{ECO-Code} {ECO-Code.html} {}}
+      {{Einsetzschach} {Chess-Variants.html} {}}
       {{Enzyklopädie der Schacheröffnungen} {ECO-Code.html} {}}
     }
   }
@@ -46,6 +50,11 @@ set Index {
       {{FEN (Forsyth-Edwards-Notation)} {FEN.html} {}}
       {{Figurenbezeichner (CQL)} {CQL-Piece-Designators.html} {}}
       {{Funktionsleisten} {Toolbar-Usage.html} {}}
+    }
+  }
+  { G
+    {
+      {{Giveaway} {Chess-Variants.html} {}}
     }
   }
   { H
@@ -61,14 +70,21 @@ set Index {
       {{Kontaktinformationen} {Contact-Information.html} {}}
     }
   }
+  { L
+    {
+      {{Losers} {Chess-Variants.html} {}}
+    }
+  }
   { M
     {
+      {{Markierung (CQL)} {CQL-Tagging.html} {}}
       {{Markierungen (Partie-Flags)} {Game-Flags.html} {}}
     }
   }
   { N
     {
       {{NAG-Kommentarwerte} {NAG-Comments.html} {}}
+      {{Normalschach} {Chess-Variants.html} {}}
       {{Numerisches Anmerkungszeichen} {NAG-Comments.html} {}}
     }
   }
@@ -80,19 +96,26 @@ set Index {
       {{Positionsliste (CQL)} {CQL-Position-List.html} {}}
     }
   }
+  { R
+    {
+      {{Relationsliste (CQL)} {CQL-Relation-List.html} {}}
+    }
+  }
   { S
     {
+      {{Schachformen} {Chess-Variants.html} {}}
+      {{Schlagschach} {Chess-Variants.html} {}}
       {{Shredder-FEN} {FEN.html} {}}
       {{Startpositionseingabe} {Start-Position-Setup-Dialog.html} {}}
       {{Stellungseingabe} {Board-Setup-Dialog.html} {}}
       {{Suchliste (CQL)} {CQL-Match-List.html} {}}
       {{Suchmusterabgleich (Pattern-Matching)} {Pattern-Matching.html} {}}
+      {{Suicide} {Chess-Variants.html} {}}
     }
   }
   { T
     {
       {{Transformationen (CQL)} {CQL-Transformations.html} {}}
-      {{Transformationen der Figurenbezeichner (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }
   { U

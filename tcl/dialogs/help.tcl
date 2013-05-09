@@ -244,6 +244,8 @@ proc open {parent {file {}} args} {
 	bind $dlg <Alt-Next>					[namespace code [list Goto @next]]
 	bind $dlg <Alt-Home>					[namespace code [list Goto @home]]
 	bind $dlg <Alt-End>					[namespace code [list Goto @end]]
+	bind $dlg <Alt-Down>					[namespace code [list Goto @down]]
+	bind $dlg <Alt-Up>					[namespace code [list Goto @up]]
 	bind $dlg <Control-plus>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeFontSize -1]]
@@ -893,8 +895,12 @@ proc StandardBindings {w} {
 	$w bind <Alt-Next>	[namespace code [list Goto @next]]
 	$w bind <Alt-Home>	[namespace code [list Goto @home]]
 	$w bind <Alt-End>		[namespace code [list Goto @end]]
+	$w bind <Alt-Up>		[namespace code [list Goto @up]]
+	$w bind <Alt-Down>	[namespace code [list Goto @down]]
 	$w bind <Alt-Home>	{+ break }
 	$w bind <Alt-End>		{+ break }
+	$w bind <Alt-Up>		{+ break }
+	$w bind <Alt-Down>	{+ break }
 }
 
 
@@ -1035,6 +1041,7 @@ proc PopupMenu {dlg tab} {
 			$m add command \
 				-command [namespace code history::back] \
 				-label " $mc::GoBack" \
+				-accel "$::mc::Key(Alt)-$::mc::Key(Left)" \
 				-image $::icon::16x16::backward \
 				-compound left \
 				-state [$Priv(button:back) cget -state]
@@ -1042,6 +1049,7 @@ proc PopupMenu {dlg tab} {
 			$m add command \
 				-command [namespace code history::forward] \
 				-label " $mc::GoForward" \
+				-accel "$::mc::Key(Alt)-$::mc::Key(Right)" \
 				-image $::icon::16x16::forward \
 				-compound left \
 				-state [$Priv(button:forward) cget -state]
@@ -1414,30 +1422,31 @@ proc Goto {position} {
 	lassign [$Priv(html) viewbox] _ view0 _ view1
 	set changed 0
 
-	if {[string length $position] == 0} {
-		set changed [expr {$view0 > 30}]
-		set position 0
-	} elseif {$position eq "@home"} {
-		set position 0
-	} elseif {$position eq "@end"} {
-		set position 1000000
-	} elseif {$position eq "@prior"} {
-		$Priv(html) yview scroll -1 page
-		return 1
-	} elseif {$position eq "@next"} {
-		$Priv(html) yview scroll +1 page
-		return 1
-	} elseif {![string is integer -strict $position]} {
-		if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
-		set selector [format {[id="%s"]} $position]
-		set node [lindex [$Priv(html) search $selector] 0]
-		if {[llength $node] == 0} { return }
-		set bbox [$Priv(html) bbox $node]
-		lassign $bbox _ y0 _ y1
-		# seems to be too confusing
-		# set changed [expr {(max($view0, $y0) > min($view1, $y1))}] ;# no intersection
-		set changed [expr {abs($y0 - $view0) > 30}]
-		set position [lindex $bbox 1]
+	switch $position {
+		@home		{ set position 0 }
+		@end		{ set position 1000000 }
+		@prior	{ return [$Priv(html) yview scroll -1 page] }
+		@next		{ return [$Priv(html) yview scroll +1 page] }
+		@up		{ return [$Priv(html) yview scroll -1 unit] }
+		@down		{ return [$Priv(html) yview scroll +1 unit] }
+
+		default {
+			if {[string length $position] == 0} {
+				set changed [expr {$view0 > 30}]
+				set position 0
+			} elseif {![string is integer -strict $position]} {
+				if {[string index $position 0] eq "#"} { set position [string range $position 1 end] }
+				set selector [format {[id="%s"]} $position]
+				set node [lindex [$Priv(html) search $selector] 0]
+				if {[llength $node] == 0} { return }
+				set bbox [$Priv(html) bbox $node]
+				lassign $bbox _ y0 _ y1
+				# seems to be too confusing
+				# set changed [expr {(max($view0, $y0) > min($view1, $y1))}] ;# no intersection
+				set changed [expr {abs($y0 - $view0) > 30}]
+				set position [lindex $bbox 1]
+			}
+		}
 	}
 
 	$Priv(html) scrollto $position

@@ -19,7 +19,7 @@
 INDEX Tagging (CQL)
 INDEX CQL Tagging
 
-TITLE Tagging
+TITLE CQL - Tagging
 
 <p>
 It is possible to track the identity of a particular piece. Each piece
@@ -27,14 +27,21 @@ in the initial position of the game is assigned a unique nonnegative
 integer, called its mark. Promotion does not change the mark of a piece.
 A tag is a named mark. We say that a tag is bound to the value of a mark.
 A tag represents the particular piece whose mark equals the mark of the
-tag. The following keywords manipulate the mark:
+tag.
 </p>
 
-<h2>:forany in the match list</h2>
+<ul>
+  <li><a href="#forany">:forany in the match list</a></li>
+  <li><a href="#tagmatch">:tagmatch in the position list</a></li>
+  <li><a href="#designators">Piece designators and tags</a></li>
+  <li><a href="#examples">Longer examples</a></li>
+</ul>
+
+<h2 id="forany">:forany in the match list</h2>
 
 <p>
-A tag is defined via the :forany keyword in a match list.
-The :forany keyword takes two parameters: the alphanumeric
+A tag is defined via the <cql>:forany</cql> keyword in a match list.
+The <cql>:forany</cql> keyword takes two parameters: the alphanumeric
 name of a tag and a piece designator.
 </p>
 
@@ -60,21 +67,25 @@ in a matchlist if a <cql>position:relation</cql> occurs in a position list
 inside that match list.
 </p>
 
-<h2>:tagmatch in the position list</h2>
+<h2 id="tagmatch">:tagmatch in the position list</h2>
 
 <p>
-A :tagmatch keyword in a position list takes two parameters, the
+A <cql>:tagmatch</cql> keyword in a position list takes two parameters, the
 name of a tag and a piece designator. The position list match fails on the
 current position if the piece and square corresponding to the mark of the tag
-does not match the given piece designator. For example, assuming there is a
+does not match the given piece designator.
+</p>
+
+<p>
+For example, assuming there is a
 tag named "foo", this position will only match if "foo" is a white pawn:
 </p>
 
 <verb>
-(position :tagmatch foo &P;)
+(position <keyword>:tagmatch</keyword> foo &P;)
 </verb>
 
-<h2>Piece designators and tags</h2>
+<h2 id="designators">Piece designators and tags</h2>
 
 <p>
 A piece designator can have a piecetype designator that is the name of a tag
@@ -84,17 +95,18 @@ designators in such a piece designator must be enclosed in brackets. Example:
 </p>
 
 <verb>
-(position $foo[a1,d4])
+(position $foo[a1])
 </verb>
 
 <p>
-The piece represented by the tag named "foo" must be on a1 or d4.
+The piece represented by the tag named "foo" must be on a1.
 </p>
 
-<h2>Longer examples</h2>
+<h2 id="examples">Longer examples</h2>
 
 <p>
-For longer examples see: <a href="CQL-Examples.html#tagging">Examples for tagging</a>.
+For longer examples see:
+<a href="CQL-Examples.html#tagging">Examples for tagging</a>.
 </p>
 
 END

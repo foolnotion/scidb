@@ -178,11 +178,12 @@ is identical to the following:
 </p>
 
 <div class='box'><pre><code><!--
--->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>))<!--
+-->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a>))<!--
 --></code></pre></div>
 
 <p>
-In fact this keyword is somewhat superfluous, but included for completeness.
+This keyword seems to be superfluous, but it may be useful inside
+<a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> or <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a>.
 </p>
 
 <h3 id="match:not">:not&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
@@ -205,7 +206,7 @@ Example:
 
 <p>
 Search for games which do not start with a Shuffle Chess position. This
-example may be written in the clearer second form:
+example may be written in the second form:
 </p>
 
 <div class='verb'><code>
@@ -271,6 +272,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
 and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the event is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -366,6 +368,10 @@ The event mode is one of:
 </li></ul>
 
 <p>
+The CQL editor provides a feature for the input of event modes.
+</p>
+
+<p>
 Example:
 </p>
 
@@ -439,6 +445,10 @@ The event type is one of:
 </li></ul>
 
 <p>
+The CQL editor provides a feature for the input of event types.
+</p>
+
+<p>
 Example:
 </p>
 
@@ -506,6 +516,10 @@ Time mode is one of:
     </tr>
   </table>
 </li></ul>
+
+<p>
+The CQL editor provides a feature for the input of time modes.
+</p>
 
 <p>
 Example:
@@ -602,6 +616,7 @@ or <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<spa
 Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
 and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the black player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -726,6 +741,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
 and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the nationality
 of one player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -906,7 +922,7 @@ Rating is one of:
       <td class="r">Individual Player Strength (Chess 960 Rating)</td>
     </tr>
     <tr valign="top">
-      <td class="l"><span style='white-space:nowrap;'><code>Other</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>Rating</code></span></td>
       <td class="r">Any other rating type</td>
     </tr>
   </table>
@@ -1028,6 +1044,7 @@ or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2">ISO 3166-2 country code<
 Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
 and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
 of the white player is unknown.
+The CQL editor provides a feature for the input of country codes.
 </p>
 
 <p>
@@ -1370,6 +1387,12 @@ within the range specifier (&#x21d2;
 </p>
 
 <p>
+Note that in case of PGN databases the game number may occur more than once,
+because of <a href="Chess-Variants.html">chess variants</a>. Possibly the
+search should be restricted with keyword <a href="CQL-Match-List.html#match:variant"><span style='white-space:nowrap;'>:variant</span></a>.
+</p>
+
+<p>
 Examples:
 </p>
 
@@ -1501,6 +1524,10 @@ A token is one of:
 </div>
 
 <p>
+The CQL editor provides a feature for the input of game markers.
+</p>
+
+<p>
 Examples:
 </p>
 
@@ -1533,26 +1560,29 @@ comma-separated list.
 A special marker is one of:
 </p>
 
-<table>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
-    <td class="m"><img src="../images/gameflag-Deleted.png" alt="" /></td>
-    <td class="r">Game marked for deletion</td>
-  </tr>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
-    <td class="r">Game contains illegal castling move.</td>
-  </tr>
-  <tr>
-    <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
-    <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
-    <td class="r">Game contains illegal castling.</td>
-  </tr>
-</table>
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
+      <td class="m"><img src="../images/gameflag-Deleted.png" alt="" /></td>
+      <td class="r">Game marked for deletion</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt="" /></td>
+      <td class="r">Game contains illegal castling move.</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt="" /></td>
+      <td class="r">Game contains illegal castling.</td>
+    </tr>
+  </table>
+</div>
 
 <p>
 Note that <span style='white-space:nowrap;'><code>illegalmove</code></span> is not including illegal castlings.
+The CQL editor provides a feature for the input of special markers.
 </p>
 
 <p>
@@ -1605,7 +1635,7 @@ Result is one of:
 <div class="dir">
   <table>
     <tr>
-      <td class="l"><span style='white-space:nowrap;'><code>1/2-1/2</code></span></td>
+      <td class="l"><span style='white-space:nowrap;'><code>1/2</code></span></td>
       <td class="r">drawn game</td>
     </tr>
     <tr>
@@ -1627,8 +1657,8 @@ Result is one of:
   </table>
 </div>
 
-<p><img src='../images/note.png' alt='note' /> 
-The parameter <span style='white-space:nowrap;'><code>1/2-1/2</code></span> may be abbreviated to <span style='white-space:nowrap;'><code>1/2</code></span>.
+<p>
+The parameter <span style='white-space:nowrap;'><code>1/2</code></span> may be written-out with <span style='white-space:nowrap;'><code>1/2-1/2</code></span>.
 </p>
 
 <p>
@@ -1734,7 +1764,8 @@ in an abnormal fashion.
 <h3 id="match:variant">:variant&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /> </h3>
 
 <p>
-Only search in games matching any chess variant in given comma-separated list.
+Only search in games matching any <a href="Chess-Variants.html">chess variant</a>
+in given comma-separated list.
 </p>
 
 <p>
@@ -2015,7 +2046,8 @@ Examples:
 Search for games beginning with a standard start position. In case
 of chess variants Suicide and
 Giveaway this will also match position
-number 3398.
+number 3398 (this is the standard start position for
+Suicide and Giveaway games).
 </p>
 
 <div class='verb'><code>
@@ -2070,7 +2102,7 @@ Shuffle Chess position, or a (supported) FICS variant.
 <h3 id="match:forany">:forany</h3>
 
 <p>
-This takes two parameters, a tag name and a piece designator.
+This takes two parameters, a tag name and a piecetype designator.
 This feature is described on page <a href="CQL-Tagging">Tagging</a>.
 </p>
 

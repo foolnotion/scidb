@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Tagging.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Markierung</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Markierung</h1>
+</div>
+
+<p>
+Es ist möglich den Verlauf einer bestimmten Figur zu verfolgen. Jeder Figur
+in der Ausgangsstellung der Partie ist eine eindeutige Identität zugewiesen.
+Bauernumwandlungen ändern die Identität der Figur nicht. Eine Markierung
+ist eine benamte Identität, sie ist an die Identität gebunden. Eine Markierung
+repräsentiert eine einzelne Figur, deren Identität mit dieser Markierung
+verbunden ist.
+</p>
+
+<ul>
+  <li><a href="#forany">:forany in der Suchliste</a></li>
+  <li><a href="#tagmatch">:tagmatch in der Positionsliste</a></li>
+  <li><a href="#designators">Figurenbezeichner und Markierungen</a></li>
+  <li><a href="#examples">Ausführlichere Beispiele</a></li>
+</ul>
+
+<h2 id="forany">:forany in der Suchliste</h2>
+
+<p>
+Eine Markierung wird mit dem Schlüsselwort <span style='white-space:nowrap;'>:forany</span> in einer
+Suchliste definiert. Dieses Schlüsselwort erwartet zwei Argumente: den
+alphanumerischen Namen einer Markierung und einen Figurenartbezeichner.
+</p>
+
+<p>
+Gedanklich filtert der Suchfilter nun für jede an eine Identität gebundene
+Markierung, so daß folgende Bedingungen erfüllt sind:
+</p>
+
+<ul style="padding: 0;">
+  <li class="space">
+    An eine Identität kann nicht mehr als eine Markierung gebunden werden.
+  </li>
+  <li class="space">
+    Eine Markierung kann nur an eine Figur gebunden werden, die vom
+    assoziierten Figurenartbezeichner zugelassen wurde.
+  </li>
+</ul>
+
+<p>
+Markierungen können nicht verwendet werden, wenn das Schlüsselwort
+<a href="CQL-Position-List.html#position:relation"><span style='white-space:nowrap;'>:relation</span></a> in einer der Positionslisten vorhanden ist.
+<br/><img src="../images/gameflag-Illegal-Move.png" alt="" />  Beides ist zu prüfen!
+</p>
+
+<h2 id="tagmatch">:tagmatch in der Positionsliste</h2>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:tagmatch</span> in einer Positionsliste erwartet zwei
+Argumente, den Namen einer Markierung und einen Figurenbezeichner. Die
+Filterung der Positionsliste schlägt in einer Position fehl, wenn die zur
+Markierung gehörenden Figur- und Feldinformationen nicht mit dem gegebenen
+Figurenbezeichner übereinstimmen.
+</p>
+
+<p>
+Als Beispiel nehmen wir an, wir haben eine Markierung "foo", und eine
+Position soll nur dann gefiltert werden, wenn "foo" ein weißer Bauer ist:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:tagmatch</span> foo <span class='piece'>&#x2659;</span>)
+</code></div>
+
+<h2 id="designators">Figurenbezeichner und Markierungen</h2>
+
+<p>
+Eine Figurenbezeichner kann als Figurenartbezeichner den Namen einer Markierung
+erhalten, wobei das Zeichen '$' der Markierung vorangestellt wird. Solch ein
+Figurenartbezeichner repräsentiert die an diese Markierung gebundene Figur.
+Weil die Markierungsnamen alphanumerisch sind, müssen Felderbezeichner in solch
+einem Figurenbezeichner in Klammern eingeschlossen werden. Beispiel:
+</p>
+
+<div class='verb'><code>
+(position $foo[a1])
+</code></div>
+
+<p>
+Die durch den Markierungsnamen repräsentierte Figur "foo" muß auf a1 stehen.
+</p>
+
+<h2 id="examples">Ausführlichere Beispiele</h2>
+
+<p>
+Für ausführlichere  Beispiele siehe:
+<a href="CQL-Examples.html#tagging">Beispiele für Markierungen</a>.
+</p>
+
+</body>
+</html>

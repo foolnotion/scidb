@@ -2,6 +2,7 @@ set Index {
   { A
     {
       {{Administrate database} {Database-Switcher.html} {Administration}}
+      {{Antichess} {Chess-Variants.html} {}}
       {{Archive} {Database-Formats.html} {Database-Archive}}
     }
   }
@@ -13,6 +14,7 @@ set Index {
   { C
     {
       {{Chess Query Language} {CQL-Index.html} {}}
+      {{Chess variants} {Chess-Variants.html} {}}
       {{Clipbase} {Clipbase.html} {}}
       {{Command line options} {Command-Line-Options.html} {}}
       {{Compound square designators (CQL)} {CQL-Square-Designators.html} {compound}}
@@ -27,6 +29,7 @@ set Index {
       {{CQL Syntax} {CQL-Syntax.html} {}}
       {{CQL Tagging} {CQL-Tagging.html} {}}
       {{CQL Transformations} {CQL-Transformations.html} {}}
+      {{Crazyhouse Chess} {Chess-Variants.html} {}}
     }
   }
   { D
@@ -53,12 +56,17 @@ set Index {
     {
       {{Game Browser} {Game-Browser.html} {}}
       {{Game markers} {Game-Flags.html} {}}
-      {{Game Overview Browser} {Game-Overview.html} {}}
+      {{Giveaway} {Chess-Variants.html} {}}
     }
   }
   { H
     {
       {{Homepage} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { L
+    {
+      {{Losers} {Chess-Variants.html} {}}
     }
   }
   { M
@@ -70,12 +78,8 @@ set Index {
   { N
     {
       {{NAG annotation values} {NAG-Comments.html} {}}
+      {{Normal Chess} {Chess-Variants.html} {}}
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
-    }
-  }
-  { O
-    {
-      {{Overview Browser} {Game-Overview.html} {}}
     }
   }
   { P
@@ -95,14 +99,15 @@ set Index {
     {
       {{Shredder FEN} {FEN.html} {}}
       {{Square designators (CQL)} {CQL-Square-Designators.html} {}}
+      {{Suicide} {Chess-Variants.html} {}}
     }
   }
   { T
     {
       {{Tagging (CQL)} {CQL-Tagging.html} {}}
+      {{Three-check Chess} {Chess-Variants.html} {}}
       {{Toolbars} {Toolbar-Usage.html} {}}
       {{Transformations (CQL)} {CQL-Transformations.html} {}}
-      {{Transforms of piece designators (CQL)} {CQL-Piece-Designator-Transforms.html} {}}
     }
   }
   { W

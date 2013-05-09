@@ -32,9 +32,9 @@ TITLE CQL - The relation list
 <h2 id="relation">The :relation keyword</h2>
 
 <p>
-The :relation keyword occurs in a position list. It takes one parameter, a
-relation specifier. A relation specifier is a list denoting parameters to
-the relation keyword.
+The <cql>:relation</cql> keyword occurs in a position list. It takes one
+parameter, a relation specifier. A relation specifier is a list denoting
+parameters to the relation keyword.
 </p>
 
 <p>
@@ -42,7 +42,7 @@ Example:
 </p>
 
 <verb>
-(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> A 1 100))
+(position <keyword>:relation</keyword> (<cql>relation:missingpiececount</cql> A 1 unlimited))
 </verb>
 
 <p>
@@ -51,10 +51,10 @@ except that the later one is missing one or more white pieces.
 </p>
 
 <p>
-The operation of the :relation tag is as follows. A position list with a
-relation tag matches a position P1 if and only if at some later point in the
-current game there is a position P2 such that the relationship between P1 and
-P2 matches the parameters defined in the relation specifier.
+The operation of the <cql>:relation</cql> tag is as follows. A position list
+with a relation tag matches a position P1 if and only if at some later point
+in the current game there is a position P2 such that the relationship between
+P1 and P2 matches the parameters defined in the relation specifier.
 </p>
 
 <h2 id="index">Index</h2>
@@ -119,14 +119,16 @@ This keyword takes the same parameters as does the
 designator followed by a range. A missing piece is a piece that occurs in
 P1 on a square that is empty on P2. P2 matches if the number of these
 missing pieces lies within the range specifier. Unlike the case of the
-<cql>position:pieccount</cql> keyowrd, at most one :missingpiececount
-specifier can occur. No shift or flip transformation specifiers in the
-containing position list affect the piece designator in this keyword.
+<cql>position:piececount</cql> keyowrd, at most one
+<cql>:missingpiececount</cql> specifier can occur inside the relation list.
+No shift or flip transformation specifiers in the containing position list
+affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for :missingpiececount is <code>U</code> and
-the default range is zero. That is, by default there can be no missing pieces. 
+The default piece designator for <cql>:missingpiececount</cql> is
+<code>U</code> and the default range is zero. That is, by default there can
+be no missing pieces. 
 </p>
 
 <h3 id="relation:newpiececount">:newpiececount</h3>
@@ -136,14 +138,14 @@ This keyword takes the same parameters as does the <cql>position:piececount</cql
 keyword in a position list: a pieced designator followed by a range. A new piece
 is a piece that occurs in P2 on a square that is empty on P1. P2 matches if the
 number of these new pieces lies within the range specifier. Unlike the case of
-the <cql>position:pieccount</cql> keyowrd, at most one :newpiececount specifier
-can occur. No shift or flip transformation specifiers in the containing position
-list affect the piece designator in this keyword.
+the <cql>position:pieccount</cql> keyowrd, at most one <cql>:newpiececount</cql>
+specifier can occur. No shift or flip transformation specifiers in the
+containing position list affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for :newiececount is U and the default range is
-zero. That is, by default there can be no new pieces. 
+The default piece designator for <cql>:newiececount</cql> is <code>U<code> and
+the default range is zero. That is, by default there can be no new pieces. 
 </p>
 
 <h3 id="relation:originaldifferentcount">:originaldifferentcount</h3>
@@ -165,9 +167,9 @@ specifier.
 <h3 id="relation:pattern">:pattern</h3>
 
 <p>
-The :pattern keyword signifies that all piece designators that occur at the
-top level of the position list that encloses the current relation list define
-the allowable squares. Only allowable squares are considered in the
+The <cql>:pattern</cql> keyword signifies that all piece designators that occur
+at the top level of the position list that encloses the current relation list
+define the allowable squares. Only allowable squares are considered in the
 comparisons. By default all squares are allowable.
 </p>
 

@@ -42,7 +42,7 @@ proc readTranslationFile {file encoding} {
 	chan configure $f -encoding $encoding
 
 	while {[gets $f line] >= 0} {
-		if {[string match *AsciiMapping* $line]} {
+		if {[string length $line] > 0 && [string index $line 0] ne "#"} {
 			set var [lindex $line 0]
 			set value [string map {& {} "..." {}} [lindex $line 1]]
 			set ns [join [lrange [split $var ::] 1 end-2] ::]
@@ -52,6 +52,20 @@ proc readTranslationFile {file encoding} {
 	}
 
 	close $f
+}
+
+proc substituteVariables {line} {
+	while {[regexp {%(::)?[a-zA-Z_:]*(\([^)]*\))?%} $line pattern]} {
+		set var [string range $pattern 1 end-1]
+		if {[info exists $var]} {
+			set line [string map [list $pattern [set $var]] $line]
+		} else {
+			puts stderr "Warning([info script]): Couldn't substitute $var"
+			set line [string map [list $pattern $var] $line]
+		}
+	}
+
+	return $line
 }
 
 encoding system utf-8
@@ -89,7 +103,7 @@ foreach file [glob *.txt] {
 			chan configure $src -encoding $charset
 		}
 		if {[string match INDEX* $line]} {
-			set item [getArg $line]
+			set item [substituteVariables [getArg $line]]
 			lassign [split $item #] wref fragment
 			set alph [string map $::mc::AsciiMapping [string toupper [string index $wref 0]]]
 			set path [file rootname $file]

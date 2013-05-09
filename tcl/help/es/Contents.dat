@@ -43,7 +43,6 @@ set Contents {
       {{{Syntax} {CQL-Syntax.html}}}
       {{{Piece designators} {CQL-Piece-Designators.html}}}
       {{{Square designators} {CQL-Square-Designators.html}}}
-      {{{Transforms of piece designators} {CQL-Piece-Designator-Transforms.html}}}
       {{{Range specifiers} {CQL-Range-Specifiers.html}}}
       {{{Pattern matching} {Pattern-Matching.html}}}
     }
@@ -57,6 +56,7 @@ set Contents {
   {
     {{{Información adicional} {Overview.html} {further-information}}}
     {{{Marcadores de partida} {Game-Flags.html}}}
+    {{{Supported chess variants} {Chess-Variants.html}}}
     {{{Especificación de Archivos de base de datos (inglés)} {../en/Database-Archive.html}}}
     {{{Opciones de la línea de comandos} {Command-Line-Options.html}}}
     {{{Valores de las anotaciones NAG} {NAG-Comments.html}}}

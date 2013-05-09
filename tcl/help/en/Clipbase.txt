@@ -40,7 +40,8 @@ The Clipbase cannot be closed. It exists a menu function for emptying the Clipba
 
 <p>
 The Clipbase keeps data in Scidb's native format and is an exception, because
-it may contain various variants concurrently. But administrative operations
+it may contain various <a href="Chess-Variants.html">chess variants</a>
+concurrently. But administrative operations
 (<see/> <a href="Database-Switcher.html#Maintenance">
 %::application::database::mc::FileMaintenance%</a>) can be applied to only one
 variant.

@@ -61,42 +61,8 @@ Scidb verfügbar, und es garantiert optimale Verarbeitungsgeschwindigkeit.
 </p>
 
 <p>
-Nur das Scidb-Format (sowie das PGN-Format) speichert Partien verschiedener Schachformen,
-zur Zeit sind dies:
-</p>
-
-<box>
-  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr>
-      <td>%::mc::VariantName(Normal)%</td>
-    </tr>
-    <tr>
-      <td><a href="http://de.wikipedia.org/wiki/Schachvarianten#Crazyhouse_oder_Einsetzschach">
-         %::mc::VariantName(Crazyhouse)%</a></td>
-      <td></td>
-      <td>(<a href="http://en.wikipedia.org/wiki/Crazyhouse">Crazyhouse</a>)</td>
-    </tr>
-    <tr>
-      <td><a href="http://de.wikipedia.org/wiki/R%C3%A4uberschach">
-        %::mc::VariantName(Antichess)%</a></td>
-      <td></td>
-      <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
-          <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
-    </tr>
-    <tr>
-      <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
-      <td></td>
-      <td>(Schlagschachvariante)</td>
-    </tr>
-    <tr>
-      <td>%::mc::VariantName(ThreeCheck)%</td>
-      <td></td>
-      <td>(<a href="http://en.wikipedia.org/wiki/Three-check_chess">Three-Check</a>)</td>
-    </tr>
-  </table>
-</box>
-
-<p>
+Nur das Scidb-Format (sowie das PGN-Format) speichert Partien verschiedener Schachformen
+(<see/> <a href="Chess-Variants.html">Unterstützte Schachformen</a>).
 Eine Datenbank ist auf eine Schachform festgelegt (die
 <a href="Clipbase.html">Ablage-Datenbank</a> ist eine Ausnahme).
 </p>

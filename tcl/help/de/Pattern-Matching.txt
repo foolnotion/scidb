@@ -43,7 +43,7 @@ enthalten kann:
       <td class="l"><expr>\x</expr></td>
       <td class="r">
         Bezeichnet das Zeichen x. Dies bietet einen Weg um die
-        spezielle Interpreation der Zeichen <expr>*?\</expr> im
+        spezielle Interpretation der Zeichen <expr>*?\</expr> im
         Suchmuster zu unterdrücken.
       </td>
     </tr>

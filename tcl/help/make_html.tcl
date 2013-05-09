@@ -168,7 +168,6 @@ if {"%scidb%" ni $HtmlMapping} {
 	exit 1
 }
 
-
 proc print {chan source title body} {
 	variable lang
 
@@ -190,7 +189,6 @@ proc print {chan source title body} {
 	puts $chan "</body>"
 	puts $chan "</html>"
 }
-
 
 proc readTranslationFile {file nagFile encoding} {
 	set f [open $file r]
@@ -229,6 +227,19 @@ proc readTranslationFile {file nagFile encoding} {
 	}
 }
 
+proc substituteVariables {line} {
+	while {[regexp {%(::)?[a-zA-Z_:]*(\([^)]*\))?%} $line pattern]} {
+		set var [string range $pattern 1 end-1]
+		if {[info exists $var]} {
+			set line [string map [list $pattern [set $var]] $line]
+		} else {
+			puts stderr "Warning([info script]): Couldn't substitute $var"
+			set line [string map [list $pattern $var] $line]
+		}
+	}
+
+	return $line
+}
 
 proc example {chan} {
 	puts $chan "<!-- Example usage: -->"
@@ -249,7 +260,6 @@ proc example {chan} {
 	exit 1
 }
 
-
 proc getArg {line} {
 	set n 0
 	while {$n < [string length $line] && ![string is space [string index $line $n]]} { incr n }
@@ -257,12 +267,10 @@ proc getArg {line} {
 	return [string range $line $n end]
 }
 
-
 if {$argc < 1} {
 	puts stderr "Usage: [info script] <input-file> [<output-file>]"
 	exit 1
 }
-
 
 encoding system utf-8
 set lang [file tail [pwd]] 
@@ -281,6 +289,18 @@ if {$codeName ne $lang} {
 	exit 1
 }
 
+set transFile [file join .. .. lang $translationFile]
+set nagFile [file join .. .. lang nag $translationFile]
+
+if {![file readable $transFile]} {
+	puts stderr "Error([info script]): Cannot open file \"$transFile\"."
+	exit 1
+}
+#if {![file readable $nagFile]} {
+#	puts stderr "Error([info script]): Cannot open file \"$nagFile\"."
+#	exit 1
+#}
+
 set srcfile [lindex $argv 0]
 set dstfile [lindex $argv 1]
 
@@ -289,9 +309,11 @@ set charset $charsetName
 chan configure $src -encoding $charset
 set title ""
 
+readTranslationFile $transFile $nagFile $charsetName
+
 while {[gets $src line] >= 0} {
 	if {[string match TITLE* $line]} {
-		set title [getArg $line]
+		set title [substituteVariables [getArg $line]]
 		break
 	} elseif {[string match CHARSET* $line]} {
 		set charset [getArg $line]
@@ -394,13 +416,18 @@ proc readContents {chan file} {
 
 		while {[regexp -indices {<cql>[^/]*</cql>} $line location]} {
 			lassign $location i k
-			set parts [split [string range $line [expr {$i + 5}] [expr {$k - 6}]] :]
-			set section [lindex $parts 0]
-			set keyword [string trim [lindex [split [lindex $parts 1] " "] 0]]
-			set text [join [lrange $parts 1 end] ":"]
-			set Section [string toupper $section 0 0]
+			set keyword [string trim [string range $line [expr {$i + 5}] [expr {$k - 6}]]]
 			set newline [string range $line 0 [expr {$i - 1}]]
-			append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\"><nobr>:$text</nobr></a>"
+			if {[string index $keyword 0] == ":"} {
+				append newline "<nobr>$keyword</nobr>"
+			} else {
+				set parts [split $keyword :]
+				set section [lindex $parts 0]
+				set keyword [string trim [lindex [split [lindex $parts 1] " "] 0]]
+				set text [join [lrange $parts 1 end] ":"]
+				set Section [string toupper $section 0 0]
+				append newline "<a href=\"CQL-$Section-List.html#$section:$keyword\"><nobr>:$text</nobr></a>"
+			}
 			append newline [string range $line [expr {$k + 1}] end]
 			set line $newline
 		}
@@ -517,20 +544,6 @@ proc readContents {chan file} {
 	return $contents
 }
 
-set transFile [file join .. .. lang $translationFile]
-set nagFile [file join .. .. lang nag $translationFile]
-
-if {![file readable $transFile]} {
-	puts stderr "Error([info script]): Cannot open file \"$transFile\"."
-	exit 1
-}
-#if {![file readable $nagFile]} {
-#	puts stderr "Error([info script]): Cannot open file \"$nagFile\"."
-#	exit 1
-#}
-
-readTranslationFile $transFile $nagFile $charsetName
-
 proc processContents {contents} {
 	variable body
 	variable charset
@@ -557,16 +570,7 @@ proc processContents {contents} {
 			}
 			processContents [readContents $inc $f]
 		} else {
-			while {[regexp {%(::)?[a-zA-Z_:]*(\([^)]*\))?%} $line pattern]} {
-				set var [string range $pattern 1 end-1]
-				if {[info exists $var]} {
-					set line [string map [list $pattern [set $var]] $line]
-				} else {
-					puts stderr "Warning([info script]): Couldn't substitute $var"
-					set line [string map [list $pattern $var] $line]
-				}
-			}
-			lappend body $line
+			lappend body [substituteVariables $line]
 		}
 	}
 }

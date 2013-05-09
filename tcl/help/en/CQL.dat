@@ -50,6 +50,7 @@ set Index {
       {{eco : match} {CQL-Match-List.html} {match:eco}}
       {{elo : position} {CQL-Position-List.html} {position:elo}}
       {{endgame : position} {CQL-Position-List.html} {position:endgame}}
+      {{endmost : position} {CQL-Position-List.html} {position:endmost}}
       {{enpassant : position} {CQL-Position-List.html} {position:enpassant}}
       {{evaluation : position} {CQL-Position-List.html} {position:evaluation}}
       {{event : match} {CQL-Match-List.html} {match:event}}
@@ -72,6 +73,7 @@ set Index {
       {{flipdihedral : position} {CQL-Position-List.html} {position:flipdihedral}}
       {{fliphorizontal : position} {CQL-Position-List.html} {position:fliphorizontal}}
       {{flipvertical : position} {CQL-Position-List.html} {position:flipvertical}}
+      {{following : position} {CQL-Position-List.html} {position:following}}
       {{forany : match} {CQL-Match-List.html} {match:forany}}
     }
   }

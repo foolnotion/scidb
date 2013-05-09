@@ -27,8 +27,9 @@ TITLE The database switcher
 <p>
 The database switcher provides easy navigation between databases.
 The active database will be highlighted with a yellow background.
-All databases not belonging to the chess variant of the active
-database are disabled (white background).
+All databases not belonging to the
+<a href="Chess-Variants.html">chess variant</a> of the active database are
+disabled (white background).
 </p>
 
 <p>
@@ -63,7 +64,8 @@ Opens a box displaying various database information.
 <menuitem>%::export::mc::Export%</menuitem>
 Opens a dialog for <a href="Database-Export-Dialog.html">database export</a>
 into other database formats or document formats.
-<note/>If this database contains several chess variants (only possible
+<note/>If this database contains several
+<a href="Chess-Variants.html">chess variants</a> (only possible
 in case of <a href="Clipbase.html">Clipbase</a> or PGN files) only the games
 of the active chess variant will be exported.
 </p>
@@ -128,13 +130,14 @@ Open a database via the database history.
 Create a new database. Only Scidb and Scid databases
 (<abbr>.sci</abbr>, <abbr>.si4</abbr>, <abbr>.si3</abbr>)
 can be created.
-If the database should store games of any chess variant please use the next menu item.
+If the database should store games of any
+<a href="Chess-Variants.html">chess variant</a> please use the next menu item.
 </p>
 
 <p>
 <menuitem>%::application::database::mc::FileNew%</menuitem>
-Create a new database of any chess variant. Only Scidb databases
-can be created in this case.
+Create a new database of any <a href="Chess-Variants.html">chess variant</a>.
+Only Scidb databases can be created in this case.
 </p>
 
 <p>
@@ -215,10 +218,11 @@ the games will be copied into the destination database.
 </p>
 
 <p>
-To copy all games (of one chess variant) of one database to another, drag the
-games while holding the left mouse button and drop the games into the destination
-field. It is required that the destination database is writeable and not disabled.
-This is an important way to manage and copy games within databases.
+To copy all games (of one <a href="Chess-Variants.html">chess variant</a>) of
+one database to another, drag the games while holding the left mouse button and
+drop the games into the destination field. It is required that the destination
+database is writeable and not disabled.  This is an important way to manage and
+copy games within databases.
 </p>
 
 END

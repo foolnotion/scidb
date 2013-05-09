@@ -41,18 +41,223 @@
 </div>
 
 <ul>
-  <li><a href="#tranforms">Transformationsschlüsselwörter in einer Positionsliste</a></li>
+  <li><a href="#transforms">Transformationen der Figurenbezeichner</a></li>
+  <li><a href="#keywords">Transformationsschlüsselwörter in einer Positionsliste</a></li>
   <li><a href="#examples">Beispiele für Anwendungen der Transformationsschlüsselwörter</a></li>
   <li><a href="#multiple">Mehrfachtransformationsschlüsselwörter</a></li>
 </ul>
 
-<h2 id="tranforms">Transformationsschlüsselwörter in einer Positionsliste</h2>
+<h2 id="transforms">Transformationen der Figurenbezeichner</h2>
 
 <p>
-Bestimmte Sclüsselwörter in einer Positionsliste spezifizieren, daß die
+Einige Transformationen für Figurenbezeichner werden hier definiert.
+</p>
+
+<p>
+Eine <b>diagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+Hauptdiagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> an der Hauptdiagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die diagonale Spiegelung von <span style='white-space:nowrap;'><code>[Aa][a-h1-2,f6,h7]</code></span>
+gleich <span style='white-space:nowrap;'><code>[Aa][a-b1-8,f6,g8]</code></span>.
+</p>
+
+<p>
+Eine <b>gegendiagonale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+a8-h1-Diagonalen.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Gegendiagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>b2</code></span> an der a8-h1-Diagonalen.
+    </td>
+  </tr>
+</table>
+
+<p>
+Beispielsweise ist die gegendiagonale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> gleich
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span>. Die gegendiagonale Spiegelung von
+<span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1-8]</code></span>, kennzeichnend einen Läufer auf der a-Linie,
+ist <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a-h8]</code></span>, kennzeichnend einen Läufer auf der achten
+Reihe.
+</p>
+
+<p>
+Eine <b>vertikale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+vertikalen Halbierungslinie des Schachbretts. Beispielsweise ist die vertikale
+Spiegelung von <span style='white-space:nowrap;'><code>Uf6</code></span>, kennzeichnend eine Figur auf f6, gleich
+<span style='white-space:nowrap;'><code>Uc6</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertikale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> an der vertikalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>horizontale Spiegelungstransformation</b>, angewendet auf einen
+Figurenbezeichner, reflektiert jedes Feld auf das Feld gegenüber der
+horizontalen Halbierungslinie des Schachbretts. Beispielsweise ist die horizontale
+Spiegelung von <span style='white-space:nowrap;'><code>Uf6</code></span> gleich <span style='white-space:nowrap;'><code>Uf3</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontale Spiegelung von <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> an der horizontalen Halbierungslinie.
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>diedrische Transformation</b>, angewendet auf einen Figurenbezeichner,
+ist eine Spiegelungstransformation gefolgt von einer Spiegelungstransformation
+oder der identischen Transformation (es können statt der ersten
+Spiegelungstransformation auch Rotationen von 90, 180, oder 270 Grad eingesetzt
+werden).  Es gibt 8 unterscheidbare diedrische Transformationen des
+Schachbretts.  Beispielsweise ist das Resultat einer Anwendung aller
+diedrischen Transformationen auf den Figurenbezeichner
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> die Menge der 8 Figurenbezeichner <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b3</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c7</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f7</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g3</code></span> und <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f2</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png" alt="" />
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diedrische Transformationen von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>, beispielsweise:<br/>
+      diagonale Spiegelung + diagonale Spiegelung (nach c2)<br/>
+      diagonale Spiegelung + identische Transformation (nach b3)<br/>
+      diagonale Spiegelung + horizontale Spiegelung (nach b6)<br/>
+      horizontale Spiegelung + identische Transformation (nach c7)<br/>
+      horizontale Spiegelung + vertikale Spiegelung (nach f7)<br/>
+      gegendiagonale Spiegelung + identische Transformation (nach g6)<br/>
+      gegendiagonale Spiegelung + horizontale Spiegelung (nach g3)<br/>
+      vertikale Spiegelung + identische Transformation (nach f2)<br/>
+    </td>
+  </tr>
+</table>
+
+<p>
+Eine <b>einschrittige rechtsschiebende Transformation</b>, angewendet auf einen
+Figurenbezeichner, verschiebt jedes Feld in der Feldermenge ein Feld nach
+rechts. Ist ein Feld bereits auf dem rechten Brettrand, so wird es von der
+Feldermenge entfernt. Ein Feld auf dem linken Brettrand ist auch wieder in der
+neuen Menge enthalten.
+</p>
+
+<p>
+Beispielsweise ist die einschrittige rechtsschiebende Transformation von
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> gleich <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>e4</code></span>. Die einschrittige rechtsschiebende
+Transformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[c2,h2]</code></span> ist <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d2</code></span>. Die
+einschrittige rechtsschiebende Transformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,c2,h2]</code></span> ist
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,b2,d2]</code></span>.
+</p>
+
+<p>
+Die Definitionen der <b>einschrittigen linksschiebenden Transformation</b>,
+<b>einschrittigen hochschiebenden Transformation</b>, sowie der <b>einschrittigen
+runterschiebenden Transformation</b>, sind analog zur einschrittigen
+rechtsschiebenden Transformation. Die Randfelderbesonderheiten sind in
+der enstprechenden Veränderung zu sehen.
+</p>
+
+<p>
+Eine <b>Rechtswärtstransformation</b> ist eine Hintereinanderausführung von
+Null oder mehr einstelligen rechtsschiebenden Transformationen. Beispielsweise
+ergibt die drei aufeinanderfolgenden einstelligen rechtsschiebenden
+Transformationen umfassende Rechtswärtstransformation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>a4</code></span>
+die Menge <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a4,b4,c4,d4]</code></span>, denn die Felder am linken Brettrand
+sind auch in der neuen Menge enthalten. Das Resultat der Anwendung dieser
+Rechtswärtstransformation auf <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> ergibt <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g4</code></span>.
+</p>
+
+<p>
+Die Definitionen der <b>Linkswärtstransformation</b>,
+<b>Hochwärtstransformation</b>, und <b>Runterwärtstransformation</b> sind
+entsprechend.
+</p>
+
+<p>
+Eine <b>horizontale Translation</b> ist entweder eine Linkswärtstransformation
+oder eine Rechtswärtstransformation. Eine <b>vertikale Translation</b> ist
+entweder eine Runterwärtstransformation oder eine Hochwärtstransformation.
+</p>
+
+<p>
+Eine <b>hauptdiagonale Translation</b> ist eine Folge von Null oder mehr
+Kombinationen aus einschrittiger Rechstwärtstransformation und einschrittiger
+Hochwärtstransformation.
+Eine <b>gegendiagonale Translation</b> ist eine Folge von Null oder mehr
+Kombinationen aus einschrittiger Rechstwärtstransformation und einschrittiger
+Runterwärtstransformation.
+</p>
+
+<p>
+Eine <b>Translation</b> ist eine Transformation, die als Folge von Null oder
+mehr horizontalen Translationen, gefolgt von Null oder mehr vertikalen
+Translationen, ausgedrückt werden kann. Es gibt exakt eine Translation, die
+ein gegebenes Feld auf ein anderes gegebenes Feld verschiebt. Eine mögliche
+Translation von <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[b3,c4]</code></span> ist <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[d4,e5]</code></span>.
+</p>
+
+<p>
+Eine <b>Farbwechseltransformation</b>, angewendet auf einen Felderbezeichner,
+wechselt die Farbe der Figurenmenge des Felderbezeichners, und wendet dann
+eine horizontale Verschiebung auf den Figurenbezeichner an. Beispiel:
+die Farbwechseltransformation angewendet auf <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265f;</span>][a2,c2]</code></span>,
+entweder ein weißer Turm, ein schwarzer Läufer, oder ein schwarzer Bauer auf
+c2 oder a2, ergibt die Menge <span style='white-space:nowrap;'><code>[<span class='piece'>&#x265c;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2659;</span>][a7,c7]</code></span>.
+</p>
+
+<h2 id="keywords">Transformationsschlüsselwörter in einer Positionsliste</h2>
+
+<p>
+Bestimmte Schlüsselwörter in einer Positionsliste spezifizieren, daß die
 Positionsliste eine Position filtert, wenn eine transformierte
 Positionsliste die Position gefiltert hat. Beispielsweise spezifiziert
-das Sclüsselwort <a href="CQL-Position-List.html#position:fliphorizontal"><span style='white-space:nowrap;'>:fliphorizontal</span></a>, daß die Positionsliste
+das Schlüsselwort <a href="CQL-Position-List.html#position:fliphorizontal"><span style='white-space:nowrap;'>:fliphorizontal</span></a>, daß die Positionsliste
 dann eine Position filtert, wenn entweder die Ursprungspositionsliste diese
 Position filtert, oder wenn eine an der horizontalen Halbierungslinie
 gespiegelte Positionsliste diese Position filtert.
@@ -118,7 +323,7 @@ ist folglich
 </code></div>
 
 <p>
-Zur Erinnerung: Verschiebungen wriken in spezieller Weise mit einigen
+Zur Erinnerung: Verschiebungen wiRKen in spezieller Weise mit einigen
 Randfeldern. Beispielsweise das Resultat der Anwendung einer
 einstelligen Hochwärtstransformation auf folgende Positionsliste
 </p>
@@ -143,12 +348,12 @@ der Transformationsmenge auf die Positionsliste.
 </p>
 
 <p>
-Jedes Tranformationsschlüsselwort ist mit einer Transformationsmenge assoziiert,
+Jedes Transformationsschlüsselwort ist mit einer Transformationsmenge assoziiert,
 jede davon beinhaltet auch die identische Transformation.
 </p>
 
 <p>
-Zu den Tranformationsschlüsselwörtern siehe:
+Zu den Transformationsschlüsselwörtern siehe:
 <a href="CQL-Position-List.html#transform">Die Positionsliste:
 Transformationsschlüsselwörter</a>.
 </p>
@@ -202,8 +407,8 @@ und der Turm auf der c-Linie steht, und die Dame auf der g-Linie.
 
 <p>
 Diese Positionsliste filtert jede Position mit einem weißen Turm und einer
-schwarzen Dame auf der gleichen Reihe, so daß dieser Turm vier Felder links der
-schwarzen Dame steht.
+schwarzen Dame auf der gleichen Reihe, so daß dieser Turm vier Felder links von
+der schwarzen Dame steht.
 </p>
 
 <div class='verb'><code>
@@ -240,8 +445,8 @@ einem weißen Bauern auf der c-Linie steht.
 </code></div>
 
 <p>
-Aufgrund der Weise wie Randfelder behandelt werden, filtert dies Positionen,
-in der beispielsweise ein weißer Turm auf c2 steht aund ein weißer Bauer auf
+Aufgrund der Weise wie Randfelder behandelt werden filtert dies Positionen,
+in denen beispielsweise ein weißer Turm auf c2 steht aund ein weißer Bauer auf
 c7.
 </p>
 
@@ -289,7 +494,7 @@ jede Position filtert, in der ein Springer einen gegnerischen König angreift.
 </p>
 
 <p>
-Beachte: Dieses Beispiel kann effizienter formuliert werden:
+Das letzte Beispiel kann jedoch effizienter formuliert werden kann:
 </p>
 
 <div class='verb'><code>

@@ -76,7 +76,7 @@ folgenden Optionen auszuwählen:
         (Nicht verfügbar im Web-Browser)
       </div>
     </td>
-    <td nowrap>&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
+    <td nowrap="true">&emsp;K Q R B N P k q r b n p (wird in den CQL-Dateien verwendet)</td>
   </tr>
   <tr valign="top">
     <td>
@@ -85,7 +85,7 @@ folgenden Optionen auszuwählen:
         (Nicht verfügbar im Web-Browser)
       </div>
     </td>
-    <td nowrap>&emsp;<whitepieceletters/> <blackpieceletters/></td>
+    <td nowrap="true">&emsp;<whitepieceletters/> <blackpieceletters/></td>
   </tr>
   <tr valign="top">
     <td>
@@ -94,8 +94,7 @@ folgenden Optionen auszuwählen:
         Standard im Web-Browser
       </div>
     </td>
-    <td nowrap>&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
-    </td>
+    <td nowrap="true">&emsp;&King; &Queen; &Rook; &Bishop; &Knight; &Pawn; &king; &queen; &rook; &bishop; &knight; &pawn;</td>
   </tr>
 </table>
 
@@ -106,7 +105,6 @@ folgenden Optionen auszuwählen:
     <ul class="index">
       <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
       <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-      <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
       <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
       <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
     </ul>
@@ -114,10 +112,8 @@ folgenden Optionen auszuwählen:
   <li><a href="CQL-Transformations.html">Transformationen</a></li>
   <li><a href="CQL-Match-List.html">Die Suchliste</a></li>
   <li><a href="CQL-Position-List.html">Die Positionsliste</a></li>
-<!--
   <li><a href="CQL-Relation-List.html">Die Relationenliste</a></li>
   <li><a href="CQL-Tagging.html">Markierung</a></li>
--->
   <li><a href="CQL-Examples.html">Beispiele</a></li>
 </ul>
 

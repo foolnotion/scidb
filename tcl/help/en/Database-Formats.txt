@@ -60,37 +60,8 @@ recommended because of speed and feature completeness considerations.
 </p>
 
 <p>
-Only Scidb's format (and PGN format) is storing games of various chess variants,
-currently this is:
-</p>
-
-<box>
-  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
-    <tr>
-      <td>%::mc::VariantName(Normal)%</td>
-    </tr>
-    <tr>
-      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
-    </tr>
-    <tr>
-      <td><a href="http://en.wikipedia.org/wiki/Antichess">%::mc::VariantName(Antichess)%</a></td>
-      <td></td>
-      <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
-          <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
-    </tr>
-    <tr>
-      <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
-      <td></td>
-      <td>(variant of %::mc::VariantName(Antichess)%)</td>
-    </tr>
-    <tr>
-      <td><a href="http://en.wikipedia.org/wiki/Three-check_chess">
-          %::mc::VariantName(ThreeCheck)%</a></td>
-    </tr>
-  </table>
-</box>
-
-<p>
+Only Scidb's format (and PGN format) is storing games of various chess variants
+(<see/><a href="Chess-Variants.html">Supported chess variants</a>).
 A database is fixed to one chess variant (the <a href="Clipbase.html">Clipbase</a>
 is an exception).
 </p>

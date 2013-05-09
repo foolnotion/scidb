@@ -53,7 +53,7 @@ im Jahr 2013:
 </verbatim>
 
 <p>
-Um die einzelenen Bestandteile von CQL zu verstehen, werden einige syntaktische
+Um die einzelnen Bestandteile von CQL zu verstehen, werden einige syntaktische
 Terminologien definiert.
 </p>
 
@@ -72,14 +72,15 @@ Beispielsweise ist
 </verb>
 
 <p>
-eine Liste deren drei Elemente die Zeichenketten "position",
-":shifthorizontal", und ":flipcolor" sind.
+eine Liste deren drei Elemente die Zeichenketten <nobr>"position"</nobr>,
+<nobr>":shifthorizontal"</nobr>, und <nobr>":flipcolor"</nobr> sind.
 </p>
 
 <p>
-Die obige Liste, beginnend mit "(match", hat sechs Elemente. Das letzte
-Element ist selbst eine Liste mit sechs Elementen, dessen erstes Element
-"position", und dessen letztes Element ":flipcolor" ist.
+Die obige Liste, beginnend mit <nobr>"(match"</nobr>, hat sechs Elemente.
+Das letzte Element ist selbst eine Liste mit sechs Elementen, dessen erstes
+Element <nobr>"position"</nobr>, und dessen letztes Element
+<nobr>":flipcolor"</nobr> ist.
 </p>
 
 <p>
@@ -111,13 +112,13 @@ In der Liste
 erhält <cql>position:piececount</cql> die Parameter <expr>&P;[b2-7]</expr>
 und <expr>4</expr>. Die anderen Schlüsselwörter
 <cql>position:shifthorizontal</cql> und <cql>position:flipcolor</cql> erwarten
-keine Parameter. Eine Liste mit dem ersten Element "match" wird eine Suchliste
-genannt und definiert einen Suchfilter.
+keine Parameter. Eine Liste mit dem ersten Element <nobr>"match"</nobr> wird eine
+Suchliste genannt und definiert einen Suchfilter.
 </p>
 
 <p>
-Eine Liste mit dem ersten Element "position" wird eine Positionsliste
-genannt und definiert einen Positionsfilter.
+Eine Liste mit dem ersten Element <nobr>"position"</nobr> wird eine
+Positionsliste genannt und definiert einen Positionsfilter.
 </p>
 
 <h2>Funktionsweise von CQL</h2>
@@ -152,7 +153,7 @@ Der einfachste Positionsfilter ist:
 </verb>
 
 <p>
-Dieser Positionsfilter filtert jede Partie. Folglich filtert das folgende
+Dieser Positionsfilter filtert jede Position. Folglich filtert das folgende
 Skript alle Partien:
 </p>
 
@@ -162,7 +163,8 @@ Skript alle Partien:
 
 <p>
 In Scidb kann dieses Skript noch einfacher formuliert werden, denn in
-Scidb muß die Suchliste keine Positionsliste enthalten:
+Scidb muß die Suchliste, abweichend vom CQL-Standard, keine Positionsliste
+enthalten:
 </p>
 
 <verb>
@@ -183,16 +185,15 @@ Beispiel:
 )
 </verbatim>
 
-<h2>Einige Basiselement</h2>
+<h2>Einige Basiselemente</h2>
 
 <ul>
     <li><a href="CQL-Piece-Designators.html">Figurenbezeichner</a></li>
     <li><a href="CQL-Square-Designators.html">Felderbezeichner</a></li>
-    <li><a href="CQL-Piece-Designator-Transforms.html">Transformation der Figurenbezeichner</a></li>
     <li><a href="CQL-Range-Specifiers.html">Bereichsangaben</a></li>
     <li><a href="Pattern-Matching.html">Suchmusterabgleich (Pattern-Matching)</a></li>
 </ul>
 
 END
 
-<!-- vi:set ts=2 sw=2 et filetype=html: -->
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

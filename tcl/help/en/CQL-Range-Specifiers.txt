@@ -31,15 +31,15 @@ it denotes all the integers between its first and second integers inclusive.
 </p>
 
 <p>
-A special meaning has the value "unlimited". If "unlimited" is a
+A special meaning has the value <i>unlimited</i>. If <i>unlimited</i> is a
 single argument, the range is completely unlimited, this means all
-values are included. If the lower range is "unlimited", the meaning
-is negative unlimited. If the upper range is "unlimited", the meaning is
+values are included. If the lower range is <i>unlimited</i>, the meaning
+is negative unlimited. If the upper range is <i>unlimited</i>, the meaning is
 positive unlimited.
 </p>
 
 <note>
-The special range "unlimited" is not part of the CQL standard.
+The special range <i>unlimited</i> is not part of the CQL standard.
 </note>
 
 <h3>Examples</h3>
@@ -63,7 +63,7 @@ Denotes the year 1934. <code>1934</code> is the range specifier.
 
 <p>
 Denotes the years between 1934 and 2000 inclusive. The range specifier is
-<code>1934 2000</code>.
+<code>1934</code> <code>2000</code>.
 </p>
 
 <verb>
