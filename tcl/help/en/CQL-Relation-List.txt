@@ -144,7 +144,7 @@ containing position list affect the piece designator in this keyword.
 </p>
 
 <p>
-The default piece designator for <cql>:newiececount</cql> is <code>U<code> and
+The default piece designator for <cql>:newiececount</cql> is <code>U</code> and
 the default range is zero. That is, by default there can be no new pieces. 
 </p>
 
