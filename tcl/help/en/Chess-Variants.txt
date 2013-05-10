@@ -1,0 +1,76 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Chess variants
+INDEX %::mc::VariantName(Normal)%
+INDEX %::mc::VariantName(Crazyhouse)%
+INDEX %::mc::VariantName(ThreeCheck)%
+INDEX %::mc::VariantName(Antichess)%
+INDEX %::mc::VariantName(Suicide)%
+INDEX %::mc::VariantName(Giveaway)%
+INDEX %::mc::VariantName(Losers)%
+
+TITLE Supported chess variants
+
+<p>
+Scidb is supporting various chess variants, currently this is:
+</p>
+
+<box>
+  <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
+    <tr>
+      <td>%::mc::VariantName(Normal)%</td>
+    </tr>
+    <tr>
+      <td><a href="http://en.wikipedia.org/wiki/Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></td>
+    </tr>
+    <tr>
+      <td><a href="http://en.wikipedia.org/wiki/Antichess">%::mc::VariantName(Antichess)%</a></td>
+      <td></td>
+      <td>(<a href="http://suicidechess.ca/index.php?lg=en">%::mc::VariantName(Suicide)%</a>,
+          <a href="http://www6.chessclub.com/help/Giveaway">%::mc::VariantName(Giveaway)%</a>)</td>
+    </tr>
+    <tr>
+      <td><a href="http://loserschess.org/">%::mc::VariantName(Losers)%</a></td>
+      <td></td>
+      <td>(variant of %::mc::VariantName(Antichess)%)</td>
+    </tr>
+    <tr>
+      <td><a href="http://en.wikipedia.org/wiki/Three-check_chess">
+          %::mc::VariantName(ThreeCheck)%</a></td>
+    </tr>
+  </table>
+</box>
+
+<p>
+In all chess variants
+<a href="http://de.wikipedia.org/wiki/Chess960">%::mc::VariantName(Chess960)%</a>
+and also
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a>
+positions are supported.
+</p>
+
+<p>
+For chess variants %::mc::VariantName(Crazyhouse)% and
+%::mc::VariantName(ThreeCheck)% Scidb is using required extensions for
+FEN (<see/> <a href="FEN.html">Forsyth-Edwards-Notation</a>).
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->
