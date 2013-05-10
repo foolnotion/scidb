@@ -81,8 +81,18 @@ info::Site::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 Rating::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	uint16_t rating = info.findRating(m_color, m_ratingType);
-	return m_minScore <= rating && rating <= m_maxScore;
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if (	(m_colors & (1 << i))
+			&& mstl::is_between(info.findRating(color::ID(i), m_ratingType), m_minScore, m_maxScore))
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
 
 
@@ -133,7 +143,15 @@ EventType::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 Country::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return m_countries.test(info.eventCountry());
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && m_countries.test(info.eventCountry()))
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -190,14 +208,30 @@ Gender::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 IsComputer::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return info.playerType(m_color) == species::Program;
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && info.playerType(db::color::ID(i)) == species::Program)
+			return true;
+	}
+
+	return false;
 }
 
 
 bool
 IsHuman::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	return info.playerType(m_color) == species::Human;
+	static_assert((White | Black) == 1, "loop not working");
+
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if ((m_colors & (1 << i)) && info.playerType(db::color::ID(i)) == species::Human)
+			return true;
+	}
+
+	return false;
 }
 
 
@@ -227,19 +261,19 @@ StartPosition::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
 	if (m_none)
 		return info.idn() == 0;
-	
+
 	if (m_positions.test(0))
 		return info.idn() == 0 || info.idn() > 4*960;
 
 	if (m_positions.test(info.idn()))
 		return true;
-	
+
 	if (!isAntichessExceptLosers(variant))
 		return false;
 
 	if (info.idn() > 3*960)
 		return m_positions.test(info.idn() - 3*960);
-	
+
 	return false;
 }
 
@@ -351,14 +385,24 @@ BirthYear::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 bool
 DeathYear::match(GameInfo const& info, Variant variant, unsigned gameNumber)
 {
-	db::Date const& date = info.player(m_color)->dateOfDeath();
+	static_assert((White | Black) == 1, "loop not working");
 
-	if (!date)
-		return false;
+	for (unsigned i = 0; i < 2; ++i)
+	{
+		if (m_colors & (1 << i))
+		{
+			db::Date const& date = info.player(db::color::ID(i))->dateOfDeath();
 
-	unsigned year = date.year();
+			if (!date)
+				return false;
 
-	return m_min <= year && year <= m_max;
+			unsigned year = date.year();
+
+			return m_min <= year && year <= m_max;
+		}
+	}
+
+	return false;
 }
 
 // vi:set ts=3 sw=3:

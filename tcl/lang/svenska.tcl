@@ -1609,6 +1609,7 @@
 ::export::mc::ExportDatabase				"Exportera databas"
 ::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"Exportera databas '%s'"
+::export::mc::ExportCurrentGameTitle	"Export Current Game" ;# NEW
 ::export::mc::ExportingDatabase			"Exporterar '%s' till filen '%s'"
 ::export::mc::Export							"Export"
 ::export::mc::NoGamesCopied				"Inga partier exporterade."

@@ -84,6 +84,7 @@ public:
 	void addEntry(unsigned originalId, NamebaseEntry* entry);
 	void update(Namebase& base, sys::utf8::Codec& codec);
 	void reserve(unsigned size);
+	void finish();
 
 	void resetMaxFrequency();
 	void updateMaxFrequency(unsigned freq);

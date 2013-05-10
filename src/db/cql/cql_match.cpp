@@ -219,6 +219,28 @@ skipSpaces(char const* s)
 }
 
 
+static char const*
+skipPattern(char const* s)
+{
+	s = skipSpaces(s);
+
+	if (*s == '"')
+	{
+		while (*s && *s != '\n' && *s != '"')
+			++s;
+
+		if (*s != '"')
+			return 0;
+	}
+	else
+	{
+		s = skipToDelim(s);
+	}
+
+	return s;
+}
+
+
 static unsigned
 lengthOfKeyword(char const* s)
 {
@@ -398,7 +420,7 @@ parseCountryCodes(char const* s, error::Type& error, mstl::bitset& codes)
 
 		while (::isalpha(*t))
 			str += *t++;
-		
+
 		if (!::isDelim(*t))
 		{
 			error = Invalid_Country_Code;
@@ -628,9 +650,9 @@ Match::parseAnd(char const* s, Error& error)
 char const*
 Match::parseAnnotator(char const* s, Error& error)
 {
-	char const* t = ::skipToDelim(s);
+	char const* t = ::skipPattern(s);
 
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
@@ -681,7 +703,7 @@ Match::parseBlackCountry(char const* s, Error& error)
 	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Country(countries, Black));
+		m_matchGameInfoList.push_back(new info::Country(1 << Black, countries));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -697,7 +719,7 @@ Match::parseBlackDeathYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::DeathYear(Black, min, max));
+		m_matchGameInfoList.push_back(new info::DeathYear(1 << Black, min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -712,7 +734,7 @@ Match::parseBlackElo(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, Black));
+		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, 1 << Black));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -728,7 +750,7 @@ Match::parseBlackGender(char const* s, Error& error)
 	s = ::parseGender(s, error, sex);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Gender(sex, 1 << Black));
+		m_matchGameInfoList.push_back(new info::Gender(1 << Black, sex));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -739,7 +761,7 @@ Match::parseBlackGender(char const* s, Error& error)
 char const*
 Match::parseBlackIsComputer(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsComputer(Black));
+	m_matchGameInfoList.push_back(new info::IsComputer(1 << Black));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -749,7 +771,7 @@ Match::parseBlackIsComputer(char const* s, Error& error)
 char const*
 Match::parseBlackIsHuman(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsHuman(Black));
+	m_matchGameInfoList.push_back(new info::IsHuman(1 << Black));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -758,15 +780,15 @@ Match::parseBlackIsHuman(char const* s, Error& error)
 char const*
 Match::parseBlackPlayer(char const* s, Error& error)
 {
-	char const* t = ::skipToDelim(s);
+	char const* t = ::skipPattern(s);
 
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
 	}
 
-	m_matchGameInfoList.push_back(new info::Player(s, t, Black));
+	m_matchGameInfoList.push_back(new info::Player(s, t, 1 << Black));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return t;
@@ -786,7 +808,7 @@ Match::parseBlackRating(char const* s, Error& error)
 		s = Position::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
-			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, Black));
+			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, 1 << Black));
 	}
 
 	m_isStandard = false;
@@ -803,7 +825,7 @@ Match::parseBlackTitle(char const* s, Error& error)
 	s = ::parseTitles(s, error, titles);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Title(titles, Black));
+		m_matchGameInfoList.push_back(new info::Title(titles, 1 << Black));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -867,10 +889,7 @@ Match::parseCountry(char const* s, Error& error)
 	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-	{
-		m_matchGameInfoList.push_back(new info::Country(countries, White));
-		m_matchGameInfoList.push_back(new info::Country(countries, Black));
-	}
+		m_matchGameInfoList.push_back(new info::Country((1 << White) | (1 << Black), countries));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo; // XXX depends on database format
@@ -903,10 +922,7 @@ Match::parseDeathYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-	{
-		m_matchGameInfoList.push_back(new info::DeathYear(White, min, max));
-		m_matchGameInfoList.push_back(new info::DeathYear(Black, min, max));
-	}
+		m_matchGameInfoList.push_back(new info::DeathYear((1 << White) | (1 << Black), min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -951,8 +967,8 @@ Match::parseElo(char const* s, Error& error)
 
 	if (error == No_Error)
 	{
-		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, White));
-		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, Black));
+		m_matchGameInfoList.push_back(
+			new info::Rating(rating::Elo, min, max, (1 << White) | (1 << Black)));
 	}
 
 	m_isStandard = false;
@@ -964,9 +980,9 @@ Match::parseElo(char const* s, Error& error)
 char const*
 Match::parseEvent(char const* s, Error& error)
 {
-	char const* t = ::skipToDelim(s);
+	char const* t = ::skipPattern(s);
 
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
@@ -1131,7 +1147,7 @@ Match::parseGender(char const* s, Error& error)
 	s = ::parseGender(s, error, sex);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Gender(sex, (1 << White) | (1 << Black)));
+		m_matchGameInfoList.push_back(new info::Gender((1 << White) | (1 << Black), sex));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1262,8 +1278,7 @@ Match::parseIsChess960(char const* s, Error& error)
 char const*
 Match::parseIsComputer(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsComputer(White));
-	m_matchGameInfoList.push_back(new info::IsComputer(Black));
+	m_matchGameInfoList.push_back(new info::IsComputer((1 << White) | (1 << Black)));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1273,8 +1288,7 @@ Match::parseIsComputer(char const* s, Error& error)
 char const*
 Match::parseIsHuman(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsHuman(White));
-	m_matchGameInfoList.push_back(new info::IsHuman(Black));
+	m_matchGameInfoList.push_back(new info::IsHuman((1 << White) | (1 << Black)));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1394,11 +1408,25 @@ Match::parseOr(char const* s, Error& error)
 
 
 char const*
+Match::parseOutput(char const* s, Error& error)
+{
+	return s; // does not have any meaning in Scidb
+}
+
+
+char const*
+Match::parsePgn(char const* s, Error& error)
+{
+	return s; // does not have any meaning in Scidb
+}
+
+
+char const*
 Match::parsePlayer(char const* s, Error& error)
 {
-	char const* t = ::skipToDelim(s);
+	char const* t = ::skipPattern(s);
 
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
@@ -1435,12 +1463,19 @@ Match::parsePlyCount(char const* s, Error& error)
 char const*
 Match::parsePosition(char const* s, Error& error)
 {
-	mstl::auto_ptr<Position> position(new Position);
-	s = position->parse(*this, s, error);
-	if (error != No_Error)
+	if (m_isTopLevel)
 	{
-		position->finish(*this);
-		addPosition(position.release());
+		mstl::auto_ptr<Position> position(new Position);
+		s = position->parse(*this, s, error);
+		if (error != No_Error)
+		{
+			position->finish(*this);
+			addPosition(position.release());
+		}
+	}
+	else
+	{
+		error = Position_List_Is_Not_Allowed;
 	}
 	return s;
 }
@@ -1460,8 +1495,8 @@ Match::parseRating(char const* s, Error& error)
 
 		if (error == No_Error)
 		{
-			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, White));
-			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, Black));
+			m_matchGameInfoList.push_back(
+				new info::Rating(ratingType, min, max, (1 << White) | (1 << Black)));
 		}
 	}
 
@@ -1556,12 +1591,9 @@ Match::parseRound(char const* s, Error& error)
 char const*
 Match::parseSite(char const* s, Error& error)
 {
-	char const* t = s;
+	char const* t = ::skipPattern(s);
 
-	while (*t && *t != '(' && *t != ')' && !::isspace(*t))
-		++t;
-
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
@@ -1802,7 +1834,7 @@ Match::parseWhiteCountry(char const* s, Error& error)
 	s = parseCountryCodes(s, error, countries);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Country(countries, White));
+		m_matchGameInfoList.push_back(new info::Country(1 << White, countries));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1818,7 +1850,7 @@ Match::parseWhiteDeathYear(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::DeathYear(White, min, max));
+		m_matchGameInfoList.push_back(new info::DeathYear(1 << White, min, max));
 
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1833,7 +1865,7 @@ Match::parseWhiteElo(char const* s, Error& error)
 	s = Position::parseUnsignedRange(s, error, min, max);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, White));
+		m_matchGameInfoList.push_back(new info::Rating(rating::Elo, min, max, 1 << White));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1849,7 +1881,7 @@ Match::parseWhiteGender(char const* s, Error& error)
 	s = ::parseGender(s, error, sex);
 
 	if (error == No_Error)
-		m_matchGameInfoList.push_back(new info::Gender(sex, 1 << White));
+		m_matchGameInfoList.push_back(new info::Gender(1 << White, sex));
 
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
@@ -1860,7 +1892,7 @@ Match::parseWhiteGender(char const* s, Error& error)
 char const*
 Match::parseWhiteIsComputer(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsComputer(White));
+	m_matchGameInfoList.push_back(new info::IsComputer(1 << White));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1870,7 +1902,7 @@ Match::parseWhiteIsComputer(char const* s, Error& error)
 char const*
 Match::parseWhiteIsHuman(char const* s, Error& error)
 {
-	m_matchGameInfoList.push_back(new info::IsHuman(White));
+	m_matchGameInfoList.push_back(new info::IsHuman(1 << White));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return s;
@@ -1880,15 +1912,15 @@ Match::parseWhiteIsHuman(char const* s, Error& error)
 char const*
 Match::parseWhitePlayer(char const* s, Error& error)
 {
-	char const* t = ::skipToDelim(s);
+	char const* t = ::skipPattern(s);
 
-	if (s == t)
+	if (s == 0 || s == t)
 	{
 		error = Pattern_Expected;
 		return s;
 	}
 
-	m_matchGameInfoList.push_back(new info::Player(s, t, White));
+	m_matchGameInfoList.push_back(new info::Player(s, t, 1 << White));
 	m_isStandard = false;
 	m_sections |= Section_GameInfo;
 	return t;
@@ -1908,7 +1940,7 @@ Match::parseWhiteRating(char const* s, Error& error)
 		s = Position::parseUnsignedRange(s, error, min, max);
 
 		if (error == No_Error)
-			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, White));
+			m_matchGameInfoList.push_back(new info::Rating(ratingType, min, max, 1 << White));
 	}
 
 	m_isStandard = false;
@@ -1994,6 +2026,8 @@ Match::parse(char const* s, Error& error)
 		Pair("language",				&Match::parseLanguage),
 		Pair("not",						&Match::parseNot),
 		Pair("or",						&Match::parseOr),
+		Pair("output",					&Match::parseOutput),
+		Pair("pgn",						&Match::parsePgn),
 		Pair("player",					&Match::parsePlayer),
 		Pair("plycount",				&Match::parsePlyCount),
 		Pair("position",				&Match::parsePosition),
@@ -2152,17 +2186,17 @@ Match::match(GameInfo const& info, variant::Type variant, unsigned gameNo)
 
 
 bool
-Match::match(GameInfo const& info, db::Board const& board, variant::Type variant, bool isFinal)
+Match::match(GameInfo const& info, db::Board const& board, variant::Type variant, unsigned flags)
 {
-	if (m_finalOnly && !isFinal)
+	if (m_finalOnly && !(flags & flags::IsFinalPosition))
 		return false;
-	
+
 	MatchPositionList::iterator i = m_matchPositionList.begin();
 	MatchPositionList::iterator e = m_matchPositionList.end();
 
 	for ( ; i != e; ++i)
 	{
-		if (!(*i)->match(info, board, variant, isFinal))
+		if (!(*i)->match(info, board, variant, flags))
 			return false;
 	}
 
@@ -2197,7 +2231,7 @@ Match::matchComments(char const* data, unsigned length)
 
 	if (m_not)
 		match = !match;
-	
+
 	return match;
 }
 

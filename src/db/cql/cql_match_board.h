@@ -41,6 +41,7 @@ namespace db { class GameInfo; }
 namespace cql {
 
 class Position;
+class PieceTypeDesignator;
 
 namespace board {
 
@@ -51,7 +52,7 @@ struct Match
 	typedef db::variant::Type Variant;
 
 	virtual ~Match() = 0;
-	virtual bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) = 0;
+	virtual bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) = 0;
 };
 
 
@@ -75,7 +76,7 @@ public:
 
 	void add(Designator const& designator);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -89,7 +90,7 @@ public:
 
 	AttackCount(Designator const& fst, Designator const& snd, unsigned min, unsigned max);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -105,7 +106,7 @@ public:
 
 	CannotWin(db::color::ID color);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -117,9 +118,9 @@ class Castling : public Match
 {
 public:
 
-	Castling(Designator const& designator);
+	Castling(PieceTypeDesignator const& designator);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -129,7 +130,7 @@ private:
 
 struct Check : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
@@ -140,7 +141,7 @@ public:
 	CheckCount(unsigned count);
 	CheckCount(unsigned wcount, unsigned bcount);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -151,31 +152,31 @@ private:
 
 struct DoubleCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct NoCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct NoDoubleCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct ContactCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct NoContactCheck : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
@@ -188,7 +189,7 @@ public:
 	void add(unsigned state);
 	void sub(unsigned state);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -203,7 +204,7 @@ public:
 
 	ToMove(db::color::ID color);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -217,7 +218,7 @@ public:
 
 	Fen(Board const& board);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -228,7 +229,7 @@ private:
 
 struct FiftyMoveRule : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
@@ -238,7 +239,7 @@ public:
 
 	HalfmoveClockLimit(unsigned limit);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -248,13 +249,13 @@ private:
 
 class EndGame : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct NoEndGame : public Match
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
@@ -265,7 +266,7 @@ struct GappedSequence : public Match
 
 	virtual cql::Position& pushBack();
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 protected:
 
@@ -283,7 +284,7 @@ public:
 
 	virtual cql::Position& pushBack() override;
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -299,7 +300,7 @@ public:
 
 	MatingMaterial(bool negate);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -307,30 +308,13 @@ private:
 };
 
 
-
-class MaxSwapEvaluation : public MatchMinMax
-{
-public:
-
-	MaxSwapEvaluation(Designator const& from, Designator const& to, int minScore, int maxScore);
-
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
-
-private:
-
-	Designator	m_from;
-	Designator	m_to;
-	int			m_minScore;
-	int			m_maxScore;
-};
-
 class PieceCount : public MatchMinMax
 {
 public:
 
 	PieceCount(Designator const& designator, unsigned min, unsigned max);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -344,7 +328,7 @@ public:
 
 	Power(Designator const& designator, unsigned min, unsigned max);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -358,7 +342,7 @@ public:
 
 	PowerDifference(Designator const& designator, int min, int max);
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -374,7 +358,7 @@ public:
 
 	Repetition();
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 
 private:
 
@@ -407,37 +391,76 @@ struct MatchRay : public MatchMinMax
 
 struct RayHorizontal : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct RayVertical : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct RayOrthogonal : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct RayDiagonal : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct Ray : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
 };
 
 
 struct RayAttack : public MatchRay
 {
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal) override;
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
+};
+
+
+class Evaluation : public Match
+{
+public:
+
+	enum Mode { Depth, MoveTime, Mate };
+	enum View { SideToMove, Absolute };
+
+	Evaluation(Mode mode, unsigned ply);
+	Evaluation(Mode mode, unsigned n, float lower, float upper, View view);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
+
+private:
+
+	Mode		m_mode;
+	View		m_view;
+	unsigned	m_arg;
+	float		m_lower;
+	float		m_upper;
+};
+
+
+class MaxSwapEvaluation : public MatchMinMax
+{
+public:
+
+	MaxSwapEvaluation(Designator const& from, Designator const& to, int minScore, int maxScore);
+
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags) override;
+
+private:
+
+	Designator	m_from;
+	Designator	m_to;
+	int			m_minScore;
+	int			m_maxScore;
 };
 
 } // namespace board

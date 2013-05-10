@@ -668,7 +668,7 @@ cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Tcl_WrongNumArgs(
 			ti, 1, objv,
 			"<database> <variant> <view> <file> <search-path> <script-path> <preamble> <flags> "
-			" <options> <nag-map> <languages> <significant> <progress-cmd> <progress-arg> "
+			" <options> <nag-map> <languages> <significant> <trace> <progress-cmd> <progress-arg> "
 			"<log-cmd> <log-arg>");
 		return TCL_ERROR;
 	}

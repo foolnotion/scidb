@@ -574,7 +574,7 @@ Codec::filterTags(TagSet& tags, Section section) const
 	tag::TagSet infoTags = Encoder::infoTags();
 
 	if (section == InfoTags)
-		infoTags.flip(0, tag::ExtraTag - 1);
+		infoTags.flip(0, tag::LastTag);
 
 	tags.remove(infoTags);
 }

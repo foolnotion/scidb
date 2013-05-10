@@ -35,6 +35,7 @@
 
 #include "m_map.h"
 #include "m_vector.h"
+#include "m_string.h"
 #include "m_ref_counted_ptr.h"
 #include "m_ref_counter.h"
 #include "m_bitfield.h"
@@ -44,6 +45,8 @@ namespace util { class PipedProgress; }
 
 namespace mstl { class ostream; }
 namespace mstl { class string; }
+
+namespace TeXt { class Environment; }
 
 namespace db {
 
@@ -74,6 +77,8 @@ public:
 	typedef util::crc::checksum_t checksum_t;
 	typedef mstl::bitfield<uint32_t> Variants;
 	typedef mstl::map<mstl::string,unsigned> TagMap;
+	typedef db::Byte NagMap[db::nag::Scidb_Last];
+	typedef mstl::string Languages[4];
 
 	static unsigned const InvalidPosition	= unsigned(-1);
 	static unsigned const ReservedPosition	= unsigned(-2);
@@ -82,6 +87,12 @@ public:
 	{
 		UpdateGameInfo,
 		DontUpdateGameInfo,
+	};
+
+	enum FileMode
+	{
+		Create,
+		Append,
 	};
 
 	struct Subscriber : public mstl::ref_counter
@@ -253,10 +264,11 @@ public:
 	void setSource(unsigned position, mstl::string const& name, unsigned index);
 	void setReadonly(Cursor& cursor, bool flag);
 	db::save::State writeGame(	unsigned position,
-										mstl::string const& name,
+										mstl::string const& filename,
 										mstl::string const& encoding,
 										mstl::string const& comment,
-										unsigned flags) const;
+										unsigned flags,
+										FileMode fmode);
 	db::save::State saveGame(Cursor& cursor, bool replace);
 	db::save::State updateMoves();
 	db::save::State updateCharacteristics(Cursor& cursor, unsigned index, db::TagSet const& tags);
@@ -303,6 +315,14 @@ public:
 						db::move::Order moveOrder,
 						unsigned variationDepth);
 	void pasteGame(unsigned from, unsigned to);
+	void printGame(unsigned position,
+						TeXt::Environment& environment,
+						db::format::Type format,
+						unsigned flags,
+						unsigned options,
+						NagMap const& nagMap,
+						Languages const& languages,
+						unsigned significantLanguages) const;
 
 	unsigned addEngine(Engine* engine);
 	void removeEngine(unsigned id);

@@ -43,7 +43,7 @@ ist der Bereich nach oben grenzenlos.
 Der spezielle Wert <i>unlimited</i> ist nicht Bestandteil des CQL-Standards.
 </note>
 
-<h3>Beispiele</h3>
+<h2>Beispiele</h2>
 
 <p>
 Die Suchliste kann das Schlüsselwort <cql>:year</cql> enthalten, mit dem

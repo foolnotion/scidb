@@ -63,7 +63,6 @@ static Pair const NameMap[] =
 	{ "BlackAClock",			BlackAClock },
 	{ "BlackACountry",		BlackACountry },
 	{ "BlackAElo",				BlackAElo },
-	{ "BlackAFideId",			BlackAFideId },
 	{ "BlackANA",				BlackANA },
 	{ "BlackARating",			BlackARating },
 	{ "BlackASex",				BlackASex },
@@ -76,7 +75,6 @@ static Pair const NameMap[] =
 	{ "BlackBClock",			BlackBClock },
 	{ "BlackBCountry",		BlackBCountry },
 	{ "BlackBElo",				BlackBElo },
-	{ "BlackBFideId",			BlackBFideId },
 	{ "BlackBNA",				BlackBNA },
 	{ "BlackBRating",			BlackBRating },
 	{ "BlackBSex",				BlackBSex },
@@ -137,7 +135,6 @@ static Pair const NameMap[] =
 	{ "WhiteAClock",			WhiteAClock },
 	{ "WhiteACountry",		WhiteACountry },
 	{ "WhiteAElo",				WhiteAElo },
-	{ "WhiteAFideId",			WhiteAFideId },
 	{ "WhiteANA",				WhiteANA },
 	{ "WhiteARating",			WhiteARating },
 	{ "WhiteASex",				WhiteASex },
@@ -150,7 +147,6 @@ static Pair const NameMap[] =
 	{ "WhiteBClock",			WhiteBClock },
 	{ "WhiteBCountry",		WhiteBCountry },
 	{ "WhiteBElo",				WhiteBElo },
-	{ "WhiteBFideId",			WhiteBFideId },
 	{ "WhiteBNA",				WhiteBNA },
 	{ "WhiteBRating",			WhiteBRating },
 	{ "WhiteBSex",				WhiteBSex },
@@ -187,6 +183,10 @@ static Pair const NameMap[] =
 	{ "~RESERVED_77",			RESERVED_77 },
 	{ "~RESERVED_78",			RESERVED_78 },
 	{ "~RESERVED_79",			RESERVED_79 },
+	{ "~RESERVED_80",			RESERVED_80 },
+	{ "~RESERVED_81",			RESERVED_81 },
+	{ "~RESERVED_82",			RESERVED_82 },
+	{ "~RESERVED_83",			RESERVED_83 },
 };
 
 static tag::ID Ordered[tag::BughouseTag];
@@ -1643,7 +1643,7 @@ bool tag::isRatingTag(ID tag)			{ return IsRating.test(tag); }
 mstl::string const&
 tag::toName(ID tag)
 {
-	M_REQUIRE(tag < ExtraTag);
+	M_REQUIRE(isValid(tag));
 	return *NameLookup[tag];
 }
 

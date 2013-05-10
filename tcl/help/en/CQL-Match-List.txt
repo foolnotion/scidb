@@ -78,6 +78,9 @@ part of the CQL standard.
         <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
@@ -531,6 +534,9 @@ Search for blitz and bullet games.
     <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
@@ -608,6 +614,18 @@ For examples see <cql>match:country</cql>.
 
 <p>
 See also: <cql>match:country</cql>, <cql>match:whitecountry</cql>.
+</p>
+
+<h3 id="match:blackelo">:blackelo<extension/></h3>
+
+<p>
+This keyword takes a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of the black player must lie within its range.
+</p>
+
+<p>
+See also: <cql>match:whiteelo</cql>, <cql>match:elo</cql>,
+<cql>match:blackrating</cql>.
 </p>
 
 <h3 id="match:blackdeathyear">:blackdeathyear<extension/></h3>
@@ -771,6 +789,18 @@ See also: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
 <cql>match:birthyear</cql>.
 </p>
 
+<h3 id="match:elo">:elo<extension/></h3>
+
+<p>
+This parameter expects a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of at least one of the players must lie within the specified range.
+</p>
+
+<p>
+Siehe auch: <cql>match:blackelo</cql>, <cql>match:whiteelo</cql>,
+<cql>match:rating</cql>.
+</p>
+
 <h3 id="match:gender">:gender<extension/></h3>
 
 <p>
@@ -920,7 +950,8 @@ Example:
 </verb>
 
 <p>
-Match all games where one of the players has an ELO rating between 2000 and 3000.
+Match all games where one of the players has an <abbr>ELO</abbr> rating between
+2000 and 3000.
 </p>
 
 <p>
@@ -1003,6 +1034,18 @@ given ranges (<see/> <a href="CQL-Range-Specifiers.html">range specifiers</a>).
 See also: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
 <cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
 <cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:whiteelo">:whiteelo<extension/></h3>
+
+<p>
+This keyword takes a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of the white player must lie within its range.
+</p>
+
+<p>
+See also: <cql>match:blackelo</cql>, <cql>match:elo</cql>,
+<cql>match:whiterating</cql>.
 </p>
 
 <h3 id="match:whitegender">:whitegender<extension/></h3>

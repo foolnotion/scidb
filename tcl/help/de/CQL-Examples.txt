@@ -274,7 +274,7 @@ Viertes Beispiel: ein Springer gibt Matt mit seinem ersten Zug.
 (match
   (position
     <cql>position:flipcolor</cql>            <comment>; Jede Farbe</comment>
-    <cql>position:attackcount</cql> k [A.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
+    <cql>position:attackcount</cql> &k; [A.] 0 <comment>; König ist von eigenen Figuren umzingelt</comment>
     <cql>position:mate</cql>))               <comment>; und ist matt</comment>
 </verbatim>
 

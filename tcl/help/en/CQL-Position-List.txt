@@ -72,147 +72,146 @@ Chess Assistant 9. The description of these keywords are taken from
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rating">:rating</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:ray">:ray</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:blackcannotwin">:blackcannotwin</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:losing">:losing</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:ray">:ray</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:markall">:markall</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:btm">:btm</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:mate">:mate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:castling">:castling</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:matingmaterial">:matingmaterial</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:check">:check</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:maxswapevaluation">:maxswapevaluation</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:relation">:relation</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:moveevaluation">:moveevaluation</a></td>
-      <td>&emsp;&#x2022;</td><td><a href="#position:relation">:relation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:reset">:reset</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:cut">:cut</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:reset">:reset</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:result">:result</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:moveto">:moveto</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:result">:result</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:sequence">:sequence</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:sequence">:sequence</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:nocastling">:nocastling</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:endmost">:endmost</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:evaluation">:evaluation</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:exchangeevaluation">:exchangeevaluation</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:exclude">:exclude</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:nolosing">:nolosing</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:nomate">:nomate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:nomatingmaterial">:nomatingmaterial</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:variant">:variant</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:not">:not</a></td>
-      <td>&emsp;&#x2022;</td><td><a href="#position:variant">:variant</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:or">:or</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:piececount">:piececount</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td>
-      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:following">:following</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
     </tr>
     <tr>
       <td>      &#x2022;</td><td><a href="#position:gameisover">:gameisover</a></td>
     	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
     </tr>
     <tr>
     	<td>      &#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:preceding">:preceding</a></td>
-    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
     </tr>
   </table>
 </dir>
@@ -720,7 +719,7 @@ Example:
 
 <p>
 Exclude all positions where no capture has been made and no pawn has been
-moved in previous thirty halfmoves (15 moves by each side).
+moved since more than thirty halfmoves (15 moves by each side).
 </p>
 
 <p>
@@ -1713,8 +1712,8 @@ See also: <cql>position:enpassant</cql>.
 
 <p>
 The next move is a piece drop, where the piecedrop designator is matching
-the given piecetype designator. For a nonempty piecetype designator this
-is possible only in chess variants %::mc::VariantName(Crazyhouse)%, and
+the given piece designator. For a nonempty piece designator this is possible
+only in chess variants %::mc::VariantName(Crazyhouse)%, and
 %::mc::VariantName(Bughouse)%.
 </p>
 
@@ -1728,6 +1727,14 @@ Examples:
 
 <p>
 The next move is a piece drop which is dropping a knight.
+</p>
+
+<verb>
+(position <keyword>:piecedrop</keyword> [&Q;]f7)
+</verb>
+
+<p>
+The next move is a piece drop which is dropping a white queen on f7.
 </p>
 
 <verb>
@@ -1782,7 +1789,7 @@ queen on e8 and promoting to a rook.
 
 <p>
 Matches a position in which the next move is not a promotion (because the
-piece designator is empty).
+piecetype designator is empty).
 </p>
 
 <h2 id="sequence">Sequence keywords</h2>
@@ -1944,7 +1951,7 @@ them. these are:
       <td>&emsp;&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
     </tr>
     <tr>
-      <td>      &#x2022;</td><td><a href="#position:rating">:rating</a></td>
+      <td>              </td><td></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
       <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
     </tr>
@@ -1978,11 +1985,10 @@ This parameter expects a <a href="CQL-Range-Specifiers.html">range specifier</a>
 the ELO of at least one of the players must lie within the specified range.
 </p>
 
-<h3 id="position:rating">:rating<extension/></h3>
-
 <p>
-Match all games where the specified rating score of one player is between
-given range. For a detailed description see <cql>match:rating (match)</cql>.
+This keyword is supported only due to compatibility reasons with the CQL standard.
+It is recommended to use instead the identically named keyword
+<cql>match:elo</cql> in the match list.
 </p>
 
 <h3 id="position:result">:result</h3>
@@ -2231,7 +2237,7 @@ Examples:
 </p>
 
 <verb>
-<keyword>:evaluate</keyword> depth 4 2.5 unlimited sidetomove
+<keyword>:evaluation</keyword> depth 4 2.5 unlimited sidetomove
 </verb>
 
 <p>
@@ -2240,7 +2246,7 @@ at least 2.5 pawn units ahead.
 </p>
 
 <verb>
-<keyword>:evaluate</keyword> depth 4 unlimited -2.5 sidetomove
+<keyword>:evaluation</keyword> depth 4 unlimited -2.5 sidetomove
 </verb>
 
 <p>
@@ -2249,7 +2255,7 @@ at least 2.5 pawn units behind.
 </p>
 
 <verb>
-<keyword>:evaluate</keyword> movetime 3000 unlimited -3.0 absolute
+<keyword>:evaluation</keyword> movetime 3000 unlimited -3.0 absolute
 </verb>
 
 <p>
@@ -2257,7 +2263,7 @@ Black is (probably) losing, because he is at least 3 pawn units behind.
 </p>
 
 <verb>
-<keyword>:evaluate</keyword> mate 3
+<keyword>:evaluation</keyword> mate 3
 </verb>
 
 <p>
@@ -2295,7 +2301,7 @@ Example:
 </p>
 
 <verb>
-<keyword>:exchangeevaluation</keyword> unlimited 3
+<keyword>:exchangeevaluation</keyword> unlimited -3
 </verb>
 
 <p>

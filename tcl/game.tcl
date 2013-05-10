@@ -69,6 +69,8 @@ set GameNumberDoesNotExist		"Game %number does not exist in '%base'."
 namespace import ::tcl::mathfunc::max
 namespace import ::tcl::mathfunc::min
 
+variable Header [list "Backup file for Scidb (UTF-8 encoded; HTML format)" "Version 1.0"]
+
 # {<time> <modified> <locked> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <tags>}
 variable List		{}
 
@@ -702,6 +704,7 @@ proc historyIsEmpty? {} {
 
 proc backup {} {
 	variable List
+	variable Header
 	variable MaxPosition
 
 	set Recovery [lrepeat $MaxPosition {}]
@@ -712,7 +715,12 @@ proc backup {} {
 			&& ![::scidb::game::query $i empty?]} {
 			lassign [lindex $List $i] time _ _ key crc _
 			set filename [file join $::scidb::dir::backup game-$i.pgn]
-			::scidb::game::export $i $filename -comment [list $time $key $crc]
+			set comment [lindex $Header 0]
+			append comment "\n"
+			append comment [lindex $Header 1]
+			append comment "\n"
+			append comment [list $time $key $crc]
+			::scidb::game::export $filename -comment $comment -position $i
 		}
 	}
 }
@@ -721,6 +729,7 @@ proc backup {} {
 proc recover {} {
 	variable Recovery
 	variable Current
+	variable Header
 	variable List
 
 	set count 0
@@ -739,47 +748,49 @@ proc recover {} {
 				set content [read $chan]
 				close $chan
 
-				set header [string range [lindex [split $content "\n"] 0] 1 end]
+				set header [split $content "\n"]
+				lassign {"" "" ""} line1 line2 line3
+				lassign $header line1 line2 line3
+				set line1 [string range $line1 2 end]
+				set line2 [string range $line2 2 end]
+				set line3 [string range $line3 2 end]
+				set version [string trim [string range $line2 8 end]]
 
-				if {[catch { set length [llength $header] }]} {
+				if {	$line1 != [lindex $Header 0]
+					|| ![regexp {Version ([0-9]+\.[0-9]+)} $line2 _ version]
+					|| $version != "1.0"
+					|| [catch { set length [llength $line3] }]
+					|| $length != 3
+					|| [llength [lindex $line3 1]] != 4
+					|| [llength [lindex $line3 2]] != 2} {
 					::dialog::error \
 						-parent .application \
 						-message [format $mc::CorruptedHeader $file] \
 						-detail [format $mc::RenamedFile $file] \
 						;
 				} else {
-					if {	$length != 3
-						|| [llength [lindex $header 1]] != 4
-						|| [llength [lindex $header 2]] != 2} {
-						::dialog::error \
-							-parent .application \
-							-message [format $mc::CorruptedHeader $file] \
-							-detail [format $mc::RenamedFile $file] \
-							;
-					} else {
-						lassign $header time key crc
-						lassign $key base _ index variant
-						set Current(file) $file
-						set Current(key) $key
-						::scidb::game::new $count $variant
-						set tags [::scidb::game::tags $count]
-						lappend List [list $time 1 0 $key $crc $tags]
-						::scidb::game::import $count $content [namespace current]::Log {} \
-							-encoding utf-8 \
-							-variation 0 \
-							-scidb 1 \
-							-database $base \
-							-index $index \
-							-variant $variant \
-							;
-						Update _ $count
-						set tags [lindex $List $count 5]
-						::scidb::game::sink $count $base $index
-						::application::pgn::add $count $base $variant $tags
-						::application::pgn::setModified $count
-						::scidb::game::modified $count -irreversible yes
-						incr count
-					}
+					lassign $line3 time key crc
+					lassign $key base _ index variant
+					set Current(file) $file
+					set Current(key) $key
+					::scidb::game::new $count $variant
+					set tags [::scidb::game::tags $count]
+					lappend List [list $time 1 0 $key $crc $tags]
+					::scidb::game::import $count $content [namespace current]::Log {} \
+						-encoding utf-8 \
+						-variation 0 \
+						-scidb 1 \
+						-database $base \
+						-index $index \
+						-variant $variant \
+						;
+					Update _ $count
+					set tags [lindex $List $count 5]
+					::scidb::game::sink $count $base $index
+					::application::pgn::add $count $base $variant $tags
+					::application::pgn::setModified $count
+					::scidb::game::modified $count -irreversible yes
+					incr count
 				}
 			} else {
 				::dialog::error \

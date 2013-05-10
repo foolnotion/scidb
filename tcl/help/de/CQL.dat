@@ -15,6 +15,7 @@ set Index {
       {{blackcannotwin : position} {CQL-Position-List.html} {position:blackcannotwin}}
       {{blackcountry : match} {CQL-Match-List.html} {match:blackcountry}}
       {{blackdeathyear : match} {CQL-Match-List.html} {match:blackdeathyear}}
+      {{blackelo : match} {CQL-Match-List.html} {match:blackelo}}
       {{blackelo : position} {CQL-Position-List.html} {position:blackelo}}
       {{blackgender : match} {CQL-Match-List.html} {match:blackgender}}
       {{blackiscomputer : match} {CQL-Match-List.html} {match:blackiscomputer}}
@@ -48,6 +49,7 @@ set Index {
   { E
     {
       {{eco : match} {CQL-Match-List.html} {match:eco}}
+      {{elo : match} {CQL-Match-List.html} {match:elo}}
       {{elo : position} {CQL-Position-List.html} {position:elo}}
       {{endgame : position} {CQL-Position-List.html} {position:endgame}}
       {{endmost : position} {CQL-Position-List.html} {position:endmost}}
@@ -169,7 +171,6 @@ set Index {
   { R
     {
       {{rating : match} {CQL-Match-List.html} {match:rating}}
-      {{rating : position} {CQL-Position-List.html} {position:rating}}
       {{ray : position} {CQL-Position-List.html} {position:ray}}
       {{rayattack : position} {CQL-Position-List.html} {position:rayattack}}
       {{raydiagonal : position} {CQL-Position-List.html} {position:raydiagonal}}
@@ -225,6 +226,7 @@ set Index {
       {{whitecannotwin : position} {CQL-Position-List.html} {position:whitecannotwin}}
       {{whitecountry : match} {CQL-Match-List.html} {match:whitecountry}}
       {{whitedeathyear : match} {CQL-Match-List.html} {match:whitedeathyear}}
+      {{whiteelo : match} {CQL-Match-List.html} {match:whiteelo}}
       {{whiteelo : position} {CQL-Position-List.html} {position:whiteelo}}
       {{whitegender : match} {CQL-Match-List.html} {match:whitegender}}
       {{whiteiscomputer : match} {CQL-Match-List.html} {match:whiteiscomputer}}

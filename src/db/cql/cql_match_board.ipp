@@ -49,6 +49,26 @@ inline GappedSequence::GappedSequence() :m_info(0), m_index(0) {}
 inline Repetition::Repetition() :m_info(0) {}
 
 inline
+Evaluation::Evaluation(Mode mode, unsigned ply)
+	:m_mode(mode)
+	,m_view(SideToMove)
+	,m_arg(ply)
+	,m_lower(0.0)
+	,m_upper(0.0)
+{
+}
+
+inline
+Evaluation::Evaluation(Mode mode, unsigned n, float lower, float upper, View view)
+	:m_mode(mode)
+	,m_view(view)
+	,m_arg(n)
+	,m_lower(lower)
+	,m_upper(upper)
+{
+}
+
+inline
 MaxSwapEvaluation::MaxSwapEvaluation(	Designator const& from,
 													Designator const& to,
 													int minScore,

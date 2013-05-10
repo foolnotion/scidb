@@ -1601,6 +1601,7 @@
 ::export::mc::ExportDatabase				"Export database"
 ::export::mc::ExportDatabaseVariant		"Export database - variant %s"
 ::export::mc::ExportDatabaseTitle		"Export Database '%s'"
+::export::mc::ExportCurrentGameTitle	"Export Current Game"
 ::export::mc::ExportingDatabase			"Exporting '%s' to file '%s'"
 ::export::mc::Export							"Export"
 ::export::mc::NoGamesCopied				"No games exported."

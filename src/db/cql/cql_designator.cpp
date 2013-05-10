@@ -1412,12 +1412,12 @@ Designator::Designator()
 	static_assert(variant::Index_Antichess  == 4, "initialization not working");
 	static_assert(variant::Index_Losers     == 5, "initialization not working");
 
-	static_assert(piece::King   == 1, "initialization not working");
-	static_assert(piece::Queen  == 2, "initialization not working");
-	static_assert(piece::Rook   == 3, "initialization not working");
-	static_assert(piece::Bishop == 4, "initialization not working");
-	static_assert(piece::Knight == 5, "initialization not working");
-	static_assert(piece::Pawn   == 6, "initialization not working");
+	static_assert(db::piece::King   == 1, "initialization not working");
+	static_assert(db::piece::Queen  == 2, "initialization not working");
+	static_assert(db::piece::Rook   == 3, "initialization not working");
+	static_assert(db::piece::Bishop == 4, "initialization not working");
+	static_assert(db::piece::Knight == 5, "initialization not working");
+	static_assert(db::piece::Pawn   == 6, "initialization not working");
 }
 
 

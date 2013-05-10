@@ -24,7 +24,6 @@ TITLE CQL - The relation list
 <dir>
   <table>
     <tr><td>&#x2022;</td><td><a href="#relation">The :relation keyword</a></td></tr>
-    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#keywords">Relation keywords</a></td></tr>
   </table>
 </dir>
@@ -57,7 +56,7 @@ in the current game there is a position P2 such that the relationship between
 P1 and P2 matches the parameters defined in the relation specifier.
 </p>
 
-<h2 id="index">Index</h2>
+<h2 id="keywords">Relation keywords</h2>
 
 <dir>
   <table>
@@ -75,8 +74,6 @@ P1 and P2 matches the parameters defined in the relation specifier.
     <tr><td>&#x2022;</td><td><a href="#relation:variationsonly">:variationsonly</a></td></tr>
   </table>
 </dir>
-
-<h2 id="keywords">Relation keywords</h2>
 
 <h3 id="relation:changesidetomove">:changesidetomove</h3>
 

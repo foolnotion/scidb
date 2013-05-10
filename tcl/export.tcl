@@ -88,6 +88,7 @@ set TeXFiles					"LaTeX Files"
 set ExportDatabase			"Export database"
 set ExportDatabaseVariant	"Export database - variant %s"
 set ExportDatabaseTitle		"Export Database '%s'"
+set ExportCurrentGameTitle	"Export Current Game"
 set ExportingDatabase		"Exporting %s to file %s"
 set Export						"Export"
 set NoGamesExported			"No games exported."
@@ -440,7 +441,6 @@ array set NagMapping {
 namespace eval si3 { array set Tags [array get DefaultTags] }
 namespace eval sci { array set Tags [array get DefaultTags] }
 
-variable Types	{scidb scid pgn pdf html tex}
 variable Info
 
 # NOTE: order must coincide with flags in db::DocumentWriter
@@ -617,7 +617,8 @@ array set Defaults {
 
 array set Values [array get Defaults]
 
-set Values(Type)					scidb
+set Values(Type)					pgn
+set Values(Types)					{pgn pdf html tex}
 
 set Values(pgn,encoding)		iso8859-1
 set Values(scid,encoding)		utf-8
@@ -639,42 +640,49 @@ array set Fields {
 }
 
 
-proc open {parent base variant type name view {closeViewAfterExit 0}} {
+proc open {parent args} {
 	variable icon::32x32::IconPDF
 	variable icon::32x32::IconHtml
 	variable icon::32x32::IconPGN
 	variable icon::32x32::IconTeX
 	variable ::scidb::clipbaseName
 	variable PdfEncodingList
-	variable Types
 	variable Icons
 	variable Info
 	variable Values
 
-	if {[::scidb::view::count games $base $variant $view] == 0} {
+	array set opts $args
+	array unset Info
+	set Info(base) $opts(-base)
+	set Info(variant) $opts(-variant)
+	if {[info exists opts(-view)]} { set Info(view) $opts(-view) }
+	if {[info exists opts(-name)]} { set Info(name) $opts(-name) }
+	if {[info exists opts(-type)]} { set Info(type) $opts(-type) }
+	if {[info exists opts(-index)]} { set Info(index) $opts(-index) }
+	if {[info exists opts(-title)]} { set Info(title) $opts(-title) }
+	unset opts
+
+	if {	![info exists Info(index)]
+		&& [::scidb::view::count games $Info(base) $Info(variant) $Info(view)] == 0} {
 		::dialog::info -parent $parent -message $mc::NoGamesForExport
 		return
 	}
 
-	set Info(base) $base
-	set Info(variant) $variant
-	set Info(name) $name
-	set Info(type) $type
-	set Info(view) $view
-
 	set Info(after) {}
-	set Info(encoding) [::scidb::db::get encoding $base]
+	set Info(encoding) [::scidb::db::get encoding $Info(base)]
 	set Info(pdf-encoding) 0
 	set Info(fonts) {}
 
-	switch $type {
-		scidb - tex {}
-		default { if {$Info(encoding) ni $PdfEncodingList} { set Info(pdf-encoding) 1 } }
+	if {![info exists Info(index)]} {
+		switch $Info(type) {
+			scidb - tex {}
+			default { if {$Info(encoding) ni $PdfEncodingList} { set Info(pdf-encoding) 1 } }
+		}
 	}
 
 	set dlg [tk::toplevel $parent.export -class Dialog]
 	bind $dlg <Alt-Key> [list tk::AltKeyInDialog $dlg %A]
-	if {$closeViewAfterExit} { bind $dlg <Destroy> [namespace code CloseView] }
+#	if {$closeViewAfterExit} { bind $dlg <Destroy> [namespace code CloseView] }
 	wm withdraw $dlg
 	set top [ttk::frame $dlg.top]
 	pack $top
@@ -689,10 +697,46 @@ proc open {parent base variant type name view {closeViewAfterExit 0}} {
 	]
 	set bwd 2
 
-	set list [::tlistbox $top.list -height [llength $Types] -usescroll no -padx 10 -pady 7 -ipady 4]
+	if {[info exists Info(index)]} {
+		set Values(Types) {pgn pdf html tex}
+		set Values(Type) pgn
+		set tabs {	options OptionsSetup
+						style StyleSetup
+						page_pdf PageSetup
+						page_tex PageSetup
+						notation NotationSetup
+						diagram DiagramSetup
+						comment CommentsSetup
+						annotation AnnotationSetup
+						encoding EncodingSetup}
+		if {[info exists Info(title)]} {
+			set initialfile "$mc::Game-$Info(title)"
+		} else {
+			set initialfile "$mc::Game-$Info(index)"
+		}
+	} else {
+		set Values(Type) scidb
+		set Values(Types) {scidb scid pgn pdf html tex}
+		set tabs {	options OptionsSetup
+						tags_si3 TagsSetup
+						tags_sci TagsSetup
+						style StyleSetup
+						page_pdf PageSetup
+						page_tex PageSetup
+						notation NotationSetup
+						diagram DiagramSetup
+						comment CommentsSetup
+						annotation AnnotationSetup
+						encoding EncodingSetup}
+		set initialfile [file rootname [file tail $Info(base)]]
+		if {$initialfile eq $clipbaseName} { set initialfile $::util::clipbaseName }
+	}
+
+	set height [llength $Values(Types)]
+	set list [::tlistbox $top.list -height $height -usescroll no -padx 10 -pady 7 -ipady 4]
 	pack $list -expand yes -fill both
 	$list addcol combined -id item
-	foreach type $Types {
+	foreach type $Values(Types) {
 		$list insert [list [list $icons($type) $mc::FormatName($type)]]
 		set Info($type,flags) 0
 	}
@@ -702,8 +746,6 @@ proc open {parent base variant type name view {closeViewAfterExit 0}} {
 	bind $list <<ListboxSelect>> [namespace code [list Select $nb %d]]
 	bind $nb <ButtonPress-1> [list focus $nb]
 	ttk::notebook::enableTraversal $nb
-	set initialfile [file rootname [file tail $base]]
-	if {$initialfile eq $clipbaseName} { set initialfile $::util::clipbaseName }
 	lappend opts -okcommand [namespace code [list DoExport $parent $dlg]]
 	lappend opts -cancelcommand [list destroy $dlg]
 	lappend opts -parent $nb
@@ -717,17 +759,7 @@ proc open {parent base variant type name view {closeViewAfterExit 0}} {
 	$nb add $Info(fsbox) -sticky nsew
 	::widget::notebookTextvarHook $nb $Info(fsbox) [namespace current]::mc::FileSelection
 
-	foreach {tab var} {	options OptionsSetup
-								tags_si3 TagsSetup
-								tags_sci TagsSetup
-								style StyleSetup
-								page_pdf PageSetup
-								page_tex PageSetup
-								notation NotationSetup
-								diagram DiagramSetup
-								comment CommentsSetup
-								annotation AnnotationSetup
-								encoding EncodingSetup} {
+	foreach {tab var} $tabs {
 		set f [ttk::frame $nb.$tab]
 		$nb add $f -sticky nsew
 		::widget::notebookTextvarHook $nb $f [namespace current]::mc::$var
@@ -745,12 +777,17 @@ proc open {parent base variant type name view {closeViewAfterExit 0}} {
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padding
 	grid rowconfigure $top {0 2} -minsize $::theme::padding
 
-	set index [lsearch -exact $Types $Values(Type)]
+	set index [lsearch -exact $Values(Types) $Values(Type)]
 	Select $nb $index
 	$list select $index
 
 	wm withdraw $dlg
-	wm title $dlg [format $mc::ExportDatabaseTitle $name]
+	if {[info exists Info(index)]} {
+		set title "$mc::ExportCurrentGameTitle (#$Info(index))"
+	} else {
+		set title [format $mc::ExportDatabaseTitle $Info(name)]
+	}
+	wm title $dlg $title
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm resizable $dlg false false
 	wm transient $dlg $parent
@@ -2803,19 +2840,28 @@ proc ConfigureTListbox {list height} {
 }
 
 
-proc HideTab {nb tab} { $nb tab $tab -state hidden }
-proc ShowTab {nb tab} { $nb tab $tab -state normal }
+proc HideTab {nb tab} {
+	if {$tab in [$nb tabs]} {
+		$nb tab $tab -state hidden
+	}
+}
+
+
+proc ShowTab {nb tab} {
+	if {$tab in [$nb tabs]} {
+		$nb tab $tab -state normal
+	}
+}
 
 
 proc Select {nb index} {
 	variable PdfEncodingList
-	variable Types
 	variable Info
 	variable Values
 
 	if {[llength $index] == 0} { return }	;# ignore double click
 	::widget::busyCursor $nb on
-	set Values(Type) [lindex $Types $index]
+	set Values(Type) [lindex $Values(Types) $index]
 	set savemode 0
 
 	switch $Values(Type) {
@@ -2940,11 +2986,11 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} { ::beta::notYetImplement
 	::dialog::fsbox::useSaveMode $Info(fsbox) $savemode
 
 	foreach what {tags_si3 tags_sci page_pdf page_tex style notation diagram comment annotation} {
-		if {[$nb tab $nb.$what -state] eq "normal"} {
-			if {$Info(build-$what)} {
-				${what}::BuildFrame $nb.$what
-				set Info(build-$what) 0
-			}
+		if {	[info exists Info(build-$what)]
+			&& [$nb tab $nb.$what -state] eq "normal"
+			&& $Info(build-$what)} {
+			${what}::BuildFrame $nb.$what
+			set Info(build-$what) 0
 		}
 	}
 
@@ -3038,7 +3084,7 @@ proc DoExport {parent dlg file} {
 		set encoding $PdfEncodingMap($encoding)
 	}
 
-	if {$Values(Type) eq "pgn"} {
+	if {$Values(Type) eq "pgn" && ![info exists Info(index)]} {
 		set excludeGamesWithIllegalMoves $Values(pgn,flag,exclude_games_with_illegal_moves)
 	} else {
 		set excludeGamesWithIllegalMoves 0
@@ -3178,132 +3224,164 @@ if {[pwd] ne "/home/gregor/development/c++/scidb/tcl"} {
 	set Trace_ {}
 	set close 1
 
-	switch $Values(Type) {
-		scid - scidb - pgn {
-			switch [::dialog::fsbox::saveMode $Info(fsbox)] {
-				append		{ set append 1 }
-				overwrite	{ set append 0 }
+	if {[info exists Info(index)]} {
+		switch $Values(Type) {
+			pgn {
+				switch [::dialog::fsbox::saveMode $Info(fsbox)] {
+					append		{ set mode append }
+					overwrite	{ set mode create }
+				}
+				::scidb::game::export $file \
+					-flags $Info($Values(Type),flags) \
+					-mode $mode \
+					-encoding $encoding \
+					;
 			}
 
-			if {$useCopyOperation} {
-				set close 0
-				::scidb::db::clear $file
-				::scidb::db::set variant $file $Info(variant)
-				set cmd [list ::scidb::view::copy \
+			html - pdf - tex {
+				return [::beta::notYetImplemented .application print-game]
+				::scidb::game::print
+					$file \
+					$searchPath \
+					$script \
+					$preamble \
+					$flags \
+					$options \
+					$nags \
+					$languages \
+					$significant \
+					[namespace current]::Trace_ \
+					;
+			}
+		}
+	} else {
+		switch $Values(Type) {
+			scid - scidb - pgn {
+				switch [::dialog::fsbox::saveMode $Info(fsbox)] {
+					append		{ set append 1 }
+					overwrite	{ set append 0 }
+				}
+
+				if {$useCopyOperation} {
+					set close 0
+					::scidb::db::clear $file
+					::scidb::db::set variant $file $Info(variant)
+					set cmd [list ::scidb::view::copy \
+						$Info(base) \
+						$Info(view) \
+						$file \
+						$Info(variant) \
+						$tagList \
+					]
+				} else {
+					set cmd [list ::scidb::view::export \
+						$Info(base) \
+						$Info(variant) \
+						$Info(view) \
+						$file \
+						$Info($Values(Type),flags) \
+						$append \
+						$encoding \
+						$excludeGamesWithIllegalMoves \
+						$tagList \
+					]
+				}
+			}
+
+			html - pdf - tex {
+				set cmd [list ::scidb::view::print \
 					$Info(base) \
+					$Info(variant) \
 					$Info(view) \
 					$file \
-					$Info(variant) \
-					$tagList \
-				]
-			} else {
-				set cmd [list ::scidb::view::export \
-					$Info(base) \
-					$Info(variant) \
-					$Info(view) \
-					$file \
-					$Info($Values(Type),flags) \
-					$append \
-					$encoding \
-					$excludeGamesWithIllegalMoves \
-					$tagList \
+					$searchPath \
+					$script \
+					$preamble \
+					$flags \
+					$options \
+					$nags \
+					$languages \
+					$significant \
+					[namespace current]::Trace_ \
 				]
 			}
 		}
 
-		html - pdf - tex {
-			set cmd [list ::scidb::view::print \
-				$Info(base) \
-				$Info(variant) \
-				$Info(view) \
-				$file \
-				$searchPath \
-				$script \
-				$preamble \
-				$flags \
-				$options \
-				$nags \
-				$languages \
-				$significant \
-				[namespace current]::Trace_ \
-			]
+		set options {}
+		if {[llength [::scidb::db::get variants $Info(base)]] > 1} {
+			lappend options -message [format $mc::ExportDatabaseVariant $Info(variant)]
+		} else {
+			lappend options -message $mc::ExportDatabase
 		}
-	}
+		lappend options -interrupt yes
+		lappend args [namespace current]::Log {}
 
-	set options {}
-	if {[llength [::scidb::db::get variants $Info(base)]] > 1} {
-		lappend options -message [format $mc::ExportDatabaseVariant $Info(variant)]
-	} else {
-		lappend options -message $mc::ExportDatabase
-	}
-	lappend options -interrupt yes
-	lappend args [namespace current]::Log {}
+		# XXX text widget may overflow (too many messages)
+		set parent [winfo toplevel $parent]
+		set formatName $mc::FormatName($Values(Type))
+		if {$formatName eq "scid"} {
+			append formatName " " [string index $file end]
+		}
+		::log::open "$formatName $mc::Export"
+		::log::delay
 
-	# XXX text widget may overflow (too many messages)
-	set parent [winfo toplevel $parent]
-	set formatName $mc::FormatName($Values(Type))
-	if {$formatName eq "scid"} {
-		append formatName " " [string index $file end]
-	}
-	::log::open "$formatName $mc::Export"
-	::log::delay
+		if {$useCopyOperation} {
+			set dst [::util::databaseName $file]
+			set msg [string map [list %src $Info(name) %dst $dst] $mc::ExportGamesFromTo]
+		} else {
+			set msg [format $mc::ExportingDatabase $Info(name) $file]
+		}
+		::log::info $msg
 
-	if {$useCopyOperation} {
-		set dst [::util::databaseName $file]
-		set msg [string map [list %src $Info(name) %dst $dst] $mc::ExportGamesFromTo]
-	} else {
-		set msg [format $mc::ExportingDatabase $Info(name) $file]
-	}
-	::log::info $msg
+		set cmd [list ::progress::start $parent $cmd $args $options $close]
+		set count {}
+		if {[catch { ::util::catchException $cmd count } rc opts]} {
+			::log::error $::import::mc::AbortedDueToInternalError
+			::progress::close
+			::log::close
+			return {*}$opts -rethrow 1 0
+		}
 
-	set cmd [list ::progress::start $parent $cmd $args $options $close]
-	set count {}
-	if {[catch { ::util::catchException $cmd count } rc opts]} {
-		::log::error $::import::mc::AbortedDueToInternalError
+		if {[llength $count] == 2} {
+			lassign $count count illegal
+		} else {
+			set illegal 0
+		}
+
+		if {$rc == 1} {
+			::log::error $::import::mc::AbortedDueToIoError
+			::progress::close
+			::log::close
+			# show error dialog
+			return 0
+		}
+
+		if {$count < 0} {
+			::log::warning $::import::mc::UserHasInterrupted
+			set count [expr {-$count - 2}]
+			set rc -1
+		}
+
+		update idletasks	;# be sure the following will be appended
+
+		if {$illegal} {
+			::log::warning [format $mc::IllegalRejected $illegal]
+		}
+		if {$count == 0} {
+			::log::info $mc::NoGamesExported
+		} else {
+			::log::info	[format $mc::ExportedGames [::locale::formatNumber $count]]
+		}
+
+		if {$useCopyOperation} {
+			set cmd [list ::scidb::db::save $file]
+			set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
+			if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
+		}
+
 		::progress::close
 		::log::close
-		return {*}$opts -rethrow 1 0
 	}
-
-	if {[llength $count] == 2} {
-		lassign $count count illegal
-	} else {
-		set illegal 0
-	}
-
-	if {$rc == 1} {
-		::log::error $::import::mc::AbortedDueToIoError
-		::progress::close
-		::log::close
-		# show error dialog
-		return 0
-	}
-
-	if {$count < 0} {
-		::log::warning $::import::mc::UserHasInterrupted
-		set count [expr {-$count - 2}]
-		set rc -1
-	}
-
-	update idletasks	;# be sure the following will be appended
-
-	if {$illegal} {
-		::log::warning [format $mc::IllegalRejected $illegal]
-	}
-	if {$count == 0} {
-		::log::info $mc::NoGamesExported
-	} else {
-		::log::info	[format $mc::ExportedGames [::locale::formatNumber $count]]
-	}
-
-	if {$useCopyOperation} {
-		set cmd [list ::scidb::db::save $file]
-		set rc [::util::catchException { ::progress::start $parent $cmd {} {} 1 } count]
-		if {$rc == 1} { ::log::error $::import::mc::AbortedDueToIoError }
-	}
-
-	::progress::close
-	::log::close
 
 	if {[string length $Trace_]} { ShowTrace $parent $Trace_ }
 	unset Trace_
@@ -3364,10 +3442,10 @@ proc Log {unused arguments} {
 }
 
 
-proc CloseView {} {
-	variable Info
-	::scidb::view::close $Info(base) $Info(view)
-}
+# proc CloseView {} {
+# 	variable Info
+# 	::scidb::view::close $Info(base) $Info(view)
+# }
 
 
 proc WriteOptions {chan} {

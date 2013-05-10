@@ -1075,7 +1075,8 @@ proc UpdatePGN {position data {w {}}} {
 
 			result {
 				set reason [::scidb::game::query $position termination]
-				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason $Vars(variant)]
+				if {[info exists Vars(variant)]} { set variant $Vars(variant) } else { set variant Normal }
+				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason $variant]
 				PrintResult $w $position
 				if {[llength $current]} {
 					catch { $w tag configure $current -background $Colors(background) }

@@ -40,12 +40,16 @@
 #include "db_board.h"
 #include "db_line.h"
 #include "db_pgn_writer.h"
+#include "db_latex_writer.h"
 #include "db_producer.h"
 #include "db_exception.h"
 
+#include "u_misc.h"
 #include "u_piped_progress.h"
+#include "u_zstream.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 #include "sys_thread.h"
 
 #include "m_ifstream.h"
@@ -430,7 +434,7 @@ Application::insertGame(unsigned position)
 
 
 Application::GameP
-Application::insertScratchGame(unsigned position, db::variant::Type variant)
+Application::insertScratchGame(unsigned position, variant::Type variant)
 {
 	M_REQUIRE(variant != variant::Undetermined);
 	M_REQUIRE(contains(scratchbaseName()));
@@ -520,7 +524,7 @@ Application::contains(mstl::string const& name) const
 
 
 bool
-Application::contains(mstl::string const& name, db::variant::Type variant) const
+Application::contains(mstl::string const& name, variant::Type variant) const
 {
 	M_REQUIRE(variant == variant::Undetermined || variant::isMainVariant(variant));
 
@@ -534,7 +538,7 @@ Application::contains(mstl::string const& name, db::variant::Type variant) const
 
 
 bool
-Application::contains(char const* name, db::variant::Type variant) const
+Application::contains(char const* name, variant::Type variant) const
 {
 	if (name == 0)
 		return currentVariant() == variant;
@@ -736,8 +740,8 @@ Application::create(	mstl::string const& name,
 
 unsigned
 Application::create(	mstl::string const& name,
-							db::type::ID type,
-							db::Producer& producer,
+							type::ID type,
+							Producer& producer,
 							util::Progress& progress)
 {
 	M_REQUIRE(!contains(name));
@@ -1180,8 +1184,8 @@ Application::sort(Cursor& cursor,
 void
 Application::sort(Cursor& cursor,
 						unsigned view,
-						db::attribute::event::ID attr,
-						db::order::ID order)
+						attribute::event::ID attr,
+						order::ID order)
 {
 	cursor.view(view).sort(attr, order);
 	cursor.view(view).updateSelector(table::Events);
@@ -1194,8 +1198,8 @@ Application::sort(Cursor& cursor,
 void
 Application::sort(Cursor& cursor,
 						unsigned view,
-						db::attribute::site::ID attr,
-						db::order::ID order)
+						attribute::site::ID attr,
+						order::ID order)
 {
 	cursor.view(view).sort(attr, order);
 	cursor.view(view).updateSelector(table::Sites);
@@ -1423,7 +1427,7 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 
 
 void
-Application::changeVariant(unsigned position, db::variant::Type variant)
+Application::changeVariant(unsigned position, variant::Type variant)
 {
 	M_REQUIRE(containsGameAt(position));
 	M_REQUIRE(database(position).name() == scratchbaseName());
@@ -1577,37 +1581,118 @@ Application::clearGame(Board const* startPosition)
 }
 
 
-db::save::State
+save::State
 Application::writeGame(	unsigned position,
-								mstl::string const& name,
+								mstl::string const& filename,
 								mstl::string const& encoding,
 								mstl::string const& comment,
-								unsigned flags) const
+								unsigned flags,
+								FileMode fmode)
 {
 	M_REQUIRE(containsGameAt(position));
-	M_REQUIRE(isScratchGame(position));
+	M_REQUIRE(	util::misc::file::suffix(filename) == "pgn"
+				|| util::misc::file::suffix(filename) == "gz"
+				|| util::misc::file::suffix(filename) == "zip");
 
 	if (position == InvalidPosition)
 		position = currentPosition();
 
-	EditGame const& game = *m_gameMap.find(position)->second;
+	GameP g = m_gameMap.find(position)->second;
+	mstl::string internalName(sys::file::internalName(filename));
+	save::State state = save::Ok;
 
-	game.game->setIndex(m_indexMap[position]);
-	Cursor* scratch = scratchbase(variant::toMainVariant(game.game->variant()));
-	save::State state = scratch->base().updateGame(*game.game);
-	if (!save::isOk(state))
-		return state;
+	if (isScratchGame(position))
+	{
+		g->game->setIndex(m_indexMap[position]);
+	}
+	else if (g->game->isModified())
+	{
+		GameP scratchGame = insertScratchGame(ReservedPosition, g->game->variant());
+		*scratchGame->game = *g->game;
+		scratchGame->game->setIndex(scratchGame->index);
+		scratchGame->cursor->database().gameInfo(scratchGame->index) =
+			g->cursor->database().gameInfo(g->index);
+		g = m_gameMap.find(position = ReservedPosition)->second;
+	}
+	else
+	{
+		g->game->setIndex(g->index);
+	}
 
-	mstl::ofstream strm(name, mstl::ios_base::out | mstl::ios_base::trunc);
+	try
+	{
+		if (isScratchGame(position))
+			state = g->cursor->base().updateGame(*g->game);
 
-	if (!strm)
-		IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", name.c_str());
+		if (save::isOk(state))
+		{
+			util::ZStream::Type type;
+			mstl::string ext = util::misc::file::suffix(filename);
 
-	PgnWriter writer(format::Scidb, strm, encoding, flags);
-	writer.setupVariant(scratch->variant());
-	writer.writeCommnentLine(comment);
+			if (ext == "gz")			type = util::ZStream::GZip;
+			else if (ext == "zip")	type = util::ZStream::Zip;
+			else							type = util::ZStream::Text;
 
-	return scratch->database().exportGame(game.game->index(), writer);
+			mstl::ios_base::openmode mode = mstl::ios_base::out;
+
+			if (fmode == Append)
+			{
+				if (type != util::ZStream::Zip)
+				{
+					mstl::ifstream strm(internalName, mstl::ios_base::in);
+
+					if (strm)
+					{
+						char buf[3];
+
+						mode |= mstl::ios_base::app;
+						flags |= PgnWriter::Flag_Append_Games;
+
+						if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
+							flags |= PgnWriter::Flag_Use_UTF8;
+						else
+							flags &= ~PgnWriter::Flag_Use_UTF8;
+					}
+				}
+			}
+			else
+			{
+				mode = mstl::ios_base::trunc;
+			}
+
+			mstl::ofstream strm(internalName, mode);
+
+			if (!strm)
+				IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
+
+			mstl::string useEncoding;
+
+			if (flags & PgnWriter::Flag_Use_UTF8)
+				useEncoding = sys::utf8::Codec::utf8();
+			else if (encoding == sys::utf8::Codec::utf8())
+				useEncoding = sys::utf8::Codec::latin1();
+			else
+				useEncoding = encoding;
+
+			PgnWriter writer(format::Scidb, strm, useEncoding, flags);
+			writer.setupVariant(g->cursor->variant());
+
+			if (!comment.empty())
+				writer.writeCommentLines(comment);
+
+			state = g->cursor->database().exportGame(g->game->index(), writer);
+		}
+	}
+	catch (...)
+	{
+		releaseGame(ReservedPosition);
+		throw;
+	}
+
+	if (position == ReservedPosition)
+		releaseGame(ReservedPosition);
+
+	return state;
 }
 
 
@@ -2171,7 +2256,7 @@ Application::saveGame(Cursor& cursor, bool replace)
 }
 
 
-db::save::State
+save::State
 Application::updateMoves()
 {
 	M_REQUIRE(haveCurrentGame());
@@ -2327,8 +2412,8 @@ Application::findUnusedPosition() const
 }
 
 
-db::load::State
-Application::importGame(db::Producer& producer, unsigned position, bool trialMode)
+load::State
+Application::importGame(Producer& producer, unsigned position, bool trialMode)
 {
 	M_REQUIRE(containsGameAt(position));
 	M_REQUIRE(contains(scratchbaseName()));
@@ -2336,7 +2421,7 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 	if (position == InvalidPosition)
 		position = m_currentPosition;
 
-	GameP game	= m_gameMap.find(position)->second;
+	GameP game		= m_gameMap.find(position)->second;
 	GameP myGame	= game;
 
 	unsigned rememberPosition = position;
@@ -2352,7 +2437,7 @@ Application::importGame(db::Producer& producer, unsigned position, bool trialMod
 
 	Cursor* scratch = scratchbase(variant::toMainVariant(producer.variant()));
 	unsigned count = scratch->base().importGame(producer, myGame->index);
-	db::load::State state = count ? db::load::Ok : db::load::None;
+	load::State state = count ? load::Ok : load::None;
 
 	if (count > 0 && !trialMode)
 	{
@@ -2650,7 +2735,7 @@ Application::save(mstl::string const& name, util::Progress& progress)
 
 
 void
-Application::changeVariant(mstl::string const& name, ::db::variant::Type variant)
+Application::changeVariant(mstl::string const& name, variant::Type variant)
 {
 	M_REQUIRE(contains(name));
 
@@ -3073,6 +3158,41 @@ Application::mergeLastClipbaseGame(	unsigned position,
 
 	releaseGame(ReservedPosition);
 	return rc;
+}
+
+
+void
+Application::printGame(	unsigned position,
+								TeXt::Environment& environment,
+								format::Type format,
+								unsigned flags,
+								unsigned options,
+								NagMap const& nagMap,
+								Languages const& languages,
+								unsigned significantLanguages) const
+{
+	M_REQUIRE(containsGameAt(position));
+
+	EditGame const& game = *m_gameMap.find(position)->second;
+
+	switch (int(format))
+	{
+		case format::LaTeX:
+			{
+				LaTeXWriter	writer(	game.cursor->database().format(),
+											flags,
+											options,
+											nagMap,
+											languages,
+											significantLanguages,
+											environment);
+				game.cursor->database().exportGame(game.index, writer);
+			}
+			break;
+
+		default:
+			M_RAISE("unsupported format");
+	}
 }
 
 // vi:set ts=3 sw=3:

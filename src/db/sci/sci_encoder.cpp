@@ -560,9 +560,9 @@ Encoder::isExtraTag(tag::ID tag)
 	bool skip = TagLookup::skipTag(tag);
 
 	if (!skip)
-		return true;
+		return tag::isValid(tag);
 
-	return !skip && isRatingTag(tag);
+	return isRatingTag(tag);
 }
 
 
@@ -623,7 +623,7 @@ Encoder::encodeTagSection(TagSet const& tags, tag::TagSet allowedTags, bool allo
 
 	allowedTags -= ::TagLookup::ignoreTags();
 
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
+	for (tag::ID tag = tags.findFirst(); tag <= tag::LastTag; tag = tags.findNext(tag))
 	{
 		if (	allowedTags.test(tag)
 			&& tags.isUserSupplied(tag)

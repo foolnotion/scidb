@@ -25,39 +25,10 @@
 // ======================================================================
 
 namespace cql {
-namespace move {
 
-inline MoveFrom::MoveFrom(Designator const& designator) :m_designator(designator) {}
-inline MoveTo::MoveTo(Designator const& designator) :m_designator(designator) {}
-inline PieceDrop::PieceDrop(Designator const& designator) :m_designator(designator) {}
-inline Promote::Promote(Designator const& designator) :m_designator(designator) {}
+inline bool PieceTypeDesignator::test(piece::ID piece) const { return m_pieces.test(piece); }
+inline PieceTypeDesignator::Pieces const& PieceTypeDesignator::pieces() const { return m_pieces; }
 
-inline
-ExchangeEvaluation::ExchangeEvaluation(int minScore, int maxScore)
-	:m_minScore(minScore)
-	,m_maxScore(maxScore)
-{
-}
-
-inline
-MoveEvaluation::MoveEvaluation(	Mode mode,
-											unsigned n,
-											Designator const& from,
-											Designator const& to,
-											float lower,
-											float upper,
-											View view)
-	:m_mode(mode)
-	,m_view(view)
-	,m_arg(n)
-	,m_from(from)
-	,m_to(to)
-	,m_lower(lower)
-	,m_upper(upper)
-{
-}
-
-} // namespace move
 } // namespace cql
 
 // vi:set ts=3 sw=3:

@@ -732,13 +732,12 @@ View::exportGames(mstl::string const& filename,
 		destination.save(progress);
 		destination.close();
 	}
-	else if (ext == "pgn" || ext == "gz" || ext == "zip" || ext == "PGN" || ext == "ZIP")
+	else if (ext == "pgn" || ext == "gz" || ext == "zip")
 	{
 		util::ZStream::Type type;
 
 		if (ext == "gz")			type = util::ZStream::GZip;
 		else if (ext == "zip")	type = util::ZStream::Zip;
-		else if (ext == "ZIP")	type = util::ZStream::Zip;
 		else							type = util::ZStream::Text;
 
 		mstl::ios_base::openmode mode = mstl::ios_base::out;

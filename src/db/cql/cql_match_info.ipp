@@ -37,9 +37,9 @@ inline EventMode::EventMode(unsigned modes) :m_modes(modes) {}
 inline EventType::EventType(unsigned types) :m_types(types) {}
 inline GameNumber::GameNumber(unsigned min, unsigned max) :m_min(min), m_max(max) {}
 inline GameMarkers::GameMarkers(unsigned flags) :m_flags(flags) {}
-inline Gender::Gender(db::sex::ID sex, unsigned colors) :m_sex(sex), m_colors(colors) {}
-inline IsComputer::IsComputer(db::color::ID color) :m_color(color) {}
-inline IsHuman::IsHuman(db::color::ID color) :m_color(color) {}
+inline Gender::Gender(unsigned colors, db::sex::ID sex) :m_colors(colors), m_sex(sex) {}
+inline IsComputer::IsComputer(unsigned colors) :m_colors(colors) {}
+inline IsHuman::IsHuman(unsigned colors) :m_colors(colors) {}
 inline PlyCount::PlyCount(unsigned min, unsigned max) :m_min(min), m_max(max) {}
 inline SpecialGameMarkers::SpecialGameMarkers(unsigned flags) :m_flags(flags) {}
 inline Result::Result(unsigned results) :m_results(results) {}
@@ -62,8 +62,8 @@ BirthYear::BirthYear(unsigned colors, unsigned min, unsigned max)
 
 
 inline
-DeathYear::DeathYear(db::color::ID color, unsigned min, unsigned max)
-	:m_color(color)
+DeathYear::DeathYear(unsigned colors, unsigned min, unsigned max)
+	:m_colors(colors)
 	,m_min(min)
 	,m_max(max)
 {
@@ -87,17 +87,17 @@ EventDate::EventDate(db::Date const& min, db::Date const& max)
 
 
 inline
-Country::Country(mstl::bitset const& countries, db::color::ID color)
-	:m_countries(countries)
-	,m_color(color)
+Country::Country(unsigned colors, mstl::bitset const& countries)
+	:m_colors(colors)
+	,m_countries(countries)
 {
 }
 
 
 inline
-Rating::Rating(db::rating::Type ratingType, uint16_t minScore, uint16_t maxScore, db::color::ID color)
+Rating::Rating(db::rating::Type ratingType, uint16_t minScore, uint16_t maxScore, unsigned colors)
 	:m_ratingType(ratingType)
-	,m_color(color)
+	,m_colors(colors)
 	,m_minScore(minScore)
 	,m_maxScore(maxScore)
 {

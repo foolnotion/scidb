@@ -68,49 +68,51 @@ public:
 	Match();
 	~Match();
 
-	// Returns the affected sections for this search.
-	// May be zero if search is empty.
+	/// Returns the affected sections for this search.
+	/// May be zero if search is empty.
 	unsigned sections() const;
 
-	// Returns whether given expression complies with CQL standard.
+	/// Returns whether given expression complies with CQL standard.
 	bool isStandard() const;
 
-	// Use this method after match of initial board position. Returns false if never matching.
+	/// Use this method after match of initial board position. Returns false if never matching.
 	bool proceed() const;
 
-	// Returns true if any comment should be matched.
-	// Do only use if comment section is involved.
+	/// Returns true if any comment should be matched.
+	/// Use only if comment section is involved.
 	bool matchComments() const;
 
-	// Use this method only if any comment should be matched.
-	// Do only use if comment section is involved.
+	/// Use this method only if any comment should be matched.
+	/// Use only if comment section is involved.
 	bool matchComments(char const* data, unsigned length);
 
-	// Use this method at start of game. Returns false if never matching.
-	// Do only use if game information section is involved.
+	/// Use this method at start of game. Returns false if never matching.
+	/// Use only if game information section is involved.
 	bool match(db::GameInfo const& info, db::variant::Type variant, unsigned gameNo);
 
-	// Use this method for intial board and each board position after making
-	// a move. Set parameter 'isFinal' to true only for final board position.
-	// Do only use if board (position) section is involved.
-	bool match(db::GameInfo const& info, db::Board const& board, db::variant::Type variant, bool isFinal);
+	/// Use this method for intial board and each board position after making
+	/// a move. Use only if board (position) section is involved.
+	bool match(	db::GameInfo const& info,
+					db::Board const& board,
+					db::variant::Type variant,
+					unsigned flags);
 
-	// Use this method before matching board position after move.
-	// Do only use if move section is involved.
+	/// Use this method before matching board position after move.
+	/// Use only if move section is involved.
 	bool match(db::Board const& board, db::Move const& move, db::variant::Type variant);
 
-	// Use this method after starting a variation. Returns false if
-	// variation cannot match.
+	/// Use this method after starting a variation. Returns false if
+	/// variation cannot match.
 	bool beginVariation();
 
-	// Use this method before ending a variation.
+	/// Use this method before ending a variation.
 	void endVariation();
 
-	// Parse given expression, and either return the string position
-	// where first error is detected, or the position after expression.
+	/// Parse given expression, and either return the string position
+	/// where first error is detected, or the position after expression.
 	char const* parse(char const* s, Error& error);
 
-	// Returns all sub-expressions which do not comply with CQL standard.
+	/// Returns all sub-expressions which do not comply with CQL standard.
 	Ranges const& nonStandardRanges() const;
 
 	friend class Position;
@@ -163,8 +165,8 @@ private:
 	char const* parseGender(char const* s, Error& error);
 	char const* parseHasAnnotation(char const* s, Error& error);
 	char const* parseHasComments(char const* s, Error& error);
-	char const* parseHasMarkers(char const* s, Error& error);     
-	char const* parseHasSpecialMarkers(char const* s, Error& error);     
+	char const* parseHasMarkers(char const* s, Error& error);
+	char const* parseHasSpecialMarkers(char const* s, Error& error);
 	char const* parseHasVariations(char const* s, Error& error);
 	char const* parseIsChess960(char const* s, Error& error);
 	char const* parseIsComputer(char const* s, Error& error);
@@ -173,6 +175,8 @@ private:
 	char const* parseLanguage(char const* s, Error& error);
 	char const* parseNot(char const* s, Error& error);
 	char const* parseOr(char const* s, Error& error);
+	char const* parseOutput(char const* s, Error& error);
+	char const* parsePgn(char const* s, Error& error);
 	char const* parsePlayer(char const* s, Error& error);
 	char const* parsePlyCount(char const* s, Error& error);
 	char const* parsePosition(char const* s, Error& error);

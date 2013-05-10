@@ -12,6 +12,8 @@ Some enhancements:
 
 	Some fixes in line breaking algorithm (the layout algorithm is still a mess).
 
+	Fixes in layout algorithms of <sub> and <sup>.
+
 new commands:
 
 	<pathname> charset
@@ -56,6 +58,7 @@ new options:
 		Specifies whether latin ligatures should be used.
 		Default is 0.
 		HTML example for ligature ff: "f&zwj;f" or "f&#x200D;f".
+		Unluckely in most fonts the ligatures are ugly.
 	
 	-fixedwidth <dimension>
 		Set the width of the internal canvas to a fixed with, otherwise a
@@ -66,7 +69,7 @@ is supporting more attributes:
 
 	<ol start="12">...</ol>
 
-and has new dynamic flags:
+and has more dynamic flags:
 
 	<node> set dynamic user
 	<node> set dynamic user1	# alias for flag user

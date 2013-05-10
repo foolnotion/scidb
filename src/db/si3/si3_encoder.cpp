@@ -185,7 +185,7 @@ Encoder::infoTags()
 bool
 Encoder::isExtraTag(tag::ID tag)
 {
-	return !TagLookup::skipTag(tag);
+	return tag::isValid(tag) && !TagLookup::skipTag(tag);
 }
 
 
@@ -194,7 +194,7 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 {
 	mstl::string buf;
 
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
+	for (tag::ID tag = tags.findFirst(); tag <= tag::LastTag; tag = tags.findNext(tag))
 	{
 		if (allowedTags.test(tag))
 		{
@@ -215,7 +215,7 @@ Encoder::encodeTags(TagSet const& tags, db::Consumer::TagBits allowedTags, bool 
 		}
 	}
 
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
+	for (tag::ID tag = tags.findFirst(); tag <= tag::LastTag; tag = tags.findNext(tag))
 	{
 		if (!TagLookup::skipTag(tag))
 		{

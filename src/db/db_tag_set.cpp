@@ -180,7 +180,7 @@ TagSet::setExtra(char const* name, unsigned nameLen, char const* value, unsigned
 void
 TagSet::set(tag::ID tag, mstl::string const& value, bool isUserSupplied)
 {
-	M_ASSERT(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_ASSERT(!value.empty());
 
 	m_isUserSupplied[tag] = isUserSupplied;
@@ -192,7 +192,7 @@ TagSet::set(tag::ID tag, mstl::string const& value, bool isUserSupplied)
 void
 TagSet::set(tag::ID tag, char const* value, unsigned length, bool isUserSupplied)
 {
-	M_ASSERT(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_ASSERT(length);
 	M_ASSERT(value);
 
@@ -206,7 +206,7 @@ TagSet::set(tag::ID tag, char const* value, unsigned length, bool isUserSupplied
 void
 TagSet::add(tag::ID tag, mstl::string const& value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	if (!value.empty() && !m_isUserSupplied[tag])
 		set(tag, value, false);
@@ -216,7 +216,7 @@ TagSet::add(tag::ID tag, mstl::string const& value)
 void
 TagSet::add(tag::ID tag, char const* value, unsigned valueLen)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_REQUIRE(value);
 
 	if (valueLen && !m_isUserSupplied[tag])
@@ -227,7 +227,7 @@ TagSet::add(tag::ID tag, char const* value, unsigned valueLen)
 void
 TagSet::add(tag::ID tag, unsigned value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	if (!m_isUserSupplied[tag])
 	{
@@ -240,7 +240,7 @@ TagSet::add(tag::ID tag, unsigned value)
 void
 TagSet::overwrite(tag::ID tag, char const* value, unsigned valueLen)
 {
-	M_ASSERT(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_ASSERT(value);
 	M_ASSERT(valueLen);
 
@@ -253,7 +253,7 @@ TagSet::overwrite(tag::ID tag, char const* value, unsigned valueLen)
 void
 TagSet::replace(tag::ID tag, char const* value, unsigned valueLen)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_REQUIRE(value);
 
 	if (valueLen)
@@ -264,7 +264,7 @@ TagSet::replace(tag::ID tag, char const* value, unsigned valueLen)
 void
 TagSet::replace(tag::ID tag, mstl::string const& value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	if (!value.empty())
 		overwrite(tag, value, value.size());
@@ -274,7 +274,7 @@ TagSet::replace(tag::ID tag, mstl::string const& value)
 void
 TagSet::replace(tag::ID tag, unsigned value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	char buf[30];
 	overwrite(tag, buf, ::snprintf(buf, sizeof(buf), "%u", value));
@@ -284,7 +284,7 @@ TagSet::replace(tag::ID tag, unsigned value)
 void
 TagSet::set(tag::ID tag, unsigned value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	char buf[30];
 	set(tag, buf, ::snprintf(buf, sizeof(buf), "%u", value), true);

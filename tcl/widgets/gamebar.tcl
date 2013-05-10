@@ -1321,7 +1321,11 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		-image $::icon::16x16::document \
 		-compound left \
 		;
+
 	set actual [::scidb::db::get name]
+	set position [::scidb::game::current]
+	lassign [::scidb::game::link? $position] base variant index
+
 	if {$actual eq $scratchbaseName || [::scidb::db::count games] == 0} {
 		set state disabled
 	} else {
@@ -1340,9 +1344,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		-compound left \
 		-command [list ::application::pgn::importGame $parent] \
 		;
-
-	set position [::scidb::game::current]
-	lassign [::scidb::game::link? $position] base variant index
 	
 	if {$addSaveMenu && ![::game::trialMode?]} {
 		$m add separator
@@ -1661,12 +1662,6 @@ proc MergeGame {parent title primary secondary} {
 
 	::widget::busyCursor off
 	destroy $dlg
-}
-
-
-proc ImportGame {parent} {
-	set pos [::game::new $parent]
-	if {$pos >= 0} { ::import::openEdit $parent $pos }
 }
 
 
@@ -2543,9 +2538,7 @@ proc ShowPlayerCard {gamebar id side} {
 	variable Specs
 
 	set sid $Specs(selected:$gamebar)
-	set info [GetPlayerInfo $gamebar $sid $side]
-	set name [lindex $info 0]
-	if {$name eq "?" || $name eq "-"} { set name "" }
+	set name [GetPlayerName $gamebar $sid $side]
 
 	if {[string length $name]} {
 		lassign [::scidb::game::sink? $id] base variant index

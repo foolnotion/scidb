@@ -50,13 +50,17 @@
 #include "db_var_consumer.h"
 #include "db_writer.h"
 
+#include "T_Controller.h"
+
 #include "u_progress.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_file.h"
 
 #include "m_sstream.h"
 #include "m_vector.h"
 #include "m_bitset.h"
+#include "m_ofstream.h"
 
 #include <tcl.h>
 
@@ -99,6 +103,7 @@ static char const* CmdPaste			= "::scidb::game::paste";
 static char const* CmdPly				= "::scidb::game::ply";
 static char const* CmdPop				= "::scidb::game::pop";
 static char const* CmdPosition		= "::scidb::game::position";
+static char const* CmdPrint			= "::scidb::game::print";
 static char const* CmdPush				= "::scidb::game::push";
 static char const* CmdQuery			= "::scidb::game::query";
 static char const* CmdRefresh			= "::scidb::game::refresh";
@@ -3232,34 +3237,160 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* comment = "";
-	char const* option;
+	char const*					option;
+	char const*					comment("");
+	unsigned						flags(Writer::Flag_Use_Scidb_Import_Format);
+	Application::FileMode	mode(Application::Create);
+	mstl::string				encoding(sys::utf8::Codec::utf8());
+	unsigned						position(Application::InvalidPosition);
 
 	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
 	{
 		if (::strcmp(option, "-comment") == 0)
+		{
 			comment = stringFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-flags") == 0)
+		{
+			flags = unsignedFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-encoding") == 0)
+		{
+			encoding = stringFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-position") == 0)
+		{
+			position = unsignedFromObj(objc, objv, objc - 1);
+		}
+		else if (::strcmp(option, "-mode") == 0)
+		{
+			char const* fmode = stringFromObj(objc, objv, objc - 1);
+
+			if (::strcmp(fmode, "append") == 0)
+				mode = Application::Append;
+			else if (::strcmp(fmode, "create") == 0)
+				mode = Application::Create;
+			else
+				return error (CmdExport, nullptr, nullptr, "unknown mode '%s'", fmode);
+		}
 		else
+		{
 			return error (CmdExport, nullptr, nullptr, "unexpected option '%s'", option);
+		}
 
 		objc -= 2;
 	}
 
-	if (objc != 3)
+	if (objc != 2)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv,"<position> <filename> ?-comment <string>?");
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<filename> ?-comment <string>? ?-flags <flags>? "
+			"?-mode append|create? ?-encoding <encoding>? ?-position <index>?");
 		return TCL_ERROR;
 	}
 
-	unsigned		position	= unsignedFromObj(objc, objv, 1);
-	char const*	filename	= stringFromObj(objc, objv, 2);
+	char const* filename = stringFromObj(objc, objv, 1);
+	setResult(save::isOk(scidb->writeGame(position, filename, encoding, comment, flags, mode)));
+	return TCL_OK;
+}
 
-	setResult(save::isOk(Scidb->writeGame(
-		position,
-		filename,
-		sys::utf8::Codec::utf8(),
-		comment,
-		Writer::Flag_Use_Scidb_Import_Format)));
+
+static int
+cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	struct Log : public TeXt::Controller::Log
+	{
+		void error(mstl::string const& msg) { str = msg; }
+		mstl::string str;
+	};
+
+	if (objc != 11)
+	{
+		Tcl_WrongNumArgs(
+			ti, 1, objv,
+			"<file> <search-path> <script-path> <preamble> <flags> "
+			"<options> <nag-map> <languages> <significant> <trace>");
+		return TCL_ERROR;
+	}
+
+	char const*		filename			= stringFromObj(objc, objv, 1);
+	char const* 	searchPath		= stringFromObj(objc, objv, 2);
+	mstl::string 	scriptPath		= stringFromObj(objc, objv, 3);
+	mstl::string 	preamble			= stringFromObj(objc, objv, 4);
+	unsigned			flags				= unsignedFromObj(objc, objv, 5);
+	unsigned			options			= unsignedFromObj(objc, objv, 6);
+	Tcl_Obj*			mapObj			= objectFromObj(objc, objv, 7);
+	Tcl_Obj*			languageList	= objectFromObj(objc, objv, 8);
+	unsigned			significant		= unsignedFromObj(objc, objv, 9);
+	char const*		trace				= stringFromObj(objc, objv, 10);
+
+	Tcl_Obj**			objs;
+	View::NagMap		nagMap;
+	View::Languages	languages;
+
+	::memset(nagMap, 0, sizeof(nagMap));
+
+	if (Tcl_ListObjGetElements(ti, mapObj, &objc, &objs) != TCL_OK)
+		error(CmdExport, 0, 0, "invalid nag map");
+
+	for (int i = 0; i < objc; ++i)
+	{
+		Tcl_Obj** pair;
+		int nelems;
+
+		if (Tcl_ListObjGetElements(ti, objs[i], &nelems, &pair) != TCL_OK || nelems != 2)
+			error(CmdExport, 0, 0, "invalid nag map");
+
+		int lhs = intFromObj(2, pair, 0);
+		int rhs = intFromObj(2, pair, 1);
+
+		if (lhs >= nag::Scidb_Last || rhs >= nag::Scidb_Last)
+			error(CmdExport, 0, 0, "invalid nag map values");
+
+		nagMap[lhs] = rhs;
+	}
+
+	if (	Tcl_ListObjGetElements(ti, languageList, &objc, &objs) != TCL_OK
+		|| objc >= int(U_NUMBER_OF(languages)))
+	{
+		error(CmdExport, 0, 0, "invalid language list");
+	}
+
+	for (int i = 0; i < objc; ++i)
+		languages[i] = stringFromObj(objc, objs, i);
+
+	TeXt::Controller::LogP myLog(new Log);
+	TeXt::Controller controller(searchPath, TeXt::Controller::AbortMode, myLog);
+	mstl::istringstream src(preamble);
+	mstl::ofstream dst(sys::file::internalName(filename));
+	mstl::ostringstream out;
+
+	if (controller.processInput(src, dst, &out, &out) >= 0)
+	{
+		int rc = controller.processInput(scriptPath, dst, &out, &out);
+
+		if (rc == TeXt::Controller::OpenInputFileFailed)
+			out.write(static_cast<Log*>(myLog.get())->str);
+	}
+
+	Scidb->printGame(	Application::InvalidPosition,
+							controller.environment(),
+							format::LaTeX,
+							flags,
+							options,
+							nagMap,
+							languages,
+							significant);
+
+	{
+		mstl::string log(out.str());
+
+		if (!log.empty() && log.back() == '\n')
+			log.set_size(log.size() - 1);
+
+		Tcl_SetVar2Ex(ti, trace, 0, Tcl_NewStringObj(log, log.size()), TCL_GLOBAL_ONLY);
+	}
 
 	return TCL_OK;
 }
@@ -3454,6 +3585,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdPly,				cmdPly);
 	createCommand(ti, CmdPop,				cmdPop);
 	createCommand(ti, CmdPosition,		cmdPosition);
+	createCommand(ti, CmdPrint,			cmdPrint);
 	createCommand(ti, CmdPush,				cmdPush);
 	createCommand(ti, CmdQuery,			cmdQuery);
 	createCommand(ti, CmdRefresh,			cmdRefresh);

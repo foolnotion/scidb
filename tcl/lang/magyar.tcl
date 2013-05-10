@@ -1609,6 +1609,7 @@
 ::export::mc::ExportDatabase			"Adatbázis exportálása"
 ::export::mc::ExportDatabaseVariant		"Export database - variant %s" ;# NEW
 ::export::mc::ExportDatabaseTitle		"'%s' adatbézis exportálása"
+::export::mc::ExportCurrentGameTitle		"Export Current Game" ;# NEW
 ::export::mc::ExportingDatabase			"'%s' exportálása '%s'fájlba"
 ::export::mc::Export				"Exportálás"
 ::export::mc::NoGamesCopied			"No games exported." ;# NEW

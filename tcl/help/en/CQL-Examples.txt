@@ -268,7 +268,7 @@ Fourth example: knight gives mate with its first move.
 (match
   (position
     <cql>position:flipcolor</cql>            <comment>; either color</comment>
-    <cql>position:attackcount</cql> k [A.] 0 <comment>; king is smothered by own pieces</comment>
+    <cql>position:attackcount</cql> &k; [A.] 0 <comment>; king is smothered by own pieces</comment>
     <cql>position:mate</cql>))               <comment>; and is mate</comment>
 </verbatim>
 

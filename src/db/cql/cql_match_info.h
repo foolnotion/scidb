@@ -113,14 +113,14 @@ class Rating : public Match
 {
 public:
 
-	Rating(db::rating::Type ratingType, uint16_t minScore, uint16_t maxScore, db::color::ID color);
+	Rating(db::rating::Type ratingType, uint16_t minScore, uint16_t maxScore, unsigned colors);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
 	db::rating::Type	m_ratingType;
-	db::color::ID		m_color;
+	unsigned				m_colors;
 	uint16_t				m_minScore;
 	uint16_t				m_maxScore;
 };
@@ -217,14 +217,14 @@ class Country : public Match
 {
 public:
 
-	Country(mstl::bitset const& countries, db::color::ID color);
+	Country(unsigned colors, mstl::bitset const& countries);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
+	unsigned			m_colors;
 	mstl::bitset 	m_countries;
-	db::color::ID	m_color;
 };
 
 
@@ -279,14 +279,14 @@ class Gender : public Match
 {
 public:
 
-	Gender(db::sex::ID sex, unsigned colors);
+	Gender(unsigned colors, db::sex::ID sex);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::sex::ID	m_sex;
 	unsigned		m_colors;
+	db::sex::ID	m_sex;
 };
 
 
@@ -294,13 +294,13 @@ class IsComputer : public Match
 {
 public:
 
-	IsComputer(db::color::ID color);
+	IsComputer(unsigned colors);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::color::ID m_color;
+	unsigned m_colors;
 };
 
 
@@ -308,13 +308,13 @@ class IsHuman : public Match
 {
 public:
 
-	IsHuman(db::color::ID color);
+	IsHuman(unsigned colors);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::color::ID m_color;
+	unsigned m_colors;
 };
 
 
@@ -498,15 +498,15 @@ class DeathYear : public Match
 {
 public:
 
-	DeathYear(db::color::ID color, unsigned min, unsigned max);
+	DeathYear(unsigned colors, unsigned min, unsigned max);
 
 	bool match(GameInfo const& info, Variant variant, unsigned gameNumber) override;
 
 private:
 
-	db::color::ID	m_color;
-	unsigned			m_min;
-	unsigned			m_max;
+	unsigned m_colors;
+	unsigned m_min;
+	unsigned m_max;
 };
 
 } // namespace info

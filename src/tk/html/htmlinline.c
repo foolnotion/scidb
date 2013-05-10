@@ -155,6 +155,8 @@ struct InlineBox {
 
   /* Applicable value of the 'white-space' property */
   int eWhitespace;
+  /* Position inside a nowrap region */
+  int eNowrapPos;
 };
 
 /* Values for InlineBox.eType */
@@ -1599,6 +1601,7 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
     int eWhitespace;               /* Value of 'white-space' property */
 
     int sw;                        /* Space-Width in pFont. */
+    int ts;                        /* Thin-Space: 1/5 of 'em' unit in pFont. */
     int nh;                        /* Newline-height in pFont */
     const int szonly = pContext->isSizeOnly;
 
@@ -1611,6 +1614,7 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
     eWhitespace = pValues->eWhitespace;
 
     sw = pFont->space_pixels;
+    ts = (pFont->em_pixels + 2)/5;
     nh = pFont->metrics.ascent + pFont->metrics.descent;
 
     assert(HtmlNodeIsText(pNode));
@@ -1641,6 +1645,7 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
                 pBox->nContentPixels = tw;
                 pBox->iHyphen = iHyphen;
                 pBox->eWhitespace = eWhitespace;
+                pBox->eNowrapPos = 0;
                 pBox->nKerning = 0;
                 pBox->iJoin = iJoin;
 
@@ -1693,6 +1698,32 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
                 }
                 for (i = 0; i < nData; i++) {
                     inlineContextAddSpace(pContext, sw, eWhitespace);
+                }
+                pPrevTextBox = pPrevBox = NULL;
+                iJoin = 0;
+                break;
+            }
+
+            case HTML_TEXT_TOKEN_NO_BREAK_SPACE: {
+                int i;
+                if (HtmlInlineContextIsEmpty(pContext)) {
+                    inlineContextAddInlineCanvas(pContext, INLINE_TEXT, 0);
+                }
+                for (i = 0; i < nData; i++) {
+                    inlineContextAddSpace(pContext, sw, CSS_CONST_PRE);
+                }
+                pPrevTextBox = pPrevBox = NULL;
+                iJoin = 0;
+                break;
+            }
+
+            case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE: {
+                int i;
+                if (HtmlInlineContextIsEmpty(pContext)) {
+                    inlineContextAddInlineCanvas(pContext, INLINE_TEXT, 0);
+                }
+                for (i = 0; i < nData; i++) {
+                    inlineContextAddSpace(pContext, ts, CSS_CONST_PRE);
                 }
                 pPrevTextBox = pPrevBox = NULL;
                 iJoin = 0;

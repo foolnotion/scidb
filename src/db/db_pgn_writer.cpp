@@ -152,15 +152,43 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 
 
 void
-PgnWriter::writeCommnentLine(mstl::string const& content)
+PgnWriter::writeCommentLines(mstl::string const& content)
 {
 	if (!content.empty())
 	{
 		mstl::string text;
+		mstl::string line("; ", 2);
+
 		codec().fromUtf8(content, text);
-		m_strm.write("; ");
-		m_strm.write(content);
-		m_strm.write("\n\n");
+
+		for (char const *s = text; *s; ++s)
+		{
+			if (*s == '\n')
+			{
+				if (line.size() == 2)
+				{
+					m_strm.put(';');
+				}
+				else
+				{
+					m_strm.write(line);
+					line.resize(2);
+				}
+				m_strm.put('\n');
+			}
+			else
+			{
+				line += *s;
+			}
+		}
+
+		if (line.size() > 2)
+		{
+			m_strm.write(line);
+			m_strm.put('\n');
+		}
+
+		m_strm.put('\n');
 	}
 }
 
@@ -679,15 +707,15 @@ PgnWriter::writeBeginVariation(unsigned)
 {
 	if (test(Flag_Indent_Variations))
 	{
-		m_pendingSpace = 0;
 		putNewline();
 		putDelim('(');
+		m_pendingSpace = 1;
 	}
 	else
 	{
 		putSpace();
 		putDelim('(');
-		m_pendingSpace = 0;
+		m_pendingSpace = 1;
 	}
 
 	m_needPostComment = false;

@@ -24,40 +24,37 @@
 // (at your option) any later version.
 // ======================================================================
 
+#ifndef _cql_piece_type_designator_defined
+#define _cql_piece_type_designator_defined
+
+#include "cql_common.h"
+
+#include "m_bitfield.h"
+
 namespace cql {
-namespace move {
 
-inline MoveFrom::MoveFrom(Designator const& designator) :m_designator(designator) {}
-inline MoveTo::MoveTo(Designator const& designator) :m_designator(designator) {}
-inline PieceDrop::PieceDrop(Designator const& designator) :m_designator(designator) {}
-inline Promote::Promote(Designator const& designator) :m_designator(designator) {}
-
-inline
-ExchangeEvaluation::ExchangeEvaluation(int minScore, int maxScore)
-	:m_minScore(minScore)
-	,m_maxScore(maxScore)
+class PieceTypeDesignator
 {
-}
+public:
 
-inline
-MoveEvaluation::MoveEvaluation(	Mode mode,
-											unsigned n,
-											Designator const& from,
-											Designator const& to,
-											float lower,
-											float upper,
-											View view)
-	:m_mode(mode)
-	,m_view(view)
-	,m_arg(n)
-	,m_from(from)
-	,m_to(to)
-	,m_lower(lower)
-	,m_upper(upper)
-{
-}
+	typedef mstl::bitfield<unsigned> Pieces;
+	typedef error::Type Error;
 
-} // namespace move
+	bool test(piece::ID piece) const;
+
+	Pieces const& pieces() const;
+
+	char const* parse(char const* s, Error& error);
+
+private:
+
+	Pieces m_pieces;
+};
+
 } // namespace cql
+
+#include "cql_piece_type_designator.ipp"
+
+#endif // _cql_piece_type_designator_defined
 
 // vi:set ts=3 sw=3:

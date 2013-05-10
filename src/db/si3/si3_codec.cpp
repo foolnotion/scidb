@@ -398,7 +398,7 @@ Codec::filterTags(TagSet& tags, Section section) const
 
 	if (section == InfoTags)
 	{
-		infoTags.flip(0, tag::ExtraTag - 1);
+		infoTags.flip(0, tag::LastTag);
 	}
 	else if (tags.contains(tag::Date) && tags.contains(tag::EventDate))
 	{
@@ -1984,6 +1984,7 @@ Codec::readNamebase(	ByteIStream& bstrm,
 	}
 
 	progress.update(m_progressCount + count);
+	shadowBase.finish();
 	base.setNextId(count);
 }
 

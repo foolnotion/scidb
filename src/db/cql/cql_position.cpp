@@ -27,6 +27,7 @@
 #include "cql_position.h"
 #include "cql_relation.h"
 #include "cql_designator.h"
+#include "cql_piece_type_designator.h"
 #include "cql_match.h"
 #include "cql_match_board.h"
 #include "cql_match_move.h"
@@ -79,7 +80,7 @@ struct Adaptor : public cql::board::Match
 	Adaptor(cql::info::Match* match) :m_match(match) {}
 	~Adaptor() { delete m_match; }
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 	{
 		return m_match->match(info, variant, 0); // game number not required
 	}
@@ -127,14 +128,14 @@ struct And : public Match
 	bool match(	GameInfo const& info,
 					Board const& board,
 					Variant variant,
-					bool isFinal) override
+					unsigned flags) override
 	{
 		PositionList::iterator i = m_list.begin();
 		PositionList::iterator e = m_list.end();
 
 		for ( ; i != e; ++i)
 		{
-			if (!(*i)->match(info, board, variant, isFinal))
+			if (!(*i)->match(info, board, variant, flags))
 				return false;
 		}
 
@@ -162,14 +163,14 @@ struct Or : public Match
 	bool match(	GameInfo const& info,
 					Board const& board,
 					Variant variant,
-					bool isFinal) override
+					unsigned flags) override
 	{
 		PositionList::iterator i = m_list.begin();
 		PositionList::iterator e = m_list.end();
 
 		for ( ; i != e; ++i)
 		{
-			if ((*i)->match(info, board, variant, isFinal))
+			if ((*i)->match(info, board, variant, flags))
 				return true;
 		}
 
@@ -291,6 +292,29 @@ parseSequence(cql::board::GappedSequence& seq, Match& match, char const* s, erro
 }
 
 
+static char const*
+parseRange(char const* s, error::Type& error, float& lower, float& upper)
+{
+	char *e;
+
+	lower = strtof(s, &e);
+
+	if (s == e || !isDelim(*s))
+	{
+		error = Invalid_Range_Argument;
+	}
+	else
+	{
+		upper = strtof(s = skipSpaces(e), &e);
+
+		if (s == e || !isDelim(*s))
+			error = Invalid_Range_Argument;
+	}
+
+	return s;
+}
+
+
 Position::Position()
 	:m_relation(0)
 	,m_cutExpression(0)
@@ -321,9 +345,9 @@ Position::~Position()
 
 
 bool
-Position::doMatch(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Position::doMatch(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
-	if (m_cutExpression && m_cutExpression->match(info, board, variant, isFinal))
+	if (m_cutExpression && m_cutExpression->match(info, board, variant, flags))
 	{
 		m_cutFunc();
 
@@ -333,11 +357,11 @@ Position::doMatch(GameInfo const& info, Board const& board, Variant variant, boo
 
 	if (m_finalState)
 	{
-		if (!m_finalState->match(info, board, variant, isFinal))
+		if (!m_finalState->match(info, board, variant, flags))
 			return m_not;
 	}
 
-	if (!m_designators->match(info, board, variant, isFinal))
+	if (!m_designators->match(info, board, variant, flags))
 		return m_not;
 
 	{
@@ -346,7 +370,7 @@ Position::doMatch(GameInfo const& info, Board const& board, Variant variant, boo
 
 		for ( ; i != e; ++i)
 		{
-			if (!(*i)->match(info, board, variant, isFinal))
+			if (!(*i)->match(info, board, variant, flags))
 			{
 				if (m_not && dynamic_cast<cql::board::GappedSequence const*>(*i))
 					return false;
@@ -362,7 +386,7 @@ Position::doMatch(GameInfo const& info, Board const& board, Variant variant, boo
 
 		for ( ; i != e; ++i)
 		{
-			if (!(*i)->match(info, board, variant, isFinal))
+			if (!(*i)->match(info, board, variant, flags))
 				return m_not;
 		}
 	}
@@ -399,19 +423,19 @@ Position::doMatch(Board const& board, Move const& move, Variant variant)
 
 
 bool
-Position::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Position::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
-	bool match = doMatch(info, board, variant, isFinal);
+	bool match = doMatch(info, board, variant, flags);
 
 	if (match)
 		++m_matchCount;
-	
+
 	if (m_relation && !m_relation->match(board, false)) // XXX set parameter insideVariation
 		return m_not;
 
-	if (isFinal)
+	if (flags & flags::IsFinalPosition)
 		return m_minMatchCount <= m_matchCount && m_matchCount <= m_maxMatchCount;
-	
+
 	return m_matchCount >= m_maxMatchCount;
 }
 
@@ -583,16 +607,19 @@ Position::parseBlackToMove(Match& match, char const* s, Error& error)
 char const*
 Position::parseCastling(Match& match, char const* s, Error& error)
 {
-	Designator designator;
+	PieceTypeDesignator designator;
 	char const* t = designator.parse(s, error);
 
 	if (error == No_Error)
 	{
-		uint64_t pieces	= designator.pieces(White) | designator.pieces(Black) | designator.empty();
-		uint64_t kings		= designator.kings(White)  | designator.kings(Black);
-		uint64_t queens	= designator.queens(White) | designator.queens(Black);
+		PieceTypeDesignator::Pieces pieces = designator.pieces();
 
-		if (pieces & ~(kings | queens))
+		pieces.reset(cql::piece::WK);
+		pieces.reset(cql::piece::BK);
+		pieces.reset(cql::piece::WQ);
+		pieces.reset(cql::piece::BQ);
+
+		if (pieces.count() > 0)
 		{
 			error = Invalid_Designator;
 		}
@@ -757,10 +784,93 @@ Position::parseEndGame(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseEndmost(Match& match, char const* s, Error& error)
+{
+	// TODO
+	return s;
+}
+
+
+char const*
 Position::parseEnPassant(Match& match, char const* s, Error& error)
 {
 	m_moveMatchList.push_back(new cql::move::EnPassant);
 	match.m_sections |= Match::Section_Moves;
+	return s;
+}
+
+
+char const*
+Position::parseEvaluation(Match& match, char const* s, Error& error)
+{
+	char const *t = ::skipToDelim(s);
+	mstl::string mode(s, t);
+
+	if (mode != "depth" && mode != "movetime" && mode != "mate")
+	{
+		error = Invalid_Evaluation_Mode;
+		return s;
+	}
+
+	s = ::skipSpaces(t);
+
+	if (!::isdigit(*s))
+	{
+		error = Positive_Integer_Expected;
+		return s;
+	}
+
+	char* e;
+	unsigned n = ::strtoul(s, &e, 10);
+
+	if (n == 0)
+	{
+		error = Integer_Out_Of_Range;
+		return s;
+	}
+
+	if (mode == "mate")
+	{
+		m_boardMatchList.push_back(new cql::board::Evaluation(cql::board::Evaluation::Mate, n));
+	}
+	else
+	{
+		float lower, upper;
+		s = ::parseRange(s, error, lower, upper);
+
+		if (error != No_Error)
+			return s;
+
+		s = ::skipSpaces(s);
+		t = ::skipToDelim(s);
+		mstl::string stm(s, t);
+
+		if (stm != "sidetomove" && stm != "absolute")
+		{
+			error = Invalid_Evaluation_View;
+			return s;
+		}
+
+		s = t;
+
+		cql::board::Evaluation::Mode emode;
+		cql::board::Evaluation::View view;
+
+		if (mode == "depth")
+			emode = cql::board::Evaluation::Depth;
+		else
+			emode = cql::board::Evaluation::MoveTime;
+
+		if (stm == "sidetomove")
+			view = cql::board::Evaluation::SideToMove;
+		else
+			view = cql::board::Evaluation::Absolute;
+
+		m_boardMatchList.push_back(new cql::board::Evaluation(emode, n, lower, upper, view));
+	}
+
+	match.m_isStandard = false;
+	match.m_sections |= Match::Section_Positions;
 	return s;
 }
 
@@ -894,6 +1004,14 @@ Position::parseFlipVertical(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseFollowing(Match& match, char const* s, Error& error)
+{
+	// TODO
+	return s;
+}
+
+
+char const*
 Position::parseGameIsOver(Match& match, char const* s, Error& error)
 {
 	if (m_state == 0)
@@ -931,8 +1049,16 @@ Position::parseHalfmoveClockLimit(Match& match, char const* s, Error& error)
 	{
 		char* e;
 		unsigned limit = ::strtoul(s, &e, 10);
-		s = e;
-		m_boardMatchList.push_back(new cql::board::HalfmoveClockLimit(limit));
+
+		if (limit == 0)
+		{
+			error = Integer_Out_Of_Range;
+		}
+		else
+		{
+			s = e;
+			m_boardMatchList.push_back(new cql::board::HalfmoveClockLimit(limit));
+		}
 	}
 	else
 	{
@@ -1027,7 +1153,7 @@ Position::parseMaxSwapEvaluation(Match& match, char const* s, Error& error)
 		{
 			int min, max;
 			s = parseSignedRange(s, error, min, max);
-			
+
 			if (error == No_Error)
 				m_boardMatchList.push_back(new cql::board::MaxSwapEvaluation(from, to, min, max));
 		}
@@ -1035,6 +1161,86 @@ Position::parseMaxSwapEvaluation(Match& match, char const* s, Error& error)
 
 	match.m_isStandard = false;
 	match.m_sections |= Match::Section_Positions;
+	return s;
+}
+
+
+char const*
+Position::parseMoveEvaluation(Match& match, char const* s, Error& error)
+{
+	Designator from, to;
+
+	s = from.parse(s, error);
+
+	if (error != No_Error)
+		return s;
+
+	s = to.parse(::skipSpaces(s), error);
+
+	if (error != No_Error)
+		return s;
+
+	char const *t = ::skipToDelim(::skipSpaces(s));
+	mstl::string mode(s, t);
+
+	if (mode != "depth" && mode != "movetime")
+	{
+		error = Invalid_Evaluation_Mode;
+		return s;
+	}
+
+	s = ::skipSpaces(t);
+
+	if (!::isdigit(*s))
+	{
+		error = Positive_Integer_Expected;
+		return s;
+	}
+
+	char* e;
+	unsigned n = ::strtoul(s, &e, 10);
+
+	if (n == 0)
+	{
+		error = Integer_Out_Of_Range;
+		return s;
+	}
+
+	float lower, upper;
+	s = ::parseRange(s, error, lower, upper);
+
+	if (error != No_Error)
+		return s;
+
+	s = ::skipSpaces(s);
+	t = ::skipToDelim(s);
+	mstl::string stm(s, t);
+
+	if (stm != "sidetomove" && stm != "absolute")
+	{
+		error = Invalid_Evaluation_View;
+		return s;
+	}
+
+	s = t;
+
+	cql::move::MoveEvaluation::Mode emode;
+	cql::move::MoveEvaluation::View view;
+
+	if (mode == "depth")
+		emode = cql::move::MoveEvaluation::Depth;
+	else
+		emode = cql::move::MoveEvaluation::MoveTime;
+
+	if (stm == "sidetomove")
+		view = cql::move::MoveEvaluation::SideToMove;
+	else
+		view = cql::move::MoveEvaluation::Absolute;
+
+	m_moveMatchList.push_back(new cql::move::MoveEvaluation(emode, n, from, to, lower, upper, view));
+
+	match.m_isStandard = false;
+	match.m_sections |= Match::Section_Moves;
 	return s;
 }
 
@@ -1324,6 +1530,14 @@ Position::parsePowerDifference(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parsePreceding(Match& match, char const* s, Error& error)
+{
+	// TODO
+	return s;
+}
+
+
+char const*
 Position::parsePreTransformMatchCount(Match& match, char const* s, Error& error)
 {
 	// TODO
@@ -1355,13 +1569,6 @@ Position::parsePromote(Match& match, char const* s, Error& error)
 
 	match.m_sections |= Match::Section_Moves;
 	return s;
-}
-
-
-char const*
-Position::parseRating(Match& match, char const* s, Error& error)
-{
-	return adopt(match, match.parseRating(s, error), error);
 }
 
 
@@ -1591,6 +1798,13 @@ Position::parseTerminal(Match& match, char const* s, Error& error)
 
 
 char const*
+Position::parseVariant(Match& match, char const* s, Error& error)
+{
+	return adopt(match, match.parseVariant(s, error), error);
+}
+
+
+char const*
 Position::parseVariations(Match& match, char const* s, Error& error)
 {
 	m_includeVariations = true;
@@ -1667,6 +1881,8 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("and",								&Position::parseAnd),
 		Pair("attackcount",					&Position::parseAttackCount),
 		Pair("blackcannotwin",				&Position::parseBlackCannotWin),
+ 		Pair("blackelo",						&Position::parseBlackElo),
+ 		Pair("blackrating",					&Position::parseBlackRating),
 		Pair("btm",								&Position::parseBlackToMove),
 		Pair("castling",						&Position::parseCastling),
 		Pair("cut",								&Position::parseCut),
@@ -1674,8 +1890,11 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("checkcount",					&Position::parseCheckCount),
 		Pair("contactcheck",					&Position::parseContactCheck),
 		Pair("doublecheck",					&Position::parseDoubleCheck),
+	 	Pair("elo",								&Position::parseElo),
 		Pair("endgame",						&Position::parseEndGame),
+		Pair("endmost",						&Position::parseEndmost),
 		Pair("enpassant",						&Position::parseEnPassant),
+		Pair("evaluation",					&Position::parseEvaluation),
 		Pair("exchangeevaluation",			&Position::parseExchangeEvaluation),
 		Pair("exclude",						&Position::parseExclude),
 		Pair("fen",								&Position::parseFen),
@@ -1687,6 +1906,7 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("fliphorizontal",				&Position::parseFlipHorizontal),
 		Pair("flipoffdiagonal",				&Position::parseFlipOffDiagonal),
 		Pair("flipvertical",					&Position::parseFlipVertical),
+		Pair("following",						&Position::parseFollowing),
 		Pair("gameisover",					&Position::parseGameIsOver),
 		Pair("gappedsequence",				&Position::parseGappedSequence),
 		Pair("halfmoveclocklimit",			&Position::parseHalfmoveClockLimit),
@@ -1718,6 +1938,7 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("piecedrop",						&Position::parsePieceDrop),
 		Pair("power",							&Position::parsePower),
 		Pair("powerdifference",				&Position::parsePowerDifference),
+		Pair("preceding",						&Position::parsePreceding),
 		Pair("pretransformmatchcount",	&Position::parsePreTransformMatchCount),
 		Pair("promote",						&Position::parsePromote),
 		Pair("ray",								&Position::parseRay),
@@ -1728,6 +1949,8 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("rayvertical",					&Position::parseRayVertical),
 		Pair("relation",						&Position::parseRelation),
 		Pair("repetition",					&Position::parseRepetition),
+		Pair("reset",							&Position::parseReset),
+ 		Pair("result",							&Position::parseResult),
 		Pair("sequence",						&Position::parseSequence),
 		Pair("shift",							&Position::parseShift),
 		Pair("shiftdiagonal",				&Position::parseShiftDiagonal),
@@ -1739,18 +1962,13 @@ Position::parse(Match& match, char const* s, Error& error)
 		Pair("sumrange",						&Position::parseSumRange),
 		Pair("tagmatch",						&Position::parseTagMatch),
 		Pair("terminal",						&Position::parseTerminal),
+		Pair("variant",						&Position::parseVariant),
 		Pair("variations",					&Position::parseVariations),
 		Pair("variationsonly",				&Position::parseVariationsOnly),
-		Pair("wtm",								&Position::parseWhiteToMove),
-	 	Pair("elo",								&Position::parseElo),
- 		Pair("blackelo",						&Position::parseBlackElo),
- 		Pair("blackrating",					&Position::parseBlackRating),
- 		Pair("rating",							&Position::parseRating),
-		Pair("reset",							&Position::parseReset),
- 		Pair("result",							&Position::parseResult),
 		Pair("whitecannotwin",				&Position::parseWhiteCannotWin),
  		Pair("whiteelo",						&Position::parseWhiteElo),
  		Pair("whiterating",					&Position::parseWhiteRating),
+		Pair("wtm",								&Position::parseWhiteToMove),
 	};
 
 	mstl::string key;

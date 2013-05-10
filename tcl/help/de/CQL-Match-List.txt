@@ -79,6 +79,9 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
         <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
     <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
@@ -540,6 +543,9 @@ Suche nach Blitz- bzw. Bullet-Partien.
     <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
     <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
         <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
@@ -633,6 +639,19 @@ Suche nach Partien, in denen der schwarze Spieler innnerhalb der gegebenen
 Siehe auch: <cql>match:whitedeathyear</cql>, <cql>match:deathyear</cql>,
 <cql>match:blackbirthyear</cql>, <cql>match:whitebirthyear</cql>,
 <cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:blackelo">:blackelo<extension/>&emsp;<n>(<abbr>ELO</abbr> - schwarzer Spieler)</n></h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO des schwarzen
+Spielers muß innerhalb dieses Bereichs liegen.
+</p>
+
+<p>
+Siehe auch: <cql>match:whiteelo</cql>, <cql>match:elo</cql>,
+<cql>match:blackrating</cql>.
 </p>
 
 <h3 id="match:blackgender">:blackgender<extension/>&emsp;<n>(Geschlecht - schwarzer Spieler)</n></h3>
@@ -789,6 +808,19 @@ Spieler vestarb zwischen 1800 und 1950.
 Siehe auch: <cql>match:whitedeathyear</cql>, <cql>match:blackdeathyear</cql>,
 <cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
 <cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:elo">:elo<extension/></h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO von mindestens
+einem Spieler muß innerhalb dieses Bereichs liegen.
+</p>
+
+<p>
+Siehe auch: <cql>match:whiteelo</cql>, <cql>match:blackelo</cql>,
+<cql>match:rating</cql>.
 </p>
 
 <h3 id="match:gender">:gender<extension/>&emsp;<n>(Geschlecht)</n></h3>
@@ -952,7 +984,7 @@ Beispiel:
 </verb>
 
 <p>
-Filtere nur Partien, in denen einer der Spieler eine ELO-Wertung
+Filtere nur Partien, in denen einer der Spieler eine <abbr>ELO</abbr>-Wertung
 zwischen 2000 und 3000 besitzt.
 </p>
 
@@ -1039,6 +1071,19 @@ Suche nach Partien, in denen der weiße Spieler innnerhalb der gegebenen
 Siehe auch: <cql>match:blackdeathyear</cql>, <cql>match:deathyear</cql>,
 <cql>match:whitebirthyear</cql>, <cql>match:blackbirthyear</cql>,
 <cql>match:birthyear</cql>.
+</p>
+
+<h3 id="match:whiteelo">:whiteelo<extension/>&emsp;<n>(<abbr>ELO</abbr> - weißer Spieler)</n></h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO des weißen
+Spielers muß innerhalb dieses Bereichs liegen.
+</p>
+
+<p>
+Siehe auch: <cql>match:blackelo</cql>, <cql>match:elo</cql>,
+<cql>match:whiterating</cql>.
 </p>
 
 <h3 id="match:whitegender">:whitegender<extension/>&emsp;<n>(Geschlecht - weißer Spieler)</n></h3>

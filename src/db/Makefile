@@ -291,6 +291,10 @@ cql/cql_match.o: cql/cql_designator.h
 cql/cql_match.o: cql/cql_board.h
 cql/cql_match.o: cql/cql_board.ipp
 cql/cql_match.o: cql/cql_designator.ipp
+cql/cql_match.o: ../mstl/m_function.h
+cql/cql_match.o: ../mstl/m_function_base.h
+cql/cql_match.o: ../mstl/m_function_base.ipp
+cql/cql_match.o: ../mstl/m_function.ipp
 cql/cql_match.o: db_game_info.h
 cql/cql_match.o: db_signature.h
 cql/cql_match.o: db_signature.ipp
@@ -373,6 +377,12 @@ cql/cql_match_board.o: ../mstl/m_pair.ipp
 cql/cql_match_board.o: ../mstl/m_hash.ipp
 cql/cql_match_board.o: cql/cql_match_board.ipp
 cql/cql_match_board.o: cql/cql_position.h
+cql/cql_match_board.o: ../mstl/m_function.h
+cql/cql_match_board.o: ../mstl/m_function_base.h
+cql/cql_match_board.o: ../mstl/m_function_base.ipp
+cql/cql_match_board.o: ../mstl/m_function.ipp
+cql/cql_match_board.o: cql/cql_piece_type_designator.h
+cql/cql_match_board.o: cql/cql_piece_type_designator.ipp
 cql/cql_match_board.o: db_game_info.h
 cql/cql_match_board.o: db_date.h
 cql/cql_match_board.o: db_date.ipp
@@ -585,6 +595,10 @@ cql/cql_position.o: ../mstl/m_uninitialized.h
 cql/cql_position.o: ../mstl/m_uninitialized.ipp
 cql/cql_position.o: ../mstl/m_algobase.h
 cql/cql_position.o: ../mstl/m_algobase.ipp
+cql/cql_position.o: ../mstl/m_function.h
+cql/cql_position.o: ../mstl/m_function_base.h
+cql/cql_position.o: ../mstl/m_function_base.ipp
+cql/cql_position.o: ../mstl/m_function.ipp
 cql/cql_position.o: cql/cql_relation.h
 cql/cql_position.o: db_board.h
 cql/cql_position.o: db_move_list.h
@@ -601,6 +615,8 @@ cql/cql_position.o: db_signature.h
 cql/cql_position.o: db_signature.ipp
 cql/cql_position.o: db_board.ipp
 cql/cql_position.o: cql/cql_relation.ipp
+cql/cql_position.o: cql/cql_piece_type_designator.h
+cql/cql_position.o: cql/cql_piece_type_designator.ipp
 cql/cql_position.o: cql/cql_match.h
 cql/cql_position.o: ../mstl/m_match.h
 cql/cql_position.o: ../mstl/m_match.ipp

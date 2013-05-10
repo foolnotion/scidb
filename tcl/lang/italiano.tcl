@@ -1610,6 +1610,7 @@
 ::export::mc::ExportDatabase				"Esporta database"
 ::export::mc::ExportDatabaseVariant		"Esporta database - variante %s"
 ::export::mc::ExportDatabaseTitle		"Esporta Database '%s'"
+::export::mc::ExportCurrentGameTitle	"Export Current Game" ;# NEW
 ::export::mc::ExportingDatabase			"Sto esportando '%s' nel file '%s'"
 ::export::mc::Export							"Esporta"
 ::export::mc::NoGamesCopied				"Nessuna partita esportata."

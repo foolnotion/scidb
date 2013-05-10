@@ -67,7 +67,7 @@ inline
 void
 TagSet::set(tag::ID tag, mstl::string const& value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 
 	if (!value.empty())
 		set(tag, value, true);
@@ -78,7 +78,7 @@ inline
 void
 TagSet::set(tag::ID tag, char const* value, unsigned length)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	M_REQUIRE(value);
 
 	if (length)
@@ -90,7 +90,7 @@ inline
 void
 TagSet::setSignificance(tag::ID tag, Byte value)
 {
-	M_REQUIRE(tag < tag::ExtraTag);
+	M_ASSERT(tag::isValid(tag));
 	m_significance[tag] = value;
 }
 

@@ -301,6 +301,13 @@ NameList::nextId()
 }
 
 
+void
+NameList::finish()
+{
+	m_nextId = m_usedIdSet.find_first_not();
+}
+
+
 NameList::Node*
 NameList::makeNode(NamebaseEntry* entry, mstl::string const* str)
 {

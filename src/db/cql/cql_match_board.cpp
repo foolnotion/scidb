@@ -26,6 +26,7 @@
 
 #include "cql_match_board.h"
 #include "cql_position.h"
+#include "cql_piece_type_designator.h"
 
 #include "db_game_info.h"
 #include "db_board_base.h"
@@ -39,12 +40,12 @@ using namespace db::board;
 using namespace db::color;
 
 
-static bool isAlwaysTrue(piece::Type) { return true; }
+static bool isAlwaysTrue(db::piece::Type) { return true; }
 
 
 namespace bits {
 
-typedef bool (*RayCondition)(piece::Type);
+typedef bool (*RayCondition)(db::piece::Type);
 
 
 struct RayHorizontal
@@ -399,7 +400,7 @@ void MatchRay::add(Designator const& designator) { m_designators.push_back(desig
 
 
 bool
-Designators::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Designators::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	for (List::iterator i = m_list.begin(); i != m_list.end(); ++i)
 	{
@@ -422,7 +423,7 @@ AttackCount::AttackCount(Designator const& fst, Designator const& snd, unsigned 
 
 
 bool
-AttackCount::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+AttackCount::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	color::ID sideToMove = board.sideToMove();
 
@@ -442,77 +443,77 @@ AttackCount::match(GameInfo const& info, Board const& board, Variant variant, bo
 
 
 bool
-CannotWin::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+CannotWin::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.cannotWin(m_color, variant);
 }
 
 
 bool
-Check::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Check::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.isInCheck();
 }
 
 
 bool
-DoubleCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+DoubleCheck::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.isInCheck() && (board.checkState(variant) & Board::DoubleCheck);
 }
 
 
 bool
-NoCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+NoCheck::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return !board.isInCheck();
 }
 
 
 bool
-NoDoubleCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+NoDoubleCheck::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return !board.isInCheck() && (board.checkState(variant) & Board::DoubleCheck) == 0;
 }
 
 
-Castling::Castling(Designator const& designator)
+Castling::Castling(PieceTypeDesignator const& designator)
 	:m_castling(0)
 {
-	if (designator.kings(White))
+	if (designator.test(cql::piece::WK))
 		m_castling |= castling::WhiteKingside;
-	if (designator.kings(Black))
+	if (designator.test(cql::piece::BK))
 		m_castling |= castling::BlackKingside;
-	if (designator.queens(White))
+	if (designator.test(cql::piece::WQ))
 		m_castling |= castling::WhiteQueenside;
-	if (designator.queens(Black))
+	if (designator.test(cql::piece::BQ))
 		m_castling |= castling::BlackQueenside;
 }
 
 
 bool
-Castling::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Castling::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return bool(board.signature().castling() & m_castling);
 }
 
 
 bool
-ContactCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+ContactCheck::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.isContactCheck();
 }
 
 
 bool
-NoContactCheck::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+NoContactCheck::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return !board.isContactCheck();
 }
 
 
 bool
-State::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+State::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	unsigned states = board.checkState(variant);
 	return (states & m_and) == m_and && (states & m_not) == 0;
@@ -520,7 +521,7 @@ State::match(GameInfo const& info, Board const& board, Variant variant, bool isF
 
 
 bool
-ToMove::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+ToMove::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.sideToMove() == m_color;
 }
@@ -537,7 +538,7 @@ Fen::Fen(Board const& board)
 
 
 bool
-Fen::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Fen::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	if (m_includeHolding && (variant::isZhouse(variant) || variant == variant::ThreeCheck))
 		return board.isEqualZHPosition(m_board);
@@ -547,21 +548,21 @@ Fen::match(GameInfo const& info, Board const& board, Variant variant, bool isFin
 
 
 bool
-FiftyMoveRule::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+FiftyMoveRule::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.halfMoveClock() >= 100;
 }
 
 
 bool
-HalfmoveClockLimit::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+HalfmoveClockLimit::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.halfMoveClock() <= m_limit;
 }
 
 
 bool
-CheckCount::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+CheckCount::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	if (variant != variant::ThreeCheck)
 		return false;
@@ -574,14 +575,14 @@ CheckCount::match(GameInfo const& info, Board const& board, Variant variant, boo
 
 
 bool
-EndGame::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+EndGame::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return ::isEndGame(board, variant);
 }
 
 
 bool
-NoEndGame::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+NoEndGame::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return !isEndGame(board, variant);
 }
@@ -596,7 +597,7 @@ Sequence::pushBack()
 
 
 bool
-Sequence::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Sequence::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	if (m_info != &info)
 	{
@@ -605,7 +606,7 @@ Sequence::match(GameInfo const& info, Board const& board, Variant variant, bool 
 		m_stack.clear();
 	}
 
-	if (m_list[m_index]->match(info, board, variant, isFinal))
+	if (m_list[m_index]->match(info, board, variant, flags))
 	{
 		if (++m_index == m_list.size())
 		{
@@ -623,7 +624,7 @@ Sequence::match(GameInfo const& info, Board const& board, Variant variant, bool 
 
 		m_index = 0;
 
-		while (i != e && m_list[m_index]->match(info, *i, variant, isFinal))
+		while (i != e && m_list[m_index]->match(info, *i, variant, flags))
 		{
 			++m_index;
 			++i;
@@ -648,7 +649,7 @@ GappedSequence::pushBack()
 
 
 bool
-GappedSequence::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+GappedSequence::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	if (m_info != &info)
 	{
@@ -656,7 +657,7 @@ GappedSequence::match(GameInfo const& info, Board const& board, Variant variant,
 		m_index = 0;
 	}
 
-	if (m_list[m_index]->match(info, board, variant, isFinal))
+	if (m_list[m_index]->match(info, board, variant, flags))
 	{
 		if (++m_index == m_list.size())
 		{
@@ -672,14 +673,22 @@ GappedSequence::match(GameInfo const& info, Board const& board, Variant variant,
 
 
 bool
-MatingMaterial::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+MatingMaterial::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return board.neitherPlayerHasMatingMaterial(variant) == !m_negate;
 }
 
 
 bool
-MaxSwapEvaluation::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Evaluation::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
+{
+	// TODO
+	return false;
+}
+
+
+bool
+MaxSwapEvaluation::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	MoveList moves;
 	int maxScore = INT_MIN;
@@ -702,14 +711,14 @@ MaxSwapEvaluation::match(GameInfo const& info, Board const& board, Variant varia
 
 
 bool
-PieceCount::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+PieceCount::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	return result(m_designator.count(board));
 }
 
 
 bool
-Power::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Power::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	unsigned power = m_designator.powerWhite(board, variant) + m_designator.powerBlack(board, variant);
 	return result(power);
@@ -717,7 +726,7 @@ Power::match(GameInfo const& info, Board const& board, Variant variant, bool isF
 
 
 bool
-PowerDifference::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+PowerDifference::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	int diff = int(m_designator.powerWhite(board, variant))
 				- int(m_designator.powerBlack(board, variant));
@@ -727,9 +736,10 @@ PowerDifference::match(GameInfo const& info, Board const& board, Variant variant
 
 
 bool
-Repetition::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Repetition::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
-	// NOTE: this algorithm is not working with sub-variations.
+	if (flags & flags::IsInsideVariation)
+		return false; // skip variations
 
 	if (m_info != &info)
 	{
@@ -755,7 +765,7 @@ Repetition::match(GameInfo const& info, Board const& board, Variant variant, boo
 
 
 bool
-RayHorizontal::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+RayHorizontal::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayHorizontal match(board, m_designators);
 	return result(match.match());
@@ -763,7 +773,7 @@ RayHorizontal::match(GameInfo const& info, Board const& board, Variant variant, 
 
 
 bool
-RayVertical::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+RayVertical::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayVertical match(board, m_designators);
 	return result(match.match());
@@ -771,7 +781,7 @@ RayVertical::match(GameInfo const& info, Board const& board, Variant variant, bo
 
 
 bool
-RayOrthogonal::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+RayOrthogonal::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayHorizontal horz(board, m_designators);
 	::bits::RayVertical   vert(board, m_designators);
@@ -781,7 +791,7 @@ RayOrthogonal::match(GameInfo const& info, Board const& board, Variant variant, 
 
 
 bool
-RayDiagonal::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+RayDiagonal::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayDiagonal match(board, m_designators);
 	return result(match.match(db::board::MaskDiagonal) + match.match(db::board::MaskOffDiagonal));
@@ -789,7 +799,7 @@ RayDiagonal::match(GameInfo const& info, Board const& board, Variant variant, bo
 
 
 bool
-Ray::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+Ray::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayHorizontal	horz(board, m_designators);
 	::bits::RayVertical		vert(board, m_designators);
@@ -803,16 +813,16 @@ Ray::match(GameInfo const& info, Board const& board, Variant variant, bool isFin
 
 
 bool
-RayAttack::match(GameInfo const& info, Board const& board, Variant variant, bool isFinal)
+RayAttack::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
 	::bits::RayHorizontal	horz(board, m_designators);
 	::bits::RayVertical		vert(board, m_designators);
 	::bits::RayDiagonal		diag(board, m_designators);
 
-	return result(	horz.match(&piece::isOrthogonalLongStepPiece)
-					 + vert.match(&piece::isOrthogonalLongStepPiece)
-					 + diag.match(db::board::MaskDiagonal, piece::isDiagonalLongStepPiece)
-					 + diag.match(db::board::MaskOffDiagonal, piece::isDiagonalLongStepPiece));
+	return result(	horz.match(&db::piece::isOrthogonalLongStepPiece)
+					 + vert.match(&db::piece::isOrthogonalLongStepPiece)
+					 + diag.match(db::board::MaskDiagonal, db::piece::isDiagonalLongStepPiece)
+					 + diag.match(db::board::MaskOffDiagonal, db::piece::isDiagonalLongStepPiece));
 }
 
 // vi:set ts=3 sw=3:

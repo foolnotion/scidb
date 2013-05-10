@@ -34,7 +34,13 @@ squares denoted by that piece designator which contains a piece in the set
 of piecetypes denoted by the piece designator.
 </p>
 
-<h3>Examples of piece designators</h3>
+<ul>
+  <li><a href="#examples">Examples of piece designators</a></li>
+  <li><a href="#allowed">Allowed piecetype designators</a></li>
+  <li><a href="#tagging">Tagging piecetype designators</a></li>
+</ul>
+
+<h2 id="examples">Examples of piece designators</h2>
 
 <p>
 The piece designator <expr>&R;a2</expr> denotes a white rook on a2. The
@@ -63,7 +69,7 @@ that has either a white queen or a black rook on either d1 or h3. (Of course,
 the position can also have a white queen or black rook on both d1 and h3).
 </p>
 
-<h2>Allowed piecetype designators</h2>
+<h2 id="allowed">Allowed piecetype designators</h2>
 
 <p>
 These are the allowed piecetype designators:
@@ -101,7 +107,7 @@ These are the allowed piecetype designators:
    <p></p>
 </box>
 
-<h3>Tagging piecetype designators</h3>
+<h2 id="tagging">Tagging piecetype designators</h2>
 
 <p>
 Anywhere a piecetype designator may occur, a tag name preceded by a

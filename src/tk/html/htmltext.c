@@ -1307,6 +1307,8 @@ initHtmlText_TextNode(HtmlTree *pTree, HtmlTextNode *pTextNode, HtmlTextInit *pI
         switch (eType) {
             case HTML_TEXT_TOKEN_NEWLINE:
             case HTML_TEXT_TOKEN_SPACE:
+            case HTML_TEXT_TOKEN_NO_BREAK_SPACE:
+            case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE:
                 if (isPre) {
                     int ii;
                     const char *zWhite;
@@ -2016,13 +2018,27 @@ populateTextNode(
                 nText++;
                 isPrevTokenText = 0;
             }
-        } else if (c == 0xe2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0x8B) {
+        } else if (c == 0xE2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0x8B) {
             /* ZERO WIDTH SPACE */
             if (pText) {
-                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_ZERO_SPACE, 0);
+                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_ZERO_SPACE, 1);
             }
             nToken++;
             zCsr += 3;
+        } else if (c == 0xE2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0xAF) {
+            /* NARROW NO-BREAK SPACE */
+            if (pText) {
+                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE, 1);
+            }
+            nToken++;
+            zCsr += 3;
+        } else if (c == 0xC2 && (unsigned char)zCsr[1] == 0xA0) {
+            /* NO-BREAK SPACE */
+            if (pText) {
+                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_NO_BREAK_SPACE, 1);
+            }
+            nToken++;
+            zCsr += 2;
         } else {
 
             /* This block sets nThisText to the number of bytes (not
@@ -2316,7 +2332,7 @@ findZeroWidthSpace(const char* zText, const char* zEnd)
     zEnd -= 3;
 
     for (++zText; zText < zEnd; ++zText) {
-        if (   zText[0] == (char)0xe2
+        if (   zText[0] == (char)0xE2
             && zText[1] == (char)0x80
             && (zText[2] == (char)0x8C || zText[2] == (char)0x8D)) {
 

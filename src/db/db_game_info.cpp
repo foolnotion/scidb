@@ -261,7 +261,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 	m_subround		= 0;
 	m_termination	= termination::Unknown;
 
-	for (tag::ID tag = tags.findFirst(); tag < tag::ExtraTag; tag = tags.findNext(tag))
+	for (tag::ID tag = tags.findFirst(); tag <= tag::LastTag; tag = tags.findNext(tag))
 	{
 		switch (int(tag))
 		{

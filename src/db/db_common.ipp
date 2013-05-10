@@ -440,7 +440,8 @@ convertEcfToElo(unsigned ecf)
 
 namespace tag {
 
-inline bool isMandatory(ID tag) { return Event <= tag && tag <= Result; }
+inline bool isValid(ID tag)		{ return tag <= LastTag || (BughouseTag <= tag && tag < ExtraTag); }
+inline bool isMandatory(ID tag)	{ return Event <= tag && tag <= Result; }
 
 } // namespace tag
 

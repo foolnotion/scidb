@@ -470,6 +470,10 @@ namespace tag
 		RESERVED_77 = 77,
 		RESERVED_78 = 78,
 		RESERVED_79 = 79,
+		RESERVED_80 = 80,
+		RESERVED_81 = 81,
+		RESERVED_82 = 82,
+		RESERVED_83 = 83,
 
 		// BPGN (Bughouse)
 		WhiteA,					WhiteB,
@@ -478,7 +482,6 @@ namespace tag
 		WhiteANA,				WhiteBNA,
 		WhiteAType,				WhiteBType,
 		WhiteASex,				WhiteBSex,
-		WhiteAFideId,			WhiteBFideId,
 		WhiteAClock,			WhiteBClock,
 		WhiteAElo,				WhiteBElo,
 		WhiteARating,			WhiteBRating,
@@ -491,7 +494,6 @@ namespace tag
 		BlackANA,				BlackBNA,
 		BlackAType,				BlackBType,
 		BlackASex,				BlackBSex,
-		BlackAFideId,			BlackBFideId,
 		BlackAClock,			BlackBClock,
 		BlackAElo,				BlackBElo,
 		BlackARating,			BlackBRating,
@@ -499,12 +501,14 @@ namespace tag
 		BlackATeamCountry,	BlackBTeamCountry,
 
 		ExtraTag, // IMPORTANT NOTE: must have value <= TagSetSize
+		LastTag = Lag,
 		BughouseTag = WhiteA,
 	};
 
 	enum { TagSetSize = 128 };
 	typedef mstl::bitfield<uint128_t> TagSet;
 
+	bool isValid(ID tag);
 	bool isMandatory(ID tag);
 	bool isRatingTag(ID tag);
 	bool isWhiteRatingTag(ID tag);

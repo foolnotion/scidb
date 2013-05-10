@@ -834,7 +834,11 @@ proc UpdateLanguages {position languages} {
 	variable Vars
 
 	if {$position >= 9} { return }
-	if {$Vars(lang:set) eq $languages} { return }
+
+	if {$Vars(lang:set) eq $languages} {
+		set Vars(lang:set:$position) $Vars(lang:set)
+		return
+	}
 
 	if {[llength $Vars(lang:set:$position)]} {
 		foreach lang $languages {
@@ -2149,7 +2153,25 @@ proc PopupMenu {parent position} {
 			-state $state \
 			;
 
-		if {[::scidb::game::query database] eq $::scidb::scratchbaseName} {
+		lassign [::scidb::game::sink? $position] base variant index
+		set mainVariant [::util::toMainVariant $variant]
+		foreach side {white black} {
+			set info [scidb::db::fetch ${side}PlayerInfo $index $base $mainVariant]
+			set $side [lindex [split [lindex $info 0] ","] 0]
+		}
+		if {[string length $white] && [string length $black]} {
+			set title "$white-$black"
+		} else {
+			set title [lindex [::scidb::game::sink? $id] 2]
+		}
+		set cmd [list ::export::open $parent -base $base -variant $variant -index $index -title $title]
+		$menu add command \
+			-label " $::application::database::mc::FileExport..." \
+			-image $::icon::16x16::fileExport \
+			-compound left \
+			-command $cmd \
+			;
+		if {$base eq $::scidb::scratchbaseName} {
 			$menu add command \
 				-label " $::import::mc::ImportPgnGame..." \
 				-image $::icon::16x16::filetypePGN \

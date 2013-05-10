@@ -57,7 +57,7 @@ public:
 
 	format::Type format() const override;
 
-	void writeCommnentLine(mstl::string const& content);
+	void writeCommentLines(mstl::string const& content);
 
 	void writeTag(mstl::string const& name, mstl::string const& value) override;
 	void writePrecedingComment(Comment const& comment, MarkSet const& marks) override;

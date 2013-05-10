@@ -63,7 +63,7 @@ public:
 
 	void reset();
 
-	bool match(GameInfo const& info, Board const& board, Variant variant, bool isFinal);
+	bool match(GameInfo const& info, Board const& board, Variant variant, unsigned flags);
 	bool match(Board const& board, Move const& move, Variant variant);
 
 	char const* parse(Match& match, char const* s, Error& error);
@@ -84,7 +84,7 @@ private:
 	typedef mstl::vector<Position*> PositionList;
 	typedef mstl::function<void ()> CutFunc;
 
-	bool doMatch(GameInfo const& info, Board const& board, Variant variant, bool isFinal);
+	bool doMatch(GameInfo const& info, Board const& board, Variant variant, unsigned flags);
 	bool doMatch(Board const& board, Move const& move, Variant variant);
 
 	char const* adopt(Match& match, char const* s, Error& error);
@@ -105,7 +105,9 @@ private:
 	char const* parseDoubleCheck(Match& match, char const* s, Error& error);
 	char const* parseElo(Match& match, char const* s, Error& error);
 	char const* parseEndGame(Match& match, char const* s, Error& error);
+	char const* parseEndmost(Match& match, char const* s, Error& error);
 	char const* parseEnPassant(Match& match, char const* s, Error& error);
+	char const* parseEvaluation(Match& match, char const* s, Error& error);
 	char const* parseExchangeEvaluation(Match& match, char const* s, Error& error);
 	char const* parseExclude(Match& match, char const* s, Error& error);
 	char const* parseFen(Match& match, char const* s, Error& error);
@@ -117,6 +119,7 @@ private:
 	char const* parseFlipHorizontal(Match& match, char const* s, Error& error);
 	char const* parseFlipOffDiagonal(Match& match, char const* s, Error& error);
 	char const* parseFlipVertical(Match& match, char const* s, Error& error);
+	char const* parseFollowing(Match& match, char const* s, Error& error);
 	char const* parseGameIsOver(Match& match, char const* s, Error& error);
 	char const* parseGappedSequence(Match& match, char const* s, Error& error);
 	char const* parseHalfmoveClockLimit(Match& match, char const* s, Error& error);
@@ -128,6 +131,7 @@ private:
 	char const* parseMate(Match& match, char const* s, Error& error);
 	char const* parseMatingMaterial(Match& match, char const* s, Error& error);
 	char const* parseMaxSwapEvaluation(Match& match, char const* s, Error& error);
+	char const* parseMoveEvaluation(Match& match, char const* s, Error& error);
 	char const* parseMoveFrom(Match& match, char const* s, Error& error);
 	char const* parseMoveNumber(Match& match, char const* s, Error& error);
 	char const* parseMoveTo(Match& match, char const* s, Error& error);
@@ -148,9 +152,9 @@ private:
 	char const* parsePieceDrop(Match& match, char const* s, Error& error);
 	char const* parsePower(Match& match, char const* s, Error& error);
 	char const* parsePowerDifference(Match& match, char const* s, Error& error);
+	char const* parsePreceding(Match& match, char const* s, Error& error);
 	char const* parsePreTransformMatchCount(Match& match, char const* s, Error& error);
 	char const* parsePromote(Match& match, char const* s, Error& error);
-	char const* parseRating(Match& match, char const* s, Error& error);
 	char const* parseRay(Match& match, char const* s, Error& error);
 	char const* parseRayAttack(Match& match, char const* s, Error& error);
 	char const* parseRayDiagonal(Match& match, char const* s, Error& error);
@@ -172,6 +176,7 @@ private:
 	char const* parseSumRange(Match& match, char const* s, Error& error);
 	char const* parseTagMatch(Match& match, char const* s, Error& error);
 	char const* parseTerminal(Match& match, char const* s, Error& error);
+	char const* parseVariant(Match& match, char const* s, Error& error);
 	char const* parseVariations(Match& match, char const* s, Error& error);
 	char const* parseVariationsOnly(Match& match, char const* s, Error& error);
 	char const* parseWhiteCannotWin(Match& match, char const* s, Error& error);

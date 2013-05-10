@@ -33,6 +33,15 @@ namespace mstl { class string; }
 
 namespace cql {
 
+namespace flags
+{
+	enum
+	{
+		IsFinalPosition	= 1 << 0,
+		IsInsideVariation	= 1 << 1,
+	};
+};
+
 namespace error
 {
 	enum Type
@@ -46,6 +55,7 @@ namespace error
 		Pattern_Expected,
 		Integer_Expected,
 		Invalid_Square_Designator,
+		Invalid_Evaluation_Mode,
 		Positive_Integer_Expected,
 		Double_Quote_Expected,
 		Unterminated_String,
@@ -73,6 +83,8 @@ namespace error
 		Invalid_Promotion_Ranks,
 		Invalid_FICS_Position,
 		Invalid_IDN,
+		Invalid_Range_Argument,
+		Invalid_Evaluation_View,
 		Invalid_Special_Marker,
 		Position_Number_Expected,
 		Integer_Out_Of_Range,
@@ -85,6 +97,7 @@ namespace error
 		Position_List_Expected,
 		Keyword_Match_Or_Position_Expected,
 		Relation_List_Expected,
+		Position_List_Is_Not_Allowed,
 		Unmatched_Bracket,
 		Empty_Piece_Designator,
 		Invalid_Designator,
@@ -97,9 +110,31 @@ namespace error
 
 } // namespace error
 
-namespace country {
+namespace piece {
 
-db::country::Code lookupIso3166_2(mstl::string const& s); // lookup ISO 3166-2 country code
+	enum ID
+	{
+		WK = 1 << 0,
+		WQ = 1 << 1,
+		WR = 1 << 2,
+		WB = 1 << 3,
+		WN = 1 << 4,
+		WP = 1 << 5,
+
+		BK = 1 << 6,
+		BQ = 1 << 7,
+		BR = 1 << 8,
+		BB = 1 << 9,
+		BN = 1 << 10,
+		BP = 1 << 11,
+
+		E = 1 << 12,
+	};
+}
+
+namespace country
+{
+	db::country::Code lookupIso3166_2(mstl::string const& s); // lookup ISO 3166-2 country code
 
 } // namespace country
 

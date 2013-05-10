@@ -1208,7 +1208,12 @@ proc PopupMenu {parent x y {base ""}} {
 			-label " $mc::FileExport..." \
 			-image $::icon::16x16::fileExport \
 			-compound left \
-			-command [list ::export::open $parent $base $Vars(variant) $type $name 0] \
+			-command [list ::export::open $parent \
+							-base $base \
+							-variant $Vars(variant) \
+							-type $type \
+							-name $name \
+							-view 0] \
 			;
 		$menu add command \
 			-label " $mc::FileImport(db)..." \

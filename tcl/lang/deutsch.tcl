@@ -1602,6 +1602,7 @@
 ::export::mc::ExportDatabase				"Datenbank exportieren"
 ::export::mc::ExportDatabaseVariant		"Datenbank exportieren - Schachform %s"
 ::export::mc::ExportDatabaseTitle		"Datenbank '%s' exportieren"
+::export::mc::ExportCurrentGameTitle	"Aktuelle Partie exportieren"
 ::export::mc::ExportingDatabase			"Exportiere '%s' nach Datei '%s'"
 ::export::mc::Export							"Export"
 ::export::mc::NoGamesCopied				"Keine Partie exportiert"
