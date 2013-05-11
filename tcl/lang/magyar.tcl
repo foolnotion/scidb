@@ -1478,6 +1478,8 @@
 ::import::mc::DifferentEncoding			"A kiválasztott %src kódolás nem illeszkedik %dst fájl kódoláshoz."
 ::import::mc::DifferentEncodingDetails		"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
 ::import::mc::CannotDetectFigurineSet		"Nem sikerült felismerni egyetlen megfelelő bábukészletet sem."
+::import::mc::TryAgainWithEnglishSet		"Try again with English figurines?" ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
 ::import::mc::CheckImportResult			"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve: %s."
 ::import::mc::CheckImportResultDetail		"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 

@@ -51,6 +51,8 @@ set Rejected								"rejected"
 set DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
 set CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set."
+set TryAgainWithEnglishSet				"Try again with English figurines?"
+set TryAgainWithEnglishSetDetail		"It may be helpful to use English figurines, because this is standard in PGN."
 set CheckImportResult					"Please check whether the right figurine set is detected: %s."
 set CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
@@ -919,33 +921,45 @@ proc DoImport {position dlg} {
 			}
 		}
 
-		if {!$successfull} {
-			return [::dialog::error -parent $dlg -message $mc::CannotDetectFigurineSet]
-		}
-
-		if {[llength $found] >= 1} {
-			set currentCode [lindex $found 0]
-			set f $::figurines::langSet($currentCode)
-			set s ""
-			append s "[lindex $f 0]=$::mc::Piece(K), "
-			append s "[lindex $f 1]=$::mc::Piece(Q), "
-			append s "[lindex $f 2]=$::mc::Piece(R), "
-			append s "[lindex $f 3]=$::mc::Piece(B), "
-			append s "[lindex $f 4]=$::mc::Piece(K)"
-			if {[llength $found] > 1} {
-				::dialog::warning \
-					-parent $dlg \
-					-buttons {ok} \
-					-message [format $mc::CheckImportResult $s] \
-					-detail $mc::CheckImportResultDetail \
-					;
+		if {$successfull} {
+			if {[llength $found] >= 1} {
+				set currentCode [lindex $found 0]
+				set f $::figurines::langSet($currentCode)
+				set s ""
+				append s "[lindex $f 0]=$::mc::Piece(K), "
+				append s "[lindex $f 1]=$::mc::Piece(Q), "
+				append s "[lindex $f 2]=$::mc::Piece(R), "
+				append s "[lindex $f 3]=$::mc::Piece(B), "
+				append s "[lindex $f 4]=$::mc::Piece(K)"
+				if {[llength $found] > 1} {
+					::dialog::warning \
+						-parent $dlg \
+						-buttons {ok} \
+						-message [format $mc::CheckImportResult $s] \
+						-detail $mc::CheckImportResultDetail \
+						;
+				}
+			} else {
+				set currentCode en
 			}
-		} else {
-			set currentCode en
-		}
 
-		set i [lsearch -exact -index 0 $Priv($position:sets) $currentCode]
-		set figurine [lindex $Priv($position:sets) $i 2]
+			if {[llength $found] <= 1} {
+				set index [lsearch -exact -index 0 $Priv($position:sets) $currentCode]
+				$Priv($position:figurines) current [expr {$index + 1}]
+			}
+
+			set i [lsearch -exact -index 0 $Priv($position:sets) $currentCode]
+			set figurine [lindex $Priv($position:sets) $i 2]
+		} else {
+			set msg $mc::CannotDetectFigurineSet
+			append msg "\n\n"
+			append msg $mc::TryAgainWithEnglishSet
+			set detail $mc::TryAgainWithEnglishSetDetail
+			set reply [::dialog::question -parent $dlg -message $msg -detail $detail]
+			if {$reply == "no"} { return }
+			$Priv($position:figurines) current 1
+			set figurine [$Priv($position:figurines) get fig]
+		}
 	}
 
 	set state [::scidb::game::import \

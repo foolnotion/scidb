@@ -1475,6 +1475,8 @@
 ::import::mc::DifferentEncoding					"La codificación seleccinada %src no coincide con la codificación del archivo %dst."
 ::import::mc::DifferentEncodingDetails			"Recodificar la base de datos no funcionará más despué de esta acción."
 ::import::mc::CannotDetectFigurineSet			"No puede auto-detectarse un juego de piezas adecuado."
+::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?" ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
 ::import::mc::CheckImportResult					"Por favor revise si se ha detectado el juego de piezas correcto: %s."
 ::import::mc::CheckImportResultDetail			"En algunos casos la auto-detección falla debido a ambiguedades."
 

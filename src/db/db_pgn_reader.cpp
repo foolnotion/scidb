@@ -932,7 +932,7 @@ PgnReader::process(Progress& progress)
 					if (m_readMode == Text)
 					{
 						finishGame();
-						return 0;
+						return 1;
 					}
 
 					sendError(UnexpectedEndOfInput);

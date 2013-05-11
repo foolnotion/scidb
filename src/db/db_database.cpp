@@ -1193,11 +1193,11 @@ Database::importGame(Producer& producer, unsigned index)
 
 	m_codec->reset();
 	unsigned n = m_codec->importGames(producer, progress, index);
+	m_namebases.update();
 
 	if (n > 0)
 	{
 		m_lastChange = sys::time::timestamp();
-		m_namebases.update();
 		setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
 		m_statistic.add(*m_gameInfoList[index]);
 

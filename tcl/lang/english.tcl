@@ -1470,6 +1470,8 @@
 ::import::mc::DifferentEncoding					"Selected encoding %src does not match file encoding %dst."
 ::import::mc::DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
 ::import::mc::CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set."
+::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?"
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN."
 ::import::mc::CheckImportResult					"Please check whether the right figurine set is detected: %s."
 ::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 

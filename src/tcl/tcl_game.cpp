@@ -3106,11 +3106,11 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		mstl::string text(stringFromObj(objc, objv, 2));
 
-		tcl::PgnReader::ReadMode mode = tcl::PgnReader::File;
+		tcl::PgnReader::ReadMode mode = tcl::PgnReader::Text;
 		char const* searchTag = ::searchTag(text);
 		unsigned lineOffset = 0;
 
-		if (modification == tcl::PgnReader::Normalize && *searchTag != '[')
+		if (modification == tcl::PgnReader::Raw && *searchTag != '[')
 		{
 			text.insert(text.begin(),	"[Event  \"?\"]\n"
 												"[Site   \"?\"]\n"
@@ -3121,10 +3121,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												"[Result \"*\"]\n");
 
 			lineOffset = 7;
-		}
-		else if (*searchTag != '[')
-		{
-			mode = tcl::PgnReader::Text;
+			mode = tcl::PgnReader::File;
 		}
 
 		int position(intFromObj(objc, objv, 1));
