@@ -517,7 +517,7 @@ PgnReader::fatalError(Error code, Pos const& pos, mstl::string const& item)
 void
 PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 {
-	if (m_readMode == Text && code == UnexpectedEndOfInput)
+	if (m_readMode != File && code == UnexpectedEndOfInput)
 	{
 		putMove(true);
 		throw Termination();
@@ -759,7 +759,7 @@ PgnReader::process(Progress& progress)
 
 	try
 	{
-		Token		token			= m_readMode == Text ? kTag : searchTag();
+		Token		token			= m_readMode == Variation ? kTag : searchTag();
 		unsigned	streamSize	= m_stream.size();
 		unsigned	numGames		= estimateNumberOfGames(streamSize);
 		unsigned	frequency	= progress.frequency(numGames, 1000);
@@ -812,7 +812,7 @@ PgnReader::process(Progress& progress)
 				if ((m_variant = m_givenVariant) == variant::Antichess)
 					m_variant = variant::Suicide;
 
-				if (m_readMode == File)
+				if (m_readMode != Variation)
 				{
 					m_parsingTags = true;
 					readTags();
@@ -929,7 +929,7 @@ PgnReader::process(Progress& progress)
 
 				if (token == kEoi)
 				{
-					if (m_readMode == Text)
+					if (m_readMode != File)
 					{
 						finishGame();
 						return 1;
@@ -939,7 +939,7 @@ PgnReader::process(Progress& progress)
 				}
 				else if (token == kTag)
 				{
-					if (m_readMode == Text)
+					if (m_readMode != File)
 						sendError(UnexpectedTag, m_currPos);
 
 					if (m_currPos.column == 1)
@@ -3211,7 +3211,7 @@ PgnReader::putNag(nag::ID whiteNag, nag::ID blackNag)
 PgnReader::Token
 PgnReader::resultToken(result::ID result)
 {
-	if (m_readMode == Text)
+	if (m_readMode == Variation)
 		sendError(UnexpectedResultToken, m_prevPos);
 
 	m_result = result;

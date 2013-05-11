@@ -52,7 +52,7 @@ set DifferentEncoding					"Selected encoding %src does not match file encoding %
 set DifferentEncodingDetails			"Recoding of the database will not be successful anymore after this action."
 set CannotDetectFigurineSet			"Cannot auto-detect a suitable figurine set."
 set TryAgainWithEnglishSet				"Try again with English figurines?"
-set TryAgainWithEnglishSetDetail		"It may be helpful to use English figurines, because this is standard in PGN."
+set TryAgainWithEnglishSetDetail		"It may be helpful to use English figurines, because this is standard in PGN format."
 set CheckImportResult					"Please check whether the right figurine set is detected: %s."
 set CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
@@ -85,7 +85,7 @@ set UnknownSex								"Unknown sex (ignored)"
 set UnknownTermination					"Unknown termination reason"
 set UnknownMode							"Unknown mode"
 set RatingTooHigh							"Rating too high (ignored)"
-set EncodingFailed						"Encoding failed"
+set EncodingFailed						"Character decoding failed"
 set TooManyNags							"Too many NAG's (latter ignored)"
 set IllegalCastling						"Illegal castling"
 set IllegalMove							"Illegal move"
@@ -255,6 +255,7 @@ proc openEdit {parent position args} {
 	set Priv($position:varno) -1
 	set Priv($position:figurines) $fig
 	set Priv($position:variants) $var
+	set Priv($position:undo) 0
 	set Priv(showOnlyEncodingWarnings) 0
 
 	pack $top -expand yes -fill both
@@ -278,6 +279,7 @@ proc openEdit {parent position args} {
 	bind $dlg <Escape> [namespace code [list AskAbort $position $dlg.close]]
 
 	# editor bindings
+	set selectCmd [list $edit.text tag add sel 1.0 end]
 	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y]]
 	bind $edit.text <ButtonPress-3> [namespace code [list PopupMenu $edit $position %X %Y]]
 	bind $edit.text <<PasteSelection>> $pastecmd
@@ -288,6 +290,8 @@ proc openEdit {parent position args} {
 	bind $edit.text <Key-Tab> {+ break }
 	bind $edit.text <Shift-Tab> {after idle { focus [::tk_focusPrev %W] } }
 	bind $edit.text <Shift-Tab> {+ break }
+	bind $edit.text <Control-A> $selectCmd
+	bind $edit.text <Control-a> $selectCmd
 
 	Clear $position
 	SetFigurines $position
@@ -559,15 +563,84 @@ proc Import {parent base files msg encoding} {
 
 
 proc PopupMenu {edit position x y} {
+	variable Priv
+
 	set m $edit.menu
 	catch { destroy $m }
 	menu $m -tearoff 0
 	catch { wm attributes $m -type popup_menu }
-	$m add command -label $mc::Cut -command [list tk_textCut $edit.text]
-	$m add command -label $mc::Copy -command [list tk_textCopy $edit.text]
-	$m add command -label $mc::Paste -command [namespace code [list TextPaste $position $edit.text]]
-	$m add command -label $mc::SelectAll -command [list $edit.text tag add sel 1.0 end]
-	$m add command -label $mc::Clear -command [namespace code [list Clear $position]]
+
+	set sel ""
+	catch { ::tk::GetSelection $edit.text CLIPBOARD } sel
+	set accel "$::mc::Key(Ctrl)-"
+
+	if {[llength [$edit.text tag ranges sel]] == 0} { set state disabled } else { set state normal }
+	$m add command \
+		-label " $::mc::Copy" \
+		-accelerator ${accel}C \
+		-image $::icon::16x16::clipboardIn \
+		-compound left \
+		-command [list tk_textCopy $edit.text] \
+		-state $state \
+		;
+	$m add command \
+		-label " $::mc::Cut" \
+		-accelerator ${accel}X \
+		-image $::icon::16x16::clipboardIn \
+		-compound left \
+		-command [list tk_textCut $edit.text] \
+		-state $state \
+		;
+	if {[string length $sel]} { set state normal } else { set state disabled }
+	$m add command \
+		-label " $::mc::Paste" \
+		-accelerator ${accel}V \
+		-image $::icon::16x16::clipboardOut \
+		-compound left \
+		-command [namespace code [list TextPaste $position $edit.text]] \
+		;
+
+	set empty [expr {[$edit.text compare end <= 2.0]}]
+	if {!$empty || [$edit.text edit modified] || $Priv($position:undo)} {
+		$m add separator
+		if {$empty && ![$edit.text edit modified]} { set state disabled } else { set state normal }
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::undo \
+			-label $::mc::Undo \
+			-accelerator ${accel}Z \
+			-command [namespace code [list Undo $position]] \
+			-state $state \
+			;
+		if {$Priv($position:undo)} { set state normal } else { set state disabled }
+		$m add command \
+			-compound left \
+			-image $::icon::16x16::redo \
+			-label $::mc::Redo \
+			-accelerator ${accel}Y \
+			-command [namespace code [list Redo $position]] \
+			-state $state
+			;
+	}
+
+	if {!$empty} {
+		$m add separator
+		$m add command \
+			-label " $::mc::SelectAll" \
+			-accelerator ${accel}A \
+			-image $::icon::16x16::selectAll \
+			-compound left \
+			-command [list $edit.text tag add sel 1.0 end] \
+			-state $state \
+			;
+		$m add command \
+			-label " $::mc::Clear" \
+			-image $::icon::16x16::clear \
+			-compound left \
+			-command [namespace code [list Clear $position]] \
+			;
+	}
+
 	tk_popup $m $x $y
 }
 
@@ -652,7 +725,7 @@ proc TextPaste {position w} {
 			catch { $w delete sel.first sel.last }
 		}
 		$w insert insert [ConvertPastedText $position $w $sel]
-		$w edit reset
+		$w edit separator
 	}
 }
 
@@ -662,7 +735,7 @@ proc TextPasteSelection {position w x y} {
 		$w mark set insert [::tk::TextClosestGap $w $x $y]
 		if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
 			$w insert insert [ConvertPastedText $position $w $sel]
-			$w edit reset
+			$w edit separator
 			if {[$w cget -state] eq "normal"} { focus $w }
 		}
 #	}
@@ -825,7 +898,7 @@ proc Clear {position} {
 	set log $Priv($position:log)
 
 	$txt delete 1.0 end
-	$txt edit reset
+	$txt edit separator
 	$txt mark unset {*}[$txt mark names]
 	$log configure -state normal
 	$log delete 0 end
@@ -838,6 +911,24 @@ proc Clear {position} {
 	}
 
 	$log configure -state disabled -takefocus 0
+}
+
+
+proc Undo {position} {
+	variable Priv
+
+	if {![catch { $Priv($position:txt) edit undo }]} {
+		incr Priv($position:undo)
+	}
+}
+
+
+proc Redo {position} {
+	variable Priv
+
+	if {![catch { $Priv($position:txt) edit redo }]} {
+		decr Priv($position:undo)
+	}
 }
 
 
@@ -945,7 +1036,9 @@ proc DoImport {position dlg} {
 
 			if {[llength $found] <= 1} {
 				set index [lsearch -exact -index 0 $Priv($position:sets) $currentCode]
-				$Priv($position:figurines) current [expr {$index + 1}]
+				if {$currentCode ne "en"} {
+					$Priv($position:figurines) current [expr {$index + 1}]
+				}
 			}
 
 			set i [lsearch -exact -index 0 $Priv($position:sets) $currentCode]
@@ -957,7 +1050,8 @@ proc DoImport {position dlg} {
 			set detail $mc::TryAgainWithEnglishSetDetail
 			set reply [::dialog::question -parent $dlg -message $msg -detail $detail]
 			if {$reply == "no"} { return }
-			$Priv($position:figurines) current 1
+			set index [lsearch -exact -index 0 $Priv($position:sets) en]
+			$Priv($position:figurines) current $index
 			set figurine [$Priv($position:figurines) get fig]
 		}
 	}

@@ -438,11 +438,11 @@
 ::application::database::mc::UpgradeMessage					"Datenbank '%s' aktualisieren"
 ::application::database::mc::CompactMessage					"Datenbank '%s' kompaktieren"
 ::application::database::mc::CannotOpenFile					"Die Datei '%s' kann nicht geöffnet werden."
-::application::database::mc::EncodingFailed					"Die Enkodierung %s ist fehlgeschlagen."
+::application::database::mc::EncodingFailed					"Die Zeichendekodierung %s ist fehlgeschlagen."
 ::application::database::mc::DatabaseAlreadyOpen			"Die Datenbank '%s' ist bereits geöffnet."
 ::application::database::mc::Properties						"Eigenschaften"
 ::application::database::mc::Preload							"Preload"	;# ???
-::application::database::mc::MissingEncoding					"Fehlende Enkodierung %s (%s wurde statdessen verwendet)"
+::application::database::mc::MissingEncoding					"Fehlende Zeichenkodierung %s (%s wurde statdessen verwendet)"
 ::application::database::mc::DescriptionTooLarge			"Die Eingabe ist zu lang."
 ::application::database::mc::DescrTooLargeDetail			"Die Eingabe beinhaltet %d Zeichen, aber nur %d Zeichen sind erlaubt."
 ::application::database::mc::ClipbaseDescription			"Temporäre Datenbank, wird nicht auf der Festplatte gehalten."
@@ -721,7 +721,7 @@
 ::database::switcher::mc::Description						"Beschreibung"
 ::database::switcher::mc::Created							"Erstellt"
 ::database::switcher::mc::LastModified						"Letzte Änderung"
-::database::switcher::mc::Encoding							"Enkodierung"
+::database::switcher::mc::Encoding							"Zeichenkodierung"
 ::database::switcher::mc::YearRange							"Jahres-Spanne"
 ::database::switcher::mc::RatingRange						"Bewertungszahl-Spanne"
 ::database::switcher::mc::Result								"Ergebnis"
@@ -1377,16 +1377,16 @@
 ### encoding ###########################################################
 ::encoding::mc::AutoDetect				"autom. erkennen"
 
-::encoding::mc::Encoding				"Enkodierung"
+::encoding::mc::Encoding				"Zeichenkodierung"
 ::encoding::mc::Description			"Beschreibung"
 ::encoding::mc::Languages				"Sprachen (Schrift)"
 ::encoding::mc::UseAutoDetection		"Automatische Erkennung benutzen"
 
-::encoding::mc::ChooseEncodingTitle	"Enkodierung wählen"
+::encoding::mc::ChooseEncodingTitle	"Zeichenkodierung wählen"
 
-::encoding::mc::CurrentEncoding		"Aktuelle Enkodierung:"
-::encoding::mc::DefaultEncoding		"Standard-Enkodierung:"
-::encoding::mc::SystemEncoding		"System-Enkodierung:"
+::encoding::mc::CurrentEncoding		"Aktuelle Zeichenkodierung:"
+::encoding::mc::DefaultEncoding		"Standard-Zeichenkodierung:"
+::encoding::mc::SystemEncoding		"System-Zeichenkodierung:"
 
 ### setup ##############################################################
 ::setup::mc::Position(Chess960)	"Schach-960-Position"
@@ -1468,11 +1468,11 @@
 ::import::mc::Accepted								"akzeptiert"
 ::import::mc::Rejected								"zurückgewiesen"
 
-::import::mc::DifferentEncoding					"Die ausgewählte Enkodierung %src stimmt nicht mit der Dateienkodierung %dst überein."
+::import::mc::DifferentEncoding					"Die ausgewählte Zeichenkodierung %src stimmt nicht mit der Dateikodierung %dst überein."
 ::import::mc::DifferentEncodingDetails			"Eine Umkodierung wird danach nicht mehr erfolgreich sein."
 ::import::mc::CannotDetectFigurineSet			"Es konnte kein geeigneter Figurensatz ermittelt werden."
 ::import::mc::TryAgainWithEnglishSet			"Nochmal probieren mit dem englischen Figurensatz?"
-::import::mc::TryAgainWithEnglishSetDetail	"Es mag hilfreich sein den englischen Figurensatz zu verwenden, denn dies ist Standard in PGN."
+::import::mc::TryAgainWithEnglishSetDetail	"Es mag hilfreich sein den englischen Figurensatz zu verwenden, denn dies ist Standard im PGN-Format."
 ::import::mc::CheckImportResult					"Bitte prüfen ob der richtige Figurensatz ermittelt wurde: %s."
 ::import::mc::CheckImportResultDetail			"In seltenen Fällen scheitert die automatische Ermittlung aufgrund von Mehrdeutigkeiten."
 
@@ -1505,7 +1505,7 @@
 ::import::mc::UnknownTermination					"Unbekannter Spielbeendigungsgrund"
 ::import::mc::UnknownMode							"Unbekannter Spielmodus"
 ::import::mc::RatingTooHigh						"Zu große Wertungszahl (wird ignoriert)"
-::import::mc::EncodingFailed						"Die Enkodierung ist fehlgeschlagen"
+::import::mc::EncodingFailed						"Die Zeichendekodierung ist fehlgeschlagen"
 ::import::mc::TooManyNags							"Zuviele NAG's (die letzteren werden ignoriert)"
 ::import::mc::IllegalCastling						"Regelwidrige Rochade"
 ::import::mc::IllegalMove							"Regelwidriger Zug"
@@ -1553,7 +1553,7 @@
 ::export::mc::PageSetup						"&Seiteneinstellung"
 ::export::mc::DiagramSetup					"Dia&grammdruck"
 ::export::mc::StyleSetup					"St&ilauswahl"
-::export::mc::EncodingSetup				"&Enkodierung"
+::export::mc::EncodingSetup				"&Zeichenkodierung"
 ::export::mc::TagsSetup						"&Tags"
 ::export::mc::NotationSetup				"&Notation"
 ::export::mc::AnnotationSetup				"&Anmerkungen"
@@ -1611,7 +1611,7 @@
 ::export::mc::ExportedGames				"%s Partie(n) exportiert"
 ::export::mc::NoGamesForExport			"Keine Partie zum exportieren."
 ::export::mc::ResetDefaults				"Auf Standardwerte zurücksetzen"
-::export::mc::UnsupportedEncoding		"Die Enkodierung %s kann nicht für PDF-Dokumente benutzt werden. Wählen sie bitte eine alternative Enkodierung."
+::export::mc::UnsupportedEncoding		"Die Zeichenkodierung %s kann nicht für PDF-Dokumente benutzt werden. Wählen sie bitte eine alternative Zeichenkodierung."
 ::export::mc::DatabaseIsOpen				"Die Zieldatenbank '%s' ist geöffnet, das bedeutet das die Zieldatenbank geleert wird bevor der Export startet. Trotzdem den Exportvorgang fortsetzen?"
 ::export::mc::DatabaseIsOpenDetail		"Sollen die Partien stattdessen angehängt werden dann kann eine Drag&Drop-Operation im Datenbankumschalter verwendet werden."
 ::export::mc::ExportGamesFromTo			"Partien exportieren von '%src' nach '%dst'"
@@ -1689,7 +1689,7 @@
 ::export::mc::Option(pgn,append_mode_to_event_type)			"Modus an Ereignistyp anhängen"
 ::export::mc::Option(pgn,comment_to_html)							"Schreibe Kommentar im HTML-Format"
 ::export::mc::Option(pgn,exclude_games_with_illegal_moves)	"Partien mit regelwidrigen Zügen ausschliessen"
-::export::mc::Option(pgn,use_utf8_encoding)						"UTF-8 Enkodierung benutzen"
+::export::mc::Option(pgn,use_utf8_encoding)						"UTF-8 Zeichenkodierung benutzen"
 
 ### notation ###########################################################
 ::notation::mc::Notation		"Notation"
@@ -2309,7 +2309,7 @@
 ::fsbox::mc::Trash							"Müllkorb"
 ::fsbox::mc::Home								"Heimverzeichnis"
 
-::fsbox::mc::SelectEncoding				"Auswahl der Enkodierung für die Datenbank (öffnet einen Dialog)"
+::fsbox::mc::SelectEncoding				"Auswahl der Zeichenkodierung für die Datenbank (öffnet einen Dialog)"
 ::fsbox::mc::SelectWhichType				"Auswahl der anzuzeigenden Dateitypen"
 ::fsbox::mc::TimeFormat						"%d.%m.%Y %H:%M"
 

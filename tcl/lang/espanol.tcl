@@ -187,7 +187,7 @@
 ::util::mc::IOError(WriteFailed)				"operación de escritura fallida"
 ::util::mc::IOError(InvalidData)				"datos no válidos (archivo probablemente corrupto)" 
 ::util::mc::IOError(ReadError)				"error de lectura"
-::util::mc::IOError(EncodingFailed)			"no se puede escribir el nombre" 
+::util::mc::IOError(EncodingFailed)			"no se puede escribir el nombre"
 ::util::mc::IOError(MaxFileSizeExceeded)	"se alcanzó el tamaño máximo de archivo" 
 ::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
 
@@ -439,11 +439,11 @@
 ::application::database::mc::UpgradeMessage					"Actualizando Database '%s'"
 ::application::database::mc::CompactMessage					"Compactando base de datos '%s'" 
 ::application::database::mc::CannotOpenFile					"No se puede abrir el archivo '%s'."
-::application::database::mc::EncodingFailed					"Fallo en la codificación de %s."
+::application::database::mc::EncodingFailed					"Fallo en la codificación de %s." ;# "Character decoding %s failed."
 ::application::database::mc::DatabaseAlreadyOpen			"La Base '%s' ya está abierta."
 ::application::database::mc::Properties						"Propiedades"
 ::application::database::mc::Preload							"Precarga"
-::application::database::mc::MissingEncoding					"Codificación %s perdida (usar %s en su lugar)"
+::application::database::mc::MissingEncoding					"Codificación %s perdida (usar %s en su lugar)" ;# NEW "Missing character encoding %s (using %s instead)"
 ::application::database::mc::DescriptionTooLarge			"Descripción demasiado grande."
 ::application::database::mc::DescrTooLargeDetail			"La entrada contiene %d caracteres, pero sólo se permiten %d."
 ::application::database::mc::ClipbaseDescription			"Base temporal, no se guarda al disco."
@@ -1476,7 +1476,7 @@
 ::import::mc::DifferentEncodingDetails			"Recodificar la base de datos no funcionará más despué de esta acción."
 ::import::mc::CannotDetectFigurineSet			"No puede auto-detectarse un juego de piezas adecuado."
 ::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?" ;# NEW
-::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN format." ;# NEW
 ::import::mc::CheckImportResult					"Por favor revise si se ha detectado el juego de piezas correcto: %s."
 ::import::mc::CheckImportResultDetail			"En algunos casos la auto-detección falla debido a ambiguedades."
 
@@ -1509,7 +1509,7 @@
 ::import::mc::UnknownTermination					"Motivo de la terminación desconocido"
 ::import::mc::UnknownMode							"Modo desconocido"
 ::import::mc::RatingTooHigh						"Número de valuación demasiado alto (ignorado)"
-::import::mc::EncodingFailed						"Encoding failed"
+::import::mc::EncodingFailed						"Encoding failed" ;# NEW "Character decoding failed"
 ::import::mc::TooManyNags							"Demasiados NAG's (se ignorará el último)"
 ::import::mc::IllegalCastling						"Enroque ilegal"
 ::import::mc::IllegalMove							"Jugada ilegal"

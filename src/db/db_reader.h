@@ -42,8 +42,9 @@ public:
 
 	enum ReadMode
 	{
-		Text,
 		File,
+		Game,
+		Variation,
 	};
 
 	enum ResultMode

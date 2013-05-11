@@ -1229,7 +1229,6 @@ proc PopupMenu {parent} {
 	}
 
 	set sel ""
-	set selrange [$w tag ranges sel]
 	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
 		set sel [string map {"\n" "\n\u00b6"} $sel]
 	}
@@ -1344,10 +1343,19 @@ proc PopupMenu {parent} {
 		-command [namespace code EditRedo] \
 		-state $state \
 		;
+	if {[$Vars(widget:text) compare end = 1.0]} { set state disabled } else { set state enabled }
+	$m add command \
+		-compound left \
+		-image $::icon::16x16::selectAll \
+		-label " $::mc::SelectAll" \
+		-accelerator ${accel}A \
+		-command [list $Vars(widget:text) tag add sel 1.0 end] \
+		-state $state \
+		;
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::clear \
-		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
+		-label " $::mc::Clear" \
 		-command [namespace code Clear] \
 		;
 	$m add command \
@@ -2484,6 +2492,8 @@ bind Comment <Control-e>		{ comment::TextSetCursorExt %W {insert display lineend
 bind Comment <Control-f>		{ comment::TextSetCursorExt %W insert+1displayindices +1 }
 bind Comment <Control-n>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
 bind Comment <Control-p>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
+bind Comment <Control-A>		{ %W tag add sel 1.0 end }
+bind Comment <Control-a>		{ %W tag add sel 1.0 end }
 bind Comment <Meta-f>			{ comment::TextSetCursorExt %W [comment::TextNextWord %W insert] }
 bind Comment <Meta-greater>	{ comment::TextSetCursorExt %W end-1c }
 bind Comment <<Undo>>			{ comment::EditUndo }

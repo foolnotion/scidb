@@ -439,11 +439,11 @@
 ::application::database::mc::UpgradeMessage		"Adatbázis frissítése %s"
 ::application::database::mc::CompactMessage		"%s adatbázis tömörítése"
 ::application::database::mc::CannotOpenFile		"A fájl nem nyitható meg olvasásra: '%s'."
-::application::database::mc::EncodingFailed		"%s kódolása sikertelen."
+::application::database::mc::EncodingFailed		"%s kódolása sikertelen." ;# "Character decoding %s failed."
 ::application::database::mc::DatabaseAlreadyOpen	"Az '%s' adatbázis már meg van nyitva."
 ::application::database::mc::Properties			"Tulajdonságok"
 ::application::database::mc::Preload			"Előtöltés"
-::application::database::mc::MissingEncoding		"Hiányos kódolás %s (használd inkább %s-t)"
+::application::database::mc::MissingEncoding		"Hiányos kódolás %s (használd inkább %s-t)" ;# NEW "Missing character encoding %s (using %s instead)"
 ::application::database::mc::DescriptionTooLarge	"Túl hosszú leírás."
 ::application::database::mc::DescrTooLargeDetail	"A mező %d karaktert tartalmaz, de csak %d megengedett."
 ::application::database::mc::ClipbaseDescription	"Ideiglenes adatbázis, nincs elmentve a lemezre."
@@ -1479,7 +1479,7 @@
 ::import::mc::DifferentEncodingDetails		"Az adatbázis kódolásának megváltoztatása ez után a művelet után már nem lesz lehetséges." ;#?
 ::import::mc::CannotDetectFigurineSet		"Nem sikerült felismerni egyetlen megfelelő bábukészletet sem."
 ::import::mc::TryAgainWithEnglishSet		"Try again with English figurines?" ;# NEW
-::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN format." ;# NEW
 ::import::mc::CheckImportResult			"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve: %s."
 ::import::mc::CheckImportResultDetail		"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 
@@ -1512,7 +1512,7 @@
 ::import::mc::UnknownTermination		"Ismeretlen megszakítási ok"
 ::import::mc::UnknownMode			"Ismeretlen mód"
 ::import::mc::RatingTooHigh			"Túl magas érétkszám (kihagyva))"
-::import::mc::EncodingFailed			"Encoding failed"
+::import::mc::EncodingFailed			"Character decoding failed"
 ::import::mc::TooManyNags			"Túl sok NAG (a későbbiek kihagyva)"
 ::import::mc::IllegalCastling			"Szabálytalan sáncolás"
 ::import::mc::IllegalMove			"Szabálytalan lépés"

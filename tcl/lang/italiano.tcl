@@ -186,7 +186,7 @@
 ::util::mc::IOError(WriteFailed)				"operazione di scrittura fallita"
 ::util::mc::IOError(InvalidData)				"dato non valido (possibile corruzione file)"
 ::util::mc::IOError(ReadError)				"errore di lettura"
-::util::mc::IOError(EncodingFailed)			"non posso scrivere il file di namebase" ;#namebase?
+::util::mc::IOError(EncodingFailed)			"non posso scrivere il file di namebase"
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
 
@@ -438,11 +438,11 @@
 ::application::database::mc::UpgradeMessage					"Aggiornamento database '%s'"
 ::application::database::mc::CompactMessage					"Comprimendo il database '%s'"
 ::application::database::mc::CannotOpenFile					"Non è possibile aprire il file '%s'."
-::application::database::mc::EncodingFailed					"Codifica di %s fallita."
+::application::database::mc::EncodingFailed					"Codifica di %s fallita." ;# "Character decoding %s failed."
 ::application::database::mc::DatabaseAlreadyOpen			"Il database '%s' è già aperto."
 ::application::database::mc::Properties						"Proprietà"
 ::application::database::mc::Preload							"Preload"
-::application::database::mc::MissingEncoding					"Codifica %s mancante (uso %s)"
+::application::database::mc::MissingEncoding					"Codifica %s mancante (uso %s)" ;# NEW "Missing character encoding %s (using %s instead)"
 ::application::database::mc::DescriptionTooLarge			"La descrizione è troppo lunga."
 ::application::database::mc::DescrTooLargeDetail			"Il campo contiene %d caratteri, ma solo %d sono permessi."
 ::application::database::mc::ClipbaseDescription			"Database temporaneo, non è salvato sul disco"
@@ -1480,7 +1480,7 @@
 ::import::mc::DifferentEncodingDetails			"La ricodifica del database non avrà più successo dopo questa azione."
 ::import::mc::CannotDetectFigurineSet			"Impossibile auto-rilevare un set figurine adatto."
 ::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?" ;# NEW
-::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN format." ;# NEW
 ::import::mc::CheckImportResult					"Per favore controlla che un set figurine adatto sia stato rilevato: %s."
 ::import::mc::CheckImportResultDetail			"In rari casi l'auto-rilevamento fallisce per ambiguità."
 
@@ -1513,7 +1513,7 @@
 ::import::mc::UnknownTermination					"Ragione del termine sconosciuta"
 ::import::mc::UnknownMode							"Modalità sconosciuta"
 ::import::mc::RatingTooHigh						"Elo troppo alto (ignorato)"
-::import::mc::EncodingFailed						"Encoding failed"
+::import::mc::EncodingFailed						"Character decoding failed"
 ::import::mc::TooManyNags							"Troppi NAG (ultimo ignorato)"
 ::import::mc::IllegalCastling						"Arrocco illegale"
 ::import::mc::IllegalMove							"Mossa illegale"

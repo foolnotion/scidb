@@ -3059,7 +3059,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												cmd,
 												arg,
 												modification,
-												tcl::PgnReader::Text);
+												tcl::PgnReader::Variation);
 		VarConsumer				consumer(Scidb->game().currentBoard());
 		SingleProgress			progress;
 
@@ -3106,11 +3106,10 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	{
 		mstl::string text(stringFromObj(objc, objv, 2));
 
-		tcl::PgnReader::ReadMode mode = tcl::PgnReader::Text;
 		char const* searchTag = ::searchTag(text);
 		unsigned lineOffset = 0;
 
-		if (modification == tcl::PgnReader::Raw && *searchTag != '[')
+		if (modification == tcl::PgnReader::Normalize && *searchTag != '[')
 		{
 			text.insert(text.begin(),	"[Event  \"?\"]\n"
 												"[Site   \"?\"]\n"
@@ -3121,7 +3120,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												"[Result \"*\"]\n");
 
 			lineOffset = 7;
-			mode = tcl::PgnReader::File;
 		}
 
 		int position(intFromObj(objc, objv, 1));
@@ -3170,7 +3168,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											nullptr,
 											nullptr,
 											::db::Reader::Raw,
-											mode,
+											tcl::PgnReader::Game,
 											nullptr,
 											lineOffset,
 											true);
@@ -3195,7 +3193,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												cmd,
 												arg,
 												modification,
-												mode,
+												tcl::PgnReader::Game,
 												nullptr,
 												lineOffset,
 												trialMode);

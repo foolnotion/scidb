@@ -438,11 +438,11 @@
 ::application::database::mc::UpgradeMessage					"Upgraderar databas '%s'"
 ::application::database::mc::CompactMessage					"Komprimerar databas '%s'"
 ::application::database::mc::CannotOpenFile					"Kan inte öppna fil '%s'."
-::application::database::mc::EncodingFailed					"Kodning %s misslyckades."
+::application::database::mc::EncodingFailed					"Kodning %s misslyckades." ;# "Character decoding %s failed."
 ::application::database::mc::DatabaseAlreadyOpen			"Databasen '%s' är redan öppen."
 ::application::database::mc::Properties						"Egenskaper"
 ::application::database::mc::Preload							"Förinläsning"
-::application::database::mc::MissingEncoding					"Saknar kodning %s (använder %s istället)"
+::application::database::mc::MissingEncoding					"Saknar kodning %s (använder %s istället)" ;# NEW "Missing character encoding %s (using %s instead)"
 ::application::database::mc::DescriptionTooLarge			"Beskrivningen är för stor."
 ::application::database::mc::DescrTooLargeDetail			"Posten innehåller %d tecken, men bara %d tecken är tillåtet."
 ::application::database::mc::ClipbaseDescription			"Temporär databas, lagras inte på disk."
@@ -1479,7 +1479,7 @@
 ::import::mc::DifferentEncodingDetails			"Databasen kan därefter inte omkoderas."
 ::import::mc::CannotDetectFigurineSet			"Kan inte hitta någon passande figuruppsättning."
 ::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?" ;# NEW
-::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN." ;# NEW
+::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN format." ;# NEW
 ::import::mc::CheckImportResult					"Kontrollera om den riktiga figuruppsättningen hittats: %s."
 ::import::mc::CheckImportResultDetail			"In seldom cases the auto-detection fails due to ambiguities."
 
@@ -1512,7 +1512,7 @@
 ::import::mc::UnknownTermination					"Okänd avbrottsorsak"
 ::import::mc::UnknownMode							"Okänd modus"
 ::import::mc::RatingTooHigh						"Ratingtal för högt(ignorerad)"
-::import::mc::EncodingFailed						"Encoding failed"
+::import::mc::EncodingFailed						"Character decoding failed"
 ::import::mc::TooManyNags							"För många NAG's (latter ignored)"
 ::import::mc::IllegalCastling						"Otillåten rockad"
 ::import::mc::IllegalMove							"Ogiltigt drag"
