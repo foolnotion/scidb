@@ -80,9 +80,9 @@ private:
 	void decodeTextSection(MoveNode* node, util::ByteStream& text);
 	void decodeMark();
 
-	Byte const* skipTags(Byte const* p);
-	Byte const* skipEngines(Byte const* p);
-	Byte const* skipMoveInfo(Byte const* p);
+	Byte const* skipTags(Byte const* p, Byte const* eos);
+	Byte const* skipEngines(Byte const* p, Byte const* eos);
+	Byte const* skipMoveInfo(Byte const* p, Byte const* eos);
 
 	void skipVariations();
 

@@ -2,8 +2,6 @@ set Index {
   { A
     {
       {{Administrate database} {Database-Switcher.html} {Administration}}
-      {{Ajedrez Normal} {Chess-Variants.html} {}}
-      {{Antichess} {Chess-Variants.html} {}}
       {{Archivo de base de datos} {Database-Formats.html} {Database-Archive}}
     }
   }
@@ -15,11 +13,9 @@ set Index {
   }
   { C
     {
-      {{Chess variants} {Chess-Variants.html} {}}
       {{Clipbase} {Clipbase.html} {}}
       {{Compress} {Database-Switcher.html} {Compact}}
       {{Compress database} {Database-Switcher.html} {Compact}}
-      {{Crazyhouse} {Chess-Variants.html} {}}
       {{Código ECO} {ECO-Code.html} {}}
     }
   }
@@ -41,7 +37,6 @@ set Index {
   }
   { G
     {
-      {{Giveaway} {Chess-Variants.html} {}}
       {{Glifos de anotación numérica} {NAG-Comments.html} {}}
     }
   }
@@ -51,15 +46,11 @@ set Index {
       {{Intercambiador de bases de datos} {Database-Switcher.html} {}}
     }
   }
-  { L
-    {
-      {{Losers} {Chess-Variants.html} {}}
-    }
-  }
   { M
     {
       {{Marcadores} {Game-Flags.html} {}}
       {{Marcadores de partida} {Game-Flags.html} {}}
+      {{Mirar partidas} {Game-Browser.html} {}}
     }
   }
   { O
@@ -77,12 +68,6 @@ set Index {
   { S
     {
       {{Sitio Web} {Contact-Information.html} {}}
-      {{Suicidio} {Chess-Variants.html} {}}
-    }
-  }
-  { T
-    {
-      {{Three-check} {Chess-Variants.html} {}}
     }
   }
   { V

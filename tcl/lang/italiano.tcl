@@ -479,6 +479,7 @@
 ::application::database::mc::CompactionRecommended			"Si raccomanda di comprimere il database."
 ::application::database::mc::SearchPGNTags					"Ricerca tag PNG"
 ::application::database::mc::SelectSuperfluousTags			"Seleziona tag superflui:"
+::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database." ;# NEW
 
 ::application::database::mc::T_Unspecific						"Non specificato"
 ::application::database::mc::T_Temporary						"Temporaneo"
@@ -831,7 +832,7 @@
 
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Personalizza l'editor"
-::pgn::setup::mc::Configure(browser)			"Personalizza il testo in output"
+::pgn::setup::mc::Configure(browser)			"Personalizza il testo in output" ;# NEW "Customize Text Display"
 ::pgn::setup::mc::TakeOver(editor)				"Imposta configurazione dallo Sfoglia Partite"
 ::pgn::setup::mc::TakeOver(browser)				"Imposta configurazione dall'Editor Partite"
 ::pgn::setup::mc::Pixel								"pixel"
@@ -1840,6 +1841,8 @@
 ::game::mc::VariantHasChanged				"La partita non può essere aperta perché la variante del database è cambiata ed è differente dalla variante della partita."
 ::game::mc::RemoveGameFromHistory		"Rimuovi partita dalla storia?"
 ::game::mc::GameNumberDoesNotExist		"Game %number does not exist in '%base'."
+::game::mc::ReallyReplaceGame				"It seems that the actual game #%s is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?" ;# NEW
+::game::mc::ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action." ;# NEW
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Tutte le lingue"

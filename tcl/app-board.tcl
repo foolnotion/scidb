@@ -214,24 +214,24 @@ proc build {w width height} {
 		-command [namespace code Apply] \
 		;
 
-	set Vars(game:next) [::toolbar::add $tbGame button \
-		-image $::icon::toolbarNext \
-		-command [namespace code [list LoadGame(any) next]] \
-		-state disabled \
-	]
 	set Vars(game:prev) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarPrev \
 		-command [namespace code [list LoadGame(any) prev]] \
 		-state disabled \
 	]
-	set Vars(game:last) [::toolbar::add $tbGame button \
-		-image $::icon::toolbarBack \
-		-command [namespace code [list LoadGame(any) last]] \
+	set Vars(game:next) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarNext \
+		-command [namespace code [list LoadGame(any) next]] \
 		-state disabled \
 	]
 	set Vars(game:first) [::toolbar::add $tbGame button \
 		-image $::icon::toolbarFront \
 		-command [namespace code [list LoadGame(any) first]] \
+		-state disabled \
+	]
+	set Vars(game:last) [::toolbar::add $tbGame button \
+		-image $::icon::toolbarBack \
+		-command [namespace code [list LoadGame(any) last]] \
 		-state disabled \
 	]
 	set Vars(game:view) [::toolbar::add $tbGame button \
@@ -1334,14 +1334,12 @@ proc UpdateControls {} {
 
 
 proc GameSwitched {position} {
-	variable ::scidb::scratchbaseName
 	variable Vars
 
 	# reset if position is 9 (all games closed)
 
 	set variant [::scidb::game::query $position mainvariant?]
 	set base [lindex [::scidb::game::link?] 0]
-	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
 	set Vars(variant) $variant
 
 	set view [::scidb::game::view $position id]
@@ -1352,7 +1350,7 @@ proc GameSwitched {position} {
 		Subscribe $position $base $variant
 	}
 
-	::toolbar::childconfigure $Vars(crossTable) -state $state
+	UpdateCrossTableButton
 	UpdateGameControls $position
 	UpdateGameButtonState(list) $position
 	UpdateGameButtonState(base) [::scidb::db::get name] [::scidb::app::variant]
@@ -1381,6 +1379,17 @@ proc UpdateInfo {_ base variant} {
 proc DatabaseSwitched {base variant} {
 	UpdateGameButtonState(base) $base $variant
 	UpdateSaveButton
+	UpdateCrossTableButton
+}
+
+
+proc UpdateCrossTableButton {} {
+	variable ::scidb::scratchbaseName
+	variable Vars
+
+	set base [lindex [::scidb::game::sink?] 0]
+	if {$base eq $scratchbaseName} { set state disabled } else { set state normal }
+	::toolbar::childconfigure $Vars(crossTable) -state $state
 }
 
 

@@ -18,12 +18,12 @@
 BEGIN
 <box>
   <table>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>King</key>  </td><td>=</td><td>&King;  </td></tr>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>Queen</key> </td><td>=</td><td>&Queen; </td></tr>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>Rook</key>  </td><td>=</td><td>&Rook;  </td></tr>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>Bishop</key></td><td>=</td><td>&Bishop;</td></tr>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>Knight</key></td><td>=</td><td>&Knight;</td></tr>
-    <tr><td><key>Ctrl</key> <key>Shift</key> <key>Pawn</key>  </td><td>=</td><td>&Pawn;  </td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>King</key>  </td><td>=</td><td>&King;  </td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>Queen</key> </td><td>=</td><td>&Queen; </td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>Rook</key>  </td><td>=</td><td>&Rook;  </td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>Bishop</key></td><td>=</td><td>&Bishop;</td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>Knight</key></td><td>=</td><td>&Knight;</td></tr>
+    <tr><td><key>Ctrl</key>+<key>Shift</key>+<key>Pawn</key>  </td><td>=</td><td>&Pawn;  </td></tr>
   </table>
 </box>
 END

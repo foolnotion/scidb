@@ -32,26 +32,37 @@ Anmerkungen, Kommentare und Untervarianten. Der Browser eignet
 sich insbesondere zum Sichten einer Partienliste.
 </p>
 
+<ul>
+  <li><a href="#head">Der Partiekopf</a></li>
+  <li><a href="#data">Das Textfenster</a></li>
+  <li><a href="#admin">Funktionen und Einstellungen</a></li>
+</ul>
+
+<h2 id="head">Der Partiekopf</h2>
+
 <p>
 Der Partienkopf enthält drei Schaltflächen: das Ereignis und die
 Spielernamen. Durch Klicken und Halten der mittleren Maustaste auf
-einer Schaltfläche wird eine Informationsbox angezeigt. Durch
-Anklicken eines Spielernamens wird die Karteikarte dieses Spielers
-geöffnet.
+einer hervorgehobenen Schaltfläche wird eine Informationsbox angezeigt.
+Durch Anklicken eines hervorgehobenen Spielernamens wird die Karteikarte
+dieses Spielers geöffnet.
 </p>
 
 <p>
-Wechselt die Farbe des Partienkopfs von blau auf rot, so signalisiert
+Wechselt die Farbe des Partienkopfs von blau auf rot so signalisiert
 dies, daß die vorliegende Partie zwischenzeitlich in der Datenbank
-geändert wurde. Sie kann erneut geladen werden, um die aktuelle Partie
+geändert wurde. Sie kann erneut geladen werden um die aktuelle Partie
 zu sehen (<see/> <a href="#ReloadGame">%::browser::mc::ReloadGame%</a>
-im kontextsensitiven Menü).
+im kontextsensitiven Menü), sofern die Ursprungsdatenbank noch geöffnet ist.
 </p>
+
+<h2 id="data">Das Textfenster</h2>
 
 <p>
 Wird der Mauszeiger ausserhalb des Textfensters (mit den Partiezügen)
 positioniert, aber noch innerhalb des Dialogs, kann das Mausrad zum
-Vorspielen der Züge eingesetzt werden.
+Vorspielen der Züge eingesetzt werden. Durch Klick auf den mit dem
+Cursor hervorgehobenen Zug wird zu dieser Position gewechselt.
 </p>
 
 <p>
@@ -60,6 +71,8 @@ wird die zugehörige Brettstellung angezeigt. Wird gleichzeitig
 <key>Shift</key> gehalten während des Klicks, so wird nur die
 Bauernstruktur gezeigt.
 </p>
+
+<h2 id="admin">Funktionen und Einstellungen</h2>
 
 <p>
 Der Browser bietet folgendes kontextsensitives Menü:
@@ -72,15 +85,25 @@ Der Browser bietet folgendes kontextsensitives Menü:
 Lade die aktuelle Partie in den Partieneditor. Die aktuelle Partie
 im Editor wird durch diese Partie ersetzt, sofern sie nicht gesperrt
 oder modifiziert ist, andernfalls wird eine neue Partie im Editor
-geöffnet.
+geöffnet. Dieser Menüpunkt steht nicht zur Verfügung wenn die
+Ursprungsdatenbank geschlossen wurde.
+</p>
+
+<p>
+<menuitem>%::browser::mc::MergeGame%</menuitem>
+Einfügen dieser Partie in die derzeitig geöffnetete Partie des Partieneditors.
+Dieser Menüpunkt steht nicht zur Verfügung wenn die Ursprungsdatenbank
+geschlossen wurde.
 </p>
 
 <p id="ReloadGame">
 <menuitem>%::browser::mc::ReloadGame%</menuitem>
 Aktualisiert die aktuelle Partie durch erneutes Laden. Dieser Menüpunkt
-isr nur dann aktiv, wenn die vorliegende Partie zwischenzeitlich in der
+ist nur dann aktiv, wenn die vorliegende Partie zwischenzeitlich in der
 Datenbank geändert wurde. Das eine veränderte Partie in der Datenbank
 vorliegt wird durch einen roten Partienkopf signalisiert (sonst blau).
+Wird die Ursprungsdatenbank geschlossen, dann steht dieser Menüpunkt
+nicht mehr zur Verfügung.
 </p>
 
 <p>

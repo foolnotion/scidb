@@ -478,6 +478,7 @@
 ::application::database::mc::CompactionRecommended			"It is recommended to compact the database."
 ::application::database::mc::SearchPGNTags					"Searching for PGN tags"
 ::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:"
+::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database."
 
 ::application::database::mc::T_Unspecific						"Unspecific"
 ::application::database::mc::T_Temporary						"Temporary"
@@ -828,7 +829,7 @@
 
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Customize Editor"
-::pgn::setup::mc::Configure(browser)			"Customize Text Output"
+::pgn::setup::mc::Configure(browser)			"Customize Text Display"
 ::pgn::setup::mc::TakeOver(editor)				"Adopt settings from Game Browser"
 ::pgn::setup::mc::TakeOver(browser)				"Adopt settings from Game Editor"
 ::pgn::setup::mc::Pixel								"pixel"
@@ -1831,6 +1832,8 @@
 ::game::mc::VariantHasChanged				"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
 ::game::mc::RemoveGameFromHistory		"Remove game from history?"
 ::game::mc::GameNumberDoesNotExist		"Game %number does not exist in '%base'."
+::game::mc::ReallyReplaceGame				"It seems that the actual game #%s is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
+::game::mc::ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"All languages"

@@ -114,7 +114,7 @@ public:
 	static Type type(unsigned char firstByte);
 	static unsigned length(unsigned char firstByte);
 	static void skip(util::ByteStream& strm);
-	static unsigned char const* skip(unsigned char const* strm);
+	static unsigned char const* skip(unsigned char const* strm, unsigned char const* eos);
 
 private:
 

@@ -84,7 +84,7 @@ public:
 	void encode(util::ByteStream& strm) const;
 
 	static void skip(util::ByteStream& strm);
-	static unsigned char const* skip(unsigned char const* stream);
+	static unsigned char const* skip(unsigned char const* stream, unsigned char const* eos);
 	static bool isMark(Byte firstByte);
 
 	void dump();

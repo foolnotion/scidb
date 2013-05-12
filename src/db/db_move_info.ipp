@@ -176,15 +176,6 @@ MoveInfo::isMoveInfo(unsigned char firstByte)
 	return firstByte & 0x80;
 }
 
-
-inline
-unsigned char const*
-MoveInfo::skip(unsigned char const* strm)
-{
-	M_REQUIRE(isMoveInfo(*strm));
-	return strm + length(*strm);
-}
-
 } // namespace db
 
 // vi:set ts=3 sw=3:

@@ -81,7 +81,7 @@ private:
 
 	Byte const* skipTags(Byte const* p);
 	Byte const* skipEngines(Byte const* p);
-	Byte const* skipMoveInfo(Byte const* p);
+	Byte const* skipMoveInfo(Byte const* p, Byte const* eos);
 
 	void skipVariations();
 

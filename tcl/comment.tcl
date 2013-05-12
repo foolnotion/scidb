@@ -168,6 +168,7 @@ proc open {parent pos lang} {
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
 	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
 	bind $top.text <Any-Button>		+[list ::tooltip::tooltip hide]
+	bind $top.text <<Modified>>		 [namespace code [list Modified $top.text]]
 
 	set butts [ttk::frame $top.buttons]
 	ttk::button $butts.symbol \
@@ -189,7 +190,8 @@ proc open {parent pos lang} {
 		-command [namespace code [list Revert $dlg]] \
 		;
 	set Vars(lang:label) [LanguageName]
-	set Vars(widget:label) $butts.lang
+	set Vars(widget:lang) $butts.lang
+	set Vars(widget:revert) $butts.revert
 	ttk::label $butts.lang \
 		-compound left \
 		-textvar [namespace current]::Vars(lang:label) \
@@ -402,6 +404,7 @@ proc Apply {} {
 	variable Vars
 
 	Accept
+	$Vars(widget:revert) configure -state disabled
 	focus $Vars(widget:text)
 }
 
@@ -456,7 +459,7 @@ proc Update {{setup 1}} {
 
 	foreach entry $Vars(content) {
 		lassign $entry lang comment
-		SetupComment $lang $comment
+		SetupComment $lang $comment $setup
 		if {$setup && $lang eq $Vars(lang)} {
 			if {[string length $lang] == 0} { set lang xx }
 			SetUndoPoint $w $lang
@@ -467,20 +470,20 @@ proc Update {{setup 1}} {
 }
 
 
-proc SetupComment {lang comment} {
+proc SetupComment {lang comment {setup 0}} {
 	variable Vars
 
 	if {$lang eq ""} { set lang xx }
 	set Vars(content:$lang) $comment
 	if {$lang eq $Vars(lang)} {
 		if {[info exists Vars(content:$lang)]} {
-			InsertComment $lang $Vars(content:$lang)
+			InsertComment $lang $Vars(content:$lang) $setup
 		}
 	}
 }
 
 
-proc InsertComment {lang content} {
+proc InsertComment {lang content {setup 0}} {
 	variable Vars
 
 	set flags 0
@@ -515,6 +518,14 @@ proc InsertComment {lang content} {
 			+underline	{ set underline 1 }
 			-underline	{ set underline 0 }
 		}
+	}
+
+	if {$setup} {
+		set Vars(dump:$lang) [ParseDump [$Vars(widget:text) dump -tag -text 1.0 end]]
+		$Vars(widget:revert) configure -state disabled
+puts "setup"
+	} else {
+		Modified $w
 	}
 }
 
@@ -723,6 +734,23 @@ proc ParseDump {dump} {
 }
 
 
+proc Modified {w} {
+	variable Vars
+
+	$w edit modified no
+	set lang $Vars(lang)
+	if {![info exists Vars(content:$lang)]} { return }
+
+	if {[string length $Vars(content:$lang)] == 0} {
+		return [$Vars(widget:revert) configure -state disabled]
+	}
+
+	set content [DumpToComment [$Vars(widget:text) dump -tag -text 1.0 end]]
+	if {$Vars(content:$lang) ne $content} { set state normal } else { set state disabled }
+	$Vars(widget:revert) configure -state $state
+}
+
+
 proc SetUndoPoint {w {lang {}}} {
 	variable Vars
 
@@ -850,7 +878,7 @@ proc SwitchLanguage {lang} {
 	set Vars(content) [ParseContent $Vars(lang)]
 	set Vars(lang) $lang
 	set Vars(lang:label) [LanguageName]
-	$Vars(widget:label) configure -image $::country::icon::flag([::mc::countryForLang $Vars(lang)])
+	$Vars(widget:lang) configure -image $::country::icon::flag([::mc::countryForLang $Vars(lang)])
 	Update 0
 }
 
@@ -975,7 +1003,17 @@ proc DumpToComment {dump} {
 		}
 	}
 
-	return [string map {\u00b6 ""} $content]
+	set content [string map {\u00b6 ""} $content]
+
+	# normalize content
+	set newContent "{xx {"
+	append newContent $content
+	append newContent "}}"
+	set newContent [::scidb::misc::xml fromList $newContent]
+	set newContent [::scidb::misc::xml toList $newContent]
+	set content [lindex $newContent 0 1]
+
+	return $content
 }
 
 
@@ -1343,7 +1381,7 @@ proc PopupMenu {parent} {
 		-command [namespace code EditRedo] \
 		-state $state \
 		;
-	if {[$Vars(widget:text) compare end = 1.0]} { set state disabled } else { set state enabled }
+	if {[::widget::textIsEmpty? $Vars(widget:text)]} { set state disabled } else { set state normal }
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::selectAll \
@@ -1355,14 +1393,16 @@ proc PopupMenu {parent} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::clear \
-		-label " $::mc::Clear" \
+		-label " [::mc::stripAmpersand $::widget::mc::Clear]" \
 		-command [namespace code Clear] \
+		-state $state \
 		;
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::reset \
 		-label " [::mc::stripAmpersand $::widget::mc::Revert]" \
 		-command [namespace code [list Revert [winfo toplevel $parent]]] \
+		-state [$Vars(widget:revert) cget -state] \
 		;
 	
 	if {[llength $Vars(langSet)]} { set state normal } else { set state disabled }
@@ -1802,6 +1842,8 @@ proc ChangeFormat {format {toggle no}} {
 			}
 		}
 	}
+
+	Modified $Vars(widget:text)
 }
 
 
@@ -2104,16 +2146,7 @@ proc TextPasteSelection {w x y} {
 	$w mark set insert [::tk::TextClosestGap $w $x $y]
 
 	if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
-		set oldSeparator [$w cget -autoseparators]
-		if {$oldSeparator} {
-			$w configure -autoseparators 0
-			$w edit separator
-		}
 		PasteText $w $sel
-		if {$oldSeparator} {
-			$w edit separator
-			$w configure -autoseparators 1
-		}
 	}
 
 	if {[$w cget -state] eq "normal"} {

@@ -63,6 +63,8 @@ set GameDecodingChangedDetail	"Probably you have opened the database with the wr
 set VariantHasChanged			"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
 set RemoveGameFromHistory		"Remove game from history?"
 set GameNumberDoesNotExist		"Game %number does not exist in '%base'."
+set ReallyReplaceGame			"It seems that the actual game #%s is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
+set ReallyReplaceGameDetail	"It is recommended to have a look on game #%s before doing this action."
 
 } ;# namespace mc
 
@@ -265,6 +267,20 @@ proc new {parent args} {
 	UpdateHistoryEntry $pos $base $variant $tags
 
 	return $pos
+}
+
+
+proc verify {parent position number} {
+	variable ::scidb::scratchbaseName
+
+	set sink [lindex [::scidb::game::link? $position] 0]
+	if {$sink eq $scratchbaseName && ![::scidb::game::verify $position]} {
+		set msg [format $mc::ReallyReplaceGame $number]
+		set detail [format $mc::ReallyReplaceGameDetail $number]
+		return [::dialog::question -parent $parent -message $msg -detail $detail -default no]
+	}
+
+	return yes
 }
 
 
@@ -714,12 +730,13 @@ proc backup {} {
 			&& [::scidb::game::query $i modified?]
 			&& ![::scidb::game::query $i empty?]} {
 			lassign [lindex $List $i] time _ _ key crc _
+			lassign [::scidb::game::link? $i] _ _ _ crcIndex crcMoves
 			set filename [file join $::scidb::dir::backup game-$i.pgn]
 			set comment [lindex $Header 0]
 			append comment "\n"
 			append comment [lindex $Header 1]
 			append comment "\n"
-			append comment [list $time $key $crc]
+			append comment [list $time $key $crc [list $crcIndex $crcMoves]]
 			::scidb::game::export $filename -comment $comment -position $i
 		}
 	}
@@ -760,16 +777,17 @@ proc recover {} {
 					|| ![regexp {Version ([0-9]+\.[0-9]+)} $line2 _ version]
 					|| $version != "1.0"
 					|| [catch { set length [llength $line3] }]
-					|| $length != 3
+					|| $length != 4
 					|| [llength [lindex $line3 1]] != 4
-					|| [llength [lindex $line3 2]] != 2} {
+					|| [llength [lindex $line3 2]] != 2
+					|| [llength [lindex $line3 3]] != 2} {
 					::dialog::error \
 						-parent .application \
 						-message [format $mc::CorruptedHeader $file] \
 						-detail [format $mc::RenamedFile $file] \
 						;
 				} else {
-					lassign $line3 time key crc
+					lassign $line3 time key crc crcLink
 					lassign $key base _ index variant
 					set Current(file) $file
 					set Current(key) $key
@@ -786,7 +804,7 @@ proc recover {} {
 						;
 					Update _ $count
 					set tags [lindex $List $count 5]
-					::scidb::game::sink $count $base $index
+					::scidb::game::sink $count $base $index {*}$crcLink
 					::application::pgn::add $count $base $variant $tags
 					::application::pgn::setModified $count
 					::scidb::game::modified $count -irreversible yes

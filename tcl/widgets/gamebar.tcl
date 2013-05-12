@@ -381,22 +381,15 @@ proc insert {gamebar at id tags} {
 
 		$gamebar bind $tag <Enter>					[namespace code [list EnterFlag $gamebar $id $side]]
 		$gamebar bind $tag <Leave>					[namespace code [list LeaveFlag $gamebar $id]]
-		$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowPlayerInfo $gamebar $id $side]]
-		$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HidePlayerInfo $gamebar $id $side]]
-		$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupMenu $gamebar]]
+		$gamebar bind $tag <ButtonPress-2>		[namespace code [list ShowTags $gamebar $id]]
+		$gamebar bind $tag <ButtonRelease-2>	[namespace code [list HideTags $gamebar]]
+		$gamebar bind $tag <ButtonPress-3>		[namespace code [list PopupMenu $gamebar $id]]
 	}
-
-	set tag ${side}CountryInput${id}
-
-	$gamebar bind $tag <Enter> [namespace code [list EnterFlag $gamebar $id $side]]
-	$gamebar bind $tag <Leave> [namespace code [list LeaveFlag $gamebar $id]]
-	$gamebar bind $tag <ButtonPress-3> [namespace code [list PopupMenu $gamebar]]
 
 	$gamebar bind close:input$id <ButtonPress-1> [namespace code [list Press $gamebar $id close:]]
 	$gamebar bind close:input$id <ButtonRelease-1> [namespace code [list Release $gamebar $id close:]]
 	$gamebar bind close:input$id <ButtonPress-2> [namespace code [list ShowTags $gamebar $id]]
 	$gamebar bind close:input$id <ButtonRelease-2> [namespace code [list HideTags $gamebar]]
-#	$gamebar bind close:input$id <ButtonPress-3> [namespace code [list PopupMenu $gamebar $id]]
 
 	if {$id ne "-1"} {
 		$gamebar bind close:input$id <Enter> [namespace code [list Enter $gamebar $id close:]]
@@ -883,7 +876,11 @@ proc ShowTags {gamebar id} {
 	set bg [$f cget -background]
 
 	lassign [::scidb::game::link? $id] base variant number
+	set sink [lindex [::scidb::game::sink? $id] 0]
+
 	if {$base ne $scratchbaseName} {
+		tk::frame $f.fram -background $bg
+		ttk::separator $f.sep
 		if {$base eq $clipbaseName} {
 			set name $T_Clipbase
 		} else {
@@ -891,10 +888,16 @@ proc ShowTags {gamebar id} {
 		}
 		append name " (#[expr {$number + 1}])"
 		if {[::scidb::game::query $id modified?]} { set fg darkred } else { set fg black }
-		tk::label $f.nhdr -text $name -background $bg -foreground $fg -font $Specs(bold:$gamebar)
-		grid $f.nhdr -row 1 -column 1 -columnspan 3 -sticky wn
-		ttk::separator $f.sep
-		grid $f.sep -row 2 -column 1 -columnspan 3 -sticky ew
+		if {$sink eq $scratchbaseName} {
+			tk::label $f.fram.link -text "\uf08e" -background $bg -foreground $fg
+			set size [font configure [$f.fram.link cget -font] -size]
+			$f.fram.link configure -font [list FontAwesome $size bold]
+			grid $f.fram.link -row 1 -column 1 -sticky e
+		}
+		tk::label $f.fram.nhdr -text $name -background $bg -foreground $fg -font $Specs(bold:$gamebar)
+		grid $f.fram.nhdr -row 1 -column 2 -sticky e
+		grid $f.fram -row 1 -column 1 -columnspan 3 -sticky ew
+		grid $f.sep  -row 2 -column 1 -columnspan 3 -sticky ew
 	}
 
 	set row 3
@@ -1367,12 +1370,13 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			}
 
 			set name [::util::databaseName $base]
+			set number [expr {$index + 1}]
 
 			$m add command \
 				-label " [format $mc::ReplaceGame $name]" \
 				-image $::icon::16x16::save \
 				-compound left \
-				-command [list ::dialog::save::open $parent $base $variant $position [expr {$index + 1}]] \
+				-command [namespace code [list ReplaceGame $parent $base $variant $position $number]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-game)" \
 				;
@@ -1382,7 +1386,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 				-label " [format $mc::ReplaceMoves $name]" \
 				-image $::icon::16x16::save \
 				-compound left \
-				-command [list ::application::pgn::replaceMoves $parent] \
+				-command [namespace code [list ReplaceMoves $parent $position $number]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-moves)" \
 				;
@@ -1529,6 +1533,20 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-compound left \
 			-command ::game::clearHistory \
 			;
+	}
+}
+
+
+proc ReplaceGame {parent base variant position number} {
+	if {[::game::verify $parent $position $number]} {
+		::dialog::save::open $parent $base $variant $position $number
+	}
+}
+
+
+proc ReplaceMoves {parent position number} {
+	if {[::game::verify $parent $position $number]} {
+		::application::pgn::replaceMoves $parent
 	}
 }
 
@@ -1741,6 +1759,13 @@ proc CheckOkButton {dlg max value valid} {
 }
 
 
+proc GetSource {id} {
+	lassign [::scidb::game::sink? $id] base variant index
+	set variant [::util::toMainVariant $variant]
+	return [list $base $variant $index]
+}
+
+
 proc PopupEventMenu {gamebar id} {
 	variable Specs
 
@@ -1755,8 +1780,7 @@ proc PopupEventMenu {gamebar id} {
 		set Specs(event:locked) 1
 		set name [GetEventName $gamebar $id]
 		if {[string length $name]} {
-			lassign [::scidb::game::sink? $id] base variant index
-			set variant [::util::toMainVariant $variant]
+			lassign [GetSource $id] base variant index
 			::eventtable::popupMenu $gamebar $menu $base $variant 0 $index game
 			$menu add separator
 		}
@@ -1782,8 +1806,7 @@ proc PopupPlayerMenu {gamebar id side} {
 		set name [lindex $info 0]
 		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
-			lassign [::scidb::game::sink? $id] base variant gameIndex
-			set variant [::util::toMainVariant $variant]
+			lassign [GetSource $id] base variant index
 			::playertable::popupMenu $menu $base $variant $info [list $gameIndex $side]
 			$menu add separator
 		}
@@ -2363,6 +2386,7 @@ proc Layout {gamebar} {
 
 
 proc EnterEvent {gamebar id} {
+	variable ::scidb::scratchbaseName
 	variable Specs
 	variable Defaults
 
@@ -2371,7 +2395,7 @@ proc EnterEvent {gamebar id} {
 	if {$id eq $sid || $id eq "-1"} {
 		set name [GetEventName $gamebar $sid]
 
-		if {[string length $name]} {
+		if {[string length $name] && $name ne $scratchbaseName} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
 			$gamebar itemconfigure line1bg${id} \
 				-fill $Defaults(background:$color) \
@@ -2477,8 +2501,10 @@ proc LeaveFlag {gamebar id} {
 
 
 proc GetEventInfo {gamebar id} {
-	lassign [::scidb::game::sink? $id] base variant index
-	set variant [::util::toMainVariant $variant]
+	variable ::scidb::scratchbaseName
+
+	lassign [GetSource $id] base variant index
+	if {$base eq $scratchbaseName} { return {""} }
 	return [scidb::db::fetch eventInfo $index $base $variant -card]
 }
 
@@ -2521,8 +2547,7 @@ proc HideEvent {gamebar id} {
 
 
 proc GetPlayerInfo {gamebar id side} {
-	lassign [::scidb::game::sink? $id] base variant index
-	set variant [::util::toMainVariant $variant]
+	lassign [GetSource $id] base variant index
 	return [scidb::db::fetch ${side}PlayerInfo $index $base $variant -card -ratings {Any Any}]
 }
 
@@ -2541,8 +2566,7 @@ proc ShowPlayerCard {gamebar id side} {
 	set name [GetPlayerName $gamebar $sid $side]
 
 	if {[string length $name]} {
-		lassign [::scidb::game::sink? $id] base variant index
-		set variant [::util::toMainVariant $variant]
+		lassign [GetSource $id] base variant index
 		::playercard::show $base $variant $index $side
 	}
 }

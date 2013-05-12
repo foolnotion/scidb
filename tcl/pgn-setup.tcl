@@ -31,7 +31,7 @@ namespace eval setup {
 namespace eval mc {
 
 set Configure(editor)			"Customize Editor"
-set Configure(browser)			"Customize Text Output"
+set Configure(browser)			"Customize Text Display"
 set TakeOver(editor)				"Adopt settings from Game Browser"
 set TakeOver(browser)			"Adopt settings from Game Editor"
 set Pixel							"pixel"

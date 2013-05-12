@@ -600,6 +600,18 @@ MoveInfo::length(unsigned char firstByte)
 }
 
 
+unsigned char const*
+MoveInfo::skip(unsigned char const* strm, unsigned char const* eos)
+{
+	M_REQUIRE(isMoveInfo(*strm));
+
+	if ((strm += length(*strm)) > eos)
+		IO_RAISE(Game, Corrupted, "corrupted stream");
+
+	return strm;
+}
+
+
 void
 MoveInfo::encode(ByteStream& strm) const
 {

@@ -354,7 +354,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(subscribe:info)  [list [namespace current]::UpdateInfo $position]
 	set Vars(subscribe:data)  [list [namespace current]::UpdateData $position]
 	set Vars(subscribe:list)  [list [namespace current]::Update [namespace current]::Close $position]
-	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $position]]
+	set Vars(subscribe:close) [list [namespace current]::Close $base $variant $position]
 
 	::scidb::game::subscribe board {*}$Vars(subscribe:board)
 	::scidb::game::subscribe pgn {*}$Vars(subscribe:pgn)
@@ -636,22 +636,19 @@ proc UpdateInfo {position id} {
 	variable ${position}::Vars
 	variable Options
 
-	if {[::scidb::game::link? $position] eq [::scidb::game::link? $id]} {
+	if {[::scidb::game::link? $position] ne [::scidb::game::link? $id]} {
 		set Vars(modified) 1
 		$Vars(header) configure -background $Options(background:modified)
+		foreach item {event white black} {
+			$Vars(header) tag configure $item -background $Options(background:modified)
+		}
 	}
 }
 
 
 proc UpdateData {position id evenMainline} {
-	if {![info exists ${position}::Vars]} { return }
-
-	variable ${position}::Vars
-	variable Options
-
-	if {$evenMainline && [::scidb::game::link? $position] eq [::scidb::game::link? $id]} {
-		set Vars(modified) 1
-		$Vars(header) configure -background $Options(background:modified)
+	if {$evenMainline} {
+		UpdateInfo $position $id
 	}
 }
 
@@ -1375,11 +1372,11 @@ proc PopupMenu {parent board position {what ""}} {
 			;
 		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
 		$menu add command \
-			-label " $mc::MergeGame" \
+			-label " $mc::MergeGame..." \
 			-command [list gamebar::mergeGame $dlg $position] \
 			-state $state \
 			;
-		if {!$Vars(modified)} { set state disabled }
+		if {$Vars(modified)} { set state normal } else { set state disabled }
 		$menu add command \
 			-label " $mc::ReloadGame" \
 			-image $::icon::16x16::refresh \
@@ -1388,15 +1385,6 @@ proc PopupMenu {parent board position {what ""}} {
 			-state $state \
 			;
 		$menu add separator
-		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
-		$menu add command \
-			-label " $mc::GotoGame(next)" \
-			-image $::icon::16x16::forward \
-			-compound left \
-			-command [namespace code [list GotoGame(next) $parent $position]] \
-			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
-			-state $state \
-			;
 		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
 		$menu add command \
 			-label " $mc::GotoGame(prev)" \
@@ -1408,11 +1396,11 @@ proc PopupMenu {parent board position {what ""}} {
 			;
 		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$menu add command \
-			-label " $mc::GotoGame(last)" \
-			-image $::icon::16x16::last \
+			-label " $mc::GotoGame(next)" \
+			-image $::icon::16x16::forward \
 			-compound left \
-			-command [namespace code [list GotoGame(last) $parent $position]] \
-			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
+			-command [namespace code [list GotoGame(next) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 			-state $state \
 			;
 		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
@@ -1422,6 +1410,15 @@ proc PopupMenu {parent board position {what ""}} {
 			-compound left \
 			-command [namespace code [list GotoGame(first) $parent $position]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-label " $mc::GotoGame(last)" \
+			-image $::icon::16x16::last \
+			-compound left \
+			-command [namespace code [list GotoGame(last) $parent $position]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
 			-state $state \
 			;
 		$menu add separator
@@ -1574,6 +1571,9 @@ proc ReloadGame {parent position} {
 
 	set Vars(modified) 0
 	$Vars(header) configure -background $Options(background:header)
+	foreach item {event white black} {
+		$Vars(header) tag configure $item -background $Options(background:header)
+	}
 	::scidb::game::refresh $position -immediate
 }
 

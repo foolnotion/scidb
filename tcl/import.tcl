@@ -600,7 +600,7 @@ proc PopupMenu {edit position x y} {
 		-command [namespace code [list TextPaste $position $edit.text]] \
 		;
 
-	set empty [expr {[$edit.text compare end <= 2.0]}]
+	set empty [::widget::textIsEmpty? $edit.text]
 	if {!$empty || [$edit.text edit modified] || $Priv($position:undo)} {
 		$m add separator
 		if {$empty && ![$edit.text edit modified]} { set state disabled } else { set state normal }

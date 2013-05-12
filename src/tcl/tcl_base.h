@@ -27,6 +27,7 @@
 #ifndef _tcl_base_included
 #define _tcl_base_included
 
+#include <stdint.h>
 #include <stdarg.h>
 
 extern "C"
@@ -117,6 +118,7 @@ unsigned unsignedFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
 long longFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
 bool boolFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
 Tcl_Obj* objectFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
+int64_t wideIntFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index);
 
 } // namespace tcl
 

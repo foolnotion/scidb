@@ -49,13 +49,22 @@ is open, no more games can be loaded inside this browser.
 <p>
 The game brower displays games in a simple form, this means without
 annotations and sub-variants. The browser is especially suitable
-for displaying list of games.
+for previewing a list of games.
 </p>
+
+<ul>
+  <li><a href="#head">The game header</a></li>
+  <li><a href="#data">The move window</a></li>
+  <li><a href="#admin">Functions and settings</a></li>
+</ul>
+
+<h2 id="head">The game header</h2>
 
 <p>
 The game header contains three buttons: the event and both player names.
-While keeping the middle mouse button pressed on any button an information
-box will be displayed. Clicking a player name is opening a player card.
+While keeping the middle mouse button pressed on any highlighted  button
+an information box will be displayed. Clicking a highlighted player name
+is opening a player card.
 </p>
 
 <p>
@@ -63,12 +72,16 @@ If the color of the game header is changing from blue to red, this will
 signal an intermediate change of the game in the database. The game can
 be re-loaded to see the actual game (&#x21d2;
 <a href="#ReloadGame">Reload game</a> inside
-context-sensitive menu).
+context-sensitive menu), as long as the source database is still open.
 </p>
+
+<h2 id="data">The move window</h2>
 
 <p>
 While the mouse is not hovering the move window, but still hovering the
 dialog, the mouse wheel can be used to play moves forward and backward.
+Clicking on the cursor highlighted move will change the position to this
+move.
 </p>
 
 <p>
@@ -76,6 +89,8 @@ While keeping the middle mouse button pressed on a game move the
 associated board position will be displayed. Holding <kbd class='key'>Shift</kbd>
 during the click will show only the pawn structure.
 </p>
+
+<h2 id="admin">Functions and settings</h2>
 
 <p>
 The browser is providing the following context-sensitive menu:
@@ -88,7 +103,8 @@ The browser is providing the following context-sensitive menu:
 Load the actual game into the game editor. The actual game in game editor
 will be replaced with this game, so far the editor isn't locked or the
 game is modified. Otherwise a new pane for this game will be opened in
-editor.
+editor. This menu item is available as long as the source database is not
+closed.
 </p>
 
 <p id="ReloadGame">
@@ -97,12 +113,21 @@ Update the actual game by re-loading. This menu entry is active
 only if the current game is differing from the game in database due
 to an intermediate change. A red coloured game header (normally the
 game header is blue) will signal that the current game is differing
-from the game in database.
+from the game in database. This menu item is not available as soon
+as the source database is closed.
+</p>
+
+<p>
+<span class='menuitem'>Merge game</span>
+Merge this game into the current open game of the game editor.
+This menu item is not available as soon as the source database is
+closed.
 </p>
 
 <p>
 <span class='menuitem'>Goto next game</span>
-Load next game in underlying game list.
+Load next game in underlying game list. This menu item is available as
+long as the source database is not closed.
 </p>
 
 <p>

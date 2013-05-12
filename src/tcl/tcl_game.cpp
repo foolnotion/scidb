@@ -126,6 +126,7 @@ static char const* CmdUndoSetup		= "::scidb::game::undoSetup";
 static char const* CmdUnsubscribe	= "::scidb::game::unsubscribe";
 static char const* CmdUpdate			= "::scidb::game::update";
 static char const* CmdVariation		= "::scidb::game::variation";
+static char const* CmdVerify			= "::scidb::game::verify";
 static char const* CmdView				= "::scidb::game::view";
 
 
@@ -2161,11 +2162,13 @@ static int
 cmdLink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
-	Tcl_Obj* objs[3];
+	Tcl_Obj* objs[5];
 
 	objs[0] = Tcl_NewStringObj(Scidb->sourceName(position), -1);
 	objs[1] = ::tcl::tree::variantToString(Scidb->variant(position));
 	objs[2] = Tcl_NewIntObj(Scidb->sourceIndex(position));
+	objs[3] = Tcl_NewWideIntObj(Scidb->sourceCrcIndex(position));
+	objs[4] = Tcl_NewWideIntObj(Scidb->sourceCrcMoves(position));
 
 	setResult(Tcl_NewListObj(U_NUMBER_OF(objs), objs));
 	return TCL_OK;
@@ -2175,11 +2178,15 @@ cmdLink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	typedef ::util::crc::checksum_t checksum_t;
+
 	unsigned		position		= unsignedFromObj(objc, objv, 1);
 	char const*	sourceName	= stringFromObj(objc, objv, 2);
 	unsigned		sourceIndex	= unsignedFromObj(objc, objv, 3);
+	checksum_t	crcIndex		= wideIntFromObj(objc, objv, 4);
+	checksum_t	crcMoves		= wideIntFromObj(objc, objv, 5);
 
-	scidb->setSource(position, sourceName, sourceIndex);
+	scidb->setSource(position, sourceName, sourceIndex, crcIndex, crcMoves);
 	return TCL_OK;
 }
 
@@ -2187,7 +2194,7 @@ cmdSink(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSink_(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	unsigned position = intFromObj(objc, objv, 1);
+	unsigned position = objc == 1 ? Application::InvalidPosition : intFromObj(objc, objv, 1);
 	Tcl_Obj* objs[3];
 
 	objs[0] = Tcl_NewStringObj(Scidb->databaseName(position), -1);
@@ -3544,6 +3551,14 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdVerify(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(scidb->verifyGame(unsignedFromObj(objc, objv, 1)));
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace game {
 
@@ -3603,6 +3618,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdUnsubscribe,	cmdUnsubscribe);
 	createCommand(ti, CmdUpdate,			cmdUpdate);
 	createCommand(ti, CmdVariation,		cmdVariation);
+	createCommand(ti, CmdVerify,			cmdVerify);
 	createCommand(ti, CmdView,				cmdView);
 }
 

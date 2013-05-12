@@ -480,6 +480,7 @@
 ::application::database::mc::CompactionRecommended			"Eine Kompaktierung der Datenbank wird empfohlen."
 ::application::database::mc::SearchPGNTags					"Nach PGN-Tags suchen"
 ::application::database::mc::SelectSuperfluousTags			"Unerwünschte Tags auswählen:"
+::application::database::mc::WillBePermanentlyDeleted		"Bitte beachten: Diese Aktion wird die betroffenen Daten permanent aus der Datenbank entfernen."
 
 ::application::database::mc::T_Unspecific						"Unspezifiziert"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -830,7 +831,7 @@
 
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Editor konfigurieren"
-::pgn::setup::mc::Configure(browser)			"Textausgabe konfigurieren"
+::pgn::setup::mc::Configure(browser)			"Textanzeige konfigurieren"
 ::pgn::setup::mc::TakeOver(editor)				"Einstellungen des Partiebrowsers übernehmen"
 ::pgn::setup::mc::TakeOver(browser)				"Einstellungen des Partieeditors übernehmen"
 ::pgn::setup::mc::Pixel								"pixel"
@@ -1317,10 +1318,10 @@
 ::gamebar::mc::ReloadCurrentGame				"Partie neu laden"
 ::gamebar::mc::MergeWithCurrentGame			"In die aktuelle Partie einfügen"
 ::gamebar::mc::CreateNewGame					"Eine neue Partie kreieren"
-::gamebar::mc::StartFromCurrentPosition	"Einfügen von der aktuellen Position starten"
-::gamebar::mc::StartFromInitialPosition	"Einfügen von der Anfangsposition starten"
+::gamebar::mc::StartFromCurrentPosition	"Einfügungen von der aktuellen Position starten"
+::gamebar::mc::StartFromInitialPosition	"Einfügungen von der Anfangsposition starten"
 ::gamebar::mc::NoTranspositions				"Keine Zugumstellungen"
-::gamebar::mc::IncludeTranspositions		"Zugumstellungen miteinbeziehen"
+::gamebar::mc::IncludeTranspositions		"Zugumstellungen mit einbeziehen"
 ::gamebar::mc::VariationDepth					"Variantentiefe"
 
 ::gamebar::mc::LockGame							"Partie sperren"
@@ -1364,7 +1365,7 @@
 
 ::browser::mc::LoadGame				"Partie in den Editor laden"
 ::browser::mc::ReloadGame			"Partie neu laden"
-::browser::mc::MergeGame			"Partie kombinieren"	;# einfügen
+::browser::mc::MergeGame			"Partie zusammenfügen"	;# einfügen, kombinieren
 
 ::browser::mc::IllegalMove			"Regelwidriger Zug"
 ::browser::mc::NoCastlingRights	"keine Rochaderechte"
@@ -1832,6 +1833,8 @@
 ::game::mc::VariantHasChanged				"Die Partie kann nicht geöffnet werden weil sich die Schachform der Datenbank geändert hat und nicht mit der Schachform der Partie übereinstimmt."
 ::game::mc::RemoveGameFromHistory		"Die Partie aus der Historie entfernen?"
 ::game::mc::GameNumberDoesNotExist		"Die Partie %number existiert nicht in '%base'."
+::game::mc::ReallyReplaceGame				"Es scheint das die aktuelle Partie #%s nicht die ursprünglich geladene Partie ist aufgrund von zwischenzeitlichen Datenbankänderungen. Es ist möglich eine andere Partie zu verlieren. Wirklich die Partiedaten überschreiben?"
+::game::mc::ReallyReplaceGameDetail		"Es wird empfohlen einen Blick auf Partie #%s zu werfen, bevor diese Aktion ausgeführt wird."
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alle Sprachen"

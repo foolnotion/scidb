@@ -58,23 +58,23 @@ Ausserdem sind folgende Standardtastaturkürzel an das Textfeld gebunden:
 <box>
   <table>
     <tr>
-      <td valign="top"><key>Ctrl</key> <key>C</key>
+      <td valign="top"><key>Ctrl</key>+<key>C</key>
       </td><td>Markierten Text in die Zwischenablage kopieren</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key> <key>X</key>
+      <td valign="top"><key>Ctrl</key>+<key>X</key>
       </td><td>Markierten Text löschen und in die Zwischenablage kopieren</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key> <key>V</key></td>
+      <td valign="top"><key>Ctrl</key>+<key>V</key></td>
       <td>Text aus der Zwischenablage an der Cursorposition einfügen</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key> <key>Z</key>
+      <td valign="top"><key>Ctrl</key>+<key>Z</key>
       </td><td>Letzte Aktion im Textbereich zurücknehmen</td>
     </tr>
     <tr>
-      <td valign="top"><key>Ctrl</key> <key>Y</key></td>
+      <td valign="top"><key>Ctrl</key>+<key>Y</key></td>
       <td>Vorhergehende Rücknahme wieder aufheben</td>
     </tr>
   </table>
@@ -144,6 +144,11 @@ wieder aufheben.
 </p>
 
 <p>
+<menuitem>%::mc::SelectAll%</menuitem>
+Den gesamten Text selektieren.
+</p>
+
+<p>
 <menuitem>%::widget::mc::Clear%</menuitem>
 Den gesamten Text löschen.
 </p>
@@ -151,7 +156,9 @@ Den gesamten Text löschen.
 <p>
 <menuitem>%::widget::mc::Revert%</menuitem>
 Den ursprünglichen Text - entweder den Starttext,
-oder den Text nach dem letzten Speichern - wiederherstellen.
+oder den Text nach dem letzten Speichern - wiederherstellen. Dieser
+Menüpunkt steht nur dann zur Verfügung, wenn der aktuelle Text vom
+Wiederherstellungstext abweicht.
 </p>
 
 <p>

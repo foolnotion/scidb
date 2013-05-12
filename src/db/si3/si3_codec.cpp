@@ -259,7 +259,7 @@ Codec::Codec(CustomFlags* customFlags)
 	,m_blockSize(customFlags ? 131072 : 32768)
 	,m_progressiveStream(0)
 	,m_codec(0)
-	,m_encoding(sys::utf8::Codec::latin1()) // utf8() should be preferred?
+	,m_encoding(sys::utf8::Codec::utf8())
 	,m_customFlags(customFlags)
 	,m_gameData(0)
 	,m_asyncReader(0)
@@ -1711,23 +1711,24 @@ Codec::readNamebases(mstl::fstream& stream, util::Progress& progress)
 
 	if (!m_codec->hasEncoding())
 	{
-		progress.message("preload-namebase");
-		preloadNamebase(bstrm, maxFreq[Namebase::Player], count[Namebase::Player], progress);
-		m_progressCount += count[Namebase::Player];
-		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
-		preloadNamebase(bstrm, maxFreq[Namebase::Event], count[Namebase::Event], progress);
-		m_progressCount += count[Namebase::Event];
-		m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
-		preloadNamebase(bstrm, maxFreq[Namebase::Site], count[Namebase::Site], progress);
-		m_progressReportAfter = m_progressFrequency;
-		m_progressCount = 0;
-		progress.update(0);
-		stream.seekg(36, mstl::ios_base::beg);
-		bstrm.reset();
-		DataEnd();
+		if (!m_hasMagic)
+		{
+			progress.message("preload-namebase");
+			preloadNamebase(bstrm, maxFreq[Namebase::Player], count[Namebase::Player], progress);
+			m_progressCount += count[Namebase::Player];
+			m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+			preloadNamebase(bstrm, maxFreq[Namebase::Event], count[Namebase::Event], progress);
+			m_progressCount += count[Namebase::Event];
+			m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+			preloadNamebase(bstrm, maxFreq[Namebase::Site], count[Namebase::Site], progress);
+			m_progressReportAfter = m_progressFrequency;
+			m_progressCount = 0;
+			progress.update(0);
+			stream.seekg(36, mstl::ios_base::beg);
+			bstrm.reset();
+			DataEnd();
+		}
 
-		if (m_encoding == sys::utf8::Codec::automatic())
-			m_encoding = sys::utf8::Codec::latin1();
 		m_codec->reset(m_encoding);
 		useEncoding(m_encoding);
 	}
@@ -1836,10 +1837,10 @@ Codec::readNamebase(	ByteIStream& bstrm,
 {
 	typedef Namebase::Type Type;
 
-	M_ASSERT(m_codec && m_codec->hasEncoding());
 	M_ASSERT(count >= base.size());
 	M_ASSERT(count <= limit);
 	M_ASSERT(m_codec);
+	M_ASSERT(m_codec->hasEncoding());
 
 	if (count == 0)
 		return;

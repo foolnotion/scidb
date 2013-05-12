@@ -919,12 +919,12 @@ Decoder::skipEngines(Byte const* p)
 
 
 Byte const*
-Decoder::skipMoveInfo(Byte const* p)
+Decoder::skipMoveInfo(Byte const* p, Byte const* eos)
 {
 	unsigned length = ByteStream::uint16(p);
 
 	for (p += 2; length; length--)
-		p = MoveInfo::skip(p);
+		p = MoveInfo::skip(p, eos);
 
 	return p;
 }
@@ -964,7 +964,7 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 
 	if (flags & flags::TimeTableSection)
 	{
-		Byte const* p = skipMoveInfo(data);
+		Byte const* p = skipMoveInfo(data, m_strm.end());
 
 		if (types & (1 << MoveInfo::ElapsedMilliSeconds))
 		{
@@ -982,6 +982,7 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 	{
 		Byte const* dp = data;
 		Byte const* dq = dp;
+		Byte const* de = m_strm.end();
 		Byte const* mp = m_strm.data();
 		Byte const* mq = mp;
 		Byte const* me = m_strm.base() + offset;
@@ -1016,7 +1017,7 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 							n = dq - dp;
 							::memmove(dr, dp, n);
 							dr += n;
-							dp = dq = MoveInfo::skip(dq);
+							dp = dq = MoveInfo::skip(dq, de);
 
 							n = mq - mp - 1;
 							::memmove(mr, mp, n);
@@ -1025,12 +1026,12 @@ Decoder::stripMoveInformation(unsigned halfMoveCount, unsigned types)
 						}
 						else
 						{
-							dq = MoveInfo::skip(dq);
+							dq = MoveInfo::skip(dq, de);
 						}
 					}
 					else
 					{
-						dq = Mark::skip(dq);
+						dq = Mark::skip(dq, de);
 					}
 					break;
 			}

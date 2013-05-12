@@ -876,6 +876,23 @@ tcl::intFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 }
 
 
+int64_t
+tcl::wideIntFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
+{
+	M_REQUIRE(objc > 0);
+
+	if (index >= objc)
+		TCL_RAISE("Wrong number of arguments to %s", Tcl_GetString(objv[0]));
+
+	Tcl_WideInt value;
+
+	if (Tcl_GetWideIntFromObj(interp(), objv[index], &value) != TCL_OK)
+		TCL_RAISE("integer expected as %u. argument to %s", index, Tcl_GetString(objv[0]));
+
+	return value;
+}
+
+
 unsigned
 tcl::unsignedFromObj(unsigned objc, Tcl_Obj* const objv[], unsigned index)
 {

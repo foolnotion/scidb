@@ -224,6 +224,10 @@ public:
 	MultiCursor& multiCursor(mstl::string const& name);
 	db::MultiBase& multiBase(mstl::string const& name);
 
+	db::variant::Type currentVariant() const;
+	Variants getAllVariants() const;
+	Variants getAllVariants(mstl::string const& name) const;
+
 	db::Game& game(unsigned position = InvalidPosition);
 	db::Game const& game(unsigned position = InvalidPosition) const;
 	mstl::string const& encoding(unsigned position = InvalidPosition) const;
@@ -234,6 +238,8 @@ public:
 	unsigned gameIndex(unsigned position = InvalidPosition) const;
 	unsigned gameNumber(unsigned position = InvalidPosition) const;
 	unsigned sourceIndex(unsigned position = InvalidPosition) const;
+	checksum_t sourceCrcIndex(unsigned position = InvalidPosition) const;
+	checksum_t sourceCrcMoves(unsigned position = InvalidPosition) const;
 	db::Database const& database(unsigned position = InvalidPosition) const;
 	mstl::string const& databaseName(unsigned position = InvalidPosition) const;
 	mstl::string const& sourceName(unsigned position = InvalidPosition) const;
@@ -242,9 +248,7 @@ public:
 	unsigned indexAt(unsigned position) const;
 	checksum_t checksumIndex(unsigned position = InvalidPosition) const;
 	checksum_t checksumMoves(unsigned position = InvalidPosition) const;
-	db::variant::Type currentVariant() const;
-	Variants getAllVariants() const;
-	Variants getAllVariants(mstl::string const& name) const;
+	bool verifyGame(unsigned position);
 
 	db::load::State loadGame(unsigned position);
 	db::load::State loadGame(	unsigned position,
@@ -261,7 +265,11 @@ public:
 	void switchGame(unsigned position);
 	void clearGame(db::Board const* startPosition = 0);
 	void setupGame(db::Board const& startPosition);
-	void setSource(unsigned position, mstl::string const& name, unsigned index);
+	void setSource(unsigned position,
+						mstl::string const& name,
+						unsigned index,
+						checksum_t crcIndex,
+						checksum_t crcMoves);
 	void setReadonly(Cursor& cursor, bool flag);
 	db::save::State writeGame(	unsigned position,
 										mstl::string const& filename,
@@ -395,21 +403,42 @@ private:
 
 	struct EditGame : public mstl::ref_counter
 	{
-		EditGame();
-		~EditGame();
+		struct Data
+		{
+			Data();
+			~Data();
 
-		Cursor*			cursor;
-		unsigned			index;
-		int				viewId;
-		db::Game*		game;
-		db::Game*		backup;
-		checksum_t		crcIndex;
-		checksum_t		crcMoves;
-		checksum_t		crcMainline;
-		unsigned			refresh;
-		mstl::string	sourceBase;
-		unsigned			sourceIndex;
-		mstl::string	encoding;
+			int				viewId;
+			db::Game*		game;
+			db::Game*		backup;
+			unsigned			refresh;
+			mstl::string	encoding;
+		};
+
+		struct Sink
+		{
+			Sink();
+
+			Cursor*			cursor;
+			unsigned			index;
+			checksum_t		crcIndex;
+			checksum_t		crcMoves;
+			checksum_t		crcMainline;
+		};
+
+		struct Link
+		{
+			Link();
+
+			mstl::string	databaseName;
+			unsigned			index;
+			checksum_t		crcIndex;
+			checksum_t		crcMoves;
+		};
+
+		Sink sink;
+		Link link;
+		Data data;
 	};
 
 	typedef mstl::ref_counted_ptr<EditGame>		GameP;
@@ -448,6 +477,7 @@ private:
 	Cursor const* findBase(	mstl::string const& name, db::variant::Type variant) const;
 	void setReferenceBase(Cursor* cursor, bool isUserSet);
 	void moveGamesToScratchbase(Cursor& cursor, bool overtake = false);
+	void moveGamesBackToDatabase(Cursor& cursor);
 	EditGame* findGame(Cursor* cursor, unsigned index, unsigned* position = 0);
 	unsigned findUnusedPosition() const;
 	void setActiveBase(Cursor* cursor);

@@ -476,6 +476,7 @@ proc saveGame {mode} {
 
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
+	if {$mode ne "add" && ![::game::verify $Vars(main) $position [expr {$index + 1}]]} { return }
 
 	if {$base eq $scratchbaseName} {
 		set base [::scidb::db::get name]
@@ -2162,7 +2163,7 @@ proc PopupMenu {parent position} {
 		if {[string length $white] && [string length $black]} {
 			set title "$white-$black"
 		} else {
-			set title [lindex [::scidb::game::sink? $id] 2]
+			set title [lindex [::scidb::game::sink? $position] 2]
 		}
 		set cmd [list ::export::open $parent -base $base -variant $variant -index $index -title $title]
 		$menu add command \

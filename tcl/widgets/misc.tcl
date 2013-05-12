@@ -133,6 +133,12 @@ proc showTrace {path text useHorzScroll closeCmd} {
 }
 
 
+proc textIsEmpty? {w} {
+	if {[$w compare end > 2.0]} { return 0 }
+	return [expr {[$w count -chars 1.0 2.0] <= 1}]
+}
+
+
 proc textLineScroll {w cmd args} {
 	switch $cmd {
 		moveto {

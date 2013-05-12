@@ -53,7 +53,24 @@ sin anotaciones, comentarios o subvariantes. Está dirigido especialmente a la
 visualización de un Listado de partidas.
 </p>
 
+<span class='NEW'>
+<ul>
+  <li><a href="#head">The game header</a></li>
+  <li><a href="#data">The move window</a></li>
+  <li><a href="#admin">Functions and settings</a></li>
+</ul>
+</span>
+
+<span class='NEW'>
+<h2 id="head">The game header</h2>
+</span>
+
 <p>
+<!-- NEW: The original text has changed a bit:
+The game header contains three buttons: the event and both player names.
+While keeping the middle mouse button pressed on any highlighted  button
+an information box will be displayed. Clicking a highlighted player name
+is opening a player card. -->
 El encabezado de la partida contiene tres campos: el Torneo y los Nombres del jugador. 
 Manteniendo apretado el botón central del ratón aparece un cuadro de información. Al
 cliquear sobre el Nombre de un jugador aparece la Ficha de dicho jugador.
@@ -65,8 +82,12 @@ If the color of the game header is changing from blue to red, this will
 signal an intermediate change of the game in the database. The game can
 be re-loaded to see the actual game (&#x21d2;
 <a href="#ReloadGame">Reload game</a> inside
-context-sensitive menu).
+context-sensitive menu), as long as the source database is still open.
 </p>
+</span>
+
+<span class='NEW'>
+<h2 id="data">The move window</h2>
 </span>
 
 <p>
@@ -81,6 +102,8 @@ associated board position will be displayed. Holding <kbd class='key'>Mayúscula
 during the click will show only the pawn structure.
 </p>
 
+<h2 id="admin">Functions and settings</h2>
+
 <p>
 The browser is providing the following context-sensitive menu:
 </p>
@@ -92,7 +115,8 @@ The browser is providing the following context-sensitive menu:
 Load the actual game into the game editor. The actual game in game editor
 will be replaced with this game, so far the editor isn't locked or the
 game is modified. Otherwise a new pane for this game will be opened in
-editor.
+editor. This menu item is available as long as the source database is not
+closed.
 </p>
 
 <p id="ReloadGame">
@@ -101,7 +125,15 @@ Update the actual game by re-loading. This menu entry is active
 only if the current game is differing from the game in database due
 to an intermediate change. A red coloured game header (normally the
 game header is blue) will signal that the current game is differing
-from the game in database.
+from the game in database. This menu item is not available as soon
+as the source database is closed.
+</p>
+
+<p>
+<span class='menuitem'>Fusionar partida</span>
+Merge this game into the current open game of the game editor.
+This menu item is not available as soon as the source database is
+closed.
 </p>
 
 <p>

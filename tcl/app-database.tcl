@@ -101,6 +101,7 @@ set RemoveSpace						"Some empty spaces will be removed."
 set CompactionRecommended			"It is recommended to compact the database."
 set SearchPGNTags						"Searching for PGN tags"
 set SelectSuperfluousTags			"Select superfluous tags:"
+set WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database."
 
 set T_Unspecific						"Unspecific"
 set T_Temporary						"Temporary"
@@ -1535,6 +1536,18 @@ proc StripMoveInfo {parent file} {
 		incr row
 	}
 
+	ttk::separator $top.sep
+	ttk::label $top.warning \
+		-text $mc::WillBePermanentlyDeleted \
+		-padding left \
+		-font TkHeadingFont \
+		-wraplength 100 \
+		;
+	grid $top.sep -row $row -column 1 -columnspan 5 -sticky we
+	grid $top.warning -row [expr {$row + 2}] -column 1 -columnspan 5 -sticky we
+	grid rowconfigure $top [list [expr {$row + 1}] [expr {$row + 3}]] -minsize $::theme::pady
+	bind $top <Configure> [namespace code [list ResizeLabel $top.warning %w]]
+
 	grid columnconfigure $top {0 4 6} -minsize $::theme::padx
 	grid columnconfigure $top {2} -minsize $::theme::padX
 	grid rowconfigure $top 0 -minsize $::theme::pady
@@ -1644,6 +1657,18 @@ proc StripPGNTags {parent file} {
 		incr row
 	}
 
+	ttk::separator $top.sep
+	ttk::label $top.warning \
+		-text $mc::WillBePermanentlyDeleted \
+		-padding left \
+		-font TkHeadingFont \
+		-wraplength 100 \
+		;
+	grid $top.sep -row $row -column 1 -columnspan 3 -sticky we
+	grid $top.warning -row [expr {$row + 2}] -column 1 -columnspan 3 -sticky we
+	grid rowconfigure $top [list [expr {$row + 1}] [expr {$row + 3}]] -minsize $::theme::pady
+	bind $top <Configure> [namespace code [list ResizeLabel $top.warning %w]]
+
 	grid rowconfigure $top {0 2} -minsize $::theme::pady
 	grid columnconfigure $top {0 4} -minsize $::theme::padx
 	grid columnconfigure $top {2} -minsize $::theme::padX
@@ -1662,6 +1687,13 @@ proc StripPGNTags {parent file} {
 	::ttk::grabWindow $dlg
 	tkwait window $dlg
 	::ttk::releaseGrab $dlg
+}
+
+
+proc ResizeLabel {w width} {
+	set width [expr {$width - 2*$::theme::padx}]
+	if {$width <= 1} { return }
+	$w configure -wraplength $width
 }
 
 
