@@ -894,6 +894,8 @@
 
 ::pgn::setup::mc::Section(Diagrams)				"Diagram" ;# NEW
 ::pgn::setup::mc::Diagrams(show)					"Visa diagram"
+# Note for translators: "Emoticons" can be simply translated to "Smileys"
+::pgn::setup::mc::Emoticons(show)				"Detect Emoticons" ;# NEW
 ::pgn::setup::mc::Diagrams(square-size)		"Rutstorlek"
 ::pgn::setup::mc::Diagrams(indentation)		"Indrag"
 
@@ -2063,6 +2065,8 @@
 ::comment::mc::CopyText					"Kopiera text till"
 ::comment::mc::OverwriteContent		"Ersätta aktuellt innehåll?"
 ::comment::mc::AppendContent			"Ifall \"nej\" kommer texten att läggas till."
+# Note for translators: "Emoticons" can be simply translated to "Smiley
+::comment::mc::DisplayEmoticons		"Display Emoticons" ;# NEW
 
 ::comment::mc::LanguageSelection		"Val av språk"
 ::comment::mc::Formatting				"Formaterar"
@@ -2072,6 +2076,8 @@
 ::comment::mc::Underline				"Understruket"
 
 ::comment::mc::InsertSymbol			"&Infoga symbol..."
+# Note for translators: "Emoticon" can be simply translated to "Smiley"
+::comment::mc::InsertEmoticon			"Insert &Emoticon..." ;# NEW
 ::comment::mc::MiscellaneousSymbols	"Diverse symboler"
 ::comment::mc::Figurine					"Figur"
 
@@ -2829,6 +2835,34 @@
 ::calendar::mc::WeekdayName(4)	"Torsdag"
 ::calendar::mc::WeekdayName(5)	"Fredag"
 ::calendar::mc::WeekdayName(6)	"Lördag"
+
+### emoticons ##########################################################
+::emoticons::mc::Tooltip(smile)		"Smiling (Smiley)" ;# NEW
+::emoticons::mc::Tooltip(frown)		"Frown (Frowny)" ;# NEW
+::emoticons::mc::Tooltip(saint)		"Saint" ;# NEW
+::emoticons::mc::Tooltip(evil)		"Evil" ;# NEW
+::emoticons::mc::Tooltip(gleeful)	"Gleeful" ;# NEW
+::emoticons::mc::Tooltip(wink)		"Winking" ;# NEW
+::emoticons::mc::Tooltip(cool)		"Cool" ;# NEW
+::emoticons::mc::Tooltip(grin)		"Grinning" ;# NEW
+::emoticons::mc::Tooltip(neutral)	"Neutral" ;# NEW
+::emoticons::mc::Tooltip(sweat)		"Sweating" ;# NEW
+::emoticons::mc::Tooltip(confuse)	"Confused" ;# NEW
+::emoticons::mc::Tooltip(shock)		"Shocked" ;# NEW
+::emoticons::mc::Tooltip(kiss)		"Kissing" ;# NEW
+::emoticons::mc::Tooltip(razz)		"Razzing" ;# NEW
+::emoticons::mc::Tooltip(grumpy)		"Disappointed / Grumpy" ;# NEW
+::emoticons::mc::Tooltip(upset)		"Upset" ;# NEW
+::emoticons::mc::Tooltip(cry)			"Crying" ;# NEW
+::emoticons::mc::Tooltip(yell)		"Yelling" ;# NEW
+::emoticons::mc::Tooltip(surprise)	"Surprised" ;# NEW
+::emoticons::mc::Tooltip(red)			"Ashamed" ;# NEW
+::emoticons::mc::Tooltip(sleep)		"Sleepy" ;# NEW
+::emoticons::mc::Tooltip(eek)			"Scared" ;# NEW
+::emoticons::mc::Tooltip(kitty)		"Kitty" ;# NEW
+::emoticons::mc::Tooltip(roll)		"Eye-rolling" ;# NEW
+::emoticons::mc::Tooltip(blink)		"Blinking" ;# NEW
+::emoticons::mc::Tooltip(glasses)	"Intelligent" ;# NEW
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Databasen \"%s\" kommer inte att öppnas förrän den pågående operationen är avslutad."

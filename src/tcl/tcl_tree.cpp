@@ -98,8 +98,9 @@ namespace {
 
 struct MyPipedProgress : public util::PipedProgress
 {
-	MyPipedProgress(Tcl_Obj* cmd, Tcl_Obj* arg)
-		:m_cmd(cmd)
+	MyPipedProgress(sys::Thread& thread, Tcl_Obj* cmd, Tcl_Obj* arg)
+		:PipedProgress(thread)
+		,m_cmd(cmd)
 		,m_arg(arg)
 	{
 		M_ASSERT(cmd);
@@ -173,7 +174,11 @@ static int
 cmdInit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (m_progress == 0)
-		m_progress = new MyPipedProgress(objectFromObj(objc, objv, 1), objectFromObj(objc, objv, 2));
+	{
+		m_progress = new MyPipedProgress(Scidb->treeThread(),
+													objectFromObj(objc, objv, 1),
+													objectFromObj(objc, objv, 2));
+	}
 
 	return TCL_OK;
 }

@@ -320,8 +320,8 @@ proc build {w width height} {
 	foreach key [array names Accel] { set Vars(key:$key) $Accel($key) }
 
 	set Vars(cmd:edit-annotation)		[namespace parent]::pgn::editAnnotation
-	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment p]
-	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment a]
+	set Vars(cmd:edit-comment)			[list [namespace parent]::pgn::editComment after]
+	set Vars(cmd:shift:edit-comment)	[list [namespace parent]::pgn::editComment before]
 	set Vars(cmd:edit-marks)			[namespace parent]::pgn::openMarksPalette
 	set Vars(cmd:add-new-game)			[list [namespace parent]::pgn::saveGame add]
 	set Vars(cmd:replace-game)			[list [namespace parent]::pgn::saveGame replace]

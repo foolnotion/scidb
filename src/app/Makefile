@@ -185,6 +185,11 @@ app_application.o: ../db/db_database.ipp
 app_application.o: ../db/db_database_codec.h
 app_application.o: ../db/db_database_codec.ipp
 app_application.o: ../util/u_rkiss.h
+app_application.o: ../sys/sys_thread.h
+app_application.o: ../mstl/m_function.h
+app_application.o: ../mstl/m_function_base.h
+app_application.o: ../mstl/m_function_base.ipp
+app_application.o: ../mstl/m_function.ipp
 app_application.o: app_application.ipp
 app_application.o: app_multi_cursor.h
 app_application.o: app_multi_cursor.ipp
@@ -240,11 +245,6 @@ app_application.o: ../mstl/m_ostream.ipp
 app_application.o: ../sys/sys_utf8_codec.h
 app_application.o: ../sys/sys_utf8_codec.ipp
 app_application.o: ../sys/sys_file.h
-app_application.o: ../sys/sys_thread.h
-app_application.o: ../mstl/m_function.h
-app_application.o: ../mstl/m_function_base.h
-app_application.o: ../mstl/m_function_base.ipp
-app_application.o: ../mstl/m_function.ipp
 app_application.o: ../mstl/m_ifstream.h
 app_application.o: ../mstl/m_file.h
 app_application.o: ../mstl/m_file.ipp
@@ -387,6 +387,11 @@ app_cursor.o: ../db/db_database.ipp
 app_cursor.o: ../db/db_database_codec.h
 app_cursor.o: ../db/db_database_codec.ipp
 app_cursor.o: ../util/u_rkiss.h
+app_cursor.o: ../sys/sys_thread.h
+app_cursor.o: ../mstl/m_function.h
+app_cursor.o: ../mstl/m_function_base.h
+app_cursor.o: ../mstl/m_function_base.ipp
+app_cursor.o: ../mstl/m_function.ipp
 app_cursor.o: app_application.ipp
 app_cursor.o: ../db/db_exception.h
 app_cursor.o: ../util/u_exception.h
@@ -949,6 +954,11 @@ app_view.o: ../db/db_database.ipp
 app_view.o: ../db/db_database_codec.h
 app_view.o: ../db/db_database_codec.ipp
 app_view.o: ../util/u_rkiss.h
+app_view.o: ../sys/sys_thread.h
+app_view.o: ../mstl/m_function.h
+app_view.o: ../mstl/m_function_base.h
+app_view.o: ../mstl/m_function_base.ipp
+app_view.o: ../mstl/m_function.ipp
 app_view.o: app_application.ipp
 app_view.o: ../db/db_game.h
 app_view.o: ../db/db_game_data.h

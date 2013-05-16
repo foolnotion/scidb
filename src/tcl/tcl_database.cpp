@@ -1733,7 +1733,7 @@ getEventKey(NamebaseEvent const& event)
 	objv[EventKey_Name]			= Tcl_NewStringObj(event.name(), event.name().size());
 	objv[EventKey_Type]			= Tcl_NewStringObj(event::toString(event.type()), -1);
 	objv[EventKey_Date]			= Tcl_NewStringObj(event.date().asString(), -1);
-	objv[EventKey_TimeMode]		= Tcl_NewStringObj(time::toString(event.timeMode()), -1);
+	objv[EventKey_TimeMode]		= Tcl_NewStringObj(::db::time::toString(event.timeMode()), -1);
 	objv[EventKey_EventMode]	= Tcl_NewStringObj(event::toString(event.eventMode()), -1);
 	objv[EventKey_Site]			= Tcl_NewStringObj(event.site()->name(), event.site()->name().size());
 	objv[EventKey_SiteCountry]	= Tcl_NewStringObj(country::toString(event.site()->country()), -1);
@@ -1909,7 +1909,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 			break;
 
 		case attribute::game::TimeMode:
-			obj = Tcl_NewStringObj(time::toString(info.timeMode()), -1);
+			obj = Tcl_NewStringObj(::db::time::toString(info.timeMode()), -1);
 			break;
 
 		case attribute::game::EventCountry:
@@ -2074,7 +2074,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(Chess960Position,     Tcl_NewBooleanObj(variant::isChess960(info.idn())));
 	SET(Termination,          Tcl_NewStringObj(termination::toString(info.terminationReason()), -1));
 	SET(Mode,                 Tcl_NewStringObj(event::toString(info.eventMode()), -1));
-	SET(TimeMode,             Tcl_NewStringObj(time::toString(info.timeMode()), -1));
+	SET(TimeMode,             Tcl_NewStringObj(::db::time::toString(info.timeMode()), -1));
 	SET(Overview,             Tcl_NewStringObj(overview, overview.size()));
 	SET(Opening,              Tcl_NewListObj(2, openingVar));
 	SET(Variation,            Tcl_NewStringObj(variation, variation.size()));
@@ -2203,7 +2203,7 @@ getEventInfo(int index, int view, char const* database, variant::Type variant, u
 			break;
 
 		case attribute::event::TimeMode:
-			obj = Tcl_NewStringObj(time::toString(event.timeMode()), -1);
+			obj = Tcl_NewStringObj(::db::time::toString(event.timeMode()), -1);
 			break;
 
 		default:
@@ -2268,7 +2268,7 @@ getEventInfo(NamebaseEvent const& event, Database const* database = nullptr)
 	objv[attribute::event::Type     ] = Tcl_NewStringObj(event::toString(event.type()), -1);
 	objv[attribute::event::Date     ] = Tcl_NewStringObj(event.date().asShortString(), -1);
 	objv[attribute::event::Mode     ] = Tcl_NewStringObj(event::toString(event.eventMode()), -1);
-	objv[attribute::event::TimeMode ] = Tcl_NewStringObj(time::toString(event.timeMode()), -1);
+	objv[attribute::event::TimeMode ] = Tcl_NewStringObj(::db::time::toString(event.timeMode()), -1);
 	objv[attribute::event::Frequency] = Tcl_NewIntObj(event.frequency());
 
 	if (database)
@@ -3810,7 +3810,7 @@ cmdMatch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					objs[n++] = Tcl_NewStringObj(event->date().asShortString(), -1);
 					objs[n++] = Tcl_NewStringObj(event::toString(event->eventMode()), -1);
 					objs[n++] = Tcl_NewStringObj(event::toString(event->type()), -1);
-					objs[n++] = Tcl_NewStringObj(time::toString(event->timeMode()), -1);
+					objs[n++] = Tcl_NewStringObj(::db::time::toString(event->timeMode()), -1);
 				}
 				break;
 
@@ -3979,7 +3979,7 @@ cmdFind(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				Tcl_GetString(objs[EventKey_Name]),
 				Date(Tcl_GetString(objs[EventKey_Date])),
 				event::typeFromString(Tcl_GetString(objs[EventKey_Type])),
-				time::fromString(Tcl_GetString(objs[EventKey_TimeMode])),
+				::db::time::fromString(Tcl_GetString(objs[EventKey_TimeMode])),
 				event::modeFromString(Tcl_GetString(objs[EventKey_EventMode])),
 				site
 			);

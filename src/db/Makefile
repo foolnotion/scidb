@@ -959,6 +959,7 @@ db_comment.o: ../mstl/m_list_node.h
 db_comment.o: ../mstl/m_list_node.ipp
 db_comment.o: ../mstl/m_list.ipp
 db_comment.o: ../sys/sys_utf8_codec.ipp
+db_comment.o: ../util/u_emoticons.h
 db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
 db_comment.o: ../mstl/m_algorithm.h

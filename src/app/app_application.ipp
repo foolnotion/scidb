@@ -49,6 +49,7 @@ inline Application::Subscriber* Application::subscriber() const	{ return m_subsc
 inline unsigned Application::currentPosition() const					{ return m_currentPosition; }
 inline db::Tree const* Application::currentTree() const				{ return m_currentTree.get(); }
 inline mstl::ostream* Application::engineLog() const					{ return m_engineLog; }
+inline sys::Thread& Application::treeThread()							{ return m_treeThread; }
 
 inline void Application::setSwitchReferenceBase(bool flag)			{ m_switchReference = flag; }
 inline void Application::setReferenceBase(Cursor* cursor)			{ setReferenceBase(cursor, true); }

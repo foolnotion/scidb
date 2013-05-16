@@ -363,10 +363,12 @@ public:
 			Tcl_IncrRefCount(m_open				= Tcl_NewStringObj("(",						-1));
 			Tcl_IncrRefCount(m_close			= Tcl_NewStringObj(")",						-1));
 			Tcl_IncrRefCount(m_fold				= Tcl_NewStringObj("+",						-1));
-			Tcl_IncrRefCount(m_a					= Tcl_NewStringObj("a",						-1));
+			Tcl_IncrRefCount(m_preceding		= Tcl_NewStringObj("preceding",			-1));
+			Tcl_IncrRefCount(m_trailing		= Tcl_NewStringObj("trailing",			-1));
+			Tcl_IncrRefCount(m_before			= Tcl_NewStringObj("before",				-1));
+			Tcl_IncrRefCount(m_after			= Tcl_NewStringObj("after",				-1));
+			Tcl_IncrRefCount(m_finally			= Tcl_NewStringObj("finally",				-1));
 			Tcl_IncrRefCount(m_e					= Tcl_NewStringObj("e",						-1));
-			Tcl_IncrRefCount(m_f					= Tcl_NewStringObj("f",						-1));
-			Tcl_IncrRefCount(m_p					= Tcl_NewStringObj("p",						-1));
 			Tcl_IncrRefCount(m_s					= Tcl_NewStringObj("s",						-1));
 			Tcl_IncrRefCount(m_blank			= Tcl_NewStringObj(" ",						-1));
 			Tcl_IncrRefCount(m_zero				= Tcl_NewIntObj(0));
@@ -619,10 +621,10 @@ public:
 		objv[0] = m_comment;
 		switch (varPos)
 		{
-			case edit::Comment::AtStart:	objv[1] = m_s; break;
-			case edit::Comment::AtEnd:		objv[1] = m_e; break;
-			case edit::Comment::Inside:	objv[1] = (position == move::Ante) ? m_a: m_p; break;
-			case edit::Comment::Finally:	objv[1] = m_f; break;
+			case edit::Comment::AtStart:	objv[1] = m_preceding; break;
+			case edit::Comment::AtEnd:		objv[1] = m_trailing; break;
+			case edit::Comment::Inside:	objv[1] = (position == move::Ante) ? m_before: m_after; break;
+			case edit::Comment::Finally:	objv[1] = m_finally; break;
 		}
 		objv[2] = Tcl_NewStringObj(comment.content(), comment.content().size());
 
@@ -834,10 +836,12 @@ public:
 	static Tcl_Obj* m_fold;
 	static Tcl_Obj* m_blank;
 	static Tcl_Obj* m_zero;
-	static Tcl_Obj* m_a;
+	static Tcl_Obj* m_preceding;
+	static Tcl_Obj* m_trailing;
+	static Tcl_Obj* m_before;
+	static Tcl_Obj* m_after;
+	static Tcl_Obj* m_finally;
 	static Tcl_Obj* m_e;
-	static Tcl_Obj* m_f;
-	static Tcl_Obj* m_p;
 	static Tcl_Obj* m_s;
 };
 
@@ -890,10 +894,12 @@ Tcl_Obj* Visitor::m_close				= 0;
 Tcl_Obj* Visitor::m_fold				= 0;
 Tcl_Obj* Visitor::m_blank				= 0;
 Tcl_Obj* Visitor::m_zero				= 0;
-Tcl_Obj* Visitor::m_a					= 0;
+Tcl_Obj* Visitor::m_preceding			= 0;
+Tcl_Obj* Visitor::m_trailing			= 0;
+Tcl_Obj* Visitor::m_before				= 0;
+Tcl_Obj* Visitor::m_after				= 0;
+Tcl_Obj* Visitor::m_finally			= 0;
 Tcl_Obj* Visitor::m_e					= 0;
-Tcl_Obj* Visitor::m_f					= 0;
-Tcl_Obj* Visitor::m_p					= 0;
 Tcl_Obj* Visitor::m_s					= 0;
 
 
@@ -2315,15 +2321,22 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 								{
 									char const* which = stringFromObj(objc, objv, nextArg);
 
-									if (*which == 'e')
+									Comment comment;
+									Game const& game = Scidb->game(pos);
+
+									if (*which == 't')
 									{
-										setResult(Scidb->game(pos).trailingComment());
+										comment = game.trailingComment();
 									}
 									else
 									{
-										move::Position position = *which == 'a' ? move::Ante : move::Post;
-										setResult(Scidb->game(pos).comment(position));
+										move::Position position = *which == 'b' ? move::Ante : move::Post;
+										comment = game.comment(position);
 									}
+
+									if (game.displayStyle() & display::ShowEmoticons)
+										comment.detectEmoticons();
+									setResult(comment);
 								}
 								break;
 
@@ -2666,7 +2679,8 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	bool			paragraphSpacing				= boolFromObj(objc, objv, 8);
 	bool			showDiagram						= boolFromObj(objc, objv, 9);
 	Tcl_Obj*		showMoveInfo					= objectFromObj(objc, objv, 10);
-	bool			showVariationNumbers			= boolFromObj(objc, objv, 11);
+	bool			showEmoticon					= boolFromObj(objc, objv, 11);
+	bool			showVariationNumbers			= boolFromObj(objc, objv, 12);
 	unsigned		displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
 	unsigned		moveInfoTypes;
 
@@ -2677,6 +2691,8 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (showDiagram)
 		displayStyle |= display::ShowDiagrams;
+	if (showEmoticon)
+		displayStyle |= display::ShowEmoticons;
 	if (paragraphSpacing)
 		displayStyle |= display::ParagraphSpacing;
 	if (moveInfoTypes)
@@ -2901,12 +2917,10 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					char const*		pos = stringFromObj(objc, objv, 3);
 					mstl::string	comment(stringFromObj(objc, objv, 4));
 
-					move::Position position = (*pos == 'a' ? move::Ante : move::Post);
-
-					if (*pos == 'e')
+					if (*pos == 't')
 						game.setTrailingComment(comment);
 					else
-						game.setComment(comment, position);
+						game.setComment(comment, *pos == 'b' ? move::Ante : move::Post);
 				}
 				break;
 

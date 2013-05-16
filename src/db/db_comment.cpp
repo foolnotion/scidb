@@ -31,6 +31,8 @@
 #include "sys_utf8.h"
 #include "sys_utf8_codec.h"
 
+#include "u_emoticons.h"
+
 #include "m_set.h"
 #include "m_map.h"
 #include "m_utility.h"
@@ -121,25 +123,44 @@ flatten(mstl::string const& src, mstl::string& dst)
 }
 
 
-static void
-escapeString(mstl::string const& src, mstl::string& dst)
+static bool
+detectEmoticons(mstl::string const& str, mstl::string& result)
 {
-	M_ASSERT(dst.empty());
+	bool detected = false;
 
-	dst.reserve(2*src.size());
+	char const* s = str.begin();
+	char const* e = str.end();
 
-	for (mstl::string::const_iterator i = src.begin(); i != src.end(); ++i)
+	while (s < e)
 	{
-		switch (*i)
+		util::emoticons::Emotion emotion;
+
+		char const* q = s;
+		char const* p = util::emoticons::parseEmotion(q, e, emotion);
+
+		mstl::string tmp;
+		mstl::string content;
+
+		tmp.hook(const_cast<char*>(s), p - s);
+		Comment::escapeString(tmp, content);
+		result.append(content);
+
+		if (p < e)
 		{
-			case '&':	dst.append("&amp;",  5); break;
-			case '<':	dst.append("&lt;",   4); break;
-			case '>':	dst.append("&gt;",   4); break;
-			case '\'':	dst.append("&apos;", 6); break;
-			case '"':	dst.append("&quot;", 6); break;
-			default:		dst.append(*i); break;
+			result.append("<emo>", 5);
+
+			mstl::string code;
+			Comment::escapeString(util::emoticons::toAscii(emotion), code);
+			result.append(code);
+			detected = true;
+
+			result.append("</emo>", 6);
 		}
+
+		s = q;
 	}
+
+	return detected;
 }
 
 
@@ -147,7 +168,7 @@ namespace {
 
 struct XmlData
 {
-	enum State { Content, Symbol, Nag };
+	enum State { Content, Symbol, Emoticon, Nag };
 
 	XmlData(Comment::Callback& callback) :cb(callback), state(Content) {}
 
@@ -207,9 +228,10 @@ struct Collector : public Comment::Callback
 	void startAttribute(Attribute attr) override	{}
 	void endAttribute(Attribute attr) override	{}
 
-	void content(mstl::string const& s) override	{ *m_length += s.size(); }
-	void nag(mstl::string const& s) override		{ *m_length += 1; }
-	void symbol(char s) override						{ *m_length += 1; }
+	void content(mstl::string const& s) override		{ *m_length += s.size(); }
+	void nag(mstl::string const& s) override			{ *m_length += 1; }
+	void symbol(char s) override							{ *m_length += 1; }
+	void emoticon(mstl::string const& s) override	{ *m_length += s.size(); }
 
 	void invalidXmlContent(mstl::string const& content) override
 	{
@@ -282,6 +304,13 @@ struct Split : public Comment::Callback
 		m_current->append("<sym>", 5);
 		m_current->append(s);
 		m_current->append("</sym>", 6);
+	}
+
+	void emoticon(mstl::string const& s) override
+	{
+		m_current->append("<emo>", 5);
+		m_current->append(s);
+		m_current->append("</emo>", 6);
 	}
 
 	void nag(mstl::string const& s) override
@@ -685,6 +714,26 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
+	void emoticon(mstl::string const& s) override
+	{
+		if (m_lang)
+		{
+			if (m_wanted || m_fromLang || m_toLang)
+			{
+				m_lang->str.append("<emo>", 5);
+				m_lang->str.append(s);
+				m_lang->str.append("</emo>", 6);
+				m_isXml = true;
+			}
+			else
+			{
+				Comment::escapeString(s, m_lang->str);
+			}
+
+			m_lang->length += 1;
+		}
+	}
+
 	void nag(mstl::string const& s) override
 	{
 		if (m_lang)
@@ -720,6 +769,84 @@ struct Normalize : public Comment::Callback
 };
 
 
+struct DetectEmoticons : public Comment::Callback
+{
+	DetectEmoticons(mstl::string& result) :m_result(result), m_detected(false) {}
+
+	bool detected() const { return m_detected; }
+
+	void start()  override { m_result.append("<xml>"); }
+	void finish() override { m_result.append("</xml>"); }
+
+	void startLanguage(mstl::string const& lang) override
+	{
+		m_result += '<';
+		m_result += ':';
+		m_result += lang;
+		m_result += '>';
+	}
+
+	void endLanguage(mstl::string const& lang) override
+	{
+		m_result += '<';
+		m_result += '/';
+		m_result += ':';
+		m_result += lang;
+		m_result += '>';
+	}
+
+	void startAttribute(Attribute attr) override
+	{
+		m_result += '<';
+		m_result += attr;
+		m_result += '>';
+	}
+
+	void endAttribute(Attribute attr) override
+	{
+		m_result += '<';
+		m_result += '/';
+		m_result += attr;
+		m_result += '>';
+	}
+
+	void content(mstl::string const& str) override
+	{
+		if (::detectEmoticons(str, m_result))
+			m_detected = true;
+	}
+
+	void symbol(char s) override
+	{
+		m_result.append("<sym>", 5);
+		m_result.append(s);
+		m_result.append("</sym>", 6);
+	}
+
+	void emoticon(mstl::string const& s) override
+	{
+		m_result.append("<emo>", 5);
+		m_result.append(s);
+		m_result.append("</emo>", 6);
+	}
+
+	void nag(mstl::string const& s) override
+	{
+		m_result.append("<nag>", 5);
+		m_result.append(s);
+		m_result.append("</nag>", 6);
+	}
+
+	void invalidXmlContent(mstl::string const& content) override
+	{
+		m_result = content;
+	}
+
+	mstl::string&	m_result;
+	bool				m_detected;
+};
+
+
 struct CountLanguages : public Comment::Callback
 {
 	CountLanguages() :m_count(0) {}
@@ -740,6 +867,7 @@ struct CountLanguages : public Comment::Callback
 	void endAttribute(Attribute attr) override				{}
 	void content(mstl::string const& s) override				{}
 	void symbol(char s) override									{}
+	void emoticon(mstl::string const& s) override			{}
 	void nag(mstl::string const& s) override					{}
 
 	void invalidXmlContent(mstl::string const& content) override {}
@@ -794,6 +922,11 @@ struct Flatten : public Comment::Callback
 			m_result += piece::utf8::asString(piece::fromLetter(s));
 		else
 			m_result += s;
+	}
+
+	void emoticon(mstl::string const& s) override
+	{
+		m_result += s;
 	}
 
 	void nag(mstl::string const& s) override
@@ -910,6 +1043,11 @@ struct HtmlConv : public Comment::Callback
 		m_result.append(code, 8);
 	}
 
+	void emoticon(mstl::string const& s) override
+	{
+		m_result.append(s);
+	}
+
 	void nag(mstl::string const& s) override
 	{
 		m_result.append("<nag>", 5);
@@ -941,6 +1079,14 @@ xmlContent(void* cbData, XML_Char const* s, int len)
 	{
 		case XmlData::Symbol:
 			data->cb.symbol(*s);
+			break;
+
+		case XmlData::Emoticon:
+			{
+				mstl::string str;
+				str.hook(const_cast<char*>(s), len);
+				data->cb.emoticon(str);
+			}
 			break;
 
 		case XmlData::Nag:
@@ -1000,6 +1146,14 @@ startXmlElement(void* cbData, XML_Char const* elem, char const** attr)
 			}
 			break;
 
+		case 'e':
+			if (match(elem, "emo"))
+			{
+				data->state = XmlData::Emoticon;
+				return;
+			}
+			break;
+
 		case 'n':
 			if (match(elem, "nag"))
 			{
@@ -1045,6 +1199,14 @@ endXmlElement(void* cbData, XML_Char const* elem)
 
 		case 's':
 			if (match(elem, "sym"))
+			{
+				data->state = XmlData::Content;
+				return;
+			}
+			break;
+
+		case 'e':
+			if (match(elem, "emo"))
 			{
 				data->state = XmlData::Content;
 				return;
@@ -1428,7 +1590,7 @@ Comment::append(Comment const& comment, char delim)
 			if (!comment.m_content.empty())
 			{
 				mstl::string content;
-				::escapeString(comment.m_content, content);
+				escapeString(comment.m_content, content);
 				thatMap[mstl::string::empty_string].swap(content);
 			}
 			Split::join(m_content, thisSplit.m_result, thatMap, delim);
@@ -1443,7 +1605,7 @@ Comment::append(Comment const& comment, char delim)
 			if (!m_content.empty())
 			{
 				mstl::string content;
-				::escapeString(m_content, content);
+				escapeString(m_content, content);
 				thisMap[mstl::string::empty_string].swap(content);
 			}
 			Split::join(m_content, thisMap, thatSplit.m_result, delim);
@@ -1486,7 +1648,7 @@ Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
 		if (!comment.m_content.empty())
 		{
 			mstl::string content;
-			::escapeString(comment.m_content, content);
+			escapeString(comment.m_content, content);
 			thatMap[mstl::string::empty_string].swap(content);
 		}
 		Split::merge(m_content, thisSplit.m_result, thatMap, leadingLanguageSet);
@@ -1501,7 +1663,7 @@ Comment::merge(Comment const& comment, LanguageSet const& leadingLanguageSet)
 		if (!m_content.empty())
 		{
 			mstl::string content;
-			::escapeString(m_content, content);
+			escapeString(m_content, content);
 			thisMap[mstl::string::empty_string].swap(content);
 		}
 		Split::merge(m_content, thisMap, thatSplit.m_result, leadingLanguageSet);
@@ -1700,6 +1862,36 @@ Comment::flatten(mstl::string& result, encoding::CharSet encoding) const
 	{
 		::flatten(m_content, result);
 	}
+}
+
+
+void
+Comment::detectEmoticons()
+{
+	mstl::string content;
+	DetectEmoticons detector(content);
+
+	if (isXml())
+	{
+		parse(detector);
+	}
+	else
+	{
+		mstl::string newContent;
+
+		newContent.append("<xml>");
+		escapeString(m_content, newContent);
+		newContent.append("</xml>");
+		m_content.swap(newContent);
+
+		parse(detector);
+
+		if (!detector.detected())
+			m_content.swap(newContent);
+	}
+
+	if (detector.detected())
+		content.swap(m_content);
 }
 
 
@@ -1932,6 +2124,26 @@ Comment::fromHtml(mstl::string const& s)
 
 	XML_ParserFree(parser);
 	return sucesss;
+}
+
+
+void
+Comment::escapeString(mstl::string const& src, mstl::string& dst)
+{
+	dst.reserve(dst.size() + 2*src.size());
+
+	for (mstl::string::const_iterator i = src.begin(); i != src.end(); ++i)
+	{
+		switch (*i)
+		{
+			case '&':	dst.append("&amp;",  5); break;
+			case '<':	dst.append("&lt;",   4); break;
+			case '>':	dst.append("&gt;",   4); break;
+			case '\'':	dst.append("&apos;", 6); break;
+			case '"':	dst.append("&quot;", 6); break;
+			default:		dst.append(*i); break;
+		}
+	}
 }
 
 

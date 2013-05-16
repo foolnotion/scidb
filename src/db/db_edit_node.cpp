@@ -901,6 +901,13 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	if (work.isFolded)
 		return;
 
+	if (!(work.m_displayStyle & display::ShowDiagrams) && move->hasAnnotation())
+	{
+		m_list.push_back(new Annotation(move->annotation()));
+		work.m_isVirgin = false;
+		work.pushSpace();
+	}
+
 	if (move->threefoldRepetition() || move->fiftyMoveRule())
 	{
 		work.pop(m_list);
@@ -927,6 +934,9 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	{
 		db::Comment comm(move->comment(move::Post));
 		comm.strip(*work.wantedLanguages);
+
+		if (work.m_displayStyle & display::ShowEmoticons)
+			comm.detectEmoticons();
 
 		if (!comm.isEmpty())
 		{
@@ -979,6 +989,9 @@ Move::Move(Work& work, MoveNode const* move)
 	{
 		db::Comment comment(move->comment(move::Ante));
 		comment.strip(*work.wantedLanguages);
+
+		if (work.m_displayStyle & display::ShowEmoticons)
+			comment.detectEmoticons();
 
 		if (!comment.isEmpty())
 		{
@@ -1067,6 +1080,9 @@ Move::Move(Work& work, MoveNode const* move)
 		db::Comment comment(move->comment(move::Post));
 		comment.strip(*work.wantedLanguages);
 
+		if (work.m_displayStyle & display::ShowEmoticons)
+			comment.detectEmoticons();
+
 		if (!comment.isEmpty())
 		{
 			bool isShort =		info.empty()
@@ -1117,6 +1133,9 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 	{
 		db::Comment comm(comment);
 		comm.strip(*work.wantedLanguages);
+
+		if (work.m_displayStyle & display::ShowEmoticons)
+			comm.detectEmoticons();
 
 		if (!comm.isEmpty())
 		{

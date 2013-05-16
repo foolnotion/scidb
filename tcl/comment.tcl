@@ -40,6 +40,7 @@ set FormatText					"Format text"
 set CopyText					"Copy text to"
 set OverwriteContent			"Overwrite existing content?"
 set AppendContent				"If \"no\" the text will be appended."
+set DisplayEmoticons			"Display Emoticons"
 
 set LanguageSelection		"Language selection"
 set Formatting					"Formatting"
@@ -49,6 +50,7 @@ set Italic						"Italic"
 set Underline					"Underline"
 
 set InsertSymbol				"&Insert Symbol..."
+set InsertEmoticon			"&Insert Emoticon..."
 set MiscellaneousSymbols	"Miscellaneous Symbols"
 set Figurine					"Figurine"
 
@@ -82,8 +84,9 @@ array set Fonts {
 }
 
 array set Options {
-	useComboBox 1
-	menuColumns 3
+	useComboBox		1
+	menuColumns		3
+	showEmoticons	1
 }
 
 variable Geometry {}
@@ -164,6 +167,10 @@ proc open {parent pos lang} {
 	$top.text tag configure symbol -font $::font::symbol(text:normal)
 	$top.text tag configure symbolb -font $::font::symbol(text:bold)
 	$top.text tag configure underline -underline true
+
+	set size [font configure $::font::figurine(text:normal) -size]
+	$top.text tag configure emoticon -font [list Emoticons $size]
+	$top.text tag configure emoticon -background yellow
 
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
 	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
@@ -384,19 +391,26 @@ proc Revert {dlg} {
 	variable Vars
 
 	set w $Vars(widget:text)
+	set comment [GetComment]
+	SetUndoPoint $w
+	$w delete 1.0 end
+	SetupComment $Vars(lang) $comment
+	SetUndoPoint $w
+	focus $w
+}
 
-	foreach entry [::scidb::misc::xml toList [::scidb::game::query comment $Vars(pos)]] {
+
+proc GetComment {} {
+	variable Options
+	variable Vars
+
+	set comment [::scidb::game::query comment $Vars(pos)]
+
+	foreach entry [::scidb::misc::xml toList $comment] {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} { set lang xx }
-		if {$lang eq $Vars(lang)} {
-			SetUndoPoint $w
-			$w delete 1.0 end
-			SetupComment $lang $comment
-			SetUndoPoint $w
-		}
+		if {$lang eq $Vars(lang)} { return $comment }
 	}
-
-	focus $w
 }
 
 
@@ -509,6 +523,7 @@ proc InsertComment {lang content {setup 0}} {
 			}
 
 			sym { InsertFigurine $w $text [expr {$flags & 1}] }
+			emo { InsertEmoticon $w $text }
 			nag { InsertNag $w $text [expr {$flags & 1}] }
 
 			+bold			{ incr flags +1 }
@@ -523,7 +538,6 @@ proc InsertComment {lang content {setup 0}} {
 	if {$setup} {
 		set Vars(dump:$lang) [ParseDump [$Vars(widget:text) dump -tag -text 1.0 end]]
 		$Vars(widget:revert) configure -state disabled
-puts "setup"
 	} else {
 		Modified $w
 	}
@@ -582,8 +596,36 @@ proc InsertNag {w nag {bold {}}} {
 		$w insert insert $sym $tags
 	}
 
-	$w tag bind $key <Enter> [namespace code [list TooltipShow $w $key nag $value]]
-	$w tag bind $key <Leave> [namespace code [list TooltipHide $w $key]]
+	$w tag bind $key <Enter> [namespace code [list TooltipShowNag $w $key nag $value]]
+	$w tag bind $key <Leave> [namespace code [list TooltipHide $w]]
+}
+
+
+proc InsertEmoticon {w text} {
+	variable Options
+
+	if {$Options(showEmoticons)} {
+		variable Vars
+
+		set selrange [$w tag ranges sel]
+		set emotion [::emoticons::lookupEmotion $text]
+		set ch [::emoticons::getCharCode $emotion]
+		set key key[incr Vars(count)]
+		set tags [list $key emoticon]
+
+		if {	[llength $selrange]
+			&& [$w compare insert >= [lindex $selrange 0]]
+			&& [$w compare insert <= [lindex $selrange 1]]} {
+			$w replace {*}$selrange $ch $tags
+		} else {
+			$w insert insert $ch $tags
+		}
+
+		$w tag bind $key <Enter> [namespace code [list TooltipShowEmoticon $w $emotion]]
+		$w tag bind $key <Leave> [namespace code [list TooltipHide $w]]
+	} else {
+		InsertChar $w [::emoticons::lookupCode $text]
+	}
 }
 
 
@@ -699,6 +741,10 @@ proc ParseDump {dump} {
 						append content [string map $::figurines::pieceMap $Vars(symbol:$num)]
 					}
 
+					emo {
+						append content [::emoticons::lookupCode [::emoticons::lookupChar $value]]
+					}
+
 					nag {
 						set nag $Vars(symbol:$num)
 						set symbol [::font::mapNagToSymbol $nag]
@@ -716,6 +762,7 @@ proc ParseDump {dump} {
 			tagon {
 				switch -glob $value {
 					symbol*		{ set token nag }
+					emoticon		{ set token emo }
 					code*			{ set token nag }
 					figurine*	{ set token sym }
 					key*			{ set num [string range $value 3 end] }
@@ -724,7 +771,7 @@ proc ParseDump {dump} {
 
 			tagoff {
 				switch -glob $value {
-					symbol* - code* - figurine* { set token str }
+					symbol* - emoticon - code* - figurine* { set token str }
 				}
 			}
 		}
@@ -810,7 +857,7 @@ proc EditRedo {} {
 }
 
 
-proc TooltipShow {w key type value} {
+proc TooltipShowNag {w key type value} {
 	variable Options
 
 	::tooltip::show $w "$::annotation::mc::Nag($value) (\$$value)"
@@ -818,7 +865,13 @@ proc TooltipShow {w key type value} {
 }
 
 
-proc TooltipHide {w key} {
+proc TooltipShowEmoticon {w emotion} {
+	::tooltip::show $w $::emoticons::mc::Tooltip($emotion)
+	$w configure -cursor question_arrow
+}
+
+
+proc TooltipHide {w} {
 	variable Options
 
 	::tooltip::tooltip hide
@@ -842,10 +895,10 @@ proc LanguageChanged {dlg w} {
 	set Vars(mc) $::mc::langID
 
 	switch $Vars(pos) {
-		a { set titleVar CommentBeforeMove }
-		p { set titleVar CommentAfterMove }
-		s { set titleVar PrecedingComment }
-		e { set titleVar TrailingComment }
+		before		{ set titleVar CommentBeforeMove }
+		after			{ set titleVar CommentAfterMove }
+		preceding	{ set titleVar PrecedingComment }
+		trailing		{ set titleVar TrailingComment }
 	}
 
 	wm title $dlg [set mc::$titleVar]
@@ -901,7 +954,7 @@ proc DumpToComment {dump} {
 
 			tagon {
 				switch -glob $value {
-					symbol* - code* - figurine* {
+					symbol* - emoticon - code* - figurine* {
 						set n 0
 						set lst 2
 						if {$fst == 0} { set fst 2 }
@@ -911,7 +964,7 @@ proc DumpToComment {dump} {
 
 			tagoff {
 				switch -glob $value {
-					symbol* - code* - figurine* { set n 1 }
+					symbol* - emoticon - code* - figurine* { set n 1 }
 				}
 			}
 		}
@@ -943,6 +996,8 @@ proc DumpToComment {dump} {
 					} elseif {$n == $count} {
 						if {$lst == 1} { set value [string trimright $value] }
 					}
+				} elseif {$token eq "emo"} {
+					set value [::emoticons::lookupCode [::emoticons::lookupChar $value]]
 				} else {
 					set value $Vars(symbol:$num)
 				}
@@ -978,6 +1033,7 @@ proc DumpToComment {dump} {
 
 					key*				{ set num [string range $value 3 end] }
 					code - symbol	{ set token nag }
+					emoticon			{ set token emo }
 					figurine			{ set token sym }
 				}
 			}
@@ -997,7 +1053,7 @@ proc DumpToComment {dump} {
 						set token str
 					}
 
-					code - symbol - figurine { set token str }
+					code - symbol - emoticon - figurine { set token str }
 				}
 			}
 		}
@@ -1317,6 +1373,15 @@ proc PopupMenu {parent} {
 		;
 	MakeSymbolMenu $parent $m.symbol
 
+	menu $m.emoticons -tearoff no
+	$m add cascade \
+		-compound left \
+		-image $::emoticons::icon(smile) \
+		-label [string map {"..." ""} [::mc::stripAmpersand $mc::InsertEmoticon]] \
+		-menu $m.emoticons \
+		;
+	MakeEmoticonMenu $parent $m.emoticons
+
 	menu $m.format -tearoff no
 	$m add cascade \
 		-compound left \
@@ -1443,7 +1508,31 @@ proc PopupMenu {parent} {
 		-menu $m.languages \
 		;
 
+	if {$::pgn::editor::Options(show:emoticon)} {
+		$m add separator
+		$m add checkbutton \
+			-label " $mc::DisplayEmoticons" \
+			-variable [namespace current]::Options(showEmoticons) \
+			-command [namespace code DisplayEmoticons] \
+			;
+	}
+
 	tk_popup $m {*}[winfo pointerxy $parent]
+}
+
+
+proc MakeEmoticonMenu {w menu} {
+	set emotions [::emoticons::emotions]
+	set n [expr {[llength $emotions]/2 + 1}]
+	foreach emotion $emotions {
+		$menu add command \
+			-image $::emoticons::icon($emotion) \
+			-label " $::emoticons::mc::Tooltip($emotion)" \
+			-compound left \
+			-command [namespace code [list InsertEmoticon $w $emotion]] \
+			-columnbreak [expr {[decr n] == 0}] \
+			;
+	}
 }
 
 
@@ -1718,6 +1807,28 @@ proc Selected {popdown args} {
 		UnpostPopdown $popdown
 		NewLanguage $lang
 	}
+}
+
+
+proc DisplayEmoticons {} {
+	variable Options
+	variable Vars
+
+	set w $Vars(widget:text)
+	set lang $Vars(lang)
+	set mark [$w index current]
+
+	set comment "{xx {"
+	append comment [DumpToComment [$w dump -tag -text 1.0 end]]
+	append comment "}}"
+
+	set content [::scidb::misc::xml fromList $comment]
+	set content [::scidb::misc::xml toList $content -detectemoticons $Options(showEmoticons)]
+
+	$w delete 1.0 end
+	InsertComment $lang [lindex $content 0 1]
+	$w mark set insert $mark
+	$w see insert
 }
 
 

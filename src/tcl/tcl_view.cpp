@@ -934,7 +934,7 @@ cmdEnumTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Progress			progress(objv[4], objv[5]);
 
 	TagMap tags;
-	Scidb->findTags(view, tags, progress);
+	view.findTags(tags, progress);
 
 	if (progress.interrupted())
 	{

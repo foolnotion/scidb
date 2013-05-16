@@ -20,6 +20,7 @@ SRC_CXX = \
 	u_block_file.cpp \
 	u_bit_stream.cpp \
 	u_byte_stream.cpp \
+	u_emoticons.cpp \
 	u_exception.cpp \
 	u_html.cpp \
 	u_http.cpp \
@@ -151,6 +152,26 @@ u_byte_stream.o: ../mstl/m_uint128.h
 u_byte_stream.o: ../mstl/m_assert.h
 u_byte_stream.o: ../mstl/m_string.h
 u_byte_stream.o: ../mstl/m_string.ipp
+u_emoticons.o: u_emoticons.h
+u_emoticons.o: ../sys/sys_utf8.h
+u_emoticons.o: ../mstl/m_types.h
+u_emoticons.o: ../sys/sys_utf8.ipp
+u_emoticons.o: ../mstl/m_string.h
+u_emoticons.o: ../mstl/m_string.ipp
+u_emoticons.o: ../mstl/m_utility.h
+u_emoticons.o: ../mstl/m_type_traits.h
+u_emoticons.o: ../mstl/m_type_traits.ipp
+u_emoticons.o: ../mstl/m_utility.ipp
+u_emoticons.o: ../mstl/m_limits.h
+u_emoticons.o: ../mstl/m_bit_functions.h
+u_emoticons.o: ../mstl/m_bit_functions.ipp
+u_emoticons.o: ../mstl/m_uint128_t.h
+u_emoticons.o: ../mstl/m_uint128.h
+u_emoticons.o: ../mstl/m_assert.h
+u_emoticons.o: ../mstl/m_exception.h
+u_emoticons.o: ../mstl/m_backtrace.h
+u_emoticons.o: ../mstl/m_exception.ipp
+u_emoticons.o: u_base.h
 u_exception.o: u_exception.h
 u_exception.o: ../mstl/m_exception.h
 u_exception.o: ../mstl/m_backtrace.h

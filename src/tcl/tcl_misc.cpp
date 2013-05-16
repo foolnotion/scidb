@@ -49,6 +49,7 @@
 #include "u_crc.h"
 #include "u_html.h"
 #include "u_zstream.h"
+#include "u_emoticons.h"
 
 #include "m_backtrace.h"
 #include "m_string.h"
@@ -61,11 +62,13 @@
 #include <ctype.h>
 
 using namespace tcl;
+using namespace util;
 
 static char const* CmdAttributes				= "::scidb::misc::attributes";
 static char const* CmdContainsUnicodeChar	= "::scidb::misc::containsUnicodeChar";
 static char const* CmdCrc32					= "::scidb::misc::crc32";
 static char const* CmdDebug					= "::scidb::misc::debug?";
+static char const* CmdEmoticons				= "::scidb::misc::emoticons";
 static char const* CmdEncoding				= "::scidb::misc::encoding";
 static char const* CmdExtraTags				= "::scidb::misc::extraTags";
 static char const* CmdFitsRegion				= "::scidb::misc::fitsRegion?";
@@ -182,7 +185,7 @@ class ToList : public ::db::Comment::Callback
 {
 public:
 
-	ToList();
+	ToList(bool detectEmoticons);
 	~ToList() throw();
 
 	Tcl_Obj* result();
@@ -199,6 +202,7 @@ public:
 	void content(mstl::string const& s) override;
 	void nag(mstl::string const& s) override;
 	void symbol(char s) override;
+	void emoticon(mstl::string const& s) override;
 
 	void invalidXmlContent(mstl::string const& content) override;
 
@@ -209,19 +213,22 @@ private:
 	void putContent();
 	void putTag(char const* tag);
 	void putTag(char const* tag, mstl::string const& content);
+	void appendTag(mstl::string const& tag, mstl::string const& content);
 
 	Tcl_Obj*			m_result;
 	mstl::string	m_tag;
 	mstl::string	m_content;
 	Stack				m_stack;
+	bool				m_detectEmoticons;
 };
 
 
 Tcl_Obj* ToList::result() { return m_result; }
 
 
-ToList::ToList()
+ToList::ToList(bool detectEmoticons)
 	:m_result(Tcl_NewListObj(0, 0))
+	,m_detectEmoticons(detectEmoticons)
 {
 	Tcl_IncrRefCount(m_result);
 	m_stack.push(Tcl_NewListObj(0, 0));
@@ -239,27 +246,26 @@ ToList::~ToList() throw()
 
 
 void
+ToList::appendTag(mstl::string const& tag, mstl::string const& content)
+{
+	M_ASSERT(!m_stack.empty());
+
+	Tcl_Obj* objv[2];
+	objv[0] = Tcl_NewStringObj(tag, tag.size());
+	objv[1] = Tcl_NewStringObj(content, content.size());
+	Tcl_ListObjAppendElement(0, m_stack.top(), Tcl_NewListObj(2, objv));
+}
+
+
+void
 ToList::putTag(char const* tag, mstl::string const& content)
 {
 	M_ASSERT(!m_stack.empty());
 
 	if (!content.empty())
 	{
-		Tcl_Obj* objv[2];
-		objv[0] = Tcl_NewStringObj(tag, -1);
-		objv[1] = Tcl_NewStringObj(content, content.size());
-		Tcl_ListObjAppendElement(0, m_stack.top(), Tcl_NewListObj(2, objv));
-	}
-}
-
-
-void
-ToList::putContent()
-{
-	if (!m_content.empty())
-	{
-		putTag("str", m_content);
-		m_content.clear();
+		m_tag = tag;
+		m_content.append(content);
 	}
 }
 
@@ -271,6 +277,56 @@ ToList::putTag(char const* tag)
 
 	Tcl_Obj* objv[1] = { Tcl_NewStringObj(tag, -1) };
 	Tcl_ListObjAppendElement(0, m_stack.top(), Tcl_NewListObj(1, objv));
+}
+
+
+void
+ToList::putContent()
+{
+	if (!m_tag.empty())
+	{
+		appendTag(m_tag, m_content);
+		m_tag.clear();
+		m_content.clear();
+	}
+	else if (!m_content.empty())
+	{
+		if (m_detectEmoticons)
+		{
+			char const* s = m_content.begin();
+			char const* e = m_content.end();
+
+			while (s < e)
+			{
+				util::emoticons::Emotion emotion;
+
+				char const* q = s;
+				char const* p = util::emoticons::parseEmotion(q, e, emotion);
+
+				mstl::string tmp;
+				mstl::string str;
+
+				tmp.hook(const_cast<char*>(s), p - s);
+				::db::Comment::escapeString(tmp, str);
+				appendTag("str", str);
+
+				if (p < e)
+				{
+					mstl::string code;
+					::db::Comment::escapeString(util::emoticons::toAscii(emotion), code);
+					appendTag("emo", code);
+				}
+
+				s = q;
+			}
+		}
+		else
+		{
+			appendTag("str", m_content);
+		}
+
+		m_content.clear();
+	}
 }
 
 
@@ -338,6 +394,8 @@ ToList::endAttribute(Attribute attr)
 void
 ToList::content(mstl::string const& s)
 {
+	if (!m_tag.empty())
+		putContent();
 	::append(m_content, s, s.size());
 }
 
@@ -345,15 +403,26 @@ ToList::content(mstl::string const& s)
 void
 ToList::nag(mstl::string const& s)
 {
-	putContent();
+	if (m_tag != "nag")
+		putContent();
 	putTag("nag", s);
+}
+
+
+void
+ToList::emoticon(mstl::string const& s)
+{
+	if (m_tag != "emo")
+		putContent();
+	putTag("emo", s);
 }
 
 
 void
 ToList::symbol(char s)
 {
-	putContent();
+	if (m_tag != "sym")
+		putContent();
 	putTag("sym", mstl::string(1, s));
 }
 
@@ -379,9 +448,9 @@ ToList::finish()
 	M_ASSERT(!m_stack.empty());
 
 	int length = 0;
-	Tcl_ListObjLength(0, m_stack.top(), &length);
 
 	putContent();
+	Tcl_ListObjLength(0, m_stack.top(), &length);
 
 	if (length)
 	{
@@ -548,6 +617,13 @@ Parser::parse()
 					m_xml.append("</nag>", 6);
 					break;
 
+				case 'e':	// emoticon
+					processModes();
+					m_xml.append("<emo>", 5);
+					m_xml += Tcl_GetString(objs[1]);
+					m_xml.append("</emo>", 6);
+					break;
+
 				case '+':
 					switch (token[1])
 					{
@@ -619,8 +695,19 @@ static int
 cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	::db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
-	ToList callback;
+	bool detectEmoticons = false;
 
+	if (objc > 3)
+	{
+		char const* option = Tcl_GetString(objv[2]);
+
+		if (::strcmp(option, "-detectemoticons") != 0)
+			return error(CmdLookup, 0, 0, "unknown option '%s'", Tcl_GetString(objv[2]));
+
+		detectEmoticons = boolFromObj(objc, objv, 3);
+	}
+
+	ToList callback(detectEmoticons);
 	comment.parse(callback);
 	setResult(callback.result());
 
@@ -656,7 +743,7 @@ static int
 cmdCrc32(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* s = stringFromObj(objc, objv, 1);
-	setResult(util::crc::compute(0, s, ::strlen(s)));
+	setResult(crc::compute(0, s, ::strlen(s)));
 	return TCL_OK;
 }
 
@@ -785,7 +872,7 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdZipContent(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	util::ZStream::Strings result = util::ZStream::zipContent(stringFromObj(objc, objv, 1));
+	ZStream::Strings result = ZStream::zipContent(stringFromObj(objc, objv, 1));
 
 	Tcl_Obj* objs[result.size()];
 
@@ -904,10 +991,10 @@ cmdHtmlHyphenate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int length;
 	char const* document = Tcl_GetStringFromObj(objv[3], &length);
 
-	util::html::Hyphenate hyphenate(
+	html::Hyphenate hyphenate(
 		stringFromObj(objc, objv, 1),
 		stringFromObj(objc, objv, 2),
-		::cacheCount ? util::html::Hyphenate::KeepInCache : util::html::Hyphenate::DontKeepInCache);
+		::cacheCount ? html::Hyphenate::KeepInCache : html::Hyphenate::DontKeepInCache);
 
 	hyphenate.parse(document, length);
 	setResult(hyphenate.result());
@@ -928,7 +1015,7 @@ cmdHtmlLigatures(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	int length;
 	char const* document = Tcl_GetStringFromObj(objv[1], &length);
 
-	util::html::BuildLigatures ligatures;
+	html::BuildLigatures ligatures;
 	ligatures.parse(document, length);
 	setResult(ligatures.result());
 
@@ -986,7 +1073,7 @@ cmdHtmlSearch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 	}
 
-	util::html::Search search(noCase, entireWord, titleOnly, maxMatches);
+	html::Search search(noCase, entireWord, titleOnly, maxMatches);
 
 	int lengthHaystack;
 	int lengthNeedle;
@@ -1021,7 +1108,7 @@ cmdHtmlCache(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const obj
 	if (flag)
 		++::cacheCount;
 	else if (--::cacheCount == 0)
-		util::html::Hyphenate::clearCache();
+		html::Hyphenate::clearCache();
 
 	return TCL_OK;
 }
@@ -1262,6 +1349,60 @@ cmdMemTotal(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv
 }
 
 
+static int
+cmdEmoticons(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	static char const* Emoticons[] =
+	{
+		"smile",		"frown",		"neutral",	"grin",
+		"gleeful",	"wink",		"confuse",	"shock",
+		"grumpy",	"upset",		"cry",		"surprise",
+		"red",		"eek",		"yell",		"roll",
+		"blink",		"sweat",		"razz",		"sleep",
+		"saint",		"evil",		"cool",		"glasses",
+		"kiss",		"kitty",		0
+	};
+
+	static_assert(U_NUMBER_OF(Emoticons) - 2 == util::emoticons::LAST, "table expired");
+
+	if (::strcmp(stringFromObj(objc, objv, 1), "code") == 0)
+	{
+		int index = ::tcl::uniqueMatchObj(objectFromObj(objc, objv, 2), Emoticons);
+
+		if (index == -1)
+			return error(CmdEmoticons, 0, 0, "unknown emotion '%s'", stringFromObj(objc, objv, 2));
+
+		setResult(util::emoticons::toAscii(util::emoticons::Emotion(index)));
+	}
+	else if (::strcmp(Tcl_GetString(objv[1]), "parse") == 0)
+	{
+		util::emoticons::Emotion emotion;
+		char const* s = stringFromObj(objc, objv, 2);
+		bool rc = util::emoticons::lookupEmotion(s, s + ::strlen(s), emotion);
+
+		if (rc && size_t(emotion) >= U_NUMBER_OF(Emoticons))
+			return error(CmdEmoticons, 0, 0, "internal lookup error: table is expired");
+
+		setResult(rc ? Emoticons[emotion] : "");
+	}
+	else if (::strcmp(Tcl_GetString(objv[1]), "list") == 0)
+	{
+		Tcl_Obj* objs[U_NUMBER_OF(Emoticons) - 1];
+
+		for (unsigned i = 0; i < U_NUMBER_OF(Emoticons) - 1; ++i)
+			objs[i] = Tcl_NewStringObj(Emoticons[i], -1);
+
+		setResult(U_NUMBER_OF(Emoticons) - 1, objs);
+	}
+	else
+	{
+		return error(CmdEmoticons, 0, 0, "unknown command '%s'", Tcl_GetString(objv[1]));
+	}
+
+	return TCL_OK;
+}
+
+
 namespace tcl {
 namespace misc {
 
@@ -1273,6 +1414,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdCrc32,					cmdCrc32);
 	createCommand(ti, CmdDebug,					cmdDebug);
 	createCommand(ti, CmdEncoding,				cmdEncoding);
+	createCommand(ti, CmdEmoticons,				cmdEmoticons);
 	createCommand(ti, CmdExtraTags,				cmdExtraTags);
 	createCommand(ti, CmdFitsRegion,				cmdFitsRegion);
 	createCommand(ti, CmdGeometryRequest,		cmdGeometryRequest);

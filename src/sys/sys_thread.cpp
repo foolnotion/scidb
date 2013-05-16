@@ -22,46 +22,34 @@
 #include "m_stdio.h"
 #include "m_exception.h"
 
-#if defined(__i386__) || defined(__x86_64__)
-# define CONFIG_SMP
-#endif
+#include <stdlib.h>
 
-using namespace sys::thread;
+using namespace sys;
 
-#ifdef __WIN32__
-
-# include <windows.h>
-typedef HANDLE Id;
-
-#else
-
-# include <pthread.h>
-typedef pthread_t Id;
-
-#endif
+typedef Thread::atomic_t atomic_t;
+typedef Thread::lock_t lock_t;
 
 
-static Id m_id = 0;
-static Runnable m_runnable;
-
-
-template <int N>
 struct Guard
 {
 	void acquire();
 	void release();
 
-	Guard()	{ acquire(); }
-	~Guard()	{ release(); }
+	Guard(lock_t& lock) :m_lock(lock) { acquire(); }
+	~Guard() { release(); }
+
+	static void initLock(lock_t& lock);
+
+	lock_t& m_lock;
 };
 
 
 static void
-startRoutine(Runnable* runnable)
+startRoutine(Thread::Runnable& runnable)
 {
 	try
 	{
-		(*runnable)();
+		runnable();
 	}
 	catch (mstl::exception& exc)
 	{
@@ -74,87 +62,13 @@ startRoutine(Runnable* runnable)
 	}
 }
 
-// Mutex ////////////////////////////////////////////////////////////////
 
-#ifndef CONFIG_SMP
+// Atomic functions /////////////////////////////////////////////////////////////////
 
-// This is the implementation of Dekker's algorithm, which won't work on SMP machines.
-
-# define ATOMIC_INIT(x) x
-
-typedef volatile int atomic_t;
-
-static volatile int flag[2]	= { 0, 0 };
-static volatile int turn		= 0;
-
-# define atomic_read(v)		(*v)
-# define atomic_set(v, i)	(*v = i)
-
-template <int N>
-void
-Guard<N>::acquire()
-{
-	flag[N] = 1;
-	turn = 1 - N;
-
-	while (flag[1 - N] == 1 && turn == 1 - N)
-		yield();
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	flag[N] = 0;
-}
-
-inline static int
-atomic_cmpxchg(atomic_t* v, int oldval, int newval)
-{
-	Guard<0> guard;
-
-	if (*v != oldval)
-		return *v;
-
-	*v = newval;
-	return oldval;
-}
-
-inline static bool
-atomic_test(atomic_t* v)
-{
-	Guard<1> guard;
-	return *v == 1;
-}
-
-#elif __GNUC_PREREQ(4,1) && !defined(DONT_USE_SYNC_BUILTIN)
-
-# define ATOMIC_INIT(x) { x }
+#if __GNUC_PREREQ(4,1) && !defined(DONT_USE_SYNC_BUILTIN) ///////////////////////////
 
 # define atomic_read(v)		*v
 # define atomic_set(v, i)	(*v = i)
-
-typedef volatile int atomic_t;
-
-static atomic_t m_lock = 0;
-
-template <int N>
-void
-Guard<N>::acquire()
-{
-	while (__sync_fetch_and_add(&m_lock, 1) > 0)
-	{
-		__sync_sub_and_fetch(&m_lock, 1);
-		yield();
-	}
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	__sync_sub_and_fetch(&m_lock, 1);
-}
 
 inline static int
 atomic_cmpxchg(atomic_t* v, int oldval, int newval)
@@ -162,54 +76,12 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 	return __sync_val_compare_and_swap(v, oldval, newval);
 }
 
-inline static bool
-atomic_test(atomic_t* v)
-{
-	Guard<1> guard;
-	return *v == 1;
-}
+#elif defined( __WIN32__) ///////////////////////////////////////////////////////////
 
-#elif defined(__WIN32__)
+# define atomic_read(v)		(*v)
+# define atomic_set(v, i)	(*v = i)
 
-static volatile LONG m_lock = 0;
-
-# define atomic_read(v) (*v)
-
-inline static bool
-atomic_test(volatile LONG* v)
-{
-	if (InterlockedDecrement(v) == 0)
-		return true;
-
-	InterlockedIncrement(v);
-	return false;
-}
-
-template <int N>
-void
-Guard<N>::acquire()
-{
-	while (InterlockedIncrement(&m_lock) > 1)
-	{
-		InterlockedDecrement(&m_lock);
-		yield();
-	}
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	InterlockedDecrement(&m_lock);
-}
-
-#elif defined(__i386__) || defined(__x86_64__)
-
-# define ATOMIC_INIT(x) { x }
-
-typedef struct { volatile int counter; } atomic_t;
-
-static atomic_t m_lock = ATOMIC_INIT(1);
+#elif defined(__i386__) || defined(__x86_64__) //////////////////////////////////////
 
 # define atomic_read(v)		(v)->counter
 # define atomic_set(v, i)	(((v)->counter) = i)
@@ -251,43 +123,9 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 	return prev;
 }
 
-static inline bool
-atomic_test(atomic_t* v)
-{
-	if (atomic_dec_and_test(v))
-		return true;
-
-	atomic_inc(v);
-	return false;
-}
-
-template <int N>
-void
-Guard<N>::acquire()
-{
-	while (!atomic_dec_and_test(&m_lock))
-	{
-		atomic_inc(&m_lock);
-		yield();
-	}
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	atomic_inc(&m_lock);
-}
-
-#elif defined(__MacOSX__)
+#elif defined(__MacOSX__) ///////////////////////////////////////////////////////////
 
 #include <libkern/OSAtomic.h>
-
-typedef struct { volatile int32_t counter; } atomic_t;
-
-# define ATOMIC_INIT(x) { x }
-
-static atomic_t m_lock = ATOMIC_INIT(1);
 
 # define atomic_set(v, i)	(((v)->counter) = i)
 # define atomic_read(v)		((v)->counter)
@@ -304,76 +142,25 @@ atomic_dec_and_test(atomic_t* v)
 	return OSAtomicDecrement32Barrier(&v->counter) != 0;
 }
 
-static inline bool
-atomic_test(atomic_t* v)
-{
-	if (atomic_dec_and_test(v))
-		return true;
-
-	atomic_inc(v);
-	return false;
-}
-
 static inline int
 atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 {
 	return OSAtomicCompareAndSwapIntBarrier(oldval, newval, &v->counter);
 }
 
-template <int N>
-void
-Guard<N>::acquire()
-{
-	while (!atomic_dec_and_test(&m_lock))
-	{
-		atomic_inc(&m_lock);
-		yield();
-	}
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	atomic_inc(&m_lock);
-}
-
-#elif defined (__unix__)
+#elif defined (__unix__) ////////////////////////////////////////////////////////////
 
 // This is the fallback implementation.
-
-pthread_mutex_t m_lock = PTHREAD_MUTEX_INITIALIZER;
-
-template <int N>
-void
-Guard<N>::acquire()
-{
-	if (pthread_mutex_lock(&m_lock) != 0)
-		M_RAISE("pthread_mutex_lock() failed");
-}
-
-template <int N>
-void
-Guard<N>::release()
-{
-	if (pthread_mutex_unlock(&m_lock) != 0)
-	{
-		// don't throw an exception, release() will be used in a destructor
-		::fprintf(stderr, "pthread_mutex_unlock() failed\n");
-	}
-}
-
-typedef int atomic_t;
-
-# define ATOMIC_INIT(i)		(i)
 
 # define atomic_set(v, i)	(*v = i)
 # define atomic_read(v)		(*v)
 
+static pthread_mutex_t m_mutex = PTHREAD_MUTEX_INITIALIZER;
+
 static inline int
 atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 {
-	Guard<0> guard;
+	Guard guard(m_mutex);
 
 	if (*v != oldval)
 		return *v;
@@ -382,89 +169,171 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 	return oldval;
 }
 
-inline static bool
-atomic_test(atomic_t* v)
+#endif //////////////////////////////////////////////////////////////////////////////
+
+
+// Guard implementation /////////////////////////////////////////////////////////////
+
+#if __GNUC_PREREQ(4,1) && !defined(DONT_USE_SYNC_BUILTIN) ///////////////////////////
+
+void
+Guard::acquire()
 {
-	Guard<0> guard;
-	return *v == 1;
+	while (__sync_fetch_and_add(&m_lock, 1) > 0)
+	{
+		__sync_sub_and_fetch(&m_lock, 1);
+		sched_yield();
+	}
 }
 
-#else
-
-# error "Unsupported platform"
-
-#endif
-
-// End of Mutex /////////////////////////////////////////////////////////
-
-#ifdef __WIN32__
-
-static volatile LONG m_cancel = 1;
-
-
-static unsigned
-startRoutine(void* arg)
+void
+Guard::release()
 {
-	startRoutine(static_cast<Arg*>(arg));
-	InterlockedExchange(&m_cancel, 1);
-	return 0;
-}
-
-
-static Id
-createThread()
-{
-	M_ASSERT((&m_cancel & 0x1f) == 0);	// must be aligned to 32-bit boundary
-
-	m_cancel = 0;	// we do not need a memory barrier
-
-	Id id = CreateThread(0, 0, startRoutine, &m_runnable, 0, 0);
-
-	if (id == 0)
-		M_RAISE("CreateThread() failed");
-
-	return id;
-}
-
-
-static void
-cancelThread(Id id)
-{
-	if (InterlockedCompareExchange(&m_cancel, 0, 1) != 0)
-		return false;
-
-	WaitForSingleObject(id, INFINITE);
-	CloseHandle(id);
-
-	return true;
+	__sync_sub_and_fetch(&m_lock, 1);
 }
 
 
 void
-sys::thread::yield()
+Guard::initLock(lock_t& lock)
 {
-	Yield();
+	lock = 0;
 }
 
-#elif defined(__unix__) || defined(__MacOSX__)
+#elif defined( __WIN32__) ///////////////////////////////////////////////////////////
 
-static atomic_t m_cancel = ATOMIC_INIT(1);
-
-
-static void*
-startRoutine(void* arg)
+void
+Guard::acquire()
 {
-	startRoutine(static_cast<Runnable*>(arg));
-	atomic_cmpxchg(&m_cancel, 0, 1);
+	while (InterlockedIncrement(&m_lock) > 1)
+	{
+		InterlockedDecrement(&m_lock);
+		Yield();
+	}
+}
+
+void
+Guard::release()
+{
+	InterlockedDecrement(&m_lock);
+}
+
+
+void
+Guard::initLock(lock_t& lock)
+{
+	lock = 0;
+}
+
+#elif defined(__i386__) || defined(__x86_64__) || defined(__MacOSX__) ///////////////
+
+void
+Guard::acquire()
+{
+	while (!atomic_dec_and_test(&m_lock))
+	{
+		atomic_inc(&m_lock);
+		sched_yield();
+	}
+}
+
+void
+Guard::release()
+{
+	atomic_inc(&m_lock);
+}
+
+
+void
+Guard::initLock(lock_t& lock)
+{
+	lock.counter = 1;
+}
+
+#elif defined (__unix__) ////////////////////////////////////////////////////////////
+
+// This is the fallback implementation.
+
+void
+Guard::acquire()
+{
+	if (pthread_mutex_lock(&m_lock) != 0)
+		M_RAISE("pthread_mutex_lock() failed");
+}
+
+void
+Guard::release()
+{
+	if (pthread_mutex_unlock(&m_lock) != 0)
+	{
+		// don't throw an exception, release() will be used in a destructor
+		::fprintf(stderr, "pthread_mutex_unlock() failed\n");
+	}
+}
+
+
+void
+Guard::initLock(lock_t& lock)
+{
+	lock = 1;
+}
+
+#else ///////////////////////////////////////////////////////////////////////////////
+
+# error "Unsupported platform"
+
+#endif //////////////////////////////////////////////////////////////////////////////
+
+
+#ifdef __WIN32__ ////////////////////////////////////////////////////////////////////
+
+unsigned
+Thread::startThread(void* arg)
+{
+	startRoutine(static_cast<Thread*>(arg)->m_runnable);
+	InterlockedExchange(&(static_cast<Thread*>(arg)->m_cancel), 1);
+	return 0;
+}
+
+
+void
+Thread::createThread()
+{
+	M_ASSERT((&m_cancel & 0x1f) == 0);	// must be aligned to 32-bit boundary
+
+	m_cancel = 0;	// we do not need a memory barrier
+	m_threadId = CreateThread(0, 0, &startThread, this, 0, 0);
+
+	if (m_threadId == 0)
+		M_RAISE("CreateThread() failed");
+}
+
+
+bool
+Thread::cancelThread()
+{
+	if (InterlockedCompareExchange(&m_cancel, 0, 1) == 1)
+		return false;
+
+	WaitForSingleObject(m_threadId, INFINITE);
+	CloseHandle(m_threadId);
+	return true;
+}
+
+#elif defined(__unix__) || defined(__MacOSX__) //////////////////////////////////////
+
+void*
+Thread::startThread(void* arg)
+{
+	startRoutine(static_cast<Thread*>(arg)->m_runnable);
+	atomic_cmpxchg(&(static_cast<Thread*>(arg))->m_cancel, 0, 1);
 	pthread_exit(0); // never returns
 }
 
 
-static Id
-createThread()
+void
+Thread::createThread()
 {
 	pthread_attr_t attr;
-	pthread_t id;
 
 	if (pthread_attr_init(&attr) != 0)
 		M_RAISE("pthread_attr_init() failed");
@@ -477,98 +346,92 @@ createThread()
 
 	pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE);
 
-	int rc = pthread_create(&id, &attr, startRoutine, &m_runnable);
+	int rc = pthread_create(&m_threadId, &attr, &startThread, this);
 	pthread_attr_destroy(&attr);
 
 	if (rc != 0)
+	{
+		atomic_set(&m_cancel, 1);
 		M_RAISE("pthread_create() failed");
-
-	return id;
+	}
 }
 
 
-static bool
-cancelThread(Id id)
+bool
+Thread::cancelThread()
 {
-	if (atomic_cmpxchg(&m_cancel, 0, 1) != 0)
+	if (atomic_cmpxchg(&m_cancel, 0, 1) == 1)
 		return false;
 
-	pthread_join(id, 0);
+	pthread_join(m_threadId, 0);
 	return true;
 }
 
-
-void
-sys::thread::yield()
-{
-	sched_yield();
-}
-
-#else
+#else ///////////////////////////////////////////////////////////////////////////////
 
 # error "Unsupported platform"
 
-#endif
+#endif //////////////////////////////////////////////////////////////////////////////
 
-#include <stdlib.h>
 
 #ifndef NDEBUG
-static bool noThreads = getenv("SCIDB_NO_THREADS") != 0;
+static bool m_noThreads = getenv("SCIDB_NO_THREADS") != 0;
 #endif
+
+
+Thread::Thread()
+{
+	Guard::initLock(m_lock);
+	atomic_set(&m_cancel, 1);
+}
+
+
+Thread::~Thread()
+{
+	Guard guard(m_lock);	// really neccessary?
+	cancelThread();
+}
 
 
 void
-sys::thread::start(Runnable runnable)
+Thread::start(Runnable runnable)
 {
-#ifndef NDEBUG
-
-	if (::noThreads)
-		return runnable();
-
-#endif
-
-	Guard<0> guard;	// really neccessary?
-	cancelThread(m_id);
 	m_runnable = runnable;
-	m_id = createThread();
+
+#ifndef NDEBUG
+	if (::m_noThreads)
+		return m_runnable();
+#endif
+
+	Guard guard(m_lock);	// really neccessary?
+	cancelThread();
+	createThread();
 }
 
 
 bool
-sys::thread::stop()
+Thread::stop()
 {
 #ifndef NDEBUG
-
-	if (::noThreads)
+	if (::m_noThreads)
 		return true;
-
 #endif
 
-	Guard<0> guard;
-	return cancelThread(m_id);
+	Guard guard(m_lock);
+	return cancelThread();
 }
 
 
 bool
-sys::thread::testCancel()
+Thread::testCancel()
 {
 #ifndef NDEBUG
-
-	if (::noThreads)
+	if (::m_noThreads)
 		return false;
-
 #endif
-
-#if 0
-
- 	return atomic_test(&m_cancel);
-
-#else
 
 	// we do not need synchronization here
 	return atomic_read(&m_cancel);
-
-#endif
 }
 
 // vi:set ts=3 sw=3:

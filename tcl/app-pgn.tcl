@@ -101,7 +101,8 @@ set MoveInfo(video)					"Video Time"
 
 variable Vars
 variable CharLimit 250
-variable Counter 0
+variable CursorCounter 0
+variable EmoticonCounter 0
 
 array set MoveInfoPGN {
 	eval	"%eval"
@@ -519,8 +520,8 @@ proc editComment {pos {position -1} {key {}} {lang {}}} {
 
 	if {[::scidb::game::position $position atStart?]} {
 		switch $pos {
-			p { return }
-			a { set pos s }
+			after		{ return }
+			before	{ set pos preceding }
 		}
 	}
 
@@ -937,6 +938,9 @@ proc ConfigureEditor {} {
 	::scidb::game::switch $position
 	::scidb::tree::freeze 0
 	refresh
+
+	set Vars(current:$position) ""
+	ProcessGoto $position $Vars(pgn:$position) [::scidb::game::position key] $Vars(successor:$position)
 }
 
 
@@ -1264,20 +1268,30 @@ proc InsertMove {position w level key data} {
 
 					default {
 						variable cursor::collapse
+						variable cursor::expand
 						variable ::pgn::editor::Colors
 
 						if {$space eq "+"} {
 							$w insert current " "
-							set img $w.[string map {. :} $key]
-							tk::label $img \
-								-background $Colors(background) \
-								-borderwidth 0 \
-								-padx 0 \
-								-pady 0 \
-								-image $icon::12x12::expand \
-								;
-							$w window create current -align center -window $img
-							bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
+							if {[::font::truetypeSupport?]} {
+								set myKey unfold:$key
+								$w insert current "+" [list circled $myKey]
+								set cmd [namespace code [list ToggleFold $w $key 0]]
+								$w tag bind $myKey <ButtonPress-1> $cmd
+								$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
+								$w tag bind $myKey <Any-Leave> [namespace code [list LeavePlus $w]]
+							} else {
+								set img $w.[string map {. :} $key]
+								tk::label $img \
+									-background $Colors(background) \
+									-borderwidth 0 \
+									-padx 0 \
+									-pady 0 \
+									-image $icon::12x12::expand \
+									;
+								$w window create current -align center -window $img
+								bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
+							}
 							$w insert current " )" bracket
 						} elseif {[info exists collapse]} {
 							set tag fold:$key
@@ -1312,6 +1326,7 @@ proc InsertMove {position w level key data} {
 				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
 				if {[llength $suffixAnnotation]} {
 					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
+					set suffixAnnotation {}
 				}
 				set havePly 1
 			}
@@ -1360,7 +1375,7 @@ proc InsertMove {position w level key data} {
 			comment {
 				set startPos [$w index current]
 				set type [lindex $node 1]
-				if {$type eq "f"} {
+				if {$type eq "finally"} {
 					PrintMoveInfo $position $w $level $key [lindex $node 2]
 				} else {
 					PrintComment $position $w $level $key $type [lindex $node 2]
@@ -1370,6 +1385,10 @@ proc InsertMove {position w level key data} {
 				}
 			}
 		}
+	}
+
+	if {[llength $suffixAnnotation]} {
+		PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
 	}
 }
 
@@ -1547,6 +1566,33 @@ proc PrintComment {position w level key pos data} {
 					if {[string is integer $sym]} { set sym "{\$$sym}" }
 					$w insert current [::font::mapNagToUtfSymbol $sym] $tag
 					incr count
+				}
+				emo {
+					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					set emotion [::emoticons::lookupEmotion $text]
+					if {[string length $emotion]} {
+						variable ::pgn::editor::Colors
+						variable EmoticonCounter
+						set img $w.emoticon_[incr EmoticonCounter]
+						tk::label $img \
+							-background $Colors(background) \
+							-borderwidth 0 \
+							-image $::emoticons::icon($emotion) \
+							;
+						$w window create current -align center -window $img
+						$w insert current "\ufeff" $langTag
+						bind $img <ButtonPress-1> [namespace code [list EditComment $position $key $pos $lang]]
+						bind $img <Enter> [list ::tooltip::show $w $::emoticons::mc::Tooltip($emotion)]
+						bind $img <Leave> [list ::tooltip::hide]
+					} else {
+						switch $flags {
+							0 { set tag {} }
+							1 { set tag bold }
+							2 { set tag italic }
+							3 { set tag bold-italic }
+						}
+						$w insert current $text [list $langTag $tag]
+					}
 				}
 				str {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
@@ -1791,7 +1837,7 @@ proc LeaveMark {w tag} {
 
 
 proc EnterBracket {w key} {
-	variable Counter
+	variable CursorCounter
 
 	if {[::scidb::game::variation folded? $key]} {
 		set cursor $cursor::expand
@@ -1799,15 +1845,47 @@ proc EnterBracket {w key} {
 		set cursor $cursor::collapse
 	}
 
-	incr Counter
-	after 75 [namespace code [list SetCursor $w $cursor $Counter]]
+	incr CursorCounter
+	after 75 [namespace code [list SetCursor $w $CursorCounter $cursor]]
 }
 
 
-proc SetCursor {w cursor counter} {
-	variable Counter
+proc LeaveBracket {w} {
+	variable CursorCounter
 
-	if {$counter < $Counter} { return }
+	incr CursorCounter
+	after 75 [namespace code [list UnsetCursor $w $CursorCounter]]
+}
+
+
+proc EnterPlus {w} {
+	variable CursorCounter
+
+	incr CursorCounter
+	after 75 [namespace code [list SetCursor $w $CursorCounter $cursor::expand]]
+}
+
+
+proc LeavePlus {w} {
+	variable CursorCounter
+
+	incr CursorCounter
+	after 75 [namespace code [list UnsetCursor $w $CursorCounter]]
+}
+
+
+proc ToggleFold {w key triggerEnter} {
+	::scidb::game::variation fold $key toggle
+	if {$triggerEnter} {
+		EnterBracket $w $key	;# toggle cursor
+	}
+}
+
+
+proc SetCursor {w counter cursor} {
+	variable CursorCounter
+
+	if {$counter < $CursorCounter} { return }
 
 	if {[tk windowingsystem] eq "x11"} {
 		::xcursor::setCursor $w $cursor
@@ -1817,23 +1895,15 @@ proc SetCursor {w cursor counter} {
 }
 
 
-proc LeaveBracket {w} {
-	variable Counter
+proc UnsetCursor {w counter} {
+	variable CursorCounter
 
-	incr Counter
+	if {$counter < $CursorCounter} { return }
 
 	if {[tk windowingsystem] eq "x11"} {
 		::xcursor::unsetCursor $w
 	} else {
 		$w configure -cursor {}
-	}
-}
-
-
-proc ToggleFold {w key triggerEnter} {
-	::scidb::game::variation fold $key toggle
-	if {$triggerEnter} {
-		EnterBracket $w $key	;# toggle cursor
 	}
 }
 
@@ -2316,7 +2386,7 @@ proc PopupMenu {parent position} {
 				-label " $mc::EditPrecedingComment..." \
 				-image $::fsbox::bookmarks::icon::16x16::modify \
 				-compound left \
-				-command [namespace code [list editComment p $position]] \
+				-command [namespace code [list editComment preceding $position]] \
 				-accel $accel \
 				;
 		} else {
@@ -2324,14 +2394,14 @@ proc PopupMenu {parent position} {
 				-label " $mc::EditCommentBefore..." \
 				-image $::fsbox::bookmarks::icon::16x16::modify \
 				-compound left \
-				-command [namespace code [list editComment a $position]] \
+				-command [namespace code [list editComment before $position]] \
 				-accel $accel \
 				;
 			$menu add command \
 				-label " $mc::EditCommentAfter..." \
 				-image $::fsbox::bookmarks::icon::16x16::modify \
 				-compound left \
-				-command [namespace code [list editComment p $position]] \
+				-command [namespace code [list editComment after $position]] \
 				-accel "$::mc::Key(Ctrl)-[set [namespace parent]::board::mc::Accel(edit-comment)]" \
 				;
 		}
@@ -2340,7 +2410,7 @@ proc PopupMenu {parent position} {
 				-label " $mc::EditTrailingComment..." \
 				-image $::fsbox::bookmarks::icon::16x16::modify \
 				-compound left \
-				-command [namespace code [list editComment e $position]] \
+				-command [namespace code [list editComment trailing $position]] \
 				;
 		}
 		$menu add command \
@@ -2431,7 +2501,8 @@ proc PopupMenu {parent position} {
 								Display(numbering) show:varnumbers
 								Display(moveinfo) show:moveinfo
 								Display(nagtext) show:nagtext
-								Diagrams(show) show:diagram} {
+								Diagrams(show) show:diagram
+								Emoticons(show) show:emoticon} {
 		$menu.display add checkbutton \
 			-label [set ::pgn::setup::mc::$label] \
 			-onvalue 1 \

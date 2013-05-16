@@ -337,7 +337,7 @@ Database::save(util::Progress& progress)
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly() || !isReadonly());
 	M_REQUIRE(isMemoryOnly() || isWriteable());
-	M_REQUIRE(isMemoryOnly() || !usingAsyncReader());
+	M_REQUIRE(!usingAsyncReader());
 
 	if (m_size == m_gameInfoList.size())
 		return;
@@ -399,6 +399,7 @@ Database::writeGames(mstl::ostream& os, util::Progress& progress)
 	M_REQUIRE(format() == format::Scidb);
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(!isMemoryOnly());
+	M_REQUIRE(!usingAsyncReader());
 
 	m_namebases.update();
 	m_codec->reset();
@@ -424,6 +425,8 @@ Database::sync(util::Progress& progress)
 void
 Database::close()
 {
+	M_REQUIRE(!usingAsyncReader());
+
 	if (m_codec)
 	{
 		util::Progress progress;
@@ -440,6 +443,7 @@ void
 Database::remove()
 {
 	M_REQUIRE(format() == format::Scidb || format() == format::Scid3 || format() == format::Scid4);
+	M_REQUIRE(!usingAsyncReader());
 
 	if (m_codec)
 		m_codec->close(); // we don't need sync()
@@ -1006,6 +1010,7 @@ Database::copyGames(	Database& destination,
 	M_REQUIRE(isOpen());
 	M_REQUIRE(destination.isOpen());
 	M_REQUIRE(destination.isWriteable());
+	M_REQUIRE(!destination.usingAsyncReader());
 	M_REQUIRE(	destination.format() == format::Scidb
 				|| destination.format() == format::Scid3
 				|| destination.format() == format::Scid4);
@@ -1725,7 +1730,6 @@ void
 Database::findTags(Filter const& filter, TagMap& tags, util::Progress& progress) const
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(format() == format::Scidb);
 
 	unsigned count			= filter.count();

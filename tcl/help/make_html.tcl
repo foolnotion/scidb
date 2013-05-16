@@ -460,16 +460,20 @@ proc readContents {chan file} {
 			}
 		} else {
 			set e 0
-			while {[regexp -indices {<a[^>]*href=.http[^>]*>[^<]*</a>} $line indices]} {
-				lassign $indices s e
-				set newline [string range $line 0 [expr {$e - 4}]]
+			while {[regexp -indices {<a[^>]*href=.http[^>]*()>[^<]*</a>} $line indices inspos]} {
+				lassign $indices s e; lassign $inspos f l
+				set newline [string range $line 0 $l]
+				append newline " target=\"blank_\""
+				append newline [string range $line $f [expr {$e - 4}]]
 				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}
-			while {[regexp -indices {<a[^>]*href=.ftp[^>]*>[^<]*</a>} $line indices]} {
-				lassign $indices s e
-				set newline [string range $line 0 [expr {$e - 4}]]
+			while {[regexp -indices {<a[^>]*href=.ftp[^>]*()>[^<]*</a>} $line indices]} {
+				lassign $indices s e; lassign $inspos f l
+				set newline [string range $line 0 $l]
+				append newline " target=\"blank_\""
+				append newline [string range $line $f [expr {$e - 4}]]
 				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline

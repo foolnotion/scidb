@@ -344,6 +344,8 @@ public:
 	LanguageSet const& languageSet() const;
 	/// Get move style.
 	move::Notation moveStyle() const;
+	/// Get display flags.
+	unsigned displayStyle() const;
 
 	// Moving through game
 

@@ -26,15 +26,22 @@
 using namespace util;
 
 
-PipedProgress::PipedProgress() : m_total(0), m_interrupted(false), m_prevValue(-1) {}
-
 bool PipedProgress::interruptReceived() const { return m_interrupted; }
+
+
+PipedProgress::PipedProgress(sys::Thread& thread)
+	:m_thread(thread)
+	,m_total(0)
+	,m_interrupted(false)
+	,m_prevValue(-1)
+{
+}
 
 
 bool
 PipedProgress::interrupted()
 {
-	if (!sys::thread::testCancel())
+	if (!m_thread.testCancel())
 		return false;
 
 	if (!m_interrupted)

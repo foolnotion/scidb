@@ -894,6 +894,8 @@
 
 ::pgn::setup::mc::Section(Diagrams)				"Diagramas"
 ::pgn::setup::mc::Diagrams(show)					"Mostrar diagramas"
+# Note for translators: "Emoticons" can be simply translated to "Smileys"
+::pgn::setup::mc::Emoticons(show)				"Detect Emoticons" ;# NEW
 ::pgn::setup::mc::Diagrams(square-size)		"Tamaño de los escaques"
 ::pgn::setup::mc::Diagrams(indentation)		"Sangrar el ancho"
 
@@ -2060,6 +2062,8 @@
 ::comment::mc::CopyText					"Copiar texto a"
 ::comment::mc::OverwriteContent		"¿Sobrescribir contenido existente?"
 ::comment::mc::AppendContent			"Si \"no\" el texto se agregará al final."
+# Note for translators: "Emoticons" can be simply translated to "Smiley
+::comment::mc::DisplayEmoticons		"Display Emoticons" ;# NEW
 
 ::comment::mc::LanguageSelection		"Selección de idioma"
 ::comment::mc::Formatting				"Formateando"
@@ -2069,6 +2073,8 @@
 ::comment::mc::Underline				"Subrayado"
 
 ::comment::mc::InsertSymbol			"&Insertar símbolo..."
+# Note for translators: "Emoticon" can be simply translated to "Smiley"
+::comment::mc::InsertEmoticon			"Insert &Emoticon..." ;# NEW
 ::comment::mc::MiscellaneousSymbols	"Simbolos misceláneos"
 ::comment::mc::Figurine					"Piezas"
 
@@ -2826,6 +2832,34 @@
 ::calendar::mc::WeekdayName(4)	"Jueves"
 ::calendar::mc::WeekdayName(5)	"Viernes"
 ::calendar::mc::WeekdayName(6)	"Sábado"
+
+### emoticons ##########################################################
+::emoticons::mc::Tooltip(smile)		"Smiling (Smiley)" ;# NEW
+::emoticons::mc::Tooltip(frown)		"Frown (Frowny)" ;# NEW
+::emoticons::mc::Tooltip(saint)		"Saint" ;# NEW
+::emoticons::mc::Tooltip(evil)		"Evil" ;# NEW
+::emoticons::mc::Tooltip(gleeful)	"Gleeful" ;# NEW
+::emoticons::mc::Tooltip(wink)		"Winking" ;# NEW
+::emoticons::mc::Tooltip(cool)		"Cool" ;# NEW
+::emoticons::mc::Tooltip(grin)		"Grinning" ;# NEW
+::emoticons::mc::Tooltip(neutral)	"Neutral" ;# NEW
+::emoticons::mc::Tooltip(sweat)		"Sweating" ;# NEW
+::emoticons::mc::Tooltip(confuse)	"Confused" ;# NEW
+::emoticons::mc::Tooltip(shock)		"Shocked" ;# NEW
+::emoticons::mc::Tooltip(kiss)		"Kissing" ;# NEW
+::emoticons::mc::Tooltip(razz)		"Razzing" ;# NEW
+::emoticons::mc::Tooltip(grumpy)		"Disappointed / Grumpy" ;# NEW
+::emoticons::mc::Tooltip(upset)		"Upset" ;# NEW
+::emoticons::mc::Tooltip(cry)			"Crying" ;# NEW
+::emoticons::mc::Tooltip(yell)		"Yelling" ;# NEW
+::emoticons::mc::Tooltip(surprise)	"Surprised" ;# NEW
+::emoticons::mc::Tooltip(red)			"Ashamed" ;# NEW
+::emoticons::mc::Tooltip(sleep)		"Sleepy" ;# NEW
+::emoticons::mc::Tooltip(eek)			"Scared" ;# NEW
+::emoticons::mc::Tooltip(kitty)		"Kitty" ;# NEW
+::emoticons::mc::Tooltip(roll)		"Eye-rolling" ;# NEW
+::emoticons::mc::Tooltip(blink)		"Blinking" ;# NEW
+::emoticons::mc::Tooltip(glasses)	"Intelligent" ;# NEW
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "La apertura de la base \"%s\" se pospondrá hasta que concluya la operación en curso."

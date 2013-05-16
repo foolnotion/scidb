@@ -1330,7 +1330,8 @@ namespace display
 		ParagraphSpacing		= 1 << 2,
 		ShowDiagrams			= 1 << 3,
 		ShowMoveInfo			= 1 << 4,
-		ShowVariationNumbers	= 1 << 5,
+		ShowEmoticons			= 1 << 5,
+		ShowVariationNumbers	= 1 << 6,
 	};
 };
 

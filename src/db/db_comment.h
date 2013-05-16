@@ -63,6 +63,7 @@ public:
 		virtual void content(mstl::string const& s) = 0;
 		virtual void nag(mstl::string const& s) = 0;
 		virtual void symbol(char s) = 0;
+		virtual void emoticon(mstl::string const& s) = 0;
 
 		virtual void invalidXmlContent(mstl::string const& content) = 0;
 	};
@@ -103,6 +104,7 @@ public:
 	void remove(mstl::string const& lang);
 	void remove(LanguageSet const& languageSet);
 	void strip(LanguageSet const& set);
+	void detectEmoticons();
 	bool fromHtml(mstl::string const& s);
 	void swap(Comment& comment);
 	void swap(mstl::string& content, bool engFlag, bool othFlag);
@@ -121,6 +123,7 @@ public:
 	static bool convertCommentToXml(	mstl::string const& comment,
 												Comment& result,
 												encoding::CharSet encoding);
+	static void escapeString(mstl::string const& src, mstl::string& dst);
 
 private:
 

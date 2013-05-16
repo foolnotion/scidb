@@ -93,6 +93,7 @@ set Display(nagtext)				"Text for unusual NAG comments"
 
 set Section(Diagrams)			"Diagrams"
 set Diagrams(show)				"Show Diagrams"
+set Emoticons(show)				"Detect Emoticons"
 set Diagrams(square-size)		"Square Size"
 set Diagrams(indentation)		"Indent Width"
 
@@ -180,6 +181,7 @@ array set DefaultOptions {
 	show:moveinfo		1
 	show:varnumbers	0
 	show:diagram		1
+	show:emoticon		1
 	show:opening		1
 	show:nagtext		1
 	indent:amount		25
@@ -299,6 +301,9 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
 
+		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
+		$w tag configure circled -foreground #008b00
+
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold)
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)
 		$w tag configure symbolb -font $::font::symbol($fontContext:bold)
@@ -345,7 +350,8 @@ proc setupStyle {context {position -1}} {
 
 	if {$context eq "editor"} {
 		set paragraphSpacing $Options(spacing:paragraph)
-		set diagramShow $Options(show:diagram)
+		set showDiagrams $Options(show:diagram)
+		set showEmoticons [expr {$Options(show:emoticon) && abs([::font::currentFontSize $context]) >= 12}]
 		set showMoveInfo {}
 		set showVariationNumbers $Options(show:varnumbers)
 
@@ -356,8 +362,9 @@ proc setupStyle {context {position -1}} {
 		}
 	} else {
 		set paragraphSpacing no
-		set diagramShow no
+		set showDiagrams no
 		set showMoveInfo {}
+		set showEmoticons no
 		set showVariationNumbers no
 	}
 
@@ -367,8 +374,9 @@ proc setupStyle {context {position -1}} {
 		$Options(style:column) \
 		$Options(style:move) \
 		$paragraphSpacing \
-		$diagramShow \
+		$showDiagrams \
 		$showMoveInfo \
+		$showEmoticons \
 		$showVariationNumbers \
 		;
 }
@@ -433,13 +441,7 @@ proc openSetupDialog {parent context position args} {
 	}
 	$style resize
 
-	if {![::font::haveSymbols?]} {
-		$style disable symbol-font
-	}
-	if {![::font::haveFigurines?]} {
-		$style disable figurine-font
-		$style disable figurine-bold
-	}
+	SetupStyle $style
 
 	set options [::tk::multiwindow $top.options \
 		-borderwidth 1 \
@@ -498,7 +500,7 @@ proc openSetupDialog {parent context position args} {
 	::widget::dialogButtons $dlg {ok apply cancel reset revert}
 	$dlg.ok configure -command [namespace code [list ApplyOptions $context $position yes]]
 	$dlg.apply configure -command [namespace code [list ApplyOptions $context $position no]]
-	$dlg.cancel configure -command [namespace code [list DoClose $context $position]]
+	$dlg.cancel configure -command [namespace code [list RevertOptions $context $position yes]]
 	$dlg.revert configure -command [namespace code [list RevertOptions $context $position no]]
 	$dlg.reset configure -command [namespace code [list ResetOptions $context $position]]
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list RevertOptions $context $position yes]]
@@ -602,7 +604,7 @@ proc RevertOptions {context position close} {
 	if {$Revert_Fonts(figurine:use)} {
 		set lang graphic
 	} else {
-		set lang $Revert_Options(figurine:lang)
+		set lang $Revert_Fonts(figurine:lang)
 	}
 	::font::useLanguage $lang
 
@@ -1190,6 +1192,7 @@ proc RefreshFigurineFont {context position lang} {
 	::font::unregisterFigurineFonts setup
 
 	if {$lang eq "graphic"} {
+		set ::font::Options(figurine:lang) ""
 		::font::useFigurines yes
 		set action enable
 		set color blue2
@@ -1200,6 +1203,8 @@ proc RefreshFigurineFont {context position lang} {
 		set action disable
 		set color #595985
 	}
+
+	SetupStyle $Priv(tree)
 
 	foreach tag {figurine-font figurine-bold} {
 		if {[info exists Priv(link:text:$tag)]} {
@@ -1231,6 +1236,20 @@ proc RefreshNotation {context position style} {
 
 	set New_Options(style:move) $style
 	RefreshOptions $context $position style:move
+}
+
+
+proc SetupStyle {style} {
+	if {[::font::haveSymbols?]} { set action enable } else { set action disable }
+	$style $action symbol-font
+
+	if {[::font::haveFigurines?] && [string length $::font::Options(figurine:lang)] == 0} {
+		set action enable
+	} else {
+		set action disable
+	}
+	$style $action figurine-font
+	$style $action figurine-bold
 }
 
 

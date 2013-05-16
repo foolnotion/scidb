@@ -49,6 +49,7 @@ SOURCES = \
 	utils/web.tcl \
 	utils/xcursor.tcl \
 	utils/player-photos.tcl \
+	utils/emoticons.tcl \
 	dnd/tkdnd.tcl \
 	dnd/tkdnd_unix.tcl \
 	widgets/tooltip.tcl \

@@ -117,15 +117,15 @@ array set Attr {
 	games,after				tree
 	games,type				frame
 
-	analysis,width			320
-	analysis,height		300
-	analysis,minWidth		280
-	analysis,minHeight	200
-	analysis,stretch		never
-	analysis,float			1
-	analysis,before		{}
-	analysis,after			pgn
-	analysis,type			frame
+	clock,width				320
+	clock,height			150
+	clock,minWidth			280
+	clock,minHeight		100
+	clock,stretch			never
+	clock,float				1
+	clock,before			{}
+	clock,after				pgn
+	clock,type				frame
 }
 
 array set Vars {
@@ -235,7 +235,7 @@ proc open {} {
 #	set right [tk::panedwindow $right.pw -orient vertical -opaqueresize true]
 #	pack $right -fill both -expand yes
 
-#	foreach {sub class} {pgn Frame analysis Frame} {
+#	foreach {sub class} {pgn Frame clock Frame} {
 #		set $sub [tk::frame $right.$sub \
 #						-class $class \
 #						-width $Attr($sub,width) \
@@ -252,16 +252,14 @@ proc open {} {
 
 	set pgn [tk::frame $right.pgn -class Frame -width $Attr(pgn,width)]
 
-if {[::process::testOption use-analysis]} {
-	set analysis [tk::frame $right.analysis -class Frame -width $Attr(analysis,width)]
+if {[::process::testOption use-clock]} {
+	set clock [tk::frame $right.clock -class Frame -width $Attr(clock,width)]
+	grid $clock -row 0 -column 0 -sticky nsew
 }
 
-	grid $pgn -row 0 -column 0 -sticky nsew
-if {[::process::testOption use-analysis]} {
-	grid [::ttk::separator $right.sep -orient horizontal] -row 1 -column 0 -sticky ew
-	grid $analysis -row 2 -column 0 -sticky nsew
-}
-	grid rowconfigure $right 0 -weight 1
+	grid $pgn -row 1 -column 0 -sticky nsew
+
+	grid rowconfigure $right 1 -weight 1
 	grid columnconfigure $right 0 -weight 1
 
 	foreach {sub class} {tree Frame games Frame} {
@@ -291,10 +289,10 @@ if {[::process::testOption use-analysis]} {
 	pgn::build $right.pgn $Attr(pgn,width) $Attr(pgn,height)
 	tree::build $bottom.tree $Attr(tree,width) $Attr(tree,height) $bottom.games
 	tree::games::build $bottom.games $Attr(games,width) $Attr(games,height)
-if {[::process::testOption use-analysis]} {
-	analysis::build $right.analysis $Attr(analysis,width) $Attr(analysis,height)
+
+if {[::process::testOption use-clock]} {
+	clock::build $right.clock $Attr(clock,width) $Attr(clock,height)
 }
-#[winfo parent $bottom] forget $bottom
 
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]
 	bind $app <Destroy> [namespace code { Exit %W }]
@@ -675,14 +673,14 @@ proc TabChanged {nb app} {
 			database::activate $nb.database 1
 			board::activate $nb.main.top.board 0
 			tree::activate $nb.main.bottom.tree 0
-#			analysis::activate $nb.main.top.right.analysis 0
+#			clock::activate $nb.main.top.right.clock 0
 		}
 
 		main {
 			database::activate $nb.database 0
 			board::activate $nb.main.top.board 1
 			tree::activate $nb.main.bottom.tree 1
-#			analysis::activate $nb.main.top.right.analysis 1
+#			clock::activate $nb.main.top.right.clock 1
 		}
 	}
 

@@ -33,6 +33,8 @@
 #include "u_crc.h"
 #include "u_rkiss.h"
 
+#include "sys_thread.h"
+
 #include "m_map.h"
 #include "m_vector.h"
 #include "m_string.h"
@@ -298,7 +300,6 @@ public:
 											util::Progress& progress,
 											Update updateMode);
 	unsigned stripTags(View& view, TagMap const& tags, util::Progress& progress, Update updateMode);
-	void findTags(View const& view, TagMap& tags, util::Progress& progress) const;
 	void viewClosed(Cursor const& cursor, unsigned viewId);
 	void exportGameToClipbase(unsigned position);
 	void pasteLastClipbaseGame(unsigned position);
@@ -398,6 +399,7 @@ public:
 
 	static mstl::string const& clipbaseName();
 	static mstl::string const& scratchbaseName();
+	static sys::Thread& treeThread();
 
 private:
 
@@ -506,7 +508,8 @@ private:
 
 	mutable SubscriberP m_subscriber;
 
-	static Application* m_instance;
+	static Application*	m_instance;
+	static sys::Thread	m_treeThread;
 };
 
 } // namespace app

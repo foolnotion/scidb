@@ -48,6 +48,7 @@ inline unsigned Game::variationLevel() const			{ return m_currentKey.level(); }
 inline color::ID Game::sideToMove() const				{ return m_currentBoard.sideToMove(); }
 inline TagSet const& Game::tags() const				{ return m_tags; }
 inline GameData const& Game::data() const				{ return *this; }
+inline unsigned Game::displayStyle() const			{ return m_displayStyle; }
 
 inline void Game::setTags(TagSet const& tags)		{ m_tags = tags; }
 inline void Game::setFlags(unsigned flags)			{ m_flags = flags; }

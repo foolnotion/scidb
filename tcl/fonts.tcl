@@ -98,6 +98,8 @@ array set mapCodeToNag {
 	"\u21d4"				149
 	"\u21d7"				150
 	"\u25e8"				153
+	"\u2b12"				155
+	"\u2b13"				156
 	"\u26af"				157
 	"\u26ae"				159
 	"\u26a8"				160
@@ -212,8 +214,8 @@ array set SymbolUtfEncoding {
 	152 "\u25eb"
 	153 "\u25e8"
 	154 "^="
-	155 "D"
-	156 "D'"
+	155 "\u2b12"
+	156 "\u2b13"
 	157 "\u26af"
 	158 "oo"
 	159 "\u26ae"
@@ -1186,12 +1188,20 @@ proc setupChessFonts {} {
 		set symbolEncoding $chessSymbolFontsMap([string tolower $Options(symbol:family)])
 	}
 
-	if {$UseFigurines && [::tk windowingsystem] eq "x11"} {
+	if {![truetypeSupport?]} {
 		set UseFigurines 0
-		catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set UseFigurines 1 } }
+		set UseSymbols 0
 	}
 
-	useFigurines [expr {$UseFigurines && $Options(figurine:use)}] yes
+	UseFigurines [expr {$UseFigurines && $Options(figurine:use)}]
+}
+
+
+proc truetypeSupport? {} {
+	if {[::tk windowingsystem] ne "x11"} { return 1 }
+	set truetypeSupport 0
+	catch { if {[::tk::pkgconfig get fontsystem] eq "xft"} { set truetypeSupport 1 } }
+	return $truetypeSupport
 }
 
 
@@ -1216,24 +1226,11 @@ proc useLanguage {lang} {
 
 
 proc useFigurines {flag {force 0}} {
-	variable UseFigurines
 	variable Options
-	variable figurine
-	variable figurineEncoding
-	variable chessFigurineFontsMap
 
 	if {!$force && $Options(figurine:use) == $flag} { return }
 	set Options(figurine:use) $flag
-
-	unregisterFigurineFonts text
-	registerFigurineFonts text
-
-	if {$UseFigurines} {
-		set figurineEncoding(normal) \
-			$chessFigurineFontsMap([string tolower $Options(figurine:family:normal)])
-		set figurineEncoding(bold) \
-			$chessFigurineFontsMap([string tolower $Options(figurine:family:bold)])
-	}
+	UseFigurines $flag
 }
 
 
@@ -1252,6 +1249,12 @@ proc haveFigurines? {} {
 
 proc haveSymbols? {} {
 	return [set [namespace current]::UseSymbols]
+}
+
+
+proc currentFontSize {context} {
+	variable Options
+	return [expr {-$Options($context:size)}]
 }
 
 
@@ -1765,6 +1768,24 @@ if {$tcl_platform(platform) ne "windows"} {
 		}
 	}
 
+}
+
+
+proc UseFigurines {flag} {
+	variable Options
+	variable UseFigurines
+	variable figurineEncoding
+	variable chessFigurineFontsMap
+
+	unregisterFigurineFonts text
+	registerFigurineFonts text
+
+	if {$UseFigurines} {
+		set figurineEncoding(normal) \
+			$chessFigurineFontsMap([string tolower $Options(figurine:family:normal)])
+		set figurineEncoding(bold) \
+			$chessFigurineFontsMap([string tolower $Options(figurine:family:bold)])
+	}
 }
 
 

@@ -891,6 +891,8 @@
 
 ::pgn::setup::mc::Section(Diagrams)				"Diagrams"
 ::pgn::setup::mc::Diagrams(show)					"Show Diagrams"
+# Note for translators: "Emoticons" can be simply translated to "Smileys"
+::pgn::setup::mc::Emoticons(show)				"Detect Emoticons"
 ::pgn::setup::mc::Diagrams(square-size)		"Square Size"
 ::pgn::setup::mc::Diagrams(indentation)		"Indent Width"
 
@@ -2055,6 +2057,8 @@
 ::comment::mc::CopyText					"Copy text to"
 ::comment::mc::OverwriteContent		"Overwrite existing content?"
 ::comment::mc::AppendContent			"If \"no\" the text will be appended."
+# Note for translators: "Emoticons" can be simply translated to "Smiley
+::comment::mc::DisplayEmoticons		"Display Emoticons"
 
 ::comment::mc::LanguageSelection		"Language selection"
 ::comment::mc::Formatting				"Formatting"
@@ -2063,7 +2067,9 @@
 ::comment::mc::Italic					"Italic"
 ::comment::mc::Underline				"Underline"
 
-::comment::mc::InsertSymbol			"&Insert Symbol..."
+::comment::mc::InsertSymbol			"Insert &Symbol..."
+# Note for translators: "Emoticon" can be simply translated to "Smiley"
+::comment::mc::InsertEmoticon			"Insert &Emoticon..."
 ::comment::mc::MiscellaneousSymbols	"Miscellaneous Symbols"
 ::comment::mc::Figurine					"Figurine"
 
@@ -2821,6 +2827,34 @@
 ::calendar::mc::WeekdayName(4)	"Thursday"
 ::calendar::mc::WeekdayName(5)	"Friday"
 ::calendar::mc::WeekdayName(6)	"Saturday"
+
+### emoticons ##########################################################
+::emoticons::mc::Tooltip(smile)		"Smiling (Smiley)"
+::emoticons::mc::Tooltip(frown)		"Frown (Frowny)"
+::emoticons::mc::Tooltip(saint)		"Saint"
+::emoticons::mc::Tooltip(evil)		"Evil"
+::emoticons::mc::Tooltip(gleeful)	"Gleeful"
+::emoticons::mc::Tooltip(wink)		"Winking"
+::emoticons::mc::Tooltip(cool)		"Cool"
+::emoticons::mc::Tooltip(grin)		"Grinning"
+::emoticons::mc::Tooltip(neutral)	"Neutral"
+::emoticons::mc::Tooltip(sweat)		"Sweating"
+::emoticons::mc::Tooltip(confuse)	"Confused"
+::emoticons::mc::Tooltip(shock)		"Shocked"
+::emoticons::mc::Tooltip(kiss)		"Kissing"
+::emoticons::mc::Tooltip(razz)		"Razzing"
+::emoticons::mc::Tooltip(grumpy)		"Disappointed / Grumpy"
+::emoticons::mc::Tooltip(upset)		"Upset"
+::emoticons::mc::Tooltip(cry)			"Crying"
+::emoticons::mc::Tooltip(yell)		"Yelling"
+::emoticons::mc::Tooltip(surprise)	"Surprised"
+::emoticons::mc::Tooltip(red)			"Ashamed"
+::emoticons::mc::Tooltip(sleep)		"Sleepy"
+::emoticons::mc::Tooltip(eek)			"Scared"
+::emoticons::mc::Tooltip(kitty)		"Kitty"
+::emoticons::mc::Tooltip(roll)		"Eye-rolling"
+::emoticons::mc::Tooltip(blink)		"Blinking"
+::emoticons::mc::Tooltip(glasses)	"Intelligent"
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Opening of database \"%s\" is postponed until current operation will be finished."

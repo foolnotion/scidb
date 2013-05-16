@@ -72,6 +72,7 @@ using namespace util;
 
 
 Application* Application::m_instance = 0;
+sys::Thread Application::m_treeThread;
 
 unsigned const Application::InvalidPosition;
 unsigned const Application::ReservedPosition;
@@ -1915,7 +1916,7 @@ Application::moveGamesBackToDatabase(Cursor& cursor)
 {
 	if (cursor.isScratchbase())
 		return;
-	
+
 	mstl::string const& databaseName = cursor.base().name();
 
 	for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
@@ -2025,7 +2026,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 
 	M_ASSERT(m_referenceBase->hasTreeView());
 
-	sys::thread::stop();
+	m_treeThread.stop();
 
 	EditGame const& g	= *m_gameMap.find(m_currentPosition)->second;
 	Database& base		= m_referenceBase->base();
@@ -2057,7 +2058,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 	base.openAsyncReader();
 
 	::runnable = new Runnable(tree, *g.data.game, base, mode, ratingType, progress);
-	sys::thread::start(mstl::function<void ()>(&Runnable::operator(), ::runnable));
+	m_treeThread.start(mstl::function<void ()>(&Runnable::operator(), ::runnable));
 
 	return false;
 }
@@ -2068,7 +2069,7 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 {
 	Runnable::TreeP tree;
 
-	sys::thread::stop();
+	m_treeThread.stop();
 
 	if (::runnable)
 	{
@@ -2169,7 +2170,7 @@ Application::stopUpdateTree()
 {
 	M_REQUIRE(hasInstance());
 
-	sys::thread::stop();
+	m_treeThread.stop();
 
 	if (::runnable)
 	{
@@ -2194,7 +2195,7 @@ Application::cancelUpdateTree()
 {
 	M_REQUIRE(hasInstance());
 
-	sys::thread::stop();
+	m_treeThread.stop();
 
 	if (::runnable)
 		::runnable->m_database.closeAsyncReader();
@@ -2684,7 +2685,7 @@ Application::cursor(unsigned databaseId) const
 void
 Application::finalize()
 {
-	sys::thread::stop();
+	m_treeThread.stop();
 
 	for (Iterator i = begin(), e = end(); i != e; ++i)
 		i->close();
@@ -2925,16 +2926,6 @@ Application::stripTags(View& view, TagMap const& tags, util::Progress& progress,
 	}
 
 	return numGames;
-}
-
-
-void
-Application::findTags(View const& view, TagMap& tags, util::Progress& progress) const
-{
-	if (view.cursor().isReferenceBase())
-		stopUpdateTree();
-
-	view.findTags(tags, progress);
 }
 
 

@@ -79,7 +79,7 @@ set Add(var)					"Add move as new variation"
 set Add(line)					"Add variation"
 set Add(all)					"Add all variations"
 
-} ;# analysis mc
+} ;# namespace mc
 
 namespace import ::tcl::mathfunc::abs
 
@@ -89,7 +89,7 @@ array set Defaults {
 	info:foreground	darkgreen
 	best:foreground	darkgreen
 	error:foreground	darkred
-	active:background	#ebf4f5
+	active:background	#f5f5e4
 }
 
 array set Options {
