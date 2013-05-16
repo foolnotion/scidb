@@ -185,7 +185,7 @@ class ToList : public ::db::Comment::Callback
 {
 public:
 
-	ToList(bool detectEmoticons);
+	ToList(bool detectEmoticons, bool expandEmoticons);
 	~ToList() throw();
 
 	Tcl_Obj* result();
@@ -220,15 +220,17 @@ private:
 	mstl::string	m_content;
 	Stack				m_stack;
 	bool				m_detectEmoticons;
+	bool				m_expandEmoticons;
 };
 
 
 Tcl_Obj* ToList::result() { return m_result; }
 
 
-ToList::ToList(bool detectEmoticons)
+ToList::ToList(bool detectEmoticons, bool expandEmoticons)
 	:m_result(Tcl_NewListObj(0, 0))
 	,m_detectEmoticons(detectEmoticons)
+	,m_expandEmoticons(expandEmoticons)
 {
 	Tcl_IncrRefCount(m_result);
 	m_stack.push(Tcl_NewListObj(0, 0));
@@ -308,7 +310,9 @@ ToList::putContent()
 
 				tmp.hook(const_cast<char*>(s), p - s);
 				::db::Comment::escapeString(tmp, str);
-				appendTag("str", str);
+
+				if (!str.empty())
+					appendTag("str", str);
 
 				if (p < e)
 				{
@@ -412,9 +416,16 @@ ToList::nag(mstl::string const& s)
 void
 ToList::emoticon(mstl::string const& s)
 {
-	if (m_tag != "emo")
-		putContent();
-	putTag("emo", s);
+	if (m_expandEmoticons)
+	{
+		content(s);
+	}
+	else
+	{
+		if (m_tag != "emo")
+			putContent();
+		putTag("emo", s);
+	}
 }
 
 
@@ -695,19 +706,23 @@ static int
 cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	::db::Comment comment(stringFromObj(objc, objv, 1), false, false); // language flags not needed
+
 	bool detectEmoticons = false;
+	bool expandEmoticons = false;
 
 	if (objc > 3)
 	{
 		char const* option = Tcl_GetString(objv[2]);
 
-		if (::strcmp(option, "-detectemoticons") != 0)
+		if (::strcmp(option, "-detectemoticons") == 0)
+			detectEmoticons = boolFromObj(objc, objv, 3);
+		else if (::strcmp(option, "-expandemoticons") == 0)
+			expandEmoticons = boolFromObj(objc, objv, 3);
+		else
 			return error(CmdLookup, 0, 0, "unknown option '%s'", Tcl_GetString(objv[2]));
-
-		detectEmoticons = boolFromObj(objc, objv, 3);
 	}
 
-	ToList callback(detectEmoticons);
+	ToList callback(detectEmoticons, expandEmoticons);
 	comment.parse(callback);
 	setResult(callback.result());
 

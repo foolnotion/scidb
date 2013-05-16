@@ -195,6 +195,7 @@ proc open {parent pos lang} {
 		-compound left \
 		-image $icon::iconReset \
 		-command [namespace code [list Revert $dlg]] \
+		-state disabled \
 		;
 	set Vars(lang:label) [LanguageName]
 	set Vars(widget:lang) $butts.lang
@@ -353,10 +354,12 @@ proc MakeLanguageButtons {} {
 
 
 proc Accept {} {
+	variable Options
 	variable Vars
 
 	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
+	set expand [expr {!$Options(showEmoticons)}]
 	set Vars(comment) [::scidb::misc::xml fromList $Vars(content)]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
 }
@@ -404,9 +407,11 @@ proc GetComment {} {
 	variable Options
 	variable Vars
 
+	set expand [expr {!$Options(showEmoticons)}]
 	set comment [::scidb::game::query comment $Vars(pos)]
+	set content [::scidb::misc::xml toList $comment -expandemoticons $expand]
 
-	foreach entry [::scidb::misc::xml toList $comment] {
+	foreach entry $content {
 		lassign $entry lang comment
 		if {[string length $lang] == 0} { set lang xx }
 		if {$lang eq $Vars(lang)} { return $comment }
@@ -456,6 +461,7 @@ proc Init {parent lang} {
 
 
 proc Update {{setup 1}} {
+	variable Options
 	variable Vars
 
 	set w $Vars(widget:text)
@@ -468,7 +474,8 @@ proc Update {{setup 1}} {
 	if {$setup} {
 		array unset Vars undoStack:*
 		array unset Vars undoStackIndex:*
-		set Vars(content) [::scidb::misc::xml toList $Vars(comment)]
+		set expand [expr {!$Options(showEmoticons)}]
+		set Vars(content) [::scidb::misc::xml toList $Vars(comment) -expandemoticons $expand]
 	}
 
 	foreach entry $Vars(content) {
@@ -937,6 +944,7 @@ proc SwitchLanguage {lang} {
 
 
 proc DumpToComment {dump} {
+	variable Options
 	variable Vars
 
 	set count 0
@@ -1065,8 +1073,9 @@ proc DumpToComment {dump} {
 	set newContent "{xx {"
 	append newContent $content
 	append newContent "}}"
+	set expand [expr {!$Options(showEmoticons)}]
 	set newContent [::scidb::misc::xml fromList $newContent]
-	set newContent [::scidb::misc::xml toList $newContent]
+	set newContent [::scidb::misc::xml toList $newContent -expandemoticons $expand]
 	set content [lindex $newContent 0 1]
 
 	return $content
@@ -1822,11 +1831,12 @@ proc DisplayEmoticons {} {
 	append comment [DumpToComment [$w dump -tag -text 1.0 end]]
 	append comment "}}"
 
+	if {$Options(showEmoticons)} { set opt -detectemoticons } else { set opt -expandemoticons }
 	set content [::scidb::misc::xml fromList $comment]
-	set content [::scidb::misc::xml toList $content -detectemoticons $Options(showEmoticons)]
+	set content [::scidb::misc::xml toList $content $opt 1]
 
 	$w delete 1.0 end
-	InsertComment $lang [lindex $content 0 1]
+	SetupComment $lang [lindex $content 0 1]
 	$w mark set insert $mark
 	$w see insert
 }
