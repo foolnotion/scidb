@@ -111,7 +111,6 @@ proc update {} {
 			{Apollo|1296050637190|yellow.color|gregor}
 			{Arena|1348599577049|yellow.color|gregor}
 			{Black & White|1322146556616|yellow.color|gregor}
-			{Blue Theme|1354018040763|yellow.color|gregor}
 			{Burly|1262881982561|yellow.color|gregor}
 			{Burnett|1228820485389|yellow.color|gregor}
 			{Fantasy|1228820514842|yellow.color|gregor}
@@ -129,6 +128,7 @@ proc update {} {
 			{Motif|1262882557387|yellow.color|gregor}
 			{Ocean|1262882648418|yellow.color|gregor}
 			{Phoenix|1354101318690|purple|gregor}
+			{Primus|1368794511290|yellow.color|gregor}
 			{Sand|1228828282840|yellow.color|gregor}
 			{Scidb|1251901638256|yellow.color|gregor}
 			{Staidly|1326986145826|yellow.color|gregor}
@@ -161,7 +161,6 @@ proc update {} {
 			{Apollo|1243715687066|yellow.color|gregor}
 			{Arena|1348599714170|yellow.color|gregor}
 			{Black & White|1322146381433|yellow.color|gregor}
-			{Blue Theme|1354016677445|yellow.color|gregor}
 			{Brown & Goldenrod|1355495679308|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
 			{Crater|1296048990606|yellow.color|gregor}
@@ -174,6 +173,7 @@ proc update {} {
 			{Marble - Brown|1243715874135|yellow.color|gregor}
 			{Marble - Red|1296049694406|yellow.color|gregor}
 			{Ocean|1262882896027|yellow.color|gregor}
+			{Primus|1368794504056|yellow.color|gregor}
 			{Sand|1228820287277|yellow.color|gregor}
 			{Scidb|1251901586671|yellow.color|gregor}
 			{Seagreen|1355510010833|yellow.color|gregor}

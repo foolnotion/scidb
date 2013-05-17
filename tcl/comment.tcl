@@ -354,12 +354,10 @@ proc MakeLanguageButtons {} {
 
 
 proc Accept {} {
-	variable Options
 	variable Vars
 
 	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
-	set expand [expr {!$Options(showEmoticons)}]
 	set Vars(comment) [::scidb::misc::xml fromList $Vars(content)]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
 }
@@ -404,12 +402,10 @@ proc Revert {dlg} {
 
 
 proc GetComment {} {
-	variable Options
 	variable Vars
 
-	set expand [expr {!$Options(showEmoticons)}]
 	set comment [::scidb::game::query comment $Vars(pos)]
-	set content [::scidb::misc::xml toList $comment -expandemoticons $expand]
+	set content [::scidb::misc::xml toList $comment -expandemoticons [ExpandEmoticons]]
 
 	foreach entry $content {
 		lassign $entry lang comment
@@ -461,7 +457,6 @@ proc Init {parent lang} {
 
 
 proc Update {{setup 1}} {
-	variable Options
 	variable Vars
 
 	set w $Vars(widget:text)
@@ -474,8 +469,7 @@ proc Update {{setup 1}} {
 	if {$setup} {
 		array unset Vars undoStack:*
 		array unset Vars undoStackIndex:*
-		set expand [expr {!$Options(showEmoticons)}]
-		set Vars(content) [::scidb::misc::xml toList $Vars(comment) -expandemoticons $expand]
+		set Vars(content) [::scidb::misc::xml toList $Vars(comment) -expandemoticons [ExpandEmoticons]]
 	}
 
 	foreach entry $Vars(content) {
@@ -691,7 +685,7 @@ proc PasteText {w str} {
 				incr i $m
 				set m 0
 			} else {
-				incr m -1
+				decr m
 			}
 		}
 		if {$m == 1} {
@@ -805,19 +799,22 @@ proc Modified {w} {
 }
 
 
-proc SetUndoPoint {w {lang {}}} {
+proc SetUndoPoint {w {lang {}} {force 0}} {
 	variable Vars
 
 	if {[string length $lang] == 0} { set lang $Vars(lang) }
 
 	set dump [$w dump -tag -text 1.0 end]
 	set text [ParseDump $dump]
-	set insert [$w index insert]
+	set content [DumpToComment $dump]
+	set mark [$w index insert]
 
 	if {[info exists Vars(undoStack:$lang)]} {
-		if {$text eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 1]} {
-			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $insert
-			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2 [DumpToComment $dump]
+		if {!$force
+				? $content eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]
+				: $text eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 1]} {
+			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $mark
+#			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2 $content
 			return
 		}
 		set Vars(undoStack:$lang) [lrange $Vars(undoStack:$lang) 0 $Vars(undoStackIndex:$lang)]
@@ -826,7 +823,7 @@ proc SetUndoPoint {w {lang {}}} {
 		set Vars(undoStackIndex:$lang) 0
 	}
 
-	lappend Vars(undoStack:$lang) [list $insert $text [DumpToComment $dump]]
+	lappend Vars(undoStack:$lang) [list $mark $text $content]
 }
 
 
@@ -835,11 +832,14 @@ proc DoUndo {lang inc} {
 
 	set w $Vars(widget:text)
 	incr Vars(undoStackIndex:$lang) $inc
+	set currentText [ParseDump [$w dump -tag -text 1.0 end]]
 	lassign [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang)] mark text content
 	$w delete 1.0 end
 	InsertComment $lang $content
-	$w mark set insert $mark
-	$w see insert
+	if {$currentText ne $text} {
+		$w mark set insert $mark
+		$w see insert
+	}
 }
 
 
@@ -944,7 +944,6 @@ proc SwitchLanguage {lang} {
 
 
 proc DumpToComment {dump} {
-	variable Options
 	variable Vars
 
 	set count 0
@@ -983,7 +982,7 @@ proc DumpToComment {dump} {
 	set content {}
 	set num 0
 	set length 0
-	array set flags { bold 0 italic 0 underline 0 }
+	array set flags { bold 0 italic 0 bold-italic 0 underline 0 }
 
 	foreach {key value index} $dump {
 		switch $key {
@@ -1016,48 +1015,49 @@ proc DumpToComment {dump} {
 			}
 
 			tagon {
-				switch -glob $value {
-					bold - italic - bold-italic - underline {
-						foreach fmt [split $value -] {
-							if {[incr flags($fmt)] == 1} {
-								lappend content "+$fmt"
-							}
-						}
+				switch $value {
+					bold - italic - underline {
+						if {[incr flags($value)] == 1} { lappend content "+$value" }
+					}
+
+					bold-italic {
+						if {[incr flags($value)] == 1} { lappend content "+bold"; lappend content "+italic" }
 					}
 
 					codeb - symbolb {
-						if {[incr flags(bold)] == 1} {
-							lappend content "+bold"
-						}
+						if {[incr flags(bold)] == 1} { lappend content "+bold" }
 						set token nag
 					}
 
 					figurineb {
-						if {[incr flags(bold)] == 1} {
-							lappend content "+bold"
-						}
+						if {[incr flags(bold)] == 1} { lappend content "+bold" }
 						set token sym
 					}
 
-					key*				{ set num [string range $value 3 end] }
 					code - symbol	{ set token nag }
 					emoticon			{ set token emo }
 					figurine			{ set token sym }
+
+					default {
+						if {[string match key* $value]} {
+							 set num [string range $value 3 end]
+						}
+					}
 				}
 			}
 
 			tagoff {
 				switch $value {
-					bold - italic - bold-italic - underline {
-						if {[incr flags($fmt) -1] == 0} {
-							lappend content "-$fmt"
-						}
+					bold - italic - underline {
+						if {[decr flags($value)] == 0} { lappend content "-$value" }
+					}
+
+					bold-italic {
+						if {[decr flags($value)] == 0} { lappend content "-italic"; lappend content "-bold" }
 					}
 
 					symbolb - codeb - figurineb {
-						if {[incr flags(bold) -1] == 0} {
-							lappend content "-bold"
-						}
+						if {[decr flags(bold)] == 0} { lappend content "-bold" }
 						set token str
 					}
 
@@ -1073,12 +1073,17 @@ proc DumpToComment {dump} {
 	set newContent "{xx {"
 	append newContent $content
 	append newContent "}}"
-	set expand [expr {!$Options(showEmoticons)}]
 	set newContent [::scidb::misc::xml fromList $newContent]
-	set newContent [::scidb::misc::xml toList $newContent -expandemoticons $expand]
+	set newContent [::scidb::misc::xml toList $newContent -expandemoticons [ExpandEmoticons]]
 	set content [lindex $newContent 0 1]
 
 	return $content
+}
+
+
+proc ExpandEmoticons {} {
+	variable Options
+	return [expr {!$Options(showEmoticons)}]
 }
 
 
@@ -1901,6 +1906,7 @@ proc ChangeFormat {format {toggle no}} {
 	variable Vars
 
 	set w $Vars(widget:text)
+	set content [DumpToComment [$w dump -tag -text 1.0 end]]
 	set selrange [$w tag ranges sel]
 	ToggleFormat $format $toggle
 	if {[llength $selrange] == 0} { return }
@@ -1909,7 +1915,7 @@ proc ChangeFormat {format {toggle no}} {
 	array set flags {bold 0 italic 0 underline 0 symbol 0 symbolb 0 figurine 0 figurineb 0}
 	set flags($format) $Vars(format:$format)
 
-	foreach {key value index} [$w dump -tag 1.0 ${lastIndex}+1c] {
+	foreach {key value index} [$w dump -tag 1.0 end] {
 		if {[$w compare $prevIndex <= $index] && [$w compare $index <= $lastIndex]} {
 			if {$prevIndex ne $index} {
 				set range [list $prevIndex $index]
@@ -1956,12 +1962,17 @@ proc ChangeFormat {format {toggle no}} {
 			foreach fmt [split $value -] {
 				if {$fmt ne $format} {
 					switch $key {
-						tagon  { incr flags($fmt) +1 }
-						tagoff { incr flags($fmt) -1 }
+						tagon  { incr flags($fmt) }
+						tagoff { decr flags($fmt) }
 					}
 				}
 			}
 		}
+	}
+
+	set newContent [DumpToComment [$w dump -tag -text 1.0 end]]
+	if {$content ne $newContent} {
+		SetUndoPoint $w $Vars(lang) yes
 	}
 
 	Modified $Vars(widget:text)

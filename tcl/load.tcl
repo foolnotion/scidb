@@ -249,6 +249,7 @@ set msg [format $load::mc::Loading $load::mc::Theme]
 
 # --- Load themes ------------------------------------------------------
 ### Upgrade #######################################
+set update 0
 if {	[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]
 	|| [file exists [file join $::scidb::dir::user themes Mayan-1.dat]]} {
 	file delete [file join $::scidb::dir::user themes BlueMono.dat]
@@ -268,8 +269,15 @@ if {	[file exists [file join $::scidb::dir::user themes StonyGlass.dat]]
 	file delete [file join $::scidb::dir::user themes square Wood-Green.dat]
 	file delete [file join $::scidb::dir::user themes piece MayanRed.dat]
 	file delete [file join $::scidb::dir::user themes piece Yellow.dat]
-	::scidb::themes::update
+	set update 1
 }
+if {[file exists [file join $::scidb::dir::user themes BlueTheme.dat]]} {
+	file delete [file join $::scidb::dir::user themes BlueTheme.dat]
+	file delete [file join $::scidb::dir::user themes square BlueTheme.dat]
+	set update 1
+}
+if {$update} { ::scidb::themes::update }
+unset update
 ###################################################
 
 foreach subdir {piece square {}} {

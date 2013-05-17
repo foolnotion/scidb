@@ -1596,13 +1596,16 @@ proc PrintComment {position w level key pos data} {
 				}
 				str {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
+					set tags $langTag
 					switch $flags {
-						0 { set tag {} }
-						1 { set tag bold }
-						2 { set tag italic }
-						3 { set tag bold-italic }
+						1 { lappend tags bold }
+						2 { lappend tags italic }
+						3 { lappend tags bold-italic }
 					}
-					$w insert current $text [list $langTag $tag]
+					if {$underline} {
+						lappend tags underline
+					}
+					$w insert current $text $tags
 				}
 				+bold			{ incr flags +1 }
 				-bold			{ incr flags -1 }

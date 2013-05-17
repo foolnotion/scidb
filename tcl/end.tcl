@@ -271,6 +271,15 @@ if {[catch {
 	exit 1
 }
 
+# migrate to new default theme
+if {$scidb::revision <= 569} {
+	if {$board::currentTheme eq {Blue Theme|1354018040763|yellow.color|gregor}} {
+		set board::currentTheme Default
+	} elseif {$scidb::revision > 83 && $board::currentTheme eq "Default"} {
+		set board::currentTheme {Primus|1368794511290|yellow.color|gregor}
+	}
+}
+
 set ::scidb::revision [::scidb::misc::revision]
 
 # --- Initalization ----------------------------------------------------

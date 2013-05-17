@@ -32,9 +32,12 @@ all: Makefile.in check-mtime
 
 check-mtime:
 	@if [ Makefile.in -ot configure ]; then                    \
+		echo "";                                                \
 		echo "Makefile.in is older than the configure script."; \
-		echo "It is recommended to re-configure. Touch";        \
-		echo "Makefile.in if you think you don't need this.";   \
+		echo "It is recommended to re-configure. Invoke";       \
+		echo "\"./configure\", or touch Makefile.in if you";    \
+		echo "think you don't need this.";                      \
+		echo "";                                                \
 		exit 1;                                                 \
 	fi
 

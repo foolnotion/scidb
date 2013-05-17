@@ -521,7 +521,11 @@ Parser::processModes()
 				m_mode[i] = true;
 			}
 		}
-		else
+	}
+
+	for (int i = 2; i >= 0; --i)
+	{
+		if (!m_attr[i])
 		{
 			if (m_mode[i])
 			{
