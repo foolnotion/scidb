@@ -1,24 +1,24 @@
 ::board::addStyle square {
   borderline,gap        {0}
   borderline,opacity    {0x80}
-  borderline,width      {0.006666666666666667}
+  borderline,width      {0.007}
   dark,rotation         {0}
-  dark,solid            {#4682b4}
+  dark,solid            {#70a070}
   dark,texture          {}
   dark,x1               {0}
   dark,x2               {0}
   dark,y1               {0}
   dark,y2               {0}
-  hilite,selected       {#11ac1f}
-  hilite,suggested      {#fff056}
+  hilite,selected       {#b0d0e0}
+  hilite,suggested      {#ffff00}
   hint,background-color {}
-  hint,background-tile  {marble marble_252.jpg}
-  hint,border-color     {#32719d}
+  hint,background-tile  {wood wood_143.gif}
+  hint,border-color     {#007d00}
   hint,border-tile      {}
-  hint,coordinates      {#ffffff}
-  identifier            {Blue Theme|1354016677445|yellow.color|gregor}
+  hint,coordinates      {#d3ff02}
+  identifier            {Primus|1368794504056|yellow.color|gregor}
   lite,rotation         {0}
-  lite,solid            {#b0c4de}
+  lite,solid            {#e0d070}
   lite,texture          {}
   lite,x1               {0}
   lite,x2               {0}
