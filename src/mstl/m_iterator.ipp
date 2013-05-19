@@ -276,7 +276,7 @@ const_reverse_iterator<T>::operator<(const_reverse_iterator const& iter) const
 
 template <typename T>
 inline
-typename const_reverse_iterator<T>::const_reference
+typename const_reverse_iterator<T>::reference
 const_reverse_iterator<T>::operator*() const
 {
 	const_iterator prev  = m_i;
@@ -286,7 +286,7 @@ const_reverse_iterator<T>::operator*() const
 
 template <typename T>
 inline
-typename const_reverse_iterator<T>::const_pointer
+typename const_reverse_iterator<T>::pointer
 const_reverse_iterator<T>::operator->() const
 {
 	return &(operator*());
@@ -375,7 +375,7 @@ const_reverse_iterator<T>::operator-(size_t n) const
 
 template <typename T>
 inline
-typename const_reverse_iterator<T>::const_reference
+typename const_reverse_iterator<T>::reference
 const_reverse_iterator<T>::operator[](difference_type n) const
 {
 	return *(*this + n);

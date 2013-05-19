@@ -119,6 +119,8 @@ m_backtrace.o: m_uint128.h
 m_backtrace.o: m_assert.h
 m_backtrace.o: m_exception.h
 m_backtrace.o: m_exception.ipp
+m_backtrace.o: m_pointer_iterator.h
+m_backtrace.o: m_pointer_iterator.ipp
 m_backtrace.o: m_iterator.h
 m_backtrace.o: m_iterator.ipp
 m_backtrace.o: m_stack.ipp
@@ -241,6 +243,8 @@ m_equiv_classes.o: m_assert.h
 m_equiv_classes.o: m_exception.h
 m_equiv_classes.o: m_backtrace.h
 m_equiv_classes.o: m_exception.ipp
+m_equiv_classes.o: m_pointer_iterator.h
+m_equiv_classes.o: m_pointer_iterator.ipp
 m_equiv_classes.o: m_iterator.h
 m_equiv_classes.o: m_iterator.ipp
 m_equiv_classes.o: m_vector.ipp
@@ -340,6 +344,8 @@ m_hash.o: m_assert.h
 m_hash.o: m_exception.h
 m_hash.o: m_backtrace.h
 m_hash.o: m_exception.ipp
+m_hash.o: m_pointer_iterator.h
+m_hash.o: m_pointer_iterator.ipp
 m_hash.o: m_iterator.h
 m_hash.o: m_iterator.ipp
 m_hash.o: m_vector.ipp

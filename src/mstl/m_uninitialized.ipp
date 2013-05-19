@@ -30,8 +30,8 @@ template <size_t N> struct uninitialized;
 template <>
 struct uninitialized<0>
 {
-	template <typename T, typename U>
-	inline static U* copy(T const* first, T const* last, U* result)
+	template <typename InputIterator, typename T>
+	inline static T* copy(InputIterator first, InputIterator last, T* result)
 	{
 		T* curr = result;
 
@@ -41,8 +41,8 @@ struct uninitialized<0>
 		return curr;
 	}
 
-	template<typename T>
-	inline static T* fill_n(T* first, size_t n, T const& value)
+	template<typename ForwardIterator, typename T>
+	inline static ForwardIterator fill_n(ForwardIterator first, size_t n, T const& value)
 	{
 		while (n--)
 			construct(first++, value);
@@ -54,15 +54,15 @@ struct uninitialized<0>
 template <size_t NBytes>
 struct uninitialized_pod
 {
-	template <typename T, typename U>
-	inline static U* copy(T const* first, T const* last, U* result)
+	template <typename InputIterator, typename T>
+	inline static T* copy(InputIterator first, InputIterator last, T* result)
 	{
 		::memmove(result, first, NBytes*(last - first));
 		return result + (last - first);
 	}
 
-	template<typename T>
-	inline static T* fill_n(T* first, size_t n, T const& value)
+	template<typename ForwardIterator, typename T>
+	inline static ForwardIterator fill_n(ForwardIterator first, size_t n, T const& value)
 	{
 		return ::mstl::fill_n(first, n, value);
 	}
@@ -71,15 +71,15 @@ struct uninitialized_pod
 template <>
 struct uninitialized_pod<1>
 {
-	template <typename T, typename U>
-	inline static U* copy(T const* first, T const* last, U* result)
+	template <typename InputIterator, typename T>
+	inline static T* copy(InputIterator first, InputIterator last, T* result)
 	{
 		::memmove(result, first, last - first);
 		return result + (last - first);
 	}
 
-	template<typename T>
-	inline static T* fill_n(T* first, size_t n, T const value)
+	template<typename ForwardIterator, typename T>
+	inline static ForwardIterator fill_n(ForwardIterator first, size_t n, T const& value)
 	{
 		::memset(first, value, n);
 		return first + n;
@@ -89,14 +89,14 @@ struct uninitialized_pod<1>
 template <>
 struct uninitialized<1>
 {
-	template <typename T, typename U>
-	inline static U* copy(T const* first, T const* last, U* result)
+	template <typename InputIterator, typename T>
+	inline static T* copy(InputIterator first, InputIterator last, T* result)
 	{
 		return uninitialized_pod<sizeof(T)>::copy(first, last, result);
 	}
 
-	template<typename T>
-	inline static T* fill_n(T* first, size_t n, T const& value)
+	template<typename ForwardIterator, typename T>
+	inline static ForwardIterator fill_n(ForwardIterator first, size_t n, T const& value)
 	{
 		return uninitialized_pod<sizeof(T)>::fill_n(first, n, value);
 	}
@@ -105,19 +105,19 @@ struct uninitialized<1>
 } // namespace bits
 
 
-template<typename T, typename U>
+template<typename T>
 inline
-U*
-uninitialized_copy(T const* first, T const* last, U* result)
+T*
+uninitialized_copy(T const* first, T const* last, T* result)
 {
 	return bits::uninitialized<is_pod<T>::value>::copy(first, last, result);
 }
 
 
-template<typename T, typename U>
+template<typename T>
 inline
-U*
-uninitialized_move(T const* first, T const* last, U* result)
+T*
+uninitialized_move(T const* first, T const* last, T* result)
 {
 	return bits::uninitialized<is_movable<T>::value>::copy(first, last, result);
 }
@@ -129,6 +129,134 @@ T*
 uninitialized_fill_n(T* first, size_t n, T const& value)
 {
 	return bits::uninitialized<is_pod<T>::value>::fill_n(first, n, value);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_copy(T* first, T* last, T* result)
+{
+	return bits::uninitialized<is_pod<T>::value>::copy(first, last, result);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_move(T* first, T* last, T* result)
+{
+	return bits::uninitialized<is_movable<T>::value>::copy(first, last, result);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_copy(pointer_iterator<T> first, pointer_iterator<T> last, T* result)
+{
+	return bits::uninitialized<is_pod<T>::value>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_move(pointer_iterator<T> first, pointer_iterator<T> last, T* result)
+{
+	return bits::uninitialized<is_movable<T>::value>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_fill_n(pointer_iterator<T>* first, size_t n, T const& value)
+{
+	return bits::uninitialized<is_pod<T>::value>::fill_n(first.ref(), n, value);
+}
+
+
+template<typename T, typename U>
+inline
+U**
+uninitialized_copy(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result)
+{
+	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T, typename U>
+inline
+U**
+uninitialized_move(pointer_iterator<T*> first, pointer_iterator<T*> last, U** result)
+{
+	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T, typename U>
+inline
+U**
+uninitialized_fill_n(pointer_iterator<U**> first, size_t n, T const* value)
+{
+	return bits::uninitialized<1>::fill_n(first.ref(), n, value);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_copy(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result)
+{
+	return bits::uninitialized<is_pod<T>::value>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T>
+inline
+T*
+uninitialized_move(pointer_const_iterator<T> first, pointer_const_iterator<T> last, T* result)
+{
+	return bits::uninitialized<is_movable<T>::value>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T, typename U>
+inline
+U**
+uninitialized_copy(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result)
+{
+	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename T, typename U>
+inline
+U**
+uninitialized_move(pointer_const_iterator<T*> first, pointer_const_iterator<T*> last, U** result)
+{
+	return bits::uninitialized<1>::copy(first.ref(), last.ref(), result);
+}
+
+
+template<typename Iterator, typename T>
+inline
+T*
+uninitialized_copy(Iterator first, Iterator last, T* result)
+{
+	static_assert(sizeof(typename Iterator::value_type), "should be an iterator");
+	return bits::uninitialized<0>::copy(first, last, result);
+}
+
+
+template<typename Iterator, typename T>
+inline
+T*
+uninitialized_move(Iterator first, Iterator last, T* result)
+{
+	static_assert(sizeof(typename Iterator::value_type), "should be an iterator");
+	return bits::uninitialized<0>::copy(first, last, result);
 }
 
 } // namespace mstl

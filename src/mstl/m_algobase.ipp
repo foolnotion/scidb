@@ -94,7 +94,7 @@ inline
 void
 reverse(BidirectionalIterator first, BidirectionalIterator last)
 {
-	for (; distance(first, --last) > 0; ++first)
+	for ( ; distance(first, last--) > 1; ++first)
 		swap(*first, *last);
 }
 

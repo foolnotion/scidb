@@ -30,6 +30,17 @@ struct type_list
 	typedef U tail;
 };
 
+template <typename T> struct is_pod;
+template <typename T> struct is_movable;
+
+template <> struct is_pod<null_type> { enum { value = 1 }; };
+template <> struct is_movable<null_type> { enum { value = 1 }; };
+
+template <typename T, typename U>
+struct is_pod< type_list<T,U> > { enum { value = is_pod<T>::value & is_pod<U>::value }; };
+template <typename T, typename U>
+struct is_movable< type_list<T,U> > { enum { value = is_movable<T>::value & is_movable<U>::value }; };
+
 namespace tl {
 
 template <typename TList> struct length;

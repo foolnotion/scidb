@@ -71,6 +71,8 @@ HyphenationRule.o: ../../mstl/m_exception.ipp
 HyphenationRule.o: ../../mstl/m_vector.h
 HyphenationRule.o: ../../mstl/m_memblock.h
 HyphenationRule.o: ../../mstl/m_memblock.ipp
+HyphenationRule.o: ../../mstl/m_pointer_iterator.h
+HyphenationRule.o: ../../mstl/m_pointer_iterator.ipp
 HyphenationRule.o: ../../mstl/m_iterator.h
 HyphenationRule.o: ../../mstl/m_iterator.ipp
 HyphenationRule.o: ../../mstl/m_vector.ipp
@@ -101,6 +103,8 @@ HyphenationTree.o: ../../mstl/m_exception.ipp
 HyphenationTree.o: ../../mstl/m_vector.h
 HyphenationTree.o: ../../mstl/m_memblock.h
 HyphenationTree.o: ../../mstl/m_memblock.ipp
+HyphenationTree.o: ../../mstl/m_pointer_iterator.h
+HyphenationTree.o: ../../mstl/m_pointer_iterator.ipp
 HyphenationTree.o: ../../mstl/m_iterator.h
 HyphenationTree.o: ../../mstl/m_iterator.ipp
 HyphenationTree.o: ../../mstl/m_vector.ipp
@@ -141,6 +145,8 @@ Hyphenator.o: ../../mstl/m_exception.ipp
 Hyphenator.o: ../../mstl/m_vector.h
 Hyphenator.o: ../../mstl/m_memblock.h
 Hyphenator.o: ../../mstl/m_memblock.ipp
+Hyphenator.o: ../../mstl/m_pointer_iterator.h
+Hyphenator.o: ../../mstl/m_pointer_iterator.ipp
 Hyphenator.o: ../../mstl/m_iterator.h
 Hyphenator.o: ../../mstl/m_iterator.ipp
 Hyphenator.o: ../../mstl/m_vector.ipp
@@ -196,6 +202,8 @@ Language.o: ../../mstl/m_assert.h
 Language.o: ../../mstl/m_exception.h
 Language.o: ../../mstl/m_backtrace.h
 Language.o: ../../mstl/m_exception.ipp
+Language.o: ../../mstl/m_iterator.h
+Language.o: ../../mstl/m_iterator.ipp
 Language.o: ../../mstl/m_list.ipp
 Language.o: ../../mstl/m_construct.h
 Language.o: ../../mstl/m_construct.ipp

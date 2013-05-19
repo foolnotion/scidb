@@ -119,6 +119,8 @@ tcl_application.o: ../mstl/m_bitset.ipp
 tcl_application.o: ../db/db_filter.ipp
 tcl_application.o: ../db/db_board.h
 tcl_application.o: ../db/db_move_list.h
+tcl_application.o: ../mstl/m_pointer_iterator.h
+tcl_application.o: ../mstl/m_pointer_iterator.ipp
 tcl_application.o: ../mstl/m_iterator.h
 tcl_application.o: ../mstl/m_iterator.ipp
 tcl_application.o: ../db/db_move_list.ipp
@@ -138,8 +140,6 @@ tcl_application.o: ../mstl/m_algobase.h
 tcl_application.o: ../mstl/m_algobase.ipp
 tcl_application.o: ../mstl/m_construct.h
 tcl_application.o: ../mstl/m_construct.ipp
-tcl_application.o: ../mstl/m_pointer_iterator.h
-tcl_application.o: ../mstl/m_pointer_iterator.ipp
 tcl_application.o: ../mstl/m_pvector.ipp
 tcl_application.o: ../mstl/m_ref_counter.h
 tcl_application.o: ../mstl/m_ref_counter.ipp
@@ -312,6 +312,8 @@ tcl_board.o: ../mstl/m_bitset.ipp
 tcl_board.o: ../db/db_filter.ipp
 tcl_board.o: ../db/db_board.h
 tcl_board.o: ../db/db_move_list.h
+tcl_board.o: ../mstl/m_pointer_iterator.h
+tcl_board.o: ../mstl/m_pointer_iterator.ipp
 tcl_board.o: ../mstl/m_iterator.h
 tcl_board.o: ../mstl/m_iterator.ipp
 tcl_board.o: ../db/db_move_list.ipp
@@ -331,8 +333,6 @@ tcl_board.o: ../mstl/m_algobase.h
 tcl_board.o: ../mstl/m_algobase.ipp
 tcl_board.o: ../mstl/m_construct.h
 tcl_board.o: ../mstl/m_construct.ipp
-tcl_board.o: ../mstl/m_pointer_iterator.h
-tcl_board.o: ../mstl/m_pointer_iterator.ipp
 tcl_board.o: ../mstl/m_pvector.ipp
 tcl_board.o: ../mstl/m_ref_counter.h
 tcl_board.o: ../mstl/m_ref_counter.ipp
@@ -464,6 +464,8 @@ tcl_crosstable.o: ../mstl/m_bitset.ipp
 tcl_crosstable.o: ../db/db_filter.ipp
 tcl_crosstable.o: ../db/db_board.h
 tcl_crosstable.o: ../db/db_move_list.h
+tcl_crosstable.o: ../mstl/m_pointer_iterator.h
+tcl_crosstable.o: ../mstl/m_pointer_iterator.ipp
 tcl_crosstable.o: ../mstl/m_iterator.h
 tcl_crosstable.o: ../mstl/m_iterator.ipp
 tcl_crosstable.o: ../db/db_move_list.ipp
@@ -483,8 +485,6 @@ tcl_crosstable.o: ../mstl/m_algobase.h
 tcl_crosstable.o: ../mstl/m_algobase.ipp
 tcl_crosstable.o: ../mstl/m_construct.h
 tcl_crosstable.o: ../mstl/m_construct.ipp
-tcl_crosstable.o: ../mstl/m_pointer_iterator.h
-tcl_crosstable.o: ../mstl/m_pointer_iterator.ipp
 tcl_crosstable.o: ../mstl/m_pvector.ipp
 tcl_crosstable.o: ../mstl/m_ref_counter.h
 tcl_crosstable.o: ../mstl/m_ref_counter.ipp
@@ -631,6 +631,8 @@ tcl_database.o: ../mstl/m_byte_order.ipp
 tcl_database.o: ../mstl/m_string.h
 tcl_database.o: ../mstl/m_string.ipp
 tcl_database.o: ../db/db_move.ipp
+tcl_database.o: ../mstl/m_pointer_iterator.h
+tcl_database.o: ../mstl/m_pointer_iterator.ipp
 tcl_database.o: ../mstl/m_iterator.h
 tcl_database.o: ../mstl/m_iterator.ipp
 tcl_database.o: ../db/db_move_list.ipp
@@ -708,8 +710,6 @@ tcl_database.o: ../db/db_tree_info.ipp
 tcl_database.o: ../db/db_filter.h
 tcl_database.o: ../db/db_filter.ipp
 tcl_database.o: ../mstl/m_pvector.h
-tcl_database.o: ../mstl/m_pointer_iterator.h
-tcl_database.o: ../mstl/m_pointer_iterator.ipp
 tcl_database.o: ../mstl/m_pvector.ipp
 tcl_database.o: ../mstl/m_ref_counter.h
 tcl_database.o: ../mstl/m_ref_counter.ipp
@@ -861,6 +861,8 @@ tcl_engine.o: ../mstl/m_byte_order.ipp
 tcl_engine.o: ../mstl/m_string.h
 tcl_engine.o: ../mstl/m_string.ipp
 tcl_engine.o: ../db/db_move.ipp
+tcl_engine.o: ../mstl/m_pointer_iterator.h
+tcl_engine.o: ../mstl/m_pointer_iterator.ipp
 tcl_engine.o: ../mstl/m_iterator.h
 tcl_engine.o: ../mstl/m_iterator.ipp
 tcl_engine.o: ../db/db_move_list.ipp
@@ -879,8 +881,6 @@ tcl_engine.o: ../mstl/m_algobase.h
 tcl_engine.o: ../mstl/m_algobase.ipp
 tcl_engine.o: ../mstl/m_construct.h
 tcl_engine.o: ../mstl/m_construct.ipp
-tcl_engine.o: ../mstl/m_pointer_iterator.h
-tcl_engine.o: ../mstl/m_pointer_iterator.ipp
 tcl_engine.o: ../mstl/m_pvector.ipp
 tcl_engine.o: ../mstl/m_list.h
 tcl_engine.o: ../mstl/m_list_node.h
@@ -1015,6 +1015,8 @@ tcl_fam.o: ../mstl/m_hash.h
 tcl_fam.o: ../mstl/m_vector.h
 tcl_fam.o: ../mstl/m_memblock.h
 tcl_fam.o: ../mstl/m_memblock.ipp
+tcl_fam.o: ../mstl/m_pointer_iterator.h
+tcl_fam.o: ../mstl/m_pointer_iterator.ipp
 tcl_fam.o: ../mstl/m_iterator.h
 tcl_fam.o: ../mstl/m_iterator.ipp
 tcl_fam.o: ../mstl/m_vector.ipp
@@ -1079,6 +1081,8 @@ tcl_game.o: ../util/u_crc.ipp
 tcl_game.o: ../mstl/m_byte_order.h
 tcl_game.o: ../mstl/m_byte_order.ipp
 tcl_game.o: ../db/db_move.ipp
+tcl_game.o: ../mstl/m_pointer_iterator.h
+tcl_game.o: ../mstl/m_pointer_iterator.ipp
 tcl_game.o: ../mstl/m_iterator.h
 tcl_game.o: ../mstl/m_iterator.ipp
 tcl_game.o: ../db/db_move_list.ipp
@@ -1145,8 +1149,6 @@ tcl_game.o: ../db/db_tree_info.ipp
 tcl_game.o: ../db/db_filter.h
 tcl_game.o: ../db/db_filter.ipp
 tcl_game.o: ../mstl/m_pvector.h
-tcl_game.o: ../mstl/m_pointer_iterator.h
-tcl_game.o: ../mstl/m_pointer_iterator.ipp
 tcl_game.o: ../mstl/m_pvector.ipp
 tcl_game.o: ../mstl/m_ref_counter.h
 tcl_game.o: ../mstl/m_ref_counter.ipp
@@ -1324,6 +1326,8 @@ tcl_misc.o: ../mstl/m_map.h
 tcl_misc.o: ../mstl/m_vector.h
 tcl_misc.o: ../mstl/m_memblock.h
 tcl_misc.o: ../mstl/m_memblock.ipp
+tcl_misc.o: ../mstl/m_pointer_iterator.h
+tcl_misc.o: ../mstl/m_pointer_iterator.ipp
 tcl_misc.o: ../mstl/m_iterator.h
 tcl_misc.o: ../mstl/m_iterator.ipp
 tcl_misc.o: ../mstl/m_vector.ipp
@@ -1447,6 +1451,8 @@ tcl_pgn_reader.o: ../mstl/m_byte_order.ipp
 tcl_pgn_reader.o: ../mstl/m_string.h
 tcl_pgn_reader.o: ../mstl/m_string.ipp
 tcl_pgn_reader.o: ../db/db_move.ipp
+tcl_pgn_reader.o: ../mstl/m_pointer_iterator.h
+tcl_pgn_reader.o: ../mstl/m_pointer_iterator.ipp
 tcl_pgn_reader.o: ../mstl/m_iterator.h
 tcl_pgn_reader.o: ../mstl/m_iterator.ipp
 tcl_pgn_reader.o: ../db/db_move_list.ipp
@@ -1552,6 +1558,8 @@ tcl_player.o: ../mstl/m_bitset.ipp
 tcl_player.o: ../mstl/m_vector.h
 tcl_player.o: ../mstl/m_memblock.h
 tcl_player.o: ../mstl/m_memblock.ipp
+tcl_player.o: ../mstl/m_pointer_iterator.h
+tcl_player.o: ../mstl/m_pointer_iterator.ipp
 tcl_player.o: ../mstl/m_iterator.h
 tcl_player.o: ../mstl/m_iterator.ipp
 tcl_player.o: ../mstl/m_vector.ipp
@@ -1626,6 +1634,8 @@ tcl_position.o: ../mstl/m_bitset.ipp
 tcl_position.o: ../db/db_filter.ipp
 tcl_position.o: ../db/db_board.h
 tcl_position.o: ../db/db_move_list.h
+tcl_position.o: ../mstl/m_pointer_iterator.h
+tcl_position.o: ../mstl/m_pointer_iterator.ipp
 tcl_position.o: ../mstl/m_iterator.h
 tcl_position.o: ../mstl/m_iterator.ipp
 tcl_position.o: ../db/db_move_list.ipp
@@ -1645,8 +1655,6 @@ tcl_position.o: ../mstl/m_algobase.h
 tcl_position.o: ../mstl/m_algobase.ipp
 tcl_position.o: ../mstl/m_construct.h
 tcl_position.o: ../mstl/m_construct.ipp
-tcl_position.o: ../mstl/m_pointer_iterator.h
-tcl_position.o: ../mstl/m_pointer_iterator.ipp
 tcl_position.o: ../mstl/m_pvector.ipp
 tcl_position.o: ../mstl/m_ref_counter.h
 tcl_position.o: ../mstl/m_ref_counter.ipp
@@ -1812,6 +1820,8 @@ tcl_tree.o: ../mstl/m_bitset.ipp
 tcl_tree.o: ../db/db_filter.ipp
 tcl_tree.o: ../db/db_board.h
 tcl_tree.o: ../db/db_move_list.h
+tcl_tree.o: ../mstl/m_pointer_iterator.h
+tcl_tree.o: ../mstl/m_pointer_iterator.ipp
 tcl_tree.o: ../mstl/m_iterator.h
 tcl_tree.o: ../mstl/m_iterator.ipp
 tcl_tree.o: ../db/db_move_list.ipp
@@ -1831,8 +1841,6 @@ tcl_tree.o: ../mstl/m_algobase.h
 tcl_tree.o: ../mstl/m_algobase.ipp
 tcl_tree.o: ../mstl/m_construct.h
 tcl_tree.o: ../mstl/m_construct.ipp
-tcl_tree.o: ../mstl/m_pointer_iterator.h
-tcl_tree.o: ../mstl/m_pointer_iterator.ipp
 tcl_tree.o: ../mstl/m_pvector.ipp
 tcl_tree.o: ../mstl/m_ref_counter.h
 tcl_tree.o: ../mstl/m_ref_counter.ipp
@@ -1965,6 +1973,8 @@ tcl_view.o: ../util/u_crc.ipp
 tcl_view.o: ../mstl/m_byte_order.h
 tcl_view.o: ../mstl/m_byte_order.ipp
 tcl_view.o: ../db/db_move.ipp
+tcl_view.o: ../mstl/m_pointer_iterator.h
+tcl_view.o: ../mstl/m_pointer_iterator.ipp
 tcl_view.o: ../mstl/m_iterator.h
 tcl_view.o: ../mstl/m_iterator.ipp
 tcl_view.o: ../db/db_move_list.ipp
@@ -2037,8 +2047,6 @@ tcl_view.o: ../db/db_tree_info.ipp
 tcl_view.o: ../db/db_filter.h
 tcl_view.o: ../db/db_filter.ipp
 tcl_view.o: ../mstl/m_pvector.h
-tcl_view.o: ../mstl/m_pointer_iterator.h
-tcl_view.o: ../mstl/m_pointer_iterator.ipp
 tcl_view.o: ../mstl/m_pvector.ipp
 tcl_view.o: ../mstl/m_ref_counter.h
 tcl_view.o: ../mstl/m_ref_counter.ipp

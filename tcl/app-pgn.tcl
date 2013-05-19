@@ -1560,7 +1560,17 @@ proc PrintComment {position w level key pos data} {
 					if {[llength $startPos] == 0} { set startPos [$w index current] }
 					lassign [::font::splitAnnotation $text] value sym tag
 					set nagTag nag$text
-					if {($flags & 1) && $tag eq "symbol"} { set tag symbolb }
+					if {$tag eq "symbol"} {
+						if {$flags & 1} { set tag symbolb }
+					} else {
+						switch $flags {
+							0 { set tag {} }
+							1 { set tag bold }
+							2 { set tag italic }
+							3 { set tag bold-italic }
+						}
+						if {$underline} { lappend tag underline }
+					}
 					lappend tag $langTag $nagTag
 					set sym [::font::mapNagToUtfSymbol $sym]
 					if {[string is integer $sym]} { set sym "{\$$sym}" }
@@ -1574,9 +1584,13 @@ proc PrintComment {position w level key pos data} {
 						variable ::pgn::editor::Colors
 						variable EmoticonCounter
 						set img $w.emoticon_[incr EmoticonCounter]
+						# An alternative is to embed an image, but images cannot be
+						# bound to Enter/Leave events.
 						tk::label $img \
 							-background $Colors(background) \
 							-borderwidth 0 \
+							-padx 0 \
+							-pady 0 \
 							-image $::emoticons::icon($emotion) \
 							;
 						$w window create current -align center -window $img
@@ -1602,9 +1616,7 @@ proc PrintComment {position w level key pos data} {
 						2 { lappend tags italic }
 						3 { lappend tags bold-italic }
 					}
-					if {$underline} {
-						lappend tags underline
-					}
+					if {$underline} { lappend tags underline }
 					$w insert current $text $tags
 				}
 				+bold			{ incr flags +1 }

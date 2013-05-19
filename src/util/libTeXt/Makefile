@@ -158,6 +158,8 @@ T_ActiveToken.o: T_Input.ipp
 T_ActiveToken.o: ../../mstl/m_stack.h
 T_ActiveToken.o: ../../mstl/m_memblock.h
 T_ActiveToken.o: ../../mstl/m_memblock.ipp
+T_ActiveToken.o: ../../mstl/m_pointer_iterator.h
+T_ActiveToken.o: ../../mstl/m_pointer_iterator.ipp
 T_ActiveToken.o: ../../mstl/m_iterator.h
 T_ActiveToken.o: ../../mstl/m_iterator.ipp
 T_ActiveToken.o: ../../mstl/m_stack.ipp
@@ -191,6 +193,8 @@ T_AhoCorasick.o: ../../mstl/m_exception.ipp
 T_AhoCorasick.o: ../../mstl/m_vector.h
 T_AhoCorasick.o: ../../mstl/m_memblock.h
 T_AhoCorasick.o: ../../mstl/m_memblock.ipp
+T_AhoCorasick.o: ../../mstl/m_pointer_iterator.h
+T_AhoCorasick.o: ../../mstl/m_pointer_iterator.ipp
 T_AhoCorasick.o: ../../mstl/m_iterator.h
 T_AhoCorasick.o: ../../mstl/m_iterator.ipp
 T_AhoCorasick.o: ../../mstl/m_vector.ipp
@@ -253,6 +257,8 @@ T_Alignment.o: T_Producer.h
 T_Alignment.o: ../../mstl/m_vector.h
 T_Alignment.o: ../../mstl/m_memblock.h
 T_Alignment.o: ../../mstl/m_memblock.ipp
+T_Alignment.o: ../../mstl/m_pointer_iterator.h
+T_Alignment.o: ../../mstl/m_pointer_iterator.ipp
 T_Alignment.o: ../../mstl/m_iterator.h
 T_Alignment.o: ../../mstl/m_iterator.ipp
 T_Alignment.o: ../../mstl/m_vector.ipp
@@ -335,6 +341,8 @@ T_Arithmetic.o: T_Input.ipp
 T_Arithmetic.o: ../../mstl/m_stack.h
 T_Arithmetic.o: ../../mstl/m_memblock.h
 T_Arithmetic.o: ../../mstl/m_memblock.ipp
+T_Arithmetic.o: ../../mstl/m_pointer_iterator.h
+T_Arithmetic.o: ../../mstl/m_pointer_iterator.ipp
 T_Arithmetic.o: ../../mstl/m_iterator.h
 T_Arithmetic.o: ../../mstl/m_iterator.ipp
 T_Arithmetic.o: ../../mstl/m_stack.ipp
@@ -404,6 +412,8 @@ T_AsciiToken.o: T_Input.ipp
 T_AsciiToken.o: ../../mstl/m_stack.h
 T_AsciiToken.o: ../../mstl/m_memblock.h
 T_AsciiToken.o: ../../mstl/m_memblock.ipp
+T_AsciiToken.o: ../../mstl/m_pointer_iterator.h
+T_AsciiToken.o: ../../mstl/m_pointer_iterator.ipp
 T_AsciiToken.o: ../../mstl/m_iterator.h
 T_AsciiToken.o: ../../mstl/m_iterator.ipp
 T_AsciiToken.o: ../../mstl/m_stack.ipp
@@ -469,6 +479,8 @@ T_Char.o: T_Input.ipp
 T_Char.o: ../../mstl/m_stack.h
 T_Char.o: ../../mstl/m_memblock.h
 T_Char.o: ../../mstl/m_memblock.ipp
+T_Char.o: ../../mstl/m_pointer_iterator.h
+T_Char.o: ../../mstl/m_pointer_iterator.ipp
 T_Char.o: ../../mstl/m_iterator.h
 T_Char.o: ../../mstl/m_iterator.ipp
 T_Char.o: ../../mstl/m_stack.ipp
@@ -526,6 +538,8 @@ T_Conditional.o: T_Package.ipp
 T_Conditional.o: ../../mstl/m_stack.h
 T_Conditional.o: ../../mstl/m_memblock.h
 T_Conditional.o: ../../mstl/m_memblock.ipp
+T_Conditional.o: ../../mstl/m_pointer_iterator.h
+T_Conditional.o: ../../mstl/m_pointer_iterator.ipp
 T_Conditional.o: ../../mstl/m_iterator.h
 T_Conditional.o: ../../mstl/m_iterator.ipp
 T_Conditional.o: ../../mstl/m_stack.ipp
@@ -661,6 +675,8 @@ T_Controller.o: T_Input.ipp
 T_Controller.o: ../../mstl/m_stack.h
 T_Controller.o: ../../mstl/m_memblock.h
 T_Controller.o: ../../mstl/m_memblock.ipp
+T_Controller.o: ../../mstl/m_pointer_iterator.h
+T_Controller.o: ../../mstl/m_pointer_iterator.ipp
 T_Controller.o: ../../mstl/m_iterator.h
 T_Controller.o: ../../mstl/m_iterator.ipp
 T_Controller.o: ../../mstl/m_stack.ipp
@@ -761,6 +777,8 @@ T_DateTime.o: T_Input.ipp
 T_DateTime.o: ../../mstl/m_stack.h
 T_DateTime.o: ../../mstl/m_memblock.h
 T_DateTime.o: ../../mstl/m_memblock.ipp
+T_DateTime.o: ../../mstl/m_pointer_iterator.h
+T_DateTime.o: ../../mstl/m_pointer_iterator.ipp
 T_DateTime.o: ../../mstl/m_iterator.h
 T_DateTime.o: ../../mstl/m_iterator.ipp
 T_DateTime.o: ../../mstl/m_stack.ipp
@@ -824,6 +842,8 @@ T_Diagnostic.o: T_Input.ipp
 T_Diagnostic.o: ../../mstl/m_stack.h
 T_Diagnostic.o: ../../mstl/m_memblock.h
 T_Diagnostic.o: ../../mstl/m_memblock.ipp
+T_Diagnostic.o: ../../mstl/m_pointer_iterator.h
+T_Diagnostic.o: ../../mstl/m_pointer_iterator.ipp
 T_Diagnostic.o: ../../mstl/m_iterator.h
 T_Diagnostic.o: ../../mstl/m_iterator.ipp
 T_Diagnostic.o: ../../mstl/m_stack.ipp
@@ -888,6 +908,8 @@ T_Environment.o: T_Input.ipp
 T_Environment.o: ../../mstl/m_stack.h
 T_Environment.o: ../../mstl/m_memblock.h
 T_Environment.o: ../../mstl/m_memblock.ipp
+T_Environment.o: ../../mstl/m_pointer_iterator.h
+T_Environment.o: ../../mstl/m_pointer_iterator.ipp
 T_Environment.o: ../../mstl/m_iterator.h
 T_Environment.o: ../../mstl/m_iterator.ipp
 T_Environment.o: ../../mstl/m_stack.ipp
@@ -935,8 +957,6 @@ T_Environment.o: ../../mstl/m_member_list.h
 T_Environment.o: ../../mstl/m_member_list.ipp
 T_Environment.o: ../../mstl/m_tuple.ipp
 T_Environment.o: ../../mstl/m_pvector.h
-T_Environment.o: ../../mstl/m_pointer_iterator.h
-T_Environment.o: ../../mstl/m_pointer_iterator.ipp
 T_Environment.o: ../../mstl/m_pvector.ipp
 T_Environment.o: ../../mstl/m_hash.h
 T_Environment.o: ../../mstl/m_pair.h
@@ -1002,6 +1022,8 @@ T_Errormode.o: T_Input.ipp
 T_Errormode.o: ../../mstl/m_stack.h
 T_Errormode.o: ../../mstl/m_memblock.h
 T_Errormode.o: ../../mstl/m_memblock.ipp
+T_Errormode.o: ../../mstl/m_pointer_iterator.h
+T_Errormode.o: ../../mstl/m_pointer_iterator.ipp
 T_Errormode.o: ../../mstl/m_iterator.h
 T_Errormode.o: ../../mstl/m_iterator.ipp
 T_Errormode.o: ../../mstl/m_stack.ipp
@@ -1063,6 +1085,8 @@ T_ExpandableToken.o: T_Input.ipp
 T_ExpandableToken.o: ../../mstl/m_stack.h
 T_ExpandableToken.o: ../../mstl/m_memblock.h
 T_ExpandableToken.o: ../../mstl/m_memblock.ipp
+T_ExpandableToken.o: ../../mstl/m_pointer_iterator.h
+T_ExpandableToken.o: ../../mstl/m_pointer_iterator.ipp
 T_ExpandableToken.o: ../../mstl/m_iterator.h
 T_ExpandableToken.o: ../../mstl/m_iterator.ipp
 T_ExpandableToken.o: ../../mstl/m_stack.ipp
@@ -1128,6 +1152,8 @@ T_Expansion.o: T_Input.ipp
 T_Expansion.o: ../../mstl/m_stack.h
 T_Expansion.o: ../../mstl/m_memblock.h
 T_Expansion.o: ../../mstl/m_memblock.ipp
+T_Expansion.o: ../../mstl/m_pointer_iterator.h
+T_Expansion.o: ../../mstl/m_pointer_iterator.ipp
 T_Expansion.o: ../../mstl/m_iterator.h
 T_Expansion.o: ../../mstl/m_iterator.ipp
 T_Expansion.o: ../../mstl/m_stack.ipp
@@ -1238,6 +1264,8 @@ T_FinalToken.o: T_Input.ipp
 T_FinalToken.o: ../../mstl/m_stack.h
 T_FinalToken.o: ../../mstl/m_memblock.h
 T_FinalToken.o: ../../mstl/m_memblock.ipp
+T_FinalToken.o: ../../mstl/m_pointer_iterator.h
+T_FinalToken.o: ../../mstl/m_pointer_iterator.ipp
 T_FinalToken.o: ../../mstl/m_iterator.h
 T_FinalToken.o: ../../mstl/m_iterator.ipp
 T_FinalToken.o: ../../mstl/m_stack.ipp
@@ -1304,6 +1332,8 @@ T_Format.o: T_Input.ipp
 T_Format.o: ../../mstl/m_stack.h
 T_Format.o: ../../mstl/m_memblock.h
 T_Format.o: ../../mstl/m_memblock.ipp
+T_Format.o: ../../mstl/m_pointer_iterator.h
+T_Format.o: ../../mstl/m_pointer_iterator.ipp
 T_Format.o: ../../mstl/m_iterator.h
 T_Format.o: ../../mstl/m_iterator.ipp
 T_Format.o: ../../mstl/m_stack.ipp
@@ -1599,6 +1629,8 @@ T_GenericValueToken.o: T_Input.ipp
 T_GenericValueToken.o: ../../mstl/m_stack.h
 T_GenericValueToken.o: ../../mstl/m_memblock.h
 T_GenericValueToken.o: ../../mstl/m_memblock.ipp
+T_GenericValueToken.o: ../../mstl/m_pointer_iterator.h
+T_GenericValueToken.o: ../../mstl/m_pointer_iterator.ipp
 T_GenericValueToken.o: ../../mstl/m_iterator.h
 T_GenericValueToken.o: ../../mstl/m_iterator.ipp
 T_GenericValueToken.o: ../../mstl/m_stack.ipp
@@ -1668,6 +1700,8 @@ T_Grouping.o: T_Input.ipp
 T_Grouping.o: ../../mstl/m_stack.h
 T_Grouping.o: ../../mstl/m_memblock.h
 T_Grouping.o: ../../mstl/m_memblock.ipp
+T_Grouping.o: ../../mstl/m_pointer_iterator.h
+T_Grouping.o: ../../mstl/m_pointer_iterator.ipp
 T_Grouping.o: ../../mstl/m_iterator.h
 T_Grouping.o: ../../mstl/m_iterator.ipp
 T_Grouping.o: ../../mstl/m_stack.ipp
@@ -1766,6 +1800,8 @@ T_InputOutput.o: T_Input.ipp
 T_InputOutput.o: ../../mstl/m_stack.h
 T_InputOutput.o: ../../mstl/m_memblock.h
 T_InputOutput.o: ../../mstl/m_memblock.ipp
+T_InputOutput.o: ../../mstl/m_pointer_iterator.h
+T_InputOutput.o: ../../mstl/m_pointer_iterator.ipp
 T_InputOutput.o: ../../mstl/m_iterator.h
 T_InputOutput.o: ../../mstl/m_iterator.ipp
 T_InputOutput.o: ../../mstl/m_stack.ipp
@@ -1879,6 +1915,8 @@ T_LeftBraceToken.o: T_Input.ipp
 T_LeftBraceToken.o: ../../mstl/m_stack.h
 T_LeftBraceToken.o: ../../mstl/m_memblock.h
 T_LeftBraceToken.o: ../../mstl/m_memblock.ipp
+T_LeftBraceToken.o: ../../mstl/m_pointer_iterator.h
+T_LeftBraceToken.o: ../../mstl/m_pointer_iterator.ipp
 T_LeftBraceToken.o: ../../mstl/m_iterator.h
 T_LeftBraceToken.o: ../../mstl/m_iterator.ipp
 T_LeftBraceToken.o: ../../mstl/m_stack.ipp
@@ -1938,6 +1976,8 @@ T_List.o: T_Producer.h
 T_List.o: ../../mstl/m_vector.h
 T_List.o: ../../mstl/m_memblock.h
 T_List.o: ../../mstl/m_memblock.ipp
+T_List.o: ../../mstl/m_pointer_iterator.h
+T_List.o: ../../mstl/m_pointer_iterator.ipp
 T_List.o: ../../mstl/m_iterator.h
 T_List.o: ../../mstl/m_iterator.ipp
 T_List.o: ../../mstl/m_vector.ipp
@@ -2012,6 +2052,8 @@ T_ListToken.o: T_Producer.h
 T_ListToken.o: ../../mstl/m_vector.h
 T_ListToken.o: ../../mstl/m_memblock.h
 T_ListToken.o: ../../mstl/m_memblock.ipp
+T_ListToken.o: ../../mstl/m_pointer_iterator.h
+T_ListToken.o: ../../mstl/m_pointer_iterator.ipp
 T_ListToken.o: ../../mstl/m_iterator.h
 T_ListToken.o: ../../mstl/m_iterator.ipp
 T_ListToken.o: ../../mstl/m_vector.ipp
@@ -2082,6 +2124,8 @@ T_MacroToken.o: T_Producer.h
 T_MacroToken.o: ../../mstl/m_vector.h
 T_MacroToken.o: ../../mstl/m_memblock.h
 T_MacroToken.o: ../../mstl/m_memblock.ipp
+T_MacroToken.o: ../../mstl/m_pointer_iterator.h
+T_MacroToken.o: ../../mstl/m_pointer_iterator.ipp
 T_MacroToken.o: ../../mstl/m_iterator.h
 T_MacroToken.o: ../../mstl/m_iterator.ipp
 T_MacroToken.o: ../../mstl/m_vector.ipp
@@ -2173,6 +2217,8 @@ T_Macros.o: T_Producer.h
 T_Macros.o: ../../mstl/m_vector.h
 T_Macros.o: ../../mstl/m_memblock.h
 T_Macros.o: ../../mstl/m_memblock.ipp
+T_Macros.o: ../../mstl/m_pointer_iterator.h
+T_Macros.o: ../../mstl/m_pointer_iterator.ipp
 T_Macros.o: ../../mstl/m_iterator.h
 T_Macros.o: ../../mstl/m_iterator.ipp
 T_Macros.o: ../../mstl/m_vector.ipp
@@ -2255,6 +2301,8 @@ T_Memory.o: T_Input.ipp
 T_Memory.o: ../../mstl/m_stack.h
 T_Memory.o: ../../mstl/m_memblock.h
 T_Memory.o: ../../mstl/m_memblock.ipp
+T_Memory.o: ../../mstl/m_pointer_iterator.h
+T_Memory.o: ../../mstl/m_pointer_iterator.ipp
 T_Memory.o: ../../mstl/m_iterator.h
 T_Memory.o: ../../mstl/m_iterator.ipp
 T_Memory.o: ../../mstl/m_stack.ipp
@@ -2358,6 +2406,8 @@ T_Messages.o: T_Input.ipp
 T_Messages.o: ../../mstl/m_stack.h
 T_Messages.o: ../../mstl/m_memblock.h
 T_Messages.o: ../../mstl/m_memblock.ipp
+T_Messages.o: ../../mstl/m_pointer_iterator.h
+T_Messages.o: ../../mstl/m_pointer_iterator.ipp
 T_Messages.o: ../../mstl/m_iterator.h
 T_Messages.o: ../../mstl/m_iterator.ipp
 T_Messages.o: ../../mstl/m_stack.ipp
@@ -2426,6 +2476,8 @@ T_Miscellaneous.o: T_Input.ipp
 T_Miscellaneous.o: ../../mstl/m_stack.h
 T_Miscellaneous.o: ../../mstl/m_memblock.h
 T_Miscellaneous.o: ../../mstl/m_memblock.ipp
+T_Miscellaneous.o: ../../mstl/m_pointer_iterator.h
+T_Miscellaneous.o: ../../mstl/m_pointer_iterator.ipp
 T_Miscellaneous.o: ../../mstl/m_iterator.h
 T_Miscellaneous.o: ../../mstl/m_iterator.ipp
 T_Miscellaneous.o: ../../mstl/m_stack.ipp
@@ -2506,6 +2558,8 @@ T_Nothing.o: T_Input.ipp
 T_Nothing.o: ../../mstl/m_stack.h
 T_Nothing.o: ../../mstl/m_memblock.h
 T_Nothing.o: ../../mstl/m_memblock.ipp
+T_Nothing.o: ../../mstl/m_pointer_iterator.h
+T_Nothing.o: ../../mstl/m_pointer_iterator.ipp
 T_Nothing.o: ../../mstl/m_iterator.h
 T_Nothing.o: ../../mstl/m_iterator.ipp
 T_Nothing.o: ../../mstl/m_stack.ipp
@@ -2568,6 +2622,8 @@ T_NumberToken.o: T_Input.ipp
 T_NumberToken.o: ../../mstl/m_stack.h
 T_NumberToken.o: ../../mstl/m_memblock.h
 T_NumberToken.o: ../../mstl/m_memblock.ipp
+T_NumberToken.o: ../../mstl/m_pointer_iterator.h
+T_NumberToken.o: ../../mstl/m_pointer_iterator.ipp
 T_NumberToken.o: ../../mstl/m_iterator.h
 T_NumberToken.o: ../../mstl/m_iterator.ipp
 T_NumberToken.o: ../../mstl/m_stack.ipp
@@ -2629,6 +2685,8 @@ T_OutputFilter.o: T_Input.ipp
 T_OutputFilter.o: ../../mstl/m_stack.h
 T_OutputFilter.o: ../../mstl/m_memblock.h
 T_OutputFilter.o: ../../mstl/m_memblock.ipp
+T_OutputFilter.o: ../../mstl/m_pointer_iterator.h
+T_OutputFilter.o: ../../mstl/m_pointer_iterator.ipp
 T_OutputFilter.o: ../../mstl/m_iterator.h
 T_OutputFilter.o: ../../mstl/m_iterator.ipp
 T_OutputFilter.o: ../../mstl/m_stack.ipp
@@ -2690,6 +2748,8 @@ T_Package.o: T_Input.ipp
 T_Package.o: ../../mstl/m_stack.h
 T_Package.o: ../../mstl/m_memblock.h
 T_Package.o: ../../mstl/m_memblock.ipp
+T_Package.o: ../../mstl/m_pointer_iterator.h
+T_Package.o: ../../mstl/m_pointer_iterator.ipp
 T_Package.o: ../../mstl/m_iterator.h
 T_Package.o: ../../mstl/m_iterator.ipp
 T_Package.o: ../../mstl/m_stack.ipp
@@ -2754,6 +2814,8 @@ T_ParameterToken.o: T_Input.ipp
 T_ParameterToken.o: ../../mstl/m_stack.h
 T_ParameterToken.o: ../../mstl/m_memblock.h
 T_ParameterToken.o: ../../mstl/m_memblock.ipp
+T_ParameterToken.o: ../../mstl/m_pointer_iterator.h
+T_ParameterToken.o: ../../mstl/m_pointer_iterator.ipp
 T_ParameterToken.o: ../../mstl/m_iterator.h
 T_ParameterToken.o: ../../mstl/m_iterator.ipp
 T_ParameterToken.o: ../../mstl/m_stack.ipp
@@ -2927,6 +2989,8 @@ T_RightBraceToken.o: T_Input.ipp
 T_RightBraceToken.o: ../../mstl/m_stack.h
 T_RightBraceToken.o: ../../mstl/m_memblock.h
 T_RightBraceToken.o: ../../mstl/m_memblock.ipp
+T_RightBraceToken.o: ../../mstl/m_pointer_iterator.h
+T_RightBraceToken.o: ../../mstl/m_pointer_iterator.ipp
 T_RightBraceToken.o: ../../mstl/m_iterator.h
 T_RightBraceToken.o: ../../mstl/m_iterator.ipp
 T_RightBraceToken.o: ../../mstl/m_stack.ipp
@@ -3015,6 +3079,8 @@ T_TextProducer.o: T_Input.ipp
 T_TextProducer.o: ../../mstl/m_stack.h
 T_TextProducer.o: ../../mstl/m_memblock.h
 T_TextProducer.o: ../../mstl/m_memblock.ipp
+T_TextProducer.o: ../../mstl/m_pointer_iterator.h
+T_TextProducer.o: ../../mstl/m_pointer_iterator.ipp
 T_TextProducer.o: ../../mstl/m_iterator.h
 T_TextProducer.o: ../../mstl/m_iterator.ipp
 T_TextProducer.o: ../../mstl/m_stack.ipp
@@ -3068,6 +3134,8 @@ T_TextToken.o: T_Producer.h
 T_TextToken.o: ../../mstl/m_vector.h
 T_TextToken.o: ../../mstl/m_memblock.h
 T_TextToken.o: ../../mstl/m_memblock.ipp
+T_TextToken.o: ../../mstl/m_pointer_iterator.h
+T_TextToken.o: ../../mstl/m_pointer_iterator.ipp
 T_TextToken.o: ../../mstl/m_iterator.h
 T_TextToken.o: ../../mstl/m_iterator.ipp
 T_TextToken.o: ../../mstl/m_vector.ipp
@@ -3145,6 +3213,8 @@ T_Token.o: T_Input.ipp
 T_Token.o: ../../mstl/m_stack.h
 T_Token.o: ../../mstl/m_memblock.h
 T_Token.o: ../../mstl/m_memblock.ipp
+T_Token.o: ../../mstl/m_pointer_iterator.h
+T_Token.o: ../../mstl/m_pointer_iterator.ipp
 T_Token.o: ../../mstl/m_iterator.h
 T_Token.o: ../../mstl/m_iterator.ipp
 T_Token.o: ../../mstl/m_stack.ipp
@@ -3202,6 +3272,8 @@ T_TokenBuffer.o: ../../mstl/m_string.ipp
 T_TokenBuffer.o: ../../mstl/m_vector.h
 T_TokenBuffer.o: ../../mstl/m_memblock.h
 T_TokenBuffer.o: ../../mstl/m_memblock.ipp
+T_TokenBuffer.o: ../../mstl/m_pointer_iterator.h
+T_TokenBuffer.o: ../../mstl/m_pointer_iterator.ipp
 T_TokenBuffer.o: ../../mstl/m_iterator.h
 T_TokenBuffer.o: ../../mstl/m_iterator.ipp
 T_TokenBuffer.o: ../../mstl/m_vector.ipp
@@ -3212,8 +3284,6 @@ T_TokenBuffer.o: ../../mstl/m_algobase.ipp
 T_TokenBuffer.o: ../../mstl/m_construct.h
 T_TokenBuffer.o: ../../mstl/m_construct.ipp
 T_TokenBuffer.o: ../../mstl/m_pvector.h
-T_TokenBuffer.o: ../../mstl/m_pointer_iterator.h
-T_TokenBuffer.o: ../../mstl/m_pointer_iterator.ipp
 T_TokenBuffer.o: ../../mstl/m_pvector.ipp
 T_TokenBuffer.o: ../../mstl/m_hash.h
 T_TokenBuffer.o: ../../mstl/m_pair.h
@@ -3269,6 +3339,8 @@ T_Tokenizer.o: T_Input.ipp
 T_Tokenizer.o: ../../mstl/m_stack.h
 T_Tokenizer.o: ../../mstl/m_memblock.h
 T_Tokenizer.o: ../../mstl/m_memblock.ipp
+T_Tokenizer.o: ../../mstl/m_pointer_iterator.h
+T_Tokenizer.o: ../../mstl/m_pointer_iterator.ipp
 T_Tokenizer.o: ../../mstl/m_iterator.h
 T_Tokenizer.o: ../../mstl/m_iterator.ipp
 T_Tokenizer.o: ../../mstl/m_stack.ipp
@@ -3330,6 +3402,8 @@ T_Tracing.o: T_Input.ipp
 T_Tracing.o: ../../mstl/m_stack.h
 T_Tracing.o: ../../mstl/m_memblock.h
 T_Tracing.o: ../../mstl/m_memblock.ipp
+T_Tracing.o: ../../mstl/m_pointer_iterator.h
+T_Tracing.o: ../../mstl/m_pointer_iterator.ipp
 T_Tracing.o: ../../mstl/m_iterator.h
 T_Tracing.o: ../../mstl/m_iterator.ipp
 T_Tracing.o: ../../mstl/m_stack.ipp
@@ -3391,6 +3465,8 @@ T_UnboundToken.o: T_Input.ipp
 T_UnboundToken.o: ../../mstl/m_stack.h
 T_UnboundToken.o: ../../mstl/m_memblock.h
 T_UnboundToken.o: ../../mstl/m_memblock.ipp
+T_UnboundToken.o: ../../mstl/m_pointer_iterator.h
+T_UnboundToken.o: ../../mstl/m_pointer_iterator.ipp
 T_UnboundToken.o: ../../mstl/m_iterator.h
 T_UnboundToken.o: ../../mstl/m_iterator.ipp
 T_UnboundToken.o: ../../mstl/m_stack.ipp
@@ -3453,6 +3529,8 @@ T_UndefinedToken.o: T_Input.ipp
 T_UndefinedToken.o: ../../mstl/m_stack.h
 T_UndefinedToken.o: ../../mstl/m_memblock.h
 T_UndefinedToken.o: ../../mstl/m_memblock.ipp
+T_UndefinedToken.o: ../../mstl/m_pointer_iterator.h
+T_UndefinedToken.o: ../../mstl/m_pointer_iterator.ipp
 T_UndefinedToken.o: ../../mstl/m_iterator.h
 T_UndefinedToken.o: ../../mstl/m_iterator.ipp
 T_UndefinedToken.o: ../../mstl/m_stack.ipp
@@ -3527,6 +3605,8 @@ T_Unicode.o: T_Input.ipp
 T_Unicode.o: ../../mstl/m_stack.h
 T_Unicode.o: ../../mstl/m_memblock.h
 T_Unicode.o: ../../mstl/m_memblock.ipp
+T_Unicode.o: ../../mstl/m_pointer_iterator.h
+T_Unicode.o: ../../mstl/m_pointer_iterator.ipp
 T_Unicode.o: ../../mstl/m_iterator.h
 T_Unicode.o: ../../mstl/m_iterator.ipp
 T_Unicode.o: ../../mstl/m_stack.ipp
@@ -3604,6 +3684,8 @@ T_ValueBuffer.o: ../../mstl/m_shared_ptr.ipp
 T_ValueBuffer.o: ../../mstl/m_vector.h
 T_ValueBuffer.o: ../../mstl/m_memblock.h
 T_ValueBuffer.o: ../../mstl/m_memblock.ipp
+T_ValueBuffer.o: ../../mstl/m_pointer_iterator.h
+T_ValueBuffer.o: ../../mstl/m_pointer_iterator.ipp
 T_ValueBuffer.o: ../../mstl/m_iterator.h
 T_ValueBuffer.o: ../../mstl/m_iterator.ipp
 T_ValueBuffer.o: ../../mstl/m_vector.ipp
@@ -3666,6 +3748,8 @@ T_Values.o: T_Input.ipp
 T_Values.o: ../../mstl/m_stack.h
 T_Values.o: ../../mstl/m_memblock.h
 T_Values.o: ../../mstl/m_memblock.ipp
+T_Values.o: ../../mstl/m_pointer_iterator.h
+T_Values.o: ../../mstl/m_pointer_iterator.ipp
 T_Values.o: ../../mstl/m_iterator.h
 T_Values.o: ../../mstl/m_iterator.ipp
 T_Values.o: ../../mstl/m_stack.ipp
@@ -3731,6 +3815,8 @@ T_VariableToken.o: T_Input.ipp
 T_VariableToken.o: ../../mstl/m_stack.h
 T_VariableToken.o: ../../mstl/m_memblock.h
 T_VariableToken.o: ../../mstl/m_memblock.ipp
+T_VariableToken.o: ../../mstl/m_pointer_iterator.h
+T_VariableToken.o: ../../mstl/m_pointer_iterator.ipp
 T_VariableToken.o: ../../mstl/m_iterator.h
 T_VariableToken.o: ../../mstl/m_iterator.ipp
 T_VariableToken.o: ../../mstl/m_stack.ipp
@@ -3795,6 +3881,8 @@ T_Verify.o: T_Input.ipp
 T_Verify.o: ../../mstl/m_stack.h
 T_Verify.o: ../../mstl/m_memblock.h
 T_Verify.o: ../../mstl/m_memblock.ipp
+T_Verify.o: ../../mstl/m_pointer_iterator.h
+T_Verify.o: ../../mstl/m_pointer_iterator.ipp
 T_Verify.o: ../../mstl/m_iterator.h
 T_Verify.o: ../../mstl/m_iterator.ipp
 T_Verify.o: ../../mstl/m_stack.ipp

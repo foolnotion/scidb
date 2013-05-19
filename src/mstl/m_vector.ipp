@@ -207,7 +207,9 @@ inline
 vector<T>::vector(vector const& v)
 	:memblock<T>(v.size())
 {
-	this->m_finish = mstl::uninitialized_copy(v.begin(), v.end(), this->m_start);
+	this->m_finish = mstl::uninitialized_copy(const_pointer(v.begin()),
+															const_pointer(v.end()),
+															this->m_start);
 }
 
 
@@ -217,7 +219,10 @@ vector<T>::vector(vector const& v, size_type n)
 	:memblock<T>(n)
 {
 	M_REQUIRE(n <= v.size());
-	this->m_finish = mstl::uninitialized_copy(v.begin(), v.begin() + n, this->m_start);
+
+	this->m_finish = mstl::uninitialized_copy(const_pointer(v.begin()),
+															const_pointer(v.begin()) + n,
+															this->m_start);
 }
 
 
@@ -225,8 +230,8 @@ template <typename T>
 inline
 vector<T>::~vector() throw()
 {
-	M_ASSERT((begin() == 0) == (end() == 0));
-	mstl::bits::destroy(begin(), end());
+	M_ASSERT((pointer(begin()) == 0) == (pointer(end()) == 0));
+	mstl::bits::destroy(pointer(begin()), pointer(end()));
 }
 
 
@@ -239,7 +244,9 @@ vector<T>::operator=(vector const& v)
 	{
 		clear();
 		reserve(v.size());
-		this->m_finish = mstl::uninitialized_copy(v.begin(), v.end(), this->m_start);
+		this->m_finish = mstl::uninitialized_copy(const_pointer(v.begin()),
+																const_pointer(v.end()),
+																this->m_start);
 	}
 
 	return *this;
@@ -394,7 +401,7 @@ template <typename T>
 void
 vector<T>::release()
 {
-	mstl::bits::destroy(begin(), end());
+	mstl::bits::destroy(pointer(begin()), pointer(end()));
 	delete this->m_start;
 	this->m_start = this->m_finish = this->m_end_of_storage = 0;
 }
@@ -455,7 +462,7 @@ vector<T>::erase(iterator position)
 
 	if (is_movable<T>::value)
 	{
-		mstl::bits::destroy(position);
+		mstl::bits::destroy(pointer(position));
 		::memmove(position, position + 1, mstl::distance(position + 1, end())*sizeof(T));
 		--this->m_finish;
 	}
@@ -500,7 +507,7 @@ vector<T>::erase(iterator first, iterator last)
 		i = mstl::copy(last, end(), first);
 	}
 
-	mstl::bits::destroy(i, end());
+	mstl::bits::destroy(pointer(i), pointer(end()));
 	this->m_finish = this->m_finish - (last - first);
 
 	return first;
@@ -554,18 +561,18 @@ vector<T>::insert(iterator position, Iterator first, Iterator last)
 
 	if (size_type(this->m_end_of_storage - this->m_finish) >= n)
 	{
-		mstl::uninitialized_move(position, position + n, this->m_finish);
-		bits::destroy(position, position + n);
-		this->m_finish = mstl::uninitialized_copy(first, last, position);
+		mstl::uninitialized_move(const_pointer(position), const_pointer(position) + n, this->m_finish);
+		bits::destroy(pointer(position), pointer(position) + n);
+		this->m_finish = mstl::uninitialized_copy(first, last, pointer(position));
 	}
 	else
 	{
 		memblock<T> block(memblock<T>::compute_capacity(capacity(), size() + n, 4));
 		block.swap(*this);
 
-		this->m_finish = mstl::uninitialized_move(block.m_start, position, this->m_start);
+		this->m_finish = mstl::uninitialized_move(block.m_start, pointer(position), this->m_start);
 		this->m_finish = mstl::uninitialized_copy(first, last, this->m_finish);
-		this->m_finish = mstl::uninitialized_move(position, block.m_finish, this->m_finish);
+		this->m_finish = mstl::uninitialized_move(pointer(position), block.m_finish, this->m_finish);
 	}
 }
 
@@ -586,17 +593,19 @@ vector<T>::fill_insert(iterator position, size_type n, const_reference value)
 		{
 			if (is_movable<T>::value)
 			{
-				::memmove(position + n, position, mstl::distance(position, end())*sizeof(T));
+				::memmove(	pointer(position) + n,
+								pointer(position),
+								mstl::distance(position, end())*sizeof(T));
 				this->m_finish += n;
-				mstl::fill_n(position, n, value);
+				mstl::fill_n(pointer(position), n, value);
 			}
 			else
 			{
 				iterator old_finish = this->m_finish;
 				mstl::uninitialized_copy(this->m_finish - n, this->m_finish, this->m_finish);
 				this->m_finish += n;
-				mstl::copy_backward(position, old_finish - n, old_finish);
-				mstl::fill(position, position + n, value);
+				mstl::copy_backward(pointer(position), pointer(old_finish) - n, pointer(old_finish));
+				mstl::fill(pointer(position), pointer(position) + n, value);
 			}
 		}
 		else
@@ -604,9 +613,9 @@ vector<T>::fill_insert(iterator position, size_type n, const_reference value)
 			iterator old_finish = this->m_finish;
 			mstl::uninitialized_fill_n(this->m_finish, n - elems_after, value);
 			this->m_finish += n - elems_after;
-			mstl::uninitialized_copy(position, old_finish, this->m_finish);
+			mstl::uninitialized_copy(const_pointer(position), const_pointer(old_finish), this->m_finish);
 			this->m_finish += elems_after;
-			mstl::fill(position, old_finish, value);
+			mstl::fill(pointer(position), pointer(old_finish), value);
 		}
 	}
 	else
@@ -614,9 +623,9 @@ vector<T>::fill_insert(iterator position, size_type n, const_reference value)
 		memblock<T> block(memblock<T>::compute_capacity(capacity(), size() + n, 4));
 		block.swap(*this);
 
-		this->m_finish = mstl::uninitialized_move(block.m_start, position, this->m_start);
+		this->m_finish = mstl::uninitialized_move(block.m_start, pointer(position), this->m_start);
 		this->m_finish = mstl::uninitialized_fill_n(this->m_finish, n, value);
-		this->m_finish = mstl::uninitialized_move(position, block.m_finish, this->m_finish);
+		this->m_finish = mstl::uninitialized_move(pointer(position), block.m_finish, this->m_finish);
 	}
 }
 
@@ -629,14 +638,14 @@ vector<T>::insert_aux(iterator position, const_reference value)
 	{
 		if (is_movable<T>::value)
 		{
-			::memmove(position + 1, position, mstl::distance(position, end())*sizeof(T));
-			mstl::bits::construct(position, value);
+			::memmove(pointer(position) + 1, pointer(position), mstl::distance(position, end())*sizeof(T));
+			mstl::bits::construct(pointer(position), value);
 		}
 		else
 		{
 			mstl::bits::construct(this->m_finish, *(this->m_finish - 1));
 			if (position < this->m_finish)
-				mstl::copy_backward(position, this->m_finish - 1, this->m_finish);
+				mstl::copy_backward(pointer(position), this->m_finish - 1, this->m_finish);
 			*position = value;
 		}
 
@@ -647,17 +656,17 @@ vector<T>::insert_aux(iterator position, const_reference value)
 		memblock<T> block(memblock<T>::compute_capacity(capacity(), size() + 1, 4));
 		block.swap(*this);
 
-		this->m_finish = mstl::uninitialized_move(block.m_start, position, this->m_start);
+		this->m_finish = mstl::uninitialized_move(block.m_start, pointer(position), this->m_start);
 		mstl::bits::construct(this->m_finish++, value);
-		this->m_finish = mstl::uninitialized_move(position, block.m_finish, this->m_finish);
+		this->m_finish = mstl::uninitialized_move(pointer(position), block.m_finish, this->m_finish);
 	}
 }
 
 
 template <typename T>
-template <typename Iter>
+template <typename Iterator>
 inline
-vector<T>::vector(Iter* first, Iter* last)
+vector<T>::vector(Iterator first, Iterator last)
 {
 	M_REQUIRE(first <= last);
 	M_REQUIRE(last || !first);

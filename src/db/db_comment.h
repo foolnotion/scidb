@@ -44,9 +44,9 @@ public:
 	{
 		enum Attribute
 		{
-			Bold			= 'b',
-			Italic		= 'i',
-			Underline	= 'u',
+			Bold,
+			Italic,
+			Underline,
 		};
 
 		virtual ~Callback() throw();
@@ -67,6 +67,8 @@ public:
 
 		virtual void invalidXmlContent(mstl::string const& content) = 0;
 	};
+
+	enum Mode { PreserveEmoticons, ExpandEmoticons };
 
 	typedef mstl::map<mstl::string,unsigned> LanguageSet;
 
@@ -109,7 +111,7 @@ public:
 	void swap(Comment& comment);
 	void swap(mstl::string& content, bool engFlag, bool othFlag);
 	void copy(mstl::string const& fromLang, mstl::string const& toLang, bool stripOriginal = false);
-	void normalize(char delim = '\n');
+	void normalize(Mode mode = ExpandEmoticons, char delim = '\n');
 	void clear();
 
 	void parse(Callback& cb) const;

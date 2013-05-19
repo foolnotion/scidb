@@ -108,7 +108,7 @@ PlayerStats::finish()
 {
 	for (unsigned i = 0; i < 2; ++i)
 	{
-		::qsort(	const_cast<MapType*>(m_ecoMap[i].container().begin()),
+		::qsort(	const_cast<MapType*>(m_ecoMap[i].container().begin().ref()),
 					m_ecoMap[i].size(),
 					sizeof(MapType),
 					::cmpEco);

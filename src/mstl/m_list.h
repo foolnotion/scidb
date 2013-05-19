@@ -20,6 +20,7 @@
 #define _mstl_list_included
 
 #include "m_list_node.h"
+#include "m_iterator.h"
 
 namespace mstl {
 
@@ -41,10 +42,10 @@ public:
 	{
 	public:
 
-		typedef ptrdiff_t	difference_type;
 		typedef T			value_type;
 		typedef T*			pointer;
 		typedef T&			reference;
+		typedef ptrdiff_t	difference_type;
 
 		iterator();
 		explicit iterator(bits::node_base* n);
@@ -78,10 +79,12 @@ public:
 	{
 	public:
 
-		typedef ptrdiff_t	difference_type;
+		typedef typename list<T>::iterator iterator;
+
 		typedef T			value_type;
 		typedef T const*	pointer;
 		typedef T const&	reference;
+		typedef ptrdiff_t	difference_type;
 
 		const_iterator();
 		explicit const_iterator(bits::node_base const* n);
@@ -113,6 +116,9 @@ public:
 		bits::node_base const* m_node;
 	};
 
+	typedef mstl::reverse_iterator<iterator>					reverse_iterator;
+	typedef mstl::const_reverse_iterator<const_iterator>	const_reverse_iterator;
+
 	list();
 	list(size_type n);
 	list(size_type n, const_reference v);
@@ -125,6 +131,7 @@ public:
 #endif
 
 	list& operator=(list const& v);
+	list& operator+=(list const& v);
 
 #if 0
 	reference operator[](size_type n);
@@ -145,6 +152,11 @@ public:
 	const_iterator begin() const;
 	iterator end();
 	const_iterator end() const;
+
+	reverse_iterator rbegin();
+	reverse_iterator rend();
+	const_reverse_iterator rbegin() const;
+	const_reverse_iterator rend() const;
 
 	void push_back(const_reference v);
 	void push_back();

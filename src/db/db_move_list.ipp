@@ -35,7 +35,7 @@ inline bool MoveList::isFull() const			{ return m_size == Maximum_Moves; }
 inline bool MoveList::notFull() const			{ return m_size < Maximum_Moves; }
 inline unsigned MoveList::size()	const 		{ return m_size; }
 inline void MoveList::clear()						{ m_size = 0; }
-inline MoveList::iterator MoveList::begin()	{ return iterator(m_buffer); }
+inline MoveList::iterator MoveList::begin()	{ return iterator(m_buffer + 0); }
 inline MoveList::iterator MoveList::end()		{ return iterator(m_buffer + m_size); }
 
 inline MoveList::const_iterator MoveList::begin() const	{ return const_iterator(m_buffer); }

@@ -335,6 +335,8 @@ best_move.o: mstl/m_byte_order.ipp
 best_move.o: mstl/m_string.h
 best_move.o: mstl/m_string.ipp
 best_move.o: db/db_move.ipp
+best_move.o: mstl/m_pointer_iterator.h
+best_move.o: mstl/m_pointer_iterator.ipp
 best_move.o: mstl/m_iterator.h
 best_move.o: mstl/m_iterator.ipp
 best_move.o: db/db_move_list.ipp
@@ -422,6 +424,8 @@ cbh2si4.o: mstl/m_map.h
 cbh2si4.o: mstl/m_vector.h
 cbh2si4.o: mstl/m_memblock.h
 cbh2si4.o: mstl/m_memblock.ipp
+cbh2si4.o: mstl/m_pointer_iterator.h
+cbh2si4.o: mstl/m_pointer_iterator.ipp
 cbh2si4.o: mstl/m_iterator.h
 cbh2si4.o: mstl/m_iterator.ipp
 cbh2si4.o: mstl/m_vector.ipp
@@ -580,6 +584,8 @@ cdb2sci.o: mstl/m_map.h
 cdb2sci.o: mstl/m_vector.h
 cdb2sci.o: mstl/m_memblock.h
 cdb2sci.o: mstl/m_memblock.ipp
+cdb2sci.o: mstl/m_pointer_iterator.h
+cdb2sci.o: mstl/m_pointer_iterator.ipp
 cdb2sci.o: mstl/m_iterator.h
 cdb2sci.o: mstl/m_iterator.ipp
 cdb2sci.o: mstl/m_vector.ipp
@@ -752,6 +758,8 @@ dump_eco.o: mstl/m_byte_order.ipp
 dump_eco.o: mstl/m_string.h
 dump_eco.o: mstl/m_string.ipp
 dump_eco.o: db/db_move.ipp
+dump_eco.o: mstl/m_pointer_iterator.h
+dump_eco.o: mstl/m_pointer_iterator.ipp
 dump_eco.o: mstl/m_iterator.h
 dump_eco.o: mstl/m_iterator.ipp
 dump_eco.o: db/db_move_list.ipp
@@ -854,6 +862,8 @@ extend_eco.o: mstl/m_byte_order.ipp
 extend_eco.o: mstl/m_string.h
 extend_eco.o: mstl/m_string.ipp
 extend_eco.o: db/db_move.ipp
+extend_eco.o: mstl/m_pointer_iterator.h
+extend_eco.o: mstl/m_pointer_iterator.ipp
 extend_eco.o: mstl/m_iterator.h
 extend_eco.o: mstl/m_iterator.ipp
 extend_eco.o: db/db_move_list.ipp
@@ -915,6 +925,8 @@ pawn_progress.o: mstl/m_memblock.h
 pawn_progress.o: mstl/m_memblock.ipp
 pawn_progress.o: mstl/m_utility.h
 pawn_progress.o: mstl/m_utility.ipp
+pawn_progress.o: mstl/m_pointer_iterator.h
+pawn_progress.o: mstl/m_pointer_iterator.ipp
 pawn_progress.o: mstl/m_iterator.h
 pawn_progress.o: mstl/m_iterator.ipp
 pawn_progress.o: mstl/m_vector.ipp
@@ -967,6 +979,8 @@ pgn_split_eco.o: mstl/m_byte_order.ipp
 pgn_split_eco.o: mstl/m_string.h
 pgn_split_eco.o: mstl/m_string.ipp
 pgn_split_eco.o: db/db_move.ipp
+pgn_split_eco.o: mstl/m_pointer_iterator.h
+pgn_split_eco.o: mstl/m_pointer_iterator.ipp
 pgn_split_eco.o: mstl/m_iterator.h
 pgn_split_eco.o: mstl/m_iterator.ipp
 pgn_split_eco.o: db/db_move_list.ipp
@@ -1095,6 +1109,8 @@ tkscidb.o: mstl/m_bitset.ipp
 tkscidb.o: db/db_filter.ipp
 tkscidb.o: db/db_board.h
 tkscidb.o: db/db_move_list.h
+tkscidb.o: mstl/m_pointer_iterator.h
+tkscidb.o: mstl/m_pointer_iterator.ipp
 tkscidb.o: mstl/m_iterator.h
 tkscidb.o: mstl/m_iterator.ipp
 tkscidb.o: db/db_move_list.ipp
@@ -1114,8 +1130,6 @@ tkscidb.o: mstl/m_algobase.h
 tkscidb.o: mstl/m_algobase.ipp
 tkscidb.o: mstl/m_construct.h
 tkscidb.o: mstl/m_construct.ipp
-tkscidb.o: mstl/m_pointer_iterator.h
-tkscidb.o: mstl/m_pointer_iterator.ipp
 tkscidb.o: mstl/m_pvector.ipp
 tkscidb.o: mstl/m_ref_counter.h
 tkscidb.o: mstl/m_ref_counter.ipp

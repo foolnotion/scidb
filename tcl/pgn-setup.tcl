@@ -288,7 +288,7 @@ proc configureText {path {fontContext ""}} {
 	if {$context eq "editor"} { set bold $Options(weight:mainline) } else { set bold normal }
 	set charwidth [font measure [$w cget -font] "0"]
 
-	$w tag configure figurine -font $::font::figurine($fontContext:normal)
+	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
 	$w tag configure result -font $::font::text($fontContext:$bold)
 	$w tag configure result -foreground  $Colors(foreground:result)
 	$w tag configure empty -foreground $Colors(foreground:empty)
@@ -304,7 +304,7 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
 		$w tag configure circled -foreground #008b00
 
-		$w tag configure figurineb -font $::font::figurine($fontContext:bold)
+		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)
 		$w tag configure symbolb -font $::font::symbol($fontContext:bold)
 

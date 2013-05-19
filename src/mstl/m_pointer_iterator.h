@@ -30,9 +30,12 @@ class pointer_iterator
 {
 public:
 
-	typedef ptrdiff_t difference_type;
+	typedef T				value_type;
+	typedef value_type*	pointer;
+	typedef value_type&	reference;
+	typedef ptrdiff_t		difference_type;
 
-	pointer_iterator(T** elems = 0);
+	pointer_iterator(T* elems = 0);
 
 	bool operator==(pointer_iterator const& it) const;
 	bool operator!=(pointer_iterator const& it) const;
@@ -48,19 +51,19 @@ public:
 
 	difference_type operator-(pointer_iterator const& i) const;
 
-	T& operator[](size_t n) const;
+	reference operator[](size_t n) const;
 
-	T& operator*() const;
-	T* operator->() const;
+	reference operator*() const;
+	pointer operator->() const;
 
-	operator T* () const;
+	operator pointer () const;
 
 	void swap(pointer_iterator i);
-	T**& ref();	// Use with care!
+	pointer& ref();	// Use with care!
 
 private:
 
-	T** m_elems;
+	T* m_elems;
 
 	friend class pointer_const_iterator<T>;
 };
@@ -71,10 +74,14 @@ class pointer_const_iterator
 {
 public:
 
-	typedef ptrdiff_t difference_type;
+	typedef pointer_iterator<T>	iterator;
+	typedef T							value_type;
+	typedef value_type const*		pointer;
+	typedef value_type const&		reference;
+	typedef ptrdiff_t			 		difference_type;
 
-	pointer_const_iterator(T*const* elems = 0);
-	pointer_const_iterator(pointer_iterator<T> const& it);
+	pointer_const_iterator(T const* elems = 0);
+	pointer_const_iterator(iterator const& it);
 
 	bool operator==(pointer_const_iterator const& it) const;
 	bool operator!=(pointer_const_iterator const& it) const;
@@ -90,18 +97,18 @@ public:
 
 	difference_type operator-(pointer_const_iterator const& i) const;
 
-	T const& operator[](size_t n) const;
+	reference operator[](size_t n) const;
 
-	T const& operator*() const;
-	T const* operator->() const;
+	reference operator*() const;
+	pointer operator->() const;
 
-	operator T const* () const;
+	operator pointer () const;
 
-	T* const* ref() const;	// Use with care!
+	pointer ref() const;	// Use with care!
 
 private:
 
-	T* const* m_elems;
+	T const* m_elems;
 };
 
 } // namespace mstl

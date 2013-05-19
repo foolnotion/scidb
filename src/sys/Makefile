@@ -128,6 +128,8 @@ sys_fam.o: ../mstl/m_hash.h
 sys_fam.o: ../mstl/m_vector.h
 sys_fam.o: ../mstl/m_memblock.h
 sys_fam.o: ../mstl/m_memblock.ipp
+sys_fam.o: ../mstl/m_pointer_iterator.h
+sys_fam.o: ../mstl/m_pointer_iterator.ipp
 sys_fam.o: ../mstl/m_iterator.h
 sys_fam.o: ../mstl/m_iterator.ipp
 sys_fam.o: ../mstl/m_vector.ipp
@@ -169,6 +171,8 @@ sys_file.o: ../mstl/m_map.h
 sys_file.o: ../mstl/m_vector.h
 sys_file.o: ../mstl/m_memblock.h
 sys_file.o: ../mstl/m_memblock.ipp
+sys_file.o: ../mstl/m_pointer_iterator.h
+sys_file.o: ../mstl/m_pointer_iterator.ipp
 sys_file.o: ../mstl/m_iterator.h
 sys_file.o: ../mstl/m_iterator.ipp
 sys_file.o: ../mstl/m_vector.ipp
@@ -215,6 +219,8 @@ sys_process.o: ../mstl/m_map.h
 sys_process.o: ../mstl/m_vector.h
 sys_process.o: ../mstl/m_memblock.h
 sys_process.o: ../mstl/m_memblock.ipp
+sys_process.o: ../mstl/m_pointer_iterator.h
+sys_process.o: ../mstl/m_pointer_iterator.ipp
 sys_process.o: ../mstl/m_iterator.h
 sys_process.o: ../mstl/m_iterator.ipp
 sys_process.o: ../mstl/m_vector.ipp
@@ -285,6 +291,8 @@ sys_utf8_codec.o: ../mstl/m_exception.ipp
 sys_utf8_codec.o: ../mstl/m_list.h
 sys_utf8_codec.o: ../mstl/m_list_node.h
 sys_utf8_codec.o: ../mstl/m_list_node.ipp
+sys_utf8_codec.o: ../mstl/m_iterator.h
+sys_utf8_codec.o: ../mstl/m_iterator.ipp
 sys_utf8_codec.o: ../mstl/m_list.ipp
 sys_utf8_codec.o: ../mstl/m_construct.h
 sys_utf8_codec.o: ../mstl/m_construct.ipp

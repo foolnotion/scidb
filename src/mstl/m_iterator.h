@@ -23,16 +23,16 @@
 
 namespace mstl {
 
-template <typename T>
+template <typename Iterator>
 class reverse_iterator
 {
 public:
 
-	typedef T				value_type;
-	typedef value_type*	pointer;
-	typedef pointer		iterator;
-	typedef value_type&	reference;
-	typedef ptrdiff_t		difference_type;
+	typedef Iterator										iterator;
+	typedef typename Iterator::value_type			value_type;
+	typedef typename Iterator::pointer				pointer;
+	typedef typename Iterator::reference			reference;
+	typedef typename Iterator::difference_type	difference_type;
 
 	explicit reverse_iterator(iterator i);
 
@@ -66,17 +66,17 @@ protected:
 };
 
 
-template <typename T>
+template <typename ConstIterator>
 class const_reverse_iterator
 {
 public:
 
-	typedef T						value_type;
-	typedef value_type const*	const_pointer;
-	typedef value_type*			iterator;
-	typedef const_pointer		const_iterator;
-	typedef value_type const&	const_reference;
-	typedef ptrdiff_t				difference_type;
+	typedef typename ConstIterator::iterator			iterator;
+	typedef ConstIterator									const_iterator;
+	typedef typename ConstIterator::value_type		value_type;
+	typedef typename ConstIterator::pointer			pointer;
+	typedef typename ConstIterator::reference			reference;
+	typedef typename ConstIterator::difference_type	difference_type;
 
 	explicit const_reverse_iterator(const_iterator i);
 	explicit const_reverse_iterator(iterator i);
@@ -91,8 +91,8 @@ public:
 
 	const_iterator base() const;
 
-	const_reference operator*() const;
-	const_pointer operator->() const;
+	reference operator*() const;
+	pointer operator->() const;
 
 	const_reverse_iterator& operator++();
 	const_reverse_iterator& operator--();
@@ -103,7 +103,7 @@ public:
 	const_reverse_iterator  operator+(size_t n) const;
 	const_reverse_iterator  operator-(size_t n) const;
 
-	const_reference operator[](difference_type n) const;
+	reference operator[](difference_type n) const;
 	difference_type operator-(const_reverse_iterator const& i) const;
 
 protected:

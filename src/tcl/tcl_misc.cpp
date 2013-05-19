@@ -54,6 +54,7 @@
 #include "m_backtrace.h"
 #include "m_string.h"
 #include "m_bit_functions.h"
+#include "m_stack.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -478,11 +479,13 @@ public:
 
 	Parser(Tcl_Obj* obj);
 
-	mstl::string const& parse();
+	mstl::string parse();
 
 private:
 
-	enum Mode { Bold = 0, Italic = 1, Underline = 2 };
+	enum { Bold = 0, Italic = 1, Underline = 2 };
+
+	typedef mstl::stack<unsigned> ModeStack;
 
 	void processModes();
 
@@ -490,6 +493,7 @@ private:
 	mstl::string	m_xml;
 	unsigned			m_attr[3];
 	bool				m_mode[3];
+	ModeStack		m_stack;
 };
 
 
@@ -499,7 +503,7 @@ Parser::Parser(Tcl_Obj* obj)
 	M_ASSERT(m_obj);
 
 	m_attr[0] = m_attr[1] = m_attr[2] = 0;
-	m_mode[0] = m_mode[1] = m_mode[2] = 0;
+	m_mode[0] = m_mode[1] = m_mode[2] = false;
 	m_xml.reserve(512);
 }
 
@@ -511,36 +515,44 @@ Parser::processModes()
 
 	for (unsigned i = 0; i < 3; ++i)
 	{
-		if (m_attr[i])
+		if (!m_attr[i] && m_mode[i])
 		{
-			if (!m_mode[i])
-			{
-				m_xml += '<';
-				m_xml += Token[i];
-				m_xml += '>';
-				m_mode[i] = true;
-			}
-		}
-	}
-
-	for (int i = 2; i >= 0; --i)
-	{
-		if (!m_attr[i])
-		{
-			if (m_mode[i])
+			while (!m_stack.empty() && m_stack.top() != i)
 			{
 				m_xml += '<';
 				m_xml += '/';
-				m_xml += Token[i];
+				m_xml += Token[m_stack.top()];
 				m_xml += '>';
-				m_mode[i] = false;
+				m_mode[m_stack.top()] = false;
+				m_stack.pop();
 			}
+
+			m_xml += '<';
+			m_xml += '/';
+			m_xml += Token[i];
+			m_xml += '>';
+			m_mode[i] = false;
+
+			if (!m_stack.empty())
+				m_stack.pop();
+		}
+	}
+
+	for (unsigned i = 0; i < 3; ++i)
+	{
+		if (m_attr[i] && !m_mode[i])
+		{
+			m_xml += '<';
+			m_xml += Token[i];
+			m_xml += '>';
+			m_mode[i] = true;
+			m_stack.push(i);
 		}
 	}
 }
 
 
-mstl::string const&
+mstl::string
 Parser::parse()
 {
 	int objc;
@@ -565,6 +577,9 @@ Parser::parse()
 		m_xml.format("<:%s>", lang);
 		Tcl_ListObjGetElements(0, argv[1], &argc, &argv);
 
+		int firstStrIndex	= -1;
+		int lastStrIndex	= INT_MIN;
+
 		for (int k = 0; k < argc; ++k)
 		{
 			int objn;
@@ -574,6 +589,23 @@ Parser::parse()
 
 			if (objn == 0)
 				M_RAISE("invalid xml list");
+
+			char const* token = Tcl_GetStringFromObj(objs[0], nullptr);
+
+			if (::strncmp(token, "str", 3) == 0)
+			{
+				if (firstStrIndex == -1)
+					firstStrIndex = k;
+				lastStrIndex = k;
+			}
+		}
+
+		for (int k = 0; k < argc; ++k)
+		{
+			int objn;
+			Tcl_Obj** objs;
+
+			Tcl_ListObjGetElements(0, argv[k], &objn, &objs);
 
 			char const* token = Tcl_GetStringFromObj(objs[0], nullptr);
 
@@ -589,6 +621,20 @@ Parser::parse()
 							{
 								int len;
 								char const* str = Tcl_GetStringFromObj(objs[1], &len);
+
+								if (firstStrIndex == k)
+								{
+									while (len > 0 && ::isspace(*str))
+										++str, --len;
+								}
+
+								if (lastStrIndex == k)
+								{
+									char const* s = str + len - 1;
+
+									while (len > 0 && ::isspace(*s))
+										--s, --len;
+								}
 
 								if (len > 0)
 								{
@@ -672,7 +718,10 @@ Parser::parse()
 
 	m_xml.append("</xml>", 6);
 
-	return m_xml;
+	::db::Comment comment(m_xml, false, false);
+	comment.normalize(::db::Comment::PreserveEmoticons);
+
+	return comment.content();
 }
 
 } // namespace
@@ -714,16 +763,20 @@ cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	bool detectEmoticons = false;
 	bool expandEmoticons = false;
 
-	if (objc > 3)
+	int offs = 0;
+
+	while (objc - offs > 3)
 	{
-		char const* option = Tcl_GetString(objv[2]);
+		char const* option = Tcl_GetString(objv[2 + offs]);
 
 		if (::strcmp(option, "-detectemoticons") == 0)
-			detectEmoticons = boolFromObj(objc, objv, 3);
+			detectEmoticons = boolFromObj(objc, objv, 3 + offs);
 		else if (::strcmp(option, "-expandemoticons") == 0)
-			expandEmoticons = boolFromObj(objc, objv, 3);
+			expandEmoticons = boolFromObj(objc, objv, 3 + offs);
 		else
-			return error(CmdLookup, 0, 0, "unknown option '%s'", Tcl_GetString(objv[2]));
+			return error(CmdLookup, 0, 0, "unknown option '%s'", Tcl_GetString(objv[2 + offs]));
+
+		offs += 2;
 	}
 
 	ToList callback(detectEmoticons, expandEmoticons);

@@ -133,6 +133,7 @@ proc open {parent pos lang} {
 	set Vars(pos) $pos
 	set Vars(lang) xx
 	set Vars(mc) $::mc::langID
+	set Vars(init) 0
 
 	# Currently the undo/redo mechanism of the text widget is not working properly
 	# (and quite useless). The Tk team does not like to handle this problem (see
@@ -162,15 +163,11 @@ proc open {parent pos lang} {
 		if {$attr eq "bold"} { $top.text tag configure codeb -font $f }
 	}
 	# XXX possibly we can use only {Scidb Symbol Traveller}
-	$top.text tag configure figurine -font $::font::figurine(text:normal)
-	$top.text tag configure figurineb -font $::font::figurine(text:bold)
+	$top.text tag configure figurine -font $::font::figurine(text:normal) -underline no
+	$top.text tag configure figurineb -font $::font::figurine(text:bold) -underline no
 	$top.text tag configure symbol -font $::font::symbol(text:normal)
 	$top.text tag configure symbolb -font $::font::symbol(text:bold)
-	$top.text tag configure underline -underline true
-
-	set size [font configure $::font::figurine(text:normal) -size]
-	$top.text tag configure emoticon -font [list Emoticons $size]
-	$top.text tag configure emoticon -background yellow
+	$top.text tag configure underline -underline yes
 
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
 	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
@@ -501,43 +498,38 @@ proc SetupComment {lang comment {setup 0}} {
 proc InsertComment {lang content {setup 0}} {
 	variable Vars
 
-	set flags 0
-	set underline 0
 	set w $Vars(widget:text)
 	set Vars(symbols) {}
 	set Vars(count) 0
+	set Vars(init) 1
 
-	foreach comment $content {
-		lassign $comment code text
-		set text [string map {"<brace/>" "\{" "\n" "\u00b6\n"} $text]
+	set fmt [list 0 [$w index current]]
+
+	foreach entry $content {
+		lassign $entry code text
 
 		switch -- $code {
-			str {
-				switch $flags {
-					0 { set attrs {} }
-					1 { set attrs bold }
-					2 { set attrs italic }
-					3 { set attrs bold-italic }
-				}
-				if {$underline} { lappend attrs underline }
-				$w insert end $text $attrs
+			str { $w insert end [string map {"<brace/>" "\{" "\n" "\u00b6\n"} $text] }
+			emo { InsertEmoticon $w $text no }
+			nag { InsertNag $w $text [expr {[lindex $fmt 0] & 1}] }
+			sym { InsertFigurine $w $text [expr {[lindex $fmt 0] & 1}] }
+
+			+bold - +italic - +underline - -bold - -italic - -underline {
+				set fmt [UpdateAttrs $w $fmt $code]
 			}
-
-			sym { InsertFigurine $w $text [expr {$flags & 1}] }
-			emo { InsertEmoticon $w $text }
-			nag { InsertNag $w $text [expr {$flags & 1}] }
-
-			+bold			{ incr flags +1 }
-			-bold			{ incr flags -1 }
-			+italic		{ incr flags +2 }
-			-italic		{ incr flags -2 }
-			+underline	{ set underline 1 }
-			-underline	{ set underline 0 }
 		}
 	}
 
+	UpdateAttrs $w $fmt
+	$w tag raise figurine
+	$w tag raise figurineb
+	$w tag raise symbol
+	$w tag raise symbolb
+
+	set Vars(init) 0
+
 	if {$setup} {
-		set Vars(dump:$lang) [ParseDump [$Vars(widget:text) dump -tag -text 1.0 end]]
+		set Vars(dump:$lang) [ParseDump [$Vars(widget:text) dump -tag -image -text 1.0 end]]
 		$Vars(widget:revert) configure -state disabled
 	} else {
 		Modified $w
@@ -545,64 +537,86 @@ proc InsertComment {lang content {setup 0}} {
 }
 
 
-proc InsertFigurine {w fig {bold {}}} {
-	variable Vars
+proc UpdateAttrs {w fmt {code ""}} {
+	lassign $fmt flags pos
+	set attrs {}
 
-	if {[llength $bold] == 0} { set bold $Vars(format:bold) }
-	set Vars(symbol:[incr Vars(count)]) $fig
-	set selrange [$w tag ranges sel]
-	set text [string map $::figurines::pieceMap $fig]
-	set key key$Vars(count)
-	if {$bold} {
-		set tags [list figurineb $key]
-	} else {
-		set tags [list figurine $key]
+	if {($flags & 3) == 3} {
+		set attrs bold-italic
+	} elseif {$flags & 2} {
+		set attrs italic
+	} elseif {$flags & 1} {
+		set attrs bold
 	}
-	$w tag bind $key <Enter> {}
-	$w tag bind $key <Leave> {}
 
-	if {	[llength $selrange]
-		&& [$w compare insert >= [lindex $selrange 0]]
-		&& [$w compare insert <= [lindex $selrange 1]]} {
-		$w replace {*}$selrange $text $tags
-	} else {
-		$w insert insert $text $tags
+	if {$flags & 4} {
+		lappend attrs underline
 	}
+
+	if {[llength $attrs]} {
+		set end [$w index current]
+		foreach attr $attrs {
+			$w tag add $attr $pos $end
+		}
+	}
+
+	switch $code {
+		+bold			{ set flags [expr {$flags | 1}] }
+		+italic		{ set flags [expr {$flags | 2}] }
+		+underline	{ set flags [expr {$flags | 4}] }
+
+		-bold			{ set flags [expr {$flags & ~1}] }
+		-italic		{ set flags [expr {$flags & ~2}] }
+		-underline	{ set flags [expr {$flags & ~4}] }
+	}
+
+	return [list $flags [$w index current]]
 }
 
 
-proc InsertNag {w nag {bold {}}} {
+proc InsertFigurine {w fig {boldFlag {}}} {
 	variable Vars
 
-	if {[llength $bold] == 0} { set bold $Vars(format:bold) }
+	set useFormatting [expr {[llength $boldFlag] == 0}]
+	if {$useFormatting} { set useBold $Vars(format:bold) } else { set useBold $boldFlag }
+	set Vars(symbol:[incr Vars(count)]) $fig
+	set text [string map $::figurines::pieceMap $fig]
+	set key key$Vars(count)
+	set tag figurine
+	if {$useBold} { append tag b }
+	$w tag bind $key <Enter> {}
+	$w tag bind $key <Leave> {}
+
+	InsertText $w $text [list $tag $key] $useFormatting
+}
+
+
+proc InsertNag {w nag {boldFlag {}}} {
+	variable Vars
+
+	set useFormatting [expr {[llength $boldFlag] == 0}]
+	if {$useFormatting} { set useBold $Vars(format:bold) } else { set useBold $boldFlag }
 	set Vars(symbol:[incr Vars(count)]) $nag
 	set key key$Vars(count)
 	lassign [::font::splitAnnotation $nag] value sym tag
 	if {$tag eq "symbol"} {
-		if {$bold} { set tag symbolb }
+		set tag symbol
 	} else {
-		if {$bold} { set tag codeb } else { set tag code }
+		set tag code
 		if {[string is digit -strict $sym]} {
 			set sym "{\$$sym}"	;# use something like a question mark instead
 		}
 	}
-	set tags [list $tag $key]
-	set selrange [$w tag ranges sel]
 
-	if {	[llength $selrange]
-		&& [$w compare insert >= [lindex $selrange 0]]
-		&& [$w compare insert <= [lindex $selrange 1]]} {
-		$w replace {*}$selrange $sym $tags
-	} else {
-		$w insert insert $sym $tags
-	}
+	if {$useBold} { append tag b }
+	InsertText $w $sym [list $tag $key] $useFormatting
 
 	$w tag bind $key <Enter> [namespace code [list TooltipShowNag $w $key nag $value]]
 	$w tag bind $key <Leave> [namespace code [list TooltipHide $w]]
 }
 
 
-proc InsertEmoticon {w text} {
+proc InsertEmoticon {w text {useFormatting yes}} {
 	variable Options
 
 	if {$Options(showEmoticons)} {
@@ -610,27 +624,45 @@ proc InsertEmoticon {w text} {
 
 		set selrange [$w tag ranges sel]
 		set emotion [::emoticons::lookupEmotion $text]
-		set ch [::emoticons::getCharCode $emotion]
-		set key key[incr Vars(count)]
-		set tags [list $key emoticon]
-
+		set Vars(symbol:[incr Vars(count)]) $emotion
+		set key key$Vars(count)
+		set mark insert
 		if {	[llength $selrange]
 			&& [$w compare insert >= [lindex $selrange 0]]
 			&& [$w compare insert <= [lindex $selrange 1]]} {
-			$w replace {*}$selrange $ch $tags
-		} else {
-			$w insert insert $ch $tags
+			$w delete {*}$selrange
+			set mark [lindex $selrange 0]
 		}
-
-		$w tag bind $key <Enter> [namespace code [list TooltipShowEmoticon $w $emotion]]
-		$w tag bind $key <Leave> [namespace code [list TooltipHide $w]]
+		$w image create $mark -image $::emoticons::icon($emotion) -name $key
+		if {$useFormatting} {
+			DoFormatting $w $mark $mark
+		}
 	} else {
-		InsertChar $w [::emoticons::lookupCode $text]
+		InsertText $w [::emoticons::lookupCode $text] {} $useFormatting
 	}
 }
 
 
-proc InsertChar {w ch} {
+proc InsertText {w text tags useFormatting} {
+	set selrange [$w tag ranges sel]
+
+	if {	[llength $selrange]
+		&& [$w compare insert >= [lindex $selrange 0]]
+		&& [$w compare insert <= [lindex $selrange 1]]} {
+		set pos [lindex $selrange 0]
+		$w replace {*}$selrange $text $tags
+	} else {
+		set pos [$w index insert]
+		$w insert insert $text $tags
+	}
+
+	if {$useFormatting} {
+		DoFormatting $w $pos [$w index current]
+	}
+}
+
+
+proc DoFormatting {w start end} {
 	variable Vars
 
 	if {$Vars(format:bold) && $Vars(format:italic)} {
@@ -646,20 +678,27 @@ proc InsertChar {w ch} {
 		lappend fmt underline
 	}
 
-	set selrange [$w tag ranges sel]
+	if {[llength $fmt]} {
+		foreach f $fmt {
+			$w tag add $f $start $end
+		}
 
-	if {	[llength $selrange]
-		&& [$w compare insert >= [lindex $selrange 0]]
-		&& [$w compare insert <= [lindex $selrange 1]]} {
-		$w replace {*}$selrange $ch $fmt
-	} else {
-		$w insert insert $ch $fmt
+		$w tag raise figurine
+		$w tag raise figurineb
+		$w tag raise symbol
+		$w tag raise symbolb
 	}
 }
 
 
-proc PasteText {w str} {
+proc PasteText {w {str ""}} {
 	variable Symbols
+
+	if {[string length $str] == 0} {
+		if {[catch { [::tk::GetSelection %W PRIMARY] str }]} {
+			return
+		}
+	}
 
 	if {[tk windowingsystem] ne "x11"} {
 		catch { $w delete sel.first sel.last }
@@ -742,10 +781,6 @@ proc ParseDump {dump} {
 						append content [string map $::figurines::pieceMap $Vars(symbol:$num)]
 					}
 
-					emo {
-						append content [::emoticons::lookupCode [::emoticons::lookupChar $value]]
-					}
-
 					nag {
 						set nag $Vars(symbol:$num)
 						set symbol [::font::mapNagToSymbol $nag]
@@ -760,10 +795,14 @@ proc ParseDump {dump} {
 				}
 			}
 
+			image {
+				set num [string range $value 3 end]
+				append content [list emo [::emoticons::lookupCode $Vars(symbol:$num)]]
+			}
+
 			tagon {
 				switch -glob $value {
 					symbol*		{ set token nag }
-					emoticon		{ set token emo }
 					code*			{ set token nag }
 					figurine*	{ set token sym }
 					key*			{ set num [string range $value 3 end] }
@@ -772,7 +811,7 @@ proc ParseDump {dump} {
 
 			tagoff {
 				switch -glob $value {
-					symbol* - emoticon - code* - figurine* { set token str }
+					symbol* - code* - figurine* { set token str }
 				}
 			}
 		}
@@ -785,6 +824,8 @@ proc ParseDump {dump} {
 proc Modified {w} {
 	variable Vars
 
+	if {$Vars(init)} { return }
+
 	$w edit modified no
 	set lang $Vars(lang)
 	if {![info exists Vars(content:$lang)]} { return }
@@ -793,30 +834,31 @@ proc Modified {w} {
 		return [$Vars(widget:revert) configure -state disabled]
 	}
 
-	set content [DumpToComment [$Vars(widget:text) dump -tag -text 1.0 end]]
+	set content [DumpToComment [$Vars(widget:text) dump -tag -image -text 1.0 end]]
 	if {$Vars(content:$lang) ne $content} { set state normal } else { set state disabled }
 	$Vars(widget:revert) configure -state $state
 }
 
 
-proc SetUndoPoint {w {lang {}} {force 0}} {
+proc SetUndoPoint {w {lang {}}} {
 	variable Vars
 
+	if {$Vars(init)} { return }
 	if {[string length $lang] == 0} { set lang $Vars(lang) }
 
-	set dump [$w dump -tag -text 1.0 end]
+	set dump [$w dump -tag -image -text 1.0 end]
 	set text [ParseDump $dump]
 	set content [DumpToComment $dump]
 	set mark [$w index insert]
 
 	if {[info exists Vars(undoStack:$lang)]} {
-		if {!$force
-				? $content eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]
-				: $text eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 1]} {
+		set prevContent [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]
+
+		if {$content eq [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2]} {
 			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 0 $mark
-#			lset Vars(undoStack:$lang) $Vars(undoStackIndex:$lang) 2 $content
 			return
 		}
+
 		set Vars(undoStack:$lang) [lrange $Vars(undoStack:$lang) 0 $Vars(undoStackIndex:$lang)]
 		incr Vars(undoStackIndex:$lang)
 	} else {
@@ -827,12 +869,17 @@ proc SetUndoPoint {w {lang {}} {force 0}} {
 }
 
 
+proc CheckFormat {text} {
+	return $text
+}
+
+
 proc DoUndo {lang inc} {
 	variable Vars
 
 	set w $Vars(widget:text)
 	incr Vars(undoStackIndex:$lang) $inc
-	set currentText [ParseDump [$w dump -tag -text 1.0 end]]
+	set currentText [ParseDump [$w dump -tag -image -text 1.0 end]]
 	lassign [lindex $Vars(undoStack:$lang) $Vars(undoStackIndex:$lang)] mark text content
 	$w delete 1.0 end
 	InsertComment $lang $content
@@ -944,6 +991,7 @@ proc SwitchLanguage {lang} {
 
 
 proc DumpToComment {dump} {
+	variable Options
 	variable Vars
 
 	set count 0
@@ -953,7 +1001,7 @@ proc DumpToComment {dump} {
 
 	foreach {key value index} $dump {
 		switch $key {
-			text		{
+			text {
 				incr count $n
 				set lst 1
 				if {$fst == 0} { set fst 1 }
@@ -961,7 +1009,7 @@ proc DumpToComment {dump} {
 
 			tagon {
 				switch -glob $value {
-					symbol* - emoticon - code* - figurine* {
+					symbol* - code* - figurine* {
 						set n 0
 						set lst 2
 						if {$fst == 0} { set fst 2 }
@@ -971,7 +1019,7 @@ proc DumpToComment {dump} {
 
 			tagoff {
 				switch -glob $value {
-					symbol* - emoticon - code* - figurine* { set n 1 }
+					symbol* - code* - figurine* { set n 1 }
 				}
 			}
 		}
@@ -981,7 +1029,6 @@ proc DumpToComment {dump} {
 	set token str
 	set content {}
 	set num 0
-	set length 0
 	array set flags { bold 0 italic 0 bold-italic 0 underline 0 }
 
 	foreach {key value index} $dump {
@@ -1003,15 +1050,17 @@ proc DumpToComment {dump} {
 					} elseif {$n == $count} {
 						if {$lst == 1} { set value [string trimright $value] }
 					}
-				} elseif {$token eq "emo"} {
-					set value [::emoticons::lookupCode [::emoticons::lookupChar $value]]
 				} else {
 					set value $Vars(symbol:$num)
 				}
 				if {[string length $value]} {
-					incr length [string length $value]
 					lappend content [list $token $value]
 				}
+			}
+
+			image {
+				set num [string range $value 3 end]
+				lappend content [list emo [::emoticons::lookupCode $Vars(symbol:$num)]]
 			}
 
 			tagon {
@@ -1035,7 +1084,6 @@ proc DumpToComment {dump} {
 					}
 
 					code - symbol	{ set token nag }
-					emoticon			{ set token emo }
 					figurine			{ set token sym }
 
 					default {
@@ -1061,7 +1109,7 @@ proc DumpToComment {dump} {
 						set token str
 					}
 
-					code - symbol - emoticon - figurine { set token str }
+					code - symbol - figurine { set token str }
 				}
 			}
 		}
@@ -1074,7 +1122,8 @@ proc DumpToComment {dump} {
 	append newContent $content
 	append newContent "}}"
 	set newContent [::scidb::misc::xml fromList $newContent]
-	set newContent [::scidb::misc::xml toList $newContent -expandemoticons [ExpandEmoticons]]
+	set newContent [::scidb::misc::xml toList $newContent \
+		-expandemoticons [ExpandEmoticons] -detectemoticons [DetectEmoticons]]
 	set content [lindex $newContent 0 1]
 
 	return $content
@@ -1087,11 +1136,17 @@ proc ExpandEmoticons {} {
 }
 
 
+proc DetectEmoticons {} {
+	variable Options
+	return [expr {$Options(showEmoticons) && $::pgn::editor::Options(show:emoticon)}]
+}
+
+
 proc ParseContent {lang} {
 	variable Vars
 
 	set w $Vars(widget:text)
-	set content [DumpToComment [$w dump -tag -text 1.0 end]]
+	set content [DumpToComment [$w dump -tag -image -text 1.0 end]]
 
 	set languages ""
 	foreach name [array names Vars content:*] {
@@ -1305,7 +1360,7 @@ proc PopupSymbolTable {w text} {
 		switch [lindex $_Symbol 0] {
 			fig { InsertFigurine $text [lindex $_Symbol 1] }
 			nag { InsertNag $text [lindex $_Symbol 1] }
-			sym { InsertChar $text [lindex $_Symbol 1] }
+			sym { InsertText $text [lindex $_Symbol 1] {} yes }
 		}
 	}
 
@@ -1330,6 +1385,10 @@ proc PopupMenu {parent} {
 	catch { wm attributes $m -type popup_menu }
 	SetUndoPoint $w
 
+	if {![info exists Vars(content:xx)]} {
+		set Vars(content:xx) ""
+	}
+
 	if {[llength [$parent tag ranges sel]] == 0} {
 		set state disabled
 	} else {
@@ -1338,7 +1397,7 @@ proc PopupMenu {parent} {
 
 	set sel ""
 	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
-		set sel [string map {"\n" "\n\u00b6"} $sel]
+		set sel [string map {"<brace/>" "\{" "\n" "\n\u00b6"} $sel]
 	}
 	
 	set count 0
@@ -1623,7 +1682,7 @@ proc MakeSymbolMenu {w menu} {
 	foreach c $DingbatSet {
 		$m add command \
 			-label $c \
-			-command [namespace code [list InsertChar $w $c]] \
+			-command [namespace code [list InsertText $w $c {} yes]] \
 			-columnbreak [expr {[incr i] == [llength $DingbatSet]/2}] \
 			;
 	}
@@ -1833,7 +1892,7 @@ proc DisplayEmoticons {} {
 	set mark [$w index current]
 
 	set comment "{xx {"
-	append comment [DumpToComment [$w dump -tag -text 1.0 end]]
+	append comment [DumpToComment [$w dump -tag -image -text 1.0 end]]
 	append comment "}}"
 
 	if {$Options(showEmoticons)} { set opt -detectemoticons } else { set opt -expandemoticons }
@@ -1912,7 +1971,7 @@ proc ChangeFormat {format {toggle no}} {
 	if {[llength $selrange] == 0} { return }
 
 	lassign $selrange prevIndex lastIndex
-	array set flags {bold 0 italic 0 underline 0 symbol 0 symbolb 0 figurine 0 figurineb 0}
+	array set flags {bold 0 italic 0 underline 0 code 0 codeb 0 symbol 0 symbolb 0 figurine 0 figurineb 0}
 	set flags($format) $Vars(format:$format)
 
 	foreach {key value index} [$w dump -tag 1.0 end] {
@@ -1927,6 +1986,14 @@ proc ChangeFormat {format {toggle no}} {
 						$w tag remove symbolb {*}$range
 						$w tag add symbol {*}$range
 					}
+				} elseif {$flags(code) || $flags(codeb)} {
+					if {$flags(code) && $flags(bold)} {
+						$w tag remove code {*}$range
+						$w tag add codeb {*}$range
+					} elseif {$flags(codeb) && !$flags(bold)} {
+						$w tag remove codeb {*}$range
+						$w tag add code {*}$range
+					}
 				} elseif {$flags(figurine) || $flags(figurineb)} {
 					if {$flags(figurine) && $flags(bold)} {
 						$w tag remove figurine {*}$range
@@ -1935,24 +2002,23 @@ proc ChangeFormat {format {toggle no}} {
 						$w tag remove figurineb {*}$range
 						$w tag add figurine {*}$range
 					}
+				}
+				if {$flags(bold) && $flags(italic)} {
+					set fmt bold-italic
+				} elseif {$flags(bold)} {
+					set fmt bold
+				} elseif {$flags(italic)} {
+					set fmt italic
 				} else {
-					if {$flags(bold) && $flags(italic)} {
-						set fmt bold-italic
-					} elseif {$flags(bold)} {
-						set fmt bold
-					} elseif {$flags(italic)} {
-						set fmt italic
-					} else {
-						set fmt {}
-					}
-					if {$format eq "underline"} {
-						if {$flags(underline)} { set cmd add } else { set cmd remove }
-						$w tag $cmd underline {*}$range
-					} else {
-						foreach f {bold italic bold-italic} {
-							if {$f eq $fmt} { set cmd add } else { set cmd remove }
-							$w tag $cmd $f {*}$range
-						}
+					set fmt {}
+				}
+				if {$format eq "underline"} {
+					if {$flags(underline)} { set cmd add } else { set cmd remove }
+					$w tag $cmd underline {*}$range
+				} else {
+					foreach f {bold italic bold-italic} {
+						if {$f eq $fmt} { set cmd add } else { set cmd remove }
+						$w tag $cmd $f {*}$range
 					}
 				}
 			}
@@ -1968,11 +2034,6 @@ proc ChangeFormat {format {toggle no}} {
 				}
 			}
 		}
-	}
-
-	set newContent [DumpToComment [$w dump -tag -text 1.0 end]]
-	if {$content ne $newContent} {
-		SetUndoPoint $w $Vars(lang) yes
 	}
 
 	Modified $Vars(widget:text)
@@ -2277,9 +2338,7 @@ proc TextControlD {w} {
 proc TextPasteSelection {w x y} {
 	$w mark set insert [::tk::TextClosestGap $w $x $y]
 
-	if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
-		PasteText $w $sel
-	}
+	PasteText $w
 
 	if {[$w cget -state] eq "normal"} {
 		focus $w
@@ -2292,7 +2351,9 @@ proc TextPaste {w} {
 
 	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
 		set sel [string map {"\n" "\n\u00b6"} $sel]
-		PasteText $w $sel
+		if {[string length $sel]} {
+			PasteText $w $sel
+		}
 	}
 }
 
@@ -2301,7 +2362,7 @@ proc TextCopy {w} {
 	variable Vars
 
 	if {[llength [$w tag ranges sel]]} {
-		set data [ParseDump [$w dump -tag -text sel.first sel.last]]
+		set data [ParseDump [$w dump -tag -image -text sel.first sel.last]]
 		SetUndoPoint $w
 		clipboard clear -displayof $w
 		clipboard append -displayof $w $data
@@ -2314,7 +2375,7 @@ proc TextCut {w} {
 	variable Vars
 
 	if {[llength [$w tag ranges sel]]} {
-		set data [ParseDump [$w dump -tag -text sel.first sel.last]]
+		set data [ParseDump [$w dump -tag -image -text sel.first sel.last]]
 		SetUndoPoint $w
 		clipboard clear -displayof $w
 		clipboard append -displayof $w $data
@@ -2635,7 +2696,7 @@ ttk::copyBindings Text Comment
 
 bind Comment <Control-i>		{ comment::TextInsert %W \t }
 bind Comment <Return>			{ comment::TextInsert %W \n }
-bind Comment <Insert>			{ comment::PasteText %W [::tk::GetSelection %W PRIMARY] }
+bind Comment <Insert>			{ comment::PasteText %W }
 bind Comment <KeyPress>			{ comment::TextInsert %W %A }
 bind Comment <Tab>				{ focus [tk_focusNext %W] }
 bind Comment <Shift-Tab>		{ focus [tk_focusPrev %W] }

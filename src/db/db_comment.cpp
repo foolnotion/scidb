@@ -33,8 +33,10 @@
 
 #include "u_emoticons.h"
 
+#include "m_stack.h"
 #include "m_set.h"
 #include "m_map.h"
+#include "m_bitfield.h"
 #include "m_utility.h"
 
 #include <expat.h>
@@ -47,6 +49,9 @@ using namespace db;
 
 static mstl::string const prefix("<xml>");
 static mstl::string const suffix("</xml>");
+
+
+static char const AttrMap[3] = { 'b', 'i', 'u' };
 
 
 static char const*
@@ -119,6 +124,21 @@ flatten(mstl::string const& src, mstl::string& dst)
 		{
 			dst.append(*s++);
 		}
+	}
+}
+
+
+static void
+appendChar(char c, mstl::string& result)
+{
+	switch (c)
+	{
+		case '<':	result.append("&lt;",   4); break;
+		case '>':	result.append("&gt;",   4); break;
+		case '&':	result.append("&amp;",  5); break;
+		case '\'':	result.append("&apos;", 6); break;
+		case '"':	result.append("&quot;", 6); break;
+		default:		result.append(c); break;
 	}
 }
 
@@ -266,37 +286,29 @@ struct Split : public Comment::Callback
 
 	void startAttribute(Attribute attr) override
 	{
+		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
+
 		m_current->append('<');
-		m_current->append(attr);
+		m_current->append(::AttrMap[attr]);
 		m_current->append('>');
 	}
 
 	void endAttribute(Attribute attr) override
 	{
+		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
+
 		m_current->append('<');
 		m_current->append('/');
-		m_current->append(attr);
+		m_current->append(::AttrMap[attr]);
 		m_current->append('>');
 	}
 
 	void content(mstl::string const& s) override
 	{
 		if (s.size() == 1)
-		{
-			switch (s[0])
-			{
-				case '<':	m_current->append("&lt;",   4); break;
-				case '>':	m_current->append("&gt;",   4); break;
-				case '&':	m_current->append("&amp;",  5); break;
-				case '\'':	m_current->append("&apos;", 6); break;
-				case '"':	m_current->append("&quot;", 6); break;
-				default:		m_current->append(s[0]); break;
-			}
-		}
+			::appendChar(s[0], *m_current);
 		else
-		{
 			m_current->append(s);
-		}
 	}
 
 	void symbol(char s) override
@@ -503,25 +515,45 @@ struct Split : public Comment::Callback
 
 struct Normalize : public Comment::Callback
 {
+	enum { Delim = 3 };
+
+	typedef mstl::bitfield<unsigned> Flags;
+
+	struct Item
+	{
+		Item() {}
+		Item(Flags const& f) :flags(f) {}
+
+		Flags				flags;
+		mstl::string	text;
+	};
+
 	struct Content
 	{
-		Content() :length(0) {}
+		typedef mstl::list<Item> Items;
 
-		mstl::string	str;
-		unsigned			length;
+		Content() :count(0), prevCount(0) {}
+
+		Items		items;
+		unsigned	count;
+		unsigned	prevCount;
 	};
 
 	typedef mstl::map<mstl::string,Content> LangMap;
+	typedef mstl::stack<Attribute> AttrStack;
 	typedef Comment::LanguageSet LanguageSet;
+	typedef Comment::Mode Mode;
 
 	Normalize(	mstl::string& result,
 					bool& engFlag,
 					bool& othFlag,
+					Mode mode,
 					char delim,
 					LanguageSet const* wanted = 0,
 					mstl::string const* fromLang = 0,
 					mstl::string const* toLang = 0)
 		:m_result(result)
+		,m_mode(mode)
 		,m_delim(delim)
 		,m_wanted(wanted)
 		,m_fromLang(fromLang)
@@ -531,11 +563,87 @@ struct Normalize : public Comment::Callback
 		,m_othFlag(othFlag)
 		,m_isXml(false)
 	{
-		::memset(m_attr, 0, sizeof(m_attr));
+		static_assert(	((1 << Delim) & ((1 << Bold) | (1 << Italic) | (1 << Underline))) == 0,
+							"invalid constant");
+		static_assert(sizeof(m_attr) >= (Bold | Italic | Underline), "array too small");
+
 		m_engFlag = m_othFlag = false;
 	}
 
 	void start() override { endLanguage(mstl::string::empty_string); }
+
+	void appendFlag(Attribute attr, char delim = '\0')
+	{
+		m_result.append('<');
+
+		if (delim)
+		{
+			m_result.append(delim);
+			m_flags.reset(attr);
+		}
+		else
+		{
+			m_flags.set(attr);
+			m_stack.push(attr);
+		}
+
+		m_result.append(::AttrMap[attr]);
+		m_result.append('>');
+	}
+
+	void setFlags(Flags flags)
+	{
+		if (flags.test(Underline))
+			appendFlag(Underline);
+		if (flags.test(Bold))
+			appendFlag(Bold);
+		if (flags.test(Italic))
+			appendFlag(Italic);
+	}
+
+	Flags unsetFlags(Flags flags)
+	{
+		Flags reset;
+
+		if (flags.any())
+		{
+			while (!m_stack.empty() && !flags.test(m_stack.top()))
+			{
+				appendFlag(m_stack.top(), '/');
+				reset.set(m_stack.top());
+				m_stack.pop();
+			}
+
+#ifndef NREQ
+			unsigned count = 0;
+#endif
+
+			Attribute flag = Attribute(flags.find_first());
+
+			do
+			{
+#ifndef NREQ
+				if (count++ == 20)
+					M_RAISE("internal error");
+#endif
+
+				if (m_stack.top() == flag)
+				{
+					appendFlag(flag, '/');
+					m_stack.pop();
+					flags.reset(flag);
+					flag = Attribute(flags.find_first());
+				}
+				else
+				{
+					flag = Attribute(flags.find_next(flag));
+				}
+			}
+			while (flags.any());
+		}
+
+		return reset;
+	}
 
 	void finish() override
 	{
@@ -545,7 +653,7 @@ struct Normalize : public Comment::Callback
 		{
 			for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 			{
-				if (!i->first.empty() && i->second.length > 0)
+				if (!i->first.empty() && i->second.count > 0)
 					m_isXml = true;
 			}
 
@@ -559,8 +667,14 @@ struct Normalize : public Comment::Callback
 				{
 					Content& content = m_map[*m_toLang];
 
-					content.str += i->second.str;
-					content.length += i->second.length;
+					if (content.count > 0)
+					{
+						content.items.push_back();
+						content.items.back().flags.set(Delim);
+					}
+
+					content.items += i->second.items;
+					content.count += i->second.count;
 
 					if (!m_toLang->empty())
 					{
@@ -577,7 +691,14 @@ struct Normalize : public Comment::Callback
 			if (!m_isXml)
 			{
 				m_map[mstl::string::empty_string]; // ensure existence
-				::flatten(m_map.find(mstl::string::empty_string)->second.str, m_result);
+
+				Content::Items const& items = m_map.find(mstl::string::empty_string)->second.items;
+
+				if (!items.empty())
+				{
+					M_ASSERT(items.size() == 1);
+					::flatten(m_map.find(mstl::string::empty_string)->second.items.front().text, m_result);
+				}
 			}
 			else
 			{
@@ -585,22 +706,70 @@ struct Normalize : public Comment::Callback
 
 				for (LangMap::const_iterator i = m_map.begin(); i != m_map.end(); ++i)
 				{
-					if (i->second.length > 0)
+					if (i->second.count > 0)
 					{
 						M_ASSERT(	m_wanted == 0
 									|| m_wanted->find(i->first) != m_wanted->end()
 									|| (m_toLang && *m_toLang == i->first));
 
-						m_result += '<';
-						m_result += ':';
-						m_result += i->first;
-						m_result += '>';
-						m_result += i->second.str;
-						m_result += '<';
-						m_result += '/';
-						m_result += ':';
-						m_result += i->first;
-						m_result += '>';
+						m_result.append("<:", 2);
+						m_result.append(i->first);
+						m_result.append('>');
+
+						Content::Items::const_iterator k = i->second.items.begin();
+						Content::Items::const_iterator e = i->second.items.end();
+
+						bool pendingDelim = false;
+
+						m_flags.reset();
+						m_stack.clear();
+
+						for ( ; k != e; ++k)
+						{
+							if (k->flags.test(Delim))
+							{
+								pendingDelim = true;
+							}
+							else
+							{
+								M_ASSERT(!k->text.empty());
+
+								if (pendingDelim)
+								{
+									m_result.append(m_delim);
+									pendingDelim = false;
+								}
+
+								Flags flags = k->flags - m_flags;
+
+								if (m_flags.any())
+									flags |= unsetFlags(m_flags - k->flags);
+
+								if (flags.any())
+								{
+									Content::Items::const_iterator j(k + 1);
+
+									while (j != e && (j->flags & flags).any())
+										++j;
+
+									while (--j != k && flags.any())
+									{
+										setFlags(flags & j->flags);
+										flags -= j->flags;
+									}
+
+									setFlags(flags);
+								}
+
+								m_result += k->text;
+							}
+						}
+
+						unsetFlags(m_flags);
+
+						m_result.append("</:", 3);
+						m_result.append(i->first);
+						m_result.append('>');
 					}
 				}
 
@@ -609,12 +778,29 @@ struct Normalize : public Comment::Callback
 		}
 	}
 
+	mstl::string& text()
+	{
+		M_ASSERT(m_lang);
+
+		if (m_lang->items.empty() || m_flags != m_lang->items.back().flags)
+			m_lang->items.push_back(Item(m_flags));
+		return m_lang->items.back().text;
+	}
+
 	void startLanguage(mstl::string const& lang) override
 	{
+		::memset(m_attr, 0, sizeof(m_attr));
+		m_flags.reset();
+
 		if (m_wanted == 0 || m_wanted->find(lang) != m_wanted->end())
 		{
 			m_lang = &m_map[lang];
-			m_lang->length += ::appendDelim(m_lang->str, m_delim);
+
+			if (m_lang->count > 0)
+			{
+				m_lang->items.push_back();
+				m_lang->items.back().flags.set(Delim);
+			}
 
 			if (!lang.empty())
 			{
@@ -628,8 +814,10 @@ struct Normalize : public Comment::Callback
 		{
 			M_ASSERT(m_toLang);
 
-			m_lang = &m_map[*m_toLang];
-			m_lang->length += ::appendDelim(m_lang->str, m_delim);
+			m_lang = &m_map[lang];
+
+			if (m_lang->count)
+				text().append(m_delim);
 
 			if (!m_toLang->empty())
 			{
@@ -659,9 +847,7 @@ struct Normalize : public Comment::Callback
 	{
 		if (m_lang && ++m_attr[attr] == 1)
 		{
-			m_lang->str += '<';
-			m_lang->str += attr;
-			m_lang->str += '>';
+			m_flags.set(attr);
 			m_isXml = true;
 		}
 	}
@@ -670,35 +856,23 @@ struct Normalize : public Comment::Callback
 	{
 		if (m_lang && --m_attr[attr] == 0)
 		{
-			m_lang->str += '<';
-			m_lang->str += '/';
-			m_lang->str += attr;
-			m_lang->str += '>';
+			m_flags.reset(attr);
+			m_isXml = true;
 		}
 	}
 
 	void content(mstl::string const& s) override
 	{
-		if (m_lang)
+		if (m_lang && !s.empty())
 		{
-			if (s.size() == 1)
-			{
-				switch (s[0])
-				{
-					case '<':	m_lang->str.append("&lt;",   4); break;
-					case '>':	m_lang->str.append("&gt;",   4); break;
-					case '&':	m_lang->str.append("&amp;",  5); break;
-					case '\'':	m_lang->str.append("&apos;", 6); break;
-					case '"':	m_lang->str.append("&quot;", 6); break;
-					default:		m_lang->str.append(s[0]); break;
-				}
-			}
-			else
-			{
-				m_lang->str += s;
-			}
+			mstl::string& str = text();
 
-			m_lang->length += s.size();
+			if (s.size() == 1)
+				::appendChar(s[0], str);
+			else
+				str += s;
+
+			m_lang->count++;
 		}
 	}
 
@@ -706,10 +880,12 @@ struct Normalize : public Comment::Callback
 	{
 		if (m_lang)
 		{
-			m_lang->str.append("<sym>", 5);
-			m_lang->str.append(s);
-			m_lang->str.append("</sym>", 6);
-			m_lang->length += 1;
+			mstl::string& str = text();
+
+			str.append("<sym>", 5);
+			str.append(s);
+			str.append("</sym>", 6);
+			m_lang->count++;
 			m_isXml = true;
 		}
 	}
@@ -718,19 +894,21 @@ struct Normalize : public Comment::Callback
 	{
 		if (m_lang)
 		{
-			if (m_wanted || m_fromLang || m_toLang)
+			if (Comment::PreserveEmoticons)
 			{
-				m_lang->str.append("<emo>", 5);
-				m_lang->str.append(s);
-				m_lang->str.append("</emo>", 6);
+				mstl::string& str = text();
+
+				str.append("<emo>", 5);
+				str.append(s);
+				str.append("</emo>", 6);
 				m_isXml = true;
 			}
 			else
 			{
-				Comment::escapeString(s, m_lang->str);
+				Comment::escapeString(s, text());
 			}
 
-			m_lang->length += 1;
+			m_lang->count++;
 		}
 	}
 
@@ -738,24 +916,27 @@ struct Normalize : public Comment::Callback
 	{
 		if (m_lang)
 		{
-			m_lang->str.append("<nag>", 5);
-			m_lang->str.append(s);
-			m_lang->str.append("</nag>", 6);
-			m_lang->length += 1;
+			mstl::string& str = text();
+
+			str.append("<nag>", 5);
+			str.append(s);
+			str.append("</nag>", 6);
+			m_lang->count++;
 			m_isXml = true;
 		}
 	}
 
 	void invalidXmlContent(mstl::string const& content) override
 	{
-		if (m_lang)
+		if (m_lang && !content.empty())
 		{
-			m_lang->str = content;
-			m_lang->length = content.size();
+			text().append(content);
+			m_lang->count++;
 		}
 	}
 
 	mstl::string&			m_result;
+	Mode						m_mode;
 	char						m_delim;
 	LanguageSet const*	m_wanted;
 	mstl::string const*	m_fromLang;
@@ -765,7 +946,9 @@ struct Normalize : public Comment::Callback
 	bool&						m_engFlag;
 	bool&						m_othFlag;
 	bool						m_isXml;
-	Byte						m_attr[256];
+	Byte						m_attr[3];
+	Flags						m_flags;
+	AttrStack				m_stack;
 };
 
 
@@ -797,16 +980,20 @@ struct DetectEmoticons : public Comment::Callback
 
 	void startAttribute(Attribute attr) override
 	{
+		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
+
 		m_result += '<';
-		m_result += attr;
+		m_result += ::AttrMap[attr];
 		m_result += '>';
 	}
 
 	void endAttribute(Attribute attr) override
 	{
+		M_ASSERT(size_t(attr) < U_NUMBER_OF(::AttrMap));
+
 		m_result += '<';
 		m_result += '/';
-		m_result += attr;
+		m_result += ::AttrMap[attr];
 		m_result += '>';
 	}
 
@@ -1008,21 +1195,9 @@ struct HtmlConv : public Comment::Callback
 			s = sys::utf8::nextChar(s, code);
 
 			if (code < 128)
-			{
-				switch (code)
-				{
-					case '&':	m_result.append("&amp;",  5); break;
-					case '<':	m_result.append("&lt;",   4); break;
-					case '>':	m_result.append("&gt;",   4); break;
-					case '\'':	m_result.append("&apos;", 6); break;
-					case '"':	m_result.append("&quot;", 6); break;
-					default:		m_result.append(char(code)); break;
-				}
-			}
+				::appendChar(code, m_result);
 			else
-			{
 				m_result.format("&#x%04x;", code);
-			}
 		}
 	}
 
@@ -1370,16 +1545,7 @@ htmlContent(void* cbData, XML_Char const* s, int len)
 					}
 				}
 #else
-				switch (*s)
-				{
-					case '<':	data->result.append("&lt;",   4); break;
-					case '>':	data->result.append("&gt;",   4); break;
-					case '&':	data->result.append("&amp;",  5); break;
-					case '\'':	data->result.append("&apos;", 6); break;
-					case '"':	data->result.append("&quot;", 6); break;
-					default:		data->result.append(*s); break;
-				}
-
+				::appendChar(*s, data->result);
 				++s;
 #endif
 			}
@@ -1943,7 +2109,7 @@ Comment::toHtml(mstl::string& result) const
 
 
 void
-Comment::normalize(char delim)
+Comment::normalize(Mode mode, char delim)
 {
 	if (m_content.empty())
 		return;
@@ -1951,7 +2117,7 @@ Comment::normalize(char delim)
 	if (!isXml())
 		return;
 
-	Normalize normalize(m_content, m_engFlag, m_othFlag, delim);
+	Normalize normalize(m_content, m_engFlag, m_othFlag, mode, delim);
 	parse(normalize);
 }
 
@@ -2011,7 +2177,7 @@ Comment::strip(LanguageSet const& set)
 	}
 	else if (isXml())
 	{
-		Normalize normalize(m_content, m_engFlag, m_othFlag, '\0', &set);
+		Normalize normalize(m_content, m_engFlag, m_othFlag, PreserveEmoticons, '\0', &set);
 		parse(normalize);
 	}
 	else if (set.find(mstl::string::empty_string) == set.end())
@@ -2037,12 +2203,29 @@ Comment::copy(mstl::string const& fromLang, mstl::string const& toLang, bool str
 		if (m_languageSet.empty())
 			collect();
 		m_languageSet.erase(fromLang);
-		Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', &m_languageSet, &fromLang, &toLang);
+
+		Normalize normalize(	m_content,
+									m_engFlag,
+									m_othFlag,
+									PreserveEmoticons,
+									'\n',
+									&m_languageSet,
+									&fromLang,
+									&toLang);
+
 		parse(normalize);
 	}
 	else
 	{
-		Normalize normalize(m_content, m_engFlag, m_othFlag, '\n', nullptr, &fromLang, &toLang);
+		Normalize normalize(	m_content,
+									m_engFlag,
+									m_othFlag,
+									PreserveEmoticons,
+									'\n',
+									nullptr,
+									&fromLang,
+									&toLang);
+
 		parse(normalize);
 		m_languageSet.clear();
 	}
@@ -2133,17 +2316,7 @@ Comment::escapeString(mstl::string const& src, mstl::string& dst)
 	dst.reserve(dst.size() + 2*src.size());
 
 	for (mstl::string::const_iterator i = src.begin(); i != src.end(); ++i)
-	{
-		switch (*i)
-		{
-			case '&':	dst.append("&amp;",  5); break;
-			case '<':	dst.append("&lt;",   4); break;
-			case '>':	dst.append("&gt;",   4); break;
-			case '\'':	dst.append("&apos;", 6); break;
-			case '"':	dst.append("&quot;", 6); break;
-			default:		dst.append(*i); break;
-		}
-	}
+		appendChar(*i, dst);
 }
 
 
@@ -2392,7 +2565,7 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 		result.m_content.append(lang);
 		result.m_content.append(">", 1);
 		result.m_content += ::suffix;
-		result.normalize('\0');
+		result.normalize(ExpandEmoticons, '\0');
 	}
 
 	return hasDiagram;

@@ -60,6 +60,24 @@ private:
 	members m_members;
 };
 
+template <typename T> struct is_pod;
+template <typename T> struct is_movable;
+
+template <typename T0, typename T1, typename T2, typename T3>
+struct
+is_pod< tuple<T0,T1,T2,T3> >
+{
+	enum { value = is_pod<T0>::value & is_pod<T1>::value & is_pod<T2>::value & is_pod<T3>::value };
+};
+
+template <typename T0, typename T1, typename T2, typename T3>
+struct
+is_movable< tuple<T0,T1,T2,T3> >
+{
+	enum { value = is_movable<T0>::value & is_movable<T1>::value
+					 & is_movable<T2>::value & is_movable<T3>::value };
+};
+
 } // namespace mstl
 
 #include "m_tuple.ipp"

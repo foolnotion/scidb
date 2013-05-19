@@ -21,6 +21,7 @@
 
 #include "m_type_traits.h"
 #include "m_memblock.h"
+#include "m_pointer_iterator.h"
 #include "m_iterator.h"
 
 #include <stddef.h>
@@ -36,22 +37,23 @@ public:
 	typedef vector<value_type>	vector_type;
 	typedef value_type*			pointer;
 	typedef value_type const*	const_pointer;
-	typedef pointer				iterator;
-	typedef const_pointer		const_iterator;
 	typedef value_type&			reference;
 	typedef value_type const&	const_reference;
 	typedef ptrdiff_t				difference_type;
 	typedef bits::size_t			size_type;
 
-	typedef mstl::reverse_iterator<T>			reverse_iterator;
-	typedef mstl::const_reverse_iterator<T>	const_reverse_iterator;
+	typedef pointer_iterator<T>			iterator;
+	typedef pointer_const_iterator<T>	const_iterator;
+
+	typedef mstl::reverse_iterator<iterator>					reverse_iterator;
+	typedef mstl::const_reverse_iterator<const_iterator>	const_reverse_iterator;
 
 	vector();
 	explicit vector(size_type n);
 	vector(size_type n, const_reference v);
 	vector(vector const& v);
 	vector(vector const& v, size_type n);
-	template <typename Iter> vector(Iter* first, Iter* last);
+	template <typename Iterator> vector(Iterator first, Iterator last);
 	~vector() throw();
 
 #if HAVE_0X_MOVE_CONSTRCUTOR_AND_ASSIGMENT_OPERATOR

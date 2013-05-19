@@ -63,7 +63,7 @@ inline
 stack<T>::stack(stack const& v)
 	:memblock<T>(v.size())
 {
-	this->m_finish = ::mstl::uninitialized_copy(v.begin(), v.end(), this->m_start) - 1;
+	this->m_finish = ::mstl::uninitialized_copy(pointer(v.begin()), pointer(v.end()), this->m_start) - 1;
 }
 
 
@@ -71,8 +71,8 @@ template <typename T>
 inline
 stack<T>::~stack() throw()
 {
-	M_ASSERT((begin() == 0) == (end() == 0));
-	::mstl::bits::destroy(begin(), end());
+	M_ASSERT((pointer(begin()) == 0) == (pointer(end()) == 0));
+	::mstl::bits::destroy(pointer(begin()), pointer(end()));
 }
 
 
@@ -85,7 +85,9 @@ stack<T>::operator=(stack const& v)
 	{
 		clear();
 		reserve(v.size());
-		this->m_finish = ::mstl::uninitialized_copy(v.begin(), v.end(), this->m_start) - 1;
+		this->m_finish = ::mstl::uninitialized_copy(	const_pointer(v.begin()),
+																	const_pointer(v.end()),
+																	this->m_start) - 1;
 	}
 
 	return *this;

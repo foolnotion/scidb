@@ -90,6 +90,8 @@ u_block_file.o: ../mstl/m_string.ipp
 u_block_file.o: ../mstl/m_vector.h
 u_block_file.o: ../mstl/m_memblock.h
 u_block_file.o: ../mstl/m_memblock.ipp
+u_block_file.o: ../mstl/m_pointer_iterator.h
+u_block_file.o: ../mstl/m_pointer_iterator.ipp
 u_block_file.o: ../mstl/m_iterator.h
 u_block_file.o: ../mstl/m_iterator.ipp
 u_block_file.o: ../mstl/m_vector.ipp
@@ -198,6 +200,8 @@ u_html.o: ../mstl/m_exception.ipp
 u_html.o: ../mstl/m_vector.h
 u_html.o: ../mstl/m_memblock.h
 u_html.o: ../mstl/m_memblock.ipp
+u_html.o: ../mstl/m_pointer_iterator.h
+u_html.o: ../mstl/m_pointer_iterator.ipp
 u_html.o: ../mstl/m_iterator.h
 u_html.o: ../mstl/m_iterator.ipp
 u_html.o: ../mstl/m_vector.ipp
@@ -379,6 +383,8 @@ u_zstream.o: ../mstl/m_bit_functions.ipp
 u_zstream.o: ../mstl/m_uint128_t.h
 u_zstream.o: ../mstl/m_uint128.h
 u_zstream.o: ../mstl/m_assert.h
+u_zstream.o: ../mstl/m_pointer_iterator.h
+u_zstream.o: ../mstl/m_pointer_iterator.ipp
 u_zstream.o: ../mstl/m_iterator.h
 u_zstream.o: ../mstl/m_iterator.ipp
 u_zstream.o: ../mstl/m_vector.ipp

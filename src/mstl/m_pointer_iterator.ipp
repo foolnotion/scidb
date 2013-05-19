@@ -20,7 +20,7 @@ namespace mstl {
 
 template <typename T>
 inline
-pointer_iterator<T>::pointer_iterator(T** elems)
+pointer_iterator<T>::pointer_iterator(T* elems)
 	:m_elems(elems)
 {
 }
@@ -131,36 +131,36 @@ pointer_iterator<T>::operator-(pointer_iterator<T> const& i) const
 
 template <typename T>
 inline
-T&
+typename pointer_iterator<T>::reference
 pointer_iterator<T>::operator[](size_t n) const
 {
-	return *(m_elems[n]);
+	return m_elems[n];
 }
 
 
 template <typename T>
 inline
-T&
+typename pointer_iterator<T>::reference
 pointer_iterator<T>::operator*() const
 {
-	return **m_elems;
+	return *m_elems;
 }
 
 
 template <typename T>
 inline
-T*
+typename pointer_iterator<T>::pointer
 pointer_iterator<T>::operator->() const
 {
-	return *m_elems;
+	return m_elems;
 }
 
 
 template <typename T>
 inline
-pointer_iterator<T>::operator T* () const
+pointer_iterator<T>::operator pointer () const
 {
-	return *m_elems;
+	return m_elems;
 }
 
 
@@ -177,7 +177,7 @@ pointer_iterator<T>::swap(pointer_iterator i)
 
 template <typename T>
 inline
-T**&
+typename pointer_iterator<T>::pointer&
 pointer_iterator<T>::ref()
 {
 	return m_elems;
@@ -186,7 +186,7 @@ pointer_iterator<T>::ref()
 
 template <typename T>
 inline
-pointer_const_iterator<T>::pointer_const_iterator(T*const* elems)
+pointer_const_iterator<T>::pointer_const_iterator(T const* elems)
 	:m_elems(elems)
 {
 }
@@ -194,7 +194,7 @@ pointer_const_iterator<T>::pointer_const_iterator(T*const* elems)
 
 template <typename T>
 inline
-pointer_const_iterator<T>::pointer_const_iterator(pointer_iterator<T> const& it)
+pointer_const_iterator<T>::pointer_const_iterator(iterator const& it)
 	:m_elems(it.m_elems)
 {
 }
@@ -305,42 +305,42 @@ pointer_const_iterator<T>::operator-(pointer_const_iterator<T> const& i) const
 
 template <typename T>
 inline
-T const&
+typename pointer_const_iterator<T>::reference
 pointer_const_iterator<T>::operator[](size_t n) const
 {
-	return *(m_elems[n]);
+	return m_elems[n];
 }
 
 
 template <typename T>
 inline
-T const&
+typename pointer_const_iterator<T>::reference
 pointer_const_iterator<T>::operator*() const
 {
-	return **m_elems;
+	return *m_elems;
 }
 
 
 template <typename T>
 inline
-T const*
+typename pointer_const_iterator<T>::pointer
 pointer_const_iterator<T>::operator->() const
 {
-	return *m_elems;
+	return m_elems;
 }
 
 
 template <typename T>
 inline
-pointer_const_iterator<T>::operator T const* () const
+pointer_const_iterator<T>::operator pointer () const
 {
-	return *m_elems;
+	return m_elems;
 }
 
 
 template <typename T>
 inline
-T* const*
+typename pointer_const_iterator<T>::pointer
 pointer_const_iterator<T>::ref() const
 {
 	return m_elems;

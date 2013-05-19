@@ -125,7 +125,7 @@ inline
 typename set<T>::iterator
 set<T>::find(const_reference v)
 {
-	return const_cast<iterator>(const_cast<set const&>(*this).find(v));
+	return iterator(const_cast<pointer>(const_cast<set const&>(*this).find(v).ref()));
 }
 
 

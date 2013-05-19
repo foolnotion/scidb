@@ -86,6 +86,8 @@ svg_gradient.o: ../../mstl/m_assert.h
 svg_gradient.o: ../../mstl/m_exception.h
 svg_gradient.o: ../../mstl/m_backtrace.h
 svg_gradient.o: ../../mstl/m_exception.ipp
+svg_gradient.o: ../../mstl/m_pointer_iterator.h
+svg_gradient.o: ../../mstl/m_pointer_iterator.ipp
 svg_gradient.o: ../../mstl/m_iterator.h
 svg_gradient.o: ../../mstl/m_iterator.ipp
 svg_gradient.o: ../../mstl/m_vector.ipp
@@ -129,6 +131,8 @@ svg_parser.o: ../../mstl/m_assert.h
 svg_parser.o: ../../mstl/m_exception.h
 svg_parser.o: ../../mstl/m_backtrace.h
 svg_parser.o: ../../mstl/m_exception.ipp
+svg_parser.o: ../../mstl/m_pointer_iterator.h
+svg_parser.o: ../../mstl/m_pointer_iterator.ipp
 svg_parser.o: ../../mstl/m_iterator.h
 svg_parser.o: ../../mstl/m_iterator.ipp
 svg_parser.o: ../../mstl/m_vector.ipp
@@ -203,6 +207,8 @@ svg_path_renderer.o: ../../mstl/m_assert.h
 svg_path_renderer.o: ../../mstl/m_exception.h
 svg_path_renderer.o: ../../mstl/m_backtrace.h
 svg_path_renderer.o: ../../mstl/m_exception.ipp
+svg_path_renderer.o: ../../mstl/m_pointer_iterator.h
+svg_path_renderer.o: ../../mstl/m_pointer_iterator.ipp
 svg_path_renderer.o: ../../mstl/m_iterator.h
 svg_path_renderer.o: ../../mstl/m_iterator.ipp
 svg_path_renderer.o: ../../mstl/m_vector.ipp

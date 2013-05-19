@@ -33,6 +33,7 @@ public:
 	typedef typename container_type::value_type			key_type;
 	typedef typename container_type::value_type			data_type;
 	typedef typename container_type::value_type			value_type;
+	typedef typename container_type::pointer				pointer;
 	typedef typename container_type::reference			reference;
 	typedef typename container_type::const_reference	const_reference;
 	typedef typename container_type::const_iterator		const_iterator;
