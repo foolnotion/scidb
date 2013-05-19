@@ -37,10 +37,10 @@ public:
 	typedef value_type const&	const_reference;
 	typedef bits::size_t			size_type;
 
-	typedef pointer_iterator<T>			iterator;
-	typedef pointer_const_iterator<T>	const_iterator;
-	typedef reverse_iterator<T>			reverse_iterator;
-	typedef const_reverse_iterator<T>	const_reverse_iterator;
+	typedef mstl::pointer_iterator<T>			iterator;
+	typedef mstl::pointer_const_iterator<T>	const_iterator;
+	typedef mstl::reverse_iterator<T>			reverse_iterator;
+	typedef mstl::const_reverse_iterator<T>	const_reverse_iterator;
 
 	stack();
 	explicit stack(size_type n);
