@@ -666,8 +666,6 @@ GappedSequence::match(GameInfo const& info, Board const& board, Variant variant,
 		}
 	}
 
-	// XXX not working if combined with not.
-	// XXX in this case we have to return 'probably'; that means: don't stop matching
 	return false;
 }
 

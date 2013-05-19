@@ -1370,23 +1370,31 @@ fliphorizontal(uint64_t value)
 
 
 static bool
-shift(uint64_t& value, int stepFyle, int stepRank)
+shifthorizontal(uint64_t& value, int step)
 {
-	uint64_t result= 0;
+	uint64_t result = 0;
 
 	while (Square sq = lsbClear(value))
 	{
-		int f = int(fyle(sq)) + stepFyle;
+		int f = int(fyle(sq)) + step;
 
 		if (f < int(FyleA) || int(FyleH) < f)
 			return false;
 
-		int r = int(rank(sq)) + stepRank;
-
-		if (r < int(Rank1) || int(Rank8) < r)
-			return false;
+		int r = int(rank(sq));
 
 		result |= setBit(make(Fyle(f), Rank(r)));
+
+		if (f == FyleA && step > 0)
+		{
+			for (int i = 1; i < step; ++i)
+				result |= setBit(make(Fyle(f - i), Rank(r)));
+		}
+		else if (f == FyleH && step < 0)
+		{
+			for (int i = 1; i < step; ++i)
+				result |= setBit(make(Fyle(f + i), Rank(r)));
+		}
 	}
 
 	value = result;
@@ -1394,9 +1402,53 @@ shift(uint64_t& value, int stepFyle, int stepRank)
 }
 
 
-static bool shifthorizontal(uint64_t& value, int step)	{ return shift(value, step, 0); }
-static bool shiftvertical(uint64_t& value, int step)		{ return shift(value, 0, step); }
-static bool shiftmaindiagonal(uint64_t& value, int step)	{ return shift(value, step, step); }
+static bool
+shiftvertical(uint64_t& value, int step)
+{
+	uint64_t result = 0;
+
+	while (Square sq = lsbClear(value))
+	{
+		int r = int(rank(sq)) + step;
+
+		if (r < int(Rank1) || int(Rank8) < r)
+			return false;
+
+		int f = int(fyle(sq));
+
+		result |= setBit(make(Fyle(f), Rank(r)));
+
+		if (r == Rank1 && step > 0)
+		{
+			for (int i = 1; i < step; ++i)
+				result |= setBit(make(Fyle(f), Rank(r - i)));
+		}
+		else if (r == Rank8 && step < 0)
+		{
+			for (int i = 1; i < step; ++i)
+				result |= setBit(make(Fyle(f), Rank(r + i)));
+		}
+	}
+
+	value = result;
+	return true;
+}
+
+
+static bool
+shift(uint64_t& value, int stepFyle, int stepRank)
+{
+	if (stepFyle && !::shifthorizontal(value, stepFyle))
+		return false;
+
+	if (stepRank && !::shiftvertical(value, stepRank))
+		return false;
+
+	return true;
+}
+
+
+static bool shiftmaindiagonal(uint64_t& value, int step)	{ return shift(value, +step, step); }
 static bool shiftoffdiagonal(uint64_t& value, int step)	{ return shift(value, -step, step); }
 
 

@@ -589,7 +589,7 @@ proc LoadPage {item} {
 			set ExternalLinks($path) 1
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
-			set Links($path) [[namespace parent]::Load $path {} {} $fragment]
+			set Links($path) [[namespace parent]::Load $path {} $fragment]
 		}
 	}
 }
