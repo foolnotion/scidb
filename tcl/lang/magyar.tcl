@@ -42,11 +42,13 @@
 ::mc::Key(Enter)		"\u23ce"
 ::mc::Key(Esc)			"Kilépés"
 ::mc::Key(Home)			"Home" ;# NEW
+::mc::Key(Ins)			"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
 ::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
 ::mc::Key(Right)		"\u2192"
 ::mc::Key(Shift)		"Shift" ;# NEW
+::mc::Key(Space)		"\u2423"
 ::mc::Key(Up)			"\u2191"
 
 ::mc::Alignment			"Sorba rendezés(?)"

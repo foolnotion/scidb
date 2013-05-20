@@ -145,7 +145,7 @@ proc open {parent pos lang} {
 		-font $Fonts(normal) \
 		-wrap word \
 		-setgrid 1 \
-		-font $::font::text(editor:normal) \
+		-font $::font::text(text:normal) \
 		-yscrollcommand [list ::scrolledframe::sbset $top.sb] \
 		-undo no \
 		-maxundo 0 \
@@ -402,7 +402,10 @@ proc GetComment {} {
 	variable Vars
 
 	set comment [::scidb::game::query comment $Vars(pos)]
-	set content [::scidb::misc::xml toList $comment -expandemoticons [ExpandEmoticons]]
+	set content [::scidb::misc::xml toList $comment \
+		-expandemoticons [ExpandEmoticons] \
+		-detectemoticons [DetectEmoticons] \
+	]
 
 	foreach entry $content {
 		lassign $entry lang comment
@@ -466,7 +469,10 @@ proc Update {{setup 1}} {
 	if {$setup} {
 		array unset Vars undoStack:*
 		array unset Vars undoStackIndex:*
-		set Vars(content) [::scidb::misc::xml toList $Vars(comment) -expandemoticons [ExpandEmoticons]]
+		set Vars(content) [::scidb::misc::xml toList $Vars(comment) \
+			-expandemoticons [ExpandEmoticons] \
+			-detectemoticons [DetectEmoticons] \
+		]
 	}
 
 	foreach entry $Vars(content) {
@@ -695,7 +701,7 @@ proc PasteText {w {str ""}} {
 	variable Symbols
 
 	if {[string length $str] == 0} {
-		if {[catch { [::tk::GetSelection %W PRIMARY] str }]} {
+		if {[catch { ::tk::GetSelection $w PRIMARY } str ]} {
 			return
 		}
 	}
@@ -2098,6 +2104,12 @@ proc WriteOptions {chan} {
 ::options::hookWriter [namespace current]::WriteOptions
 
 
+proc InvokeDefaultButton {} {
+	variable Vars
+	::widget::dialogButtonInvoke $Vars(dialog)
+}
+
+
 proc TextInsert {w s} {
 	variable Vars
 
@@ -2224,6 +2236,15 @@ proc TextNextPos {w start op} {
 
 proc TextPrevPos {w start op} {
 	set pos [::tk::TextPrevPos $w $start $op]
+	if {[$w compare $pos != 1.0]} {
+		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
+	}
+	return $pos
+}
+
+
+proc TextScrollPages {w count} {
+	set pos [::tk::TextScrollPages $w $count]
 	if {[$w compare $pos != 1.0]} {
 		if {[$w get $pos] eq "\n"} { set pos [$w index $pos-1displayindices] }
 	}
@@ -2694,15 +2715,16 @@ switch -- [tk windowingsystem] {
 
 ttk::copyBindings Text Comment
 
-bind Comment <Control-i>		{ comment::TextInsert %W \t }
-bind Comment <Return>			{ comment::TextInsert %W \n }
-bind Comment <Insert>			{ comment::PasteText %W }
+bind Comment <Return>			{ comment::InvokeDefaultButton }
 bind Comment <KeyPress>			{ comment::TextInsert %W %A }
-bind Comment <Tab>				{ focus [tk_focusNext %W] }
+bind Comment <Insert>			{ comment::PasteText %W }
 bind Comment <Shift-Tab>		{ focus [tk_focusPrev %W] }
+bind Comment <Tab>				{ focus [tk_focusNext %W] }
+
 bind Comment <BackSpace>		{ comment::TextBackSpace %W }
 bind Comment <Delete>			{ comment::TextDelete %W }
 bind Comment <Control-d>		{ comment::TextControlD %W }
+bind Comment <Control-D>		{ comment::TextControlD %W }
 bind Comment <Left>				{ comment::TextSetCursorExt %W insert-1displayindices }
 bind Comment <Right>				{ comment::TextSetCursorExt %W insert+1displayindices +1 }
 bind Comment <Up>					{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
@@ -2713,15 +2735,22 @@ bind Comment <End>				{ comment::TextSetCursorExt %W {insert display lineend} }
 bind Comment <Control-Up>		{ comment::TextSetCursorExt %W [comment::TextPrevPara %W insert] }
 bind Comment <Control-Down>	{ comment::TextSetCursorExt %W [comment::TextNextPara %W insert] }
 bind Comment <Control-End>		{ comment::TextSetCursorExt %W {end - 1 indices} }
+bind Comment <Control-i>		{ comment::TextInsert %W \t }
+bind Comment <Control-I>		{ comment::TextInsert %W \t }
+bind Comment <Control-m>		{ comment::TextInsert %W \n }
+bind Comment <Control-M>		{ comment::TextInsert %W \n }
 bind Comment <Control-b>		{ comment::TextSetCursorExt %W insert-1displayindices }
-bind Comment <Control-e>		{ comment::TextSetCursorExt %W {insert display lineend} }
+bind Comment <Control-B>		{ comment::TextSetCursorExt %W insert-1displayindices }
 bind Comment <Control-f>		{ comment::TextSetCursorExt %W insert+1displayindices +1 }
+bind Comment <Control-F>		{ comment::TextSetCursorExt %W insert+1displayindices +1 }
 bind Comment <Control-n>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
+bind Comment <Control-N>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W 1] }
 bind Comment <Control-p>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
-bind Comment <Control-A>		{ %W tag add sel 1.0 end }
+bind Comment <Control-P>		{ comment::TextSetCursorExt %W [comment::TextUpDownLine %W -1] }
 bind Comment <Control-a>		{ %W tag add sel 1.0 end }
-bind Comment <Meta-f>			{ comment::TextSetCursorExt %W [comment::TextNextWord %W insert] }
-bind Comment <Meta-greater>	{ comment::TextSetCursorExt %W end-1c }
+bind Comment <Control-A>		{ %W tag add sel 1.0 end }
+bind Comment <Control-w>		{ %W delete insert [tk::TextNextWord %W insert] }
+bind Comment <Control-W>		{ %W delete insert [tk::TextNextWord %W insert] }
 bind Comment <<Undo>>			{ comment::EditUndo }
 bind Comment <<Paste>>			{ comment::TextPaste %W }
 bind Comment <<Copy>>			{ comment::TextCopy %W }
@@ -2733,7 +2762,7 @@ bind Comment <Control-Left> {
 }
 
 bind Comment <Control-Right> {
-	comment::TextSetCursorExt %W [comment::TextNextWord %W insert]
+	comment::TextSetCursorExt %W [tk::TextNextWord %W insert]
 }
 
 bind Comment <1> {
@@ -2751,14 +2780,22 @@ bind Comment <Control-Key-y> { ;# the <<Redo>> binding is not working!
 	comment::EditRedo
 }
 
+bind Comment <Control-Key-Y> { ;# the <<Redo>> binding is not working!
+	comment::EditRedo
+}
+
+bind Comment <Control-q> {
+	%W delete [comment::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+}
+
+bind Comment <Control-Q> {
+	%W delete [comment::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+}
+
 if {[tk windowingsystem] eq "x11"} {
 	bind Comment <Control-Key-Z> { ;# the <<Redo>> binding is not working!
 		comment::EditRedo
 	}
-}
-
-bind Comment <Meta-b> {
-	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
 }
 
 if {[tk windowingsystem] eq "aqua"} {
@@ -2767,18 +2804,19 @@ bind Comment <Option-Left> {
 	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
 }
 
-bind Comment <Option-Right>	{ comment::TextSetCursorExt %W [comment::TextNextWord %W insert] +1 }
+bind Comment <Option-Right>	{ comment::TextSetCursorExt %W [tk::TextNextWord %W insert] +1 }
 bind Comment <Option-Up>		{ comment::TextSetCursorExt %W [comment::TextPrevPara %W insert] }
 bind Comment <Option-Down>		{ comment::TextSetCursorExt %W [comment::TextNextPara %W insert] +1 }
 
 } ;# End of Mac only bindings
 
-# TODO
-bind Comment <Control-k> {#}
-bind Comment <Meta-d> {#}
-bind Comment <Meta-BackSpace> {#}
-bind Comment <Meta-Delete> {#}
+# Don't use:
+bind Comment <Control-v> {#}
 bind Comment <Control-h> {#}
 bind Comment <Control-o> {#}
+bind Comment <Meta-greater> {#}
+
+bind Comment <Meta-b> { break }
+bind Comment <Meta-f> { break }
 
 # vi:set ts=3 sw=3:

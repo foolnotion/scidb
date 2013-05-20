@@ -42,11 +42,13 @@
 ::mc::Key(Enter)			"Enter"
 ::mc::Key(Esc)				"Esc"
 ::mc::Key(Home)			"Home"
+::mc::Key(Ins)				"Ins"
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down
 ::mc::Key(Prior)			"Page\u2191"	;# Page Up
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Shift"
+::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
 ::mc::Alignment			"Alignment"

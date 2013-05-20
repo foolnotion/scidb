@@ -171,10 +171,10 @@ static unsigned char Map_Char_Tbl[256] =
 // Saint			0:-)		0:)		0=)		0=-)		0:)		O:-)		O:)		O=)		O=-)		C:-)		C:)		C=)		C=-)
 // Evil			>:-)		>:)		>=)		>=-)		>:-D		>=D		>=-D		>:->
 // Cool			B-)		B=)		=B)
-// Glasses		::-)		8-)		8=)		\=o-o=/
+// Glasses		::-)		8-)		8=)		=o-o=		\=o-o=/
 // Kiss			:-*		:*			=*			:=*		=-*
 // Kitty			:-3		:=3
-static char const State_Transition_Tbl[85][38] =
+static char const State_Transition_Tbl[88][38] =
 {
 #define __ 0
 //        %   '   (   )   *   -   .   /   0   3   8   :   ;   <   =   >   ?   @   B   C   D   I   L   O   P   S   X   [   \   ]   ^   _   c   o   s   |   ~
@@ -193,7 +193,7 @@ static char const State_Transition_Tbl[85][38] =
 	{ __, __, 51, 53, 54, Ks, 50, __, __, __, __, __, 55, __, __, 50, __, Cf, __, __, __, __, Ne, __, __, __, __, __, __, __, __, __, __, __, __, __, Ne, __ }, // 12 :
 	{ __, __, __, __, Wi, __, 57, __, __, __, __, __, __, __, __, 57, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 13 ;
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 14
-	{ __, __, 58, Fr, __, Ks, 59, __, __, __, __, __, __, __, __, __, __, Cf, __, 60, __, __, Ne, __, __, __, __, __, __, __, __, __, __, __, __, __, Ne, __ }, // 15 =
+	{ __, __, 58, Fr, __, Ks, 59, __, __, __, __, __, __, __, __, __, __, Cf, __, 60, __, __, Ne, __, __, __, __, __, __, __, __, __, __, __, 85, __, Ne, __ }, // 15 =
 	{ __, __, __, __, __, __, __, __, __, __, __, __, 61, __, __, 62, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 16 >
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 17
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, 65, __, __, __, __, __, __ }, // 18 @
@@ -263,6 +263,9 @@ static char const State_Transition_Tbl[85][38] =
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, Ra, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 82 c[
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, Ne, __, __, __ }, // 83 o_
 	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, Bl }, // 84 ~.    ~-
+	{ __, __, __, __, __, __, 86, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 85 =o
+	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, 87, __, __, __ }, // 86 =o-
+	{ __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, Gs, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __, __ }, // 87 =o-o
 #undef __
 };
 
@@ -321,17 +324,24 @@ emoticons::parseEmotion(char const*& first, char const* last, Emotion& emotion)
 
 		if (sym == 0)
 		{
-			if (state > 0 && State_Transition_Tbl[static_cast<unsigned char>(state)][0] < 0)
+			if (state > 0)
 			{
-				emotion = Emotion(DECODE(State_Transition_Tbl[static_cast<unsigned char>(state)][0]));
-				return p;
+				char entry = State_Transition_Tbl[static_cast<unsigned char>(state)][0];
+
+				if (entry < 0)
+				{
+					emotion = Emotion(DECODE(entry));
+					return p;
+				}
 			}
 
 			state = 0;
 		}
 		else
 		{
-			char nextState = State_Transition_Tbl[static_cast<unsigned char>(state)][sym];
+			char const* stateTbl = State_Transition_Tbl[static_cast<unsigned char>(state)];
+
+			char nextState = stateTbl[sym];
 
 			if (nextState < 0)
 			{
@@ -345,9 +355,9 @@ emoticons::parseEmotion(char const*& first, char const* last, Emotion& emotion)
 				if (state == 0)
 					p = first;
 			}
-			else if (state > 0 && State_Transition_Tbl[static_cast<unsigned char>(state)][0] < 0)
+			else if (state > 0 && stateTbl[0] < 0)
 			{
-				emotion = Emotion(DECODE(State_Transition_Tbl[static_cast<unsigned char>(state)][0]));
+				emotion = Emotion(DECODE(stateTbl[0]));
 				return p;
 			}
 
@@ -355,10 +365,15 @@ emoticons::parseEmotion(char const*& first, char const* last, Emotion& emotion)
 		}
 	}
 
-	if (state > 0 && State_Transition_Tbl[static_cast<unsigned char>(state)][0] < 0)
+	if (state > 0)
 	{
-		emotion = Emotion(DECODE(State_Transition_Tbl[static_cast<unsigned char>(state)][0]));
-		return p;
+		char entry = State_Transition_Tbl[static_cast<unsigned char>(state)][0];
+
+		if (entry < 0)
+		{
+			emotion = Emotion(DECODE(entry));
+			return p;
+		}
 	}
 
 	return last;

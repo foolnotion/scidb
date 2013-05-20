@@ -42,11 +42,13 @@
 ::mc::Key(Enter)			"\u23ce"
 ::mc::Key(Esc)				"Esc"
 ::mc::Key(Home)			"Pos1"
+::mc::Key(Ins)				"Einfg"
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Bild\u2193"
 ::mc::Key(Prior)			"Bild\u2191"
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Umschalt"
+::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
 ::mc::Alignment			"Ausrichtung"

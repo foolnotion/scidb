@@ -40,10 +40,17 @@
   <h1 class="title">Kommentareditor</h1>
 </div>
 
+<p>
+Der Kommentareditor erlaubt die Eingabe bzw. Modifizierung von
+Kommentaren im Partietext in verschiedenen Sprachversionen. Es werden
+alle europäischen Sprachen unterstützt.
+<p>
+
 <ul>
   <li><a href="#Formatting">Textformatierung</a></li>
-  <li><a href="#Shortcuts">Tastaturkürzel</a></li>
-  <li><a href="#Linebreak">Zeilenumbruch</a></li>
+  <li><a href="#Control">Steuerung im Textfeld</a></li>
+  <li><a href="#Buttons">Schaltflächen</a></li>
+  <li><a href="#Emoticons">Smileys</a></li>
   <li><a href="#Menu">Kontextsensitives Menü</a></li>
 </ul>
 
@@ -67,14 +74,465 @@ oder <i>Scidb-Import-Format benutzen</i>
 wird verwendet) gehen alle Formatierungen verloren.
 </div>
 
-<h2 id="Shortcuts">Tastaturkürzel</h2>
+<h2 id="Control">Steuerung im Textfeld</h2>
+
+<ul>
+  <li><a href="#Control:Mouse">Cursorsteuerung mit der Maus</a></li>
+  <li><a href="#Control:Keyboard">Cursorsteuerung mit der Tastatur</a></li>
+  <li><a href="#Control:Select">Textselektion</a></li>
+  <li><a href="#Control;Delete">Text löschen</a></h4>
+  <li><a href="#Control;Undo">Rückgängig &amp; Wiederherstellen</a></h4>
+  <li><a href="#Control:Misc">Weitere Steuerungskürzel</a></h4>
+  <li><a href="#Control:Figurine">Einfügen einer Figur</a></h4>
+</ul>
+
+<h4 id="Control:Mouse">Cursorsteuerung mit der Maus</h4>
 
 <p>
-Im Textfeld dienen die nachfolgenden Tastaturkürzel zum Einfügen einer Figur:
+Klicken mit der linken Maustaste positioniert den Einfüge-Cursor vor das
+unter dem Maus-Cursor befindliche Zeichen, setzt den Engabefokus auf das
+Textfeld, und deselektiert jeglichen selektierten Text. Das Ziehen mit der
+Maus bei gedrückter linker Maustaste selektiert den Text zwischen dem
+Einfüge-Cursor und dem Zeichen unter dem Maus-Cursor.
+</p>
+
+<p>
+Doppelklicken mit der linken Maustaste selektiert das Wort unter dem
+Maus-Cursor und positioniert den Einfüge-Cursor am Anfang des Wortes.
+Das Ziehen mit der Maus bei gedrückter linker Maustaste nach einem
+Doppelklick selektiert die Wörter zwischen dem Einfüge-Cursor und dem Zeichen
+unter dem Maus-Cursor.
+</p>
+
+<p>
+Ein Dreifachklick mit der linken Maustaste selektiert die Zeile unter dem
+Maus-Cursor und positioniert den Einfüge-Cursor am Emde der Zeile.
+Das Ziehen mit der Maus bei gedrückter linker Maustaste nach einem
+Dreifachklick selektiert alle Zeilen zwischen dem Einfüge-Cursor und dem
+Zeichen unter dem Maus-Cursor.
+</p>
+
+<p>
+Das Ende einer Textselektion kan mit ziehender Maus bei gedrückter linker
+Maustaste erweitert werden; dies wirkt auf das Ende der Selektion, das dem
+Maus-Cursor während des Klicks am nächsten war. Wurde ein Doppelklick
+ausgeführt vor dem Ziehen, dann wird in Worteinheiten erweitert, bei einem
+vorangegangenen Dreifachklick wird in Zeileneinheiten erweitert.
+</p>
+
+<p>
+Klciken der linken Maustaste während die <kbd class='key'>Strg</kbd>-Taste gehalten
+wird, positioniert den Einfüge-Cursor ohne die Textselektion zu beeeinflussen.
+</p>
+
+<p>
+Der Textausschnitt im Textfeld kann durch Ziehen bei gedrückter mittlerer
+Maustaste geändert werden. Wird die mittlere Maustaste geklickt, ohne die
+Maus zu Ziehen, dann wird die aktuelle X-Textselektion der Zwischenablage
+an die Position des Einfüge-Cursor eingefügt (nur Linux/Unix).
+</p>
+
+<p>
+Wird die Maus aus dem Textfensterbereich gezogen, während die linke Maustaste
+gehalten wird, dann bewegt sich der Text automatisch, um mehr Text sichtbar
+zu machen.
+</p>
+
+<h4 id="Control:Keyboard">Cursorsteuerung mit der Tastatur</h4>
+
+<table>
+  <tr valign="top">
+    <td nowrap="true">
+      <kbd class='key'>←</kbd> oder <kbd class='key'>Strg</kbd>+<kbd class='key'>B</kbd><br/>
+      <kbd class='key'>→</kbd> oder <kbd class='key'>Strg</kbd>+<kbd class='key'>F</kbd>
+    </td>
+    <td style="padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor ein Zeichen nach links oder rechts;
+      zudem wird jeglicher Text im Textfenster deselektiert.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>←</kbd><br/>
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>→</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor ein Zeichen nach links oder rechts;
+      die Selektion im Textfenster wird mit dem neuen Zeichen erweitert.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>←</kbd><br/>
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>→</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor wortweise, und deselektiert jegliche
+      Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>←</kbd><br/>
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>→</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor wortweise, und erweitert die Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>↑</kbd> oder <kbd class='key'>Strg</kbd>+<kbd class='key'>P</kbd><br/>
+      <kbd class='key'>↓</kbd> oder <kbd class='key'>Strg</kbd>+<kbd class='key'>N</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor eine Zeile hoch oder runter, und deselektiert
+      jegliche Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>↑</kbd><br/>
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>↓</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor eine Zeile hoch oder runter, die Textselektion
+      wird um die neuen Zeichen erweitert.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>↑</kbd><br/>
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>↓</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor paragraphenweise (Zeilengruppen separiert
+      duch Leerzeilen), und deselektiert jegliche Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>↑</kbd><br/>
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>↓</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor paragraphenweise, und erweitert die
+      Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Bild↓</kbd><br/>
+      <kbd class='key'>Bild↑</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor einen Textbereich vorwärts oder rückwärts, und
+      deselektiert jegliche Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>Bild↓</kbd><br/>
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>Bild↑</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor einen Textbereich vorwärts oder rückwärts, und
+      erweitert die Textselektion.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Bild↓</kbd><br/>
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Bild↑</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Rollt den Textbereich um eine Seite vorwärts oder rückwärts, ohne
+      den Einfüge-Cursor zu verändern, oder die Textselektion zu beeinflußen.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Pos1</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an den Anfang der Displayzeile, und deselektiert
+      jegliche Textselektion im Textfeld.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>Pos1</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an den Anfang der Displayzeile, und erweitert
+      die Textselektion bis zu diesem Punkt.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Pos1</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an den Textanfang, und deselektiert
+      jegliche Textselektion im Textfeld.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>Pos1</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an den Textanfang, und erweitert
+      die Textselektion bis zu diesem Punkt.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Ende</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an das Ende der Displayzeile, und deselektiert
+      jegliche Textselektion im Textfeld.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Umschalt</kbd>+<kbd class='key'>Ende</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an das Ende der Displayzeile, und erweitert
+      die Textselektion bis zu diesem Punkt.
+    </td>
+  </tr>
+
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Ende</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an das Textende, und deselektiert
+      jegliche Textselektion im Textfeld.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>Ende</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Bewegt den Einfüge-Cursor an das Textende, und erweitert
+      die Textselektion bis zu diesem Punkt.
+    </td>
+  </tr>
+</table>
+
+<h4 id="Control:Select">Textselektion</h4>
+
+<table>
+  <tr valign="top">
+    <td nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>A</kbd>
+    </td>
+    <td style="padding-left: 0.5em;">
+      Selektiert den gesamten Textinhalt.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>C</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Kopiert den selektierten Text in die Zwischenablage, sofern
+      eine Selektion vorhanden ist.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>X</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Kopiert den selektierten Text in die Zwischenablage und löscht den
+      selektierten Text. Ist keine Selektion vorhanden, dann hat diese
+      Taste keine Wirkung.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>V</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Fügt den Inhalt der Zwischenablage hinter den Einfüge-Cursors ein.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Einfg</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Nur Linux/Unix: Fügt die X-Textselektion der Zwischenablage hinter den
+      Einfüge-Cursors ein.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Entf</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht den selektierten Text sofern welcher vorhanden ist, andernfalls
+      wird das Zeichen rechts vom Einfüge-Cursors gelöscht.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>⌫</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht den selektierten Text sofern welcher vorhanden ist, andernfalls
+      wird das Zeichen links vom Einfüge-Cursor gelöscht.
+    </td>
+  </tr>
+</table>
+
+<h4 id="Control:Delete">Text löschen</h4>
+
+<table>
+  <tr valign="top">
+    <td nowrap="true">
+      <kbd class='key'>Entf</kbd>
+    </td>
+    <td style="padding-left: 0.5em;">
+      Löscht das Zeichen rechts vom Einfüge-Cursor. Ist Text selektiert
+      worden, dann wird der selektierte Text gelöscht.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>⌫</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht das Zeichen links vom Einfüge-Cursor. Ist Text selektiert
+      worden, dann wird der selektierte Text gelöscht.
+      deleted.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>D</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht das Zeichen rechts vom Einfüge-Cursor.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>E</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht das Wort rechts vom Einfüge-Cursor.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Alt</kbd>+<kbd class='key'>⌫</kbd> or<br/>
+      <kbd class='key'>Alt</kbd>+<kbd class='key'>Entf</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht das Wort links vom Einfüge-Cursor.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>K</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Löscht vom Einfüge-Cursor bis zum Ender der Zeile. Ist der Einfüge-Cursor
+      bereits am Ende der Zeile, dann wird der Zeilenumbruch gelöscht.
+    </td>
+  </tr>
+</table>
+
+<h4 id="Control;Undo">Rückgängig &amp; Wiederherstellen</h4>
+
+<table>
+  <tr valign="top">
+    <td nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Z</kbd>
+    </td>
+    <td style="padding-left: 0.5em;">
+      Letzte Aktion im Textbereich zurücknehmen.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>Y</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Vorhergehende Rücknahme wieder aufheben.
+    </td>
+  </tr>
+</table>
+
+<h4 id="Control:Misc">Weitere Steuerungskürzel</h4>
+
+<table>
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>T</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Vertauscht die beiden Zeichen rechts vom Einfüge-Cursor.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
+      <kbd class='key'>Strg</kbd>+<kbd class='key'>⏎</kbd>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Damit können Zeilenumbrüche erzwungen werden. Im Textfeld werden
+      die erzwungenen Zeilenumbrüche mit dem Absatzsymbol &#x00b6;
+      gekennzeichnet.
+    </td>
+  </tr>
+</table>
+
+<h4 id="Control:Figurine">Einfügen einer Figur</h4>
+
+<p>
+Nachfolgende Tastaturkürzel dienen zum Einfügen einer Figur:
 </p>
 
 <div class='box'>
-  <table>
+  <table class="box">
     <tr><td><kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>K</kbd>  </td><td>=</td><td><span class='chess'>&#x2654;</span>  </td></tr>
     <tr><td><kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>D</kbd> </td><td>=</td><td><span class='chess'>&#x2655;</span> </td></tr>
     <tr><td><kbd class='key'>Strg</kbd>+<kbd class='key'>Umschalt</kbd>+<kbd class='key'>T</kbd>  </td><td>=</td><td><span class='chess'>&#x2656;</span>  </td></tr>
@@ -84,39 +542,47 @@ Im Textfeld dienen die nachfolgenden Tastaturkürzel zum Einfügen einer Figur:
   </table>
 </div>
 
-Ausserdem sind folgende Standardtastaturkürzel an das Textfeld gebunden:
+<h2 id="Buttons">Schaltflächen</h2>
 
-<div class='box'>
-  <table>
-    <tr>
-      <td valign="top"><kbd class='key'>Strg</kbd>+<kbd class='key'>C</kbd>
-      </td><td>Markierten Text in die Zwischenablage kopieren</td>
-    </tr>
-    <tr>
-      <td valign="top"><kbd class='key'>Strg</kbd>+<kbd class='key'>X</kbd>
-      </td><td>Markierten Text löschen und in die Zwischenablage kopieren</td>
-    </tr>
-    <tr>
-      <td valign="top"><kbd class='key'>Strg</kbd>+<kbd class='key'>V</kbd></td>
-      <td>Text aus der Zwischenablage an der Cursorposition einfügen</td>
-    </tr>
-    <tr>
-      <td valign="top"><kbd class='key'>Strg</kbd>+<kbd class='key'>Z</kbd>
-      </td><td>Letzte Aktion im Textbereich zurücknehmen</td>
-    </tr>
-    <tr>
-      <td valign="top"><kbd class='key'>Strg</kbd>+<kbd class='key'>Y</kbd></td>
-      <td>Vorhergehende Rücknahme wieder aufheben</td>
-    </tr>
-  </table>
-</div>
-
-<h2 id="Linebreak">Zeilenumbruch</h2>
+<ul style='list-style-type: none'><li><img src="images/comment-editor-buttons.png" alt="" /> </li></ul>
 
 <p>
-Eine besondere Bedeuting hat <kbd class='key'>⏎</kbd>, mit dieser Taste können
-Zeilenumbrüche erzwungen werden. Im Textfeld werden die erzwungenen
-Zeilenumbrüche mit dem Absatzsymbol &#x00b6; gekennzeichnet.
+<span class='menuitem'>Symbol einfügen</span>
+Schnelleingabe eines Symbols an der aktuellen Cursorposition, wie z.B.
+einer Stellungsbewertung, oder eines anderen Sonderzeichens.
+</p>
+
+<p>
+<span class='menuitem'>Löschen</span>
+Den gesamten Text (der aktuellen Sprache) löschen.
+</p>
+
+<p>
+<span class='menuitem'>Zurückkehren</span>
+Den Originaltext für die aktuelle Sprache wiederherstellen. Diese
+Schaltfläche ist nur dann aktiv, wenn der neue Text vom Originaltext
+abweicht. Sobald eine Speicherung des Textes erfolgt, so ist dies der neue
+Originaltext.
+</p>
+
+<h2 id="Emoticons">Smileys</h2>
+
+<p>
+Der Editor erkennt Smileys, sofern die Erkennung vom Smileys im Partieeditor
+eingeschaltet ist, d.h. das textuelle Smiley-Codes &ndash; wie z.B.
+<span style='white-space:nowrap;'><code>:-)</code></span> &ndash; mit dem entsprechenden Piktogramm angezeigt werden,
+sofern eine Erkennung möglich war. Dazu muss allerdings auch die Anzeige von
+Smileys im Kommentareditor eingeschaltet sein (&#x21d2;
+<a href="#Menu">Kontextsensitives Menü</a>). Die Eingabe eines Smileys erfolgt
+am einfachsten mit Hilfe des kontextsensitive Menüs. Im Textfeld eingegebene
+Smiley-Codes werden nicht sofort automatisch erkannt, sondern erst nach einer
+Aktualisierung der gesamten Anzeige, wie z.B. nach einem Sprachwechsel, oder
+nach dem Speichern (mit "Anwenden").
+</p>
+
+<p>
+Smileys werden in der Textform abgespeichert, d.h. sie sind in andere
+Datenbankformate übertragbar.
 </p>
 
 <h2 id="Menu">Kontextsensitives Menü</h2>
@@ -128,21 +594,21 @@ Das kontextsensitive Menü im Textfeld bietet folgende Funktionen:
 <p>
 <span class='menuitem'>Kopieren</span>
 Markierten Text in die Zwischenablage kopieren.
-Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+Dieser Menüpunkt steht nur zur Verfügung wenn Text
 markiert ist.
 </p>
 
 <p>
 <span class='menuitem'>Ausschneiden</span>
 Markierten Text löschen und in die Zwischenablage kopieren.
-Dieser Menüpunkt steht nur zur Verfügung, wenn Text
+Dieser Menüpunkt steht nur zur Verfügung wenn Text
 markiert ist.
 </p>
 
 <p>
 <span class='menuitem'>Einfügen</span>
 Text aus der Zwischenablage an der Cursorposition einfügen.
-Dieser Menüpunkt steht nur zur Verfügung, wenn Text in
+Dieser Menüpunkt steht nur zur Verfügung wenn Text in
 der Zwischenablage vorhanden ist.
 </p>
 
@@ -165,7 +631,7 @@ Der Text wird an den evt. bereits vorhandenen Text angefügt.
 
 <p>
 <span class='menuitem'>Rückgängig</span>
-Letzte Aktion im Textbereich zurücknehmen (außer Formatierungen).
+Letzte Aktion im Textbereich zurücknehmen.
 </p>
 
 <p>
@@ -200,6 +666,14 @@ Andere Sprache auswählen.
 <p>
 <span class='menuitem'>Sprache hinzufügen</span>
 Eine Sprache hinzufügen.
+</p>
+
+<p>
+<span class='menuitem'>Smileys anzeigen</span>
+Wenn eingeschaltet, dann werden die erkannten Smileys mit Piktogrammen
+angezeigt, andernfalls ist der Text für diesen Smiley zu sehen.
+Dieser Menüpunkt steht nur zur Verfügung, wenn die automatische Erkennung von
+Smileys im Partieeditor eingeschaltet ist.
 </p>
 
 </body>

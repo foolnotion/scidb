@@ -1806,7 +1806,7 @@ proc PopupPlayerMenu {gamebar id side} {
 		set name [lindex $info 0]
 		if {$name eq "?" || $name eq "-"} { set name "" }
 		if {[string length $name]} {
-			lassign [GetSource $id] base variant index
+			lassign [GetSource $id] base variant gameIndex
 			::playertable::popupMenu $menu $base $variant $info [list $gameIndex $side]
 			$menu add separator
 		}

@@ -306,21 +306,14 @@ ToList::putContent()
 				char const* q = s;
 				char const* p = util::emoticons::parseEmotion(q, e, emotion);
 
-				mstl::string tmp;
 				mstl::string str;
-
-				tmp.hook(const_cast<char*>(s), p - s);
-				::db::Comment::escapeString(tmp, str);
+				str.hook(const_cast<char*>(s), p - s);
 
 				if (!str.empty())
 					appendTag("str", str);
 
 				if (p < e)
-				{
-					mstl::string code;
-					::db::Comment::escapeString(util::emoticons::toAscii(emotion), code);
-					appendTag("emo", code);
-				}
+					appendTag("emo", util::emoticons::toAscii(emotion));
 
 				s = q;
 			}

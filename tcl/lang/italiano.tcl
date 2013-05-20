@@ -43,11 +43,13 @@
 ::mc::Key(Enter)			"Invio"
 ::mc::Key(Esc)				"Esci"
 ::mc::Key(Home)			"Inizio" ;# "Home"
+::mc::Key(Ins)				"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"
 ::mc::Key(Prior)			"Page\u2191"
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Shift"
+::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
 ::mc::Alignment			"Allineamento"

@@ -65,6 +65,11 @@ set Index {
       {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
+  { K
+    {
+      {{Kommentareditor} {Comment-Editor-Dialog.html} {}}
+    }
+  }
   { L
     {
       {{Losers} {Chess-Variants.html} {}}

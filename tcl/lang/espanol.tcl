@@ -44,11 +44,13 @@
 ::mc::Key(Enter)			"Intro"
 ::mc::Key(Esc)				"Esc"
 ::mc::Key(Home)			"Inicio"
+::mc::Key(Ins)				"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Re Pag" ;# "Página\u2193"
 ::mc::Key(Prior)			"Av Pag" ;# "Página\u2191"
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Mayúsculas" 
+::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
 ::mc::Alignment			"Alineación"

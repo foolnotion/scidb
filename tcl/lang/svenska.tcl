@@ -43,11 +43,13 @@
 ::mc::Key(Enter)			"Enter" ;# NEW
 ::mc::Key(Esc)				"Esc"
 ::mc::Key(Home)			"Home" ;# NEW
+::mc::Key(Ins)				"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"	;# "Vänster"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
 ::mc::Key(Prior)			"Page\u2191"	;# Page Up NEW
 ::mc::Key(Right)			"\u2192" ;# "Höger"
 ::mc::Key(Shift)			"Shift" ;# NEW
+::mc::Key(Space)			"\u2423"
 ::mc::Key(Up)				"\u2191"
 
 ::mc::Alignment			"Justering"

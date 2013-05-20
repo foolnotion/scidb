@@ -136,6 +136,11 @@ span.keyword {
 	color: #8b0000;
 }
 
+table.box {
+	padding-top: 		0.5em;
+	padding-bottom:	0.5em;
+}
+
 table.standard {
 /*	background:			#e5eeff;*/
 /*	background:			#dde6ef;*/

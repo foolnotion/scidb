@@ -403,6 +403,7 @@ proc dialogButtonInvoke {parent} {
 			if {[$w cget -default] eq "active"} {
 				focus $w
 				event generate $w <Key-space>
+				return
 			}
 		}
 	}
