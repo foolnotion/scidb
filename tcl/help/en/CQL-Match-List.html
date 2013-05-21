@@ -1,0 +1,2186 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-Match-List.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Help: CQL - The match list</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - The match list</h1>
+</div>
+
+<p>
+Any CQL script must have exactly one match list at top level. The match list
+contains keyword parameters that control the matching of each game.
+The match list contains zero or more position lists. (Note that the CQL
+standard requires at least one position list.)  A game will be matched
+only if all conditions in the match list are fullfilled. If positions lists
+are given, each of which must match at least one position in the game in order
+for the match list to match that game. Scidb allows an additional feature:
+the match list may contain logical keywords (<a href="CQL-Match-List.html#match:and"><span style='white-space:nowrap;'>:and</span></a>,
+<a href="CQL-Match-List.html#match:or"><span style='white-space:nowrap;'>:or</span></a>, <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>) with sub-matches.
+</p>
+
+<p>
+Note that most examples on this page are not conform to the CQL standard,
+you have to insert an empty position list <span style='white-space:nowrap;'><code>(position)</code></span> to build
+a script which complies with the standard.
+</p>
+
+<p>
+The symbol <img src="../images/ft-scidb-tiny.png" alt="" /> in the title of a
+keyword description denotes that this keyword is an extension, it is not
+part of the CQL standard.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Logical keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#event">Event search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#player">Player search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#header">Game header search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#data">Game data search related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#tagging">Tagging related keywords</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#meaningless">Meaningless keywords</a></td></tr>
+  </table>
+</li></ul>
+
+<h2 id="index">Index</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>      &#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:country">:country</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:gender">:gender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:player">:player</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:rating">:rating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:title">:title</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+    <tr><td>      &#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+  </table>
+</li></ul>
+
+<!-- ############################################################################## -->
+<h2 id="logical">Logical keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:or">:or</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:and">:and&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Takes a list of sub-match lists and matches only if each of them match.
+Note that a sub-match cannot contain position matches.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  <span class='keyword'>:and</span> (
+    (match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>)
+    (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>))))<!--
+--></code></pre></div>
+
+<p>
+Search for Shuffle Chess games, not including Chess 960 positions. This example
+is identical to the following:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a> (match <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a>))<!--
+--></code></pre></div>
+
+<p>
+This keyword seems to be superfluous, but it may be useful inside
+<a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> or <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a>.
+</p>
+
+<h3 id="match:not">:not&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This keyword can be used in two forms: either it is included in a match list,
+or it has a sub-match list as parameter. In former case match if the containing
+match list would not match without the :not. In latter case: negate the result
+of the sub-match list match. The former form is defined only to be conform
+with CQL standard of keyword <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a> of position match.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+(match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a> <span class='keyword'>:not</span>)
+</code></div>
+
+<p>
+Search for games which do not start with a Shuffle Chess position. This
+example may be written in the second form:
+</p>
+
+<div class='verb'><code>
+(match <span class='keyword'>:not</span> (match <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>))
+</code></div>
+
+<h3 id="match:or">:or&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Takes a list of sub-match lists and matches if at least one of them matches.
+Note that a sub-match cannot contain position matches.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  <span class='keyword'>:or</span> (
+    (match <a href="CQL-Match-List.html#match:event"><span style='white-space:nowrap;'>:event</span></a> "FIDE-Wch*"
+    (match <a href="CQL-Match-List.html#match:event"><span style='white-space:nowrap;'>:event</span></a> "PCA-World Championchip*"))))<!--
+--></code></pre></div>
+
+<p>
+Search for world championchip games.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="event">Event search related keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:event">:event</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventcountry">:eventcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventdate">:eventdate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventmode">:eventmode</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eventtype">:eventtype</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:site">:site</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:timemode">:timemode</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:event">:event&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the event matches given pattern.
+</p>
+
+<p>
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<h3 id="match:eventcountry">:eventcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the country of the event is matching one of the
+countries in the given comma-separated list. Country is either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes" target="blank_">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="blank_">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the event is unknown.
+The CQL editor provides a feature for the input of country codes.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eventcountry</span> dk,fi,no,se
+</code></div>
+
+<p>
+Search for games played in Scandinavian events.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eventcountry</span> xx
+</code></div>
+
+<p>
+Search for games where the country of the event is unknown.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:site"><span style='white-space:nowrap;'>:site</span></a>.
+</p>
+
+<h3 id="match:eventdate">:eventdate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This takes a range specifier denoting the range of dates
+that the event of the game must match.
+</p>
+
+<p>
+For a detailed description of the date range see
+<a href="CQL-Match-List.html#match:date"><span style='white-space:nowrap;'>:date</span></a>.
+</p>
+
+<h3 id="match:eventmode">:eventmode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the event mode is matching one
+of the modes in the given comma-separated list.
+</p>
+
+<p>
+The event mode is one of:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
+      <td class="m"></td>
+      <td class="r">Event mode is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>otb</code></span></td>
+      <td class="m"><img src="../images/eventmode_OTB.png" alt=""/></td>
+      <td class="r">Over the board</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>corr</code></span></td>
+      <td class="m"><img src="../images/eventmode_PM.png" alt=""/></td>
+      <td class="r">Correspondence</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>email</code></span></td>
+      <td class="m"><img src="../images/eventmode_EM.png" alt=""/></td>
+      <td class="r">E-mail</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>internet</code></span></td>
+      <td class="m"><img src="../images/eventmode_ICS.png" alt=""/></td>
+      <td class="r">Internet Chess Server</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>tele</code></span></td>
+      <td class="m"><img src="../images/eventmode_TC.png" alt=""/></td>
+      <td class="r">Telecommunication</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>analysis</code></span></td>
+      <td class="m"><img src="../images/eventmode_Analysis.png" alt=""/></td>
+      <td class="r">Analysis</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>composition</code></span></td>
+      <td class="m"><img src="../images/eventmode_Composition.png" alt=""/></td>
+      <td class="r">Composition</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+The CQL editor provides a feature for the input of event modes.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eventmode</span> corr,email
+</code></div>
+
+<p>
+Search for correspondence chess games, or games played via E-mail.
+</p>
+
+<h3 id="match:eventtype">:eventtype&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the event type is matching one of the types
+in the given comma-separated list.
+</p>
+
+<p>
+The event type is one of:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
+      <td class="m"></td>
+      <td class="r">Event type is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>game</code></span></td>
+      <td class="m"><img src="../images/eventtype_game.png" alt=""/></td>
+      <td class="r">Individual Game</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>match</code></span></td>
+      <td class="m"><img src="../images/eventtype_match.png" alt=""/></td>
+      <td class="r">Match</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>tourn</code></span></td>
+      <td class="m"><img src="../images/eventtype_tourn.png" alt=""/></td>
+      <td class="r">Round Robin</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>knockout</code></span></td>
+      <td class="m"><img src="../images/eventtype_ko.png" alt=""/></td>
+      <td class="r">Knockout Tournament</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>swiss</code></span></td>
+      <td class="m"><img src="../images/eventtype_swiss.png" alt=""/></td>
+      <td class="r">Swiss-System Tournament</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>team</code></span></td>
+      <td class="m"><img src="../images/eventtype_team.png" alt=""/></td>
+      <td class="r">Team Tournament</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>schev</code></span></td>
+      <td class="m"><img src="../images/eventtype_schev.png" alt=""/></td>
+      <td class="r">Scheveningen-System Tournament</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>simul</code></span></td>
+      <td class="m"><img src="../images/eventtype_simul.png" alt=""/></td>
+      <td class="r">Simultaneous Tournament</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+The CQL editor provides a feature for the input of event types.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eventtype</span> tourn,swiss
+</code></div>
+
+<h3 id="match:site">:site&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the site of the event matches given pattern.
+</p>
+
+<p>
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:eventcountry"><span style='white-space:nowrap;'>:eventcountry</span></a>.
+</p>
+
+<h3 id="match:timemode">:timemode&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the time mode is matching one of the modes
+in the given comma-separated list.
+</p>
+
+<p>
+Time mode is one of:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
+      <td class="m"></td>
+      <td class="r">Time mode is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
+      <td class="m"><img src="../images/timemode_normal.png" alt=""/></td>
+      <td class="r">Normal</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>rapid</code></span></td>
+      <td class="m"><img src="../images/timemode_rapid.png" alt=""/></td>
+      <td class="r">Rapid</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>blitz</code></span></td>
+      <td class="m"><img src="../images/timemode_blitz.png" alt=""/></td>
+      <td class="r">Blitz</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>bullet</code></span></td>
+      <td class="m"><img src="../images/timemode_bullet.png" alt=""/></td>
+      <td class="r">Bullet</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>corr</code></span></td>
+      <td class="m"><img src="../images/timemode_corr.png" alt=""/></td>
+      <td class="r">Correspondence</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+The CQL editor provides a feature for the input of time modes.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:timemode</span> blitz,bullet
+</code></div>
+
+<p>
+Search for blitz and bullet games.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="player">Player search related keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:birthyear">:birthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitebirthyear">:whitebirthyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackbirthyear">:blackbirthyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:country">:country</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitecountry">:whitecountry</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackcountry">:blackcountry</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:deathyear">:deathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitedeathyear">:whitedeathyear</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackdeathyear">:blackdeathyear</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:elo">:elo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteelo">:whiteelo</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackelo">:blackelo</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gender">:gender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitegender">:whitegender</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackgender">:blackgender</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:iscomputer">:iscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteiscomputer">:whiteiscomputer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackiscomputer">:blackiscomputer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ishuman">:ishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteishuman">:whiteishuman</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackishuman">:blackishuman</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:player">:player</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiteplayer">:whiteplayer</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackplayer">:blackplayer</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:rating">:rating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whiterating">:whiterating</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blackrating">:blackrating</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:title">:title</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:whitetitle">:whitetitle</a></td>
+        <td>&emsp;&#x2022;</td><td><a href="#match:blacktitle">:blacktitle</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:birthyear">:birthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where one of the players is born in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:birthyear</span> 1990 unlimited
+</code></div>
+
+<p>
+Search for games with at least one younger player, born 1990 or later.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
+</p>
+
+<h3 id="match:blackbirthyear">:blackbirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the black player was born in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>,
+<a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>, <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
+</p>
+
+<h3 id="match:blackcountry">:blackcountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the nationality of the black player is matching one of
+the countries in given comma-separated list. A country will be specified either
+as <a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes" target="blank_">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
+or <a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="blank_">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the black player is unknown.
+The CQL editor provides a feature for the input of country codes.
+</p>
+
+<p>
+For examples see <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>, <a href="CQL-Match-List.html#match:whitecountry"><span style='white-space:nowrap;'>:whitecountry</span></a>.
+</p>
+
+<h3 id="match:blackelo">:blackelo&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This keyword takes a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of the black player must lie within its range.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiteelo"><span style='white-space:nowrap;'>:whiteelo</span></a>, <a href="CQL-Match-List.html#match:elo"><span style='white-space:nowrap;'>:elo</span></a>,
+<a href="CQL-Match-List.html#match:blackrating"><span style='white-space:nowrap;'>:blackrating</span></a>.
+</p>
+
+<h3 id="match:blackdeathyear">:blackdeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the black player died in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>,
+<a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>, <a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
+</p>
+
+<h3 id="match:blackgender">:blackgender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the gender of the black player is matching given gender.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:blackgender</span> f
+</code></div>
+
+<p>
+Only search for games where the black player is female.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:blackgender</span> x
+</code></div>
+
+<p>
+Only search for games where the gender is unknown for at least one player.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitegender"><span style='white-space:nowrap;'>:whitegender</span></a>, <a href="CQL-Match-List.html#match:gender"><span style='white-space:nowrap;'>:gender</span></a>.
+</p>
+
+<h3 id="match:blackiscomputer">:blackiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the black player is an engine.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:iscomputer"><span style='white-space:nowrap;'>:iscomputer</span></a>, <a href="CQL-Match-List.html#match:whiteiscomputer"><span style='white-space:nowrap;'>:whiteiscomputer</span></a>.
+</p>
+
+<h3 id="match:blackishuman">:blackishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the black player is a human.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:ishuman"><span style='white-space:nowrap;'>:ishuman</span></a>, <a href="CQL-Match-List.html#match:whiteishuman"><span style='white-space:nowrap;'>:whiteishuman</span></a>.
+</p>
+
+<h3 id="match:blackplayer">:blackplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the black player matches given name.
+</p>
+
+<p>
+This takes one parameter, either a double-quoted pattern, or a un-quoted
+string.  See <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a> for a detailed description.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a>, <a href="CQL-Match-List.html#match:whiteplayer"><span style='white-space:nowrap;'>:whiteplayer</span></a>.
+</p>
+
+<h3 id="match:blackrating">:blackrating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the given rating is between given score range of the
+black player. The first parameter is the rating type, then the score range
+follows. For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiterating"><span style='white-space:nowrap;'>:whiterating</span></a>, <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
+</p>
+
+<h3 id="match:blacktitle">:blacktitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the title of the black player is matching
+one of the titles in the given comma-separated list.
+See <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> for a more detailed description.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitetitle"><span style='white-space:nowrap;'>:whitetitle</span></a>, <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a>.
+</p>
+
+<h3 id="match:country">:country&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the nationality one of the players is matching any
+country in given comma-separated list. Country is either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes" target="blank_">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="blank_">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the nationality
+of one player is unknown.
+The CQL editor provides a feature for the input of country codes.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:country</span> GER<br/>
+<span class='keyword'>:country</span> de
+</code></div>
+
+<p>
+In both examples, match all games where one of the players has a German
+nationality.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitecountry"><span style='white-space:nowrap;'>:whitecountry</span></a>, <a href="CQL-Match-List.html#match:blackcountry"><span style='white-space:nowrap;'>:blackcountry</span></a>.
+</p>
+
+<h3 id="match:deathyear">:deathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where one of the players died in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:deathyear</span> 1800 1950
+</code></div>
+
+<p>
+Search for games with ancient players, at least one of them died between
+1800 and 1950.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>,
+<a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
+</p>
+
+<h3 id="match:elo">:elo&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This parameter expects a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of at least one of the players must lie within the specified range.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Match-List.html#match:blackelo"><span style='white-space:nowrap;'>:blackelo</span></a>, <a href="CQL-Match-List.html#match:whiteelo"><span style='white-space:nowrap;'>:whiteelo</span></a>,
+<a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
+</p>
+
+<h3 id="match:gender">:gender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the gender of one player is matching given gender.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
+</p>
+
+<p>
+For examples see <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>, <a href="CQL-Match-List.html#match:whitegender"><span style='white-space:nowrap;'>:whitegender</span></a>.
+</p>
+
+<h3 id="match:iscomputer">:iscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where one of the players is a engine.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiteiscomputer"><span style='white-space:nowrap;'>:whiteiscomputer</span></a>, <a href="CQL-Match-List.html#match:blackiscomputer"><span style='white-space:nowrap;'>:blackiscomputer</span></a>.
+</p>
+
+<h3 id="match:ishuman">:ishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where one of the players is a human.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiteishuman"><span style='white-space:nowrap;'>:whiteishuman</span></a>, <a href="CQL-Match-List.html#match:blackishuman"><span style='white-space:nowrap;'>:blackishuman</span></a>.
+</p>
+
+<h3 id="match:player">:player</h3>
+
+<p>
+Search for games where one of the players matches given name.
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
+</p>
+
+<p>
+<b>Un-quoted string</b>: Only games at least one of whose players names
+has as sub-string the given parameter will match. The string matching is
+case-insensitive. This form complies with the CQL standard.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:player</span> coeff
+</code></div>
+
+<p>
+Match all games where one of the player names has as sub-string
+<span style='white-space:nowrap;'>"coeff"</span>.
+</p>
+
+<p>
+<b>Double-quoted pattern:</b> Only games at least one of whose players names
+are matching the pattern will be found.
+For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> The form with double-quoted patterns does not comply with the CQL standard.</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:player</span> "*coeff*"
+</code></div>
+
+<p>
+This is identical to preceding example (un-quoted string).
+</p>
+
+<p>
+For more examples see
+<a href="Pattern-Matching.html#examples">Pattern Matching</a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiteplayer"><span style='white-space:nowrap;'>:whiteplayer</span></a>, <a href="CQL-Match-List.html#match:blackplayer"><span style='white-space:nowrap;'>:blackplayer</span></a>.
+</p>
+
+<h3 id="match:rating">:rating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where one of the players has a score of given rating type
+which is between the specified score range.
+The first parameter is the rating type, then the score range follows.
+</p>
+
+<p>
+Rating is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>ELO</code></span></td>
+      <td class="r">FIDE Rating</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>DWZ</code></span></td>
+      <td class="r">German Rating (Deutsche Wertungszahl)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>ECF</code></span></td>
+      <td class="r">English Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>Rapid</code></span></td>
+      <td class="r">English Chess Federation Rapid Rating</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>ICCF</code></span></td>
+      <td class="r">International Correspondence Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>USCF</code></span></td>
+      <td class="r">United States Chess Federation</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>IPS</code></span></td>
+      <td class="r">Individual Player Strength (Chess 960 Rating)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>Rating</code></span></td>
+      <td class="r">Any other rating type</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:rating</span> ELO 2000 3000
+</code></div>
+
+<p>
+Match all games where one of the players has an <abbr>ELO</abbr> rating between
+2000 and 3000.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:whiterating"><span style='white-space:nowrap;'>:whiterating</span></a>, <a href="CQL-Match-List.html#match:blackrating"><span style='white-space:nowrap;'>:blackrating</span></a>.
+</p>
+
+<h3 id="match:title">:title&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where any title in the given comma-separated list is matching
+the title of one player. Title is one of:
+</p>
+
+<div class="dir">
+<table>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>None</code></span></td><td class="r">No title     </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>GM  </code></span></td><td class="r">Grandmaster (FIDE)  </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>IM  </code></span></td><td class="r">International Master (FIDE)  </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>FM  </code></span></td><td class="r">Fide Master (FIDE)  </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CM  </code></span></td><td class="r">Candidate Master (FIDE)  </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>WGM </code></span></td><td class="r">Woman Grandmaster (FIDE) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>WIM </code></span></td><td class="r">Woman International Master (FIDE) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>WFM </code></span></td><td class="r">Woman Fide Master (FIDE) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>WCM </code></span></td><td class="r">Woman Candidate Master (FIDE) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>HGM </code></span></td><td class="r">Honorary Grandmaster (FIDE) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CGM </code></span></td><td class="r">Correspondence Grandmaster (ICCF) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CIM </code></span></td><td class="r">Correspondence International Master (ICCF) </td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CLGM</code></span></td><td class="r">Correspondence Lady Grandmaster (ICCF)</td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CILM</code></span></td><td class="r">Correspondence Lady International Master (ICCF)</td>
+  </tr>
+  <tr valign="top">
+    <td class="l"><span style='white-space:nowrap;'><code>CSIM</code></span></td><td class="r">Correspondence Senior International Master (ICCF)</td>
+  </tr>
+</table>
+</div>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:title</span> GM,IM
+</code></div>
+
+<p>
+Search for all games with al least one GM or IM.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:title</span> None
+</code></div>
+
+<p>
+Search for all games where both don't have a title.
+</p>
+
+<h3 id="match:whitebirthyear">:whitebirthyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the white player was born in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>, <a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>,
+<a href="CQL-Match-List.html#match:whitedeathyear"><span style='white-space:nowrap;'>:whitedeathyear</span></a>, <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>,
+<a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>.
+</p>
+
+<h3 id="match:whitecountry">:whitecountry&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the nationality of the white player is matching any country
+in given comma-separated list. Country is either an
+<a href="http://en.wikipedia.org/wiki/List_of_IOC_country_codes" target="blank_">IOC country code<span class="awesome">&nbsp;&#xf08e;</span></a>,
+or an <a href="http://en.wikipedia.org/wiki/ISO_3166-2" target="blank_">ISO 3166-2 country code<span class="awesome">&nbsp;&#xf08e;</span></a>.
+Furthermore the special country codes <span style='white-space:nowrap;'><code>UNK</code></span> (IOC form),
+and <span style='white-space:nowrap;'><code>xx</code></span> (ISO 3166-2 form) are matching games where the country
+of the white player is unknown.
+The CQL editor provides a feature for the input of country codes.
+</p>
+
+<p>
+For examples see <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackcountry"><span style='white-space:nowrap;'>:blackcountry</span></a>, <a href="CQL-Match-List.html#match:country"><span style='white-space:nowrap;'>:country</span></a>.
+</p>
+
+<h3 id="match:whitedeathyear">:whitedeathyear&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the white player died in a year between the
+given ranges (&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackdeathyear"><span style='white-space:nowrap;'>:blackdeathyear</span></a>, <a href="CQL-Match-List.html#match:deathyear"><span style='white-space:nowrap;'>:deathyear</span></a>,
+<a href="CQL-Match-List.html#match:whitebirthyear"><span style='white-space:nowrap;'>:whitebirthyear</span></a>, <a href="CQL-Match-List.html#match:blackbirthyear"><span style='white-space:nowrap;'>:blackbirthyear</span></a>,
+<a href="CQL-Match-List.html#match:birthyear"><span style='white-space:nowrap;'>:birthyear</span></a>.
+</p>
+
+<h3 id="match:whiteelo">:whiteelo&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This keyword takes a <a href="CQL-Range-Specifiers.html">range specifier</a>;
+the ELO of the white player must lie within its range.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackelo"><span style='white-space:nowrap;'>:blackelo</span></a>, <a href="CQL-Match-List.html#match:elo"><span style='white-space:nowrap;'>:elo</span></a>,
+<a href="CQL-Match-List.html#match:whiterating"><span style='white-space:nowrap;'>:whiterating</span></a>.
+</p>
+
+<h3 id="match:whitegender">:whitegender&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the gender of the white player is matching given gender.
+Gender is one of <span style='white-space:nowrap;'><code>f</code></span> (female), <span style='white-space:nowrap;'><code>m</code></span> (male, man), or
+<span style='white-space:nowrap;'><code>x</code></span> (unknown). For female also <span style='white-space:nowrap;'><code>w</code></span> (woman) may be used.
+</p>
+
+<p>
+For examples see <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackgender"><span style='white-space:nowrap;'>:blackgender</span></a>, <a href="CQL-Match-List.html#match:gender"><span style='white-space:nowrap;'>:gender</span></a>.
+</p>
+
+<h3 id="match:whiteiscomputer">:whiteiscomputer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the white player is an engine.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:iscomputer"><span style='white-space:nowrap;'>:iscomputer</span></a>, <a href="CQL-Match-List.html#match:blackiscomputer"><span style='white-space:nowrap;'>:blackiscomputer</span></a>.
+</p>
+
+<h3 id="match:whiteishuman">:whiteishuman&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the white player is a human.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:ishuman"><span style='white-space:nowrap;'>:ishuman</span></a>, <a href="CQL-Match-List.html#match:blackishuman"><span style='white-space:nowrap;'>:blackishuman</span></a>.
+</p>
+
+<h3 id="match:whiteplayer">:whiteplayer&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the white player matches given name.
+</p>
+
+<p>
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
+See <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a> for a detailed description.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackplayer"><span style='white-space:nowrap;'>:blackplayer</span></a>, <a href="CQL-Match-List.html#match:player"><span style='white-space:nowrap;'>:player</span></a>.
+</p>
+
+<h3 id="match:whiterating">:whiterating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the given rating is between given score range of the
+white player. The first parameter is the rating type, then the score range
+follows.  For a detailed description see <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blackrating"><span style='white-space:nowrap;'>:blackrating</span></a>, <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating</span></a>.
+</p>
+
+<h3 id="match:whitetitle">:whitetitle&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the title of the white player is matching
+one of the titles in the given comma-separated list.
+See <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a> for a more detailed description.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:blacktitle"><span style='white-space:nowrap;'>:blacktitle</span></a>, <a href="CQL-Match-List.html#match:title"><span style='white-space:nowrap;'>:title</span></a>.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="header">Game header search related keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:annotator">:annotator</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:date">:date</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:eco">:eco</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:gamenumber">:gamenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasmarkers">:hasmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasspecialmarkers">:hasspecialmarkers</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:plycount">:plycount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:result">:result</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:termination">:termination</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:variant">:variant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:year">:year</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:annotator">:annotator&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games where the annotator matches given name.
+</p>
+
+<p>
+This takes one parameter, either a double-quoted pattern, or a un-quoted string.
+See <a href="#match:player">:player</a> for a detailed description.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:annotator</span> Capablanca
+</code></div>
+
+Search for games where one of the player names has a sub-string matching
+the name <span style='white-space:nowrap;'>"Capablanca"</span>.
+
+<div class='verb'><code>
+<span class='keyword'>:annotator</span> "*"
+</code></div>
+
+<p>
+Search for games with any annotator, this means that games without an
+annotator are excluded.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>.
+</p>
+
+<h3 id="match:date">:date&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This takes a range specifier denoting the range of dates
+that the game must match.
+</p>
+
+<p>
+The range specifier has one of the following forms:
+</p>
+
+<div class="dir">
+  <table>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-27</code></span></td>
+      <td class="r">denoting a single date</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 2010-10-31</code></span></td>
+      <td class="r">denoting a range of dates, inclusive the ranges</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>2010-10-01 .. 2010-11-01</code></span></td>
+      <td class="r">denoting a range of dates, inclusive the former date,
+          exlusive the latter date</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Note that in third form it is not required that the former date is less than the
+latter date. Also note that the empty range (for example
+<code><span style='white-space:nowrap;'>2010-10-01</span> <span style='white-space:nowrap;'>..</span> <span style='white-space:nowrap;'>2010-10-01</span></code>)
+is not allowed.
+</p>
+
+<p>
+A date has the following syntax:
+</p>
+
+<div class="dir">
+  <p><span style='white-space:nowrap;'><code>
+  &lt;year&gt;'&#x2212;'&lt;month&gt;'&#x2212;'&lt;day&gt;(&lt;sign&gt;&lt;num&gt;'y')?(&lt;sign&gt;&lt;num&gt;'m')?(&lt;sign&gt;&lt;num&gt;'d')?
+  </code></span></p>
+
+  <table>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;year&gt;</code></span></td>
+      <td class="r">specifies the year (four digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;month&gt;</code></span></td>
+      <td class="r">specifies the month (two digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;day&gt;</code></span></td>
+      <td class="r">specifies the day of the month (two digits)</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;sign&gt;</code></span></td>
+      <td class="r">is either '&#x2212;' or '+'</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>&lt;num&gt;</code></span></td>
+      <td class="r">is any positive number, denoting an increment or decrement</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>d</code></span></td>
+      <td class="r">specifies to increment/decrement the day</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>m</code></span></td>
+      <td class="r">specifies to increment/decrement the month</td>
+    </tr>
+    <tr valign="top">
+      <td class="l"><span style='white-space:nowrap;'><code>y</code></span></td>
+      <td class="r">specifies to increment/decrement the year</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Moreover the special date "unlimited" is allowed - see
+<a href="CQL-Range-Specifiers.html">range specifiers</a> for a description -
+but not as right barrier in the third form.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01
+</code></div>
+
+<p>
+Search for all games played on October 1, 2010.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 unlimited
+</code></div>
+
+<p>
+Search for all games played after September 30, 2010.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 .. 2010-11-01
+</code></div>
+
+<p>
+Search for all games played in October 2010: between October 1, 2010
+(inclusive), and November 1, 2010 (exclusive).
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-01 .. 2010-10-01+1m
+</code></div>
+
+<p>
+Also search for all games played in October 2010; the latter range
+(<span style='white-space:nowrap;'><code>2010-10-01+1m</code></span> is November 1, 2010) is excluded.
+<span style='white-space:nowrap;'><code>+1m</code></span> denotes the increment for the month.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> 2010-10-27 .. 2010-10-27-43d
+</code></div>
+
+<p>
+Search for all games between September 14, 2010 (exclusive;
+<span style='white-space:nowrap;'><code>2010-10-27-43d</code></span> is September 14, 2010), and
+October 27, 2010 (inclusive). This is an example for the following
+case: we know that the tournament has finished on October 27, 2010,
+and the duration of this tournament was exact 43 days. This example
+is exploiting that the first date specifier of a range
+can be greater than the last date specifier.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:date</span> unlimited <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a>
+</code></div>
+
+<p>
+Search for games which are blank dated.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:year"><span style='white-space:nowrap;'>:year</span></a>.
+</p>
+
+<h3 id="match:eco">:eco&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This takes a range specifier denoting the <a href="ECO-Code.html">ECO code</a>
+range that the game must match. It is allowed that the range consists of
+a single code.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eco</span> A00
+</code></div>
+
+<p>
+Search all games with ECO code A00.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:eco</span> A00 A99
+</code></div>
+
+<p>
+Search all games with an ECO code between A00 and A99 (inclusive the ranges).
+</p>
+
+<h3 id="match:gamenumber">:gamenumber</h3>
+
+<p>
+This takes a range specifier. Only games whose number within the database lies
+within the range specifier (&#x21d2;
+<a href="CQL-Range-Specifiers.html">range specifiers</a>) are considered.
+</p>
+
+<p>
+Note that in case of PGN databases the game number may occur more than once,
+because of <a href="Chess-Variants.html">chess variants</a>. Possibly the
+search should be restricted with keyword <a href="CQL-Match-List.html#match:variant"><span style='white-space:nowrap;'>:variant</span></a>.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:gamenumber</span> 1000<br/>
+<span class='keyword'>:gamenumber</span> 1 100
+</code></div>
+
+<h3 id="match:hasmarkers">:hasmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games which has one of the markers set specified in the given
+string of tokens (&#x21d2; <a href="Game-Flags.html">game markers</a>). If no
+parameter is given, we will search for any marker.
+</p>
+
+<p>
+A token is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l">w</td>
+      <td class="m"><img src="../images/gameflag-White-Opening.png" alt=""/></td>
+      <td class="r">White Opening</td>
+    </tr>
+    <tr>
+      <td class="l">b</td>
+      <td class="m"><img src="../images/gameflag-Black-Opening.png" alt=""/></td>
+      <td class="r">Black Opening</td>
+    </tr>
+    <tr>
+      <td class="l">m</td>
+      <td class="m"><img src="../images/gameflag-Middle-Game.png" alt=""/></td>
+      <td class="r">Middle Game</td>
+    </tr>
+    <tr>
+      <td class="l">e</td>
+      <td class="m"><img src="../images/gameflag-End-Game.png" alt=""/></td>
+      <td class="r">End Game</td>
+    </tr>
+    <tr>
+      <td class="l">N</td>
+      <td class="m"><img src="../images/gameflag-Novelty.png" alt=""/></td>
+      <td class="r">Novelty</td>
+    </tr>
+    <tr>
+      <td class="l">p</td>
+      <td class="m"><img src="../images/gameflag-Pawn-Structure.png" alt=""/></td>
+      <td class="r">Pawn Structure</td>
+    </tr>
+    <tr>
+      <td class="l">T</td>
+      <td class="m"><img src="../images/gameflag-Tactics.png" alt=""/></td>
+      <td class="r">Tactics</td>
+    </tr>
+    <tr>
+      <td class="l">K</td>
+      <td class="m"><img src="../images/gameflag-King-Side.png" alt=""/></td>
+      <td class="r">King Side</td>
+    </tr>
+    <tr>
+      <td class="l">Q</td>
+      <td class="m"><img src="../images/gameflag-Queen-Side.png" alt=""/></td>
+      <td class="r">Queen Side</td>
+    </tr>
+    <tr>
+      <td class="l">!</td>
+      <td class="m"><img src="../images/gameflag-Brilliancy.png" alt=""/></td>
+      <td class="r">Brilliancy</td>
+    </tr>
+    <tr>
+      <td class="l">?</td>
+      <td class="m"><img src="../images/gameflag-Blunder.png" alt=""/></td>
+      <td class="r">Blunder</td>
+    </tr>
+    <tr>
+      <td class="l">U</td>
+      <td class="m"><img src="../images/gameflag-User.png" alt=""/></td>
+      <td class="r">User</td>
+    </tr>
+    <tr>
+      <td class="l">*</td>
+      <td class="m"><img src="../images/gameflag-Best-Game.png" alt=""/></td>
+      <td class="r">Best Game</td>
+    </tr>
+    <tr>
+      <td class="l">D</td>
+      <td class="m"><img src="../images/gameflag-Decided-Tournament.png" alt=""/></td>
+      <td class="r">Decided Tournament</td>
+    </tr>
+    <tr>
+      <td class="l">G</td>
+      <td class="m"><img src="../images/gameflag-Model-Game.png" alt=""/></td>
+      <td class="r">Model Game</td>
+    </tr>
+    <tr>
+      <td class="l">S</td>
+      <td class="m"><img src="../images/gameflag-Strategy.png" alt=""/></td>
+      <td class="r">Strategy</td>
+    </tr>
+    <tr>
+      <td class="l">^</td>
+      <td class="m"><img src="../images/gameflag-With-Attack.png" alt=""/></td>
+      <td class="r">Attack</td>
+    </tr>
+    <tr>
+      <td class="l">~</td>
+      <td class="m"><img src="../images/gameflag-Sacrifice.png" alt=""/></td>
+      <td class="r">Sacrifice</td>
+    </tr>
+    <tr>
+      <td class="l">=</td>
+      <td class="m"><img src="../images/gameflag-Defense.png" alt=""/></td>
+      <td class="r">Defense</td>
+    </tr>
+    <tr>
+      <td class="l">M</td>
+      <td class="m"><img src="../images/gameflag-Material.png" alt=""/></td>
+      <td class="r">Material</td>
+    </tr>
+    <tr>
+      <td class="l">P</td>
+      <td class="m"><img src="../images/gameflag-Piece-Play.png" alt=""/></td>
+      <td class="r">Piece Play</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+The CQL editor provides a feature for the input of game markers.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:hasmarkers</span> wb
+</code></div>
+
+<p>
+Search for games with marker <i>White Opening</i>
+or <i>Black Opening</i> (or both).
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:hasmarkers</span>
+</code></div>
+
+<p>
+Search for games with any marker set; this means games without any
+game marker are excluded.
+</p>
+
+<h3 id="match:hasspecialmarkers">:hasspecialmarkers&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games which has one of the special markers set specified in the given
+comma-separated list.
+</p>
+
+<p>
+A special marker is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>deleted</code></span></td>
+      <td class="m"><img src="../images/gameflag-Deleted.png" alt=""/></td>
+      <td class="r">Game marked for deletion</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalmove</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Move.png" alt=""/></td>
+      <td class="r">Game contains illegal castling move.</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>illegalcastling</code></span></td>
+      <td class="m"><img src="../images/gameflag-Illegal-Castling.png" alt=""/></td>
+      <td class="r">Game contains illegal castling.</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Note that <span style='white-space:nowrap;'><code>illegalmove</code></span> is not including illegal castlings.
+The CQL editor provides a feature for the input of special markers.
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a> (match <span class='keyword'>:hasspecialmarkers</span> illegalmove)
+</code></div>
+
+<p>
+Search for games without illegal moves, but illegal castling moves are allowed.
+</p>
+
+<h3 id="match:plycount">:plycount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games with a ply count between the given range
+(&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:plycount</span> 40 60
+</code></div>
+
+<p>
+This is matching short games, with no less than 20 moves, and no
+more than 30 moves.
+</p>
+
+<h3 id="match:result">:result</h3>
+
+<p>
+Match all games where the result of the game is matching one of the results in the
+given comma-separated list.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+The CQL standard does allow only a single result as parameter.
+</p>
+
+<p>
+Result is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>1/2</code></span></td>
+      <td class="r">drawn game</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>1-0</code></span></td>
+      <td class="r">game in which white wins</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>0-1</code></span></td>
+      <td class="r">game in which black wins</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>0-0</code></span></td>
+      <td class="r">game lost for both players (not part of CQL standard)</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>*</code></span></td>
+      <td class="r">game with unknown result (not part of CQL standard)</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+The parameter <span style='white-space:nowrap;'><code>1/2</code></span> may be written-out with <span style='white-space:nowrap;'><code>1/2-1/2</code></span>.
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:result</span> 1/2
+</code></div>
+
+<p>
+Match all drawn games.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:result</span> 1-0,0-1
+</code></div>
+
+<p>
+Match all games in which one side has won. This example is not conform
+to the CQL standard.
+</p>
+
+<h3 id="match:termination">:termination&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Match all games where the termination reason is matching one of
+the reasons in the given comma-separated list.
+</p>
+
+<p>
+The termination reason is one of:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unknown</code></span></td>
+      <td class="m"></td>
+      <td class="r">Termination reason is unknown</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Normal.png" alt=""/></td>
+      <td class="r">Game terminated in a normal fashion</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unplayed</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Unplayed.png" alt=""/></td>
+      <td class="r">Game is unplayed</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>abandoned</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Abandoned.png" alt=""/></td>
+      <td class="r">Game is abandoned</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>adjudication</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Adjudication.png" alt=""/></td>
+      <td class="r">Adjudication</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>disconnection</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Disconnection.png" alt=""/></td>
+      <td class="r">Disconnection</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>emergency</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Emergency.png" alt=""/></td>
+      <td class="r">Abandoned due to an emergency</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>rulesinfraction</code></span></td>
+      <td class="m"><img src="../images/termination_reason_RulesInfraction.png" alt=""/></td>
+      <td class="r">Decided due to a rules infraction</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>timeforfeit</code></span></td>
+      <td class="m"><img src="../images/termination_reason_TimeForfeit.png" alt=""/></td>
+      <td class="r">One or both players forfeits on time</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>unterminated</code></span></td>
+      <td class="m"><img src="../images/termination_reason_Unterminated.png" alt=""/></td>
+      <td class="r">Unterminated</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:termination</span> unknown,normal
+</code></div>
+
+<p>
+Search all games where it is not known that the game did not terminate
+in an abnormal fashion.
+</p>
+
+<h3 id="match:variant">:variant&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Only search in games matching any <a href="Chess-Variants.html">chess variant</a>
+in given comma-separated list.
+</p>
+
+<p>
+Supported variants are:
+</p>
+
+<div class="dir">
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>normal</code></span></td>
+      <td class="r">Normal Chess</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>threecheck</code></span></td>
+      <td class="r">Three-check Chess</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>crazyhouse</code></span></td>
+      <td class="r">Crazyhouse Chess</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>suicide</code></span></td>
+      <td class="r">Suicide</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>giveaway</code></span></td>
+      <td class="r">Giveaway</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>losers</code></span></td>
+      <td class="r">Losers</td>
+    </tr>
+  </table>
+</div>
+
+<p>
+Example:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:variant</span> suicide,giveaway,losers
+</code></div>
+
+<p>
+Restrict the search to Antichess games.
+</p>
+
+<h3 id="match:year">:year</h3>
+
+<p>
+This takes a range specifier denoting the range of years that the game must match
+(&#x21d2; <a href="CQL-Range-Specifiers.html">range specifiers</a>).
+</p>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:year</span> 2000<br/>
+<span class='keyword'>:year</span> 2000 2010
+</code></div>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:date"><span style='white-space:nowrap;'>:date</span></a>.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="data">Game data search related keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:comment">:comment</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasannotation">:hasannotation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hascomments">:hascomments</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:hasvariations">:hasvariations</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:ischess960">:ischess960</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:isshufflechess">:isshufflechess</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:startposition">:startposition</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:comment">:comment&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search all games containing at least one comment with a sub-string which
+is matching the given pattern.
+For pattern matching see <a href="Pattern-Matching.html">Pattern Matching</a>.
+The pattern must be enclosed in double quotes.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:comment</span> "decisive game"
+</code></div>
+
+<p>
+This will find a game, for example, which contains the commentary
+"This decisive game started with a suprise.".
+</p>
+
+<h3 id="match:hasannotation">:hasannotation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for annotated games (does not include comments).
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>, <a href="CQL-Match-List.html#match:hasvariations"><span style='white-space:nowrap;'>:hasvariations</span></a>.
+</p>
+
+<h3 id="match:hascomments">:hascomments&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for commented games. Note that a commented game must not have
+an annotator (&#x21d2; <a href="CQL-Match-List.html#match:annotator"><span style='white-space:nowrap;'>:annotator</span></a>).
+</p>
+
+See also: <a href="CQL-Match-List.html#match:hasannotation"><span style='white-space:nowrap;'>:hasannotation</span></a>, <a href="CQL-Match-List.html#match:hasvariations"><span style='white-space:nowrap;'>:hasvariations</span></a>.
+
+<h3 id="match:hasvariations">:hasvariations&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games containing sub-variations.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:hasannotation"><span style='white-space:nowrap;'>:hasannotation</span></a>, <a href="CQL-Match-List.html#match:hascomments"><span style='white-space:nowrap;'>:hascomments</span></a>.
+</p>
+
+<h3 id="match:ischess960">:ischess960&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games starting with a Chess 960 position.
+This includes the standard start position.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:isshufflechess"><span style='white-space:nowrap;'>:isshufflechess</span></a>.
+</p>
+
+<h3 id="match:isshufflechess">:isshufflechess&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Search for games starting with a Shuffle Chess position.
+This includes Chess 960 positions.
+</p>
+
+<p>
+See also: <a href="CQL-Match-List.html#match:ischess960"><span style='white-space:nowrap;'>:ischess960</span></a>.
+</p>
+
+<h3 id="match:startposition">:startposition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+This will take a comma-separated list of start positions. A start
+position is either a position number, or a FICS variant identifier.
+</p>
+
+<p>
+If the position number is zero then games not beginning with a
+Shuffle Chess position will be matched. Otherwise the position
+number between 1 and 3840 is denoting a Shuffle Chess position.
+If the number is less or equal than 960 (but not null), then it
+is a Chess 960 position number. A special meaning has position
+number -1: this number is excluding Shuffle Chess positions and
+(supported) FICS variants (see below).
+</p>
+
+<p>
+The Shuffle Chess position number is derived from the Chess 960
+position number in the following way:
+</p>
+
+<ol style="margin-left: 0">
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is between the two rooks, and all castling rights
+    are given: this is a Chess 960 position. Thus the position
+    number is between 1 and 960.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is right from the rooks: the number for this Shuffle
+    Chess position is between 961 and 1920.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is left from the rooks: the number for this Shuffle
+    Chess position is between 1921 and 2880.
+  </li>
+  <li style="margin-top: 0.5em; margin-bottom: 0.5em;">
+    The king is between the two rooks, but no castling rights are
+    given: add 3&#x00d7;960 to the corresponding Chess 960 position,
+    thus the position number is between 2881 and 3840.
+  </li>
+</ol>
+
+<p>
+For chess variants Suicide and
+Giveaway a special rule applies: in this case a position
+number N is also matching <span style='white-space:nowrap;'>N&#x2212;3&#x00d7;960</span>, if
+<span style='white-space:nowrap;'>N &gt; 3&#x00d7;960</span>. This is simplifying the search for standard
+start positions; see example below. Note that a start position in these chess
+variants cannot have a position number equal or less than 960.
+</p>
+
+<p>
+It is also possible to specifiy a FICS variant identifier for
+the start position. The supported positions are:
+</p>
+
+<div class="dir">
+<table style="margin-top: 0.5em; margin-bottom: 0.5em;">
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/bishops-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>endings/kbbk</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/knights-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>endings/kbnk</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/little-game</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>pawns/pawns-only</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/no-queens</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>pawns/wild-five</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/pawns-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/19</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/pyramid</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/5</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/queen-rooks</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code>wild/8</code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/queens-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/rooks-only</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
+  </tr>
+  <tr>
+    <td><span style='white-space:nowrap;'><code>misc/runaway</code></span></td>
+    <td><span style='white-space:nowrap;'><code>&#x2001;</code></span></td>
+    <td><span style='white-space:nowrap;'><code></code></span></td>
+  </tr>
+</table>
+</div>
+
+<p>
+Examples:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 518
+</code></div>
+
+<p>
+Search for games beginning with a standard start position. In case
+of chess variants Suicide and
+Giveaway this will also match position
+number 3398 (this is the standard start position for
+Suicide and Giveaway games).
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 518,3398
+</code></div>
+
+<p>
+Search for games beginning with a standard start position, with or
+without castling rights. Here the search will also find in
+Normal Chess the start position 3398, in contrast
+to preceding example.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> misc/runaway
+</code></div>
+
+<p>
+Search for games with FICS variant <span style='white-space:nowrap;'><code>misc/runaway</code></span>.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> 0 <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>
+</code></div>
+
+<p>
+Search for games beginning with any start position: this means
+that the first game position of these games must be a Shuffle Chess
+position.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:startposition</span> -1 <a href="CQL-Match-List.html#match:not"><span style='white-space:nowrap;'>:not</span></a>
+</code></div>
+
+<p>
+Search for games beginning with any supported start position:
+this means that the first game position in these games is either a
+Shuffle Chess position, or a (supported) FICS variant.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="tagging">Tagging related keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:forany">:forany</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:forany">:forany</h3>
+
+<p>
+This takes two parameters, a tag name and a piecetype designator.
+This feature is described on page <a href="CQL-Tagging">Tagging</a>.
+</p>
+
+<!-- ############################################################################## -->
+<h2 id="meaningless">Meaningless keywords</h2>
+<!-- ############################################################################## -->
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#match:output">:output</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#match:pgn">:pgn</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="match:output">:output</h3>
+
+<p>
+This takes one parameter which denotes the name of a file.
+</p>
+
+<p>
+This keyword is supported to be compatible with CQL standard, and does
+not have any meaning in Scidb.
+</p>
+
+<h3 id="match:pgn">:pgn</h3>
+
+<p>
+This takes one parameter which denotes the name of a file.
+</p>
+
+<p>
+This keyword is supported to be compatible with CQL standard, and does
+not have any meaning in Scidb.
+</p>
+
+</body>
+</html>

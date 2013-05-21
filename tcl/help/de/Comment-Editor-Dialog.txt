@@ -114,7 +114,7 @@ wird verwendet) gehen alle Formatierungen verloren.
 
 <ul>
   <li><a href="#Text:Control">Steuerung im Textfeld</a></li>
-  <li><a href="#Text:Emoticons">Smileys</a> <img src="../images/smiley.png" /></li>
+  <li><a href="#Text:Emoticons">Smileys</a></li>
   <li><a href="#Text:Menu">Kontextsensitives Menü</a></li>
 </ul>
 
@@ -593,12 +593,13 @@ Nachfolgende Tastaturkürzel dienen zum Einfügen einer Figur:
 
 INCLUDE ../Comment-Editor-Pieces.txt
 
-<h3 id="Text:Emoticons">Smileys <img src="../images/smiley.png" /></h3>
+<h3 id="Text:Emoticons">Smileys</h3>
 
 <p>
 Der Editor erkennt Smileys, sofern die Erkennung vom Smileys im Partieeditor
 eingeschaltet ist, d.h. das textuelle Smiley-Codes &ndash; wie z.B.
-<expr>:-)</expr> &ndash; mit dem entsprechenden Piktogramm angezeigt werden,
+<expr>:-)</expr> &ndash; mit dem entsprechenden Piktogramm
+(z.B. <img src="../images/smiley.png" />) angezeigt werden,
 sofern eine Erkennung möglich war. Dazu muss allerdings auch die Anzeige von
 Smileys im Kommentareditor eingeschaltet sein (<see/>
 <a href="#Menu">Kontextsensitives Menü</a>). Die Eingabe eines Smileys erfolgt

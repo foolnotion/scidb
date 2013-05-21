@@ -1,0 +1,2906 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/de/CQL-Position-List.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='de'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="de" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Hilfe: CQL - Die Positionsliste</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Die Positionsliste</h1>
+</div>
+
+<p>
+Das Symbol <img src="../images/ft-scidb-tiny.png" alt="" /> im Titel einer
+Schlüsselwortdefinition kennzeichnet, daß dieses Schlüsselwort eine
+Erweiterung ist, also nicht zum CQL-Standard gehört.
+</p>
+
+<p>
+Die Schlüsselwörter <a href="CQL-Position-List.html#position:castling"><span style='white-space:nowrap;'>:castling</span></a>, <a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>,
+<a href="CQL-Position-List.html#position:inside"><span style='white-space:nowrap;'>:inside</span></a>, and <a href="CQL-Position-List.html#position:reset"><span style='white-space:nowrap;'>:reset</span></a> sind von Chess
+Assistant 9 entlehnt worden. Die Beschreibung dieser Schlüsselwörter entstammt
+dem Dokument <a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#index">Index</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#logical">Schlüsselwörter für die Kontrolllogik</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#simple">Einfache Schlüsselwörter</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#transform">Transformierende Schlüsselwörter</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#piece">Schlüsselwörte für die Figurenanalyse</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#move">Schlüsselwörter für die Zuganalyse</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#sequence">Schlüsselwörter für Sequenzen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#game">Schlüsselwörter für die Partieinformationen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#relation">Relationen zwischen den Positionen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#matching">Schlüsselwörter zur Zählung</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#evaluation">Schlüsselwörter für die Stellungsbeurteilung</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#accumulator">Schlüsselwörter für Akkumulationen</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#tagging">Schlüsselwörter für das Markieren</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#control">Schlüsselwörter für die Steuerung</a></td></tr>
+  </table>
+</li></ul>
+
+<h2 id="index">Index</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:accumulate">:accumulate</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:halfmoveclocklimit">:halfmoveclocklimit</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:and">:and</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:inside">:inside</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:promote">:promote</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:ray">:ray</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:blackcannotwin">:blackcannotwin</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:losing">:losing</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:markall">:markall</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:btm">:btm</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:mate">:mate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:castling">:castling</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:matingmaterial">:matingmaterial</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:check">:check</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:maxswapevaluation">:maxswapevaluation</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:relation">:relation</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:moveevaluation">:moveevaluation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:reset">:reset</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:cut">:cut</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:result">:result</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:moveto">:moveto</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:sequence">:sequence</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shift">:shift</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nocastling">:nocastling</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:endmost">:endmost</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:evaluation">:evaluation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:exchangeevaluation">:exchangeevaluation</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:exclude">:exclude</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nolosing">:nolosing</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomate">:nomate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flip">:flip</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomatingmaterial">:nomatingmaterial</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:variant">:variant</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:not">:not</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:or">:or</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:piececount">:piececount</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:following">:following</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:power">:power</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:gameisover">:gameisover</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
+    </tr>
+    <tr>
+    	<td>      &#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:preceding">:preceding</a></td>
+    </tr>
+  </table>
+</li></ul>
+
+<h2 id="logical">Schlüsselwörter für die Kontrolllogik</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:and">:and</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:not">:not</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:or">:or</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:and">:and&emsp;<span class='normal'>(und)</span></h3>
+
+<p>
+Erwartet eine Liste von Positionslisten, und filtert genau dann eine Position,
+wenn jede von ihnen diese Position filtert.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>
+  <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>
+  <span class='keyword'>:and</span> (
+    (position <span class='piece'>&#x2654;</span>e2 <span class='piece'>&#x265a;</span>g2 <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>)
+    (position <span class='piece'>&#x2658;</span>e2)))<!--
+--></code></pre></div>
+
+<p>
+Filtert Positionen in denen die Könige in Opposition stehen, ein Springer auf
+e2 platziert ist, und der weiße König steht im Schach.
+</p>
+
+<h3 id="position:not">:not&emsp;<span class='normal'>(nicht)</span></h3>
+
+<p>
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+Im ersten Fall filtert dieses Schlüsselwort, wenn die Positionsliste ohne dieses
+Schlüsselwort nicht filtern würde. Im zweiten Fall: das Resultat des
+Arguments wird negiert. Die erste Form ist konform mit dem CQL-Standard des
+Schlüsselwortes <span style='white-space:nowrap;'>:not</span>, die zweite Form ist eine Erweiterung.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    ; <span class='comment'>wir suchen für beide Seiten</span>
+    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>
+    <span class='comment'>; die Mattposition muß alle folgenden Kriterien erfüllen</span>
+    <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> (
+      <span class='comment'>; der König ist von Leerfeldern umgeben, wird einmal</span>
+      <span class='comment'>; attackiert, und ist matt</span>
+      (position
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> . 8
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> A <span class='piece'>&#x265a;</span> 1
+        <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
+        <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
+      <span class='comment'>; überprüfe daß kein Nachbar des schwarzen Königs</span>
+      <span class='comment'>; mehr als einmal attackiert wird</span>
+      (position
+        <span class='keyword'>:not</span>
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x265a;</span> .e4 1
+        <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> A .e4 2 unlimited
+        <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>))))<!--
+--></code></pre></div>
+
+<p>
+Dies findet alle Idealmatts: Studien in denen der König von Leerfeldern
+umgeben ist und genau einmal angegriffen wird, so daß er auf einem
+Nachbarsfeld ebenfalls genau einmal angegriffen wäre.
+</p>
+
+<p>
+Die folgende Positionsliste
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>a3 <span class='keyword'>:not</span>)
+</code></div>
+
+<p>
+ist equivalent zu
+</p>
+
+<div class='verb'><code>
+(position [a<span class='piece'>&#x2655;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x2659;</span><span class='piece'>&#x2654;</span>.]a3)
+</code></div>
+
+<h3 id="position:or">:or&emsp;<span class='normal'>(oder)</span></h3>
+
+<p>
+Erwartet eine Liste von Positionslisten, und filter genau dann eine Position,
+wenn mindestens eine von ihnen diese Position filtert.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    <span class='keyword'>:or</span> (
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
+        <span class='piece'>&#x2657;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
+        <span class='piece'>&#x265d;</span>[a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,d6,d8,e1,
+        e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2 9)
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
+        <span class='piece'>&#x265d;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9)
+      (position <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a>
+        <span class='piece'>&#x2657;</span>[a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,d5,d7,e2,
+        e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2 9))))<!--
+--></code></pre></div>
+
+<p>
+Suche nach Partien, die Positionen mit zwei gleichfarbigen Läufern auf einer
+Seite beinhalten.
+</p>
+
+<h2 id="simple">Einfache Schlüsselwörter</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:blackcannotwin">:blackcannotwin</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:matingmaterial">:matingmaterial</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:btm">:btm</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:noannotate">:noannotate</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:castling">:castling</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nocheck">:nocheck</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:check">:check</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nocontactcheck">:nocontactcheck</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:checkcount">:checkcount</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nodoublecheck">:nodoublecheck</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:contactcheck">:contactcheck</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:noendgame">:noendgame</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:doublecheck">:doublecheck</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomate">:nomate</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:endgame">:endgame</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:nomatingmaterial">:nomatingmaterial</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:fen">:fen</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:nostalemate">:nostalemate</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:fiftymoverule">:fiftymoverule</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:repetition">:repetition</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:gameisover">:gameisover</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:stalemate">:stalemate</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:halfmoveclocklimit">:halfmoveclocklimit</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:terminal">:terminal</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:initial">:initial</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variations">:variations</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:losing">:losing</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:variationsonly">:variationsonly</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:markall">:markall</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whitecannotwin">:whitecannotwin</a></td>
+    </tr>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:mate">:mate</a></td>
+    	<td>&emsp;&#x2022;</td><td><a href="#position:wtm">:wtm</a></td>
+    </tr>
+  </table>
+</li></ul>
+
+<h3 id="position:blackcannotwin">:blackcannotwin&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Schwarz kann nicht gewinnen)</span></h3>
+
+<p>
+Filtere nur dann wenn der schwarze Spieler keine Gewinnmöglichkeit mehr hat.
+</p>
+
+<p>
+Normalerweise ist dies equivalent zu folgender Abfrage:
+</p>
+
+<div class='box'><pre><code><!--
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+  <span class='comment'>; nur schwarzer König</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> a 1)
+  <span class='comment'>; nur schwarzer König und schwarze Leichtfigur</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> a 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> i 1))<!--
+--></code></pre></div>
+
+<p>
+In der Schachform Dreimal-Schach filtert die Suche
+mit <span style='white-space:nowrap;'>:blackcannotwin</span> nur dann, wenn Schwarz nur noch den König
+besitzt, und in allen anderen Schachformen hat dieses Schlüsselwort keine
+Bedeutung und ist immer erfolglos.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:whitecannotwin"><span style='white-space:nowrap;'>:whitecannotwin</span></a>
+</p>
+
+<h3 id="position:btm">:btm&emsp;<span class='normal'>(Schwarz am Zug)</span></h3>
+
+<p>
+Filtere nur wenn Schwarz am Zug ist.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>.
+</p>
+
+<h3 id="position:check">:check&emsp;<span class='normal'>(Schachgebot)</span></h3>
+
+<p>
+Eine Seite befindet sich im Schach.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>, <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
+</p>
+
+<h3 id="position:checkcount">:checkcount&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Schachgebotszähler)</span></h3>
+
+<p>
+Ist das Argument ein einzelner Wert (zwischen 0 und 3 ist erlaubt),
+dann werden alle Positionen gefiltert, in denen der letzte Zug der anderen
+Seite zum n-ten mal Schach bot.
+</p>
+
+<p>
+Hat der Parameter die Form <span style='white-space:nowrap;'><code>+&lt;n<sub>1</sub>&gt;+&lt;n<sub>2</sub>&gt;</code></span>,
+wobei <span style='white-space:nowrap;'><code>&lt;n<sub>i</sub>&gt;</code></span> ein Wert zwischen 0 und 3 ist, so wird
+die erste Position gefiltert, in der Weiß dem Schwarzen <span style='white-space:nowrap;'>n<sub>1</sub></span>
+Schachgebote gab, und Schwarz dem Weißen <span style='white-space:nowrap;'>n<sub>2</sub></span> Schachgebote.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Diese Abfrage ist nur sinnvoll in der Schachform Dreimal-Schach,
+in allen anderen Schachformen schlägt diese Abfrage immer fehl (ausgenommen
+alle Parameterwerte sind Null).
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:checkcount</span> 2)
+</code></div>
+
+<p>
+Filtere sobald eine der Seiten dem anderen sein zweites Schach bot.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:checkcount</span> +0+3)
+</code></div>
+
+<p>
+Filtere wenn Schwarz dem weißen König zum dritten Mal Schach bot. Dies kann nur
+eine Endstellung sein.
+</p>
+
+<div class='verb'><code>
+(position <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a> <span class='keyword'>:checkcount</span> +0+0)
+</code></div>
+
+<p>
+Dies isr tatsächlich eine sinnvolle Abfrage. Wir nehmen an, daß eine
+der Partien mit folgender Position beginnt (beschrieben mit der
+<a href="FEN.html">Forsyth-Edwards-Notation</a>):
+</p>
+
+<ul style='list-style-type: none'><li><code>
+rnb1k1nr/pppp1ppp/8/4p3/3PP2q/2N5/PP3PPP/R1BQKBNR w KQkq - 1 5 +0+2
+</code></li></ul>
+
+<p>
+Diese Partie würde gefiltert werden (das Schlüsselwort <span style='white-space:nowrap;'>:not</span> ist zu
+beachten), denn Schwarz hat dem weißen König bereits zweimal Schach geboten.
+Mit anderen Worten: diese Abfrage sucht nach Partien die mit einer
+fortgeschrittenen Stellung beginnen, wobei eine Seite der anderen bereits ein
+Schachgebot gab.
+</p>
+
+<h3 id="position:castling">:castling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Rochade)</span></h3>
+
+<p>
+Dieses Schlüsselwort spezifiziert die Rochademöglichkeiten beider Seiten.
+Es erwartet als Argument einen Figurenartbezeichner, wobei die Figurenarten
+folgende Bedeutung haben:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code><span class='piece'>&#x2654;</span></code></span></td>
+      <td class="r">Weiß besitzt das Recht zur kurzen Rochade</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span></code></span></td>
+      <td class="r">Weiß besitzt das Recht zur langen Rochade</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code><span class='piece'>&#x265a;</span></code></span></td>
+      <td class="r">Schwarz besitzt das Recht zur kurzen Rochade</td>
+    </tr>
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code><span class='piece'>&#x265b;</span></code></span></td>
+      <td class="r">Schwarz besitzt das Recht zur langen Rochade</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:castling</span> <span class='piece'>&#x2654;</span>)
+</code></div>
+
+<p>
+Weiß hast das Recht zu kurzen Rochade.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:castling</span> [<span class='piece'>&#x2654;</span><span class='piece'>&#x2655;</span>])
+</code></div>
+
+<p>
+Weiß has das Recht entweder für die kurze oder für die lange Rochade
+(aber nicht für beide).
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:castling</span> <span class='piece'>&#x2654;</span> <span class='keyword'>:castling</span> <span class='piece'>&#x2655;</span>)
+</code></div>
+
+<p>
+Weiß hat das Recht für kurze und lange Rochade.
+</p>
+
+<h3 id="position:contactcheck">:contactcheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Kontaktschachgebot)</span></h3>
+
+<p>
+Eine Seite befindet sich im Schach, und es ist ein Kontaktschachgebot
+(kein Zwischensetzen einer Figur möglich, auch nicht theoretisch).
+</p>
+
+<p>
+Dies ist equivalent zu:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a> <span class='comment'>; um Schlagschachpartien auszufiltern</span>
+  <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+    (position <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>)
+    (position <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> [<span class='piece'>&#x2658;</span><span class='piece'>&#x2659;</span>] <span class='piece'>&#x265a;</span> 1 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+    (position [<span class='piece'>&#x2655;</span><span class='piece'>&#x2656;</span>]d4 <span class='piece'>&#x265a;</span>[c4,e4,d3,d5] <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>)
+    (position [<span class='piece'>&#x2655;</span><span class='piece'>&#x2657;</span>]d4 <span class='piece'>&#x265a;</span>[c3,c5,e3,e5] <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>)))<!--
+--></code></pre></div>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>, <a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
+</p>
+
+<h3 id="position:doublecheck">:doublecheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Doppelschachgebot)</span></h3>
+
+<p>
+Eine Seite befindet sich im Schach, und es ist ein Doppelschachgebot.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
+</p>
+
+<h3 id="position:endgame">:endgame&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Endspiel)</span></h3>
+
+<p>
+Die Position ist eine Endspielposition. Dieses Schlüsselwort ist equivalent
+zur folgenden Abfrage:
+</p>
+
+<div class='box'><pre><code><!--
+-->  (position
+    <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+      (position
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>] 0 3
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 3)
+    (position
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265b;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>] 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 0 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> i 0 1)
+    (position
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2655;</span> 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2656;</span> 0
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 0 1
+      <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x265b;</span> 0
+      <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a> [<span class='piece'>&#x265c;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265e;</span>] 0 16
+      <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)))<!--
+--></code></pre></div>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:noendgame"><span style='white-space:nowrap;'>:noendgame</span></a>.
+</p>
+
+<h3 id="position:fen">:fen&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
+
+<p>
+Die Position ist identisch zur beschriebenen Position im Argument. Dieses
+Argument muß eine gültige <a href="FEN.html">FEN (Forsyth-Edwards-Notation)</a>
+sein.
+</p>
+
+<h3 id="position:fiftymoverule">:fiftymoverule&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Fünfzig-Züge-Regel)</span></h3>
+
+<p>
+Die erste Position in der Partie, in der in den letzten 50 aufeinanderfolgenden
+Zügen kein Stein geschlagen und auch kein Bauer gezogen wurde.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:halfmoveclocklimit"><span style='white-space:nowrap;'>:halfmoveclocklimit</span></a>.
+</p>
+
+<h3 id="position:gameisover">:gameisover&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Partie ist beendet)</span></h3>
+
+<p>
+Dies ist eine Kurzschreibweise für:
+</p>
+
+<div class='box'><pre><code><!--
+-->  <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+    (position <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
+    (position <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a>)
+    (position <a href="CQL-Position-List.html#position:losing"><span style='white-space:nowrap;'>:losing</span></a>)
+    (position <a href="CQL-Position-List.html#position:checkcount"><span style='white-space:nowrap;'>:checkcount 3</span></a>)
+    (position <a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>))<!--
+--></code></pre></div>
+
+<h3 id="position:initial">:initial&emsp;<span class='normal'>(Startposition)</span></h3>
+
+<p>
+Dies ist die erste Position in der Partie (vor dem ersten Zug).
+</p>
+
+<h3 id="position:halfmoveclocklimit">:halfmoveclocklimit&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Halbzugzähler)</span></h3>
+
+<p>
+Dieses Schlüsselwort filtert Positionen, in denen der Halbzugzähler kleiner
+oder gleich dem gegebenen Limit ist.
+</p>
+
+<p>
+Halbzugzähler: Das ist die Anzahl der Halbzüge seit dem letzten Zug, in dem
+ein Bauer zog oder eine Figur geschlagen wurde. Dieser Zähler entscheidet
+auch, ob eine Seite ein Remis reklamieren kann aufgrund der 50-Züge-Regel
+(&#x21d2; <a href="CQL-Position-List.html#position:fiftymoverule"><span style='white-space:nowrap;'>:fiftymoverule</span></a>).
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:halfmoveclocklimit</span> 30
+</code></div>
+
+<p>
+Schließe alle Positionen aus, in denen in mehr als 30 Halbzügen (15 Züge
+auf jeder Seite) kein Bauernzug erfolgte und auch kein Stein geschlagen
+wurde.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:fiftymoverule"><span style='white-space:nowrap;'>:fiftymoverule</span></a>.
+</p>
+
+<h3 id="position:losing">:losing&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Verlust)</span></h3>
+
+<p>
+Filtere nur Endstellungen, in denen eine der Seiten alle Figuren verlor.
+Dies ist nur in Schlagschachpartien möglich.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nolosing"><span style='white-space:nowrap;'>:nolosing</span></a>.
+</p>
+
+<h3 id="position:markall">:markall&emsp;<span class='normal'>(Alles markieren)</span></h3>
+
+<p>
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
+</p>
+
+<h3 id="position:mate">:mate&emsp;<span class='normal'>(Schachmatt)</span></h3>
+
+<p>
+Filtere nur dann, wenn es eine Mattstellung ist.
+</p>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Wenn nach Mattstellungen gesucht wird, dann sollte stets auch dieses
+Schlüsselwort mitverwendet werden auch wenn es aufgrund anderer
+Bedingungen überflüssig erscheint, denn es beschleunigt die Suche (nur
+Endstellungen werden geprüft).
+</div>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:mate</span> <a href="CQL-Position-List.html#position:movenumber"><span style='white-space:nowrap;'>:movenumber</span></a> 1 20)
+</code></div>
+
+<p>
+Filtere nur dann wenn eine Seite in den ersten 20 Zügen mattgesetzt wurde.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nomate"><span style='white-space:nowrap;'>:nomate</span></a>.
+</p>
+
+<h3 id="position:matingmaterial">:matingmaterial&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Mattmaterial)</span></h3>
+
+<p>
+Filtere Positionen, in denen einer der Spieler noch über Mattmaterial verfügt
+(&#x21d2; <a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>).
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nomatingmaterial"><span style='white-space:nowrap;'>:nomatingmaterial</span></a>.
+</p>
+
+<h3 id="position:noannotate">:noannotate&emsp;<span class='normal'>(nicht kommentieren)</span></h3>
+
+<p>
+Dieses Schlüsselwort wird unterstützt um kompatibel mit dem CQL-Standard
+zu sein, es hat jedoch keinerlei Bedeutung in Scidb.
+</p>
+
+<h3 id="position:nocheck">:nocheck&emsp;<span class='normal'>(kein Schachgebot)</span></h3>
+
+<p>
+Keine Seite befindet sich im Schach.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>,
+<a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>, <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>,
+<a href="CQL-Position-List.html#position:nocontactcheck"><span style='white-space:nowrap;'>:nocontactcheck</span></a>.
+</p>
+
+<h3 id="position:nocontactcheck">:nocontactcheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Kontaktschachgebot)</span></h3>
+
+<p>
+Keine Seite befindet sich im Schach, oder aber es ist kein
+Kontaktschachgebot (&#x21d2; <a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>).
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>, <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>,
+<a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a>, <a href="CQL-Position-List.html#position:nodoublecheck"><span style='white-space:nowrap;'>:nodoublecheck</span></a>,
+<a href="CQL-Position-List.html#position:contactcheck"><span style='white-space:nowrap;'>:contactcheck</span></a>.
+</p>
+
+<h3 id="position:nodoublecheck">:nodoublecheck&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Doppelschachgebot)</span></h3>
+
+<p>
+Keine der Seiten befindet sich im Schach, oder aber es ist kein
+Doppelschachgebot.
+</p>
+
+<h3 id="position:noendgame">:noendgame&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Endspiel)</span></h3>
+
+<p>
+Diese Position ist keine Endspielposition (&#x21d2;
+<a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>).
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>.
+</p>
+
+<h3 id="position:nomate">:nomate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Schachmatt)</span></h3>
+
+<p>
+Schließe alle Mattstellungen aus.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>.
+</p>
+
+<h3 id="position:nomatingmaterial">:nomatingmaterial&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Mattmaterial)</span></h3>
+
+<p>
+Filtere nur Position, in denen keiner der Spieler noch über Mattmaterial
+verfügt.
+</p>
+
+<p>
+Normalerweise ist dies equivalent zur folgenden Abfrage:
+</p>
+
+<div class='box'><pre><code><!--
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+  <span class='comment'>; König gegen König</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 2)
+  <span class='comment'>; König und Leichtfigur gegen König</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 3 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [Ii] 1)
+  <span class='comment'>; König and Läufer gegen König und Läufer,</span>
+  <span class='comment'>; beide Läufer entweder weiß- oder schwarzfeldrig</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 4
+   <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1,a3,a5,a7,b2,b4,b6,b8,c1,c3,c5,c7,d2,d4,
+     d6,d8,e1,e3,e5,e7,f2,f4,f6,f8,g1,g3,g5,g7,h2,h4,h6,h8] 2)
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> U 4
+   <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> [<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a2,a4,a6,a8,b1,b3,b5,b7,c2,c4,c6,c8,d1,d3,
+     d5,d7,e2,e4,e6,e8,f1,f3,f5,f7,g2,g4,g6,g8,h1,h3,h5,h7] 2))<!--
+--></code></pre></div>
+
+<p>
+In der Schachform Dreimal-Schach filtert die Suche
+mit <span style='white-space:nowrap;'>:nomatingmaterial</span> nur dann, wenn nur noch Könige auf dem
+Schachbrett sind, und in allen anderen Schachformen hat dieses Schlüsselwort
+keine Bedeutung und ist immer erfolglos.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:matingmaterial"><span style='white-space:nowrap;'>:matingmaterial</span></a>.
+</p>
+
+<h3 id="position:nostalemate">:nostalemate&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Patt)</span></h3>
+
+<p>
+Filtere nur Positionen in denen niemand patt ist.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a>,
+</p>
+
+<h3 id="position:repetition">:repetition&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Stellungswiederholung)</span></h3>
+
+<p>
+Filtere die erste Position in der Hauptvariante, die zum dritten Mal in der
+Partie wiederholt wurden, mit der gleichen Seite am Zug, und den gleichen
+Rochade- und en-passant-Rechten. Diese Wiederholung muß nicht aufeinanderfolgen.
+Dies stimmt mit der FIDE-Regelung der
+<a href="http://de.wikipedia.org/wiki/Stellungswiederholung">
+Stellungswiederholung<span class="awesome">&nbsp;&#xf08e;</span></a> überein.
+</p>
+
+<h3 id="position:stalemate">:stalemate&emsp;<span class='normal'>(Patt)</span></h3>
+
+<p>
+Filtert nur Pattstellungen.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nostalemate"><span style='white-space:nowrap;'>:nostalemate</span></a>,
+</p>
+
+<h3 id="position:terminal">:terminal&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Endstellung)</span></h3>
+
+<p>
+Dies ist die letzte Position in der Partie.
+</p>
+
+<h3 id="position:variations">:variations&emsp;<span class='normal'>(Varianten)</span></h3>
+
+<p>
+Ziehe die Untervarianten in die Suche mit ein. Ohne diese Angabe werden
+die Untervarianten bei der Suche ausgelassen.
+</p>
+
+<h3 id="position:variationsonly">:variationsonly&emsp;<span class='normal'>(Nur die Varianten)</span></h3>
+
+<p>
+Suche nur in den Untervarianten, nicht in der Hauptvariante.
+</p>
+
+<h3 id="position:whitecannotwin">:whitecannotwin&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Weiß kann nicht gewinnen)</span></h3>
+
+<p>
+Filtert nur dann wenn Weiß keine Gewinnmöglichkeit mehr hat.
+</p>
+
+<p>
+Normalerweise ist dies equivalent zur folgenden Abfrage:
+</p>
+
+<div class='box'><pre><code><!--
+--><a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+  <span class='comment'>; nur weißer König</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> A 1)
+  <span class='comment'>; nur weißer König und weiße Leichtfigur</span>
+  (<a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> A 2 <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> I 1))<!--
+--></code></pre></div>
+
+<p>
+In der Schachform Dreimal-Schach filtert die Suche
+mit <span style='white-space:nowrap;'>:whitecannotwin</span> nur dann, wenn Weiß nur noch den König
+besitzt, und in allen anderen Schachformen hat dieses Schlüsselwort keine
+Bedeutung und ist immer erfolglos.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:blackcannotwin"><span style='white-space:nowrap;'>:blackcannotwin</span></a>
+</p>
+
+<h3 id="position:wtm">:wtm&emsp;<span class='normal'>(Weiß am Zug)</span></h3>
+
+<p>
+Filtert nur wenn Weiß am Zug ist.
+</p>
+
+<h2 id="transform">Transformierende Schlüsselwörter</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:flip">:flip</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipcolor">:flipcolor</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdiagonal">:flipdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipdihedral">:flipdihedral</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:fliphorizontal">:fliphorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:flipvertical">:flipvertical</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:inside">:inside</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shift">:shift</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftdiagonal">:shiftdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shifthorizontal">:shifthorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftmaindiagonal">:shiftmaindiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftoffdiagonal">:shiftoffdiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:shiftvertical">:shiftvertical</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:flip">:flip&emsp;<span class='normal'>(Spiegelung)</span></h3>
+
+<p>
+Dies ist identisch zu <a href="CQL-Position-List.html#position:flipdihedral"><span style='white-space:nowrap;'>:flipdihedral</span></a> (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:flipcolor">:flipcolor&emsp;<span class='normal'>(Farbwechsel)</span></h3>
+
+<p>
+Die Farbwechseltransformation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:flipdiagonal">:flipdiagonal&emsp;<span class='normal'>(Diagonale Spiegelung)</span></h3>
+
+<p>
+Die diagonale und gegendiagonale Spiegelungstransformation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:flipdihedral">:flipdihedral&emsp;<span class='normal'>(Diedrische Transformation)</span></h3>
+
+<p>
+Die diedrische Transformation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:fliphorizontal">:fliphorizontal&emsp;<span class='normal'>(Horizontale Spiegelung)</span></h3>
+
+<p>
+Die horizontale Spiegelungstransformation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:flipvertical">:flipvertical&emsp;<span class='normal'>(Vertikale Spiegelung)</span></h3>
+
+<p>
+Die vertikale Spiegelungstransformation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:inside">:inside&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(innerhalb)</span></h3>
+
+<p>
+Dieses Schlüsselwort filtert Translationen, bei denen die involvierten Figuren
+innerhalb einer bestimmten Region auf dem Schachbrett verbleiben. Es werden
+zwei Argumente erwartet, ein Figurenbezeichner und ein Felderbezeichner.
+Jegliche Translation beinflußt nur das erste Argument. Eine Translation wird
+von der <span style='white-space:nowrap;'>:inside</span>-Beschränkung gefiltert, wenn mindestens eine Figur,
+die mit dem ersten Argument bezeichnet wird (wobei die Transformation mit
+einbezogen ist), auf einem Feld steht das vom zweiten Argument bezeichnet wird.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<p>
+Wir formulieren die folgende Abfrage um Trippelbauern aufzufinden:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 3
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
+--></code></pre></div>
+
+<p>
+Um Trippelbauern auf der Hauptdiagonalen (a1-h8) aufzufinden, erweitern
+wir diese Abfrage:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='keyword'>:inside</span> <span class='piece'>&#x2659;</span>[b2-7] [b2,c3,d4,e5,f6,g7]
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>[b2-7] 3
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
+--></code></pre></div>
+
+<h3 id="position:shift">:shift&emsp;<span class='normal'>(Translation)</span></h3>
+
+<p>
+Die Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:shiftdiagonal">:shiftdiagonal&emsp;<span class='normal'>(Diagonale Translation)</span></h3>
+
+<p>
+Die hauptdiagonale und gegendiagonale Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:shifthorizontal">:shifthorizontal&emsp;<span class='normal'>(Horizontale Translation)</span></h3>
+
+<p>
+Die horizontale Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:shiftmaindiagonal">:shiftmaindiagonal&emsp;<span class='normal'>(Hauptdiagonale Translation)</span></h3>
+
+<p>
+Die hauptdiagonale Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:shiftoffdiagonal">:shiftoffdiagonal&emsp;<span class='normal'>(Gegendiagonale Translation)</span></h3>
+
+<p>
+Die gegendiagonale Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h3 id="position:shiftvertical">:shiftvertical&emsp;<span class='normal'>(Vertikale Translation)</span></h3>
+
+<p>
+Die vertikale Translation (&#x21d2;
+<a href="CQL-Transformations.html">Transformationen</a>).
+</p>
+
+<h2 id="piece">Schlüsselwörter für die Figurenanalyse</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:attackcount">:attackcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piececount">:piececount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:power">:power</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:powerdifference">:powerdifference</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:ray">:ray</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayattack">:rayattack</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:raydiagonal">:raydiagonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayhorizontal">:rayhorizontal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayorthogonal">:rayorthogonal</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:rayvertical">:rayvertical</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:attackcount">:attackcount&emsp;<span class='normal'>(Angriffs-Zähler)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet als Argumente zwei Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Der erste
+ist der Figurenbezeichner der attackierenden Figuren, der zweite ist
+der Figurenbezeichner der angegriffenen Figuren. Ein Angriff einer Figur
+auf ein Feld liegt vor, wenn die bezeichnete Figur auf dieses Feld ziehen kann.
+<span style='white-space:nowrap;'>:attackcount</span> zählt alle gültigen Züge (Angriffe), deren Ausgangsfeld
+vom ersten Argument bezeichnet wird, und deren Zielfeld vom zweiten Argument
+bezeichnet
+wird.
+</p>
+
+<p>
+<img src="../images/gameflag-Illegal-Move.png" alt="" />
+<a href="http://www.rbnn.com/cql/" target="blank_">CQL Manual<span class="awesome">&nbsp;&#xf08e;</span></a> sagt aus:
+"disregarding any possible checks"; dies ergibt keinen Sinn.
+</p>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:attackcount</span> filtert eine Position, wenn die
+Gesamtzahl aller gültigen Angriffe in dieser Position innerhalb der gegebenen
+Bereichsangabe liegt.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:attackcount</span> A <span class='piece'>&#x265a;</span> 2)
+</code></div>
+
+<p>
+Filtert jede Position mit einem Doppelangriff weißer Figuren auf den
+schwarzen König (jedoch sollte für diese Abfrage
+<a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a> in Verbindung mit <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>
+vorgezogen werden).
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:attackcount</span> A <span class='piece'>&#x265a;</span> 2 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+</code></div>
+
+<p>
+Filtert jede Position mit einem Doppelangriff auf einen König
+(auch hier sollte <a href="CQL-Position-List.html#position:doublecheck"><span style='white-space:nowrap;'>:doublecheck</span></a> vorgezogen werden).
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:attackcount</span> A .h3 1)
+</code></div>
+
+<p>
+Filtert eine Position, in der genau eine weiße Figur auf das freie Feld h3
+ziehen kann.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:attackcount</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span>][a-c8] ??1 5 9
+</code></div>
+
+<p>
+Filtert eine Position, in der die Anzahl der Möglichkeiten, daß ein weißer
+Turm oder ein weißer Läufer auf den Feldern a8, b8, oder c8 auf ein Feld
+der ersten Reihe ziehen kann, zwischen 5 und 9 liegt (inklusive).
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:attackcount</span> <span class='piece'>&#x265e;</span> [<span class='piece'>&#x2654;</span><span class='piece'>&#x2656;</span><span class='piece'>&#x2655;</span>] 3 unlimited)
+</code></div>
+
+<p>
+Filtert eine Position, in der es genau drei Möglichkeiten gibt, daß ein
+schwarzer Springer den weißen König oder eine weiße Schwerfigur attackiert.
+</p>
+
+<h3 id="position:piececount">:piececount&emsp;<span class='normal'>(Figurenzähler)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert
+eine Position genau dann, wenn die Anzahl der Vorkommen einer bezeichneten
+Figur in dieser Position innerhalb der gegebenen Bereichsangabe liegt.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:piececount</span> <span class='piece'>&#x2656;</span> 2)
+</code></div>
+
+<p>
+Dies wird jede Position filtern mit exakt zwei weißen Türmen - eine Position
+mit drei weißen Türmen würde nicht gefiltert werden.
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='piece'>&#x2658;</span>d4
+  <span class='keyword'>:piececount</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>][a1-8] 1 3
+  <span class='keyword'>:piececount</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>][a-h8] 4)<!--
+--></code></pre></div>
+
+<p>
+Dies wird jede Position filtern mit einem weißen Springer auf d4, ein bis drei
+Türmen auf eine Linie, und exakt vier Damen auf der achten Reihe. Ein alternative
+Schreibweise dieser Abfrage ist:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='piece'>&#x2658;</span>d4
+  <span class='keyword'>:piececount</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>][a?] 1 3
+  <span class='keyword'>:piececount</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>][?8] 4)<!--
+--></code></pre></div>
+
+<h3 id="position:power">:power&emsp;<span class='normal'>(Figurenpotential)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es wird
+jede Position gefiltert, in der das Gesamtfigurenpotential in dieser Position
+innerhalb der gegebenen Bereichsangabe liegt. Das Potential einer Figur
+ist sein Materialwert, abhängig von der
+<a href="Chess-Variants.html">Schachform</a>:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table cellpadding="3">
+    <tr>
+      <td align="right"></td>
+      <td align="right"><span class='chess'>&#x2654;</span></td>
+      <td align="right"><span class='chess'>&#x2655;</span></td>
+      <td align="right"><span class='chess'>&#x2656;</span></td>
+      <td align="right"><span class='chess'>&#x2657;</span></td>
+      <td align="right"><span class='chess'>&#x2658;</span></td>
+      <td align="right"><span class='chess'>&#x2659;</span></td>
+    </tr>
+    <tr>
+      <td>Normalschach, Dreimal-Schach&emsp;</td>
+      <td align="right"> 0</td>
+      <td align="right"> 9</td>
+      <td align="right"> 5</td>
+      <td align="right"> 3</td>
+      <td align="right"> 3</td>
+      <td align="right"> 1</td>
+    </tr>
+    <tr>
+      <td>Einsetzschach, Tandemschach&emsp;</td>
+      <td align="right"> 0</td>
+      <td align="right"> 5</td>
+      <td align="right"> 3</td>
+      <td align="right"> 3</td>
+      <td align="right"> 3</td>
+      <td align="right"> 1</td>
+    </tr>
+    <tr>
+      <td>Losers&emsp;</td>
+      <td align="right"> 0</td>
+      <td align="right"> 5</td>
+      <td align="right"> 4</td>
+      <td align="right"> 3</td>
+      <td align="right"> 4</td>
+      <td align="right"> 1</td>
+    </tr>
+    <tr>
+      <td>Suicide, Giveaway&emsp;</td>
+      <td align="right">30</td>
+      <td align="right"> 3</td>
+      <td align="right"> 9</td>
+      <td align="right"> 0</td>
+      <td align="right"> 9</td>
+      <td align="right"> 1</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:power</span> a 6)
+</code></div>
+
+<p>
+Dies wird Positionen finden deren Gesamtfigurenpotential aller schwarzen
+Figuren genau den Wert 6 hat.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:power</span> A[a-h1-4] 10 25)
+</code></div>
+
+<p>
+Dies wird Positionen finden deren Gesamtfigurenpotential aller weißen
+Figuren in der weißen Hälfte einen Wert zwischen 10 und 25 aufweist (inklusive).
+</p>
+
+<h3 id="position:powerdifference">:powerdifference&emsp;<span class='normal'>(Figurenpotentialdifferenz)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet als Argument einen Figurenbezeichner, gefolgt
+von einer <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert
+Positionen in denen die Differenz des Figurenpotentials (&#x21d2;
+<a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>) der weißen und schwarzen Figuren, die vom ersten
+Argument bezeichnet werden, innerhalb der gegebenen Bereichsangabe liegt.
+D.h. das Figurenpotential aller bezeichneten weißen Figuren minus dem
+Figurenpotential aller bezeichneten schwarzen Figuren muß innerhalb der
+Bereichsangabe liegen.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:powerdifference</span> U 4)
+</code></div>
+
+<p>
+Dies filtert Positionen, in denen das Potential der weißen Figuren genau
+um 4 größer ist als das Potential der schwarzen Figuren.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span>] -5 10)
+</code></div>
+
+<p>
+Diese filtert Positionen, in denen Weiß ein Potential zwischen einem Turm
+Materialnachteil und zwei Türmen Materialvorteil besitzt.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x265c;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x2658;</span><span class='piece'>&#x265e;</span>] unlimited -2)
+</code></div>
+
+<p>
+Dies filtert Positionen, in denen Schwarz mindestens eine Qualität Vorteil hat.
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    <a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result</span></a> 1-0
+    <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a> (
+      (position
+        <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9
+        <span class='keyword'>:powerdifference</span> U unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9)
+      (position <span class='keyword'>:powerdifference</span> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] unlimited -9))
+    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+--></code></pre></div>
+
+<p>
+Dieses Beispiel zeigt eine Möglichkeit auf, wie mit Hilfe von
+<span style='white-space:nowrap;'>:powerdifference</span> nach Damenopfern gesucht wird. Eine Seite opfert
+eine Dame, und verbleibt mindestens 12 Züge lang mit mindestens 9 Bauern
+Materialnachteil, um letztendlich zu gewinnen.
+</p>
+
+<h3 id="position:ray">:ray&emsp;<span class='normal'>(Strahl)</span></h3>
+
+<p>
+Ein Strahl bezeichnet eine Liste von Figurenbezeichnern. Es ist eine
+zusammenhängende Menge von Feldern entweder auf einer Linie, einer Reihe,
+oder einer Diagonalen auf dem Schachbrett.
+</p>
+
+<p>
+Sei R ein Felderstrahl mit einer geordneten Menge von Feldern in einer
+zusammenhängenden Linie, Reihe, oder Diagonalen <span style='white-space:nowrap;'>S<sub>1</sub>,</span>
+<span style='white-space:nowrap;'>S<sub>2</sub>,</span> <span style='white-space:nowrap;'>...,</span> <span style='white-space:nowrap;'>S<sub>n</sub>.</span>
+Gegeben sei eine Strahlendefinition <span style='white-space:nowrap;'>(G<sub>1</sub>,</span>
+<span style='white-space:nowrap;'>G<sub>2</sub>,</span> <span style='white-space:nowrap;'>...,</span> <span style='white-space:nowrap;'>G<sub>k</sub>),</span>
+wobei jedes G einen Figurenbezeichner definiert. Der Felderstrahl R ist
+gültig in Bezug auf die gegebene Strahlendefinition wenn
+<span style='white-space:nowrap;'>G<sub>1</sub></span> eine Figur auf dem Feld <span style='white-space:nowrap;'>S<sub>1</sub></span>
+bezeichnet, <span style='white-space:nowrap;'>G<sub>k</sub></span> eine Figur auf dem Feld
+<span style='white-space:nowrap;'>S<sub>n</sub></span> bezeichnet, und wenn alle anderen
+<span style='white-space:nowrap;'>G<sub>i</sub></span> jeweils mit einem Feld einer Untermenge
+des Felderstrahls gepaart werden können ohne die Reihenfolge zu verletzen,
+so daß jedes <span style='white-space:nowrap;'>G<sub>i</sub></span> eine Figur auf dem zugeordneten Feld
+bezeichnet, und alle ungepaarten Felder leer sind.
+</p>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:ray</span> erwartet eine Strahlendefinition und eine
+optionale <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Wenn die
+Bereichsangabe nicht vorhanden ist, so wird <span style='white-space:nowrap;'><code>1</code>
+<code>unlimited</code></span> als Bereich angenommen. <span style='white-space:nowrap;'>:ray</span> filtert
+eine Position wenn die Anzahl der Felderstrahlen in dieser Position, die in
+Bezug auf die Strahlendefinition gültig sind, innerhalb der Bereichsangabe
+liegen.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:ray</span> (<span class='piece'>&#x265a;</span> <span class='piece'>&#x2655;</span>))
+</code></div>
+
+<p>
+Filtert eine Position, in der eine weiße Dame den schwarzen König attackiert.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:ray</span> (<span class='piece'>&#x2655;</span>a? <span class='piece'>&#x265e;</span> <span class='piece'>&#x265a;</span>[?4-8]))
+</code></div>
+
+<p>
+Filtert eine Position, in der eine weiße Dame auf der a-Linie einen schwarzen
+Springer fesselt, und der schwarze König auf den letzten vier Reihen steht.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:ray</span> (<span class='piece'>&#x2655;</span>a? <span class='piece'>&#x2655;</span>c? <span class='piece'>&#x2655;</span>e? <span class='piece'>&#x265a;</span>g?))
+</code></div>
+
+<p>
+Filtert entweder eine Position, in der alle drei weißen Damen und der schwarze
+König auf der gleichen Reihe stehen mit jeweils exakt einem Leerfeld zwischen
+diesen Figuren, oder eine Position, in der alle drei weißen Damen und der
+schwarze König eine Diagonale formen mit jeweils einem Leerfeld zwischen diesen
+Figuren, und die Damen stehen in beiden Fällen auf den a, c, und e-Linien.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:ray</span> (<span class='piece'>&#x2655;</span> <span class='piece'>&#x265e;</span> <span class='piece'>&#x265a;</span>) 2 4)
+</code></div>
+
+<p>
+Zwei bis vier schwarze Springer sind gefesselt.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:rayattack"><span style='white-space:nowrap;'>:rayattack</span></a>.
+</p>
+
+<h3 id="position:rayattack">:rayattack&emsp;<span class='normal'>(Strahlenangriff)</span></h3>
+
+<p>
+Hat die gleiche Syntax wie <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>. Es hat auch die gleiche
+Semantik, außer das nur orthogonale Strahlen, die auf einem Feld mit einer
+Schwerfigur starten, sowie diagonale Strahlen, die auf einem Feld mit einer
+Dame oder einem Läufer starten, eingeschlossen sind.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:rayattack</span> (A a <span class='piece'>&#x265a;</span>))
+</code></div>
+
+<p>
+Filtert eine Position, in der eine schwarze Figur gefesselt ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:rayattack</span> (Ad5 a [<span class='piece'>&#x265c;</span><span class='piece'>&#x265a;</span>][a-h1-4]) 3)
+</code></div>
+
+<p>
+Filtert Positionen, in denen drei schwarze Figuren von einer weißen Figur auf
+d5 gefesselt werden, wobei ein schwarzer Turm und der schwarze König auf den
+ersten vier Reihen stehen.
+</p>
+
+<div class='verb'><code>
+(position <a href="CQL-Position-List.html#position:stalemate"><span style='white-space:nowrap;'>:stalemate</span></a> <span class='keyword'>:rayattack</span>
+(A a <span class='piece'>&#x265a;</span>) 2 8 <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>)
+</code></div>
+
+<p>
+Findet Pattstellungen mit Mehrfachfesselungen auf.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>.
+</p>
+
+<h3 id="position:raydiagonal">:raydiagonal&emsp;<span class='normal'>(Diagonalstrahl)</span></h3>
+
+<p>
+Dieses Schlüsselwort arbeitet genauso wie <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>, nur daß die
+Strahlen auf diagonale Linien beschränkt sind.
+</p>
+
+<h3 id="position:rayhorizontal">:rayhorizontal&emsp;<span class='normal'>(Horizontaler Strahl)</span></h3>
+
+<p>
+Dieses Schlüsselwort arbeitet genauso wie <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>, nur daß die
+Strahlen auf horizontale Linien beschränkt sind.
+</p>
+
+<h3 id="position:rayorthogonal">:rayorthogonal&emsp;<span class='normal'>(Othogonaler Strahl)</span></h3>
+
+<p>
+Dieses Schlüsselwort arbeitet genauso wie <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>, nur daß die
+Strahlen auf vertikale und horizontale Linien beschränkt sind.
+</p>
+
+<h3 id="position:rayvertical">:rayvertical&emsp;<span class='normal'>(Vertikaler Strahl)</span></h3>
+
+<p>
+Dieses Schlüsselwort arbeitet genauso wie <a href="CQL-Position-List.html#position:ray"><span style='white-space:nowrap;'>:ray</span></a>, nur daß die
+Strahlen auf  vertikale Linien beschränkt sind.
+</p>
+
+<h2 id="move">Schlüsselwörter für die Zuganalyse</h2>
+
+<p>
+Ein Zug hat drei Ausprägungen: einen Herkunftsbezeichner, einen
+Zielbezeichner, und einen Bauernumwandlungsbezeichner. Diese beziehen
+sich auf die Figur und das Feld von der dieser Zug weggeht; die Figur und
+das Feld wohin dieser Zug geht (aber bevor dieser Zug tatsächlich erfolgt),
+und die Figur und das Feld wo eine Bauernumwandlung stattfindet, sofern eine
+solche vorhanden. In den Schachformen Einsetzschach und
+Tandemschach hat ein Zug noch eine vierte Ausprägung: den
+Figurenartbezeichner für die Einsetzfigur. Er bezieht sich auf die Figurenart die
+eingesetzt wird, sofern es ein Einsetzzug ist.
+</p>
+
+<p>
+Beispielsweise ist der Zielbezeichner für einen weißen Turm auf a4, der
+einen schwarzen Springer auf d4 schlägt: <span style='white-space:nowrap;'><code><span class='piece'>&#x265e;</span>d4</code></span>, und der
+Herkunftsbezeichner ist <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a4</code></span>. Der Zielbezeichner eines
+Zuges nach e4, der keine Figur schlägt, ist <span style='white-space:nowrap;'><code>.e4</code></span>.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:enpassant">:enpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:iscastling">:iscastling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movefrom">:movefrom</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:movenumber">:movenumber</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:moveto">:moveto</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nocastling">:nocastling</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:noenpassant">:noenpassant</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:nopiecedrop">:nopiecedrop</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:piecedrop">:piecedrop</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:promote">:promote</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:enpassant">:enpassant</h3>
+
+<p>
+Der nächste Zug ist ein en-passant Schlagzug.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:noenpassant"><span style='white-space:nowrap;'>:noenpassant</span></a>
+</p>
+
+<h3 id="position:iscastling">:iscastling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Rochadezug?)</span></h3>
+
+<p>
+Der nächste Zug ist eine Rochade.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:nocastling"><span style='white-space:nowrap;'>:nocastling</span></a>.
+</p>
+
+<h3 id="position:movefrom">:movefrom&emsp;<span class='normal'>(Zug von)</span></h3>
+
+<p>
+Erwartet als Parameter eine Figurenbezeichner. Eine Position wird gefiltert,
+wenn dieser Figurenbezeichner den Herkunftsbezeichner des nächsten Zuges
+beinhaltet.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:movefrom</span> <span class='piece'>&#x2656;</span>a3)
+</code></div>
+
+<p>
+Filter eine Position, in der der nächste Zug ein Turmzug von a3 ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:movefrom</span> U?8)
+</code></div>
+
+<p>
+Filter eine Position, in der der nächste Zug mit einer Figur von der
+achten Reihe geschieht.
+</p>
+
+<h3 id="position:movenumber">:movenumber&emsp;<span class='normal'>(Zugnummer)</span></h3>
+
+<p>
+<span style='white-space:nowrap;'>:movenumber</span> erwartet als Argument eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>, und filtert eine
+Position nur dann, wenn die aktuelle Zugnummer innerhalb des gegebenen
+Bereichs liegt. Die Zugnummernzählung geht von einem Anzugsrecht der
+weißen Seite aus.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:movenumber</span> 10 20 <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+</code></div>
+
+<p>
+Filtert eine Position, in der ein Schachgebot zwischen dem 10. und dem
+20. Zug erfolgt.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:movenumber</span> 35 <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
+</code></div>
+
+<p>
+Filtert eine Position, in der im 35. Zug mattgesetzt wird.
+</p>
+
+<h3 id="position:moveto">:moveto&emsp;<span class='normal'>(Zug nach)</span></h3>
+
+<p>
+Erwartet als Argument einen Figurenbezeichner. <span style='white-space:nowrap;'>:moveto</span> filtert
+einen Zug wenn dieses Argument den Zielbezeichner des Zuges beinhaltet.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:moveto</span> U)
+</code></div>
+
+<p>
+Filtert eine Position dessen nächster Zug ein Schlagzug ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:moveto</span> .)
+</code></div>
+
+<p>
+Filtert eine Position dessen nächster Zug kein Schlagzug ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:moveto</span> <span class='piece'>&#x2656;</span>[b1-8])
+</code></div>
+
+<p>
+Filtert eine Position, in der der nächste Zug einen weißen Turm auf der
+f-Linie schlagen wird. Beachte daß dies sehr verschieden ist von der
+Interpretation einer Zugbeschreibung im
+<a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm" target="blank_">PGN-Format<span class="awesome">&nbsp;&#xf08e;</span></a>&#x2006;:
+dort würde dies als ein Turmzug auf die b-Linie interpretiert werden.
+Und dies wiederum geschieht in CQL auf diese Weise:
+</p>
+
+<div class='verb'><code>
+(position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span> <span class='keyword'>:moveto</span> ?b?)
+</code></div>
+
+<p>
+Filtert einen Zug, in dem der weiße Turm auf die b-Linie zieht.
+</p>
+
+<h3 id="position:nocastling">:nocastling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(kein Rochadezug?)</span></h3>
+
+<p>
+Der nächste Zug ist keine Rochade.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:iscastling"><span style='white-space:nowrap;'>:iscastling</span></a>.
+</p>
+
+<h3 id="position:noenpassant">:noenpassant&emsp;<span class='normal'>(kein en-passant-Zug?)</span></h3>
+
+<p>
+Der nächste Zug ist kein en-passant Schlagzug.
+</p>
+
+<p>
+Siehe auch: <a href="CQL-Position-List.html#position:enpassant"><span style='white-space:nowrap;'>:enpassant</span></a>.
+</p>
+
+<h3 id="position:piecedrop">:piecedrop&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Einsetzzug)</span></h3>
+
+<p>
+Der nächste Zug ist ein Einsetzzug, wobei der im Argument gebenene
+Figurenbezeichner den Figurenbezeichner für die Einsetzfigur des
+nächsten Zuges beinhalten muß. Dies ist bei einem nichtleeren
+Figurenbezeichner nur möglich in den Schachformen
+Einsetzschach und Tandemschach.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:piecedrop</span> [<span class='piece'>&#x2658;</span><span class='piece'>&#x265e;</span>])
+</code></div>
+
+<p>
+Der nächste Zug ist ein Einsetzzug, der einen Springer einsetzen wird.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:piecedrop</span> [<span class='piece'>&#x2655;</span>]f7)
+</code></div>
+
+<p>
+Der nächste Zug ist ein Einsetzzug, der eine weiße Dame auf f7 einsetzen wird.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:piecedrop</span> [])
+</code></div>
+
+<p>
+Der nächste Zug ist kein Einsetzzug (denn der Figurenartbezeichner ist leer).
+</p>
+
+<h3 id="position:promote">:promote&emsp;<span class='normal'>(Bauernumwandlung)</span></h3>
+
+<p>
+Erwartet als Argument einen Figurenbezeichner. Ein Zug wird gefiltert wenn
+es sich um eine Bauernumwandlung handelt, und der gegebene Figurenbezeichner
+den Bauernumwandlungsbezeichner des Zuges beinhaltet.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:promote</span> [<span class='piece'>&#x2656;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>])
+</code></div>
+
+<p>
+Filtert eine Position dessen nächster Zug eine weiße Unterverwandlung ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:promote</span> [<span class='piece'>&#x2657;</span><span class='piece'>&#x2658;</span>]a8)
+</code></div>
+
+<p>
+Filtert eine Position dessen nächster Zug eine weiße Bauernumwandlung in
+eine Leichtfigur ist.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:promote</span> [<span class='piece'>&#x2656;</span>e8]
+<a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2659;</span>f7 <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> <span class='piece'>&#x265b;</span>)
+</code></div>
+
+<p>
+Filtert eine Position, in der der nächster Zug einen Bauern von f7 nach e8
+zieht, wobei eine schwarze Dame geschlagen wird und eine Bauernumwandlung
+in einen Turm geschieht.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:promote</span> [])
+</code></div>
+
+<p>
+Filtert eine Position, in der der nächster Zug keine Bauernumwandlung ist
+(denn der Figurenartbezeichner ist leer).
+</p>
+
+<h2 id="sequence">Schlüsselwörter für Sequenzen</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:gappedsequence">:gappedsequence</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sequence">:sequence</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:gappedsequence">:gappedsequence&emsp;<span class='normal'>(Löchrige Folge)</span></h3>
+
+<p>
+Erwartet als Argument eine Liste von Positionslisten. Eine Positionsliste A
+wird als eine Verfeinerung einer Positionsliste B definiert, wenn A aus B
+geformt werden kann durch das Einfügen von beliebig vielen (einschließlich Null)
+Listen der Form <span style='white-space:nowrap;'><code>(position)</code></span> auf oberster Ebene in B. Zum Beispiel:
+</p>
+
+<div class='verb'><code>
+((position <span class='piece'>&#x2658;</span>a4) (position) (position <span class='piece'>&#x2656;</span>b2))
+</code></div>
+
+<p>
+verfeinert
+</p>
+
+<div class='verb'><code>
+((position <span class='piece'>&#x2658;</span>a4) (position <span class='piece'>&#x2656;</span>b2))
+</code></div>
+
+<p>
+denn es wurde geformt durch das Einfügen einer einzelnen Position in die
+letztere Liste.
+</p>
+
+<p>
+Eine löchrige Folge (<a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a>) mit Argument B
+filtert eine Position genau dann, wenn es eine Verfeinerung A von B gibt, so
+daß eine Folge (<a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>) mit Argument A diese Position
+filtern würde. D.h., <span style='white-space:nowrap;'>:gappedsequence</span> ist wie
+<a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>, außer das die Folge von filternden Positionen
+dazwischenliegende Positionen der Partie enthalten kann.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='keyword'>:gappedsequence</span> (
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>b4)))<!--
+--></code></pre></div>
+
+<p>
+Diese wird jede Position filtern, die mit der ersten Position in der Liste
+von <span style='white-space:nowrap;'>:gappedsequence</span> startet, und nach Null oder mehr weiteren
+aufeinanderfolgenden Positionen in der Partie die zweite Position von
+<span style='white-space:nowrap;'>:gappedsequence</span> auffindet. Dasselbe Ergebnis kann viel effektiver
+auf folgende Weise ermittelt werden:
+</p>
+
+<p>
+<img src="../images/gameflag-Illegal-Move.png" alt="" />
+Das ist zu prüfen!
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:initial"><span style='white-space:nowrap;'>:initial</span></a>
+  <span class='keyword'>:gappedsequence</span> (
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>a3)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2656;</span>b4)))<!--
+--></code></pre></div>
+
+<p>
+Die folgende Positionsliste filtert eine Position, in der ein Springer auf d4
+steht in irgendeiner Partiestellung, aber nach der gefundenen Position:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='keyword'>:gappedsequence</span> (
+    (position)
+    (position <span class='piece'>&#x2658;</span>d4)))<!--
+--></code></pre></div>
+
+<p>
+Die Gesamtzahl von <span style='white-space:nowrap;'>:sequence</span> und <span style='white-space:nowrap;'>:gappedsequence</span>
+Positionslisten, die auf oberster Ebene einer Positionsliste auftreten
+können, darf Eins nicht überschreiten. Um die Wirkung von beiden
+Schlüsselwörtern in einer Positionsliste zu erhalten, wird mit dem
+Gebrauch von <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> bewerkstelligt.
+<br/><img src="../images/gameflag-Illegal-Move.png" alt="" />
+Diese Einschränkung ist zu prüfen!
+</p>
+
+<h3 id="position:sequence">:sequence&emsp;<span class='normal'>(Folge)</span></h3>
+
+<p>
+Erwartet als Argument eine Liste von Positionslisten. Eine Position wird
+gefiltert, wenn sie und alle aufeinanderfolgenden Positionen von jedem
+Element im Argument gefiltert werden.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='piece'>&#x2656;</span>e8
+  <span class='keyword'>:sequence</span> (
+    (position <span class='piece'>&#x2655;</span>f3 .g2)
+    (position .f3 <span class='piece'>&#x2655;</span>g2)))<!--
+--></code></pre></div>
+
+<p>
+Diese Positionsliste filtert exakt diejenigen Positionen mit einem weißen Turm
+auf e8, so daß:
+</p>
+
+<ol>
+  <li>in dieser Position hat Weiß eine Dame auf f3, das Feld g2 ist leer, und</li>
+  <li>nach dem nächsten Zug ist das Feld f3 leer, und die weiße Dame befindet sich auf g2.</li>
+</ol>
+
+<p>
+Diese Positionsliste ist offensichtlich identisch zu:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>e8 <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>f3 <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> .g2)
+</code></div>
+
+<p>
+Der folgende recht typische Gebrauch von <span style='white-space:nowrap;'>:sequence</span> sucht nach allen
+Treppenschachmanövern mit einer Dame:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a> <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a> <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>
+  <span class='keyword'>:sequence</span> (
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>a2)
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>b2)
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>b3)
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>c3)
+    (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)
+    (position <a href="CQL-Position-List.html#position:movefrom"><span style='white-space:nowrap;'>:movefrom</span></a> <span class='piece'>&#x2655;</span>c4)))<!--
+--></code></pre></div>
+
+<p>
+Diese Positionsliste filtert eine Position mit einer weißen Dame auf a2,
+die nacheinander auf die bezeichneten Felder zieht und dabei Schach bietet.
+Die Schlüsselwörter <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>, <a href="CQL-Position-List.html#position:flip"><span style='white-space:nowrap;'>:flip</span></a>, und
+<a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> suchen nach den gespiegelten oder gedrehten
+Manövern irgendwo auf dem Schachbrett.
+</p>
+
+<h2 id="game">Schlüsselwörter für die Partieinformationen</h2>
+
+<p>
+Diese Schlüsselwörter beziehen sich auf Partiemerkmale und werden nicht von
+den Positionen beeinflußt; sie sind als Schlüsselwörter für die Positionsliste
+verfügbar, damit die <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> Operation auf sie
+angewendet werden kann; oder um Abfragen an die einzelnen
+<a href="Chess-Variants.html">Schachformen</a> anzupassen.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr>
+      <td>      &#x2022;</td><td><a href="#position:elo">:elo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whiteelo">:whiteelo</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:blackelo">:blackelo</a></td>
+    </tr>
+    <tr>
+      <td>              </td><td></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:whiterating">:whiterating</a></td>
+      <td>&emsp;&#x2022;</td><td><a href="#position:blackrating">:blackrating</a></td>
+    </tr>
+  <tr>
+      <td>      &#x2022;</td><td><a href="#position:result">:result</a></td>
+  </tr>
+  <tr>
+      <td>      &#x2022;</td><td><a href="#position:variant">:variant</a></td>
+  </tr>
+  </table>
+</li></ul>
+
+<h3 id="position:blackelo">:blackelo&emsp;<span class='normal'>(ELO - Schwarz)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO des schwarzen
+Spielers muß innerhalb dieses Bereichs liegen.
+</p>
+
+<h3 id="position:blackrating">:blackrating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Wertungszahl - Schwarz)</span></h3>
+
+<p>
+Filtert alle Partien, in denen die gegebene Wertungszahl des schwarzen Spielers
+innerhalb der gebebenen <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>
+liegt. Für eine detaillierte Beschreibung siehe <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating (match)</span></a>.
+</p>
+
+<h3 id="position:elo">:elo</h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO von mindestens
+einem Spieler muß innerhalb dieses Bereichs liegen.
+</p>
+
+<p>
+Dieses Schlüsselwort wird nur unterstützt, um kompatibel mit dem CQL-Standard
+zu sein. Es wird zur Verwendung des gleichnamigen Schlüsselworts
+<a href="CQL-Match-List.html#match:elo"><span style='white-space:nowrap;'>:elo</span></a> in der Suchliste geraten.
+</p>
+
+<h3 id="position:result">:result&emsp;<span class='normal'>(Ergebnis)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet das gleiche Argument wie das Schlüsselwort
+<a href="CQL-Match-List.html#match:result"><span style='white-space:nowrap;'>:result (match)</span></a> in der Suchliste.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match (
+  (position
+    <span class='keyword'>:result</span> 1-0
+    <a href="CQL-Position-List.html#position:whiteelo"><span style='white-space:nowrap;'>:whiteelo</span></a> 0 2300
+    <a href="CQL-Position-List.html#position:blackelo"><span style='white-space:nowrap;'>:blackelo</span></a> 2600 unlimited
+    <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+--></code></pre></div>
+
+<p>
+Suche nach Partien in denen ein Spieler mit ELO 2300 oder geringer einen
+Spieler mit ELO 2600 oder höher besiegt.
+</p>
+
+<h3 id="position:variant">:variant</h3>
+
+<p>
+Für eine Beschreibung dieses Schlüsselwortes siehe beim gleichnamigen
+Schlüsselwort <a href="CQL-Match-List.html#match:variant"><span style='white-space:nowrap;'>:variant (match)</span></a> der Suchliste. Dieses
+Schlüsselwort wird hier bereitgestellt, um bei einzelnen Positionslisten
+eine Unterscheidung zwischen den
+<a href="Chess-Variants.html">Schachformen</a> treffen zu können.
+</p>
+
+<h3 id="position:whiteelo">:whiteelo&emsp;<span class='normal'>(ELO - Weiß)</span></h3>
+
+<p>
+Dieses Schlüsselwort erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>; die ELO des weißen
+Spielers muß innerhalb dieses Bereichs liegen.
+</p>
+
+<h3 id="position:whiterating">:whiterating&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Wertungszahl - Weiß)</span></h3>
+
+<p>
+Filtert alle Partien, in denen die gegebene Wertungszahl des weißen Spielers
+innerhalb der gebebenen <a href="CQL-Range-Specifiers.html">Bereichsangabe</a>
+liegt. Für eine detaillierte Beschreibung siehe <a href="CQL-Match-List.html#match:rating"><span style='white-space:nowrap;'>:rating (match)</span></a>.
+</p>
+
+<h2 id="relation">Relationen zwischen den Positionen</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:relation">:relation</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:relation">:relation</h3>
+
+<p>
+Das Argument, eine Relationenbeschreibung, wird benutzt um nach Partien zu
+suchen, in denen Positionenpaare P1 und P2 gewisse Eigenschaften erfüllen.
+Siehe <a href="CQL-Relation-List.html">Relationsliste</a> für eine
+Beschreibung von Relationen.
+</p>
+
+<h2 id="matching">Schlüsselwörter zur Zählung</h2>
+
+<p>
+Diese Schlüsselwörter zählen die Anzahl der Positionen, die von einer
+Positionsliste gefiltert werden. Jedes von ihnen erwartet eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> als Argument.
+Sie können nur in Positionslisten verwendet werden, die sich auf oberster
+Ebene einer Suchliste befinden.
+<br/><img src="../images/gameflag-Illegal-Move.png" alt="" />
+Diese Einschränkung ist zu prüfen!
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:matchcount">:matchcount</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:pretransformmatchcount">:pretransformmatchcount</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:matchcount">:matchcount&emsp;<span class='normal'>(Übereinstimmungszähler)</span></h3>
+
+<p>
+Filtert nur dann wenn die Anzahl der Positionen in der Partie, die von dieser
+Positionsliste gefunden werden, innerhalb der gegebenen
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
+</p>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Der Gebrauch von <i>unlimited</i> (in der Bereichsangabe) statt irgendeinem
+willkürlichen Extremwert, der auch nur eine Grenzenlosigkeit signalisieren
+soll, erlaubt dem Suchalgorithmus die Möglichkeit zur Optimierung, und damit
+kann evt. eine signifikant schnellere Suche stattfinden.
+</div>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+(position <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> [<span class='piece'>&#x2655;</span><span class='piece'>&#x265b;</span>] <span class='keyword'>:matchcount</span> 4 unlimited)
+</code></div>
+
+<p>
+Filtert jede Partie in der mindestens vier Damen geschlagen wurden.
+</p>
+
+<h3 id="position:pretransformmatchcount">:pretransformmatchcount&emsp;<span class='normal'>(Prä-Transformation-Übereinstimmungszähler)</span></h3>
+
+<p>
+Dieses Schlüsselwort hat die gleiche Syntax wie <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a>.
+Zur Beschreibung dieses Schlüsselwortes nehmen wir folgende allgemeine Form
+einer Positionsliste an:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  T<sub>1</sub> T<sub>2</sub> ... T<sub>k</sub>
+  X<sub>1</sub> X<sub>2</sub> ... X<sub>n</sub>
+  <span class='keyword'>:pretransformmatchcount</span> n<sub>1</sub> n<sub>2</sub>)<!--
+--></code></pre></div>
+
+<p>
+Alle <span style='white-space:nowrap;'><code>T<sub>i</sub></code></span> sind die transformierenden Schlüsselwörter,
+und alle anderen Elemente (nur keine Transformationsschlüsselwörter) sind mit
+<span style='white-space:nowrap;'><code>X<sub>i</sub></code></span> bezeichnet. <span style='white-space:nowrap;'><code>n<sub>1</sub></code></span>
+<span style='white-space:nowrap;'><code>n<sub>2</sub></code></span> ist die Bereichsangabe. Wir nehmen nun an, daß
+<span style='white-space:nowrap;'><code>Y<sub>i,j</sub></code></span> ein Element bezeichnet das aus
+<span style='white-space:nowrap;'><code>X<sub>i</sub></code></span> in einem der Transformationsschritte j ensteht
+(möglicherweise identisch zu <span style='white-space:nowrap;'><code>X<sub>i</sub></code></span>, weil es
+transformationsinvariant ist). m soll die Anzahl aller Transformationsschritte
+bezeichnen. Nun bilden wir einen neuen Ausdruck:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+    Y<sub>1,1</sub> Y<sub>2,1</sub> ... Y<sub>n,1</sub> <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> n<sub>1</sub> n<sub>2</sub>)
+    Y<sub>1,2</sub> Y<sub>2,2</sub> ... Y<sub>n,2</sub> <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> n<sub>1</sub> n<sub>2</sub>)
+    ...
+    Y<sub>1,m</sub> Y<sub>2,m</sub> ... Y<sub>n,m</sub> <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> n<sub>1</sub> n<sub>2</sub>)))<!--
+--></code></pre></div>
+
+<p>
+Die Positionsliste mit <span style='white-space:nowrap;'>:pretransformmatchcount</span> filtert genau
+diejenigen Positionen, die von der neugeformten Positionsliste gefiltert
+werden. Mit anderen Worten: die Zählung erfolgt für jeden
+Transformationsschritt einzeln.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:moveto"><span style='white-space:nowrap;'>:moveto</span></a> [Aa]d4
+  <span class='keyword'>:pretransformmatchcount</span> 12 unlimited
+  <a href="CQL-Position-List.html#position:shift"><span style='white-space:nowrap;'>:shift</span></a>))<!--
+--></code></pre></div>
+
+<p>
+Dies würde jede Partie finden in der mindestens 12 Figuren auf dem gleichen
+Feld geschlagen wurden. Ersetzen wir <span style='white-space:nowrap;'>:pretransformmatchcount</span>
+durch <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a>, dann würde diese Positionsliste Partien
+auffinden in denen mindestens 12 Figuren irgendwo auf dem Schachbrett geschlagen
+wurden.
+</p>
+
+<h2 id="evaluation">Schlüsselwörter für die Stellungsbeurteilung</h2>
+
+<p>
+Die folgenden Schlüsselwörter analyieren Positionen.
+<a href="CQL-Position-List.html#position:evaluation"><span style='white-space:nowrap;'>:evaluation</span></a> und <a href="CQL-Position-List.html#position:moveevaluation"><span style='white-space:nowrap;'>:moveevaluation</span></a> sollten
+mit Vorsicht verwendet werden, es sind sehr langsame Operationen. In einigen
+Fällen mögen die Schlüsselwörter <a href="CQL-Position-List.html#position:exchangeevaluation"><span style='white-space:nowrap;'>:exchangeevaluation</span></a> und
+<a href="CQL-Position-List.html#position:maxswapevaluation"><span style='white-space:nowrap;'>:maxswapevaluation</span></a> eine Alternative sein, diese Operationen
+sind viel schneller, aber auch noch recht zeitverbrauchend.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:evaluation">:evaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:exchangeevaluation">:exchangeevaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:maxswapevaluation">:maxswapevaluation</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:moveevaluation">:moveevaluation</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:evaluation">:evaluation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Bewertung)</span></h3>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Diese ist eine sehr langsame Operation und sollte eingeschränkt verwendet werden.
+</div>
+
+<p>
+Dieses Schlüsselwort bewertet die aktuelle Position mit Hilfe eines externen
+Schachprogramms. Die Anzahl der Parameter hängt vom Berechnungsmodus ab.
+Es gibt drei Berechnungsmodi:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <!-- UCI:  "go depth <x>" -->
+    <!-- WB:   "st <x>"       -->
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>depth &lt;d&gt;</code></span></td>
+      <td class="r">suche nur &lt;d&gt; Halbzüge tief</td>
+    </tr>
+
+    <!-- UCI:  "go movetime <x>" -->
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>movetime &lt;ms&gt;</code></span></td>
+      <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
+    </tr>
+
+    <!-- UCI:  "go mate <x>" -->
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>mate &lt;n&gt;</code></span></td>
+      <td class="r">suche nach Matt in &lt;n&gt; Zügen</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+Die Modi <i>depth</i> und <i>movetime</i> erwarten drei zusätzliche Parameter.
+Der dritte Parameter bezeichnet die untere Grenze, der vierte Parameter
+bezeichnet die obere Grenze, beide Werte werden in Bauerneinheiten
+angegeben. Die Abfrage ist erfolgreich, wenn die Bewertung der Position
+innerhalb der gegebenen Grenzen liegt (inklusive der Randwerte). Ist die untere
+Grenze mit <i>unlimited</i> (unbeschränkt) spezifiziert, so wird sie als
+negativ unendlich interpretiert. Ist die obere Grenze mit <i>unlimited</i>
+spezifiziert, so wird sie als positiv unendlich angenommen. Der fünfte
+Parameter ist entweder <i>sidetomove</i> (Zugrecht) oder <i>absolute</i>
+(absolut). <i>sidetomove</i> bedeutet, daß die Bewertungswerte vom Zugrecht
+abhängig sind, und mit <i>absolute</i> sind die Bewertungswerte unabhängig
+davon.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Beachte daß die Modi <i>depth</i> und <i>mate</i> nur verfügbar sind wenn das
+verwendete Schachprogramm das UCI-Protokoll unterstützt. Ist das Schachprogramm
+auf das Protokoll WinBoard/XBoard eingeschränkt, so kann nur der Modus
+<i>movetime</i> verwendet werden.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:evaluation</span> depth 4 2.5 unlimited sidetomove
+</code></div>
+
+<p>
+Die Seite mit dem Zugrecht hat (wahrscheinlich) eine Gewinnstellung, denn sie
+ist mit mindestens 2,5 Bauerneinheiten im Vorteil.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:evaluation</span> depth 4 unlimited -2.5 sidetomove
+</code></div>
+
+<p>
+Die Seite mit dem Zugrecht hat (wahrscheinlich) eine Verluststellung, denn sie
+ist mit mindestens 2,5 Bauerneinheiten im Nachteil.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:evaluation</span> movetime 3000 unlimited -3.0 absolute
+</code></div>
+
+<p>
+Schwarz ist (wahrscheinlich) verloren, denn er ist mindestens 3,0
+Bauerneinheiten im Nachteil.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:evaluation</span> mate 3
+</code></div>
+
+<p>
+Eine der Seiten kann in spätestens 3 Zügen mattgesetzt werden.
+</p>
+
+<h3 id="position:exchangeevaluation">:exchangeevaluation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Figurentauschbewertung)</span></h3>
+
+<p>
+Dieses Schlüsselwort analysiert Schlagzüge, um zu sehen ob sie profitabel
+erscheinen.
+</p>
+
+<p>
+Das Schlüsselwort filtert den aktuellen Zug, wenn der Wert innerhalb der
+angegeben Grenzen liegt: ein unterer und ein oberer Wert in Bauerneinheiten.
+Nur Schlagzüge werden bewertet. Ist der untere Wert mit <i>unlimited</i>
+(unbeschränkt) spezifiziert, so bedeutet dies negativ unendlich. Ist der obere
+Wert mit <i>unlimited</i> spezifiziert, so bedeutet dies positiv unendlich. Die
+Bewertungsfunktion bezieht mit ein, daß Figuren gefesselt sein können, oder daß
+sie von anderen Figuren gedeckt werden. Der Wert dieser Funktion hängt nicht
+vom Zugrecht ab.
+</p>
+
+<p>
+Bezüglich der Figurenwerte siehe <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>.
+</p>
+
+<p>
+Beachte daß diese Funktion keine Stellungsbewertung vornimmt, stattdessen
+wird nur der Schlagabtausch abgeschätzt.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:exchangeevaluation</span> unlimited -3
+</code></div>
+
+<p>
+Dieser Schlagzug ist (wahrscheinlich) ein Patzer.
+</p>
+
+<h3 id="position:maxswapevaluation">:maxswapevaluation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Maximum einer Schlagabtauschbewertung)</span></h3>
+
+<p>
+Dieses Schlüsselwort erlaubt die Abschätzung von Zügen. Es erwartet
+als Argument zwei Figurenbezeichner, gefolgt von einer Bereichsangabe.
+Das erste Argument spezifiziert die erlaubten Figuren und Felder des nächsten
+Zuges, das zweite Argument spezifiziert die Zielfelder. Für jeden erlaubten
+Zug wird ein Wert berechnet, der den materiellen Vorteil bzw. Verlust dieses
+Zuges berechnet (in Bauerneinheiten), aufgrund möglicher Schlagabtäusche auf
+dem Zielfeld. Abschliessend wird das Maximum alle berechneten Werte ausgewählt.
+</p>
+
+<p>
+Das Schlüsselwort filter eine Position wenn der berechnete Wert innerhalb des
+gegebenen Bereichs liegt (ein unterer und ein oberer Wert). Ist der untere
+Bereich mit dem speziellen Wert <i>unlimited</i> (unbeschränkt) spezifiziert,
+so wird negativ unendlich angenommen. Ist der obere Wert mit <i>unlimited</i>
+spezifiziert, so wird positiv unendlich angenommen. Die Bewertungsfunktion
+bezieht mit ein, das Figuren gefesselt sein können, oder von anderen Figuren
+gedeckt werden. Der Wert dieser Funktion hängt nicht vom Zugrecht ab.
+</p>
+
+<p>
+Bezüglich der Figurenwerte siehe <a href="CQL-Position-List.html#position:power"><span style='white-space:nowrap;'>:power</span></a>.
+</p>
+
+<p>
+Beachte daß diese Funktion keine Stellungsbewertung vornimmt, stattdessen
+wird nur der Schlagabtausch abgeschätzt.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Dieses Schlüsselwort ist ähnlich dem Schlüsselwort <span style='white-space:nowrap;'>:maxswapvalue</span>
+von Chess Assistant 9 (&#x21d2;
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>),
+aber auf sehr verschiedene Weise implementiert.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:maxswapevaluation</span> A a 1 unlimited)
+</code></div>
+
+<p>
+Diese Abfrage filtert Positionen, in denen Weiß mit Materialgewinn droht.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:maxswapevaluation</span> <span class='piece'>&#x2655;</span>?1-7 ??8 0 unlimited)
+</code></div>
+
+<p>
+Diese Abfrage filtert Positionen, in denen eine weiße Dame die achte Reihe
+erobern kann ohne materiellen Verlust.
+</p>
+
+<h3 id="position:moveevaluation">:moveevaluation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Zugbewertung)</span></h3>
+
+<div class='annotation'><img src='../images/annotation.png' style='float:left; margin:0 1em 0 0' alt='annotation' />
+Diese ist eine sehr langsame Operation und sollte eingeschränkt verwendet werden.
+</div>
+
+<p>
+Dieses Schlüsselwort vergleicht die Differenz einer Stellungsbewertung der
+aktuellen Position mit der nächsten Position. Die Bewertung wird mit
+Einsatz eines externen Schachprogramm durchgeführt. Es werden sieben
+Parameter erwartet. Die ersten beiden Parameter sind Figurenbezeichner. Der
+erste davon spezifiziert die erlaubten Figuren und Felder des nächsten Zuges,
+der zweite spezifiziert die Zielfelder. Der vierte und fünfte Parameter
+hängen vom Berechnungsmodus ab:
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <!-- UCI:  "go depth <x>" -->
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>depth &lt;d&gt;</code></span></td>
+      <td class="r">suche nur &lt;d&gt; Halbzüge tief</td>
+    </tr>
+
+    <!-- UCI:  "go movetime <x>" -->
+    <!-- WB:   "st <x>"       -->
+    <tr>
+      <td class="l"><span style='white-space:nowrap;'><code>movetime &lt;ms&gt;</code></span></td>
+      <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
+    </tr>
+  </table>
+</li></ul>
+
+<p>
+Der fünfte Parameter bezeichnet die untere Grenze, der sechste Parameter
+bezeichnet die obere Grenze, beide Werte werden in Bauerneinheiten
+angegeben. Die Abfrage ist erfolgreich, wenn die Bewertung der Position
+innerhalb der gegebenen Grenzen liegt (inklusive der Randwerte). Ist die untere
+Grenze mit <i>unlimited</i> (unbeschränkt) spezifiziert, so wird sie als
+negativ unendlich interpretiert. Ist die obere Grenze mit <i>unlimited</i>
+spezifiziert, so wird sie als positiv unendlich angenommen. Der Wert des
+letzten Zuges ist die Differenz zwischen der Bewertung der aktuellen
+Position und der Bewertung der vorangegangenen Position. Im Falle von
+Mattpositionen ist die Differenz immer größer als 10.000.
+</p>
+
+<p><img src='../images/note.png' alt='note' /> 
+Beachte daß der Modus <i>depth</i> nur verfügbar ist, wenn das Schachprogramm
+das UCI-Protokoll unterstützt. Ist das Schachprogramm auf das Protokoll
+WinBoard/XBoard beschränkt, so kann nur der Modus <i>movetime</i> verwendet
+werden.
+</p>
+
+<p>
+Der siebte Parameter ist entweder <i>sidetomove</i> (Zugrecht) oder
+<i>absolute</i> (absolut). <i>sidetomove</i> bedeutet, daß die Bewertungswerte
+vom Zugrecht abhängig sind, und mit <i>absolute</i> sind die Bewertungswerte
+unabhängig davon.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:moveevaluation</span> U ? depth 4 3.0 unlimited sidetomove
+</code></div>
+
+<p>
+Filtere die erste Position mit einer Bewertungsdifferenz von mindestens 3,0
+Bauerneinheiten. Dies heißt. das der letzte Zug (wahrscheinlich) ein Patzer
+war.
+</p>
+
+<div class='verb'><code>
+<span class='keyword'>:moveevaluation</span> A a depth 4 unlimited -3.0 absolute
+</code></div>
+
+<p>
+Filtere die erste Position, in der die Bewertungsdifferenz mindestens 3,0
+Bauerneinheiten als Vorteil für Schwarz beträgt. Dies bedeutet, daß der letzte
+weiße Zug (wahrscheinlich) ein Patzer war. Nur Schlagzüge wurden bewertet.
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position <span class='keyword'>:moveevaluation</span> [<span class='piece'>&#x2659;</span><span class='piece'>&#x265f;</span>] ?[?1,?8]
+             unlimited 0.0 movetime 5000 absolute)
+  (position <a href="CQL-Position-List.html#position:promotion"><span style='white-space:nowrap;'>:promotion</span></a> U <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a>)))<!--
+--></code></pre></div>
+
+<p>
+Suche nach Positionen, in denen sie Seite mit dem Zugrecht die erste
+Bauernverwandlung in dieser Partie ausführt, aber keinen bessere
+Stellungsbewertung dadurch erzielt. Wir stellten sicher, daß nur
+Bauernumwandlungszüge bewertet werden.
+</p>
+
+<h2 id="accumulator">Schlüsselwörter für Akkumulationen</h2>
+
+<p>
+Es gibg hauptsächlich zwei Akkumulatorschlüsselwörter, <span style='white-space:nowrap;'>:accumulate</span>
+und <span style='white-space:nowrap;'>:sumrange</span>. Diese werden verwendet um die Anzahl der
+Transformationen einer Positionsliste zu zählen, die die aktuelle Position
+filtern. Jedesmal wenn eine transformierte Positionsliste eine Position
+filtert, wird der assoziierte Akkumulator inkrementiert. Jede Positionsliste
+kann dann mit <span style='white-space:nowrap;'>:sumrange</span> testen, ob der akkumulierte Wert innerhalb
+eines gewissen Bereichs liegt.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:accumulate">:accumulate</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:reset">:reset</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:sumrange">:sumrange</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:accumulate">:accumulate&emsp;<span class='normal'>(Akkumulieren)</span></h3>
+
+<p>
+Dies erwartet als Argument den Namen des Akkumulators. Jedesmal
+wenn die Anwendung eines Elements auf die Menge der transformierten
+Positionslisten eine Position filtert, wird der mit diesem Namen assoziierte
+Akkumulator inkrementiert. Der Akkumulator wird wieder auf Null gesetzt,
+sobald eine neue Position untersucht wird (nach einem Zug). Als Folge davon
+sollte <span style='white-space:nowrap;'>:accumulate</span> nicht innerhalb von folgenden Schlüsselwörtern
+verwendet werden: <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a>, <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>,
+und <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a>. Zu beachten ist daß
+<a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a> in den meisten Fällen unerwartete Ergebnisse
+hervorruft, wenn es zusammen mit <span style='white-space:nowrap;'>:accumulate</span> verwendet wird,
+denn der Akkumulator wird nicht auf Null zurückgesetzt zwischen den
+Farbwechseln.
+</p>
+
+<p>
+Für Beispiele siehe:
+<a href="CQL-Examples.html#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a>.
+</p>
+
+<h3 id="position:reset">:reset&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Zurücksetzen)</span></h3>
+
+<p>
+Diese Schlüsselwort erwartet als Argument den Namen des Akkumulators. Es setzt
+den mit diesen Namen assoziierten Akkumulator nach der Anwendung einer
+Transformationen wieder auf Null zurück.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<p>
+Trippelbauern können auf folgende Weise aufgefunden werden:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <span class='keyword'>:reset</span> akku
+  <span class='piece'>&#x2659;</span>e2
+  <a href="CQL-Position-List.html#position:accumulate"><span style='white-space:nowrap;'>:accumulate</span></a> akku
+  <a href="CQL-Position-List.html#position:sumrange"><span style='white-space:nowrap;'>:sumrange</span></a> akku 3
+  <a href="CQL-Position-List.html#position:shiftvertical"><span style='white-space:nowrap;'>:shiftvertical</span></a>
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>)<!--
+--></code></pre></div>
+
+<p>
+Beachte das dies nur ein Beispiel für eine Anwednung dieses Schlüsselwort ist
+(aus <a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>),
+es wird nicht geraten diese Abfrage für die Trippelbauersuche einzusetzen.
+Eine viel bessere Abfrage dafür ist:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:piececount"><span style='white-space:nowrap;'>:piececount</span></a> <span class='piece'>&#x2659;</span>d[2-7] 3 6
+  <a href="CQL-Position-List.html#position:shifthorizontal"><span style='white-space:nowrap;'>:shifthorizontal</span></a>
+  <a href="CQL-Position-List.html#position:flipcolor"><span style='white-space:nowrap;'>:flipcolor</span></a>))<!--
+--></code></pre></div>
+
+<h3 id="position:sumrange">:sumrange&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Ergebnisbereich)</span></h3>
+
+<p>
+Dies erwartet als Argument den Namen eines Akkumulator und eine
+<a href="CQL-Range-Specifiers.html">Bereichsangabe</a>. Es filtert eine
+Position, wenn der Wert des bezeichneten Akkumulators innerhalb des gegebenen
+Bereichs liegt.
+</p>
+
+<p>
+Für Beispiele siehe:
+<a href="CQL-Examples.html#accumulator">Benutzung von Akkumulatoren zur Zählung von Freibauern</a>.
+</p>
+
+<h2 id="tagging">Schlüsselwörter für das Markieren</h2>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:tagmatch">:tagmatch</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:tagmatch">:tagmatch&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(Markierungsvergleich)</span></h3>
+
+<p>
+Das Schlüsselwort <span style='white-space:nowrap;'>:tagmatch</span> erwartet zwei Argumente, den Namen einer
+Markierung und einen Figurenbezeichner. Es filtert nur dann wenn die an die
+Markierung gebundene Figur vom zweiten Argument bezeichnet wird. Für weitere
+Informationen siehe Abschnitt <a href="CQL-Tagging.html">Markierung</a>.
+</p>
+
+<h2 id="control">Schlüsselwörter für die Steuerung</h2>
+
+<p>
+Die folgenden steuernden Schlüsselwörter beeinflussen den Ablauf der Suche
+bzw. das Suchergebnis. Tatsächlich erweitert keines dieser Schlüsselwörter
+die Mächtigkeit von CQL, jedes von ihnen kann ersetzt werden, aber der
+Gebrauch dieser Schlüsselwörter kann die Suchzeit beträchtlich verkürzen,
+und der Suchausdruck ist möglicherweise klarer definiert.
+</p>
+
+<ul style='list-style-type: none'><li>
+  <table>
+    <tr><td>&#x2022;</td><td><a href="#position:cut">:cut</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:endmost">:cut</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:exclude">:exclude</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:following">:following</a></td></tr>
+    <tr><td>&#x2022;</td><td><a href="#position:preceding">:preceding</a></td></tr>
+  </table>
+</li></ul>
+
+<h3 id="position:cut">:cut&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(beschneiden)</span></h3>
+
+<p>
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+In der ersten Form wird die Positionssuche in der aktuellen Partie abgebrochen
+sobald die Bedingung der Positionsliste aufgefunden wird. In der zweiten Form
+bricht die Suche in der aktuellen Partie ab sobald die Bedingung des
+Arguments aufgefunden wird. Dieses Schlüsselwort ist immer erfolgreich,
+mit anderen Worten: es beeinflußt nicht das Resultat der anderen Filter.
+</p>
+
+<p>
+Der <span style='white-space:nowrap;'>:cut</span>-Filter hat niedrigere Priorität als alle anderen Filter.
+Das heißt, daß eine Position gefiltert wird, wenn alle anderen Filter diese
+Position akzeptieren, unabhängig vom Resultat des <span style='white-space:nowrap;'>:cut</span>-Filters.
+Soll der <span style='white-space:nowrap;'>:cut</span>-Filter höchste Priorität haben, dann ist das
+Schlüsselwort <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a> anzuwenden. In diesem Fall bricht
+die Erfüllung der <span style='white-space:nowrap;'>:cut</span>-Bedingung mit einem negativen Resultat ab,
+unanhängig vom Resultat aller anderen Bedingungen. Siehe dazu nachfolgende
+Beispiele:
+</p>
+
+<div class='verb'><code>
+(match (position &lt;A&gt; <span class='keyword'>:cut</span> (position &lt;B&gt;)))
+</code></div>
+
+<p>
+Wir nehmen an das &lt;A&gt; und &lt;B&gt; von einer Position erfüllt werden,
+und beide Bedingungen zum ersten Mal. In diesem Fall ist die Suche in dieser
+Partie erfolgreich.
+</p>
+
+<div class='verb'><code>
+(match (position &lt;A&gt; <span class='keyword'>:cut</span> (position <a href="CQL-Position-List.html#position:preceding"><span style='white-space:nowrap;'>:preceding</span></a> &lt;B&gt;)))
+</code></div>
+
+<p>
+Wir nehmen an das &lt;A&gt; und &lt;B&gt; von einer Position erfüllt werden,
+und beide Bedingungen zum erstem Mal. In diesem Fall ist die Suche in dieser
+Partie negativ.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>
+    <span class='keyword'>:cut</span> (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>)))<!--
+--></code></pre></div>
+
+<p>
+Suche nach Partien die mit einem Matt enden, und keine der beiden Seiten hat
+jemals zuvor Schach geboten. Tatsächlich ist das Schlüsselwort <span style='white-space:nowrap;'>:cut</span>
+für diese Suchkriterien nicht erforderlich, wie folgende Umformung zeigt:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position <a href="CQL-Position-List.html#position:mate"><span style='white-space:nowrap;'>:mate</span></a>)
+  (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a> <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 1))<!--
+--></code></pre></div>
+
+<p>
+Aber diese Version durchsucht die gesamte Partie, und die vorhergehende Version
+mit <span style='white-space:nowrap;'>:cut</span> schlägt bereits fehl sobald das erste Schachgebot erfolgt.
+In komplexen Fällen kann der Gebrauch des Schlüsselwortes <span style='white-space:nowrap;'>:cut</span> viel
+effizienter sein als der Gebrauch von <span style='white-space:nowrap;'>:matchcount</span>.
+</p>
+
+<h3 id="position:endmost">:endmost&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(letzte)</span></h3>
+
+<p>
+Diese Schlüsselwort liefert das letzte Autreten einer aufgefundenen Stellung
+in einer Partie. Dies könnte auch auf die folgende Weise erreicht werden:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  &lt;A&gt;
+  <a href="CQL-Position-List.html#position:not"><span style='white-space:nowrap;'>:not</span></a> (
+    <a href="CQL-Position-List.html#position:gappedsequence"><span style='white-space:nowrap;'>:gappedsequence</span></a> (
+      (position)
+      (position &lt;A&gt;))))<!--
+--></code></pre></div>
+
+<p>
+Wobei <span style='white-space:nowrap;'><code>&lt;A&gt;</code></span> die gesuchte Position repräsentiert. Der Gebrauch
+von <span style='white-space:nowrap;'>:endmost</span> führt zu einem viel klareren Ausdruck:
+</p>
+
+<div class='verb'><code>
+(position &lt;A&gt; <span class='keyword'>:endmost</span>)
+</code></div>
+
+<h3 id="position:exclude">:exclude&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(ausschliessen)</span></h3>
+
+<p>
+Dieses Schlüsselwort kann in zwei Formen angewandt werden: entweder ist es in
+einer Positionsliste enthalten, oder es hat eine Positionsliste als Parameter.
+In der ersten Form wird die Partie ausgeschlossen wenn eine Position von
+der Positionsliste gefiltert wird. In der zweiten Form wird eine Partie
+ausgeschlossen, wenn das Resultat des Arguments positiv ist. Diese
+Schlüsselwort beeinflußt nicht das Resultat der anderen Filter (siehe
+dazu das Besipiel).
+</p>
+
+<p>
+Dieses Schlüsselwort schließt selbst dann Partien aus, wenn eine Position
+gefiltert wurde bevor die <span style='white-space:nowrap;'>:exclude</span>-Bedingungen erfüllt wurden. Kurz
+gesagt: <span style='white-space:nowrap;'>:exclude</span> schließt unter gewissen Bedingungen Partien
+vollständig aus der Suche aus.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    &lt;A&gt;
+    <span class='keyword'>:exclude</span> (position &lt;B&gt;)))<!--
+--></code></pre></div>
+
+<p>
+Suche nach Partien die eine Position enthalten, die Bedingung
+<span style='white-space:nowrap;'><code>&lt;A&gt;</code></span> erfüllen, aber nicht wenn es in dieser Partie
+eine Position gibt, die die Bedingung <span style='white-space:nowrap;'><code>&lt;B&gt;</code></span> erfüllt.
+Dieses Suchkrierium kann auch ohne den Gebrauch des Schlüsselwortes
+<span style='white-space:nowrap;'>:exclude</span> formuliert werden:
+</p>
+
+<div class='box'><pre><code><!--
+-->(match
+  (position
+    <a href="CQL-Position-List.html#position:and"><span style='white-space:nowrap;'>:and</span></a> (
+      (position &lt;A&gt;)
+      (position &lt;B&gt; <a href="CQL-Position-List.html#position:matchcount"><span style='white-space:nowrap;'>:matchcount</span></a> 0))))<!--
+--></code></pre></div>
+
+<p>
+Aber der Gebrauch von <span style='white-space:nowrap;'>:exclude</span> ist einfacher und klarer.
+</p>
+
+<h3 id="position:following">:following&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(nachfolgende)</span></h3>
+
+<p>
+Dieses Schlüsselwort liefert die nachfolgende Position des Filters, sofern
+ein Ergebnis vorliegt. Dies bedeutet daß die Endstellung einer Partie nicht
+mehr aufgefunden sein kann, denn sie hat keinen Nachfolger. Dieses
+Schlüsselwort kann nur auf oberster Ebene verwendet werden.
+</p>
+
+<p>
+Beispiel:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2658;</span>d4 <span class='keyword'>:following</span>)
+</code></div>
+
+<p>
+Wird eine Position mit einem Springer auf d4 gefunden, dann wird die
+nachfolgende Position als Ergebnis geliefert.
+</p>
+
+<h3 id="position:preceding">:preceding&ensp;<img src="../images/ft-scidb-tiny.png" alt="" />&emsp;<span class='normal'>(vorhergehende)</span></h3>
+
+<p>
+Dieses Schlüsselwort liefert die vorhergehende Position des Filters, sofern
+ein Ergebnis vorliegt. Ist die Startposition gefiltert worden, dann wird
+diese Position übergangen, und die Suche läuft weiter. Disees Schlüsselwort
+kann nur auf oberster Ebene verwendet werden.
+</p>
+
+<p>
+Dieses Schlüsselwort hat eine spezielle Bedeutung wenn es mit dem
+Schlüsselwort <a href="CQL-Position-List.html#position:cut"><span style='white-space:nowrap;'>:cut</span></a> kombiniert wird.
+</p>
+
+<p>
+Beispiele:
+</p>
+
+<div class='verb'><code>
+position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a> <span class='keyword'>:preceding</span>
+</code></div>
+
+<p>
+Das Resultat dieser Suche ist die Vorgängerposition der ersten gefundenen
+Position, in der einer der Seiten Schach bietet. Dies kann auch ohne dieses
+Schlüsselwort formuliert werden:
+</p>
+
+<div class='verb'><code>
+position <a href="CQL-Position-List.html#position:sequence"><span style='white-space:nowrap;'>:sequence</span></a>
+((position <a href="CQL-Position-List.html#position:nocheck"><span style='white-space:nowrap;'>:nocheck</span></a>) (position <a href="CQL-Position-List.html#position:check"><span style='white-space:nowrap;'>:check</span></a>))
+</code></div>
+
+<p>
+Aber der Gebrauch von <span style='white-space:nowrap;'>:preceding</span> ist einfacher, und die Suche ist
+effizienter.
+</p>
+
+</body>
+</html>

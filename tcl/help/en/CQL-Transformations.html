@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<!-- Generated from tcl/help/en/CQL-Transformations.txt -->
+
+<html xmlns='http://www.w3.org/1999/xhtml' xml:lang='en' lang='en'>
+<head>
+  <meta http-equiv="content-type"
+           content="text/html; charset=utf-8" />
+  <meta http-equiv="content-language"
+           content="en" />
+  <meta http-equiv="content-style-type"
+           content="text/css" />
+
+  <meta name="author"
+     content="scidb.sourceforge.net" />
+  <meta name="generator"
+     content="scidb.sourceforge.net" />
+  <meta name="description"
+     content="Scidb Help Page" />
+
+  <link rel="icon"
+       href="http://scidb.sourceforge.net/favicon.ico"
+       type="image/x-icon" />
+  <link rel="shortcut icon"
+       href="http://scidb.sourceforge.net/favicon.ico" />
+  <link rel="stylesheet"
+       type="text/css"
+      media="screen"
+       href="../styles/help.css" />
+
+  <title>Scidb Help: CQL - Transformations</title>
+</head>
+
+<body>
+
+<div class="title">
+  <h1 class="title">CQL - Transformations</h1>
+</div>
+
+<ul>
+  <li><a href="#transforms">Transforms of piece designators</a></li>
+  <li><a href="#keywords">Transformation keywords in a position list</a></li>
+  <li><a href="#examples">Examples of transformation keyword uses</a></li>
+  <li><a href="#multiple">Multiple transformation keywords</a></li>
+</ul>
+
+<h2 id="transforms">Transforms of piece designators</h2>
+
+<p>
+Certain transforms are defined on piece designators.
+</p>
+
+<p>
+A <b>diagonal flip transformation</b>, applied to a piece designator, reflects
+each square in its square set about the main diagonal.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-diagonal.png" alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Diagonal flip of <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> about the main diagonal.
+    </td>
+  </tr>
+</table>
+
+<p>
+For example, the diagonal flip of <span style='white-space:nowrap;'><code>[Aa][a-h1-2,f6,h7]</code></span> is
+<span style='white-space:nowrap;'><code>[Aa][a-b1-8,f6,g8]</code></span>.
+</p>
+
+<p>
+An <b>off-diagonal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the a8 to h1 diagonal.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-off-diagonal.png" alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Off-diagonal flip of <span style='white-space:nowrap;'><code><span class='piece'>&#x2657;</span>b2</code></span> about the a8 to h1 diagonal.
+    </td>
+  </tr>
+</table>
+
+<p>
+For example, the off-diagonal flip of <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span> is <span style='white-space:nowrap;'><code><span class='piece'>&#x2656;</span>a8</code></span>.
+The off-diagonal flip of <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a1-8]</code></span>, denoting a bishop on the
+a file, is <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2657;</span><span class='piece'>&#x265d;</span>][a-h8]</code></span>, denoting a bishop on the eight rank.
+</p>
+
+<p>
+A <b>vertical flip transformation</b> applied to a piece designator reflects
+each square in its square set about the vertical bisector of the board. For
+example, the vertical flip of <span style='white-space:nowrap;'><code>Uf6</code></span>, denoting a piece on f6, is
+<span style='white-space:nowrap;'><code>Uc6</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-vertical.png" alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Vertical flip of <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> about the vertical bisector.
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>horizontal flip transformation</b> applied to a piece designator
+reflects each square in its square set about the horizontal bisector of
+the board. For example, the horizontal flip of <span style='white-space:nowrap;'><code>Uf6</code></span> is
+<span style='white-space:nowrap;'><code>Uf3</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-horizontal.png" alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Horizontal flip of <span style='white-space:nowrap;'><code><span class='piece'>&#x265d;</span>f6</code></span> about the horizontal bisector.
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>dihedral transformation</b> of a piece designator is a flip transformation
+followed by a flip transformation or the identity transformation (the first
+flip transformation could be replaced by rotations by 90, 180, or 270 degrees).
+There are 8 distinct dihedral transformations of the board. For example, the
+results of applying all dihedral transformations to the piece designator
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span> are the 8 piece designators <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b3</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>b6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c7</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f7</code></span>,
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g6</code></span>, <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g3</code></span>, and <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>f2</code></span>.
+</p>
+
+<table width="100%" border="0">
+  <tr>
+    <td align="center">
+      <img src="../images/cql-flip-dihedral.png" alt=""/>
+    </td>
+  </tr>
+  <tr>
+    <td align="center">
+      Dihedral transformations of <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>c2</code></span>, for example:<br/>
+      diagonal flip + diagonal flip (to c2)<br/>
+      diagonal flip + identity transformation (to b3)<br/>
+      diagonal flip + horizontal flip (to b6)<br/>
+      horizontal flip + identity transformation (to c7)<br/>
+      horizontal flip + vertical flip (to f7)<br/>
+      off-diagonal flip + identity transformation (to g6)<br/>
+      off-diagonal flip + horizontal flip (to g3)<br/>
+      vertical flip + identity transformation (to f2)<br/>
+    </td>
+  </tr>
+</table>
+
+<p>
+A <b>unit right shift transformation</b>, applied to a piece designator,
+shifts each square in its square set over to the right one square. If a
+square is already at the right edge of the board, it is removed from the
+square set. If a square is at the left edge of the board, it is also added
+to the new square set.
+</p>
+
+<p>
+For example, the unit right shift transformation of <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> is
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>e4</code></span>. The unit right shift transformation of <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[c2,h2]</code></span>
+is <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d2</code></span>. The unit right shift transformation of
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,c2,h2]</code></span> is <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a2,b2,d2]</code></span>.
+</p>
+
+<p>
+The definitions of <b>unit left shift transformation</b>, <b>unit up shift
+transformation</b> and <b>unit down shift transformation</b> are similar to that
+of unit right shift transformation, with of course the location of the
+appropriate board edges altering mutatis mutandis.
+</p>
+
+<p>
+A <b>right transformation</b> is a composition of zero or more unit right
+transformations. For example, the right transformation comprising three
+successive unit right transformations applied to <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>a4</code></span> is
+<span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[a4,b4,c4,d4]</code></span>, since squares on the left edge of the board are
+always included in the new set. The result of applying this right
+transformation to <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>d4</code></span> is <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>g4</code></span>.
+</p>
+
+<p>
+Similar definitions apply for <b>left transformation</b>, <b>up
+transformation</b>, and <b>down transformation</b>.
+</p>
+
+<p>
+A <b>horizontal shift transformation</b> is either a left or a right
+transformation. A <b>vertical shift transformation</b> is either a down
+or an up transformation.
+</p>
+
+<p>
+A <b>maindiagonal shift</b> is a transformation that can be be written as
+zero or more combinations of unit right shift and unit up shift transformations.
+An <b>off-diagonal shift</b> is a transformation that can be be written as
+zero or more combinations of unit right shift and unit down shift transformations.
+</p>
+
+<p>
+A <b>shift transformation</b> is a transformation that can be written as
+zero or more horizontal shift transformations followed by zero or more
+vertical shift transformations. There is exactly one shift transformation
+that sends a given square to another given square. One possible shift
+transformation of <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[b3,c4]</code></span> is <span style='white-space:nowrap;'><code><span class='piece'>&#x2655;</span>[d4,e5]</code></span>.
+</p>
+
+<p>
+A <b>color flip transformation</b> of a piece designator switches the colors
+of each piecetype in the piece set of the piece designator, and then applies
+a horizontal flip to the piece designator. For example, the color flip
+transformation applied to <span style='white-space:nowrap;'><code>[<span class='piece'>&#x2656;</span><span class='piece'>&#x265d;</span><span class='piece'>&#x265f;</span>][a2,c2]</code></span>, either a white rook,
+a black bishop, or a black pawn on either c2 or a2, is
+<span style='white-space:nowrap;'><code>[<span class='piece'>&#x265c;</span><span class='piece'>&#x2657;</span><span class='piece'>&#x2659;</span>][a7,c7]</code></span>.
+</p>
+
+<h2 id="keywords">Transformation keywords in a position list</h2>
+
+<p>
+Certain keywords within a position list specify that the position list should
+match a position if some transformation of the position list matches the
+position. For example, the <a href="CQL-Position-List.html#position:fliphorizontal"><span style='white-space:nowrap;'>:fliphorizontal</span></a> keyword
+specifies that the position list matches a position if either the original
+position list matches the position, or if the position list, when flipped
+about the horizontal bisector, matches the position.
+</p>
+
+<p>
+To apply a transformation to a position list we apply the transformation to
+each piece designator that occurs in the position, and we recursively apply
+the transformation to any other position lists contained in that position
+list. If the transformation is a color flip translation, then we also flip
+interchange any <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a> keywords with <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>
+ones, and we flip the <a href="CQL-Position-List.html#position:result"><span style='white-space:nowrap;'>:result</span></a> keyword arguments
+appropriately.
+</p>
+
+<p>
+For example, consider the position list
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c2 <span class='piece'>&#x2657;</span>h8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+</code></div>
+
+<p>
+This matches any position with white to move that has a white rook on c2 and a
+white bishop on h8. The result of applying a unit left shift transformation to
+this position list is the new position list:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+</code></div>
+
+<p>
+that matches any position with white rook on b2 and white bishop on g8 with
+white to move.
+</p>
+
+<p>
+Similarly, the result of applying a horizontal flip to this position list is
+the position list:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+</code></div>
+
+<p>
+The result of applying a color flip transformation to the
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>b2 <span class='piece'>&#x2657;</span>g8 <a href="CQL-Position-List.html#position:wtm"><span style='white-space:nowrap;'>:wtm</span></a>)
+</code></div>
+
+<p>
+is thus
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>b8 <span class='piece'>&#x2657;</span>g1 <a href="CQL-Position-List.html#position:btm"><span style='white-space:nowrap;'>:btm</span></a>)
+</code></div>
+
+<p>
+Remember that shifts interact specially with certain squares on the edge.
+For example the result of applying a unit up shift to this position list:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>[a1,a8,h1,a8])
+</code></div>
+
+<p>
+is the position list:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>[a1,a2,h1,h2])
+</code></div>
+
+<p>
+A transformation set is any set of transformations. A transformation set
+applied to a position list is the set of all position lists that result from
+applying any transformation in the transformation set to the position list.
+</p>
+
+<p>
+Each transformation keyword is associated to a transformation set, each of which
+also includes the identity transformation.
+</p>
+
+<p>
+For the transformation keywords see:
+<a href="CQL-Position-List.html#transform">The position list: transformation keywords</a>.
+</p>
+
+<h2 id="examples">Examples of transformation keyword uses</h2>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3)
+</code></div>
+
+<p>
+This position list matches any position with a white rook on c3 and a black
+queen on g3. We can add a :shifthorizontal keyword:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shifthorizontal</span>)
+</code></div>
+
+<p>
+The set of transformed position lists is:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3)<br/>
+(position <span class='piece'>&#x2656;</span>b3 <span class='piece'>&#x265b;</span>f3)<br/>
+(position <span class='piece'>&#x2656;</span>a3 <span class='piece'>&#x265b;</span>e3)<br/>
+(position <span class='piece'>&#x2656;</span>d3 <span class='piece'>&#x265b;</span>h3)
+</code></div>
+
+<p>
+A position will match the new position list, if there is a white rook and
+black queen on the third rank and the white rook is four squares to the left
+of the black queen.
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shiftvertical</span>)
+</code></div>
+
+<p>
+Similarly, this position list will match any position in which there is a
+white rook on the same rank as a black queen such that the rook is on the c
+file and the queen on the g file.
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:shift</span>)
+</code></div>
+
+<p>
+This position list will match any position with a white rook and a black
+queen on the same rank, in which the white rook is four squares to the left
+of the black queen.
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:fliphorizontal</span>)
+</code></div>
+
+<p>
+This position list will match any position in which either the white rook
+is on c3 and the black queen is on g3, or the white rook is on c6 and the
+black queen on g6.
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:flipdiagonal</span>)
+</code></div>
+
+<p>
+This position list will match a position in which either a white rook is on
+c3 and a black queen on g3, or in which a white rook is on c3 and a black
+queen is on c7.
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2656;</span>c3 <span class='piece'>&#x265b;</span>g3 <span class='keyword'>:flip</span>)
+</code></div>
+
+<p>
+The following position list matches any position in which a white rook is
+somewhere behind a white pawn on the c file:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span class='keyword'>:shiftvertical</span>)
+</code></div>
+
+<p>
+Because of the way edge squares are treated, this will match a position in
+which, say, the white rook is on c2 and the white pawn on c7.
+</p>
+
+<p>
+To match any position in which a white rook is behind a white pawn on the
+same file, use:
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2659;</span>c2 <span class='piece'>&#x2656;</span>c1 <span class='keyword'>:shift</span>)
+</code></div>
+
+<h2 id="multiple">Multiple transformation keywords</h2>
+
+<p>
+When multiple transformation keywords occur, the associated transformation
+set is any transformation that can be expressed as a composition of
+transformations from the corresponding transformation sets. This feature
+is most often used when looking for a piece configuration that can occur
+anywhere on the board, possibly rotated or reflected: adding
+<span style='white-space:nowrap;'><code>:shift</code></span> <span style='white-space:nowrap;'><code>:flip</code></span> to the position specifier does this.
+</p>
+
+<p>
+For example, this position list
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span class='keyword'>:shift</span> <span class='keyword'>:flip</span>)
+</code></div>
+
+<p>
+matches any position in which a white knight attacks a black king, while
+</p>
+
+<div class='verb'><code>
+(position <span class='piece'>&#x2658;</span>d4 <span class='piece'>&#x265a;</span>f3 <span class='keyword'>:shift</span> <span class='keyword'>:flip</span> <span class='keyword'>:flipcolor</span>)
+</code></div>
+
+<p>
+matches any position in which a knight attacks a king of the opposite color.
+</p>
+
+<p>
+Note: This example can be written much more efficiently as
+</p>
+
+<div class='verb'><code>
+(position <a href="CQL-Position-List.html#position:attackcount"><span style='white-space:nowrap;'>:attackcount</span></a> <span class='piece'>&#x2658;</span> <span class='piece'>&#x265a;</span> 1 unlimited <span class='keyword'>:flipcolor</span>)
+</code></div>
+
+<p>
+however.
+</p>
+
+</body>
+</html>
