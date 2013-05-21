@@ -1014,12 +1014,12 @@ const char *HtmlTextIterData(HtmlTextIter *);
 
 /* Values returned by HtmlTextTokenType */
 #define HTML_TEXT_TOKEN_TEXT                    1
-#define HTML_TEXT_TOKEN_SPACE                   2
-#define HTML_TEXT_TOKEN_ZERO_SPACE              3
-#define HTML_TEXT_TOKEN_NO_BREAK_SPACE          4
-#define HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE   5
-#define HTML_TEXT_TOKEN_NEWLINE                 6
-#define HTML_TEXT_TOKEN_HARDNEWLINE             7
+#define HTML_TEXT_TOKEN_NEWLINE                 2
+#define HTML_TEXT_TOKEN_SPACE                   3
+#define HTML_TEXT_TOKEN_ZERO_SPACE              4
+#define HTML_TEXT_TOKEN_NO_BREAK_SPACE          5
+#define HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE   6
+#define HTML_TEXT_TOKEN_HAIR_SPACE              7
 
 /* These values are used internally by the htmltext.c module. They
  * should never be returned by HtmlTextTokenType(). But define them

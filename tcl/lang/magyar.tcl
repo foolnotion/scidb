@@ -34,7 +34,7 @@
 ::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N O Ó Ö Ő P Q R S T U Ú Ü Ű V W X Y Z a á b c d e é f g h i í j k l m n o ó ö ő p q r s t u ú ü ű v w x y z}
 
 ::mc::Key(Alt)			"Alt" ;# NEW
-::mc::Key(BS)			"\u232b"
+::mc::Key(BS)			"\u27fb" ;# "\u232b" is correct, but difficult to read
 ::mc::Key(Ctrl)			"Ctrl" ;# NEW
 ::mc::Key(Del)			"Delete" ;# NEW
 ::mc::Key(Down)			"\u2193"

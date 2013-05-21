@@ -350,11 +350,14 @@ nodeGetPreText(HtmlTextNode *pTextNode)
                 Tcl_AppendToObj(pRet, zData, nData);
                 break;
 
-            /*case HTML_TEXT_TOKEN_ZERO_SPACE:
-                break;*/
+            case HTML_TEXT_TOKEN_ZERO_SPACE:
+                break;
 
             case HTML_TEXT_TOKEN_NEWLINE:
                 zWhite = "\n";
+            case HTML_TEXT_TOKEN_NO_BREAK_SPACE:
+            case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE:
+            case HTML_TEXT_TOKEN_HAIR_SPACE:
             case HTML_TEXT_TOKEN_SPACE: {
                 int ii;
                 for (ii = 0; ii < nData; ii++) {
@@ -2209,6 +2212,18 @@ nodeTextCommand(Tcl_Interp *interp, HtmlNode *pNode, int objc, Tcl_Obj *CONST ob
                         break;
                     case HTML_TEXT_TOKEN_SPACE:
                         zType = "space";
+                        pObj = Tcl_NewIntObj(nData);
+                        break;
+                    case HTML_TEXT_TOKEN_NO_BREAK_SPACE:
+                        zType = "no-break-space";
+                        pObj = Tcl_NewIntObj(nData);
+                        break;
+                    case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE:
+                        zType = "narrow.no-break-space";
+                        pObj = Tcl_NewIntObj(nData);
+                        break;
+                    case HTML_TEXT_TOKEN_HAIR_SPACE:
+                        zType = "hair-space";
                         pObj = Tcl_NewIntObj(nData);
                         break;
                     case HTML_TEXT_TOKEN_ZERO_SPACE:

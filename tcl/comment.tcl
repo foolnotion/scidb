@@ -154,19 +154,25 @@ proc open {parent pos lang} {
 	ttk::scrollbar $top.sb -command [namespace code [list ::widget::textLineScroll $top.text]]
 
 	set font $Fonts(normal)
+	set fam [font configure $font -family]
+	set size [font configure $font -size]
 	foreach {attr args} {bold bold italic italic bold-italic {bold italic}} {
 		set f $Fonts($attr)
 		if {[llength $f] == 0} {
-			set f [list [font configure $font -family] [font configure $font -size] {*}$args]
+			set f [list $fam $size {*}$args]
 		}
 		$top.text tag configure $attr -font $f
 		if {$attr eq "bold"} { $top.text tag configure codeb -font $f }
 	}
 	# XXX possibly we can use only {Scidb Symbol Traveller}
-	$top.text tag configure figurine -font $::font::figurine(text:normal) -underline no
-	$top.text tag configure figurineb -font $::font::figurine(text:bold) -underline no
+	$top.text tag configure figurine -font $::font::figurine(text:normal)
+	$top.text tag configure figurineb -font $::font::figurine(text:bold)
 	$top.text tag configure symbol -font $::font::symbol(text:normal)
 	$top.text tag configure symbolb -font $::font::symbol(text:bold)
+	$top.text tag configure code -font [list $fam $size]
+	foreach tag {figurine figurineb symbol symbolb code codeb} {
+		$top.text tag configure underline -underline no
+	}
 	$top.text tag configure underline -underline yes
 
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
@@ -355,7 +361,7 @@ proc Accept {} {
 
 	SetUndoPoint $Vars(widget:text)
 	set Vars(content) [ParseContent $Vars(lang)]
-	set Vars(comment) [::scidb::misc::xml fromList $Vars(content)]
+	set Vars(comment) [::scidb::misc::xml fromList $Vars(content) -replacewithspace \u2423]
 	::scidb::game::update comment $Vars(key) $Vars(pos) $Vars(comment)
 }
 
@@ -389,7 +395,7 @@ proc Revert {dlg} {
 	variable Vars
 
 	set w $Vars(widget:text)
-	set comment [GetComment]
+	set comment [GetNormalizedComment]
 	SetUndoPoint $w
 	$w delete 1.0 end
 	SetupComment $Vars(lang) $comment
@@ -400,11 +406,19 @@ proc Revert {dlg} {
 
 proc GetComment {} {
 	variable Vars
+	return [::scidb::game::query comment $Vars(pos)]
+}
 
-	set comment [::scidb::game::query comment $Vars(pos)]
+
+proc GetNormalizedComment {} {
+	variable Vars
+
+	set comment [GetComment]
+
 	set content [::scidb::misc::xml toList $comment \
 		-expandemoticons [ExpandEmoticons] \
 		-detectemoticons [DetectEmoticons] \
+		-replacespaces "\u2423" \
 	]
 
 	foreach entry $content {
@@ -447,7 +461,7 @@ proc Init {parent lang} {
 
 	LanguageChanged $Vars(dialog) $Vars(dialog)
 
-	set Vars(comment) [::scidb::game::query comment $Vars(pos)]
+	set Vars(comment) [GetComment]
 	set Vars(langSet) [::scidb::game::query langSet]
 
 	SwitchLanguage $lang
@@ -469,9 +483,11 @@ proc Update {{setup 1}} {
 	if {$setup} {
 		array unset Vars undoStack:*
 		array unset Vars undoStackIndex:*
+
 		set Vars(content) [::scidb::misc::xml toList $Vars(comment) \
 			-expandemoticons [ExpandEmoticons] \
 			-detectemoticons [DetectEmoticons] \
+			-replacespaces "\u2423" \
 		]
 	}
 
@@ -531,6 +547,8 @@ proc InsertComment {lang content {setup 0}} {
 	$w tag raise figurineb
 	$w tag raise symbol
 	$w tag raise symbolb
+	$w tag raise code
+	$w tag raise codeb
 
 	set Vars(init) 0
 
@@ -643,6 +661,7 @@ proc InsertEmoticon {w text {useFormatting yes}} {
 		if {$useFormatting} {
 			DoFormatting $w $mark $mark
 		}
+		Modified $w
 	} else {
 		InsertText $w [::emoticons::lookupCode $text] {} $useFormatting
 	}
@@ -693,6 +712,8 @@ proc DoFormatting {w start end} {
 		$w tag raise figurineb
 		$w tag raise symbol
 		$w tag raise symbolb
+		$w tag raise code
+		$w tag raise codeb
 	}
 }
 
@@ -830,9 +851,10 @@ proc ParseDump {dump} {
 proc Modified {w} {
 	variable Vars
 
+	$w edit modified no
+
 	if {$Vars(init)} { return }
 
-	$w edit modified no
 	set lang $Vars(lang)
 	if {![info exists Vars(content:$lang)]} { return }
 
@@ -2739,6 +2761,8 @@ bind Comment <Control-i>		{ comment::TextInsert %W \t }
 bind Comment <Control-I>		{ comment::TextInsert %W \t }
 bind Comment <Control-m>		{ comment::TextInsert %W \n }
 bind Comment <Control-M>		{ comment::TextInsert %W \n }
+bind Comment <Control-s>		{ comment::TextInsert %W \u2423 }
+bind Comment <Control-S>		{ comment::TextInsert %W \u2423 }
 bind Comment <Control-b>		{ comment::TextSetCursorExt %W insert-1displayindices }
 bind Comment <Control-B>		{ comment::TextSetCursorExt %W insert-1displayindices }
 bind Comment <Control-f>		{ comment::TextSetCursorExt %W insert+1displayindices +1 }

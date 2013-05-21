@@ -1602,6 +1602,7 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
 
     int sw;                        /* Space-Width in pFont. */
     int ts;                        /* Thin-Space: 1/5 of 'em' unit in pFont. */
+    int hs;                        /* Hair-Space: 1 pixel. */
     int nh;                        /* Newline-height in pFont */
     const int szonly = pContext->isSizeOnly;
 
@@ -1615,6 +1616,7 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
 
     sw = pFont->space_pixels;
     ts = (pFont->em_pixels + 2)/5;
+    hs = 1;
     nh = pFont->metrics.ascent + pFont->metrics.descent;
 
     assert(HtmlNodeIsText(pNode));
@@ -1698,6 +1700,22 @@ HtmlInlineContextAddText(InlineContext *pContext, HtmlNode *pNode)
                 }
                 for (i = 0; i < nData; i++) {
                     inlineContextAddSpace(pContext, sw, eWhitespace);
+                }
+                pPrevTextBox = pPrevBox = NULL;
+                iJoin = 0;
+                break;
+            }
+ 
+            case HTML_TEXT_TOKEN_HAIR_SPACE: {
+                int i;
+                if (
+                    eWhitespace == CSS_CONST_PRE &&
+                    HtmlInlineContextIsEmpty(pContext)
+                ) {
+                    inlineContextAddInlineCanvas(pContext, INLINE_TEXT, 0);
+                }
+                for (i = 0; i < nData; i++) {
+                    inlineContextAddSpace(pContext, hs, eWhitespace);
                 }
                 pPrevTextBox = pPrevBox = NULL;
                 iJoin = 0;

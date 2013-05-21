@@ -35,7 +35,7 @@
 ::mc::SortOrder		{A À Å B C D E È É F G H I Ì J K L M N O Ò P Q R S T U Ù V W X Y Z a à å b c d e è é f g h i ì j k l m n o ò p q r s t u ù v w x y z}
 
 ::mc::Key(Alt)				"Alt"
-::mc::Key(BS)				"\u232b"
+::mc::Key(BS)				"\u27fb" ;# "\u232b" is correct, but difficult to read
 ::mc::Key(Ctrl)			"Ctrl"
 ::mc::Key(Del)				"Canc"
 ::mc::Key(Down)			"\u2193"

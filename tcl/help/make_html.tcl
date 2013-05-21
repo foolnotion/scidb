@@ -488,6 +488,7 @@ proc readContents {chan file} {
 			}
 		}
 
+# <kbd class='key'>Strg</kbd>+<kbd class='key'>%::application::board::mc::Accel(edit-comment)%</kbd>
 		while {[regexp {<key>([a-zA-Z%:\(\)-]*)</key>} $line _ key]} {
 			switch $key {
 				King		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 0]</kbd>" }

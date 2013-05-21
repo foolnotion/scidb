@@ -34,7 +34,7 @@
 ::mc::SortOrder		{}
 
 ::mc::Key(Alt)				"Alt"
-::mc::Key(BS)				"\u232b"
+::mc::Key(BS)				"\u27fb" ;# "\u232b" is correct, but difficult to read
 ::mc::Key(Ctrl)			"Strg"
 ::mc::Key(Del)				"Entf"
 ::mc::Key(Down)			"\u2193"

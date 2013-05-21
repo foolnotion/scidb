@@ -19,25 +19,82 @@ INDEX Kommentareditor
 TITLE Kommentareditor
 
 <p>
-Der Kommentareditor erlaubt die Eingabe bzw. Modifizierung von
-Kommentaren im Partietext in verschiedenen Sprachversionen. Es werden
-alle europäischen Sprachen unterstützt.
-<p>
+Dieser Dialog wird auf einer der folgenden Weisen im Partieeditor geöffnet:
+</p>
 
 <ul>
-  <li><a href="#Formatting">Textformatierung</a></li>
-  <li><a href="#Control">Steuerung im Textfeld</a></li>
-  <li><a href="#Buttons">Schaltflächen</a></li>
-  <li><a href="#Emoticons">Smileys</a></li>
-  <li><a href="#Menu">Kontextsensitives Menü</a></li>
+  <li style="margin-bottom:0.5em;">
+    Mit dem Tastaturkürzel
+    <key>Ctrl</key>+<key>%::application::board::mc::Accel(edit-comment)%</key>
+    zum Bearbeiten eines Kommentars nach dem Zug.
+  </li>
+  <li style="margin-bottom:0.5em;">
+    Mit dem Tastaturkürzel
+    <key>Ctrl</key>+<key>Shift</key>+<key>%::application::board::mc::Accel(edit-comment)%</key>
+    zum Bearbeiten eines Kommentars vor dem Zug; bzw. zum Bearbeiten eines
+    vorangestellten Kommentars einer Variante, wenn der Cursor vor dem ersten
+    Zug der Variante (bzw. Hauptvariante) steht.
+  </li>
+  <li style="margin-bottom:0.5em;">
+    Über das kontextsensitive Menü des Partieeditors.
+  </li>
+  <li>
+    Durch Mausklick auf einen Kommentar. In diesem Fall schaltet der
+    Dialog automatisch bereits beim Öffnen auf die Sprache des
+    angeklickten Kommentars um.
+  </li>
+  <li></li>
 </ul>
+
+<p>
+Der Kommentareditor besteht aus fünf Regionen:
+<p>
+
+<dir><img src="images/comment-editor.png" /></dir>
+
+<ul>
+  <li><a href="#Language">Sprachauswahl</a> (obere Werkzeugleiste)</li>
+  <li><a href="#Formatting">Textformatierung</a> (linke Werkzeugleiste)</li>
+  <li><a href="#Text">Textfeld</a></li>
+  <li><a href="#Buttons">Schaltflächen zur Textfeldsteuerung</a> (Schaltflächen rechts vom Textfeld)</li>
+  <li><a href="#Dialog">Dialogschaltflächen</a> (Schaltflächen unten)</li>
+</ul>
+
+<h2 id="Language">Sprachauswahl</h2>
+
+<p>
+Der Kommentareditor erlaubt die Eingabe bzw. Modifizierung von
+Kommentaren im Partietext in verschiedenen Sprachversionen. Es werden
+alle europäischen Sprachen unterstützt. Mit dem Symbol
+<img src="../images/green-plus.png" /> öffnet sich eine Combobox zum
+Hinzufügen einer weiteren Sprache.
+<p>
 
 <h2 id="Formatting">Textformatierung</h2>
 
 <p>
-Kommentare können formatiert werden: Fettschrift, Kursivschrift, und Unterstrichen.
-Es sind alle Kombinationen dieser Formatierungen erlaubt. Das Setzen einer
-Formatierung wirkt auf den selektierten Bereich.
+Kommentare können formatiert werden:
+
+<dir>
+  <li><img src="../images/format-bold.png" />&ensp;Fettschrift</li>
+  <li><img src="../images/format-italic.png">&ensp;Kursivschrift</li>
+  <li><img src="../images/format-underline.png">&ensp;Unterstrich</li>
+</dir>
+
+Es sind alle Kombinationen dieser Formatierungen erlaubt. Dazu wird ein
+Textbereich selektiert (<see/> <a href="#Control">Steuerung im Textfeld</a>)
+und dann das entsprechende Symbol gewählt. Das Setzen einer Formatierung wirkt
+auf den gesamten selektierten Bereich. Bei jeder Neupositionierung des
+Einfüge-Cursors im Textfeld wird die Formatierung des Zeichens links vom
+Cursor entsprechend angezeigt. Bei einer Texteingabe wird die Formatierung
+links vom Einfüge-Cursor weiter fortgesetzt, jedoch nicht die Formatierung
+rechts vom Einfüge-Cursor.
+</p>
+
+<p>
+Es gibt eine Ausnahme: Figurine (graphische Figuren, wie z.B. &King;) und
+Stellungskommentierungssymbole (wie z.B. &#x00b1;) unterliegen nicht der
+Kursivschriftformatierung und auch nicht der Unterstrichformatierung.
 </p>
 
 <annotation>
@@ -52,7 +109,15 @@ oder <i>%::export::mc::Option(pgn,use_scidb_import_format)%</i>
 wird verwendet) gehen alle Formatierungen verloren.
 </annotation>
 
-<h2 id="Control">Steuerung im Textfeld</h2>
+<h2 id="Control">Textfeld</h2>
+
+<ul>
+  <li><a href="#Text:Control">Steuerung im Textfeld</a></li>
+  <li><a href="#Text:Emoticons">Smileys</a></li>
+  <li><a href="#Text:Menu">Kontextsensitives Menü</a></li>
+</ul>
+
+<h3 id="Text:Control">Steuerung im Textfeld</h3>
 
 <ul>
   <li><a href="#Control:Mouse">Cursorsteuerung mit der Maus</a></li>
@@ -438,7 +503,7 @@ zu machen.
 
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="true">
-      <key>Alt</key>+<key>BS</key> or<br/>
+      <key>Alt</key>+<key>BS</key> oder<br/>
       <key>Alt</key>+<key>Del</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -493,6 +558,23 @@ zu machen.
 
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="true">
+      <key>Ctrl</key>+<key>S</key>
+    </td>
+    <td style="padding-top: 1em; padding-left: 0.5em;">
+      Fügt das Zeichen &#x2423; in den Text ein.
+      Dieses Zeichen hat eine besondere Bedeutung am Textanfang und
+      Textende. Leerzeichen am Textanfang und Textende werden beim
+      Speichern entfernt (damit sie nicht versehentlich gespeichert
+      werden, denn sie werden im Partieeditor leicht übersehen).
+      Um Leerzeichen am Textanfang oder Textende trotzdem zu erwingen
+      kann dieses Zeichen eingesetzt werden, denn es wird beim Speichern
+      in Leerzeichen umgwandelt, jedoch eben nur am Textanfang und am
+      Textende.
+    </td>
+  </tr>
+
+  <tr valign="top">
+    <td style="padding-top: 1em;" nowrap="true">
       <key>Ctrl</key>+<key>Enter</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -511,30 +593,7 @@ Nachfolgende Tastaturkürzel dienen zum Einfügen einer Figur:
 
 INCLUDE ../Comment-Editor-Pieces.txt
 
-<h2 id="Buttons">Schaltflächen</h2>
-
-<dir><img src="images/comment-editor-buttons.png" /></dir>
-
-<p>
-<menuitem>%::comment::mc::InsertSymbol%</menuitem>
-Schnelleingabe eines Symbols an der aktuellen Cursorposition, wie z.B.
-einer Stellungsbewertung, oder eines anderen Sonderzeichens.
-</p>
-
-<p>
-<menuitem>%::widget::mc::Clear%</menuitem>
-Den gesamten Text (der aktuellen Sprache) löschen.
-</p>
-
-<p>
-<menuitem>%::widget::mc::Revert%</menuitem>
-Den Originaltext für die aktuelle Sprache wiederherstellen. Diese
-Schaltfläche ist nur dann aktiv, wenn der neue Text vom Originaltext
-abweicht. Sobald eine Speicherung des Textes erfolgt, so ist dies der neue
-Originaltext.
-</p>
-
-<h2 id="Emoticons">Smileys</h2>
+<h3 id="Text:Emoticons">Smileys</h3>
 
 <p>
 Der Editor erkennt Smileys, sofern die Erkennung vom Smileys im Partieeditor
@@ -550,11 +609,17 @@ nach dem Speichern (mit "%::widget::mc::Apply%").
 </p>
 
 <p>
+Werden Smiley-Piktogramme angezeigt, so unterliegen sie natürlich keiner
+Textformatierung. Jedoch sollte beachtet werden, das die Textanzeige der
+Smiley-Codes der gesetzten Formatierung unterliegt.
+</p>
+
+<p>
 Smileys werden in der Textform abgespeichert, d.h. sie sind in andere
 Datenbankformate übertragbar.
 </p>
 
-<h2 id="Menu">Kontextsensitives Menü</h2>
+<h3 id="Text:Menu">Kontextsensitives Menü</h3>
 
 Das kontextsensitive Menü im Textfeld bietet folgende Funktionen:
 
@@ -643,6 +708,48 @@ Wenn eingeschaltet, dann werden die erkannten Smileys mit Piktogrammen
 angezeigt, andernfalls ist der Text für diesen Smiley zu sehen.
 Dieser Menüpunkt steht nur zur Verfügung, wenn die automatische Erkennung von
 Smileys im Partieeditor eingeschaltet ist.
+</p>
+
+<h2 id="Buttons">Schaltflächen zur Textfeldsteuerung</h2>
+
+<p>
+<menuitem>%::comment::mc::InsertSymbol%</menuitem>
+Schnelleingabe eines Symbols an der aktuellen Cursorposition, wie z.B.
+einer Stellungsbewertung, oder eines anderen Sonderzeichens.
+</p>
+
+<p>
+<menuitem>%::widget::mc::Clear%</menuitem>
+Den gesamten Text (der aktuellen Sprache) löschen.
+</p>
+
+<p>
+<menuitem>%::widget::mc::Revert%</menuitem>
+Den Originaltext für die aktuelle Sprache wiederherstellen. Diese
+Schaltfläche ist nur dann aktiv, wenn der neue Text vom Originaltext
+abweicht. Sobald eine Speicherung des Textes erfolgt, so ist dies der neue
+Originaltext.
+</p>
+
+<h2 id="Buttons">Dialogschaltflächen</h2>
+
+<p>
+<menuitem>%::widget::mc::Ok%</menuitem>
+Die Texte aller ausgewählten Sprachen speichern und den Dialog schliessen.
+</p>
+
+<p>
+<menuitem>%::widget::mc::Apply%</menuitem>
+Die Texte aller ausgewählten Sprachen speichern ohne den Dialog zu verlassen
+(zur Voransicht im Partieeditor).
+</p>
+
+<p>
+<menuitem>%::widget::mc::Cancel%</menuitem>
+Den Dialog ohne Speicherung schliessen, d.h. das alle evt. vorhandenen
+Änderungen verworfen werden. Wurde zuvor mit
+<menuitem>%::widget::mc::Apply%</menuitem> bereits gespeichert, so bleibt
+der zuletzt gespeicherte Text erhalten.
 </p>
 
 END

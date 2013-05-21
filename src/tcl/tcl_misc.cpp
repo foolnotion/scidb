@@ -186,7 +186,7 @@ class ToList : public ::db::Comment::Callback
 {
 public:
 
-	ToList(bool detectEmoticons, bool expandEmoticons);
+	ToList(mstl::string const& space, bool detectEmoticons, bool expandEmoticons);
 	~ToList() throw();
 
 	Tcl_Obj* result();
@@ -215,23 +215,30 @@ private:
 	void putTag(char const* tag);
 	void putTag(char const* tag, mstl::string const& content);
 	void appendTag(mstl::string const& tag, mstl::string const& content);
+	void resolveSpaces();
 
 	Tcl_Obj*			m_result;
 	mstl::string	m_tag;
 	mstl::string	m_content;
 	Stack				m_stack;
+	mstl::string	m_space;
 	bool				m_detectEmoticons;
 	bool				m_expandEmoticons;
+	Tcl_Obj*			m_first;
+	Tcl_Obj*			m_last;
 };
 
 
 Tcl_Obj* ToList::result() { return m_result; }
 
 
-ToList::ToList(bool detectEmoticons, bool expandEmoticons)
+ToList::ToList(mstl::string const& space, bool detectEmoticons, bool expandEmoticons)
 	:m_result(Tcl_NewListObj(0, 0))
+	,m_space(space)
 	,m_detectEmoticons(detectEmoticons)
 	,m_expandEmoticons(expandEmoticons)
+	,m_first(0)
+	,m_last(0)
 {
 	Tcl_IncrRefCount(m_result);
 	m_stack.push(Tcl_NewListObj(0, 0));
@@ -249,6 +256,70 @@ ToList::~ToList() throw()
 
 
 void
+ToList::resolveSpaces()
+{
+	if (m_first)
+	{
+		int objc;
+		Tcl_Obj** objv;
+
+		Tcl_ListObjGetElements(0, m_first, &objc, &objv);
+		M_ASSERT(objc == 2);
+
+		mstl::string str(Tcl_GetString(objv[1]));
+		mstl::string res;
+
+		char const* s = str.begin();
+		char const* e = str.end();
+
+		for ( ; s < e && *s == ' '; ++s)
+			res.append(m_space);
+
+		if (!res.empty())
+		{
+			res.append(s, e);
+
+			Tcl_Obj* objs[1] = { Tcl_NewStringObj(res, res.size()) };
+			Tcl_ListObjReplace(0, m_first, 1, 1, 1, objs);
+		}
+
+		m_first = 0;
+	}
+
+	if (m_last)
+	{
+		int objc;
+		Tcl_Obj** objv;
+
+		Tcl_ListObjGetElements(0, m_last, &objc, &objv);
+		M_ASSERT(objc == 2);
+
+		mstl::string str(Tcl_GetString(objv[1]));
+		mstl::string res;
+
+		char const* s = str.begin();
+		char const* e = str.end();
+		char const* t = str.end();
+
+		while (t > s && t[-1] == ' ')
+			--t;
+
+		if (t < e && (t > s || m_last != m_first))
+		{
+			res.append(s, t);
+			while (t++ < e)
+			res.append(m_space);
+
+			Tcl_Obj* objs[1] = { Tcl_NewStringObj(res, res.size()) };
+			Tcl_ListObjReplace(0, m_last, 1, 1, 1, objs);
+		}
+
+		m_last = 0;
+	}
+}
+
+
+void
 ToList::appendTag(mstl::string const& tag, mstl::string const& content)
 {
 	M_ASSERT(!m_stack.empty());
@@ -256,7 +327,17 @@ ToList::appendTag(mstl::string const& tag, mstl::string const& content)
 	Tcl_Obj* objv[2];
 	objv[0] = Tcl_NewStringObj(tag, tag.size());
 	objv[1] = Tcl_NewStringObj(content, content.size());
-	Tcl_ListObjAppendElement(0, m_stack.top(), Tcl_NewListObj(2, objv));
+
+	Tcl_Obj* list = Tcl_NewListObj(2, objv);
+
+	if (!m_space.empty() && tag == "str")
+	{
+		if (m_first == 0)
+			m_first = list;
+		m_last = list;
+	}
+
+	Tcl_ListObjAppendElement(0, m_stack.top(), list);
 }
 
 
@@ -349,6 +430,7 @@ ToList::endLanguage(mstl::string const&)
 	M_ASSERT(!m_stack.empty());
 
 	putContent();
+	resolveSpaces();
 	m_stack.pop();
 }
 
@@ -470,7 +552,7 @@ class Parser
 {
 public:
 
-	Parser(Tcl_Obj* obj);
+	Parser(Tcl_Obj* obj, mstl::string const& space);
 
 	mstl::string parse();
 
@@ -487,11 +569,13 @@ private:
 	unsigned			m_attr[3];
 	bool				m_mode[3];
 	ModeStack		m_stack;
+	mstl::string	m_space;
 };
 
 
-Parser::Parser(Tcl_Obj* obj)
+Parser::Parser(Tcl_Obj* obj, mstl::string const& space)
 	:m_obj(obj)
+	,m_space(space)
 {
 	M_ASSERT(m_obj);
 
@@ -614,19 +698,42 @@ Parser::parse()
 							{
 								int len;
 								char const* str = Tcl_GetStringFromObj(objs[1], &len);
+								mstl::string::size_type appendSpaces = 0;
 
 								if (firstStrIndex == k)
 								{
-									while (len > 0 && ::isspace(*str))
-										++str, --len;
+									for ( ; len > 0 && ::isspace(*str); ++str)
+										--len;
+
+									if (!m_space.empty())
+									{
+										while (	len >= int(m_space.size())
+												&& ::strncmp(str, m_space, m_space.size()) == 0)
+										{
+											str += m_space.size();
+											len -= m_space.size();
+											m_xml.append(' ');
+										}
+									}
 								}
 
 								if (lastStrIndex == k)
 								{
-									char const* s = str + len - 1;
+									char const* s = str + len;
 
-									while (len > 0 && ::isspace(*s))
-										--s, --len;
+									for ( ; len > 0 && ::isspace(s[-1]); --s)
+										--len;
+
+									if (!m_space.empty() && (s > str || lastStrIndex != firstStrIndex))
+									{
+										while (	len >= int(m_space.size())
+												&& ::strncmp(s - m_space.size(), m_space, m_space.size()) == 0)
+										{
+											s -= m_space.size();
+											len -= m_space.size();
+											appendSpaces++;
+										}
+									}
 								}
 
 								if (len > 0)
@@ -646,6 +753,8 @@ Parser::parse()
 										}
 									}
 								}
+
+								m_xml.append(appendSpaces, ' ');
 							}
 							break;
 
@@ -756,6 +865,8 @@ cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	bool detectEmoticons = false;
 	bool expandEmoticons = false;
 
+	mstl::string space;
+
 	int offs = 0;
 
 	while (objc - offs > 3)
@@ -766,13 +877,15 @@ cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			detectEmoticons = boolFromObj(objc, objv, 3 + offs);
 		else if (::strcmp(option, "-expandemoticons") == 0)
 			expandEmoticons = boolFromObj(objc, objv, 3 + offs);
+		else if (::strcmp(option, "-replacespaces") == 0)
+			space.assign(stringFromObj(objc, objv, 3 + offs));
 		else
-			return error(CmdLookup, 0, 0, "unknown option '%s'", Tcl_GetString(objv[2 + offs]));
+			return error(CmdXml, "toList", 0, "unknown option '%s'", Tcl_GetString(objv[2 + offs]));
 
 		offs += 2;
 	}
 
-	ToList callback(detectEmoticons, expandEmoticons);
+	ToList callback(space, detectEmoticons, expandEmoticons);
 	comment.parse(callback);
 	setResult(callback.result());
 
@@ -783,7 +896,23 @@ cmdXmlToList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdXmlFromList(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	Parser parser(objectFromObj(objc, objv, 1));
+	mstl::string space;
+
+	int offs = 0;
+
+	while (objc - offs > 3)
+	{
+		char const* option = Tcl_GetString(objv[2 + offs]);
+
+		if (::strcmp(option, "-replacewithspace") == 0)
+			space.assign(stringFromObj(objc, objv, 3 + offs));
+		else
+			return error(CmdXml, "fromList", 0, "unknown option '%s'", Tcl_GetString(objv[2 + offs]));
+
+		offs += 2;
+	}
+
+	Parser parser(objectFromObj(objc, objv, 1), space);
 	setResult(parser.parse());
 	return TCL_OK;
 }

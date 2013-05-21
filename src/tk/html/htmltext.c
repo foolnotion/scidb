@@ -46,10 +46,10 @@
 #define ISNEWLINE(x) ((x) == '\n' || (x) == '\r')
 #define ISTAB(x) ((x) == '\t')
 #define ISSPACE(x) isspace((unsigned char)(x))
-#define ISZEROWIDTHSPACE(x) ((x) == 0x200B)
 #define ISSOFTHYPHEN(x) ((x) == 0x00AD)
 #define ISHYPHEN(x) ((x) == '-')
 #define ISZEROWIDTHJOINER(x) ((x) == 0x200D)
+#define ISSPECIALSPACE(x) ((x) == 0x200B || (x) == 0x200A || (x) == 0x202F || (x) == 0x000a)
 
 #define BUFSIZE 2048
 
@@ -1309,10 +1309,11 @@ initHtmlText_TextNode(HtmlTree *pTree, HtmlTextNode *pTextNode, HtmlTextInit *pI
             case HTML_TEXT_TOKEN_SPACE:
             case HTML_TEXT_TOKEN_NO_BREAK_SPACE:
             case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE:
+            case HTML_TEXT_TOKEN_HAIR_SPACE:
                 if (isPre) {
                     int ii;
                     const char *zWhite;
-                    zWhite = (eType==HTML_TEXT_TOKEN_SPACE ? " " : "\n");
+                    zWhite = (eType==HTML_TEXT_TOKEN_NEWLINE ? "\n" : " ");
                     for (ii = 0; ii < nData; ii++) {
                         Tcl_AppendToObj(pInit->pText->pObj, zWhite, 1);
                     }
@@ -1826,7 +1827,7 @@ tokenLength(const unsigned char *zToken, const unsigned char *zEnd)
     const unsigned char *zNext = zCsr;
 
     iChar = utf8Read(zCsr, zEnd, &zNext);
-    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar) && !ISZEROWIDTHSPACE(iChar)) {
+    while (iChar && (iChar >= 256 || !ISSPACE(iChar)) && !ISCJK(iChar) && !ISSPECIALSPACE(iChar)) {
         Tcl_UniChar prevChar = iChar;
         zCsr = zNext;
         iChar = utf8Read(zCsr, zEnd, &zNext);
@@ -1978,7 +1979,7 @@ populateTextNode(
                  */
                 if (ISTAB(*zCsr)) nSpace += (7 - (iCol%8));
 
-                /* The sequence CR (carraige return) followed by LF (line
+                /* The sequence CR (carriage return) followed by LF (line
                  * feed) counts as a single newline. If either is encountered
                  * alone, this is also a single newline. LF followed by CR
                  * is two newlines.
@@ -2022,22 +2023,40 @@ populateTextNode(
             /* ZERO WIDTH SPACE */
             if (pText) {
                 setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_ZERO_SPACE, 1);
+                pText->zText[nText] = ' ';
             }
+            nText++;
             nToken++;
+            zCsr += 3;
+        } else if (c == 0xE2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0x8A) {
+            /* HAIR SPACE */
+            if (pText) {
+                setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_HAIR_SPACE, 1);
+                pText->zText[nText] = ' ';
+            }
+            nText++;
+            nToken++;
+            iCol++;
             zCsr += 3;
         } else if (c == 0xE2 && (unsigned char)zCsr[1] == 0x80 && (unsigned char)zCsr[2] == 0xAF) {
             /* NARROW NO-BREAK SPACE */
             if (pText) {
                 setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE, 1);
+                pText->zText[nText] = ' ';
             }
+            nText++;
             nToken++;
+            iCol++;
             zCsr += 3;
         } else if (c == 0xC2 && (unsigned char)zCsr[1] == 0xA0) {
             /* NO-BREAK SPACE */
             if (pText) {
                 setupToken(&pText->aToken[nToken], HTML_TEXT_TOKEN_NO_BREAK_SPACE, 1);
+                pText->zText[nText] = ' ';
             }
+            nText++;
             nToken++;
+            iCol++;
             zCsr += 2;
         } else {
 

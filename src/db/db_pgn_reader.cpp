@@ -3380,21 +3380,34 @@ PgnReader::parseComment(Token prevToken, int c)
 	if (c == '{')
 	{
 		// parse comment until first '}'
-		do
-			c = get();
-		while (::isspace(c));
-
-		while (c != '}')
+		if (m_modification == Normalize)
 		{
-			if (c == '\n' || c == '\r')
-			{
-				::appendSpace(content);
+			do
+				c = get();
+			while (::isspace(c));
 
-				do
+			while (c != '}')
+			{
+				if (c == '\n' || c == '\r')
+				{
+					::appendSpace(content);
+
+					do
+						c = get();
+					while (::isspace(c));
+				}
+				else
+				{
+					content += c;
 					c = get();
-				while (::isspace(c));
+				}
 			}
-			else
+		}
+		else
+		{
+			c = get();
+
+			while (c != '}')
 			{
 				content += c;
 				c = get();

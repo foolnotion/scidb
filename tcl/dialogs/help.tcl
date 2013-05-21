@@ -509,11 +509,7 @@ proc FillContents {t contents {depth 0}} {
 					}
 				} else {
 					set collapse yes
-					if {$d == 0} {
-						set icon [list $bookClosed {!open} $bookOpen {open}]
-					} else {
-						set icon $document
-					}
+					set icon [list $bookClosed {!open} $bookOpen {open}]
 				}
 				$t add $d \
 					-text $title \
@@ -986,10 +982,8 @@ proc RecordGeometry {pw} {
 	if {$x < 0} { set x 0 }
 	if {$y < 0} { set y 0 }
 
-	if {[llength [$pw panes]] == 1} {
-		set w [expr {min($w + $Priv(minsize), [winfo screenwidth $pw] - 30)}]
-	} else {
-		set Priv(minsize) [winfo width [lindex [$pw panes] 0]]
+	if {[llength [$pw panes]] > 1} {
+		set Priv(minsize) [winfo width $Priv(contents:tree)]
 	}
 
 	set Options(geometry) "${w}x${h}+${x}+${y}"
@@ -1172,6 +1166,7 @@ proc ToggleIndex {} {
 		$pw forget $Priv(control)
 	} else {
 		$pw add $Priv(control) -sticky nswe -stretch never -minsize $Priv(minsize) -before [$pw panes]
+		after idle [list $pw paneconfigure $Priv(control) -minsize 260]
 	}
 }
 

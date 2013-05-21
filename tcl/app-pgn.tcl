@@ -1563,13 +1563,7 @@ proc PrintComment {position w level key pos data} {
 					if {$tag eq "symbol"} {
 						if {$flags & 1} { set tag symbolb }
 					} else {
-						switch $flags {
-							0 { set tag {} }
-							1 { set tag bold }
-							2 { set tag italic }
-							3 { set tag bold-italic }
-						}
-						if {$underline} { lappend tag underline }
+						if {$flags & 1} { set tag codeb } else { set tag code }
 					}
 					lappend tag $langTag $nagTag
 					set sym [::font::mapNagToUtfSymbol $sym]

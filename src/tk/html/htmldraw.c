@@ -2660,11 +2660,24 @@ updateRegions(HtmlTree *pTree, HtmlElementNode *pElem, Drawable drawable, int dx
 
                             case HTML_TEXT_TOKEN_NEWLINE:
                             case HTML_TEXT_TOKEN_SPACE:
+                            case HTML_TEXT_TOKEN_NO_BREAK_SPACE:
                                 buf[len++] = ' ';
                                 break;
 
-                            /*case HTML_TEXT_TOKEN_ZERO_SPACE:
-                                break;*/
+                            case HTML_TEXT_TOKEN_NARROW_NO_BREAK_SPACE:
+                                buf[len++] = 0xE2;
+                                buf[len++] = 0x80;
+                                buf[len++] = 0x86;
+                                break;
+
+                            case HTML_TEXT_TOKEN_HAIR_SPACE:
+                                buf[len++] = 0xE2;
+                                buf[len++] = 0x80;
+                                buf[len++] = 0x8A;
+                                break;
+
+                            case HTML_TEXT_TOKEN_ZERO_SPACE:
+                                break;
                         }
                     }
                 }

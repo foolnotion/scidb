@@ -307,6 +307,8 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)
 		$w tag configure symbolb -font $::font::symbol($fontContext:bold)
+		$w tag configure code -font $::font::text($fontContext:normal)
+		$w tag configure codeb -font $::font::text($fontContext:bold)
 
 		$w tag configure opening -foreground $Colors(foreground:opening)
 		$w tag configure opening -font $::font::text($fontContext:bold)
