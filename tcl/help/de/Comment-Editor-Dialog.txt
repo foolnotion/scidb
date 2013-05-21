@@ -43,12 +43,11 @@ Dieser Dialog wird auf einer der folgenden Weisen im Partieeditor geöffnet:
     Dialog automatisch bereits beim Öffnen auf die Sprache des
     angeklickten Kommentars um.
   </li>
-  <li></li>
 </ul>
 
 <p>
 Der Kommentareditor besteht aus fünf Regionen:
-<p>
+</p>
 
 <dir><img src="images/comment-editor.png" /></dir>
 
@@ -68,19 +67,21 @@ Kommentaren im Partietext in verschiedenen Sprachversionen. Es werden
 alle europäischen Sprachen unterstützt. Mit dem Symbol
 <img src="../images/green-plus.png" /> öffnet sich eine Combobox zum
 Hinzufügen einer weiteren Sprache.
-<p>
+</p>
 
 <h2 id="Formatting">Textformatierung</h2>
 
 <p>
 Kommentare können formatiert werden:
+</p>
 
-<dir>
+<ul>
   <li><img src="../images/format-bold.png" />&ensp;Fettschrift</li>
-  <li><img src="../images/format-italic.png">&ensp;Kursivschrift</li>
-  <li><img src="../images/format-underline.png">&ensp;Unterstrich</li>
-</dir>
+  <li><img src="../images/format-italic.png" />&ensp;Kursivschrift</li>
+  <li><img src="../images/format-underline.png" />&ensp;Unterstrich</li>
+</ul>
 
+<p>
 Es sind alle Kombinationen dieser Formatierungen erlaubt. Dazu wird ein
 Textbereich selektiert (<see/> <a href="#Control">Steuerung im Textfeld</a>)
 und dann das entsprechende Symbol gewählt. Das Setzen einer Formatierung wirkt
@@ -113,7 +114,7 @@ wird verwendet) gehen alle Formatierungen verloren.
 
 <ul>
   <li><a href="#Text:Control">Steuerung im Textfeld</a></li>
-  <li><a href="#Text:Emoticons">Smileys</a></li>
+  <li><a href="#Text:Emoticons">Smileys</a> <img src="../images/smiley.png" /></li>
   <li><a href="#Text:Menu">Kontextsensitives Menü</a></li>
 </ul>
 
@@ -123,10 +124,10 @@ wird verwendet) gehen alle Formatierungen verloren.
   <li><a href="#Control:Mouse">Cursorsteuerung mit der Maus</a></li>
   <li><a href="#Control:Keyboard">Cursorsteuerung mit der Tastatur</a></li>
   <li><a href="#Control:Select">Textselektion</a></li>
-  <li><a href="#Control;Delete">Text löschen</a></h4>
-  <li><a href="#Control;Undo">Rückgängig &amp; Wiederherstellen</a></h4>
-  <li><a href="#Control:Misc">Weitere Steuerungskürzel</a></h4>
-  <li><a href="#Control:Figurine">Einfügen einer Figur</a></h4>
+  <li><a href="#Control:Delete">Text löschen</a></li>
+  <li><a href="#Control:Undo">Rückgängig &amp; Wiederherstellen</a></li>
+  <li><a href="#Control:Misc">Weitere Steuerungskürzel</a></li>
+  <li><a href="#Control:Figurine">Einfügen einer Figur</a></li>
 </ul>
 
 <h4 id="Control:Mouse">Cursorsteuerung mit der Maus</h4>
@@ -185,7 +186,7 @@ zu machen.
 
 <table>
   <tr valign="top">
-    <td nowrap="true">
+    <td nowrap="nowrap">
       <key>Left</key> oder <key>Ctrl</key>+<key>B</key><br/>
       <key>Right</key> oder <key>Ctrl</key>+<key>F</key>
     </td>
@@ -196,7 +197,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Shift</key>+<key>Left</key><br/>
       <key>Shift</key>+<key>Right</key>
     </td>
@@ -207,7 +208,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Left</key><br/>
       <key>Ctrl</key>+<key>Right</key>
     </td>
@@ -218,7 +219,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Shift</key>+<key>Left</key><br/>
       <key>Ctrl</key>+<key>Shift</key>+<key>Right</key>
     </td>
@@ -228,7 +229,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Up</key> oder <key>Ctrl</key>+<key>P</key><br/>
       <key>Down</key> oder <key>Ctrl</key>+<key>N</key>
     </td>
@@ -239,7 +240,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Shift</key>+<key>Up</key><br/>
       <key>Shift</key>+<key>Down</key>
     </td>
@@ -250,7 +251,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Shift</key>+<key>Up</key><br/>
       <key>Ctrl</key>+<key>Shift</key>+<key>Down</key>
     </td>
@@ -261,7 +262,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Shift</key>+<key>Up</key><br/>
       <key>Ctrl</key>+<key>Shift</key>+<key>Down</key>
     </td>
@@ -272,7 +273,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Next</key><br/>
       <key>Prior</key>
     </td>
@@ -283,7 +284,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Shift</key>+<key>Next</key><br/>
       <key>Shift</key>+<key>Prior</key>
     </td>
@@ -294,7 +295,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Next</key><br/>
       <key>Ctrl</key>+<key>Prior</key>
     </td>
@@ -305,7 +306,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Home</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -315,7 +316,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Shift</key>+<key>Home</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -325,7 +326,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Home</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -335,7 +336,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Shift</key>+<key>Home</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -345,7 +346,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>End</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -355,7 +356,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Shift</key>+<key>End</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -364,9 +365,8 @@ zu machen.
     </td>
   </tr>
 
-
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>End</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -376,7 +376,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Shift</key>+<key>End</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -390,7 +390,7 @@ zu machen.
 
 <table>
   <tr valign="top">
-    <td nowrap="true">
+    <td nowrap="nowrap">
       <key>Ctrl</key>+<key>A</key>
     </td>
     <td style="padding-left: 0.5em;">
@@ -399,7 +399,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>C</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -409,7 +409,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>X</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -420,7 +420,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>V</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -429,7 +429,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ins</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -439,7 +439,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Del</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -449,7 +449,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>BS</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -463,7 +463,7 @@ zu machen.
 
 <table>
   <tr valign="top">
-    <td nowrap="true">
+    <td nowrap="nowrap">
       <key>Del</key>
     </td>
     <td style="padding-left: 0.5em;">
@@ -473,7 +473,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>BS</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -484,7 +484,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>D</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -493,7 +493,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>E</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -502,8 +502,8 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
-      <key>Alt</key>+<key>BS</key> oder<br/>
+    <td style="padding-top: 1em;" nowrap="nowrap">
+      <key>Alt</key>+<key>BS</key><br/>
       <key>Alt</key>+<key>Del</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -512,7 +512,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>K</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -522,11 +522,11 @@ zu machen.
   </tr>
 </table>
 
-<h4 id="Control;Undo">Rückgängig &amp; Wiederherstellen</h4>
+<h4 id="Control:Undo">Rückgängig &amp; Wiederherstellen</h4>
 
 <table>
   <tr valign="top">
-    <td nowrap="true">
+    <td nowrap="nowrap">
       <key>Ctrl</key>+<key>Z</key>
     </td>
     <td style="padding-left: 0.5em;">
@@ -535,7 +535,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Y</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -548,7 +548,7 @@ zu machen.
 
 <table>
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>T</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -557,7 +557,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>S</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -574,7 +574,7 @@ zu machen.
   </tr>
 
   <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="true">
+    <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Enter</key>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
@@ -593,7 +593,7 @@ Nachfolgende Tastaturkürzel dienen zum Einfügen einer Figur:
 
 INCLUDE ../Comment-Editor-Pieces.txt
 
-<h3 id="Text:Emoticons">Smileys</h3>
+<h3 id="Text:Emoticons">Smileys <img src="../images/smiley.png" /></h3>
 
 <p>
 Der Editor erkennt Smileys, sofern die Erkennung vom Smileys im Partieeditor
@@ -731,7 +731,7 @@ abweicht. Sobald eine Speicherung des Textes erfolgt, so ist dies der neue
 Originaltext.
 </p>
 
-<h2 id="Buttons">Dialogschaltflächen</h2>
+<h2 id="Dialog">Dialogschaltflächen</h2>
 
 <p>
 <menuitem>%::widget::mc::Ok%</menuitem>
