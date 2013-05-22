@@ -1597,7 +1597,7 @@ Examples:
 </p>
 
 <verb>
-(position <keyword>:movefrom</keyword> &R;a3)
+<keyword>:movefrom</keyword> &R;a3
 </verb>
 
 <p>
@@ -1609,7 +1609,18 @@ Matches a position in which the next move is of a white rook on a3.
 </verb>
 
 <p>
-Matches a position in the next move is of some piece on the 8th rank.
+Matches a position in which the next move is of some piece on the 8th rank.
+</p>
+
+<verb>
+(position <keyword>:movefrom</keyword> .)
+</verb>
+
+<p>
+This can never match, even a piece drop move
+(%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%)
+will not match. Use <cql>position:piecedrop</cql> for the detection
+of piece drop moves.
 </p>
 
 <h3 id="position:movenumber">:movenumber</h3>
@@ -1686,7 +1697,26 @@ would be done via:
 
 <p>
 Matches a move of the white rook to the b file.
+But back to the previous example:
 </p>
+
+<verb>
+(position <keyword>:moveto</keyword> &R;[b1-8])
+</verb>
+
+<p>
+This can never match a piece drop (concerns the chess variants
+%::mc::VariantName(Crazyhouse)% and %::mc::VariantName(Bughouse)%).
+However, if this should match also a piece drop, we have to extend
+the query:
+</p>
+
+<verbatim>
+(position
+  <cql>position:or</cql> (
+    (<keyword>:moveto</keyword> &R;[b1-8])
+    (<cql>position:piecedrop</cql> &R;[b1-8])))
+</verbatim>
 
 <h3 id="position:nocastling">:nocastling<extension/></h3>
 
@@ -1744,6 +1774,8 @@ The next move is a piece drop which is dropping a white queen on f7.
 <p>
 The next move is not a piece drop (because the piecetype designator
 is empty).
+</p>
+
 </p>
 
 <h3 id="position:promote">:promote</h3>
@@ -2186,8 +2218,8 @@ This is a very slow operation and should be used with restrictions.
 
 <p>
 This keyword is evaluating the current position with the help of an
-external chess engine. The number of parameters depends on the evaluation mode.
-There are three evaluation modes:
+external chess engine. The first two parameter are specifying the
+computation mode:
 </p>
 
 <dir>
@@ -2200,36 +2232,42 @@ There are three evaluation modes:
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
+    <!-- WB:   "st <x>"          -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
-    </tr>
-
-    <!-- UCI:  "go mate <x>" -->
-    <tr>
-      <td class="l"><expr>mate &lt;n&gt;</expr></td>
-      <td class="r">search for a mate in &lt;n&gt; moves</td>
     </tr>
   </table>
 </dir>
 
 <p>
-The modes <i>depth</i> and <i>movetime</i> are taking three additional
-parameters.  The third parameter denotes the lower bound, the fourth parameter
-denotes the upper bound, both scores are in pawn units. The query succeeds
-if the evaluation of the position is within the specified bounds (inclusive
-the ranges). If the lower-bound value is specified with <i>unlimited</i>, it
-means negative unlimited. If the upper-bound value is specified with
-<i>unlimited</i>, it means positive unlimited. The fifth parameter is either
-<i>sidetomove</i> or <i>absolute</i>. <i>sidetomove</i> means that the
-evaluation value depends on side to move, and <i>absolute</i> means that the
-evaluation value is independent from side to move.
+Now you can either specify a search for mate, or a search for position
+evaluation.
+</p>
+
+<p>
+A search for mate expects one more parameter: namely the word <i>mate</i>.
+A query is successful if a mate has been found.
+</p>
+
+<p>
+The search for position evaluation is expecting three additional parameters.
+The first one denotes the lower bound, the second one denotes the upper bound,
+both scores are in pawn units. The query succeeds if the evaluation of the
+position is within the specified bounds (inclusive the ranges). If the
+lower-bound value is specified with <i>unlimited</i>, it means negative
+unlimited. If the upper-bound value is specified with <i>unlimited</i>, it
+means positive unlimited. The third parameter is either <i>sidetomove</i> or
+<i>absolute</i>. <i>sidetomove</i> means that the evaluation value depends on
+side to move, and <i>absolute</i> means that the evaluation value is
+independent from side to move.
 </p>
 
 <note>
-Please note that the modes <i>depth</i> and <i>mate</i> are available only if
-the engine supports the UCI protocol. An engine restricted to the
-WinBoard/XBoard protocol does only support the <i>movetime</i> mode.
+Please note that in mode <i>movetime</i> the specification of the milli-seconds
+will be rounded to seconds if the engine is restricted to
+<nobr>WinBoard</nobr>/<nobr>XBoard</nobr> protocol. If the UCI
+protocol is available then the exact number of milli-seconds will be used.
 </note>
 
 <p>
@@ -2263,11 +2301,11 @@ Black is (probably) losing, because he is at least 3 pawn units behind.
 </p>
 
 <verb>
-<keyword>:evaluation</keyword> mate 3
+<keyword>:evaluation</keyword> depth 6 mate
 </verb>
 
 <p>
-Either side can be mated in maximal 3 moves.
+Either side can be mated in maximal 3 moves (6 plies).
 </p>
 
 <h3 id="position:exchangeevaluation">:exchangeevaluation<extension/></h3>
@@ -2380,19 +2418,20 @@ position and the evaluation of the preceding position. The evaluation will be
 done with the help of an external chess engine. It takes seven parameters.
 The first and second parameter are piece designators. The former is specifies
 moving pieces, the second one specifies target squares. The third and fourth
-are depending on the evaluation mode:
+are specifiying the computation mode:
 </p>
 
 <dir>
   <table>
     <!-- UCI:  "go depth <x>" -->
+    <!-- WB:   "st <x>"       -->
     <tr>
       <td class="l"><expr>depth &lt;d&gt;</expr></td>
       <td class="r">search &lt;d&gt; plies only</td>
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
-    <!-- WB:   "st <x>"       -->
+    <!-- WB:   "st <x>"          -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
@@ -2411,20 +2450,21 @@ current position minus the score of the preceding position. In case of mating
 positions the difference will be always greater than 10,000.
 </p>
 
-<note>
-Please note that the mode <i>depth</i> is available only if the engine suppoprts
-the UCI protocol. An engine restricted to the WinBoard/XBoard protocol does only
-support the <i>movetime</i> mode.
-</note>
-
 <p>
 The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 <i>sidetomove</i> means that the evaluation value depends on side to move, and
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
 
+<note>
+Please note that in mode <i>movetime</i> the specification of the milli-seconds
+will be rounded to seconds if the engine is restricted to
+<nobr>WinBoard</nobr>/<nobr>XBoard</nobr> protocol. If the UCI
+protocol is available then the exact number of milli-seconds will be used.
+</note>
+
 <p>
-Example:
+Examples:
 </p>
 
 <verb>
@@ -2456,7 +2496,7 @@ Only capture moves were evaluated.
 
 <p>
 Search for positions where side to move is doing first promotion in game, but
-without gaining a better score. We are ensuring that only promoting moves will
+without gaining a better score. We have ensured that only promoting moves will
 be evaluated.
 </p>
 

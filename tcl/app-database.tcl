@@ -518,6 +518,10 @@ proc openBase {parent file byUser args} {
 				set opts(-readonly) 1
 			}
 		}
+		if {![::scidb::db::get open? $file]} {
+			::dialog::error -parent $parent -message [format $mc::CannotOpenFile $file]
+			return 0
+		}
 		set readonly $opts(-readonly)
 		if {$ext == "sci" && [::scidb::db::get upgrade? $file]} {
 			set opts(-readonly) 1

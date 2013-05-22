@@ -2650,9 +2650,12 @@ Codec::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info, unsign
 }
 
 
-// NOTE: currently not used!
+#if 0
 Move
-Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations)
+Codec::findExactPosition(	GameInfo const& info,
+									Board const& position,
+									bool skipVariations,
+									BlockFileReader* reader)
 {
 	Byte buf[32768];
 
@@ -2666,6 +2669,7 @@ Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool 
 	Decoder decoder(gStrm, aStrm, *m_codec, isChess960);
 	return decoder.findExactPosition(position, skipVariations);
 }
+#endif
 
 
 bool

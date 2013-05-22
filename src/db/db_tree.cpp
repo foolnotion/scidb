@@ -201,7 +201,7 @@ Tree::possiblyAdd(Database const& base,
 {
 	try
 	{
-		Move m = base.findExactPositionAsync(m_index, myPosition, true);
+		Move m = base.findExactPosition(m_index, myPosition, true);
 
 		if (!m.isInvalid())
 			add(info, eco, ::index(m), myPosition);

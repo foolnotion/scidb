@@ -150,10 +150,13 @@ public:
 
 	sys::utf8::Codec& codec();
 
-	void useAsyncReader(bool flag) override;
-	Move findExactPositionAsync(	GameInfo const& info,
-											Board const& position,
-											bool skipVariations) override;
+	::util::BlockFileReader* getAsyncReader() override;
+	void closeAsyncReader(::util::BlockFileReader* reader) override;
+
+	Move findExactPosition(	GameInfo const& info,
+									Board const& position,
+									bool skipVariations,
+									::util::BlockFileReader* reader) override;
 
 	static bool getAttributes(	mstl::string const& filename,
 										int& numGames,
@@ -212,32 +215,31 @@ private:
 													mstl::string& result,
 													sys::utf8::Codec& codec);
 
-	unsigned						m_headerSize;
-	unsigned						m_indexEntrySize;
-	unsigned						m_fileVersion;
-	unsigned						m_autoLoad;
-	mstl::string				m_extIndex;
-	mstl::string				m_extGame;
-	mstl::string				m_extNamebase;
-	unsigned						m_blockSize;
-	mstl::fstream				m_gameStream;
-	mstl::fstream*				m_progressiveStream;
-	Lookup						m_roundLookup;
-	sys::utf8::Codec*			m_codec;
-	mstl::string				m_encoding;
-	CustomFlags*				m_customFlags;
-	util::BlockFile*			m_gameData;
-	util::BlockFileReader*	m_asyncReader;
-	mstl::string				m_magicGameFile;
-	bool							m_hasMagic;
-	NameList*					m_playerList;
-	NameList*					m_eventList;
-	NameList*					m_siteList;
-	NameList*					m_roundList;
-	NamebaseEntry*				m_roundEntry;
-	unsigned						m_progressFrequency;
-	unsigned						m_progressReportAfter;
-	unsigned						m_progressCount;
+	unsigned				m_headerSize;
+	unsigned				m_indexEntrySize;
+	unsigned				m_fileVersion;
+	unsigned				m_autoLoad;
+	mstl::string		m_extIndex;
+	mstl::string		m_extGame;
+	mstl::string		m_extNamebase;
+	unsigned				m_blockSize;
+	mstl::fstream		m_gameStream;
+	mstl::fstream*		m_progressiveStream;
+	Lookup				m_roundLookup;
+	sys::utf8::Codec*	m_codec;
+	mstl::string		m_encoding;
+	CustomFlags*		m_customFlags;
+	util::BlockFile*	m_gameData;
+	mstl::string		m_magicGameFile;
+	bool					m_hasMagic;
+	NameList*			m_playerList;
+	NameList*			m_eventList;
+	NameList*			m_siteList;
+	NameList*			m_roundList;
+	NamebaseEntry*		m_roundEntry;
+	unsigned				m_progressFrequency;
+	unsigned				m_progressReportAfter;
+	unsigned				m_progressCount;
 };
 
 } // namespace si3

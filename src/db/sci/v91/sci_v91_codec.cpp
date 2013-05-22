@@ -399,7 +399,6 @@ Codec::gameFlags() const
 
 Codec::Codec()
 	:m_gameData(0)
-	,m_asyncReader(0)
 	,m_progressFrequency(0)
 	,m_progressReportAfter(0)
 	,m_progressCount(0)
@@ -419,9 +418,6 @@ Codec::Codec()
 
 Codec::~Codec() throw()
 {
-	if (m_asyncReader)
-		m_gameData->closeAsyncReader(m_asyncReader);
-
 	delete m_gameData;
 }
 
@@ -1793,31 +1789,29 @@ Codec::writePlayerbase(util::ByteStream& bstrm, Namebase& base)
 }
 
 
-void
-Codec::useAsyncReader(bool flag)
+BlockFileReader*
+Codec::getAsyncReader()
 {
-	M_ASSERT(m_gameData);
+	return m_gameData->openAsyncReader();
+}
 
-	if (flag)
-	{
-		if (m_asyncReader == 0)
-			m_asyncReader = m_gameData->openAsyncReader();
-	}
-	else if (m_asyncReader)
-	{
-		m_gameData->closeAsyncReader(m_asyncReader);
-		m_asyncReader = 0;
-	}
+
+void
+Codec::closeAsyncReader(BlockFileReader* reader)
+{
+	M_ASSERT(reader);
+	m_gameData->closeAsyncReader(reader);
 }
 
 
 Move
-Codec::findExactPositionAsync(GameInfo const& info, Board const& position, bool skipVariations)
+Codec::findExactPosition(	GameInfo const& info,
+									Board const& position,
+									bool skipVariations,
+									BlockFileReader* reader)
 {
-	M_ASSERT(m_asyncReader);
-
 	ByteStream src;
-	getGameRecord(info, *m_asyncReader, src);
+	getGameRecord(info, reader ? *reader : m_gameData->reader(), src);
 	Decoder decoder(src, m_gameData->blockSize() - info.gameOffset());
 	return decoder.findExactPosition(position, skipVariations);
 }

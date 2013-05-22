@@ -101,10 +101,6 @@ public:
 	void reset() override;
 	void setEncoding(mstl::string const& encoding) override;
 
-	Move findExactPositionAsync(	GameInfo const& info,
-											Board const& position,
-											bool skipVariations) override;
-
 	static bool getAttributes(	mstl::string const& filename,
 										int& numGames,
 										db::type::ID& type,

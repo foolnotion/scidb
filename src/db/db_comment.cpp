@@ -1576,7 +1576,7 @@ startHtmlElement(void* cbData, XML_Char const* elem, char const** attr)
 				data->result.append("<b>", 3);
 				data->isXml = true;
 			}
-			else if (elem[1] == 'r' && elem[2] == '0')
+			else if (elem[1] == 'r' && elem[2] == '\0')
 			{
 				checkLang(data);
 				data->result += '\n';
@@ -2414,10 +2414,25 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 					case '"':	result.m_content.append("&quot;", 6); ++s; break;
 
 					case '<':
-						if (	::islower(s[1])
-							&& ::islower(s[2])
-							&& s[3] == '>'
-							&& s[4] == ' ')
+						if (::tolower(s[1]) == 'b' && ::tolower(s[2]) == 'r' && s[3] != '>')
+						{
+							char const* t = s + 3;
+
+							while (::isspace(*t))
+								++t;
+
+							if (*t == '>')
+							{
+								result.m_content.append('\n');
+								s = t + 1;
+							}
+							else
+							{
+								result.m_content.append("&lt;", 4);
+								++s;
+							}
+						}
+						else if (::islower(s[1]) && ::islower(s[2]) && s[3] == '>' && s[4] == ' ')
 						{
 							while (!result.m_content.empty() && result.m_content.back() == ' ')
 								result.m_content.set_size(result.m_content.size() - 1);
@@ -2431,12 +2446,12 @@ Comment::convertCommentToXml(	mstl::string const& comment,
 							isXml = true;
 							s += 5;
 						}
-					else
-					{
-						result.m_content.append("&lt;", 4);
-						++s;
-					}
-					break;
+						else
+						{
+							result.m_content.append("&lt;", 4);
+							++s;
+						}
+						break;
 
 					default:
 						if (::isDelimChar(*s))

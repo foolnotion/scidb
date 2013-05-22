@@ -689,84 +689,84 @@ Parser::parse()
 			switch (*token)
 			{
 				case 's':	// "str" | "sym"
-					if (objn != 2)
-						M_RAISE("invalid xml list");
-
-					switch (token[1])
+					if (objn == 2) // tokens like "{str }" may happen
 					{
-						case 't':	// "str"
-							{
-								int len;
-								char const* str = Tcl_GetStringFromObj(objs[1], &len);
-								mstl::string::size_type appendSpaces = 0;
-
-								if (firstStrIndex == k)
+						switch (token[1])
+						{
+							case 't':	// "str"
 								{
-									for ( ; len > 0 && ::isspace(*str); ++str)
-										--len;
+									int len;
+									char const* str = Tcl_GetStringFromObj(objs[1], &len);
+									mstl::string::size_type appendSpaces = 0;
 
-									if (!m_space.empty())
+									if (firstStrIndex == k)
 									{
-										while (	len >= int(m_space.size())
-												&& ::strncmp(str, m_space, m_space.size()) == 0)
+										for ( ; len > 0 && *str == ' '; ++str)
+											--len;
+
+										if (!m_space.empty())
 										{
-											str += m_space.size();
-											len -= m_space.size();
-											m_xml.append(' ');
+											while (	len >= int(m_space.size())
+													&& ::strncmp(str, m_space, m_space.size()) == 0)
+											{
+												str += m_space.size();
+												len -= m_space.size();
+												m_xml.append(' ');
+											}
 										}
 									}
-								}
 
-								if (lastStrIndex == k)
-								{
-									char const* s = str + len;
-
-									for ( ; len > 0 && ::isspace(s[-1]); --s)
-										--len;
-
-									if (!m_space.empty() && (s > str || lastStrIndex != firstStrIndex))
+									if (lastStrIndex == k)
 									{
-										while (	len >= int(m_space.size())
-												&& ::strncmp(s - m_space.size(), m_space, m_space.size()) == 0)
+										char const* s = str + len;
+
+										for ( ; len > 0 && s[-1] == ' '; --s)
+											--len;
+
+										if (!m_space.empty() && (s > str || lastStrIndex != firstStrIndex))
 										{
-											s -= m_space.size();
-											len -= m_space.size();
-											appendSpaces++;
+											while (	len >= int(m_space.size())
+													&& ::strncmp(s - m_space.size(), m_space, m_space.size()) == 0)
+											{
+												s -= m_space.size();
+												len -= m_space.size();
+												appendSpaces++;
+											}
 										}
 									}
-								}
 
-								if (len > 0)
-								{
-									processModes();
-
-									for (int j = 0; j < len; ++j)
+									if (len > 0)
 									{
-										switch (str[j])
+										processModes();
+
+										for (int j = 0; j < len; ++j)
 										{
-											case '<':	m_xml.append("&lt;",   4); break;
-											case '>':	m_xml.append("&gt;",   4); break;
-											case '&':	m_xml.append("&amp;",  5); break;
-											case '\'':	m_xml.append("&apos;", 6); break;
-											case '"':	m_xml.append("&quot;", 6); break;
-											default:		m_xml += str[j]; break;
+											switch (str[j])
+											{
+												case '<':	m_xml.append("&lt;",   4); break;
+												case '>':	m_xml.append("&gt;",   4); break;
+												case '&':	m_xml.append("&amp;",  5); break;
+												case '\'':	m_xml.append("&apos;", 6); break;
+												case '"':	m_xml.append("&quot;", 6); break;
+												default:		m_xml += str[j]; break;
+											}
 										}
 									}
+
+									m_xml.append(appendSpaces, ' ');
 								}
+								break;
 
-								m_xml.append(appendSpaces, ' ');
-							}
-							break;
+							case 'y':	// "sym"
+								processModes();
+								m_xml.append("<sym>", 5);
+								m_xml += *Tcl_GetString(objs[1]);
+								m_xml.append("</sym>", 6);
+								break;
 
-						case 'y':	// "sym"
-							processModes();
-							m_xml.append("<sym>", 5);
-							m_xml += *Tcl_GetString(objs[1]);
-							m_xml.append("</sym>", 6);
-							break;
-
-						default:
-							M_RAISE("invalid xml list");
+							default:
+								M_RAISE("invalid xml list");
+						}
 					}
 					break;
 

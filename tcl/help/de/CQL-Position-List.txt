@@ -1645,6 +1645,19 @@ Filter eine Position, in der der nächste Zug mit einer Figur von der
 achten Reihe geschieht.
 </p>
 
+<verb>
+(position <keyword>:movefrom</keyword> .)
+</verb>
+
+<p>
+Dies kann niemals gefiltert werden, auch keinen Einsetzzug
+(%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%)
+Zur Erkennung von Einsetzzügen sollte <cql>position:piecedrop</cql>
+verwendet werden.
+</p>
+
+</p>
+
 <h3 id="position:movenumber">:movenumber&emsp;<n>(Zugnummer)</n></h3>
 
 <p>
@@ -1709,7 +1722,7 @@ Filtert eine Position dessen nächster Zug kein Schlagzug ist.
 
 <p>
 Filtert eine Position, in der der nächste Zug einen weißen Turm auf der
-f-Linie schlagen wird. Beachte daß dies sehr verschieden ist von der
+b-Linie schlagen wird. Beachte daß dies sehr verschieden ist von der
 Interpretation einer Zugbeschreibung im
 <a href="http://www.saremba.de/chessgml/standards/pgn/pgn-complete.htm">PGN-Format</a>&#x2006;:
 dort würde dies als ein Turmzug auf die b-Linie interpretiert werden.
@@ -1722,7 +1735,26 @@ Und dies wiederum geschieht in CQL auf diese Weise:
 
 <p>
 Filtert einen Zug, in dem der weiße Turm auf die b-Linie zieht.
+Doch zurück zum vorigen Beispiel:
 </p>
+
+<verb>
+(position <keyword>:moveto</keyword> &R;[b1-8])
+</verb>
+
+<p>
+Dies kann keinen Einsetzzug filtern (betrifft die Schachformen
+%::mc::VariantName(Crazyhouse)% und %::mc::VariantName(Bughouse)%).
+Soll aber auch ein Einsetzzug damit gefiltert werden, dann ist ein
+erweiterter Ausdruck notwendig:
+</p>
+
+<verbatim>
+(position
+  <cql>position:or</cql> (
+    (<keyword>:moveto</keyword> &R;[b1-8])
+    (<cql>position:piecedrop</cql> &R;[b1-8])))
+</verbatim>
 
 <h3 id="position:nocastling">:nocastling<extension/>&emsp;<n>(kein Rochadezug?)</n></h3>
 
@@ -2260,53 +2292,57 @@ Diese ist eine sehr langsame Operation und sollte eingeschränkt verwendet werden
 
 <p>
 Dieses Schlüsselwort bewertet die aktuelle Position mit Hilfe eines externen
-Schachprogramms. Die Anzahl der Parameter hängt vom Berechnungsmodus ab.
-Es gibt drei Berechnungsmodi:
+Schachprogramms. Die ersten beide Parameter bestimmen den Berechnungsmodus: 
 </p>
 
 <dir>
   <table>
     <!-- UCI:  "go depth <x>" -->
-    <!-- WB:   "st <x>"       -->
+    <!-- WB:   "sd <x>"       -->
     <tr>
       <td class="l"><expr>depth &lt;d&gt;</expr></td>
       <td class="r">suche nur &lt;d&gt; Halbzüge tief</td>
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
+    <!-- WB:   "st <x>"          -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
-    </tr>
-
-    <!-- UCI:  "go mate <x>" -->
-    <tr>
-      <td class="l"><expr>mate &lt;n&gt;</expr></td>
-      <td class="r">suche nach Matt in &lt;n&gt; Zügen</td>
     </tr>
   </table>
 </dir>
 
 <p>
-Die Modi <i>depth</i> und <i>movetime</i> erwarten drei zusätzliche Parameter.
-Der dritte Parameter bezeichnet die untere Grenze, der vierte Parameter
-bezeichnet die obere Grenze, beide Werte werden in Bauerneinheiten
-angegeben. Die Abfrage ist erfolgreich, wenn die Bewertung der Position
-innerhalb der gegebenen Grenzen liegt (inklusive der Randwerte). Ist die untere
-Grenze mit <i>unlimited</i> (unbeschränkt) spezifiziert, so wird sie als
-negativ unendlich interpretiert. Ist die obere Grenze mit <i>unlimited</i>
-spezifiziert, so wird sie als positiv unendlich angenommen. Der fünfte
-Parameter ist entweder <i>sidetomove</i> (Zugrecht) oder <i>absolute</i>
-(absolut). <i>sidetomove</i> bedeutet, daß die Bewertungswerte vom Zugrecht
-abhängig sind, und mit <i>absolute</i> sind die Bewertungswerte unabhängig
-davon.
+Jetzt kann entweder eine Mattsuche oder eine Stellungsbewertungssuche
+spezifiziert werden.
+</p>
+
+<p>
+Eine Mattsuche erwartet einen weiteren Parameter: nämlich das Wort <i>mate</i>
+(für Matt). Die Abfrage ist erfolgreich, wenn ein Matt aufgefunden wurde.
+</p>
+
+<p>
+Die Stellungsbewertungssuche erfordert drei weitere Parameter.
+Der erste davon bezeichnet die untere Grenze, der zweite bezeichnet die obere
+Grenze, beide Werte werden in Bauerneinheiten angegeben. Die Abfrage ist
+erfolgreich, wenn die Bewertung der Position innerhalb der gegebenen Grenzen
+liegt (inklusive der Randwerte). Ist die untere Grenze mit <i>unlimited</i>
+(unbeschränkt) spezifiziert, so wird sie als negativ unendlich interpretiert.
+Ist die obere Grenze mit <i>unlimited</i> spezifiziert, so wird sie als positiv
+unendlich angenommen. Der dritte Parameter ist entweder <i>sidetomove</i>
+(Zugrecht) oder <i>absolute</i> (absolut). <i>sidetomove</i> bedeutet, daß die
+Bewertungswerte vom Zugrecht abhängig sind, und mit <i>absolute</i> sind die
+Bewertungswerte unabhängig davon.
 </p>
 
 <note>
-Beachte daß die Modi <i>depth</i> und <i>mate</i> nur verfügbar sind wenn das
-verwendete Schachprogramm das UCI-Protokoll unterstützt. Ist das Schachprogramm
-auf das Protokoll WinBoard/XBoard eingeschränkt, so kann nur der Modus
-<i>movetime</i> verwendet werden.
+Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
+Sekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
+Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
+Millisekundenangabe verwendet.
 </note>
 
 <p>
@@ -2341,11 +2377,11 @@ Bauerneinheiten im Nachteil.
 </p>
 
 <verb>
-<keyword>:evaluation</keyword> mate 3
+<keyword>:evaluation</keyword> depth 6 mate
 </verb>
 
 <p>
-Eine der Seiten kann in spätestens 3 Zügen mattgesetzt werden.
+Eine der Seiten kann in spätestens 3 Zügen (6 Halbzüge) mattgesetzt werden.
 </p>
 
 <h3 id="position:exchangeevaluation">:exchangeevaluation<extension/>&emsp;<n>(Figurentauschbewertung)</n></h3>
@@ -2400,7 +2436,7 @@ dem Zielfeld. Abschliessend wird das Maximum alle berechneten Werte ausgewählt.
 </p>
 
 <p>
-Das Schlüsselwort filter eine Position wenn der berechnete Wert innerhalb des
+Das Schlüsselwort filtert eine Position wenn der berechnete Wert innerhalb des
 gegebenen Bereichs liegt (ein unterer und ein oberer Wert). Ist der untere
 Bereich mit dem speziellen Wert <i>unlimited</i> (unbeschränkt) spezifiziert,
 so wird negativ unendlich angenommen. Ist der obere Wert mit <i>unlimited</i>
@@ -2458,20 +2494,21 @@ aktuellen Position mit der nächsten Position. Die Bewertung wird mit
 Einsatz eines externen Schachprogramm durchgeführt. Es werden sieben
 Parameter erwartet. Die ersten beiden Parameter sind Figurenbezeichner. Der
 erste davon spezifiziert die erlaubten Figuren und Felder des nächsten Zuges,
-der zweite spezifiziert die Zielfelder. Der vierte und fünfte Parameter
-hängen vom Berechnungsmodus ab:
+der zweite spezifiziert die Zielfelder. Der dritte und vierte Parameter
+spezifizieren den Berechnungsmodus:
 </p>
 
 <dir>
   <table>
     <!-- UCI:  "go depth <x>" -->
+    <!-- WB:   "st <x>"       -->
     <tr>
       <td class="l"><expr>depth &lt;d&gt;</expr></td>
       <td class="r">suche nur &lt;d&gt; Halbzüge tief</td>
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
-    <!-- WB:   "st <x>"       -->
+    <!-- WB:   "st <x>"          -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
@@ -2492,13 +2529,6 @@ Position und der Bewertung der vorangegangenen Position. Im Falle von
 Mattpositionen ist die Differenz immer größer als 10.000.
 </p>
 
-<note>
-Beachte daß der Modus <i>depth</i> nur verfügbar ist, wenn das Schachprogramm
-das UCI-Protokoll unterstützt. Ist das Schachprogramm auf das Protokoll
-WinBoard/XBoard beschränkt, so kann nur der Modus <i>movetime</i> verwendet
-werden.
-</note>
-
 <p>
 Der siebte Parameter ist entweder <i>sidetomove</i> (Zugrecht) oder
 <i>absolute</i> (absolut). <i>sidetomove</i> bedeutet, daß die Bewertungswerte
@@ -2506,8 +2536,16 @@ vom Zugrecht abhängig sind, und mit <i>absolute</i> sind die Bewertungswerte
 unabhängig davon.
 </p>
 
+<note>
+Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
+Sekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
+Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
+Millisekundenangabe verwendet.
+</note>
+
 <p>
-Beispiel:
+Beispiele:
 </p>
 
 <verb>
@@ -2527,7 +2565,7 @@ war.
 <p>
 Filtere die erste Position, in der die Bewertungsdifferenz mindestens 3,0
 Bauerneinheiten als Vorteil für Schwarz beträgt. Dies bedeutet, daß der letzte
-weiße Zug (wahrscheinlich) ein Patzer war. Nur Schlagzüge wurden bewertet.
+weiße Zug (wahrscheinlich) ein Patzer war. Nur Schlagzüge werden bewertet.
 </p>
 
 <verbatim>

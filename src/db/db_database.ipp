@@ -215,18 +215,6 @@ Database::insertAnnotator(mstl::string const& name)
 
 
 inline
-Move
-Database::findExactPositionAsync(unsigned index, Board const& position, bool skipVariations) const
-{
-	M_REQUIRE(isOpen());
-	M_REQUIRE(index < countGames());
-	M_REQUIRE(usingAsyncReader());
-
-	return m_codec->findExactPositionAsync(*m_gameInfoList[index], position, skipVariations);
-}
-
-
-inline
 load::State
 Database::loadGame(unsigned index, Game& game)
 {

@@ -612,10 +612,24 @@ DatabaseCodec::setWriteable()
 
 
 Move
-DatabaseCodec::findExactPositionAsync(GameInfo const&, Board const&, bool)
+DatabaseCodec::findExactPosition(GameInfo const&, Board const&, bool, BlockFileReader*)
 {
 	M_RAISE("should not be used");
 	return Move();
+}
+
+
+BlockFileReader*
+DatabaseCodec::getAsyncReader()
+{
+	return 0;
+}
+
+
+void
+DatabaseCodec::closeAsyncReader(::util::BlockFileReader* reader)
+{
+	M_ASSERT(reader == 0);
 }
 
 
@@ -831,13 +845,6 @@ DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFileReader& reader
 
 void
 DatabaseCodec::doEncoding(util::ByteStream&, GameData const&, Signature const&, TagBits const&, bool)
-{
-	M_RAISE("should not be used");
-}
-
-
-void
-DatabaseCodec::useAsyncReader(bool flag)
 {
 	M_RAISE("should not be used");
 }

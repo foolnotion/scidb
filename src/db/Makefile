@@ -21,6 +21,7 @@ CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DI
 SRC_CXX = \
 	cql/cql_common.cpp \
 	cql/cql_designator.cpp \
+	cql/cql_engine.cpp \
 	cql/cql_match.cpp \
 	cql/cql_match_board.cpp \
 	cql/cql_match_info.cpp \
@@ -229,6 +230,27 @@ cql/cql_designator.o: db_signature.ipp
 cql/cql_designator.o: db_board.ipp
 cql/cql_designator.o: db_board_base.h
 cql/cql_designator.o: db_board_base.ipp
+cql/cql_engine.o: cql/cql_engine.h
+cql/cql_engine.o: db_common.h
+cql/cql_engine.o: ../util/u_base.h
+cql/cql_engine.o: ../mstl/m_types.h
+cql/cql_engine.o: ../mstl/m_bitfield.h
+cql/cql_engine.o: ../mstl/m_bitfield.ipp
+cql/cql_engine.o: ../mstl/m_assert.h
+cql/cql_engine.o: ../mstl/m_exception.h
+cql/cql_engine.o: ../mstl/m_backtrace.h
+cql/cql_engine.o: ../mstl/m_exception.ipp
+cql/cql_engine.o: ../mstl/m_bit_functions.h
+cql/cql_engine.o: ../mstl/m_bit_functions.ipp
+cql/cql_engine.o: ../mstl/m_uint128_t.h
+cql/cql_engine.o: ../mstl/m_uint128.h
+cql/cql_engine.o: ../mstl/m_limits.h
+cql/cql_engine.o: ../mstl/m_bitfield128.h
+cql/cql_engine.o: db_common.ipp
+cql/cql_engine.o: ../mstl/m_utility.h
+cql/cql_engine.o: ../mstl/m_type_traits.h
+cql/cql_engine.o: ../mstl/m_type_traits.ipp
+cql/cql_engine.o: ../mstl/m_utility.ipp
 cql/cql_match.o: cql/cql_match.h
 cql/cql_match.o: cql/cql_common.h
 cql/cql_match.o: db_common.h
@@ -343,6 +365,7 @@ cql/cql_match_board.o: ../mstl/m_type_traits.h
 cql/cql_match_board.o: ../mstl/m_type_traits.ipp
 cql/cql_match_board.o: ../mstl/m_utility.ipp
 cql/cql_match_board.o: cql/cql_designator.ipp
+cql/cql_match_board.o: cql/cql_engine.h
 cql/cql_match_board.o: db_board.h
 cql/cql_match_board.o: db_move_list.h
 cql/cql_match_board.o: db_move.h
@@ -638,6 +661,7 @@ cql/cql_position.o: ../mstl/m_pair.h
 cql/cql_position.o: ../mstl/m_pair.ipp
 cql/cql_position.o: cql/cql_match.ipp
 cql/cql_position.o: cql/cql_match_board.h
+cql/cql_position.o: cql/cql_engine.h
 cql/cql_position.o: ../mstl/m_ring.h
 cql/cql_position.o: ../mstl/m_ring.ipp
 cql/cql_position.o: ../mstl/m_hash.h
@@ -982,6 +1006,8 @@ db_comment.o: ../mstl/m_list_node.ipp
 db_comment.o: ../mstl/m_list.ipp
 db_comment.o: ../sys/sys_utf8_codec.ipp
 db_comment.o: ../util/u_emoticons.h
+db_comment.o: ../mstl/m_stack.h
+db_comment.o: ../mstl/m_stack.ipp
 db_comment.o: ../mstl/m_set.h
 db_comment.o: ../mstl/m_set.ipp
 db_comment.o: ../mstl/m_algorithm.h

@@ -48,6 +48,14 @@ inline void DatabaseCodec::setDescription(char const* description) { m_db->m_des
 
 
 inline
+Move
+DatabaseCodec::findExactPosition(GameInfo const& info, Board const& position, bool skipVariations)
+{
+	return findExactPosition(info, position, skipVariations, 0);
+}
+
+
+inline
 void
 DatabaseCodec::save(unsigned start, util::Progress& progress)
 {

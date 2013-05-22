@@ -68,7 +68,8 @@ set PageNotAvailable			"This page is not available"
 array set Options {
 	fonttable	{8 9 10 11 13 15 17}
 	piecelang	graphic
-	treewidth	-1
+	treewidth	320
+	htmlheight	800
 	geometry		""
 	lang			""
 }
@@ -99,7 +100,7 @@ proc helpLanguage {} {
 }
 
 
-proc open {parent {file {}} args} {
+proc open {parent {file ""} args} {
 	variable Options
 	variable Priv
 	variable Links
@@ -143,11 +144,11 @@ proc open {parent {file {}} args} {
 
 	set Priv(topic) ""
 	set Priv(dlg) $dlg
-	set Priv(minsize) 260
 	set Priv(recent) {}
 	set Priv(grab) {}
 	set Priv(history) {}
 	set Priv(history:index) -1
+	set Priv(extend) [expr {[string length $file] > 0}]
 
 	::scidb::misc::html cache on
 
@@ -213,9 +214,7 @@ proc open {parent {file {}} args} {
 	grid columnconfigure $buttons {4} -weight 1
 	grid rowconfigure $buttons {0 2} -minsize $::theme::pady
 
-	set width $Options(treewidth)
-	if {$width <= 0} { set width 320 }
-	set nb [ttk::notebook $control.nb -takefocus 1 -width $width]
+	set nb [ttk::notebook $control.nb -takefocus 1 -width $Options(treewidth)]
 	::ttk::notebook::enableTraversal $nb
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb]]
 	bind $nb <Configure> [namespace code [list RecordTreeWidth $nb %w]]
@@ -261,33 +260,42 @@ proc open {parent {file {}} args} {
 	set html $pw.html
 	set Priv(html) $html
 	BuildHtmlFrame $dlg $html
+	bind $html <Configure> [namespace code [list RecordHtmlHeight $nb %h]]
 
 	if {[string length $file] == 0} {
-		$pw add $control -sticky nswe -stretch never -minsize $Priv(minsize)
+		$pw add $control -sticky nswe -stretch never -minsize $Options(treewidth)
+		after idle [list $pw paneconfigure $control -minsize 260]
 	}
-	$pw add $html -sticky nswe -stretch always -minsize 500
+	$pw add $html -sticky nswe -stretch always -minsize 400
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
 	if {$opts(-transient)} {
 		wm transient $dlg [winfo toplevel $parent]
 	}
-	wm minsize $dlg 600 300
+
+	if {[string length $file] == 0} {
+		wm minsize $dlg 670 300
+	} else {
+		wm minsize $dlg 410 300
+	}
+
+	set geometry ""
 	if {[string length $file] == 0} {
 		if {[llength $Options(geometry)] == 0} {
 			update idletasks
 			set Options(geometry) [winfo reqwidth $dlg]x[winfo reqheight $dlg]
-			focus $Priv($Priv(tab):tree)
 		}
 		wm geometry $dlg $Options(geometry)
-	} else {
-		::util::place $dlg center $parent
 	}
 
-	if {[string length $file]} {
+	if {[string length $file] == 0} {
+		focus $Priv($Priv(tab):tree)
+	} else {
 		set Priv(current:file) [FullPath $file]
 		set Priv(current:lang) [helpLanguage]
 	}
+
 	ReloadCurrentPage no
 	wm deiconify $dlg
 	return $dlg
@@ -965,8 +973,15 @@ proc Update {} {
 }
 
 
+proc RecordHtmlHeight {nb height} {
+	variable Options
+	set Options(htmlheight) $height
+}
+
+
 proc RecordTreeWidth {nb width} {
-	set [namespace current]::Options(treewidth) $width
+	variable Options
+	set Options(treewidth) $width
 }
 
 
@@ -982,8 +997,8 @@ proc RecordGeometry {pw} {
 	if {$x < 0} { set x 0 }
 	if {$y < 0} { set y 0 }
 
-	if {[llength [$pw panes]] > 1} {
-		set Priv(minsize) [winfo width $Priv(contents:tree)]
+	if {$Priv(extend)} {
+		set w [expr {$w + $Options(treewidth)}]
 	}
 
 	set Options(geometry) "${w}x${h}+${x}+${y}"
@@ -1158,15 +1173,27 @@ proc FindTopic {file contents} {
 
 
 proc ToggleIndex {} {
+	variable Options
 	variable Priv
 
 	set pw [winfo parent $Priv(control)]
+	set dlg [winfo toplevel $pw]
 
 	if {$Priv(control) in [$pw panes]} {
 		$pw forget $Priv(control)
+		wm minsize $dlg 410 300
 	} else {
-		$pw add $Priv(control) -sticky nswe -stretch never -minsize $Priv(minsize) -before [$pw panes]
+		$pw add $Priv(control) -sticky nswe -stretch never -minsize $Options(treewidth) -before [$pw panes]
 		after idle [list $pw paneconfigure $Priv(control) -minsize 260]
+		wm minsize $dlg 670 300
+
+		if {$Priv(extend)} {
+			set dlg [winfo toplevel $pw]
+			set width [expr {$Options(treewidth) + [winfo width $dlg] - [winfo width $pw.control]}]
+			set height [winfo height $dlg]
+			after idle [list wm geometry $dlg ${width}x${height}]
+			set Priv(extend) 0
+		}
 	}
 }
 
@@ -1194,8 +1221,8 @@ proc BuildHtmlFrame {dlg w} {
 		-imagecmd [namespace code GetImage] \
 		-center no \
 		-fittowidth yes \
-		-width 650 \
-		-height $height \
+		-width 400 \
+		-height $Options(htmlheight) \
 		-cursor left_ptr \
 		-borderwidth 1 \
 		-relief sunken \

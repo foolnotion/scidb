@@ -111,6 +111,7 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -133,6 +134,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -162,6 +164,7 @@ Database::Database(	mstl::string const& name,
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -216,6 +219,7 @@ Database::Database(	mstl::string const& name,
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -263,6 +267,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
 	,m_usingAsyncReader(false)
@@ -293,6 +298,9 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 
 Database::~Database() throw()
 {
+	if (m_asyncReader)
+		m_codec->closeAsyncReader(m_asyncReader);
+
 	delete m_codec;
 }
 
@@ -1459,14 +1467,27 @@ Database::annotator(unsigned index) const
 }
 
 
+Move
+Database::findExactPosition(unsigned index, Board const& position, bool skipVariations) const
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(index < countGames());
+
+	return m_codec->findExactPosition(	*m_gameInfoList[index],
+													position,
+													skipVariations,
+													m_asyncReader);
+}
+
+
 void
 Database::openAsyncReader()
 {
 	M_REQUIRE(isOpen());
 
-	if (!m_usingAsyncReader)
+	if (m_asyncReader == 0)
 	{
-		m_codec->useAsyncReader(true);
+		m_asyncReader = m_codec->getAsyncReader();
 		m_usingAsyncReader = true;
 	}
 }
@@ -1475,12 +1496,10 @@ Database::openAsyncReader()
 void
 Database::closeAsyncReader()
 {
-	if (!isOpen())
-		return;
-
 	if (m_usingAsyncReader)
 	{
-		m_codec->useAsyncReader(false);
+		m_codec->closeAsyncReader(m_asyncReader);
+		m_asyncReader = 0;
 		m_usingAsyncReader = false;
 	}
 }

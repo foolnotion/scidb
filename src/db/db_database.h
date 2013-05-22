@@ -42,6 +42,7 @@ namespace mstl { class ostream; }
 namespace mstl { template <typename T, typename U> class map; }
 namespace util { class Progress; }
 namespace util { class ByteStream; }
+namespace util { class BlockFileReader; }
 namespace TeXt { class Receptacle; }
 
 namespace db {
@@ -289,7 +290,7 @@ public:
 	unsigned stripTags(Filter const& filter, TagMap const& tags, util::Progress& progress);
 
 	/// Search for givee position and return following move.
-	Move findExactPositionAsync(unsigned index, Board const& position, bool skipVariations) const;
+	Move findExactPosition(unsigned index, Board const& position, bool skipVariations) const;
 	/// Find all used tags in database.
 	void findTags(Filter const& filter, TagMap& tags, util::Progress& progress) const;
 
@@ -310,6 +311,8 @@ public:
 
 private:
 
+	typedef ::util::BlockFileReader AsyncReader;
+
 	/// Opens the given database.
 	bool open(mstl::string const& name, bool readOnly);
 	/// Read the given gzipped PGN file
@@ -329,6 +332,7 @@ private:
 	unsigned			m_size;
 	uint64_t			m_lastChange;
 	TreeCache		m_treeCache;
+	AsyncReader*	m_asyncReader;
 	mutable bool	m_encodingFailed;
 	mutable bool	m_encodingOk;
 	bool				m_usingAsyncReader;

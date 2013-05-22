@@ -28,6 +28,7 @@
 #define _cql_match_move_included
 
 #include "cql_designator.h"
+#include "cql_engine.h"
 
 namespace db { class Move; }
 namespace db { class Board; }
@@ -90,7 +91,8 @@ class MoveEvaluation : public Match
 {
 public:
 
-	enum Mode { Depth, MoveTime, Mate };
+	typedef Engine::Mode Mode;
+
 	enum View { SideToMove, Absolute };
 
 	MoveEvaluation(Mode mode,
@@ -112,6 +114,7 @@ private:
 	Designator	m_to;
 	float			m_lower;
 	float			m_upper;
+	Engine*		m_engine;
 };
 
 

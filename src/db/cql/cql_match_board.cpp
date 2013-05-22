@@ -32,6 +32,7 @@
 #include "db_board_base.h"
 
 #include "m_utility.h"
+#include "m_assert.h"
 
 using namespace cql;
 using namespace cql::board;
@@ -680,8 +681,27 @@ MatingMaterial::match(GameInfo const& info, Board const& board, Variant variant,
 bool
 Evaluation::match(GameInfo const& info, Board const& board, Variant variant, unsigned flags)
 {
-	// TODO
-	return false;
+	M_ASSERT(m_engine);
+
+	bool rc;
+
+	switch (m_method)
+	{
+		case Engine::Mate:
+			rc = m_engine->searchMate(m_mode, m_arg);
+			break;
+
+		case Engine::Score:
+		{
+			float result = m_engine->evaluate(m_mode, m_arg);
+			if (m_view == SideToMove && board.blackToMove())
+				result = -result;
+			rc = m_lower <= result && result <= m_upper;
+			break;
+		}
+	}
+
+	return rc;
 }
 
 

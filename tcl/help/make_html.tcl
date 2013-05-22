@@ -453,7 +453,7 @@ proc readContents {chan file} {
 			if {[regexp -indices {.*</a>} $line indices]} {
 				lassign $indices s e
 				set newline [string range $line 0 [expr {$e - 4}]]
-				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
+				append newline "&nbsp;<span class=\"awesome\">&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 				set indices {}
@@ -465,7 +465,7 @@ proc readContents {chan file} {
 				set newline [string range $line 0 $l]
 				append newline " target=\"blank_\""
 				append newline [string range $line $f [expr {$e - 4}]]
-				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
+				append newline "&nbsp;<span class=\"awesome\">&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}
@@ -474,7 +474,7 @@ proc readContents {chan file} {
 				set newline [string range $line 0 $l]
 				append newline " target=\"blank_\""
 				append newline [string range $line $f [expr {$e - 4}]]
-				append newline "<span class=\"awesome\">&nbsp;&#xf08e;</span></a>"
+				append newline "&nbsp;<span class=\"awesome\">&#xf08e;</span></a>"
 				append newline [string range $line [expr {$e + 1}] end]
 				set line $newline
 			}

@@ -117,6 +117,11 @@ struct Runnable
 	{
 	}
 
+	bool finished() const
+	{
+		return !m_database.usingAsyncReader();
+	}
+
 	void operator() ()
 	{
 		m_database.openAsyncReader();
@@ -2033,14 +2038,13 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 
 	if (::runnable)
 	{
-		::runnable->m_database.closeAsyncReader();
-
 		if (Runnable::TreeP tree = ::runnable->m_tree)
 		{
 			tree->compressFilter();
 			Tree::addToCache(tree.get());
 		}
 
+		M_ASSERT(::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2054,8 +2058,6 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 
 		tree->uncompressFilter();
 	}
-
-	base.openAsyncReader();
 
 	::runnable = new Runnable(tree, *g.data.game, base, mode, ratingType, progress);
 	m_treeThread.start(mstl::function<void ()>(&Runnable::operator(), ::runnable));
@@ -2075,8 +2077,6 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 	{
 		tree = ::runnable->m_tree;
 
-		::runnable->m_database.closeAsyncReader();
-
 		if (tree)
 		{
 			Tree::addToCache(tree.get());
@@ -2090,6 +2090,7 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 			}
 		}
 
+		M_ASSERT(::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2176,14 +2177,13 @@ Application::stopUpdateTree()
 	{
 		Runnable::TreeP tree = ::runnable->m_tree;
 
-		::runnable->m_database.closeAsyncReader();
-
 		if (tree)
 		{
 			tree->compressFilter();
 			Tree::addToCache(tree.get());
 		}
 
+		M_ASSERT(::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2196,10 +2196,7 @@ Application::cancelUpdateTree()
 	M_REQUIRE(hasInstance());
 
 	m_treeThread.stop();
-
-	if (::runnable)
-		::runnable->m_database.closeAsyncReader();
-
+	M_ASSERT(::runnable->finished());
 	delete ::runnable;
 	::runnable = 0;
 }

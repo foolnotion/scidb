@@ -569,7 +569,9 @@ zu machen.
       Um Leerzeichen am Textanfang oder Textende trotzdem zu erwingen
       kann dieses Zeichen eingesetzt werden, denn es wird beim Speichern
       in Leerzeichen umgwandelt, jedoch eben nur am Textanfang und am
-      Textende.
+      Textende. Grundsätzlich wird von Leerzeichen an den Textenden
+      abgeraten (sie werden u.a. unterstützt weil sie im Scid-Datenbankformat
+      vorkommen können).
     </td>
   </tr>
 
@@ -580,7 +582,11 @@ zu machen.
     <td style="padding-top: 1em; padding-left: 0.5em;">
       Damit können Zeilenumbrüche erzwungen werden. Im Textfeld werden
       die erzwungenen Zeilenumbrüche mit dem Absatzsymbol &#x00b6;
-      gekennzeichnet.
+      gekennzeichnet. Zeilenumbrüche in Kommentaren gehen beim Exportieren
+      in das <PGN a href="Database-Formats.html#PGN">PGN-Format</a>
+      verloren. Es wird grundsätzlich von der Verwendung abgeraten
+      (sie werden unterstützt weil sie im Scid-Datenbankformat
+      vorkommen können).
     </td>
   </tr>
 </table>

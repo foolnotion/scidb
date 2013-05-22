@@ -811,7 +811,7 @@ Position::parseEvaluation(Match& match, char const* s, Error& error)
 	char const *t = ::skipToDelim(s);
 	mstl::string mode(s, t);
 
-	if (mode != "depth" && mode != "movetime" && mode != "mate")
+	if (mode != "depth" && mode != "movetime")
 	{
 		error = Invalid_Evaluation_Mode;
 		return s;
@@ -834,11 +834,11 @@ Position::parseEvaluation(Match& match, char const* s, Error& error)
 		return s;
 	}
 
-	if (mode == "mate")
-	{
-		m_boardMatchList.push_back(new cql::board::Evaluation(cql::board::Evaluation::Mate, n));
-	}
-	else
+	cql::board::Evaluation::Mode emode = mode == "depth" ? cql::Engine::Depth : cql::Engine::MoveTime;
+
+	s = ::skipSpaces(s);
+
+	if (::isdigit(*s) || *s == '.')
 	{
 		float lower, upper;
 		s = ::parseRange(s, error, lower, upper);
@@ -858,20 +858,19 @@ Position::parseEvaluation(Match& match, char const* s, Error& error)
 
 		s = t;
 
-		cql::board::Evaluation::Mode emode;
 		cql::board::Evaluation::View view;
-
-		if (mode == "depth")
-			emode = cql::board::Evaluation::Depth;
-		else
-			emode = cql::board::Evaluation::MoveTime;
 
 		if (stm == "sidetomove")
 			view = cql::board::Evaluation::SideToMove;
 		else
 			view = cql::board::Evaluation::Absolute;
 
-		m_boardMatchList.push_back(new cql::board::Evaluation(emode, n, lower, upper, view));
+		m_boardMatchList.push_back(
+			new cql::board::Evaluation(Engine::Score, emode, n, lower, upper, view));
+	}
+	else if (::strncmp(s, "mate", 4) == 0 && ::isDelim(s[4]))
+	{
+		m_boardMatchList.push_back(new cql::board::Evaluation(Engine::Mate, emode, n));
 	}
 
 	match.m_isStandard = false;
@@ -1233,9 +1232,9 @@ Position::parseMoveEvaluation(Match& match, char const* s, Error& error)
 	cql::move::MoveEvaluation::View view;
 
 	if (mode == "depth")
-		emode = cql::move::MoveEvaluation::Depth;
+		emode = cql::Engine::Depth;
 	else
-		emode = cql::move::MoveEvaluation::MoveTime;
+		emode = cql::Engine::MoveTime;
 
 	if (stm == "sidetomove")
 		view = cql::move::MoveEvaluation::SideToMove;

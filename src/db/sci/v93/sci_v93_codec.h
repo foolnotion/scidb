@@ -131,10 +131,13 @@ public:
 	void reset() override;
 	void setEncoding(mstl::string const& encoding) override;
 
-	void useAsyncReader(bool flag) override;
-	Move findExactPositionAsync(	GameInfo const& info,
-											Board const& position,
-											bool skipVariations) override;
+	::util::BlockFileReader* getAsyncReader() override;
+	void closeAsyncReader(::util::BlockFileReader* reader) override;
+
+	Move findExactPosition(	GameInfo const& info,
+									Board const& position,
+									bool skipVariations,
+									::util::BlockFileReader* reader) override;
 
 	static DatabaseCodec* makeCodec(mstl::string const& name);
 	static void rename(mstl::string const& oldName, mstl::string const& newName);
@@ -180,15 +183,14 @@ private:
 	uint16_t readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames = 0);
 	void checkFileVersion(mstl::fstream& fstrm, mstl::string const& magic, uint16_t fileVersion);
 
-	mstl::fstream				m_gameStream;
-	mstl::fstream*				m_progressiveStream;
-	util::BlockFile*			m_gameData;
-	util::BlockFileReader*	m_asyncReader;
-	mstl::string				m_magicGameFile;
-	Lookup						m_lookup[4];
-	unsigned						m_progressFrequency;
-	unsigned						m_progressReportAfter;
-	unsigned						m_progressCount;
+	mstl::fstream		m_gameStream;
+	mstl::fstream*		m_progressiveStream;
+	util::BlockFile*	m_gameData;
+	mstl::string		m_magicGameFile;
+	Lookup				m_lookup[4];
+	unsigned				m_progressFrequency;
+	unsigned				m_progressReportAfter;
+	unsigned				m_progressCount;
 };
 
 } // namespace v93
