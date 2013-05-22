@@ -117,6 +117,9 @@ array set fontFamilies {
 
 	Fixed {
 		{Bitstream Vera Sans Mono}
+		{Monaco}
+		{Menlo}
+		{Consolas}
 		{Arial Monospaced}
 		{Akkurat-Mono}
 		{Andale Mono}
