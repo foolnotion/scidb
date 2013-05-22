@@ -272,7 +272,7 @@ if {[catch {
 }
 
 # migrate to new default theme
-if {$scidb::revision <= 701} {
+if {$scidb::revision < 701} {
 	if {$board::currentTheme eq {Blue Theme|1354018040763|yellow.color|gregor}} {
 		set board::currentTheme Default
 	} elseif {$scidb::revision > 83 && $board::currentTheme eq "Default"} {

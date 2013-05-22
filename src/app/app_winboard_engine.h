@@ -129,6 +129,7 @@ private:
 	bool m_featureVariant;
 	bool m_featurePing;
 	bool m_isCrafty;
+	bool m_parsingFeatures;
 	bool m_startAnalyzeIsPending;
 	bool m_stopAnalyzeIsPending;
 };

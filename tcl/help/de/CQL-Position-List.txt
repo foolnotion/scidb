@@ -2305,7 +2305,7 @@ Schachprogramms. Die ersten beide Parameter bestimmen den Berechnungsmodus:
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
-    <!-- WB:   "st <x>"          -->
+    <!-- WB:   "time <x/10>"     -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
@@ -2339,7 +2339,7 @@ Bewertungswerte unabhängig davon.
 
 <note>
 Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
-Sekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Centisekunden gerundet wird, wenn das verwendete Schachprogramm auf das
 Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
 Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
 Millisekundenangabe verwendet.
@@ -2508,7 +2508,7 @@ spezifizieren den Berechnungsmodus:
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
-    <!-- WB:   "st <x>"          -->
+    <!-- WB:   "time <x/10>"     -->
     <tr>
       <td class="l"><expr>movetime &lt;ms&gt;</expr></td>
       <td class="r">suche exakt &lt;ms&gt; Millisekunden pro Zug</td>
@@ -2538,7 +2538,7 @@ unabhängig davon.
 
 <note>
 Beachte daß im Modus <i>movetime</i> die Angabe der Millisekunden auf
-Sekunden gerundet wird, wenn das verwendete Schachprogramm auf das
+Centisekunden gerundet wird, wenn das verwendete Schachprogramm auf das
 Protokoll <nobr>WinBoard</nobr>/<nobr>XBoard</nobr> eingeschränkt ist.
 Steht dem Schachprogramm das UCI-Protokoll zur Verfügung, so wird die exakte
 Millisekundenangabe verwendet.

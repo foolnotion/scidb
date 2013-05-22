@@ -231,6 +231,7 @@ winboard::Engine::Engine()
 	,m_featureVariant(false)
 	,m_featurePing(false)
 	,m_isCrafty(false)
+	,m_parsingFeatures(false)
 	,m_startAnalyzeIsPending(false)
 	,m_stopAnalyzeIsPending(false)
 {
@@ -695,7 +696,8 @@ winboard::Engine::isReady() const
 void
 winboard::Engine::protocolStart(bool isProbing)
 {
-	addVariant(app::Engine::Variant_Standard);
+	if (supportedVariants() == 0)
+		addVariant(app::Engine::Variant_Standard);
 
 	send("xboard");
 	send("protover 2");
@@ -710,7 +712,7 @@ winboard::Engine::protocolStart(bool isProbing)
 		send("sd 1");
 		send("depth 1");		// some engines are expecting "depth" instead of "sd"
 		send("st 1");			// "level 1 1 0" does not work with any machine
-		send("st 0");
+		send("time 1");		// not any machine is supporting "time"
 		send("post");
 		send("go");				// NOTE: don't send "go" if the user is to move
 
@@ -746,6 +748,7 @@ winboard::Engine::featureDone(bool done)
 	// so it supports version 2 or better of the xboard protocol.
 
 	m_response = true;
+	m_parsingFeatures = false;
 
 	if (!done)
 	{
@@ -771,6 +774,9 @@ winboard::Engine::timeout()
 {
 	if (isProbing())
 	{
+		if (m_parsingFeatures)
+			m_response = true;
+
 		deactivate();
 	}
 	else if (m_waitForPong)
@@ -809,10 +815,7 @@ winboard::Engine::processMessage(mstl::string const& message)
 		{
 			case 'f':
 				if (::strncmp(msg, "feature ", 8) == 0)
-				{
-					m_response = true;
 					return parseFeatures(::skipSpaces(msg + 8));
-				}
 				break;
 
 			case 'p':
@@ -929,6 +932,8 @@ winboard::Engine::processMessage(mstl::string const& message)
 void
 winboard::Engine::parseFeatures(char const* msg)
 {
+	m_parsingFeatures = true;
+
 	while (true)
 	{
 		char const* key	= msg;

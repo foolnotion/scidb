@@ -191,6 +191,7 @@ public:
 		db::Game const* currentGame() const;
 		Options const& options() const;
 		::db::variant::Type currentVariant() const;
+		unsigned supportedVariants() const;
 		int findVariation(db::Move const& move) const;
 
 		long pid() const;

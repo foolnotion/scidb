@@ -50,7 +50,7 @@ part of the CQL standard.
 The keywords <a href="CQL-Position-List.html#position:castling"><span style='white-space:nowrap;'>:castling</span></a>, <a href="CQL-Position-List.html#position:endgame"><span style='white-space:nowrap;'>:endgame</span></a>,
 <a href="CQL-Position-List.html#position:inside"><span style='white-space:nowrap;'>:inside</span></a>, and <a href="CQL-Position-List.html#position:reset"><span style='white-space:nowrap;'>:reset</span></a> are borrowed from
 Chess Assistant 9. The description of these keywords are taken from
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>.
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension&nbsp;<span class="awesome">&#xf08e;</span></a>.
 </p>
 
 <ul style='list-style-type: none'><li>
@@ -911,7 +911,7 @@ Match first position of mainline which occurred the third time in this game,
 with same player to move, and each player has the same castling and en passant
 capturing rights. The repeated positions need not occur in succession. This
 accords with the <a href="http://en.wikipedia.org/wiki/Threefold_repetition">
-threefold repetition rule<span class="awesome">&nbsp;&#xf08e;</span></a>.
+threefold repetition rule&nbsp;<span class="awesome">&#xf08e;</span></a>.
 </p>
 
 <h3 id="position:stalemate">:stalemate</h3>
@@ -1614,7 +1614,7 @@ Examples:
 </p>
 
 <div class='verb'><code>
-(position <span class='keyword'>:movefrom</span> <span class='piece'>&#x2656;</span>a3)
+<span class='keyword'>:movefrom</span> <span class='piece'>&#x2656;</span>a3
 </code></div>
 
 <p>
@@ -1626,7 +1626,18 @@ Matches a position in which the next move is of a white rook on a3.
 </code></div>
 
 <p>
-Matches a position in the next move is of some piece on the 8th rank.
+Matches a position in which the next move is of some piece on the 8th rank.
+</p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:movefrom</span> .)
+</code></div>
+
+<p>
+This can never match, even a piece drop move
+(Crazyhouse Chess, Bughouse Chess)
+will not match. Use <a href="CQL-Position-List.html#position:piecedrop"><span style='white-space:nowrap;'>:piecedrop</span></a> for the detection
+of piece drop moves.
 </p>
 
 <h3 id="position:movenumber">:movenumber</h3>
@@ -1692,7 +1703,7 @@ Is matching a position where next move is not a capture move.
 <p>
 Matches a position in which the next move is to capture a white rook on
 the b file. Note that this is quite different from the natural
-<a href="http://de.wikipedia.org/wiki/Portable_Game_Notation" target="blank_">PGN<span class="awesome">&nbsp;&#xf08e;</span></a>
+<a href="http://de.wikipedia.org/wiki/Portable_Game_Notation" target="blank_">PGN&nbsp;<span class="awesome">&#xf08e;</span></a>
 interpration of its being a move of a white rook to the b file. That
 would be done via:
 </p>
@@ -1703,7 +1714,26 @@ would be done via:
 
 <p>
 Matches a move of the white rook to the b file.
+But back to the previous example:
 </p>
+
+<div class='verb'><code>
+(position <span class='keyword'>:moveto</span> <span class='piece'>&#x2656;</span>[b1-8])
+</code></div>
+
+<p>
+This can never match a piece drop (concerns the chess variants
+Crazyhouse Chess and Bughouse Chess).
+However, if this should match also a piece drop, we have to extend
+the query:
+</p>
+
+<div class='box'><pre><code><!--
+-->(position
+  <a href="CQL-Position-List.html#position:or"><span style='white-space:nowrap;'>:or</span></a> (
+    (<span class='keyword'>:moveto</span> <span class='piece'>&#x2656;</span>[b1-8])
+    (<a href="CQL-Position-List.html#position:piecedrop"><span style='white-space:nowrap;'>:piecedrop</span></a> <span class='piece'>&#x2656;</span>[b1-8])))<!--
+--></code></pre></div>
 
 <h3 id="position:nocastling">:nocastling&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
 
@@ -1761,6 +1791,8 @@ The next move is a piece drop which is dropping a white queen on f7.
 <p>
 The next move is not a piece drop (because the piecetype designator
 is empty).
+</p>
+
 </p>
 
 <h3 id="position:promote">:promote</h3>
@@ -2203,8 +2235,8 @@ This is a very slow operation and should be used with restrictions.
 
 <p>
 This keyword is evaluating the current position with the help of an
-external chess engine. The number of parameters depends on the evaluation mode.
-There are three evaluation modes:
+external chess engine. The first two parameter are specifying the
+computation mode:
 </p>
 
 <ul style='list-style-type: none'><li>
@@ -2217,36 +2249,42 @@ There are three evaluation modes:
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
+    <!-- WB:   "time <x/10>"     -->
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>movetime &lt;ms&gt;</code></span></td>
       <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
-    </tr>
-
-    <!-- UCI:  "go mate <x>" -->
-    <tr>
-      <td class="l"><span style='white-space:nowrap;'><code>mate &lt;n&gt;</code></span></td>
-      <td class="r">search for a mate in &lt;n&gt; moves</td>
     </tr>
   </table>
 </li></ul>
 
 <p>
-The modes <i>depth</i> and <i>movetime</i> are taking three additional
-parameters.  The third parameter denotes the lower bound, the fourth parameter
-denotes the upper bound, both scores are in pawn units. The query succeeds
-if the evaluation of the position is within the specified bounds (inclusive
-the ranges). If the lower-bound value is specified with <i>unlimited</i>, it
-means negative unlimited. If the upper-bound value is specified with
-<i>unlimited</i>, it means positive unlimited. The fifth parameter is either
-<i>sidetomove</i> or <i>absolute</i>. <i>sidetomove</i> means that the
-evaluation value depends on side to move, and <i>absolute</i> means that the
-evaluation value is independent from side to move.
+Now you can either specify a search for mate, or a search for position
+evaluation.
+</p>
+
+<p>
+A search for mate expects one more parameter: namely the word <i>mate</i>.
+A query is successful if a mate has been found.
+</p>
+
+<p>
+The search for position evaluation is expecting three additional parameters.
+The first one denotes the lower bound, the second one denotes the upper bound,
+both scores are in pawn units. The query succeeds if the evaluation of the
+position is within the specified bounds (inclusive the ranges). If the
+lower-bound value is specified with <i>unlimited</i>, it means negative
+unlimited. If the upper-bound value is specified with <i>unlimited</i>, it
+means positive unlimited. The third parameter is either <i>sidetomove</i> or
+<i>absolute</i>. <i>sidetomove</i> means that the evaluation value depends on
+side to move, and <i>absolute</i> means that the evaluation value is
+independent from side to move.
 </p>
 
 <p><img src='../images/note.png' alt='note' /> 
-Please note that the modes <i>depth</i> and <i>mate</i> are available only if
-the engine supports the UCI protocol. An engine restricted to the
-WinBoard/XBoard protocol does only support the <i>movetime</i> mode.
+Please note that in mode <i>movetime</i> the specification of the milli-seconds
+will be rounded to centi-seconds if the engine is restricted to
+<span style='white-space:nowrap;'>WinBoard</span>/<span style='white-space:nowrap;'>XBoard</span> protocol. If the UCI
+protocol is available then the exact number of milli-seconds will be used.
 </p>
 
 <p>
@@ -2280,11 +2318,11 @@ Black is (probably) losing, because he is at least 3 pawn units behind.
 </p>
 
 <div class='verb'><code>
-<span class='keyword'>:evaluation</span> mate 3
+<span class='keyword'>:evaluation</span> depth 6 mate
 </code></div>
 
 <p>
-Either side can be mated in maximal 3 moves.
+Either side can be mated in maximal 3 moves (6 plies).
 </p>
 
 <h3 id="position:exchangeevaluation">:exchangeevaluation&ensp;<img src="../images/ft-scidb-tiny.png" alt="" /></h3>
@@ -2359,7 +2397,7 @@ estimating the exchange values.
 <p><img src='../images/note.png' alt='note' /> 
 This keyword is alike the keyword <span style='white-space:nowrap;'><code>:maxswapvalue</code></span> from Chess
 Assistant 9 (&#x21d2;
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>),
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension&nbsp;<span class="awesome">&#xf08e;</span></a>),
 but quite different implemented.
 </p>
 
@@ -2397,19 +2435,20 @@ position and the evaluation of the preceding position. The evaluation will be
 done with the help of an external chess engine. It takes seven parameters.
 The first and second parameter are piece designators. The former is specifies
 moving pieces, the second one specifies target squares. The third and fourth
-are depending on the evaluation mode:
+are specifiying the computation mode:
 </p>
 
 <ul style='list-style-type: none'><li>
   <table>
     <!-- UCI:  "go depth <x>" -->
+    <!-- WB:   "st <x>"       -->
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>depth &lt;d&gt;</code></span></td>
       <td class="r">search &lt;d&gt; plies only</td>
     </tr>
 
     <!-- UCI:  "go movetime <x>" -->
-    <!-- WB:   "st <x>"       -->
+    <!-- WB:   "time <x/10>"     -->
     <tr>
       <td class="l"><span style='white-space:nowrap;'><code>movetime &lt;ms&gt;</code></span></td>
       <td class="r">search exactly &lt;ms&gt; milli-seconds per move</td>
@@ -2428,20 +2467,21 @@ current position minus the score of the preceding position. In case of mating
 positions the difference will be always greater than 10,000.
 </p>
 
-<p><img src='../images/note.png' alt='note' /> 
-Please note that the mode <i>depth</i> is available only if the engine suppoprts
-the UCI protocol. An engine restricted to the WinBoard/XBoard protocol does only
-support the <i>movetime</i> mode.
-</p>
-
 <p>
 The seventh parameter is either <i>sidetomove</i> or <i>absolute</i>.
 <i>sidetomove</i> means that the evaluation value depends on side to move, and
 <i>absolute</i> means that the evaluation value is independent from side to move.
 </p>
 
+<p><img src='../images/note.png' alt='note' /> 
+Please note that in mode <i>movetime</i> the specification of the milli-seconds
+will be rounded to centi-seconds if the engine is restricted to
+<span style='white-space:nowrap;'>WinBoard</span>/<span style='white-space:nowrap;'>XBoard</span> protocol. If the UCI
+protocol is available then the exact number of milli-seconds will be used.
+</p>
+
 <p>
-Example:
+Examples:
 </p>
 
 <div class='verb'><code>
@@ -2473,7 +2513,7 @@ Only capture moves were evaluated.
 
 <p>
 Search for positions where side to move is doing first promotion in game, but
-without gaining a better score. We are ensuring that only promoting moves will
+without gaining a better score. We have ensured that only promoting moves will
 be evaluated.
 </p>
 
@@ -2542,7 +2582,7 @@ Tripled pawns can be found by the query:
 
 <p>
 Note that this is only an example for the use of this keyword (taken from
-<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension<span class="awesome">&nbsp;&#xf08e;</span></a>),
+<a href="http://hornid.com/chess/docs/CQL-3GX.pdf" target="blank_">The CQL 3.GX Extension&nbsp;<span class="awesome">&#xf08e;</span></a>),
 it is not recommended to use this statement for triple pawn search.
 A much better way is:
 </p>

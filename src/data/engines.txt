@@ -390,7 +390,7 @@
 *	Geisterauge							2058	----	GER	?			N
 	Geko									----	----	ITA	WB			N			http://www.geocities.com/gekochess/
 	Genesis								----	----	ISR	WB			N			http://www.cs.biu.ac.il/~davoudo/
- 	Gerbil Chess						1970	----	USA	WB			N			http://www.seanet.com/~brucemo/gerbil/gerbil.htm
+ 	Gerbil Chess						1970	----	USA	WB			NL			http://www.seanet.com/~brucemo/gerbil/gerbil.htm
 =	Gerbil
 *	GES									----	----	USA	WB			N
 *	GFC									----	----	ARG	WB			N			https://sites.google.com/site/chronosce/Home
@@ -478,6 +478,7 @@
 	Ikarus								----	----	GER	?			N
 =	Icarus
 *	Ildtiadar							----	----	GER	WB			N			http://eloxoph.com/ildtiadar/
+*	Immortal								----	----	PHI	WB			C			https://sites.google.com/site/deuteriumengine/
 	Imp									----	----	LTU	?			N
 *	InmiChess							----	----	AUT	WB			N
 *	Insomniac							----	----	USA	?			N
@@ -761,6 +762,7 @@
 *	NeuroStock							----	----	---	UCI		N			https://github.com/m00natic/neuroStock
 	Neurone								1101	----	ITA	WB			N			http://www.lissandrello.it/?p=524
 	Neurosis								2161	2302	NED	WB			N
+*	Nilatac								----	---	ROU	WB			S			http://voronet.francu.com/
 	Nimrod								2380	----	???	?			N
 *	New Rival							----	----	ENG	WB			N
 *	Nimzo									----	2612	AUT	WB			N

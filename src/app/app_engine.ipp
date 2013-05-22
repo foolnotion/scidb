@@ -50,6 +50,7 @@ inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillL
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
 inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
+inline unsigned Engine::Concrete::supportedVariants() const	{ return m_engine->supportedVariants(); }
 
 inline long Engine::Concrete::pid() const							{ return m_engine->pid(); }
 
