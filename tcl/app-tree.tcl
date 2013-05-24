@@ -55,6 +55,7 @@ set FromBlacksPerspective			"From blacks perspective"
 set FromSideToMovePerspective		"From side to move perspective"
 set FromWhitesPerspectiveTip		"Score from whites perspective"
 set FromBlacksPerspectiveTip		"Score from blacks perspective"
+set EmphasizeMoveOfGame				"Emphasize move of game"
 
 set TooltipAverageRating			"Average Rating (%s)"
 set TooltipBestRating				"Best Rating (%s)"
@@ -108,6 +109,7 @@ array set Options {
 	sort:column			frequency
 	rating:type			Elo
 	score:side			white
+	hilite:nextmove	0
 
 	-background			white
 	-emphasize			linen
@@ -127,6 +129,7 @@ array set Vars {
 	progress	{}
 	table		{}
 	after		{}
+	nextmove	-1
 }
 
 array set Bars {}
@@ -186,6 +189,12 @@ proc build {parent width height gameTable} {
 	bind $sb <Any-Button> [list ::tooltip::hide]
 	::ttk::frame $sq -borderwidth 1 -relief sunken
 
+	$tb.t state define next
+	set font [::table::getFont $tb]
+	set bold [::font::makeBoldFont $font]
+	set Vars(style) [list -font [list $bold next $font !next] \
+		 -font2 [list $::font::figurine(text:bold) next $::font::figurine(text:normal) !next]]
+
 	grid $tb -row 0 -column 0 -rowspan 2 -sticky nsew
 	grid $sb -row 0 -column 1 -rowspan 2 -sticky ns
 	grid rowconfigure $info 0 -weight 1
@@ -212,16 +221,22 @@ proc build {parent width height gameTable} {
 		set stripes $Options(-stripes)
 
 		switch $id {
-			number {
-				set var {}
-				set stripes $Options(-emphasize)
-				set lock left
-			}
-
-			move {
-				set var ::gametable::mc::SortAscending
-				set stripes $Options(-emphasize)
-				set lock left
+			number - move {
+				lappend menu [list checkbutton \
+					-command [namespace code [list RefreshCurrentItem $tb]] \
+					-labelvar [namespace current]::mc::EmphasizeMoveOfGame \
+					-variable [namespace current]::Options(hilite:nextmove) \
+				]
+				lappend menu { separator }
+				if {$id eq "number"} {
+					set var {}
+					set stripes $Options(-emphasize)
+					set lock left
+				} else {
+					set var ::gametable::mc::SortAscending
+					set stripes $Options(-emphasize)
+					set lock left
+				}
 			}
 
 			eco {
@@ -860,6 +875,15 @@ proc ToggleTransparentBar {table} {
 }
 
 
+proc RefreshCurrentItem {table} {
+	variable Vars
+
+	if {$Vars(nextmove) >= 0} {
+		SetItemState $table $Vars(nextmove)
+	}
+}
+
+
 proc RefreshHeader {table} {
 	variable Options
 
@@ -971,6 +995,8 @@ proc SetItemStyle {table item row} {
 		$table.t item style set $item {*}$Vars(styles)
 	} else {
 		$table.t item style set $item {*}[::table::defaultStyles $table]
+		$table.t item element configure $row move elemTxtmove {*}$Vars(style)
+		$table.t item element configure $row number elemTxtnumber {*}$Vars(style)
 	}
 }
 
@@ -1007,6 +1033,16 @@ proc Format {value} {
 }
 
 
+proc SetItemState {table index} {
+	variable Options
+	variable Vars
+
+	if {$Vars(nextmove) != $index || !$Options(hilite:nextmove)} { append states ! }
+	append states next
+	$table.t item state set $index $states
+}
+
+
 proc FillTable {table} {
 	variable Options
 	variable Defaults
@@ -1020,6 +1056,8 @@ proc FillTable {table} {
 	set nrows [llength $Vars(data)]
 	set stm [::scidb::pos::stm]
 	set row 1
+	set nextMove [::scidb::game::next move]
+	set Vars(nextmove) -1
 
 	RefreshRatingLabel
 
@@ -1043,10 +1081,17 @@ proc FillTable {table} {
 				move {
 					if {$row == [expr {$nrows + 1}]} {
 						lappend text $mc::Total
-					} elseif {$item eq "end"} {
-						lappend text "\uff0d"
 					} else {
-						lappend text [::font::translate $item]
+						set index [expr {$row - 1}]
+						if {$item eq "end"} {
+							if {[string length $nextMove] == 0} { set Vars(nextmove) $index }
+							SetItemState $table $index
+							lappend text "\uff0d"
+						} else {
+							if {$nextMove eq $item} { set Vars(nextmove) $index }
+							SetItemState $table $index
+							lappend text [::font::translate $item]
+						}
 					}
 					incr col
 				}

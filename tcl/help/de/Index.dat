@@ -46,6 +46,7 @@ set Index {
     {
       {{Felderbezeichner (CQL)} {CQL-Square-Designators.html} {}}
       {{Felderbezeichnerverbund (CQL)} {CQL-Square-Designators.html} {compound}}
+      {{Feldmarkierungen} {Mark-Palette-Dialog.html} {}}
       {{Feldmarkierungspalette} {Mark-Palette-Dialog.html} {}}
       {{FEN (Forsyth-Edwards-Notation)} {FEN.html} {}}
       {{Figurenbezeichner (CQL)} {CQL-Piece-Designators.html} {}}
@@ -79,6 +80,7 @@ set Index {
     {
       {{Markierung (CQL)} {CQL-Tagging.html} {}}
       {{Markierungen (Partie-Flags)} {Game-Flags.html} {}}
+      {{Markierungen auf dem Schachbrett} {Mark-Palette-Dialog.html} {}}
     }
   }
   { N
@@ -131,6 +133,11 @@ set Index {
   { X
     {
       {{X-FEN (Erweiterte Forsyth-Edwards-Notation)} {FEN.html} {}}
+    }
+  }
+  { Z
+    {
+      {{Zugmarkierungen} {Mark-Palette-Dialog.html} {}}
     }
   }
 }

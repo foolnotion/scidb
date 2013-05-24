@@ -517,6 +517,11 @@ proc insert {table index list} {
 }
 
 
+proc getFont {table} {
+	return [set ${table}::Options(-font)]
+}
+
+
 proc tablePath {table} {
 	return $table.t
 }

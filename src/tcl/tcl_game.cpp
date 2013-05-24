@@ -2951,7 +2951,7 @@ cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					{
 						marks.add(mark);
 					}
-					else if (type == mark::Arrow || marks[index] == mark)
+					else if (marks[index] == mark)
 					{
 						marks.remove(index);
 					}

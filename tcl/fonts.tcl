@@ -1627,6 +1627,13 @@ proc splitAnnotation {text} {
 }
 
 
+proc makeBoldFont {font} {
+	set family [font configure $font -family]
+	set size [font configure $font -size]
+	return [list $family $size bold]
+}
+
+
 proc htmlFixedFamilies {} {
 	variable DefaultHtmlFixedFamilies
 	variable _MonoFamilies

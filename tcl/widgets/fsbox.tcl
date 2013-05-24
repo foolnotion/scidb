@@ -661,7 +661,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		}
 	}
 	set filetypes $list
-	set filetypeList [lsort -unique $filetypeList]
+	set filetypeList [mySort -unique $filetypeList]
 
 	set Vars(defaultextension) $defaultextension
 	set Vars(filetypes) $filetypes
@@ -699,7 +699,7 @@ proc setFileTypes {w filetypes {defaultextension ""}} {
 		set filetypeCount [max $filetypeCount [llength $iconList]]
 	}
 
-	set Vars(file:type:list) [lsort -unique $Vars(file:type:list)]
+	set Vars(file:type:list) [mySort -unique $Vars(file:type:list)]
 
 	set cb $Vars(widget:filetypes:combobox)
 	set top [winfo parent $cb]
@@ -890,6 +890,7 @@ proc mc {msg args} { return [::msgcat::mc [set $msg] {*}$args] }
 proc busy {w} {}
 proc unbusy {w} {}
 proc configureRadioEntry {sub text} {}
+proc mySort {$args} { return [lsort {*}$args] }
 
 
 proc makeStateSpecificIcons {img} {
@@ -973,7 +974,7 @@ proc SelectInitialFile {w} {
 	set sel 0
 	foreach file $Vars(list:file) {
 		set file [file tail $file]
-		if {$file eq $Vars(initialfile)} { set sel $i }
+		if {[EqualPaths $file $Vars(initialfile)]} { set sel $i }
 		incr i
 	}
 	$t selection clear
@@ -1340,15 +1341,17 @@ proc DirChanged {w {useHistory 1}} {
 		if {!$HaveFAM} { set Vars(fam) {} }
 	}
 	if {[llength $Vars(fam)] && [string length $Vars(prevFolder)]} {
-		if {[catch { ::fam::remove $Vars(fam) $Vars(prevFolder) } _ err]} {
+		if {[catch { ::fam::remove $Vars(fam) [file normalize $Vars(prevFolder)] } _ err]} {
 			array set opts $err
 			puts stderr "'fam::remove' failed: $opts(-errorinfo)"
 		}
 	}
 	if {[llength $Vars(fam)] && [string length $Vars(folder)]} {
-		if {[catch { ::fam::add $Vars(fam) $Vars(folder) } _ err]} {
-			array set opts $err
-			puts stderr "'fam::add' failed: $opts(-errorinfo)"
+		if {[file isdirectory $Vars(folder)]} {
+			if {[catch { ::fam::add $Vars(fam) [file normalize $Vars(folder)] } _ err]} {
+				array set opts $err
+				puts stderr "'fam::add' failed: $opts(-errorinfo)"
+			}
 		}
 	}
 
@@ -1510,14 +1513,19 @@ proc ChangeDir {w path {useHistory 1}} {
 			} else {
 				set icon ""
 			}
-			set Vars(folder) [pwd]
+			set pwd [pwd]
+			if {[file normalize $path] eq $pwd} {
+				set Vars(folder) $path
+			} else {
+				set Vars(folder) $pwd
+			}
 			cd $appPWD
 			$Vars(choosedir) set $Vars(folder) $icon
 			set Vars(lastFolder) $Vars(folder)
 		}
 	}
 
-	if {$Vars(type) eq "dir" && $Vars(initialfile) ne $path} {
+	if {$Vars(type) eq "dir" && [EqualPaths $Vars(initialfile) $path]} {
 		set Vars(initialfile) $path
 	}
 
@@ -1526,6 +1534,17 @@ proc ChangeDir {w path {useHistory 1}} {
 	if {$Vars(prevFolder) ne $Vars(folder) || $Vars(prevGlob) ne $Vars(glob)} {
 		DirChanged $w $useHistory
 	}
+}
+
+
+proc EqualPaths {dir1 dir2} {
+	if {$dir1 ne "Favorites" && $dir1 ne "LastVisited"} {
+		set dir1 [file normalize $dir1]
+	}
+	if {$dir2 ne "Favorites" && $dir2 ne "LastVisited"} {
+		set dir2 [file normalize $dir2]
+	}
+	return [expr {$dir1 eq $dir2}]
 }
 
 
@@ -2276,7 +2295,6 @@ proc AskFileAction {w old new} {
 	wm transient $dlg [winfo toplevel $w]
 	::ttk::grabWindow $dlg
 	::util::place $dlg center $w
-	::ttk::grabWindow $dlg
 	wm deiconify $dlg
 	focus -force $ren.entry
 	vwait [namespace current]::_action
@@ -2595,7 +2613,7 @@ proc AddBookmark {w} {
 	foreach entry $Bookmarks(user) {
 		lappend list [list [incr index] [string tolower [lindex $entry 1]]]
 	}
-	set list [lsort -nocase -index 1 $list]
+	set list [[namespace parent]::mySort -nocase -index 1 $list]
 	set bookmarks {}
 	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
 	set Bookmarks(user) $bookmarks
@@ -3625,7 +3643,7 @@ proc Glob {w refresh} {
 	set lookupFolder 0
 
 	if {$refresh || ![info exists Vars(list:folder)]} {
-		[namespace parent]::busy $w
+		[namespace parent]::busy [winfo toplevel $w]
 
 		switch $Vars(glob) {
 			Files {
@@ -3637,7 +3655,7 @@ proc Glob {w refresh} {
 				set filter *
 				if {$Vars(showhidden)} { lappend filter .* }
 				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
-				set folders [lsort -nocase $folders]
+				set folders [[namespace parent]::mySort -nocase $folders]
 			}
 
 			LastVisited - Favorites {
@@ -3687,7 +3705,7 @@ proc Glob {w refresh} {
 			set files [glob -nocomplain -directory $Vars(folder) -types $types {*}$filter]
 
 			# NOTE: we don't want -dictionary
-			foreach file [lsort -nocase -unique $files] {
+			foreach file [[namespace parent]::mySort -nocase -unique $files] {
 				set match 0
 
 				if {[llength $Vars(extensions)] == 0} {
@@ -3706,7 +3724,7 @@ proc Glob {w refresh} {
 			}
 		}
 
-		[namespace parent]::unbusy $w
+		[namespace parent]::unbusy [winfo toplevel $w]
 
 	} else {
 		set filelist {}
@@ -3759,20 +3777,24 @@ proc InvokeFile {w args} {
 		lassign $args x y
 		set id [$t identify $x $y]
 		if {[llength $id] == 0 || [lindex $id 0] eq "header"} { return }
-		set sel [$t item order [lindex $id 1] -visible]
+		set id [lindex $id 1]
 	} else {
-		set sel [expr {[$t item id active] - 1}]
+		set id [$t item id active]
 	}
 
-	if {$sel < 0} { return }
+	if {$id < 1} { return }
+	set index [expr {$id - 1}]
+	set sel [$t item order $id -visible]
 
 	if {$sel >= [llength $Vars(list:folder)]} {
 		SelectFiles $w [expr {$sel - [llength $Vars(list:folder)]}]]
 		if {!$Vars(multiple)} { [namespace parent]::Activate $w yes }
 	} elseif {$Vars(type) ne "dir"} {
+		[namespace parent]::busy [winfo toplevel $w]
 		[namespace parent]::VisitItem $w $t leave [expr {$sel + 1}]
-		set folder [lindex $Vars(list:folder) $sel]
+		set folder [lindex $Vars(list:folder) $index]
 		[namespace parent]::ChangeDir $w $folder
+		[namespace parent]::unbusy [winfo toplevel $w]
 		after idle [list [namespace parent]::VisitItem $w $t enter [expr {$sel + 1}]]
 	} else {
 		SelectFiles $w $sel
@@ -3786,6 +3808,7 @@ proc RefreshFileList {w} {
 
 	if {![winfo exists $w]} { return }	;# may happen due to FAM service
 	if {$Vars(lock:refresh)} { return }	;# may happen due to FAM service
+
 	set Vars(lock:refresh) 1
 	set Vars(lock:selection) 1
 	set t $Vars(widget:list:file)
@@ -4007,7 +4030,7 @@ proc DeleteFile {w} {
 		if {[[namespace parent]::CheckIfInUse $w $file delete]} { return }
 	}
 
-	[namespace parent]::busy $w
+	[namespace parent]::busy [winfo toplevel $w]
 
 	if {$type eq "link"} {
 		set iskde 0
@@ -4050,7 +4073,7 @@ proc DeleteFile {w} {
 		after idle [list [namespace parent]::Stimulate $w]
 
 		if {$reply ne "yes" } {
-			[namespace parent]::unbusy $w
+			[namespace parent]::unbusy [winfo toplevel $w]
 			return
 		}
 
@@ -4088,7 +4111,7 @@ proc DeleteFile {w} {
 
 	RefreshFileList $w
 	after idle [namespace code [list ResetFamId $w]]
-	[namespace parent]::unbusy $w
+	[namespace parent]::unbusy [winfo toplevel $w]
 
 	if {$file in $Vars(list:$ltype)} {
 		set action [string toupper $Vars(delete:action) 0 0]
@@ -4456,7 +4479,7 @@ proc FinishDuplicateFile {w sel name} {
 				set msg [format [Tr CopyFailed] [file tail $f]]
 				foreach f $newFiles { catch { file delete -force $f } }
 				::dialog::error -parent $Vars(widget:main) -message $msg
-				[namespace parent]::unbusy $w
+				[namespace parent]::unbusy $dlg
 				return $srcFile
 			} else {
 				if {$::tcl_platform(platform) eq "unix"} { catch { exec touch $g } }

@@ -228,7 +228,7 @@ proc readTranslationFile {file nagFile encoding} {
 }
 
 proc substituteVariables {line} {
-	while {[regexp {%(::)?[a-zA-Z_:]*(\([^)]*\))?%} $line pattern]} {
+	while {[regexp {%(::)?([a-zA-Z_]+::)*[a-zA-Z_]+(\([^)]+\))?%} $line pattern]} {
 		set var [string range $pattern 1 end-1]
 		if {[info exists $var]} {
 			set line [string map [list $pattern [set $var]] $line]

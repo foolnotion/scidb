@@ -666,6 +666,7 @@
 ::application::tree::mc::FromSideToMovePerspective		"Aus der Sicht des Zugberechtigten"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Ergebnis aus weißer Sicht"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Ergebnis aus schwarzer Sicht"
+::application::tree::mc::EmphasizeMoveOfGame				"Partiezug hervorheben"
 
 ::application::tree::mc::TooltipAverageRating			"Durchschnittswertung (%s)"
 ::application::tree::mc::TooltipBestRating				"Beste Wertung (%s)"
@@ -1949,14 +1950,13 @@
 ::help::mc::OnlyFirstMatches		"Pro Seite werden nur die ersten %s Übereinstimmungen gezeigt."
 ::help::mc::HideIndex				"Index ausblenden"
 ::help::mc::ShowIndex				"Index einblenden"
+::help::mc::All						"Alle"
 
 ::help::mc::FileNotFound			"Datei nicht gefunden."
 ::help::mc::CantFindFile			"Die Datei %s kann nicht gefunden werden."
 ::help::mc::IncompleteHelpFiles	"Es scheint das die Hilfeseiten leider noch nicht vollständig sind."
 ::help::mc::ProbablyTheHelp		"Möglicherweise ist die Hilfseite in einer anderen Sprache eine Alternative"
 ::help::mc::PageNotAvailable		"Diese Seite ist nicht verfügbar"
-
-::help::mc::Overview					"Übersicht"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Turniertabelle"
@@ -2086,7 +2086,7 @@
 ::annotation::mc::ChessBaseCommentaries		"ChessBase-Kommentierungen"
 
 ### marks ##############################################################
-::marks::mc::MarksPalette			"Markierungen - Palette"
+::marks::mc::MarksPalette			"Feldmarkierungspalette"
 
 ### move ###############################################################
 ::move::mc::Action(replace)		"Zug ersetzen"

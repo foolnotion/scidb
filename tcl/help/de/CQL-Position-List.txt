@@ -2183,13 +2183,6 @@ Positionsliste gefunden werden, innerhalb der gegebenen
 <a href="CQL-Range-Specifiers.html">Bereichsangabe</a> liegt.
 </p>
 
-<annotation>
-Der Gebrauch von <i>unlimited</i> (in der Bereichsangabe) statt irgendeinem
-willkürlichen Extremwert, der auch nur eine Grenzenlosigkeit signalisieren
-soll, erlaubt dem Suchalgorithmus die Möglichkeit zur Optimierung, und damit
-kann evt. eine signifikant schnellere Suche stattfinden.
-</annotation>
-
 <p>
 Beispiel:
 </p>

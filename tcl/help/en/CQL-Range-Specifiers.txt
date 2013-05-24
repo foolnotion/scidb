@@ -42,6 +42,13 @@ positive unlimited.
 The special range <i>unlimited</i> is not part of the CQL standard.
 </note>
 
+<annotation>
+The use of <i>unlimited</i> (inside the range specifier) instead of an
+arbitry chosen value, which also only is signalising infinity, allows
+the search algorithm optimisations, and this may result in a considerably
+faster search.
+</annotation>
+
 <h2>Examples</h2>
 
 <p>

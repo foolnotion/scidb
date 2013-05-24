@@ -666,8 +666,9 @@
 ::application::tree::mc::FromWhitesPerspective		"Világos nézőpontjából"
 ::application::tree::mc::FromBlacksPerspective		"Sötét nézőpontjából"
 ::application::tree::mc::FromSideToMovePerspective	"A lépésre következő játékos nézőpontjából"
-::application::tree::mc::FromWhitesPerspectiveTip		"Világos nézőpontjából"
-::application::tree::mc::FromBlacksPerspectiveTip		"Sötét nézőpontjából"
+::application::tree::mc::FromWhitesPerspectiveTip	"Világos nézőpontjából"
+::application::tree::mc::FromBlacksPerspectiveTip	"Sötét nézőpontjából"
+::application::tree::mc::EmphasizeMoveOfGame		"Emphasize move of game" ;# NEW
 
 ::application::tree::mc::TooltipAverageRating		"Átlagos értékszám (%s)"
 ::application::tree::mc::TooltipBestRating		"Legjobb értékszám (%s)"
@@ -1957,14 +1958,13 @@
 ::help::mc::OnlyFirstMatches		"Csak az első %s találat jelenik meg."
 ::help::mc::HideIndex			"Tárgymutató elrejtése"
 ::help::mc::ShowIndex			"Tárgymutató mutatása"
+::help::mc::All				"All" ;# NEW
 
 ::help::mc::FileNotFound		"Fájl nem található."
 ::help::mc::CantFindFile		"Fájl nem található %s könyvtárban."
 ::help::mc::IncompleteHelpFiles		"Úgy tűnik, hogy a súgó fájlok még nem véglegesek. Bocs!"
 ::help::mc::ProbablyTheHelp		"Valószínűleg egy más nylevű súgó segíthet"
 ::help::mc::PageNotAvailable		"Ez az oldal nem elérhető"
-
-::help::mc::Overview			"Áttekintés"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable		"Verseny tabella"

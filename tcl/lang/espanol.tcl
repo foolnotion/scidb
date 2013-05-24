@@ -667,6 +667,7 @@
 ::application::tree::mc::FromSideToMovePerspective		"Desde el lado que mueve"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Evaluar desde la perspectiva de las blancas"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Evaluar desde la perspectiva de las negras"
+::application::tree::mc::EmphasizeMoveOfGame				"Emphasize move of game" ;# NEW
 
 ::application::tree::mc::TooltipAverageRating			"Rating promedio (%s)"
 ::application::tree::mc::TooltipBestRating				"Mejor rating (%s)"
@@ -1954,14 +1955,13 @@
 ::help::mc::OnlyFirstMatches		"Solo se mostrarán las primeras %s coincidencias por página."
 ::help::mc::HideIndex				"Ocultar el úndice"
 ::help::mc::ShowIndex				"Mostrar el úndice"
+::help::mc::All						"All" ;# NEW
 
 ::help::mc::FileNotFound			"No se encontró el archivo."
 ::help::mc::CantFindFile			"No se encuentrá el archivo en %s."
 ::help::mc::IncompleteHelpFiles	"Lo sentimos pero parece que los archivos de ayuda aún estan incompletos."
 ::help::mc::ProbablyTheHelp		"Probablemente la página de ayuda en un lenguaje diferente puede ser una alternativa para usted"
 ::help::mc::PageNotAvailable		"Esta página no se encuentra disponible"
-
-::help::mc::Overview					"Resumen"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Tabla del torneo"

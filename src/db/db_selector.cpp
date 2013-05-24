@@ -638,7 +638,6 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 
 	switch (attr)
 	{
-		case attribute::game::Number:						break;
 		case attribute::game::WhitePlayer:				func = game::compWhitePlayer; break;
 		case attribute::game::BlackPlayer:				func = game::compBlackPlayer; break;
 		case attribute::game::WhiteFideID:				func = game::compWhiteFideID; break;
@@ -683,6 +682,13 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Promotion:					func = game::compPromotion; break;
 		case attribute::game::UnderPromotion:			func = game::compUnderPromotion; break;
 		case attribute::game::Overview:					func = game::compOverview; break;
+
+		case attribute::game::Number:
+			reset(db);
+
+			if (order == order::Descending)
+				reverse(db);
+			return;
 
 		case attribute::game::Eco:
 			if (db.format() == format::Scidb)
@@ -732,7 +738,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 				case rating::Rapid:	func = game::compAverageRapid; break;
 				case rating::Rating:	func = game::compAverageRating; break;
 				case rating::USCF:	func = game::compAverageUSCF; break;
-				case rating::Any	:	func = game::compAverageAny; break;
+				case rating::Any:		func = game::compAverageAny; break;
 			}
 			break;
 
@@ -747,10 +753,9 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 			return;
 	}
 
-	if (func)
-		finish(db, db.countGames(), order, reinterpret_cast<Compar>(func));
-	else
-		m_map.release();
+	M_ASSERT(func);
+
+	finish(db, db.countGames(), order, reinterpret_cast<Compar>(func));
 }
 
 

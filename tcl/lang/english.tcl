@@ -664,6 +664,7 @@
 ::application::tree::mc::FromSideToMovePerspective		"From side to move perspective"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Score from whites perspective"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Score from blacks perspective"
+::application::tree::mc::EmphasizeMoveOfGame				"Emphasize move of game"
 
 ::application::tree::mc::TooltipAverageRating			"Average Rating (%s)"
 ::application::tree::mc::TooltipBestRating				"Best Rating (%s)"
@@ -1949,14 +1950,13 @@
 ::help::mc::OnlyFirstMatches		"Only first %s matches per page will be shown."
 ::help::mc::HideIndex				"Hide index"
 ::help::mc::ShowIndex				"Show index"
+::help::mc::All						"All"
 
 ::help::mc::FileNotFound			"File not found."
 ::help::mc::CantFindFile			"Can't find the file at %s."
 ::help::mc::IncompleteHelpFiles	"It seems that the help files are still incomplete. Sorry about that."
 ::help::mc::ProbablyTheHelp		"Probably the help page in a different language may be an alternative for you"
 ::help::mc::PageNotAvailable		"This page is not available"
-
-::help::mc::Overview					"Overview"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Tournament Table"

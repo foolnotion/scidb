@@ -2197,7 +2197,7 @@ HtmlTextNew(HtmlTree* pTree, int n, const char *z, int isTrimEnd, int isTrimStar
      * included because I am paranoid the optimized HtmlNodeIsWhitespace()
      * test (pText->zText==0) will malfunction one day.
      */
-    if (1) {
+    if (0) {
         int haveText = 0;
         HtmlTextIter sIter;
         HtmlTextIterFirst(pText, &sIter);

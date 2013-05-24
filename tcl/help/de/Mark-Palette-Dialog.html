@@ -46,7 +46,8 @@
 Diese Palette kann auf dem Schachbrettfenster entweder mit dem Tastaturkürzel
 <span style='white-space:nowrap;'><kbd class='key'>Strg</kbd>+<kbd class='key'>M</kbd></span>
 oder über das kontextsensitive Menü des Partieneditors (&#x21d2;
-<span class='menuitem'>Markierungen - Palette</span>) geöffnet werden.
+<span class='menuitem'>Feldmarkierungspalette</span>) geöffnet werden, jedoch
+nur wenn auch eine Partie im Partieeditor berabeitet wird.
 </p>
 
 <p>
@@ -58,6 +59,49 @@ identisch zur Schachdatenbankapplikation
 
 <p><img src='../images/note.png' alt='note' /> 
 Die Palette ist nur sichtbar, wenn das Schachbrettfenster aktiv ist.
+</p>
+
+<p>
+Im Partieeditor werden Markierungen mit dem Symbol
+<span color="|::pgn::editor::Colors(foreground:marks)|#6300c6|">&#x27f8;</span>
+gekennzeichnet. Die Kurzinfo (Tooltip) zeigt den Code an, wie er im
+<a href="Database-Formats.html#PGN">PGN-Format</a> aussieht.
+</p>
+
+<p>
+Im folgenden wird beschrieben wie Markierungen gesetzt werden. Das Setzen
+einer Markierung auf dem Schachbrett ist nur möglich, wenn eine Partie
+im Partieeditor bearbeitet wird.
+</p>
+
+<ul>
+  <li><a href="#square">Ein Feld mit einem Symbol markieren</a></li>
+  <li><a href="#move">Einen Zug mit einem Pfeil markieren</a></li>
+</ul>
+
+<h3 id="square">Ein Feld mit einem Symbol markieren</h3>
+
+<p>
+Ein Doppelklick bzw. ein zweifacher Klick auf ein Feld bei gehaltener
+<kbd class='key'>Strg</kbd>-Taste markiert dieses Feld mit dem ausgewähltem Symbol in der
+ausgewählten Farbe. Die Rücknahme der Markierung geschieht durch erneuten
+Doppelklick bei gehaltener <kbd class='key'>Strg</kbd>-Taste mit dem gleichen Symbol und
+der gleichen Farbe. Es ist zu beachten das nach dem ersten Klick die Markierung
+für das ausgewählte Feld zu sehen ist, und erst nach dem zweiten Klick wird das
+Symbol sichtbar. Eine Feldmarkierung kann durch eine andere Feldmarkierung
+überschrieben werden. Eine doppelte Feldmarkierung ist nicht möglich.
+</p>
+
+<h3 id="move">Einen Zug mit einem Pfeil markieren</h3>
+
+<p>
+Ein Pfeil wird gesetzt durch einen Klick bei gehaltener <kbd class='key'>Strg</kbd>-Taste
+auf dem Ausgangsfeld (es ist nun die Markierung für das ausgewählte Feld zu
+sehen) und einem zweiten Klick bei gehaltener <kbd class='key'>Strg</kbd>-Taste auf dem
+Zielfeld. Der Pfeil wird in der ausgewählten Farbe angezeigt. Die Rücknahme
+einer Zugmarkierung geschieht durch erneutes Setzen eines Pfeils der gleichen
+Farbe auf den gleichen Ausgangs- und Zielfeldern. Eine Zugmarkierung kann durch
+eine Zugmarkierung einer anderen Farbe ersetzt werden.
 </p>
 
 </body>

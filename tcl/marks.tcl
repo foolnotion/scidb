@@ -78,7 +78,7 @@ proc open {parent} {
 	set Vars(hidden) 0
 	tk::toplevel $dlg -class Scidb -relief solid
 	wm withdraw $dlg
-	set title "$::scidb::app: $mc::MarksPalette"
+	set title $mc::MarksPalette
 
 	set top [ttk::frame $dlg.top -relief raised -borderwidth 2]
 	pack $dlg.top -fill both -expand yes

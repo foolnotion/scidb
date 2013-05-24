@@ -2111,13 +2111,6 @@ position in the current game lies within the
 <a href="CQL-Range-Specifiers.html">range specifier</a>.
 </p>
 
-<annotation>
-The use of <i>unlimited</i> (inside the range specifier) instead of an
-arbitry chosen value, which also only is signalising infinity, allows
-the search algorithm optimisations, and this may result in a considerably
-faster search.
-</annotation>
-
 <p>
 Example:
 </p>

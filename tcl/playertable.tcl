@@ -748,6 +748,7 @@ proc SortColumn {path id dir} {
 		}
 		cancel {
 			set columnNo [::scrolledtable::columnNo $path lastName]
+			if {$columnNo > 1} { decr columnNo }
 			::scidb::db::sort player $base $variant $columnNo $view -ascending -reset
 		}
 		default {
@@ -756,7 +757,7 @@ proc SortColumn {path id dir} {
 				lappend options -latest
 			}
 			set columnNo [::scrolledtable::columnNo $table $id]
-			if {$columnNo > 1} { incr column -1 }
+			if {$columnNo > 1} { decr columnNo }
 			::scidb::db::sort player $base $variant $columnNo $view {*}$options -$dir
 		}
 	}

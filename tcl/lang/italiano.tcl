@@ -667,6 +667,7 @@
 ::application::tree::mc::FromSideToMovePerspective		"Dalla prospettiva del lato col tratto"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Punteggio dalla prospettiva del bianco"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Punteggio dalla prospettiva del nero"
+::application::tree::mc::EmphasizeMoveOfGame				"Emphasize move of game" ;# NEW
 
 ::application::tree::mc::TooltipAverageRating			"Media ELO (%s)"
 ::application::tree::mc::TooltipBestRating				"Miglior ELO (%s)"
@@ -1958,14 +1959,13 @@
 ::help::mc::OnlyFirstMatches		"Solo le prime %s corrispondenze per pagina saranno mostrate."
 ::help::mc::HideIndex				"Nascondi Indice"
 ::help::mc::ShowIndex				"Mostra Indice"
+::help::mc::All						"All" ;# NEW
 
 ::help::mc::FileNotFound			"File non trovato."
 ::help::mc::CantFindFile			"Impossibile trovare file a %s."
 ::help::mc::IncompleteHelpFiles	"I file di aiuto sono ancora incompleti. Ci scusiamo."
 ::help::mc::ProbablyTheHelp		"Probabilmente la pagina di aiuto in una lingua differente può essere una valida alternativa."
 ::help::mc::PageNotAvailable		"Questa pagina non è disponibile"
-
-::help::mc::Overview					"Visione d'insieme"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Tabella Torneo"

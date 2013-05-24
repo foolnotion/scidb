@@ -56,6 +56,7 @@ set MaxmimumExceeded			"Maximal number of matches exceeded in some pages."
 set OnlyFirstMatches			"Only first %s matches per page will be shown."
 set HideIndex					"Hide index"
 set ShowIndex					"Show index"
+set All							"All"
 
 set FileNotFound				"File not found."
 set CantFindFile				"Can't find the file at %s."
@@ -89,6 +90,8 @@ array set Priv {
 	titleOnly		no
 	currentOnly		no
 	latinligatures	no
+	minsize:tree	300
+	minsize:html	400
 }
 
 
@@ -264,9 +267,9 @@ proc open {parent {file ""} args} {
 
 	if {[string length $file] == 0} {
 		$pw add $control -sticky nswe -stretch never -minsize $Options(treewidth)
-		after idle [list $pw paneconfigure $control -minsize 260]
+		after idle [list $pw paneconfigure $control -minsize $Priv(minsize:tree)]
 	}
-	$pw add $html -sticky nswe -stretch always -minsize 400
+	$pw add $html -sticky nswe -stretch always -minsize [expr {$Priv(minsize:tree) + 100}]
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
@@ -275,9 +278,9 @@ proc open {parent {file ""} args} {
 	}
 
 	if {[string length $file] == 0} {
-		wm minsize $dlg 670 300
+		wm minsize $dlg [expr {$Priv(minsize:html) + $Priv(minsize:tree) + 10}] 300
 	} else {
-		wm minsize $dlg 410 300
+		wm minsize $dlg [expr {$Priv(minsize:html) + 10}] 300
 	}
 
 	set geometry ""
@@ -605,12 +608,49 @@ namespace eval index {
 proc BuildFrame {w type} {
 	variable [namespace parent]::Priv
 
+	if {$type eq "cql"} {
+		ttk::frame $w -takefocus 0
+		ttk::frame $w.filter -takefocus 0
+		set col 0
+		set Priv(cql:filter) all
+
+		foreach list {all match position relation} {
+			if {$list eq "all"} {
+				set text [list -textvar [namespace parent]::mc::All]
+			} else {
+				set text [list -text $list]
+			}
+			ttk::radiobutton $w.filter.$list \
+				{*}$text \
+				-variable [namespace parent]::Priv(cql:filter) \
+				-command [namespace code [list Update $type]] \
+				-value $list \
+				-takefocus 0 \
+				;
+			grid $w.filter.$list -row 1 -column $col -sticky w
+			incr col 2
+		}
+
+		grid columnconfigure $w.filter {1 3 5} -minsize $::theme::padx
+		grid rowconfigure $w.filter {0 2} -minsize $::theme::pady
+
+		grid $w.filter -row 0 -column 0 -sticky w
+		grid columnconfigure $w {0} -weight 1
+		grid rowconfigure $w {1} -weight 1
+
+		set w $w.tree
+	}
+
 	set Priv($type:changed) 0
 	set Priv($type:tree) $w
 	::treetable $w -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
 
 	bind $w <<TreeTableSelection>> [namespace code [list LoadPage $type %d]]
 	$w bind <Any-KeyPress> [namespace code [list Select $type %W %A]]
+
+	if {$type eq "cql"} {
+		grid $w -row 1 -column 0 -sticky ewns
+	}
 
 	[namespace parent]::StandardBindings $w
 	Update $type
@@ -642,12 +682,21 @@ proc Update {type} {
 	foreach group $Index {
 		lassign $group alph entries
 
-		$t add 0 -text $alph -fill red4 -font $bold -enabled no -tag $alph -collapse no
-		set Priv($type:key:$alph) $alph
 		set count 0
 
 		foreach entry $entries {
 			lassign $entry topic file fragment
+
+			if {$type eq "cql" && $Priv(cql:filter) ne "all"} {
+				lassign $topic topic _ list
+				if {$Priv(cql:filter) ne $list} { continue }
+			}
+
+			if {$count == 0} {
+				$t add 0 -text $alph -fill red4 -font $bold -enabled no -tag $alph -collapse no
+				set Priv($type:key:$alph) $alph
+			}
+
 			set tag "$alph-$count"
 			$t add 1 -text $topic -tag $tag
 			set path [[namespace parent]::FullPath $file]
@@ -1181,11 +1230,11 @@ proc ToggleIndex {} {
 
 	if {$Priv(control) in [$pw panes]} {
 		$pw forget $Priv(control)
-		wm minsize $dlg 410 300
+		wm minsize $dlg [expr {$Priv(minsize:html) + 10}] 300
 	} else {
 		$pw add $Priv(control) -sticky nswe -stretch never -minsize $Options(treewidth) -before [$pw panes]
-		after idle [list $pw paneconfigure $Priv(control) -minsize 260]
-		wm minsize $dlg 670 300
+		after idle [list $pw paneconfigure $Priv(control) -minsize $Priv(minsize:tree)]
+		wm minsize $dlg [expr {$Priv(minsize:html) + $Priv(minsize:tree) + 10}] 300
 
 		if {$Priv(extend)} {
 			set dlg [winfo toplevel $pw]
@@ -1829,6 +1878,29 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 	}
 	set content [::html::hyphenate $lang $content]
 	if {$Priv(latinligatures)} { set content [::scidb::misc::html ligatures $content] }
+
+	set expr {\|(::)?([a-zA-Z_]+::)*[a-zA-Z_]+(\([a-zA-Z_:-]*\))?\|[^|]+\|}
+	set start 0
+	while {[regexp -indices -start $start $expr $content pos]} {
+		lassign $pos n1 n2
+		set k1 [expr {$n1 + 1}]
+		set k2 [expr {$n2 - 1}]
+		while {[string index $content $k2] ne "|"} { decr k2 }
+		decr k2
+		set var [string range $content $k1 $k2]
+		if {[string index $var 0] ne ":"} {
+			set v ::; append v $var; set var $v
+		}
+		if {[info exists $var]} {
+			set content [string replace $content $n1 $n2 [set $var]]
+		} else {
+			set k1 [expr {$k2 + 2}]
+			set k2 [expr {$n2 - 1}]
+			set content [string replace $content $n1 $n2 [string range $content $k1 $k2]]
+			puts stderr "Warning([namespace current]::Parse): Couldn't substitute '$var'."
+		}
+		set start [incr n2]
+	}
 
 	[$Priv(html) drawable] configure -cursor {}
 	$Priv(html) parse $content

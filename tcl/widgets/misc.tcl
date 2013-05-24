@@ -505,7 +505,7 @@ proc busyCursor {w {state on}} {
 		set action forget
 	}
 
-	if {$action eq "hold"} { ::update }
+	::update
 
 	foreach toplevel {.application .setupEngine .help .playerDict} {
 		if {[winfo exists $toplevel]} {
@@ -524,7 +524,7 @@ proc busyCursor {w {state on}} {
 
 
 proc unbusyCursor {{w {}}} {
-	if {[llength $w]} { busyCursor $w off } else { busyCursor off }
+	busyCursor {*}$w off
 }
 
 

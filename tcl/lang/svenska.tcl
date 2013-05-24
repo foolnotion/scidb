@@ -667,6 +667,7 @@
 ::application::tree::mc::FromSideToMovePerspective		"Från sidan som är vid draget"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Poäng från vits sida"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Poäng från svarts sida"
+::application::tree::mc::EmphasizeMoveOfGame				"Emphasize move of game" ;# NEW
 
 ::application::tree::mc::TooltipAverageRating			"Medelrating (%s)"
 ::application::tree::mc::TooltipBestRating				"Max rating (%s)"
@@ -1957,14 +1958,13 @@
 ::help::mc::OnlyFirstMatches		"Endast de första %s träffar per sida kommer att visas."
 ::help::mc::HideIndex				"Dölj index"
 ::help::mc::ShowIndex				"Visa index"
+::help::mc::All						"All" ;# NEW
 
 ::help::mc::FileNotFound			"Hittar ej filen."
 ::help::mc::CantFindFile			"Kan inte hitta filen på %s."
 ::help::mc::IncompleteHelpFiles	"Det verkar som om hjälpfilerna är fortfarande ofullständiga. Vi beklagar."
 ::help::mc::ProbablyTheHelp		"Kanske kan hjälpsidan på ett annat språk vara ett alternativ för dig."
 ::help::mc::PageNotAvailable		"Denna sida är inte tillgänglig"
-
-::help::mc::Overview					"Översikt"
 
 ### crosstable #########################################################
 ::crosstable::mc::TournamentTable			"Turneringstabell"
