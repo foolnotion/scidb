@@ -1938,6 +1938,8 @@
 ::help::mc::GotoHome					"Zum Seitenanfang"
 ::help::mc::GotoEnd					"Zum Seiteneende"
 ::help::mc::GotoPage					"Wechsle zur Seite '%s'"
+::help::mc::NextTopic				"Gehe zum nächsten Thema"
+::help::mc::PrevTopic				"Gehe zum vorhergehenden Thema"
 ::help::mc::ExpandAllItems			"Alle Elemente expandieren"
 ::help::mc::CollapseAllItems		"Alle Elemente zusammenfalten"
 ::help::mc::SelectLanguage			"Sprachauswahl"

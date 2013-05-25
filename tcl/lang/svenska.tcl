@@ -1946,6 +1946,8 @@
 ::help::mc::GotoHome					"Go to top of page" ;# NEW
 ::help::mc::GotoEnd					"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Gå till sida '%s'"
+::help::mc::NextTopic				"Go to next topic" ;# NEW
+::help::mc::PrevTopic				"Go to previous topic" ;# NEW
 ::help::mc::ExpandAllItems			"Visa alla objekt"
 ::help::mc::CollapseAllItems		"Dölj alla objekt"
 ::help::mc::SelectLanguage			"Välj språk"

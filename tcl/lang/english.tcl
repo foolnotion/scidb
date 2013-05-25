@@ -1938,6 +1938,8 @@
 ::help::mc::GotoHome					"Go to top of page"
 ::help::mc::GotoEnd					"Go to end of page"
 ::help::mc::GotoPage					"Go to page '%s'"
+::help::mc::NextTopic				"Go to next topic"
+::help::mc::PrevTopic				"Go to previous topic"
 ::help::mc::ExpandAllItems			"Expand all items"
 ::help::mc::CollapseAllItems		"Collapse all items"
 ::help::mc::SelectLanguage			"Select Language"

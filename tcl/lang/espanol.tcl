@@ -1943,6 +1943,8 @@
 ::help::mc::GotoHome					"Go to top of page" ;# NEW
 ::help::mc::GotoEnd					"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Ir a la página '%s'"
+::help::mc::NextTopic				"Go to next topic" ;# NEW
+::help::mc::PrevTopic				"Go to previous topic" ;# NEW
 ::help::mc::ExpandAllItems			"Expandir todo"
 ::help::mc::CollapseAllItems		"Colapsar todo"
 ::help::mc::SelectLanguage			"Seleccionar idioma"

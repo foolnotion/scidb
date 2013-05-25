@@ -2044,7 +2044,7 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 			Tree::addToCache(tree.get());
 		}
 
-		M_ASSERT(::runnable->finished());
+		M_ASSERT(::runnable == 0 || ::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2090,7 +2090,7 @@ Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribut
 			}
 		}
 
-		M_ASSERT(::runnable->finished());
+		M_ASSERT(::runnable == 0 || ::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2183,7 +2183,7 @@ Application::stopUpdateTree()
 			Tree::addToCache(tree.get());
 		}
 
-		M_ASSERT(::runnable->finished());
+		M_ASSERT(::runnable == 0 || ::runnable->finished());
 		delete ::runnable;
 		::runnable = 0;
 	}
@@ -2196,7 +2196,7 @@ Application::cancelUpdateTree()
 	M_REQUIRE(hasInstance());
 
 	m_treeThread.stop();
-	M_ASSERT(::runnable->finished());
+	M_ASSERT(::runnable == 0 || ::runnable->finished());
 	delete ::runnable;
 	::runnable = 0;
 }

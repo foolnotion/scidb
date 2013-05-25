@@ -44,6 +44,8 @@ set GoForward					"Go forward one page"
 set GotoHome					"Go to top of page"
 set GotoEnd						"Go to end of page"
 set GotoPage					"Go to page '%s'"
+set NextTopic					"Go to next topic"
+set PrevTopic					"Go to previous topic"
 set ExpandAllItems			"Expand all items"
 set CollapseAllItems			"Collapse all items"
 set SelectLanguage			"Select Language"
@@ -183,6 +185,18 @@ proc open {parent {file ""} args} {
 		;
 	set Priv(button:collapse) $buttons.collapse
 	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
+	ttk::button $buttons.prev \
+		-image $::icon::16x16::previous \
+		-command [namespace code [list GotoTopic -1]] \
+		-state disabled \
+		;
+	set Priv(button:prev) $buttons.prev
+	ttk::button $buttons.next \
+		-image $::icon::16x16::next \
+		-command [namespace code [list GotoTopic +1]] \
+		-state disabled \
+		;
+	set Priv(button:next) $buttons.next
 	ttk::button $buttons.home \
 		-image $::icon::16x16::controlFastBackward \
 		-command [namespace code [list Goto @home]] \
@@ -208,11 +222,13 @@ proc open {parent {file ""} args} {
 
 	grid $buttons.expand   -row 1 -column 1
 	grid $buttons.collapse -row 1 -column 3
-	grid $buttons.home     -row 1 -column 5
-	grid $buttons.end      -row 1 -column 7
-	grid $buttons.back     -row 1 -column 9
-	grid $buttons.forward  -row 1 -column 11
-	grid columnconfigure $buttons {0 2 4 6 10 12} -minsize $::theme::padx
+	grid $buttons.prev     -row 1 -column 5
+	grid $buttons.next     -row 1 -column 7
+	grid $buttons.home     -row 1 -column 9
+	grid $buttons.end      -row 1 -column 11
+	grid $buttons.back     -row 1 -column 13
+	grid $buttons.forward  -row 1 -column 15
+	grid columnconfigure $buttons {0 2 4 6 10 12 15 16} -minsize $::theme::padx
 	grid columnconfigure $buttons {8} -minsize $::theme::padX
 	grid columnconfigure $buttons {4} -weight 1
 	grid rowconfigure $buttons {0 2} -minsize $::theme::pady
@@ -996,6 +1012,11 @@ proc UpdateTitle {} {
 
 	wm title $Priv(dlg) $title
 
+	set tip "$mc::PrevTopic ($::mc::Key(Ctrl)-$::mc::Key(Up))"
+	::tooltip::tooltip $Priv(button:prev) $tip
+	set tip "$mc::NextTopic ($::mc::Key(Ctrl)-$::mc::Key(Down))"
+	::tooltip::tooltip $Priv(button:next) $tip
+
 	set tip "$mc::GoBack ($::mc::Key(Alt)-$::mc::Key(Left))"
 	::tooltip::tooltip $Priv(button:back) $tip
 	set tip "$mc::GoForward ($::mc::Key(Alt)-$::mc::Key(Right))"
@@ -1096,13 +1117,32 @@ proc PopupMenu {dlg tab} {
 		}
 
 		*.html.* {
+			set prev [$Priv(button:prev) cget -state]
+			set next [$Priv(button:next) cget -state]
+			$m add command \
+				-command [namespace code [list GotoTopic -1]] \
+				-label " $mc::PrevTopic" \
+				-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
+				-image $::icon::16x16::previous \
+				-compound left \
+				-state $prev \
+				;
+			$m add command \
+				-command [namespace code [list GotoTopic +1]] \
+				-label " $mc::NextTopic" \
+				-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
+				-image $::icon::16x16::next \
+				-compound left \
+				-state $next \
+				;
+			$m add separator
 			$m add command \
 				-command [namespace code history::back] \
 				-label " $mc::GoBack" \
 				-accel "$::mc::Key(Alt)-$::mc::Key(Left)" \
 				-image $::icon::16x16::backward \
 				-compound left \
-				-state [$Priv(button:back) cget -state]
+				-state [$Priv(button:back) cget -state] \
 				;
 			$m add command \
 				-command [namespace code history::forward] \
@@ -1110,7 +1150,7 @@ proc PopupMenu {dlg tab} {
 				-accel "$::mc::Key(Alt)-$::mc::Key(Right)" \
 				-image $::icon::16x16::forward \
 				-compound left \
-				-state [$Priv(button:forward) cget -state]
+				-state [$Priv(button:forward) cget -state] \
 				;
 			$m add separator
 			set count 0
@@ -1484,6 +1524,11 @@ proc ReloadCurrentPage {{reload yes}} {
 	set Priv(current:file) ""
 	set Links($file) [Load [FullPath [file tail $file]] {} {} {} $reload]
 	$Priv(html) yview moveto $yview
+}
+
+
+proc GotoTopic {incr} {
+	puts "Not yet implemented"
 }
 
 

@@ -1947,6 +1947,8 @@
 ::help::mc::GotoHome					"Go to top of page" ;# NEW
 ::help::mc::GotoEnd					"Go to end of page" ;# NEW
 ::help::mc::GotoPage					"Vai alla pagina '%s'"
+::help::mc::NextTopic				"Go to next topic" ;# NEW
+::help::mc::PrevTopic				"Go to previous topic" ;# NEW
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
 ::help::mc::SelectLanguage			"Selezione Lingua"

@@ -1946,6 +1946,8 @@
 ::help::mc::GotoHome			"Go to top of page" ;# NEW
 ::help::mc::GotoEnd			"Go to end of page" ;# NEW
 ::help::mc::GotoPage			"Menj a '%s'-dik oldalra"
+::help::mc::NextTopic			"Go to next topic" ;# NEW
+::help::mc::PrevTopic			"Go to previous topic" ;# NEW
 ::help::mc::ExpandAllItems		"Kibontás"
 ::help::mc::CollapseAllItems		"Összecsukás"
 ::help::mc::SelectLanguage		"Nyelv választás"
