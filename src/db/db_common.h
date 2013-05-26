@@ -1594,6 +1594,12 @@ namespace copy
 		AllGames,
 		ExcludeIllegal,
 	};
+
+	enum Source
+	{
+		OriginalSource,
+		ModifiedVersion,
+	};
 };
 
 namespace country

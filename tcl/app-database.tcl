@@ -434,6 +434,7 @@ proc openBase {parent file byUser args} {
 	} else {
 		set ext [string range $ext 1 end]
 	}
+
 	set ext [string tolower $ext]
 
 	if {![file readable $file]} {
@@ -449,6 +450,7 @@ proc openBase {parent file byUser args} {
 	if {[file type $file] eq "link"} { set file [file normalize [file readlink $file]] }
 
 	if {[file extension $file] eq ".scv"} {
+		# TODO: check if alreay opened
 		return [::remote::busyOperation { OpenArchive $parent $file $byUser {*}$args }]
 	}
 

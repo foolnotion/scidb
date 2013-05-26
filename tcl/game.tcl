@@ -63,8 +63,10 @@ set GameDecodingChangedDetail	"Probably you have opened the database with the wr
 set VariantHasChanged			"Game cannot be opened because the variant of the database has changed and is now different from the game variant."
 set RemoveGameFromHistory		"Remove game from history?"
 set GameNumberDoesNotExist		"Game %number does not exist in '%base'."
-set ReallyReplaceGame			"It seems that the actual game #%s is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
+set ReallyReplaceGame			"It seems that the actual game #%s in game editor is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?"
 set ReallyReplaceGameDetail	"It is recommended to have a look on game #%s before doing this action."
+set ReopenLockedGames			"Re-open locked games from previous session?"
+set OpenAssociatedDatabases	"Open all associated databases?"
 
 } ;# namespace mc
 
@@ -73,7 +75,13 @@ namespace import ::tcl::mathfunc::min
 
 variable Header [list "Backup file for Scidb (UTF-8 encoded; HTML format)" "Version 1.0"]
 
-# {<time> <modified> <locked> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <tags>}
+# {<time>
+#	<modified>
+#	<locked>
+#	{<base> <codec> <number> <variant>}
+#	{<crc-index> <crc-moves>}
+#	<tags>
+#	<encoding>}
 variable List		{}
 
 # {<tags> {<base> <codec> <number> <variant>} {<crc-index> <crc-moves>} <encoding>}
@@ -82,6 +90,8 @@ variable History	{}
 variable HistorySize		10
 variable MaxPosition		9
 variable Count				0
+variable LockedGames		{}
+variable Selection		-1
 
 array set Options {
 	askAgain:overwrite	1
@@ -91,6 +101,10 @@ array set Options {
 	answer:releaseAll		0
 	answer:closeAnyway	0
 	game:max					9
+}
+
+array set Vars {
+	slots {}
 }
 
 
@@ -109,6 +123,7 @@ proc new {parent args} {
 		-number	-1
 		-fen		""
 		-variant	Normal
+		-lock		0
 	}
 	array set opts $args
 	set base $opts(-base)
@@ -124,7 +139,7 @@ proc new {parent args} {
 		set number [incr Count]
 		set lock 1
 	} else {
-		set lock 0
+		set lock $opts(-lock)
 	}
 	if {[llength $base] == 0} { set base $scratchbaseName }
 	set variant $opts(-variant)
@@ -276,7 +291,6 @@ proc verify {parent position number} {
 	set sink [lindex [::scidb::game::link? $position] 0]
 	if {$sink eq $scratchbaseName && ![::scidb::game::verify $position]} {
 		set msg [format $mc::ReallyReplaceGame $number]
-		set detail [format $mc::ReallyReplaceGameDetail $number]
 		return [::dialog::question -parent $parent -message $msg -detail $detail -default no]
 	}
 
@@ -432,7 +446,7 @@ proc load {parent position base args} {
 }
 
 
-proc setFirst {base variant tags} {
+proc setFirst {base variant tags encoding} {
 	variable List
 
 	if {[llength $List] == 0} {
@@ -443,7 +457,7 @@ proc setFirst {base variant tags} {
 	if {[llength $List] == 0} { lappend List {} }
 	set id [list $base sci 0 $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
-	lset List 0 [list $time 0 0 $id {0 0} $tags]
+	lset List 0 [list $time 0 0 $id {0 0} $tags $encoding]
 }
 
 
@@ -453,7 +467,7 @@ proc release {position} {
 
 	update ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {{} 0 0 {{} {} {} {} {}} {0 0} {}}
+	lset List $position {{} 0 0 {{} {} {} {} {}} {0 0} {} {}}
 	set Vars(lookup:$position) {}
 }
 
@@ -461,6 +475,7 @@ proc release {position} {
 proc closeAll {parent base variant {title ""} {detail ""}} {
 	variable List
 	variable Options
+	variable Priv
 
 	if {[string length $title] == 0} {
 		set title $mc::CloseDatabase
@@ -472,7 +487,7 @@ proc closeAll {parent base variant {title ""} {detail ""}} {
 	set query 1
 
 	foreach entry $List {
-		lassign $entry time modified locked database crc tags
+		lassign $entry time modified locked database crc tags _
 		lassign $database name _ number var
 
 		if {$base eq $name && $variant eq $var} {
@@ -545,7 +560,7 @@ proc releaseAll {parent base {variant ""}} {
 	set pos 0
 
 	foreach entry $List {
-		lassign $entry time modified locked database crc tags
+		lassign $entry time modified locked database crc tags _
 		lassign $database name _ number var
 
 		if {$base eq $name && ([string length $variant] == 0 || $variant eq $var)} {
@@ -630,29 +645,43 @@ proc releaseAll {parent base {variant ""}} {
 
 
 proc queryCloseApplication {parent} {
+	variable LockedGames
+	variable Selection
 	variable List
 
-	set games {}
+	set modifiedGames {}
+	set LockedGames {}
 	set pos 0
 
 	foreach entry $List {
-		lassign $entry time modified locked database crc tags
-		lassign $database name _ number _
+		lassign $entry time modified locked key crc tags encoding
+		lassign $key name _ number variant
 
-		if {$modified && ![::scidb::game::query $pos empty?]} {
+		if {$modified} {
+			if {![::scidb::game::query $pos empty?]} {
+				set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
+				lappend modifiedGames [list $pos $index $time $name $number $tags]
+			}
+		} elseif {$locked} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
-			lappend games [list $pos $index $time $name $number $tags]
+			lappend LockedGames [list $index $time $crc $key $encoding]
 		}
 
 		incr pos
 	}
 
-	if {[llength $games] == 0} { return discard }
-	set games [lsort -index 1 $games]
+	set LockedGames [lsort -index 0 $LockedGames]
+	set Selection [::application::pgn::selected]
+
+	if {[llength $modifiedGames] == 0} {
+		return discard
+	}
+
+	set modifiedGames [lsort -index 1 $modifiedGames]
 
 	append msg $mc::UnsavedGames
 	append msg <embed>
-	if {[llength $games] == 1} {
+	if {[llength $modifiedGames] == 1} {
 		append msg $mc::ShouldRestoreGame
 	} else {
 		append msg $mc::ShouldRestoreGames
@@ -663,7 +692,7 @@ proc queryCloseApplication {parent} {
 		-message $msg \
 		-detail [format $mc::DiscardChanges [::mc::stripAmpersand $::dialog::mc::No]] \
 		-buttons {cancel yes no} \
-		-embed [namespace code [list EmbedCloseMessage $games]] \
+		-embed [namespace code [list EmbedCloseMessage $modifiedGames]] \
 	]
 
 	switch $reply {
@@ -729,25 +758,29 @@ proc backup {} {
 		if {	[llength [lindex $List $i 0]]
 			&& [::scidb::game::query $i modified?]
 			&& ![::scidb::game::query $i empty?]} {
-			lassign [lindex $List $i] time _ _ key crc _
+			lassign [lindex $List $i] time _ _ key crc _ encoding
 			lassign [::scidb::game::link? $i] _ _ _ crcIndex crcMoves
-			set filename [file join $::scidb::dir::backup game-$i.pgn]
+			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $i] + 1}]
+			set filename [file join $::scidb::dir::backup game-$index.pgn]
 			set comment [lindex $Header 0]
 			append comment "\n"
 			append comment [lindex $Header 1]
 			append comment "\n"
-			append comment [list $time $key $crc [list $crcIndex $crcMoves]]
+			append comment [list $time $key $crc [list $crcIndex $crcMoves] $encoding]
 			::scidb::game::export $filename -comment $comment -position $i
 		}
 	}
 }
 
 
-proc recover {} {
+proc recover {parent} {
+	variable ::scidb::scratchbaseName
 	variable Recovery
+	variable Selection
 	variable Current
 	variable Header
 	variable List
+	variable Vars
 
 	set count 0
 	set pattern game-*.pgn
@@ -755,11 +788,14 @@ proc recover {} {
 
 	log::open $mc::Recovery
 	set files [lsort -dictionary [glob -directory $::scidb::dir::backup -nocomplain $pattern]]
+	set bases {}
+	set selection 0
 
 	foreach file $files {
 		if {![::process::testOption dont-recover]} {
 			if {[file readable $file]} {
 				set position [string range $file 5 end-4]
+				lappend Vars(slots) $position
 				set chan [open $file r]
 				fconfigure $chan -encoding utf-8
 				set content [read $chan]
@@ -777,23 +813,26 @@ proc recover {} {
 					|| ![regexp {Version ([0-9]+\.[0-9]+)} $line2 _ version]
 					|| $version != "1.0"
 					|| [catch { set length [llength $line3] }]
-					|| $length != 4
+					|| $length != 5
 					|| [llength [lindex $line3 1]] != 4
 					|| [llength [lindex $line3 2]] != 2
 					|| [llength [lindex $line3 3]] != 2} {
 					::dialog::error \
-						-parent .application \
+						-parent $parent \
 						-message [format $mc::CorruptedHeader $file] \
 						-detail [format $mc::RenamedFile $file] \
 						;
 				} else {
-					lassign $line3 time key crc crcLink
+					lassign $line3 time key crc crcLink encoding
 					lassign $key base _ index variant
+					if {$base ne $scratchbaseName && [lsearch -exact -index 0 $bases $base] == -1} {
+						lappend bases [list $base $encoding]
+					}
 					set Current(file) $file
 					set Current(key) $key
 					::scidb::game::new $count $variant
 					set tags [::scidb::game::tags $count]
-					lappend List [list $time 1 0 $key $crc $tags]
+					lappend List [list $time 1 0 $key $crc $tags $encoding]
 					::scidb::game::import $count $content [namespace current]::Log {} \
 						-encoding utf-8 \
 						-variation 0 \
@@ -808,11 +847,12 @@ proc recover {} {
 					::application::pgn::add $count $base $variant $tags
 					::application::pgn::setModified $count
 					::scidb::game::modified $count -irreversible yes
+					if {$position == $Selection} { set selection $count }
 					incr count
 				}
 			} else {
 				::dialog::error \
-					-parent .application \
+					-parent $parent \
 					-message [format $mc::CannotOpen $file] \
 					-detail [format $mc::RenamedFile $file] \
 					;
@@ -840,10 +880,85 @@ proc recover {} {
 				set msg [format $mc::GamesRestored $count]
 			}
 		}
-		::dialog::info -parent .application -message $msg
-		::scidb::game::switch 0
-		::application::pgn::select 0
+		if {[llength $bases] > 0} {
+			append msg "\n\n" $mc::OpenAssociatedDatabases
+			set reply [::dialog::question -parent $parent -message $msg]
+			if {$reply eq "yes"} { OpenAssociatedDatabases $parent $bases }
+		} else {
+			::dialog::info -parent $parent -message $msg
+		}
+		::scidb::game::switch $selection
+		::application::pgn::select $selection
 		::process::setOption "show-board"
+	}
+}
+
+
+proc reopenLockedGames {parent} {
+	variable LockedGames
+	variable Selection
+	variable Vars
+	variable List
+
+	if {[llength $LockedGames] == 0} { return }
+
+	set lockedGames $LockedGames
+	set LockedGames {}
+
+	set reply [::dialog::question -parent $parent -message $mc::ReopenLockedGames -default yes]
+	if {$reply eq "no"} { return }
+
+	set selection -1
+	set count [llength $Vars(slots)]
+	set bases {}
+	set Vars(slots) [lsort -integer -decreasing $Vars(slots)]
+
+	foreach entry $lockedGames {
+		lassign $entry position time crc key encoding
+		lassign $key base _ number variant
+
+		if {[lsearch -exact -index 0 $bases $base] == -1} {
+			lappend bases [list $base $encoding]
+		}
+	}
+
+	OpenAssociatedDatabases $parent $bases
+
+	foreach entry $lockedGames {
+		lassign $entry position time crc key
+		lassign $key base _ number variant
+
+		if {![::scidb::db::get open? $base]} {
+			# Log: cannot open anymore
+			continue
+		}
+
+		::scidb::game::new $count $variant
+
+		if {[load $parent $count $base -variant $variant -number $number]} {
+			set at {}
+			set i [expr {$count - 1}]
+			foreach slot $Vars(slots) {
+				if {$position < $slot} { set at $i }
+			}
+
+			set tags [::scidb::game::tags $count]
+			lappend List [list $time 0 1 $key $crc $tags]
+			Update _ $count
+			::application::pgn::add $count $base $variant $tags {*}$at
+			::application::pgn::lock $count
+			::process::setOption "show-board"
+			if {$position == $Selection} { set selection $count }
+			incr count
+		} else {
+			# Log: couldn't load game
+			::scidb::game::release $count
+		}
+	}
+
+	if {$selection >= 0} {
+		::scidb::game::switch $selection
+		::application::pgn::select $selection
 	}
 }
 
@@ -925,6 +1040,19 @@ proc openGame {parent index} {
 	}
 
 	return [expr {$rc > 0}]
+}
+
+
+proc OpenAssociatedDatabases {parent bases} {
+	foreach entry $bases {
+		lassign $entry base encoding
+
+		if {![file exists $base]} {
+			# Log problem
+		} elseif {![::application::database::openBase $parent $base no -encoding $encoding]} {
+			# Log problem
+		}
+	}
 }
 
 
@@ -1162,7 +1290,9 @@ proc GameInTrialMode {parent title} {
 
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::History
+	::options::writeList $chan [namespace current]::LockedGames
 	::options::writeItem $chan [namespace current]::Options
+	::options::writeItem $chan [namespace current]::Selection
 }
 
 ::options::hookWriter [namespace current]::WriteOptions

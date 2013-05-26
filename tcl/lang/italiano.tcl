@@ -1335,7 +1335,11 @@
 ::gamebar::mc::NoTranspositions				"No transpositions" ;# NEW
 ::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
 ::gamebar::mc::VariationDepth					"Variation depth" ;# NEW
+::gamebar::mc::CopyOriginalVersion			"Original version from database" ;# NEW
+::gamebar::mc::ModifiedVersion				"Modified version in game editor" ;# NEW
+::gamebar::mc::WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open." ;# NEW
 
+::gamebar::mc::CopyGame							"Copy Game" ;# NEW
 ::gamebar::mc::LockGame							"Blocca Partita"
 ::gamebar::mc::UnlockGame						"Sblocca Partita"
 ::gamebar::mc::CloseGame						"Chiudi Partita"
@@ -1846,8 +1850,10 @@
 ::game::mc::VariantHasChanged				"La partita non può essere aperta perché la variante del database è cambiata ed è differente dalla variante della partita."
 ::game::mc::RemoveGameFromHistory		"Rimuovi partita dalla storia?"
 ::game::mc::GameNumberDoesNotExist		"Game %number does not exist in '%base'."
-::game::mc::ReallyReplaceGame				"It seems that the actual game #%s is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?" ;# NEW
+::game::mc::ReallyReplaceGame				"It seems that the actual game #%s in game editor is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?" ;# NEW
 ::game::mc::ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action." ;# NEW
+::game::mc::ReopenLockedGames				"Re-open locked games from previous session?" ;# NEW
+::game::mc::OpenAssociatedDatabases		"Open all associated databases?"
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Tutte le lingue"

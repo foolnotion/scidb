@@ -301,7 +301,7 @@ public:
 											Update updateMode);
 	unsigned stripTags(View& view, TagMap const& tags, util::Progress& progress, Update updateMode);
 	void viewClosed(Cursor const& cursor, unsigned viewId);
-	void exportGameToClipbase(unsigned position);
+	void exportGameToClipbase(unsigned position, ::db::copy::Source source);
 	void pasteLastClipbaseGame(unsigned position);
 	bool mergeLastClipbaseGame(unsigned position,
 										db::position::ID startPosition,
@@ -471,6 +471,7 @@ private:
 	Cursor* scratchbase(db::variant::Type variant) const;
 	Cursor* scratchbase(unsigned variantIndex) const;
 
+	GameP createIntermediateGame(GameP original);
 	GameP insertScratchGame(unsigned position, db::variant::Type variant);
 	GameP insertGame(unsigned position);
 	Cursor* findBase(mstl::string const& name);

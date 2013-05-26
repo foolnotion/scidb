@@ -56,13 +56,16 @@ set StartFromInitialPosition		"Start merge from initial position"
 set NoTranspositions					"No transpositions"
 set IncludeTranspositions			"Include transpositions"
 set VariationDepth					"Variation depth"
+set CopyOriginalVersion				"Original version from database"
+set ModifiedVersion					"Modified version in game editor"
+set WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open."
 
 set LockGame							"Lock Game"
 set UnlockGame							"Unlock Game"
 set CloseGame							"Close Game"
+set CopyGame							"Copy Game"
 
 set GameNew								"New Game"
-
 set AddNewGame							"Save: Add New Game to %s..."
 set ReplaceGame						"Save: Replace Game in %s..."
 set ReplaceMoves						"Save: Replace Moves Only in Game..."
@@ -1328,6 +1331,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 	set actual [::scidb::db::get name]
 	set position [::scidb::game::current]
 	lassign [::scidb::game::link? $position] base variant index
+	set sink [lindex [::scidb::game::sink? $position] 0]
 
 	if {$actual eq $scratchbaseName || [::scidb::db::count games] == 0} {
 		set state disabled
@@ -1364,8 +1368,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 				set state disabled
 			}
 
-			if {	$base eq $clipbaseName
-				&& [lindex [::scidb::game::sink? $position] 0] eq $scratchbaseName} {
+			if {$base eq $clipbaseName && $sink eq $scratchbaseName} {
 				set state disabled
 			}
 
@@ -1433,7 +1436,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-state $state \
 			;
 
-		if {$base ne $scratchbaseName} {
+		if {$base ne $scratchbaseName && $sink ne $scratchbaseName} {
 			if {[::scidb::game::query modified?]} { set state normal } else { set state disabled }
 			$m add command \
 				-label " $mc::ReloadCurrentGame" \
@@ -1457,7 +1460,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-label " $mc::CopyThisGameToClipbase" \
 			-image $::icon::16x16::none \
 			-compound left \
-			-command [list ::scidb::game::copy clipbase $position] \
+			-command [namespace code [list CopyThisGameToClipbase $parent $position]] \
 			;
 		if {[::scidb::db::count games $clipbaseName $variant] == 0} {
 			set state disabled
@@ -1555,6 +1558,65 @@ proc CheckIfModified {parent position} {
 	if {![::scidb::game::query $position modified?]} { return false }
 	set reply [::dialog::question -parent $parent -message $mc::DiscardChanges]
 	return [expr {$reply eq "no"}]
+}
+
+
+proc CopyThisGameToClipbase {parent position} {
+	variable ::scidb::scratchbaseName
+	variable mode
+
+	lassign [::scidb::game::link? $position] base variant index
+	set sink [lindex [::scidb::game::sink? $position] 0]
+	set mode original
+
+	if {[::scidb::game::query $position modified?]} {
+		if {$base ne $scratchbaseName} {
+			if {$sink eq $scratchbaseName} {
+				set msg $mc::WillCopyModifiedGame
+				set reply [::dialog::question -parent $parent -message $msg -default yes]
+				if {$reply eq "no"} { return }
+				set mode modified
+			} else {
+				set dlg [tk::toplevel $parent.copyGame -class Dialog]
+				set top [ttk::frame $dlg.top -takefocus 0]
+				pack $top -fill both
+				ttk::radiobutton $top.original \
+					-text $mc::CopyOriginalVersion \
+					-value original \
+					-variable [namespace current]::mode \
+					;
+				ttk::radiobutton $top.modified \
+					-text $mc::ModifiedVersion \
+					-value modified \
+					-variable [namespace current]::mode \
+					;
+				grid $top.original -row 1 -column 1 -sticky w
+				grid $top.modified -row 3 -column 1 -sticky w
+				grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+				grid rowconfigure $top {0 2 4} -minsize $::theme::pady
+
+				::widget::dialogButtons $dlg {ok}
+				$dlg.ok configure -command [list destroy $dlg]
+
+				wm protocol $dlg WM_DELETE_WINDOW [list bell]
+				wm transient $dlg [winfo toplevel $parent]
+				wm title $dlg $mc::CopyGame
+				wm resizable $dlg false false
+
+				wm withdraw $dlg
+				::util::place $dlg center $parent
+				wm deiconify $dlg
+				focus $top.original
+				::ttk::grabWindow $dlg
+				tkwait window $dlg
+				::ttk::releaseGrab $dlg
+			}
+		} else {
+			set mode modified
+		}
+	}
+
+	::scidb::game::copy clipbase $position $mode
 }
 
 

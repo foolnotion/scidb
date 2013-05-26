@@ -3438,7 +3438,17 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 	else if (::strcmp(cmd, "clipbase") == 0)
 	{
-		scidb->exportGameToClipbase(unsignedFromObj(objc, objv, 2));
+		char const* arg = stringFromObj(objc, objv, 3);
+		copy::Source source;
+
+		if (::strcmp(arg, "original") == 0)
+			source = copy::OriginalSource;
+		else if (::strcmp(arg, "modified") == 0)
+			source = copy::ModifiedVersion;
+		else
+			return error(CmdCopy, nullptr, nullptr, "unexpected source '%s'", arg);
+
+		scidb->exportGameToClipbase(unsignedFromObj(objc, objv, 2), source);
 	}
 	else
 	{

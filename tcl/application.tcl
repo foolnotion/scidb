@@ -316,7 +316,8 @@ if {[::process::testOption use-clock]} {
 			-encoding $::encoding::autoEncoding
 	}
 
-	::game::recover
+	::game::recover $app
+	::game::reopenLockedGames $app
 
 	if {[::process::testOption show-board]} {
 		after idle [namespace code [list switchTab board]]

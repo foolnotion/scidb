@@ -1639,6 +1639,24 @@ Application::clearGame(Board const* startPosition)
 }
 
 
+Application::GameP
+Application::createIntermediateGame(GameP original)
+{
+	GameP scratchGame = insertScratchGame(ReservedPosition, original->data.game->variant());
+	*scratchGame->data.game = *original->data.game;
+	scratchGame->data.game->setIndex(scratchGame->sink.index);
+
+	Database& database = scratchGame->sink.cursor->base();
+	GameInfo info(original->sink.cursor->base().gameInfo(scratchGame->sink.index));
+
+	info = original->sink.cursor->base().gameInfo(original->sink.index);
+	info.reallocate(database.namebases());
+	database.namebases().update();
+
+	return scratchGame;
+}
+
+
 save::State
 Application::writeGame(	unsigned position,
 								mstl::string const& filename,
@@ -1665,12 +1683,8 @@ Application::writeGame(	unsigned position,
 	}
 	else if (g->data.game->isModified())
 	{
-		GameP scratchGame = insertScratchGame(ReservedPosition, g->data.game->variant());
-		*scratchGame->data.game = *g->data.game;
-		scratchGame->data.game->setIndex(scratchGame->sink.index);
-		scratchGame->sink.cursor->database().gameInfo(scratchGame->sink.index) =
-			g->sink.cursor->database().gameInfo(g->sink.index);
-		g = m_gameMap.find(position = ReservedPosition)->second;
+		g = createIntermediateGame(g);
+		position = ReservedPosition;
 	}
 	else
 	{
@@ -3029,22 +3043,58 @@ Application::getRandomGameIndex(unsigned position) const
 
 
 void
-Application::exportGameToClipbase(unsigned position)
+Application::exportGameToClipbase(unsigned position, copy::Source source)
 {
 	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(source == copy::OriginalSource || game(position).isModified());
 
-	EditGame const&	game			= *m_gameMap.find(position)->second;
-	Cursor&				destination	= *clipbase(variant::toMainVariant(game.data.game->variant()));
+	if (position == InvalidPosition)
+		position = currentPosition();
+
+	GameP					g				= m_gameMap.find(position)->second;
+	Cursor&				destination	= *clipbase(variant::toMainVariant(g->data.game->variant()));
 	Database&			database		= destination.base();
-	save::State			state			__attribute__((unused));
+	save::State			state			= save::Ok;
 	util::Progress		progress;
 
 	if (m_referenceBase == &destination)
 		stopUpdateTree();
 
-	state = game.sink.cursor->database().exportGame(game.sink.index, database);
+	if (isScratchGame(position))
+	{
+		g->data.game->setIndex(m_indexMap[position]);
+	}
+	else if (source == copy::ModifiedVersion)
+	{
+		g = createIntermediateGame(g);
+		position = ReservedPosition;
+	}
+	else
+	{
+		g->data.game->setIndex(g->sink.index);
+	}
+
+	try
+	{
+		if (isScratchGame(position))
+			state = g->sink.cursor->base().updateGame(*g->data.game);
+
+		if (state == save::Ok)
+			state = g->sink.cursor->database().exportGame(g->data.game->index(), database);
+	}
+	catch (...)
+	{
+		if (position == ReservedPosition)
+			releaseGame(ReservedPosition);
+		throw;
+	}
+
 	M_ASSERT(state == save::Ok);
 	database.save(progress);
+
+	if (position == ReservedPosition)
+		releaseGame(ReservedPosition);
+
 	destination.updateViews();
 
 	if (m_subscriber)
@@ -3255,6 +3305,8 @@ Application::printGame(	unsigned position,
 	M_REQUIRE(containsGameAt(position));
 
 	EditGame const& game = *m_gameMap.find(position)->second;
+
+	// save changes in new scratch game before printing
 
 	switch (int(format))
 	{

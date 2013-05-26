@@ -350,10 +350,14 @@ proc gamebar {} {
 }
 
 
-proc add {position base variant tags} {
+proc add {position base variant tags {at -1}} {
 	variable Vars
 
-	::gamebar::add $Vars(gamebar) $position $tags
+	if {$at >= 0} {
+		::gamebar::insert $Vars(gamebar) $position $tags $at
+	} else {
+		::gamebar::add $Vars(gamebar) $position $tags
+	}
 	ResetGame $position $tags
 }
 
@@ -421,6 +425,11 @@ proc selectAt {index} {
 	if {$index < [::gamebar::size $Vars(gamebar)]} {
 		select [::gamebar::getId $Vars(gamebar) $index]
 	}
+}
+
+
+proc selected {} {
+	return [::gamebar::selected  [set [namespace current]::Vars(gamebar)]]
 }
 
 
@@ -589,7 +598,7 @@ proc ensureScratchGame {} {
 	::scidb::game::switch 0
 	::scidb::pos::setup $fen
 	set tags [::scidb::game::tags 0]
-	::game::setFirst $scratchbaseName Normal $tags
+	::game::setFirst $scratchbaseName Normal $tags utf-8
 	add 0 $scratchbaseName Normal $tags
 	select 0
 	return 1

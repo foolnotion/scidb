@@ -1306,7 +1306,7 @@
 ::gamebar::mc::Site								"Ort"
 ::gamebar::mc::SeparateHeader					"Separater Partiekopf"
 ::gamebar::mc::ShowActiveAtBottom			"Sortiere aktive Partie nach unten"
-::gamebar::mc::ShowPlayersOnSeparateLines			"Spielernamen untereinander anorden"
+::gamebar::mc::ShowPlayersOnSeparateLines	"Spielernamen untereinander anorden"
 ::gamebar::mc::DiscardChanges					"Diese Partie wurde geändert.\n\nSollen tatsächlich die Änderungen verworfen werden?"
 ::gamebar::mc::DiscardNewGame					"Soll diese Partie tatsächlich verworfen werden?"
 ::gamebar::mc::NewGameFstPart					"Neue"
@@ -1327,7 +1327,11 @@
 ::gamebar::mc::NoTranspositions				"Keine Zugumstellungen"
 ::gamebar::mc::IncludeTranspositions		"Zugumstellungen mit einbeziehen"
 ::gamebar::mc::VariationDepth					"Variantentiefe"
+::gamebar::mc::CopyOriginalVersion			"Die Originalversion aus der Datanbank"
+::gamebar::mc::ModifiedVersion				"Die modifizierte Version im Partieeditor"
+::gamebar::mc::WillCopyModifiedGame			"Diese Operation wird die modifizierte Partie aus dem Partieeditor kopieren. Die Originalversion kann nicht kopiert werden, denn die beeinhaltende Datenbank ist nicht geöffnet."
 
+::gamebar::mc::CopyGame							"Partie kopieren"
 ::gamebar::mc::LockGame							"Partie sperren"
 ::gamebar::mc::UnlockGame						"Partie freigeben"
 ::gamebar::mc::CloseGame						"Partie schliessen"
@@ -1837,8 +1841,10 @@
 ::game::mc::VariantHasChanged				"Die Partie kann nicht geöffnet werden weil sich die Schachform der Datenbank geändert hat und nicht mit der Schachform der Partie übereinstimmt."
 ::game::mc::RemoveGameFromHistory		"Die Partie aus der Historie entfernen?"
 ::game::mc::GameNumberDoesNotExist		"Die Partie %number existiert nicht in '%base'."
-::game::mc::ReallyReplaceGame				"Es scheint das die aktuelle Partie #%s nicht die ursprünglich geladene Partie ist aufgrund von zwischenzeitlichen Datenbankänderungen. Es ist möglich eine andere Partie zu verlieren. Wirklich die Partiedaten überschreiben?"
+::game::mc::ReallyReplaceGame				"Es scheint das die aktuelle Partie #%s im Partieeditor nicht die ursprünglich geladene Partie ist aufgrund von zwischenzeitlichen Datenbankänderungen. Es ist möglich eine andere Partie zu verlieren. Wirklich die Partiedaten überschreiben?"
 ::game::mc::ReallyReplaceGameDetail		"Es wird empfohlen einen Blick auf Partie #%s zu werfen, bevor diese Aktion ausgeführt wird."
+::game::mc::ReopenLockedGames				"Die gesperrten Partien der letzten Sitzung wieder öffnen?"
+::game::mc::OpenAssociatedDatabases		"Alle zugehörigen Datenbanken öffnen?"
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Alle Sprachen"

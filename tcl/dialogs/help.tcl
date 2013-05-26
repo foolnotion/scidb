@@ -187,13 +187,13 @@ proc open {parent {file ""} args} {
 	::tooltip::tooltip $buttons.collapse [namespace current]::mc::CollapseAllItems
 	ttk::button $buttons.prev \
 		-image $::icon::16x16::previous \
-		-command [namespace code [list GotoTopic -1]] \
+		-command [namespace code [list GotoTopic prev]] \
 		-state disabled \
 		;
 	set Priv(button:prev) $buttons.prev
 	ttk::button $buttons.next \
 		-image $::icon::16x16::next \
-		-command [namespace code [list GotoTopic +1]] \
+		-command [namespace code [list GotoTopic next]] \
 		-state disabled \
 		;
 	set Priv(button:next) $buttons.next
@@ -264,6 +264,8 @@ proc open {parent {file ""} args} {
 	bind $dlg <Alt-End>					[namespace code [list Goto @end]]
 	bind $dlg <Alt-Down>					[namespace code [list Goto @down]]
 	bind $dlg <Alt-Up>					[namespace code [list Goto @up]]
+	bind $dlg <Control-Up>				[namespace code [list GotoTopic prev]]
+	bind $dlg <Control-Down>			[namespace code [list GotoTopic next]]
 	bind $dlg <Control-plus>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-KP_Add>			[namespace code [list ChangeFontSize +1]]
 	bind $dlg <Control-minus>			[namespace code [list ChangeFontSize -1]]
@@ -488,8 +490,9 @@ proc BuildFrame {w} {
 
 	set Priv(contents:changed) 0
 	set Priv(contents:tree) $w
+	set Priv(contents:current) ""
 
-	bind $w <<TreeTableSelection>> [namespace code [list LoadPage %d]]
+	bind $w <<TreeTableSelection>> [namespace code { LoadPage %W %d }]
 	[namespace parent]::StandardBindings $w
 	Update
 }
@@ -503,6 +506,10 @@ proc FillContents {t contents {depth 0}} {
 	variable [namespace parent]::icon::16x16::bookOpen
 	variable [namespace parent]::Priv
 
+	if {$depth == 0} {
+		array unset Priv contents:item:*
+	}
+
 	set g 0
 	foreach group $contents {
 		set e 0
@@ -514,7 +521,7 @@ proc FillContents {t contents {depth 0}} {
 				set enabled yes
 				set collapse no
 				set tag "$d-$g-$e"
-				if {[llength $topic] > 0} {
+				if {[llength $topic] > 1} {
 					set file [[namespace parent]::FullPath [lindex $topic 1]]
 					if {![file readable $file]} {
 						set enabled no
@@ -545,6 +552,9 @@ proc FillContents {t contents {depth 0}} {
 					-collapse $collapse \
 					-tag $tag \
 					;
+				if {[llength $topic] > 1} {
+					set Priv(contents:item:[lindex $topic 1]) $tag
+				}
 				if {$first} { incr d; set first 0 }
 			} else {
 				FillContents $t [list $entry] [expr {$depth + 1}]
@@ -599,7 +609,7 @@ proc Update {} {
 }
 
 
-proc LoadPage {item} {
+proc LoadPage {t item} {
 	variable [namespace parent]::Priv
 	variable [namespace parent]::Links
 	variable [namespace parent]::ExternalLinks
@@ -613,6 +623,46 @@ proc LoadPage {item} {
 		} else {
 			set fragment [$Priv(uri:$item) fragment]
 			set Links($path) [[namespace parent]::Load $path {} $fragment]
+		}
+	}
+}
+
+
+proc DetectSiblings {} {
+	variable [namespace parent]::Priv
+
+	set file [file tail $Priv(current:file)]
+	if {$file eq "Overview.html"} { return }
+	if {![info exists Priv(contents:item:$file)]} { return }
+	set item $Priv(contents:item:$file)
+	set t $Priv(contents:tree)
+
+	set prev [$t item prevsibling $item]
+	set next [$t item nextsibling $item]
+
+	if {[llength $prev]} { set prev normal } else { set prev disabled }
+	if {[llength $next]} { set next normal } else { set next disabled }
+
+	$Priv(button:prev) configure -state $prev
+	$Priv(button:next) configure -state $next
+}
+
+
+proc GotoSibling {direction} {
+	variable [namespace parent]::Priv
+
+	set file [file tail $Priv(current:file)]
+	if {![info exists Priv(contents:item:$file)]} { return }
+	set t $Priv(contents:tree)
+	set item [$t item ${direction}sibling $Priv(contents:item:$file)]
+
+	if {[llength $item]} {
+		set tag [lindex [$t item tag names $item] 0]
+
+		if {[LoadPage $t $tag]} {
+			$t selection clear
+			$t selection add $tag
+			$t activate $tag
 		}
 	}
 }
@@ -736,9 +786,12 @@ proc LoadPage {type item} {
 
 	if {[string match http* $path] || [string match ftp* $path]} {
 		::web::open $Priv(html) $path
+		set rc 0
 	} else {
-		[namespace parent]::Load $path {} {} $fragment
+		set rc [[namespace parent]::Load $path {} {} $fragment]
 	}
+
+	return $rc
 }
 
 
@@ -970,6 +1023,11 @@ proc StandardBindings {w} {
 	$w bind <Alt-End>		{+ break }
 	$w bind <Alt-Up>		{+ break }
 	$w bind <Alt-Down>	{+ break }
+
+	$w bind <Control-Up>		[namespace code [list GotoTopic prev]]
+	$w bind <Control-Down>	[namespace code [list GotoTopic next]]
+	$w bind <Control-Up>		{+ break }
+	$w bind <Control-Down>	{+ break }
 }
 
 
@@ -1120,7 +1178,7 @@ proc PopupMenu {dlg tab} {
 			set prev [$Priv(button:prev) cget -state]
 			set next [$Priv(button:next) cget -state]
 			$m add command \
-				-command [namespace code [list GotoTopic -1]] \
+				-command [namespace code [list GotoTopic prev]] \
 				-label " $mc::PrevTopic" \
 				-accel "$::mc::Key(Ctrl)-$::mc::Key(Up)" \
 				-image $::icon::16x16::previous \
@@ -1128,7 +1186,7 @@ proc PopupMenu {dlg tab} {
 				-state $prev \
 				;
 			$m add command \
-				-command [namespace code [list GotoTopic +1]] \
+				-command [namespace code [list GotoTopic next]] \
 				-label " $mc::NextTopic" \
 				-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 				-image $::icon::16x16::next \
@@ -1527,8 +1585,8 @@ proc ReloadCurrentPage {{reload yes}} {
 }
 
 
-proc GotoTopic {incr} {
-	puts "Not yet implemented"
+proc GotoTopic {direction} {
+	contents::GotoSibling $direction
 }
 
 
@@ -1800,6 +1858,7 @@ proc Load {file {wantedFile {}} {match {}} {position {}} {reload no}} {
 		history::addCurrentNode
 	}
 
+	contents::DetectSiblings
 	return 1
 }
 

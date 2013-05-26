@@ -539,7 +539,7 @@ proc doDestructiveCommand {parent action cmd yesAction noAction} {
 			lassign $cmd cmd args
 			set cmd [list $cmd [list {*}$args -force]]
 		} else {
-			lappend $cmd -force
+			lappend cmd -force
 		}
 		{*}$cmd
 	}
