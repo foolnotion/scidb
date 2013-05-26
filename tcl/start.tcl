@@ -424,13 +424,6 @@ proc shiftIsHeldDown? {state} {
 }
 
 
-proc clipboard {} {
-	set selection ""
-	catch { set selection [selection get] }
-	return $selection
-}
-
-
 proc databasePath {file} {
 	variable Extensions
 

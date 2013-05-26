@@ -26,9 +26,10 @@
 
 ::util::source clipboard
 
-namespace eval selection {
+namespace eval clipboard {
 
 variable CurrentSelection ""
+
 
 proc selectText {text} {
 	clipboard clear -displayof "."
@@ -42,6 +43,14 @@ proc selectText {text} {
 		selection own -selection PRIMARY -command [namespace current]::LostSelection "."
 	}
 }
+
+
+proc getSelection {} {
+	set str ""
+	catch { ::tk::GetSelection $w PRIMARY } str
+	return $str
+}
+
 
 if {[tk windowingsystem] eq "x11"} {
 
@@ -58,6 +67,6 @@ if {[tk windowingsystem] eq "x11"} {
 
 }
 
-} ;# namespace selection
+} ;# namespace clipboard
 
 # vi:set ts=3 sw=3:

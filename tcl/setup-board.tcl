@@ -1411,10 +1411,7 @@ proc CopyFen {} {
 	$w delete 1.0 end
 	$w insert end $fen sel
 
-	clipboard clear
-	clipboard append $fen
-	selection own $w
-	selection get
+	::clipboard::selectText $fen
 }
 
 

@@ -1730,8 +1730,7 @@ proc CopyThisGameToClipboard {parent position} {
 	set result [string trim [::scidb::game::toPGN $mode -position $position -flags $flags]]
 
 	if {[string length $result]} {
-		clipboard clear -displayof $parent
-		clipboard append -displayof $parent $result
+		::clipboard::selectText $result
 	}
 }
 
