@@ -308,7 +308,6 @@ proc build {w width height} {
 	bind <Control-KP_Add>		[list ::application::pgn::changeFontSize +1]
 	bind <Control-minus>			[list ::application::pgn::changeFontSize -1]
 	bind <Control-KP_Subtract>	[list ::application::pgn::changeFontSize -1]
-	bind <<Copy>>					[list ::application::pgn::copyGameToPrimary]
 	bind <<LanguageChanged>>	[namespace code LanguageChanged]
 
 	for {set i 1} {$i <= 9} {incr i} {

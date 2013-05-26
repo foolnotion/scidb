@@ -1656,8 +1656,6 @@ Zur Erkennung von Einsetzzügen sollte <cql>position:piecedrop</cql>
 verwendet werden.
 </p>
 
-</p>
-
 <h3 id="position:movenumber">:movenumber&emsp;<n>(Zugnummer)</n></h3>
 
 <p>

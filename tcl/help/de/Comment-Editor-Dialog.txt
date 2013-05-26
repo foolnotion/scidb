@@ -588,7 +588,7 @@ zu machen.
       Damit können Zeilenumbrüche erzwungen werden. Im Textfeld werden
       die erzwungenen Zeilenumbrüche mit dem Absatzsymbol &#x00b6;
       gekennzeichnet. Zeilenumbrüche in Kommentaren gehen beim Exportieren
-      in das <PGN a href="Database-Formats.html#PGN">PGN-Format</a>
+      in das <a href="Database-Formats.html#PGN">PGN-Format</a>
       verloren. Es wird grundsätzlich von der Verwendung abgeraten
       (sie werden unterstützt weil sie im Scid-Datenbankformat
       vorkommen können).

@@ -563,17 +563,6 @@ proc openMarksPalette {{position -1} {key {}}} {
 }
 
 
-proc copyGameToPrimary {} {
-	variable Vars
-
-	if {[empty?]} { return }
-	if {[::scidb::game::query modified?]} { set source modified } else { set source original }
-	set flags [::export::getPgnFlags]
-	set result [string trim [::scidb::game::toPGN $source -position $Vars(position) -flags $flags]]
-	::selection::selectText $result
-}
-
-
 proc scroll {args} {
 	::widget::textLineScroll [set [namespace current]::Vars(pgn:[::scidb::game::current])] scroll {*}$args
 }

@@ -401,7 +401,7 @@
 ::application::board::mc::SwitchView(list)			"Switch to game list view"
 
 ::application::board::mc::Accel(edit-annotation)	"A"
-::application::board::mc::Accel(edit-comment)		"K"
+::application::board::mc::Accel(edit-comment)		"C"
 ::application::board::mc::Accel(edit-marks)			"M"
 ::application::board::mc::Accel(add-new-game)		"S"
 ::application::board::mc::Accel(replace-game)		"R"

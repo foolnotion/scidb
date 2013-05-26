@@ -1776,8 +1776,6 @@ The next move is not a piece drop (because the piecetype designator
 is empty).
 </p>
 
-</p>
-
 <h3 id="position:promote">:promote</h3>
 
 <p>

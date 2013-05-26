@@ -24,34 +24,34 @@
 # (at your option) any later version.
 # ======================================================================
 
-::util::source selection
+::util::source clipboard
 
 namespace eval selection {
 
 variable CurrentSelection ""
 
 proc selectText {text} {
+	clipboard clear -displayof "."
+	clipboard append -displayof "." $text
+
 	if {[tk windowingsystem] eq "x11"} {
 		variable CurrentSelection
 		set CurrentSelection $text
 
-		selection handle -selection PRIMARY "." [namespace current]::primaryTransfer
-		selection own -selection PRIMARY -command [namespace current]::lostSelection "."
-	} else {
-		clipboard clear -displayof "."
-		clipboard append -displayof "." $text
+		selection handle -selection PRIMARY "." [namespace current]::PrimaryTransfer
+		selection own -selection PRIMARY -command [namespace current]::LostSelection "."
 	}
 }
 
 if {[tk windowingsystem] eq "x11"} {
 
-	proc primaryTransfer {offset maxChars} {
+	proc PrimaryTransfer {offset maxChars} {
 		variable CurrentSelection
 		return [string range $CurrentSelection $offset [expr {$offset + $maxChars - 1}]]
 	}
 
 
-	proc lostSelection {} {
+	proc LostSelection {} {
 		variable CurrentSelection
 		set CurrentSelection ""
 	}
