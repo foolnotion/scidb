@@ -436,6 +436,9 @@ proc replace {gamebar id tags} {
 	Reset $gamebar $id
 	Setup $gamebar [getIndex $gamebar $id] $id $tags [MakeData $gamebar $id $tags]
 	$gamebar itemconfigure close:icon$id -image $icon::15x15::close(unlocked)
+	if {$Specs(selected:$gamebar) == $id} {
+		setEmphasized $gamebar no
+	}
 	Update $gamebar $id no
 }
 

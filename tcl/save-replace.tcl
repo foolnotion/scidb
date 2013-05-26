@@ -55,6 +55,7 @@ set SaveGameFailedDetail		"See log for details."
 set SavingGameLogInfo			"Saving game (%white - %black, %event) into database '%base'"
 set CurrentBaseIsReadonly		"Current database '%s' is read-only."
 set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
+set LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 set OpenPlayerDictionary		"Open Player Dictionary"
 
 set LocalName						"&Local Name"
@@ -380,7 +381,10 @@ proc checkIfWriteable {parent base variant position number} {
 	}
 	if {[::scidb::game::query trial]} {
 		set msg [format $mc::CurrentGameHasTrialMode [::util::databaseName $base]]
-		::dialog::info -parent $parent -message $msg -title [GetTitle $base $position $number]
+		set shortcut "$::mc::Key(Ctrl)-$::application::board::mc::Accel(trial-mode)"
+		set detail [format $mc::LeaveTrialModeHint $shortcut]
+		set title [GetTitle $base $position $number]
+		::dialog::info -parent $parent -message $msg -detail $detail -title $title
 		return 0
 	}
 	return 1
@@ -388,11 +392,11 @@ proc checkIfWriteable {parent base variant position number} {
 
 
 proc GetTitle {base position number} {
-	set title "[tk appname] - "
+	set title ""
 	if {[llength $position] == 0} {
 		append title $mc::EditCharacteristics
 		set characteristicsOnly 1
-	} elseif {$number < 0} {
+	} elseif {$number <= 0} {
 		append title $mc::SaveGame
 		set characteristicsOnly 0
 	} else {

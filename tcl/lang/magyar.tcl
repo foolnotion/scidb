@@ -1749,6 +1749,7 @@
 ::dialog::save::mc::SavingGameLogInfo		"(%white - %black, %event) játszma mentése a(z) '%base' adatbázisba"
 ::dialog::save::mc::CurrentBaseIsReadonly	"A jelenlegi '%s' adatbázis csak olvasható."
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved." ;' NEW
+::dialog::save::mc::LeaveTrialModeHint		"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
 ::dialog::save::mc::OpenPlayerDictionary	"Open Player Dictionary" ;# NEW
 
 ::dialog::save::mc::LocalName			"He&lyi Név"

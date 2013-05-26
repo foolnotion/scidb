@@ -1749,6 +1749,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Sparar partiet (%vit - %svart, %tävling) i databasen '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"Aktuell databas '%s' är skrivskyddad."
 ::dialog::save::mc::CurrentGameHasTrialMode	"Aktuellt parti befinner sig i teststadiet och kan inte sparas."
+::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary" ;# NEW
 
 ::dialog::save::mc::LocalName						"&Lokalt namn"

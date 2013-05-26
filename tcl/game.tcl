@@ -1278,16 +1278,6 @@ proc UpdateHistoryEntry {pos base variant tags} {
 }
 
 
-proc GameInTrialMode {parent title} {
-	set name [::util::databaseName [::scidb::db::get name]]
-	::dialog::info \
-		-parent $parent \
-		-message [format $mc::CurrentGameHasTrialMode $name] \
-		-title "[tk appname] - $title" \
-		;
-}
-
-
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::History
 	::options::writeList $chan [namespace current]::LockedGames

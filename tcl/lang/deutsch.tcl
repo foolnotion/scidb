@@ -1741,6 +1741,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Partie (%white - %black, %event) in Datenbank '%base' speichern"
 ::dialog::save::mc::CurrentBaseIsReadonly		"Die aktuelle Datenbank '%s' ist schreibgeschützt."
 ::dialog::save::mc::CurrentGameHasTrialMode	"Die aktuelle Partie befindet sich im Variantentest und kann nicht gespeichert werden."
+::dialog::save::mc::LeaveTrialModeHint			"Der Variantentest sollte zuvor verlassen werden, dazu kann das Tastaturkürzel %s verwendet werden."
 ::dialog::save::mc::OpenPlayerDictionary		"Spielerlexikon öffnen"
 
 ::dialog::save::mc::LocalName						"&Heimatl. Name"

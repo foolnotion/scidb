@@ -485,8 +485,10 @@ proc saveGame {mode} {
 	variable Vars
 
 	set position [::scidb::game::current]
+	set parent $Vars(main)
 	lassign [::scidb::game::link? $position] base variant index
-	if {$mode ne "add" && ![::game::verify $Vars(main) $position [expr {$index + 1}]]} { return }
+	set number [expr {$index + 1}]
+	if {$mode ne "add" && ![::game::verify $parent $position $number]} { return }
 
 	if {$base eq $scratchbaseName} {
 		set base [::scidb::db::get name]
@@ -497,9 +499,9 @@ proc saveGame {mode} {
 	if {$variant ni [::scidb::db::get variants $base]} { return }
 
 	switch $mode {
-		add		{ ::dialog::save::open $Vars(main) $base $variant $position }
-		replace	{ ::dialog::save::open $Vars(main) $base $variant $position [expr {$index + 1}] }
-		moves		{ replaceMoves $Vars(main) }
+		add		{ ::dialog::save::open $parent $base $variant $position }
+		replace	{ ::dialog::save::open $parent $base $variant $position $number }
+		moves		{ replaceMoves $parent $base $variant $position $number }
 	}
 }
 
@@ -576,7 +578,9 @@ proc undoLastMove {} {
 }
 
 
-proc replaceMoves {parent} {
+proc replaceMoves {parent base variant position number} {
+	if {![::dialog::save::checkIfWriteable $parent $base $variant $position $number]} { return }
+
 	if {[::scidb::game::query modified?]} {
 		set reply [::dialog::question -parent $parent -message $mc::ReallyReplaceMoves]
 		if {$reply eq "yes"} { ::util::catchException { ::scidb::game::update moves } }

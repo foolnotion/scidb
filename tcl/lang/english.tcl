@@ -1741,6 +1741,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Saving game (%white - %black, %event) into database '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"Current database '%s' is read-only."
 ::dialog::save::mc::CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
+::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary"
 
 ::dialog::save::mc::LocalName						"&Local Name"
