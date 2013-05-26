@@ -213,7 +213,7 @@ Writer::beginGame(TagSet const& tags)
 
 	for (unsigned i = 0; i < tag::BughouseTag; ++i)
 	{
-		tag::ID tag = tag::mapAlphabetic(tag::ID(i));
+		tag::ID tag  = test(Flag_Strict_PGN_Standard) ? tag::mapAlphabetic(tag::ID(i)) : tag::ID(i);
 		bool isEmpty = !tags.contains(tag);
 		mstl::string const& value = tags.value(tag);
 
@@ -332,37 +332,40 @@ Writer::beginGame(TagSet const& tags)
 				break;
 
 			default:
-				if (tag::isWhiteRatingTag(tag))
+				if (!isEmpty)
 				{
-					if (!whiteElo)
+					if (tag::isWhiteRatingTag(tag))
 					{
-						if (	tag == tag::WhiteElo
-							|| (	test(Flag_Write_Any_Rating_As_ELO)
-								&& !tags.contains(tag::WhiteElo)
-								&& (tag == tag::WhiteRating || !tags.contains(tag::WhiteRating))))
+						if (!whiteElo)
 						{
-							writeTag(tag, value);
-							whiteElo = true;
+							if (	tag == tag::WhiteElo
+								|| (	test(Flag_Write_Any_Rating_As_ELO)
+									&& !tags.contains(tag::WhiteElo)
+									&& (tag == tag::WhiteRating || !tags.contains(tag::WhiteRating))))
+							{
+								writeTag(tag, value);
+								whiteElo = true;
+							}
 						}
 					}
-				}
-				else if (tag::isBlackRatingTag(tag))
-				{
-					if (!blackElo)
+					else if (tag::isBlackRatingTag(tag))
 					{
-						if (	tag == tag::BlackElo
-							|| (	test(Flag_Write_Any_Rating_As_ELO)
-								&& !tags.contains(tag::BlackElo)
-								&& (tag == tag::BlackRating || !tags.contains(tag::BlackRating))))
+						if (!blackElo)
 						{
-							writeTag(tag, value);
-							blackElo = true;
+							if (	tag == tag::BlackElo
+								|| (	test(Flag_Write_Any_Rating_As_ELO)
+									&& !tags.contains(tag::BlackElo)
+									&& (tag == tag::BlackRating || !tags.contains(tag::BlackRating))))
+							{
+								writeTag(tag, value);
+								blackElo = true;
+							}
 						}
 					}
-				}
-				else if (!tag::isMandatory(tag) && !isEmpty && !test(Flag_Exclude_Extra_Tags))
-				{
-					writeTag(tag, value);
+					else if (!tag::isMandatory(tag) && !test(Flag_Exclude_Extra_Tags))
+					{
+						writeTag(tag, value);
+					}
 				}
 				break;
 		}

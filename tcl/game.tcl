@@ -645,6 +645,8 @@ proc releaseAll {parent base {variant ""}} {
 
 
 proc queryCloseApplication {parent} {
+	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
 	variable LockedGames
 	variable Selection
 	variable List
@@ -662,7 +664,7 @@ proc queryCloseApplication {parent} {
 				set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
 				lappend modifiedGames [list $pos $index $time $name $number $tags]
 			}
-		} elseif {$locked} {
+		} elseif {$locked && $name ne $scratchbaseName && $name ne $clipbaseName} {
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
 			lappend LockedGames [list $index $time $crc $key $encoding]
 		}

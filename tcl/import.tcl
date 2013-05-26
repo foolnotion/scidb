@@ -280,18 +280,20 @@ proc openEdit {parent position args} {
 
 	# editor bindings
 	set selectCmd [list $edit.text tag add sel 1.0 end]
-	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y]]
 	bind $edit.text <ButtonPress-3> [namespace code [list PopupMenu $edit $position %X %Y]]
-	bind $edit.text <<PasteSelection>> $pastecmd
-	bind $edit.text <<PasteSelection>> {+ break }
-	bind $edit.text <<Paste>> $pastecmd
-	bind $edit.text <<Paste>> {+ break }
 	bind $edit.text <Key-Tab> {after idle { focus [::tk_focusNext %W] } }
 	bind $edit.text <Key-Tab> {+ break }
 	bind $edit.text <Shift-Tab> {after idle { focus [::tk_focusPrev %W] } }
 	bind $edit.text <Shift-Tab> {+ break }
 	bind $edit.text <Control-A> $selectCmd
 	bind $edit.text <Control-a> $selectCmd
+
+	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y CLIPBOARD]]
+	bind $edit.text <<PasteSelection>> $pastecmd
+	bind $edit.text <<PasteSelection>> {+ break }
+	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y PRIMARY]]
+	bind $edit.text <<Paste>> $pastecmd
+	bind $edit.text <<Paste>> {+ break }
 
 	Clear $position
 	SetFigurines $position
@@ -730,10 +732,10 @@ proc TextPaste {position w} {
 }
 
 
-proc TextPasteSelection {position w x y} {
+proc TextPasteSelection {position w x y buffer} {
 #	if {![::info exists ::tk::Priv(mouseMoved)] || !$::tk::Priv(mouseMoved)} {
 		$w mark set insert [::tk::TextClosestGap $w $x $y]
-		if {![catch {::tk::GetSelection $w PRIMARY} sel]} {
+		if {![catch {::tk::GetSelection $w $buffer} sel]} {
 			$w insert insert [ConvertPastedText $position $w $sel]
 			$w edit separator
 			if {[$w cget -state] eq "normal"} { focus $w }

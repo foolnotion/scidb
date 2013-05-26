@@ -279,6 +279,10 @@ public:
 										mstl::string const& comment,
 										unsigned flags,
 										FileMode fmode);
+	::db::save::State exportGame(	unsigned position,
+											mstl::ostream& strm,
+											unsigned flags,
+											::db::copy::Source source);
 	db::save::State saveGame(Cursor& cursor, bool replace);
 	db::save::State updateMoves();
 	db::save::State updateCharacteristics(Cursor& cursor, unsigned index, db::TagSet const& tags);

@@ -45,6 +45,7 @@ public:
 													 | Flag_Include_Variation_Tag
 													 | Flag_Include_Sub_Variation_Tag
 													 | Flag_Indent_Variations
+													 | Flag_Convert_Null_Moves_To_Comments
 													 | Flag_Convert_Lost_Result_To_Comment;
 
 	static unsigned const Flag_Append_Games = Flag_LAST << 1;

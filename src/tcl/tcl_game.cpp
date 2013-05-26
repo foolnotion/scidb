@@ -48,7 +48,7 @@
 #include "db_mark_set.h"
 #include "db_tag_set.h"
 #include "db_var_consumer.h"
-#include "db_writer.h"
+#include "db_pgn_writer.h"
 
 #include "T_Controller.h"
 
@@ -61,6 +61,7 @@
 #include "m_vector.h"
 #include "m_bitset.h"
 #include "m_ofstream.h"
+#include "m_sstream.h"
 
 #include <tcl.h>
 
@@ -120,6 +121,7 @@ static char const* CmdSubscribe		= "::scidb::game::subscribe";
 static char const* CmdSwap				= "::scidb::game::swap";
 static char const* CmdSwitch			= "::scidb::game::switch";
 static char const* CmdTags				= "::scidb::game::tags";
+static char const* CmdToPGN			= "::scidb::game::toPGN";
 static char const* CmdTranspose		= "::scidb::game::transpose";
 static char const* CmdTrial			= "::scidb::game::trial";
 static char const* CmdUndoSetup		= "::scidb::game::undoSetup";
@@ -3313,6 +3315,44 @@ cmdExport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdToPGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	char const*	option;
+	unsigned		flags(PgnWriter::Default_Flags);
+	unsigned		position(Application::InvalidPosition);
+
+	while (objc > 2 && *(option = stringFromObj(objc, objv, objc - 2)) == '-')
+	{
+		if (::strcmp(option, "-flags") == 0)
+			flags = unsignedFromObj(objc, objv, objc - 1);
+		else if (::strcmp(option, "-position") == 0)
+			position = unsignedFromObj(objc, objv, objc - 1);
+		else
+			return error (CmdExport, nullptr, nullptr, "unexpected option '%s'", option);
+
+		objc -= 2;
+	}
+
+	char const* arg = stringFromObj(objc, objv, 1);
+	copy::Source source;
+
+	if (::strcmp(arg, "original") == 0)
+		source = copy::OriginalSource;
+	else if (::strcmp(arg, "modified") == 0)
+		source = copy::ModifiedVersion;
+	else
+		return error(CmdCopy, nullptr, nullptr, "unexpected source '%s'", arg);
+
+	mstl::ostringstream strm;
+
+	if (save::isOk(scidb->exportGame(position, strm, flags, source)))
+		setResult(strm.str());
+
+	return TCL_OK;
+}
+
+
+static int
 cmdPrint(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	struct Log : public TeXt::Controller::Log
@@ -3636,6 +3676,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSwap,				cmdSwap);
 	createCommand(ti, CmdSwitch,			cmdSwitch);
 	createCommand(ti, CmdTags,				cmdTags);
+	createCommand(ti, CmdToPGN,				cmdToPGN);
 	createCommand(ti, CmdTranspose,		cmdTranspose);
 	createCommand(ti, CmdTrial,			cmdTrial);
 	createCommand(ti, CmdUndoSetup,		cmdUndoSetup);

@@ -43,7 +43,10 @@ set NewGameSndPart					"Game"
 set EnterGameNumber					"Enter game number"
 
 set CopyThisGameToClipbase			"Copy this game to Clipbase"
+set CopyThisGameToClipboard		"Copy this game to Clipboard (PGN format)"
+set ExportThisGame					"Export this game"
 set PasteLastClipbaseGame			"Paste last Clipbase game"
+set PasteClipboardContent			"Paste content from Clipbpard"
 set MergeLastClipbaseGame			"Merge last Clipbase game"
 set PasteGameFrom						"Paste game"
 set MergeGameFrom						"Merge game"
@@ -56,14 +59,15 @@ set StartFromInitialPosition		"Start merge from initial position"
 set NoTranspositions					"No transpositions"
 set IncludeTranspositions			"Include transpositions"
 set VariationDepth					"Variation depth"
-set CopyOriginalVersion				"Original version from database"
+set OriginalVersion					"Original version from database"
 set ModifiedVersion					"Modified version in game editor"
 set WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open."
 
+set CopyGame							"Copy Game"
+set ExportGame							"Export Game"
 set LockGame							"Lock Game"
 set UnlockGame							"Unlock Game"
 set CloseGame							"Close Game"
-set CopyGame							"Copy Game"
 
 set GameNew								"New Game"
 set AddNewGame							"Save: Add New Game to %s..."
@@ -1465,23 +1469,28 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-compound left \
 			-command [namespace code [list CopyThisGameToClipbase $parent $position]] \
 			;
-		if {[::scidb::db::count games $clipbaseName $variant] == 0} {
-			set state disabled
-		} else {
-			set state normal }
+		$m add command \
+			-label " $mc::CopyThisGameToClipboard" \
+			-image $::icon::16x16::clipboardIn \
+			-compound left \
+			-command [namespace code [list CopyThisGameToClipboard $parent $position]] \
+			;
+
+		set clipbaseState normal
+		if {[::scidb::db::count games $clipbaseName $variant] == 0} { set clipbaseState disabled }
 		$m add command \
 			-label " $mc::PasteLastClipbaseGame" \
 			-image $::icon::16x16::none \
 			-compound left \
 			-command [namespace code [list PasteFromClipbase $gamebar $position]] \
-			-state $state \
+			-state $clipbaseState \
 			;
-		set cmd [namespace code [list MergeGame $parent $mc::MergeLastClipbaseGame $position clipbase]]
+		if {[ClipboardContainsPgnFile $parent]} { set state normal } else { set state disabled }
 		$m add command \
-			-label " $mc::MergeLastClipbaseGame..." \
-			-image $::icon::16x16::none \
+			-label " $mc::PasteClipboardContent" \
+			-image $::icon::16x16::clipboardOut \
 			-compound left \
-			-command $cmd \
+			-command [namespace code [list PasteClipboardContent $parent $position]] \
 			-state $state \
 			;
 		if {[llength $idList] <= 1} { set state disabled } else { set state normal }
@@ -1502,6 +1511,22 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-image $::icon::16x16::none \
 			-compound left \
 			-state $state \
+			;
+
+		$m add command \
+			-label " $mc::ExportThisGame..." \
+			-image $::icon::16x16::fileExport \
+			-compound left \
+			-command [namespace code [list ExportGame $parent $position]] \
+			;
+
+		set cmd [namespace code [list MergeGame $parent $mc::MergeLastClipbaseGame $position clipbase]]
+		$m add command \
+			-label " $mc::MergeLastClipbaseGame..." \
+			-image $::icon::16x16::none \
+			-compound left \
+			-command $cmd \
+			-state $clipbaseState \
 			;
 		set sub [menu $m.mergeFrom]
 		foreach id $idList {
@@ -1543,6 +1568,19 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 }
 
 
+proc ClipboardContainsPgnFile {parent} {
+	catch { ::tk::GetSelection $parent CLIPBOARD } sel
+	set sel [string trim $sel]
+	return [string match "\[Event " $sel]
+}
+
+
+proc PasteClipboardContent {parent} {
+	# TODO
+	puts "Not yet implemented"
+}
+
+
 proc ReplaceGame {parent base variant position number} {
 	if {[::game::verify $parent $position $number]} {
 		::dialog::save::open $parent $base $variant $position $number
@@ -1564,6 +1602,83 @@ proc CheckIfModified {parent position} {
 }
 
 
+proc WhichVersion {parent title} {
+	variable Mode_
+
+	set Mode_ original
+
+	set dlg [tk::toplevel $parent.whichVersion -class Dialog]
+	set top [ttk::frame $dlg.top -takefocus 0]
+	pack $top -fill both
+	ttk::radiobutton $top.original \
+		-text $mc::OriginalVersion \
+		-value original \
+		-variable [namespace current]::Mode_ \
+		;
+	ttk::radiobutton $top.modified \
+		-text $mc::ModifiedVersion \
+		-value modified \
+		-variable [namespace current]::Mode_ \
+		;
+	grid $top.original -row 1 -column 1 -sticky w
+	grid $top.modified -row 3 -column 1 -sticky w
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2 4} -minsize $::theme::pady
+
+	::widget::dialogButtons $dlg {ok}
+	$dlg.ok configure -command [list destroy $dlg]
+
+	wm protocol $dlg WM_DELETE_WINDOW [list bell]
+	wm transient $dlg [winfo toplevel $parent]
+	wm title $dlg $title
+	wm resizable $dlg false false
+
+	wm withdraw $dlg
+	::util::place $dlg center $parent
+	wm deiconify $dlg
+	focus $top.original
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+
+	return $Mode_
+}
+
+
+proc ExportGame {parent position} {
+	variable ::scidb::scratchbaseName
+
+	lassign [::scidb::game::sink? $position] base variant index
+	set sink [lindex [::scidb::game::sink? $position] 0]
+	set mode original
+
+	if {[::scidb::game::query $position modified?]} {
+		if {$base ne $scratchbaseName} {
+			if {$sink eq $scratchbaseName} {
+				set mode modified
+			} else {
+				set mode [WhichVersion $parent $mc::ExportGame]
+			}
+		} else {
+			set mode modified
+		}
+	}
+
+	set mainVariant [::util::toMainVariant $variant]
+	foreach side {white black} {
+		set info [scidb::db::fetch ${side}PlayerInfo $index $base $mainVariant]
+		set $side [lindex [split [lindex $info 0] ","] 0]
+	}
+	if {[string length $white] && [string length $black]} {
+		set title "$white-$black"
+	} else {
+		set title [lindex [::scidb::game::sink? $position] 2]
+	}
+
+	::export::open $parent -base $base -variant $variant -index $index -title $title
+}
+
+
 proc CopyThisGameToClipbase {parent position} {
 	variable ::scidb::scratchbaseName
 	variable mode
@@ -1580,39 +1695,7 @@ proc CopyThisGameToClipbase {parent position} {
 				if {$reply eq "no"} { return }
 				set mode modified
 			} else {
-				set dlg [tk::toplevel $parent.copyGame -class Dialog]
-				set top [ttk::frame $dlg.top -takefocus 0]
-				pack $top -fill both
-				ttk::radiobutton $top.original \
-					-text $mc::CopyOriginalVersion \
-					-value original \
-					-variable [namespace current]::mode \
-					;
-				ttk::radiobutton $top.modified \
-					-text $mc::ModifiedVersion \
-					-value modified \
-					-variable [namespace current]::mode \
-					;
-				grid $top.original -row 1 -column 1 -sticky w
-				grid $top.modified -row 3 -column 1 -sticky w
-				grid columnconfigure $top {0 2 4} -minsize $::theme::padx
-				grid rowconfigure $top {0 2 4} -minsize $::theme::pady
-
-				::widget::dialogButtons $dlg {ok}
-				$dlg.ok configure -command [list destroy $dlg]
-
-				wm protocol $dlg WM_DELETE_WINDOW [list bell]
-				wm transient $dlg [winfo toplevel $parent]
-				wm title $dlg $mc::CopyGame
-				wm resizable $dlg false false
-
-				wm withdraw $dlg
-				::util::place $dlg center $parent
-				wm deiconify $dlg
-				focus $top.original
-				::ttk::grabWindow $dlg
-				tkwait window $dlg
-				::ttk::releaseGrab $dlg
+				set mode [WhichVersion $parent $mc::CopyGame]
 			}
 		} else {
 			set mode modified
@@ -1620,6 +1703,36 @@ proc CopyThisGameToClipbase {parent position} {
 	}
 
 	::scidb::game::copy clipbase $position $mode
+}
+
+
+proc CopyThisGameToClipboard {parent position} {
+	variable ::scidb::scratchbaseName
+	variable mode
+
+	lassign [::scidb::game::link? $position] base variant index
+	set sink [lindex [::scidb::game::sink? $position] 0]
+	set mode original
+
+	if {[::scidb::game::query $position modified?]} {
+		if {$base ne $scratchbaseName} {
+			if {$sink eq $scratchbaseName} {
+				set mode modified
+			} else {
+				set mode [WhichVersion $parent $mc::CopyGame]
+			}
+		} else {
+			set mode modified
+		}
+	}
+
+	set flags [::export::getPgnFlags]
+	set result [string trim [::scidb::game::toPGN $mode -position $position -flags $flags]]
+
+	if {[string length $result]} {
+		clipboard clear -displayof $parent
+		clipboard append -displayof $parent $result
+	}
 }
 
 

@@ -3084,8 +3084,7 @@ Application::exportGameToClipbase(unsigned position, copy::Source source)
 	}
 	catch (...)
 	{
-		if (position == ReservedPosition)
-			releaseGame(ReservedPosition);
+		releaseGame(ReservedPosition);
 		throw;
 	}
 
@@ -3107,6 +3106,64 @@ Application::exportGameToClipbase(unsigned position, copy::Source source)
 		if (!m_treeIsFrozen)
 			m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
 	}
+}
+
+
+save::State
+Application::exportGame(unsigned position, mstl::ostream& strm, unsigned flags, copy::Source source)
+{
+	M_REQUIRE(containsGameAt(position));
+	M_REQUIRE(source == copy::OriginalSource || game(position).isModified());
+
+	if (position == InvalidPosition)
+		position = currentPosition();
+
+	GameP			g		= m_gameMap.find(position)->second;
+	save::State	state	= save::Ok;
+
+	if (isScratchGame(position))
+	{
+		g->data.game->setIndex(m_indexMap[position]);
+	}
+	else if (source == copy::ModifiedVersion)
+	{
+		g = createIntermediateGame(g);
+		position = ReservedPosition;
+	}
+	else
+	{
+		g->data.game->setIndex(g->sink.index);
+	}
+
+	try
+	{
+		if (isScratchGame(position))
+			state = g->sink.cursor->base().updateGame(*g->data.game);
+
+		if (state == save::Ok)
+		{
+			mstl::string encoding;
+
+			if (flags & PgnWriter::Flag_Use_UTF8)
+				encoding = sys::utf8::Codec::utf8();
+			else
+				encoding = sys::utf8::Codec::latin1();
+
+			PgnWriter writer(format::Scidb, strm, encoding, flags);
+			writer.setupVariant(g->sink.cursor->variant());
+			state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
+		}
+	}
+	catch (...)
+	{
+		releaseGame(ReservedPosition);
+		throw;
+	}
+
+	if (position == ReservedPosition)
+		releaseGame(ReservedPosition);
+
+	return state;
 }
 
 

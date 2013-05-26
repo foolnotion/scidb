@@ -79,6 +79,9 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	M_REQUIRE(!test(Flag_Use_Scidb_Import_Format) || !test(Flag_Strict_PGN_Standard));
 	M_REQUIRE(!test(Flag_Use_ChessBase_Format) || !test(Flag_Strict_PGN_Standard));
 
+	if (test(Flag_Strict_PGN_Standard))
+		m_lineLength = mstl::min(m_lineLength, 80u);
+
 	if (test(Flag_Use_Scidb_Import_Format))
 	{
 		addFlag(Flag_Include_Variations);
@@ -380,6 +383,11 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 			indent = variationLevel()*::IndentSize;
 		}
 	}
+
+	unsigned lineLength = m_lineLength;
+
+	if (!test(Flag_Strict_PGN_Standard))
+		lineLength = mstl::max(lineLength, 512u);
 
 	if (mstl::min(m_length, indent) + m_pendingSpace + comment.size() + 2 < m_lineLength)
 	{
