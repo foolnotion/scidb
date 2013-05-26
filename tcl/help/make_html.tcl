@@ -28,6 +28,9 @@ exec tclsh "$0" "$@"
 # ======================================================================
 
 package require Tcl 8.5
+package require Tk 8.5
+
+wm withdraw .
 
 array set Pieces {
 	de {K D T L S B}
@@ -153,6 +156,18 @@ set HtmlMapping {
 	&b;				{<span class='piece'>&#x265d;</span>}
 	&n;				{<span class='piece'>&#x265e;</span>}
 	&p;				{<span class='piece'>&#x265f;</span>}
+}
+
+switch [tk windowingsystem] {
+	x11	{
+		lappend SysMapping <x11> {} </x11> {} <win32> {<!--} </win32> {-->} <aqua> {<!--} </aqua> {-->}
+	}
+	win32	{
+		lappend SysMapping <x11> {<!--} </x11> {-->} <win32> {} </win32> {} <aqua> {<!--} </aqua> {-->}
+	}
+	aqua	{
+		lappend SysMapping <x11> {<!--} </x11> {-->} <win32> {<!--} </win32> {-->} <aqua> {} </aqua> {}
+	}
 }
 
 set f [open ../../../Makefile.in r]
@@ -374,6 +389,7 @@ proc formatUrl {url} {
 proc readContents {chan file} {
 	variable HtmlMapping
 	variable HtmlDefs
+	variable SysMapping
 	variable Pieces
 	variable charset
 	variable lang
@@ -447,6 +463,7 @@ proc readContents {chan file} {
 			set line $newline
 		}
 
+		set line [string map $SysMapping $line]
 		set line [string map $HtmlMapping $line]
 
 		if {[llength $indices]} {
@@ -488,8 +505,7 @@ proc readContents {chan file} {
 			}
 		}
 
-# <kbd class='key'>Strg</kbd>+<kbd class='key'>%::application::board::mc::Accel(edit-comment)%</kbd>
-		while {[regexp {<key>([a-zA-Z%:\(\)-]*)</key>} $line _ key]} {
+		while {[regexp {<key>([a-zA-Z0-9%:\(\)-]*)</key>} $line _ key]} {
 			switch $key {
 				King		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 0]</kbd>" }
 				Queen		{ set expr "<kbd class='key'>[lindex $Pieces($lang) 1]</kbd>" }
@@ -500,6 +516,8 @@ proc readContents {chan file} {
 
 				default {
 					if {[string length $key] == 1 || [string index $key 0] == "%"} {
+						set expr "<kbd class='key'>$key</kbd>"
+					} elseif {[regexp {F[0-9][0-9]?} $key]} {
 						set expr "<kbd class='key'>$key</kbd>"
 					} else {
 						set expr "<kbd class='key'>$::mc::Key($key)</kbd>"
@@ -592,5 +610,7 @@ if {[string length $dstfile] == 0} {
 	print $dst [file join tcl help $lang $srcfile] $title $body
 	close $dst
 }
+
+exit 0
 
 # vi:set ts=3 sw=3:

@@ -1316,7 +1316,6 @@
 ::gamebar::mc::CopyThisGameToClipboard		"Copy this game to Clipboard (PGN format)"
 ::gamebar::mc::ExportThisGame					"Export this game"
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game"
-::gamebar::mc::PasteClipboardContent		"Paste content from Clipbpard"
 ::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game"
 ::gamebar::mc::PasteGameFrom					"Paste game"
 ::gamebar::mc::MergeGameFrom					"Merge game"

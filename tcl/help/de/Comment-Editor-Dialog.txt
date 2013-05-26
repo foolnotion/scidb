@@ -416,6 +416,9 @@ zu machen.
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>X</key>
+      <x11><br/><key>F20</key></x11>
+      <win32><br/><key>Shift</key>+<key>Del</key></win32>
+      <aqua><br/><key>F2</key></aqua>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
       Kopiert den selektierten Text in die Zwischenablage und löscht den
@@ -427,19 +430,12 @@ zu machen.
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>V</key>
+      <x11><br/><key>F18</key></x11>
+      <win32><br/><key>Shift</key>+<key>Ins</key></win32>
+      <aqua><br/><key>F4</key></aqua>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
       Fügt den Inhalt der Zwischenablage hinter den Einfüge-Cursors ein.
-    </td>
-  </tr>
-
-  <tr valign="top">
-    <td style="padding-top: 1em;" nowrap="nowrap">
-      <key>Ins</key>
-    </td>
-    <td style="padding-top: 1em; padding-left: 0.5em;">
-      Nur Linux/Unix: Fügt die X-Textselektion der Zwischenablage hinter den
-      Einfüge-Cursors ein.
     </td>
   </tr>
 

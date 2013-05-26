@@ -31,9 +31,9 @@ TITLE Supported chess variants
 Scidb is supporting various chess variants, currently this is:
 </p>
 
-<!-- Hint for translators: Please replace %::mc::VariantName(...)% with the corresponding
+<!-- Hint for translators: Please replace ::mc::VariantName(...) with the corresponding
      English name (see tcl/lang/english.tcl) if the English web page is referred.
-     Use %::mc::VariantName(...)% only for web pages in your regional language. -->
+     Use ::mc::VariantName(...) only for web pages in your regional language. -->
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em" cellpadding="2">
     <tr>

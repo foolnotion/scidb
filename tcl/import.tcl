@@ -288,10 +288,12 @@ proc openEdit {parent position args} {
 	bind $edit.text <Control-A> $selectCmd
 	bind $edit.text <Control-a> $selectCmd
 
-	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y CLIPBOARD]]
+	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y PRIMARY]]
 	bind $edit.text <<PasteSelection>> $pastecmd
 	bind $edit.text <<PasteSelection>> {+ break }
-	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y PRIMARY]]
+	bind $edit.text <Insert> $pastecmd
+	bind $edit.text <Insert> {+ break }
+	set pastecmd [namespace code [list TextPasteSelection $position %W %x %y CLIPBOARD]]
 	bind $edit.text <<Paste>> $pastecmd
 	bind $edit.text <<Paste>> {+ break }
 

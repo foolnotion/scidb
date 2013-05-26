@@ -2255,8 +2255,6 @@ proc OpenSetupDialog(Script) {parent} {
 	set Vars(script:content) [split [$edit.txt get 1.0 end] \n]
 	set Vars(script:original) $Vars(script:content)
 	bind $edit.txt <<Modified>> [namespace code [list ScriptUpdate $edit.txt]]
-#	bind $edit.txt <<Undo>> [namespace code [list ScriptUndo $edit.txt]]
-#	bind $edit.txt <<Redo>> [namespace code [list ScriptRedo $edit.txt]]
 
 	### log pane ############################################################
 	set log [ttk::frame $main.log]
@@ -3717,8 +3715,11 @@ bind Script <<Copy>> {
 }
 
 bind Script <<Paste>> {
-	tk_textPaste %W
-	event generate %W <<Modified>>
+	set sel [::clipboard::getSelection CLIPBOARD]
+	if {[string length $sel]} {
+		tk::TextInsert %W $sel
+		event generate %W <<Modified>>
+	}
 }
 
 bind Script <<Clear>> {
@@ -3728,14 +3729,12 @@ bind Script <<Clear>> {
 
 bind Script <<PasteSelection>> {
 	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
-		tk::TextPasteSelection %W %x %y
-		event generate %W <<Modified>>
+		set sel [::clipboard::getSelection PRIMARY]
+		if {[string length $sel]} {
+			tk::TextInsert %W $sel
+			event generate %W <<Modified>>
+		}
 	}
-}
-
-bind Script <Insert> {
-	catch {tk::TextInsert %W [::tk::GetSelection %W PRIMARY]}
-	event generate %W <<Modified>>
 }
 
 bind Script <KeyPress> {
@@ -3770,12 +3769,12 @@ bind Script <Control-t> {
 
 bind Script <Return> {+ break }
 
-bind Script <<Undo>> {
+theme::bindUndo Script {
 	catch { %W edit undo }
 	event generate %W <<Modified>>
 }
 
-bind Script <<Redo>> {
+theme::bindRedo Script {
 	catch { %W edit redo }
 	event generate %W <<Modified>>
 }

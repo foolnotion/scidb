@@ -1317,7 +1317,6 @@
 ::gamebar::mc::CopyThisGameToClipboard		"Diese Partie in die Ablage kopieren (PGN-Format)"
 ::gamebar::mc::ExportThisGame					"Diese Partie exportieren"
 ::gamebar::mc::PasteLastClipbaseGame		"Letzte Partie aus Ablage-Datenbank einfügen"
-::gamebar::mc::PasteClipboardContent		"Inhalt aus der Ablage einfügen"
 ::gamebar::mc::MergeLastClipbaseGame		"Mit letzter Partie aus Ablage-Datenbank zusammenfügen"
 ::gamebar::mc::PasteGameFrom					"Partie einfügen"
 ::gamebar::mc::MergeGameFrom					"Mit Partie zusammenfügen"

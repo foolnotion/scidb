@@ -31,23 +31,35 @@ namespace eval clipboard {
 variable CurrentSelection ""
 
 
-proc selectText {text} {
+proc selectText {text {buffer CLIPBOARD}} {
+	if {[tk windowingsystem] eq "x11"} {
+		if {$buffer eq "PRIMARY"} {
+			variable CurrentSelection
+			set CurrentSelection $text
+
+			selection handle -selection PRIMARY "." [namespace current]::PrimaryTransfer
+			selection own -selection PRIMARY -command [namespace current]::LostSelection "."
+			return
+		}
+	}
+
 	clipboard clear -displayof "."
 	clipboard append -displayof "." $text
-
-	if {[tk windowingsystem] eq "x11"} {
-		variable CurrentSelection
-		set CurrentSelection $text
-
-		selection handle -selection PRIMARY "." [namespace current]::PrimaryTransfer
-		selection own -selection PRIMARY -command [namespace current]::LostSelection "."
-	}
 }
 
 
-proc getSelection {} {
-	set str ""
-	catch { ::tk::GetSelection $w PRIMARY } str
+proc getSelection {{buffer CLIPBOARD}} {
+	if {[tk windowingsystem] eq "x11"} {
+		if {$buffer eq "PRIMARY"} {
+			set str ""
+			if {[catch { ::tk::GetSelection "." PRIMARY } str]} {
+				return ""
+			}
+			return $str
+		}
+	}
+
+	set str [clipboard get -displayof "."]
 	return $str
 }
 

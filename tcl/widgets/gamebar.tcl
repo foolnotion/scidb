@@ -1485,14 +1485,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-command [namespace code [list PasteFromClipbase $gamebar $position]] \
 			-state $clipbaseState \
 			;
-		if {[ClipboardContainsPgnFile $parent]} { set state normal } else { set state disabled }
-		$m add command \
-			-label " $mc::PasteClipboardContent" \
-			-image $::icon::16x16::clipboardOut \
-			-compound left \
-			-command [namespace code [list PasteClipboardContent $parent $position]] \
-			-state $state \
-			;
 		if {[llength $idList] <= 1} { set state disabled } else { set state normal }
 		set sub [menu $m.pasteFrom]
 		foreach id $idList {
@@ -1565,13 +1557,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-command ::game::clearHistory \
 			;
 	}
-}
-
-
-proc ClipboardContainsPgnFile {parent} {
-	catch { ::tk::GetSelection $parent CLIPBOARD } sel
-	set sel [string trim $sel]
-	return [string match "\[Event " $sel]
 }
 
 

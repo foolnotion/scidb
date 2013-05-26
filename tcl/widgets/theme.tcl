@@ -42,7 +42,7 @@ switch [tk windowingsystem] {
 		event add <<Paste>>	<Control-Key-v> <Key-F18>
 		event add <<PasteSelection>> <ButtonRelease-2>
 		event add <<Undo>>	<Control-Key-z>
-		event add <<Redo>>	<Control-Key-Z> <Control-Key-y>
+		event add <<Redo>>	<Control-Key-y>
 	}
 
 	win32 {
@@ -63,6 +63,60 @@ switch [tk windowingsystem] {
 		event add <<Undo>>	<Command-Key-z>
 		event add <<Redo>>	<Command-Key-y>
 	}
+}
+
+proc bindCut {w {cmd {#}}} {
+	switch [tk windowingsystem] {
+		x11 	{ set keys {<Control-Key-x> <Key-F20>} }
+		win32	{ set keys {<Control-Key-x> <Shift-Key-Delete>} }
+		aqua	{ set keys {<Control-Key-x> <Key-F2> } }
+	}
+	foreach key $keys {
+		bind $w $key $cmd
+	}
+}
+
+
+proc bindCopy {w {cmd {#}}} {
+	switch [tk windowingsystem] {
+		x11 	{ set keys {<Control-Key-c> <Key-F16>} }
+		win32	{ set keys {<Control-Key-c> <Control-Key-Insert>} }
+		aqua	{ set keys {<Control-Key-c> <Key-F3> } }
+	}
+	foreach key $keys {
+		bind $w $key $cmd
+	}
+}
+
+
+proc bindPaste {w {cmd {#}}} {
+	switch [tk windowingsystem] {
+		x11 	{ set keys {<Control-Key-v> <Key-F18>} }
+		win32	{ set keys {<Control-Key-v> <Shift-Key-Insert>} }
+		aqua	{ set keys {<Control-Key-v> <Key-F4> } }
+	}
+	foreach key $keys {
+		bind $w $key $cmd
+	}
+}
+
+
+proc bindUndo {w {cmd {#}}} {
+	foreach key {<Control-Key-z> <Control-Key-Z>} {
+		bind $w $key $cmd
+	}
+}
+
+
+proc bindRedo {w {cmd {#}}} {
+	foreach key {<Control-Key-y> <Control-Key-Y>} {
+		bind $w $key $cmd
+	}
+}
+
+
+proc bindPasteSelection {w {cmd {#}}} {
+	bind $w <ButtonRelease-2> $cmd
 }
 
 
@@ -535,11 +589,7 @@ bind Spinbox <FocusOut> {+ if {![%W cget -exportselection]} { %W selection clear
 #bind TSpinbox <FocusIn>  {+ %W instate {!readonly !disabled} { %W selection range 0 end } }
 bind TSpinbox <FocusOut> {+ if {![%W cget -exportselection]} { %W selection clear } }
 
-# NOTE: 'bind Text <<Redo>>' fails for any reason
-bind Text <Control-Key-y> { catch { %W edit redo } }
-if {[tk windowingsystem] eq "x11"} {
-	bind Text <Control-Key-Z> { catch { %W edit redo } }
-}
+bindRedo Text { catch { %W edit redo } }
 
 # TODO: probably we want to override <Ctrl-A> of text/entry/ttk::entry
 

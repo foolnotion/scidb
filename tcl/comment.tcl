@@ -722,9 +722,8 @@ proc PasteText {w {str ""}} {
 	variable Symbols
 
 	if {[string length $str] == 0} {
-		if {[catch { ::tk::GetSelection $w PRIMARY } str ]} {
-			return
-		}
+		set str [::clipboard::getSelection]
+		if {[string length $str] == 0} { return }
 	}
 
 	if {[tk windowingsystem] ne "x11"} {
@@ -1435,11 +1434,6 @@ proc PopupMenu {parent} {
 		set state normal
 	}
 
-	set sel ""
-	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
-		set sel [string map {"<brace/>" "\{" "\n" "\n\u00b6"} $sel]
-	}
-	
 	set count 0
 	set lang $Vars(lang)
 	set accel "$::mc::Key(Ctrl)-"
@@ -1463,7 +1457,9 @@ proc PopupMenu {parent} {
 			;
 		incr count
 	}
+	set sel [::clipboard::getSelection]
 	if {[string length $sel]} {
+		set sel [string map {"<brace/>" "\{" "\n" "\n\u00b6"} $sel]
 		$m add command \
 			-compound left \
 			-image $::icon::16x16::clipboardOut \
@@ -2401,14 +2397,14 @@ proc TextPasteSelection {w x y} {
 }
 
 
-proc TextPaste {w} {
+proc TextPaste {w buffer} {
 	variable Vars
 
-	if {![catch {::tk::GetSelection $w CLIPBOARD} sel]} {
+	set sel [::clipboard::getSelection $buffer]
+
+	if {[string length $sel]} {
 		set sel [string map {"\n" "\n\u00b6"} $sel]
-		if {[string length $sel]} {
-			PasteText $w $sel
-		}
+		PasteText $w $sel
 	}
 }
 
@@ -2420,7 +2416,6 @@ proc TextCopy {w} {
 		set data [ParseDump [$w dump -tag -image -text sel.first sel.last]]
 		SetUndoPoint $w
 		::clipboard::selectText $data
-		SetUndoPoint $w
 	}
 }
 
@@ -2749,10 +2744,8 @@ ttk::copyBindings Text Comment
 
 bind Comment <Return>			{ comment::InvokeDefaultButton }
 bind Comment <KeyPress>			{ comment::TextInsert %W %A }
-bind Comment <Insert>			{ comment::PasteText %W }
 bind Comment <Shift-Tab>		{ focus [tk_focusPrev %W] }
 bind Comment <Tab>				{ focus [tk_focusNext %W] }
-
 bind Comment <BackSpace>		{ comment::TextBackSpace %W }
 bind Comment <Delete>			{ comment::TextDelete %W }
 bind Comment <Control-d>		{ comment::TextControlD %W }
@@ -2767,8 +2760,6 @@ bind Comment <End>				{ comment::TextSetCursorExt %W {insert display lineend} }
 bind Comment <Control-Up>		{ comment::TextSetCursorExt %W [comment::TextPrevPara %W insert] }
 bind Comment <Control-Down>	{ comment::TextSetCursorExt %W [comment::TextNextPara %W insert] }
 bind Comment <Control-End>		{ comment::TextSetCursorExt %W {end - 1 indices} }
-bind Comment <Control-i>		{ comment::TextInsert %W \t }
-bind Comment <Control-I>		{ comment::TextInsert %W \t }
 bind Comment <Control-m>		{ comment::TextInsert %W \n }
 bind Comment <Control-M>		{ comment::TextInsert %W \n }
 bind Comment <Control-s>		{ comment::TextInsert %W \u2423 }
@@ -2785,11 +2776,18 @@ bind Comment <Control-a>		{ %W tag add sel 1.0 end }
 bind Comment <Control-A>		{ %W tag add sel 1.0 end }
 bind Comment <Control-w>		{ %W delete insert [tk::TextNextWord %W insert] }
 bind Comment <Control-W>		{ %W delete insert [tk::TextNextWord %W insert] }
-bind Comment <<Undo>>			{ comment::EditUndo }
-bind Comment <<Paste>>			{ comment::TextPaste %W }
-bind Comment <<Copy>>			{ comment::TextCopy %W }
-bind Comment <<Cut>>				{ comment::TextCut %W }
-bind Comment <<Clear>>			{ catch { comment::TextClear %W } }
+
+theme::bindUndo	Comment { comment::EditUndo }
+theme::bindRedo	Comment { comment::EditRedo }
+theme::bindCopy	Comment { comment::TextCopy %W }
+theme::bindCut		Comment { comment::TextCut %W }
+theme::bindPaste	Comment { comment::TextPaste %W CLIPBOARD }
+
+theme::bindPasteSelection Comment {
+	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
+		comment::TextPaste %W PRIMARY
+	}
+}
 
 bind Comment <Control-Left> {
 	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
@@ -2804,20 +2802,6 @@ bind Comment <1> {
 	%W tag remove sel 0.0 end
 }
 
-bind Comment <<PasteSelection>> {
-	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
-		comment::TextPasteSelection %W %x %y
-	}
-}
-
-bind Comment <Control-Key-y> { ;# the <<Redo>> binding is not working!
-	comment::EditRedo
-}
-
-bind Comment <Control-Key-Y> { ;# the <<Redo>> binding is not working!
-	comment::EditRedo
-}
-
 bind Comment <Control-q> {
 	%W delete [comment::TextPrevPos %W insert tcl_startOfPreviousWord] insert
 }
@@ -2827,12 +2811,14 @@ bind Comment <Control-Q> {
 }
 
 if {[tk windowingsystem] eq "x11"} {
-	bind Comment <Control-Key-Z> { ;# the <<Redo>> binding is not working!
+	bind Comment <Control-Z> { ;# the <<Redo>> binding is not working!
 		comment::EditRedo
 	}
 }
 
 if {[tk windowingsystem] eq "aqua"} {
+
+bind Comment <Clear> { catch { comment::TextClear %W } }
 
 bind Comment <Option-Left> {
 	comment::TextSetCursorExt %W [comment::TextPrevPos %W insert tcl_startOfPreviousWord]
@@ -2845,7 +2831,6 @@ bind Comment <Option-Down>		{ comment::TextSetCursorExt %W [comment::TextNextPar
 } ;# End of Mac only bindings
 
 # Don't use:
-bind Comment <Control-v> {#}
 bind Comment <Control-h> {#}
 bind Comment <Control-o> {#}
 bind Comment <Meta-greater> {#}
