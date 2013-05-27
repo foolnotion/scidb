@@ -45,6 +45,7 @@
 ::mc::Key(Ins)				"Einfg"
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Bild\u2193"
+::mc::Key(Option)			"option"	;# Mac
 ::mc::Key(Prior)			"Bild\u2191"
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Umschalt"
@@ -2108,6 +2109,12 @@
 ::move::mc::Action(exchange)		"Zug austauschen"
 ::move::mc::Action(append)			"Zug anfügen"
 ::move::mc::Action(load)			"Erste Partie mit dieser Fortsetzung laden"
+
+::move::mc::Accel(trial)			"V"
+::move::mc::Accel(replace)			"E"
+::move::mc::Accel(variation)		"N"
+::move::mc::Accel(append)			"A"
+::move::mc::Accel(load)				"L"
 
 ::move::mc::GameWillBeTruncated	"Die Partie wird dadurch gekürzt. Fortfahren mit '%s'?"
 

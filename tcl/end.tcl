@@ -100,6 +100,8 @@ if {[tk windowingsystem] eq "x11"} {
 	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 }
 
+set ::clipboard::window .application
+
 set dialog::iconOk		$icon::iconOk
 set dialog::iconCancel	$icon::iconCancel
 set dialog::iconGoNext	$icon::iconGoNext

@@ -745,6 +745,7 @@ Game::operator=(Game const& game)
 		m_combinePredecessingMoves		= game.m_combinePredecessingMoves;
 		m_undoCommand						= None;
 		m_redoCommand						= None;
+		m_rollbackCommand					= None;
 		m_flags								= game.m_flags;
 		m_linebreakThreshold				= game.m_linebreakThreshold;
 		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
@@ -761,6 +762,9 @@ Game::operator=(Game const& game)
 
 		m_line.copy(game.m_line);
 		m_timeTable = game.m_timeTable;
+
+		if (game.m_editNode)
+			m_editNode = buildEditNodes();
 
 		for (unsigned i = 0; i < m_undoList.size(); ++i)
 			delete m_undoList[i];
@@ -4068,41 +4072,15 @@ Game::updateSubscriber(unsigned action)
 	{
 		typedef mstl::auto_ptr<edit::Root> Root;
 
+		Root editNode(buildEditNodes());
+
 		if (m_subscriber->mainlineOnly())
 		{
-			Root editNode(edit::Root::makeList(	m_tags,
-															m_idn,
-															m_eco,
-															m_startBoard,
-															m_variant,
-															m_termination,
-															m_finalBoard,
-															m_startNode,
-															m_linebreakThreshold,
-															m_linebreakMaxLineLengthMain,
-															m_displayStyle));
 			m_editNode = editNode.release();
 			m_subscriber->updateEditor(m_editNode, m_moveStyle);
 		}
 		else
 		{
-			Root editNode(edit::Root::makeList(	m_tags,
-															m_idn,
-															m_eco,
-															m_startBoard,
-															m_variant,
-															m_termination,
-															m_languageSet,
-															m_wantedLanguages,
-															m_engines,
-															m_startNode,
-															m_linebreakThreshold,
-															m_linebreakMaxLineLengthMain,
-															m_linebreakMaxLineLengthVar,
-															m_linebreakMinCommentLength,
-															m_displayStyle,
-															m_moveInfoTypes));
-
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
 			m_subscriber->updateEditor(diff,
@@ -4126,6 +4104,45 @@ Game::updateSubscriber(unsigned action)
 
 		goToCurrentMove();
 	}
+}
+
+
+edit::Root*
+Game::buildEditNodes() const
+{
+	M_ASSERT(m_subscriber);
+
+	if (m_subscriber->mainlineOnly())
+	{
+		return edit::Root::makeList(	m_tags,
+												m_idn,
+												m_eco,
+												m_startBoard,
+												m_variant,
+												m_termination,
+												m_finalBoard,
+												m_startNode,
+												m_linebreakThreshold,
+												m_linebreakMaxLineLengthMain,
+												m_displayStyle);
+	}
+
+	return edit::Root::makeList(	m_tags,
+											m_idn,
+											m_eco,
+											m_startBoard,
+											m_variant,
+											m_termination,
+											m_languageSet,
+											m_wantedLanguages,
+											m_engines,
+											m_startNode,
+											m_linebreakThreshold,
+											m_linebreakMaxLineLengthMain,
+											m_linebreakMaxLineLengthVar,
+											m_linebreakMinCommentLength,
+											m_displayStyle,
+											m_moveInfoTypes);
 }
 
 

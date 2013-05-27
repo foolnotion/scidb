@@ -1566,7 +1566,9 @@ winboard::Engine::detectFeatures(char const* identifier)
 			m_dontInvertScore = true;
 
 		if (isProbing())
-			send("log off");		// turn off crafty logging, to reduce number of junk files
+			send("log off");	// turn off crafty logging, to reduce number of junk files
+
+		send("linelength 100000"); // disable line breaks
 
 		addFeature(app::Engine::Feature_Analyze);
 		m_featureSetboard = true;

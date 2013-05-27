@@ -45,6 +45,7 @@
 ::mc::Key(Ins)			"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
+::mc::Key(Option)		"option"	;# Mac
 ::mc::Key(Prior)		"Page\u2191"	;# Page Up NEW
 ::mc::Key(Right)		"\u2192"
 ::mc::Key(Shift)		"Shift" ;# NEW
@@ -2117,6 +2118,12 @@
 ::move::mc::Action(exchange)	"Lépés cseréje"
 ::move::mc::Action(append)	"Lépés hozzáadása"
 ::move::mc::Action(load)	"Első játszma betöltése ezzel a folytatással"
+
+::move::mc::Accel(trial)	"T"
+::move::mc::Accel(replace)	"R"
+::move::mc::Accel(variation)	"V"
+::move::mc::Accel(append)	"A"
+::move::mc::Accel(load)		"L"
 
 ::move::mc::GameWillBeTruncated	"Játszma megcsonkításra kerül. Folytatod? '%s'"
 

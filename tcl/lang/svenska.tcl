@@ -46,6 +46,7 @@
 ::mc::Key(Ins)				"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"	;# "Vänster"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down NEW
+::mc::Key(Option)			"option"			;# Mac
 ::mc::Key(Prior)			"Page\u2191"	;# Page Up NEW
 ::mc::Key(Right)			"\u2192" ;# "Höger"
 ::mc::Key(Shift)			"Shift" ;# NEW
@@ -2118,6 +2119,12 @@
 ::move::mc::Action(exchange)		"Byt drag"
 ::move::mc::Action(append)			"Lägg till drag"
 ::move::mc::Action(load)			"Ladda första parti med den här fortsättningen"
+
+::move::mc::Accel(trial)			"T"
+::move::mc::Accel(replace)			"R"
+::move::mc::Accel(variation)		"V"
+::move::mc::Accel(append)			"A"
+::move::mc::Accel(load)				"L"
 
 ::move::mc::GameWillBeTruncated	"Partiet kommer att avkortas. Fortsätta med '%s'?"
 

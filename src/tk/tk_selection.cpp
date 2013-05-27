@@ -139,6 +139,17 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 #  include <ctype.h>
 #  include <stdlib.h>
 
+static Atom xaSTRING				= 0;
+static Atom xaUTF8_STRING		= 0;
+static Atom xaPlainText			= 0;
+static Atom xaPlainTextUtf8	= 0;
+static Atom xaPlainTextLatin1	= 0;
+static Atom xaHtmlText			= 0;
+static Atom xaHtmlUtf8			= 0;
+static Atom xaHtmlLatin1		= 0;
+static Atom xaMozUrl				= 0;
+static Atom xaUriList			= 0;
+static Atom xaQIconList			= 0;
 
 static bool m_selectionRetrieved = false;
 static bool m_timeOut = true;
@@ -289,33 +300,31 @@ selEventProc(Tk_Window tkwin, XEvent* eventPtr)
 
 	if (result == Success && propInfo.c != 0 && type != None && bytesAfter == 0 && format == 8)
 	{
-		Atom xaPlainTextUtf8		= 0;
-		Atom xaPlainTextLatin1	= 0;
-		Atom xaUriList				= 0;
-		Atom xaQIconList			= 0;
-		Atom xaHtmlUtf8			= 0;
-		Atom xaHtmlLatin1			= 0;
-
-		if (	type == Tk_InternAtom(tkwin, "text/plain")
-			|| type == Tk_InternAtom(tkwin, "text/html")
-			|| type == Tk_InternAtom(tkwin, "text/x-moz-url")
-			|| type == (xaHtmlUtf8			= Tk_InternAtom(tkwin, "text/html;charset=UTF-8"))
-			|| type == (xaHtmlLatin1		= Tk_InternAtom(tkwin, "text/html;charset=ISO-8859-1"))
-			|| type == (xaPlainTextUtf8	= Tk_InternAtom(tkwin, "text/plain;charset=UTF-8"))
-			|| type == (xaPlainTextLatin1	= Tk_InternAtom(tkwin, "text/plain;charset=ISO-8859-1"))
-			|| type == (xaUriList			= Tk_InternAtom(tkwin, "text/uri-list"))
-			|| type == (xaQIconList			= Tk_InternAtom(tkwin, "application/x-qiconlist")))
+		if (	type == xaUriList
+			|| type == xaMozUrl
+			|| type == xaHtmlUtf8
+			|| type == xaHtmlLatin1
+			|| type == xaHtmlText
+			|| type == xaUTF8_STRING
+			|| type == xaPlainTextUtf8
+			|| type == xaPlainTextLatin1
+			|| type == xaPlainText
+			|| type == xaSTRING
+			|| type == xaQIconList)
 		{
 			while (numItems > 0 && propInfo.c[numItems - 1] == '\0')
 				--numItems;
 
 			numItems = mapToUnixNewline(propInfo.c, propInfo.c + numItems) - propInfo.c;
 
-			if (type == xaPlainTextUtf8 || type == xaHtmlUtf8)
+			if (type == xaPlainTextUtf8 || type == xaHtmlUtf8 || type == xaUTF8_STRING)
 			{
 				Tcl_SetObjResult(Tk_Interp(tkwin), Tcl_NewStringObj(propInfo.c, numItems));
 			}
-			else if (type == xaPlainTextLatin1 || type == xaHtmlLatin1 || type == xaQIconList)
+			else if (	type == xaPlainTextLatin1
+						|| type == xaHtmlLatin1
+						|| type == xaQIconList
+						|| type == xaSTRING)
 			{
 				Tcl_DString ds;
 				Tcl_Encoding encoding = Tcl_GetEncoding(Tk_Interp(tkwin), "iso8859-1");
@@ -386,6 +395,21 @@ selectionGet(	Tcl_Interp* ti,
 					unsigned long timestamp,
 					long timeout)
 {
+	if (xaSTRING == 0)
+	{
+		xaSTRING = Tk_InternAtom(tkwin, "UTF8_STRING");
+		xaUTF8_STRING = Tk_InternAtom(tkwin, "UTF8_STRING");
+		xaPlainText = Tk_InternAtom(tkwin, "text/plain");
+		xaPlainTextUtf8 = Tk_InternAtom(tkwin, "text/plain;charset=UTF-8");
+		xaPlainTextLatin1 = Tk_InternAtom(tkwin, "text/plain;charset=ISO-8859-1");
+		xaHtmlText = Tk_InternAtom(tkwin, "text/html");
+		xaHtmlUtf8 = Tk_InternAtom(tkwin, "text/html;charset=UTF-8");
+		xaHtmlLatin1 = Tk_InternAtom(tkwin, "text/html;charset=ISO-8859-1");
+		xaMozUrl = Tk_InternAtom(tkwin, "text/x-moz-url");
+		xaUriList = Tk_InternAtom(tkwin, "text/uri-list");
+		xaQIconList = Tk_InternAtom(tkwin, "application/x-qiconlist");
+	}
+
 	XConvertSelection(Tk_Display(tkwin), selection, target, selection, Tk_WindowId(tkwin), timestamp);
 	Tk_CreateGenericHandler(handleSelection, 0);
 

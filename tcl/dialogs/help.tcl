@@ -73,6 +73,7 @@ array set Options {
 	piecelang	graphic
 	treewidth	320
 	htmlheight	800
+	htmlwidth	600
 	geometry		""
 	lang			""
 }
@@ -281,13 +282,13 @@ proc open {parent {file ""} args} {
 	set html $pw.html
 	set Priv(html) $html
 	BuildHtmlFrame $dlg $html
-	bind $html <Configure> [namespace code [list RecordHtmlHeight $nb %h]]
+	bind $html <Configure> [namespace code [list RecordHtmlSize $nb %w %h]]
 
 	if {[string length $file] == 0} {
 		$pw add $control -sticky nswe -stretch never -minsize $Options(treewidth)
 		after idle [list $pw paneconfigure $control -minsize $Priv(minsize:tree)]
 	}
-	$pw add $html -sticky nswe -stretch always -minsize [expr {$Priv(minsize:tree) + 100}]
+	$pw add $html -sticky nswe -stretch always -minsize $Priv(minsize:html)
 
 	bind $dlg <Configure> [namespace code [list RecordGeometry $pw]]
 
@@ -295,20 +296,26 @@ proc open {parent {file ""} args} {
 		wm transient $dlg [winfo toplevel $parent]
 	}
 
-	if {[string length $file] == 0} {
-		wm minsize $dlg [expr {$Priv(minsize:html) + $Priv(minsize:tree) + 10}] 300
-	} else {
-		wm minsize $dlg [expr {$Priv(minsize:html) + 10}] 300
-	}
+	set minwidth [expr {$Priv(minsize:html) + 10}]
+	if {[string length $file] == 0} { incr minwidth $Priv(minsize:tree) }
+	wm minsize $dlg $minwidth 300
 
 	set geometry ""
-	if {[string length $file] == 0} {
-		if {[llength $Options(geometry)] == 0} {
-			update idletasks
-			set Options(geometry) [winfo reqwidth $dlg]x[winfo reqheight $dlg]
+	if {[llength $Options(geometry)] == 0} {
+		update idletasks
+		set w [winfo reqwidth $dlg]
+		set h [winfo reqheight $dlg]
+		set geometry ${w}x${h}
+		if {[string length $file] == 0} { incr w $Options(treewidth) }
+		set Options(geometry) ${w}x${h}
+	} else {
+		set geometry $Options(geometry)
+		if {[string length $file] > 0} {
+			scan $geometry "%dx%d%d%d" w h x y
+			set geometry [expr {$w - $Options(treewidth)}]x${h}${x}${y}
 		}
-		wm geometry $dlg $Options(geometry)
 	}
+	wm geometry $dlg $geometry
 
 	if {[string length $file] == 0} {
 		focus $Priv($Priv(tab):tree)
@@ -710,6 +717,7 @@ proc BuildFrame {w type} {
 	set Priv($type:changed) 0
 	set Priv($type:tree) $w
 	::treetable $w -takefocus 1 -showarrows 0 -borderwidth 1 -relief sunken -showlines no
+	set Priv(index) $w
 
 	bind $w <<TreeTableSelection>> [namespace code [list LoadPage $type %d]]
 	$w bind <Any-KeyPress> [namespace code [list Select $type %W %A]]
@@ -1101,15 +1109,20 @@ proc Update {} {
 }
 
 
-proc RecordHtmlHeight {nb height} {
+proc RecordHtmlSize {nb width height} {
 	variable Options
-	set Options(htmlheight) $height
+	variable Priv
+
+	set Options(htmlheight) [expr {$height - 2}]
+	set Options(htmlwidth) [expr {$width - 2}]
 }
 
 
 proc RecordTreeWidth {nb width} {
 	variable Options
-	set Options(treewidth) $width
+	variable Priv
+
+	set Options(treewidth) [expr {$width - 2*[$Priv(index) cget -borderwidth]}]
 }
 
 
@@ -1363,12 +1376,11 @@ proc BuildHtmlFrame {dlg w} {
 	set css [::html::defaultCSS [::font::htmlFixedFamilies] [::font::htmlTextFamilies]]
 
 	# build HTML widget
-	set height [expr {min([winfo screenheight $dlg] - 60, 800)}]
 	::html $w \
 		-imagecmd [namespace code GetImage] \
 		-center no \
 		-fittowidth yes \
-		-width 400 \
+		-width $Options(htmlwidth) \
 		-height $Options(htmlheight) \
 		-cursor left_ptr \
 		-borderwidth 1 \

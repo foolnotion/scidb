@@ -2225,13 +2225,15 @@ proc OpenSetupDialog(Script) {parent} {
 		-height 10 \
 		-background white \
 		-foreground black \
+		-selectbackground lightgray \
+		-selectforeground black \
 		-borderwidth 1 \
 		-relief sunken \
 		-setgrid on \
 		-xscrollcommand [list ::scrolledframe::sbset $edit.hsb] \
 		-yscrollcommand [list $edit.vsb set] \
 		-wrap none \
-		-undo no \
+		-undo yes \
 		-font TkFixedFont \
 		;
 	::scidb::tk::misc setClass $edit.txt Script
@@ -2248,9 +2250,10 @@ proc OpenSetupDialog(Script) {parent} {
 	$edit.txt tag configure comment -foreground darkgreen
 	$edit.txt tag configure error -foreground darkred
 	foreach line $script {
-		ScriptInsertLine $edit.txt $line
+		$edit.txt insert end $line
 		$edit.txt insert end \n
 	}
+	ScriptSetTags $edit.txt
 	$edit.txt mark set insert 1.0
 	set Vars(script:content) [split [$edit.txt get 1.0 end] \n]
 	set Vars(script:original) $Vars(script:content)
@@ -2285,7 +2288,7 @@ proc OpenSetupDialog(Script) {parent} {
 	::widget::dialogButtons $dlg {save cancel reset help} -default save
 	$dlg.cancel configure -command [namespace code [list AskCloseSetup $dlg.save]]
 	$dlg.save configure -state disabled -command [namespace code [list SaveScript $edit.txt $log.txt]]
-	$dlg.reset configure -command [namespace code [list ResetScript $edit.txt]]
+	$dlg.reset configure -state disabled -command [namespace code [list ResetScript $edit.txt]]
 	::tooltip::tooltip $dlg.reset [namespace current]::mc::ResetToDefaultContent
 
 	### popup ################################################################
@@ -2327,13 +2330,15 @@ proc ResetScript {txt} {
 	set i [FindIndex $Vars(current:name)]
 	array set engine [lindex $Engines $i]
 	array set profiles $engine(Profiles:WB)
-	set script $engine(Script:Default)
+	set script $profiles($Vars(current:profile))
 	$txt delete 1.0 end
 
-	foreach line $engine(Script:Default) {
-		ScriptInsertLine $txt $line
+	foreach line $script {
+		$txt insert end $line
 		$txt insert end \n
 	}
+
+	ScriptSetTags $txt
 
 	$txt mark set insert 1.0
 	$txt see 1.0
@@ -2341,6 +2346,7 @@ proc ResetScript {txt} {
 	set content [split [$txt get 1.0 end] \n]
 	if {$Vars(script:original) eq $content} { set state disabled } else { set state normal }
 	[winfo toplevel $txt].save configure -state $state
+	[winfo toplevel $txt].reset configure -state $state
 	set Vars(script:content) $content
 }
 
@@ -2360,6 +2366,8 @@ proc SaveScript {txt log} {
 	set cur [$txt index insert]
 	set row 1
 	set errCount 0
+
+	ScriptSetTags $txt ;# clear old errors
 
 	foreach line $Vars(script:content) {
 		set line [string trim $line]
@@ -2397,32 +2405,43 @@ proc ScriptUpdate {txt} {
 
 	set content [split [$txt get 1.0 end] \n]
 
-	set row 1
+	set changed 0
 	set cur [$txt index insert]
 
 	foreach old $Vars(script:content) new $content {
 		if {$old ne $new} {
-			$txt delete $row.0 $row.end
-			$txt mark set insert $row.0
-			ScriptInsertLine $txt $new
+			set changed 1
+			break
 		}
-		incr row
 	}
 
+	if {$changed} { ScriptSetTags $txt }
 	$txt mark set insert $cur
 	if {$Vars(script:original) eq $content} { set state disabled } else { set state normal }
 	[winfo toplevel $txt].save configure -state $state
+	[winfo toplevel $txt].reset configure -state $state
 	set Vars(script:content) $content
 }
 
 
-proc ScriptInsertLine {txt line} {
-	set n [string first "#" $line]
-	if {$n == -1} {
-		$txt insert insert $line
-	} else {
-		$txt insert insert [string range $line 0 [expr {$n - 1}]]
-		$txt insert insert [string range $line $n end] comment
+proc ScriptSetTags {txt} {
+	set indices {}
+
+	foreach {key value index} [$txt dump -text 1.0 end] {
+		switch $key {
+			text {
+				set n [string first "#" $value]
+				if {$n >= 0} {
+					lassign [split $index .] row col
+					lappend indices $row [expr {$col + $n}]
+				}
+			}
+		}
+	}
+
+	$txt tag remove comment 1.0 end
+	foreach {row col} $indices {
+		$txt tag add comment ${row}.${col} ${row}.end
 	}
 }
 
@@ -3704,19 +3723,26 @@ bind Script <BackSpace> {
 	}
 }
 
-bind Script <<Cut>> {
-	tk_textCut %W
-	event generate %W <<Modified>>
+theme::bindCopy Script {
+	if {![catch {set data [%W get sel.first sel.last]}]} {
+		clipboard::selectText $data
+	}
 }
 
-bind Script <<Copy>> {
-	tk_textCopy %W
-	event generate %W <<Modified>>
+theme::bindCut Script {
+	if {![catch {set data [%W get sel.first sel.last]}]} {
+		clipboard::selectText $data
+		%W delete sel.first sel.last
+		event generate %W <<Modified>>
+	}
 }
 
-bind Script <<Paste>> {
-	set sel [::clipboard::getSelection CLIPBOARD]
+theme::bindPaste Script {
+	set sel [clipboard::getSelection]
 	if {[string length $sel]} {
+		if {[tk windowingsystem] ne "x11"} {
+			catch { %W delete sel.first sel.last }
+		}
 		tk::TextInsert %W $sel
 		event generate %W <<Modified>>
 	}
@@ -3727,12 +3753,14 @@ bind Script <<Clear>> {
 	event generate %W <<Modified>>
 }
 
-bind Script <<PasteSelection>> {
+theme::bindPasteSelection Script {
 	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
+		%W mark set insert [::tk::TextClosestGap %W %x %y]
 		set sel [::clipboard::getSelection PRIMARY]
 		if {[string length $sel]} {
-			tk::TextInsert %W $sel
+			%W insert insert $sel
 			event generate %W <<Modified>>
+			if {[%W cget -state] eq "normal"} { focus %W }
 		}
 	}
 }
@@ -3747,6 +3775,31 @@ bind Script <Control-d> {
 	event generate %W <<Modified>>
 }
 
+bind Script <Control-D> {
+	%W delete insert
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-w> {
+	%W delete insert [tk::TextNextWord %W insert]
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-W> {
+	%W delete insert [tk::TextNextWord %W insert]
+	event generate %W <<Modified>>
+}
+
+bind Comment <Control-q> {
+	%W delete [comment::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+	event generate %W <<Modified>>
+}
+
+bind Comment <Control-Q> {
+	%W delete [comment::TextPrevPos %W insert tcl_startOfPreviousWord] insert
+	event generate %W <<Modified>>
+}
+
 bind Script <Control-k> {
 	if {[%W compare insert == {insert lineend}]} {
 		%W delete insert
@@ -3756,13 +3809,33 @@ bind Script <Control-k> {
 	event generate %W <<Modified>>
 }
 
-bind Script <Control-o> {
+bind Script <Control-K> {
+	if {[%W compare insert == {insert lineend}]} {
+		%W delete insert
+	} else {
+		%W delete insert {insert lineend}
+	}
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-m> {
+	%W insert insert \n
+	%W mark set insert insert-1c
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-M> {
 	%W insert insert \n
 	%W mark set insert insert-1c
 	event generate %W <<Modified>>
 }
 
 bind Script <Control-t> {
+	tk::TextTranspose %W
+	event generate %W <<Modified>>
+}
+
+bind Script <Control-T> {
 	tk::TextTranspose %W
 	event generate %W <<Modified>>
 }
@@ -3779,29 +3852,14 @@ theme::bindRedo Script {
 	event generate %W <<Modified>>
 }
 
-bind Script <Meta-d> {
-	%W delete insert [tk::TextNextWord %W insert]
-	event generate %W <<Modified>>
-}
-
-bind Script <Meta-BackSpace> {
-	%W delete [tk::TextPrevPos %W insert tcl_startOfPreviousWord] insert
-	event generate %W <<Modified>>
-}
-
-bind Script <Meta-Delete> {
-	%W delete [tk::TextPrevPos %W insert tcl_startOfPreviousWord] insert
-	event generate %W <<Modified>>
-}
-
-bind Script <Control-h> {
-	if {[%W compare insert != 1.0]} {
-		%W delete insert-1c
-		event generate %W <<Modified>>
-		%W see insert
-	}
-}
-
+# dont use
+bind Script <Control-h> {#}
+bind Script <Meta-greater> {#}
+bind Script <Meta-BackSpace> {#}
+bind Script <Meta-Delete> {#}
+bind Script <Meta-b> {#}
+bind Script <Meta-f> {#}
+bind Script <Meta-d> {#}
 
 # --- Setup engines ----------------------------------------------------
 if {[catch {::engine::setup} err]} {

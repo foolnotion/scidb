@@ -1444,7 +1444,7 @@ proc PopupMenu {parent} {
 			-image $::icon::16x16::clipboardIn \
 			-label " $::mc::Copy" \
 			-accelerator ${accel}C \
-			-command [list tk_textCopy $w] \
+			-command [namespace code [list TextCopy $w]] \
 			-state $state \
 			;
 		$m add command \
@@ -1452,7 +1452,7 @@ proc PopupMenu {parent} {
 			-image $::icon::16x16::clipboardIn \
 			-label " $::mc::Cut" \
 			-accelerator ${accel}X \
-			-command [list tk_textCut $w] \
+			-command [namespace code [list TextCut $w]] \
 			-state $state \
 			;
 		incr count
@@ -2389,7 +2389,7 @@ proc TextControlD {w} {
 proc TextPasteSelection {w x y} {
 	$w mark set insert [::tk::TextClosestGap $w $x $y]
 
-	PasteText $w
+	PasteText $w [::clipboard::getSelection PRIMARY]
 
 	if {[$w cget -state] eq "normal"} {
 		focus $w
@@ -2397,10 +2397,10 @@ proc TextPasteSelection {w x y} {
 }
 
 
-proc TextPaste {w buffer} {
+proc TextPaste {w} {
 	variable Vars
 
-	set sel [::clipboard::getSelection $buffer]
+	set sel [::clipboard::getSelection]
 
 	if {[string length $sel]} {
 		set sel [string map {"\n" "\n\u00b6"} $sel]
@@ -2776,16 +2776,18 @@ bind Comment <Control-a>		{ %W tag add sel 1.0 end }
 bind Comment <Control-A>		{ %W tag add sel 1.0 end }
 bind Comment <Control-w>		{ %W delete insert [tk::TextNextWord %W insert] }
 bind Comment <Control-W>		{ %W delete insert [tk::TextNextWord %W insert] }
+bind Comment <Control-T>		{ tk::TextTranspose %W }
+bind Comment <<Clear>>			{ catch {%W delete sel.first sel.last} }
 
 theme::bindUndo	Comment { comment::EditUndo }
 theme::bindRedo	Comment { comment::EditRedo }
 theme::bindCopy	Comment { comment::TextCopy %W }
 theme::bindCut		Comment { comment::TextCut %W }
-theme::bindPaste	Comment { comment::TextPaste %W CLIPBOARD }
+theme::bindPaste	Comment { comment::TextPaste %W }
 
 theme::bindPasteSelection Comment {
 	if {![info exists tk::Priv(mouseMoved)] || !$tk::Priv(mouseMoved)} {
-		comment::TextPaste %W PRIMARY
+		comment::TextPasteSelection %W %x %y
 	}
 }
 
@@ -2795,11 +2797,6 @@ bind Comment <Control-Left> {
 
 bind Comment <Control-Right> {
 	comment::TextSetCursorExt %W [tk::TextNextWord %W insert]
-}
-
-bind Comment <1> {
-	comment::TextButton1 %W %x %y
-	%W tag remove sel 0.0 end
 }
 
 bind Comment <Control-q> {
@@ -2814,6 +2811,11 @@ if {[tk windowingsystem] eq "x11"} {
 	bind Comment <Control-Z> { ;# the <<Redo>> binding is not working!
 		comment::EditRedo
 	}
+}
+
+bind Comment <1> {
+	comment::TextButton1 %W %x %y
+	%W tag remove sel 0.0 end
 }
 
 if {[tk windowingsystem] eq "aqua"} {
@@ -2834,8 +2836,10 @@ bind Comment <Option-Down>		{ comment::TextSetCursorExt %W [comment::TextNextPar
 bind Comment <Control-h> {#}
 bind Comment <Control-o> {#}
 bind Comment <Meta-greater> {#}
-
-bind Comment <Meta-b> { break }
-bind Comment <Meta-f> { break }
+bind Comment <Meta-BackSpace> {#}
+bind Comment <Meta-Delete> {#}
+bind Comment <Meta-b> {#}
+bind Comment <Meta-f> {#}
+bind Comment <Meta-d> {#}
 
 # vi:set ts=3 sw=3:

@@ -47,6 +47,7 @@
 ::mc::Key(Ins)				"Ins" ;# NEW
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Re Pag" ;# "Página\u2193"
+::mc::Key(Option)			"option"	;# Mac
 ::mc::Key(Prior)			"Av Pag" ;# "Página\u2191"
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Mayúsculas" 
@@ -2115,6 +2116,12 @@
 ::move::mc::Action(exchange)		"Cambiar jugada"
 ::move::mc::Action(append)			"Añadir movimiento"
 ::move::mc::Action(load)			"Cargar el primer juego con este movimiento"
+
+::move::mc::Accel(trial)			"T"
+::move::mc::Accel(replace)			"R"
+::move::mc::Accel(variation)		"V"
+::move::mc::Accel(append)			"A"
+::move::mc::Accel(load)				"L"
 
 ::move::mc::GameWillBeTruncated	"Se truncará la partida. ¿Continuar con '%s'?"
 

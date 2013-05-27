@@ -30,25 +30,31 @@ namespace eval clipboard {
 
 variable CurrentSelection ""
 
+variable window "."
+
 
 proc selectText {text {buffer CLIPBOARD}} {
+	variable window
+
 	if {[tk windowingsystem] eq "x11"} {
 		if {$buffer eq "PRIMARY"} {
 			variable CurrentSelection
 			set CurrentSelection $text
 
-			selection handle -selection PRIMARY "." [namespace current]::PrimaryTransfer
-			selection own -selection PRIMARY -command [namespace current]::LostSelection "."
+			selection handle -selection PRIMARY $window [namespace current]::PrimaryTransfer
+			selection own -selection PRIMARY -command [namespace current]::LostSelection $window
 			return
 		}
 	}
 
-	clipboard clear
-	clipboard append $text
+	clipboard clear -displayof $window
+	clipboard append -displayof $window $text
 }
 
 
 proc getSelection {{buffer CLIPBOARD}} {
+	variable window
+
 	if {[tk windowingsystem] eq "x11"} {
 		if {[catch { selection get -selection $buffer -type UTF8_STRING -timeout 20 } str]} {
 			return ""
@@ -56,7 +62,7 @@ proc getSelection {{buffer CLIPBOARD}} {
 		return $str
 	}
 
-	return [clipboard get]
+	return [clipboard get -displayof $window]
 }
 
 

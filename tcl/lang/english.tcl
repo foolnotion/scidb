@@ -45,6 +45,7 @@
 ::mc::Key(Ins)				"Ins"
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"	;# Page Down
+::mc::Key(Option)			"option"			;# Mac
 ::mc::Key(Prior)			"Page\u2191"	;# Page Up
 ::mc::Key(Right)			"\u2192"
 ::mc::Key(Shift)			"Shift"
@@ -2110,6 +2111,12 @@
 ::move::mc::Action(exchange)		"Exchange Move"
 ::move::mc::Action(append)			"Append move"
 ::move::mc::Action(load)			"Load first game with this continuation"
+
+::move::mc::Accel(trial)			"T"
+::move::mc::Accel(replace)			"R"
+::move::mc::Accel(variation)		"V"
+::move::mc::Accel(append)			"A"
+::move::mc::Accel(load)				"L"
 
 ::move::mc::GameWillBeTruncated	"Game will be truncated. Continue with '%s'?"
 

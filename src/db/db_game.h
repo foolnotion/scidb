@@ -682,6 +682,8 @@ private:
 
 	Move parseMove(mstl::string const& san) const;
 
+	edit::Root* buildEditNodes() const;
+
 	mutable SubscriberP m_subscriber;
 
 	unsigned				m_id;
