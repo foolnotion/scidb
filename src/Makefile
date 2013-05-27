@@ -1068,6 +1068,10 @@ pgn_split_eco.o: mstl/m_file.ipp
 pgn_split_eco.o: mstl/m_ofstream.h
 pgn_split_eco.o: mstl/m_sstream.h
 tkscidb.o: app/app_application.h
+tkscidb.o: app/app_tree_admin.h
+tkscidb.o: db/db_tree.h
+tkscidb.o: db/db_tree_info.h
+tkscidb.o: db/db_move.h
 tkscidb.o: db/db_common.h
 tkscidb.o: util/u_base.h
 tkscidb.o: mstl/m_types.h
@@ -1088,9 +1092,6 @@ tkscidb.o: mstl/m_utility.h
 tkscidb.o: mstl/m_type_traits.h
 tkscidb.o: mstl/m_type_traits.ipp
 tkscidb.o: mstl/m_utility.ipp
-tkscidb.o: db/db_tree.h
-tkscidb.o: db/db_tree_info.h
-tkscidb.o: db/db_move.h
 tkscidb.o: util/u_crc.h
 tkscidb.o: util/u_crc.ipp
 tkscidb.o: mstl/m_byte_order.h
@@ -1192,12 +1193,13 @@ tkscidb.o: db/db_consumer.ipp
 tkscidb.o: db/db_database.ipp
 tkscidb.o: db/db_database_codec.h
 tkscidb.o: db/db_database_codec.ipp
-tkscidb.o: util/u_rkiss.h
 tkscidb.o: sys/sys_thread.h
 tkscidb.o: mstl/m_function.h
 tkscidb.o: mstl/m_function_base.h
 tkscidb.o: mstl/m_function_base.ipp
 tkscidb.o: mstl/m_function.ipp
+tkscidb.o: app/app_tree_admin.ipp
+tkscidb.o: util/u_rkiss.h
 tkscidb.o: app/app_application.ipp
 tkscidb.o: tk/tk_init.h
 tkscidb.o: tcl/tcl_base.h

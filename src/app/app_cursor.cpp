@@ -250,7 +250,7 @@ Database&
 Cursor::database()
 {
 	if (m_isRefBase)
-		Application::stopUpdateTree();
+		m_cursor.app().stopUpdateTree();
 
 	return *m_db;
 }
@@ -333,7 +333,7 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 	M_REQUIRE(!isReadonly());
 
 	if (m_isRefBase)
-		Application::stopUpdateTree();
+		m_cursor.app().stopUpdateTree();
 
 	unsigned res = m_db->importGames(producer, progress);
 
@@ -357,7 +357,7 @@ Cursor::importGames(	db::Database const& src,
 	M_REQUIRE(!isReadonly());
 
 	if (m_isRefBase)
-		Application::stopUpdateTree();
+		m_cursor.app().stopUpdateTree();
 
 	unsigned res = m_db->importGames(src, illegalRejected, log, progress);
 

@@ -89,13 +89,16 @@ fill_n(OutputIterator first, unsigned count, T const& value)
 /// it exchanges *(first + i) and *(last - (i + 1)).
 /// \ingroup MutatingAlgorithms
 ///
-template <typename BidirectionalIterator>
+template <typename RandomAccessIterator>
 inline
 void
-reverse(BidirectionalIterator first, BidirectionalIterator last)
+reverse(RandomAccessIterator first, RandomAccessIterator last)
 {
-	for ( ; distance(first, last--) > 1; ++first)
-		swap(*first, *last);
+	if (first == last)
+		return;
+
+	for (--last ; first < last; ++first, --last)
+		mstl::swap(*first, *last);
 }
 
 } // namespace mstl

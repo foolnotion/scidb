@@ -43,24 +43,20 @@ proc selectText {text {buffer CLIPBOARD}} {
 		}
 	}
 
-	clipboard clear -displayof "."
-	clipboard append -displayof "." $text
+	clipboard clear
+	clipboard append $text
 }
 
 
 proc getSelection {{buffer CLIPBOARD}} {
 	if {[tk windowingsystem] eq "x11"} {
-		if {$buffer eq "PRIMARY"} {
-			set str ""
-			if {[catch { ::tk::GetSelection "." PRIMARY } str]} {
-				return ""
-			}
-			return $str
+		if {[catch { selection get -selection $buffer -type UTF8_STRING -timeout 20 } str]} {
+			return ""
 		}
+		return $str
 	}
 
-	set str [clipboard get -displayof "."]
-	return $str
+	return [clipboard get]
 }
 
 

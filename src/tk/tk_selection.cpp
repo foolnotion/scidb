@@ -54,7 +54,7 @@ invokeTkSelection(Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 #  endif
 
 static bool
-selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long)
+selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long, long)
 {
 	bool rc = false;
 
@@ -142,6 +142,7 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 static bool m_selectionRetrieved = false;
 static bool m_timeOut = true;
+static int  m_flags = 0;
 
 
 inline unsigned
@@ -357,9 +358,13 @@ static void
 selTimeoutProc(ClientData clientData)
 {
 	m_timeOut = true;
-	Tcl_SetResult(	static_cast<Tcl_Interp*>(clientData),
-						const_cast<char*>("selection owner didn't respond"),
-						TCL_STATIC);
+
+	if (m_flags == 0)
+	{
+		Tcl_SetResult(	static_cast<Tcl_Interp*>(clientData),
+							const_cast<char*>("selection owner didn't respond"),
+							TCL_STATIC);
+	}
 }
 
 
@@ -374,16 +379,22 @@ handleSelection(ClientData clientData, XEvent* eventPtr)
 
 
 static bool
-selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsigned long timestamp)
+selectionGet(	Tcl_Interp* ti,
+					Tk_Window tkwin,
+					Atom selection,
+					Atom target,
+					unsigned long timestamp,
+					long timeout)
 {
 	XConvertSelection(Tk_Display(tkwin), selection, target, selection, Tk_WindowId(tkwin), timestamp);
 	Tk_CreateGenericHandler(handleSelection, 0);
 
-	Tcl_TimerToken timeout = Tcl_CreateTimerHandler(500, selTimeoutProc, ti);
+	Tcl_TimerToken timer = Tcl_CreateTimerHandler(timeout < 0 ? 100 : timeout, selTimeoutProc, ti);
 	m_selectionRetrieved = m_timeOut = false;
+	m_flags = timeout < 0 ? 0 : TCL_TIMER_EVENTS;
 	while (!m_timeOut)
-		Tcl_DoOneEvent(0);
-	Tcl_DeleteTimerHandler(timeout);
+		Tcl_DoOneEvent(m_flags);
+	Tcl_DeleteTimerHandler(timer);
 	m_timeOut = true;
 
 	Tk_DeleteGenericHandler(handleSelection, 0);
@@ -633,14 +644,18 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	char const* selName		= 0;
 	char const* targetName	= 0;
 	long			timestamp	= CurrentTime;
+	long			timeout		= -1;
 	Tcl_Obj*		used[6]		= {  0, 0, 0, 0, 0, 0 };
 	Tcl_Obj*		args[8]		= { objv[0], objv[1] };
 	int			nargs			= 2;
 
 	for ( ; count > 0; count -= 2, objs += 2)
 	{
-		static char const* OptionStrings[] = { "-displayof", "-selection", "-type", "-time", 0 };
-		enum { GET_DISPLAYOF, GET_SELECTION, GET_TYPE, GET_TIME };
+		static char const* OptionStrings[] =
+		{
+			"-displayof", "-selection", "-type", "-time", "-timeout", 0
+		};
+		enum { GET_DISPLAYOF, GET_SELECTION, GET_TYPE, GET_TIME, GET_TIMEOUT };
 
 		char const* string = Tcl_GetString(objs[0]);
 
@@ -672,9 +687,18 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 					return TCL_ERROR;
 				}
 				break;
+
+			case GET_TIMEOUT:
+				// Scidb's extension: in some cases we need immediate responses.
+				if (Tcl_GetLongFromObj(ti, objs[1], &timeout) != TCL_OK || timeout < 0)
+				{
+					Tcl_AppendResult(ti, "wrong timeout value \"", Tcl_GetString(objs[1]), nullptr);
+					return TCL_ERROR;
+				}
+				break;
 		}
 
-		if (index != GET_TIME)
+		if (index != GET_TIME && index != GET_TIMEOUT)
 		{
 			used[2*index    ] = objs[0];
 			used[2*index + 1] = objs[1];
@@ -687,7 +711,7 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	if (selName && strcmp(selName, "XdndSelection") == 0)
+	if (selName && (strcmp(selName, "XdndSelection") == 0 || timeout >= 0))
 	{
 		Tk_Window tkwin = Tk_MainWindow(ti);
 
@@ -706,7 +730,7 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 				if (	target != None
 					&& selection != None
-					&& selectionGet(ti, tkwin, selection, target, timestamp))
+					&& selectionGet(ti, tkwin, selection, target, timestamp, timeout))
 				{
 					return TCL_OK;
 				}
@@ -714,7 +738,7 @@ selGet(Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 	}
 
-	// strip "-time" from objv (to be sure)
+	// strip "-time" and "-timeout" from objv (to be sure)
 	for (unsigned i = 0; i < 6; ++i)
 	{
 		if (used[i])

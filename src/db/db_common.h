@@ -952,6 +952,15 @@ namespace permission
 	};
 }
 
+namespace process
+{
+	enum Mode
+	{
+		Background,
+		Synchronous,
+	};
+};
+
 namespace position
 {
 	enum ID { Initial, Current };

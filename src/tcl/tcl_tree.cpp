@@ -175,7 +175,7 @@ cmdInit(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	if (m_progress == 0)
 	{
-		m_progress = new MyPipedProgress(Scidb->treeThread(),
+		m_progress = new MyPipedProgress(scidb->treeThread(),
 													objectFromObj(objc, objv, 1),
 													objectFromObj(objc, objv, 2));
 	}

@@ -178,6 +178,17 @@ namespace eval tkdnd {
 };# namespace tkdnd
 
 # ----------------------------------------------------------------------------
+#  Command tkdnd::get_drop_target
+# ----------------------------------------------------------------------------
+proc tkdnd::get_drop_target {} {
+  variable _platform_namespace
+  if {[info exists ${_platform_namespace}::_drop_target]} {
+    return [set ${_platform_namespace}::_drop_target]
+  }
+  return ""
+}
+
+# ----------------------------------------------------------------------------
 #  Command tkdnd::drag_source
 # ----------------------------------------------------------------------------
 proc tkdnd::drag_source { mode path { types {} } { event 1 } } {

@@ -240,10 +240,10 @@ sys_thread.o: ../mstl/m_function_base.h
 sys_thread.o: ../mstl/m_function_base.ipp
 sys_thread.o: ../mstl/m_types.h
 sys_thread.o: ../mstl/m_function.ipp
-sys_thread.o: ../mstl/m_assert.h
 sys_thread.o: ../mstl/m_exception.h
 sys_thread.o: ../mstl/m_backtrace.h
 sys_thread.o: ../mstl/m_exception.ipp
+sys_thread.o: ../mstl/m_assert.h
 sys_thread.o: ../mstl/m_stdio.h
 sys_time.o: sys_time.h
 sys_time.o: ../util/u_base.h

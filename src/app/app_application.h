@@ -27,13 +27,13 @@
 #ifndef _app_application_included
 #define _app_application_included
 
+#include "app_tree_admin.h"
+
 #include "db_common.h"
 #include "db_tree.h"
 
 #include "u_crc.h"
 #include "u_rkiss.h"
-
-#include "sys_thread.h"
 
 #include "m_map.h"
 #include "m_vector.h"
@@ -141,7 +141,6 @@ public:
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
-	typedef mstl::ref_counted_ptr<db::Tree> TreeP;
 	typedef mstl::vector<Cursor*> CursorList;
 
 	enum CloseMode	{ Except_Clipbase, Including_Clipbase };
@@ -176,11 +175,14 @@ public:
 	unsigned countEngines() const;
 	unsigned maxEngineId() const;
 
+	sys::Thread& treeThread();
+
 	void enumCursors(CursorList& list, db::variant::Type variant) const;
 
 	Cursor* open(	mstl::string const& name,
 						mstl::string const& encoding,
-						bool readOnly,
+						::db::permission::Mode permission,
+						::db::process::Mode processMode,
 						util::Progress& progress);
 	Cursor* create(mstl::string const& name,
 						db::variant::Type variant,
@@ -359,8 +361,8 @@ public:
 												db::rating::Type ratingType,
 												db::attribute::tree::ID sortAttr);
 	void freezeTree(bool flag);
-	static void stopUpdateTree();
-	static void cancelUpdateTree();
+	void stopUpdateTree();
+	void cancelUpdateTree();
 
 	void startTrialMode();
 	void endTrialMode();
@@ -403,7 +405,6 @@ public:
 
 	static mstl::string const& clipbaseName();
 	static mstl::string const& scratchbaseName();
-	static sys::Thread& treeThread();
 
 private:
 
@@ -502,19 +503,18 @@ private:
 	GameMap			m_gameMap;
 	CursorMap		m_cursorMap;
 	IndexMap			m_indexMap;
-	TreeP				m_currentTree;
 	EngineList		m_engineList;
 	unsigned			m_numEngines;
 	mstl::ostream*	m_engineLog;
 	bool				m_isClosed;
 	bool				m_treeIsFrozen;
+	TreeAdmin		m_treeAdmin;
 
 	mutable util::RKiss m_rand;
 
 	mutable SubscriberP m_subscriber;
 
-	static Application*	m_instance;
-	static sys::Thread	m_treeThread;
+	static Application* m_instance;
 };
 
 } // namespace app

@@ -20,6 +20,7 @@
 #define _sys_thread_included
 
 #include "m_function.h"
+#include "m_exception.h"
 #include "m_types.h"
 
 #ifdef __WIN32__
@@ -40,8 +41,11 @@ public:
 	~Thread();
 
 	void start(Runnable runnable);
+
 	bool stop();
 	bool testCancel();
+
+	mstl::exception const* exception() const;
 
 #ifdef __WIN32__
 	typedef HANDLE ThreadId;
@@ -55,11 +59,11 @@ public:
 #elif defined( __WIN32__)
 	typedef LONG atomic_t;
 	typedef atomic_t lock_t;
-#elif defined(__i386__) || defined(__x86_64__)
-	typedef struct { volatile int counter; } atomic_t;
-	typedef atomic_t lock_t;
 #elif defined(__MacOSX__)
 	typedef struct { volatile int32_t counter; } atomic_t;
+	typedef atomic_t lock_t;
+#elif defined(__i386__) || defined(__x86_64__)
+	typedef struct { volatile int counter; } atomic_t;
 	typedef atomic_t lock_t;
 #elif defined (__unix__)
 	typedef int atomic_t;
@@ -67,6 +71,8 @@ public:
 #endif
 
 private:
+
+	typedef mstl::exception Exception;
 
 	void createThread();
 	bool cancelThread();
@@ -77,10 +83,12 @@ private:
 	static void* startThread(void*);
 #endif
 
-	Runnable	m_runnable;
-	ThreadId	m_threadId;
-	lock_t	m_lock;
-	atomic_t	m_cancel;
+	Runnable		m_runnable;
+	ThreadId		m_threadId;
+	Exception*	m_exception;
+
+	mutable lock_t		m_lock;
+	mutable atomic_t	m_cancel;
 };
 
 } // namespace sys

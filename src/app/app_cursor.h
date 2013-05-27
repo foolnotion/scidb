@@ -39,16 +39,16 @@
 namespace mstl { class string; }
 namespace util { class Progress; }
 
-namespace db {
-
-class Database;
-class Producer;
-class TagSet;
-
-} // namespace db
+namespace db
+{
+	class Database;
+	class Producer;
+	class TagSet;
+}
 
 namespace app {
 
+class Apllication;
 class MultiCursor;
 class View;
 

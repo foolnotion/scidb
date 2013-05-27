@@ -518,6 +518,7 @@ cql/cql_match_move.o: ../mstl/m_type_traits.h
 cql/cql_match_move.o: ../mstl/m_type_traits.ipp
 cql/cql_match_move.o: ../mstl/m_utility.ipp
 cql/cql_match_move.o: cql/cql_designator.ipp
+cql/cql_match_move.o: cql/cql_engine.h
 cql/cql_match_move.o: cql/cql_match_move.ipp
 cql/cql_match_move.o: db_board.h
 cql/cql_match_move.o: db_move_list.h

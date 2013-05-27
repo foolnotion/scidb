@@ -54,6 +54,8 @@ namespace eval olednd {
   variable _common_drag_source_types {}
   variable _common_drop_target_types {}
   variable _unhandled_types {}
+  variable _drag_source {}
+  variable _drop_target {}
   variable _prev_drop_target {}
 };# namespace olednd
 

@@ -45,7 +45,7 @@
 #include "db_exception.h"
 
 #include "u_misc.h"
-#include "u_piped_progress.h"
+#include "u_progress.h"
 #include "u_zstream.h"
 
 #include "sys_utf8_codec.h"
@@ -58,7 +58,6 @@
 #include "m_function.h"
 #include "m_bitset.h"
 #include "m_auto_ptr.h"
-#include "m_ref_counted_ptr.h"
 #include "m_limits.h"
 #include "m_string.h"
 #include "m_assert.h"
@@ -72,7 +71,6 @@ using namespace util;
 
 
 Application* Application::m_instance = 0;
-sys::Thread Application::m_treeThread;
 
 unsigned const Application::InvalidPosition;
 unsigned const Application::ReservedPosition;
@@ -89,82 +87,6 @@ bool operator==(Cursor const* cursor, mstl::string const& name)
 }
 
 } // namespace app
-
-
-namespace {
-
-struct Runnable
-{
-	typedef mstl::ref_counted_ptr<Tree> TreeP;
-	typedef tree::Mode Mode;
-
-	Runnable(TreeP tree,
-				Game& game,
-				Database& database,
-				Mode mode,
-				rating::Type ratingType,
-				PipedProgress& progress)
-		:m_database(database)
-		,m_progress(progress)
-		,m_mode(mode)
-		,m_ratingType(ratingType)
-		,m_currentLine(m_lineBuf)
-		,m_hpsig(game.currentLine(m_currentLine))
-		,m_idn(game.idn())
-		,m_startPosition(game.startBoard())
-		,m_currentPosition(game.currentBoard())
-		,m_tree(tree)
-	{
-	}
-
-	bool finished() const
-	{
-		return !m_database.usingAsyncReader();
-	}
-
-	void operator() ()
-	{
-		m_database.openAsyncReader();
-
-		try
-		{
-			m_tree.reset(Tree::makeTree(	m_tree,
-													m_idn,
-													m_startPosition,
-													m_currentPosition,
-													m_currentLine,
-													m_hpsig,
-													m_database,
-													m_mode,
-													m_ratingType,
-													m_progress));
-		}
-		catch (...)
-		{
-			m_database.closeAsyncReader();
-			throw;
-		}
-
-		m_database.closeAsyncReader();
-	}
-
-	Database&		m_database;
-	PipedProgress&	m_progress;
-	Mode				m_mode;
-	rating::Type	m_ratingType;
-	Line				m_currentLine;
-	uint16_t			m_hpsig;
-	unsigned			m_idn;
-	Board				m_startPosition;
-	Board				m_currentPosition;
-	TreeP				m_tree;
-
-	uint16_t m_lineBuf[opening::Max_Line_Length];
-};
-
-static Runnable* runnable = 0;
-
-} // namespace
 
 
 Application::EditGame::Data::Data()
@@ -716,7 +638,8 @@ Application::encoding(unsigned position) const
 Cursor*
 Application::open(mstl::string const& name,
 						mstl::string const& encoding,
-						bool readOnly,
+						permission::Mode permission,
+						process::Mode processMode,
 						util::Progress& progress)
 {
 	// IMPORTANT NOTE:
@@ -733,7 +656,7 @@ Application::open(mstl::string const& name,
 
 	MultiBase* multiBase = new MultiBase(	name,
 														encoding,
-														readOnly ? permission::ReadOnly : permission::ReadWrite,
+														permission,
 														progress);
 	MultiCursor* cursor = new MultiCursor(*this, multiBase);
 
@@ -2024,13 +1947,7 @@ Application::treeIsUpToDate(Tree::Key const& key) const
 		return true;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
-
-	EditGame const& g	= *m_gameMap.find(m_currentPosition)->second;
-	Database& base		= m_referenceBase->base();
-
-	Runnable::TreeP tree(Tree::lookup(base, g.data.game->currentBoard(), key.mode(), key.ratingType()));
-
-	return tree ? tree->key() == key : false;
+	return m_treeAdmin.isUpToDate(m_referenceBase->base(), game(), key);
 }
 
 
@@ -2044,139 +1961,39 @@ Application::updateTree(tree::Mode mode, rating::Type ratingType, PipedProgress&
 		return false;
 
 	M_ASSERT(m_referenceBase->hasTreeView());
-
-	m_treeThread.stop();
-
-	EditGame const& g	= *m_gameMap.find(m_currentPosition)->second;
-	Database& base		= m_referenceBase->base();
-
-	if (::runnable)
-	{
-		if (Runnable::TreeP tree = ::runnable->m_tree)
-		{
-			tree->compressFilter();
-			Tree::addToCache(tree.get());
-		}
-
-		M_ASSERT(::runnable == 0 || ::runnable->finished());
-		delete ::runnable;
-		::runnable = 0;
-	}
-
-	Runnable::TreeP tree(Tree::lookup(base, g.data.game->currentBoard(), mode, ratingType));
-
-	if (tree)
-	{
-		if (tree->isComplete())
-			return true;
-
-		tree->uncompressFilter();
-	}
-
-	::runnable = new Runnable(tree, *g.data.game, base, mode, ratingType, progress);
-	m_treeThread.start(mstl::function<void ()>(&Runnable::operator(), ::runnable));
-
-	return false;
+	return m_treeAdmin.startUpdate(m_referenceBase->base(), game(), mode, ratingType, progress);
 }
 
 
 Tree const*
 Application::finishUpdateTree(tree::Mode mode, rating::Type ratingType, attribute::tree::ID sortAttr)
 {
-	Runnable::TreeP tree;
+	Database const* base = m_referenceBase ? &m_referenceBase->base() : 0;
 
-	m_treeThread.stop();
-
-	if (::runnable)
+	if (m_treeAdmin.finishUpdate(base, game(), mode, ratingType, sortAttr))
 	{
-		tree = ::runnable->m_tree;
+		M_ASSERT(m_referenceBase);
+		M_ASSERT(m_treeAdmin.tree());
 
-		if (tree)
+		if (m_referenceBase->hasTreeView())
 		{
-			Tree::addToCache(tree.get());
+			M_ASSERT(m_referenceBase->database().id() == m_treeAdmin.tree()->database().id());
+			M_ASSERT(m_treeAdmin.tree()->filter().size() == m_referenceBase->database().countGames());
 
-			if (	m_referenceBase == 0
-				|| m_referenceBase->base().countGames() != tree->filter().size()
-				|| !tree->isTreeFor(m_referenceBase->base(), game().currentBoard(), mode, ratingType))
+			m_referenceBase->treeView().setGameFilter(m_treeAdmin.tree()->filter());
+
+			if (m_subscriber)
 			{
-				tree->compressFilter();
-				tree.reset(0);	// tree is incomplete or outdated
+				m_subscriber->updateList(	table::Games,
+													m_updateCount++,
+													m_referenceBase->name(),
+													m_referenceBase->variant(),
+													m_referenceBase->treeViewIdentifier());
 			}
-		}
-
-		M_ASSERT(::runnable == 0 || ::runnable->finished());
-		delete ::runnable;
-		::runnable = 0;
-	}
-
-	if (m_referenceBase == 0)
-	{
-		m_currentTree.reset();
-		tree.reset();
-	}
-	else
-	{
-		if (!tree)
-		{
-			tree.reset(Tree::lookup(m_referenceBase->base(), game().currentBoard(), mode, ratingType));
-
-			if (tree)
-			{
-				if (tree->filter().size() != m_referenceBase->base().countGames())
-					tree->setIncomplete();
-
-				if (!tree->isComplete())
-					tree.reset(0);
-			}
-		}
-
-		if (tree)
-		{
-			tree->uncompressFilter();
-
-			if (tree && sortAttr != attribute::tree::LastColumn)
-				tree->sort(sortAttr);
-
-			bool send = m_currentTree == 0;
-
-			if (m_currentTree != tree)
-			{
-				if (m_currentTree)
-				{
-					m_currentTree->compressFilter();
-					send = true;
-				}
-
-				m_currentTree = tree;
-			}
-
-			if (m_referenceBase->hasTreeView())
-			{
-				if (send)
-				{
-					M_ASSERT(m_referenceBase->database().id() == tree->database().id());
-					M_ASSERT(tree->filter().size() == m_referenceBase->database().countGames());
-
-					m_referenceBase->treeView().setGameFilter(tree->filter());
-
-					if (m_subscriber && m_referenceBase->hasTreeView())
-					{
-						m_subscriber->updateList(	table::Games,
-															m_updateCount++,
-															m_referenceBase->name(),
-															m_referenceBase->variant(),
-															m_referenceBase->treeViewIdentifier());
-					}
-				}
-			}
-		}
-		else
-		{
-			m_currentTree.reset();
 		}
 	}
 
-	return tree.get();
+	return m_treeAdmin.tree().get();
 }
 
 
@@ -2184,23 +2001,7 @@ void
 Application::stopUpdateTree()
 {
 	M_REQUIRE(hasInstance());
-
-	m_treeThread.stop();
-
-	if (::runnable)
-	{
-		Runnable::TreeP tree = ::runnable->m_tree;
-
-		if (tree)
-		{
-			tree->compressFilter();
-			Tree::addToCache(tree.get());
-		}
-
-		M_ASSERT(::runnable == 0 || ::runnable->finished());
-		delete ::runnable;
-		::runnable = 0;
-	}
+	m_treeAdmin.stopUpdate();
 }
 
 
@@ -2208,11 +2009,7 @@ void
 Application::cancelUpdateTree()
 {
 	M_REQUIRE(hasInstance());
-
-	m_treeThread.stop();
-	M_ASSERT(::runnable == 0 || ::runnable->finished());
-	delete ::runnable;
-	::runnable = 0;
+	m_treeAdmin.cancelUpdate();
 }
 
 
@@ -2696,7 +2493,7 @@ Application::cursor(unsigned databaseId) const
 void
 Application::finalize()
 {
-	m_treeThread.stop();
+	m_treeAdmin.thread().stop();
 
 	for (Iterator i = begin(), e = end(); i != e; ++i)
 		i->close();

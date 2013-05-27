@@ -45,7 +45,7 @@ struct Guard
 
 
 static void
-startRoutine(Thread::Runnable& runnable)
+startRoutine(Thread::Runnable& runnable, mstl::exception*& exception)
 {
 	try
 	{
@@ -55,6 +55,7 @@ startRoutine(Thread::Runnable& runnable)
 	{
 		fprintf(stderr, "*** exception catched in worker thread ***\n");
 		fprintf(stderr, "%s\n", exc.what());
+		exception = new mstl::exception(exc);
 	}
 	catch (...)
 	{
@@ -80,6 +81,31 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 
 # define atomic_read(v)		(*v)
 # define atomic_set(v, i)	(*v = i)
+
+#elif defined(__MacOSX__) ///////////////////////////////////////////////////////////
+
+#include <libkern/OSAtomic.h>
+
+# define atomic_set(v, i)	(((v)->counter) = i)
+# define atomic_read(v)		((v)->counter)
+
+static inline void
+atomic_inc(atomic_t* v)
+{
+	OSAtomicIncrement32Barrier(&v->counter);
+}
+
+static inline int
+atomic_dec_and_test(atomic_t* v)
+{
+	return OSAtomicDecrement32Barrier(&v->counter) != 0;
+}
+
+static inline int
+atomic_cmpxchg(atomic_t* v, int oldval, int newval)
+{
+	return OSAtomicCompareAndSwapIntBarrier(oldval, newval, &v->counter);
+}
 
 #elif defined(__i386__) || defined(__x86_64__) //////////////////////////////////////
 
@@ -121,31 +147,6 @@ atomic_cmpxchg(atomic_t* v, int oldval, int newval)
 		: "memory");
 
 	return prev;
-}
-
-#elif defined(__MacOSX__) ///////////////////////////////////////////////////////////
-
-#include <libkern/OSAtomic.h>
-
-# define atomic_set(v, i)	(((v)->counter) = i)
-# define atomic_read(v)		((v)->counter)
-
-static inline void
-atomic_inc(atomic_t* v)
-{
-	OSAtomicIncrement32Barrier(&v->counter);
-}
-
-static inline int
-atomic_dec_and_test(atomic_t* v)
-{
-	return OSAtomicDecrement32Barrier(&v->counter) != 0;
-}
-
-static inline int
-atomic_cmpxchg(atomic_t* v, int oldval, int newval)
-{
-	return OSAtomicCompareAndSwapIntBarrier(oldval, newval, &v->counter);
 }
 
 #elif defined (__unix__) ////////////////////////////////////////////////////////////
@@ -289,7 +290,7 @@ Guard::initLock(lock_t& lock)
 unsigned
 Thread::startThread(void* arg)
 {
-	startRoutine(static_cast<Thread*>(arg)->m_runnable);
+	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
 	InterlockedExchange(&(static_cast<Thread*>(arg)->m_cancel), 1);
 	return 0;
 }
@@ -324,7 +325,7 @@ Thread::cancelThread()
 void*
 Thread::startThread(void* arg)
 {
-	startRoutine(static_cast<Thread*>(arg)->m_runnable);
+	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
 	atomic_cmpxchg(&(static_cast<Thread*>(arg))->m_cancel, 0, 1);
 	pthread_exit(0); // never returns
 }
@@ -380,6 +381,7 @@ static bool m_noThreads = getenv("SCIDB_NO_THREADS") != 0;
 
 
 Thread::Thread()
+	:m_exception(0)
 {
 	Guard::initLock(m_lock);
 	atomic_set(&m_cancel, 1);
@@ -390,6 +392,14 @@ Thread::~Thread()
 {
 	Guard guard(m_lock);	// really neccessary?
 	cancelThread();
+}
+
+
+mstl::exception const*
+Thread::exception() const
+{
+	Guard guard(m_lock);
+	return m_exception;
 }
 
 

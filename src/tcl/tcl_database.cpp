@@ -887,7 +887,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	char const* encoding = sys::utf8::Codec::utf8();
-	bool readonly = false;
+	permission::Mode permission = permission::ReadWrite;
 
 	for ( ; objc > 4; objc -= 2)
 	{
@@ -896,7 +896,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		if (::strcmp(arg, "-encoding") == 0)
 			encoding = stringFromObj(objc, objv, objc - 1);
 		else if (::strcmp(arg, "-readonly") == 0)
-			readonly = boolFromObj(objc, objv, objc - 1);
+			permission = boolFromObj(objc, objv, objc - 1) ? permission::ReadOnly : permission::ReadWrite;
 		else
 			error(CmdLoad, nullptr, nullptr, "unexpected option '%s'", arg);
 	}
@@ -909,7 +909,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Progress	progress(objv[2], objv[3]);
 	progress.checkInterruption();
 
-	Cursor* cursor = scidb->open(path, encoding, readonly, progress);
+	Cursor* cursor = scidb->open(path, encoding, permission, process::Synchronous, progress);
 
 	if (cursor == 0)
 		return TCL_ERROR;

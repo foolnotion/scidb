@@ -691,10 +691,7 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 			return;
 
 		case attribute::game::Eco:
-			if (db.format() == format::Scidb)
-				func = game::compUserEco;
-			else
-				func = game::compEco;
+			func = db.format() == format::Scidb ? game::compUserEco : game::compEco;
 			break;
 
 		case attribute::game::WhiteRating:
@@ -910,11 +907,7 @@ Selector::reverse(Database const& db)
 	}
 	else
 	{
-		unsigned n = m_map.size();
-		unsigned middle = n/2;
-
-		for (unsigned i = 0; i < middle; ++i)
-			mstl::swap(m_map[i], m_map[n - i - 1]);
+		mstl::reverse(m_map.begin(), m_map.end());
 	}
 }
 
