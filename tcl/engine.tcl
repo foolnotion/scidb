@@ -650,7 +650,7 @@ proc openSetup {parent} {
 	$dlg.close configure -command [list wm withdraw $dlg]
 	$dlg.admin configure -command [namespace code [list OpenAdministration $dlg]]
 
-	set i [FindIndex $Options(engine)]
+	set i [FindIndexInList $Options(engine)]
 	if {$i == -1} { set i 0 }
 	$list select $i
 	LanguageChanged $list
@@ -1992,7 +1992,7 @@ proc OpenAdministration {dlg} {
 
 	openAdmininstration $dlg
 	SetupEngineList
-	set i [FindIndex $Vars(current:name)]
+	set i [FindIndexInList $Vars(current:name)]
 	if {$i == -1} { set i 0 }
 	$Vars(list:engines) select $i
 }
@@ -3605,6 +3605,26 @@ proc FindIndex {name} {
 		array set engine $entry
 		if {$engine(Name) eq $name} { return $index }
 		incr index
+	}
+
+	return -1
+}
+
+
+proc FindIndexInList {name} {
+	variable Engines
+
+	set index 0
+	foreach entry $Engines {
+		array set engine $entry
+		array unset features
+		foreach protocol $engine(Protocol) {
+			array set features $engine(Features:$protocol)
+		}
+		if {[info exists features(analyze)]} {
+			if {$engine(Name) eq $name} { return $index }
+			incr index
+		}
 	}
 
 	return -1
