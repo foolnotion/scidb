@@ -3132,8 +3132,6 @@ Game::stripMoves(move::Position position)
 void
 Game::unstripMoves(MoveNode* startNode, Board const& startBoard, edit::Key const& key)
 {
-	M_ASSERT(startNode->next());
-
 	BEGIN_BACKUP;
 
 	MoveNode* last = startNode->getLineEnd();
