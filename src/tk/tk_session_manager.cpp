@@ -334,12 +334,14 @@ callbackSaveYourself(SmcConn smcConn,
 
 		SmProp prop[] =
 		{
-			{ SmProgram,          SmLISTofARRAY8, 1,        vals.program },
-			{ SmUserID,           SmLISTofARRAY8, 1,        vals.user    },
-			{ SmRestartStyleHint, SmCARD8,        1,        vals.hint    },
-			{ SmCurrentDirectory, SmARRAY8,       0,        vals.pwd     },
-			{ SmCloneCommand,     SmLISTofARRAY8, objc,     vals.clone   },
-			{ SmRestartCommand,   SmLISTofARRAY8, objc + 2, vals.restart },
+#define C(x) const_cast<char*>(x)
+			{ C(SmProgram),          C(SmLISTofARRAY8), 1,        vals.program },
+			{ C(SmUserID),           C(SmLISTofARRAY8), 1,        vals.user    },
+			{ C(SmRestartStyleHint), C(SmCARD8),        1,        vals.hint    },
+			{ C(SmCurrentDirectory), C(SmARRAY8),       0,        vals.pwd     },
+			{ C(SmCloneCommand),     C(SmLISTofARRAY8), objc,     vals.clone   },
+			{ C(SmRestartCommand),   C(SmLISTofARRAY8), objc + 2, vals.restart },
+#undef C
 		};
 
 		SmProp* props[] = { &prop[0], &prop[1], &prop[2], &prop[3], &prop[4], &prop[5] };
@@ -625,7 +627,7 @@ cmdConnect(Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 {
 	if (getenv("SESSION_MANAGER") == 0)
 	{
-		Tcl_SetResult(ti, "", __tcl_static);
+		Tcl_SetResult(ti, const_cast<char*>(""), __tcl_static);
 		return TCL_OK;
 	}
 

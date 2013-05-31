@@ -397,7 +397,7 @@ cmdActiveVariants(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdWriting(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	bool background = false;
+	bool background __attribute__((unused)) = false;
 
 	for (int i = 1; i < objc; i += 2)
 	{
