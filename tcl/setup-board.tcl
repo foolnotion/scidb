@@ -743,7 +743,7 @@ proc open {parent} {
 	catch { wm attributes $dlg -type dialog }
 	wm title $dlg "[tk appname] - $mc::SetStartBoard"
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $focus
 	::ttk::grabWindow $dlg

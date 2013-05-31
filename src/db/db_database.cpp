@@ -314,7 +314,12 @@ Database::count(table::Type type) const
 		case table::Players:		return m_namebases(Namebase::Player).used();
 		case table::Events:		return m_namebases(Namebase::Event).used();
 		case table::Sites:		return m_namebases(Namebase::Site).used();
-		case table::Annotators:	return m_namebases(Namebase::Annotator).used();
+
+		case table::Annotators:
+			// NOTE: If non-empty, skip the empty entry
+			if (m_namebases(Namebase::Annotator).used() == 0)
+				return 0;
+			return m_namebases(Namebase::Annotator).used() - 1;
 	}
 
 	return 0; // satisifes the compiler
@@ -1105,18 +1110,13 @@ Database::exportGames(	Destination& destination,
 	if (format::isScidFormat(dstFormat))
 		copyMode = copy::ExcludeIllegal;
 
-	unsigned frequency = progress.frequency(gameFilter.count());
-
-	if (frequency == 0)
-		frequency = mstl::min(1000u, mstl::max(gameFilter.count()/100, 1u));
-
-	unsigned reportAfter = frequency;
+	unsigned frequency	= mstl::min(1000u, mstl::max(gameFilter.count()/100, 1u));
+	unsigned reportAfter	= frequency;
+	unsigned count			= 0;
+	unsigned numGames		= 0;
+	unsigned warnings		= 0;
 
 	util::ProgressWatcher watcher(progress, gameFilter.count());
-
-	unsigned count		= 0;
-	unsigned numGames	= 0;
-	unsigned warnings	= 0;
 
 	for (	int index = gameFilter.next(Filter::Invalid);
 			index != Filter::Invalid;

@@ -775,7 +775,7 @@ proc OpenArchive {parent file byUser args} {
 	::widget::dialogButtons $dlg {ok cancel}
 	$dlg.ok configure -command [namespace code [list OpenBases $parent $dlg $bases $byUser {*}$args]]
 	$dlg.cancel configure -command [list destroy $dlg]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $dlg
 	::ttk::grabWindow $dlg
@@ -1485,7 +1485,7 @@ proc EditDescription {parent file} {
 	wm withdraw $dlg
 	wm title $dlg "$mc::EditDescription ([::util::databaseName $file])"
 	wm resizable $dlg false false
-	::util::place $dlg below $parent
+	::util::place $dlg -parent $parent -position below
 	wm deiconify $dlg
 	focus $top.entry
 	::ttk::grabWindow $dlg
@@ -1568,7 +1568,7 @@ proc StripMoveInfo {parent file} {
 	wm withdraw $dlg
 	wm title $dlg $mc::FileStripMoveInfo
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.evaluation
 	::ttk::grabWindow $dlg
@@ -1687,7 +1687,7 @@ proc StripPGNTags {parent file} {
 	wm withdraw $dlg
 	wm title $dlg $mc::FileStripPGNTags
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.b[lindex $tags 0 0]
 	::ttk::grabWindow $dlg
@@ -1852,7 +1852,7 @@ proc ChangeIcon {parent file} {
 
 	set dlg [tk::toplevel $parent.changeIcon -class Dialog]
 	set ext [$Vars(switcher) extension $file]
-	if {[winfo screenheight $parent] >= 650} { set rows 10 } else { set rows 9 }
+	if {[winfo workareaheight $parent] >= 650} { set rows 10 } else { set rows 9 }
 	set cols [expr {([llength $Types($ext)] + $rows - 1)/$rows}]
 	set list [::tlistbox $dlg.list \
 		-visible $Options(visible) \
@@ -1890,7 +1890,7 @@ proc ChangeIcon {parent file} {
 	wm withdraw $dlg
 	wm title $dlg "$mc::ChangeIcon ([::util::databaseName $file])"
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $dlg.list
 	::ttk::grabWindow $dlg

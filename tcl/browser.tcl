@@ -338,7 +338,7 @@ proc open {parent base variant info view index {fen {}}} {
 #	wm minsize $dlg [expr {$Vars(size:width) + $Vars(size:width:plus)}] 1
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm resizable $dlg true false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $buttons.close
 
@@ -1700,8 +1700,8 @@ proc Resize {position mode board newSize delta ext} {
 
 		set x0 [winfo rootx $dlg]
 		set y0 [winfo rooty $dlg]
-		set x1 [expr {[winfo screenwidth  $dlg] - [winfo width  $dlg] - 25}]
-		set y1 [expr {[winfo screenheight $dlg] - [winfo height $dlg] - 25}]
+		set x1 [expr {[winfo workareawidth  $dlg] - [winfo width  $dlg] - 25}]
+		set y1 [expr {[winfo workareaheight $dlg] - [winfo height $dlg] - 25}]
 
 		if {$x1 >= 0 && $y1 >= 0 && ($x1 < $x0 || $y1 < $y0)} {
 			wm geometry $dlg +[min $x0 $x1]+[min $y0 $y1]
@@ -1717,9 +1717,9 @@ proc ComputeBoardSize {position board mode ext} {
 
 	set squareSize $Options(board:size$ext)
 	set dlg [winfo toplevel $board]
-	set max1 [expr {([winfo screenheight $dlg] - [winfo height $dlg] + 8*$squareSize - 75)/8}]
+	set max1 [expr {([winfo workareaheight $dlg] - [winfo height $dlg] + 8*$squareSize - 30)/8}]
 	if {[string length $ext]} { set n 10 } else { set n 8 }
-	set max2 [expr {([winfo screenwidth $dlg] - $Priv(minWidth) - 16)/$n}]
+	set max2 [expr {([winfo workareawidth $dlg] - $Priv(minWidth) - 16)/$n}]
 	set maxSize [min $max1 $max2]
 	set maxSize [expr {$maxSize - ($maxSize % 5)}]
 

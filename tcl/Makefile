@@ -19,9 +19,9 @@ UPDATE_PHOTO_FILES = update-scidb-photo-files
 # NOTE that the ordering is important!
 SOURCES = \
 	exec.tcl \
+	utils/place.tcl \
 	start.tcl \
 	utils/tcl_bugs.tcl \
-	utils/place.tcl \
 	splash.tcl \
 	utils/archive.tcl \
 	dialogs/messagebox.tcl \

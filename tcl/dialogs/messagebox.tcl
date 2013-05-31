@@ -61,6 +61,20 @@ namespace eval messagebox {
 variable ButtonOrder {ok continue cancel abort retry ignore yes no}
 variable Current ""
 
+variable Specs {
+	{ -parent			"" "" "" }
+	{ -message			"" "" "" }
+	{ -detail			"" "" "" }
+	{ -buttons			"" "" "" }
+	{ -default			"" "" "" }
+	{ -title				"" "" "" }
+	{ -check				"" "" "" }
+	{ -type				"" "" "" }
+	{ -topmost			"" "" "" }
+	{ -centeronscreen	"" "" "" }
+	{ -embed				"" "" "" }
+}
+
 
 proc mc {msg} {
 	package require msgcat
@@ -70,33 +84,29 @@ proc mc {msg} {
 
 proc open? {} { return [set [namespace current]::Current] }
 
+
+proc changeDesktop {w type} {}
+
 } ;# namespace messagebox
 
 
 # this is a replacement for tk_messageBox
 proc messageBox {args} {
-	set specs {
-		{ -type		"" "" "" }
-		{ -parent	"" "" "" }
-		{ -icon		"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 
-	array set opts [list        \
-		-parent	$data(-parent)  \
-		-message	$data(-message) \
-		-detail	$data(-detail)  \
-		-buttons	{}              \
-		-default	{}              \
-		-title	$data(-title)   \
-		-type		info            \
-		-embed	$data(-embed)   \
+	array set opts [list                 \
+		-parent				$data(-parent)  \
+		-message				$data(-message) \
+		-detail				$data(-detail)  \
+		-buttons				{}              \
+		-default				{}              \
+		-title				$data(-title)   \
+		-check				{}              \
+		-type					info            \
+		-topmost				0               \
+		-centeronscreen	0               \
+		-embed				$data(-embed)   \
 	]
 
 	switch $data(-type) {
@@ -143,123 +153,84 @@ proc messageBox {args} {
 
 
 proc error {args} {
-	set specs {
-		{ -parent	"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -buttons	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -check		"" "" "" }
-		{ -topmost	"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	array set opts {
 		-parent	.
 		-message	""
 		-detail	""
-		-buttons	{ ok }
+		-buttons	{ok}
 		-default	ok
 		-title	""
 		-check	""
 		-type		error
 		-topmost	false
+		-centeronscreen 0
 		-embed   {}
 	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 	array set opts $args
 	return [alert {*}[array get opts]]
 }
 
 
 proc warning {args} {
-	set specs {
-		{ -parent	"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -buttons	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -check		"" "" "" }
-		{ -topmost	"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	array set opts {
 		-parent	.
 		-message	""
 		-detail	""
-		-buttons	{ ok cancel }
+		-buttons	{ok cancel}
 		-default	cancel
 		-title	""
 		-check	""
 		-type		warning
 		-topmost	false
+		-centeronscreen 0
 		-embed   {}
 	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 	array set opts $args
 	return [alert {*}[array get opts]]
 }
 
 
 proc question {args} {
-	set specs {
-		{ -parent	"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -buttons	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -check		"" "" "" }
-		{ -topmost	"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	array set opts {
 		-parent	.
 		-message	""
 		-detail	""
-		-buttons	{ yes no }
+		-buttons	{yes no}
 		-default	yes
 		-title	""
 		-check	""
 		-type		question
 		-topmost	false
+		-centeronscreen 0
 		-embed   {}
 	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 	array set opts $args
 	return [alert {*}[array get opts]]
 }
 
 
 proc info {args} {
-	set specs {
-		{ -parent	"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -buttons	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -check		"" "" "" }
-		{ -topmost	"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	array set opts {
 		-parent	.
 		-message	""
 		-detail	""
-		-buttons	{ ok }
+		-buttons	{ok}
 		-default	ok
 		-title	""
 		-check	""
 		-type		info
 		-topmost	false
+		-centeronscreen 0
+		-embed   {}
 	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 	array set opts $args
 	return [alert {*}[array get opts]]
 }
@@ -274,32 +245,21 @@ proc alert {args} {
 	variable messagebox::ButtonOrder
 	variable messagebox::Current
 
-	set specs {
-		{ -parent	"" "" "" }
-		{ -message	"" "" "" }
-		{ -detail	"" "" "" }
-		{ -buttons	"" "" "" }
-		{ -default	"" "" "" }
-		{ -title		"" "" "" }
-		{ -check		"" "" "" }
-		{ -type		"" "" "" }
-		{ -topmost	"" "" "" }
-		{ -embed		"" "" "" }
-	}
 	array set opts {
 		-parent	.
 		-message	""
 		-detail	""
-		-buttons	{ ok }
+		-buttons	{ok}
 		-default	ok
 		-title	""
 		-check	""
 		-type		info
 		-topmost	false
+		-centeronscreen 0
 		-embed   {}
 	}
 	upvar [namespace current]::Data data
-	tclParseConfigSpec [namespace current]::Data $specs "" $args
+	tclParseConfigSpec [namespace current]::Data [set [namespace current]::messagebox::Specs] "" $args
 	array set opts $args
 
 	if {[llength $opts(-type)] == 0} {
@@ -460,9 +420,12 @@ proc alert {args} {
 	# center the window
 	set rw [winfo reqwidth $w]
 	set rh [winfo reqheight $w]
-	set sw [winfo screenwidth  $parent]
-	set sh [winfo screenheight $parent]
-	if {$parent eq "."} {
+	set sw [winfo workareawidth  $parent]
+	set sh [winfo workareaheight $parent]
+	if {$opts(-centeronscreen)} {
+		set x0 [expr {($sw - $rw)/2}]
+		set y0 [expr {($sh - $rh)/2}]
+	} elseif {$parent eq "."} {
 		set x0 [expr {($sw - $rw)/2 - [winfo vrootx $parent]}]
 		set y0 [expr {($sh - $rh)/2 - [winfo vrooty $parent]}]
 	} else {
@@ -491,15 +454,19 @@ proc alert {args} {
 		wm protocol $w WM_DELETE_WINDOW [list destroy $w]
 	}
 	wm resizable $w false false
+	messagebox::changeDesktop $parent $opts(-type)
 	wm deiconify $w
 	raise $w
 #	tkwait visibility $w
 	set focus [expr {[llength $defaultButton] ? $defaultButton : $w}]
-	focus $focus
-
-	if {[llength $opts(-buttons)] == 0} { return $w }
+	if {[llength $opts(-buttons)] == 0} {
+		focus -force $focus
+		return $w
+	}
 
 	::ttk::grabWindow $w
+	tkwait visibility $w
+	focus -force $focus
 	vwait ::dialog::Reply
 	::ttk::releaseGrab $w
 	destroy $w

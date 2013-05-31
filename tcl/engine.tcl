@@ -434,7 +434,7 @@ proc openAdmininstration {parent} {
 	wm resizable $dlg true false
 	wm title $dlg $mc::AdminEngines
 	wm transient $dlg [winfo toplevel $parent]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $list
 	::ttk::grabWindow $dlg
@@ -658,7 +658,7 @@ proc openSetup {parent} {
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.close cget -command]
 	wm resizable $dlg false false
 	wm transient $dlg [winfo toplevel $parent]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $list
 }
@@ -793,7 +793,7 @@ proc showEngineDictionary {parent} {
 	wm resizable $dlg yes yes
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 #	wm transient $dlg [winfo toplevel $parent]
-	::util::place $dlg center [winfo toplevel $parent]
+	::util::place $dlg -parent [winfo toplevel $parent] -position center
 	wm deiconify $dlg
 
 	if {[llength $Priv(engines)]} {
@@ -1336,7 +1336,7 @@ proc SetFilter {lb} {
 	wm resizable $dlg no no
 	wm title $dlg $mc::EngineFilter
 	wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::Reply_ cancel]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	::ttk::grabWindow $dlg
 	wm deiconify $dlg
 	focus $v.chess960
@@ -2048,7 +2048,7 @@ proc RenameProfile {parent} {
 	::widget::dialogButtons $dlg {ok cancel} -default ok
 	$dlg.ok configure -command [namespace code [list DoRenameProfile $dlg]]
 	$dlg.cancel configure -command [list destroy $dlg]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm resizable $dlg no no
 	wm transient $dlg $parent
 	wm title $dlg $mc::RenameProfile
@@ -2123,7 +2123,7 @@ proc NewProfile {parent} {
 	$dlg.ok configure -command [namespace code [list MakeProfile $dlg]]
 	$dlg.cancel configure -command [list destroy $dlg]
 
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm resizable $dlg no no
 	wm transient $dlg $parent
 	wm title $dlg $mc::NewProfile
@@ -2244,7 +2244,8 @@ proc OpenSetupDialog(Script) {parent} {
 	grid $edit.vsb -row 1 -column 2 -sticky ns
 	grid columnconfigure $edit {1} -weight 1
 	grid rowconfigure $edit {1} -weight 1
-	$main paneconfigure $edit -sticky nswe -stretch always
+	set linespace [font metrics [$edit.txt cget -font] -linespace]
+	$main paneconfigure $edit -sticky nswe -stretch always -gridsize $linespace
 	$main add $edit
 
 	$edit.txt tag configure comment -foreground darkgreen
@@ -2277,7 +2278,7 @@ proc OpenSetupDialog(Script) {parent} {
 	grid $log.vsb -row 1 -column 2 -sticky ns
 	grid columnconfigure $log {1} -weight 1
 	grid rowconfigure $log {1} -weight 1
-	$main paneconfigure $log -sticky nswe -stretch never
+	$main paneconfigure $log -sticky nswe -stretch never -gridsize $linespace
 	$main add $log
 
 	$log.txt tag configure error -foreground darkred
@@ -2293,7 +2294,10 @@ proc OpenSetupDialog(Script) {parent} {
 
 	### popup ################################################################
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	::util::place $dlg center .
+	::util::place $dlg -position center
+	if {[scan [wm grid $dlg] "%d %d" w h] >= 2} {
+		wm geometry $dlg ${w}x14
+	}
 	wm resizable $dlg yes yes
 	wm transient $dlg $parent
 	wm title $dlg "$engine(Name) - [format $mc::EditProfile $Vars(current:profile)]"
@@ -2453,7 +2457,7 @@ proc OpenSetupDialog(Options) {parent} {
 	variable Option_
 	variable Vars
 
-	if {[winfo screenwidth $parent] >= 1500} { set vertical 0 } else { set vertical 1 }
+	if {[winfo workareawidth $parent] >= 1500} { set vertical 0 } else { set vertical 1 }
 
 	set dlg [tk::toplevel $parent.confOptions -class Scidb]
 #	if {$vertical} { set expand x } else { set expand y }
@@ -2480,9 +2484,9 @@ proc OpenSetupDialog(Options) {parent} {
 
 	if {$vertical} {
 		if {$n > 12} { set numCols 2 } else { set numCols 1 }
-		set wrapLength [expr {([winfo screenwidth $parent] - 760)/$numCols}]
+		set wrapLength [expr {([winfo workareawidth $parent] - 760)/$numCols}]
 	} else {
-		set maxRows [expr {[winfo screenheight $parent]/45}]
+		set maxRows [expr {[winfo workareaheight $parent]/45}]
 		set numCols [expr {($n + $maxRows - 1)/$maxRows}]
 		if {$n > 12} { set numCols [expr {max(2, $numCols)}] }
 	}
@@ -2656,14 +2660,14 @@ proc OpenSetupDialog(Options) {parent} {
 	$dlg.save configure -state disabled -command [namespace code [list SaveOptions $dlg]]
 
 	update idletasks
-	$scrolled configure -height [expr {min([winfo reqheight $top], [winfo screenheight $top] - 120)}]
-	$scrolled configure -width [expr {min([winfo reqwidth $top], [winfo screenwidth $top] - 20)}]
+	$scrolled configure -height [expr {min([winfo reqheight $top], [winfo workareaheight $top] - 120)}]
+	$scrolled configure -width [expr {min([winfo reqwidth $top], [winfo workareawidth $top] - 20)}]
 
 	set profileName $Vars(current:profile)
 	if {$Vars(current:profile) eq "Default"} { set profileName $::mc::Default }
 
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
-	::util::place $dlg center .
+	::util::place $dlg -position center
 	wm resizable $dlg no no
 	wm transient $dlg $parent
 	wm title $dlg "$engine(Name) - [format $mc::EditProfile $Vars(current:profile)]"
@@ -3028,7 +3032,7 @@ proc ProbeEngine {parent entry} {
 	pack [tk::label $wait.f.text -compound left -text "$mc::Probing..."] -padx 10 -pady 10
 	wm resizable $wait no no
 	wm transient $wait $parent
-	::util::place $wait center $parent
+	::util::place $wait -parent $parent -position center
 	update idletasks
 	::scidb::tk::wm frameless $wait
 	wm deiconify $wait
@@ -3395,7 +3399,7 @@ proc NewEngine {list} {
 		wm title $dlg $mc::ConfirmNewEngine
 		wm protocol $dlg WM_DELETE_WINDOW {#}
 		wm transient $dlg $parent
-		::util::place $dlg center $parent
+		::util::place $dlg -parent $parent -position center
 		wm deiconify $dlg
 		focus $cpy.rb0
 		::ttk::grabWindow $dlg
@@ -3886,7 +3890,8 @@ if {[catch {::engine::setup} err]} {
 	set msg $::load::mc::EngineSetupFailed
 	lappend ::load::Log error "$msg: $err"
 	puts "$msg -- $err"
-	unset msg err
+	unset msg
 }
+unset -nocomplain err
 
 # vi:set ts=3 sw=3:

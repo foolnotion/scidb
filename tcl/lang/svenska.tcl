@@ -377,8 +377,14 @@
 ::application::mc::ChessInfoDatabase	"Chess Information Data Base"
 ::application::mc::Shutdown				"Avstängning..."
 ::application::mc::QuitAnyway				"Vill du avsluta?"
+::application::mc::CancelLogout			"Cancel Logout" ;# NEW
+::application::mc::AbortWriteOperation	"Abort write operation" ;# NEW
 
 ::application::mc::UpdatesAvailable		"Uppdateringar tillgängliga"
+
+::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
+::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
+::application::mc::RestartLogout			"Aborting the write operation will restart the logout process." ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Visa turneringstabell för partiet"

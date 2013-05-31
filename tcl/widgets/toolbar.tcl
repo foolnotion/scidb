@@ -2792,8 +2792,8 @@ proc UndockToolbar {toolbar x y} {
 	::update idletasks
 	set rw [winfo reqwidth $win]
 	set rh [winfo reqheight $win]
-	set sw [winfo screenwidth $win]
-	set sh [winfo screenheight $win]
+	set sw [winfo workareawidth $win]
+	set sh [winfo workareaheight $win]
 	set rx [expr {max(min($x, $sw - $rw), 0)}]
 	set ry [expr {max(min($y, $sh - $rh), 0)}]
 	wm geometry $win +$rx+$ry

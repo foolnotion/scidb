@@ -1,6 +1,21 @@
 [Mai 2013 ] ==================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #813)
+------------------------------------------------------------------------------
+* Session management implemented: display a warning/error message if a
+shutdown (logout) is invoked while a write operation is still in progress. The
+user may cancel the shutdown, or abort the write operation (if possible).
+
+* util::place re-worked: now the placement of the windows is regarding the
+size of the work-area, and the extents of the window manager frame.
+
+* Popup of message dialogs will now be done on the desktop of the application.
+This means that a switch to the desktop of the application will be done
+automatically as soon as a message popup occurs. This behaviour will be
+implemented for other dialog popups, too.
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #804)
 ------------------------------------------------------------------------------
 * Copy game to clipboard (CLIPBOARD + PRIMARY) implemented. The current PGN

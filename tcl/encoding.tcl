@@ -327,7 +327,7 @@ proc choose {parent currentEnc defaultEnc {autoDetectFlag no}} {
 	wm resizable $dlg true true
 	wm minsize $dlg 600 400
 	wm withdraw $dlg
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $dlg.enc.list.t
 	ttk::grabWindow $dlg

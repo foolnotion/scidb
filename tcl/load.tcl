@@ -288,9 +288,11 @@ foreach subdir {piece square {}} {
 		load::source $file -message $msg
 	}
 }
+unset msg
 
 set file [file join $::scidb::dir::share textures preferences.dat]
 if {[file readable $file]} { load::source $file }
+unset file subdir
 
 # --- Load done --------------------------------------------------------
 ::scidb::app::load done

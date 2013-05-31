@@ -17,6 +17,7 @@
 // ======================================================================
 
 #include "tk_init.h"
+#include "tk_session_manager.h"
 
 #include <tcl.h>
 
@@ -37,6 +38,7 @@ tk::init(Tcl_Interp* ti)
 	fixes_init(ti);
 	selection_init(ti);
 	x11_init(ti);
+	session_manager_init(ti, "::scidb::tk::sm");
 	miscInit(ti);
 	window_manager_init(ti);
 	twm_init(ti);

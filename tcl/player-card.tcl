@@ -382,7 +382,7 @@ proc setupPrivateCard {parent} {
 	wm resizable $dlg true false
 	wm title $dlg [::mc::stripAmpersand $::menu::mc::PrivatePlayerCard]
 	wm transient $dlg [winfo toplevel $parent]
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $list
 	update idletasks

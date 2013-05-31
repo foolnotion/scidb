@@ -195,7 +195,7 @@ array set defaults {
     tk-inc      -I/usr/include
     tk-lib      -ltk\$(TCL_VERSION)
     x-inc       -I/usr/include
-    x-lib       {-L/usr/X11R6/lib -lX11}
+    x-lib       {-L/usr/X11R6/lib -lX11 -lSM -lICE}
     xcursor-lib {-L/usr/lib -lXcursor}
 }
 
@@ -250,6 +250,7 @@ array set release {
 
 
 set instableTkLibrary ""
+set x11Libraries " -lX11 -lSM -lICE"
 
 set MinGCCVersion "3.4"
 set MinClangVersion "3.1"
@@ -749,7 +750,7 @@ proc findTclTkPaths {} {
 
     if {[info exists configure(x-libraries)]} {
         set package(x-lib) [MakeOption -L $configure(x-libraries)]
-        append package(x-lib) " -lX11"
+        append package(x-lib) $::x11Libraries
     } else {
         set configure(x-libraries) [FindDir "libX11*" $path(x,libraries)]
         puts -nonewline "    Location of X11 library: "
@@ -757,7 +758,7 @@ proc findTclTkPaths {} {
             puts "not found"
         } else {
             set package(x-lib) [MakeOption -L $configure(x-libraries)]
-            append package(x-lib) " -lX11"
+            append package(x-lib) $::x11Libraries
             puts $configure(x-libraries)
         }
     }

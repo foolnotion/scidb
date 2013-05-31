@@ -1619,7 +1619,7 @@ proc WhichVersion {parent title} {
 	wm resizable $dlg false false
 
 	wm withdraw $dlg
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.original
 	::ttk::grabWindow $dlg
@@ -1814,7 +1814,7 @@ proc MergeGame {parent title primary secondary} {
 	wm withdraw $dlg
 	wm title $dlg $title
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.mergeCurrent
 	::ttk::grabWindow $dlg
@@ -1881,7 +1881,7 @@ proc LoadGameNumber {parent} {
 	wm withdraw $dlg
 	wm title $dlg $mc::LoadGameNumber
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.number
 	::ttk::grabWindow $dlg

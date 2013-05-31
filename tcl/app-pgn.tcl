@@ -2722,7 +2722,7 @@ proc CopyComments {parent} {
 	wm withdraw $dlg
 	wm title $dlg $mc::Command(copy:comments)
 	wm resizable $dlg false false
-	::util::place $dlg center
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.src
 	::ttk::grabWindow $dlg
@@ -2865,7 +2865,7 @@ proc ExchangeMoves {parent} {
 	wm withdraw $dlg
 	wm title $dlg $mc::Command(variation:exchange)
 	wm resizable $dlg false false
-	::util::place $dlg center
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $top.sblength
 	::ttk::grabWindow $dlg

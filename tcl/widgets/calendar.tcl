@@ -345,7 +345,7 @@ proc popup {parent args} {
 
 	tooltip on $top*
 	wm transient $top [winfo toplevel [winfo parent $parent]]
-	util::place $top below $parent
+	util::place $top -parent $parent -position below -type popup
 	wm deiconify $top
 	raise $top
 	if {[tk windowingsystem] == "x11"} {

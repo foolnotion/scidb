@@ -169,8 +169,8 @@ proc popup {w xc yc} {
 	::tooltip::tooltip off
 	set dx [expr {[$w.texture cget -width] + 4}]
 	set dy [expr {[$w.texture cget -height] + 4}]
-	if {($xc + $dx) > [winfo screenwidth $w]} {
-		set xc [expr {[winfo screenwidth $w] - $dx}]
+	if {($xc + $dx) > [winfo workareawidth $w]} {
+		set xc [expr {[winfo workareawidth $w] - $dx}]
 	}
 	if {($yc + $dy) > [winfo screenheight $w]} {
 		set yc [expr {[winfo screenheight $w] - $dy}]
@@ -420,7 +420,7 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} 
 	wm withdraw $dlg
 	wm grid $dlg $Browser(ncols) $Browser(nrows) $Browser(incr) $Browser(incr)
 	wm minsize $dlg 3 1
-	util::place $dlg $place $parent
+	::util::place $dlg -parent $parent -position $place
 	wm deiconify $dlg
 	focus $browser
 	ttk::grabWindow $dlg

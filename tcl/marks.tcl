@@ -228,14 +228,14 @@ proc open {parent} {
 			set ry [expr {$ty + [lindex $Position 1]}]
 			set rw [winfo reqwidth $dlg]
 			set rh [winfo reqheight $dlg]
-			set sw [winfo screenwidth $dlg]
-			set sh [winfo screenheight $dlg]
+			set sw [winfo workareawidth $dlg]
+			set sh [winfo workareaheight $dlg]
 			set rx [expr {max(min($rx, $sw - $rw), 0)}]
 			set ry [expr {max(min($ry, $sh - $rh), 0)}]
 			wm geometry $dlg +$rx+$ry
 		}
 	} else {
-		::util::place $dlg center $parent
+		::util::place $dlg -parent $parent -position center
 	}
 	if {[tk windowingsystem] eq "aqua"} {
 		::tk::unsupported::MacWindowStyle style $dlg plainDBox {}

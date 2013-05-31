@@ -116,14 +116,18 @@ proc close {} {
 }
 
 
-proc show {} {
+proc show {{force 0}} {
 	variable Priv
 	variable Log
 
 	if {![winfo exists $Log]} { Open }
+
 	set Priv(show) 1
 	set Priv(delay) 0
-	Show
+
+	if {![string is boolean -strict $force]} { set force 1 }
+	if {$force} { set Priv(suppress) 0 }
+	if {!$Priv(suppress)} { Show }
 }
 
 
@@ -134,6 +138,11 @@ proc delay {{flag 1}} {
 
 proc hide {{flag 1}} {
 	set [namespace current]::Priv(hide) $flag
+}
+
+
+proc suppress {{flag 1}} {
+	set [namespace current]::Priv(suppress) $flag
 }
 
 
@@ -162,7 +171,7 @@ proc Show {} {
 		withdrawn - iconic - icon {
 			if {$Priv(center)} {
 				raise $Log
-				::util::place $Log center .application
+				::util::place $Log -parent .application -position center
 				focus $Log
 				set Priv(center) 0
 			}
@@ -305,6 +314,7 @@ proc Open {} {
 	set Priv(force) 0
 	set Priv(delay) 0
 	set Priv(hide) 0
+	set Priv(suppress) 0
 	set Priv(center) 1
 	set Priv(newline) 1
 	set Priv(empty) 0

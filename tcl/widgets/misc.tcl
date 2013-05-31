@@ -124,7 +124,7 @@ proc showTrace {path text useHorzScroll closeCmd} {
 		if {[llength $closeCmd]} {
 			$path.close configure -command $closeCmd
 		}
-#		::util::place $path center $w
+#		::util::place $path -parent $w -position center
 		wm protocol $path WM_DELETE_WINDOW $closeCmd
 		wm deiconify $path
 	}

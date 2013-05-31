@@ -1629,7 +1629,7 @@ proc Properties {w id popup} {
 		$dlg.close configure -command [list destroy $dlg]
 		wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 		wm withdraw $dlg
-		::util::place $dlg center $canv
+		::util::place $dlg -parent $canv -position center
 		wm deiconify $dlg
 	}
 }

@@ -336,7 +336,7 @@ proc open {parent base variant position {number 0}} {
 	wm title $dlg $Priv(title)
 	wm resizable $dlg no no
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Withdraw $dlg]]
-	::util::place $dlg center [winfo toplevel $parent]
+	::util::place $dlg -parent [winfo toplevel $parent] -position center
 	wm deiconify $dlg
 
 	# Finalization ############################################

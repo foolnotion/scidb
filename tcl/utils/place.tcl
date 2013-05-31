@@ -20,14 +20,19 @@
 
 # Due to centering problems on window, see http://wiki.tcl.tk/20773
 
-package provide place 1.0
+package provide place 1.1
 
 namespace eval util {
 
-proc place {path args} { return [place::place $path {*}$args] }
+proc place {path args} {
+	lassign [place::geometry $path {*}$args] x y w h
+	wm geometry $path "${x}${y}"
+}
 
 
 namespace eval place {
+
+variable mainWindow	.
 
 variable PlaceList	{"at" "center" "left" "right" "above" "below"}
 variable ShiftLeft	8
@@ -45,174 +50,246 @@ variable ShiftLeft	8
 #  Currently there is no way to ask Tk the extent of the Windows desktop in 
 #  a multi monitor system. Nor what the legal co-ordinate range might be.
 #
-proc geometry {path w h args} {
+proc geometry {path args} {
 	variable PlaceList
 	variable ShiftLeft
 
+	array set opts {
+		-parent ""
+		-position at
+		-x 0 -y 0
+		-width 0 -height 0
+		-type normal
+		-shift 0
+	}
+	array set opts $args
+
 	update idletasks
 	set windowingsystem [tk windowingsystem]
-	set arglen [llength $args]
-	set posOnly [expr {$w <= 0 && $arglen > 0}]
-	set sizeOnly [expr {$arglen == 0}]
-	set shiftLeft 0
+	set w $opts(-width)
+	set h $opts(-height)
 	if {$w <= 0} { set w [winfo reqwidth $path] }
 	if {$h <= 0} { set h [winfo reqheight $path] }
-
-	if {$arglen > 4} {
-		return -code error "[namespace current]::geometry: bad number of argument"
+	set isPopup 0
+	set cls [winfo class $path]
+	if {$cls eq "Menu" || $cls eq "OptionMenu" || $opts(-type) eq "popup"} { set isPopup 1 }
+	set frameless 0
+	if {$isPopup || $opts(-type) eq "frameless"} { set frameless 1 }
+	if {$isPopup} {
+		set sx 0
+		set sy 0
+		set sw [winfo screenwidth  $path]
+		set sh [winfo screenheight $path]
+	} else {
+		lassign [winfo workarea $path] sx sy sw sh
 	}
 
-	if {$arglen > 0} {
-		set where [lindex $args 0]
-		set idx   [lsearch -exact $PlaceList $where]
-
-		if {$idx == -1} {
-			set last [lindex $PlaceList end]
-			set list [lreplace $PlaceList end end]
-			return -code error "bad position \"$where\": must be [join $list ", "], or $last"
+	set where $opts(-position)
+	if {$where ni $PlaceList} {
+		set last [lindex $PlaceList end]
+		set list [lreplace $PlaceList end end]
+		return -code error "bad position \"$where\": must be [join $list ", "], or $last"
+	}
+	if {$where eq "at"} {
+		set err [catch {
+						set x [expr {int($opts(-x))}]
+						set y [expr {int($opts(-y))}]
+						}]
+		if {$err} {
+			return -code error "[namespace current]::geometry: incorrect position"
 		}
-		if {$idx == 0} {
-			set err [catch {
-							set x [expr {int([lindex $args 1])}]
-							set y [expr {int([lindex $args 2])}]
-							}]
-			if {$err} {
-				return -code error "[namespace current]::geometry: incorrect position"
-			}
-			if {$windowingsystem eq "win32"} {
-				# handle windows multi-screen. -100 != +-100
-				if {[string index [lindex $args 1] 0] ne "-"} { set x "+$x" }
-				if {[string index [lindex $args 2] 0] ne "-"} { set y "+$y" }                    
+		if {$isPopup} {
+			set x [expr {max($x, $sx)}]
+			set y [expr {max($y, $sy)}]
+		}
+		if {$windowingsystem eq "win32"} {
+			# handle windows multi-screen. -100 != +-100
+			if {[string index $opts(-x) 0] ne "-"} { set x "+$x" }
+			if {[string index $opts(-y) 0] ne "-"} { set y "+$y" }                    
+		} else {
+			if {$x >= 0} { set x "+$x" }
+			if {$y >= 0} { set y "+$y" }
+		}
+	} else {
+		set parent $opts(-parent)
+		if {[string length $parent] && ![winfo exists $parent]} {
+			return -code error "[namespace current]::geometry: \"$parent\" does not exist"
+		}
+		if {$where eq "center"} {
+			if {$frameless} {
+				lassign {0 0 0 0} el er et eb
 			} else {
-				if {$x >= 0} { set x "+$x" }
-				if {$y >= 0} { set y "+$y" }
+				lassign [winfo extents $path] el er et eb
+			}
+			if {[string length $parent]} {
+				# center to parent
+				set x0 [expr {[winfo rootx $parent] + $sx + ([winfo width  $parent] - ($w + $el + $er))/2}]
+				set y0 [expr {[winfo rooty $parent] + $sy + ([winfo height $parent] - ($h + $et + $eb))/2}]
+			} else {
+				# center to screen/desktop
+				set x0 [expr {($sw - ($w + $el + $er))/2 - [winfo vrootx $path] - $sx}]
+				set y0 [expr {($sh - ($h + $et + $eb))/2 - [winfo vrooty $path] - $sy}]
+			}
+			set x "+$x0"
+			set y "+$y0"
+			if {$windowingsystem ne "win32"} {
+				if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
+				if {$x0 < 0}			{ set x "+0" }
+				if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
+				if {$y0 < 0}			{ set y "+0" }
 			}
 		} else {
-			if {$arglen >= 2} {
-				set widget [lindex $args 1]
-				if {![winfo exists $widget]} {
-					return -code error "[namespace current]::geometry: \"$widget\" does not exist"
-				}
+			if {[string length $parent] == 0} {
+				set x0 [expr {[winfo vrootx $path] + $sx}]
+				set y0 [expr {[winfo vrooty $path] + $sy}]
+				set x1 [expr {$x0 + $sw}]
+				set y1 [expr {$y0 + $sh}]
 			} else {
-				set widget .
+				set x0 [winfo rootx $parent]
+				set y0 [winfo rooty $parent]
+				set x1 [expr {$x0 + [winfo width  $parent]}]
+				set y1 [expr {$y0 + [winfo height $parent]}]
 			}
-			if {$arglen == 3 && [lindex $args 2]} { set shiftLeft $ShiftLeft }
-			set sw [winfo screenwidth  $path]
-			set sh [winfo screenheight $path]
-			if {$idx == 1} {
-				if {$arglen >= 2 && $widget ne "."} {
-					# center to widget
-					set x0 [expr {[winfo rootx $widget] + ([winfo width  $widget] - $w)/2}]
-					set y0 [expr {[winfo rooty $widget] + ([winfo height $widget] - $h)/2}]
-				} else {
-					# center to screen
-					set x0 [expr {($sw - $w)/2 - [winfo vrootx $path]}]
-					set y0 [expr {($sh - $h)/2 - [winfo vrooty $path]}]
-				}
-				set x "+$x0"
+			if {$opts(-shift) && !$frameless} {
+				lassign [winfo extents $path] el er et eb
+			} else {
+				lassign {0 0 0 0} el er et eb
+			}
+			if {$where eq "left" || $where eq "right"} {
 				set y "+$y0"
 				if {$windowingsystem ne "win32"} {
-					if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
-					if {$x0 < 0}			{ set x "+0" }
 					if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
 					if {$y0 < 0}			{ set y "+0" }
 				}
-			} else {
-				if {$widget eq "."} {
-					set x0 [winfo vrootx $path]
-					set y0 [winfo vrooty $path]
-					set x1 [expr {$x0 + $sw}]
-					set y1 [expr {$y0 + $sh}]
+				if {$where eq "left"} {
+					incr x0 -$er
+					incr x1 -$er
+					# try left, then right if out, then 0 if out
+					if {$x0 >= $w + $shiftLeft} {
+						set x +[expr {$x0 - $w - $shiftLeft}]
+					} elseif {$x1 + $w <= $sw} {
+						set x "+$x1"
+					} else {
+						set x "+0"
+					}
 				} else {
-					set x0 [winfo rootx $widget]
-					set y0 [winfo rooty $widget]
-					set x1 [expr {$x0 + [winfo width  $widget]}]
-					set y1 [expr {$y0 + [winfo height $widget]}]
+					incr x0 $el
+					incr x1 $el
+					# try right, then left if out, then 0 if out
+					if {$x1 + $w <= $sw} {
+						set x "+$x1"
+					} elseif {$x0 >= $w + $shiftLeft} {
+						set x +[expr {$x0 - $w - $shiftLeft}]
+					} else {
+						set x "-0"
+					}
 				}
-				if {$idx == 2 || $idx == 3} {
-					set y "+$y0"
-					if {$windowingsystem ne "win32"} {
-						if {$y0 + $h > $sh}	{ set y "-0"; set y0 [expr {$sh - $h}] }
-						if {$y0 < 0}			{ set y "+0" }
-					}
-					if {$idx == 2} {
-						# try left, then right if out, then 0 if out
-						if {$x0 >= $w + $shiftLeft} {
-							set x +[expr {$x0 - $w - $shiftLeft}]
-						} elseif {$x1 + $w <= $sw} {
-							set x "+$x1"
-						} else {
-							set x "+0"
-						}
+			} else {
+				set x "+$x0"
+				if {$windowingsystem ne "win32"} {
+					if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
+					if {$x0 < 0}	      { set x "+0" }
+				}
+				if {$where eq "above"} {
+					incr y0 -$eb
+					incr y1 -$eb
+					# try top, then bottom, then 0
+					if {$h <= $y0} {
+						set y +[expr {$y0 - $sh}]
+					} elseif {$y1 + $h <= $sh} {
+						set y "+$y1"
 					} else {
-						# try right, then left if out, then 0 if out
-						if {$x1 + $w <= $sw} {
-							set x "+$x1"
-						} elseif {$x0 >= $w + $shiftLeft} {
-							set x +[expr {$x0 - $w - $shiftLeft}]
-						} else {
-							set x "-0"
-						}
+						set y "+0"
 					}
 				} else {
-				set x "+$x0"
-					if {$windowingsystem ne "win32"} {
-						if {$x0 + $w > $sw}	{ set x "-0"; set x0 [expr {$sw - $w}] }
-						if {$x0 < 0}	      { set x "+0" }
-					}
-					if {$idx == 4} {
-						# try top, then bottom, then 0
-						if {$h <= $y0} {
-							set y +[expr {$y0 - $sh}]
-						} elseif {$y1 + $h <= $sh} {
-							set y "+$y1"
-						} else {
-							set y "+0"
-						}
+					incr y0 $et
+					incr y1 $et
+					# try bottom, then top, then 0
+					if {$y1 + $h <= $sh} {
+						set y "+$y1"
+					} elseif {$y0 >= $h} {
+						set y +[expr {$y0 - $h}]
 					} else {
-						# try bottom, then top, then 0
-						if {$y1 + $h <= $sh} {
-							set y "+$y1"
-						} elseif {$y0 >= $h} {
-							set y +[expr {$y0 - $h}]
-						} else {
-							set y "-0"
-						}
+						set y "-0"
 					}
 				}
 			}
 		}
-		if {$windowingsystem eq "aqua"} {
-			# Avoid the native menu bar which sits on top of everything.
-			scan $y "%d" y0
-			if {0 <= $y0 && $y0 < 22} { set y "+22" }
-		}
 	}
-	if {$sizeOnly} {
-		return "${w}x${h}"
+	if {$windowingsystem eq "aqua"} {
+		# Avoid the native menu bar which sits on top of everything.
+		scan $y "%d" y0
+		if {0 <= $y0 && $y0 < 22} { set y "+22" }
 	}
-	if {$posOnly} {
-		return "${x}${y}"
-	}
-	return "${w}x${h}${x}${y}"
+
+	return [list $x $y $w $h]
 }
 
 
 proc position {path args} {
-	return [geometry $path 0 0 {*}$args]
+	lassign [geometry $path {*}$args] x y _ _
+	wm geometry $path "${x}${y}"
 }
 
 
 proc size {path} {
-	return [geometry $path 0 0]
+	lassign [geometry $path {*}$args] _ _ w h
+	wm geometry $path "${w}x${h}"
 }
 
 
-proc place {path args} {
-	wm geometry $path [geometry $path 0 0 {*}$args]
+proc getWmFrameExtents {w} {
+	return -code error "[namespace current]::getWmFrameExtents is not implemented"
+}
+
+
+proc getWmWorkArea {w} {
+	return -code error "[namespace current]::getWmWorkArea is not implemented"
 }
 
 } ;# namespace place
 } ;# namespace util
+
+
+rename winfo __place_winfo_orig
+
+proc winfo {args} {
+	if {[llength $args] > 0} {
+		set cmd [lindex $args 0]
+		if {$cmd eq "extents"} {
+			if {[llength $args] < 2} {
+				return -code error "wrong # args: should be \"winfo extents window\""
+			}
+			return [::util::place::getWmFrameExtents [lindex $args 1]]
+		} elseif {[string match workarea* $cmd]} {
+			variable util::place::mainWindow
+			set window .
+			lassign $args cmd window
+			if {[winfo exists $mainWindow]} {
+				set workarea [::util::place::getWmWorkArea $mainWindow]
+			} else {
+				set workarea [::util::place::getWmWorkArea $window]
+			}
+			if {[llength $workarea] == 0} {
+				set w [__place_winfo_orig screenwidth $window]
+				set h [__place_winfo_orig screenheight $window]
+				if {$cmd eq "workarea"} { return [list 0 0 $w $h] }
+				set x 0
+				set y 0
+			} else {
+				if {$cmd eq "workarea"} { return $workarea }
+				lassign $workarea x y w h
+			}
+			switch $cmd {
+				workareawidth 	{ return $w }
+				workareaheight	{ return $h }
+				workareax		{ return $x }
+				workareay		{ return $y }
+			}
+		}
+	}
+
+	return [uplevel 1 __place_winfo_orig $args]
+}
 
 # vi:set ts=3 sw=3:

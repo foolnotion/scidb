@@ -384,7 +384,7 @@ proc openAnalysis {{force {}}} {
 	wm transient $dlg .application
 	wm minsize $dlg 350 100
 	wm title $dlg $::application::database::mc::T_Analysis
-	::util::place $dlg center .application
+	::util::place $dlg -parent .application -position center
 	wm deiconify $dlg
 }
 

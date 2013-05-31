@@ -32,6 +32,7 @@ SRC_CXX = \
 	tk_notebook.cpp \
 	tk_png.cpp \
 	tk_selection.cpp \
+	tk_session_manager.cpp \
 	tk_twm.cpp \
 	tk_window_manager.cpp \
 	tk_x11.cpp \
@@ -201,6 +202,7 @@ tk_image.o: svg/agg/agg_span_image_filter_rgba.h
 tk_image.o: svg/agg/agg_blur.h
 tk_image.o: svg/agg/agg_pixfmt_transposer.h
 tk_init.o: tk_init.h
+tk_init.o: tk_session_manager.h
 tk_jpeg.o: tk_init.h
 tk_jpeg.o: jpeg/jpeg_image.h
 tk_jpeg.o: jpeg/jpeg_scanline.h
@@ -251,6 +253,7 @@ tk_selection.o: ../mstl/m_bit_functions.h
 tk_selection.o: ../mstl/m_bit_functions.ipp
 tk_selection.o: ../mstl/m_uint128_t.h
 tk_selection.o: ../mstl/m_uint128.h
+tk_session_manager.o: tk_session_manager.h
 tk_twm.o: tk_init.h
 tk_twm.o: tk8.5/tkInt.h
 tk_twm.o: tk8.5/tkPort.h

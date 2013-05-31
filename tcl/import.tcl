@@ -306,7 +306,7 @@ proc openEdit {parent position args} {
 	}
 
 	wm withdraw $dlg
-	::util::place $dlg center [winfo toplevel $parent]
+	::util::place $dlg -parent [winfo toplevel $parent] -position center
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Close $position $dlg]]
 	SetTitle $dlg $position
 	update idletasks

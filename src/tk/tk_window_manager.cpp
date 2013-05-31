@@ -21,6 +21,7 @@
 #include "u_base.h"
 
 #include "m_stdio.h"
+#include "m_types.h"
 #include "m_assert.h"
 
 #include <tcl.h>
@@ -72,39 +73,122 @@ enum
 	KDE_staysOnTop = 2048
 };
 
-
-typedef struct
+struct MWM_Hints
 {
 	unsigned long flags;
 	unsigned long functions;
 	unsigned long decorations;
 	long input_mode;
 	unsigned long status;
-}
-MWM_Hints;
+};
+
+struct Rect
+{
+	Rect() :left(0), right(0), width(0), height(0) {}
+
+	bool isEmpty() const { return height == 0; }
+
+	int left;
+	int right;
+	int width;
+	int height;
+};
+
+struct MyAtom
+{
+	MyAtom(char const* name) :m_name(name), m_atom(None), m_allocate(true) {}
+
+	Atom get(Display* display)
+	{
+		if (m_allocate)
+		{
+			m_atom = XInternAtom(display, m_name, True);
+			m_allocate = false;
+		}
+
+		return m_atom;
+	}
+
+	char const*	m_name;
+	Atom			m_atom;
+	bool			m_allocate;
+};
 
 
-static char const* XA_MOTIF_WM_HINTS						= "_MOTIF_WM_HINTS";
-static char const* XA_KWM_WIN_DECORATION					= "KWM_WIN_DECORATION";
-static char const* XA_WIN_HINTS								= "_WIN_HINTS";
-static char const* XA_NET_ACTIVE_WINDOW					= "_NET_ACTIVE_WINDOW";
-//static char const* XA_NET_WM_WINDOW_TYPE				= "_NET_WM_WINDOW_TYPE";
 static char const* XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE	= "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE";
-static char const* XA_NET_WM_WINDOW_TYPE_NORMAL			= "_NET_WM_WINDOW_TYPE_NORMAL";
-static char const* XA_NET_WM_WINDOW_TYPE_TOOLBAR		= "_NET_WM_WINDOW_TYPE_TOOLBAR";
-static char const* XA_NET_WM_WINDOW_TYPE_SPLASH			= "_NET_WM_WINDOW_TYPE_SPLASH";
-static char const* XA_NET_WM_WINDOW_TYPE_MENU			= "_NET_WM_WINDOW_TYPE_MENU";
-
-#if 0
-static char const* XA_NET_WM_ALLOWED_ACTIONS				= "_NET_WM_ALLOWED_ACTIONS";
-static char const* XA_NET_WM_ACTION_MOVE					= "_NET_WM_ACTION_MOVE";
-static char const* XA_NET_WM_ACTION_RESIZE				= "_NET_WM_ACTION_RESIZE";
+static char const* XA_KWM_WIN_DECORATION					= "KWM_WIN_DECORATION";
+static char const* XA_MOTIF_WM_HINTS						= "_MOTIF_WM_HINTS";
+static char const* XA_NET_ACTIVE_WINDOW					= "_NET_ACTIVE_WINDOW";
+static char const* XA_NET_CURRENT_DESKTOP					= "_NET_CURRENT_DESKTOP";
+static char const* XA_NET_FRAME_EXTENTS					= "_NET_FRAME_EXTENTS";
+static char const* XA_NET_SUPPORTED							= "_NET_SUPPORTED";
+static char const* XA_NET_WM_ACTION_CLOSE					= "_NET_WM_ACTION_CLOSE";
 static char const* XA_NET_WM_ACTION_MAXIMIZE_HORZ		= "_NET_WM_ACTION_MAXIMIZE_HORZ";
 static char const* XA_NET_WM_ACTION_MAXIMIZE_VERT		= "_NET_WM_ACTION_MAXIMIZE_VERT";
-static char const* XA_NET_WM_ACTION_CLOSE					= "_NET_WM_ACTION_CLOSE";
-#endif
+static char const* XA_NET_WM_ACTION_MOVE					= "_NET_WM_ACTION_MOVE";
+static char const* XA_NET_WM_ACTION_RESIZE				= "_NET_WM_ACTION_RESIZE";
+static char const* XA_NET_WM_ALLOWED_ACTIONS				= "_NET_WM_ALLOWED_ACTIONS";
+static char const* XA_NET_WM_DESKTOP						= "_NET_WM_DESKTOP";
+static char const* XA_NET_WM_WINDOW_TYPE					= "_NET_WM_WINDOW_TYPE";
+static char const* XA_NET_WM_WINDOW_TYPE_MENU			= "_NET_WM_WINDOW_TYPE_MENU";
+static char const* XA_NET_WM_WINDOW_TYPE_NORMAL			= "_NET_WM_WINDOW_TYPE_NORMAL";
+static char const* XA_NET_WM_WINDOW_TYPE_SPLASH			= "_NET_WM_WINDOW_TYPE_SPLASH";
+static char const* XA_NET_WM_WINDOW_TYPE_TOOLBAR		= "_NET_WM_WINDOW_TYPE_TOOLBAR";
+static char const* XA_NET_WORKAREA							= "_NET_WORKAREA";
+static char const* XA_WIN_HINTS								= "_WIN_HINTS";
+static char const* XA_WM_CLIENT_LEADER						= "WM_CLIENT_LEADER";
 
-static char const* XA_WM_CLIENT_LEADER = "WM_CLIENT_LEADER";
+static MyAtom AtomList[] =
+{
+	XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
+	XA_KWM_WIN_DECORATION,
+	XA_MOTIF_WM_HINTS,
+	XA_NET_ACTIVE_WINDOW,
+	XA_NET_CURRENT_DESKTOP,
+	XA_NET_FRAME_EXTENTS,
+	XA_NET_SUPPORTED,
+	XA_NET_WM_ACTION_CLOSE,
+	XA_NET_WM_ACTION_MAXIMIZE_HORZ,
+	XA_NET_WM_ACTION_MAXIMIZE_VERT,
+	XA_NET_WM_ACTION_MOVE,
+	XA_NET_WM_ACTION_RESIZE,
+	XA_NET_WM_ALLOWED_ACTIONS,
+	XA_NET_WM_DESKTOP,
+	XA_NET_WM_WINDOW_TYPE,
+	XA_NET_WM_WINDOW_TYPE_MENU,
+	XA_NET_WM_WINDOW_TYPE_NORMAL,
+	XA_NET_WM_WINDOW_TYPE_SPLASH,
+	XA_NET_WM_WINDOW_TYPE_TOOLBAR,
+	XA_NET_WORKAREA,
+	XA_WIN_HINTS,
+	XA_WM_CLIENT_LEADER,
+};
+
+
+static unsigned char*
+getProperty(Display* display, Window window, Atom atom, unsigned length, unsigned offset = 0)
+{
+	Atom				actualType;
+	unsigned long	nitems;
+	unsigned long	bytesAfter;
+	int				actualFormat;
+	unsigned char*	prop;
+
+	int status = XGetWindowProperty(	display,
+												window,
+												atom,
+												offset,
+												length,
+												False,
+												XA_CARDINAL,
+												&actualType,
+												&actualFormat,
+												&nitems,
+												&bytesAfter,
+												&prop);
+
+	return status == Success && nitems >= length && actualFormat == 32 ? prop : 0;
+}
 
 
 static void
@@ -137,10 +221,18 @@ changeProperty2(Display* display, Window window, Atom prop, void* data, int nele
 
 inline
 static int
-checkAtom(Atom& wmHints, Tk_Window tkwin, char const* name)
+checkAtom(Atom& request, Display* display, char const* name)
 {
-	wmHints = Tk_InternAtom(tkwin, name);
-	return wmHints != None;
+	for (unsigned i = 0; i < U_NUMBER_OF(AtomList); ++i)
+	{
+		if (AtomList[i].m_name == name)
+		{
+			request = AtomList[i].get(display);
+			return request != None;
+		}
+	}
+
+	return 0;
 }
 
 
@@ -149,7 +241,7 @@ frameless(Tk_Window tkwin, Window window, char const* property)
 {
 	M_ASSERT(property);
 
-	Atom	wmHints;
+	Atom	request;
 	int	rc = 0;
 
 	Display* display = Tk_Display(tkwin);
@@ -157,39 +249,57 @@ frameless(Tk_Window tkwin, Window window, char const* property)
 	XLockDisplay(display);
 
 	// First try to set MWM hints (works!)
-	if ((rc = checkAtom(wmHints, tkwin, XA_MOTIF_WM_HINTS)))
+	if ((rc = checkAtom(request, display, XA_MOTIF_WM_HINTS)))
 	{
 		MWM_Hints hints = { MWM_HINTS_DECORATIONS, 0, MWM_DECOR_NONE, 0, 0 };
-		changeProperty1(display, window, wmHints, &hints, sizeof(hints)/4);
+		changeProperty1(display, window, request, &hints, sizeof(hints)/4);
 	}
 
 	// Now try to set KWM hints (doesn't work for any reason)
-	if ((rc = checkAtom(wmHints, tkwin, XA_KWM_WIN_DECORATION)))
+	if ((rc = checkAtom(request, display, XA_KWM_WIN_DECORATION)))
 	{
 		uint32_t KWMHints = KDE_tinyDecoration;
-		changeProperty1(display, window, wmHints, &KWMHints, 1);
+		changeProperty1(display, window, request, &KWMHints, 1);
 	}
 
 	// Now try to set GNOME hints (working?)
-	if ((rc = checkAtom(wmHints, tkwin, XA_WIN_HINTS)))
+	if ((rc = checkAtom(request, display, XA_WIN_HINTS)))
 	{
 		uint32_t GNOMEHints = 0;
-		changeProperty1(display, window, wmHints, &GNOMEHints, 1);
+		changeProperty1(display, window, request, &GNOMEHints, 1);
 	}
 
 	// Now try to set KDE NET_WM hints
-	if ((rc = checkAtom(wmHints, tkwin, XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE)))
+	if ((rc = checkAtom(request, display, XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE)))
 	{
 		Atom netWmHints[2] =
 		{
-			Tk_InternAtom(tkwin, XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE),
+			request,
 			Tk_InternAtom(tkwin, property),
 		};
-		changeProperty2(display, window, wmHints, &netWmHints, U_NUMBER_OF(netWmHints));
+		changeProperty2(display, window, request, &netWmHints, U_NUMBER_OF(netWmHints));
 	}
 
 	XUnlockDisplay(display);
 	return rc;
+}
+
+
+static Window
+getParent(Display* display, Window window)
+{
+	Window	root;
+	Window	parent;
+	Window*	childs;
+	unsigned	nchilds;
+
+	if (XQueryTree(display, window, &root, &parent, &childs, &nchilds) == 0)
+		return window;
+
+	if (childs)
+		XFree(childs);
+
+	return parent == XDefaultRootWindow(display) ? window : parent;
 }
 
 
@@ -207,17 +317,18 @@ setClientLeader(Tk_Window tkwin, Window window)
 		leader = XCreateSimpleWindow(display, rootWindow, 0, 0, 1, 1, 0, 0, 0);
 	}
 
-	changeProperty1(display, window, clientLeader, &leader, 1);
+	changeProperty1(display, getParent(display, window), clientLeader, &leader, 1);
 }
 
 
 void
-raiseWindow(Tk_Window tkwin, Window window)
+raiseWindow(Tk_Window tkwin)
 {
 	Atom		atom				= Tk_InternAtom(tkwin, XA_NET_ACTIVE_WINDOW);
 	Display*	display			= Tk_Display(tkwin);
 	Window	rootWindow		= XRootWindow(display, Tk_ScreenNumber(tkwin));
 	Window	activeWindow	= rootWindow;
+	Window	window			= Tk_WindowId(tkwin);
 	XEvent	xev;
 
 	// NOTE: this function is not working although it should (seems to be a KDE problem)
@@ -265,9 +376,184 @@ raiseWindow(Tk_Window tkwin, Window window)
 					&xev);
 	XSync(display, False);
 
-	XRaiseWindow(display, window);
+	Window w = Tk_IsTopLevel(tkwin) ? getParent(display, window) : window;
+	XRaiseWindow(display, w);
+
 	XSetInputFocus(display, window, RevertToParent, CurrentTime);
 	XFlush(display);
+}
+
+
+#if 0
+static void
+setDesktop(Tk_Window tkwin, int desktop)
+{
+	if (desktop < 0)
+		return;
+
+	Display*	display	= Tk_Display(tkwin);
+	Window	window	= Tk_WindowId(tkwin);
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_WM_DESKTOP))
+		return;
+
+	XWindowAttributes attr;
+	XGetWindowAttributes(display, window, &attr);
+
+	XEvent xev;
+	memset(&xev, 0, sizeof(xev));
+
+	xev.type = ClientMessage;
+	xev.xclient.display = display;
+	xev.xclient.window = window;
+	xev.xclient.message_type = request;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = desktop;
+	xev.xclient.data.l[1] = 1;
+
+	XSendEvent(	display,
+					attr.screen->root,
+					False,
+					SubstructureNotifyMask | SubstructureRedirectMask,
+					&xev);
+}
+#endif
+
+
+static int
+getDesktop(Tk_Window tkwin)
+{
+	Display*	display	= Tk_Display(tkwin);
+	Window	window	= getParent(display, Tk_WindowId(tkwin));
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_WM_DESKTOP))
+		return -1;
+
+	while (!Tk_IsTopLevel(tkwin))
+	{
+		if ((tkwin = Tk_Parent(tkwin)) == 0)
+			return -1;
+	}
+
+	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, window, request, 1));
+
+	if (data == 0)
+		return -1;
+
+	int desktop = *data;
+	XFree(data);
+	return desktop;
+}
+
+
+static int
+getCurrentDesktop(Tk_Window tkwin)
+{
+	Display*	display	= Tk_Display(tkwin);
+	Window	window	= XDefaultRootWindow(display);
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_CURRENT_DESKTOP))
+		return -1;
+
+	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, window, request, 1));
+
+	if (data == 0)
+		return -1;
+
+	int desktop = *data;
+	XFree(data);
+	return desktop;
+}
+
+
+static void
+setCurrentDesktop(Tk_Window tkwin, int desktop)
+{
+	if (desktop < 0)
+		return;
+
+	Display*	display	= Tk_Display(tkwin);
+	Window	root		= XDefaultRootWindow(display);
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_CURRENT_DESKTOP))
+		return;
+
+	XEvent xev;
+	memset(&xev, 0, sizeof(xev));
+
+	xev.type = ClientMessage;
+	xev.xclient.display = display;
+	xev.xclient.window = root;
+	xev.xclient.message_type = request;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = desktop;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent(display, root, False, SubstructureNotifyMask | SubstructureRedirectMask, &xev);
+}
+
+
+static bool
+getWorkArea(Tk_Window tkwin, int desktop, Rect& result)
+{
+	if (desktop < 0)
+		return false;
+
+	Display*	display	= Tk_Display(tkwin);
+	Window	root		= XDefaultRootWindow(display);
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_WORKAREA))
+		return false;
+
+	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, root, request, 4, desktop*4));
+
+	if (data == 0)
+		return false;
+	
+	result.left		= data[0];
+	result.right	= data[1];
+	result.width	= data[2];
+	result.height	= data[3];
+
+	XFree(data);
+	return true;
+}
+
+
+static bool
+getExtents(Tk_Window tkwin, Rect& result)
+{
+	Display*	display	= Tk_Display(tkwin);
+	Window	root		= getParent(display, Tk_WindowId(tkwin));
+	Atom		request;
+
+	if (!checkAtom(request, display, XA_NET_FRAME_EXTENTS))
+		return false;
+
+	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, root, request, 4));
+
+	if (data == 0)
+	{
+		result.left = 6;
+		result.right = 6;
+		result.width = 24;
+		result.height = 8;
+
+		return false;
+	}
+	
+	result.left		= data[0];
+	result.right	= data[1];
+	result.width	= data[2];
+	result.height	= data[3];
+
+	XFree(data);
+	return true;
 }
 
 #endif
@@ -291,11 +577,28 @@ tcl_error(Tcl_Interp* ti, char const* fmt, ...)
 }
 
 
+static void
+setResult(Tcl_Interp* ti, Rect& rect)
+{
+	if (!rect.isEmpty())
+	{
+		Tcl_Obj* objs[4] =
+		{
+			Tcl_NewIntObj(rect.left),
+			Tcl_NewIntObj(rect.right),
+			Tcl_NewIntObj(rect.width),
+			Tcl_NewIntObj(rect.height)
+		};
+		Tcl_SetObjResult(ti, Tcl_NewListObj(4, objs));
+	}
+}
+
+
 static int
 cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* Usage =	"Usage: ::scidb::tk::wm (frameless | splash | toolbar | menu | grid "
-								"| setLeader | map | raise | sync) <window> ...";
+								"| setLeader | map | raise | sync | desktop | ondesktop) <window> ...";
 
 	if (objc < 2)
 		return tcl_error(ti, Usage);
@@ -307,12 +610,16 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 	if (!tkwin)
 		return TCL_ERROR;
+	
+	if (path == 0)
+		path = Tk_PathName(tkwin);
 
 	int rc = 1;
 
 	if (strcasecmp(subcmd, "grid") == 0)
 	{
-		char const* Usage = "Usage: ::scidb::tk::wm grid <window> <baseWidth> <baseHeight> <widthInc> <heightInc>";
+		char const* Usage =	"Usage: ::scidb::tk::wm grid <window> <baseWidth> "
+									"<baseHeight> <widthInc> <heightInc>";
 
 		if (objc != 7)
 			return tcl_error(ti, Usage);
@@ -328,6 +635,57 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		Tk_SetGrid(tkwin, baseWidth, baseHeight, widthIncr, heightIncr);
+	}
+	else if (strcasecmp(subcmd, "desktop") == 0)
+	{
+#if !defined(__WIN32__) && !defined(__MacOSX__)
+		setCurrentDesktop(tkmain, getDesktop(tkwin));
+#endif
+	}
+	else if (strcasecmp(subcmd, "ondesktop") == 0)
+	{
+		bool result = true;
+
+#if !defined(__WIN32__) && !defined(__MacOSX__)
+		int desktop1 = getCurrentDesktop(tkwin);
+		int desktop2 = getDesktop(tkwin);
+
+		result = desktop1 >= 0 && desktop2 >= 0 && desktop1 == desktop2;
+#endif
+
+		Tcl_SetObjResult(ti, Tcl_NewBooleanObj(result));
+		return TCL_OK;
+	}
+	else if (strcasecmp(subcmd, "workarea") == 0)
+	{
+		Rect result;
+
+#if defined(__WIN32__)
+# error "not yet implemented"
+#elif defined(__MacOSX__)
+# error "not yet implemented"
+#else
+		if (!getWorkArea(tkwin, getDesktop(tkwin), result))
+			getWorkArea(tkwin, getCurrentDesktop(tkwin), result);
+#endif
+
+		setResult(ti, result);
+		return TCL_OK;
+	}
+	else if (strcasecmp(subcmd, "extents") == 0)
+	{
+		Rect result;
+
+#if defined(__WIN32__)
+# error "not yet implemented"
+#elif defined(__MacOSX__)
+# error "not yet implemented"
+#else
+		getExtents(tkwin, result);
+#endif
+
+		setResult(ti, result);
+		return TCL_OK;
 	}
 #if !defined(__WIN32__) && !defined(__MacOSX__)
 	else if (	strcasecmp(subcmd, "frameless") == 0
@@ -349,16 +707,7 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 		if (!Tk_IsTopLevel(tkwin))
 			return tcl_error(ti, "'%s' isn't a top level window", path);
 
-		Window	parent;
-		Window	root;
-		Window*	children;
-		unsigned	nchildren;
-
-		if (XQueryTree(Tk_Display(tkmain), window, &root, &parent, &children, &nchildren) == 0)
-			return tcl_error(ti, "XQueryTree() failed");
-
-		if (children)
-			XFree(children);
+		Window parent = getParent(Tk_Display(tkmain), window);
 
 		char const* prop = 0;
 
@@ -374,11 +723,14 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 	}
 	else if (strcasecmp(subcmd, "setLeader") == 0)
 	{
+		if (!Tk_IsTopLevel(tkwin))
+			return tcl_error(ti, "'%s' isn't a top level window", path);
+
 		setClientLeader(tkwin, Tk_WindowId(tkwin));
 	}
 	else if (strcasecmp(subcmd, "raise") == 0)
 	{
-		raiseWindow(tkwin, Tk_WindowId(tkwin));
+		raiseWindow(tkwin);
 	}
 	else if (strcasecmp(subcmd, "map") == 0)
 	{

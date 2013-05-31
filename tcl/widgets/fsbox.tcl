@@ -2294,7 +2294,7 @@ proc AskFileAction {w old new} {
 	wm title $dlg [Tr EntryAlreadyExists]
 	wm transient $dlg [winfo toplevel $w]
 	::ttk::grabWindow $dlg
-	::util::place $dlg center $w
+	::util::place $dlg -parent $w -position center
 	wm deiconify $dlg
 	focus -force $ren.entry
 	vwait [namespace current]::_action
@@ -4463,7 +4463,7 @@ proc FinishDuplicateFile {w sel name} {
 	pack $top.msg -padx 5 -pady 5
 	wm resizable $dlg no no
 	wm transient $dlg [winfo toplevel $w]
-	::util::place $dlg center [winfo toplevel $w]
+	::util::place $dlg -parent [winfo toplevel $w] -position center
 	update idletasks
 	[namespace parent]::noWindowFrame $dlg
 	wm deiconify $dlg

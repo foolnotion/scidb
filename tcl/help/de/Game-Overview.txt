@@ -50,6 +50,9 @@ Funktionen:
 <ul>
 	<li>Die Bretter drehen</li>
 	<li>Die aktuelle Partie in den Partien-Editor laden</li>
+  <li>Die Partie erneut laden sofern sie zwischenzeitlich geändert wurde</li>
+  <li>Die vorhergehende Partie in der Partienliste laden</li>
+  <li>Die nächste Partie in der Partienliste laden</li>
 	<li>Die erste Partie in der Partienliste laden</li>
 	<li>Die letzte Partie in der Partienliste laden</li>
 </ul>
@@ -59,7 +62,7 @@ Des weiteren gibt es Schaltflächen für folgende Aktionen:
 </p>
 
 <ul>
-	<li>Die vorhergegehende Partie aus der Partienliste laden</li>
+	<li>Die vorhergehende Partie aus der Partienliste laden</li>
 	<li>Die nachfolgende Partie aus der Partienliste laden</li>
 	<li>Den Browser schliessen</li>
 	<li>Diese Hilfeseite öffnen</li>

@@ -53,7 +53,7 @@ proc open {} {
 		aqua	{ ::tk::unsupported::MacWindowStyle style .splash plainDBox {} }
 	}
 
-	::util::place .splash center .
+	::util::place .splash -position center
 	wm deiconify .splash
 	raise .splash
 	update idletasks

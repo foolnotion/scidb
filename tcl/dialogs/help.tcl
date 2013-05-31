@@ -417,7 +417,7 @@ proc CheckLanguage {parent helpFile} {
 	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
 	wm resizable $dlg no no
 	wm title $dlg $mc::SelectLanguage
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	update idletasks
 	focus $dlg.cancel

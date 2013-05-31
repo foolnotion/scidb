@@ -79,6 +79,26 @@ static unsigned undoLevel = 20;
 static unsigned undoCombinePredecessingMoves = 9999;
 
 
+namespace {
+
+struct WriteGuard
+{
+	void release() { m_app.setIsWriting(); }
+
+	WriteGuard(Application& app, Cursor const& cursor)
+		:m_app(app)
+	{
+		if (!cursor.isMemoryOnly())
+			m_app.setIsWriting(cursor.name());
+	}
+
+	~WriteGuard() { release(); }
+
+	Application& m_app;
+};
+
+} // namespace
+
 namespace app {
 
 bool operator==(Cursor const* cursor, mstl::string const& name)
@@ -1230,6 +1250,8 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 {
 	Database& base = cursor.base();
 
+	WriteGuard guard(*this, cursor);
+
 	switch (base.format())
 	{
 		case format::Scidb:
@@ -1258,6 +1280,8 @@ Application::recode(Cursor& cursor, mstl::string const& encoding, util::Progress
 			// cannot happen
 			break;
 	}
+
+	guard.release();
 
 	if (m_subscriber)
 		m_subscriber->updateList(m_updateCount++, cursor.name(), cursor.variant());
@@ -2602,6 +2626,8 @@ Application::save(mstl::string const& name, util::Progress& progress)
 //	M_REQUIRE(start <= cursor(name).countGames());
 
 	MultiCursor& multiCursor = *m_cursorMap.find(name)->second;
+
+	WriteGuard guard(*this, multiCursor.cursor());
 
 	for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 	{

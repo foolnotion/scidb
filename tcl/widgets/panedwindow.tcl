@@ -109,8 +109,12 @@ proc WidgetProc {w command args} {
 		variable [namespace current]::${w}::MaxSize
 		variable [namespace current]::${w}::GridSize
 
-		set MaxSize($child) 32000
-		set GridSize($child) 0
+		if {![info exists MaxSize($child)]} {
+			set MaxSize($child) 32000
+		}
+		if {![info exists GridSize($child)]} {
+			set GridSize($child) 0
+		}
 		
 		if {[info exists opts(-maxsize)]} {
 			if {[string is integer -strict $opts(-maxsize)]} {

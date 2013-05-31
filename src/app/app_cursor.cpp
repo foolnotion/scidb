@@ -42,6 +42,29 @@ using namespace db;
 using namespace app;
 
 
+namespace {
+
+struct WriteGuard
+{
+	void release() { m_app.setIsWriting(); }
+
+	WriteGuard(Cursor const* cursor)
+		:m_app(cursor->app())
+	{
+		M_ASSERT(cursor);
+
+		if (!cursor->isMemoryOnly())
+			m_app.setIsWriting(cursor->database().name());
+	}
+
+	~WriteGuard() { release(); }
+
+	Application& m_app;
+};
+
+} // namespace
+
+
 Cursor::Subscriber::~Subscriber() throw() {}
 
 
@@ -67,6 +90,9 @@ Cursor::~Cursor()
 }
 
 
+Application& Cursor::app() const { return m_cursor.app(); }
+
+
 db::format::Type Cursor::format() const	{ return m_db->format(); }
 db::variant::Type Cursor::variant() const	{ return m_db->variant(); }
 
@@ -84,6 +110,13 @@ Cursor::clear() throw()
 
 bool Cursor::isScratchbase() const	{ return m_cursor.isScratchbase(); }
 bool Cursor::isClipbase() const		{ return m_cursor.isClipbase(); }
+
+
+bool
+Cursor::isMemoryOnly() const
+{
+	return database().isMemoryOnly();
+}
 
 
 bool
@@ -335,7 +368,9 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 	if (m_isRefBase)
 		m_cursor.app().stopUpdateTree();
 
+	WriteGuard guard(this);
 	unsigned res = m_db->importGames(producer, progress);
+	guard.release();
 
 	if (res > 0)
 		updateViews();
@@ -359,7 +394,9 @@ Cursor::importGames(	db::Database const& src,
 	if (m_isRefBase)
 		m_cursor.app().stopUpdateTree();
 
+	WriteGuard guard(this);
 	unsigned res = m_db->importGames(src, illegalRejected, log, progress);
+	guard.release();
 
 	if (res > 0)
 		updateViews();
@@ -388,6 +425,7 @@ Cursor::compact(::util::Progress& progress)
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWriteable());
 
+	WriteGuard guard(this);
 	m_db->sync(progress);
 
 	if (!m_db->shouldCompress())
@@ -464,6 +502,8 @@ Cursor::compact(::util::Progress& progress)
 	m_db = compacted.release();
 	m_db->rename(orig);
 	m_cursor.replace(m_db);
+
+	guard.release();
 
 	ViewList viewList;
 

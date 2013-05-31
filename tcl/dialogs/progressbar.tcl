@@ -80,6 +80,7 @@ proc open {w args} {
 		set parent [winfo parent $w]
 	}
 	set Priv(interrupted:$w) 0
+	set Priv(interruptable:$w) $opts(-interrupt)
 	setTitle $w $opts(-title)
 	wm iconname $w ""
 	wm resizable $w false false
@@ -149,8 +150,8 @@ proc open {w args} {
 
 	set rw [winfo reqwidth $w]
 	set rh [winfo reqheight $w]
-	set sw [winfo screenwidth  $parent]
-	set sh [winfo screenheight $parent]
+	set sw [winfo workareawidth  $parent]
+	set sh [winfo workareaheight $parent]
 	if {$parent eq "."} {
 		set x0 [expr {($sw - $rw)/2 - [winfo vrootx $parent]}]
 		set y0 [expr {($sh - $rh)/2 - [winfo vrooty $parent]}]
@@ -200,14 +201,23 @@ proc tick {w {amount 1}} {
 }
 
 
+proc interruptable? {w} {
+	return [set [namespace current]::Priv(interruptable:$w)]
+}
+
+
 proc interrupted? {w} {
 	return [set [namespace current]::Priv(interrupted:$w)]
 }
 
 
 proc interrupt {w} {
-	set [namespace current]::Priv(interrupted:$w) 1
-	event generate $w <<Stop>>
+	variable Priv
+
+	if {$Priv(interruptable:$w)} {
+		set Priv(interrupted:$w) 1
+		event generate $w <<Stop>>
+	}
 }
 
 

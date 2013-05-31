@@ -38,8 +38,14 @@ set UndockWindow			"Undock Window"
 set ChessInfoDatabase	"Chess Information Data Base"
 set Shutdown				"Shutdown..."
 set QuitAnyway				"Quit anyway?"
+set CancelLogout			"Cancel Logout"
+set AbortWriteOperation	"Abort write operation"
 
 set UpdatesAvailable		"Updates available"
+
+set WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'."
+set LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database."
+set RestartLogout			"Aborting the write operation will restart the logout process."
 
 } ;# namespace mc
 
@@ -129,7 +135,8 @@ array set Attr {
 }
 
 array set Vars {
-	tabs:changed 0
+	tabs:changed	0
+	exit:save		1
 
 	menu:locked					0
 	menu:state					normal
@@ -148,6 +155,7 @@ proc open {} {
 	::move::setup
 	::tcl::mathfunc::srand [clock milliseconds]
 	set app .application
+	set ::util::place::mainWindow $app
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus
 	set Vars(control) [::widget::dialogFullscreenButtons $nb]
@@ -225,7 +233,7 @@ proc open {} {
 		$top add $top.$sub
 
 #		if {$Attr($sub,float)} {
-#			set m [menu $top.$sub.popup -tearoff false]
+			set m [menu $top.$sub.popup -tearoff false]
 #			$m add command -command [namespace code [list Undock $top.$sub $sub]]
 #			::widget::menuTextvarHook $m 0 [namespace current]::mc::UndockWindow
 #			bind $top.$sub <ButtonPress-3> [list tk_popup $m %X %Y 0]
@@ -297,7 +305,20 @@ if {[::process::testOption use-clock]} {
 	bind $nb <<NotebookTabChanged>> [namespace code [list TabChanged $nb $app]]
 	bind $app <Destroy> [namespace code { Exit %W }]
 	ComputeMinSize $main
-	::util::place $app center .
+
+	if {[tk windowingsystem] eq "x11"} {
+		wm client $app [lindex [split [info hostname] .] 0]
+		wm protocol $app WM_SAVE_YOURSELF [namespace code [list WmSaveYourself $app]]
+		WmSaveYourself $app 0 ;# initial setup
+
+		::scidb::tk::sm connect \
+			-restart no \
+			-saveYourself [namespace code SmSaveYourself] \
+			-interactRequest [namespace code SmInteractRequest] \
+			;
+	}
+
+	::util::place $app -position center
 	::widget::dialogSetTitle $app [namespace code Title]
 	wm deiconify $app
 	database::finish $app
@@ -358,22 +379,34 @@ proc shutdown {} {
 	pack [tk::label $dlg.f.text -compound left -image $shutdown -text " $mc::Shutdown"] -padx 10 -pady 10
 	wm resizable $dlg no no
 	wm transient $dlg .application
-	::util::place $dlg center .application
+	::util::place $dlg -parent .application -position center
 	update idletasks
 	::scidb::tk::wm frameless $dlg
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	::widget::busyCursor on
 
-	::remote::cleanup
-	database::prepareClose
-	::scidb::app::close
-	if {$backup} { ::game::backup }
-	::scidb::app::finalize
+	prepareExit $backup
+	if {[tk windowingsystem] eq "x11"} { ::scidb::tk::sm disconnect }
 
 	::widget::busyCursor off
 	::ttk::releaseGrab $dlg
 	destroy .application
+}
+
+
+proc prepareExit {{backup 1}} {
+	variable Vars
+
+	if {$Vars(exit:save)} {
+		::log::delay
+		::remote::cleanup
+		database::prepareClose
+		::scidb::app::close
+		if {$backup} { ::game::backup }
+		::scidb::app::finalize
+		set Vars(exit:save) 0
+	}
 }
 
 
@@ -386,6 +419,84 @@ proc switchTab {which} {
 	update idletasks
 	${which}::setFocus
 }
+
+
+if {[tk windowingsystem] eq "x11"} {
+
+proc WmSaveYourself {app {shutdown 0}} {
+	if {$shutdown} { prepareExit }
+	wm command $app [concat [::scidb::tk::sm get -command] [::scidb::tk::sm get -argv]]
+}
+
+
+proc SmSaveYourself {shutdown} {
+	if {$shutdown} {
+		prepareExit
+	}
+}
+
+
+proc SmInteractRequest {shutdown} {
+	set base [::scidb::app::writing -background no]
+
+	## Handle foreground process ####################################
+	if {[string length $base]} {
+		set parent [grab current]
+		if {[string length $parent] == 0} { set parent .application }
+		set base [::util::databaseName $base]
+		set msg [format $mc::WriteOperationInProgress $base]
+
+		if {![::scidb::progress::interruptable?]} {
+			set detail $mc::LogoutNotPossible
+			dialog::error -parent $parent -message $msg -detail $detail -topmost yes 
+		} else {
+			set buttons [list [list cancel $mc::CancelLogout] [list abort $mc::AbortWriteOperation]]
+			set detail  $mc::RestartLogout
+			set reply [::dialog::warning \
+				-parent $parent \
+				-message $msg \
+				-detail $detail \
+				-buttons $buttons \
+				-topmost yes \
+				-centeronscreen yes \
+			]
+			if {$reply eq "cancel"} { return 0 }
+			set cmd [namespace code [list SmCallSaveYourself $shutdown]]
+			if {[::scidb::progress::interrupt -inform $cmd]} { return 1 }
+		}
+
+		::log::suppress yes
+		update
+		return 0
+	}
+
+	## Handle background process - always interruptable #############
+	set base [::scidb::app::writing -background yes]
+	if {[string length $base] == 0} { return 1 }
+	set base [::util::databaseName $base]
+	set msg [format $mc::WriteOperationInProgress $base]
+	set buttons [list [list cancel $mc::CancelLogout] [list abort $mc::AbortWriteOperation]]
+
+	set reply [::dialog::warning -parent $parent \
+		-message $msg \
+		-buttons $buttons \
+		-topmost yes \
+		-centeronscreen yes \
+	]
+	if {$reply eq "cancel"} { return 0 }
+	::log::suppress yes
+	::scidb::progress::interrupt -wait yes
+	return 1
+}
+
+
+proc SmCallSaveYourself {shutdown} {
+	update
+	::log::suppress no
+	::scidb::tk::sm saveyourself -shutdown $shutdown
+}
+
+} ;# [tk windowingsystem] eq "x11"
 
 
 proc InformAboutUpdates {item} {
@@ -625,7 +736,7 @@ proc ChooseLanguage {parent} {
 	}
 	wm resizable $dlg no no
 	wm transient $dlg $parent
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	update idletasks
 	::scidb::tk::wm frameless $dlg
 	wm deiconify $dlg
@@ -744,7 +855,7 @@ proc Undock {w name} {
 	::widget::menuTextvarHook $w.popup 0 [namespace current]::mc::DockWindow
 	$w configure -width $Attr($name,width) -height $Attr($name,height)
 	wm manage $w ;# -iconic
-	::util::place $w at $x [expr {$y - 22}]
+	::util::place $w -x $x -y [expr {$y - 22}]
 	wm protocol $w WM_DELETE_WINDOW [namespace code [list Dock $w $name]]
 #	wm iconphoto $w -default $::icon::64x64::logo $::icon::16x16::logo
 	ComputeMinSize $main

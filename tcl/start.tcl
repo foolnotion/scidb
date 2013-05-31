@@ -236,6 +236,12 @@ proc update {} {
 } ;# namespace scidb
 
 
+# --- Initalization ------------------------------------------------------------
+proc util::place::getWmFrameExtents {w} { return [::scidb::tk::wm extents $w] }
+proc util::place::getWmWorkArea {w} { return [::scidb::tk::wm workarea $w] }
+# ------------------------------------------------------------------------------
+
+
 if {[::process::testOption version]} {
 	puts "$::scidb::app version $::scidb::version"
 	if {[file readable $::scidb::file::options]} {

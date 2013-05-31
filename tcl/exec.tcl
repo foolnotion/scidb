@@ -148,6 +148,10 @@ proc ParseArgs {} {
 			incr i
 			break
 		}
+		if {$arg eq "--session-id"} {
+			incr i
+			continue
+		}
 		if {[string range $arg 0 1] ne "--"} {
 			break
 		}
@@ -406,6 +410,7 @@ if {	![::process::testOption single-process]
 			exit 1
 		}
 	}
+	unset -nocomplain err
 }
 
 } ;# namespace remote

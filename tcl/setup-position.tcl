@@ -237,7 +237,7 @@ proc open {parent} {
 	wm transient $dlg [winfo toplevel $parent]
 	wm title $dlg "[tk appname] - $mc::SetStartPosition"
 	wm resizable $dlg no no
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $focus
 	::ttk::grabWindow $dlg

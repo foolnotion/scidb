@@ -953,6 +953,7 @@ proc Configure {table w h} {
 		GenerateTableMinSizeEvent $table
 	}
 
+	set h [winfo height $table.t]
 	set hdrHeight [$table.t headerheight]
 	set tableHeight [expr {$h - $hdrHeight - 2*[$table.t cget -borderwidth]}]
 	set height [expr {$tableHeight/$Vars(linespace)}]
@@ -1737,7 +1738,7 @@ proc OpenConfigureDialog {table id header} {
 	if {[tk windowingsystem] eq "aqua"} {
 		catch { ::tk::unsupported::MacWindowStyle style $top moveableModal {} }
 	}
-	::util::place $top center $table
+	::util::place $top -parent $table -position center
 	wm deiconify $top
 	::focus $tbl.bforeground
 	ttk::grabWindow $top

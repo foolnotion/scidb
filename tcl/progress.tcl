@@ -126,7 +126,12 @@ proc DoCmd {cmd parent {value 0}} {
 		}
 
 		interrupted? {
+			update idletasks
 			return [::dialog::progressbar::interrupted? .progress]
+		}
+
+		interruptable? {
+			return [::dialog::progressbar::interruptable? .progress]
 		}
 	}
 }

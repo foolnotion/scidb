@@ -512,7 +512,7 @@ proc openSetupDialog {parent context position args} {
 	wm withdraw $dlg
 	wm title $dlg "$::scidb::app - $mc::Configure($context)"
 	wm resizable $dlg no no
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm transient $dlg [winfo toplevel $parent]
 	catch { wm attributes $dlg -type dialog }
 	wm deiconify $dlg

@@ -986,7 +986,7 @@ proc openConfigDialog {parent size closeCmd updateCmd resetCmd} {
 	wm resizable $dlg 0 0
 	wm withdraw $dlg
 	wm title $dlg "$::scidb::app: [set [namespace current]::mc::SquareStyleConf]"
-	util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 #	wm transient $dlg [winfo toplevel $parent]
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list DestroyDialog $dlg $size $resetCmd]]
 	wm deiconify $dlg

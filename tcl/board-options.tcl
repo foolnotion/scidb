@@ -580,7 +580,7 @@ proc EnterName {parent labelText} {
 	wm title $dlg "$::scidb::app"
 	wm transient $dlg [winfo toplevel $parent]
 	catch { wm attributes $dlg -type dialog }
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $f.e
 	::ttk::grabWindow $dlg
@@ -702,7 +702,7 @@ proc SaveSquareStyle {parent} {
 
 	wm withdraw $dlg
 	wm title $dlg "$::scidb::app"
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm transient $dlg [winfo toplevel $parent]
 	catch { wm attributes $dlg -type dialog }
 	wm deiconify $dlg
@@ -1174,7 +1174,7 @@ proc EditStyles {parent which} {
 		}"
 
 	# map window ###################################
-	::util::place $dlg center $parent
+	::util::place $dlg -parent $parent -position center
 	wm transient $dlg [winfo toplevel $parent]
 	wm protocol $dlg WM_DELETE_WINDOW "destroy $dlg"
 	wm title $dlg $::scidb::app

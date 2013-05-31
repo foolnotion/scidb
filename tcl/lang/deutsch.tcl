@@ -377,8 +377,14 @@
 ::application::mc::ChessInfoDatabase	"Schach-Informations-Datenbank"
 ::application::mc::Shutdown				"Schließung..."
 ::application::mc::QuitAnyway				"Trotzdem schliessen?"
+::application::mc::CancelLogout			"Logout beenden"
+::application::mc::AbortWriteOperation	"Schreiboperation abbrechen"
 
 ::application::mc::UpdatesAvailable		"Updates verfügbar"
+
+::application::mc::WriteOperationInProgress "Eine Schreiboperation ist im Fortgang: zur Zeit modfiziert/schreibt Scidb die Datenbank '%s'."
+::application::mc::LogoutNotPossible	"Ein Logout ist jetzt nicht möglich, das Resultat wäre eine korrupte Datenbank."
+::application::mc::RestartLogout			"Der Abbruch der Schreiboperation wird den Logout-Prozess erneut starten."
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Zeige Turniertabelle zur aktuellen Partie"

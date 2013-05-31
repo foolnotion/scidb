@@ -93,11 +93,19 @@ if {[tk windowingsystem] eq "x11"} {
 			update idletasks
 			::scidb::tk::wm toolbar $w
 		}
+		proc changeDesktop {w} {
+			if {[winfo exists .application]} {
+				::scidb::tk::wm desktop .application
+			} else {
+				::scidb::tk::wm desktop .
+			}
+		}
 	}
 
 	proc toolbar::x11MakeToolbar {w} { ::x11::makeToolbar $w }
 	proc fsbox::x11MakeFrameless {w} { ::x11::makeFrameless $w }
 	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
+	proc dialog::messagebox::changeDesktop {w type} { ::x11::changeDesktop $w }
 }
 
 set ::clipboard::window .application
@@ -115,6 +123,7 @@ set dialog::choosefont::iconReset	$icon::iconReset
 set dialog::progressbar::icon::16x16::stop $::icon::16x16::stop
 
 set tk::ShadowOffset $::shadow::offset
+
 
 proc dialog::choosefont::messageBox {parent title msg buttons defaultButton} {
 	return [::dialog::warning \

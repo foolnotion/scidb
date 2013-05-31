@@ -61,6 +61,7 @@ static char const* CmdInitialized		= "::scidb::app::initialized?";
 static char const* CmdLoad					= "::scidb::app::load";
 static char const* CmdLookup				= "::scidb::app::lookup";
 static char const* CmdVariant				= "::scidb::app::variant";
+static char const* CmdWriting				= "::scidb::app::writing";
 
 
 static int
@@ -393,6 +394,27 @@ cmdActiveVariants(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 }
 
 
+static int
+cmdWriting(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	bool background = false;
+
+	for (int i = 1; i < objc; i += 2)
+	{
+		char const* option = stringFromObj(objc, objv, i);
+
+		if (strcmp(option, "-background") == 0)
+			background = boolFromObj(objc, objv, i + 1);
+		else
+			return error(CmdWriting, 0, 0, "unknown option '%s'", option);
+	}
+
+	// TODO: background write operations not exisiting yes
+	setResult(Scidb->currentlyWriting());
+	return TCL_OK;
+}
+
+
 void
 tcl::app::setup(::app::Application* app)
 {
@@ -413,6 +435,7 @@ tcl::app::init(Tcl_Interp* ti)
 	createCommand(ti, CmdLoad,					cmdLoad);
 	createCommand(ti, CmdLookup,				cmdLookup);
 	createCommand(ti, CmdVariant,				cmdVariant);
+	createCommand(ti, CmdWriting,				cmdWriting);
 }
 
 // vi:set ts=3 sw=3:

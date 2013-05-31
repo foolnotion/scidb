@@ -28,7 +28,7 @@ proc trace {cmd type args} {
 		uplevel [list __trace__orig remove $type $name $ops $commandPrefix]
 	}
 
-	uplevel [list __trace__orig $cmd $type {*}$args]
+	return [uplevel [list __trace__orig $cmd $type {*}$args]]
 }
 
 

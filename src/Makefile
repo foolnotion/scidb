@@ -291,11 +291,11 @@ cdb2sci: cdb2sci.o $(LIBS)
 	@$(CXX) -o $@ $< $(LDFLAGS) $(PROFILING) $(ALL_LIBS)
 
 $(TCL_PROGRAM): tclscidb.o $(TCL_LIBS) $(ZLIB_LIB)
-	@echo "Building $@"
+	@echo "Building $(TCL_PROGRAM)"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(TCL_LIBRARY) $(ZLIB_LIB)
 
 $(TK_PROGRAM): tkscidb.o $(LIBS) $(TCL_LIBS) $(TK_LIBS)
-	@echo "Building $@"
+	@echo "Building $(TK_PROGRAM)"
 	@$(CXX) -o $@ $< $(LDFLAGS) $(PROFILING) $(ALL_TK_LIBS) $(ALL_LIBS)
 
 .cpp.o:

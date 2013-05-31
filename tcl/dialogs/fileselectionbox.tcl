@@ -450,8 +450,8 @@ proc Open {type args} {
 				scan $geometry "%dx%d" dw dh
 			}
 			set parent $data(-parent)
-			set sw [winfo screenwidth  $parent]
-			set sh [winfo screenheight $parent]
+			set sw [winfo workareawidth  $parent]
+			set sh [winfo workareaheight $parent]
 			if {$parent eq "." || $data(-place) eq "centeronscreen"} {
 				set x0 [expr {($sw - $dw)/2 - [winfo vrootx $parent]}]
 				set y0 [expr {($sh - $dh)/2 - [winfo vrooty $parent]}]

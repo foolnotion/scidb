@@ -76,8 +76,8 @@ proc open {parent base variant info view index {fen {}}} {
 	::tooltip::tooltip $dlg.previous ::browser::mc::LoadPrevGame
 	::tooltip::tooltip $dlg.next ::browser::mc::LoadNextGame
 
-	set sw [expr {[winfo screenwidth $dlg] - 30}]
-	set sh [expr {[winfo screenheight $dlg] - 140}]
+	set sw [expr {[winfo workareawidth $dlg] - 20}]
+	set sh [expr {[winfo workareaheight $dlg] - 110}]
 
 	set boardSize(1) [expr {($sh - 2*47)/16}]
 	set boardSize(3) [expr {($sh - 3*47)/24}]
@@ -125,7 +125,7 @@ proc open {parent base variant info view index {fen {}}} {
 	wm withdraw $dlg
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
 	wm resizable $dlg false false
-	::util::place $dlg center $parent
+	::util::place $dlg -position center
 	wm deiconify $dlg
 	focus $nb
 
@@ -525,7 +525,8 @@ proc PopupMenu {nb} {
 		-image $::icon::16x16::rotateBoard \
 		-label " $mc::RotateBoard" \
 		-accelerator [string toupper $mc::AcceleratorRotate] \
-		-command [namespace code [list RotateBoard $nb]]
+		-command [namespace code [list RotateBoard $nb]] \
+		;
 	$menu add command \
 		-compound left \
 		-image $::icon::16x16::document \
@@ -550,15 +551,6 @@ proc PopupMenu {nb} {
 	if {$Vars(index) >= 0} {
 		$menu add separator
 		set count [scidb::view::count games $base $variant $view]
-		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
-		$menu add command \
-			-label " $::browser::mc::GotoGame(next)" \
-			-image $::icon::16x16::forward \
-			-compound left \
-			-command [namespace code [list GotoGame(next) $nb]] \
-			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
-			-state $state \
-			;
 		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
 		$menu add command \
 			-label " $::browser::mc::GotoGame(prev)" \
@@ -570,11 +562,11 @@ proc PopupMenu {nb} {
 			;
 		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
 		$menu add command \
+			-label " $::browser::mc::GotoGame(next)" \
+			-image $::icon::16x16::forward \
 			-compound left \
-			-image $::icon::16x16::last \
-			-label " $::browser::mc::GotoGame(last)" \
-			-command [namespace code [list GotoGame(last) $nb]] \
-			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
+			-command [namespace code [list GotoGame(next) $nb]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(Down)" \
 			-state $state \
 			;
 		if {$count <= 1 || $Vars(index) == 0} { set state disabled } else { set state normal }
@@ -584,6 +576,15 @@ proc PopupMenu {nb} {
 			-label " $::browser::mc::GotoGame(first)" \
 			-command [namespace code [list GotoGame(first) $nb]] \
 			-accel "$::mc::Key(Ctrl)-$::mc::Key(Home)" \
+			-state $state \
+			;
+		if {$count <= 1 || $Vars(index) + 1 == $count} { set state disabled } else { set state normal }
+		$menu add command \
+			-compound left \
+			-image $::icon::16x16::last \
+			-label " $::browser::mc::GotoGame(last)" \
+			-command [namespace code [list GotoGame(last) $nb]] \
+			-accel "$::mc::Key(Ctrl)-$::mc::Key(End)" \
 			-state $state \
 			;
 	}
@@ -604,8 +605,10 @@ proc RotateBoard {nb} {
 	set Vars(flip) [expr {!$Vars(flip)}]
 
 	foreach tab [$nb tabs] {
-		foreach w [winfo children $tab] {
-			if {[winfo class $w] eq "Board"} { ::board::diagram::rotate $w }
+		foreach v [winfo children $tab] {
+			foreach w [winfo children $v] {
+				if {[winfo class $w] eq "Board"} { ::board::diagram::rotate $w }
+			}
 		}
 	}
 

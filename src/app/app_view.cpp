@@ -72,6 +72,29 @@ map(View::UpdateMode mode)
 }
 
 
+namespace {
+
+struct WriteGuard
+{
+	void release() { m_app.setIsWriting(); }
+
+	WriteGuard(Application& app, Database const& base)
+		:m_app(app)
+	{
+		if (!base.isMemoryOnly())
+			m_app.setIsWriting(base.name());
+	}
+
+	WriteGuard(Application& app, mstl::string const& name) :m_app(app) { m_app.setIsWriting(name); }
+
+	~WriteGuard() { release(); }
+
+	Application& m_app;
+};
+
+} // namespace
+
+
 View::View(Application& app, Cursor& cursor)
 	:m_app(app)
 	,m_cursor(cursor)
@@ -595,7 +618,9 @@ View::copyGames(	Cursor& destination,
 {
 	progress.message("copy-game");
 
-	unsigned count = m_cursor.m_db->copyGames(	destination.database(),
+	WriteGuard guard(m_app, destination.database());
+
+	unsigned count = m_cursor.m_db->copyGames(destination.database(),
 															m_filter[table::Games],
 															m_selector[table::Games],
 															allowedTags,
@@ -604,6 +629,7 @@ View::copyGames(	Cursor& destination,
 															log,
 															progress);
 
+	guard.release();
 	m_app.startUpdateTree(destination);
 	return count;
 }
@@ -679,6 +705,8 @@ View::exportGames(mstl::string const& filename,
 		destination.setDescription(description);
 		progress.message("write-game");
 
+		WriteGuard guard(m_app, destination);
+
 		if (	m_cursor.m_db->format() == format::Scidb
 			&& fmode != Upgrade
 			&& allowExtraTags
@@ -705,6 +733,8 @@ View::exportGames(mstl::string const& filename,
 									m_cursor.m_db->variant(),
 									type);
 		destination.setDescription(description);
+
+		WriteGuard guard(m_app, destination);
 
 		if (m_cursor.m_db->variant() == variant::Normal)
 		{
@@ -781,6 +811,7 @@ View::exportGames(mstl::string const& filename,
 		util::ZStream strm(internalName, type, mode);
 		PgnWriter writer(format::Pgn, strm, useEncoding, flags);
 		progress.message("write-game");
+		WriteGuard guard(m_app, filename);
 		count = exportGames(writer, copyMode, illegalRejected, log, progress);
 	}
 	else
