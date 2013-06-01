@@ -36,8 +36,6 @@
 #include "tt.h"
 #include "ucioption.h"
 
-#define HASHFULL // (Gregor Cramer)
-
 namespace Search {
 
   volatile SignalsType Signals;
@@ -315,18 +313,14 @@ finalize:
 
 #ifdef THREECHECK
   if (pos.got_third_check())
-  {
       sync_cout << "bestmove " << "(none) ponder (none)" << sync_endl;
-  }
   else
 #endif
-  {
-      // Best move could be MOVE_NONE when searching on a stalemate position
-      sync_cout << "bestmove " << move_to_uci(RootMoves[0].pv[0], Chess960)
-                << " ponder "  << move_to_uci(RootMoves[0].pv[1], Chess960) << sync_endl;
-  }
+  // Best move could be MOVE_NONE when searching on a stalemate position
+  sync_cout << "bestmove " << move_to_uci(RootMoves[0].pv[0], Chess960)
+            << " ponder "  << move_to_uci(RootMoves[0].pv[1], Chess960) << sync_endl;
 
-#ifdef HASHFULL // (Gregor Cramer)
+#ifdef HASHFULL
   sync_cout << "info hashfull " << TT.fullness() << sync_endl;
 #endif
 }
@@ -351,7 +345,9 @@ namespace {
     bestValue = delta = -VALUE_INFINITE;
     ss->currentMove = MOVE_NULL; // Hack to skip update gains
 
-    Time::point startTime = Time::now();
+#ifdef HASHFULL
+    Time::point startTime = Time::now(); // used for "info hashfull"
+#endif
 
     // Iterative deepening loop until requested to stop or target depth reached
     while (!Signals.stop && ++depth <= MAX_PLY && (!Limits.depth || depth <= Limits.depth))
@@ -421,9 +417,9 @@ namespace {
                 if ((bestValue > alpha && bestValue < beta) || currentTime - SearchTime > 2000)
                     sync_cout << uci_pv(pos, depth, alpha, beta) << sync_endl;
 
-#ifdef HASHFULL // (Gregor Cramer)
+#ifdef HASHFULL
                 // This seems to be the appropriate place to send our stats,
-                // but with at least one-second gap (Gregor Cramer)
+                // but with at least one-second gap.
                 if (currentTime >= startTime + 1000)
                 {
                   sync_cout << "info hashfull " << TT.fullness() << sync_endl;

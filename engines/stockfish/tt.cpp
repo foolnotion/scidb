@@ -27,7 +27,10 @@ TranspositionTable TT; // Our global transposition table
 
 TranspositionTable::TranspositionTable() {
 
-  size = used = generation = 0;
+  size = generation = 0;
+#ifdef HASHFULL
+  used = 0;
+#endif
   entries = NULL;
 }
 
@@ -70,7 +73,9 @@ void TranspositionTable::set_size(size_t mbSize) {
 
 void TranspositionTable::clear() {
 
+#ifdef HASHFULL
   used = 0;
+#endif
   memset(entries, 0, size * sizeof(TTCluster));
 }
 
@@ -99,8 +104,10 @@ void TranspositionTable::store(const Key posKey, Value v, Bound t, Depth d, Move
           if (m == MOVE_NONE)
               m = tte->move();
 
+#ifdef HASHFULL
 			 if (i == 0)
 				 ++used;
+#endif
           tte->save(posKey32, v, t, d, m, generation, statV, kingD);
           return;
       }

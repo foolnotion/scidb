@@ -105,11 +105,15 @@ public:
   void new_search();
   TTEntry* first_entry(const Key posKey) const;
   void refresh(const TTEntry* tte) const;
+#ifdef HASHFULL
   size_t fullness() const;
+#endif
 
 private:
   size_t size;
+#ifdef HASHFULL
   size_t used;
+#endif
   TTCluster* entries;
   uint8_t generation; // Size must be not bigger then TTEntry::generation8
 };
@@ -136,11 +140,13 @@ inline void TranspositionTable::refresh(const TTEntry* tte) const {
 }
 
 
+#ifdef HASHFULL
 /// TranspositionTable::used() returns the fullness of the table (in permille).
 
 inline size_t TranspositionTable::fullness() const {
 
   return size_t(used*1000.0/size + 0.5);
 }
+#endif
 
 #endif // !defined(TT_H_INCLUDED)
