@@ -3585,7 +3585,7 @@ Game::finishLoad(variant::Type variant, mstl::string const* fen)
 	::checkThreefoldRepetitions(m_startBoard, m_variant, m_startNode);
 	updateLine();
 	updateLanguageSet();
-	m_wantedLanguages = m_languageSet;
+//	m_wantedLanguages = m_languageSet;
 	m_startNode->updateFromTimeTable(m_timeTable);
 	m_previousKey.clear();
 

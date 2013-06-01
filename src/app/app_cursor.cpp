@@ -446,7 +446,7 @@ Cursor::compact(::util::Progress& progress)
 
 	try
 	{
-		unsigned frequency	= progress.frequency(numGames, 20000);
+		unsigned frequency	= progress.frequency(numGames, 5000);
 		unsigned reportAfter	= frequency;
 
 		util::ProgressWatcher watcher(progress, numGames);

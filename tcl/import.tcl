@@ -1055,7 +1055,7 @@ proc DoImport {position dlg} {
 			set reply [::dialog::question -parent $dlg -message $msg -detail $detail]
 			if {$reply == "no"} { return }
 			set index [lsearch -exact -index 0 $Priv($position:sets) en]
-			$Priv($position:figurines) current $index
+			$Priv($position:figurines) current [expr {$index + 1}]
 			set figurine [$Priv($position:figurines) get fig]
 		}
 	}

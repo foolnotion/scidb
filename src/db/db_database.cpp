@@ -1648,7 +1648,7 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 	M_REQUIRE(format() == format::Scidb);
 
 	unsigned count			= filter.count();
-	unsigned frequency	= progress.frequency(count, 20000);
+	unsigned frequency	= progress.frequency(count, 5000);
 	unsigned reportAfter	= frequency;
 	unsigned number		= 0;
 	unsigned numGames		= 0;
@@ -1694,7 +1694,7 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 	M_REQUIRE(format() == format::Scidb);
 
 	unsigned count			= filter.count();
-	unsigned frequency	= progress.frequency(count, 20000);
+	unsigned frequency	= progress.frequency(count, 5000);
 	unsigned reportAfter	= frequency;
 	unsigned number		= 0;
 	unsigned numGames		= 0;

@@ -1396,7 +1396,7 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 				-label " [format $mc::ReplaceMoves $name]" \
 				-image $::icon::16x16::save \
 				-compound left \
-				-command [namespace code [list ReplaceMoves $parent $position $number]] \
+				-command [namespace code [list ReplaceMoves $parent $base $variant $position $number]] \
 				-state $state \
 				-accel "$::mc::Key(Ctrl)-$::application::board::mc::Accel(replace-moves)" \
 				;
@@ -1573,9 +1573,9 @@ proc ReplaceGame {parent base variant position number} {
 }
 
 
-proc ReplaceMoves {parent position number} {
+proc ReplaceMoves {parent base variant position number} {
 	if {[::game::verify $parent $position $number]} {
-		::application::pgn::replaceMoves $parent
+		::application::pgn::replaceMoves $parent $base $variant $position $number
 	}
 }
 

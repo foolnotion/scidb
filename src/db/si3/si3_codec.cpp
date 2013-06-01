@@ -938,7 +938,7 @@ Codec::writeIndexEntries(mstl::fstream& fstrm, unsigned start, Progress& progres
 
 	GameInfoList& infoList = gameInfoList();
 
-	unsigned frequency	= progress.frequency(infoList.size(), 100000);
+	unsigned frequency	= progress.frequency(infoList.size(), 5000);
 	unsigned reportAfter	= frequency + start;
 
 	ProgressWatcher watcher(progress, infoList.size());
