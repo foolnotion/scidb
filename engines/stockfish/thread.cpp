@@ -426,7 +426,7 @@ void ThreadPool::start_searching(const Position& pos, const LimitsType& limits,
   Limits = limits;
 
 #if 1 // FIX fixing an invalid access to memory (Gregor Cramer)
-  if (states)
+  if (states.get())
 #endif
   SetupStates = states; // Ownership transfer here
   RootMoves.clear();
