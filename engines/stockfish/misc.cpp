@@ -1,7 +1,7 @@
 /*
   Stockfish, a UCI chess playing engine derived from Glaurung 2.1
   Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
-  Copyright (C) 2008-2012 Marco Costalba, Joona Kiiski, Tord Romstad
+  Copyright (C) 2008-2013 Marco Costalba, Joona Kiiski, Tord Romstad
 
   Stockfish is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -31,23 +31,20 @@
 using namespace std;
 
 /// Version number. If Version is left empty, then Tag plus current
-/// date (in the format YYMMDD) is used as a version number.
+/// date, in the format DD-MM-YY, are used as a version number.
 
-static const string Version = "2.3.1 scidb";
+static const string Version = "";
 static const string Tag = "";
 
 
-/// engine_info() returns the full name of the current Stockfish version.
-/// This will be either "Stockfish YYMMDD" (where YYMMDD is the date when
-/// the program was compiled) or "Stockfish <version number>", depending
-/// on whether Version is empty.
+/// engine_info() returns the full name of the current Stockfish version. This
+/// will be either "Stockfish <Tag> DD-MM-YY" (where DD-MM-YY is the date when
+/// the program was compiled) or "Stockfish <Version>", depending on whether
+/// Version is empty.
 
 const string engine_info(bool to_uci) {
 
   const string months("Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec");
-  const string cpu64(Is64Bit ? " 64bit" : "");
-  const string popcnt(HasPopCnt ? " SSE4.2" : "");
-
   string month, day, year;
   stringstream s, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
@@ -57,11 +54,13 @@ const string engine_info(bool to_uci) {
   {
       date >> month >> day >> year;
 
-      s << Tag << setfill('0') << " " << year.substr(2)
-        << setw(2) << (1 + months.find(month) / 4) << setw(2) << day;
+      s << Tag << string(Tag.empty() ? "" : " ") << setfill('0') << setw(2) << day
+        << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
   }
 
-  s << cpu64 << popcnt << (to_uci ? "\nid author ": " by ")
+  s << (Is64Bit ? " 64" : "")
+    << (HasPopCnt ? " SSE4.2" : "")
+    << (to_uci ? "\nid author ": " by ")
     << "Tord Romstad, Marco Costalba and Joona Kiiski";
 
   return s.str();
@@ -178,7 +177,7 @@ void start_logger(bool b) { Logger::start(b); }
 
 int cpu_count() {
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
   SYSTEM_INFO s;
   GetSystemInfo(&s);
   return s.dwNumberOfProcessors;
@@ -204,7 +203,7 @@ int cpu_count() {
 
 void timed_wait(WaitCondition& sleepCond, Lock& sleepLock, int msec) {
 
-#if defined(_WIN32) || defined(_WIN64)
+#if defined(_WIN32)
   int tm = msec;
 #else
   timespec ts, *tm = &ts;
@@ -227,18 +226,19 @@ void prefetch(char*) {}
 
 #else
 
-#   include <xmmintrin.h>
-
 void prefetch(char* addr) {
 
-#  if defined(__INTEL_COMPILER) || defined(__ICL)
+#  if defined(__INTEL_COMPILER)
    // This hack prevents prefetches to be optimized away by
    // Intel compiler. Both MSVC and gcc seems not affected.
    __asm__ ("");
 #  endif
 
-  _mm_prefetch(addr, _MM_HINT_T2);
-  _mm_prefetch(addr+64, _MM_HINT_T2); // 64 bytes ahead
+#  if defined(__INTEL_COMPILER) || defined(_MSC_VER)
+  _mm_prefetch(addr, _MM_HINT_T0);
+#  else
+  __builtin_prefetch(addr);
+#  endif
 }
 
 #endif
