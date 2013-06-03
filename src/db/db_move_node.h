@@ -171,6 +171,7 @@ public:
 	void replaceMarks(MarkSet const& marks);
 	void swapComment(Comment& comment, move::Position position);
 	void setComment(Comment const& comment, move::Position position);
+	void setMove(Move const& move);
 	void merge(MoveNode const* node);
 	void setInfoFlag(bool flag = true);
 	void swapVariations(unsigned varNo1, unsigned varNo2);

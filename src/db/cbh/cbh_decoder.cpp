@@ -916,6 +916,7 @@ Decoder::getAnnotation(MoveNode* node, int moveNo)
 }
 
 
+#if 0
 void
 Decoder::decodeMoves(Consumer& consumer)
 {
@@ -953,6 +954,7 @@ Decoder::decodeMoves(Consumer& consumer)
 		}
 	}
 }
+#endif
 
 
 void
@@ -1031,8 +1033,7 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count)
 				}
 				else
 				{
-					MoveNode dummy;
-					getAnnotation(&dummy, int(count) - 1);
+					throw DecodingFailedException();
 				}
 				break;
 
@@ -1051,10 +1052,122 @@ Decoder::decodeMoves(MoveNode* root, unsigned& count)
 
 
 void
+Decoder::decodeMoves(MoveNode* root, unsigned& count, MoveNodeAllocator& allocator)
+{
+	typedef mstl::vector<MoveNode*> Vars;
+
+	Vars varList;
+	Move move;
+
+	while (true)
+	{
+		MoveNode* node;
+
+		switch (decodeMove(move, count))
+		{
+			case ::Move:
+				if (move)
+				{
+					(node = allocator.allocate())->setMove(move);
+
+					if (varList.empty())
+					{
+						M_REQUIRE(root->next() == 0);
+						root->setNext(node);
+					}
+					else
+					{
+						// first variation is main line
+						// main line is last variation
+
+						MoveNode* main = varList[0];
+
+						if (!main->next())
+							IO_RAISE(Game, Corrupted, "bad data");
+
+						M_REQUIRE(root->next() == 0);
+						root->setNext(main->removeNext());
+						root = root->next();
+
+						for (unsigned i = 1; i < varList.size(); ++i)
+						{
+							MoveNode* var  = varList[i];
+							MoveNode* next = var->next();
+
+#ifndef ALLOW_EMPTY_VARS
+							if (next->atLineEnd())
+							{
+								// Scidb does not support empty variations,
+								// but we cannot delete the variation if a
+								// comment/annotation/mark exists. As a
+								// workaround we insert a null move.
+								// Note: Possibly it isn't possible to enter
+								// empty variations in ChessBase, but we like
+								// to handle this case for safety reasons.
+								if (var->hasSupplement() || next->hasSupplement())
+								{
+									Move null(Move::null());
+									null.setColor(move.color());
+									(next = allocator.allocate())->setMove(null);
+									M_REQUIRE(next->next() == 0);
+									next->setNext(var->removeNext());
+									M_REQUIRE(var->next() == 0);
+									var->setNext(next);
+								}
+							}
+#endif
+
+							if (next->isBeforeLineEnd())
+								root->addVariation(var);
+						}
+
+						root->addVariation(main);
+						M_REQUIRE(main->next() == 0);
+						main->setNext(node);
+						varList.clear();
+					}
+
+					getAnnotation(node, int(count) - 1);
+					root = node;
+				}
+				else
+				{
+					throw DecodingFailedException();
+				}
+				break;
+
+			case ::Push:
+				node = allocator.allocate();
+				varList.push_back(node);
+				decodeMoves(node, count, allocator);
+				break;
+
+			case ::Pop:
+				M_REQUIRE(root->next() == 0);
+				root->setNext(allocator.allocate());
+				return;
+		}
+	}
+}
+
+
+MoveNode*
 Decoder::decodeMoves(MoveNode* root)
 {
 	unsigned count = 0;
 	decodeMoves(root, count);
+	return root;
+}
+
+
+MoveNode*
+Decoder::decodeMoves(MoveNodeAllocator& allocator)
+{
+	unsigned		count	= 0;
+	MoveNode*	root	= allocator.allocate();
+
+	decodeMoves(root, count, allocator);
+	return root;
 }
 
 
@@ -1096,7 +1209,7 @@ Decoder::doDecoding(GameData& data)
 
 
 save::State
-Decoder::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
+Decoder::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info, MoveNodeAllocator& allocator)
 {
 	startDecoding(&tags);
 
@@ -1106,17 +1219,21 @@ Decoder::doDecoding(Consumer& consumer, TagSet& tags, GameInfo const& info)
 	unsigned plyNumber = m_position.board().plyNumber();
 	consumer.startMoveSection();
 
+#if 0
+	// Annoying. We cannot use the direct decoding, because the
+	// game may contain wrong information about the existence of
+	// sub-variations.
 	if (info.countVariations() == 0 && info.countComments() == 0)
 	{
 		// fast decoding
 		decodeMoves(consumer);
 	}
 	else
+#endif
 	{
-		// slow decoding
-		MoveNode root;
-		decodeMoves(&root);
-		traverse(consumer, &root);
+		allocator.release();
+		allocator.reserve(mstl::mul2(m_gStrm.size()));
+		traverse(consumer, decodeMoves(allocator));
 	}
 
 	char buf[32];

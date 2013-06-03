@@ -820,17 +820,6 @@ DatabaseCodec::clear()
 }
 
 
-unsigned
-DatabaseCodec::produce(Producer& producer, Consumer& consumer, util::Progress& progress)
-{
-	M_REQUIRE(producer.hasConsumer());
-	M_REQUIRE(producer.consumer().consumer() == 0);
-
-	producer.consumer().setConsumer(&consumer);
-	return importGames(producer, progress);
-}
-
-
 void
 DatabaseCodec::getGameRecord(GameInfo const& info, util::BlockFileReader& reader, util::ByteStream& src)
 {
@@ -912,33 +901,24 @@ DatabaseCodec::addGame(ByteStream& gameData, TagSet const& tags, Consumer& consu
 {
 	save::State state;
 
-	if (consumer.consumer())
-	{
-		TagSet myTags(tags);
-		GameInfo::setupTags(myTags, consumer);
-		state = exportGame(*consumer.consumer(), gameData, myTags);
-	}
-	else
-	{
-		int index = consumer.index();
+	int index = consumer.index();
 
-		if (index >= 0)
+	if (index >= 0)
+	{
+		if (unsigned(index) < m_db->m_gameInfoList.size())
 		{
-			if (unsigned(index) < m_db->m_gameInfoList.size())
-			{
-				state = saveGame(gameData, tags, consumer);
-				consumer.setIndex(index + 1);
-			}
-			else
-			{
-				consumer.setIndex(-1);
-				state = saveGame(gameData, tags, consumer);
-			}
+			state = saveGame(gameData, tags, consumer);
+			consumer.setIndex(index + 1);
 		}
 		else
 		{
+			consumer.setIndex(-1);
 			state = saveGame(gameData, tags, consumer);
 		}
+	}
+	else
+	{
+		state = saveGame(gameData, tags, consumer);
 	}
 
 	return state;

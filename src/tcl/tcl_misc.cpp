@@ -330,7 +330,7 @@ ToList::appendTag(mstl::string const& tag, mstl::string const& content)
 
 	Tcl_Obj* list = Tcl_NewListObj(2, objv);
 
-	if (!m_space.empty() && tag == "str")
+	if (!m_space.empty())
 	{
 		if (m_first == 0)
 			m_first = list;
@@ -485,7 +485,7 @@ ToList::nag(mstl::string const& s)
 {
 	if (m_tag != "nag")
 		putContent();
-	putTag("nag", s);
+	appendTag("nag", s);
 }
 
 
@@ -500,7 +500,7 @@ ToList::emoticon(mstl::string const& s)
 	{
 		if (m_tag != "emo")
 			putContent();
-		putTag("emo", s);
+		appendTag("emo", s);
 	}
 }
 
@@ -510,7 +510,7 @@ ToList::symbol(char s)
 {
 	if (m_tag != "sym")
 		putContent();
-	putTag("sym", mstl::string(1, s));
+	appendTag("sym", mstl::string(1, s));
 }
 
 
@@ -654,29 +654,6 @@ Parser::parse()
 		m_xml.format("<:%s>", lang);
 		Tcl_ListObjGetElements(0, argv[1], &argc, &argv);
 
-		int firstStrIndex	= -1;
-		int lastStrIndex	= INT_MIN;
-
-		for (int k = 0; k < argc; ++k)
-		{
-			int objn;
-			Tcl_Obj** objs;
-
-			Tcl_ListObjGetElements(0, argv[k], &objn, &objs);
-
-			if (objn == 0)
-				M_RAISE("invalid xml list");
-
-			char const* token = Tcl_GetStringFromObj(objs[0], nullptr);
-
-			if (::strncmp(token, "str", 3) == 0)
-			{
-				if (firstStrIndex == -1)
-					firstStrIndex = k;
-				lastStrIndex = k;
-			}
-		}
-
 		for (int k = 0; k < argc; ++k)
 		{
 			int objn;
@@ -699,7 +676,7 @@ Parser::parse()
 									char const* str = Tcl_GetStringFromObj(objs[1], &len);
 									mstl::string::size_type appendSpaces = 0;
 
-									if (firstStrIndex == k)
+									if (k == 0)
 									{
 										for ( ; len > 0 && *str == ' '; ++str)
 											--len;
@@ -716,14 +693,14 @@ Parser::parse()
 										}
 									}
 
-									if (lastStrIndex == k)
+									if (k == argc - 1)
 									{
 										char const* s = str + len;
 
 										for ( ; len > 0 && s[-1] == ' '; --s)
 											--len;
 
-										if (!m_space.empty() && (s > str || lastStrIndex != firstStrIndex))
+										if (!m_space.empty() && (s > str || argc > 1))
 										{
 											while (	len >= int(m_space.size())
 													&& ::strncmp(s - m_space.size(), m_space, m_space.size()) == 0)

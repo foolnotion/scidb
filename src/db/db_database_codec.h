@@ -144,8 +144,6 @@ public:
 	virtual void setWriteable();
 	virtual void reset() = 0;
 
-	unsigned produce(Producer& producer, Consumer& consumer, util::Progress& progress);
-
 	void open(DatabaseContent* db, mstl::string const& encoding);
 	void open(DatabaseContent* db, mstl::string const& encoding, util::Progress& progress);
 	void open(	DatabaseContent* db,
@@ -193,6 +191,7 @@ public:
 	virtual void sync();
 
 	virtual ::util::BlockFileReader* getAsyncReader();
+	virtual Consumer* getConsumer(format::Type srcFormat);
 	virtual void closeAsyncReader(::util::BlockFileReader* reader);
 
 	Move findExactPosition(GameInfo const& info, Board const& position, bool skipVariations);
@@ -223,8 +222,6 @@ protected:
 	class InfoData;
 
 	typedef DatabaseContent::GameInfoList GameInfoList;
-
-	virtual Consumer* getConsumer(format::Type srcFormat);
 
 	virtual void updateHeader(mstl::string const& rootname);
 	virtual void save(mstl::string const& rootname, unsigned start, util::Progress& progress);

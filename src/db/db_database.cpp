@@ -983,15 +983,24 @@ Database::exportGame(unsigned index, Database& destination) const
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(destination.isOpen());
-	M_REQUIRE(	format() == format::Scid3
-				|| format() == format::Scid4
-				|| format() == format::Scidb);
-	M_REQUIRE(format() == destination.format());
+	M_REQUIRE(	destination.format() == format::Scidb
+				|| destination.format() == format::Scid3
+				|| destination.format() == format::Scid4);
 	M_REQUIRE(index < countGames());
 
-	GameInfo const& info = *m_gameInfoList[index];
-	ByteStream data(m_codec->getGame(info));
-	return destination.codec().addGame(data, info, DatabaseCodec::Alloc);
+	GameInfo const&	info			= *m_gameInfoList[index];
+	format::Type		srcFormat	= format();
+
+	if (srcFormat == destination.format())
+	{
+		ByteStream data(m_codec->getGame(info));
+		return destination.codec().addGame(data, info, DatabaseCodec::Alloc);
+	}
+	else
+	{
+		mstl::auto_ptr<Consumer> consumer(destination.codec().getConsumer(srcFormat));
+		return exportGame(index, *consumer);
+	}
 }
 
 

@@ -683,7 +683,7 @@ Evaluation::match(GameInfo const& info, Board const& board, Variant variant, uns
 {
 	M_ASSERT(m_engine);
 
-	bool rc;
+	bool rc = false; // shut up the compiler
 
 	switch (m_method)
 	{

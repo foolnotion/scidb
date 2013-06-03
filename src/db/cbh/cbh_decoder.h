@@ -28,8 +28,10 @@
 #define _cbh_decoder_included
 
 #include "cbh_decoder_position.h"
-
+#include "db_move_node.h"
 #include "db_move.h"
+
+#include "m_fixed_size_allocator.h"
 
 namespace util { class ByteStream; }
 namespace sys { namespace utf8 { class Codec; } }
@@ -48,23 +50,33 @@ class Decoder
 {
 public:
 
+	typedef mstl::fixed_size_allocator<db::MoveNode> MoveNodeAllocator;
+
 	Decoder(util::ByteStream& gStrm, util::ByteStream& aStrm, sys::utf8::Codec& codec, bool isChess960);
 
 	Move findExactPosition(Board const& position, bool skipVariations);
 
 	unsigned doDecoding(GameData& data);
-	save::State doDecoding(db::Consumer& consumer, TagSet& tags, GameInfo const& info);
+	save::State doDecoding(	db::Consumer& consumer,
+									TagSet& tags,
+									GameInfo const& info,
+									MoveNodeAllocator& allocator);
 
 private:
+
 
 	Decoder(Decoder const&);
 	Decoder& operator=(Decoder const&);
 
 	void startDecoding(TagSet* tags = 0);
 	unsigned decodeMove(Move& move, unsigned& count);
+#if 0
 	void decodeMoves(Consumer& consumer);
-	void decodeMoves(MoveNode* root);
+#endif
+	MoveNode* decodeMoves(MoveNode* root);
+	MoveNode* decodeMoves(MoveNodeAllocator& allocator);
 	void decodeMoves(MoveNode* root, unsigned& count);
+	void decodeMoves(MoveNode* root, unsigned& count, MoveNodeAllocator& allocator);
 	void traverse(Consumer& consumer, MoveNode const* root);
 	void getAnnotation(MoveNode* node, int moveNo);
 	void decodeComment(MoveNode* node, unsigned length, move::Position position);

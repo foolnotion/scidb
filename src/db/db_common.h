@@ -1341,6 +1341,7 @@ namespace display
 		ShowMoveInfo			= 1 << 4,
 		ShowEmoticons			= 1 << 5,
 		ShowVariationNumbers	= 1 << 6,
+		DiscardUnknownResult	= 1 << 7,
 	};
 };
 

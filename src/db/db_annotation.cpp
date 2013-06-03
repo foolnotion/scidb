@@ -163,6 +163,21 @@ Annotation::contains(nag::ID nag) const
 
 
 unsigned
+Annotation::countPrefixNags() const
+{
+	unsigned n = 0;
+
+	for (unsigned i = 0; i < m_count; ++i)
+	{
+		if (nag::isPrefix(nag::ID(m_annotation[i])))
+			++n;
+	}
+
+	return n;
+}
+
+
+unsigned
 Annotation::countUnusualNags() const
 {
 	unsigned n = 0;
@@ -328,6 +343,21 @@ Annotation::suffix(mstl::string& result) const
 			result += "$";
 			::addNumber(result, m_annotation[i]);
 		}
+	}
+
+	return result;
+}
+
+
+mstl::string&
+Annotation::all(mstl::string& result) const
+{
+	for (unsigned i = 0; i < m_count; ++i)
+	{
+		if (!result.empty())
+			::addSpace(result);
+		result += "$";
+		::addNumber(result, m_annotation[i]);
 	}
 
 	return result;

@@ -61,6 +61,7 @@ inline Comment const& MoveNode::comment(move::Position position) const { return 
 
 inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
+inline void MoveNode::setMove(Move const& move)					{ m_move = move; }
 
 
 inline

@@ -634,24 +634,50 @@ public:
 		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
 	}
 
-	void annotation(Annotation const& annotation, bool isTexual) override
+	void annotation(Annotation const& annotation, edit::Annotation::DisplayType type) override
 	{
-		mstl::string prefix, infix, suffix;
+		if (type == edit::Annotation::Textual)
+		{
+			M_ASSERT(!annotation.containsUsualNags());
+			M_ASSERT(annotation.countPrefixNags() == 0);
 
-		annotation.prefix(prefix);
-		annotation.infix(infix);
-		annotation.suffix(suffix);
+			mstl::string textual;
 
-		Tcl_Obj* objv[5];
+			annotation.infix(textual);
+			annotation.suffix(textual);
 
-		objv[0] = m_annotation;
-		objv[1] = Tcl_NewBooleanObj(isTexual);
-		objv[2] = Tcl_NewStringObj(prefix, prefix.size());
-		objv[3] = Tcl_NewStringObj(infix, infix.size());
-		objv[4] = Tcl_NewStringObj(suffix, suffix.size());
+			Tcl_Obj* objv[5];
 
-		M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
-		m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+			objv[0] = m_annotation;
+			objv[1] = Tcl_NewStringObj(textual, textual.size());
+
+			M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
+			m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		}
+		else
+		{
+			mstl::string	prefix, infix, suffix, textual;
+			Annotation		usual, unusual;
+
+			usual.setUsualNags(annotation);
+			unusual.setUnusualNags(annotation);
+
+			usual.prefix(prefix);
+			usual.infix(infix);
+			usual.suffix(suffix);
+			unusual.all(textual);
+
+			Tcl_Obj* objv[5];
+
+			objv[0] = m_annotation;
+			objv[1] = Tcl_NewStringObj(prefix, prefix.size());
+			objv[2] = Tcl_NewStringObj(infix, infix.size());
+			objv[3] = Tcl_NewStringObj(suffix, suffix.size());
+			objv[4] = Tcl_NewStringObj(textual, textual.size());
+
+			M_ASSERT(m_objc < U_NUMBER_OF(m_objv));
+			m_objv[m_objc++] = Tcl_NewListObj(U_NUMBER_OF(objv), objv);
+		}
 	}
 
 	void states(bool threefoldRepetition, bool fiftyMoveRule) override
@@ -2683,6 +2709,7 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj*		showMoveInfo					= objectFromObj(objc, objv, 10);
 	bool			showEmoticon					= boolFromObj(objc, objv, 11);
 	bool			showVariationNumbers			= boolFromObj(objc, objv, 12);
+	bool			discardUnknownResult			= boolFromObj(objc, objv, 13);
 	unsigned		displayStyle					= columnStyle ? display::ColumnStyle : display::CompactStyle;
 	unsigned		moveInfoTypes;
 
@@ -2701,6 +2728,8 @@ cmdSetupStyle(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		displayStyle |= display::ShowMoveInfo;
 	if (showVariationNumbers)
 		displayStyle |= display::ShowVariationNumbers;
+	if (discardUnknownResult)
+		displayStyle |= display::DiscardUnknownResult;
 
 	if (strcmp(moveStyle, "alg") == 0)
 		moveForm = move::Algebraic;

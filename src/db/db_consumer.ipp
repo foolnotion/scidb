@@ -49,7 +49,6 @@ inline Line const& Consumer::openingLine() const					{ return m_line; }
 inline mstl::string const& Consumer::encoding() const				{ return m_encoding; }
 inline sys::utf8::Codec& Consumer::codec() const					{ return *m_codec; }
 inline uint32_t Consumer::flags() const								{ return m_flags; }
-inline Consumer* Consumer::consumer() const							{ return m_consumer; }
 inline MoveInfoSet const& Consumer::moveInfo() const				{ return m_moveInfoSet; }
 inline EngineList const& Consumer::engines() const					{ return m_engines; }
 inline EngineList& Consumer::engines()									{ return m_engines; }
@@ -57,10 +56,9 @@ inline Consumer::TagBits const& Consumer::allowedTags() const	{ return m_allowed
 inline TimeTable& Consumer::timeTable()								{ return m_sendTimeTable; }
 
 inline void Consumer::setFlags(uint32_t flags)						{ m_flags = flags; }
-inline void Consumer::setConsumer(Consumer* consumer)				{ m_consumer = consumer; }
+inline void Consumer::setProducer(Producer* producer)				{ m_producer = producer; }
 inline void Consumer::addMoveInfo(MoveInfo const& info)			{ m_moveInfoSet.add(info); }
 inline void Consumer::startMoveSection()								{ beginMoveSection(); }
-inline void Consumer::setProducer(Producer* producer)				{ m_producer = producer; }
 inline void Consumer::useVariant(variant::Type variant)			{ m_useVariant = variant; }
 
 inline void Consumer::incrementCommentCount()						{ ++m_commentCount; }

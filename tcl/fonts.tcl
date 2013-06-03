@@ -1380,7 +1380,7 @@ proc registerFigurineFonts {context} {
 	if {[info exists figurine($context:normal)]} { return }
 	set size [expr {-$Options($context:size)}]
 
-	if {$UseFigurines && ($Options(figurine:use) || $context eq "text")} {
+	if {$UseFigurines} {
 		set ascent [font metrics $text($context:normal) -ascent]
 		set figurine($context:normal) [font create ::font::figurine($context:normal) \
 			-family $Options(figurine:family:normal) \
@@ -1557,10 +1557,10 @@ proc splitMoves {text {tag figurine}} {
 			if {[string index $m 0] == "*"} {
 				lappend result [string range $m 1 end] $tag
 			} else {
-#				if we like to use Oh's, not zeroes, uncomment this:
 				if {[llength $encoding]} {
 					set m [string map $encoding $m]
 				}
+#				if we like to use Oh's, not zeroes, uncomment this:
 #				lappend result [string map {O 0} $m] {}
 				lappend result $m {}
 			}

@@ -158,7 +158,7 @@ mstl::bits::prepare_exc(mstl::exception& exc,
 	prepare_msg(exc, file, line, func, status == -1 ? 0 : exc_type);
 
 	if (status != -1)
-		free(exc_type);
+		::free(exc_type);
 
 #else
 

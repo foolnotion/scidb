@@ -484,7 +484,7 @@ MoveInfoSet::print(	EngineList const& engines,
 	{
 		if (!m_row[i].isEmpty())
 		{
-			bool print;
+			bool print = false; // shut up the compiler
 
 			switch (m_row[i].content())
 			{

@@ -28,10 +28,15 @@ class memblock
 {
 public:
 
+	typedef ::size_t size_type;
+
 	memblock();
 	explicit memblock(size_t n);
 	explicit memblock(T* finish);
 	~memblock() throw();	// NOTE: we don't want a virtual destructor
+
+	size_type size() const;
+	size_type capacity() const;
 
 #if HAVE_OX_EXPLICITLY_DEFAULTED_AND_DELETED_SPECIAL_MEMBER_FUNCTIONS
 	memblock(memblock const&) = delete;

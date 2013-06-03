@@ -138,9 +138,6 @@ public:
 	void incrementAnnotationCount();
 
 	// data for receiver
-
-	Consumer* consumer() const;
-	void setConsumer(Consumer* consumer);
 	void setProducer(Producer* producer);
 
 #ifdef DEBUG_SI4

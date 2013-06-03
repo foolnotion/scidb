@@ -582,10 +582,11 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Cursor& dst = scidb->cursor(destination, variant);
 	unsigned variantIndex = variant::toIndex(variant);
 	unsigned illegalRejected = 0;
+	unsigned numGames = dst.count(table::Games);
 
 	n = view.copyGames(dst, tagBits, extraTags, illegalRejected, log, progress);
 	accepted[variantIndex] = n;
-	rejected[variantIndex] = dst.count(table::Games) - n;
+	rejected[variantIndex] = dst.count(table::Games) - numGames - n;
 
 	if (progress.interrupted())
 		n = -n - 1;

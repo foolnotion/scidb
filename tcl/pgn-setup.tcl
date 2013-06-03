@@ -288,21 +288,16 @@ proc configureText {path {fontContext ""}} {
 	if {$context eq "editor"} { set bold $Options(weight:mainline) } else { set bold normal }
 	set charwidth [font measure [$w cget -font] "0"]
 
-	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
-	$w tag configure result -font $::font::text($fontContext:$bold)
-	$w tag configure result -foreground  $Colors(foreground:result)
-	$w tag configure empty -foreground $Colors(foreground:empty)
-	$w tag configure illegal -foreground $Colors(foreground:illegal)
-	$w tag configure state -foreground $Colors(foreground:illegal)
-
 	if {$context eq "editor"} {
 		$w tag configure main -font $::font::text($fontContext:$bold)
 		$w tag configure italic -font $::font::text($fontContext:italic)
-		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
+		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
+		$w tag configure variation -foreground $Colors(foreground:variation)
 
-		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
-		$w tag configure circled -foreground #008b00
+		$w tag configure opening -foreground $Colors(foreground:opening)
+		$w tag configure opening -font $::font::text($fontContext:bold)
+		$w tag configure comment -foreground $Colors(foreground:comment)
 
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)
@@ -310,17 +305,15 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure code -font $::font::text($fontContext:normal)
 		$w tag configure codeb -font $::font::text($fontContext:bold)
 
-		$w tag configure opening -foreground $Colors(foreground:opening)
-		$w tag configure opening -font $::font::text($fontContext:bold)
-
-		$w tag configure variation -foreground $Colors(foreground:variation)
 		$w tag configure nag -foreground $Colors(foreground:nag)
 		$w tag configure nagtext -foreground $Colors(foreground:nagtext)
 		$w tag configure bracket -foreground $Colors(foreground:bracket)
 		$w tag configure numbering -foreground $Colors(foreground:numbering)
 		$w tag configure marks -foreground $Colors(foreground:marks)
-		$w tag configure comment -foreground $Colors(foreground:comment)
 		$w tag configure info -foreground $Colors(foreground:info)
+
+		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
+		$w tag configure circled -foreground #008b00
 
 		for {set k 0} {$k <= 10} {incr k} {
 			set margin [expr {$k*$Options(indent:amount)}]
@@ -329,6 +322,13 @@ proc configureText {path {fontContext ""}} {
 			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
 		}
 	}
+
+	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
+	$w tag configure result -font $::font::text($fontContext:$bold)
+	$w tag configure result -foreground  $Colors(foreground:result)
+	$w tag configure empty -foreground $Colors(foreground:empty)
+	$w tag configure illegal -foreground $Colors(foreground:illegal)
+	$w tag configure state -foreground $Colors(foreground:illegal)
 
 	if {$Options(style:column)} {
 		set tab1 [expr {round($Options(tabstop:1)*$charwidth)}]
@@ -349,6 +349,8 @@ proc setupStyle {context {position -1}} {
 	variable ShowMoveInfo
 
 	if {$Options(style:column)} { set thresholds {0 0 0 0} } else { set thresholds {240 80 60 0} }
+
+	set discardUnknownResult 1
 
 	if {$context eq "editor"} {
 		set paragraphSpacing $Options(spacing:paragraph)
@@ -380,6 +382,7 @@ proc setupStyle {context {position -1}} {
 		$showMoveInfo \
 		$showEmoticons \
 		$showVariationNumbers \
+		$discardUnknownResult \
 		;
 }
 
@@ -1196,35 +1199,13 @@ proc RefreshFigurineFont {context position lang} {
 	if {$lang eq "graphic"} {
 		set ::font::Options(figurine:lang) ""
 		::font::useFigurines yes
-		set action enable
-		set color blue2
 	} else {
 		set ::font::Options(figurine:lang) $lang
 		::font::useLanguage $lang
 		::font::useFigurines no
-		set action disable
-		set color #595985
 	}
 
 	SetupStyle $Priv(tree)
-
-	foreach tag {figurine-font figurine-bold} {
-		if {[info exists Priv(link:text:$tag)]} {
-			set t $Priv(link:text:$tag)
-			$t tag configure link -foreground $color
-			if {$action eq "enable"} {
-				$t tag bind link <Enter> [list $t tag configure link -underline 1]
-				$t tag bind link <Leave> [list $t tag configure link -underline 0]
-				$t tag bind link <ButtonPress-1> \
-					[namespace code [list $Priv(tree) select $Priv(link:item:$tag)]]
-			} else {
-				$t tag bind link <Enter> {#}
-				$t tag bind link <Leave> {#}
-				$t tag bind link <ButtonPress-1> {#}
-			}
-			$Priv(tree) $action $tag
-		}
-	}
 
 	::font::registerFigurineFonts setup
 	array set New_Fonts [array get ::font::Options]
@@ -1242,16 +1223,36 @@ proc RefreshNotation {context position style} {
 
 
 proc SetupStyle {style} {
+	variable Priv
+
 	if {[::font::haveSymbols?]} { set action enable } else { set action disable }
 	$style $action symbol-font
 
 	if {[::font::haveFigurines?] && [string length $::font::Options(figurine:lang)] == 0} {
 		set action enable
+		set color blue2
 	} else {
 		set action disable
+		set color #595985
 	}
-	$style $action figurine-font
-	$style $action figurine-bold
+
+	foreach tag {figurine-font figurine-bold} {
+		if {[info exists Priv(link:text:$tag)]} {
+			set t $Priv(link:text:$tag)
+			$t tag configure link -foreground $color
+			if {$action eq "enable"} {
+				$t tag bind link <Enter> [list $t tag configure link -underline 1]
+				$t tag bind link <Leave> [list $t tag configure link -underline 0]
+				$t tag bind link <ButtonPress-1> \
+					[namespace code [list $Priv(tree) select $Priv(link:item:$tag)]]
+			} else {
+				$t tag bind link <Enter> {#}
+				$t tag bind link <Leave> {#}
+				$t tag bind link <ButtonPress-1> {#}
+			}
+			$style $action $tag
+		}
+	}
 }
 
 

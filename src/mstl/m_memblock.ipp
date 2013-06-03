@@ -50,6 +50,24 @@ memblock<T>::~memblock() throw()
 
 template <typename T>
 inline
+typename memblock<T>::size_type
+memblock<T>::size() const
+{
+	return m_finish - m_start;
+}
+
+
+template <typename T>
+inline
+typename memblock<T>::size_type
+memblock<T>::capacity() const
+{
+	return m_end_of_storage - m_start;
+}
+
+
+template <typename T>
+inline
 void
 memblock<T>::swap(memblock& block)
 {

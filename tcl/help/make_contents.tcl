@@ -66,7 +66,7 @@ set f [open $translationFile r]
 chan configure $f -encoding $charset
 while {[gets $f line] >= 0} {
 	if {[string length $line] > 0 && [string index $line 0] ne "#"} {
-		if {[string match ::help::mc::Overview* $line]} {
+		if {[string match ::overview::mc::Overview* $line]} {
 			set var [lindex $line 0]
 			set value [string map {& {} "..." {}} [lindex $line 1]]
 			set ns [join [lrange [split $var ::] 1 end-2] ::]

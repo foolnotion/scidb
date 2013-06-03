@@ -1101,6 +1101,8 @@ proc DoLayout {position data {w {}}} {
 				$w mark gravity m-0 right
 				$w configure -state disabled
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+#foreach m $Vars(marks) { $w mark unset $m }
+#if {[llength $data]} { puts "[$w dump -all 1.0 end]" }
 			}
 		}
 	}
@@ -1235,12 +1237,15 @@ proc InsertMove {position w level key data} {
 		# NOTE: We need a blind character between the marks because
 		# the editor is permuting consecutive marks.
 		# NOTE: Actually this case (empty data) should not happen.
-		$w insert current "\u200b"
+		if {$level == 0} { set main main } else { set main variation }
+		$w insert current "\u200b" $main
 	}
 
 	set havePly 0
 	set prefixAnnotation {}
 	set suffixAnnotation {}
+	set textualAnnotation {}
+	if {$level == 0} { set main main } else { set main variation }
 
 	foreach node $data {
 		switch [lindex $node 0] {
@@ -1257,16 +1262,17 @@ proc InsertMove {position w level key data} {
 				} else {
 					set space " "
 				}
-				$w insert current $space
+				$w insert current $space $main
 			}
 
 			space {
 				lassign $node _ space flag number
+				set tag {}
 				switch $space {
-					" " { $w insert current " " }
-					")" { $w insert current " )" bracket }
+					")" { $w insert current " )" {variation bracket} }
 					"e" { $w insert current "\n"; $w insert current "<$mc::EmptyGame>" empty }
 					"s" { if {[$w index current] ne "1.1"} { $w insert current "\n" } }
+					" " { $w insert current " " $main }
 
 					"]" {
 						if {$flag && $level > $Options(indent:max)} {
@@ -1276,7 +1282,7 @@ proc InsertMove {position w level key data} {
 							# the editor is permuting consecutive marks.
 							set txt "\u200b"
 						}
-						$w insert current $txt bracket
+						$w insert current $txt {variation bracket}
 					}
 
 					default {
@@ -1285,10 +1291,10 @@ proc InsertMove {position w level key data} {
 						variable ::pgn::editor::Colors
 
 						if {$space eq "+"} {
-							$w insert current " "
+							$w insert current " " variation
 							if {[::font::truetypeSupport?]} {
 								set myKey unfold:$key
-								$w insert current "+" [list circled $myKey]
+								$w insert current "+" [list variation circled $myKey]
 								set cmd [namespace code [list ToggleFold $w $key 0]]
 								$w tag bind $myKey <ButtonPress-1> $cmd
 								$w tag bind $myKey <Any-Enter> [namespace code [list EnterPlus $w]]
@@ -1305,16 +1311,16 @@ proc InsertMove {position w level key data} {
 								$w window create current -align center -window $img
 								bind $img <ButtonPress-1> [namespace code [list ToggleFold $w $key 0]]
 							}
-							$w insert current " )" bracket
+							$w insert current " )" {variation bracket}
 						} elseif {[info exists collapse]} {
 							set tag fold:$key
 							if {$space eq "\["} {
 								if {$flag && $level > $Options(indent:max)} {
-									$w insert current "\[" [list bracket $tag]
+									$w insert current "\[" [list variation bracket $tag]
 								}
-								$w insert current "($number) " [list numbering $tag]
+								$w insert current "($number) " [list variation $tag numbering]
 							} else {
-								$w insert current "( " [list bracket $tag]
+								$w insert current "( " [list variation bracket $tag]
 							}
 							if {$position < 9} {
 								$w tag bind $tag <Any-Enter> +[namespace code [list EnterBracket $w $key]]
@@ -1324,11 +1330,11 @@ proc InsertMove {position w level key data} {
 						} else {
 							if {$space eq "\["} {
 								if {$flag && $level > $Options(indent:max)} {
-									$w insert current "\[" bracket
+									$w insert current "\[" {variation bracket}
 								}
-								$w insert current "($number) " numbering
+								$w insert current "($number) " {variation numbering}
 							} else {
-								$w insert current "( " bracket
+								$w insert current "( " {variation bracket}
 							}
 						}
 					}
@@ -1337,45 +1343,46 @@ proc InsertMove {position w level key data} {
 
 			ply {
 				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
+				set needSpace 0
 				if {[llength $suffixAnnotation]} {
 					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
 					set suffixAnnotation {}
+					set needSpace 1
+				}
+				if {[llength $textualAnnotation]} {
+					PrintTextualAnnotation $position $w $level $key $textualAnnotation $needSpace
+					set textualAnnotation {}
 				}
 				set havePly 1
 			}
 
 			annotation {
-				lassign $node _ isTextual prefix infix suffix
-				lappend infix {*}$suffix
-				if {$isTextual} {
-					lappend prefix {*}$infix
-					PrintTextualAnnotation $position $w $level $key $prefix
+				if {[llength $node] == 2} {
+					PrintTextualAnnotation $position $w $level $key [lindex $node 1]
 				} else {
-					set prefixAnnotation $prefix
-					set suffixAnnotation $infix
+					lassign $node _ prefixAnnotation infix suffix textualAnnotation
+					set suffixAnnotation [concat $infix $suffix]
 				}
 			}
 
 			states {
 				set states [lindex $node 1]
-				set tags state
-				if {$level == 0} { lappend tags main }
 				if {[string match *3* $states]} {
-					$w insert current " "
-					$w insert current "3\u00d7" [list {*}$tags threefold]
+					$w insert current " " $main
+					$w insert current "3\u00d7" [list $main state threefold]
 				}
 				if {[string match *f* $states]} {
-					$w insert current " "
-					$w insert current "50" [list {*}$tags fifty]
+					$w insert current " " $main
+					$w insert current "50" [list $main state fifty]
 				}
 			}
 
 			marks {
 				set hasMarks [lindex $node 1]
 				if {$hasMarks} {
+					if {$havePly} { $w insert current " " $main }
 					set tag marks:$key
-					if {$havePly} { $w insert current " " }
-					$w insert current "\u27f8" [list marks $tag]
+					$w insert current "\u27f8" [list $main marks $tag]
 					if {$position < 9} {
 						$w tag bind $tag <Any-Enter> +[namespace code [list EnterMark $w $tag $key]]
 						$w tag bind $tag <Any-Leave> +[namespace code [list LeaveMark $w $tag]]
@@ -1412,11 +1419,12 @@ proc InsertDiagram {position w level key data} {
 	variable Vars
 
 	set color white
+	if {$level == 0} { set main main } else { set main variation }
 
 	foreach entry $data {
 		switch [lindex $entry 0] {
 			color { set color [lindex $entry 1] }
-			break { $w insert current "\n" }
+			break { $w insert current "\n" $main }
 
 			board {
 				set linespace [font metrics [$w cget -font] -linespace]
@@ -1455,69 +1463,45 @@ proc PrintMove {position w level key data annotation} {
 	variable ::pgn::editor::Options
 
 	lassign $data moveNo stm san legal
-	set tags $key
 
-	if {$level > 0} {
-		lappend tags variation
-		set main {}
-	} else {
-		set main main
-	}
+	if {$level == 0} { set main main } else { set main variation }
 
 	if {$level == 0 && $Options(style:column)} {
-		$w insert current "\t"
+		set text "\t"
 
 		if {$moveNo} {
-			$w insert current $moveNo main
-			$w insert current ". " main
-			$w insert current "\t"
-			if {$stm eq "black"} { $w insert current "...\t" main }
+			append text $moveNo ".\t"
+			if {$stm eq "black"} { append text "...\t" }
 		} 
 
+		$w insert current $text main
+
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $position $w $level $key $annotation 1
-			$w insert current "\u2006"
+			$w insert current "\u2006" main
 		}
 	} else {
 		if {[llength $annotation]} {
 			PrintNumericalAnnotation $position $w $level $key $annotation 1
-			$w insert current "\u2006"
+			$w insert current "\u2006" $main
 		}
-
-		set myTags [list {*}$tags $main]
 
 		if {$moveNo} {
+			set myTags [list $key $main]
 			$w insert current $moveNo $myTags
-			$w insert current "." $myTags
-			if {$stm eq "black"} { $w insert current ".." $myTags }
+			set text "."
+			if {$stm eq "black"} { append text ".." }
+			$w insert current $text $myTags
 		}
 	}
 
-	if {$level == 0} {
-		if {!$legal} { lappend tags illegal }
-		if {$Options(weight:mainline) eq "bold"} { set t figurineb } else { set t figurine }
-	} else {
-		set t figurine
-	}
+	if {$legal || $level == 0} { set illegal {} } else { set illegal illegal }
+	if {$level == 0 && $Options(weight:mainline) eq "bold"} { set t figurineb } else { set t figurine }
 
 	foreach {text tag} [::font::splitMoves $san $t] {
-		if {[llength $tag] == 0} { set tag $main }
-		PrintSingleMove $position $w $key $text [list {*}$tags {*}$tag]
+		$w insert current $text [list $key $main {*}$tag {*}$illegal]
 	}
 
-	if {!$legal && $level > 0} {
-		set tags illegal
-#		if {$level == 0} { lappend tags main }
-		$w insert current "\u26A1" $tags ;# alternatives: u26A0, u2716
-		if {$position < 9} {
-			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
-		}
-	}
-}
-
-
-proc PrintSingleMove {position w key text tags} {
-	$w insert current $text [list {*}$tags]
 	if {$position < 9} {
 		$w tag bind $key <Any-Enter> [namespace code [list EnterMove $position $key]]
 		$w tag bind $key <Any-Leave> [namespace code [list LeaveMove $position $key]]
@@ -1525,6 +1509,13 @@ proc PrintSingleMove {position w key text tags} {
 		$w tag bind $key <ButtonPress-2> [namespace code [list ShowPosition $position $w $key %s]]
 		$w tag bind $key <ButtonRelease-2> [list ::browser::hidePosition $w]
 		$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
+	}
+
+	if {!$legal && $level > 0} {
+		$w insert current "\u26A1" [list $key illegal] ;# alternatives: u26A0, u2716
+		if {$position < 9} {
+			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
+		}
 	}
 }
 
@@ -1660,6 +1651,7 @@ proc PrintMoveInfo {position w level key data} {
 	set count 0
 	set keyTag info:$key
 	set moveInfo [lindex [::scidb::misc::xml toList $data] 0 1]
+	if {$level == 0} { set main main } else { set main variation }
 
 	foreach pair $moveInfo {
 		lassign $pair code text
@@ -1669,16 +1661,14 @@ proc PrintMoveInfo {position w level key data} {
 				while {$k < [string length $text]} {
 					set n [string first ";" $text $k]
 					if {$n == -1} { set n [string length $text] }
-					if {$k > 0} { $w insert current " \u2726 " }
-					set startPos [$w index current]
+					if {$k > 0} { $w insert current " \u2726 " $main }
 					switch $flags {
 						0 { set tag {} }
 						1 { set tag bold }
 						2 { set tag italic }
 						3 { set tag bold-italic }
 					}
-					$w insert current [string range $text $k [expr {$n - 1}]] [list $keyTag $tag]
-					$w tag add info $startPos current
+					$w insert current [string range $text $k [expr {$n - 1}]] [list $main info $keyTag $tag]
 					if {$position < 9} {
 						$w tag bind $keyTag <Enter> [namespace code [list EnterInfo $w $key]]
 						$w tag bind $keyTag <Leave> [namespace code [list LeaveInfo $w $position $key]]
@@ -1734,55 +1724,48 @@ proc PrintNumericalAnnotation {position w level key nags isPrefix} {
 			set prevSym $sym
 		}
 		if {[string length $nag]} {
-			if {$level == 0 && [string index $nag 0] ne "$"} { lappend tag main }
-			lappend tag nag$value
-			$w insert current $nag [list {*}$tag $nagTag]
+			$w insert current $nag [list nag$value $nagTag $tag]
 			if {$position < 9} {
 				$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 				$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+				$w tag bind $nagTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
 			}
 		}
 		set prefix 0
 	}
 
-	set keyTag numerical:$key
+	if {$level == 0} { set main main } else { set main variation }
+	$w tag add $main $pos current
 	$w tag add nag $pos current
 	$w tag raise symbol
 	$w tag raise symbolb
-	$w tag add $keyTag $pos current
-
-	if {$position < 9} {
-		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-	}
 }
 
 
-proc PrintTextualAnnotation {position w level key nags} {
+proc PrintTextualAnnotation {position w level key nags {needSpace 0}} {
 	set pos [$w index current]
 	set keyTag nagtext:$key
 	set count 0
 
-#	set pos [$w index current]
+	if {$needSpace} { $w insert current " " }
 #	if {![string match *.0 $pos]} { $w insert current " " }
 
 	foreach nag $nags {
-		if {$count > 0} { $w insert current " \u2726 " nagtext }
+		if {$count > 0} { $w insert current " \u2726 " }
 		set nagTag $keyTag:[incr count]
 		set txt $::annotation::mc::Nag([string range $nag 1 end])
-		$w insert current $txt [list $nagTag nagtext]
+		$w insert current $txt $nagTag
 		if {$position < 9} {
 			$w tag bind $nagTag <Enter> [namespace code [list EnterAnnotation $w $nagTag]]
 			$w tag bind $nagTag <Leave> [namespace code [list LeaveAnnotation $w $nagTag]]
+			$w tag bind $nagTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
 		}
 	}
 
-	set keyTag textual:$key
+	if {$level == 0} { set main main } else { set main variation }
+	$w tag add $main $pos current
 	$w tag add nag $pos current
-	$w tag add $keyTag $pos current
-
-	if {$position < 9} {
-		$w tag bind $keyTag <ButtonPress-1> [namespace code [list editAnnotation $position $key]]
-	}
+	$w tag add nagtext $pos current
 }
 
 

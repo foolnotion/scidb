@@ -28,6 +28,7 @@
 #define _cbh_codec_included
 
 #include "db_database_codec.h"
+#include "db_move_node.h"
 #include "db_date.h"
 
 #include "nsUniversalDetector.h"
@@ -36,6 +37,7 @@
 #include "m_map.h"
 #include "m_vector.h"
 #include "m_chunk_allocator.h"
+#include "m_fixed_size_allocator.h"
 
 namespace sys  { namespace utf8 { class Codec; }; };
 namespace mstl { class fstream; }
@@ -134,6 +136,7 @@ private:
 	typedef mstl::chunk_allocator<NamebaseEvent>			Allocator;
 	typedef mstl::vector<Team*>								TeamBase;
 	typedef mstl::map<GameInfo const*,unsigned>			GameIndexLookup;
+	typedef mstl::fixed_size_allocator<db::MoveNode>	MoveNodeAllocator;
 
 	void startDecoding(	util::ByteStream& gameStream,
 								util::ByteStream& annotationStream,
@@ -202,6 +205,7 @@ private:
 	NamebasePlayer*	m_illegalPlayer;
 	unsigned				m_numGames;
 	bool					m_highQuality;
+	MoveNodeAllocator	m_moveNodeAllocator;
 };
 
 } // namespace cbh

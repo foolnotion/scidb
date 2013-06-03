@@ -63,6 +63,7 @@ public:
 	bool containsUnusualNags() const;
 
 	unsigned count() const;
+	unsigned countPrefixNags() const;
 	unsigned countUsualNags() const;
 	unsigned countUnusualNags() const;
 
@@ -83,6 +84,7 @@ public:
 	mstl::string& prefix(mstl::string& result) const;
 	mstl::string& infix(mstl::string& result) const;
 	mstl::string& suffix(mstl::string& result) const;
+	mstl::string& all(mstl::string& result) const;
 	mstl::string& print(mstl::string& result, unsigned flags = 0) const;
 	void dump() const;
 

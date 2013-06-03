@@ -334,7 +334,6 @@ Consumer::sendMoveInfo(MoveInfoSet const& moveInfo)
 }
 
 
-#include <stdio.h> // XXX
 bool
 Consumer::preparseComment(mstl::string& comment)
 {
