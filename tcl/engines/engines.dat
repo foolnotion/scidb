@@ -5,7 +5,7 @@
 set ::engine::Engines {
 	{
 		Name Stockfish
-		Identifier "Stockfish 2.3.1 scidb"
+		Identifier "Stockfish 3 scidb"
 		Author "Tord Romstad, Marco Costalba & Joona Kiiski"
 		Command stockfish-scidb
 		Protocol UCI
