@@ -46,7 +46,7 @@ set Contents {
       {{{Bereichsangaben} {CQL-Range-Specifiers.html}}}
       {{{Suchmusterabgleich (Pattern-Matching)} {Pattern-Matching.html}}}
     }
-    {{{Tranformationen} {CQL-Transformations.html}}}
+    {{{Transformationen} {CQL-Transformations.html}}}
     {{{Die Suchliste} {CQL-Match-List.html}}}
     {{{Die Positionsliste} {CQL-Position-List.html}}}
     {{{Die Relationsliste} {CQL-Relation-List.html}}}

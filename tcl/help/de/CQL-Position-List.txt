@@ -1651,7 +1651,7 @@ achten Reihe geschieht.
 
 <p>
 Dies kann niemals gefiltert werden, auch keinen Einsetzzug
-(%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%)
+(%::mc::VariantName(Crazyhouse)%, %::mc::VariantName(Bughouse)%).
 Zur Erkennung von Einsetzzügen sollte <cql>position:piecedrop</cql>
 verwendet werden.
 </p>
@@ -2782,7 +2782,7 @@ effizienter sein als der Gebrauch von <cql>:matchcount</cql>.
 <h3 id="position:endmost">:endmost<extension/>&emsp;<n>(letzte)</n></h3>
 
 <p>
-Diese Schlüsselwort liefert das letzte Autreten einer aufgefundenen Stellung
+Dieses Schlüsselwort liefert das letzte Autreten einer aufgefundenen Stellung
 in einer Partie. Dies könnte auch auf die folgende Weise erreicht werden:
 </p>
 
@@ -2881,7 +2881,7 @@ nachfolgende Position als Ergebnis geliefert.
 <p>
 Dieses Schlüsselwort liefert die vorhergehende Position des Filters, sofern
 ein Ergebnis vorliegt. Ist die Startposition gefiltert worden, dann wird
-diese Position übergangen, und die Suche läuft weiter. Disees Schlüsselwort
+diese Position übergangen, und die Suche läuft weiter. Dises Schlüsselwort
 kann nur auf oberster Ebene verwendet werden.
 </p>
 
