@@ -33,7 +33,7 @@ using namespace std;
 /// Version number. If Version is left empty, then Tag plus current
 /// date, in the format DD-MM-YY, are used as a version number.
 
-static const string Version = "";
+static const string Version = "3";
 static const string Tag = "";
 
 
@@ -58,10 +58,18 @@ const string engine_info(bool to_uci) {
         << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
   }
 
+#if 1 // Scidb's extended version
+  s << (Is64Bit ? " 64" : "")
+    << (HasPopCnt ? " SSE4.2" : "")
+	 << (to_uci ? " scidb" : "")
+    << (to_uci ? "\nid author ": " by ")
+    << "Tord Romstad, Marco Costalba and Joona Kiiski";
+#else
   s << (Is64Bit ? " 64" : "")
     << (HasPopCnt ? " SSE4.2" : "")
     << (to_uci ? "\nid author ": " by ")
     << "Tord Romstad, Marco Costalba and Joona Kiiski";
+#endif
 
   return s.str();
 }
