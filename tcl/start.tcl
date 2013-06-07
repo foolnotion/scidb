@@ -236,7 +236,7 @@ proc update {} {
 } ;# namespace scidb
 
 
-# --- Initalization ------------------------------------------------------------
+# --- Initialization ------------------------------------------------------------
 proc util::place::getWmFrameExtents {w} { return [::scidb::tk::wm extents $w] }
 proc util::place::getWmWorkArea {w} { return [::scidb::tk::wm workarea $w] }
 # ------------------------------------------------------------------------------

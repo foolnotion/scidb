@@ -81,7 +81,7 @@ proc WriteOptions {chan} {
 
 } ;# namespace beta
 
-# --- Initalization ----------------------------------------------------
+# --- Initialization ---------------------------------------------------
 
 if {[tk windowingsystem] eq "x11"} {
 	namespace eval x11 {

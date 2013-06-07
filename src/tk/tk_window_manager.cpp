@@ -86,7 +86,10 @@ struct Rect
 {
 	Rect() :left(0), right(0), width(0), height(0) {}
 
-	bool isEmpty() const { return height == 0; }
+	bool isEmpty() const
+	{
+		return height == 0 || width == 0 || left == 0 || right == 0;
+	}
 
 	int left;
 	int right;
@@ -299,7 +302,10 @@ getParent(Display* display, Window window)
 	if (childs)
 		XFree(childs);
 
-	return parent == XDefaultRootWindow(display) ? window : parent;
+	if (parent == XDefaultRootWindow(display))
+		return window;
+
+	return parent;
 }
 
 
@@ -541,7 +547,7 @@ static bool
 getExtents(Tk_Window tkwin, Rect& result)
 {
 	Display*	display	= Tk_Display(tkwin);
-	Window	root		= getParent(display, Tk_WindowId(tkwin));
+	Window	root		= Tk_WindowId(tkwin);
 	Atom		request;
 
 	if (!checkAtom(request, display, XA_NET_FRAME_EXTENTS))
@@ -558,6 +564,10 @@ getExtents(Tk_Window tkwin, Rect& result)
 	result.height	= data[3];
 
 	XFree(data);
+
+	if (result.isEmpty())
+		return getDefaultExtents(result);
+
 	return true;
 }
 
