@@ -605,7 +605,7 @@ DatabaseCodec::findTags(GameInfo const&, TagMap&) const
 
 
 void
-DatabaseCodec::setWriteable()
+DatabaseCodec::setWritable()
 {
 	M_RAISE("should not be used");
 }
@@ -638,10 +638,10 @@ DatabaseCodec::checkPermissions(mstl::string const& filename)
 {
 	M_ASSERT(isOpen());
 
-	if (!isWriteable() || !sys::file::access(filename, sys::file::Writeable))
+	if (!isWritable() || !sys::file::access(filename, sys::file::Writeable))
 	{
 		m_db->m_readOnly = true;
-		m_db->m_writeable = false;
+		m_db->m_writable = false;
 	}
 
 	if (!sys::file::access(filename, sys::file::Readable))

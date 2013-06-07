@@ -522,7 +522,7 @@ Codec::~Codec() throw()
 
 
 bool
-Codec::isWriteable() const
+Codec::isWritable() const
 {
 	return true;
 }
@@ -557,7 +557,7 @@ Codec::setEncoding(mstl::string const& encoding)
 
 
 void
-Codec::setWriteable()
+Codec::setWritable()
 {
 	if (!m_gameStream.is_writable())
 		m_gameStream.reopen(mstl::ios_base::in | mstl::ios_base::out | mstl::ios_base::binary);

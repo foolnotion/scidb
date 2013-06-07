@@ -205,6 +205,14 @@ MultiCursor::countGames() const
 
 
 void
+MultiCursor::setWritable(bool flag)
+{
+	M_REQUIRE(isOpen());
+	m_leader->base().setWritable(flag);
+}
+
+
+void
 MultiCursor::close()
 {
 	if (isOpen())
@@ -274,7 +282,7 @@ MultiCursor::changeVariant(::db::variant::Type variant)
 	M_REQUIRE(!isScratchbase());
 	M_REQUIRE(!isClipbase());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 
 	if (m_leader->variant() != variant)
 	{

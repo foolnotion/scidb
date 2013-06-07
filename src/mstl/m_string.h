@@ -95,7 +95,7 @@ public:
 
 	bool empty() const;
 	bool readonly() const;
-	bool writeable() const;
+	bool writable() const;
 
 	size_type size() const;
 	size_type capacity() const;

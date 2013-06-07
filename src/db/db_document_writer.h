@@ -73,7 +73,9 @@ protected:
 	void start() override;
 	void finish() override;
 
-	void writePrecedingComment(Comment const& comment, MarkSet const& marks) override;
+	void writePrecedingComment(Annotation const& annotation,
+										Comment const& comment,
+										MarkSet const& marks) override;
 	void writeTrailingComment(Comment const& comment) override;
 	void writeMoveInfo(MoveInfoSet const& moveInfo) override;
 	void writeMove(Move const& move,

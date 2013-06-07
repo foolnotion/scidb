@@ -33,7 +33,7 @@ namespace db {
 inline bool Database::isEmpty() const							{ return m_size == 0; }
 inline bool Database::isOpen() const							{ return m_codec; }
 inline bool Database::isReadonly() const						{ return m_readOnly; }
-inline bool Database::isWriteable() const						{ return m_writeable; }
+inline bool Database::isWritable() const						{ return m_writable; }
 inline bool Database::shouldUpgrade() const					{ return m_codec->isExpired(); }
 inline bool Database::isMemoryOnly() const					{ return m_memoryOnly; }
 inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }

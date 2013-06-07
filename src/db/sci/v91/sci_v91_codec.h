@@ -60,7 +60,7 @@ public:
 	Codec();
 	~Codec() throw();
 
-	bool isWriteable() const override;
+	bool isWritable() const override;
 	bool isExpired() const override;
 	bool encodingFailed() const override;
 

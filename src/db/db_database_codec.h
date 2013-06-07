@@ -111,7 +111,7 @@ public:
 
 	bool isOpen() const;
 	virtual bool isExpired() const;
-	virtual bool isWriteable() const = 0;
+	virtual bool isWritable() const = 0;
 	virtual bool encodingFailed() const = 0;
 
 	variant::Type variant() const;
@@ -141,7 +141,7 @@ public:
 
 	void updateHeader();
 	virtual void setEncoding(mstl::string const& encoding) = 0;
-	virtual void setWriteable();
+	virtual void setWritable();
 	virtual void reset() = 0;
 
 	void open(DatabaseContent* db, mstl::string const& encoding);

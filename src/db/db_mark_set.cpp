@@ -96,7 +96,7 @@ MarkSet::sort()
 bool
 MarkSet::extractFromComment(mstl::string& comment)
 {
-	M_REQUIRE(comment.writeable() || comment.empty());
+	M_REQUIRE(comment.writable() || comment.empty());
 
 	mstl::string result;
 

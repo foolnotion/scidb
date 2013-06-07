@@ -430,7 +430,7 @@ Codec::format() const
 
 
 bool
-Codec::isWriteable() const
+Codec::isWritable() const
 {
 	return false;
 }

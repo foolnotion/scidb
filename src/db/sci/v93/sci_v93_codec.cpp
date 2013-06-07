@@ -574,7 +574,7 @@ Codec::~Codec() throw()
 
 
 bool
-Codec::isWriteable() const
+Codec::isWritable() const
 {
 	return false;
 }

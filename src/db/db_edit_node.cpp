@@ -903,21 +903,6 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 	if (work.m_isFolded)
 		return;
 
-	if (!(work.m_displayStyle & display::ShowDiagrams) && move->hasAnnotation())
-	{
-		m_list.push_back(new Annotation(move->annotation()));
-		work.m_isVirgin = false;
-		work.pushSpace();
-	}
-
-	if (move->threefoldRepetition() || move->fiftyMoveRule())
-	{
-		work.pop(m_list);
-		m_list.push_back(new States(*move));
-		work.m_isVirgin = false;
-		work.pushSpace();
-	}
-
 	bool needSpace = false;
 
 	if (move->hasMark())
@@ -971,6 +956,14 @@ Move::Move(Work& work, MoveNode const* move, bool isEmptyGame, unsigned varNo, u
 			work.pushSpaceOrParagraph(Spacing::Comment);
 		else
 			work.pushSpace();
+	}
+
+	if (!(work.m_displayStyle & display::ShowDiagrams) && move->hasAnnotation())
+	{
+		work.pop(m_list);
+		m_list.push_back(new Annotation(move->annotation()));
+		work.m_isVirgin = false;
+		work.pushSpace();
 	}
 }
 

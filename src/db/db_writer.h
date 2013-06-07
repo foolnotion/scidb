@@ -117,7 +117,9 @@ protected:
 
 	virtual void writeBeginGame(unsigned number) = 0;
 	virtual void writeEndGame() = 0;
-	virtual void writePrecedingComment(Comment const& comment, MarkSet const& marks) = 0;
+	virtual void writePrecedingComment(	Annotation const& annotation,
+													Comment const& comment,
+													MarkSet const& marks) = 0;
 	virtual void writeTrailingComment(Comment const& comment) = 0;
 	virtual void writeTag(mstl::string const& name, mstl::string const& value) = 0;
 	virtual void writeTag(tag::ID tag, mstl::string const& value);

@@ -65,7 +65,7 @@ public:
 	bool isOpen() const;
 	bool isClosed() const;
 	bool isReadonly() const;
-	bool isWriteable() const;
+	bool isWritable() const;
 	bool isMemoryOnly() const;
 	bool isClipbase() const;
 	bool isScratchbase() const;
@@ -101,6 +101,8 @@ public:
 	void setClipbase();
 	/// Mark this database as a scratchbase.
 	void setScratchbase();
+	/// Set/unset writable flag.
+	void setWritable(bool flag);
 	/// Close all databases.
 	void close();
 	/// Change the variant; requires an empty database.

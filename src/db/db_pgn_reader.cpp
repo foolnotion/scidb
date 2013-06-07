@@ -1601,11 +1601,13 @@ PgnReader::putMove(bool lastMove)
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
 					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
 				}
-				else if (m_modification == Raw && m_comments.size() - m_postIndex > 1)
+				else if (	m_comments.size() - m_postIndex > 1
+							&& (!m_sourceIsPossiblyChessBase || m_modification == Raw))
 				{
 					::join(m_comments.begin() + m_postIndex, m_comments.end() - 1);
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
-					consumer().putTrailingComment(m_comments.back());
+					if (!m_comments.back().isEmpty())
+						consumer().putTrailingComment(m_comments.back());
 					m_comments.clear();
 				}
 				else
@@ -1622,11 +1624,13 @@ PgnReader::putMove(bool lastMove)
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
 				m_comments.erase(m_comments.begin());
 			}
-			else if (m_modification == Raw && m_comments.size() > 1)
+			else if (	m_comments.size() > 1
+						&& (!m_sourceIsPossiblyChessBase || m_modification == Raw))
 			{
 				::join(m_comments.begin(), m_comments.end() - 1);
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
-				consumer().putTrailingComment(m_comments.back());
+				if (!m_comments.back().isEmpty())
+					consumer().putTrailingComment(m_comments.back());
 				m_comments.clear();
 			}
 			else
@@ -1658,10 +1662,19 @@ PgnReader::putMove(bool lastMove)
 	{
 		if (m_atStart)
 		{
-			if (m_modification == Raw && m_comments.size() > 1)
+			if (m_comments.size() > 1)
 			{
-				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
-				m_comments.erase(m_comments.begin());
+				if (m_modification == Raw)
+				{
+					consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+					m_comments.erase(m_comments.begin());
+				}
+				else
+				{
+					::join(m_comments.begin(), m_comments.end() - 1);
+					consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
+					m_comments.erase(m_comments.begin(), m_comments.end() - 1);
+				}
 			}
 			else if (!m_annotation.isEmpty() || !m_marks.isEmpty())
 			{
@@ -1693,11 +1706,12 @@ PgnReader::putLastMove()
 
 		if (consumer().variationIsEmpty())
 		{
-			if (m_modification == Raw && m_comments.size() > 1)
+			if (m_comments.size() > 1 && (!m_sourceIsPossiblyChessBase || m_modification == Raw))
 			{
 				::join(m_comments.begin() + 1, m_comments.end());
 				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
-				consumer().putTrailingComment(m_comments[1]);
+				if (!m_comments[1].isEmpty())
+					consumer().putTrailingComment(m_comments[1]);
 			}
 			else if (m_comments.size() > 0)
 			{
@@ -1709,7 +1723,8 @@ PgnReader::putLastMove()
 		{
 			// We have a comment after the last variation has finished,
 			::join(m_comments.begin(), m_comments.end());
-			consumer().putTrailingComment(m_comments[0]);
+			if (!m_comments[0].isEmpty())
+				consumer().putTrailingComment(m_comments[0]);
 		}
 	}
 }
@@ -1798,11 +1813,8 @@ PgnReader::get(bool allowEndOfInput)
 
 		return '\n';
 	}
-	else
-	{
-		++m_currPos.column;
-	}
 
+	++m_currPos.column;
 	return *m_linePos++;
 }
 
@@ -3426,6 +3438,8 @@ PgnReader::parseComment(Token prevToken, int c)
 		return prevToken; // skip comment
 	}
 
+	bool isEmpty = content.empty();
+
 	if (m_marks.extractFromComment(content))
 		m_hasNote = true;
 
@@ -3437,7 +3451,9 @@ PgnReader::parseComment(Token prevToken, int c)
 		switch (content.size())
 		{
 			case 0:
-				return kComment;
+				if (!isEmpty)
+					return kComment;
+				break;
 
 			case 1:
 				switch (content[0])
@@ -3482,9 +3498,6 @@ PgnReader::parseComment(Token prevToken, int c)
 				break;
 		}
 
-		if (content.empty())
-			return kComment;
-
 		if (m_sourceIsChessOK)
 		{
 			::parseChessOkComment(content);
@@ -3528,9 +3541,10 @@ PgnReader::parseComment(Token prevToken, int c)
 						}
 						else
 						{
+							if (!comment.isEmpty())
+								m_hasNote = true;
 							m_comments.push_back();
 							m_comments.back().swap(comment);
-							m_hasNote = true;
 						}
 
 						return kComment;
@@ -3597,7 +3611,7 @@ PgnReader::parseComment(Token prevToken, int c)
 		consumer().preparseComment(content);
 	}
 
-	if (m_modification == Raw || !content.empty())
+	if (m_modification == Raw || !content.empty() || isEmpty)
 	{
 		Comment comment;
 
@@ -3609,7 +3623,8 @@ PgnReader::parseComment(Token prevToken, int c)
 			comment.normalize();
 		}
 
-		m_hasNote = true;
+		if (!comment.isEmpty())
+			m_hasNote = true;
 		m_comments.push_back();
 		m_comments.back().swap(comment);
 	}

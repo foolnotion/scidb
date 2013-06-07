@@ -945,10 +945,16 @@ namespace storage
 
 namespace permission
 {
-	enum Mode
+	enum ReadMode
 	{
 		ReadWrite,
 		ReadOnly,
+	};
+
+	enum WriteMode
+	{
+		Writable,
+		CannotWrite,
 	};
 }
 

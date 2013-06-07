@@ -51,7 +51,7 @@ public:
 	Codec();
 	~Codec() throw();
 
-	bool isWriteable() const override;
+	bool isWritable() const override;
 	bool encodingFailed() const override;
 
 	Format format() const override;

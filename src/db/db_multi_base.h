@@ -52,7 +52,7 @@ public:
 					util::Progress& progress);
 	MultiBase(	mstl::string const& name,
 					mstl::string const& encoding,
-					permission::Mode mode,
+					permission::ReadMode mode,
 					util::Progress& progress);
 	MultiBase(	mstl::string const& name,
 					mstl::string const& encoding,

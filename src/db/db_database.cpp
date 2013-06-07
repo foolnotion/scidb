@@ -147,7 +147,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	m_temporary = true;
 	m_created = sys::time::time();
 	m_readOnly = true;
-	m_writeable = false;
+	m_writable = false;
 	m_size = m_codec->openProgressive(this, encoding);
 	m_namebases.setModified(true);
 }
@@ -192,8 +192,8 @@ Database::Database(	mstl::string const& name,
 		default: M_ASSERT(!"unexpected format");
 	}
 
-	if (!m_codec->isWriteable())
-		m_writeable = false;
+	if (!m_codec->isWritable())
+		m_writable = false;
 
 	try
 	{
@@ -211,7 +211,7 @@ Database::Database(	mstl::string const& name,
 
 Database::Database(	mstl::string const& name,
 							mstl::string const& encoding,
-							permission::Mode mode,
+							permission::ReadMode mode,
 							util::Progress& progress)
 	:DatabaseContent(name, encoding)
 	,m_codec(0)
@@ -240,8 +240,8 @@ Database::Database(	mstl::string const& name,
 		DB_RAISE("unknown file format (.%s)", m_suffix.c_str());
 	}
 
-	if (!m_codec->isWriteable())
-		m_writeable = false;
+	if (!m_codec->isWritable())
+		m_writable = false;
 
 	try
 	{
@@ -276,7 +276,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 
 	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
-	M_ASSERT(m_codec->isWriteable());
+	M_ASSERT(m_codec->isWritable());
 
 	try
 	{
@@ -338,7 +338,7 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 
 	m_rootname = file::rootname(filename);
 	m_codec->attach(progress);
-	M_ASSERT(m_codec->isWriteable());
+	M_ASSERT(m_codec->isWritable());
 	m_readOnly = false;
 	m_memoryOnly = false;
 }
@@ -349,7 +349,7 @@ Database::save(util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly() || !isReadonly());
-	M_REQUIRE(isMemoryOnly() || isWriteable());
+	M_REQUIRE(isMemoryOnly() || isWritable());
 	M_REQUIRE(!usingAsyncReader());
 
 	if (m_size == m_gameInfoList.size())
@@ -425,7 +425,7 @@ Database::writeGames(mstl::ostream& os, util::Progress& progress)
 void
 Database::sync(util::Progress& progress)
 {
-	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writeable)
+	if (m_codec && !isMemoryOnly() && !m_readOnly && m_writable)
 	{
 		if (m_size != m_gameInfoList.size())
 			save(progress);
@@ -509,7 +509,7 @@ Database::clear()
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 
 	m_gameInfoList.clear();
 	m_statistic.clear();
@@ -630,7 +630,7 @@ Database::newGame(Game& game, GameInfo const& info)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(isMemoryOnly());
 	M_REQUIRE(game.variant() != variant::Undetermined);
@@ -657,7 +657,7 @@ Database::addGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 
@@ -695,7 +695,7 @@ Database::updateGame(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 	M_REQUIRE(!usingAsyncReader());
@@ -751,7 +751,7 @@ Database::updateMoves(Game& game)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(0 <= game.index() && game.index() < int(countGames()));
 	M_REQUIRE(variant::toMainVariant(game.variant()) == variant());
 	M_REQUIRE(!usingAsyncReader());
@@ -805,7 +805,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
 
@@ -1016,7 +1016,7 @@ Database::copyGames(	Database& destination,
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(destination.isOpen());
-	M_REQUIRE(destination.isWriteable());
+	M_REQUIRE(destination.isWritable());
 	M_REQUIRE(!destination.usingAsyncReader());
 	M_REQUIRE(	destination.format() == format::Scidb
 				|| destination.format() == format::Scid3
@@ -1190,7 +1190,7 @@ Database::importGame(Producer& producer, unsigned index)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(index < countGames());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(	producer.variant() == variant::Undetermined
@@ -1227,7 +1227,7 @@ Database::importGames(Producer& producer, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(	producer.variant() == variant::Undetermined
 				|| variant::toMainVariant(producer.variant()) == variant());
@@ -1252,7 +1252,7 @@ Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, u
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(db.variant() == variant());
 
@@ -1343,7 +1343,7 @@ Database::deleteGame(unsigned index, bool flag)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(index < countGames());
 
 	if (gameInfo(index).isDeleted())
@@ -1366,7 +1366,7 @@ Database::setGameFlags(unsigned index, unsigned flags)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(index < countGames());
 
 	gameInfo(index).setFlags(flags);
@@ -1381,7 +1381,7 @@ Database::setType(Type type)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 
 	if (type != m_type)
 	{
@@ -1398,7 +1398,7 @@ Database::setDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly() || !isReadonly());
-	M_REQUIRE(isMemoryOnly() || isWriteable());
+	M_REQUIRE(isMemoryOnly() || isWritable());
 
 	if (m_description != description)
 	{
@@ -1418,7 +1418,7 @@ Database::setVariant(variant::Type variant)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(isEmpty());
 	M_REQUIRE(variant::isMainVariant(variant));
 
@@ -1652,7 +1652,7 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(format() == format::Scidb);
 
@@ -1698,7 +1698,7 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(format() == format::Scidb);
 
@@ -1773,18 +1773,28 @@ void
 Database::setReadonly(bool flag)
 {
 	M_REQUIRE(isOpen());
-	M_REQUIRE(flag || isWriteable());
+	M_REQUIRE(!flag || isWritable());
 
 	if (flag != m_readOnly)
 	{
-		if (!m_readOnly)
+		if (!m_readOnly && !m_memoryOnly)
 			m_codec->sync();
 
 		m_readOnly = flag;
 
-		if (!m_readOnly)
-			m_codec->setWriteable();
+		if (!m_readOnly && !m_memoryOnly)
+			m_codec->setWritable();
 	}
+}
+
+
+void
+Database::setWritable(bool flag)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!flag || codec().isWritable());
+
+	m_writable = flag;
 }
 
 

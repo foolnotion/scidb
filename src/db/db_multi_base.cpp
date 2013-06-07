@@ -78,7 +78,7 @@ MultiBase::MultiBase(mstl::string const& name,
 
 MultiBase::MultiBase(mstl::string const& name,
 							mstl::string const& encoding,
-							permission::Mode mode,
+							permission::ReadMode mode,
 							util::Progress& progress)
 	:m_singleBase(true)
 {

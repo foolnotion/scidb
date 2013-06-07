@@ -91,7 +91,9 @@ DocumentWriter::writeMove(	Move const& move,
 
 
 void
-DocumentWriter::writePrecedingComment(Comment const& comment, MarkSet const& marks)
+DocumentWriter::writePrecedingComment(	Annotation const& annotation,
+													Comment const& comment,
+													MarkSet const& marks)
 {
 }
 

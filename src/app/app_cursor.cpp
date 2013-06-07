@@ -128,10 +128,10 @@ Cursor::isReadonly() const
 
 
 bool
-Cursor::isWriteable() const
+Cursor::isWritable() const
 {
 	M_REQUIRE(isOpen());
-	return m_db->isWriteable();
+	return m_db->isWritable();
 }
 
 
@@ -423,7 +423,7 @@ Cursor::compact(::util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(!isReadonly());
-	M_REQUIRE(isWriteable());
+	M_REQUIRE(isWritable());
 
 	WriteGuard guard(this);
 	m_db->sync(progress);

@@ -146,13 +146,13 @@ set OpenDatabase						"Open Database"
 set NewDatabase						"New Database"
 set CloseDatabase						"Close Database '%s'"
 set SetReadonly						"Set Database '%s' readonly"
-set SetWriteable						"Set Database '%s' writeable"
+set SetWriteable						"Set Database '%s' writable"
 
 set OpenReadonly						"Open readonly"
-set OpenWriteable						"Open writeable"
+set OpenWriteable						"Open writable"
 
-set UpgradeDatabase					"%s is an old format database that cannot be opened writeable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
-set UpgradeDatabaseDetail			"\"No\" will open the database readonly, and you cannot set it writeable."
+set UpgradeDatabase					"%s is an old format database that cannot be opened writable.\n\nUpgrading will create a new version of the database and after that remove the original files.\n\nThis may take a while, but it only needs to be done one time.\n\nDo you want to upgrade this database now?"
+set UpgradeDatabaseDetail			"\"No\" will open the database readonly, and you cannot set it writable."
 
 set MoveInfo(evaluation)			"Evaluation"
 set MoveInfo(playersClock)			"Players Clock"
@@ -545,7 +545,7 @@ proc openBase {parent file byUser args} {
 				set opts(-readonly) $readonly
 			}
 		}
-		if {![::scidb::db::get writeable? $file]} { set opts(-readonly) 1 }
+		if {![::scidb::db::get writable? $file]} { set opts(-readonly) 1 }
 		::scidb::db::set readonly $file $opts(-readonly)
 		set type [::scidb::db::get type $file]
 		$Vars(switcher) add $file $type $opts(-readonly) $opts(-encoding)
@@ -997,12 +997,20 @@ proc Switch {filename {variant Undetermined}} {
 	set readonly [::scidb::db::get readonly? $filename]
 
 	if {$filename eq $clipbaseName} { set state disabled } else { set state normal }
-	if {$filename eq $clipbaseName || ![::scidb::db::get writeable? $filename]} {
+	if {$filename eq $clipbaseName || ![::scidb::db::get writable? $filename]} {
 		set roState disabled
 	} else {
 		switch [file extension $filename] {
-			.sci 		{ set roState normal }
-			default	{ set roState disabled }
+			.sci - .pgn {
+				if {[::scidb::db::get writable? $filename]} {
+					set roState normal
+				} else {
+					set roState disabled
+				}
+			}
+			default {
+				set roState disabled
+			}
 		}
 
 		::toolbar::childconfigure $Vars(button:readonly) -tooltip $roState
@@ -1168,6 +1176,7 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 proc PopupMenu {parent x y {base ""}} {
 	variable ::scidb::clipbaseName
 	variable Defaults
+	variable Types
 	variable Vars
 	variable ::table::options
 
@@ -1248,12 +1257,14 @@ proc PopupMenu {parent x y {base ""}} {
 
 		if {!$readonly} {
 			if {!$isClipbase} {
+				set state $readonlyState
+				if {![info exists Types($ext)]} { set state disabled }
 				$maint add command \
 					-label " $mc::ChangeIcon..." \
 					-image $::icon::16x16::none \
 					-compound left \
 					-command [namespace code [list ChangeIcon $top $base]] \
-					-state $readonlyState \
+					-state $state \
 					;
 				$maint add command \
 					-label " $mc::EditDescription..." \
@@ -1337,7 +1348,7 @@ proc PopupMenu {parent x y {base ""}} {
 		$menu add separator
 
 		if {!$isClipbase && $ext eq "sci"} {
-			if {![::scidb::db::get writeable? $base]} { set state disabled } else { set state normal }
+			if {![::scidb::db::get writable? $base]} { set state disabled } else { set state normal }
 			$menu add checkbutton \
 				-label " $::database::switcher::mc::ReadOnly" \
 				-image $::icon::16x16::lock \

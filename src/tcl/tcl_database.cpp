@@ -887,7 +887,7 @@ cmdLoad(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	char const* encoding = sys::utf8::Codec::utf8();
-	permission::Mode permission = permission::ReadWrite;
+	permission::ReadMode permission = permission::ReadWrite;
 
 	for ( ; objc > 4; objc -= 2)
 	{
@@ -1170,6 +1170,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	stream.close();
+	scidb->multiCursor(dst).setWritable(!progress.interrupted());
 
 	if (progress.interrupted())
 		n = -n - 1;
@@ -1536,7 +1537,7 @@ static int
 getWriteable(char const* database = 0)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database));
-	::tcl::setResult(Scidb->cursor(database).database().isWriteable());
+	::tcl::setResult(Scidb->cursor(database).database().isWritable());
 	return TCL_OK;
 }
 
@@ -2697,7 +2698,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"playerIndex", "eventIndex", "siteIndex", "annotatorIndex", "description", "variant?",
 		"stats", "readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
 		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum", "idn",
-		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writeable?",
+		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writable?",
 		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants", 0
 	};
 	static char const* args[] =
@@ -2743,7 +2744,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* lookupPlayer	*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		/* lookupEvent		*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		/* lookupSite		*/ "<index> ?<view>? ?<database>? ?<variant>?",
-		/* writeable?		*/ "?<database>?",
+		/* writable?		*/ "?<database>?",
 		/* upgrade?			*/ "<database>",
 		/* memoryOnly?		*/ "?<database>?",
 		/* compact?			*/ "<database>",

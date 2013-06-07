@@ -235,7 +235,7 @@ MoveInfoSet::count(unsigned types) const
 bool
 MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 {
-	M_REQUIRE(comment.writeable() || comment.empty());
+	M_REQUIRE(comment.writable() || comment.empty());
 
 	MoveInfo			info;
 	mstl::string	result;

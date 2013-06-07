@@ -73,7 +73,7 @@ public:
 	bool isClosed() const;
 	bool isEmpty() const;
 	bool isReadonly() const;
-	bool isWriteable() const;
+	bool isWritable() const;
 	bool isActive() const;
 	bool isViewOpen(unsigned view) const;
 	bool isValidView(unsigned view) const;

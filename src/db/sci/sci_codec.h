@@ -59,7 +59,7 @@ public:
 	Codec();
 	~Codec() throw();
 
-	bool isWriteable() const override;
+	bool isWritable() const override;
 	bool encodingFailed() const override;
 
 	Format format() const override;
@@ -128,7 +128,7 @@ public:
 
 	void reset() override;
 	void setEncoding(mstl::string const& encoding) override;
-	void setWriteable() override;
+	void setWritable() override;
 
 	::util::BlockFileReader* getAsyncReader() override;
 	void closeAsyncReader(::util::BlockFileReader* reader) override;

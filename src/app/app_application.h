@@ -182,7 +182,7 @@ public:
 
 	Cursor* open(	mstl::string const& name,
 						mstl::string const& encoding,
-						::db::permission::Mode permission,
+						::db::permission::ReadMode permission,
 						::db::process::Mode processMode,
 						util::Progress& progress);
 	Cursor* create(mstl::string const& name,

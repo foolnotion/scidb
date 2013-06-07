@@ -1345,7 +1345,7 @@ proc InsertMove {position w level key data} {
 				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
 				set needSpace 0
 				if {[llength $suffixAnnotation]} {
-					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
+					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0 1
 					set suffixAnnotation {}
 					set needSpace 1
 				}
@@ -1408,7 +1408,7 @@ proc InsertMove {position w level key data} {
 	}
 
 	if {[llength $suffixAnnotation]} {
-		PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0
+		PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0 0
 	}
 }
 
@@ -1477,12 +1477,12 @@ proc PrintMove {position w level key data annotation} {
 		$w insert current $text main
 
 		if {[llength $annotation]} {
-			PrintNumericalAnnotation $position $w $level $key $annotation 1
+			PrintNumericalAnnotation $position $w $level $key $annotation 1 1
 			$w insert current "\u2006" main
 		}
 	} else {
 		if {[llength $annotation]} {
-			PrintNumericalAnnotation $position $w $level $key $annotation 1
+			PrintNumericalAnnotation $position $w $level $key $annotation 1 1
 			$w insert current "\u2006" $main
 		}
 
@@ -1688,7 +1688,7 @@ proc PrintMoveInfo {position w level key data} {
 }
 
 
-proc PrintNumericalAnnotation {position w level key nags isPrefix} {
+proc PrintNumericalAnnotation {position w level key nags isPrefix afterPly} {
 	variable ::pgn::editor::Options
 
 	set annotation [::font::splitAnnotation $nags]
@@ -1707,17 +1707,15 @@ proc PrintNumericalAnnotation {position w level key nags isPrefix} {
 		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
-			if {[lindex [split [$w index current] .] end] ne "0"} {
-				if {$prevSym >= 0 || !$isPrefix} {
-					$w insert current " "
-				}
+			if {($isPrefix || $afterPly) && ($prevSym >= 0 || !$isPrefix)} {
+				$w insert current " "
 			}
 			set prevSym 1
 		} elseif {$value <= 6} {
 			if {$count > 1} { $w insert current "\u2005" }
 			set prevSym 1
 		} elseif {$value == 155 || $value == 156} {
-			if {[lindex [split [$w index current] .] end] ne "0"} { $w insert current "\u2005" }
+			if {$isPrefix || $afterPly} { $w insert current "\u2005" }
 			set prevSym $sym
 		} elseif {!$sym && !$isPrefix} {
 			$w insert current "\u2005"
@@ -1732,6 +1730,7 @@ proc PrintNumericalAnnotation {position w level key nags isPrefix} {
 			}
 		}
 		set prefix 0
+		set afterPly 0
 	}
 
 	if {$level == 0} { set main main } else { set main variation }

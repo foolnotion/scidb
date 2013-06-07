@@ -569,14 +569,14 @@ proc findTclTkPaths {} {
                         s390x-linux-gnu
                         sparc64-linux-gnu} }
     }
-    set dirs [lappend dirs                     \
+    lappend dirs                               \
         alpha-linux-gnu                        \
         arm-linux-gnueabi arm-linux-gnueabihf  \
         m68k-linux-gnu                         \
         mips-linux-gnu mipsel-linux-gnu        \
         powerpc-linux-gnu powerpc-linux-gnuspe \
         sh4-linux-gnu                          \
-    ]
+        ;
     foreach dir $dirs {
         lappend path(x,libraries,usr) /usr/lib/$dir
         lappend path(x,libraries,local) /usr/local/lib/$dir
@@ -585,7 +585,7 @@ proc findTclTkPaths {} {
     set path(x,libraries) [concat $path(x,libraries,local) $path(x,libraries,usr) /usr/openwin/lib]
 
     # Tcl/Tk header path: List of possible locations for tcl.h and tk.h
-    set path(tcl,includes) [list                              \
+    lappend path(tcl,includes)                                \
         /usr/$configure(exec-prefix)/include/tcl${tclv}       \
         /usr/$configure(exec-prefix)/include/tcl${tclv_nodot} \
         /usr/$configure(exec-prefix)/include/tk${tclv}        \
@@ -624,37 +624,43 @@ proc findTclTkPaths {} {
         /usr/local/tcl${tclv_nodot}/generic                   \
         /usr/local/tk${tclv}/generic                          \
         /usr/local/tk${tclv_nodot}/generic                    \
-    ]
+        ;
     set path(tk,includes) $path(tcl,includes)
 
     # Tcl/Tk library path: List of possible locations of Tcl/Tk library.
-    set path(tcl,libraries) [list                          \
-        /usr/$configure(exec-prefix)/lib/tcl${tclv}        \
-        /usr/$configure(exec-prefix)/lib/tcl${tclv_nodot}  \
-        /usr/$configure(exec-prefix)/lib/tk${tclv}         \
-        /usr/$configure(exec-prefix)/lib/tk${tclv_nodot}   \
-        /usr/$configure(prefix)/lib/tcl${tclv}             \
-        /usr/$configure(prefix)/lib/tcl${tclv_nodot}       \
-        /usr/$configure(prefix)/lib/tk${tclv}              \
-        /usr/$configure(prefix)/lib/tk${tclv_nodot}        \
-        /usr/local/lib/tcl${tclv}                          \
-        /usr/local/lib/tcl${tclv_nodot}                    \
-        /usr/local/lib/tk${tclv}                           \
-        /usr/local/lib/tk${tclv_nodot}                     \
-        /usr/local/tcl/lib                                 \
-        /usr/local/lib                                     \
-        /usr/local/lib64                                   \
-        /usr/lib/tcl${tclv}                                \
-        /usr/lib/tcl${tclv_nodot}                          \
-        /usr/lib/tk${tclv}                                 \
-        /usr/lib/tk${tclv_nodot}                           \
-        /usr/lib                                           \
-        /usr/lib64                                         \
-        /usr/X11R6/lib                                     \
-        /opt/tcltk/lib                                     \
-        /opt/mytcltk/lib                                   \
-        /opt/lib                                           \
-    ]
+    lappend path(tcl,libraries)                      \
+        $configure(exec-prefix)/lib/tcl${tclv}       \
+        $configure(exec-prefix)/lib/tcl${tclv_nodot} \
+        $configure(exec-prefix)/lib/tk${tclv}        \
+        $configure(exec-prefix)/lib/tk${tclv_nodot}  \
+        $configure(prefix)/lib/tcl${tclv}            \
+        $configure(prefix)/lib/tcl${tclv_nodot}      \
+        $configure(prefix)/lib/tk${tclv}             \
+        $configure(prefix)/lib/tk${tclv_nodot}       \
+        ;
+    foreach dir $dirs { lappend path(tcl,libraries) /usr/lib/$dir }
+    lappend path(tcl,libraries)         \
+        /usr/local/lib/tcl${tclv}       \
+        /usr/local/lib/tcl${tclv_nodot} \
+        /usr/local/lib/tk${tclv}        \
+        /usr/local/lib/tk${tclv_nodot}  \
+        ;
+    foreach dir $dirs { lappend path(tcl,libraries) /usr/local/lib/$dir }
+    lappend path(tcl,libraries)   \
+        /usr/local/tcl/lib        \
+        /usr/local/lib64          \
+        /usr/local/lib            \
+        /usr/lib/tcl${tclv}       \
+        /usr/lib/tcl${tclv_nodot} \
+        /usr/lib/tk${tclv}        \
+        /usr/lib/tk${tclv_nodot}  \
+        /usr/lib64                \
+        /usr/lib                  \
+        /usr/X11R6/lib            \
+        /opt/tcltk/lib            \
+        /opt/mytcltk/lib          \
+        /opt/lib                  \
+        ;
 
     # Try to add tcl_library and auto_path values to path(tcl,libraries),
     # in case the user has a non-standard Tcl/Tk library location:

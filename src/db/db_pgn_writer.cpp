@@ -586,19 +586,36 @@ PgnWriter::putMarks(MarkSet const& marks)
 
 
 void
-PgnWriter::writePrecedingComment(Comment const& comment, MarkSet const& marks)
+PgnWriter::writePrecedingComment(Annotation const& annotation,
+											Comment const& comment,
+											MarkSet const& marks)
 {
-	if (!comment.isEmpty())
+	bool hasComment = !comment.isEmpty() || !marks.isEmpty();
+
+	if ((annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack)))
 	{
-		m_hasPrecedingComment = true;
-		m_needPreComment = true;
-	}
-	else if (!marks.isEmpty())
-	{
-		m_needPreComment = true;
+		mstl::string s;
+		annotation.print(s);
+		putToken(s);
+
+		if (hasComment)
+			putSpace();
 	}
 
-	putComment(comment, marks);
+	if (hasComment)
+	{
+		if (!comment.isEmpty())
+		{
+			m_hasPrecedingComment = true;
+			m_needPreComment = true;
+		}
+		else if (!marks.isEmpty())
+		{
+			m_needPreComment = true;
+		}
+
+		putComment(comment, marks);
+	}
 }
 
 

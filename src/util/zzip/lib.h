@@ -23,6 +23,7 @@
 
 #include <fcntl.h>
 #include <stddef.h> /* size_t and friends */
+#include <sys/types.h> /* ssize_t */
 /* msvc6 has neither ssize_t (we assume "int") nor off_t (assume "long") */
 
 #ifdef __cplusplus

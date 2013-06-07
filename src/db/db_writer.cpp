@@ -82,20 +82,35 @@ Writer::conv(mstl::string const& comment)
 void
 Writer::sendPrecedingComment(Comment const& comment, Annotation const& annotation, MarkSet const& marks)
 {
+	bool hasDiagram = annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack);
+
 	if (test(Flag_Include_Comments))
 	{
-		if (	!m_needSpace
-			&& (annotation.contains(nag::Diagram) || annotation.contains(nag::DiagramFromBlack)))
+		if (hasDiagram && test(Flag_Use_ChessBase_Format))
 		{
-			writePrecedingComment(Comment("#", false, false), MarkSet());
+			writePrecedingComment(Annotation(), Comment("#", false, false), MarkSet());
 			m_needSpace = true;
-		}
 
-		if (!comment.isEmpty() || !marks.isEmpty())
+			if (!comment.isEmpty() || !marks.isEmpty())
+			{
+				writePrecedingComment(Annotation(), comment, marks);
+				m_needSpace = true;
+			}
+		}
+		else
 		{
-			writePrecedingComment(comment, marks);
+			writePrecedingComment(annotation, comment, marks);
 			m_needSpace = true;
 		}
+	}
+	else if (hasDiagram)
+	{
+		if (test(Flag_Use_ChessBase_Format))
+			writePrecedingComment(Annotation(), Comment("#", false, false), MarkSet());
+		else
+			writePrecedingComment(annotation, Comment(), MarkSet());
+
+		m_needSpace = true;
 	}
 }
 
