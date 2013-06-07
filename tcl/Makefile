@@ -525,6 +525,10 @@ uninstall-fonts:
 		fi;                                                          \
 	fi
 
+install-photos:
+	@echo "Install player photos"
+	@install -m 755 -d $(SHAREDIR)/photos
+
 uninstall-photos:
 	@echo "Uninstall player photos"
 	@if [ -d $(SHAREDIR) ]; then                                                         \
@@ -538,7 +542,7 @@ uninstall-photos:
 
 install: install-scripts install-pieces install-cursors install-flags \
 				install-localizations install-textures install-themes install-text-scripts  \
-				install-images install-help install-config install-fonts
+				install-images install-help install-config install-photos install-fonts
 
 uninstall: uninstall-scripts uninstall-pieces uninstall-cursors uninstall-flags uninstall-localizations \
 				uninstall-themes uninstall-text-scripts uninstall-textures uninstall-images \
