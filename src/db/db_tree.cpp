@@ -365,8 +365,6 @@ Tree::buildTree960(	unsigned myIdn,
 							unsigned frequency,
 							unsigned numGames)
 {
-	typedef EcoTable::EcoSet EcoSet;
-
 	M_ASSERT(myIdn != 0);
 	M_ASSERT(myIdn != variant::Standard);
 	M_ASSERT(!myPosition.isStandardPosition(base.variant()));
@@ -477,8 +475,6 @@ Tree::buildTreeStandard(unsigned myIdn,
 								unsigned frequency,
 								unsigned numGames)
 {
-	typedef EcoTable::EcoSet EcoSet;
-
 	M_ASSERT(myIdn == variant::Standard);
 	M_ASSERT(myPosition.isStandardPosition(base.variant()));
 
@@ -542,8 +538,6 @@ Tree::buildTreeStart(unsigned myIdn,
 							unsigned frequency,
 							unsigned numGames)
 {
-	typedef EcoTable::EcoSet EcoSet;
-
 	M_ASSERT(myIdn != variant::Standard);
 	M_ASSERT(myPosition.isStartPosition());
 

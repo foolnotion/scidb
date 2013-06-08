@@ -687,8 +687,6 @@ View::exportGames(mstl::string const& filename,
 {
 	M_REQUIRE(!application().contains(filename));
 
-	typedef DatabaseCodec::Format Format;
-
 	if (m_cursor.m_db->size() == 0)
 		return 0;
 

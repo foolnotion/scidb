@@ -1215,7 +1215,6 @@ static void
 blur_image(PixBuf const& src, PixBuf& dst, double radius)
 {
 	typedef typename PixBuf::agg_pixfmt pixfmt;
-	typedef agg::renderer_base<pixfmt> renderer_base;
 
 	agg::rendering_buffer rbuf(dst.buf(), dst.cols(), dst.rows(), dst.pitch());
 	agg::rendering_buffer rbuf_pre(	const_cast<unsigned char*>(src.buf()),

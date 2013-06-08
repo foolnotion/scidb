@@ -1604,8 +1604,6 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 								unsigned count,
 								Progress& progress)
 {
-	typedef Namebase::Type Type;
-
 	M_ASSERT(m_codec);
 
 	if (count == 0)

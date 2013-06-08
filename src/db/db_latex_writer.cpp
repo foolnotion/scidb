@@ -84,8 +84,6 @@ LaTeXWriter::format() const
 bool
 LaTeXWriter::beginGame(TagSet const& tags)
 {
-	typedef mstl::ref_counted_ptr<ListToken> List;
-
 	m_env.bindMacro(m_white, 			tags.value(tag::White));
 	m_env.bindMacro(m_black, 			tags.value(tag::Black));
 	m_env.bindMacro(m_whiteCountry,	tags.value(tag::WhiteCountry));

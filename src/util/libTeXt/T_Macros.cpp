@@ -361,8 +361,6 @@ performEdef(Environment& env)
 static void
 performXdef(Environment& env)
 {
-	typedef Environment::ConsumerP ConsumerP;
-
 	TokenP		cs(env.getUndefinedToken(Verify::controlSequenceToken));
 	bool			isChar(cs->type() == Token::T_Number || cs->type() == Token::T_Ascii);
 	TokenList	paramList;

@@ -1335,7 +1335,6 @@ cmdDump(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc > 6)
 	{
 		typedef View::StringList StringList;
-		typedef View::LengthList LengthList;
 
 		StringList result, positions;
 
