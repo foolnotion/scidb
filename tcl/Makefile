@@ -23,6 +23,7 @@ SOURCES = \
 	start.tcl \
 	utils/tcl_bugs.tcl \
 	splash.tcl \
+	log.tcl \
 	utils/archive.tcl \
 	dialogs/messagebox.tcl \
 	dialogs/progressbar.tcl \
@@ -33,7 +34,6 @@ SOURCES = \
 	widgets/misc.tcl \
 	options.tcl \
 	board-basic.tcl \
-	log.tcl \
 	load.tcl \
 	i18n.tcl \
 	fonts.tcl \

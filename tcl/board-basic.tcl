@@ -202,7 +202,7 @@ dict set NameMap $workingSetId $workingSetId
 
 namespace import ::tcl::mathfunc::min
 
-namespace export loadTexture setupSquares setupPieces
+namespace export findTexture loadTexture setupSquares setupPieces
 namespace export loadImage registerSize unregisterSize setTile setTheme
 namespace export setSquareStyle setPieceStyle setPieceSet setBackground
 
@@ -525,6 +525,15 @@ proc unregisterSize {size} {
 }
 
 
+proc findTexture {sub style name} {
+	set file [file join $::scidb::dir::user textures $sub $style $name]
+	if {![file readable $file]} {
+		set file [file join $::scidb::dir::share textures $sub $style $name]
+	}
+	return $file
+}
+
+
 proc loadTexture {which} {
 	variable colors
 	variable texture
@@ -540,10 +549,10 @@ proc loadTexture {which} {
 	}
 
 	if {$texture($which) ne $value} {
-		if {[llength $value] == 0} {
+		if {[string length $value] == 0} {
 			set texture($which) ""
 		} else {
-			set path [file join $::scidb::dir::share textures $subdir {*}$value]
+			set path [findTexture $subdir {*}$value]
 
 			if {![info exists Texture($path)]} {
 				if {[catch { set Texture($path) [image create photo -file $path] } msg]} {
@@ -1222,7 +1231,7 @@ proc SetSquareStyle {identifier {size all}} {
 	foreach which {lite dark} {
 		if {[llength $style($which,texture)]} {
 			if {$texture($which) ne $style($which,texture)} {
-				set path [file join $::scidb::dir::share textures $which {*}$style($which,texture)]
+				set path [findTexture $which {*}$style($which,texture)]
 
 				if {[file readable $path]} {
 					loadTexture $which
@@ -1257,7 +1266,7 @@ proc SetPieceStyle {identifier {size all}} {
 	variable piece::style
 
 	if {[llength $style(color,w,texture)]} {
-		set path [file join $::scidb::dir::share textures lite {*}$style(color,w,texture)]
+		set path [findTexture lite {*}$style(color,w,texture)]
 
 		if {[file readable $path]} {
 			loadTexture white
@@ -1268,7 +1277,7 @@ proc SetPieceStyle {identifier {size all}} {
 		}
 	}
 	if {[llength $style(color,b,texture)]} {
-		set path [file join $::scidb::dir::share textures dark {*}$style(color,b,texture)]
+		set path [findTexture dark {*}$style(color,b,texture)]
 
 		if {[file readable $path]} {
 			loadTexture black
@@ -1416,21 +1425,21 @@ MakeBorderlines
 
 # check background tiles
 if {[llength $square::Default(hint,background-tile)]} {
-	set file [file join $::scidb::dir::share textures tile {*}$square::Default(hint,background-tile)]
+	set file [board::findTexture tile {*}$square::Default(hint,background-tile)]
 	if {![file readable $file]} {
 		::log::error $mc::Setup [format $mc::CannotFindFile $file]
 		set square::Default(hint,background-tile) {}
 	}
 }
 if {[llength $colors(user,background-tile)]} {
-	set file [file join $::scidb::dir::share textures tile {*}$colors(user,background-tile)]
+	set file [board::findTexture tile {*}$colors(user,background-tile)]
 	if {![file readable $file]} {
 		::log::error $mc::Setup [format $mc::CannotFindFile $file]
 		set colors(user,background-tile) {}
 	}
 }
 if {[llength $colors(hint,background-tile)]} {
-	set file [file join $::scidb::dir::share textures tile {*}$colors(hint,background-tile)]
+	set file [board::findTexture tile {*}$colors(hint,background-tile)]
 	if {![file readable $file]} {
 		::log::error $mc::Setup [format $mc::CannotFindFile $file]
 		set colors(hint,background-tile) {}
