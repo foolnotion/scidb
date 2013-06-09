@@ -1,6 +1,6 @@
 ::board::addStyle square {
   version               1.0
-  hint,border-tile      {wood WoodFine0006_Green.png}
+  hint,border-tile      {wood WoodFine0006_S.jpg}
   dark,y1               0
   hint,border-color     {}
   dark,y2               99
@@ -19,7 +19,7 @@
   dark,texture          {wood WOOD-parisot.jpg}
   dark,x2               99
   dark,solid            {}
-  hint,coordinates      #ffffff
+  hint,coordinates      #000000
   borderline,gap        0
   borderline,opacity    175
   identifier            {Wood - Green|1244309414202|yellow.color|gregor}

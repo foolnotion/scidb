@@ -1213,6 +1213,7 @@ proc TableFill {path args} {
 					}
 
 					result {
+						# if {$item eq "1/2-1/2"} { set item "1/2" }
 						lappend text [::util::formatResult $item]
 					}
 
