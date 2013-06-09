@@ -581,6 +581,7 @@ proc open {parent} {
 		::ttk::label $checks.lblb -textvar ::mc::Black
 
 		foreach side {w b} {
+			set Vars(checks:$side) 0
 			::ttk::spinbox $checks.val$side \
 				-from 0 \
 				-to 3 \

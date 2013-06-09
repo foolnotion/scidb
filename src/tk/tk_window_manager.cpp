@@ -86,9 +86,15 @@ struct Rect
 {
 	Rect() :left(0), right(0), width(0), height(0) {}
 
-	bool isEmpty() const
+	bool isEmpty() const { return height == 0 || width == 0 || left == 0 || right == 0; }
+	bool hasSize() const { return height > 0 && width > 0; }
+
+	void set(unsigned long const* data)
 	{
-		return height == 0 || width == 0 || left == 0 || right == 0;
+		left		= data[0];
+		right		= data[1];
+		width		= data[2];
+		height	= data[3];
 	}
 
 	int left;
@@ -101,11 +107,11 @@ struct MyAtom
 {
 	MyAtom(char const* name) :m_name(name), m_atom(None), m_allocate(true) {}
 
-	Atom get(Display* display)
+	Atom get(Display* display, bool onlyIfExists)
 	{
 		if (m_allocate)
 		{
-			m_atom = XInternAtom(display, m_name, True);
+			m_atom = XInternAtom(display, m_name, onlyIfExists ? True : False);
 			m_allocate = false;
 		}
 
@@ -118,12 +124,15 @@ struct MyAtom
 };
 
 
+static char const* XA_KDE_NET_WM_FRAME_STRUT				= "_KDE_NET_WM_FRAME_STRUT";
 static char const* XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE	= "_KDE_NET_WM_WINDOW_TYPE_OVERRIDE";
 static char const* XA_KWM_WIN_DECORATION					= "KWM_WIN_DECORATION";
 static char const* XA_MOTIF_WM_HINTS						= "_MOTIF_WM_HINTS";
 static char const* XA_NET_ACTIVE_WINDOW					= "_NET_ACTIVE_WINDOW";
 static char const* XA_NET_CURRENT_DESKTOP					= "_NET_CURRENT_DESKTOP";
 static char const* XA_NET_FRAME_EXTENTS					= "_NET_FRAME_EXTENTS";
+static char const* XA_NET_NUMBER_OF_DESKTOPS				= "_NET_NUMBER_OF_DESKTOPS";
+static char const* XA_NET_REQUEST_FRAME_EXTENTS			= "_NET_REQUEST_FRAME_EXTENTS";
 static char const* XA_NET_SUPPORTED							= "_NET_SUPPORTED";
 static char const* XA_NET_WM_ACTION_CLOSE					= "_NET_WM_ACTION_CLOSE";
 static char const* XA_NET_WM_ACTION_MAXIMIZE_HORZ		= "_NET_WM_ACTION_MAXIMIZE_HORZ";
@@ -143,12 +152,15 @@ static char const* XA_WM_CLIENT_LEADER						= "WM_CLIENT_LEADER";
 
 static MyAtom AtomList[] =
 {
+	XA_KDE_NET_WM_FRAME_STRUT,
 	XA_KDE_NET_WM_WINDOW_TYPE_OVERRIDE,
 	XA_KWM_WIN_DECORATION,
 	XA_MOTIF_WM_HINTS,
 	XA_NET_ACTIVE_WINDOW,
 	XA_NET_CURRENT_DESKTOP,
 	XA_NET_FRAME_EXTENTS,
+	XA_NET_NUMBER_OF_DESKTOPS,
+	XA_NET_REQUEST_FRAME_EXTENTS,
 	XA_NET_SUPPORTED,
 	XA_NET_WM_ACTION_CLOSE,
 	XA_NET_WM_ACTION_MAXIMIZE_HORZ,
@@ -166,6 +178,11 @@ static MyAtom AtomList[] =
 	XA_WIN_HINTS,
 	XA_WM_CLIENT_LEADER,
 };
+
+static Rect m_extents;
+#ifdef GET_EXTENTS_IMMEDIATELY
+static bool m_timeout = false;
+#endif
 
 
 static unsigned char*
@@ -222,7 +239,6 @@ changeProperty2(Display* display, Window window, Atom prop, void* data, int nele
 }
 
 
-inline
 static int
 checkAtom(Atom& request, Display* display, char const* name)
 {
@@ -230,12 +246,25 @@ checkAtom(Atom& request, Display* display, char const* name)
 	{
 		if (AtomList[i].m_name == name)
 		{
-			request = AtomList[i].get(display);
+			request = AtomList[i].get(display, true);
 			return request != None;
 		}
 	}
 
 	return 0;
+}
+
+
+static Atom
+getAtom(Display* display, char const* name)
+{
+	for (unsigned i = 0; i < U_NUMBER_OF(AtomList); ++i)
+	{
+		if (AtomList[i].m_name == name)
+			return AtomList[i].get(display, false);
+	}
+
+	return None;
 }
 
 
@@ -261,14 +290,14 @@ frameless(Tk_Window tkwin, Window window, char const* property)
 	// Now try to set KWM hints (doesn't work for any reason)
 	if ((rc = checkAtom(request, display, XA_KWM_WIN_DECORATION)))
 	{
-		uint32_t KWMHints = KDE_tinyDecoration;
+		unsigned KWMHints = KDE_tinyDecoration;
 		changeProperty1(display, window, request, &KWMHints, 1);
 	}
 
 	// Now try to set GNOME hints (working?)
 	if ((rc = checkAtom(request, display, XA_WIN_HINTS)))
 	{
-		uint32_t GNOMEHints = 0;
+		unsigned GNOMEHints = 0;
 		changeProperty1(display, window, request, &GNOMEHints, 1);
 	}
 
@@ -304,7 +333,7 @@ getParent(Display* display, Window window)
 
 	if (parent == XDefaultRootWindow(display))
 		return window;
-
+	
 	return parent;
 }
 
@@ -443,28 +472,7 @@ getDesktop(Tk_Window tkwin)
 			return -1;
 	}
 
-	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, window, request, 1));
-
-	if (data == 0)
-		return -1;
-
-	int desktop = *data;
-	XFree(data);
-	return desktop;
-}
-
-
-static int
-getCurrentDesktop(Tk_Window tkwin)
-{
-	Display*	display	= Tk_Display(tkwin);
-	Window	window	= XDefaultRootWindow(display);
-	Atom		request;
-
-	if (!checkAtom(request, display, XA_NET_CURRENT_DESKTOP))
-		return -1;
-
-	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, window, request, 1));
+	unsigned long* data = reinterpret_cast<unsigned long*>(getProperty(display, window, request, 1));
 
 	if (data == 0)
 		return -1;
@@ -504,30 +512,48 @@ setCurrentDesktop(Tk_Window tkwin, int desktop)
 
 
 static bool
-getWorkArea(Tk_Window tkwin, int desktop, Rect& result)
+getWorkArea(Display* display, int desktop, Rect& result)
 {
 	if (desktop < 0)
 		return false;
 
-	Display*	display	= Tk_Display(tkwin);
-	Window	root		= XDefaultRootWindow(display);
-	Atom		request;
+	Window	root = XDefaultRootWindow(display);
+	Atom		prop;
 
-	if (!checkAtom(request, display, XA_NET_WORKAREA))
+	if (!checkAtom(prop, display, XA_NET_WORKAREA))
 		return false;
 
-	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, root, request, 4, desktop*4));
+	unsigned long* data =
+		reinterpret_cast<unsigned long*>(getProperty(display, root, prop, 4, 4*desktop));
 
 	if (data == 0)
 		return false;
-	
-	result.left		= data[0];
-	result.right	= data[1];
-	result.width	= data[2];
-	result.height	= data[3];
 
+	result.set(data);
 	XFree(data);
+
 	return true;
+}
+
+
+static int
+getCurrentDesktop(Display* display)
+{
+	Window	root = XDefaultRootWindow(display);
+	Atom		prop;
+
+	if (!checkAtom(prop, display, XA_NET_CURRENT_DESKTOP))
+		return -1;
+
+	unsigned long* data = reinterpret_cast<unsigned long*>(getProperty(display, root, prop, 1));
+
+	if (data == 0)
+		return -1;
+
+	int desktop = *data;
+	XFree(data);
+
+	return desktop;
 }
 
 
@@ -536,39 +562,87 @@ getDefaultExtents(Rect& result)
 {
 	result.left = 6;
 	result.right = 6;
-	result.width = 24;
-	result.height = 8;
+	result.width = 30;
+	result.height = 6;
 
 	return false;
 }
 
 
-static bool
-getExtents(Tk_Window tkwin, Rect& result)
+#ifdef GET_EXTENTS_IMMEDIATELY
+static void
+timeoutProc(ClientData clientData)
+{
+	m_timeout = true;
+}
+#endif
+
+
+static int
+handleDesktopProperties(ClientData clientData, XEvent* xev)
+{
+	if (	xev->type == PropertyNotify
+		&& xev->xproperty.atom == Atom(clientData)
+		&& xev->xproperty.state == PropertyNewValue)
+	{
+		Atom extents;
+
+		if (checkAtom(extents, xev->xany.display, XA_NET_FRAME_EXTENTS))
+		{
+			unsigned long* data = reinterpret_cast<unsigned long*>
+											(getProperty(xev->xany.display, xev->xany.window, extents, 4));
+
+			if (data)
+			{
+				m_extents.set(data);
+				XFree(data);
+			}
+		}
+
+#ifdef GET_EXTENTS_IMMEDIATELY
+		m_timeout = true;
+#endif
+	}
+
+	return 0;
+}
+
+
+static void
+requestDesktopProperties(Tcl_Interp* ti, Tk_Window tkwin)
 {
 	Display*	display	= Tk_Display(tkwin);
-	Window	root		= Tk_WindowId(tkwin);
-	Atom		request;
+	Window	window	= Tk_WindowId(tkwin);
+	Atom		extents;
 
-	if (!checkAtom(request, display, XA_NET_FRAME_EXTENTS))
-		return getDefaultExtents(result);
+	if (checkAtom(extents, display, XA_NET_FRAME_EXTENTS))
+	{
+		static XID data[4];
 
-	uint32_t* data = reinterpret_cast<uint32_t*>(getProperty(display, root, request, 4));
+		XEvent xev;
+		memset(&xev, 0, sizeof(xev));
+		xev.xclient.message_type = getAtom(display, XA_NET_REQUEST_FRAME_EXTENTS);
+		xev.xclient.type = ClientMessage;
+		xev.xclient.display = display;
+		xev.xclient.window = window;
+		xev.xclient.format = 32;
 
-	if (data == 0)
-		return getDefaultExtents(result);
-	
-	result.left		= data[0];
-	result.right	= data[1];
-	result.width	= data[2];
-	result.height	= data[3];
+		Window root = XDefaultRootWindow(display);
+		XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	XFree(data);
+		Tk_CreateGenericHandler(handleDesktopProperties, ClientData(data));
 
-	if (result.isEmpty())
-		return getDefaultExtents(result);
+#ifdef GET_EXTENTS_IMMEDIATELY
+		Tcl_TimerToken timer = Tcl_CreateTimerHandler(250, timeoutProc, ti);
 
-	return true;
+		m_timeout = false;
+
+		while (!m_timeout)
+			Tcl_DoOneEvent(TCL_ALL_EVENTS);
+
+		Tcl_DeleteTimerHandler(timer);
+#endif
+	}
 }
 
 #endif
@@ -595,17 +669,14 @@ tcl_error(Tcl_Interp* ti, char const* fmt, ...)
 static void
 setResult(Tcl_Interp* ti, Rect& rect)
 {
-	if (!rect.isEmpty())
+	Tcl_Obj* objs[4] =
 	{
-		Tcl_Obj* objs[4] =
-		{
-			Tcl_NewIntObj(rect.left),
-			Tcl_NewIntObj(rect.right),
-			Tcl_NewIntObj(rect.width),
-			Tcl_NewIntObj(rect.height)
-		};
-		Tcl_SetObjResult(ti, Tcl_NewListObj(4, objs));
-	}
+		Tcl_NewIntObj(rect.left),
+		Tcl_NewIntObj(rect.right),
+		Tcl_NewIntObj(rect.width),
+		Tcl_NewIntObj(rect.height)
+	};
+	Tcl_SetObjResult(ti, Tcl_NewListObj(4, objs));
 }
 
 
@@ -651,6 +722,13 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 
 		Tk_SetGrid(tkwin, baseWidth, baseHeight, widthIncr, heightIncr);
 	}
+	else if (strcasecmp(subcmd, "startup") == 0)
+	{
+#if !defined(__WIN32__) && !defined(__MacOSX__)
+		getDefaultExtents(m_extents);
+		requestDesktopProperties(ti, tkwin);
+#endif
+	}
 	else if (strcasecmp(subcmd, "desktop") == 0)
 	{
 #if !defined(__WIN32__) && !defined(__MacOSX__)
@@ -662,7 +740,7 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 		bool result = true;
 
 #if !defined(__WIN32__) && !defined(__MacOSX__)
-		int desktop1 = getCurrentDesktop(tkwin);
+		int desktop1 = getCurrentDesktop(Tk_Display(tkwin));
 		int desktop2 = getDesktop(tkwin);
 
 		result = desktop1 >= 0 && desktop2 >= 0 && desktop1 == desktop2;
@@ -680,11 +758,15 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 #elif defined(__MacOSX__)
 # error "not yet implemented"
 #else
-		if (!getWorkArea(tkwin, getDesktop(tkwin), result))
-			getWorkArea(tkwin, getCurrentDesktop(tkwin), result);
+		Display* display = Tk_Display(tkwin);
+
+		if (!getWorkArea(display, getDesktop(tkwin), result))
+			getWorkArea(display, getCurrentDesktop(display), result);
 #endif
 
-		setResult(ti, result);
+		if (result.hasSize())
+			setResult(ti, result);
+
 		return TCL_OK;
 	}
 	else if (strcasecmp(subcmd, "extents") == 0)
@@ -695,11 +777,11 @@ cmdWM(ClientData, Tcl_Interp *ti, int objc, Tcl_Obj* const objv[])
 # error "not yet implemented"
 #elif defined(__MacOSX__)
 # error "not yet implemented"
-#else
-		getExtents(tkwin, result);
 #endif
 
-		setResult(ti, result);
+		if (!m_extents.isEmpty())
+			setResult(ti, m_extents);
+
 		return TCL_OK;
 	}
 #if !defined(__WIN32__) && !defined(__MacOSX__)

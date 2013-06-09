@@ -279,6 +279,7 @@ namespace eval mc {}
 tk appname $scidb::app
 
 tk::toplevel .application -class $::scidb::app
+::scidb::tk::wm startup .
 wm withdraw .application
 
 if {[::scidb::misc::debug?]} {

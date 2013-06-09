@@ -16,9 +16,10 @@
 # (at your option) any later version.
 # ======================================================================
 
-# This implementation is adopted from BWidget/utils.tcl.
+# This implementation is adopted from BWidget/utils.tcl, but heavily
+# modified.
 
-# Due to centering problems on window, see http://wiki.tcl.tk/20773
+# Due to centering problems on windows, see http://wiki.tcl.tk/20773
 
 package provide place 1.1
 
