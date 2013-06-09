@@ -365,7 +365,7 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 
 }
 
-set Extensions		{.sci .si4 .si3 .cbh .cbf .pgn .zip}
+set Extensions		{.sci .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
 set clipbaseName	Clipbase
 
 switch [tk windowingsystem] {
@@ -383,7 +383,7 @@ proc databaseName {base {withExtension 1}} {
 	}
 
 	set name [lindex [file split $base] end]
-	set ext [file extension $name]
+	set ext [string tolower [file extension $name]]
 	set name [file rootname $name]
 
 	if {[string length $name] > 32} {
@@ -435,7 +435,7 @@ proc databasePath {file} {
 	variable Extensions
 
 	set ext [file extension $file]
-	if {$ext ni $Extensions && ![string match {*.pgn.gz} $file]} {
+	if {$ext ni $Extensions && ![string match -nocase {*.pgn.gz} $file]} {
 		foreach ext $Extensions {
 			set f "$file$ext"
 			if {[file readable $f]} {

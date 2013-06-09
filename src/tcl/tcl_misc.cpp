@@ -1077,7 +1077,7 @@ cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMapExtension(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* Extensions[] = { "sci", "si3", "si4", "cbh", "cbf" };
+	static char const* Extensions[] = { "sci", "si3", "si4", "cbh", "cbf", "CBF" };
 
 	char const* extension = stringFromObj(objc, objv, 1);
 
