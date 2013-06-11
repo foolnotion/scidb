@@ -181,7 +181,7 @@ Consumer::swapMoveInfo(MoveInfoSet& moveInfo)
 
 
 bool
-Consumer::startGame(TagSet const& tags, Board const* board)
+Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 {
 	while (m_stack.size() > 1)
 		m_stack.pop();
@@ -220,10 +220,10 @@ Consumer::startGame(TagSet const& tags, Board const* board)
 
 		m_idn = startBoard().computeIdn(m_useVariant);
 	}
-	else if (tags.contains(tag::Idn))
+	else if (idn)
 	{
-		m_idn = tags.asInt(tag::Idn);
-		setup(m_idn);
+		M_ASSERT(*idn > 0);
+		setup(m_idn = *idn);
 	}
 	else if (m_setupBoard)
 	{
@@ -331,7 +331,6 @@ Consumer::putTrailingComment(Comment const& comment)
 			m_commentOthFlag = true;
 
 		sendTrailingComment(comment, m_stack.top().empty);
-		m_stack.top().move = Move::null();
 	}
 }
 

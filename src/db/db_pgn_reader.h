@@ -40,6 +40,7 @@
 #include "m_map.h"
 
 namespace mstl { class istream; }
+namespace mstl { template <typename> class vector; }
 namespace util { class Progress; }
 namespace sys { namespace utf8 { class Codec; } }
 
@@ -51,6 +52,7 @@ public:
 
 	typedef mstl::map<mstl::string,unsigned> Variants;
 	typedef unsigned GameCount[variant::NumberOfVariants];
+	typedef mstl::vector<unsigned> FileOffsets;
 
 	PgnReader(	mstl::istream& stream,
 					variant::Type variant,
@@ -75,6 +77,7 @@ public:
 
 	unsigned process(util::Progress& progress) override;
 
+	void setup(FileOffsets* fileOffsets);
 	void setFigurine(mstl::string const& figurine);
 
 	unsigned estimateNumberOfGames() override;
@@ -236,6 +239,9 @@ private:
 	Token unexpectedSymbol(Token prevToken, int c);
 
 	mstl::istream&		m_stream;
+	FileOffsets*		m_fileOffsets;
+	unsigned				m_currentOffset;
+	unsigned				m_lineOffset;
 	unsigned				m_putback;
 	char					m_putbackBuf[10];
 	mstl::string		m_line;
@@ -272,6 +278,7 @@ private:
 	bool					m_hasNote;
 	bool					m_atStart;
 	bool					m_parsingComment;
+	bool					m_sourceIsScidb;
 	bool					m_sourceIsPossiblyChessBase;
 	bool					m_sourceIsChessOK;
 	bool					m_encodingFailed;

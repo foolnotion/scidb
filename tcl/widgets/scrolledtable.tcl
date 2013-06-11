@@ -998,7 +998,7 @@ proc ScanDrag {table x y} {
 			set Vars(drag:selection) [$table.t selection get]
 			$table.t dragimage clear
 			foreach col [::table::columns $table] {
-				$table.t dragimage add i$Vars(drag:row) $col elemBrd
+				catch { $table.t dragimage add i$Vars(drag:row) $col elemBrd }
 			}
 			$table.t dragimage configure -visible yes
 		}

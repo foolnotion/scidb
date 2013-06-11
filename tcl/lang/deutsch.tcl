@@ -667,6 +667,7 @@
 ::application::tree::mc::NoGamesAvailable					"Keine Partien verfügbar"
 ::application::tree::mc::Searching							"Suche"
 ::application::tree::mc::VariantsNotYetSupported		"Schachformen (außer Normalschach) werden noch nicht unterstützt."
+::application::tree::mc::End									"Ende"
 
 ::application::tree::mc::FromWhitesPerspective			"Aus weißer Sicht"
 ::application::tree::mc::FromBlacksPerspective			"Aus schwarzer Sicht"

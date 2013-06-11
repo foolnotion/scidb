@@ -80,7 +80,7 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	M_REQUIRE(!test(Flag_Use_ChessBase_Format) || !test(Flag_Strict_PGN_Standard));
 
 	if (test(Flag_Strict_PGN_Standard))
-		m_lineLength = mstl::min(m_lineLength, 80u);
+		m_lineLength = mstl::min(m_lineLength, 255u);
 
 	if (test(Flag_Use_Scidb_Import_Format))
 	{
@@ -389,9 +389,9 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 	if (!test(Flag_Strict_PGN_Standard))
 		lineLength = mstl::max(lineLength, 512u);
 
-	if (mstl::min(m_length, indent) + m_pendingSpace + comment.size() + 2 < m_lineLength)
+	if (mstl::min(m_length, indent) + m_pendingSpace + comment.size() + 2 < lineLength)
 	{
-		if (m_length + m_pendingSpace + comment.size() + 2 >= m_lineLength)
+		if (m_length + m_pendingSpace + comment.size() + 2 >= lineLength)
 			putNewline();
 
 		m_length += m_pendingSpace;
@@ -420,7 +420,7 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 
 		unsigned length = t - s;
 
-		if (m_length + length + m_pendingSpace + 1 + (t == e ? 1 : 0) >= m_lineLength)
+		if (m_length + length + m_pendingSpace + 1 + (t == e ? 1 : 0) >= lineLength)
 		{
 			if (insideComment())
 				m_strm.put('\n');
@@ -467,7 +467,7 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 
 				unsigned delim = (t == e && !insideComment() ? 1 : 0);
 
-				if (m_length + length + spaces + delim >= m_lineLength)
+				if (m_length + length + spaces + delim >= lineLength)
 				{
 					m_strm.put('\n');
 					m_length = 0;

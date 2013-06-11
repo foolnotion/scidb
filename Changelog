@@ -1,6 +1,14 @@
 [Juni 2013 ] =================================================================
 
 ------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #831)
+------------------------------------------------------------------------------
+* configure script: test for POPCNT instruction (_mm_popcnt_u64), available
+only on 64 bit machines and modern x86 processors.
+
+* Severe bug in .sci consumer fixed (a long time undetected).
+
+------------------------------------------------------------------------------
 Scidb 1.0 BETA (rev. #818)
 ------------------------------------------------------------------------------
 * Upgrade of stockfish to version 3 (Date: June 01, 2013,

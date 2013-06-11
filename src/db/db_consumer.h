@@ -104,6 +104,7 @@ public:
 
 	bool startGame(TagSet const& tags);
 	bool startGame(TagSet const& tags, Board const& board);
+	bool startGame(TagSet const& tags, uint16_t idn);
 	save::State finishGame(TagSet const& tags);
 	virtual save::State skipGame(TagSet const& tags);
 
@@ -191,7 +192,7 @@ private:
 
 	typedef mstl::stack<Entry> Stack;
 
-	bool startGame(TagSet const& tags, Board const* board);
+	bool startGame(TagSet const& tags, Board const* board, uint16_t* idn);
 	void setup(Board const& startPosition);
 	void setup(mstl::string const& fen);
 	void setup(unsigned idn);

@@ -50,6 +50,7 @@ PgnReader::PgnReader(mstl::istream& strm,
 							Tcl_Obj* arg,
 							Modification modification,
 							ReadMode readMode,
+							::db::permission::ReadMode permission,
 							GameCount const* firstGameNumber,
 							unsigned lineOffset,
 							bool trialMode)
@@ -72,6 +73,10 @@ PgnReader::PgnReader(mstl::istream& strm,
 	,m_lastError(LastError)
 {
 	M_REQUIRE(cmd == 0 || arg != 0);
+	M_REQUIRE(permission == ::db::permission::ReadOnly || readMode == File);
+
+	if (permission == ::db::permission::ReadWrite)
+		setup(&m_fileOffsets);
 
 	Tcl_IncrRefCount(m_warning);
 	Tcl_IncrRefCount(m_error);
@@ -89,6 +94,7 @@ unsigned PgnReader::countErrors() const				{ return m_countErrors; }
 unsigned PgnReader::countWarnings() const				{ return m_countWarnings; }
 
 PgnReader::Error PgnReader::lastErrorCode() const	{ return m_lastError; }
+PgnReader::FileOffsets const& PgnReader::fileOffsets() const { return m_fileOffsets; }
 
 
 void

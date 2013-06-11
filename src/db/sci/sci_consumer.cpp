@@ -131,6 +131,7 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_endOfRun(false)
 	,m_danglingPop(false)
 	,m_danglingEndMarker(0)
+	,m_trailingComment(false)
 	,m_lastCommentPos(0)
 {
 //	M_REQUIRE(!codecs.isEmpty());
@@ -168,6 +169,7 @@ Consumer::beginGame(TagSet const& tags)
 	m_endOfRun = false;
 	m_danglingPop = false;
 	m_danglingEndMarker = 1;
+	m_trailingComment = false;
 	m_lastCommentPos = 0;
 	m_timeTable.clear();
 	m_plyCount = 0;
@@ -307,6 +309,7 @@ Consumer::sendTrailingComment(Comment const& comment, bool variationIsEmpty)
 
 		m_strm.put(token::Comment);
 		m_data.put(flag);
+		m_trailingComment = true;
 		m_endOfRun = true;
 
 		if (isMainline())
@@ -421,24 +424,31 @@ Consumer::endVariation(bool isEmpty)
 		putMove(Move::null());
 #endif
 
-	if (m_danglingEndMarker > 1)
-	{
-		if (m_danglingPop)
-			m_position.pop();
+	m_position.pop();
 
+	if (m_danglingPop)
 		m_position.pop();
+	else
+		m_danglingPop = true;
+
+	if (m_trailingComment)
+	{
+		m_trailingComment = false;
+	}
+	else if (m_danglingEndMarker > 1)
+	{
 		m_strm.put(token::End_Marker);
 		m_strm.put(token::End_Marker);
 		m_danglingEndMarker--;
 	}
-
-	m_danglingPop = true;
 }
 
 
 bool
 Consumer::sendMove(Move const& move)
 {
+	M_REQUIRE(move);
+
 	if (m_danglingPop)
 	{
 		m_position.pop();
@@ -469,6 +479,8 @@ Consumer::sendMove(	Move const& move,
 							Comment const& preComment,
 							Comment const& comment)
 {
+	M_REQUIRE(move);
+
 	if (m_danglingPop)
 	{
 		m_position.pop();

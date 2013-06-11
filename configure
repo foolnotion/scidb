@@ -170,6 +170,7 @@ foreach name [array names environment] {
 
 array set compiler {
     simd            {}
+    popcnt          {}
     thread-support  {}
     no-gzoffset     {}
 }
@@ -573,7 +574,7 @@ proc findTclTkPaths {} {
         alpha-linux-gnu                        \
         arm-linux-gnueabi arm-linux-gnueabihf  \
         m68k-linux-gnu                         \
-        mips-linux-gnu mipsel-linux-gnu        \
+        mipsel-linux-gnu                       \
         powerpc-linux-gnu powerpc-linux-gnuspe \
         sh4-linux-gnu                          \
         ;
@@ -876,6 +877,24 @@ proc checkStatVFS {} {
 }
 
 
+proc Probe {file script} {
+    if {[catch {open $file.sh w} f]} {
+        puts "Severe error: Unable to write file '$file.sh' in current directory."
+        puts "Aborted."
+        exit 1
+    }
+    puts $f $script
+    close $f
+    set err ""
+    catch [list exec sh $file.sh] err
+    catch [list file delete -force $file.sh]
+    catch [list file delete -force $file.c]
+    catch [list file delete -force $file]
+    if {[llength $err]} { return 0 }
+    return 1
+}
+
+
 # TestInotify.sh:
 #    Script used to test if the kernel has inotify.
 #
@@ -932,15 +951,7 @@ proc SystemHasInotify {} {
     set testinotify [regsub -all __CC__ $TestInotify $environment(CC)]
     set testinotify [regsub -all __pwd__ $testinotify [pwd]]
     flush stdout
-    if {[catch {open testinotify.sh w} f]} { return 0 }
-    puts $f $testinotify
-    close $f
-    set result 0
-    if {![catch {exec sh testinotify.sh} err]} { set result 1 }
-
-    catch { file delete -force testinotify.sh }
-    catch { file delete -force testinotify.c }
-    catch { file delete -force testinotify }
+    set result [Probe testinotify $testinotify]
 
     if {$result} {
         set option(HAVE_INOTIFY) "-DHAVE_INOTIFY=1"
@@ -1425,12 +1436,58 @@ fi
 }
 
 
+# TestPOPCNT.sh:
+#    Script used to test if gcc supports _mm_popcnt_u64 instruction
+#
+set TestPOPCNT {#!/bin/sh
+cat <<EOF > testpopcnt.c
+#ifdef __i386__
+static void cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
+{
+	__asm__ __volatile__
+	(
+		"push   %%ebx    \n\t"
+		"cpuid           \n\t"
+		"movl   %%ebx,%1 \n\t"
+		"pop    %%ebx    \n\t"
+
+		: "=a"(eax), "=r"(ebx), "=c"(ecx), "=d"(edx)
+		: "a"(op)
+		: "cc"
+	);
+}
+
+static int isPOPCNTSupported()
+{
+    unsigned ax, bx, cx, dx;
+    cpuid(0x00000001, &ax, &bx, &cx, &dx);
+    return (cx & (1u << 23)) != 0;
+}
+
+int main() { return isPOPCNTSupported() ? 0 : 1; }
+#else
+int main()
+{
+    return 1;
+}
+#endif
+EOF
+
+__CC__ -o testsse2 testsse2.c -msse2
+if [ -f testsse2 ]; then
+    exit 0
+else
+    exit 1
+fi
+}
+
+
 # TestSSE2.sh:
 #    Script used to test if gcc supports SSE2 (required for jpeg library).
 #
 set TestSSE2 {#!/bin/sh
 cat <<EOF > testsse2.c
-int main() { return 1; }
+int main() { return 0; }
 EOF
 
 __CC__ -o testsse2 testsse2.c -msse2
@@ -1474,7 +1531,7 @@ fi
 #
 set TestCompilerFlag {#!/bin/sh
 cat <<EOF > testCompilerFlag.c
-int main() { return 1; }
+int main() { return 0; }
 EOF
 
 __CC__ -g %FLAG% -o testCompilerFlag testCompilerFlag.c
@@ -1483,24 +1540,6 @@ if [ -f testCompilerFlag ]; then
 else
     exit 1
 fi
-}
-
-
-proc Probe {file script} {
-    if {[catch {open $file.sh w} f]} {
-        puts "Severe error: Unable to write file '$file.sh' in current directory."
-        puts "Aborted."
-        exit 1
-    }
-    puts $f $script
-    close $f
-    set err ""
-    catch [list exec sh $file.sh] err
-    catch [list file delete -force $file.sh]
-    catch [list file delete -force $file.c]
-    catch [list file delete -force $file]
-    if {[llength $err]} { return 0 }
-    return 1
 }
 
 
@@ -1563,8 +1602,10 @@ proc checkClang {cc} {
 # checkGCC:
 #    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
+    global tcl_platform
     global TestGCC
     global TestSSE2
+    global TestPOPCNT
     global TestSyncBuiltin
     global TestCompilerFlag
     global environment
@@ -1576,6 +1617,7 @@ proc checkGCC {cc} {
     # TODO: we want some more test:
     # --with-fpmath=sse     SSE math enabled by default
     # -mpopcnt              enables GCC to use the popcnt instructions on both AMD and Intel processors
+    # -m64 -msse4.2 for use of _mm_popcnt_u64
 
     if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
@@ -1615,14 +1657,23 @@ proc checkGCC {cc} {
         if {[string compare $version "4.3"] >= 0} {
             set option(EXTRA_CXXFLAGS) "-std=c++0x"
         }
-        puts -nonewline "    Checking if your compiler supports SSE2: "
-        flush stdout
-        if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
-            set compiler(simd) -msse2
-            puts "yes."
-        } else {
-            puts "no."
+        puts -nonewline "    Checking if your compiler supports POPCNT: "
+        if {8*$tcl_platform(wordSize) == 64} {
+            flush stdout
+            if {[Probe testpopcnt [regsub -all __CC__ $TestPOPCNT $environment($cc)]]} {
+                set compiler(simd) -msse3
+                set compiler(popcnt) -DUSE_POPCNT
+            }
         }
+        if {[llength $compiler(simd)] == 0} { puts "no." } else { puts "yes." }
+        puts -nonewline "    Checking if your compiler supports SSE2: "
+        if {[llength $compiler(simd)] == 0} {
+            flush stdout
+            if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
+                set compiler(simd) -msse2
+            }
+        }
+        if {[llength $compiler(simd)] == 0} { puts "no." } else { puts "yes." }
         puts -nonewline "    Checking if your kernel supports __sync_* builtin functions: "
         flush stdout
         if {[Probe testSyncBuiltin [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]]} {
@@ -1806,6 +1857,10 @@ proc writeMakefile {{type ""}} {
 
     if {[string length $compiler(no-gzoffset)]} {
         Append option(EXTRA_CXXFLAGS) $compiler(no-gzoffset)
+    }
+
+    if {[string length $compiler(popcnt)]} {
+        Append option(EXTRA_CXXFLAGS) $compiler(popcnt)
     }
 
     set success [findTclTkPaths]

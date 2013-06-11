@@ -665,6 +665,7 @@
 ::application::tree::mc::NoGamesAvailable					"No games available"
 ::application::tree::mc::Searching							"Searching"
 ::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported."
+::application::tree::mc::End									"end"
 
 ::application::tree::mc::FromWhitesPerspective			"From whites perspective"
 ::application::tree::mc::FromBlacksPerspective			"From blacks perspective"

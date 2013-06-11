@@ -270,16 +270,12 @@ Writer::beginGame(TagSet const& tags)
 				break;
 
 			case tag::Idn:
-				if (!isEmpty && test(Flag_Include_Position_Tag))
+				if (format() == format::Scidb && !isEmpty && test(Flag_Include_Position_Tag))
 				{
 					uint16_t idn = ::strtoul(value.c_str(), nullptr, 10);
-
-					if (variant::isShuffleChess(idn))
-					{
-						mstl::string buf;
-						buf.format(	"%s %s", value.c_str(), shuffle::position(idn).c_str());
-						writeTag(tag, buf);
-					}
+					mstl::string buf;
+					buf.format(	"%s %s", value.c_str(), shuffle::position(idn).c_str());
+					writeTag(tag, buf);
 				}
 				break;
 

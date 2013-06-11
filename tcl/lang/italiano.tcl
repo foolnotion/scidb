@@ -668,6 +668,7 @@
 ::application::tree::mc::NoGamesAvailable					"Nessuna partita disponibile"
 ::application::tree::mc::Searching							"Ricerca"
 ::application::tree::mc::VariantsNotYetSupported		"Variante di scacchi non ancora supportata."
+::application::tree::mc::End									"end" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Dalla prospettiva del bianco"
 ::application::tree::mc::FromBlacksPerspective			"Dalla prospettiva del nero"

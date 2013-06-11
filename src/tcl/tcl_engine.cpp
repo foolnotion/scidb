@@ -1299,7 +1299,7 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 						if (engine->snapshotExists(line) && !engine->snapshotLine(line).isEmpty())
 						{
-							game->addVariation(engine->snapshotLine(line));
+							game->mergeVariation(engine->snapshotLine(line));
 							rc = true;
 						}
 					}
@@ -1318,7 +1318,7 @@ cmdSnapshot(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 							for (unsigned line = 0; engine->snapshotExists(line); ++line)
 							{
 								if (!engine->snapshotLine(line).isEmpty())
-									game->addVariation(engine->snapshotLine(line));
+									game->mergeVariation(engine->snapshotLine(line));
 							}
 
 							game->endUndoPoint(Game::UpdatePgn);

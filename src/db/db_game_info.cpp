@@ -47,7 +47,6 @@
 #include <ctype.h>
 
 #define GAME_INFO_VAR
-#define GAME_INFO_IDN
 
 using namespace db;
 using namespace db::color;
@@ -813,16 +812,9 @@ GameInfo::setupVariant(TagSet& tags, variant::Type variant, uint16_t idn)
 {
 	M_ASSERT(idn > 0);
 
-#ifdef GAME_INFO_IDN
-	tags.remove(tag::Idn);	// it's too dangerous to keep a user supplied value
-#endif
-
 	if (idn != variant::Standard)
 	{
 		tags.set(tag::SetUp, 1);
-#ifdef GAME_INFO_IDN
-		tags.add(tag::Idn, idn);
-#endif
 
 		if (variant::isChess960(idn))
 		{
@@ -935,6 +927,7 @@ GameInfo::setupTags(TagSet& tags, variant::Type variant) const
 	tags.set(tag::Termination, termination::toString(termination::Reason(m_termination)));
 	tags.set(tag::Mode, event::toString(m_event->eventMode()));
 	tags.set(tag::TimeMode, time::toString(m_event->timeMode()));
+	tags.set(tag::Idn, m_positionId);
 
 	if (m_positionId)
 	{
@@ -985,6 +978,8 @@ GameInfo::setupTags(TagSet& tags, Provider const& provider)
 	mstl::string opening, variation, subvariation;
 	variant::Type variant = provider.variant();
 	unsigned idn = provider.getStartBoard().computeIdn(variant);
+
+	tags.set(tag::Idn, idn);
 
 	if (idn)
 	{

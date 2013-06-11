@@ -350,6 +350,8 @@ PgnReader::PgnReader(mstl::istream& stream,
 							ResultMode resultMode)
 	:Reader(format::Pgn)
 	,m_stream(stream)
+	,m_currentOffset(0)
+	,m_lineOffset(0)
 	,m_putback(0)
 	,m_linePos(0)
 	,m_lineEnd(0)
@@ -368,6 +370,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_hasNote(false)
 	,m_atStart(true)
 	,m_parsingComment(false)
+	,m_sourceIsScidb(false)
 	,m_sourceIsPossiblyChessBase(false)
 	,m_sourceIsChessOK(false)
 	,m_encodingFailed(false)
@@ -410,6 +413,12 @@ PgnReader::PgnReader(mstl::istream& stream,
 }
 
 
+PgnReader::~PgnReader() throw()
+{
+	delete m_codec;
+}
+
+
 variant::Type
 PgnReader::detectedVariant() const
 {
@@ -417,9 +426,10 @@ PgnReader::detectedVariant() const
 }
 
 
-PgnReader::~PgnReader() throw()
+void
+PgnReader::setup(FileOffsets* fileOffsets)
 {
-	delete m_codec;
+	m_fileOffsets = fileOffsets;
 }
 
 
@@ -798,7 +808,6 @@ PgnReader::process(Progress& progress)
 				m_atStart = true;
 				m_significance[color::White] = 1;
 				m_significance[color::Black] = 1;
-				m_sourceIsChessOK = false;
 				m_postIndex = 0;
 				m_ficsGamesDBGameNo = false;
 				m_checkShufflePosition = false;
@@ -808,6 +817,9 @@ PgnReader::process(Progress& progress)
 				m_warnings.clear();
 				m_givenVariant = givenVariant;
 				m_thisVariant = variant::Undetermined;
+				m_sourceIsScidb = false;
+				m_sourceIsPossiblyChessBase = false;
+				m_sourceIsChessOK = false;
 
 				if ((m_variant = m_givenVariant) == variant::Antichess)
 					m_variant = variant::Suicide;
@@ -817,9 +829,14 @@ PgnReader::process(Progress& progress)
 					m_parsingTags = true;
 					readTags();
 					m_parsingTags = false;
-					m_sourceIsPossiblyChessBase =		m_modification == Raw
-															&& m_tags.contains(PlyCount)
-															&& m_tags.contains(EventCountry);
+
+					if (	!m_sourceIsScidb
+						&& m_modification == Raw
+						&& m_tags.contains(PlyCount)
+						&& m_tags.contains(EventCountry))
+					{
+						m_sourceIsPossiblyChessBase = true;
+					}
 				}
 
 				if (m_variant != variant::Undetermined && !m_tags.contains(tag::Variant))
@@ -828,7 +845,7 @@ PgnReader::process(Progress& progress)
 				if (m_variant != variant::Undetermined && !consumer().supportsVariant(m_variant))
 					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
-				if (!consumer().startGame(m_tags))
+				if (!consumer().startGame(m_tags, m_idn))
 					sendError(UnsupportedVariant, m_currPos, m_tags.value(tag::Variant));
 
 				token = nextToken(kTag);
@@ -850,7 +867,7 @@ PgnReader::process(Progress& progress)
 					// The PGN standard does not forbid such things.
 					while (token & (kStartVariation | kEndVariation))
 					{
-						putMove(true);
+						putMove((token & kEndVariation));
 
 						if (token == kEndVariation)
 						{
@@ -999,6 +1016,9 @@ PgnReader::process(Progress& progress)
 	catch (Termination const&)
 	{
 	}
+
+	if (m_fileOffsets)
+		m_fileOffsets->push_back(m_currentOffset);
 
 	return ::total(m_gameCount);
 }
@@ -1281,6 +1301,9 @@ PgnReader::finishGame(bool skip)
 		++m_rejected[variantIndex];
 	else
 		++m_accepted[variantIndex];
+
+	if (m_fileOffsets)
+		m_fileOffsets->push_back(m_currentOffset);
 
 	variant::Type variant = getVariant();
 
@@ -1601,8 +1624,7 @@ PgnReader::putMove(bool lastMove)
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
 					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
 				}
-				else if (	m_comments.size() - m_postIndex > 1
-							&& (!m_sourceIsPossiblyChessBase || m_modification == Raw))
+				else if (m_comments.size() - m_postIndex > 1 && (m_sourceIsScidb || m_modification == Raw))
 				{
 					::join(m_comments.begin() + m_postIndex, m_comments.end() - 1);
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
@@ -1624,8 +1646,7 @@ PgnReader::putMove(bool lastMove)
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
 				m_comments.erase(m_comments.begin());
 			}
-			else if (	m_comments.size() > 1
-						&& (!m_sourceIsPossiblyChessBase || m_modification == Raw))
+			else if (m_comments.size() > 1 && (m_sourceIsScidb || m_modification == Raw))
 			{
 				::join(m_comments.begin(), m_comments.end() - 1);
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
@@ -1706,7 +1727,7 @@ PgnReader::putLastMove()
 
 		if (consumer().variationIsEmpty())
 		{
-			if (m_comments.size() > 1 && (!m_sourceIsPossiblyChessBase || m_modification == Raw))
+			if (m_comments.size() > 1 && (m_sourceIsScidb || m_modification == Raw))
 			{
 				::join(m_comments.begin() + 1, m_comments.end());
 				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
@@ -1780,6 +1801,8 @@ PgnReader::get(bool allowEndOfInput)
 
 	if (m_lineEnd <= m_linePos)
 	{
+		m_lineOffset = m_stream.tellg();
+
 		if (m_stream.getline(m_line))
 		{
 			m_linePos = m_line.begin();
@@ -1808,6 +1831,7 @@ PgnReader::get(bool allowEndOfInput)
 		}
 		else
 		{
+			m_currentOffset = m_stream.tellg() + 1;
 			m_eof = true;
 		}
 
@@ -1952,7 +1976,8 @@ PgnReader::searchTag()
 
 		switch (c)
 		{
-			case '\0':	return kEoi;
+			case '\0':
+				return kEoi;
 
 			case '[':
 				if (m_encoding == sys::utf8::Codec::automatic())
@@ -1960,6 +1985,7 @@ PgnReader::searchTag()
 					delete m_codec;
 					m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
 				}
+				m_currentOffset = m_lineOffset + m_currPos.column - 1;
 				return kTag;
 
 			case 0xef:
@@ -2293,8 +2319,11 @@ PgnReader::checkTags()
 	if (m_tags.contains(Fen))
 		checkFen();
 
-	if (m_idn)
-		m_tags.set(Idn, m_idn);
+	if (m_tags.contains(tag::Idn))
+	{
+		m_sourceIsScidb = true;
+		m_tags.remove(tag::Idn);
+	}
 
 	if (m_modification == Raw)
 		return;
@@ -4753,6 +4782,7 @@ PgnReader::parseTag(Token prevToken, int)
 		}
 	}
 
+	m_currentOffset = m_lineOffset + m_currPos.column - 1;
 	return kTag;
 }
 

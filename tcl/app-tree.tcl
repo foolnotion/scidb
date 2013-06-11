@@ -49,6 +49,7 @@ set NoGamesFound						"No games found"
 set NoGamesAvailable					"No games available"
 set Searching							"Searching"
 set VariantsNotYetSupported		"Chess variants not yet supported."
+set End									"end"
 
 set FromWhitesPerspective			"From whites perspective"
 set FromBlacksPerspective			"From blacks perspective"
@@ -503,7 +504,10 @@ proc update {position} {
 	variable Vars
 	variable Options
 
-	if {[::scidb::tree::isUpToDate?]} { return }
+	if {[::scidb::tree::isUpToDate?]} {
+		Enabled 1
+		return
+	}
 
 	if {$Options(search:automatic) && [llength [::scidb::tree::get]]} {
 		set variant [::scidb::game::query $position mainvariant?]
@@ -1086,9 +1090,12 @@ proc FillTable {table} {
 						if {$item eq "end"} {
 							if {[string length $nextMove] == 0} { set Vars(nextmove) $index }
 							SetItemState $table $index
-							lappend text "\uff0d"
+							# lappend text "\uff0d"
+							# lappend text "\u2205"
+							lappend text "\[$mc::End\]"
 						} else {
 							if {$nextMove eq $item} { set Vars(nextmove) $index }
+							# if {$item eq "--"} { set item null }
 							SetItemState $table $index
 							lappend text [::font::translate $item]
 						}

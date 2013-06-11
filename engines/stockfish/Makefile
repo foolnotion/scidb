@@ -75,6 +75,7 @@ ifeq ($(ARCH),general-64)
 	prefetch = no
 	bsfq = no
 	popcnt = no
+	sse = no
 endif
 
 ifeq ($(ARCH),general-32)
@@ -84,6 +85,7 @@ ifeq ($(ARCH),general-32)
 	prefetch = no
 	bsfq = no
 	popcnt = no
+	sse = no
 endif
 
 # x86-section
@@ -94,6 +96,7 @@ ifeq ($(ARCH),x86-64)
 	prefetch = yes
 	bsfq = yes
 	popcnt = no
+	sse = no
 endif
 
 ifeq ($(ARCH),x86-64-modern)
@@ -103,6 +106,7 @@ ifeq ($(ARCH),x86-64-modern)
 	prefetch = yes
 	bsfq = yes
 	popcnt = yes
+	sse = yes
 endif
 
 ifeq ($(ARCH),x86-32)
@@ -112,6 +116,7 @@ ifeq ($(ARCH),x86-32)
 	prefetch = yes
 	bsfq = no
 	popcnt = no
+	sse = yes
 endif
 
 ifeq ($(ARCH),x86-32-old)
@@ -121,6 +126,18 @@ ifeq ($(ARCH),x86-32-old)
 	prefetch = no
 	bsfq = no
 	popcnt = no
+	sse = no
+endif
+
+# arm section
+ifeq ($(ARCH),armv7)
+	arch = armv7
+	os = any
+	bits = 32
+	prefetch = yes
+	bsfq = yes
+	popcnt = no
+	sse = no
 endif
 
 # osx-section
@@ -131,6 +148,7 @@ ifeq ($(ARCH),osx-ppc-64)
 	prefetch = no
 	bsfq = no
 	popcnt = no
+	sse = no
 endif
 
 ifeq ($(ARCH),osx-ppc-32)
@@ -140,6 +158,7 @@ ifeq ($(ARCH),osx-ppc-32)
 	prefetch = no
 	bsfq = no
 	popcnt = no
+	sse = no
 endif
 
 ifeq ($(ARCH),osx-x86-64)
@@ -149,6 +168,7 @@ ifeq ($(ARCH),osx-x86-64)
 	prefetch = yes
 	bsfq = yes
 	popcnt = no
+	sse = yes
 endif
 
 ifeq ($(ARCH),osx-x86-32)
@@ -158,6 +178,7 @@ ifeq ($(ARCH),osx-x86-32)
 	prefetch = yes
 	bsfq = no
 	popcnt = no
+	sse = yes
 endif
 
 ifeq ($(os),osx)
@@ -174,8 +195,10 @@ ifeq ($(bits),64)
 endif
 
 ifeq ($(prefetch),yes)
-	CXXFLAGS += -msse
-	DEPENDFLAGS += -msse
+	ifeq ($(sse),yes)
+		CXXFLAGS += -msse
+		DEPENDFLAGS += -msse
+	endif
 else
 	CXXFLAGS += -DNO_PREFETCH
 endif
@@ -184,9 +207,9 @@ ifeq ($(bsfq),yes)
 	CXXFLAGS += -DUSE_BSFQ
 endif
 
-ifeq ($(popcnt),yes)
-	CXXFLAGS += -msse3 -DUSE_POPCNT
-endif
+#ifeq ($(popcnt),yes)
+#	CXXFLAGS += -msse3 -DUSE_POPCNT
+#endif
 
 ### 3.10 Link Time Optimization, it works since gcc 4.5 but not on mingw.
 ### This is a mix of compile and link time options because the lto link phase
@@ -194,7 +217,7 @@ endif
 GCC_MAJOR := `$(CXX) -dumpversion | cut -f1 -d.`
 GCC_MINOR := `$(CXX) -dumpversion | cut -f2 -d.`
 ifeq (1,$(shell expr \( $(GCC_MAJOR) \> 4 \) \| \( $(GCC_MAJOR) \= 4 \& $(GCC_MINOR) \>= 5 \)))
-	# on some system LTO is disabled (but why?)
+	# on some systems LTO is disabled (but why?)
 	DISABLE_LTO := `$(CXX) -v 2>&1 | grep disable-lto`
 	ifeq (1,$(shell expr "$(DISABLE_LTO)" == ""))
 		CXXFLAGS += -flto

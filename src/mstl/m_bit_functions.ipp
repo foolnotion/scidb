@@ -24,6 +24,10 @@
 # include "m_types.h"
 #endif
 
+#ifdef USE_POPCNT
+# include <nmmintrin.h>
+#endif
+
 namespace mstl {
 namespace bf {
 namespace bits {
@@ -70,7 +74,12 @@ inline unsigned lsb(uint64_t x)				{ return ctz(x); }
 inline unsigned popcount(uint8_t x)			{ return pc(unsigned(x)); }
 inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
 inline unsigned popcount(uint32_t x)		{ return pc(x); }
+
+#ifdef USE_POPCNT
+inline unsigned popcount(uint64_t x)		{ return _mm_popcnt_u64(x); }
+#else
 inline unsigned popcount(uint64_t x)		{ return pc(x); }
+#endif
 
 #ifdef USE_UINT128
 # if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)

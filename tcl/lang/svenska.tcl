@@ -668,6 +668,7 @@
 ::application::tree::mc::NoGamesAvailable					"No games available" ;# NEW
 ::application::tree::mc::Searching							"Searching" ;# NEW
 ::application::tree::mc::VariantsNotYetSupported		"Chess variants not yet supported." ;# NEW
+::application::tree::mc::End									"end" ;# NEW
 
 ::application::tree::mc::FromWhitesPerspective			"Från vits sida"
 ::application::tree::mc::FromBlacksPerspective			"Från svarts sida"
