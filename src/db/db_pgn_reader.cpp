@@ -356,6 +356,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_linePos(0)
 	,m_lineEnd(0)
 	,m_readMode(readMode)
+	,m_gameIndex(0)
 	,m_firstGameNumber(firstGameNumber)
 	,m_resultMode(resultMode)
 	,m_prefixAnnotation(nag::Null)
@@ -429,7 +430,8 @@ PgnReader::detectedVariant() const
 void
 PgnReader::setup(FileOffsets* fileOffsets)
 {
-	m_fileOffsets = fileOffsets;
+	if (m_fileOffsets = fileOffsets)
+		m_fileOffsets->resize(estimateNumberOfGames());
 }
 
 
@@ -1018,7 +1020,7 @@ PgnReader::process(Progress& progress)
 	}
 
 	if (m_fileOffsets)
-		m_fileOffsets->push_back(m_currentOffset);
+		m_fileOffsets->append(m_currentOffset);
 
 	return ::total(m_gameCount);
 }
@@ -1298,12 +1300,21 @@ PgnReader::finishGame(bool skip)
 		state = consumer().finishGame(m_tags);
 
 	if (state == save::UnsupportedVariant)
+	{
 		++m_rejected[variantIndex];
+	}
 	else
+	{
 		++m_accepted[variantIndex];
 
+		if (m_fileOffsets)
+			m_fileOffsets->setIndex(variantIndex, m_gameIndex);
+	}
+
+	++m_gameIndex;
+
 	if (m_fileOffsets)
-		m_fileOffsets->push_back(m_currentOffset);
+		m_fileOffsets->append(m_currentOffset);
 
 	variant::Type variant = getVariant();
 
@@ -2321,7 +2332,8 @@ PgnReader::checkTags()
 
 	if (m_tags.contains(tag::Idn))
 	{
-		m_sourceIsScidb = true;
+//		TODO: seems not to be realizable
+//		m_sourceIsScidb = true;
 		m_tags.remove(tag::Idn);
 	}
 

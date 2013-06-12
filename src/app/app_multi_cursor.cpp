@@ -205,14 +205,6 @@ MultiCursor::countGames() const
 
 
 void
-MultiCursor::setWritable(bool flag)
-{
-	M_REQUIRE(isOpen());
-	m_leader->base().setWritable(flag);
-}
-
-
-void
 MultiCursor::close()
 {
 	if (isOpen())

@@ -101,8 +101,6 @@ public:
 	void setClipbase();
 	/// Mark this database as a scratchbase.
 	void setScratchbase();
-	/// Set/unset writable flag.
-	void setWritable(bool flag);
 	/// Close all databases.
 	void close();
 	/// Change the variant; requires an empty database.

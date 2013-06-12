@@ -1058,7 +1058,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		::db::MultiBase& destination = scidb->multiBase(dst);
 		::db::MultiBase::GameCount gameCount;
-		destination.countGames(gameCount);
+		unsigned k = destination.countGames(gameCount);
 
 		tcl::PgnReader	reader(	stream,
 										variant::Undetermined,
@@ -1067,10 +1067,10 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										objv[4],
 										tcl::PgnReader::Normalize,
 										tcl::PgnReader::File,
-										::db::permission::ReadOnly,
+										nullptr,
 										&gameCount);
 
-		count = destination.importGames(reader, progress);
+		count = destination.importGames(reader, progress) - k;
 		stream.close();
 
 		if (progress.interrupted())
@@ -1149,10 +1149,10 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	::db::permission::ReadMode readMode = ::db::permission::ReadOnly;
+	mstl::auto_ptr< ::db::FileOffsets> fileOffsets;
 
 	if (ext == "pgn" || ext == "PGN")
-		readMode = ::db::permission::ReadWrite;
+		fileOffsets.reset(new ::db::FileOffsets);
 
 	tcl::PgnReader	reader(	stream,
 									variant::Undetermined,
@@ -1161,7 +1161,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									objv[3],
 									tcl::PgnReader::Normalize,
 									tcl::PgnReader::File,
-									::db::permission::ReadWrite);
+									fileOffsets.get());
 
 	int n = scidb->create(dst, type::PGNFile, reader, progress);
 
@@ -1177,11 +1177,16 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	stream.close();
-	scidb->multiCursor(dst).setWritable(	!progress.interrupted()
-													&& readMode == ::db::permission::ReadWrite);
 
 	if (progress.interrupted())
+	{
+		scidb->multiCursor(dst).multiBase().setup(0);
 		n = -n - 1;
+	}
+	else
+	{
+		scidb->multiCursor(dst).multiBase().setup(fileOffsets.release());
+	}
 
 	reader.setResult(n, 0);
 	return TCL_OK;
@@ -1542,10 +1547,10 @@ getReadonly(char const* database, variant::Type variant)
 
 
 static int
-getWriteable(char const* database = 0)
+getWritable(char const* database = 0)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database));
-	::tcl::setResult(Scidb->cursor(database).database().isWritable());
+	::tcl::setResult(Scidb->isWritable(database));
 	return TCL_OK;
 }
 
@@ -2770,7 +2775,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_AnnotatorIndex, Cmd_Description, Cmd_Variant, Cmd_Stats, Cmd_ReadOnly, Cmd_EncodingState,
 		Cmd_Deleted, Cmd_Open, Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber,
 		Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes,
-		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_Writeable, Cmd_Upgrade, Cmd_MemoryOnly,
+		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_Writable, Cmd_Upgrade, Cmd_MemoryOnly,
 		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants,
 	};
 
@@ -3040,10 +3045,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			return getReadonly(	objc > 2 ? stringFromObj(objc, objv, 2) : 0,
 										tcl::game::variantFromObj(objc, objv, 3));
 
-		case Cmd_Writeable:
+		case Cmd_Writable:
 			if (objc < 3)
-				return getWriteable();
-			return getWriteable(stringFromObj(objc, objv, 2));
+				return getWritable();
+			return getWritable(stringFromObj(objc, objv, 2));
 
 		case Cmd_Upgrade:
 			::tcl::setResult(Scidb->cursor(stringFromObj(objc, objv, 2)).database().shouldUpgrade());

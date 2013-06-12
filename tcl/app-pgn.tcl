@@ -1101,8 +1101,6 @@ proc DoLayout {position data {w {}}} {
 				$w mark gravity m-0 right
 				$w configure -state disabled
 				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
-#foreach m $Vars(marks) { $w mark unset $m }
-#if {[llength $data]} { puts "[$w dump -all 1.0 end]" }
 			}
 		}
 	}
@@ -1131,6 +1129,8 @@ proc ProcessGoto {position w key succKey} {
 	variable ::pgn::editor::Colors
 
 	::move::reset
+	after cancel $Vars(after:$position)
+	set Vars(after:$position) {}
 
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
@@ -1144,8 +1144,6 @@ proc ProcessGoto {position w key succKey} {
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
 		if {[llength $Vars(previous:$position)]} {
-			after cancel $Vars(after:$position)
-			set Vars(after:$position) {}
 			See $position $w $key $succKey
 			if {$Vars(active:$position) eq $Vars(previous:$position)} {
 				EnterMove $position $Vars(previous:$position)
@@ -1159,8 +1157,6 @@ proc ProcessGoto {position w key succKey} {
 		if {$position < 9} { ::annotation::update $key }
 	} elseif {$Vars(dirty:$position)} {
 		set Vars(dirty:$position) 0
-		after cancel $Vars(after:$position)
-		set Vars(after:$position) {}
 		See $position $w $key $succKey
 	}
 }
@@ -1799,7 +1795,8 @@ proc EnterMove {position key} {
 
 	if {$Vars(current:$position) ne $key} {
 		$Vars(pgn:$position) tag configure $key -background $Colors(hilite:move)
-		$Vars(pgn:$position) configure -cursor hand2
+		after cancel $Vars(after:$position)
+		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
 	}
 
 	set Vars(active:$position) $key
@@ -1819,8 +1816,17 @@ proc LeaveMove {position key} {
 			set color $Colors(background)
 		}
 		$Vars(pgn:$position) tag configure $key -background $color
-		$Vars(pgn:$position) configure -cursor {}
+		after cancel $Vars(after:$position)
+		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
 	}
+}
+
+
+proc ChangeCursor {position cursor} {
+	variable Vars
+
+	set Vars(after:$position) {}
+	$Vars(pgn:$position) configure -cursor $cursor
 }
 
 

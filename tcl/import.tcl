@@ -441,7 +441,7 @@ proc Open {parent file msg encoding type} {
 		::log::error $mc::AbortedDueToInternalError
 		::progress::close
 		::log::close
-		return {*}$opts -rethrow 1 "internal error"
+		return {*}$opts -rethrow 1 $rc
 	}
 
 	if {$rc == 1} {
@@ -526,7 +526,7 @@ proc Import {parent base files msg encoding} {
 			::log::error $mc::AbortedDueToInternalError
 			::progress::close
 			::log::close
-			return {*}$opts -rethrow 1 "internal error"
+			return {*}$opts -rethrow 1 $rc
 		}
 
 		if {$rc == 1} {

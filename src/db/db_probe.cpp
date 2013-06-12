@@ -352,7 +352,7 @@ movePiece(Move const& move, egtb::Square* whiteSquares, egtb::Square* blackSquar
 		}
 	}
 
-	M_RAISE("internal error");
+	M_RAISE("internal error in %s", __func__);
 }
 
 

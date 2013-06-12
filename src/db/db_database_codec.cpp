@@ -956,8 +956,12 @@ DatabaseCodec::saveMoves(util::ByteStream const& gameData, Provider const& provi
 	}
 
 	info->setup(gameOffset, gameData.size());
-	update(m_db->m_rootname, provider.index(), false);
-	sync();
+
+	if (!m_db->m_memoryOnly)
+	{
+		update(m_db->m_rootname, provider.index(), false);
+		sync();
+	}
 
 	return save::Ok;
 }
@@ -1082,6 +1086,7 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
+		M_ASSERT(!m_db->m_memoryOnly);
 
 		if (info == 0)
 		{
@@ -1119,7 +1124,10 @@ DatabaseCodec::saveGame(ByteStream const& gameData, TagSet const& tags, Provider
 			info->restore(*m_storedInfo, m_db->m_namebases);
 
 		if (format() != format::Scidb)
+		{
+			M_ASSERT(!m_db->m_memoryOnly);
 			static_cast<si3::Codec*>(this)->restoreRoundEntry(index);
+		}
 
 		namebases().update();
 
@@ -1254,6 +1262,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
+		M_ASSERT(!m_db->m_memoryOnly);
 
 		if (!static_cast<si3::Codec*>(this)->saveRoundEntry(	m_db->m_gameInfoList.size(),
 																				info.roundAsString()))
@@ -1268,7 +1277,10 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 	if (failed || int(gameOffset = putGame(gameData)) < 0)
 	{
 		if (format() != format::Scidb)
+		{
+			M_ASSERT(!m_db->m_memoryOnly);
 			static_cast<si3::Codec*>(this)->restoreRoundEntry(m_db->m_gameInfoList.size());
+		}
 
 		namebases().update();
 
@@ -1381,6 +1393,7 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 	if (!failed && format() != format::Scidb)
 	{
 		M_ASSERT(format() == format::Scid3 || format() == format::Scid4);
+		M_ASSERT(!m_db->m_memoryOnly);
 
 		if (static_cast<si3::Codec*>(this)->getRoundEntry(index) != tags.value(tag::Round))
 		{
@@ -1399,7 +1412,10 @@ DatabaseCodec::updateCharacteristics(unsigned index, TagSet const& tags)
 		info->restore(*m_storedInfo, m_db->m_namebases);
 
 		if (format() != format::Scidb)
+		{
+			M_ASSERT(!m_db->m_memoryOnly);
 			static_cast<si3::Codec*>(this)->restoreRoundEntry(index);
+		}
 
 		namebases().update();
 

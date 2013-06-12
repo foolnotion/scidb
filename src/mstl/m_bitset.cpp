@@ -732,8 +732,8 @@ bitset::resize(size_type nbits, bool set)
 	M_REQUIRE(!compressed());
 
 #ifdef M_CHECK
-		size_type old_count = count();
-		size_type old_size  = m_size;
+	size_type old_count = count();
+	size_type old_size  = m_size;
 #endif
 
 	size_type words = count_words(nbits);

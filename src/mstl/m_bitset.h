@@ -193,6 +193,7 @@ public:
 	void push(bool b);
 	void pop();
 	void resize(size_type nbits, bool set = false);
+	void reserve(size_type nbits);
 	void swap(bitset& bset);
 	void clear();
 

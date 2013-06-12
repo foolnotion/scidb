@@ -293,8 +293,8 @@ Sort::Sort(Tcl_Interp* interp)
 
 Sort::~Sort()
 {
-	delete m_indexVec;
-	delete m_elements;
+	delete [] m_indexVec;
+	delete [] m_elements;
 }
 
 

@@ -167,6 +167,7 @@ public:
 	bool treeIsUpToDate(db::Tree::Key const& key) const;
 	bool engineExists(unsigned id) const;
 	bool isSingleBase(mstl::string const& name) const;
+	bool isWritable(mstl::string const& name) const;
 	bool isWriting() const;
 
 	unsigned countBases() const;

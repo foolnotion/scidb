@@ -579,6 +579,17 @@ Application::isSingleBase(mstl::string const& name) const
 }
 
 
+bool
+Application::isWritable(mstl::string const& name) const
+{
+	M_REQUIRE(contains(name));
+
+	CursorMap::const_iterator i = m_cursorMap.find(name);
+	M_ASSERT(i != m_cursorMap.end());
+	return i->second->isWritable();
+}
+
+
 Cursor*
 Application::findBase(mstl::string const& name)
 {

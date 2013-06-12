@@ -689,9 +689,11 @@ BlockFile::put(ByteStream const& buf)
 			m_sizeInfo.push_back(0);
 			m_view.m_buffer.m_number = 0;
 		}
-		else if ((m_view.m_buffer.m_size = m_sizeInfo.back()) + nbytes <= m_blockSize)
+		else
 		{
-			if (unsigned rc = fetch(m_view, m_sizeInfo.size() - 1, span))
+			m_view.m_buffer.m_number = m_sizeInfo.size() - 1;
+
+			if (unsigned rc = fetch(m_view, m_view.m_buffer.m_number, span))
 				return rc;
 		}
 	}

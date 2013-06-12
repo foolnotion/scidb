@@ -624,7 +624,7 @@ struct Normalize : public Comment::Callback
 			{
 #ifndef NREQ
 				if (count++ == 20)
-					M_RAISE("internal error");
+					M_RAISE("internal error in comment class");
 #endif
 
 				if (m_stack.top() == flag)

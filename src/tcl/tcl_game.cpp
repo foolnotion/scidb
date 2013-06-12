@@ -3220,7 +3220,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											nullptr,
 											::db::Reader::Raw,
 											tcl::PgnReader::Game,
-											::db::permission::ReadOnly,
+											nullptr,
 											nullptr,
 											lineOffset,
 											true);
@@ -3246,7 +3246,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												arg,
 												modification,
 												tcl::PgnReader::Game,
-												::db::permission::ReadOnly,
+												nullptr,
 												nullptr,
 												lineOffset,
 												trialMode);
