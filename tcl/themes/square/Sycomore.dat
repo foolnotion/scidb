@@ -12,10 +12,10 @@
   hilite,selected          #edee93
   hilite,suggested         #a3e6ee
   hint,background-color    {}
-  hint,background-tile     {marble marble12.jpg}
+  hint,background-tile     {misc patterncooler-17.png}
   hint,background-rotation	0
-  hint,border-color        #b6a36c
-  hint,border-tile         {}
+  hint,border-color        {}
+  hint,border-tile         {misc patterncooler-02.png}
   hint,border-rotation   	0
   hint,coordinates         #ffffff
   identifier               Sycomore|1243762745547|yellow.color|gregor

@@ -41,10 +41,10 @@ proc welcomeToScidb {parent} {
 	variable WhatsNew
 
 	if {!$Welcome} {
-		::help::open .application Welcome
+		::help::open .application Welcome -center 1
 		set Welcome 1
 	} elseif {$WhatsNew} {
-		::help::open .application Whats-New
+		::help::open .application Whats-New -center 1
 	}
 }
 
@@ -298,11 +298,6 @@ set ::scidb::revision [::scidb::misc::revision]
 
 ::mc::setup
 ::font::useLanguage $mc::langID
-
-if {[::process::testOption first-time]} {
-	::scidb::themes::update
-}
-
 ::theme::setTheme $menu::Theme
 ::menu::setup
 ::board::setup

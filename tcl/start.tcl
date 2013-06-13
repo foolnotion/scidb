@@ -208,6 +208,7 @@ proc update {} {
 			}
 			close $f
 			if {!$ignore} {
+				set overwrite 1
 				set path [file join $themesDir [file tail $file]]
 				if {[file exists $path]} {
 					set exisiting 0
@@ -222,9 +223,11 @@ proc update {} {
 					}
 					if {!$exisiting} {
 						puts stderr [format $mc::CannotOverwriteTheme $path]
+						set overwrite 0
 					}
 					close $f
-				} else {
+				}
+				if {$overwrite} {
 					catch { file copy -force $file $path }
 				}
 			}

@@ -12,7 +12,7 @@
   hilite,selected          {#88b9e0}
   hilite,suggested         {#ffff00}
   hint,background-color    {}
-  hint,background-tile     {marble marble_234.jpg}
+  hint,background-tile     {misc patterncooler-10.png}
   hint,background-rotation	0
   hint,border-color        {#995f26}
   hint,border-tile         {}

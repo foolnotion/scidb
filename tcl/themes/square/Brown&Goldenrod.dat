@@ -16,7 +16,7 @@
   hint,background-rotation	0
   hint,border-color        {}
   hint,border-tile         {wood DarkMaple.jpg}
-  hint,border-rotation   	0
+  hint,border-rotation   	90
   hint,coordinates         {#f3ff2b}
   identifier               {Brown & Goldenrod|1355495679308|yellow.color|gregor}
   lite,rotation            {0}

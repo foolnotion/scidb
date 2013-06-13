@@ -279,6 +279,9 @@ if {[file exists [file join $::scidb::dir::user themes BlueTheme.dat]]} {
 if {![file exists [file join $::scidb::dir::user themes Primus.dat]]} {
 	set update 1
 }
+if {[::process::testOption first-time]} {
+	set update 1
+}
 if {$update} { ::scidb::themes::update }
 if {![file exists [file join $::scidb::dir::user themes square Wood-Green.dat]]} {
 	file delete [file join $::scidb::dir::user themes square Wood-Green.dat]

@@ -1971,17 +1971,18 @@ proc SelectBorderColor {which setter} {
 							-place centeronparent]
 	
 	if {[llength $selection] == 0} { return }
-	set n [string first ":" $selection]
+	set n [llength $selection]
+	if {$n == 0} { return }
 
-	if {$n == -1 && $selection ne "texture"} {
+	if {$n == 1 && $selection ne "texture"} {
 		SetRecentColors border border
 		set colors(hint,border-tile) {}
 		set colors(hint,border-rotation) 0
 		set colors(hint,border-color) $selection
 	} else {
-		if {$n >= 0} {
+		if {$n == 2} {
 			lassign $selection tile rotation
-			set tile [string range $tile [expr {$n + 1}] end-1]
+			set tile [string range $tile [expr {[string first : $tile] + 1}] end-1]
 			SetBorderTexture $setter $which [list $tile $rotation]
 		} else {
 			bind $setter <<BrowserSelect>> [namespace code [list SetBorderTexture $setter $which %d]]
@@ -1990,8 +1991,9 @@ proc SelectBorderColor {which setter} {
 			if {[llength $tile] == 0} { return }
 		}
 
-		SetRecentColors border border
 	}
+
+	SetRecentColors border border
 
 	if {$which eq "user"} {
 		set colors(user,border-tile) $colors(hint,border-tile)
@@ -1999,7 +2001,7 @@ proc SelectBorderColor {which setter} {
 		set colors(user,border-rotation) $colors(hint,border-rotation)
 	}
 
-	if {$n == -1} { RefreshBoard }
+	if {$n != 2} { RefreshBoard }
 	if {$which eq "user"} { SetColorTooltips }
 }
 
@@ -2087,7 +2089,7 @@ proc SelectBackgroundColor {which setter eraser} {
 		set colors(user,background-rotation) $colors(hint,background-rotation)
 	}
 
-	if {$n == -1} { RefreshBoard }
+	if {$n != 2} { RefreshBoard }
 	if {$which eq "user"} { SetColorTooltips }
 }
 

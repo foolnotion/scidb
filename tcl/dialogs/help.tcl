@@ -115,6 +115,7 @@ proc open {parent {file ""} args} {
 	array set opts {
 		-transient	no
 		-parent		{}
+		-center		0
 	}
 	array set opts $args
 	if {[llength $opts(-parent)] == 0} { set opts(-parent) $parent }
@@ -325,6 +326,9 @@ proc open {parent {file ""} args} {
 	}
 
 	ReloadCurrentPage no
+	if {$opts(-center)} {
+		::util::place $dlg -parent $parent -position center
+	}
 	wm deiconify $dlg
 	return $dlg
 }

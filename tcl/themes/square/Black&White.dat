@@ -12,7 +12,7 @@
   hilite,selected          {#b0d0e0}
   hilite,suggested         {#eeed2a}
   hint,background-color    {}
-  hint,background-tile     {misc CeramicTilesPatern_thumbnail.jpg}
+  hint,background-tile     {misc patterncooler-30.png}
   hint,background-rotation	0
   hint,border-color        {#666666}
   hint,border-tile         {}
