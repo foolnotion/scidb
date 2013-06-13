@@ -75,14 +75,13 @@ set CannotUsePieceWorkingSet	"Cannot create new theme with '%s' selected for pie
 set ChooseAnotherPieceStyle	"At first you have to save new piece style, or choose another piece style."
 
 set CannotUseSquareWorkingSet	"Cannot create new theme with '%s' selected for square style."
-set ChooseAnotherSquareStyle	\
-	"At first you have to save new square style, or choose another square style."
+set ChooseAnotherSquareStyle	"At first you have to save new square style, or choose another square style."
 
 } ;# namespace mc
 
 namespace import ::tcl::mathfunc::min
 
-variable RecentTextures		[lrepeat 6 {{} {}}]
+variable RecentTextures		[lrepeat 6 {{} 0 {}}]
 variable InitialPosition	{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk}}
 variable NameList
 
@@ -306,10 +305,12 @@ proc makeBasicFrame {path} {
 
 	::ttk::button $f.save \
 		-textvar [::mc::var [namespace current]::mc::SaveWorkingSet ...] \
-		-command [namespace code [list SaveTheme $f.save]]
+		-command [namespace code [list SaveTheme $f.save]] \
+		;
 	::ttk::button $f.editList \
 		-textvar [::mc::var [namespace current]::mc::EditList ...] \
-		-command [namespace code [list EditStyles $f.editList theme]]
+		-command [namespace code [list EditStyles $f.editList theme]] \
+		;
 	set Vars(widget:theme:save) $f.save
 	set Vars(widget:theme:edit) $f.editList
 	ConfigThemeSelectionFrame
@@ -329,7 +330,7 @@ proc makeBasicFrame {path} {
 	grid $path.colors			-row 5 -column 1 -sticky nswe
 	grid $path.theme			-row 1 -column 3 -sticky nswe -rowspan 9
 	grid columnconfigure $path {0 2 4} -minsize $::theme::padx
-	grid columnconfigure $path 3 -minsize 160 -weight 1
+	grid columnconfigure $path {3} -minsize 160 -weight 1
 	grid rowconfigure $path {2 4} -minsize $::theme::pady
 
 	bind $path.layout <Destroy> +[namespace code { forgetTextures }]
@@ -578,7 +579,7 @@ proc EnterName {parent labelText} {
 
 	wm withdraw $dlg
 	wm title $dlg "$::scidb::app"
-	wm transient $dlg [winfo toplevel $parent]
+#	wm transient $dlg [winfo toplevel $parent]
 	catch { wm attributes $dlg -type dialog }
 	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
@@ -722,7 +723,9 @@ proc SaveSquareStyle {parent} {
 	if {!$showBorder} { set layout(border) false }
 
 	if {$colors(locked)} {
-		foreach attr {background-tile background-color border-tile border-color coordinates} {
+		foreach attr {	background-tile background-color background-rotation
+							border-tile border-color border-rotation
+							coordinates} {
 			set colors(hint,$attr) $colors(user,$attr)
 		}
 	}
@@ -784,7 +787,7 @@ proc makeFrame {path} {
 	variable Vars
 
 	set top [::ttk::frame $path.top]
-	pack $top
+	pack $top -fill both -expand yes
 
 	[namespace parent]::prepareNameLists
 	set Vars(changeWS) 0
@@ -815,6 +818,7 @@ proc makeFrame {path} {
 	$f.board yview moveto 0
 	pack $f.board -padx $::theme::padx -pady $::theme::pady -fill both -expand yes
 
+	bind $f <Configure> [namespace code ConfigureBoard]
 	bind $f.board <Configure> [namespace code { DrawBoard %h %w }]
 	bind $f.board <Destroy> [namespace code { array unset Vars widget:* }]
 
@@ -849,7 +853,7 @@ proc openConfigDialog {parent applyProc} {
 	wm title $dlg "$::scidb::app: $mc::BoardSetup"
 	wm transient $dlg [winfo toplevel $parent]
 	wm iconname $dlg ""
-	wm resizable $dlg 0 0
+	wm resizable $dlg yes no
 	makeFrame $dlg
 	::widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	$dlg.cancel configure -command [namespace code [list Cancel $dlg $applyProc]]
@@ -955,14 +959,28 @@ proc ToggleLock {} {
 
 	if {$colors(locked)} {
 		$Vars(widget:background) configure -state normal
-		foreach attr {background-tile background-color border-tile border-color coordinates} {
+		foreach attr {	background-tile background-rotation background-color
+							border-tile border-rotation border-color
+							coordinates} {
 			set colors(hint,$attr) $colors(user,$attr)
 		}
-		SetRecent window $style(hint,background-color) $style(hint,background-tile)
-		SetRecent border $style(hint,border-color) $style(hint,border-tile)
+		SetRecent \
+			window \
+			$style(hint,background-color) \
+			$style(hint,background-tile) \
+			$style(hint,background-rotation) \
+			;
+		SetRecent \
+			border \
+			$style(hint,border-color) \
+			$style(hint,border-tile) \
+			$style(hint,border-rotation) \
+			;
 	} else {
 		$Vars(widget:background) configure -state disabled
-		foreach attr {background-tile background-color border-tile border-color coordinates} {
+		foreach attr {	background-tile background-rotation background-color
+							border-tile border-rotation border-color
+							coordinates} {
 			set colors(hint,$attr) $style(hint,$attr)
 		}
 	}
@@ -1438,6 +1456,8 @@ proc ConfigureBoard {} {
 	variable Options
 	variable Vars
 
+	if {![info exists Vars(widget:canv:border)]} { return }
+
 	set border $Vars(widget:canv:border)
 	set preview $Vars(widget:canv:preview)
 	set board $Vars(widget:board)
@@ -1491,6 +1511,32 @@ proc ConfigureBoard {} {
 	set y [expr {$y2 - $stmSize - $stmGap}]
 	$preview coords stmw $x $y
 
+	# configure coordinates ########################
+	set bdw	20
+	set x3	[expr {$x1 - 10}]
+	set y3	[expr {$y1 + $squareSize/2}]
+	set x4	12
+	set y4	[expr {$bdw + $squareSize/2}]
+
+	foreach row {1 2 3 4} {
+		$preview coords wcoords$row [expr {$x3 - 1}] [expr {$y3 - 1}]
+		$preview coords bcoords$row [expr {$x3 + 1}] [expr {$y3 + 1}]
+		$preview coords coords$row $x3 $y3
+		incr y3 $squareSize
+		incr y4 $squareSize
+	}
+	set x3 [expr {$x1 + $squareSize/2}]
+	set y3 [expr {$y2 + 10}]
+	set x4 [expr {$squareSize/2 + $bdw}]
+	set y4 [expr {4*$squareSize + $bdw + $bdw/2 - 1}]
+	foreach col {A B C D} {
+		$preview coords wcoords$col [expr {$x3 - 1}] [expr {$y3 - 1}]
+		$preview coords bcoords$col [expr {$x3 + 1}] [expr {$y3 + 1}]
+		$preview coords coords$col $x3 $y3
+		incr x3 $squareSize
+		incr x4 $squareSize
+	}
+
 	# configure material values ####################
 	set pieceSize $Options(figurineSize)
 	if {$layout(material-bar)} { incr pieceSize -1 }
@@ -1523,6 +1569,9 @@ proc ConfigureBoard {} {
 		$preview coords mv$i $x $y
 		incr y [expr {$mvS + $mvGap}]
 	}
+
+	# background ###################################
+	setBackground $preview window
 }
 
 
@@ -1582,18 +1631,18 @@ proc DrawBoard {h w} {
 	}
 
 	# borderlines ##################################
-	set mx [expr {$x2 - $x1 - 1}]
-	set my [expr {$y2 - $y1 - 1}]
+#	set mx [expr {$x2 - $x1 - 1}]
+#	set my [expr {$y2 - $y1 - 1}]
 
-	$canv create line [expr {$x1 - 1}] $y1 [expr {$x1 - 1}] [expr {$y2 + 1}] -fill white
-	$canv create line [expr {$x1 - 1}] [expr {$y1 - 1}] [expr {$x2 + 1}] [expr {$y1 - 1}] -fill white
-	$canv create line $x2 $y1 $x2 $y2 -fill black
-	$canv create line $x1 $y2 [expr {$x2 + 1}] $y2 -fill black
+#	$canv create line [expr {$x1 - 1}] $y1 [expr {$x1 - 1}] [expr {$y2 + 1}] -fill white
+#	$canv create line [expr {$x1 - 1}] [expr {$y1 - 1}] [expr {$x2 + 1}] [expr {$y1 - 1}] -fill white
+#	$canv create line $x2 $y1 $x2 $y2 -fill black
+#	$canv create line $x1 $y2 [expr {$x2 + 1}] $y2 -fill black
 
-	$board create line 0 0 [expr {$y2 - $y1}] 0  -fill black -tag black
-	$board create line 0 0 0 [expr {$x2 - $x1}] -fill black -tag black
-	$board create line 1 $my $mx $my -fill white -tag white
-	$board create line $mx 1 $mx $my -fill white -tag white
+#	$board create line 0 0 [expr {$y2 - $y1}] 0  -fill black -tag black
+#	$board create line 0 0 0 [expr {$x2 - $x1}] -fill black -tag black
+#	$board create line 1 $my $mx $my -fill white -tag white
+#	$board create line $mx 1 $mx $my -fill white -tag white
 
 	# side to move #################################
 	set pieceSize $Options(figurineSize)
@@ -1628,14 +1677,14 @@ proc DrawBoard {h w} {
 
 	foreach row {1 2 3 4} {
 		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] \
-			-justify right -text $row -fill white -tag coords -tag wcoords
+			-justify right -text $row -fill white -tags [list wcoords wcoords$row]
 		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] \
-			-justify right -text $row -fill black -tag coords -tag bcoords
-		$canv create text $x3 $y3 -justify right -text $row -tag coords
+			-justify right -text $row -fill black -tags [list bcoords bcoords$row]
+		$canv create text $x3 $y3 -justify right -text $row -tags [list coords coords$row]
 		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] \
-			-justify right -text $row -fill white -tag coords -tag wcoords
+			-justify right -text $row -fill white -tag wcoords
 		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] \
-			-justify right -text $row -fill black -tag coords -tag bcoords
+			-justify right -text $row -fill black -tag bcoords
 		$bord create text $x4 $y4 -justify right -text $row -tag coords
 		incr y3 $squareSize
 		incr y4 $squareSize
@@ -1645,19 +1694,19 @@ proc DrawBoard {h w} {
 	set x4 [expr {$squareSize/2 + $bdw}]
 	set y4 [expr {4*$squareSize + $bdw + $bdw/2 - 1}]
 	foreach col {A B C D} {
-		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] -text $col -fill white -tag coords -tag wcoords
-		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] -text $col -fill black -tag coords -tag bcoords
-		$canv create text $x3 $y3 -text $col -tag coords
-		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] -text $col -fill white -tag coords -tag wcoords
-		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] -text $col -fill black -tag coords -tag bcoords
+		$canv create text [expr {$x3 - 1}] [expr {$y3 - 1}] \
+			-text $col -fill white -tag coords -tags [list wcoords wcoords$col]
+		$canv create text [expr {$x3 + 1}] [expr {$y3 + 1}] \
+			-text $col -fill black -tag coords -tags [list bcoords bcoords$col]
+		$canv create text $x3 $y3 -text $col -tags [list coords coords$col]
+		$bord create text [expr {$x4 - 1}] [expr {$y4 - 1}] -text $col -fill white -tag wcoords
+		$bord create text [expr {$x4 + 1}] [expr {$y4 + 1}] -text $col -fill black -tag bcoords
 		$bord create text $x4 $y4 -text $col -tag coords
 		incr x3 $squareSize
 		incr x4 $squareSize
 	}
-	
-	# background ###################################
-	setBackground $canv window
 
+	# background ###################################
 	ConfigureBoard
 	RefreshBoard
 }
@@ -1740,12 +1789,16 @@ proc SetColors {} {
 	variable [namespace parent]::square::style
 
 #	if {[[namespace parent]::isWorkingSet square]} {
-#		foreach which {background-tile background-color border-tile border-color coordinates} {
+#		foreach which {background-tile background-rotation background-color
+#							border-tile border-rotation border-color
+#							coordinates} {
 #			set colors(hint,$which) $colors(user,$which)
 #		}
 #	}
 	if {!$colors(locked)} {
-		foreach which {background-tile background-color border-tile border-color coordinates} {
+		foreach which {background-tile background-rotation background-color
+							border-tile border-rotation border-color
+							coordinates} {
 			set colors(hint,$which) $style(hint,$which)
 		}
 
@@ -1853,11 +1906,11 @@ proc SelectCoordsColor {which parent} {
 
 proc SetRecentColors {what which} {
 	variable [namespace parent]::colors
-	SetRecent $what $colors(hint,$which-color) $colors(hint,$which-tile)
+	SetRecent $what $colors(hint,$which-color) $colors(hint,$which-tile) $colors(hint,$which-rotation)
 }
 
 
-proc SetRecent {what recentColor recentTexture} {
+proc SetRecent {what recentColor recentTexture recentRotation} {
 	variable [namespace parent]::texture
 	variable RecentColors
 	variable RecentTextures
@@ -1872,7 +1925,8 @@ proc SetRecent {what recentColor recentTexture} {
 			catch { image delete photo_Texture(bg:[lindex $RecentTextures end 0]) }
 			set n end
 		}
-		set RecentTextures [linsert [lreplace $RecentTextures $n $n] 0 [list $img $file]]
+		set entry [list $img $recentRotation $file]
+		set RecentTextures [linsert [lreplace $RecentTextures $n $n] 0 $entry]
 	}
 
 	if {[llength $recentColor]} {
@@ -1881,14 +1935,17 @@ proc SetRecent {what recentColor recentTexture} {
 }
 
 
-proc SetBorderTexture {setter which tile} {
+proc SetBorderTexture {setter which arguments} {
 	variable [namespace parent]::colors
 	variable Vars
 
+	lassign $arguments tile rotation
 	set colors(hint,border-tile) $tile
+	set colors(hint,border-rotation) $rotation
 
 	if {[setBackground $Vars(widget:canv:border) border]} {
 		set colors(hint,border-color) {}
+		set colors(hint,border-rotation) 0
 	} else {
 		set colors(hint,border-tile) {}
 	}
@@ -1919,13 +1976,16 @@ proc SelectBorderColor {which setter} {
 	if {$n == -1 && $selection ne "texture"} {
 		SetRecentColors border border
 		set colors(hint,border-tile) {}
+		set colors(hint,border-rotation) 0
 		set colors(hint,border-color) $selection
 	} else {
 		if {$n >= 0} {
-			SetBorderTexture $setter $which [string range $selection [expr {$n + 1}] end-1]
+			lassign $selection tile rotation
+			set tile [string range $tile [expr {$n + 1}] end-1]
+			SetBorderTexture $setter $which [list $tile $rotation]
 		} else {
 			bind $setter <<BrowserSelect>> [namespace code [list SetBorderTexture $setter $which %d]]
-			set tile [openBrowser $setter tile $colors(hint,border-tile)]
+			set tile [openBrowser $setter tile $colors(hint,border-tile) {} $colors(hint,border-rotation)]
 			bind $setter <<BrowserSelect>> {}
 			if {[llength $tile] == 0} { return }
 		}
@@ -1936,6 +1996,7 @@ proc SelectBorderColor {which setter} {
 	if {$which eq "user"} {
 		set colors(user,border-tile) $colors(hint,border-tile)
 		set colors(user,border-color) $colors(hint,border-color)
+		set colors(user,border-rotation) $colors(hint,border-rotation)
 	}
 
 	if {$n == -1} { RefreshBoard }
@@ -1943,17 +2004,21 @@ proc SelectBorderColor {which setter} {
 }
 
 
-proc SetBackgroundTexture {setter which tile} {
+proc SetBackgroundTexture {setter which arguments} {
 	variable [namespace parent]::colors
 	variable Vars
 
+	lassign $arguments tile rotation
 	set colors(hint,background-tile) $tile
+	set colors(hint,background-rotation) $rotation
+
 	if {[setBackground $Vars(widget:canv:preview) window]} {
 		set colors(hint,background-color) {}
 		# NOTE: we do not provide full language support; not needed here
 		::tooltip::tooltip $setter "${::mc::Texture}: [file join tile {*}$colors(hint,background-tile)]"
 	} else {
 		set colors(hint,background-tile) {}
+		set colors(hint,background-rotation) 0
 	}
 }
 
@@ -1983,23 +2048,31 @@ proc SelectBackgroundColor {which setter eraser} {
 							-place centeronparent]
 
 	if {![winfo exists $eraser]} { return } ;# may happen if dialog is destroyed
-	if {[llength $selection] == 0} { return }
-	set n [string first ":" $selection]
+	set n [llength $selection]
+	if {$n == 0} { return }
 
 	if {$selection eq "erase"} {
 		EraseBackgroundColor $which $setter $eraser
-	} elseif {$n == -1 && $selection ne "texture"} {
+	} elseif {$n == 1 && $selection ne "texture"} {
 		set colors(hint,background-color) $selection
 		set colors(hint,background-tile) {}
 		$eraser configure -state normal
 		setBackground $Vars(widget:canv:preview) window
 		::tooltip::tooltip $setter "${::mc::Color}: [extendColorName $selection]"
 	} else {
-		if {$n > 0} {
-			SetBackgroundTexture $setter $which [string range $selection [expr {$n + 1}] end-1]
+		if {$n == 2} {
+			lassign $selection tile rotation
+			set tile [string range $tile [expr {[string first : $tile] + 1}] end-1]
+			SetBackgroundTexture $setter $which [list $tile $rotation]
 		} else {
 			bind $setter <<BrowserSelect>> [namespace code [list SetBackgroundTexture $setter $which %d]]
-			set tile [openBrowser $setter tile $colors(hint,background-tile)]
+			set tile [openBrowser \
+				$setter \
+				tile \
+				$colors(hint,background-tile) \
+				{} \
+				$colors(hint,background-rotation) \
+			]
 			bind $setter <<BrowserSelect>> {}
 			if {[llength $tile] == 0} { return }
 			$eraser configure -state normal
@@ -2011,6 +2084,7 @@ proc SelectBackgroundColor {which setter eraser} {
 	if {$which eq "user"} {
 		set colors(user,background-tile) $colors(hint,background-tile)
 		set colors(user,background-color) $colors(hint,background-color)
+		set colors(user,background-rotation) $colors(hint,background-rotation)
 	}
 
 	if {$n == -1} { RefreshBoard }
@@ -2025,6 +2099,7 @@ proc EraseBackgroundColor {which setter eraser} {
 	SetRecentColors window background
 	set colors(hint,background-color) {}
 	set colors(hint,background-tile) {}
+	set colors(hint,background-rotation) 0
 	$eraser configure -state disabled
 	setBackground $Vars(widget:canv:preview) window
 	RefreshBoard
@@ -2033,6 +2108,7 @@ proc EraseBackgroundColor {which setter eraser} {
 	if {$which eq "user"} {
 		set colors(user,background-color) {}
 		set colors(user,background-tile) {}
+		set colors(user,background-rotation) 0
 	}
 }
 

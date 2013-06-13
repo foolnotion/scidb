@@ -1,28 +1,30 @@
 ::board::addStyle square {
-  version               {1.0}
-  borderline,gap        {0}
-  borderline,opacity    {0x80}
-  borderline,width      {0.006666666666666667}
-  dark,rotation         {0}
-  dark,solid            {#70a070}
-  dark,texture          {wood cherry.65152300.jpg}
-  dark,x1               {0}
-  dark,x2               {150}
-  dark,y1               {0}
-  dark,y2               {150}
-  hilite,selected       {#b0d0e0}
-  hilite,suggested      {#ffff00}
-  hint,background-color {}
-  hint,background-tile  {wood wood_112.jpg}
-  hint,border-color     {}
-  hint,border-tile      {wood WoodFine0009_S.jpg}
-  hint,coordinates      {#000000}
-  identifier            {Woodgrain|1296150231295|yellow.color|gregor}
-  lite,rotation         {0}
-  lite,solid            {#e0d070}
-  lite,texture          {wood WoodFine0009_S.jpg}
-  lite,x1               {0}
-  lite,x2               {150}
-  lite,y1               {0}
-  lite,y2               {150}
+  version                  {1.0}
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#70a070}
+  dark,texture             {wood cherry.65152300.jpg}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#b0d0e0}
+  hilite,suggested         {#ffff00}
+  hint,background-color    {}
+  hint,background-tile     {wood wood_112.jpg}
+  hint,background-rotation	0
+  hint,border-color        {}
+  hint,border-tile         {wood WoodFine0009_S.jpg}
+  hint,border-rotation   	0
+  hint,coordinates         {#000000}
+  identifier               {Woodgrain|1296150231295|yellow.color|gregor}
+  lite,rotation            {0}
+  lite,solid               {#e0d070}
+  lite,texture             {wood WoodFine0009_S.jpg}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
 }

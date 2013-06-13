@@ -1,28 +1,30 @@
 ::board::addStyle square {
-  version               1.0
-  hint,border-tile      {marble marble_252.jpg}
-  dark,y1               0
-  hint,border-color     {}
-  dark,y2               90
-  hint,background-tile  {marble marble_141.jpg}
-  borderline,width      0.006666666666666667
-  lite,rotation         0
-  hint,background-color {}
-  lite,texture          {marble BlueTexture5.jpg}
-  lite,x1               0
-  hilite,selected       #d69c00
-  lite,x2               90
-  lite,solid            {}
-  hilite,suggested      #eeed2a
-  dark,rotation         0
-  dark,x1               0
-  dark,texture          {marble blue-marble-dark.jpg}
-  dark,x2               90
-  dark,solid            {}
-  hint,coordinates      #ffffff
-  borderline,gap        0
-  identifier            Ocean|1262882896027|yellow.color|gregor
-  borderline,opacity    175
-  lite,y1               0
-  lite,y2               90
+  borderline,gap           0
+  borderline,opacity       175
+  borderline,width         0.006666666666666667
+  dark,rotation            0
+  dark,solid               {}
+  dark,texture             {marble blue-marble-dark.jpg}
+  dark,x1                  0
+  dark,x2                  90
+  dark,y1                  0
+  dark,y2                  90
+  hilite,selected          #d69c00
+  hilite,suggested         #eeed2a
+  hint,background-color    {}
+  hint,background-tile     {marble marble_141.jpg}
+  hint,background-rotation	0
+  hint,border-color        {}
+  hint,border-tile         {marble marble_252.jpg}
+  hint,border-rotation   	0
+  hint,coordinates         #ffffff
+  identifier               Ocean|1262882896027|yellow.color|gregor
+  lite,rotation            0
+  lite,solid               {}
+  lite,texture             {marble BlueTexture5.jpg}
+  lite,x1                  0
+  lite,x2                  90
+  lite,y1                  0
+  lite,y2                  90
+  version                  1.0
 }

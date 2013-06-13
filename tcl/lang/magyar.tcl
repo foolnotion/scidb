@@ -796,9 +796,11 @@
 
 ::board::options::mc::YouCannotReverse		"Ez a művelet nem viszafordítható. '%s'fájl fizikailag törlésre kerül."
 
-::board::options::mc::CannotUsePieceWorkingSet "Nem hozható létre új téma a kiválasztott %s figura stílussal.\n Először el kell mentened az új figurastílust vagy egy másik figura stílust kell választanod."
+::board::options::mc::CannotUsePieceWorkingSet "Nem hozható létre új téma a kiválasztott %s figura stílussal."
+::board::options::mc::CannotUsePieceWorkingSet "Először el kell mentened az új figurastílust vagy egy másik figura stílust kell választanod."
 
-::board::options::mc::CannotUseSquareWorkingSet "Nem hozható létre új téma a kiválasztott %s mező stílussal.\n Először el kell mentened az új mező stílust vagy egy másik mező stílust kell választanod."
+::board::options::mc::CannotUseSquareWorkingSet "Nem hozható létre új téma a kiválasztott %s mező stílussal."
+::board::options::mc::CannotUseSquareWorkingSet "Először el kell mentened az új mező stílust vagy egy másik mező stílust kell választanod."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -1138,7 +1140,6 @@
 ::gametable::mc::F_Position				"Pozíció"
 ::gametable::mc::F_EventDate				"Esemény dátuma"
 ::gametable::mc::F_EventType				"Esemény típusa"
-::gametable::mc::F_Changed					"Changed"
 ::gametable::mc::F_Promotion				"Promotion"
 ::gametable::mc::F_UnderPromo				"Under-Promotion"
 ::gametable::mc::F_StandardPos			"Standard Position"
@@ -1165,6 +1166,7 @@
 ::gametable::mc::T_EventType				"Verseny típusa"
 ::gametable::mc::T_Chess960Pos			"Chess 960 Position"
 ::gametable::mc::T_Deleted					"Törölve"
+::gametable::mc::T_Changed					"Changed"
 ::gametable::mc::T_EngFlag					"English Language Flag"
 ::gametable::mc::T_OthFlag					"Other Language Flag"
 ::gametable::mc::T_Idn						"Chess 960 Position Number"

@@ -794,9 +794,11 @@
 
 ::board::options::mc::YouCannotReverse		"Diese Aktion kann nicht zurückgenommen werden. Die Datei '%s' wird physikalisch gelöscht."
 
-::board::options::mc::CannotUsePieceWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Figurengestaltung anzulegen.\n Zuerst muß die neue Figurengestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
+::board::options::mc::CannotUsePieceWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Figurengestaltung anzulegen."
+::board::options::mc::ChooseAnotherPieceStyle "Zuerst sollte die neue Figurengestaltung gespeichert, oder eine andere Gestaltung ausgewählt werden."
 
-::board::options::mc::CannotUseSquareWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Feldergestaltung anzulegen.\n Zuerst muß die neue Feldergestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
+::board::options::mc::CannotUseSquareWorkingSet "Es ist nicht möglich ein neues Thema mit einem Arbeitssatz als Feldergestaltung anzulegen."
+::board::options::mc::ChooseAnotherSquareStyle "Zuerst muß die neue Feldergestaltung gesichert, oder aber ein andere Gestaltung ausgewählt werden."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -1130,7 +1132,6 @@
 ::gametable::mc::F_Position				"Position"
 ::gametable::mc::F_EventDate				"Turnierdatum"
 ::gametable::mc::F_EventType				"Tur.Typ"
-::gametable::mc::F_Changed					"Geändert"
 ::gametable::mc::F_Promotion				"Umwandlung"
 ::gametable::mc::F_UnderPromo				"Unterverwandlung"
 ::gametable::mc::F_StandardPos			"Standardposition"
@@ -1157,6 +1158,7 @@
 ::gametable::mc::T_EventType				"Turniertyp"
 ::gametable::mc::T_Chess960Pos			"Schach-960 Position"
 ::gametable::mc::T_Deleted					"Gelöscht"
+::gametable::mc::T_Changed					"Geändert"
 ::gametable::mc::T_EngFlag					"Englischsprachig-Kennzeichen"
 ::gametable::mc::T_OthFlag					"Anderssprachig-Kennzeichen"
 ::gametable::mc::T_Idn						"Schach-960 Positionsnummer"

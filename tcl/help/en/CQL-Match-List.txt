@@ -1545,7 +1545,12 @@ A special marker is one of:
     <tr>
       <td class="l"><expr>deleted</expr></td>
       <td class="m"><img src="../images/gameflag-Deleted.png"/></td>
-      <td class="r">Game marked for deletion</td>
+      <td class="r">Game marked for deletion.</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>changed</expr></td>
+      <td class="m"><img src="../images/gameflag-Changed.png"/></td>
+      <td class="r">Game has changed in this session.</td>
     </tr>
     <tr>
       <td class="l"><expr>illegalmove</expr></td>

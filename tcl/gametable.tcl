@@ -89,7 +89,6 @@ set F_Idn					"960"
 set F_Position				"Position"
 set F_EventDate			"Event Date"
 set F_EventType			"Ev.Type"
-set F_Changed				"Changed"
 set F_Promotion			"Promotion"
 set F_UnderPromo			"Under-Promotion"
 set F_StandardPos			"Standard Position"
@@ -116,6 +115,7 @@ set T_EventType			"Event Type"
 set T_Chess960Pos			"Chess 960 Position"
 set T_ShuffleChessPos	"Shuffle Chess Position"
 set T_Deleted				"Deleted"
+set T_Changed				"Changed"
 set T_EngFlag				"English Language Flag"
 set T_OthFlag				"Other Language Flag"
 set T_Idn					"Chess 960 Position Number"
@@ -968,6 +968,7 @@ proc PrepareImages {path count} {
 
 proc TableFill {path args} {
 	variable icon::12x12::CrossHandRed
+	variable icon::12x12::Modified
 	variable icon::12x12::Check
 	variable icon::12x12::NotAvailable
 	variable GameFlags
@@ -1093,9 +1094,14 @@ proc TableFill {path args} {
 						}
 					}
 
-					deleted - changed {
+					deleted {
 						# TODO: only for 12pt; use U+2716 (or U+2718) for other sizes
 						if {$item} { set image $CrossHandRed } else { set image {} }
+						lappend text [list @ $image]
+					}
+
+					changed {
+						if {$item} { set image $Modified } else { set image {} }
 						lappend text [list @ $image]
 					}
 
@@ -1386,6 +1392,7 @@ proc TableVisit {table data} {
 		whiteSex - blackSex { if {!$Options(include-type)} { return } }
 		whiteRating1 - blackRating1 { if {$Defaults(rating:1) ne [lindex $ratings end]} { return } }
 		whiteRating2 - blackRating2 { if {$Defaults(rating:2) ne [lindex $ratings end]} { return } }
+		deleted - changed {}
 		default { return }
 	}
 
@@ -1522,6 +1529,14 @@ proc TableVisit {table data} {
 
 		eventType {
 			set tip $::eventtypebox::mc::Type($item)
+		}
+
+		deleted {
+			if {$item} { set tip [set [namespace current]::mc::T_Deleted] }
+		}
+
+		changed {
+			if {$item} { set tip [set [namespace current]::mc::T_Changed] }
 		}
 	}
 
@@ -1870,6 +1885,20 @@ set CrossHandRed [image create photo -data {
 	dlJw6uDuOu29e0xD8Oy/GtB8+5cAqNeKOFRvqpiQVCPwA3nMEgZcj7r6AAAAAElFTkSuQmCC
 }]
 
+set Modified [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAABIAAAASABGyWs+AAAB2UlEQVQoz3XSPWgTcRgG8Od/d7k0zSUXEK1V+iFqY5U2
+	R1MIBkKcWkVQEZ3cXNwtpThGRGhuUnt0Kwq6WVToJigIIhqxaQQjJjFJ9XKNTdLcR6r/JOac
+	LGrrO/+e5Xlegv9cq/gaDwZCGJOj5/vIxl2kqm8aaesKuxNenhrGvos30Q7SiNN/QTZfJvu8
+	L7KDxLSPbQskp4chyW6oT25PCIPv5vWmcNTuvwT9VYq49Eo/+y8OxPfiyyNjwjNqKKJbG+Jy
+	CeTXdoMJn/tu5RILZAvPHIE0+xHFxZFToqTfcXLaQTv/E/VUN1Y/OWiNGZvb72FuEAB4O30Y
+	43IGxcXR06JkKk6HOmB/bqO2IqBRIrRlskorQ2NE5AwucXUIwbgfheNdkz7JnOO5P7BKKDVY
+	pZ53xJwia4QeroPY9llk7q2Fe6LlBZ4t+X9jSyWU1hmlluViTq9thB9XAADM0vhT0XvgzLUu
+	vtdv51rYWBFgfSV0s8YoWpqNMd2dLQwA3J4TkUmhNxDhWwRVbR1GsbzZqJF5LY3rLl/biC7V
+	/6qdDVA9zrubI7t8TWpky4XS++qt1WRnlvd0rJPPjG2jEvkQb7rcjmIw1HO/8uHb80KSLrtF
+	tnlZ/bHjy/wCBlfTTV2R074AAAAASUVORK5CYII=
+}]
+
 set Check [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
 	CXBIWXMAAABIAAAASABGyWs+AAABuklEQVQoz32QP2gTUQCHf++9u8tdcjnOIz1qsUVNUilY
@@ -1963,6 +1992,7 @@ set I_BlackSex [image create photo -data {
 }]
 
 set I_TimeMode $::terminationbox::icon::12x12::TimeForfeit
+set I_Changed [::icon::makeGrayscale $Modified 0.7]
 
 } ;# namespace 12x12
 } ;# namespace icon

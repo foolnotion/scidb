@@ -1,28 +1,30 @@
 ::board::addStyle square {
-  version               1.0
-  hint,border-tile      {wood WoodFine0006_S.jpg}
-  dark,y1               0
-  hint,border-color     {}
-  dark,y2               99
-  hint,background-tile  {wood WoodFine0006_S.jpg}
-  borderline,width      0.006666666666666667
-  lite,rotation         0
-  hint,background-color {}
-  lite,texture          {wood wood_hickory_yellow.png}
-  lite,x1               0
-  hilite,selected       #b0d0e0
-  lite,x2               99
-  lite,solid            {}
-  hilite,suggested      #eeed2a
-  dark,rotation         0
-  dark,x1               0
-  dark,texture          {wood WOOD-parisot.jpg}
-  dark,x2               99
-  dark,solid            {}
-  hint,coordinates      #000000
-  borderline,gap        0
-  borderline,opacity    175
-  identifier            {Wood - Green|1244309414202|yellow.color|gregor}
-  lite,y1               0
-  lite,y2               99
+  borderline,gap           0
+  borderline,opacity       175
+  borderline,width         0.006666666666666667
+  dark,rotation            0
+  dark,solid               {}
+  dark,texture             {wood WOOD-parisot.jpg}
+  dark,x1                  0
+  dark,x2                  99
+  dark,y1                  0
+  dark,y2                  99
+  hilite,selected          #b0d0e0
+  hilite,suggested         #eeed2a
+  hint,background-color    {}
+  hint,background-tile     {wood WoodFine0006_S.jpg}
+  hint,background-rotation	0
+  hint,border-color        {}
+  hint,border-tile         {wood WoodFine0006_S.jpg}
+  hint,border-rotation   	0
+  hint,coordinates         #000000
+  identifier               {Wood - Green|1244309414202|yellow.color|gregor}
+  lite,rotation            0
+  lite,solid               {}
+  lite,texture             {wood wood_hickory_yellow.png}
+  lite,x1                  0
+  lite,x2                  99
+  lite,y1                  0
+  lite,y2                  99
+  version                  1.0
 }

@@ -245,12 +245,22 @@ proc SelectTexture {canv row col file} {
 }
 
 
+proc SendSelected {} {
+	variable Browser
+
+	if {[llength $Browser(result)]} {
+		SendResult $Browser(result)
+	} elseif {[llength $Browser(hilite)]} {
+		SendResult $Browser(hilite)
+	}
+}
+
+
 proc SendResult {file} {
 	variable Browser
 
-	set parts [file split $file]
-	set n [llength $parts]
-	set result [list [lindex $parts [expr {$n - 2}]] [lindex $parts [expr {$n - 1}]]]
+	set result [list [lrange [file split $file] end-1 end]]
+	lappend result $Browser(rotation)
 	event generate $Browser(recv) <<BrowserSelect>> -data $result
 }
 
@@ -399,7 +409,7 @@ proc Focus {canv state} {
 }
 
 
-proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} {
+proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {place center}} {
 	variable Browser
 
 	set dlg [tk::toplevel $parent.select_texture -class Scidb]
@@ -410,7 +420,29 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} 
 	set browser \
 		[buildBrowser $top $dlg $which $Browser(rows) $Browser(cols) $currentTexture $otherTexture]
 	set Browser(recv) $parent
-	
+	set Browser(rotation) $rotation
+
+	if {[string is integer -strict $rotation]} {
+		set rot [::ttk::frame $top.rot -takefocus 0]
+		ttk::label $rot.lrot -textvar [namespace parent]::piece::mc::Rotate
+		set col 3
+		foreach deg {0 90 180 270} {
+			set Browser($deg,$which) [ttk::checkbutton $rot.b$deg \
+				-text "$deg°" \
+				-variable [namespace current]::Browser(rotation) \
+				-onvalue $deg \
+				-command [namespace code SendSelected] \
+			]
+			grid $rot.b$deg -row 1 -column $col
+			incr col 2
+		}
+
+		grid $rot.lrot -row 1 -column 1
+		grid rowconfigure $rot {0 2} -minsize $::theme::pady
+		grid columnconfigure $rot {0 2 4 6 8 10} -minsize $::theme::padx
+		grid $rot -row 1 -column 0 -sticky w
+	}
+		
 	widget::dialogButtons $dlg close
 	$dlg.close configure -command [list destroy $dlg]
 
@@ -422,7 +454,7 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} 
 	wm protocol $dlg WM_DELETE_WINDOW "destroy $dlg"
 	wm withdraw $dlg
 	wm grid $dlg $Browser(ncols) $Browser(nrows) $Browser(incr) $Browser(incr)
-	wm minsize $dlg 3 1
+	wm minsize $dlg 4 1
 	::util::place $dlg -parent $parent -position $place
 	wm deiconify $dlg
 	focus $browser
@@ -432,6 +464,10 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {place center}} 
 
 	set Browser(rows) $Browser(nrows)
 	set Browser(cols) $Browser(ncols)
+
+	if {$Browser(rotation) ne $rotation} {
+		set Browser(result) $currentTexture
+	}
 
 	return $Browser(result)
 }
@@ -487,6 +523,7 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 	bind $w.container <End>			[namespace code {
 		Move %W [expr {$Browser(row) - $Browser(cury)}] [expr {$Browser(col) - $Browser(curx) - 1}]
 	}]
+
 #	bind $w.container <Tab>		[namespace code {
 #		if {$Browser(curx) == $Browser(ncols) - 1} { Move %W +1 -$Browser(curx) } else { Move %W 0 +1 }
 #	}]
@@ -508,14 +545,21 @@ proc buildBrowser {w recv which nrows ncols currentTexture {otherTexture {}}} {
 		grid $w.preferredOnly \
 			-row 1 -column 0 -columnspan 2 \
 			-sticky nswe \
-			-padx $::theme::padx -pady $::theme::pady
+			-padx $::theme::padx -pady $::theme::pady \
+			;
 	}
 	grid columnconfigure $w 0 -weight 1
 	grid rowconfigure $w 0 -weight 1
 
+	if {[llength $currentTexture] == 2} {
+		set currentTexture [[namespace parent]::findTexture $which {*}$currentTexture]
+	} else {
+		set currentTexture ""
+	}
+
 	set Browser(row) 0
 	set Browser(col) 0
-	set Browser(hilite) [[namespace parent]::findTexture $which {*}$currentTexture]
+	set Browser(hilite) $currentTexture
 	set Browser(result) {}
 
 	bind $w.container <Destroy>  [namespace code { after cancel $Browser(afterId,texture) }]

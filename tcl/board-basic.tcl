@@ -55,37 +55,39 @@ variable workingSetId	[set [namespace parent]::workingSetId]
 variable defaultId		[set [namespace parent]::defaultId]
 
 array set Default {
-	Modified						false
-	Filename						{}
+	Modified							false
+	Filename							{}
 
-	lite,rotation				0
-	lite,solid					#b0c4de
-	lite,texture				{}
-	lite,x1						0
-	lite,x2						0
-	lite,y1						0
-	lite,y2						0
+	lite,rotation					0
+	lite,solid						#b0c4de
+	lite,texture					{}
+	lite,x1							0
+	lite,x2							0
+	lite,y1							0
+	lite,y2							0
 
-	dark,rotation				0
-	dark,solid					#4682b4
-	dark,texture				{}
-	dark,x1						0
-	dark,x2						0
-	dark,y1						0
-	dark,y2						0
+	dark,rotation					0
+	dark,solid						#4682b4
+	dark,texture					{}
+	dark,x1							0
+	dark,x2							0
+	dark,y1							0
+	dark,y2							0
 
-	borderline,width			0.007
-	borderline,opacity		0x80
-	borderline,gap				0
+	borderline,width				0.007
+	borderline,opacity			0x80
+	borderline,gap					0
 
-	hilite,selected			#11ac1f
-	hilite,suggested			#fff056
+	hilite,selected				#11ac1f
+	hilite,suggested				#fff056
 
-	hint,border-color			#32719d
-	hint,border-tile			{}
-	hint,background-color	{}
-	hint,background-tile		{marble marble_252.jpg}
-	hint,coordinates			#ffffff
+	hint,border-color				#32719d
+	hint,border-tile				{}
+	hint,border-rotation			0
+	hint,background-color		{}
+	hint,background-tile			{marble marble_252.jpg}
+	hint,background-rotation	0
+	hint,coordinates				#ffffff
 }
 set Default(identifier) $defaultId
 set Default(version) [set [namespace parent]::Version]
@@ -262,6 +264,7 @@ array set texture {
 }
 
 array set Texture {}
+array set Tile {}
 
 array set layout {
 	material-values	1
@@ -283,19 +286,23 @@ array set hilite {
 }
 
 array set colors {
-	locked						false
+	locked							false
 
-	user,background-tile		{}
-	user,background-color	{}
-	user,border-tile			{}
-	user,border-color			#999999
-	user,coordinates			#ffffff
+	user,background-tile			{}
+	user,background-color		{}
+	user,background-rotation	0
+	user,border-tile				{}
+	user,border-color				#999999
+	user,border-rotation			0
+	user,coordinates				#ffffff
 }
-set colors(hint,border-color)			$square::Default(hint,border-color)
-set colors(hint,border-tile)			$square::Default(hint,border-tile)
-set colors(hint,background-color)	$square::Default(hint,background-color)
-set colors(hint,background-tile)		$square::Default(hint,background-tile)
-set colors(hint,coordinates)			$square::Default(hint,coordinates)
+set colors(hint,border-color)				$square::Default(hint,border-color)
+set colors(hint,border-tile)				$square::Default(hint,border-tile)
+set colors(hint,border-rotation)			$square::Default(hint,border-rotation)
+set colors(hint,background-color)		$square::Default(hint,background-color)
+set colors(hint,background-tile)			$square::Default(hint,background-tile)
+set colors(hint,background-rotation)	$square::Default(hint,background-rotation)
+set colors(hint,coordinates)				$square::Default(hint,coordinates)
 
 array set needRefresh {
 	piece,all		false
@@ -346,7 +353,8 @@ proc refreshTexture {which size} {
 
 	::scidb::tk::image copy $texture($which) photo_Square($which,$size) \
 		-from $x1 $y1 $x2 $y2 \
-		-rotate [expr {$style(texture,$color,rotation)/90}]
+		-rotate [expr {$style(texture,$color,rotation)/90}] \
+		;
 }
 
 
@@ -526,6 +534,7 @@ proc unregisterSize {size} {
 
 
 proc findTexture {sub style name} {
+	if {[string length $name] == 0} { return "" }
 	set file [file join $::scidb::dir::user textures $sub $style $name]
 	if {![file readable $file]} {
 		set file [file join $::scidb::dir::share textures $sub $style $name]
@@ -938,18 +947,52 @@ proc prepareNameLists {} {
 
 proc setTile {canv which {wd 0} {ht 0}} {
 	variable texture
+	variable colors
+	variable Tile
 
 	if {[llength $texture($which)] == 0} { return }
 
-	set ih [image height $texture($which)]
-	set iw [image width $texture($which)]
+	switch $which {
+		border { set what border }
+		window { set what background }
+	}
+
+	set rotation $colors(hint,$what-rotation)
+	set tile ""
+
+	if {[info exists Tile($which:texture)]} {
+		if {$Tile($which:texture) eq $texture($which) && $Tile($which:rotation) == $rotation} {
+			set tile $Tile($which:tile)
+		} else {
+			image delete $Tile($which:tile)
+			array unset Tile $which:*
+		}
+	}
+
+	if {$rotation == 0} {
+		set tile $texture($which)
+	} elseif {[string length $tile] == 0} {
+		set w [image width $texture($which)]
+		set h [image height $texture($which)]
+		if {$rotation != 180} { set tmp $w; set w $h; set h $tmp }
+		set img [image create photo -width $w -height $h]
+		::scidb::tk::image copy $texture($which) $img -rotate [expr {$rotation/90}]
+		set Tile($which:img) $texture($which)
+		set Tile($which:tile) $img
+		set Tile($which:rotation) $rotation
+		set tile $img
+		$canv delete tile
+	}
+
+	set ih [image height $tile]
+	set iw [image width $tile]
 	set ch [expr {$ht ? $ht : [winfo height $canv]}]
 	set cw [expr {$wd ? $wd : [winfo width $canv]}]
 
 	for {set x 0} {$x < $cw} {incr x $iw} {
 		for {set y 0} {$y < $ch} {incr y $ih} {
 			if {[llength [$canv find withtag tile:$x:$y]] == 0} {
-				$canv create image $x $y -anchor nw -image $texture($which) -tags [list tile tile:$x:$y]
+				$canv create image $x $y -anchor nw -image $tile -tags [list tile tile:$x:$y]
 			}
 		}
 	}
@@ -961,13 +1004,14 @@ proc setBackground {canv which {wd 0} {ht 0}} {
 	variable texture
 
 	switch $which {
-		border	{ set value $colors(hint,border-tile) }
-		window	{ set value $colors(hint,background-tile) }
+		border { set what border }
+		window { set what background }
 	}
 
+	set tile $colors(hint,$what-tile)
 	$canv delete tile
 
-	if {[llength $value] == 0} {
+	if {[llength $tile] == 0} {
 		loadTexture $which
 	} else {
 		if {[llength [loadTexture $which]] == 0} { return 0 }
@@ -1035,10 +1079,12 @@ proc addStyle {which style} {
 	variable ${which}::StyleDict
 	variable ${which}::NameLookup
 	variable ${which}::Working
+	variable ${which}::Default
 	variable ::load::currentFile
 
 	lappend style Filename $currentFile Modified false
 	set var [namespace current]::${which}::Style[dict size $StyleDict]
+	array set $var [array get Default]
 	array set $var $style
 	upvar 0 $var arr
 

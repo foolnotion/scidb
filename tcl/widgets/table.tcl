@@ -91,7 +91,7 @@ array set Defaults {
 	-foreground					black
 	-selectionbackground		#ffdd76
 	-selectionforeground		black
-	-disabledforeground		#999999
+	-disabledforeground		#555555
 	-labelforeground			black
 	-labelbackground			#d9d9d9
 	-borderwidth				1

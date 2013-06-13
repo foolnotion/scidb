@@ -512,7 +512,7 @@ proc SelectTexture {parent which} {
 	incr Vars(open)
 	bind $parent <<BrowserSelect>> [namespace code [list BrowserSelect $parent $which %d]]
 	set other [expr {$which eq "lite" ? "dark" : "lite"}]
-	openBrowser $parent $which $style($which,texture) $style($other,texture) right
+	openBrowser $parent $which $style($which,texture) $style($other,texture) {} right
 	bind $parent <<BrowserSelect>> {}
 	incr Vars(open) -1
 }

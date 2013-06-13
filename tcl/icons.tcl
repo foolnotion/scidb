@@ -42,6 +42,19 @@ proc makeDisabledImage {img} {
 }
 
 
+proc makeGrayscale {img {darken 1.0}} {
+	variable Grayscale
+
+	if {![info exists Grayscale($img)]} {
+		set Grayscale($img) [image create photo -width [image width $img] -height [image height $img]]
+		$Grayscale($img) copy $img
+		::scidb::tk::image grayscale $Grayscale($img)
+		if {$darken != 1.0} { ::scidb::tk::image darken $darken $Grayscale($img) }
+	}
+	return $Grayscale($img)
+}
+
+
 proc makeStateSpecificIcons {img} {
 	if {[llength $img] > 1} { return $img }
 	return [list $img disabled [makeDisabledImage $img]]

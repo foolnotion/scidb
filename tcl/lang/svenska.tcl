@@ -795,9 +795,11 @@
 
 ::board::options::mc::YouCannotReverse		"Du kan inte ta tillbaka den här handlingen. Filen '%s' kommer fysiskt raderas."
 
-::board::options::mc::CannotUsePieceWorkingSet "Kan inte skapa nytt tema med %s markerad för pjässtil.\n Först måste du spara den nya pjässtilen, eller välja en annan pjässtil."
+::board::options::mc::CannotUsePieceWorkingSet "Kan inte skapa nytt tema med %s markerad för pjässtil."
+::board::options::mc::CannotUsePieceWorkingSet "Först måste du spara den nya pjässtilen, eller välja en annan pjässtil."
 
-::board::options::mc::CannotUseSquareWorkingSet "Kan inte skapa nytt tema med %s markerad för brädstil.\n Först måste du spara den nya brädstilen, eller välja en annan brädstil."
+::board::options::mc::CannotUseSquareWorkingSet "Kan inte skapa nytt tema med %s markerad för brädstil."
+::board::options::mc::CannotUseSquareWorkingSet "Först måste du spara den nya brädstilen, eller välja en annan brädstil."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -1137,7 +1139,6 @@
 ::gametable::mc::F_Position				"Position"
 ::gametable::mc::F_EventDate				"Tävlingsdatum"
 ::gametable::mc::F_EventType				"Täv.typ"
-::gametable::mc::F_Changed					"Ändrad"
 ::gametable::mc::F_Promotion				"Promovering"
 ::gametable::mc::F_UnderPromo				"Underpromovering"
 ::gametable::mc::F_StandardPos			"Standardposition"
@@ -1164,6 +1165,7 @@
 ::gametable::mc::T_EventType				"Tävlingstyp"
 ::gametable::mc::T_Chess960Pos			"Schack960 position"
 ::gametable::mc::T_Deleted					"Raderad"
+::gametable::mc::T_Changed					"Ändrad"
 ::gametable::mc::T_EngFlag					"Engelsk språkflagga"
 ::gametable::mc::T_OthFlag					"Övrig språkflagga"
 ::gametable::mc::T_Idn						"Schack960 positionsnummer"

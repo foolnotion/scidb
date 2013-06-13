@@ -1,28 +1,30 @@
 ::board::addStyle square {
-  version               1.0
-  hint,border-tile      {}
-  dark,y1               0
-  hint,border-color     #b6a36c
-  dark,y2               99
-  hint,background-tile  {marble marble12.jpg}
-  borderline,width      0.006666666666666667
-  lite,rotation         0
-  hint,background-color {}
-  lite,texture          {misc 84.jpg}
-  lite,x1               0
-  hilite,selected       #edee93
-  lite,x2               99
-  lite,solid            {}
-  hilite,suggested      #a3e6ee
-  dark,rotation         0
-  dark,x1               0
-  dark,texture          {misc Sycomore_red_dyed.jpg}
-  dark,x2               99
-  dark,solid            {}
-  hint,coordinates      #ffffff
-  borderline,gap        0
-  borderline,opacity    175
-  identifier            Sycomore|1243762745547|yellow.color|gregor
-  lite,y1               0
-  lite,y2               99
+  borderline,gap           0
+  borderline,opacity       175
+  borderline,width         0.006666666666666667
+  dark,rotation            0
+  dark,solid               {}
+  dark,texture             {misc Sycomore_red_dyed.jpg}
+  dark,x1                  0
+  dark,x2                  99
+  dark,y1                  0
+  dark,y2                  99
+  hilite,selected          #edee93
+  hilite,suggested         #a3e6ee
+  hint,background-color    {}
+  hint,background-tile     {marble marble12.jpg}
+  hint,background-rotation	0
+  hint,border-color        #b6a36c
+  hint,border-tile         {}
+  hint,border-rotation   	0
+  hint,coordinates         #ffffff
+  identifier               Sycomore|1243762745547|yellow.color|gregor
+  lite,rotation            0
+  lite,solid               {}
+  lite,texture             {misc 84.jpg}
+  lite,x1                  0
+  lite,x2                  99
+  lite,y1                  0
+  lite,y2                  99
+  version                  1.0
 }

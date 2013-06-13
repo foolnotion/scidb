@@ -8,10 +8,7 @@ set Index {
   }
   { C
     {
-      {{Chess variants} {Chess-Variants.html} {}}
       {{Clipbase} {Clipbase.html} {}}
-      {{Codici} {Game-Flags.html} {}}
-      {{Codici Partita} {Game-Flags.html} {}}
       {{Compressione database} {Database-Switcher.html} {Compact}}
       {{Comprimi} {Database-Switcher.html} {Compact}}
       {{Contatti} {Contact-Information.html} {}}
@@ -23,40 +20,15 @@ set Index {
       {{Formati File} {Database-Formats.html} {}}
     }
   }
-  { G
-    {
-      {{Giveaway} {Chess-Variants.html} {}}
-    }
-  }
   { H
     {
       {{Homepage} {Contact-Information.html} {Homepage}}
     }
   }
-  { O
-    {
-      {{Opzioni nella linea di comando} {Command-Line-Options.html} {}}
-    }
-  }
   { S
     {
-      {{Scacchi Crazyhouse} {Chess-Variants.html} {}}
-      {{Scacchi Ortodossi} {Chess-Variants.html} {}}
       {{Selezionatore di Database} {Database-Switcher.html} {}}
       {{Sito Internet} {Contact-Information.html} {Homepage}}
-    }
-  }
-  { T
-    {
-      {{Tre Scacchi} {Chess-Variants.html} {}}
-    }
-  }
-  { V
-    {
-      {{Valori delle annotazioni NAG} {NAG-Comments.html} {}}
-      {{Vinciperdi} {Chess-Variants.html} {}}
-      {{Vinciperdi} {Chess-Variants.html} {}}
-      {{Vinciperdi} {Chess-Variants.html} {}}
     }
   }
 }

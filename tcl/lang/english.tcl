@@ -792,9 +792,11 @@
 
 ::board::options::mc::YouCannotReverse		"You cannot reverse this action. File '%s' will be physically removed."
 
-::board::options::mc::CannotUsePieceWorkingSet "Cannot create new theme with %s selected for piece style.\n At first you have to save new piece style, or choose another piece style."
+::board::options::mc::CannotUsePieceWorkingSet "Cannot create new theme with %s selected for piece style."
+::board::options::mc::CannotUsePieceWorkingSet "At first you have to save new piece style, or choose another piece style."
 
-::board::options::mc::CannotUseSquareWorkingSet "Cannot create new theme with %s selected for square style.\n At first you have to save new square style, or choose another square style."
+::board::options::mc::CannotUseSquareWorkingSet "Cannot create new theme with %s selected for square style."
+::board::options::mc::CannotUseSquareWorkingSet "At first you have to save new square style, or choose another square style."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Start"
@@ -1129,7 +1131,6 @@
 ::gametable::mc::F_Position				"Position"
 ::gametable::mc::F_EventDate				"Event Date"
 ::gametable::mc::F_EventType				"Ev.Type"
-::gametable::mc::F_Changed					"Changed"
 ::gametable::mc::F_Promotion				"Promotion"
 ::gametable::mc::F_UnderPromo				"Under-Promotion"
 ::gametable::mc::F_StandardPos			"Standard Position"
@@ -1156,6 +1157,7 @@
 ::gametable::mc::T_EventType				"Event Type"
 ::gametable::mc::T_Chess960Pos			"Chess 960 Position"
 ::gametable::mc::T_Deleted					"Deleted"
+::gametable::mc::T_Changed					"Changed"
 ::gametable::mc::T_EngFlag					"English Language Flag"
 ::gametable::mc::T_OthFlag					"Other Language Flag"
 ::gametable::mc::T_Idn						"Chess 960 Position Number"

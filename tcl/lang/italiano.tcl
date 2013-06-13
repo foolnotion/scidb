@@ -795,9 +795,11 @@
 
 ::board::options::mc::YouCannotReverse		"Non puoi ritornare su questa azione. Il file '%s' sarà rimosso fisicamente."
 
-::board::options::mc::CannotUsePieceWorkingSet "Non posso creare un nuovo tema con %s selezionato per lo stile dei pezzi.\n Prima devi salvare il nuovo stile pezzi, o scegliere un altro stile pezzi."
+::board::options::mc::CannotUsePieceWorkingSet "Non posso creare un nuovo tema con %s selezionato per lo stile dei pezzi."
+::board::options::mc::CannotUsePieceWorkingSet "Prima devi salvare il nuovo stile pezzi, o scegliere un altro stile pezzi."
 
-::board::options::mc::CannotUseSquareWorkingSet "Non posso creare un nuovo tema con %s selezionato per lo stile delle case.\n Prima devi salvare il nuovo stile case, o scegliere un altro stile case."
+::board::options::mc::CannotUseSquareWorkingSet "Non posso creare un nuovo tema con %s selezionato per lo stile delle case."
+::board::options::mc::CannotUseSquareWorkingSet "Prima devi salvare il nuovo stile case, o scegliere un altro stile case."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Inizia"
@@ -1138,7 +1140,6 @@
 ::gametable::mc::F_Position				"Posizione"
 ::gametable::mc::F_EventDate				"Data Evento"
 ::gametable::mc::F_EventType				"Tipo Ev."
-::gametable::mc::F_Changed					"Modificato"
 ::gametable::mc::F_Promotion				"Promozione"
 ::gametable::mc::F_UnderPromo				"Sotto-Promozione"
 ::gametable::mc::F_StandardPos			"Posizione Standard"
@@ -1165,6 +1166,7 @@
 ::gametable::mc::T_EventType				"Tipo dell'evento"
 ::gametable::mc::T_Chess960Pos			"Posizione Scacchi 960"
 ::gametable::mc::T_Deleted					"Eliminate"
+::gametable::mc::T_Changed					"Modificato"
 ::gametable::mc::T_EngFlag					"Identificatore Lingua Inglese"
 ::gametable::mc::T_OthFlag					"Identificatori per Altre Lingue"
 ::gametable::mc::T_Idn						"Numero Posizione Scacchi 960"

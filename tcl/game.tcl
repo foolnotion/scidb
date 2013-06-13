@@ -908,7 +908,7 @@ proc reopenLockedGames {parent} {
 	set LockedGames {}
 
 	set reply [::dialog::question -parent $parent -message $mc::ReopenLockedGames -default yes]
-	if {$reply eq "no"} { return }
+	if {$reply eq "no"} { return [UnlockGames] }
 
 	set selection -1
 	set count [llength $Vars(slots)]
@@ -1042,6 +1042,18 @@ proc openGame {parent index} {
 	}
 
 	return [expr {$rc > 0}]
+}
+
+
+proc UnlockGames {} {
+	variable LockedGames
+	variable List
+
+	set LockedGames {}
+
+	for {set i 0} {$i < [llength $List]} {incr i} {
+		lset List $i 2 0
+	}
 }
 
 

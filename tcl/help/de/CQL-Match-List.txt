@@ -1600,6 +1600,11 @@ Eine spezielle Markierung wird folgendermaßen spezifiziert:
       <td class="r">Die Partie ist markiert zum Löschen.</td>
     </tr>
     <tr>
+      <td class="l"><expr>changed</expr></td>
+      <td class="m"><img src="../images/gameflag-Changed.png"/></td>
+      <td class="r">Die Partie wurde in dieser Sitzung verändert.</td>
+    </tr>
+    <tr>
       <td class="l"><expr>illegalmove</expr></td>
       <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
       <td class="r">Die Partie enthält unerlaubte Züge.</td>

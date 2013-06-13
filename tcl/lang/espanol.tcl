@@ -795,9 +795,11 @@
 
 ::board::options::mc::YouCannotReverse		"No puede revertir esta acción. El archivo '%s' será removido físicamente."
 
-::board::options::mc::CannotUsePieceWorkingSet "No se puede crear un nuevo tema con el estilo de piezas %s elegido.\n Primero debe guardar el nuevo estilo de pieza, o elegir otro."
+::board::options::mc::CannotUsePieceWorkingSet "No se puede crear un nuevo tema con el estilo de piezas %s elegido."
+::board::options::mc::CannotUsePieceWorkingSet "Primero debe guardar el nuevo estilo de pieza, o elegir otro."
 
-::board::options::mc::CannotUseSquareWorkingSet "No se puede crear un nuevo tema con el estilo de casillas %s elegido.\n Primero debe guardar el nuevo estilo de casillas, o elegir otro."
+::board::options::mc::CannotUseSquareWorkingSet "No se puede crear un nuevo tema con el estilo de casillas %s elegido."
+::board::options::mc::CannotUseSquareWorkingSet "Primero debe guardar el nuevo estilo de casillas, o elegir otro."
 
 ### board::piece #######################################################
 ::board::piece::mc::Start						"Iniciar"
@@ -1133,7 +1135,6 @@
 ::gametable::mc::F_Position				"Posición"
 ::gametable::mc::F_EventDate				"Fecha del Evento"
 ::gametable::mc::F_EventType				"Tipo de Ev."
-::gametable::mc::F_Changed					"Modificado"
 ::gametable::mc::F_Promotion				"Promoción"
 ::gametable::mc::F_UnderPromo				"Sub-promoción"
 ::gametable::mc::F_StandardPos			"Posición estándar"
@@ -1160,6 +1161,7 @@
 ::gametable::mc::T_EventType				"Tipo de Evento"
 ::gametable::mc::T_Chess960Pos			"Posición en Chess 960"
 ::gametable::mc::T_Deleted					"Eliminado"
+::gametable::mc::T_Changed					"Modificado"
 ::gametable::mc::T_EngFlag					"Insignia de idioma inglés"
 ::gametable::mc::T_OthFlag					"Insignia de otro idioma"
 ::gametable::mc::T_Idn						"Número de posición en Chess 960"

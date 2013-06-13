@@ -196,7 +196,7 @@ proc popup {parent args} {
 		if {[llength $texture] == 0 && ($nt == 0 || $nt % 6 == 0)} { break }
 		incr nt
 	}
-	if {$nt % 6} { lappend textureList {*}[lrepeat [expr {6 - ($nt % 6)}] {{} {}}] }
+	if {$nt % 6} { lappend textureList {*}[lrepeat [expr {6 - ($nt % 6)}] {{} 0 {}}] }
 
 	set actions [list palette [set [namespace current]::icon::16x16::palette] [Tr OpenColorDialog]]
 	lappend actions {*}$userActions
@@ -311,13 +311,13 @@ proc popup {parent args} {
 						-width 22 \
 						-height 22]
 			set b [tk::canvas $f.b -relief solid -borderwidth 1 -width 16 -height 16]
-			set tooltip [lindex $texture 1]
-			set texture [lindex $texture 0]
+			lassign $texture texture rotation tooltip
+			set result [list $texture $rotation]
 			if {[llength $texture]} { $b create image 1 1 -image $texture -anchor nw }
-			bind $b <ButtonPress-1> [namespace code [list set selection $texture]]
-			bind $f <ButtonPress-1> [namespace code [list set selection $texture]]
-			bind $f <Return> [namespace code [list set selection $texture]]
-			bind $f <space> [namespace code [list set selection $texture]]
+			bind $b <ButtonPress-1> [namespace code [list set selection $result]]
+			bind $f <ButtonPress-1> [namespace code [list set selection $result]]
+			bind $f <Return> [namespace code [list set selection $result]]
+			bind $f <space> [namespace code [list set selection $result]]
 			bind $f <Escape> [namespace code [list set selection close]]
 			bind $f <Enter> { focus %W }
 			grid $f -column $col -row $row

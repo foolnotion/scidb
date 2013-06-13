@@ -1,28 +1,30 @@
 ::board::addStyle square {
-  version               1.0
-  hint,border-tile      {marble marble12.jpg}
-  dark,y1               0
-  hint,border-color     {}
-  dark,y2               150
-  hint,background-tile  {marble marble12.jpg}
-  borderline,width      0.006666666666666667
-  lite,rotation         0
-  hint,background-color {}
-  lite,texture          {marble 13621.jpg}
-  lite,x1               228
-  hilite,selected       #b0d0e0
-  lite,x2               378
-  lite,solid            #e0d070
-  hilite,suggested      #c32424
-  dark,rotation         0
-  dark,x1               0
-  dark,texture          {marble marble13.jpg}
-  dark,x2               150
-  dark,solid            #70a070
-  hint,coordinates      #ffffff
-  borderline,gap        0
-  borderline,opacity    0x80
-  identifier            {Marble - Black&White|1243715852129|yellow.color|gregor}
-  lite,y1               358
-  lite,y2               508
+  borderline,gap           0
+  borderline,opacity       0x80
+  borderline,width         0.006666666666666667
+  dark,rotation            0
+  dark,solid               #70a070
+  dark,texture             {marble marble13.jpg}
+  dark,x1                  0
+  dark,x2                  150
+  dark,y1                  0
+  dark,y2                  150
+  hilite,selected          #b0d0e0
+  hilite,suggested         #c32424
+  hint,background-color    {}
+  hint,background-tile     {marble marble12.jpg}
+  hint,background-rotation	0
+  hint,border-color        {}
+  hint,border-tile         {marble marble12.jpg}
+  hint,border-rotation   	0
+  hint,coordinates         #ffffff
+  identifier               {Marble - Black&White|1243715852129|yellow.color|gregor}
+  lite,rotation            0
+  lite,solid               #e0d070
+  lite,texture             {marble 13621.jpg}
+  lite,x1                  228
+  lite,x2                  378
+  lite,y1                  358
+  lite,y2                  508
+  version                  1.0
 }
