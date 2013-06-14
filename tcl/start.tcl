@@ -175,6 +175,7 @@ proc update {} {
 			{Black & White|1322146381433|yellow.color|gregor}
 			{Brown & Goldenrod|1355495679308|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
+			{Contrast|1371196032342|purple|gregor}
 			{Country Style|1370798009651|INE543149|cmartins}
 			{Crater|1296048990606|yellow.color|gregor}
 			{Glass|1228820514871|yellow.color|gregor}

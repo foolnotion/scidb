@@ -1,0 +1,30 @@
+::board::addStyle square {
+  borderline,gap           {0}
+  borderline,opacity       {0x80}
+  borderline,width         {0.006666666666666667}
+  dark,rotation            {0}
+  dark,solid               {#4682b4}
+  dark,texture             {wood Melamine-wood-006.png}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#ffdb8f}
+  hilite,suggested         {#3bbdbe}
+  hint,background-color    {}
+  hint,background-rotation {0}
+  hint,background-tile     {wood Melamine-wood-004.png}
+  hint,border-color        {}
+  hint,border-rotation     {0}
+  hint,border-tile         {wood Melamine-wood-005.png}
+  hint,coordinates         {#000000}
+  identifier               {Contrast|1371196032342|purple|gregor}
+  lite,rotation            {0}
+  lite,solid               {#b0c4de}
+  lite,texture             {wood Melamine-wood-003.png}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}
