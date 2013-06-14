@@ -396,7 +396,7 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 
 				while (k < n && ::isspace(descr[k]))
 					++k;
-				descr.erase(0u, k);
+				descr.erase(mstl::string::size_type(0), mstl::string::size_type(k));
 				n = descr.size();
 			}
 
