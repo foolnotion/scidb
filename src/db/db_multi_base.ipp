@@ -29,6 +29,7 @@
 namespace db {
 
 inline bool MultiBase::isSingleBase() const	{ return m_singleBase; }
+inline bool MultiBase::isTextFile() const		{ return m_fileOffsets; }
 
 inline Database* MultiBase::database()			{ return m_leader; }
 

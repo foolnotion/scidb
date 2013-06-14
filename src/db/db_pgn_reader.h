@@ -256,7 +256,6 @@ private:
 	unsigned				m_countErrors[LastError + 1];
 	ReadMode				m_readMode;
 	GameCount			m_gameCount;
-	unsigned				m_gameIndex;
 	GameCount const*	m_firstGameNumber;
 	ResultMode			m_resultMode;
 	Comments				m_comments;
@@ -287,6 +286,7 @@ private:
 	bool					m_isICS;
 	bool					m_hasCastled;
 	bool					m_resultCorrection;
+	bool					m_firstRejected;
 	unsigned				m_postIndex;
 	uint16_t				m_idn;
 	variant::Type		m_variant;

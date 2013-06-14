@@ -313,8 +313,6 @@ struct pixbuf
 				p[R] = ::mulChan(p[R], opacity);
 				p[G] = ::mulChan(p[G], opacity);
 				p[B] = ::mulChan(p[B], opacity);
-				if (Alpha)
-					p[A] = 255;
 			}
 		}
 	}

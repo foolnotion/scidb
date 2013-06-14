@@ -356,7 +356,6 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_linePos(0)
 	,m_lineEnd(0)
 	,m_readMode(readMode)
-	,m_gameIndex(0)
 	,m_firstGameNumber(firstGameNumber)
 	,m_resultMode(resultMode)
 	,m_prefixAnnotation(nag::Null)
@@ -380,6 +379,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_isICS(false)
 	,m_hasCastled(false)
 	,m_resultCorrection(false)
+	,m_firstRejected(true)
 	,m_postIndex(0)
 	,m_idn(0)
 	,m_variant(variant)
@@ -431,7 +431,7 @@ void
 PgnReader::setup(FileOffsets* fileOffsets)
 {
 	if ((m_fileOffsets = fileOffsets))
-		m_fileOffsets->resize(estimateNumberOfGames());
+		m_fileOffsets->reserve(estimateNumberOfGames());
 }
 
 
@@ -816,6 +816,7 @@ PgnReader::process(Progress& progress)
 				m_isICS = false;
 				m_hasCastled = false;
 				m_resultCorrection = false;
+				m_firstRejected = true;
 				m_warnings.clear();
 				m_givenVariant = givenVariant;
 				m_thisVariant = variant::Undetermined;
@@ -1302,19 +1303,23 @@ PgnReader::finishGame(bool skip)
 	if (state == save::UnsupportedVariant)
 	{
 		++m_rejected[variantIndex];
+
+		if (m_fileOffsets && m_firstRejected)
+		{
+			m_fileOffsets->append(m_currentOffset);
+			m_firstRejected = false;
+		}
 	}
 	else
 	{
 		++m_accepted[variantIndex];
 
 		if (m_fileOffsets)
-			m_fileOffsets->setIndex(variantIndex, m_gameIndex);
+		{
+			m_fileOffsets->append(m_currentOffset, variantIndex, m_gameCount[variantIndex]);
+			m_firstRejected = true;
+		}
 	}
-
-	++m_gameIndex;
-
-	if (m_fileOffsets)
-		m_fileOffsets->append(m_currentOffset);
 
 	variant::Type variant = getVariant();
 

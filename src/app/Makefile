@@ -206,6 +206,8 @@ app_application.o: app_cursor.ipp
 app_application.o: app_engine.h
 app_application.o: app_engine.ipp
 app_application.o: ../db/db_multi_base.h
+app_application.o: ../db/db_file_offsets.h
+app_application.o: ../db/db_file_offsets.ipp
 app_application.o: ../db/db_multi_base.ipp
 app_application.o: ../db/db_game.h
 app_application.o: ../db/db_game_data.h
@@ -665,6 +667,8 @@ app_multi_cursor.o: app_tree_admin.ipp
 app_multi_cursor.o: ../util/u_rkiss.h
 app_multi_cursor.o: app_application.ipp
 app_multi_cursor.o: ../db/db_multi_base.h
+app_multi_cursor.o: ../db/db_file_offsets.h
+app_multi_cursor.o: ../db/db_file_offsets.ipp
 app_multi_cursor.o: ../db/db_multi_base.ipp
 app_multi_cursor.o: ../sys/sys_utf8_codec.h
 app_multi_cursor.o: ../sys/sys_utf8_codec.ipp

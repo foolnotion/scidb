@@ -114,6 +114,16 @@ public:
 	bool shouldCompress() const;
 	/// Return whether this database is opened with temporary storage.
 	bool hasTemporaryStorage() const;
+	/// Return whether this database contains unsaved changes.
+	bool hasChanged() const;
+	/// Return whether specified game is deleted.
+	bool isDeleted(unsigned index) const;
+	/// Return whether specified game has changed.
+	bool hasChanged(unsigned index) const;
+	/// Return whether the descriptuon has changed.
+	bool descriptionHasChanged() const;
+	/// Return whether file is unchanged.
+	bool checkFileTime() const;
 
 	/// Returns an unique database id.
 	unsigned id() const;
@@ -333,10 +343,13 @@ private:
 	unsigned			m_id;
 	unsigned			m_size;
 	uint64_t			m_lastChange;
+	uint32_t			m_fileTime;
 	TreeCache		m_treeCache;
 	AsyncReader*	m_asyncReader;
 	mutable bool	m_encodingFailed;
 	mutable bool	m_encodingOk;
+	bool				m_hasChanged;
+	bool				m_descriptionHasChanged;
 	bool				m_usingAsyncReader;
 };
 

@@ -1934,6 +1934,14 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 			obj = Tcl_NewStringObj(event::toString(info.eventType()), -1);
 			break;
 
+		case attribute::game::Deleted:
+			obj = Tcl_NewBooleanObj(info.isDeleted());
+			break;
+
+		case attribute::game::Changed:
+			obj = Tcl_NewBooleanObj(info.isChanged());
+			break;
+
 		default:
 			return error(::CmdGet, "gameInfo", nullptr, "cannot access number %u", which);
 	}
@@ -2398,6 +2406,19 @@ getDeleted(int index, int view, char const* database, variant::Type variant)
 }
 
 
+static int
+getChanged(int index, int view, char const* database, variant::Type variant)
+{
+	Cursor const& cursor = database ? Scidb->cursor(database, variant) : Scidb->cursor();
+
+	if (view >= 0)
+		index = cursor.index(table::Games, index, view);
+
+	setResult(cursor.database().gameInfo(index).isChanged());
+	return TCL_OK;
+}
+
+
 int
 tcl::db::getTags(TagSet const& tags, bool userSuppliedOnly)
 {
@@ -2712,7 +2733,8 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"stats", "readonly?", "encodingState", "deleted?", "open?", "lastChange", "customFlags",
 		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum", "idn",
 		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writable?",
-		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants", 0
+		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants",
+		"changed?", 0
 	};
 	static char const* args[] =
 	{
@@ -2765,6 +2787,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* eventKey			*/ "<database> <variant> game|event <event>",
 		/* siteKey			*/ "<database> <variant> game|site <site>",
 		/* variants			*/ "<database>",
+		/* changed?			*/ "<index> ?<view>? ?<database>? ?<variant>?",
 		0
 	};
 	enum
@@ -2776,7 +2799,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Deleted, Cmd_Open, Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber,
 		Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes,
 		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_Writable, Cmd_Upgrade, Cmd_MemoryOnly,
-		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants,
+		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed,
 	};
 
 	if (objc < 2)
@@ -3073,6 +3096,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Deleted:
 			return getDeleted(intFromObj(objc, objv, 2),
+									objc < 4 ? -1 : intFromObj(objc, objv, 3),
+									objc < 5 ? 0 : stringFromObj(objc, objv, 4),
+									tcl::game::variantFromObj(objc, objv, 5));
+
+		case Cmd_Changed:
+			return getChanged(intFromObj(objc, objv, 2),
 									objc < 4 ? -1 : intFromObj(objc, objv, 3),
 									objc < 5 ? 0 : stringFromObj(objc, objv, 4),
 									tcl::game::variantFromObj(objc, objv, 5));

@@ -518,6 +518,8 @@ cbh2si4.o: db/db_mark.ipp
 cbh2si4.o: db/db_mark_set.ipp
 cbh2si4.o: db/db_comment.h
 cbh2si4.o: db/db_comment.ipp
+cbh2si4.o: db/db_file_offsets.h
+cbh2si4.o: db/db_file_offsets.ipp
 cbh2si4.o: db/db_exception.h
 cbh2si4.o: util/u_exception.h
 cbh2si4.o: db/db_log.h
@@ -678,6 +680,8 @@ cdb2sci.o: db/db_mark.ipp
 cdb2sci.o: db/db_mark_set.ipp
 cdb2sci.o: db/db_comment.h
 cdb2sci.o: db/db_comment.ipp
+cdb2sci.o: db/db_file_offsets.h
+cdb2sci.o: db/db_file_offsets.ipp
 cdb2sci.o: db/db_exception.h
 cdb2sci.o: util/u_exception.h
 cdb2sci.o: db/db_log.h
@@ -1035,6 +1039,8 @@ pgn_split_eco.o: db/db_mark.ipp
 pgn_split_eco.o: db/db_mark_set.ipp
 pgn_split_eco.o: db/db_comment.h
 pgn_split_eco.o: db/db_comment.ipp
+pgn_split_eco.o: db/db_file_offsets.h
+pgn_split_eco.o: db/db_file_offsets.ipp
 pgn_split_eco.o: db/db_pgn_writer.h
 pgn_split_eco.o: db/db_writer.h
 pgn_split_eco.o: db/db_writer.ipp

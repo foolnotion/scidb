@@ -62,6 +62,7 @@ public:
 		Game,
 		Namebase,
 		Annotation,
+		PgnFile,
 	};
 
 	enum ErrorType
@@ -78,6 +79,7 @@ public:
 		Encoding_Failed,
 		Max_File_Size_Exceeded,
 		Load_Failed,
+		Not_Original_Version,
 	};
 
 	IOException(FileType fileType,

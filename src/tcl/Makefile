@@ -691,6 +691,8 @@ tcl_database.o: ../db/db_mark.ipp
 tcl_database.o: ../db/db_mark_set.ipp
 tcl_database.o: ../db/db_comment.h
 tcl_database.o: ../db/db_comment.ipp
+tcl_database.o: ../db/db_file_offsets.h
+tcl_database.o: ../db/db_file_offsets.ipp
 tcl_database.o: tcl_player.h
 tcl_database.o: tcl_progress.h
 tcl_database.o: ../util/u_progress.h
@@ -1145,6 +1147,8 @@ tcl_game.o: ../db/db_mark.ipp
 tcl_game.o: ../db/db_mark_set.ipp
 tcl_game.o: ../db/db_comment.h
 tcl_game.o: ../db/db_comment.ipp
+tcl_game.o: ../db/db_file_offsets.h
+tcl_game.o: ../db/db_file_offsets.ipp
 tcl_game.o: tcl_tree.h
 tcl_game.o: tcl_log.h
 tcl_game.o: ../db/db_log.h
@@ -1520,6 +1524,8 @@ tcl_pgn_reader.o: ../db/db_mark.ipp
 tcl_pgn_reader.o: ../db/db_mark_set.ipp
 tcl_pgn_reader.o: ../db/db_comment.h
 tcl_pgn_reader.o: ../db/db_comment.ipp
+tcl_pgn_reader.o: ../db/db_file_offsets.h
+tcl_pgn_reader.o: ../db/db_file_offsets.ipp
 tcl_pgn_reader.o: tcl_progress.h
 tcl_pgn_reader.o: ../util/u_progress.h
 tcl_pgn_reader.o: ../util/u_progress.ipp
@@ -2046,6 +2052,8 @@ tcl_view.o: ../db/db_mark.ipp
 tcl_view.o: ../db/db_mark_set.ipp
 tcl_view.o: ../db/db_comment.h
 tcl_view.o: ../db/db_comment.ipp
+tcl_view.o: ../db/db_file_offsets.h
+tcl_view.o: ../db/db_file_offsets.ipp
 tcl_view.o: tcl_game.h
 tcl_view.o: tcl_exception.h
 tcl_view.o: ../util/u_exception.h

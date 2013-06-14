@@ -40,6 +40,8 @@ inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }
 inline bool Database::encodingFailed() const					{ return m_encodingFailed; }
 inline bool Database::usingAsyncReader() const				{ return m_usingAsyncReader; }
 inline bool Database::hasTemporaryStorage() const			{ return m_temporary; }
+inline bool Database::hasChanged() const						{ return m_hasChanged; }
+inline bool Database::descriptionHasChanged() const		{ return m_descriptionHasChanged; }
 
 inline unsigned Database::id() const							{ return m_id; }
 inline unsigned Database::countGames() const					{ return m_gameInfoList.size(); }

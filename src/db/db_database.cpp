@@ -55,6 +55,7 @@
 
 #include "sys_utf8_codec.h"
 #include "sys_time.h"
+#include "sys_file.h"
 
 #include "m_assert.h"
 #include "m_string.h"
@@ -111,9 +112,12 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
+	,m_hasChanged(false)
+	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
 	try
@@ -134,9 +138,12 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
+	,m_hasChanged(false)
+	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
 	M_ASSERT(m_codec);
@@ -164,9 +171,12 @@ Database::Database(	mstl::string const& name,
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
+	,m_hasChanged(false)
+	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(storage != storage::Temporary);
@@ -219,9 +229,12 @@ Database::Database(	mstl::string const& name,
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
+	,m_hasChanged(false)
+	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
 	M_REQUIRE(file::hasSuffix(name));
@@ -231,6 +244,7 @@ Database::Database(	mstl::string const& name,
 
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
+	::sys::file::changed(m_name, m_fileTime);
 
 	if (m_codec == 0)
 	{
@@ -267,9 +281,12 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	,m_id(Counter++)
 	,m_size(0)
 	,m_lastChange(sys::time::timestamp())
+	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
+	,m_hasChanged(false)
+	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
 	// NOTE: we assume normalized (unique) file names.
@@ -302,6 +319,29 @@ Database::~Database() throw()
 		m_codec->closeAsyncReader(m_asyncReader);
 
 	delete m_codec;
+}
+
+
+bool
+Database::isDeleted(unsigned index) const
+{
+	return gameInfo(index).isDeleted();
+}
+
+
+bool
+Database::hasChanged(unsigned index) const
+{
+	return gameInfo(index).isChanged();
+}
+
+
+bool
+Database::checkFileTime() const
+{
+	uint32_t fileTime;
+	::sys::file::changed(m_name, fileTime);
+	return fileTime == m_fileTime;
 }
 
 
@@ -511,6 +551,9 @@ Database::clear()
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWritable());
 
+	if (isMemoryOnly() && !m_gameInfoList.empty())
+		m_hasChanged = true;
+
 	m_gameInfoList.clear();
 	m_statistic.clear();
 	m_namebases.clear();
@@ -646,6 +689,9 @@ Database::newGame(Game& game, GameInfo const& info)
 	{
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
+
+		if (isMemoryOnly())
+			m_hasChanged = true;
 	}
 
 	return state;
@@ -681,9 +727,13 @@ Database::addGame(Game& game)
 		}
 
 		m_size = m_gameInfoList.size();
+		m_gameInfoList.back()->setChanged(true);
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
 		m_treeCache.setIncomplete();
+
+		if (isMemoryOnly())
+			m_hasChanged = true;
 	}
 
 	return state;
@@ -734,8 +784,14 @@ Database::updateGame(Game& game)
 				m_codec->updateHeader();
 		}
 
+		info.setDirty(false);
+		info.setChanged(true);
+		game.setFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
+
+		if (isMemoryOnly())
+			m_hasChanged = true;
 
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -791,9 +847,14 @@ Database::updateMoves(Game& game)
 			}
 		}
 
+		info.setDirty(false);
+		info.setChanged(true);
 		game.setFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
+
+		if (isMemoryOnly())
+			m_hasChanged = true;
 	}
 
 	return state;
@@ -818,8 +879,14 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 		if (!m_memoryOnly)
 			m_codec->update(index, true);
 
-		m_gameInfoList[index]->setDirty(false);
+		GameInfo& info = *m_gameInfoList[index];
+
+		info.setDirty(false);
+		info.setChanged(true);
 		m_lastChange = sys::time::timestamp();
+
+		if (isMemoryOnly())
+			m_hasChanged = true;
 
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -1208,7 +1275,11 @@ Database::importGame(Producer& producer, unsigned index)
 		setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
 		m_statistic.add(*m_gameInfoList[index]);
 
-		if (!isMemoryOnly())
+		if (isMemoryOnly())
+		{
+			m_hasChanged = true;
+		}
+		else
 		{
 			m_codec->update(index, true);
 			m_codec->updateHeader();
@@ -1287,6 +1358,9 @@ Database::finishImport(unsigned oldSize, bool encodingFailed)
 
 	if (encodingFailed || m_codec->encodingFailed())
 		setEncodingFailed(true);
+
+	if (isMemoryOnly())
+		m_hasChanged = true;
 }
 
 
@@ -1354,7 +1428,9 @@ Database::deleteGame(unsigned index, bool flag)
 	if (flag)
 		++m_statistic.deleted;
 
-	if (!m_memoryOnly)
+	if (m_memoryOnly)
+		m_hasChanged = true;
+	else
 		m_codec->update(index, false);
 
 	m_lastChange = sys::time::timestamp();
@@ -1407,7 +1483,9 @@ Database::setDescription(mstl::string const& description)
 		if (m_codec->maxDescriptionLength() < m_description.size())
 			m_description.set_size(m_codec->maxDescriptionLength());
 
-		if (!m_memoryOnly)
+		if (m_memoryOnly)
+			m_descriptionHasChanged = m_hasChanged = true;
+		else
 			m_codec->updateHeader();
 	}
 }

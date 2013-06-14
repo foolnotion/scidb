@@ -280,7 +280,7 @@ proc busyOperation {cmd} {
 	if {$postponed} {
 		after idle [namespace code update]
 	}
-	return -code $code $res
+	return -code $code -rethrow 1 $res
 }
 
 
