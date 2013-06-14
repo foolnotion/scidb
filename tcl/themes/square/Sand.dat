@@ -29,7 +29,7 @@
   hint,border-tile         {marble marble_206.jpg}
   hint,border-rotation   	0
   hint,background-color    {}
-  hint,background-tile     {marble marble_234.jpg}
+  hint,background-tile     {misc patterncooler-31.png}
   hint,background-rotation	0
   hint,coordinates         #ffffff
 }

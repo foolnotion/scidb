@@ -93,7 +93,7 @@ proc build {w width height} {
 	set border [tk::canvas $canv.border -takefocus 0 -borderwidth 0]
 	$border xview moveto 0
 	$border yview moveto 0
-	set board [::board::diagram::new $border.board $Dim(squaresize) $Dim(edgethickness)]
+	set board [::board::diagram::new $border.board $Dim(squaresize) -bordersize $Dim(edgethickness)]
 	::board::diagram::setTargets $board $border $canv
 	set boardc [::board::diagram::canvas $board]
 	set Vars(holding:w) [::board::holding::new $canv.holding-w w $Dim(squaresize) $boardc $border $canv]
@@ -829,7 +829,7 @@ proc RebuildBoard {canv width height} {
 				set Vars(registered:$l) 1
 			}
 		}
-		::board::diagram::resize $board $Dim(squaresize) $Dim(edgethickness)
+		::board::diagram::resize $board $Dim(squaresize) -bordersize $Dim(edgethickness)
 		if {$Vars(registered:$Vars(layout))} {
 			::board::unregisterSize $Vars(inuse:$Vars(layout))
 			set Vars(registered:$Vars(layout)) 0
@@ -980,7 +980,7 @@ proc ComputeLayout {canvWidth canvHeight {bordersize -1}} {
 
 	set height					[expr {$height - 2*$Dim(offset)}]
 	set boardsize				[expr {min($width, $height)}]
-	set Dim(edgethickness)	[expr {$Dim(borderthickness) ? 0 : ($boardsize/8 < 65 ? 1 : 2)}]
+	set Dim(edgethickness)	[expr {$Dim(borderthickness) ? 0 : ($boardsize/8 < 45 ? 1 : 2)}]
 
 	if {$Vars(layout) eq "Crazyhouse"} {
 		set squaresize		[expr {($boardsize - 2*$Dim(edgethickness) - 4)/10.3333}]

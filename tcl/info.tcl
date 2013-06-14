@@ -438,9 +438,10 @@ proc DisplayContributions {w} {
 		<div class='box'>
 			<h1>$mc::BoardThemeDesign</h1>
 			<hr/>
-			<p>
-				[Name {Gregor Cramer}]
-			</p>
+			<table border='0'>
+				<tr><td>[Name {Gregor Cramer}]</td></tr>
+				<tr><td>[Name {José Carlos Martins}]</td><td>\u2001</td><td>Country Style</td></tr>
+			</table>
 		</div>
 		<div class='box'>
 			<h1>$mc::FlagsDesign</h1>

@@ -656,7 +656,7 @@ proc open {parent} {
 	set size [expr {$squareSize*8 + 2*$BorderThickness + $edge}]
 	set canv [tk::canvas $top.board -width $size -height $size -takefocus 0]
 	::theme::configureCanvas $canv
-	set board [::board::diagram::new $canv.board $squareSize $BorderThickness]
+	set board [::board::diagram::new $canv.board $squareSize -bordersize $BorderThickness]
 	::board::diagram::update $board $Vars(pos)
 	$board configure -cursor crosshair
 	set Vars(board) $board

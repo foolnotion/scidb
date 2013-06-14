@@ -65,11 +65,14 @@ set emptyBoard		"...............................................................
 set standardBoard	"RNBQKBNRPPPPPPPP................................pppppppprnbqkbnr"
 
 
-proc new {w size {borderSize 0} {flipped 0} args} {
+proc new {w size args} {
 	namespace eval [namespace current]::${w} {}
 	variable ${w}::Board
 
-	set Board(flip) $flipped
+	array set opts { -bordersize 0 -flipped 0 -relief raised }
+	array set opts $args
+
+	set Board(flip) $opts(-flipped)
 	set Board(marks) {}
 	set Board(size) $size
 	set Board(data) ""
@@ -90,8 +93,8 @@ proc new {w size {borderSize 0} {flipped 0} args} {
    tk::canvas $w.c \
 		-width $boardSize \
 		-height $boardSize \
-		-borderwidth $borderSize \
-		-relief raised \
+		-borderwidth $opts(-bordersize) \
+		-relief $opts(-relief) \
 		-takefocus 0 \
 		;
    grid $w.c -column 0 -row 0
@@ -115,8 +118,11 @@ proc setTargets {w args} {
 }
 
 
-proc resize {w size {borderSize 0}} {
+proc resize {w size args} {
    variable ${w}::Board
+
+	array set opts { -bordersize 0 }
+	array set opts $args
 
    if {$size != $Board(size)} {
 		DeleteImages $w
@@ -125,7 +131,7 @@ proc resize {w size {borderSize 0}} {
 		set oldSize $Board(size)
 		set boardSize [expr {8*$size}]
 
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $opts(-bordersize)
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 
@@ -137,10 +143,10 @@ proc resize {w size {borderSize 0}} {
 
 		rebuild $w
 		::board::unregisterSize $oldSize
-	} elseif {$borderSize != $Board(border)} {
-		set Board(border) $borderSize
+	} elseif {$opts(-bordersize) != $Board(border)} {
+		set Board(border) $opts(-bordersize)
 		set boardSize [expr {8*$size}]
-		$w.c configure -width $boardSize -height $boardSize -borderwidth $borderSize
+		$w.c configure -width $boardSize -height $boardSize -borderwidth $opts(-bordersize)
 		$w.c xview moveto 0
 		$w.c yview moveto 0
 	}

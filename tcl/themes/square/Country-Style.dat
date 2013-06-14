@@ -1,0 +1,30 @@
+::board::addStyle square {
+  borderline,gap           {0}
+  borderline,opacity       {0x50}
+  borderline,width         {0.0}
+  dark,rotation            {90}
+  dark,solid               {#70a070}
+  dark,texture             {wood wood-cafe-maple.jpg}
+  dark,x1                  {0}
+  dark,x2                  {150}
+  dark,y1                  {0}
+  dark,y2                  {150}
+  hilite,selected          {#e05524}
+  hilite,suggested         {#ffd700}
+  hint,background-color    {}
+  hint,background-tile     {wood peruvianwalnut-tile.png}
+  hint,background-rotation {0}
+  hint,border-color        {}
+  hint,border-tile         {wood mVX4E0Q.jpg}
+  hint,border-rotation     {90}
+  hint,coordinates         {#ffffff}
+  identifier               {Country Style|1370798009651|INE543149|cmartins}
+  lite,rotation            {0}
+  lite,solid               {#e0d070}
+  lite,texture             {wood wood_hickory_clear.png}
+  lite,x1                  {0}
+  lite,x2                  {150}
+  lite,y1                  {0}
+  lite,y2                  {150}
+  version                  {1.0}
+}

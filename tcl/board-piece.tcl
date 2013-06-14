@@ -551,7 +551,7 @@ proc SelectTexture {parent which} {
 	set Vars(rotation,$which) $style(texture,$which,rotation)
 
 	set dlg [tk::toplevel $parent.select_texture_$which -class Scidb]
-	bind $dlg <<BrowserSelect>> [namespace code [list SetTexture $which "%d" true]]
+	bind $dlg <<BrowserSelect>> [namespace code [list SetTexture $which %d true]]
 	bind $dlg <Destroy> "if {{%W} eq {$dlg}} { incr [namespace current]::Vars(open) -1 }"
 
 	set top [ttk::frame $dlg.top]
@@ -1452,7 +1452,7 @@ proc DestroyDialog {dlg size resetCmd} {
 			-message [set [namespace current]::mc::CloseDialog]] eq "yes"} {
 		Reset
 		MakePieces $size
-		$resetCmd
+		{*}$resetCmd
 		destroy $dlg
 	}
 }

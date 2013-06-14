@@ -74,6 +74,15 @@ if {![file isdirectory $user]} {
 	file mkdir [file join $user photos]
 	file mkdir [file join $user backup]
 	file mkdir [file join $user engines]
+	file mkdir [file join $user textures tile marble]
+	file mkdir [file join $user textures tile wood]
+	file mkdir [file join $user textures tile misc]
+	file mkdir [file join $user textures lite marble]
+	file mkdir [file join $user textures lite wood]
+	file mkdir [file join $user textures lite misc]
+	file mkdir [file join $user textures dark marble]
+	file mkdir [file join $user textures dark wood]
+	file mkdir [file join $user textures dark misc]
 	file copy  [file join $share themes] $user
 } else {
 	set setup 0
@@ -111,8 +120,10 @@ proc update {} {
 			{Apollo|1296050637190|yellow.color|gregor}
 			{Arena|1348599577049|yellow.color|gregor}
 			{Black & White|1322146556616|yellow.color|gregor}
+			{Blackjack|1371197629186|purple|gregor}
 			{Burly|1262881982561|yellow.color|gregor}
 			{Burnett|1228820485389|yellow.color|gregor}
+			{Country Style|1370798029772|INE543149|cmartins}
 			{Fantasy|1228820514842|yellow.color|gregor}
 			{Glass|1243787890671|yellow.color|gregor}
 			{Goldenrod|1243765848112|yellow.color|gregor}
@@ -151,6 +162,7 @@ proc update {} {
 			{Lemon|1251901475461|yellow.color|gregor}
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan - Red|1243775183896|yellow.color|gregor}
+			{Not Black and White|1371197617696|purple|gregor}
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
 			{Sand|1326983597299|yellow.color|gregor}
 			{Sycomore|1244122254189|yellow.color|gregor}
@@ -163,6 +175,7 @@ proc update {} {
 			{Black & White|1322146381433|yellow.color|gregor}
 			{Brown & Goldenrod|1355495679308|yellow.color|gregor}
 			{Burly|1295711105525|yellow.color|gregor}
+			{Country Style|1370798009651|INE543149|cmartins}
 			{Crater|1296048990606|yellow.color|gregor}
 			{Glass|1228820514871|yellow.color|gregor}
 			{Gray|1243532989423|yellow.color|gregor}

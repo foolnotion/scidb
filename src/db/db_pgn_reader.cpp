@@ -430,7 +430,7 @@ PgnReader::detectedVariant() const
 void
 PgnReader::setup(FileOffsets* fileOffsets)
 {
-	if (m_fileOffsets = fileOffsets)
+	if ((m_fileOffsets = fileOffsets))
 		m_fileOffsets->resize(estimateNumberOfGames());
 }
 

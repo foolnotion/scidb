@@ -820,13 +820,19 @@ GameInfo::setupVariant(TagSet& tags, variant::Type variant, uint16_t idn)
 		{
 			tags.set(tag::Fen, chess960::fen(idn));
 			tags.add(tag::Opening, chess960::position(idn));
-			tags.set(tag::Variant, chess960::identifier());
+
+//			Not required, because the FEN is decisive.
+//			Furthermore it's a conflict in case of a chess variant.
+//			tags.set(tag::Variant, chess960::identifier());
 		}
 		else if (variant::isShuffleChess(idn))
 		{
 			tags.set(tag::Fen, shuffle::fen(idn));
 			tags.add(tag::Opening, shuffle::position(idn));
-			tags.set(tag::Variant, shuffle::identifier());
+
+//			Not required, because the FEN is decisive.
+//			Furthermore it's a conflict in case of a chess variant.
+//			tags.set(tag::Variant, shuffle::identifier());
 		}
 		else
 		{
@@ -834,7 +840,6 @@ GameInfo::setupVariant(TagSet& tags, variant::Type variant, uint16_t idn)
 		}
 	}
 
-	// TODO what if we have a shuffle chess position?
 	if (variant != variant::Normal)
 		tags.set(tag::Variant, variant::identifier(variant));
 }

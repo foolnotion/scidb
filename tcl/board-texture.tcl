@@ -259,8 +259,12 @@ proc SendSelected {} {
 proc SendResult {file} {
 	variable Browser
 
-	set result [list [lrange [file split $file] end-1 end]]
-	lappend result $Browser(rotation)
+	set result [lrange [file split $file] end-1 end]
+
+	if {[info exists Browser(rotation)]} {
+		set result [list $result $Browser(rotation)]
+	}
+
 	event generate $Browser(recv) <<BrowserSelect>> -data $result
 }
 
@@ -420,9 +424,9 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 	set browser \
 		[buildBrowser $top $dlg $which $Browser(rows) $Browser(cols) $currentTexture $otherTexture]
 	set Browser(recv) $parent
-	set Browser(rotation) $rotation
 
 	if {[string is integer -strict $rotation]} {
+		set Browser(rotation) $rotation
 		set rot [::ttk::frame $top.rot -takefocus 0]
 		ttk::label $rot.lrot -textvar [namespace parent]::piece::mc::Rotate
 		set col 3
@@ -465,7 +469,7 @@ proc openBrowser {parent which currentTexture {otherTexture {}} {rotation {}} {p
 	set Browser(rows) $Browser(nrows)
 	set Browser(cols) $Browser(ncols)
 
-	if {$Browser(rotation) ne $rotation} {
+	if {[info exists Browser(rotation)] && $Browser(rotation) ne $rotation} {
 		set Browser(result) $currentTexture
 	}
 

@@ -1296,6 +1296,7 @@ proc ResetSelection {longId which} {
 }
 
 
+# TODO
 #proc RenameStyleEntry {parent listbox which} {
 #	variable [namespace parent]::${which}::styleNames
 #	variable NameList
@@ -1502,6 +1503,15 @@ proc ConfigureBoard {} {
 	# draw border lines ############################
 	drawBorderlines $border [expr {4*$squareSize + 2*$bdw}]
 
+	# borderlines ##################################
+	set mx [expr {$x2 - $x1 - 1}]
+	set my [expr {$y2 - $y1 - 1}]
+
+	$preview coords borderline1 [expr {$x1 - 1}] $y1 [expr {$x1 - 1}] [expr {$y2 + 1}]
+	$preview coords borderline2 [expr {$x1 - 1}] [expr {$y1 - 1}] [expr {$x2 + 1}] [expr {$y1 - 1}]
+	$preview coords borderline3 $x2 $y1 $x2 $y2
+	$preview coords borderline4 $x1 $y2 [expr {$x2 + 1}] $y2
+
 	# configure side to move #######################
 	set stmSize 19	;#[expr {$squareSize/4 + 5}]
 	set stmGap	7	;#[expr {$stmSize/3}]
@@ -1551,7 +1561,7 @@ proc ConfigureBoard {} {
 	}
 
 	set mvGap	3
-	set mvS		16
+	set mvS		18
 	set x3		[expr {$x2 + $stmGap + $bdw}]
 	set y3		[expr {$y1 + $stmSize + 2*$stmGap + 1}]
 	set x4		[expr {$x3 + $stmSize - 1}]
@@ -1631,18 +1641,10 @@ proc DrawBoard {h w} {
 	}
 
 	# borderlines ##################################
-#	set mx [expr {$x2 - $x1 - 1}]
-#	set my [expr {$y2 - $y1 - 1}]
-
-#	$canv create line [expr {$x1 - 1}] $y1 [expr {$x1 - 1}] [expr {$y2 + 1}] -fill white
-#	$canv create line [expr {$x1 - 1}] [expr {$y1 - 1}] [expr {$x2 + 1}] [expr {$y1 - 1}] -fill white
-#	$canv create line $x2 $y1 $x2 $y2 -fill black
-#	$canv create line $x1 $y2 [expr {$x2 + 1}] $y2 -fill black
-
-#	$board create line 0 0 [expr {$y2 - $y1}] 0  -fill black -tag black
-#	$board create line 0 0 0 [expr {$x2 - $x1}] -fill black -tag black
-#	$board create line 1 $my $mx $my -fill white -tag white
-#	$board create line $mx 1 $mx $my -fill white -tag white
+	$canv create line 0 0 0 0 -fill white -tag borderline1
+	$canv create line 0 0 0 0 -fill white -tag borderline2
+	$canv create line 0 0 0 0 -fill #c0c0c0 -tag borderline3
+	$canv create line 0 0 0 0 -fill #c0c0c0 -tag borderline4
 
 	# side to move #################################
 	set pieceSize $Options(figurineSize)

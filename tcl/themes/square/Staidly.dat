@@ -1,6 +1,6 @@
 ::board::addStyle square {
   borderline,gap           {0}
-  borderline,opacity       {0x80}
+  borderline,opacity       {0x5a}
   borderline,width         {0.006666666666666667}
   dark,rotation            {0}
   dark,solid               {#d48334}
@@ -20,7 +20,7 @@
   hint,coordinates         {#ffffff}
   identifier               {Staidly|1326985703375|yellow.color|gregor}
   lite,rotation            {0}
-  lite,solid               {#eebc8a}
+  lite,solid               {#f2c36e}
   lite,texture             {}
   lite,x1                  {0}
   lite,x2                  {0}

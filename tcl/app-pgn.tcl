@@ -1437,7 +1437,7 @@ proc InsertDiagram {position w level key data} {
 				set index 0
 				set key [string map {d m} $key]
 				set img $w.[string map {. :} $key]
-				board::diagram::new $img $size $borderSize
+				board::diagram::new $img $size -bordersize $borderSize
 				if {2*$pady < $alignment} {board::diagram::alignBoard $img $Colors(background)}
 				if {$color eq "black"} { ::board::diagram::rotate $img }
 				::board::diagram::update $img $board

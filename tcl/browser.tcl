@@ -145,7 +145,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set background [::theme::getBackgroundColor]
 
 	# board
-	set board [::board::diagram::new $lt.board $squareSize 1]
+	set board [::board::diagram::new $lt.board $squareSize -bordersize 1]
 	grid $board -column 3 -row 1 -sticky nsew
 
 	if {$variant eq "Crazyhouse"} {
@@ -416,7 +416,7 @@ proc showPosition {parent position flip key {state 0}} {
 		variable Options
 
 		destroy [::util::makePopup $w]
-		::board::diagram::new $w.board $Options(miniboard:size) 2
+		::board::diagram::new $w.board $Options(miniboard:size) -bordersize 2
 		pack $w.board
 	}
 
@@ -1681,7 +1681,7 @@ proc Resize {position mode board newSize delta ext} {
 				::board::unregisterSize $Vars(board:size$ext)
 			}
 		}
-		::board::diagram::resize $board $newSize 1
+		::board::diagram::resize $board $newSize
 		set size [expr {8*$newSize + 2}]
 		if {[info exists Vars(holding:w)]} {
 			::board::holding::resize $Vars(holding:w) $newSize

@@ -166,8 +166,8 @@ proc geometry {path args} {
 					incr x0 -$er
 					incr x1 -$er
 					# try left, then right if out, then 0 if out
-					if {$x0 >= $w + $shiftLeft} {
-						set x +[expr {$x0 - $w - $shiftLeft}]
+					if {$x0 >= $w + $opts(-shift)} {
+						set x +[expr {$x0 - $w - $opts(-shift)}]
 					} elseif {$x1 + $w <= $sw} {
 						set x "+$x1"
 					} else {
@@ -179,8 +179,8 @@ proc geometry {path args} {
 					# try right, then left if out, then 0 if out
 					if {$x1 + $w <= $sw} {
 						set x "+$x1"
-					} elseif {$x0 >= $w + $shiftLeft} {
-						set x +[expr {$x0 - $w - $shiftLeft}]
+					} elseif {$x0 >= $w + $opts(-shift)} {
+						set x +[expr {$x0 - $w - $opts(-shift)}]
 					} else {
 						set x "-0"
 					}

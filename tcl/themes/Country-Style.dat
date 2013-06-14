@@ -1,0 +1,7 @@
+::board::addStyle theme {
+  identifier   {Country Style|1370798029772|INE543149|cmartins}
+  piece-set    {Alpha}
+  piece-style  {Default}
+  square-style {Country Style|1370798009651|INE543149|cmartins}
+  version      {1.0}
+}

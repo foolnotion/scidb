@@ -11,9 +11,9 @@
   dark,y1                  {0}
   dark,y2                  {0}
   hilite,selected          {#e03a5a}
-  hilite,suggested         {#ffe084}
+  hilite,suggested         {#f7ff88}
   hint,background-color    {}
-  hint,background-tile     {marble marble_234.jpg}
+  hint,background-tile     {misc patterncooler-08.png}
   hint,background-rotation	0
   hint,border-color        {#995f26}
   hint,border-tile         {}
@@ -21,7 +21,7 @@
   hint,coordinates         {#ffffff}
   identifier               {Burly|1295711105525|yellow.color|gregor}
   lite,rotation            {0}
-  lite,solid               {#e4b484}
+  lite,solid               {#e4b768}
   lite,texture             {}
   lite,x1                  {0}
   lite,x2                  {0}

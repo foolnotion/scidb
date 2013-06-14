@@ -804,7 +804,7 @@ proc DestroyDialog {dlg size resetCmd} {
 			-title $::scidb::app \
 			-message [set [namespace current]::mc::CloseDialog]] eq "yes"} {
 		Reset $size
-		$resetCmd
+		{*}$resetCmd
 		destroy $dlg
 	}
 }
