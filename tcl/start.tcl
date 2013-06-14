@@ -162,7 +162,7 @@ proc update {} {
 			{Lemon|1251901475461|yellow.color|gregor}
 			{Lemon|1227320554192|yellow.color|gregor}
 			{Mayan - Red|1243775183896|yellow.color|gregor}
-			{Not Black and White|1371197617696|purple|gregor}
+			{Not Black nor White|1371197617696|purple|gregor}
 			{Orange - Lemon|1243778153963|yellow.color|gregor}
 			{Sand|1326983597299|yellow.color|gregor}
 			{Sycomore|1244122254189|yellow.color|gregor}
