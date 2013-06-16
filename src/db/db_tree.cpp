@@ -250,6 +250,9 @@ Tree::buildTree0(	unsigned myIdn,
 			reportAfter += frequency;
 		}
 
+		if (progress.interrupted())
+			return false;
+
 		GameInfo const& info = base.gameInfo(m_index);
 
 		// XXX reachableFunc should not use home pawns

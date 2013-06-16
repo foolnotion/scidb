@@ -327,7 +327,7 @@ Thread::startThread(void* arg)
 {
 	startRoutine(static_cast<Thread*>(arg)->m_runnable, static_cast<Thread*>(arg)->m_exception);
 	atomic_cmpxchg(&(static_cast<Thread*>(arg))->m_cancel, 0, 1);
-	pthread_exit(0); // never returns
+	return 0;
 }
 
 

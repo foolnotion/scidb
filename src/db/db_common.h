@@ -803,7 +803,7 @@ namespace variant
 		QueenVsRooks		= 4014,	// FICS misc/queen-rooks
 		UpsideDown			= 4015,	// Upside down chess <http://www.chessvariants.org/diffsetup.dir/upside.html>
 
-		// NOTE: maximal number is 4095
+		MaxCode				= 4095,	// maximal number
 	};
 
 	bool isAntichess(Type variant);

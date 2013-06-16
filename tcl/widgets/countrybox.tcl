@@ -161,7 +161,7 @@ proc SetupList {w} {
 			set flag $::country::icon::flag($code)
 			lappend list [list [::mc::mapForSort $country] $code $iso1 $flag $country $options]
 		}
-		set list [lsort -index 0 -dictionary $list]
+		set list [::scidb::misc::sort -index 0 -order [::mc::sortOrderTable] $list]
 		foreach entry $list {
 			lassign $entry _ code iso1 flag country options
 			$w listinsert [list $code $iso1 $flag $country] {*}$options -index [incr index]

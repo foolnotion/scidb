@@ -37,84 +37,6 @@ using namespace sys::utf8;
 using namespace tcl;
 
 
-static char const Latin1Map[128][2] =
-#define ___ 0
-	{
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 80 81 82 83
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 84 85 86 87
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 88 89 8a 8b
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 8c 8d 8e 8f
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 90 91 92 93
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 94 95 96 97
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 98 99 9a 9b
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 9c 9d 9e 9f
-		{ '?', ___ }, { '?', ___ }, { 'c', ___ }, { '#', ___ },	// a0 a1 a2 a3
-		{ '?', ___ }, { 'Y', ___ }, { '?', ___ }, { '?', ___ },	// a4 a5 a6 a7
-		{ '?', ___ }, { 'C', ___ }, { '?', ___ }, { '?', ___ },	// a8 a9 aa ab
-		{ '?', ___ }, { '?', ___ }, { 'R', ___ }, { '-', ___ },	// ac ad ae af
-		{ '-', ___ }, { '-', ___ }, { '-', ___ }, { '?', ___ },	// b0 b1 b2 b3
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// b4 b5 b6 b7
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// b8 b9 ba bb
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// bc bd be bf
-		{ 'A', ___ }, { 'A', ___ }, { 'A', ___ }, { 'A', ___ },	// c0 c1 c2 c3
-		{ 'A', ___ }, { 'A', ___ }, { 'A', ___ }, { 'C', ___ },	// c4 c5 c6 c7
-		{ 'E', ___ }, { 'E', ___ }, { 'E', ___ }, { 'E', ___ },	// c8 c9 ca cb
-		{ 'I', ___ }, { 'I', ___ }, { 'I', ___ }, { 'I', ___ },	// cc cd ce cf
-		{ 'D', ___ }, { 'N', ___ }, { 'O', ___ }, { 'O', ___ },	// d0 d1 d2 d3
-		{ 'O', ___ }, { 'O', ___ }, { 'O', ___ }, { 'x', ___ },	// d4 d5 d6 d7
-		{ 'O', ___ }, { 'U', ___ }, { 'U', ___ }, { 'U', ___ },	// d8 d9 da db
-		{ 'U', ___ }, { 'Y', ___ }, { '?', ___ }, { 's', 's' },	// dc dd de df
-		{ 'a', ___ }, { 'a', ___ }, { 'a', ___ }, { 'a', ___ },	// e0 e1 e2 e3
-		{ 'a', ___ }, { 'a', ___ }, { 'a', ___ }, { 'c', ___ },	// e4 e5 e6 e7
-		{ 'e', ___ }, { 'e', ___ }, { 'e', ___ }, { 'e', ___ },	// e8 e9 ea ab
-		{ 'i', ___ }, { 'i', ___ }, { 'i', ___ }, { 'i', ___ },	// ec ed ee ef
-		{ 'd', ___ }, { 'n', ___ }, { 'o', ___ }, { 'o', ___ },	// f0 f1 f2 f3
-		{ 'o', ___ }, { 'o', ___ }, { 'o', ___ }, { '/', ___ },	// f4 f5 f6 f7
-		{ 'o', ___ }, { 'u', ___ }, { 'u', ___ }, { 'u', ___ },	// f8 f9 fa fb
-		{ 'u', ___ }, { 'y', ___ }, { '?', ___ }, { 'y', ___ },	// fc fd fe ff
-#undef ___
-};
-
-static char const GermanMap[128][2] =
-#define ___ 0
-#define _e_ 0
-	{
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 80 81 82 83
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 84 85 86 87
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 88 89 8a 8b
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 8c 8d 8e 8f
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 90 91 92 93
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 94 95 96 97
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 98 99 9a 9b
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// 9c 9d 9e 9f
-		{ '?', ___ }, { '?', ___ }, { 'c', ___ }, { '#', ___ },	// a0 a1 a2 a3
-		{ '?', ___ }, { 'Y', ___ }, { '?', ___ }, { '?', ___ },	// a4 a5 a6 a7
-		{ '?', ___ }, { 'C', ___ }, { '?', ___ }, { '?', ___ },	// a8 a9 aa ab
-		{ '?', ___ }, { '?', ___ }, { 'R', ___ }, { '-', ___ },	// ac ad ae af
-		{ '-', ___ }, { '-', ___ }, { '-', ___ }, { '?', ___ },	// b0 b1 b2 b3
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// b4 b5 b6 b7
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// b8 b9 ba bb
-		{ '?', ___ }, { '?', ___ }, { '?', ___ }, { '?', ___ },	// bc bd be bf
-		{ 'A', ___ }, { 'A', ___ }, { 'A', ___ }, { 'A', ___ },	// c0 c1 c2 c3
-		{ 'A', 'e' }, { 'A', ___ }, { 'A', _e_ }, { 'C', ___ },	// c4 c5 c6 c7
-		{ 'E', ___ }, { 'E', ___ }, { 'E', ___ }, { 'E', ___ },	// c8 c9 ca cb
-		{ 'I', ___ }, { 'I', ___ }, { 'I', ___ }, { 'I', ___ },	// cc cd ce cf
-		{ 'D', ___ }, { 'N', ___ }, { 'O', ___ }, { 'O', ___ },	// d0 d1 d2 d3
-		{ 'O', ___ }, { 'O', ___ }, { 'O', ___ }, { 'x', ___ },	// d4 d5 d6 d7
-		{ 'O', 'e' }, { 'U', ___ }, { 'U', ___ }, { 'U', ___ },	// d8 d9 da db
-		{ 'U', 'e' }, { 'Y', ___ }, { '?', ___ }, { 's', 's' },	// dc dd de df
-		{ 'a', ___ }, { 'a', ___ }, { 'a', ___ }, { 'a', ___ },	// e0 e1 e2 e3
-		{ 'a', 'e' }, { 'a', ___ }, { 'a', _e_ }, { 'c', ___ },	// e4 e5 e6 e7
-		{ 'e', ___ }, { 'e', ___ }, { 'e', ___ }, { 'e', ___ },	// e8 e9 ea ab
-		{ 'i', ___ }, { 'i', ___ }, { 'i', ___ }, { 'i', ___ },	// ec ed ee ef
-		{ 'd', ___ }, { 'n', ___ }, { 'o', ___ }, { 'o', ___ },	// f0 f1 f2 f3
-		{ 'o', ___ }, { 'o', ___ }, { 'o', 'e' }, { '/', ___ },	// f4 f5 f6 f7
-		{ 'o', _e_ }, { 'u', ___ }, { 'u', ___ }, { 'u', ___ },	// f8 f9 fa fb
-		{ 'u', 'e' }, { 'y', ___ }, { '?', ___ }, { 'y', ___ },	// fc fd fe ff
-#undef _e_
-#undef ___
-};
-
 static char const* const NonDiacriticsTables[28][256] =
 {
 #define ___ 0
@@ -1795,19 +1717,6 @@ Codec::~Codec()
 }
 
 
-void
-Codec::reset(mstl::string const& encoding)
-{
-	if (m_codec)
-		Tcl_FreeEncoding(m_codec);
-
-	m_codec = Tcl_GetEncoding(::sys::tcl::interp(), encoding);
-	m_encoding = encoding;
-	m_failed = false;
-	m_isUtf8 = (encoding == utf8());
-}
-
-
 bool
 Codec::is7BitAscii(char const* s, unsigned nbytes)
 {
@@ -1818,6 +1727,19 @@ Codec::is7BitAscii(char const* s, unsigned nbytes)
 	}
 
 	return true;
+}
+
+
+void
+Codec::reset(mstl::string const& encoding)
+{
+	if (m_codec)
+		Tcl_FreeEncoding(m_codec);
+
+	m_codec = Tcl_GetEncoding(::sys::tcl::interp(), encoding);
+	m_encoding = encoding;
+	m_failed = false;
+	m_isUtf8 = (encoding == utf8());
 }
 
 
@@ -2117,130 +2039,23 @@ void
 Codec::mapFromGerman(mstl::string const& name, mstl::string& result)
 {
 	M_REQUIRE(fitsRegion(name, 1));
-
-	char const* s = name.begin();
-	char const* e = name.end();
-
-	result.clear();
-	result.reserve(mstl::mul2(name.size()));
-
-	while (s < e)
-	{
-		Tcl_UniChar c;
-		s += ::utfToUniChar(s, c);
-
-		if (c < 0x80)
-		{
-			result += c;
-		}
-		else
-		{
-			char const* m = ::GermanMap[c & 0x7f];
-
-			result += m[0];
-
-			if (m[1])
-				result += m[1];
-		}
-	}
+	return sys::utf8::german::map(name, result);
 }
 
 
 bool
-Codec::matchAscii(mstl::string const& utf8, mstl::string const& ascii)
+Codec::matchAscii(mstl::string const& utf8, mstl::string const& ascii, bool noCase)
 {
 	M_REQUIRE(is7BitAscii(ascii));
-
-	// IMPORTANT NOTE:
-	// At this time, the match algorithm is only defined for the ISO8859-1 characters.
-
-	if (utf8.size() < ascii.size())
-		return false;
-
-	char const* s = ascii.begin();
-	char const* e = ascii.end();
-	char const* t = utf8.begin();
-	char const* f = utf8.end();
-
-	Tcl_UniChar c;
-
-	while (t < f)
-	{
-		if (s == e)
-			return false;
-
-		t += ::utfToUniChar(t, c);
-
-		if (c < 0x80)
-		{
-			if (c != *s++)
-				return false;
-		}
-		else
-		{
-			char const* m = ::Latin1Map[c & 0x7f];
-
-			if (m[0] != *s++)
-				return false;
-
-			if (s == e)
-				return false;
-
-			if (m[1] && m[1] != *s++)
-				return false;
-		}
-	}
-
-	return true;
+	return sys::utf8::ascii::match(utf8, ascii, noCase);
 }
 
 
 bool
-Codec::matchGerman(mstl::string const& utf8, mstl::string const& ascii)
+Codec::matchGerman(mstl::string const& utf8, mstl::string const& ascii, bool noCase)
 {
 	M_REQUIRE(is7BitAscii(ascii));
-
-	// IMPORTANT NOTE:
-	// At this time, the match algorithm is only defined for the ISO8859-1 characters.
-
-	if (utf8.size() < ascii.size())
-		return false;
-
-	char const* s = ascii.begin();
-	char const* e = ascii.end();
-	char const* t = utf8.begin();
-	char const* f = utf8.end();
-
-	Tcl_UniChar c;
-
-	while (t < f)
-	{
-		if (s == e)
-			return false;
-
-		t += ::utfToUniChar(t, c);
-
-		if (c < 0x80)
-		{
-			if (c != *s++)
-				return false;
-		}
-		else
-		{
-			char const* m = ::GermanMap[c & 0x7f];
-
-			if (m[0] != *s++)
-				return false;
-
-			if (s == e)
-				return false;
-
-			if (m[1] && m[1] != *s++)
-				return false;
-		}
-	}
-
-	return true;
+	return sys::utf8::german::match(utf8, ascii, noCase);
 }
 
 

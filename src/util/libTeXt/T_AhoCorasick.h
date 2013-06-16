@@ -35,9 +35,12 @@ public:
 	bool isPrepared() const;
 
 	bool add(mstl::string const& pattern);
+	bool add(mstl::string const& pattern, unsigned flag);
 	bool search(mstl::string const& text, Method method = LongestMatchOnly);
 
-	virtual void match(unsigned position, unsigned index, unsigned length) = 0;
+	char const* findTag(char const* text, unsigned& flag);
+
+	virtual void match(unsigned position, unsigned index, unsigned length);
 
 private:
 

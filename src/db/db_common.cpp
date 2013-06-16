@@ -4438,6 +4438,7 @@ variant::fen(Idn idn)
 		case Runaway:			return FRunaway;
 		case QueenVsRooks:	return FQueenVsRooks;
 		case UpsideDown:		return FUpsideDown;
+		case MaxCode:			break;
 	}
 
 	M_ASSERT(!"position number out of range");

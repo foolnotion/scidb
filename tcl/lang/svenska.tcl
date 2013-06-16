@@ -30,9 +30,9 @@
 # ======================================================================
 
 ### global #############################################################
-::mc::SortMapping		{ä ä à a á a å a æ ae ç c é e ë e í i ñ n ö o õ o ø oe ß ss ü u Ü U}
-::mc::AsciiMapping	{ä a à a á a å a æ a é e ë e ç c í i ñ n ö o õ o ø o ü u ß ss Å A Ä A Ö O Ü U}
-::mc::SortOrder		{A B C D E F G H I J K L M N O P Q R S T U V W X Y Z Å Ä Ö a b c d e f g h i j k l m n o p q r s t u v w x y z å ä ö}
+::mc::SortMapping		{Ü U á a ü u æ ae ç c ë e í i ñ n õ o ø oe ß ss}
+::mc::AsciiMapping	{Ü U á a ü u æ a  ç c ë e í i ñ n õ o ø o  ß ss Å A Ä A À A É E Ö O ä a à a å a é e ö o}
+::mc::SortOrder		{{z å ä à é ö}}
 
 ::mc::Key(Alt)				"Alt"
 ::mc::Key(BS)				"\u27fb" ;# "\u232b" is correct, but difficult to read

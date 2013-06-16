@@ -2230,7 +2230,7 @@
 ::dialog::fsbox::mc::TypesettingFile		"Typesetting File"
 ::dialog::fsbox::mc::ImageFile				"Image File"
 ::dialog::fsbox::mc::TextFile					"Text File"
-::dialog::fsbox::mc::BinaryFile				"Binäry File"
+::dialog::fsbox::mc::BinaryFile				"Binary File"
 ::dialog::fsbox::mc::ShellScript				"Shell Script" ;# NEW
 ::dialog::fsbox::mc::Executable				"Executable" ;# NEW
 

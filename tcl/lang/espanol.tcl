@@ -31,9 +31,9 @@
 # ======================================================================
 
 ### global #############################################################
-::mc::SortMapping		{á a Á A é e É E í i Í I ñ n Ñ N ó o Ó O ú u Ú U}
-::mc::AsciiMapping	{á a Á A é e É E í i Í I ñ n Ñ N ó o Ó O ú u Ú U}
-::mc::SortOrder		{A Á B C D E É F G H I Í J K L M N Ñ O Ó P Q R S T U Ú V W X Y Z a á b c d e é f g h i í j k l m n ñ o ó p q r s t u ú v w x y z}
+::mc::SortMapping		{á a Á A é e É E í i Í I ó o Ó O ú u Ú U}
+::mc::AsciiMapping	{á a Á A é e É E í i Í I ó o Ó O ú u Ú U ñ n Ñ N}
+::mc::SortOrder		{{c ch} {l ll} {n ñ}}
 
 ::mc::Key(Alt)				"Alt" 
 ::mc::Key(BS)				"Retroceso"

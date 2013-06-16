@@ -37,7 +37,10 @@ bool validate(char const* str, unsigned nbytes);
 bool isAlpha(uchar uc);
 bool isSpace(uchar uc);
 
-bool isAscii(char c);
+bool isAscii(char uc);
+
+bool isLower(uchar uc);
+bool isUpper(uchar uc);
 
 uchar toLower(uchar uc);
 uchar toUpper(uchar uc);
@@ -76,6 +79,25 @@ unsigned levenstein(	mstl::string const& lhs,
 							unsigned sub = 1);
 bool isSimilar(mstl::string const& lhs, mstl::string const& rhs, unsigned threshold = 2);
 
+namespace latin1 {
+
+int compare(char const* lhs, char const* rhs, bool noCase = false, bool skipPunct = false);
+int dictionaryCompare(char const* lhs, char const* rhs, bool skipPunct = false);
+
+} // namespace latin1
+
+namespace german {
+
+void map(mstl::string const& name, mstl::string& result);
+bool match(mstl::string const& utf8, mstl::string const& ascii, bool noCase);
+
+} // namespace german
+
+namespace ascii {
+
+bool match(mstl::string const& utf8, mstl::string const& ascii, bool noCase);
+
+} // namespace ascii
 } // namespace utf8
 } // namespace sys
 

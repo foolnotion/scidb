@@ -67,8 +67,8 @@ public:
 
 	static bool is7BitAscii(mstl::string const& s);
 	static bool is7BitAscii(char const* s, unsigned nbytes);
-	static bool matchAscii(mstl::string const& utf8, mstl::string const& ascii);
-	static bool matchGerman(mstl::string const& utf8, mstl::string const& ascii);
+	static bool matchAscii(mstl::string const& utf8, mstl::string const& ascii, bool noCase = false);
+	static bool matchGerman(mstl::string const& utf8, mstl::string const& ascii, bool noCase = false);
 	static bool fitsRegion(mstl::string const& s, unsigned region);
 	static unsigned removeOverlongSequences(char* s, unsigned size);
 	static void mapFromGerman(mstl::string const& name, mstl::string& result);

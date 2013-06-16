@@ -367,6 +367,14 @@ proc translate {str} {
 }
 
 
+proc mapForSort {str}	{ return [string map $mc::SortMapping $str] }
+proc mapToAscii {str}	{ return [string map $mc::AsciiMapping $str] }
+
+proc mappingForSort {}	{ return $mc::SortMapping }
+proc mappingToAscii {}	{ return $mc::AsciiMapping }
+proc sortOrderTable {}	{ return $mc::SortOrder }
+
+
 proc setup {} {
 	variable languages
 
@@ -499,13 +507,6 @@ proc translateEco {str} {
 
 	return [TranslateParen $str]
 }
-
-
-proc mapForSort {str}	{ return [string map $mc::SortMapping $str] }
-proc mapToAscii {str}	{ return [string map $mc::AsciiMapping $str] }
-
-proc mappingForSort {}	{ return $mc::SortMapping }
-proc mappingToAscii {}	{ return $mc::AsciiMapping }
 
 
 proc TranslateParen {str} {

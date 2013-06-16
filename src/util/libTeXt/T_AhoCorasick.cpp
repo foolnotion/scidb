@@ -67,11 +67,12 @@ Edge::compare(void const* lhs, void const* rhs)
 
 struct Match
 {
-	Match() :m_index(0), m_length(0) {}
-	Match(unsigned index, unsigned length) :m_index(index), m_length(length) {}
+	Match() :m_index(0), m_length(0), m_tag(0) {}
+	Match(unsigned index, unsigned length, unsigned tag) :m_index(index), m_length(length), m_tag(tag) {}
 
 	unsigned m_index;
 	unsigned m_length;
+	unsigned m_tag;
 };
 
 
@@ -102,6 +103,7 @@ struct Node
 	unsigned	m_depth;
 	Edges		m_outgoing;
 	Indices	m_indices;
+	unsigned	m_tag;
 };
 
 
@@ -109,6 +111,7 @@ Node::Node()
 	:m_isFinal(false)
 	,m_failureNode(0)
 	,m_depth(0)
+	,m_tag(0)
 {
 }
 
@@ -228,9 +231,10 @@ public:
 
 	Impl();
 
-	bool add(mstl::string const& pattern);
+	bool add(mstl::string const& pattern, unsigned tag);
 	void prepareSearch();
 	bool search(AhoCorasick& base, mstl::string const& text, Method method);
+	char const* findTag(AhoCorasick& base, char const* text, unsigned& tag);
 
 private:
 
@@ -259,7 +263,7 @@ AhoCorasick::Impl::Impl()
 
 
 bool
-AhoCorasick::Impl::add(mstl::string const& pattern)
+AhoCorasick::Impl::add(mstl::string const& pattern, unsigned tag)
 {
 	bool multipleMatches = false;
 
@@ -271,7 +275,7 @@ AhoCorasick::Impl::add(mstl::string const& pattern)
 			node = node->createNext(m_allocator, m_pool, pattern[i]);
 
 		node->m_isFinal = true;
-		node->m_indices.push_back(Match(m_countPatterns, pattern.size()));
+		node->m_indices.push_back(Match(m_countPatterns, pattern.size(), tag));
 
 		if (node->m_indices.size() > 1)
 			multipleMatches = true;
@@ -320,7 +324,7 @@ AhoCorasick::Impl::search(AhoCorasick& base, mstl::string const& text, Method me
 				{
 					case LongestMatchOnly:
 					{
-						Match match(0, 0);
+						Match match;
 
 						for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
 						{
@@ -369,6 +373,44 @@ AhoCorasick::Impl::search(AhoCorasick& base, mstl::string const& text, Method me
 }
 
 
+char const*
+AhoCorasick::Impl::findTag(AhoCorasick& base, char const* text, unsigned& tag)
+{
+	m_current = m_root;
+
+	while (*text)
+	{
+		Node* next = m_current->findNextFast(*text);
+
+		if (next == 0)
+			break;
+
+		m_current = next;
+		++text;
+	}
+
+	if (m_current->m_isFinal)
+	{
+		M_ASSERT(!m_current->m_indices.empty());
+
+		Match match;
+
+		for (unsigned i = 0; i < m_current->m_indices.size(); ++i)
+		{
+			Match const& m = m_current->m_indices[i];
+
+			if (m.m_length > match.m_length)
+				match = m;
+		}
+
+		tag = match.m_tag;
+		return text;
+	}
+
+	return 0;
+}
+
+
 AhoCorasick::AhoCorasick()
 	:m_impl(new Impl)
 	,m_isPrepared(false)
@@ -393,7 +435,17 @@ bool
 AhoCorasick::add(mstl::string const& pattern)
 {
 	M_REQUIRE(!isPrepared());
-	return m_impl->add(pattern);
+	return m_impl->add(pattern, 0);
+}
+
+
+bool
+AhoCorasick::add(mstl::string const& pattern, unsigned tag)
+{
+	M_REQUIRE(!isPrepared());
+	M_REQUIRE(tag != 0);
+
+	return m_impl->add(pattern, tag);
 }
 
 
@@ -407,6 +459,28 @@ AhoCorasick::search(mstl::string const& text, Method method)
 	}
 
 	return m_impl->search(*this, text, method);
+}
+
+
+char const*
+AhoCorasick::findTag(char const* text, unsigned& tag)
+{
+	M_REQUIRE(text);
+
+	if (!m_isPrepared)
+	{
+		m_isPrepared = true;
+		m_impl->prepareSearch();
+	}
+
+	return m_impl->findTag(*this, text, tag);
+}
+
+
+void
+AhoCorasick::match(unsigned position, unsigned index, unsigned length)
+{
+	// no action
 }
 
 // vi:set ts=3 sw=3:
