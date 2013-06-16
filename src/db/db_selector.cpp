@@ -308,7 +308,16 @@ compMaterial(unsigned const* lhs, unsigned const* rhs)
 static int
 compUserEco(unsigned const* lhs, unsigned const* rhs)
 {
-	return int(database->gameInfo(*lhs).idn()) - int(database->gameInfo(*rhs).idn());
+	GameInfo const& il = database->gameInfo(*lhs);
+	GameInfo const& ir = database->gameInfo(*rhs);
+
+	if (il.idn() != variant::Standard)
+		return ir.idn() == variant::Standard;
+
+	if (ir.idn() != variant::Standard)
+		return -1;
+
+	return compare(il.userEco(), ir.userEco());
 }
 
 
