@@ -30,7 +30,7 @@ set Contents {
     {{{Tree games window} {Tree-Games-Window.html}}}
     {{{Comment editor} {Comment-Editor-Dialog.html}}}
     {{{Square marker palette} {Mark-Palette-Dialog.html}}}
-    {{{Edit position} {Board-Setup-Dialog.html}}}
+    {{{Board Setup} {Board-Setup-Dialog.html}}}
     {{{Edit start position} {Start-Position-Setup-Dialog.html}}}
     {{{Crosstable} {Crosstable-Window.html}}}
     {{{Game import} {PGN-Import-Dialog.html}}}

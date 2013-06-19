@@ -1,0 +1,100 @@
+<!-- **********************************************************************
+* Author : $Author$
+* Version: $Revision: 161 $
+* Date   : $Date: 2011-12-17 12:31:23 +0100 (Sat, 17 Dec 2011) $
+* Url    : $URL$
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* Copyright: (C) 2013 Gregor Cramer
+*********************************************************************** -->
+
+<!-- **********************************************************************
+* This program is free software; you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation; either version 2 of the License, or
+* (at your option) any later version.
+*********************************************************************** -->
+
+INDEX Board Setup
+TITLE Board Setup
+
+<p>
+This dialog provides the set-up of a start position. It is simple to
+use, therefore only the features will be explained.
+</p>
+
+<ul>
+  <li><a href="#PieceSelection">%::board::piece::mc::PieceSelection%</a></li>
+  <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
+  <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
+  <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
+</ul>
+
+<h2 id="PieceSelection">%::board::piece::mc::PieceSelection%</h2>
+
+<p>
+If the mouse pointer hovers the board - in this case the cursor is showing
+the selected piece - the middle mouse button will select the next piece,
+and the right mouse button will switch the color of the piece. A square will
+be emptied with setting the same piece on this square.
+</p>
+
+<h2 id="StartPosition">%::setup::board::mc::StartPosition%</h2>
+
+<p>
+Scidb is supporting Chess 960 positions. Chess 960 allows 960 different
+start positions, which are enumerated with a worldwide accepted scheme,
+developed from Reinhard Scharnagl. The standard start position has
+number 518 in this scheme. With the input of a number the corresponding
+position will be set-up. For further details of the enumeration see
+<a href"http://en.wikipedia.org/wiki/Chess960_numbering_scheme">
+Chess960 numbering scheme</a>.
+</p>
+
+<p>
+Scidb is alos supporting Shuffle Chess positions. Shuffle Chess contains
+all the Chess 960 positions, with or without castling rights. Furthermore
+Shuffle Chess is allowing positions where castling is not possible,
+because the rule that the king is between two rooks will not be fullfilled.
+These positions will be enumerated with an extension of the Scharnagl scheme
+- there exists 2880 different start positions. All Chess 960 positions,
+with or without castlings rights, are retaining their position numbers.
+</p>
+
+<p>
+Moreover Scidb supports special start positions, provided on the FICS
+server (as special chess variants). You can select a FICS start position
+with button <img src="../images/fics-start-position-menu-button.png"/>.
+But only the start positions which are supported from Scidb will be offered.
+</p>
+
+<h2 id="Crazyhouse">%::mc::VariantName(Crazyhouse)%</h2>
+
+<p>
+In this chess variant it is necessary to specify the pieces in holding.
+</p>
+
+<p>
+Moreover a special button exists:
+</p>
+
+<dir><img src="images/set-start-board-marker.png" /></dir>
+
+<p>
+With the use of this symbol you can tag pieces which are the result of a
+pawn promotion. This is essential, because in Crazyhouse promoted
+but captured pawns are dropped as pawns.
+</p>
+
+
+<h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
+
+<p>
+In this chess variant the specification of given checks is required;
+how often white has given check, and how often black.
+</p>
+
+END
+
+<!-- vi:set ts=2 sw=2 et filetype=html fileencoding=latin1: -->

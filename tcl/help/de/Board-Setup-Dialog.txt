@@ -24,13 +24,13 @@ bedienen, deshalb werden nur die Besonderheiten erwähnt.
 </p>
 
 <ul>
-  <li><a href="#PieceSelection">Figurenauswahl</a></li>
+  <li><a href="#PieceSelection">%::board::piece::mc::PieceSelection%</a></li>
   <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
   <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
 </ul>
 
-<h2 id="PieceSelection">Figurenauswahl</h2>
+<h2 id="PieceSelection">%::board::piece::mc::PieceSelection%</h2>
 
 <p>
 Befindet sich der Mauszeiger über dem Brett - in diesem Fall zeigt der

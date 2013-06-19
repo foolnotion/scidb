@@ -32,19 +32,19 @@ targets: $(TARGETS) $(INDEX) $(CQL) $(CONTENTS)
 
 .txt.html:
 	@echo "Generating $@"
-	@tclsh$(TCL_VERSION) ../make_html.tcl $< > $@
+	@$$TCL_SHELL ../make_html.tcl $< > $@
 
 $(INDEX): $(SOURCES) ../make_index.tcl
 	@echo "Generating $@"
-	@tclsh$(TCL_VERSION) ../make_index.tcl > $@
+	@$$TCL_SHELL ../make_index.tcl > $@
 
 $(CQL): $(SOURCES) ../make_cql.tcl
 	@echo "Generating $@"
-	@tclsh$(TCL_VERSION) ../make_cql.tcl > $@
+	@$$TCL_SHELL ../make_cql.tcl > $@
 
 $(CONTENTS): Overview.txt ../make_contents.tcl
 	@echo "Generating $@"
-	@tclsh$(TCL_VERSION) ../make_contents.tcl Overview.txt > $@
+	@$$TCL_SHELL ../make_contents.tcl Overview.txt > $@
 
 clean:
 	rm -f Makefile.tmp
