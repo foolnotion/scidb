@@ -29,8 +29,8 @@ using namespace tcl;
 static int
 tkMisc(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* Subcommands[] = { "setClass", "shiftMask?" };
-	enum { Cmd_SetClass, Cmd_ShiftMask };
+	static char const* Subcommands[] = { "setClass", "shiftMask?", "lockMask?", "controlMask?", "modMask?" };
+	enum { Cmd_SetClass, Cmd_ShiftMask, Cmd_LockMask, Cmd_ControlMask, Cmd_ModMask };
 
 	int index;
 	int result = Tcl_GetIndexFromObj(ti, objv[1], Subcommands, "subcommand", TCL_EXACT, &index);
@@ -55,6 +55,18 @@ tkMisc(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_ShiftMask:
 			Tcl_SetObjResult(ti, Tcl_NewIntObj(ShiftMask));
+			break;
+
+		case Cmd_LockMask:
+			Tcl_SetObjResult(ti, Tcl_NewIntObj(LockMask));
+			break;
+
+		case Cmd_ControlMask:
+			Tcl_SetObjResult(ti, Tcl_NewIntObj(ControlMask));
+			break;
+
+		case Cmd_ModMask:
+			Tcl_SetObjResult(ti, Tcl_NewIntObj(Mod1Mask));
 			break;
 	}
 

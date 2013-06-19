@@ -387,9 +387,15 @@ set Extensions		{.sci .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
 set clipbaseName	Clipbase
 
 switch [tk windowingsystem] {
-	win32	{ set ShiftMask 1 }
-	aqua	{ set ShiftMask 1 }
-	x11	{ set ShiftMask [::scidb::tk::misc shiftMask?] }
+	win32 - aqua {
+		lassign {1 2 4 8} ShiftMask LockMask ControlMask ModMask
+	}
+	x11 {
+		set ShiftMask [::scidb::tk::misc shiftMask?]
+		set LockMask [::scidb::tk::misc lockMask?]
+		set ControlMask [::scidb::tk::misc controlMask?]
+		set ModMask [::scidb::tk::misc modMask?]^
+	}
 }
 
 
@@ -434,9 +440,19 @@ proc formatResult {result} {
 
 proc doAccelCmd {accel keyState cmd} {
 	switch -glob -- $accel {
-		Alt-*		{ if {!($keyState & 8)} { return } }
-		Ctrl-*	{ if {!($keyState & 4)} { return } }
-		default	{ if {$keyState} { return } }
+		Alt-* {
+			variable ModMask
+			if {!($keyState & $ModMask)} { return } 
+		}
+		Ctrl-* {
+			variable ControlMask
+			if {!($keyState & $ControlMask)} { return }
+		}
+		default {
+			variable ShiftMask
+			variable LockMask
+			if {($keyState & ($ShiftMask | $LockMask)) != $keyState} { return }
+		}
 	}
 
 	eval $cmd
