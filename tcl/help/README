@@ -2,8 +2,8 @@ How to translate the help files
 -------------------------------------------------------------------------------
 
 1. Create the required sub-directory, for example "es" for Spanish translation.
-   Note: "es" is ISO 639-1; use ISO 639-2 if 639-1 is inadequate for your
-   language.
+   Note: "es" is an ISO 639-1 code; use a ISO 639-2 code if 639-1 is inadequate
+   for your language.
 
 2. Change into the created sub-directory, e.g. "tcl/lang/es/".
 
@@ -29,17 +29,14 @@ How to translate the help files
       > sudo make install-help
 
 7. Add new files with the command
-      > svn add tcl/help/es/NewFile.*
-   (Note that "tcl/help/es/" is the sub-directory for Spanish!)
-   You have to change to the root (installation) directory before invoking
-   the svn command. This is a local change, it's not a commit to the
-   repository.
+      > svn add NewFile.*
+   in sub-directory tcl/lang/es/.
+   This is a local change, it's not a commit to the repository.
 
-8. Commit your changes to the repository. Change into the the root
-   (installation) directory and type
-        > svn commit -m "Any senseful log message" tcl/help/es/
-   (Note that "tcl/help/es/" is the sub-directory for Spanish!)
+8. Commit your changes to the repository. Change to the sub-directory
+   tcl/lang/es/ and type
+        > svn commit -m "Any senseful log message"
    The svn manual advices that the log message given with -m shouldn't be
-   empty. Please don't forget the directory argument (the latter argument).
+   empty.
 
 # vi:set ts=3 sw=3 et:
