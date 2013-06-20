@@ -22,15 +22,55 @@
 
 #include <tcl.h>
 #include <tk.h>
+#include <stdio.h>
 
 using namespace tcl;
+
+static int m_altModMask = Mod1Mask | Mod5Mask;
+
+
+#if !defined(__WIN32__) && !defined(__MacOSX__)
+
+# include <X11/keysym.h>
+
+static void
+initKeymapInfo(Tcl_Interp* ti)
+{
+	Display*				display			= Tk_Display(Tk_MainWindow(ti));
+	XModifierKeymap*	modMap			= XGetModifierMapping(display);
+	int					maxKeyPerMod	= modMap->max_keypermod;
+	KeyCode*				keyCode			= modMap->modifiermap;
+
+	m_altModMask = 0;
+
+	for (int i = 0; i < 8*maxKeyPerMod; ++i, ++keyCode)
+	{
+		if (*keyCode)
+		{
+			KeySym keysym = XKeycodeToKeysym(display, *keyCode, 0);
+
+			if (keysym == XK_Alt_L || keysym == XK_Alt_R)
+				m_altModMask |= (ShiftMask << (i/maxKeyPerMod));
+		}
+	}
+
+	if (m_altModMask == 0)
+		fprintf(stderr, "initKeymapInfo(): no Alt key mapped");
+
+	XFreeModifiermap(modMap);
+}
+
+#endif
 
 
 static int
 tkMisc(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* Subcommands[] = { "setClass", "shiftMask?", "lockMask?", "controlMask?", "modMask?" };
-	enum { Cmd_SetClass, Cmd_ShiftMask, Cmd_LockMask, Cmd_ControlMask, Cmd_ModMask };
+	static char const* Subcommands[] = 
+	{
+		"setClass", "shiftMask?", "lockMask?", "controlMask?", "altMask?"
+	};
+	enum { Cmd_SetClass, Cmd_ShiftMask, Cmd_LockMask, Cmd_ControlMask, Cmd_AltMask };
 
 	int index;
 	int result = Tcl_GetIndexFromObj(ti, objv[1], Subcommands, "subcommand", TCL_EXACT, &index);
@@ -65,8 +105,8 @@ tkMisc(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			Tcl_SetObjResult(ti, Tcl_NewIntObj(ControlMask));
 			break;
 
-		case Cmd_ModMask:
-			Tcl_SetObjResult(ti, Tcl_NewIntObj(Mod1Mask));
+		case Cmd_AltMask:
+			Tcl_SetObjResult(ti, Tcl_NewIntObj(m_altModMask));
 			break;
 	}
 
@@ -77,6 +117,10 @@ tkMisc(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 void
 tk::miscInit(Tcl_Interp* ti)
 {
+#if !defined(__WIN32__) && !defined(__MacOSX__)
+	initKeymapInfo(ti);
+#endif
+
 	tcl::createCommand(ti, "::scidb::tk::misc", tkMisc);
 }
 

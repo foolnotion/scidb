@@ -366,6 +366,7 @@ namespace eval mc {
 
 set IOErrorOccurred					"I/O Error occurred"
 
+set IOError(CreateFailed)			"no permissions to create files"
 set IOError(OpenFailed)				"open failed"
 set IOError(ReadOnly)				"database is read-only"
 set IOError(UnknownVersion)		"unknown file version"
@@ -377,7 +378,7 @@ set IOError(ReadError)				"read error"
 set IOError(EncodingFailed)		"cannot write namebase file"
 set IOError(MaxFileSizeExceeded)	"maximal file size reached"
 set IOError(LoadFailed)				"load failed (too many event entries)"
-set IOError(NotOriginalVersion)	"PGN file has changed outside from Scidb since last open"
+set IOError(NotOriginalVersion)	"file has changed outside from Scidb since last open"
 
 set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner didn't respond."
 
@@ -386,17 +387,11 @@ set SelectionOwnerDidntRespond   "Timeout during drop action: selection owner di
 set Extensions		{.sci .si4 .si3 .cbh .cbf .CBF .pgn .PGN .zip}
 set clipbaseName	Clipbase
 
-switch [tk windowingsystem] {
-	win32 - aqua {
-		lassign {1 2 4 8} ShiftMask LockMask ControlMask ModMask
-	}
-	x11 {
-		set ShiftMask [::scidb::tk::misc shiftMask?]
-		set LockMask [::scidb::tk::misc lockMask?]
-		set ControlMask [::scidb::tk::misc controlMask?]
-		set ModMask [::scidb::tk::misc modMask?]
-	}
-}
+set ShiftMask		[::scidb::tk::misc shiftMask?]
+set LockMask		[::scidb::tk::misc lockMask?]
+set ControlMask	[::scidb::tk::misc controlMask?]
+set AltMask			[::scidb::tk::misc altMask?]
+set KeyStateMask	[expr {$ShiftMask | $LockMask | $ControlMask | $AltMask}]
 
 
 proc databaseName {base {withExtension 1}} {
@@ -441,16 +436,21 @@ proc formatResult {result} {
 proc doAccelCmd {accel keyState cmd} {
 	switch -glob -- $accel {
 		Alt-* {
-			variable ModMask
-			if {!($keyState & $ModMask)} { return } 
+			variable AltMask
+			if {!($keyState & $AltMask)} { return } 
 		}
+
 		Ctrl-* {
 			variable ControlMask
 			if {!($keyState & $ControlMask)} { return }
 		}
+
 		default {
 			variable ShiftMask
 			variable LockMask
+			variable KeyStateMask
+
+			set keyState [expr {$keyState & $KeyStateMask}]
 			if {($keyState & ($ShiftMask | $LockMask)) != $keyState} { return }
 		}
 	}
