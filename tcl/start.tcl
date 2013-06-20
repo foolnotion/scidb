@@ -394,7 +394,7 @@ switch [tk windowingsystem] {
 		set ShiftMask [::scidb::tk::misc shiftMask?]
 		set LockMask [::scidb::tk::misc lockMask?]
 		set ControlMask [::scidb::tk::misc controlMask?]
-		set ModMask [::scidb::tk::misc modMask?]^
+		set ModMask [::scidb::tk::misc modMask?]
 	}
 }
 
