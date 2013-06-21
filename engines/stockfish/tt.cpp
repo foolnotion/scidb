@@ -93,9 +93,10 @@ void TranspositionTable::store(const Key key, Value v, Bound t, Depth d, Move m,
               m = tte->move();
 
 #ifdef HASHFULL
-          if (i == 0)
-            ++used;
+          if (!tte->key())
+              ++used;
 #endif
+
           tte->save(key32, v, t, d, m, generation, statV, kingD);
           return;
       }

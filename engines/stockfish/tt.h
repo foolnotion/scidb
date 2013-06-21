@@ -134,7 +134,7 @@ inline void TranspositionTable::refresh(const TTEntry* tte) const {
 /// TranspositionTable::used() returns the fullness of the table (in permille).
 
 inline size_t TranspositionTable::fullness() const {
-  return size_t(used*1000.0/(hashMask + ClusterSize) + 0.5);
+  return size_t((used*1000.0)/(hashMask + ClusterSize) + 0.5);
 }
 #endif
 
