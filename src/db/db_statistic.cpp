@@ -43,6 +43,13 @@ Statistic::clear()
 
 
 void
+Statistic::reset()
+{
+	::memset(&content, 0, sizeof(content));
+}
+
+
+void
 Statistic::count(GameInfo const& info)
 {
 	if (info.isDeleted())
@@ -54,10 +61,10 @@ Statistic::count(GameInfo const& info)
 
 	if (year)
 	{
-		if (year < minYear)
-			minYear = year;
-		else if (year > maxYear)
-			maxYear = year;
+		if (year < content.minYear)
+			content.minYear = year;
+		else if (year > content.maxYear)
+			content.maxYear = year;
 
 		m_sumYear += year;
 		++m_dateCount;
@@ -67,10 +74,10 @@ Statistic::count(GameInfo const& info)
 
 	if (elo)
 	{
-		if (elo < minElo)
-			minElo = elo;
-		else if (elo > maxElo)
-			maxElo = elo;
+		if (elo < content.minElo)
+			content.minElo = elo;
+		else if (elo > content.maxElo)
+			content.maxElo = elo;
 
 		m_sumElo += elo;
 		++m_eloCount;
@@ -80,37 +87,37 @@ Statistic::count(GameInfo const& info)
 
 	if (elo)
 	{
-		if (elo < minElo)
-			minElo = elo;
-		else if (elo > maxElo)
-			maxElo = elo;
+		if (elo < content.minElo)
+			content.minElo = elo;
+		else if (elo > content.maxElo)
+			content.maxElo = elo;
 
 		m_sumElo += elo;
 		++m_eloCount;
 	}
 
-	M_ASSERT(info.result() < int(U_NUMBER_OF(result)));
-	++result[info.result()];
+	M_ASSERT(info.result() < int(U_NUMBER_OF(content.result)));
+	++content.result[info.result()];
 }
 
 
 void
 Statistic::add(GameInfo const& info)
 {
-	if (minYear == 0)
-		minYear = 9999;
-	if (minElo == 0)
-		minElo = 9999;
+	if (content.minYear == 0)
+		content.minYear = 9999;
+	if (content.minElo == 0)
+		content.minElo = 9999;
 
 	count(info);
 
-	if (minYear == 9999)
-		minYear = 0;
-	if (minElo == 9999)
-		minElo = 0;
+	if (content.minYear == 9999)
+		content.minYear = 0;
+	if (content.minElo == 9999)
+		content.minElo = 0;
 
-	avgYear = uint16_t(m_sumYear/m_dateCount + 0.5);
-	avgElo = uint16_t(m_sumElo/m_eloCount + 0.5);
+	content.avgYear = uint16_t(m_sumYear/m_dateCount + 0.5);
+	content.avgElo = uint16_t(m_sumElo/m_eloCount + 0.5);
 }
 
 
@@ -118,23 +125,23 @@ void
 Statistic::compute(GameInfo* const* first, GameInfo* const* last, Mode mode)
 {
 	if (mode == Reset)
-		clear();
+		reset();
 
-	if (minYear == 0)
-		minYear = 9999;
-	if (minElo == 0)
-		minElo = 9999;
+	if (content.minYear == 0)
+		content.minYear = 9999;
+	if (content.minElo == 0)
+		content.minElo = 9999;
 
 	for ( ; first != last; ++first)
 		count(**first);
 
-	if (minYear == 9999)
-		minYear = 0;
-	if (minElo == 9999)
-		minElo = 0;
+	if (content.minYear == 9999)
+		content.minYear = 0;
+	if (content.minElo == 9999)
+		content.minElo = 0;
 
-	avgYear = uint16_t(m_sumYear/m_dateCount + 0.5);
-	avgElo = uint16_t(m_sumElo/m_eloCount + 0.5);
+	content.avgYear = uint16_t(m_sumYear/m_dateCount + 0.5);
+	content.avgElo = uint16_t(m_sumElo/m_eloCount + 0.5);
 }
 
 // vi:set ts=3 sw=3:

@@ -358,12 +358,14 @@ bool
 DatabaseCodec::getAttributes(	mstl::string const& filename,
 										int& numGames,
 										type::ID& type,
+										variant::Type& variant,
 										uint32_t& creationTime,
 										mstl::string* description)
 {
 	mstl::string ext(file::suffix(filename));
 
 	type = type::Unspecific;
+	variant = variant::Normal;
 	creationTime = 0;
 	numGames = -1;
 
@@ -371,7 +373,7 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 		description->clear();
 
 	if (ext == "sci")
-		return sci::Codec::getAttributes(filename, numGames, type, creationTime, description);
+		return sci::Codec::getAttributes(filename, numGames, type, variant, creationTime, description);
 
 	if (ext == "cbh")
 		return cbh::Codec::getAttributes(filename, numGames, type, description);
@@ -1323,6 +1325,7 @@ DatabaseCodec::addGame(ByteStream const& gameData, GameInfo const& info, Allocat
 		m_db->m_namebases);
 
 	m_db->m_gameInfoList.push_back(i);
+
 	return state;
 }
 

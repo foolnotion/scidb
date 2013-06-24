@@ -68,6 +68,7 @@ public:
 	enum ErrorType
 	{
 		Unknown_Error_Type,
+		Create_Failed,
 		Open_Failed,
 		Read_Only,
 		Unknown_Version,

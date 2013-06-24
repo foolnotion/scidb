@@ -130,6 +130,12 @@ public:
 									bool skipVariations,
 									::util::BlockFileReader* reader) override;
 
+	static bool getAttributes(	mstl::string const& filename,
+										int& numGames,
+										db::type::ID& type,
+										uint32_t& creationTime,
+										mstl::string* description = 0);
+
 private:
 
 	typedef mstl::vector<unsigned> Lookup;

@@ -51,7 +51,7 @@ inline GameData const& Game::data() const				{ return *this; }
 inline unsigned Game::displayStyle() const			{ return m_displayStyle; }
 
 inline void Game::setTags(TagSet const& tags)		{ m_tags = tags; }
-inline void Game::setFlags(unsigned flags)			{ m_flags = flags; }
+inline void Game::removeFlags(unsigned flags)		{ m_flags &= ~flags; }
 
 inline Game::Subscriber* Game::subscriber() const	{ return m_subscriber.get(); }
 

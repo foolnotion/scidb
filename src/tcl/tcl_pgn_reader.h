@@ -53,14 +53,12 @@ public:
 					Modification modification,
 					ReadMode readMode,
 					::db::FileOffsets* fileOffsets = 0,
-					GameCount const* firstGameNumber = 0,
 					unsigned lineOffset = 0,
 					bool trialMode = false);
 	~PgnReader() throw();
 
 	unsigned countErrors() const;
 	unsigned countWarnings() const;
-	Error lastErrorCode() const;
 
 	void setResult(int n, int illegal) const;
 
@@ -79,6 +77,11 @@ public:
 						mstl::string const& message,
 						mstl::string const& info,
 						mstl::string const& item) override;
+	void error(		::db::save::State state,
+						unsigned lineNo,
+						unsigned gameNo,
+						::db::variant::Type variant) override;
+
 
 	static void setResult(	int n,
 									int illegal,
@@ -92,13 +95,13 @@ private:
 	Tcl_Obj*	m_arg;
 	Tcl_Obj*	m_warning;
 	Tcl_Obj*	m_error;
+	Tcl_Obj*	m_save;
 	ReadMode	m_mode;
 	unsigned	m_lineOffset;
 	unsigned	m_countErrors;
 	unsigned	m_countWarnings;
 	bool		m_trialModeFlag;
 	bool		m_tooManyRoundNames;
-	Error		m_lastError;
 };
 
 } // namespace tcl

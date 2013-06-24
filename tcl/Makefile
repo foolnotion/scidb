@@ -93,6 +93,7 @@ SOURCES = \
 	widgets/twm.tcl \
 	widgets/database-switcher.tcl \
 	widgets/registerbutton.tcl \
+	widgets/dropdownbutton.tcl \
 	gametable.tcl \
 	playertable.tcl \
 	eventtable.tcl \

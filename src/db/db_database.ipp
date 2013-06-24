@@ -40,14 +40,16 @@ inline bool Database::encodingIsBroken() const				{ return !m_encodingOk; }
 inline bool Database::encodingFailed() const					{ return m_encodingFailed; }
 inline bool Database::usingAsyncReader() const				{ return m_usingAsyncReader; }
 inline bool Database::hasTemporaryStorage() const			{ return m_temporary; }
-inline bool Database::hasChanged() const						{ return m_hasChanged; }
 inline bool Database::descriptionHasChanged() const		{ return m_descriptionHasChanged; }
+inline bool Database::isAdded(unsigned index) const		{ return index >= m_initialSize; }
+inline bool Database::isUnsaved() const						{ return m_size < m_gameInfoList.size(); }
 
 inline unsigned Database::id() const							{ return m_id; }
 inline unsigned Database::countGames() const					{ return m_gameInfoList.size(); }
 inline unsigned Database::countPlayers() const				{ return m_namebases(Namebase::Player).used(); }
 inline unsigned Database::countEvents() const				{ return m_namebases(Namebase::Event).used(); }
 inline unsigned Database::countSites() const					{ return m_namebases(Namebase::Site).used(); }
+inline unsigned Database::countInitialGames() const		{ return m_initialSize; }
 inline mstl::string const& Database::name() const			{ return m_name; }
 inline mstl::string const& Database::description() const	{ return m_description; }
 inline type::ID Database::type() const							{ return m_type; }

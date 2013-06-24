@@ -29,23 +29,30 @@
 namespace eval application {
 namespace eval mc {
 
-set Database				"&Database"
-set Board					"&Board"
-set MainMenu				"&Main Menu"
+set Database					"&Database"
+set Board						"&Board"
+set MainMenu					"&Main Menu"
 
-set DockWindow				"Dock Window"
-set UndockWindow			"Undock Window"
-set ChessInfoDatabase	"Chess Information Data Base"
-set Shutdown				"Shutdown..."
-set QuitAnyway				"Quit anyway?"
-set CancelLogout			"Cancel Logout"
-set AbortWriteOperation	"Abort write operation"
+set DockWindow					"Dock Window"
+set UndockWindow				"Undock Window"
+set ChessInfoDatabase		"Chess Information Data Base"
+set Shutdown					"Shutdown..."
+set QuitAnyway					"Quit anyway?"
+set CancelLogout				"Cancel Logout"
+set AbortWriteOperation		"Abort write operation"
 
-set UpdatesAvailable		"Updates available"
+set UpdatesAvailable			"Updates available"
 
 set WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'."
-set LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database."
-set RestartLogout			"Aborting the write operation will restart the logout process."
+set LogoutNotPossible		"Logout is currently not possible, the result would be a corrupted database."
+set RestartLogout				"Aborting the write operation will restart the logout process."
+set UnsavedFiles				"The following PGN files are unsaved:"
+set ThrowAwayAllChanges		"Do you really want to throw away all changes?"
+
+set Deleted						"Games deleted: %d"
+set Changed						"Games changed: %d"
+set Added						"Games added: %d"
+set DescriptionHasChanged	"Description has changed"
 
 } ;# namespace mc
 
@@ -138,10 +145,9 @@ array set Vars {
 	tabs:changed	0
 	exit:save		1
 
-	menu:locked					0
-	menu:state					normal
-	menu:background			#c3c3c3
-	menu:activebackground	{}
+	menu:locked			0
+	menu:state			normal
+	menu:background	#c3c3c3
 
 	updates {}
 }
@@ -168,17 +174,14 @@ proc open {} {
 	$Vars(control).restore configure -command { ::menu::viewFullscreen toggle }
 	$Vars(control).close configure -command [namespace code shutdown]
 
-	set m ".__m__[clock milliseconds]"
-	menu $m
-	set Vars(menu:activebackground) [$m cget -activebackground]
-	destroy $m
 	set m [tk::menubutton $nb.menu_main \
 		-borderwidth 1 \
 		-relief raised \
 		-padx 2 \
 		-pady 2 \
 		-background $Vars(menu:background) \
-		-activebackground $Vars(menu:activebackground) \
+		-activebackground [::dropdownbutton::activebackground] \
+		-activeforeground [::dropdownbutton::activeforeground] \
 		-foreground black \
 		-activeforeground white \
 		-image $icon::16x12::downArrow(black) \
@@ -367,6 +370,20 @@ proc shutdown {} {
 		::util::photos::terminateUpdate
 	}
 
+	if {[llength [set unsaved [::scidb::app::get unsavedFiles]]]} {
+		append msg $mc::UnsavedFiles
+		append msg <embed>
+		append msg $mc::ThrowAwayAllChanges
+	
+		set reply [::dialog::question \
+			-parent .application \
+			-message $msg \
+			-default no \
+			-embed [namespace code [list EmbedUnsavedFiles $unsaved]] \
+		]
+		if {$reply ne "yes"} { return }
+	}
+
 	switch [::game::queryCloseApplication .application] {
 		restore	{ set backup 1 }
 		discard	{ set backup 0 }
@@ -529,12 +546,32 @@ proc LeaveSettings {w} {
 }
 
 
+proc BuildSettingsMenu {m} {
+	variable Vars
+
+	catch { destroy $m.entries }
+	::menu $m.entries
+	::menu::build $m.entries
+
+	$m configure \
+		-background [::dropdownbutton::activebackground] \
+		-activebackground [::dropdownbutton::activebackground] \
+		-foreground white \
+		-activeforeground [::dropdownbutton::activeforeground] \
+		-image $icon::16x12::downArrow(white) \
+		-menu $m.entries \
+		-direction below \
+		;
+	set Vars(menu:locked) 1
+}
+
+
 proc FinishSettings {m} {
 	variable Vars
 
 	$m configure \
 		-background $Vars(menu:background) \
-		-activebackground $Vars(menu:activebackground) \
+		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
 		-image $icon::16x12::downArrow(black) \
@@ -575,7 +612,7 @@ proc BuildUpdatesButton {} {
 		-padx 2 \
 		-pady 2 \
 		-background $Vars(menu:background) \
-		-activebackground $Vars(menu:activebackground) \
+		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
 		-image $icon::16x16::softwareUpdate \
@@ -607,8 +644,8 @@ proc BuildUpdatesMenu {m} {
 	}
 
 	$m configure \
-		-background $Vars(menu:activebackground) \
-		-activebackground $Vars(menu:activebackground) \
+		-background [::dropdownbutton::activebackground] \
+		-activebackground [::dropdownbutton::activebackground] \
 		-foreground white \
 		-activeforeground white \
 		-menu $m.updates \
@@ -623,7 +660,7 @@ proc FinishUpdates {m} {
 
 	$m configure \
 		-background $Vars(menu:background) \
-		-activebackground $Vars(menu:activebackground) \
+		-activebackground [::dropdownbutton::activebackground] \
 		-foreground black \
 		-activeforeground white \
 		;
@@ -640,6 +677,90 @@ proc InstallUpdate {item} {
 
 	if {[llength $Vars(updates)] == 0} {
 		destroy $Vars(menu:updates)
+	}
+}
+
+
+proc EmbedUnsavedFiles {unsaved w infoFont alertFont} {
+	::html $w.t \
+		-imagecmd [namespace code GetImage] \
+		-center no \
+		-fittowidth no \
+		-borderwidth 0 \
+		-doublebuffer no \
+		-exportselection yes \
+		-imagecmd [namespace code GetImage] \
+		-css "html { background: [$w cget -background] }"
+		;
+	place $w.t -x 10 -y 0
+
+	$w.t onmouseover [list [namespace current]::MouseEnter $w.t]
+	$w.t onmouseout  [list [namespace current]::MouseLeave $w.t]
+
+	array set font [font actual $infoFont]
+	set family $font(-family)
+	set size [expr {abs($font(-size))}]
+
+	append content "<table style='font-family: ${family}; font-size: ${size}px;'>"
+
+	foreach file $unsaved {
+		lassign [::scidb::db::get changes $file] added changed deleted descriptionHasChanged
+		append content "<tr>"
+		append content "<td id='$file'>[::util::databaseName $file]&ensp;</td>"
+		if {$deleted > 0} {
+			append content "<td id='Deleted' count='$deleted'><img src='deleted'></td>"
+		}
+		if {$changed > 0} {
+			append content "<td id='Changed' count='$changed'><img src='edit'></td>"
+		}
+		if {$added > 0} {
+			append content "<td id='Added' count='$added'><img src='plus'></td>"
+		}
+		if {$descriptionHasChanged} {
+			append content "<td id='DescriptionHasChanged'><img src='info'></td>"
+		}
+		append content "</tr>"
+	}
+
+	append content "</table>"
+	lassign [$w.t parse $content] x0 y0 x1 y1
+	set margins [expr {2*[$w.t margin]}]
+	$w configure -width [expr {$x1 - $x0 + $margins + 10}] -height [expr {$y1 - $y0 + $margins}]
+}
+
+
+proc GetImage {code} {
+	return [list [set ::icon::12x12::$code] [namespace code DoNothing]]
+}
+
+
+proc DoNothing {args} {
+	# nothing to do
+}
+
+
+proc MouseEnter {w node} {
+	if {[llength $node] == 0} { return }
+	set id [$node attribute -default {} id]
+	if {[llength $id]} {
+		if {[info exists mc::$id]} {
+			set count [$node attribute -default 0 count]
+			if {$count} {
+				set id [format [set mc::$id] $count]
+			} else {
+				set id [set mc::$id]
+			}
+		}
+		::tooltip::show $w $id
+	}
+}
+
+
+proc MouseLeave {w node} {
+	if {[llength $node] == 0} { return }
+	set id [$node attribute -default {} id]
+	if {[llength $id]} {
+		::tooltip::hide
 	}
 }
 
@@ -681,26 +802,6 @@ proc SetSettingsText {w} {
 
 	lassign [::tk::UnderlineAmpersand $mc::MainMenu] text ul
 	$w configure -text " $text" -underline [incr ul]
-}
-
-
-proc BuildSettingsMenu {m} {
-	variable Vars
-
-	catch { destroy $m.entries }
-	::menu $m.entries
-	::menu::build $m.entries
-
-	$m configure \
-		-background $Vars(menu:activebackground) \
-		-activebackground $Vars(menu:activebackground) \
-		-foreground white \
-		-activeforeground white \
-		-image $icon::16x12::downArrow(white) \
-		-menu $m.entries \
-		-direction below \
-		;
-	set Vars(menu:locked) 1
 }
 
 

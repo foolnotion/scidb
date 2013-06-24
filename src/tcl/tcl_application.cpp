@@ -29,6 +29,7 @@
 #include "tcl_base.h"
 
 #include "app_application.h"
+#include "app_multi_cursor.h"
 #include "app_cursor.h"
 
 #include "db_database.h"
@@ -306,9 +307,9 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	static char const* subcommands[] = { "countryCodes", 0 };
+	static char const* subcommands[] = { "countryCodes", "unsavedFiles", 0 };
 	static char const* args[] = { "", 0 };
-	enum { Cmd_CountryCodes };
+	enum { Cmd_CountryCodes, Cmd_UnsavedFiles };
 
 	if (objc != 2)
 		return usage(::CmdGet, 0, 0, subcommands, args);
@@ -333,6 +334,27 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				setResult(country::count(), objs);
 			}
 			break;
+
+		case Cmd_UnsavedFiles:
+		{
+			Application::MultiCursorList cursors;
+			Application::MultiCursorList unsaved;
+
+			Scidb->enumCursors(cursors);
+
+			for (unsigned i = 0; i < cursors.size(); ++i)
+			{
+				if (cursors[i]->isUnsaved())
+					unsaved.push_back(cursors[i]);
+			}
+
+			Tcl_Obj* objs[unsaved.size()];
+			for (unsigned i = 0; i < unsaved.size(); ++i)
+				objs[i] = Tcl_NewStringObj(unsaved[i]->name(), unsaved[i]->name().size());
+
+			setResult(unsaved.size(), objs);
+			break;
+		}
 
 		default:
 			return usage(::CmdGet, 0, 0, subcommands, args);

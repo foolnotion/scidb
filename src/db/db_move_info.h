@@ -107,6 +107,7 @@ public:
 	char const* parseClockTime(char const* s);
 	char const* parseElapsedGameTime(char const* s);
 	char const* parseElapsedMoveTime(char const* s);
+	char const* parseTimeInfo(char const* s);
 	char const* parseEvaluation(char const* s);
 	char const* parseVideoTime(char const* s);
 

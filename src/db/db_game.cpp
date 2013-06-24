@@ -1340,6 +1340,11 @@ Game::redo()
 }
 
 
+void Game::setFlags(unsigned flags)
+{
+	m_flags = flags & ~GameInfo::Flag_Special;
+}
+
 
 bool
 Game::containsIllegalMoves() const

@@ -2346,7 +2346,7 @@ Codec::remove(mstl::string const& fileName)
 bool
 Codec::getAttributes(mstl::string const& filename,
 							int& numGames,
-							db::type::ID& type,
+							type::ID& type,
 							uint32_t& creationTime,
 							mstl::string* description)
 {

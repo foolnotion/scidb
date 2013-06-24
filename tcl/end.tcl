@@ -106,6 +106,7 @@ if {[tk windowingsystem] eq "x11"} {
 	proc fsbox::x11MakeFrameless {w} { ::x11::makeFrameless $w }
 	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 	proc dialog::messagebox::changeDesktop {w type} { ::x11::changeDesktop $w }
+	proc ::fsbox::makeFrameless {w} { update idletasks; ::scidb::tk::wm frameless $w }
 }
 
 set ::clipboard::window .application

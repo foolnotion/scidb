@@ -138,9 +138,6 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 		addFlag(Flag_Convert_Null_Moves_To_Comments);
 		addFlag(Flag_Convert_Lost_Result_To_Comment);
 
-		removeFlag(Flag_Include_Move_Info);
-		removeFlag(Flag_Include_Marks);
-		removeFlag(Flag_Include_Move_Info);
 		removeFlag(Flag_Extended_Symbolic_Annotation_Style);
 		removeFlag(Flag_Use_Shredder_FEN);
 		removeFlag(Flag_Comment_To_Html);

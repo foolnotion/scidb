@@ -727,7 +727,13 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 
 	for (tag::ID id = tag::ID(strm.get()); id; id = tag::ID(strm.get()))
 	{
-		if (id == tag::ExtraTag)
+		if (id == 75)
+		{
+			value.clear();
+			strm.get(value);
+			tags.setExtra("NIC", value);
+		}
+		else if (id == tag::ExtraTag)
 		{
 			name.clear();
 			value.clear();
@@ -735,7 +741,7 @@ Decoder::decodeTags(ByteStream& strm, TagSet& tags)
 			strm.get(value);
 			tags.setExtra(name, value);
 		}
-		else
+		else if (tag::isValid(id))
 		{
 			value.clear();
 			strm.get(value);

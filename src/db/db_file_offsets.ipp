@@ -37,6 +37,14 @@ FileOffsets::Offset::isGameIndex() const
 
 
 inline
+bool
+FileOffsets::Offset::isNumberOfSkippedGames() const
+{
+	return m_variant == variant::NumberOfVariants;
+}
+
+
+inline
 unsigned
 FileOffsets::Offset::offset() const
 {
@@ -55,6 +63,15 @@ FileOffsets::Offset::gameIndex() const
 
 inline
 unsigned
+FileOffsets::Offset::skipped() const
+{
+	M_REQUIRE(isNumberOfSkippedGames());
+	return m_index;
+}
+
+
+inline
+unsigned
 FileOffsets::Offset::variant() const
 {
 	M_REQUIRE(isGameIndex());
@@ -63,9 +80,9 @@ FileOffsets::Offset::variant() const
 
 
 inline
-FileOffsets::Offset::Offset(unsigned offset)
+FileOffsets::Offset::Offset(unsigned offset, unsigned skipped)
 	:m_offset(offset)
-	,m_index(0)
+	,m_index(skipped)
 	,m_variant(variant::NumberOfVariants)
 {
 }
@@ -83,11 +100,34 @@ FileOffsets::Offset::Offset(unsigned offset, unsigned variant, unsigned gameInde
 
 
 inline
+FileOffsets::FileOffsets()
+	:m_countSkipped(0)
+{
+}
+
+
+inline
+bool
+FileOffsets::isEmpty() const
+{
+	return m_offsets.empty();
+}
+
+
+inline
 unsigned
 FileOffsets::size() const
 {
-	M_ASSERT(!m_offsets.empty());
+	M_REQUIRE(!isEmpty());
 	return m_offsets.size() - 1;
+}
+
+
+inline
+unsigned
+FileOffsets::countGames() const
+{
+	return size() + m_countSkipped;
 }
 
 
@@ -102,9 +142,9 @@ FileOffsets::get(unsigned index) const
 
 inline
 void
-FileOffsets::append(unsigned offset)
+FileOffsets::append(unsigned offset, unsigned skipped)
 {
-	m_offsets.push_back(Offset(offset));
+	m_offsets.push_back(Offset(offset, skipped));
 }
 
 
@@ -118,9 +158,22 @@ FileOffsets::append(unsigned offset, unsigned variant, unsigned gameIndex)
 
 inline
 void
+FileOffsets::setSkipped(unsigned count)
+{
+	M_REQUIRE(!isEmpty());
+	M_REQUIRE(get(size()).isNumberOfSkippedGames());
+	M_REQUIRE(count > 0);
+
+	m_offsets.back().m_index = count;
+	m_countSkipped += count - 1;
+}
+
+
+inline
+void
 FileOffsets::reserve(unsigned n)
 {
-	m_offsets.reserve(n);
+	m_offsets.reserve(n + 1);
 }
 
 } // namespace db

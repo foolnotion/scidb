@@ -3221,7 +3221,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 											::db::Reader::Raw,
 											tcl::PgnReader::Game,
 											nullptr,
-											nullptr,
 											lineOffset,
 											true);
 			util::Progress	progress;
@@ -3247,7 +3246,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 												modification,
 												tcl::PgnReader::Game,
 												nullptr,
-												nullptr,
 												lineOffset,
 												trialMode);
 
@@ -3261,7 +3259,7 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		if (trialMode)
 		{
-			setResult(reader.lastErrorCode() == tcl::PgnReader::LastError);
+			setResult(reader.countErrors() == 0);
 		}
 		else
 		{

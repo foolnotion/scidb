@@ -65,6 +65,7 @@ inline
 MoveInfo&
 MoveInfoSet::add(MoveInfo const& info)
 {
+	M_REQUIRE(!info.isEmpty());
 	m_row.push_back(info);
 	return m_row.back();
 }

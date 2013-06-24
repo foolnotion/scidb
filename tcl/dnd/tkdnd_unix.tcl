@@ -81,7 +81,6 @@ proc xdnd::_HandleXdndEnter { path drag_source typelist } {
   variable _action;                   set _action      {}
   variable _common_drag_source_types; set _common_drag_source_types {}
   variable _common_drop_target_types; set _common_drop_target_types {}
-  variable _actionlist
   variable _drag_source;              set _drag_source $drag_source
   variable _drop_target;              set _drop_target {}
   variable _actionlist;               set _actionlist  \
@@ -834,6 +833,21 @@ proc xdnd::_SendXdndDrop {} {
     _HandleXdndFinished {}
     return
   }
+
+  # Call the <<DradDropCmd>> binding.
+  set source $_dodragdrop_drag_source
+  set cmd [bind $source <<DragDropCmd>>]
+  if {[string length $cmd]} {
+    set action $_dodragdrop_drop_target_accepts_action
+    set cmd [string map [list %W $source %e <<DragDropCmd>> %A \{$action\}] $cmd]
+    set action [uplevel \#0 $cmd]
+    if {$action == ""} {
+      _SendXdndLeave
+      _HandleXdndFinished {}
+      return
+    }
+  }
+
   # puts "XdndDrop: $_dodragdrop_drop_target"
   variable _dodragdrop_drop_timestamp
   set _dodragdrop_drop_timestamp [_send_XdndDrop \

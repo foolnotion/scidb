@@ -1227,6 +1227,10 @@ Match::parseHasSpecialMarkers(char const* s, Error& error)
 			{
 				flags |= GameInfo::Flag_Changed;
 			}
+			else if (marker == "added")
+			{
+				flags |= info::SpecialGameMarkers::Flag_Added;
+			}
 			else if (marker == "illegalmove")
 			{
 				flags |= GameInfo::Flag_Illegal_Move;

@@ -2436,7 +2436,8 @@ Codec::remove(mstl::string const& fileName)
 bool
 Codec::getAttributes(mstl::string const& filename,
 							int& numGames,
-							db::type::ID& type,
+							type::ID& type,
+							variant::Type& variant,
 							uint32_t& creationTime,
 							mstl::string* description)
 {
@@ -2456,8 +2457,10 @@ Codec::getAttributes(mstl::string const& filename,
 
 	bstrm.skip(2);
 	numGames	= bstrm.uint24();
+	variant = variant::fromIndex(bstrm.uint8());
 	type = type::ID(bstrm.uint8());
-	creationTime  = bstrm.uint32();
+	bstrm.skip(1);
+	creationTime = bstrm.uint32();
 
 	if (description)
 		bstrm.get(*description);

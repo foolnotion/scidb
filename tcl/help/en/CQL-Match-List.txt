@@ -1550,7 +1550,12 @@ A special marker is one of:
     <tr>
       <td class="l"><expr>changed</expr></td>
       <td class="m"><img src="../images/gameflag-Changed.png"/></td>
-      <td class="r">Game has changed in this session.</td>
+      <td class="r">Game has been changed in this session.</td>
+    </tr>
+    <tr>
+      <td class="l"><expr>changed</expr></td>
+      <td class="m"><img src="../images/gameflag-Added.png"/></td>
+      <td class="r">Game has been added in this session.</td>
     </tr>
     <tr>
       <td class="l"><expr>illegalmove</expr></td>

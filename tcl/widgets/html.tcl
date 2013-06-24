@@ -399,7 +399,7 @@ proc WidgetProc {w command args} {
 				update idletasks
 				after idle [namespace code [list Place $w.sub]]
 			}
-			return
+			return $Priv(minbbox)
 		}
 
 		minbbox {
@@ -412,6 +412,10 @@ proc WidgetProc {w command args} {
 				set Priv(minbbox) [ComputeBoundingBox $w.sub.html [$w.sub.html node] $maxWidth]
 			}
 			return $Priv(minbbox)
+		}
+
+		margin {
+			return [set [namespace current]::Margin]
 		}
 
 		handler - search - style {

@@ -37,6 +37,7 @@ set FileExport							"Export"
 set FileImport(pgn)					"Import PGN files"
 set FileImport(db)					"Import Databases"
 set FileCreate							"Create Archive"
+set FileSaveChanges					"Save Changes"
 set FileClose							"Close"
 set FileMaintenance					"Maintenance"
 set FileCompact						"Compact"
@@ -75,6 +76,7 @@ set SelectDatabases					"Select the databases to be opened"
 set ExtractArchive					"Extract archive %s"
 set SelectVariant						"Select Variant"
 set Example								"Example"
+set UnsavedFiles						"This PGN file is unsaved."
 
 set RecodingDatabase					"Recoding %base from %from to %to"
 set RecodedGames						"%s game(s) recoded"
@@ -143,6 +145,7 @@ set T_ThreeCheck						"Three-check"
 set T_Crazyhouse						"Crazyhouse"
 
 set OpenDatabase						"Open Database"
+set OpenRecentDatabase				"Open Recent Database"
 set NewDatabase						"New Database"
 set CloseDatabase						"Close Database '%s'"
 set SetReadonly						"Set Database '%s' readonly"
@@ -283,25 +286,30 @@ proc build {tab width height} {
 		bind $tbFile <<$event>> [namespace code [list ToolbarShow $switcher]]
 	}
 
-	set Vars(button:new) [::toolbar::add $tbFile button \
+	set Vars(button:new) [::toolbar::add $tbFile dropdownbutton \
 		-image $::icon::toolbarDocNew \
 		-tooltip "$mc::NewDatabase ($::mc::VariantName(Normal))..." \
+		-arrowttipvar [::mc::var [namespace current]::mc::NewDatabase "..."] \
 		-command [list ::menu::dbNew $main Normal] \
+		-menucmd ::menu::addVariantsToMenu \
 	]
-	set Vars(button:new...) [::toolbar::add $tbFile button \
-		-image $::icon::toolbarDocNewAlt \
-		-tooltipvar [::mc::var [namespace current]::mc::NewDatabase "..."] \
-		-command [namespace code PopdownFileNew] \
-	]
-	::toolbar::add $tbFile button \
+	::toolbar::add $tbFile dropdownbutton \
 		-image $::icon::toolbarDocOpen \
 		-tooltipvar [::mc::var [namespace current]::mc::OpenDatabase "..."] \
+		-arrowttipvar [namespace current]::mc::OpenRecentDatabase \
 		-command [list ::menu::dbOpen $main] \
+		-menucmd [namespace current]::addRecentlyUsedToMenu \
 		;
 	set Vars(button:close) [::toolbar::add $tbFile button \
 		-image $::icon::toolbarDocClose \
 		-tooltipvar [namespace current]::_CloseDatabase \
 		-command [list ::menu::dbClose $main] \
+	]
+	set Vars(button:save) [::toolbar::add $tbFile button \
+		-image $::icon::toolbarSave \
+		-tooltipvar [namespace current]::mc::FileSaveChanges \
+		-command [namespace code [list SaveChanges $main]] \
+		-state disabled \
 	]
 	set Vars(flag:readonly) 0
 	set Vars(button:readonly) [::toolbar::add $tbFile checkbutton \
@@ -517,7 +525,9 @@ proc openBase {parent file byUser args} {
 					catch { ::scidb::db::close $file }
 					return 0
 				}
-				set opts(-readonly) 1
+				if {$opts(-readonly) == -1} {
+					set opts(-readonly) 1
+				}
 			}
 		}
 		if {![::scidb::db::get open? $file]} {
@@ -586,6 +596,17 @@ proc prepareClose {} {
 
 
 proc closeBase {parent {file {}}} {
+	if {[string length $file] == 0} {
+		set file [::scidb::db::get name]
+	}
+
+	if {[::scidb::db::get unsaved? $file]} {
+		append msg $mc::UnsavedFiles "\n\n"
+		append msg $::application::mc::ThrowAwayAllChanges
+		set reply [::dialog::question -parent $parent -message $msg -default no]
+		if {$reply ne "yes"} { return }
+	}
+
 	::remote::busyOperation { CloseBase $parent $file }
 }
 
@@ -671,6 +692,8 @@ proc addRecentlyUsedToMenu {parent m} {
 			lappend recentFiles $entry
 		}
 	}
+
+	set parent [winfo toplevel $parent]
 
 	if {[llength $recentFiles]} {
 		foreach entry $recentFiles {
@@ -996,9 +1019,10 @@ proc Switch {filename {variant Undetermined}} {
 	::scidb::db::switch $filename $Vars(variant)
 	set readonly [::scidb::db::get readonly? $filename]
 
-	if {$filename eq $clipbaseName} { set state disabled } else { set state normal }
+	if {$filename eq $clipbaseName} { set closeState disabled } else { set closeState normal }
 	if {$filename eq $clipbaseName || ![::scidb::db::get writable? $filename]} {
 		set roState disabled
+		set saveState disabled
 	} else {
 		switch [file extension $filename] {
 			.sci - .pgn {
@@ -1016,12 +1040,12 @@ proc Switch {filename {variant Undetermined}} {
 		::toolbar::childconfigure $Vars(button:readonly) -tooltip $roState
 	}
 
-	#::menu::configureCloseBase $state
-	::toolbar::childconfigure $Vars(button:close) -state $state
+	::toolbar::childconfigure $Vars(button:close) -state $closeState
 	::toolbar::childconfigure $Vars(button:readonly) -state $roState
 
 	set Vars(flag:readonly) $readonly
 	CheckTabState
+	CheckSaveState $filename
 
 	foreach file [$Vars(switcher) bases] {
 		if {$file eq $filename} {
@@ -1037,6 +1061,19 @@ proc Switch {filename {variant Undetermined}} {
 			[namespace current]::${tab}::activate $Vars($tab) 1
 		}
 	}
+}
+
+
+proc CheckSaveState {base} {
+	variable ::scidb::clipbaseName
+	variable Vars
+
+	if {$base eq $clipbaseName || ![::scidb::db::get unsaved? $base]} {
+		set state disabled
+	} else {
+		set state normal
+	}
+	::toolbar::childconfigure $Vars(button:save) -state $state
 }
 
 
@@ -1063,6 +1100,8 @@ proc CheckTabState {} {
 
 proc Update {path id base variant {view 0} {index -1}} {
 	variable Vars
+
+	CheckSaveState $base
 
 	if {$index >= 0} {
 		after cancel $Vars(after)
@@ -1246,6 +1285,15 @@ proc PopupMenu {parent x y {base ""}} {
 			-state $readonlyState \
 			;
 
+		$menu add command \
+			-label " $mc::FileCreate..." \
+			-image $::icon::16x16::filetypeArchive \
+			-compound left \
+			-command [list ::menu::dbCreateArchive $top $base] \
+			;
+
+		$menu add separator
+
 		set maint [menu $menu.maintenance -tearoff no]
 		$menu add cascade \
 			-menu $maint \
@@ -1307,13 +1355,6 @@ proc PopupMenu {parent x y {base ""}} {
 			}
 		}
 
-		$menu add command \
-			-label " $mc::FileCreate..." \
-			-image $::icon::16x16::filetypeArchive \
-			-compound left \
-			-command [list ::menu::dbCreateArchive $top $base] \
-			;
-
 		if {!$isClipbase} {
 			$menu add command \
 				-label " $mc::FileClose" \
@@ -1321,6 +1362,14 @@ proc PopupMenu {parent x y {base ""}} {
 				-compound left \
 				-command [namespace code [list closeBase $parent $base]] \
 				;
+			if {[::scidb::db::get unsaved? $base]} {
+				$menu add command \
+					-label " $mc::FileSaveChanges" \
+					-image $::icon::16x16::save \
+					-compound left \
+					-command [namespace code [list SaveChanges $parent $base]] \
+					;
+			}
 		} else {
 			set count [::scidb::db::count games $base $Vars(variant)]
 			if {$count} { set state normal } else { set state disabled }
@@ -1334,7 +1383,11 @@ proc PopupMenu {parent x y {base ""}} {
 		}
 		switch $ext {
 			si3 - si4 - cbh - cbf - pgn - bpgn {
-				if {[file readable $base]} { set state normal } else { set state disabled }
+				if {[file readable $base] && ![::scidb::db::get unsaved? $base]} {
+					set state normal
+				} else {
+					set state disabled
+				}
 				$menu add command \
 					-label " $mc::Recode..." \
 					-image $::icon::16x16::none \
@@ -1393,7 +1446,7 @@ proc PopupMenu {parent x y {base ""}} {
 		-image $::icon::16x16::databaseNewAlt \
 		-compound left \
 		;
-	::menu::addVariantsToMenu $top $menu.mFileNew
+	::menu::addVariantsToMenu $top $menu.mFileNew 1
 
 #	if {$index == -1 && [::scidb::db::get name] ne $clipbaseName} {
 #		$menu add separator
@@ -1433,19 +1486,6 @@ proc PopupMenu {parent x y {base ""}} {
 }
 
 
-proc PopdownFileNew {} {
-	variable Vars
-
-	set parent $Vars(button:new...)
-	set m $parent.dbNew
-	if {[winfo exists $m]} { destroy $m }
-	menu $m -tearoff false
-	catch { wm attributes $m -type popup_menu }
-	::menu::addVariantsToMenu $parent $m
-	tk_popdown $m $parent
-}
-
-
 proc ToggleReadOnly {} {
 	variable Vars
 	variable RecentFiles
@@ -1471,6 +1511,15 @@ proc EmptyClipbase {parent} {
 		::scidb::db::clear $clipbaseName $Vars(variant)
 		::widget::busyCursor off
 	}
+}
+
+
+proc SaveChanges {parent {base ""}} {
+return [beta::notYetImplemented $parent SavePgn]
+	if {[string length $base] == 0} { set base [scidb::db::get name] }
+	set cmd [list scidb::db::savePGN $base [::export::getPgnFlags]]
+	set options [list -message $mc::FileSaveChanges]
+	::progress::start $parent $cmd {} $options
 }
 
 
@@ -1513,6 +1562,7 @@ proc SetDescription {dlg file} {
 	set length [::scidb::db::set description $file $s]
 
 	if {$length == 0} {
+		CheckSaveState $file
 		destroy $dlg
 	} else {
 		::dialog::error \

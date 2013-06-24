@@ -148,6 +148,13 @@ Consumer::idn() const
 
 
 void
+Consumer::setFlags(uint32_t flags)
+{
+	m_flags = flags & ~GameInfo::Flag_Special;
+}
+
+
+void
 Consumer::setup(Board const& startPosition)
 {
 	m_stack.bottom().board = startPosition;

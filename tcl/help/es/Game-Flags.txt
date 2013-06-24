@@ -43,12 +43,22 @@ Si alguna partida está marcada con ambos sólo se mostrará el marcador
 <em>%::gametable::mc::GameFlags(I)%</em>.
 </p>
 
-<p>
+<!--<p>
 Existe otro marcador especial que no es programable por el usuario, el marcador de
 borrado. Así, una partida marcada será removida la próxima vez que la base de datos sea
 compactada (<see/> <a href="Database-Switcher.html#Compact">Intercambiador de bases de datos:
 %::application::database::mc::FileCompact%</a>).
-</p>
+</p> =============== This section has been replaced: ==========================-->
+<NEW>
+There are also special markers which are not user-settable, the deletion
+marker, the changes marker, and the newly added marker. A game marked with the
+deletion marker will be removed when next the database is compacted
+(<see/> <a href="Database-Switcher.html#Compact">Database switcher:
+%::application::database::mc::FileCompact%</a>). This marker will be retained
+after closing the database. The changes marker means that this game has been
+changed (and saved), and the newly added marker is denoting a newly added game.
+Both markers will be lost as soon as the database is closed.
+</NEW>
 
 <p>
 Cuando se editan partidas de bases de datos Scid (.si4) Scidb soporta los seis marcadores

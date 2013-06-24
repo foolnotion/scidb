@@ -89,10 +89,14 @@ the marker <em>Illegal Move</em> will be displayed.
 </p>
 
 <p>
-There exists another special marker which is not user-settable, the deletion
-marker. A game marked thus will be removed when next the database is compacted
+There are also special markers which are not user-settable, the deletion
+marker, the changed marker, and the newly added marker. A game marked with the
+deletion marker will be removed when next the database is compacted
 (&#x21d2; <a href="Database-Switcher.html#Compact">Database switcher:
-Compact</a>).
+Compact</a>). This marker will be retained
+after closing the database. The changes marker means that this game has been
+changed (and saved), and the newly added marker is denoting a newly added game.
+Both markers will be lost as soon as the database is closed.
 </p>
 
 <p>

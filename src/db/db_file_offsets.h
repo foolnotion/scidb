@@ -30,10 +30,11 @@
 #include "db_common.h"
 
 #include "m_vector.h"
+#include "m_utility.h"
 
 namespace db {
 
-class FileOffsets
+class FileOffsets : public mstl::noncopyable
 {
 public:
 
@@ -41,16 +42,20 @@ public:
 	{
 	public:
 
-		Offset(unsigned offset);
+		Offset(unsigned offset, unsigned skipped);
 		Offset(unsigned offset, unsigned variant, unsigned gameIndex);
 
 		bool isGameIndex() const;
+		bool isNumberOfSkippedGames() const;
 
 		unsigned offset() const;
 		unsigned variant() const;
 		unsigned gameIndex() const;
+		unsigned skipped() const;
 
 	private:
+
+		friend class FileOffsets;
 
 		uint32_t m_offset;
 		uint32_t m_index:24;
@@ -59,17 +64,26 @@ public:
 
 	typedef mstl::vector<Offset> Offsets;
 
+	FileOffsets();
+	FileOffsets(FileOffsets const& fileOffsets);
+
+	bool isEmpty() const;
+
 	unsigned size() const;
+	unsigned countGames() const;
+
 	Offset const& get(unsigned index) const;
 
-	void append(unsigned offset);
+	void append(unsigned offset, unsigned skipped = 0);
 	void append(unsigned offset, unsigned variant, unsigned gameIndex);
+	void setSkipped(unsigned count);
 
 	void reserve(unsigned n);
 
 private:
 
-	Offsets m_offsets;
+	Offsets	m_offsets;
+	unsigned	m_countSkipped;
 };
 
 } // namespace db

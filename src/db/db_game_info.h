@@ -112,6 +112,10 @@ public:
 
 		// --- special flag to distiguish between Losers and Giveaway ----------
 		Flag_Giveaway					= Flag_Illegal_Castling,
+
+		// --- special flags ---------------------------------------------------
+		Flag_Special					= Flag_Deleted | Flag_Dirty | Flag_Changed,
+		Flag_Last						= Flag_Changed,
 	};
 
 	GameInfo();
@@ -241,6 +245,7 @@ public:
 	void setChanged(bool flag = true);
 	void setFlags(unsigned flags);
 	void setDirty(bool flag);
+	void setUnchanged();
 	void setIllegalCastling(bool flag);
 	void setIllegalMove(bool flag);
 	void reset(Namebases& namebases);
@@ -331,11 +336,14 @@ private:
 
 	uint32_t m_gameOffset;
 
-	uint64_t m_gameFlags			:26;
-	uint64_t m_positionId		:12;
-	uint64_t m_plyCount			:11;
-	uint64_t m_dateYear			:10;
-	uint64_t m_dateDay			: 5;
+	uint32_t m_gameFlags			:26;
+	uint32_t m_dateDay			: 5;
+	uint32_t m_setup				: 1;
+
+	uint32_t m_positionId		:12;
+	uint32_t m_round				: 8;
+	uint32_t m_subround			: 8;
+	uint64_t m_dateMonth			: 4;
 
 	union __attribute__((packed))
 	{
@@ -350,11 +358,9 @@ private:
 		uint32_t m_positionData;
 	};
 
-	uint32_t m_round				: 8;
-	uint32_t m_subround			: 8;
-	uint32_t m_dateMonth			: 4;
+	uint64_t m_dateYear			:10;
+	uint32_t m_plyCount			:11;
 	uint32_t m_result				: 3;
-	uint32_t m_setup				: 1;
 	uint32_t __unused__			: 8;
 
 	static const GameInfo m_initializer;
@@ -364,7 +370,7 @@ private:
 //#endif
 ;
 
-// NOTE: 64 bytes on all 32 bit platforms (63 bytes if packed)
+// NOTE: 64 bytes on all 32 bit platforms
 // NOTE: 96 bytes on all 64 bit platforms (64 on Intel/AMD platforms)
 // NOTE: IndexEntry (Scid) has 48 bytes on Intel/AMD platforms
 

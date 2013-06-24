@@ -100,6 +100,8 @@ public:
 	bool equal(vector_type const& v) const;
 	bool equal(vector_type const& v, size_type n) const;
 
+	template <typename Iterator> void assign(Iterator first, Iterator last);
+
 	iterator insert(iterator position, const_reference value);
 	void insert(iterator position, size_type n, const_reference value);
 	template <typename Iterator>

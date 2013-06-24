@@ -714,6 +714,8 @@ View::exportGames(mstl::string const& filename,
 		}
 		else
 		{
+			// TODO: in this case we should allow to copy the move data section
+			// This means: use exportGames(..., allowedTags, allowExtraTags, ...)
 			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
 			sci::Consumer consumer(m_cursor.m_db->format(), codecs, allowedTags, allowExtraTags);
 			count = exportGames(consumer, copyMode, illegalRejected, log, progress);
@@ -773,28 +775,21 @@ View::exportGames(mstl::string const& filename,
 
 		if (fmode == Append)
 		{
+			mode |= mstl::ios_base::app;
+
 			if (type != util::ZStream::Zip)
 			{
-				int64_t size = 0;
-				util::ZStream::size(internalName, size);
-
 				flags |= PgnWriter::Flag_Append_Games;
 
-				if (size >= 4)
-				{
-					util::ZStream strm(internalName);
-
-					char buf[3];
-					strm.seekg(0, mstl::ios_base::beg);
-
-					if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
-						flags |= PgnWriter::Flag_Use_UTF8;
-					else
-						flags &= ~PgnWriter::Flag_Use_UTF8;
-				}
+				if (util::ZStream::testByteOrderMark(internalName))
+					flags |= PgnWriter::Flag_Use_UTF8;
+				else
+					flags &= ~PgnWriter::Flag_Use_UTF8;
 			}
-
-			mode |= mstl::ios_base::app;
+		}
+		else
+		{
+			mode |= mstl::ios_base::trunc;
 		}
 
 		mstl::string useEncoding;

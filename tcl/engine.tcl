@@ -866,13 +866,17 @@ proc setup {} {
 									set newEngine(Profiles:$prot) $optionList
 								}
 							}
-							set newEntry [array get newEngine]
-							lset Engines $index $newEntry
 						} else {
 							foreach {profile options} $newEngine(Profiles:WB) {
 								if {$profile eq "Default"} { set newEngine(Script:Default) $options }
 							}
 						}
+						set newEngine(LastUsed) $oldEngine(LastUsed)
+						set newEngine(Frequency) $oldEngine(Frequency)
+						set newEngine(Timestamp) $oldEngine(Timestamp)
+						set newEngine(Timestamp) [clock seconds]
+						file stat $newEngine(Command) st
+						set newEngine(FileTime) $st(mtime)
 						set newEntry [array get newEngine]
 						lset Engines $index $newEntry
 					} else {
@@ -907,8 +911,10 @@ proc startEngine {isReadyCmd signalCmd updateCmd} {
 	set protocol $Vars(current:protocol)
 	if {[string length $engine(Directory)] && [file isdirectory $engine(Directory)]} {
 		set dir $engine(Directory)
-	} else {
+	} elseif {[file isdirectory $::scidb::dir::log]} {
 		set dir $::scidb::dir::log
+	} else {
+		set dir [pwd]
 	}
 	set engine(LastUsed) [clock seconds]
 	incr engine(Frequency)
@@ -3246,6 +3252,8 @@ proc SaveEngine {list} {
 		}
 
 		set engine(Timestamp) [clock seconds]
+		file stat $engine(Command) st
+		set engine(FileTime) $st(mtime)
 		lset Engines $sel [array get engine]
 	}
 
@@ -3876,7 +3884,7 @@ theme::bindRedo Script {
 	event generate %W <<Modified>>
 }
 
-# dont use
+# don't use
 bind Script <Control-h> {#}
 bind Script <Meta-greater> {#}
 bind Script <Meta-BackSpace> {#}

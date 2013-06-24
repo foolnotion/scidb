@@ -920,7 +920,9 @@ else
 		{
 			MoveInfo info;
 			info.decode(strm);
-			timeTable.set(i, info);
+
+			if (!info.isEmpty())
+				timeTable.set(i, info);
 		}
 
 		n = strm.uint8();

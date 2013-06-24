@@ -50,7 +50,7 @@ array set Options {
 }
 
 variable Columns {
-	number white whiteElo black blackElo event result site date round length eco deleted acv
+	number white whiteElo black blackElo event result site date round length eco deleted changed acv
 }
 
 variable Tables {}
@@ -89,7 +89,7 @@ proc build {parent} {
 	bind $tb <<TableMinSize>>		[namespace code [list TableMinSize $tb %d]]
 	bind $tb <<TableLayout>>		[namespace code [list TableLayout $tb]]
 	bind $tb <<TableResized>>		[namespace code [list TableResized $tb %d]]
-	bind $tb <<LanguageChanged>>	[namespace code [list ::scrolledtable::refresh $tb]]
+	bind $tb <<LanguageChanged>>	+[namespace code [list ::scrolledtable::refresh $tb]]
 
 	set tbGameNo [::toolbar::toolbar $parent \
 		-id games-gameno \

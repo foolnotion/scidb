@@ -161,7 +161,6 @@ array set environment {
     ARFLAGS     rc
     RANLIB      ranlib
     STRIP       strip
-    CPUS        1
 }
 
 foreach name [array names environment] {
@@ -1796,46 +1795,6 @@ proc checkFontConfig {} {
 }
 
 
-proc detectCores {} {
-    variable environment
-    variable haveEnvironment
-
-    if {$haveEnvironment(CPUS)} { return }
-
-    puts -nonewline "    Determining number of CPUs (cores): "
-    set cores 1
-
-    if {[file readable /proc/cpuinfo]} { ;# this should work on Linux
-        set info {}
-        catch { set info [exec cat /proc/cpuinfo] }
-        set n [string last "processor" $info]
-        if {$n >= 0} {
-            set n [string first ":" $info $n]
-            if {$n >= 0} {
-                set info [string range $info [expr {$n + 1}] end]
-                if {[scan [string trim $info] "%u" n] == 1} {
-                    if {[string is integer -strict $n]} { set cores [expr {$n + 1}] }
-                }
-            }
-        }
-    } elseif {![catch { set info [exec uname -X ] }]} { ;# this should work on SunOS
-        set n [string last "NumCPU" $info]
-        if {$n >= 0} {
-            set n [string first "=" $info $n]
-            if {$n >= 0} {
-                set info [string range $info [expr {$n + 1}] end]
-                if {[scan [string trim $info] "%u" n] == 1} {
-                    if {[string is integer -strict $n]} { set cores [expr {$n + 1}] }
-                }
-            }
-        }
-    }
-
-    puts $cores
-    set environment(CPUS) $cores
-}
-
-
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
@@ -2120,7 +2079,6 @@ proc usage {rc} {
     puts "  ARFLAGS     Flags for AR \[$environment(ARFLAGS)\]"
     puts "  RANLIB      RANLIB for the host \[$environment(RANLIB)\]"
     puts "  STRIP       STRIP for the host \[$environment(STRIP)\]"
-    puts "  CPUS        Number of CPUs (cores) available \[$environment(CPUS)\]"
     puts ""
     puts "Use these variables to override the choices made by \`configure' or to help"
     puts "it to find libraries and programs with nonstandard names/locations."
@@ -2237,7 +2195,6 @@ if {[string length $gxxVer]} {
     if {$::tcl_platform(platform) eq "unix"} {
         findFontconfig
         findFreetype
-        detectCores
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {

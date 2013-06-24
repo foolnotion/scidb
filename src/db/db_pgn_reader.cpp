@@ -345,18 +345,18 @@ PgnReader::PgnReader(mstl::istream& stream,
 							variant::Type variant,
 							mstl::string const& encoding,
 							ReadMode readMode,
-							GameCount const* firstGameNumber,
 							Modification modification,
 							ResultMode resultMode)
 	:Reader(format::Pgn)
 	,m_stream(stream)
+	,m_fileOffsets(0)
+	,m_gameNumber(0)
 	,m_currentOffset(0)
 	,m_lineOffset(0)
 	,m_putback(0)
 	,m_linePos(0)
 	,m_lineEnd(0)
 	,m_readMode(readMode)
-	,m_firstGameNumber(firstGameNumber)
 	,m_resultMode(resultMode)
 	,m_prefixAnnotation(nag::Null)
 	,m_ignoreNags(false)
@@ -379,7 +379,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_isICS(false)
 	,m_hasCastled(false)
 	,m_resultCorrection(false)
-	,m_firstRejected(true)
+	,m_countRejected(0)
 	,m_postIndex(0)
 	,m_idn(0)
 	,m_variant(variant)
@@ -391,10 +391,7 @@ PgnReader::PgnReader(mstl::istream& stream,
 	::memset(m_accepted, 0, sizeof(m_accepted));
 	::memset(m_rejected, 0, sizeof(m_rejected));
 
-	if (firstGameNumber)
-		::memcpy(m_gameCount, firstGameNumber, sizeof(m_gameCount));
-	else
-		::memset(m_gameCount, 0, sizeof(m_gameCount));
+	::memset(m_gameCount, 0, sizeof(m_gameCount));
 
 	if (encoding == sys::utf8::Codec::automatic())
 		m_codec = new sys::utf8::Codec(sys::utf8::Codec::latin1());
@@ -501,12 +498,21 @@ PgnReader::inverseFigurineMapping(mstl::string const& str)
 
 
 void
+PgnReader::fatalError(save::State state)
+{
+	error(state, m_currPos.line, m_gameNumber, variant::Undetermined);
+	throw Termination();
+}
+
+
+void
 PgnReader::fatalError(Error code, Pos const& pos, mstl::string const& item)
 {
 	if (m_parsingFirstHdr)
 	{
 		error(SeemsNotToBePgnText,
-				pos.line, 0, 0,
+				pos.line, 0,
+				m_gameNumber,
 				m_variant,
 				mstl::string::empty_string,
 				mstl::string::empty_string,
@@ -515,7 +521,8 @@ PgnReader::fatalError(Error code, Pos const& pos, mstl::string const& item)
 	else
 	{
 		error(code,
-				pos.line, 0, 0,
+				pos.line, 0,
+				m_gameNumber,
 				m_variant,
 				mstl::string::empty_string,
 				mstl::string::empty_string,
@@ -538,7 +545,8 @@ PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 	if (m_parsingFirstHdr)
 	{
 		error(SeemsNotToBePgnText,
-				pos.line, 0, 0,
+				pos.line, 0,
+				m_gameNumber,
 				m_variant,
 				mstl::string::empty_string,
 				mstl::string::empty_string,
@@ -576,7 +584,7 @@ PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 		case UnexpectedEndOfGame:		msg += "Error parsing PGN file: unexpected end of game"; break;
 		case UnterminatedVariation:	msg += "Error parsing PGN file: unterminated variation"; break;
 		case InvalidMove:					msg += "Error parsing PGN file: illegal move " + myItem; break;
-		case InvalidFen:					gameCount = pos.column = 0; break;
+		case InvalidFen:					gameCount = m_gameNumber; pos.column = 0; break;
 		default:								pos.column = 0; break;
 	}
 
@@ -618,15 +626,8 @@ PgnReader::sendError(Error code, Pos pos, mstl::string const& item)
 	if (code == InvalidMove || !m_move.isLegal())
 		m_move.clear();
 
-	switch (unsigned(code))
-	{
-		case TooManyRoundNames:
-		case ContinuationsNotSupported:
-			break;
-
-		default:
-			throw Interruption(code, msg);
-	}
+	if (code != ContinuationsNotSupported)
+		throw Interruption(code, msg);
 }
 
 
@@ -682,7 +683,8 @@ PgnReader::sendWarning(Warning code, Pos pos, mstl::string const& item)
 	if (++m_countWarnings[code] == MaxWarnings)
 	{
 		warning(	MaximalWarningCountExceeded,
-					pos.line, 0, 0,
+					pos.line, 0,
+					m_gameNumber,
 					variant,
 					mstl::string::empty_string,
 					mstl::string::empty_string);
@@ -776,7 +778,6 @@ PgnReader::process(Progress& progress)
 		unsigned	numGames		= estimateNumberOfGames(streamSize);
 		unsigned	frequency	= progress.frequency(numGames, 1000);
 		unsigned	reportAfter	= frequency;
-		unsigned	count			= 0;
 
 		variant::Type givenVariant = Reader::variant();
 
@@ -784,7 +785,7 @@ PgnReader::process(Progress& progress)
 
 		while (token == kTag)
 		{
-			if (reportAfter == count++)
+			if (reportAfter == m_gameNumber++)
 			{
 				progress.update(m_stream.goffset());
 
@@ -816,7 +817,6 @@ PgnReader::process(Progress& progress)
 				m_isICS = false;
 				m_hasCastled = false;
 				m_resultCorrection = false;
-				m_firstRejected = true;
 				m_warnings.clear();
 				m_givenVariant = givenVariant;
 				m_thisVariant = variant::Undetermined;
@@ -1021,7 +1021,12 @@ PgnReader::process(Progress& progress)
 	}
 
 	if (m_fileOffsets)
+	{
+		if (m_countRejected)
+			m_fileOffsets->setSkipped(m_countRejected);
+
 		m_fileOffsets->append(m_currentOffset);
+	}
 
 	return ::total(m_gameCount);
 }
@@ -1302,13 +1307,11 @@ PgnReader::finishGame(bool skip)
 
 	if (state == save::UnsupportedVariant)
 	{
-		++m_rejected[variantIndex];
-
-		if (m_fileOffsets && m_firstRejected)
-		{
+		if (m_countRejected == 0)
 			m_fileOffsets->append(m_currentOffset);
-			m_firstRejected = false;
-		}
+
+		++m_rejected[variantIndex];
+		++m_countRejected;
 	}
 	else
 	{
@@ -1316,8 +1319,13 @@ PgnReader::finishGame(bool skip)
 
 		if (m_fileOffsets)
 		{
+			if (m_countRejected)
+			{
+				m_fileOffsets->setSkipped(m_countRejected);
+				m_countRejected = 0;
+			}
+
 			m_fileOffsets->append(m_currentOffset, variantIndex, m_gameCount[variantIndex]);
-			m_firstRejected = true;
 		}
 	}
 
@@ -1328,33 +1336,19 @@ PgnReader::finishGame(bool skip)
 		case save::Ok:								break;
 		case save::UnsupportedVariant:		return; // already handled
 		case save::DecodingFailed:				return; // cannot happen
-		case save::TooManyGames:				fatalError(TooManyGames);
-		case save::FileSizeExeeded:			fatalError(FileSizeExeeded);
-		case save::TooManyPlayerNames:		fatalError(TooManyPlayerNames);
-		case save::TooManyEventNames:			fatalError(TooManyEventNames);
-		case save::TooManySiteNames:			fatalError(TooManySiteNames);
-		case save::TooManyAnnotatorNames:	fatalError(TooManyAnnotatorNames);
+		case save::TooManyGames:				fatalError(save::TooManyGames);
+		case save::FileSizeExeeded:			fatalError(save::FileSizeExeeded);
+		case save::TooManyPlayerNames:		fatalError(save::TooManyPlayerNames);
+		case save::TooManyEventNames:			fatalError(save::TooManyEventNames);
+		case save::TooManySiteNames:			fatalError(save::TooManySiteNames);
+		case save::TooManyAnnotatorNames:	fatalError(save::TooManyAnnotatorNames);
 
 		case save::TooManyRoundNames:
-			error(TooManyRoundNames,
-					m_currPos.line,
-					m_currPos.column,
-					::total(m_gameCount),
-					variant,
-					mstl::string::empty_string,
-					mstl::string::empty_string,
-					mstl::string::empty_string);
+			error(save::TooManyRoundNames, m_currPos.line, m_gameNumber, variant);
 			break;
 
 		case save::GameTooLong:
-			error(GameTooLong,
-					m_currPos.line,
-					m_currPos.column,
-					::total(m_gameCount),
-					variant,
-					mstl::string::empty_string,
-					mstl::string::empty_string,
-					mstl::string::empty_string);
+			error(save::GameTooLong, m_currPos.line, m_gameNumber, variant::Undetermined);
 			break;
 	}
 

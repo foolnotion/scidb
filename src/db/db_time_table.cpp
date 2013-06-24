@@ -86,6 +86,7 @@ void
 TimeTable::set(unsigned index, MoveInfo const& moveInfo)
 {
 	M_REQUIRE(index < size());
+	M_REQUIRE(!moveInfo.isEmpty());
 
 	unsigned col = moveInfo.content() - 1;
 
@@ -113,6 +114,8 @@ TimeTable::set(unsigned index, MoveInfoSet const& moveInfoSet)
 
 		MoveInfo const&	info	= moveInfoSet[i];
 		unsigned				col	= info.content() - 1;
+
+		M_ASSERT(!info.isEmpty());
 
 		set[col] = info;
 		m_size[col] = mstl::max(m_size[col], size);

@@ -69,8 +69,8 @@ proc geometry {path args} {
 	set windowingsystem [tk windowingsystem]
 	set w $opts(-width)
 	set h $opts(-height)
-	if {$w <= 0} { set w [winfo reqwidth $path] }
-	if {$h <= 0} { set h [winfo reqheight $path] }
+	if {$w <= 0} { set w [expr {max([winfo reqwidth  $path], [winfo width  $path])}] }
+	if {$h <= 0} { set h [expr {max([winfo reqheight $path], [winfo height $path])}] }
 	set isPopup 0
 	set cls [winfo class $path]
 	if {$cls eq "Menu" || $cls eq "OptionMenu" || $opts(-type) eq "popup"} { set isPopup 1 }

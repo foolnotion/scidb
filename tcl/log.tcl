@@ -179,19 +179,7 @@ proc Show {} {
 		}
 	
 		default {
-			if {$Priv(show) && $Priv(visibility) ne "VisibilityUnobscured"} {
-				if {[::fsbox::checkIsKDE]} {
-					set geom [wm geometry $Log]
-					if {[string length $geom]} {
-						set geom [string range $geom [string first + $geom] end]
-						catch { wm geometry $Log $geom }
-					}
-					wm withdraw $Log
-				}
-				wm deiconify $Log
-				raise $Log
-				focus -force $Log
-			}
+			::widget::dialogRaise $Log
 		}
 	}
 

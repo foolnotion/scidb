@@ -553,6 +553,8 @@ public:
 	void setTags(TagSet const& tags);
 	/// Set game flags (should coincide with game flags in GameInfo).
 	void setFlags(unsigned flags);
+	/// Remove some flags from game flags.
+	void removeFlags(unsigned flags);
 	/// Reset game for next load.
 	void resetForNextLoad();
 	/// Set current language set.

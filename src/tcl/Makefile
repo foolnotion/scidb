@@ -420,8 +420,13 @@ tcl_board.o: ../db/db_edit_key.ipp
 tcl_board.o: ../mstl/m_auto_ptr.h
 tcl_board.o: ../mstl/m_auto_ptr.ipp
 tcl_board.o: ../db/db_game.ipp
-tcl_compare.o: ../sys/sys_utf8.h
+tcl_compare.o: tcl_compare.h
+tcl_compare.o: tcl_base.h
+tcl_compare.o: tcl_base.ipp
+tcl_compare.o: ../util/libTeXt/T_AhoCorasick.h
+tcl_compare.o: ../util/u_base.h
 tcl_compare.o: ../mstl/m_types.h
+tcl_compare.o: ../sys/sys_utf8.h
 tcl_compare.o: ../sys/sys_utf8.ipp
 tcl_compare.o: ../mstl/m_string.h
 tcl_compare.o: ../mstl/m_string.ipp
@@ -438,6 +443,8 @@ tcl_compare.o: ../mstl/m_assert.h
 tcl_compare.o: ../mstl/m_exception.h
 tcl_compare.o: ../mstl/m_backtrace.h
 tcl_compare.o: ../mstl/m_exception.ipp
+tcl_compare.o: ../mstl/m_auto_ptr.h
+tcl_compare.o: ../mstl/m_auto_ptr.ipp
 tcl_crosstable.o: tcl_application.h
 tcl_crosstable.o: tcl_player.h
 tcl_crosstable.o: ../db/db_common.h
@@ -1810,6 +1817,7 @@ tcl_progress.o: tcl_base.ipp
 tcl_sort.o: tcl_sort.h
 tcl_sort.o: tcl_base.h
 tcl_sort.o: tcl_base.ipp
+tcl_sort.o: tcl_compare.h
 tcl_sort.o: ../sys/sys_utf8.h
 tcl_sort.o: ../mstl/m_types.h
 tcl_sort.o: ../sys/sys_utf8.ipp

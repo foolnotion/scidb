@@ -182,6 +182,7 @@
 
 ::util::mc::IOErrorOccurred					"Errore Input/Output"
 
+::util::mc::IOError(CreateFailed)			"no permissions to create files" ;# NEW
 ::util::mc::IOError(OpenFailed)				"apertura fallita"
 ::util::mc::IOError(ReadOnly)					"il database è in sola-lettura"
 ::util::mc::IOError(UnknownVersion)			"versione del file sconosciuta"
@@ -193,6 +194,7 @@
 ::util::mc::IOError(EncodingFailed)			"non posso scrivere il file di namebase"
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
+::util::mc::IOError(NotOriginalVersion)	"file has changed outside from Scidb since last open" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Tempo scaduto durante operazione di trascinamento: intestatario selezione non ha risposto."
 
@@ -263,6 +265,7 @@
 
 # Setup
 ::menu::mc::Engines						"&Motori"
+::menu::mc::PgnOptions					"Setup &PGN export options" ;# NEW
 ::menu::mc::PrivatePlayerCard			"Profilo &Privato del Giocatore"
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
@@ -386,6 +389,8 @@
 ::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
 ::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
 ::application::mc::RestartLogout			"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::UnsavedFiles			"The following PGN files are unsaved:" ;# NEW
+::application::mc::ThrowAwayAllChanges	"Do you really want to throw away all changes?" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Mostra tabella torneo per questa partita"
@@ -425,6 +430,7 @@
 ::application::database::mc::FileImport(pgn)					"Importa file PGN"
 ::application::database::mc::FileImport(db)					"Importa Database"
 ::application::database::mc::FileCreate						"Crea Archivio"
+::application::database::mc::FileSaveChanges					"Save Changes" ;# NEW
 ::application::database::mc::FileClose							"Chiudi"
 ::application::database::mc::FileMaintenance					"Manutenzione"
 ::application::database::mc::FileCompact						"Compresso"
@@ -463,6 +469,7 @@
 ::application::database::mc::ExtractArchive					"Estrai l'archivio %s"
 ::application::database::mc::SelectVariant					"Selezione Variante"
 ::application::database::mc::Example							"Esempio"
+::application::database::mc::UnsavedFiles						"This PGN file is unsaved." ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"
@@ -533,6 +540,7 @@
 ::application::database::mc::T_Crazyhouse						"Crazyhouse"
 
 ::application::database::mc::OpenDatabase						"Apri Database"
+::application::database::mc::OpenRecentDatabase				"Open Recent Database" ;# NEW
 ::application::database::mc::NewDatabase						"Nuovo Database"
 ::application::database::mc::CloseDatabase					"Chiudi Database '%s'"
 ::application::database::mc::SetReadonly						"Imposta Database '%s' in sola lettura"
@@ -732,6 +740,8 @@
 ::database::switcher::mc::GameCount							"Partite"
 ::database::switcher::mc::DatabasePath						"Indirizzo Database"
 ::database::switcher::mc::DeletedGames						"Partite Eliminate"
+::database::switcher::mc::ChangedGames						"Changed Games" ;# NEW
+::database::switcher::mc::AddedGames						"Added Games" ;# NEW
 ::database::switcher::mc::Description						"Descrizione"
 ::database::switcher::mc::Created							"Creata"
 ::database::switcher::mc::LastModified						"Ultima Modifica"
@@ -1168,6 +1178,7 @@
 ::gametable::mc::T_Chess960Pos			"Posizione Scacchi 960"
 ::gametable::mc::T_Deleted					"Eliminate"
 ::gametable::mc::T_Changed					"Modificato"
+::gametable::mc::T_Added					"Added" ;# NEW
 ::gametable::mc::T_EngFlag					"Identificatore Lingua Inglese"
 ::gametable::mc::T_OthFlag					"Identificatori per Altre Lingue"
 ::gametable::mc::T_Idn						"Numero Posizione Scacchi 960"
@@ -1246,9 +1257,11 @@
 ::playertable::mc::T_PlayerInfo				"Identificatore informazioni" ;# "Info Flag" Identificatore informazioni o informazioni sull'identificatore?
 
 ::playertable::mc::Find							"Cerca"
+::playertable::mc::Options						"Options" ;# NEW
 ::playertable::mc::StartSearch				"Comincia ricerca"
 ::playertable::mc::ClearEntries				"Pulisci form"
 ::playertable::mc::NotFound					"Nessun risultato."
+::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
 
 ::playertable::mc::Name							"Nome"
 ::playertable::mc::HighestRating				"Punteggio più alto"
@@ -1512,72 +1525,75 @@
 ::import::mc::EnterOrPaste-Game					"partita"
 ::import::mc::EnterOrPaste-Variation			"variante"
 
-::import::mc::UnsupportedVariant					"Variante non supportata rifiutata"
-::import::mc::MissingWhitePlayerTag				"Manca giocatore bianco"
-::import::mc::MissingBlackPlayerTag				"Manca giocatore nero"
-::import::mc::MissingPlayerTags					"Mancano i giocatori"
-::import::mc::MissingResult						"Manca risultato (alla fine della selezione mosse)"
-::import::mc::MissingResultTag					"Manca risultato (nella sezione tag)"
-::import::mc::InvalidRoundTag						"Tag turno non valida"
-::import::mc::InvalidResultTag					"Tag risultato non valida"
-::import::mc::InvalidDateTag						"Tag data non valida"
-::import::mc::InvalidEventDateTag				"Tag data evento non valida"
-::import::mc::InvalidTimeModeTag					"Tag cadenza non valida"
-::import::mc::InvalidEcoTag						"Tag ECO non valida"
-::import::mc::InvalidTagName						"Tag nome non valida (ignorata)"
-::import::mc::InvalidCountryCode					"Codice paese non valido"
-::import::mc::InvalidRating						"Valore punteggio non valido"
-::import::mc::InvalidNag							"NAG non valido"
-::import::mc::BraceSeenOutsideComment			"\"\}\" visto fuori da un commento nella partita (ignorato)"
-::import::mc::MissingFen							"Manca FEN (tag variante sarà ignorata)"
-::import::mc::UnknownEventType					"Tipo di evento sconosciuto"
-::import::mc::UnknownTitle							"Titolo sconosciuto (ignorato)"
-::import::mc::UnknownPlayerType					"Tipo di giocatore sconosciuto (ignorato)"
-::import::mc::UnknownSex							"Genere sconosciuto (ignorato)"
-::import::mc::UnknownTermination					"Ragione del termine sconosciuta"
-::import::mc::UnknownMode							"Modalità sconosciuta"
-::import::mc::RatingTooHigh						"Elo troppo alto (ignorato)"
-::import::mc::EncodingFailed						"Character decoding failed"
-::import::mc::TooManyNags							"Troppi NAG (ultimo ignorato)"
-::import::mc::IllegalCastling						"Arrocco illegale"
-::import::mc::IllegalMove							"Mossa illegale"
-::import::mc::CastlingCorrection					"Correzione arrocco"
-::import::mc::DecodingFailed						"La decodifica di questa partita non è stata possibile"
-::import::mc::ResultDidNotMatchHeaderResult	"Il risultato non corrisponde alle informazioni fornite"
-::import::mc::ValueTooLong							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
-::import::mc::NotSuicideNotGiveaway				"Dato l'esito della partita la variante non è Vinciperdi."
-::import::mc::VariantChangedToGiveaway			"Dato l'esito della partita la variante è stata cambiata a Vinciperdi"
-::import::mc::VariantChangedToSuicide			"Dato l'esito della partita la variante è stata cambiata a Vinciperdi"
-::import::mc::ResultCorrection					"Dato l'esito della partita è stata effettuata una correzione del risultato"
-::import::mc::MaximalErrorCountExceeded		"Numero massimo di errori superato; non saranno riportati altri errori analoghi"
-::import::mc::MaximalWarningCountExceeded		"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti analoghi"
-::import::mc::InvalidToken							"Token non valido"
-::import::mc::InvalidMove							"Mossa non valida"
-::import::mc::UnexpectedSymbol					"Simbolo inatteso"
-::import::mc::UnexpectedEndOfInput				"Fine dell'inserimento inatteso"
-::import::mc::UnexpectedResultToken				"Token del risultato inatteso"
-::import::mc::UnexpectedTag						"Tag all'interno della partita inattesa"
-::import::mc::UnexpectedEndOfGame				"Fine partita inattesa (manca il risultato)"
-::import::mc::UnexpectedCastling					"Arrocco inaspettato (non permesso in questa variante degli scacchi"
-::import::mc::ContinuationsNotSupported		"'Continuazioni' non supportate"
-::import::mc::TagNameExpected						"Errore di sintassi: serve un nome per il Tag"
-::import::mc::TagValueExpected					"Errore di sintassi: serve un valore per il Tag"
-::import::mc::InvalidFen							"FEN non valido"
-::import::mc::UnterminatedString					"Stringa indeterminata"
-::import::mc::UnterminatedVariation				"Variante indeterminata"
-::import::mc::TooManyGames							"Troppe partite nel database (interrotto)"
-::import::mc::GameTooLong							"Partita troppo lunga (saltata)"
-::import::mc::FileSizeExceeded					"La grandezza massima del file (2GB) sarà superata (interrotto)"
-::import::mc::TooManyPlayerNames					"Troppi nomi di giocatori nel database (interrotto)"
-::import::mc::TooManyEventNames					"Troppi nomi di eventi nel database (interrotto)"
-::import::mc::TooManySiteNames					"Troppi nomi di siti nel database (interrotto)"
-::import::mc::TooManyRoundNames					"Troppi turni nel database"
-::import::mc::TooManyAnnotatorNames				"Troppi nomi di commentatori nel database (interrotto)"
-::import::mc::TooManySourceNames					"Troppi nomi fonte nel database (interrotto)"
-::import::mc::SeemsNotToBePgnText				"Potrebbe non essere un testo PGN"
-::import::mc::AbortedDueToInternalError		"Annullato per errore interno"
-::import::mc::AbortedDueToIoError				"Annullato per errore di lettura/scrittura"
-::import::mc::UserHasInterrupted					"L'utente ha interrotto" ;#User has interrupted?
+::import::mc::State(UnsupportedVariant)		"Variante non supportata rifiutata"
+::import::mc::State(DecodingFailed)				"La decodifica di questa partita non è stata possibile"
+::import::mc::State(TooManyGames)				"Troppe partite nel database (interrotto)"
+::import::mc::State(FileSizeExceeded)			"La grandezza massima del file (2GB) sarà superata (interrotto)"
+::import::mc::State(GameTooLong)					"Partita troppo lunga (saltata)"
+::import::mc::State(TooManyPlayerNames)		"Troppi nomi di giocatori nel database (interrotto)"
+::import::mc::State(TooManyEventNames)			"Troppi nomi di eventi nel database (interrotto)"
+::import::mc::State(TooManySiteNames)			"Troppi nomi di siti nel database (interrotto)"
+::import::mc::State(TooManyRoundNames)			"Troppi turni nel database"
+::import::mc::State(TooManyAnnotatorNames)	"Troppi nomi di commentatori nel database (interrotto)"
+::import::mc::State(TooManySourceNames)		"Troppi nomi fonte nel database (interrotto)"
+
+::import::mc::Warning(MissingWhitePlayerTag)				"Manca giocatore bianco"
+::import::mc::Warning(MissingBlackPlayerTag)				"Manca giocatore nero"
+::import::mc::Warning(MissingPlayerTags)					"Mancano i giocatori"
+::import::mc::Warning(MissingResult)						"Manca risultato (alla fine della selezione mosse)"
+::import::mc::Warning(MissingResultTag)					"Manca risultato (nella sezione tag)"
+::import::mc::Warning(InvalidRoundTag)						"Tag turno non valida"
+::import::mc::Warning(InvalidResultTag)					"Tag risultato non valida"
+::import::mc::Warning(InvalidDateTag)						"Tag data non valida"
+::import::mc::Warning(InvalidEventDateTag)				"Tag data evento non valida"
+::import::mc::Warning(InvalidTimeModeTag)					"Tag cadenza non valida"
+::import::mc::Warning(InvalidEcoTag)						"Tag ECO non valida"
+::import::mc::Warning(InvalidTagName)						"Tag nome non valida (ignorata)"
+::import::mc::Warning(InvalidCountryCode)					"Codice paese non valido"
+::import::mc::Warning(InvalidRating)						"Valore punteggio non valido"
+::import::mc::Warning(InvalidNag)							"NAG non valido"
+::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" visto fuori da un commento nella partita (ignorato)"
+::import::mc::Warning(MissingFen)							"Manca FEN (tag variante sarà ignorata)"
+::import::mc::Warning(UnknownEventType)					"Tipo di evento sconosciuto"
+::import::mc::Warning(UnknownTitle)							"Titolo sconosciuto (ignorato)"
+::import::mc::Warning(UnknownPlayerType)					"Tipo di giocatore sconosciuto (ignorato)"
+::import::mc::Warning(UnknownSex)							"Genere sconosciuto (ignorato)"
+::import::mc::Warning(UnknownTermination)					"Ragione del termine sconosciuta"
+::import::mc::Warning(UnknownMode)							"Modalità sconosciuta"
+::import::mc::Warning(RatingTooHigh)						"Elo troppo alto (ignorato)"
+::import::mc::Warning(EncodingFailed)						"Character decoding failed"
+::import::mc::Warning(TooManyNags)							"Troppi NAG (ultimo ignorato)"
+::import::mc::Warning(IllegalCastling)						"Arrocco illegale"
+::import::mc::Warning(IllegalMove)							"Mossa illegale"
+::import::mc::Warning(CastlingCorrection)					"Correzione arrocco"
+::import::mc::Warning(ResultDidNotMatchHeaderResult)	"Il risultato non corrisponde alle informazioni fornite"
+::import::mc::Warning(ValueTooLong)							"Il valore del tag è troppo lungo e sarà interrotto a 255 caratteri"
+::import::mc::Warning(NotSuicideNotGiveaway)				"Dato l'esito della partita la variante non è Vinciperdi."
+::import::mc::Warning(VariantChangedToGiveaway)			"Dato l'esito della partita la variante è stata cambiata a Vinciperdi"
+::import::mc::Warning(VariantChangedToSuicide)			"Dato l'esito della partita la variante è stata cambiata a Vinciperdi"
+::import::mc::Warning(ResultCorrection)					"Dato l'esito della partita è stata effettuata una correzione del risultato"
+::import::mc::Warning(MaximalErrorCountExceeded)		"Numero massimo di errori superato; non saranno riportati altri errori analoghi"
+::import::mc::Warning(MaximalWarningCountExceeded)		"Numero massimo di avvertimenti superato; non saranno riportati altri avvertimenti analoghi"
+
+::import::mc::Error(InvalidToken)							"Token non valido"
+::import::mc::Error(InvalidMove)								"Mossa non valida"
+::import::mc::Error(UnexpectedSymbol)						"Simbolo inatteso"
+::import::mc::Error(UnexpectedEndOfInput)					"Fine dell'inserimento inatteso"
+::import::mc::Error(UnexpectedResultToken)				"Token del risultato inatteso"
+::import::mc::Error(UnexpectedTag)							"Tag all'interno della partita inattesa"
+::import::mc::Error(UnexpectedEndOfGame)					"Fine partita inattesa (manca il risultato)"
+::import::mc::Error(UnexpectedCastling)					"Arrocco inaspettato (non permesso in questa variante degli scacchi"
+::import::mc::Error(ContinuationsNotSupported)			"'Continuazioni' non supportate"
+::import::mc::Error(TagNameExpected)						"Errore di sintassi: serve un nome per il Tag"
+::import::mc::Error(TagValueExpected)						"Errore di sintassi: serve un valore per il Tag"
+::import::mc::Error(InvalidFen)								"FEN non valido"
+::import::mc::Error(UnterminatedString)					"Stringa indeterminata"
+::import::mc::Error(UnterminatedVariation)				"Variante indeterminata"
+::import::mc::Error(SeemsNotToBePgnText)					"Potrebbe non essere un testo PGN"
+::import::mc::Error(AbortedDueToInternalError)			"Annullato per errore interno"
+::import::mc::Error(AbortedDueToIoError)					"Annullato per errore di lettura/scrittura"
+::import::mc::Error(UserHasInterrupted)					"L'utente ha interrotto" ;#User has interrupted?
+
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Selezione File"
@@ -2365,7 +2381,6 @@
 ::fsbox::mc::DirectoryRemoved				"Non posso passare alla cartella '%s'.\nLa cartella è rimossa."
 ::fsbox::mc::DeleteFailed					"Rimozione di '%s' fallita."
 ::fsbox::mc::RestoreFailed					"Ripristino di '%s' fallito."
-::fsbox::mc::CommandFailed					"Comando '%s' fallito." 
 ::fsbox::mc::CopyFailed						"Copia del file '%s' fallita: permesso negato."
 ::fsbox::mc::CannotCopy						"Non posso creare una copia perché il file '%s' esiste già."
 ::fsbox::mc::CannotDuplicate				"Impossibile duplicare il file '%s' per mancanza di permessi lettura."
@@ -2404,6 +2419,8 @@
 ::fsbox::mc::AnEntryAlreadyExists		"Un valore '%s' è già presente."
 ::fsbox::mc::SourceDirectoryIs			"La cartella d'origine è '%s'."
 ::fsbox::mc::NewName							"Nuovo nome"
+::fsbox::mc::BookmarkAlreadyExists		"A bookmark for this folder is already existing: '%s'." ;# NEW
+::fsbox::mc::AddBookmarkAnyway			"Add bookmark anyway?" ;# NEW
 
 ::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
 ::fsbox::mc::ReallyMove(file,r)			"Vuoi davvero spostare il file protetto in scrittura '%s' nel cestino?"
@@ -2423,6 +2440,7 @@
 ::fsbox::mc::Cannot(rename)				"Impossibile rinominare il file '%s'."
 ::fsbox::mc::Cannot(move)					"Impossibile spostare il file '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Impossibile sovrascrivere il file '%s'."
+::fsbox::mc::Cannot(delete-or-move)		"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)				"Sposta qui"
 ::fsbox::mc::DropAction(copy)				"Copia qui"

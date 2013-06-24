@@ -434,14 +434,7 @@ proc childconfigure {w args} {
 	}
 
 	if {$HaveTooltips} {
-		if {![info exists Specs(tooltip-init:$w:$toolbar)]} {
-			if {[llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)]} {
-				::tooltip::init
-				bind $w <Enter> +[namespace code { Tooltip show %W }]
-				bind $w <Leave> +[namespace code { Tooltip hide %W }]
-			}
-		}
-
+		SetupTooltips $w
 		if {"-state" in $args} { Tooltip hide $w }
 	}
 }
@@ -821,6 +814,8 @@ proc Add {toolbar widgetCommand args} {
 		offvalue:$w:$toolbar			0                             \
 		tooltip:$w:$toolbar			{}                            \
 		tooltipvar:$w:$toolbar		{}                            \
+		arrowttip:$w:$toolbar		{}                            \
+		arrowttipvar:$w:$toolbar	{}                            \
 		default:$w:$toolbar			{}                            \
 		small:$w:$toolbar				{}                            \
 		medium:$w:$toolbar			{}                            \
@@ -828,40 +823,46 @@ proc Add {toolbar widgetCommand args} {
 		state:$w:$toolbar				normal                        \
 		overrelief:$w:$toolbar		$Defaults(toolbar:overrelief) \
 		relief:$w:$toolbar			$Defaults(toolbar:relief)     \
+		menucmd:$w:$toolbar			{}                            \
 	]
 
 	foreach {arg val} $args {
 		switch -- $arg {
-			-after		{ lappend packOpts -after $val }
-			-before		{ lappend packOpts -before $val }
-			-before		{ set beforeWidget $val }
-			-image		{ set options(-image) [SetupIcons $toolbar $w $val] }
-			-state		{ set state $val }
-			-overrelief	{ set Specs(overrelief:$w:$toolbar) $val }
-			-relief		{ set Specs(relief:$w:$toolbar) $val }
-			-tooltip		{ if {[llength $val]} { set Specs(tooltip:$w:$toolbar) $val } }
-			-tooltipvar	{ if {[llength $val]} { set Specs(tooltipvar:$w:$toolbar) $val } }
-			-value		{ set value $val }
-			-variable	{ set variable $val }
-			-float		{ set Specs(float:$w:$toolbar) $val }
-			-padx			{ set Specs(padx:$w:$toolbar) $val }
-			-onvalue		{ set Specs(onvalue:$w:$toolbar) $val }
-			-offvalue	{ set Specs(offvalue:$w:$toolbar) $val }
-			default		{ set options($arg) $val }
+			-after			{ lappend packOpts -after $val }
+			-before			{ lappend packOpts -before $val }
+			-image			{ set options(-image) [SetupIcons $toolbar $w $val] }
+			-state			{ set state $val }
+			-overrelief		{ set Specs(overrelief:$w:$toolbar) $val }
+			-relief			{ set Specs(relief:$w:$toolbar) $val }
+			-tooltip			{ if {[llength $val]} { set Specs(tooltip:$w:$toolbar) $val } }
+			-tooltipvar		{ if {[llength $val]} { set Specs(tooltipvar:$w:$toolbar) $val } }
+			-arrowttip		{ if {[llength $val]} { set Specs(arrowttip:$w:$toolbar) $val } }
+			-arrowttipvar	{ if {[llength $val]} { set Specs(arrowttipvar:$w:$toolbar) $val } }
+			-value			{ set value $val }
+			-variable		{ set variable $val }
+			-float			{ set Specs(float:$w:$toolbar) $val }
+			-padx				{ set Specs(padx:$w:$toolbar) $val }
+			-onvalue			{ set Specs(onvalue:$w:$toolbar) $val }
+			-offvalue		{ set Specs(offvalue:$w:$toolbar) $val }
+			-menucmd			{ set Specs(menucmd:$w:$toolbar) $val }
+			default			{ set options($arg) $val }
 		}
 	}
 
 	if {![info exists options(-background)] && [string match *button* $widgetCommand]} {
 		set options(-background) [$toolbar cget -background]
 	}
-	if {![info exists  options(-activebackground)]} {
+	if {![info exists options(-activebackground)]} {
 		set options(-activebackground) $Defaults(toolbar:activebackground)
 	}
 
 	if {[string match *ttk::spinbox $widgetCommand]} { set options(-state) $state }
 	if {$widgetCommand eq "spinbox"} { set options(-state) $state }
 	if {$widgetCommand eq "checkbutton"} { set widgetCommand "button" }
-	if {$widgetCommand ne "button"} { unset options(-activebackground) }
+	if {$widgetCommand ne "button" && $widgetCommand ne "dropdownbutton"} {
+		unset options(-activebackground)
+	}
+	if {$widgetCommand eq "dropdownbutton"} { set options(-menucmd) $Specs(menucmd:$w:$toolbar) }
 	if {$widgetCommand eq "frame"} { set options(-relief) $Specs(relief:$w:$toolbar) }
 	if {![string match *ttk* $widgetCommand]} { set options(-relief) $Specs(relief:$w:$toolbar) }
 	if {[string match *entry $widgetCommand]} { set Specs(takefocus:$toolbar) 1 }
@@ -869,7 +870,8 @@ proc Add {toolbar widgetCommand args} {
 
 	eval $widgetCommand $w [array get options]
 
-	if {[winfo class $w] eq "Button"} {
+	set class [winfo class $w]
+	if {$class eq "Button" || $class eq "DropdownButton"} {
 		set Specs(command:$w:$toolbar) [$w cget -command]
 		set Specs(active:$w:$toolbar) [$w cget -activebackground]
 		set Specs(button1:$w:$toolbar) ::tooltip::hide
@@ -926,12 +928,8 @@ proc Add {toolbar widgetCommand args} {
 	trace add variable $variable write $traceCmd
 	bind $w <Destroy> "+trace remove variable $variable write {$traceCmd}"
 
-	if {	$HaveTooltips
-		&& ([llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)])} {
-		::tooltip::init
-		set Specs(tooltip-init:$w:$toolbar) 1
-		bind $w <Enter> +[namespace code { Tooltip show %W }]
-		bind $w <Leave> +[namespace code { Tooltip hide %W }]
+	if {$HaveTooltips} {
+		SetupTooltips $w
 	}
 	if {$widgetCommand eq "button"} {
 		bind $w <Enter> +[namespace code [list EnterButton $toolbar $w]]
@@ -966,6 +964,28 @@ proc SetIconSize {args} {
 	foreach toolbar $Specs(toolbars) {
 		set Specs(default:$toolbar) $Options(icons:size)
 		ChangeIcons $toolbar
+	}
+}
+
+
+proc SetupTooltips {w} {
+	variable Specs
+
+	set toolbar [winfo parent $w]
+
+	if {![info exists Specs(tooltip-init:$w:$toolbar)]} {
+		if {[llength $Specs(tooltip:$w:$toolbar)] || [llength $Specs(tooltipvar:$w:$toolbar)]} {
+			::tooltip::init
+			bind $w <Enter> +[namespace code { Tooltip show %W }]
+			bind $w <Leave> +[namespace code { Tooltip hide %W }]
+		}
+	}
+
+	if {[winfo class $w] eq "DropdownButton"} {
+		$w configure -arrowttipvar $Specs(arrowttipvar:$w:$toolbar)
+		$w configure -arrowttip $Specs(arrowttip:$w:$toolbar)
+		$w configure -tooltipvar $Specs(tooltipvar:$w:$toolbar)
+		$w configure -tooltip $Specs(tooltip:$w:$toolbar)
 	}
 }
 
@@ -1719,7 +1739,7 @@ proc SetState {toolbar v w state} {
 	variable Specs
 
 	switch [winfo class $w] {
-		Button {
+		Button - DropdownButton {
 			if {$state eq "normal"} {
 				set overrelief $Specs(overrelief:$v:$toolbar)
 				set relief $Specs(relief:$v:$toolbar)
@@ -2307,9 +2327,9 @@ proc Tooltip {mode w} {
 
 	switch $mode {
 		show {
-			if {[llength $Specs(tooltipvar:$w:$toolbar)]} {
+			if {[string length $Specs(tooltipvar:$w:$toolbar)]} {
 				::tooltip::showvar $w $Specs(tooltipvar:$w:$toolbar)
-			} else {
+			} elseif {[string length $Specs(tooltip:$w:$toolbar)]} {
 				::tooltip::show $w $Specs(tooltip:$w:$toolbar)
 			}
 		}
@@ -2719,7 +2739,6 @@ proc UndockToolbar {toolbar x y} {
 	variable Specs
 	variable Defaults
 	variable iconSizes
-	variable HaveTooltips
 
 	if {!$Specs(enabled:$toolbar)} { return }
 
@@ -2896,7 +2915,8 @@ proc CloneWidget {toolbar child} {
 				bind $clone <Leave> +[namespace code { Tooltip hide %W }]
 			}
 		}
-		if {[winfo class $child] eq "Button"} {
+		set class [winfo class $child]
+		if {$class eq "Button" || $class eq "DropdownButton"} {
 			foreach attr {relief overrelief active command} {
 				set Specs($attr:$clone:$floatingToolbar) $Specs($attr:$child:$toolbar)
 			}

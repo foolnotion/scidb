@@ -671,8 +671,12 @@ proc popupMenu {gamebar parent {addGameHistory 1} {remove -1}} {
 }
 
 
-proc addVariantsToMenu {parent m} {
-	foreach variant {ThreeCheck Crazyhouse} {
+proc addVariantsToMenu {parent m {excludeNormal 0}} {
+	set variants {}
+	if {!$excludeNormal} { lappend variants Normal }
+	lappend variants ThreeCheck Crazyhouse
+
+	foreach variant $variants {
 		$m add command \
 			-label " $::mc::VariantName($variant)" \
 			-image $::icon::16x16::variant($variant) \
@@ -1321,17 +1325,17 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 	$m add command \
 		-label " $mc::GameNew" \
 		-accelerator "Ctrl+X" \
-		-image $::icon::16x16::document \
+		-image $::icon::16x16::documentNew \
 		-compound left \
 		-command [list ::menu::gameNew $parent] \
 		;
 
 	set sub [menu $m.newGame -tearoff 0]
-	addVariantsToMenu $parent $sub
+	addVariantsToMenu $parent $sub 1
 	$m add cascade \
 		-menu $sub \
 		-label " $mc::GameNew" \
-		-image $::icon::16x16::document \
+		-image $::icon::16x16::documentNewAlt \
 		-compound left \
 		;
 

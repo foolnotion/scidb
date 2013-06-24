@@ -69,7 +69,6 @@ namespace
 {
 #ifdef USE_BITFIELDS // non-portable between different platforms!
 
-	// 56 bytes (Scid: 46 bytes)
 	struct IndexEntry
 	{
 		union
@@ -81,7 +80,7 @@ namespace
 				uint64_t whitePlayer			:24;
 				uint64_t blackPlayer			:24;
 				uint64_t plyCount				:11;
-				uint32_t dateDay				: 5;
+				uint64_t dateDay				: 5;
 				//----------------------------- 64 bit
 				uint32_t positionData;
 				//----------------------------- 32 bit
@@ -117,11 +116,11 @@ namespace
 				//----------------------------- 32 bit
 				uint32_t whiteElo				:12;
 				uint32_t dateYear				:10;
-				uint64_t termination			: 4;
+				uint32_t termination			: 4;
 				uint32_t result				: 3;
-				uint64_t setup					: 1;
-				uint16_t commentEngFlag		: 1;
-				uint16_t commentOthFlag		: 1;
+				uint32_t setup					: 1;
+				uint32_t commentEngFlag		: 1;
+				uint32_t commentOthFlag		: 1;
 				//----------------------------- 32 bit
 			};
 			struct
@@ -140,7 +139,15 @@ namespace
 		void swapBytes();
 	};
 
-#else
+#else // USE_BITFIELDS
+
+// 56 bytes per index entry (Scid: 46 bytes)
+//
+// Maximal file size is 2GB:
+// ------------------------------------------------------------
+// maximal 76.695.844 =~ 2^27 players	-- we allow maximal 2^24
+// maximal 38.347.922 =~ 2^26 events	-- we allow maximal 2^24
+// maximal 38.347.922 =~ 2^26 sites		-- we allow maximal 2^24
 
 struct IndexEntry
 {
@@ -155,90 +162,124 @@ struct IndexEntry
 	};
 };
 
-#define SET_HOME_PAWNS(item,value)			item->u64[ 0]  = value
-#define SET_WHITE_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ffffff) << 8
-#define SET_BLACK_PLAYER(item,value)		item->u32[ 2] |= (value & 0x00ff0000) >> 16, \
-														item->u32[ 3] |= (value & 0x0000ffff) << 16
-#define SET_PLY_COUNT(item,value)			item->u32[ 3] |= (value & 0x000007ff) << 5
-#define SET_DATE_DAY(item,value)				item->u32[ 3] |= value & 0x0000001f
-#define SET_POSITION_DATA(item,value)		item->u32[ 4]  = value
-#define SET_PLY_0(item,value)					item->u16[ 8]  = value
-#define SET_PLY_1(item,value)					item->u16[ 9]  = value
-#define SET_PAWN_PROGRESS(item,value)		item->u32[ 5]  = value
-#define SET_GAME_OFFSET(item,value)			item->u32[ 6]  = value
-#define SET_ANNOTATOR(item,value)			item->u32[ 7] |= (value & 0x00ffffff) << 8
-#define SET_VARIATION_COUNT(item,value)	item->u32[ 7] |= (value & 0x0000000f) << 4
-#define SET_COMMENT_COUNT(item,value)		item->u32[ 7] |= (value & 0x0000000f)
-#define SET_EVENT(item,value)					item->u32[ 8] |= (value & 0x00ffffff) << 8
-#define SET_ROUND(item,value)					item->u32[ 8] |= value & 0x000000ff
-#define SET_MATERIAL(item,value)				item->u32[ 9] |= (value & 0x00ffffff) << 8
-#define SET_HP_COUNT(item,value)				item->u32[ 9] |= (value & 0x0000000f) << 4
-#define SET_BLACK_RATING_TYPE(item,value)	item->u32[ 9] |= (value & 0x00000007) << 1
-#define SET_UNDER_PROMOTION(item,value)	item->u32[ 9] |= value & 0x00000001
-#define SET_GAME_FLAGS(item,value)			item->u32[10] |= (value & 0x00ffffff) << 8
-#define SET_CASTLING(item,value)				item->u32[10] |= (value & 0x0000000f) << 4
-#define SET_WHITE_RATING_TYPE(item,value)	item->u32[10] |= (value & 0x00000007) << 1
-#define SET_PROMOTION(item,value)			item->u32[10] |= value & 0x00000001
-#define SET_WHITE_RATING(item,value)		item->u32[11] |= (value & 0x00000fff) << 20
-#define SET_POSITION_ID(item,value)			item->u32[11] |= (value & 0x00000fff) << 8
-#define SET_SUBROUND(item,value)				item->u32[11] |= value & 0x000000ff
-#define SET_BLACK_ELO(item,value)			item->u32[12] |= (value & 0x00000fff) << 20
-#define SET_BLACK_RATING(item,value)		item->u32[12] |= (value & 0x00000fff) << 8
-#define SET_DATE_MONTH(item,value)			item->u32[12] |= (value & 0x0000000f) << 4
-#define SET_ANNOTATION_COUNT(item,value)	item->u32[12] |= value & 0x0000000f
-#define SET_WHITE_ELO(item,value)			item->u32[13] |= (value & 0x00000fff) << 20
-#define SET_DATE_YEAR(item,value)			item->u32[13] |= (value & 0x000003ff) << 10
-#define SET_TERMINATION(item,value)			item->u32[13] |= (value & 0x0000000f) << 6
-#define SET_RESULT(item,value)				item->u32[13] |= (value & 0x00000007) << 3
-#define SET_SETUP(item,value)					item->u32[13] |= (value & 0x00000001) << 2
-#define SET_COMMENT_ENG_FLAG(item,value)	item->u32[13] |= (value & 0x00000001) << 1
-#define SET_COMMENT_OTH_FLAG(item,value)	item->u32[13] |= value & 0x00000001
+#define BF_MASK(type, pos, len) \
+	(((static_cast<type>(1) << (len)) - 1) << (pos))
+
+#define BF_GET(var, pos, len) \
+	((var >> (pos)) & ((static_cast<typeof(var)>(1) << (len)) - 1))
+
+#define BF_SET(var, val, pos, len) \
+	var |= ((static_cast<typeof(var)>(val) << (pos)) & BF_MASK(typeof(var), pos, len))
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+#define SET_HOME_PAWNS(item,value)					item->u64[0] = value
+
+#define SET_BLACK_PLAYER(item,value)				BF_SET(item->u32[2], value >> 16, 0,  8), \
+																BF_SET(item->u32[3], value, 16, 16)
+#define SET_WHITE_PLAYER(item,value)				BF_SET(item->u32[2], value,  8, 24)
+
+#define SET_DATE_DAY(item,value)						BF_SET(item->u32[3], value,  0,  5)
+#define SET_PLY_COUNT(item,value)					BF_SET(item->u32[3], value,  5, 11)
+
+#define SET_POSITION_DATA(item,value)				item->u32[4] = value
+#define SET_PLY_0(item,value)							item->u16[8] = value
+#define SET_PLY_1(item,value)							item->u16[9] = value
+#define SET_PAWN_PROGRESS(item,value)				item->u32[5] = value
+#define SET_GAME_OFFSET(item,value)					item->u32[6] = value
+
+#define SET_COMMENT_COUNT(item,value)				BF_SET(item->u32[7], value,  0,  4)
+#define SET_VARIATION_COUNT(item,value)			BF_SET(item->u32[7], value,  4,  4)
+#define SET_ANNOTATOR(item,value)					BF_SET(item->u32[7], value,  8, 24)
+
+#define SET_ROUND(item,value)							BF_SET(item->u32[8], value,  0,  8)
+#define SET_EVENT(item,value)							BF_SET(item->u32[8], value,  8, 24)
+
+#define SET_UNDER_PROMOTION(item,value)			BF_SET(item->u32[9], value,  0,  1)
+#define SET_BLACK_RATING_TYPE(item,value)			BF_SET(item->u32[9], value,  1,  3)
+#define SET_HP_COUNT(item,value)						BF_SET(item->u32[9], value,  4,  4)
+#define SET_MATERIAL(item,value)						BF_SET(item->u32[9], value,  8, 24)
+
+#define SET_PROMOTION(item,value)					BF_SET(item->u32[10], value,  0,  1)
+#define SET_WHITE_RATING_TYPE(item,value)			BF_SET(item->u32[10], value,  1,  3)
+#define SET_CASTLING(item,value)						BF_SET(item->u32[10], value,  4,  4)
+#define SET_GAME_FLAGS(item,value)					BF_SET(item->u32[10], value,  8, 24)
+
+#define SET_SUBROUND(item,value)						BF_SET(item->u32[11], value,  0,  8)
+#define SET_POSITION_ID(item,value)					BF_SET(item->u32[11], value,  8, 12)
+#define SET_WHITE_RATING(item,value)				BF_SET(item->u32[11], value, 20, 12)
+
+#define SET_ANNOTATION_COUNT(item,value)			BF_SET(item->u32[12], value,  0,  4)
+#define SET_DATE_MONTH(item,value)					BF_SET(item->u32[12], value,  4,  4)
+#define SET_BLACK_RATING(item,value)				BF_SET(item->u32[12], value,  8, 12)
+#define SET_BLACK_ELO(item,value)					BF_SET(item->u32[12], value, 20, 12)
+
+#define SET_COMMENT_OTH_FLAG(item,value)			BF_SET(item->u32[13], value,  0,  1)
+#define SET_COMMENT_ENG_FLAG(item,value)			BF_SET(item->u32[13], value,  1,  1)
+#define SET_SETUP(item,value)							BF_SET(item->u32[13], value,  2,  1)
+#define SET_RESULT(item,value)						BF_SET(item->u32[13], value,  3,  3)
+#define SET_TERMINATION(item,value)					BF_SET(item->u32[13], value,  6,  4)
+#define SET_DATE_YEAR(item,value)					BF_SET(item->u32[13], value, 10, 10)
+#define SET_WHITE_ELO(item,value)					BF_SET(item->u32[13], value, 20, 12)
+
+///////////////////////////////////////////////////////////////////////////////////////////
 
 #define GET_HOME_PAWNS(item)					item->u64[0]
-#define GET_WHITE_PLAYER(item)				((item->u32[2] >>  8) & 0x00ffffff)
-#define GET_BLACK_PLAYER(item)				((item->u32[2] & 0x000000ff) << 16) | \
-														((item->u32[3] >> 16) & 0x0000ffff)
-#define GET_PLY_COUNT(item)					((item->u32[3] >>  5) & 0x000007ff)
-#define GET_DATE_DAY(item)						(item->u32[3] & 0x0000001f)
+
+#define GET_BLACK_PLAYER(item)				(BF_GET(item->u32[2],  0,  8) << 16) | \
+														(BF_GET(item->u32[3], 16, 16))
+#define GET_WHITE_PLAYER(item)				BF_GET(item->u32[2],  8, 24)
+
+#define GET_DATE_DAY(item)						BF_GET(item->u32[3],  0,  5)
+#define GET_PLY_COUNT(item)					BF_GET(item->u32[3],  5, 11)
+
 #define GET_POSITION_DATA(item)				item->u32[4]
 #define GET_PLY_0(item)							item->u16[8]
 #define GET_PLY_1(item)							item->u16[9]
 #define GET_PAWN_PROGRESS(item)				item->u32[5]
 #define GET_GAME_OFFSET(item)					item->u32[6]
-#define GET_ANNOTATOR(item)					((item->u32[7] >> 8) & 0x00ffffff)
-#define GET_VARIATION_COUNT(item)			((item->u32[7] >> 4) & 0x0000000f)
-#define GET_COMMENT_COUNT(item)				(item->u32[7] & 0x0000000f)
-#define GET_EVENT(item)							((item->u32[8] >> 8) & 0x00ffffff)
-#define GET_ROUND(item)							(item->u32[8] & 0x000000ff)
-#define GET_MATERIAL(item)						((item->u32[9] >> 8) & 0x00ffffff)
-#define GET_HP_COUNT(item)						((item->u32[9] >> 4) & 0x0000000f)
-#define GET_BLACK_RATING_TYPE(item)			((item->u32[9] >> 1) & 0x00000007)
-#define GET_UNDER_PROMOTION(item)			(item->u32[9] & 0x00000001)
-#define GET_GAME_FLAGS(item)					((item->u32[10] >> 8) & 0x00ffffff)
-#define GET_CASTLING(item)						((item->u32[10] >> 4) & 0x0000000f)
-#define GET_WHITE_RATING_TYPE(item)			((item->u32[10] >> 1) & 0x00000007)
-#define GET_PROMOTION(item)					(item->u32[10] & 0x00000001)
-#define GET_WHITE_RATING(item)				((item->u32[11] >> 20) & 0x00000fff)
-#define GET_POSITION_ID(item)					((item->u32[11] >>  8) & 0x00000fff)
-#define GET_SUBROUND(item)						(item->u32[11] & 0x000000ff)
-#define GET_BLACK_ELO(item)					((item->u32[12] >> 20) & 0x00000fff)
-#define GET_BLACK_RATING(item)				((item->u32[12] >>  8) & 0x00000fff)
-#define GET_DATE_MONTH(item)					((item->u32[12] >>  4) & 0x0000000f)
-#define GET_ANNOTATION_COUNT(item)			(item->u32[12] & 0x0000000f)
-#define GET_WHITE_ELO(item)					((item->u32[13] >> 20) & 0x00000fff)
-#define GET_DATE_YEAR(item)					((item->u32[13] >> 10) & 0x000003ff)
-#define GET_TERMINATION(item)					((item->u32[13] >>  6) & 0x0000000f)
-#define GET_RESULT(item)						((item->u32[13] >>  3) & 0x00000007)
-#define GET_SETUP(item)							((item->u32[13] >>  2) & 0x00000001)
-#define GET_COMMENT_ENG_FLAG(item)			((item->u32[13] >>  1) & 0x00000001)
-#define GET_COMMENT_OTH_FLAG(item)			(item->u32[13] & 0x00000001)
 
-#endif
+#define GET_COMMENT_COUNT(item)				BF_GET(item->u32[7],  0,  4)
+#define GET_VARIATION_COUNT(item)			BF_GET(item->u32[7],  4,  4)
+#define GET_ANNOTATOR(item)					BF_GET(item->u32[7],  8, 24)
+
+#define GET_ROUND(item)							BF_GET(item->u32[8],  0,  8)
+#define GET_EVENT(item)							BF_GET(item->u32[8],  8, 24)
+
+#define GET_UNDER_PROMOTION(item)			BF_GET(item->u32[9],  0,  1)
+#define GET_BLACK_RATING_TYPE(item)			BF_GET(item->u32[9],  1,  3)
+#define GET_HP_COUNT(item)						BF_GET(item->u32[9],  4,  4)
+#define GET_MATERIAL(item)						BF_GET(item->u32[9],  8, 24)
+
+#define GET_PROMOTION(item)					BF_GET(item->u32[10],  0,  1)
+#define GET_WHITE_RATING_TYPE(item)			BF_GET(item->u32[10],  1,  3)
+#define GET_CASTLING(item)						BF_GET(item->u32[10],  4,  4)
+#define GET_GAME_FLAGS(item)					BF_GET(item->u32[10],  8, 24)
+
+#define GET_SUBROUND(item)						BF_GET(item->u32[11],  0,  8)
+#define GET_POSITION_ID(item)					BF_GET(item->u32[11],  8, 12)
+#define GET_WHITE_RATING(item)				BF_GET(item->u32[11], 20, 12)
+
+#define GET_ANNOTATION_COUNT(item)			BF_GET(item->u32[12],  0,  4)
+#define GET_DATE_MONTH(item)					BF_GET(item->u32[12],  4,  4)
+#define GET_BLACK_RATING(item)				BF_GET(item->u32[12],  8, 12)
+#define GET_BLACK_ELO(item)					BF_GET(item->u32[12], 20, 12)
+
+#define GET_COMMENT_OTH_FLAG(item)			BF_GET(item->u32[13],  0,  1)
+#define GET_COMMENT_ENG_FLAG(item)			BF_GET(item->u32[13],  1,  1)
+#define GET_SETUP(item)							BF_GET(item->u32[13],  2,  1)
+#define GET_RESULT(item)						BF_GET(item->u32[13],  3,  3)
+#define GET_TERMINATION(item)					BF_GET(item->u32[13],  6,  4)
+#define GET_DATE_YEAR(item)					BF_GET(item->u32[13], 10, 10)
+#define GET_WHITE_ELO(item)					BF_GET(item->u32[13], 20, 12)
+
+///////////////////////////////////////////////////////////////////////////////////////////
+#endif // USE_BITFIELDS
 
 #if __BYTE_ORDER == __LITTLE_ENDIAN
 
-// NOTE dont swap homepawns:			u64[ 0] = mstl::bo::swap(u64[ 0]);
-// NOTE dont swap pawn progression:	u32[ 5] = mstl::bo::swap(u32[ 5]);
+// NOTE: don't swap homepawns:			u64[0]
+// NOTE: don't swap pawn progression:	u32[5]
 
 # define SWAP_BYTES(idn)               \
 	u32[ 2] = mstl::bo::swap(u32[ 2]);  \
@@ -1521,7 +1562,7 @@ Codec::encodeIndex(GameInfo const& item, ByteStream& strm)
 	M_ASSERT(item.material().value						== (GET_MATERIAL(bits)));
 	M_ASSERT(item.m_round									== (GET_ROUND(bits)));
 	M_ASSERT(item.m_subround								== (GET_SUBROUND(bits)));
-	M_ASSERT(item.m_gameFlags								== (GET_GAME_FLAGS(bits)));
+//	M_ASSERT(item.m_gameFlags								== (GET_GAME_FLAGS(bits)));
 	M_ASSERT(item.m_signature.hasPromotion()			== (GET_PROMOTION(bits)));
 	M_ASSERT(item.m_signature.hasUnderPromotion()	== (GET_UNDER_PROMOTION(bits)));
 	M_ASSERT(item.m_signature.m_castling				== (GET_CASTLING(bits)));
@@ -2390,6 +2431,7 @@ bool
 Codec::getAttributes(mstl::string const& filename,
 							int& numGames,
 							db::type::ID& type,
+							variant::Type& variant,
 							uint32_t& creationTime,
 							mstl::string* description)
 {
@@ -2409,10 +2451,25 @@ Codec::getAttributes(mstl::string const& filename,
 
 	ByteStream bstrm(header, sizeof(header));
 
-	bstrm.skip(2);
+#ifndef CODEBLOCKS
+	unsigned fileVersion = bstrm.uint16();
+
+	switch (fileVersion)
+	{
+		case 91:
+			return v91::Codec::getAttributes(filename, numGames, type, creationTime, description);
+		case 92:
+			return v92::Codec::getAttributes(filename, numGames, type, creationTime, description);
+		case 93:
+			return v93::Codec::getAttributes(filename, numGames, type, variant, creationTime, description);
+	}
+#endif
+
 	numGames	= bstrm.uint24();
+	variant = variant::fromIndex(bstrm.uint8());
 	type = type::ID(bstrm.uint8());
-	creationTime  = bstrm.uint32();
+	bstrm.skip(1);
+	creationTime = bstrm.uint32();
 
 	if (description)
 		bstrm.get(*description);

@@ -111,12 +111,12 @@ Database::Database(Database const& db, mstl::string const& name)
 	,m_name(name)
 	,m_id(Counter++)
 	,m_size(0)
+	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
-	,m_hasChanged(false)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
@@ -126,7 +126,7 @@ Database::Database(Database const& db, mstl::string const& name)
 	}
 	catch (mstl::ios_base::failure const& exc)
 	{
-		IO_RAISE(Unspecified, Open_Failed, "create failed");
+		IO_RAISE(Unspecified, Create_Failed, "no permissions to create file");
 	}
 }
 
@@ -137,12 +137,12 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	,m_name(name)
 	,m_id(Counter++)
 	,m_size(0)
+	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
-	,m_hasChanged(false)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
@@ -155,7 +155,7 @@ Database::Database(mstl::string const& name, mstl::string const& encoding)
 	m_created = sys::time::time();
 	m_readOnly = true;
 	m_writable = false;
-	m_size = m_codec->openProgressive(this, encoding);
+	m_initialSize = m_size = m_codec->openProgressive(this, encoding);
 	m_namebases.setModified(true);
 }
 
@@ -170,12 +170,12 @@ Database::Database(	mstl::string const& name,
 	,m_name(name)
 	,m_id(Counter++)
 	,m_size(0)
+	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
-	,m_hasChanged(false)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
@@ -214,7 +214,7 @@ Database::Database(	mstl::string const& name,
 		IO_RAISE(Unspecified, Open_Failed, "create failed");
 	}
 
-	m_size = m_gameInfoList.size();
+	m_initialSize = m_size = m_gameInfoList.size();
 	m_namebases.setModified(true);
 }
 
@@ -228,12 +228,12 @@ Database::Database(	mstl::string const& name,
 	,m_name(name)
 	,m_id(Counter++)
 	,m_size(0)
+	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
-	,m_hasChanged(false)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
@@ -244,6 +244,7 @@ Database::Database(	mstl::string const& name,
 
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
+
 	::sys::file::changed(m_name, m_fileTime);
 
 	if (m_codec == 0)
@@ -266,8 +267,9 @@ Database::Database(	mstl::string const& name,
 		IO_RAISE(Unspecified, Open_Failed, "open failed");
 	}
 
-	m_size = m_gameInfoList.size();
+	m_initialSize = m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
+
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								Statistic::Reset);
@@ -280,12 +282,12 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	,m_name(name)
 	,m_id(Counter++)
 	,m_size(0)
+	,m_initialSize(0)
 	,m_lastChange(sys::time::timestamp())
 	,m_fileTime(0)
 	,m_asyncReader(0)
 	,m_encodingFailed(false)
 	,m_encodingOk(true)
-	,m_hasChanged(false)
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
@@ -304,9 +306,10 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 		IO_RAISE(Unspecified, Open_Failed, "open failed");
 	}
 
-	m_size = m_gameInfoList.size();
+	m_initialSize = m_size = m_gameInfoList.size();
 	m_readOnly = true;
 	setEncodingFailed(producer.encodingFailed());
+
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								Statistic::Reset);
@@ -337,11 +340,46 @@ Database::hasChanged(unsigned index) const
 
 
 bool
+Database::hasChanged() const
+{
+	return	m_memoryOnly
+			&& (	m_descriptionHasChanged
+				|| m_statistic.deleted + m_statistic.changed + m_statistic.added > 0);
+}
+
+
+bool
 Database::checkFileTime() const
 {
 	uint32_t fileTime;
 	::sys::file::changed(m_name, fileTime);
 	return fileTime == m_fileTime;
+}
+
+
+void
+Database::resetChangedStatus()
+{
+	::sys::file::changed(m_name, m_fileTime);
+	m_descriptionHasChanged = false;
+	m_initialSize = m_size;
+
+	for (unsigned i = 0; i < m_gameInfoList.size(); ++i)
+		m_gameInfoList[i]->setUnchanged();
+
+	m_statistic.added = 0;
+	m_statistic.changed = 0;
+	m_statistic.deleted = 0;
+}
+
+
+void
+Database::resetInitialSize()
+{
+	M_REQUIRE(!isUnsaved());
+
+	m_initialSize = m_size;
+	m_statistic.added = 0;
 }
 
 
@@ -399,6 +437,9 @@ Database::save(util::Progress& progress)
 
 	m_namebases.update();
 
+	if (m_codec->encodingFailed())
+		setEncodingFailed(true);
+
 	if (!isMemoryOnly())
 	{
 		m_codec->reset();
@@ -413,7 +454,8 @@ Database::save(util::Progress& progress)
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + start,
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Reset);
+								start == 0 ? Statistic::Reset : Statistic::Continue);
+	m_statistic.added = m_size - m_initialSize;
 }
 
 
@@ -551,9 +593,6 @@ Database::clear()
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWritable());
 
-	if (isMemoryOnly() && !m_gameInfoList.empty())
-		m_hasChanged = true;
-
 	m_gameInfoList.clear();
 	m_statistic.clear();
 	m_namebases.clear();
@@ -561,6 +600,7 @@ Database::clear()
 	m_encodingFailed = false;
 	m_encodingOk = true;
 	m_size = 0;
+	m_initialSize = 0;
 	m_lastChange = sys::time::timestamp();
 	m_codec->reset();
 	m_treeCache.clear();
@@ -583,6 +623,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 	m_encodingFailed = false;
 	m_encodingOk = true;
 	m_size = 0;
+	m_initialSize = 0;
 	m_lastChange = sys::time::timestamp();
 	m_encoding = encoding;
 
@@ -600,7 +641,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 		IO_RAISE(Unspecified, Open_Failed, "re-open failed");
 	}
 
-	m_size = m_gameInfoList.size();
+	m_initialSize = m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
 
@@ -687,11 +728,14 @@ Database::newGame(Game& game, GameInfo const& info)
 
 	if (save::isOk(state))
 	{
+		GameInfo* info = m_gameInfoList.back();
+
+		info->setChanged(true);
+		info->setDirty(true);
+
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
-
-		if (isMemoryOnly())
-			m_hasChanged = true;
+		m_statistic.added = m_size - m_initialSize;
 	}
 
 	return state;
@@ -713,7 +757,7 @@ Database::addGame(Game& game)
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
 
 	if (format() != format::Scidb)
-		game.setFlags(game.flags() & ~(GameInfo::Flag_Illegal_Castling | GameInfo::Flag_Illegal_Move));
+		game.removeFlags(GameInfo::Flag_Illegal_Castling | GameInfo::Flag_Illegal_Move);
 
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
 	m_namebases.update();
@@ -726,14 +770,16 @@ Database::addGame(Game& game)
 			m_codec->updateHeader();
 		}
 
+		GameInfo* info = m_gameInfoList.back();
+
+		info->setChanged(true);
+		info->setDirty(true);
+
 		m_size = m_gameInfoList.size();
-		m_gameInfoList.back()->setChanged(true);
 		m_lastChange = sys::time::timestamp();
 		m_statistic.add(*m_gameInfoList.back());
+		m_statistic.added = m_size - m_initialSize;
 		m_treeCache.setIncomplete();
-
-		if (isMemoryOnly())
-			m_hasChanged = true;
 	}
 
 	return state;
@@ -784,14 +830,16 @@ Database::updateGame(Game& game)
 				m_codec->updateHeader();
 		}
 
+		if (!info.isChanged())
+		{
+			++m_statistic.changed;
+			info.setChanged(true);
+		}
+
 		info.setDirty(false);
-		info.setChanged(true);
 		game.setFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
-
-		if (isMemoryOnly())
-			m_hasChanged = true;
 
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -847,14 +895,16 @@ Database::updateMoves(Game& game)
 			}
 		}
 
+		if (!info.isChanged())
+		{
+			++m_statistic.changed;
+			info.setChanged(true);
+		}
+
 		info.setDirty(false);
-		info.setChanged(true);
 		game.setFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
-
-		if (isMemoryOnly())
-			m_hasChanged = true;
 	}
 
 	return state;
@@ -881,12 +931,14 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 
 		GameInfo& info = *m_gameInfoList[index];
 
-		info.setDirty(false);
-		info.setChanged(true);
-		m_lastChange = sys::time::timestamp();
+		if (!info.isChanged())
+		{
+			++m_statistic.changed;
+			info.setChanged(true);
+		}
 
-		if (isMemoryOnly())
-			m_hasChanged = true;
+		info.setDirty(false);
+		m_lastChange = sys::time::timestamp();
 
 		m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 									const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -1116,6 +1168,8 @@ Database::copyGames(	Database& destination,
 
 	if (!useConsumer && allowedTags.complete() && allowExtraTags)
 	{
+		// TODO: use this in any case (but !useConsumer), with
+		// exportGames(..., allowedTags, allowExtraTags, ...)
 		count = exportGames(	destination,
 									gameFilter,
 									gameSelector,
@@ -1129,7 +1183,7 @@ Database::copyGames(	Database& destination,
 		if (dstFormat == format::Scidb)
 		{
 			sci::Consumer::Codecs codecs(&dynamic_cast<sci::Codec&>(destination.codec()));
-			// XXX do we need the source encoding?
+			// XXX <we need the source encoding?
 			sci::Consumer consumer(srcFormat, codecs, allowedTags, allowExtraTags);
 			consumer.setupVariant(m_variant);
 			count = exportGames(	consumer,
@@ -1274,12 +1328,9 @@ Database::importGame(Producer& producer, unsigned index)
 		m_lastChange = sys::time::timestamp();
 		setEncodingFailed(producer.encodingFailed() || m_codec->encodingFailed());
 		m_statistic.add(*m_gameInfoList[index]);
+		m_statistic.added = m_size - m_initialSize;
 
-		if (isMemoryOnly())
-		{
-			m_hasChanged = true;
-		}
-		else
+		if (!isMemoryOnly())
 		{
 			m_codec->update(index, true);
 			m_codec->updateHeader();
@@ -1303,18 +1354,7 @@ Database::importGames(Producer& producer, util::Progress& progress)
 	M_REQUIRE(	producer.variant() == variant::Undetermined
 				|| variant::toMainVariant(producer.variant()) == variant());
 
-	unsigned oldSize = m_gameInfoList.size();
-
-	m_codec->reset();
-	unsigned n = m_codec->importGames(producer, progress);
-
-	if (n)
-	{
-		m_lastChange = sys::time::timestamp();
-		finishImport(oldSize, producer.encodingFailed());
-	}
-
-	return n;
+	return m_codec->importGames(producer, progress);
 }
 
 
@@ -1327,8 +1367,6 @@ Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, u
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(db.variant() == variant());
 
-	unsigned oldSize = m_gameInfoList.size();
-
 	m_codec->reset();
 
 	Filter	filter(db.size());
@@ -1337,30 +1375,7 @@ Database::importGames(Database const& db, unsigned& illegalRejected, Log& log, u
 
 	filter.set();
 
-	unsigned n = db.copyGames(*this, filter, selector, allowedTags, true, illegalRejected, log, progress);
-
-	if (n > 0)
-		finishImport(oldSize, db.encodingFailed());
-
-	return n;
-}
-
-
-void
-Database::finishImport(unsigned oldSize, bool encodingFailed)
-{
-	m_lastChange = sys::time::timestamp();
-	m_namebases.update();
-	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin() + oldSize,
-								const_cast<GameInfoList const&>(m_gameInfoList).end(),
-								Statistic::Continue);
-	m_treeCache.setIncomplete();
-
-	if (encodingFailed || m_codec->encodingFailed())
-		setEncodingFailed(true);
-
-	if (isMemoryOnly())
-		m_hasChanged = true;
+	return db.copyGames(*this, filter, selector, allowedTags, true, illegalRejected, log, progress);
 }
 
 
@@ -1420,17 +1435,19 @@ Database::deleteGame(unsigned index, bool flag)
 	M_REQUIRE(isWritable());
 	M_REQUIRE(index < countGames());
 
-	if (gameInfo(index).isDeleted())
-		--m_statistic.deleted;
+	GameInfo& info = gameInfo(index);
 
-	gameInfo(index).setDeleted(flag);
+	if (info.isDeleted() == flag)
+		return;
 
 	if (flag)
 		++m_statistic.deleted;
-
-	if (m_memoryOnly)
-		m_hasChanged = true;
 	else
+		--m_statistic.deleted;
+
+	info.setDeleted(flag);
+
+	if (!m_memoryOnly)
 		m_codec->update(index, false);
 
 	m_lastChange = sys::time::timestamp();
@@ -1484,7 +1501,7 @@ Database::setDescription(mstl::string const& description)
 			m_description.set_size(m_codec->maxDescriptionLength());
 
 		if (m_memoryOnly)
-			m_descriptionHasChanged = m_hasChanged = true;
+			m_descriptionHasChanged = true;
 		else
 			m_codec->updateHeader();
 	}

@@ -57,7 +57,6 @@ public:
 					variant::Type variant,
 					mstl::string const& encoding,
 					ReadMode readMode,
-					GameCount const* firstGameNumber = 0,
 					Modification modification = Normalize,
 					ResultMode resultMode = UseResultTag);
 	virtual ~PgnReader() throw();
@@ -140,6 +139,7 @@ private:
 		__attribute__((noreturn));
 	void fatalError(Error code, mstl::string const& item = mstl::string::empty_string)
 		__attribute__((noreturn));
+	void fatalError(save::State state) __attribute__((noreturn));
 
 	void sendWarning(Warning code, Pos pos, mstl::string const& item = mstl::string::empty_string);
 	void sendWarning(Warning code, mstl::string const& item = mstl::string::empty_string);
@@ -239,6 +239,7 @@ private:
 
 	mstl::istream&		m_stream;
 	FileOffsets*		m_fileOffsets;
+	unsigned				m_gameNumber;
 	unsigned				m_currentOffset;
 	unsigned				m_lineOffset;
 	unsigned				m_putback;
@@ -256,7 +257,6 @@ private:
 	unsigned				m_countErrors[LastError + 1];
 	ReadMode				m_readMode;
 	GameCount			m_gameCount;
-	GameCount const*	m_firstGameNumber;
 	ResultMode			m_resultMode;
 	Comments				m_comments;
 	Warnings				m_warnings;
@@ -286,7 +286,7 @@ private:
 	bool					m_isICS;
 	bool					m_hasCastled;
 	bool					m_resultCorrection;
-	bool					m_firstRejected;
+	unsigned				m_countRejected;
 	unsigned				m_postIndex;
 	uint16_t				m_idn;
 	variant::Type		m_variant;

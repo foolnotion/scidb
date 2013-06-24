@@ -411,32 +411,35 @@ proc ButtonEnter {w} {
 proc Invoke {w btn i} {
 	variable ${w}::Vars
 
-	if {$i == -1} {
-		event generate $w <<GetStartMenu>>
-		set m $w.popup
-		if {[winfo exists $m]} { destroy $m }
-		menu $m -tearoff false
-		foreach {icon name folder} $Vars(startmenu) {
-			if {[string length $name] == 0} {
-				$m add separator
-			} else {
-				$m add command \
-					-label " $name" \
-					-image $icon \
-					-compound left \
-					-command [namespace code [list ChangeFolder $w $folder]] \
-					;
+	if {!$Vars(user)} {
+		if {$i == -1} {
+			event generate $w <<GetStartMenu>>
+			set m $w.popup
+			if {[winfo exists $m]} { destroy $m }
+			menu $m -tearoff false
+			foreach {icon name folder} $Vars(startmenu) {
+				if {[string length $name] == 0} {
+					$m add separator
+				} else {
+					$m add command \
+						-label " $name" \
+						-image $icon \
+						-compound left \
+						-command [namespace code [list ChangeFolder $w $folder]] \
+						;
+				}
 			}
+			bind $m <<MenuUnpost>> [list $btn configure -state normal -relief flat]
+			bind $m <<MenuUnpost>> +[namespace code [list ButtonEnter $btn]]
+			tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
+		} elseif {$Vars(user)} {
+			event generate $w <<SetFolder>> -data $Vars(dir)
+		} else {
+			set components [lrange $Vars(components) 0 $i]
+			event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
 		}
-		bind $m <<MenuUnpost>> [list $btn configure -state normal -relief flat]
-		bind $m <<MenuUnpost>> +[namespace code [list ButtonEnter $btn]]
-		tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
-	} elseif {$Vars(user)} {
-		event generate $w <<SetFolder>> -data $Vars(dir)
-	} else {
-		set components [lrange $Vars(components) 0 $i]
-		event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
 	}
+
 	after idle [namespace code [list ButtonEnter $btn]]
 }
 

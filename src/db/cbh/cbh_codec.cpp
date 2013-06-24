@@ -2675,7 +2675,7 @@ Codec::findExactPosition(	GameInfo const& info,
 bool
 Codec::getAttributes(mstl::string const& filename,
 							int& numGames,
-							db::type::ID& type,
+							type::ID& type,
 							mstl::string* description)
 {
 	M_REQUIRE(util::misc::file::suffix(filename) == "cbh");

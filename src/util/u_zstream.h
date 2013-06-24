@@ -44,23 +44,27 @@ public:
 	ZStream(char const* filename, Type type, Mode mode = mstl::ios_base::out);
 	~ZStream() throw();
 
-	bool is_open() const;
+	bool isOpen() const;
 
 	// NOTE: in case of GZIP stream the decompressed size is only an estimation
 	int64_t size() const override;	// decompressed size
 	uint64_t goffset() override;
 
+	mstl::string const& filename() const;
 	Type type() const;
 
 	void open(char const* filename, Mode mode = mstl::ios_base::in);
 	void open(char const* filename, Type type, Mode mode = mstl::ios_base::in);
 	void close();
 
+	void setBufsize(size_t size);
+
 	static bool size(char const* filename, int64_t& size, Type* type = 0);
 	static bool containsSuffix(char const* filename, char const* suffix);
 	static void setZipFileSuffixes(Strings const& suffixes);
 	static Strings const& zipFileSuffixes();
 	static Strings zipContent(char const* filename);
+	static bool testByteOrderMark(char const* filename);
 
 	// is public due to technical reasons
 	struct Handle
@@ -84,9 +88,12 @@ public:
 
 private:
 
-	Handle	m_handle;
-	int64_t	m_size;
-	Type		m_type;
+	mstl::string	m_filename;
+	Handle			m_handle;
+	int64_t			m_size;
+	Type				m_type;
+	char*				m_buffer;
+	size_t			m_bufsize;
 
 	static Strings m_suffixes;
 };

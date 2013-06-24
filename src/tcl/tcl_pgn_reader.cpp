@@ -51,26 +51,24 @@ PgnReader::PgnReader(mstl::istream& strm,
 							Modification modification,
 							ReadMode readMode,
 							db::FileOffsets* fileOffsets,
-							GameCount const* firstGameNumber,
 							unsigned lineOffset,
 							bool trialMode)
 	:db::PgnReader(strm,
 						variant,
 						encoding.empty() ? sys::utf8::Codec::automatic() : encoding,
 						readMode,
-						firstGameNumber,
 						modification,
 						lineOffset ? InMoveSection : UseResultTag)
 	,m_cmd(cmd)
 	,m_arg(arg)
 	,m_warning(Tcl_NewStringObj("warning", -1))
 	,m_error(Tcl_NewStringObj("error", -1))
+	,m_save(Tcl_NewStringObj("save", -1))
 	,m_mode(readMode)
 	,m_lineOffset(lineOffset)
 	,m_countErrors(0)
 	,m_countWarnings(0)
 	,m_trialModeFlag(trialMode)
-	,m_lastError(LastError)
 {
 	M_REQUIRE(cmd == 0 || arg != 0);
 
@@ -78,6 +76,7 @@ PgnReader::PgnReader(mstl::istream& strm,
 
 	Tcl_IncrRefCount(m_warning);
 	Tcl_IncrRefCount(m_error);
+	Tcl_IncrRefCount(m_save);
 }
 
 
@@ -85,13 +84,12 @@ PgnReader::~PgnReader() throw()
 {
 	Tcl_DecrRefCount(m_warning);
 	Tcl_DecrRefCount(m_error);
+	Tcl_DecrRefCount(m_save);
 }
 
 
-unsigned PgnReader::countErrors() const				{ return m_countErrors; }
-unsigned PgnReader::countWarnings() const				{ return m_countWarnings; }
-
-PgnReader::Error PgnReader::lastErrorCode() const	{ return m_lastError; }
+unsigned PgnReader::countErrors() const	{ return m_countErrors; }
+unsigned PgnReader::countWarnings() const	{ return m_countWarnings; }
 
 
 void
@@ -103,12 +101,12 @@ PgnReader::warning(	Warning code,
 							mstl::string const& info,
 							mstl::string const& item)
 {
-	char const* msg = 0;
-
 	++m_countWarnings;
 
 	if (m_trialModeFlag || m_cmd == 0)
 		return;
+
+	char const* msg = 0;
 
 	switch (code)
 	{
@@ -186,15 +184,12 @@ PgnReader::error(	Error code,
 						mstl::string const& info,
 						mstl::string const& item)
 {
-	char const* msg = 0;
-
-	if (m_trialModeFlag)
-		m_lastError = code;
-
 	++m_countErrors;
 
 	if (m_cmd == 0)
 		return;
+
+	char const* msg = 0;
 
 	switch (code)
 	{
@@ -210,25 +205,10 @@ PgnReader::error(	Error code,
 		case UnterminatedVariation:		msg = "UnterminatedVariation"; break;
 		case InvalidMove:						msg = "InvalidMove"; break;
 		case UnsupportedVariant:			msg = "UnsupportedVariant"; break;
-		case TooManyGames:					msg = "TooManyGames"; break;
-		case FileSizeExeeded:				msg = "FileSizeExeeded"; break;
-		case GameTooLong:						msg = "GameTooLong"; break;
-		case TooManyPlayerNames:			msg = "TooManyPlayerNames"; break;
-		case TooManyEventNames:				msg = "TooManyEventNames"; break;
-		case TooManySiteNames:				msg = "TooManySiteNames"; break;
-		case TooManyAnnotatorNames:		msg = "TooManyAnnotatorNames"; break;
-		case TooManySourceNames:			msg = "TooManySourceNames"; break;
 		case SeemsNotToBePgnText:			msg = "SeemsNotToBePgnText"; break;
 		case UnexpectedResultToken:		msg = "UnexpectedResultToken"; break;
 		case UnexpectedCastling:			msg = "UnexpectedCastling"; break;
 		case ContinuationsNotSupported:	msg = "ContinuationsNotSupported"; break;
-
-		case TooManyRoundNames:
-			if (m_tooManyRoundNames)
-				return;
-			m_tooManyRoundNames = true;
-			msg = "TooManyRoundNames"; break;
-			break;
 	}
 
 	if (lineNo >= m_lineOffset)
@@ -251,6 +231,55 @@ PgnReader::error(	Error code,
 	objv[6] = Tcl_NewStringObj(msg, -1);
 	objv[7] = Tcl_NewStringObj(info, info.size());
 	objv[8] = Tcl_NewStringObj(item, item.size());
+
+	invoke(__func__, m_cmd, m_arg, nullptr, U_NUMBER_OF(objv), objv);
+}
+
+
+void
+PgnReader::error(db::save::State state, unsigned lineNo, unsigned gameNo, db::variant::Type variant)
+{
+	++m_countErrors;
+
+	if (m_cmd == 0)
+		return;
+
+	char const* msg = 0;
+
+	switch (state)
+	{
+		case db::save::TooManyGames:				msg = "TooManyGames"; break;
+		case db::save::FileSizeExeeded:			msg = "FileSizeExeeded"; break;
+		case db::save::GameTooLong:				msg = "GameTooLong"; break;
+		case db::save::TooManyPlayerNames:		msg = "TooManyPlayerNames"; break;
+		case db::save::TooManyEventNames:		msg = "TooManyEventNames"; break;
+		case db::save::TooManySiteNames:			msg = "TooManySiteNames"; break;
+		case db::save::TooManyAnnotatorNames:	msg = "TooManyAnnotatorNames"; break;
+
+		case db::save::TooManyRoundNames:
+			if (m_tooManyRoundNames)
+				return;
+			m_tooManyRoundNames = true;
+			msg = "TooManyRoundNames"; break;
+			break;
+
+		case db::save::Ok:
+		case db::save::UnsupportedVariant:
+		case db::save::DecodingFailed:
+			return; // should not happen
+	}
+
+	Tcl_Obj* objv[9];
+
+	objv[0] = m_save;
+	objv[1] = Tcl_NewIntObj(lineNo);
+	objv[2] = Tcl_NewIntObj(0);
+	objv[3] = gameNo > 0 ? Tcl_NewIntObj(gameNo) : Tcl_NewStringObj("", 0);
+	objv[4] = tree::variantToString(variant),
+	objv[5] = Tcl_NewStringObj(0, 0);
+	objv[6] = Tcl_NewStringObj(msg, -1);
+	objv[7] = Tcl_NewStringObj(0, 0);
+	objv[8] = Tcl_NewStringObj(0, 0);
 
 	invoke(__func__, m_cmd, m_arg, nullptr, U_NUMBER_OF(objv), objv);
 }

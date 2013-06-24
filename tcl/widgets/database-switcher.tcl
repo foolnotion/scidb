@@ -73,6 +73,8 @@ set SelectGames(complete)			"Complete database"
 set GameCount							"Games"
 set DatabasePath						"Database path"
 set DeletedGames						"Deleted Games"
+set ChangedGames						"Changed Games"
+set AddedGames							"Added Games"
 set Description						"Description"
 set Created								"Created"
 set LastModified						"Last modified"
@@ -332,6 +334,7 @@ proc UpdateIconSize {w args} {
 		$canv itemconfigure name$id -font $symFont
 		$canv itemconfigure suff$id -font $symFont
 		$canv itemconfigure size$id -font $symFont
+		UpdateIcon $w $id
 	}
 
 	update idletasks
@@ -462,12 +465,46 @@ proc UpdateBase {w id} {
 }
 
 
+proc UpdateIcon {w id} {
+	variable ${w}::Vars
+	variable Options
+
+	lassign [lindex $Vars(bases) $Vars(map:$id)] _ type file
+
+	if {[::scidb::db::get writable? $file]} {
+		set ext [string tolower [file extension $file]]
+
+		if {$ext eq ".pgn" || $ext eq ".gz" || $ext eq ".zip"} {
+			set unsaved [::scidb::db::get unsaved? $file]
+			set size $Options(iconsize)
+			set icon [set ::application::database::icons::${type}(${size}x${size})]
+
+			if {$unsaved} {
+				variable UnsavedIcon
+
+				if {![info exists UnsavedIcon($type,$size)]} {
+					set img [image create photo -width 0 -height 0]
+					$img copy $icon
+					::scidb::tk::image colorize darkred 1 $img
+					set UnsavedIcon($type,$size) $img
+				}
+
+				set icon $UnsavedIcon($type,$size)
+			}
+
+			$w.content itemconfigure icon$id -image $icon
+		}
+	}
+}
+
+
 proc UpdateSwitcher {w file {variant ""}} {
 	variable ${w}::Vars
 
 	if {[string length $variant] == 0 || $variant eq "Undetermined" || $variant eq $Vars(variant)} {
 		if {[info exists Vars(id:$file)]} {
 			UpdateBase $w $Vars(id:$file)
+			UpdateIcon $w $Vars(id:$file)
 			LayoutSwitcher $w
 		}
 	}
@@ -921,10 +958,10 @@ proc RegisterDragDropEvents {w} {
 	::tkdnd::drop_target register $canv DND_Files
 	::tkdnd::drag_source register $canv DND_Files
 
-	bind $canv <<DropEnter>>		[namespace code [list HandleDropEvent $w enter %t %X %Y]]
-	bind $canv <<DropLeave>>		[namespace code [list HandleDropEvent $w leave %t %X %Y]]
-	bind $canv <<DropPosition>>	[namespace code [list HandleDropPosition $w %X %Y]]
-	bind $canv <<Drop>>				[namespace code [list HandleDropEvent $w %D %t %X %Y]]
+	bind $canv <<DropEnter>>		[namespace code [list HandleDropEvent $w enter %t %a %X %Y]]
+	bind $canv <<DropLeave>>		[namespace code [list HandleDropEvent $w leave %t %a %X %Y]]
+	bind $canv <<DropPosition>>	[namespace code [list HandleDropPosition $w %a %X %Y]]
+	bind $canv <<Drop>>				[namespace code [list HandleDropEvent $w %D %t %a %X %Y]]
 	bind $canv <<DragInitCmd>>		[namespace code [list HandleDragEvent $w %W %t %X %Y]]
 	bind $canv <<DragEndCmd>>		[namespace code [list FinishDragEvent $w %W %A]]
 	bind $canv <<DragPosition>>	[namespace code [list HandleDragPositon $w %W %X %Y]]
@@ -1002,8 +1039,11 @@ proc FinishDragEvent {w src currentAction} {
 }
 
 
-proc HandleDropEvent {w action types x y} {
+proc HandleDropEvent {w action types actions x y} {
 	variable ${w}::Vars
+
+	if {[llength $actions] == 0} { return refuse_drop }
+	if {[llength $actions] == 1 && "private" in $actions} { return refuse_drop }
 
 	switch $action {
 		enter {
@@ -1034,6 +1074,22 @@ proc HandleDropEvent {w action types x y} {
 			}
 			::tooltip::tooltip include all
 		}
+	}
+
+	return copy
+}
+
+
+proc HandleDropPosition {w actions x y} {
+	variable ${w}::Vars
+
+	if {[llength $actions] == 0} { return refuse_drop }
+	if {[llength $actions] == 1 && "private" in $actions} { return refuse_drop }
+
+	HighlightDropRegion $w $x $y position
+
+	if {$Vars(curr-item) != $Vars(drop-item) && $Vars(curr-item) != $Vars(drag-item)} {
+		return refuse_drop
 	}
 
 	return copy
@@ -1108,19 +1164,6 @@ proc HighlightDropRegion {w x y action} {
 }
 
 
-proc HandleDropPosition {w x y} {
-	variable ${w}::Vars
-
-	HighlightDropRegion $w $x $y position
-
-	if {$Vars(curr-item) != $Vars(drop-item) && $Vars(curr-item) != $Vars(drag-item)} {
-		return refuse_drop
-	}
-
-	return copy
-}
-
-
 proc ParseUriFiles {parent files allowedExtensions action} {
 	set errorList {}
 	set rejectList {}
@@ -1129,11 +1172,9 @@ proc ParseUriFiles {parent files allowedExtensions action} {
 	set databaseList {}
 
 	foreach {uri file} [::fsbox::parseUriList $files] {
-		if {[string equal -length 6 $uri "trash:"]} {
-			lappend trashList $uri
-		} elseif {	[string equal -length 5 $uri "http:"]
-					|| [string equal -length 6 $uri "https:"]
-					|| [string equal -length 4 $uri "ftp:"]} {
+		if {	[string equal -length 5 $uri "http:"]
+			|| [string equal -length 6 $uri "https:"]
+			|| [string equal -length 4 $uri "ftp:"]} {
 			lappend remoteList $uri
 		} elseif {[file exists $file]} {
 			set origExt [file extension $file]
@@ -1156,6 +1197,8 @@ proc ParseUriFiles {parent files allowedExtensions action} {
 			} else {
 				if {$file ni $rejectList} { lappend rejectList $file }
 			}
+		} elseif {[string equal -length 6 $uri "trash:"]} {
+			lappend trashList $uri
 		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
 			# TODO: support .scv, .pgn, and .bpgn files in successor versions
 			lappend rejectList $uri
@@ -1482,9 +1525,10 @@ proc Properties {w id popup} {
 	set row 1
 	foreach {name var} {	path DatabasePath descr Description type Type variant Variant
 								readonly ReadOnly created Created lastModified LastModified
-								encoding Encoding games GameCount deleted DeletedGames yearRange
-								YearRange ratingRange RatingRange score Score resWhite {Result 1-0}
-								resBlack {Result 0-1} resDraw {Result 1/2-1/2} resLost {Result 0-0}
+								encoding Encoding games GameCount deleted DeletedGames changed
+								ChangedGames added AddedGames yearRange YearRange ratingRange
+								RatingRange score Score resWhite {Result 1-0} resBlack
+								{Result 0-1} resDraw {Result 1/2-1/2} resLost {Result 0-0}
 								resNone {Result *}} {
 
 		if {[llength $var] == 1} {
@@ -1555,11 +1599,12 @@ proc Properties {w id popup} {
 	set slaves [grid slaves $f]
 
 	if {$size == 0} {
-		foreach name {deleted yearRange ratingRange score resWhite resBlack resDraw resLost resNone} {
+		foreach name {	deleted changed added yearRange ratingRange score \
+							resWhite resBlack resDraw resLost resNone} {
 			if {"$f.l$name" in $slaves} { grid remove $f.l$name $f.t$name }
 		}
 	} else {
-		if {$ext in {pgn bpgn}} {
+		if {$ext eq "bpgn"} {
 			if {"$f.ldeleted" in $slaves} { grid remove $f.ldeleted $f.tdeleted }
 		} else {
 			if {"$f.ldeleted" ni $slaves} { grid $f.ldeleted $f.tdeleted }
@@ -1570,8 +1615,8 @@ proc Properties {w id popup} {
 			}
 		}
 
-		lassign [::scidb::db::get stats $file] \
-			deleted minYear maxYear avgYear minElo maxElo avgElo resNone resWhite resBlack resDraw resLost
+		lassign [::scidb::db::get stats $file] deleted changed added minYear maxYear avgYear \
+			minElo maxElo avgElo resNone resWhite resBlack resDraw resLost
 		set total [expr {double($resWhite + $resBlack + $resDraw + $resLost)}]
 		set size [expr {double($size)}]
 		set score 0
@@ -1579,21 +1624,7 @@ proc Properties {w id popup} {
 		if {$total != 0.0} {
 			set score [expr {round((($resWhite + 0.5*$resDraw)/$total)*100)}]
 		}
-
-		set fmtDeleted		[::locale::formatNumber $deleted]
-		set fmtScore		[format "%d%%" $score]
-		set fmtWhite		[::locale::formatNumber $resWhite]
-		set fmtBlack		[::locale::formatNumber $resBlack]
-		set fmtDraw			[::locale::formatNumber $resDraw]
-		set fmtLost			[::locale::formatNumber $resLost]
-		set fmtNone			[::locale::formatNumber $resNone]
-		set fmtAvgDeleted	[format "%d" [expr {round((double($deleted)/$size)*100)}]]
-		set fmtAvgWhite	[format "%d" [expr {round(($resWhite/$size)*100)}]]
-		set fmtAvgBlack	[format "%d" [expr {round(($resBlack/$size)*100)}]]
-		set fmtAvgDraw		[format "%d" [expr {round(($resDraw/$size)*100)}]]
-		set fmtAvgLost		[format "%d" [expr {round(($resLost/$size)*100)}]]
-		set fmtAvgNone		[format "%d" [expr {round(($resNone/$size)*100)}]]
-
+	
 		if {$minYear && $maxYear && $minYear != $maxYear} {
 			set yearRange "$minYear-$maxYear ($avgYear)"
 		} elseif {$minYear} {
@@ -1610,15 +1641,21 @@ proc Properties {w id popup} {
 			set ratingRange "\u2014"
 		}
 
-		$f.tdeleted			configure -text "$fmtDeleted ($fmtAvgDeleted%)"
-		$f.tyearRange		configure -text $yearRange
-		$f.tratingRange	configure -text $ratingRange
-		$f.tscore			configure -text $fmtScore
-		$f.tresWhite		configure -text "$fmtWhite ($fmtAvgWhite%)"
-		$f.tresBlack		configure -text "$fmtBlack ($fmtAvgBlack%)"
-		$f.tresDraw			configure -text "$fmtDraw ($fmtAvgDraw%)"
-		$f.tresLost			configure -text "$fmtLost ($fmtAvgLost%)"
-		$f.tresNone			configure -text "$fmtNone ($fmtAvgNone%)"
+		foreach var {	deleted changed added yearRange ratingRange
+							score resWhite resBlack resDraw resLost resNone} {
+			set value [set $var]
+			if {$var eq "score"} {
+				set text  [format "%d%%" $value]
+			} elseif {$value == 0} {
+				set text "\u2014"
+			} elseif {[string match *Range $var]} {
+				set text $value
+			} else {
+				set text [::locale::formatNumber $value]
+				append text " (" [format "%d" [expr {round((double($value)/$size)*100)}]] "%)"
+			}
+			$f.t$var configure -text $text
+		}
 	}
 
 	if {$popup} {

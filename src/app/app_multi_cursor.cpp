@@ -132,6 +132,9 @@ MultiCursor::MultiCursor(	Application& app,
 
 	WriteGuard guard(m_app, *base->database());
 	unsigned n = base->importGames(producer, progress);
+	if (n)
+		base->save(progress);
+	base->resetInitialSize();
 	guard.release();
 
 	m_base = base.release();
@@ -193,6 +196,13 @@ bool
 MultiCursor::isSingleBase() const
 {
 	return m_base->isSingleBase();
+}
+
+
+bool
+MultiCursor::isUnsaved() const
+{
+	return m_base->isUnsaved();
 }
 
 

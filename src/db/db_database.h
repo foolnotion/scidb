@@ -124,12 +124,18 @@ public:
 	bool descriptionHasChanged() const;
 	/// Return whether file is unchanged.
 	bool checkFileTime() const;
+	/// Return whether game with given index is newly added.
+	bool isAdded(unsigned index) const;
+	/// Returns whether database is not unsaved.
+	bool isUnsaved() const;
 
 	/// Returns an unique database id.
 	unsigned id() const;
 	/// Count the number of items in table.
 	unsigned count(table::Type type) const;
-	/// Counts the number of games in the database.
+	/// Count the number of initial games in the database.
+	unsigned countInitialGames() const;
+	/// Count the number of games in the database.
 	unsigned countGames() const;
 	/// Count the number of players in the database.
 	unsigned countPlayers() const;
@@ -270,6 +276,10 @@ public:
 	void rename(mstl::string const& name);
 	/// Remove database from disk
 	void remove();
+	/// Reset changed status to unchanged
+	void resetChangedStatus();
+	/// Reset initial size to current size.
+	void resetInitialSize();
 
 	/// Build tournament table for selected games.
 	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;
@@ -315,8 +325,6 @@ public:
 								unsigned& illegalRejected,
 								Log& log,
 								util::Progress& progress);
-	/// Called from MultiBase after game import.
-	void finishImport(unsigned oldSize, bool encodingFailed);
 
 	Namebases& namebases();
 	using DatabaseContent::namebase;
@@ -342,13 +350,13 @@ private:
 	mstl::string	m_name;
 	unsigned			m_id;
 	unsigned			m_size;
+	unsigned			m_initialSize;
 	uint64_t			m_lastChange;
 	uint32_t			m_fileTime;
 	TreeCache		m_treeCache;
 	AsyncReader*	m_asyncReader;
 	mutable bool	m_encodingFailed;
 	mutable bool	m_encodingOk;
-	bool				m_hasChanged;
 	bool				m_descriptionHasChanged;
 	bool				m_usingAsyncReader;
 };

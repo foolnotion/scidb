@@ -405,8 +405,7 @@ ZStream::Handle::Handle() : dir(0), file(0), suffixes(0) {}
 
 ZStream::Strings ZStream::m_suffixes;
 
-ZStream::~ZStream() throw()			{ if (m_fp) ::fclose(m_fp); }
-bool ZStream::is_open() const			{ return m_fp != 0; }
+bool ZStream::isOpen() const			{ return m_fp != 0; }
 ZStream::Type ZStream::type() const	{ return m_type; }
 int64_t ZStream::size() const			{ return m_size; }
 
@@ -414,6 +413,8 @@ int64_t ZStream::size() const			{ return m_size; }
 ZStream::ZStream(char const* filename, Mode mode)
 	:m_size(-1)
 	,m_type(None)
+	,m_buffer(0)
+	,m_bufsize(0)
 {
 	M_REQUIRE(filename);
 	open(filename, mode);
@@ -423,9 +424,27 @@ ZStream::ZStream(char const* filename, Mode mode)
 ZStream::ZStream(char const* filename, Type type, Mode mode)
 	:m_size(-1)
 	,m_type(type)
+	,m_buffer(0)
+	,m_bufsize(0)
 {
 	M_REQUIRE(filename);
 	open(filename, type, mode);
+}
+
+
+ZStream::~ZStream() throw()
+{
+	if (m_fp)
+		::fclose(m_fp);
+
+	delete [] m_buffer;
+}
+
+
+mstl::string const&
+ZStream::filename() const
+{
+	return m_filename;
 }
 
 
@@ -458,12 +477,41 @@ ZStream::goffset()
 
 
 void
+ZStream::setBufsize(size_t size)
+{
+	M_REQUIRE(size > 0);
+
+	if (::setvbuf(m_fp, m_buffer, _IOFBF, size))
+		M_RAISE("setvbuf() can't be honoured (fd=%d)", fileno(m_fp));
+
+	if (size != m_bufsize)
+	{
+		if (size > m_bufsize)
+		{
+			delete [] m_buffer;
+			m_buffer = new char[size];
+		}
+
+		if (isOpen())
+		{
+			if (::setvbuf(m_fp, m_buffer, _IOFBF, size))
+				M_RAISE("setvbuf() can't be honoured (fd=%d)", fileno(m_fp));
+		}
+
+		m_bufsize = size;
+	}
+}
+
+
+void
 ZStream::open(char const* filename, Mode mode)
 {
 	M_REQUIRE(filename);
-	M_REQUIRE(!is_open());
+	M_REQUIRE(!isOpen());
 	M_REQUIRE(mode & mstl::ios_base::in);
 	M_REQUIRE(!(mode & mstl::ios_base::out));
+
+	m_filename = filename;
 
 	mstl::ifstream strm(filename, mode | mstl::ios_base::binary);
 
@@ -530,6 +578,10 @@ ZStream::open(char const* filename, Mode mode)
 		m_type = None;
 		setstate(failbit);
 	}
+	else if (m_bufsize)
+	{
+		setBufsize(m_bufsize);
+	}
 }
 
 
@@ -537,9 +589,11 @@ void
 ZStream::open(char const* filename, Type type, Mode mode)
 {
 	M_REQUIRE(filename);
-	M_REQUIRE(!is_open());
+	M_REQUIRE(!isOpen());
 	M_REQUIRE(mode & mstl::ios_base::out);
 	M_REQUIRE(!(mode & mstl::ios_base::in));
+
+	m_filename = filename;
 
 	char		fmode[3]	= { '\0', '\0', '\0' };
 	Handle*	cookie	= &m_handle;
@@ -596,10 +650,14 @@ ZStream::open(char const* filename, Type type, Mode mode)
 	{
 		HANDLE = 0;
 		m_type = None;
+		m_size = -1;
 		setstate(failbit);
 	}
 	else
 	{
+		if (m_bufsize)
+			setBufsize(m_bufsize);
+
 		m_size = 0;
 	}
 }
@@ -646,7 +704,7 @@ ZStream::size(char const* filename, int64_t& size, Type* type)
 		Handle	handle;
 		void*		cookie = &handle;
 
-		ZIP_DIR = ::zzip_dir_open(filename, 0);
+		ZIP_DIR = ::zzip_dir_open(strm.filename(), 0);
 
 		if (!ZIP_DIR)
 			return false;
@@ -768,6 +826,31 @@ ZStream::zipContent(char const* filename)
 	}
 
 	return result;
+}
+
+
+bool
+ZStream::testByteOrderMark(char const* filename)
+{
+	M_REQUIRE(filename);
+
+	int64_t	size = 0;
+	Type		type;
+
+	if (!ZStream::size(filename, size, &type))
+		return false;
+
+	if (type != Zip && size >= 3)
+	{
+		ZStream strm(filename);
+
+		char buf[3];
+
+		if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
+			return true;
+	}
+
+	return false;
 }
 
 // vi:set ts=3 sw=3:

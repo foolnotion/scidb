@@ -70,7 +70,8 @@ set OpenPlayerDictionary	"Open &Player Dictionary"
 
 # Setup
 set Engines						"&Engines"
-set PrivatePlayerCard		"&Private Player Card"
+set PgnOptions					"Setup &PGN export options"
+set PrivatePlayerCard		"Private Player &Card"
 
 set OpenFile					"Open a Scidb File"
 set NewFile						"Create a Scidb File"
@@ -219,6 +220,16 @@ proc build {menu} {
 	$m add command \
 		-label " $text" \
 		-underline [incr ul] -command $cmd \
+		-image $::icon::16x16::engine \
+		-compound left \
+		;
+	lassign [::tk::UnderlineAmpersand $mc::PgnOptions] text ul
+	set cmd [namespace code [list setupPgnOptions .application]]
+	$m add command \
+		-label " $text" \
+		-underline [incr ul] -command $cmd \
+		-image $::icon::16x16::filetypePGN \
+		-compound left \
 		;
 if {0} {
 	lassign [::tk::UnderlineAmpersand $mc::PrivatePlayerCard] text ul
@@ -243,7 +254,7 @@ if {0} {
 		-image $::icon::16x16::none \
 		;
 	lassign [::tk::UnderlineAmpersand $mc::OpenPlayerDictionary] text ul
-	set cmd [namespace code [list ::playerdict::open .]]
+	set cmd [namespace code [list ::playerdict::open .application]]
 	$m add command \
 		-label " $text..." \
 		-underline [incr ul] \
@@ -391,8 +402,12 @@ if {0} {
 }
 
 
-proc addVariantsToMenu {parent m} {
-	foreach variant {ThreeCheck Crazyhouse} {
+proc addVariantsToMenu {parent m {excludeNormal 0}} {
+	set variants {}
+	if {!$excludeNormal} { lappend variants Normal }
+	lappend variants ThreeCheck Crazyhouse
+
+	foreach variant $variants {
 		$m add command \
 			-label " $::mc::VariantName($variant)" \
 			-image $::icon::16x16::variant($variant) \
@@ -421,6 +436,28 @@ proc addVariantsToMenu {parent m} {
 }
 
 
+proc setupPgnOptions {parent} {
+	set dlg [tk::toplevel $parent.pgnOptions -class Dialog]
+	::widget::dialogButtons $dlg {ok}
+	$dlg.ok configure -command [list destroy $dlg]
+
+	set top [::export::buildPgnOptionsFrame $dlg]
+	pack $top -fill both
+
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.ok cget -command]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg [::mc::stripAmpersand $mc::PgnOptions]
+	wm resizable $dlg false false
+	::util::place $dlg -parent $parent -position center
+	wm deiconify $dlg
+	focus $top
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
 proc dbNew {parent variant} {
 	variable FileSelBoxInUse
 
@@ -436,7 +473,7 @@ proc dbNew {parent variant} {
 		-defaultextension .sci \
 		-defaultencoding utf-8 \
 		-needencoding 1 \
-		-title [set [namespace current]::mc::NewFile] \
+		-title "[set [namespace current]::mc::NewFile] ($::mc::VariantName($variant))" \
 		-customicon $::icon::16x16::filetypeArchive \
 		-customtooltip $mc::Archiving \
 		-customcommand [namespace code [list CreateArchive]] \

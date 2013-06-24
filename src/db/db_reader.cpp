@@ -533,7 +533,7 @@ Reader::getAttributes(mstl::string const& filename, int& numGames, mstl::string*
 	{
 		util::ZStream strm(sys::file::internalName(filename), mstl::ios_base::in);
 
-		if (!strm.is_open())
+		if (!strm.isOpen())
 			return false;
 
 		numGames = strm.size();

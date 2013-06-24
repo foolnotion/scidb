@@ -433,6 +433,7 @@ logIOError(IOException const& exc, unsigned gameNumber = 0)
 
 	switch (exc.errorType())
 	{
+		case IOException::Create_Failed:			error = "no permissions to create files"; break;
 		case IOException::Open_Failed:			error = "open failed"; break;
 		case IOException::Unknown_Error_Type:	error = "unknown error type"; break;
 		case IOException::Unknown_Version:		error = "unknown file version"; break;

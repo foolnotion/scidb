@@ -110,6 +110,7 @@ static char const* CmdPlayerInfo		= "::scidb::db::playerInfo";
 static char const* CmdRecode			= "::scidb::db::recode";
 static char const* CmdReverse			= "::scidb::db::reverse";
 static char const* CmdSave				= "::scidb::db::save";
+static char const* CmdSavePGN			= "::scidb::db::savePGN";
 static char const* CmdSort				= "::scidb::db::sort";
 static char const* CmdSubscribe		= "::scidb::db::subscribe";
 static char const* CmdSwitch			= "::scidb::db::switch";
@@ -1057,8 +1058,6 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		}
 
 		::db::MultiBase& destination = scidb->multiBase(dst);
-		::db::MultiBase::GameCount gameCount;
-		unsigned k = destination.countGames(gameCount);
 
 		tcl::PgnReader	reader(	stream,
 										variant::Undetermined,
@@ -1066,11 +1065,9 @@ cmdImport(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 										objv[3],
 										objv[4],
 										tcl::PgnReader::Normalize,
-										tcl::PgnReader::File,
-										nullptr,
-										&gameCount);
+										tcl::PgnReader::File);
 
-		count = destination.importGames(reader, progress) - k;
+		count = destination.importGames(reader, progress);
 		stream.close();
 
 		if (progress.interrupted())
@@ -1151,7 +1148,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	mstl::auto_ptr< ::db::FileOffsets> fileOffsets;
 
-	if (ext == "pgn" || ext == "PGN")
+	if (ext == "pgn" || ext == "PGN" || ext == "gz")
 		fileOffsets.reset(new ::db::FileOffsets);
 
 	tcl::PgnReader	reader(	stream,
@@ -1606,6 +1603,31 @@ getVariants(char const* database)
 
 
 static int
+isUnsaved(char const* database)
+{
+	M_ASSERT(database);
+	setResult(Scidb->multiBase(database).isUnsaved());
+	return TCL_OK;
+}
+
+
+static int
+getChanges(char const* database)
+{
+	M_ASSERT(database);
+
+	MultiBase const& base = Scidb->multiBase(database);
+	Tcl_Obj* result[4];
+	result[0] = Tcl_NewIntObj(base.countGames(MultiBase::Added));
+	result[1] = Tcl_NewIntObj(base.countGames(MultiBase::Changed));
+	result[2] = Tcl_NewIntObj(base.countGames(MultiBase::Deleted));
+	result[3] = Tcl_NewBooleanObj(base.descriptionHasChanged());
+	setResult(U_NUMBER_OF(result), result);
+	return TCL_OK;
+}
+
+
+static int
 getType(char const* database = 0)
 {
 	M_ASSERT(database == 0 || Scidb->contains(database));
@@ -1689,20 +1711,22 @@ static int
 getStats(char const* database)
 {
 	Statistic const& statistic = Scidb->cursor(database).database().statistic();
-	Tcl_Obj*	objv[12];
+	Tcl_Obj*	objv[14];
 
 	objv[ 0] = Tcl_NewIntObj(statistic.deleted);
-	objv[ 1] = Tcl_NewIntObj(statistic.minYear);
-	objv[ 2] = Tcl_NewIntObj(statistic.maxYear);
-	objv[ 3] = Tcl_NewIntObj(statistic.avgYear);
-	objv[ 4] = Tcl_NewIntObj(statistic.minElo);
-	objv[ 5] = Tcl_NewIntObj(statistic.maxElo);
-	objv[ 6] = Tcl_NewIntObj(statistic.avgElo);
-	objv[ 7] = Tcl_NewIntObj(statistic.result[0]);
-	objv[ 8] = Tcl_NewIntObj(statistic.result[1]);
-	objv[ 9] = Tcl_NewIntObj(statistic.result[2]);
-	objv[10] = Tcl_NewIntObj(statistic.result[3]);
-	objv[11] = Tcl_NewIntObj(statistic.result[4]);
+	objv[ 1] = Tcl_NewIntObj(statistic.changed);
+	objv[ 2] = Tcl_NewIntObj(statistic.added);
+	objv[ 3] = Tcl_NewIntObj(statistic.content.minYear);
+	objv[ 4] = Tcl_NewIntObj(statistic.content.maxYear);
+	objv[ 5] = Tcl_NewIntObj(statistic.content.avgYear);
+	objv[ 6] = Tcl_NewIntObj(statistic.content.minElo);
+	objv[ 7] = Tcl_NewIntObj(statistic.content.maxElo);
+	objv[ 8] = Tcl_NewIntObj(statistic.content.avgElo);
+	objv[ 9] = Tcl_NewIntObj(statistic.content.result[0]);
+	objv[10] = Tcl_NewIntObj(statistic.content.result[1]);
+	objv[11] = Tcl_NewIntObj(statistic.content.result[2]);
+	objv[12] = Tcl_NewIntObj(statistic.content.result[3]);
+	objv[13] = Tcl_NewIntObj(statistic.content.result[4]);
 
 	setResult(U_NUMBER_OF(objv), objv);
 
@@ -1942,6 +1966,10 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 			obj = Tcl_NewBooleanObj(info.isChanged());
 			break;
 
+		case attribute::game::Added:
+			obj = Tcl_NewBooleanObj(cursor.database().isAdded(index));
+			break;
+
 		default:
 			return error(::CmdGet, "gameInfo", nullptr, "cannot access number %u", which);
 	}
@@ -2086,10 +2114,11 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	SET(Flags,                Tcl_NewStringObj(flags, flags.size()));
 	SET(Material,             Tcl_NewStringObj(material, material.size()));
 	SET(Deleted,              Tcl_NewBooleanObj(info.isDeleted()));
+	SET(Changed,              Tcl_NewIntObj(info.isChanged()));
+	SET(Added,                Tcl_NewIntObj(db.isAdded(index)));
 	SET(Acv,                  Tcl_NewStringObj(acv, acvSize));
 	SET(CommentEngFlag,       Tcl_NewBooleanObj(info.containsEnglishLanguage()));
 	SET(CommentOthFlag,       Tcl_NewBooleanObj(info.containsOtherLanguage()));
-	SET(Changed,              Tcl_NewIntObj(info.isDirty() || info.isChanged()));
 	SET(Promotion,            Tcl_NewBooleanObj(info.hasPromotion()));
 	SET(UnderPromotion,       Tcl_NewBooleanObj(info.hasUnderPromotion()));
 	SET(StandardPosition,     Tcl_NewBooleanObj(variant::isStandardChess(info.idn(), db.variant())));
@@ -2184,7 +2213,8 @@ getPlayerInfo(	int index,
 					Ratings& ratings,
 					federation::ID federation,
 					bool info,
-					bool idCard)
+					bool idCard,
+					bool usePlayerBase)
 {
 	M_ASSERT(database);
 
@@ -2193,7 +2223,8 @@ getPlayerInfo(	int index,
 	if (view >= 0)
 		index = cursor.index(table::Players, index, view);
 
-	return tcl::player::getInfo(cursor.database().player(index), ratings, federation, info, idCard);
+	NamebasePlayer const& player = cursor.database().player(index);
+	return tcl::player::getInfo(player, ratings, federation, info, idCard, usePlayerBase);
 }
 
 
@@ -2529,7 +2560,7 @@ cmdPlayerInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		player = &base.player(index, color::fromSide(stringFromObj(objc, objv, 4)));
 
 	Ratings ratings(rating::Any, rating::Any);
-	return tcl::player::getInfo(*player, ratings, federation::Fide, true, true);
+	return tcl::player::getInfo(*player, ratings, federation::Fide, true, true, true);
 }
 
 
@@ -2701,11 +2732,9 @@ cmdFetch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 				}
 
 				color::ID side = idx == Cmd_WhitePlayerInfo ? color::White : color::Black;
+				NamebasePlayer const& player = *info.playerEntry(side);
 
-				return tcl::player::getInfo(	*info.playerEntry(side),
-														ratings, federation,
-														infoWanted,
-														idCard);
+				return tcl::player::getInfo(player, ratings, federation, infoWanted, idCard, true);
 			}
 			break;
 
@@ -2734,7 +2763,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		"gameFlags", "gameNumber", "minYear", "maxYear", "maxUsage", "tags", "checksum", "idn",
 		"eco", "ratingTypes", "lookupPlayer", "lookupEvent", "lookupSite", "writable?",
 		"upgrade?", "memoryOnly?", "compact?", "playerKey", "eventKey", "siteKey", "variants",
-		"changed?", 0
+		"changed?", "unsaved?", "changes", 0
 	};
 	static char const* args[] =
 	{
@@ -2788,6 +2817,8 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		/* siteKey			*/ "<database> <variant> game|site <site>",
 		/* variants			*/ "<database>",
 		/* changed?			*/ "<index> ?<view>? ?<database>? ?<variant>?",
+		/* unsaved?			*/ "<database>",
+		/* changes			*/ "<database>",
 		0
 	};
 	enum
@@ -2799,7 +2830,8 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		Cmd_Deleted, Cmd_Open, Cmd_LastChange, Cmd_CustomFlags, Cmd_GameFlags, Cmd_GameNumber,
 		Cmd_MinYear, Cmd_MaxYear, Cmd_MaxUsage, Cmd_Tags, Cmd_Checksum, Cmd_Idn, Cmd_Eco, Cmd_RatingTypes,
 		Cmd_LookupPlayer, Cmd_LookupEvent, Cmd_LookupSite, Cmd_Writable, Cmd_Upgrade, Cmd_MemoryOnly,
-		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed,
+		Cmd_Compact, Cmd_PlayerKey, Cmd_EventKey, Cmd_SiteKey, Cmd_Variants, Cmd_Changed, Cmd_Unsaved,
+		Cmd_Changes,
 	};
 
 	if (objc < 2)
@@ -2882,9 +2914,10 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			Ratings ratings(rating::Any, rating::Any);
 			federation::ID federation = federation::Fide;
 
-			bool parseOptions = true;
-			bool idCard			= false;
-			bool info			= false;
+			bool parseOptions 	= true;
+			bool idCard				= false;
+			bool info				= false;
+			bool usePlayerBase	= true;
 
 			while (parseOptions && objc >= 3)
 			{
@@ -2913,6 +2946,11 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 						federation = federation::fromString(stringFromObj(objc, objv, objc - 1));
 						--objc;
 					}
+					else if (::strcmp(lastArg, "-usebase") == 0)
+					{
+						usePlayerBase = boolFromObj(objc, objv, objc - 1);
+						--objc;
+					}
 					else
 					{
 						return error(::CmdGet, nullptr, nullptr, "invalid argument %s", lastArg);
@@ -2935,7 +2973,17 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			variant::Type	variant	= tcl::game::variantFromObj(objc, objv, 5);
 
 			if (objc < 7)
-				return getPlayerInfo(index, view, database, variant, ratings, federation, info, idCard);
+			{
+				return getPlayerInfo(index,
+											view,
+											database,
+											variant,
+											ratings,
+											federation,
+											info,
+											idCard,
+											usePlayerBase);
+			}
 
 			unsigned which = unsignedFromObj(objc, objv, 6);
 
@@ -3299,6 +3347,12 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Variants:
 			return getVariants(stringFromObj(objc, objv, 2));
+
+		case Cmd_Unsaved:
+			return isUnsaved(stringFromObj(objc, objv, 2));
+
+		case Cmd_Changes:
+			return getChanges(stringFromObj(objc, objv, 2));
 	}
 
 	return usage(::CmdGet, nullptr, nullptr, subcommands, args);
@@ -4063,6 +4117,25 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdSavePGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	if (objc != 5)
+	{
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> <flags> <progress-cmd> <progress-arg>");
+		return TCL_ERROR;
+	}
+
+	char const*	db(stringFromObj(objc, objv, 1));
+	unsigned		flags(unsignedFromObj(objc, objv, 2));
+	Progress		progress(objv[3], objv[4]);
+
+	scidb->save(db, flags, progress);
+	setResult(scidb->multiCursor(db).countGames());
+	return TCL_OK;
+}
+
+
+static int
 cmdUpdate(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const*		database	= stringFromObj(objc, objv, 1);
@@ -4340,6 +4413,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdRecode,			cmdRecode);
 	createCommand(ti, CmdReverse,			cmdReverse);
 	createCommand(ti, CmdSave,				cmdSave);
+	createCommand(ti, CmdSavePGN,			cmdSavePGN);
 	createCommand(ti, CmdSort,				cmdSort);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);
 	createCommand(ti, CmdSwitch,			cmdSwitch);

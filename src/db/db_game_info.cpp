@@ -148,18 +148,18 @@ GameInfo::GameInfo(Initializer const&)
 	,m_termination(termination::Unknown)
 	,m_gameOffset(0)
 	,m_gameFlags(0)
-	,m_positionId(variant::Standard)
-	,m_plyCount(0)
-	,m_dateYear(Date::Zero10Bits)
 	,m_dateDay(0)
-	,m_ecoKey(1)
-	,m_eco(Eco::root())
-	,m_rest(0)
+	,m_setup(false)
+	,m_positionId(variant::Standard)
 	,m_round(0)
 	,m_subround(0)
 	,m_dateMonth(0)
+	,m_ecoKey(1)
+	,m_eco(Eco::root())
+	,m_rest(0)
+	,m_dateYear(Date::Zero10Bits)
+	,m_plyCount(0)
 	,m_result(result::Unknown)
-	,m_setup(false)
 {
 #if defined(__i386__)
 	static_assert(sizeof(GameInfo) == 64, "should be 64 bytes");
@@ -520,12 +520,13 @@ GameInfo::setup(	uint32_t gameOffset,
 	setup(gameOffset, gameRecordLength, whitePlayer, blackPlayer, event, annotator, namebases);
 
 	m_gameOffset		= gameOffset;
-	m_gameFlags			= provider.flags();
 	m_signature			= provider.getFinalBoard().signature();
 	m_result				= result::fromString(tags.value(tag::Result));
 	m_plyCount			= mstl::min(MaxPlyCount, provider.plyCount());
 	m_pd[0].langFlag	= provider.commentEngFlag();
 	m_pd[1].langFlag	= provider.commentOthFlag();
+
+	setFlags(provider.flags());
 
 	char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 	m_round = ::strtoul(s, &s, 10);

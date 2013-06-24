@@ -116,7 +116,11 @@ wikiLinkList(Player const* player)
 
 
 static void
-playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings, bool idCard)
+playerRatings(	NamebasePlayer const& player,
+					rating::Type& type,
+					int16_t* ratings,
+					bool idCard,
+					bool usePlayerBase)
 {
 	if (type == rating::Any)
 		type = player.findRatingType();
@@ -124,37 +128,41 @@ playerRatings(NamebasePlayer const& player, rating::Type& type, int16_t* ratings
 	ratings[0] = player.playerHighestRating(type);
 	ratings[1] = player.playerLatestRating(type);
 
-	if (player.isPlayerRating(type))
+	if (usePlayerBase)
 	{
-		if (idCard)
+		if (player.isPlayerRating(type))
 		{
-			if (uint16_t elo = player.findElo())
+			if (idCard)
 			{
-				type = rating::Elo;
-				ratings[0] = elo;
-				ratings[1] = player.playerLatestRating(type);
+				if (uint16_t elo = player.findElo())
+				{
+					type = rating::Elo;
+					ratings[0] = elo;
+					ratings[1] = player.playerLatestRating(type);
+				}
 			}
 		}
-	}
-	else
-	{
-		ratings[0] = -ratings[0];
-		ratings[1] = -ratings[1];
+		else
+		{
+			ratings[0] = -ratings[0];
+			ratings[1] = -ratings[1];
+		}
 	}
 }
 
 
 static int
 getInfo(	NamebasePlayer const* player,
-			Player const* p,
+			Player const* lookup,
 			tcl::player::Ratings& ratings,
 			federation::ID federation,
 			bool info,
-			bool idCard)
+			bool idCard,
+			bool usePlayerBase)
 {
 	M_ASSERT(!idCard || info);
 	M_ASSERT(!idCard || player);
-	M_ASSERT(player || p);
+	M_ASSERT(player || lookup);
 
 	Tcl_Obj* objv[info ? attribute::player::LastInfo : attribute::player::LastColumn];
 
@@ -172,25 +180,25 @@ getInfo(	NamebasePlayer const* player,
 	{
 		name = &player->name();
 		sex = sex::toString(player->sex());
-		species = species::toString(player->findType());
+		species = species::toString(usePlayerBase ? player->findType() : player->type());
 		if (federation == federation::Fide && player->fideID())
 			fideID.format("%u", player->fideID());
 		haveInfo = player->havePlayerInfo();
 	}
 	else
 	{
-		name = &p->name();
-		sex = sex::toString(p->sex());
-		species = species::toString(p->type());
-		fideID = p->federationID(federation);
+		name = &lookup->name();
+		sex = sex::toString(lookup->sex());
+		species = species::toString(lookup->type());
+		fideID = lookup->federationID(federation);
 		haveInfo = true;
 	}
 
-	if (p)
+	if (lookup)
 	{
 		if (idCard || !player || player->title() == title::None)
 		{
-			unsigned titles = p->titles();
+			unsigned titles = lookup->titles();
 
 			while (titles)
 			{
@@ -205,20 +213,20 @@ getInfo(	NamebasePlayer const* player,
 		}
 
 		if (idCard || !player || player->federation() == country::Unknown)
-			federationCode = country::toString(p->federation());
+			federationCode = country::toString(lookup->federation());
 
 		if (idCard || (player && player->sex() == sex::Unspecified))
-			sex = sex::toString(p->sex());
+			sex = sex::toString(lookup->sex());
 
 		if (idCard || (player && player->type() == species::Unspecified))
-			species = species::toString(p->type());
+			species = species::toString(lookup->type());
 
 		if (idCard)
-			name = &p->name();
+			name = &lookup->name();
 
 		if (fideID.empty())
 		{
-			fideID = p->federationID(federation);
+			fideID = lookup->federationID(federation);
 
 			if (!fideID.empty() && federation == federation::Fide && !idCard)
 				fideID.replace(size_t(0), size_t(0), "*", size_t(1));
@@ -237,18 +245,18 @@ getInfo(	NamebasePlayer const* player,
 		if (!*federationCode)
 			federationCode = country::toString(player->federation());
 
-		::playerRatings(*player, ratings.first,  rating1, idCard);
-		::playerRatings(*player, ratings.second, rating2, idCard);
+		::playerRatings(*player, ratings.first,  rating1, idCard, usePlayerBase);
+		::playerRatings(*player, ratings.second, rating2, idCard, usePlayerBase);
 
 		ratingType = rating::toString(player->playerRatingType());
 	}
 	else
 	{
 		ratingType = rating::toString(ratings.second);
-		rating1[0] = p->highestRating(ratings.first);
-		rating2[0] = p->highestRating(ratings.second);
-		rating1[1] = p->latestRating(ratings.first);
-		rating2[1] = p->latestRating(ratings.second);
+		rating1[0] = lookup->highestRating(ratings.first);
+		rating2[0] = lookup->highestRating(ratings.second);
+		rating1[1] = lookup->latestRating(ratings.first);
+		rating2[1] = lookup->latestRating(ratings.second);
 	}
 
 	Tcl_Obj* ratingObj1[3] =
@@ -291,21 +299,21 @@ getInfo(	NamebasePlayer const* player,
 		Tcl_Obj*			wikiLinkList(0);
 		Tcl_Obj*			aliasList(0);
 
-		if (p)
+		if (lookup)
 		{
 			typedef Player::StringList	StringList;
 
-			dateOfBirth = p->dateOfBirth();
-			dateOfDeath = p->dateOfDeath();
-			iccfID = p->iccfID();
-			dsbID = p->dsbID().asString();
-			ecfID = p->ecfID().asString();
-			viafID = p->viafID();
-			pndID = p->pndID();
-			chessgamesID = p->chessgamesID();
-			wikiLinkList = ::wikiLinkList(p);
+			dateOfBirth = lookup->dateOfBirth();
+			dateOfDeath = lookup->dateOfDeath();
+			iccfID = lookup->iccfID();
+			dsbID = lookup->dsbID().asString();
+			ecfID = lookup->ecfID().asString();
+			viafID = lookup->viafID();
+			pndID = lookup->pndID();
+			chessgamesID = lookup->chessgamesID();
+			wikiLinkList = ::wikiLinkList(lookup);
 
-			StringList const& aliases = p->aliases();
+			StringList const& aliases = lookup->aliases();
 
 			if (!aliases.empty())
 			{
@@ -342,10 +350,13 @@ tcl::player::getInfo(NamebasePlayer const& player,
 							Ratings& ratings,
 							federation::ID federation,
 							bool info,
-							bool idCard)
+							bool idCard,
+							bool usePlayerBase)
 {
 	M_ASSERT(!idCard || info);
-	return ::getInfo(&player, player.player(), ratings, federation, info, idCard);
+
+	Player const* lookup = usePlayerBase ? player.player() : 0;
+	return ::getInfo(&player, lookup, ratings, federation, info, idCard, usePlayerBase);
 }
 
 
@@ -426,7 +437,7 @@ cmdInfo(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Player const& player = m_dictionary->getPlayer(unsignedFromObj(objc, objv, 1));
 
 	if (forWeb)
-		return ::getInfo(0, &player, ratings, federation, true, false);
+		return ::getInfo(0, &player, ratings, federation, true, false, false);
 
 	Tcl_Obj* objs[10];
 	Tcl_Obj* titles[title::Last];

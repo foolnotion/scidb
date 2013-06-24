@@ -116,6 +116,7 @@ set T_Chess960Pos			"Chess 960 Position"
 set T_ShuffleChessPos	"Shuffle Chess Position"
 set T_Deleted				"Deleted"
 set T_Changed				"Changed"
+set T_Added					"Added"
 set T_EngFlag				"English Language Flag"
 set T_OthFlag				"Other Language Flag"
 set T_Idn					"Chess 960 Position Number"
@@ -231,10 +232,11 @@ variable Columns {
 	{ flags				{}			left		 2		 0		54px		0			1			0			{}				}
 	{ material			{}			left		 8		 0		25			0			1			1			{}				}
 	{ deleted			{}			center	 0		 0		14px		0			1			0			red			}
+	{ changed			{}			center	 0		 0		14px		0			1			0			{}				}
+	{ added				{}			center	 0		 0		14px		0			1			0			{}				}
 	{ acv					{}			center	 0		 0		30px		0			1			0			{}				}
 	{ engFlag			{}			center	 0		 0		18px		0			1			0			black			}
 	{ othFlag			{}			center	 0		 0		18px		0			1			0			black			}
-	{ changed			{}			center	 0		 0		14px		0			1			0			{}				}
 	{ promotion			{}			center	 0		 0		14px		0			1			0			{}				}
 	{ underPromo		{}			center	 0		 0		14px		0			1			0			{}				}
 	{ standardPos		{}			center	 0		 0		14px		0			1			0			{}				}
@@ -969,6 +971,7 @@ proc PrepareImages {path count} {
 proc TableFill {path args} {
 	variable icon::12x12::CrossHandRed
 	variable icon::12x12::Modified
+	variable icon::12x12::Added
 	variable icon::12x12::Check
 	variable icon::12x12::NotAvailable
 	variable GameFlags
@@ -1105,6 +1108,11 @@ proc TableFill {path args} {
 						lappend text [list @ $image]
 					}
 
+					added {
+						if {$item} { set image $Added } else { set image {} }
+						lappend text [list @ $image]
+					}
+
 					promotion - underPromo {
 						if {$codec eq "cbh" || $codec eq "cbf"} {
 							lappend text [list @ $NotAvailable]
@@ -1115,7 +1123,7 @@ proc TableFill {path args} {
 						}
 					}
 
-					standardPos - chess960Pos {
+					standardPos - chess960Pos - added {
 						# TODO: only for 12pt; use U+2714 for other sizes
 						if {$item} { set image $Check } else { set image {} }
 						lappend text [list @ $image]
@@ -1392,7 +1400,7 @@ proc TableVisit {table data} {
 		whiteSex - blackSex { if {!$Options(include-type)} { return } }
 		whiteRating1 - blackRating1 { if {$Defaults(rating:1) ne [lindex $ratings end]} { return } }
 		whiteRating2 - blackRating2 { if {$Defaults(rating:2) ne [lindex $ratings end]} { return } }
-		deleted - changed {}
+		deleted - changed - added {}
 		default { return }
 	}
 
@@ -1537,6 +1545,10 @@ proc TableVisit {table data} {
 
 		changed {
 			if {$item} { set tip [set [namespace current]::mc::T_Changed] }
+		}
+
+		added {
+			if {$item} { set tip [set [namespace current]::mc::T_Added] }
 		}
 	}
 
@@ -1790,14 +1802,14 @@ proc BindAccelerators {path} {
 	foreach {accel proc} [list $mc::AccelBrowse OpenBrowser \
 										$mc::AccelOverview OpenOverview \
 										$mc::AccelTournTable OpenCrosstable] {
-#		if {[info exists Vars(accel:$proc)]} {
-#			bind $path <Key-[string toupper $Vars(accel:$proc)]> {}
-#			bind $path <Key-[string tolower $Vars(accel:$proc)]> {}
-#		}
+		if {[info exists Vars(accel:$proc)]} {
+			bind $path <Key-[string toupper $Vars(accel:$proc)]> {}
+			bind $path <Key-[string tolower $Vars(accel:$proc)]> {}
+		}
 		set cmd [namespace code [list $proc $path]]
 		bind $path <Key-[string toupper $accel]> [list ::util::doAccelCmd $accel %s $cmd]
 		bind $path <Key-[string tolower $accel]> [list ::util::doAccelCmd $accel %s $cmd]
-#		set Vars(accel:$proc) $accel
+		set Vars(accel:$proc) $accel
 	}
 }
 
@@ -1873,44 +1885,10 @@ set CrossHandBlack [image create photo -data {
 	sb1yJ55STrUAAAAASUVORK5CYII=
 }]
 
-set CrossHandRed [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAMAAABhq6zVAAABFFBMVEWAAACoAACtAACHAACK
-	AACRAACYAACcAACqAACAAACoAACvBAScAACHDg6OAABuAABtAABqAACiAACWKyt/HhaCJBvS
-	eHXDSknJYF2dHxy/NCrFRz+kHxOkHxWkIRqkIx6lHhKmHhCrJBevJxuzMSazKx++Sj/DSkDI
-	TEPKVkyAIyGBIyGhPjSyQzpqIx9qIyB7PDJZIRxbIRu9AAC+AAC/OTPBEQrCMzPCTUjDOjrF
-	OTLGEgzHEgzJPj7LRD/LTkrMRkbQAADQEgzTVlbTV1TTZWDUYl7WYF3XY2HbExDbFBHfEw/f
-	FBLfaGHjAADlLyrlMCzlMi3lMi7lc3HmbW3mdnXpjYnvFBLvFRPviYfwjYr1AABdSm1OAAAA
-	AXRSTlMAQObYZgAAAIBJREFUCNcli9UWglAABOcbMDHB7kKxA7ADC5P//w/P9e7D7jzsAFH+
-	CYuKfcpiSt84KCfvUYT63XsqkF8621pr7WwK4pCdTeeDxSon1cyoP+zpktFMo2tqkhO2NZ5Y
-	dlJw6uDuOu29e0xD8Oy/GtB8+5cAqNeKOFRvqpiQVCPwA3nMEgZcj7r6AAAAAElFTkSuQmCC
-}]
-
-set Modified [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
-	CXBIWXMAAABIAAAASABGyWs+AAAB2UlEQVQoz3XSPWgTcRgG8Od/d7k0zSUXEK1V+iFqY5U2
-	R1MIBkKcWkVQEZ3cXNwtpThGRGhuUnt0Kwq6WVToJigIIhqxaQQjJjFJ9XKNTdLcR6r/JOac
-	LGrrO/+e5Xlegv9cq/gaDwZCGJOj5/vIxl2kqm8aaesKuxNenhrGvos30Q7SiNN/QTZfJvu8
-	L7KDxLSPbQskp4chyW6oT25PCIPv5vWmcNTuvwT9VYq49Eo/+y8OxPfiyyNjwjNqKKJbG+Jy
-	CeTXdoMJn/tu5RILZAvPHIE0+xHFxZFToqTfcXLaQTv/E/VUN1Y/OWiNGZvb72FuEAB4O30Y
-	43IGxcXR06JkKk6HOmB/bqO2IqBRIrRlskorQ2NE5AwucXUIwbgfheNdkz7JnOO5P7BKKDVY
-	pZ53xJwia4QeroPY9llk7q2Fe6LlBZ4t+X9jSyWU1hmlluViTq9thB9XAADM0vhT0XvgzLUu
-	vtdv51rYWBFgfSV0s8YoWpqNMd2dLQwA3J4TkUmhNxDhWwRVbR1GsbzZqJF5LY3rLl/biC7V
-	/6qdDVA9zrubI7t8TWpky4XS++qt1WRnlvd0rJPPjG2jEvkQb7rcjmIw1HO/8uHb80KSLrtF
-	tnlZ/bHjy/wCBlfTTV2R074AAAAASUVORK5CYII=
-}]
-
-set Check [image create photo -data {
-	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
-	CXBIWXMAAABIAAAASABGyWs+AAABuklEQVQoz32QP2gTUQCHf++9u8tdcjnOIz1qsUVNUilY
-	KlYtCoKTi/9ABEWwq4OB6ORUF10srYNSkIqTi9pFRFF0F5QKhVoKNkpEKcY2ofGSy7s/7163
-	ghD7zb9v+H0M25DeZ6eNXrMAhnXRigAAbDtBL5rjow/Ove3vL1y283aee/4v5X/j7IBN3dN7
-	yr2HhsjY2JFBs+oN3kJptbtAANqnXXHH88MSApWlL3JubvJ2c2TjnqJaKThDbg9RaQ9vBV83
-	Fn7HVt4x7EvuHbKD4k+lIt88e329bTVn7PumoEbRLKtnSE2/qi6pI+yFklFhHLSuWRdyu/zV
-	BuafvLzbcbwZbVqK+nINiozwjmoU+t4UkmPiVJB1RpUCuxl7HN8fL87GB8QEKYeiUw8AABT1
-	ZLn9yf+AEFBdFeG31sPMiWzu56OVp7wYlMIbf2PRjLfusdDjyFiWYxzVT5Ishb7b6Gu8X//M
-	j4vzdCoORDWEFHJLoAAgIOejSggqCfgKX+P7xUUyG/nhgi+R/BuQAQATpIaULPEqDxo7W2e1
-	j2wxftWRSSy6FQdSuTQUWzscudEaBsiP6HlbykSiG5sKg7NehOto0gAAAABJRU5ErkJggg==
-}]
+set CrossHandRed $::icon::12x12::deleted
+set Added $::icon::12x12::plus
+set Check $::icon::12x12::check
+set Modified $::icon::12x12::edit
 
 set NotAvailable [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAAAwAAAAMCAYAAABWdVznAAAABmJLR0QA/wD/AP+gvaeTAAAA
@@ -1993,6 +1971,7 @@ set I_BlackSex [image create photo -data {
 
 set I_TimeMode $::terminationbox::icon::12x12::TimeForfeit
 set I_Changed [::icon::makeGrayscale $Modified 0.7]
+set I_Added [::icon::makeGrayscale $Added 0.8]
 
 } ;# namespace 12x12
 } ;# namespace icon

@@ -227,7 +227,8 @@ proc dragCursors {{ext ""}} {
 
 		foreach {filetypes name} {	{.sci .si4 .si3 .scv .cbh .cbf .pgn .pgn.gz .bpgn .bpgn.gz .zip} db
 											{.pdf .html .htm .tex .ltx .bin .txt} document
-											{.ppm .png .gif .jpg .jpeg} image } {
+											{.ppm .png .gif .jpg .jpeg} image
+											{folder} folder } {
 			if {[tk windowingsystem] eq "x11"} {
 				set accept [file join $::scidb::dir::share cursor drag-$name-accept-32x32.xcur]
 				set deny   [file join $::scidb::dir::share cursor drag-$name-deny-32x32.xcur]
@@ -646,7 +647,8 @@ proc GetNumGames {filename mtime} {
 proc IsUsed {file} {
 	switch [string tolower [file extension $file]] {
 		.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
-			# no action
+			if {![::scidb::db::get open? [file normalize $file]]} { return no }
+			if {![::scidb::db::get readonly? $file]} { return yes }
 		}
 
 		.sci - .si3 - .si4 - .cbh - .cbf {
@@ -738,7 +740,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 
 				switch $ext {
 					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
-						lassign [::scidb::misc::attributes $filename] numGames type created descr
+						lassign [::scidb::misc::attributes $filename] numGames type variant created descr
 						if {[string length $descr] == 0} { set descr "\u2014" }
 #						set type [set ::application::database::mc::T_$type]
 						set numGames [FormatNumGames $filename $numGames]
@@ -758,6 +760,10 @@ proc Inspect {parent {folder ""} {filename ""}} {
 						}
 						tk::label $f.lused -text "$mc::Open:"
 						tk::label $f.tused -text $open
+						if {$ext eq ".sci"} {
+							tk::label $f.lvariant -text "$mc::Variant:"
+							tk::label $f.tvariant -text $mc::VariantName($variant)
+						}
 						tk::label $f.ldescr -text "$::database::switcher::mc::Description:"
 						tk::label $f.tdescr -text $descr -wraplength 200 -justify left
 					}
@@ -806,7 +812,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 			}
 
 			set r 1
-			foreach attr {name type target size created modified ngames used descr} {
+			foreach attr {name type target size created modified ngames used variant descr} {
 				if {[winfo exists $f.l$attr]} {
 					$f.l$attr configure -background $bg
 					$f.t$attr configure -background $bg

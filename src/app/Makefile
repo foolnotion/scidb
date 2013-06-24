@@ -251,7 +251,6 @@ app_application.o: ../sys/sys_file.h
 app_application.o: ../mstl/m_ifstream.h
 app_application.o: ../mstl/m_file.h
 app_application.o: ../mstl/m_file.ipp
-app_application.o: ../mstl/m_ofstream.h
 app_application.o: ../mstl/m_algorithm.h
 app_application.o: ../mstl/m_algorithm.ipp
 app_application.o: ../mstl/m_stdio.h

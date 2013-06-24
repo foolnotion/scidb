@@ -36,6 +36,9 @@
 using namespace db;
 
 
+inline static bool isdelim(char c) { return c == '-' || c == 'x'; }
+
+
 char const*
 match(char const* s, char const* pattern, unsigned n)
 {
@@ -141,6 +144,27 @@ skipTimeInfo(char const* s)
 }
 
 
+char const*
+skipMove(char const* s)
+{
+	if (s[0] == '(' && isalpha(s[1]))
+	{
+		if (isalpha(s[2]))
+		{
+			if (isdigit(s[3]) && isdelim(s[4]) && isalpha(s[5]) && isdigit(s[6]) && s[7] == ')')
+				return s + 8;
+		}
+		else
+		{
+			if (isdigit(s[2]) && isdelim(s[3]) && isalpha(s[4]) && isdigit(s[5]) && s[6] == ')')
+				return s + 7;
+		}
+	}
+
+	return s;
+}
+
+
 static int
 compare(void const* lhs, void const* rhs)
 {
@@ -222,17 +246,16 @@ MoveInfoSet::count(unsigned types) const
 // 								"Crafty: 12:+0.61"
 // 								"-11.78|d9"
 // 								"+0.00/0"
+//									"+0.01/16 61s"
+//									"(Nf3-e5) +0.32/13 98s"
 // 								"[Stockfish 1.9.1] 21:+2.74"
 // 								"[Stockfish 1.9.1] 66:M4"
 // Time Information:			"1:40:25"
 // 								"(1:40:25)"
 // 								"Crafty: 1:40:25"
 // 								"Rybka Aquarium (0:00:45)"
+//									"135s"
 // Video Time:					"[vt 122.44]"
-//
-// NOTE:
-// Evaluation information may be followed by a time value; e.g. " 4s".
-// We will skip this time information.
 bool
 MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 {
@@ -336,9 +359,12 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 		result.append(s, comment.end());
 		comment.swap(result);
 		comment.trim();
+		rc = false;
 	}
 
-	s = ::skipSpaces(comment);
+	char const* m = ::skipMove(comment);
+
+	s = ::skipSpaces(m);
 
 	if (::seemsToBeMoveInfo(s, comment.end() - 1))
 	{
@@ -371,10 +397,19 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			char const* q = info.parsePlayersClock(s);
 
 			if (!q)
-				q = ::skipTimeInfo(info.parseEvaluation(s));
+			{
+				q = info.parseEvaluation(s);
 
-			if (q == 0 || (delim ? q[0] != delim || q[1] : *q))
+				if (q == 0)
+					return false;
+			}
+
+			char const* e = ::skipTimeInfo(q);
+
+			if ((delim ? (e[0] != delim || e[1]) : *e))
 				return false;
+
+			M_ASSERT(!info.isEmpty());
 
 			p = s - 1;
 			if (*p == '(')
@@ -389,22 +424,32 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 		}
 		else if (::seemsToBeEvaluation(s))
 		{
-			char const* e = ::skipTimeInfo(info.parseEvaluation(s));
-
-			if (e && ::isDelim(::skipSpaces(e)))
+			if (char const* e = info.parseEvaluation(s))
 			{
-				s = e;
-				rc = true;
+				char const* f = ::skipTimeInfo(e);
+
+				if (::isDelim(::skipSpaces(f)))
+				{
+					M_ASSERT(!info.isEmpty());
+					s = e;
+					rc = true;
+				}
 			}
 		}
 		else if (::isdigit(*s))
 		{
 			char const* e = info.parsePlayersClock(s);
 
-			if (e && ::isDelim(::skipSpaces(e)))
+			if (e)
 			{
-				s = e;
-				rc = true;
+				e = ::skipSpaces(e);
+
+				if (::isDelim(e))
+				{
+					M_ASSERT(!info.isEmpty());
+					s = e;
+					rc = true;
+				}
 			}
 		}
 		else if (*s == '[')
@@ -431,6 +476,7 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 			if (!q)
 				return false;
 
+			M_ASSERT(!info.isEmpty());
 			info.setAnalysisEngine(engineList.addEngine(engine));
 			s = ::skipSpaces(q);
 			rc = true;
@@ -439,29 +485,40 @@ MoveInfoSet::extractFromComment(EngineList& engineList, mstl::string& comment)
 		if (rc)
 		{
 			add(info);
+
+			if (m > comment.begin())
+			{
+				result.append(comment.begin(), m);
+
+				if (s < comment.end())
+					result.append(' ');
+			}
+
 			result.append(s, comment.end());
 			comment.swap(result);
 			comment.trim();
 		}
 	}
 
-	char const* e = comment.c_str() + comment.size() - 1;
-
-	if (e > comment.c_str())
+	if (!rc || info.hasEvaluationInfo())
 	{
-		if (*e == 's')
+		char const* s = comment.begin();
+		char const* t = comment.end() - 1;
+
+		if (t > s && t[0] == 's' && ::isdigit(t[-1]))
 		{
-			--e;
+			do
+				--t;
+			while (t > s && ::isdigit(*t));
 
-			if (::isdigit(*e))
+			if (t == s || info.hasEvaluationInfo())
 			{
-				while (e > comment.c_str() && ::isdigit(e[-1]))
-					--e;
-
-				if (e == comment.c_str() || e[-1] == ' ')
+				if (char const* e = info.parseTimeInfo(t))
 				{
-					comment.erase(e, comment.end());
+					add(info);
+					comment.erase(t, e);
 					comment.trim();
+					rc = true;
 				}
 			}
 		}

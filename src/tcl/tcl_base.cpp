@@ -789,6 +789,7 @@ safeCall(void* clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		switch (exc.errorType())
 		{
 			case IOException::Unknown_Error_Type:		error = "UnknownErrorType"; break;
+			case IOException::Create_Failed:				error = "CreateFailed"; break;
 			case IOException::Open_Failed:				error = "OpenFailed"; break;
 			case IOException::Read_Only:					error = "ReadOnly"; break;
 			case IOException::Unknown_Version:			error = "UnknownVersion"; break;

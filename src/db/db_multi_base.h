@@ -44,6 +44,8 @@ class MultiBase
 {
 public:
 
+	enum Mode { Changed, Added, Deleted };
+
 	typedef type::ID Type;
 	typedef format::Type Format;
 	typedef unsigned GameCount[variant::NumberOfVariants];
@@ -67,13 +69,18 @@ public:
 	bool isEmpty() const;
 	bool isEmpty(variant::Type variant) const;
 	bool isEmpty(unsigned variantIndex) const;
-	bool hasChanged() const;
-	bool hasChanged(unsigned variantIndex) const;
+	bool isUnsaved() const;
+	bool isUnsaved(unsigned variantIndex) const;
 	bool exists(variant::Type variant) const;
 	bool exists(unsigned variantIndex) const;
 	bool isSingleBase() const;
 	bool isTextFile() const;
+	bool descriptionHasChanged() const;
 
+	unsigned countGames(Mode mode) const;
+
+	/// Return the name of the database.
+	mstl::string const& name() const;
 	/// Returns the (decoding) format of database
 	Format format() const;
 	/// Returns the variant of the leading database.
@@ -99,8 +106,12 @@ public:
 	void replace(Database* database);
 	/// Import games from given producer.
 	unsigned importGames(Producer& producer, util::Progress& progress, GameCount* count = 0);
+	/// Save changes.
+	void save(util::Progress& progress);
 	/// Update PGN file.
-	save::State save(mstl::string const& encoding, unsigned flags, util::Progress& progress);
+	void save(unsigned flags, util::Progress& progress);
+	/// Reset status of databases.
+	void resetInitialSize();
 
 	/// Setup data for PGN files.
 	void setup(FileOffsets* fileOffsets);

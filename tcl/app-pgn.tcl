@@ -195,15 +195,12 @@ proc build {parent width height} {
 		-side bottom \
 		-tooltipvar ::mc::Game \
 	]
-	set Vars(button:new) [::toolbar::add $tbGame button \
+	set Vars(button:new) [::toolbar::add $tbGame dropdownbutton \
 		-image $::icon::toolbarDocumentNew \
 		-tooltip "$::gamebar::mc::GameNew ($::mc::VariantName(Normal))" \
+		-arrowttipvar ::gamebar::mc::GameNew \
 		-command [list ::menu::gameNew $tbGame] \
-	]
-	set Vars(button:new...) [::toolbar::add $tbGame button \
-		-image $::icon::toolbarDocumentNewAlt \
-		-tooltipvar [::mc::var ::gamebar::mc::GameNew "..."] \
-		-command [namespace code NewGame] \
+		-menucmd ::gamebar::addVariantsToMenu \
 	]
 #	set Vars(button:shuffle) [::toolbar::add $tbGame button \
 #		-image $::icon::toolbarDice \
@@ -1703,10 +1700,10 @@ proc PrintNumericalAnnotation {position w level key nags isPrefix afterPly} {
 		set nagTag $keyTag:[incr count]
 		set c [string index $nag 0]
 		if {[string is alpha $c] && [string is ascii $c]} {
-			if {($isPrefix || $afterPly) && ($prevSym >= 0 || !$isPrefix)} {
+			if {$isPrefix || $afterPly || $prevSym >= 0} {
 				$w insert current " "
 			}
-			set prevSym 1
+			set prevSym 2
 		} elseif {$value <= 6} {
 			if {$count > 1} { $w insert current "\u2005" }
 			set prevSym 1
@@ -1729,6 +1726,7 @@ proc PrintNumericalAnnotation {position w level key nags isPrefix afterPly} {
 		set afterPly 0
 	}
 
+	if {$isPrefix && $prevSym == 2} { $w insert current " " }
 	if {$level == 0} { set main main } else { set main variation }
 	$w tag add $main $pos current
 	$w tag add nag $pos current
@@ -2926,19 +2924,6 @@ proc Refresh {var} {
 	set Vars(successor:$Vars(position)) {}
 
 	refresh
-}
-
-
-proc NewGame {} {
-	variable Vars
-
-	set parent $Vars(button:new...)
-	set m $parent.newGame
-	if {[winfo exists $m]} { destroy $m }
-	menu $m -tearoff false
-	catch { wm attributes $m -type popup_menu }
-	::gamebar::addVariantsToMenu $parent $m
-	tk_popdown $m $parent
 }
 
 

@@ -14,7 +14,7 @@
 // ======================================================================
 
 // ======================================================================
-// Copyright: (C) 2009-2013 Gregor Cramer
+// Copyright: (C) 2013 Gregor Cramer
 // ======================================================================
 
 // ======================================================================
@@ -24,57 +24,16 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_statistic_included
-#define _db_statistic_included
+#include "db_file_offsets.h"
 
-#include "u_base.h"
+using namespace db;
 
-namespace db {
 
-class GameInfo;
-
-class Statistic
+FileOffsets::FileOffsets(FileOffsets const& fileOffsets)
+	:m_countSkipped(fileOffsets.m_countSkipped)
 {
-public:
-
-	enum Mode { Reset, Continue };
-
-	Statistic();
-
-	void clear();
-	void reset();
-	void add(GameInfo const& info);
-	void compute(GameInfo* const* first, GameInfo* const* last, Mode mode);
-
-	unsigned deleted;
-	unsigned changed;
-	unsigned added;
-
-	struct Content
-	{
-		uint16_t minYear;
-		uint16_t maxYear;
-		uint16_t avgYear;
-		uint16_t minElo;
-		uint16_t maxElo;
-		uint16_t avgElo;
-		unsigned result[5];
-	};
-
-	Content content;
-
-private:
-
-	void count(GameInfo const& info);
-
-	double	m_sumYear;
-	double	m_sumElo;
-	unsigned	m_dateCount;
-	unsigned	m_eloCount;
-};
-
-} // namespace db
-
-#endif // _db_statistic_included
+	if (!fileOffsets.isEmpty())
+		m_offsets.assign(fileOffsets.m_offsets.begin(), fileOffsets.m_offsets.end() - 1);
+}
 
 // vi:set ts=3 sw=3:

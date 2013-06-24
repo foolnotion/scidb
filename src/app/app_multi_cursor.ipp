@@ -51,6 +51,8 @@ inline mstl::string const& MultiCursor::name() const	{ return m_leader->name(); 
 inline Application& MultiCursor::app() const				{ return m_app; }
 inline db::MultiBase& MultiCursor::multiBase()			{ return *m_base; }
 
+inline db::MultiBase const& MultiCursor::multiBase() const { return *m_base; }
+
 
 inline
 Cursor*

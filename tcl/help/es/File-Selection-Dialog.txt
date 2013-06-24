@@ -66,6 +66,16 @@ este fin se puede utilizar el menú contextual o la Barra de herramientas. Manten
 pulsado el botón central del ratón sobre un enlace se muestra la ruta correspondiente.
 </p>
 
+<NEW>
+</p>
+The context sensitive menu allows to add the current directory, unless a
+bookmark with this name and referencing this directory is already exisiting.
+Furthermore user defined bookmarks may be deleted or renamed. An alternative
+method for adding a bookmark is Drag &amp; Drop of a directory entry into
+this division.
+<p>
+</NEW>
+
 <p>
 Existen referencias internas que no se pueden eliminar:
 </p>

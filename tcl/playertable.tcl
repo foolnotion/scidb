@@ -30,9 +30,12 @@ namespace eval playertable {
 namespace eval mc {
 
 set Find							"Find"
+set Options						"Options"
 set StartSearch				"Start search"
 set ClearEntries				"Clear entries"
 set NotFound					"Not found."
+set EnablePlayerBase			"Enable use of player base"
+set DisablePlayerBase		"Disable use of player base"
 
 set Name							"Name"
 set HighestRating				"Highest rating"
@@ -89,16 +92,17 @@ variable columns {}
 foreach col $Columns { lappend columns [lindex $col 0] }
 
 array set Defaults {
-	country-code	flags
-	federation		Fide
+	country-code		flags
+	federation			Fide
+	use-player-base	1
 
-	exclude-elo		1
-	include-type	1
+	exclude-elo			1
+	include-type		1
 
-	rating1:which	highest
-	rating2:which	highest
-	rating1:type	Elo
-	rating2:type	DWZ
+	rating1:which		highest
+	rating2:which		highest
+	rating1:type		Elo
+	rating2:type		DWZ
 }
 
 array set Options {}
@@ -116,9 +120,10 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	namespace eval [namespace current]::$path {}
 	variable ${path}::Vars
 
-	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
-		array set Options [array get Defaults]
-	}
+	array set options [array get Defaults]
+	array set options [array get Options]
+	array set Options [array get options]
+	unset options
 
 	set mc::F_Rating1 $Options(rating1:type)
 	set mc::F_Rating2 $Options(rating2:type)
@@ -317,6 +322,22 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			-tooltipvar [namespace current]::mc::ClearEntries \
 			-command [namespace code [list Clear $path $cb] \
 		]
+
+		set tbOptions [::toolbar::toolbar $path \
+			-id playertable-options \
+			-hide 1 \
+			-side bottom \
+			-alignment left \
+			-allow {top bottom} \
+			-tooltipvar [namespace current]::mc::Options \
+		]
+		set Vars(button:player-base) [::toolbar::add $tbOptions checkbutton \
+			-image $::icon::toolbarDatabase \
+			-variable [namespace current]::Options(use-player-base) \
+			-tooltipvar [namespace current]::mc::EnablePlayerBase \
+			-command [namespace code [list Refresh $path]] \
+		]
+		SetupPlayerBaseButton $path
 	}
 
 	return $Vars(table)
@@ -521,6 +542,20 @@ proc Refresh {path} {
 	set table $path.table
 	::scrolledtable::clear $table
 	::scrolledtable::refresh $table
+	SetupPlayerBaseButton $path
+}
+
+
+proc SetupPlayerBaseButton {path} {
+	variable ${path}::Vars
+	variable Options
+
+	if {$Options(use-player-base)} {
+		set var [namespace current]::mc::DisablePlayerBase
+	} else {
+		set var [namespace current]::mc::EnablePlayerBase
+	}
+	::toolbar::childconfigure $Vars(button:player-base) -tooltipvar $var
 }
 
 
@@ -564,7 +599,10 @@ proc TableFill {path args} {
 	for {set i $first} {$i < $last} {incr i} {
 		set index [expr {$start + $i}]
 		set line [scidb::db::get playerInfo $index $view $base $variant \
-						-ratings $ratings -federation $Options(federation)]
+			-ratings $ratings \
+			-federation $Options(federation) \
+			-usebase $Options(use-player-base) \
+		]
 		set text {}
 		set k 0
 

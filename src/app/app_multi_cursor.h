@@ -73,6 +73,7 @@ public:
 	bool exists(unsigned variantIndex) const;
 	bool isEmpty(unsigned variantIndex) const;
 	bool isEmpty() const;
+	bool isUnsaved() const;
 
 	unsigned countGames() const;
 
@@ -84,6 +85,7 @@ public:
 	Cursor& cursor(db::variant::Type variant) const;
 
 	db::MultiBase& multiBase();
+	db::MultiBase const& multiBase() const;
 
 	mstl::string const& name() const;
 	Application& app() const;

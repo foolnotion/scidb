@@ -84,9 +84,8 @@ set CannotChangeDir				"Cannot change to the directory \"%s\".\nPermission denie
 set DirectoryRemoved				"Cannot change to the directory \"%s\".\nDirectory is removed."
 set DeleteFailed					"Deletion of '%s' failed."
 set RstoreFailed					"Restoring '%s' failed."
-set CommandFailed					"Command '%s' failed."
 set CopyFailed						"Copying of file '%s' failed: permission denied."
-set CannotCopy						"Cannot create a copy because file '%s' is already exisiting."
+set CannotCopy						"Cannot create a copy because file '%s' is already existing."
 set CannotDuplicate				"Cannot duplicate file '%s' due to the lack of read permission."
 set ReallyDuplicateFile			"Really duplicate this file?"
 set ReallyDuplicateDetail		"This file has about %s. Duplicating this file may take some time."
@@ -123,6 +122,8 @@ set EntryAlreadyExists			"Entry already exists"
 set AnEntryAlreadyExists		"An entry '%s' already exists."
 set SourceDirectoryIs			"The source directories is '%s'."
 set NewName							"New name"
+set BookmarkAlreadyExists		"A bookmark for this folder is already existing: '%s'."
+set AddBookmarkAnyway			"Add bookmark anyway?"
 
 set ReallyMove(file,w)			"Really move file '%s' to trash?"
 set ReallyMove(file,r)			"Really move write-protected file '%s' to trash?"
@@ -142,6 +143,7 @@ set Cannot(delete)				"Cannot delete file '%s'."
 set Cannot(rename)				"Cannot rename file '%s'."
 set Cannot(move)					"Cannot move file '%s'."
 set Cannot(overwrite)			"Cannot overwrite file '%s'."
+set Cannot(delete-or-move)		"Cannot delete nor move file '%s'."
 
 set DropAction(move)				"Move Here"
 set DropAction(copy)				"Copy Here"
@@ -164,6 +166,7 @@ array set Options {
 	pane:favorites 0
 	menu:headerbackground #ffdd76
 	menu:headerforeground black
+	drop:background LemonChiffon
 	tooltip:shorten-paths 0
 }
 
@@ -261,11 +264,8 @@ proc fsbox {w type args} {
 	set Vars(glob) Files
 	set Vars(fam) {}
 	set Vars(folder:home) [file nativename ~]
-	set Vars(folder:desktop) [file join $Vars(folder:home) Desktop]
-	if {![file isdirectory $Vars(folder:desktop)]} { set Vars(folder:desktop) "" }
-	set Vars(folder:trash) [file join $Vars(folder:home) .local share Trash files]
-	if {![file isdirectory $Vars(folder:trash)]} { set Vars(folder:trash) "" }
-	if {![CheckIsKDE $w]} { set Vars(folder:trash) "" }
+	set Vars(folder:desktop) [desktop::directory]
+	set Vars(folder:trash) [trash::directory]
 	set Vars(folder:filesystem) [fileSeparator]
 	set Vars(bookmark:folder) ""
 	set Vars(edit:active) 0
@@ -273,12 +273,13 @@ proc fsbox {w type args} {
 	set Vars(lookup:$Vars(folder:filesystem)) filesystem
 	set Vars(history:folder) ""
 	set Vars(folder) ""
-	set Vars(dragging) 0
+	set Vars(drag:active) 0
+	set Vars(drag:private) 0
 	set Vars(startup) 1
 	set Vars(extensions) {}
 	set Vars(onlyexecutables) 0
+
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
-#	if {[llength $Vars(folder:trash)]} { set Vars(lookup:$Vars(folder:trash)) trash }
 
 	set Vars(icon:lastvisited) $icon::16x16::visited
 	set Vars(icon:favorites) $icon::16x16::star
@@ -836,6 +837,21 @@ proc verifyPath {path} {
 }
 
 
+proc toUriList {files} {
+	set result {}
+
+	foreach file $files {
+		if {[trash::isTrashed? $file]} {
+			lappend result "trash://$file"
+		} else {
+			lappend result "file://localhost/$file"
+		}
+	}
+
+	return $result
+}
+
+
 proc parseUriList {uriFiles} {
 	set result {}
 
@@ -873,9 +889,8 @@ proc parseUriList {uriFiles} {
 					set file [string range $file 5 end]
 				}
 				set file [file normalize $file]
-			} elseif {[string equal -length 7 $file "trash:/"] && [checkIsKDE]} {
-				set file [string range $file 7 end]
-				set file [file join [file nativename ~] .local share Trash files $file]
+			} elseif {[string equal -length 7 $file "trash://"]} {
+				set file [file normalize [file join [trash::directory] [string range $file 8 end]]]
 			}
 			lappend result $uri $file
 		}
@@ -898,33 +913,192 @@ proc makeStateSpecificIcons {img} {
 }
 
 
-proc checkIsKDE {} {
-	variable _IsKDE
+switch [tk windowingsystem] {
+	x11 {
+		proc makeFrameless {w} { ;# XXX how to do this?  }
+	}
 
-	if {![info exists _IsKDE]} {
-		if {[tk windowingsystem] eq "x11"} {
-			set atoms {}
-			catch { set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"] }
-			set _IsKDE [expr {[string length $atoms] > 0}]
-		} else {
-			set _IsKDE 0
+	win32 {
+		proc makeFrameless {w} { wm attributes $w -toolwindow }
+	}
+
+	aqua {
+		proc makeFrameless {w} { ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
+	}
+}
+
+
+namespace eval desktop {
+
+switch [tk windowingsystem] {
+	x11 {
+		proc directory {} {
+			set dir [file join [file nativename ~] Desktop]
+			if {[file isdirectory $dir]} { return $dir }
+			return ""
+		}
+	}
+}
+
+} ;# namespace desktop
+
+
+namespace eval trash {
+
+switch [tk windowingsystem] {
+	x11 {
+		proc checkIsKDE {} {
+			variable IsKde_
+
+			if {![info exists IsKde_]} {
+				if {[tk windowingsystem] eq "x11"} {
+					set atoms {}
+					catch { set atoms [exec /bin/sh -c "xlsatoms | grep _KDE_RUNNING"] }
+					set IsKde_ [expr {[string length $atoms] > 0}]
+				} else {
+					set IsKde_ 0
+				}
+			}
+
+			return $IsKde_
+		}
+
+		proc AutoExecOk? {exe} { return [expr {[string length [auto_execok $exe]] > 0}] }
+
+		proc usable? {} {
+			variable IsUsable_
+
+			if {![info exists IsUsable_]} {
+				set IsUsable_ 0
+
+				if {[string length [directory]] > 0} {
+					if {[AutoExecOk? trash] || [AutoExecOk? trash-put]} {
+						set IsUsable_ 1
+					} elseif {[checkIsKDE]} {
+						set IsUsable_ [expr {[AutoExecOk? kioclient] || [AutoExecOk? kfmclient]}]
+					}
+				}
+			}
+
+			return $IsUsable_
+		}
+
+		proc isTrash? {path} {
+			set dir [directory]
+			if {[string length $dir] == 0} { return }
+			return [string match ${dir}/* $path]
+		}
+
+		proc directory {} {
+			variable Dir_
+
+			if {[info exists Dir_]} {
+				if {![file isdirectory $Dir_]} { return "" }
+			} else {
+				set Dir_ ""
+
+				if {[info exists ::env(XDG_DATA_HOME)]} {
+					if {[file isdirectory [set dir [file join $::env(XDG_DATA_HOME) Trash files]]]} {
+						set Dir_ $dir
+					}
+				}
+
+				if {[string length $Dir_] == 0} {
+					set home [file nativename ~]
+					if {[file isdirectory [set dir [file join $home .local share Trash files]]]} {
+						set Dir_ $dir
+					}
+				}
+			}
+
+			return $Dir_
+		}
+
+		proc move {files} {
+			if {[llength $files] == 0} { return 1 }
+
+			if {[AutoExecOk? trash-put] || [AutoExecOk? trash]} {
+				set cmd [auto_execok trash-put]
+				if {[string length $cmd] == 0} { set cmd [auto_execok trash] }
+				foreach f $files {
+					if {[file exists $f]} { append cmd " \"$f\"" }
+				}
+			} elseif {[AutoExecOk? kioclient] || [AutoExecOk? kfmclient]} {
+				set cmd [auto_execok kioclient]
+				if {[string length $cmd] == 0} { set cmd [auto_execok kfmclient] }
+				append cmd " move "
+				foreach f $files {
+					if {[file exists $f]} { append cmd " \"$f\"" }
+				}
+				append cmd " trash:/"
+			} else {
+				return 0
+			}
+
+			if {[catch {exec /bin/sh -c $cmd}]} {
+				# Oops, kioclient is always returning an error
+			}
+
+			return 1
+		}
+
+		proc restore? {} { return 0 }
+
+#		"ktrash --restore <file>" is not working despite the documentation
+#		proc restore {files} {
+#			if {![AutoExecOk? ktrash]} { return 0 }
+#
+#			set fs [fileSeparator]
+#			set n [llength [split [directory] $fs]]
+#			set exe [auto_execok ktrash]
+#
+#			foreach f $files {
+#				if {[file exists $f]} {
+#					set components [lrange [split $f $fs] $n end]
+#					set f [file join {*}$components]
+#					set cmd "$exe --restore \"$f\""
+#					if {[catch {exec /bin/sh -c $cmd}]} {
+#						# TODO: ktrash failed
+#					}
+#				}
+#			}
+#
+#			return 1
+#		}
+
+		proc isTrashed? {file} {
+			set dir [directory]
+			if {[string length $dir] == 0} { return 0 }
+			if {[string match "${dir}*" $file]} { return 1 }
+			return 0
+		}
+
+		proc list {filter} {
+			set result {}
+
+			if {[AutoExecOk? trash-list] || [AutoExecOk? list-trash]} {
+				set cmd [auto_execok trash-list]
+				if {[string length $cmd] == 0} { set cmd [auto_execok list-trash] }
+				catch {exec /bin/sh -c $cmd}
+			} else {
+				set files [glob -nocomplain -directory [directory] -types {f} {*}$filter]
+				foreach file $files { lappend result [::list . . $file] }
+			}
+
+			return $result
 		}
 	}
 
-	return $_IsKDE
-}
+	windows {
+		# TODO
+	}
 
-
-proc x11MakeFrameless {w} { ;# how to do? }
-
-
-proc noWindowFrame {w} {
-	switch [tk windowingsystem] {
-		aqua	{ ::tk::unsupported::MacWindowStyle style $w plainDBox {} }
-		win32	{ wm attributes $w -toolwindow }
-		x11	{ x11MakeFrameless $w }
+	aqua {
+		# TODO
 	}
 }
+
+} ;# namespace trash
 
 
 proc Tr {tok {args {}}} {
@@ -1356,12 +1530,7 @@ proc DirChanged {w {useHistory 1}} {
 	}
 
 	set Vars(history:folder) ""
-
-	if {$Vars(glob) eq "Files"} {
-		set folder $Vars(folder)
-	} else {
-		set folder $Vars(glob)
-	}
+	if {$Vars(glob) eq "Files"} { set folder $Vars(folder) } else { set folder $Vars(glob) }
 
 	if {$useHistory} {
 		set Vars(undo:history) [lrange $Vars(undo:history) 0 $Vars(undo:current)]
@@ -1378,15 +1547,11 @@ proc DirChanged {w {useHistory 1}} {
 		}
 	}
 
-	set Vars(bookmark:folder) ""
-	foreach action {delete rename copy new} { set Vars(disable:$action) 0 }
-	::toolbar::childconfigure $Vars(button:add) -state normal
+	bookmarks::UpdateButtons $w
 
-	if {[string length $Vars(folder:trash)] > 0 && [string match $Vars(folder:trash)* $Vars(folder)]} {
-		set action restore
-	} else {
-		set action delete
-	}
+	foreach action {delete rename copy new} { set Vars(disable:$action) 0 }
+
+	if {[trash::isTrash? $Vars(folder)]} { set action restore } else { set action delete }
 	filelist::SetDeleteAction $w $action
 
 	foreach f {desktop trash} {
@@ -1396,25 +1561,6 @@ proc DirChanged {w {useHistory 1}} {
 		}
 	}
 
-	foreach f {home filesystem} {
-		if {$Vars(folder) eq $Vars(folder:$f)} {
-			::toolbar::childconfigure $Vars(button:add) -state disabled
-		}
-	}
-
-	if {$Vars(glob) ne "Files"} {
-		::toolbar::childconfigure $Vars(button:add) -state disabled
-	} else {
-		foreach f $Bookmarks(user) {
-			if {$Vars(folder) eq [lindex $f 0]} {
-				::toolbar::childconfigure $Vars(button:add) -state disabled
-			}
-		}
-	}
-
-	set Vars(bookmark:folder) $folder
-	set tip [format [Tr AddBookmark] [file tail $folder]]
-	::toolbar::childconfigure $Vars(button:add) -tooltip $tip
 	filelist::ConfigureButtons $w
 
 	if {[namespace exists ::tkdnd]} {
@@ -1488,6 +1634,12 @@ proc ChangeDir {w path {useHistory 1}} {
 			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
 		}
 
+		Desktop - Trash {
+			set Vars(glob) $path
+			set Vars(folder) $Vars(folder:[string tolower $path])
+			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
+		}
+
 		default {
 			set Vars(glob) Files
 			set appPWD [pwd]
@@ -1505,14 +1657,6 @@ proc ChangeDir {w path {useHistory 1}} {
 				return
 			}
 
-			if {[info exists Vars(lookup:$path)]} {
-				set icon [set icon::16x16::$Vars(lookup:$path)]
-			} elseif {	[string length $Vars(folder:trash)] > 0
-						&& [string match $Vars(folder:trash)* $path]} {
-				set icon $Vars(icon:trash)
-			} else {
-				set icon ""
-			}
 			set pwd [pwd]
 			if {[file normalize $path] eq $pwd} {
 				set Vars(folder) $path
@@ -1520,7 +1664,19 @@ proc ChangeDir {w path {useHistory 1}} {
 				set Vars(folder) $pwd
 			}
 			cd $appPWD
-			$Vars(choosedir) set $Vars(folder) $icon
+			switch $path {
+				Trash - Desktop {
+					$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
+				}
+				default {
+					if {[info exists Vars(lookup:$path)]} {
+						set icon [set icon::16x16::$Vars(lookup:$path)]
+					} else {
+						set icon ""
+					}
+					$Vars(choosedir) set $Vars(folder) $icon
+				}
+			}
 			set Vars(lastFolder) $Vars(folder)
 		}
 	}
@@ -1583,9 +1739,9 @@ proc Activate {w {exit no}} {
 	variable ${w}::Vars
 
 	switch $Vars(glob) {
-		Files			{ set complete Join }
-		Favorites	{ set complete SearchFavorite }
-		LastVisited	{ set complete SearchLastVisited }
+		Desktop - Trash - Files	{ set complete Join }
+		Favorites					{ set complete SearchFavorite }
+		LastVisited					{ set complete SearchLastVisited }
 	}
 
 	set files {}
@@ -1821,35 +1977,17 @@ proc Stimulate {w} {
 }
 
 
-proc CheckIfInUse {w file mode} {
+proc CheckIfInUse {w file mode {deferDialog 0}} {
 	variable ${w}::Vars
 
 	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $file]} {
 		set msg [format [Tr Cannot($mode)] [file tail $file]]
 		set detail [Tr CurrentlyInUse]
-		::dialog::info -parent $Vars(widget:main) -message $msg -detail $detail
+		set cmd [list ::dialog::info -parent $Vars(widget:main) -message $msg -detail $detail]
+		if {$deferDialog} { after idle $cmd } else { {*}$cmd }
 		return 1
 	}
 	return 0
-}
-
-
-proc CheckIsKDE {w} {
-	variable ${w}::Vars
-
-	if {![info exists Vars(iskde)]} {
-		set Vars(iskde) [checkIsKDE]
-		if {$Vars(iskde)} {
-			set Vars(exec:delete) [auto_execok kioclient]
-			if {[llength $Vars(exec:delete)] == 0} {
-				set Vars(exec:delete) [auto_execok kfmclient]
-			}
-			set Vars(exec:restore) [auto_execok ktrash]
-			if {[llength $Vars(exec:delete)] == 0} { set $Vars(iskde) 0 }
-		}
-	}
-
-	return $Vars(iskde)
 }
 
 
@@ -1877,13 +2015,23 @@ proc RegisterDndEvents {w} {
 	}
 
 	set t $Vars(widget:list:file)
+
 	::tkdnd::drop_target register $t DND_Files
 	::tkdnd::drag_source register $t DND_Files
-	bind $t <<DropEnter>> [namespace code [list HandleDropEvent $w enter %t %a]]
-	bind $t <<DropLeave>> [namespace code [list HandleDropEvent $w leave %t %a]]
-	bind $t <<Drop>> [namespace code [list HandleDropEvent $w %D %t %a]]
-	bind $t <<DragInitCmd>> [namespace code [list HandleDragEvent $w %W %t %X %Y]]
-	bind $t <<DragEndCmd>> [namespace code [list FinishDragEvent $w %W %A]]
+	bind $t <<DropEnter>> [namespace code [list filelist::HandleDropEvent $w enter %t %a]]
+	bind $t <<DropLeave>> [namespace code [list filelist::HandleDropEvent $w leave %t %a]]
+	bind $t <<Drop>> [namespace code [list filelist::HandleDropEvent $w %D %t %a]]
+	bind $t <<DragInitCmd>> [namespace code [list filelist::HandleDragEvent $w %W %t %X %Y]]
+	bind $t <<DragDropCmd>> [namespace code [list filelist::HandleDragDropgEvent $w %W %A]]
+	bind $t <<DragEndCmd>> [namespace code [list filelist::FinishDragEvent $w %W %A]]
+
+	set t $Vars(widget:list:bookmark)
+
+	::tkdnd::drop_target register $t DND_Files
+	bind $t <<DropEnter>> [namespace code [list bookmarks::HandleDropEvent $w enter %t %a %X %Y]]
+	bind $t <<DropPosition>> [namespace code [list bookmarks::HandleDropEvent $w position %t %a %X %Y]]
+	bind $t <<DropLeave>> [namespace code [list bookmarks::HandleDropEvent $w leave %t %a]]
+	bind $t <<Drop>> [namespace code [list bookmarks::HandleDropEvent $w %D %t %a]]
 }
 
 
@@ -1899,64 +2047,13 @@ proc UnregisterDndEvents {w} {
 	set t $Vars(widget:list:file)
 	::tkdnd::drop_target unregister $t DND_Files
 	::tkdnd::drag_source unregister $t DND_Files
+
+	set t $Vars(widget:list:file)
+	::tkdnd::drop_target unregister $t DND_Files
 }
 
 
-proc HandleDropEvent {w action types actions} {
-	variable ${w}::Vars
-
-	if {[string length $Vars(folder)] == 0} { return refuse_drop }
-	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
-	if {$Vars(dragging)} { return refuse_drop }
-
-	switch $action {
-		enter		{ return ask }
-		leave		{ return ask }
-		default	{ return [AskAboutAction $w $action $actions] }
-	}
-}
-
-
-proc HandleDragEvent {w src types x y} {
-	variable ${w}::Vars
-
-	set Vars(dragging) 1
-	lassign [filelist::GetCurrentSelection $w] type _ file
-	if {$type eq "folder"} { return {} }
-	set files {}
-	set ext [string tolower [file extension $file]]
-
-	if {[string length $Vars(deletecommand)]} {
-		foreach f [{*}$Vars(deletecommand) $file] {
-			if {[file exists $f]} { lappend files $f }
-		}
-	} else {
-		lappend files $file
-	}
-
-	foreach {extensionList cursors} $Vars(filecursors) {
-		if {$ext in $extensionList} {
-			::tkdnd::set_drag_cursors $src \
-				{copy move link ask private} [lindex $cursors 0] \
-				refuse_drop [lindex $cursors 1] \
-				;
-			break;
-		}
-	}
-
-	return [list {copy move link ask private} DND_Files $files]
-}
-
-
-proc FinishDragEvent {w src currentAction} {
-	variable ${w}::Vars
-
-	set Vars(dragging) 0
-	::tkdnd::set_drag_cursors $src
-}
-
-
-proc AskAboutAction {w uriFiles actions} {
+proc AskAboutAction {w destination uriFiles actions} {
 	set m $w.askAboutAction
 	catch { destroy $m }
 	menu $m -tearoff 0
@@ -1987,14 +2084,14 @@ proc AskAboutAction {w uriFiles actions} {
 
 	if {$_action ne "refuse_drop"} {
 		# It is important that HandleDropEvent is returning as fast as possible.
-		after idle [namespace code [list DoFileOperations $w $_action $uriFiles]]
+		after idle [namespace code [list DoFileOperations $w $_action $uriFiles $destination]]
 	}
 
 	return $_action
 }
 
 
-proc DoFileOperations {w action uriFiles} {
+proc DoFileOperations {w action uriFiles destination} {
 	variable ${w}::Vars
 
 	if {![winfo exists $w]} { return }
@@ -2118,7 +2215,7 @@ proc DoFileOperations {w action uriFiles} {
 	set fileList {}
 
 	foreach file [concat $databaseList $dirList] {
-		set dst $Vars(folder)
+		set dst $destination
 		set dst [file join $dst [file tail $file]]
 		set dst [file normalize $dst]
 
@@ -2143,19 +2240,32 @@ proc DoFileOperations {w action uriFiles} {
 		}
 		foreach {src dst} $list {
 			if {[file exists $src]} {
+				set permissionDenied 0
 				switch $action {
 					move {
-						file rename -force $src $dst
+						if {[catch { file rename -force $src $dst }]} {
+							set permissionDenied 1
+						}
 					}
 					copy {
 						while {[file type $src] eq "link"} { set src [file readlink $src] }
-						file copy -force $src $dst
-						if {$::tcl_platform(platform) eq "unix"} { catch { exec touch $dst } }
+						if {[catch { file copy -force $src $dst }]} {
+							set permissionDenied 1
+						} elseif {$::tcl_platform(platform) eq "unix"} {
+							catch { exec touch $dst }
+						}
 					}
 					link {
 						catch { file delete -force $dst }
-						file link -symbolic $dst $src
+						if {[catch { file link -symbolic $dst $src }]} {
+							set permissionDenied 1
+						}
 					}
+				}
+				if {$permissionDenied} {
+					set msg [format [Tr PermissionDenied] [file dirname $dst]]
+					::dialog::error -parent $Vars(widget:main) -message $msg
+					return
 				}
 				set refresh 1
 			}
@@ -2267,13 +2377,15 @@ proc AskFileAction {w old new} {
 		-text " [Tr Rename]" \
 		-command [namespace code [list ActionRename $w [file dirname $new] $extension]] \
 		;
-	tk::AmpWidget ttk::button $buttons.overwrite  \
-		-class TButton \
-		-default normal \
-		-compound left \
-		-text " [Tr Overwrite]" \
-		-command [namespace code [list ActionOverwrite $w $new]] \
-		;
+	if {[llength $Vars(isusedcommand)] > 0 && ![$Vars(isusedcommand) $new]} {
+		tk::AmpWidget ttk::button $buttons.overwrite  \
+			-class TButton \
+			-default normal \
+			-compound left \
+			-text " [Tr Overwrite]" \
+			-command [namespace code [list ActionOverwrite $w $new]] \
+			;
+	}
 	tk::AmpWidget ttk::button $buttons.cancel  \
 		-class TButton \
 		-default normal \
@@ -2282,9 +2394,11 @@ proc AskFileAction {w old new} {
 		-command [list set [namespace current]::_action cancel] \
 		;
 
-	pack $buttons.rename    -pady 5 -padx 5 -side left
-	pack $buttons.overwrite -pady 5 -padx 5 -side left
-	pack $buttons.cancel    -pady 5 -padx 5 -side left
+	pack $buttons.rename -pady 5 -padx 5 -side left
+	if {[winfo exists $buttons.overwrite]} {
+		pack $buttons.overwrite -pady 5 -padx 5 -side left
+	}
+	pack $buttons.cancel -pady 5 -padx 5 -side left
 
 	pack $top -fill x
 	pack $dlg.sep -fill x -side bottom -before $top
@@ -2386,6 +2500,9 @@ proc Build {w path args} {
 	set t $path.f.list
 	set sb $path.f.vscroll
 	set Vars(widget:list:bookmark) $t
+	set Vars(bookmark:target:id) {}
+	set Vars(bookmark:target:folder) ""
+	set Vars(bookmark:target:path) ""
 	set yscrollcmd [list [namespace parent]::SbSet $sb]
 
 	treectrl $t {*}[array get opts] \
@@ -2413,6 +2530,7 @@ proc Build {w path args} {
 	grid rowconfigure $path.f {0} -weight 1
 
 	$t state define hilite
+	$t state define target
 	$t state define edit
 
 	$t column create -tags root
@@ -2424,22 +2542,23 @@ proc Build {w path args} {
 			$Vars(selectionforeground) {selected focus}  \
 			$Vars(selectionforeground) {selected hilite} \
 			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite}             \
+			$Vars(activeforeground)    {hilite}          \
 		]                                               \
 		-lines 1                                        \
 		;
 	$t element create elemSel rect                     \
 		-fill [list                                     \
+			$Options(drop:background)  {target}          \
 			$Vars(selectionbackground) {selected focus}  \
 			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground) {selected !focus}  \
-			$Vars(activebackground) {hilite}             \
+			$Vars(inactivebackground)  {selected !focus} \
+			$Vars(activebackground)    {hilite}          \
 		]
-	$t element create elemBrd border          \
-		-filled no                             \
-		-relief raised                         \
-		-thickness 1                           \
-		-background {#e5e5e5 {selected} {} {}} \
+	$t element create elemBrd border                           \
+		-filled no                                              \
+		-relief raised                                          \
+		-thickness 1                                            \
+		-background {#e5e5e5 {selected} #e5e5e5 {target} {} {}} \
 		;
 
 	set s [$t style create style]
@@ -2589,25 +2708,25 @@ proc LayoutBookmarks {w} {
 }
 
 
-proc AddBookmark {w} {
+proc AddBookmark {w {folder ""}} {
 	variable [namespace parent]::${w}::Vars
 	variable Bookmarks
 
-#	set ReallyAddBookmark "A bookmark for folder '%folder%' already exists, with name '%name%'. Really add this bookmark again?"
-#	set i [lsearch -exact -index 0 $Bookmarks(user) $Vars(folder)]
-#	if {$i >= 0} {
-#		set msg [string map \
-#			[list %name% [lindex $Bookmarks(user) $i 1] %folder% [file tail $Vars(folder)]] \
-#			[Tr ReallyAddBookmark] \
-#		]
-#		set reply [::dialog::question -parent $w -message $msg]
-#	}
+	if {[string length $folder] == 0} { set folder $Vars(folder) }
 
-	set folder $Vars(folder)
-#	while {[file type $folder] eq "link"} {
-#		set folder [file readlink $folder]
-#	}
-	lappend Bookmarks(user) [list [file normalize $folder] [file tail $Vars(folder)]]
+	set i [lsearch -exact -index 0 $Bookmarks(user) $folder]
+	if {$i >= 0} {
+		set name [lindex $Bookmarks(user) $i 1]
+		set msg [format [Tr BookmarkAlreadyExists] $name]
+		if {$name eq [file tail $folder]} {
+			return [::dialog::info -parent $w -message $msg]
+		}
+		append msg "\n\n" [Tr AddBookmarkAnyway]
+		set reply [::dialog::question -parent $w -message $msg -default yes]
+		if {$reply eq "no"} { return }
+	}
+	
+	lappend Bookmarks(user) [list [file normalize $folder] [file tail $folder]]
 	set list {}
 	set index -1
 	foreach entry $Bookmarks(user) {
@@ -2618,6 +2737,7 @@ proc AddBookmark {w} {
 	foreach entry $list { lappend bookmarks [lindex $Bookmarks(user) [lindex $entry 0]] }
 	set Bookmarks(user) $bookmarks
 	LayoutBookmarks $w
+	$Vars(widget:list:bookmark) see end
 	[namespace parent]::DirChanged $w 0
 }
 
@@ -2631,6 +2751,7 @@ proc RemoveBookmark {w} {
 	set sel [expr {$sel - [llength $Vars(bookmarks)]}]
 	set Bookmarks(user) [lreplace $Bookmarks(user) $sel $sel]
 	LayoutBookmarks $w
+	UpdateButtons $w
 	[namespace parent]::DirChanged $w 0
 }
 
@@ -2642,6 +2763,37 @@ proc RenameBookmark {w} {
 	set t $Vars(widget:list:bookmark)
 	set sel [$t item id active]
 	OpenEdit $w $sel rename
+}
+
+
+proc UpdateButtons {w} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	if {$Vars(glob) eq "Files"} { set folder $Vars(folder) } else { set folder $Vars(glob) }
+	set Vars(bookmark:folder) ""
+	::toolbar::childconfigure $Vars(button:add) -state normal
+
+	foreach f {home filesystem} {
+		if {$Vars(folder) eq $Vars(folder:$f)} {
+			::toolbar::childconfigure $Vars(button:add) -state disabled
+		}
+	}
+
+	if {$Vars(glob) ne "Files"} {
+		::toolbar::childconfigure $Vars(button:add) -state disabled
+	} else {
+		foreach f $Bookmarks(user) {
+			lassign $f folder name
+			if {$Vars(folder) eq [lindex $f 0] && [file tail $Vars(folder)] eq $name} {
+				::toolbar::childconfigure $Vars(button:add) -state disabled
+			}
+		}
+	}
+
+	set Vars(bookmark:folder) $folder
+	set tip [format [Tr AddBookmark] [file tail $folder]]
+	::toolbar::childconfigure $Vars(button:add) -tooltip $tip
 }
 
 
@@ -2692,6 +2844,7 @@ proc FinishEdit {w} {
 	$t activate $sel
 	$t see $sel
 
+	UpdateButtons $w
 	after idle [list [namespace parent]::Stimulate $w]
 }
 
@@ -2730,10 +2883,10 @@ proc InvokeBookmark {w args} {
 
 	if {$sel < [llength $Vars(bookmarks)]} {
 		set folder [lindex $Vars(bookmarks) $sel 1]
-		set id [string tolower $folder]
 		if {[string length $folder] == 0} { return }
+		set id [string tolower $folder]
 		switch $folder {
-			Favorites - LastVisited	{ set dir $folder }
+			Favorites - LastVisited - Desktop - Trash { set dir $folder }
 			default { set dir $Vars(folder:$id) }
 		}
 		[namespace parent]::ChangeDir $w $dir
@@ -2800,6 +2953,102 @@ proc PopupMenu {w x y} {
 		tk_popup $m {*}[winfo pointerxy $w]
 		bind $m <<MenuUnpost>> [list [namespace parent]::Stimulate $w]
 	}
+}
+
+
+proc HandleDropEvent {w action types actions {x -1} {y -1}} {
+	variable [namespace parent]::${w}::Vars
+	variable Bookmarks
+
+	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
+	if {$action ne "leave" && !$Vars(drag:active)} { return refuse_drop }
+
+	if {$action eq "enter"} {
+		set Vars(bookmark:target:id) {}
+	}
+
+	set t $Vars(widget:list:bookmark)
+	set result refuse_drop
+
+	switch $action {
+		enter - position {
+			if {$Vars(drag:private)} { return private }
+			set x [expr {$x - [winfo rootx $t]}]
+			set y [expr {$y - [winfo rooty $t]}]
+			set id [$t identify $x $y]
+			if {$Vars(bookmark:target:id) eq $id} { return ask }
+			if {[llength $Vars(bookmark:target:id)] > 0} {
+				$t item state set [lindex $Vars(bookmark:target:id) 1] !target
+			}
+			set Vars(bookmark:target:id) {}
+			if {[llength $id] > 0 && [lindex $id 0] ne "header"} {
+				set sel [expr {[lindex $id 1] - 1}]
+				set folder ""
+				set path ""
+				if {$sel < [llength $Vars(bookmarks)]} {
+					set folder [lindex $Vars(bookmarks) $sel 1]
+					if {[string length $folder] > 0} {
+						switch $folder {
+							Favorites - LastVisited - Desktop {}
+							default { set path $Vars(folder:[string tolower $folder]) }
+						}
+					}
+				} else {
+					set i [expr {$sel - [llength $Vars(bookmarks)]}]
+					if {$i < [llength $Bookmarks(user)]} {
+						set folder [lindex $Bookmarks(user) $i 0]
+						set path $folder
+					}
+				}
+				if {[string length $path]} {
+					set Vars(bookmark:target:id) $id
+					set Vars(bookmark:target:folder) $folder
+					set Vars(bookmark:target:path) $path
+					$t item state set [lindex $id 1] target
+					return ask
+				}
+			}
+		}
+
+		leave {
+			# nothing to do
+		}
+
+		default {
+			if {$Vars(drag:private)} {
+				set dir [lindex [[namespace parent]::parseUriList $action] 1]
+				after idle [namespace code [list AddBookmark $w $dir]]
+				set result private
+			} else {
+				if {[llength $Vars(bookmark:target:id)] > 0} {
+					if {$Vars(bookmark:target:folder) eq "Trash"} {
+						after idle [namespace code [list DoHandleDropEvent $w $action]]
+						set result move
+					} else {
+						set result [[namespace parent]::AskAboutAction \
+							$w $Vars(bookmark:target:path) $action $actions]
+					}
+				}
+			}
+		}
+	}
+
+	if {[llength $Vars(bookmark:target:id)] > 0} {
+		$t item state set [lindex $Vars(bookmark:target:id) 1] !target
+	}
+	set Vars(bookmark:target:id) {}
+
+	return $result
+}
+
+
+proc DoHandleDropEvent {w uriFiles} {
+	variable [namespace parent]::${w}::Vars
+
+	set list {}
+	foreach {uri file} [[namespace parent]::parseUriList $uriFiles] { lappend list $file }
+	[namespace parent]::trash::move $list
+	[namespace parent]::filelist::RefreshFileList $w
 }
 
 namespace eval icon {
@@ -2938,7 +3187,7 @@ proc Build {w path args} {
 	set count 0
 
 	if {"delete" in $Vars(actions)} {
-		if {[[namespace parent]::CheckIsKDE $w]} { set tip MoveToTrash } else { set tip Delete }
+		if {[[namespace parent]::trash::usable?]} { set tip MoveToTrash } else { set tip Delete }
 		set Vars(button:delete) [::toolbar::add $tb button \
 			-image $icon::16x16::iconDelete                 \
 			-command [namespace code [list DeleteFile $w]]  \
@@ -3635,6 +3884,34 @@ proc SetColumnBackground {t id stripes background} {
 }
 
 
+proc Filter {w files} {
+	variable [namespace parent]::${w}::Vars
+
+	set filelist {}
+
+	# NOTE: we don't want -dictionary
+	foreach file [[namespace parent]::mySort -nocase -unique $files] {
+		set match 0
+
+		if {[llength $Vars(extensions)] == 0} {
+			set match 1
+		} else {
+			foreach ext $Vars(extensions) {
+				if {[string match *$ext $file]} {
+					set match 1
+				}
+			}
+		}
+
+		if {$match} {
+			lappend filelist $file
+		}
+	}
+
+	return $filelist
+}
+
+
 proc Glob {w refresh} {
 	variable [namespace parent]::${w}::Vars
 
@@ -3645,13 +3922,16 @@ proc Glob {w refresh} {
 	if {$refresh || ![info exists Vars(list:folder)]} {
 		[namespace parent]::busy [winfo toplevel $w]
 
+		switch $Vars(sort-order) {
+			increasing { set arrow up }
+			decreasing { set arrow down }
+		}
+
+		set state normal
+		set folders {}
+
 		switch $Vars(glob) {
-			Files {
-				switch $Vars(sort-order) {
-					increasing { set arrow up }
-					decreasing { set arrow down }
-				}
-				set state normal
+			Files - Desktop {
 				set filter *
 				if {$Vars(showhidden)} { lappend filter .* }
 				set folders [glob -nocomplain -directory $Vars(folder) -types d {*}$filter]
@@ -3673,7 +3953,6 @@ proc Glob {w refresh} {
 					}
 				}
 				set Bookmarks($attr) $bookmarks
-				set folders {}
 				foreach entry $Bookmarks($attr) {
 					if {$attr eq "favorites"} { set folder [lindex $entry 0] } else { set folder $entry }
 					if {[string index $folder 0] ne "." || $Vars(showhidden)} { 
@@ -3698,34 +3977,29 @@ proc Glob {w refresh} {
 			}
 		}
 
-		if {$Vars(glob) eq "Files" && $Vars(type) ne "dir"} {
-			set filter *
-			if {$Vars(showhidden)} { lappend filter .* }
-			if {$Vars(onlyexecutables)} { set types {f x} } else { set types f }
-			set files [glob -nocomplain -directory $Vars(folder) -types $types {*}$filter]
-
-			# NOTE: we don't want -dictionary
-			foreach file [[namespace parent]::mySort -nocase -unique $files] {
-				set match 0
-
-				if {[llength $Vars(extensions)] == 0} {
-					set match 1
-				} else {
-					foreach ext $Vars(extensions) {
-						if {[string match *$ext $file]} {
-							set match 1
-						}
-					}
+		switch $Vars(glob) {
+			Files - Desktop {
+				if {$Vars(type) ne "dir"} {
+					set filter *
+					if {$Vars(showhidden)} { lappend filter .* }
+					if {$Vars(onlyexecutables)} { set types {f x} } else { set types f }
+					set files [glob -nocomplain -directory $Vars(folder) -types $types {*}$filter]
+					set filelist [Filter $w $files]
 				}
+			}
 
-				if {$match} {
-					lappend filelist $file
+			Trash {
+				set filter *
+				if {$Vars(showhidden)} { lappend filter .* }
+				set files {}
+				foreach entry [[namespace parent]::trash::list $filter] {
+					lappend files [lrange $entry 2 end]
 				}
+				set filelist [Filter $w $files]
 			}
 		}
 
 		[namespace parent]::unbusy [winfo toplevel $w]
-
 	} else {
 		set filelist {}
 		foreach file $Vars(list:file) {
@@ -3744,8 +4018,7 @@ proc Glob {w refresh} {
 				set attr $Vars(lookup:$path)
 				set icon [set [namespace parent]::icon::16x16::$attr]
 				set folder [Tr [string toupper $attr 0 0]]
-			} elseif {	[string length  $Vars(folder:trash)] > 0
-						&& [string match $Vars(folder:trash)* $path]} {
+			} elseif {[[namespace parent]::trash::isTrash? $path]} {
 				set icon [set [namespace parent]::icon::16x16::trash]
 				set folder [Tr Trash]
 				if {$path ne $Vars(folder:trash)} { append folder ": " [file tail $path] }
@@ -3762,8 +4035,14 @@ proc Glob {w refresh} {
 		if {$valid} { lappend Vars(list:file) $file }
 	}
 
-	if {$Vars(glob) eq "Files" && ($Vars(sort-column) ne "name" || $Vars(sort-order) ne "increasing")} {
-		SortColumn $w
+	switch $Vars(glob) {
+		LastVisited - Favorites {}
+
+		default {
+			if {($Vars(sort-column) ne "name" || $Vars(sort-order) ne "increasing")} {
+				SortColumn $w
+			}
+		}
 	}
 }
 
@@ -4033,39 +4312,17 @@ proc DeleteFile {w} {
 	[namespace parent]::busy [winfo toplevel $w]
 
 	if {$type eq "link"} {
-		set iskde 0
+		set trashIsUsable 0
 		set dest [file link $file]
 	} else {
-		set iskde [[namespace parent]::CheckIsKDE $w]
+		set trashIsUsable [[namespace parent]::trash::usable?]
 		set dest $file
 	}
 
 	if {$Vars(delete:action) eq "restore"} {
-# "ktrash --restore <file>" is not working despite the documentation
-#		if {$iskde && [llength $Vars(exec:restore)] > 0} {
-#			set fs [[namespace parent]::fileSeparator]
-#			set n [llength [split $Vars(folder:trash) $fs]]
-#			if {$ltype eq "file"} {
-#				foreach f [{*}$Vars(deletecommand) $file] {
-#					if {[file exists $f]} {
-#						set components [lrange [split $f $fs] $n end]
-#						set f [file join {*}$components]
-#						set cmd "$Vars(exec:restore) --restore \"$f\""
-#						if {[catch {exec /bin/sh -c $cmd}]} {
-#							# TODO: ktrash failed
-#						}
-#					}
-#				}
-#			} else {
-#				set cmd "$Vars(exec:restore) --restore \"$file\""
-#			}
-#			if {[catch {exec /bin/sh -c $cmd}]} {
-#				# TODO: ktrash failed
-#			}
-#		}
 	} else {
 		if {[file writable $file]} { set mode w } else { set mode r }
-		if {$iskde} { set which ReallyMove } else { set which ReallyDelete }
+		if {$trashIsUsable} { set which ReallyMove } else { set which ReallyDelete }
 		set fmt [Tr ${which}($type,$mode)]
 		set msg [format $fmt [file tail $dest]]
 		foreach item [$t item children root] { $t item state set $item {!hilite} }
@@ -4079,19 +4336,8 @@ proc DeleteFile {w} {
 
 		incr Vars(fam:lastid)
 
-		if {$iskde} {
-			if {$ltype eq "file" && [llength $Vars(deletecommand)] > 0} {
-				set cmd "$Vars(exec:delete) move"
-				foreach f [{*}$Vars(deletecommand) $file] {
-					if {[file exists $f]} { append cmd " \"$f\"" }
-				}
-				append cmd " trash:/"
-			} else {
-				set cmd "$Vars(exec:delete) move \"$file\" trash:/"
-			}
-			if {[catch {exec /bin/sh -c $cmd}]} {
-				# Oops, kioclient is always returning an error
-			}
+		if {$trashIsUsable} {
+			set cmd [[namespace parent]::trash::move [list $file]]
 		} elseif {$ltype eq "file"} {
 			if {[llength $Vars(deletecommand)] > 0} {
 				set files {}
@@ -4103,21 +4349,23 @@ proc DeleteFile {w} {
 				set files [list $file]
 			}
 
-			catch {file delete -force {*}$files}
-		} elseif {![catch {file delete -force $file}]} {
-			[namespace parent]::bookmarks::LayoutBookmarks $w
+			set cmd "file delete -force {*}$files"
+			catch $cmd
+		} else {
+			set cmd "file delete -force $file"
+			catch $cmd
 		}
 	}
 
 	RefreshFileList $w
+	[namespace parent]::bookmarks::LayoutBookmarks $w
 	after idle [namespace code [list ResetFamId $w]]
 	[namespace parent]::unbusy [winfo toplevel $w]
 
 	if {$file in $Vars(list:$ltype)} {
 		set action [string toupper $Vars(delete:action) 0 0]
 		set msg [format [Tr ${action}Failed] $file]
-		set detail [format [Tr CommandFailed] $cmd]
-		::dialog::error -parent $Vars(widget:main) -message $msg -detail $detail
+		::dialog::error -parent $Vars(widget:main) -message $msg
 	}
 }
 
@@ -4465,7 +4713,7 @@ proc FinishDuplicateFile {w sel name} {
 	wm transient $dlg [winfo toplevel $w]
 	::util::place $dlg -parent [winfo toplevel $w] -position center
 	update idletasks
-	[namespace parent]::noWindowFrame $dlg
+	[namespace parent]::makeFrameless $dlg
 	wm deiconify $dlg
 	::ttk::grabWindow $dlg
 	[namespace parent]::busy $dlg
@@ -4525,24 +4773,31 @@ proc SetTooltip {w which folder} {
 	variable [namespace parent]::${w}::Vars
 	variable [namespace parent]::Options
 
-	if {$folder eq "Favorites" || $folder eq "LastVisited"} {
-		set folder [Tr $folder]
-	} elseif {$Options(tooltip:shorten-paths)} {
-		# NOTE: We are shortening the (display of) file path. This is a bit experimental.
-		set parts [file split $folder]
-		set k [expr {[llength $parts] - 1}]
-		set length 0
-		set count 0
-
-		while {$k >= 0 && $length + [string length [lindex $parts $k]] < 30} {
-			incr length [string length [lindex $parts $k]]
-			incr length 1
-			incr count
+	switch $folder {
+		Favorites - LastVisited - Desktop - Trash {
+			set folder [Tr $folder]
 		}
-		set count [expr {max(1, $count)}]
 
-		if {$count + 2 < [llength $parts]} {
-			set folder "\u2026[file join {*}[lrange $parts [expr {[llength $parts] - $count - 1}] end]]"
+		default {
+			if {$Options(tooltip:shorten-paths)} {
+				# NOTE: We are shortening the (display of) file path. This is a bit experimental.
+				set parts [file split $folder]
+				set k [expr {[llength $parts] - 1}]
+				set length 0
+				set count 0
+
+				while {$k >= 0 && $length + [string length [lindex $parts $k]] < 30} {
+					incr length [string length [lindex $parts $k]]
+					incr length 1
+					incr count
+				}
+				set count [expr {max(1, $count)}]
+
+				if {$count + 2 < [llength $parts]} {
+					set parts [lrange $parts [expr {[llength $parts] - $count - 1}] end]
+					set folder "\u2026[file join {*}$parts]"
+				}
+			}
 		}
 	}
 
@@ -4631,7 +4886,7 @@ proc PopupMenu {w x y} {
 					incr count
 					if {$Vars(delete:action) eq "restore"} {
 						set name Restore
-					} elseif {[[namespace parent]::CheckIsKDE $w]} {
+					} elseif {[[namespace parent]::trash::usable?]} {
 						set name MoveToTrash
 					} else {
 						set name Delete
@@ -4762,7 +5017,8 @@ proc Inspect {w mode args} {
 		set t $Vars(widget:list:file)
 		lassign $args x y
 		set id [$t identify $x $y]
-		if {[llength $id] > 0 && [lindex $id 0] eq "header"} { return }
+		if {[llength $id] == 0} { return }
+		if {[lindex $id 0] eq "header"} { return }
 		set index [expr {[lindex $id 1] - 1}]
 		switch $Vars(glob) {
 			LastVisited - Favorites {
@@ -4782,6 +5038,81 @@ proc Inspect {w mode args} {
 	} else {
 		{*}$Vars(inspectcommand) $tl
 	}
+}
+
+
+proc HandleDropEvent {w action types actions} {
+	variable [namespace parent]::${w}::Vars
+
+	if {[string length $Vars(folder)] == 0} { return refuse_drop }
+	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
+	if {$Vars(drag:active)} { return refuse_drop }
+
+	switch $action {
+		enter		{ return ask }
+		leave		{ return ask }
+		default	{ return [[namespace parent]::AskAboutAction $w $Vars(folder) $action $actions] }
+	}
+}
+
+
+proc HandleDragEvent {w src types x y} {
+	variable [namespace parent]::${w}::Vars
+
+	set Vars(drag:active) 1
+	set Vars(drag:private) 0
+	set cursor {}
+	lassign [GetCurrentSelection $w] type _ file
+
+	if {$type eq "folder"} {
+		set Vars(drag:private) 1
+		set files [list $file]
+		set actions {private}
+		foreach {extensionList cursors} $Vars(filecursors) {
+			if {"folder" in $extensionList} { set cursor $cursors }
+		}
+	} else {
+		set actions {copy move link ask}
+		set files {}
+		set ext [string tolower [file extension $file]]
+
+		if {[string length $Vars(deletecommand)]} {
+			foreach f [{*}$Vars(deletecommand) $file] {
+				if {[file exists $f]} { lappend files $f }
+			}
+		} else {
+			lappend files $file
+		}
+
+		foreach {extensionList cursors} $Vars(filecursors) {
+			if {$ext in $extensionList} { set cursor $cursors; break; }
+		}
+	}
+
+	if {[llength $cursor] == 2} {
+		::tkdnd::set_drag_cursors $src \
+			{copy move link ask private} [lindex $cursors 0] \
+			refuse_drop [lindex $cursors 1] \
+			;
+	}
+
+	return [list $actions DND_Files [[namespace parent]::toUriList $files]]
+}
+
+
+proc HandleDragDropgEvent {w src currentAction} {
+	lassign [GetCurrentSelection $w] type _ file
+	if {[[namespace parent]::CheckIfInUse $w $file delete-or-move 1]} { return "" }
+	return $currentAction
+}
+
+
+proc FinishDragEvent {w src currentAction} {
+	variable [namespace parent]::${w}::Vars
+
+	set Vars(drag:active) 0
+	set Vars(drag:private) 0
+	::tkdnd::set_drag_cursors $src
 }
 
 

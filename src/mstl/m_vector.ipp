@@ -227,6 +227,15 @@ vector<T>::vector(vector const& v, size_type n)
 
 
 template <typename T>
+template <typename Iterator>
+inline
+vector<T>::vector(Iterator first, Iterator last)
+{
+	assign(first, last);
+}
+
+
+template <typename T>
 inline
 vector<T>::~vector() throw()
 {
@@ -666,13 +675,15 @@ vector<T>::insert_aux(iterator position, const_reference value)
 template <typename T>
 template <typename Iterator>
 inline
-vector<T>::vector(Iterator first, Iterator last)
+void
+vector<T>::assign(Iterator first, Iterator last)
 {
 	M_REQUIRE(first <= last);
 	M_REQUIRE(last || !first);
 
 	size_type n = distance(first, last);
 
+	clear();
 	reserve(n);
 
 	for ( ; first < last; ++first)

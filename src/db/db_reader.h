@@ -85,15 +85,6 @@ public:
 		UnterminatedVariation,
 		InvalidMove,
 		UnsupportedVariant,
-		TooManyGames,
-		FileSizeExeeded,
-		GameTooLong,
-		TooManyPlayerNames,
-		TooManyEventNames,
-		TooManySiteNames,
-		TooManyRoundNames,
-		TooManyAnnotatorNames,
-		TooManySourceNames,
 		SeemsNotToBePgnText,
 		UnexpectedCastling,
 		ContinuationsNotSupported,
@@ -161,6 +152,10 @@ public:
 								mstl::string const& message,
 								mstl::string const& info,
 								mstl::string const& item) = 0;
+	virtual void error(	save::State state,
+								unsigned lineNo,
+								unsigned gameNo,
+								variant::Type variant) = 0;
 
 	static bool validateTagName(char* tag, unsigned len);
 	static bool validateTagName(char const* s, char const* e);

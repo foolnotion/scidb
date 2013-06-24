@@ -801,6 +801,11 @@ proc open {parent args} {
 }
 
 
+proc buildPgnOptionsFrame {parent} {
+	return [options::BuildFrame $parent.options]
+}
+
+
 proc getPgnFlags {} {
 	variable Flags
 	variable Values
@@ -839,7 +844,7 @@ proc BuildFrame {w} {
 	variable [namespace parent]::Fields
 	variable [namespace parent]::Info
 
-	ttk::frame $w
+	ttk::frame $w -takefocus 0
 	set flags [Pow2 $Flags(pgn,include_annotation)]
 	set count 0
 	set nrows [expr {([llength $Fields(pgn)] + 1)/2}]
@@ -852,22 +857,33 @@ proc BuildFrame {w} {
 			;
 		set row [expr {2*($count % $nrows) + 3}]
 		set col [expr {2*($count / $nrows) + 1}]
-		grid $w.$field -row $row -column $col -sticky w
+		grid $w.$field -row $row -column $col -sticky we
 		incr count
 	}
 	set Info(options:nrows) $nrows
-	set b [ttk::frame $w.buttons]
-	set var [namespace parent]::mc::ResetDefaults
-	ttk::button $b.reset -text [set $var] -command [namespace code [list ResetFlags $w pgn]]
-	if {$count % 2} { incr count }
-	incr count 2
-	grid $b.reset -row 0 -column 0 -sticky w
-	grid columnconfigure $b 1 -minsize $::theme::padding
-	grid $b -row [expr {$count + 1}] -column 1 -columnspan 3 -sticky w
+	set parent [winfo parent $w]
+
+	if {[winfo toplevel $parent] eq $parent} {
+		::widget::dialogButtons $parent reset
+		$parent.reset configure -command [namespace code [list ResetFlags $w pgn]]
+		::tooltip::tooltip $parent.reset [namespace parent]::mc::ResetDefaults
+		incr count 2
+		grid rowconfigure $w $count -minsize $::theme::padding
+		bind $w <FocusIn> { focus [tk_focusNext %W] }
+	} else {
+		set var [namespace parent]::mc::ResetDefaults
+		set b [ttk::frame $w.buttons]
+		ttk::button $b.reset -text [set $var] -command [namespace code [list ResetFlags $w pgn]]
+		if {$count % 2} { incr count }
+		incr count 2
+		grid $b.reset -row 0 -column 0 -sticky w
+		grid columnconfigure $b 1 -minsize $::theme::padding
+		grid $b -row [expr {$count + 1}] -column 1 -columnspan 3 -sticky w
+		grid rowconfigure $w $count -minsize [expr {2*$::theme::padding}]
+	}
 
 	for {set i 0} {$i < $count} {incr i 2} { lappend rows $i }
 	grid rowconfigure $w $rows -minsize $::theme::padding
-	grid rowconfigure $w $count -minsize [expr {2*$::theme::padding}]
 	grid rowconfigure $w [expr {$count + 2}] -minsize $::theme::padding
 	grid columnconfigure $w {0 4} -minsize $::theme::padding
 	grid columnconfigure $w 2 -minsize [expr {2*$::theme::padding}]
@@ -885,8 +901,8 @@ proc ResetFlags {w type} {
 		set Values($field) $Defaults($field)
 	}
 
-	switch $type {
-		pgn { SetupFlags $w $type }
+	if {$type eq"pgn"} {
+		SetupFlags $w $type
 	}
 }
 
@@ -912,6 +928,7 @@ proc SetupFlags {w type} {
 					$w.use_chessbase_format configure -state disabled
 					$w.use_scidb_import_format configure -state normal
 					$w.use_strict_pgn_standard configure -state disabled
+					$w.write_any_rating_as_elo configure -state disabled
 				} else {
 					$w.use_chessbase_format configure -state normal
 					$w.use_scidb_import_format configure -state disabled
@@ -933,15 +950,16 @@ proc SetupFlags {w type} {
 					}
 				}
 			} elseif {$Values(pgn,flag,use_strict_pgn_standard)} {
-				$w.use_chessbase_format configure -state disabled
-				$w.use_scidb_import_format configure -state disabled
 				$w.use_strict_pgn_standard configure -state normal
 				foreach field $Fields(pgn) {
 					switch $field {
 						include_varations -
 						include_comments -
-						use_chessbase_format -
-						use_scidb_import_format -
+						include_moveinfo -
+						include_marks -
+						include_variant_tag -
+						append_mode_to_event_type -
+						symbolic_annotation_style -
 						use_strict_pgn_standard -
 						exclude_games_with_illegal_moves -
 						column_style -

@@ -370,6 +370,8 @@ Cursor::importGames(Producer& producer, util::Progress& progress)
 
 	WriteGuard guard(this);
 	unsigned res = m_db->importGames(producer, progress);
+	if (res)
+		m_db->save(progress);
 	guard.release();
 
 	if (res > 0)
@@ -396,6 +398,8 @@ Cursor::importGames(	db::Database const& src,
 
 	WriteGuard guard(this);
 	unsigned res = m_db->importGames(src, illegalRejected, log, progress);
+	if (res > 0)
+		m_db->save(progress);
 	guard.release();
 
 	if (res > 0)

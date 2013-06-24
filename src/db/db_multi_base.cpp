@@ -34,32 +34,54 @@
 #include "sci_consumer.h"
 
 #include "u_progress.h"
+#include "u_zstream.h"
+#include "u_misc.h"
 
 #include "sys_time.h"
+#include "sys_file.h"
+#include "sys_utf8_codec.h"
 
-#include "m_ofstream.h"
-#include "m_ifstream.h"
 #include "m_auto_ptr.h"
+#include "m_utility.h"
 #include "m_assert.h"
 
 #include <string.h>
 #include <ctype.h>
 
 using namespace db;
+using namespace util;
 
 enum { ChunkSize = 65536 };
 
 
-static void
-write(mstl::istream& src, mstl::ostream& dst, unsigned offset, unsigned size)
+static unsigned
+write(mstl::istream& src,
+		mstl::ostream& dst,
+		unsigned offset,
+		unsigned size,
+		Progress& progress,
+		unsigned& reportAfter,
+		unsigned frequency,
+		unsigned count,
+		unsigned numGames)
 {
 	char buf[ChunkSize];
 
 	if (!src.seekg(offset, mstl::ios_base::beg))
 		IO_RAISE(PgnFile, Corrupted, "unexpected end of file");
 
+	unsigned bytesPerGame	= numGames ? (size + mstl::div2(size))/numGames : size;
+	unsigned countBytes		= 0;
+	unsigned counter			= count;
+
 	while (size > 0)
 	{
+		if (reportAfter >= counter)
+		{
+			progress.update(counter);
+			reportAfter += frequency;
+		}
+
 		unsigned bytes = mstl::min(size, unsigned(ChunkSize));
 
 		if (!src.read(buf, bytes))
@@ -69,7 +91,19 @@ write(mstl::istream& src, mstl::ostream& dst, unsigned offset, unsigned size)
 			IO_RAISE(PgnFile, Write_Failed, "error while writing PGN file");
 
 		size -= bytes;
+		countBytes += bytes;
+		counter = countBytes/bytesPerGame;
 	}
+
+	count += numGames;
+
+	if (reportAfter >= count)
+	{
+		progress.update(counter);
+		reportAfter += frequency;
+	}
+
+	return count;
 }
 
 
@@ -132,6 +166,13 @@ MultiBase::~MultiBase()
 }
 
 
+mstl::string const&
+MultiBase::name() const
+{
+	return m_leader->name();
+}
+
+
 bool
 MultiBase::isEmpty(unsigned variantIndex) const
 {
@@ -140,9 +181,17 @@ MultiBase::isEmpty(unsigned variantIndex) const
 
 
 bool
-MultiBase::hasChanged(unsigned variantIndex) const
+MultiBase::descriptionHasChanged() const
 {
-	return m_bases[variantIndex] != 0 && m_bases[variantIndex]->hasChanged();
+	return m_leader->descriptionHasChanged();
+}
+
+
+bool
+MultiBase::isUnsaved(unsigned variantIndex) const
+{
+	Database const* base = m_bases[variantIndex];
+	return base != 0 && (base->hasChanged());
 }
 
 
@@ -160,15 +209,37 @@ MultiBase::isEmpty() const
 
 
 bool
-MultiBase::hasChanged() const
+MultiBase::isUnsaved() const
 {
 	for (unsigned i = 0; i < variant::NumberOfVariants; ++i)
 	{
-		if (hasChanged(i))
+		if (isUnsaved(i))
 			return true;
 	}
 
 	return false;
+}
+
+
+unsigned
+MultiBase::countGames(Mode mode) const
+{
+	unsigned total = 0;
+
+	for (unsigned i = 0; i < variant::NumberOfVariants; ++i)
+	{
+		if (Database const* base = m_bases[i])
+		{
+			switch (mode)
+			{
+				case Changed:	total += base->statistic().changed; break;
+				case Added:		total += base->statistic().added; break;
+				case Deleted:	total += base->statistic().deleted; break;
+			}
+		}
+	}
+
+	return total;
 }
 
 
@@ -250,8 +321,17 @@ MultiBase::close(variant::Type variant)
 void
 MultiBase::setup(FileOffsets* fileOffsets)
 {
-	delete m_fileOffsets;
-	m_fileOffsets = fileOffsets;
+	mstl::string ext = util::misc::file::suffix(m_leader->name());
+	bool isReadonly = true;
+
+	if (ext == "pgn" || ext == "PGN" || ext == "gz")
+	{
+		isReadonly = !sys::file::access(m_leader->name(), sys::file::Writeable);
+		delete m_fileOffsets;
+		m_fileOffsets = fileOffsets;
+	}
+
+	m_leader->setReadonly(isReadonly);
 	m_leader->setWritable(m_fileOffsets != 0);
 }
 
@@ -264,6 +344,17 @@ MultiBase::changeVariant(variant::Type variant)
 
 	if (isSingleBase())
 		m_leader->setVariant(variant);
+}
+
+
+void
+MultiBase::resetInitialSize()
+{
+	for (unsigned i = 0; i < variant::NumberOfVariants; ++i)
+	{
+		if (Database* database = m_bases[i])
+			database->resetInitialSize();
+	}
 }
 
 
@@ -335,7 +426,6 @@ MultiBase::importGames(Producer& producer, util::Progress& progress, GameCount* 
 				if (cnt > 0)
 				{
 					n += cnt;
-					base->finishImport(oldCount[i], producer.encodingFailed());
 
 					if (count)
 						(*count)[i] = cnt;
@@ -348,164 +438,324 @@ MultiBase::importGames(Producer& producer, util::Progress& progress, GameCount* 
 }
 
 
-save::State
-MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& progress)
+void
+MultiBase::save(util::Progress& progress)
 {
-	enum { Unchanged, Changed, Deleted, New };
+	for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)
+	{
+		if (Database* database = m_bases[variant])
+			database->save(progress);
+	}
+}
+
+
+void
+MultiBase::save(unsigned flags, util::Progress& progress)
+{
+	enum { Unchanged, Changed, Deleted, Added };
 
 	M_REQUIRE(isTextFile());
 
-	if (!hasChanged())
-		return save::Ok;
+	if (!isUnsaved())
+		return;
 
 	M_ASSERT(m_fileOffsets);
+
+	if (!sys::file::access(m_leader->name(), sys::file::Writeable))
+		IO_RAISE(PgnFile, Read_Error, "PGN file is removed");
+
+	if (!sys::file::access(m_leader->name(), sys::file::Writeable))
+		IO_RAISE(PgnFile, Read_Only, "PGN file is readonly");
 
 	if (!m_leader->checkFileTime())
 		IO_RAISE(PgnFile, Not_Original_Version, "PGN file has changed");
 
-	mstl::string tmpName(m_leader->name() + ".part");
-	mstl::ofstream ostrm(tmpName);
-	mstl::ifstream istrm(m_leader->name());
+	unsigned changedGames	= 0;
+	unsigned deletedGames	= 0;
+	unsigned addedGames		= 0;
+
+	for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)
+	{
+		if (Database* database = m_bases[variant])
+		{
+			changedGames += database->statistic().changed;
+			deletedGames += database->statistic().deleted;
+			addedGames += database->statistic().added;
+		}
+	}
+
+	unsigned totalGames = m_fileOffsets->countGames() + addedGames - deletedGames;
+
+	mstl::auto_ptr<ZStream> ostrm;
+	mstl::string internalName(sys::file::internalName(m_leader->name()));
+
+	if (ZStream::testByteOrderMark(internalName))
+		flags |= PgnWriter::Flag_Use_UTF8;
+	else
+		flags &= ~PgnWriter::Flag_Use_UTF8;
+
+	PgnWriter writer(format::Scidb, *ostrm, m_leader->encoding(), flags);
 	mstl::auto_ptr<FileOffsets> newFileOffsets(new FileOffsets);
 
-	istrm.set_bufsize(::ChunkSize);
-	ostrm.set_bufsize(::ChunkSize);
+	unsigned nextIndex[variant::NumberOfVariants];
+	::memset(nextIndex, 0, sizeof(nextIndex));
 
-	if (m_leader->descriptionHasChanged())
+	bool newFile = changedGames > 0 || deletedGames > 0 || m_leader->descriptionHasChanged();
+	unsigned numberOfGamesToWrite = newFile ? totalGames : addedGames;
+
+	util::ProgressWatcher watcher(progress, numberOfGamesToWrite);
+
+	unsigned frequency	= mstl::min(1000u, mstl::max(numberOfGamesToWrite/100, 1u));
+	unsigned reportAfter	= frequency;
+	unsigned count			= 0;
+
+	if (newFile)
 	{
-		if (unsigned n = m_leader->description().size())
+		mstl::string tmpName(internalName + ".part");
+
+		newFileOffsets.reset(new FileOffsets);
+		newFileOffsets->reserve(m_fileOffsets->size() + addedGames - deletedGames);
+		ostrm.reset(new ZStream(tmpName));
+
+		if (!*ostrm)
+			IO_RAISE(PgnFile, Create_Failed, "no permissions to create file");
+
+		ZStream istrm(internalName);
+
+		istrm.setBufsize(::ChunkSize);
+		ostrm->setBufsize(::ChunkSize);
+
+		if (m_leader->descriptionHasChanged())
 		{
-			mstl::string descr(m_leader->description());
-
-			while (n > 78)
+			if (unsigned n = m_leader->description().size())
 			{
-				unsigned k = n/2;
+				mstl::string descr(m_leader->description());
 
-				while (k > 0 && !::isspace(descr[k]))
-					--k;
-
-				if (k == 0)
+				while (n > 78)
 				{
-					k = n/2;
-					while (k < n && !::isspace(descr[k]))
+					unsigned k = mstl::div2(n);
+
+					while (k > 0 && !::isspace(descr[k]))
+						--k;
+
+					if (k == 0)
+					{
+						k = mstl::div2(n);
+						while (k < n && !::isspace(descr[k]))
+							++k;
+					}
+
+					ostrm->write("; ", 2);
+					ostrm->writenl(descr.substr(0u, k));
+
+					while (k < n && ::isspace(descr[k]))
 						++k;
+					descr.erase(mstl::string::size_type(0), mstl::string::size_type(k));
+					n = descr.size();
 				}
 
-				ostrm.write("; ", 2);
-				ostrm.writenl(descr.substr(0u, k));
+				if (n > 0)
+				{
+					ostrm->write("; ", 2);
+					ostrm->writenl(descr);
+				}
 
-				while (k < n && ::isspace(descr[k]))
-					++k;
-				descr.erase(mstl::string::size_type(0), mstl::string::size_type(k));
-				n = descr.size();
+				ostrm->writenl(mstl::string::empty_string);
 			}
+		}
+		else
+		{
+			FileOffsets::Offset const& offs = m_fileOffsets->get(0);
 
-			if (n > 0)
+			if (offs.offset())
 			{
-				ostrm.write("; ", 2);
-				ostrm.writenl(descr);
+				try
+				{
+					unsigned numGames = offs.isNumberOfSkippedGames() ? offs.skipped() : 0;
+
+					count = ::write(	istrm,
+											*ostrm,
+											0,
+											offs.offset(),
+											progress,
+											reportAfter,
+											frequency,
+											count,
+											numGames);
+				}
+				catch (...)
+				{
+					sys::file::deleteIt(tmpName);
+					throw;
+				}
 			}
-
-			ostrm.writenl(mstl::string::empty_string);
 		}
-	}
-	else if (unsigned n = m_fileOffsets->get(0).offset())
-	{
-		::write(istrm, ostrm, 0, n);
-	}
 
-	newFileOffsets->append(ostrm.tellp() + 1);
+		newFileOffsets->append(ostrm->tellp() + 1);
 
-	unsigned n				= m_fileOffsets->size();
-	unsigned lastIndex	= 0;
-	unsigned prevState	= New;
-	unsigned nextState	= New;
+		unsigned n				= m_fileOffsets->size();
+		unsigned lastIndex	= 0;
+		unsigned prevState	= Added;
+		unsigned nextState	= Added;
 
-	if (n > 0)
-	{
-		FileOffsets::Offset const& offs = m_fileOffsets->get(0);
-
-		if (!offs.isGameIndex())
-			prevState = Unchanged;
-		else if (m_bases[offs.variant()]->isDeleted(offs.gameIndex()))
-			prevState = Deleted;
-		else if (m_bases[offs.variant()]->hasChanged(offs.gameIndex()))
-			prevState = Changed;
-		else
-			prevState = Unchanged;
-
-		lastIndex = 1;
-	}
-
-	PgnWriter writer(format::Scidb, ostrm, encoding, flags);
-
-	unsigned startIndex = 0;
-
-	while (lastIndex <= n && nextState != New)
-	{
-		if (lastIndex == n)
+		if (n > 0)
 		{
-			nextState = New;
-		}
-		else
-		{
-			FileOffsets::Offset const& offs = m_fileOffsets->get(lastIndex);
+			FileOffsets::Offset const& offs = m_fileOffsets->get(0);
 
 			if (!offs.isGameIndex())
-				nextState = Unchanged;
+				prevState = Unchanged;
 			else if (m_bases[offs.variant()]->isDeleted(offs.gameIndex()))
-				nextState = Deleted;
+				prevState = Deleted;
 			else if (m_bases[offs.variant()]->hasChanged(offs.gameIndex()))
-				nextState = Changed;
+				prevState = Changed;
 			else
-				nextState = Unchanged;
+				prevState = Unchanged;
+
+			lastIndex = 1;
 		}
 
-		if (prevState == nextState)
+		unsigned startIndex = 0;
+
+		while (lastIndex <= n && nextState != Added)
 		{
-			++lastIndex;
-		}
-		else
-		{
-			switch (prevState)
+			if (lastIndex == n)
 			{
-				case Unchanged:
+				nextState = Added;
+			}
+			else
+			{
+				FileOffsets::Offset const& offs = m_fileOffsets->get(lastIndex);
+
+				if (!offs.isGameIndex())
 				{
-					unsigned startOffs = m_fileOffsets->get(startIndex).offset();
-					unsigned endOffs = m_fileOffsets->get(lastIndex).offset();
-					::write(istrm, ostrm, startOffs, endOffs - startOffs);
-					startIndex = lastIndex;
-					break;
+					nextState = Unchanged;
 				}
-
-				case Changed:
-					for ( ; startIndex < lastIndex; ++startIndex)
-					{
-						FileOffsets::Offset const& offs = m_fileOffsets->get(startIndex);
-						Database* database = m_bases[offs.variant()];
-						writer.setupVariant(variant::fromIndex(offs.variant()));
-						save::State state = database->exportGame(offs.gameIndex(), writer);
-
-						if (state != save::Ok)
-						{
-							// TODO: finish
-							return state;
-						}
-					}
-					break;
-
-				case Deleted:
-					startIndex = lastIndex;
-					break;
+				else if (m_bases[offs.variant()]->isDeleted(offs.gameIndex()))
+				{
+					nextState = Deleted;
+				}
+				else
+				{
+					nextState = m_bases[offs.variant()]->hasChanged(offs.gameIndex()) ? Changed : Unchanged;
+					nextIndex[offs.variant()] = offs.gameIndex();
+				}
 			}
 
-			prevState = nextState;
+			if (prevState == nextState)
+			{
+				++lastIndex;
+			}
+			else
+			{
+				switch (prevState)
+				{
+					case Unchanged:
+					{
+						unsigned offs		= ostrm->tellp();
+						unsigned numGames	= 0;
+
+						FileOffsets::Offset const* currOffs = &newFileOffsets->get(startIndex);
+
+						for ( ; startIndex < lastIndex; ++startIndex)
+						{
+							FileOffsets::Offset const* nextOffs = &newFileOffsets->get(startIndex + 1);
+							offs += nextOffs->offset() - currOffs->offset();
+
+							if (currOffs->isGameIndex())
+							{
+								newFileOffsets->append(offs, currOffs->variant(), currOffs->gameIndex());
+								++numGames;
+							}
+							else
+							{
+								newFileOffsets->append(offs, currOffs->skipped());
+								numGames += currOffs->skipped();
+							}
+
+							currOffs = nextOffs;
+						}
+
+						try
+						{
+							unsigned startOffs	= m_fileOffsets->get(startIndex).offset();
+							unsigned endOffs		= m_fileOffsets->get(lastIndex).offset();
+
+							count = ::write(	istrm,
+													*ostrm,
+													startOffs,
+													endOffs - startOffs,
+													progress,
+													reportAfter,
+													frequency,
+													count,
+													numGames);
+						}
+						catch (...)
+						{
+							sys::file::deleteIt(tmpName);
+							throw;
+						}
+						break;
+					}
+
+					case Changed:
+						for ( ; startIndex < lastIndex; ++startIndex)
+						{
+							if (reportAfter == count++)
+							{
+								progress.update(count);
+								reportAfter += frequency;
+							}
+
+							FileOffsets::Offset const& offs = m_fileOffsets->get(startIndex);
+							Database* database = m_bases[offs.variant()];
+							writer.setupVariant(variant::fromIndex(offs.variant()));
+							database->exportGame(offs.gameIndex(), writer); // always returning save::Ok
+							newFileOffsets->append(ostrm->tellp(), offs.variant(), offs.gameIndex());
+						}
+						break;
+
+					case Deleted:
+						startIndex = lastIndex;
+						break;
+				}
+
+				prevState = nextState;
+			}
+		}
+
+		istrm.close();
+	}
+	else
+	{
+		ostrm.reset(new ZStream(internalName, mstl::ofstream::app));
+		ostrm->writenl(mstl::string::empty_string);
+		newFileOffsets.reset(new FileOffsets(*m_fileOffsets));
+	}
+
+	for (unsigned variant = 0; variant < variant::NumberOfVariants; ++variant)
+	{
+		if (Database* database = m_bases[variant])
+		{
+			unsigned n = database->countGames();
+
+			writer.setupVariant(variant::fromIndex(variant));
+
+			for (unsigned index = nextIndex[variant]; index < n; ++index)
+			{
+				database->exportGame(index, writer); // always returning save::Ok
+				newFileOffsets->append(ostrm->tellp(), variant, index);
+			}
 		}
 	}
 
-	// export new games
+	ostrm->close();
+	if (ostrm->filename() != internalName)
+		sys::file::rename(ostrm->filename(), m_leader->name());
+	m_leader->resetChangedStatus();
 
-	return save::Ok;
+	delete m_fileOffsets;
+	m_fileOffsets = newFileOffsets.release();
 }
 
 // vi:set ts=3 sw=3:

@@ -99,6 +99,7 @@ private:
 	typedef mstl::vector<unsigned> Map;
 	typedef int(*Compar)(void const*, void const*);
 
+	void reserve(Database const& db, unsigned numEntries);
 	void finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc);
 
 	Map m_map;

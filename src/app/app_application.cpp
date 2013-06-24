@@ -53,7 +53,6 @@
 #include "sys_thread.h"
 
 #include "m_ifstream.h"
-#include "m_ofstream.h"
 #include "m_algorithm.h"
 #include "m_function.h"
 #include "m_bitset.h"
@@ -90,6 +89,12 @@ struct WriteGuard
 	{
 		if (!cursor.isMemoryOnly())
 			m_app.setIsWriting(cursor.name());
+	}
+
+	WriteGuard(Application& app, MultiBase const& multiBase)
+		:m_app(app)
+	{
+		m_app.setIsWriting(multiBase.name());
 	}
 
 	~WriteGuard() { release(); }
@@ -1437,6 +1442,8 @@ Application::deleteGame(Cursor& cursor, unsigned index, unsigned view, bool flag
 
 		++m_updateCount;
 	}
+
+	m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 }
 
 
@@ -1667,30 +1674,24 @@ Application::writeGame(	unsigned position,
 
 			if (fmode == Append)
 			{
+				mode |= mstl::ios_base::app;
+
 				if (type != util::ZStream::Zip)
 				{
-					mstl::ifstream strm(internalName, mstl::ios_base::in);
+					flags |= PgnWriter::Flag_Append_Games;
 
-					if (strm)
-					{
-						char buf[3];
-
-						mode |= mstl::ios_base::app;
-						flags |= PgnWriter::Flag_Append_Games;
-
-						if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
-							flags |= PgnWriter::Flag_Use_UTF8;
-						else
-							flags &= ~PgnWriter::Flag_Use_UTF8;
-					}
+					if (util::ZStream::testByteOrderMark(internalName))
+						flags |= PgnWriter::Flag_Use_UTF8;
+					else
+						flags &= ~PgnWriter::Flag_Use_UTF8;
 				}
 			}
 			else
 			{
-				mode = mstl::ios_base::trunc;
+				mode |= mstl::ios_base::trunc;
 			}
 
-			mstl::ofstream strm(internalName, mode);
+			util::ZStream strm(internalName, type, mode);
 
 			if (!strm)
 				IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
@@ -2076,6 +2077,19 @@ Application::enumCursors(CursorList& list, variant::Type variant) const
 }
 
 
+void
+Application::enumCursors(MultiCursorList& list) const
+{
+	list.clear();
+
+	for (CursorMap::const_iterator i = m_cursorMap.begin(); i != m_cursorMap.end(); ++i)
+	{
+		if (!i->second->isScratchbase() && !i->second->isClipbase())
+			list.push_back(const_cast<MultiCursor*>(i->second.get()));
+	}
+}
+
+
 save::State
 Application::saveGame(Cursor& cursor, bool replace)
 {
@@ -2123,8 +2137,6 @@ Application::saveGame(Cursor& cursor, bool replace)
 
 	cursor.updateViews();
 
-	GameInfo& info	= cursor.base().gameInfo(g.sink.index);
-
 	if (save::isOk(state))
 	{
 		checksum_t crcMainline	= g.sink.crcMainline;
@@ -2133,7 +2145,6 @@ Application::saveGame(Cursor& cursor, bool replace)
 		TagSet tags;
 		db.getGameTags(g.sink.index, tags);
 
-		info.setDirty(false);
 		g.data.game->setIsModified(false);
 		g.sink.crcMainline = g.data.game->computeChecksumOfMainline();
 		g.sink.crcMoves = g.link.crcMoves = tags.computeChecksum(g.data.game->computeChecksum());
@@ -2504,8 +2515,24 @@ Application::multiBase(mstl::string const& name)
 }
 
 
+MultiBase const&
+Application::multiBase(mstl::string const& name) const
+{
+	M_REQUIRE(contains(name));
+	return m_cursorMap.find(name)->second->multiBase();
+}
+
+
 MultiCursor&
 Application::multiCursor(mstl::string const& name)
+{
+	M_REQUIRE(contains(name));
+	return *m_cursorMap.find(name)->second;
+}
+
+
+MultiCursor const&
+Application::multiCursor(mstl::string const& name) const
 {
 	M_REQUIRE(contains(name));
 	return *m_cursorMap.find(name)->second;
@@ -2668,6 +2695,21 @@ Application::save(mstl::string const& name, util::Progress& progress)
 				++m_updateCount;
 			}
 		}
+	}
+}
+
+
+void
+Application::save(mstl::string const& name, unsigned flags, util::Progress& progress)
+{
+	M_REQUIRE(contains(name));
+
+	MultiBase& multiBase = m_cursorMap.find(name)->second->multiBase();
+
+	if (multiBase.isUnsaved())
+	{
+		WriteGuard guard(*this, multiBase);
+		multiBase.save(flags, progress);
 	}
 }
 

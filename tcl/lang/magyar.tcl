@@ -178,19 +178,21 @@
 
 ### util ###############################################################
 
-::util::mc::IOErrorOccurred					"I/O hiba történt"
+::util::mc::IOErrorOccurred			"I/O hiba történt"
 
-::util::mc::IOError(OpenFailed)				"Sikertelen megynitási művelet"
-::util::mc::IOError(ReadOnly)					"Írásvédett adatbázis"
-::util::mc::IOError(UnknownVersion)			"Ismeretlen kiterjesztés (UnknownVersion)"
+::util::mc::IOError(CreateFailed)		"no permissions to create files" ;# NEW
+::util::mc::IOError(OpenFailed)			"Sikertelen megynitási művelet"
+::util::mc::IOError(ReadOnly)			"Írásvédett adatbázis"
+::util::mc::IOError(UnknownVersion)		"Ismeretlen kiterjesztés (UnknownVersion)"
 ::util::mc::IOError(UnexpectedVersion)		"unexpected file version"
-::util::mc::IOError(Corrupted)				"Hibás fájl"
-::util::mc::IOError(WriteFailed)				"Sikertelen írási művelet"
-::util::mc::IOError(InvalidData)				"Érvénytelen adat (valószínűleg sérült fájl)"
-::util::mc::IOError(ReadError)				"olvasási hiba"
-::util::mc::IOError(EncodingFailed)			"namebase fájl nem írható"
+::util::mc::IOError(Corrupted)			"Hibás fájl"
+::util::mc::IOError(WriteFailed)		"Sikertelen írási művelet"
+::util::mc::IOError(InvalidData)		"Érvénytelen adat (valószínűleg sérült fájl)"
+::util::mc::IOError(ReadError)			"olvasási hiba"
+::util::mc::IOError(EncodingFailed)		"namebase fájl nem írható"
 ::util::mc::IOError(MaxFileSizeExceeded)	"túl nagy fájlméret"
-::util::mc::IOError(LoadFailed)				"Betöltési hiba (túl sok bejegyzés)"
+::util::mc::IOError(LoadFailed)			"Betöltési hiba (túl sok bejegyzés)"
+::util::mc::IOError(NotOriginalVersion)		"file has changed outside from Scidb since last open" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
@@ -262,6 +264,7 @@
 
 # Setup
 ::menu::mc::Engines			"Elemző &modulok"
+::menu::mc::PgnOptions			"Setup &PGN export options" ;# NEW
 ::menu::mc::PrivatePlayerCard		"&Private Player Card" ;# NEW
 
 ::menu::mc::OpenFile			"Scidb fájl megnyitása"
@@ -385,7 +388,9 @@
 
 ::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
 ::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
-::application::mc::RestartLogout			"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::RestartLogout	"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::UnsavedFiles		"The following PGN files are unsaved:" ;# NEW
+::application::mc::ThrowAwayAllChanges	"Do you really want to throw away all changes?" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
@@ -418,25 +423,26 @@
 ::application::board::mc::Accel(trial-mode)		"T" ;# NEW
 
 ### application::database ##############################################
-::application::database::mc::FileOpen					"Fájl megnyitása"
-::application::database::mc::FileOpenRecent				"Legutóbbi fájlok Megnyitása"
-::application::database::mc::FileNew					"Új"
-::application::database::mc::FileExport					"Exportálás"
-::application::database::mc::FileImport(pgn)				"PGN fájlok importálás..."
-::application::database::mc::FileImport(db)				"Adatbázis importálása "
-::application::database::mc::FileCreate					"Archívum létrehozása"
-::application::database::mc::FileClose					"Bezárás"
-::application::database::mc::FileMaintenance				"Karbantartás"
-::application::database::mc::FileCompact				"Kompakt"
-::application::database::mc::FileStripMoveInfo				"Strip Move Information" ;# NEW
-::application::database::mc::FileStripPGNTags				"Strip PGN Tags" ;# NEW
-::application::database::mc::HelpSwitcher				"Adatbázis váltó(?) Súgó"
+::application::database::mc::FileOpen			"Fájl megnyitása"
+::application::database::mc::FileOpenRecent		"Legutóbbi fájlok Megnyitása"
+::application::database::mc::FileNew			"Új"
+::application::database::mc::FileExport			"Exportálás"
+::application::database::mc::FileImport(pgn)		"PGN fájlok importálás..."
+::application::database::mc::FileImport(db)		"Adatbázis importálása "
+::application::database::mc::FileCreate			"Archívum létrehozása"
+::application::database::mc::FileSaveChanges		"Save Changes" ;# NEW
+::application::database::mc::FileClose			"Bezárás"
+::application::database::mc::FileMaintenance		"Karbantartás"
+::application::database::mc::FileCompact		"Kompakt"
+::application::database::mc::FileStripMoveInfo		"Strip Move Information" ;# NEW
+::application::database::mc::FileStripPGNTags		"Strip PGN Tags" ;# NEW
+::application::database::mc::HelpSwitcher		"Adatbázis váltó(?) Súgó"
 
-::application::database::mc::Games							"&Játszmák"
-::application::database::mc::Players						"Já&tékosok"
-::application::database::mc::Events							"&Versenyek"
-::application::database::mc::Sites							"&Helyszín"  ;#NEW
-::application::database::mc::Annotators					"&Elemző"
+::application::database::mc::Games			"&Játszmák"
+::application::database::mc::Players			"Já&tékosok"
+::application::database::mc::Events			"&Versenyek"
+::application::database::mc::Sites			"&Helyszín"  ;#NEW
+::application::database::mc::Annotators			"&Elemző"
 
 ::application::database::mc::File			"Fájl"
 ::application::database::mc::SymbolSize			"Szimvólum méret"
@@ -463,14 +469,15 @@
 ::application::database::mc::ExtractArchive		"%s archívum kicsomagolása"
 ::application::database::mc::SelectVariant		"Select Variant" ;# NEW
 ::application::database::mc::Example			"Example" ;# NEW
+::application::database::mc::UnsavedFiles		"This PGN file is unsaved." ;# NEW
 
-::application::database::mc::RecodingDatabase			"Recoding %s from %s to %s"
-::application::database::mc::RecodedGames					"%s game(s) recoded"
+::application::database::mc::RecodingDatabase		"Recoding %s from %s to %s"
+::application::database::mc::RecodedGames		"%s game(s) recoded"
 
-::application::database::mc::ChangeIcon					"Ikon cseréje"
-::application::database::mc::Recode							"Újrakódolás"
-::application::database::mc::EditDescription				"Leírás szerkesztése"
-::application::database::mc::EmptyClipbase				"Üres vágólap"
+::application::database::mc::ChangeIcon			"Ikon cseréje"
+::application::database::mc::Recode			"Újrakódolás"
+::application::database::mc::EditDescription		"Leírás szerkesztése"
+::application::database::mc::EmptyClipbase		"Üres vágólap"
 
 ::application::database::mc::Maintenance		"Maintenance" ;# NEW
 ::application::database::mc::StripMoveInfo		"Strip move information from database '%s'" ;# NEW
@@ -491,67 +498,68 @@
 ::application::database::mc::SelectSuperfluousTags	"Select superfluous tags:" ;# NEW
 ::application::database::mc::WillBePermanentlyDeleted	"Please note: This action will permanently delete the concerned information from database." ;# NEW
 
-::application::database::mc::T_Unspecific					"Nem specifikus"
-::application::database::mc::T_Temporary					"Ideiglenes"
-::application::database::mc::T_Work							"Munka"
-::application::database::mc::T_Clipbase					"Vágólap"
-::application::database::mc::T_MyGames						"Játszmáim"
-::application::database::mc::T_Informant					"Informátor"
-::application::database::mc::T_LargeDatabase				"Nagy adatbázis"
-::application::database::mc::T_CorrespondenceChess		"Levelező sakk"  
-::application::database::mc::T_EmailChess					"e-mail sakk"
-::application::database::mc::T_InternetChess				"internet sakk"
-::application::database::mc::T_ComputerChess				"számítógépes sakk"
-::application::database::mc::T_Chess960					"Chess 960"
-::application::database::mc::T_PlayerCollection			"Játékos adatlapok"
+::application::database::mc::T_Unspecific		"Nem specifikus"
+::application::database::mc::T_Temporary		"Ideiglenes"
+::application::database::mc::T_Work			"Munka"
+::application::database::mc::T_Clipbase			"Vágólap"
+::application::database::mc::T_MyGames			"Játszmáim"
+::application::database::mc::T_Informant		"Informátor"
+::application::database::mc::T_LargeDatabase		"Nagy adatbázis"
+::application::database::mc::T_CorrespondenceChess	"Levelező sakk"  
+::application::database::mc::T_EmailChess		"e-mail sakk"
+::application::database::mc::T_InternetChess		"internet sakk"
+::application::database::mc::T_ComputerChess		"számítógépes sakk"
+::application::database::mc::T_Chess960			"Chess 960"
+::application::database::mc::T_PlayerCollection		"Játékos adatlapok"
 # Female version of "Player Collection"
 # Be sure that the translation starts with same term as the translation above.
-::application::database::mc::T_PlayerCollectionFemale		"Játékos gyűjtemény"
-::application::database::mc::T_Tournament					"Verseny"
-::application::database::mc::T_TournamentSwiss			"Svájci verseny"
-::application::database::mc::T_GMGames						"GM Játszmák"
-::application::database::mc::T_IMGames						"IM Játszmák"
-::application::database::mc::T_BlitzGames					"Schnell játszmák"
-::application::database::mc::T_Tactics						"Taktika"
-::application::database::mc::T_Endgames					"Végjátékok"
-::application::database::mc::T_Analysis					"Elemzések"
-::application::database::mc::T_Training					"Edzések"
-::application::database::mc::T_Match						"Match"
-::application::database::mc::T_Studies						"Tanulmányok"
-::application::database::mc::T_Jewels						"Gyöngyszemek"
-::application::database::mc::T_Problems					"Problémák"
-::application::database::mc::T_Patzer						"Patzer"
-::application::database::mc::T_Gambit						"Gambit"
-::application::database::mc::T_Important					"Important"
-::application::database::mc::T_Openings					"Megnyitások"
-::application::database::mc::T_OpeningsWhite				"Megnyitások világossal"
-::application::database::mc::T_OpeningsBlack				"Megnyitások sötéttel"
-::application::database::mc::T_Bughouse					"Tandem"
-::application::database::mc::T_Antichess				"Francia sakk"
-::application::database::mc::T_PGNFile					"PGN fájl"
-::application::database::mc::T_ThreeCheck				"Three-check" ;# NEW
-::application::database::mc::T_Crazyhouse				"Crazyhouse" ;# NEW
+::application::database::mc::T_PlayerCollectionFemale	"Játékos gyűjtemény"
+::application::database::mc::T_Tournament		"Verseny"
+::application::database::mc::T_TournamentSwiss		"Svájci verseny"
+::application::database::mc::T_GMGames			"GM Játszmák"
+::application::database::mc::T_IMGames			"IM Játszmák"
+::application::database::mc::T_BlitzGames		"Schnell játszmák"
+::application::database::mc::T_Tactics			"Taktika"
+::application::database::mc::T_Endgames			"Végjátékok"
+::application::database::mc::T_Analysis			"Elemzések"
+::application::database::mc::T_Training			"Edzések"
+::application::database::mc::T_Match			"Match"
+::application::database::mc::T_Studies			"Tanulmányok"
+::application::database::mc::T_Jewels			"Gyöngyszemek"
+::application::database::mc::T_Problems			"Problémák"
+::application::database::mc::T_Patzer			"Patzer"
+::application::database::mc::T_Gambit			"Gambit"
+::application::database::mc::T_Important		"Important"
+::application::database::mc::T_Openings			"Megnyitások"
+::application::database::mc::T_OpeningsWhite		"Megnyitások világossal"
+::application::database::mc::T_OpeningsBlack		"Megnyitások sötéttel"
+::application::database::mc::T_Bughouse			"Tandem"
+::application::database::mc::T_Antichess		"Francia sakk"
+::application::database::mc::T_PGNFile			"PGN fájl"
+::application::database::mc::T_ThreeCheck		"Three-check" ;# NEW
+::application::database::mc::T_Crazyhouse		"Crazyhouse" ;# NEW
 
-::application::database::mc::OpenDatabase					"Adatbázis megnyitása"
-::application::database::mc::NewDatabase					"Új adatbázis"
-::application::database::mc::CloseDatabase				"Adatbázis bezárása: '%s'"
-::application::database::mc::SetReadonly					"'%s' adatbázis módosítása írásvédette"
-::application::database::mc::SetWriteable					"'%s' adatbázis módosítása írhatóvá"
+::application::database::mc::OpenDatabase		"Adatbázis megnyitása"
+::application::database::mc::OpenRecentDatabase		"Open Recent Database" ;# NEW
+::application::database::mc::NewDatabase		"Új adatbázis"
+::application::database::mc::CloseDatabase		"Adatbázis bezárása: '%s'"
+::application::database::mc::SetReadonly		"'%s' adatbázis módosítása írásvédette"
+::application::database::mc::SetWriteable		"'%s' adatbázis módosítása írhatóvá"
 
-::application::database::mc::OpenReadonly					"Megynitás olvasásra"
-::application::database::mc::OpenWriteable				"Megnyitás írásra"
+::application::database::mc::OpenReadonly		"Megynitás olvasásra"
+::application::database::mc::OpenWriteable		"Megnyitás írásra"
 
-::application::database::mc::UpgradeDatabase				"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
-::application::database::mc::UpgradeDatabaseDetail		"\"Nem\" olvasásra niytja meg az adatbázist."
+::application::database::mc::UpgradeDatabase		"%s egy régi formátum ami nem nyitható meg írásra.\n\nÚj formátumra kell konvertálni, hogy írható legyen.\n\nEz eltarthat egy kis ideig.\n\nÁt akarod konvertálni az adatbázist?"
+::application::database::mc::UpgradeDatabaseDetail	"\"Nem\" olvasásra niytja meg az adatbázist."
 
-::application::database::mc::MoveInfo(evaluation)		"Evaluation" ;# NEW
-::application::database::mc::MoveInfo(playersClock)		"Players Clock" ;# NEW
-::application::database::mc::MoveInfo(elapsedGameTime)		"Elapsed Game Time" ;# NEW
-::application::database::mc::MoveInfo(elapsedMoveTime)		"Elapsed Move Time" ;# NEW
-::application::database::mc::MoveInfo(elapsedMilliSecs)		"Elapsed Milliseconds" ;# NEW
-::application::database::mc::MoveInfo(clockTime)		"Clock Time" ;# NEW
-::application::database::mc::MoveInfo(corrChessSent)		"Correspondence Chess Sent" ;# NEW
-::application::database::mc::MoveInfo(videoTime)		"Video Time" ;# NEW
+::application::database::mc::MoveInfo(evaluation)	"Evaluation" ;# NEW
+::application::database::mc::MoveInfo(playersClock)	"Players Clock" ;# NEW
+::application::database::mc::MoveInfo(elapsedGameTime)	"Elapsed Game Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMoveTime)	"Elapsed Move Time" ;# NEW
+::application::database::mc::MoveInfo(elapsedMilliSecs)	"Elapsed Milliseconds" ;# NEW
+::application::database::mc::MoveInfo(clockTime)	"Clock Time" ;# NEW
+::application::database::mc::MoveInfo(corrChessSent)	"Correspondence Chess Sent" ;# NEW
+::application::database::mc::MoveInfo(videoTime)	"Video Time" ;# NEW
 
 ### application::database::games #######################################
 ::application::database::games::mc::Control						"Control"
@@ -732,6 +740,8 @@
 ::database::switcher::mc::GameCount			"Játszmák"
 ::database::switcher::mc::DatabasePath			"Adatbázis elérési útvonala"
 ::database::switcher::mc::DeletedGames			"Törölt játszmák"
+::database::switcher::mc::ChangedGames			"Changed Games" ;# NEW
+::database::switcher::mc::AddedGames			"Added Games" ;# NEW
 ::database::switcher::mc::Description			"Leírás"
 ::database::switcher::mc::Created			"Létrehozva"
 ::database::switcher::mc::LastModified			"Utoljára módosítva"
@@ -1167,6 +1177,7 @@
 ::gametable::mc::T_Chess960Pos			"Chess 960 Position"
 ::gametable::mc::T_Deleted					"Törölve"
 ::gametable::mc::T_Changed					"Changed"
+::gametable::mc::T_Added					"Added" ;# NEW
 ::gametable::mc::T_EngFlag					"English Language Flag"
 ::gametable::mc::T_OthFlag					"Other Language Flag"
 ::gametable::mc::T_Idn						"Chess 960 Position Number"
@@ -1245,9 +1256,11 @@
 ::playertable::mc::T_PlayerInfo			"Info Flag"
 
 ::playertable::mc::Find				"Keresés"
+::playertable::mc::Options			"Options" ;# NEW
 ::playertable::mc::StartSearch			"Keresés indítása"
 ::playertable::mc::ClearEntries			"Bejegyzések törlése"
 ::playertable::mc::NotFound			"Nem található."
+::playertable::mc::UsePlayerBase		"Use Player Base" ;# NEW
 
 ::playertable::mc::Name				"Név"
 ::playertable::mc::HighestRating		"Legmagasabb ELO pontszám"
@@ -1506,76 +1519,79 @@
 ::import::mc::CheckImportResult			"Kérlek ellenőrizd, hogy a megfelelő bábukészlet lett-e felismerve: %s."
 ::import::mc::CheckImportResultDetail		"Néhány esetben előfordulhat, hogy kétértelmű bejegyzések miatt az automatikus felismerés nem sikeres."
 
-::import::mc::UnsupportedVariant		"Unsuported variant rejected" ;# NEW
 ::import::mc::EnterOrPaste			"Enter or paste a PGN-format %s in the frame above.\nAny errors importing the %s will be displayed here."
 ::import::mc::EnterOrPaste-Game			"játszma"
 ::import::mc::EnterOrPaste-Variation		"változat"
 
-::import::mc::MissingWhitePlayerTag		"Hiányzó világos játékos"
-::import::mc::MissingBlackPlayerTag		"Hiányzó sötét játékos"
-::import::mc::MissingPlayerTags			"Hiányzó játékosok"
-::import::mc::MissingResult			"Hiányzó eredmény (at end of move section)"
-::import::mc::MissingResultTag			"Hiányzó eredmény (in tag section)"
-::import::mc::InvalidRoundTag			"Érvénytelen foduló cimke"
-::import::mc::InvalidResultTag			"Érvénytelen eredmény cimke"
-::import::mc::InvalidDateTag			"Érvénytelen dátum cimke"
-::import::mc::InvalidEventDateTag		"Érvénytelen esemény-dátum címke"
-::import::mc::InvalidTimeModeTag		"Érvénytelen időbosztás cimke"
-::import::mc::InvalidEcoTag			"Érvénytelen ECO cimke"
-::import::mc::InvalidTagName			"Érvénytelen cimke név (kihagyva)"
-::import::mc::InvalidCountryCode		"Érvénytelen országkód"
-::import::mc::InvalidRating			"Érvénytelen értékszám"
-::import::mc::InvalidNag			"Érvénytelen NAG"
-::import::mc::BraceSeenOutsideComment		"\"\}\" seen outisde a comment in game (ignored)"
-::import::mc::MissingFen			"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
-::import::mc::UnknownEventType			"Ismeretlen verseny típus"
-::import::mc::UnknownTitle			"Ismeretlen cím (kihagyva)"
-::import::mc::UnknownPlayerType			"Ismeretlen játkos típus (kihagyva)"
-::import::mc::UnknownSex			"Ismeretlen nem (kihagyva)"
-::import::mc::UnknownTermination		"Ismeretlen megszakítási ok"
-::import::mc::UnknownMode			"Ismeretlen mód"
-::import::mc::RatingTooHigh			"Túl magas érétkszám (kihagyva))"
-::import::mc::EncodingFailed			"Character decoding failed"
-::import::mc::TooManyNags			"Túl sok NAG (a későbbiek kihagyva)"
-::import::mc::IllegalCastling			"Szabálytalan sáncolás"
-::import::mc::IllegalMove			"Szabálytalan lépés"
-::import::mc::CastlingCorrection		"Castling correction" ;# NEW
-::import::mc::DecodingFailed			"Sikertelen dekódolás"
-::import::mc::ResultDidNotMatchHeaderResult	"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
-::import::mc::ValueTooLong			"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
-::import::mc::NotSuicideNotGiveaway		"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
-::import::mc::VariantChangedToGiveaway		"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
-::import::mc::VariantChangedToSuicide		"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
-::import::mc::ResultCorrection			"Due to the final position of the game a correction of the result has been done" ;# NEW
-::import::mc::MaximalErrorCountExceeded		"A maximális hibaszám túllépve; több hiba (az előző hibatípusból) nem lesz közölve"
-::import::mc::MaximalWarningCountExceeded	"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
-::import::mc::InvalidToken			"Érvénytelen token"
-::import::mc::InvalidMove			"Érvénytelen lépés"
-::import::mc::UnexpectedSymbol			"Váratlan szimbólum"
-::import::mc::UnexpectedEndOfInput		"A bement váratlanul véget ért" ;# ? Unexpected end of input"
-::import::mc::UnexpectedResultToken		"Váratlan eredmény token"
-::import::mc::UnexpectedTag			"Váratlan cimke a játszmában"
-::import::mc::UnexpectedEndOfGame		"A játszma váratlanul véget ért (hiényzó eredmény)"
-::import::mc::UnexpectedCastling		"Unexpected castling (not allowed in this chess variant)" ;# NEW
-::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
-::import::mc::TagNameExpected			"Szintaktikai hiba: meg kell adni a cimke nevét"
-::import::mc::TagValueExpected			"Szintaktikai hiba: meg kell adni a cimke értékét"
-::import::mc::InvalidFen			"Érvénytelen FEN"
-::import::mc::UnterminatedString		"Befejezetlen string"
-::import::mc::UnterminatedVariation		"Befejezetlen változat"
-::import::mc::TooManyGames			"Az adatbézis túl sok játszmát tartalmaz (aborted)"
-::import::mc::GameTooLong			"A játszma túl hosszú (átugorva)"
-::import::mc::FileSizeExceeded			"A legnagyobb kezelhető ájlméret (2GB) túllépésre került (aborted)"
-::import::mc::TooManyPlayerNames		"Túl sok játékos az adatbázisban (aborted)"
-::import::mc::TooManyEventNames			"Túl sok esemény az adatbázisban (aborted)"
-::import::mc::TooManySiteNames			"Túl sok helyzín az adatbázisban (aborted)"
-::import::mc::TooManyRoundNames			"Túl sok forduló az adatbázisban (aborted)"
-::import::mc::TooManyAnnotatorNames		"Túl sok elemző az adatbázisban (aborted)"
-::import::mc::TooManySourceNames		"Túl sok forrás az adatbázisban (aborted)"
-::import::mc::SeemsNotToBePgnText		"Nem tűnik PGN szövegnek"
 ::import::mc::AbortedDueToInternalError		"Beslő hiba miatt Aborted"
 ::import::mc::AbortedDueToIoError		"Aborted due to an read/write error" ;# NEW
 ::import::mc::UserHasInterrupted		"User has interrupted" ;# NEW
+
+::import::mc::State(UnsupportedVariant)		"Unsuported variant rejected" ;# NEW
+::import::mc::State(DecodingFailed)		"Sikertelen dekódolás"
+::import::mc::State(TooManyGames)		"Az adatbézis túl sok játszmát tartalmaz (aborted)"
+::import::mc::State(GameTooLong)		"A játszma túl hosszú (átugorva)"
+::import::mc::State(FileSizeExceeded)		"A legnagyobb kezelhető ájlméret (2GB) túllépésre került (aborted)"
+::import::mc::State(TooManyPlayerNames)		"Túl sok játékos az adatbázisban (aborted)"
+::import::mc::State(TooManyEventNames)		"Túl sok esemény az adatbázisban (aborted)"
+::import::mc::State(TooManySiteNames)		"Túl sok helyzín az adatbázisban (aborted)"
+::import::mc::State(TooManyRoundNames)		"Túl sok forduló az adatbázisban (aborted)"
+::import::mc::State(TooManyAnnotatorNames)	"Túl sok elemző az adatbázisban (aborted)"
+::import::mc::State(TooManySourceNames)		"Túl sok forrás az adatbázisban (aborted)"
+
+::import::mc::Warning(MissingWhitePlayerTag)		"Hiányzó világos játékos"
+::import::mc::Warning(MissingBlackPlayerTag)		"Hiányzó sötét játékos"
+::import::mc::Warning(MissingPlayerTags)		"Hiányzó játékosok"
+::import::mc::Warning(MissingResult)			"Hiányzó eredmény (at end of move section)"
+::import::mc::Warning(MissingResultTag)			"Hiányzó eredmény (in tag section)"
+::import::mc::Warning(InvalidRoundTag)			"Érvénytelen foduló cimke"
+::import::mc::Warning(InvalidResultTag)			"Érvénytelen eredmény cimke"
+::import::mc::Warning(InvalidDateTag)			"Érvénytelen dátum cimke"
+::import::mc::Warning(InvalidEventDateTag)		"Érvénytelen esemény-dátum címke"
+::import::mc::Warning(InvalidTimeModeTag)		"Érvénytelen időbosztás cimke"
+::import::mc::Warning(InvalidEcoTag)			"Érvénytelen ECO cimke"
+::import::mc::Warning(InvalidTagName)			"Érvénytelen cimke név (kihagyva)"
+::import::mc::Warning(InvalidCountryCode)		"Érvénytelen országkód"
+::import::mc::Warning(InvalidRating)			"Érvénytelen értékszám"
+::import::mc::Warning(InvalidNag)			"Érvénytelen NAG"
+::import::mc::Warning(BraceSeenOutsideComment)		"\"\}\" seen outisde a comment in game (ignored)"
+::import::mc::Warning(MissingFen)			"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
+::import::mc::Warning(UnknownEventType)			"Ismeretlen verseny típus"
+::import::mc::Warning(UnknownTitle)			"Ismeretlen cím (kihagyva)"
+::import::mc::Warning(UnknownPlayerType)		"Ismeretlen játkos típus (kihagyva)"
+::import::mc::Warning(UnknownSex)			"Ismeretlen nem (kihagyva)"
+::import::mc::Warning(UnknownTermination)		"Ismeretlen megszakítási ok"
+::import::mc::Warning(UnknownMode)			"Ismeretlen mód"
+::import::mc::Warning(RatingTooHigh)			"Túl magas érétkszám (kihagyva))"
+::import::mc::Warning(EncodingFailed)			"Character decoding failed"
+::import::mc::Warning(TooManyNags)			"Túl sok NAG (a későbbiek kihagyva)"
+::import::mc::Warning(IllegalCastling)			"Szabálytalan sáncolás"
+::import::mc::Warning(IllegalMove)			"Szabálytalan lépés"
+::import::mc::Warning(CastlingCorrection)		"Castling correction" ;# NEW
+::import::mc::Warning(ResultDidNotMatchHeaderResult)	"Az eredmény nem egyezik meg a fejlécben megadott eredménnyel"
+::import::mc::Warning(ValueTooLong)			"A cimke értéke túl hosszú és 255 karakterre csonkolódik"
+::import::mc::Warning(NotSuicideNotGiveaway)		"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
+::import::mc::Warning(VariantChangedToGiveaway)		"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
+::import::mc::Warning(VariantChangedToSuicide)		"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
+::import::mc::Warning(ResultCorrection)			"Due to the final position of the game a correction of the result has been done" ;# NEW
+::import::mc::Warning(MaximalErrorCountExceeded)	"A maximális hibaszám túllépve; több hiba (az előző hibatípusból) nem lesz közölve"
+::import::mc::Warning(MaximalWarningCountExceeded)	"A maximális figyelmeztetés-szám túllépve; több figyelmeztetés (az előző figyelmeztetés-típusból) nem lesz közölve"
+
+::import::mc::Error(InvalidToken)			"Érvénytelen token"
+::import::mc::Error(InvalidMove)			"Érvénytelen lépés"
+::import::mc::Error(UnexpectedSymbol)			"Váratlan szimbólum"
+::import::mc::Error(UnexpectedEndOfInput)		"A bement váratlanul véget ért" ;# ? Unexpected end of input"
+::import::mc::Error(UnexpectedResultToken)		"Váratlan eredmény token"
+::import::mc::Error(UnexpectedTag)			"Váratlan cimke a játszmában"
+::import::mc::Error(UnexpectedEndOfGame)		"A játszma váratlanul véget ért (hiényzó eredmény)"
+::import::mc::Error(UnexpectedCastling)			"Unexpected castling (not allowed in this chess variant)" ;# NEW
+::import::mc::Error(ContinuationsNotSupported)		"'Continuations' not supported" ;# NEW
+::import::mc::Error(TagNameExpected)			"Szintaktikai hiba: meg kell adni a cimke nevét"
+::import::mc::Error(TagValueExpected)			"Szintaktikai hiba: meg kell adni a cimke értékét"
+::import::mc::Error(InvalidFen)				"Érvénytelen FEN"
+::import::mc::Error(UnterminatedString)			"Befejezetlen string"
+::import::mc::Error(UnterminatedVariation)		"Befejezetlen változat"
+::import::mc::Error(SeemsNotToBePgnText)		"Nem tűnik PGN szövegnek"
 
 ### export #############################################################
 ::export::mc::FileSelection			"&Fájl Kiválasztás"
@@ -2362,7 +2378,6 @@
 ::fsbox::mc::DirectoryRemoved		"Cannot change to the directory \"%s\".\nKönyvtár nem létezik."
 ::fsbox::mc::DeleteFailed		"'%s' törlése meghiúsult."
 ::fsbox::mc::RestoreFailed		"'%s' visszaállítása meghiúsult."
-::fsbox::mc::CommandFailed		"'%s' utasítás nem hajtható vége."
 ::fsbox::mc::CopyFailed			"'%s' fájl másolása meghiúsult: hozzáférés megtagadva"
 ::fsbox::mc::CannotCopy			"'%s' már létezik. A másolás meghiúsult."
 ::fsbox::mc::CannotDuplicate		"Cannot duplicate file '%s' due to the lack of read permission." ;# NEW
@@ -2401,6 +2416,8 @@
 ::fsbox::mc::AnEntryAlreadyExists	"An entry '%s' already exists." ;# NEW
 ::fsbox::mc::SourceDirectoryIs		"The source directories is '%s'." ;# NEW
 ::fsbox::mc::NewName			"Új név"
+::fsbox::mc::BookmarkAlreadyExists	"A bookmark for this folder is already existing: '%s'." ;# NEW
+::fsbox::mc::AddBookmarkAnyway		"Add bookmark anyway?" ;# NEW
 
 ::fsbox::mc::ReallyMove(file,w)		"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
 ::fsbox::mc::ReallyMove(file,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
@@ -2420,6 +2437,7 @@
 ::fsbox::mc::Cannot(rename)		"'%s' fájlt nem lehet átnevezni"
 ::fsbox::mc::Cannot(move)		"'%s' fájlt nem lehet áthelyezni"
 ::fsbox::mc::Cannot(overwrite)		"'%s' fájlt nem lehet felülírni"
+::fsbox::mc::Cannot(delete-or-move)	"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)		"Beillesztés ide"
 ::fsbox::mc::DropAction(copy)		"Másolás innen"

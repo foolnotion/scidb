@@ -995,13 +995,16 @@ cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSize(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	int				numGames;
-	uint32_t			creationTime;
-	::db::type::ID	type;
+	int		numGames;
+	uint32_t	creationTime;
+
+	::db::type::ID			type;
+	::db::variant::Type	variant;
 
 	::db::DatabaseCodec::getAttributes(	stringFromObj(objc, objv, 1),
 													numGames,
 													type,
+													variant,
 													creationTime);
 
 	setResult(numGames);
@@ -1015,15 +1018,18 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	mstl::string	description;
 	int				numGames;
 	uint32_t			creationTime;
-	::db::type::ID	type;
+
+	::db::type::ID			type;
+	::db::variant::Type	variant;
 
 	::db::DatabaseCodec::getAttributes(	stringFromObj(objc, objv, 1),
 													numGames,
 													type,
+													variant,
 													creationTime,
 													&description);
 
-	Tcl_Obj* objs[4];
+	Tcl_Obj* objs[5];
 
 	mstl::string created;
 
@@ -1032,10 +1038,11 @@ cmdAttributes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	objs[0] = Tcl_NewIntObj(numGames);
 	objs[1] = Tcl_NewStringObj(tcl::db::lookupType(type), -1);
-	objs[2] = Tcl_NewStringObj(created, created.size());
-	objs[3] = Tcl_NewStringObj(description, description.size());
+	objs[2] = game::objFromVariant(variant);
+	objs[3] = Tcl_NewStringObj(created, created.size());
+	objs[4] = Tcl_NewStringObj(description, description.size());
 
-	setResult(4, objs);
+	setResult(U_NUMBER_OF(objs), objs);
 	return TCL_OK;
 }
 

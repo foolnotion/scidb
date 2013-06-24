@@ -206,7 +206,7 @@ proc dialogRaise {dlg} {
 		}
 
 		default {
-			if {[::fsbox::checkIsKDE]} {
+			if {[tk windowingsystem] eq "x11" && [::fsbox::trash::checkIsKDE]} {
 				# stupid handling of KDE: without withdrawing
 				# the window will not be raised
 				set geom [wm geometry $dlg]

@@ -592,10 +592,9 @@ DEF_COMPARE(Frequency, frequency());
 
 
 void
-Selector::finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc)
+Selector::reserve(Database const& db, unsigned numEntries)
 {
 	M_ASSERT(m_map.size() <= numEntries);
-	M_ASSERT(compFunc);
 
 	if (numEntries != m_map.size())
 	{
@@ -606,7 +605,16 @@ Selector::finish(Database const& db, unsigned numEntries, order::ID order, Compa
 		for (unsigned i = k; i < numEntries; ++i)
 			m_map[i] = i;
 	}
+}
 
+
+void
+Selector::finish(Database const& db, unsigned numEntries, order::ID order, Compar compFunc)
+{
+	M_ASSERT(m_map.size() <= numEntries);
+	M_ASSERT(compFunc);
+
+	reserve(db, numEntries);
 	::database = &db;
 
 	if (order == order::Descending)
@@ -673,6 +681,34 @@ Selector::sort(Database const& db, attribute::game::ID attr, order::ID order, ra
 		case attribute::game::Promotion:					func = game::compPromotion; break;
 		case attribute::game::UnderPromotion:			func = game::compUnderPromotion; break;
 		case attribute::game::Overview:					func = game::compOverview; break;
+
+		case attribute::game::Added:
+			if (!m_map.empty() && db.countGames() > db.countInitialGames())
+			{
+				unsigned numGames			= db.countGames();
+				unsigned initialGames	= db.countInitialGames();
+				unsigned k;
+				unsigned j;
+
+				reserve(db, numGames);
+
+				Map map;
+				map.resize(numGames);
+
+				if (order == order::Ascending)
+					k = 0, j = initialGames;
+				else
+					k = numGames - initialGames, j = 0;
+
+				for (unsigned i = 0; i < numGames; ++i)
+				{
+					unsigned index = m_map[i];
+					map[index < initialGames ? k++ : j++] = index;
+				}
+
+				m_map.swap(map);
+			}
+			return;
 
 		case attribute::game::Number:
 			reset(db);

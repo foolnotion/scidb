@@ -181,6 +181,7 @@
 
 ::util::mc::IOErrorOccurred					"I/O fel uppstod"
 
+::util::mc::IOError(CreateFailed)			"no permissions to create files" ;# NEW
 ::util::mc::IOError(OpenFailed)				"öppningen misslyckades"
 ::util::mc::IOError(ReadOnly)					"databasen är skrivskyddad"
 ::util::mc::IOError(UnknownVersion)			"okänd filversion"
@@ -192,6 +193,7 @@
 ::util::mc::IOError(EncodingFailed)			"kan inte skriva i namnbas fil"
 ::util::mc::IOError(MaxFileSizeExceeded)	"maximal filstorlek uppnådd"
 ::util::mc::IOError(LoadFailed)				"inläsningen misslyckades  (för många tävlingar)"
+::util::mc::IOError(NotOriginalVersion)	"file has changed outside from Scidb since last open" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond."
 
@@ -262,6 +264,7 @@
 
 # Setup
 ::menu::mc::Engines						"&Motorer"
+::menu::mc::PgnOptions					"Setup &PGN export options" ;# NEW
 ::menu::mc::PrivatePlayerCard			"&Private Player Card" ;# NEW
 
 ::menu::mc::OpenFile						"Öppna Scidb fil"
@@ -385,6 +388,8 @@
 ::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
 ::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
 ::application::mc::RestartLogout			"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::UnsavedFiles			"The following PGN files are unsaved:" ;# NEW
+::application::mc::ThrowAwayAllChanges	"Do you really want to throw away all changes?" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Visa turneringstabell för partiet"
@@ -424,6 +429,7 @@
 ::application::database::mc::FileImport(pgn)					"Importera PGN fil"
 ::application::database::mc::FileImport(db)					"Importera databas"
 ::application::database::mc::FileCreate						"Skapa arkiv"
+::application::database::mc::FileSaveChanges					"Save Changes" ;# NEW
 ::application::database::mc::FileClose							"Stäng"
 ::application::database::mc::FileMaintenance					"Underhåll"
 ::application::database::mc::FileCompact						"Komprimera"
@@ -462,6 +468,7 @@
 ::application::database::mc::ExtractArchive					"Packa upp arkiv %s"
 ::application::database::mc::SelectVariant					"Select Variant" ;# NEW
 ::application::database::mc::Example							"Example" ;# NEW
+::application::database::mc::UnsavedFiles						"This PGN file is unsaved." ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"
@@ -532,6 +539,7 @@
 ::application::database::mc::T_Crazyhouse						"Crazyhouse" ;# NEW
 
 ::application::database::mc::OpenDatabase						"Öppna databas"
+::application::database::mc::OpenRecentDatabase				"Open Recent Database" ;# NEW
 ::application::database::mc::NewDatabase						"Ny databas"
 ::application::database::mc::CloseDatabase					"Stäng databas '%s'"
 ::application::database::mc::SetReadonly						"Sätt databasen '%s' skrivskyddad"
@@ -731,6 +739,8 @@
 ::database::switcher::mc::GameCount							"Partier"
 ::database::switcher::mc::DatabasePath						"Databaskatalog"
 ::database::switcher::mc::DeletedGames						"Raderade partier"
+::database::switcher::mc::ChangedGames						"Changed Games" ;# NEW
+::database::switcher::mc::AddedGames						"Added Games" ;# NEW
 ::database::switcher::mc::Description						"Beskrivning"
 ::database::switcher::mc::Created							"Skapad"
 ::database::switcher::mc::LastModified						"Senast ändrad"
@@ -1166,6 +1176,7 @@
 ::gametable::mc::T_Chess960Pos			"Schack960 position"
 ::gametable::mc::T_Deleted					"Raderad"
 ::gametable::mc::T_Changed					"Ändrad"
+::gametable::mc::T_Added					"Added" ;# NEW
 ::gametable::mc::T_EngFlag					"Engelsk språkflagga"
 ::gametable::mc::T_OthFlag					"Övrig språkflagga"
 ::gametable::mc::T_Idn						"Schack960 positionsnummer"
@@ -1244,9 +1255,11 @@
 ::playertable::mc::T_PlayerInfo				"Info Flag"
 
 ::playertable::mc::Find							"Hitta"
+::playertable::mc::Options						"Options" ;# NEW
 ::playertable::mc::StartSearch				"Starta sökning"
 ::playertable::mc::ClearEntries				"Rensa"
 ::playertable::mc::NotFound					"Saknas."
+::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
 
 ::playertable::mc::Name							"Namn"
 ::playertable::mc::HighestRating				"Högsta rating"
@@ -1494,7 +1507,6 @@
 ::import::mc::ImportAborted						"Import avbruten."
 ::import::mc::TextIsEmpty							"PGN-text är tom."
 ::import::mc::AbortImport							"Avbryta PGN-import?"
-::import::mc::UnsupportedVariant					"Varianten '%s' stöds inte, avvisades"
 ::import::mc::Accepted								"accepterat"
 ::import::mc::Rejected								"avvisat"
 
@@ -1511,71 +1523,75 @@
 ::import::mc::EnterOrPaste-Game					"parti"
 ::import::mc::EnterOrPaste-Variation			"variation"
 
-::import::mc::MissingWhitePlayerTag				"Vitspelare saknas"
-::import::mc::MissingBlackPlayerTag				"Svartspelare saknas"
-::import::mc::MissingPlayerTags					"Spelare saknas"
-::import::mc::MissingResult						"Resultat saknas (i slutet av move section)"
-::import::mc::MissingResultTag					"Resultat saknas (i tag section)"
-::import::mc::InvalidRoundTag						"Ogiltig 'round tag'"
-::import::mc::InvalidResultTag					"Ogiltig 'result tag'"
-::import::mc::InvalidDateTag						"Ogiltig 'date tag'"
-::import::mc::InvalidEventDateTag				"Ogiltig 'event date tag'"
-::import::mc::InvalidTimeModeTag					"Ogiltig 'time mode tag'"
-::import::mc::InvalidEcoTag						"Ogiltig 'ECO tag'"
-::import::mc::InvalidTagName						"Ogiltig 'tag name' (ignored)"
-::import::mc::InvalidCountryCode					"Ogiltig landskod"
-::import::mc::InvalidRating						"Ogiltigt 'ratingtal'"
-::import::mc::InvalidNag							"Ogiltig 'NAG'"
-::import::mc::BraceSeenOutsideComment			"\"\}\" seen outisde a comment in game (ignored)"
-::import::mc::MissingFen							"Ingen startposition funnen för det schack960 partiet; det är kommer behandlas som vanligt schack"
-::import::mc::UnknownEventType					"Okänd tävlingstyp"
-::import::mc::UnknownTitle							"Okänd titel(ignorerad)"
-::import::mc::UnknownPlayerType					"Okänd spelartyp (ignorerad)"
-::import::mc::UnknownSex							"Okänd kön (ignorerad)"
-::import::mc::UnknownTermination					"Okänd avbrottsorsak"
-::import::mc::UnknownMode							"Okänd modus"
-::import::mc::RatingTooHigh						"Ratingtal för högt(ignorerad)"
-::import::mc::EncodingFailed						"Character decoding failed"
-::import::mc::TooManyNags							"För många NAG's (latter ignored)"
-::import::mc::IllegalCastling						"Otillåten rockad"
-::import::mc::IllegalMove							"Ogiltigt drag"
-::import::mc::CastlingCorrection					"Rockad korrigering"
-::import::mc::DecodingFailed						"Partiet kunde inte avkodas"
-::import::mc::ResultDidNotMatchHeaderResult	"Resultatet motsvarar inte resultatrubrik"
-::import::mc::ValueTooLong							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
-::import::mc::NotSuicideNotGiveaway				"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
-::import::mc::VariantChangedToGiveaway			"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
-::import::mc::VariantChangedToSuicide			"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
-::import::mc::ResultCorrection					"Due to the final position of the game a correction of the result has been done" ;# NEW
-::import::mc::MaximalErrorCountExceeded		"Fler än maximalt tillåtna fel. Inga fler fel (av tidigare typ) kommer att rapporteras"
-::import::mc::MaximalWarningCountExceeded		"Fler än maximalt tillåtna varningar. Inga fler varningar (av tidigare typ) kommer att rapporteras"
-::import::mc::InvalidToken							"Ogiltigt tecken"
-::import::mc::InvalidMove							"Ogiltigt drag"
-::import::mc::UnexpectedSymbol					"Oväntad symbol"
-::import::mc::UnexpectedEndOfInput				"Oväntad end of input"
-::import::mc::UnexpectedResultToken				"Oväntad resultattecken"
-::import::mc::UnexpectedTag						"Oväntad tag inuti parti"
-::import::mc::UnexpectedEndOfGame				"Oväntad slut av parti (saknar resultat)"
-::import::mc::UnexpectedCastling					"Oväntad rockad (inte tillåten i den här schackvarianten)"
-::import::mc::ContinuationsNotSupported		"'Continuations' not supported" ;# NEW
-::import::mc::TagNameExpected						"Syntaxfel: Tag name expected"
-::import::mc::TagValueExpected					"Syntaxfel: Tag value expected"
-::import::mc::InvalidFen							"Ogiltig FEN"
-::import::mc::UnterminatedString					"Obestämd sträng"
-::import::mc::UnterminatedVariation				"Obestämd variation"
-::import::mc::TooManyGames							"För många partier i databasen (avbrott)"
-::import::mc::GameTooLong							"Partiet för långt (utelämnat)"
-::import::mc::FileSizeExceeded					"Maximala filstorleken (2GB) kommer att överskridas (avbrott)"
-::import::mc::TooManyPlayerNames					"För många spelarnamn i databasen (avbrott)"
-::import::mc::TooManyEventNames					"För många tävlingsnamn i databasen (avbrott)"
-::import::mc::TooManySiteNames					"För många platsnamn i databasen (avbrott)"
-::import::mc::TooManyRoundNames					"För många rondnamn i databasen"
-::import::mc::TooManyAnnotatorNames				"För många kommentatornamn i databasen (avbrott)"
-::import::mc::TooManySourceNames					"För många källnamn i databasen (avbrott)"
-::import::mc::SeemsNotToBePgnText				"Det här är ingen PGN-text."
 ::import::mc::AbortedDueToInternalError		"Avbrott på grund av internt fel."
 ::import::mc::AbortedDueToIoError				"Avbrott på grund av läs/skrivfel"
 ::import::mc::UserHasInterrupted					"Avbrutit av användare"
+
+::import::mc::State(UnsupportedVariant)		"Varianten '%s' stöds inte, avvisades"
+::import::mc::State(DecodingFailed)				"Partiet kunde inte avkodas"
+::import::mc::State(TooManyGames)				"För många partier i databasen (avbrott)"
+::import::mc::State(FileSizeExceeded)			"Maximala filstorleken (2GB) kommer att överskridas (avbrott)"
+::import::mc::State(GameTooLong)					"Partiet för långt (utelämnat)"
+::import::mc::State(TooManyPlayerNames)		"För många spelarnamn i databasen (avbrott)"
+::import::mc::State(TooManyEventNames)			"För många tävlingsnamn i databasen (avbrott)"
+::import::mc::State(TooManySiteNames)			"För många platsnamn i databasen (avbrott)"
+::import::mc::State(TooManyRoundNames)			"För många rondnamn i databasen"
+::import::mc::State(TooManyAnnotatorNames)	"För många kommentatornamn i databasen (avbrott)"
+::import::mc::State(TooManySourceNames)		"För många källnamn i databasen (avbrott)"
+
+::import::mc::Warning(MissingWhitePlayerTag)				"Vitspelare saknas"
+::import::mc::Warning(MissingBlackPlayerTag)				"Svartspelare saknas"
+::import::mc::Warning(MissingPlayerTags)					"Spelare saknas"
+::import::mc::Warning(MissingResult)						"Resultat saknas (i slutet av move section)"
+::import::mc::Warning(MissingResultTag)					"Resultat saknas (i tag section)"
+::import::mc::Warning(InvalidRoundTag)						"Ogiltig 'round tag'"
+::import::mc::Warning(InvalidResultTag)					"Ogiltig 'result tag'"
+::import::mc::Warning(InvalidDateTag)						"Ogiltig 'date tag'"
+::import::mc::Warning(InvalidEventDateTag)				"Ogiltig 'event date tag'"
+::import::mc::Warning(InvalidTimeModeTag)					"Ogiltig 'time mode tag'"
+::import::mc::Warning(InvalidEcoTag)						"Ogiltig 'ECO tag'"
+::import::mc::Warning(InvalidTagName)						"Ogiltig 'tag name' (ignored)"
+::import::mc::Warning(InvalidCountryCode)					"Ogiltig landskod"
+::import::mc::Warning(InvalidRating)						"Ogiltigt 'ratingtal'"
+::import::mc::Warning(InvalidNag)							"Ogiltig 'NAG'"
+::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" seen outisde a comment in game (ignored)"
+::import::mc::Warning(MissingFen)							"Ingen startposition funnen för det schack960 partiet; det är kommer behandlas som vanligt schack"
+::import::mc::Warning(UnknownEventType)					"Okänd tävlingstyp"
+::import::mc::Warning(UnknownTitle)							"Okänd titel(ignorerad)"
+::import::mc::Warning(UnknownPlayerType)					"Okänd spelartyp (ignorerad)"
+::import::mc::Warning(UnknownSex)							"Okänd kön (ignorerad)"
+::import::mc::Warning(UnknownTermination)					"Okänd avbrottsorsak"
+::import::mc::Warning(UnknownMode)							"Okänd modus"
+::import::mc::Warning(RatingTooHigh)						"Ratingtal för högt(ignorerad)"
+::import::mc::Warning(EncodingFailed)						"Character decoding failed"
+::import::mc::Warning(TooManyNags)							"För många NAG's (latter ignored)"
+::import::mc::Warning(IllegalCastling)						"Otillåten rockad"
+::import::mc::Warning(IllegalMove)							"Ogiltigt drag"
+::import::mc::Warning(CastlingCorrection)					"Rockad korrigering"
+::import::mc::Warning(ResultDidNotMatchHeaderResult)	"Resultatet motsvarar inte resultatrubrik"
+::import::mc::Warning(ValueTooLong)							"Tagvärdet är för lång och kommer att avkortas till 255 tecken"
+::import::mc::Warning(NotSuicideNotGiveaway)				"Due to the outcome of the game the variant isn't either Suicide or Giveaway." ;# NEW
+::import::mc::Warning(VariantChangedToGiveaway)			"Due to the outcome of the game the variant has been changed to Giveaway" ;# NEW
+::import::mc::Warning(VariantChangedToSuicide)			"Due to the outcome of the game the variant has been changed to Suicide" ;# NEW
+::import::mc::Warning(ResultCorrection)					"Due to the final position of the game a correction of the result has been done" ;# NEW
+::import::mc::Warning(MaximalErrorCountExceeded)		"Fler än maximalt tillåtna fel. Inga fler fel (av tidigare typ) kommer att rapporteras"
+::import::mc::Warning(MaximalWarningCountExceeded)		"Fler än maximalt tillåtna varningar. Inga fler varningar (av tidigare typ) kommer att rapporteras"
+
+::import::mc::Error(InvalidToken)							"Ogiltigt tecken"
+::import::mc::Error(InvalidMove)								"Ogiltigt drag"
+::import::mc::Error(UnexpectedSymbol)						"Oväntad symbol"
+::import::mc::Error(UnexpectedEndOfInput)					"Oväntad end of input"
+::import::mc::Error(UnexpectedResultToken)				"Oväntad resultattecken"
+::import::mc::Error(UnexpectedTag)							"Oväntad tag inuti parti"
+::import::mc::Error(UnexpectedEndOfGame)					"Oväntad slut av parti (saknar resultat)"
+::import::mc::Error(UnexpectedCastling)					"Oväntad rockad (inte tillåten i den här schackvarianten)"
+::import::mc::Error(ContinuationsNotSupported)			"'Continuations' not supported" ;# NEW
+::import::mc::Error(TagNameExpected)						"Syntaxfel: Tag name expected"
+::import::mc::Error(TagValueExpected)						"Syntaxfel: Tag value expected"
+::import::mc::Error(InvalidFen)								"Ogiltig FEN"
+::import::mc::Error(UnterminatedString)					"Obestämd sträng"
+::import::mc::Error(UnterminatedVariation)				"Obestämd variation"
+::import::mc::Error(SeemsNotToBePgnText)					"Det här är ingen PGN-text."
 
 ### export #############################################################
 ::export::mc::FileSelection				"&Filer"
@@ -2363,7 +2379,6 @@
 ::fsbox::mc::DirectoryRemoved				"Kan inte byta till foldern \"%s\".\nFoldern är borttagen."
 ::fsbox::mc::DeleteFailed					"Det gick inte att radera '%s'."
 ::fsbox::mc::RestoreFailed					"Det gick inte att återställa '%s'."
-::fsbox::mc::CommandFailed					"Kommmandot '%s' misslyckades."
 ::fsbox::mc::CopyFailed						"Det gick inte att kopiera filen '%s': åtkomst nekad."
 ::fsbox::mc::CannotCopy						"Kan inte skapa en kopia, filen '%s' finns redan."
 ::fsbox::mc::CannotDuplicate				"Kan inte duplicera filen '%s'. Tillstånd att läsa saknas."
@@ -2402,6 +2417,8 @@
 ::fsbox::mc::AnEntryAlreadyExists		"En post '%s' finns redan."
 ::fsbox::mc::SourceDirectoryIs			"Källfoldern är '%s'."
 ::fsbox::mc::NewName							"Nytt namn"
+::fsbox::mc::BookmarkAlreadyExists		"A bookmark for this folder is already existing: '%s'." ;# NEW
+::fsbox::mc::AddBookmarkAnyway			"Add bookmark anyway?" ;# NEW
 
 ::fsbox::mc::ReallyMove(file,w)			"Är du säker att filen '%s' ska flyttas till papperskorgen?"
 ::fsbox::mc::ReallyMove(file,r)			"Är du säker att den skrivskyddade filen '%s' ska flyttas till papperskorgen?"
@@ -2421,6 +2438,7 @@
 ::fsbox::mc::Cannot(rename)				"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::Cannot(move)					"Kan inte flytta filen '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Kan inte skriva över filen '%s'."
+::fsbox::mc::Cannot(delete-or-move)		"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)				"Flytta hit"
 ::fsbox::mc::DropAction(copy)				"Kopiera hit"

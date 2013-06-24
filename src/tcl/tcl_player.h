@@ -34,6 +34,7 @@
 extern "C" { struct Tcl_Interp; }
 
 namespace db { class NamebasePlayer; }
+namespace db { class Player; }
 
 namespace tcl
 {
@@ -45,7 +46,8 @@ namespace tcl
 						Ratings& ratings,
 						::db::federation::ID federation,
 						bool info,
-						bool idCard);
+						bool idCard,
+						bool usePlayerBase);
 	}
 }
 

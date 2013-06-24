@@ -211,6 +211,7 @@ public:
 	static bool getAttributes(	mstl::string const& filename,
 										int& numGames,
 										type::ID& type,
+										variant::Type& variant,
 										uint32_t& creationTime,
 										mstl::string* description = 0);
 	static void getSuffixes(mstl::string const& filename, StringList& result);
