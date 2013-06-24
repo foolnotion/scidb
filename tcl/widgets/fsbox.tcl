@@ -1076,14 +1076,17 @@ switch [tk windowingsystem] {
 		proc list {filter} {
 			set result {}
 
-			if {[AutoExecOk? trash-list] || [AutoExecOk? list-trash]} {
-				set cmd [auto_execok trash-list]
-				if {[string length $cmd] == 0} { set cmd [auto_execok list-trash] }
-				catch {exec /bin/sh -c $cmd}
-			} else {
+#			if {[AutoExecOk? trash-list] || [AutoExecOk? list-trash]} {
+#				set cmd [auto_execok trash-list]
+#				if {[string length $cmd] == 0} { set cmd [auto_execok list-trash] }
+#				catch {exec /bin/sh -c $cmd} files
+#				foreach line [split $files \n] {
+#					lappend result [lrange $line 2 end]
+#				}
+#			} else {
 				set files [glob -nocomplain -directory [directory] -types {f} {*}$filter]
-				foreach file $files { lappend result [::list . . $file] }
-			}
+				foreach file $files { lappend result $file }
+#			}
 
 			return $result
 		}
@@ -3991,10 +3994,7 @@ proc Glob {w refresh} {
 			Trash {
 				set filter *
 				if {$Vars(showhidden)} { lappend filter .* }
-				set files {}
-				foreach entry [[namespace parent]::trash::list $filter] {
-					lappend files [lrange $entry 2 end]
-				}
+				set files [[namespace parent]::trash::list $filter]
 				set filelist [Filter $w $files]
 			}
 		}
