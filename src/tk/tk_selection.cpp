@@ -141,6 +141,7 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 static Atom xaSTRING				= 0;
 static Atom xaUTF8_STRING		= 0;
+static Atom xaCOMPOUND_TEXT	= 0;
 static Atom xaPlainText			= 0;
 static Atom xaPlainTextUtf8	= 0;
 static Atom xaPlainTextLatin1	= 0;
@@ -150,6 +151,7 @@ static Atom xaHtmlLatin1		= 0;
 static Atom xaMozUrl				= 0;
 static Atom xaUriList			= 0;
 static Atom xaQIconList			= 0;
+static Atom xaColor				= 0;
 
 static bool m_selectionRetrieved = false;
 static bool m_timeOut = true;
@@ -387,18 +389,14 @@ handleSelection(ClientData clientData, XEvent* eventPtr)
 }
 
 
-static bool
-selectionGet(	Tcl_Interp* ti,
-					Tk_Window tkwin,
-					Atom selection,
-					Atom target,
-					unsigned long timestamp,
-					long timeout)
+static void
+setupAtoms(Tk_Window tkwin)
 {
 	if (xaSTRING == 0)
 	{
-		xaSTRING = Tk_InternAtom(tkwin, "UTF8_STRING");
+		xaSTRING = Tk_InternAtom(tkwin, "STRING");
 		xaUTF8_STRING = Tk_InternAtom(tkwin, "UTF8_STRING");
+		xaCOMPOUND_TEXT = Tk_InternAtom(tkwin, "COMPOUND_TEXT");
 		xaPlainText = Tk_InternAtom(tkwin, "text/plain");
 		xaPlainTextUtf8 = Tk_InternAtom(tkwin, "text/plain;charset=UTF-8");
 		xaPlainTextLatin1 = Tk_InternAtom(tkwin, "text/plain;charset=ISO-8859-1");
@@ -408,7 +406,20 @@ selectionGet(	Tcl_Interp* ti,
 		xaMozUrl = Tk_InternAtom(tkwin, "text/x-moz-url");
 		xaUriList = Tk_InternAtom(tkwin, "text/uri-list");
 		xaQIconList = Tk_InternAtom(tkwin, "application/x-qiconlist");
+		xaColor = Tk_InternAtom(tkwin, "application/x-color");
 	}
+}
+
+
+static bool
+selectionGet(	Tcl_Interp* ti,
+					Tk_Window tkwin,
+					Atom selection,
+					Atom target,
+					unsigned long timestamp,
+					long timeout)
+{
+	setupAtoms(tkwin);
 
 	XConvertSelection(Tk_Display(tkwin), selection, target, selection, Tk_WindowId(tkwin), timestamp);
 	Tk_CreateGenericHandler(handleSelection, 0);
@@ -440,33 +451,27 @@ selectionSend(	Tcl_Interp* ti,
 
 	Tcl_Encoding encoding = 0;
 
-	if (type == Tk_InternAtom(source, "COMPOUND_TEXT"))
+	setupAtoms(source);
+
+	if (type == xaCOMPOUND_TEXT)
 	{
 		format = 8;
 		encoding = Tcl_GetEncoding(0, "iso2022");
 	}
-	else if (	type == Tk_InternAtom(source, "text/uri-list")
-				|| type == Tk_InternAtom(source, "text/x-moz-url")
-				|| type == Tk_InternAtom(source, "text/plain")
-				|| type == Tk_InternAtom(source, "text/html"))
+	else if (type == xaUriList || type == xaMozUrl || type == xaPlainText || type == xaHtmlText)
 	{
 		format = 8;
 	}
-	else if (	type == Tk_InternAtom(source, "STRING")
-				|| type == Tk_InternAtom(source, "application/x-qiconlist")
-				|| type == Tk_InternAtom(source, "text/plain;charset=ISO-8859-1")
-				|| type == Tk_InternAtom(source, "text/html;charset=ISO-8859-1"))
+	else if (type == xaSTRING || type == xaQIconList || type == xaPlainTextLatin1 || type == xaHtmlLatin1)
 	{
 		format = 8;
 		encoding = Tcl_GetEncoding(0, "iso8859-1");
 	}
-	else if (	type == Tk_InternAtom(source, "UTF8_STRING")
-				|| type == Tk_InternAtom(source, "text/plain;charset=UTF-8")
-				|| type == Tk_InternAtom(source, "text/html;charset=UTF-8"))
+	else if (type == xaUTF8_STRING || type == xaPlainTextUtf8 || type == xaHtmlUtf8)
 	{
 		format = 8;
 	}
-	else if (type == Tk_InternAtom(source, "application/x-color"))
+	else if (type == xaColor)
 	{
 		format = 16;
 	}
@@ -483,7 +488,7 @@ selectionSend(	Tcl_Interp* ti,
 				Tcl_DString ds;
 				Tcl_DStringInit(&ds);
 
-				if (type == Tk_InternAtom(source, "text/uri-list"))
+				if (type == xaUriList)
 				{
 					Tcl_DString buf;
 
