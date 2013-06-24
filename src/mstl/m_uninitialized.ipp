@@ -171,7 +171,7 @@ uninitialized_move(pointer_iterator<T> first, pointer_iterator<T> last, T* resul
 template<typename T>
 inline
 T*
-uninitialized_fill_n(pointer_iterator<T>* first, size_t n, T const& value)
+uninitialized_fill_n(pointer_iterator<T*> first, size_t n, T const& value)
 {
 	return bits::uninitialized<is_pod<T>::value>::fill_n(first.ref(), n, value);
 }

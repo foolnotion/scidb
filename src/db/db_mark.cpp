@@ -517,8 +517,8 @@ Mark::encode(ByteStream& strm) const
 	}
 	else
 	{
-		M_ASSERT(m_color < 0x80);
-		M_ASSERT(m_type < 0x20);
+		M_ASSERT(int(m_color) < 0x80);
+		M_ASSERT(int(m_type) < 0x20);
 
 		strm.put(m_square1);
 		strm.put(m_type == mark::Text ? m_text : char(m_type));

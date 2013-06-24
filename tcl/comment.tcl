@@ -134,6 +134,7 @@ proc open {parent pos lang} {
 	set Vars(lang) xx
 	set Vars(mc) $::mc::langID
 	set Vars(init) 0
+	set Vars(modified:cmd) [namespace code [list Modified $top.text]]
 
 	# Currently the undo/redo mechanism of the text widget is not working properly
 	# (and quite useless). The Tk team does not like to handle this problem (see
@@ -178,7 +179,7 @@ proc open {parent pos lang} {
 	bind $top.text <ButtonPress-3>	 [namespace code [list PopupMenu $top.text]]
 	bind $top.text <Any-Button>		 [list $top.text configure -cursor xterm]
 	bind $top.text <Any-Button>		+[list ::tooltip::tooltip hide]
-	bind $top.text <<Modified>>		 [namespace code [list Modified $top.text]]
+	bind $top.text <<Modified>>		 $Vars(modified:cmd)
 
 	set butts [ttk::frame $top.buttons]
 	ttk::button $butts.symbol \
@@ -850,20 +851,24 @@ proc ParseDump {dump} {
 proc Modified {w} {
 	variable Vars
 
+	# Work-around for Tk 8.6 bug.
+	bind $w <<Modified>> {#}
 	$w edit modified no
+	bind $w <<Modified>> $Vars(modified:cmd)
 
 	if {$Vars(init)} { return }
 
 	set lang $Vars(lang)
-	if {![info exists Vars(content:$lang)]} { return }
 
-	if {[string length $Vars(content:$lang)] == 0} {
-		return [$Vars(widget:revert) configure -state disabled]
+	if {[info exists Vars(content:$lang)]} {
+		if {[string length $Vars(content:$lang)] == 0} {
+			$Vars(widget:revert) configure -state disabled
+		} else {
+			set content [DumpToComment [$Vars(widget:text) dump -tag -image -text 1.0 end]]
+			if {$Vars(content:$lang) ne $content} { set state normal } else { set state disabled }
+			$Vars(widget:revert) configure -state $state
+		}
 	}
-
-	set content [DumpToComment [$Vars(widget:text) dump -tag -image -text 1.0 end]]
-	if {$Vars(content:$lang) ne $content} { set state normal } else { set state disabled }
-	$Vars(widget:revert) configure -state $state
 }
 
 

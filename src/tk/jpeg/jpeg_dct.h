@@ -70,7 +70,10 @@ private:
 	// attributes
 	Impl*	m_impl;
 	float	m_quant0;
+
+#ifdef JPEG_SUPPORT_12_BIT
 	int	m_bitsInSample;
+#endif
 };
 
 } // namespace JPEG

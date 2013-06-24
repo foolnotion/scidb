@@ -116,7 +116,6 @@ private:
 	bool m_identifierDetected;
 	bool m_shortNameDetected;
 	bool m_mustUseChess960;
-	bool m_mustUseNoCastle;
 	bool m_editSent;
 	bool m_dontInvertScore;
 	bool m_wholeSeconds;

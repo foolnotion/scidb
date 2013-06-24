@@ -93,8 +93,7 @@ private:
 	Move doCapture(Byte number, Byte offs);
 	Move doMove(Move move);
 
-	Stack	m_stack;
-	Byte	m_rookNumbers[4];
+	Stack m_stack;
 };
 
 } // namespace decoder

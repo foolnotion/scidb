@@ -96,7 +96,6 @@ private:
 	Tcl_Obj*	m_warning;
 	Tcl_Obj*	m_error;
 	Tcl_Obj*	m_save;
-	ReadMode	m_mode;
 	unsigned	m_lineOffset;
 	unsigned	m_countErrors;
 	unsigned	m_countWarnings;

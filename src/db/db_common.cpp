@@ -4138,7 +4138,7 @@ mstl::string const&
 event::toString(Mode mode)
 {
 	static_assert(U_NUMBER_OF(ModeLookup) == Composition + 1, "event::Lookup expired");
-	M_ASSERT(mode < int(U_NUMBER_OF(ModeLookup)));
+	M_ASSERT(int(mode) < int(U_NUMBER_OF(ModeLookup)));
 
 	return ModeLookup[mode];
 }

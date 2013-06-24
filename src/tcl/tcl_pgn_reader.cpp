@@ -64,7 +64,6 @@ PgnReader::PgnReader(mstl::istream& strm,
 	,m_warning(Tcl_NewStringObj("warning", -1))
 	,m_error(Tcl_NewStringObj("error", -1))
 	,m_save(Tcl_NewStringObj("save", -1))
-	,m_mode(readMode)
 	,m_lineOffset(lineOffset)
 	,m_countErrors(0)
 	,m_countWarnings(0)

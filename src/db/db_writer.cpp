@@ -306,7 +306,7 @@ Writer::beginGame(TagSet const& tags)
 					{
 						mstl::string v = value;
 
-						if (!v.back() == ')')
+						if (v.back() != ')')
 						{
 							v += " (";
 							v += tags.value(tag::Mode);

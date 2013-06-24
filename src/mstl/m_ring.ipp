@@ -16,6 +16,7 @@
 // (at your option) any later version.
 // ======================================================================
 
+#include "m_utility.h"
 #include "m_assert.h"
 
 namespace mstl {
@@ -652,8 +653,8 @@ void
 ring<T>::swap(ring& v)
 {
 	m_list.swap(v.m_list);
-	m_first.swap(v.m_first);
-	m_last.swap(v.m_last);
+	swap(m_first, v.m_first);
+	swap(m_last, v.m_last);
 }
 
 

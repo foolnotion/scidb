@@ -123,8 +123,6 @@ public:
 
 	enum { Lower = 1, Upper = 2, Exact = 3 };
 
-	Transposition();
-
 	bool lookup(uint64_t key, uint16_t& move, int& score, unsigned depth, int& alpha, int& beta) const;
 	void store(uint64_t key, uint16_t move, unsigned depth, int score, int alpha, int beta);
 
@@ -132,12 +130,8 @@ private:
 
 	enum { TableSize = 32768 };	// 0.5 MB
 
-	TransEntry	m_table[TableSize];
-	unsigned		m_size;
+	TransEntry m_table[TableSize];
 };
-
-
-Transposition::Transposition() : m_size(0) {}
 
 
 bool

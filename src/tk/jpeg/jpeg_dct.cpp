@@ -747,7 +747,9 @@ DCT::DCT(int bitsInSample)
 	:m_impl(new ConcreteDCT<false>(bitsInSample))
 #endif
 	,m_quant0(0.0)
+#ifdef JPEG_SUPPORT_12_BIT
 	,m_bitsInSample(bitsInSample)
+#endif
 {
 }
 

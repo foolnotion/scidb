@@ -359,24 +359,28 @@
 
 // C++Ox definitions //////////////////////////////////////////////////////////
 
-#if !HAVE_0X_CONSTANT_EXPRESSIONS
-#define constexpr const
-#endif
+#if !defined(__clang__)
 
-#if !HAVE_0X_NULL_POINTER_CONSTANT
-# define nullptr NULL
-#endif
+# if !HAVE_0X_CONSTANT_EXPRESSIONS
+#  define constexpr const
+# endif
 
-#if !HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES
-# define override
-#endif
+# if !HAVE_0X_NULL_POINTER_CONSTANT
+#  define nullptr NULL
+# endif
 
-#if !HAVE_0X_ALLOWING_MOVE_CONSTRUCTORS_TO_THROW
-# define noexcept
-#endif
+# if !HAVE_0X_EXPLICIT_VIRTUAL_OVERRRIDES
+#  define override
+# endif
 
-#if !__GNUC_PREREQ(4,3) || !defined(USE_0X_STANDARD) ///////////////////////////
-# define decltype typeof
+# if !HAVE_0X_ALLOWING_MOVE_CONSTRUCTORS_TO_THROW
+#  define noexcept
+# endif
+
+# if !__GNUC_PREREQ(4,3) || !defined(USE_0X_STANDARD)
+#  define decltype typeof
+# endif
+
 #endif
 
 #if !HAVE_0X_STATIC_ASSERTIONS

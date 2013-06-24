@@ -96,8 +96,6 @@ extractRoundNumber(mstl::string& str, unsigned& round, unsigned& subround)
 
 			if (valid && *s == ')')
 			{
-				char* end;
-
 				e = s + 1;
 				s = anchor;
 
@@ -109,17 +107,20 @@ extractRoundNumber(mstl::string& str, unsigned& round, unsigned& subround)
 					++s;
 
 				if (s < e)
+				{
+					char* end;
 					round = strtol(s, &end, 10);
 
-				if (end < e)
-				{
-					s = end;
+					if (end < e)
+					{
+						s = end;
 
-					while (s < e && !isdigit(*s))
-						++s;
+						while (s < e && !isdigit(*s))
+							++s;
 
-					if (s < e)
-						subround = strtol(s, &end, 10);
+						if (s < e)
+							subround = strtol(s, &end, 10);
+					}
 				}
 
 				if (anchor > str.begin() && isspace(s[-1]) && isspace(*e))
