@@ -375,6 +375,10 @@
 # define noexcept
 #endif
 
+#if !__GNUC_PREREQ(4,3) || !defined(USE_0X_STANDARD) ///////////////////////////
+# define decltype typeof
+#endif
+
 #if !HAVE_0X_STATIC_ASSERTIONS
 
 namespace mstl {

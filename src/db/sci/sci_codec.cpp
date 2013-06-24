@@ -50,6 +50,7 @@
 #include "m_string.h"
 #include "m_fstream.h"
 #include "m_byte_order.h"
+#include "m_type_traits.h"
 #include "m_assert.h"
 
 #include "sys_utf8_codec.h"
@@ -162,14 +163,16 @@ struct IndexEntry
 	};
 };
 
+#define TYPEOF(var) mstl::remove_reference<decltype(var)>::type
+
 #define BF_MASK(type, pos, len) \
 	(((static_cast<type>(1) << (len)) - 1) << (pos))
 
 #define BF_GET(var, pos, len) \
-	((var >> (pos)) & ((static_cast<typeof(var)>(1) << (len)) - 1))
+	((var >> (pos)) & ((static_cast<TYPEOF(var)>(1) << (len)) - 1))
 
 #define BF_SET(var, val, pos, len) \
-	var |= ((static_cast<typeof(var)>(val) << (pos)) & BF_MASK(typeof(var), pos, len))
+	var |= ((static_cast<TYPEOF(var)>(val) << (pos)) & BF_MASK(TYPEOF(var), pos, len))
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 
