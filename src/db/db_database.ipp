@@ -63,6 +63,8 @@ inline Time Database::created() const							{ return m_created; }
 inline uint32_t Database::creationTimestamp() const		{ return m_created; }
 inline unsigned Database::size() const							{ return m_size; }
 
+inline void Database::resetInitialSize()						{ resetInitialSize(m_size); }
+
 
 inline
 DatabaseCodec const&

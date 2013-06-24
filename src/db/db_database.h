@@ -280,6 +280,8 @@ public:
 	void resetChangedStatus();
 	/// Reset initial size to current size.
 	void resetInitialSize();
+	/// Reset initial size to given size.
+	void resetInitialSize(unsigned size);
 
 	/// Build tournament table for selected games.
 	TournamentTable* makeTournamentTable(Filter const& gameFilter) const;

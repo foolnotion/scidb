@@ -374,12 +374,12 @@ Database::resetChangedStatus()
 
 
 void
-Database::resetInitialSize()
+Database::resetInitialSize(unsigned size)
 {
-	M_REQUIRE(!isUnsaved());
+	M_REQUIRE(size <= countGames());
 
-	m_initialSize = m_size;
-	m_statistic.added = 0;
+	m_initialSize = size;
+	m_statistic.added = m_size - size;
 }
 
 
@@ -730,7 +730,6 @@ Database::newGame(Game& game, GameInfo const& info)
 	{
 		GameInfo* info = m_gameInfoList.back();
 
-		info->setChanged(true);
 		info->setDirty(true);
 
 		m_lastChange = sys::time::timestamp();
@@ -772,7 +771,6 @@ Database::addGame(Game& game)
 
 		GameInfo* info = m_gameInfoList.back();
 
-		info->setChanged(true);
 		info->setDirty(true);
 
 		m_size = m_gameInfoList.size();
@@ -830,7 +828,7 @@ Database::updateGame(Game& game)
 				m_codec->updateHeader();
 		}
 
-		if (!info.isChanged())
+		if (unsigned(game.index()) < m_initialSize && !info.isChanged())
 		{
 			++m_statistic.changed;
 			info.setChanged(true);
@@ -895,7 +893,7 @@ Database::updateMoves(Game& game)
 			}
 		}
 
-		if (!info.isChanged())
+		if (unsigned(game.index()) < m_initialSize && !info.isChanged())
 		{
 			++m_statistic.changed;
 			info.setChanged(true);
@@ -931,7 +929,7 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 
 		GameInfo& info = *m_gameInfoList[index];
 
-		if (!info.isChanged())
+		if (index <= m_initialSize && !info.isChanged())
 		{
 			++m_statistic.changed;
 			info.setChanged(true);

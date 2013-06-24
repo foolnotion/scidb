@@ -435,7 +435,14 @@ Cursor::compact(::util::Progress& progress)
 	if (!m_db->shouldCompress())
 		return false;
 
-	unsigned numGames = m_db->countGames();
+	unsigned numGames		= m_db->countGames();
+	unsigned initialSize	= m_db->countInitialGames();
+
+	for (unsigned i = 0, n = initialSize; i < n; ++i)
+	{
+		if (m_db->gameInfo(i).isDeleted())
+			--initialSize;
+	}
 
 	mstl::string orig(m_db->name());
 	mstl::string name;
@@ -496,6 +503,7 @@ Cursor::compact(::util::Progress& progress)
 		}
 
 		compacted->save(progress);
+		compacted->resetInitialSize(initialSize);
 	}
 	catch (...)
 	{
