@@ -42,6 +42,7 @@
 #include "nsUniversalDetector.h"
 
 #include "sys_utf8_codec.h"
+#include "sys_utf8.h"
 #include "sys_file.h"
 #include "sys_info.h"
 #include "sys_vfs.h"
@@ -110,7 +111,7 @@ valToXDigit(unsigned v)
 }
 
 
-inline unsigned
+inline sys::utf8::uchar
 xdigitToVal(unsigned char c)
 {
 	return isdigit(c) ? c - '0' : toupper(c) - 'A' + 10;
@@ -1316,23 +1317,30 @@ cmdHtml(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdUrlEscape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	typedef sys::utf8::uchar uchar;
+
 	char const* p = stringFromObj(objc, objv, 1);
 	char const* e = p + ::strlen(p);
 
 	mstl::string url;
 
-	for ( ; p < e; ++p)
+	while (p < e)
 	{
-		if ((unsigned char)(*p) > 127 || isspace(*p) || !isgraph(*p))
+		uchar code;
+		p = sys::utf8::nextChar(p, code);
+		code &= 0xff;
+
+		if (code > 127 || isspace(code) || !isgraph(code))
 		{
 			url += '%';
-			url += valToXDigit(*p >> 4);
-			url += valToXDigit(*p & 0xf0);
+			url += valToXDigit(code >> 4);
+			url += valToXDigit(code & 0x0f);
 		}
 		else
 		{
-			url += *p;
+			url += char(code);
 		}
+
 	}
 
 	setResult(url);
@@ -1343,6 +1351,8 @@ cmdUrlEscape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const obj
 static int
 cmdUrlUnescape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
+	typedef sys::utf8::uchar uchar;
+
 	char const* p = stringFromObj(objc, objv, 1);
 	char const* e = p + ::strlen(p);
 
@@ -1356,7 +1366,7 @@ cmdUrlUnescape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const o
 		}
 		else if (isxdigit(p[1]) && isxdigit(p[2]))
 		{
-			url += char((xdigitToVal(p[1]) << 4) + xdigitToVal(p[2]));
+			sys::utf8::append(url, (xdigitToVal(p[1]) << 4) + xdigitToVal(p[2]));
 			p += 3;
 		}
 		else

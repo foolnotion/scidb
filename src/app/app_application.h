@@ -281,7 +281,7 @@ public:
 						unsigned index,
 						checksum_t crcIndex,
 						checksum_t crcMoves);
-	void setReadonly(Cursor& cursor, bool flag);
+	bool setReadonly(Cursor& cursor, bool flag);
 	void setIsWriting(mstl::string const& name = mstl::string::empty_string);
 	db::save::State writeGame(	unsigned position,
 										mstl::string const& filename,
@@ -308,7 +308,7 @@ public:
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
 	void bindGameToView(unsigned position, int viewId, Update updateMode = UpdateGameInfo);
 	void save(mstl::string const& name, util::Progress& progress);
-	void save(mstl::string const& name, unsigned flags, util::Progress& progress);
+	::db::file::State save(mstl::string const& name, unsigned flags, util::Progress& progress);
 	void startUpdateTree(Cursor& cursor);
 	unsigned stripMoveInformation(View& view,
 											unsigned types,

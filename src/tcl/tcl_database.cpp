@@ -1169,7 +1169,7 @@ cmdOpen(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			variant::Type variant = variant::fromIndex(v);
 
 			if (Scidb->contains(dst, variant))
-				scidb->cursor(dst, variant).setDescription(reader.description());
+				scidb->cursor(dst, variant).setupDescription(reader.description());
 		}
 	}
 
@@ -1307,7 +1307,7 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 			if (strlen(descr) <= db.maxDescriptionLength())
 			{
-				db.setDescription(descr);
+				db.updateDescription(descr);
 				setResult(unsigned(0));
 			}
 			else
@@ -1319,9 +1319,14 @@ cmdSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		case Cmd_Readonly:
 			if (objc == 4)
-				scidb->setReadonly(scidb->cursor(stringFromObj(objc, objv, 2)), boolFromObj(objc, objv, 3));
+			{
+				setResult(scidb->setReadonly(	scidb->cursor(stringFromObj(objc, objv, 2)),
+														boolFromObj(objc, objv, 3)));
+			}
 			else
-				scidb->setReadonly(scidb->cursor(), boolFromObj(objc, objv, 2));
+			{
+				setResult(scidb->setReadonly(scidb->cursor(), boolFromObj(objc, objv, 2)));
+			}
 			break;
 
 		case Cmd_Variant:
@@ -4129,8 +4134,15 @@ cmdSavePGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned		flags(unsignedFromObj(objc, objv, 2));
 	Progress		progress(objv[3], objv[4]);
 
-	scidb->save(db, flags, progress);
-	setResult(scidb->multiCursor(db).countGames());
+	switch (scidb->save(db, flags, progress))
+	{
+		case file::IsUpTodate:	setResult("IsUpTodate"); break;
+		case file::Updated:		setResult("Updated"); break;
+		case file::IsRemoved:	setResult("IsRemoved"); break;
+		case file::IsReadonly:	setResult("IsReadonly"); break;
+		case file::HasChanged:	setResult("HasChanged"); break;
+	}
+
 	return TCL_OK;
 }
 

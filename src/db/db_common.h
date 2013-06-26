@@ -1311,6 +1311,18 @@ namespace save
 	bool isOk(State state);
 }
 
+namespace file
+{
+	enum State
+	{
+		IsUpTodate,
+		Updated,
+		IsRemoved,
+		IsReadonly,
+		HasChanged,
+	};
+}
+
 namespace load
 {
 	enum State

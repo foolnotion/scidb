@@ -700,7 +700,7 @@ View::exportGames(mstl::string const& filename,
 									storage::OnDisk,
 									m_cursor.m_db->variant(),
 									type);
-		destination.setDescription(description);
+		destination.setupDescription(description);
 		progress.message("write-game");
 
 		WriteGuard guard(m_app, destination);
@@ -732,7 +732,7 @@ View::exportGames(mstl::string const& filename,
 									storage::OnDisk,
 									m_cursor.m_db->variant(),
 									type);
-		destination.setDescription(description);
+		destination.setupDescription(description);
 
 		WriteGuard guard(m_app, destination);
 

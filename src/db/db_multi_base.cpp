@@ -332,7 +332,7 @@ MultiBase::setup(FileOffsets* fileOffsets)
 	}
 
 	m_leader->setReadonly(isReadonly);
-	m_leader->setWritable(m_fileOffsets != 0);
+	m_leader->setWritable(!isReadonly && m_fileOffsets != 0);
 }
 
 
@@ -449,7 +449,7 @@ MultiBase::save(util::Progress& progress)
 }
 
 
-void
+file::State
 MultiBase::save(unsigned flags, util::Progress& progress)
 {
 	enum { Unchanged, Changed, Deleted, Added };
@@ -457,18 +457,18 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	M_REQUIRE(isTextFile());
 
 	if (!isUnsaved())
-		return;
+		return file::IsUpTodate;
 
 	M_ASSERT(m_fileOffsets);
 
-	if (!sys::file::access(m_leader->name(), sys::file::Writeable))
-		IO_RAISE(PgnFile, Read_Error, "PGN file is removed");
+	if (!sys::file::access(m_leader->name(), sys::file::Existence))
+		return file::IsRemoved;
 
 	if (!sys::file::access(m_leader->name(), sys::file::Writeable))
-		IO_RAISE(PgnFile, Read_Only, "PGN file is readonly");
+		return file::IsReadonly;
 
 	if (!m_leader->checkFileTime())
-		IO_RAISE(PgnFile, Not_Original_Version, "PGN file has changed");
+		return file::HasChanged;
 
 	unsigned changedGames	= 0;
 	unsigned deletedGames	= 0;
@@ -487,6 +487,7 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	unsigned totalGames = m_fileOffsets->countGames() + addedGames - deletedGames;
 
 	mstl::auto_ptr<ZStream> ostrm;
+	mstl::auto_ptr<PgnWriter> writer;
 	mstl::string internalName(sys::file::internalName(m_leader->name()));
 
 	if (ZStream::testByteOrderMark(internalName))
@@ -494,8 +495,12 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	else
 		flags &= ~PgnWriter::Flag_Use_UTF8;
 
-	PgnWriter writer(format::Scidb, *ostrm, m_leader->encoding(), flags);
 	mstl::auto_ptr<FileOffsets> newFileOffsets(new FileOffsets);
+
+	mstl::string ext(misc::file::suffix(m_leader->name()));
+	ext.tolower();
+	M_ASSERT(ext == "pgn" || ext == "gz");
+	ZStream::Type fileType = ext == "gz" ? ZStream::GZip : ZStream::Text;
 
 	unsigned nextIndex[variant::NumberOfVariants];
 	::memset(nextIndex, 0, sizeof(nextIndex));
@@ -515,11 +520,12 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 
 		newFileOffsets.reset(new FileOffsets);
 		newFileOffsets->reserve(m_fileOffsets->size() + addedGames - deletedGames);
-		ostrm.reset(new ZStream(tmpName));
+		ostrm.reset(new ZStream(tmpName, fileType));
 
 		if (!*ostrm)
 			IO_RAISE(PgnFile, Create_Failed, "no permissions to create file");
 
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, m_leader->encoding(), flags));
 		ZStream istrm(internalName);
 
 		istrm.setBufsize(::ChunkSize);
@@ -709,8 +715,8 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 
 							FileOffsets::Offset const& offs = m_fileOffsets->get(startIndex);
 							Database* database = m_bases[offs.variant()];
-							writer.setupVariant(variant::fromIndex(offs.variant()));
-							database->exportGame(offs.gameIndex(), writer); // always returning save::Ok
+							writer->setupVariant(variant::fromIndex(offs.variant()));
+							database->exportGame(offs.gameIndex(), *writer); // always returning save::Ok
 							newFileOffsets->append(ostrm->tellp(), offs.variant(), offs.gameIndex());
 						}
 						break;
@@ -728,7 +734,8 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	}
 	else
 	{
-		ostrm.reset(new ZStream(internalName, mstl::ofstream::app));
+		ostrm.reset(new ZStream(internalName, fileType, mstl::ofstream::app));
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, m_leader->encoding(), flags));
 		ostrm->writenl(mstl::string::empty_string);
 		newFileOffsets.reset(new FileOffsets(*m_fileOffsets));
 	}
@@ -739,23 +746,26 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 		{
 			unsigned n = database->countGames();
 
-			writer.setupVariant(variant::fromIndex(variant));
+			writer->setupVariant(variant::fromIndex(variant));
 
 			for (unsigned index = nextIndex[variant]; index < n; ++index)
 			{
-				database->exportGame(index, writer); // always returning save::Ok
+				database->exportGame(index, *writer); // always returning save::Ok
 				newFileOffsets->append(ostrm->tellp(), variant, index);
 			}
 		}
 	}
 
 	ostrm->close();
+	writer.release();
 	if (ostrm->filename() != internalName)
 		sys::file::rename(ostrm->filename(), m_leader->name());
 	m_leader->resetChangedStatus();
 
 	delete m_fileOffsets;
 	m_fileOffsets = newFileOffsets.release();
+
+	return file::Updated;
 }
 
 // vi:set ts=3 sw=3:

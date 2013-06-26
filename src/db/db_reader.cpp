@@ -496,6 +496,21 @@ Reader::getEventMode(char const* event, char const* site)
 
 
 void
+Reader::trimDescription(mstl::string& descr)
+{
+	if (descr.size() >= 1 && descr[0] == ';')
+	{
+		mstl::string::size_type n = 1;
+
+		while (::isspace(descr[n]))
+			++n;
+
+		descr.erase(descr.begin(), n);
+	}
+}
+
+
+void
 Reader::parseDescription(mstl::istream& strm, mstl::string& result)
 {
 	unsigned n = 0;
@@ -508,14 +523,14 @@ Reader::parseDescription(mstl::istream& strm, mstl::string& result)
 		{
 			case '\0':
 			case '[':
-				return;
+				return trimDescription(result);
 
 			case EOF:
-				return;
+				return trimDescription(result);
 
 			case '\n':
 				if (++n == 10)
-					return;
+					return trimDescription(result);
 				// fallthru
 
 			default:
@@ -562,11 +577,7 @@ Reader::getAttributes(mstl::string const& filename, int& numGames, mstl::string*
 			else
 				numGames = -1;
 		}
-		else if (ext == "gz")
-		{
-			ext = util::misc::file::suffix(util::misc::file::rootname(filename));
-		}
-		else if (ext == "pgn" || ext == "PGN")
+		else if (ext == "gz" || ext == "pgn" || ext == "PGN")
 		{
 			numGames = PgnReader::estimateNumberOfGames(numGames);
 		}

@@ -31,7 +31,7 @@ Erweiterung ist, also nicht zum CQL-Standard gehört.
 
 <p>
 Die Schlüsselwörter <cql>position:castling</cql>, <cql>position:endgame</cql>,
-<cql>position:inside</cql>, and <cql>position:reset</cql> sind von Chess
+<cql>position:inside</cql>, und <cql>position:reset</cql> sind von Chess
 Assistant 9 entlehnt worden. Die Beschreibung dieser Schlüsselwörter entstammt
 dem Dokument <a href="http://hornid.com/chess/docs/CQL-3GX.pdf">The CQL 3.GX Extension</a>.
 </p>

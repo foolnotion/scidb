@@ -66,9 +66,8 @@
 #include "m_map.h"
 
 using namespace db;
+using namespace sys;
 using namespace util;
-
-namespace file = util::misc::file;
 
 
 namespace {
@@ -123,6 +122,7 @@ Database::Database(Database const& db, mstl::string const& name)
 	try
 	{
 		m_codec->open(this, m_encoding);
+		::sys::file::changed(m_name, m_fileTime);
 	}
 	catch (mstl::ios_base::failure const& exc)
 	{
@@ -216,6 +216,7 @@ Database::Database(	mstl::string const& name,
 
 	m_initialSize = m_size = m_gameInfoList.size();
 	m_namebases.setModified(true);
+	::sys::file::changed(m_name, m_fileTime);
 }
 
 
@@ -237,15 +238,13 @@ Database::Database(	mstl::string const& name,
 	,m_descriptionHasChanged(false)
 	,m_usingAsyncReader(false)
 {
-	M_REQUIRE(file::hasSuffix(name));
-	M_REQUIRE(file::suffix(m_name) == "sci" || mode == permission::ReadOnly);
+	M_REQUIRE(misc::file::hasSuffix(name));
+	M_REQUIRE(misc::file::suffix(m_name) == "sci" || mode == permission::ReadOnly);
 
 	// NOTE: we assume normalized (unique) file names.
 
 	m_readOnly = mode == permission::ReadOnly;
 	m_codec = DatabaseCodec::makeCodec(m_name, DatabaseCodec::Existing);
-
-	::sys::file::changed(m_name, m_fileTime);
 
 	if (m_codec == 0)
 	{
@@ -269,6 +268,7 @@ Database::Database(	mstl::string const& name,
 
 	m_initialSize = m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
+	::sys::file::changed(m_name, m_fileTime);
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -309,6 +309,7 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 	m_initialSize = m_size = m_gameInfoList.size();
 	m_readOnly = true;
 	setEncodingFailed(producer.encodingFailed());
+	::sys::file::changed(m_name, m_fileTime);
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
@@ -352,7 +353,10 @@ bool
 Database::checkFileTime() const
 {
 	uint32_t fileTime;
-	::sys::file::changed(m_name, fileTime);
+
+	if (!::sys::file::changed(m_name, fileTime))
+		return false;
+
 	return fileTime == m_fileTime;
 }
 
@@ -409,14 +413,15 @@ Database::attach(mstl::string const& filename, util::Progress& progress)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly());
-	M_REQUIRE(codec().extension() == file::suffix(filename));
+	M_REQUIRE(codec().extension() == misc::file::suffix(filename));
 	M_REQUIRE(!usingAsyncReader());
 
 	// NOTE: we assume normalized (unique) file names.
 
-	m_rootname = file::rootname(filename);
+	m_rootname = misc::file::rootname(filename);
 	m_codec->attach(progress);
 	M_ASSERT(m_codec->isWritable());
+	::sys::file::changed(m_name, m_fileTime);
 	m_readOnly = false;
 	m_memoryOnly = false;
 }
@@ -445,6 +450,7 @@ Database::save(util::Progress& progress)
 		m_codec->reset();
 		m_codec->save(start, progress);
 		m_codec->updateHeader();
+		::sys::file::changed(m_name, m_fileTime);
 		setEncodingFailed(m_codec->encodingFailed());
 	}
 
@@ -469,6 +475,7 @@ Database::writeIndex(mstl::ostream& os, util::Progress& progress)
 	m_namebases.update();
 	m_codec->reset();
 	m_codec->writeIndex(os, progress);
+	::sys::file::changed(m_name, m_fileTime);
 	m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
 }
@@ -611,7 +618,7 @@ Database::clear()
 void
 Database::reopen(mstl::string const& encoding, util::Progress& progress)
 {
-	M_REQUIRE(file::hasSuffix(name()));
+	M_REQUIRE(misc::file::hasSuffix(name()));
 	M_REQUIRE(!isMemoryOnly());
 	M_REQUIRE(!usingAsyncReader());
 	M_REQUIRE(!hasTemporaryStorage());
@@ -643,6 +650,7 @@ Database::reopen(mstl::string const& encoding, util::Progress& progress)
 
 	m_initialSize = m_size = m_gameInfoList.size();
 	setEncodingFailed(m_codec->encodingFailed());
+	::sys::file::changed(m_name, m_fileTime);
 }
 
 
@@ -767,6 +775,7 @@ Database::addGame(Game& game)
 		{
 			m_codec->update(m_gameInfoList.size() - 1, true);
 			m_codec->updateHeader();
+			::sys::file::changed(m_name, m_fileTime);
 		}
 
 		GameInfo* info = m_gameInfoList.back();
@@ -828,6 +837,9 @@ Database::updateGame(Game& game)
 				m_codec->updateHeader();
 		}
 
+		if (!m_memoryOnly)
+			::sys::file::changed(m_name, m_fileTime);
+
 		if (unsigned(game.index()) < m_initialSize && !info.isChanged())
 		{
 			++m_statistic.changed;
@@ -876,7 +888,10 @@ Database::updateMoves(Game& game)
 				m_shouldCompress = true;
 
 				if (!m_memoryOnly)
+				{
 					m_codec->updateHeader();
+					::sys::file::changed(m_name, m_fileTime);
+				}
 			}
 
 			bool illegalCastling	= game.containsIllegalCastlings();
@@ -925,7 +940,10 @@ Database::updateCharacteristics(unsigned index, TagSet const& tags)
 	if (save::isOk(state))
 	{
 		if (!m_memoryOnly)
+		{
 			m_codec->update(index, true);
+			::sys::file::changed(m_name, m_fileTime);
+		}
 
 		GameInfo& info = *m_gameInfoList[index];
 
@@ -1333,6 +1351,7 @@ Database::importGame(Producer& producer, unsigned index)
 			m_codec->update(index, true);
 			m_codec->updateHeader();
 			m_size = m_gameInfoList.size();
+			::sys::file::changed(m_name, m_fileTime);
 		}
 
 		m_treeCache.setIncomplete();
@@ -1409,7 +1428,8 @@ Database::rename(mstl::string const& name)
 		m_codec->rename(m_name, name);
 
 	m_name = name;
-	m_rootname = file::rootname(m_name);
+	m_rootname = misc::file::rootname(m_name);
+	::sys::file::changed(m_name, m_fileTime);
 }
 
 
@@ -1446,7 +1466,10 @@ Database::deleteGame(unsigned index, bool flag)
 	info.setDeleted(flag);
 
 	if (!m_memoryOnly)
+	{
 		m_codec->update(index, false);
+		::sys::file::changed(m_name, m_fileTime);
+	}
 
 	m_lastChange = sys::time::timestamp();
 }
@@ -1463,7 +1486,10 @@ Database::setGameFlags(unsigned index, unsigned flags)
 	gameInfo(index).setFlags(flags);
 
 	if (!m_memoryOnly)
+	{
 		m_codec->update(index, false);
+		::sys::file::changed(m_name, m_fileTime);
+	}
 }
 
 
@@ -1479,13 +1505,33 @@ Database::setType(Type type)
 		m_type = type;
 
 		if (!m_memoryOnly)
+		{
 			m_codec->updateHeader();
+			::sys::file::changed(m_name, m_fileTime);
+		}
 	}
 }
 
 
 void
-Database::setDescription(mstl::string const& description)
+Database::updateDescription(mstl::string const& description)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isMemoryOnly() || !isReadonly());
+	M_REQUIRE(isMemoryOnly() || isWritable());
+
+	if (m_description != description)
+	{
+		setupDescription(description);
+
+		if (m_memoryOnly)
+			m_descriptionHasChanged = true;
+	}
+}
+
+
+void
+Database::setupDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
 	M_REQUIRE(isMemoryOnly() || !isReadonly());
@@ -1498,10 +1544,11 @@ Database::setDescription(mstl::string const& description)
 		if (m_codec->maxDescriptionLength() < m_description.size())
 			m_description.set_size(m_codec->maxDescriptionLength());
 
-		if (m_memoryOnly)
-			m_descriptionHasChanged = true;
-		else
+		if (!m_memoryOnly)
+		{
 			m_codec->updateHeader();
+			::sys::file::changed(m_name, m_fileTime);
+		}
 	}
 }
 
@@ -1520,7 +1567,10 @@ Database::setVariant(variant::Type variant)
 		m_variant = variant;
 
 		if (!m_memoryOnly)
+		{
 			m_codec->updateHeader();
+			::sys::file::changed(m_name, m_fileTime);
+		}
 	}
 }
 
@@ -1776,7 +1826,10 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 			m_shouldCompress = true;
 
 			if (!isMemoryOnly())
+			{
 				m_codec->updateHeader();
+				::sys::file::changed(m_name, m_fileTime);
+			}
 		}
 
 		m_codec->sync();
@@ -1822,7 +1875,10 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 			m_shouldCompress = true;
 
 			if (!isMemoryOnly())
+			{
 				m_codec->updateHeader();
+				::sys::file::changed(m_name, m_fileTime);
+			}
 		}
 
 		m_codec->sync();
@@ -1862,7 +1918,7 @@ Database::findTags(Filter const& filter, TagMap& tags, util::Progress& progress)
 }
 
 
-void
+bool
 Database::setReadonly(bool flag)
 {
 	M_REQUIRE(isOpen());
@@ -1870,6 +1926,9 @@ Database::setReadonly(bool flag)
 
 	if (flag != m_readOnly)
 	{
+		if (!flag && !checkFileTime())
+			return false;
+
 		if (!m_readOnly && !m_memoryOnly)
 			m_codec->sync();
 
@@ -1878,6 +1937,8 @@ Database::setReadonly(bool flag)
 		if (!m_readOnly && !m_memoryOnly)
 			m_codec->setWritable();
 	}
+
+	return true;
 }
 
 

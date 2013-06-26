@@ -100,6 +100,9 @@ if {[tk windowingsystem] eq "x11"} {
 				::scidb::tk::wm desktop .
 			}
 		}
+
+		proc ::trash::urlDecode {str} { return [::scidb::misc::url unescape $str] }
+		proc ::trash::urlEncode {str} { return [::scidb::misc::url escape $str] }
 	}
 
 	proc toolbar::x11MakeToolbar {w} { ::x11::makeToolbar $w }

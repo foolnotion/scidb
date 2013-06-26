@@ -74,6 +74,8 @@ set Title(dir)						"Choose Directory"
 
 set Content							"Content"
 set Open								"Open"
+set OriginalPath					"Original Path"
+set DateOfDeletion				"Date of Deletion"
 
 set FileType(exe)					"Executables"
 set FileType(txt)					"Text files"
@@ -684,7 +686,7 @@ proc GetFileType {extension} {
 }
 
 
-proc Inspect {parent {folder ""} {filename ""}} {
+proc Inspect {parent {folder ""} {filename ""} {originalPath ""} {deletionDate ""}} {
 	variable FileType
 
 	set dlg $parent.__inspect__
@@ -698,12 +700,13 @@ proc Inspect {parent {folder ""} {filename ""}} {
 			file stat $filename stat
 			set type [file type $filename]
 			set mtime [::locale::formatTime [clock format $stat(mtime) -format {%Y.%m.%d %H:%M:%S}]]
+			if {[string length $originalPath]} { set name $originalPath } else { set name $filename }
 
 			if {$stat(type) eq "directory"} {
 				set fileType $mc::Directory
 				if {$type eq "link"} { set fileType [format $mc::LinkTo $fileType] }
 				tk::label $f.lname -text "$::fsbox::mc::Name:"
-				tk::label $f.tname -text [file tail $filename]
+				tk::label $f.tname -text [file tail $name]
 				tk::label $f.ltype -text "$::database::switcher::mc::Type:"
 				tk::label $f.ttype -text $fileType
 				if {$type eq "link"} {
@@ -726,7 +729,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				if {$ext eq ".cbf"} { append fileType " (DOS)" }
 
 				tk::label $f.lname -text "$::fsbox::mc::Name:"
-				tk::label $f.tname -text [file tail $filename]
+				tk::label $f.tname -text [file tail $name]
 				tk::label $f.ltype -text "$::database::switcher::mc::Type:"
 				tk::label $f.ttype -text $fileType
 				if {$type eq "link"} {
@@ -739,7 +742,7 @@ proc Inspect {parent {folder ""} {filename ""}} {
 				tk::label $f.tcreated -text $ctime
 
 				switch $ext {
-					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
+					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
 						lassign [::scidb::misc::attributes $filename] numGames type variant created descr
 						if {[string length $descr] == 0} { set descr "\u2014" }
 #						set type [set ::application::database::mc::T_$type]
@@ -749,6 +752,16 @@ proc Inspect {parent {folder ""} {filename ""}} {
 						}
 						tk::label $f.lmodified -text "$::fsbox::mc::Modified:"
 						tk::label $f.tmodified -text $mtime
+						if {$ext eq ".zip"} {
+							set zipContent [::scidb::misc::zipContent $filename]
+							set subcontent [lrange $zipContent 0 9]
+							set content [join $subcontent "\n"]
+							if {[llength $zipContent] > [llength $subcontent]} {
+								append content "\n\u2026"
+							}
+							tk::label $f.lcontent -text "$mc::Content:"
+							tk::label $f.tcontent -text $content -justify left
+						}
 						if {$numGames >= 0} {
 							tk::label $f.lngames -text "$::crosstable::mc::Games:"
 							tk::label $f.tngames -text $numGames
@@ -764,8 +777,10 @@ proc Inspect {parent {folder ""} {filename ""}} {
 							tk::label $f.lvariant -text "$mc::Variant:"
 							tk::label $f.tvariant -text $mc::VariantName($variant)
 						}
-						tk::label $f.ldescr -text "$::database::switcher::mc::Description:"
-						tk::label $f.tdescr -text $descr -wraplength 200 -justify left
+						if {$ext ne ".zip"} {
+							tk::label $f.ldescr -text "$::database::switcher::mc::Description:"
+							tk::label $f.tdescr -text $descr -wraplength 200 -justify left
+						}
 					}
 
 					.scv {
@@ -797,22 +812,11 @@ proc Inspect {parent {folder ""} {filename ""}} {
 							tk::label $f.tdescr -text $bases -wraplength 250 -justify left
 						}
 					}
-
-					.zip - .ZIP {
-						set content [::scidb::misc::zipContent $filename]
-						set subcontent [lrange $content 0 9]
-						set descr [join $subcontent "\n"]
-						if {[llength $content] > [llength $subcontent]} {
-							append descr "\n\u2026"
-						}
-						tk::label $f.ldescr -text "$mc::Content:"
-						tk::label $f.tdescr -text $descr -justify left
-					}
 				}
 			}
 
 			set r 1
-			foreach attr {name type target size created modified ngames used variant descr} {
+			foreach attr {name type target size created modified content ngames used variant descr} {
 				if {[winfo exists $f.l$attr]} {
 					$f.l$attr configure -background $bg
 					$f.t$attr configure -background $bg
@@ -822,6 +826,28 @@ proc Inspect {parent {folder ""} {filename ""}} {
 					incr r
 				}
 			}
+
+			if {[string length $originalPath]} {
+				set date [::locale::formatTime $deletionDate]
+
+				grid [ttk::separator $f.sep] -row $r -column 1 -columnspan 3 -sticky ew -pady 5
+				incr r
+
+				tk::label $f.loriginalPath -text $mc::OriginalPath
+				tk::label $f.toriginalPath -text $originalPath
+				tk::label $f.ldeletionDate -text $mc::DateOfDeletion
+				tk::label $f.tdeletionDate -text $date
+
+				foreach attr {originalPath deletionDate} {
+					$f.l$attr configure -background $bg
+					$f.t$attr configure -background $bg
+					grid $f.l$attr -row $r -column 1 -sticky wn
+					grid $f.t$attr -row $r -column 3 -sticky wn
+					grid rowconfigure $f [incr r] -minsize 3
+					incr r
+				}
+			}
+
 			grid rowconfigure $f [list 0 $r] -minsize 3
 			grid columnconfigure $f {0 2 4} -minsize 3
 		} else {

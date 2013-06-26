@@ -174,6 +174,10 @@ public:
 protected:
 
 	static void parseDescription(mstl::istream& strm, mstl::string& result);
+
+private:
+
+	static void trimDescription(mstl::string& descr);
 };
 
 } // namespace db

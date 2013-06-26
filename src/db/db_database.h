@@ -302,9 +302,11 @@ public:
 	/// Set variant of database games.
 	void setVariant(variant::Type variant);
 	/// Set description of database.
-	void setDescription(mstl::string const& description);
+	void setupDescription(mstl::string const& description);
+	/// Change description of database.
+	void updateDescription(mstl::string const& description);
 	/// Set/unset read-only flag.
-	void setReadonly(bool flag = true);
+	bool setReadonly(bool flag = true);
 	/// Set/unset writable flag.
 	void setWritable(bool flag);
 

@@ -144,10 +144,10 @@ Cursor::Cursor::isEmpty() const
 
 
 void
-Cursor::setDescription(mstl::string const& description)
+Cursor::setupDescription(mstl::string const& description)
 {
 	M_REQUIRE(isOpen());
-	m_db->setDescription(description);
+	m_db->setupDescription(description);
 }
 
 

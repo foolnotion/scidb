@@ -104,6 +104,7 @@ set CompactionRecommended			"It is recommended to compact the database."
 set SearchPGNTags						"Searching for PGN tags"
 set SelectSuperfluousTags			"Select superfluous tags:"
 set WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database."
+set ReadWriteFailed					"Setting the database writable failed:"
 
 set T_Unspecific						"Unspecific"
 set T_Temporary						"Temporary"
@@ -1015,7 +1016,11 @@ proc Switch {filename {variant Undetermined}} {
 		set variant $Vars(variant)
 	}
 
-	$Vars(switcher) current $filename
+	if {[catch { $Vars(switcher) current $filename }]} {
+		# may happen if open failed
+		return
+	}
+
 	::scidb::db::switch $filename $Vars(variant)
 	set readonly [::scidb::db::get readonly? $filename]
 
@@ -1491,7 +1496,14 @@ proc ToggleReadOnly {} {
 	variable RecentFiles
 
 	set file [::scidb::db::get name]
-	::scidb::db::set readonly $Vars(flag:readonly)
+
+	if {![::scidb::db::set readonly $Vars(flag:readonly)]} {
+		set Vars(flag:readonly) [expr {!$Vars(flag:readonly)}]
+		append msg $mc::ReadWriteFailed " " $::util::mc::IOError(NotOriginalVersion) "."
+		::dialog::error -parent [winfo toplevel $Vars(switcher)] -message $msg
+		return
+	}
+
 	$Vars(switcher) readonly $file $Vars(flag:readonly)
 
 	set k [FindRecentFile $file]
@@ -1515,11 +1527,29 @@ proc EmptyClipbase {parent} {
 
 
 proc SaveChanges {parent {base ""}} {
-return [beta::notYetImplemented $parent SavePgn]
+return [::beta::notYetImplemented $parent savePGN]
 	if {[string length $base] == 0} { set base [scidb::db::get name] }
+
+	if {![file writable $base]} {
+	}
+
+	set stats [::scidb::db::get stats $base]
 	set cmd [list scidb::db::savePGN $base [::export::getPgnFlags]]
 	set options [list -message $mc::FileSaveChanges]
-	::progress::start $parent $cmd {} $options
+	set result [::progress::start $parent $cmd {} $options]
+	CheckSaveState $base
+
+	switch $result {
+		IsUpTodate	{ ;# cannot happen }
+		IsReadonly	{ ;# cannot happen }
+		IsRemoved	{ ;# cannot happen }
+
+		HasChanged	{}
+
+		Updated {
+			;# succesfully saved
+		}
+	}
 }
 
 
@@ -1629,7 +1659,7 @@ proc StripMoveInfo {parent file} {
 	wm withdraw $dlg
 	wm title $dlg $mc::FileStripMoveInfo
 	wm resizable $dlg false false
-	::util::place $dlg -parent $parent -position center
+	::util::place $dlg -parent [winfo toplevel $parent] -position center
 	wm deiconify $dlg
 	focus $top.evaluation
 	::ttk::grabWindow $dlg

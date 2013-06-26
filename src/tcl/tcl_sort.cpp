@@ -315,7 +315,7 @@ Sort::process(int objc, Tcl_Obj* const objv[])
 		}
 		else
 		{
-			indexPtr = listObjPtrs[i];
+			currentObj = indexPtr = listObjPtrs[i];
 		}
 
 		if (useMapping)
@@ -326,7 +326,7 @@ Sort::process(int objc, Tcl_Obj* const objv[])
 		}
 		else
 		{
-			m_elements[i].m_value = Tcl_GetString(indexPtr);
+			m_elements[i].m_value = Tcl_GetString(currentObj);
 		}
 
 		if (indices)

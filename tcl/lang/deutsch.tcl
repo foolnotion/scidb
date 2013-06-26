@@ -192,7 +192,7 @@
 ::util::mc::IOError(EncodingFailed)			"die Namebase konnte nicht erzeugt werden"
 ::util::mc::IOError(MaxFileSizeExceeded)	"die maximale Dateigrösse wurde erreicht"
 ::util::mc::IOError(LoadFailed)				"das Laden schlug fehl (zuviele Turnier-Einträge)"
-::util::mc::IOError(NotOriginalVersion)	"die Datei wurde seit dem Öffnen ausserhalb von Scidb verändert"
+::util::mc::IOError(NotOriginalVersion)	"die Datei wurde seit dem Öffnen ausserhalb dieser Anwendung verändert"
 
 ::util::mc::SelectionOwnerDidntRespond		"Zeitüberschreitung während der Drop-Aktion: der Eigentümer des Drop-Inhalts antwortete nicht."
 
@@ -371,25 +371,30 @@
 ::util::photos::mc::Log(updated:N)				"%s Dateien wurden erneuert."
 
 ### application ########################################################
-::application::mc::Database				"Datenba&nk"
-::application::mc::Board					"&Brett"
-::application::mc::MainMenu				"&Hauptmenü"
+::application::mc::Database					"Datenba&nk"
+::application::mc::Board						"&Brett"
+::application::mc::MainMenu					"&Hauptmenü"
 
-::application::mc::DockWindow				"Fenster einkoppeln"
-::application::mc::UndockWindow			"Fenster abkoppeln"
-::application::mc::ChessInfoDatabase	"Schach-Informations-Datenbank"
-::application::mc::Shutdown				"Schließung..."
-::application::mc::QuitAnyway				"Trotzdem schliessen?"
-::application::mc::CancelLogout			"Logout beenden"
-::application::mc::AbortWriteOperation	"Schreiboperation abbrechen"
+::application::mc::DockWindow					"Fenster einkoppeln"
+::application::mc::UndockWindow				"Fenster abkoppeln"
+::application::mc::ChessInfoDatabase		"Schach-Informations-Datenbank"
+::application::mc::Shutdown					"Schließung..."
+::application::mc::QuitAnyway					"Trotzdem schliessen?"
+::application::mc::CancelLogout				"Logout beenden"
+::application::mc::AbortWriteOperation		"Schreiboperation abbrechen"
 
-::application::mc::UpdatesAvailable		"Updates verfügbar"
+::application::mc::UpdatesAvailable			"Updates verfügbar"
 
 ::application::mc::WriteOperationInProgress "Eine Schreiboperation ist im Fortgang: zur Zeit modfiziert/schreibt Scidb die Datenbank '%s'."
-::application::mc::LogoutNotPossible	"Ein Logout ist jetzt nicht möglich, das Resultat wäre eine korrupte Datenbank."
-::application::mc::RestartLogout			"Der Abbruch der Schreiboperation wird den Logout-Prozess erneut starten."
-::application::mc::UnsavedFiles			"Die folgenden PGN-Dateien sind ungesichert:"
-::application::mc::ThrowAwayAllChanges	"Wirklich alle Änderungen verwerfen?"
+::application::mc::LogoutNotPossible		"Ein Logout ist jetzt nicht möglich, das Resultat wäre eine korrupte Datenbank."
+::application::mc::RestartLogout				"Der Abbruch der Schreiboperation wird den Logout-Prozess erneut starten."
+::application::mc::UnsavedFiles				"Die folgenden PGN-Dateien sind ungesichert:"
+::application::mc::ThrowAwayAllChanges		"Wirklich alle Änderungen verwerfen?"
+
+::application::mc::Deleted						"Gelöschte Partien: %d"
+::application::mc::Changed						"Veränderte Partien: %d"
+::application::mc::Added						"Hinzugefügte Partien: %d"
+::application::mc::DescriptionHasChanged	"Die Beschreibung wurde verändert"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Zeige Turniertabelle zur aktuellen Partie"
@@ -497,6 +502,7 @@
 ::application::database::mc::SearchPGNTags					"Nach PGN-Tags suchen"
 ::application::database::mc::SelectSuperfluousTags			"Unerwünschte Tags auswählen:"
 ::application::database::mc::WillBePermanentlyDeleted		"Bitte beachten: Diese Aktion wird die betroffenen Daten permanent aus der Datenbank entfernen."
+::application::database::mc::ReadWriteFailed					"Die Datenbank kann nicht schreibbar gesetzt werden:"
 
 ::application::database::mc::T_Unspecific						"Unspezifiziert"
 ::application::database::mc::T_Temporary						"Temporär"
@@ -2258,6 +2264,8 @@
 
 ::dialog::fsbox::mc::Content					"Inhalt"
 ::dialog::fsbox::mc::Open						"Geöffnet"
+::dialog::fsbox::mc::OriginalPath			"Ursprungspfad"
+::dialog::fsbox::mc::DateOfDeletion			"Löschdatum"
 
 ::dialog::fsbox::mc::FileType(exe)			"Ausführbare Dateien"
 ::dialog::fsbox::mc::FileType(txt)			"Textdateien"
@@ -2409,6 +2417,8 @@
 ::fsbox::mc::NewName							"Neuer Name"
 ::fsbox::mc::BookmarkAlreadyExists		"Es existiert bereits ein Verweis auf dieses Verzeichnis: '%s'."
 ::fsbox::mc::AddBookmarkAnyway			"Trotzdem hinzufügen?"
+::fsbox::mc::OriginalPathDoesNotExist	"Das Ursprungsverzeichnis '%s' dieses Elements existiert nicht mehr. Das Ursprungsverzeichnis anlegen und mit der Operation fortfahren?"
+::fsbox::mc::DragItemAnywhere				"Eine Alternative besteht darin, dieses Element in ein anderes Verzeichnis zu ziehen, um es wiederherzustellen."
 
 ::fsbox::mc::ReallyMove(file,w)			"Soll tatsächlich die Datei '%s' in den Müllkorb verschoben werden?"
 ::fsbox::mc::ReallyMove(file,r)			"Soll tatsächlich die schreibgeschützte Datei '%s' in den Müllkorb verschoben werden?"
@@ -2433,6 +2443,7 @@
 ::fsbox::mc::DropAction(move)				"Hierher verschieben"
 ::fsbox::mc::DropAction(copy)				"Hierher kopieren"
 ::fsbox::mc::DropAction(link)				"Hier eine Verknüpfungen erstellen"
+::fsbox::mc::DropAction(restore)			"Hierher wiederherstellen"
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Funktionsleiste"

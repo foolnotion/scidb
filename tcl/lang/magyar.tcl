@@ -192,7 +192,7 @@
 ::util::mc::IOError(EncodingFailed)		"namebase fájl nem írható"
 ::util::mc::IOError(MaxFileSizeExceeded)	"túl nagy fájlméret"
 ::util::mc::IOError(LoadFailed)			"Betöltési hiba (túl sok bejegyzés)"
-::util::mc::IOError(NotOriginalVersion)		"file has changed outside from Scidb since last open" ;# NEW
+::util::mc::IOError(NotOriginalVersion)		"file has changed outside from this session since last open" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
@@ -372,25 +372,30 @@
 ::util::photos::mc::Log(updated:N)		"%s fájlok frissítve."
 
 ### application ########################################################
-::application::mc::Database		"&Adatbázis"
-::application::mc::Board		"&Tábla"
-::application::mc::MainMenu		"Fő&menü"
+::application::mc::Database			"&Adatbázis"
+::application::mc::Board			"&Tábla"
+::application::mc::MainMenu			"Fő&menü"
 
-::application::mc::DockWindow		"Ablak dokkolása"
-::application::mc::UndockWindow		"Dokkolás visszavonása"
-::application::mc::ChessInfoDatabase	"Chess Information Data Base"
-::application::mc::Shutdown		"Kilépés..."
-::application::mc::QuitAnyway		"Biztos ki akar lépni?"
-::application::mc::CancelLogout		"Cancel Logout" ;# NEW
-::application::mc::AbortWriteOperation	"Abort write operation" ;# NEW
+::application::mc::DockWindow			"Ablak dokkolása"
+::application::mc::UndockWindow			"Dokkolás visszavonása"
+::application::mc::ChessInfoDatabase		"Chess Information Data Base"
+::application::mc::Shutdown			"Kilépés..."
+::application::mc::QuitAnyway			"Biztos ki akar lépni?"
+::application::mc::CancelLogout			"Cancel Logout" ;# NEW
+::application::mc::AbortWriteOperation		"Abort write operation" ;# NEW
 
-::application::mc::UpdatesAvailable	"Új frissítés érhető el"
+::application::mc::UpdatesAvailable		"Új frissítés érhető el"
 
-::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
-::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
-::application::mc::RestartLogout	"Aborting the write operation will restart the logout process." ;# NEW
-::application::mc::UnsavedFiles		"The following PGN files are unsaved:" ;# NEW
-::application::mc::ThrowAwayAllChanges	"Do you really want to throw away all changes?" ;# NEW
+::application::mc::WriteOperationInProgress	"Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
+::application::mc::LogoutNotPossible		"Logout is currently not possible, the result would be a corrupted database." ;# NEW
+::application::mc::RestartLogout		"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::UnsavedFiles			"The following PGN files are unsaved:" ;# NEW
+::application::mc::ThrowAwayAllChanges		"Do you really want to throw away all changes?" ;# NEW
+
+::application::mc::Deleted			"Games deleted: %d" ;# NEW
+::application::mc::Changed			"Games changed: %d" ;# NEW
+::application::mc::Added			"Games added: %d" ;# NEW
+::application::mc::DescriptionHasChanged	"Description has changed" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable		"Mutasd a verseny kereszttábláját"
@@ -497,6 +502,7 @@
 ::application::database::mc::SearchPGNTags		"Searching for PGN tags" ;# NEW
 ::application::database::mc::SelectSuperfluousTags	"Select superfluous tags:" ;# NEW
 ::application::database::mc::WillBePermanentlyDeleted	"Please note: This action will permanently delete the concerned information from database." ;# NEW
+::application::database::mc::ReadWriteFailed		"Setting the database writable failed:" ;# NEW
 
 ::application::database::mc::T_Unspecific		"Nem specifikus"
 ::application::database::mc::T_Temporary		"Ideiglenes"
@@ -2267,6 +2273,8 @@
 
 ::dialog::fsbox::mc::Content			"Content" ;# NEW
 ::dialog::fsbox::mc::Open			"Open" ;# NEW
+::dialog::fsbox::mc::OriginalPath		"Original Path" ;# NEW
+::dialog::fsbox::mc::DateOfDeletion		"Date of Deletion" ;# NEW
 
 ::dialog::fsbox::mc::FileType(exe)		"Executables" ;# NEW
 ::dialog::fsbox::mc::FileType(txt)		"Text files" ;# NEW
@@ -2418,6 +2426,8 @@
 ::fsbox::mc::NewName			"Új név"
 ::fsbox::mc::BookmarkAlreadyExists	"A bookmark for this folder is already existing: '%s'." ;# NEW
 ::fsbox::mc::AddBookmarkAnyway		"Add bookmark anyway?" ;# NEW
+::fsbox::mc::OriginalPathDoesNotExist	"The original directory '%s' of this item does not exist anymore. Create this directory and continue with operation?" ;# NEW
+::fsbox::mc::DragItemAnywhere		"An alternative may be to drag the item anywhere else to restore it." ;# NEW
 
 ::fsbox::mc::ReallyMove(file,w)		"Biztos hogy a kukába dobod a(z) '%s' fájlt?"
 ::fsbox::mc::ReallyMove(file,r)		"Biztos hogy a kukába dobod a(z) '%s' írásvédett fájlt?"
@@ -2442,6 +2452,7 @@
 ::fsbox::mc::DropAction(move)		"Beillesztés ide"
 ::fsbox::mc::DropAction(copy)		"Másolás innen"
 ::fsbox::mc::DropAction(link)		"Link Here"  ;#NEW
+::fsbox::mc::DropAction(restore)	"Restore Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Eszköztár"

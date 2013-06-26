@@ -153,7 +153,7 @@ public:
 	/// Update the characteristics of a game.
 	void updateCharacteristics(unsigned index, db::TagSet const& tags);
 	/// Update the database description.
-	void setDescription(mstl::string const& description);
+	void setupDescription(mstl::string const& description);
 	/// Set flag whether this cursor is the currently active cursor.
 	void setActive(bool flag);
 

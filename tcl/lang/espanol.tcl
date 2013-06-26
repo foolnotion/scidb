@@ -194,7 +194,7 @@
 ::util::mc::IOError(EncodingFailed)			"no se puede escribir el nombre"
 ::util::mc::IOError(MaxFileSizeExceeded)	"se alcanzó el tamaño máximo de archivo" 
 ::util::mc::IOError(LoadFailed)				"carga fallida (demasiadas entradas de evento)" 
-::util::mc::IOError(NotOriginalVersion)	"file has changed outside from Scidb since last open" ;# NEW
+::util::mc::IOError(NotOriginalVersion)	"file has changed outside from this session since last open" ;# NEW
 
 ::util::mc::SelectionOwnerDidntRespond		"Tiempo excedido durante la operación: el propietario de la selección no respondió."
 
@@ -372,25 +372,30 @@
 ::util::photos::mc::Log(updated:N)				"%s archivos actualizados."
 
 ### application ########################################################
-::application::mc::Database				"&Base"
-::application::mc::Board					"&Tablero"
-::application::mc::MainMenu				"&Menu principal"
+::application::mc::Database					"&Base"
+::application::mc::Board						"&Tablero"
+::application::mc::MainMenu					"&Menu principal"
 
-::application::mc::DockWindow				"Ventana acoplada"
-::application::mc::UndockWindow			"Ventana desacoplada"
-::application::mc::ChessInfoDatabase	"Base de Datos Ajedrecística"
-::application::mc::Shutdown				"Cierre..."
-::application::mc::QuitAnyway				"¿Desea cerrar de todos modos?"
-::application::mc::CancelLogout			"Cancel Logout" ;# NEW
-::application::mc::AbortWriteOperation	"Abort write operation" ;# NEW
+::application::mc::DockWindow					"Ventana acoplada"
+::application::mc::UndockWindow				"Ventana desacoplada"
+::application::mc::ChessInfoDatabase		"Base de Datos Ajedrecística"
+::application::mc::Shutdown					"Cierre..."
+::application::mc::QuitAnyway					"¿Desea cerrar de todos modos?"
+::application::mc::CancelLogout				"Cancel Logout" ;# NEW
+::application::mc::AbortWriteOperation		"Abort write operation" ;# NEW
 
-::application::mc::UpdatesAvailable		"Actualizaciones disponibles"
+::application::mc::UpdatesAvailable			"Actualizaciones disponibles"
 
 ::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
-::application::mc::LogoutNotPossible	"Logout is currently not possible, the result would be a corrupted database." ;# NEW
-::application::mc::RestartLogout			"Aborting the write operation will restart the logout process." ;# NEW
-::application::mc::UnsavedFiles			"The following PGN files are unsaved:" ;# NEW
-::application::mc::ThrowAwayAllChanges	"Do you really want to throw away all changes?" ;# NEW
+::application::mc::LogoutNotPossible		"Logout is currently not possible, the result would be a corrupted database." ;# NEW
+::application::mc::RestartLogout				"Aborting the write operation will restart the logout process." ;# NEW
+::application::mc::UnsavedFiles				"The following PGN files are unsaved:" ;# NEW
+::application::mc::ThrowAwayAllChanges		"Do you really want to throw away all changes?" ;# NEW
+
+::application::mc::Deleted						"Games deleted: %d" ;# NEW
+::application::mc::Changed						"Games changed: %d" ;# NEW
+::application::mc::Added						"Games added: %d" ;# NEW
+::application::mc::DescriptionHasChanged	"Description has changed" ;# NEW
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Mostrar tabla de torneo para esta partida"
@@ -497,6 +502,7 @@
 ::application::database::mc::SearchPGNTags					"Searching for PGN tags" ;# NEW
 ::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:" ;# NEW
 ::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database." ;# NEW
+::application::database::mc::ReadWriteFailed					"Setting the database writable failed:" ;# NEW
 
 ::application::database::mc::T_Unspecific						"Inespecífico"
 ::application::database::mc::T_Temporary						"Temporal"
@@ -2265,6 +2271,8 @@
 
 ::dialog::fsbox::mc::Content					"Contenido" 
 ::dialog::fsbox::mc::Open						"Abrir" 
+::dialog::fsbox::mc::OriginalPath			"Original Path" ;# NEW
+::dialog::fsbox::mc::DateOfDeletion			"Date of Deletion" ;# NEW
 
 ::dialog::fsbox::mc::FileType(exe)			"Ejecutables"
 ::dialog::fsbox::mc::FileType(txt)			"Archivos de Texto"
@@ -2416,6 +2424,8 @@
 ::fsbox::mc::NewName							"Nuevo nombre"
 ::fsbox::mc::BookmarkAlreadyExists		"A bookmark for this folder is already existing: '%s'." ;# NEW
 ::fsbox::mc::AddBookmarkAnyway			"Add bookmark anyway?" ;# NEW
+::fsbox::mc::OriginalPathDoesNotExist	"The original directory '%s' of this item does not exist anymore. Create this directory and continue with operation?" ;# NEW
+::fsbox::mc::DragItemAnywhere				"An alternative may be to drag the item anywhere else to restore it." ;# NEW
 
 ::fsbox::mc::ReallyMove(file,w)			"¿Realmente desea mover el archivo '%s' a la papelera?"
 ::fsbox::mc::ReallyMove(file,r)			"¿Realmente desea mover el archivo de solo lectura '%s' a la papelera?"
@@ -2440,6 +2450,7 @@
 ::fsbox::mc::DropAction(move)				"Mover aquí"
 ::fsbox::mc::DropAction(copy)				"Copiar aquí"
 ::fsbox::mc::DropAction(link)				"Enlazar aquí"
+::fsbox::mc::DropAction(restore)			"Restore Here" ;# NEW
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra de herramientas"

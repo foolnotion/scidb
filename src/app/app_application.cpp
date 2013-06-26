@@ -1004,16 +1004,20 @@ Application::setSource(	unsigned position,
 }
 
 
-void
+bool
 Application::setReadonly(Cursor& cursor, bool flag)
 {
 	if (flag != cursor.base().isReadonly())
 	{
-		cursor.base().setReadonly(flag);
+		// flag=true: may fail if the modification time of the database has changed
+		if (!cursor.base().setReadonly(flag))
+			return false;
 
 		if (m_subscriber)
 			m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 	}
+
+	return true;
 }
 
 
@@ -2699,18 +2703,27 @@ Application::save(mstl::string const& name, util::Progress& progress)
 }
 
 
-void
+file::State
 Application::save(mstl::string const& name, unsigned flags, util::Progress& progress)
 {
 	M_REQUIRE(contains(name));
 
-	MultiBase& multiBase = m_cursorMap.find(name)->second->multiBase();
+	MultiCursor&	multiCursor(*m_cursorMap.find(name)->second);
+	MultiBase&		multiBase(multiCursor.multiBase());
+	WriteGuard		guard(*this, multiBase);
 
-	if (multiBase.isUnsaved())
+	file::State state = multiBase.save(flags, progress);
+
+	if (state == file::Updated && m_subscriber)
 	{
-		WriteGuard guard(*this, multiBase);
-		multiBase.save(flags, progress);
+		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+		{
+			if (multiCursor.exists(v))
+				m_subscriber->updateDatabaseInfo(name, variant::fromIndex(v));
+		}
 	}
+
+	return state;
 }
 
 

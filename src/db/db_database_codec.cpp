@@ -60,8 +60,7 @@
 
 using namespace db;
 using namespace util;
-
-namespace file = util::misc::file;
+using namespace sys;
 
 
 struct DatabaseCodec::InfoData
@@ -328,7 +327,7 @@ DatabaseCodec::hasCodecFor(mstl::string const& suffix)
 DatabaseCodec*
 DatabaseCodec::makeCodec(mstl::string const& name, Mode mode)
 {
-	mstl::string ext(file::suffix(name));
+	mstl::string ext(misc::file::suffix(name));
 
 	if (ext == "si4")
 	{
@@ -362,7 +361,7 @@ DatabaseCodec::getAttributes(	mstl::string const& filename,
 										uint32_t& creationTime,
 										mstl::string* description)
 {
-	mstl::string ext(file::suffix(filename));
+	mstl::string ext(misc::file::suffix(filename));
 
 	type = type::Unspecific;
 	variant = variant::Normal;
@@ -396,7 +395,7 @@ DatabaseCodec::getSuffixes(mstl::string const& filename, StringList& result)
 	if (filename.find('.') == mstl::string::npos)
 		ext = filename;
 	else
-		ext = file::suffix(filename);
+		ext = misc::file::suffix(filename);
 
 	if (ext == "sci")
 	{
@@ -724,8 +723,8 @@ DatabaseCodec::rename(mstl::string const& oldName, mstl::string const& newName)
 	M_REQUIRE(util::misc::file::suffix(oldName) == util::misc::file::suffix(newName));
 	M_REQUIRE(format() == format::Scidb || format() == format::Scid3 || format() == format::Scid4);
 
-	mstl::string oldRoot(file::rootname(oldName));
-	mstl::string newRoot(file::rootname(newName));
+	mstl::string oldRoot(misc::file::rootname(oldName));
+	mstl::string newRoot(misc::file::rootname(newName));
 
 	StringList result;
 	getSuffixes(newName, result);
