@@ -51,6 +51,7 @@ SOURCES = \
 	utils/player-photos.tcl \
 	utils/emoticons.tcl \
 	utils/clipboard.tcl \
+	utils/trash.tcl \
 	dnd/tkdnd.tcl \
 	dnd/tkdnd_unix.tcl \
 	widgets/tooltip.tcl \
