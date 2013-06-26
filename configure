@@ -117,7 +117,6 @@ array set configure {
     prefix          /usr/local
     exec-prefix     /usr/local
     program-suffix  {}
-    fontconfig-path {}
     tcl-shell       {}
 }
 set configure(tcl-version) [findBestTclVersion]
@@ -505,11 +504,11 @@ proc FindTclTkPathsAqua {} {
 }
 
 
-# findTclTkPaths:
+# findTclTkPathsAndMore:
 #    Finds all details of the Tcl/Tk installation.
 #    Returns 1 on success, 0 on failure.
 #
-proc findTclTkPaths {} {
+proc findTclTkPathsAndMore {} {
     global tclv tclv_nodot configure package tcl_platform bitmode
 
     if {$tcl_platform(os) eq "Darwin" && [FindTclTkPathsAqua]} {
@@ -716,7 +715,6 @@ proc findTclTkPaths {} {
         if {[info exists configure($module-libraries)]} {
             set package($module-lib) [MakeOption -L $configure($module-libraries)]
             append package($module-lib) " -l${module}${tclv}"
-#           set package($module-lib) "$configure($module-libraries)/lib${module}${tclv}.so"
         } else {
             set libPaths $path($module,libraries)
             set configure($module-libraries) [FindDir "lib${module}${tclv}.*" $libPaths]
@@ -769,30 +767,28 @@ proc findTclTkPaths {} {
         }
     }
 
-    if {[info exists configure(xcursor-libraries)]} {
-        set package(xcursor-lib) [MakeOption -L $configure(xcursor-libraries)]
-    } else {
-        set configure(xcursor-libraries) [FindDir "libXcursor*" $path(x,libraries)]
-        puts -nonewline "    Location of Xcursor library: "
-        if {[string length $configure(xcursor-libraries)] == 0} {
-            puts "not found"
+    foreach lib {Xcursor fontconfig} {
+        set attr [string tolower $lib]
+        if {[info exists configure(${attr}-libraries)]} {
+            set package(${attr}-lib) [MakeOption -L $configure(${attr}-libraries)]
         } else {
-            # Because of an Ubuntu 11.04 (and higher) system bug we have
-            # to check the library path.
-            if {[file exists $configure(xcursor-libraries)/libXcursor.so]} {
-                # this is the normal case
-                set package(xcursor-lib) [MakeOption -L $configure(xcursor-libraries)]
-                append package(xcursor-lib) " -lXcursor"
-                puts $configure(xcursor-libraries)
+            set configure(${attr}-libraries) [FindDir "lib${lib}*" $path(x,libraries)]
+            puts -nonewline "    Location of ${lib} library: "
+            if {[string length $configure(${attr}-libraries)] == 0} {
+                puts "not found"
             } else {
-                # special case on Ubuntu 11.04 (and higher)
-                set files [glob -directory $configure(xcursor-libraries) -nocomplain libXcursor.so.*]
-                if {[llength $files] == 0} {
-                    puts "not found"
+                # Because of an Ubuntu 11.04 (and higher) system bug we have
+                # to check the library path.
+                if {[file exists $configure(${attr}-libraries)/lib${lib}.so]} {
+                    # this is the normal case
+                    set package(${attr}-lib) [MakeOption -L $configure(${attr}-libraries)]
+                    append package(${attr}-lib) " -l${lib}"
+                    puts $configure(${attr}-libraries)
                 } else {
-                    # only libXursor.so.1.0.2 is existing; a hack is required.
-                    set package(xcursor-lib) [lindex $files 0]
-                    puts $package(xcursor-lib)
+                    puts "Couldn't find library lib{$lib}.so. It is recommended to"
+                    puts "execute the script 'fix-this-crappy-ubuntu-system',"
+                    puts "and then try again."
+                    exit 1
                 }
             }
         }
@@ -859,7 +855,7 @@ proc findFreetype {} {
         set package(freetype-inc) "-I/[file join {*}[lrange [split $dir /] 0 end-2]]"
         puts "yes."
     } else {
-        set option(HAVE_FREETYPE) 0
+        set option(HAVE_FREETYPE) ""
         puts "no."
     }
 }
@@ -1685,7 +1681,7 @@ proc checkGCC {cc} {
         #
         # Don't use "var-tracking*", compile time is too long.
         #
-        # We use "Wno-cpp" to suppress this stupid "Attemot to use
+        # We use "Wno-cpp" to suppress this stupid "Attempt to use
         # kernel headers from user space" warning (the inventor
         # of this warning has no serious experience in software
         # development).
@@ -1741,7 +1737,7 @@ int main()
 }
 EOF
 
-__CC__ -o testfontconfig testfontconfig.c -lfontconfig
+__CC__ -o testfontconfig testfontconfig.c -L__LIB__ -lfontconfig
 if [ -f testfontconfig ]; then
     exit 0
 else
@@ -1753,9 +1749,11 @@ fi
 proc checkFontConfig {} {
     global TestFontConfig
     global environment
+    global configure
 
     puts -nonewline "    Checking your fontconfig version: "
     set testfontconfig [regsub -all __CC__ $TestFontConfig $environment(CC)]
+    set testfontconfig [regsub -all __LIB__ $testfontconfig $configure(fontconfig-libraries)]
     flush stdout
     if {[catch {open testfontconfig.sh w} f]} { return 0 }
     puts $f $testfontconfig
@@ -1768,28 +1766,30 @@ proc checkFontConfig {} {
         puts "Cannot install Scidb because library fontconfig"
         puts "cannot be found."
         set result 0
-    }
+    } else {
+        set version 0
+        if {[catch {exec ./testfontconfig} version err]} {
+            puts $err
+            set result 0
+        }
 
-    set version 0
-    if {[catch {exec ./testfontconfig} version err]} {
-        puts $err
-        set result 0
+        if {$result} {
+            puts "[expr {$version/10000}].[expr {($version % 10000)/100}]"
+
+            if {$version == 30800} {
+                puts ""
+                puts "Your system has fontconfig version 3.8 installed."
+                puts "This library version is broken, Scidb is not working"
+                puts "with this version. Please upgrade to library version"
+                puts "3.9 or higher before installing Scidb."
+                set result 0
+            }
+        }
     }
 
     catch { file delete -force testfontconfig.sh }
     catch { file delete -force testfontconfig.c }
     catch { file delete -force testfontconfig }
-
-    puts "[expr {$version/10000}].[expr {($version % 10000)/100}]"
-
-    if {$version == 30800} {
-        puts ""
-        puts "Your system has fontconfig version 3.8 installed."
-        puts "This library version is broken, Scidb is not working"
-        puts "with this version. Please upgrade to library version"
-        puts "3.9 or higher before installing Scidb."
-        set result 0
-    }
 
     return $result
 }
@@ -1798,7 +1798,7 @@ proc checkFontConfig {} {
 # writeMakefile:
 #    Creates the Makefile.in using Makefile.conf and the configured settings.
 #
-proc writeMakefile {{type ""}} {
+proc writeMakefile {success} {
     global option defaults environment package compiler warnings
     global feature configure subdir tcl_platform engines bitmode
 
@@ -1821,8 +1821,6 @@ proc writeMakefile {{type ""}} {
     if {[string length $compiler(popcnt)]} {
         Append option(EXTRA_CXXFLAGS) $compiler(popcnt)
     }
-
-    set success [findTclTkPaths]
 
     foreach name [array names defaults] {
         if {![info exists option($name)]} {
@@ -2010,62 +2008,63 @@ proc usage {rc} {
     puts "For better control, use the options below."
     puts ""
     puts "Fine tuning of the installation directories:"
-    puts "  --bindir=DIR              user executables \[EPREFIX/bin\]"
-    puts "  --enginesdir=DIR          engines (executables) \[EPREFIX/games\]"
-    puts "  --datadir=DIR             read-only architecture-independent data \[PREFIX/share\]"
-    puts "  --libdir=DIR              object code libraries \[EPREFIX/lib\]"
-    puts "  --mandir=DIR              man documentation \[PREFIX/man\]"
+    puts "  --bindir=DIR               user executables \[EPREFIX/bin\]"
+    puts "  --enginesdir=DIR           engines (executables) \[EPREFIX/games\]"
+    puts "  --datadir=DIR              read-only architecture-independent data \[PREFIX/share\]"
+    puts "  --libdir=DIR               object code libraries \[EPREFIX/lib\]"
+    puts "  --mandir=DIR               man documentation \[PREFIX/man\]"
     puts ""
     puts "Program names:"
-    puts "  --program-suffix=SUFFIX   append SUFFIX to installed program names"
+    puts "  --program-suffix=SUFFIX    append SUFFIX to installed program names"
     puts ""
     puts "Tcl/Tk features:"
-    puts "  --tcl-version=VER         Tcl/Tk version \[$configure(tcl-version)\]"
-    puts "  --tcl-includes=DIR        Tcl include files are in DIR"
-    puts "  --tcl-libraries=DIR       Tcl library files are in DIR"
-    puts "  --tk-includes=DIR         Tk include files are in DIR"
-    puts "  --tk-libraries=DIR        Tk library files are in DIR"
+    puts "  --tcl-version=VER          Tcl/Tk version \[$configure(tcl-version)\]"
+    puts "  --tcl-includes=DIR         Tcl include files are in DIR"
+    puts "  --tcl-libraries=DIR        Tcl library files are in DIR"
+    puts "  --tk-includes=DIR          Tk include files are in DIR"
+    puts "  --tk-libraries=DIR         Tk library files are in DIR"
     puts ""
     puts "X features:"
-    puts "  --x-includes=DIR          X include files are in DIR"
-    puts "  --x-libraries=DIR         X library files are in DIR"
-    puts "  --xcursor-libraries=DIR   Xcursor library files are in DIR"
+    puts "  --x-includes=DIR           X include files are in DIR"
+    puts "  --x-libraries=DIR          X library files are in DIR"
+    puts "  --xcursor-libraries=DIR    Xcursor library files are in DIR"
+    puts "  --fontconfig-libraries=DIR fontconfig library files are in DIR"
     puts ""
     puts "GNU compiler features:"
     if {[llength $configure(gcc-version)]} {
-    puts "  --gcc-version=VER         GNU compiler version \[$configure(gcc-version)\]"
+    puts "  --gcc-version=VER          GNU compiler version \[$configure(gcc-version)\]"
     } else {
-    puts "  --gcc-version=VER         GNU compiler version"
+    puts "  --gcc-version=VER          GNU compiler version"
     }
-    puts "                            you may use 'clang' instead of a version for the"
-    puts "                            clang compiler"
+    puts "                             you may use 'clang' instead of a version for the"
+    puts "                             clang compiler"
     puts ""
     puts "Packages:"
-    puts "  --with-zlib-inc=DIR       path to Zlib compression library headers"
-    puts "  --with-zlib-lib=DIR       link options for Zlib compression library"
-    puts "  --with-zziplib-inc=DIR    path to Zziplib zip library headers"
-    puts "  --with-zziplib-lib=DIR    link options for Zziplib zip library"
-    puts "  --with-expat-inc=DIR      path to Expat XML Parser headers"
-    puts "  --with-expat-lib=DIR      link options for Expat XML Parser library"
+    puts "  --with-zlib-inc=DIR        path to Zlib compression library headers"
+    puts "  --with-zlib-lib=DIR        link options for Zlib compression library"
+    puts "  --with-zziplib-inc=DIR     path to Zziplib zip library headers"
+    puts "  --with-zziplib-lib=DIR     link options for Zziplib zip library"
+    puts "  --with-expat-inc=DIR       path to Expat XML Parser headers"
+    puts "  --with-expat-lib=DIR       link options for Expat XML Parser library"
     puts ""
     puts "Optional Features:"
-    puts "  --disable-FEATURE         do not include FEATURE (same as --enable-FEATURE=no)"
-    puts "  --enable-FEATURE\[=ARG\]    include FEATURE \[ARG=yes\]"
-    puts "  --enable-fam              build with FAM support \[default=$feature(fam)\]"
-    puts "  --enable-symbols          build with debugging symbols \[default=$feature(symbols)\]"
-    puts "  --enable-assertions       build with assertions (slows down the program)"
-    puts "                            \[default=$feature(assertions)\]"
-    puts "  --enable-gprof-profiling  enable gprof profiling (slows down the program)"
-    puts "                            \[default=$feature(gprof-profiling)\]"
-    puts "  --enable-gcov-coverage    enable coverage (slows down the program)"
-    puts "                            \[default=$feature(gcov-coverage)\]"
-    puts "  --enable-si4-debugging    enable debugging information for .si3/.si4 format"
-    puts "                            \[default=$feature(debug-si4)]"
-#   puts "  --enable-splash-screen   enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
+    puts "  --disable-FEATURE          do not include FEATURE (same as --enable-FEATURE=no)"
+    puts "  --enable-FEATURE\[=ARG\]     include FEATURE \[ARG=yes\]"
+    puts "  --enable-fam               build with FAM support \[default=$feature(fam)\]"
+    puts "  --enable-symbols           build with debugging symbols \[default=$feature(symbols)\]"
+    puts "  --enable-assertions        build with assertions (slows down the program)"
+    puts "                             \[default=$feature(assertions)\]"
+    puts "  --enable-gprof-profiling   enable gprof profiling (slows down the program)"
+    puts "                             \[default=$feature(gprof-profiling)\]"
+    puts "  --enable-gcov-coverage     enable coverage (slows down the program)"
+    puts "                             \[default=$feature(gcov-coverage)\]"
+    puts "  --enable-si4-debugging     enable debugging information for .si3/.si4 format"
+    puts "                             \[default=$feature(debug-si4)]"
+#   puts "  --enable-splash-screen    enable (or disable) the splash screen \[default=$feature(splash-screen)\]"
     puts ""
     puts "Additional Options:"
-    puts "  --suppress-insane-message suppress the message about an insane distribution"
-    puts "                            (not recommended)"
+    puts "  --suppress-insane-message  suppress the message about an insane distribution"
+    puts "                             (not recommended)"
     puts ""
     puts "Some influential environment variables:"
     puts "  CC          C compiler command \[$environment(CC)\]"
@@ -2177,6 +2176,8 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
+    set success [findTclTkPathsAndMore]
+
     if {![checkFontConfig]} { exit 1 }
 
     checkInotify
@@ -2198,7 +2199,7 @@ if {[string length $gxxVer]} {
     }
 
      if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
-         writeMakefile
+         writeMakefile $success
      }
 
     if {[llength $instableTkLibrary]} {

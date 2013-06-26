@@ -1,0 +1,138 @@
+#!/bin/sh
+
+#########################################################################
+#
+#  Ubuntu 11.04 (and higher) has severe system bugs: missing link from
+#  "libXcursor.so" to "libXcursor.so.1.0.2".
+#
+#  Ubuntu 13.03 introduced another problem: missing link from
+#  "libfontconfig.so" to "libfontconfig.so.1".
+#
+#  This script tries to find the libraries and to set the missing links.
+#
+#########################################################################
+
+
+# Try to find the best version of Tcl/Tk 8.x that is installed,
+# by searching the PATH directories for tclsh8.5, tclsh85, etc. If no
+# tclsh program with a version number in the file name is found, the
+# default program to execute is just tclsh.
+# The backslashes at the end of these lines are needed: \
+tclsh=tclsh; \
+for tclver in 86 8.6 85 8.5; do \
+    IFS=:; \
+    for dir in $PATH; do \
+        if [ -x $dir/tclsh$tclver ]; \
+            then tclsh=$dir/tclsh$tclver; \
+        fi; \
+    done; \
+done
+# Now execute this script using the best tclsh version found:
+# The backslash at the end of this line is needed: \
+exec $tclsh "$0" ${1+"$@"}
+
+
+proc FindDir {f path {exp ""}} {
+    foreach dir $path {
+        set p [file join $dir $f]
+        if {![catch {glob $p}]} {
+            return $dir 
+        }
+    }
+
+    return ""
+}
+
+
+set searchPaths {}
+if {8*$tcl_platform(wordSize) == 64} {
+    lappend searchPaths [linsert $path(x,libraries,usr) 0 /usr/lib64]
+}
+lappend searchPaths /usr/lib
+# NOTE: All these entries below are required for the corrupted Unix
+# systems (Ubuntu >= 11.04, and others). Sane Unix systems have
+# common links (like above).
+switch [expr {8*$tcl_platform(wordSize)}] {
+    32 { set dirs { i386-linux-gnu
+                    i386-gnu
+                    i386-kfreebsd-gnu
+                    hppa-linux-gnu
+                    mips-linux-gnu
+                    ppc-linux-gnu
+                    s390-linux-gnu
+                    sparc-linux-gnu} }
+    64 { set dirs { x86_64-linux-gnu
+                    x86_64-gnu
+                    x86_64-kfreebsd-gnu
+                    hppa64-linux-gnu
+                    ia64-linux-gnu
+                    mips64-linux-gnu
+                    ppc64-linux-gnu
+                    s390x-linux-gnu
+                    sparc64-linux-gnu} }
+}
+lappend dirs                               \
+    alpha-linux-gnu                        \
+    arm-linux-gnueabi arm-linux-gnueabihf  \
+    m68k-linux-gnu                         \
+    mipsel-linux-gnu                       \
+    powerpc-linux-gnu powerpc-linux-gnuspe \
+    sh4-linux-gnu                          \
+    ;
+foreach dir $dirs {
+    lappend searchPaths /usr/lib/$dir
+}
+
+
+#foreach {Xcursor fontconfig} {}
+foreach lib {XXX YYY} {
+    set path [FindDir "lib{$lib}*" $searchPaths]
+    set found 0
+
+    if {[string length $path] > 0} {
+        if {[file exists $path/lib${lib}.so]} {
+            puts "*** Link '$path/lib${lib}.so' exists, fine."
+            puts ""
+            set found 1
+        } else {
+            foreach path $searchPaths {
+                set files [glob -directory $path -nocomplain lib${lib}.so.*]
+                if {[llength $files] > 0} {
+                    # missing link, a fix is required
+                    set file ""
+                    set len 0
+                    foreach f $files {
+                        if {$len == 0 || [string length $f] < $len} {
+                            set file $f
+                            set len [string length $f]
+                        }
+                    }
+                    set p /usr/lib
+                    if {[string match *64* $path]} { append p 64 }
+                    set link ${p}/lib${lib}.so
+                    if {![file exists $link]} {
+                        set cmd [list sudo ln -s $file $link]
+                        puts "*** Missing link '$link', I will fix this."
+                        puts ""
+                        puts "Probably you have to enter the user password"
+                        puts "(for command '$cmd'):"
+                        exec {*}$cmd
+                        puts ""
+                        puts "*** Missing link '$link' set to destination '$file'"
+                        puts ""
+                        set found 1
+                        break
+                    }
+                }
+            }
+        }
+    }
+
+    if {!$found} {
+        puts "*** Sorry, cannot find lib${lib} on this crappy system."
+        puts ""
+        exit 1
+    }
+}
+
+# vi:set ts=4 sw=4 et filetype=tcl:
