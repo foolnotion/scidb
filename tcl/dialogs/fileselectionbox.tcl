@@ -96,11 +96,14 @@ set FileIcons [list                           \
 	.scv 		$::icon::16x16::filetypeArchive   \
 	.cbh		$::icon::16x16::filetypeChessBase \
 	.cbf		$::icon::16x16::filetypeChessBase \
+	.CBF		$::icon::16x16::filetypeChessBase \
 	.pgn		$::icon::16x16::filetypePGN       \
+	.PGN		$::icon::16x16::filetypePGN       \
 	.pgn.gz	$::icon::16x16::filetypePGN       \
 	.bpgn		$::icon::16x16::filetypeBPGN      \
 	.bpgn.gz	$::icon::16x16::filetypeBPGN      \
 	.zip		$::icon::16x16::filetypeZipFile   \
+	.ZIP		$::icon::16x16::filetypeZipFile   \
 	.pdf		$::icon::16x16::filetypePDF       \
 	.html		$::icon::16x16::filetypeHTML      \
 	.htm		$::icon::16x16::filetypeHTML      \
@@ -115,11 +118,14 @@ set FileEncodings [list                    \
 	.scv 		0 utf-8                        \
 	.cbh 		1 $::encoding::windowsEncoding \
 	.cbf 		1 $::encoding::dosEncoding     \
+	.CBF 		1 $::encoding::dosEncoding     \
 	.pgn 		1 $::encoding::defaultEncoding \
+	.PGN 		1 $::encoding::defaultEncoding \
 	.bpgn 	1 $::encoding::defaultEncoding \
 	.pgn.gz  1 $::encoding::defaultEncoding \
 	.bpgn.gz 1 $::encoding::defaultEncoding \
 	.zip  	1 $::encoding::defaultEncoding \
+	.ZIP  	1 $::encoding::defaultEncoding \
 ]
 if {$tcl_platform(platform) eq "windows"} {
 	set FileEncodings(.cbh) [list 1 $::encoding::systemEncoding] ;# XXX ok?

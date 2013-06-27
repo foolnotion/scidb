@@ -70,6 +70,7 @@ static char const* CmdAttributes				= "::scidb::misc::attributes";
 static char const* CmdContainsUnicodeChar	= "::scidb::misc::containsUnicodeChar";
 static char const* CmdCrc32					= "::scidb::misc::crc32";
 static char const* CmdDebug					= "::scidb::misc::debug?";
+static char const* CmdDirEmpty				= "::scidb::misc::dirEmpty?";
 static char const* CmdEmoticons				= "::scidb::misc::emoticons";
 static char const* CmdEncoding				= "::scidb::misc::encoding";
 static char const* CmdExtraTags				= "::scidb::misc::extraTags";
@@ -104,10 +105,18 @@ static char const* CmdZipContent				= "::scidb::misc::zipContent";
 static unsigned cacheCount = 0;
 
 
-inline char
-valToXDigit(unsigned v)
+inline bool
+isMark(char c)
 {
-	return char(v + (v < 10 ? unsigned('0') : unsigned('A' - 10)));
+	static char const* Marks = "-_.!~*'()";
+	return bool(strchr(Marks, c));
+}
+
+
+inline char
+valToXDigit(unsigned char v)
+{
+	return char(v + (v < 10 ? '0' : 'A' - 10));
 }
 
 
@@ -945,6 +954,14 @@ cmdDebug(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 
 static int
+cmdDirEmpty(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	setResult(::sys::file::dirIsEmpty(stringFromObj(objc, objv, 1)));
+	return TCL_OK;
+}
+
+
+static int
 cmdLookup(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* which = stringFromObj(objc, objv, 1);
@@ -1318,25 +1335,33 @@ static int
 cmdUrlEscape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	typedef sys::utf8::uchar uchar;
+	typedef sys::utf8::uchar byte;
 
 	char const* p = stringFromObj(objc, objv, 1);
 	char const* e = p + ::strlen(p);
 
 	mstl::string url;
+	char pathDelim = sys::file::pathDelim();
 
-	for ( ; p < e; ++p)
+	while (p < e)
 	{
-		if ((unsigned char)(*p) > 127 || isspace(*p) || !isgraph(*p))
+		uchar code;
+		char const* q = sys::utf8::nextChar(p, code);
+
+		if (code > 127 || !(isalnum(code) || isMark(code) || code == pathDelim))
 		{
-			url += '%';
-			url += valToXDigit(*p >> 4);
-			url += valToXDigit(*p & 0xf0);
+			for ( ; p < q; ++p)
+			{
+				url += '%';
+				url += valToXDigit(byte(*p & 0xf0) >> 4);
+				url += valToXDigit(byte(*p) & 0x0f);
+			}
 		}
 		else
 		{
-			url += *p;
+			url += char(code);
+			p = q;
 		}
-
 	}
 
 	setResult(url);
@@ -1595,6 +1620,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdContainsUnicodeChar,	cmdContainsUnicodeChar);
 	createCommand(ti, CmdCrc32,					cmdCrc32);
 	createCommand(ti, CmdDebug,					cmdDebug);
+	createCommand(ti, CmdDirEmpty,				cmdDirEmpty);
 	createCommand(ti, CmdEncoding,				cmdEncoding);
 	createCommand(ti, CmdEmoticons,				cmdEmoticons);
 	createCommand(ti, CmdExtraTags,				cmdExtraTags);

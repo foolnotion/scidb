@@ -2417,8 +2417,8 @@
 ::fsbox::mc::InvalidUri						"Innehåll som släpps är inte en giltig URI-lista."
 ::fsbox::mc::UriRejected					"Följande filer är förkastade:"
 ::fsbox::mc::UriRejectedDetail			"Bara listade filtyper kan behandlas."
-::fsbox::mc::CannotOpenTrashFiles		"Kan inte öppna filer från papperskorgen:"
 ::fsbox::mc::CannotOpenRemoteFiles		"Kan inte öppna fjärrfiler:"
+::fsbox::mc::CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:" ;# NEW
 ::fsbox::mc::OperationAborted				"Åtgärden avbröts."
 ::fsbox::mc::ApplyOnDirectories			"Är du säker på att du vill använda den valda åtgärden på (följande) folder?"
 ::fsbox::mc::EntryAlreadyExists			"Post finns redan"
@@ -2440,6 +2440,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"Är du säker att länken till '%s' ska raderas?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Är du säker att folder '%s'ska raderas? Denna åtgärd kan inte ångras."
 ::fsbox::mc::ReallyDelete(folder,r)		"Är du säker att den skrivskyddade foldern '%s' ska raderas? Denna åtgärd kan inte ångras."
+::fsbox::mc::ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation." ;# NEW
 
 ::fsbox::mc::ErrorRenaming(folder)		"Fel vid namnbyte av foldern '%old' till '%new': åtkomst nekad."
 ::fsbox::mc::ErrorRenaming(file)			"Fel vid namnbyte av filen '%old' till '%new': åtkomst nekad."

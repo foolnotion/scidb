@@ -429,6 +429,19 @@ proc xdnd::_platform_specific_types { types } {
 #  Command xdnd::_normalise_data
 # ----------------------------------------------------------------------------
 proc xdnd::_normalise_data { type data } {
+  switch $type {
+    text/uri-list - text/x-moz-url {
+      set list {}
+      foreach file [split $data \n] {
+        set file [string trim $file "\n\r"]
+        if {[string length $file] > 0} {
+          lappend list $file
+        }
+      }
+      return $list
+    }
+    application/x-color {return $data ;# ???}
+  }
   return $data
 }; # xdnd::_normalise_data
 
@@ -997,19 +1010,18 @@ proc xdnd::_SendData {type offset bytes args} {
       STRING                  -
       TEXT                    -
       COMPOUND_TEXT           {
-        binary scan $_dodragdrop_data c* _dodragdrop_transfer_data
-        set _dodragdrop_transfer_data [_convert_to_unsigned $_dodragdrop_transfer_data $format]
+        return $_dodragdrop_data
       }
       text/uri-list {
-        set files [list]
+        set files {}
         foreach file $_dodragdrop_data {
-          switch -glob $file {
-            *://*     {lappend files $file}
-            default   {lappend files file://$file}
+          if {[string match {[a-z]*://*} $file]} {
+            lappend files $file
+          } else {
+            lappend files "file://$file"
           }
         }
-        binary scan "[join $files \r\n]\r\n" c* _dodragdrop_transfer_data
-        set _dodragdrop_transfer_data [_convert_to_unsigned $_dodragdrop_transfer_data $format]
+        return "[join $files \r\n]\r\n"
       }
       application/x-color {
         set format 16

@@ -158,10 +158,10 @@ static bool m_timeOut = true;
 static int  m_flags = 0;
 
 
-inline unsigned
-valToXDigit(unsigned v)
+inline char
+valToXDigit(unsigned char v)
 {
-	return v + (v < 10 ? unsigned('0') : unsigned('A' - 10));
+	return v + (v < 10 ? '0' : 'A' - 10);
 }
 
 
@@ -194,16 +194,33 @@ mapToUnixNewline(char* s, char const* e)
 }
 
 
+inline static int
+utfToUniChar(char const* s, Tcl_UniChar& ch)
+{
+	if (static_cast<unsigned char>(*s) >= 0xc0)
+		return Tcl_UtfToUniChar(s, &ch);
+
+	ch = *s;
+	return 1;
+}
+
+
 static unsigned
 quoteChars(char const* src, char const* end, char* dst)
 {
+	typedef unsigned char Byte;
+
 	char* buf = dst;
 
-	for ( ; src < end; ++src)
+	while (src < end)
 	{
-		switch (unsigned char c = *src)
+		Tcl_UniChar code;
+		char const* nxt = src + utfToUniChar(src, code);
+
+		switch (code)
 		{
 			case '\r':
+				src = nxt;
 				break;
 
 			case '\n':
@@ -212,19 +229,31 @@ quoteChars(char const* src, char const* end, char* dst)
 					if (dst[-1] != '\r')
 						*dst++ = '\r';
 					*dst++ = '\n';
+					src = nxt;
 				}
 				break;
 
+			case '-': case '_': case '.': case '!': case '~':	// RFC 3986
+			case '*': case '\'': case '(': case ')':				// RFC 3986
+			case '/': case ':':											// path elements
+				*dst++ = char(code);
+				src = nxt;
+				break;
+
 			default:
-				if (0x20 <= c && c < 0x80 && c != '%')
+				if (code < 128 && isalnum(code))
 				{
-					*dst++ = c;
+					*dst++ = char(code);
+					src = nxt;
 				}
 				else
 				{
-					*dst++ = '%';
-					*dst++ = valToXDigit(c >> 4);
-					*dst++ = valToXDigit(c & 0xf0);
+					for ( ; src < nxt; ++src)
+					{
+						*dst++ = '%';
+						*dst++ = valToXDigit(Byte(*src & 0xf0) >> 4);
+						*dst++ = valToXDigit(Byte(*src) & 0x0f);
+					}
 				}
 				break;
 		}

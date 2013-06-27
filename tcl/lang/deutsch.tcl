@@ -2407,8 +2407,8 @@
 ::fsbox::mc::InvalidUri						"Der Drop-Inhalt ist keine gültige URI-Liste."
 ::fsbox::mc::UriRejected					"Die folgenden Dateien wurden zurückgewiesen:"
 ::fsbox::mc::UriRejectedDetail			"Nur die aufgelisteten Dateitypen können gehandhabt werden."
-::fsbox::mc::CannotOpenTrashFiles		"Dateien aus dem Müllkorb können nicht geöffnet werden:"
 ::fsbox::mc::CannotOpenRemoteFiles		"Dateien können nicht über Fernzugriff geöffnet werden:"
+::fsbox::mc::CannotCopyFolders			"Verzeichnis können nicht kopiert werden und werden deshalb zurückgewiesen:"
 ::fsbox::mc::OperationAborted				"Die Transaktion wurde abgebrochen."
 ::fsbox::mc::ApplyOnDirectories			"Soll die gewählte Aktion auch auf (die folgenden) Verzeichnisse angewandt werden?"
 ::fsbox::mc::EntryAlreadyExists			"Eintrag bereits existierend"
@@ -2430,6 +2430,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"Soll tatsächlich der Link zu '%s' gelöscht werden?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Soll tatsächlich der Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 ::fsbox::mc::ReallyDelete(folder,r)		"Soll tatsächlich der schreibgeschützte Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
+::fsbox::mc::ReallyDelete(empty,w)		"Soll tatsächlich der leere Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
+::fsbox::mc::ReallyDelete(empty,r)		"Soll tatsächlich der leere, schreibgeschützte Ordner '%s' gelöscht werden? Diese Operation kann nicht rückgängig gemacht werden."
 
 ::fsbox::mc::ErrorRenaming(folder)		"Fehler beim Umbennenen des Ordners '%old' in '%new': keine ausreichenden Rechte vorhanden."
 ::fsbox::mc::ErrorRenaming(file)			"Fehler beim Umbennenen der Datei '%old' in '%new': keine ausreichenden Rechte vorhanden."

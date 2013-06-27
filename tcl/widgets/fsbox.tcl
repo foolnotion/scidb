@@ -114,8 +114,8 @@ set CannotOpenUri					"Cannot open the following URI:"
 set InvalidUri						"Drop content is not a valid URI list."
 set UriRejected					"The following files are rejected:"
 set UriRejectedDetail			"Only the listed file types can be handled."
-set CannotOpenTrashFiles		"Cannot open files from trash:"
 set CannotOpenRemoteFiles		"Cannot open remote files:"
+set CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:"
 set OperationAborted				"Operation aborted."
 set ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?"
 set EntryAlreadyExists			"Entry already exists"
@@ -137,6 +137,8 @@ set ReallyDelete(link,w)		"Really delete link to '%s'?"
 set ReallyDelete(link,r)		"Really delete link to '%s'?"
 set ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
 set ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
+set ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation."
+set ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation."
 
 set ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
 set ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."
@@ -801,6 +803,12 @@ proc fileSeparator {} {
 }
 
 
+proc dirIsEmpty {dir} {
+	if {![file isdirectory $dir]} { return 0 }
+	return [expr {[llength [glob -nocomplain -tails -dir $dir * .*]] <= 2}]
+}
+
+
 proc validateCharacters {path} {
 	variable reservedChars
 
@@ -857,9 +865,9 @@ proc toUriList {files} {
 
 	foreach file $files {
 		if {[::trash::isTrash? $file]} {
-			lappend result "trash://$file"
+			lappend result "trash:///[file tail $file]"
 		} else {
-			lappend result "file://localhost/$file"
+			lappend result "file://localhost$file"
 		}
 	}
 
@@ -870,7 +878,7 @@ proc toUriList {files} {
 proc parseUriList {uriFiles} {
 	set result {}
 
-	foreach file [split $uriFiles \n] {
+	foreach file $uriFiles {
 		# according to RFC2-483 lines starting with a '#' are comment lines.
 		# should we really discard these lines?
 		if {[string length $file]} {
@@ -904,8 +912,18 @@ proc parseUriList {uriFiles} {
 					set file [string range $file 5 end]
 				}
 				set file [file normalize $file]
-			} elseif {[string equal -length 7 $file "trash://"]} {
-				set file [file normalize [file join [::trash::directory] [string range $file 8 end]]]
+			} elseif {[string equal -length 9 $file "trash:/0-"]} {
+				# KDE style
+				set file [file normalize [file join [::trash::directory] [string range $file 9 end]]]
+			} elseif {[string equal -length 8 $file "trash://"]} {
+				if {[string equal -length 18 $file "trash://localhost/"]} {
+					set file [string range $file 17 end]
+				} elseif {[string equal -length 9 $file "trash:///"]} {
+					set file [string range $file 9 end]
+				} else {
+					set file [string range $file 8 end]
+				}
+				set file [file normalize [file join [::trash::directory] $file]]
 			}
 			lappend result $uri $file
 		}
@@ -1906,11 +1924,21 @@ proc AskAboutAction {w destination uriFiles actions} {
 	catch { destroy $m }
 	menu $m -tearoff 0
 
-	if {$Vars(drag:active) && $Vars(drag:trash)} {
+	set trash 0
+	set dir 0
+	set normal 0
+	foreach uri $uriFiles {
+		if {[string match trash:* $uri]} { incr trash } else { incr normal }
+	}
+
+	if {$trash > 0 && $normal > 0} {
+		set actions {copy}
+	} elseif {$trash > 0} {
 		set actions {restore copy}
 	} else {
 		set actions {move copy link}
 	}
+
 	foreach action $actions {
 		if {$action in $actions} {
 			$m add command \
@@ -1952,50 +1980,25 @@ proc DoFileOperations {w action uriFiles destination trash} {
 
 	set errorList {}
 	set rejectList {}
+	set acceptList {}
 	set remoteList {}
 	set trashList {}
 	set dirList {}
-	set databaseList {}
 
 	foreach {uri file} [parseUriList $uriFiles] {
-		if {[string equal -length 6 $uri "trash:"] && !$trash} {
-			lappend trashList $file
+		if {[string equal -length 6 $uri "trash:"]} {
+			if {$action ni {copy restore}} {
+				lappend trashList $uri
+			} elseif {![file exists $file]} {
+				# This shouldn't happen.
+				lappend errorList $uri
+			} else {
+				lappend acceptList $file
+			}
 		} elseif {[file isdirectory $file]} {
 			lappend dirList $file
 		} elseif {[file exists $file]} {
-			set origExt [file extension $file]
-			set mappedExt $origExt
-
-			if {[string length $Vars(mapextcommand)]} {
-				set mappedExt [$Vars(mapextcommand) $origExt]
-			}
-
-			set valid 0
-			if {$mappedExt in $Vars(file:type:list)} {
-				set valid 1
-			} else {
-				foreach ext $Vars(file:type:list) {
-					if {[string match *$ext $file]} { set valid 1 }
-				}
-			}
-
-			if {$valid} {
-				if {$origExt ne $mappedExt} {
-					set f [file rootname $file]
-					append f $mappedExt
-					if {[file exists $f]} {
-						set file $f
-					} else {
-						set valid 0
-						if {$file ni $rejectList} { lappend rejectList $file }
-					}
-				}
-				if {$valid && $file ni $databaseList} {
-					lappend databaseList $file
-				}
-			} elseif {$file ni $rejectList} {
-				lappend rejectList $file
-			}
+			lappend acceptList $file
 		} elseif {	[string equal -length 5 $uri "http:"]
 					|| [string equal -length 4 $uri "https:"]
 					|| [string equal -length 4 $uri "ftp:"]} {
@@ -2003,6 +2006,44 @@ proc DoFileOperations {w action uriFiles destination trash} {
 		} elseif {$uri ni $errorList} {
 			# This shouldn't happen.
 			lappend errorList $uri
+		}
+	}
+
+	set databaseList {}
+
+	foreach file $acceptList {
+		set origExt [file extension $file]
+		set mappedExt $origExt
+
+		if {[string length $Vars(mapextcommand)]} {
+			set mappedExt [$Vars(mapextcommand) $origExt]
+		}
+
+		set valid 0
+		if {$mappedExt in $Vars(file:type:list)} {
+			set valid 1
+		} else {
+			foreach ext $Vars(file:type:list) {
+				if {[string match *$ext $file]} { set valid 1 }
+			}
+		}
+
+		if {$valid} {
+			if {$origExt ne $mappedExt} {
+				set f [file rootname $file]
+				append f $mappedExt
+				if {[file exists $f]} {
+					set file $f
+				} else {
+					set valid 0
+					if {$file ni $rejectList} { lappend rejectList $file }
+				}
+			}
+			if {$valid && $file ni $databaseList} {
+				lappend databaseList $file
+			}
+		} elseif {$file ni $rejectList} {
+			lappend rejectList $file
 		}
 	}
 
@@ -2020,16 +2061,17 @@ proc DoFileOperations {w action uriFiles destination trash} {
 		return [::dialog::error -parent $w -message $message {*}$options]
 	}
 
-	if {[llength $trashList]} {
-		set message [Tr CannotOpenTrashFiles]
-		append message <embed>
-		append message [Tr OperationAborted]
-		return [::dialog::error \
-			-parent $w \
-			-message $message \
-			-embed [namespace code [list EmbedFileList $trashList no]]
-		]
-	}
+#  ###### This cannot happen ##################
+#	if {[llength $trashList]} {
+#		set message [Tr OperationNotPermitted]
+#		append message <embed>
+#		append message [Tr OperationAborted]
+#		return [::dialog::error \
+#			-parent $w \
+#			-message $message \
+#			-embed [namespace code [list EmbedFileList $trashList no]]
+#		]
+#	}
 
 	if {[llength $rejectList]} {
 		set message [Tr UriRejected]
@@ -2056,34 +2098,53 @@ proc DoFileOperations {w action uriFiles destination trash} {
 	}
 
 	if {[llength $dirList]} {
-		set message [Tr ApplyOnDirectories]
-		append message <embed>
-		set reply [dialog::question \
-			-parent $w \
-			-message $message \
-			-embed [namespace code [list EmbedFileList $dirList yes]]
-		]
-		if {$reply eq "no"} { set dirList {} }
+		switch $action {
+			copy {
+				set message [Tr CannotCopyFolders]
+				append message <embed>
+				append message [Tr OperationAborted]
+				return [::dialog::error \
+					-parent $w \
+					-message $message \
+					-embed [namespace code [list EmbedFileList $dirList no]]
+				]
+			}
+			default {
+				set message [Tr ApplyOnDirectories]
+				append message <embed>
+				set reply [dialog::question \
+					-parent $w \
+					-message $message \
+					-embed [namespace code [list EmbedFileList $dirList yes]]
+				]
+				if {$reply eq "no"} { set dirList {} }
+			}
+		}
 	}
 
 	set fileList {}
 
-puts "files: [concat $databaseList $dirList]"
 	foreach file [concat $databaseList $dirList] {
 		if {$trash} {
 			set i [lsearch -index 0 $Vars(list:file) $file]
 			set dst [file join $destination [file tail [lindex $Vars(list:file) $i 1]]]
+		} elseif {[::trash::isTrash? $file]} {
+			set dst [::trash::originalPath [file tail $file]]
+			set dst [file join $Vars(folder) [file tail $dst]]
 		} else {
 			set dst [file join $destination [file tail $file]]
 		}
-		set dst [file normalize $dst]
 
-		if {$dst ne $file} {
-			set op overwrite
-			if {[file exists $dst]} { lassign [AskFileAction $w $file $dst] op newName }
-			if {$op ne "cancel"} {
-				if {$op eq "rename"} { set dst $newName }
-				lappend fileList $file $dst
+		if {[string length $dst] > 0} {
+			set dst [file normalize $dst]
+
+			if {$dst ne $file} {
+				set op overwrite
+				if {[file exists $dst]} { lassign [AskFileAction $w $file $dst] op newName }
+				if {$op ne "cancel"} {
+					if {$op eq "rename"} { set dst $newName }
+					lappend fileList $file $dst
+				}
 			}
 		}
 	}
@@ -2091,7 +2152,6 @@ puts "files: [concat $databaseList $dirList]"
 	if {[llength $fileList] == 0} { return }
 	set refresh 0
 
-puts "fileList: $fileList"
 	foreach {src dst} $fileList {
 		if {[file exists $dst]} {
 			if {[llength $Vars(deletecommand)]} {
@@ -2128,10 +2188,8 @@ puts "fileList: $fileList"
 						}
 					}
 					restore {
-puts "restore $src $dst"
 						switch [::trash::restore $src $dst] {
-							nodir  			{ puts "nodir" }
-							nopermission	{ set permissionDenied 1 }
+							nopermission { set permissionDenied 1 }
 						}
 					}
 				}
@@ -2902,15 +2960,13 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 				set dir [lindex [[namespace parent]::parseUriList $action] 1]
 				after idle [namespace code [list AddBookmark $w $dir]]
 				set result private
-			} else {
-				if {[llength $Vars(bookmark:target:id)] > 0} {
-					if {$Vars(bookmark:target:folder) eq "Trash"} {
-						after idle [namespace code [list DoHandleDropEvent $w $action]]
-						set result move
-					} else {
-						set result [[namespace parent]::AskAboutAction \
-							$w $Vars(bookmark:target:path) $action $actions]
-					}
+			} elseif {[llength $Vars(bookmark:target:id)] > 0} {
+				if {$Vars(bookmark:target:folder) eq "Trash"} {
+					after idle [namespace code [list DoHandleDropEvent $w $action]]
+					set result move
+				} else {
+					set result [[namespace parent]::AskAboutAction \
+						$w $Vars(bookmark:target:path) $action $actions]
 				}
 			}
 		}
@@ -4034,15 +4090,25 @@ proc RefreshFileList {w} {
 proc ConfigureButtons {w} {
 	variable [namespace parent]::${w}::Vars
 
-	if {	[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 0
-		|| $Vars(glob) ne "Files"} {
+	if {[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] > 1} {
+		set st disabled
+	} elseif {	[llength $Vars(selected:folders)] + [llength $Vars(selected:files)] == 0
+				|| $Vars(glob) ne "Files"} {
 		set st disabled
 	} else {
 		set st normal
 	}
 
 	foreach what {delete rename copy} { set Vars(state:$what) $st }
-	if {[llength $Vars(selected:folders)] > 0} { set Vars(state:copy) disabled }
+
+	if {[llength $Vars(selected:folders)] > 0} {
+		set Vars(state:copy) disabled
+
+		if {![[namespace parent]::dirIsEmpty [lindex $Vars(selected:folders) 0]]} {
+			set Vars(state:delete) disabled
+		}
+	}
+
 	if {$Vars(glob) eq "Files"} { set Vars(state:new) normal } else { set Vars(state:new) disabled }
 	if {$Vars(glob) eq "Trash" && [llength $Vars(selected:files)] == 1} { set Vars(state:delete) normal }
 
@@ -4219,6 +4285,7 @@ proc DeleteFile {w} {
 		set dest [file link $file]
 	} else {
 		set trashIsUsable [::trash::usable?]
+		if {$type eq "folder"} { set trashIsUsable 0 }
 		set dest $file
 	}
 
@@ -4245,6 +4312,7 @@ proc DeleteFile {w} {
 
 	if {[file writable $file]} { set mode w } else { set mode r }
 	if {$trashIsUsable} { set which ReallyMove } else { set which ReallyDelete }
+	if {$type eq "folder"} { set type empty }
 	set fmt [Tr ${which}($type,$mode)]
 	set msg [format $fmt [file tail $dest]]
 	foreach item [$t item children root] { $t item state set $item {!hilite} }
@@ -4519,7 +4587,7 @@ proc FinishRenameFile {w sel name} {
 		set i [expr {$i - [llength $Vars(list:folder)]}]
 		set type file
 	}
-	set oldName [lindex $Vars(list:$type) $i]
+	set oldName [lindex $Vars(list:$type) $i 0]
 	if {[string length $name] == 0} { return $oldName }
 	set newName [file join $Vars(folder) $name]
 	if {$oldName eq $newName} { return $oldName }

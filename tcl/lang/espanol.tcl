@@ -2414,8 +2414,8 @@
 ::fsbox::mc::InvalidUri						"Descartar contenido no es una lista URI válida."
 ::fsbox::mc::UriRejected					"Los siguientes archivos fueron rechazados:"
 ::fsbox::mc::UriRejectedDetail			"Sólo pueden manejarse los tipos de archivo listados."
-::fsbox::mc::CannotOpenTrashFiles		"No pueden abrirse archivos de la papelera:"
 ::fsbox::mc::CannotOpenRemoteFiles		"No pueden abrirse archivos remotos:"
+::fsbox::mc::CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:" ;# NEW
 ::fsbox::mc::OperationAborted				"Operación abortada."
 ::fsbox::mc::ApplyOnDirectories			"¿Está seguro que desea aplicar la operación seleccionada sobre los (siguientes) directorios?"
 ::fsbox::mc::EntryAlreadyExists			"La entrada ya existe"
@@ -2437,6 +2437,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"¿Realmente desea borrar el vúnculo a '%s'?"
 ::fsbox::mc::ReallyDelete(folder,w)		"¿Realmente desea borrar la carpeta '%s'? Esta operación no puede revertirse."
 ::fsbox::mc::ReallyDelete(folder,r)		"¿Realmente desea borrar la carpeta de solo lectura '%s'? Esta operación no puede revertirse."
+::fsbox::mc::ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation." ;# NEW
 
 ::fsbox::mc::ErrorRenaming(folder)		"No se puede cambiar el nombre de la carpeta '%old' a '%new': permiso denegado."
 ::fsbox::mc::ErrorRenaming(file)			"Error cambiando de nombre el archivo '%old' a '%new': permiso denegado."

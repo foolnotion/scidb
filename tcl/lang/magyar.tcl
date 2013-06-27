@@ -2416,8 +2416,8 @@
 ::fsbox::mc::InvalidUri			"Drop content is not a valid URI list." ;# NEW
 ::fsbox::mc::UriRejected		"The following files are rejected:" ;# NEW
 ::fsbox::mc::UriRejectedDetail		"Only the listed file types can be handled." ;# NEW
-::fsbox::mc::CannotOpenTrashFiles	"Cannot open files from trash:" ;# NEW
 ::fsbox::mc::CannotOpenRemoteFiles	"Cannot open remote files:" ;# NEW (http://*)
+::fsbox::mc::CannotCopyFolders		"Cannot copy folders, thus these folders will be rejected:" ;# NEW
 ::fsbox::mc::OperationAborted		"Operation aborted." ;# NEW
 ::fsbox::mc::ApplyOnDirectories		"Are you sure that you want to apply the selected operation on (the following) directories?" ;# NEW
 ::fsbox::mc::EntryAlreadyExists		"Entry already exists" ;# NEW
@@ -2439,6 +2439,8 @@
 ::fsbox::mc::ReallyDelete(link,r)	"Biztos hogy törlöd a(z) '%s' linket?"
 ::fsbox::mc::ReallyDelete(folder,w)	"Biztos hogy törlöd a(z) '%s' könyvtárat? Ez a művelet később nem vonható vissza."
 ::fsbox::mc::ReallyDelete(folder,r)	"Biztos hogy törlöd a(z) '%s' írásvédett könyvtárat? Ez a művelet később nem vonható vissza."
+::fsbox::mc::ReallyDelete(empty,w)	"Really delete empty folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(empty,r)	"Really delete empty write-protected folder '%s'? You cannot undo this operation." ;# NEW
 
 ::fsbox::mc::ErrorRenaming(folder)	"Hiba '%old' könyvtár '%new'-ra történő átnevezése közben: Hozzáférés megtagadva."
 ::fsbox::mc::ErrorRenaming(file)	"Hiba '%old' fájl '%new'-ra történő átnevezése közben: Hozzáférés megtagadva."

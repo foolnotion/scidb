@@ -2409,8 +2409,8 @@
 ::fsbox::mc::InvalidUri						"Drop content is not a valid URI list."
 ::fsbox::mc::UriRejected					"The following files are rejected:"
 ::fsbox::mc::UriRejectedDetail			"Only the listed file types can be handled."
-::fsbox::mc::CannotOpenTrashFiles		"Cannot open files from trash:"
 ::fsbox::mc::CannotOpenRemoteFiles		"Cannot open remote files:"
+::fsbox::mc::CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:"
 ::fsbox::mc::OperationAborted				"Operation aborted."
 ::fsbox::mc::ApplyOnDirectories			"Are you sure that you want to apply the selected operation on (the following) directories?"
 ::fsbox::mc::EntryAlreadyExists			"Entry already exists"
@@ -2432,6 +2432,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"Really delete link to '%s'?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Really delete folder '%s'? You cannot undo this operation."
 ::fsbox::mc::ReallyDelete(folder,r)		"Really delete write-protected folder '%s'? You cannot undo this operation."
+::fsbox::mc::ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation."
+::fsbox::mc::ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation."
 
 ::fsbox::mc::ErrorRenaming(folder)		"Error renaming folder '%old' to '%new': permission denied."
 ::fsbox::mc::ErrorRenaming(file)			"Error renaming file '%old' to '%new': permission denied."

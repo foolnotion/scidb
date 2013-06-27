@@ -108,8 +108,8 @@ switch [tk windowingsystem] {
 			set infoDir [file normalize [file join $filesDir .. info]]
 			set tail [file tail $file]
 
+			set infoFile [file join $infoDir "$tail.trashinfo"]
 			if {[string length $newName] == 0} {
-				set infoFile [file join $infoDir "$tail.trashinfo"]
 				set newName [lindex [ReadInfo $infoFile] 0]
 				if {[string length $newName] == 0} {
 					return failed
@@ -145,6 +145,13 @@ switch [tk windowingsystem] {
 			}
 
 			return $content
+		}
+
+		proc originalPath {file} {
+			set filesDir [directory]
+			if {[string length $filesDir] == 0} { return "" }
+			set infoDir [file normalize [file join $filesDir .. info]]
+			return [lindex [ReadInfo [file join $infoDir "[file tail $file].trashinfo"]] 0]
 		}
 
 		proc ReadInfo {file} {

@@ -1169,41 +1169,55 @@ proc ParseUriFiles {parent files allowedExtensions action} {
 	set rejectList {}
 	set remoteList {}
 	set trashList {}
-	set databaseList {}
+	set acceptList {}
 
 	foreach {uri file} [::fsbox::parseUriList $files] {
 		if {	[string equal -length 5 $uri "http:"]
 			|| [string equal -length 6 $uri "https:"]
 			|| [string equal -length 4 $uri "ftp:"]} {
 			lappend remoteList $uri
-		} elseif {[file exists $file]} {
-			set origExt [file extension $file]
-
-			if {[string length $origExt]} {
-				set origExt [string range $origExt 1 end]
-				set mappedExt [::scidb::misc::mapExtension $origExt]
-
-				if {$origExt ne $mappedExt} {
-					set f [file rootname $file]
-					append f . $mappedExt
-					if {[file exists $f]} {
-						set file $f
-					}
-				}
-			}
-
-			if {[file extension $file] in $allowedExtensions} {
-				if {$file ni $databaseList} { lappend databaseList $file }
-			} else {
-				if {$file ni $rejectList} { lappend rejectList $file }
-			}
-		} elseif {[string equal -length 6 $uri "trash:"]} {
-			lappend trashList $uri
 		} elseif {[string equal -length 5 $uri "http:"] || [string equal -length 4 $uri "ftp:"]} {
 			# TODO: support .scv, .pgn, and .bpgn files in successor versions
 			lappend rejectList $uri
+		} elseif {[file exists $file]} {
+			if {[string equal -length 9 $uri "trash:/0-"]} {
+				# KDE style: normalize URI
+				set uri "trash:///[string range $uri 9 end]"
+			}
+			lappend acceptList $uri $file
 		} elseif {$uri ni $errorList} {
 			lappend errorList $uri
+		}
+	}
+
+	set databaseList {}
+
+	# TODO: in case of .zip files reject if no .pgn (or .PGN) file is contained
+	
+	foreach {uri file} $acceptList {
+		set origExt [file extension $file]
+
+		if {[string length $origExt]} {
+			set origExt [string range $origExt 1 end]
+			set mappedExt [::scidb::misc::mapExtension $origExt]
+
+			if {$origExt ne $mappedExt} {
+				set f [file rootname $file]
+				append f . $mappedExt
+				if {[file exists $f]} {
+					set file $f
+				}
+			}
+		}
+
+		if {[file extension $file] in $allowedExtensions} {
+			if {$file ni $databaseList} { lappend databaseList $file }
+		} elseif {$file ni $rejectList} {
+			if {[string match trash* $uri]} {
+				lappend rejectList $uri
+			} else {
+				lappend rejectList $file
+			}
 		}
 	}
 

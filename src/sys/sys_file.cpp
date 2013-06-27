@@ -205,6 +205,14 @@ sys::file::setModificationTime(char const* filename, uint32_t time)
 	return true;
 }
 
+
+bool
+sys::file::dirIsEmpty(char const* dirname)
+{
+	M_REQUIRE(dirname);
+	return ::PathIsDirectoryEmpty(dirname);
+}
+
 #else
 
 #include "m_map.h"
@@ -217,6 +225,7 @@ sys::file::setModificationTime(char const* filename, uint32_t time)
 # include <sys/mman.h>
 # include <sys/types.h>
 # include <utime.h>
+# include <dirent.h>
 
 
 static mstl::map<void*,mstl::pair<int,int> > FileMap;
@@ -316,6 +325,26 @@ sys::file::setModificationTime(char const* filename, uint32_t time)
 		return false;
 
 	return true;
+}
+
+
+bool
+sys::file::dirIsEmpty(char const* dirname)
+{
+	M_REQUIRE(dirname);
+
+	DIR *dir = ::opendir(dirname);
+
+	if (!dir)
+		return 1;
+
+	int n = 0;
+
+	for ( ; readdir(dir) && n < 3; ++n)
+		;
+
+	closedir(dir);
+	return n <= 2;
 }
 
 #endif

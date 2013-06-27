@@ -2419,8 +2419,8 @@
 ::fsbox::mc::InvalidUri						"Il contenuto trascinato non è una lista valida di URI."
 ::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
 ::fsbox::mc::UriRejectedDetail			"Solo i seguenti tipi di file possono essere gestiti."
-::fsbox::mc::CannotOpenTrashFiles		"Impossibile aprire file dal cestino:"
 ::fsbox::mc::CannotOpenRemoteFiles		"Impossibile aprire file remoti:"
+::fsbox::mc::CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:" ;# NEW
 ::fsbox::mc::OperationAborted				"Operazione interrotta."
 ::fsbox::mc::ApplyOnDirectories			"Sei sicuro di voler appllicare l'operazione selezionata sulle (seguenti) cartelle?"
 ::fsbox::mc::EntryAlreadyExists			"Valore già esistente"
@@ -2442,6 +2442,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"Vuoi davvero eliminare il collegamento a '%s'?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
 ::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation." ;# NEW
 
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."

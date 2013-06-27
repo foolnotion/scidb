@@ -112,6 +112,8 @@ if {[tk windowingsystem] eq "x11"} {
 	proc ::fsbox::makeFrameless {w} { update idletasks; ::scidb::tk::wm frameless $w }
 }
 
+proc ::fsbox::dirIsEmpty {dir} { return [::scidb::misc::dirEmpty? $dir] }
+
 set ::clipboard::window .application
 
 set dialog::iconOk		$icon::iconOk
