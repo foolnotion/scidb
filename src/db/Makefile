@@ -6372,6 +6372,7 @@ sci/v91/sci_v91_codec.o: ../util/u_progress.h
 sci/v91/sci_v91_codec.o: ../util/u_progress.ipp
 sci/v91/sci_v91_codec.o: ../sys/sys_utf8_codec.h
 sci/v91/sci_v91_codec.o: ../sys/sys_utf8_codec.ipp
+sci/v91/sci_v91_codec.o: ../sys/sys_file.h
 sci/v91/sci_v91_decoder.o: sci/v91/sci_v91_decoder.h
 sci/v91/sci_v91_decoder.o: sci/v91/sci_v91_decoder_position.h
 sci/v91/sci_v91_decoder.o: db_board.h

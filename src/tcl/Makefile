@@ -212,6 +212,8 @@ tcl_application.o: ../mstl/m_function.ipp
 tcl_application.o: ../app/app_tree_admin.ipp
 tcl_application.o: ../util/u_rkiss.h
 tcl_application.o: ../app/app_application.ipp
+tcl_application.o: ../app/app_multi_cursor.h
+tcl_application.o: ../app/app_multi_cursor.ipp
 tcl_application.o: ../app/app_cursor.h
 tcl_application.o: ../app/app_view.h
 tcl_application.o: ../db/db_selector.h
@@ -1446,6 +1448,8 @@ tcl_misc.o: ../db/si3/si3_codec.ipp
 tcl_misc.o: ../db/sci/sci_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.h
 tcl_misc.o: ../sys/sys_utf8_codec.ipp
+tcl_misc.o: ../sys/sys_utf8.h
+tcl_misc.o: ../sys/sys_utf8.ipp
 tcl_misc.o: ../sys/sys_file.h
 tcl_misc.o: ../sys/sys_info.h
 tcl_misc.o: ../sys/sys_vfs.h
@@ -1454,8 +1458,6 @@ tcl_misc.o: ../util/u_html.ipp
 tcl_misc.o: ../util/u_zstream.h
 tcl_misc.o: ../mstl/m_iostream.h
 tcl_misc.o: ../util/u_emoticons.h
-tcl_misc.o: ../sys/sys_utf8.h
-tcl_misc.o: ../sys/sys_utf8.ipp
 tcl_pgn_reader.o: tcl_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_pgn_reader.h
 tcl_pgn_reader.o: ../db/db_reader.h

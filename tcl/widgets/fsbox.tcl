@@ -2153,11 +2153,12 @@ proc DoFileOperations {w action uriFiles destination trash} {
 	set refresh 0
 
 	foreach {src dst} $fileList {
+		set deletionList{}
 		if {[file exists $dst]} {
 			if {[llength $Vars(deletecommand)]} {
-				foreach f [$Vars(deletecommand) $dst] { catch { file delete $f } }
+				foreach f [$Vars(deletecommand) $dst] { lappend deletionList $f }
 			} else {
-				catch { file delete $dst }
+				lappend deletionList $f
 			}
 		}
 		if {[llength $Vars(duplicatecommand)]} {
@@ -2167,6 +2168,11 @@ proc DoFileOperations {w action uriFiles destination trash} {
 		}
 		foreach {src dst} $list {
 			if {[file exists $src]} {
+				set i [lsearch $deletionList $dst]
+				if {$i >= 0} {
+					catch { file delete $dst }
+					set deletionList [lreplace $deletionList $i $i]
+				}
 				set permissionDenied 0
 				switch $action {
 					move {
@@ -2188,7 +2194,7 @@ proc DoFileOperations {w action uriFiles destination trash} {
 						}
 					}
 					restore {
-						switch [::trash::restore $src $dst] {
+						switch [::trash::restore $src $dst -force 1] {
 							nopermission { set permissionDenied 1 }
 						}
 					}
@@ -2201,6 +2207,7 @@ proc DoFileOperations {w action uriFiles destination trash} {
 				set refresh 1
 			}
 		}
+		foreach f $deletionList { catch { file delete $f } }
 	}
 
 	if {$refresh} { filelist::RefreshFileList $w }
