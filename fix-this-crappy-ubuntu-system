@@ -84,8 +84,7 @@ foreach dir $dirs {
 }
 
 
-#foreach {Xcursor fontconfig} {}
-foreach lib {XXX YYY} {
+foreach lib {Xcursor fontconfig} {
     set path [FindDir "lib{$lib}*" $searchPaths]
     set found 0
 

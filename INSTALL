@@ -10,6 +10,26 @@
 ==============================================================================
 UNIX
 ==============================================================================
+Probably you have to install some required packages:
+
+1. Tcl/Tk package
+
+   On Debian/Ubuntu use:
+      > sudo apt-get install tcl8.6
+      > sudo apt-get install tk8.6
+
+2. Freetype development package
+   (normally available, but especially missing under Ubuntu)
+
+   On Debian/Ubuntu use:
+      > sudo apt-get install libfreetype6-dev
+
+2. SM library development package
+   (normally available, but especially missing under Ubuntu)
+
+   On Debian/Ubuntu use:
+      > sudo apt-get install libsm-dev
+
 A normal unix installation is made in three or three steps (after you've
 unpacked the source archive):
 

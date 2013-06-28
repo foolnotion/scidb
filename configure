@@ -861,6 +861,32 @@ proc findFreetype {} {
 }
 
 
+# findSMlibHeader:
+#    Find the SM header file.
+#    Returns 1 on success, 0 on failure.
+#
+proc findSMlibHeader {} {
+    variable configure
+
+    set path {
+        /usr/local/include/
+        /usr/include/
+    }
+
+    puts -nonewline "    Checking if your system has X11/SM/SM.h: "
+    set dir [FindDir "X11/SM/SM.h" $path]
+
+    if {[string length $dir]} {
+        puts "yes."
+        return 1
+    } else {
+        puts "no."
+    }
+
+    return 0
+}
+
+
 # checkStatVFS
 #   Check if your system provides the statvfs() function.
 proc checkStatVFS {} {
@@ -2179,6 +2205,15 @@ if {[string length $gxxVer]} {
     set success [findTclTkPathsAndMore]
 
     if {![checkFontConfig]} { exit 1 }
+
+    if {![findSMlibHeader]} {
+        puts ""
+        puts "Development files for SM library not found,"
+        puts "this is especially a problem on Ubuntu systems."
+        puts "Please install the development package for libsm."
+        puts "On Ubuntu use: sudo apt-get install libsm-dev"
+        exit 1
+    }
 
     checkInotify
     checkStatVFS
