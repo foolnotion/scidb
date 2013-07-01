@@ -718,7 +718,7 @@
 ::database::switcher::mc::Failed								"fallito"
 
 ::database::switcher::mc::UriRejectedDetail(open)		"Solo database Scidb possono essere aperti:"
-::database::switcher::mc::UriRejectedDetail(import)	"Solo database Scidb possono essere importati:"
+::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:" ;# NEW
 ::database::switcher::mc::EmptyUriList						"Gli archivi trascinati sono vuoti."
 ::database::switcher::mc::CopyGames							"Copia partite"
 ::database::switcher::mc::CopyGamesFromTo					"Copia partite da '%src' a '%dst'"
@@ -2452,7 +2452,6 @@
 ::fsbox::mc::Cannot(rename)				"Impossibile rinominare il file '%s'."
 ::fsbox::mc::Cannot(move)					"Impossibile spostare il file '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Impossibile sovrascrivere il file '%s'."
-::fsbox::mc::Cannot(delete-or-move)		"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)				"Sposta qui"
 ::fsbox::mc::DropAction(copy)				"Copia qui"

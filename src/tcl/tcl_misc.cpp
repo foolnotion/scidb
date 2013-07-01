@@ -1092,7 +1092,12 @@ cmdSuffixes(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Tcl_Obj* objs[result.size()];
 
 	for (unsigned i = 0; i < result.size(); ++i)
-		objs[i] = Tcl_NewStringObj(result[i], -1);
+	{
+		mstl::string ext(result[i]);
+		if (ext == "gz")
+			ext.assign("pgn.gz");
+		objs[i] = Tcl_NewStringObj(ext, -1);
+	}
 
 	setResult(result.size(), objs);
 	return TCL_OK;

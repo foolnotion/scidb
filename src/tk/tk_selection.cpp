@@ -228,8 +228,8 @@ quoteChars(char const* src, char const* end, char* dst)
 					if (dst[-1] != '\r')
 						*dst++ = '\r';
 					*dst++ = '\n';
-					src = nxt;
 				}
+				src = nxt;
 				break;
 
 			case '-': case '_': case '.': case '!': case '~':	// RFC 3986

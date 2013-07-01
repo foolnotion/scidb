@@ -717,7 +717,7 @@
 ::database::switcher::mc::Failed								"misslyckades"
 
 ::database::switcher::mc::UriRejectedDetail(open)		"Bara Scidb databaser kan öppnas:"
-::database::switcher::mc::UriRejectedDetail(import)	"Bara Scidb databases kan importeras:"
+::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:" ;# NEW
 ::database::switcher::mc::EmptyUriList						"Innehåll som släpps är tomt."
 ::database::switcher::mc::CopyGames							"Kopiera partier"
 ::database::switcher::mc::CopyGamesFromTo					"Kopiera partier från '%src' till '%dst'"
@@ -2450,7 +2450,6 @@
 ::fsbox::mc::Cannot(rename)				"Kan inte byta namn på filen '%s'."
 ::fsbox::mc::Cannot(move)					"Kan inte flytta filen '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Kan inte skriva över filen '%s'."
-::fsbox::mc::Cannot(delete-or-move)		"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)				"Flytta hit"
 ::fsbox::mc::DropAction(copy)				"Kopiera hit"

@@ -147,7 +147,6 @@ set Cannot(delete)				"Cannot delete file '%s'."
 set Cannot(rename)				"Cannot rename file '%s'."
 set Cannot(move)					"Cannot move file '%s'."
 set Cannot(overwrite)			"Cannot overwrite file '%s'."
-set Cannot(delete-or-move)		"Cannot delete nor move file '%s'."
 
 set DropAction(move)				"Move Here"
 set DropAction(copy)				"Copy Here"
@@ -1491,6 +1490,14 @@ proc ChangeDir {w path {useHistory 1}} {
 	set Vars(prevFolder) $Vars(folder)
 	set Vars(prevGlob) $Vars(glob)
 
+	foreach f {Desktop Trash} {
+		if {$Vars(folder:[string tolower $f]) eq $path} {
+			set path $f
+		}
+	}
+
+	$Vars(choosedir) tooltip ""
+
 	switch $path {
 		Favorites - LastVisited {
 			set Vars(glob) $path
@@ -1528,18 +1535,16 @@ proc ChangeDir {w path {useHistory 1}} {
 				set Vars(folder) $pwd
 			}
 			cd $appPWD
-			switch $path {
-				Trash - Desktop {
-					$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
+			if {[string match $Vars(folder:home)* $Vars(folder)]} {
+				$Vars(choosedir) set $Vars(folder) $icon::16x16::home $Vars(folder:home)
+				$Vars(choosedir) tooltip [Tr Home]
+			} else {
+				if {[info exists Vars(lookup:$path)]} {
+					$Vars(choosedir) set $Vars(folder) [set icon::16x16::$Vars(lookup:$path)]
+				} else {
+					$Vars(choosedir) set $Vars(folder)
 				}
-				default {
-					if {[info exists Vars(lookup:$path)]} {
-						set icon [set icon::16x16::$Vars(lookup:$path)]
-					} else {
-						set icon ""
-					}
-					$Vars(choosedir) set $Vars(folder) $icon
-				}
+				$Vars(choosedir) tooltip [Tr FileSystem]
 			}
 			set Vars(lastFolder) $Vars(folder)
 		}
@@ -1932,15 +1937,20 @@ proc AskAboutAction {w destination uriFiles actions} {
 	}
 
 	if {$trash > 0 && $normal > 0} {
-		set actions {copy}
+		set myActions {copy}
 	} elseif {$trash > 0} {
-		set actions {restore copy}
+		set myActions {restore copy}
 	} else {
-		set actions {move copy link}
+		foreach action {move copy link} {
+			if {$action in $actions} { lappend myActions $action }
+		}
+		if {[llength $myActions] == 0} {
+			set myActions {copy link}
+		}
 	}
 
-	foreach action $actions {
-		if {$action in $actions} {
+	foreach action $myActions {
+		if {$action in $myActions} {
 			$m add command \
 				-label " [Tr DropAction($action)]" \
 				-image $icon::16x16::action($action) \
@@ -2907,21 +2917,25 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
 	if {$action ne "leave" && !$Vars(drag:active)} { return refuse_drop }
 
-	if {$action eq "enter"} {
-		set Vars(bookmark:target:id) {}
-	}
-
 	set t $Vars(widget:list:bookmark)
 	set result refuse_drop
 
 	switch $action {
-		enter - position {
+		enter {
+			set Vars(bookmark:target:id) {}
+		}
+
+		leave {
+			# nothing to do
+		}
+
+		position {
 			if {$Vars(drag:private)} { return private }
 			set x [expr {$x - [winfo rootx $t]}]
 			set y [expr {$y - [winfo rooty $t]}]
 			set id [$t identify $x $y]
-			if {$Vars(bookmark:target:id) eq $id} { return ask }
 			if {[llength $Vars(bookmark:target:id)] > 0} {
+				if {$Vars(bookmark:target:id) eq $id} { return ask }
 				$t item state set [lindex $Vars(bookmark:target:id) 1] !target
 			}
 			set Vars(bookmark:target:id) {}
@@ -2953,13 +2967,10 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 					set Vars(bookmark:target:folder) $folder
 					set Vars(bookmark:target:path) $path
 					$t item state set [lindex $id 1] target
+					if {$Vars(drag:private)} { return private }
 					return ask
 				}
 			}
-		}
-
-		leave {
-			# nothing to do
 		}
 
 		default {
@@ -5067,6 +5078,7 @@ proc HandleDragEvent {w src types x y} {
 	set Vars(drag:private) 0
 	set Vars(drag:trash) 0
 	set cursor {}
+	set allowedActions {copy move link ask private}
 	lassign [GetCurrentSelection $w] type _ file
 
 	if {$type eq "folder"} {
@@ -5106,13 +5118,16 @@ proc HandleDragEvent {w src types x y} {
 			;
 	}
 
+	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $file]} {
+		set i [lsearch $actions move]
+		if {$i >= 0} { set actions [lreplace $actions $i $i] }
+	}
+
 	return [list $actions DND_Files [[namespace parent]::toUriList $files]]
 }
 
 
 proc HandleDragDropgEvent {w src currentAction} {
-	lassign [GetCurrentSelection $w] type _ file
-	if {[[namespace parent]::CheckIfInUse $w $file delete-or-move 1]} { return "" }
 	return $currentAction
 }
 

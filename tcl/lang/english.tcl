@@ -1,4 +1,4 @@
-# ======================================================================
+ln -sf ../# ====================================================================== .
 # Author : $Author$
 # Version: $Revision$
 # Date   : $Date$
@@ -714,7 +714,7 @@
 ::database::switcher::mc::Failed								"failed"
 
 ::database::switcher::mc::UriRejectedDetail(open)		"Only Scidb databases can be opened:"
-::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases can be imported:"
+::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:"
 ::database::switcher::mc::EmptyUriList						"Drop content is empty."
 ::database::switcher::mc::CopyGames							"Copy games"
 ::database::switcher::mc::CopyGamesFromTo					"Copy games from '%src' to '%dst'" ;# NEW
@@ -2442,7 +2442,6 @@
 ::fsbox::mc::Cannot(rename)				"Cannot rename file '%s'."
 ::fsbox::mc::Cannot(move)					"Cannot move file '%s'."
 ::fsbox::mc::Cannot(overwrite)			"Cannot overwrite file '%s'."
-::fsbox::mc::Cannot(delete-or-move)		"Cannot delete nor move file '%s'."
 
 ::fsbox::mc::DropAction(move)				"Move Here"
 ::fsbox::mc::DropAction(copy)				"Copy Here"

@@ -18,6 +18,7 @@
 
 package require Tk 8.4
 if {[catch { package require tkpng }]} { package require Img }
+package require tooltip
 package provide choosedir 1.0
 
 
@@ -75,7 +76,10 @@ proc Build {w args} {
 	}
 
 	set Vars(dir) ""
-	set Vars(components) { "" }
+	set Vars(dir:components) { "" }
+	set Vars(dir:size) 0
+	set Vars(prefix:components) { "" }
+	set Vars(prefix:size) 0
 	set Vars(size) 0
 	set Vars(start) 1
 	set Vars(font) $opts(-font)
@@ -86,6 +90,8 @@ proc Build {w args} {
 	set Vars(icon) {}
 	set Vars(startmenu) {}
 	set Vars(showhidden) $opts(-showhidden)
+	set Vars(prefix) ""
+	set Vars(tooltip) ""
 
 	set Vars(linespace) [font metrics $opts(-font) -linespace]
 	set Vars(activebackground) $opts(-activebackground)
@@ -124,6 +130,8 @@ proc Build {w args} {
 		-activebackground $Vars(activebackground) \
 		-takefocus 0                              \
 		;
+	bind $w.prev <Enter> [namespace code [list ShowTooltip $w]]
+	bind $w.prev <Leave> { ::tooltip::hide yes }
 	tk::button $w.next                           \
 		-image $icon::14x14::nextComponent        \
 		-relief flat                              \
@@ -142,7 +150,7 @@ proc Build {w args} {
 		-command [namespace code [list PopupDirs $w $w.image--1 -1]] \
 		-takefocus 0                                                 \
 		;
-	bind $w.prev <Leave> { %W configure -relief flat }
+	bind $w.prev <Leave> {+ %W configure -relief flat }
 	bind $w.image--1 <Leave> { %W configure -relief flat }
 	tooltip $w.next [Tr ShowTail]
 	if {$Vars(showlabel)} {
@@ -169,22 +177,29 @@ proc Build {w args} {
 proc WidgetProc {w command args} {
 	switch -- $command {
 		set {
-			if {[llength $args] != 1 && [llength $args] != 2} {
-				error "wrong # args: should be \"[namespace current] $command <dir> ?<icon>?\""
+			if {[llength $args] < 1 || 3 < [llength $args]} {
+				error "wrong # args: should be \"[namespace current] $command <dir> ?<icon>? ?<prefix>?\""
 			}
 			variable ${w}::Vars
 
 			set icon {}
-			lassign $args folder icon
-			if {$folder ne $Vars(dir)} {
+			set prefix ""
+			lassign $args folder icon prefix
+			if {$folder ne $Vars(dir) || $prefix ne $Vars(prefix)} {
+				set separator [file separator $folder]
 				set Vars(dir) $folder
-				set Vars(components) [file split $Vars(dir)]
-				if {[llength $Vars(components)] <= 1} {
-					set Vars(components) {}
-				} else {
-					set Vars(components) [lreplace $Vars(components) 0 0]
+				set Vars(prefix) $prefix
+				set Vars(prefix:components) [file split $prefix]
+				set Vars(dir:components) [file split $folder]
+				foreach attr {dir prefix} {
+					if {[llength $Vars($attr:components)] <= 1} {
+						set Vars($attr:components) {}
+					} else {
+						set Vars($attr:components) [lreplace $Vars($attr:components) 0 0]
+					}
+					set Vars($attr:size) [llength $Vars($attr:components)]
 				}
-				set Vars(start) [llength $Vars(components)]
+				set Vars(start) [expr {$Vars(dir:size) - $Vars(prefix:size) + 1}]
 				set Vars(user) 0
 				set Vars(icon) $icon
 				Layout $w
@@ -194,7 +209,7 @@ proc WidgetProc {w command args} {
 		}
 
 		setfolder {
-			if {[llength $args] != 1 && [llength $args] != 2 && [llength $args] != 2} {
+			if {[llength $args] != 1 && [llength $args] != 2} {
 				error "wrong # args: should be \"[namespace current] $command <folder> ?<icon>?\""
 			}
 			variable ${w}::Vars
@@ -203,7 +218,11 @@ proc WidgetProc {w command args} {
 			lassign $args folder icon
 			if {$folder ne $Vars(dir)} {
 				set Vars(dir) $folder
-				set Vars(components) [list $folder]
+				set Vars(dir:components) [list $folder]
+				set Vars(dir:size) 1
+				set Vars(prefix) ""
+				set Vars(prefix:components) { "" }
+				set Vars(prefix:size) 0
 				set Vars(start) 1
 				set Vars(user) 1
 				set Vars(icon) $icon
@@ -229,6 +248,15 @@ proc WidgetProc {w command args} {
 			variable ${w}::Vars
 			set Vars(showhidden) [lindex $args 0]
 			return $w
+		}
+
+		tooltip {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace current] $command <string>\""
+			}
+			variable ${w}::Vars
+			set Vars(tooltip) [lindex $args 0]
+			return
 		}
 
 		dir {
@@ -273,11 +301,20 @@ proc WidgetProc {w command args} {
 }
 
 
+proc ShowTooltip {w} {
+	variable ${w}::Vars
+
+	if {[string length $Vars(tooltip)]} {
+		::tooltip::show $w $Vars(tooltip)
+	}
+}
+
+
 proc Layout {w} {
 	variable ${w}::Vars
 
 	set bg [::theme::getBackgroundColor]
-	set n [llength $Vars(components)]
+	set n [expr {$Vars(dir:size) - $Vars(prefix:size)}]
 
 	for {set i $Vars(size)} {$i < $n} {incr i} {
 		tk::button $w.text-$i                                       \
@@ -309,8 +346,9 @@ proc Layout {w} {
 		grid $w.image-$i -column [incr col] -row 1 -sticky ns
 	}
 
-	for {set i 0} {$i < $n} {incr i} {
-		$w.text-$i configure -text [lindex $Vars(components) $i]
+	for {set i $Vars(prefix:size)} {$i < $Vars(dir:size)} {incr i} {
+		set k [expr {$i - $Vars(prefix:size)}]
+		$w.text-$k configure -text [lindex $Vars(dir:components) $i]
 	}
 
 	set Vars(size) [max $n $Vars(size)]
@@ -435,7 +473,7 @@ proc Invoke {w btn i} {
 		} elseif {$Vars(user)} {
 			event generate $w <<SetFolder>> -data $Vars(dir)
 		} else {
-			set components [lrange $Vars(components) 0 $i]
+			set components [lrange $Vars(dir:components) 0 [expr {$i + $Vars(prefix:size)}]]
 			event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
 		}
 	}
@@ -450,7 +488,8 @@ proc PopupDirs {w btn i} {
 	if {$Vars(user)} {
 		set subdirs {}
 	} else {
-		set rootdir [file join "/" {*}[lrange $Vars(components) 0 $i]]
+		incr i $Vars(prefix:size)
+		set rootdir [file join "/" {*}[lrange $Vars(dir:components) 0 $i]]
 		set filter *
 		if {$::tcl_platform(platform) eq "unix" && $Vars(showhidden)} { lappend filter .* }
 		set subdirs [glob -nocomplain -tails -dir $rootdir -types d {*}$filter]
@@ -515,7 +554,7 @@ proc Configure {w width} {
 	variable ${w}::Vars
 
 	if {$width <= 1} { return }
-	set Vars(start) [llength $Vars(components)]
+	set Vars(start) [expr {[llength $Vars(dir:components)] - $Vars(prefix:size)}]
 	Layout $w
 }
 

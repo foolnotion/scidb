@@ -56,12 +56,6 @@
 #include <X11/Xatom.h>
 #include <X11/keysym.h>
 
-#ifdef HAVE_LIMITS_H
-#include "limits.h"
-#else
-#define LONG_MAX 0x7FFFFFFFL
-#endif
-
 #define XDND_VERSION 5
 
 #define GNOME_SUPPORT
@@ -107,6 +101,13 @@ struct WrapperList
 static struct WrapperList wrapperList;
 
 #endif
+
+static const char *DropActions[] = {
+  "XdndActionCopy", "XdndActionMove", "XdndActionLink", "XdndActionAsk",  "XdndActionPrivate"
+};
+static const char *ActionNames[] = {
+  "copy", "move", "link", "ask", "private"
+};
 
 static Tk_Window FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state);
 
@@ -611,7 +612,7 @@ int TkDND_HandleXdndEnter(Tk_Window tkwin, Tk_Window target, XClientMessageEvent
     unsigned char *data;
     XGetWindowProperty(cm->display, drag_source,
                        Tk_InternAtom(tkwin, "XdndTypeList"), 0,
-                       LONG_MAX, False, XA_ATOM, &actualType, &actualFormat,
+                       4096, False, XA_ATOM, &actualType, &actualFormat,
                        &itemCount, &remainingBytes, &data);
     typelist = (Atom *) Tcl_Alloc(sizeof(Atom)*(itemCount+1));
     if (typelist == NULL)
@@ -650,7 +651,7 @@ int TkDND_HandleXdndPosition(Tk_Window tkwin, Tk_Window target, XClientMessageEv
   int rootX, rootY, index, status;
   XClientMessageEvent response;
   int width = 1, height = 1;
-  static char *DropActions[] = {
+  static const char *DropActions[] = {
     "copy", "move", "link", "ask",  "private", "refuse_drop", "default",
     (char *) NULL
   };
@@ -748,7 +749,7 @@ int TkDND_HandleXdndDrop(Tk_Window tkwin, Tk_Window target, XClientMessageEvent 
   Tcl_Obj* objv[2], *result;
   int status, index;
   Time time = (sizeof(Time) == 8 && cm->data.l[2] < 0) ? (unsigned)cm->data.l[2] : cm->data.l[2];
-  static char *DropActions[] = {
+  static const char *DropActions[] = {
     "copy", "move", "link", "ask",  "private", "refuse_drop", "default",
     (char *) NULL
   };
@@ -1210,7 +1211,7 @@ int TkDND_UnregisterGenericEventHandlerObjCmd(ClientData clientData,
 }; /* TkDND_UnegisterGenericEventHandlerObjCmd */
 
 int TkDND_AnnounceTypeListObjCmd(ClientData clientData, Tcl_Interp *interp,
-                            int objc, Tcl_Obj *CONST objv[]) {
+                         int objc, Tcl_Obj *CONST objv[]) {
   Tk_Window path;
   Tcl_Obj **type;
   int status, i, types;
@@ -1241,10 +1242,11 @@ int TkDND_AnnounceTypeListObjCmd(ClientData clientData, Tcl_Interp *interp,
 }; /* TkDND_AnnounceTypeListObjCmd */
 
 int TkDND_AnnounceActionListObjCmd(ClientData clientData, Tcl_Interp *interp,
-                            int objc, Tcl_Obj *CONST objv[]) {
+                         int objc, Tcl_Obj *CONST objv[]) {
   Tk_Window path;
   Tcl_Obj **action, **description;
-  int status, i, actions, descriptions;
+  int status, i, k, actions, descriptions;
+  int count = 0;
   Atom actionlist[10], descriptionlist[10];
 
   if (objc != 4) {
@@ -1271,19 +1273,76 @@ int TkDND_AnnounceActionListObjCmd(ClientData clientData, Tcl_Interp *interp,
   }
 
   for (i = 0; i < actions; ++i) {
-    actionlist[i]      = Tk_InternAtom(path, Tcl_GetString(action[i]));
-    descriptionlist[i] = Tk_InternAtom(path, Tcl_GetString(description[i]));
+    int valid = 0;
+    for (k = 0; k < sizeof(ActionNames)/sizeof(ActionNames[0]); ++k) {
+      if (strcmp(Tcl_GetString(action[i]), ActionNames[k]) == 0) {
+        actionlist[count] = Tk_InternAtom(path, DropActions[k]);
+        valid = 1;
+      }
+    }
+    if (valid) {
+      descriptionlist[count++] = Tk_InternAtom(path, Tcl_GetString(description[i]));
+    }
   }
   XChangeProperty(Tk_Display(path), Tk_WindowId(path),
                   Tk_InternAtom(path, "XdndActionList"),
                   XA_ATOM, 32, PropModeReplace,
-                  (unsigned char*) actionlist, actions);
+                  (unsigned char*) actionlist, count);
   XChangeProperty(Tk_Display(path), Tk_WindowId(path),
                   Tk_InternAtom(path, "XdndActionDescription"),
                   XA_ATOM, 32, PropModeReplace,
-                  (unsigned char*) descriptionlist, descriptions);
+                  (unsigned char*) descriptionlist, count);
   return TCL_OK;
 }; /* TkDND_AnnounceActionListObjCmd */
+
+int TkDND_FetchActionListObjCmd(ClientData clientData, Tcl_Interp *interp,
+                         int objc, Tcl_Obj *CONST objv[]) {
+  Tk_Window tkwin;
+  Window source;
+  Atom actual_type;
+  int actual_format;
+  unsigned long nitems, bytes_after;
+  unsigned char* data = NULL;
+  Tcl_Obj* actionlist[5];
+  int count = 0;
+
+  if (objc != 2) {
+    Tcl_WrongNumArgs(interp, 1, objv, "path");
+    return TCL_ERROR;
+  }
+
+  tkwin = Tk_MainWindow(interp);
+  source = atoi(Tcl_GetString(objv[1]));
+
+  int result = XGetWindowProperty(Tk_Display(tkwin), source,
+                                  Tk_InternAtom(tkwin, "XdndActionList"),
+                                  0, 4096, False, XA_ATOM, &actual_type,
+                                  &actual_format, &nitems, &bytes_after,
+                                  &data);
+
+  if (result == Success && actual_type != None && data && actual_format == 32) {
+    Atom atoms[5];
+    int i, k;
+
+    memset(atoms, 0, sizeof(atoms));
+
+    for (i = 0; i < nitems; ++i) {
+      Atom action = ((Atom*)data)[i];
+      for (k = 0; k < sizeof(DropActions)/sizeof(DropActions[0]); ++k) {
+        if (atoms[k] == (Atom)0) {
+          atoms[k] = Tk_InternAtom(tkwin, DropActions[k]);
+        }
+        if (action == atoms[k]) {
+          actionlist[count++] = Tcl_NewStringObj(ActionNames[k], -1);
+        }
+      }
+    }
+  }
+
+  if (data) XFree(data);
+  Tcl_SetObjResult(interp, Tcl_NewListObj(count, actionlist));
+  return TCL_OK;
+}
 
 int TkDND_FindDropTargetWindowObjCmd(ClientData clientData,
                          Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
@@ -1451,7 +1510,7 @@ int TkDND_SendXdndEnterObjCmd(ClientData clientData,
 
 int TkDND_SendXdndPositionObjCmd(ClientData clientData,
                          Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]) {
-  static char *DropActions[] = {
+  static const char *DropActions[] = {
     "copy", "move", "link", "ask",  "private", "default",
     (char *) NULL
   };
@@ -1773,6 +1832,12 @@ int Tkdnd_Init(Tcl_Interp *interp) {
 
   if (Tcl_CreateObjCommand(interp, "_announce_action_list",
            (Tcl_ObjCmdProc*) TkDND_AnnounceActionListObjCmd,
+           (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
+    return TCL_ERROR;
+  }
+
+  if (Tcl_CreateObjCommand(interp, "_fetch_action_list",
+           (Tcl_ObjCmdProc*) TkDND_FetchActionListObjCmd,
            (ClientData) NULL, (Tcl_CmdDeleteProc *) NULL) == NULL) {
     return TCL_ERROR;
   }

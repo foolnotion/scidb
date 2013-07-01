@@ -718,7 +718,7 @@
 ::database::switcher::mc::Failed			"meghiúsult"
 
 ::database::switcher::mc::UriRejectedDetail(open)	"Csak Scidb adabázisok nyithatóak meg:"
-::database::switcher::mc::UriRejectedDetail(import)	"Csak Scidb adatbázisok importálhatóak:"
+::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:" ;# NEW
 ::database::switcher::mc::EmptyUriList			"Drop content is empty." ;# NEW
 ::database::switcher::mc::CopyGames			"Játszmák másolása"
 ::database::switcher::mc::CopyGamesFromTo		"Játszmák másolása '%src'-ból/-ből '%dst'-ba/-be"
@@ -2449,7 +2449,6 @@
 ::fsbox::mc::Cannot(rename)		"'%s' fájlt nem lehet átnevezni"
 ::fsbox::mc::Cannot(move)		"'%s' fájlt nem lehet áthelyezni"
 ::fsbox::mc::Cannot(overwrite)		"'%s' fájlt nem lehet felülírni"
-::fsbox::mc::Cannot(delete-or-move)	"Cannot delete nor move file '%s'." ;# NEW
 
 ::fsbox::mc::DropAction(move)		"Beillesztés ide"
 ::fsbox::mc::DropAction(copy)		"Másolás innen"
