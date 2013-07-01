@@ -481,8 +481,8 @@ PgnReader::putback(int c)
 
 	if (c != '\n')
 	{
-		--m_currPos.column;
 		m_putbackBuf[m_putback++] = c;
+		--m_currPos.column;
 	}
 }
 
@@ -4454,28 +4454,15 @@ PgnReader::parseNag(Token prevToken, int)
 	unsigned nag = 0;
 
 	do
-		nag = nag*10 + *m_linePos++ - '0';
+		nag = nag*10 + get() - '0';
 	while (::isdigit(*m_linePos));
 
-	nag::ID myNag = nag::fromChessPad(nag::fromScid3(nag::ID(nag)));
+	nag::ID myNag = nag::map(nag::ID(nag));
 
-	if (!partOfMove(prevToken))
-	{
-		if (myNag != nag::Diagram && myNag != nag::DiagramFromBlack)
-			sendError(UnexpectedSymbol, "$");
-
-		m_annotation.add(nag::ID(myNag));
-		m_hasNote = true;
-		return prevToken;
-	}
-	else if (myNag == nag::Null)
-	{
+	if (myNag == nag::Null || nag >= nag::Scidb_Last)
 		sendWarning(InvalidNag, mstl::string("$") + ::itos(nag));
-	}
 	else
-	{
 		putNag(myNag);
-	}
 
 	return kNag;
 }

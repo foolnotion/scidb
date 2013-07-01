@@ -90,7 +90,7 @@ foreach lib {Xcursor fontconfig} {
 
     if {[string length $path] > 0} {
         if {[file exists $path/lib${lib}.so]} {
-            puts "*** Link '$path/lib${lib}.so' exists, fine."
+            puts "*** Link to '$path/lib${lib}.so' exists, fine."
             puts ""
             set found 1
         } else {
@@ -111,13 +111,24 @@ foreach lib {Xcursor fontconfig} {
                     set link ${p}/lib${lib}.so
                     if {![file exists $link]} {
                         set cmd [list sudo ln -s $file $link]
-                        puts "*** Missing link '$link', I will fix this."
+                        puts "*** Missing link '$link', I like to fix this:"
                         puts ""
-                        puts "Probably you have to enter the user password"
-                        puts "(for command '$cmd'):"
+                        puts "Set link '$link' to destination '$file'"
+                        puts "Execute: '$cmd'"
+                        puts ""
+                        puts -nonewline "Should I set this link? (y/n) "
+                        flush stdout
+                        set reply ""
+                        while {$reply ne "y" && $reply ne "n"} {
+                            set reply [string tolower [read stdin 1]]
+                        }
+                        puts ""
+                        if {$reply eq "n"} {
+                            puts "Couldn't fix the system."
+                            exit 1
+                        }
+                        puts "Probably you have to enter the user password:"
                         exec {*}$cmd
-                        puts ""
-                        puts "*** Missing link '$link' set to destination '$file'"
                         puts ""
                         set found 1
                         break

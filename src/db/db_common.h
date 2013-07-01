@@ -1282,8 +1282,9 @@ namespace nag
 
 	ID fromScid3(ID nag);
 	ID toScid3(ID nag);
-
 	ID fromChessPad(ID nag);
+
+	ID map(ID nag);
 
 	char const* toSymbol(ID nag);
 	ID fromSymbol(mstl::string const& symbol);

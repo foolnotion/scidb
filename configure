@@ -828,9 +828,13 @@ proc findFontconfig {} {
     if {[string length $dir]} {
         set option(HAVE_XFT) "-DHAVE_XFT"
         puts "yes."
+        set rc 1
     } else {
         puts "no."
+        set rc 0
     }
+
+    return $rc
 }
 
 
@@ -854,10 +858,14 @@ proc findFreetype {} {
         set option(HAVE_FREETYPE) "-DHAVE_FREETYPE"
         set package(freetype-inc) "-I/[file join {*}[lrange [split $dir /] 0 end-2]]"
         puts "yes."
+        set rc 1
     } else {
         set option(HAVE_FREETYPE) ""
         puts "no."
+        set rc 0
     }
+
+    return $rc
 }
 
 
@@ -2215,6 +2223,19 @@ if {[string length $gxxVer]} {
         exit 1
     }
 
+    if {$::tcl_platform(platform) eq "unix"} {
+        if {![findFontconfig]} {
+            puts ""
+            puts "Development files for fontconfig not found,"
+            puts "this is especially a problem on Ubuntu systems."
+            puts "Please install the development package for libfontconfig."
+            puts "On Ubuntu use: sudo apt-get install libfontconfig1-dev"
+            exit 1
+        }
+
+        findFreetype
+    }
+
     checkInotify
     checkStatVFS
     checkFAM
@@ -2228,14 +2249,9 @@ if {[string length $gxxVer]} {
     # of static objects).
     Append option(EXTRA_CXXFLAGS) "-DBROKEN_LINKER_HACK=1"
 
-    if {$::tcl_platform(platform) eq "unix"} {
-        findFontconfig
-        findFreetype
+    if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
+        writeMakefile $success
     }
-
-     if {[lsearch $argv -n] == -1 && [lsearch $argv --no-create] == -1} {
-         writeMakefile $success
-     }
 
     if {[llength $instableTkLibrary]} {
         # it seems that we build on an insane Unix system (like Ubuntu Oneiric)

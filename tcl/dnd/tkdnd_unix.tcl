@@ -70,6 +70,8 @@ namespace eval xdnd {
   proc debug {msg} {
     puts $msg
   };# debug
+
+  proc registerWrapper {w {alias ""}} { return [_register_wrapper $w $alias] }
 };# namespace xdnd
 
 # ----------------------------------------------------------------------------

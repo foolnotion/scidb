@@ -451,6 +451,8 @@ inline bool isPrefix(ID nag)	{ return WithTheIdea <= nag && nag <= EditorsRemark
 inline bool isInfix(ID nag)	{ return GoodMove <= nag && nag <= QuestionableMove; }
 inline bool isSuffix(ID nag)	{ return nag && !isPrefix(nag) && !isInfix(nag); }
 
+inline ID map(ID nag) { return fromChessPad(fromScid3(nag)); }
+
 } // namespace nag
 
 namespace sex {

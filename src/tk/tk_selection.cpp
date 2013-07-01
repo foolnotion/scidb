@@ -133,11 +133,10 @@ selectionGet(Tcl_Interp* ti, Tk_Window tkwin, Atom selection, Atom target, unsig
 
 # if defined(__unix__)
 
-#  include "m_utility.h"
-
 #  include <X11/Xatom.h>
 #  include <ctype.h>
 #  include <stdlib.h>
+#  include <stdint.h>
 
 static Atom xaSTRING				= 0;
 static Atom xaUTF8_STRING		= 0;
