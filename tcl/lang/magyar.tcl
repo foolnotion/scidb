@@ -2376,6 +2376,7 @@
 ::fsbox::mc::FileSystem			"Fájlredszer"
 ::fsbox::mc::Desktop			"Asztal"
 ::fsbox::mc::Trash			"Kuka"
+::fsbox::mc::Download			"Download" ;# NEW
 ::fsbox::mc::Home			"Home"  ;#NEW
 
 ::fsbox::mc::SelectEncoding		"Adatbázis kódolásának kiválasztása"

@@ -4439,7 +4439,7 @@ PgnReader::parseMoveNumber(Token prevToken, int)
 			advanceLinePos();
 	}
 
-	return prevToken;
+	return kMoveNumber;
 }
 
 
@@ -4457,9 +4457,11 @@ PgnReader::parseNag(Token prevToken, int)
 		nag = nag*10 + get() - '0';
 	while (::isdigit(*m_linePos));
 
-	nag::ID myNag = nag::map(nag::ID(nag));
+	nag::ID myNag = nag::map((prevToken & (kSan | kNag))
+										? nag::ID(nag)
+										: nag::prefix::map(nag::ID(nag::ID(nag))));
 
-	if (myNag == nag::Null || nag >= nag::Scidb_Last)
+	if (myNag == nag::Null || myNag >= nag::Scidb_Last)
 		sendWarning(InvalidNag, mstl::string("$") + ::itos(nag));
 	else
 		putNag(myNag);

@@ -1280,8 +1280,8 @@ namespace nag
 	bool isInfix(ID nag);
 	bool isSuffix(ID nag);
 
-	ID fromScid3(ID nag);
 	ID toScid3(ID nag);
+	ID fromScid3(ID nag);
 	ID fromChessPad(ID nag);
 
 	ID map(ID nag);
@@ -1290,6 +1290,15 @@ namespace nag
 	ID fromSymbol(mstl::string const& symbol);
 	ID fromSymbol(char const* symbol);
 	ID fromSymbol(char const* symbol, unsigned len);
+
+	namespace prefix
+	{
+		ID fromScid3(ID nag);
+		ID fromChessPad(ID nag);
+		ID fromJose(ID nag);
+
+		ID map(ID nag);
+	}
 }
 
 namespace save

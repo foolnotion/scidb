@@ -291,7 +291,9 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::scrolledtable::bind $table <ButtonRelease-2>	[namespace code [list HideInfo $path]]
 	::scrolledtable::bind $table <ButtonPress-3>		+[namespace code [list HideInfo $path]]
 
-#	::scrolledtable::configure $table lastName -font2 $::font::figurine(text:normal)
+	# XXX doesn't work, we have to replace the font2 command with:
+	# -specialfont [list $::font::figurine(text:normal) {9812 9823}]
+	# ::scrolledtable::configure $table lastName -font2 $::font::figurine(text:normal)
 
 	if {$useFind} {
 		set tbFind [::toolbar::toolbar $path \

@@ -822,7 +822,7 @@ Application::closeAll(CloseMode mode)
 
 	m_cursorMap.swap(map);
 
-	if (refBase)
+	if (refBase || mode == Including_Clipbase)
 		setReferenceBase(refBase, false);
 }
 

@@ -162,10 +162,6 @@ array set environment {
     STRIP       strip
 }
 
-foreach name [array names environment] {
-    set haveEnvironment($name) 0
-}
-
 array set compiler {
     simd            {}
     popcnt          {}
@@ -1056,10 +1052,7 @@ fi
 #    Determines if libfam is available.
 #
 proc SystemHasFAM {} {
-    global TestFAM
-    global environment
-    global package
-    global option
+    global TestFAM environment package option
 
     set lib -lfam
     set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
@@ -1174,11 +1167,7 @@ fi
 #    the zlib version that comes with Scidb will be used.
 #
 proc SystemHasZlib {} {
-    global TestZlib
-    global TestGzOffset
-    global environment
-    global package
-    global compiler
+    global TestZlib TestGzOffset environment package compiler
 
     set testZlib [regsub -all __CC__ $TestZlib $environment(CC)]
     set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
@@ -1261,9 +1250,7 @@ fi
 #    the zziplib version that comes with Scidb will be used.
 #
 proc SystemHasZziplib {} {
-    global TestZziplib
-    global environment
-    global package
+    global TestZziplib environment package
 
     set testZziplib [regsub -all __CC__ $TestZziplib $environment(CC)]
     set testZziplib [regsub -all __zziplib-inc__ $testZziplib $package(zziplib-inc)]
@@ -1334,9 +1321,7 @@ fi
 #    the gdbm version that comes with Scidb will be used.
 #
 proc SystemHasGdbm {} {
-    global TestGdbm
-    global environment
-    global package
+    global TestGdbm environment package
 
     set testGdbm [regsub -all __CC__ $TestGdbm $environment(CC)]
     set testGdbm [regsub -all __gdbm-inc__ $testGdbm $package(gdbm-inc)]
@@ -1405,9 +1390,7 @@ fi
 #    the expat version that comes with Scidb will be used.
 #
 proc SystemHasExpat {} {
-    global TestExpat
-    global environment
-    global package
+    global TestExpat environment package
 
     set testExpat [regsub -all __CC__ $TestExpat $environment(CC)]
     set testExpat [regsub -all __expat-inc__ $testExpat $package(expat-inc)]
@@ -1575,9 +1558,7 @@ fi
 # checkClang
 #    Checks whether clang/clang++ is installed.
 proc checkClang {cc} {
-    global TestGCC
-    global TestSSE2
-    global TestSyncBuiltin
+    global TestGCC TestSSE2 TestSyncBuiltin
     variable environment
     variable option
     variable compiler
@@ -1632,16 +1613,8 @@ proc checkClang {cc} {
 #    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
     global tcl_platform
-    global TestGCC
-    global TestSSE2
-    global TestPOPCNT
-    global TestSyncBuiltin
-    global TestCompilerFlag
-    global environment
-    global configure
-    global compiler
-    global warnings
-    global option
+    global TestGCC TestSSE2 TestPOPCNT TestSyncBuiltin
+    global TestCompilerFlag environment configure compiler warnings option
 
     # TODO: we want some more test:
     # --with-fpmath=sse     SSE math enabled by default
@@ -1781,9 +1754,7 @@ fi
 
 
 proc checkFontConfig {} {
-    global TestFontConfig
-    global environment
-    global configure
+    global TestFontConfig environment configure
 
     puts -nonewline "    Checking your fontconfig version: "
     set testfontconfig [regsub -all __CC__ $TestFontConfig $environment(CC)]
@@ -2012,10 +1983,7 @@ proc writeMakefile {success} {
 #     Explains the usage of this script, then exits
 #
 proc usage {rc} {
-    global configure
-    global feature
-    global environment
-    global env
+    global configure feature environment env
 
     puts "Usage: ./configure \[OPTION\]... \[VAR=VALUE\]..."
     puts ""
@@ -2158,7 +2126,6 @@ foreach arg $argv {
             set package([string range $arg0 7 end]) $arg1
         } elseif {[info exists environment($arg0)]} {
             set environment($arg0) $arg1
-            set haveEnvironment($arg0) 1
         } elseif {[string match --* $arg0]} {
             set configure([string range $arg0 2 end]) $arg1
         } else {

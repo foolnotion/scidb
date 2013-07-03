@@ -2379,6 +2379,7 @@
 ::fsbox::mc::FileSystem						"File System"
 ::fsbox::mc::Desktop							"Desktop"
 ::fsbox::mc::Trash							"Cestino"
+::fsbox::mc::Download						"Download" ;# NEW
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectEncoding				"Selezionare la codifica del database (apre un'interfaccia)"

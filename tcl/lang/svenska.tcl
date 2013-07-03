@@ -2377,6 +2377,7 @@
 ::fsbox::mc::FileSystem						"Filsystem"
 ::fsbox::mc::Desktop							"Skrivbord"
 ::fsbox::mc::Trash							"Papperskorg"
+::fsbox::mc::Download						"Download" ;# NEW
 ::fsbox::mc::Home								"Hem"
 
 ::fsbox::mc::SelectEncoding				"Välj kodning av databas (öppnar en dialog)"

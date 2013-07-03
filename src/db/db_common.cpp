@@ -4054,6 +4054,23 @@ nag::fromChessPad(ID nag)
 }
 
 
+nag::ID
+nag::prefix::fromChessPad(ID nag)
+{
+	if (nag >= Scid3_Specific && Scid3_Last > nag)
+	{
+		switch (nag)
+		{
+			case ChessPad_Diagram:				return Diagram;
+			case ChessPad_DiagramFromBlack:	return DiagramFromBlack;
+			default:									return Null;
+		}
+	}
+
+	return nag;
+}
+
+
 mstl::string&
 pawns::print(Progress progress, color::ID color, mstl::string& result)
 {

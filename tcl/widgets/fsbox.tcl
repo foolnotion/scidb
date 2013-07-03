@@ -74,6 +74,7 @@ set LastVisited					"Last Visited"
 set FileSystem						"File System"
 set Desktop							"Desktop"
 set Trash							"Trash"
+set Download						"Download"
 set Home								"Home"
 
 set SelectEncoding				"Select the encoding of the database (opens a dialog)"
@@ -270,6 +271,7 @@ proc fsbox {w type args} {
 	set Vars(folder:home) [file nativename ~]
 	set Vars(folder:desktop) [desktop::directory]
 	set Vars(folder:trash) ""
+	set Vars(folder:download) [file join $Vars(folder:home) Downloads]
 	set Vars(folder:filesystem) [fileSeparator]
 	set Vars(bookmark:folder) ""
 	set Vars(edit:active) 0
@@ -285,10 +287,12 @@ proc fsbox {w type args} {
 
 	if {$type ne "save"} { set Vars(folder:trash) [::trash::directory] }
 	if {[llength $Vars(folder:desktop)]} { set Vars(lookup:$Vars(folder:desktop)) desktop }
+	if {![file isdirectory $Vars(folder:download)]} { set Vars(folder:download) "" }
 
 	set Vars(icon:lastvisited) $icon::16x16::visited
 	set Vars(icon:favorites) $icon::16x16::star
 	set Vars(icon:desktop) $icon::16x16::desktop
+	set Vars(icon:download) $icon::16x16::download
 	set Vars(icon:filesystem) $icon::16x16::filesystem
 	set Vars(icon:trash) $icon::16x16::trash
 	set Vars(icon:home) $icon::16x16::home
@@ -1459,7 +1463,7 @@ proc GetStartMenu {w} {
 		lappend start $Vars(icon:[string tolower $folder]) [Tr $folder] $folder
 	}
 	lappend start "" "" ""
-	foreach folder {FileSystem Desktop Trash Home} {
+	foreach folder {FileSystem Desktop Trash Download Home} {
 		set id [string tolower $folder]
 		if {[llength $Vars(folder:$id)]} {
 			lappend start $Vars(icon:$id) [Tr $folder] $Vars(folder:$id)
@@ -1490,7 +1494,7 @@ proc ChangeDir {w path {useHistory 1}} {
 	set Vars(prevFolder) $Vars(folder)
 	set Vars(prevGlob) $Vars(glob)
 
-	foreach f {Desktop Trash} {
+	foreach f {Desktop Trash Download} {
 		if {$Vars(folder:[string tolower $f]) eq $path} {
 			set path $f
 		}
@@ -1505,7 +1509,7 @@ proc ChangeDir {w path {useHistory 1}} {
 			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
 		}
 
-		Desktop - Trash {
+		Desktop - Trash - Download {
 			set Vars(glob) $path
 			set Vars(folder) $Vars(folder:[string tolower $path])
 			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
@@ -1608,9 +1612,9 @@ proc Activate {w {exit no}} {
 	variable ${w}::Vars
 
 	switch $Vars(glob) {
-		Desktop - Trash - Files	{ set complete Join }
-		Favorites					{ set complete SearchFavorite }
-		LastVisited					{ set complete SearchLastVisited }
+		Desktop - Trash - Files { set complete Join }
+		Favorites	{ set complete SearchFavorite }
+		LastVisited	{ set complete SearchLastVisited }
 	}
 
 	set files {}
@@ -2163,7 +2167,7 @@ proc DoFileOperations {w action uriFiles destination trash} {
 	set refresh 0
 
 	foreach {src dst} $fileList {
-		set deletionList{}
+		set deletionList {}
 		if {[file exists $dst]} {
 			if {[llength $Vars(deletecommand)]} {
 				foreach f [$Vars(deletecommand) $dst] { lappend deletionList $f }
@@ -2451,6 +2455,7 @@ proc Build {w path args} {
 	set Vars(bookmark:target:id) {}
 	set Vars(bookmark:target:folder) ""
 	set Vars(bookmark:target:path) ""
+	set Vars(bookmark:background) white
 	set yscrollcmd [list [namespace parent]::SbSet $sb]
 
 	treectrl $t {*}[array get opts] \
@@ -2521,7 +2526,7 @@ proc Build {w path args} {
 	$t style elements styLine {elemDiv}
 	$t style layout styLine elemDiv -pady {3 2} -padx {4 4} -iexpand x -expand ns
 
-	TreeCtrl::SetEditable  $t { {root style elemTxt} }
+	TreeCtrl::SetEditable $t { {root style elemTxt} }
 
 	$t notify install <Edit-begin>
 	$t notify install <Edit-accept>
@@ -2576,6 +2581,9 @@ proc BuildBookmarks {w} {
 	}
 	if {[string length $Vars(folder:trash)]} {
 		lappend Vars(bookmarks) { trash Trash }
+	}
+	if {[string length $Vars(folder:download)]} {
+		lappend Vars(bookmarks) { download Download }
 	}
 	lappend Vars(bookmarks)         \
 		{ home			Home			} \
@@ -2840,7 +2848,7 @@ proc InvokeBookmark {w args} {
 		if {[string length $folder] == 0} { return }
 		set id [string tolower $folder]
 		switch $folder {
-			Favorites - LastVisited - Desktop - Trash { set dir $folder }
+			Favorites - LastVisited - Desktop - Trash - Download { set dir $folder }
 			default { set dir $Vars(folder:$id) }
 		}
 		[namespace parent]::ChangeDir $w $dir
@@ -2912,9 +2920,9 @@ proc PopupMenu {w x y} {
 
 proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 	variable [namespace parent]::${w}::Vars
+	variable [namespace parent]::Options
 	variable Bookmarks
 
-	if {"ask" ni $actions || "copy" ni $actions} { return refuse_drop }
 	if {$action ne "leave" && !$Vars(drag:active)} { return refuse_drop }
 
 	set t $Vars(widget:list:bookmark)
@@ -2922,11 +2930,18 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 
 	switch $action {
 		enter {
+			if {$Vars(drag:private)} {
+				$Vars(widget:list:bookmark) configure -background $Options(drop:background)
+				set Vars(bookmark:background) $Options(drop:background)
+			}
 			set Vars(bookmark:target:id) {}
 		}
 
 		leave {
-			# nothing to do
+			if {$Vars(bookmark:background) ne "white"}  {
+				$Vars(widget:list:bookmark) configure -background white
+				set Vars(bookmark:background) white
+			}
 		}
 
 		position {
@@ -2949,8 +2964,8 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 						switch $folder {
 							Favorites - LastVisited {}
 							default {
-								if {$folder ne "Trash" || !$Vars(drag:active) || !$Vars(drag:trash)} {
-									set path $Vars(folder:trash)
+								if {$folder eq "Trash" || !$Vars(drag:active) || !$Vars(drag:trash)} {
+									set path $Vars(folder:[string tolower $folder])
 								}
 							}
 						}
@@ -2987,6 +3002,10 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 						$w $Vars(bookmark:target:path) $action $actions]
 				}
 			}
+			if {$Vars(bookmark:background) ne "white"}  {
+				$Vars(widget:list:bookmark) configure -background white
+				set Vars(bookmark:background) white
+			}
 		}
 	}
 
@@ -3007,7 +3026,11 @@ proc DoHandleDropEvent {w uriFiles} {
 		set extensions {}
 		foreach {uri f} [[namespace parent]::parseUriList $uriFiles] {
 			if {[string length $file] == 0} { set file [file rootname $f] }
-			lappend extensions [file extension $f]
+			set ext [file extension $f]
+			if {$ext in $Vars(extensions)} {
+				if {[[namespace parent]::CheckIfInUse $w $f delete]} { return }
+			}
+			lappend extensions $ext
 		}
 		::trash::move $file $extensions
 		[namespace parent]::filelist::RefreshFileList $w
@@ -4769,7 +4792,7 @@ proc SetTooltip {w which folder} {
 	variable [namespace parent]::Options
 
 	switch $folder {
-		Favorites - LastVisited - Desktop - Trash {
+		Favorites - LastVisited - Desktop - Trash - Download {
 			set folder [Tr $folder]
 		}
 
@@ -5345,6 +5368,22 @@ set desktop [image create photo -data {
 	4fKaZQz/vlwBavsBEECMyImImVtEUC91xgzn0KCw3z+A3nkNjChmBob3z959v7que8OrE3Pn
 	MPx8cwqo9AtMD0AAYeYBNh5OjZQliypP/PvvNPPHf5ngmTtZBFSCQUkPm3qAAMJhCjO7oH5Y
 	GaesWRqQJw1yHC61AAEGAA9ENHUsc2BpAAAAAElFTkSuQmCC
+}]
+
+set download [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAMAAAAoLQ9TAAAACXBIWXMAAABIAAAASABGyWs+
+	AAAACXZwQWcAAAAQAAAAEABcxq3DAAAA9lBMVEUAAAASJAcWJQsaLwsaMgocLg0jPhAMIwAO
+	KQARMwAvURY7ZBtKfSM8cBhUjidDfRsfVwIiXAQnYAcrZQowag01cBE7dRRkqC8kZwIpbAUu
+	cQgzdww5fRA/hBREiRhTlyNKjR1Nkh5stDJZoSVRnB5RnR5qvC1YrCBuwy5aryB82jR+3jWJ
+	7zly0i9z0zGK8TpKnR9MniJPoCZnr0BoskBqsEVqtz5rtERsvD1tuEJvvUBvwTtxwj5ytE5y
+	t0xyxzpzu0lzyDx0v0Z1xEN1zjl2zjp3yUF5zz571jt71jx73DV73DZ+3TqB5DiC5DmF6ziG
+	6zj////HF9ybAAAAMHRSTlMAAgMEBQUHCwwZGiNFSVNXdHR0dHR0dIGEhISEhISEhYqRkZWf
+	n8DKzNDo7/z9/v6iPZ5sAAAAAWJLR0RRlGl8KgAAAINJREFUGNNly7EOAUEUheH/3jsTQaGw
+	NQrv/0QUS2HaZWUmy2Q01hpO9edLjgAwU6AkAAfAfKeUS5hAbEESvkAErUD1H6QC+704w39A
+	tl694Jb7fH5iQG42JqKrFCIocLuqmZndO8AAehoVDm0eocSy1uMpMQKPWLq2ZwIGKYFq6t/x
+	Amg3I7g1zHW7AAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDEwLTAyLTExVDAxOjIwOjIxLTA2OjAw
+	tZnToAAAACV0RVh0ZGF0ZTptb2RpZnkAMjAwNi0xMC0wMVQwMDo0ODo0OC0wNTowMNyFnTQA
+	AAAASUVORK5CYII=
 }]
 
 set trash [image create photo -data {

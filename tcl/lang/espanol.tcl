@@ -2374,6 +2374,7 @@
 ::fsbox::mc::FileSystem						"Sistema de archivos"
 ::fsbox::mc::Desktop							"Escritorio"
 ::fsbox::mc::Trash							"Papelera"
+::fsbox::mc::Download						"Download" ;# NEW
 ::fsbox::mc::Home								"Inicio"
 
 ::fsbox::mc::SelectEncoding				"Seleccionar la codificación de la base de datos (abre un cuadro de dialogo)"

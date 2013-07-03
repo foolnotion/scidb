@@ -2369,6 +2369,7 @@ ln -sf ../# ====================================================================
 ::fsbox::mc::FileSystem						"File System"
 ::fsbox::mc::Desktop							"Desktop"
 ::fsbox::mc::Trash							"Trash"
+::fsbox::mc::Download						"Download"
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectEncoding				"Select the encoding of the database (opens a dialog)"

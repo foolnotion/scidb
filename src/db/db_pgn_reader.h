@@ -97,8 +97,9 @@ private:
 	// loop inside nextToken()
 	static Token const kNag					= 1 << 7;	// Numeric Annotation Glyph
 	static Token const kMovePrefix		= 1 << 8;
-	static Token const kComment			= 1 << 9;
-	static Token const kOutDated			= 1 << 10;
+	static Token const kMoveNumber		= 1 << 9;
+	static Token const kComment			= 1 << 10;
+	static Token const kOutDated			= 1 << 11;
 
 	// special token
 	static Token const PartOfMove			= kSan | kNag | kComment;

@@ -2367,6 +2367,7 @@
 ::fsbox::mc::FileSystem						"Dateisystem"
 ::fsbox::mc::Desktop							"Arbeitsfläche"
 ::fsbox::mc::Trash							"Müllkorb"
+::fsbox::mc::Download						"Download"
 ::fsbox::mc::Home								"Heimverzeichnis"
 
 ::fsbox::mc::SelectEncoding				"Auswahl der Zeichenkodierung für die Datenbank (öffnet einen Dialog)"

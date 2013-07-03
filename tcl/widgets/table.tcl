@@ -321,7 +321,8 @@ proc addcol {table id args} {
 		set labelImage $opts(-image)
 	} elseif {[llength $opts(-textvar)]} {
 		set labelText [set $opts(-textvar)]
-		set trace "variable $opts(-textvar) write { [namespace current]::SetText $table $id $opts(-textvar) }"
+		set trace \
+			"variable $opts(-textvar) write { [namespace current]::SetText $table $id $opts(-textvar) }"
 		trace add {*}$trace
 		::bind $table.t <Destroy> +[list trace remove {*}$trace]
 	} else {

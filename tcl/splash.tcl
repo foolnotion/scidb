@@ -37,7 +37,7 @@ proc open {} {
 	catch { wm attributes .splash -type splash }
 	tk::frame .splash.f -relief raised -borderwidth 1
 	tk::canvas .splash.f.c -borderwidth 0 -width [image width $Picture] -height [image height $Picture]
-	.splash.f.c create image 0 0 -image $Picture -anchor nw
+	.splash.f.c create image 0 0 -image $Picture -anchor nw -tag picture
 	ttk::label .splash.f.text -padding {1 0 0 0}
 	pack .splash.f.c
 	pack .splash.f.text -fill x
@@ -69,6 +69,18 @@ proc close {} {
 
 proc print {msg} {
 	.splash.f.text configure -text $msg
+
+	if {[tk windowingsystem] eq "x11"} {
+		variable Refresh 1
+
+		if {$Refresh} {
+			variable Picture
+			# On Unix systems we need an image refresh (bug in Tk?)
+			.splash.f.c itemconfigure picture -image $Picture
+			set Refresh 0
+		}
+	}
+
 	update idletasks
 }
 

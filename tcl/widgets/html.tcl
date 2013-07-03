@@ -128,6 +128,7 @@ proc defaultCSS {monoFamilies textFamilies} {
 	append css ".match   { background: yellow; color: black; }" \n
 	append css [monoStyle $monoFamilies] \n
 	append css [textStyle $textFamilies] \n
+puts $css
 	return $css
 }
 
