@@ -1460,6 +1460,7 @@ fi
 set TestPOPCNT {#!/bin/sh
 cat <<EOF > testpopcnt.c
 #ifdef __i386__
+#include <nmmintrin.h>
 static void cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
 {
 	__asm__ __volatile__
@@ -1488,7 +1489,7 @@ int main() { return 1; }
 #endif
 EOF
 
-__CC__ -o testpopcnt.c testpopcnt.c -msse3
+__CC__ -o testpopcnt.c testpopcnt.c -msse4
 if [ -f testpopcnt.c ]; then
     exit 0
 else
@@ -1676,7 +1677,7 @@ proc checkGCC {cc} {
         if {8*$tcl_platform(wordSize) == 64} {
             flush stdout
             if {[Probe testpopcnt [regsub -all __CC__ $TestPOPCNT $environment($cc)]]} {
-                set compiler(simd) -msse3
+                set compiler(simd) -msse4
                 set compiler(popcnt) -DUSE_POPCNT
             }
         }
