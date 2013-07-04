@@ -66,7 +66,7 @@ ifeq ($(ARCH),x86-32)
 	endif
 endif
 
-CXXFLAGS = -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DNDEBUG
+CXXFLAGS = -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DNDEBUG $(SIMD)
 
 ifeq ($(ARCH),general-64)
 	arch = any
@@ -208,7 +208,7 @@ ifeq ($(bsfq),yes)
 endif
 
 #ifeq ($(popcnt),yes)
-#	CXXFLAGS += -msse3 -DUSE_POPCNT
+#	CXXFLAGS += -msse4.2 -DUSE_POPCNT
 #endif
 
 ### 3.10 Link Time Optimization, it works since gcc 4.5 but not on mingw.
