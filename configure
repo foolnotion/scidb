@@ -1489,7 +1489,7 @@ int main() { return 1; }
 #endif
 EOF
 
-__CC__ -o testpopcnt.c testpopcnt.c -msse4
+__CC__ -o testpopcnt.c testpopcnt.c -msse4.2
 if [ -f testpopcnt.c ]; then
     exit 0
 else
@@ -1623,7 +1623,6 @@ proc checkGCC {cc} {
     # TODO: we want some more test:
     # --with-fpmath=sse     SSE math enabled by default
     # -mpopcnt              enables GCC to use the popcnt instructions on both AMD and Intel processors
-    # -m64 -msse4.2 for use of _mm_popcnt_u64
 
     if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
@@ -1677,7 +1676,7 @@ proc checkGCC {cc} {
         if {8*$tcl_platform(wordSize) == 64} {
             flush stdout
             if {[Probe testpopcnt [regsub -all __CC__ $TestPOPCNT $environment($cc)]]} {
-                set compiler(simd) -msse4
+                set compiler(simd) -msse4.2
                 set compiler(popcnt) -DUSE_POPCNT
             }
         }
