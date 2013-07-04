@@ -1557,12 +1557,12 @@ Codec::reloadNamebases(	mstl::string const& rootname,
 	total += (count[Namebase::Player] = bstrm.uint24());
 	total += (count[Namebase::Event ] = bstrm.uint24());
 	total += (count[Namebase::Site  ] = bstrm.uint24());
-	bstrm.skip(3); // skip round
+	total += (count[Namebase::Round ] = bstrm.uint24());
 
 	maxFreq[Namebase::Player]	= bstrm.uint24();
 	maxFreq[Namebase::Event]	= bstrm.uint24();
 	maxFreq[Namebase::Site]		= bstrm.uint24();
-	bstrm.skip(3); // skip round
+	maxFreq[Namebase::Round]   = bstrm.uint24();
 
 	ProgressWatcher watcher(progress, total);
 	progress.message("read-namebase");
@@ -1592,6 +1592,13 @@ Codec::reloadNamebases(	mstl::string const& rootname,
 						*m_siteList,
 						maxFreq[Namebase::Site],
 						count[Namebase::Site],
+						progress);
+	m_progressReportAfter = m_progressFrequency - (m_progressCount % m_progressFrequency);
+	reloadNamebase(bstrm,
+						namebase(Namebase::Round),
+						*m_roundList,
+						maxFreq[Namebase::Round],
+						count[Namebase::Round],
 						progress);
 }
 
@@ -1652,7 +1659,11 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 
 		str.set_size(length);
 
-		if (!sys::utf8::Codec::is7BitAscii(name))
+		if (sys::utf8::Codec::is7BitAscii(str))
+		{
+			base.rename(shadowBase.lookup(index)->entry, str);
+		}
+		else
 		{
 			m_codec->toUtf8(str, name);
 
@@ -1665,6 +1676,8 @@ Codec::reloadNamebase(	ByteIStream& bstrm,
 			base.rename(shadowBase.lookup(index)->entry, name);
 		}
 	}
+
+	base.finishRenaming();
 }
 
 

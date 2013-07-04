@@ -203,7 +203,9 @@ public:
 												species::ID type,
 												sex::ID sex,
 												uint32_t fideID);
+
 	void rename(NamebaseEntry* entry, mstl::string const& name);
+	void finishRenaming();
 
 	void update();
 	void setPrepared(unsigned maxFrequency, unsigned maxId, unsigned maxUsage);
@@ -272,7 +274,9 @@ private:
 		PlayerAllocator*	m_playerAllocator;
 	};
 
-	StringAllocator m_stringAllocator;
+	StringAllocator  m_stringAllocator;
+	StringAllocator* m_stringAllocator2;
+	StringAllocator* m_stringAllocator3;
 };
 
 } // namespace db

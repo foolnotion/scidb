@@ -38,7 +38,7 @@ NamebaseEntry* NamebaseEntry::m_emptyEntry	= new NamebaseEntry();
 
 
 NamebaseEntry::NamebaseEntry(mstl::string const& name) :m_name(name) {}
-NamebaseEntry::~NamebaseEntry() throw() {}
+//NamebaseEntry::~NamebaseEntry() throw() {}
 
 NamebaseSite::NamebaseSite() : m_value(country::Unknown), m_site(0) {}
 NamebaseEvent::NamebaseEvent() {}

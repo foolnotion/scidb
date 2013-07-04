@@ -204,10 +204,16 @@ DStringAppendf(
 	Tcl_DStringAppend(dString, buf, -1);
 }
 
+static int
+isSpecialChar(SpecialFont* font, Tcl_UniChar uc)
+{
+	return font->first <= uc && uc < font->last;
+}
+
 int
 Tree_MeasureChars(
 	Tk_Font tkfont,			/* The font used to display the string. */
-	Tk_Font tkfont2,
+	SpecialFont* specialfont,
 	CONST char *string,		/* UTF-8 string, need not be NULL-terminated. */
 	int numBytes,			/* Number of bytes to consider. */
 	int maxPixels,			/* maximum line length allowed. */
@@ -217,7 +223,7 @@ Tree_MeasureChars(
 {
 	int bytesThatFit;
 
-	if (tkfont2)
+	if (specialfont)
 	{
 		CONST char* e = string + numBytes;
 		CONST char* s = string;
@@ -248,16 +254,16 @@ Tree_MeasureChars(
 					int length;
 					int nbytes;
 
-					if (uniCh <= 255)
+					if (!isSpecialChar(specialfont, uniCh))
 					{
 						do
 						{
 							u = t;
 							t += Tcl_UtfToUniChar(t, &uniCh);
 						}
-						while (t < f && uniCh <= 255);
+						while (t < f && !isSpecialChar(specialfont, uniCh));
 
-						if (uniCh <= 255)
+						if (!isSpecialChar(specialfont, uniCh))
 							u = t;
 
 						nbytes = Tk_MeasureChars(tkfont, s, u - s, maxPixels, 0, &length);
@@ -269,12 +275,12 @@ Tree_MeasureChars(
 							u = t;
 							t += Tcl_UtfToUniChar(t, &uniCh);
 						}
-						while (t < f && uniCh > 255);
+						while (t < f && isSpecialChar(specialfont, uniCh));
 
-						if (uniCh > 255)
+						if (isSpecialChar(specialfont, uniCh))
 							u = t;
 
-						nbytes = Tk_MeasureChars(tkfont2, s, u - s, maxPixels, 0, &length);
+						nbytes = Tk_MeasureChars(specialfont->tkfont, s, u - s, maxPixels, 0, &length);
 					}
 
 					if (nbytes < u - s)
@@ -302,16 +308,16 @@ Tree_MeasureChars(
 				int length;
 				int nbytes;
 
-				if (uniCh <= 255)
+				if (!isSpecialChar(specialfont, uniCh))
 				{
 					do
 					{
 						u = t;
 						t += Tcl_UtfToUniChar(t, &uniCh);
 					}
-					while (t < e && uniCh <= 255);
+					while (t < e && !isSpecialChar(specialfont, uniCh));
 
-					if (uniCh <= 255)
+					if (!isSpecialChar(specialfont, uniCh))
 						u = t;
 
 					nbytes = Tk_MeasureChars(tkfont, s, u - s, maxPixels, 0, &length);
@@ -323,12 +329,12 @@ Tree_MeasureChars(
 						u = t;
 						t += Tcl_UtfToUniChar(t, &uniCh);
 					}
-					while (t < e && uniCh > 255);
+					while (t < e && isSpecialChar(specialfont, uniCh));
 
-					if (uniCh > 255)
+					if (isSpecialChar(specialfont, uniCh))
 						u = t;
 
-					nbytes = Tk_MeasureChars(tkfont2, s, u - s, maxPixels, 0, &length);
+					nbytes = Tk_MeasureChars(specialfont->tkfont, s, u - s, maxPixels, 0, &length);
 				}
 
 				bytesThatFit += nbytes;
@@ -349,7 +355,7 @@ done:
 			int length;
 
 			Tcl_UtfToUniChar(s, &uniCh);
-			font = uniCh <= 255 ? tkfont : tkfont2;
+			font = isSpecialChar(specialfont, uniCh) ? specialfont->tkfont : tkfont;
 			bytesThatFit = Tk_MeasureChars(font, string, e - string, maxPixels, 0, &length);
 			*pixels -= length;
 		}
@@ -392,7 +398,7 @@ done:
 int
 Tree_Ellipsis(
 	Tk_Font tkfont,				/* The font used to display the string. */
-	Tk_Font tkfont2,
+	SpecialFont* specialfont,
 	char *string,				/* UTF-8 string, need not be NULL-terminated. */
 	int numBytes,				/* Number of bytes to consider. */
 	int *maxPixels,				/* In: maximum line length allowed.
@@ -410,7 +416,7 @@ Tree_Ellipsis(
 	int bytesInFirstCh;
 	Tcl_UniChar uniCh;
 
-	bytesThatFit = Tree_MeasureChars(tkfont, tkfont2, string, numBytes, *maxPixels, 0, &pixels);
+	bytesThatFit = Tree_MeasureChars(tkfont, specialfont, string, numBytes, *maxPixels, 0, &pixels);
 
 	/* The whole string fits. No ellipsis needed (unless forced) */
 	if ((bytesThatFit == numBytes) && !force) {
@@ -433,7 +439,7 @@ Tree_Ellipsis(
 	memcpy(tmpStr, string, bytesTest);
 	while (bytesTest > 0) {
 		memcpy(tmpStr + bytesTest, ellipsis, ellipsisNumBytes);
-		numBytes = Tree_MeasureChars(tkfont, tkfont2, tmpStr,
+		numBytes = Tree_MeasureChars(tkfont, specialfont, tmpStr,
 			bytesTest + ellipsisNumBytes,
 			*maxPixels, 0, &pixelsTest);
 		if (numBytes == bytesTest + ellipsisNumBytes) {
@@ -452,7 +458,7 @@ Tree_Ellipsis(
 	bytesThatFit = bytesInFirstCh;
 	memcpy(tmpStr, string, bytesThatFit);
 	memcpy(tmpStr + bytesThatFit, ellipsis, ellipsisNumBytes);
-	(void) Tree_MeasureChars(tkfont, tkfont2, tmpStr, bytesThatFit + ellipsisNumBytes,
+	(void) Tree_MeasureChars(tkfont, specialfont, tmpStr, bytesThatFit + ellipsisNumBytes,
 		-1, 0, &pixels);
 	(*maxPixels) = pixels;
 	if (tmpStr != staticStr)
@@ -1862,7 +1868,7 @@ typedef struct LayoutChunk
 typedef struct LayoutInfo
 {
 	Tk_Font tkfont;				/* The font used when laying out the text. */
-	Tk_Font tkfont2;				/* The font used when laying out the text. */
+	SpecialFont specialfont;	/* The font used when laying out the text. */
 	CONST char *string;			/* The string that was layed out. */
 	int numLines;				/* Number of lines */
 	int width;					/* The maximum width of all lines in the
@@ -1941,7 +1947,7 @@ static LayoutChunk *NewChunk(LayoutInfo **layoutPtrPtr, int *maxPtr,
 
 TextLayout TextLayout_Compute(
 	Tk_Font tkfont,				/* Font that will be used to display text. */
-	Tk_Font tkfont2,
+	SpecialFont* specialfont,
 	CONST char *string,			/* String whose dimensions are to be
 								** computed. */
 	int numChars,				/* Number of characters to consider from
@@ -1995,14 +2001,17 @@ TextLayout TextLayout_Compute(
 #else
 	maxChunks = 1;
 
-	layoutPtr = (LayoutInfo *) ckalloc(sizeof(LayoutInfo) + (maxChunks -
-			1) * sizeof(LayoutChunk));
+	layoutPtr = (LayoutInfo *) ckalloc(sizeof(LayoutInfo) + (maxChunks - 1) * sizeof(LayoutChunk));
 #endif
 	layoutPtr->tkfont = tkfont;
-	layoutPtr->tkfont2 = tkfont2;
 	layoutPtr->string = string;
 	layoutPtr->numChunks = 0;
 	layoutPtr->numLines = 0;
+
+	if (specialfont)
+		memcpy(&layoutPtr->specialfont, specialfont, sizeof(SpecialFont));
+	else
+		memset(&layoutPtr->specialfont, 0, sizeof(SpecialFont));
 
 	baseline = fm.ascent;
 	maxWidth = 0;
@@ -2030,7 +2039,7 @@ TextLayout TextLayout_Compute(
 
 		chunkPtr = NULL;
 		if (start < special) {
-			bytesThisChunk = Tree_MeasureChars(tkfont, tkfont2, start, special - start,
+			bytesThisChunk = Tree_MeasureChars(tkfont, specialfont, start, special - start,
 				wrapLength - curX, flags, &newX);
 			newX += curX;
 			flags &= ~TK_AT_LEAST_ONE;
@@ -2094,7 +2103,7 @@ TextLayout TextLayout_Compute(
 			bytesThisChunk = start - end;
 			if (bytesThisChunk > 0) {
 				bytesThisChunk =
-					Tree_MeasureChars(tkfont, tkfont2, end, bytesThisChunk, -1, 0,
+					Tree_MeasureChars(tkfont, specialfont, end, bytesThisChunk, -1, 0,
 					&chunkPtr->totalWidth);
 				chunkPtr->numBytes += bytesThisChunk;
 				chunkPtr->numChars += Tcl_NumUtfChars(end, bytesThisChunk);
@@ -2167,7 +2176,7 @@ wrapLine:
 					pixelsForText = wrapLength - chunkPtr->x;
 				else
 					pixelsForText = chunkPtr->totalWidth - 1;
-				bytesThisChunk = Tree_Ellipsis(tkfont, tkfont2,
+				bytesThisChunk = Tree_Ellipsis(tkfont, specialfont,
 						(char *) chunkPtr->start, chunkPtr->numBytes,
 						&pixelsForText, ellipsis, TRUE);
 				if (pixelsForText > wrapLength - chunkPtr->x)
@@ -2199,7 +2208,7 @@ wrapLine:
 				buf = ckalloc(chunkPtr->numBytes + ellipsisLen);
 			memcpy(buf, chunkPtr->start, chunkPtr->numBytes);
 			memcpy(buf + chunkPtr->numBytes, ellipsis, ellipsisLen);
-			Tree_MeasureChars(tkfont, tkfont2, buf,
+			Tree_MeasureChars(tkfont, specialfont, buf,
 				chunkPtr->numBytes + ellipsisLen, -1, 0,
 				&chunkPtr->displayWidth);
 			chunkPtr->totalWidth = chunkPtr->displayWidth;
@@ -2296,11 +2305,11 @@ int TextLayout_TotalWidth(TextLayout textLayout)
 }
 
 int
-Tree_TextWidth(Tk_Font tkfont, Tk_Font tkfont2, CONST char* string, int numBytes)
+Tree_TextWidth(Tk_Font tkfont, SpecialFont* specialfont, CONST char* string, int numBytes)
 {
 	int width;
 
-	if (tkfont2)
+	if (specialfont)
 	{
 		CONST char* e = string + numBytes;
 		CONST char* s = string;
@@ -2313,16 +2322,16 @@ Tree_TextWidth(Tk_Font tkfont, Tk_Font tkfont2, CONST char* string, int numBytes
 
 		while (s < e)
 		{
-			if (uniCh < 256)
+			if (!isSpecialChar(specialfont, uniCh))
 			{
 				do
 				{
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh <= 255);
+				while (t < e && !isSpecialChar(specialfont, uniCh));
 
-				if (uniCh <= 255)
+				if (!isSpecialChar(specialfont, uniCh))
 					u = t;
 
 				width += Tk_TextWidth(tkfont, s, u - s);
@@ -2334,12 +2343,12 @@ Tree_TextWidth(Tk_Font tkfont, Tk_Font tkfont2, CONST char* string, int numBytes
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh > 255);
+				while (t < e && isSpecialChar(specialfont, uniCh));
 
-				if (uniCh > 255)
+				if (isSpecialChar(specialfont, uniCh))
 					u = t;
 
-				width += Tk_TextWidth(tkfont2, s, u - s);
+				width += Tk_TextWidth(specialfont->tkfont, s, u - s);
 			}
 
 			s = u;
@@ -2359,12 +2368,12 @@ Tree_DrawChars(
 	Drawable drawable,
 	GC gc,
 	Tk_Font tkfont,
-	Tk_Font tkfont2,
+	SpecialFont* specialfont,
 	CONST char *string,
 	int numBytes,
 	int x, int y)
 {
-	if (tkfont2)
+	if (specialfont)
 	{
 		CONST char* e = string + numBytes;
 		CONST char* s = string;
@@ -2375,16 +2384,16 @@ Tree_DrawChars(
 
 		while (s < e)
 		{
-			if (uniCh <= 255)
+			if (!isSpecialChar(specialfont, uniCh))
 			{
 				do
 				{
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh <= 255);
+				while (t < e && !isSpecialChar(specialfont, uniCh));
 
-				if (uniCh <= 255)
+				if (!isSpecialChar(specialfont, uniCh))
 					u = t;
 
 				Tk_DrawChars(display, drawable, gc, tkfont, s, u - s, x, y);
@@ -2399,15 +2408,15 @@ Tree_DrawChars(
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh > 255);
+				while (t < e && isSpecialChar(specialfont, uniCh));
 
-				if (uniCh > 255)
+				if (isSpecialChar(specialfont, uniCh))
 					u = t;
 
-				Tk_DrawChars(display, drawable, gc, tkfont2, s, u - s, x, y);
+				Tk_DrawChars(display, drawable, gc, specialfont->tkfont, s, u - s, x, y);
 
 				if (u < e)
-					x += Tk_TextWidth(tkfont2, s, u - s);
+					x += Tk_TextWidth(specialfont->tkfont, s, u - s);
 			}
 
 			s = t = u;
@@ -2425,14 +2434,14 @@ Tree_UnderlineChars(
 	Drawable drawable,
 	GC gc,
 	Tk_Font tkfont,
-	Tk_Font tkfont2,
+	SpecialFont* specialfont,
 	CONST char *string,
 	int x, int y,
 	int firstByte,
 	int lastByte
 	)
 {
-	if (tkfont2)
+	if (specialfont)
 	{
 		CONST char* e = string + lastByte;
 		CONST char* s = string + firstByte;
@@ -2443,16 +2452,16 @@ Tree_UnderlineChars(
 
 		while (s < e)
 		{
-			if (uniCh < 256)
+			if (!isSpecialChar(specialfont, uniCh))
 			{
 				do
 				{
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh <= 255);
+				while (t < e && !isSpecialChar(specialfont, uniCh));
 
-				if (uniCh <= 255)
+				if (!isSpecialChar(specialfont, uniCh))
 					u = t;
 
 				Tk_UnderlineChars(display, drawable, gc, tkfont, s, x, y, s - string, u - string);
@@ -2467,15 +2476,15 @@ Tree_UnderlineChars(
 					u = t;
 					t += Tcl_UtfToUniChar(t, &uniCh);
 				}
-				while (t < e && uniCh > 255);
+				while (t < e && isSpecialChar(specialfont, uniCh));
 
-				if (uniCh > 255)
+				if (isSpecialChar(specialfont, uniCh))
 					u = t;
 
-				Tk_UnderlineChars(display, drawable, gc, tkfont2, s, x, y, s - string, u - string);
+				Tk_UnderlineChars(display, drawable, gc, specialfont->tkfont, s, x, y, s - string, u - string);
 
 				if (u < e)
-					x += Tk_TextWidth(tkfont2, s, u - s);
+					x += Tk_TextWidth(specialfont->tkfont, s, u - s);
 			}
 
 			s = t = u;
@@ -2523,7 +2532,7 @@ void TextLayout_Draw(
 				firstByte = chunkPtr->start;
 			} else {
 				firstByte = Tcl_UtfAtIndex(chunkPtr->start, firstChar);
-				Tree_MeasureChars(layoutPtr->tkfont, layoutPtr->tkfont2, chunkPtr->start,
+				Tree_MeasureChars(layoutPtr->tkfont, &layoutPtr->specialfont, chunkPtr->start,
 					firstByte - chunkPtr->start, -1, 0, &drawX);
 			}
 			if (lastChar < numDisplayChars)
@@ -2539,14 +2548,14 @@ void TextLayout_Draw(
 					buf = ckalloc((lastByte - firstByte) + ellipsisLen);
 				memcpy(buf, firstByte, (lastByte - firstByte));
 				memcpy(buf + (lastByte - firstByte), ellipsis, ellipsisLen);
-				Tree_DrawChars(display, drawable, gc, layoutPtr->tkfont, layoutPtr->tkfont2,
+				Tree_DrawChars(display, drawable, gc, layoutPtr->tkfont, &layoutPtr->specialfont,
 					buf, (lastByte - firstByte) + ellipsisLen,
 					x + chunkPtr->x + drawX, y + chunkPtr->y);
 				if (buf != staticStr)
 					ckfree(buf);
 			} else
 #endif
-			Tree_DrawChars(display, drawable, gc, layoutPtr->tkfont, layoutPtr->tkfont2,
+			Tree_DrawChars(display, drawable, gc, layoutPtr->tkfont, &layoutPtr->specialfont,
 				firstByte, lastByte - firstByte, x + chunkPtr->x + drawX,
 				y + chunkPtr->y);
 #if 1
@@ -2554,7 +2563,7 @@ void TextLayout_Draw(
 				CONST char *fstBytePtr = Tcl_UtfAtIndex(chunkPtr->start, underline);
 				CONST char *sndBytePtr = Tcl_UtfNext(fstBytePtr);
 				Tree_UnderlineChars(display, drawable, gc,
-						layoutPtr->tkfont, layoutPtr->tkfont2, firstByte,
+						layoutPtr->tkfont, &layoutPtr->specialfont, firstByte,
 						x + chunkPtr->x + drawX, y + chunkPtr->y,
 						fstBytePtr - chunkPtr->start, sndBytePtr - chunkPtr->start);
 			}
@@ -3543,6 +3552,13 @@ struct PerStateDataFont
 	Tk_Font tkfont;
 };
 
+typedef struct PerStateDataSpecialFont PerStateDataSpecialFont;
+struct PerStateDataSpecialFont
+{
+	PerStateData header;
+	SpecialFont font;
+};
+
 static int
 PSDFontFromObj(
 	TreeCtrl *tree,
@@ -3560,6 +3576,36 @@ PSDFontFromObj(
 	return TCL_OK;
 }
 
+static int
+PSDSpecialFontFromObj(
+	TreeCtrl *tree,
+	Tcl_Obj *obj,
+	PerStateDataSpecialFont *pFont)
+{
+	if (ObjectIsEmpty(obj)) {
+		/* Specify empty string to override masterX */
+		pFont->font.tkfont = NULL;
+	} else {
+		Tcl_Obj** objv;
+		int objc;
+		pFont->font.first = 512;
+		pFont->font.last = 65536;
+		pFont->font.tkfont = NULL;
+		if (Tcl_ListObjGetElements(tree->interp, obj, &objc, &objv) == TCL_OK) {
+			if (objc == 1) {
+				pFont->font.tkfont = Tk_AllocFontFromObj(tree->interp, tree->tkwin, objv[0]);
+			} else if (objc == 3) {
+				pFont->font.tkfont = Tk_AllocFontFromObj(tree->interp, tree->tkwin, objv[0]);
+				Tcl_GetIntFromObj(tree->interp, objv[1], &pFont->font.first);
+				Tcl_GetIntFromObj(tree->interp, objv[2], &pFont->font.last);
+			}
+		}
+		if (pFont->font.tkfont == NULL)
+			return TCL_ERROR;
+	}
+	return TCL_OK;
+}
+
 static void
 PSDFontFree(
 	TreeCtrl *tree,
@@ -3567,6 +3613,15 @@ PSDFontFree(
 {
 	if (pFont->tkfont != NULL)
 		Tk_FreeFont(pFont->tkfont);
+}
+
+static void
+PSDSpecialFontFree(
+	TreeCtrl *tree,
+	PerStateDataSpecialFont *pFont)
+{
+	if (pFont->font.tkfont != NULL)
+		Tk_FreeFont(pFont->font.tkfont);
 }
 
 PerStateType pstFont =
@@ -3577,12 +3632,12 @@ PerStateType pstFont =
 	(PerStateType_FreeProc) PSDFontFree
 };
 
-PerStateType pstFont2 =
+PerStateType pstSpecialFont =
 {
-	"pstFont2",
-	sizeof(PerStateDataFont),
-	(PerStateType_FromObjProc) PSDFontFromObj,
-	(PerStateType_FreeProc) PSDFontFree
+	"pstSpecialFont",
+	sizeof(PerStateDataSpecialFont),
+	(PerStateType_FromObjProc) PSDSpecialFontFromObj,
+	(PerStateType_FreeProc) PSDSpecialFontFree
 };
 
 Tk_Font
@@ -3597,6 +3652,21 @@ PerStateFont_ForState(
 	pData = (PerStateDataFont *) PerStateInfo_ForState(tree, &pstFont, pInfo, state, match);
 	if (pData != NULL)
 		return pData->tkfont;
+	return NULL;
+}
+
+SpecialFont*
+PerStateSpecialFont_ForState(
+	TreeCtrl *tree,
+	PerStateInfo *pInfo,
+	int state,
+	int *match)
+{
+	PerStateDataSpecialFont *pData;
+
+	pData = (PerStateDataSpecialFont *) PerStateInfo_ForState(tree, &pstSpecialFont, pInfo, state, match);
+	if (pData != NULL)
+		return &pData->font;
 	return NULL;
 }
 

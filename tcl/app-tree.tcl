@@ -191,10 +191,14 @@ proc build {parent width height gameTable} {
 	::ttk::frame $sq -borderwidth 1 -relief sunken
 
 	$tb.t state define next
-	set font [::table::getFont $tb]
-	set bold [::font::makeBoldFont $font]
-	set Vars(style) [list -font [list $bold next $font !next] \
-		 -font2 [list $::font::figurine(text:bold) next $::font::figurine(text:normal) !next]]
+	set font(normal) [::table::getFont $tb]
+	set font(bold) [::font::makeBoldFont $font(normal)]
+	set specialfont(normal) [list $::font::figurine(text:normal) 9812 9823]
+	set specialfont(bold) [list $::font::figurine(text:bold) 9812 9823]
+	set Vars(style) [list \
+		-font [list $font(bold) next $font(normal) !next] \
+		-specialfont [list $specialfont(bold) next $specialfont(normal) !next] \
+	]
 
 	grid $tb -row 0 -column 0 -rowspan 2 -sticky nsew
 	grid $sb -row 0 -column 1 -rowspan 2 -sticky ns
@@ -347,7 +351,7 @@ proc build {parent width height gameTable} {
 		lappend Vars(styles) $id styTotal$id
 	}
 
-	::table::configure $tb move -font2 $::font::figurine(text:normal)
+	::table::configure $tb move -specialfont [list  [list $::font::figurine(text:normal) 9812 9823]]
 
 	::table::bind $tb <ButtonPress-2>	[namespace code [list ShowPlayerInfo $tb %x %y]]
 	::table::bind $tb <ButtonRelease-2>	[namespace code [list HideInfo $tb]]

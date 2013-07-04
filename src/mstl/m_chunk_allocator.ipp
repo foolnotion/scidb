@@ -123,6 +123,17 @@ chunk_allocator<T,Zero>::clear()
 
 
 template <typename T, bool Zero>
+inline
+void
+chunk_allocator<T,Zero>::swap(chunk_allocator& allocator)
+{
+	mstl::swap(m_chunk_size, allocator.m_chunk_size);
+	mstl::swap(m_num_elems, allocator.m_num_elems);
+	m_chunk_list.swap(allocator.m_chunk_list);
+}
+
+
+template <typename T, bool Zero>
 typename chunk_allocator<T,Zero>::chunk*
 chunk_allocator<T,Zero>::new_chunk()
 {

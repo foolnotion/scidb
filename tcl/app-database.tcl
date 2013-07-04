@@ -1902,9 +1902,10 @@ proc Recode {file parent} {
 	set encoding [::encoding::choose $parent $enc $defaultEncoding]
 	if {[llength $encoding] == 0 || $encoding eq $enc} { return }
 
-	::log::open $mc::Recode
 	set name [::util::databaseName $file]
-	::log::info [string map [list "%base" $name "%from" $enc "%to" $encoding] $mc::RecodingDatabase]
+	set msg [string map [list "%base" $name "%from" $enc "%to" $encoding] $mc::RecodingDatabase]
+	::log::open $mc::Recode
+	::log::info $msg
 
 	switch $ext {
 		pgn - bpgn {
@@ -1915,7 +1916,8 @@ proc Recode {file parent} {
 		}
 
 		default {
-			::progress::start $parent [list ::scidb::db::recode $file $encoding] {} {}
+			lappend options -message $msg
+			::progress::start $parent [list ::scidb::db::recode $file $encoding] {} $options
 		}
 	}
 
@@ -1926,6 +1928,8 @@ proc Recode {file parent} {
 	$Vars(switcher) encoding $file $encoding
 	set i [lsearch -exact -index 1 $RecentFiles $file]
 	if {$i >= 0} { lset RecentFiles $i 2 $encoding }
+
+	CheckEncoding $parent $file [::scidb::db::get encoding $file]
 }
 
 

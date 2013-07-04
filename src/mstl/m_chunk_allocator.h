@@ -51,6 +51,7 @@ public:
 	size_t elems_per_chunk() const;
 
 	void clear();
+	void swap(chunk_allocator& allocator);
 
 	T* alloc();
 	T* alloc(size_t length);

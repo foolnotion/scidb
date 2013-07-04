@@ -40,6 +40,7 @@
 #endif
 
 #include <string.h>
+#include <stdlib.h>
 #include <ctype.h>
 
 using namespace db;
@@ -72,7 +73,6 @@ inline
 bool
 operator<(Namebase::Entry* lhs, NamebaseSite::Key const& rhs)
 {
-	M_ASSERT(dynamic_cast<NamebaseSite const*>(lhs));
 	return static_cast<NamebaseSite const&>(*lhs) < rhs;
 }
 
@@ -81,7 +81,6 @@ inline
 bool
 operator<(Namebase::Entry* lhs, NamebaseEvent::Key const& rhs)
 {
-	M_ASSERT(dynamic_cast<NamebaseEvent const*>(lhs));
 	return static_cast<NamebaseEvent const&>(*lhs) < rhs;
 }
 
@@ -90,11 +89,18 @@ inline
 bool
 operator<(Namebase::Entry* lhs, NamebasePlayer::Key const& rhs)
 {
-	M_ASSERT(dynamic_cast<NamebasePlayer const*>(lhs));
 	return static_cast<NamebasePlayer const&>(*lhs) < rhs;
 }
 
 } // namespace db
+
+
+template <typename T>
+static int
+compare(void const* lhs, void const* rhs)
+{
+	return **static_cast<T const* const*>(lhs) < **static_cast<T const* const*>(rhs);
+}
 
 
 Namebase::Namebase(Type type)
@@ -110,6 +116,8 @@ Namebase::Namebase(Type type)
 	,m_isOriginal(true)
 	,m_isReadonly(false)
 	,m_stringAllocator(32768)
+	,m_stringAllocator2(0)
+	,m_stringAllocator3(0)
 {
 	static_assert(int(Player)		== int(table::Players),		"invalid enum");
 	static_assert(int(Event)		== int(table::Events),		"invalid enum");
@@ -135,6 +143,9 @@ Namebase::~Namebase() throw()
 		case Player:	delete m_playerAllocator; break;
 		default:			delete m_entryAllocator; break;
 	}
+
+	delete m_stringAllocator2;
+	delete m_stringAllocator3;
 }
 
 
@@ -185,16 +196,9 @@ Namebase::makeEntry(mstl::string const& name)
 
 	entry = m_entryAllocator->alloc();
 
-	if (name.readonly())
-	{
-		entry->m_name = name;
-	}
-	else
-	{
-		char* p = alloc(name.size());
-		::memcpy(p, name.c_str(), name.size() + 1);
-		entry->m_name.hook(p, name.size());
-	}
+	char* p = alloc(name.size());
+	::memcpy(p, name.c_str(), name.size() + 1);
+	entry->m_name.hook(p, name.size());
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -213,16 +217,9 @@ Namebase::makeEventEntry(mstl::string const& name)
 
 	entry = m_eventAllocator->alloc();
 
-	if (name.readonly())
-	{
-		entry->m_name = name;
-	}
-	else
-	{
-		char* p = alloc(name.size());
-		::memcpy(p, name.c_str(), name.size() + 1);
-		entry->m_name.hook(p, name.size());
-	}
+	char* p = alloc(name.size());
+	::memcpy(p, name.c_str(), name.size() + 1);
+	entry->m_name.hook(p, name.size());
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -242,16 +239,9 @@ Namebase::makeSiteEntry(mstl::string const& name, db::Site const* site)
 	entry = m_siteAllocator->alloc();
 	entry->m_site = site;
 
-	if (name.readonly())
-	{
-		entry->m_name = name;
-	}
-	else
-	{
-		char* p = alloc(name.size());
-		::memcpy(p, name.c_str(), name.size() + 1);
-		entry->m_name.hook(p, name.size());
-	}
+	char* p = alloc(name.size());
+	::memcpy(p, name.c_str(), name.size() + 1);
+	entry->m_name.hook(p, name.size());
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -270,16 +260,9 @@ Namebase::makePlayerEntry(mstl::string const& name, db::Player const* player)
 
 	entry->m_player = player;
 
-	if (name.readonly())
-	{
-		entry->m_name = name;
-	}
-	else
-	{
-		char* p = alloc(name.size());
-		::memcpy(p, name.c_str(), name.size() + 1);
-		entry->m_name.hook(p, name.size());
-	}
+	char* p = alloc(name.size());
+	::memcpy(p, name.c_str(), name.size() + 1);
+	entry->m_name.hook(p, name.size());
 
 	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
 		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
@@ -1078,122 +1061,35 @@ Namebase::rename(NamebaseEntry* entry, mstl::string const& name)
 	M_REQUIRE(entry);
 	M_REQUIRE(sys::utf8::validate(name));
 
-	if (name == entry->name())
-		return;
+	if (m_stringAllocator2 == 0)
+		m_stringAllocator2 = new StringAllocator(32768);
 
-	List::iterator oldPos;
+	char* s = m_stringAllocator2->alloc(name.size() + 1);
+	::memcpy(s, name.c_str(), name.size() + 1);
+	M_ASSERT(entry->m_name.readonly());
+	entry->m_name.hook(s);
+}
 
-	switch (type())
+
+void
+Namebase::finishRenaming()
+{
+	mstl::swap(m_stringAllocator2, m_stringAllocator3);
+	delete m_stringAllocator2;
+	m_stringAllocator2 = 0;
+
+	int (*cmpFunc)(void const*, void const*);
+
+	switch (m_type)
 	{
-		case Player:
-			M_REQUIRE(dynamic_cast<NamebasePlayer*>(entry));
-			{
-				PlayerEntry* e = static_cast<PlayerEntry*>(entry);
-				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebasePlayer::Key(*e));
-			}
-			break;
-
-		case Event:
-			M_REQUIRE(dynamic_cast<NamebaseEvent*>(entry));
-			{
-				EventEntry* e = static_cast<EventEntry*>(entry);
-				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebaseEvent::Key(*e));
-			}
-			break;
-
-		case Site:
-			M_REQUIRE(dynamic_cast<NamebaseSite*>(entry));
-			{
-				SiteEntry* e = static_cast<SiteEntry*>(entry);
-				oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), NamebaseSite::Key(*e));
-			}
-			break;
-
-		case Round:
-		case Annotator:
-			oldPos = mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name);
-			break;
-
-		default:
-			oldPos = m_list.end(); // shut up the compiler
-			break;
+		case Player:		cmpFunc = ::compare<NamebasePlayer>; break;
+		case Site:			cmpFunc = ::compare<NamebaseSite>; break;
+		case Event:			cmpFunc = ::compare<NamebaseEvent>; break;
+		case Annotator:	// fallthru
+		case Round:			cmpFunc = ::compare<NamebaseEntry>; break;
 	}
 
-	M_ASSERT(oldPos != m_list.end());
-	M_ASSERT(*oldPos == entry);
-
-	mstl::string oldName;
-
-	oldName.swap(entry->m_name);
-
-	if (name.readonly())
-	{
-		entry->m_name = name;
-	}
-	else
-	{
-		char* s = alloc(name.size());
-		::memcpy(s, name.c_str(), name.size() + 1);
-		entry->m_name.hook(s);
-	}
-
-	if (entry->m_name.size() > NamebaseEntry::MaxNameLength)
-		entry->m_name.set_size(NamebaseEntry::MaxNameLength);
-
-	switch (type())
-	{
-		case Player:
-			{
-				NamebasePlayer::Key key(*static_cast<PlayerEntry*>(entry));
-				List::iterator newPos(mstl::lower_bound(m_list.begin(), m_list.end(), key));
-
-				if (oldPos != newPos)
-				{
-					m_list.erase(oldPos);
-					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
-				}
-			}
-			break;
-
-		case Event:
-			{
-				NamebaseEvent::Key key(*static_cast<EventEntry*>(entry));
-				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), key);
-
-				if (oldPos != newPos)
-				{
-					m_list.erase(oldPos);
-					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
-				}
-			}
-			break;
-
-		case Site:
-			{
-				NamebaseSite::Key key(*static_cast<SiteEntry*>(entry));
-				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), key);
-
-				if (oldPos != newPos)
-				{
-					m_list.erase(oldPos);
-					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), key), entry);
-				}
-			}
-			break;
-
-		case Round:
-		case Annotator:
-			{
-				List::iterator newPos = mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name);
-
-				if (oldPos != newPos)
-				{
-					m_list.erase(oldPos);
-					m_list.insert(mstl::lower_bound(m_list.begin(), m_list.end(), entry->m_name), entry);
-				}
-			}
-			break;
-	}
+	::qsort(m_list.begin(), m_list.size(), sizeof(List::value_type), cmpFunc);
 }
 
 // vi:set ts=3 sw=3:

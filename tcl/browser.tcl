@@ -143,6 +143,7 @@ proc open {parent base variant info view index {fen {}}} {
 	grid columnconfigure $top 1 -weight 1
 
 	set background [::theme::getBackgroundColor]
+	set activebackground [$dlg cget -background]
 
 	# board
 	set board [::board::diagram::new $lt.board $squareSize -bordersize 1]
@@ -164,6 +165,7 @@ proc open {parent base variant info view index {fen {}}} {
 	tk::button $controls.rotateBoard \
 		-takefocus 0 \
 		-background $background \
+		-activebackground $activebackground \
 		-image $::icon::22x22::rotateBoard \
 		-command [namespace code [list RotateBoard $position]] \
 		;
@@ -180,6 +182,7 @@ proc open {parent base variant info view index {fen {}}} {
 		tk::button $w \
 			-image [set ::icon::22x22::control$control] \
 			-background $background \
+			-activebackground $activebackground \
 			-takefocus 0 \
 			-command [list event generate $w <$key>] \
 			;
@@ -192,6 +195,7 @@ proc open {parent base variant info view index {fen {}}} {
 	tk::button $controls.autoplay \
 		-takefocus 0 \
 		-background $background \
+		-activebackground $activebackground \
 		-image $::icon::22x22::start \
 		-command [namespace code [list ToggleAutoPlay $position 1]] \
 		;
@@ -200,6 +204,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(control:help) [tk::button $controls.help \
 		-takefocus 0 \
 		-background $background \
+		-activebackground $activebackground \
 		-image $::icon::22x22::help \
 		-command [list ::help::open .application Game-Browser -parent $dlg] \
 	]

@@ -139,6 +139,13 @@ struct GCCache
 	GCCache *next;
 };
 
+typedef struct
+{
+	int first, last;
+	Tk_Font tkfont;
+}
+SpecialFont;
+
 /*
  * A TreePtrList is used for dynamically-growing lists of ClientData pointers.
  * A TreePtrList is NULL-terminated.
@@ -933,11 +940,11 @@ MODULE_SCOPE int TreeTheme_IsDesktopComposited(TreeCtrl *tree);
 #define WFREE(p,t) WIPEFREE(p, sizeof(t))
 #define WCFREE(p,t,c) WIPEFREE(p, sizeof(t) * (c))
 
-MODULE_SCOPE int Tree_MeasureChars(Tk_Font tkfont, Tk_Font tkfont2, CONST char *string, int numBytes, int maxPixels, int flags, int* pixels);
-MODULE_SCOPE int Tree_Ellipsis(Tk_Font tkfont, Tk_Font tkfont2, char *string, int numBytes, int *maxPixels, char *ellipsis, int force);
-MODULE_SCOPE int Tree_TextWidth(Tk_Font tkfont, Tk_Font tkfont2, CONST char* string, int numBytes);
-MODULE_SCOPE void Tree_DrawChars(Display *display, Drawable drawable, GC gc, Tk_Font tkfont, Tk_Font tkfont2, CONST char *string, int numBytes, int x, int y);
-MODULE_SCOPE void Tree_UnderlineChars(Display *display, Drawable drawable, GC gc, Tk_Font tkfont, Tk_Font tkfont2, CONST char *string, int x, int y, int firstByte, int lastByte);
+MODULE_SCOPE int Tree_MeasureChars(Tk_Font tkfont, SpecialFont* specialfont, CONST char *string, int numBytes, int maxPixels, int flags, int* pixels);
+MODULE_SCOPE int Tree_Ellipsis(Tk_Font tkfont, SpecialFont* specialfont, char *string, int numBytes, int *maxPixels, char *ellipsis, int force);
+MODULE_SCOPE int Tree_TextWidth(Tk_Font tkfont, SpecialFont* specialfont, CONST char* string, int numBytes);
+MODULE_SCOPE void Tree_DrawChars(Display *display, Drawable drawable, GC gc, Tk_Font tkfont, SpecialFont* specialfont, CONST char *string, int numBytes, int x, int y);
+MODULE_SCOPE void Tree_UnderlineChars(Display *display, Drawable drawable, GC gc, Tk_Font tkfont, SpecialFont* specialfont, CONST char *string, int x, int y, int firstByte, int lastByte);
 MODULE_SCOPE void Tree_HDotLine(TreeCtrl *tree, Drawable drawable, GC gc, int x1, int y1, int x2);
 MODULE_SCOPE void Tree_VDotLine(TreeCtrl *tree, Drawable drawable, GC gc, int x1, int y1, int y2);
 MODULE_SCOPE void Tree_DrawActiveOutline(TreeCtrl *tree, Drawable drawable, int x, int y, int width, int height, int open);
@@ -949,7 +956,7 @@ MODULE_SCOPE void TreeDotRect_Setup(TreeCtrl *tree, Drawable drawable, DotState 
 MODULE_SCOPE void TreeDotRect_Draw(DotState *dotState, int x, int y, int width, int height);
 MODULE_SCOPE void TreeDotRect_Restore(DotState *dotState);
 typedef struct TextLayout_ *TextLayout;
-MODULE_SCOPE TextLayout TextLayout_Compute(Tk_Font tkfont, Tk_Font tkfont2, CONST char *string,
+MODULE_SCOPE TextLayout TextLayout_Compute(Tk_Font tkfont, SpecialFont* specialfont, CONST char *string,
 		int numChars, int wrapLength, Tk_Justify justify, int maxLines,
 		int lMargin1, int lMargin2, int flags);
 MODULE_SCOPE void TextLayout_Free(TextLayout textLayout);
@@ -1001,7 +1008,7 @@ MODULE_SCOPE int ObjectIsEmpty(Tcl_Obj *obj);
 #define pstBorder TreeCtrl_pstBorder
 #define pstColor TreeCtrl_pstColor
 #define pstFont TreeCtrl_pstFont
-#define pstFont2 TreeCtrl_pstFont2
+#define pstSpecialFont TreeCtrl_pstSpecialFont
 #define pstImage TreeCtrl_pstImage
 #define pstRelief TreeCtrl_pstRelief
 MODULE_SCOPE PerStateType pstBitmap;
@@ -1009,7 +1016,7 @@ MODULE_SCOPE PerStateType pstBoolean;
 MODULE_SCOPE PerStateType pstBorder;
 MODULE_SCOPE PerStateType pstColor;
 MODULE_SCOPE PerStateType pstFont;
-MODULE_SCOPE PerStateType pstFont2;
+MODULE_SCOPE PerStateType pstSpecialFont;
 MODULE_SCOPE PerStateType pstImage;
 MODULE_SCOPE PerStateType pstRelief;
 
@@ -1044,6 +1051,8 @@ MODULE_SCOPE Tk_3DBorder PerStateBorder_ForState(TreeCtrl *tree, PerStateInfo *p
 MODULE_SCOPE XColor *PerStateColor_ForState(TreeCtrl *tree, PerStateInfo *pInfo,
 	int state, int *match);
 MODULE_SCOPE Tk_Font PerStateFont_ForState(TreeCtrl *tree, PerStateInfo *pInfo,
+	int state, int *match);
+MODULE_SCOPE SpecialFont* PerStateSpecialFont_ForState(TreeCtrl *tree, PerStateInfo *pInfo,
 	int state, int *match);
 MODULE_SCOPE Tk_Image PerStateImage_ForState(TreeCtrl *tree, PerStateInfo *pInfo,
 	int state, int *match);

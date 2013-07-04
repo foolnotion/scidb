@@ -120,6 +120,33 @@ DO_FontForState(
 	return result;
 }
 
+static SpecialFont*
+DO_SpecialFontForState(
+	TreeCtrl *tree,
+	TreeElement elem,
+	int id,
+	int state
+	)
+{
+	SpecialFont* result = NULL;
+	PerStateInfo *psi;
+	int match = MATCH_NONE;
+
+	psi = DynamicOption_FindData(elem->options, id);
+	if (psi != NULL)
+		result = PerStateSpecialFont_ForState(tree, psi, state, &match);
+	if ((match != MATCH_EXACT) && (elem->master != NULL)) {
+		PerStateInfo *psi = DynamicOption_FindData(elem->master->options, id);
+		if (psi != NULL) {
+			int matchM;
+			SpecialFont* resultM = PerStateSpecialFont_ForState(tree, psi, state, &matchM);
+			if (matchM > match)
+				result = resultM;
+		}
+	}
+	return result;
+}
+
 /*
  *----------------------------------------------------------------------
  *
@@ -589,6 +616,8 @@ static void AdjustForSticky(int sticky, int cavityWidth, int cavityHeight,
 	OPTION_FOR_STATE(PerStateColor_ForState,XColor*,xVAR,xFIELD,xSTATE)
 #define FONT_FOR_STATE(xVAR,xFIELD,xSTATE) \
 	OPTION_FOR_STATE(PerStateFont_ForState,Tk_Font,xVAR,xFIELD,xSTATE)
+#define SPECIAL_FONT_FOR_STATE(xVAR,xFIELD,xSTATE) \
+	OPTION_FOR_STATE(PerStateSpecialFont_ForState,SpecialFont,xVAR,xFIELD,xSTATE)
 #define IMAGE_FOR_STATE(xVAR,xFIELD,xSTATE) \
 	OPTION_FOR_STATE(PerStateImage_ForState,Tk_Image,xVAR,xFIELD,xSTATE)
 #define RELIEF_FOR_STATE(xVAR,xFIELD,xSTATE) \
@@ -2368,7 +2397,7 @@ struct ElementText
 #define DOID_TEXT_DRAW 1002
 #define DOID_TEXT_FILL 1003
 #define DOID_TEXT_FONT 1004
-#define DOID_TEXT_FONT_2 1005
+#define DOID_TEXT_SPECIAL_FONT 1005
 #define DOID_TEXT_LAYOUT 1006
 #define DOID_TEXT_DATA 1007
 #define DOID_TEXT_LAYOUT2 1008
@@ -2492,9 +2521,6 @@ static Tk_OptionSpec textOptionSpecs[] = {
 	{TK_OPTION_CUSTOM, "-font", (char *) NULL, (char *) NULL,
 	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
 	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_LAYOUT},
-	{TK_OPTION_CUSTOM, "-font2", (char *) NULL, (char *) NULL,
-	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
-	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_LAYOUT},
 	{TK_OPTION_CUSTOM, "-format", (char *) NULL, (char *) NULL,
 	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
 	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_STRINGREP},
@@ -2508,6 +2534,9 @@ static Tk_OptionSpec textOptionSpecs[] = {
 	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
 	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_LAYOUT},
 	{TK_OPTION_CUSTOM, "-lmargin2", (char *) NULL, (char *) NULL,
+	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
+	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_LAYOUT},
+	{TK_OPTION_CUSTOM, "-specialfont", (char *) NULL, (char *) NULL,
 	 (char *) NULL, -1, Tk_Offset(TreeElement_, options),
 	 TK_OPTION_NULL_OK, (ClientData) NULL, TEXT_CONF_LAYOUT},
 	{TK_OPTION_STRING, "-text", (char *) NULL, (char *) NULL,
@@ -2760,7 +2789,8 @@ TextUpdateLayout(
 	ElementText *elemX = (ElementText *) elem;
 	ElementText *masterX = (ElementText *) elem->master;
 	int state = args->state;
-	Tk_Font tkfont, tkfont2;
+	Tk_Font tkfont;
+	SpecialFont* specialfont;
 	char *text = NULL;
 	int textLen = 0;
 	int justify = TK_JUSTIFY_LEFT;
@@ -2813,7 +2843,7 @@ TextUpdateLayout(
 	tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
 	if (tkfont == NULL)
 		tkfont = tree->tkfont;
-	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
+	specialfont = DO_SpecialFontForState(tree, elem, DOID_TEXT_SPECIAL_FONT, state);
 
 	if (etl != NULL && etl->wrap != TEXT_WRAP_NULL)
 		wrap = etl->wrap;
@@ -2846,7 +2876,7 @@ TextUpdateLayout(
 	if (!multiLine) {
 		if (width == 0)
 			return etl2;
-		textWidth = Tree_TextWidth(tkfont, tkfont2, text, textLen);
+		textWidth = Tree_TextWidth(tkfont, specialfont, text, textLen);
 	if (tree->debug.enable && tree->debug.textLayout) dbwin("    available width %d textWidth %d\n", width, textWidth);
 		if (width >= textWidth)
 			return etl2;
@@ -2882,7 +2912,7 @@ TextUpdateLayout(
 	else if (etl3M != NULL && etl3M->lMargin2Obj != NULL)
 		lMargin2 = etl3M->lMargin2;
 
-	etl2->layout = TextLayout_Compute(tkfont, tkfont2, text,
+	etl2->layout = TextLayout_Compute(tkfont, specialfont, text,
 			Tcl_NumUtfChars(text, textLen), width, justify, lines, lMargin1, lMargin2, flags);
 
 	if (tree->debug.enable && tree->debug.textLayout)
@@ -3146,7 +3176,8 @@ static void DisplayProcText(TreeElementArgs *args)
 	XColor *color;
 	char *text = elemX->text;
 	int textLen = elemX->textLen;
-	Tk_Font tkfont, tkfont2;
+	Tk_Font tkfont;
+	SpecialFont* specialfont;
 	TextLayout layout = NULL;
 	Tk_FontMetrics fm;
 	GC gc;
@@ -3176,7 +3207,7 @@ static void DisplayProcText(TreeElementArgs *args)
 
 	color = DO_ColorForState(tree, elem, DOID_TEXT_FILL, state);
 	tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
-	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
+	specialfont = DO_SpecialFontForState(tree, elem, DOID_TEXT_SPECIAL_FONT, state);
 
 	/* FIXME: -font {"" {state...}}*/
 	if ((color != NULL) || (tkfont != NULL)) {
@@ -3249,7 +3280,7 @@ static void DisplayProcText(TreeElementArgs *args)
 	ascent = fm.ascent;
 
 	pixelsForText = args->display.width;
-	bytesThatFit = Tree_Ellipsis(tkfont, tkfont2, text, textLen, &pixelsForText,
+	bytesThatFit = Tree_Ellipsis(tkfont, specialfont, text, textLen, &pixelsForText,
 			ellipsis, FALSE);
 	width = pixelsForText, height = fm.linespace;
 	/* Hack -- The actual size of the text may be slightly smaller than
@@ -3285,13 +3316,13 @@ static void DisplayProcText(TreeElementArgs *args)
 			bufLen += ellipsisLen;
 		}
 		Tree_DrawChars(tree->display, args->display.drawable, gc,
-				tkfont, tkfont2, buf, bufLen, x, y + ascent);
+				tkfont, specialfont, buf, bufLen, x, y + ascent);
 #ifdef TEXT_STYLE
 		if (underline >= 0 && underline < Tcl_NumUtfChars(buf, abs(bytesThatFit))) {
 			CONST char *fstBytePtr = Tcl_UtfAtIndex(buf, underline);
 			CONST char *sndBytePtr = Tcl_UtfNext(fstBytePtr);
 			Tree_UnderlineChars(tree->display, args->display.drawable, gc,
-					tkfont, tkfont2, buf, x, y + ascent,
+					tkfont, specialfont, buf, x, y + ascent,
 					fstBytePtr - buf, sndBytePtr - buf);
 		}
 #endif
@@ -3299,13 +3330,13 @@ static void DisplayProcText(TreeElementArgs *args)
 			ckfree(buf);
 	} else {
 		Tree_DrawChars(tree->display, args->display.drawable, gc,
-				tkfont, tkfont2, text, textLen, x, y + ascent);
+				tkfont, specialfont, text, textLen, x, y + ascent);
 #ifdef TEXT_STYLE
 		if (underline >= 0 && underline < Tcl_NumUtfChars(text, textLen)) {
 			CONST char *fstBytePtr = Tcl_UtfAtIndex(text, underline);
 			CONST char *sndBytePtr = Tcl_UtfNext(fstBytePtr);
 			Tree_UnderlineChars(tree->display, args->display.drawable, gc,
-					tkfont, tkfont2, text, x, y + ascent,
+					tkfont, specialfont, text, x, y + ascent,
 					fstBytePtr - text, sndBytePtr - text);
 		}
 #endif
@@ -3325,7 +3356,8 @@ static void NeededProcText(TreeElementArgs *args)
 	int state = args->state;
 	char *text = NULL;
 	int textLen = 0;
-	Tk_Font tkfont, tkfont2;
+	Tk_Font tkfont;
+	SpecialFont* specialfont;
 	Tk_FontMetrics fm;
 	int width = 0, height = 0;
 	ElementTextLayout *etl, *etlM = NULL;
@@ -3381,9 +3413,9 @@ static void NeededProcText(TreeElementArgs *args)
 			tkfont = DO_FontForState(tree, elem, DOID_TEXT_FONT, state);
 			if (tkfont == NULL)
 				tkfont = tree->tkfont;
-			tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, state);
+			specialfont = DO_SpecialFontForState(tree, elem, DOID_TEXT_SPECIAL_FONT, state);
 
-			width = Tree_TextWidth(tkfont, tkfont2, text, textLen);
+			width = Tree_TextWidth(tkfont, specialfont, text, textLen);
 			if (etl != NULL && etl->widthObj != NULL)
 				maxWidth = etl->width;
 			else if ((etlM != NULL) && (etlM->widthObj != NULL))
@@ -3537,8 +3569,8 @@ static int StateProcText(TreeElementArgs *args)
 	if (tkfont1 != tkfont2)
 		return CS_DISPLAY | CS_LAYOUT;
 
-	tkfont1 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, args->states.state1);
-	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_FONT_2, args->states.state2);
+	tkfont1 = DO_FontForState(tree, elem, DOID_TEXT_SPECIAL_FONT, args->states.state1);
+	tkfont2 = DO_FontForState(tree, elem, DOID_TEXT_SPECIAL_FONT, args->states.state2);
 	if (tkfont1 != tkfont2)
 		return CS_DISPLAY | CS_LAYOUT;
 
@@ -3574,8 +3606,8 @@ static int UndefProcText(TreeElementArgs *args)
 		modified |= PerStateInfo_Undefine(tree, &pstColor, psi, args->state);
 	if ((psi = DynamicOption_FindData(args->elem->options, DOID_TEXT_FONT)) != NULL)
 		modified |= PerStateInfo_Undefine(tree, &pstFont, psi, args->state);
-	if ((psi = DynamicOption_FindData(args->elem->options, DOID_TEXT_FONT_2)) != NULL)
-		modified |= PerStateInfo_Undefine(tree, &pstFont2, psi, args->state);
+	if ((psi = DynamicOption_FindData(args->elem->options, DOID_TEXT_SPECIAL_FONT)) != NULL)
+		modified |= PerStateInfo_Undefine(tree, &pstSpecialFont, psi, args->state);
 
 	return modified;
 }
@@ -3589,7 +3621,7 @@ static int ActualProcText(TreeElementArgs *args)
 #ifdef DEPRECATED
 		"-draw",
 #endif
-		"-fill", "-font", "-font2",
+		"-fill", "-font", "-specialfont",
 		(char *) NULL };
 	int index;
 	Tcl_Obj *obj = NULL;
@@ -3613,7 +3645,7 @@ static int ActualProcText(TreeElementArgs *args)
 			break;
 		}
 		case 3: {
-			obj = DO_ObjectForState(tree, &pstFont2, args->elem, DOID_TEXT_FONT_2, args->state);
+			obj = DO_ObjectForState(tree, &pstSpecialFont, args->elem, DOID_TEXT_SPECIAL_FONT, args->state);
 			break;
 		}
 #else
@@ -3626,7 +3658,7 @@ static int ActualProcText(TreeElementArgs *args)
 			break;
 		}
 		case 2: {
-			obj = DO_ObjectForState(tree, &pstFont2, args->elem, DOID_TEXT_FONT_2, args->state);
+			obj = DO_ObjectForState(tree, &pstSpecialFont, args->elem, DOID_TEXT_SPECIAL_FONT, args->state);
 			break;
 		}
 #endif
@@ -4534,10 +4566,10 @@ int TreeElement_Init(Tcl_Interp *interp)
 		Tk_Offset(PerStateInfo, obj),
 		0, PerStateCO_Alloc("-font", &pstFont, TreeStateFromObj),
 		(DynamicOptionInitProc *) NULL);
-	DynamicCO_Init(treeElemTypeText.optionSpecs, "-font2",
-		DOID_TEXT_FONT_2, sizeof(PerStateInfo),
+	DynamicCO_Init(treeElemTypeText.optionSpecs, "-specialfont",
+		DOID_TEXT_SPECIAL_FONT, sizeof(PerStateInfo),
 		Tk_Offset(PerStateInfo, obj),
-		0, PerStateCO_Alloc("-font2", &pstFont2, TreeStateFromObj),
+		0, PerStateCO_Alloc("-specialfont", &pstSpecialFont, TreeStateFromObj),
 		(DynamicOptionInitProc *) NULL);
 	DynamicCO_Init(treeElemTypeText.optionSpecs, "-textvariable",
 		DOID_TEXT_VAR, sizeof(ElementTextVar),

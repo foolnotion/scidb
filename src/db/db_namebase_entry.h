@@ -47,7 +47,6 @@ public:
 
 	NamebaseEntry();
 	NamebaseEntry(mstl::string const& name);
-	virtual ~NamebaseEntry() throw();
 
 	bool operator==(mstl::string const& name) const;
 	bool operator< (mstl::string const& name) const;
