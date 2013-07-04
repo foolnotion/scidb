@@ -764,7 +764,7 @@ proc findTclTkPathsAndMore {} {
         }
     }
 
-    foreach lib {Xcursor fontconfig} {
+    foreach {lib packageName} {Xcursor libxcursor-dev fontconfig libfontconfig1-dev} {
         set attr [string tolower $lib]
         if {[info exists configure(${attr}-libraries)]} {
             set package(${attr}-lib) [MakeOption -L $configure(${attr}-libraries)]
@@ -782,7 +782,6 @@ proc findTclTkPathsAndMore {} {
                     append package(${attr}-lib) " -l${lib}"
                     puts $configure(${attr}-libraries)
                 } else {
-                    set packageName "lib[string tolower ${lib}]-dev"
                     puts ""
                     puts "Couldn't find library lib{$lib}.so."
                     puts "Propably you have to install the package $packageName;"
@@ -1665,7 +1664,10 @@ proc checkGCC {cc} {
         puts "I found a GCC compiler with version $version, but due to"
         puts "some problems with this compiler version it cannot be used."
         puts "Please use another GCC compiler version; for example:"
-        puts "./configure --gcc-version=4.4"
+        puts "  ./configure --gcc-version=4.4"
+        puts "Possibly you have to install another compiler beforehand:"
+        puts "  sudo apt-get install g++-4.4"
+        puts ""
         exit 1
     }
     if {[string length $version] > 0 && $cc eq "CXX"} {
@@ -1831,6 +1833,10 @@ proc writeMakefile {success} {
 
     Append option(EXTRA_CXXFLAGS) $extra_c_flags
     Append option(EXTRA_CFLAGS) $extra_c_flags
+
+    if {[string length $compiler(simd)]} {
+        Append environment(CXXFLAGS) $compiler(simd)
+    }
 
     if {[string length $compiler(no-gzoffset)]} {
         Append option(EXTRA_CXXFLAGS) $compiler(no-gzoffset)

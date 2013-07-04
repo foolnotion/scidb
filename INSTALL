@@ -30,11 +30,17 @@ Probably you have to install some required packages:
    On Debian/Ubuntu use:
       > sudo apt-get install libsm-dev
 
-4. fontconfig development package
+4. Xcursor development package
    (normally available, but especially missing under Ubuntu)
 
    On Debian/Ubuntu use:
-      > sudo apt-get libfontconfig1-dev
+      > sudo apt-get install libxcursor-dev
+
+5. fontconfig development package
+   (normally available, but especially missing under Ubuntu)
+
+   On Debian/Ubuntu use:
+      > sudo apt-get install libfontconfig1-dev
 
 A normal unix installation is made in three or three steps (after you've
 unpacked the source archive):

@@ -84,13 +84,13 @@ foreach dir $dirs {
 }
 
 
-foreach lib {Xcursor fontconfig} {
+foreach {lib package} {Xcursor libxcursor-dev fontconfig libfontconfig1-dev} {
     set path [FindDir "lib{$lib}*" $searchPaths]
     set found 0
 
     if {[string length $path] > 0} {
         if {[file exists $path/lib${lib}.so]} {
-            puts "*** Link to '$path/lib${lib}.so' exists, fine."
+            puts "*** Link '$path/lib${lib}.so' exists, fine."
             puts ""
             set found 1
         } else {
@@ -139,10 +139,9 @@ foreach lib {Xcursor fontconfig} {
     }
 
     if {!$found} {
-        set packageName "lib[string tolower ${lib}]-dev"
         puts "*** Sorry, cannot find lib${lib} on this system."
-        puts "Probably you have to install the package $packageName;"
-        puts "for example: 'sudo apt-get install $packageName'."
+        puts "Probably you have to install the package $package;"
+        puts "for example: 'sudo apt-get install $package'."
         puts ""
         exit 1
     }

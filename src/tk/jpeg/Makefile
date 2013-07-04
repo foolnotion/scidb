@@ -15,7 +15,7 @@ include ../../../Makefile.in
 .SUFFIXES: .cpp
 
 INCLUDE	= -I.
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(SIMD)
+CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG)
 
 SRC_CXX = \
 	jpeg_base.cpp \

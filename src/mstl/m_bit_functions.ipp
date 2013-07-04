@@ -24,7 +24,7 @@
 # include "m_types.h"
 #endif
 
-#ifdef USE_POPCNT
+#ifdef __SSE4_2__
 # include <nmmintrin.h>
 #endif
 
@@ -75,7 +75,7 @@ inline unsigned popcount(uint8_t x)			{ return pc(unsigned(x)); }
 inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
 inline unsigned popcount(uint32_t x)		{ return pc(x); }
 
-#ifdef USE_POPCNT
+#ifdef __SSE4_2__
 inline unsigned popcount(uint64_t x)		{ return _mm_popcnt_u64(x); }
 #else
 inline unsigned popcount(uint64_t x)		{ return pc(x); }
