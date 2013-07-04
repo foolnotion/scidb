@@ -243,6 +243,7 @@ array set release {
     yellowdog       "Yellow Dog"
 }
 
+set problematicGCCVersions {4.6}
 
 set instableTkLibrary ""
 set x11Libraries " -lX11 -lSM -lICE"
@@ -781,9 +782,14 @@ proc findTclTkPathsAndMore {} {
                     append package(${attr}-lib) " -l${lib}"
                     puts $configure(${attr}-libraries)
                 } else {
-                    puts "Couldn't find library lib{$lib}.so. It is recommended to"
-                    puts "execute the script 'fix-this-crappy-ubuntu-system',"
-                    puts "and then try again."
+                    set packageName "lib[string tolower ${lib}]-dev"
+                    puts ""
+                    puts "Couldn't find library lib{$lib}.so."
+                    puts "Propably you have to install the package $packageName;"
+                    puts "for example: 'sudo apt-get install $packageName'."
+                    puts "If this doesn't help, it may be required to execute"
+                    puts "the script 'fix-this-crappy-ubuntu-system', and then"
+                    puts "try again to configure."
                     exit 1
                 }
             }
@@ -1478,15 +1484,12 @@ static int isPOPCNTSupported()
 
 int main() { return isPOPCNTSupported() ? 0 : 1; }
 #else
-int main()
-{
-    return 1;
-}
+int main() { return 1; }
 #endif
 EOF
 
-__CC__ -o testsse2 testsse2.c -msse2
-if [ -f testsse2 ]; then
+__CC__ -o testpopcnt.c testpopcnt.c -msse3
+if [ -f testpopcnt.c ]; then
     exit 0
 else
     exit 1
@@ -1614,7 +1617,7 @@ proc checkClang {cc} {
 proc checkGCC {cc} {
     global tcl_platform
     global TestGCC TestSSE2 TestPOPCNT TestSyncBuiltin
-    global TestCompilerFlag environment configure compiler warnings option
+    global TestCompilerFlag environment configure compiler warnings option problematicGCCVersions
 
     # TODO: we want some more test:
     # --with-fpmath=sse     SSE math enabled by default
@@ -1632,7 +1635,9 @@ proc checkGCC {cc} {
         if {$found} {
             set environment($cc) $gccexe
         } else {
-            set configure(gcc-version) ""
+            puts "\n"
+            puts "The given compiler version $configure(gcc-version) is not working."
+            exit 1
         }
     }
     if {[llength $configure(gcc-version)] == 0} {
@@ -1655,6 +1660,14 @@ proc checkGCC {cc} {
             set version ""
         }
     }
+    if {$version in $problematicGCCVersions} {
+        puts ""
+        puts "I found a GCC compiler with version $version, but due to"
+        puts "some problems with this compiler version it cannot be used."
+        puts "Please use another GCC compiler version; for example:"
+        puts "./configure --gcc-version=4.4"
+        exit 1
+    }
     if {[string length $version] > 0 && $cc eq "CXX"} {
         if {[string compare $version "4.3"] >= 0} {
             set option(EXTRA_CXXFLAGS) "-std=c++0x"
@@ -1667,7 +1680,7 @@ proc checkGCC {cc} {
                 set compiler(popcnt) -DUSE_POPCNT
             }
         }
-        if {[llength $compiler(simd)] == 0} { puts "no." } else { puts "yes." }
+        if {[llength $compiler(popcnt)] == 0} { puts "no." } else { puts "yes." }
         puts -nonewline "    Checking if your compiler supports SSE2: "
         if {[llength $compiler(simd)] == 0} {
             flush stdout
@@ -2137,6 +2150,12 @@ foreach arg $argv {
 }
 set configure(tk-version) $configure(tcl-version)
 
+if {$configure(gcc-version) in $problematicGCCVersions} {
+    puts ""
+    puts "Due to some problems in gcc-${configure(gcc-version)} this compiler version"
+    puts "will not be supported. Please use another version."
+    exit 1
+}
 
 if {[file readable "Makefile.in"]} {
     puts "Renaming \"Makefile.in\" to \"Makefile.in.bak\""
@@ -2237,14 +2256,16 @@ if {[string length $gxxVer]} {
         # (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
+        puts "------------------------------------------------------"
         puts "The call of sub-processes is not working properly on"
         puts "this system, you may not get a proper error message"
         puts "in case of an exception, the application is crashing"
         puts "instead."
-        puts "Furthermore the distributed Tk library is broken, some"
-        puts "windows of the application will be frozen."
-        puts "You have to use a self-compiled Tk library if you want"
-        puts "to avoid this problem (see INSTALL)."
+        puts "Furthermore the distributed Tk library may broken, it"
+        puts "is possible that some windows of the application will"
+        puts "freeze. In this case you have to use a self-compiled Tk"
+        puts "library if you want to avoid this problem (see INSTALL)."
+        puts ""
         puts "It is highly recommended to build Scidb on a working Unix"
         puts "system. This system is broken and distorted due to the"
         puts "\"kernel hardening\" paranoia, which assumes that every"

@@ -46,7 +46,7 @@ proc FindDir {f path {exp ""}} {
 
 set searchPaths {}
 if {8*$tcl_platform(wordSize) == 64} {
-    lappend searchPaths [linsert $path(x,libraries,usr) 0 /usr/lib64]
+    lappend searchPaths /usr/lib64
 }
 lappend searchPaths /usr/lib
 # NOTE: All these entries below are required for the corrupted Unix
@@ -139,7 +139,10 @@ foreach lib {Xcursor fontconfig} {
     }
 
     if {!$found} {
-        puts "*** Sorry, cannot find lib${lib} on this crappy system."
+        set packageName "lib[string tolower ${lib}]-dev"
+        puts "*** Sorry, cannot find lib${lib} on this system."
+        puts "Probably you have to install the package $packageName;"
+        puts "for example: 'sudo apt-get install $packageName'."
         puts ""
         exit 1
     }
