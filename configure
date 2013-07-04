@@ -1489,7 +1489,7 @@ int main() { return 1; }
 #endif
 EOF
 
-__CC__ -o testpopcnt.c testpopcnt.c -msse4.2
+__CC__ -o testpopcnt.c testpopcnt.c -msse4
 if [ -f testpopcnt.c ]; then
     exit 0
 else
@@ -1676,7 +1676,7 @@ proc checkGCC {cc} {
         if {8*$tcl_platform(wordSize) == 64} {
             flush stdout
             if {[Probe testpopcnt [regsub -all __CC__ $TestPOPCNT $environment($cc)]]} {
-                set compiler(simd) -msse4.2
+                set compiler(simd) -msse4
                 set compiler(popcnt) -DUSE_POPCNT
             }
         }
