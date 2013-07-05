@@ -17,7 +17,7 @@ include ../../../Makefile.in
 INCLUDE	= -Ixmltok -Ixmlparse
 DEFINES	= -DXML_NS -DXML_DTD
 OPTIMIZE	= -O2
-CFLAGS	+= $(OPTIMIZE) $(DEFINES)
+CFLAGS	+= $(SYS_CFLAGS) $(OPTIMIZE) $(DEFINES)
 
 # Use one of the next two lines; unixfilemap is better if it works.
 FILEMAP_OBJ=unixfilemap.o

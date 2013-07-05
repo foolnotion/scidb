@@ -42,15 +42,15 @@ Probably you have to install some required packages:
    On Debian/Ubuntu use:
       > sudo apt-get install libfontconfig1-dev
 
-A normal unix installation is made in three or three steps (after you've
-unpacked the source archive):
+A normal unix installation is made in three steps (after you've unpacked
+the source archive):
 
    ./configure
    make
    make install
 
-You probably need to be root when doing the last command. An alternative is to
-use the "sudo" command for the installation:
+You probably need to be root when doing the last command. An alternative is
+to use the "sudo" command for the installation:
 
    sudo make install
 
@@ -74,17 +74,46 @@ install in your own home directory:
 The configure script always tries to find a working Tcl/Tk library unless
 explicitly told not to. If you have Tcl/Tk installed in the default search
 path for your compiler/linker, you don't need to do anything special. If
-you have Tcl/Tk somewhere else (for example, /opt/mytcltk), you can run
+you have Tcl/Tk somewhere else (for example, $HOME/mytcltk), you can run
 configure like:
 
-   PATH=$PATH:/opt/mytcltk/bin \
-   ./configure --tcl-includes=/opt/mytcltk/include \
-               --tk-includes=/opt/mytcltk/include \
-               --tcl-libraries=/opt/mytcltk/lib \
-               --tk-libraries=/opt/mytcltk/lib
+   PATH=$PATH:$HOME/mytcltk/bin \
+   ./configure --tcl-includes$HOME=$HOME/mytcltk/include \
+               --tk-includes=$HOME/include \
+               --tcl-libraries=$HOME/mytcltk/lib \
+               --tk-libraries=$HOME/mytcltk/lib
 
 Note that the PATH variable has to contain the path of the Tcl shell (for
-example '/opt/mytcltk/bin' which contains tclsh8.5), otherwise the Tcl shell
+example '$HOME/mytcltk/bin' which contains tclsh8.5), otherwise the Tcl shell
 will not be found.
+
+Not every GCC compiler version is properly working. The minimum compiler
+version is 3.4, and version 4.6 is excluded because of compiler bug. It may
+be required to install a proper compiler. For example you decided to version
+4.4: on Debian/Ubuntu use
+
+   sudo apt-get install gcc-4.4
+   sudo apt-get install g++-4.4
+   ./configure --gcc-version=4.4
+
+Alternatively the clang compiler may be used. The minimal clang version which
+can be used is 3.1. The newer version 3.3 is also working, but it's not yet sure
+that this version is linking properly. If you want to use clang tell it to the
+configure script in this way:
+
+   ./configure --gcc-version=clang
+
+On Debian/Ubuntu system the usage of newer compilers is a bit problematic,
+because Debian has changed some system paths. It may be required to tell
+the configure script the required paths, for example:
+
+   ./configure \
+      --gcc-version=4.7 \
+      SYS_CFLAGS="-I/usr/include/i386-linux-gnu -B/usr/lib/i386-linux-gnu" \
+      SYS_CXXFLAGS="-I/usr/include/i386-linux-gnu" \
+      SYS_LDFLAGS="-B/usr/lib/i386-linux-gnu"
+
+Exchange "i386-linux-gnu" with the path of your architecture (it's of course
+a bad idea of Debian that the user has to know the system paths).
 
 = vi:set et sw=3 ts=3: =

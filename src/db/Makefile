@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
-CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DISK) -DSCI_NAMEBASE_FIX=1
+CXXFLAGS	+= $(SYS_CXXFLAGS) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING) $(SLOW_DISK) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
 	cql/cql_common.cpp \

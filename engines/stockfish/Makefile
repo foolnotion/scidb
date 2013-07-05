@@ -66,7 +66,7 @@ ifeq ($(ARCH),x86-32)
 	endif
 endif
 
-CXXFLAGS = -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DNDEBUG $(SIMD)
+CXXFLAGS = $(SYS_CXXFLAGS) -O3 -Wall -Wcast-qual -fno-exceptions -fno-rtti -DHASHFULL -DTHREECHECK -DNDEBUG $(SIMD)
 
 ifeq ($(ARCH),general-64)
 	arch = any
@@ -224,6 +224,8 @@ ifeq (1,$(shell expr \( $(GCC_MAJOR) \> 4 \) \| \( $(GCC_MAJOR) \= 4 \& $(GCC_MI
 		LDFLAGS += $(CXXFLAGS)
 	endif
 endif
+
+LDFLAGS += $(SYS_LDFLAGS)
 
 all: $(EXE)
 

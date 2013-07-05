@@ -13,7 +13,7 @@ OBJS		= $(SOURCES:.c=.o)
 # current dircectory. Otherwise you may want to adjust CPPFLAGS.
 ##CPPFLAGS = -I../include/lzo -I.
 
-CFLAGS = -s -Wall -O2 -fomit-frame-pointer
+CFLAGS = $(SYS_CFLAGS) -s -Wall -O2 -fomit-frame-pointer
 
 LIB = liblzo
 

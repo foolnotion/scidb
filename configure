@@ -150,16 +150,19 @@ array set feature {
 }
 
 array set environment {
-    CC          gcc
-    CFLAGS      "-Wall"
-    CXX         g++
-    CXXFLAGS    "-Wall"
-    LDFLAGS     {}
-    OPTIMIZE    "-O3 -funit-at-a-time -fomit-frame-pointer"
-    AR          ar
-    ARFLAGS     rc
-    RANLIB      ranlib
-    STRIP       strip
+    CC              gcc
+    CFLAGS          "-Wall"
+    SYS_CFLAGS      ""
+    CXX             g++
+    CXXFLAGS        "-Wall"
+    SYS_CXXFLAGS    ""
+    LDFLAGS         ""
+    SYS_LDFLAGS     ""
+    OPTIMIZE        "-O3 -funit-at-a-time -fomit-frame-pointer"
+    AR              ar
+    ARFLAGS         rc
+    RANLIB          ranlib
+    STRIP           strip
 }
 
 array set compiler {
@@ -774,8 +777,7 @@ proc findTclTkPathsAndMore {} {
             if {[string length $configure(${attr}-libraries)] == 0} {
                 puts "not found"
             } else {
-                # Because of an Ubuntu 11.04 (and higher) system bug we have
-                # to check the library path.
+                # On poor Ubuntu systems we have to check the library paths.
                 if {[file exists $configure(${attr}-libraries)/lib${lib}.so]} {
                     # this is the normal case
                     set package(${attr}-lib) [MakeOption -L $configure(${attr}-libraries)]
@@ -786,9 +788,6 @@ proc findTclTkPathsAndMore {} {
                     puts "Couldn't find library lib{$lib}.so."
                     puts "Propably you have to install the package $packageName;"
                     puts "for example: 'sudo apt-get install $packageName'."
-                    puts "If this doesn't help, it may be required to execute"
-                    puts "the script 'fix-this-crappy-ubuntu-system', and then"
-                    puts "try again to configure."
                     exit 1
                 }
             }
@@ -978,7 +977,7 @@ proc SystemHasInotify {} {
     global environment
     global option
 
-    set testinotify [regsub -all __CC__ $TestInotify $environment(CC)]
+    set testinotify [regsub -all __CC__ $TestInotify [GetGCC]]
     set testinotify [regsub -all __pwd__ $testinotify [pwd]]
     flush stdout
     set result [Probe testinotify $testinotify]
@@ -988,7 +987,7 @@ proc SystemHasInotify {} {
     } elseif {$tcl_platform(os) eq "Linux"} {
         scan $tcl_platform(osVersion) "%d.%d.%d" v1 v2 v3
         if {$v1 > 2 || ($v1 == 2 && ($v2 > 6 || ($v2 == 6 && $v3 >= 13)))} {
-            set testinotify [regsub -all __CC__ $TestInotifySys $environment(CC)]
+            set testinotify [regsub -all __CC__ $TestInotifySys [GetGCC]]
             set testinotify [regsub -all __pwd__ $testinotify [pwd]]
             flush stdout
             if {[catch {open testinotify.sh w} f]} { return 0 }
@@ -1060,7 +1059,7 @@ proc SystemHasFAM {} {
     global TestFAM environment package option
 
     set lib -lfam
-    set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
+    set testfam [regsub -all __CC__ $TestFAM [GetGCC]]
     set testfam [regsub -all __pwd__ $testfam [pwd]]
     set testfam [regsub -all __lib__ $testfam $lib]
     flush stdout
@@ -1080,7 +1079,7 @@ proc SystemHasFAM {} {
 
 #       if {[string length $lib]} {
 #           set lib $lib/libfam.so.0
-#           set testfam [regsub -all __CC__ $TestFAM $environment(CC)]
+#           set testfam [regsub -all __CC__ $TestFAM [GetGCC]]
 #           set testfam [regsub -all __pwd__ $testfam [pwd]]
 #           set testfam [regsub -all __lib__ $testfam $lib]
 #           flush stdout
@@ -1174,7 +1173,7 @@ fi
 proc SystemHasZlib {} {
     global TestZlib TestGzOffset environment package compiler
 
-    set testZlib [regsub -all __CC__ $TestZlib $environment(CC)]
+    set testZlib [regsub -all __CC__ $TestZlib [GetGCC]]
     set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
     set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
     flush stdout
@@ -1185,7 +1184,7 @@ proc SystemHasZlib {} {
     if {![catch {exec sh testzlib.sh} err]} { set result 1 }
 
     if {$result} {
-        set testZlib [regsub -all __CC__ $TestGzOffset $environment(CC)]
+        set testZlib [regsub -all __CC__ $TestGzOffset [GetGCC]]
         set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
         set testZlib [regsub -all __zlib-lib__ $testZlib $package(zlib-lib)]
         flush stdout
@@ -1257,13 +1256,13 @@ fi
 proc SystemHasZziplib {} {
     global TestZziplib environment package
 
-    set testZziplib [regsub -all __CC__ $TestZziplib $environment(CC)]
+    set testZziplib [regsub -all __CC__ $TestZziplib [GetGCC]]
     set testZziplib [regsub -all __zziplib-inc__ $testZziplib $package(zziplib-inc)]
     set testZziplib [regsub -all __zziplib-lib__ $testZziplib $package(zziplib-lib)]
 
     flush stdout
     if {[catch {open testzziplib.sh w} f]} { return 0 }
-    puts $f [regsub -all __CC__ $testZziplib $environment(CC)]
+    puts $f [regsub -all __CC__ $testZziplib [GetGCC]]
     close $f
     set result 0
     if {![catch {exec sh testzziplib.sh} err]} { set result 1 }
@@ -1328,13 +1327,13 @@ fi
 proc SystemHasGdbm {} {
     global TestGdbm environment package
 
-    set testGdbm [regsub -all __CC__ $TestGdbm $environment(CC)]
+    set testGdbm [regsub -all __CC__ $TestGdbm [GetGCC]]
     set testGdbm [regsub -all __gdbm-inc__ $testGdbm $package(gdbm-inc)]
     set testGdbm [regsub -all __gdbm-lib__ $testGdbm $package(gdbm-lib)]
 
     flush stdout
     if {[catch {open testgdbm.sh w} f]} { return 0 }
-    puts $f [regsub -all __CC__ $testGdbm $environment(CC)]
+    puts $f [regsub -all __CC__ $testGdbm [GetGCC]]
     close $f
     set result 0
     if {![catch {exec sh testgdbm.sh} err]} { set result 1 }
@@ -1397,13 +1396,13 @@ fi
 proc SystemHasExpat {} {
     global TestExpat environment package
 
-    set testExpat [regsub -all __CC__ $TestExpat $environment(CC)]
+    set testExpat [regsub -all __CC__ $TestExpat [GetGCC]]
     set testExpat [regsub -all __expat-inc__ $testExpat $package(expat-inc)]
     set testExpat [regsub -all __expat-lib__ $testExpat $package(expat-lib)]
 
     flush stdout
     if {[catch {open testexpat.sh w} f]} { return 0 }
-    puts $f [regsub -all __CC__ $testExpat $environment(CC)]
+    puts $f [regsub -all __CC__ $testExpat [GetGCC]]
     close $f
     set result 0
     if {![catch {exec sh testexpat.sh} err]} { set result 1 }
@@ -1460,22 +1459,24 @@ set TestPOPCNT {#!/bin/sh
 cat <<EOF > testpopcnt.c
 #ifdef __i386__
 #include <nmmintrin.h>
-static void cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
+static void
+cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
 {
-	__asm__ __volatile__
-	(
-		"push   %%ebx    \n\t"
-		"cpuid           \n\t"
-		"movl   %%ebx,%1 \n\t"
-		"pop    %%ebx    \n\t"
+    __asm__ __volatile__
+    (
+        "push   %%ebx    \n\t"
+        "cpuid           \n\t"
+        "movl   %%ebx,%1 \n\t"
+        "pop    %%ebx    \n\t"
 
-		: "=a"(eax), "=r"(ebx), "=c"(ecx), "=d"(edx)
-		: "a"(op)
-		: "cc"
-	);
+        : "=a"(eax), "=r"(ebx), "=c"(ecx), "=d"(edx)
+        : "a"(op)
+        : "cc"
+    );
 }
 
-static int isPOPCNTSupported()
+static int
+isPOPCNTSupported()
 {
     unsigned ax, bx, cx, dx;
     cpuid(0x00000001, &ax, &bx, &cx, &dx);
@@ -1612,35 +1613,48 @@ proc checkClang {cc} {
 }
 
 
+proc GetGCC {{cc "CC"}} {
+    global environment
+
+    if {$cc eq "CC"} { set flags SYS_CFLAGS } else { set flags SYS_CXXFLAGS }
+    append gcc $environment($cc) " " $environment($flags) " " $environment(SYS_LDFLAGS)
+    return $gcc
+}
+
+
+proc ProbeGCC {script cc {subst {}}} {
+    global $script environment
+
+    set exe [string tolower $script]
+    set probe [regsub -all __CC__ [set $script] [GetGCC $cc]]
+    if {[llength $subst]} {
+        set probe [regsub -all [lindex $subst 0] $probe [lindex $subst 1]]
+    }
+    return [Probe $exe $probe]
+}
+
+
 # checkGCC:
 #    Checks whether gcc/g++ is installed.
 proc checkGCC {cc} {
     global tcl_platform
-    global TestGCC TestSSE2 TestPOPCNT TestSyncBuiltin
-    global TestCompilerFlag environment configure compiler warnings option problematicGCCVersions
-
-    # TODO: we want some more test:
-    # --with-fpmath=sse     SSE math enabled by default
-    # -mpopcnt              enables GCC to use the popcnt instructions on both AMD and Intel processors
+    global environment configure compiler warnings option problematicGCCVersions
 
     if {$configure(gcc-version) eq "clang"} { return [checkClang $cc] }
+
     if {$cc eq "CC"} { set gcc gcc } else { set gcc g++ }
     puts -nonewline "    Checking if your system has $gcc installed: "
     flush stdout
-    set found 0
-    if {[llength $configure(gcc-version)]} {
-        set gccexe $gcc-$configure(gcc-version)
-        set found [Probe testgcc [regsub -all __CC__ $TestGCC $gccexe]]
-        if {$found} {
-            set environment($cc) $gccexe
-        } else {
+    set found 1
+    if {[string length $configure(gcc-version)]} {
+        set environment($cc) $gcc-$configure(gcc-version)
+        if {![ProbeGCC TestGCC $cc]} {
             puts "\n"
             puts "The given compiler version $configure(gcc-version) is not working."
             exit 1
         }
-    }
-    if {[llength $configure(gcc-version)] == 0} {
-        set found [Probe testgcc [regsub -all __CC__ $TestGCC $environment($cc)]]
+    } else {
+        set found [ProbeGCC TestGCC $cc]
     }
     set version ""
     if {!$found} {
@@ -1677,7 +1691,7 @@ proc checkGCC {cc} {
         puts -nonewline "    Checking if your compiler supports POPCNT: "
         if {8*$tcl_platform(wordSize) == 64} {
             flush stdout
-            if {[Probe testpopcnt [regsub -all __CC__ $TestPOPCNT $environment($cc)]]} {
+            if {[ProbeGCC TestPOPCNT $cc]} {
                 set compiler(simd) -msse4
                 set compiler(popcnt) -DUSE_POPCNT
             }
@@ -1686,14 +1700,14 @@ proc checkGCC {cc} {
         puts -nonewline "    Checking if your compiler supports SSE2: "
         if {[llength $compiler(simd)] == 0} {
             flush stdout
-            if {[Probe testsse2 [regsub -all __CC__ $TestSSE2 $environment($cc)]]} {
+            if {[ProbeGCC TestSSE2 $cc]} {
                 set compiler(simd) -msse2
             }
         }
         if {[llength $compiler(simd)] == 0} { puts "no." } else { puts "yes." }
         puts -nonewline "    Checking if your kernel supports __sync_* builtin functions: "
         flush stdout
-        if {[Probe testSyncBuiltin [regsub -all __CC__ $TestSyncBuiltin $environment($cc)]]} {
+        if {[ProbeGCC TestSyncBuiltin $cc]} {
             puts "yes."
         } else {
             set compiler(thread-support) -DDONT_USE_SYNC_BUILTIN
@@ -1708,16 +1722,12 @@ proc checkGCC {cc} {
         # of this warning has no serious experience in software
         # development).
         foreach opt {-fno-stack-protector -Wno-cpp} {
-            set script [regsub -all %FLAG% $TestCompilerFlag $opt]
-            set script [regsub -all __CC__ $script $environment($cc)]
-            if {[Probe testCompilerFlag $script]} {
+            if {[ProbeGCC TestCompilerFlag $cc [list %FLAG% $opt]]} {
                 set compiler($opt) $opt
             }
         }
         foreach opt {-Wno-unused-result} {
-            set script [regsub -all %FLAG% $TestCompilerFlag $opt]
-            set script [regsub -all __CC__ $script $environment($cc)]
-            if {[Probe testCompilerFlag $script]} {
+            if {[ProbeGCC TestCompilerFlag $cc [list %FLAG% $opt]]} {
                 set warnings($opt) $opt
             }
         }
@@ -1772,7 +1782,7 @@ proc checkFontConfig {} {
     global TestFontConfig environment configure
 
     puts -nonewline "    Checking your fontconfig version: "
-    set testfontconfig [regsub -all __CC__ $TestFontConfig $environment(CC)]
+    set testfontconfig [regsub -all __CC__ $TestFontConfig [GetGCC]]
     set testfontconfig [regsub -all __LIB__ $testfontconfig $configure(fontconfig-libraries)]
     flush stdout
     if {[catch {open testfontconfig.sh w} f]} { return 0 }
@@ -2057,8 +2067,7 @@ proc usage {rc} {
     } else {
     puts "  --gcc-version=VER          GNU compiler version"
     }
-    puts "                             you may use 'clang' instead of a version for the"
-    puts "                             clang compiler"
+    puts "                             you may use 'clang' instead for the clang compiler"
     puts ""
     puts "Packages:"
     puts "  --with-zlib-inc=DIR        path to Zlib compression library headers"
@@ -2088,17 +2097,20 @@ proc usage {rc} {
     puts "                             (not recommended)"
     puts ""
     puts "Some influential environment variables:"
-    puts "  CC          C compiler command \[$environment(CC)\]"
-    puts "  CFLAGS      C compiler flags \[$environment(CFLAGS)\]"
-    puts "  LDFLAGS     linker flags, e.g. -L<lib dir> if you have libraries in a"
-    puts "              nonstandard directory <lib dir>"
-    puts "  CXX         C++ compiler command \[$environment(CXX)\]"
-    puts "  CXXFLAGS    C++ compiler flags \[$environment(CXXFLAGS)\]"
-    puts "  OPTIMIZE    C/C++ optimization flags \[$environment(OPTIMIZE)\]"
-    puts "  AR          AR for the host \[$environment(AR)\]"
-    puts "  ARFLAGS     Flags for AR \[$environment(ARFLAGS)\]"
-    puts "  RANLIB      RANLIB for the host \[$environment(RANLIB)\]"
-    puts "  STRIP       STRIP for the host \[$environment(STRIP)\]"
+    puts "  CC           C compiler command \[$environment(CC)\]"
+    puts "  CFLAGS       C compiler flags \[$environment(CFLAGS)\]"
+    puts "  SYS_CFLAGS   system specific C compiler flags"
+    puts "  CXX          C++ compiler command \[$environment(CXX)\]"
+    puts "  CXXFLAGS     C++ compiler flags \[$environment(CXXFLAGS)\]"
+    puts "  SYS_CXXFLAGS system specific C++ compiler flags"
+    puts "  LDFLAGS      linker flags, e.g. -L<lib dir> if you have libraries in a"
+    puts "               nonstandard directory <lib dir>"
+    puts "  SYS_LDFLAGS  system specific linker flags"
+    puts "  OPTIMIZE     C/C++ optimization flags \[$environment(OPTIMIZE)\]"
+    puts "  AR           AR for the host \[$environment(AR)\]"
+    puts "  ARFLAGS      Flags for AR \[$environment(ARFLAGS)\]"
+    puts "  RANLIB       RANLIB for the host \[$environment(RANLIB)\]"
+    puts "  STRIP        STRIP for the host \[$environment(STRIP)\]"
     puts ""
     puts "Use these variables to override the choices made by \`configure' or to help"
     puts "it to find libraries and programs with nonstandard names/locations."
@@ -2253,8 +2265,8 @@ if {[string length $gxxVer]} {
         puts "Scidb may crash with the pre-installed Tk library $instableTkLibrary."
         puts "It is highly recommended to install a stable Tk version"
         puts "(8.5.6, or 8.5.11) before building Scidb."
-        puts "Use \"configure --help\" for instructions how to use"
-        puts "alternative library versions."
+        puts "Read INSTALL for instructions how to use alternative"
+        puts "library versions."
     }
 
     if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {
@@ -2270,7 +2282,7 @@ if {[string length $gxxVer]} {
         puts "Furthermore the distributed Tk library may broken, it"
         puts "is possible that some windows of the application will"
         puts "freeze. In this case you have to use a self-compiled Tk"
-        puts "library if you want to avoid this problem (see INSTALL)."
+        puts "library if you want to avoid this problem (read INSTALL)."
         puts ""
         puts "It is highly recommended to build Scidb on a working Unix"
         puts "system. This system is broken and distorted due to the"

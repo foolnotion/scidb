@@ -75,11 +75,16 @@ inline unsigned popcount(uint8_t x)			{ return pc(unsigned(x)); }
 inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
 inline unsigned popcount(uint32_t x)		{ return pc(x); }
 
+inline
+unsigned
+popcount(uint64_t x)
+{
 #ifdef __SSE4_2__
-inline unsigned popcount(uint64_t x)		{ return _mm_popcnt_u64(x); }
+	return _mm_popcnt_u64(x);
 #else
-inline unsigned popcount(uint64_t x)		{ return pc(x); }
+	return pc(x);
 #endif
+}
 
 #ifdef USE_UINT128
 # if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)
@@ -102,7 +107,7 @@ inline
 unsigned
 popcount(uint128_t const& x)
 {
-	return pc(x.lo()) + pc(x.hi());
+	return popcount(x.lo()) + popcount(x.hi());
 }
 
 # else // if __WORDSIZE == 64
@@ -126,7 +131,7 @@ inline
 unsigned
 popcount(uint128_t x)
 {
-	return pc(uint64_t(x)) + pc(uint64_t(x >> 64));
+	return popcount(uint64_t(x)) + popcount(uint64_t(x >> 64));
 }
 
 # endif // __WORDSIZE

@@ -17,7 +17,7 @@ include ../../Makefile.in
 
 INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/libTeXt -I../util/universalchardet -I../db -I../db/sci -I../db/si3
 ALL_INCLUDE = $(INCLUDE) $(ZLIB_INC)
-CXXFLAGS	+= $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
+CXXFLAGS	+= $(SYS_CXXFLAGS) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(OPTIMIZE) $(PROFILING)
 
 SRC_CXX = \
 	app_application.cpp \

@@ -17,8 +17,8 @@ include ../../Makefile.in
 
 INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itcl$(TCL_VERSION) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
 ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+CFLAGS	+= $(SYS_CFLAGS) $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
+CXXFLAGS	+= $(SYS_CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	tk_busy.cpp \

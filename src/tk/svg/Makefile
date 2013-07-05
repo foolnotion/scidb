@@ -16,7 +16,7 @@ include ../../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../../mstl -I../../util -I../../util/expat -Iagg
-CXXFLAGS	+= $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+CXXFLAGS	+= $(SYS_CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	svg_exception.cpp \

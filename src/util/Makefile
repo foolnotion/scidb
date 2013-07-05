@@ -13,7 +13,7 @@
 include ../../Makefile.in
 
 INCLUDE	= -I. -I../mstl -I../sys -Ilibhyphenate -Izlib -Iminizip -Iexpat
-CXXFLAGS	+=  $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+CXXFLAGS	+= $(SYS_CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
 
 SRC_CXX = \
 	u_base64_decoder.cpp \

@@ -19,10 +19,11 @@ TCL_PROGRAM		= tclscidb$(SUFFIX)
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/sci -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
 ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(ZLIB_INC)
-ALL_CXXFLAGS	= $(CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+ALL_CXXFLAGS	= $(CXXFLAGS) $(SYS_CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 
-MAKEFLAGS += --no-print-directory
+MAKEFLAGS	+= --no-print-directory
+LDFLAGS		+= $(SYS_LDFLAGS)
 
 LIBS_BASE = \
 	mstl/libmstl.a \
