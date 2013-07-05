@@ -1459,9 +1459,12 @@ set TestPOPCNT {#!/bin/sh
 cat <<EOF > testpopcnt.c
 #ifdef __i386__
 #include <nmmintrin.h>
-static void
-cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
+static int
+isPOPCNTSupported()
 {
+    unsigned op  = 0x00000001;
+    unsigned eax, ebx, ecx, edx;
+
     __asm__ __volatile__
     (
         "push   %%ebx    \n\t"
@@ -1473,14 +1476,8 @@ cpuid(int op, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
         : "a"(op)
         : "cc"
     );
-}
 
-static int
-isPOPCNTSupported()
-{
-    unsigned ax, bx, cx, dx;
-    cpuid(0x00000001, &ax, &bx, &cx, &dx);
-    return (cx & (1u << 23)) != 0;
+    return (ecx & (1u << 23)) != 0;
 }
 
 int main() { return isPOPCNTSupported() ? 0 : 1; }
