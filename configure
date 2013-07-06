@@ -1521,7 +1521,7 @@ fi
 #   the usage of __sync_val_compare_and_swap().
 #
 set TestSyncBuiltin {#!/bin/sh
-cat <<EOF > testSyncBuiltin.c
+cat <<EOF > testsyncbuiltin.c
 int main()
 {
     int v;
@@ -1530,8 +1530,8 @@ int main()
 }
 EOF
 
-__CC__ -o testSyncBuiltin testSyncBuiltin.c
-if [ -f testSyncBuiltin ]; then
+__CC__ -o testsyncbuiltin testsyncbuiltin.c
+if [ -f testsyncbuiltin ]; then
     exit 0
 else
     exit 1
@@ -1543,12 +1543,12 @@ fi
 #    Script used to test which options the compiler supports.
 #
 set TestCompilerFlag {#!/bin/sh
-cat <<EOF > testCompilerFlag.c
+cat <<EOF > testcompilerflag.c
 int main() { return 0; }
 EOF
 
-__CC__ -g %FLAG% -o testCompilerFlag testCompilerFlag.c
-if [ -f testCompilerFlag ]; then
+__CC__ -g %FLAG% -o testcompilerflag testcompilerflag.c
+if [ -f testcompilerflag ]; then
     exit 0
 else
     exit 1
