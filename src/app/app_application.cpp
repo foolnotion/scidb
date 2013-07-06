@@ -731,6 +731,7 @@ Application::create(	mstl::string const& name,
 
 	MultiCursor* cursor = new MultiCursor(*this, name, type, producer, progress);
 	m_cursorMap[name] = cursor;
+	moveGamesBackToDatabase(cursor->cursor());
 	return cursor->countGames();
 }
 

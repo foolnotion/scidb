@@ -1560,7 +1560,7 @@
 ::import::mc::Warning(InvalidCountryCode)					"Ogiltig landskod"
 ::import::mc::Warning(InvalidRating)						"Ogiltigt 'ratingtal'"
 ::import::mc::Warning(InvalidNag)							"Ogiltig 'NAG'"
-::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" seen outisde a comment in game (ignored)"
+::import::mc::Warning(BraceSeenOutsideComment)			"\"\}\" seen outside a comment in game (ignored)"
 ::import::mc::Warning(MissingFen)							"Ingen startposition funnen för det schack960 partiet; det är kommer behandlas som vanligt schack"
 ::import::mc::Warning(UnknownEventType)					"Okänd tävlingstyp"
 ::import::mc::Warning(UnknownTitle)							"Okänd titel(ignorerad)"

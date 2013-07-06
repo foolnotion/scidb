@@ -1560,7 +1560,7 @@
 ::import::mc::Warning(InvalidCountryCode)		"Érvénytelen országkód"
 ::import::mc::Warning(InvalidRating)			"Érvénytelen értékszám"
 ::import::mc::Warning(InvalidNag)			"Érvénytelen NAG"
-::import::mc::Warning(BraceSeenOutsideComment)		"\"\}\" seen outisde a comment in game (ignored)"
+::import::mc::Warning(BraceSeenOutsideComment)		"\"\}\" seen outside a comment in game (ignored)"
 ::import::mc::Warning(MissingFen)			"No start position for this Shuffle/Chess-960 game; will be interpreted as standard chess" ;# NEW
 ::import::mc::Warning(UnknownEventType)			"Ismeretlen verseny típus"
 ::import::mc::Warning(UnknownTitle)			"Ismeretlen cím (kihagyva)"
