@@ -46,13 +46,21 @@ depend:
 	@$(MAKE) -C engines depend
 	@$(MAKE) -C tcl depend
 
-clean:
+clean-subdirs:
 	@$(MAKE) -C man clean
 	@$(MAKE) -C src clean
 	@$(MAKE) -C engines clean
 	@$(MAKE) -C tcl clean
-	@echo ""
-	@echo "Now you may use \"make\" to build the program."
+
+clean: clean-subdirs
+	@if [ -f Makefile.in ]; then                              \
+		echo "";                                               \
+		echo "Now you may use \"make\" to build the program."; \
+	fi
+
+dist-clean: clean-subdirs
+	@echo "Clean `pwd`"
+	@rm -f Makefile.in Makefile.in.bak
 
 install: check-mtime install-subdirs install-engines # update-magic
 

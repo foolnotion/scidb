@@ -195,10 +195,10 @@ ifeq ($(bits),64)
 endif
 
 ifeq ($(prefetch),yes)
-	ifeq ($(sse),yes)
-		CXXFLAGS += -msse
-		DEPENDFLAGS += -msse
-	endif
+#	ifeq ($(sse),yes)
+#		CXXFLAGS += -msse
+#		DEPENDFLAGS += -msse
+#	endif
 else
 	CXXFLAGS += -DNO_PREFETCH
 endif

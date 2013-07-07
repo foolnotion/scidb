@@ -34,7 +34,7 @@ proc stripDot {version} { return "[string index $version 0][string index $versio
 proc findBestTclVersion {} {
     global env
 
-    set versions {8.5 8.6}
+    set versions {8.6 8.5}
 
     foreach version $versions {
         lappend paths                                 \
@@ -550,25 +550,25 @@ proc findTclTkPathsAndMore {} {
     # systems (Ubuntu >= 11.04, and others). Sane Unix systems have
     # common links (like above).
     switch [expr {8*$tcl_platform(wordSize)}] {
-        32 { set dirs { i386-linux-gnu
-                        i386-gnu
-                        i386-kfreebsd-gnu
-                        hppa-linux-gnu
-                        mips-linux-gnu
-                        ppc-linux-gnu
-                        s390-linux-gnu
-                        sparc-linux-gnu} }
-        64 { set dirs { x86_64-linux-gnu
-                        x86_64-gnu
-                        x86_64-kfreebsd-gnu
-                        hppa64-linux-gnu
-                        ia64-linux-gnu
-                        mips64-linux-gnu
-                        ppc64-linux-gnu
-                        s390x-linux-gnu
-                        sparc64-linux-gnu} }
+        32 { set sysDirs { i386-linux-gnu
+                           i386-gnu
+                           i386-kfreebsd-gnu
+                           hppa-linux-gnu
+                           mips-linux-gnu
+                           ppc-linux-gnu
+                           s390-linux-gnu
+                           sparc-linux-gnu} }
+        64 { set sysDirs { x86_64-linux-gnu
+                           x86_64-gnu
+                           x86_64-kfreebsd-gnu
+                           hppa64-linux-gnu
+                           ia64-linux-gnu
+                           mips64-linux-gnu
+                           ppc64-linux-gnu
+                           s390x-linux-gnu
+                           sparc64-linux-gnu} }
     }
-    lappend dirs                               \
+    lappend sysDirs                            \
         alpha-linux-gnu                        \
         arm-linux-gnueabi arm-linux-gnueabihf  \
         m68k-linux-gnu                         \
@@ -576,7 +576,7 @@ proc findTclTkPathsAndMore {} {
         powerpc-linux-gnu powerpc-linux-gnuspe \
         sh4-linux-gnu                          \
         ;
-    foreach dir $dirs {
+    foreach dir $sysDirs {
         lappend path(x,libraries,usr) /usr/lib/$dir
         lappend path(x,libraries,local) /usr/local/lib/$dir
     }
@@ -637,14 +637,14 @@ proc findTclTkPathsAndMore {} {
         $configure(prefix)/lib/tk${tclv}             \
         $configure(prefix)/lib/tk${tclv_nodot}       \
         ;
-    foreach dir $dirs { lappend path(tcl,libraries) /usr/lib/$dir }
+    foreach dir $sysDirs { lappend path(tcl,libraries) /usr/lib/$dir }
     lappend path(tcl,libraries)         \
         /usr/local/lib/tcl${tclv}       \
         /usr/local/lib/tcl${tclv_nodot} \
         /usr/local/lib/tk${tclv}        \
         /usr/local/lib/tk${tclv_nodot}  \
         ;
-    foreach dir $dirs { lappend path(tcl,libraries) /usr/local/lib/$dir }
+    foreach dir $sysDirs { lappend path(tcl,libraries) /usr/local/lib/$dir }
     lappend path(tcl,libraries)   \
         /usr/local/tcl/lib        \
         /usr/local/lib64          \
@@ -1672,12 +1672,10 @@ proc checkGCC {cc} {
     }
     if {$version in $problematicGCCVersions} {
         puts ""
-        puts "I found a GCC compiler with version $version, but due to"
-        puts "some problems with this compiler version it cannot be used."
-        puts "Please use another GCC compiler version; for example:"
-        puts "  ./configure --gcc-version=4.4"
-        puts "Possibly you have to install another compiler beforehand:"
-        puts "  sudo apt-get install g++-4.4"
+        puts "I found a GCC compiler with version $version, but due to some problems with"
+        puts "this compiler version it cannot be used. Please use another GCC compiler"
+        puts "version; for example: \"./configure --gcc-version=4.4\". Possibly you have"
+        puts "to install another compiler beforehand: \"sudo apt-get install g++-4.4\"."
         puts ""
         exit 1
     }
@@ -1805,10 +1803,9 @@ proc checkFontConfig {} {
 
             if {$version == 30800} {
                 puts ""
-                puts "Your system has fontconfig version 3.8 installed."
-                puts "This library version is broken, Scidb is not working"
-                puts "with this version. Please upgrade to library version"
-                puts "3.9 or higher before installing Scidb."
+                puts "Your system has fontconfig version 3.8 installed, this library version is"
+                puts "broken, Scidb is not working with this version. Please upgrade to library"
+                puts "version 3.9 or higher before installing Scidb."
                 set result 0
             }
         }
@@ -2168,7 +2165,7 @@ set configure(tk-version) $configure(tcl-version)
 if {$configure(gcc-version) in $problematicGCCVersions} {
     puts ""
     puts "Due to some problems in gcc-${configure(gcc-version)} this compiler version"
-    puts "will not be supported. Please use another version."
+    puts "will not be supported. Please use another compiler version (read INSTALL)."
     exit 1
 }
 
@@ -2217,9 +2214,8 @@ if {[string length $gxxVer]} {
 
     if {![findSMlibHeader]} {
         puts ""
-        puts "Development files for SM library not found,"
-        puts "this is especially a problem on Ubuntu systems."
-        puts "Please install the development package for libsm."
+        puts "Development files for SM library not found, this is especially a problem"
+        puts "on Ubuntu systems. Please install the development package for libsm."
         puts "On Ubuntu use: sudo apt-get install libsm-dev"
         exit 1
     }
@@ -2227,9 +2223,8 @@ if {[string length $gxxVer]} {
     if {$::tcl_platform(platform) eq "unix"} {
         if {![findFontconfig]} {
             puts ""
-            puts "Development files for fontconfig not found,"
-            puts "this is especially a problem on Ubuntu systems."
-            puts "Please install the development package for libfontconfig."
+            puts "Development files for fontconfig not found, this is especially a problem on"
+            puts "Ubuntu systems. Please install the development package for libfontconfig."
             puts "On Ubuntu use: sudo apt-get install libfontconfig1-dev"
             exit 1
         }
@@ -2238,8 +2233,8 @@ if {[string length $gxxVer]} {
     }
 
     checkInotify
-    checkStatVFS
     checkFAM
+    checkStatVFS
     checkZlib
     checkZziplib
     checkExpat
@@ -2258,34 +2253,28 @@ if {[string length $gxxVer]} {
         # it seems that we build on an insane Unix system (like Ubuntu Oneiric)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "You're about to run Scidb on an insane distribution."
-        puts "Scidb may crash with the pre-installed Tk library $instableTkLibrary."
-        puts "It is highly recommended to install a stable Tk version"
-        puts "(8.5.6, or 8.5.11) before building Scidb."
-        puts "Read INSTALL for instructions how to use alternative"
-        puts "library versions."
+        puts "You're about to run Scidb on an insane distribution. Scidb may crash with the"
+        puts "pre-installed Tk library $instableTkLibrary. It is highly recommended to install a stable"
+        puts "Tk version (8.6.0, 8.5.11, or 8.5.6) before building Scidb. Read INSTALL for"
+        puts "instructions how to use alternative library versions."
     }
 
     if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {
         # it seems that we build on an insane Unix system
-        # (like Ubuntu Oneiric)
+        # (like Ubuntu Oneiric, and higher versions)
         puts ""
         puts "IMPORTANT NOTE:"
-        puts "------------------------------------------------------"
-        puts "The call of sub-processes is not working properly on"
-        puts "this system, you may not get a proper error message"
-        puts "in case of an exception, the application is crashing"
-        puts "instead."
-        puts "Furthermore the distributed Tk library may broken, it"
-        puts "is possible that some windows of the application will"
-        puts "freeze. In this case you have to use a self-compiled Tk"
-        puts "library if you want to avoid this problem (read INSTALL)."
+        puts "-------------------------------------------------------------------------------"
+        puts "The call of sub-processes is not working properly on this system, you may not"
+        puts "get a proper error message in case of an exception, the application is crashing"
+        puts "instead. Furthermore the distributed Tk library may be broken, it is possible"
+        puts "that some windows of the application will freeze. In this case you have to use"
+        puts "a self-compiled Tk library if you want to avoid this problem (read INSTALL)."
         puts ""
-        puts "It is highly recommended to build Scidb on a working Unix"
-        puts "system. This system is broken and distorted due to the"
-        puts "\"kernel hardening\" paranoia, which assumes that every"
-        puts "software is an attacker. But Scidb is definitively not an"
-        puts "attacker and requires a sane system."
+        puts "It is highly recommended to build Scidb on a working Unix system. This system"
+        puts "is broken and distorted due to the \"kernel hardening\" paranoia, which assumes"
+        puts "that every software is an attacker. But Scidb is definitively not an attacker"
+        puts "and requires a sane system."
     }
 
     exit 0

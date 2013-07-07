@@ -88,7 +88,7 @@ example '$HOME/mytcltk/bin' which contains tclsh8.5), otherwise the Tcl shell
 will not be found.
 
 Not every GCC compiler version is properly working. The minimum compiler
-version is 3.4, and version 4.6 is excluded because of compiler bug. It may
+version is 3.4, and version 4.6 is excluded because of a compiler bug. It may
 be required to install a proper compiler. For example you decided to version
 4.4: on Debian/Ubuntu use
 
@@ -109,11 +109,18 @@ the configure script the required paths, for example:
 
    ./configure \
       --gcc-version=4.7 \
-      SYS_CFLAGS="-I/usr/include/i386-linux-gnu -B/usr/lib/i386-linux-gnu" \
+      SYS_CFLAGS="-I/usr/include/i386-linux-gnu" \
       SYS_CXXFLAGS="-I/usr/include/i386-linux-gnu" \
       SYS_LDFLAGS="-B/usr/lib/i386-linux-gnu"
 
-Exchange "i386-linux-gnu" with the path of your architecture (it's of course
-a bad idea of Debian that the user has to know the system paths).
+Exchange "i386-linux-gnu" with the system specific part of your architecture.
+It's of course a bad idea from Debian that the user has to know the system
+paths, but the configure script may give you a hint. If you invoke this script
+(./configure) look at the output, it shows a line like this:
+
+   Location of X11 library: /usr/lib/i386-linux-gnu
+
+The latter part of the path (in this example "i386-linux-gnu") is your system
+specific part.
 
 = vi:set et sw=3 ts=3: =
