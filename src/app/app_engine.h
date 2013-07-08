@@ -138,6 +138,7 @@ public:
 
 		virtual bool startAnalysis(bool isNewGame) = 0;
 		virtual bool stopAnalysis(bool restartIsPending) = 0;
+		virtual bool continueAnalysis() = 0;
 
 		virtual void protocolStart(bool isProbing) = 0;
 		virtual void protocolEnd() = 0;

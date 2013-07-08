@@ -263,7 +263,7 @@ protected:
 										unsigned prevRecordLength);
 
 	bool isReadonly() const;
-	bool shouldCompress() const;
+	bool shouldCompact() const;
 	GameInfoList& gameInfoList();
 	GameInfo& gameInfo(unsigned index);
 	mstl::string const& description() const;
@@ -275,7 +275,7 @@ protected:
 	void setType(DatabaseContent::Type type);
 	void setCreated(uint32_t time);
 	void setDescription(char const* description);
-	void shouldCompress(bool flag);
+	void shouldCompact(bool flag);
 	void useEncoding(mstl::string const& encoding);
 
 	void checkPermissions(mstl::string const& filename);

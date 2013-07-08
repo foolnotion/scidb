@@ -110,6 +110,7 @@ public:
 	unsigned countWrites() const;
 	unsigned countSpans(unsigned size) const;
 	unsigned fileSize();
+	unsigned blockNumber(unsigned fileOffset) const;
 
 	bool save(mstl::ostream& stream, Progress* progress = 0);
 	bool attach(mstl::fstream* stream, Progress* progress = 0);
@@ -122,6 +123,8 @@ public:
 	unsigned get(ByteStream& result, unsigned offset, unsigned length = 0);
 
 	unsigned shrink(unsigned newLength, unsigned offset, unsigned minLength = 0);
+
+	void removeBlocks(unsigned firstBlockNo, unsigned lastBlockNo);
 
 	Reader& reader();
 
@@ -148,7 +151,6 @@ private:
 	unsigned get(View& view, ByteStream& result, unsigned offset, unsigned length);
 
 	unsigned lastBlockSize() const;
-	unsigned blockNumber(unsigned fileOffset) const;
 	unsigned blockOffset(unsigned fileOffset) const;
 	unsigned fileOffset(unsigned blockNumber) const;
 	unsigned computeCapacity(unsigned span) const;

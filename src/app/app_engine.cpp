@@ -1195,7 +1195,10 @@ Engine::startAnalysis(Game* game)
 	else if (isAnalyzing())
 	{
 		if (m_engine->m_board.isEqualZHPosition(game->currentBoard()))
+		{
+			m_engine->continueAnalysis();
 			return true;
+		}
 	}
 
 	m_usedMultiPV = 0;

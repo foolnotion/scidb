@@ -109,7 +109,7 @@ public:
 	/// Save changes.
 	void save(util::Progress& progress);
 	/// Update PGN file.
-	file::State save(unsigned flags, util::Progress& progress);
+	file::State save(mstl::string const& encoding, unsigned flags, util::Progress& progress);
 	/// Reset status of databases.
 	void resetInitialSize();
 

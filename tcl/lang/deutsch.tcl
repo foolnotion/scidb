@@ -474,6 +474,8 @@
 ::application::database::mc::SelectVariant					"Schachform wählen"
 ::application::database::mc::Example							"Beispiel"
 ::application::database::mc::UnsavedFiles						"Diese PGN-Datei ist ungesichert."
+::application::database::mc::FileIsRemoved					"Die Datei '%s' ist nicht mehr vorhanden. Um diese Datenbank zu sichern sollte der Exportdialog verwendet werden."
+::application::database::mc::FileIsNotWritable				"Die Datei '%s' ist nicht schreibbar. Um diese Datenbank zu sichern sollte entwerder der Exportdialog verwendet werden, oder aber die Datei sollte schreibbar gesetzt werden."
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"

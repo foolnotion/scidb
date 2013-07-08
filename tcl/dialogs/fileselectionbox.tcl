@@ -655,8 +655,8 @@ proc GetNumGames {filename mtime} {
 proc IsUsed {file} {
 	switch [string tolower [file extension $file]] {
 		.pgn - .pgn.gz - .bpgn - .bpgn.gz - .zip {
-			if {![::scidb::db::get open? [file normalize $file]]} { return no }
-			if {![::scidb::db::get readonly? $file]} { return yes }
+#			if {![::scidb::db::get open? [file normalize $file]]} { return no }
+#			if {![::scidb::db::get readonly? $file]} { return yes }
 		}
 
 		.sci - .si3 - .si4 - .cbh - .cbf {

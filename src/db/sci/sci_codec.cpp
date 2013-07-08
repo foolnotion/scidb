@@ -47,6 +47,7 @@
 #include "u_progress.h"
 #include "u_misc.h"
 
+#include "m_bitset.h"
 #include "m_string.h"
 #include "m_fstream.h"
 #include "m_byte_order.h"
@@ -1099,7 +1100,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 	setType(type::ID(baseType));
 	setCreated(created);
 
-	shouldCompress(flags & maintenance::Compress);
+	shouldCompact(flags & maintenance::Compact);
 
 	GameInfoList& infoList = gameInfoList();
 
@@ -1356,8 +1357,8 @@ Codec::writeIndexHeader(mstl::ostream& strm)
 
 	Byte flags = 0;
 
-	if (shouldCompress())
-		flags |= maintenance::Compress;
+	if (shouldCompact())
+		flags |= maintenance::Compact;
 
 	bstrm.put(::MagicIndexFile, 8);
 	bstrm << uint16_t(FileVersion);						// Scidb version
@@ -2489,6 +2490,99 @@ Codec::getSuffixes(mstl::string const&, StringList& result)
 	result.push_back("sci");
 	result.push_back("scg");
 	result.push_back("scn");
+}
+
+
+void
+Codec::compact(util::Progress& progress)
+{
+	M_ASSERT(m_gameData->isMemoryOnly());
+
+	unsigned numGames		= gameInfoList().size();
+	unsigned frequency	= progress.frequency(numGames, 20000);
+	unsigned reportAfter	= frequency;
+	unsigned numBlocks	= m_gameData->countBlocks();
+
+	util::ProgressWatcher watcher(progress, numGames);
+	progress.start(numGames);
+
+	mstl::bitset used(numBlocks);
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		GameInfo const& info = gameInfo(i);
+
+		if (!info.isDeleted())
+		{
+			unsigned firstBlock	= m_gameData->blockNumber(info.gameOffset());
+			unsigned lastBlock	= firstBlock + m_gameData->countSpans(info.gameRecordLength());
+
+			for ( ; firstBlock < lastBlock; ++firstBlock)
+				used.set(firstBlock);
+		}
+	}
+
+	mstl::vector<unsigned> offsets;
+	offsets.resize(numBlocks, 0);
+	unsigned skip = 0;
+
+	progress.start(numBlocks);
+	frequency = progress.frequency(numBlocks, 20000);
+	reportAfter = frequency;
+
+	for (unsigned i = 0; i < numBlocks; )
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		if (used.test(i))
+		{
+			offsets[i++] = skip;
+		}
+		else
+		{
+			unsigned k = i + 1;
+
+			while (k < numBlocks && !used.test(k))
+				++k;
+
+			m_gameData->removeBlocks(i, k - 1);
+			skip += (k - i)*m_gameData->blockSize();
+			i = k;
+		}
+	}
+
+	progress.start(numGames);
+	frequency = progress.frequency(numGames, 20000);
+	reportAfter = frequency;
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		GameInfo& info = gameInfo(i);
+
+		if (!info.isDeleted())
+		{
+			unsigned skip = offsets[m_gameData->blockNumber(info.gameOffset())];
+
+			M_ASSERT(info.gameOffset() >= skip);
+			info.setGameOffset(info.gameOffset() - skip);
+		}
+	}
 }
 
 // vi:set ts=3 sw=3:

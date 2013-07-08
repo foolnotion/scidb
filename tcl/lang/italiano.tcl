@@ -475,6 +475,8 @@
 ::application::database::mc::SelectVariant					"Selezione Variante"
 ::application::database::mc::Example							"Esempio"
 ::application::database::mc::UnsavedFiles						"This PGN file is unsaved." ;# NEW
+::application::database::mc::FileIsRemoved					"File '%s' is removed. Please use the export dialog if you like to save this database." ;# NEW
+::application::database::mc::FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable." ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"

@@ -449,8 +449,9 @@ MultiBase::save(util::Progress& progress)
 }
 
 
+#include <stdio.h> // XXX
 file::State
-MultiBase::save(unsigned flags, util::Progress& progress)
+MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& progress)
 {
 	enum { Unchanged, Changed, Deleted, Added };
 
@@ -489,15 +490,9 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	mstl::auto_ptr<ZStream> ostrm;
 	mstl::auto_ptr<PgnWriter> writer;
 	mstl::string internalName(sys::file::internalName(m_leader->name()));
-
-	if (ZStream::testByteOrderMark(internalName))
-		flags |= PgnWriter::Flag_Use_UTF8;
-	else
-		flags &= ~PgnWriter::Flag_Use_UTF8;
-
 	mstl::auto_ptr<FileOffsets> newFileOffsets(new FileOffsets);
-
 	mstl::string ext(misc::file::suffix(m_leader->name()));
+	mstl::string myEncoding(encoding);
 	ext.tolower();
 	M_ASSERT(ext == "pgn" || ext == "gz");
 	ZStream::Type fileType = ext == "gz" ? ZStream::GZip : ZStream::Text;
@@ -514,6 +509,19 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	unsigned reportAfter	= frequency;
 	unsigned count			= 0;
 
+	if (ZStream::testByteOrderMark(internalName))
+	{
+		flags |= PgnWriter::Flag_Use_UTF8;
+		myEncoding = sys::utf8::Codec::utf8();
+	}
+	else
+	{
+		flags &= ~PgnWriter::Flag_Use_UTF8;
+
+		if (myEncoding == sys::utf8::Codec::utf8())
+			myEncoding = sys::utf8::Codec::latin1();
+	}
+
 	if (newFile)
 	{
 		mstl::string tmpName(internalName + ".part");
@@ -525,7 +533,7 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 		if (!*ostrm)
 			IO_RAISE(PgnFile, Create_Failed, "no permissions to create file");
 
-		writer.reset(new PgnWriter(format::Scidb, *ostrm, m_leader->encoding(), flags));
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, flags));
 		ZStream istrm(internalName);
 
 		istrm.setBufsize(::ChunkSize);
@@ -601,7 +609,6 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 
 		unsigned n				= m_fileOffsets->size();
 		unsigned lastIndex	= 0;
-		unsigned prevState	= Added;
 		unsigned nextState	= Added;
 
 		if (n > 0)
@@ -609,18 +616,19 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 			FileOffsets::Offset const& offs = m_fileOffsets->get(0);
 
 			if (!offs.isGameIndex())
-				prevState = Unchanged;
+				nextState = Unchanged;
 			else if (m_bases[offs.variant()]->isDeleted(offs.gameIndex()))
-				prevState = Deleted;
+				nextState = Deleted;
 			else if (m_bases[offs.variant()]->hasChanged(offs.gameIndex()))
-				prevState = Changed;
+				nextState = Changed;
 			else
-				prevState = Unchanged;
+				nextState = Unchanged;
 
 			lastIndex = 1;
 		}
 
-		unsigned startIndex = 0;
+		unsigned startIndex	= 0;
+		unsigned prevState	= nextState;
 
 		while (lastIndex <= n && nextState != Added)
 		{
@@ -660,11 +668,11 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 						unsigned offs		= ostrm->tellp();
 						unsigned numGames	= 0;
 
-						FileOffsets::Offset const* currOffs = &newFileOffsets->get(startIndex);
+						FileOffsets::Offset const* currOffs = &m_fileOffsets->get(startIndex);
 
-						for ( ; startIndex < lastIndex; ++startIndex)
+						for (unsigned index = startIndex + 1; index <= lastIndex; ++index)
 						{
-							FileOffsets::Offset const* nextOffs = &newFileOffsets->get(startIndex + 1);
+							FileOffsets::Offset const* nextOffs = &m_fileOffsets->get(index);
 							offs += nextOffs->offset() - currOffs->offset();
 
 							if (currOffs->isGameIndex())
@@ -686,6 +694,7 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 							unsigned startOffs	= m_fileOffsets->get(startIndex).offset();
 							unsigned endOffs		= m_fileOffsets->get(lastIndex).offset();
 
+printf("unchanged(%u-%u): %u - %u\n", startIndex, lastIndex, startOffs, endOffs);
 							count = ::write(	istrm,
 													*ostrm,
 													startOffs,
@@ -717,15 +726,13 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 							Database* database = m_bases[offs.variant()];
 							writer->setupVariant(variant::fromIndex(offs.variant()));
 							database->exportGame(offs.gameIndex(), *writer); // always returning save::Ok
+printf("changed(%u): %ul\n", startIndex, ostrm->tellp());
 							newFileOffsets->append(ostrm->tellp(), offs.variant(), offs.gameIndex());
 						}
 						break;
-
-					case Deleted:
-						startIndex = lastIndex;
-						break;
 				}
 
+				startIndex = ++lastIndex;
 				prevState = nextState;
 			}
 		}
@@ -735,7 +742,7 @@ MultiBase::save(unsigned flags, util::Progress& progress)
 	else
 	{
 		ostrm.reset(new ZStream(internalName, fileType, mstl::ofstream::app));
-		writer.reset(new PgnWriter(format::Scidb, *ostrm, m_leader->encoding(), flags));
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, flags));
 		ostrm->writenl(mstl::string::empty_string);
 		newFileOffsets.reset(new FileOffsets(*m_fileOffsets));
 	}

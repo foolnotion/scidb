@@ -1446,6 +1446,8 @@ proc StartEngine {list} {
 				::application::analysis::startAnalysis [::application::board::anaylsisWindow]
 			} elseif {$Vars(current:profile) ne $Vars(active:profile)} {
 				::application::analysis::restartAnalysis
+			} else {
+				::application::analysis::restartAnalysis
 			}
 			if {$Vars(current:priority) ne $Vars(active:priority)} {
 				set Vars(active:priority) $Vars(current:priority)

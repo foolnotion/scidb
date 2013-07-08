@@ -1104,7 +1104,7 @@ Codec::readIndexHeader(mstl::fstream& fstrm, unsigned* retNumGames)
 	setType(type::ID(baseType));
 	setCreated(created);
 
-	shouldCompress(flags & maintenance::Compress);
+	shouldCompact(flags & maintenance::Compact);
 
 	GameInfoList& infoList = gameInfoList();
 
@@ -1361,8 +1361,8 @@ Codec::writeIndexHeader(mstl::ostream& strm)
 
 	Byte flags = 0;
 
-	if (shouldCompress())
-		flags |= maintenance::Compress;
+	if (shouldCompact())
+		flags |= maintenance::Compact;
 
 	bstrm.put(::MagicIndexFile, 8);
 	bstrm << uint16_t(FileVersion);						// Scidb version

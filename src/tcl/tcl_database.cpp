@@ -3298,7 +3298,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			char const*		database(stringFromObj(objc, objv, 2));
 			variant::Type	variant(tcl::game::variantFromObj(objc, objv, 3));
 
-			setResult(Scidb->cursor(database, variant).database().shouldCompress());
+			setResult(Scidb->cursor(database, variant).database().shouldCompact());
 			return TCL_OK;
 		}
 
@@ -4124,17 +4124,18 @@ cmdSave(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdSavePGN(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	if (objc != 5)
+	if (objc != 6)
 	{
-		Tcl_WrongNumArgs(ti, 1, objv, "<database> <flags> <progress-cmd> <progress-arg>");
+		Tcl_WrongNumArgs(ti, 1, objv, "<database> <encoding> <flags> <progress-cmd> <progress-arg>");
 		return TCL_ERROR;
 	}
 
 	char const*	db(stringFromObj(objc, objv, 1));
-	unsigned		flags(unsignedFromObj(objc, objv, 2));
-	Progress		progress(objv[3], objv[4]);
+	char const*	encoding(stringFromObj(objc, objv, 2));
+	unsigned		flags(unsignedFromObj(objc, objv, 3));
+	Progress		progress(objv[4], objv[5]);
 
-	switch (scidb->save(db, flags, progress))
+	switch (scidb->save(db, encoding, flags, progress))
 	{
 		case file::IsUpTodate:	setResult("IsUpTodate"); break;
 		case file::Updated:		setResult("Updated"); break;

@@ -246,6 +246,7 @@ public:
 	void setFlags(unsigned flags);
 	void setDirty(bool flag);
 	void setUnchanged();
+	void setGameOffset(unsigned offset);
 	void setIllegalCastling(bool flag);
 	void setIllegalMove(bool flag);
 	void reset(Namebases& namebases);

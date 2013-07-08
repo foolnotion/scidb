@@ -46,7 +46,7 @@ DatabaseContent::DatabaseContent(mstl::string const& filename, mstl::string cons
 	,m_writable(true)
 	,m_memoryOnly(false)
 	,m_temporary(false)
-	,m_shouldCompress(false)
+	,m_shouldCompact(false)
 	,m_encoding(encoding)
 	,m_allocator(32768)
 {
@@ -63,7 +63,7 @@ DatabaseContent::DatabaseContent(mstl::string const& filename, DatabaseContent c
 	,m_writable(content.m_writable)
 	,m_memoryOnly(content.m_memoryOnly)
 	,m_temporary(content.m_temporary)
-	,m_shouldCompress(false)
+	,m_shouldCompact(false)
 	,m_description(content.m_description)
 	,m_encoding(content.m_encoding)
 	,m_allocator(32768)

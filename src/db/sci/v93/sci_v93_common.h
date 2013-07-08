@@ -72,7 +72,7 @@ namespace maintenance
 {
 	enum
 	{
-		Compress = 1,
+		Compact = 1,
 	};
 }
 

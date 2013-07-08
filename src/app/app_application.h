@@ -308,7 +308,10 @@ public:
 	void bindGameToDatabase(unsigned position, mstl::string const& name, unsigned index);
 	void bindGameToView(unsigned position, int viewId, Update updateMode = UpdateGameInfo);
 	void save(mstl::string const& name, util::Progress& progress);
-	::db::file::State save(mstl::string const& name, unsigned flags, util::Progress& progress);
+	::db::file::State save(	mstl::string const& name,
+									mstl::string const& encoding,
+									unsigned flags,
+									util::Progress& progress);
 	void startUpdateTree(Cursor& cursor);
 	unsigned stripMoveInformation(View& view,
 											unsigned types,

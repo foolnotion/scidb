@@ -214,7 +214,6 @@ uci::Engine::Engine()
 	,m_isNewGame(false)
 	,m_startAnalyzeIsPending(false)
 	,m_stopAnalyzeIsPending(false)
-	,m_continueAnalysis(false)
 	,m_isChess960(false)
 	,m_sendAnalyseMode(false)
 	,m_usedAnalyseModeBefore(false)
@@ -369,19 +368,21 @@ uci::Engine::stopAnalysis(bool restartIsPending)
 }
 
 
-void
+bool
 uci::Engine::continueAnalysis()
 {
-	if (m_continueAnalysis)
-	{
-		if (currentGame())
-		{
-			send("go infinite");
-			m_isAnalyzing = true;
-		}
+	if (m_state == Start)
+		return false;
 
-		m_continueAnalysis = false;
+	if (currentGame())
+	{
+		send("go infinite");
+		m_isAnalyzing = true;
+		updateState(app::Engine::Resume);
 	}
+
+	m_state = Start;
+	return true;
 }
 
 
@@ -567,7 +568,9 @@ void
 uci::Engine::parseBestMove(char const* msg)
 {
 	m_stopAnalyzeIsPending = false;
-	m_isAnalyzing = false;
+
+	if (m_state != Start)
+		m_isAnalyzing = false;
 
 	char const* s = ::skipSpaces(msg);
 	Move move(currentBoard().parseLAN(s));
@@ -1178,7 +1181,6 @@ uci::Engine::sendOptions()
 	{
 		m_waitingOn = "readyok";
 		send("isready");
-		m_continueAnalysis = true;
 	}
 }
 
@@ -1192,7 +1194,6 @@ uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
 		// XXX probably "ucinewgame" is required
 		m_waitingOn = "setoption";
 		send("isready");
-		m_continueAnalysis = true;
 		m_name = name;
 		m_value = value;
 	}

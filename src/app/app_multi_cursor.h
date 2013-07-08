@@ -110,6 +110,9 @@ public:
 	/// Replace database object.
 	void replace(db::Database* database);
 
+	// Compact the databases.
+	bool compact(::util::Progress& progress);
+
 	static mstl::string const& clipbaseName();
 	static mstl::string const& scratchbaseName();
 

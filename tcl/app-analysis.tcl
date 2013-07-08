@@ -128,6 +128,7 @@ proc build {parent width height} {
 	}
 	set Vars(maxMoves) 0
 	set Vars(after) {}
+	set Vars(after2) {}
 	set Vars(state) normal
 	set Vars(mode) normal
 	set Vars(message) {}
@@ -616,6 +617,9 @@ proc Layout {tree} {
 proc SetState {state} {
 	variable Vars
 
+	after cancel $Vars(after2)
+	set Vars(after2) ""
+
 	if {![winfo exists $Vars(tree)]} { return }
 	if {$Vars(state) eq $state} { return }
 	set Vars(state) $state
@@ -683,11 +687,14 @@ proc ShowMessage {type txt} {
 proc Display(state) {state} {
 	variable Vars
 
+	after cancel $Vars(after2)
+	set Vars(after2) ""
+
 	switch $state {
-		stop		{ after idle [namespace code [list SetState disabled]] }
+		stop		{ set Vars(after2) { after idle [namespace code [list SetState disabled]] } }
 		start		{ SetState normal }
 		pause		{}
-		resume	{}
+		resume	{ SetState normal }
 	}
 }
 
@@ -935,6 +942,7 @@ proc VisitItem {w mode column item {x {}} {y {}}} {
 
 	if {$Vars(keepActive)} { return }
 	if {[string length $column] == 0} { return }
+	if {$Vars(engine:id) < 0} { return }
 
 	if {$mode eq "leave"} {
 		$w activate root

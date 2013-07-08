@@ -77,6 +77,8 @@ set ExtractArchive					"Extract archive %s"
 set SelectVariant						"Select Variant"
 set Example								"Example"
 set UnsavedFiles						"This PGN file is unsaved."
+set FileIsRemoved						"File '%s' is removed. Please use the export dialog if you like to save this database."
+set FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable."
 
 set RecodingDatabase					"Recoding %base from %from to %to"
 set RecodedGames						"%s game(s) recoded"
@@ -1527,14 +1529,20 @@ proc EmptyClipbase {parent} {
 
 
 proc SaveChanges {parent {base ""}} {
-return [::beta::notYetImplemented $parent savePGN]
 	if {[string length $base] == 0} { set base [scidb::db::get name] }
 
+	if {![file exists $base]} {
+		set msg [format $mc::FileIsRemoved [file tail $base]]
+		return [::dialog::error -parent $parent -message $msg]
+	}
+
 	if {![file writable $base]} {
+		set msg [format $mc::FileIsNotWritable [file tail $base]]
+		return [::dialog::error -parent $parent -message $msg]
 	}
 
 	set stats [::scidb::db::get stats $base]
-	set cmd [list scidb::db::savePGN $base [::export::getPgnFlags]]
+	set cmd [list scidb::db::savePGN $base "iso8859-1" [::export::getPgnFlags]]
 	set options [list -message $mc::FileSaveChanges]
 	set result [::progress::start $parent $cmd {} $options]
 	CheckSaveState $base

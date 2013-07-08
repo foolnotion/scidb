@@ -157,7 +157,7 @@ public:
 	/// Set flag whether this cursor is the currently active cursor.
 	void setActive(bool flag);
 
-	// Compress the database.
+	// Compact the database.
 	bool compact(::util::Progress& progress);
 
 	SubscriberP subscriber() const;

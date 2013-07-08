@@ -71,7 +71,7 @@ public:
 	bool				m_writable;
 	bool				m_memoryOnly;
 	bool				m_temporary;
-	bool				m_shouldCompress;
+	bool				m_shouldCompact;
 	mstl::string	m_description;
 	mstl::string	m_encoding;
 	Allocator 		m_allocator;

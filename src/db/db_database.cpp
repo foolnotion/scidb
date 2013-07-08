@@ -373,7 +373,6 @@ Database::resetChangedStatus()
 
 	m_statistic.added = 0;
 	m_statistic.changed = 0;
-	m_statistic.deleted = 0;
 }
 
 
@@ -459,6 +458,108 @@ Database::save(util::Progress& progress)
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),
 								start == 0 ? Statistic::Reset : Statistic::Continue);
 	m_statistic.added = m_size - m_initialSize;
+}
+
+
+void
+Database::compact(Database &destination, util::Progress& progress)
+{
+	M_REQUIRE(isOpen());
+	M_REQUIRE(!isMemoryOnly());
+
+	unsigned numGames		= countGames();
+	unsigned frequency	= progress.frequency(numGames, 5000);
+	unsigned reportAfter	= frequency;
+
+	util::ProgressWatcher watcher(progress, numGames);
+
+	progress.start(numGames);
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		if (!m_gameInfoList[i]->isDeleted())
+		{
+			save::State state = exportGame(i, destination);
+
+			if (!save::isOk(state))
+			{
+				// The following errors cannot happen, but we want to be sure:
+				switch (state)
+				{
+					case save::Ok:
+						break;
+
+					case save::UnsupportedVariant:
+					case save::DecodingFailed:
+					case save::GameTooLong:
+					case save::TooManyAnnotatorNames:
+						// skip non-fatal errors
+						break;
+
+					case save::FileSizeExeeded:
+					case save::TooManyGames:
+					case save::TooManyPlayerNames:
+					case save::TooManyEventNames:
+					case save::TooManySiteNames:
+					case save::TooManyRoundNames:
+						M_THROW(Exception("Compression failed: save state %d", int(state)));
+						break;
+				}
+			}
+		}
+	}
+
+	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
+								const_cast<GameInfoList const&>(m_gameInfoList).end(),
+								Statistic::Reset);
+}
+
+
+
+void
+Database::compact(util::Progress& progress)
+{
+	M_REQUIRE(format() == format::Scidb);
+	M_REQUIRE(isOpen());
+	M_REQUIRE(isMemoryOnly());
+	M_REQUIRE(!isReadonly());
+
+	unsigned numGames		= countGames();
+	unsigned frequency	= progress.frequency(numGames, 20000);
+	unsigned reportAfter	= frequency;
+
+	M_ASSERT(dynamic_cast<sci::Codec*>(m_codec));
+	static_cast<sci::Codec*>(m_codec)->compact(progress);
+
+	util::ProgressWatcher watcher(progress, numGames);
+	progress.start(numGames);
+
+	GameInfoList newList;
+	newList.reserve(numGames - m_statistic.deleted);
+
+	for (unsigned i = 0; i < numGames; ++i)
+	{
+		if (reportAfter == i)
+		{
+			progress.update(i);
+			reportAfter += frequency;
+		}
+
+		if (!m_gameInfoList[i]->isDeleted())
+			newList.push_back(m_gameInfoList[i]);
+	}
+
+	m_gameInfoList.swap(newList);
+
+	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
+								const_cast<GameInfoList const&>(m_gameInfoList).end(),
+								Statistic::Reset);
 }
 
 
@@ -559,9 +660,9 @@ Database::remove()
 
 
 bool
-Database::shouldCompress() const
+Database::shouldCompact() const
 {
-	return !isReadonly() && format() == format::Scidb && (m_shouldCompress || m_statistic.deleted > 0);
+	return !isReadonly() && format() == format::Scidb && (m_shouldCompact || m_statistic.deleted > 0);
 }
 
 
@@ -828,7 +929,7 @@ Database::updateGame(Game& game)
 
 		if (format() == format::Scidb && offset != info.gameOffset())
 		{
-			m_shouldCompress = true;
+			m_shouldCompact = true;
 
 			if (!m_memoryOnly)
 				m_codec->updateHeader();
@@ -882,7 +983,7 @@ Database::updateMoves(Game& game)
 		{
 			if (offset != info.gameOffset())
 			{
-				m_shouldCompress = true;
+				m_shouldCompact = true;
 
 				if (!m_memoryOnly)
 				{
@@ -1819,9 +1920,9 @@ Database::stripMoveInformation(Filter const& filter, unsigned types, util::Progr
 
 	if (numGames > 0)
 	{
-		if (!m_shouldCompress)
+		if (!m_shouldCompact)
 		{
-			m_shouldCompress = true;
+			m_shouldCompact = true;
 
 			if (!isMemoryOnly())
 			{
@@ -1868,9 +1969,9 @@ Database::stripTags(Filter const& filter, TagMap const& tags, util::Progress& pr
 
 	if (numGames > 0)
 	{
-		if (!m_shouldCompress)
+		if (!m_shouldCompact)
 		{
-			m_shouldCompress = true;
+			m_shouldCompact = true;
 
 			if (!isMemoryOnly())
 			{

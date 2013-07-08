@@ -1853,7 +1853,7 @@ proc Stimulate {w} {
 proc CheckIfInUse {w file mode {deferDialog 0}} {
 	variable ${w}::Vars
 
-	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) $file]} {
+	if {[llength $Vars(isusedcommand)] > 0 && [$Vars(isusedcommand) [file normalize $file]]} {
 		set msg [format [Tr Cannot($mode)] [file tail $file]]
 		set detail [Tr CurrentlyInUse]
 		set cmd [list ::dialog::info -parent $Vars(widget:main) -message $msg -detail $detail]

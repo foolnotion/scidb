@@ -411,6 +411,25 @@ BlockFile::clear()
 }
 
 
+void
+BlockFile::removeBlocks(unsigned firstBlockNo, unsigned lastBlockNo)
+{
+	M_REQUIRE(isMemoryOnly());
+	M_REQUIRE(isInSyncMode());
+	M_REQUIRE(firstBlockNo < countBlocks());
+	M_REQUIRE(lastBlockNo < countBlocks());
+	M_REQUIRE(firstBlockNo <= lastBlockNo);
+
+	m_sizeInfo.erase(	m_sizeInfo.begin() + firstBlockNo,
+							m_sizeInfo.begin() + lastBlockNo - firstBlockNo + 1);
+	m_cache.erase(	m_cache.begin() + firstBlockNo,
+						m_cache.end() + lastBlockNo - firstBlockNo + 1);
+
+	if (mstl::is_between(m_view.m_buffer.m_number, firstBlockNo, lastBlockNo))
+		m_view.m_buffer.m_number = InvalidBlock;
+}
+
+
 bool
 BlockFile::sync()
 {

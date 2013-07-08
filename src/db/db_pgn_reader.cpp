@@ -1841,7 +1841,7 @@ PgnReader::get(bool allowEndOfInput)
 		}
 		else
 		{
-			m_currentOffset = m_stream.tellg() + 1;
+			m_currentOffset = m_stream.tellg();
 			m_eof = true;
 		}
 

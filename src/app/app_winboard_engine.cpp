@@ -636,6 +636,13 @@ winboard::Engine::stopAnalysis(bool restartIsPending)
 }
 
 
+bool
+winboard::Engine::continueAnalysis()
+{
+	return false;
+}
+
+
 void
 winboard::Engine::pongReceived()
 {

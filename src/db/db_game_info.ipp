@@ -73,7 +73,8 @@ inline uint8_t GameInfo::countComments() const				{ return m_commentCount; }
 inline uint8_t GameInfo::countAnnotations() const			{ return m_annotationCount; }
 inline Signature GameInfo::signature() const					{ return m_signature; }
 inline unsigned GameInfo::moveCount() const 					{ return mstl::div2(m_plyCount + 1); }
-inline void GameInfo::setUnchanged()							{ m_gameFlags &= ~Flag_Special; }
+
+inline void GameInfo::setGameOffset(unsigned offset)		{ m_gameOffset = offset; }
 
 inline species::ID GameInfo::playerType(color::ID color) const	{ return m_player[color]->type(); }
 inline sex::ID GameInfo::sex(color::ID color) const				{ return m_player[color]->sex(); }
@@ -89,6 +90,13 @@ void
 GameInfo::setFlags(unsigned flags)
 {
 	m_gameFlags = (m_gameFlags & Flag_Special) | (flags & ~Flag_Special);
+}
+
+
+inline
+void GameInfo::setUnchanged()
+{
+	m_gameFlags &= ~(Flag_Dirty | Flag_Changed);
 }
 
 

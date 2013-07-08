@@ -52,6 +52,8 @@ public:
 
 	bool startAnalysis(bool isNewGame) override;
 	bool stopAnalysis(bool restartIsPending) override;
+	bool continueAnalysis() override;
+
 	bool isReady() const override;
 	bool isAnalyzing() const override;
 

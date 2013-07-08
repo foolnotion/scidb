@@ -429,93 +429,57 @@ Cursor::compact(::util::Progress& progress)
 	M_REQUIRE(!isReadonly());
 	M_REQUIRE(isWritable());
 
-	WriteGuard guard(this);
-	m_db->sync(progress);
-
-	if (!m_db->shouldCompress())
+	if (!m_db->shouldCompact())
 		return false;
 
-	unsigned numGames		= m_db->countGames();
-	unsigned initialSize	= m_db->countInitialGames();
+	progress.message("write-game");
 
-	for (unsigned i = 0, n = initialSize; i < n; ++i)
+	if (m_db->isMemoryOnly())
 	{
-		if (m_db->gameInfo(i).isDeleted())
-			--initialSize;
+		m_db->compact(progress);
 	}
-
-	mstl::string orig(m_db->name());
-	mstl::string name;
-
-	name.append(::util::misc::file::dirname(m_db->name()));
-	name.append('.');
-	name.append(::util::misc::file::basename(::util::misc::file::rootname(m_db->name())));
-	name.append(".compact.293528376.");
-	name.append(::util::misc::file::suffix(m_db->name()));
-
-	mstl::auto_ptr<Database> compacted(new Database(*m_db, name));
-
-	try
+	else
 	{
-		unsigned frequency	= progress.frequency(numGames, 5000);
-		unsigned reportAfter	= frequency;
+		WriteGuard guard(this);
+		m_db->sync(progress);
 
-		util::ProgressWatcher watcher(progress, numGames);
+		unsigned initialSize = m_db->countInitialGames();
 
-		for (unsigned i = 0; i < numGames; ++i)
+		for (unsigned i = 0, n = initialSize; i < n; ++i)
 		{
-			if (reportAfter == i)
-			{
-				progress.update(i);
-				reportAfter += frequency;
-			}
-
-			if (!m_db->gameInfo(i).isDeleted())
-			{
-				save::State state = m_db->exportGame(i, *compacted);
-
-				if (!save::isOk(state))
-				{
-					// The following errors cannot happen, but we want to be sure:
-					switch (state)
-					{
-						case save::Ok:
-							break;
-
-						case save::UnsupportedVariant:
-						case save::DecodingFailed:
-						case save::GameTooLong:
-						case save::TooManyAnnotatorNames:
-							// skip non-fatal errors
-							break;
-
-						case save::FileSizeExeeded:
-						case save::TooManyGames:
-						case save::TooManyPlayerNames:
-						case save::TooManyEventNames:
-						case save::TooManySiteNames:
-						case save::TooManyRoundNames:
-							M_THROW(Exception("Compression failed: save state %d", int(state)));
-							break;
-					}
-				}
-			}
+			if (m_db->gameInfo(i).isDeleted())
+				--initialSize;
 		}
 
-		compacted->save(progress);
-		compacted->resetInitialSize(initialSize);
-	}
-	catch (...)
-	{
-		compacted->remove();
-		throw;
-	}
+		mstl::string orig(m_db->name());
+		mstl::string name;
 
-	m_db = compacted.release();
-	m_db->rename(orig);
-	m_cursor.replace(m_db);
+		name.append(::util::misc::file::dirname(m_db->name()));
+		name.append('.');
+		name.append(::util::misc::file::basename(::util::misc::file::rootname(m_db->name())));
+		name.append(".compact.293528376.");
+		name.append(::util::misc::file::suffix(m_db->name()));
 
-	guard.release();
+		mstl::auto_ptr<Database> compacted(new Database(*m_db, name));
+
+		try
+		{
+			m_db->compact(*compacted, progress);
+			compacted->save(progress);
+			compacted->resetInitialSize(initialSize);
+		}
+		catch (...)
+		{
+			compacted->remove();
+			throw;
+		}
+
+		m_db = compacted.release();
+		m_db->rename(orig);
+		m_cursor.replace(m_db);
+
+		guard.release();
+	}
 
 	ViewList viewList;
 

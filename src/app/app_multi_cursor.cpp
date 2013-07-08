@@ -311,4 +311,22 @@ MultiCursor::replace(db::Database* database)
 	m_base->replace(database);
 }
 
+
+bool
+MultiCursor::compact(::util::Progress& progress)
+{
+	bool compacted = false;
+
+	for (unsigned v = 0; v < ::db::variant::NumberOfVariants; ++v)
+	{
+		if (m_cursor[v])
+		{
+			if (m_cursor[v]->compact(progress))
+				compacted = true;
+		}
+	}
+
+	return compacted;
+}
+
 // vi:set ts=3 sw=3:
