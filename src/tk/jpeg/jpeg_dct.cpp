@@ -173,20 +173,43 @@ transpose(vec& a, vec& b, vec& c, vec& d)
 #ifdef __i386__
 
 static void
-cpuid(int op, uint32_t& eax, uint32_t& ebx, uint32_t& ecx, uint32_t& edx)
+cpuid(unsigned info, unsigned& eax, unsigned& ebx, unsigned& ecx, unsigned& edx)
 {
-	// Execute CPUID with the feature request bit set
-	__asm__ __volatile__
-	(
-		"push   %%ebx    \n\t"	// Save EBX
-		"cpuid           \n\t"	// Call CPUID
-		"movl   %%ebx,%1 \n\t"  // Store EBX into ebx
-		"pop    %%ebx    \n\t"	// Restore EBX
-
-		: "=a"(eax), "=r"(ebx), "=c"(ecx), "=d"(edx)
-		: "a"(op)					// Set EAX (features request)
-		: "cc"
-	);
+#if defined(_MSC_VER) && (defined(_WIN32) || defined(_WIN64))
+  int regs[4];
+  __cpuid(regs, info);
+  eax = regs[0];
+  ebx = regs[1];
+  ecx = regs[2];
+  edx = regs[3];
+#elif defined(__i386__) || defined(__i386)
+  eax = info;
+  #if defined(__PIC__)
+  __asm__ __volatile__ (
+   "mov %%ebx, %%esi;"
+   "cpuid;"
+   "xchg %%ebx, %%esi;"
+   : "+a" (eax), 
+     "=S" (ebx),
+     "=c" (ecx),
+     "=d" (edx));
+  #else
+  __asm__ __volatile__ (
+   "cpuid;"
+   : "+a" (eax), 
+     "=b" (ebx),
+     "=c" (ecx),
+     "=d" (edx));
+  #endif
+#elif defined(__x86_64__)
+  eax = info;
+  __asm__ __volatile__ (
+   "cpuid;"
+   : "+a" (eax), 
+     "=b" (ebx),
+     "=c" (ecx),
+     "=d" (edx));
+#endif
 }
 
 #endif
@@ -195,11 +218,7 @@ cpuid(int op, uint32_t& eax, uint32_t& ebx, uint32_t& ecx, uint32_t& edx)
 static bool
 cpu_provides_sse2()
 {
-#if defined(__x86_64__)
-
-	return true;
-
-#elif !defined(__i386__)
+#if !defined(__i386__)
 
 	return false;
 
@@ -212,6 +231,7 @@ cpu_provides_sse2()
 	if (!first_time)
 		return caps;
 
+#ifndef __x86_64__
 	bool haveCPUID;
 
 	// First check if the CPU supports the CPUID instruction
@@ -241,20 +261,14 @@ cpu_provides_sse2()
 
 	// If we don't have CPUID we won't have the other extensions either
 	if (haveCPUID)
+#endif
 	{
-		uint32_t eax;
-		uint32_t ebx;
-		uint32_t ecx;
-		uint32_t edx;
+		unsigned eax = 0, ebx = 0, ecx = 0, edx = 0;
 
 		cpuid(0x00000001, eax, ebx, ecx, edx);
 
-		if (edx & (1 << 23))
-		{
-			if (edx & (1 << 26)) caps = true;	// SSE2
-			if (ecx & (1 <<  0)) caps = true;	// SSE3
-			if (ecx & (1 <<  9)) caps = true;	// SSSE3
-		}
+		if (edx & (1 << 26)) caps = true;	// SSE2
+		if (ecx & (1 <<  0)) caps = true;	// SSE3
 	}
 
 	first_time = false;

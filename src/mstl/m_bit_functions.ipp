@@ -24,10 +24,6 @@
 # include "m_types.h"
 #endif
 
-#ifdef __SSE4_2__
-# include <nmmintrin.h>
-#endif
-
 namespace mstl {
 namespace bf {
 namespace bits {
@@ -74,17 +70,7 @@ inline unsigned lsb(uint64_t x)				{ return ctz(x); }
 inline unsigned popcount(uint8_t x)			{ return pc(unsigned(x)); }
 inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
 inline unsigned popcount(uint32_t x)		{ return pc(x); }
-
-inline
-unsigned
-popcount(uint64_t x)
-{
-#ifdef __SSE4_2__
-	return _mm_popcnt_u64(x);
-#else
-	return pc(x);
-#endif
-}
+inline unsigned popcount(uint64_t x)		{ return pc(x); }
 
 #ifdef USE_UINT128
 # if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)

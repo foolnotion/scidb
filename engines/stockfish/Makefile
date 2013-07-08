@@ -207,9 +207,9 @@ ifeq ($(bsfq),yes)
 	CXXFLAGS += -DUSE_BSFQ
 endif
 
-#ifeq ($(popcnt),yes)
-#	CXXFLAGS += -msse4.2 -DUSE_POPCNT
-#endif
+ifeq ($(popcnt),yes)
+	CXXFLAGS += -msse4.2 -DUSE_POPCNT
+endif
 
 ### 3.10 Link Time Optimization, it works since gcc 4.5 but not on mingw.
 ### This is a mix of compile and link time options because the lto link phase

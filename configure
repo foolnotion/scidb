@@ -1459,34 +1459,10 @@ set TestPOPCNT {#!/bin/sh
 cat <<EOF > testpopcnt.c
 #ifdef __i386__
 #include <nmmintrin.h>
-static int
-isPOPCNTSupported()
-{
-    unsigned op  = 0x00000001;
-    unsigned eax, ebx, ecx, edx;
-
-    __asm__ __volatile__
-    (
-        "push   %%ebx    \n\t"
-        "cpuid           \n\t"
-        "movl   %%ebx,%1 \n\t"
-        "pop    %%ebx    \n\t"
-
-        : "=a"(eax), "=r"(ebx), "=c"(ecx), "=d"(edx)
-        : "a"(op)
-        : "cc"
-    );
-
-    return (ecx & (1u << 23)) != 0;
-}
-
-int main() { return isPOPCNTSupported() ? 0 : 1; }
-#else
-int main() { return 1; }
-#endif
+int main() { return 0; }
 EOF
 
-__CC__ -o testpopcnt.c testpopcnt.c -msse4
+__CC__ -o testpopcnt.c testpopcnt.c -msse4.2
 if [ -f testpopcnt.c ]; then
     exit 0
 else
