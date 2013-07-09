@@ -84,9 +84,7 @@ struct Wrapper
 {
   Window    win;
   Tk_Window tkwin;
-#ifndef USE_TKINT_H
   Tk_Window alias;
-#endif
 };
 
 typedef struct Wrapper Wrapper;
@@ -244,18 +242,15 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
               mouse_tkwin = child;
               newBaseX = baseX - x;
               newBaseY = baseY - y;
-              if (winPtr->flags & TK_TOP_HIERARCHY)
-                break;
             }
           }
+
+          if (winPtr->flags & TK_TOP_HIERARCHY)
+            break;
         }
       }
     }
 #else
-    /* IMPORTANT NOTE:
-     * This alternative is not equivalent, because it cannot take the
-     * visibility hierarchy into account. But in most cases it will work.
-     */
     Tcl_Interp* interp = Tk_Interp(tkwin);
     Tcl_Obj* objv[3];
     Tcl_Obj* result;
@@ -309,7 +304,18 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
                 mouse_tkwin = child;
                 newBaseX = baseX - x;
                 newBaseY = baseY - y;
-                break;
+              }
+            }
+
+            objv[0] = Tcl_NewStringObj("winfo", -1);
+            objv[1] = Tcl_NewStringObj("viewable", -1);
+            objv[2] = Tcl_NewStringObj(Tk_PathName(child), -1);
+
+            if (TkDND_Eval(interp, 3, objv) == TCL_OK) {
+              int result = 0;
+              Tcl_Obj* obj = Tcl_GetObjResult(interp);
+              if (Tcl_GetBooleanFromObj(interp, obj, &result) == TCL_OK) {
+                if (result) break;
               }
             }
           }
@@ -510,9 +516,7 @@ int TkDND_RegisterWrapperObjCmd(ClientData clientData, Tcl_Interp *interp,
     Wrapper* entry = &wrapperList.targets[wrapperList.size++];
 
     entry->win = SetWmFrameAware(tkwin);
-#ifndef USE_TKINT_H
     entry->alias = tkwin;
-#endif
     if (*Tcl_GetString(objv[2])) {
       entry->tkwin = TkDND_TkWin(interp, objv[2]);
     } else {
@@ -926,14 +930,10 @@ FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state) {
       if (currentWrapper) {
         int rootX = (cm->data.l[2] & 0xffff0000) >> 16;
         int rootY = cm->data.l[2] & 0x0000ffff;
-#ifdef USE_TKINT_H
-        Tk_Window w = CoordsToWindow(rootX, rootY, wrapper);
-#else
         Tk_Window w = Tk_CoordsToWindow(rootX, rootY, wrapper);
         if (w == wrapperList.targets[i].alias) {
           w = CoordsToWindow(rootX, rootY, wrapper);
         }
-#endif
         while (w && !Tk_IsTopLevel(w) && !IsXdndAware(w)) {
           w = Tk_Parent(w);
         }

@@ -78,14 +78,22 @@ proc findBestTclVersion {} {
         if {[file isdirectory $dir]} {
             if {[file exists $dir/tk.h]} {
                 set f [open $dir/tk.h r]
+                set tkVersion ""
+                set tkPatchLevel ""
                 while {[gets $f line] >= 0} {
                     if {[string match {\#*define *TK_VERSION*} $line]} {
-                        set ver [lindex [split $line \"] 1]
-                        if {[lindex $versions 0] eq $ver} {
-                            close $f
-                            return $ver
-                        } elseif {$ver in $versions} {
-                            lappend results $ver
+                        set tkVersion [lindex [split $line \"] 1]
+                    } elseif {[string match {\#*define *TCL_PATCH_LEVEL*} $line]} {
+                        set tkPatchLevel [lindex [split $line \"] 1]
+                    }
+                    if {[string length $tkVersion] && [string length $tkPatchLevel]} {
+                        if {$tkPatchLevel ne "8.6b1"} {
+                            if {[lindex $versions 0] eq $tkVersion} {
+                                close $f
+                                return $tkVersion
+                            } elseif {$tkVersion in $versions} {
+                                lappend results $tkVersion
+                            }
                         }
                     }
                 }
