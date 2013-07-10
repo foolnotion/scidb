@@ -507,6 +507,7 @@
 ::application::database::mc::SelectSuperfluousTags			"Seleziona tag superflui:"
 ::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database." ;# NEW
 ::application::database::mc::ReadWriteFailed					"Setting the database writable failed:" ;# NEW
+::application::database::mc::NoExtraTagsFound				"No tags found for deletion." ;# NEW
 
 ::application::database::mc::T_Unspecific						"Non specificato"
 ::application::database::mc::T_Temporary						"Temporaneo"

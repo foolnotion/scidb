@@ -694,7 +694,7 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 							unsigned startOffs	= m_fileOffsets->get(startIndex).offset();
 							unsigned endOffs		= m_fileOffsets->get(lastIndex).offset();
 
-printf("unchanged(%u-%u): %u - %u\n", startIndex, lastIndex, startOffs, endOffs);
+//printf("unchanged(%u-%u): %u - %u\n", startIndex, lastIndex, startOffs, endOffs);
 							count = ::write(	istrm,
 													*ostrm,
 													startOffs,
@@ -726,7 +726,7 @@ printf("unchanged(%u-%u): %u - %u\n", startIndex, lastIndex, startOffs, endOffs)
 							Database* database = m_bases[offs.variant()];
 							writer->setupVariant(variant::fromIndex(offs.variant()));
 							database->exportGame(offs.gameIndex(), *writer); // always returning save::Ok
-printf("changed(%u): %ul\n", startIndex, ostrm->tellp());
+//printf("changed(%u): %ul\n", startIndex, ostrm->tellp());
 							newFileOffsets->append(ostrm->tellp(), offs.variant(), offs.gameIndex());
 						}
 						break;

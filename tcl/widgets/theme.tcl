@@ -244,8 +244,8 @@ proc configureCheckEntry {menu {index end}} {
 		set img [$menu entrycget $entry -image]
 		if {[string length $img] == 0} {
 			$menu entryconfigure $entry \
-				-image $icon::16x16::CheckNo \
-				-selectimage $icon::16x16::CheckYes \
+				-image $icon::16x16::checkNo \
+				-selectimage $icon::16x16::checkYes \
 				-compound left \
 				-indicatoron no \
 				;
@@ -254,12 +254,12 @@ proc configureCheckEntry {menu {index end}} {
 			if {![info exists Icons($img)]} {
 				set y [expr {(16 - [image height $img])/2}]
 				set imgOff [image create photo -width 36 -height 16]
-				$imgOff copy $icon::16x16::CheckNo -to 0 0
+				$imgOff copy $icon::16x16::checkNo -to 0 0
 				$imgOff copy $img -to 20 $y
 				set imgOn [image create photo -width 36 -height 16]
 				$imgOn blank
 				$imgOn copy $img -to 20 $y
-				$imgOn copy $icon::16x16::CheckYes -to 0 0
+				$imgOn copy $icon::16x16::checkYes -to 0 0
 				set Icons($img) [list $imgOff $imgOn]
 			} else {
 				lassign $Icons($img) imgOff imgOn
@@ -283,8 +283,8 @@ proc configureRadioEntry {menu {index end}} {
 		if {[string length $img] == 0} {
 			$menu entryconfigure $entry \
 				-indicatoron off \
-				-image $icon::16x16::RadioOff \
-				-selectimage $icon::16x16::RadioOn \
+				-image $icon::16x16::radioOff \
+				-selectimage $icon::16x16::radioOn \
 				-compound left \
 				;
 		} else {
@@ -292,10 +292,10 @@ proc configureRadioEntry {menu {index end}} {
 			if {![info exists Icons($img)]} {
 				set y [expr {(16 - [image height $img])/2}]
 				set imgOff [image create photo -width 36 -height 16]
-				$imgOff copy $icon::16x16::RadioOff -to 0 0
+				$imgOff copy $icon::16x16::radioOff -to 0 0
 				$imgOff copy $img -to 20 $y
 				set imgOn [image create photo -width 36 -height 16]
-				$imgOn copy $icon::16x16::RadioOn -to 0 0
+				$imgOn copy $icon::16x16::radioOn -to 0 0
 				$imgOn copy $img -to 20 $y
 				set Icons($img) [list $imgOff $imgOn]
 			} else {
@@ -766,7 +766,7 @@ set Dot [image create photo -data {
 
 namespace eval 16x16 {
 
-set CheckYes [image create photo -data {
+set checkYes [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAL
 	EwAACxMBAJqcGAAAAAd0SU1FB90HCg81KCMxtFQAAAACYktHRAD/h4/MvwAAAY5JREFUKM9Vkbtu
 	1EAUhsdnZuyZsdf2XOzZ7PqWBdssQRsEi0IikGgBiRAayhUplirPgNKk4QWQaGhpeQVooKCEJkIi
@@ -779,7 +779,7 @@ set CheckYes [image create photo -data {
 	AElFTkSuQmCC
 }]
 
-set CheckNo [image create photo -data {
+set checkNo [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAAJiS0dEAP+H
 	j8y/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QcKDzUNaDVgEwAAAPlJREFUKM9tjjtP
 	w0AQhL+9W9uJFcBREAgk0lLy/38IDQ0lElGCICh+3PmWgjwsJzPd7DerEUDw5HNlIO1XHREDQZjp
@@ -789,7 +789,7 @@ set CheckNo [image create photo -data {
 	W1AwHBp1s/siYH/45m3dmwA7UwAAAABJRU5ErkJggg==
 }]
 
-set RadioOn [image create photo -data {
+set radioOn [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmJJREFUOMtN
 	k0tuHDcQhj8W+92SRg+PFMk2JMDWJgkC5AbZZemVb+ALxFufw/cxcoEE3mUR+CFZgCxbkWamp6eb
 	zaospgcQNyQL9eDPH58DHGCslwME8EA67gr0QBzPD3NNHgQEqIC9CdTA8PIlzVhcAnus437MN8C5
@@ -804,7 +804,7 @@ set RadioOn [image create photo -data {
 	Z4645JrlBsJNAx5AVQE7WcaOGZkLhH4Nzz2w3EC0Gfw/imAF/o/T7KQAAAAASUVORK5CYII=
 }]
 
-set RadioOff [image create photo -data {
+set radioOff [image create photo -data {
 	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAUdJREFUKM9V
 	kMFu01AQRc+dZz8nNknaIEpbUFiUfgLfwZ93XzZIUGVFUVBqO/Hz87BIEco9u6s5o9EIuYOEESgJ
 	TAxkplPrbu4go+YyNIxfWwbmXNIogLskR4EFvjmWVRer0OU8NMdtNRp7H0GIFSF2b5eTyQFccttv

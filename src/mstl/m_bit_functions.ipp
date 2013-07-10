@@ -69,8 +69,29 @@ inline unsigned lsb(uint64_t x)				{ return ctz(x); }
 
 inline unsigned popcount(uint8_t x)			{ return pc(unsigned(x)); }
 inline unsigned popcount(uint16_t x)		{ return pc(unsigned(x)); }
-inline unsigned popcount(uint32_t x)		{ return pc(x); }
-inline unsigned popcount(uint64_t x)		{ return pc(x); }
+
+inline unsigned
+popcount(uint32_t x)
+{
+#if 1 // the builtin function of GCC is quite slow
+	x = x - ((x >> 1) & 0x55555555);
+	x = (x & 0x33333333) + ((x >> 2) & 0x33333333);
+	x = (x + (x >> 4)) & 0x0f0f0f0f;
+	return (x * 0x01010101) >> 24;
+#else
+	return pc(x);
+#endif
+}
+
+inline unsigned
+popcount(uint64_t x)
+{
+#if 1 // the builtin function of GCC is quite slow
+	return popcount(static_cast<uint32_t>(x)) + popcount(static_cast<uint32_t>(x >> 32));
+#else
+	return pc(x);
+#endif
+}
 
 #ifdef USE_UINT128
 # if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)

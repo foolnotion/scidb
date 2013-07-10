@@ -298,32 +298,32 @@ proc DisplayContributions {w} {
 			<table border='0'>
 				<tr>
 					<td>[Name {Lars Ekman}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName sv]</td>
 				</tr>
 				<tr>
 					<td>[Name {Carlos Fernando González}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName es]</td>
 				</tr>
 				<tr>
 					<td>[Name {Giovanni Ornaghi}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName it]</td>
 				</tr>
 				<tr>
 					<td>[Name {Zoltán Tibenszky}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName hu]</td>
 				</tr>
 				<tr>
 					<td>[Name {Juan Carlos Vásquez}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName es]</td>
 				</tr>
 				<tr>
 					<td>[Name {Gregor Cramer}]</td>
-					<td>\u2000</td>
+					<td>\u2000\u2212\u2000</td>
 					<td>[::encoding::languageName de], [::encoding::languageName en]</td>
 				</tr>
 			</table>
@@ -440,7 +440,11 @@ proc DisplayContributions {w} {
 			<hr/>
 			<table border='0'>
 				<tr><td>[Name {Gregor Cramer}]</td></tr>
-				<tr><td>[Name {José Carlos Martins}]</td><td>\u2001</td><td>Country Style</td></tr>
+				<tr>
+					<td>[Name {José Carlos Martins}]</td>
+					<td>\u2000\u2212\u2000</td>
+					<td>Country Style</td>
+				</tr>
 			</table>
 		</div>
 		<div class='box'>

@@ -505,6 +505,7 @@ ln -sf ../# ====================================================================
 ::application::database::mc::SelectSuperfluousTags			"Select superfluous tags:"
 ::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database."
 ::application::database::mc::ReadWriteFailed					"Setting the database writable failed:"
+::application::database::mc::NoExtraTagsFound				"No tags found for deletion."
 
 ::application::database::mc::T_Unspecific						"Unspecific"
 ::application::database::mc::T_Temporary						"Temporary"

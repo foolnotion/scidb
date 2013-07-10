@@ -571,6 +571,14 @@ proc ShowPosition {parent position key {state 0}} {
 }
 
 
+proc SetupColumnStyle {position} {
+	variable ::pgn::browser::Options
+
+	set Options(style:column) [expr {!$Options(style:column)}]
+	SetupStyle $position
+}
+
+
 proc SetupStyle {position {refresh yes}} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
@@ -1378,6 +1386,8 @@ proc PopupMenu {parent board position {what ""}} {
 		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
 		$menu add command \
 			-label " $mc::MergeGame..." \
+			-image $::icon::16x16::none \
+			-compound left \
 			-command [list gamebar::mergeGame $dlg $position] \
 			-state $state \
 			;
@@ -1485,14 +1495,28 @@ proc PopupMenu {parent board position {what ""}} {
 		-command [list ::font::changeSize browser -1] \
 		-accel "$::mc::Key(Ctrl) \u2212" \
 		;
-	$menu add checkbutton \
-		-label $::pgn::setup::mc::ParLayout(column-style) \
-		-command [namespace code [list SetupStyle $position]] \
-		-variable ::pgn::browser::Options(style:column) \
-		;
-	::theme::configureCheckEntry $menu
+	if {$::theme::useCustomStyleMenuEntries} {
+		if {$::pgn::browser::Options(style:column)} { set state Yes } else { set state No }
+		$menu add command \
+			-label " $::pgn::setup::mc::ParLayout(column-style)" \
+			-image [set ::theme::icon::16x16::check$state] \
+			-compound left \
+			-command [namespace code [list SetupColumnStyle $position]] \
+			;
+	} else {
+		$menu add checkbutton \
+			-label " $::pgn::setup::mc::ParLayout(column-style)" \
+			-variable ::pgn::browser::Options(style:column) \
+			;
+		::theme::configureCheckEntry $menu
+	}
 	menu $menu.moveStyles -tearoff no
-	$menu add cascade -menu $menu.moveStyles -label " $::application::pgn::mc::MoveNotation"
+	$menu add cascade \
+		-menu $menu.moveStyles \
+		-label " $::application::pgn::mc::MoveNotation" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
 	foreach style $::notation::moveStyles {
 		$menu.moveStyles add radiobutton \
 			-compound left \
@@ -1501,11 +1525,13 @@ proc PopupMenu {parent board position {what ""}} {
 			-value $style \
 			-command [namespace code [list SetupStyle $position]] \
 			;
-		::theme::configureRadioEntry $menu.moveStyles end
+		::theme::configureRadioEntry $menu.moveStyles
 	}
 	$menu add command \
 		-label " $::pgn::setup::mc::Configure(browser)..." \
 		-command [namespace code [list ConfigureBrowser $parent]] \
+		-image $::icon::16x16::none \
+		-compound left \
 		;
 
 	$menu add separator

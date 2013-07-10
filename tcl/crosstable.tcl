@@ -1142,7 +1142,6 @@ proc Mouse3Down {dlg node} {
 	}
 
 	if {[info exists m]} {
-		$m add separator
 		BuildMenu $dlg $m
 
 		MouseEnter $dlg $node
@@ -1180,8 +1179,10 @@ proc BuildMenu {dlg m} {
 	::theme::configureCheckEntry $sub
 
 	$m add command \
-		-label "$mc::SaveAsHTML..." \
+		-label " $mc::SaveAsHTML..." \
 		-command [namespace code [list SaveAsHTML $dlg]] \
+		-image $::icon::16x16::save \
+		-compound left \
 		;
 	$m add separator
 

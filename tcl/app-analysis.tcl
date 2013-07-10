@@ -1012,13 +1012,13 @@ proc PopupMenu {parent args} {
 					set lbl $mc::Add(move)
 				}
 				$menu add command \
-					-label $lbl \
+					-label " $lbl" \
 					-image $::icon::16x16::plus \
 					-compound left \
 					-command [namespace code [list InsertMoves $parent move $line $lbl]] \
 					;
 				$menu add command \
-					-label $mc::Add(line) \
+					-label " $mc::Add(line)" \
 					-image $::icon::16x16::plus \
 					-compound left \
 					-command [namespace code [list InsertMoves $parent line $line $mc::Add(line)]] \
@@ -1026,7 +1026,7 @@ proc PopupMenu {parent args} {
 					;
 				if {$Options(engine:multiPV) == 1} { set state disabled }
 				$menu add command \
-					-label $mc::Add(all) \
+					-label " $mc::Add(all)" \
 					-image $::icon::16x16::plus \
 					-compound left \
 					-command [namespace code [list InsertMoves $parent all $line $mc::Add(all)]] \
@@ -1038,7 +1038,7 @@ proc PopupMenu {parent args} {
 	}
 
 	$menu add command \
-		-label "$mc::Setup..." \
+		-label " $mc::Setup..." \
 		-image $::icon::16x16::setup \
 		-compound left \
 		-command [namespace code Setup] \
@@ -1051,7 +1051,7 @@ proc PopupMenu {parent args} {
 		set img $::icon::16x16::pause
 	}
 	$menu add command \
-		-label $txt \
+		-label " $txt" \
 		-image $img \
 		-compound left \
 		-command [namespace code [list Pause $parent]] \
@@ -1088,7 +1088,9 @@ proc PopupMenu {parent args} {
 		set sub [menu $menu.lines -tearoff 0]
 		$menu add cascade \
 			-menu $sub \
-			-label $mc::LinesPerVariation \
+			-label " $mc::LinesPerVariation" \
+			-image $::icon::16x16::none \
+			-compound left \
 			;
 		foreach i {1 2 3 4} {
 			$sub add radiobutton \

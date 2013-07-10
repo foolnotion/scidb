@@ -107,6 +107,7 @@ set SearchPGNTags						"Searching for PGN tags"
 set SelectSuperfluousTags			"Select superfluous tags:"
 set WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database."
 set ReadWriteFailed					"Setting the database writable failed:"
+set NoExtraTagsFound					"No tags found for deletion."
 
 set T_Unspecific						"Unspecific"
 set T_Temporary						"Temporary"
@@ -1473,13 +1474,12 @@ proc PopupMenu {parent x y {base ""}} {
 		-compound left              \
 		;
 	foreach {name size} {Large 48 Medium 32 Small 24 Tiny 16} {
-		$m add checkbutton                                   \
+		$m add radiobutton                                   \
 			-label " [set mc::$name]"                         \
-			-onvalue $size                                    \
-			-offvalue $size                                   \
+			-value $size                                      \
 			-variable ::database::switcher::Options(iconsize) \
 			;
-		::theme::configureCheckEntry $m
+		::theme::configureRadioEntry $m
 	}
 
 	$menu add separator
@@ -1741,6 +1741,10 @@ proc StripPGNTags {parent file} {
 	set options [list -message $title -interrupt yes]
 	set tags [::progress::start $parent $cmd {} $options]
 	if {$tags eq "interrupted"} { return }
+
+	if {[llength $tags] == 0} {
+		return [::dialog::info -parent $parent -message $mc::NoExtraTagsFound]
+	}
 
 	set dlg [tk::toplevel $parent.stripPgnTags]
 	pack [set top [ttk::frame $dlg.top -takefocus 0]] -fill both

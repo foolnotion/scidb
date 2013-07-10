@@ -1,3 +1,16 @@
+[Juli 2013 ] =================================================================
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #887
+------------------------------------------------------------------------------
+* Runtime a bit improved: replacement of __builtin_popcount with a quite
+faster implementation.
+
+* Stockfish a bit improved: replacement of popcount with a faster
+implementation (twice as fast on 32 bit systems).
+
+* Custom menu check/radio-buttons implemented (as default).
+
 [Juni 2013 ] =================================================================
 
 ------------------------------------------------------------------------------
