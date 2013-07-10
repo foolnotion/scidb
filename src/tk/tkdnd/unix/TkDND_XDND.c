@@ -84,7 +84,6 @@ struct Wrapper
 {
   Window    win;
   Tk_Window tkwin;
-  Tk_Window alias;
 };
 
 typedef struct Wrapper Wrapper;
@@ -242,11 +241,10 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
               mouse_tkwin = child;
               newBaseX = baseX - x;
               newBaseY = baseY - y;
+              if (Tk_TopWinHierarchy(child))
+                break;
             }
           }
-
-          if (winPtr->flags & TK_TOP_HIERARCHY)
-            break;
         }
       }
     }
@@ -304,18 +302,8 @@ CoordsToWindow(int rootX, int rootY, Tk_Window tkwin) {
                 mouse_tkwin = child;
                 newBaseX = baseX - x;
                 newBaseY = baseY - y;
-              }
-            }
-
-            objv[0] = Tcl_NewStringObj("winfo", -1);
-            objv[1] = Tcl_NewStringObj("viewable", -1);
-            objv[2] = Tcl_NewStringObj(Tk_PathName(child), -1);
-
-            if (TkDND_Eval(interp, 3, objv) == TCL_OK) {
-              int result = 0;
-              Tcl_Obj* obj = Tcl_GetObjResult(interp);
-              if (Tcl_GetBooleanFromObj(interp, obj, &result) == TCL_OK) {
-                if (result) break;
+                if (Tk_TopWinHierarchy(child))
+                  break;
               }
             }
           }
@@ -516,7 +504,6 @@ int TkDND_RegisterWrapperObjCmd(ClientData clientData, Tcl_Interp *interp,
     Wrapper* entry = &wrapperList.targets[wrapperList.size++];
 
     entry->win = SetWmFrameAware(tkwin);
-    entry->alias = tkwin;
     if (*Tcl_GetString(objv[2])) {
       entry->tkwin = TkDND_TkWin(interp, objv[2]);
     } else {
@@ -930,10 +917,8 @@ FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state) {
       if (currentWrapper) {
         int rootX = (cm->data.l[2] & 0xffff0000) >> 16;
         int rootY = cm->data.l[2] & 0x0000ffff;
-        Tk_Window w = Tk_CoordsToWindow(rootX, rootY, wrapper);
-        if (w == wrapperList.targets[i].alias) {
-          w = CoordsToWindow(rootX, rootY, wrapper);
-        }
+        // Tk_CoordsToWindow() is not working as expected!
+        Tk_Window w = CoordsToWindow(rootX, rootY, wrapper);
         while (w && !Tk_IsTopLevel(w) && !IsXdndAware(w)) {
           w = Tk_Parent(w);
         }
