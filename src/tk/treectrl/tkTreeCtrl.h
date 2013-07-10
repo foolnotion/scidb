@@ -18,7 +18,7 @@
  * RCS: @(#) $Id: tkTreeCtrl.h,v 1.97 2009/05/17 18:39:54 treectrl Exp $
  */
 
-#include "tk.h"
+#include "tcl.h"
 #include "tkPort.h"
 #include "default.h"
 #include "tclInt.h"
