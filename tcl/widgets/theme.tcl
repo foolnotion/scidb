@@ -27,6 +27,7 @@ variable sliderWidth 8
 variable strongTtk false
 variable repeatDelay 0
 variable repeatInterval 0
+variable useCustomStyleMenuEntries 1
 
 variable Settings
 variable Setup 1
@@ -230,14 +231,86 @@ proc enableScale {scale {enable true}} {
 }
 
 
-proc configureRadioEntry {menu {index end}} {
+proc configureCheckEntry {menu {index end}} {
+	variable useCustomStyleMenuEntries
+
 	set entry [$menu index $index]
-	$menu entryconfigure $entry \
-		-indicatoron off \
-		-image $icon::15x15::None \
-		-selectimage $icon::15x15::Dot \
-		-compound left \
-		;
+	set text [$menu entrycget $entry -label]
+	if {[string index $text 0] ne " "} {
+		$menu entryconfigure $entry -label " $text"
+	}
+
+	if {$useCustomStyleMenuEntries} {
+		set img [$menu entrycget $entry -image]
+		if {[string length $img] == 0} {
+			$menu entryconfigure $entry \
+				-image $icon::16x16::CheckNo \
+				-selectimage $icon::16x16::CheckYes \
+				-compound left \
+				-indicatoron no \
+				;
+		} else {
+			variable Icons
+			if {![info exists Icons($img)]} {
+				set y [expr {(16 - [image height $img])/2}]
+				set imgOff [image create photo -width 36 -height 16]
+				$imgOff copy $icon::16x16::CheckNo -to 0 0
+				$imgOff copy $img -to 20 $y
+				set imgOn [image create photo -width 36 -height 16]
+				$imgOn blank
+				$imgOn copy $img -to 20 $y
+				$imgOn copy $icon::16x16::CheckYes -to 0 0
+				set Icons($img) [list $imgOff $imgOn]
+			} else {
+				lassign $Icons($img) imgOff imgOn
+			}
+			$menu entryconfigure $entry -indicatoron off -image $imgOff -selectimage $imgOn -compound left
+		}
+	}
+}
+
+proc configureRadioEntry {menu {index end}} {
+	variable useCustomStyleMenuEntries
+
+	set entry [$menu index $index]
+
+	if {$useCustomStyleMenuEntries} {
+		set text [$menu entrycget $entry -label]
+		if {[string index $text 0] ne " "} {
+			$menu entryconfigure $entry -label " $text"
+		}
+		set img [$menu entrycget $entry -image]
+		if {[string length $img] == 0} {
+			$menu entryconfigure $entry \
+				-indicatoron off \
+				-image $icon::16x16::RadioOff \
+				-selectimage $icon::16x16::RadioOn \
+				-compound left \
+				;
+		} else {
+			variable Icons
+			if {![info exists Icons($img)]} {
+				set y [expr {(16 - [image height $img])/2}]
+				set imgOff [image create photo -width 36 -height 16]
+				$imgOff copy $icon::16x16::RadioOff -to 0 0
+				$imgOff copy $img -to 20 $y
+				set imgOn [image create photo -width 36 -height 16]
+				$imgOn copy $icon::16x16::RadioOn -to 0 0
+				$imgOn copy $img -to 20 $y
+				set Icons($img) [list $imgOff $imgOn]
+			} else {
+				lassign $Icons($img) imgOff imgOn
+			}
+			$menu entryconfigure $entry -indicatoron off -image $imgOff -selectimage $imgOn -compound left
+		}
+	} else {
+		$menu entryconfigure $entry \
+			-indicatoron off \
+			-image $::icon::15x15::none \
+			-selectimage $icon::15x15::Dot \
+			-compound left \
+			;
+	}
 }
 
 
@@ -690,6 +763,58 @@ set Dot [image create photo -data {
 }]
 
 } ;# namespace 15x15
+
+namespace eval 16x16 {
+
+set CheckYes [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAAlwSFlzAAAL
+	EwAACxMBAJqcGAAAAAd0SU1FB90HCg81KCMxtFQAAAACYktHRAD/h4/MvwAAAY5JREFUKM9Vkbtu
+	1EAUhsdnZuyZsdf2XOzZ7PqWBdssQRsEi0IikGgBiRAayhUplirPgNKk4QWQaGhpeQVooKCEJkIi
+	Cu/BJApZcj6d4kiffh3pRw0vhR1gic0VlB2UouENR6VIdKQrtqA7jvxiWYBkYkZhKVCixdBlFLYq
+	q9UOx3UYZnHmBNZXLC+vslbwW/HMCq8dRohvK2yarFphi+gO+UDfYi3uSYnYw5DqdVOvkB15j0/p
+	mxHn207gD5wwOQs2zTk1OYITeCeu3fYvBduxF3RXT/R6VvkH8Bs+RZ2pr7MLISbsPv4Ix8HCTMRL
+	+AVfvPnaSLbxPwHRvIE9+Ao/yQH8gO/kaWN0q7tu9YPqrcHP4Rv88Y7J/jhRvW5VfynQUHWqzxVZ
+	wGd0OJHyhrsdWcx3nODPvZmQqstv2gIeRUU6tVM1VV1pgg26pRPEa/KYbpFhkqoUURJLNzgd5P6c
+	PGHtKERZHGyQZ/QVfo2XsMTneEu87+/5myp1XZSCDGAczOic3v2PTV6R+Kzwv9J7P34PDPSEAAAA
+	AElFTkSuQmCC
+}]
+
+set CheckNo [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAAJiS0dEAP+H
+	j8y/AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QcKDzUNaDVgEwAAAPlJREFUKM9tjjtP
+	w0AQhL+9W9uJFcBREAgk0lLy/38IDQ0lElGCICh+3PmWgjwsJzPd7DerEUDw5HNlIO1XHREDQZjp
+	dWUxlHI478x8r802bklK6RcPqa68a499T27u26pobH3+tGjTrRMz4WQnYVLswlX/47p5aL0i6oZG
+	CnUhVGSKNzExYaRIg3lQgCRyBnj3nymAXQDiPlGoyQQ3BuwEXP5w2KUwBWc2BtQF2wOpUIvnG5IW
+	IiIub+qlrcD80EjY/N4TU6/6Wb+sJ/6jbMKxndHn7WMzLV7bKGQs5dndWS52GiiBdf/GO50g6Oym
+	W1AwHBp1s/siYH/45m3dmwA7UwAAAABJRU5ErkJggg==
+}]
+
+set RadioOn [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAmJJREFUOMtN
+	k0tuHDcQhj8W+92SRg+PFMk2JMDWJgkC5AbZZemVb+ALxFufw/cxcoEE3mUR+CFZgCxbkWamp6eb
+	zaospgcQNyQL9eDPH58DHGCslwME8EA67gr0QBzPD3NNHgQEqIC9CdTA8PIlzVhcAnus437MN8C5
+	8eKBbcDOzugOhPx+SZYV+NsVserodUJ3/5H8v/WgOTBsnuGACeCfwHL3kJ2oiHOYOEwNZ4ZzDkuE
+	+ftrsrHmDlAB8qJgF2h2pkyC4r2gh49ZqeFOtmm9oNGQQdn+5Yi+LKlHuc4Bh1WFf/aIVddQJUL8
+	1lPP5rxS49wcX57WvM33mccFkgTaTzOyZi39qwD7+0vu+iUlwCSnv5vzajBeGPxqxu9fGl4fGCuA
+	eUZxNmWRj7IlTamf/0YYFF8Y7qKlVOPcQQ6oA6/GjzdLSjVcpvjpTwyaUgFeAH/zjmLVYgtDTgpW
+	zvEZCKNDiuPfrKJVQ0rg8j3Zxk6vyvQGstOcthdSBtLY8udKODIonePvoLyZClUwXJ/Qf1uwNxi5
+	Kl8TYJ4knM4S/tovKNsWqWu4afgDEAz9ueYoKL7o0FkkLCM/yMAtED1gIhz3A1mu3HpP6oTssGRy
+	IJTTmoMg5MXa/PaiZ2rGblA+AgsPBFW8Os5nHa723G5NMN+RiCeLQLFFaFpW1z3HQXkWIhfA5fjJ
+	AJRZxnMi54B64YrA1WSLbrYgTVOO28ATPKkJH0LgH6ABzD0gq8hzTmLHqXimAnU0Eu+IIdI4+D7A
+	Z4645JrlBsJNAx5AVQE7WcaOGZkLhH4Nzz2w3EC0Gfw/imAF/o/T7KQAAAAASUVORK5CYII=
+}]
+
+set RadioOff [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAQAAAC1+jfqAAAAAXNSR0IArs4c6QAAAUdJREFUKM9V
+	kMFu01AQRc+dZz8nNknaIEpbUFiUfgLfwZ93XzZIUGVFUVBqO/Hz87BIEco9u6s5o9EIuYOEESgJ
+	TAxkplPrbu4go+YyNIxfWwbmXNIogLskR4EFvjmWVRer0OU8NMdtNRp7H0GIFSF2b5eTyQFccttv
+	I2Lnk1FVF7TrVQzgcrnANS1uh1lDLQXWcfqgVOXTtlfckrfySGes8+4wP77a/5A0u3rRimBl8yXl
+	UNr5QBbhbixqQkF4mAWvzMVZgn+LBLA09NdlOvddLtL+CseNfbFhmMvOKHRM4/XYk41naDdtC9j/
+	E1Pfv6fyX+RAmgL3B5W/F24hC+rUH/qbfJd/8sQkR/P4Od8z2TZv3xxfyvJm+GilfU+PtO5yJGbx
+	Nn2yd2qmwnJuefYfF0+7zh1O70eBmmVcehyT7/lD5yOA9BdNkrO4MeXe0gAAAABJRU5ErkJggg==
+}]
+
+} ;# namespace 16x16
 } ;# namespace icon
 } ;# namespace theme
 

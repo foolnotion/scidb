@@ -2061,7 +2061,7 @@ proc BuildMenu {gamebar id side menu} {
 #				-variable [namespace current]::Specs(line:$gamebar) \
 #				-command [namespace code [list SelectLine $gamebar]]
 #		}
-#		::theme::configureRadioEntry $menu $text
+#		::theme::configureRadioEntry $menu
 #		$menu add separator
 
 		eval $addsep
@@ -2082,8 +2082,9 @@ proc BuildMenu {gamebar id side menu} {
 				-label $text \
 				-value $item \
 				-variable [namespace current]::Options(alignment) \
-				-command [namespace code [list Layout $gamebar]]
-			::theme::configureRadioEntry $menu.configuration.alignment end
+				-command [namespace code [list Layout $gamebar]] \
+				;
+			::theme::configureRadioEntry $menu.configuration.alignment
 		}
 
 		menu $menu.configuration.layout -tearoff no
@@ -2098,6 +2099,7 @@ proc BuildMenu {gamebar id side menu} {
 			-variable [namespace current]::Options(separateColumn) \
 			-command [namespace code [list ShowSeparateColumn $gamebar]] \
 			;
+		::theme::configureCheckEntry $menu.configuration.layout
 		$menu.configuration.layout add checkbutton \
 			-label $mc::ShowActiveAtBottom \
 			-onvalue 1 \
@@ -2106,6 +2108,7 @@ proc BuildMenu {gamebar id side menu} {
 			-command [namespace code [list ShowAtBottom $gamebar]] \
 			-state $state \
 			;
+		::theme::configureCheckEntry $menu.configuration.layout
 		$menu.configuration.layout add checkbutton \
 			-label $mc::ShowPlayersOnSeparateLines \
 			-onvalue 1 \
@@ -2113,6 +2116,7 @@ proc BuildMenu {gamebar id side menu} {
 			-variable [namespace current]::Options(separateLines) \
 			-command [namespace code [list ShowAtSeparateLines $gamebar]] \
 			;
+		::theme::configureCheckEntry $menu.configuration.layout
 	}
 
 	if {[$menu index end] eq "none"} { return }

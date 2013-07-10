@@ -940,7 +940,8 @@ proc tooltip {args} {}
 proc mc {msg args} { return [::msgcat::mc [set $msg] {*}$args] }
 proc busy {w} {}
 proc unbusy {w} {}
-proc configureRadioEntry {sub text} {}
+proc configureRadioEntry {m} { return $m }
+proc configureCheckEntry {m} { return $m }
 proc mySort {$args} { return [lsort {*}$args] }
 
 
@@ -5006,7 +5007,7 @@ proc PopupMenu {w x y} {
 		-command [namespace code [list SwitchLayout $w list]] \
 		-value details                                        \
 		;
-	[namespace parent]::configureRadioEntry $sub $text
+	[namespace parent]::configureRadioEntry $sub
 	set text " [Tr ListLayout]"
 	$sub add radiobutton                                        \
 		-compound left                                           \
@@ -5016,17 +5017,18 @@ proc PopupMenu {w x y} {
 		-command [namespace code [list SwitchLayout $w details]] \
 		-value list                                              \
 		;
-	[namespace parent]::configureRadioEntry $sub $text
+	[namespace parent]::configureRadioEntry $sub
 	if {$::tcl_platform(platform) eq "unix"} {
 		if {$Vars(showhidden)} { set ipref "" } else { set ipref "un" }
 		if {$Vars(type) eq "dir"} { set var ShowHiddenDirs } else { set var ShowHiddenFiles }
 		$m add checkbutton                                      \
 			-compound left                                       \
 			-image [set icon::16x16::${ipref}locked]             \
-			-label " [Tr $var]"                                  \
+			-label [Tr $var]                                     \
 			-command [namespace code [list SwitchHidden $w]]     \
 			-variable [namespace parent]::${w}::Vars(showhidden) \
 			;
+		[namespace parent]::configureCheckEntry $m
 	}
 
 	set Vars(edit:active) 1

@@ -813,6 +813,7 @@ proc addGameFlagsMenuEntry {menu base variant view index} {
 			-variable [namespace current]::_Flags($flag) \
 			-command [namespace code [list SetFlag $base $variant $index $view $flag]]
 			;
+		::theme::configureCheckEntry $menu.gameflags
 	}
 
 	$menu add cascade \

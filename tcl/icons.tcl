@@ -694,6 +694,8 @@ namespace eval 12x12 {
 
 namespace eval 15x15 {
 
+	set none [image create photo -width 15 -height 15]
+
 	set circle [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAABRklEQVQoz6WSwU7CQBCG/267
 		U4RWQmITGhJlw/bsgSMcJeElPHLB11EvnoR3MDF4lKfAwCNwoNiWZHc9oKQKgSZOMpfJfPkn

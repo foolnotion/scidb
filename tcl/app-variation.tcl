@@ -610,11 +610,13 @@ proc PopupMenu {table x y} {
 		-label $mc::AutomaticSearch \
 		-variable [namespace current]::Options(search:automatic) \
 		;
+	::theme::configureCheckEntry $m
 	$m add separator
 	$m add checkbutton \
 		-label $mc::LockReferenceBase \
 		-variable [namespace current]::Options(base:lock) \
 		;
+	::theme::configureCheckEntry $m
 	$m add separator
 
 	set n [menu $m.switch -tearoff false]

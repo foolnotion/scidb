@@ -224,6 +224,8 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Tema"
+::menu::mc::CustomStyleMenu			"Scidb's Style Menu" ;# NEW
+::menu::mc::DefaultStyleMenu			"Default Style Menu" ;# NEW
 
 ::menu::mc::AllScidbFiles				"Alla Scidb filer"
 ::menu::mc::AllScidbBases				"Alla Scidb databaser"

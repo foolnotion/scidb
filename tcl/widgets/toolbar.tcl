@@ -106,6 +106,7 @@ event add <<ToolbarEnabled>>	ToolbarEnabled
 
 proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
 proc makeStateSpecificIcons {img} { return $img }
+proc configureCheckEntry {m} { return $m }
 
 
 proc toolbar {parent args} {
@@ -687,7 +688,8 @@ proc addToolbarMenu {menu parent {index -1} {var {}}} {
 			-onvalue 0 \
 			-offvalue 1 \
 			-variable [namespace current]::Specs(hidden:$tb) \
-			-command "[namespace current]::ShowToolbar $tb"
+			-command "[namespace current]::ShowToolbar $tb" \
+			;
 
 		if {[llength $Specs(titlevar:$tb)]} {
 			set var $Specs(titlevar:$tb)
@@ -699,6 +701,7 @@ proc addToolbarMenu {menu parent {index -1} {var {}}} {
 			$m entryconfigure $i -label $Specs(title:$tb)
 		}
 
+		configureCheckEntry $m
 		incr i
 	}
 
@@ -2456,12 +2459,16 @@ proc MenuOrientation {toolbar menu} {
 	variable Specs
 
 	if {$Specs(float:$toolbar)} {
+		set cmd [list [namespace current]::ChangeState \
+			$toolbar [set [namespace current]::Specs(menu:$toolbar)]]
 		$menu add checkbutton \
 			-label [Tr Floating] \
 			-onvalue float \
 			-offvalue [expr {$Specs(state:$toolbar) eq "float" ? "" : "float"}] \
 			-variable [namespace current]::Specs(menu:$toolbar) \
-			-command "[namespace current]::ChangeState $toolbar \$[namespace current]::Specs(menu:$toolbar)"
+			-command $cmd \
+			;
+		configureCheckEntry $menu
 	}
 
 	if {$Specs(flat:$toolbar)} {
@@ -2470,7 +2477,9 @@ proc MenuOrientation {toolbar menu} {
 			-onvalue flat \
 			-offvalue show \
 			-variable [namespace current]::Specs(menu:$toolbar) \
-			-command [namespace code [list ChangeState $toolbar flat]]
+			-command [namespace code [list ChangeState $toolbar flat]] \
+			;
+		configureCheckEntry $m
 	}
 
 	if {$Specs(hide:$toolbar)} {
@@ -2489,7 +2498,9 @@ proc MenuOrientation {toolbar menu} {
 					-label [Tr [string toupper $side 0 0]] \
 					-variable [namespace current]::Specs(side:$toolbar) \
 					-onvalue [expr {[winfo exists $toolbar.floating] ? "" : $side}] \
-					-command [namespace code [list MoveCmd $toolbar $side $prev]]
+					-command [namespace code [list MoveCmd $toolbar $side $prev]] \
+					;
+				configureCheckEntry $menu
 			}
 		}
 	}
@@ -2557,7 +2568,9 @@ proc MenuIconSize {toolbar menu} {
 			-onvalue $size \
 			-offvalue $Specs(iconsize:$toolbar) \
 			-variable [namespace current]::Specs(iconsize:$toolbar) \
-			-command [namespace code [list ChangeIcons $toolbar]]
+			-command [namespace code [list ChangeIcons $toolbar]] \
+			;
+		configureCheckEntry $m
 	}
 }
 
@@ -2579,7 +2592,9 @@ proc MenuAlignment {tbf menu} {
 			-label [Tr $text] \
 			-onvalue $align \
 			-variable [namespace current]::Specs(alignment:$tbf) \
-			-command [namespace code [list DoAlignment $tbf]]
+			-command [namespace code [list DoAlignment $tbf]] \
+			;
+		configureCheckEntry $m
 	}
 }
 

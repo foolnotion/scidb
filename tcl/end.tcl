@@ -75,6 +75,7 @@ proc Enc {s} { return [encoding convertfrom utf-8 $s] }
 proc WriteOptions {chan} {
 	::options::writeItem $chan [namespace current]::Welcome
 #	::options::writeItem $chan [namespace current]::NotYetImplemented
+	::options::writeItem $chan ::theme::useCustomStyleMenuEntries
 }
 
 ::options::hookWriter [namespace current]::WriteOptions
@@ -147,6 +148,7 @@ set dialog::choosecolor::iconCancel	$icon::iconCancel
 proc dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc toolbar::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
+proc toolbar::configureCheckEntry {args} { return [::theme::configureCheckEntry {*}$args] }
 
 proc calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
 
@@ -156,7 +158,10 @@ proc fsbox::makeStateSpecificIcons {args} { return [::icon::makeStateSpecificIco
 proc fsbox::busy {args} { ::widget::busyCursor on }
 proc fsbox::unbusy {args} { ::widget::busyCursor off }
 proc fsbox::mySort {args} { return [::scidb::misc::sort {*}$args] }
-proc fsbox::configureRadioEntry {args} { ::theme::configureRadioEntry {*}$args }
+proc fsbox::configureRadioEntry {args} { return [::theme::configureRadioEntry {*}$args] }
+proc fsbox::configureCheckEntry {args} { return [::theme::configureCheckEntry {*}$args] }
+
+proc table::configureCheckEntry {args} { return [::theme::configureCheckEntry {*}$args] }
 
 proc dialog::progressbar::busyCursor {w state} { ::widget::busyCursor $w $state }
 

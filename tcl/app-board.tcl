@@ -744,32 +744,38 @@ proc PopupMenu {w} {
 		-variable ::board::layout(side-to-move) \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label $::board::options::mc::ShowMaterialValues \
 		-variable ::board::layout(material-values) \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label $::board::options::mc::ShowMaterialBar \
 		-variable ::board::layout(material-bar) \
 		-state [expr {$::board::layout(material-values) ? "normal" : "disabled"}] \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label $::board::options::mc::ShowBorder \
 		-variable ::board::layout(border) \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label $::board::options::mc::ShowCoordinates \
 		-variable ::board::layout(coordinates) \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	$m add checkbutton \
 		-label $::board::options::mc::ShowSuggestedMove \
 		-variable ::board::hilite(show-suggested) \
 		-command [namespace code Apply] \
 		;
+	::theme::configureCheckEntry $m
 	tk_popup $m {*}[winfo pointerxy $w]
 }
 

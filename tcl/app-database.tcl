@@ -1417,6 +1417,7 @@ proc PopupMenu {parent x y {base ""}} {
 				-variable [namespace current]::Vars(flag:readonly) \
 				-state $state \
 				;
+			::theme::configureCheckEntry $menu
 			$menu add separator
 		}
 	}
@@ -1473,11 +1474,12 @@ proc PopupMenu {parent x y {base ""}} {
 		;
 	foreach {name size} {Large 48 Medium 32 Small 24 Tiny 16} {
 		$m add checkbutton                                   \
-			-label [set mc::$name]                            \
+			-label " [set mc::$name]"                         \
 			-onvalue $size                                    \
 			-offvalue $size                                   \
 			-variable ::database::switcher::Options(iconsize) \
 			;
+		::theme::configureCheckEntry $m
 	}
 
 	$menu add separator

@@ -223,6 +223,8 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Thema"
+::menu::mc::CustomStyleMenu			"Scidb's Menüstil"
+::menu::mc::DefaultStyleMenu			"Standard-Menüstil"
 
 ::menu::mc::AllScidbFiles				"Alle Scidb Dateien"
 ::menu::mc::AllScidbBases				"Alle Scidb Datenbanken"

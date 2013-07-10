@@ -1687,7 +1687,11 @@ proc SelectMatchAttributes {dlg attr x y} {
 		;
 	$m add separator
 	foreach field $fieldList {
-		$m add checkbutton -label $mc::Label($field) -variable [namespace current]::Selection($attr:$field)
+		$m add checkbutton \
+			-label $mc::Label($field) \
+			-variable [namespace current]::Selection($attr:$field) \
+			;
+		::theme::configureCheckEntry $m
 	}
 
 	tk_popup $m $x $y

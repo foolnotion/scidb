@@ -1502,22 +1502,24 @@ proc PopupMenu {table x y} {
 			-compound left \
 			-value $mode \
 			;
-		::theme::configureRadioEntry $m $text
+		::theme::configureRadioEntry $m
 	}
 	$m add separator
 	$m add checkbutton \
-		-label " $mc::AutomaticSearch" \
+		-label $mc::AutomaticSearch \
 		-variable [namespace current]::Options(search:automatic) \
 		-image $::icon::16x16::search \
 		-compound left \
 		;
+	::theme::configureCheckEntry $m
 	$m add separator
 	$m add checkbutton \
-		-label " $mc::LockReferenceBase" \
+		-label $mc::LockReferenceBase \
 		-variable [namespace current]::Options(base:lock) \
 		-image $::icon::16x16::lock \
 		-compound left \
 		;
+	::theme::configureCheckEntry $m
 	$m add separator
 
 	set n [menu $m.switch -tearoff false]
@@ -1548,7 +1550,7 @@ proc PopupMenu {table x y} {
 			-variable [namespace current]::_Current \
 			-command [list ::scidb::tree::set $value] \
 			;
-		::theme::configureRadioEntry $n $text
+		::theme::configureRadioEntry $n
 	}
 
 	::bind $m <<MenuUnpost>> [list after idle [list table::doSelection $table]]

@@ -2500,6 +2500,7 @@ proc PopupMenu {parent position} {
 			-variable ::pgn::editor::Options($var) \
 			-command [namespace code [list Refresh $var]] \
 			;
+		::theme::configureCheckEntry $menu.display
 	}
 
 	variable _BoldTextForMainlineMoves \
@@ -2511,9 +2512,15 @@ proc PopupMenu {parent position} {
 		-variable [namespace current]::_BoldTextForMainlineMoves \
 		-command [namespace code [list Refresh weight:mainline]] \
 		;
+	::theme::configureCheckEntry $menu.display
 
 	menu $menu.display.moveStyles -tearoff no
-	$menu.display add cascade -menu $menu.display.moveStyles -label $mc::MoveNotation
+	$menu.display add cascade \
+		-menu $menu.display.moveStyles \
+		-label " $mc::MoveNotation" \
+		-image $icon::16x16::none \
+		-compound left \
+		;
 	foreach style $moveStyles {
 		$menu.display.moveStyles add radiobutton \
 			-compound left \
@@ -2522,18 +2529,24 @@ proc PopupMenu {parent position} {
 			-value $style \
 			-command [namespace code [list Refresh style:move]] \
 			;
-		::theme::configureRadioEntry $menu.display.moveStyles end
+		::theme::configureRadioEntry $menu.display.moveStyles
 	}
 
 	menu $menu.display.languages -tearoff no
-	$menu.display add cascade -menu $menu.display.languages -label $mc::LanguageSelection
+	$menu.display add cascade \
+		-menu $menu.display.languages \
+		-label " $mc::LanguageSelection" \
+		-image $icon::16x16::none \
+		-compound left \
+		;
 	$menu.display.languages add checkbutton \
 		-compound left \
 		-image $::country::icon::flag([::mc::countryForLang xx]) \
-		-label " $::languagebox::mc::AllLanguages" \
+		-label $::languagebox::mc::AllLanguages \
 		-variable [namespace current]::Vars(lang:active:xx) \
 		-command [namespace code [list SetLanguages $Vars(position)]] \
 		;
+	::theme::configureCheckEntry $menu.display.languages
 	if {[llength $Vars(lang:set)]} { ;# not the complete set?
 		foreach entry [::country::makeCountryList $Vars(lang:set)] {
 			lassign $entry flag name code
@@ -2544,17 +2557,24 @@ proc PopupMenu {parent position} {
 				-variable [namespace current]::Vars(lang:active:$code) \
 				-command [namespace code [list SetLanguages $Vars(position)]] \
 				;
+			::theme::configureCheckEntry $menu.display.languages
 		}
 	}
 
 	menu $menu.display.moveinfo -tearoff no
-	$menu.display add cascade -menu $menu.display.moveinfo -label $mc::MoveInfoSelection
+	$menu.display add cascade \
+		-menu $menu.display.moveinfo \
+		-label " $mc::MoveInfoSelection" \
+		-image $icon::16x16::none \
+		-compound left \
+		;
 	foreach type {eval clk emt ccsnt video} {
 		$menu.display.moveinfo add checkbutton \
 			-label "$mc::MoveInfo($type) ($MoveInfoPGN($type))" \
 			-variable ::pgn::setup::ShowMoveInfo($type) \
 			-command [namespace code [list Refresh moveinfo:$type]] \
 			;
+		::theme::configureCheckEntry $menu.display.moveinfo
 	}
 
 	$menu.display add separator

@@ -224,6 +224,8 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme			"Téma"
+::menu::mc::CustomStyleMenu		"Scidb's Style Menu" ;# NEW
+::menu::mc::DefaultStyleMenu		"Default Style Menu" ;# NEW
 
 ::menu::mc::AllScidbFiles		"Minden Scidb fájl"
 ::menu::mc::AllScidbBases		"Minde Scidb adatbázis"

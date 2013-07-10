@@ -1486,10 +1486,11 @@ proc PopupMenu {parent board position {what ""}} {
 		-accel "$::mc::Key(Ctrl) \u2212" \
 		;
 	$menu add checkbutton \
-		-label " $::pgn::setup::mc::ParLayout(column-style)" \
+		-label $::pgn::setup::mc::ParLayout(column-style) \
 		-command [namespace code [list SetupStyle $position]] \
 		-variable ::pgn::browser::Options(style:column) \
 		;
+	::theme::configureCheckEntry $menu
 	menu $menu.moveStyles -tearoff no
 	$menu add cascade -menu $menu.moveStyles -label " $::application::pgn::mc::MoveNotation"
 	foreach style $::notation::moveStyles {

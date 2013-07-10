@@ -1626,10 +1626,11 @@ proc PopupMenu {parent} {
 	if {$::pgn::editor::Options(show:emoticon)} {
 		$m add separator
 		$m add checkbutton \
-			-label " $mc::DisplayEmoticons" \
+			-label $mc::DisplayEmoticons \
 			-variable [namespace current]::Options(showEmoticons) \
 			-command [namespace code DisplayEmoticons] \
 			;
+		::theme::configureCheckEntry $m
 	}
 
 	tk_popup $m {*}[winfo pointerxy $parent]

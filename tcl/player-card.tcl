@@ -707,6 +707,7 @@ proc Mouse3Down {w key info node} {
 			-command [namespace code [list ToggleTrace $opt $key]] \
 			-variable [namespace current]::Options(debug:$opt) \
 			;
+		::theme::configureCheckEntry $sub
 	}
 	$m add cascade -label $::crosstable::mc::Debugging -menu $sub
 
@@ -781,6 +782,7 @@ proc PopupMenu {key} {
 			-command [namespace code [list ToggleTrace $opt $key]] \
 			-variable [namespace current]::Options(debug:$opt) \
 			;
+		::theme::configureCheckEntry $sub
 	}
 	$m add cascade -label $::crosstable::mc::Debugging -menu $sub
 

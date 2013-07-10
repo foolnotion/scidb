@@ -1168,6 +1168,7 @@ proc BuildMenu {dlg m} {
 			-variable [namespace current]::Options(show:$opt) \
 			-state $state \
 			;
+		::theme::configureCheckEntry $sub
 	}
 
 	if {$Vars(bestMode) eq "swiss"} { set state normal } else { set state disabled }
@@ -1176,6 +1177,7 @@ proc BuildMenu {dlg m} {
 		-variable [namespace current]::Options(show:opponent) \
 		-state $state
 		;
+	::theme::configureCheckEntry $sub
 
 	$m add command \
 		-label "$mc::SaveAsHTML..." \
@@ -1243,6 +1245,7 @@ proc BuildMenu {dlg m} {
 			-command [namespace code [list ToggleTrace $dlg $opt]] \
 			-variable [namespace current]::Options(debug:$opt) \
 			;
+		::theme::configureCheckEntry $sub
 	}
 
 	$m add separator

@@ -223,6 +223,8 @@ ln -sf ../# ====================================================================
 
 ### menu ###############################################################
 ::menu::mc::Theme							"Theme"
+::menu::mc::CustomStyleMenu			"Scidb's Style Menu"
+::menu::mc::DefaultStyleMenu			"Default Style Menu"
 
 ::menu::mc::AllScidbFiles				"All Scidb files"
 ::menu::mc::AllScidbBases				"All Scidb databases"
