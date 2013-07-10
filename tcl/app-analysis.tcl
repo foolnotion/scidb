@@ -1097,7 +1097,7 @@ proc PopupMenu {parent args} {
 				-value $i \
 				-command [namespace code [list SetLinesPerPV $parent]] \
 				;
-			::widget::configureRadioEntry $sub
+			::theme::configureRadioEntry $sub
 		}
 	}
 
