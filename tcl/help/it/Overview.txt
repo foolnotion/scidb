@@ -58,27 +58,25 @@ TITLE Benvenuti a Scidb-Help
   <li><a href="Database-Export-Dialog.html">Esporta Database</a></li>
 </ul>
 
-<NEW>
 <h2 id="cql-manual">CQL (Chess Query Language)</h2>
 
 <ul class="index">
-  <li><a href="CQL-Index.html">Introduction</a></li>
-  <li><a href="CQL-Syntax.html">Syntax</a>
+  <li><a href="CQL-Index.html">Introduzione</a></li>
+  <li><a href="CQL-Syntax.html">Syntassi</a>
     <ul class="index">
-      <li><a href="CQL-Piece-Designators.html">Piece designators</a></li>
-      <li><a href="CQL-Square-Designators.html">Square designators</a></li>
-      <li><a href="CQL-Range-Specifiers.html">Range specifiers</a></li>
+      <li><a href="CQL-Piece-Designators.html">Indicatori di pezzi</a></li>
+      <li><a href="CQL-Square-Designators.html">Indicatori di casa</a></li>
+      <li><a href="CQL-Range-Specifiers.html">Specificatori di intervallo</a></li>
       <li><a href="Pattern-Matching.html">Pattern matching</a></li>
     </ul>
   </li>
-  <li><a href="CQL-Transformations.html">Transformations</a></li>
-  <li><a href="CQL-Match-List.html">The match list</a></li>
-  <li><a href="CQL-Position-List.html">The position list</a></li>
-  <li><a href="CQL-Relation-List.html">The relation list</a></li>
+  <li><a href="CQL-Transformations.html">Trasformazioni</a></li>
+  <li><a href="CQL-Match-List.html">La lista di risultati</a></li>
+  <li><a href="CQL-Position-List.html">La lista di posizioni</a></li>
+  <li><a href="CQL-Relation-List.html">La lista di relazioni</a></li>
   <li><a href="CQL-Tagging.html">Tagging</a></li>
-  <li><a href="CQL-Examples.html">Examples</a></li>
+  <li><a href="CQL-Examples.html">Esempi</a></li>
 </ul>
-</NEW>
 
 <h2 id="further-information">Ulteriori Informazioni</h2>
 

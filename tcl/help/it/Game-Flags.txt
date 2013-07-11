@@ -29,9 +29,30 @@ I codici e i loro simboli nel dettaglio:
 </p>
 INCLUDE ../Game-Flags.txt
 
+<NEW>
+<p>
+The last two markers are not user-settable, they will be set automatically if a
+game contains illegal castlings or even other illegal moves (for example the king
+is moving into check) within the main line. If a game is marked with both only
+the marker <em>%::gametable::mc::GameFlags(I)%</em> will be displayed.
+</p>
+
+<!--<p>
 <p>
 Esistono altri codici speciali che non sono impostabili dall'utente, il codice di rimozione. Una partita marcata così sarà rimossa alla prossima compressione del database.
 </p>
+</p> =============== This section has been replaced: ==========================-->
+<p>
+There are also special markers which are not user-settable, the deletion
+marker, the changed marker, and the newly added marker. A game marked with the
+deletion marker will be removed when next the database is compacted
+(<see/> <a href="Database-Switcher.html#Compact">Database switcher:
+%::application::database::mc::FileCompact%</a>). This marker will be retained
+after closing the database. The changes marker means that this game has been
+changed (and saved), and the newly added marker is denoting a newly added game.
+Both markers will be lost as soon as the database is closed.
+</p>
+</NEW>
 
 <p>
 Quando si modifica partite dai database di Scid (.si4) Scidb supporta i sei codici speciali definiti dall'utente (1..6). Ma non è raccomandato usare questi codici, perché appariranno problemi insolvibili quando le partite saranno copiate in altri database; neanche il programma Scid può risolvere questi problemi.

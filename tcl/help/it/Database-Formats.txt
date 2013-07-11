@@ -58,20 +58,17 @@ Questo è il formato proprio di Scidb. L'uso di questo formato è fortemente rac
 
 <p>
 Solo il formato Scidb (e il formato PGN) possono contenere partite di diverse varianti degli scacchi
-(<NEW><see/> <a href="Chess-Variants.html">Supported chess variants</a></NEW>).
+(<see/> <a href="Chess-Variants.html">Varianti degli scacchi supportate</a>).
 Un database può contenere solo una variante degli scacchi (la <a href="Clipbase.html">Clipbase</a>
 è un'eccezione).
 </p>
 
-<NEW>
 <p>
-Furthermore this format is supporting
+Inoltre questo formato posizioni di
 <a href="http://it.wikipedia.org/wiki/Scacchi960">%::mc::VariantName(Chess960)%</a>,
-and
-<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a> positions,
-in all chess variants.
+e
+<a href="http://de.wikipedia.org/wiki/Shuffle_Chess">%::mc::VariantName(Shuffle)%</a> in tutte le varianti degli scacchi.
 </p>
-</NEW>
 
 <p>
 I database Scidb sono sempre codificati con il set caratteri <nobr>UTF-8</nobr>. Per questo
@@ -85,16 +82,16 @@ Un database nel formato Scidb è diviso in diversi file:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.sci</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.sci</td><td>=&nbsp;</kbd></td>
       <td>Informazioni partita</td>
     </tr>
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.scg</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scg</td><td>=&nbsp;</kbd></td>
       <td>Mosse, commenti, annotazioni, informazioni sulla mossa e tag PGN</td>
     </tr>
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.scn</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.scn</td><td>=&nbsp;</kbd></td>
       <td>Informazioni su Giocatore/Evento/Sito/Commentatore</td>
     </tr>
   </table>
@@ -108,9 +105,7 @@ Scid (<abbr>.si4</abbr>, <abbr>.si3</abbr>)
 Questo è il formato database di Scid e data la sua ampia distribuzione è supportato sia in lettura sia in scrittura. Usando questo formato non sarà possibile usare tutte le funzioni disponibili in Scidb.
 
 <annotation>
-<NEW>
-Scid databases will be opened only in read-only mode.
-</NEW>
+I database di Scidb saranno aperti in modalità di sola lettura.
 </annotation>
 
 <p>
@@ -129,20 +124,20 @@ Questo formato ricorda per struttura il formato Scidb:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.si4</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.si4</td><td>=&nbsp;</kbd></td>
       <td>Dati partita</td>
     </tr>
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.sg4</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.sg4</td><td>=&nbsp;</kbd></td>
       <td>Mosse, commenti, annotazioni e tag PGN</td>
     </tr>
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.sn4</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.sn4</td><td>=&nbsp;</kbd></td>
       <td>Dati relativi a Giocatore/Evento/Luogo/Turno</td>
     </tr>
-    <tr>
-      <td nowrap="nowrap" valign="top"><kbd>.ssc</td><td>=&nbsp;</kbd></td>
+    <tr valign="top">
+      <td nowrap="nowrap"><kbd>.ssc</td><td>=&nbsp;</kbd></td>
       <td>Dati di ordinamento</td>
     </tr>
   </table>
@@ -181,19 +176,19 @@ Il formato database di ChessBase è diviso in diversi file separati, quelli più
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbh </td><td>=&nbsp;</kbd></td><td>Dati partita</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbg </td><td>=&nbsp;</kbd></td><td>Mosse e varianti</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cba </td><td>=&nbsp;</kbd></td><td>Commenti e annotazioni</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbs </td><td>=&nbsp;</kbd></td><td>Indice delle fonti</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbp </td><td>=&nbsp;</kbd></td><td>Indice giocatori</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbc </td><td>=&nbsp;</kbd></td><td>Indice commentatori</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbt </td><td>=&nbsp;</kbd></td><td>Indice tornei</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbe </td><td>=&nbsp;</kbd></td><td>Indice squadre</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbj </td><td>=&nbsp;</kbd></td><td>Informazioni squadra</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cko </td><td>=&nbsp;</kbd></td><td>Opening keys</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo </td><td>=&nbsp;</kbd></td><td>Opening keys</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.ini </td><td>=&nbsp;</kbd></td><td>File di inizializzazione per il database</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.html</td><td>=&nbsp;</kbd></td><td>Documento HTML</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbh </td><td>=&nbsp;</kbd></td><td>Dati partita</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbg </td><td>=&nbsp;</kbd></td><td>Mosse e varianti</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cba </td><td>=&nbsp;</kbd></td><td>Commenti e annotazioni</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbs </td><td>=&nbsp;</kbd></td><td>Indice delle fonti</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbp </td><td>=&nbsp;</kbd></td><td>Indice giocatori</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbc </td><td>=&nbsp;</kbd></td><td>Indice commentatori</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbt </td><td>=&nbsp;</kbd></td><td>Indice tornei</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbe </td><td>=&nbsp;</kbd></td><td>Indice squadre</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbj </td><td>=&nbsp;</kbd></td><td>Informazioni squadra</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cko </td><td>=&nbsp;</kbd></td><td>Opening keys</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cpo </td><td>=&nbsp;</kbd></td><td>Opening keys</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.ini </td><td>=&nbsp;</kbd></td><td>File di inizializzazione per il database</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.html</td><td>=&nbsp;</kbd></td><td>Documento HTML</td></tr>
   </table>
 </box>
 
@@ -203,10 +198,10 @@ Un database nel vecchio formato consiste di quattro file:
 
 <box>
   <table style="margin-top: 0.5em; margin-bottom: 0.5em;">
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbf</td><td>=&nbsp;</kbd></td><td>Dati partita e mosse</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cbi</td><td>=&nbsp;</kbd></td><td>Indice</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cko</td><td>=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
-    <tr><td nowrap="nowrap" valign="top"><kbd>.cpo</td><td>=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbf</td><td>=&nbsp;</kbd></td><td>Dati partita e mosse</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cbi</td><td>=&nbsp;</kbd></td><td>Indice</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cko</td><td>=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
+    <tr valign="top"><td nowrap="nowrap"><kbd>.cpo</td><td>=&nbsp;</kbd></td><td>Chiavi di apertura</td></tr>
   </table>
 </box>
 

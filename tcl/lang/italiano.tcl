@@ -44,7 +44,7 @@
 ::mc::Key(Enter)			"Invio"
 ::mc::Key(Esc)				"Esci"
 ::mc::Key(Home)			"Inizio" ;# "Home"
-::mc::Key(Ins)				"Ins" ;# NEW
+::mc::Key(Ins)				"Ins"
 ::mc::Key(Left)			"\u2190"
 ::mc::Key(Next)			"Page\u2193"
 ::mc::Key(Option)			"option" ;# Mac
@@ -182,7 +182,7 @@
 
 ::util::mc::IOErrorOccurred					"Errore Input/Output"
 
-::util::mc::IOError(CreateFailed)			"no permissions to create files" ;# NEW
+::util::mc::IOError(CreateFailed)			"permessi di creazione file negati"
 ::util::mc::IOError(OpenFailed)				"apertura fallita"
 ::util::mc::IOError(ReadOnly)					"il database è in sola-lettura"
 ::util::mc::IOError(UnknownVersion)			"versione del file sconosciuta"
@@ -194,7 +194,7 @@
 ::util::mc::IOError(EncodingFailed)			"non posso scrivere il file di namebase"
 ::util::mc::IOError(MaxFileSizeExceeded)	"grandezza di file massima raggiunta"
 ::util::mc::IOError(LoadFailed)				"apertura fallita (troppi eventi inseriti)"
-::util::mc::IOError(NotOriginalVersion)	"file has changed outside from this session since last open" ;# NEW
+::util::mc::IOError(NotOriginalVersion)	"dall'ultima apertura i file sono stati modificati al di fuori di questa sessione"
 
 ::util::mc::SelectionOwnerDidntRespond		"Tempo scaduto durante operazione di trascinamento: intestatario selezione non ha risposto."
 
@@ -267,7 +267,7 @@
 
 # Setup
 ::menu::mc::Engines						"&Motori"
-::menu::mc::PgnOptions					"Setup &PGN export options" ;# NEW
+::menu::mc::PgnOptions					"Imposta opzioni di esportazione &PGN"
 ::menu::mc::PrivatePlayerCard			"Profilo &Privato del Giocatore"
 
 ::menu::mc::OpenFile						"Apri un file Scidb"
@@ -383,21 +383,21 @@
 ::application::mc::ChessInfoDatabase		"Chess Information Data Base"
 ::application::mc::Shutdown					"Spegni..."
 ::application::mc::QuitAnyway					"Uscire comunque?"
-::application::mc::CancelLogout				"Cancel Logout" ;# NEW
-::application::mc::AbortWriteOperation		"Abort write operation" ;# NEW
+::application::mc::CancelLogout				"Annulla Logout"
+::application::mc::AbortWriteOperation		"Annulla operazione di scrittura"
 
 ::application::mc::UpdatesAvailable			"Aggiornamenti disponibili"
 
-::application::mc::WriteOperationInProgress "Write operation in progress: currently Scidb is modifying/writing database '%s'." ;# NEW
-::application::mc::LogoutNotPossible		"Logout is currently not possible, the result would be a corrupted database." ;# NEW
-::application::mc::RestartLogout				"Aborting the write operation will restart the logout process." ;# NEW
-::application::mc::UnsavedFiles				"The following PGN files are unsaved:" ;# NEW
-::application::mc::ThrowAwayAllChanges		"Do you really want to throw away all changes?" ;# NEW
+::application::mc::WriteOperationInProgress "Operazione di scrittura in corso: al momento Scidb sta modificando\scrivendo il database '%s'."
+::application::mc::LogoutNotPossible		"Il logout non è possibile al momento, il risultato sarebbe un database corrotto."
+::application::mc::RestartLogout				"Annullare l'operazione di scrittura riavvierà il processo di logout."
+::application::mc::UnsavedFiles				"I seguenti file PGN non sono salvati:"
+::application::mc::ThrowAwayAllChanges		"Vuoi davvero scartare tutti i cambiamenti?"
 
-::application::mc::Deleted						"Games deleted: %d" ;# NEW
-::application::mc::Changed						"Games changed: %d" ;# NEW
-::application::mc::Added						"Games added: %d" ;# NEW
-::application::mc::DescriptionHasChanged	"Description has changed" ;# NEW
+::application::mc::Deleted						"Partite eliminate: %d"
+::application::mc::Changed						"Partite modificate: %d"
+::application::mc::Added						"Partite aggiunte: %d"
+::application::mc::DescriptionHasChanged	"La descrizione è stata modificata"
 
 ### application::board #################################################
 ::application::board::mc::ShowCrosstable				"Mostra tabella torneo per questa partita"
@@ -437,7 +437,7 @@
 ::application::database::mc::FileImport(pgn)					"Importa file PGN"
 ::application::database::mc::FileImport(db)					"Importa Database"
 ::application::database::mc::FileCreate						"Crea Archivio"
-::application::database::mc::FileSaveChanges					"Save Changes" ;# NEW
+::application::database::mc::FileSaveChanges					"Salva Modifiche"
 ::application::database::mc::FileClose							"Chiudi"
 ::application::database::mc::FileMaintenance					"Manutenzione"
 ::application::database::mc::FileCompact						"Compresso"
@@ -465,7 +465,7 @@
 ::application::database::mc::DatabaseAlreadyOpen			"Il database '%s' è già aperto."
 ::application::database::mc::Properties						"Proprietà"
 ::application::database::mc::Preload							"Preload"
-::application::database::mc::MissingEncoding					"Codifica %s mancante (uso %s)" ;# NEW "Missing character encoding %s (using %s instead)"
+::application::database::mc::MissingEncoding					"Codifica %s mancante (uso %s)"
 ::application::database::mc::DescriptionTooLarge			"La descrizione è troppo lunga."
 ::application::database::mc::DescrTooLargeDetail			"Il campo contiene %d caratteri, ma solo %d sono permessi."
 ::application::database::mc::ClipbaseDescription			"Database temporaneo, non è salvato sul disco"
@@ -476,9 +476,9 @@
 ::application::database::mc::ExtractArchive					"Estrai l'archivio %s"
 ::application::database::mc::SelectVariant					"Selezione Variante"
 ::application::database::mc::Example							"Esempio"
-::application::database::mc::UnsavedFiles						"This PGN file is unsaved." ;# NEW
-::application::database::mc::FileIsRemoved					"File '%s' is removed. Please use the export dialog if you like to save this database." ;# NEW
-::application::database::mc::FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable." ;# NEW
+::application::database::mc::UnsavedFiles						"Quest file PGN non è stato salvato"
+::application::database::mc::FileIsRemoved					"Il file '%s' è rimosso. Usa la dialog di esportazione se vuoi salvare questo database."
+::application::database::mc::FileIsNotWritable				"Il file '%s' non è scrivibile. Usa la dialog di esportazione se vuoi salvare questo database, o cambia i permessi per questo file."
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"
@@ -505,8 +505,8 @@
 ::application::database::mc::CompactionRecommended			"Si raccomanda di comprimere il database."
 ::application::database::mc::SearchPGNTags					"Ricerca tag PNG"
 ::application::database::mc::SelectSuperfluousTags			"Seleziona tag superflui:"
-::application::database::mc::WillBePermanentlyDeleted		"Please note: This action will permanently delete the concerned information from database." ;# NEW
-::application::database::mc::ReadWriteFailed					"Setting the database writable failed:" ;# NEW
+::application::database::mc::WillBePermanentlyDeleted		"Nota: questa azione eliminerà definitavamente le informazioni dal database."
+::application::database::mc::ReadWriteFailed					"Tentativo di settare il database come scrivibile fallito:"
 ::application::database::mc::NoExtraTagsFound				"No tags found for deletion." ;# NEW
 
 ::application::database::mc::T_Unspecific						"Non specificato"
@@ -551,7 +551,7 @@
 ::application::database::mc::T_Crazyhouse						"Crazyhouse"
 
 ::application::database::mc::OpenDatabase						"Apri Database"
-::application::database::mc::OpenRecentDatabase				"Open Recent Database" ;# NEW
+::application::database::mc::OpenRecentDatabase				"Apri Database Recente"
 ::application::database::mc::NewDatabase						"Nuovo Database"
 ::application::database::mc::CloseDatabase					"Chiudi Database '%s'"
 ::application::database::mc::SetReadonly						"Imposta Database '%s' in sola lettura"
@@ -611,7 +611,7 @@
 ::application::pgn::mc::Command(variation:first)		"Rendi prima variante"
 ::application::pgn::mc::Command(variation:promote)		"Promuovi variante a linea principale"
 ::application::pgn::mc::Command(variation:remove)		"Elimina variante"
-::application::pgn::mc::Command(variation:remove:n)	"Delete Variations" ;# NEW
+::application::pgn::mc::Command(variation:remove:n)	"Elimina Varianti"
 ::application::pgn::mc::Command(variation:mainline)	"Nuova linea principale"
 ::application::pgn::mc::Command(variation:insert)		"Inserisci mosse"
 ::application::pgn::mc::Command(variation:exchange)	"Cambia mosse"
@@ -625,7 +625,7 @@
 ::application::pgn::mc::Command(copy:comments)			"Copia Commenti"
 ::application::pgn::mc::Command(move:comments)			"Muovi Commenti"
 ::application::pgn::mc::Command(game:clear)				"Pulisci partita"
-::application::pgn::mc::Command(game:merge)				"Merge Game" ;# NEW
+::application::pgn::mc::Command(game:merge)				"Unisci Partite"
 ::application::pgn::mc::Command(game:transpose)			"Trasponi Partita"
 
 ::application::pgn::mc::StartTrialMode						"Inizia modalità di prova"
@@ -637,7 +637,7 @@
 ::application::pgn::mc::StripOriginalComments			"Rimuovi commenti originali"
 
 ::application::pgn::mc::LanguageSelection					"Selezione Lingue"
-::application::pgn::mc::MoveInfoSelection					"Move Info Selection" ;# NEW
+::application::pgn::mc::MoveInfoSelection					"Selezione Info Mossa"
 ::application::pgn::mc::MoveNotation						"Muovi Notazione"
 ::application::pgn::mc::CollapseVariations				"Comprimi Varianti"
 ::application::pgn::mc::ExpandVariations					"Espandi Varianti"
@@ -662,11 +662,11 @@
 ::application::pgn::mc::Display								"Display"
 ::application::pgn::mc::None									"nessuno"
 
-::application::pgn::mc::MoveInfo(eval)						"Evaluation" ;# NEW
-::application::pgn::mc::MoveInfo(clk)						"Players Clock" ;# NEW
-::application::pgn::mc::MoveInfo(emt)						"Elapsed Time" ;# NEW
-::application::pgn::mc::MoveInfo(ccsnt)					"Correspondence Chess Sent" ;# NEW
-::application::pgn::mc::MoveInfo(video)					"Video Time" ;# NEW
+::application::pgn::mc::MoveInfo(eval)						"Valutazione"
+::application::pgn::mc::MoveInfo(clk)						"Orologio Giocatori"
+::application::pgn::mc::MoveInfo(emt)						"Tempo Passato"
+::application::pgn::mc::MoveInfo(ccsnt)					"Mossa Mandata per Corrispondenza"
+::application::pgn::mc::MoveInfo(video)					"Tempo Video"
 
 ### application::tree ##################################################
 ::application::tree::mc::Total								"Totale"
@@ -688,14 +688,14 @@
 ::application::tree::mc::NoGamesAvailable					"Nessuna partita disponibile"
 ::application::tree::mc::Searching							"Ricerca"
 ::application::tree::mc::VariantsNotYetSupported		"Variante di scacchi non ancora supportata."
-::application::tree::mc::End									"end" ;# NEW
+::application::tree::mc::End									"fine"
 
 ::application::tree::mc::FromWhitesPerspective			"Dalla prospettiva del bianco"
 ::application::tree::mc::FromBlacksPerspective			"Dalla prospettiva del nero"
 ::application::tree::mc::FromSideToMovePerspective		"Dalla prospettiva del lato col tratto"
 ::application::tree::mc::FromWhitesPerspectiveTip		"Punteggio dalla prospettiva del bianco"
 ::application::tree::mc::FromBlacksPerspectiveTip		"Punteggio dalla prospettiva del nero"
-::application::tree::mc::EmphasizeMoveOfGame				"Emphasize move of game" ;# NEW
+::application::tree::mc::EmphasizeMoveOfGame				"Enfatizza mossa della partita"
 
 ::application::tree::mc::TooltipAverageRating			"Media ELO (%s)"
 ::application::tree::mc::TooltipBestRating				"Miglior ELO (%s)"
@@ -723,12 +723,12 @@
 ::database::switcher::mc::Failed								"fallito"
 
 ::database::switcher::mc::UriRejectedDetail(open)		"Solo database Scidb possono essere aperti:"
-::database::switcher::mc::UriRejectedDetail(import)	"Only Scidb databases, but no ChessBase databases, can be imported:" ;# NEW
+::database::switcher::mc::UriRejectedDetail(import)	"Solo database Scidb, ma non database ChessBase, possono essere importati"
 ::database::switcher::mc::EmptyUriList						"Gli archivi trascinati sono vuoti."
 ::database::switcher::mc::CopyGames							"Copia partite"
 ::database::switcher::mc::CopyGamesFromTo					"Copia partite da '%src' a '%dst'"
 ::database::switcher::mc::CopiedGames						"%s game(s) copied"
-::database::switcher::mc::NoGamesCopied					"No games copied"
+::database::switcher::mc::NoGamesCopied					"Nessuna partita copiata"
 ::database::switcher::mc::CopyGamesFrom					"Copia partite da '%s'"
 ::database::switcher::mc::ImportGames						"Importa partite"
 ::database::switcher::mc::ImportFiles						"Importa i file:"
@@ -751,8 +751,8 @@
 ::database::switcher::mc::GameCount							"Partite"
 ::database::switcher::mc::DatabasePath						"Indirizzo Database"
 ::database::switcher::mc::DeletedGames						"Partite Eliminate"
-::database::switcher::mc::ChangedGames						"Changed Games" ;# NEW
-::database::switcher::mc::AddedGames						"Added Games" ;# NEW
+::database::switcher::mc::ChangedGames						"Partite Cambiate"
+::database::switcher::mc::AddedGames						"Partite Aggiunte"
 ::database::switcher::mc::Description						"Descrizione"
 ::database::switcher::mc::Created							"Creata"
 ::database::switcher::mc::LastModified						"Ultima Modifica"
@@ -867,7 +867,7 @@
 
 ### pgn-setup ##########################################################
 ::pgn::setup::mc::Configure(editor)				"Personalizza l'editor"
-::pgn::setup::mc::Configure(browser)			"Personalizza il testo in output" ;# NEW "Customize Text Display"
+::pgn::setup::mc::Configure(browser)			"Personalizza il testo in mostra"
 ::pgn::setup::mc::TakeOver(editor)				"Imposta configurazione dallo Sfoglia Partite"
 ::pgn::setup::mc::TakeOver(browser)				"Imposta configurazione dall'Editor Partite"
 ::pgn::setup::mc::Pixel								"pixel"
@@ -930,7 +930,7 @@
 ::pgn::setup::mc::Section(Diagrams)				"Diagrammi"
 ::pgn::setup::mc::Diagrams(show)					"Mostra diagrammi"
 # Note for translators: "Emoticons" can be simply translated to "Smileys"
-::pgn::setup::mc::Emoticons(show)				"Detect Emoticons" ;# NEW
+::pgn::setup::mc::Emoticons(show)				"Individua Emoticons"
 ::pgn::setup::mc::Diagrams(square-size)		"Grandezza Casa"
 ::pgn::setup::mc::Diagrams(indentation)		"Larghezza Indentazione"
 
@@ -1189,7 +1189,7 @@
 ::gametable::mc::T_Chess960Pos			"Posizione Scacchi 960"
 ::gametable::mc::T_Deleted					"Eliminate"
 ::gametable::mc::T_Changed					"Modificato"
-::gametable::mc::T_Added					"Added" ;# NEW
+::gametable::mc::T_Added					"Aggiunto"
 ::gametable::mc::T_EngFlag					"Identificatore Lingua Inglese"
 ::gametable::mc::T_OthFlag					"Identificatori per Altre Lingue"
 ::gametable::mc::T_Idn						"Numero Posizione Scacchi 960"
@@ -1268,11 +1268,11 @@
 ::playertable::mc::T_PlayerInfo				"Identificatore informazioni" ;# "Info Flag" Identificatore informazioni o informazioni sull'identificatore?
 
 ::playertable::mc::Find							"Cerca"
-::playertable::mc::Options						"Options" ;# NEW
+::playertable::mc::Options						"Opzioni"
 ::playertable::mc::StartSearch				"Comincia ricerca"
 ::playertable::mc::ClearEntries				"Pulisci form"
 ::playertable::mc::NotFound					"Nessun risultato."
-::playertable::mc::UsePlayerBase				"Use Player Base" ;# NEW
+::playertable::mc::UsePlayerBase				"Usa Database Giocatore"
 
 ::playertable::mc::Name							"Nome"
 ::playertable::mc::HighestRating				"Punteggio più alto"
@@ -1354,30 +1354,30 @@
 ::gamebar::mc::DiscardNewGame					"Vuoi davvero buttare via questa partita?"
 ::gamebar::mc::NewGameFstPart					"Nuovo"
 ::gamebar::mc::NewGameSndPart					"Partita"
-::gamebar::mc::EnterGameNumber				"Enter game number" ;# NEW
+::gamebar::mc::EnterGameNumber				"Inserisci numero partita"
 
-::gamebar::mc::CopyThisGameToClipbase		"Copy this game to Clipbase" ;# NEW
-::gamebar::mc::CopyThisGameToClipboard		"Copy this game to Clipboard (PGN format)" ;# NEW
-::gamebar::mc::ExportThisGame					"Export this game" ;# NEW
-::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
-::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
-::gamebar::mc::PasteGameFrom					"Paste game" ;# NEW
-::gamebar::mc::MergeGameFrom					"Merge game" ;# NEW
-::gamebar::mc::LoadGameNumber					"Load game number" ;# NEW
-::gamebar::mc::ReloadCurrentGame				"Re-load current game" ;# NEW
-::gamebar::mc::MergeWithCurrentGame			"Merge with current game" ;# NEW
-::gamebar::mc::CreateNewGame					"Create new game" ;# NEW
-::gamebar::mc::StartFromCurrentPosition	"Start merge from current position" ;# NEW
-::gamebar::mc::StartFromInitialPosition	"Start merge from initial position" ;# NEW
-::gamebar::mc::NoTranspositions				"No transpositions" ;# NEW
-::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
-::gamebar::mc::VariationDepth					"Variation depth" ;# NEW
-::gamebar::mc::OriginalVersion				"Original version from database" ;# NEW
-::gamebar::mc::ModifiedVersion				"Modified version in game editor" ;# NEW
-::gamebar::mc::WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open." ;# NEW
+::gamebar::mc::CopyThisGameToClipbase		"Copia questa partita nella Clipbase"
+::gamebar::mc::CopyThisGameToClipboard		"Copia questa partita nella Clipboard (formato PGN)"
+::gamebar::mc::ExportThisGame					"Esporta questa partita"
+::gamebar::mc::PasteLastClipbaseGame		"Incolla ultima partita della Clipbase"
+::gamebar::mc::MergeLastClipbaseGame		"Unisci ultima partita della Clipbase"
+::gamebar::mc::PasteGameFrom					"Incolla partita"
+::gamebar::mc::MergeGameFrom					"Unisci partita"
+::gamebar::mc::LoadGameNumber					"Carica partita numero"
+::gamebar::mc::ReloadCurrentGame				"Ri-carica partita corrente"
+::gamebar::mc::MergeWithCurrentGame			"Unisci con partita corrente"
+::gamebar::mc::CreateNewGame					"Crea nuova partita"
+::gamebar::mc::StartFromCurrentPosition	"Comincia unione da posizione corrente"
+::gamebar::mc::StartFromInitialPosition	"Comincia unione da posizione iniziale"
+::gamebar::mc::NoTranspositions				"Nessuna trasposizione"
+::gamebar::mc::IncludeTranspositions		"Includi trasposizioni"
+::gamebar::mc::VariationDepth					"Profondità variante"
+::gamebar::mc::OriginalVersion				"Versione originale dal database"
+::gamebar::mc::ModifiedVersion				"Versione modificata nell'editor partita"
+::gamebar::mc::WillCopyModifiedGame			"Questa operazione copierà la partita modificata nell'editor. La versione originale non può essere copiata perché il database associato non è aperto."
 
-::gamebar::mc::CopyGame							"Copy Game" ;# NEW
-::gamebar::mc::ExportGame						"Export Game" ;# NEW
+::gamebar::mc::CopyGame							"Copia Partita"
+::gamebar::mc::ExportGame						"Esporta Partita"
 ::gamebar::mc::LockGame							"Blocca Partita"
 ::gamebar::mc::UnlockGame						"Sblocca Partita"
 ::gamebar::mc::CloseGame						"Chiudi Partita"
@@ -1394,7 +1394,7 @@
 ::gamebar::mc::Tip(Losers)						"Il re si comporta come negli scacchi ortodossi e puoi vincere prendendo scacco matto o stallo."
 
 ### validate ###########################################################
-::validate::mc::Unlimited	"unlimited" ;# NEW
+::validate::mc::Unlimited	"illimitato"
 
 ### browser ############################################################
 ::browser::mc::BrowseGame			"Sfoglia Partita"
@@ -1527,8 +1527,8 @@
 ::import::mc::DifferentEncoding					"La codifica selezionata %src non corrisponde alla codifica del file %dst."
 ::import::mc::DifferentEncodingDetails			"La ricodifica del database non avrà più successo dopo questa azione."
 ::import::mc::CannotDetectFigurineSet			"Impossibile auto-rilevare un set figurine adatto."
-::import::mc::TryAgainWithEnglishSet			"Try again with English figurines?" ;# NEW
-::import::mc::TryAgainWithEnglishSetDetail	"It may be helpful to use English figurines, because this is standard in PGN format." ;# NEW
+::import::mc::TryAgainWithEnglishSet			"Riprova con notazione inglesi?"
+::import::mc::TryAgainWithEnglishSetDetail	"Potrebbe aiutare usare la notazione inglese in quanto è lo standard del formato PGN"
 ::import::mc::CheckImportResult					"Per favore controlla che un set figurine adatto sia stato rilevato: %s."
 ::import::mc::CheckImportResultDetail			"In rari casi l'auto-rilevamento fallisce per ambiguità."
 
@@ -1663,7 +1663,7 @@
 ::export::mc::ExportDatabase				"Esporta database"
 ::export::mc::ExportDatabaseVariant		"Esporta database - variante %s"
 ::export::mc::ExportDatabaseTitle		"Esporta Database '%s'"
-::export::mc::ExportCurrentGameTitle	"Export Current Game" ;# NEW
+::export::mc::ExportCurrentGameTitle	"Esporta Partita Corrente"
 ::export::mc::ExportingDatabase			"Sto esportando '%s' nel file '%s'"
 ::export::mc::Export							"Esporta"
 ::export::mc::NoGamesCopied				"Nessuna partita esportata."
@@ -1791,7 +1791,7 @@
 ::dialog::save::mc::SavingGameLogInfo			"Salvataggio partita (%white - %black, %event) nel database '%base'"
 ::dialog::save::mc::CurrentBaseIsReadonly		"L'attuale database '%s' è per sola-lettura."
 ::dialog::save::mc::CurrentGameHasTrialMode	"L'attuale partita è in modalità di prova e non può essere salvata."
-::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s." ;# NEW
+::dialog::save::mc::LeaveTrialModeHint			"Prima devi uscire dalla modalità di prova, usa la scorciatoia %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Apri Dizionario Giocatore"
 
 ::dialog::save::mc::LocalName						"&Nome locale"
@@ -1891,11 +1891,11 @@
 ::game::mc::GameDecodingChangedDetail	"Probabilmente hai aperto il database con il set caratteri sbagliato. Nota che l'identificazione automatica del set caratteri è limitata."
 ::game::mc::VariantHasChanged				"La partita non può essere aperta perché la variante del database è cambiata ed è differente dalla variante della partita."
 ::game::mc::RemoveGameFromHistory		"Rimuovi partita dalla storia?"
-::game::mc::GameNumberDoesNotExist		"Game %number does not exist in '%base'."
-::game::mc::ReallyReplaceGame				"It seems that the actual game #%s in game editor is not the originally loaded game due to intermediate database changes, it is likely that you lose a different game. Really replace game data?" ;# NEW
-::game::mc::ReallyReplaceGameDetail		"It is recommended to have a look on game #%s before doing this action." ;# NEW
-::game::mc::ReopenLockedGames				"Re-open locked games from previous session?" ;# NEW
-::game::mc::OpenAssociatedDatabases		"Open all associated databases?"
+::game::mc::GameNumberDoesNotExist		"La partita %number non esiste in '%base'."
+::game::mc::ReallyReplaceGame				"Sembra che la partita #%s nell'editor non è la partita originariamente aperta data una modifica avvenuta nel database, è possibile che un'altra partita verrà persa. Vuoi davvero rimpiazzare i dati?"
+::game::mc::ReallyReplaceGameDetail		"Si raccomanda di guardare la partita #%s prima di continuare con questa operazione."
+::game::mc::ReopenLockedGames				"Ri-apri partite bloccate dalla sessione precedente?"
+::game::mc::OpenAssociatedDatabases		"Apri tutti i database associati?"
 
 ### languagebox ########################################################
 ::languagebox::mc::AllLanguages	"Tutte le lingue"
@@ -1937,7 +1937,7 @@
 ::terminationbox::mc::Reason(Unplayed)					"La partita non è stata giocata"
 ::terminationbox::mc::Reason(Abandoned)				"La partita è stata abbandonata"
 ::terminationbox::mc::Reason(Adjudication)			"Aggiundicata"
-::terminationbox::mc::Reason(Disconnection)			"Disconnection" ;# NEW
+::terminationbox::mc::Reason(Disconnection)			"Disconnessione"
 ::terminationbox::mc::Reason(Emergency)				"Abbandonata per via di un'emergenza"
 ::terminationbox::mc::Reason(RulesInfraction)		"Decisa in virtù di infrazioni alle regole"
 ::terminationbox::mc::Reason(TimeForfeit)				"%s perde per tempo"
@@ -1951,7 +1951,7 @@
 ::terminationbox::mc::Termination(fifty)				"Partita patta per la regola delle 50 mosse"
 ::terminationbox::mc::Termination(threefold)			"Partita patta per triplice ripetizione"
 ::terminationbox::mc::Termination(nomating)			"Partita patta per insufficienza di materiale"
-::terminationbox::mc::Termination(nocheck)			"Neither player can give check" ;# NEW
+::terminationbox::mc::Termination(nocheck)			"Nessun giocatore può dare scacco"
 
 ### eventmodebox #######################################################
 ::eventmodebox::mc::OTB				"A tavolino"
@@ -1992,11 +1992,11 @@
 ::help::mc::CurrentPageOnly		"Cerca solo nella pagina corrente"
 ::help::mc::GoBack					"Vai indietro una pagina"
 ::help::mc::GoForward				"Vai avanti una pagina"
-::help::mc::GotoHome					"Go to top of page" ;# NEW
-::help::mc::GotoEnd					"Go to end of page" ;# NEW
+::help::mc::GotoHome					"Vai all'inizio della pagina"
+::help::mc::GotoEnd					"Vai alla fine della pagina"
 ::help::mc::GotoPage					"Vai alla pagina '%s'"
-::help::mc::NextTopic				"Go to next topic" ;# NEW
-::help::mc::PrevTopic				"Go to previous topic" ;# NEW
+::help::mc::NextTopic				"Vai all'argomento successivo"
+::help::mc::PrevTopic				"Vai all'argomento precedente"
 ::help::mc::ExpandAllItems			"Espandi tutti gli oggetti"
 ::help::mc::CollapseAllItems		"Comprimi tutti gli oggetti"
 ::help::mc::SelectLanguage			"Selezione Lingua"
@@ -2009,7 +2009,7 @@
 ::help::mc::OnlyFirstMatches		"Solo le prime %s corrispondenze per pagina saranno mostrate."
 ::help::mc::HideIndex				"Nascondi Indice"
 ::help::mc::ShowIndex				"Mostra Indice"
-::help::mc::All						"All" ;# NEW
+::help::mc::All						"Tutti"
 
 ::help::mc::FileNotFound			"File non trovato."
 ::help::mc::CantFindFile			"Impossibile trovare file a %s."
@@ -2119,7 +2119,7 @@
 ::comment::mc::OverwriteContent		"Sovrascrivere contenuto esistente?"
 ::comment::mc::AppendContent			"Se \"no\" il testo sarà aggiunto."
 # Note for translators: "Emoticons" can be simply translated to "Smiley
-::comment::mc::DisplayEmoticons		"Display Emoticons" ;# NEW
+::comment::mc::DisplayEmoticons		"Mostra Emoticons"
 
 ::comment::mc::LanguageSelection		"Selezione lingua"
 ::comment::mc::Formatting				"Formattazione"
@@ -2130,7 +2130,7 @@
 
 ::comment::mc::InsertSymbol			"&Inserisci Simbolo..."
 # Note for translators: "Emoticon" can be simply translated to "Smiley"
-::comment::mc::InsertEmoticon			"Insert &Emoticon..." ;# NEW
+::comment::mc::InsertEmoticon			"Inserisci &Emoticon..."
 ::comment::mc::MiscellaneousSymbols	"Simboli vari"
 ::comment::mc::Figurine					"Figurine"
 
@@ -2173,7 +2173,7 @@
 ::log::mc::Information	"Info"
 
 ### titlebox ############################################################
-::titlebox::mc::None				"No title" ;# NEW
+::titlebox::mc::None				"Nessun titolo"
 ::titlebox::mc::Title(GM)		"Grande Maestro (FIDE)"
 ::titlebox::mc::Title(IM)		"Maestro Internazionale (FIDE)"
 ::titlebox::mc::Title(FM)		"Maestro Fide (FIDE)"
@@ -2281,8 +2281,8 @@
 
 ::dialog::fsbox::mc::Content					"Contenuto"
 ::dialog::fsbox::mc::Open						"Apri"
-::dialog::fsbox::mc::OriginalPath			"Original Path" ;# NEW
-::dialog::fsbox::mc::DateOfDeletion			"Date of Deletion" ;# NEW
+::dialog::fsbox::mc::OriginalPath			"Percorso Originale"
+::dialog::fsbox::mc::DateOfDeletion			"Data di Eliminazione"
 
 ::dialog::fsbox::mc::FileType(exe)			"Eseguibili"
 ::dialog::fsbox::mc::FileType(txt)			"Files di testo"
@@ -2384,7 +2384,7 @@
 ::fsbox::mc::FileSystem						"File System"
 ::fsbox::mc::Desktop							"Desktop"
 ::fsbox::mc::Trash							"Cestino"
-::fsbox::mc::Download						"Download" ;# NEW
+::fsbox::mc::Download						"Download"
 ::fsbox::mc::Home								"Home"
 
 ::fsbox::mc::SelectEncoding				"Selezionare la codifica del database (apre un'interfaccia)"
@@ -2426,17 +2426,17 @@
 ::fsbox::mc::UriRejected					"I seguenti file sono rifiutati:"
 ::fsbox::mc::UriRejectedDetail			"Solo i seguenti tipi di file possono essere gestiti."
 ::fsbox::mc::CannotOpenRemoteFiles		"Impossibile aprire file remoti:"
-::fsbox::mc::CannotCopyFolders			"Cannot copy folders, thus these folders will be rejected:" ;# NEW
+::fsbox::mc::CannotCopyFolders			"Impossibile copiare le cartelle. Questa cartelle saranno rifiutate: "
 ::fsbox::mc::OperationAborted				"Operazione interrotta."
 ::fsbox::mc::ApplyOnDirectories			"Sei sicuro di voler appllicare l'operazione selezionata sulle (seguenti) cartelle?"
 ::fsbox::mc::EntryAlreadyExists			"Valore già esistente"
 ::fsbox::mc::AnEntryAlreadyExists		"Un valore '%s' è già presente."
 ::fsbox::mc::SourceDirectoryIs			"La cartella d'origine è '%s'."
 ::fsbox::mc::NewName							"Nuovo nome"
-::fsbox::mc::BookmarkAlreadyExists		"A bookmark for this folder is already existing: '%s'." ;# NEW
-::fsbox::mc::AddBookmarkAnyway			"Add bookmark anyway?" ;# NEW
-::fsbox::mc::OriginalPathDoesNotExist	"The original directory '%s' of this item does not exist anymore. Create this directory and continue with operation?" ;# NEW
-::fsbox::mc::DragItemAnywhere				"An alternative may be to drag the item anywhere else to restore it." ;# NEW
+::fsbox::mc::BookmarkAlreadyExists		"Un segnalibro per questa cartella esiste già: '%s'."
+::fsbox::mc::AddBookmarkAnyway			"Aggiungi comunque il segnalibro?"
+::fsbox::mc::OriginalPathDoesNotExist	"La cartella originale '%s' di questo elemento non esiste più. Creare questa cartella e continuare con l'operazione?"
+::fsbox::mc::DragItemAnywhere				"Un'alternativa può essere di trascinare l'elemento in un'altra parte per recuperarlo."
 
 ::fsbox::mc::ReallyMove(file,w)			"Vuoi davvero spostare il file '%s' nel cestino?"
 ::fsbox::mc::ReallyMove(file,r)			"Vuoi davvero spostare il file protetto in scrittura '%s' nel cestino?"
@@ -2448,8 +2448,8 @@
 ::fsbox::mc::ReallyDelete(link,r)		"Vuoi davvero eliminare il collegamento a '%s'?"
 ::fsbox::mc::ReallyDelete(folder,w)		"Vuoi davvero eliminare la cartella '%s'? L'operazione è permanente."
 ::fsbox::mc::ReallyDelete(folder,r)		"Vuoi davvero eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
-::fsbox::mc::ReallyDelete(empty,w)		"Really delete empty folder '%s'? You cannot undo this operation." ;# NEW
-::fsbox::mc::ReallyDelete(empty,r)		"Really delete empty write-protected folder '%s'? You cannot undo this operation." ;# NEW
+::fsbox::mc::ReallyDelete(empty,w)		"Vuoi veramente eliminare la cartella vuota '%s'? L'operazione è permanente."
+::fsbox::mc::ReallyDelete(empty,r)		"Vuoi veramente eliminare la cartella protetta in scrittura '%s'? L'operazione è permanente."
 
 ::fsbox::mc::ErrorRenaming(folder)		"Errore nel rinominare la cartella '%old' a '%new': permesso negato."
 ::fsbox::mc::ErrorRenaming(file)			"Errore nel rinominare il file '%old' a '%new': permesso negato."
@@ -2462,7 +2462,7 @@
 ::fsbox::mc::DropAction(move)				"Sposta qui"
 ::fsbox::mc::DropAction(copy)				"Copia qui"
 ::fsbox::mc::DropAction(link)				"Collega qui"
-::fsbox::mc::DropAction(restore)			"Restore Here" ;# NEW
+::fsbox::mc::DropAction(restore)			"Recupera Qui"
 
 ### toolbar ############################################################
 ::toolbar::mc::Toolbar		"Barra strumenti"
@@ -2905,32 +2905,32 @@
 ::calendar::mc::WeekdayName(6)	"Sabato"
 
 ### emoticons ##########################################################
-::emoticons::mc::Tooltip(smile)		"Smiling (Smiley)" ;# NEW
-::emoticons::mc::Tooltip(frown)		"Frown (Frowny)" ;# NEW
-::emoticons::mc::Tooltip(saint)		"Saint" ;# NEW
-::emoticons::mc::Tooltip(evil)		"Evil" ;# NEW
-::emoticons::mc::Tooltip(gleeful)	"Gleeful" ;# NEW
-::emoticons::mc::Tooltip(wink)		"Winking" ;# NEW
-::emoticons::mc::Tooltip(cool)		"Cool" ;# NEW
-::emoticons::mc::Tooltip(grin)		"Grinning" ;# NEW
-::emoticons::mc::Tooltip(neutral)	"Neutral" ;# NEW
-::emoticons::mc::Tooltip(sweat)		"Sweating" ;# NEW
-::emoticons::mc::Tooltip(confuse)	"Confused" ;# NEW
-::emoticons::mc::Tooltip(shock)		"Shocked" ;# NEW
-::emoticons::mc::Tooltip(kiss)		"Kissing" ;# NEW
-::emoticons::mc::Tooltip(razz)		"Razzing" ;# NEW
-::emoticons::mc::Tooltip(grumpy)		"Disappointed / Grumpy" ;# NEW
-::emoticons::mc::Tooltip(upset)		"Upset" ;# NEW
-::emoticons::mc::Tooltip(cry)			"Crying" ;# NEW
-::emoticons::mc::Tooltip(yell)		"Yelling" ;# NEW
-::emoticons::mc::Tooltip(surprise)	"Surprised" ;# NEW
-::emoticons::mc::Tooltip(red)			"Ashamed" ;# NEW
-::emoticons::mc::Tooltip(sleep)		"Sleepy" ;# NEW
-::emoticons::mc::Tooltip(eek)			"Scared" ;# NEW
-::emoticons::mc::Tooltip(kitty)		"Kitty" ;# NEW
-::emoticons::mc::Tooltip(roll)		"Eye-rolling" ;# NEW
-::emoticons::mc::Tooltip(blink)		"Blinking" ;# NEW
-::emoticons::mc::Tooltip(glasses)	"Intelligent" ;# NEW
+::emoticons::mc::Tooltip(smile)		"Sorriso"
+::emoticons::mc::Tooltip(frown)		"Cipiglio"
+::emoticons::mc::Tooltip(saint)		"Santo"
+::emoticons::mc::Tooltip(evil)		"Male"
+::emoticons::mc::Tooltip(gleeful)	"Gioioso"
+::emoticons::mc::Tooltip(wink)		"Occhiolino"
+::emoticons::mc::Tooltip(cool)		"Fico"
+::emoticons::mc::Tooltip(grin)		"Ghigno"
+::emoticons::mc::Tooltip(neutral)	"Neutrale"
+::emoticons::mc::Tooltip(sweat)		"Sudando"
+::emoticons::mc::Tooltip(confuse)	"Confuso"
+::emoticons::mc::Tooltip(shock)		"Scioccato"
+::emoticons::mc::Tooltip(kiss)		"Bacio"
+::emoticons::mc::Tooltip(razz)		"Incredulo"
+::emoticons::mc::Tooltip(grumpy)		"Scontroso"
+::emoticons::mc::Tooltip(upset)		"Agitato"
+::emoticons::mc::Tooltip(cry)			"Pianto"
+::emoticons::mc::Tooltip(yell)		"Urla"
+::emoticons::mc::Tooltip(surprise)	"Sorpreso"
+::emoticons::mc::Tooltip(red)			"Vergogna"
+::emoticons::mc::Tooltip(sleep)		"Sonnolento"
+::emoticons::mc::Tooltip(eek)			"Spaventato"
+::emoticons::mc::Tooltip(kitty)		"Micio"
+::emoticons::mc::Tooltip(roll)		"Girare gli occhi"
+::emoticons::mc::Tooltip(blink)		"Sbattere le palpebre"
+::emoticons::mc::Tooltip(glasses)	"Intelligente"
 
 ### remote #############################################################
 ::remote::mc::PostponedMessage "Apertura database \"%s\" in pausa fino a che l'operazione attuale non è conclusa."

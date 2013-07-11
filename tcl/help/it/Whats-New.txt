@@ -38,9 +38,7 @@ TITLE Novità 
   <li class="space">Browser di partite: modalità tutto schermo, massimizza\riduci scacchiera, integrato</li>
   <li class="space">Migliorata finestra di selezione file</li>
   <li class="space">Migliorata finestra di salvataggio/sovrascrittura partite</li>
-<NEW>
-  <li class="space">Merge of games including move transpositions (optional)</li>
-</NEW>
+  <li class="space">Unione di partite incluse trasposizioni di mossa (opzionale)</li>
   <li class="space">Ora il vecchio formato ChessBase (.cbf) è supportato</li>
   <li class="space">Scheda giocatore implementata</li>
   <li class="space">Archiviazione database integrata</li>
@@ -61,9 +59,7 @@ TITLE Novità 
   <li class="space">L'editor delle partite ha alcune funzioni in più: mostra i commenti NAG invece dei simboli NAG se l'annotazione è più inusuale</li>
   <li class="space">Ora è possibile importare dei database senza aprirli prima</li>
   <li class="space">Risolto il problema di performance nell'apertura di database ChessBase</li>
-<NEW>
-  <li class="space">Export of tournament tables to HTML file</li>
-</NEW>
+  <li class="space">Esportazione di tabelle di tornei in file HTML</li>
   <li class="space">Risolto un grave problema con Tcl alla versione 8.6</li>
   <li class="space">Alcune icone sono state ridisegnte</li>
 </ul>
