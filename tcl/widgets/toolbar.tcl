@@ -107,6 +107,7 @@ event add <<ToolbarEnabled>>	ToolbarEnabled
 proc mc {tok} { return [tk::msgcat::mc [set $tok]] }
 proc makeStateSpecificIcons {img} { return $img }
 proc configureCheckEntry {m} { return $m }
+proc configureRadioEntry {m} { return $m }
 
 
 proc toolbar {parent args} {
@@ -747,7 +748,9 @@ proc requestetHeight {parent} {
 
 	foreach side {left right flat} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr height [winfo reqheight $tbf.frame.scrolled] }
+		if {$tbf in $slaves && [winfo exists $tbf.frame.scrolled]} {
+			incr height [winfo reqheight $tbf.frame.scrolled]
+		}
 	}
 
 	return $height
@@ -760,7 +763,9 @@ proc totalHeight {parent} {
 
 	foreach side {top bottom flat} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr height [winfo reqheight $tbf.frame.scrolled] }
+		if {$tbf in $slaves && [winfo exists  $tbf.frame.scrolled]} {
+			incr height [winfo reqheight $tbf.frame.scrolled]
+		}
 	}
 
 	return $height
@@ -773,7 +778,9 @@ proc totalWidth {parent} {
 
 	foreach side {left right} {
 		set tbf [Join $parent __tbf__$side]
-		if {$tbf in $slaves} { incr width [winfo reqwidth $tbf.frame.scrolled] }
+		if {$tbf in $slaves && [winfo exists $tbf.frame.scrolled]} {
+			incr width [winfo reqwidth $tbf.frame.scrolled]
+		}
 	}
 
 	return $width
@@ -1703,7 +1710,7 @@ proc ConfigureCheckButton {toolbar v w var args} {
 	variable Specs
 	variable Defaults
 
-	if {[CheckIfOn $toolbar $w $var]} {
+	if {[CheckIfOn $toolbar $v $var]} {
 		set relief sunken
 		set overrelief sunken
 		set color $Defaults(button:selectcolor)
@@ -2459,14 +2466,12 @@ proc MenuOrientation {toolbar menu} {
 	variable Specs
 
 	if {$Specs(float:$toolbar)} {
-		set cmd [list [namespace current]::ChangeState \
-			$toolbar [set [namespace current]::Specs(menu:$toolbar)]]
 		$menu add checkbutton \
 			-label [Tr Floating] \
 			-onvalue float \
 			-offvalue [expr {$Specs(state:$toolbar) eq "float" ? "" : "float"}] \
 			-variable [namespace current]::Specs(menu:$toolbar) \
-			-command $cmd \
+			-command [namespace code [list ChangeState $toolbar float]] \
 			;
 		configureCheckEntry $menu
 	}
@@ -2479,13 +2484,18 @@ proc MenuOrientation {toolbar menu} {
 			-variable [namespace current]::Specs(menu:$toolbar) \
 			-command [namespace code [list ChangeState $toolbar flat]] \
 			;
-		configureCheckEntry $m
+		configureCheckEntry $menu
 	}
 
 	if {$Specs(hide:$toolbar)} {
-		$menu add command \
+		$menu add checkbutton \
 			-label [Tr Hide] \
-			-command [namespace code [list ChangeState $toolbar hide]]
+			-onvalue hide \
+			-offvalue show \
+			-variable [namespace current]::Specs(menu:$toolbar) \
+			-command [namespace code [list ChangeState $toolbar hide]] \
+			;
+		configureCheckEntry $menu
 	}
 
 	if {[llength $Specs(allow:$toolbar)] > 1} {
@@ -2494,13 +2504,13 @@ proc MenuOrientation {toolbar menu} {
 		foreach side {top left right bottom} {
 			if {$side in $Specs(allow:$toolbar)} {
 				set prev $Specs(side:$toolbar)
-				$menu add checkbutton \
+				$menu add radiobutton \
 					-label [Tr [string toupper $side 0 0]] \
 					-variable [namespace current]::Specs(side:$toolbar) \
-					-onvalue [expr {[winfo exists $toolbar.floating] ? "" : $side}] \
+					-value $side \
 					-command [namespace code [list MoveCmd $toolbar $side $prev]] \
 					;
-				configureCheckEntry $menu
+				configureRadioEntry $menu
 			}
 		}
 	}
@@ -2563,14 +2573,13 @@ proc MenuIconSize {toolbar menu} {
 	}
 
 	foreach size [list default {*}$usedSizes] {
-		$m add checkbutton \
+		$m add radiobutton \
 			-label [Tr [string toupper $size 0 0]] \
-			-onvalue $size \
-			-offvalue $Specs(iconsize:$toolbar) \
+			-value $size \
 			-variable [namespace current]::Specs(iconsize:$toolbar) \
 			-command [namespace code [list ChangeIcons $toolbar]] \
 			;
-		configureCheckEntry $m
+		configureRadioEntry $m
 	}
 }
 
@@ -2588,13 +2597,13 @@ proc MenuAlignment {tbf menu} {
 	}
 
 	foreach {align text} $params {
-		$m add checkbutton \
+		$m add radiobutton \
 			-label [Tr $text] \
-			-onvalue $align \
+			-value $align \
 			-variable [namespace current]::Specs(alignment:$tbf) \
 			-command [namespace code [list DoAlignment $tbf]] \
 			;
-		configureCheckEntry $m
+		configureRadioEntry $m
 	}
 }
 
@@ -2960,6 +2969,7 @@ proc MakeClone {parent clone w} {
 		TTCombobox			{ ttk::tcombobox $clone; $clone clone $w }
 		TEntry				{ ttk::entry $clone }
 		TSpinbox				{ ttk::spinbox $clone; $clone set [$w get] }
+		DropdownButton		{ $w clone $clone }
 		Frame					{ CloneFrame $parent $clone $w }
 		default				{ catch {[string tolower $class] $clone} }
 	}

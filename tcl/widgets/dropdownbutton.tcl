@@ -74,7 +74,7 @@ proc Build {w args} {
 		}
 	}
 
-	tk::button $w.b
+	tk::button $w.b -overrelief flat
 	tk::menubutton $w.m -padx 0 -pady 0
 
 	bind $w.m <Enter> [namespace code [list EnterArrow $w]]
@@ -148,21 +148,46 @@ proc WidgetProc {w command args} {
 				}
 			}
 
-			set Priv(relief) [$w.b cget -relief]
-			set Priv(overrelief) [$w.b cget -overrelief]
-			set Priv(background) [$w.b cget -background]
-			set Priv(activebackground) [$w.b cget -activebackground]
-			set Priv(arrowactivebackground) [$w.m cget -activebackground]
-			set Priv(arrowactiveforeground) [$w.m cget -activeforeground]
-			set Priv(arrowforeground) [$w.m cget -foreground]
-			set Priv(arrowbackground) [$w.m cget -background]
-
-			SetTooltips $w
+			Setup $w
 			return $w
+		}
+
+		clone {
+			if {[llength $args] != 1} {
+				error "wrong # args: should be \"[namespace curent] clone <path>\""
+			}
+			set v [lindex $args 0]
+			Build $v -menucmd $Priv(menucmd)
+			foreach option [$w.m configure] {
+				set spec [lindex $option 0]
+				catch { $v.m configure $spec [$w.m cget $spec] }
+			}
+			foreach option [$w.b configure] {
+				set spec [lindex $option 0]
+				catch { $v.b configure $spec [$w.b cget $spec] }
+			}
+			Setup $v
+			return $v
 		}
 	}
 
 	return [$w.b $command {*}$args]
+}
+
+
+proc Setup {w} {
+	variable ${w}::Priv
+
+	set Priv(relief) [$w.b cget -relief]
+	set Priv(overrelief) [$w.b cget -overrelief]
+	set Priv(background) [$w.b cget -background]
+	set Priv(activebackground) [$w.b cget -activebackground]
+	set Priv(arrowactivebackground) [$w.m cget -activebackground]
+	set Priv(arrowactiveforeground) [$w.m cget -activeforeground]
+	set Priv(arrowforeground) [$w.m cget -foreground]
+	set Priv(arrowbackground) [$w.m cget -background]
+
+	SetTooltips $w
 }
 
 
@@ -231,19 +256,6 @@ proc Tooltip {mode w btn attr} {
 }
 
 
-proc Popdown {w} {
-	variable ${w}::Priv
-
-	if {[string length $Priv(menucmd)] == 0} { return }
-
-	set m $w.b.m
-	catch { destroy $m }
-	menu $m -tearoff 0
-	eval $Priv(menucmd) $w $m
-	tk_popdown $m $w
-}
-
-
 proc BuildMenu {w} {
 	variable ${w}::Priv
 
@@ -263,6 +275,7 @@ proc BuildMenu {w} {
 		-direction below \
 		;
 
+	EnterArrow $w ;# probably we entered while another menu button is active
 	set Priv(arrow:locked) 1
 }
 

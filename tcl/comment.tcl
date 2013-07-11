@@ -1483,7 +1483,7 @@ proc PopupMenu {parent} {
 	$m add cascade \
 		-compound left \
 		-image $icon::16x16::blackPawn \
-		-label [string map {"..." ""} [::mc::stripAmpersand $mc::InsertSymbol]] \
+		-label " [string map {"..." ""} [::mc::stripAmpersand $mc::InsertSymbol]]" \
 		-menu $m.symbol \
 		;
 	MakeSymbolMenu $parent $m.symbol
@@ -1492,7 +1492,7 @@ proc PopupMenu {parent} {
 	$m add cascade \
 		-compound left \
 		-image $::emoticons::icon(smile) \
-		-label [string map {"..." ""} [::mc::stripAmpersand $mc::InsertEmoticon]] \
+		-label " [string map {"..." ""} [::mc::stripAmpersand $mc::InsertEmoticon]]" \
 		-menu $m.emoticons \
 		;
 	MakeEmoticonMenu $parent $m.emoticons
@@ -1510,7 +1510,7 @@ proc PopupMenu {parent} {
 		$m.format add command \
 			-compound left \
 			-image [set ::icon::12x12::text-$fmt] \
-			-label [set mc::$format] \
+			-label " [set mc::$format]" \
 			-command [namespace code [list ChangeFormat $fmt yes]] \
 			;
 	}
@@ -1523,7 +1523,7 @@ proc PopupMenu {parent} {
 	$m add cascade \
 		-compound left \
 		-image $::icon::16x16::copy \
-		-label $mc::CopyText \
+		-label " $mc::CopyText" \
 		-menu $m.copy \
 		-state $state \
 		;
@@ -1543,7 +1543,7 @@ proc PopupMenu {parent} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::undo \
-		-label $::mc::Undo \
+		-label " $::mc::Undo" \
 		-accelerator ${accel}Z \
 		-command [namespace code EditUndo] \
 		-state $state \
@@ -1556,7 +1556,7 @@ proc PopupMenu {parent} {
 	$m add command \
 		-compound left \
 		-image $::icon::16x16::redo \
-		-label $::mc::Redo \
+		-label " $::mc::Redo" \
 		-accelerator ${accel}Y \
 		-command [namespace code EditRedo] \
 		-state $state \

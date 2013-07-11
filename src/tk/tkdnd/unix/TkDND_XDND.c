@@ -78,7 +78,7 @@
 #endif
 
 #ifdef SUPPORT_EMBEDDED_TOPLEVEL
-enum { WrapEnter, WrapLeave, WrapPosition, WrapDrop };
+enum { WrapEnter, WrapLeave, WrapPosition, WrapDrop, WrapInitialize };
 
 struct Wrapper
 {
@@ -509,12 +509,6 @@ int TkDND_RegisterWrapperObjCmd(ClientData clientData, Tcl_Interp *interp,
     } else {
       entry->tkwin = tkwin;
     }
-
-    /* In newer versions of GTK something has changed. It seems that now it is
-     * required that the top level window has to be aware, too. It's not anymore
-     * sufficient that the window manager frame is aware.
-     */
-    ChangeAwarenessProperty(tkwin, Tk_WindowId(tkwin));
   }
 #endif
   return TCL_OK;
@@ -885,6 +879,12 @@ FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state) {
   static Tk_Window currentWrapper = NULL;
   static XClientMessageEvent enter;
 
+  if (state == WrapInitialize)
+  {
+    memset(&enter, 0, sizeof(enter));
+    return NULL;
+  }
+
   Window win = Tk_WindowId(tkwin);
   Tk_Window wrapper = NULL;
   unsigned i;
@@ -910,6 +910,7 @@ FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state) {
         currentTarget = NULL;
       }
       currentWrapper = NULL;
+      memset(&enter, 0, sizeof(enter));
       break;
 
     case WrapPosition:
@@ -945,6 +946,7 @@ FindTarget(Tk_Window tkwin, XClientMessageEvent* cm, int state) {
       Tk_Window target = currentTarget;
       currentTarget = NULL;
       currentWrapper = NULL;
+      memset(&enter, 0, sizeof(enter));
       return target;
     }
   }
@@ -1767,6 +1769,7 @@ int Tkdnd_Init(Tcl_Interp *interp) {
   wrapperList.targets = NULL;
   wrapperList.capacity = 0;
   wrapperList.size = 0;
+  FindTarget(NULL, NULL, WrapInitialize);
 
 #endif
 

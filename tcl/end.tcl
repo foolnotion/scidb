@@ -149,6 +149,7 @@ proc dialog::choosecolor::tooltip {args} { ::tooltip::tooltip {*}$args }
 
 proc toolbar::makeStateSpecificIcons {img} { return [::icon::makeStateSpecificIcons $img] }
 proc toolbar::configureCheckEntry {args} { return [::theme::configureCheckEntry {*}$args] }
+proc toolbar::configureRadioEntry {args} { return [::theme::configureRadioEntry {*}$args] }
 
 proc calendar::tooltip {args} { ::tooltip::tooltip {*}$args }
 
