@@ -39,36 +39,38 @@ enum BitCountType {
 const BitCountType Full  = HasPopCnt ? CNT_HW_POPCNT : Is64Bit ? CNT_64 : CNT_32;
 const BitCountType Max15 = HasPopCnt ? CNT_HW_POPCNT : Is64Bit ? CNT_64_MAX15 : CNT_32_MAX15;
 
+namespace bits
+{
+  inline int popcount(uint32_t b)
+  {
+    b -=  (b >> 1) & 0x55555555U;
+    b  = ((b >> 2) & 0x33333333U) + (b & 0x33333333U);
+    b  = ((b >> 4) + b) & 0x0F0F0F0FU;
+    return (b * 0x01010101U) >> 24;
+  }
+}
 
 /// popcount() counts the number of nonzero bits in a bitboard
 template<BitCountType> inline int popcount(Bitboard);
 
-namespace bits
-{
-  inline int popcount(uint32_t v)
-  {
-    // Modified from http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel
-    // and http://www.hackersdelight.org/
-    v = v - ((v >> 1) & 0x55555555);
-    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
-    v = (v + (v >> 4)) & 0x0F0F0F0F;
-    return (v * 0x01010101) >> 24;
-  }
+template<>
+inline int popcount<CNT_64>(Bitboard b) {
+  b -=  (b >> 1) & 0x5555555555555555ULL;
+  b  = ((b >> 2) & 0x3333333333333333ULL) + (b & 0x3333333333333333ULL);
+  b  = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0FULL;
+  return (b * 0x0101010101010101ULL) >> 56;
+}
+
+template<>
+inline int popcount<CNT_64_MAX15>(Bitboard b) {
+  b -=  (b >> 1) & 0x5555555555555555ULL;
+  b  = ((b >> 2) & 0x3333333333333333ULL) + (b & 0x3333333333333333ULL);
+  return (b * 0x1111111111111111ULL) >> 60;
 }
 
 template<>
 inline int popcount<CNT_32>(Bitboard b) {
-#if 1
-	return bits::popcount(b);
-#else
-  unsigned w = unsigned(b >> 32), v = unsigned(b);
-  v -=  (v >> 1) & 0x55555555; // 0-2 in 2 bits
-  w -=  (w >> 1) & 0x55555555;
-  v  = ((v >> 2) & 0x33333333) + (v & 0x33333333); // 0-4 in 4 bits
-  w  = ((w >> 2) & 0x33333333) + (w & 0x33333333);
-  v  = ((v >> 4) + v + (w >> 4) + w) & 0x0F0F0F0F;
-  return (v * 0x01010101) >> 24;
-#endif
+	return bits::popcount(uint32_t(b)) + bits::popcount(uint32_t(b >> 32));
 }
 
 template<>
@@ -79,25 +81,6 @@ inline int popcount<CNT_32_MAX15>(Bitboard b) {
   v  = ((v >> 2) & 0x33333333) + (v & 0x33333333); // 0-4 in 4 bits
   w  = ((w >> 2) & 0x33333333) + (w & 0x33333333);
   return ((v + w) * 0x11111111) >> 28;
-}
-
-template<>
-inline int popcount<CNT_64>(Bitboard b) {
-#if 1
-  return bits::popcount((uint32_t)b) + bits::popcount(b >> 32);
-#else
-  b -=  (b >> 1) & 0x5555555555555555ULL;
-  b  = ((b >> 2) & 0x3333333333333333ULL) + (b & 0x3333333333333333ULL);
-  b  = ((b >> 4) + b) & 0x0F0F0F0F0F0F0F0FULL;
-  return (b * 0x0101010101010101ULL) >> 56;
-#endif
-}
-
-template<>
-inline int popcount<CNT_64_MAX15>(Bitboard b) {
-  b -=  (b >> 1) & 0x5555555555555555ULL;
-  b  = ((b >> 2) & 0x3333333333333333ULL) + (b & 0x3333333333333333ULL);
-  return (b * 0x1111111111111111ULL) >> 60;
 }
 
 template<>
