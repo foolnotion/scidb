@@ -27,16 +27,16 @@ done
 # The backslash at the end of this line is needed: \
 exec $tclsh "$0" ${1+"$@"}
 
+set Versions {8.6 8.5}
+
 
 proc stripDot {version} { return "[string index $version 0][string index $version 2]" }
 
 
 proc findBestTclVersion {} {
-    global env
+    global env Versions
 
-    set versions {8.6 8.5}
-
-    foreach version $versions {
+    foreach version $Versions {
         lappend paths                                 \
             /usr/local/include/tk$version             \
             /usr/local/include/tcl$version            \
@@ -49,7 +49,7 @@ proc findBestTclVersion {} {
         /usr/local/tcl/include \
         /usr/local/include     \
         ;
-    foreach version $versions {
+    foreach version $Versions {
         lappend paths                                 \
             /usr/local/tk$version/generic             \
             /usr/local/tcl$version/generic            \
@@ -88,10 +88,10 @@ proc findBestTclVersion {} {
                     }
                     if {[string length $tkVersion] && [string length $tkPatchLevel]} {
                         if {$tkPatchLevel ne "8.6b1"} {
-                            if {[lindex $versions 0] eq $tkVersion} {
+                            if {[lindex $Versions 0] eq $tkVersion} {
                                 close $f
                                 return $tkVersion
-                            } elseif {$tkVersion in $versions} {
+                            } elseif {$tkVersion in $Versions} {
                                 lappend results $tkVersion
                             }
                         }
@@ -106,14 +106,14 @@ proc findBestTclVersion {} {
         return [lindex [lsort $results] 0]
     }
 
-    foreach version $versions {
+    foreach version $Versions {
         foreach dir $env(PATH) {
             if {[file exists $dir/tclsh$version]} { return $version }
             if {[file exists $dir/tclsh[stripDot $version]]} { return $version }
         }
     }
 
-    return [lindex $versions 0]
+    return [lindex $Versions 0]
 }
 
 
@@ -2177,8 +2177,17 @@ if {[string length $distribution(codename)]} {
 
 set configure(tcl-shell) [auto_execok tclsh$tclv]
 if {[string length $configure(tcl-shell)] == 0} {
-    puts "Cannot find Tcl shell 'tclsh$tclv'"
-    exit 1
+    foreach v $Versions {
+        set configure(tcl-shell) [auto_execok tclsh$v]
+        if {[string length $configure(tcl-shell)]} { break }
+    }
+    if {[string length $configure(tcl-shell)] == 0} {
+        set configure(tcl-shell) [info nameofexecutable]
+    }
+    if {[string length $configure(tcl-shell)] == 0} {
+        puts "Cannot find any Tcl shell"
+        exit 1
+    }
 }
 
 set gxxVer ""
