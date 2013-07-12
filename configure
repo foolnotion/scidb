@@ -28,13 +28,14 @@ done
 exec $tclsh "$0" ${1+"$@"}
 
 set Versions {8.6 8.5}
+set IgnorePatches {8.6b1}
 
 
 proc stripDot {version} { return "[string index $version 0][string index $version 2]" }
 
 
 proc findBestTclVersion {} {
-    global env Versions
+    global env Versions IgnorePatches
 
     foreach version $Versions {
         lappend paths                                 \
@@ -83,11 +84,11 @@ proc findBestTclVersion {} {
                 while {[gets $f line] >= 0} {
                     if {[string match {\#*define *TK_VERSION*} $line]} {
                         set tkVersion [lindex [split $line \"] 1]
-                    } elseif {[string match {\#*define *TCL_PATCH_LEVEL*} $line]} {
+                    } elseif {[string match {\#*define *TK_PATCH_LEVEL*} $line]} {
                         set tkPatchLevel [lindex [split $line \"] 1]
                     }
                     if {[string length $tkVersion] && [string length $tkPatchLevel]} {
-                        if {$tkPatchLevel ne "8.6b1"} {
+                        if {$tkPatchLevel ni $IgnorePatches} {
                             if {[lindex $Versions 0] eq $tkVersion} {
                                 close $f
                                 return $tkVersion
@@ -103,7 +104,7 @@ proc findBestTclVersion {} {
     }
 
     if {[llength $results] > 0} {
-        return [lindex [lsort $results] 0]
+        return [lindex $results 0]
     }
 
     foreach version $Versions {
