@@ -246,7 +246,7 @@ proc setMaximum {w maximum} {
 
 
 proc Start {w command close} {
-	$command
+	{*}$command
 	if {$close} { destroy $w }
 }
 

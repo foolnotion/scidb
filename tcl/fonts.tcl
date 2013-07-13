@@ -1676,15 +1676,23 @@ proc htmlTextFamilies {} {
 
 if {$tcl_platform(platform) ne "windows"} {
 
-	proc installChessBaseFonts {parent {windowsFontDir /c/WINDOWS/Fonts}} {
+	proc installChessBaseFonts {parent {windowsFontDirs {/c/Windows/Fonts /c/WINDOWS/Fonts}}} {
 		variable _Count
 
 		set fonts [::dialog::choosefont::fontFamilies]
+		set windowsFontDir [lindex $windowsFontDirs 0]
 
 		if {{FigurineCB AriesSP} in $fonts} {
 			set msg $mc::ChessBaseFontsAlreadyInstalled
 			set reply [::dialog::question -parent $parent -message $msg]
 			if {$reply eq "no"} { return }
+		}
+
+		foreach dir $windowsFontDirs {
+			if {[file isdirectory $dir]} {
+				set windowsFontDir $dir
+				break
+			}
 		}
 
 		if {![file isdirectory $windowsFontDir]} {
@@ -1697,8 +1705,9 @@ if {$tcl_platform(platform) ne "windows"} {
 			]
 			lassign $result windowsFontDir
 			if {[string length $windowsFontDir] == 0} { return }
-			if {![string match */WINDOWS/Fonts $windowsFontDir]} {
-				append windowsFontDir /WINDOWS/Fonts
+			if {	![string match */Windows/Fonts $windowsFontDir]
+				&& ![string match */WINDOWS/Fonts $windowsFontDir]} {
+				append windowsFontDir /Windows/Fonts
 			}
 			if {![file isdirectory $windowsFontDir]} {
 				set msg [format $::fsbox::mc::DirectoryDoesNotExist $windowsFontDir]
