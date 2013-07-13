@@ -2514,12 +2514,12 @@ proc PopupMenu {parent position} {
 		;
 	::theme::configureCheckEntry $menu.display
 
+	$menu.display add separator
+
 	menu $menu.display.moveStyles -tearoff no
 	$menu.display add cascade \
 		-menu $menu.display.moveStyles \
 		-label " $mc::MoveNotation" \
-		-image $icon::16x16::none \
-		-compound left \
 		;
 	foreach style $moveStyles {
 		$menu.display.moveStyles add radiobutton \
@@ -2536,8 +2536,6 @@ proc PopupMenu {parent position} {
 	$menu.display add cascade \
 		-menu $menu.display.languages \
 		-label " $mc::LanguageSelection" \
-		-image $icon::16x16::none \
-		-compound left \
 		;
 	$menu.display.languages add checkbutton \
 		-compound left \
@@ -2565,8 +2563,6 @@ proc PopupMenu {parent position} {
 	$menu.display add cascade \
 		-menu $menu.display.moveinfo \
 		-label " $mc::MoveInfoSelection" \
-		-image $icon::16x16::none \
-		-compound left \
 		;
 	foreach type {eval clk emt ccsnt video} {
 		$menu.display.moveinfo add checkbutton \
@@ -2578,7 +2574,7 @@ proc PopupMenu {parent position} {
 	}
 
 	$menu.display add separator
-	
+
 	$menu.display add command \
 		-label " $::pgn::setup::mc::Configure(editor)..." \
 		-image $::icon::16x16::setup \

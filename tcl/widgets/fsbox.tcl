@@ -4398,6 +4398,8 @@ proc ResetFamId {w} {
 proc SetDeleteAction {w action} {
 	variable [namespace parent]::${w}::Vars
 
+	if {![info exists Vars(button:delete)]} { return }
+
 	set Vars(delete:action) $action
 
 	set name [string toupper $action 0 0]
