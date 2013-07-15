@@ -234,8 +234,10 @@ ln -sf ../# ====================================================================
 ::menu::mc::ScidbArchives					"Scidb archives"
 ::menu::mc::PGNFilesArchives				"PGN files/archives"
 ::menu::mc::PGNFiles							"PGN files"
+::menu::mc::PGNFilesCompressed			"PGN files (compressed)"
 ::menu::mc::BPGNFilesArchives				"BPGN files/archives"
 ::menu::mc::BPGNFiles						"BPGN files"
+::menu::mc::BPGNFilesCompressed			"BPGN files (compressed)"
 ::menu::mc::PGNArchives						"PGN archives"
 
 ::menu::mc::Language							"&Language"

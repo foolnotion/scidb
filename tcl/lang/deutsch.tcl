@@ -234,8 +234,10 @@
 ::menu::mc::ScidbArchives					"Scidb Archive"
 ::menu::mc::PGNFilesArchives				"PGN Dateien/Archive"
 ::menu::mc::PGNFiles							"PGN Dateien"
+::menu::mc::PGNFilesCompressed			"PGN Dateien (komprimiert)"
 ::menu::mc::BPGNFilesArchives				"BPGN Dateien/Archive"
 ::menu::mc::BPGNFiles						"BPGN Dateien"
+::menu::mc::BPGNFilesCompressed			"BPGN Dateien (komprimiert)"
 ::menu::mc::PGNArchives						"PGN Archive"
 
 ::menu::mc::Language							"&Sprache"

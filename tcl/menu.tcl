@@ -41,8 +41,10 @@ set ChessBaseBases				"ChessBase databases"
 set ScidbArchives					"Scidb archives"
 set PGNFilesArchives				"PGN files/archives"
 set PGNFiles						"PGN files"
+set PGNFilesCompressed			"PGN files (compressed)"
 set BPGNFilesArchives			"BPGN files/archives"
 set BPGNFiles						"BPGN files"
+set BPGNFilesCompressed			"BPGN files (compressed)"
 set PGNArchives					"PGN archives"
 
 set Language						"&Language"
@@ -756,7 +758,7 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 				scid3 {.si3} ScidBases
 				chessbase {.cbh .cbf} ChessBaseBases
 				pgn {.pgn} PGNFiles
-				gzpgn {.pgn.gz} PGNFiles} {
+				gzpgn {.pgn.gz} PGNFilesCompressed} {
 			set k [lsearch -exact $::dialog::fsbox::FileIcons [lindex $extensions 0]]
 			set img [lindex $::dialog::fsbox::FileIcons [expr {$k + 1}]]
 			ttk::label $top.${filetype} -text [set mc::$lbl]

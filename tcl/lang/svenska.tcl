@@ -235,8 +235,10 @@
 ::menu::mc::ScidbArchives					"Scidb arkiv"
 ::menu::mc::PGNFilesArchives				"PGN filer/arkiv"
 ::menu::mc::PGNFiles							"PGN filer"
+::menu::mc::PGNFilesCompressed			"PGN filer (komprimerat)"
 ::menu::mc::BPGNFilesArchives				"BPGN filer/arkiv"
 ::menu::mc::BPGNFiles						"BPGN filer"
+::menu::mc::BPGNFilesCompressed			"BPGN filer (komprimerat)"
 ::menu::mc::PGNArchives						"PGN arkiv"
 
 ::menu::mc::Language							"&Språk"
