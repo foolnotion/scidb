@@ -66,12 +66,14 @@ update-mime-database:
 	else                                                              \
 		xdgdir=~/.local/share;                                         \
 		if [ ! -z "$(xdg_data_home)" ]; then                           \
-			if [ -d $(xdg_data_home)/mime ]; then                       \
+			if [ -d $(xdg_data_home) ]; then                            \
 				xdgdir=$(xdg_data_home);                                 \
 			fi;                                                         \
 		fi;                                                            \
 	fi;                                                               \
-	update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null
+	if [ -n "$(shell update-mime-database -V 2>/dev/null)" ]; then    \
+		update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null;     \
+	fi
 
 install-mime: install-mime-icons install-mime-types update-mime-database
 

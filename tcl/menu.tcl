@@ -85,9 +85,9 @@ set Data								"%s data"
 
 # Default Application
 set Assign							"assign"
-set ErrorWhileExecCmd			"Error while executing command: '%s'."
 set FailedSettingDefaultApp	"Failed to set Scidb as a default application for %s."
 set SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s."
+set CommandFailed					"Command '%s' failed."
 
 # do not need translation
 set SettingsEnglish				"&English"
@@ -729,14 +729,14 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 	proc AssignFileTypes {parent} {
 		variable Action_
 		variable Assign_
+		variable Result_
 
 		set xdgmime [auto_execok xdg-mime]
 
 		foreach filetype {scidb scid3 scid4 chessbase pgn gzpgn} {
 			set cmd [list $xdgmime query default application/x-chess-$filetype]
-			if {[catch { set dfltApp [exec {*}$cmd] }]} {
-				return [::dialog::error -parent $parent -message [format $mc::ErrorWhileExecCmd $cmd]]
-			}
+			set dfltApp ""
+			catch { set dfltApp [exec {*}$cmd] }
 			set default($filetype) 0
 			set Assign_($filetype) 0
 			if {[string match scidb.* $dfltApp]} { set default($filetype) 1 }
@@ -812,42 +812,41 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 		}
 
 		if {[llength $mimetypes]} {
-			global env
-
 			::widget::busyCursor on
-			set xdg_data_home ~/.local/share
-			if {[info exists env(XDG_DATA_HOME)]} {
-				foreach p [split $XDG_DATA_HOME :] {
-					if {[file isdirectory $p/mime]} {
-						set xdg_data_home $p
-						break
-					}
-				}
-			}
-			set cmd [list $xdgmime default scidb.desktop {*}[join $mimetypes " "]]
-			# Unluckely the pipe is swallowing any error, but we have to use 'y' because
-			# xdg-mime may ask if ~/.local/share/applications/mimeapps.list should be set
-			# writeable.
-			catch { exec echo "y" | {*}$cmd }
-			catch { update-mime-database $xdg_data_home/mime }
+			set xdgcmd [list $xdgmime default scidb.desktop {*}[join $mimetypes " "]]
+			# Unluckely the pipe is swallowing any error, but we have to use pipe 'yes'
+			# because xdg-mime may ask if some files should be set writeable.
+			catch { exec yes | {*}$xdgcmd }
+#			set update_mime_database [auto_execok update-mime-database]
+#			if {[string length $update_mime_database]} {
+#				set xdg_data_home ~/.local/share
+#				if {[info exists ::env(XDG_DATA_HOME)]} {
+#					foreach p [split $::env(XDG_DATA_HOME) :] {
+#						if {[file isdirectory $p/mime]} {
+#							set xdg_data_home $p
+#							break
+#						}
+#					}
+#				}
+#				catch { update-mime-database $xdg_data_home/mime }
+#			}
 			set failed {}
 			set success {}
 			foreach mimetype $mimetypes {
 				set cmd [list $xdgmime query default $mimetype]
-				if {[catch { set dfltApp [exec {*}$cmd] }]} {
-					::widget::busyCursor off
-					destroy $dlg
-					return [::dialog::error -parent $parent -message [format $mc::ErrorWhileExecCmd $cmd]]
-				}
-				if {![string match scidb.* $dfltApp]} {
-					lappend failed $mimetype
-				} else {
+				set dfltApp ""
+				catch { set dfltApp [exec {*}$cmd] }
+				if {[string match scidb.* $dfltApp]} {
 					lappend success $mimetype
+				} else {
+					lappend failed $mimetype
 				}
 			}
 			if {[llength $failed]} {
 				set failed [join $failed ", "]
-				::dialog::error -parent $parent -message [format $mc::FailedSettingDefaultApp $failed]
+				set msg [format $mc::FailedSettingDefaultApp $failed]
+				append detail [format $mc::CommandFailed $xdgcmd]
+				::dialog::error -parent $parent -message $msg -detail $detail
 			}
 			if {[llength $success]} {
 				set success [join $success ", "]

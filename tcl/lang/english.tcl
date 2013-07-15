@@ -278,9 +278,9 @@ ln -sf ../# ====================================================================
 
 # Default Application
 ::menu::mc::Assign							"assign" ;# NEW
-::menu::mc::ErrorWhileExecCmd				"Error while executing command: '%s'."
 ::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s."
 ::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s."
+::menu::mc::CommandFailed					"Command '%s' failed."
 
 ### load ###############################################################
 ::load::mc::SevereError				"Severe error during load of ECO file"

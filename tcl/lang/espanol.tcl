@@ -280,9 +280,9 @@
 
 # Default Application
 ::menu::mc::Assign							"assign"
-::menu::mc::ErrorWhileExecCmd				"Error while executing command: '%s'." ;# NEW
 ::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s." ;# NEW
 ::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s." ;# NEW
+::menu::mc::CommandFailed					"Command '%s' failed." ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Error severo al cargar archivo ECO" 

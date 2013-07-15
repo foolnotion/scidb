@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
   <mime-type type="application/x-chess-scid4">
-    <comment>Binary chess database (Scid)</comment>
+    <comment>Binary chess database (Scid format 4)</comment>
     <comment xml:lang="de">Binäre Schachdatenbank (Scid-Format 4)</comment>
     <comment xml:lang="en">Binary chess database (Scid format 4)</comment>
     <magic priority="50">
@@ -10,7 +10,7 @@
     <glob pattern="*.si4"/>
   </mime-type>
   <mime-type type="application/x-chess-scid3">
-    <comment>Binary chess database (Scid)</comment>
+    <comment>Binary chess database (Scid format 3)</comment>
     <comment xml:lang="de">Binäre Schachdatenbank (Scid-Format 3)</comment>
     <comment xml:lang="en">Binary chess database (Scid format 3)</comment>
     <magic priority="50">

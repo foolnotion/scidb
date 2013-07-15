@@ -350,7 +350,7 @@ proc OpenPipe {informProc shared parent} {
 	set cmd [file join $::scidb::dir::exec $script]
 
 	if {$shared && $tcl_platform(platform) eq "unix" && [exec id -u] != 0} {
-		variable _Result
+		variable Result_
 		set sudo [auto_execok sudo]
 		if {[string length $sudo] == 0} { return failed }
 		lassign [AskPassword $parent.installPlayerPhotos] passwd result
@@ -358,12 +358,12 @@ proc OpenPipe {informProc shared parent} {
 		if {$result ne "ok"} { return cancelled }
 		if {[catch { open "| echo $passwd | $sudo -S echo \"\" 2>@1" r } sudoPipe ]} { return failed }
 		fconfigure $sudoPipe -buffering none -blocking 1
-		fileevent $sudoPipe readable [namespace code [list CheckPassword $sudoPipe]]
-		set _Result ""
-		while {![eof $sudoPipe]} { vwait [namespace current]::_Result }
+		fileevent $sudoPipe readable [namespace code [list ReadPipe $sudoPipe]]
+		set Result_ ""
+		while {![eof $sudoPipe]} { vwait [namespace current]::Result_ }
 		catch { close $sudoPipe }
-		if {[string match *:*:* $_Result]} { return passwd }
-		if {[string match {* sudoers *} $_Result]} { return nosudo }
+		if {[string match *:*:* $Result_]} { return passwd }
+		if {[string match {* sudoers *} $Result_]} { return nosudo }
 		lassign {"" ""} arg1 arg2
 		if {[info exists env(LD_LIBRARY_PATH)] && [string length $env(LD_LIBRARY_PATH)]} {
 			set arg1 $env(LD_LIBRARY_PATH)
@@ -589,9 +589,11 @@ proc AskPassword {parent} {
 }
 
 
-proc CheckPassword {pipe} {
-	variable _Result
-	set _Result "${_Result}[read $pipe]"
+proc ReadPipe {pipe} {
+	variable Result_
+
+	# IMPORTANT NOTE: don't use 'append'
+	set Result_ "${Result_}[read $pipe]"
 }
 
 
