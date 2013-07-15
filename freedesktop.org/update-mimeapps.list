@@ -114,6 +114,13 @@ proc stripApplications {mimetype applications} {
 }
 
 
+if {[file extension $file] eq ".cache"} {
+    set header "\[MIME Cache\]"
+} elseif {[file tail $file] eq "defaults.list"} {
+    set header "\[Default Applications\]"
+} else {
+    set header "\[Added Associations\]"
+}
 array set content {0 {} 1 {} 2 {}}
 if {$method eq "add"} { set handleProc sortApplications} else { set handleProc stripApplications }
 set countEntries 0
@@ -125,7 +132,7 @@ if {[file readable $file]} {
 
     while {[gets $chan line] >= 0} {
         set line [string trim $line]
-        if {$line eq "\[Added Associations\]"} {
+        if {$line eq $header} {
             set section 1
         } elseif {[string match {[*]*} $line]} {
             if {$section == 1} { incr section }
@@ -150,7 +157,7 @@ if {[file readable $file]} {
 
     close $chan
 } elseif {$method eq "add"} {
-    lappend content(1) "\[Added Associations\]"
+    lappend content(1) $header
     incr countEntries
 }
 

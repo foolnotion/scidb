@@ -33,35 +33,44 @@ install-mime-icons:
 
 install-mime-types:
 	@echo "Install mime types"
-	@for f in `ls *.xml`; do \
-		xdg-mime install $$f; \
-	done
+	@if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then    \
+		mkdir .tmp;                                           \
+		for f in `ls *.xml`; do                               \
+			cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
+			xdg-mime install --mode system .tmp/$$f;           \
+		done;                                                 \
+		rm -rf .tmp;                                          \
+	else                                                     \
+		for f in `ls *.xml`; do                               \
+			xdg-mime install $$f;                              \
+		done;                                                 \
+	fi
 
 update-mime-database:
 	@echo "Update mime database"
 	@xdg-icon-resource forceupdate
-	@if [ "`id -u`" -eq 0 ]; then                                     \
-		xdgdir=/usr/share;                                             \
-		if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-				xdgdir=/usr/local/share;                                 \
-			fi;                                                         \
-		else                                                           \
-			for p in ${XDG_DATA_HOME//:/ }; do                          \
-				if [ -d $$p/applications ] ; then                        \
-					xdgdir=$$p;                                           \
-					break;                                                \
-				fi;                                                      \
-			done;                                                       \
-		fi;                                                            \
-	else                                                              \
-		xdgdir=~/.local/share;                                         \
-		if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-			if [ -d $(XDG_DATA_HOME) ]; then                            \
-				xdgdir=$(XDG_DATA_HOME);                                 \
-			fi;                                                         \
-		fi;                                                            \
-	fi;                                                               \
+	@if [ "`id -u`" -eq 0 ]; then                                                 \
+		xdgdir=/usr/share;                                                         \
+		if [ -z "$(xdg_data_dirs)" ]; then                                         \
+			if [ -f /usr/local/share/applications/mimeapps.list ]; then             \
+				xdgdir=/usr/local/share;                                             \
+			fi;                                                                     \
+		else                                                                       \
+			for p in ${xdg_data_home//:/ }; do                                      \
+				if [ -d $$p/applications ] ; then                                    \
+					xdgdir=$$p;                                                       \
+					break;                                                            \
+				fi;                                                                  \
+			done;                                                                   \
+		fi;                                                                        \
+	else                                                                          \
+		xdgdir=~/.local/share;                                                     \
+		if [ ! -z "$(xdg_data_home)" ]; then                                       \
+			if [ -d $(xdg_data_home) ]; then                                        \
+				xdgdir=$(xdg_data_home);                                             \
+			fi;                                                                     \
+		fi;                                                                        \
+	fi;                                                                           \
 	update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null
 
 install-mime: install-mime-icons install-mime-types update-mime-database
@@ -69,10 +78,10 @@ install-mime: install-mime-icons install-mime-types update-mime-database
 uninstall-mime:
 	@# do nothing, because other applications may use these mime types
 
-### DESKTOP ICONS & MENU ###############################################
+### desktop icons & menu ###############################################
 
 install-app-icons:
-	@echo "Install desktop application icons"
+	@echo "install desktop application icons"
 	@for size in 16 22 32 48 64 128; do                                                           \
 		if [ -f scidb-$$size.png ]; then                                                           \
 			xdg-icon-resource install --noupdate --novendor --size $$size ./scidb-$$size.png scidb; \
