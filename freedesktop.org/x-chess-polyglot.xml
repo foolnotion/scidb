@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/x-chess-polyglot">
+    <comment>Polyglot chess opening book</comment>
+    <comment xml:lang="de">Polyglot-Schacheröffnungsbuch</comment>
+    <comment xml:lang="en">Polyglot chess opening book</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="\x00\x00\x00\x00\x00\x00\x00\x00@PG@\x0a"/>
+    </magic>
+    <glob pattern="*.bin"/>
+  </mime-type>
+</mime-info>

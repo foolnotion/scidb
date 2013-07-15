@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/x-chess-archive">
+    <comment>Chess database archive</comment>
+    <comment xml:lang="de">Schachdatenbankarchiv</comment>
+    <comment xml:lang="en">Chess database archive</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="iveArch\x0a\x3cTotalSize\x3e"/>
+    </magic>
+    <glob pattern="*.scv"/>
+  </mime-type>
+</mime-info>

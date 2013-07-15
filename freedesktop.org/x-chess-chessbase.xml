@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns='http://www.freedesktop.org/standards/shared-mime-info'>
+  <mime-type type="application/x-chess-chessbase">
+    <comment>Binary chess database (ChessBase format)</comment>
+    <comment xml:lang="de">Binäre Schachdatenbank (ChessBase-Format)</comment>
+    <comment xml:lang="en">Binary chess database (ChessBase format)</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="\x00\x00\x2c\x00\x2e\x01"/>
+      <match type="string" offset="0" value="\x00\x00\x24\x00\x2e\x01"/>
+    </magic>
+    <glob pattern="*.cbh"/>
+  </mime-type>
+  <mime-type type="application/x-chess-chessbasedos">
+    <comment>Binary chess database (ChessBase DOS format)</comment>
+    <comment xml:lang="de">Binäre Schachdatenbank (ChessBase-DOS-Format)</comment>
+    <comment xml:lang="en">Binary chess database (ChessBase DOS format)</comment>
+    <glob pattern="*.cbf"/>
+  </mime-type>
+</mime-info>

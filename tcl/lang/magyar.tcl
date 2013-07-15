@@ -259,6 +259,7 @@
 # Extras
 ::menu::mc::InstallChessBaseFonts	"ChessBase betűtípusok telepítése" ;#"Install ChessBase Fonts"  ;#NEW
 ::menu::mc::OpenEngineLog		"&Elemző konzol megnyitása"  ;#NEW
+::menu::mc::AssignFileTypes		"Assign File &Types" ;# NEW
 
 # Tools
 ::menu::mc::OpenEngineDictionary	"Open Engine &Dictionary" ;# NEW
@@ -275,6 +276,12 @@
 ::menu::mc::CreateArchive		"Archívum készítése"
 ::menu::mc::BuildArchive		"Archívum %s készítése"
 ::menu::mc::Data			"%s adat"
+
+# Default Application
+::menu::mc::Assign			"assign" ;# NEW
+::menu::mc::ErrorWhileExecCmd		"Error while executing command: '%s'." ;# NEW
+::menu::mc::FailedSettingDefaultApp	"Failed to set Scidb as a default application for %s." ;# NEW
+::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s." ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Az ECO fájl beolvasása közben súlyos hiba történt"
@@ -2255,8 +2262,10 @@
 ::dialog::fsbox::mc::ScidbDatabase		"Scidb adatbázis"
 ::dialog::fsbox::mc::ScidDatabase		"Scid adatbázis"
 ::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase adatbázis"
-::dialog::fsbox::mc::PortableGameFile		"PGN fájl"
+::dialog::fsbox::mc::PortableGameFile		"PGN fájl" ;# PGN sakkfeljegyzés
+::dialog::fsbox::mc::PortableGameFileCompressed "PGN fájl (gzip-pel tömörítve)"
 ::dialog::fsbox::mc::BughousePortableGameFile "Bughouse PGN fájl"
+::dialog::fsbox::mc::BughousePortableGameFileCompressed "Bughouse PGN fájl (gzip-pel tömörítve)"
 ::dialog::fsbox::mc::ZipArchive			"ZIP archívum"
 ::dialog::fsbox::mc::ScidbArchive		"Scidb archívum"
 ::dialog::fsbox::mc::PortableDocumentFile	"PDF" ;# NEW

@@ -52,7 +52,9 @@ set ScidbDatabase					"Scidb Database"
 set ScidDatabase					"Scid Database"
 set ChessBaseDatabase			"ChessBase Database"
 set PortableGameFile				"Portable Game File"
+set PortableGameFileCompressed "Portable Game File (gzip compressed)"
 set BughousePortableGameFile	"Bughouse Portable Game File"
+set BughousePortableGameFileCompressed "Bughouse Portable Game File (gzip compressed)"
 set ZipArchive						"ZIP Archive"
 set ScidbArchive					"Scidb Arvchive"
 set PortableDocumentFile		"Portable Document File"
@@ -131,33 +133,33 @@ if {$tcl_platform(platform) eq "windows"} {
 	set FileEncodings(.cbh) [list 1 $::encoding::systemEncoding] ;# XXX ok?
 }
 
-array set FileType [list             \
-	.sci		ScidbDatabase            \
-	.si4		ScidDatabase             \
-	.si3		ScidDatabase             \
-	.scv 		ScidbArchive             \
-	.cbh		ChessBaseDatabase        \
-	.cbf		ChessBaseDatabase        \
-	.pgn		PortableGameFile         \
-	.pgn.gz	PortableGameFile         \
-	.bpgn		BughousePortableGameFile \
-	.bpgn.gz	BughousePortableGameFile \
-	.zip		ZipArchive               \
-	.pdf		PortableDocumentFile     \
-	.html		HypertextFile            \
-	.htm		HypertextFile            \
-	.tex		TypesettingFile          \
-	.ltx		TypesettingFile          \
-	.ppm		ImageFile                \
-	.png		ImageFile                \
-	.gif		ImageFile                \
-	.jpg		ImageFile                \
-	.jpeg		ImageFile                \
-	.txt		TextFile                 \
-	.log		TextFile                 \
-	.bin		BinaryFile               \
-	.exe		Executable               \
-	.sh		ShellScript              \
+array set FileType [list                       \
+	.sci		ScidbDatabase                      \
+	.si4		ScidDatabase                       \
+	.si3		ScidDatabase                       \
+	.scv 		ScidbArchive                       \
+	.cbh		ChessBaseDatabase                  \
+	.cbf		ChessBaseDatabase                  \
+	.pgn		PortableGameFile                   \
+	.pgn.gz	PortableGameFileCompressed         \
+	.bpgn		BughousePortableGameFile           \
+	.bpgn.gz	BughousePortableGameFileCompressed \
+	.zip		ZipArchive                         \
+	.pdf		PortableDocumentFile               \
+	.html		HypertextFile                      \
+	.htm		HypertextFile                      \
+	.tex		TypesettingFile                    \
+	.ltx		TypesettingFile                    \
+	.ppm		ImageFile                          \
+	.png		ImageFile                          \
+	.gif		ImageFile                          \
+	.jpg		ImageFile                          \
+	.jpeg		ImageFile                          \
+	.txt		TextFile                           \
+	.log		TextFile                           \
+	.bin		BinaryFile                         \
+	.exe		Executable                         \
+	.sh		ShellScript                        \
 ]
 
 

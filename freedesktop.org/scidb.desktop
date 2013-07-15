@@ -1,0 +1,25 @@
+[Desktop Entry]
+Version=1.0 BETA
+Type=Application
+Name=Scidb
+Comment=Scidb is a Chess Database Application
+GenericName[de]=Chess Database (beta version)
+GenericName[en]=Schachdatenbank (Beta-Version)
+#GenericName[es]=<spanish>
+#GenericName[hu]=<hungarian>
+#GenericName[it]=<italian>
+#GenericName[sv]=<svedish>
+GenericName=Chess Database (beta version)
+Exec=scidb-beta %F
+Path=
+Icon=scidb
+Categories=Game;BoardGame;
+MineType=x-chess-scidb;x-chess-archive;x-chess-scid;x-chess-chessbase;x-chess-pgn;x-chess-pgngz;
+Terminal=false
+TerminalOptions=
+StartupNotify=false
+StartupWMClass=Scidb
+X-DBUS-ServiceName=
+X-DBUS-StartupType=
+X-KDE-SubstituteUID=false
+X-KDE-Username=

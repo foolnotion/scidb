@@ -224,58 +224,65 @@
 ::progress::mc::Message(copy-game)				"Copiar %s partida(s)"
 
 ### menu ###############################################################
-::menu::mc::Theme							"Tema"
-::menu::mc::CustomStyleMenu			"Scidb's Style Menu" ;# NEW
-::menu::mc::DefaultStyleMenu			"Default Style Menu" ;# NEW
+::menu::mc::Theme								"Tema"
+::menu::mc::CustomStyleMenu				"Scidb's Style Menu" ;# NEW
+::menu::mc::DefaultStyleMenu				"Default Style Menu" ;# NEW
 
-::menu::mc::AllScidbFiles				"Todos los archivos Scidb"
-::menu::mc::AllScidbBases				"Todas las bases Scidb"
-::menu::mc::ScidBases					"Bases Scid"
-::menu::mc::ScidbBases					"Bases Scidb"
-::menu::mc::ChessBaseBases				"Bases ChessBase"
-::menu::mc::ScidbArchives				"Archivos Scidb"
-::menu::mc::PGNFilesArchives			"Archivos PGN"
-::menu::mc::PGNFiles						"Archivos PGN"
-::menu::mc::BPGNFilesArchives			"Archivos BPGN"
-::menu::mc::BPGNFiles					"Archivos BPGN"
-::menu::mc::PGNArchives					"Archivos PGN"
+::menu::mc::AllScidbFiles					"Todos los archivos Scidb"
+::menu::mc::AllScidbBases					"Todas las bases Scidb"
+::menu::mc::ScidBases						"Bases Scid"
+::menu::mc::ScidbBases						"Bases Scidb"
+::menu::mc::ChessBaseBases					"Bases ChessBase"
+::menu::mc::ScidbArchives					"Archivos Scidb"
+::menu::mc::PGNFilesArchives				"Archivos PGN"
+::menu::mc::PGNFiles							"Archivos PGN"
+::menu::mc::BPGNFilesArchives				"Archivos BPGN"
+::menu::mc::BPGNFiles						"Archivos BPGN"
+::menu::mc::PGNArchives						"Archivos PGN"
 
-::menu::mc::Language						"&Idioma"
-::menu::mc::Toolbars						"&Barras de herramientas"
-::menu::mc::ShowLog						"Mostrar &bitácora"
-::menu::mc::AboutScidb					"A&cerca de Scidb"
-::menu::mc::Fullscreen					"&Pantalla completa"
-::menu::mc::LeaveFullscreen			"Salir de &pantalla completa"
-::menu::mc::Help							"&Ayuda"
-::menu::mc::Contact						"&Contenidos (navegador web)"
-::menu::mc::Quit							"&Salir"
-::menu::mc::Tools							"&Tools" ;# NEW
-::menu::mc::Extras						"E&xtras" 
-::menu::mc::Setup							"Configu&rar"
+::menu::mc::Language							"&Idioma"
+::menu::mc::Toolbars							"&Barras de herramientas"
+::menu::mc::ShowLog							"Mostrar &bitácora"
+::menu::mc::AboutScidb						"A&cerca de Scidb"
+::menu::mc::Fullscreen						"&Pantalla completa"
+::menu::mc::LeaveFullscreen				"Salir de &pantalla completa"
+::menu::mc::Help								"&Ayuda"
+::menu::mc::Contact							"&Contenidos (navegador web)"
+::menu::mc::Quit								"&Salir"
+::menu::mc::Tools								"&Tools" ;# NEW
+::menu::mc::Extras							"E&xtras" 
+::menu::mc::Setup								"Configu&rar"
 
 # Contact
-::menu::mc::ContactBugReport			"&Reporte de errores"
-::menu::mc::ContactFeatureRequest	"&Solicitud de característica"
+::menu::mc::ContactBugReport				"&Reporte de errores"
+::menu::mc::ContactFeatureRequest		"&Solicitud de característica"
 
 # Extras
-::menu::mc::InstallChessBaseFonts	"Instalar Fuentes de ChessBase" 
-::menu::mc::OpenEngineLog				"Abrir bitácora d&el Motor"
+::menu::mc::InstallChessBaseFonts		"Instalar Fuentes de ChessBase" 
+::menu::mc::OpenEngineLog					"Abrir bitácora d&el Motor"
+::menu::mc::AssignFileTypes				"Assign File &Types"
 
 # Tools
-::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
-::menu::mc::OpenPlayerDictionary		"Open &Player Dictionary" ;# NEW
+::menu::mc::OpenEngineDictionary			"Open Engine &Dictionary" ;# NEW
+::menu::mc::OpenPlayerDictionary			"Open &Player Dictionary" ;# NEW
 
 # Setup
-::menu::mc::Engines						"Motor&es"
-::menu::mc::PgnOptions					"Setup &PGN export options" ;# NEW
-::menu::mc::PrivatePlayerCard			"&Private Player Card" ;# NEW
+::menu::mc::Engines							"Motor&es"
+::menu::mc::PgnOptions						"Setup &PGN export options" ;# NEW
+::menu::mc::PrivatePlayerCard				"&Private Player Card" ;# NEW
 
-::menu::mc::OpenFile						"Abrir un archivo Scidb"
-::menu::mc::NewFile						"Crear un archivo Scidb"
-::menu::mc::Archiving					"Archivando" 
-::menu::mc::CreateArchive				"Crear Archivo" 
-::menu::mc::BuildArchive				"Crear archivo %s" 
-::menu::mc::Data							"%s datos" 
+::menu::mc::OpenFile							"Abrir un archivo Scidb"
+::menu::mc::NewFile							"Crear un archivo Scidb"
+::menu::mc::Archiving						"Archivando" 
+::menu::mc::CreateArchive					"Crear Archivo" 
+::menu::mc::BuildArchive					"Crear archivo %s" 
+::menu::mc::Data								"%s datos" 
+
+# Default Application
+::menu::mc::Assign							"assign"
+::menu::mc::ErrorWhileExecCmd				"Error while executing command: '%s'." ;# NEW
+::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s." ;# NEW
+::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s." ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Error severo al cargar archivo ECO" 
@@ -2253,8 +2260,10 @@
 ::dialog::fsbox::mc::ScidbDatabase			"Base de datos Scidb"
 ::dialog::fsbox::mc::ScidDatabase			"Base de datos Scid"
 ::dialog::fsbox::mc::ChessBaseDatabase		"Base de datos ChessBase" 
-::dialog::fsbox::mc::PortableGameFile		"Archivo PGN"
+::dialog::fsbox::mc::PortableGameFile		"Archivo PGN" ;# Notación para juegos de ajedrez PGN
+::dialog::fsbox::mc::PortableGameFileCompressed "Archivo PGN (comprimido con gzip)"
 ::dialog::fsbox::mc::BughousePortableGameFile "Archivo BPGN"
+::dialog::fsbox::mc::BughousePortableGameFileCompressed "Archivo BPGN (comprimido con gzip)"
 ::dialog::fsbox::mc::ZipArchive				"Archivo ZIP" 
 ::dialog::fsbox::mc::ScidbArchive			"Archivo Scidb" 
 ::dialog::fsbox::mc::PortableDocumentFile	"Archivo PDF" 

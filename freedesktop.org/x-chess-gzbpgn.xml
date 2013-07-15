@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+  <mime-type type="application/x-chess-bpgn">
+    <comment>BPGN Bughouse chess game notation (gzip-compressed)</comment>
+    <comment xml:lang="de">BPGN-Tandemschachspielnotation (gzip-komprimiert)</comment>
+    <comment xml:lang="en">BPGN Bughouse chess game notation (gzip-compressed)</comment>
+    <comment xml:lang="es">Notación para juegos de Bughouse BPGN (comprimido con gzip)</comment>
+    <comment xml:lang="hu">Bughouse PGN sakkfeljegyzés</comment>
+    <comment xml:lang="it">iNotazione partita a scacchi Mangia-passa BPGN (compresso con gzip)</comment>
+    <comment xml:lang="sv">Bughouse PGN-schackpartinotation (gzip-komprimerat)</comment>
+    <magic priority="50">
+      <match type="string" offset="0" value="\x1F\x8B"/>
+    </magic>
+    <generic-icon name="package-x-generic"/>
+    <sub-class-of type="application/x-gzip"/>
+    <glob pattern="*.bpgn.gz"/>
+  </mime-type>
+</mime-info>

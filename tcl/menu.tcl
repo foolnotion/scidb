@@ -29,61 +29,68 @@
 namespace eval menu {
 namespace eval mc {
 
-set Theme						"Theme"
-set CustomStyleMenu			"Scidb's Style Menu"
-set DefaultStyleMenu			"Default Style Menu"
+set Theme							"Theme"
+set CustomStyleMenu				"Scidb's Style Menu"
+set DefaultStyleMenu				"Default Style Menu"
 
-set AllScidbFiles				"All Scidb files"
-set AllScidbBases				"All Scidb databases"
-set ScidBases					"Scid databases"
-set ScidbBases					"Scidb databases"
-set ChessBaseBases			"ChessBase databases"
-set ScidbArchives				"Scidb archives"
-set PGNFilesArchives			"PGN files/archives"
-set PGNFiles					"PGN files"
-set BPGNFilesArchives		"BPGN files/archives"
-set BPGNFiles					"BPGN files"
-set PGNArchives				"PGN archives"
+set AllScidbFiles					"All Scidb files"
+set AllScidbBases					"All Scidb databases"
+set ScidBases						"Scid databases"
+set ScidbBases						"Scidb databases"
+set ChessBaseBases				"ChessBase databases"
+set ScidbArchives					"Scidb archives"
+set PGNFilesArchives				"PGN files/archives"
+set PGNFiles						"PGN files"
+set BPGNFilesArchives			"BPGN files/archives"
+set BPGNFiles						"BPGN files"
+set PGNArchives					"PGN archives"
 
-set Language					"&Language"
-set Toolbars					"&Toolbars"
-set ShowLog						"&Show Log"
-set AboutScidb					"&About Scidb"
-set Fullscreen					"&Full-Screen"
-set LeaveFullscreen			"Leave &Full-Screen"
-set Help							"&Help"
-set Contact						"&Contact (Web Browser)"
-set Quit							"&Quit"
-set Tools						"&Tools"
-set Extras						"&Extras"
-set Setup						"Setu&p"
+set Language						"&Language"
+set Toolbars						"&Toolbars"
+set ShowLog							"&Show Log"
+set AboutScidb						"&About Scidb"
+set Fullscreen						"&Full-Screen"
+set LeaveFullscreen				"Leave &Full-Screen"
+set Help								"&Help"
+set Contact							"&Contact (Web Browser)"
+set Quit								"&Quit"
+set Tools							"&Tools"
+set Extras							"&Extras"
+set Setup							"Setu&p"
 
 # Contact
-set ContactBugReport			"&Bug Report"
-set ContactFeatureRequest	"&Feature Request"
+set ContactBugReport				"&Bug Report"
+set ContactFeatureRequest		"&Feature Request"
 
 # Extras
-set InstallChessBaseFonts	"Install ChessBase &Fonts"
-set OpenEngineLog				"Open Engine &Console"
+set InstallChessBaseFonts		"Install ChessBase &Fonts"
+set OpenEngineLog					"Open Engine &Console"
+set AssignFileTypes				"Assign File &Types"
 
 # Tools
-set OpenEngineDictionary	"Open &Engine Dictionary"
-set OpenPlayerDictionary	"Open &Player Dictionary"
+set OpenEngineDictionary		"Open &Engine Dictionary"
+set OpenPlayerDictionary		"Open &Player Dictionary"
 
 # Setup
-set Engines						"&Engines"
-set PgnOptions					"Setup &PGN export options"
-set PrivatePlayerCard		"Private Player &Card"
+set Engines							"&Engines"
+set PgnOptions						"Setup &PGN export options"
+set PrivatePlayerCard			"Private Player &Card"
 
-set OpenFile					"Open a Scidb File"
-set NewFile						"Create a Scidb File"
-set Archiving					"Archiving"
-set CreateArchive				"Create Archive"
-set BuildArchive				"Create archive %s"
-set Data							"%s data"
+set OpenFile						"Open a Scidb File"
+set NewFile							"Create a Scidb File"
+set Archiving						"Archiving"
+set CreateArchive					"Create Archive"
+set BuildArchive					"Create archive %s"
+set Data								"%s data"
+
+# Default Application
+set Assign							"assign"
+set ErrorWhileExecCmd			"Error while executing command: '%s'."
+set FailedSettingDefaultApp	"Failed to set Scidb as a default application for %s."
+set SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s."
 
 # do not need translation
-set SettingsEnglish			"&English"
+set SettingsEnglish				"&English"
 
 }
 
@@ -292,9 +299,21 @@ if {0} {
 		-image $::icon::16x16::none \
 		;
 
+	if {[llength [info procs [namespace current]::AssignFileTypes]]} {
+		lassign [::tk::UnderlineAmpersand $mc::AssignFileTypes] text ul
+		set cmd [namespace code [list AssignFileTypes .application]]
+		$m add command \
+			-compound left \
+			-label " $text" \
+			-underline [incr ul] \
+			-image $::icon::16x16::none \
+			-command $cmd \
+			;
+	}
+
 	if {[::util::photos::busy?]} { set state disabled } else { set state normal }
 	lassign [::tk::UnderlineAmpersand $::util::photos::mc::InstallPlayerPhotos] text ul
-	set cmd [namespace code [list ::util::photos::openDialog .application]]
+	set cmd [list ::util::photos::openDialog .application]
 	$m add command \
 		-compound left \
 		-label " $text" \
@@ -306,7 +325,7 @@ if {0} {
 
 	if {[llength [info procs ::font::installChessBaseFonts]]} {
 		lassign [::tk::UnderlineAmpersand $mc::InstallChessBaseFonts] text ul
-		set cmd [namespace code [list ::font::installChessBaseFonts .application]]
+		set cmd [list ::font::installChessBaseFonts .application]
 		$m add command \
 			-compound left \
 			-label " $text" \
@@ -317,7 +336,7 @@ if {0} {
 	}
 
 	lassign [::tk::UnderlineAmpersand $mc::OpenEngineLog] text ul
-	set cmd [namespace code [list ::engine::openEngineLog .application]]
+	set cmd [list ::engine::openEngineLog .application]
 	if {[::engine::logIsOpen? .application]} { set state disabled } else { set state normal }
 	$m add command \
 		-compound left \
@@ -702,6 +721,132 @@ proc CheckFullscreen {app} {
 			if {$wd == [winfo screenwidth $app] && $ht == [winfo screenheight $app]} { set Fullscreen 1 }
 		}
 	}
+}
+
+
+if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
+
+	proc AssignFileTypes {parent} {
+		variable Action_
+		variable Assign_
+
+		set xdgmime [auto_execok xdg-mime]
+
+		foreach filetype {scidb scid3 scid4 chessbase pgn gzpgn} {
+			set cmd [list $xdgmime query default application/x-chess-$filetype]
+			if {[catch { set dfltApp [exec {*}$cmd] }]} {
+				return [::dialog::error -parent $parent -message [format $mc::ErrorWhileExecCmd $cmd]]
+			}
+			set default($filetype) 0
+			set Assign_($filetype) 0
+			if {[string match scidb.* $dfltApp]} { set default($filetype) 1 }
+		}
+
+		set Action_ cancel
+		set dlg [tk::toplevel $parent.setDefaultApp -class Dialog]
+
+		pack [set top [ttk::frame $dlg.top]] -fill both
+		set last -1
+		set count 0
+		set row 1
+
+		foreach {filetype extensions lbl} {
+				scidb {.sci .scv} ScidbBases
+				scid4 {.si4} ScidBases
+				scid3 {.si3} ScidBases
+				chessbase {.cbh .cbf} ChessBaseBases
+				pgn {.pgn} PGNFiles
+				gzpgn {.pgn.gz} PGNFiles} {
+			set k [lsearch -exact $::dialog::fsbox::FileIcons [lindex $extensions 0]]
+			set img [lindex $::dialog::fsbox::FileIcons [expr {$k + 1}]]
+			ttk::label $top.${filetype} -text [set mc::$lbl]
+			ttk::label $top.${filetype}Icon -image $img
+			ttk::label $top.${filetype}Descr -text "($extensions)"
+			grid $top.$filetype -row $row -column 1 -sticky w
+			grid $top.${filetype}Icon -row $row -column 3 -sticky w
+			grid $top.${filetype}Descr -row $row -column 5 -sticky w
+			if {!$default($filetype)} {
+				ttk::checkbutton $top.${filetype}Assign \
+					-text $mc::Assign \
+					-variable [namespace current]::Assign_($filetype) \
+					;
+				grid $top.${filetype}Assign -row $row -column 7 -sticky w
+				incr count
+			}
+			grid rowconfigure $top [incr row] -minsize $::theme::pady
+			incr row
+		}
+
+		grid rowconfigure $top 0 -minsize $::theme::pady
+		grid columnconfigure $top {0 2 4 6} -minsize $::theme::padx
+		if {$count > 0} { grid columnconfigure $top 8 -minsize $::theme::padx }
+
+		if {$count == 0} {
+			::widget::dialogButtons $dlg {close}
+			$dlg.close configure -command [list set [namespace current]::Action_ close]
+		} else {
+			::widget::dialogButtons $dlg {cancel ok}
+			$dlg.ok configure -command [list set [namespace current]::Action_ ok]
+			$dlg.cancel configure -command [list set [namespace current]::Action_ cancel]
+		}
+
+		wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::Action_ cancel]
+		wm transient $dlg [winfo toplevel $parent]
+		wm withdraw $dlg
+		wm title $dlg [::mc::stripAmpersand $mc::AssignFileTypes]
+		wm resizable $dlg false false
+		::util::place $dlg -parent $parent -position center
+		wm deiconify $dlg
+		focus $top
+		::ttk::grabWindow $dlg
+		tkwait variable [namespace current]::Action_
+		::ttk::releaseGrab $dlg
+
+		set mimetypes {}
+		if {$Action_ eq "ok"} {
+			foreach filetype {scidb scid4 scid3 chessbase pgn gzpgn} {
+				if {!$default($filetype) && $Assign_($filetype)} {
+					lappend mimetypes application/x-chess-$filetype
+				}
+			}
+		}
+
+		if {[llength $mimetypes]} {
+			::widget::busyCursor on
+			set cmd [list $xdgmime default scidb.desktop {*}[join $mimetypes " "]]
+			# Unluckely the pipe is swallowing any error, but we have to use 'y' because
+			# xdg-mime may ask if ~/.local/share/applications/mimeapps.list should be set
+			# writeable.
+			catch { exec echo "y" | {*}$cmd }
+			set failed {}
+			set success {}
+			foreach mimetype $mimetypes {
+				set cmd [list $xdgmime query default $mimetype]
+				if {[catch { set dfltApp [exec {*}$cmd] }]} {
+					::widget::busyCursor off
+					destroy $dlg
+					return [::dialog::error -parent $parent -message [format $mc::ErrorWhileExecCmd $cmd]]
+				}
+				if {![string match scidb.* $dfltApp]} {
+					lappend failed $mimetype
+				} else {
+					lappend success $mimetype
+				}
+			}
+			if {[llength $failed]} {
+				set failed [join $failed ", "]
+				::dialog::error -parent $parent -message [format $mc::FailedSettingDefaultApp $failed]
+			}
+			if {[llength $success]} {
+				set success [join $success ", "]
+				::dialog::info -parent $parent -message [format $mc::SuccessSettingDefaultApp $success]
+			}
+			::widget::busyCursor off
+		}
+
+		destroy $dlg
+	}
+
 }
 
 

@@ -195,7 +195,7 @@
 ::util::mc::IOError(LoadFailed)				"inläsningen misslyckades  (för många tävlingar)"
 ::util::mc::IOError(NotOriginalVersion)	"file has changed outside from this session since last open" ;# NEW
 
-::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond."
+::util::mc::SelectionOwnerDidntRespond		"Timeout during drop action: selection owner didn't respond." ;# NEW
 
 ### progress ###########################################################
 ::progress::mc::Progress							"Förlopp"
@@ -223,58 +223,65 @@
 ::progress::mc::Message(copy-game)				"Kopiera %s parti(er)"
 
 ### menu ###############################################################
-::menu::mc::Theme							"Tema"
-::menu::mc::CustomStyleMenu			"Scidb's Style Menu" ;# NEW
-::menu::mc::DefaultStyleMenu			"Default Style Menu" ;# NEW
+::menu::mc::Theme								"Tema"
+::menu::mc::CustomStyleMenu				"Scidb's Style Menu" ;# NEW
+::menu::mc::DefaultStyleMenu				"Default Style Menu" ;# NEW
 
-::menu::mc::AllScidbFiles				"Alla Scidb filer"
-::menu::mc::AllScidbBases				"Alla Scidb databaser"
-::menu::mc::ScidBases					"Scid databaser"
-::menu::mc::ScidbBases					"Scidb databaser"
-::menu::mc::ChessBaseBases				"ChessBase databaser"
-::menu::mc::ScidbArchives				"Scidb arkiv"
-::menu::mc::PGNFilesArchives			"PGN filer/arkiv"
-::menu::mc::PGNFiles						"PGN filer"
-::menu::mc::BPGNFilesArchives			"BPGN filer/arkiv"
-::menu::mc::BPGNFiles					"BPGN filer"
-::menu::mc::PGNArchives					"PGN arkiv"
+::menu::mc::AllScidbFiles					"Alla Scidb filer"
+::menu::mc::AllScidbBases					"Alla Scidb databaser"
+::menu::mc::ScidBases						"Scid databaser"
+::menu::mc::ScidbBases						"Scidb databaser"
+::menu::mc::ChessBaseBases					"ChessBase databaser"
+::menu::mc::ScidbArchives					"Scidb arkiv"
+::menu::mc::PGNFilesArchives				"PGN filer/arkiv"
+::menu::mc::PGNFiles							"PGN filer"
+::menu::mc::BPGNFilesArchives				"BPGN filer/arkiv"
+::menu::mc::BPGNFiles						"BPGN filer"
+::menu::mc::PGNArchives						"PGN arkiv"
 
-::menu::mc::Language						"&Språk"
-::menu::mc::Toolbars						"&Verktygsfält"
-::menu::mc::ShowLog						"Visa &Log"
-::menu::mc::AboutScidb					"&Om Scidb"
-::menu::mc::Fullscreen					"&Helskärm"
-::menu::mc::LeaveFullscreen			"Lämna &helskärm"
-::menu::mc::Help							"&Hjälp"
-::menu::mc::Contact						"&Kontakt (Webbläsare)"
-::menu::mc::Quit							"&Avsluta"
-::menu::mc::Tools							"&Tools" ;# NEW
-::menu::mc::Extras						"&Tillägg"
-::menu::mc::Setup							"&Inställningar"
+::menu::mc::Language							"&Språk"
+::menu::mc::Toolbars							"&Verktygsfält"
+::menu::mc::ShowLog							"Visa &Log"
+::menu::mc::AboutScidb						"&Om Scidb"
+::menu::mc::Fullscreen						"&Helskärm"
+::menu::mc::LeaveFullscreen				"Lämna &helskärm"
+::menu::mc::Help								"&Hjälp"
+::menu::mc::Contact							"&Kontakt (Webbläsare)"
+::menu::mc::Quit								"&Avsluta"
+::menu::mc::Tools								"&Tools" ;# NEW
+::menu::mc::Extras							"&Tillägg"
+::menu::mc::Setup								"&Inställningar"
 
 # Contact
-::menu::mc::ContactBugReport			"&Felrapport"
-::menu::mc::ContactFeatureRequest	"Ö&nskemål"
+::menu::mc::ContactBugReport				"&Felrapport"
+::menu::mc::ContactFeatureRequest		"Ö&nskemål"
 
 # Extras
-::menu::mc::InstallChessBaseFonts	"Installera ChessBase fonter"
-::menu::mc::OpenEngineLog				"Öppna &motorkonsol"
+::menu::mc::InstallChessBaseFonts		"Installera ChessBase fonter"
+::menu::mc::OpenEngineLog					"Öppna &motorkonsol"
+::menu::mc::AssignFileTypes				"Assign File &Types" ;# NEW
 
 # Tools
-::menu::mc::OpenEngineDictionary		"Open Engine &Dictionary" ;# NEW
-::menu::mc::OpenPlayerDictionary		"Open &Player Dictionary" ;# NEW
+::menu::mc::OpenEngineDictionary			"Open Engine &Dictionary" ;# NEW
+::menu::mc::OpenPlayerDictionary			"Open &Player Dictionary" ;# NEW
 
 # Setup
-::menu::mc::Engines						"&Motorer"
-::menu::mc::PgnOptions					"Setup &PGN export options" ;# NEW
-::menu::mc::PrivatePlayerCard			"&Private Player Card" ;# NEW
+::menu::mc::Engines							"&Motorer"
+::menu::mc::PgnOptions						"Setup &PGN export options" ;# NEW
+::menu::mc::PrivatePlayerCard				"&Private Player Card" ;# NEW
 
-::menu::mc::OpenFile						"Öppna Scidb fil"
-::menu::mc::NewFile						"Skapa Scidb fil"
-::menu::mc::Archiving					"Arkiverar"
-::menu::mc::CreateArchive				"Skapa arkiv"
-::menu::mc::BuildArchive				"Skapa arkiver %s"
-::menu::mc::Data							"%s data" ;# NEW
+::menu::mc::OpenFile							"Öppna Scidb fil"
+::menu::mc::NewFile							"Skapa Scidb fil"
+::menu::mc::Archiving						"Arkiverar"
+::menu::mc::CreateArchive					"Skapa arkiv"
+::menu::mc::BuildArchive					"Skapa arkiver %s"
+::menu::mc::Data								"%s data" ;# NEW
+
+# Default Application
+::menu::mc::Assign							"assign" ;# NEW
+::menu::mc::ErrorWhileExecCmd				"Error while executing command: '%s'." ;# NEW
+::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s." ;# NEW
+::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s." ;# NEW
 
 ### load ###############################################################
 ::load::mc::SevereError				"Allvarlig fel vid laddning av ECO-fil"
@@ -2257,7 +2264,9 @@
 ::dialog::fsbox::mc::ScidDatabase			"Scid databas"
 ::dialog::fsbox::mc::ChessBaseDatabase		"ChessBase databas"
 ::dialog::fsbox::mc::PortableGameFile		"Flyttbar partifil"
+::dialog::fsbox::mc::PortableGameFileCompressed "Flyttbar partifil (gzip-komprimerat)"
 ::dialog::fsbox::mc::BughousePortableGameFile "Bughouse Portable Game File" ;# NEW
+::dialog::fsbox::mc::BughousePortableGameFileCompressed "Bughouse Portable Game File (gzip compressed)" ;# NEW
 ::dialog::fsbox::mc::ZipArchive				"ZIP arkiv"
 ::dialog::fsbox::mc::ScidbArchive			"Scidb arkiv"
 ::dialog::fsbox::mc::PortableDocumentFile	"Flyttbar dokumentfil"

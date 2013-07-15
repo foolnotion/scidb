@@ -1,7 +1,13 @@
 [Juli 2013 ] =================================================================
 
 ------------------------------------------------------------------------------
-Scidb 1.0 BETA (rev. #887
+Scidb 1.0 BETA (rev. #893)
+------------------------------------------------------------------------------
+* freedesktop.org requirements implemented: associate file types with icons,
+associate file tyoes with Scidb, add desktop menu entry.
+
+------------------------------------------------------------------------------
+Scidb 1.0 BETA (rev. #887)
 ------------------------------------------------------------------------------
 * Runtime a bit improved: replacement of __builtin_popcount with a quite
 faster implementation.

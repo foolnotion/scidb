@@ -62,13 +62,9 @@ dist-clean: clean-subdirs
 	@echo "Clean `pwd`"
 	@rm -f Makefile.in Makefile.in.bak
 
-install: check-mtime install-subdirs install-engines # update-magic
+install: check-mtime install-subdirs install-xdg # update-magic
 
-uninstall:
-	@$(MAKE) -C man uninstall
-	@$(MAKE) -C src uninstall
-	@$(MAKE) -C engines uninstall
-	@$(MAKE) -C tcl uninstall
+uninstall: uninstall-subdirs uninstall-xdg # update-magic
 
 uninstall-photos:
 	@$(MAKE) -C tcl uninstall-photos
@@ -83,11 +79,31 @@ install-subdirs:
 	@$(MAKE) -C engines install
 	@$(MAKE) -C tcl install
 
-install-engines: 
-	@$(MAKE) -C engines install
-
-uninstall-engines: 
+uninstall-subdirs:
+	@$(MAKE) -C man uninstall
+	@$(MAKE) -C src uninstall
 	@$(MAKE) -C engines uninstall
+	@$(MAKE) -C tcl uninstall
+
+install-xdg:
+	@if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
+		if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then        \
+			$(MAKE) -C freedesktop.org install-mime;                      \
+		fi;                                                              \
+	fi
+	@if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
+		$(MAKE) -C freedesktop.org install-desktop-menu;                 \
+	fi
+
+uninstall-xdg:
+	@if [ -n "$(shell xdg-icon-resource --version 2>/dev/null)" ]; then \
+		if [ -n "$(shell xdg-mime --version 2>/dev/null)" ]; then        \
+			$(MAKE) -C freedesktop.org uninstall-mime;                    \
+		fi;                                                              \
+	fi
+	@if [ -n "$(shell xdg-desktop-menu --version 2>/dev/null)" ]; then  \
+		$(MAKE) -C freedesktop.org uninstall-desktop-menu;               \
+	fi
 
 update-magic:
 	@echo "Update magic file"
