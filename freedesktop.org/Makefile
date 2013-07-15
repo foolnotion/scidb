@@ -49,28 +49,28 @@ install-mime-types:
 update-mime-database:
 	@echo "Update mime database"
 	@xdg-icon-resource forceupdate
-	@if [ "`id -u`" -eq 0 ]; then                                                 \
-		xdgdir=/usr/share;                                                         \
-		if [ -z "$(xdg_data_dirs)" ]; then                                         \
-			if [ -f /usr/local/share/applications/mimeapps.list ]; then             \
-				xdgdir=/usr/local/share;                                             \
-			fi;                                                                     \
-		else                                                                       \
-			for p in ${xdg_data_home//:/ }; do                                      \
-				if [ -d $$p/applications ] ; then                                    \
-					xdgdir=$$p;                                                       \
-					break;                                                            \
-				fi;                                                                  \
-			done;                                                                   \
-		fi;                                                                        \
-	else                                                                          \
-		xdgdir=~/.local/share;                                                     \
-		if [ ! -z "$(xdg_data_home)" ]; then                                       \
-			if [ -d $(xdg_data_home) ]; then                                        \
-				xdgdir=$(xdg_data_home);                                             \
-			fi;                                                                     \
-		fi;                                                                        \
-	fi;                                                                           \
+	@if [ "`id -u`" -eq 0 ]; then                                     \
+		xdgdir=/usr/share;                                             \
+		if [ -z "$(xdg_data_dirs)" ]; then                             \
+			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+				xdgdir=/usr/local/share;                                 \
+			fi;                                                         \
+		else                                                           \
+			for p in ${xdg_data_home//:/ }; do                          \
+				if [ -d $$p/applications ] ; then                        \
+					xdgdir=$$p;                                           \
+					break;                                                \
+				fi;                                                      \
+			done;                                                       \
+		fi;                                                            \
+	else                                                              \
+		xdgdir=~/.local/share;                                         \
+		if [ ! -z "$(xdg_data_home)" ]; then                           \
+			if [ -d $(xdg_data_home)/mime ]; then                       \
+				xdgdir=$(xdg_data_home);                                 \
+			fi;                                                         \
+		fi;                                                            \
+	fi;                                                               \
 	update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null
 
 install-mime: install-mime-icons install-mime-types update-mime-database
