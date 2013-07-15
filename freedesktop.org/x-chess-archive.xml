@@ -5,7 +5,7 @@
     <comment xml:lang="de">Schachdatenbankarchiv</comment>
     <comment xml:lang="en">Chess database archive</comment>
     <magic priority="50">
-      <match type="string" offset="0" value="iveArch\x0a\x3cTotalSize\x3e"/>
+      <match type="string" offset="0" value="iveArch"/>
     </magic>
     <glob pattern="*.scv"/>
   </mime-type>

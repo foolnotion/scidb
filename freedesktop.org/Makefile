@@ -83,7 +83,7 @@ uninstall-mime:
 ### desktop icons & menu ###############################################
 
 install-app-icons:
-	@echo "install desktop application icons"
+	@echo "Install desktop application icons"
 	@for size in 16 22 32 48 64 128; do                                                           \
 		if [ -f scidb-$$size.png ]; then                                                           \
 			xdg-icon-resource install --noupdate --novendor --size $$size ./scidb-$$size.png scidb; \
