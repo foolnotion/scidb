@@ -15,8 +15,8 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci #-I../util/curl/include
-ALL_INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(ZLIB_INC) $(INCLUDE)
+INCLUDE	= -I. -I../util/libTeXt -I../mstl -I../sys -I../util -I../util/expat -I../util/universalchardet -I../app -I../db -I../db/si3 -I../db/sci
+ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(ZLIB_INC)
 CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS) $(SCIDB_VERSION) $(SCIDB_REVISION)
 
 SRC_CXX = \

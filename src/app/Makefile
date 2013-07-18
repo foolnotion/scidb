@@ -16,7 +16,7 @@ include ../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/libTeXt -I../util/universalchardet -I../db -I../db/sci -I../db/si3
-ALL_INCLUDE = $(ZLIB_INC) $(INCLUDE)
+ALL_INCLUDE = $(INCLUDE) $(ZLIB_INC)
 CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS)
 
 SRC_CXX = \

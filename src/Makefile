@@ -18,7 +18,7 @@ TK_PROGRAM		= tkscidb$(SUFFIX)
 TCL_PROGRAM		= tclscidb$(SUFFIX)
 
 INCLUDE			= -I. -Imstl -Iutil -Idb -Idb/sci -Idb/si3 -Iutil/universalchardet -Iapp -Itcl -Itk -Isys
-ALL_INCLUDE		= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(ZLIB_INC) $(INCLUDE)
+ALL_INCLUDE		= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(ZLIB_INC)
 ALL_CXXFLAGS	= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(CXXFLAGS) $(SYS_CXXFLAGS)
 MINIZIP_LIB		= -Lutil/minizip -lminizip
 

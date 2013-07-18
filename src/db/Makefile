@@ -15,7 +15,7 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= $(ZLIB_INC) -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys
+INCLUDE	= -I. -Icql -Isci -Isci/v91 -Isci/v92 -Isci/v93 -Isi3 -Icbh -Icbf -I../mstl -I../util -I../util/libTeXt -I../util/libharu -I../util/universalchardet -I../util/expat -I../sys $(ZLIB_INC)
 CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(EXTRA_DEBUG_FLAGS) $(SYS_CXXFLAGS) -DSCI_NAMEBASE_FIX=1
 
 SRC_CXX = \
