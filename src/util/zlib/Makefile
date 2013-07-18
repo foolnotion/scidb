@@ -17,7 +17,7 @@ include ../../../Makefile.in
 INCLUDE	= -I.
 DEBUG		= -DNDEBUG
 OPTIMIZE	= -g #-O2
-CFLAGS	+= $(SYS_CFLAGS) $(OPTIMIZE) $(DEBUG)
+CFLAGS	+= $(OPTIMIZE) $(DEBUG) $(SYS_CFLAGS)
 
 SRC_C = \
 	adler32.c \

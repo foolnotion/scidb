@@ -16,7 +16,7 @@ include ../../../Makefile.in
 .PRECIOUS:
 
 INCLUDE	 = -I. -I../../mstl
-CXXFLAGS	+= $(SYS_CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING)
+CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(SYS_CXXFLAGS)
 
 SRC_CXX = \
 	T_ActiveToken.cpp \

@@ -103,8 +103,10 @@ proc findBestTclVersion {} {
         }
     }
 
-    if {[llength $results] > 0} {
-        return [lindex $results 0]
+    foreach v1 $Versions {
+        foreach v2 $results {
+            if {$v1 eq $v2} { return $version }
+        }
     }
 
     foreach version $Versions {

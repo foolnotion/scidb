@@ -8,7 +8,7 @@ include ../../../Makefile.in
 .PRECIOUS:
 
 INCLUDE  = -I.
-CXXFLAGS += $(SYS_CXXFLAGS) $(CXX_DEBUG) $(OPTIMIZE) $(PROFILING) #-DDEBUG_chardet
+CXXFLAGS += $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(SYS_CXXFLAGS) #-DDEBUG_chardet
 
 SRC_CXX = \
 	CharDistribution.cpp \

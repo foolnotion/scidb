@@ -15,10 +15,10 @@ include ../../Makefile.in
 .SUFFIXES: .cpp
 .PRECIOUS:
 
-INCLUDE	= -I. -I../mstl -I../sys -I../util -I../util/zlib -Itcl$(TCL_VERSION) -Itk$(TCL_VERSION) -I../tcl -Isvg -Isvg/agg -Ijpeg
-ALL_INCLUDE	= $(INCLUDE) $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE)
-CFLAGS	+= $(SYS_CFLAGS) $(OPTIMIZE) $(C_DEBUG) $(PROFILING)
-CXXFLAGS	+= $(SYS_CXXFLAGS) $(OPTIMIZE) $(CXX_DEBUG) $(PROFILING)
+INCLUDE	= -Itcl$(TCL_VERSION) -Itk$(TCL_VERSION) -I. -I../mstl -I../sys -I../util -I../util/zlib -I../tcl -Isvg -Isvg/agg -Ijpeg
+ALL_INCLUDE	= $(TCL_INCLUDE) $(TK_INCLUDE) $(X_INCLUDE) $(INCLUDE)
+CFLAGS	+= $(OPTIMIZE) $(PROFILING) $(C_DEBUG) $(SYS_CFLAGS)
+CXXFLAGS	+= $(OPTIMIZE) $(PROFILING) $(CXX_DEBUG) $(SYS_CXXFLAGS)
 
 SRC_CXX = \
 	tk_busy.cpp \

@@ -1549,6 +1549,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	$mw raise $Priv(pane:$pane)
 
 	setupStyle $context
+	::scidb::game::switch $position
 	::scidb::game::import $position $data [namespace current]::Trash {}
 	::scidb::game::langSet $position [list {} $langID]
 	if {$pane ne $Priv(previous-pane)} {

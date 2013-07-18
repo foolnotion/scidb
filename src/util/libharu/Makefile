@@ -17,13 +17,13 @@ include ../../../Makefile.in
 INCLUDE	= -I. -I../../mstl
 DEFINES	= -DHPDF_NOPNGLIB
 
-ALL_INCLUDE = $(INCLUDE) $(ZLIB_INC)
+ALL_INCLUDE = $(ZLIB_INC) $(INCLUDE)
 
 ifdef HAVE_XFT
 DEFINES += -DLIBHPDF_HAVE_FONTCONFIG_H=1
 endif
 
-CFLAGS	+= $(SYS_CFLAGS) $(C_DEBUG) $(OPTIMIZE) $(DEFINES)
+CFLAGS	+= $(OPTIMIZE) $(C_DEBUG) $(SYS_CFLAGS) $(DEFINES)
 
 SRC_C = \
 	hpdf_3dmeasure.c \

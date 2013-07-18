@@ -2411,7 +2411,9 @@ Application::importGame(Producer& producer, unsigned position, bool trialMode)
 
 	if (position != ReservedPosition && count > 0 && !trialMode && m_subscriber)
 	{
-		refreshGame(position);
+		// otherwise loadGame() is doing the refresh
+		if (game->sink.cursor->isScratchbase())
+			refreshGame(position);
 		m_subscriber->updateGameInfo(rememberPosition);
 	}
 
