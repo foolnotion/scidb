@@ -49,6 +49,9 @@ if {$method eq "remove" && ![file exists $file]} { return }
 proc sortApplications {mimetype applications} {
     global order myapp
 
+    # fix previous script version bug
+    if {[string index $applications end] ne ";"} { append applications ";" }
+
     if {[string match *$myapp.desktop* $applications]} { return $applications }
 
     if {$order($mimetype) eq "default"} {
@@ -61,7 +64,7 @@ proc sortApplications {mimetype applications} {
     } else {
         set other {}
         foreach app [split [lindex [split $order($mimetype) ":"] 1] ";"] {
-            lappend other $app.desktop
+            if {[string length $other]} { lappend other $app.desktop }
         }
         set apps [split $applications ";"]
         set delim ""
@@ -91,6 +94,7 @@ proc sortApplications {mimetype applications} {
         }
     }
 
+    if {[string length $applications]} { append result ";" }
     return $result
 }
 
@@ -98,18 +102,22 @@ proc sortApplications {mimetype applications} {
 proc stripApplications {mimetype applications} {
     global order myapp
 
+    # fix previous script version bug
+    if {[string index $applications end] ne ";"]} { append applications ";" }
+
     if {![string match *$myapp.desktop* $applications]} { return $applications }
 
     set delim ""
     set result ""
 
     foreach app [split $applications ";"] {
-        if {"$myapp.desktop" != $app} {
+        if {[string length $app] && "$myapp.desktop" != $app} {
             append result $delim $app
             set delim ";"
         }
     }
 
+    if {[string length $applications]} { append result ";" }
     return $result
 }
 
