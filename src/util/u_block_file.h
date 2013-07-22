@@ -111,6 +111,7 @@ public:
 	unsigned countSpans(unsigned size) const;
 	unsigned fileSize();
 	unsigned blockNumber(unsigned fileOffset) const;
+	unsigned recordLength(unsigned offset);
 
 	bool save(mstl::ostream& stream, Progress* progress = 0);
 	bool attach(mstl::fstream* stream, Progress* progress = 0);
@@ -123,7 +124,6 @@ public:
 	unsigned get(ByteStream& result, unsigned offset, unsigned length = 0);
 
 	unsigned shrink(unsigned newLength, unsigned offset, unsigned minLength = 0);
-
 	void removeBlocks(unsigned firstBlockNo, unsigned lastBlockNo);
 
 	Reader& reader();

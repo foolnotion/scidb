@@ -487,6 +487,8 @@
 ::application::database::mc::UnsavedFiles						"PGN-filen är inte sparad."
 ::application::database::mc::FileIsRemoved					"Filen '%s' är raderad. Använd exportdialogen om du vill spara databasen."
 ::application::database::mc::FileIsNotWritable				"Filen '%s' är inte skrivbar. Använd exportdialogen om du vill spara databasen, eller sätt filen skrivbar."
+::application::database::mc::OverwriteOriginalFile			"Important note: The original file '%s' will be overwritten." ;# NEW
+::application::database::mc::SetupPgnOptions					"Probably the PGN options should be set before saving." ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Omkodar %base från %from till %to"
 ::application::database::mc::RecodedGames						"%s parti(er) omkodade"

@@ -32,12 +32,11 @@
 #include "m_string.h"
 #include "m_ref_counter.h"
 
-namespace db { class MultiBase; }
-namespace db { class Producer; }
-namespace db { class Database; }
-namespace db { class Log; }
-
-namespace util { class Progress; }
+namespace db	{ class MultiBase; }
+namespace db	{ class Producer; }
+namespace db	{ class Database; }
+namespace db	{ class Log; }
+namespace util	{ class Progress; }
 
 namespace app {
 
@@ -110,8 +109,9 @@ public:
 	/// Replace database object.
 	void replace(db::Database* database);
 
-	// Compact the databases.
-	bool compact(::util::Progress& progress);
+	// FAM service
+	void famChanged();
+	void famDeleted();
 
 	static mstl::string const& clipbaseName();
 	static mstl::string const& scratchbaseName();

@@ -488,6 +488,8 @@
 ::application::database::mc::UnsavedFiles						"This PGN file is unsaved." ;# NEW
 ::application::database::mc::FileIsRemoved					"File '%s' is removed. Please use the export dialog if you like to save this database." ;# NEW
 ::application::database::mc::FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable." ;# NEW
+::application::database::mc::OverwriteOriginalFile			"Important note: The original file '%s' will be overwritten." ;# NEW
+::application::database::mc::SetupPgnOptions					"Probably the PGN options should be set before saving." ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Recodificar %base de %from a %to"
 ::application::database::mc::RecodedGames						"%s partida(s) recodificadas"

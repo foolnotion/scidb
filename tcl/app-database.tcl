@@ -79,6 +79,8 @@ set Example								"Example"
 set UnsavedFiles						"This PGN file is unsaved."
 set FileIsRemoved						"File '%s' is removed. Please use the export dialog if you like to save this database."
 set FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable."
+set OverwriteOriginalFile			"Important note: The original file '%s' will be overwritten."
+set SetupPgnOptions					"Probably the PGN options should be set before saving."
 
 set RecodingDatabase					"Recoding %base from %from to %to"
 set RecodedGames						"%s game(s) recoded"
@@ -311,7 +313,7 @@ proc build {tab width height} {
 	]
 	set Vars(button:save) [::toolbar::add $tbFile button \
 		-image $::icon::toolbarSave \
-		-tooltipvar [namespace current]::mc::FileSaveChanges \
+		-tooltipvar [::mc::var [namespace current]::mc::FileSaveChanges ...] \
 		-command [namespace code [list SaveChanges $main]] \
 		-state disabled \
 	]
@@ -1372,7 +1374,7 @@ proc PopupMenu {parent x y {base ""}} {
 				;
 			if {[::scidb::db::get unsaved? $base]} {
 				$menu add command \
-					-label " $mc::FileSaveChanges" \
+					-label " $mc::FileSaveChanges..." \
 					-image $::icon::16x16::save \
 					-compound left \
 					-command [namespace code [list SaveChanges $parent $base]] \
@@ -1533,33 +1535,74 @@ proc EmptyClipbase {parent} {
 proc SaveChanges {parent {base ""}} {
 	if {[string length $base] == 0} { set base [scidb::db::get name] }
 
+	wm withdraw [set dlg [tk::toplevel $parent.save -class Dialog]]
+	pack [set top [ttk::frame $dlg.top]] -fill both
+
+	set text [format $mc::OverwriteOriginalFile [::util::databaseName $base no]]
+	ttk::label $top.warning -wraplength 250 -text $text
+	set font [$top.warning cget -font]
+	if {[string length $font] == 0} { set font TkDefaultFont }
+	$top.warning configure -font [::font::makeBoldFont $font]
+	grid $top.warning -row 1 -column 1 -columnspan 3 -sticky w
+	ttk::label $top.options -wraplength 250 -text $mc::SetupPgnOptions
+	set text [::mc::stripAmpersand $::menu::mc::PgnOptions]
+	ttk::button $top.setup -text $text -command [list ::menu::setupPgnOptions $dlg]
+	grid $top.options -row 3 -column 1 -columnspan 3 -sticky w
+	grid $top.setup -row 5 -column 1 -columnspan 3 -sticky we
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 4 6} -minsize $::theme::pady
+	grid rowconfigure $top 2 -minsize $::theme::padY
+
+	::widget::dialogButtons $dlg {ok cancel}
+	$dlg.ok configure -command [namespace code [list DoSaveChanges $dlg $base]]
+	$dlg.cancel configure -command [list destroy $dlg]
+
+	update idletasks
+	set width [winfo reqwidth $top.setup]
+	$top.warning configure -wraplength $width
+	$top.options configure -wraplength $width
+
+	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
+	wm transient $dlg [winfo toplevel $parent]
+	wm withdraw $dlg
+	wm title $dlg $mc::FileSaveChanges
+	wm resizable $dlg false false
+	::util::place $dlg -parent $parent -position center
+	wm deiconify $dlg
+	focus $top.setup
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
+}
+
+
+proc DoSaveChanges {parent base} {
 	if {![file exists $base]} {
 		set msg [format $mc::FileIsRemoved [file tail $base]]
-		return [::dialog::error -parent $parent -message $msg]
-	}
-
-	if {![file writable $base]} {
+		::dialog::error -parent $parent -message $msg
+	} else if {![file writable $base]} {
 		set msg [format $mc::FileIsNotWritable [file tail $base]]
-		return [::dialog::error -parent $parent -message $msg]
-	}
+		::dialog::error -parent $parent -message $msg
+	} else {
+		set cmd [list scidb::db::savePGN $base "iso8859-1" [::export::getPgnFlags]]
+		set options [list -message $mc::FileSaveChanges]
+		set result [::progress::start $parent $cmd {} $options]
+		CheckSaveState $base
 
-	set stats [::scidb::db::get stats $base]
-	set cmd [list scidb::db::savePGN $base "iso8859-1" [::export::getPgnFlags]]
-	set options [list -message $mc::FileSaveChanges]
-	set result [::progress::start $parent $cmd {} $options]
-	CheckSaveState $base
+		switch $result {
+			IsUpTodate	{ ;# cannot happen }
+			IsReadonly	{ ;# cannot happen }
+			IsRemoved	{ ;# cannot happen }
 
-	switch $result {
-		IsUpTodate	{ ;# cannot happen }
-		IsReadonly	{ ;# cannot happen }
-		IsRemoved	{ ;# cannot happen }
+			HasChanged	{}
 
-		HasChanged	{}
-
-		Updated {
-			;# succesfully saved
+			Updated {
+				;# succesfully saved
+			}
 		}
 	}
+
+	destroy $dlg
 }
 
 
@@ -1879,24 +1922,21 @@ proc Compact {parent file} {
 	]
 	if {$reply eq "yes"} {
 		set variant [::scidb::app::variant]
-
-		if {[::game::closeAll $parent $file $variant $mc::FileCompact $mc::AllGamesMustBeClosed]} {
-			::browser::closeAll $file $variant
-			::overview::closeAll $file $variant
-			set cmd [list ::scidb::db::compact $file]
-			set name [::util::databaseName $file]
-			set title [format $mc::CompactMessage $name]
-			set options [list -message $title]
-			::progress::start $parent $cmd {} $options
-			switch $n {
-				0 - 1		{ set info $mc::GamesRemoved($n) }
-				default	{ set info $mc::GamesRemoved(N) }
-			}
-			::log::open $mc::Maintenance
-			::log::info $title
-			::log::info $info
-			::log::close
+		::browser::closeAll $file $variant
+		::overview::closeAll $file $variant
+		set cmd [list ::scidb::db::compact $file]
+		set name [::util::databaseName $file]
+		set title [format $mc::CompactMessage $name]
+		set options [list -message $title]
+		::progress::start $parent $cmd {} $options
+		switch $n {
+			0 - 1		{ set info $mc::GamesRemoved($n) }
+			default	{ set info $mc::GamesRemoved(N) }
 		}
+		::log::open $mc::Maintenance
+		::log::info $title
+		::log::info $info
+		::log::close
 	}
 }
 

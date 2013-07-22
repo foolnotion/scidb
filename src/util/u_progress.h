@@ -45,6 +45,8 @@ public:
 	void setFrequency(unsigned frequency);
 	void setCount(unsigned count);
 
+	static Progress& null();
+
 private:
 
 	unsigned m_freq;

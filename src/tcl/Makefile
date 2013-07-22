@@ -853,6 +853,7 @@ tcl_database.o: ../util/u_misc.h
 tcl_database.o: ../sys/sys_utf8_codec.h
 tcl_database.o: ../sys/sys_utf8_codec.ipp
 tcl_database.o: ../sys/sys_file.h
+tcl_database.o: ../sys/sys_file.ipp
 tcl_database.o: ../mstl/m_algorithm.h
 tcl_database.o: ../mstl/m_algorithm.ipp
 tcl_database.o: ../mstl/m_tuple.h
@@ -1286,6 +1287,7 @@ tcl_game.o: ../util/u_progress.ipp
 tcl_game.o: ../sys/sys_utf8_codec.h
 tcl_game.o: ../sys/sys_utf8_codec.ipp
 tcl_game.o: ../sys/sys_file.h
+tcl_game.o: ../sys/sys_file.ipp
 tcl_game.o: ../mstl/m_sstream.h
 tcl_game.o: ../mstl/m_ostream.h
 tcl_game.o: ../mstl/m_ios.h
@@ -1451,6 +1453,7 @@ tcl_misc.o: ../sys/sys_utf8_codec.ipp
 tcl_misc.o: ../sys/sys_utf8.h
 tcl_misc.o: ../sys/sys_utf8.ipp
 tcl_misc.o: ../sys/sys_file.h
+tcl_misc.o: ../sys/sys_file.ipp
 tcl_misc.o: ../sys/sys_info.h
 tcl_misc.o: ../sys/sys_vfs.h
 tcl_misc.o: ../util/u_html.h
@@ -2189,6 +2192,7 @@ tcl_view.o: ../mstl/m_scoped_ptr.ipp
 tcl_view.o: ../sys/sys_utf8_codec.h
 tcl_view.o: ../sys/sys_utf8_codec.ipp
 tcl_view.o: ../sys/sys_file.h
+tcl_view.o: ../sys/sys_file.ipp
 tcl_view.o: ../mstl/m_ofstream.h
 tcl_view.o: ../mstl/m_ostream.h
 tcl_view.o: ../mstl/m_ios.h

@@ -449,7 +449,6 @@ MultiBase::save(util::Progress& progress)
 }
 
 
-#include <stdio.h> // XXX
 file::State
 MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& progress)
 {
@@ -605,8 +604,6 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 			}
 		}
 
-		newFileOffsets->append(ostrm->tellp() + 1);
-
 		unsigned n				= m_fileOffsets->size();
 		unsigned lastIndex	= 0;
 		unsigned nextState	= Added;
@@ -647,11 +644,12 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 				else if (m_bases[offs.variant()]->isDeleted(offs.gameIndex()))
 				{
 					nextState = Deleted;
+					nextIndex[offs.variant()] = offs.gameIndex() + 1;
 				}
 				else
 				{
 					nextState = m_bases[offs.variant()]->hasChanged(offs.gameIndex()) ? Changed : Unchanged;
-					nextIndex[offs.variant()] = offs.gameIndex();
+					nextIndex[offs.variant()] = offs.gameIndex() + 1;
 				}
 			}
 
@@ -670,22 +668,14 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 
 						FileOffsets::Offset const* currOffs = &m_fileOffsets->get(startIndex);
 
-						for (unsigned index = startIndex + 1; index <= lastIndex; ++index)
+						newFileOffsets->append(offs, *currOffs);
+
+						for (unsigned index = startIndex + 1; index < lastIndex; ++index)
 						{
 							FileOffsets::Offset const* nextOffs = &m_fileOffsets->get(index);
 							offs += nextOffs->offset() - currOffs->offset();
-
-							if (currOffs->isGameIndex())
-							{
-								newFileOffsets->append(offs, currOffs->variant(), currOffs->gameIndex());
-								++numGames;
-							}
-							else
-							{
-								newFileOffsets->append(offs, currOffs->skipped());
-								numGames += currOffs->skipped();
-							}
-
+							newFileOffsets->append(offs, *nextOffs);
+							numGames += currOffs->gameCount();
 							currOffs = nextOffs;
 						}
 
@@ -694,7 +684,6 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 							unsigned startOffs	= m_fileOffsets->get(startIndex).offset();
 							unsigned endOffs		= m_fileOffsets->get(lastIndex).offset();
 
-//printf("unchanged(%u-%u): %u - %u\n", startIndex, lastIndex, startOffs, endOffs);
 							count = ::write(	istrm,
 													*ostrm,
 													startOffs,
@@ -723,16 +712,15 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 							}
 
 							FileOffsets::Offset const& offs = m_fileOffsets->get(startIndex);
+							newFileOffsets->append(ostrm->tellp(), offs);
 							Database* database = m_bases[offs.variant()];
 							writer->setupVariant(variant::fromIndex(offs.variant()));
 							database->exportGame(offs.gameIndex(), *writer); // always returning save::Ok
-//printf("changed(%u): %ul\n", startIndex, ostrm->tellp());
-							newFileOffsets->append(ostrm->tellp(), offs.variant(), offs.gameIndex());
 						}
 						break;
 				}
 
-				startIndex = ++lastIndex;
+				startIndex = lastIndex++;
 				prevState = nextState;
 			}
 		}
@@ -757,12 +745,13 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 
 			for (unsigned index = nextIndex[variant]; index < n; ++index)
 			{
-				database->exportGame(index, *writer); // always returning save::Ok
 				newFileOffsets->append(ostrm->tellp(), variant, index);
+				database->exportGame(index, *writer); // always returning save::Ok
 			}
 		}
 	}
 
+	newFileOffsets->append(ostrm->tellp());
 	ostrm->close();
 	writer.release();
 	if (ostrm->filename() != internalName)

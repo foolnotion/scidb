@@ -576,6 +576,16 @@ BlockFile::copy(ByteStream const& buf, unsigned offset, unsigned nbytes)
 
 
 unsigned
+BlockFile::recordLength(unsigned offset)
+{
+	M_REQUIRE(m_mode == ReadWriteLength);
+	M_REQUIRE(offset/blockSize() < countBlocks());
+
+	return retrieve(m_view, blockNumber(offset), blockOffset(offset));
+}
+
+
+unsigned
 BlockFile::put(ByteStream const& buf, unsigned offset, unsigned minSize)
 {
 	M_REQUIRE(isOpen());

@@ -1341,6 +1341,7 @@ db_database.o: ../util/u_misc.h
 db_database.o: ../sys/sys_utf8_codec.h
 db_database.o: ../sys/sys_utf8_codec.ipp
 db_database.o: ../sys/sys_file.h
+db_database.o: ../sys/sys_file.ipp
 db_database.o: ../mstl/m_stdio.h
 db_database_content.o: db_database_content.h
 db_database_content.o: db_namebases.h
@@ -1572,6 +1573,7 @@ db_database_codec.o: ../util/u_block_file.ipp
 db_database_codec.o: ../util/u_progress.h
 db_database_codec.o: ../util/u_progress.ipp
 db_database_codec.o: ../sys/sys_file.h
+db_database_codec.o: ../sys/sys_file.ipp
 db_database_codec.o: ../util/u_misc.h
 db_database_codec.o: ../mstl/m_auto_ptr.h
 db_database_codec.o: ../mstl/m_auto_ptr.ipp
@@ -3411,6 +3413,7 @@ db_multi_base.o: ../util/u_zstream.h
 db_multi_base.o: ../mstl/m_iostream.h
 db_multi_base.o: ../util/u_misc.h
 db_multi_base.o: ../sys/sys_file.h
+db_multi_base.o: ../sys/sys_file.ipp
 db_multi_base.o: ../sys/sys_utf8_codec.h
 db_multi_base.o: ../sys/sys_utf8_codec.ipp
 db_multi_base.o: ../mstl/m_auto_ptr.h
@@ -4424,6 +4427,7 @@ db_reader.o: ../mstl/m_ostream.ipp
 db_reader.o: ../util/u_misc.h
 db_reader.o: ../sys/sys_file.h
 db_reader.o: ../sys/sys_time.h
+db_reader.o: ../sys/sys_file.ipp
 db_search.o: db_search.h
 db_search.o: db_date.h
 db_search.o: ../util/u_crc.h
@@ -5753,6 +5757,7 @@ sci/sci_codec.o: ../util/u_misc.h
 sci/sci_codec.o: ../sys/sys_utf8_codec.h
 sci/sci_codec.o: ../sys/sys_utf8_codec.ipp
 sci/sci_codec.o: ../sys/sys_file.h
+sci/sci_codec.o: ../sys/sys_file.ipp
 sci/sci_consumer.o: sci/sci_consumer.h
 sci/sci_consumer.o: sci/sci_encoder.h
 sci/sci_consumer.o: sci/sci_encoder_position.h
@@ -6373,6 +6378,7 @@ sci/v91/sci_v91_codec.o: ../util/u_progress.ipp
 sci/v91/sci_v91_codec.o: ../sys/sys_utf8_codec.h
 sci/v91/sci_v91_codec.o: ../sys/sys_utf8_codec.ipp
 sci/v91/sci_v91_codec.o: ../sys/sys_file.h
+sci/v91/sci_v91_codec.o: ../sys/sys_file.ipp
 sci/v91/sci_v91_decoder.o: sci/v91/sci_v91_decoder.h
 sci/v91/sci_v91_decoder.o: sci/v91/sci_v91_decoder_position.h
 sci/v91/sci_v91_decoder.o: db_board.h
@@ -6693,6 +6699,7 @@ sci/v92/sci_v92_codec.o: ../util/u_misc.h
 sci/v92/sci_v92_codec.o: ../sys/sys_utf8_codec.h
 sci/v92/sci_v92_codec.o: ../sys/sys_utf8_codec.ipp
 sci/v92/sci_v92_codec.o: ../sys/sys_file.h
+sci/v92/sci_v92_codec.o: ../sys/sys_file.ipp
 sci/v92/sci_v92_decoder.o: sci/v92/sci_v92_decoder.h
 sci/v92/sci_v92_decoder.o: sci/v92/sci_v92_decoder_position.h
 sci/v92/sci_v92_decoder.o: db_board.h
@@ -7015,6 +7022,7 @@ sci/v93/sci_v93_codec.o: ../util/u_misc.h
 sci/v93/sci_v93_codec.o: ../sys/sys_utf8_codec.h
 sci/v93/sci_v93_codec.o: ../sys/sys_utf8_codec.ipp
 sci/v93/sci_v93_codec.o: ../sys/sys_file.h
+sci/v93/sci_v93_codec.o: ../sys/sys_file.ipp
 sci/v93/sci_v93_decoder.o: sci/v93/sci_v93_decoder.h
 sci/v93/sci_v93_decoder.o: sci/sci_decoder_position.h
 sci/v93/sci_v93_decoder.o: db_board.h
@@ -7354,6 +7362,7 @@ si3/si3_codec.o: ../util/u_progress.h
 si3/si3_codec.o: ../util/u_progress.ipp
 si3/si3_codec.o: ../util/u_misc.h
 si3/si3_codec.o: ../sys/sys_file.h
+si3/si3_codec.o: ../sys/sys_file.ipp
 si3/si3_codec.o: ../sys/sys_utf8.h
 si3/si3_codec.o: ../sys/sys_utf8.ipp
 si3/si3_codec.o: ../sys/sys_utf8_codec.h
@@ -8150,6 +8159,7 @@ cbf/cbf_codec.o: ../sys/sys_utf8_codec.ipp
 cbf/cbf_codec.o: ../sys/sys_utf8.h
 cbf/cbf_codec.o: ../sys/sys_utf8.ipp
 cbf/cbf_codec.o: ../sys/sys_file.h
+cbf/cbf_codec.o: ../sys/sys_file.ipp
 cbf/cbf_decoder.o: cbf/cbf_decoder.h
 cbf/cbf_decoder.o: cbf/cbf_decoder_position.h
 cbf/cbf_decoder.o: db_board.h
@@ -8452,6 +8462,7 @@ cbh/cbh_codec.o: ../util/u_byte_stream.h
 cbh/cbh_codec.o: ../util/u_byte_stream.ipp
 cbh/cbh_codec.o: ../util/u_misc.h
 cbh/cbh_codec.o: ../sys/sys_file.h
+cbh/cbh_codec.o: ../sys/sys_file.ipp
 cbh/cbh_codec.o: ../sys/sys_utf8.h
 cbh/cbh_codec.o: ../sys/sys_utf8.ipp
 cbh/cbh_codec.o: ../sys/sys_utf8_codec.h

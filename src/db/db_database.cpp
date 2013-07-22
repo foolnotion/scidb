@@ -556,6 +556,8 @@ Database::compact(util::Progress& progress)
 	}
 
 	m_gameInfoList.swap(newList);
+	m_size = m_gameInfoList.size();
+	m_statistic.deleted = 0;
 
 	m_statistic.compute(	const_cast<GameInfoList const&>(m_gameInfoList).begin(),
 								const_cast<GameInfoList const&>(m_gameInfoList).end(),

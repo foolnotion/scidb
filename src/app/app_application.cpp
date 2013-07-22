@@ -29,6 +29,7 @@
 #include "app_cursor.h"
 #include "app_view.h"
 #include "app_engine.h"
+#include "app_fam_service.h"
 
 #include "db_multi_base.h"
 #include "db_database.h"
@@ -69,7 +70,8 @@ using namespace app;
 using namespace util;
 
 
-Application* Application::m_instance = 0;
+Application*	Application::m_instance		= 0;
+FAMService*		Application::m_famService	= 0;
 
 unsigned const Application::InvalidPosition;
 unsigned const Application::ReservedPosition;
@@ -246,6 +248,7 @@ Application::Application()
 	M_REQUIRE(!hasInstance());
 
 	m_instance = this;
+	m_famService = new FAMService;
 
 	MultiCursor* clipbase		= new MultiCursor(*this, MultiCursor::Clipbase);
 	MultiCursor* scratchbase	= new MultiCursor(*this, MultiCursor::Scratchbase);
@@ -261,6 +264,8 @@ Application::Application()
 
 Application::~Application() throw()
 {
+	delete m_famService;
+	m_famService = 0;
 	m_instance = 0;
 
 	for (EngineList::iterator i = m_engineList.begin(); i != m_engineList.end(); ++i)
@@ -1331,7 +1336,8 @@ Application::loadGame(	unsigned position,
 		TagSet tags;
 		base.getGameTags(index, tags);
 
-		// TODO: compact scratch base (we need fast compact)
+		if (cursor.isScratchbase())
+			compact(cursor);
 
 		game.data.game->setUndoLevel(::undoLevel, ::undoCombinePredecessingMoves);
 		game.sink.cursor = &cursor;
@@ -1496,7 +1502,7 @@ Application::changeVariant(unsigned position, variant::Type variant)
 		game.link.crcMoves = game.sink.crcMoves;
 
 		game.sink.cursor->base().deleteGame(game.sink.index, true);
-		// TODO: compact database
+		compact(*scratch);
 	}
 }
 
@@ -1968,7 +1974,7 @@ Application::compactBase(Cursor& cursor, util::Progress& progress)
 	if (cursor.isReferenceBase())
 		cancelUpdateTree();
 
-	if (cursor.compact(progress))
+	if (compact(cursor, progress) && m_subscriber)
 	{
 		m_subscriber->updateDatabaseInfo(cursor.name(), cursor.variant());
 
@@ -2404,7 +2410,7 @@ Application::importGame(Producer& producer, unsigned position, bool trialMode)
 
 		scratch->database().deleteGame(myGame->sink.index, true);
 		releaseGame(position);
-		// TODO: compact scratch base
+		compact(*scratch);
 	}
 
 	game->data.game->setIsIrreversible(true);
@@ -2720,18 +2726,75 @@ Application::save(mstl::string const& name,
 
 	file::State state = multiBase.save(encoding, flags, progress);
 
-	multiCursor.compact(progress);
-
-	if (state == file::Updated && m_subscriber)
+	if (state == file::Updated)
 	{
 		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
 		{
-			if (multiCursor.exists(v))
+			if (Cursor* cursor = multiCursor[v])
+			{
+				if (compact(*cursor, progress) && m_subscriber)
+				{
+					if (m_current == cursor)
+						m_subscriber->updateList(m_updateCount++, cursor->name(), cursor->variant());
+
+					if (cursor->isReferenceBase() && !m_treeIsFrozen)
+						m_subscriber->updateTree(m_referenceBase->name(), m_referenceBase->variant());
+				}
+
 				m_subscriber->updateDatabaseInfo(name, variant::fromIndex(v));
+			}
 		}
 	}
 
 	return state;
+}
+
+
+bool
+Application::compact(Cursor& cursor, util::Progress& progress)
+{
+	Database const& database = cursor.base();
+	mstl::bitset map(database.countGames());
+
+	for (unsigned i = 0; i < map.size(); ++i)
+		map.put(i, !database.isDeleted(i));
+
+	bool rc = cursor.compact(progress);
+
+	if (rc)
+	{
+		for (GameMap::iterator i = m_gameMap.begin(); i != m_gameMap.end(); ++i)
+		{
+			EditGame& g = *i->second;
+
+			if (g.sink.cursor == &cursor)
+			{
+				g.sink.index = map.count(0, g.sink.index) - 1;
+
+				if (g.link.databaseName == cursor.name())
+					g.link.index = g.sink.index;
+
+				if (m_subscriber)
+					m_subscriber->updateGameInfo(i->first);
+			}
+			else if (g.link.databaseName == cursor.name())
+			{
+				g.link.index = map.count(0, g.link.index) - 1;
+
+				if (m_subscriber)
+					m_subscriber->updateGameInfo(i->first);
+			}
+		}
+	}
+
+	return rc;
+}
+
+
+bool
+Application::compact(Cursor& cursor)
+{
+	return compact(cursor, ::util::Progress::null());
 }
 
 

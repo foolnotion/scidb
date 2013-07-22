@@ -24,74 +24,40 @@
 // (at your option) any later version.
 // ======================================================================
 
-#ifndef _db_file_offsets_included
-#define _db_file_offsets_included
+#ifndef _app_fam_service_included
+#define _app_fam_service_included
 
-#include "db_common.h"
+namespace mstl { class string; }
 
-#include "m_vector.h"
-#include "m_utility.h"
+namespace app {
 
-namespace db {
-
-class FileOffsets : public mstl::noncopyable
+class FAMService
 {
 public:
 
-	struct Offset
+	struct Callback
 	{
-	public:
+		virtual ~Callback() = 0;
 
-		Offset(unsigned offset, unsigned skipped);
-		Offset(unsigned offset, unsigned variant, unsigned gameIndex);
+		virtual void signalId(unsigned id, mstl::string const& path);
 
-		bool isGameIndex() const;
-		bool isNumberOfSkippedGames() const;
-
-		unsigned offset() const;
-		unsigned variant() const;
-		unsigned gameIndex() const;
-		unsigned skipped() const;
-		unsigned gameCount() const;
-
-	private:
-
-		friend class FileOffsets;
-
-		uint32_t m_offset;
-		uint32_t m_index:24;
-		uint32_t m_variant:8;
+		virtual void signalChanged(unsigned id, mstl::string const& path);
+		virtual void signalDeleted(unsigned id, mstl::string const& path);
+		virtual void signalCreated(unsigned id, mstl::string const& path);
 	};
 
-	typedef mstl::vector<Offset> Offsets;
-
-	FileOffsets();
-	FileOffsets(FileOffsets const& fileOffsets);
-
-	bool isEmpty() const;
-
-	unsigned size() const;
-	unsigned countGames() const;
-
-	Offset const& get(unsigned index) const;
-
-	void append(unsigned offset, unsigned skipped = 0);
-	void append(unsigned offset, unsigned variant, unsigned gameIndex);
-	void append(unsigned offset, Offset const& src);
-	void setSkipped(unsigned count);
-
-	void reserve(unsigned n);
+	void hook(mstl::string const& path, Callback& callback);
+	void unhook(mstl::string const& path);
 
 private:
 
-	Offsets	m_offsets;
-	unsigned	m_countSkipped;
+	class FileAlterationMonitor;
+
+	static FileAlterationMonitor* m_fam;
 };
 
-} // namespace db
+} // namespace app
 
-#include "db_file_offsets.ipp"
-
-#endif // _db_file_offsets_included
+#endif // _app_fam_service_included
 
 // vi:set ts=3 sw=3:

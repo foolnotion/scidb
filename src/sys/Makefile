@@ -124,6 +124,7 @@ sys_fam.o: sys_fam.ipp
 sys_fam.o: sys_file.h
 sys_fam.o: sys_time.h
 sys_fam.o: ../util/u_base.h
+sys_fam.o: sys_file.ipp
 sys_fam.o: ../mstl/m_hash.h
 sys_fam.o: ../mstl/m_vector.h
 sys_fam.o: ../mstl/m_memblock.h
@@ -163,6 +164,7 @@ sys_file.o: ../mstl/m_assert.h
 sys_file.o: ../mstl/m_exception.h
 sys_file.o: ../mstl/m_backtrace.h
 sys_file.o: ../mstl/m_exception.ipp
+sys_file.o: sys_file.ipp
 sys_file.o: sys_base.h
 sys_file.o: sys_base.ipp
 sys_file.o: ../tcl/tcl_base.h

@@ -2520,8 +2520,12 @@ Codec::compact(util::Progress& progress)
 
 		if (!info.isDeleted())
 		{
+			unsigned length = m_gameData->mode() == BlockFile::ReadWriteLength
+										? m_gameData->recordLength(info.gameOffset())
+										: info.gameRecordLength();
+
 			unsigned firstBlock	= m_gameData->blockNumber(info.gameOffset());
-			unsigned lastBlock	= firstBlock + m_gameData->countSpans(info.gameRecordLength());
+			unsigned lastBlock	= firstBlock + m_gameData->countSpans(length);
 
 			for ( ; firstBlock < lastBlock; ++firstBlock)
 				used.set(firstBlock);
