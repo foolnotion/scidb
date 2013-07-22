@@ -3,7 +3,7 @@
   <mime-type type="application/x-chess-gzpgn">
     <comment>Portable Game File (gzip-compressed)</comment>
     <comment xml:lang="de">PGN-Schachspielnotation (gzip-komprimiert)</comment>
-    <comment xml:lang="en">Portable Game File (gzip-compressed)</comment>
+    <comment xml:lang="en">PGN chess game notation (gzip-compressed)</comment>
     <comment xml:lang="es">Notación para juegos de ajedrez PGN (comprimido con gzip)</comment>
     <comment xml:lang="hu">PGN sakkfeljegyzés (gzip-pel tömörítve)</comment>
     <comment xml:lang="it">Notazione partita a scacchi PGN (compresso con gzip)</comment>

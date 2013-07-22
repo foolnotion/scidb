@@ -22,7 +22,7 @@ exec $tclsh "$0" ${1+"$@"}
 
 array set order {
     application/x-chess-pgn             before:scidvspc;scid
-    application/x-chess-pgngz           before:scidvspc;scid
+    application/x-chess-gzpgn           before:scidvspc;scid
     application/x-chess-scidb           default
     application/x-chess-scid4           after:scidvspc;scid
     application/x-chess-scid3           default
@@ -49,18 +49,16 @@ if {$method eq "remove" && ![file exists $file]} { return }
 proc sortApplications {mimetype applications} {
     global order myapp
 
-    # fix previous script version bug
-    if {[string index $applications end] ne ";"} { append applications ";" }
-
-    if {[string match *$myapp.desktop* $applications]} { return $applications }
+    if {[string match *$myapp.desktop* $applications]} {
+        # fix previous script version bug
+        if {[string index $applications end] ne ";"} { append applications ";" }
+        return $applications
+    }
 
     if {$order($mimetype) eq "default"} {
-        set result $myapp.desktop
-        if {[string length $applications]} { append result ";" $applications }
+        append result $myapp.desktop ";" $applications
     } elseif {$order($mimetype) eq "end"} {
-        set result $applications
-        if {[string index $result end] ne ";"} { append result ";" }
-        append result $myapp.desktop
+        append result $applications ";" $myapp.desktop
     } else {
         set other {}
         foreach app [split [lindex [split $order($mimetype) ":"] 1] ";"] {
@@ -74,51 +72,50 @@ proc sortApplications {mimetype applications} {
             for {} {$i < [llength $apps]} {incr i} {
                 set k [lsearch -exact $other $app.desktop]
                 if {$k >= 0} { break }
-                append result $delim [lindex $apps $i]
-                set delim ";"
+                append result ";" [lindex $apps $i]
             }
         } else { ;# after:*
             for {} {$i < [llength $apps]} {incr i} {
                 if {[llength $other] == 0} { break; }
-                append result $delim [lindex $apps $i]
-                set delim ";"
+                append result ";" [lindex $apps $i]
                 set k [lsearch -exact $other $app.desktop]
                 if {$k >= 0} { set other [lreplace $other $k $k] }
             }
         }
 
-        append result $delim $myapp.desktop
+        append result ";" $myapp.desktop
 
         for {} {$i < [llength $apps]} {incr i} {
             append result ";" [lindex $apps $i]
         }
     }
 
-    if {[string length $applications]} { append result ";" }
-    return $result
+    append result ";"
+    if {[string index $result 0] == ";"} { set result [string range $result 1 end] }
+    return [string map {";;" ";"} $result]
 }
 
 
 proc stripApplications {mimetype applications} {
     global order myapp
 
-    # fix previous script version bug
-    if {[string index $applications end] ne ";"]} { append applications ";" }
+    if {![string match *$myapp.desktop* $applications]} {
+       # fix previous script version bug
+        if {[string index $applications end] ne ";"} { append applications ";" }
+        return $applications
+    }
 
-    if {![string match *$myapp.desktop* $applications]} { return $applications }
-
-    set delim ""
     set result ""
 
     foreach app [split $applications ";"] {
         if {[string length $app] && "$myapp.desktop" != $app} {
-            append result $delim $app
-            set delim ";"
+            append result ";" $delim $app
         }
     }
 
-    if {[string length $applications]} { append result ";" }
-    return $result
+    append result ";"
+    if {[string index $result] == ";"} { set result [string range $result 1 end] }
+    return [string map {";;" ";"} $result]
 }
 
 
@@ -132,7 +129,6 @@ if {[file extension $file] eq ".cache"} {
 array set content {0 {} 1 {} 2 {}}
 if {$method eq "add"} { set handleProc sortApplications} else { set handleProc stripApplications }
 set countEntries 0
-set countSections 0
 
 if {[file readable $file]} {
     set chan [open $file "r"]
@@ -144,7 +140,7 @@ if {[file readable $file]} {
             set section 1
         } elseif {[string match {[*]*} $line]} {
             if {$section == 1} { incr section }
-            incr countSections
+            incr countEntries
         } elseif {$section == 1 && [string length $line] && [string index $line 0] ne "#"} {
             set parts [split $line =]
             if {[llength $parts] == 2} {
@@ -166,24 +162,25 @@ if {[file readable $file]} {
     close $chan
 } elseif {$method eq "add"} {
     lappend content(1) $header
-    incr countEntries
 }
 
-if {$countSections == 0 && $countEntries == 0} {
+if {$method eq "remove" && $countEntries == 0} {
     file delete -force $file
 } else {
-    set chan [open $file "w" 0644]
+    set tmpfile "[file dirname $file]/.[file tail $file].037369839329"
+    set chan [open $tmpfile "w" 0644]
 
     foreach entry $content(0) { puts $chan $entry }
     foreach entry $content(1) { puts $chan $entry }
     if {$method eq "add"} {
         foreach mimetype [array names order] {
-            puts $chan "${mimetype}=$myapp.desktop"
+            puts $chan "${mimetype}=$myapp.desktop;"
         }
     }
     foreach entry $content(2) { puts $chan $entry }
 
     close $chan
+    file rename -force $tmpfile $file
 }
 
 # vi:set ts=4 sw=4 et filetype=tcl:
