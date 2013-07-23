@@ -58,7 +58,7 @@ public:
 	virtual unsigned plyCount() const = 0;
 	virtual variant::Type variant() const = 0;
 	virtual uint16_t idn() const = 0;
-	virtual uint32_t flags() const = 0;
+	virtual uint32_t gameFlags() const = 0;
 	virtual bool commentEngFlag() const = 0;
 	virtual bool commentOthFlag() const = 0;
 

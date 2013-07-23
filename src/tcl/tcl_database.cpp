@@ -848,6 +848,23 @@ convToType(char const* cmd, Tcl_Obj* typeObj, int* type)
 }
 
 
+static void
+flagsToString(unsigned flags, mstl::string& result)
+{
+	mstl::string buf;
+
+	GameInfo::flagsToString(flags & ~GameInfo::Flag_Deleted, buf);
+
+	for (unsigned i = 0; i < buf.size(); ++i)
+	{
+		result += buf[i];
+		result += ' ';
+	}
+
+	result.trim();
+}
+
+
 static int
 cmdAttach(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
@@ -1936,7 +1953,7 @@ getGameInfo(int index, int view, char const* database, variant::Type variant, un
 			{
 				mstl::string flags;
 
-				GameInfo::flagsToString(info.flags(), flags);
+				flagsToString(info.flags(), flags);
 				if (cursor.database().format() == format::Scid4)
 					::mapScid4Flags(flags);
 				obj = Tcl_NewStringObj(flags, flags.size());
@@ -2047,7 +2064,7 @@ tcl::db::getGameInfo(Database const& db, unsigned index, Ratings const& ratings)
 	mstl::string flags;
 	mstl::string overview;
 
-	GameInfo::flagsToString(info.flags(), flags);
+	flagsToString(info.flags(), flags);
 
 	if (db.format() == format::Scid4)
 		::mapScid4Flags(flags);
@@ -3202,7 +3219,7 @@ cmdGet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			Database const& database = cursor.database();
 			mstl::string flags;
 
-			GameInfo::flagsToString(database.codec().gameFlags(), flags);
+			flagsToString(database.codec().gameFlags(), flags);
 
 			if (database.format() == format::Scid4)
 				::mapScid4Flags(flags);

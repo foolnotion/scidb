@@ -272,13 +272,13 @@ private:
 	time::Mode			m_timeMode;
 	unsigned				m_significance[2];
 	Modification		m_modification;
+	Modification		m_generalModification;
 	bool					m_parsingFirstHdr;
 	bool					m_parsingTags;
 	bool					m_eof;
 	bool					m_hasNote;
 	bool					m_atStart;
 	bool					m_parsingComment;
-	bool					m_sourceIsScidb;
 	bool					m_sourceIsPossiblyChessBase;
 	bool					m_sourceIsChessOK;
 	bool					m_encodingFailed;

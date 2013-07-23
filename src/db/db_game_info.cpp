@@ -56,8 +56,9 @@ static NamebaseEntry		g_empty;
 static NamebaseEvent		g_event;
 static NamebasePlayer	g_player;
 
-static char const GameFlagMap[23] =
+static char const GameFlagMap[24] =
 {
+	'-', // Flag_Deleted
 	'w', // Flag_White_Opening
 	'b', // Flag_Black_Opening
 	'm', // Flag_Middle_Game
@@ -526,7 +527,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_pd[0].langFlag	= provider.commentEngFlag();
 	m_pd[1].langFlag	= provider.commentOthFlag();
 
-	setFlags(provider.flags());
+	m_gameFlags = provider.gameFlags() & ~(Flag_Dirty | Flag_Changed);
 
 	char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 	m_round = ::strtoul(s, &s, 10);
@@ -1283,44 +1284,27 @@ char
 GameInfo::mapFlag(uint32_t flag)
 {
 	M_REQUIRE(flag <= Flag_Illegal_Move);
-	M_REQUIRE(flag > Flag_Deleted);
+	M_ASSERT(mstl::bf::lsb_index(flag) <= U_NUMBER_OF(::GameFlagMap));
 
-	M_ASSERT(mstl::bf::lsb_index(flag) > 0);
-	M_ASSERT(mstl::bf::lsb_index(flag) < U_NUMBER_OF(::GameFlagMap));
-
-	return ::GameFlagMap[mstl::bf::lsb_index(flag) - 1];
+	return ::GameFlagMap[mstl::bf::lsb_index(flag)];
 }
 
 
 mstl::string&
 GameInfo::flagsToString(uint32_t flags, mstl::string& result)
 {
-	unsigned size = result.size();
-
 	if (flags & Flag_Illegal_Move)
-	{
 		result += mapFlag(Flag_Illegal_Move);
-		result += ' ';
-	}
 	else if (flags & Flag_Illegal_Castling)
-	{
 		result += mapFlag(Flag_Illegal_Castling);
-		result += ' ';
-	}
 
 	for (unsigned i = 0; i < U_NUMBER_OF(::GameFlagMap); ++i)
 	{
-		unsigned flag = (1u << (i + 1)) & ~(Flag_Illegal_Castling | Flag_Illegal_Move);
+		unsigned flag = (1u << i) & ~(Flag_Illegal_Castling | Flag_Illegal_Move);
 
 		if (flags & flag)
-		{
 			result += ::GameFlagMap[i];
-			result += ' ';
-		}
 	}
-
-	if (result.size() > size)
-		result.resize(result.size() - 1);
 
 	return result;
 }
@@ -1332,7 +1316,7 @@ GameInfo::charToFlag(char c)
 	for (unsigned i = 0; i < U_NUMBER_OF(::GameFlagMap); ++i)
 	{
 		if (c == ::GameFlagMap[i])
-			return (1 << (i + 1));
+			return (1 << i);
 	}
 
 	return 0;

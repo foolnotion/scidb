@@ -1340,7 +1340,7 @@ Game::redo()
 }
 
 
-void Game::setFlags(unsigned flags)
+void Game::setGameFlags(unsigned flags)
 {
 	m_flags = flags & ~GameInfo::Flag_Special;
 }

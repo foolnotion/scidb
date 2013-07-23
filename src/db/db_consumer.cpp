@@ -62,7 +62,8 @@ Consumer::Consumer(	format::Type srcFormat,
 	,m_variant(variant::Normal)
 	,m_useVariant(variant::Normal)
 	,m_idn(0)
-	,m_flags(0)
+	,m_gameFlags(0)
+	,m_updateFlags(0)
 	,m_line(m_moveBuffer)
 	,m_encoding(encoding)
 	,m_codec(new sys::utf8::Codec(encoding))
@@ -148,9 +149,9 @@ Consumer::idn() const
 
 
 void
-Consumer::setFlags(uint32_t flags)
+Consumer::setGameFlags(uint32_t flags)
 {
-	m_flags = flags & ~GameInfo::Flag_Special;
+	m_updateFlags = flags & ~(GameInfo::Flag_Dirty | GameInfo::Flag_Changed);
 }
 
 
@@ -202,13 +203,14 @@ Consumer::startGame(TagSet const& tags, Board const* board, uint16_t* idn)
 	m_line.length = 0;
 	m_commentEngFlag = false;
 	m_commentOthFlag = false;
-	m_flags = 0;
+	m_gameFlags = m_updateFlags;
 	m_variant = m_mainVariant;
 	m_useVariant = m_mainVariant;
 	m_moveInfoSet.clear();
 	m_engines.clear();
 	m_homePawns.clear();
 	m_sendTimeTable.clear();
+	m_updateFlags = 0;
 
 	if (board)
 	{
@@ -453,9 +455,9 @@ Consumer::afterSendMove(Entry& entry)
 		if (!move.isLegal())
 		{
 			if (move.isCastling() && !entry.board.isInCheck())
-				m_flags |= GameInfo::Flag_Illegal_Castling;
+				m_gameFlags |= GameInfo::Flag_Illegal_Castling;
 			else
-				m_flags |= GameInfo::Flag_Illegal_Move;
+				m_gameFlags |= GameInfo::Flag_Illegal_Move;
 		}
 
 		m_homePawns.move(move);

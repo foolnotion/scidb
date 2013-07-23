@@ -497,6 +497,7 @@ private:
 	Cursor const* findBase(	mstl::string const& name) const;
 	Cursor const* findBase(	mstl::string const& name, db::variant::Type variant) const;
 	void setReferenceBase(Cursor* cursor, bool isUserSet);
+	void moveGameToScratchbase(GameMap::value_type& entry, bool overtake);
 	void moveGamesToScratchbase(Cursor& cursor, bool overtake = false);
 	void moveGamesBackToDatabase(Cursor& cursor);
 	EditGame* findGame(Cursor* cursor, unsigned index, unsigned* position = 0);

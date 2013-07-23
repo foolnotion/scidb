@@ -83,7 +83,7 @@ public:
 	unsigned plyCount() const override;
 	variant::Type variant() const override;
 	uint16_t idn() const override;
-	uint32_t flags() const override;
+	uint32_t gameFlags() const override;
 
 	Board const& board() const;
 	Board const& startBoard() const;
@@ -117,7 +117,7 @@ public:
 						Comment const& preComment,
 						Comment const& comment,
 						MarkSet const& marks);
-	void setFlags(uint32_t flags);
+	void setGameFlags(uint32_t flags);
 	void setVariant(variant::Type variant);
 	void useVariant(variant::Type variant);
 	void setupVariant(variant::Type variant);
@@ -213,7 +213,8 @@ private:
 	variant::Type		m_variant;
 	variant::Type		m_useVariant;
 	uint16_t				m_idn;
-	uint32_t				m_flags;
+	uint32_t				m_gameFlags;
+	uint32_t				m_updateFlags;
 	Line					m_line;
 	HomePawns			m_homePawns;
 	uint16_t				m_moveBuffer[opening::Max_Line_Length];

@@ -918,7 +918,7 @@ Database::updateGame(Game& game)
 	}
 
 	m_codec->encodeGame(strm, game, game.getFinalBoard().signature());
-	game.setFlags(info.flags());
+	game.setGameFlags(info.flags());
 
 	save::State state = m_codec->saveGame(strm, game.tags(), game);
 
@@ -947,7 +947,7 @@ Database::updateGame(Game& game)
 		}
 
 		info.setDirty(false);
-		game.setFlags(info.flags());
+		game.setGameFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
 
@@ -1015,7 +1015,7 @@ Database::updateMoves(Game& game)
 		}
 
 		info.setDirty(false);
-		game.setFlags(info.flags());
+		game.setGameFlags(info.flags());
 		m_lastChange = sys::time::timestamp();
 		m_treeCache.setIncomplete(game.index());
 	}
@@ -1166,7 +1166,7 @@ Database::exportGame(unsigned index, Consumer& consumer) const
 	save::State rc;
 
 	m_codec->reset();
-	consumer.setFlags(info->flags());
+	consumer.setGameFlags(info->flags());
 
 #ifdef DEBUG_SI4
 	consumer.m_index = index;

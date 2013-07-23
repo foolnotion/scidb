@@ -32,6 +32,7 @@
 #include "db_date.h"
 #include "db_comment.h"
 #include "db_eco.h"
+#include "db_game_info.h"
 #include "db_pgn_aquarium.h"
 #include "db_exception.h"
 
@@ -364,13 +365,13 @@ PgnReader::PgnReader(mstl::istream& stream,
 	,m_result(result::Unknown)
 	,m_timeMode(time::Unknown)
 	,m_modification(modification)
+	,m_generalModification(modification)
 	,m_parsingFirstHdr(true)
 	,m_parsingTags(false)
 	,m_eof(false)
 	,m_hasNote(false)
 	,m_atStart(true)
 	,m_parsingComment(false)
-	,m_sourceIsScidb(false)
 	,m_sourceIsPossiblyChessBase(false)
 	,m_sourceIsChessOK(false)
 	,m_encodingFailed(false)
@@ -820,9 +821,9 @@ PgnReader::process(Progress& progress)
 				m_warnings.clear();
 				m_givenVariant = givenVariant;
 				m_thisVariant = variant::Undetermined;
-				m_sourceIsScidb = false;
 				m_sourceIsPossiblyChessBase = false;
 				m_sourceIsChessOK = false;
+				m_modification = m_generalModification;
 
 				if ((m_variant = m_givenVariant) == variant::Antichess)
 					m_variant = variant::Suicide;
@@ -833,13 +834,8 @@ PgnReader::process(Progress& progress)
 					readTags();
 					m_parsingTags = false;
 
-					if (	!m_sourceIsScidb
-						&& m_modification == Raw
-						&& m_tags.contains(PlyCount)
-						&& m_tags.contains(EventCountry))
-					{
+					if (m_modification == Raw && m_tags.contains(PlyCount) && m_tags.contains(EventCountry))
 						m_sourceIsPossiblyChessBase = true;
-					}
 				}
 
 				if (m_variant != variant::Undetermined && !m_tags.contains(tag::Variant))
@@ -1634,7 +1630,7 @@ PgnReader::putMove(bool lastMove)
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
 					m_comments.erase(m_comments.begin(), m_comments.begin() + m_postIndex + 1);
 				}
-				else if (m_comments.size() - m_postIndex > 1 && (m_sourceIsScidb || m_modification == Raw))
+				else if (m_comments.size() - m_postIndex > 1 && m_modification == Raw)
 				{
 					::join(m_comments.begin() + m_postIndex, m_comments.end() - 1);
 					consumer().putMove(m_move, m_annotation, m_comments[0], m_comments[m_postIndex], m_marks);
@@ -1656,7 +1652,7 @@ PgnReader::putMove(bool lastMove)
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
 				m_comments.erase(m_comments.begin());
 			}
-			else if (m_comments.size() > 1 && (m_sourceIsScidb || m_modification == Raw))
+			else if (m_comments.size() > 1 && m_modification == Raw)
 			{
 				::join(m_comments.begin(), m_comments.end() - 1);
 				consumer().putMove(m_move, m_annotation, Comment(), m_comments[0], m_marks);
@@ -1737,7 +1733,7 @@ PgnReader::putLastMove()
 
 		if (consumer().variationIsEmpty())
 		{
-			if (m_comments.size() > 1 && (m_sourceIsScidb || m_modification == Raw))
+			if (m_comments.size() > 1 && m_modification == Raw)
 			{
 				::join(m_comments.begin() + 1, m_comments.end());
 				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
@@ -2330,11 +2326,7 @@ PgnReader::checkTags()
 		checkFen();
 
 	if (m_tags.contains(tag::Idn))
-	{
-//		TODO: seems not to be realizable
-//		m_sourceIsScidb = true;
 		m_tags.remove(tag::Idn);
-	}
 
 	if (m_modification == Raw)
 		return;
@@ -3054,17 +3046,29 @@ PgnReader::readTags()
 								{
 									switch (name[0])
 									{
-										// ignore special tags from chessOK.com
+										// ignore internal flags and other special tags
 
 										case 'G': ignore = (name == "GameID"); break;
 										case 'I': ignore = (name == "Input"); break;
 										case 'O': ignore = (name == "Owner"); break;
-										case 'S': ignore = (name == "Stamp"); break;
 										case 'U': ignore = (name == "UniqID"); break;
 
 										case 'L':
 											if ((ignore = (name == "LastMoves")))
 												m_sourceIsChessOK = true;
+											break;
+
+										case 'S':
+											if (name == "ScidbGameFlags")
+											{
+												consumer().setGameFlags(GameInfo::stringToFlags(value));
+												m_modification = Raw;
+												ignore = true;
+											}
+											else
+											{
+												ignore = (name == "Stamp");
+											}
 											break;
 
 										// map White/BlackIsComp to White/BlackType
@@ -3088,6 +3092,11 @@ PgnReader::readTags()
 											}
 											break;
 									}
+								}
+								else if (name == "ScidbGameFlags")
+								{
+									consumer().setGameFlags(GameInfo::stringToFlags(value));
+									ignore = true;
 								}
 
 								if (!ignore)

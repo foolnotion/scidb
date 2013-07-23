@@ -30,6 +30,7 @@
 #include "db_annotation.h"
 #include "db_move.h"
 #include "db_comment.h"
+#include "db_game_info.h"
 
 #include "sys_utf8_codec.h"
 
@@ -389,6 +390,12 @@ Writer::beginGame(TagSet const& tags)
 	{
 		for (unsigned i = 0; i < tags.countExtra(); ++i)
 			writeTag(tags.extra(i).name, conv(tags.extra(i).value));
+	}
+
+	if (test(Flag_Use_Scidb_Import_Format))
+	{
+		mstl::string buf;
+		writeTag("ScidbGameFlags", GameInfo::flagsToString(gameFlags(), buf));
 	}
 
 	return true;

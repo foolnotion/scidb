@@ -31,7 +31,7 @@ inline Board const& Game::currentBoard() const		{ return m_currentBoard; }
 inline Board const& Game::startBoard() const			{ return m_startBoard; }
 inline Line const& Game::openingLine() const			{ return m_line; }
 inline Eco const& Game::ecoCode() const				{ return m_eco; }
-inline uint32_t Game::flags() const						{ return m_flags; }
+inline uint32_t Game::gameFlags() const				{ return m_flags; }
 inline edit::Key const& Game::currentKey() const	{ return m_currentKey; }
 inline move::Notation Game::moveStyle() const		{ return m_moveStyle; }
 inline Game::Command Game::rollbackCommand() const	{ return m_rollbackCommand; }

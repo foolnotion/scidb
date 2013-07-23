@@ -1860,6 +1860,39 @@ Application::game(unsigned position) const
 
 
 void
+Application::moveGameToScratchbase(GameMap::value_type& entry, bool overtake)
+{
+	M_ASSERT(!entry.second->sink.cursor->isScratchbase());
+
+	EditGame&	game		= *entry.second;
+	Cursor*		scratch	= scratchbase(variant::toMainVariant(game.data.game->variant()));
+	Database&	base		= scratch->base();
+
+	unsigned index = base.countGames();
+
+	m_indexMap[entry.first] = index;
+
+	GameInfo info(game.sink.cursor->base().gameInfo(game.sink.index));
+	info.reallocate(base.namebases());
+	base.namebases().update();
+
+	if (base.newGame(*game.data.game, info) != save::Ok)
+		M_RAISE("unexpected error: couldn't add new game to Scratchbase");
+
+	game.sink.cursor = scratch;
+	game.sink.index = index;
+
+	if (overtake)
+	{
+		game.link.databaseName = scratch->name();
+		game.link.index = index;
+		game.link.crcIndex = game.sink.crcIndex;
+		game.link.crcMoves = game.sink.crcMoves;
+	}
+}
+
+
+void
 Application::moveGamesToScratchbase(Cursor& cursor, bool overtake)
 {
 	if (cursor.isScratchbase())
@@ -1870,32 +1903,7 @@ Application::moveGamesToScratchbase(Cursor& cursor, bool overtake)
 		EditGame& game = *i->second;
 
 		if (game.sink.cursor == &cursor)
-		{
-			Cursor*		scratch	= scratchbase(variant::toMainVariant(game.data.game->variant()));
-			Database&	base		= scratch->base();
-
-			unsigned index = base.countGames();
-
-			m_indexMap[i->first] = index;
-
-			GameInfo info(game.sink.cursor->base().gameInfo(game.sink.index));
-			info.reallocate(base.namebases());
-			base.namebases().update();
-
-			if (base.newGame(*game.data.game, info) != save::Ok)
-				M_RAISE("unexpected error: couldn't add new game to Scratchbase");
-
-			game.sink.cursor = scratch;
-			game.sink.index = index;
-
-			if (overtake)
-			{
-				game.link.databaseName = scratch->name();
-				game.link.index = index;
-				game.link.crcIndex = game.sink.crcIndex;
-				game.link.crcMoves = game.sink.crcMoves;
-			}
-		}
+			moveGameToScratchbase(*i, overtake);
 	}
 }
 
@@ -2769,17 +2777,32 @@ Application::compact(Cursor& cursor, util::Progress& progress)
 
 			if (g.sink.cursor == &cursor)
 			{
-				g.sink.index = map.count(0, g.sink.index) - 1;
+				if (map.test(g.sink.index))
+				{
+					g.sink.index = map.count(0, g.sink.index) - 1;
 
-				if (g.link.databaseName == cursor.name())
-					g.link.index = g.sink.index;
+					if (g.link.databaseName == cursor.name())
+						g.link.index = g.sink.index;
+				}
+				else
+				{
+					moveGameToScratchbase(*i, true);
+				}
 
 				if (m_subscriber)
 					m_subscriber->updateGameInfo(i->first);
 			}
 			else if (g.link.databaseName == cursor.name())
 			{
-				g.link.index = map.count(0, g.link.index) - 1;
+				if (map.test(g.sink.index))
+				{
+					g.link.index = map.count(0, g.link.index) - 1;
+				}
+				else
+				{
+					g.link.databaseName = g.sink.cursor->name();
+					g.link.index = g.sink.index;
+				}
 
 				if (m_subscriber)
 					m_subscriber->updateGameInfo(i->first);

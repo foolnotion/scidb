@@ -1504,7 +1504,7 @@ proc PrintMove {position w level key data annotation} {
 		$w tag bind $key <Any-Button> [list ::browser::hidePosition $w]
 	}
 
-	if {!$legal && $level > 0} {
+	if {!$legal} {
 		$w insert current "\u26A1" [list $key illegal] ;# alternatives: u26A0, u2716
 		if {$position < 9} {
 			$w tag bind illegal <ButtonPress-1> [namespace code [list GotoMove $position $key]]
