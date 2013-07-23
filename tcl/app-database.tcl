@@ -1580,7 +1580,7 @@ proc DoSaveChanges {parent base} {
 	if {![file exists $base]} {
 		set msg [format $mc::FileIsRemoved [file tail $base]]
 		::dialog::error -parent $parent -message $msg
-	} else if {![file writable $base]} {
+	} elseif {![file writable $base]} {
 		set msg [format $mc::FileIsNotWritable [file tail $base]]
 		::dialog::error -parent $parent -message $msg
 	} else {
@@ -1602,7 +1602,7 @@ proc DoSaveChanges {parent base} {
 		}
 	}
 
-	destroy $dlg
+	destroy $parent
 }
 
 
