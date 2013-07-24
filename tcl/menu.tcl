@@ -792,9 +792,9 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 			$dlg.cancel configure -command [list set [namespace current]::Action_ cancel]
 		}
 
+		wm withdraw $dlg
 		wm protocol $dlg WM_DELETE_WINDOW [list set [namespace current]::Action_ cancel]
 		wm transient $dlg [winfo toplevel $parent]
-		wm withdraw $dlg
 		wm title $dlg [::mc::stripAmpersand $mc::AssignFileTypes]
 		wm resizable $dlg false false
 		::util::place $dlg -parent $parent -position center
@@ -859,7 +859,6 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 
 		destroy $dlg
 	}
-
 }
 
 

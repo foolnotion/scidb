@@ -51,12 +51,12 @@ update-mime-database:
 	@xdg-icon-resource forceupdate
 	@if [ "`id -u`" -eq 0 ]; then                                     \
 		xdgdir=/usr/share;                                             \
-		if [ -z "$(xdg_data_dirs)" ]; then                             \
+		if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
 			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
 				xdgdir=/usr/local/share;                                 \
 			fi;                                                         \
 		else                                                           \
-			for p in ${xdg_data_home//:/ }; do                          \
+			for p in ${XDG_DATA_HOME//:/ }; do                          \
 				if [ -d $$p/applications ] ; then                        \
 					xdgdir=$$p;                                           \
 					break;                                                \
@@ -65,9 +65,9 @@ update-mime-database:
 		fi;                                                            \
 	else                                                              \
 		xdgdir=~/.local/share;                                         \
-		if [ ! -z "$(xdg_data_home)" ]; then                           \
-			if [ -d $(xdg_data_home) ]; then                            \
-				xdgdir=$(xdg_data_home);                                 \
+		if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+			if [ -d $(XDG_DATA_HOME) ]; then                            \
+				xdgdir=$(XDG_DATA_HOME);                                 \
 			fi;                                                         \
 		fi;                                                            \
 	fi;                                                               \
@@ -80,7 +80,7 @@ install-mime: install-mime-icons install-mime-types update-mime-database
 uninstall-mime:
 	@# do nothing, because other applications may use these mime types
 
-### desktop icons & menu ###############################################
+### DESKTOP ICONS & MENU ###############################################
 
 install-app-icons:
 	@echo "Install desktop application icons"
