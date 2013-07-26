@@ -521,6 +521,11 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 			myEncoding = sys::utf8::Codec::latin1();
 	}
 
+	PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
+
+	if (ZStream::isWindowsLineEnding(internalName))
+		lineEnding = PgnWriter::Windows;
+
 	if (newFile)
 	{
 		mstl::string tmpName(internalName + ".part");
@@ -532,7 +537,7 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 		if (!*ostrm)
 			IO_RAISE(PgnFile, Create_Failed, "no permissions to create file");
 
-		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, flags));
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, lineEnding, flags));
 		ZStream istrm(internalName);
 
 		istrm.setBufsize(::ChunkSize);
@@ -730,7 +735,7 @@ MultiBase::save(mstl::string const& encoding, unsigned flags, util::Progress& pr
 	else
 	{
 		ostrm.reset(new ZStream(internalName, fileType, mstl::ofstream::app));
-		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, flags));
+		writer.reset(new PgnWriter(format::Scidb, *ostrm, encoding, lineEnding, flags));
 		ostrm->writenl(mstl::string::empty_string);
 		newFileOffsets.reset(new FileOffsets(*m_fileOffsets));
 	}

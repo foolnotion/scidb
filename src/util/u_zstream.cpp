@@ -349,8 +349,6 @@ read(void* cookie, char* buf, size_t len)
 static int
 seek(void* cookie, __off64_t* pos, int whence)
 {
-	M_ASSERT(IS_READABLE);
-
 	*pos = ::gzseek(HANDLE, *pos, whence);
 	return *pos == -1 ? -1 : 0;
 }
@@ -848,6 +846,48 @@ ZStream::testByteOrderMark(char const* filename)
 
 		if (strm.read(buf, 3) && ::memcmp(buf, "\xef\xbb\xbf", 3) == 0)
 			return true;
+	}
+
+	return false;
+}
+
+
+bool
+ZStream::isWindowsLineEnding(char const* filename)
+{
+	M_REQUIRE(filename);
+
+	int64_t	size = 0;
+	Type		type;
+
+	if (!ZStream::size(filename, size, &type))
+		return false;
+
+	if (type != Zip)
+	{
+		ZStream strm(filename);
+
+		while (size > 0)
+		{
+			char buf[512];
+			unsigned numBytes = mstl::min(size_t(size), sizeof(buf));
+
+			if (!strm.read(buf, sizeof(buf)))
+				return false;
+
+			char const* s = buf;
+			char const* e = buf + numBytes;
+
+			for ( ; s < e; ++s)
+			{
+				if (s[0] == '\n')
+					return false;
+				if (s[0] == '\r' && s[1] == '\n')
+					return true;
+			}
+
+			size -= numBytes;
+		}
 	}
 
 	return false;

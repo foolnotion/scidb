@@ -64,12 +64,14 @@ replaceCurlyBraces(mstl::string& s)
 PgnWriter::PgnWriter(format::Type srcFormat,
 							mstl::ostream& strm,
 							mstl::string const& encoding,
+							LineEnding lineEnding,
 							unsigned flags,
 							unsigned lineLength)
 	:Writer(srcFormat, flags, encoding)
 	,m_strm(strm)
-	,m_lineLength(lineLength)
+	,m_eol(lineEnding == Windows ? "\r\n" : "\n")
 	,m_length(0)
+	,m_lineLength(lineLength)
 	,m_pendingSpace(0)
 	,m_needPreComment(false)
 	,m_needPostComment(false)
@@ -147,7 +149,10 @@ PgnWriter::PgnWriter(format::Type srcFormat,
 	}
 
 	if (test(Flag_Use_UTF8) && !test(Flag_Append_Games) && encoding == sys::utf8::Codec::utf8())
-		m_strm.write("\xef\xbb\xbf\n"); // UTF-8 BOM
+	{
+		m_strm.write("\xef\xbb\xbf"); // UTF-8 BOM
+		m_strm.write(m_eol);
+	}
 }
 
 
@@ -174,7 +179,7 @@ PgnWriter::writeCommentLines(mstl::string const& content)
 					m_strm.write(line);
 					line.resize(2);
 				}
-				m_strm.put('\n');
+				m_strm.write(m_eol);
 			}
 			else
 			{
@@ -185,10 +190,10 @@ PgnWriter::writeCommentLines(mstl::string const& content)
 		if (line.size() > 2)
 		{
 			m_strm.write(line);
-			m_strm.put('\n');
+			m_strm.write(m_eol);
 		}
 
-		m_strm.put('\n');
+		m_strm.write(m_eol);
 	}
 }
 
@@ -217,7 +222,7 @@ PgnWriter::putNewline()
 			--m_pendingSpace;
 
 		m_length = 0;
-		m_strm.put('\n');
+		m_strm.write(m_eol);
 	}
 
 	if (test(Flag_Indent_Variations))
@@ -298,7 +303,7 @@ void
 PgnWriter::writeBeginGame(unsigned number)
 {
 	if (number == 1 && test(Flag_Append_Games))
-		m_strm.put('\n');
+		m_strm.write(m_eol);
 
 	m_pendingSpace = 0;
 	m_length = 0;
@@ -315,7 +320,7 @@ PgnWriter::writeBeginGame(unsigned number)
 void
 PgnWriter::writeEndGame()
 {
-	m_strm.put('\n');
+	m_strm.write(m_eol);
 }
 
 
@@ -326,14 +331,15 @@ PgnWriter::writeTag(mstl::string const& name, mstl::string const& value)
 	m_strm.write(name, name.size());
 	m_strm.write(" \"", 2);
 	m_strm.write(value, value.size());
-	m_strm.write("\"]\n", 3);
+	m_strm.write("\"]", 2);
+	m_strm.write(m_eol);
 }
 
 
 void
 PgnWriter::writeBeginMoveSection()
 {
-	m_strm.put('\n');
+	m_strm.write(m_eol);
 	m_length = 0;
 }
 
@@ -343,7 +349,7 @@ PgnWriter::writeEndMoveSection(result::ID result)
 {
 	putSpace();
 	putToken(result::toString(result));
-	m_strm.put('\n');
+	m_strm.write(m_eol);
 }
 
 
@@ -420,7 +426,7 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 		if (m_length + length + m_pendingSpace + 1 + (t == e ? 1 : 0) >= lineLength)
 		{
 			if (insideComment())
-				m_strm.put('\n');
+				m_strm.write(m_eol);
 			else
 				putNewline();
 		}
@@ -466,7 +472,7 @@ PgnWriter::putComment(mstl::string const& comment, char ldelim, char rdelim)
 
 				if (m_length + length + spaces + delim >= lineLength)
 				{
-					m_strm.put('\n');
+					m_strm.write(m_eol);
 					m_length = 0;
 
 					if (spaces)

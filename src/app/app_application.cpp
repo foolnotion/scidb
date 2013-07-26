@@ -52,6 +52,7 @@
 #include "sys_utf8_codec.h"
 #include "sys_file.h"
 #include "sys_thread.h"
+#include "sys_info.h"
 
 #include "m_ifstream.h"
 #include "m_algorithm.h"
@@ -1674,12 +1675,12 @@ Application::writeGame(	unsigned position,
 
 		if (save::isOk(state))
 		{
-			util::ZStream::Type type;
+			ZStream::Type type;
 			mstl::string ext = util::misc::file::suffix(filename);
 
-			if (ext == "gz")			type = util::ZStream::GZip;
-			else if (ext == "zip")	type = util::ZStream::Zip;
-			else							type = util::ZStream::Text;
+			if (ext == "gz")			type = ZStream::GZip;
+			else if (ext == "zip")	type = ZStream::Zip;
+			else							type = ZStream::Text;
 
 			mstl::ios_base::openmode mode = mstl::ios_base::out;
 
@@ -1687,11 +1688,11 @@ Application::writeGame(	unsigned position,
 			{
 				mode |= mstl::ios_base::app;
 
-				if (type != util::ZStream::Zip)
+				if (type != ZStream::Zip)
 				{
 					flags |= PgnWriter::Flag_Append_Games;
 
-					if (util::ZStream::testByteOrderMark(internalName))
+					if (ZStream::testByteOrderMark(internalName))
 						flags |= PgnWriter::Flag_Use_UTF8;
 					else
 						flags &= ~PgnWriter::Flag_Use_UTF8;
@@ -1702,7 +1703,7 @@ Application::writeGame(	unsigned position,
 				mode |= mstl::ios_base::trunc;
 			}
 
-			util::ZStream strm(internalName, type, mode);
+			ZStream strm(internalName, type, mode);
 
 			if (!strm)
 				IO_RAISE(Unspecified, Write_Failed, "cannot open file '%s'", filename.c_str());
@@ -1716,7 +1717,12 @@ Application::writeGame(	unsigned position,
 			else
 				useEncoding = encoding;
 
-			PgnWriter writer(format::Scidb, strm, useEncoding, flags);
+			PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
+
+			if (ZStream::isWindowsLineEnding(internalName))
+				lineEnding = PgnWriter::Windows;
+
+			PgnWriter writer(format::Scidb, strm, useEncoding, lineEnding, flags);
 			writer.setupVariant(g->sink.cursor->variant());
 
 			if (!comment.empty())
@@ -3132,7 +3138,12 @@ Application::exportGame(unsigned position, mstl::ostream& strm, unsigned flags, 
 			else
 				encoding = sys::utf8::Codec::latin1();
 
-			PgnWriter writer(format::Scidb, strm, encoding, flags);
+			PgnWriter::LineEnding lineEnding = PgnWriter::Unix;
+
+			if (::sys::info::isWindows())
+				lineEnding = PgnWriter::Windows;
+
+			PgnWriter writer(format::Scidb, strm, encoding, lineEnding, flags);
 			writer.setupVariant(g->sink.cursor->variant());
 			state = g->sink.cursor->database().exportGame(g->data.game->index(), writer);
 		}

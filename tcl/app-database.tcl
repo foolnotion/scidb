@@ -1035,7 +1035,7 @@ proc Switch {filename {variant Undetermined}} {
 		set saveState disabled
 	} else {
 		switch [file extension $filename] {
-			.sci - .pgn {
+			.sci - .pgn - .pgn.gz {
 				if {[::scidb::db::get writable? $filename]} {
 					set roState normal
 				} else {

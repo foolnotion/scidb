@@ -65,6 +65,7 @@ public:
 	static Strings const& zipFileSuffixes();
 	static Strings zipContent(char const* filename);
 	static bool testByteOrderMark(char const* filename);
+	static bool isWindowsLineEnding(char const* filename);
 
 	// is public due to technical reasons
 	struct Handle
