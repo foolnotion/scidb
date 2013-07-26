@@ -401,6 +401,7 @@ u_zstream.o: u_base.h
 u_zstream.o: u_exception.h
 u_zstream.o: u_byte_stream.ipp
 u_zstream.o: u_misc.h
+u_zstream.o: ../sys/sys_info.h
 u_zstream.o: ../mstl/m_ifstream.h
 u_zstream.o: ../mstl/m_file.h
 u_zstream.o: ../mstl/m_file.ipp

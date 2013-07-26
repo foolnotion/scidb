@@ -251,6 +251,7 @@ app_application.o: ../sys/sys_utf8_codec.h
 app_application.o: ../sys/sys_utf8_codec.ipp
 app_application.o: ../sys/sys_file.h
 app_application.o: ../sys/sys_file.ipp
+app_application.o: ../sys/sys_info.h
 app_application.o: ../mstl/m_ifstream.h
 app_application.o: ../mstl/m_file.h
 app_application.o: ../mstl/m_file.ipp

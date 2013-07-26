@@ -1193,6 +1193,7 @@ uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
 		send("stop");
 		// XXX probably "ucinewgame" is required
 		m_waitingOn = "setoption";
+		m_state = Pause;
 		send("isready");
 		m_name = name;
 		m_value = value;

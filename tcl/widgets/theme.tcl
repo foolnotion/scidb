@@ -155,21 +155,26 @@ proc getBackgroundColor {} {
 
 
 proc getActiveBackgroundColor {} {
-	set activebg [ttk::style lookup [currentTheme] -activebackground]
+	# for any reason the correct implementation is not
+	# working, so I'm using a workaround
+	return #efefef
 
-	if {[string length $activebg] == 0} {
-		variable ActiveBackground
-
-		if {[llength $ActiveBackground] == 0} {
-			set btn [tk::button .__btn_activebackground__]
-			set ActiveBackground [$btn cget -activebackground]
-			destroy $btn
-		}
-
-		set activebg $ActiveBackground
-	}
-
-	return $activebg
+#	correct implementation
+#	set activebg [ttk::style lookup [currentTheme] -activebackground]
+#
+#	if {[string length $activebg] == 0} {
+#		variable ActiveBackground
+#
+#		if {[llength $ActiveBackground] == 0} {
+#			set btn [tk::button .__btn_activebackground__]
+#			set ActiveBackground [$btn cget -activebackground]
+#			destroy $btn
+#		}
+#
+#		set activebg $ActiveBackground
+#	}
+#
+#	return $activebg
 }
 
 

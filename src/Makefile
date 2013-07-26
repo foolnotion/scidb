@@ -38,11 +38,11 @@ LIBS = \
 	app/libapp.a \
 	db/libdb.a \
 	mstl/libmstl.a \
+	util/libutil.a \
 	sys/libsys.a \
 	util/libTeXt/libTeXt.a \
 	util/libharu/libharu.a \
 	mstl/libmstl.a \
-	util/libutil.a \
 	util/libhyphenate/libhyphenate.a \
 	util/universalchardet/libchardet.a \
 
