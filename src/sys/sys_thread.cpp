@@ -559,7 +559,7 @@ Thread::awake()
 	if (isMainThread())
 	{
 		m_wakeUp = true;
-		Tcl_Event* ev = reinterpret_cast<Tcl_Event*>(::ckalloc(sizeof(Tcl_Event)));
+		Tcl_Event* ev = reinterpret_cast<Tcl_Event*>(ckalloc(sizeof(Tcl_Event)));
 		ev->proc = ::wakeUp;
 		Tcl_QueueEvent(ev, TCL_QUEUE_HEAD);
 	}

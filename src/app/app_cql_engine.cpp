@@ -97,7 +97,7 @@ Engine::Creator::createEngine()
 
 
 void
-Engine::Creator::destroyEngine(Engine* engine) override
+Engine::Creator::destroyEngine(::cql::Engine* engine)
 {
 	delete engine;
 }

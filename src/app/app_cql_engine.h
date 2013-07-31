@@ -37,7 +37,7 @@
 #include "m_stack.h"
 
 namespace sys { class Thread; }
-namespace db 	{ class Game; }
+namespace db  { class Game; }
 
 namespace app {
 
@@ -60,7 +60,7 @@ public:
 					unsigned numThreads);
 
 		Engine* createEngine() override;
-		void destroyEngine(Engine* engine) override;
+		void destroyEngine(::cql::Engine* engine) override;
 
 	private:
 
