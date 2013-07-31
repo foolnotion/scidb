@@ -44,11 +44,6 @@ set RulesInfraction					"Rules infraction"
 set TimeForfeit						"Time forfeit"
 set Unterminated						"Unterminated"
 
-set State(Checkmate)					"%s is checkmate"
-set State(Stalemate)					"%s is stalemate"
-set State(ThreeChecks)				"%s got three checks"
-set State(Losing)						"%s wins by losing all material"
-
 set Result(1-0)						"Black resigned"
 set Result(0-1)						"White resigned"
 set Result(0-0)						"Declared lost for both players"
@@ -65,6 +60,10 @@ set Reason(TimeForfeit,both)		"Both players forfeits on time"
 set Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win"
 set Reason(Unterminated)			"Unterminated"
 
+set Termination(checkmate)			"%s is checkmate"
+set Termination(stalemate)			"%s is stalemate"
+set Termination(three-checks)		"%s got three checks"
+set Termination(material)			"%s wins by losing all material"
 set Termination(equal-material)	"Game drawn by stalemate (equal material)"
 set Termination(less-material)	"%s wins by having less material (stalemate)"
 set Termination(bishops)			"Game drawn by stalemate (opposite color bishops)"
@@ -78,32 +77,27 @@ set Termination(nocheck)			"Neither player can give check"
 
 namespace import ::tcl::mathfunc::max
 
-variable reasons {Normal Unplayed Abandoned Adjudication Disconnection Emergency
-						RulesInfraction TimeForfeit Unterminated}
+variable reasons {Normal Unplayed Abandoned Adjudication Disconnection
+						Emergency RulesInfraction TimeForfeit Unterminated}
 
 
-proc buildText {reason state result toMove termination variant} {
-	switch $state {
-		Stalemate {
-			switch $termination {
-				equal-material - bishops {
-					return $mc::Termination($termination)
-				}
-				less-material {
-					if {$toMove eq "white" && $result eq "1-0"} {
-						return [format $mc::Termination($termination) $mc::White]
-					}
-					if {$toMove eq "black" && $result eq "0-1"} {
-						return [format $mc::Termination($termination) $mc::Black]
-					}
-				}
-				default {
-					return [format $mc::State($state) [set ::mc::[string toupper $toMove 0 0]]]
-				}
+proc buildText {reason result toMove termination variant} {
+	switch $termination {
+		equal-material - bishops {
+			return $mc::Termination($termination)
+		}
+		less-material {
+			if {$toMove eq "white" && $result eq "1-0"} {
+				return [format $mc::Termination($termination) $mc::White]
+			}
+			if {$toMove eq "black" && $result eq "0-1"} {
+				return [format $mc::Termination($termination) $mc::Black]
 			}
 		}
-		Checkmate - ThreeChecks - Losing {
-			return [format $mc::State($state) [set ::mc::[string toupper $toMove 0 0]]]
+		default {
+			if {[string length $termination]} {
+				return [format $mc::Termination($termination) [set ::mc::[string toupper $toMove 0 0]]]
+			}
 		}
 	}
 

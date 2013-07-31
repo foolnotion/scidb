@@ -1044,11 +1044,11 @@ Board::checkContactCheck() const
 
 	sq::ID ksq = sq::ID(m_ksq[m_stm]);
 
-	// a pawn is always giving a contact check
+	// a pawn is always giving contact check
 	if (count(PawnAttacks[m_stm][ksq] & m_pawns))
 		return true;
 
-	// a knight is always giving a contact check
+	// a knight is always giving contact check
 	if (count(knightAttacks(ksq) & m_knights))
 		return true;
 
@@ -1086,11 +1086,11 @@ Board::isContactCheck() const
 
 	sq::ID ksq = sq::ID(m_ksq[m_stm]);
 
-	// a pawn is always giving a contact check
+	// a pawn is always giving contact check
 	if (count(PawnAttacks[m_stm][ksq] & m_pawns))
 		return true;
 
-	// a knight is always giving a contact check
+	// a knight is always giving contact check
 	if (count(knightAttacks(ksq) & m_knights))
 		return true;
 
@@ -2050,7 +2050,15 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (count(m_occupied) == 0)
 			return EmptyBoard;
 
+		if (m_material[notToMove()].total() == 0)
+			return OppositeLosing;
+
 		return Valid;
+	}
+	else if (variant == variant::Losers)
+	{
+		if (m_material[notToMove()].total() == 1)
+			return OppositeLosing;
 	}
 
 	if (count(m_kings) > 2) return TooManyKings;
@@ -2074,16 +2082,13 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 	if (variant::isAntichessExceptLosers(variant))
 		return Valid;
 
-	if (flag == move::DontAllowIllegalMove)
+	// Bad checks
+	if (givesCheck())
 	{
-		// Bad checks
-		if (givesCheck())
-		{
-			if (isInCheck())
-				return BothInCheck;
+		if (isInCheck())
+			return BothInCheck;
 
-			return OppositeCheck;
-		}
+		return OppositeCheck;
 	}
 
 	// Detect multi pawn checks.

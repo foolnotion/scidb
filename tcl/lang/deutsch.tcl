@@ -1482,6 +1482,7 @@
 ::setup::board::mc::Error(NoBlackKing)					"Ein schwarzer König wird vermißt."
 ::setup::board::mc::Error(BothInCheck)					"Beide Könige befinden sich im Schach."
 ::setup::board::mc::Error(OppositeCheck)				"Die Seite ohne Zugrecht befindet sich im Schach."
+::setup::board::mc::Error(OppositeLosing)				"Die Seite ohne Zugrecht besitzt keine Figuren."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Zuviele weiße Bauern."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Zuviele schwarze Bauern."
 ::setup::board::mc::Error(TooManyWhitePieces)		"Zuviele weiße Figuren."
@@ -1925,11 +1926,6 @@
 ::terminationbox::mc::TimeForfeit						"Zeitüberschreitung"
 ::terminationbox::mc::Unterminated						"Unvollendet"
 
-::terminationbox::mc::State(Checkmate)					"%s ist schachmatt"
-::terminationbox::mc::State(Stalemate)					"%s ist patt"
-::terminationbox::mc::State(ThreeChecks)				"%s erhielt drei Schachgebote"
-::terminationbox::mc::State(Losing)						"%s gewinnt durch Verlust aller Figuren"
-
 ::terminationbox::mc::Result(1-0)						"Schwarz gab auf"
 ::terminationbox::mc::Result(0-1)						"Weiß gab auf"
 ::terminationbox::mc::Result(0-0)						"Für beide Spieler als verloren eklärt"
@@ -1946,6 +1942,10 @@
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer überschritt die Zeit und %opponent kann nicht mehr gewinnen"
 ::terminationbox::mc::Reason(Unterminated)			"Unvollendet"
 
+::terminationbox::mc::Termination(checkmate)			"%s ist schachmatt"
+::terminationbox::mc::Termination(stalemate)			"%s ist patt"
+::terminationbox::mc::Termination(three-checks)		"%s erhielt drei Schachgebote"
+::terminationbox::mc::Termination(material)			"%s gewinnt durch Verlust aller Figuren"
 ::terminationbox::mc::Termination(equal-material)	"Parte remis durch patt (gleiches Material)"
 ::terminationbox::mc::Termination(less-material)	"%s gewinnt aufgrund weniger Figurenmaterial (patt)"
 ::terminationbox::mc::Termination(bishops)			"Parte remis durch patt (verschiedenfarbige Läufer)"

@@ -1487,6 +1487,7 @@
 ::setup::board::mc::Error(NoBlackKing)					"Sin rey negro."
 ::setup::board::mc::Error(BothInCheck)					"Ambos reyes en jaque."
 ::setup::board::mc::Error(OppositeCheck)				"El lado que no mueve está en jaque."
+::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces." ;# NEW
 ::setup::board::mc::Error(TooManyWhitePawns)			"Demasiados peones blancos."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Demasiados peones negros."
 ::setup::board::mc::Error(TooManyWhitePieces)		"Demasiadas piezas blancas."
@@ -1930,11 +1931,6 @@
 ::terminationbox::mc::TimeForfeit						"Pierde por tiempo"
 ::terminationbox::mc::Unterminated						"No terminada"
 
-::terminationbox::mc::State(Checkmate)					"%s es jaque mate"
-::terminationbox::mc::State(Stalemate)					"%s es ahogado"
-::terminationbox::mc::State(ThreeChecks)				"%s got three checks" ;# NEW
-::terminationbox::mc::State(Losing)						"%s wins by losing all material" ;# NEW
-
 ::terminationbox::mc::Result(1-0)						"Las negras se rinden"
 ::terminationbox::mc::Result(0-1)						"Las blancas se rinden"
 ::terminationbox::mc::Result(0-0)						"Se declara perdida para ambos jugadores"
@@ -1951,6 +1947,10 @@
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
 ::terminationbox::mc::Reason(Unterminated)			"No finalizado"
 
+::terminationbox::mc::Termination(checkmate)			"%s es jaque mate"
+::terminationbox::mc::Termination(stalemate)			"%s es ahogado"
+::terminationbox::mc::Termination(three-checks)		"%s got three checks" ;# NEW
+::terminationbox::mc::Termination(material)			"%s wins by losing all material" ;# NEW
 ::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
 ::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
 ::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)" ;# NEW

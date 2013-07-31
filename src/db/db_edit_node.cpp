@@ -311,15 +311,16 @@ struct Node::Work : public Node::Spacing
 	LanguageSet const*	m_wantedLanguages;
 	EngineList const*		m_engineList;
 
-	db::Board	m_board;
-	Languages*	m_languages;
-	result::ID	m_result;
-	Key			m_key;
-	bool			m_needMoveNo;
-	bool			m_isFolded;
-	bool			m_isEmpty;
-	unsigned		m_linebreakMaxLineLengthVar;
-	unsigned		m_linebreakMinCommentLength;
+	db::Board				m_board;
+	Languages*				m_languages;
+	result::ID				m_result;
+	termination::State	m_termination;
+	Key						m_key;
+	bool						m_needMoveNo;
+	bool						m_isFolded;
+	bool						m_isEmpty;
+	unsigned					m_linebreakMaxLineLengthVar;
+	unsigned					m_linebreakMinCommentLength;
 };
 
 
@@ -328,6 +329,7 @@ Node::Work::Work()
 	,m_engineList(0)
 	,m_languages(0)
 	,m_result(result::Unknown)
+	,m_termination(termination::None)
 	,m_needMoveNo(true)
 	,m_isFolded(false)
 	,m_isEmpty(true)
@@ -582,7 +584,6 @@ void
 Node::visit(Visitor& visitor,
 				List const& nodes,
 				TagSet const& tags,
-				board::Status status,
 				termination::State termination,
 				color::ID toMove)
 {
@@ -593,7 +594,7 @@ Node::visit(Visitor& visitor,
 	for (unsigned i = 0; i < nodes.size(); ++i)
 		nodes[i]->visit(visitor);
 
-	visitor.finish(result, status, termination, toMove);
+	visitor.finish(result, termination, toMove);
 }
 
 
@@ -1156,6 +1157,7 @@ Move::Move(Work& work, db::Comment const& comment, unsigned varNo, unsigned varC
 	   m_list.push_back(new Space(bracket, varNo == varCount));
 	}
 	else if (	work.m_result != result::Unknown
+				|| work.m_termination != termination::None
 				|| (work.m_displayStyle & display::DiscardUnknownResult) == 0)
 	{
 		m_list.push_back(new Space(0));
@@ -1222,7 +1224,6 @@ Root::Root()
 	,m_languages(0)
 	,m_variation(0)
 	,m_result(result::Unknown)
-	,m_reason(board::None)
 	,m_termination(termination::None)
 	,m_toMove(color::White)
 {
@@ -1245,7 +1246,7 @@ Root::visit(Visitor& visitor) const
 	m_opening->visit(visitor);
 	m_languages->visit(visitor);
 	m_variation->visit(visitor);
-	visitor.finish(m_result, m_reason, m_termination, m_toMove);
+	visitor.finish(m_result, m_termination, m_toMove);
 }
 
 
@@ -1322,8 +1323,8 @@ Root::makeList(TagSet const& tags,
 					Eco eco,
 					db::Board const& startBoard,
 					variant::Type variant,
-					termination::State termination,
 					db::Board const& finalBoard,
+					termination::State termination,
 					MoveNode const* node,
 					unsigned linebreakThreshold,
 					unsigned linebreakMaxLineLength,
@@ -1348,7 +1349,7 @@ Root::makeList(TagSet const& tags,
 	root->m_languages = new Languages;
 	root->m_variation = new Variation(key);
 	root->m_result = result::fromString(tags.value(tag::Result));
-	root->m_reason = finalBoard.status(variant);
+	root->m_termination = termination;
 	root->m_toMove = finalBoard.sideToMove();
 
 	KeyNode::List& result = root->m_variation->m_list;
@@ -1377,6 +1378,7 @@ Root::makeList(TagSet const& tags,
 					Eco eco,
 					db::Board const& startBoard,
 					variant::Type variant,
+					db::Board const& finalBoard,
 					termination::State termination,
 					LanguageSet const& langSet, // unused
 					LanguageSet const& wantedLanguages,
@@ -1400,6 +1402,7 @@ Root::makeList(TagSet const& tags,
 	work.m_engineList = &engines;
 	work.m_wantedLanguages = &wantedLanguages;
 	work.m_result = result::fromString(tags.value(tag::Result));
+	work.m_termination = termination;
 	work.m_linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
 	work.m_linebreakMinCommentLength = linebreakMinCommentLength;
 	work.m_isEmpty = node->isEmptyLine();
@@ -1416,11 +1419,17 @@ Root::makeList(TagSet const& tags,
 	root->m_languages = work.m_languages;
 	root->m_variation = var;
 	root->m_result = work.m_result;
+	root->m_termination = termination;
+	root->m_toMove = finalBoard.sideToMove();
 
 	makeList(work, var->m_list, node, variant, 1, 1);
 
-	if (root->m_result != result::Unknown || (displayStyle & display::DiscardUnknownResult) == 0)
+	if (	root->m_result != result::Unknown
+		|| work.m_termination != termination::None
+		|| (displayStyle & display::DiscardUnknownResult) == 0)
+	{
 		work.pushParagraph(Spacing::Result);
+	}
 
 	return root;
 }

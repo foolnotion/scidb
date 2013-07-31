@@ -1490,6 +1490,7 @@
 ::setup::board::mc::Error(NoBlackKing)			"Sötét király hiányzik."
 ::setup::board::mc::Error(BothInCheck)			"Mindkét király sakkban áll."
 ::setup::board::mc::Error(OppositeCheck)		"A nem lépésre jövő fél királya sakkban áll."
+::setup::board::mc::Error(OppositeLosing)		"Side not to move has no pieces." ;# NEW
 ::setup::board::mc::Error(TooManyWhitePawns)		"Túl sok világos gyalog."
 ::setup::board::mc::Error(TooManyBlackPawns)		"Túl sok sötét gyalog."
 ::setup::board::mc::Error(TooManyWhitePieces)		"Túl sok világos tiszt."
@@ -1933,11 +1934,6 @@
 ::terminationbox::mc::TimeForfeit			"Leesett"
 ::terminationbox::mc::Unterminated			"Unterminated" ;# NEW
 
-::terminationbox::mc::State(Checkmate)			"%s is checkmate" ;# NEW
-::terminationbox::mc::State(Stalemate)			"%s is stalemate" ;# NEW
-::terminationbox::mc::State(ThreeChecks)		"%s got three checks" ;# NEW
-::terminationbox::mc::State(Losing)			"%s wins by losing all material" ;# NEW
-
 ::terminationbox::mc::Result(1-0)			"Black resigned" ;# NEW
 ::terminationbox::mc::Result(0-1)			"White resigned" ;# NEW
 ::terminationbox::mc::Result(0-0)			"Declared lost for both players" ;# NEW
@@ -1954,6 +1950,10 @@
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win" ;# NEW
 ::terminationbox::mc::Reason(Unterminated)		"Unterminated" ;# NEW
 
+::terminationbox::mc::Termination(checkmate)		"%s is checkmate" ;# NEW
+::terminationbox::mc::Termination(stalemate)		"%s is stalemate" ;# NEW
+::terminationbox::mc::Termination(three-checks)		"%s got three checks" ;# NEW
+::terminationbox::mc::Termination(material)		"%s wins by losing all material" ;# NEW
 ::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)" ;# NEW
 ::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
 ::terminationbox::mc::Termination(bishops)		"Game drawn by stalemate (opposite color bishops)" ;# NEW

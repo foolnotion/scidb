@@ -1490,6 +1490,7 @@
 ::setup::board::mc::Error(NoBlackKing)					"Svart kung saknas."
 ::setup::board::mc::Error(BothInCheck)					"Båda kungar står i schack."
 ::setup::board::mc::Error(OppositeCheck)				"Spelaren som inte är vid draget står i schack."
+::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces." ;# NEW
 ::setup::board::mc::Error(TooManyWhitePawns)			"För många vita bönder."
 ::setup::board::mc::Error(TooManyBlackPawns)			"För många svarta bönder."
 ::setup::board::mc::Error(TooManyWhitePieces)		"För många vita pjäser."
@@ -1933,11 +1934,6 @@
 ::terminationbox::mc::TimeForfeit						"Tidsöverskridning"
 ::terminationbox::mc::Unterminated						"Ej färdigspelat"
 
-::terminationbox::mc::State(Checkmate)					"%s är matt"
-::terminationbox::mc::State(Stalemate)					"%s är matt"
-::terminationbox::mc::State(ThreeChecks)				"%s har tre schackar"
-::terminationbox::mc::State(Losing)						"%s vinner genom att ha förlorat allt matrial"
-
 ::terminationbox::mc::Result(1-0)						"Svart gav upp"
 ::terminationbox::mc::Result(0-1)						"Vit gav upp"
 ::terminationbox::mc::Result(0-0)						"Förlust dömt för båda spelaren"
@@ -1954,6 +1950,10 @@
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer fick slut på tiden och %opponent kan inte vinna"
 ::terminationbox::mc::Reason(Unterminated)			"Ej färdigspelat"
 
+::terminationbox::mc::Termination(checkmate)			"%s är matt"
+::terminationbox::mc::Termination(stalemate)			"%s är patt"
+::terminationbox::mc::Termination(three-checks)		"%s har tre schackar"
+::terminationbox::mc::Termination(material)			"%s vinner genom att ha förlorat allt matrial"
 ::terminationbox::mc::Termination(equal-material)	"Parti remi genom patt (lika material)"
 ::terminationbox::mc::Termination(less-material)	"%s vinner genom att ha mindre matrial (patt)"
 ::terminationbox::mc::Termination(bishops)			"Parti remi genom patt (olikfärgade löpare)"

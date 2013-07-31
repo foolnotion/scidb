@@ -389,12 +389,9 @@ public:
 		Tcl_ListObjAppendElement(0, m_list, m_start);
 	}
 
-	void finish(result::ID result,
-					::db::board::Status reason,
-					termination::State termination,
-					color::ID toMove) override
+	void finish(result::ID result, termination::State termination, color::ID toMove) override
 	{
-		Tcl_Obj* objv[5];
+		Tcl_Obj* objv[4];
 		Tcl_Obj* term = 0;
 
 		switch (termination)
@@ -416,9 +413,8 @@ public:
 
 		objv[0] = m_result;
 		objv[1] = Tcl_NewStringObj(result::toString(result), -1);
-		objv[2] = Tcl_NewStringObj(::db::board::toString(reason), -1);
-		objv[3] = Tcl_NewStringObj(color::printColor(toMove), -1);
-		objv[4] = term;
+		objv[2] = Tcl_NewStringObj(color::printColor(toMove), -1);
+		objv[3] = term;
 
 		Tcl_ListObjAppendElement(0, m_list, Tcl_NewListObj(U_NUMBER_OF(objv), objv));
 	}
@@ -1036,14 +1032,13 @@ struct Subscriber : public Game::Subscriber
 	void updateEditor(Game::DiffList const& nodes,
 							TagSet const& tags,
 							move::Notation moveStyle,
-							::db::board::Status status,
 							termination::State termination,
 							color::ID toMove) override
 	{
 		if (m_pgn)
 		{
 			Visitor visitor(moveStyle);
-			edit::Node::visit(visitor, nodes, tags, status, termination, toMove);
+			edit::Node::visit(visitor, nodes, tags, termination, toMove);
 			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
 		}
 	}

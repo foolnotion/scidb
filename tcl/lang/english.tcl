@@ -1482,6 +1482,7 @@ ln -sf ../# ====================================================================
 ::setup::board::mc::Error(NoBlackKing)					"Missing black king."
 ::setup::board::mc::Error(BothInCheck)					"Both kings are in check."
 ::setup::board::mc::Error(OppositeCheck)				"Side not to move is in check."
+::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces."
 ::setup::board::mc::Error(TooManyWhitePawns)			"Too many white pawns."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Too many black pawns."
 ::setup::board::mc::Error(TooManyWhitePieces)		"Too many white pieces."
@@ -1925,11 +1926,6 @@ ln -sf ../# ====================================================================
 ::terminationbox::mc::TimeForfeit						"Time forfeit"
 ::terminationbox::mc::Unterminated						"Unterminated"
 
-::terminationbox::mc::State(Checkmate)					"%s is checkmate"
-::terminationbox::mc::State(Stalemate)					"%s is stalemate"
-::terminationbox::mc::State(ThreeChecks)				"%s got three checks"
-::terminationbox::mc::State(Losing)						"%s wins by losing all material"
-
 ::terminationbox::mc::Result(1-0)						"Black resigned"
 ::terminationbox::mc::Result(0-1)						"White resigned"
 ::terminationbox::mc::Result(0-0)						"Declared lost for both players"
@@ -1946,6 +1942,10 @@ ln -sf ../# ====================================================================
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ran out of time and %opponent cannot win"
 ::terminationbox::mc::Reason(Unterminated)			"Unterminated"
 
+::terminationbox::mc::Termination(checkmate)			"%s is checkmate"
+::terminationbox::mc::Termination(stalemate)			"%s is stalemate"
+::terminationbox::mc::Termination(three-checks)		"%s got three checks"
+::terminationbox::mc::Termination(material)			"%s wins by losing all material"
 ::terminationbox::mc::Termination(equal-material)	"Game drawn by stalemate (equal material)"
 ::terminationbox::mc::Termination(less-material)	"%s wins by having less material (stalemate)"
 ::terminationbox::mc::Termination(bishops)			"Game drawn by stalemate (opposite color bishops)"

@@ -167,7 +167,6 @@ public:
 		virtual void updateEditor(	DiffList const& nodes,
 											TagSet const& tags,
 											move::Notation moveStyle,
-											board::Status status,
 											termination::State termination,
 											color::ID toMove) = 0;
 	};

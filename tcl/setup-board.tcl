@@ -139,6 +139,7 @@ set Error(NoWhiteKing)					"Missing white king."
 set Error(NoBlackKing)					"Missing black king."
 set Error(BothInCheck)					"Both kings are in check."
 set Error(OppositeCheck)				"Side not to move is in check."
+set Error(OppositeLosing)				"Side not to move has no pieces."
 set Error(TooManyWhitePawns)			"Too many white pawns."
 set Error(TooManyBlackPawns)			"Too many black pawns."
 set Error(TooManyWhitePieces)			"Too many white pieces."
@@ -502,8 +503,8 @@ proc open {parent} {
 		set figfont [list [font configure $figfont -family] -20]
 
 		set col 1
-		foreach {piece fig} {Q "\u2655" R "\u2656" B "\u2657" N "\u2658" P "\u2659" 
-									q "\u265b" r "\u265c" b "\u265d" n "\u265e" p "\u265f"} {
+		foreach {piece fig} {q "\u265b" r "\u265c" b "\u265d" n "\u265e" p "\u265f"
+									Q "\u2655" R "\u2656" B "\u2657" N "\u2658" P "\u2659"} {
 			set lbl $hold._$piece
 			set spb ${lbl}_s
 			ttk::label $lbl \

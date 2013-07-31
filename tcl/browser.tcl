@@ -487,8 +487,8 @@ proc showNext {w position flag} {
 }
 
 
-proc makeResult {result state toMove termination reason variant} {
-	set reasonText [::terminationbox::buildText $reason $state $result $toMove $termination $variant]
+proc makeResult {result toMove termination reason variant} {
+	set reasonText [::terminationbox::buildText $reason $result $toMove $termination $variant]
 	set result [::util::formatResult $result]
 	if {$result ne "*"} { set r1 $result } else { set r1 "" }
 	if {[string length $reasonText]} { set r2 $reasonText } else { set r2 "" }

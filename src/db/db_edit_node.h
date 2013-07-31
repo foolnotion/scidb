@@ -84,7 +84,6 @@ public:
 	static void visit(Visitor& visitor,
 							List const& nodes,
 							TagSet const& tags,
-							board::Status status,
 							termination::State termination,
 							color::ID toMove);
 
@@ -166,8 +165,8 @@ public:
 									Eco eco,
 									db::Board const& startBoard,
 									variant::Type variant,
-									termination::State termination,
 									db::Board const& finalBoard,
+									termination::State termination,
 									MoveNode const* node,
 									unsigned linebreakThreshold,
 									unsigned linebreakMaxLineLength,
@@ -177,6 +176,7 @@ public:
 									Eco eco,
 									db::Board const& startBoard,
 									variant::Type variant,
+									db::Board const& finalBoard,
 									termination::State termination,
 									LanguageSet const& langSet,
 									LanguageSet const& wantedLanguages,
@@ -209,7 +209,6 @@ private:
 	Node* 			m_languages;
 	Variation*		m_variation;
 	result::ID		m_result;
-	board::Status	m_reason;
 	FinalState		m_termination;
 	color::ID		m_toMove;
 	mutable List	m_nodes;
@@ -500,10 +499,7 @@ public:
 	virtual void linebreak(unsigned level) = 0;
 
 	virtual void start(result::ID result) = 0;
-	virtual void finish(	result::ID result,
-								board::Status reason,
-								termination::State termination,
-								color::ID toMove) = 0;
+	virtual void finish(result::ID result, termination::State termination, color::ID toMove) = 0;
 
 	virtual void startVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;
 	virtual void endVariation(Key const& key, Key const& startKey, Key const& endKey) = 0;

@@ -52,7 +52,7 @@ namespace tag {
 
 struct Pair { mstl::string name; ID id; };
 
-#if __GNUC_PREREQ(4,7)
+#if __GNUC_PREREQ(4,7) // internal compiler error
 __attribute__((init_priority(65534)))
 #endif
 static Pair const NameMap[] =

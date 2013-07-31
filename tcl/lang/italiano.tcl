@@ -1492,6 +1492,7 @@
 ::setup::board::mc::Error(NoBlackKing)					"Manca il re nero."
 ::setup::board::mc::Error(BothInCheck)					"Entrambi i re sono sotto scacco."
 ::setup::board::mc::Error(OppositeCheck)				"Il lato senza tratto è sotto scacco."
+::setup::board::mc::Error(OppositeLosing)				"Side not to move has no pieces." ;# NEW
 ::setup::board::mc::Error(TooManyWhitePawns)			"Troppi pedoni bianchi."
 ::setup::board::mc::Error(TooManyBlackPawns)			"Troppi pedoni neri."
 ::setup::board::mc::Error(TooManyWhitePieces)		"Troppi pezzi bianchi."
@@ -1956,6 +1957,10 @@
 ::terminationbox::mc::Reason(TimeForfeit,remis)		"%causer ha finito il tempo e %opponent non ha materiale per vincere"
 ::terminationbox::mc::Reason(Unterminated)			"Non terminata"
 
+::terminationbox::mc::Termination(checkmate)			"%s è scacco matto"
+::terminationbox::mc::Termination(stalemate)			"%s è stallo"
+::terminationbox::mc::Termination(three-checks)		"%s ha preso tre scacchi"
+::terminationbox::mc::Termination(material)			"%s vince in quanto ha perso tutto il materiale"
 ::terminationbox::mc::Termination(equal-material)	"Partita patta per stallo (materiale equo)"
 ::terminationbox::mc::Termination(less-material)	"%s vince in quanto ha meno materiale (stallo)"
 ::terminationbox::mc::Termination(bishops)			"Partita patta per stallo (alfieri di colore opposto)"

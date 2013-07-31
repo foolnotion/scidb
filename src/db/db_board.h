@@ -115,6 +115,7 @@ public:
 		NoBlackKing,					///< black king is missing
 		BothInCheck,					///< both kings are in check
 		OppositeCheck,					///< opposite king is in check
+		OppositeLosing,				///< opponent has lost all pieces
 		TooManyWhitePawns,			///< more than eight white pawns
 		TooManyBlackPawns,			///< more than eight black pawns
 		TooManyWhitePieces,			///< too many white queens, rooks, bishops, or knights

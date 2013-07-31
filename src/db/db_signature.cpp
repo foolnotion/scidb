@@ -50,13 +50,13 @@ enum { BitMask		= (1 << BitLength) - 1 };
 
 typedef mstl::hash<uint32_t,bool> Hash;
 
-#if __GNUC_PREREQ(4,7)
+#if __GNUC_PREREQ(4,7) // internal compiler error
 __attribute__((init_priority(65534)))
 #endif
 Hash pawnStructureHash;
 
 static void
-#if __GNUC_PREREQ(4,7)
+#if __GNUC_PREREQ(4,7) // internal compiler error
 __attribute__((constructor(65535)))
 #else
 __attribute__((constructor))
