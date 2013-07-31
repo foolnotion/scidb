@@ -476,7 +476,7 @@ public:
 	/// Removes the given variation
 	void removeVariation(unsigned variationNumber);
 	/// Removes all variations and mainline moves after the current position,
-	/// or before the current position if @p position == BeforeMove
+	/// or before the current position if @p position == Ante
 	void truncateVariation(move::Position position = move::Post);
 	/// Exchange the moves of given variation with main line moves,
 	bool exchangeMoves(	unsigned variationNumber,
@@ -485,7 +485,7 @@ public:
 	/// Insert the moves of given variation with main line moves,
 	bool insertMoves(unsigned variationNumber, Force flag = OnlyIfRemainsConsistent);
 	/// Removes all variations and mainline moves before next move,
-	/// or before the current position if @p position == BeforeMove
+	/// or before the current position if @p position == Ante
 	bool stripMoves(move::Position position = move::Post);
 	/// Merge given game (at current position) into current game.
 	bool merge(Game const& game, position::ID startPosition, move::Order order, unsigned variationDepth);

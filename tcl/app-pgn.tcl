@@ -2519,7 +2519,7 @@ proc PopupMenu {parent position} {
 	menu $menu.display.moveStyles -tearoff no
 	$menu.display add cascade \
 		-menu $menu.display.moveStyles \
-		-label " $mc::MoveNotation" \
+		-label $mc::MoveNotation \
 		;
 	foreach style $moveStyles {
 		$menu.display.moveStyles add radiobutton \
@@ -2535,7 +2535,7 @@ proc PopupMenu {parent position} {
 	menu $menu.display.languages -tearoff no
 	$menu.display add cascade \
 		-menu $menu.display.languages \
-		-label " $mc::LanguageSelection" \
+		-label $mc::LanguageSelection \
 		;
 	$menu.display.languages add checkbutton \
 		-compound left \
@@ -2562,7 +2562,7 @@ proc PopupMenu {parent position} {
 	menu $menu.display.moveinfo -tearoff no
 	$menu.display add cascade \
 		-menu $menu.display.moveinfo \
-		-label " $mc::MoveInfoSelection" \
+		-label $mc::MoveInfoSelection \
 		;
 	foreach type {eval clk emt ccsnt video} {
 		$menu.display.moveinfo add checkbutton \

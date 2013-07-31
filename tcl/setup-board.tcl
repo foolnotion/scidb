@@ -93,7 +93,7 @@ proc setupPositionMenu {ns m} {
 		if {[info exists PositionAlt($name)]} {
 			append name " ($PositionAlt($name))"
 		}
-		$m add command -label $name -command [list ${ns}::Shuffle $idn]
+		$m add command -label "FICS - $name" -command [list ${ns}::Shuffle $idn]
 	}
 }
 

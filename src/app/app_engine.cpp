@@ -436,6 +436,8 @@ Engine::Engine(Protocol protocol, mstl::string const& command, mstl::string cons
 	,m_playOther(false)
 	,m_pondering(false)
 	,m_searchMate(0)
+	,m_searchDepth(0)
+	,m_searchTime(0)
 	,m_strength(0)
 	,m_features(0)
 	,m_variants(0)
@@ -540,6 +542,37 @@ Engine::invokeOption(mstl::string const& name)
 {
 	if (isActive())
 		m_engine->invokeOption(name);
+}
+
+
+void
+Engine::setSearchInfinity()
+{
+	m_searchMate = m_searchDepth = m_searchTime = 0;
+}
+
+
+void
+Engine::setSearchMate(unsigned plies)
+{
+	setSearchInfinity();
+	m_searchMate = plies;
+}
+
+
+void
+Engine::setSearchDepth(unsigned depth)
+{
+	setSearchInfinity();
+	m_searchDepth = depth;
+}
+
+
+void
+Engine::setSearchTime(unsigned milliseconds)
+{
+	setSearchInfinity();
+	m_searchTime = milliseconds;
 }
 
 

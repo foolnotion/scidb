@@ -1072,6 +1072,7 @@
 ::application::analysis::mc::IllegalPosition				"Illegale Stellung - keine Analyse möglich"
 ::application::analysis::mc::IllegalMoves					"Illegale Züge in der Partie - keine Analyse möglich"
 ::application::analysis::mc::DidNotReceivePong			"Der Motor antwortet nicht auf das \"ping\"-Kommando - Motor beendet"
+::application::analysis::mc::SearchMateNotSupported	"Dieser Motor unterstützt nicht die Mattsuche."
 
 ::application::analysis::mc::LinesPerVariation			"Zeilen per Variante"
 ::application::analysis::mc::BestFirstOrder				"Sortiere nach Bewertung"

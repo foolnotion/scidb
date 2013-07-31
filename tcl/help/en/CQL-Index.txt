@@ -76,6 +76,12 @@ If you prefer to see piece letters, please select one of the options:
     </td>
     <td nowrap="true">&emsp;K Q R B N P k q r b n p (will be used in CQL files)</td>
   </tr>
+  <!-- BEGIN NOTE
+   The following option has to be removed if the regional letter set is containing
+   one of the letters 'A', 'M', 'I', or 'U', because this is a clash to the CQL
+   specification of piece type designators.
+   Example: in Spanish the letter for bishop is 'A', therefore the translator for
+   Spanish has to remove this option. -->
   <tr valign="top">
     <td>
       <div embed='piecelang regional text "Use regional letters"'
@@ -85,6 +91,7 @@ If you prefer to see piece letters, please select one of the options:
     </td>
     <td nowrap="true">&emsp;<whitepieceletters/> <blackpieceletters/></td>
   </tr>
+  <!-- END NOTE -->
   <tr valign="top">
     <td>
       <div embed='piecelang graphic text "Revert to designators"'

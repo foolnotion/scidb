@@ -48,6 +48,7 @@ set SearchDepth				"Search depth in plies (Selective search depth)"
 set IllegalPosition			"Illegal position - Cannot analyze"
 set IllegalMoves				"Illegal moves in game - Cannot analyze"
 set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
+set SearchMateNotSupported	"This engine is not supporting search for mate."
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -877,12 +878,12 @@ proc Display(error) {code} {
 		standard - chess960 - analyze	{ set msg $mc::NotSupported($code) }
 		position								{ set msg $mc::IllegalPosition }
 		moves									{ set msg $mc::IllegalMoves }
+		pong									{ set msg $mc::DidNotReceivePong }
+		searchMate							{ set msg $mc::SearchMateNotSupported }
+
 		variant {
 			set variant [::scidb::engine::variant $Vars(engine:id)]
 			set msg [format $mc::NotSupported($code) $::mc::VariantName($variant)]
-		}
-		pong {
-			set msg $mc::DidNotReceivePong
 		}
 	}
 

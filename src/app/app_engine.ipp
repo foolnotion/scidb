@@ -30,6 +30,8 @@ inline unsigned Engine::maxMultiPV() const						{ return m_maxMultiPV; }
 inline unsigned Engine::numVariations() const					{ return m_wantedMultiPV; }
 inline unsigned Engine::hashSize() const							{ return m_hashSize; }
 inline unsigned Engine::searchMate() const						{ return m_searchMate; }
+inline unsigned Engine::searchDepth() const						{ return m_searchDepth; }
+inline unsigned Engine::searchTime() const						{ return m_searchTime; }
 inline unsigned Engine::skillLevel() const						{ return m_skillLevel; }
 inline unsigned Engine::limitedStrength() const					{ return m_strength; }
 inline unsigned Engine::numCores() const							{ return m_numCores; }
@@ -46,6 +48,8 @@ inline unsigned Engine::Concrete::maxMultiPV() const			{ return m_engine->maxMul
 inline unsigned Engine::Concrete::numVariations() const		{ return m_engine->numVariations(); }
 inline unsigned Engine::Concrete::hashSize() const				{ return m_engine->hashSize(); }
 inline unsigned Engine::Concrete::searchMate() const			{ return m_engine->searchMate(); }
+inline unsigned Engine::Concrete::searchDepth() const			{ return m_engine->searchDepth(); }
+inline unsigned Engine::Concrete::searchTime() const			{ return m_engine->searchTime(); }
 inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }

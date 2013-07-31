@@ -22,6 +22,8 @@
 #include "m_stdio.h"
 #include "m_exception.h"
 
+#include <tcl.h>
+
 #include <stdlib.h>
 
 using namespace sys;
@@ -287,6 +289,11 @@ Guard::initLock(lock_t& lock)
 
 #ifdef __WIN32__ ////////////////////////////////////////////////////////////////////
 
+Thread m_mainThread(GetCurrentThreadId());
+
+bool Thread::insideMainThread() { return GetCurrentThreadId() == m_mainThread.threadId(); }
+
+
 unsigned
 Thread::startThread(void* arg)
 {
@@ -320,7 +327,32 @@ Thread::cancelThread()
 	return true;
 }
 
+
+void
+Thread::doSleep()
+{
+	InitializeConditionVariable(&m_condition);
+	EnterCriticalSection(&m_condMutext);
+	m_wakeUp = false;
+	while (!m_wakeUp)
+		SleepConditionVariableCS(&m_condition, &m_condMutext);
+	LeaveCriticalSection(&m_condMutex);
+}
+
+
+void
+Thread::doAwake()
+{
+	m_wakeUp = true;
+	WakeConditionVariable(&m_condition);
+}
+
 #elif defined(__unix__) || defined(__MacOSX__) //////////////////////////////////////
+
+Thread m_mainThread(pthread_self());
+
+bool Thread::insideMainThread() { return pthread_self() == m_mainThread.threadId(); }
+
 
 void*
 Thread::startThread(void* arg)
@@ -368,20 +400,50 @@ Thread::cancelThread()
 	return true;
 }
 
+
+void
+Thread::doSleep()
+{
+	pthread_cond_init(&m_condition, 0);
+	pthread_mutex_lock(&m_condMutex);
+	m_wakeUp = false;
+	while (!m_wakeUp)
+		pthread_cond_wait(&m_condition, &m_condMutex);
+	pthread_mutex_unlock(&m_condMutex);
+}
+
+
+void
+Thread::doAwake()
+{
+	m_wakeUp = true;
+	pthread_cond_signal(&m_condition);
+}
+
 #else ///////////////////////////////////////////////////////////////////////////////
 
 # error "Unsupported platform"
 
 #endif //////////////////////////////////////////////////////////////////////////////
 
-
 #ifndef NDEBUG
 static bool m_noThreads = getenv("SCIDB_NO_THREADS") != 0;
 #endif
 
+static int wakeUp(Tcl_Event*, int) { return 1; }
+
+
+Thread::Thread(ThreadId threadId)
+	:m_threadId(threadId)
+	,m_exception(0)
+	,m_wakeUp(false)
+{
+}
+
 
 Thread::Thread()
 	:m_exception(0)
+	,m_wakeUp(false)
 {
 	Guard::initLock(m_lock);
 	atomic_set(&m_cancel, 1);
@@ -390,8 +452,25 @@ Thread::Thread()
 
 Thread::~Thread()
 {
-	Guard guard(m_lock);	// really neccessary?
-	cancelThread();
+	if (!isMainThread())
+	{
+		Guard guard(m_lock);	// really neccessary?
+		cancelThread();
+	}
+}
+
+
+Thread::ThreadId
+Thread::threadId() const
+{
+	return m_threadId;
+}
+
+
+bool
+Thread::isMainThread() const
+{
+	return m_threadId == ::m_mainThread.threadId();
 }
 
 
@@ -403,9 +482,18 @@ Thread::exception() const
 }
 
 
+Thread*
+Thread::mainThread()
+{
+	return &m_mainThread;
+}
+
+
 void
 Thread::start(Runnable runnable)
 {
+	M_REQUIRE(this != mainThread());
+
 	m_runnable = runnable;
 
 #ifndef NDEBUG
@@ -422,6 +510,8 @@ Thread::start(Runnable runnable)
 bool
 Thread::stop()
 {
+	M_REQUIRE(this != mainThread());
+
 #ifndef NDEBUG
 	if (::m_noThreads)
 		return true;
@@ -435,6 +525,8 @@ Thread::stop()
 bool
 Thread::testCancel()
 {
+	M_REQUIRE(this != mainThread());
+
 #ifndef NDEBUG
 	if (::m_noThreads)
 		return false;
@@ -442,6 +534,39 @@ Thread::testCancel()
 
 	// we do not need synchronization here
 	return atomic_read(&m_cancel);
+}
+
+
+void
+Thread::sleep()
+{
+	if (isMainThread())
+	{
+		m_wakeUp = false;
+		while (!m_wakeUp)
+			Tcl_DoOneEvent(TCL_ALL_EVENTS);
+	}
+	else
+	{
+		doSleep();
+	}
+}
+
+
+void
+Thread::awake()
+{
+	if (isMainThread())
+	{
+		m_wakeUp = true;
+		Tcl_Event* ev = reinterpret_cast<Tcl_Event*>(::ckalloc(sizeof(Tcl_Event)));
+		ev->proc = ::wakeUp;
+		Tcl_QueueEvent(ev, TCL_QUEUE_HEAD);
+	}
+	else
+	{
+		doAwake();
+	}
 }
 
 // vi:set ts=3 sw=3:

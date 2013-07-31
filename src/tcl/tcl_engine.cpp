@@ -242,6 +242,7 @@ public:
 			case Crazyhouse_Not_Supported:		// fallthru
 			case Three_Check_Not_Supported:		msg = "variant"; break;
 			case No_Analyze_Mode:					msg = "analyze"; break;
+			case Search_Mate_Not_Supported:		msg = "searchMate"; break;
 			case Illegal_Position:					msg = "position"; break;
 			case Illegal_Moves:						msg = "moves"; break;
 			case Did_Not_Receive_Pong:				msg = "pong"; break;

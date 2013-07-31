@@ -35,18 +35,6 @@ class Thread
 {
 public:
 
-	typedef mstl::function<void ()> Runnable;
-
-	Thread();
-	~Thread();
-
-	void start(Runnable runnable);
-
-	bool stop();
-	bool testCancel();
-
-	mstl::exception const* exception() const;
-
 #ifdef __WIN32__
 	typedef HANDLE ThreadId;
 #else
@@ -70,12 +58,38 @@ public:
 	typedef pthread_mutex_t lock_t;
 #endif
 
+	typedef mstl::function<void ()> Runnable;
+
+	Thread();
+	Thread(ThreadId threadId);
+	~Thread();
+
+	bool isMainThread() const;
+
+	ThreadId threadId() const;
+
+	void start(Runnable runnable);
+
+	void sleep();
+	void awake();
+
+	bool stop();
+	bool testCancel();
+
+	mstl::exception const* exception() const;
+
+	static bool insideMainThread();
+	static Thread* mainThread();
+
 private:
 
 	typedef mstl::exception Exception;
 
 	void createThread();
 	bool cancelThread();
+
+	void doSleep();
+	void doAwake();
 
 #ifdef __WIN32__
 	static unsigned startThread(void*);
@@ -86,6 +100,14 @@ private:
 	Runnable		m_runnable;
 	ThreadId		m_threadId;
 	Exception*	m_exception;
+	bool			m_wakeUp;
+#ifdef __WIN32__
+	CRITICAL_SECTION		m_condMutex;
+	PCONDITION_VARIABLE	m_condition;
+#else
+	pthread_mutex_t	m_condMutex;
+	pthread_cond_t		m_condition;
+#endif
 
 	mutable lock_t		m_lock;
 	mutable atomic_t	m_cancel;

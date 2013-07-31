@@ -97,6 +97,7 @@ private:
 	mstl::string	m_waitingOn;
 	mstl::string	m_name;
 	mstl::string	m_value;
+	mstl::string	m_threads;
 	State				m_state;
 	Variant			m_variant;
 	bool				m_uciok;

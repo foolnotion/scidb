@@ -289,16 +289,21 @@ winboard::Engine::sendOptions()
 	{
 		app::Engine::Option const& opt = *i;
 
-		msg.assign("option ", 7);
-		msg.append(opt.name);
-		msg.append('=');
+		if (	!hasFeature(app::Engine::Feature_SMP)
+			|| (opt.type != "spin" && opt.type != "slider")
+			|| (opt.name != "Cores" && opt.name != "Threads"))
+		{
+			msg.assign("option ", 7);
+			msg.append(opt.name);
+			msg.append('=');
 
-		if (opt.type == "check")
-			msg.append(opt.val == "true" ? "1" : "0"); // according to WB
-		else
-			msg.append(opt.val);
+			if (opt.type == "check")
+				msg.append(opt.val == "true" ? "1" : "0"); // according to WB
+			else
+				msg.append(opt.val);
 
-		send(msg);
+			send(msg);
+		}
 	}
 
 	if (hasFeature(app::Engine::Feature_Hash_Size))
@@ -575,7 +580,21 @@ winboard::Engine::startAnalysis(bool)
 void
 winboard::Engine::sendStartAnalysis()
 {
-	if (hasFeature(app::Engine::Feature_Analyze))
+	if (searchMate())
+	{
+		error(app::Engine::Search_Mate_Not_Supported);
+	}
+	else if (searchDepth())
+	{
+		mstl::string depth(::toStr(searchDepth()));
+		send("sd " + depth);
+		send("depth " + depth);		// some engines are expecting "depth" instead of "sd"
+	}
+	else if (searchTime())
+	{
+		send("time " + ::toStr((searchTime() + 5)/10));
+	}
+	else if (hasFeature(app::Engine::Feature_Analyze))
 	{
 		send("analyze");
 	}
@@ -1505,7 +1524,10 @@ winboard::Engine::parseOption(mstl::string const& option)
 		if (!::isNumeric(val) || !::isNumeric(min) || !::isNumeric(max))
 			return;
 
-		addOption(name, type, val, min, max);
+		if (hasFeature(app::Engine::Feature_SMP) && (name == "Cores" || name == "Threads"))
+			setThreadRange(::atoi(min), ::atoi(max));
+		else
+			addOption(name, type, val, min, max);
 
 //		if (name == "memory")
 //			setHashRange(::atoi(min), ::atoi(max));

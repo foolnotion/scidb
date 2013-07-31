@@ -494,7 +494,11 @@ uci::Engine::processMessage(mstl::string const& message)
 					m_isAnalyzing = true;
 
 					if (searchMate() > 0)
-						send("go mate=" + ::toStr(searchMate()));
+						send("go mate " + ::toStr(searchMate()));
+					else if (searchDepth() > 0)
+						send("go depth " + ::toStr(searchDepth()));
+					else if (searchTime() > 0)
+						send("go time " + ::toStr(searchTime()));
 					else
 						send("go infinite");
 
@@ -1016,6 +1020,17 @@ uci::Engine::parseOption(char const* msg)
 		else if (name == "Threads")
 		{
 			setThreadRange(::atoi(min), ::atoi(max));
+			m_threads.assign("Threads");
+		}
+		else if (name == "Cores")
+		{
+			// Some engines are using "Cores" instead of "Threads",
+			// for example Gaviota.
+			if (m_threads.empty())
+			{
+				setThreadRange(::atoi(min), ::atoi(max));
+				m_threads.assign("Cores");
+			}
 		}
 		else if (name == "Skill Level")
 		{
@@ -1080,6 +1095,9 @@ uci::Engine::sendOptions()
 {
 	bool isAnalyzing = this->isAnalyzing();
 
+	if (m_threads.empty())
+		m_threads.assign("Threads");
+
 	app::Engine::Options const& opts = options();
 	mstl::string msg;
 
@@ -1089,6 +1107,9 @@ uci::Engine::sendOptions()
 	for (app::Engine::Options::const_iterator i = opts.begin(); i != opts.end(); ++i)
 	{
 		app::Engine::Option const& opt = *i;
+
+		if (opt.name == m_threads)
+			continue; // should not be sent here
 
 		mstl::string val = opt.val;
 
@@ -1138,11 +1159,6 @@ uci::Engine::sendOptions()
 					continue; // should not be sent here
 				break;
 
-			case 'T':
-				if (opt.name == "Threads")
-					continue; // should not be sent here
-				break;
-
 			case 'U':
 				if (opt.name == "UCI_LimitStrength")
 					val = limitedStrength() ? "true" : "false";
@@ -1175,7 +1191,7 @@ uci::Engine::sendOptions()
 		send("setoption name Hash value " + ::toStr(hashSize()));
 
 	if (hasFeature(app::Engine::Feature_Threads))
-		send("setoption name Threads value " + ::toStr(numThreads()));
+		send("setoption name " + m_threads + " value " + ::toStr(numThreads()));
 
 	if (isAnalyzing)
 	{
@@ -1236,7 +1252,9 @@ uci::Engine::sendNumberOfVariations()
 void
 uci::Engine::sendThreads()
 {
-	sendOption("Threads", ::toStr(numThreads()));
+	if (m_threads.empty())
+		m_threads.assign("Threads");
+	sendOption(m_threads, ::toStr(numThreads()));
 }
 
 
