@@ -18,6 +18,42 @@
 
 TITLE Novedades
 
+<NEW>
+<h3>
+Fourth public preview version
+</h3>
+
+<ul style="padding: 5px;">
+  <li class="space">PGN archives now can be modified and saved (.pgn and .pgn.gz)</li>
+  <li class="space">Important fixes in ChessBase decoder</li>
+  <li class="space">File selection dialog is finished, especially Drag &amp; Drop</li>
+  <li class="space">PGN setup for export options now is a separate dialog; this is important for PGN export, which is available in different menues</li>
+  <li class="space">Language dependent sorting implemented</li>
+  <li class="space">New themes added: "Blackjack" and "Country Style" (thanks to José Carlos Martins)</li>
+  <li class="space">Problem with slow down in game editor eliminated</li>
+  <li class="space">Upgrade of engine Stockfish to version 3</li>
+  <li class="space">Session management implemented: now Scidb will intervene if the user is doing a session shutdown while Scidb is writing/updating a database</li>
+  <li class="space">Copy game to clipboard implemented</li>
+  <li class="space">Export of current game implemented (for example to PGN file)</li>
+  <li class="space">New option in tree window: show next game move with bold font</li>
+  <li class="space">Comment editor overworked</li>
+  <li class="space">Game editor now detects and displays Smileys (optional)</li>
+  <li class="space">Help dialog: CQL help pages completed</li>
+  <li class="space">freedesktop.org requirements implemented:
+    <ul>
+      <li class="space">Desktop menu entry for Scidb will be installed</li>
+      <li class="space">Opening databases with a file manager is possible</li>
+    </ul>
+  </li>
+  <li class="space">Custom menu check/radio-buttons implemented (as default)</li>
+  <li class="space">Toolbar now has drop-down buttons</li>
+</ul>
+
+<h3>
+Third public preview version
+</h3>
+</NEW>
+
 <ul style="padding: 5px;">
   <NEW>
   <li class="space">Support of chess variants: Crazyhouse, Antichess (Suicide, Giveaway, Losers), and Three-Check</li>
