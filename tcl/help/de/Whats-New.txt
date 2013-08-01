@@ -25,7 +25,7 @@ Vierte öffentliche Vorschau-Version
 <ul style="padding: 5px;">
   <li class="space">Installationsprobleme auf Ubuntu behoben (Ubuntu ist sehr unfreundlich zu eigeninstallierten Software-Paketen)</li>
   <li class="space">PGN-Archive können nun modifiziert und gespeichert werden (.pgn und .pgn.gz)</li>
-  <li class="space">Wesentliche Fehlerbereinigungen in der ChessBase-Dekodierung<li>
+  <li class="space">Wesentliche Fehlerbereinigungen in der ChessBase-Dekodierung</li>
   <li class="space">Der Dateiauswahldialog wurde fertiggestellt, insbesondere Drag &amp; Drop</li>
   <li class="space">PGN-Einstellungen für die Exportoptionen ist nun ein separater Dialog; dies ist wichtig für die PGN-Exportmöglichkeiten, die in verschiedenen Menüs möglich ist</li>
   <li class="space">Sprachabhängige Sortierung wurde implemented</li>
