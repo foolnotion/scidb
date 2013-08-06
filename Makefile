@@ -73,11 +73,19 @@ Makefile.in:
 	@echo "****** Please use the 'configure' script before building Scidb ******"
 	@exit 1
 
+checkinstall:
+	@$(MAKE) -C man install
+	@$(MAKE) -C src install
+	@$(MAKE) -C engines install
+	@$(MAKE) -C tcl install
+	@$(MAKE) -C freedesktop.org checkinstall
+
 install-subdirs:
 	@$(MAKE) -C man install
 	@$(MAKE) -C src install
 	@$(MAKE) -C engines install
 	@$(MAKE) -C tcl install
+	@$(MAKE) -C tcl setup-fonts
 
 uninstall-subdirs:
 	@$(MAKE) -C man uninstall

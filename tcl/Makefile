@@ -475,8 +475,8 @@ uninstall-help:
 	fi
 
 install-fonts:
+	@echo "Install fonts"
 	@if [ 1 ]; then                                                                   \
-		echo "Install fonts";                                                          \
 		if [ "`id -u`" -eq 0 ]; then                                                   \
 			fontdir="$(FONTDIR)";                                                       \
 		else                                                                           \
@@ -488,6 +488,19 @@ install-fonts:
 		fi;                                                                            \
 		install -m 755 -d $$fontdir;                                                   \
 		install -m 644 -p fonts/*.ttf $$fontdir;                                       \
+	fi
+
+setup-fonts:
+	@if [ 1 ]; then                                                                   \
+		if [ "`id -u`" -eq 0 ]; then                                                   \
+			fontdir="$(FONTDIR)";                                                       \
+		else                                                                           \
+			if [ "`uname -s`" = "Darwin" ]; then                                        \
+				fontdir="$(HOME)/Library/Fonts";                                         \
+			else                                                                        \
+				fontdir="$(HOME)/.fonts";                                                \
+			fi;                                                                         \
+		fi;                                                                            \
 		if [ ! -z "`which fc-cache`" ]; then                                           \
 			fc-cache -f $$fontdir;                                                      \
 		else                                                                           \
@@ -499,7 +512,7 @@ install-fonts:
 	fi
 
 uninstall-fonts:
-	echo "Uninstall fonts"
+	@echo "Uninstall fonts"
 	@if [ 1 ]; then                                                 \
 		if [ "`id -u`" -eq 0 ]; then                                 \
 			fontdir="$(FONTDIR)";                                     \

@@ -135,7 +135,7 @@ install-desktop-database:
 		fi;                                                            \
 	fi;                                                               \
 	appdir=$$xdgdir/applications;                                     \
-	./update-mimeapps.list add $$appdir/mimeapps.list;                \
+	./update-mimeapps.list.tcl add $$appdir/mimeapps.list;            \
 	update-desktop-database $$appdir 2>/dev/null
 
 uninstall-desktop-database:
@@ -163,11 +163,20 @@ uninstall-desktop-database:
 		fi;                                                            \
 	fi;                                                               \
 	appdir=$$xdgdir/applications;                                     \
-	./update-mimeapps.list remove $$appdir/mimeapps.list;             \
+	./update-mimeapps.list.tcl remove $$appdir/mimeapps.list;         \
 	update-desktop-database $$appdir 2>/dev/null
 
 install-desktop-menu: install-app-icons install-desktop-menu-entry install-desktop-database
 
 uninstall-desktop-menu: uninstall-app-icons uninstall-desktop-menu-entry uninstall-desktop-database
+
+### DISTRIBUTION FOR CHECKINSTALL ######################################
+
+checkinstall:
+	@echo "Distribute freedesktop.org stuff"
+	@install -m 755 -d /usr/local/share/scidb-beta/freedesktop.org
+	@install -m 755 update-mimeapps.list.tcl /usr/local/share/scidb-beta/freedesktop.org
+	@chmod 0555 /usr/local/share/scidb-beta/freedesktop.org/update-mimeapps.list.tcl
+	@install -m 644 *.* Makefile /usr/local/share/scidb-beta/freedesktop.org
 
 # vi:set ts=3 sw=3:

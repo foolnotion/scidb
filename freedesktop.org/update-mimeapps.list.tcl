@@ -109,12 +109,12 @@ proc stripApplications {mimetype applications} {
 
     foreach app [split $applications ";"] {
         if {[string length $app] && "$myapp.desktop" != $app} {
-            append result ";" $delim $app
+            append result ";" $app
         }
     }
 
     append result ";"
-    if {[string index $result] == ";"} { set result [string range $result 1 end] }
+    if {[string index $result 0] == ";"} { set result [string range $result 1 end] }
     return [string map {";;" ";"} $result]
 }
 

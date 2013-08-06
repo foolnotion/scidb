@@ -215,9 +215,9 @@ zu machen.
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Left</key><br/>
-      <aqua><key>Option</key>+<key>Left</key><br/>
+      <aqua><key>Option</key>+<key>Left</key><br/></aqua>
       <key>Ctrl</key>+<key>Right</key>
-      <aqua><key>Option</key>+<key>Right</key><br/>
+      <aqua><key>Option</key>+<key>Right</key><br/></aqua>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
       Bewegt den Einfüge-Cursor wortweise, und deselektiert jegliche
@@ -260,9 +260,9 @@ zu machen.
   <tr valign="top">
     <td style="padding-top: 1em;" nowrap="nowrap">
       <key>Ctrl</key>+<key>Up</key><br/>
-      <aqua><key>Option</key>+<key>Up</key><br/>
+      <aqua><key>Option</key>+<key>Up</key><br/></aqua>
       <key>Ctrl</key>+<key>Down</key>
-      <aqua><key>Option</key>+<key>Down</key><br/>
+      <aqua><key>Option</key>+<key>Down</key><br/></aqua>
     </td>
     <td style="padding-top: 1em; padding-left: 0.5em;">
       Bewegt den Einfüge-Cursor paragraphenweise (Zeilengruppen separiert

@@ -1,0 +1,4 @@
+fc-cache -f /usr/local/share/fonts/truetype/Scidb
+chmod 0555 /usr/local/share/scidb-beta/freedesktop.org/update-mimeapps.list
+cd /usr/local/share/scidb-beta/freedesktop.org
+make -f Makefile install-mime

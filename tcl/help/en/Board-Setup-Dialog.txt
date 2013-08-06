@@ -48,7 +48,7 @@ start positions, which are enumerated with a worldwide accepted scheme,
 developed from Reinhard Scharnagl. The standard start position has
 number 518 in this scheme. With the input of a number the corresponding
 position will be set-up. For further details of the enumeration see
-<a href"http://en.wikipedia.org/wiki/Chess960_numbering_scheme">
+<a href="http://en.wikipedia.org/wiki/Chess960_numbering_scheme">
 Chess960 numbering scheme</a>.
 </p>
 

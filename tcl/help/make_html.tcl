@@ -160,13 +160,13 @@ set HtmlMapping {
 
 switch [tk windowingsystem] {
 	x11	{
-		lappend SysMapping <x11> {} </x11> {} <win32> {<!--} </win32> {-->} <aqua> {<!--} </aqua> {-->}
+		lappend SysMapping <x11> {} </x11> {} <win32> {<!-- } </win32> { -->} <aqua> {<!-- } </aqua> { -->}
 	}
 	win32	{
-		lappend SysMapping <x11> {<!--} </x11> {-->} <win32> {} </win32> {} <aqua> {<!--} </aqua> {-->}
+		lappend SysMapping <x11> {<!-- } </x11> { -->} <win32> {} </win32> {} <aqua> {<!-- } </aqua> { -->}
 	}
 	aqua	{
-		lappend SysMapping <x11> {<!--} </x11> {-->} <win32> {<!--} </win32> {-->} <aqua> {} </aqua> {}
+		lappend SysMapping <x11> {<!-- } </x11> { -->} <win32> {<!-- } </win32> { -->} <aqua> {} </aqua> {}
 	}
 }
 
