@@ -572,7 +572,7 @@ array set Colors {
 	lite:pgn,background:nextmove			#eeff00
 	lite:pgn,hilite:comment					#7a5807
 	lite:pgn,hilite:info						#b22222
-	lite:pgn,hilite:move						#ebf4f5
+	lite:pgn,hilite:move						#dce5e6
 
 	lite:analysis,background				#ffffee
 	lite:analysis,info:background			#f5f5e4

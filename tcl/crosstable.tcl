@@ -1319,7 +1319,7 @@ proc SaveAsHTML {dlg} {
 		set html [string replace $html $i1 $i2 $src]
 	}
 
-	fconfigure $chan -encoding binary
+	fconfigure $chan -encoding utf-8
 	puts $chan $html
 	close $chan
 }

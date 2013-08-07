@@ -57,12 +57,18 @@ set Index {
     {
       {{Game Browser} {Game-Browser.html} {}}
       {{Game markers} {Game-Flags.html} {}}
+      {{Game Overview Browser} {Game-Overview.html} {}}
       {{Giveaway} {Chess-Variants.html} {}}
     }
   }
   { H
     {
       {{Homepage} {Contact-Information.html} {Homepage}}
+    }
+  }
+  { K
+    {
+      {{Kommentareditor} {Comment-Editor-Dialog.html} {}}
     }
   }
   { L
@@ -81,6 +87,11 @@ set Index {
       {{NAG annotation values} {NAG-Comments.html} {}}
       {{Normal Chess} {Chess-Variants.html} {}}
       {{Numerical annotation glyph} {NAG-Comments.html} {}}
+    }
+  }
+  { O
+    {
+      {{Overview Browser} {Game-Overview.html} {}}
     }
   }
   { P

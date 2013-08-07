@@ -358,7 +358,7 @@ public:
 			Tcl_IncrRefCount(m_bishops			= Tcl_NewStringObj("bishops",				-1));
 			Tcl_IncrRefCount(m_threefold		= Tcl_NewStringObj("threefold",			-1));
 			Tcl_IncrRefCount(m_fifty			= Tcl_NewStringObj("fifty",				-1));
-			Tcl_IncrRefCount(m_mating			= Tcl_NewStringObj("mating",				-1));
+			Tcl_IncrRefCount(m_mating			= Tcl_NewStringObj("nomating",			-1));
 			Tcl_IncrRefCount(m_empty			= Tcl_NewStringObj("",						-1));
 			Tcl_IncrRefCount(m_number			= Tcl_NewStringObj("[",						-1));
 			Tcl_IncrRefCount(m_leave			= Tcl_NewStringObj("]",						-1));

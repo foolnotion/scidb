@@ -1578,7 +1578,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 						set Priv(hover:key) $key
 					}
 					*-comment {
-						set Priv(hover:key) comment:$key:p:$langID
+						set Priv(hover:key) comment:$key:after:$langID
 						set hilite(comment) $Colors(hilite:comment)
 					}
 					*-info {
@@ -1661,15 +1661,12 @@ proc Blink {context position compl} {
 	if {$Priv(blink) % 2 == 0} {
 		if {[llength $compl]} {
 			if {$attr eq "hilite"} {
-				if {$tag eq "move"} {
-					$w tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $Colors(hilite:move)]
-				} else {
-					$w tag configure $Priv(hover:key) -background [::colors::lookup pgn $compl]
-				}
+				if {$tag eq "move"} { set color $Colors(hilite:move) } else { set color $compl }
+				$w tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $color]
 			} else {
 				switch $tag {
 					variation - bracket - numbering {
-						$w tag configure $tag -foreground [::colors::lookup $compl]
+						$w tag configure $tag -foreground [::colors::lookup pgn $compl]
 					}
 					current {
 						set key [::scidb::game::position $position key]
@@ -1690,11 +1687,8 @@ proc Blink {context position compl} {
 		set period 500
 	} else {
 		if {$attr eq "hilite"} {
-			if {$tag eq "move"} {
-				$w tag configure $Priv(hover:key) -foreground {}
-			} else {
-				$w tag configure $Priv(hover:key) -background {}
-			}
+			if {$tag eq "move"} { set color {} } else { set color $Colors($Priv(color:attr)) }
+			$w tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $color]
 		} else {
 			switch $tag {
 				variation - bracket - numbering {
