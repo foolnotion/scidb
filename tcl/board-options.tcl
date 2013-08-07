@@ -86,9 +86,9 @@ variable InitialPosition	{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk
 variable NameList
 
 array set Options {
-	modifiedForeground	white
-	modifiedBackground	brown
-	fixedBackground		#fff5d6
+	modifiedForeground	modifiedForeground
+	modifiedBackground	modifiedBackground
+	fixedBackground		fixedBackground
 	pieceSetListCount		11
 	figurineSize			18
 }
@@ -365,10 +365,16 @@ proc ConfigureListbox {w} {
 	variable Options
 
 	set fg [$w cget -selectforeground]
-	if {$fg eq "#ffffff"} { set fg $Options(fixedBackground) }
+	if {$fg eq "#ffffff"} { set fg [::colors::lookup board $Options(fixedBackground)] }
 
-	$w itemconfigure 0 -background $Options(fixedBackground) -selectforeground $fg
-	$w itemconfigure 1 -background $Options(fixedBackground) -selectforeground $fg
+	$w itemconfigure 0 \
+		-background [::colors::lookup board $Options(fixedBackground)] \
+		-selectforeground $fg \
+		;
+	$w itemconfigure 1 \
+		-background [::colors::lookup board $Options(fixedBackground)] \
+		-selectforeground $fg \
+		;
 }
 
 
@@ -449,9 +455,9 @@ proc ConfigStyleSelectionFrame {which} {
 
 		if {[[namespace parent]::workingSetIsModified $which]} {
 			$Vars(widget:$which:list) itemconfigure 0 \
-				-foreground $Options(modifiedBackground) \
-				-selectforeground $Options(modifiedForeground) \
-				-selectbackground $Options(modifiedBackground) \
+				-foreground [::colors::lookup board $Options(modifiedBackground)] \
+				-selectforeground [::colors::lookup board $Options(modifiedForeground)] \
+				-selectbackground [::colors::lookup board $Options(modifiedBackground)] \
 				;
 		} else {
 			$Vars(widget:$which:list) itemconfigure 0 -foreground {} -selectbackground {}

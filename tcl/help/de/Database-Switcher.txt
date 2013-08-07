@@ -22,7 +22,7 @@ INDEX Datenbank komprimieren#Compact
 INDEX Datenbank administrieren#Administration
 TITLE Der Datenbankumschalter
 
-<ul><img src="images/database-switcher.png"/></ul>
+<dir><img src="images/database-switcher.png"/></dir>
 
 <p>
 Der Datenbankumschalter ermöglicht den einfachen Wechsel zwischen Datenbanken.
@@ -52,7 +52,7 @@ Die Funktionalitäten im Datenbankumschalter sind:
 Zur Administration einer Datenbank steht ein kontextsensitives Menü bereit:
 </p>
 
-<ul><img src="images/database-switcher-menu.png"/></ul>
+<dir><img src="images/database-switcher-menu.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
@@ -151,7 +151,7 @@ Auswahl der Symbolgröße für die Datenbankkacheln.
 Hilfedialog zum Datenbankumschalter öffnen.
 </p>
 
-<ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
+<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
@@ -164,7 +164,7 @@ Hilfedialog zum Datenbankumschalter öffnen.
 Dieses Untermenü bietet Funktionalitäten um Datenbanken zu verwalten:
 </p>
 
-<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+<dir><img src="images/database-switcher-menu-maintenance.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>

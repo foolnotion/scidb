@@ -551,6 +551,242 @@ proc source {what} {
 } ;# namespace util
 
 
+namespace eval colors {
+
+array set Colors {
+	lite:pgn,background						#ffffff
+	lite:pgn,foreground:variation			#0000ee
+	lite:pgn,foreground:bracket			#0000ee
+	lite:pgn,foreground:numbering			#aa0acd
+	lite:pgn,foreground:nag					#ee0000
+	lite:pgn,foreground:nagtext			#912a2a
+	lite:pgn,foreground:comment			#006300
+	lite:pgn,foreground:info				#8b4513
+	lite:pgn,foreground:result				#000000
+	lite:pgn,foreground:illegal			#ee0000
+	lite:pgn,foreground:marks				#6300c6
+	lite:pgn,foreground:empty				#666666
+	lite:pgn,foreground:opening			#000000
+	lite:pgn,foreground:result				#000000
+	lite:pgn,background:current			#ffdd76
+	lite:pgn,background:nextmove			#eeff00
+	lite:pgn,hilite:comment					#7a5807
+	lite:pgn,hilite:info						#b22222
+	lite:pgn,hilite:move						#ebf4f5
+
+	lite:analysis,background				#ffffee
+	lite:analysis,info:background			#f5f5e4
+	lite:analysis,info:foreground			darkgreen
+	lite:analysis,best:foreground			darkgreen
+	lite:analysis,error:foreground		darkred
+	lite:analysis,active:background		#f5f5e4
+
+	lite:database,selected					#ffdd76
+
+	lite:tree,background						white
+	lite:tree,emphasize						linen
+	lite:tree,stripes							#ebf4f5
+	lite:tree,ratio:color					darkgreen
+	lite:tree,score:color					darkred
+	lite:tree,draws:color					darkgreen
+	lite:tree,progress:color				darkred
+	lite:tree,progress:finished			forestgreen
+
+	lite:variation,background				white
+	lite:variation,emphasize				linen
+	lite:variation,stripes					#ebf4f5
+
+	lite:board,modifiedForeground			white
+	lite:board,modifiedBackground			brown
+	lite:board,fixedBackground				#fff5d6
+
+	lite:browser,background:header		#ebf4f5
+	lite:browser,background:hilite		cornflowerblue
+	lite:browser,background:modified		linen
+	lite:browser,foreground:hilite		white
+
+	lite:overview,background:normal		#ebf4f5
+	lite:overview,background:modified	linen
+
+	lite:crosstable,background				#ffffff
+	lite:crosstable,highlighted			#ebf4f5
+	lite:crosstable,mark						#ffdd76
+
+	lite:export,shadow						#999999
+	lite:export,text							#c0c0c0
+
+	lite:import,background					#ebf4f5
+	lite:import,background:select			#ffdd76
+	lite:import,background:hilite			linen
+
+	lite:switcher,selected:background	#ffdd76
+	lite:switcher,normal:background		#efefef
+	lite:switcher,normal:foreground		black
+	lite:switcher,hidden:background		white
+	lite:switcher,hidden:foreground		#696969
+	lite:switcher,emph:foreground			darkgreen
+	lite:switcher,drop:background			LemonChiffon
+	lite:switcher,prop:background			#aee239
+
+	lite:fsbox,menu:headerbackground		#ffdd76
+	lite:fsbox,menu:headerforeground		black
+	lite:fsbox,drop:background				LemonChiffon
+	lite:fsbox,selectionbackground		#ebf4f5
+	lite:fsbox,selectionforeground		black
+	lite:fsbox,inactivebackground			#f2f2f2
+	lite:fsbox,inactiveforeground			black
+	lite:fsbox,activebackground			#ebf4f5
+	lite:fsbox,activeforeground			black
+
+	lite:gamebar,background:normal		#d9d9d9
+	lite:gamebar,foreground:normal		black
+	lite:gamebar,background:selected		white
+	lite:gamebar,background:emphasize	linen
+	lite:gamebar,background:active		#efefef
+	lite:gamebar,background:darker		#828282
+	lite:gamebar,background:shadow		#e6e6e6
+	lite:gamebar,background:lighter		white
+	lite:gamebar,background:hilite		#ebf4f5
+	lite:gamebar,foreground:hilite		black
+	lite:gamebar,background:hilite2		cornflowerblue
+	lite:gamebar,foreground:hilite2		white
+	lite:gamebar,foreground:elo			darkblue
+
+	lite:scrolledtable,background			white
+	lite:scrolledtable,stripes				#ebf4f5
+	lite:scrolledtable,highlight			#f4f4f4
+	lite:scrolledtable,separatorcolor	darkgrey
+
+	lite:tlistbox,background				white
+	lite:tlistbox,foreground				black
+	lite:tlistbox,selectbackground		#ffdd76
+	lite:tlistbox,selectforeground		black
+	lite:tlistbox,disabledbackground		#ebf4f5
+	lite:tlistbox,disabledforeground		black
+	lite:tlistbox,highlightbackground	darkblue
+	lite:tlistbox,highlightforeground	white
+
+	lite:treetable,background				white
+	lite:treetable,disabledforeground	#999999
+
+	lite:help,foreground:gray				#999999
+	lite:help,foreground:litegray			#696969
+	lite:help,background:gray				#f5f5f5
+	lite:help,background:emphasize		lightgoldenrod
+
+	lite:table,background					white
+	lite:table,foreground					black
+	lite:table,selectionbackground		#ffdd76
+	lite:table,selectionforeground		black
+	lite:table,disabledforeground			#555555
+	lite:table,labelforeground				black
+	lite:table,labelbackground				#d9d9d9
+
+	lite:save,number							darkred
+	lite:save,frequency						darkgreen
+	lite:save,title							darkgreen
+	lite:save,federation						darkblue
+	lite:save,score							darkgreen
+	lite:save,ratingType						darkblue
+	lite:save,date								darkblue
+	lite:save,eventDate						darkblue
+	lite:save,eventCountry					darkblue
+	lite:save,taglistOutline				gray
+	lite:save,taglistBackground			lightYellow
+	lite:save,taglistHighlighting			#ebf4f5
+	lite:save,tasglistCurrent				blue
+	lite:save,matchlistBackground			#ebf4f5
+	lite:save,matchlistHeaderForeground	#727272
+	lite:save,matchlistHeaderBackground	#dfe7e8
+
+	lite:encoding,selection					#ffdd76
+	lite:encoding,active						#ebf4f5
+	lite:encoding,normal						linen
+	lite:encoding,description				#efefef
+
+	lite:engine,selectbackground:dict	#ebf4f5
+	lite:engine,selectbackground:setup	lightgray
+	lite:engine,selectforeground:setup	black
+	lite:engine,stripes						linen
+
+	lite:default,disabledbackground		#ebf4f5
+	lite:default,disabledforeground		black
+
+	lite:treetable,selected:focus			#ffdd76
+	lite:treetable,selected!focus			#ffdd76
+	lite:treetable,active:focus			#ebf4f5
+	lite:treetable,hilite!selected		#ebf4f5
+
+	lite:gamehistory,selected:focus		#ebf4f5
+	lite:gamehistory,selected:hilite		#ebf4f5
+	lite:gamehistory,selected!focus		#f2f2f2
+	lite:gamehistory,hilite					#ebf4f5
+
+	lite:playerdict,stripes					linen
+}
+# mapped from #ebf4f5
+array set Colors {
+	dark:pgn,hilite:move						#e4edee
+	dark:tree,stripes							#e4edee
+	dark:variation,stripes					#e4edee
+	dark:import,background					#e4edee
+	dark:browser,background:header		#e4edee
+	dark:overview,background:normal		#e4edee
+	dark:crosstable,highlighted			#e4edee
+	dark:fsbox,selectionbackground		#e4edee
+	dark:gamebar,background:hilite		#e4edee
+	dark:scrolledtable,stripes				#e4edee
+	dark:tlistbox,disabledbackground		#e4edee
+	dark:save,taglistHighlighting			#e4edee
+	dark:save,matchlistBackground			#e4edee
+	dark:encoding,active						#e4edee
+	dark:engine,selectbackground:dict	#e4edee
+	dark:default,disabledbackground		#e4edee
+	dark:treetable,active:focus			#e4edee
+	dark:treetable,hilite!selected		#e4edee
+	dark:gamehistory,selected:focus		#e4edee
+	dark:gamehistory,selected:hilite		#e4edee
+	dark:gamehistory,hilite					#e4edee
+	dark:fsbox,activebackground			#e4edee
+}
+# mapped from #efefef
+array set Colors {
+	dark:switcher,normal:background		#e4e4e4
+	dark:gamebar,background:active		#e4e4e4
+	dark:encoding,description				#e4e4e4
+}
+# mapped from linen
+array set Colors {
+	dark:tree,emphasize						#f1e8de
+	dark:variation,emphasize				#f1e8de
+	dark:browser,background:modified		#f1e8de
+	dark:overview,background:modified	#f1e8de
+	dark:import,background:hilite			#f1e8de
+	dark:gamebar,background:emphasize	#f1e8de
+	dark:encoding,normal						#f1e8de
+	dark:playerdict,stripes					#f1e8de
+	lite:engine,stripes						#f1e8de
+}
+# mapped from #ffffee
+array set Colors {
+	dark:analysis,info:background			#e7e7d8
+	dark:analysis,active:background		#e7e7d8
+}
+
+set Scheme dark
+
+proc lookup {class color} {
+	variable Colors
+	variable Scheme
+
+	if {[info exists Colors($Scheme:$class,$color)]} { return $Colors($Scheme:$class,$color) }
+	if {[info exists Colors(lite:$class,$color)]} { return $Colors(lite:$class,$color) }
+	return $color
+}
+
+} ;# namespace colors
+
+
 namespace eval remote {
 
 proc openBases {pathList} {

@@ -85,12 +85,12 @@ set Add(all)					"Add all variations"
 namespace import ::tcl::mathfunc::abs
 
 array set Defaults {
-	background			#ffffee
-	info:background	#f5f5e4
-	info:foreground	darkgreen
-	best:foreground	darkgreen
-	error:foreground	darkred
-	active:background	#f5f5e4
+	background			background
+	info:background	info:background
+	info:foreground	info:foreground
+	best:foreground	best:foreground
+	error:foreground	error:foreground
+	active:background	active:background
 }
 
 array set Options {
@@ -142,9 +142,18 @@ proc build {parent width height} {
 	set charwidth [font measure $Options(font) "0"]
 	set minsize [expr {12*$charwidth}]
 
-	set mw   [tk::multiwindow $parent.mw -borderwidth 0 -background $Defaults(info:background)]
-	set main [tk::frame $mw.main -borderwidth 0 -background $Defaults(info:background)]
-	set mesg [tk::label $mw.mesg -borderwidth 0 -background $Defaults(background)]
+	set mw   [tk::multiwindow $parent.mw \
+					-borderwidth 0 \
+					-background [::colors::lookup analysis $Defaults(info:background)] \
+				]
+	set main [tk::frame $mw.main \
+		-borderwidth 0 \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
+	]
+	set mesg [tk::label $mw.mesg \
+		-borderwidth 0 \
+		-background [::colors::lookup analysis $Defaults(background)] \
+	]
 
 	bind $mesg <<LanguageChanged>> [namespace code LanguageChanged]
 
@@ -157,18 +166,18 @@ proc build {parent width height} {
 	set tree $main.tree
 
 	set info [tk::frame $main.info \
-		-background $Defaults(background) \
+		-background [::colors::lookup analysis $Defaults(background)] \
 		-borderwidth 0 \
 	]
 	set score [tk::frame $info.score \
-		-background $Defaults(info:background) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
 	]
 	set tscore [tk::text $info.score.t \
 		-font $::font::text(text:normal) \
-		-background $Defaults(info:background) \
-		-foreground $Defaults(info:foreground) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
+		-foreground [::colors::lookup analysis $Defaults(info:foreground)] \
 		-borderwidth 0 \
 		-state disabled \
 		-width 0 \
@@ -180,14 +189,14 @@ proc build {parent width height} {
 	pack $tscore -padx 2 -pady 2
 
 	set move [tk::frame $info.move \
-		-background $Defaults(info:background) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
 	]
 	set tmove [tk::text $info.move.t \
 		-font $::font::text(text:normal) \
-		-background $Defaults(info:background) \
-		-foreground $Defaults(info:foreground) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
+		-foreground [::colors::lookup analysis $Defaults(info:foreground)] \
 		-borderwidth 0 \
 		-state disabled \
 		-width 0 \
@@ -199,28 +208,28 @@ proc build {parent width height} {
 	pack $tmove -padx 2 -pady 2
 
 	set time [tk::frame $info.time \
-		-background $Defaults(info:background) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
 	]
 	set ttime [tk::label $info.time.t \
 		-font $::font::text(text:normal) \
-		-background $Defaults(info:background) \
-		-foreground $Defaults(info:foreground) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
+		-foreground [::colors::lookup analysis $Defaults(info:foreground)] \
 		-borderwidth 0 \
 		-width 0 \
 	]
 	pack $ttime -padx 2 -pady 2
 
 	set depth [tk::frame $info.depth \
-		-background $Defaults(info:background) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
 		-borderwidth 1 \
 		-relief raised \
 	]
 	set tdepth [tk::label $info.depth.t \
 		-font $::font::text(text:normal) \
-		-background $Defaults(info:background) \
-		-foreground $Defaults(info:foreground) \
+		-background [::colors::lookup analysis $Defaults(info:background)] \
+		-foreground [::colors::lookup analysis $Defaults(info:foreground)] \
 		-borderwidth 0 \
 		-width 0 \
 	]
@@ -259,7 +268,7 @@ proc build {parent width height} {
 		-showroot no \
 		-showlines no \
 		-showrootlines no \
-		-background $Defaults(background) \
+		-background [::colors::lookup analysis $Defaults(background)] \
 		-font $Options(font) \
 		;
 	bind $tree <ButtonPress-3> [namespace code [list PopupMenu $tree %x %y]]
@@ -274,7 +283,7 @@ proc build {parent width height} {
 		-open nw \
 		-outline gray \
 		-outlinewidth 1 \
-		-fill [list $Defaults(active:background) active] \
+		-fill [list [::colors::lookup analysis $Defaults(active:background)] active] \
 		;
 	$tree element create elemTextFig text \
 		-lines $Options(engine:nlines) \
@@ -519,7 +528,7 @@ proc SetOrdering {tree} {
 	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
 		set Vars(best:1) black
 	} else {
-		set Vars(best:1) $Defaults(best:foreground)
+		set Vars(best:1) [::colors::lookup analysis $Defaults(best:foreground)]
 	}
 
 	if {$Options(engine:bestFirst)} {
@@ -558,7 +567,7 @@ proc SetMultiPV {tree} {
 	if {$Options(engine:bestFirst) || $Options(engine:multiPV) == 1} {
 		set Vars(best:1) black
 	} else {
-		set Vars(best:1) $Defaults(best:foreground)
+		set Vars(best:1) [::colors::lookup analysis $Defaults(best:foreground)]
 	}
 	Layout $tree
 }
@@ -680,7 +689,11 @@ proc ShowMessage {type txt} {
 	variable Vars
 
 	set width [expr {[winfo width $Vars(mw)] - 50}]
-	$Vars(mesg) configure -text $txt -wraplength $width -foreground $Defaults($type:foreground)
+	$Vars(mesg) configure \
+		-text $txt \
+		-wraplength $width \
+		-foreground [::colors::lookup analysis $Defaults($type:foreground)] \
+		;
 	$Vars(mw) raise $Vars(mesg)
 }
 
@@ -722,7 +735,7 @@ proc Display(clear) {} {
 	$Vars(widget:hashfullness) configure -text ""
 	set Vars(maxMoves) 0
 
-	set bg $Defaults(background)
+	set bg [::colors::lookup analysis $Defaults(background)]
 
 	foreach i {0 1 2 3} {
 		$Vars(tree) item element configure Line$i Eval  elemTextSym -text "" -fill black
@@ -782,8 +795,9 @@ proc Display(bestscore) {score mate bestLines} {
 
 	set line 0
 	foreach best $bestLines {
-		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $Vars(best:$best)
-		$Vars(tree) item element configure Line$line Value elemTextFig -fill $Vars(best:$best)
+		set color [::colors::lookup analysis $Vars(best:$best)]
+		$Vars(tree) item element configure Line$line Eval  elemTextSym -fill $color
+		$Vars(tree) item element configure Line$line Value elemTextFig -fill $color
 		if {$best} {
 			set evalTxt [::font::mapNagToSymbol [EvalText $score $mate]]
 			set scoreTxt [ScoreText $score $mate]

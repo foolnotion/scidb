@@ -85,15 +85,18 @@ array set options {
 	element:padding			2
 }
 
+array set ColorLookup {
+	background					white
+	foreground					black
+	selectionbackground		#ffdd76
+	selectionforeground		black
+	disabledforeground		#555555
+	labelforeground			black
+	labelbackground			#d9d9d9
+}
+
 array set Defaults {
 	-width                  0
-	-background					white
-	-foreground					black
-	-selectionbackground		#ffdd76
-	-selectionforeground		black
-	-disabledforeground		#555555
-	-labelforeground			black
-	-labelbackground			#d9d9d9
 	-borderwidth				1
 	-labelfont					TkTextFont
 	-labelrelief				raised
@@ -117,6 +120,13 @@ array set Defaults {
 	-highlightcolor			{}
 	-labelcommand				{}
 	-columns						{}
+	-background					background
+	-foreground					foreground
+	-selectionbackground		selectionbackground
+	-selectionforeground		selectionforeground
+	-disabledforeground		disabledforeground
+	-labelforeground			labelforeground
+	-labelbackground			labelbackground
 }
 
 variable Eraser [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::eraser]
@@ -130,6 +140,7 @@ set KeySqueezeColumns	<Control-Key-numbersign>
 
 proc table {args} {
 	variable Defaults
+	variable Colors
 	variable KeyFitColumns
 	variable KeyOptimizeColumns
 	variable KeySqueezeColumns
@@ -175,6 +186,8 @@ proc table {args} {
 	set Vars(order)			{}
 	set Vars(styles)			{}
 
+	set background [lookupColor $Options(-background)]
+
 	treectrl $table.t                      \
 		-width $Options(-width)             \
 		-takefocus $Options(-takefocus)     \
@@ -192,13 +205,15 @@ proc table {args} {
 		-xscrollincrement 1                 \
 		-keepuserwidth no                   \
 		-fullstripes $Options(-fullstripes) \
-		-background $Options(-background)   \
+		-background $background             \
 		;
-	setColumnBackground $table tail $Options(-stripes) $Options(-background)
+	setColumnBackground $table tail $Options(-stripes) $background
 	$table.t state define deleted
 	$table.t element create elemIco image
-	set colors [list $Options(-selectionbackground) selected]
-	if {[llength $Options(-highlightcolor)]} { lappend colors $Options(-highlightcolor) active }
+	set colors [list [lookupColor $Options(-selectionbackground)] selected]
+	if {[llength $Options(-highlightcolor)]} {
+		lappend colors [lookupColor $Options(-highlightcolor)] active
+	}
 	$table.t element create elemSel rect -fill $colors
 	$table.t element create elemImg rect -fill $colors
 	$table.t element create elemBrd border  \
@@ -370,9 +385,9 @@ proc addcol {table id args} {
 	set stripes $opts(-stripes)
 	if {[llength $stripes] == 0} { set stripes $Options(-stripes) }
 	if {[llength $stripes]} {
-		set colors [list $stripes $opts(-background)]
+		set colors [list $stripes [lookupColor $opts(-background)]]
 	} else {
-		set colors $opts(-background)
+		set colors [lookupColor $opts(-background)]
 	}
 
 	set justify $opts(-justify)
@@ -382,33 +397,33 @@ proc addcol {table id args} {
 #		set justify left
 #	}
 
-	$table.t column create                      \
-		-tag $id                                 \
-		-expand yes                              \
-		-steady yes                              \
-		-minwidth $minwidth                      \
-		-maxwidth $maxwidth                      \
-		-width $width                            \
-		-lock $opts(-lock)                       \
-		-image $labelImage                       \
-		-text $labelText                         \
-		-font $Options(-labelfont)               \
-		-textcolor $Options(-labelforeground)    \
-		-background $Options(-labelbackground)   \
-		-textpadx $Options(-padx)                \
-		-textpady $Options(-pady)                \
-		-imagepadx $Options(-imagepadx)          \
-		-imagepady $Options(-imagepady)          \
-		-justify $justify                        \
-		-borderwidth $Options(-labelborderwidth) \
-		-button no                               \
-		-itemjustify $opts(-justify)             \
-		-resize $resizable                       \
-		-squeeze $squeeze                        \
-		-visible $opts(-visible)                 \
-		-weight $weight                          \
-		-uniform uniform                         \
-		-itembackground $colors                  \
+	$table.t column create                                  \
+		-tag $id                                             \
+		-expand yes                                          \
+		-steady yes                                          \
+		-minwidth $minwidth                                  \
+		-maxwidth $maxwidth                                  \
+		-width $width                                        \
+		-lock $opts(-lock)                                   \
+		-image $labelImage                                   \
+		-text $labelText                                     \
+		-font $Options(-labelfont)                           \
+		-textcolor [lookupColor $Options(-labelforeground)]  \
+		-background [lookupColor $Options(-labelbackground)] \
+		-textpadx $Options(-padx)                            \
+		-textpady $Options(-pady)                            \
+		-imagepadx $Options(-imagepadx)                      \
+		-imagepady $Options(-imagepady)                      \
+		-justify $justify                                    \
+		-borderwidth $Options(-labelborderwidth)             \
+		-button no                                           \
+		-itemjustify $opts(-justify)                         \
+		-resize $resizable                                   \
+		-squeeze $squeeze                                    \
+		-visible $opts(-visible)                             \
+		-weight $weight                                      \
+		-uniform uniform                                     \
+		-itembackground $colors                              \
 		;
 	$table.t column dragconfigure -enable yes
 	$table.t notify install <ColumnDrag-receive>
@@ -515,6 +530,14 @@ proc insert {table index list} {
 	}
 
 	set Vars(rows) [max $Vars(rows) [expr {$index + 1}]]
+}
+
+
+proc lookupColor {color} {
+	variable ColorLookup
+
+	if {[info exists ColorLookup($color)]} { return $ColorLookup($color) }
+	return $color
 }
 
 
@@ -902,8 +925,9 @@ proc setScrollCommand {table cmd} {
 
 
 proc setColumnBackground {table id stripes background} {
+	set background [lookupColor $background]
 	if {[llength $stripes]} {
-		$table.t column configure $id -itembackground [list $stripes $background]
+		$table.t column configure $id -itembackground [list [lookupColor $stripes] $background]
 	} else {
 		$table.t column configure $id -itembackground $background
 	}
@@ -1408,13 +1432,13 @@ proc PopupMenu {table x y X Y} {
 		lappend groups $e
 	}
 
-	$menu add command                                    \
-		-background $options(menu:headerbackground)       \
-		-foreground $options(menu:headerforeground)       \
-		-activebackground $options(menu:headerbackground) \
-		-activeforeground $options(menu:headerforeground) \
-		-font $options(menu:headerfont)                   \
-		-state disabled                                   \
+	$menu add command                                                  \
+		-background [lookupColor $options(menu:headerbackground)]       \
+		-foreground [lookupColor $options(menu:headerforeground)]       \
+		-activebackground [lookupColor $options(menu:headerbackground)] \
+		-activeforeground [lookupColor $options(menu:headerforeground)] \
+		-font $options(menu:headerfont)                                 \
+		-state disabled                                                 \
 		;
 	$menu add separator
 
@@ -1781,8 +1805,8 @@ proc ConfigureDialog {table id dlg} {
 proc MakePreview {foreground background preview path} {
 	set text [set [namespace current]::mc::Preview]
 	set canv [tk::canvas $path.coords -width 150 -height 20 -borderwidth 1 -relief sunken]
-	$canv configure -background $background
-	$canv create text 75 10 -text $text -fill $foreground -tag abcd -font TkDefaultFont
+	$canv configure -background [lookupColor $background]
+	$canv create text 75 10 -text $text -fill [lookupColor $foreground] -tag abcd -font TkDefaultFont
 	if {$preview eq "foreground"} {
 		::bind $canv <<ChooseColorSelected>> "$canv itemconfigure abcd -fill %d"
 	} else {
@@ -1810,7 +1834,7 @@ proc ChooseColor {parent title what initialcolor previewcolor background usedCol
 
 	switch $which {
 		stripes {
-			set backgroundcolor [::dialog::choosecolor::getActualColor $background]
+			set backgroundcolor [::dialog::choosecolor::getActualColor [lookupColor $background]]
 			scan $backgroundcolor "\#%2x%2x%2x" r g b
 			lassign [::dialog::choosecolor::rgb2hsv $r $g $b] h s v
 			if {$v < 0.5} { set incr 0.1 } else { set incr -0.02 }
@@ -1924,14 +1948,19 @@ proc SelectTableColor {table id parent title which} {
 			}
 
 			selectionbackground {
-				set colors [list $color selected]
-				if {[llength $Options(-highlightcolor)]} { lappend colors $Options(-highlightcolor) active }
+				set colors [list [lookupColor $color] selected]
+				if {[llength $Options(-highlightcolor)]} {
+					lappend colors [lookupColor $Options(-highlightcolor)] active
+				}
 				$table.t element configure elemSel -fill $colors
 				$table.t element configure elemImg -fill $colors
 			}
 
 			highlightcolor {
-				set colors [list $Options(-selectionbackground) selected $Options(-highlightcolor) active]
+				set colors [list \
+					[lookupColor $Options(-selectionbackground)] selected \
+					[lookupColor $Options(-highlightcolor)] active \
+				]
 				$table.t element configure elemSel -fill $colors
 				$table.t element configure elemImg -fill $colors
 			}
@@ -2011,15 +2040,15 @@ proc SelectTableStripes {table id parent} {
 
 	if {[llength $Options(-stripes)]} { set eraser true } else { set eraser false }
 
-	set color [ChooseColor   \
-		$parent               \
-		$mc::Stripes          \
-		table-stripes         \
-		$Options(-stripes)    \
-		$Options(-foreground) \
-		$Options(-background) \
-		{}                    \
-		$eraser               \
+	set color [ChooseColor                 \
+		$parent                             \
+		$mc::Stripes                        \
+		table-stripes                       \
+		[lookupColor $Options(-stripes)]    \
+		[lookupColor $Options(-foreground)] \
+		[lookupColor $Options(-background)] \
+		{}                                  \
+		$eraser                             \
 	]
 
 	if {$color eq "erase"} {
@@ -2044,15 +2073,15 @@ proc SelectStripes {table id parent} {
 	if {[llength $background] == 0} { set background $Options(-background) }
 	if {[llength $Options(-stripes:$id)]} { set eraser true } else { set eraser false }
 
-	set color [ChooseColor     \
-		$parent                 \
-		$mc::Stripes            \
-		stripes                 \
-		[GetStripes $table $id] \
-		$foreground             \
-		$background             \
-		{}                      \
-		$eraser                 \
+	set color [ChooseColor                   \
+		$parent                               \
+		$mc::Stripes                          \
+		stripes                               \
+		[lookupColor [GetStripes $table $id]] \
+		[lookupColor $foreground]             \
+		[lookupColor $background]             \
+		{}                                    \
+		$eraser                               \
 	]
 
 	if {$color eq "erase"} {
@@ -2079,8 +2108,10 @@ proc ResetColors {table id} {
 		set Options(-$attr) $Vars($attr:menu)
 	}
 
-	set colors [list $Options(-selectionbackground) selected]
-	if {[llength $Options(-highlightcolor)]} { lappend colors $Options(-highlightcolor) active }
+	set colors [list [lookupColor $Options(-selectionbackground)] selected]
+	if {[llength $Options(-highlightcolor)]} {
+		lappend colors [lookupColor $Options(-highlightcolor)] active
+	}
 	$table.t element configure elemSel -fill $colors
 	$table.t element configure elemImg -fill $colors
 
@@ -2098,8 +2129,12 @@ proc SetForeground {table id} {
 	if {[llength $selected] == 0} { set selected $Options(-selectionforeground) }
 	set disabled $Options(-disabledforeground:$id)
 	if {[llength $disabled] == 0} { set disabled $Options(-disabledforeground) }
-	set colors [list $disabled deleted $selected selected $foreground {}]
 
+	set colors [list \
+		[lookupColor $disabled] deleted \
+		[lookupColor $selected] selected \
+		[lookupColor $foreground] {} \
+	]
 	$table.t element configure elemTxt$id -fill $colors
 }
 

@@ -42,9 +42,9 @@ set Columns {
 }
 
 array set Options {
-	-background	white
-	-emphasize	linen
-	-stripes		#ebf4f5
+	-background	background
+	-emphasize	emphasize
+	-stripes		stripes
 }
 
 array set Defaults {
@@ -76,11 +76,12 @@ proc build {parent menu width height} {
 		-fillcolumn end \
 		-stripes {} \
 		-fullstripes 0 \
-		-background $Options(-background) \
+		-background [::colors::lookup variation $Options(-background)] \
 		-pady {1 0} \
-		-highlightcolor $Options(-emphasize) \
+		-highlightcolor [::colors::lookup variation $Options(-emphasize)] \
 		;
-	::table::setColumnBackground $tb tail $Options(-stripes) $Options(-background)
+	::table::setColumnBackground $tb tail \
+		[::colors::lookup variation $Options(-stripes)] [::colors::lookup $Options(-background)]
 	::table::setScrollCommand $tb [list $sb set]
 	::ttk::scrollbar $sb  \
 		-orient vertical \
@@ -96,7 +97,7 @@ proc build {parent menu width height} {
 	grid columnconfigure $top 0 -weight 1
 
 	set Vars(styles) {}
-	$tb.t element create elemTotal rect -fill $Options(-emphasize)
+	$tb.t element create elemTotal rect -fill [::colors::lookup variation $Options(-emphasize)]
 	set padx $::table::options(element:padding)
 
 	foreach col $Columns {
@@ -132,7 +133,7 @@ proc build {parent menu width height} {
 			-image $ivar \
 			-textvar $fvar \
 			-tooltipvar $tvar \
-			-stripes $Options(-stripes) \
+			-stripes [::colors::lookup variation $Options(-stripes)] \
 			;
 
 		if {$ellipsis} { set squeeze "x" } else { set squeeze "" }
@@ -267,7 +268,6 @@ proc DoSelection {table} {
 
 
 proc VisitItem {table data} {
-	variable Options
 	variable Vars
 
 	lassign $data mode id row
@@ -383,7 +383,6 @@ proc Format {value} {
 
 
 proc FillTable {table} {
-	variable Options
 	variable Columns
 	variable Vars
 	variable [namespace parent]::tree::Bars

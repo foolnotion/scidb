@@ -73,6 +73,7 @@ array set Options {
 	federation		Fide
 	rating1:type	Elo
 	rating2:type	DWZ
+	stripes			stripes
 }
 
 set Priv(receiver) {}
@@ -294,10 +295,8 @@ proc open {parent args} {
 		-configurable no \
 		-popupcmd [namespace code PopupMenu] \
 		-height 25 \
-		-stripes linen \
+		-stripes [::colors::lookup playerdict $Options(stripes)] \
 	]
-#		-background #ebf4f5
-#		-stripes #cddfe2
 
 	::bind $table <<TableFill>>		[namespace code [list TableFill $table %d]]
 	::bind $table <<TableVisit>>		[namespace code [list TableVisit $table %d]]

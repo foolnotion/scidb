@@ -107,15 +107,19 @@ if {[tk windowingsystem] eq "x11"} {
 	}
 
 	proc toolbar::x11MakeToolbar {w} { ::x11::makeToolbar $w }
-	proc fsbox::x11MakeFrameless {w} { ::x11::makeFrameless $w }
+	proc fsbox::makeFrameless {w} { update idletasks; ::scidb::tk::wm frameless $w }
 	proc tooltip::x11DropShadow {args} { ::x11::dropShadow {*}$args }
 	proc dialog::messagebox::changeDesktop {w type} { ::x11::changeDesktop $w }
-	proc ::fsbox::makeFrameless {w} { update idletasks; ::scidb::tk::wm frameless $w }
 }
 
-proc ::fsbox::dirIsEmpty {dir} { return [::scidb::misc::dirEmpty? $dir] }
+proc fsbox::dirIsEmpty {dir} { return [::scidb::misc::dirEmpty? $dir] }
+proc fsbox::lookupColor {color} { return [::colors::lookup fsbox $color] }
 
-set ::clipboard::window .application
+proc tlistbox::lookupColor {color} { return [::colors::lookup tlistbox $color] }
+
+proc table::lookupColor {color} { return [::colors::lookup table $color] }
+
+set clipboard::window .application
 
 set dialog::iconOk		$icon::iconOk
 set dialog::iconCancel	$icon::iconCancel
@@ -172,6 +176,7 @@ proc WriteOptions {chan} {
 	options::writeList $chan ::dialog::choosecolor::userColorList
 	options::writeItem $chan ::table::options
 	options::writeItem $chan ::menu::Theme
+	options::writeItem $chan ::colors::Scheme
 	options::writeItem $chan ::toolbar::Options
 	options::writeItem $chan ::fsbox::bookmarks::Bookmarks
 	options::writeItem $chan ::fsbox::Options
@@ -284,6 +289,9 @@ if {[catch {
 					set ::board::currentTheme Default
 				}
 			}
+		}
+
+		if {[::scidb::misc::revision] >= 775} {
 		}
 
 		::scidb::themes::update

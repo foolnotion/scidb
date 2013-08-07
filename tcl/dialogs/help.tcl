@@ -79,10 +79,10 @@ array set Options {
 }
 
 array set Colors {
-	foreground:gray		#999999
-	foreground:litegray	#696969
-	background:gray		#f5f5f5
-	background:emphasize	lightgoldenrod
+	foreground:gray		foreground:gray
+	foreground:litegray	foreground:litegray
+	background:gray		background:gray
+	background:emphasize	background:emphasize
 }
 
 # we will not use latin ligatures because they are looking bad with some fonts
@@ -510,7 +510,6 @@ proc BuildFrame {w} {
 
 
 proc FillContents {t contents {depth 0}} {
-	variable [namespace parent]::Colors
 	variable [namespace parent]::icon::16x16::library
 	variable [namespace parent]::icon::16x16::document
 	variable [namespace parent]::icon::16x16::bookClosed
@@ -952,7 +951,7 @@ proc Search {t} {
 	if {[llength $results] == 0} {
 		$t add 0 \
 			-text [set [namespace parent]::mc::NoMatch] \
-			-fill $Colors(foreground:litegray) \
+			-fill [::colors::lookup help $Colors(foreground:litegray)] \
 			-enabled no \
 			;
 	} else {
@@ -1923,17 +1922,19 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 			}
 		}
 		set alternatives [lsort -index 2 $alternatives]
+		set background [::colors::lookup help $Colors(background:emphasize)]
 		append content "
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
 			<p>[format $mc::CantFindFile [list <ragged><b>$file</b></ragged>]]</p><br>
-			<p><div style='background: $Colors(background:emphasize); border: 1px solid black;'>
+			<p><div style='background: $background; border: 1px solid black;'>
 			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
 			</div></p>
 		"
+		set background [::colors::lookup help $Colors(background:gray)]
 		if {[llength $alternatives]} {
 			append content "<br/><br/><br/>"
-			append content "<div style='background: $Colors(background:gray); border: 1px solid black;'>"
+			append content "<div style='background: $background; border: 1px solid black;'>"
 			append content "<blockquote><p>$mc::ProbablyTheHelp:</p>"
 			append content "<dl>"
 			foreach alt $alternatives {

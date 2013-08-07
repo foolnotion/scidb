@@ -97,14 +97,14 @@ set Options(iconsize) 48
 
 array set Defaults {
 	symbol-padding			4
-	selected:background	#ffdd76
-	normal:background		#efefef
-	normal:foreground		black
-	hidden:background		white
-	hidden:foreground		#696969
-	emph:foreground		darkgreen
-	drop:background		LemonChiffon
-	prop:background		#aee239
+	selected:background	selected:background
+	normal:background		normal:background
+	normal:foreground		normal:foreground
+	hidden:background		hidden:background
+	hidden:foreground		hidden:foreground
+	emph:foreground		emph:foreground
+	drop:background		drop:background
+	prop:background		prop:background
 }
 
 
@@ -344,7 +344,6 @@ proc UpdateIconSize {w args} {
 
 proc Select {w file} {
 	variable ${w}::Vars
-	variable Defaults
 
 	set id $Vars(id:$file)
 	if {$Vars(selection) == $id} { return }
@@ -366,7 +365,6 @@ proc Select {w file} {
 
 proc SetCount {w id file} {
 	variable ${w}::Vars
-	variable Defaults
 
 	set count [::scidb::db::count games $file $Vars(variant)]
 	set total [::scidb::db::count total $file]
@@ -434,7 +432,6 @@ proc CheckVariant {w file {variant ""}} {
 proc UpdateBase {w id} {
 	variable ${w}::Vars
 	variable Options
-	variable Defaults
 
 	lassign [lindex $Vars(bases) $Vars(map:$id)] _ type file
 	set variants [::scidb::db::get variants $file]
@@ -694,7 +691,8 @@ proc AddBase {w file type readonly {encoding {}}} {
 	lappend Vars(bases) [list $id $type $file $ext $encoding $readonly $name]
 	lappend Vars(idList) $id
 
-	set bg $Defaults(hidden:background)
+	set bg [::colors::lookup switcher $Defaults(hidden:background)]
+	set emph [::colors::lookup switcher $Defaults(emph:foreground)]
 	set canv $w.content
 	if {$Options(iconsize) <= 16} { set fnt TkTooltipFont } else { set fnt TkTextFont }
 
@@ -705,7 +703,7 @@ proc AddBase {w file type readonly {encoding {}}} {
 	$canv create rectangle 0 0 0 0 -tags border3$id -fill white -width 0
 	$canv create rectangle 0 0 0 0 -tags content$id -fill $bg -width 0
 	$canv create text 0 0 -anchor nw -tags name$id -font $fnt -text $name
-	$canv create text 0 0 -anchor nw  -tags suff$id -font $fnt -text $ext -fill $Defaults(emph:foreground)
+	$canv create text 0 0 -anchor nw  -tags suff$id -font $fnt -text $ext -fill $emph
 	$canv create text 0 0 -anchor ne -tags size$id -font $fnt
 	$canv create image 0 0 -anchor nw -tags type$id -image $icon
 	$canv create image 0 0 -tags icon$id -anchor nw
@@ -914,14 +912,14 @@ proc LayoutSwitcher {w args} {
 		} else {
 			set state hidden
 		}
-		$canv itemconfigure content$id -fill $Defaults($state:background)
+		$canv itemconfigure content$id -fill [::colors::lookup switcher $Defaults($state:background)]
 
 		if {$id in $Vars(subset)} { set state emph } else { set state hidden }
-		$canv itemconfigure suff$id -fill $Defaults($state:foreground)
+		$canv itemconfigure suff$id -fill [::colors::lookup switcher $Defaults($state:foreground)]
 
 		if {$id in $Vars(subset)} { set state normal } else { set state hidden }
-		$canv itemconfigure name$id -fill $Defaults($state:foreground)
-		$canv itemconfigure size$id -fill $Defaults($state:foreground)
+		$canv itemconfigure name$id -fill [::colors::lookup switcher $Defaults($state:foreground)]
+		$canv itemconfigure size$id -fill [::colors::lookup switcher $Defaults($state:foreground)]
 
 		if {[incr r] == $cols} {
 			incr y $minheight
@@ -1126,7 +1124,7 @@ proc HighlightDropRegion {w x y action} {
 		switch $action {
 			enter {
 				if {$id == -1} {
-					$canv configure -background $Defaults(drop:background)
+					$canv configure -background [::colors::lookup switcher $Defaults(drop:background)]
 				}
 			}
 			leave {
@@ -1137,7 +1135,7 @@ proc HighlightDropRegion {w x y action} {
 			position {
 				if {$Vars(curr-item) != $id} {
 					if {$id == -1} { set color $Defaults(drop:background) } else { set color white }
-					$canv configure -background $color
+					$canv configure -background [::colors::lookup switcher $color]
 				}
 			}
 		}
@@ -1155,7 +1153,7 @@ proc HighlightDropRegion {w x y action} {
 			&& ![lindex $Vars(bases) $Vars(map:$id) 5]} {
 
 			set Vars(background:item) [$canv itemcget content$id -fill]
-			$canv itemconfigure content$id -fill $Defaults(drop:background)
+			$canv itemconfigure content$id -fill [::colors::lookup switcher $Defaults(drop:background)]
 			set Vars(drop-item) $id
 		}
 	}
@@ -1522,7 +1520,7 @@ proc Properties {w id popup} {
 	} else {
 		tk::toplevel $dlg -class Scidb
 		set f $dlg.f
-		tk::frame $f -takefocus 0 -background $Defaults(prop:background)
+		tk::frame $f -takefocus 0 -background [::colors::lookup switcher $Defaults(prop:background)]
 		wm title $dlg "$::scidb::app - [::util::databaseName $file]"
 		wm resizable $dlg false false
 		set label ::ttk::label
@@ -1555,8 +1553,8 @@ proc Properties {w id popup} {
 		}
 		$label $f.t$name -justify left {*}$options
 		if {!$popup} {
-			$f.l$name configure -background $Defaults(prop:background)
-			$f.t$name configure -background $Defaults(prop:background)
+			$f.l$name configure -background [::colors::lookup switcher $Defaults(prop:background)]
+			$f.t$name configure -background [::colors::lookup switcher $Defaults(prop:background)]
 		}
 		grid $f.l$name -row $row -column 1 -sticky wn
 		grid $f.t$name -row $row -column 3 -sticky wn

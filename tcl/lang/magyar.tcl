@@ -71,6 +71,7 @@
 ::mc::Default			"Alapértelmezett"
 ::mc::Delete			"Töröl"
 ::mc::Edit			"Szerkeszt"
+::mc::Empty			"Empty" ;# NEW
 ::mc::File			"Fájl"
 ::mc::Filter			"Filter" ;# NEW
 ::mc::From			"From" ;# NEW
@@ -224,8 +225,12 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme			"Téma"
+::menu::mc::ColorScheme			"Color Scheme" ;# NEW
 ::menu::mc::CustomStyleMenu		"Scidb's Style Menu" ;# NEW
 ::menu::mc::DefaultStyleMenu		"Default Style Menu" ;# NEW
+::menu::mc::OrdinaryMonitor		"Ordinary Monitor" ;# NEW
+::menu::mc::HighQualityMonitor		"High Quality Monitor" ;# NEW
+::menu::mc::RestartRequired		"A restart of the application is required before this change can be applied everyplace." ;# NEW
 
 ::menu::mc::AllScidbFiles		"Minden Scidb fájl"
 ::menu::mc::AllScidbBases		"Minde Scidb adatbázis"

@@ -196,6 +196,13 @@ array set Options {
 	engine Stockfish
 }
 
+array set Colors {
+	selectbackground:dict	selectbackground:dict
+	selectbackground:setup	selectbackground:setup
+	selectforeground:setup	selectforeground:setup
+	stripes						stripes
+}
+
 variable PhotoFiles {}
 variable Engines {}
 
@@ -714,6 +721,7 @@ proc logIsOpen? {parent} {
 
 proc showEngineDictionary {parent} {
 	variable Priv
+	variable Colors
 
 	if {$parent eq "."} { set dlg .engineDict } else { set dlg $parent.engineDict }
 	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
@@ -728,11 +736,11 @@ proc showEngineDictionary {parent} {
 		-borderwidth 1 \
 		-relief sunken \
 		-selectmode browse \
-		-stripes linen \
+		-stripes [::colors::lookup engine $Colors(stripes)] \
 		-usescroll yes \
 		-setgrid 1 \
 		-linespace $linespace \
-		-selectbackground #ebf4f5 \
+		-selectbackground [::colors::lookup engine $Colors(selectbackground:dict)] \
 	]
 
 	bind $dlg <Any-Key> [namespace code [list Search $lb %K]]
@@ -2213,6 +2221,7 @@ proc OpenSetupDialog(Script) {parent} {
 	variable EmptyEngine
 	variable Engines
 	variable Vars
+	variable Colors
 
 	set i [FindIndex $Vars(current:name)]
 	array set engine $EmptyEngine
@@ -2233,8 +2242,8 @@ proc OpenSetupDialog(Script) {parent} {
 		-height 10 \
 		-background white \
 		-foreground black \
-		-selectbackground lightgray \
-		-selectforeground black \
+		-selectbackground [::colors::lookup engine selectbackground:setup] \
+		-selectforeground [::colors::lookup engine selectforeground:setup] \
 		-borderwidth 1 \
 		-relief sunken \
 		-setgrid on \

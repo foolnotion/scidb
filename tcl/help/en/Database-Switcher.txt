@@ -22,7 +22,7 @@ INDEX Compress database#Compact
 INDEX Administrate database#Administration
 TITLE The database switcher
 
-<ul><img src="images/database-switcher.png"/></ul>
+<dir><img src="images/database-switcher.png"/></dir>
 
 <p>
 The database switcher provides easy navigation between databases.
@@ -53,7 +53,7 @@ The functionalities of the database switcher:
 For adminstration of the database a context-sensitive menu is available:
 </p>
 
-<ul><img src="images/database-switcher-menu.png"/></ul>
+<dir><img src="images/database-switcher-menu.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
@@ -150,7 +150,7 @@ Selection of the symbol size for the database tiles.
 Open the help dialog about the database switcher.
 </p>
 
-<ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
+<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
@@ -163,7 +163,7 @@ Open the help dialog about the database switcher.
 This sub-menu provides functionality for the maintenance of databases.
 </p>
 
-<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+<dir><img src="images/database-switcher-menu-maintenance.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>

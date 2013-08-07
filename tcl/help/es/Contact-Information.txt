@@ -31,11 +31,11 @@ La página Web de Scidb está situada en
 
 Son bienvenidos los voluntarios para:
 
-<dir>
+<ul>
   <li>Probar Scidb</li>
   <li>La traducción a otros idiomas</li>
   <li>Escribir las páginas de ayuda</li>
-</dir>
+</ul>
 
 Por favor, envíele un mensaje al autor para poder coordinar estas tareas.
 

@@ -204,21 +204,9 @@ array set Vars {
 	taborder			{games players events sites annotators}
 }
 
-array set Defaults {
-	selected					#ffdd76
-	iconsize					48
-	symbol-padding			4
-	ask-encoding			1
-	ask-readonly			1
-	si4-readonly			1
-	font-symbol-tiny		TkTooltipFont
-	font-symbol-normal	TkTextFont
-	drop:background		LemonChiffon
-}
-# lightsteelblue
 
 array set Options {
-	visible				10
+	visible			10
 }
 
 variable PreOpen			{}
@@ -439,7 +427,6 @@ proc openBase {parent file byUser args} {
 	variable Vars
 	variable RecentFiles
 	variable Types
-	variable Defaults
 
 	set file [file normalize $file]
 	if {[string length [set ext [file extension $file]]]} {
@@ -724,6 +711,8 @@ proc addRecentlyUsedToMenu {parent m} {
 			-compound left \
 			-command [namespace code ClearHistory] \
 			;
+	} else {
+		$m add command -label "($::mc::Empty)"
 	}
 
 	return [llength $recentFiles]
@@ -1014,7 +1003,6 @@ proc UpdateVariants {{variant ""}} {
 
 proc Switch {filename {variant Undetermined}} {
 	variable Vars
-	variable Defaults
 	variable ::scidb::clipbaseName
 
 	if {$variant eq "Undetermined"} {
@@ -1224,7 +1212,6 @@ proc ResizeList {main contents switcher wantedHeight offset} {
 
 proc PopupMenu {parent x y {base ""}} {
 	variable ::scidb::clipbaseName
-	variable Defaults
 	variable Types
 	variable Vars
 	variable ::table::options
@@ -2062,7 +2049,6 @@ proc SelectIcon {w data typeList file} {
 proc SetIcon {w typeList file} {
 	variable Vars
 	variable Types
-	variable Defaults
 	variable RecentFiles
 	
 	set type [lindex $typeList $Vars(icon) 0]
@@ -2165,7 +2151,6 @@ proc FindRecentFile {file} {
 
 proc WriteOptions {chan} {
 	::options::writeList $chan [namespace current]::RecentFiles
-	::options::writeItem $chan [namespace current]::Defaults
 	::options::writeList $chan [namespace current]::PreOpen
 	::options::writeItem $chan [namespace current]::Positions
 }

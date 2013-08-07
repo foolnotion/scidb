@@ -23,7 +23,7 @@ INDEX Amministrazione database#Administration
 
 TITLE Il Selezionatore di Database
 
-<ul><img src="images/database-switcher.png"/></ul>
+<dir><img src="images/database-switcher.png"/></dir>
 
 <p>
 Il selezionatore permette di cambiare facilmente tra più database.
@@ -53,7 +53,7 @@ Fuinzionalità del selezionatore di Database:
 Per l'amministrazione del database è disponibile un menu contestuale:
 </p>
 
-<ul><img src="images/database-switcher-menu.png"/></ul>
+<dir><img src="images/database-switcher-menu.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::Properties%</menuitem>
@@ -145,7 +145,7 @@ Seleziona la grandezza del simbolo per l'icona del database.
 Apri la finestra di aiuto riguardante il selezionatore di database.
 </p>
 
-<ul><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></ul>
+<dir><img src="images/clipbase-menu.png" id="Empty-Clipbase"/></dir>
 
 <menuitem>
 %::application::database::mc::EmptyClipbase%</menuitem>
@@ -158,7 +158,7 @@ Apri la finestra di aiuto riguardante il selezionatore di database.
 Questo sotto-menu fornisce funzionalità di manutenzione del database.
 </p>
 
-<ul><img src="images/database-switcher-menu-maintenance.png"/></ul>
+<dir><img src="images/database-switcher-menu-maintenance.png"/></dir>
 
 <p>
 <menuitem>%::application::database::mc::ChangeIcon%</menuitem>

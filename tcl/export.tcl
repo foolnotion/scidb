@@ -353,8 +353,8 @@ set Languages {
 }
 
 array set Colors {
-	shadow	#999999
-	text		#c0c0c0
+	shadow	shadow
+	text		text
 }
 
 namespace eval si3 {
@@ -1111,7 +1111,6 @@ namespace eval notation {
 proc BuildFrame {w} {
 	variable [namespace parent]::Values
 	variable [namespace parent]::Info
-	variable [namespace parent]::Colors
 
 	::figurines::listbox $w.figurines -width 165 -variable [namespace parent]::Figurines
 	::notation::listbox $w.notation -width 180
@@ -2290,12 +2289,13 @@ proc BuildFrame {w} {
 		-height 1 \
 		-background [::theme::getBackgroundColor] \
 		;
+	set shadowColor [::colors::lookup export $Colors(shadow)]
 	$w.c xview moveto 0
 	$w.c yview moveto 0
-	$w.c create rectangle 0 0 0 0 -tag shadow -fill $Colors(shadow) -outline $Colors(shadow)
+	$w.c create rectangle 0 0 0 0 -tag shadow -fill $shadowColor -outline $shadowColor
 	$w.c create rectangle 0 0 0 0 -tag paper -fill white -outline black
-	$w.c create rectangle 0 0 0 0 -tag left -fill white -outline $Colors(text)
-	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline $Colors(text)
+	$w.c create rectangle 0 0 0 0 -tag left -fill white -outline [::colors::lookup export $Colors(text)]
+	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline [::colors::lookup export $Colors(text)]
 
 	if {$type eq "tex"} {
 		set Info(tex,paper,document-styles) {}
@@ -2739,6 +2739,7 @@ proc RefreshPreview {w} {
 	$w.c coords left $lx0 $ly0 $lx1 $ly1
 	$w.c coords right $rx0 $ry0 $rx1 $ry1
 
+	set textColor [::colors::lookup export $Colors(text)]
 	$w.c delete line
 	set i 0
 	if {$lx1 > $lx0} {
@@ -2756,7 +2757,7 @@ proc RefreshPreview {w} {
 				}
 				set yt [expr {min($y1, $y0 + 2)}]
 				set tags [list line line:$i]
-				$w.c create rectangle $x0 $y0 $xt $yt -fill $Colors(text) -outline {} -tags $tags
+				$w.c create rectangle $x0 $y0 $xt $yt -fill $textColor -outline {} -tags $tags
 				incr y0 4
 				incr i
 			}

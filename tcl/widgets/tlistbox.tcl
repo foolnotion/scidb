@@ -83,18 +83,42 @@ bind TListBox <Leave> {
 }
 
 
+array set Colors {
+	-background				background
+	-foreground				foreground
+	-selectbackground		selectbackground
+	-selectforeground		selectforeground
+	-disabledbackground	disabledbackground
+	-disabledforeground	disabledforeground
+	-highlightbackground	highlightbackground
+	-highlightforeground	highlightforeground
+}
+
+array set LookupColor {
+	background				white
+	foreground				black
+	selectbackground		#ffdd76
+	selectforeground		black
+	disabledbackground	#ebf4f5
+	disabledforeground	black
+	highlightbackground	darkblue
+	highlightforeground	white
+}
+
+proc lookupColor {color} {
+	variable LookupColor
+
+	if {[info exists LookupColor($color)]} { return $LookupColor($color) }
+	return $color
+}
+
+
 proc Build {w args} {
+	variable Colors
+
 	array set opts {
 		-font						TkTextFont
-		-background				white
-		-foreground				black
-		-selectbackground		#ffdd76
-		-selectforeground		black
-		-disabledbackground	#ebf4f5
-		-disabledforeground	black
 		-disabledfont			TkTextFont
-		-highlightbackground	darkblue
-		-highlightforeground	white
 		-highlightfont			TkTextFont
 		-relief					sunken
 		-focusmodel				click
@@ -119,6 +143,7 @@ proc Build {w args} {
 		-state					normal
 		-stripes					{}
 	}
+	array set opts [array get Colors]
 	array set opts $args
 
 	set style {}
@@ -157,26 +182,26 @@ proc Build {w args} {
 
 	set t $w.__tlistbox__
 
-	treectrl $t                         \
-		-class TListBox                  \
-		-takefocus $opts(-takefocus)     \
-		-highlightthickness 0            \
-		-borderwidth $opts(-borderwidth) \
-		-relief $opts(-relief)           \
-		-showheader no                   \
-		-selectmode $opts(-selectmode)   \
-		-showroot no                     \
-		-showlines no                    \
-		-showrootlines no                \
-		-xscrollincrement 1              \
-		-keepuserwidth no                \
-		-background $opts(-background)   \
-		-foreground $opts(-foreground)   \
-		-font $opts(-font)               \
-		-fullstripes 1                   \
-		-expensivespanwidth 1            \
-		-state $opts(-state)             \
-		-width 0                         \
+	treectrl $t                                     \
+		-class TListBox                              \
+		-takefocus $opts(-takefocus)                 \
+		-highlightthickness 0                        \
+		-borderwidth $opts(-borderwidth)             \
+		-relief $opts(-relief)                       \
+		-showheader no                               \
+		-selectmode $opts(-selectmode)               \
+		-showroot no                                 \
+		-showlines no                                \
+		-showrootlines no                            \
+		-xscrollincrement 1                          \
+		-keepuserwidth no                            \
+		-background [lookupColor $opts(-background)] \
+		-foreground [lookupColor $opts(-foreground)] \
+		-font $opts(-font)                           \
+		-fullstripes 1                               \
+		-expensivespanwidth 1                        \
+		-state $opts(-state)                         \
+		-width 0                                     \
 		;
 
 	if {$opts(-width)} { $t configure -width $opts(-width) }
@@ -204,17 +229,17 @@ proc Build {w args} {
 	$t state define highlight
 
 	if {$opts(-focusmodel) eq "hover"} {
-		lappend fill $opts(-selectbackground) {active}
+		lappend fill [lookupColor $opts(-selectbackground)] {active}
 	}
 	if {!$opts(-showfocus)} {
 		set opts(-showfocus) {}
 	}
 	lappend fill \
-		$opts(-selectbackground) {selected} \
-		$opts(-highlightbackground) {highlight} \
-		$opts(-disabledbackground) {!enabled} \
+		[lookupColor $opts(-selectbackground)] {selected} \
+		[lookupColor $opts(-highlightbackground)] {highlight} \
+		[lookupColor $opts(-disabledbackground)] {!enabled} \
 		;
-#	$opts(-background) {enabled !highlight}
+#	[lookupColor $opts(-background)] {enabled !highlight}
 	$t element create sel.e  rect -fill $fill -open e  -showfocus $opts(-showfocus)
 	$t element create sel.w  rect -fill $fill -open w  -showfocus $opts(-showfocus)
 	$t element create sel.we rect -fill $fill -open we -showfocus $opts(-showfocus)
@@ -254,7 +279,7 @@ proc Build {w args} {
 	set Priv(charwidth) [font measure $opts(-font) "0"]
 	set Priv(expand) ""
 	set Priv(itembackgrounds) {}
-	set Priv(background:normal) $opts(-background)
+	set Priv(background:normal) [lookupColor $opts(-background)]
 	set Priv(foreground:disabled) $opts(-disabledforeground)
 	set Priv(addcol) {}
 
@@ -318,7 +343,7 @@ proc WidgetProc {w command args} {
 				set Priv(expand) $id
 			}
 			set Priv(ellipsis:$id) $opts(-ellipsis)
-			set colors $opts(-background)
+			set colors [lookupColor $opts(-background)]
 			if {[llength $Priv(stripes)]} { set colors [list $Priv(stripes) $colors] }
 			if {[string length $opts(-headervar)]} {
 				set opts(-header) [set $opts(-headervar)]
@@ -419,7 +444,7 @@ proc WidgetProc {w command args} {
 					-background {
 						set background $opts(-background)
 						if {[llength $background] == 0} { set background $Priv(background:normal) }
-						$t column configure $id -itembackground $opts(-background)
+						$t column configure $id -itembackground [lookupColor $background]
 					}
 					-header {
 						$t column configure $id -text $opts(-header)
@@ -503,11 +528,11 @@ proc WidgetProc {w command args} {
 				set style [lindex $styles $col]
 				if {[llength $style] == 0} { set style $Priv(type:$id) }
 				if {[string length $Priv(foreground:$id)] && [llength $opts(-span)] == 0} {
-					set fill [list $Priv(foreground:$id) enabled]
+					set fill [list [lookupColor $Priv(foreground:$id)] enabled]
 				} else {
-					set fill [list $opts(-foreground) enabled]
+					set fill [list [lookupColor $opts(-foreground)] enabled]
 				}
-				lappend fill $Priv(foreground:disabled) !enabled
+				lappend fill [lookupColor $Priv(foreground:disabled)] !enabled
 				if {[string length $Priv(font:$id)] && [llength $opts(-span)] == 0} {
 					set font $Priv(font:$id)
 				} else {
@@ -923,7 +948,7 @@ proc WidgetProc {w command args} {
 				array unset opts -height
 			}
 			if {[info exists opts(-background)]} {
-				$t configure -background $opts(-background)
+				$t configure -background [lookupColor $opts(-background)]
 				array unset opts -background
 			}
 			set args [array get opts]

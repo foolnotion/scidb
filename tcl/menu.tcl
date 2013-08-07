@@ -30,8 +30,12 @@ namespace eval menu {
 namespace eval mc {
 
 set Theme							"Theme"
+set ColorScheme					"Color Scheme"
 set CustomStyleMenu				"Scidb's Style Menu"
 set DefaultStyleMenu				"Default Style Menu"
+set OrdinaryMonitor				"Ordinary Monitor"
+set HighQualityMonitor			"High Quality Monitor"
+set RestartRequired				"A restart of the application is required before this change can be applied everyplace."
 
 set AllScidbFiles					"All Scidb files"
 set AllScidbBases					"All Scidb databases"
@@ -132,6 +136,9 @@ proc build {menu} {
 	variable ::application::Options
 	variable Fullscreen
 	variable Theme
+	variable ColorScheme_
+
+	if {![info exists ColorScheme_]} { set ColorScheme_ $::colors::Scheme }
 
 	### languages ############################################################
 	set m [menu $menu.mLanguages]
@@ -209,6 +216,30 @@ proc build {menu} {
 		-variable ::theme::useCustomStyleMenuEntries \
 		-value 0 \
 		;
+	::theme::configureRadioEntry $m
+
+	### colors ###############################################################
+	set m [menu $menu.mColors]
+	set cmd [list ::dialog::info -parent .application -message $mc::RestartRequired]
+	$menu add cascade \
+		-menu $m \
+		-label " $mc::ColorScheme" \
+		-image $::icon::16x16::none \
+		-compound left \
+		;
+	$m add radiobutton \
+		-label $mc::OrdinaryMonitor \
+		-variable ::colors::Scheme \
+		-value dark \
+		;
+	if {$ColorScheme_ ne "dark"} { $m entryconfigure [$m index end] -command $cmd }
+	::theme::configureRadioEntry $m
+	$m add radiobutton \
+		-label $mc::HighQualityMonitor \
+		-variable ::colors::Scheme \
+		-value lite \
+		;
+	if {$ColorScheme_ ne "lite"} { $m entryconfigure [$m index end] -command $cmd }
 	::theme::configureRadioEntry $m
 
 	### toolbars #############################################################

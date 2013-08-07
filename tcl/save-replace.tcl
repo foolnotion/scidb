@@ -227,22 +227,22 @@ array set Attrs {
 }
 
 array set Colors {
-	number							darkred
-	frequency						darkgreen
-	title								darkgreen
-	federation						darkblue
-	score								darkgreen
-	ratingType						darkblue
-	date								darkblue
-	eventDate						darkblue
-	eventCountry					darkblue
-	taglistOutline					gray
-	taglistBackground				lightYellow
-	taglistHighlighting			#ebf4f5
-	tasglistCurrent				blue
-	matchlistBackground			#ebf4f5
-	matchlistHeaderForeground	#727272
-	matchlistHeaderBackground	#dfe7e8
+	number							number
+	frequency						frequency
+	title								title
+	federation						federation
+	score								score
+	ratingType						ratingType
+	date								date
+	eventDate						eventDate
+	eventCountry					eventCountry
+	taglistOutline					taglistOutline
+	taglistBackground				taglistBackground
+	taglistHighlighting			taglistHighlighting
+	tasglistCurrent				tasglistCurrent
+	matchlistBackground			matchlistBackground
+	matchlistHeaderForeground	matchlistHeaderForeground
+	matchlistHeaderBackground	matchlistHeaderBackground
 }
 
 array set Selection {
@@ -846,10 +846,10 @@ proc Build {dlg base variant position number} {
 		grid $nb.matches.$attr -row 3 -column 1 -sticky ew
 
 		set lb [tlistbox $nb.matches.$attr.lb \
-					-background $Colors(matchlistBackground) \
-					-disabledbackground $Colors(matchlistBackground) \
-					-highlightbackground $Colors(matchlistHeaderBackground) \
-					-highlightforeground $Colors(matchlistHeaderForeground) \
+					-background [::colors::lookup save $Colors(matchlistBackground)] \
+					-disabledbackground [::colors::lookup save $Colors(matchlistBackground)] \
+					-highlightbackground [::colors::lookup save $Colors(matchlistHeaderBackground)] \
+					-highlightforeground [::colors::lookup save $Colors(matchlistHeaderForeground)] \
 					-highlightfont $bold \
 					-height 12 \
 					-takefocus 0 \
@@ -864,8 +864,18 @@ proc Build {dlg base variant position number} {
 		$lb bind <ButtonRelease-1> +[namespace code [list SetFocus $dlg]]
 		$lb bind <ButtonRelease-2> +[namespace code [list SetFocus $dlg]]
 		$lb bind <ButtonPress-3> [namespace code [list SelectMatchAttributes $dlg $attr %X %Y]]
-		$lb addcol text -id number -justify right -width 1 -foreground $Colors(number)
-		$lb addcol text -id freq -justify right -width 4 -foreground $Colors(frequency)
+		$lb addcol text \
+			-id number \
+			-justify right \
+			-width 1 \
+			-foreground [::colors::lookup save $Colors(number)] \
+			;
+		$lb addcol text \
+			-id freq \
+			-justify right \
+			-width 4 \
+			-foreground [::colors::lookup save $Colors(frequency)] \
+			;
 		$lb addcol text -id name -squeeze yes -weight 1 -steady no
 		# -expand yes
 		set Priv(table:$attr) $lb
@@ -888,17 +898,22 @@ proc Build {dlg base variant position number} {
 	# ------ Player List --------------------------------------
 	set lb $nb.matches.player.lb
 
-	$lb addcol text -id title -width 4 -foreground $Colors(title) -justify center
+	$lb addcol text -id title -width 4 -foreground [::colors::lookup save $Colors(title)] -justify center
 	$lb addcol text \
-		-id federation -justify center -width 3 -font TkFixedFont -foreground $Colors(federation)
+		-id federation \
+		-justify center \
+		-width 3 \
+		-font TkFixedFont \
+		-foreground [::colors::lookup save $Colors(federation)] \
+		;
 	$lb addcol image -id sex -justify center -width 14
-	$lb addcol text -id elo -width 4 -justify right -foreground $Colors(score)
-	$lb addcol text -id rating -width 6 -foreground $Colors(ratingType)
+	$lb addcol text -id elo -width 4 -justify right -foreground [::colors::lookup save $Colors(score)]
+	$lb addcol text -id rating -width 6 -foreground [::colors::lookup save $Colors(ratingType)]
 
 	# ------ Event List ---------------------------------------
 	set lb $nb.matches.event.lb
 
-	$lb addcol text  -id eventDate -width 10 -foreground $Colors(date)
+	$lb addcol text  -id eventDate -width 10 -foreground [::colors::lookup save $Colors(date)]
 	$lb addcol image -id eventMode -width 14 -justify center
 	$lb addcol image -id eventType -width 14 -justify center
 	$lb addcol image -id timeMode -width 14 -justify center
@@ -906,7 +921,12 @@ proc Build {dlg base variant position number} {
 	# ------ Site List ----------------------------------------
 	set lb $nb.matches.site.lb
 	$lb addcol text \
-		-id country -width 3 -justify center -font TkFixedFont -foreground $Colors(eventCountry)
+		-id country \
+		-width 3 \
+		-justify center \
+		-font TkFixedFont \
+		-foreground [::colors::lookup save $Colors(eventCountry)] \
+		;
 
 	# ------ Annotator List -----------------------------------
 	set lb $nb.matches.annotator.lb
@@ -939,7 +959,7 @@ proc Build {dlg base variant position number} {
 		-takefocus 1 \
 		-borderwidth 1 \
 		-relief sunken \
-		-background $Colors(taglistBackground) \
+		-background [::colors::lookup save $Colors(taglistBackground)] \
 		-font TkTextFont \
 		-fullstripes 1 \
 		-columnresizemode realtime \
@@ -989,9 +1009,13 @@ proc Build {dlg base variant position number} {
 	# create elements
 	$t element create elemText text -lines 1
 	$t element create elemImage image
-	$t element create elemBorder rect -open nw -outline $Colors(taglistOutline) -outlinewidth 1
+	$t element create elemBorder rect \
+		-open nw \
+		-outline [::colors::lookup save $Colors(taglistOutline)] \
+		-outlinewidth 1 \
+		;
 	$t element create elemSel border \
-		-background [list $Colors(tasglistCurrent) {current focus}] \
+		-background [list [::colors::lookup save $Colors(tasglistCurrent)] {current focus}] \
 		-relief flat \
 		-thickness 1 \
 		;
@@ -1141,7 +1165,9 @@ proc VisitTag {t mode column item} {
 		enter {
 			set img [$t item element cget $item delete elemImage -image]
 			if {$img ne $icon::12x12::locked} {
-				$t item element configure $item $column elemBorder -fill $Colors(taglistHighlighting)
+				$t item element configure $item $column elemBorder \
+					-fill [::colors::lookup save $Colors(taglistHighlighting)] \
+					;
 			}
 			if {$column == 0} {
 				if {$img eq $icon::12x12::delete} {
@@ -1155,7 +1181,9 @@ proc VisitTag {t mode column item} {
 		}
 
 		leave {
-			$t item element configure $item $column elemBorder -fill $Colors(taglistBackground)
+			$t item element configure $item $column elemBorder \
+				-fill [::colors::lookup save $Colors(taglistBackground)] \
+				;
 			::tooltip::hide true
 		}
 	}
@@ -1175,7 +1203,9 @@ proc HighlightTag {t} {
 	lassign $id _ item _ column
 	set img [$t item element cget $item delete elemImage -image]
 	if {$img eq $icon::12x12::locked} { return }
-	$t item element configure $item $column elemBorder -fill $Colors(taglistHighlighting)
+	$t item element configure $item $column elemBorder \
+		-fill [::colors::lookup save $Colors(taglistHighlighting)] \
+		;
 }
 
 
@@ -1215,7 +1245,9 @@ proc EditTag {t x y} {
 	if {$column == 0} { return }
 	set img [$t item element cget $item delete elemImage -image]
 	if {$img eq $icon::12x12::locked} { return }
-	$t item element configure $item $column elemBorder -fill $Colors(taglistBackground)
+	$t item element configure $item $column elemBorder \
+		-fill [::colors::lookup save $Colors(taglistBackground)] \
+		;
 	OpenEntry $t $item $column
 }
 
@@ -2043,7 +2075,7 @@ proc UpdateMatchList {top field item args} {
 					-highlight 1 \
 					-index $row \
 					-enabled 0 \
-					-foreground $Colors(matchlistHeaderForeground) \
+					-foreground [::colors::lookup save $Colors(matchlistHeaderForeground)] \
 					;
 				incr row
 				set playerbase 1
@@ -2053,7 +2085,7 @@ proc UpdateMatchList {top field item args} {
 				-highlight 1 \
 				-index $row \
 				-enabled 0 \
-				-foreground $Colors(matchlistHeaderForeground) \
+				-foreground [::colors::lookup save $Colors(matchlistHeaderForeground)] \
 				;
 			incr row
 			set gamebase 1

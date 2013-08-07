@@ -165,19 +165,41 @@ set DuplicateFileSizeLimit 5000000
 set reservedChars {\" \\ / : * < > ? |}
 
 array set Options {
-	show:hidden	0
-	show:layout	details
-	show:filetypeicons 1
-	pane:favorites 0
-	menu:headerbackground #ffdd76
-	menu:headerforeground black
-	drop:background LemonChiffon
-	tooltip:shorten-paths 0
+	show:hidden					0
+	show:layout					details
+	show:filetypeicons		1
+	pane:favorites				0
+	menu:headerbackground	menu:headerbackground
+	menu:headerforeground	menu:headerforeground
+	drop:background			drop:background
+	tooltip:shorten-paths	0
+}
+
+array set Colors {
+	-selectionbackground		selectionbackground
+	-selectionforeground		selectionforeground
+	-inactivebackground		inactivebackground
+	-inactiveforeground		inactiveforeground
+	-activebackground			activebackground
+	-activeforeground			activeforeground
+}
+
+array set ColorLookup {
+	menu:headerbackground	menu:headerbackground
+	menu:headerforeground	menu:headerforeground
+	drop:background			drop:background
+	selectionbackground		selectionbackground
+	selectionforeground		selectionforeground
+	inactivebackground		inactivebackground
+	inactiveforeground		inactiveforeground
+	activebackground			activebackground
+	activeforeground			activeforeground
 }
 
 
 proc fsbox {w type args} {
 	variable Options
+	variable Colors
 	variable icon::16x16::filesystem
 
 	if {![namespace exists [namespace current]::${w}]} {
@@ -190,12 +212,6 @@ proc fsbox {w type args} {
 		-background					white
 		-foreground					black
 		-bookmarkswidth			120
-		-selectionbackground		#ebf4f5
-		-selectionforeground		black
-		-inactivebackground		#f2f2f2
-		-inactiveforeground		black
-		-activebackground			#f0f9fa
-		-activeforeground			black
 		-borderwidth				1
 		-relief						sunken
 		-doublebuffer				window
@@ -233,6 +249,7 @@ proc fsbox {w type args} {
 		-formattimecmd				{}
 		-actions						{delete rename copy new}
 	}
+	array set opts [array get Colors]
 
 	array set opts $args
 	if {$opts(-multiple)} { set opts(-selectmode) extended } else { set opts(-selectmode) single }
@@ -622,6 +639,16 @@ proc cleanup {w} {
 		set Vars(fam) {}
 	}
 }
+
+
+proc lookupColor {color} {
+	variable ColorLookup
+
+	if {[info exists ColorLookup($color)]} { return $ColorLookup($color) }
+	return $color
+}
+
+namespace export lookupColor
 
 
 proc countRows {w} {
@@ -2403,6 +2430,7 @@ array set Bookmarks {
 set BookmarkSize 15
 
 namespace import [namespace parent]::Tr
+namespace import [namespace parent]::lookupColor
 
 
 proc Build {w path args} {
@@ -2491,22 +2519,22 @@ proc Build {w path args} {
 	$t configure -treecolumn root
 
 	$t element create elemImg image
-	$t element create elemTxt text                     \
-		-fill [list                                     \
-			$Vars(selectionforeground) {selected focus}  \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground)    {hilite}          \
-		]                                               \
-		-lines 1                                        \
+	$t element create elemTxt text                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionforeground)] {selected focus}  \
+			[lookupColor $Vars(selectionforeground)] {selected hilite} \
+			[lookupColor $Vars(inactiveforeground)]  {selected !focus} \
+			[lookupColor $Vars(activeforeground)]    {hilite}          \
+		]                                                             \
+		-lines 1                                                      \
 		;
-	$t element create elemSel rect                     \
-		-fill [list                                     \
-			$Options(drop:background)  {target}          \
-			$Vars(selectionbackground) {selected focus}  \
-			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground)  {selected !focus} \
-			$Vars(activebackground)    {hilite}          \
+	$t element create elemSel rect                                   \
+		-fill [list                                                   \
+			[lookupColor $Options(drop:background)]  {target}          \
+			[lookupColor $Vars(selectionbackground)] {selected focus}  \
+			[lookupColor $Vars(selectionbackground)] {selected hilite} \
+			[lookupColor $Vars(inactivebackground)]  {selected !focus} \
+			[lookupColor $Vars(activebackground)]    {hilite}          \
 		]
 	$t element create elemBrd border                           \
 		-filled no                                              \
@@ -2932,8 +2960,8 @@ proc HandleDropEvent {w action types actions {x -1} {y -1}} {
 	switch $action {
 		enter {
 			if {$Vars(drag:private)} {
-				$Vars(widget:list:bookmark) configure -background $Options(drop:background)
-				set Vars(bookmark:background) $Options(drop:background)
+				$Vars(widget:list:bookmark) configure -background [lookupColor $Options(drop:background)]
+				set Vars(bookmark:background) [lookupColor $Options(drop:background)]
 			}
 			set Vars(bookmark:target:id) {}
 		}
@@ -3091,6 +3119,7 @@ namespace eval filelist {
 
 namespace import ::tcl::mathfunc::max
 namespace import [namespace parent]::Tr
+namespace import [namespace parent]::lookupColor
 
 
 proc Build {w path args} {
@@ -3456,41 +3485,41 @@ proc DetailsLayout {w} {
 		;
 	
 	$t element create elemImg image ;# -image [set [namespace parent]::icon::16x16::folder]
-	$t element create txtName text                     \
-		-fill [list                                     \
-			$Vars(selectionforeground) {selected focus}  \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite}             \
-		]                                               \
-		-lines 1                                        \
+	$t element create txtName text                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionforeground)] {selected focus}  \
+			[lookupColor $Vars(selectionforeground)] {selected hilite} \
+			[lookupColor $Vars(inactiveforeground)]  {selected !focus} \
+			[lookupColor $Vars(activeforeground)] {hilite}             \
+		]                                                             \
+		-lines 1                                                      \
 		;
-	$t element create txtSize text                     \
-		-fill [list                                     \
-			$Vars(selectionforeground) {selected focus}  \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite}             \
-		]                                               \
-		-lines 1                                        \
+	$t element create txtSize text                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionforeground)] {selected focus}  \
+			[lookupColor $Vars(selectionforeground)] {selected hilite} \
+			[lookupColor $Vars(inactiveforeground)]  {selected !focus} \
+			[lookupColor $Vars(activeforeground)]    {hilite}          \
+		]                                                             \
+		-lines 1                                                      \
 		;
-	$t element create txtDate text                     \
-		-fill [list                                     \
-			$Vars(selectionforeground) {selected focus}  \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite}             \
-		]                                               \
-		-datatype time                                  \
-		-format [Tr TimeFormat]                         \
-		-lines 1                                        \
+	$t element create txtDate text                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionforeground)] {selected focus}  \
+			[lookupColor $Vars(selectionforeground)] {selected hilite} \
+			[lookupColor $Vars(inactiveforeground)]  {selected !focus} \
+			[lookupColor $Vars(activeforeground)]    {hilite}          \
+		]                                                             \
+		-datatype time                                                \
+		-format [Tr TimeFormat]                                       \
+		-lines 1                                                      \
 		;
-	$t element create elemSel rect                     \
-		-fill [list                                     \
-			$Vars(selectionbackground) {selected focus}  \
-			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground) {selected !focus}  \
-			$Vars(activebackground) {hilite}             \
+	$t element create elemSel rect                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionbackground)] {selected focus}  \
+			[lookupColor $Vars(selectionbackground)] {selected hilite} \
+			[lookupColor $Vars(inactivebackground)] {selected !focus}  \
+			[lookupColor $Vars(activebackground)] {hilite}             \
 		] 
 	$t element create elemBrd border          \
 		-filled no                             \
@@ -3617,21 +3646,21 @@ proc ListLayout {w} {
 	$t column create -tags name -steady yes
 
 	$t element create elemImg image -image [set [namespace parent]::icon::16x16::folder]
-	$t element create txtName text                     \
-		-fill [list                                     \
-			$Vars(selectionforeground) {selected focus}  \
-			$Vars(selectionforeground) {selected hilite} \
-			$Vars(inactiveforeground)  {selected !focus} \
-			$Vars(activeforeground) {hilite}             \
-		]                                               \
-		-lines 1                                        \
+	$t element create txtName text                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionforeground)] {selected focus}  \
+			[lookupColor $Vars(selectionforeground)] {selected hilite} \
+			[lookupColor $Vars(inactiveforeground)]  {selected !focus} \
+			[lookupColor $Vars(activeforeground)]    {hilite}          \
+		]                                                             \
+		-lines 1                                                      \
 		;
-	$t element create elemSel rect                     \
-		-fill [list                                     \
-			$Vars(selectionbackground) {selected focus}  \
-			$Vars(selectionbackground) {selected hilite} \
-			$Vars(inactivebackground) {selected !focus}  \
-			$Vars(activebackground) {hilite}             \
+	$t element create elemSel rect                                   \
+		-fill [list                                                   \
+			[lookupColor $Vars(selectionbackground)] {selected focus}  \
+			[lookupColor $Vars(selectionbackground)] {selected hilite} \
+			[lookupColor $Vars(inactivebackground)] {selected !focus}  \
+			[lookupColor $Vars(activebackground)] {hilite}             \
 		] 
 	$t element create elemBrd border          \
 		-filled no                             \
@@ -4892,14 +4921,14 @@ proc PopupMenu {w x y} {
 			} else {
 				set file [lindex $Vars(list:folder) $sel]
 			}
-			$m add command                                       \
-				-label [file tail $file]                          \
-				-background $Options(menu:headerbackground)       \
-				-foreground $Options(menu:headerforeground)       \
-				-activebackground $Options(menu:headerbackground) \
-				-activeforeground $Options(menu:headerforeground) \
-				-font TkHeadingFont                               \
-				-state disabled                                   \
+			$m add command                                                     \
+				-label [file tail $file]                                        \
+				-background [lookupColor $Options(menu:headerbackground)]       \
+				-foreground [lookupColor $Options(menu:headerforeground)]       \
+				-activebackground [lookupColor $Options(menu:headerbackground)] \
+				-activeforeground [lookupColor $Options(menu:headerforeground)] \
+				-font TkHeadingFont                                             \
+				-state disabled                                                 \
 				;
 			$m add separator
 

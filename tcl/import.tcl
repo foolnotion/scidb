@@ -132,9 +132,11 @@ set Error(SeemsNotToBePgnText)					"Seems not to be PGN text"
 
 }
 
-variable Background			#ebf4f5
-variable SelectBackground	#ffdd76
-variable HiliteBackground	linen
+array set Colors {
+	background			background
+	background:select	background:select
+	background:hilite	background:hilite
+}
 
 variable Variants {Undetermined Normal ThreeCheck Crazyhouse Suicide Giveaway Losers}
 
@@ -152,9 +154,7 @@ proc open {parent file msg encoding type} {
 
 proc openEdit {parent position args} {
 	variable Priv
-	variable Background
-	variable SelectBackground
-	variable HiliteBackground
+	variable Colors
 	variable ::log::colors
 
 	array set opts {
@@ -222,7 +222,7 @@ proc openEdit {parent position args} {
 		-maxundo 10 \
 		-yscroll [list $edit.ybar set] \
 		;
-	$edit.text tag configure hilite -background $HiliteBackground
+	$edit.text tag configure hilite -background [::colors::lookup $Colors(background:hilite)]
 	ttk::scrollbar $edit.ybar -command [list $edit.text yview] -takefocus 0
 	pack $edit.ybar -side right -fill y
 	pack $edit.text -side left -expand true -fill both
@@ -232,8 +232,8 @@ proc openEdit {parent position args} {
 	# log window
 	set log [ttk::frame $main.log]
 	tk::listbox $log.text \
-		-background $Background \
-		-selectbackground $SelectBackground \
+		-background [::colors::lookup $Colors(background)] \
+		-selectbackground [::colors::lookup $Colors(background:select)] \
 		-height 4 \
 		-yscroll [list $log.ybar set] \
 		-takefocus 0 \

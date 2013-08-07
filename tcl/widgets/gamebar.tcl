@@ -82,19 +82,19 @@ set Tip(Losers)						"The king is like in normal chess, and you can also\nwin by
 } ;# namespace mc
 
 array set Defaults {
-	background:normal		#d9d9d9
-	foreground:normal		black
-	background:selected	white
-	background:emphasize	linen
-	background:active		#efefef
-	background:darker		#828282
-	background:shadow		#e6e6e6
-	background:lighter	white
-	background:hilite		#ebf4f5
-	foreground:hilite		black
-	background:hilite2	cornflowerblue
-	foreground:hilite2	white
-	foreground:elo			darkblue
+	background:normal		background:normal
+	foreground:normal		foreground:normal
+	background:selected	background:selected
+	background:emphasize	background:emphasize
+	background:active		background:active
+	background:darker		background:darker
+	background:shadow		background:shadow
+	background:lighter	background:lighter
+	background:hilite		background:hilite
+	foreground:hilite		foreground:hilite
+	background:hilite2	background:hilite2
+	foreground:hilite2	foreground:hilite2
+	foreground:elo			foreground:elo
 	width						18
 	padx						5
 	pady						3
@@ -164,10 +164,10 @@ proc insert {gamebar at id tags} {
 	variable icon::15x15::digit	;# alternative: or U+2776, U+2777, ... (or U+278A, U+278B)
 
 	if {$at eq "end"} { set at $Specs(size:$gamebar) }
-	set normal $Defaults(background:normal)
-	set lighter $Defaults(background:lighter)
-	set darker $Defaults(background:darker)
-	set foreground $Defaults(foreground:normal)
+	set normal [::colors::lookup gamebar $Defaults(background:normal)]
+	set lighter [::colors::lookup gamebar $Defaults(background:lighter)]
+	set darker [::colors::lookup gamebar $Defaults(background:darker)]
+	set foreground [::colors::lookup gamebar $Defaults(foreground:normal)]
 	set bold $Specs(bold:$gamebar)
 
 	if {$at >= 0} {
@@ -232,14 +232,14 @@ proc insert {gamebar at id tags} {
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-font $Specs(font:$gamebar) \
-		-fill $Defaults(foreground:elo) \
+		-fill [::colors::lookup gamebar $Defaults(foreground:elo)] \
 		-tags [list whiteElo$id all$id] \
 		-state hidden \
 		;
 	$gamebar create text 0 0 \
 		-anchor nw \
 		-font $Specs(font:$gamebar) \
-		-fill $Defaults(foreground:elo) \
+		-fill [::colors::lookup gamebar $Defaults(foreground:elo)] \
 		-tags [list blackElo$id all$id] \
 		-state hidden \
 		;
@@ -778,19 +778,19 @@ proc Enter {gamebar id {pref {}}} {
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "raised"} {
 		$gamebar itemconfigure ${pref}lighter${id} \
-			-fill $Defaults(background:darker) \
-			-outline $Defaults(background:darker) \
+			-fill [::colors::lookup gamebar $Defaults(background:darker)] \
+			-outline [::colors::lookup gamebar $Defaults(background:darker)] \
 			;
 		$gamebar itemconfigure ${pref}darker${id} \
-			-fill $Defaults(background:lighter) \
-			-outline $Defaults(background:lighter) \
+			-fill [::colors::lookup gamebar $Defaults(background:lighter)] \
+			-outline [::colors::lookup gamebar $Defaults(background:lighter)] \
 			;
 		set Specs(buttonstate:$id:$gamebar) "sunken"
 	} else {
 		foreach item {bg whitebg blackbg} {
 			$gamebar itemconfigure $pref$item$id \
-				-fill $Defaults(background:active) \
-				-outline $Defaults(background:active) \
+				-fill [::colors::lookup gamebar $Defaults(background:active)] \
+				-outline [::colors::lookup gamebar $Defaults(background:active)] \
 				;
 		}
 	}
@@ -805,19 +805,19 @@ proc Leave {gamebar id {pref {}}} {
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "sunken"} {
 		$gamebar itemconfigure ${pref}lighter${id} \
-			-fill $Defaults(background:lighter) \
-			-outline $Defaults(background:lighter) \
+			-fill [::colors::lookup gamebar $Defaults(background:lighter)] \
+			-outline [::colors::lookup gamebar $Defaults(background:lighter)] \
 			;
 		$gamebar itemconfigure ${pref}darker${id} \
-			-fill $Defaults(background:darker) \
-			-outline $Defaults(background:darker) \
+			-fill [::colors::lookup gamebar $Defaults(background:darker)] \
+			-outline [::colors::lookup gamebar $Defaults(background:darker)] \
 			;
 		set Specs(buttonstate:$id:$gamebar) "raised"
 	} else {
 		foreach item {bg whitebg blackbg} {
 			$gamebar itemconfigure $pref$item$id \
-				-fill $Defaults(background:normal) \
-				-outline $Defaults(background:normal) \
+				-fill [::colors::lookup gamebar $Defaults(background:normal)] \
+				-outline [::colors::lookup gamebar $Defaults(background:normal)] \
 				;
 		}
 	}
@@ -833,9 +833,13 @@ proc Press {gamebar id {pref {}}} {
 	if {[llength $pref] == 0 && ($id eq "-1" || $id eq $Specs(selected:$gamebar))} { return }
 
 	$gamebar itemconfigure ${pref}lighter${id} \
-		-fill $Defaults(background:darker) -outline $Defaults(background:darker)
+		-fill [::colors::lookup gamebar $Defaults(background:darker)] \
+		-outline [::colors::lookup gamebar $Defaults(background:darker)] \
+		;
 	$gamebar itemconfigure ${pref}darker${id} \
-		-fill $Defaults(background:lighter) -outline $Defaults(background:lighter)
+		-fill [::colors::lookup gamebar $Defaults(background:lighter)] \
+		-outline [::colors::lookup gamebar $Defaults(background:lighter)] \
+		;
 	set Specs(buttonstate:$id:$gamebar) "sunken"
 }
 
@@ -1026,9 +1030,9 @@ proc PrepareAsSunkenButton {gamebar id} {
 	variable Defaults
 	variable Specs
 
-	set lighter		$Defaults(background:lighter)
-	set darker		$Defaults(background:darker)
-	set selected	$Defaults(background:active)
+	set lighter		[::colors::lookup gamebar $Defaults(background:lighter)]
+	set darker		[::colors::lookup gamebar $Defaults(background:darker)]
+	set selected	[::colors::lookup gamebar $Defaults(background:active)]
 	set line			$Specs(line:$gamebar)
 
 	$gamebar itemconfigure lighter$id -fill $darker -outline $darker
@@ -1069,9 +1073,9 @@ proc PrepareAsButton {gamebar id} {
 	variable Defaults
 	variable Specs
 
-	set lighter	$Defaults(background:lighter)
-	set darker	$Defaults(background:darker)
-	set normal	$Defaults(background:normal)
+	set lighter	[::colors::lookup gamebar $Defaults(background:lighter)]
+	set darker	[::colors::lookup gamebar $Defaults(background:darker)]
+	set normal	[::colors::lookup gamebar $Defaults(background:normal)]
 	set line		$Specs(line:$gamebar)
 
 	::tooltip::tooltip include $gamebar input$id
@@ -1117,9 +1121,9 @@ proc PrepareAsHeader {gamebar id} {
 
 	if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
 
-	set darker		$Defaults(background:darker)
-	set shadow		$Defaults(background:shadow)
-	set selected	$Defaults(background:$color)
+	set darker		[::colors::lookup gamebar $Defaults(background:darker)]
+	set shadow		[::colors::lookup gamebar $Defaults(background:shadow)]
+	set selected	[::colors::lookup gamebar $Defaults(background:$color)]
 
 	if {$id eq "-1"} {
 		foreach item {	white black lighter darker bg whitebg
@@ -2584,10 +2588,10 @@ proc EnterEvent {gamebar id} {
 		if {[string length $name] && $name ne $scratchbaseName} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
 			$gamebar itemconfigure line1bg${id} \
-				-fill $Defaults(background:$color) \
-				-outline $Defaults(background:$color) \
+				-fill [::colors::lookup gamebar $Defaults(background:$color)] \
+				-outline [::colors::lookup gamebar $Defaults(background:$color)] \
 				;
-			$gamebar itemconfigure line1${id} -fill $Defaults(foreground:$color)
+			$gamebar itemconfigure line1${id} -fill [::colors::lookup gamebar $Defaults(foreground:$color)]
 		}
 	}
 }
@@ -2608,10 +2612,10 @@ proc LeaveEvent {gamebar id {unlock no}} {
 	if {$id eq $sid || $id eq "-1"} {
 		if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
 		$gamebar itemconfigure line1bg${id} \
-			-fill $Defaults(background:$color) \
-			-outline $Defaults(background:$color) \
+			-fill [::colors::lookup gamebar $Defaults(background:$color)] \
+			-outline [::colors::lookup gamebar $Defaults(background:$color)] \
 			;
-		$gamebar itemconfigure line1${id} -fill $Defaults(foreground:normal)
+		$gamebar itemconfigure line1${id} -fill [::colors::lookup gamebar $Defaults(foreground:normal)]
 	}
 }
 
@@ -2628,10 +2632,10 @@ proc EnterPlayer {gamebar id side} {
 		if {[string length $name]} {
 			if {$Specs(emphasize:$id:$gamebar)} { set color hilite2 } else { set color hilite }
 			$gamebar itemconfigure ${side}bg${id} \
-				-fill $Defaults(background:$color) \
-				-outline $Defaults(background:$color) \
+				-fill [::colors::lookup gamebar $Defaults(background:$color)] \
+				-outline [::colors::lookup gamebar $Defaults(background:$color)] \
 				;
-			$gamebar itemconfigure ${side}${id} -fill $Defaults(foreground:$color)
+			$gamebar itemconfigure ${side}${id} -fill [::colors::lookup gamebar $Defaults(foreground:$color)]
 		}
 	}
 }
@@ -2652,10 +2656,10 @@ proc LeavePlayer {gamebar id side {unlock no}} {
 	if {$id eq $sid || $id eq "-1"} {
 		if {$Specs(emphasize:$id:$gamebar)} { set color emphasize } else { set color selected }
 		$gamebar itemconfigure ${side}bg${id} \
-			-fill $Defaults(background:$color) \
-			-outline $Defaults(background:$color) \
+			-fill [::colors::lookup gamebar $Defaults(background:$color)] \
+			-outline [::colors::lookup gamebar $Defaults(background:$color)] \
 			;
-		$gamebar itemconfigure ${side}${id} -fill $Defaults(foreground:normal)
+		$gamebar itemconfigure ${side}${id} -fill [::colors::lookup gamebar $Defaults(foreground:normal)]
 	}
 }
 

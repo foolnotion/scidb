@@ -73,6 +73,7 @@
 ::mc::Default				"Estándar"
 ::mc::Delete				"Eliminar"
 ::mc::Edit					"Editar"
+::mc::Empty					"Empty" ;# NEW
 ::mc::File					"Archivo"
 ::mc::Filter				"Filter" ;# NEW
 ::mc::From					"De"
@@ -225,8 +226,12 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme								"Tema"
+::menu::mc::ColorScheme						"Color Scheme" ;# NEW
 ::menu::mc::CustomStyleMenu				"Scidb's Style Menu" ;# NEW
 ::menu::mc::DefaultStyleMenu				"Default Style Menu" ;# NEW
+::menu::mc::OrdinaryMonitor				"Ordinary Monitor" ;# NEW
+::menu::mc::HighQualityMonitor			"High Quality Monitor" ;# NEW
+::menu::mc::RestartRequired				"A restart of the application is required before this change can be applied everyplace." ;# NEW
 
 ::menu::mc::AllScidbFiles					"Todos los archivos Scidb"
 ::menu::mc::AllScidbBases					"Todas las bases Scidb"

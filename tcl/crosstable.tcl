@@ -100,9 +100,9 @@ namespace import ::tcl::mathfunc::max
 array set Nodes {}
 
 array set Colors {
-	background	#ffffff
-	highlighted	#ebf4f5
-	mark			#ffdd76
+	background	background
+	highlighted	highlighted
+	mark			mark
 }
 
 array set Scripts {
@@ -971,7 +971,7 @@ proc EnterNode {id} {
 	catch {
 		set node $Nodes($id)
 		if {![info exists Marks($node)]} {
-			$node hilite $Colors(highlighted)
+			$node hilite [::colors::lookup crosstable $Colors(highlighted)]
 		}
 		incr Highlighted($node)
 	}
@@ -982,7 +982,6 @@ proc LeaveNode {id} {
 	variable Highlighted
 	variable Nodes
 	variable Marks
-	variable Colors
 
 	if {[catch { set node $Nodes($id) }]} { return }
 
@@ -1005,11 +1004,13 @@ proc Hilite {idList} {
 	variable Colors
 
 	set oldIdList {}
+	set hilightColor [::colors::lookup crosstable $Colors(highlighted)]
+	set markColor [::colors::lookup crosstable $Colors(mark)]
 
 	foreach node [array names Marks] {
 		lappend oldIdList $Marks($node)
 		set color none
-		catch { if {$Highlighted($node) > 0} { set color $Colors(highlighted) } }
+		catch { if {$Highlighted($node) > 0} { set color $hilightColor } }
 		$node hilite $color
 	}
 	array unset Marks
@@ -1020,7 +1021,7 @@ proc Hilite {idList} {
 			catch {
 				set node $Nodes($id)
 				set Marks($node) $id
-				$node hilite $Colors(mark)
+				$node hilite $markColor
 			}
 		}
 	}
