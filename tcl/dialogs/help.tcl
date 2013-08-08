@@ -79,10 +79,10 @@ array set Options {
 }
 
 array set Colors {
-	foreground:gray		foreground:gray
-	foreground:litegray	foreground:litegray
-	background:gray		background:gray
-	background:emphasize	background:emphasize
+	foreground:gray		help,foreground:gray
+	foreground:litegray	help,foreground:litegray
+	background:gray		help,background:gray
+	background:emphasize	help,background:emphasize
 }
 
 # we will not use latin ligatures because they are looking bad with some fonts
@@ -313,6 +313,9 @@ proc open {parent {file ""} args} {
 		set geometry $Options(geometry)
 		if {[string length $file] > 0} {
 			scan $geometry "%dx%d%d%d" w h x y
+			set h [expr {min($h, [lindex [winfo workarea $dlg] 3])}]
+			if {$x >= 0} { set x "+$x" }
+			if {$y >= 0} { set y "+$y" }
 			set geometry [expr {$w - $Options(treewidth)}]x${h}${x}${y}
 		}
 	}
@@ -899,7 +902,7 @@ proc Search {t} {
 	set search $Priv(search:entry)
 	if {[string length $search] == 0} { return }
 
-	lappend options -max 20
+	lappend options -max 50
 	if {!$Priv(matchCase)}	{ lappend options -noCase }
 	if {$Priv(entireWord)}	{ lappend options -entireWord }
 	if {$Priv(titleOnly)}	{ lappend options -titleOnly }
@@ -951,7 +954,7 @@ proc Search {t} {
 	if {[llength $results] == 0} {
 		$t add 0 \
 			-text [set [namespace parent]::mc::NoMatch] \
-			-fill [::colors::lookup help $Colors(foreground:litegray)] \
+			-fill [::colors::lookup $Colors(foreground:litegray)] \
 			-enabled no \
 			;
 	} else {
@@ -1922,7 +1925,7 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 			}
 		}
 		set alternatives [lsort -index 2 $alternatives]
-		set background [::colors::lookup help $Colors(background:emphasize)]
+		set background [::colors::lookup $Colors(background:emphasize)]
 		append content "
 			<html><head><link rel='stylesheet'/></head><body>
 			<h1>$mc::FileNotFound</h1>
@@ -1931,7 +1934,7 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 			<blockquote><h4>$mc::IncompleteHelpFiles</h4></blockquote>
 			</div></p>
 		"
-		set background [::colors::lookup help $Colors(background:gray)]
+		set background [::colors::lookup $Colors(background:gray)]
 		if {[llength $alternatives]} {
 			append content "<br/><br/><br/>"
 			append content "<div style='background: $background; border: 1px solid black;'>"

@@ -73,7 +73,7 @@
 ::mc::Default				"Default"
 ::mc::Delete				"Elimina"
 ::mc::Edit					"Modifica"
-::mc::Empty					"Empty" ;# NEW
+::mc::Empty					"Vuoto"
 ::mc::File					"File"
 ::mc::Filter				"Filtro"
 ::mc::From					"Da"
@@ -226,12 +226,12 @@
 
 ### menu ###############################################################
 ::menu::mc::Theme								"Tema"
-::menu::mc::ColorScheme						"Color Scheme" ;# NEW
-::menu::mc::CustomStyleMenu				"Scidb's Style Menu" ;# NEW
-::menu::mc::DefaultStyleMenu				"Default Style Menu" ;# NEW
-::menu::mc::OrdinaryMonitor				"Ordinary Monitor" ;# NEW
-::menu::mc::HighQualityMonitor			"High Quality Monitor" ;# NEW
-::menu::mc::RestartRequired				"A restart of the application is required before this change can be applied everyplace." ;# NEW
+::menu::mc::ColorScheme						"Schema Colori"
+::menu::mc::CustomStyleMenu				"Stile Menu di Scidb"
+::menu::mc::DefaultStyleMenu				"Stile Menu di Default"
+::menu::mc::OrdinaryMonitor				"Monitor Normale"
+::menu::mc::HighQualityMonitor			"Monitor di Alta Qualità"
+::menu::mc::RestartRequired				"Il riavvio dell'applicazione è necessario prima che sia possibile applicare le modifiche"
 
 ::menu::mc::AllScidbFiles					"Tutti i file Scidb"
 ::menu::mc::AllScidbBases					"Tutti i Database Scidb"
@@ -286,10 +286,10 @@
 ::menu::mc::Data								"%s dati"
 
 # Default Application
-::menu::mc::Assign							"assign" ;# NEW
-::menu::mc::FailedSettingDefaultApp		"Failed to set Scidb as a default application for %s." ;# NEW
-::menu::mc::SuccessSettingDefaultApp	"Successfully set Scidb as a default application for %s." ;# NEW
-::menu::mc::CommandFailed					"Command '%s' failed." ;# NEW
+::menu::mc::Assign							"assegna"
+::menu::mc::FailedSettingDefaultApp		"Tentativo di impostare Scidb come applicazione di default fallito per %s."
+::menu::mc::SuccessSettingDefaultApp	"Impostato Scidb come applicazione di default per %s con successo"
+::menu::mc::CommandFailed					"Comando '%s' fallito"
 
 ### load ###############################################################
 ::load::mc::SevereError				"Grave errore durante caricamento file ECO"

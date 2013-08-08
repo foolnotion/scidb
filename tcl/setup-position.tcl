@@ -77,8 +77,8 @@ proc open {parent} {
 	set Vars(idn:text) ""
 
 #	set selectbg $::board::square::style(hilite,selected)
-	set selectbg [::theme::getSelectBackgroundColor]
-	set activebg [::theme::getActiveBackgroundColor]
+	set selectbg [::colors::lookup theme,selectbackground]
+	set activebg [::colors::lookup theme,activebackground]
 	if {[string length $activebg] == 0} {
 		tk::button $top.temp
 		set activebg [$top.temp cget -activebackground]

@@ -642,7 +642,7 @@ public:
 			annotation.infix(textual);
 			annotation.suffix(textual);
 
-			Tcl_Obj* objv[5];
+			Tcl_Obj* objv[2];
 
 			objv[0] = m_annotation;
 			objv[1] = Tcl_NewStringObj(textual, textual.size());

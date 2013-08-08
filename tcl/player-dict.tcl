@@ -73,7 +73,7 @@ array set Options {
 	federation		Fide
 	rating1:type	Elo
 	rating2:type	DWZ
-	stripes			stripes
+	stripes			playerdict,stripes
 }
 
 set Priv(receiver) {}
@@ -295,7 +295,7 @@ proc open {parent args} {
 		-configurable no \
 		-popupcmd [namespace code PopupMenu] \
 		-height 25 \
-		-stripes [::colors::lookup playerdict $Options(stripes)] \
+		-stripes $Options(stripes) \
 	]
 
 	::bind $table <<TableFill>>		[namespace code [list TableFill $table %d]]
@@ -441,7 +441,7 @@ proc SetFilter {table} {
 	wm withdraw $dlg
 	pack $top -fill both -expand yes
 	bind $top <<LanguageChanged>> [namespace code [list LanguageChanged(filter) $top]]
-	set bg [::theme::getBackgroundColor]
+	set bg [::colors::lookup theme,background]
 	set bold [list [font configure TkTextFont -family] [font configure TkTextFont -size] bold]
 
 	### name / federation / native top #############################

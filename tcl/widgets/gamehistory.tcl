@@ -90,10 +90,10 @@ proc Build {w args} {
 	$t element create elemHdr text -font $boldFont -lines 1 -fill darkred
 	$t element create elemTxt text -lines 1
 	$t element create elemSel rect -fill [list                          \
-		[::colors::lookup gamehistory selected:focus]  {selected focus}  \
-		[::colors::lookup gamehistory selected:hilite] {selected hilite} \
-		[::colors::lookup gamehistory selected!focus]  {selected !focus} \
-		[::colors::lookup gamehistory hilite]          {hilite}          \
+		[::colors::lookup gamehistory,selected:focus]  {selected focus}  \
+		[::colors::lookup gamehistory,selected:hilite] {selected hilite} \
+		[::colors::lookup gamehistory,selected!focus]  {selected !focus} \
+		[::colors::lookup gamehistory,hilite]          {hilite}          \
 	]
 	$t element create elemBrd border          \
 		-filled no                             \

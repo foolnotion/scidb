@@ -28,7 +28,7 @@ done
 exec $tclsh "$0" ${1+"$@"}
 
 set Versions {8.6 8.5}
-set IgnorePatches {8.6b1}
+set IgnorePatches {8.6b1 8.6b1.1 8.6b2}
 
 
 proc stripDot {version} { return "[string index $version 0][string index $version 2]" }

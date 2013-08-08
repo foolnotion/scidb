@@ -38,14 +38,14 @@ proc treetable {path args} {
 		-relief					sunken
 		-buttonimage			{}
 		-xscrollincrement		1
-		-background				background
 		-showfocus				1
 		-width					0
 		-showlines				1
 		-showbuttons			0
 		-showarrows				0
 		-selectmode				single
-		-disabledforeground	disabledforeground
+		-background				treetable,background
+		-disabledforeground	treetable,disabledforeground
 	}
 	array set opts $args
 
@@ -69,19 +69,19 @@ proc treetable {path args} {
 	pack $f -fill both -expand yes
 	bind $path <FocusIn> [list focus $t]
 	bind $f <FocusIn> [list focus $t]
-	treectrl $t                                                    \
-		-class TreeTable                                            \
-		-takefocus $opts(-takefocus)                                \
-		-borderwidth $opts(-borderwidth)                            \
-		-relief $opts(-relief)                                      \
-		-xscrollincrement $opts(-xscrollincrement)                  \
-		-background [::colors::lookup treetable $opts(-background)] \
-		-showlines $opts(-showlines)                                \
-		-showbuttons $opts(-showbuttons)                            \
-		-showheader no                                              \
-		-highlightthickness 0                                       \
-		-linestyle solid                                            \
-		-showroot no                                                \
+	treectrl $t                                          \
+		-class TreeTable                                  \
+		-takefocus $opts(-takefocus)                      \
+		-borderwidth $opts(-borderwidth)                  \
+		-relief $opts(-relief)                            \
+		-xscrollincrement $opts(-xscrollincrement)        \
+		-background [::colors::lookup $opts(-background)] \
+		-showlines $opts(-showlines)                      \
+		-showbuttons $opts(-showbuttons)                  \
+		-showheader no                                    \
+		-highlightthickness 0                             \
+		-linestyle solid                                  \
+		-showroot no                                      \
 		;
 	set itemHeight [font metrics [$t cget -font] -linespace]
 	if {$itemHeight < 18} { set itemHeight 18 }
@@ -101,10 +101,10 @@ proc treetable {path args} {
 	$t element create elemImg image
 	$t element create elemTxt text -lines 1
 	$t element create elemSel rect -fill [list                                  \
-		[::colors::lookup treetable selected:focus]  {selected focus}   \
-		[::colors::lookup treetable selected!focus]  {selected !focus}  \
-		[::colors::lookup treetable active:focus]    {active focus}     \
-		[::colors::lookup treetable hilite!selected] {hilite !selected} \
+		[::colors::lookup treetable,selected:focus]  {selected focus}   \
+		[::colors::lookup treetable,selected!focus]  {selected !focus}  \
+		[::colors::lookup treetable,active:focus]    {active focus}     \
+		[::colors::lookup treetable,hilite!selected] {hilite !selected} \
 	]
 	$t element create elemBrd border \
 		-filled no \
@@ -180,7 +180,7 @@ proc WidgetProc {t command args} {
 			array unset opts -tag
 			if {[llength $opts(-fill)] == 0} {
 				set opts(-fill) [list black enabled \
-					[::colors::lookup treetable $Vars(disabledforeground)] !enabled]
+					[::colors::lookup $Vars(disabledforeground)] !enabled]
 			}
 			set args [array get opts]
 			set item [$t item create -button auto -tags $tags]

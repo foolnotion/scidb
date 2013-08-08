@@ -222,10 +222,10 @@ variable BorderWidth 1
 variable List [lsort -dictionary [encoding names]]
 
 array set Colors {
-	selection	selection
-	active		active
-	normal		normal
-	description	description
+	selection	encoding,selection
+	active		encoding,active
+	normal		encoding,normal
+	description	encoding,description
 }
 
 
@@ -441,8 +441,8 @@ proc BuildTable {table width height} {
 
 	$table element create elemTxt text
 	$table element create elemSel rect -fill [list \
-		[::colors::lookup encoding $Colors(selection)] selected \
-		[::colors::lookup encoding $Colors(active)] active \
+		[::colors::lookup $Colors(selection)] selected \
+		[::colors::lookup $Colors(active)] active \
 	]
 	$table element create elemBrd border -filled no -relief raised -thickness 1 \
 		-background {#dbdbdb {active} {} {}}
@@ -484,7 +484,7 @@ proc BuildTable {table width height} {
 			-steady yes \
 			-squeeze $weight \
 			-weight $weight \
-			-itembackground [list [::colors::lookup encoding $background] white] \
+			-itembackground [list [::colors::lookup $background] white] \
 			-minwidth $minwidth \
 			;
 		set trace "variable mc::$id write { [namespace current]::SetText $table $id }"

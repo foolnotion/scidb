@@ -169,31 +169,31 @@ array set Options {
 	show:layout					details
 	show:filetypeicons		1
 	pane:favorites				0
-	menu:headerbackground	menu:headerbackground
-	menu:headerforeground	menu:headerforeground
-	drop:background			drop:background
+	menu:headerbackground	fsbox,menu:headerbackground
+	menu:headerforeground	fsbox,menu:headerforeground
+	drop:background			fsbox,drop:background
 	tooltip:shorten-paths	0
 }
 
 array set Colors {
-	-selectionbackground		selectionbackground
-	-selectionforeground		selectionforeground
-	-inactivebackground		inactivebackground
-	-inactiveforeground		inactiveforeground
-	-activebackground			activebackground
-	-activeforeground			activeforeground
+	-selectionbackground		fsbox,selectionbackground
+	-selectionforeground		fsbox,selectionforeground
+	-inactivebackground		fsbox,inactivebackground
+	-inactiveforeground		fsbox,inactiveforeground
+	-activebackground			fsbox,activebackground
+	-activeforeground			fsbox,activeforeground
 }
 
 array set ColorLookup {
-	menu:headerbackground	menu:headerbackground
-	menu:headerforeground	menu:headerforeground
-	drop:background			drop:background
-	selectionbackground		selectionbackground
-	selectionforeground		selectionforeground
-	inactivebackground		inactivebackground
-	inactiveforeground		inactiveforeground
-	activebackground			activebackground
-	activeforeground			activeforeground
+	fsbox,menu:headerbackground	#ffdd76
+	fsbox,menu:headerforeground	black
+	fsbox,drop:background			LemonChiffon
+	fsbox,selectionbackground		#ebf4f5
+	fsbox,selectionforeground		black
+	fsbox,inactivebackground		#f2f2f2
+	fsbox,inactiveforeground		black
+	fsbox,activebackground			#ebf4f5
+	fsbox,activeforeground			black
 }
 
 

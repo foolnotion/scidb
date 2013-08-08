@@ -29,16 +29,12 @@ Il Clipbase non può essere chiuso. Esiste una funzione per svuotare il Clipbase.
 %::application::database::mc::EmptyClipbase%</a>).
 </p>
 
-<NEW>
 <p>
-The Clipbase keeps data in Scidb's native format and is an exception, because
-it may contain various <a href="Chess-Variants.html">chess variants</a>
-concurrently. But administrative operations
+Il Clipbase mantiene i dati nel formato nativo di Scidb ed è un'eccezione, perché può contenere varie 
+<a href="Chess-Variants.html">varianti degli scacchi</a> allo stesso tempo. Le operazioni amministrative tuttavia 
 (<see/> <a href="Database-Switcher.html#Maintenance">
-%::application::database::mc::FileMaintenance%</a>) can be applied to only one
-variant.
+%::application::database::mc::FileMaintenance%</a>) possono essere applicate solo a una variante.
 </p>
-</NEW>
 
 END
 

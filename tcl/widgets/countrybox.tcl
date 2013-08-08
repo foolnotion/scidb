@@ -66,8 +66,8 @@ proc Build {w args} {
 		-textvariable $opts(-textvariable) \
 		-scrollcolumn name \
 		-exportselection no \
-		-disabledbackground [::colors::lookup default disabledbackground] \
-		-disabledforeground [::colors::lookup default disabledforeground] \
+		-disabledbackground [::colors::lookup default,disabledbackground] \
+		-disabledforeground [::colors::lookup default,disabledforeground] \
 		-disabledfont $bold \
 		-state $opts(-state) \
 		;

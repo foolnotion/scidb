@@ -140,25 +140,25 @@ set StyleLayout {
 }
 
 array set DefaultColors {
-	background				background
-	foreground:variation	foreground:variation
-	foreground:bracket	foreground:bracket
-	foreground:numbering	foreground:numbering
-	foreground:nag			foreground:nag
-	foreground:nagtext	foreground:nagtext
-	foreground:comment	foreground:comment
-	foreground:info		foreground:info
-	foreground:result		foreground:result
-	foreground:illegal	foreground:illegal
-	foreground:marks		foreground:marks
-	foreground:empty		foreground:empty
-	foreground:opening	foreground:opening
-	foreground:result		foreground:result
-	background:current	background:current
-	background:nextmove	background:nextmove
-	hilite:comment			hilite:comment
-	hilite:info				hilite:info
-	hilite:move				hilite:move
+	background				pgn,background
+	foreground:variation	pgn,foreground:variation
+	foreground:bracket	pgn,foreground:bracket
+	foreground:numbering	pgn,foreground:numbering
+	foreground:nag			pgn,foreground:nag
+	foreground:nagtext	pgn,foreground:nagtext
+	foreground:comment	pgn,foreground:comment
+	foreground:info		pgn,foreground:info
+	foreground:result		pgn,foreground:result
+	foreground:illegal	pgn,foreground:illegal
+	foreground:marks		pgn,foreground:marks
+	foreground:empty		pgn,foreground:empty
+	foreground:opening	pgn,foreground:opening
+	foreground:result		pgn,foreground:result
+	background:current	pgn,background:current
+	background:nextmove	pgn,background:nextmove
+	hilite:comment			pgn,hilite:comment
+	hilite:info				pgn,hilite:info
+	hilite:move				pgn,hilite:move
 }
 #	foreground:numbering	#68480a
 #	foreground:numbering	#bd1091
@@ -293,11 +293,11 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure italic -font $::font::text($fontContext:italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
-		$w tag configure variation -foreground [::colors::lookup pgn $Colors(foreground:variation)]
+		$w tag configure variation -foreground [::colors::lookup $Colors(foreground:variation)]
 
-		$w tag configure opening -foreground [::colors::lookup pgn $Colors(foreground:opening)]
+		$w tag configure opening -foreground [::colors::lookup $Colors(foreground:opening)]
 		$w tag configure opening -font $::font::text($fontContext:bold)
-		$w tag configure comment -foreground [::colors::lookup pgn $Colors(foreground:comment)]
+		$w tag configure comment -foreground [::colors::lookup $Colors(foreground:comment)]
 
 		$w tag configure figurineb -font $::font::figurine($fontContext:bold) -underline no
 		$w tag configure symbol -font $::font::symbol($fontContext:normal)
@@ -305,12 +305,12 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure code -font $::font::text($fontContext:normal)
 		$w tag configure codeb -font $::font::text($fontContext:bold)
 
-		$w tag configure nag -foreground [::colors::lookup pgn $Colors(foreground:nag)]
-		$w tag configure nagtext -foreground [::colors::lookup pgn $Colors(foreground:nagtext)]
-		$w tag configure bracket -foreground [::colors::lookup pgn $Colors(foreground:bracket)]
-		$w tag configure numbering -foreground [::colors::lookup pgn $Colors(foreground:numbering)]
-		$w tag configure marks -foreground [::colors::lookup pgn $Colors(foreground:marks)]
-		$w tag configure info -foreground [::colors::lookup pgn $Colors(foreground:info)]
+		$w tag configure nag -foreground [::colors::lookup $Colors(foreground:nag)]
+		$w tag configure nagtext -foreground [::colors::lookup $Colors(foreground:nagtext)]
+		$w tag configure bracket -foreground [::colors::lookup $Colors(foreground:bracket)]
+		$w tag configure numbering -foreground [::colors::lookup $Colors(foreground:numbering)]
+		$w tag configure marks -foreground [::colors::lookup $Colors(foreground:marks)]
+		$w tag configure info -foreground [::colors::lookup $Colors(foreground:info)]
 
 		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
 		$w tag configure circled -foreground #008b00
@@ -325,10 +325,10 @@ proc configureText {path {fontContext ""}} {
 
 	$w tag configure figurine -font $::font::figurine($fontContext:normal) -underline no
 	$w tag configure result -font $::font::text($fontContext:$bold)
-	$w tag configure result -foreground  [::colors::lookup pgn $Colors(foreground:result)]
-	$w tag configure empty -foreground [::colors::lookup pgn $Colors(foreground:empty)]
-	$w tag configure illegal -foreground [::colors::lookup pgn $Colors(foreground:illegal)]
-	$w tag configure state -foreground [::colors::lookup pgn $Colors(foreground:illegal)]
+	$w tag configure result -foreground  [::colors::lookup $Colors(foreground:result)]
+	$w tag configure empty -foreground [::colors::lookup $Colors(foreground:empty)]
+	$w tag configure illegal -foreground [::colors::lookup $Colors(foreground:illegal)]
+	$w tag configure state -foreground [::colors::lookup $Colors(foreground:illegal)]
 
 	if {$Options(style:column)} {
 		set tab1 [expr {round($Options(tabstop:1)*$charwidth)}]
@@ -451,7 +451,7 @@ proc openSetupDialog {parent context position args} {
 	set options [::tk::multiwindow $top.options \
 		-borderwidth 1 \
 		-relief raised \
-		-background [::theme::getBackgroundColor] \
+		-background [::colors::lookup theme,background] \
 	]
 
 	foreach id {Appearance Fonts Colors Highlighting Hovers} {
@@ -529,7 +529,7 @@ proc openSetupDialog {parent context position args} {
 
 	if {[llength $Priv(color:attr)]} {
 		addToList [namespace current]::Recent($Priv(color:attr)) \
-			[::colors::lookup pgn $Priv(color:selected)]
+			[::colors::lookup $Priv(color:selected)]
 	}
 
 	array unset New_Options
@@ -664,7 +664,7 @@ proc FinishReset {context position} {
 
 	foreach attr [array names Colors] {
 		if {[info exists Recent($attr)]} {
-			addToList [namespace current]::Recent($attr) [::colors::lookup pgn $Colors($attr)]
+			addToList [namespace current]::Recent($attr) [::colors::lookup $Colors($attr)]
 		}
 	}
 
@@ -778,7 +778,7 @@ proc BuildFrame(topics) {w topic context position tree} {
 				-borderwidth 0 \
 				-width $maxwidth \
 				-height 1 \
-				-background [::theme::getBackgroundColor] \
+				-background [::colors::lookup theme,background] \
 				-exportselection no \
 				-cursor {} \
 				-takefocus 0 \
@@ -1240,7 +1240,7 @@ proc SetupStyle {style} {
 	foreach tag {figurine-font figurine-bold} {
 		if {[info exists Priv(link:text:$tag)]} {
 			set t $Priv(link:text:$tag)
-			$t tag configure link -foreground [::colors::lookup pgn $color]
+			$t tag configure link -foreground [::colors::lookup $color]
 			if {$action eq "enable"} {
 				$t tag bind link <Enter> [list $t tag configure link -underline 1]
 				$t tag bind link <Leave> [list $t tag configure link -underline 0]
@@ -1269,9 +1269,9 @@ proc SelectColor {context position color} {
 	if {[llength $Priv(hover:key)] == 0} {
 		configureText $Priv(path) setup
 	} elseif {$Priv(color:attr) eq "hilite:move"} {
-		$Priv(pgn) tag configure $Priv(hover:key) -background [::colors::lookup pgn $color]
+		$Priv(pgn) tag configure $Priv(hover:key) -background [::colors::lookup $color]
 	} else {
-		$Priv(pgn) tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $color]
+		$Priv(pgn) tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
 	}
 }
 
@@ -1391,7 +1391,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 
 	if {[llength $Priv(color:attr)]} {
 		addToList [namespace current]::Recent($Priv(color:attr)) \
-			[::colors::lookup pgn $Priv(color:selected)]
+			[::colors::lookup $Priv(color:selected)]
 	}
 
 	set data ""
@@ -1537,9 +1537,9 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 		if {![info exists Recent($attr)]} {
 			variable DefaultColors
 			set Recent($attr) [lrepeat [array size DefaultColors] {}]
-			lset Recent($attr) 0 [::colors::lookup pgn $Colors($attr)]
+			lset Recent($attr) 0 [::colors::lookup $Colors($attr)]
 		}
-		::dialog::choosecolor::setupColor $Priv(pane:colors) [::colors::lookup pgn $Colors($attr)]
+		::dialog::choosecolor::setupColor $Priv(pane:colors) [::colors::lookup $Colors($attr)]
 		::dialog::choosecolor::setupRecentColors $Priv(pane:colors) [namespace current]::Recent($attr)
 		set pane colors
 		if {[string length $data] == 0} { set data $Games(colors) }
@@ -1568,7 +1568,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 			set hover [string match hover* $tag]
 
 			if {$hover} { set color $Colors(hilite:move) } else { set color {} }
-			after idle [list $w tag configure $key -background [::colors::lookup pgn $color]]
+			after idle [list $w tag configure $key -background [::colors::lookup $color]]
 			set hilite(comment) $Colors(foreground:comment)
 			set hilite(info) $Colors(foreground:info)
 
@@ -1590,8 +1590,8 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 
 			if {$context eq "editor"} {
 				after idle [list $w tag configure comment:$key:p:$langID \
-					-foreground [::colors::lookup pgn $hilite(comment)]]
-				after idle [list $w tag configure info:$key -foreground [::colors::lookup pgn $hilite(info)]]
+					-foreground [::colors::lookup $hilite(comment)]]
+				after idle [list $w tag configure info:$key -foreground [::colors::lookup $hilite(info)]]
 			}
 		}
 
@@ -1638,7 +1638,7 @@ proc HiliteTags {context position} {
 		background:current - background:nextmove { set compl white }
 		default {
 			variable [namespace parent]::${context}::Colors
-			scan [getActualColor [::colors::lookup pgn $Colors($Priv(color:attr))]] "\#%2x%2x%2x" r g b
+			scan [getActualColor [::colors::lookup $Colors($Priv(color:attr))]] "\#%2x%2x%2x" r g b
 			set r [expr {255 - $r}]; set g [expr {255 - $g}]; set b [expr {255 - $b}]
 			set compl [format "\#%02x%02x%02x" $r $g $b]
 			if {$compl eq "#ffffff"} { set compl yellow }
@@ -1662,24 +1662,24 @@ proc Blink {context position compl} {
 		if {[llength $compl]} {
 			if {$attr eq "hilite"} {
 				if {$tag eq "move"} { set color $Colors(hilite:move) } else { set color $compl }
-				$w tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $color]
+				$w tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
 			} else {
 				switch $tag {
 					variation - bracket - numbering {
-						$w tag configure $tag -foreground [::colors::lookup pgn $compl]
+						$w tag configure $tag -foreground [::colors::lookup $compl]
 					}
 					current {
 						set key [::scidb::game::position $position key]
-						$w tag configure $key -foreground [::colors::lookup pgn $Colors($Priv(color:attr))]
+						$w tag configure $key -foreground [::colors::lookup $Colors($Priv(color:attr))]
 					}
 					nextmove {
 						set keys [::scidb::game::next keys $position] 
 						foreach key $keys {
-							$w tag configure $key -foreground [::colors::lookup pgn $Colors($Priv(color:attr))] }
+							$w tag configure $key -foreground [::colors::lookup $Colors($Priv(color:attr))] }
 					}
 					default {
 						$w configure -selectborderwidth 1
-						$w configure -inactiveselectbackground [::colors::lookup pgn $compl]
+						$w configure -inactiveselectbackground [::colors::lookup $compl]
 					}
 				}
 			}
@@ -1688,11 +1688,11 @@ proc Blink {context position compl} {
 	} else {
 		if {$attr eq "hilite"} {
 			if {$tag eq "move"} { set color {} } else { set color $Colors($Priv(color:attr)) }
-			$w tag configure $Priv(hover:key) -foreground [::colors::lookup pgn $color]
+			$w tag configure $Priv(hover:key) -foreground [::colors::lookup $color]
 		} else {
 			switch $tag {
 				variation - bracket - numbering {
-					$w tag configure $tag -foreground [::colors::lookup pgn $Colors($Priv(color:attr))]
+					$w tag configure $tag -foreground [::colors::lookup $Colors($Priv(color:attr))]
 				}
 				current {
 					set key [::scidb::game::position $position key]

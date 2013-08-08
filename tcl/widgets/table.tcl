@@ -120,13 +120,13 @@ array set Defaults {
 	-highlightcolor			{}
 	-labelcommand				{}
 	-columns						{}
-	-background					background
-	-foreground					foreground
-	-selectionbackground		selectionbackground
-	-selectionforeground		selectionforeground
-	-disabledforeground		disabledforeground
-	-labelforeground			labelforeground
-	-labelbackground			labelbackground
+	-background					table,background
+	-foreground					table,foreground
+	-selectionbackground		table,selectionbackground
+	-selectionforeground		table,selectionforeground
+	-disabledforeground		table,disabledforeground
+	-labelforeground			table,labelforeground
+	-labelbackground			table,labelbackground
 }
 
 variable Eraser [::icon::makeStateSpecificIcons $::colormenu::icon::16x16::eraser]
@@ -207,7 +207,7 @@ proc table {args} {
 		-fullstripes $Options(-fullstripes) \
 		-background $background             \
 		;
-	setColumnBackground $table tail $Options(-stripes) $background
+	setColumnBackground $table tail [lookupColor $Options(-stripes)] [lookupColor $background]
 	$table.t state define deleted
 	$table.t element create elemIco image
 	set colors [list [lookupColor $Options(-selectionbackground)] selected]
@@ -385,7 +385,7 @@ proc addcol {table id args} {
 	set stripes $opts(-stripes)
 	if {[llength $stripes] == 0} { set stripes $Options(-stripes) }
 	if {[llength $stripes]} {
-		set colors [list $stripes [lookupColor $opts(-background)]]
+		set colors [list [lookupColor $stripes] [lookupColor $opts(-background)]]
 	} else {
 		set colors [lookupColor $opts(-background)]
 	}
@@ -925,9 +925,8 @@ proc setScrollCommand {table cmd} {
 
 
 proc setColumnBackground {table id stripes background} {
-	set background [lookupColor $background]
 	if {[llength $stripes]} {
-		$table.t column configure $id -itembackground [list [lookupColor $stripes] $background]
+		$table.t column configure $id -itembackground [list $stripes $background]
 	} else {
 		$table.t column configure $id -itembackground $background
 	}
@@ -2147,10 +2146,10 @@ proc SetBackground {table} {
 		set stripes [GetStripes $table $id]
 		set background $Options(-background:$id)
 		if {[llength $background] == 0} { set background $Options(-background) }
-		setColumnBackground $table $id $stripes $background
+		setColumnBackground $table $id [lookupColor $stripes] [lookupColor $background]
 	}
 
-	setColumnBackground $table $id $Options(-stripes) $Options(-background)
+	setColumnBackground $table $id [lookupColor $Options(-stripes)] [lookupColor $Options(-background)]
 }
 
 

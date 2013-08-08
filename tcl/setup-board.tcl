@@ -237,8 +237,8 @@ proc open {parent} {
 	set edge 20
 
 #	set selectbg $::board::square::style(hilite,selected)
-	set selectbg [::theme::getSelectBackgroundColor]
-	set activebg [::theme::getActiveBackgroundColor]
+	set selectbg [::colors::lookup theme,selectbackground]
+	set activebg [::colors::lookup theme,activebackground]
 
 	# castling rights #########################################
 	set castling [ttk::labelframe $right.castling -labelwidget [ \

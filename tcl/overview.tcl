@@ -38,8 +38,8 @@ set AcceleratorRotate	"R"
 namespace import ::tcl::mathfunc::min
 
 array set Options {
-	background:normal		background:normal
-	background:modified	background:modified
+	background:normal		overview,background:normal
+	background:modified	overview,background:modified
 	minSize					30
 }
 
@@ -232,7 +232,7 @@ proc UpdateData {nb id evenMainline} {
 		set link [list $base [::util::toMainVariant $variant] $index]
 		if {$Vars(link) eq $link} {
 			set Vars(modified) 1
-			set background [::colors::lookup overview $Options(background:modified)]
+			set background [::colors::lookup $Options(background:modified)]
 			foreach text $Vars(text) {
 				$text configure -background $background -inactiveselectbackground $background
 			}
@@ -341,7 +341,7 @@ proc NextGame {nb {step 0}} {
 	}
 
 	if {$Vars(modified)} {
-		set background [::colors::lookup overview $Options(background:normal)]
+		set background [::colors::lookup $Options(background:normal)]
 		foreach text $Vars(text) {
 			$text configure -background $background -inactiveselectbackground $background
 		}
@@ -403,7 +403,7 @@ proc BuildTab {nb boardSize sw sh specified} {
 	$nb add $f -sticky nsew -text "${nrows}x${ncols}"
 	lappend Priv(tabs) $boardSize $nrows $ncols
 	set size [expr {8*$boardSize + 2}]
-	set background [::colors::lookup overview $Options(background:normal)]
+	set background [::colors::lookup $Options(background:normal)]
 
 	for {set row 0} {$row < $nrows} {incr row} {
 		for {set col 0} {$col < $ncols} {incr col} {

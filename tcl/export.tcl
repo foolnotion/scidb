@@ -353,8 +353,8 @@ set Languages {
 }
 
 array set Colors {
-	shadow	shadow
-	text		text
+	shadow	export,shadow
+	text		export,text
 }
 
 namespace eval si3 {
@@ -1289,8 +1289,8 @@ proc BuildFrame {w} {
 	set selbox [::tlistbox $rt.images.selection \
 		-height [llength $DiagramStyles] \
 		-borderwidth 1 \
-		-disabledbackground [::theme::getBackgroundColor] \
-		-disabledforeground [::theme::getDisabledColor] \
+		-disabledbackground [::colors::lookup theme,background] \
+		-disabledforeground [::colors::lookup theme,disabled] \
 	]
 	$selbox addcol image -id icon
 	$selbox addcol text -id text -expand yes
@@ -1552,7 +1552,7 @@ proc BuildFrame {w} {
 	grid rowconfigure $f {0 2 4} -minsize $::theme::padding
 
 	set scrolled [::scrolledframe $w.mapping \
-		-background [::theme::getBackgroundColor] \
+		-background [::colors::lookup theme,background] \
 		-borderwidth 1 \
 		-relief sunken \
 		-expand x \
@@ -2287,15 +2287,15 @@ proc BuildFrame {w} {
 		-relief sunken \
 		-width 1 \
 		-height 1 \
-		-background [::theme::getBackgroundColor] \
+		-background [::colors::lookup theme,background] \
 		;
-	set shadowColor [::colors::lookup export $Colors(shadow)]
+	set shadowColor [::colors::lookup $Colors(shadow)]
 	$w.c xview moveto 0
 	$w.c yview moveto 0
 	$w.c create rectangle 0 0 0 0 -tag shadow -fill $shadowColor -outline $shadowColor
 	$w.c create rectangle 0 0 0 0 -tag paper -fill white -outline black
-	$w.c create rectangle 0 0 0 0 -tag left -fill white -outline [::colors::lookup export $Colors(text)]
-	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline [::colors::lookup export $Colors(text)]
+	$w.c create rectangle 0 0 0 0 -tag left -fill white -outline [::colors::lookup $Colors(text)]
+	$w.c create rectangle 0 0 0 0 -tag right -fill white -outline [::colors::lookup $Colors(text)]
 
 	if {$type eq "tex"} {
 		set Info(tex,paper,document-styles) {}
@@ -2739,7 +2739,7 @@ proc RefreshPreview {w} {
 	$w.c coords left $lx0 $ly0 $lx1 $ly1
 	$w.c coords right $rx0 $ry0 $rx1 $ry1
 
-	set textColor [::colors::lookup export $Colors(text)]
+	set textColor [::colors::lookup $Colors(text)]
 	$w.c delete line
 	set i 0
 	if {$lx1 > $lx0} {

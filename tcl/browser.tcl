@@ -79,10 +79,10 @@ array set Options {
 	miniboard:size			30
 	autoplay:delay			2500
 	repeat:interval		300
-	background:header		background:header
-	background:hilite		background:hilite
-	background:modified	background:modified
-	foreground:hilite		foreground:hilite
+	background:header		browser,background:header
+	background:hilite		browser,background:hilite
+	background:modified	browser,background:modified
+	foreground:hilite		browser,foreground:hilite
 }
 
 array set Active {}
@@ -142,7 +142,7 @@ proc open {parent base variant info view index {fen {}}} {
 
 	grid columnconfigure $top 1 -weight 1
 
-	set background [::theme::getBackgroundColor]
+	set background [::colors::lookup theme,background]
 	set activebackground [$dlg cget -background]
 
 	# board
@@ -218,7 +218,7 @@ proc open {parent base variant info view index {fen {}}} {
 
 	# PGN side
 	tk::text $rt.header \
-		-background [::colors::lookup browser $Options(background:header)] \
+		-background [::colors::lookup $Options(background:header)] \
 		-height 3 \
 		-width 0 \
 		-state disabled \
@@ -465,10 +465,10 @@ proc resetGoto {w position} {
 	variable ::pgn::browser::Colors
 
 	if {[llength $Vars(next)]} {
-		$w tag configure $Vars(next) -background [::colors::lookup pgn $Colors(background)]
+		$w tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
 	}
 	if {[llength $Vars(current)]} {
-		$w tag configure $Vars(current) -background [::colors::lookup pgn $Colors(background)]
+		$w tag configure $Vars(current) -background [::colors::lookup $Colors(background)]
 	}
 	set Vars(current) {}
 	set Vars(next) {}
@@ -482,7 +482,7 @@ proc showNext {w position flag} {
 
 	if {[llength $Vars(next:move)]} {
 		if {$flag} { set attr background:nextmove } else { set attr background }
-		$w tag configure $Vars(next:move) -background [::colors::lookup pgn $Colors($attr)]
+		$w tag configure $Vars(next:move) -background [::colors::lookup $Colors($attr)]
 	}
 }
 
@@ -585,7 +585,7 @@ proc SetupStyle {position {refresh yes}} {
 	variable ::pgn::browser::Options
 
 	if {[llength $Vars(next)]} {
-		$Vars(pgn) tag configure $Vars(next) -background [::colors::lookup pgn $Colors(background)]
+		$Vars(pgn) tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
 	}
 	if {$Options(style:column)} { set Vars(next) $Vars(next:move) } else { set Vars(next) {} }
 
@@ -653,10 +653,10 @@ proc UpdateInfo {position id} {
 
 	if {[::scidb::game::link? $position] ne [::scidb::game::link? $id]} {
 		set Vars(modified) 1
-		$Vars(header) configure -background [::colors::lookup browser $Options(background:modified)]
+		$Vars(header) configure -background [::colors::lookup $Options(background:modified)]
 		foreach item {event white black} {
 			$Vars(header) tag configure $item \
-				-background [::colors::lookup browser $Options(background:modified)] \
+				-background [::colors::lookup $Options(background:modified)] \
 				;
 		}
 	}
@@ -751,7 +751,7 @@ proc NextGame {parent position {step 0}} {
 		-number $number -variant $Vars(variant) -view $Vars(view) }
 	::scidb::game::go $position position $Vars(fen)
 	if {$Vars(modified)} {
-		$Vars(header) configure -background [::colors::lookup browser $Options(background:header)]
+		$Vars(header) configure -background [::colors::lookup $Options(background:header)]
 		set Vars(modified) 0
 	}
 	::scidb::game::refresh $position -immediate
@@ -950,8 +950,8 @@ proc EnterItem {position item {locked no}} {
 	if {$Vars(closed)} { return }
 
 	$Vars(header) tag configure $item \
-		-background [::colors::lookup browser $Options(background:hilite)] \
-		-foreground [::colors::lookup browser $Options(foreground:hilite)] \
+		-background [::colors::lookup $Options(background:hilite)] \
+		-foreground [::colors::lookup $Options(foreground:hilite)] \
 		;
 }
 
@@ -966,7 +966,7 @@ proc LeaveItem {position item {force no}} {
 
 	if {!$Vars(locked)} {
 		$Vars(header) tag configure $item \
-			-background [::colors::lookup browser $Options(background:header)] \
+			-background [::colors::lookup $Options(background:header)] \
 			-foreground black \
 			;
 	}
@@ -1096,7 +1096,7 @@ proc UpdatePGN {position data {w {}}} {
 				set Vars(result) [makeResult {*}[lrange $node 1 end] $reason $variant]
 				PrintResult $w $position
 				if {[llength $current]} {
-					catch { $w tag configure $current -background [::colors::lookup pgn $Colors(background)] }
+					catch { $w tag configure $current -background [::colors::lookup $Colors(background)] }
 				}
 				$w configure -state disabled
 			}
@@ -1107,7 +1107,7 @@ proc UpdatePGN {position data {w {}}} {
 				if {$cmd eq "goto" } {
 					if {$Vars(current) eq $key} { return }
 					if {[llength $Vars(next)]} {
-						$w tag configure $Vars(next) -background [::colors::lookup pgn $Colors(background)]
+						$w tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
 					}
 					set Vars(next:move) [::scidb::game::next keys $position]
 					if {$Options(style:column)} {
@@ -1116,12 +1116,12 @@ proc UpdatePGN {position data {w {}}} {
 					if {$Vars(active) eq $key} { $w configure -cursor {} }
 					set previous $Vars(current)
 					if {[llength $previous]} {
-						$w tag configure $previous -background  [::colors::lookup pgn $Colors(background)]
+						$w tag configure $previous -background  [::colors::lookup $Colors(background)]
 					}
-					$w tag configure $key -background [::colors::lookup pgn $Colors(background:current)]
+					$w tag configure $key -background [::colors::lookup $Colors(background:current)]
 					if {[llength $Vars(next)]} {
 						$w tag configure $Vars(next) \
-							-background [::colors::lookup pgn $Colors(background:nextmove)]
+							-background [::colors::lookup $Colors(background:nextmove)]
 					}
 					if {[llength $previous]} {
 						set nextkey [$w tag nextrange $key 1.0]
@@ -1192,7 +1192,7 @@ proc EnterMove {w position key} {
 	variable ::pgn::browser::Colors
 
 	if {$Vars(current) ne $key} {
-		$w tag configure $key -background [::colors::lookup pgn $Colors(hilite:move)]
+		$w tag configure $key -background [::colors::lookup $Colors(hilite:move)]
 		$w configure -cursor hand2
 	}
 
@@ -1212,7 +1212,7 @@ proc LeaveMove {w position key} {
 		} else {
 			set color $Colors(background)
 		}
-		$w tag configure $key -background [::colors::lookup pgn $color]
+		$w tag configure $key -background [::colors::lookup $color]
 		$w configure -cursor {}
 	}
 }
@@ -1613,10 +1613,10 @@ proc ReloadGame {parent position} {
 	}
 
 	set Vars(modified) 0
-	$Vars(header) configure -background [::colors::lookup browser $Options(background:header)]
+	$Vars(header) configure -background [::colors::lookup $Options(background:header)]
 	foreach item {event white black} {
 		$Vars(header) tag configure $item \
-			-background [::colors::lookup browser $Options(background:header)] \
+			-background [::colors::lookup $Options(background:header)] \
 			;
 	}
 	::scidb::game::refresh $position -immediate

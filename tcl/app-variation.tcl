@@ -42,9 +42,9 @@ set Columns {
 }
 
 array set Options {
-	-background	background
-	-emphasize	emphasize
-	-stripes		stripes
+	-background	variation,background
+	-emphasize	variation,emphasize
+	-stripes		variation,stripes
 }
 
 array set Defaults {
@@ -76,12 +76,12 @@ proc build {parent menu width height} {
 		-fillcolumn end \
 		-stripes {} \
 		-fullstripes 0 \
-		-background [::colors::lookup variation $Options(-background)] \
+		-background $Options(-background) \
 		-pady {1 0} \
-		-highlightcolor [::colors::lookup variation $Options(-emphasize)] \
+		-highlightcolor $Options(-emphasize) \
 		;
 	::table::setColumnBackground $tb tail \
-		[::colors::lookup variation $Options(-stripes)] [::colors::lookup $Options(-background)]
+		[::colors::lookup $Options(-stripes)] [::colors::lookup $Options(-background)]
 	::table::setScrollCommand $tb [list $sb set]
 	::ttk::scrollbar $sb  \
 		-orient vertical \
@@ -97,7 +97,7 @@ proc build {parent menu width height} {
 	grid columnconfigure $top 0 -weight 1
 
 	set Vars(styles) {}
-	$tb.t element create elemTotal rect -fill [::colors::lookup variation $Options(-emphasize)]
+	$tb.t element create elemTotal rect -fill [::colors::lookup $Options(-emphasize)]
 	set padx $::table::options(element:padding)
 
 	foreach col $Columns {
@@ -133,7 +133,7 @@ proc build {parent menu width height} {
 			-image $ivar \
 			-textvar $fvar \
 			-tooltipvar $tvar \
-			-stripes [::colors::lookup variation $Options(-stripes)] \
+			-stripes $Options(-stripes) \
 			;
 
 		if {$ellipsis} { set squeeze "x" } else { set squeeze "" }

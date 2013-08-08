@@ -22,16 +22,11 @@ namespace eval mc {
 	set Reverse	"Reverse"
 } ;# namespace mc
 
-variable Colors {
-	\#00008b \#0000ff \#006400 \#008b8b \#8b0000 \#ee0000
-	\#8b008b \#ffff00 \#000000 \#7f7f7f \#999999 \#ffffff
-}
-
 array set Defaults {
-	background		background
-	stripes			stripes
-	highlight		highlight
-	separatorcolor	separatorcolor
+	background		scrolledtable,background
+	stripes			scrolledtable,stripes
+	highlight		scrolledtable,highlight
+	separatorcolor	scrolledtable,separatorcolor
 	scale:padx		30
 	scale:pady		4
 }
@@ -47,8 +42,8 @@ namespace import ::tcl::mathfunc::max
 proc build {path columns args} {
 	variable Defaults
 
-	set opts(-background) [::colors::lookup scrolledtable $Defaults(background)]
-	set opts(-stripes) [::colors::lookup scrolledtable $Defaults(stripes)]
+	set opts(-background) $Defaults(background)
+	set opts(-stripes) $Defaults(stripes)
 
 	array set opts {
 		-useScale		0
@@ -75,20 +70,19 @@ proc build {path columns args} {
 	namespace eval [namespace current]::$tb {}
 	variable [namespace current]::${tb}::Vars
 
-	table::table $tb                                                         \
-		-moveable 1                                                           \
-		-takefocus $opts(-takefocus)                                          \
-		-fillcolumn end                                                       \
-		-stripes $opts(-stripes)                                              \
-		-highlightcolor [::colors::lookup scrolledtable $Defaults(highlight)] \
-		-background $opts(-background)                                        \
-		-separatorcolor $Defaults(separatorcolor)                             \
-		-listmode $opts(-listmode)                                            \
-		-fixedrows $opts(-fixedrows)                                          \
-		-labelbackground [::theme::getBackgroundColor]                        \
-		-configurable $opts(-configurable)                                    \
-		-height $opts(-height)                                                \
-		-stripes $opts(-stripes)                                              \
+	table::table $tb                                  \
+		-moveable 1                                    \
+		-takefocus $opts(-takefocus)                   \
+		-fillcolumn end                                \
+		-stripes $opts(-stripes)                       \
+		-highlightcolor $Defaults(highlight)           \
+		-background $opts(-background)                 \
+		-separatorcolor $Defaults(separatorcolor)      \
+		-listmode $opts(-listmode)                     \
+		-fixedrows $opts(-fixedrows)                   \
+		-labelbackground theme,background              \
+		-configurable $opts(-configurable)             \
+		-height $opts(-height)                         \
 		;
 	::bind $tb <Destroy> [namespace code [list TableOptions $tb]]
 	

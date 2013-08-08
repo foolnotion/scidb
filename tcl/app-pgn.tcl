@@ -383,16 +383,16 @@ proc resetGoto {w position} {
 	variable ::pgn::editor::Colors
 
 	if {[llength $Vars(current:$position)]} {
-		$w tag configure $Vars(current:$position) -background [::colors::lookup pgn $Colors(background)]
+		$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
 		set Vars(current:$position) {}
 	}
 
 	foreach k $Vars(next:$position) {
-		$w tag configure $k -background [::colors::lookup pgn $Colors(background)] }
+		$w tag configure $k -background [::colors::lookup $Colors(background)] }
 	set Vars(next:$position) {}
 
 	if {[llength $Vars(previous:$position)]} {
-		$w tag configure $Vars(previous:$position) -background [::colors::lookup pgn $Colors(background)]
+		$w tag configure $Vars(previous:$position) -background [::colors::lookup $Colors(background)]
 		set Vars(previous:$position) {}
 	}
 }
@@ -772,9 +772,9 @@ proc GameBarEvent {action position} {
 			::game::release $position
 
 			set w $Vars(pgn:$position)
-			$w tag configure $Vars(current:$position) -background [::colors::lookup pgn $Colors(background)]
+			$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
 			foreach k $Vars(next:$position) {
-				$w tag configure $k -background [::colors::lookup pgn $Colors(background)]
+				$w tag configure $k -background [::colors::lookup $Colors(background)]
 			}
 			unset -nocomplain Vars(lang:set:$position)
 
@@ -1135,15 +1135,15 @@ proc ProcessGoto {position w key succKey} {
 	if {$Vars(current:$position) ne $key} {
 		::scidb::game::variation unfold
 		foreach k $Vars(next:$position) {#
-			$w tag configure $k -background [::colors::lookup pgn $Colors(background)] }
+			$w tag configure $k -background [::colors::lookup $Colors(background)] }
 		set Vars(next:$position) [::scidb::game::next keys $position]
 		if {$Vars(active:$position) eq $key} { $w configure -cursor {} }
 		if {[llength $Vars(previous:$position)]} {
 			$w tag configure $Vars(previous:$position) \
-				-background [::colors::lookup pgn $Colors(background)] \
+				-background [::colors::lookup $Colors(background)] \
 				;
 		}
-		$w tag configure $key -background [::colors::lookup pgn $Colors(background:current)]
+		$w tag configure $key -background [::colors::lookup $Colors(background:current)]
 		set Vars(current:$position) $key
 		set Vars(successor:$position) $succKey
 		if {[llength $Vars(previous:$position)]} {
@@ -1153,7 +1153,7 @@ proc ProcessGoto {position w key succKey} {
 			}
 		}
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup pgn $Colors(background:nextmove)]
+			$w tag configure $k -background [::colors::lookup $Colors(background:nextmove)]
 		}
 		set Vars(previous:$position) $Vars(current:$position)
 		[namespace parent]::board::updateMarks [::scidb::game::query marks]
@@ -1301,7 +1301,7 @@ proc InsertMove {position w level key data} {
 							} else {
 								set img $w.[string map {. :} $key]
 								tk::label $img \
-									-background [::colors::lookup pgn $Colors(background)] \
+									-background [::colors::lookup $Colors(background)] \
 									-borderwidth 0 \
 									-padx 0 \
 									-pady 0 \
@@ -1442,7 +1442,7 @@ proc InsertDiagram {position w level key data} {
 				set img $w.[string map {. :} $key]
 				board::diagram::new $img $size -bordersize $borderSize
 				if {2*$pady < $alignment} {
-					board::diagram::alignBoard $img [::colors::lookup pgn $Colors(background)] 
+					board::diagram::alignBoard $img [::colors::lookup $Colors(background)] 
 				}
 				if {$color eq "black"} { ::board::diagram::rotate $img }
 				::board::diagram::update $img $board
@@ -1586,7 +1586,7 @@ proc PrintComment {position w level key pos data} {
 						# An alternative is to embed an image, but images cannot be
 						# bound to Enter/Leave events.
 						tk::label $img \
-							-background [::colors::lookup pgn $Colors(background)] \
+							-background [::colors::lookup $Colors(background)] \
 							-borderwidth 0 \
 							-padx 0 \
 							-pady 0 \
@@ -1800,7 +1800,7 @@ proc EnterMove {position key} {
 	variable Vars
 
 	if {$Vars(current:$position) ne $key} {
-		$Vars(pgn:$position) tag configure $key -background [::colors::lookup pgn $Colors(hilite:move)]
+		$Vars(pgn:$position) tag configure $key -background [::colors::lookup $Colors(hilite:move)]
 		after cancel $Vars(after:$position)
 		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position hand2]]]
 	}
@@ -1821,7 +1821,7 @@ proc LeaveMove {position key} {
 		} else {
 			set color $Colors(background)
 		}
-		set color [::colors::lookup pgn $color]
+		set color [::colors::lookup $color]
 		$Vars(pgn:$position) tag configure $key -background $color
 		after cancel $Vars(after:$position)
 		set Vars(after:$position) [after 75 [namespace code [list ChangeCursor $position {}]]]
@@ -1840,7 +1840,7 @@ proc ChangeCursor {position cursor} {
 proc EnterMark {w tag key} {
 	variable ::pgn::editor::Colors
 
-	$w tag configure $tag -background [::colors::lookup pgn $Colors(hilite:move)]
+	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)]
 	::tooltip::show $w [string map {",," "," " " "\n"} [::scidb::game::query marks $key]]
 }
 
@@ -1848,7 +1848,7 @@ proc EnterMark {w tag key} {
 proc LeaveMark {w tag} {
 	variable ::pgn::editor::Colors
 
-	$w tag configure $tag -background [::colors::lookup pgn $Colors(background)]
+	$w tag configure $tag -background [::colors::lookup $Colors(background)]
 	::tooltip::hide
 }
 
@@ -1937,7 +1937,7 @@ proc GotoMove {position key} {
 
 proc EnterComment {w key} {
 	variable ::pgn::editor::Colors
-	$w tag configure comment:$key -foreground [::colors::lookup pgn $Colors(hilite:comment)]
+	$w tag configure comment:$key -foreground [::colors::lookup $Colors(hilite:comment)]
 }
 
 
@@ -1946,14 +1946,14 @@ proc LeaveComment {w position key} {
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure comment:$key -foreground [::colors::lookup pgn $Colors(foreground:comment)]
+		$w tag configure comment:$key -foreground [::colors::lookup $Colors(foreground:comment)]
 	}
 }
 
 
 proc EnterInfo {w key} {
 	variable ::pgn::editor::Colors
-	$w tag configure info:$key -foreground [::colors::lookup pgn $Colors(hilite:info)]
+	$w tag configure info:$key -foreground [::colors::lookup $Colors(hilite:info)]
 }
 
 
@@ -1962,20 +1962,20 @@ proc LeaveInfo {w position key} {
 	variable Vars
 
 	if {!$Vars(edit:comment)} {
-		$w tag configure info:$key -foreground [::colors::lookup pgn $Colors(foreground:info)]
+		$w tag configure info:$key -foreground [::colors::lookup $Colors(foreground:info)]
 	}
 }
 
 
 proc EnterAnnotation {w tag} {
 	variable ::pgn::editor::Colors
-	$w tag configure $tag -background [::colors::lookup pgn $Colors(hilite:move)]
+	$w tag configure $tag -background [::colors::lookup $Colors(hilite:move)]
 }
 
 
 proc LeaveAnnotation {w tag} {
 	variable ::pgn::editor::Colors
-	$w tag configure $tag -background [::colors::lookup pgn $Colors(background)]
+	$w tag configure $tag -background [::colors::lookup $Colors(background)]
 }
 
 
@@ -2025,9 +2025,9 @@ proc ResetGame {position tags} {
 
 	if {[info exists Vars(next:$position)]} {
 		foreach k $Vars(next:$position) {
-			$w tag configure $k -background [::colors::lookup pgn $Colors(background)]
+			$w tag configure $k -background [::colors::lookup $Colors(background)]
 		}
-		$w tag configure $Vars(current:$position) -background [::colors::lookup pgn $Colors(background)]
+		$w tag configure $Vars(current:$position) -background [::colors::lookup $Colors(background)]
 	}
 
 	set Vars(current:$position) {}

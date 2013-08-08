@@ -133,9 +133,9 @@ set Error(SeemsNotToBePgnText)					"Seems not to be PGN text"
 }
 
 array set Colors {
-	background			background
-	background:select	background:select
-	background:hilite	background:hilite
+	background			import,background
+	background:select	import,background:select
+	background:hilite	import,background:hilite
 }
 
 variable Variants {Undetermined Normal ThreeCheck Crazyhouse Suicide Giveaway Losers}

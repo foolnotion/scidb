@@ -69,7 +69,7 @@ proc Build {w args} {
 	}
 
 	tk::button $w {*}$args \
-		-background [::theme::getBackgroundColor] \
+		-background [::colors::lookup theme,background] \
 		-takefocus 0 \
 		;
 	::scidb::tk::misc setClass $w Registerbutton
@@ -98,12 +98,12 @@ proc Configure {w args} {
 
 	if {[set $Vars(variable)] eq $Vars(value)} {
 		set relief sunken
-		set bg [::theme::getSelectBackgroundColor]
-		set fg [::theme::getSelectForegroundColor]
+		set bg [::colors::lookup theme,selectbackground]
+		set fg [::colors::lookup theme,selectforeground]
 	} else {
 		set relief raised
-		set bg [::theme::getBackgroundColor]
-		set fg [::theme::getForegroundColor]
+		set bg [::colors::lookup theme,background]
+		set fg [::colors::lookup theme,foreground]
 	}
 
 	$w configure -relief $relief -background $bg -foreground $fg
@@ -120,7 +120,7 @@ proc Destroy {w} {
 proc ButtonEnter {w} {
 	if {[$w cget -state] ne "disabled"} {
 		if {[$w cget -relief] eq "raised"} {
-			$w configure -background [::theme::getActiveBackgroundColor]
+			$w configure -background [::colors::lookup theme,activebackground]
 		}
 	}
 }
@@ -129,7 +129,7 @@ proc ButtonEnter {w} {
 proc ButtonLeave {w} {
 	if {[$w cget -state] ne "disabled"} {
 		if {[$w cget -relief] eq "raised"} {
-			$w configure -background [::theme::getBackgroundColor]
+			$w configure -background [::colors::lookup theme,background]
 		}
 	}
 }
@@ -146,8 +146,8 @@ proc ButtonSelect {w} {
 	} else {
 		$w configure \
 			-relief sunken \
-			-background [::theme::getSelectBackgroundColor] \
-			-foreground [::theme::getSelectForegroundColor] \
+			-background [::colors::lookup theme,selectbackground] \
+			-foreground [::colors::lookup theme,selectforeground] \
 			;
 	}
 

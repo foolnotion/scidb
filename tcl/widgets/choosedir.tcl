@@ -67,7 +67,7 @@ proc Build {w args} {
 	array set opts $args
 
 	if {[llength $opts(-activebackground)] == 0} {
-		set opts(-activebackground) [::theme::getActiveBackgroundColor]
+		set opts(-activebackground) [::colors::lookup theme,activebackground]
 		if {[llength $opts(-activebackground)] == 0} {
 			tk::button $w
 			set opts(-activebackground) [$w cget -activebackground]
@@ -105,7 +105,7 @@ proc Build {w args} {
 	array unset opts -showhidden
 
 	set opts(-height) [expr {$Vars(linespace) + 2*$Vars(pady)}]
-	set bg [::theme::getBackgroundColor]
+	set bg [::colors::lookup theme,background]
 
 	tk::frame $w -background $bg -takefocus 0 {*}[array get opts]
 
@@ -313,7 +313,7 @@ proc ShowTooltip {w} {
 proc Layout {w} {
 	variable ${w}::Vars
 
-	set bg [::theme::getBackgroundColor]
+	set bg [::colors::lookup theme,background]
 	set n [expr {$Vars(dir:size) - $Vars(prefix:size)}]
 
 	for {set i $Vars(size)} {$i < $n} {incr i} {

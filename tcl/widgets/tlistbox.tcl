@@ -84,14 +84,14 @@ bind TListBox <Leave> {
 
 
 array set Colors {
-	-background				background
-	-foreground				foreground
-	-selectbackground		selectbackground
-	-selectforeground		selectforeground
-	-disabledbackground	disabledbackground
-	-disabledforeground	disabledforeground
-	-highlightbackground	highlightbackground
-	-highlightforeground	highlightforeground
+	-background				tlistbox,background
+	-foreground				tlistbox,foreground
+	-selectbackground		tlistbox,selectbackground
+	-selectforeground		tlistbox,selectforeground
+	-disabledbackground	tlistbox,disabledbackground
+	-disabledforeground	tlistbox,disabledforeground
+	-highlightbackground	tlistbox,highlightbackground
+	-highlightforeground	tlistbox,highlightforeground
 }
 
 array set LookupColor {
@@ -344,7 +344,7 @@ proc WidgetProc {w command args} {
 			}
 			set Priv(ellipsis:$id) $opts(-ellipsis)
 			set colors [lookupColor $opts(-background)]
-			if {[llength $Priv(stripes)]} { set colors [list $Priv(stripes) $colors] }
+			if {[llength $Priv(stripes)]} { set colors [list [lookupColor $Priv(stripes)] $colors] }
 			if {[string length $opts(-headervar)]} {
 				set opts(-header) [set $opts(-headervar)]
 				set cmd [list [namespace current]::SetHeaderLabel $t $id]
@@ -503,7 +503,7 @@ proc WidgetProc {w command args} {
 				$t item span $index {*}$opts(-span)
 			}
 			while {[llength $Priv(itembackgrounds)] < $index} {
-				lappend Priv(itembackgrounds) $Priv(background:normal)
+				lappend Priv(itembackgrounds) [lookupColor $Priv(background:normal)]
 			}
 			set Priv(enabled:$index) $opts(-enabled)
 			set enabled $opts(-enabled)
@@ -520,7 +520,7 @@ proc WidgetProc {w command args} {
 			} else {
 				set background $Priv(background:normal)
 			}
-			lset Priv(itembackgrounds) [expr {$index - 1}] $background
+			lset Priv(itembackgrounds) [expr {$index - 1}] [lookupColor $background]
 			if {!$opts(-highlight)} { $t item state set $index !highlight }
 			set col -1
 			foreach id $Priv(columns) {
@@ -830,10 +830,10 @@ proc WidgetProc {w command args} {
 			if {![$t item state get $index highlight]} {
 				if {$command eq "enable"} {
 					$t item enabled $index 1
-					lset Priv(itembackgrounds) [expr {$index - 1}] $Priv(background:normal)
+					lset Priv(itembackgrounds) [expr {$index - 1}] [lookupColor $Priv(background:normal)]
 				} else {
 					$t item enabled $index 0
-					lset Priv(itembackgrounds) [expr {$index - 1}] $Priv(background:disabled)
+					lset Priv(itembackgrounds) [expr {$index - 1}] [lookupColor $Priv(background:disabled)]
 				}
 			}
 		}
@@ -852,10 +852,10 @@ proc WidgetProc {w command args} {
 			incr index
 			if {[llength $args] == 0 || [lindex $args 1]} {
 				$t item state set $index highlight
-				lset Priv(itembackgrounds) [expr {$index - 1}] $Priv(background:$command)
+				lset Priv(itembackgrounds) [expr {$index - 1}] [lookupColor $Priv(background:$command)]
 			} else {
 				$t item state set $index highlight
-				lset Priv(itembackgrounds) [expr {$index - 1}] $Priv(background:normal)
+				lset Priv(itembackgrounds) [expr {$index - 1}] [lookupColor $Priv(background:normal)]
 			}
 		}
 

@@ -197,10 +197,10 @@ array set Options {
 }
 
 array set Colors {
-	selectbackground:dict	selectbackground:dict
-	selectbackground:setup	selectbackground:setup
-	selectforeground:setup	selectforeground:setup
-	stripes						stripes
+	selectbackground:dict	engine,selectbackground:dict
+	selectbackground:setup	engine,selectbackground:setup
+	selectforeground:setup	engine,selectforeground:setup
+	stripes						engine,stripes
 }
 
 variable PhotoFiles {}
@@ -736,11 +736,11 @@ proc showEngineDictionary {parent} {
 		-borderwidth 1 \
 		-relief sunken \
 		-selectmode browse \
-		-stripes [::colors::lookup engine $Colors(stripes)] \
+		-stripes $Colors(stripes) \
 		-usescroll yes \
 		-setgrid 1 \
 		-linespace $linespace \
-		-selectbackground [::colors::lookup engine $Colors(selectbackground:dict)] \
+		-selectbackground $Colors(selectbackground:dict) \
 	]
 
 	bind $dlg <Any-Key> [namespace code [list Search $lb %K]]
@@ -2242,8 +2242,8 @@ proc OpenSetupDialog(Script) {parent} {
 		-height 10 \
 		-background white \
 		-foreground black \
-		-selectbackground [::colors::lookup engine selectbackground:setup] \
-		-selectforeground [::colors::lookup engine selectforeground:setup] \
+		-selectbackground [::colors::lookup selectbackground:setup] \
+		-selectforeground [::colors::lookup selectforeground:setup] \
 		-borderwidth 1 \
 		-relief sunken \
 		-setgrid on \

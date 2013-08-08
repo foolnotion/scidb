@@ -572,7 +572,7 @@ array set Colors {
 	lite:pgn,background:nextmove			#eeff00
 	lite:pgn,hilite:comment					#7a5807
 	lite:pgn,hilite:info						#b22222
-	lite:pgn,hilite:move						#dce5e6
+	lite:pgn,hilite:move						#dce4e5
 
 	lite:analysis,background				#ffffee
 	lite:analysis,info:background			#f5f5e4
@@ -694,7 +694,7 @@ array set Colors {
 	lite:save,taglistOutline				gray
 	lite:save,taglistBackground			lightYellow
 	lite:save,taglistHighlighting			#ebf4f5
-	lite:save,tasglistCurrent				blue
+	lite:save,taglistCurrent				blue
 	lite:save,matchlistBackground			#ebf4f5
 	lite:save,matchlistHeaderForeground	#727272
 	lite:save,matchlistHeaderBackground	#dfe7e8
@@ -726,28 +726,31 @@ array set Colors {
 }
 # mapped from #ebf4f5
 array set Colors {
-	dark:pgn,hilite:move						#e4edee
-	dark:tree,stripes							#e4edee
-	dark:variation,stripes					#e4edee
-	dark:import,background					#e4edee
-	dark:browser,background:header		#e4edee
-	dark:overview,background:normal		#e4edee
-	dark:crosstable,highlighted			#e4edee
-	dark:fsbox,selectionbackground		#e4edee
-	dark:gamebar,background:hilite		#e4edee
-	dark:scrolledtable,stripes				#e4edee
-	dark:tlistbox,disabledbackground		#e4edee
-	dark:save,taglistHighlighting			#e4edee
-	dark:save,matchlistBackground			#e4edee
-	dark:encoding,active						#e4edee
-	dark:engine,selectbackground:dict	#e4edee
-	dark:default,disabledbackground		#e4edee
-	dark:treetable,active:focus			#e4edee
-	dark:treetable,hilite!selected		#e4edee
-	dark:gamehistory,selected:focus		#e4edee
-	dark:gamehistory,selected:hilite		#e4edee
-	dark:gamehistory,hilite					#e4edee
-	dark:fsbox,activebackground			#e4edee
+	dark:tree,stripes							#dce4e5
+	dark:variation,stripes					#dce4e5
+	dark:import,background					#dce4e5
+	dark:browser,background:header		#dce4e5
+	dark:overview,background:normal		#dce4e5
+	dark:crosstable,highlighted			#dce4e5
+	dark:fsbox,selectionbackground		#dce4e5
+	dark:gamebar,background:hilite		#dce4e5
+	dark:scrolledtable,stripes				#dce4e5
+	dark:tlistbox,disabledbackground		#dce4e5
+	dark:save,taglistHighlighting			#dce4e5
+	dark:save,matchlistBackground			#dce4e5
+	dark:encoding,active						#dce4e5
+	dark:engine,selectbackground:dict	#dce4e5
+	dark:default,disabledbackground		#dce4e5
+	dark:treetable,active:focus			#dce4e5
+	dark:treetable,hilite!selected		#dce4e5
+	dark:gamehistory,selected:focus		#dce4e5
+	dark:gamehistory,selected:hilite		#dce4e5
+	dark:gamehistory,hilite					#dce4e5
+	dark:fsbox,activebackground			#dce4e5
+}
+# mapped from #dce4e5
+array set Colors {
+	dark:pgn,hilite:move						#cddddf
 }
 # mapped from #efefef
 array set Colors {
@@ -757,30 +760,39 @@ array set Colors {
 }
 # mapped from linen
 array set Colors {
-	dark:tree,emphasize						#f1e8de
-	dark:variation,emphasize				#f1e8de
-	dark:browser,background:modified		#f1e8de
-	dark:overview,background:modified	#f1e8de
-	dark:import,background:hilite			#f1e8de
-	dark:gamebar,background:emphasize	#f1e8de
-	dark:encoding,normal						#f1e8de
-	dark:playerdict,stripes					#f1e8de
-	lite:engine,stripes						#f1e8de
+	dark:tree,emphasize						#ecded0
+	dark:variation,emphasize				#ecded0
+	dark:browser,background:modified		#ecded0
+	dark:overview,background:modified	#ecded0
+	dark:import,background:hilite			#ecded0
+	dark:gamebar,background:emphasize	#ecded0
+	dark:encoding,normal						#ecded0
+	dark:playerdict,stripes					#ecded0
+	lite:engine,stripes						#ecded0
 }
 # mapped from #ffffee
 array set Colors {
 	dark:analysis,info:background			#e7e7d8
 	dark:analysis,active:background		#e7e7d8
 }
+# mapped from #dfe7e8
+array set Colors {
+	dark:save,matchlistHeaderBackground	#d1d8d9
+}
 
 set Scheme dark
 
-proc lookup {class color} {
+proc lookup {color} {
 	variable Colors
 	variable Scheme
 
-	if {[info exists Colors($Scheme:$class,$color)]} { return $Colors($Scheme:$class,$color) }
-	if {[info exists Colors(lite:$class,$color)]} { return $Colors(lite:$class,$color) }
+	if {[string match theme,* $color]} {
+		return [::theme::getColor [string range $color 6 end]]
+	}
+
+	if {[info exists Colors($Scheme:$color)]} { return $Colors($Scheme:$color) }
+	if {[info exists Colors(lite:$color)]} { return $Colors(lite:$color) }
+
 	return $color
 }
 

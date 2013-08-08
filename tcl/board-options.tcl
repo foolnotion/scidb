@@ -86,9 +86,9 @@ variable InitialPosition	{{bk br {} bq} {bp bb {} wn} {bn {} wb wp} {wq {} wr wk
 variable NameList
 
 array set Options {
-	modifiedForeground	modifiedForeground
-	modifiedBackground	modifiedBackground
-	fixedBackground		fixedBackground
+	modifiedForeground	board,modifiedForeground
+	modifiedBackground	board,modifiedBackground
+	fixedBackground		board,fixedBackground
 	pieceSetListCount		11
 	figurineSize			18
 }
@@ -365,14 +365,14 @@ proc ConfigureListbox {w} {
 	variable Options
 
 	set fg [$w cget -selectforeground]
-	if {$fg eq "#ffffff"} { set fg [::colors::lookup board $Options(fixedBackground)] }
+	if {$fg eq "#ffffff"} { set fg [::colors::lookup $Options(fixedBackground)] }
 
 	$w itemconfigure 0 \
-		-background [::colors::lookup board $Options(fixedBackground)] \
+		-background [::colors::lookup $Options(fixedBackground)] \
 		-selectforeground $fg \
 		;
 	$w itemconfigure 1 \
-		-background [::colors::lookup board $Options(fixedBackground)] \
+		-background [::colors::lookup $Options(fixedBackground)] \
 		-selectforeground $fg \
 		;
 }
@@ -455,9 +455,9 @@ proc ConfigStyleSelectionFrame {which} {
 
 		if {[[namespace parent]::workingSetIsModified $which]} {
 			$Vars(widget:$which:list) itemconfigure 0 \
-				-foreground [::colors::lookup board $Options(modifiedBackground)] \
-				-selectforeground [::colors::lookup board $Options(modifiedForeground)] \
-				-selectbackground [::colors::lookup board $Options(modifiedBackground)] \
+				-foreground [::colors::lookup $Options(modifiedBackground)] \
+				-selectforeground [::colors::lookup $Options(modifiedForeground)] \
+				-selectbackground [::colors::lookup $Options(modifiedBackground)] \
 				;
 		} else {
 			$Vars(widget:$which:list) itemconfigure 0 -foreground {} -selectbackground {}
@@ -1429,7 +1429,7 @@ proc RefreshBoard {} {
 	if {[llength $colors(user,background-color)]} {
 		$canv configure -background $colors(user,background-color)
 	} else {
-		 $canv configure -background [::theme::getBackgroundColor]
+		 $canv configure -background [::colors::lookup theme,background]
 	}
 
 	if {$layout(material-values)} {
@@ -1877,7 +1877,7 @@ proc MakePreview {path} {
 	} elseif {[llength $colors(user,background-color)]} {
 		$canv configure -background $colors(user,background-color)
 	} else {
-		$canv configure -background [::theme::getBackgroundColor]
+		$canv configure -background [::colors::lookup theme,background]
 	}
 	$canv create text 75 10 -text "a b c d" -fill $colors(hint,coordinates) -tag abcd
 	bind $canv <<ChooseColorSelected>> "$canv itemconfigure abcd -fill %d"

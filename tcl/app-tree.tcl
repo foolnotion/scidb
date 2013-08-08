@@ -112,17 +112,17 @@ array set Options {
 	score:side			white
 	hilite:nextmove	0
 
-	-background			background
-	-emphasize			emphasize
-	-stripes				stripes
+	-background			tree,background
+	-emphasize			tree,emphasize
+	-stripes				tree,stripes
 }
 
 array set Defaults {
-	ratio:color			ratio:color
-	score:color			score:color
-	draws:color			draws:color
-	progress:color		progress:color
-	progress:finished	progress:finished
+	ratio:color			tree,ratio:color
+	score:color			tree,score:color
+	draws:color			tree,draws:color
+	progress:color		tree,progress:color
+	progress:finished	tree,progress:finished
 }
 
 array set Vars {
@@ -143,7 +143,7 @@ proc build {parent width height gameTable} {
 	variable Defaults
 	variable Vars
 
-	set bg [::colors::lookup tree $Options(-background)]
+	set bg [::colors::lookup $Options(-background)]
 	set mw [tk::multiwindow $parent.mw -borderwidth 0 -background $bg -borderwidth 0]
 	pack $mw -fill both -expand yes
 
@@ -179,9 +179,9 @@ proc build {parent width height gameTable} {
 		-fullstripes 0 \
 		-background $bg \
 		-pady {1 0} \
-		-highlightcolor [::colors::lookup tree $Options(-emphasize)] \
+		-highlightcolor $Options(-emphasize) \
 		;
-	::table::setColumnBackground $tb tail [::colors::lookup tree $Options(-stripes)] $bg
+	::table::setColumnBackground $tb tail [::colors::lookup $Options(-stripes)] $bg
 	::table::setScrollCommand $tb [list $sb set]
 	::ttk::scrollbar $sb  \
 		-orient vertical \
@@ -207,7 +207,7 @@ proc build {parent width height gameTable} {
 	grid columnconfigure $info 0 -weight 1
 
 	set Vars(styles) {}
-	$tb.t element create elemTotal rect -fill [::colors::lookup tree $Options(-emphasize)]
+	$tb.t element create elemTotal rect -fill [::colors::lookup $Options(-emphasize)]
 	set padx $::table::options(element:padding)
 
 	RefreshHeader $tb
@@ -224,7 +224,7 @@ proc build {parent width height gameTable} {
 
 		set menu {}
 		set lock none
-		set stripes [::colors::lookup tree $Options(-stripes)]
+		set stripes $Options(-stripes)
 
 		switch $id {
 			number - move {
@@ -236,11 +236,11 @@ proc build {parent width height gameTable} {
 				lappend menu { separator }
 				if {$id eq "number"} {
 					set var {}
-					set stripes [::colors::lookup tree $Options(-emphasize)]
+					set stripes $Options(-emphasize)
 					set lock left
 				} else {
 					set var ::gametable::mc::SortAscending
-					set stripes [::colors::lookup tree $Options(-emphasize)]
+					set stripes $Options(-emphasize)
 					set lock left
 				}
 			}
@@ -445,7 +445,7 @@ proc build {parent width height gameTable} {
 		-allow {top bottom} \
 	]
 	set progress [::toolbar::add $tbProgress frame -width 130 -height 7 -borderwidth 1 -relief sunken]
-	tk::frame $progress.bar -background [::colors::lookup tree $Defaults(progress:color)] -height 5
+	tk::frame $progress.bar -background [::colors::lookup $Defaults(progress:color)] -height 5
 	$switcher addcol text -id name
 	bind $switcher <<LanguageChanged>> [namespace code LanguageChanged]
 	bind $switcher <<ComboboxCurrent>> [namespace code [list SetReferenceBase $switcher]]
@@ -645,7 +645,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 
 	if {[::scidb::tree::update $Options(rating:type) $Options(search:mode)]} {
 		if {$Vars(searching)} {
-			$Vars(progress) configure -background [::colors::lookup tree $Defaults(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:finished)]
 			place $Vars(progress) -x 1 -y 1 -width 127
 			set Vars(searching) 0
 		}
@@ -654,7 +654,7 @@ if {[::scidb::game::query mainvariant?] ne "Normal"} { return }
 		if {[llength $Vars(data)] == 0} { ShowMessage Searching }
 		set Vars(searching) 1
 		ConfigSearchButton $table Stop
-		$Vars(progress) configure -background [::colors::lookup tree $Defaults(progress:color)]
+		$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
 		place forget $Vars(progress)
 	}
 }
@@ -707,7 +707,7 @@ proc Tick {table n} {
 	if {$n == 0} {
 		if {$Vars(searching)} {
 			place forget $Vars(progress)
-			$Vars(progress) configure -background [::colors::lookup tree $Defaults(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
 			# show "interrupted due to a database modification"
@@ -715,7 +715,7 @@ proc Tick {table n} {
 	} else {
 		if {!$Vars(searching)} {
 			ConfigSearchButton $table Stop
-			$Vars(progress) configure -background [::colors::lookup tree $Defaults(progress:color)]
+			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:color)]
 			set Vars(searching) 1
 		}
 
@@ -724,7 +724,7 @@ proc Tick {table n} {
 		if {$n == 255} {
 			set Vars(searching) 0
 			ConfigSearchButton $table Start
-			$Vars(progress) configure -background [::colors::lookup tree $Defaults(progress:finished)]
+			$Vars(progress) configure -background [::colors::lookup $Defaults(progress:finished)]
 			after idle [namespace code [list SearchResultAvailable $table]]
 		}
 	}
@@ -1120,7 +1120,7 @@ proc FillTable {table} {
 				ratio - score - draws {
 					set item [ComputeValue $id $item $total]
 					if {$Options($id:bar)} {
-						set color [::colors::lookup tree $Defaults($id:color)]
+						set color [::colors::lookup $Defaults($id:color)]
 						set width [expr {($item + 10)/20}]
 						if {![info exists Bars($width:$color)]} {
 							set img [image create photo -width 51 -height 7]
