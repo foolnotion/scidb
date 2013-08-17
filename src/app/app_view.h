@@ -154,6 +154,8 @@ public:
 							StringList& result,
 							StringList& positions) const;
 
+	/// Add item to this view.
+	void add(db::table::Type type, unsigned index);
 	/// Sort database (using a selector).
 	void sort(	db::attribute::game::ID attr,
 					db::order::ID order,

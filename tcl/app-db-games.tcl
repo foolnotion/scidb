@@ -85,6 +85,7 @@ proc build {parent} {
 	set Vars(after)		{}
 	set Vars(resizing)	0
 	set Vars(codec)		{}
+	set Vars(base)			""
 
 	bind $tb <<TableMinSize>>		[namespace code [list TableMinSize $tb %d]]
 	bind $tb <<TableLayout>>		[namespace code [list TableLayout $tb]]
@@ -235,7 +236,11 @@ proc View {pane base variant} {
 
 
 proc Update {path id base variant {view -1} {index -1}} {
+	variable ::scidb::clipbaseName
 	variable ${path}::Vars
+
+	if {$base ne $clipbaseName && [string length [file extension $base]] == 0} { return }
+	set Vars(base) "$base:$variant"
 
 	if {$view <= 0} {
 		after cancel $Vars(after)

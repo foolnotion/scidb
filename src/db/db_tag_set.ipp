@@ -28,6 +28,7 @@
 
 namespace db {
 
+inline bool TagSet::isEmpty() const									{ return size() == 0; }
 inline bool TagSet::contains(tag::ID tag) const					{ return m_set.test(tag); }
 inline bool TagSet::contains(mstl::string const& tag) const	{ return find(tag) >= 0; }
 inline bool TagSet::isUserSupplied(tag::ID tag) const			{ return m_isUserSupplied[tag]; }

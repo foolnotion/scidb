@@ -1641,6 +1641,11 @@ namespace copy
 	};
 };
 
+namespace modification
+{
+	enum Position { First = 1 << 0, Last = 1 << 2, };
+};
+
 namespace country
 {
 	enum Code

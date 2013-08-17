@@ -1375,18 +1375,9 @@
 ::gamebar::mc::CopyThisGameToClipboard		"Kopiera partiet till Clipbase (PGN-format)"
 ::gamebar::mc::ExportThisGame					"Exporta partiet"
 ::gamebar::mc::PasteLastClipbaseGame		"Klista in sista Clipbase parti"
-::gamebar::mc::MergeLastClipbaseGame		"Sammanfoga med sista Clipbase parti"
 ::gamebar::mc::PasteGameFrom					"Klistra in parti"
-::gamebar::mc::MergeGameFrom					"Sammanfoga parti"
 ::gamebar::mc::LoadGameNumber					"Ladda parti nummer"
 ::gamebar::mc::ReloadCurrentGame				"Ladda om aktuellt parti"
-::gamebar::mc::MergeWithCurrentGame			"Sammanfoga med aktuellt parti"
-::gamebar::mc::CreateNewGame					"Skapa nytt parti"
-::gamebar::mc::StartFromCurrentPosition	"Börja sammanfogning från aktuell ställning"
-::gamebar::mc::StartFromInitialPosition	"Börja sammanfogning från utgångsställningen"
-::gamebar::mc::NoTranspositions				"Inga transponeringar"
-::gamebar::mc::IncludeTranspositions		"Ta med transponeringar"
-::gamebar::mc::VariationDepth					"Variation depth" ;# NEW
 ::gamebar::mc::OriginalVersion				"Original version from database" ;# NEW
 ::gamebar::mc::ModifiedVersion				"Modified version in game editor" ;# NEW
 ::gamebar::mc::WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open." ;# NEW
@@ -1407,6 +1398,24 @@
 ::gamebar::mc::Tip(Giveaway)					"Om patt kommer spelaren som är\npatt att vinna (enligt internationella regler)."
  ;# NEW
 ::gamebar::mc::Tip(Losers)						"Kungen är som i normalt schack, och du kan även\nvinna genom att bli mattad eller pattad."
+
+### merge ##############################################################
+::merge::mc::MergeLastClipbaseGame		"Sammanfoga med sista Clipbase parti"
+::merge::mc::MergeWithCurrentGame		"Sammanfoga med aktuellt parti"
+::merge::mc::MergeGameFrom					"Sammanfoga parti"
+
+::merge::mc::MergeTitle						"Merge with games" ;# NEW
+::merge::mc::CreateNewGame					"Skapa nytt parti"
+::merge::mc::StartFromCurrentPosition	"Börja sammanfogning från aktuell ställning"
+::merge::mc::StartFromInitialPosition	"Börja sammanfogning från utgångsställningen"
+::merge::mc::NoTranspositions				"Inga transponeringar"
+::merge::mc::IncludeTranspositions		"Ta med transponeringar"
+::merge::mc::VariationDepth				"Variation depth" ;# NEW
+::merge::mc::UpdatePreview					"Update preview" ;# NEW
+
+::merge::mc::AlreadyInUse					"Merge dialog is already in use with game #%d." ;# NEW
+::merge::mc::AlreadyInUseDetail			"Please finish merge of this game before merging into another game. This means you have to switch to game #%d for continuing." ;# NEW
+::merge::mc::CannotMerge					"Cannot merge games with different variants." ;# NEW
 
 ### validate ###########################################################
 ::validate::mc::Unlimited	"obegränsad"

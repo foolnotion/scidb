@@ -130,6 +130,7 @@ SOURCES = \
 	save-replace.tcl \
 	export.tcl \
 	import.tcl \
+	merge.tcl \
 	browser.tcl \
 	overview.tcl \
 	player-card.tcl \

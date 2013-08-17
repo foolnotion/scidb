@@ -279,7 +279,10 @@ private:
 
 	friend class Root;
 
-	void difference(Root const* root, Variation const* var, unsigned level, Node::List& nodes) const;
+	void difference(	Root const* root,
+							Variation const* var,
+							unsigned level,
+							Node::List& nodes) const;
 
 	List	m_list;
 	Key	m_succ;

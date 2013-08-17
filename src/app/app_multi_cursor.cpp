@@ -110,7 +110,21 @@ MultiCursor::MultiCursor(Application& app, MultiBase*	base)
 	M_REQUIRE(base);
 
 	::memset(m_cursor, 0, sizeof(m_cursor));
-	m_cursor[variant::toIndex(m_base->variant())] = m_leader = new Cursor(*this, m_base->database());
+
+	if (base->isSingleBase())
+	{
+		m_cursor[variant::toIndex(m_base->variant())] = m_leader = new Cursor(*this, m_base->database());
+	}
+	else
+	{
+		for (unsigned v = 0; v < variant::NumberOfVariants; ++v)
+		{
+			M_ASSERT(m_base->database(v));
+			m_cursor[v] = new Cursor(*this, m_base->database(v));
+		}
+
+		m_leader = m_cursor[variant::Index_Normal];
+	}
 }
 
 

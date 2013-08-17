@@ -61,6 +61,7 @@ proc build {parent} {
 	set Vars(after:events) {}
 	set Vars(after:players) {}
 	set Vars(active) 0
+	set Vars(base) ""
 
 	::eventtable::build $lt [namespace code [list View $top]] {} \
 		-selectcmd [list [namespace current]::events::Search $top] \
@@ -161,12 +162,15 @@ proc Close {path base variant} {
 	variable ${path}::Vars
 
 	array unset Vars $base:$variant:*
-	::eventtable::clear $path.events
 	::eventtable::forget $path.events $base $variant
-	::playertable::clear $path.info.players
 	::playertable::forget $path.info.players $base $variant
-	::gametable::clear $path.info.games
 	::gametable::forget $path.info.games $base $variant
+
+	if {$Vars(base) eq "$base:$variant"} {
+		::eventtable::clear $path.events
+		::playertable::clear $path.info.players
+		::gametable::clear $path.info.games
+	}
 }
 
 
@@ -305,8 +309,12 @@ proc Search {path base variant view {selected -1}} {
 
 
 proc Update {path id base variant {view -1} {index -1}} {
+	variable ::scidb::clipbaseName
 	variable [namespace parent]::${path}::Vars
 
+	if {$base ne $clipbaseName && [string length [file extension $base]] == 0} { return }
+
+	set Vars(base) "$base:$variant"
 	after cancel $Vars(after:events)
 	set Vars(after:events) [after idle [namespace code [list Update2 $id $path $base $variant]]]
 }

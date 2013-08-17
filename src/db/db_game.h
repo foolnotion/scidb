@@ -44,6 +44,7 @@
 #include "m_ref_counted_ptr.h"
 #include "m_ref_counter.h"
 #include "m_auto_ptr.h"
+#include "m_pair.h"
 
 #define DB_DEBUG_GAME
 
@@ -96,8 +97,7 @@ public:
 		UpdateLanguageSet		= 1 << 3,
 		UpdateIllegalMoves	= 1 << 4,
 		UpdateAll				= (1 << 5) - 1,
-
-		UpdateNewPosition		= 1 << 6,
+		UpdateNewPosition		= 1 << 5,
 	};
 
 	enum Force
@@ -142,10 +142,20 @@ public:
 		DontAllowNullMoves,
 	};
 
+	enum ModificationState
+	{
+		FirstOperation,
+		MiddleOperation,
+		LastOperation,
+	};
+
+	typedef mstl::pair<edit::Key,edit::Key> MergeResult;
+
 	typedef mstl::list<mstl::string> StringList;
 	typedef mstl::vector<edit::Node const*> DiffList;
 	typedef mstl::vector<Move> History;
 	typedef mstl::vector<MoveNode*> Variation;
+	typedef mstl::vector<MergeResult> MergeResults;
 	typedef Comment::LanguageSet LanguageSet;
 
 	struct Subscriber : public mstl::ref_counter
@@ -169,6 +179,7 @@ public:
 											move::Notation moveStyle,
 											termination::State termination,
 											color::ID toMove) = 0;
+		virtual void updateMergeResults(MergeResults const& mergeResults) = 0;
 	};
 
 	typedef mstl::ref_counted_ptr<Subscriber> SubscriberP;
@@ -387,6 +398,8 @@ public:
 	mstl::string startKey() const;
 	/// Get key of position after current position (empty if at end of main line).
 	mstl::string successorKey() const;
+	/// Get key after specified position (empty if at end of main line).
+	mstl::string nextKey(mstl::string const& key) const;
 
 	// Moving through game using subscriber
 
@@ -488,13 +501,19 @@ public:
 	/// or before the current position if @p position == Ante
 	bool stripMoves(move::Position position = move::Post);
 	/// Merge given game (at current position) into current game.
-	bool merge(Game const& game, position::ID startPosition, move::Order order, unsigned variationDepth);
+	bool merge(	unsigned modificationPosition,
+					Game const& game,
+					position::ID startPosition,
+					move::Order order,
+					unsigned variationDepth,
+					unsigned maximalVariationLength);
 	/// Merge given games into current game.
 	bool merge(	Game const& game1,
 					Game const& game2,
 					position::ID startPosition,
 					move::Order order,
-					unsigned variationDepth);
+					unsigned variationDepth,
+					unsigned maximalVariationLength);
 	/// Remove all annotations.
 	bool stripAnnotations();
 	/// Remove all comments.
@@ -558,12 +577,16 @@ public:
 	void resetForNextLoad();
 	/// Set current language set.
 	void setLanguages(LanguageSet const& set);
+	/// Select all languages.
+	void setAllLanguages();
 	/// Set whether game is modified anymore.
 	void setIsModified(bool flag);
 	/// Set whether game is irreversible modified.
 	void setIsIrreversible(bool flag);
 	/// Clear undo stack.
 	void clearUndo();
+	/// Swap game specific data; useful after a game swap
+	void swapGameSpecificData(Game& game);
 
 	// undo - redo
 
@@ -697,6 +720,19 @@ private:
 
 	mutable SubscriberP m_subscriber;
 
+	struct EditorOptions
+	{
+		EditorOptions();
+
+		unsigned				m_linebreakThreshold;
+		unsigned				m_linebreakMaxLineLengthMain;
+		unsigned				m_linebreakMaxLineLengthVar;
+		unsigned				m_linebreakMinCommentLength;
+		unsigned				m_displayStyle;
+		unsigned				m_moveInfoTypes;
+		move::Notation		m_moveStyle;
+	};
+
 	unsigned				m_id;
 	MoveNode*			m_currentNode;
 	edit::Root*			m_editNode;
@@ -722,13 +758,9 @@ private:
 	FinalState			m_termination;
 	uint16_t				m_lineBuf[opening::Max_Line_Length][2];
 	mutable Line		m_line;
-	unsigned				m_linebreakThreshold;
-	unsigned				m_linebreakMaxLineLengthMain;
-	unsigned				m_linebreakMaxLineLengthVar;
-	unsigned				m_linebreakMinCommentLength;
-	unsigned				m_displayStyle;
-	unsigned				m_moveInfoTypes;
-	move::Notation		m_moveStyle;
+	mutable bool		m_changed;
+	EditorOptions		m_editorOptions;
+	MergeResults		m_mergeResults;
 
 #ifdef DB_DEBUG_GAME
 	MoveNode* m_backupNode;

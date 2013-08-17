@@ -46,7 +46,7 @@ set SortDescending		"Sort (descending)"
 set SortOnAverageElo		"Sort on average Elo (descending)"
 set SortOnAverageRating	"Sort on average rating (descending)"
 set SortOnDate				"Sort on date (descending)"
-set SortOnNumber			"Sort on game number (asscending)"
+set SortOnNumber			"Sort on game number (ascending)"
 set ReverseOrder			"Reverse order"
 set CancelSort				"Cancel sort"
 set NoMoves					"No moves"
@@ -287,11 +287,13 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 
 	array set Vars {
 		deleted		1
-		listmode		0
+		sortable		1
+		mode			normal
 		pool			{}
 		crosshand	{}
 		columns		{}
 		positioncmd	{}
+		selectcmd	{}
 	}
 
 	if {[lsort [array names Options]] ne [lsort [array names Defaults]]} {
@@ -301,13 +303,39 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	RefreshHeader $path 1
 	RefreshHeader $path 2
 
+	if {[info exists options(-mode)]} {
+		if {$Vars(mode) eq "list"} { set options(-listmode) 1 }
+	}
+
+	array set options $args
+	foreach opt {positioncmd selectcmd mode sortable} {
+		if {[info exists options(-$opt)]} {
+			set Vars($opt) $options(-$opt)
+			unset options(-$opt)
+		}
+	}
+	set args [array get options]
+
 	set columns {}
 	set index 0
 	foreach column $Columns {
 		lassign $column id group adjustment minwidth maxwidth width stretch removable ellipsis color
+		set checkbutton 0
 		set menu {}
 
 		switch $id {
+			number {
+				if {$Vars(mode) eq "merge"} {
+					set adjustment center
+					set removable 0
+					set minwidth 0
+					set maxwidth 0
+					set width 17px
+					set checkbutton 1
+					lappend args -lock number
+				}
+			}
+
 			acv {
 				set Vars(acvsize) [string range $width 0 end-2]
 				lappend menu [list checkbutton \
@@ -423,40 +451,47 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 			}
 
 			default {
-				lappend menu [list command \
-					-command [namespace code [list SortColumn $path $id ascending]] \
-					-labelvar [namespace current]::mc::SortAscending \
-				]
-				lappend menu [list command \
-					-command [namespace code [list SortColumn $path $id descending]] \
-					-labelvar [namespace current]::mc::SortDescending \
-				]
-				switch $id {
-					whiteRating1 - blackRating1 - whiteRating2 - blackRating2 {
-						lappend menu [list command \
-							-command [namespace code [list SortColumn $path $id average]] \
-							-labelvar [namespace current]::mc::SortOnAverageRating \
-						]
+				if {$Vars(sortable)} {
+					lappend menu [list command \
+						-command [namespace code [list SortColumn $path $id ascending]] \
+						-labelvar [namespace current]::mc::SortAscending \
+					]
+					lappend menu [list command \
+						-command [namespace code [list SortColumn $path $id descending]] \
+						-labelvar [namespace current]::mc::SortDescending \
+					]
+					switch $id {
+						whiteRating1 - blackRating1 - whiteRating2 - blackRating2 {
+							lappend menu [list command \
+								-command [namespace code [list SortColumn $path $id average]] \
+								-labelvar [namespace current]::mc::SortOnAverageRating \
+							]
+						}
 					}
+					lappend menu [list command \
+						-command [namespace code [list SortColumn $path $id reverse]] \
+						-labelvar [namespace current]::mc::ReverseOrder \
+					]
+					lappend menu [list command \
+						-command [namespace code [list SortColumn $path $id cancel]] \
+						-labelvar [namespace current]::mc::CancelSort \
+					]
+					lappend menu { separator }
 				}
-				lappend menu [list command \
-					-command [namespace code [list SortColumn $path $id reverse]] \
-					-labelvar [namespace current]::mc::ReverseOrder \
-				]
-				lappend menu [list command \
-					-command [namespace code [list SortColumn $path $id cancel]] \
-					-labelvar [namespace current]::mc::CancelSort \
-				]
-				lappend menu { separator }
 			}
 		}
 
-		set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
-		set fvar [namespace current]::mc::F_[string toupper $id 0 0]
-		set tvar [namespace current]::mc::T_[string toupper $id 0 0]
-		if {![info exists $tvar]} { set tvar {} }
-		if {![info exists $fvar]} { set fvar $tvar }
-		if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
+		if {$Vars(mode) eq "merge" && $id eq "number"} {
+			lassign {{} {} {}} ivar fvar tvar
+		} else {
+			set ivar [namespace current]::icon::12x12::I_[string toupper $id 0 0]
+			set fvar [namespace current]::mc::F_[string toupper $id 0 0]
+			set tvar [namespace current]::mc::T_[string toupper $id 0 0]
+			if {![info exists $tvar]} { set tvar {} }
+			if {![info exists $fvar]} { set fvar $tvar }
+			if {![info exists $ivar]} { set ivar {} } else { set ivar [set $ivar] }
+		}
+
 		if {$id in $visibleColumns} { set visible 1 } else { set visible 0 }
 
 		set opts {}
@@ -473,6 +508,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		lappend opts -image $ivar
 		lappend opts -textvar $fvar
 		lappend opts -tooltipvar $tvar
+		lappend opts -checkbutton $checkbutton
 
 		if {[llength $group]} {
 			lappend opts -groupvar [namespace current]::mc::G_[string toupper $group 0 0]
@@ -483,15 +519,6 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 		incr index
 	}
 
-	array set options $args
-	if {[info exists options(-positioncmd)]} {
-		set Vars(positioncmd) $options(-positioncmd)
-		unset options(-positioncmd)
-		set args [array get options]
-	}
-	if {[info exists options(-listmode)]} {
-		set Vars(listmode) $options(-listmode)
-	}
 	lappend args -popupcmd [namespace code PopupMenu]
 	set Vars(table) [::scrolledtable::build $path $columns {*}$args]
 	pack $path -fill both -expand yes
@@ -517,6 +544,7 @@ proc build {path getViewCmd {visibleColumns {}} {args {}}} {
 	::bind $path <<LanguageChanged>>  [namespace code [list BindAccelerators $path]]
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 1]]
 	::bind $path <<LanguageChanged>> +[namespace code [list RefreshHeader $path 2]]
+
 	set Vars(viewcmd) $getViewCmd
 
 	return $Vars(table)
@@ -630,6 +658,11 @@ proc setOptions {path options} {
 	}
 
 	::scrolledtable::setOptions $path [array get myOptions]
+}
+
+
+proc setState {path row state} {
+	::scrolledtable::setState $path $row $state
 }
 
 
@@ -832,13 +865,21 @@ proc TableSelected {path index} {
 	set variant [::scrolledtable::variant $path]
 	set view [{*}$Vars(viewcmd) $base $variant]
 	set info [::scidb::db::get gameInfo $index $view $base $variant]
-	set fen  {}
-
-	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 	set number [expr {[column $info number] - 1}]
+	set fen {}
+	if {[llength $Vars(positioncmd)]} { set fen [{*}$Vars(positioncmd)] }
 
-	set pos [::widget::busyOperation { ::game::new $path \
-		-base $base -variant $variant -view $view -number $number -fen $fen }]
+	if {[llength $Vars(selectcmd)]} {
+		{*}$Vars(selectcmd) $base $variant $number $fen
+	} else {
+		::widget::busyOperation { ::game::new $path \
+			-base $base \
+			-variant $variant \
+			-view $view \
+			-number $number \
+			-fen $fen \
+		}
+	}
 }
 
 
@@ -1561,7 +1602,6 @@ proc TableVisit {table data} {
 proc SortColumn {path id dir {rating {}}} {
 	variable ${path}::Vars
 	variable Defaults
-	variable Columns
 
 	::widget::busyCursor on
 	set base [::scrolledtable::base $path]
@@ -1633,7 +1673,7 @@ proc PopupMenu {path menu base variant index} {
 	if {[scidb::view::count games $base $variant $view] == 0} { return }
 
 	if {$index ne "outside"} {
-		if {$Vars(listmode)} {
+		if {$Vars(mode) eq "list"} {
 			$menu add command \
 				-compound left \
 				-image $::icon::16x16::browse \
@@ -1652,12 +1692,22 @@ proc PopupMenu {path menu base variant index} {
 				-label " $::browser::mc::LoadGame" \
 				-command [namespace code [list LoadGame $path $index]] \
 				;
-			$menu add command \
-				-compound left \
-				-image $::icon::16x16::crossTable \
-				-label " $mc::ShowTournamentTable..." \
-				-command [namespace code [list OpenCrosstable $path $index]] \
-				;
+			if {$Vars(mode) ne "merge"} {
+				if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::merge \
+					-label " $::browser::mc::MergeGame..." \
+					-command [list gamebar::mergeGame $path [list $base $variant $view $index]] \
+					-state $state \
+					;
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::crossTable \
+					-label " $mc::ShowTournamentTable..." \
+					-command [namespace code [list OpenCrosstable $path $index]] \
+					;
+			}
 		} else {
 			$menu add command \
 				-compound left \
@@ -1680,14 +1730,26 @@ proc PopupMenu {path menu base variant index} {
 				-accelerator $mc::Space \
 				-command [namespace code [list LoadGame $path $index]] \
 				;
-			$menu add command \
-				-compound left \
-				-image $::icon::16x16::crossTable \
-				-label " $mc::ShowTournamentTable..." \
-				-accelerator $mc::AccelTournTable \
-				-command [namespace code [list OpenCrosstable $path $index]] \
-				;
+			if {$Vars(mode) ne "merge"} {
+				if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::merge \
+					-label " $::browser::mc::MergeGame..." \
+					-command [list gamebar::mergeGame $path [list $base $variant $view $index]] \
+					-state $state \
+					;
+				$menu add command \
+					-compound left \
+					-image $::icon::16x16::crossTable \
+					-label " $mc::ShowTournamentTable..." \
+					-accelerator $mc::AccelTournTable \
+					-command [namespace code [list OpenCrosstable $path $index]] \
+					;
+			}
 		}
+
+		if {!$Vars(sortable)} { return }
 	
 		if {![::scidb::db::get readonly? $base $variant]} {
 			$menu add separator
@@ -1715,6 +1777,8 @@ proc PopupMenu {path menu base variant index} {
 		$menu add separator
 	}
 
+	if {!$Vars(sortable)} { return }
+
 	$menu add command \
 		-label $mc::SortOnAverageElo \
 		-command [namespace code [list SortColumn $path whiteRating1 average Elo]] \
@@ -1725,7 +1789,7 @@ proc PopupMenu {path menu base variant index} {
 		;
 	$menu add command \
 		-label $mc::SortOnNumber \
-		-command [namespace code [list SortColumn $path number asscending]] \
+		-command [namespace code [list SortColumn $path number ascending]] \
 		;
 
 	set groups {}

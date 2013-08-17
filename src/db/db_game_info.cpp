@@ -527,7 +527,7 @@ GameInfo::setup(	uint32_t gameOffset,
 	m_pd[0].langFlag	= provider.commentEngFlag();
 	m_pd[1].langFlag	= provider.commentOthFlag();
 
-	m_gameFlags = provider.gameFlags() & ~(Flag_Dirty | Flag_Changed);
+	m_gameFlags = (provider.gameFlags() & ~Flag_Special) | (m_gameFlags & Flag_Special);
 
 	char* s = const_cast<char*>(tags.value(tag::Round).c_str());
 	m_round = ::strtoul(s, &s, 10);
@@ -675,6 +675,8 @@ GameInfo::reset(Namebases& namebases)
 {
 	if (!isEmpty())
 	{
+		unsigned specialFlags = m_gameFlags & Flag_Special;
+
 		namebases(Namebase::Player).deref(m_player[White]);
 		namebases(Namebase::Player).deref(m_player[Black]);
 		namebases(Namebase::Event ).deref(m_event);
@@ -695,6 +697,7 @@ GameInfo::reset(Namebases& namebases)
 			*this = m_initializer;
 		}
 
+		m_gameFlags |= specialFlags;
 		m_gameOffset = gameOffset;
 	}
 }

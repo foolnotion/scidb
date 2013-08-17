@@ -161,6 +161,7 @@ proc open {} {
 	::move::setup
 	::tcl::mathfunc::srand [clock milliseconds]
 	set app .application
+	::widget::dialogWatch $app
 	set ::util::place::mainWindow $app
 	wm protocol $app WM_DELETE_WINDOW [namespace code shutdown]
 	set nb [::ttk::notebook $app.nb -takefocus 0] ;# otherwise board does not have focus
@@ -354,6 +355,7 @@ if {[::process::testOption use-clock]} {
 
 proc shutdown {} {
 	variable icon::32x32::shutdown
+	variable ::scidb::mergebaseName
 	variable Vars
 
 	set dlg .application.shutdown
@@ -361,6 +363,8 @@ proc shutdown {} {
 
 	if {[::dialog::messagebox::open?] eq "question"} { bell; return }
 	if {[string match .application* [grab current]]} { bell; return }
+
+	::widget::dialogRaise .application
 
 	if {[::util::photos::busy?]} {
 		append msg $::util::photos::mc::DownloadStillInProgress "\n\n"
@@ -370,7 +374,11 @@ proc shutdown {} {
 		::util::photos::terminateUpdate
 	}
 
-	if {[llength [set unsaved [::scidb::app::get unsavedFiles]]]} {
+	set unsavedFiles [::scidb::app::get unsavedFiles]
+	set n 0
+	if {$mergebaseName in $unsavedFiles} { incr n }
+
+	if {[llength $unsavedFiles] > $n} {
 		append msg $mc::UnsavedFiles
 		append msg <embed>
 		append msg $mc::ThrowAwayAllChanges
@@ -379,7 +387,7 @@ proc shutdown {} {
 			-parent .application \
 			-message $msg \
 			-default no \
-			-embed [namespace code [list EmbedUnsavedFiles $unsaved]] \
+			-embed [namespace code [list EmbedUnsavedFiles $unsavedFiles]] \
 		]
 		if {$reply ne "yes"} { return }
 	}
@@ -388,6 +396,10 @@ proc shutdown {} {
 		restore	{ set backup 1 }
 		discard	{ set backup 0 }
 		cancel	{ return }
+	}
+
+	foreach toplevel [winfo children .] {
+		if {$toplevel ne ".application"} { destroy $toplevel }
 	}
 
 	tk::toplevel $dlg -class Scidb

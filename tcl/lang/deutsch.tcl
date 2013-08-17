@@ -1368,18 +1368,9 @@
 ::gamebar::mc::CopyThisGameToClipboard		"Diese Partie in die Ablage kopieren (PGN-Format)"
 ::gamebar::mc::ExportThisGame					"Diese Partie exportieren"
 ::gamebar::mc::PasteLastClipbaseGame		"Letzte Partie aus Ablage-Datenbank einfügen"
-::gamebar::mc::MergeLastClipbaseGame		"Mit letzter Partie aus Ablage-Datenbank zusammenfügen"
 ::gamebar::mc::PasteGameFrom					"Partie einfügen"
-::gamebar::mc::MergeGameFrom					"Mit Partie zusammenfügen"
 ::gamebar::mc::LoadGameNumber					"Lade Partie Nummer"
 ::gamebar::mc::ReloadCurrentGame				"Partie neu laden"
-::gamebar::mc::MergeWithCurrentGame			"In die aktuelle Partie einfügen"
-::gamebar::mc::CreateNewGame					"Eine neue Partie kreieren"
-::gamebar::mc::StartFromCurrentPosition	"Einfügungen von der aktuellen Position starten"
-::gamebar::mc::StartFromInitialPosition	"Einfügungen von der Anfangsposition starten"
-::gamebar::mc::NoTranspositions				"Keine Zugumstellungen"
-::gamebar::mc::IncludeTranspositions		"Zugumstellungen mit einbeziehen"
-::gamebar::mc::VariationDepth					"Variantentiefe"
 ::gamebar::mc::OriginalVersion				"Die Originalversion aus der Datanbank"
 ::gamebar::mc::ModifiedVersion				"Die modifizierte Version im Partieeditor"
 ::gamebar::mc::WillCopyModifiedGame			"Diese Operation wird die modifizierte Partie aus dem Partieeditor kopieren. Die Originalversion kann nicht kopiert werden, denn die beeinhaltende Datenbank ist nicht geöffnet."
@@ -1399,6 +1390,24 @@
 ::gamebar::mc::Tip(Suicide)					"Im Falle von Patt gewinnt die Seite mit den wenigeren\nFiguren (gemäß den FICS-Regeln)."
 ::gamebar::mc::Tip(Giveaway)					"Im Falle von Patt gewinnt die pattgesetzte Seite\n(gemäß den internationalen Regeln)."
 ::gamebar::mc::Tip(Losers)						"Der König verhält sich wie im normalen Schach, und man\nkann gewinnen indem man Matt oder Patt wird."
+
+### merge ##############################################################
+::merge::mc::MergeLastClipbaseGame		"Mit letzter Partie aus Ablage-Datenbank zusammenfügen"
+::merge::mc::MergeWithCurrentGame		"In die aktuelle Partie einfügen"
+::merge::mc::MergeGameFrom					"Mit Partie zusammenfügen"
+
+::merge::mc::MergeTitle						"Mit Partien zusammenfügen"
+::merge::mc::CreateNewGame					"Eine neue Partie kreieren"
+::merge::mc::StartFromCurrentPosition	"Einfügungen von der aktuellen Position starten"
+::merge::mc::StartFromInitialPosition	"Einfügungen von der Anfangsposition starten"
+::merge::mc::NoTranspositions				"Keine Zugumstellungen"
+::merge::mc::IncludeTranspositions		"Zugumstellungen mit einbeziehen"
+::merge::mc::VariationDepth				"Variantentiefe"
+::merge::mc::UpdatePreview					"Vorschau aktualisieren"
+
+::merge::mc::AlreadyInUse					"Der Dialog für das Einfügen von Partien ist bereits im Gebrauch für Partienummer %d."
+::merge::mc::AlreadyInUseDetail			"Bitte zuerst diesen Dialog beenden bevor in eine andere Partie eingefügt werden kann. Dies bedeutet das zur Partienummer %d gewechselt werden sollte, um das Einfügen von Partien fortzusetzen."
+::merge::mc::CannotMerge					"Partien verschiedener Schachformen können nicht verschmolzen wwerden."
 
 ### validate ###########################################################
 ::validate::mc::Unlimited	"unbeschränkt"

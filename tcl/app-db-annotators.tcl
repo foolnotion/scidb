@@ -129,6 +129,7 @@ proc build {parent} {
 	variable [namespace current]::${top}::Vars
 	set Vars(find-current) {}
 	set Vars(active) 0
+	set Vars(base) ""
 
 	bind $lt <<TableMinSize>>	[namespace code [list TableMinSize $lt %d]]
 	bind $lt <<TableFill>>		[namespace code [list names::TableFill $top %d]]
@@ -198,10 +199,13 @@ proc Close {path base variant} {
 	variable ${path}::Vars
 
 	array unset Vars $base:$variant:*
-	::scrolledtable::clear $path.names
 	::scrolledtable::forget $path.names $base $variant
-	::gametable::clear $path.pairings
 	::gametable::forget $path.pairings $base $variant
+
+	if {$Vars(base) eq "$base:$variant"} {
+		::scrolledtable::clear $path.names
+		::gametable::clear $path.pairings
+	}
 }
 
 
@@ -243,8 +247,10 @@ proc InitBase {path base variant} {
 namespace eval games {
 
 proc Update {path id base variant {view -1} {index -1}} {
+	variable ::scidb::clipbaseName
 	variable [namespace parent]::${path}::Vars
 	
+	if {$base ne $clipbaseName && [string length [file extension $base]] == 0} { return }
 	[namespace parent]::InitBase $path $base $variant
 
 	if {$view == $Vars($base:$variant:view)} {
@@ -322,8 +328,12 @@ proc UpdateTable {path base variant} {
 
 
 proc Update {path id base variant {view -1} {index -1}} {
+	variable ::scidb::clipbaseName
 	variable [namespace parent]::${path}::Vars
 
+	if {$base ne $clipbaseName && [string length [file extension $base]] == 0} { return }
+
+	set Vars(base) "$base:$variant"
 	[namespace parent]::InitBase $path $base $variant
 	after cancel $Vars($base:$variant:after:names)
 	set Vars($base:$variant:after:names) \

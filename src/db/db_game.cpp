@@ -169,6 +169,89 @@ checkThreefoldRepetitions(Board const& startBoard, variant::Type variant, MoveNo
 
 
 static void
+updateMoveNumbers(MoveNode* node, unsigned moveNumber)
+{
+	if (node->atLineStart())
+		node = node->next();
+
+	for ( ; !node->atLineEnd(); node = node->next())
+	{
+		if (node->hasVariation())
+		{
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+				updateMoveNumbers(node->variation(i)->next(), moveNumber);
+		}
+
+		node->setMoveNumber(moveNumber);
+
+		if (color::isBlack(node->move().color()))
+			++moveNumber;
+	}
+}
+
+
+static void
+collectMergeResults(	MoveNode* node,
+							Board board,
+							variant::Type variant,
+							edit::Key& key,
+							Game::MergeResults& mergeResults)
+{
+	M_ASSERT(node->atLineStart());
+
+	edit::Key startKey;
+	bool newMoves(false);
+
+	key.exchangePly(board.plyNumber());
+
+	for (node = node->next(); !node->atLineEnd(); node = node->next())
+	{
+		key.incrementPly();
+
+		if (node->testFlag(MoveNode::MoveHasChanged))
+		{
+			mergeResults.push_back(Game::MergeResult(key.id(), key.id()));
+		}
+		else if (node->testFlag(MoveNode::NewMoves))
+		{
+			startKey = key;
+			newMoves = true;
+		}
+
+		if (node->hasVariation())
+		{
+			for (unsigned i = 0; i < node->variationCount(); ++i)
+			{
+				key.addVariation(i);
+				key.addPly(board.plyNumber());
+
+				MoveNode* var = node->variation(i);
+
+				if (var->testFlag(MoveNode::NewVariation))
+				{
+					edit::Key lastKey(key);
+					lastKey.incrementPly(var->countHalfMoves() + 1);
+					mergeResults.push_back(Game::MergeResult(key.id(), lastKey.id()));
+				}
+				else
+				{
+					collectMergeResults(var, board, variant, key, mergeResults);
+				}
+
+				key.removePly();
+				key.removeVariation();
+			}
+		}
+
+		board.doMove(node->move(), variant);
+	}
+
+	if (newMoves)
+		mergeResults.push_back(Game::MergeResult(startKey.id(), key.id()));
+}
+
+
+static void
 splitForMerge(	Variants& variants,
 					MoveNode* startNode,
 					variant::Type variant,
@@ -228,6 +311,7 @@ mergeComments(MoveNode* dst, MoveNode const* src, MoveNode::LanguageSet const& l
 			if (dstComment.content() != dst->comment(pos).content())
 			{
 				dst->setComment(dstComment, pos);
+				dst->setFlag(MoveNode::ChangedComment);
 				changed = true;
 			}
 		}
@@ -252,7 +336,12 @@ stripComments(MoveNode* node, MoveNode::LanguageSet const& languageSet)
 			if (!comment.isEmpty())
 			{
 				comment.remove(languageSet);
-				node->setComment(comment, pos);
+
+				if (comment.content() != node->comment(pos).content())
+				{
+					node->setComment(comment, pos);
+					node->setFlag(MoveNode::ChangedComment);
+				}
 			}
 		}
 	}
@@ -264,14 +353,15 @@ makeVariation(	MoveNode* const* first,
 					MoveNode* const* last,
 					MoveNode::LanguageSet const* leadingLanguageSet,
 					TagSet const& tags,
-					mstl::string const& delim)
+					mstl::string const& delim,
+					unsigned maximalLength)
 {
 	M_ASSERT(first < last);
 
 	MoveNode* r = new MoveNode;
 	MoveNode* n = r;
 
-	for ( ; first != last; ++first, n = n->next())
+	for (unsigned count = 0; first != last && count < maximalLength; ++first, n = n->next(), ++count)
 	{
 		n->setNext((*first)->cloneThis());
 
@@ -279,10 +369,12 @@ makeVariation(	MoveNode* const* first,
 			stripComments(n->next(), *leadingLanguageSet);
 	}
 
-	M_ASSERT((*(first - 1))->next());
-	n->setNext((*(first - 1))->next()->cloneThis());
+	M_ASSERT((*(last - 1))->next());
+	n->setNext((*(last - 1))->next()->cloneThis());
 
-	if (!delim.empty() && (tags.value(tag::White).size() > 1 || tags.value(tag::Black).size() > 1))
+	if (	!delim.empty()
+		&& !tags.isEmpty()
+		&& (tags.value(tag::White).size() > 1 || tags.value(tag::Black).size() > 1))
 	{
 		mstl::string s;
 
@@ -324,6 +416,9 @@ makeVariation(	MoveNode* const* first,
 		{
 			s.append(delim);
 			s.append(tags.value(tag::Result));
+
+			if (first != last)
+				s.format(" (%u)", (*(last - 1))->moveNumber());
 		}
 
 		Comment c1(n->comment(move::Post));
@@ -345,6 +440,7 @@ merge(MoveNode* node,
 		MoveNode::LanguageSet const* leadingLanguageSet,
 		TagSet const& tags,
 		mstl::string const& delim,
+		unsigned maximalVariationLength,
 		bool append)
 {
 	M_ASSERT(node);
@@ -383,13 +479,35 @@ merge(MoveNode* node,
 		{
 			if (last - first > 1)
 			{
+				MoveNode* prev = node->prev();
+
+				for (unsigned i = 0; i < prev->variationCount(); ++i)
+				{
+					if (prev->variation(i)->next()->move() == (*first)->move())
+					{
+						return merge(	prev->variation(i),
+											first,
+											last,
+											leadingLanguageSet,
+											tags,
+											delim,
+											maximalVariationLength,
+											append);
+					}
+				}
+
 				if (append)
 				{
-					MoveNode* variation	= makeVariation(first + 1, last, leadingLanguageSet, tags, delim);
-					MoveNode* prev			= node->prev();
 					MoveNode* end			= prev->removeNext();
+					MoveNode* variation	= makeVariation(	first + 1,
+																		last,
+																		leadingLanguageSet,
+																		tags,
+																		delim,
+																		maximalVariationLength);
 
 					prev->setNext(variation->removeNext());
+					prev->next()->setFlag(MoveNode::NewMoves);
 					prev = prev->getLineEnd()->prev();
 
 					if (leadingLanguageSet && mergeComments(end, prev->next(), *leadingLanguageSet))
@@ -401,7 +519,14 @@ merge(MoveNode* node,
 				}
 				else
 				{
-					node->prev()->addVariation(makeVariation(first, last, leadingLanguageSet, tags, delim));
+					MoveNode* variation = makeVariation(first,
+																	last,
+																	leadingLanguageSet,
+																	tags,
+																	delim,
+																	maximalVariationLength);
+					prev->addVariation(variation);
+					variation->setFlag(MoveNode::NewVariation);
 				}
 
 				changed = true;
@@ -419,23 +544,31 @@ merge(MoveNode* node,
 		MoveNode* n = node->variation(i);
 
 		if (n->next()->move() == (*first)->move())
-			return merge(n, first, last, leadingLanguageSet, tags, delim, append);
+			return merge(n, first, last, leadingLanguageSet, tags, delim, maximalVariationLength, append);
 	}
 
 	if (first < last)
 	{
-		MoveNode* variation = makeVariation(first, last, leadingLanguageSet, tags, delim);
+		MoveNode* prev = node->prev();
+
+		MoveNode* variation = makeVariation(first,
+														last,
+														leadingLanguageSet,
+														tags,
+														delim,
+														maximalVariationLength);
 
 		if (node->atLineEnd())
 		{
-			MoveNode* prev = node->prev();
 			prev->deleteNext();
 			prev->setNext(variation->removeNext());
+			prev->next()->setFlag(MoveNode::NewMoves);
 			delete variation;
 		}
 		else
 		{
-			node->addVariation(makeVariation(first, last, leadingLanguageSet, tags, delim));
+			node->addVariation(variation);
+			variation->setFlag(MoveNode::NewVariation);
 		}
 
 		changed = true;
@@ -578,6 +711,18 @@ struct UndoApplyWatcher
 } // namespace
 
 
+Game::EditorOptions::EditorOptions()
+	:m_linebreakThreshold(0)
+	,m_linebreakMaxLineLengthMain(0)
+	,m_linebreakMaxLineLengthVar(0)
+	,m_linebreakMinCommentLength(0)
+	,m_displayStyle(display::CompactStyle)
+	,m_moveInfoTypes(unsigned(-1))
+	,m_moveStyle(move::ShortAlgebraic)
+{
+}
+
+
 unsigned Game::m_gameId = 0;
 mstl::string Game::m_delim(" / ", 3);
 
@@ -670,13 +815,7 @@ Game::Game()
 	,m_threefoldRepetionDetected(false)
 	,m_termination(termination::None)
 	,m_line(m_lineBuf[0])
-	,m_linebreakThreshold(0)
-	,m_linebreakMaxLineLengthMain(0)
-	,m_linebreakMaxLineLengthVar(0)
-	,m_linebreakMinCommentLength(0)
-	,m_displayStyle(display::CompactStyle)
-	,m_moveInfoTypes(unsigned(-1))
-	,m_moveStyle(move::ShortAlgebraic)
+	,m_changed(false)
 #ifdef DB_DEBUG_GAME
 	,m_backupNode(0)
 #endif
@@ -740,7 +879,7 @@ Game::operator=(Game const& game)
 		m_wasModified						= false;
 		m_threefoldRepetionDetected	= game.m_threefoldRepetionDetected;
 		m_termination						= game.m_termination;
-		m_subscriber						= game.m_subscriber;
+		m_changed							= game.m_changed;
 		m_undoIndex							= 0;
 		m_maxUndoLevel						= game.m_maxUndoLevel;
 		m_combinePredecessingMoves		= game.m_combinePredecessingMoves;
@@ -748,13 +887,7 @@ Game::operator=(Game const& game)
 		m_redoCommand						= None;
 		m_rollbackCommand					= None;
 		m_flags								= game.m_flags;
-		m_linebreakThreshold				= game.m_linebreakThreshold;
-		m_linebreakMaxLineLengthMain	= game.m_linebreakMaxLineLengthMain;
-		m_linebreakMaxLineLengthVar	= game.m_linebreakMaxLineLengthVar;
-		m_linebreakMinCommentLength	= game.m_linebreakMinCommentLength;
-		m_displayStyle						= game.m_displayStyle;
-		m_moveInfoTypes					= game.m_moveInfoTypes;
-		m_moveStyle							= game.m_moveStyle;
+		m_editorOptions					= game.m_editorOptions;
 
 #ifdef DB_DEBUG_GAME
 		delete m_backupNode;
@@ -763,8 +896,9 @@ Game::operator=(Game const& game)
 
 		m_line.copy(game.m_line);
 		m_timeTable = game.m_timeTable;
+		m_mergeResults.clear();
 
-		if (game.m_editNode)
+		if (m_subscriber && game.m_editNode)
 			m_editNode = buildEditNodes();
 
 		for (unsigned i = 0; i < m_undoList.size(); ++i)
@@ -851,6 +985,8 @@ Game::insertUndo(UndoAction action, Command command)
 {
 	M_ASSERT(action == Unstrip_Moves || action == Truncate_Variation || action == Remove_Mainline);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -893,6 +1029,8 @@ Game::insertUndo(	UndoAction action,
 						move::Position position)
 {
 	M_ASSERT(action == Set_Annotation);
+
+	m_mergeResults.clear();
 
 	if (m_rollbackCommand != None)
 		return;
@@ -947,6 +1085,8 @@ Game::insertUndo(	UndoAction action,
 {
 	M_ASSERT(action == Set_Trailing_Comment);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -987,6 +1127,8 @@ void
 Game::insertUndo(UndoAction action, Command command, MarkSet const& oldMarks, MarkSet const& newMarks)
 {
 	M_ASSERT(action == Set_Annotation);
+
+	m_mergeResults.clear();
 
 	if (m_rollbackCommand != None)
 		return;
@@ -1032,6 +1174,8 @@ Game::insertUndo(	UndoAction action,
 {
 	M_ASSERT(action == Set_Annotation);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -1073,6 +1217,8 @@ Game::insertUndo(UndoAction action, Command command, MoveNode* node)
 {
 	M_ASSERT(action == Replace_Node || action == Revert_Game);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -1098,6 +1244,8 @@ Game::insertUndo(UndoAction action, Command command, MoveNode* node, unsigned va
 {
 	M_ASSERT(action == Insert_Variation || action == New_Mainline);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -1120,6 +1268,8 @@ Game::insertUndo(UndoAction action, Command command, unsigned varNo)
 {
 	M_ASSERT(action == Remove_Variation);
 
+	m_mergeResults.clear();
+
 	if (m_rollbackCommand != None)
 		return;
 
@@ -1134,6 +1284,8 @@ void
 Game::insertUndo(UndoAction action, Command command, unsigned varNo1, unsigned varNo2)
 {
 	M_ASSERT(action == Swap_Variations || action == Promote_Variation);
+	m_mergeResults.clear();
+
 
 	if (m_rollbackCommand != None)
 		return;
@@ -1155,6 +1307,8 @@ void
 Game::insertUndo(UndoAction action, Command command, MoveNode* node, Board const& board)
 {
 	M_ASSERT(action == Strip_Moves || action == Set_Start_Position);
+
+	m_mergeResults.clear();
 
 	if (m_rollbackCommand != None)
 		return;
@@ -1216,12 +1370,15 @@ Game::clearUndo()
 {
 	m_undoList.clear();
 	m_undoIndex = 0;
+	m_mergeResults.clear();
 }
 
 
 void
 Game::applyUndo(Undo& undo, bool redo)
 {
+	m_mergeResults.clear();
+
 	if (redo || undo.action != Set_Start_Position)
 		tryMoveTo(undo.key);
 
@@ -1511,6 +1668,14 @@ mstl::string
 Game::successorKey() const
 {
 	return m_currentKey.successorKey(m_currentNode).id();
+}
+
+
+mstl::string
+Game::nextKey(mstl::string const& key) const
+{
+	edit::Key k(key);
+	return k.nextKey(k.findPosition(m_startNode, m_startBoard.plyNumber())).id();
 }
 
 
@@ -2670,6 +2835,7 @@ Game::mergeVariation(Variation const& moves)
 					nullptr,
 					TagSet(),
 					mstl::string::empty_string,
+					unsigned(-1),
 					false))
 	{
 		insertUndo(Revert_Game, Merge, clone.release());
@@ -4068,6 +4234,14 @@ Game::setLanguages(LanguageSet const& set)
 }
 
 
+void
+Game::setAllLanguages()
+{
+	updateLanguageSet();
+	setLanguages(m_languageSet);
+}
+
+
 bool
 Game::containsLanguage(edit::Key const& key, move::Position position, mstl::string const& lang) const
 {
@@ -4169,13 +4343,19 @@ Game::updateSubscriber(unsigned action)
 		if (m_subscriber->mainlineOnly())
 		{
 			m_editNode = editNode.release();
-			m_subscriber->updateEditor(m_editNode, m_moveStyle);
+			m_subscriber->updateEditor(m_editNode, m_editorOptions.m_moveStyle);
 		}
 		else
 		{
 			edit::Node::List diff;
 			editNode->difference(m_editNode, diff);
-			m_subscriber->updateEditor(diff, m_tags, m_moveStyle, m_termination, m_finalBoard.sideToMove());
+			m_subscriber->updateEditor(diff,
+												m_tags,
+												m_editorOptions.m_moveStyle,
+												m_termination,
+												m_finalBoard.sideToMove());
+			if (!m_mergeResults.empty())
+				m_subscriber->updateMergeResults(m_mergeResults);
 			delete m_editNode;
 			m_editNode = editNode.release();
 		}
@@ -4197,9 +4377,7 @@ Game::updateSubscriber(unsigned action)
 edit::Root*
 Game::buildEditNodes() const
 {
-	M_ASSERT(m_subscriber);
-
-	if (m_subscriber->mainlineOnly())
+	if (m_subscriber && m_subscriber->mainlineOnly())
 	{
 		return edit::Root::makeList(	m_tags,
 												m_idn,
@@ -4209,9 +4387,9 @@ Game::buildEditNodes() const
 												m_finalBoard,
 												m_termination,
 												m_startNode,
-												m_linebreakThreshold,
-												m_linebreakMaxLineLengthMain,
-												m_displayStyle);
+												m_editorOptions.m_linebreakThreshold,
+												m_editorOptions.m_linebreakMaxLineLengthMain,
+												m_editorOptions.m_displayStyle);
 	}
 
 	return edit::Root::makeList(	m_tags,
@@ -4225,12 +4403,12 @@ Game::buildEditNodes() const
 											m_wantedLanguages,
 											m_engines,
 											m_startNode,
-											m_linebreakThreshold,
-											m_linebreakMaxLineLengthMain,
-											m_linebreakMaxLineLengthVar,
-											m_linebreakMinCommentLength,
-											m_displayStyle,
-											m_moveInfoTypes);
+											m_editorOptions.m_linebreakThreshold,
+											m_editorOptions.m_linebreakMaxLineLengthMain,
+											m_editorOptions.m_linebreakMaxLineLengthVar,
+											m_editorOptions.m_linebreakMinCommentLength,
+											m_editorOptions.m_displayStyle,
+											m_editorOptions.m_moveInfoTypes);
 }
 
 
@@ -4272,13 +4450,13 @@ Game::setup(unsigned linebreakThreshold,
 	M_REQUIRE((displayStyle & (display::CompactStyle | display::ColumnStyle))
 					!= (display::CompactStyle | display::ColumnStyle));
 
-	m_linebreakThreshold				= linebreakThreshold;
-	m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
-	m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
-	m_linebreakMinCommentLength	= linebreakMinCommentLength;
-	m_displayStyle						= displayStyle;
-	m_moveInfoTypes					= moveInfoTypes;
-	m_moveStyle							= moveStyle;
+	m_editorOptions.m_linebreakThreshold			= linebreakThreshold;
+	m_editorOptions.m_linebreakMaxLineLengthMain	= linebreakMaxLineLengthMain;
+	m_editorOptions.m_linebreakMaxLineLengthVar	= linebreakMaxLineLengthVar;
+	m_editorOptions.m_linebreakMinCommentLength	= linebreakMinCommentLength;
+	m_editorOptions.m_displayStyle					= displayStyle;
+	m_editorOptions.m_moveInfoTypes					= moveInfoTypes;
+	m_editorOptions.m_moveStyle						= moveStyle;
 }
 
 
@@ -4367,10 +4545,20 @@ Game::findPosition(Board wanted, MoveNode* node, Board board, unsigned depth, bo
 
 
 bool
-Game::merge(Game const& game, position::ID startPosition, move::Order order, unsigned variationDepth)
+Game::merge(unsigned modificationPosition,
+				Game const& game,
+				position::ID startPosition,
+				move::Order order,
+				unsigned variationDepth,
+				unsigned maximalVariationLength)
 {
+	if (modificationPosition & modification::First)
+		m_changed = false;
+
 	if (game.isEmpty())
 		return false;
+
+	::updateMoveNumbers(game.m_startNode, game.m_startBoard.moveNumber());
 
 	Board startBoard(startPosition == position::Current ? m_currentBoard : m_startBoard);
 
@@ -4406,8 +4594,17 @@ Game::merge(Game const& game, position::ID startPosition, move::Order order, uns
 
 	for (Variants::const_iterator i = variants.begin(); i != variants.end(); ++i)
 	{
-		if (::merge(startNode, i->begin(), i->end(), &m_languageSet, game.m_tags, delim, false))
+		if (::merge(startNode,
+						i->begin(),
+						i->end(),
+						&m_languageSet,
+						i == variants.begin() ? game.m_tags : TagSet(),
+						delim,
+						maximalVariationLength,
+						false))
+		{
 			changed = true;
+		}
 	}
 
 	if (changed && order == move::Transposition)
@@ -4417,8 +4614,20 @@ Game::merge(Game const& game, position::ID startPosition, move::Order order, uns
 
 	if (changed)
 	{
-		updateLanguageSet();
-		insertUndo(Revert_Game, Merge, clone.release());
+		if (!m_changed)
+		{
+			updateLanguageSet();
+			insertUndo(Revert_Game, Merge, clone.release());
+		}
+
+		m_changed = true;
+	}
+
+	if ((modificationPosition & modification::Last) && m_changed)
+	{
+		edit::Key key(m_startBoard.plyNumber());
+		m_mergeResults.clear();
+		::collectMergeResults(m_startNode, m_startBoard, m_variant, key, m_mergeResults);
 		updateSubscriber(UpdateAll);
 	}
 
@@ -4431,12 +4640,16 @@ Game::merge(Game const& game1,
 				Game const& game2,
 				position::ID startPosition,
 				move::Order order,
-				unsigned variationDepth)
+				unsigned variationDepth,
+				unsigned maximalVariationLength)
 {
 	M_REQUIRE(isEmpty());
 
 	if (game1.isEmpty() || game2.isEmpty())
 		return false;
+
+	::updateMoveNumbers(game1.m_startNode, game1.m_startBoard.moveNumber());
+	::updateMoveNumbers(game2.m_startNode, game2.m_startBoard.moveNumber());
 
 	Board startBoard1(startPosition == position::Current ? game1.m_currentBoard : game1.m_startBoard);
 	Board startBoard2(startPosition == position::Current ? game2.m_currentBoard : game2.m_startBoard);
@@ -4472,8 +4685,9 @@ Game::merge(Game const& game1,
 					i->begin(),
 					i->end(),
 					nullptr,
-					game1.m_tags,
+					i == variants1.begin() ? game1.m_tags : TagSet(),
 					mstl::string::empty_string,
+					maximalVariationLength,
 					true);
 	}
 
@@ -4483,7 +4697,16 @@ Game::merge(Game const& game1,
 	if (node2)
 	{
 		for (Variants::const_iterator i = variants2.begin(); i != variants2.end(); ++i)
-			::merge(node2, i->begin(), i->end(), &game1.m_languageSet, game2.m_tags, delim, true);
+		{
+			::merge(	node2,
+						i->begin(),
+						i->end(),
+						&game1.m_languageSet,
+						i == variants2.begin() ? game2.m_tags : TagSet(),
+						delim,
+						maximalVariationLength,
+						true);
+		}
 	}
 
 	m_startNode->finish(m_startBoard, m_variant);
@@ -4498,6 +4721,16 @@ Game::merge(Game const& game1,
 	}
 
 	return true;
+}
+
+
+void
+Game::swapGameSpecificData(Game& game)
+{
+	mstl::swap(m_id, game.m_id);
+	mstl::swap(m_subscriber, game.m_subscriber);
+	mstl::swap(m_flags, game.m_flags);
+	mstl::swap(m_editorOptions, game.m_editorOptions);
 }
 
 // vi:set ts=3 sw=3:

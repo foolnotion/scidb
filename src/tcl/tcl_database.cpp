@@ -173,6 +173,13 @@ checkNonZero(Tcl_Obj** objv, unsigned size)
 }
 
 
+static bool
+isOption(char const* s)
+{
+	return s[0] == '-' && !isdigit(s[1]);
+}
+
+
 static Ratings
 convRatings(char const* s)
 {
@@ -1216,7 +1223,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return TCL_ERROR;
 	}
 
-	char const* path = stringFromObj(objc, objv, 1);
+	char const* name = stringFromObj(objc, objv, 1);
 	variant::Type variant = tcl::game::variantFromObj(objc, objv, 2);
 	int type;
 
@@ -1228,7 +1235,7 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	if (objc == 5)
 		encoding = stringFromObj(objc, objv, 4);
 
-	mstl::string suffix(util::misc::file::suffix(path));
+	mstl::string suffix(util::misc::file::suffix(name));
 
 	if (suffix == "pgn" || suffix == "gz" || suffix == "zip" || suffix == "PGN" || suffix == "ZIP")
 	{
@@ -1241,8 +1248,8 @@ cmdNew(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		encoding = sys::utf8::Codec::utf8();
 	}
 
-	if (scidb->create(path, variant, encoding, type::ID(type)) == 0)
-		return error(::CmdNew, nullptr, nullptr, "database '%s' already exists", path);
+	if (scidb->create(name, variant, encoding, type::ID(type)) == 0)
+		return error(::CmdNew, nullptr, nullptr, "database '%s' already exists", name);
 
 	return TCL_OK;
 }
@@ -3653,8 +3660,8 @@ cmdSort(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Ratings ratings(rating::Elo, rating::Elo);
 
 	while (	objc > 5
-			&& (	*stringFromObj(objc, objv, objc - 1) == '-'
-				|| *stringFromObj(objc, objv, objc - 2) == '-'))
+			&& (	::isOption(stringFromObj(objc, objv, objc - 1))
+				|| ::isOption(stringFromObj(objc, objv, objc - 2))))
 	{
 		++optCount;
 		--objc;

@@ -54,7 +54,7 @@ set Command(strip:variations)		"Variations"
 set Command(copy:comments)			"Copy Comments"
 set Command(move:comments)			"Move Comments"
 set Command(game:clear)				"Clear Game"
-set Command(game:merge)				"Merge"
+set Command(game:merge)				"Merge Game"
 set Command(game:transpose)		"Transpose Game"
 
 set LanguageSelection				"Language Selection"
@@ -174,7 +174,6 @@ proc build {parent width height} {
 		$panes add $edit.f$i
 		set Vars(pgn:$i) $pgn
 		set Vars(frame:$i) $edit.f$i
-		set Vars(after:$i) {}
 	}
 
 	set Vars(main) $main
@@ -355,7 +354,7 @@ proc add {position base variant tags {at -1}} {
 	} else {
 		::gamebar::add $Vars(gamebar) $position $tags
 	}
-	ResetGame $position $tags
+	ResetGame $Vars(pgn:$position) $position $tags
 }
 
 
@@ -363,7 +362,7 @@ proc replace {position base variant tags} {
 	variable Vars
 
 	::gamebar::replace $Vars(gamebar) $position $tags
-	ResetGame $position $tags
+	ResetGame $Vars(pgn:$position) $position $tags
 }
 
 
@@ -443,6 +442,16 @@ proc unlock {position} {
 
 proc unlocked? {position} {
 	return [::gamebar::unlocked? [set [namespace current]::Vars(gamebar)] $position]
+}
+
+
+proc freeze {position {tooltipvar ""}} {
+	return [::gamebar::setFrozen [set [namespace current]::Vars(gamebar)] $position 1 $tooltipvar]
+}
+
+
+proc unfreeze {position} {
+	return [::gamebar::setFrozen [set [namespace current]::Vars(gamebar)] $position 0]
 }
 
 
@@ -957,8 +966,8 @@ proc ConfigureEditor {} {
 }
 
 
-proc DoLayout {position data {w {}}} {
-	variable ::pgn::editor::Options
+proc DoLayout {position data {context editor} {w {}}} {
+	variable ::pgn::${context}::Options
 	variable Vars
 
 	if {[llength $w] == 0} { set w $Vars(pgn:$position) }
@@ -976,7 +985,7 @@ proc DoLayout {position data {w {}}} {
 			}
 
 			header {
-				UpdateHeader $position $w [lindex $node 1]
+				UpdateHeader $context $position $w [lindex $node 1]
 			}
 
 			begin {
@@ -986,7 +995,7 @@ proc DoLayout {position data {w {}}} {
 
 			end {
 				set level [lindex $node 3]
-				Indent $w $level $startVar($level)
+				Indent $context $w $level $startVar($level)
 				incr level -1
 			}
 
@@ -1013,7 +1022,7 @@ proc DoLayout {position data {w {}}} {
 
 					finish {
 						set level [lindex $args 1]
-						Indent $w $level $insertPos
+						Indent $context $w $level $insertPos
 						Mark $w $insertMark
 					}
 
@@ -1044,7 +1053,7 @@ proc DoLayout {position data {w {}}} {
 				set data [lindex $node 2]
 
 				Mark $w $key
-				InsertMove $position $w $level $key $data
+				InsertMove $context $position $w $level $key $data
 				set Vars(last:$position) $key
 			}
 
@@ -1053,54 +1062,94 @@ proc DoLayout {position data {w {}}} {
 				set data [lindex $node 2]
 
 				Mark $w $key
-				InsertDiagram $position $w $level $key $data
+				InsertDiagram $context $position $w $level $key $data
 			}
 
 			result {
-				set reason [::scidb::game::query $position termination]
-				set resultList [list {*}[lrange $node 1 end] $reason $Options(spacing:paragraph)]
+				if {[llength $Vars(tags:$position)]} {
+					set reason [::scidb::game::query $position termination]
+					set resultList [list {*}[lrange $node 1 end] $reason $Options(spacing:paragraph)]
 
-				if {$Vars(result:$position) != $resultList} {
-					if {[string length $Vars(last:$position)]} {
-						$w mark gravity $Vars(last:$position) left
-					}
-					$w mark gravity m-0 left
-					$w mark set current m-0
-					set prevChar [$w get current-1c]
-					$w delete current end
-					set variant [::scidb::game::query $position variant]
-					set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
-					if {[llength $result]} {
-						lassign $result result reason
-						if {$Options(spacing:paragraph)} { $w insert current \n }
-						if {[string length $result]} {
-							$w insert current $result result
+					if {$Vars(result:$position) != $resultList} {
+						if {[string length $Vars(last:$position)]} {
+							$w mark gravity $Vars(last:$position) left
 						}
-						if {[string length $reason]} {
-							if {[string length $result]} { $w insert current " " }
-							$w insert current "($reason)"
+						$w mark gravity m-0 left
+						$w mark set current m-0
+						set prevChar [$w get current-1c]
+						$w delete current end
+						set variant [::scidb::game::query $position variant]
+						set result [::browser::makeResult {*}[lrange $resultList 0 end-1] $variant]
+						if {[llength $result]} {
+							lassign $result result reason
+							if {$Options(spacing:paragraph)} { $w insert current \n }
+							if {[string length $result]} {
+								$w insert current $result result
+							}
+							if {[string length $reason]} {
+								if {[string length $result]} { $w insert current " " }
+								$w insert current "($reason)"
+							}
+						} else {
+							# NOTE: We need a blind character between the marks because
+							# the editor is permuting consecutive marks.
+							$w insert current "\u200b"
 						}
-					} else {
-						# NOTE: We need a blind character between the marks because
-						# the editor is permuting consecutive marks.
-						$w insert current "\u200b"
+						$w mark gravity m-0 right
+						# NOTE: the text editor has a severe bug:
+						# If the char after <pos1> is a newline, the command
+						# '<text> delete <pos1> <pos2>' will also delete one
+						# newline before <pos1>. We have to catch this case:
+						if {$prevChar eq "\n"} { $w insert m-0 \n }
+						if {[string length $Vars(last:$position)]} {
+							$w mark gravity $Vars(last:$position) right
+						}
+						set Vars(result:$position) $resultList
 					}
+					# NOTE: very slow!!
+#					foreach mark $Vars(marks) { $w mark gravity $mark right }
 					$w mark gravity m-0 right
-					# NOTE: the text editor has a severe bug:
-					# If the char after <pos1> is a newline, the command
-					# '<text> delete <pos1> <pos2>' will also delete one
-					# newline before <pos1>. We have to catch this case:
-					if {$prevChar eq "\n"} { $w insert m-0 \n }
-					if {[string length $Vars(last:$position)]} {
-						$w mark gravity $Vars(last:$position) right
+					set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+				} else {
+					set prevChar [$w get current-1c]
+					if {$prevChar eq "\n"} {
+						$w delete current-1c end
 					}
-					set Vars(result:$position) $resultList
 				}
-				# NOTE: very slow!!
-#				foreach mark $Vars(marks) { $w mark gravity $mark right }
-				$w mark gravity m-0 right
+
 				$w configure -state disabled
-				set Vars(lastrow:$position) [lindex [split [$w index end] .] 0]
+			}
+
+			merge {
+				$w tag delete merge
+				set ranges {}
+				foreach {start end} [lindex $node 1] {
+					set ismove [expr {$start == $end}]
+
+					if {$ismove} {
+						set end [::scidb::game::query $position nextKey? $end]
+					}
+
+					set start [$w index $start]
+					set end [$w index $end]
+
+					while {[$w compare $start < $end] && [string is space [$w get $start]]} {
+						set start [$w index $start+1c]
+					}
+					while {[$w compare $end > $start] && [string is space [$w get $end-1c]]} {
+						set end [$w index $end-1c]
+					}
+
+					if {!$ismove} {
+						lassign [scan $end "%u.%u"] line col
+						set end [expr {$line + 1}].0
+					}
+
+					lappend ranges $start $end
+				}
+				$w tag configure merge -background #f0f0f0
+				$w tag add merge {*}$ranges
+				$w tag raise merge
 			}
 		}
 	}
@@ -1111,11 +1160,11 @@ proc DoLayout {position data {w {}}} {
 }
 
 
-proc Indent {w level key} {
-	variable ::pgn::editor::Options
+proc Indent {context w level key} {
+	variable ::pgn::${context}::Options
 
 	if {$level > 0} {
-		if {($::pgn::editor::Options(style:column))} {
+		if {$Options(style:column)} {
 			if {[incr level -1] == 0} { return }
 		}
 		set level [expr {min($level, $Options(indent:max))}]
@@ -1127,6 +1176,8 @@ proc Indent {w level key} {
 proc ProcessGoto {position w key succKey} {
 	variable Vars
 	variable ::pgn::editor::Colors
+
+	if {[llength $Vars(tags:$position)] == 0} { return }
 
 	::move::reset
 	after cancel $Vars(after:$position)
@@ -1165,8 +1216,8 @@ proc ProcessGoto {position w key succKey} {
 }
 
 
-proc UpdateHeader {position w data} {
-	variable ::pgn::editor::Options
+proc UpdateHeader {context position w data} {
+	variable ::pgn::${context}::Options
 	variable Vars
 
 	if {!$Vars(virgin:$position)} {
@@ -1175,7 +1226,7 @@ proc UpdateHeader {position w data} {
 
 	$w mark set current 1.0
 
-	if {$Options(show:opening) || $position < 9} {
+	if {[llength $Vars(tags:$position)] && ($Options(show:opening) || $position < 9)} {
 		set idn 0
 		set opening {}
 		set pos ""
@@ -1228,7 +1279,7 @@ proc UpdateHeader {position w data} {
 }
 
 
-proc InsertMove {position w level key data} {
+proc InsertMove {context position w level key data} {
 	variable ::pgn::editor::Options
 	variable Vars
 
@@ -1341,10 +1392,10 @@ proc InsertMove {position w level key data} {
 			}
 
 			ply {
-				PrintMove $position $w $level $key [lindex $node 1] $prefixAnnotation
+				PrintMove $context $position $w $level $key [lindex $node 1] $prefixAnnotation
 				set needSpace 0
 				if {[llength $suffixAnnotation]} {
-					PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0 1
+					PrintNumericalAnnotation $context $position $w $level $key $suffixAnnotation 0 1
 					set suffixAnnotation {}
 					set needSpace 1
 				}
@@ -1407,13 +1458,13 @@ proc InsertMove {position w level key data} {
 	}
 
 	if {[llength $suffixAnnotation]} {
-		PrintNumericalAnnotation $position $w $level $key $suffixAnnotation 0 0
+		PrintNumericalAnnotation $context $position $w $level $key $suffixAnnotation 0 0
 	}
 }
 
 
 proc InsertDiagram {position w level key data} {
-	variable ::pgn::editor::Options
+	variable ::pgn::${context}::Options
 	variable ::pgn::editor::Colors
 	variable Vars
 
@@ -1460,8 +1511,8 @@ proc InsertDiagram {position w level key data} {
 }
 
 
-proc PrintMove {position w level key data annotation} {
-	variable ::pgn::editor::Options
+proc PrintMove {context position w level key data annotation} {
+	variable ::pgn::${context}::Options
 
 	lassign $data moveNo stm san legal
 
@@ -1478,12 +1529,12 @@ proc PrintMove {position w level key data annotation} {
 		$w insert current $text main
 
 		if {[llength $annotation]} {
-			PrintNumericalAnnotation $position $w $level $key $annotation 1 1
+			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
 			$w insert current "\u2006" main
 		}
 	} else {
 		if {[llength $annotation]} {
-			PrintNumericalAnnotation $position $w $level $key $annotation 1 1
+			PrintNumericalAnnotation $context $position $w $level $key $annotation 1 1
 			$w insert current "\u2006" $main
 		}
 
@@ -1689,8 +1740,8 @@ proc PrintMoveInfo {position w level key data} {
 }
 
 
-proc PrintNumericalAnnotation {position w level key nags isPrefix afterPly} {
-	variable ::pgn::editor::Options
+proc PrintNumericalAnnotation {context position w level key nags isPrefix afterPly} {
+	variable ::pgn::${context}::Options
 
 	set annotation [::font::splitAnnotation $nags]
 	set pos [$w index current]
@@ -2006,11 +2057,9 @@ proc Undo {action} {
 }
 
 
-proc ResetGame {position tags} {
+proc ResetGame {w position {tags {}}} {
 	variable Vars
 	variable ::pgn::editor::Colors
-
-	set w $Vars(pgn:$position)
 
 	$w configure -state normal
 	$w delete 1.0 end
@@ -2020,8 +2069,10 @@ proc ResetGame {position tags} {
 	$w edit reset
 	$w configure -state disabled
 
-	::gamebar::activate $Vars(gamebar) $position
-	Raise $position
+	if {$position <= 9} {
+		::gamebar::activate $Vars(gamebar) $position
+		Raise $position
+	}
 
 	if {[info exists Vars(next:$position)]} {
 		foreach k $Vars(next:$position) {
@@ -2045,15 +2096,24 @@ proc ResetGame {position tags} {
 	set Vars(last:$position) ""
 	set Vars(start:$position) 1
 	set Vars(tags:$position) $tags
+	set Vars(after:$position) {}
 
 	SetLanguages $position
-	::pgn::setup::setupStyle editor $position
 
-	::scidb::game::subscribe pgn $position [namespace current]::DoLayout
-	::scidb::game::subscribe board $position [namespace parent]::board::update
-	::scidb::game::subscribe tree $position [namespace parent]::tree::update
-	::scidb::game::subscribe board $position [namespace parent]::analysis::update
-	::scidb::game::subscribe state $position [namespace current]::StateChanged
+	if {$position <= 10} {
+		::pgn::setup::setupStyle editor $position
+		::scidb::game::subscribe pgn $position [namespace current]::DoLayout
+		::scidb::game::subscribe board $position [namespace parent]::board::update
+		::scidb::game::subscribe tree $position [namespace parent]::tree::update
+		::scidb::game::subscribe board $position [namespace parent]::analysis::update
+		::scidb::game::subscribe state $position [namespace current]::StateChanged
+	}
+}
+
+
+proc ForgetGame {position} {
+	variable Vars
+	array unset Vars *:$position
 }
 
 
@@ -2991,7 +3051,7 @@ proc LanguageChanged {} {
 		} else {
 			set w $Vars(pgn:$position)
 			$w configure -state normal
-			UpdateHeader $position $w $Vars(header:$position)
+			UpdateHeader editor $position $w $Vars(header:$position)
 			$w configure -state disabled
 		}
 	}
@@ -3082,9 +3142,11 @@ set expand [image create photo -data {
 namespace eval pgn {
 namespace eval editor {
 
-proc refresh {regardFontSize}		{ ::application::pgn::refresh $regardFontSize }
-proc resetGoto {w position}		{ ::application::pgn::resetGoto $w $position }
-proc doLayout {position data w}	{ ::application::pgn::DoLayout $position $data $w }
+proc refresh {regardFontSize}					{ ::application::pgn::refresh $regardFontSize }
+proc resetGoto {w position}					{ ::application::pgn::resetGoto $w $position }
+proc doLayout {position data context w}	{ ::application::pgn::DoLayout $position $data $context $w }
+proc resetGame {w position}					{ ::application::pgn::ResetGame $w $position }
+proc forgetGame {position}						{ ::application::pgn::ForgetGame $position }
 
 } ;# editor
 } ;# pgn

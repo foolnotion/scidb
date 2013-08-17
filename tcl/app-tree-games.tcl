@@ -37,7 +37,7 @@ proc build {parent width height} {
 	set columns {white whiteElo black blackElo event result date length}
 	set tb [::gametable::build $table [namespace code [list View $parent.treeGames]] $columns \
 		-takefocus 0 \
-		-listmode 1 \
+		-mode list \
 		-positioncmd ::scidb::tree::position \
 	]
 

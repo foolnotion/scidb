@@ -287,7 +287,10 @@ proc WidgetProc {w command args} {
 
 
 proc UpdateInfo {w file variant} {
+	variable ::scidb::clipbaseName
 	variable ${w}::Vars
+
+	if {$file ne $clipbaseName && [string length [file extension $file]] == 0} { return }
 
 	$Vars(updatecmd)
 	UpdateSwitcher $w $file $variant

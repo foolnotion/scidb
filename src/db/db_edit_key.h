@@ -78,7 +78,7 @@ public:
 	void addPly(unsigned ply);
 	void exchangePly(unsigned ply);
 	void removePly();
-	void incrementPly();
+	void incrementPly(unsigned n = 1);
 
 	void addVariation(unsigned varno);
 	void exchangeVariation(unsigned varno);
@@ -91,6 +91,7 @@ public:
 	bool setPosition(Game& game) const;
 	bool setBoard(MoveNode const* root, Board& board, variant::Type variant) const;
 	Key successorKey(MoveNode const* current) const;
+	Key nextKey(MoveNode const* current) const;
 	MoveNode* findPosition(MoveNode* root, unsigned startPly) const;
 
 	static bool isValid(mstl::string const& key);

@@ -44,7 +44,6 @@ array set Options {
 }
 
 array set Priv {
-	count	0
 	tab	0
 	flip	0
 }
@@ -64,7 +63,7 @@ proc open {parent base variant info view index {fen {}}} {
 		}
 	}
 
-	set position [incr Priv(count)]
+	set position [::game::nextGamePosition]
 	set dlg $parent.overview$position
 	lappend Priv($base:$variant:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
@@ -111,6 +110,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(moves) ""
 	set Vars(modified) 0
 	set Vars(text) {}
+	set Vars(position) $position
 
 	set Priv(tabs) {}
 	for {set i 1} {$i <= 4} {incr i} { BuildTab $nb $boardSize($i) $sw $sh [expr {$i % 2}] }
@@ -222,10 +222,13 @@ proc Update2 {nb} {
 
 
 proc UpdateData {nb id evenMainline} {
+	if {$id > 10} { return }
 	if {![info exists ${nb}::Vars]} { return }
 
 	variable ${nb}::Vars
 	variable Options
+
+	if {$Vars(position) != $id} { return }
 
 	if {$evenMainline} {
 		lassign [::scidb::game::link? $id] base variant index
@@ -536,12 +539,14 @@ proc PopupMenu {nb} {
 		-command [namespace code [list LoadGame $nb]] \
 		-state $state \
 		;
-#	if {[::scidb::game::current] == -1} { sert state disabled } else { set state normal }
-#	$menu add command \
-#		-label $::browser::mc::MergeGame \
-#		-command [list gamebar::mergeGame $nb $position] \
-#		-state $state \
-#		;
+		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+	$menu add command \
+		-label " $::browser::mc::MergeGame..." \
+		-image $::icon::16x16::merge \
+		-compound left \
+		-command [list gamebar::mergeGame [winfo toplevel [winfo parent [winfo toplevel $nb]]] $position] \
+		-state $state \
+		;
 	if {!$Vars(modified)} { set state disabled }
 	$menu add command \
 		-label " $::browser::mc::ReloadGame" \

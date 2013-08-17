@@ -952,4 +952,14 @@ View::randomGameIndex() const
 	return m_filter[table::Games].toIndex(index);
 }
 
+
+void
+View::add(db::table::Type type, unsigned index)
+{
+	M_REQUIRE(index < total(type));
+
+	m_filter[type].add(index);
+	m_selector[type].update(m_filter[type]);
+}
+
 // vi:set ts=3 sw=3:

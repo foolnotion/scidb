@@ -57,6 +57,7 @@ proc build {parent} {
 	set Vars(after:sites) {}
 	set Vars(after:events) {}
 	set Vars(active) 0
+	set Vars(base) ""
 
 	::sitetable::build $lt [namespace code [list View $top]] {} \
 		-selectcmd [list [namespace current]::sites::Search $top] \
@@ -151,10 +152,13 @@ proc Close {path base variant} {
 	variable ${path}::Vars
 
 	array unset Vars $base:$variant:*
-	::sitetable::clear $path.sites
 	::sitetable::forget $path.sites $base $variant
-	::eventtable::clear $path.events
 	::eventtable::forget $path.events $base $variant
+
+	if {$Vars(base) eq "$base:$variant"} {
+		::sitetable::clear $path.sites
+		::eventtable::clear $path.events
+	}
 }
 
 
@@ -234,8 +238,12 @@ proc Search {path base variant view {selected -1}} {
 
 
 proc Update {path id base variant {view -1} {index -1}} {
+	variable ::scidb::clipbaseName
 	variable [namespace parent]::${path}::Vars
 
+	if {$base ne $clipbaseName && [string length [file extension $base]] == 0} { return }
+
+	set Vars(base) "$base:$variant"
 	after cancel $Vars(after:sites)
 	set Vars(after:sites) [after idle [namespace code [list Update2 $id $path $base $variant]]]
 }

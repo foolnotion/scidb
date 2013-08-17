@@ -119,6 +119,7 @@ static char const* CmdSink_			= "::scidb::game::sink?";
 static char const* CmdStrip			= "::scidb::game::strip";
 static char const* CmdSubscribe		= "::scidb::game::subscribe";
 static char const* CmdSwap				= "::scidb::game::swap";
+static char const* CmdSwapPositions	= "::scidb::game::swapPositions";
 static char const* CmdSwitch			= "::scidb::game::switch";
 static char const* CmdTags				= "::scidb::game::tags";
 static char const* CmdToPGN			= "::scidb::game::toPGN";
@@ -944,6 +945,7 @@ struct Subscriber : public Game::Subscriber
 	static Tcl_Obj* m_goto;
 	static Tcl_Obj* m_move;
 	static Tcl_Obj* m_marks;
+	static Tcl_Obj* m_merge;
 	static Tcl_Obj* m_true;
 	static Tcl_Obj* m_false;
 
@@ -960,6 +962,7 @@ struct Subscriber : public Game::Subscriber
 			Tcl_IncrRefCount(m_goto		= Tcl_NewStringObj("goto", -1));
 			Tcl_IncrRefCount(m_move		= Tcl_NewStringObj("move", -1));
 			Tcl_IncrRefCount(m_marks	= Tcl_NewStringObj("marks", -1));
+			Tcl_IncrRefCount(m_merge	= Tcl_NewStringObj("merge", -1));
 
 			Tcl_IncrRefCount(m_true		= Tcl_NewBooleanObj(1));
 			Tcl_IncrRefCount(m_false	= Tcl_NewBooleanObj(0));
@@ -1040,6 +1043,30 @@ struct Subscriber : public Game::Subscriber
 			Visitor visitor(moveStyle);
 			edit::Node::visit(visitor, nodes, tags, termination, toMove);
 			invoke(__func__, m_pgn, m_position, visitor.m_list, nullptr);
+		}
+	}
+
+	void updateMergeResults(Game::MergeResults const& mergeResults) override
+	{
+		if (m_pgn)
+		{
+			int objc = 2*mergeResults.size();
+			Tcl_Obj* objv[objc];
+
+			for (unsigned i = 0; i < mergeResults.size(); ++i)
+			{
+				objv[mstl::mul2(i)] = Tcl_NewStringObj(mergeResults[i].first.id().c_str(), -1);
+				objv[mstl::mul2(i) + 1] = Tcl_NewStringObj(mergeResults[i].second.id().c_str(), -1);
+			}
+
+			Tcl_Obj* objv2[2];
+			Tcl_Obj* objv3[1];
+
+			objv2[0] = m_merge;
+			objv2[1] = Tcl_NewListObj(objc, objv);
+			objv3[0] = Tcl_NewListObj(U_NUMBER_OF(objv2), objv2);
+
+			invoke(__func__, m_pgn, m_position, Tcl_NewListObj(U_NUMBER_OF(objv3), objv3), nullptr);
 		}
 	}
 
@@ -1202,6 +1229,7 @@ Tcl_Obj* Subscriber::m_set		= 0;
 Tcl_Obj* Subscriber::m_goto	= 0;
 Tcl_Obj* Subscriber::m_move	= 0;
 Tcl_Obj* Subscriber::m_marks	= 0;
+Tcl_Obj* Subscriber::m_merge	= 0;
 Tcl_Obj* Subscriber::m_true	= 0;
 Tcl_Obj* Subscriber::m_false	= 0;
 
@@ -1479,7 +1507,20 @@ static int
 cmdSwitch(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	unsigned position = intFromObj(objc, objv, 1);
-	scidb->switchGame(position);
+
+	Application::ReferenceGames updateReferenceGames = Application::DontUpdateReferenceGames;
+
+	if (position == Application::InvalidPosition)
+	{
+		if (Scidb->currentPosition() <= 9)
+			updateReferenceGames = Application::UpdateReferenceGames;
+	}
+	else if (position <= 9)
+	{
+		updateReferenceGames = Application::UpdateReferenceGames;
+	}
+
+	scidb->switchGame(position, updateReferenceGames);
 	return TCL_OK;
 }
 
@@ -1497,6 +1538,14 @@ static int
 cmdSwap(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	scidb->swapGames(unsignedFromObj(objc, objv, 1), unsignedFromObj(objc, objv, 2));
+	return TCL_OK;
+}
+
+
+static int
+cmdSwapPositions(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
+{
+	scidb->swapGamePositions(unsignedFromObj(objc, objv, 1), unsignedFromObj(objc, objv, 2));
 	return TCL_OK;
 }
 
@@ -1852,17 +1901,26 @@ cmdLangSet(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	Game::LanguageSet set;
 	int n;
 
-	if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
-		return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
+	char const* s = Tcl_GetString(languages);
 
-	for (int i = 0; i < n; ++i)
+	if (*s == '*')
 	{
-		Tcl_Obj* lang;
-		Tcl_ListObjIndex(ti, languages, i, &lang);
-		set[mstl::string(Tcl_GetString(lang))] = 1;
+		scidb->game(position).setAllLanguages();
 	}
+	else
+	{
+		if (Tcl_ListObjLength(ti, languages, &n) != TCL_OK)
+			return error(CmdLangSet, nullptr, nullptr, "list of languages expected");
 
-	scidb->game(position).setLanguages(set);
+		for (int i = 0; i < n; ++i)
+		{
+			Tcl_Obj* lang;
+			Tcl_ListObjIndex(ti, languages, i, &lang);
+			set[mstl::string(Tcl_GetString(lang))] = 1;
+		}
+
+		scidb->game(position).setLanguages(set);
+	}
 
 	return TCL_OK;
 }
@@ -2368,9 +2426,13 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 									color::ID color = *side == 'w' ? color::White : color::Black;
 									country::Code country = Scidb->gameInfoAt(pos).findFederation(color);
 									setResult(country::toString(country));
+									break;
 								}
-								break;
 						}
+						break;
+
+					case 'u':			// current?
+						setResult(Scidb->game(pos).currentKey().id());
 						break;
 				}
 			}
@@ -2435,19 +2497,20 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			break;
 
 		case 's':
-			if (cmd[1] == 't')
+			switch (cmd[1])
 			{
-				switch (cmd[2])
-				{
-					case 'a': setResult(Scidb->game(pos).startKey()); break;		// start
-					case 'm': setResult(color::printColor(Scidb->game(pos).sideToMove())); break; // stm
+				case 't':
+					switch (cmd[2])
+					{
+						case 'a': setResult(Scidb->game(pos).startKey()); break;		// start
+						case 'm': setResult(color::printColor(Scidb->game(pos).sideToMove())); break; // stm
 
-					default: return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
-				}
-			}
-			else
-			{
-				return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
+						default: return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
+					}
+					break;
+
+				default:
+					return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
 			}
 			break;
 
@@ -2549,6 +2612,10 @@ cmdQuery(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			setResult(Scidb->databaseName(pos));
 			break;
 
+		case 'n':	// nextKey?
+			setResult(Scidb->game(pos).nextKey(stringFromObj(objc, objv, nextArg)));
+			break;
+
 		default: return error(CmdQuery, nullptr, nullptr, "invalid command %s", cmd);
 	}
 
@@ -2614,12 +2681,13 @@ cmdClear(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdExecute(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const*	cmd = stringFromObj(objc, objv, 1);
+	char const*	cmd		= stringFromObj(objc, objv, 1);
+	int			position	= objc < 3 ? -1 : intFromObj(objc, objv, 2);
 
 	if (equal(cmd, "undo"))
-		scidb->game().undo();
+		scidb->game(position).undo();
 	else if (equal(cmd, "redo"))
-		scidb->game().redo();
+		scidb->game(position).redo();
 	else
 		return error(CmdQuery, nullptr, nullptr, "invalid command %s", stringFromObj(objc, objv, 1));
 
@@ -3480,7 +3548,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
 	char const* cmd = stringFromObj(objc, objv, 1);
 
-	if (::strcmp(cmd, "comments") == 0)
+	if (strcmp(cmd, "comments") == 0)
 	{
 		char const* src = stringFromObj(objc, objv, 2);
 		char const* dst = stringFromObj(objc, objv, 3);
@@ -3499,9 +3567,10 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 		scidb->game().copyComments(src, dst, strip);
 	}
-	else if (::strcmp(cmd, "clipbase") == 0)
+	else if (strcmp(cmd, "game") == 0)
 	{
-		char const* arg = stringFromObj(objc, objv, 3);
+		char const* database = stringFromObj(objc, objv, 2);
+		char const* arg = stringFromObj(objc, objv, 4);
 		copy::Source source;
 
 		if (::strcmp(arg, "original") == 0)
@@ -3511,7 +3580,7 @@ cmdCopy(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else
 			return error(CmdCopy, nullptr, nullptr, "unexpected source '%s'", arg);
 
-		scidb->exportGameToClipbase(unsignedFromObj(objc, objv, 2), source);
+		scidb->copyGame(scidb->multiCursor(database), unsignedFromObj(objc, objv, 3), source);
 	}
 	else
 	{
@@ -3579,14 +3648,19 @@ cmdPaste(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 static int
 cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 {
-	char const* arg	= stringFromObj(objc, objv, 2);
-	char const* pos	= stringFromObj(objc, objv, 3);
-	char const* trans	= stringFromObj(objc, objv, 4);
+	Tcl_Obj*		args	= objectFromObj(objc, objv, 2);
+	char const*	pos	= stringFromObj(objc, objv, 3);
+	char const*	trans	= stringFromObj(objc, objv, 4);
 
 	unsigned variationDepth = unsigned(-1);
 
 	if (isdigit(*stringFromObj(objc, objv, 5)))
 		variationDepth = unsignedFromObj(objc, objv, 5);
+
+	unsigned maximalVariationLength = unsigned(-1);
+
+	if (isdigit(*stringFromObj(objc, objv, 6)))
+		maximalVariationLength = unsignedFromObj(objc, objv, 6);
 
 	position::ID	startPos;
 	move::Order		moveOrder;
@@ -3606,34 +3680,37 @@ cmdMerge(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		return error(CmdMerge, nullptr, nullptr, "unexpected order '%s'", trans);
 
 	unsigned primary = unsignedFromObj(objc, objv, 1);
+	int nargs;
+	Tcl_Obj** objs;
 
-	if (objc > 6)
+	if (Tcl_ListObjGetElements(ti, args, &nargs, &objs) != TCL_OK)
+		return error(CmdMerge, nullptr, nullptr, "list of position id's expected");
+
+	bool rc = false;
+
+	for (int i = 0; i < nargs; ++i)
 	{
-		unsigned target = unsignedFromObj(objc, objv, 6);
+		unsigned to = unsignedFromObj(nargs, objs, i);
+		unsigned modState = 0;
 
-		if (::strcmp(arg, "clipbase") == 0)
+		if (i == 0)
+			modState |= modification::First;
+		if (i == nargs - 1)
+			modState |= modification::Last;
+
+		if (scidb->mergeGame(primary,
+									to,
+									startPos,
+									moveOrder,
+									variationDepth,
+									maximalVariationLength,
+									modState))
 		{
-			setResult(scidb->mergeLastClipbaseGame(primary, target, startPos, moveOrder, variationDepth));
-		}
-		else
-		{
-			unsigned secondary = unsignedFromObj(objc, objv, 2);
-			setResult(scidb->mergeGame(primary, secondary, target, startPos, moveOrder, variationDepth));
+			rc = true;
 		}
 	}
-	else
-	{
-		if (::strcmp(arg, "clipbase") == 0)
-		{
-			setResult(scidb->mergeLastClipbaseGame(primary, startPos, moveOrder, variationDepth));
-		}
-		else
-		{
-			unsigned to = unsignedFromObj(objc, objv, 2);
-			setResult(scidb->mergeGame(primary, to, startPos, moveOrder, variationDepth));
-		}
-	}
 
+	setResult(rc);
 	return TCL_OK;
 }
 
@@ -3697,6 +3774,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdStrip,			cmdStrip);
 	createCommand(ti, CmdSubscribe,		cmdSubscribe);
 	createCommand(ti, CmdSwap,				cmdSwap);
+	createCommand(ti, CmdSwapPositions,	cmdSwapPositions);
 	createCommand(ti, CmdSwitch,			cmdSwitch);
 	createCommand(ti, CmdTags,				cmdTags);
 	createCommand(ti, CmdToPGN,				cmdToPGN);

@@ -199,7 +199,15 @@ proc menuTextvarHook {m index var {args {}}} {
 }
 
 
+proc dialogWatch {dlg} {
+	variable Priv
+	bind $dlg <Visibility> [namespace code [list Visibility %W $dlg %s]]
+}
+
+
 proc dialogRaise {dlg} {
+	variable Priv
+
 	switch [wm state $dlg] {
 		withdrawn - iconic - icon {
 			wm deiconify $dlg
@@ -207,14 +215,17 @@ proc dialogRaise {dlg} {
 
 		default {
 			if {[CheckIsKDE]} {
-				# stupid handling of KDE: without withdrawing
-				# the window will not be raised
-				set geom [wm geometry $dlg]
-				if {[string length $geom]} {
-					set geom [string range $geom [string first + $geom] end]
-					catch { wm geometry $dlg $geom }
+				if {	![info exists Priv(visibility:$dlg)]
+					|| $Priv(visibility:$dlg) ne "VisibilityUnobscured"} {
+					# stupid handling of KDE: without withdrawing
+					# the window will not be raised
+					set geom [wm geometry $dlg]
+					if {[string length $geom]} {
+						set geom [string range $geom [string first + $geom] end]
+						catch { wm geometry $dlg $geom }
+					}
+					wm withdraw $dlg
 				}
-				wm withdraw $dlg
 			}
 			wm deiconify $dlg
 		}
@@ -510,7 +521,7 @@ proc busyCursor {w {state on}} {
 	set Priv(busy:locked) 1
 	::update
 
-	foreach toplevel {.application .setupEngine .help .playerDict} {
+	foreach toplevel {.application .setupEngine .help .playerDict .mergeDialog} {
 		if {[winfo exists $toplevel]} {
 			::scidb::tk::busy $action $toplevel
 
@@ -576,6 +587,12 @@ proc menuItemHighlightSecond {menu} {
 			-background [option get $menu activeBackground Menu] \
 			-foreground [option get $menu activeForeground Menu]
 	}
+}
+
+
+proc Visibility {w dialog state} {
+	variable Priv
+	if {$dialog eq $w} { set Priv(visibility:$w) $state }
 }
 
 

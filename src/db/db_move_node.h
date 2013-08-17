@@ -88,6 +88,16 @@ public:
 	typedef mstl::vector<MoveNode*> Nodes;
 	typedef Comment::LanguageSet LanguageSet;
 
+	enum Flag
+	{
+		NewVariation		= 1 << 10,
+		NewMoves				= 1 << 11,
+		ChangedComment		= 1 << 12,
+		ChangedAnnotation	= 1 << 13,
+		ChangedDiagram		= 1 << 14,
+		MoveHasChanged		= ChangedComment | ChangedAnnotation | ChangedDiagram,
+	};
+
 	MoveNode(Move const& move);
 	MoveNode(Board const& board, Move const& move, variant::Type variant);
 	explicit MoveNode(MoveNode* node);
@@ -120,6 +130,7 @@ public:
 	bool contains(MoveNode const* node) const;
 	bool isFolded() const;
 	bool isEmptyLine() const;
+	bool testFlag(Flag flag) const;
 
 	unsigned variationCount() const;
 	unsigned unfoldedVariationCount() const;
@@ -133,6 +144,7 @@ public:
 	unsigned countComments() const;
 	unsigned countComments(mstl::string const& lang) const;
 	unsigned countVariations() const;
+	unsigned moveNumber() const;
 
 	MoveNode* getLineStart();
 	MoveNode* getLineEnd();
@@ -172,6 +184,7 @@ public:
 	void swapComment(Comment& comment, move::Position position);
 	void setComment(Comment const& comment, move::Position position);
 	void setMove(Move const& move);
+	void setMoveNumber(unsigned no);
 	void merge(MoveNode const* node);
 	void setInfoFlag(bool flag = true);
 	void swapVariations(unsigned varNo1, unsigned varNo2);
@@ -181,6 +194,7 @@ public:
 	void transpose();
 	void finish(Board const& board, variant::Type variant);
 	void unfold();
+	void setFlag(Flag flag);
 
 	void deleteNext();
 	void deleteVariation(unsigned varNo);
@@ -216,6 +230,7 @@ public:
 
 private:
 
+	// IMPORTANT NOTE: regard values of Flag contants
 	enum
 	{
 		HasPreComment			= 1 << move::Ante,
@@ -244,6 +259,7 @@ private:
 	bool checkHasAnnotation() const;
 
 	unsigned			m_flags;
+	unsigned			m_moveNumber;
 	MoveNode*		m_next;
 	MoveNode*		m_prev;
 	Nodes				m_variations;

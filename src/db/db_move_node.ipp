@@ -43,6 +43,7 @@ inline bool MoveNode::hasMoveInfo() const					{ return m_flags & HasMoveInfo; }
 inline bool MoveNode::isFolded() const						{ return m_flags & IsFolded; }
 inline bool MoveNode::threefoldRepetition() const		{ return m_flags & ThreefoldRepetition; }
 inline bool MoveNode::fiftyMoveRule() const				{ return m_flags & FiftyMoveRule; }
+inline bool MoveNode::testFlag(Flag flag) const			{ return m_flags & flag; }
 
 inline bool MoveNode::hasComment(move::Position position) const	 { return m_flags & (1 << position); }
 
@@ -51,6 +52,7 @@ inline Move& MoveNode::move()									{ return m_move; }
 inline Move const& MoveNode::move() const					{ return m_move; }
 inline MoveNode* MoveNode::next() const					{ return m_next; }
 
+inline unsigned MoveNode::moveNumber() const				{ return m_moveNumber; }
 inline unsigned MoveNode::variationCount() const		{ return m_variations.size(); }
 inline MoveNode* MoveNode::clone() const					{ return clone(0); }
 inline Annotation const& MoveNode::annotation() const	{ return *m_annotation; }
@@ -59,9 +61,11 @@ inline Byte MoveNode::commentFlag() const					{ return m_commentFlag; }
 
 inline Comment const& MoveNode::comment(move::Position position) const { return m_comment[position]; }
 
+inline void MoveNode::setMove(Move const& move)					{ m_move = move; }
+inline void MoveNode::setMoveNumber(unsigned no)				{ m_moveNumber = no; }
 inline void MoveNode::setComment(move::Position position)		{ m_flags |= (1 << position); }
 inline void MoveNode::unsetComment(move::Position position)	{ m_flags &= ~(1 << position); }
-inline void MoveNode::setMove(Move const& move)					{ m_move = move; }
+inline void MoveNode::setFlag(Flag flag)							{ m_flags |= flag; }
 
 
 inline

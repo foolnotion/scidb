@@ -219,12 +219,12 @@ proc buildText {path context {forceSbSet 0}} {
 	if {$context ni $ContextList} { lappend ContextList $context }
 
 	set styles {normal bold}
-	if {$context eq "editor"} { lappend styles italic bold-italic }
+	if {$context ne "browser"} { lappend styles italic bold-italic }
 
 	::font::registerTextFonts $context $styles
 	::font::registerFigurineFonts $context
 	::font::registerSymbolFonts $context
-	set complex [expr {$context eq "editor"}]
+	set complex [expr {$context ne "browser"}]
 
 	array set options [array get [namespace current]::DefaultOptions]
 	array set colors [array get [namespace current]::DefaultColors]
@@ -245,6 +245,7 @@ proc buildText {path context {forceSbSet 0}} {
 	} else {
 		set yscrollcmd [list ::scrolledframe::sbset $f.sb]
 	}
+
 	set pgn [tk::text $f.pgn \
 		-yscrollcommand $yscrollcmd \
 		-takefocus 0 \
@@ -269,10 +270,18 @@ proc buildText {path context {forceSbSet 0}} {
 	grid rowconfigure $f 1 -weight 1
 	grid columnconfigure $f 1 -weight 1
 
-	if {$complex} { InitText $path }
-	configureText $path
+	if {$context eq "editor"} { InitText $path }
+	configureText $path $context
 
 	return $pgn
+}
+
+
+proc closeText {path context} {
+	variable ContextList
+
+	set i [lsearch $ContextList $context]
+	if {$i >= 0} { set ContextList [lreplace $ContextList $i $i] }
 }
 
 
@@ -285,15 +294,18 @@ proc configureText {path {fontContext ""}} {
 	set w $path.pgn
 
 	if {[string length $fontContext] == 0} { set fontContext $context }
-	if {$context eq "editor"} { set bold $Options(weight:mainline) } else { set bold normal }
+	if {$context ne "browser"} { set bold $Options(weight:mainline) } else { set bold normal }
 	set charwidth [font measure [$w cget -font] "0"]
 
-	if {$context eq "editor"} {
+	$w configure -font $::font::text($fontContext:normal)
+
+	if {$context ne "browser"} {
 		$w tag configure main -font $::font::text($fontContext:$bold)
 		$w tag configure italic -font $::font::text($fontContext:italic)
 		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
 		$w tag configure variation -foreground [::colors::lookup $Colors(foreground:variation)]
+		$w tag configure merge -background gainsboro
 
 		$w tag configure opening -foreground [::colors::lookup $Colors(foreground:opening)]
 		$w tag configure opening -font $::font::text($fontContext:bold)
@@ -352,7 +364,13 @@ proc setupStyle {context {position -1}} {
 
 	set discardUnknownResult 1
 
-	if {$context eq "editor"} {
+	if {$context eq "browser"} {
+		set paragraphSpacing no
+		set showDiagrams no
+		set showMoveInfo {}
+		set showEmoticons no
+		set showVariationNumbers no
+	} else {
 		set paragraphSpacing $Options(spacing:paragraph)
 		set showDiagrams $Options(show:diagram)
 		set showEmoticons [expr {$Options(show:emoticon) && abs([::font::currentFontSize $context]) >= 12}]
@@ -364,12 +382,6 @@ proc setupStyle {context {position -1}} {
 				if {$show} { lappend showMoveInfo $type }
 			}
 		}
-	} else {
-		set paragraphSpacing no
-		set showDiagrams no
-		set showMoveInfo {}
-		set showEmoticons no
-		set showVariationNumbers no
 	}
 
 	::scidb::game::setupStyle \
@@ -435,7 +447,7 @@ proc openSetupDialog {parent context position args} {
 
 	set style [treetable $top.style -showarrows yes -selectmode browse]
 	set Priv(tree) $style
-	set complex [expr {$context eq "editor"}]
+	set complex [expr {$context ne "browser"}]
 	array set available {}
 	foreach entry $StyleLayout {
 		lassign $entry depth complexOnly name
@@ -471,7 +483,6 @@ proc openSetupDialog {parent context position args} {
 	]
 
 	bind $options <<ChooseColorSelected>> [namespace code [list SelectColor $context $position %d]]
-
 	foreach pane [array names Priv pane:*] { $options add $Priv($pane) -sticky nsew }
 	$options paneconfigure $Priv(pane:colors) -sticky new
 	setupStyle $context $position
@@ -479,7 +490,8 @@ proc openSetupDialog {parent context position args} {
 
 	set sample [::ttk::labelframe $top.sample -text $::mc::Preview]
 	set Priv(pgn) [buildText $sample.text $context yes]
-	$Priv(pgn) configure -font ::font::text(setup:normal)
+
+	$Priv(pgn) configure -font $::font::text(setup:normal)
 	$Priv(pgn) configure -inactiveselectbackground white
 	$Priv(pgn) configure -selectforeground black
 	set Priv(path) $sample.text
@@ -581,7 +593,7 @@ proc ApplyOptions {context position close} {
 		set Timestamp($context) [clock microseconds]
 		DoClose $context $position
 	} elseif {[llength $Priv(refresh:cmd)]} {
-		$Priv(refresh:cmd)
+		{*}$Priv(refresh:cmd)
 	}
 }
 
@@ -660,7 +672,7 @@ proc FinishReset {context position} {
 	array set New_Colors [array get Colors]
 	array set New_Fonts [array get ::font::Options]
 
-	if {[llength $Priv(refresh:cmd)]} { $Priv(refresh:cmd) }
+	if {[llength $Priv(refresh:cmd)]} { {*}$Priv(refresh:cmd) }
 
 	foreach attr [array names Colors] {
 		if {[info exists Recent($attr)]} {
@@ -728,7 +740,7 @@ proc DoUpdateDisplay {context position data} {
 	variable Priv
 
 	if {[::scidb::game::query $position open?]} {
-		::pgn::${context}::doLayout $position $data $Priv(pgn)
+		::pgn::${context}::doLayout $position $data $context $Priv(pgn)
 	}
 }
 
@@ -746,7 +758,7 @@ proc BuildFrame(topics) {w topic context position tree} {
 	set maxwidth 0
 	set mw [winfo parent $w]
 	set count 0
-	set complex [expr {$context eq "editor"}]
+	set complex [expr {$context ne "browser"}]
 
 	foreach entry $StyleLayout {
 		lassign $entry level complexOnly tag
@@ -833,7 +845,7 @@ proc BuildFrame(Layout) {w position context} {
 	variable	[namespace parent]::${context}::Options
 
 	ttk::frame $w -borderwidth 0 -takefocus 0
-	set complex [expr {$context eq "editor"}]
+	set complex [expr {$context ne "browser"}]
 
 	### Section: paragraph Layout ##########################################
 	set m [ttk::labelframe $w.moveLayout -text $mc::Section(ParLayout)]
@@ -1588,7 +1600,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 				}
 			}
 
-			if {$context eq "editor"} {
+			if {$context ne "browser"} {
 				after idle [list $w tag configure comment:$key:p:$langID \
 					-foreground [::colors::lookup $hilite(comment)]]
 				after idle [list $w tag configure info:$key -foreground [::colors::lookup $hilite(info)]]
@@ -1741,9 +1753,11 @@ proc WriteOptions {chan} {
 		if {$cxt ni $context} { lappend context $cxt }
 	}
 
-	foreach cxt {browser editor} {
+	foreach cxt {browser editor merge} {
 		if {[info exists [namespace parent]::${cxt}::Options]} {
 			::options::writeItem $chan [namespace parent]::${cxt}::Options
+		}
+		if {[info exists [namespace parent]::${cxt}::Colors]} {
 			::options::writeItem $chan [namespace parent]::${cxt}::Colors
 		}
 	}

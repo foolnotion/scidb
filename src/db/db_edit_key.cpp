@@ -142,7 +142,7 @@ Key::removePly()
 
 
 void
-Key::incrementPly()
+Key::incrementPly(unsigned n)
 {
 	M_REQUIRE(!isVariationId());
 
@@ -155,7 +155,7 @@ Key::incrementPly()
 	unsigned number = ::strtoul(s, nullptr, 10);
 
 	m_id.resize(s - m_id.begin());
-	m_id.format("%u", number + 1);
+	m_id.format("%u", number + n);
 }
 
 
@@ -436,6 +436,29 @@ Key::successorKey(MoveNode const* node) const
 
 	Key key(m_id);
 	key.incrementPly();
+	return key;
+}
+
+
+Key
+Key::nextKey(MoveNode const* node) const
+{
+	M_REQUIRE(node);
+	M_REQUIRE(node->isBeforeLineEnd());
+
+	Key key(m_id);
+
+	if (node->hasVariation())
+	{
+		unsigned plyNumber = key.plyNumber();
+		key.addVariation(0);
+		key.addPly(plyNumber - 1);
+	}
+	else
+	{
+		key.incrementPly();
+	}
+
 	return key;
 }
 

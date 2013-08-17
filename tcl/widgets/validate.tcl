@@ -47,9 +47,10 @@ proc spinboxInt {w args} {
 		bind $w <FocusOut> +[namespace code [list ClampInt %W $opts(-unlimited)]]
 	}
 	bind $w <FocusOut> {+ %W selection clear }
+	bind $w <FocusOut> +[namespace code [list SendData $w $opts(-unlimited)]]
 	bind $w <FocusIn>  {+ %W configure -validate key }
 	if {$opts(-unlimited)} {
-		bind $w <ButtonRelease-1> [namespace code [list CheckMinValue $w %x %y]]
+		bind $w <ButtonRelease-1> [namespace code { CheckMinValue %W %x %y }]
 		$w set ""
 	}
 	ClampInt $w $opts(-unlimited)
@@ -67,6 +68,7 @@ proc spinboxFloat {w args} {
 		bind $w <FocusOut> +[namespace code { ClampFloat %W }]
 	}
 	bind $w <FocusOut> {+ %W selection clear }
+	bind $w <FocusOut> +[namespace code { SendData %W }]
 	bind $w <FocusIn>  {+ %W configure -validate key }
 }
 
@@ -75,6 +77,7 @@ proc entryFloat {w} {
 	$w configure -validatecommand [namespace code { validateFloat %P }] -invalidcommand { bell }
 	bind $w <FocusOut> +[namespace code { formatFloat %W }]
 	bind $w <FocusOut> {+ %W selection clear }
+	bind $w <FocusOut> +[namespace code { SendData %W }]
 	bind $w <FocusIn>  {+ %W configure -validate key }
 }
 
@@ -83,6 +86,7 @@ proc entryUnsigned {w} {
 	$w configure -validatecommand [namespace code { validateUnsigned %P }] -invalidcommand { bell }
 	bind $w <FocusOut> +[namespace code { formatUnsigned %W }]
 	bind $w <FocusOut> {+ %W selection clear }
+	bind $w <FocusOut> +[namespace code { SendData %W }]
 	bind $w <FocusIn>  {+ %W configure -validate key }
 }
 
@@ -175,20 +179,27 @@ proc CheckMinValue {w x y} {
 	set value [string trim [$w get]]
 
 	switch -exact [$w identify $x $y] {
-		buttonup {
-			if {![string is integer -strict $value]} {
-				after idle [list $w set [expr {int([$w cget -from] + 1)}]]
+		uparrow {
+			if {![string is integer -strict $value] || int([$w cget -from]) == $value} {
+				set value [expr {int([$w cget -from] + 1)}]
+				$w set $value
 			}
 		}
-		buttondown {
-			if {![string is integer -strict $value] || int([$w cget -from]) + 1 == $value} {
-				after idle [list $w set $mc::Unlimited]
+		downarrow {
+			if {![string is integer -strict $value] || int([$w cget -from]) == $value} {
+				$w set $mc::Unlimited
 			}
-		}
-		default {
-			return
 		}
 	}
+
+	SendData $w 1
+}
+
+
+proc SendData {w {unlimited 0}} {
+	set value [string trim [$w get]]
+	if {$unlimited && ![string is integer -strict $value]} { set value [$w cget -from] }
+	event generate $w <<ValueChanged>> -data $value
 }
 
 

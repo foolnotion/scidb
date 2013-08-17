@@ -2130,7 +2130,8 @@ Comment::remove(mstl::string const& lang)
 
 	if (isXml())
 	{
-		collect();
+		if (m_languageSet.empty())
+			collect();
 		m_languageSet.erase(lang);
 		strip(m_languageSet);
 	}

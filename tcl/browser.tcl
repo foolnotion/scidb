@@ -63,7 +63,6 @@ namespace import ::tcl::mathfunc::min
 namespace import ::tcl::mathfunc::max
 
 array set Priv {
-	count						100
 	controls:height		19
 	fullscreen:size		0
 	fullscreen:size:ext	0
@@ -111,7 +110,7 @@ proc open {parent base variant info view index {fen {}}} {
 			return
 		}
 	}
-	set position [incr Priv(count)]
+	set position [::game::nextGamePosition]
 	set dlg $parent.browser$position
 	lappend Priv($base:$variant:$number:$view) $dlg
 	tk::toplevel $dlg -class Scidb
@@ -444,7 +443,7 @@ proc hidePosition {parent} {
 }
 
 
-proc refresh {{regardFontSize no}} {
+proc refresh {{unused -1}} {
 	variable Active
 
 	::widget::busyCursor on
@@ -646,12 +645,16 @@ proc Update2 {position} {
 
 
 proc UpdateInfo {position id} {
+	if {$id > 10} { return }
 	if {![info exists ${position}::Vars]} { return }
 
 	variable ${position}::Vars
 	variable Options
 
-	if {[::scidb::game::link? $position] ne [::scidb::game::link? $id]} {
+	set sink [::scidb::game::sink? $position]
+	lset sink 1 [::util::toMainVariant [lindex $sink 1]]
+
+	if {$Vars(link) eq $sink} {
 		set Vars(modified) 1
 		$Vars(header) configure -background [::colors::lookup $Options(background:modified)]
 		foreach item {event white black} {
@@ -755,6 +758,8 @@ proc NextGame {parent position {step 0}} {
 		set Vars(modified) 0
 	}
 	::scidb::game::refresh $position -immediate
+	set Vars(link) [lrange [::scidb::game::link? $position] 0 2]
+	lset Vars(link) 1 [::util::toMainVariant [lindex $Vars(link) 1]]
 }
 
 
@@ -1300,6 +1305,7 @@ proc Destroy {dlg w position} {
 	if {[llength $Priv($key)] == 0} { array unset Priv $key }
 
 	::scidb::game::release $position
+	::pgn::setup::closeText $Vars(frame) browser
 	namespace delete [namespace current]::${position}
 	array unset Active $position
 }
@@ -1396,10 +1402,10 @@ proc PopupMenu {parent board position {what ""}} {
 			;
 		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
 		$menu add command \
-			-label " $mc::MergeGame..." \
-			-image $::icon::16x16::none \
+			-label " $::merge::mc::MergeGameFrom..." \
+			-image $::icon::16x16::merge \
 			-compound left \
-			-command [list gamebar::mergeGame $dlg $position] \
+			-command [list gamebar::mergeGame $parent $position] \
 			-state $state \
 			;
 		if {$Vars(modified)} { set state normal } else { set state disabled }

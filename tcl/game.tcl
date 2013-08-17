@@ -89,7 +89,8 @@ variable History	{}
 
 variable HistorySize		10
 variable MaxPosition		9
-variable Count				0
+variable EditorCount		0
+variable BroserCount		100
 variable LockedGames		{}
 variable Selection		-1
 
@@ -114,7 +115,7 @@ proc new {parent args} {
 	variable MaxPosition
 	variable List
 	variable Options
-	variable Count
+	variable EditorCount
 	variable Vars
 
 	array set opts {
@@ -136,7 +137,7 @@ proc new {parent args} {
 	# TODO: check whether base is open or existing!
 
 	if {$number == -1} {
-		set number [incr Count]
+		set number [incr EditorCount]
 		set lock 1
 	} else {
 		set lock $opts(-lock)
@@ -146,12 +147,12 @@ proc new {parent args} {
 	set codec [::scidb::db::get codec $base $variant]
 	set id [list $base $codec $number $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
-	set entry [list $time 0 0 $id]
+	set entry [list $time 0 0 0 $id]
 	set tags {}
 	if {$base eq $scratchbaseName} {
 		set pos -1
 	} else {
-		set pos [lsearch -exact -index 3 $List $id]
+		set pos [lsearch -exact -index 4 $List $id]
 	}
 	set loadPos -1
 	set cmd ""
@@ -170,7 +171,7 @@ proc new {parent args} {
 		}
 		set crc [::scidb::game::query $loadPos checksum]
 
-		if {$crc ne [lindex $List $pos 4]} {
+		if {$crc ne [lindex $List $pos 5]} {
 			# TODO: open new slot iff only crc-index differs
 			set msg [format $mc::GameHasChanged [expr {$number + 1}]]
 			set det $mc::GameHasChangedDetail
@@ -202,7 +203,7 @@ proc new {parent args} {
 			set pos -1
 			for {set i 0} {$i < [llength $List]} {incr i} {
 				set elem [lindex $List $i]
-				if {![lindex $elem 1] && ![lindex $elem 2]} {
+				if {![lindex $elem 1] && ![lindex $elem 2] && ![lindex $elem 3]} {
 					if {$pos < 0 || [llength [lindex $elem 0]]} {
 						set pos $i
 					}
@@ -229,7 +230,7 @@ proc new {parent args} {
 				if {![::scidb::game::query $backupPos open?]} {
 					::scidb::game::new $backupPos $opts(-variant)
 				}
-				::scidb::game::swap $pos $backupPos
+				::scidb::game::swapPositions $pos $backupPos
 				::scidb::game::release $pos ;# release scratch game
 			}
 			if {![load $parent $pos $base \
@@ -243,7 +244,7 @@ proc new {parent args} {
 					if {![::scidb::game::query $pos open?]} {
 						::scidb::game::new $pos $opts(-variant)
 					}
-					::scidb::game::swap $pos $backupPos
+					::scidb::game::swapPositions $pos $backupPos
 				}
 				return -1
 			}
@@ -252,7 +253,7 @@ proc new {parent args} {
 			}
 			set crc [::scidb::game::query $pos checksum]
 		} else {
-			::scidb::game::swap $pos $loadPos
+			::scidb::game::swapPositions $pos $loadPos
 			set Vars(lookup:$pos) $Vars(lookup:$loadPos)
 			::scidb::game::release $loadPos
 		}
@@ -355,8 +356,8 @@ proc lock {position} {
 	variable List
 	variable MaxPosition
 
-	set rc [::application::pgn::lock $position]
-	if {$rc && $position < $MaxPosition} { lset List $position 2 1 }
+	if {$position >= $MaxPosition} { return 0 }
+	if {[set rc [::application::pgn::lock $position]]} { lset List $position 2 1 }
 	return $rc
 }
 
@@ -365,9 +366,18 @@ proc unlock {position} {
 	variable List
 	variable MaxPosition
 
-	set rc [::application::pgn::unlock $position]
-	if {$rc && $position < $MaxPosition} { lset List $position 2 0 }
+	if {$position >= $MaxPosition} { return 0 }
+	if {[set rc [::application::pgn::unlock $position]]} { lset List $position 2 0 }
 	return $rc
+}
+
+
+proc locked? {position} {
+	variable List
+	variable MaxPosition
+
+	if {$position >= $MaxPosition} { return 0 }
+	return [lindex $List $position 2]
 }
 
 
@@ -377,6 +387,27 @@ proc lockChanged {position locked} {
 
 	if {$position < $MaxPosition} {
 		lset List $position 2 $locked
+	}
+}
+
+
+proc freeze {position {tooltipvar ""}} {
+	variable List
+
+	::application::pgn::freeze $position $tooltipvar
+	lset List $position 3 1
+}
+
+
+proc unfreeze {position} {
+	variable List
+
+	::application::pgn::unfreeze $position
+	lset List $position 3 0
+	set gamebar [::application::pgn::gamebar]
+
+	if {[::gamebar::size $gamebar] > 1 && ![lindex $List $position 2] && ![lindex $List $position 1]} {
+		::gamebar::remove $gamebar $position
 	}
 }
 
@@ -457,7 +488,7 @@ proc setFirst {base variant tags encoding} {
 	if {[llength $List] == 0} { lappend List {} }
 	set id [list $base sci 0 $variant]
 	set time [clock format [clock seconds] -format {%Y.%m.%d %H:%M:%S}]
-	lset List 0 [list $time 0 0 $id {0 0} $tags $encoding]
+	lset List 0 [list $time 0 0 0 $id {0 0} $tags $encoding]
 }
 
 
@@ -467,8 +498,14 @@ proc release {position} {
 
 	update ;# fire dangling events
 	::scidb::game::release $position
-	lset List $position {{} 0 0 {{} {} {} {} {}} {0 0} {} {}}
+	lset List $position {{} 0 0 0 {{} {} {} {} {}} {0 0} {} {}}
 	set Vars(lookup:$position) {}
+}
+
+
+proc nextGamePosition {} {
+	variable BroserCount
+	return [incr BroserCount]
 }
 
 
@@ -487,7 +524,7 @@ proc closeAll {parent base variant {title ""} {detail ""}} {
 	set query 1
 
 	foreach entry $List {
-		lassign $entry time modified locked database crc tags _
+		lassign $entry time modified locked frozen database crc tags _
 		lassign $database name _ number var
 
 		if {$base eq $name && $variant eq $var} {
@@ -560,7 +597,7 @@ proc releaseAll {parent base {variant ""}} {
 	set pos 0
 
 	foreach entry $List {
-		lassign $entry time modified locked database crc tags _
+		lassign $entry time modified locked frozen database crc tags _
 		lassign $database name _ number var
 
 		if {$base eq $name && ([string length $variant] == 0 || $variant eq $var)} {
@@ -656,7 +693,7 @@ proc queryCloseApplication {parent} {
 	set pos 0
 
 	foreach entry $List {
-		lassign $entry time modified locked key crc tags encoding
+		lassign $entry time modified locked frozen key crc tags encoding
 		lassign $key name _ number variant
 
 		if {$modified} {
@@ -760,7 +797,7 @@ proc backup {} {
 		if {	[llength [lindex $List $i 0]]
 			&& [::scidb::game::query $i modified?]
 			&& ![::scidb::game::query $i empty?]} {
-			lassign [lindex $List $i] time _ _ key crc _ encoding
+			lassign [lindex $List $i] time _ _ _ key crc _ encoding
 			lassign [::scidb::game::link? $i] _ _ _ crcIndex crcMoves
 			set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $i] + 1}]
 			set filename [file join $::scidb::dir::backup game-$index.pgn]
@@ -834,7 +871,7 @@ proc recover {parent} {
 					set Current(key) $key
 					::scidb::game::new $count $variant
 					set tags [::scidb::game::tags $count]
-					lappend List [list $time 1 0 $key $crc $tags $encoding]
+					lappend List [list $time 1 0 0 $key $crc $tags $encoding]
 					::scidb::game::import $count $content [namespace current]::Log {} \
 						-encoding utf-8 \
 						-variation 0 \
@@ -844,7 +881,7 @@ proc recover {parent} {
 						-variant $variant \
 						;
 					Update _ $count
-					set tags [lindex $List $count 5]
+					set tags [lindex $List $count 6]
 					::scidb::game::sink $count $base $index {*}$crcLink
 					::application::pgn::add $count $base $variant $tags
 					::application::pgn::setModified $count
@@ -945,7 +982,7 @@ proc reopenLockedGames {parent} {
 			}
 
 			set tags [::scidb::game::tags $count]
-			lappend List [list $time 0 1 $key $crc $tags]
+			lappend List [list $time 0 1 0 $key $crc $tags]
 			Update _ $count
 			::application::pgn::add $count $base $variant $tags {*}$at
 			::application::pgn::lock $count
@@ -973,7 +1010,7 @@ proc traverseHistory {headerScript gameScript} {
 	set count 0
 
 	foreach entry $History {
-		if {[lsearch -exact -index 3 $List [lindex $entry 1]] == -1} {
+		if {[lsearch -exact -index 4 $List [lindex $entry 1]] == -1} {
 			lassign $entry tags key 
 			set base [lindex $key 0]
 			set i [lsearch -exact $myList $base]
@@ -1018,7 +1055,7 @@ proc openGame {parent index} {
 		} else {
 			set pos [new $parent -base $base -number $number -variant $variant]
 			if {$pos >= 0} {
-				set crcLoad [lindex $List $pos 4]
+				set crcLoad [lindex $List $pos 5]
 				if {$crcLoad ne $crcHist} {
 					# TODO: open new slot iff only crc-index differs
 					set msg [format $mc::GameHasChanged [expr {$number + 1}]]
@@ -1052,7 +1089,7 @@ proc UnlockGames {} {
 	set LockedGames {}
 
 	for {set i 0} {$i < [llength $List]} {incr i} {
-		lset List $i 2 0
+		lset List $i 3 0
 	}
 }
 
@@ -1189,7 +1226,7 @@ proc Update {_ position} {
 	variable MaxPosition
 
 	if {$position < $MaxPosition} {
-		set key    [lindex $List $position 3]
+		set key    [lindex $List $position 4]
 		set tags   [::scidb::game::tags $position]
 
 		lassign [::scidb::game::link? $position] base variant number
@@ -1210,13 +1247,13 @@ proc Update {_ position} {
 			set variant Normal
 		}
 
-		lset List $position 3 0 $base
-		lset List $position 3 1 $codec
-		lset List $position 3 2 $number
-		lset List $position 3 3 [::scidb::game::query $position variant?]
+		lset List $position 4 0 $base
+		lset List $position 4 1 $codec
+		lset List $position 4 2 $number
+		lset List $position 4 3 [::scidb::game::query $position variant?]
 		lset List $position 1 [::scidb::game::query $position modified?]
-		lset List $position 4 [::scidb::game::query $position checksum]
-		lset List $position 5 $tags
+		lset List $position 5 [::scidb::game::query $position checksum]
+		lset List $position 6 $tags
 
 		if {[::scidb::db::get open? $base $variant]} {
 			UpdateHistoryEntry $position $base $variant $tags
@@ -1258,8 +1295,7 @@ proc UpdateHistoryEntry {pos base variant tags} {
 	variable HistorySize
 
 	if {[llength $tags] == 0} { return }
-	if {$base eq $scratchbaseName} { return }
-	if {$base eq $clipbaseName} { return }
+	if {[string length [file extension $base]] == 0} { return }
 
 	foreach pair $tags {
 		lassign $pair name value
@@ -1268,7 +1304,7 @@ proc UpdateHistoryEntry {pos base variant tags} {
 	set info {}
 	set encoding [::scidb::db::get encoding $base]
 	foreach name {Event Site Date Round White Black Result} { lappend info $lookup($name) }
-	set entry [list $info [lindex $List $pos 3] [lindex $List $pos 4] $encoding]
+	set entry [list $info [lindex $List $pos 4] [lindex $List $pos 5] $encoding]
 
 	set i 0
 	set k -1
@@ -1279,7 +1315,7 @@ proc UpdateHistoryEntry {pos base variant tags} {
 		incr i
 	}
 
-	if {$k >= 0 && $base eq [lindex $List $pos 3 0] && $variant eq [lindex $List $pos 3 3]} {
+	if {$k >= 0 && $base eq [lindex $List $pos 4 0] && $variant eq [lindex $List $pos 4 3]} {
 		if {$k == -1} { set k end }
 		set History [lreplace $History $k $k]
 	}

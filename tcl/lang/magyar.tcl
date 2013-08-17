@@ -1135,7 +1135,7 @@
 ::gametable::mc::SortOnAverageElo		"Rendezés átláagos Elo szerint (csökkenő)"
 ::gametable::mc::SortOnAverageRating		"Rendezés átlagos rating szerint (csökkenő)"
 ::gametable::mc::SortOnDate			"Rendezés dátum szerint (csökkenő)"
-::gametable::mc::SortOnNumber			"Sort on game number (asscending)"
+::gametable::mc::SortOnNumber			"Sort on game number (ascending)"
 ::gametable::mc::ReverseOrder			"Sorrend megfordítása"
 ::gametable::mc::CancelSort			"Cancel sort" ;# NEW
 ::gametable::mc::NoMoves				"No moves"
@@ -1376,18 +1376,9 @@
 ::gamebar::mc::CopyThisGameToClipboard		"Copy this game to Clipboard (PGN format)" ;# NEW
 ::gamebar::mc::ExportThisGame			"Export this game" ;# NEW
 ::gamebar::mc::PasteLastClipbaseGame		"Paste last Clipbase game" ;# NEW
-::gamebar::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
 ::gamebar::mc::PasteGameFrom			"Paste game" ;# NEW
-::gamebar::mc::MergeGameFrom			"Merge game" ;# NEW
 ::gamebar::mc::LoadGameNumber			"Load game number" ;# NEW
 ::gamebar::mc::ReloadCurrentGame		"Re-load current game" ;# NEW
-::gamebar::mc::MergeWithCurrentGame		"Merge with current game" ;# NEW
-::gamebar::mc::CreateNewGame			"Create new game" ;# NEW
-::gamebar::mc::StartFromCurrentPosition		"Start merge from current position" ;# NEW
-::gamebar::mc::StartFromInitialPosition		"Start merge from initial position" ;# NEW
-::gamebar::mc::NoTranspositions			"No transpositions" ;# NEW
-::gamebar::mc::IncludeTranspositions		"Include transpositions" ;# NEW
-::gamebar::mc::VariationDepth			"Variation depth" ;# NEW
 ::gamebar::mc::OriginalVersion			"Original version from database" ;# NEW
 ::gamebar::mc::ModifiedVersion			"Modified version in game editor" ;# NEW
 ::gamebar::mc::WillCopyModifiedGame		"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open." ;# NEW
@@ -1407,6 +1398,24 @@
 ::gamebar::mc::Tip(Suicide)			"In case of stalemate the side with fewer\npieces will win (according to FICS rules)." ;# NEW
 ::gamebar::mc::Tip(Giveaway)			"In case of stalemate the side which is\nstalemate wins (according to international rules)." ;# NEW
 ::gamebar::mc::Tip(Losers)			"The king is like in normal chess, and you can also\nwin by getting checkmated or stalemated." ;# NEW
+
+### merge ##############################################################
+::merge::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
+::merge::mc::MergeWithCurrentGame		"Merge with current game" ;# NEW
+::merge::mc::MergeGameFrom			"Merge game" ;# NEW
+
+::merge::mc::MergeTitle				"Merge with games" ;# NEW
+::merge::mc::CreateNewGame			"Create new game" ;# NEW
+::merge::mc::StartFromCurrentPosition		"Start merge from current position" ;# NEW
+::merge::mc::StartFromInitialPosition		"Start merge from initial position" ;# NEW
+::merge::mc::NoTranspositions			"No transpositions" ;# NEW
+::merge::mc::IncludeTranspositions		"Include transpositions" ;# NEW
+::merge::mc::VariationDepth			"Variation depth" ;# NEW
+::merge::mc::UpdatePreview			"Update preview" ;# NEW
+
+::merge::mc::AlreadyInUse			"Merge dialog is already in use with game #%d." ;# NEW
+::merge::mc::AlreadyInUseDetail			"Please finish merge of this game before merging into another game. This means you have to switch to game #%d for continuing." ;# NEW
+::merge::mc::CannotMerge			"Cannot merge games with different variants." ;# NEW
 
 ### validate ###########################################################
 ::validate::mc::Unlimited	"unlimited" ;# NEW

@@ -56,6 +56,7 @@ public:
 
 	TagSet& operator=(TagSet const& set);
 
+	bool isEmpty() const;
 	bool contains(tag::ID tag) const;
 	bool contains(mstl::string const& tag) const;
 	bool isUserSupplied(tag::ID tag) const;

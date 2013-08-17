@@ -49,6 +49,7 @@ static MoveInfoSet const NoMoveInfo;
 
 MoveNode::MoveNode(Move const& move)
 	:m_flags(0)
+	,m_moveNumber(0)
 	,m_next(0)
 	,m_prev(0)
 	,m_annotation(const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
@@ -57,11 +58,14 @@ MoveNode::MoveNode(Move const& move)
 	,m_move(move)
 	,m_commentFlag(0)
 {
+	static_assert(move::Ante == 0 || move::Ante == 1, "invalid bit constants");
+	static_assert(move::Post == 0 || move::Post == 1, "invalid bit constants");
 }
 
 
 MoveNode::MoveNode(Board const& board, Move const& move, variant::Type variant)
 	:m_flags(0)
+	,m_moveNumber(board.moveNumber())
 	,m_next(0)
 	,m_prev(0)
 	,m_annotation(const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
@@ -93,6 +97,7 @@ MoveNode::MoveNode(MoveNode* node)
 
 MoveNode::MoveNode(Annotation* set)
 	:m_flags(0)
+	,m_moveNumber(0)
 	,m_next(0)
 	,m_prev(0)
 	,m_annotation(set ? set : const_cast<Annotation*>(Annotation::defaultSet(nag::Null)))
@@ -143,6 +148,7 @@ MoveNode::setMove(Board const& board, Move const& move, variant::Type variant)
 //	M_REQUIRE(board.isValidMove(move));
 
 	m_move = move;
+	m_moveNumber = board.moveNumber();
 	board.prepareUndo(m_move);
 	board.prepareForPrint(m_move, variant, Board::InternalRepresentation);
 }

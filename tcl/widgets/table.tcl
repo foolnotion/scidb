@@ -139,6 +139,9 @@ set KeySqueezeColumns	<Control-Key-numbersign>
 
 
 proc table {args} {
+	variable icon::13x13::checked
+	variable icon::13x13::unchecked
+	variable icon::13x13::none
 	variable Defaults
 	variable Colors
 	variable KeyFitColumns
@@ -209,6 +212,8 @@ proc table {args} {
 		;
 	setColumnBackground $table tail [lookupColor $Options(-stripes)] [lookupColor $background]
 	$table.t state define deleted
+	$table.t state define check
+	$table.t state define nocheck
 	$table.t element create elemIco image
 	set colors [list [lookupColor $Options(-selectionbackground)] selected]
 	if {[llength $Options(-highlightcolor)]} {
@@ -216,6 +221,7 @@ proc table {args} {
 	}
 	$table.t element create elemSel rect -fill $colors
 	$table.t element create elemImg rect -fill $colors
+	$table.t element create elemChk image -image [list $checked check $unchecked nocheck $none {}]
 	$table.t element create elemBrd border  \
 		-filled no                           \
 		-relief raised                       \
@@ -291,6 +297,7 @@ proc addcol {table id args} {
 		-optimizable			1
 		-fixed					0
 		-pixels					0
+		-checkbutton			0
 		-width					10
 		-justify					left
 		-lock                none
@@ -504,7 +511,7 @@ proc addcol {table id args} {
 	foreach opt [array names opts] { set Options($opt:$id) $opts($opt) }
 	incr Vars(size)
 
-	MakeStyles $table $id $foreground $disabledforeground
+	MakeStyles $table $id $foreground $disabledforeground $opts(-checkbutton)
 }
 
 
@@ -1066,19 +1073,31 @@ proc SetText {table id var args} {
 }
 
 
-proc MakeStyles {table id foreground disabledForeground} {
+proc MakeStyles {table id foreground disabledForeground isCheckButton} {
 	variable ${table}::Vars
 	variable ${table}::Options
 	variable options
 
-	$table.t element create elemTxt$id text -lines 1 -font $Options(-font)
-	SetForeground $table $id
+	if {$isCheckButton} {
+		$table.t element create elemTxt$id text -lines 1 -font $Options(-font)
+		SetForeground $table $id
 
-	$table.t style create style$id
-	$table.t style elements style$id [list elemSel elemImg elemBrd elemIco elemTxt$id]
-	setDefaultLayout $table $id style$id
-	$table.t style layout style$id elemSel -union elemTxt$id -iexpand nswe
-	$table.t style layout style$id elemBrd -iexpand xy -detach yes
+		$table.t style create style$id
+		$table.t style elements style$id [list elemSel elemImg elemBrd elemChk elemIco elemTxt$id]
+		setDefaultLayout $table $id style$id
+		$table.t style layout style$id elemSel -union elemTxt$id -iexpand nswe
+		$table.t style layout style$id elemBrd -iexpand xy -detach yes
+		$table.t style layout style$id elemChk -expand nws -padx {4 0}
+	} else {
+		$table.t element create elemTxt$id text -lines 1 -font $Options(-font)
+		SetForeground $table $id
+
+		$table.t style create style$id
+		$table.t style elements style$id [list elemSel elemImg elemBrd elemIco elemTxt$id]
+		setDefaultLayout $table $id style$id
+		$table.t style layout style$id elemSel -union elemTxt$id -iexpand nswe
+		$table.t style layout style$id elemBrd -iexpand xy -detach yes
+	}
 }
 
 
@@ -1149,6 +1168,17 @@ proc Highlight {table x y} {
 	switch [lindex $id 0] {
 		item {
 			set row [$table.t item order [lindex $id 1] -visible]
+			set elem [lindex $id 5]
+			if {$elem eq "elemChk"} {
+				set states [$table.t item state get $row]
+				if {"nocheck" in $states} {
+					$table.t item state set $row {check !nocheck}
+					event generate $table <<TableCheckbutton>> -data [list $row 1]
+				} elseif {"check" in $states} {
+					$table.t item state set $row {!check nocheck}
+					event generate $table <<TableCheckbutton>> -data [list $row 0]
+				}
+			}
 			if {$row < $Vars(rows)} { Activate $table $row false true }
 		}
 
@@ -1280,7 +1310,7 @@ proc Tooltip {table mode {id {}}} {
 		show {
 			if {[llength $Vars(tooltipvar:$id)]} {
 				::tooltip::showvar $table.t $Vars(tooltipvar:$id)
-			} else {
+			} elseif {[string length $Vars(tooltip:$id)]} {
 				::tooltip::show $table.t $Vars(tooltip:$id)
 			}
 		}
@@ -2186,6 +2216,23 @@ proc AcceptSettings {table id} {
 	event generate $table <<TableOptions>>
 }
 
+namespace eval icon {
+namespace eval 13x13 {
+
+set none [image create photo -width 13 -height 13]
+
+set checked [image create photo -data {
+	R0lGODlhDQANABEAACwAAAAADQANAIEAAAB/f3/f39////8CJ4yPNgHtLxYYtNbIbJ146jZ0
+	gzeCIuhQ53NJVNpmryZqsYDnemT3BQA7
+}]
+
+set unchecked [image create photo -data {
+	R0lGODlhDQANABEAACwAAAAADQANAIEAAAB/f3/f39////8CIYyPNgHtLxYYtNbIrMZTX+l9
+	WThwZAmSppqGmADHcnRaBQA7
+}]
+
+} ;# namespace 13x13
+} ;# namespace icon
 } ;# namespace table
 
 # vi:set ts=3 sw=3:

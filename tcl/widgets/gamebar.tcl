@@ -47,18 +47,9 @@ set CopyThisGameToClipboard		"Copy this game to Clipboard (PGN format)"
 set ExportThisGame					"Export this game"
 set PasteLastClipbaseGame			"Paste last Clipbase game"
 set PasteClipboardContent			"Paste content from Clipbpard"
-set MergeLastClipbaseGame			"Merge last Clipbase game"
 set PasteGameFrom						"Paste game"
-set MergeGameFrom						"Merge game"
 set LoadGameNumber					"Load game number"
 set ReloadCurrentGame				"Re-load current game"
-set MergeWithCurrentGame			"Merge with current game"
-set CreateNewGame						"Create new game"
-set StartFromCurrentPosition		"Start merge from current position"
-set StartFromInitialPosition		"Start merge from initial position"
-set NoTranspositions					"No transpositions"
-set IncludeTranspositions			"Include transpositions"
-set VariationDepth					"Variation depth"
 set OriginalVersion					"Original version from database"
 set ModifiedVersion					"Modified version in game editor"
 set WillCopyModifiedGame			"This operation will copy the modified game in editor. The original version cannot be copied because the associated database is not open."
@@ -534,6 +525,25 @@ proc setEmphasized {gamebar flag} {
 }
 
 
+proc setFrozen {gamebar id flag {tooltipvar ""}} {
+	variable icon::15x15::close
+	variable icon::15x15::frozen
+	variable Specs
+
+	set Specs(frozen:$id:$gamebar) $flag
+
+	if {$flag} {
+		set img $frozen
+		if {[llength $tooltipvar]} { ::tooltip::tooltip $gamebar -item close:input$id $tooltipvar }
+	} else {
+		set img $close($Specs(state:$id:$gamebar))
+		SetTooltip $gamebar $id
+	}
+
+	$gamebar itemconfigure close:icon$id -image $img
+}
+
+
 proc lock {gamebar id} {
 	variable Specs
 
@@ -549,6 +559,7 @@ proc unlock {gamebar id} {
 	variable Specs
 
 	if {$Specs(modified:$id:$gamebar)} { return 0 }
+	if {$Specs(size:$gamebar) > 1} { return 0 }
 	set Specs(locked:$id:$gamebar) 0
 	SetState $gamebar $id unlocked
 	return 1
@@ -701,7 +712,7 @@ proc addVariantsToMenu {parent m {excludeNormal 0}} {
 
 
 proc mergeGame {parent position} {
-	MergeGame $parent $mc::MergeGameFrom [::scidb::game::current] $position
+	::merge::openDialog $parent [::scidb::game::current] $position
 }
 
 
@@ -751,6 +762,8 @@ proc SetState {gamebar id state} {
 proc SetTooltip {gamebar id} {
 	variable Specs
 
+	if {$Specs(frozen:$id:$gamebar)} { return }
+
 	switch $Specs(state:$id:$gamebar) {
 		unlocked				{ set var LockGame  }
 		modified - locked	{ set var CloseGame }
@@ -765,6 +778,7 @@ proc Enter {gamebar id {pref {}}} {
 	variable Defaults
 
 	if {[llength $pref] == 0 && $id eq $Specs(selected:$gamebar)} { return }
+	if {$pref eq "close:" && $Specs(frozen:$id:$gamebar)} { return }
 
 	# Due to a bug in Tk which sometimes triggers invalid <Enter> events,
 	# we have to check whether the mouse pointer is inside the canvas.
@@ -802,6 +816,7 @@ proc Leave {gamebar id {pref {}}} {
 	variable Defaults
 
 	if {[llength $pref] == 0 && $id eq $Specs(selected:$gamebar)} { return }
+	if {$pref eq "close:" && $Specs(frozen:$id:$gamebar)} { return }
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "sunken"} {
 		$gamebar itemconfigure ${pref}lighter${id} \
@@ -829,6 +844,8 @@ proc Press {gamebar id {pref {}}} {
 	variable Specs
 
 	::tooltip::tooltip off
+	if {$pref eq "close:" && $Specs(frozen:$id:$gamebar)} { return }
+
 	HideTags $gamebar
 	if {[llength $pref] == 0 && ($id eq "-1" || $id eq $Specs(selected:$gamebar))} { return }
 
@@ -849,6 +866,7 @@ proc Release {gamebar id {pref {}}} {
 	variable Specs
 
 	if {[llength $pref] == 0 && ($id eq "-1" || $id eq $Specs(selected:$gamebar))} { return }
+	if {$pref eq "close:" && $Specs(frozen:$id:$gamebar)} { return }
 
 	if {$Specs(buttonstate:$id:$gamebar) eq "sunken"} {
 		Leave $gamebar $id $pref
@@ -955,6 +973,7 @@ proc Setup {gamebar at id tags data} {
 	set Specs(modified:$id:$gamebar) 0
 	set Specs(state:$id:$gamebar) unlocked
 	set Specs(emphasize:$id:$gamebar) 0
+	set Specs(frozen:$id:$gamebar) 0
 
 	SetTooltip $gamebar $id
 	SetCountryFlag $gamebar $id $data white
@@ -1304,6 +1323,15 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 		::game::traverseHistory $headerScript $gameScript
 
 		if {$count > 0} {
+			if {$clearHistory == 1} {
+				$sub add separator
+				$sub add command \
+					-label " $::game::mc::ClearHistory" \
+					-image $::icon::16x16::clear \
+					-compound left \
+					-command ::game::clearHistory \
+					;
+			}
 			$m add cascade \
 				-menu $sub \
 				-label " $GameHistory" \
@@ -1314,16 +1342,6 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			destroy $sub
 			set clearHistory 0
 		}
-	}
-
-	if {$clearHistory == 1} {
-		$m add command \
-			-label " $::game::mc::ClearHistory" \
-			-image $::icon::16x16::clear \
-			-compound left \
-			-command ::game::clearHistory \
-			;
-		$m add separator
 	}
 
 	$m add command \
@@ -1520,9 +1538,9 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-command [namespace code [list ExportGame $parent $position]] \
 			;
 
-		set cmd [namespace code [list MergeGame $parent $mc::MergeLastClipbaseGame $position clipbase]]
+		set cmd [list ::merge::openDialog $parent $position clipbase]
 		$m add command \
-			-label " $mc::MergeLastClipbaseGame..." \
+			-label " $::merge::mc::MergeLastClipbaseGame..." \
 			-image $::icon::16x16::none \
 			-compound left \
 			-command $cmd \
@@ -1535,13 +1553,13 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 					-label " $players($id)" \
 					-image $digit([expr {$id + 1}]) \
 					-compound left \
-					-command [namespace code [list MergeGame $parent $mc::MergeGameFrom $position $id]] 
+					-command [list ::merge::openDialog $parent $position $id] \
 					;
 			}
 		}
 		$m add cascade \
 			-menu $sub \
-			-label " $mc::MergeGameFrom..." \
+			-label " $::merge::mc::MergeGameFrom..." \
 			-image $::icon::16x16::none \
 			-compound left \
 			-state $state \
@@ -1674,6 +1692,7 @@ proc ExportGame {parent position} {
 
 proc CopyThisGameToClipbase {parent position} {
 	variable ::scidb::scratchbaseName
+	variable ::scidb::clipbaseName
 	variable mode
 
 	lassign [::scidb::game::link? $position] base variant index
@@ -1695,7 +1714,7 @@ proc CopyThisGameToClipbase {parent position} {
 		}
 	}
 
-	::scidb::game::copy clipbase $position $mode
+	::scidb::game::copy game $clipbaseName $position $mode
 }
 
 
@@ -1735,121 +1754,6 @@ proc PasteFromClipbase {parent position} {
 
 proc PasteGameFrom {parent from to} {
 	if {![CheckIfModified $parent $to]} { ::scidb::game::paste $from $to }
-}
-
-
-proc MergeGame {parent title primary secondary} {
-	variable Merge_
-	variable Position_
-	variable Transposition_
-	variable Depth_
-	variable Action_
-
-	set dlg [tk::toplevel $parent.descr -class Dialog]
-	set top [ttk::frame $dlg.top -borderwidth 0 -takefocus 0]
-	pack $top -fill both
-
-	set Merge_ current
-	set Action_ cancel
-	set Position_ initial
-	set Transposition_ ignore
-	set Depth_ ""
-
-	ttk::radiobutton $top.mergeCurrent \
-		-text $mc::MergeWithCurrentGame \
-		-variable [namespace current]::Merge_ \
-		-value current \
-		;
-	ttk::radiobutton $top.mergeNewGame \
-		-text $mc::CreateNewGame \
-		-variable [namespace current]::Merge_ \
-		-value new \
-		;
-	ttk::separator $top.sep1
-	ttk::radiobutton $top.posInitial \
-		-text $mc::StartFromInitialPosition \
-		-variable [namespace current]::Position_ \
-		-value initial \
-		;
-	ttk::radiobutton $top.posCurrent \
-		-text $mc::StartFromCurrentPosition \
-		-variable [namespace current]::Position_ \
-		-value current \
-		;
-	ttk::separator $top.sep2
-	ttk::radiobutton $top.ignoreTrans \
-		-text $mc::NoTranspositions \
-		-variable [namespace current]::Transposition_ \
-		-value ignore \
-		;
-	ttk::radiobutton $top.considerTrans \
-		-text $mc::IncludeTranspositions \
-		-variable [namespace current]::Transposition_ \
-		-value consider \
-		;
-	ttk::separator $top.sep3
-	ttk::label $top.ldepth -text "$mc::VariationDepth:"
-	ttk::spinbox $top.depth \
-		-textvar [namespace current]::Depth_ \
-		-from 0 \
-		-to 9999999999 \
-		-width 12 \
-		-exportselection false \
-		;
-	::validate::spinboxInt $top.depth -clamp no -unlimited 1
-	::theme::configureSpinbox $top.depth
-	grid $top.mergeCurrent  -row  1 -column 1 -columnspan 3 -sticky ew
-	grid $top.mergeNewGame  -row  3 -column 1 -columnspan 3 -sticky ew
-	grid $top.sep1          -row  5 -column 0 -columnspan 5 -sticky ew
-	grid $top.posInitial    -row  7 -column 1 -columnspan 3 -sticky ew
-	grid $top.posCurrent    -row  9 -column 1 -columnspan 3 -sticky ew
-	grid $top.sep2          -row 11 -column 0 -columnspan 5 -sticky ew
-	grid $top.ignoreTrans   -row 13 -column 1 -columnspan 3 -sticky ew
-	grid $top.considerTrans -row 15 -column 1 -columnspan 3 -sticky ew
-	grid $top.sep3          -row 17 -column 0 -columnspan 5 -sticky ew
-	grid $top.ldepth        -row 19 -column 1
-	grid $top.depth         -row 19 -column 3 -sticky w
-	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
-	grid columnconfigure $top {3} -weight 1
-	grid rowconfigure $top {0 2 4 6 8 10 12 14 16 18 20} -minsize $::theme::pady
-
-	::widget::dialogButtons $dlg {ok cancel}
-	$dlg.cancel configure -command [list set [namespace current]::Action_ "cancel"]
-	$dlg.ok configure -command [list set [namespace current]::Action_ "ok"]
-
-	wm protocol $dlg WM_DELETE_WINDOW [$dlg.cancel cget -command]
-	wm transient $dlg [winfo toplevel $parent]
-	wm withdraw $dlg
-	wm title $dlg $title
-	wm resizable $dlg false false
-	::util::place $dlg -parent $parent -position center
-	wm deiconify $dlg
-	focus $top.mergeCurrent
-	::ttk::grabWindow $dlg
-	tkwait variable [namespace current]::Action_
-	::ttk::releaseGrab $dlg
-	::widget::busyCursor on
-
-	if {$Action_ eq "ok"} {
-		if {$Merge_ eq "new"} {
-			set unlockedPrimary [::game::lock $primary]
-			set unlockedSecondary [::game::lock $secondary]
-			set newpos [::game::new [winfo parent $dlg] -variant [::scidb::db::get variant?]]
-			set rc 0
-			if {$newpos >= 0} {
-				set rc [::scidb::game::merge $primary $secondary $Position_ $Transposition_ $Depth_ $newpos]
-			}
-			if {!$rc} {
-				if {$unlockedPrimary} { ::game::unlock $primary }
-				if {$unlockedSecondary }  { ::game::unlock $secondary }
-			}
-		} else {
-			::scidb::game::merge $primary $secondary $Position_ $Transposition_ $Depth_
-		}
-	}
-
-	::widget::busyCursor off
-	destroy $dlg
 }
 
 
@@ -2004,7 +1908,7 @@ proc BuildMenu {gamebar id side menu} {
 	set addsep {}
 
 	set end [$menu index end]
-	AddGameMenuEntries $gamebar $menu [expr {$current && $Specs(size:$gamebar) > 0}] 1 0 -1
+	AddGameMenuEntries $gamebar $menu [expr {$current && $Specs(size:$gamebar) > 0}] 1 1 -1
 	if {[$menu index end] ne $end} { set addsep [list $menu add separator] }
 
 	if {$Specs(size:$gamebar) > 0} {
@@ -2029,7 +1933,9 @@ proc BuildMenu {gamebar id side menu} {
 		}
 
 		if {$id == -1} { set lid $sid } else { set lid $id }
-		if {!$Specs(modified:$lid:$gamebar) && $Specs(state:$lid:$gamebar) ne "modified"} {
+		if {	!$Specs(modified:$lid:$gamebar)
+			&& !$Specs(frozen:$lid:$gamebar)
+			&& $Specs(state:$lid:$gamebar) ne "modified"} {
 			eval $addsep
 			set addsep {}
 			if {$Specs(locked:$lid:$gamebar)} {
@@ -3072,6 +2978,26 @@ set close(unlocked) [image create photo -data {
 # }]
 
 set close(modified) $::icon::15x15::close
+
+set frozen [image create photo -data {
+	iVBORw0KGgoAAAANSUhEUgAAAA8AAAAPCAYAAAA71pVKAAAABmJLR0QA/wD/AP+gvaeTAAAA
+	CXBIWXMAAAsTAAALEwEAmpwYAAAAB3RJTUUH3QgPEwsw0SoKiAAAAv1JREFUKM9tkktoVFcc
+	xr9zzr137mOcyUwmk44xxkcVRHwkmb4opYHSx0KpVXBRMAVLXSm4ceMDQVy0utCNhZbGdUpb
+	KEIfAzYYF13UxqhdRGaaUZNMx8loJnNn7r1zH+ccFwliwW/7/T/4+P0/IqXEixKcozX/sPfJ
+	7b93dR4/3ghIovVkH2Rfe3M6sX7DIqH0+S15MezUql3Fq9+Mtq9fHzVb7lZdUQ0AxA19101Y
+	M+mP93275dDn43oq7fwv3CjO9N07eeJSsjz3SS7Xr8RMC5IAWPUD18VCdc73du+8uvv8Vyfj
+	a9ctEyklOo0l66+jR75Oz5RG+zZtgSQEfhiCCwEpJYiUUCiFyhgW5srce+etC/kvL52hAFD+
+	aXwvvTV1sCuVQcA5vDAEV1UQywKNxwHDQCAl3E4Hr+T6WXTj5heVyT/eUAKnrdULvx/o1kw9
+	iCKEngdmWWC6DqqpKxCDEBACPAoRRBF6Ylam9tsv+xWnspD1/i1vZ6qGjqEh9t67UFJpSMYg
+	VslKIUA4R6dUArs1BU3REMzODiv+ciMRtew13EqBJpPIfXYYZrYXL1PtxgQaU7dBOYdYbqYV
+	RTd8wVjgui7ijoN64Vfo3RmAUICS1edLABL2vbugQkJwDmnGfCXev76qbxgoLk/9synRsMHH
+	f0DHioOZBogWW6kd+OCuB+Y4ICBotFvA1oH7VE+l3ez7H1xrBx5frFQg/QAsikCDENT3QX0f
+	JAhBowiMc3i2jWrzqdf74Uc/UwDYfPDTH42hXZON+iLmi0XYtRrCZhORbSOybfBWC0GziaX/
+	qnj0YBba68PXBvbsKzxfWOXmxND08WPf8dLDQU2NwYyvgW6ZoIwh9H102m04Xhvq0I6J/OUr
+	RzI7B2eJEAJhGML1PJQnJ7ZNnz97Sr1f2pMgLEnlCjBBIJcQ1TE8+H3+9LmL/UP5edMwQGzb
+	xtjYGCkUCupCpUKbi7WksVTPv8ro20lK1wmAPxGiXI7En3539k5XpsftW5vjIyMj0TOgXno4
+	EU68tgAAAABJRU5ErkJggg==
+}]
 
 } ;# namespace 15x15
 } ;# namespace icon

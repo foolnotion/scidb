@@ -715,7 +715,10 @@ Variation::visit(Visitor& visitor) const
 
 
 void
-Variation::difference(Root const* root, Variation const* var, unsigned level, Node::List& nodes) const
+Variation::difference(	Root const* root,
+								Variation const* var,
+								unsigned level,
+								Node::List& nodes) const
 {
 	M_ASSERT(root);
 	M_ASSERT(var);
@@ -779,17 +782,24 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 				{
 					List::const_iterator lhsLast	= m_list.begin() + i + 1;
 					List::const_iterator lhsEnd	= m_list.end();
-					List::const_iterator rhsLast	= var->m_list.begin() + k + 1;
-					List::const_iterator rhsEnd	= var->m_list.end();
+					List::const_iterator lhsIter	= var->m_list.begin() + k + 1;
+					List::const_iterator rhsIter	= var->m_list.end();
+					List::const_iterator rhsLast	= lhsIter;
+					List::const_iterator rhsEnd	= rhsIter;
 
-					while	(	lhsLast < lhsEnd
-							&& rhsLast < rhsEnd
-							&& (*lhsLast)->type() == (*rhsLast)->type()
-							&& (*lhsLast)->key() == (*rhsLast)->key()
-							&& *static_cast<Node const*>(*lhsLast) == static_cast<Node const*>(*rhsLast))
+					while	(	lhsIter < lhsEnd
+							&& rhsIter < rhsEnd
+							&& (*lhsIter)->key() == (*rhsIter)->key())
 					{
-						++lhsLast;
-						++rhsLast;
+						if (	(*lhsIter)->key() != (*rhsIter)->key()
+							|| *static_cast<Node const*>(*lhsIter) != static_cast<Node const*>(*lhsIter))
+						{
+							lhsLast = lhsIter;
+							rhsLast = rhsIter;
+						}
+
+						++lhsIter;
+						++rhsIter;
 					}
 
 					Key const& before	= rhs->endKey();
@@ -798,6 +808,7 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 					nodes.push_back(root->newAction(Action::Replace, level, before, after));
 					nodes.insert(nodes.end(), m_list.begin() + i, lhsLast);
 					nodes.push_back(root->newAction(Action::Finish, level));
+
 					i = lhsLast - m_list.begin() - 1;
 					k = rhsLast - var->m_list.begin() - 1;
 				}
@@ -847,8 +858,11 @@ Variation::difference(Root const* root, Variation const* var, unsigned level, No
 
 	if (i < m)
 	{
+		List::const_iterator firstNode	= m_list.begin() + i;
+		List::const_iterator lastNode		= m_list.end();
+
 		nodes.push_back(root->newAction(Action::Insert, level, successor()));
-		nodes.insert(nodes.end(), m_list.begin() + i, m_list.end());
+		nodes.insert(nodes.end(), firstNode, lastNode);
 		nodes.push_back(root->newAction(Action::Finish, level));
 	}
 

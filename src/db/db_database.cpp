@@ -392,15 +392,10 @@ Database::count(table::Type type) const
 	switch (type)
 	{
 		case table::Games:		return countGames();
+		case table::Annotators:	return countAnnotators();
 		case table::Players:		return m_namebases(Namebase::Player).used();
 		case table::Events:		return m_namebases(Namebase::Event).used();
 		case table::Sites:		return m_namebases(Namebase::Site).used();
-
-		case table::Annotators:
-			// NOTE: If non-empty, skip the empty entry
-			if (m_namebases(Namebase::Annotator).used() == 0)
-				return 0;
-			return m_namebases(Namebase::Annotator).used() - 1;
 	}
 
 	return 0; // satisifes the compiler

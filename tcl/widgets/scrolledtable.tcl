@@ -52,6 +52,7 @@ proc build {path columns args} {
 		-popupcmd		{}
 		-takefocus		1
 		-listmode		0
+		-sortable		1
 		-fixedrows		0
 		-configurable	no
 		-height			10
@@ -80,6 +81,7 @@ proc build {path columns args} {
 		-separatorcolor $Defaults(separatorcolor)      \
 		-listmode $opts(-listmode)                     \
 		-fixedrows $opts(-fixedrows)                   \
+		-sortable $opts(-sortable)                     \
 		-labelbackground theme,background              \
 		-configurable $opts(-configurable)             \
 		-height $opts(-height)                         \
@@ -286,10 +288,12 @@ proc forget {path base variant} {
 	set table $path.top.table
 	variable ${table}::Vars
 
-	array unset Vars *:$base:$variant
-	set Vars(base) {}
-	set Vars(variant) {}
-	set Vars(size) 0
+	if {$Vars(base) eq $base && $Vars(variant) eq $variant} {
+		array unset Vars *:$base:$variant
+		set Vars(base) {}
+		set Vars(variant) {}
+		set Vars(size) 0
+	}
 }
 
 
@@ -474,6 +478,14 @@ proc setColumnMininumWidth {path id width} {
 
 proc setOptions {path options} {
 	::table::setOptions $path.top.table $options
+}
+
+
+proc setState {path row state} {
+	set table $path.top.table
+	variable ${table}::Vars
+
+	::table::setState $table [expr {$row + $Vars(start)}] $state
 }
 
 

@@ -511,7 +511,7 @@ proc openBase {parent file byUser args} {
 				return -code error "BPGN is not yet supported"
 			}
 			pgn - pgn.gz - zip {
-				set type [lsearch -exact $Types(sci) PGNFile]
+				set type [lookupType PGNFile]
 				set cmd [list ::import::open $parent $file $msg $opts(-encoding) $type]
 				set rc [::util::catchException $cmd]
 				if {$rc != 0} {
@@ -606,7 +606,6 @@ proc closeBase {parent {file {}}} {
 
 proc newBase {parent variant file {encoding ""}} {
 	variable Vars
-	variable Types
 
 	set file [file normalize $file]
 
@@ -616,7 +615,7 @@ proc newBase {parent variant file {encoding ""}} {
 	} else {
 		set type Unspecific
 		::widget::busyCursor on
-		::scidb::db::new $file $variant [lsearch -exact $Types(sci) $type] {*}$encoding
+		::scidb::db::new $file $variant [lookupType $type] {*}$encoding
 		::scidb::db::attach $file $file
 		set encoding [::scidb::db::get encoding $file]
 		$Vars(switcher) add $file $type no $encoding
@@ -625,6 +624,12 @@ proc newBase {parent variant file {encoding ""}} {
 	}
 
 	Switch $file $variant
+}
+
+
+proc lookupType {type} {
+	variable Types
+	return [lsearch -exact $Types(sci) $type]
 }
 
 
@@ -1930,7 +1935,6 @@ proc Compact {parent file} {
 
 proc Recode {file parent} {
 	variable RecentFiles
-	variable Types
 	variable Vars
 
 	set enc [::scidb::db::get encoding $file]

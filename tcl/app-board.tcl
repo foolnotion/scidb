@@ -1383,6 +1383,7 @@ proc UpdateInfo {_ base variant} {
 
 
 proc DatabaseSwitched {base variant} {
+	UpdateGameButtonState(list) [::scidb::game::current]
 	UpdateGameButtonState(base) $base $variant
 	UpdateSaveButton
 	UpdateCrossTableButton
@@ -1472,15 +1473,17 @@ proc UpdateGameButtonState(list) {position} {
 
 	if {[llength $Vars(current:game)] > 1 && $position < 9} {
 		lassign $Vars(current:game) position base variant view number
-		set numGames [scidb::view::count games $base $variant $view]
-		if {$numGames > 1} {
-			if {[::scidb::game::view $position next] >= 0} {
-				array set state { next normal last normal }
-				set state(random) normal
-			}
-			if {[::scidb::game::view $position prev] >= 0} {
-				array set state { prev normal first normal }
-				set state(random) normal
+		if {[::scidb::db::get open? $base]} {
+			set numGames [scidb::view::count games $base $variant $view]
+			if {$numGames > 1} {
+				if {[::scidb::game::view $position next] >= 0} {
+					array set state { next normal last normal }
+					set state(random) normal
+				}
+				if {[::scidb::game::view $position prev] >= 0} {
+					array set state { prev normal first normal }
+					set state(random) normal
+				}
 			}
 		}
 	}
