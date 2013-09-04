@@ -1538,25 +1538,30 @@ proc AddGameMenuEntries {gamebar m addSaveMenu addGameHistory clearHistory remov
 			-command [namespace code [list ExportGame $parent $position]] \
 			;
 
+		set state $clipbaseState
+		if {[::merge::alreadyMerged $position clipbase]} { set state disabled }
 		set cmd [list ::merge::openDialog $parent $position clipbase]
 		$m add command \
 			-label " $::merge::mc::MergeLastClipbaseGame..." \
 			-image $::icon::16x16::none \
 			-compound left \
 			-command $cmd \
-			-state $clipbaseState \
+			-state $state \
 			;
 		set sub [menu $m.mergeFrom]
+		set count 0
 		foreach id $idList {
-			if {$id != $position} {
+			if {$id != $position && ![::merge::alreadyMerged $position $id]} {
 				$sub add command \
 					-label " $players($id)" \
 					-image $digit([expr {$id + 1}]) \
 					-compound left \
 					-command [list ::merge::openDialog $parent $position $id] \
 					;
+				incr count
 			}
 		}
+		if {$count} { set state normal } else { set state disabled }
 		$m add cascade \
 			-menu $sub \
 			-label " $::merge::mc::MergeGameFrom..." \

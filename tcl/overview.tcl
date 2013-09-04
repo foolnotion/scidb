@@ -539,7 +539,8 @@ proc PopupMenu {nb} {
 		-command [namespace code [list LoadGame $nb]] \
 		-state $state \
 		;
-		if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+	if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+	if {[::merge::alreadyMerged [::scidb::game::current] $position]} { set state disabled }
 	$menu add command \
 		-label " $::browser::mc::MergeGame..." \
 		-image $::icon::16x16::merge \

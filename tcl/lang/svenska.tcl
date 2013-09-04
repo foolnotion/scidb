@@ -1401,17 +1401,20 @@
 
 ### merge ##############################################################
 ::merge::mc::MergeLastClipbaseGame		"Sammanfoga med sista Clipbase parti"
-::merge::mc::MergeWithCurrentGame		"Sammanfoga med aktuellt parti"
 ::merge::mc::MergeGameFrom					"Sammanfoga parti"
 
 ::merge::mc::MergeTitle						"Merge with games" ;# NEW
-::merge::mc::CreateNewGame					"Skapa nytt parti"
 ::merge::mc::StartFromCurrentPosition	"Börja sammanfogning från aktuell ställning"
 ::merge::mc::StartFromInitialPosition	"Börja sammanfogning från utgångsställningen"
 ::merge::mc::NoTranspositions				"Inga transponeringar"
 ::merge::mc::IncludeTranspositions		"Ta med transponeringar"
 ::merge::mc::VariationDepth				"Variation depth" ;# NEW
+::merge::mc::VariationLength				"Maximal variation length (plies)" ;# NEW
 ::merge::mc::UpdatePreview					"Update preview" ;# NEW
+::merge::mc::SelectedGame					"Selected Game" ;# NEW
+::merge::mc::SaveAs							"Save as new game" ;# NEW
+::merge::mc::Save								"Merge into game" ;# NEW
+::merge::mc::GameisLocked					"Game is locked by Merge-Dialog" ;# NEW
 
 ::merge::mc::AlreadyInUse					"Merge dialog is already in use with game #%d." ;# NEW
 ::merge::mc::AlreadyInUseDetail			"Please finish merge of this game before merging into another game. This means you have to switch to game #%d for continuing." ;# NEW
@@ -2142,7 +2145,7 @@
 ::comment::mc::CopyText					"Kopiera text till"
 ::comment::mc::OverwriteContent		"Ersätta aktuellt innehåll?"
 ::comment::mc::AppendContent			"Ifall \"nej\" kommer texten att läggas till."
-# Note for translators: "Emoticons" can be simply translated to "Smiley
+# Note for translators: "Emoticons" can be simply translated to "Smiley"
 ::comment::mc::DisplayEmoticons		"Visa smiley"
 
 ::comment::mc::LanguageSelection		"Val av språk"

@@ -305,7 +305,6 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure bold -font $::font::text($fontContext:bold)
 		$w tag configure bold-italic -font $::font::text($fontContext:bold-italic)
 		$w tag configure variation -foreground [::colors::lookup $Colors(foreground:variation)]
-		$w tag configure merge -background gainsboro
 
 		$w tag configure opening -foreground [::colors::lookup $Colors(foreground:opening)]
 		$w tag configure opening -font $::font::text($fontContext:bold)
@@ -327,11 +326,13 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
 		$w tag configure circled -foreground #008b00
 
-		for {set k 0} {$k <= 10} {incr k} {
-			set margin [expr {$k*$Options(indent:amount)}]
-#			set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
-			set indent $margin
-			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
+		if {$context ne "merge"} {
+			for {set k 0} {$k <= 10} {incr k} {
+				set margin [expr {$k*$Options(indent:amount)}]
+#				set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
+				set indent $margin
+				$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
+			}
 		}
 	}
 

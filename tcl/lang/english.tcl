@@ -1392,17 +1392,20 @@ ln -sf ../# ====================================================================
 
 ### merge ##############################################################
 ::merge::mc::MergeLastClipbaseGame		"Merge last Clipbase game"
-::merge::mc::MergeWithCurrentGame		"Merge with current game"
 ::merge::mc::MergeGameFrom					"Merge game"
 
 ::merge::mc::MergeTitle						"Merge with games"
-::merge::mc::CreateNewGame					"Create new game"
 ::merge::mc::StartFromCurrentPosition	"Start merge from current position"
 ::merge::mc::StartFromInitialPosition	"Start merge from initial position"
 ::merge::mc::NoTranspositions				"No transpositions"
 ::merge::mc::IncludeTranspositions		"Include transpositions"
 ::merge::mc::VariationDepth				"Variation depth"
+::merge::mc::VariationLength				"Maximal variation length (plies)"
 ::merge::mc::UpdatePreview					"Update preview"
+::merge::mc::SelectedGame					"Selected Game"
+::merge::mc::SaveAs							"Save as new game"
+::merge::mc::Save								"Merge into game"
+::merge::mc::GameisLocked					"Game is locked by Merge-Dialog"
 
 ::merge::mc::AlreadyInUse					"Merge dialog is already in use with game #%d."
 ::merge::mc::AlreadyInUseDetail			"Please finish merge of this game before merging into another game. This means you have to switch to game #%d for continuing."
@@ -2133,7 +2136,7 @@ ln -sf ../# ====================================================================
 ::comment::mc::CopyText					"Copy text to"
 ::comment::mc::OverwriteContent		"Overwrite existing content?"
 ::comment::mc::AppendContent			"If \"no\" the text will be appended."
-# Note for translators: "Emoticons" can be simply translated to "Smiley
+# Note for translators: "Emoticons" can be simply translated to "Smiley"
 ::comment::mc::DisplayEmoticons		"Display Emoticons"
 
 ::comment::mc::LanguageSelection		"Language selection"

@@ -29,6 +29,7 @@ Fourth public preview version
   <li class="space">Important fixes in ChessBase decoder</li>
   <li class="space">Color scheme for ordinary displays as default added, until now the color scheme was designed for high quality display</li>
   <li class="space">File selection dialog is finished, especially Drag &amp; Drop</li>
+  <li class="space">Merge dialog extended: now any number of games can be merged with the help of a preview display</li>
   <li class="space">PGN setup for export options now is a separate dialog; this is important for PGN export, which is available in different menues</li>
   <li class="space">Language dependent sorting implemented</li>
   <li class="space">New themes added: "Blackjack" and "Country Style" (thanks to José Carlos Martins)</li>

@@ -824,15 +824,17 @@ proc ToggleLanguage {lang} {
 proc SetLanguages {position} {
 	variable Vars
 
-	set langSet {}
-	foreach key [array names Vars lang:active:*] {
-		if {$Vars($key)} {
-			set lang [lindex [split $key :] 2]
-			if {$lang eq "xx"} { set lang "" }
-			lappend langSet $lang
+	if {$position <= 10} {
+		set langSet {}
+		foreach key [array names Vars lang:active:*] {
+			if {$Vars($key)} {
+				set lang [lindex [split $key :] 2]
+				if {$lang eq "xx"} { set lang "" }
+				lappend langSet $lang
+			}
 		}
+		after idle [list ::scidb::game::langSet $position $langSet]
 	}
-	after idle [list ::scidb::game::langSet $position $langSet]
 }
 
 
@@ -974,6 +976,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 
 #set clock0 [clock milliseconds]
 	foreach node $data {
+puts $node
 		switch [lindex $node 0] {
 			start {
 				$w configure -state normal
@@ -1122,6 +1125,7 @@ proc DoLayout {position data {context editor} {w {}}} {
 
 			merge {
 				$w tag delete merge
+				$w tag configure merge -background [::colors::lookup pgn,background:merge]
 				set ranges {}
 				foreach {start end} [lindex $node 1] {
 					set ismove [expr {$start == $end}]
@@ -1133,10 +1137,12 @@ proc DoLayout {position data {context editor} {w {}}} {
 					set start [$w index $start]
 					set end [$w index $end]
 
-					while {[$w compare $start < $end] && [string is space [$w get $start]]} {
-						set start [$w index $start+1c]
+					if {[lindex [split $start "."] 1] ne "1"} {
+						while {[$w compare $start < $end] && [string is space [$w get $start]]} {
+							set start [$w index $start+1c]
+						}
 					}
-					while {[$w compare $end > $start] && [string is space [$w get $end-1c]]} {
+					while {[$w compare $end > $start] && [$w get $end-1c] eq " "} {
 						set end [$w index $end-1c]
 					}
 
@@ -1147,7 +1153,6 @@ proc DoLayout {position data {context editor} {w {}}} {
 
 					lappend ranges $start $end
 				}
-				$w tag configure merge -background #f0f0f0
 				$w tag add merge {*}$ranges
 				$w tag raise merge
 			}

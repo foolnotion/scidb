@@ -1401,17 +1401,20 @@
 
 ### merge ##############################################################
 ::merge::mc::MergeLastClipbaseGame		"Merge last Clipbase game" ;# NEW
-::merge::mc::MergeWithCurrentGame		"Merge with current game" ;# NEW
 ::merge::mc::MergeGameFrom			"Merge game" ;# NEW
 
 ::merge::mc::MergeTitle				"Merge with games" ;# NEW
-::merge::mc::CreateNewGame			"Create new game" ;# NEW
 ::merge::mc::StartFromCurrentPosition		"Start merge from current position" ;# NEW
 ::merge::mc::StartFromInitialPosition		"Start merge from initial position" ;# NEW
 ::merge::mc::NoTranspositions			"No transpositions" ;# NEW
 ::merge::mc::IncludeTranspositions		"Include transpositions" ;# NEW
 ::merge::mc::VariationDepth			"Variation depth" ;# NEW
+::merge::mc::VariationLength			"Maximal variation length (plies)" ;# NEW
 ::merge::mc::UpdatePreview			"Update preview" ;# NEW
+::merge::mc::SelectedGame			"Selected Game" ;# NEW
+::merge::mc::SaveAs				"Save as new game" ;# NEW
+::merge::mc::Save				"Merge into game" ;# NEW
+::merge::mc::GameisLocked			"Game is locked by Merge-Dialog" ;# NEW
 
 ::merge::mc::AlreadyInUse			"Merge dialog is already in use with game #%d." ;# NEW
 ::merge::mc::AlreadyInUseDetail			"Please finish merge of this game before merging into another game. This means you have to switch to game #%d for continuing." ;# NEW
@@ -2141,7 +2144,7 @@
 ::comment::mc::CopyText			"Szöveg másolása"
 ::comment::mc::OverwriteContent		"Felülírod a meglévő tartalmat?"
 ::comment::mc::AppendContent		"Ha \"nem\" , akkor a szöveg hozzáasódik."
-# Note for translators: "Emoticons" can be simply translated to "Smiley
+# Note for translators: "Emoticons" can be simply translated to "Smiley"
 ::comment::mc::DisplayEmoticons		"Display Emoticons" ;# NEW
 
 ::comment::mc::LanguageSelection	"Nyelvválasztás"

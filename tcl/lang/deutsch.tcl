@@ -1393,17 +1393,20 @@
 
 ### merge ##############################################################
 ::merge::mc::MergeLastClipbaseGame		"Mit letzter Partie aus Ablage-Datenbank zusammenfügen"
-::merge::mc::MergeWithCurrentGame		"In die aktuelle Partie einfügen"
 ::merge::mc::MergeGameFrom					"Mit Partie zusammenfügen"
 
 ::merge::mc::MergeTitle						"Mit Partien zusammenfügen"
-::merge::mc::CreateNewGame					"Eine neue Partie kreieren"
 ::merge::mc::StartFromCurrentPosition	"Einfügungen von der aktuellen Position starten"
 ::merge::mc::StartFromInitialPosition	"Einfügungen von der Anfangsposition starten"
 ::merge::mc::NoTranspositions				"Keine Zugumstellungen"
 ::merge::mc::IncludeTranspositions		"Zugumstellungen mit einbeziehen"
 ::merge::mc::VariationDepth				"Variantentiefe"
+::merge::mc::VariationLength				"Maximale Variantenlänge (Halbzüge)"
 ::merge::mc::UpdatePreview					"Vorschau aktualisieren"
+::merge::mc::SelectedGame					"Selektierte Partie"
+::merge::mc::SaveAs							"Neue Partie anlegen"
+::merge::mc::Save								"In Partie einfügen"
+::merge::mc::GameisLocked					"Die Partie ist gesperrt vom Partie-Zusammenfügen-Dialog"
 
 ::merge::mc::AlreadyInUse					"Der Dialog für das Einfügen von Partien ist bereits im Gebrauch für Partienummer %d."
 ::merge::mc::AlreadyInUseDetail			"Bitte zuerst diesen Dialog beenden bevor in eine andere Partie eingefügt werden kann. Dies bedeutet das zur Partienummer %d gewechselt werden sollte, um das Einfügen von Partien fortzusetzen."

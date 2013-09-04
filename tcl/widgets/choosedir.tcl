@@ -91,6 +91,7 @@ proc Build {w args} {
 	set Vars(startmenu) {}
 	set Vars(showhidden) $opts(-showhidden)
 	set Vars(prefix) ""
+	set Vars(basename) ""
 	set Vars(tooltip) ""
 
 	set Vars(linespace) [font metrics $opts(-font) -linespace]
@@ -140,27 +141,15 @@ proc Build {w args} {
 		-activebackground $Vars(activebackground) \
 		-takefocus 0                              \
 		;
-	tk::button $w.image--1                                          \
-		-image $icon::9x14::Delimiter                                \
-		-relief flat                                                 \
-		-pady 2                                                      \
-		-overrelief raised                                           \
-		-background $bg                                              \
-		-activebackground $Vars(activebackground)                    \
-		-command [namespace code [list PopupDirs $w $w.image--1 -1]] \
-		-takefocus 0                                                 \
-		;
 	bind $w.prev <Leave> {+ %W configure -relief flat }
-	bind $w.image--1 <Leave> { %W configure -relief flat }
 	tooltip $w.next [Tr ShowTail]
 	if {$Vars(showlabel)} {
 		grid $w.label -column 1 -row 1 -sticky ns
 	}
 	grid $w.prev -column 3 -row 1 -sticky ns
-	grid $w.image--1 -column 5 -row 1 -sticky ns
 	grid $w.next -column 1000 -row 1 -sticky ns
 	grid rowconfigure $w {0 2} -minsize $Vars(pady)
-	grid columnconfigure $w {2 4 1001} -minsize $Vars(padx)
+	grid columnconfigure $w {2 1001} -minsize $Vars(padx)
 
 	bind $w <Destroy> [list catch [list namespace delete [namespace current]::${w}]]
 	bind $w <Configure> [namespace code { Configure %W %w }]
@@ -168,7 +157,7 @@ proc Build {w args} {
 	proc ::$w {command args} "[namespace current]::WidgetProc $w \$command {*}\$args"
 
 	if {[string length $Vars(initialdir)] == 0} { set Vars(initialdir) [pwd] }
-	$w set $Vars(initialdir)
+	$w set $Vars(initialdir) "" "" ""
 
 	return $w
 }
@@ -177,17 +166,16 @@ proc Build {w args} {
 proc WidgetProc {w command args} {
 	switch -- $command {
 		set {
-			if {[llength $args] < 1 || 3 < [llength $args]} {
-				error "wrong # args: should be \"[namespace current] $command <dir> ?<icon>? ?<prefix>?\""
+			if {[llength $args] != 4} {
+				error "wrong # args: should be \"[namespace current] $command <dir> <basename> <icon> <prefix>\""
 			}
 			variable ${w}::Vars
 
-			set icon {}
-			set prefix ""
-			lassign $args folder icon prefix
+			lassign $args folder basename icon prefix
 			if {$folder ne $Vars(dir) || $prefix ne $Vars(prefix)} {
 				set separator [file separator $folder]
 				set Vars(dir) $folder
+				set Vars(basename) $basename
 				set Vars(prefix) $prefix
 				set Vars(prefix:components) [file split $prefix]
 				set Vars(dir:components) [file split $folder]
@@ -209,20 +197,21 @@ proc WidgetProc {w command args} {
 		}
 
 		setfolder {
-			if {[llength $args] != 1 && [llength $args] != 2} {
-				error "wrong # args: should be \"[namespace current] $command <folder> ?<icon>?\""
+			if {[llength $args] != 2 && [llength $args] != 3} {
+				error "wrong # args: should be \"[namespace current] $command <folder> <basename> ?<icon>?\""
 			}
 			variable ${w}::Vars
 
 			set icon {}
-			lassign $args folder icon
+			lassign $args folder basename icon
 			if {$folder ne $Vars(dir)} {
 				set Vars(dir) $folder
-				set Vars(dir:components) [list $folder]
-				set Vars(dir:size) 1
+				set Vars(dir:components) { "" }
+				set Vars(dir:size) 0
 				set Vars(prefix) ""
 				set Vars(prefix:components) { "" }
 				set Vars(prefix:size) 0
+				set Vars(basename) $basename
 				set Vars(start) 1
 				set Vars(user) 1
 				set Vars(icon) $icon
@@ -314,7 +303,7 @@ proc Layout {w} {
 	variable ${w}::Vars
 
 	set bg [::colors::lookup theme,background]
-	set n [expr {$Vars(dir:size) - $Vars(prefix:size)}]
+	set n [expr {$Vars(dir:size) - $Vars(prefix:size) + 1}]
 
 	for {set i $Vars(size)} {$i < $n} {incr i} {
 		tk::button $w.text-$i                                       \
@@ -346,8 +335,10 @@ proc Layout {w} {
 		grid $w.image-$i -column [incr col] -row 1 -sticky ns
 	}
 
+	$w.text-0 configure -text $Vars(basename)
+
 	for {set i $Vars(prefix:size)} {$i < $Vars(dir:size)} {incr i} {
-		set k [expr {$i - $Vars(prefix:size)}]
+		set k [expr {$i - $Vars(prefix:size) + 1}]
 		$w.text-$k configure -text [lindex $Vars(dir:components) $i]
 	}
 
@@ -425,10 +416,8 @@ proc Layout {w} {
 		if {[llength $Vars(icon)] == 0} {
 			grid remove $w.prev
 		}
-		grid remove $w.image--1
 		grid remove $w.image-0
 	} else {
-		grid $w.image--1
 		grid $w.prev
 		if {$removeLast} { grid remove $w.image-[expr {$n - 1}] }
 		if {$e < $n} { grid $w.next } else { grid remove $w.next }
@@ -449,33 +438,33 @@ proc ButtonEnter {w} {
 proc Invoke {w btn i} {
 	variable ${w}::Vars
 
-	if {!$Vars(user)} {
-		if {$i == -1} {
-			event generate $w <<GetStartMenu>>
-			set m $w.popup
-			if {[winfo exists $m]} { destroy $m }
-			menu $m -tearoff false
-			foreach {icon name folder} $Vars(startmenu) {
-				if {[string length $name] == 0} {
-					$m add separator
-				} else {
-					$m add command \
-						-label " $name" \
-						-image $icon \
-						-compound left \
-						-command [namespace code [list ChangeFolder $w $folder]] \
-						;
-				}
+	if {$i == -1} {
+		event generate $w <<GetStartMenu>>
+		set m $w.popup
+		if {[winfo exists $m]} { destroy $m }
+		menu $m -tearoff false
+		foreach {icon name folder} $Vars(startmenu) {
+			if {[string length $name] == 0} {
+				$m add separator
+			} else {
+				$m add command \
+					-label " $name" \
+					-image $icon \
+					-compound left \
+					-command [namespace code [list ChangeFolder $w $folder]] \
+					;
 			}
-			bind $m <<MenuUnpost>> [list $btn configure -state normal -relief flat]
-			bind $m <<MenuUnpost>> +[namespace code [list ButtonEnter $btn]]
-			tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
-		} elseif {$Vars(user)} {
-			event generate $w <<SetFolder>> -data $Vars(dir)
-		} else {
-			set components [lrange $Vars(dir:components) 0 [expr {$i + $Vars(prefix:size)}]]
-			event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
 		}
+		bind $m <<MenuUnpost>> [list $btn configure -state normal -relief flat]
+		bind $m <<MenuUnpost>> +[namespace code [list ButtonEnter $btn]]
+		tk_popup $m [winfo rootx $btn] [expr {[winfo rooty $btn] + [winfo height $btn]}]
+	} elseif {$Vars(user)} {
+		event generate $w <<SetFolder>> -data $Vars(dir)
+	} elseif {$i == 0} {
+		event generate $w <<SetDirectory>> -data [file join "/" {*}$Vars(prefix:components)]
+	} else {
+		set components [lrange $Vars(dir:components) 0 [expr {$i + $Vars(prefix:size) - 1}]]
+		event generate $w <<SetDirectory>> -data [file join "/" {*}$components]
 	}
 
 	after idle [namespace code [list ButtonEnter $btn]]
@@ -488,7 +477,7 @@ proc PopupDirs {w btn i} {
 	if {$Vars(user)} {
 		set subdirs {}
 	} else {
-		incr i $Vars(prefix:size)
+		set i [expr {$i + $Vars(prefix:size) - 1}]
 		set rootdir [file join "/" {*}[lrange $Vars(dir:components) 0 $i]]
 		set filter *
 		if {$::tcl_platform(platform) eq "unix" && $Vars(showhidden)} { lappend filter .* }

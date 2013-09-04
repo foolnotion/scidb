@@ -1510,13 +1510,25 @@ proc GetStartMenu {w} {
 }
 
 
+proc ChooseDir {w basename where} {
+	variable ${w}::Vars
+
+	if {![info exists Vars(folder:$where)]} { set where filesystem }
+	set prefix $Vars(folder:$where)
+	set icon [set icon::16x16::$Vars(lookup:$prefix)]
+	$Vars(choosedir) set $Vars(folder) $basename $icon $prefix
+}
+
+
 proc ChangeDir {w path {useHistory 1}} {
 	variable ${w}::Vars
 
-	if {[catch {glob -nocomplain -directory $path -types d .*} result err]} {
-		set msg [format [Tr PermissionDenied] $path]
-		::dialog::error -parent $Vars(widget:main) -message $msg
-		return
+	if {[file pathtype $path] eq "absolute"} {
+		if {[catch {glob -nocomplain -directory $path -types d .*} result err]} {
+			set msg [format [Tr PermissionDenied] $path]
+			::dialog::error -parent $Vars(widget:main) -message $msg
+			return
+		}
 	}
 
 	set Vars(prevFolder) $Vars(folder)
@@ -1534,13 +1546,13 @@ proc ChangeDir {w path {useHistory 1}} {
 		Favorites - LastVisited {
 			set Vars(glob) $path
 			set Vars(folder) {}
-			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
+			$Vars(choosedir) setfolder $path [Tr $path] $Vars(icon:[string tolower $path])
 		}
 
 		Desktop - Trash - Download {
 			set Vars(glob) $path
 			set Vars(folder) $Vars(folder:[string tolower $path])
-			$Vars(choosedir) setfolder [Tr $path] $Vars(icon:[string tolower $path])
+			$Vars(choosedir) setfolder $path [Tr $path] $Vars(icon:[string tolower $path])
 		}
 
 		default {
@@ -1554,30 +1566,25 @@ proc ChangeDir {w path {useHistory 1}} {
 				} else {
 					set message [Tr DirectoryRemoved $path]
 				}
-				$Vars(choosedir) set $appPWD
+				set Vars(folder) $appPWD
+				ChooseDir $w [Tr FileSystem] filesystem
 				::dialog::warning -parent $Vars(widget:main) -message $message -buttons {ok}
 				if {![file isdirectory $path]} { filelist::RefreshFileList $w }
 				return
 			}
 
 			set pwd [pwd]
-			if {[file normalize $path] eq $pwd} {
-				set Vars(folder) $path
-			} else {
-				set Vars(folder) $pwd
-			}
+			if {[file normalize $path] eq $pwd} { set Vars(folder) $path } else { set Vars(folder) $pwd }
 			cd $appPWD
 			if {[string match $Vars(folder:home)* $Vars(folder)]} {
-				$Vars(choosedir) set $Vars(folder) $icon::16x16::home $Vars(folder:home)
-				$Vars(choosedir) tooltip [Tr Home]
+				set basename [Tr Home]
+				set where home
 			} else {
-				if {[info exists Vars(lookup:$path)]} {
-					$Vars(choosedir) set $Vars(folder) [set icon::16x16::$Vars(lookup:$path)]
-				} else {
-					$Vars(choosedir) set $Vars(folder)
-				}
-				$Vars(choosedir) tooltip [Tr FileSystem]
+				set basename [Tr FileSystem]
+				if {[info exists Vars(lookup:$path)]} { set where $path } else { set where filesystem }
 			}
+			ChooseDir $w $basename $where
+#			$Vars(choosedir) tooltip [Tr FileSystem]
 			set Vars(lastFolder) $Vars(folder)
 		}
 	}
@@ -3940,7 +3947,6 @@ proc Glob {w refresh} {
 			decreasing { set arrow down }
 		}
 
-		set state normal
 		set folders {}
 
 		switch $Vars(glob) {
@@ -3957,7 +3963,6 @@ proc Glob {w refresh} {
 				set lookupFolder 1
 				set attr [string tolower $Vars(glob)]
 				set arrow none
-				set state disabled
 				set bookmarks {}
 				foreach entry $Bookmarks($attr) {
 					if {$attr eq "favorites"} { set folder [lindex $entry 0] } else { set folder $entry }
@@ -3976,7 +3981,9 @@ proc Glob {w refresh} {
 		}
 
 		$Vars(widget:list:file) column configure $Vars(sort-column) -arrow $arrow
+
 		if {[info exists Vars(button:new)]} {
+			if {$Vars(glob) eq "Files"} { set state normal } else { set state disabled }
 			::toolbar::childconfigure $Vars(button:new) -state $state
 		}
 

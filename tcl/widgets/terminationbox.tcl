@@ -95,7 +95,7 @@ proc buildText {reason result toMove termination variant} {
 			}
 		}
 		default {
-			if {[string length $termination]} {
+			if {[info exists mc::Termination($termination)]} {
 				return [format $mc::Termination($termination) [set ::mc::[string toupper $toMove 0 0]]]
 			}
 		}

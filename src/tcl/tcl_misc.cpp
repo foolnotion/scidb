@@ -1153,6 +1153,8 @@ cmdExtraTags(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 			objs[count++] = Tcl_NewStringObj(::db::tag::toName(::db::tag::ID(i)), -1);
 	}
 
+	// XXX we have to add Bughouse tags if variant is Bughouse
+
 	setResult(count, objs);
 	return TCL_OK;
 }

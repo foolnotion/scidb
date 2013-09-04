@@ -247,7 +247,10 @@ collectMergeResults(	MoveNode* node,
 	}
 
 	if (newMoves)
+	{
+		key.incrementPly();
 		mergeResults.push_back(Game::MergeResult(startKey.id(), key.id()));
+	}
 }
 
 
@@ -4554,9 +4557,6 @@ Game::merge(unsigned modificationPosition,
 {
 	if (modificationPosition & modification::First)
 		m_changed = false;
-
-	if (game.isEmpty())
-		return false;
 
 	::updateMoveNumbers(game.m_startNode, game.m_startBoard.moveNumber());
 

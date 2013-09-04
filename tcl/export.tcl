@@ -360,7 +360,6 @@ array set Colors {
 namespace eval si3 {
 	array set DefaultTags {
 		Board					1
-		BughouseDBGameNo	1
 		EventCountry		1
 		EventType			1
 		FICSGamesDBGameNo	1
@@ -1024,6 +1023,7 @@ proc BuildFrame {w} {
 			lappend tagList $tag
 		}
 	}
+	set tagList [lsort -ascii $tagList]
 	lappend tagList ExtraTag
 
 	ttk::label $w.header -textvar [namespace parent]::mc::SelectExportedTags

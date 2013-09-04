@@ -1694,11 +1694,13 @@ proc PopupMenu {path menu base variant index} {
 				;
 			if {$Vars(mode) ne "merge"} {
 				if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+				set position [list $base $variant $view $index]
+				if {[::merge::alreadyMerged [::scidb::game::current] $position]} { set state disabled }
 				$menu add command \
 					-compound left \
 					-image $::icon::16x16::merge \
 					-label " $::browser::mc::MergeGame..." \
-					-command [list gamebar::mergeGame $path [list $base $variant $view $index]] \
+					-command [list gamebar::mergeGame $path $position] \
 					-state $state \
 					;
 				$menu add command \
@@ -1732,6 +1734,8 @@ proc PopupMenu {path menu base variant index} {
 				;
 			if {$Vars(mode) ne "merge"} {
 				if {[::scidb::game::current] < 9} { set state normal } else { set state disabled }
+				set position [list $base $variant $view $index]
+				if {[::merge::alreadyMerged [::scidb::game::current] $position]} { set state disabled }
 				$menu add command \
 					-compound left \
 					-image $::icon::16x16::merge \

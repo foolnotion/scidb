@@ -152,7 +152,7 @@ proc SetupList {w} {
 			if {$iso1 eq "--"} { set iso1 "" }
 			set options {}
 			if {!$active} {
-				lappend options -foreground grey60
+				lappend options -foreground [::colors::lookup default,foreground:gray]
 			}
 #			elseif {$iso1 eq ""} {
 #				lappend options -foreground darkblue

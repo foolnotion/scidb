@@ -1796,6 +1796,7 @@ Application::startTrialMode()
 
 	game.data.backup = game.data.game;
 	game.data.game = new Game(*game.data.backup);
+	game.data.game->setSubscriber(game.data.backup->subscriber());
 	game.data.game->moveTo(game.data.backup->currentKey());
 }
 

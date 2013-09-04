@@ -1938,7 +1938,7 @@ namespace eval 16x16 {
 		U0mSRk/dLtzx+GHTf4Rvr/6GjnFu/ZQAAAAASUVORK5CYII=
 	}]
 
-	set saveAs [image create photo -data {
+	set save [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0
 		RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAODSURBVHjaYvz//z8DI2MbAxCI
 		MjAwA6m//xnAgJEBAUBCTEDM+89WeqdJbtiFGY8e8Fw/d40nDyCAWEDS7IJCZbLakn5CbP+A
@@ -1960,7 +1960,7 @@ namespace eval 16x16 {
 		wMDBABBAjP///2egBAAEGAAVFDp8a+OtjwAAAABJRU5ErkJggg==
 	}]
 
-	set save [image create photo -data {
+	set saveAs [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABGdBTUEAAK/INwWK6QAAABl0
 		RVh0U29mdHdhcmUAQWRvYmUgSW1hZ2VSZWFkeXHJZTwAAAMUSURBVHjaYvz//z8Dj9T81VqO
 		mgGSXH9+MTEwMPwDiv37z8DwHwgZgTQEQBh///5hevSDm+X+iXsHvj6McgUIIAaQARbpF/4v
@@ -4636,7 +4636,7 @@ namespace eval 22x22 {
 		RU5ErkJggg==
 	}]
 
-	set saveAs [image create photo -data {
+	set save [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAAEOklEQVQ4y7XVbWwURRzH8e/M
 		7O7d9Y4W2gMqMUAEqhClKA8FQ4w2YmJM2heor1CiKGrUaHxhomLE+KJiiIn4QhNfGIgSEx+o
 		ShojDxJDgMRQxJJCSg0tZ2nhWrhyd93d250dX2xp0wj4Rv/ZV5uZTya/+c+MMMYAIMR2EAKE
@@ -4661,7 +4661,7 @@ namespace eval 22x22 {
 		RK5CYII=
 	}]
 
-	set save [image create photo -data {
+	set saveAs [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAABYAAAAWCAYAAADEtGw7AAADK0lEQVQ4y7WVu4tlRRDGf119
 		HvfOjDsv10HcYDeZVEFB2EQDUWMx18BITPwPBBMxUfAfMBSEDZRlFTRQ8BHIKoIvHFlRkHF2
 		1HGu53W7u8qgzx13uTsbuQXndJ/TxddffVXV7cyMO2HFYuLr11+954Hd57c3q2LioqkBGIt9
@@ -6956,7 +6956,7 @@ namespace eval 32x32 {
 		N01v+PqR04Xvit8MnnxufFds+vY8w7L8fwH+Az/Uw7nGLwAAAABJRU5ErkJggg==
 	}]
 
-	set saveAs [image create photo -data {
+	set save [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAG+0lEQVRYw+2Xa4xVVxXHf3uf
 		c9/3MjMMQocZkFBiA+NAW8WWh1IqtbUihFptStsvtSWIVKtWa2PERhuNialRqC3VRouoRRv7
 		CgJWCCBx2qHQQB8DAwIdCgwzc+/cuXfu3Hsee28/nHPLPEiZRJN+cSc7OTmPvX5nrfVfe21h
@@ -6994,7 +6994,7 @@ namespace eval 32x32 {
 		SUVORK5CYII=
 	}]
 
-	set save [image create photo -data {
+	set saveAs [image create photo -data {
 		iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAE00lEQVRYw+2Xu48cRRDGf1U9
 		u7fr850FBstPME/ZBsxLAiQkQBYkmJSMf4EIIYdIkCBIIOWfAJGRWCJAIAEBL4GQBbLNwwLf
 		2b6z9zHTXUXQPbvHeX23mQMYadQzo57pr77vq6oecXdu5qHc5KPaeCPyzl46/Te7e257qhLM

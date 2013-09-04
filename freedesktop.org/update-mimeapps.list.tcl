@@ -166,7 +166,7 @@ if {[file readable $file]} {
 
 if {$method eq "remove" && $countEntries == 0} {
     file delete -force $file
-} else {
+} elseif {$countEntries > 0} {
     set tmpfile "[file dirname $file]/.[file tail $file].037369839329"
     set chan [open $tmpfile "w" 0644]
 

@@ -288,7 +288,7 @@ public:
 	/// Return game flags
 	uint32_t gameFlags() const override;
 	/// Return subscriber.
-	Subscriber* subscriber() const;
+	SubscriberP subscriber() const;
 	/// Print current move in given notation
 	mstl::string& printMove(mstl::string& result,
 									unsigned flags = ExportFormat,

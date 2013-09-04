@@ -1577,7 +1577,7 @@ cmdSubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 
 	Game&			game			= scidb->game(position);
-	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber());
+	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber().get());
 
 	if (subscriber == 0)
 	{
@@ -1617,7 +1617,7 @@ cmdUnsubscribe(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	unsigned	position			= unsignedFromObj(objc, objv, 2);
 
 	Game&			game			= scidb->game(position);
-	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber());
+	Subscriber*	subscriber	= static_cast<Subscriber*>(game.subscriber().get());
 
 	if (subscriber)
 		game.setSubscriber(Game::SubscriberP(0));

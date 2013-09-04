@@ -454,11 +454,11 @@ namespace tag
 		Remark,						///< Any comment to this game
 		Board,						///< The board number
 		FICSGamesDBGameNo,		///< FICS game identifier
-		BughouseDBGameNo,			///< bughouse-db.org game identifier
-		WhiteDays, BlackDays,	///< Remaining days for white/black; used on myschach.de
 		Lag,							///< Time lag per move in milliseconds (used in BPGN)
+		WhiteDays, BlackDays,	///< Remaining days for white/black; used on myschach.de
 
 		// Reserved
+		RESERVED_68 = 68,
 		RESERVED_69 = 69,
 		RESERVED_70 = 70,
 		RESERVED_71 = 71,
@@ -473,9 +473,10 @@ namespace tag
 		RESERVED_80 = 80,
 		RESERVED_81 = 81,
 		RESERVED_82 = 82,
-		RESERVED_83 = 83,
 
 		// BPGN (Bughouse)
+		BughouseDBGameNo,			///< bughouse-db.org game identifier
+
 		WhiteA,					WhiteB,
 		WhiteACountry,			WhiteBCountry,
 		WhiteATitle,			WhiteBTitle,
@@ -501,8 +502,8 @@ namespace tag
 		BlackATeamCountry,	BlackBTeamCountry,
 
 		ExtraTag, // IMPORTANT NOTE: must have value <= TagSetSize
-		LastTag = Lag,
-		BughouseTag = WhiteA,
+		LastTag = BlackDays,
+		BughouseTag = BughouseDBGameNo,
 	};
 
 	enum { TagSetSize = 128 };

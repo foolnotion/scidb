@@ -30,11 +30,9 @@ namespace eval merge {
 namespace eval mc {
 
 set MergeLastClipbaseGame		"Merge last Clipbase game"
-#set MergeWithCurrentGame		"Merge with current game"
 set MergeGameFrom					"Merge game"
 
 set MergeTitle						"Merge with games"
-#set CreateNewGame				"Create new game"
 set StartFromCurrentPosition	"Start merge from current position"
 set StartFromInitialPosition	"Start merge from initial position"
 set NoTranspositions				"No transpositions"
@@ -42,7 +40,8 @@ set IncludeTranspositions		"Include transpositions"
 set VariationDepth				"Variation depth"
 set VariationLength				"Maximal variation length"
 set UpdatePreview					"Update preview"
-set SaveAs							"Save new game"
+set SelectedGame					"Selected Game"
+set SaveAs							"Save as new game"
 set Save								"Merge into game"
 set GameisLocked					"Game is locked by Merge-Dialog"
 
@@ -56,6 +55,7 @@ set CannotMerge					"Cannot merge games with different variants."
 proc openDialog {parent primary secondary} {
 	variable ::pgn::merge::Options
 	variable ::scidb::mergebaseName
+	variable ::scidb::clipbaseName
 	variable Priv
 
 	set dlg .mergeDialog
@@ -78,7 +78,6 @@ proc openDialog {parent primary secondary} {
 			clipbaseNo		-1
 			state				{}
 			checksum			0
-			variant			""
 			view				-1
 			used:0			0
 			current			0
@@ -132,7 +131,6 @@ proc openDialog {parent primary secondary} {
 		::bind $table <<TableCheckbutton>> [namespace code { TableCheckbutton %d }]
 		::scidb::db::subscribe gameList [namespace current]::Update {} $tb
 
-		set cmd [namespace code UpdatePreview]
 		set btns [ttk::frame $control.buttons -borderwidth 2 -relief ridge]
 
 		grid $control.table -row 1 -column 1 -sticky nsew
@@ -144,13 +142,13 @@ proc openDialog {parent primary secondary} {
 		set Priv(table) $tb
 
 		ttk::radiobutton $btns.ignoreTrans \
-			-text $mc::NoTranspositions \
+			-textvar [namespace current]::mc::NoTranspositions \
 			-variable [namespace current]::Priv(transposition) \
 			-value ignore \
 			-command $updateCmd \
 			;
 		ttk::radiobutton $btns.considerTrans \
-			-text $mc::IncludeTranspositions \
+			-textvar [namespace current]::mc::IncludeTranspositions \
 			-variable [namespace current]::Priv(transposition) \
 			-value consider \
 			-command $updateCmd \
@@ -158,20 +156,20 @@ proc openDialog {parent primary secondary} {
 
 		ttk::separator $btns.sep1
 		ttk::radiobutton $btns.posInitial \
-			-text $mc::StartFromInitialPosition \
+			-textvar [namespace current]::mc::StartFromInitialPosition \
 			-variable [namespace current]::Priv(startpos) \
 			-value initial \
 			-command $updateCmd \
 			;
 		ttk::radiobutton $btns.posCurrent \
-			-text $mc::StartFromCurrentPosition \
+			-textvar [namespace current]::mc::StartFromCurrentPosition \
 			-variable [namespace current]::Priv(startpos) \
 			-value current \
 			-command $updateCmd \
 			;
 
 		ttk::separator $btns.sep2
-		ttk::label $btns.ldepth -text "$mc::VariationDepth:"
+		ttk::label $btns.ldepth -textvar [::mc::var [namespace current]::mc::VariationDepth :]
 		ttk::spinbox $btns.depth \
 			-textvar [namespace current]::Priv(depth) \
 			-from 0 \
@@ -184,7 +182,7 @@ proc openDialog {parent primary secondary} {
 		::theme::configureSpinbox $btns.depth
 
 		ttk::separator $btns.sep3
-		ttk::label $btns.llength  -text "$mc::VariationLength:"
+		ttk::label $btns.llength  -textvar [::mc::var [namespace current]::mc::VariationLength :]
 		ttk::spinbox $btns.length \
 			-textvar [namespace current]::Priv(length) \
 			-from 0 \
@@ -229,12 +227,21 @@ proc openDialog {parent primary secondary} {
 
 		::pgn::setup::setupStyle merge $Priv(pos:merge)
 		::pgn::editor::resetGame $Priv(pgn:merge) $Priv(pos:merge)
-		set update [ttk::button $preview.update -text $mc::UpdatePreview -command $cmd]
+		set update [ttk::button $preview.update \
+			-textvar [namespace current]::mc::UpdatePreview \
+			-command [namespace code UpdatePreview] \
+		]
 		set Priv(update) $update
+		set current [ttk::label $preview.current \
+			-textvar [namespace current]::mc::SelectedGame \
+			-borderwidth 0 \
+			-anchor center \
+		]
 
-		grid $preview.merge  -row 1 -column 1 -sticky ewns
-		grid $preview.game   -row 1 -column 3 -sticky ewns -rowspan 3
-		grid $preview.update -row 3 -column 1 -sticky ew
+		grid $preview.merge   -row 1 -column 1 -sticky ewns
+		grid $preview.game    -row 1 -column 3 -sticky ewns
+		grid $preview.update  -row 3 -column 1 -sticky ewns
+		grid $preview.current -row 3 -column 3 -sticky ewns
 		grid columnconfigure $preview {0 2 4} -minsize $::theme::padx
 		grid columnconfigure $preview {1 3} -weight 1
 		grid rowconfigure $preview {0 2 4} -minsize $::theme::pady
@@ -282,7 +289,6 @@ proc openDialog {parent primary secondary} {
 		set base $clipbaseName
 		set variant $Priv(variant)
 		set number [expr {[::scidb::db::count games $clipbaseName $variant] - 1}]
-		set id [list $base $variant $number]
 	} elseif {[llength $secondary] == 4} {
 		lassign $secondary base variant view index
 		set number [::scidb::db::get gameNumber $base $variant $index $view]
@@ -305,14 +311,42 @@ proc openDialog {parent primary secondary} {
 	set temporary [::game::nextGamePosition]
 	::scidb::game::new $temporary
 	::scidb::game::load $temporary $base $variant $number
+	::scidb::game::langSet $temporary *
 	::scidb::game::copy game $mergebaseName $temporary original
 	set number [expr {[::scidb::db::count games $mergebaseName $variant] - 1}]
 	::scidb::game::load $temporary $mergebaseName $variant $number
+	::scidb::game::langSet $temporary *
 	set Priv(used:$number) 1
 	::gametable::setState $Priv(table) $number check
 	lappend Priv(games) $temporary
 	lappend Priv(temporary) $temporary
 	ConfigureUpdateButton
+}
+
+
+proc alreadyMerged {primary secondary} {
+	variable ::scidb::clipbaseName
+	variable Priv
+
+	lassign [::scidb::game::sink? $primary] base variant number
+	set id1 [list $base $variant $number]
+	if {[winfo exists .mergeDialog] && $id1 in $Priv(secondaries)} { return 1 }
+
+	if {$secondary eq "clipbase"} {
+		set base $clipbaseName
+		set number [expr {[::scidb::db::count games $clipbaseName $variant] - 1}]
+	} elseif {[llength $secondary] == 4} {
+		lassign $secondary base variant view index
+		set number [::scidb::db::get gameNumber $base $variant $index $view]
+	} else {
+		lassign [::scidb::game::sink? $secondary] base variant number
+	}
+
+	set id2 [list $base $variant $number]
+	if {$id1 eq $id2} { return 1 }
+	if {[winfo exists .mergeDialog] && $id2 in $Priv(secondaries)} { return 1 }
+
+	return 0
 }
 
 
@@ -373,7 +407,7 @@ proc ConfigureUpdateButton {} {
 	if {$mergeState ne $Priv(state)} { set state normal } else { set state disabled }
 	$Priv(update) configure -state $state
 
-	if {[llength $mergeState] > 2} { set state normal } else { set state disabled }
+	if {[llength [lindex $mergeState 4]] > 0} { set state normal } else { set state disabled }
 	.mergeDialog.save configure -state $state
 	.mergeDialog.saveAs configure -state $state
 }

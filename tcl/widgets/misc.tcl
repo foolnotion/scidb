@@ -456,13 +456,21 @@ proc dialogFullscreenButtons {parent} {
 		-borderwidth 1 \
 		-takefocus 0 \
 		;
-	::tooltip::tooltip $parent.__control__.close [namespace current]::mc::Control(close)
+	FullscreenSetupCloseButton $parent
+
+	bind $parent.__control__.close <<LanguageChanged>> \
+		[namespace code [list FullscreenSetupCloseButton $parent]]
 
 	pack $parent.__control__.minimize -side left -fill y -expand yes
 	pack $parent.__control__.restore -side left -fill y -expand yes
 	pack $parent.__control__.close -side left -fill y -expand yes
 
 	return $parent.__control__
+}
+
+
+proc FullscreenSetupCloseButton {parent} {
+	::tooltip::tooltip $parent.__control__.close "$mc::Control(close) ($::mc::Key(Alt)+F4)"
 }
 
 
