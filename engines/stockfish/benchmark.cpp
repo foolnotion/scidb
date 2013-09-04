@@ -120,9 +120,9 @@ void benchmark(const Position& current, istream& is) {
   {
 #ifdef THREECHECK
       Position pos(
-        fens[i], Options["UCI_Chess960"], Options["UCI_VariantThreeCheck"], Threads.main_thread());
+        fens[i], Options["UCI_Chess960"], Options["UCI_VariantThreeCheck"], Threads.main());
 #else
-      Position pos(fens[i], Options["UCI_Chess960"], Threads.main_thread());
+      Position pos(fens[i], Options["UCI_Chess960"], Threads.main());
 #endif
 
       cerr << "\nPosition: " << i + 1 << '/' << fens.size() << endl;

@@ -213,6 +213,7 @@ namespace {
   const Score RookSemiopenFile = make_score(19, 10);
 #endif
   const Score BishopPawns      = make_score( 8, 12);
+  const Score MinorBehindPawn  = make_score(16,  0);
   const Score UndefendedMinor  = make_score(25, 10);
   const Score TrappedRook      = make_score(90,  0);
 
@@ -301,18 +302,18 @@ namespace {
   Score evaluate_pieces_of_color(const Position& pos, EvalInfo& ei, Score& mobility);
 
   template<Color Us, bool Trace>
-  Score evaluate_king(const Position& pos, EvalInfo& ei, Value margins[]);
+  Score evaluate_king(const Position& pos, const EvalInfo& ei, Value margins[]);
 
   template<Color Us, bool Trace>
-  Score evaluate_threats(const Position& pos, EvalInfo& ei);
+  Score evaluate_threats(const Position& pos, const EvalInfo& ei);
 
   template<Color Us, bool Trace>
-  Score evaluate_passed_pawns(const Position& pos, EvalInfo& ei);
+  Score evaluate_passed_pawns(const Position& pos, const EvalInfo& ei);
 
   template<Color Us>
-  int evaluate_space(const Position& pos, EvalInfo& ei);
+  int evaluate_space(const Position& pos, const EvalInfo& ei);
 
-  Score evaluate_unstoppable_pawns(const Position& pos, EvalInfo& ei);
+  Score evaluate_unstoppable_pawns(const Position& pos, const EvalInfo& ei);
 
   Value interpolate(const Score& v, Phase ph, ScaleFactor sf);
   Score apply_weight(Score v, Score w);
@@ -457,7 +458,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   if (ei.mi->space_weight())
   {
       int s = evaluate_space<WHITE>(pos, ei) - evaluate_space<BLACK>(pos, ei);
-      score += apply_weight(make_score(s * ei.mi->space_weight(), 0), Weights[Space]);
+      score += apply_weight(s * ei.mi->space_weight(), Weights[Space]);
   }
 
   // Scale winning side if position is more drawish that what it appears
@@ -476,7 +477,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
       {
           // Check for KBP vs KB with only a single pawn that is almost
           // certainly a draw or at least two pawns.
-          bool one_pawn = (pos.piece_count(WHITE, PAWN) + pos.piece_count(BLACK, PAWN) == 1);
+          bool one_pawn = (pos.count<PAWN>(WHITE) + pos.count<PAWN>(BLACK) == 1);
           sf = one_pawn ? ScaleFactor(8) : ScaleFactor(32);
       }
       else
@@ -495,8 +496,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
       Tracing::add(IMBALANCE, ei.mi->material_value());
       Tracing::add(PAWN, ei.pi->pawns_value());
       Tracing::add(UNSTOPPABLE, evaluate_unstoppable_pawns(pos, ei));
-      Score w = make_score(ei.mi->space_weight() * evaluate_space<WHITE>(pos, ei), 0);
-      Score b = make_score(ei.mi->space_weight() * evaluate_space<BLACK>(pos, ei), 0);
+      Score w = ei.mi->space_weight() * evaluate_space<WHITE>(pos, ei);
+      Score b = ei.mi->space_weight() * evaluate_space<BLACK>(pos, ei);
       Tracing::add(SPACE, apply_weight(w, Weights[Space]), apply_weight(b, Weights[Space]));
       Tracing::add(TOTAL, score);
       Tracing::stream << "\nUncertainty margin: White: " << to_cp(margins[WHITE])
@@ -518,16 +519,16 @@ Value do_evaluate(const Position& pos, Value& margin) {
   template<Color Us>
   void init_eval_info(const Position& pos, EvalInfo& ei) {
 
-    const Color Them = (Us == WHITE ? BLACK : WHITE);
+    const Color  Them = (Us == WHITE ? BLACK : WHITE);
+    const Square Down = (Us == WHITE ? DELTA_S : DELTA_N);
 
     Bitboard b = ei.attackedBy[Them][KING] = pos.attacks_from<KING>(pos.king_square(Them));
     ei.attackedBy[Us][PAWN] = ei.pi->pawn_attacks(Us);
 
     // Init king safety tables only if we are going to use them
-    if (   pos.piece_count(Us, QUEEN)
-        && pos.non_pawn_material(Us) > QueenValueMg + PawnValueMg)
+    if (pos.count<QUEEN>(Us) && pos.non_pawn_material(Us) > QueenValueMg + PawnValueMg)
     {
-        ei.kingRing[Them] = (b | (Us == WHITE ? b >> 8 : b << 8));
+        ei.kingRing[Them] = b | shift_bb<Down>(b);
         b &= ei.attackedBy[Us][PAWN];
         ei.kingAttackersCount[Us] = b ? popcount<Max15>(b) / 2 : 0;
         ei.kingAdjacentZoneAttacksCount[Us] = ei.kingAttackersWeight[Us] = 0;
@@ -553,7 +554,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
     if (bonus && (ei.attackedBy[Us][PAWN] & s))
     {
         if (   !pos.pieces(Them, KNIGHT)
-            && !(same_color_squares(s) & pos.pieces(Them, BISHOP)))
+            && !(squares_of_color(s) & pos.pieces(Them, BISHOP)))
             bonus += bonus + bonus / 2;
         else
             bonus += bonus / 2;
@@ -572,7 +573,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
     Score score = SCORE_ZERO;
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
-    const Square* pl = pos.piece_list(Us, Piece);
+    const Square* pl = pos.list<Piece>(Us);
 
     ei.attackedBy[Us][Piece] = 0;
 
@@ -594,7 +595,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
                 ei.kingAdjacentZoneAttacksCount[Us] += popcount<Max15>(bb);
         }
 
-        int mob = popcount<Piece == QUEEN ? Full : Max15>(b & mobilityArea);
+        int mob = Piece != QUEEN ? popcount<Max15>(b & mobilityArea)
+                                 : popcount<Full >(b & mobilityArea);
+
         mobility += MobilityBonus[Piece][mob];
 
         // Decrease score if we are attacked by an enemy pawn. Remaining part
@@ -613,10 +616,17 @@ Value do_evaluate(const Position& pos, Value& margin) {
         if (Piece == BISHOP)
             score -= BishopPawns * ei.pi->pawns_on_same_color_squares(Us, s);
 
-        // Bishop and knight outposts squares
-        if (    (Piece == BISHOP || Piece == KNIGHT)
-            && !(pos.pieces(Them, PAWN) & attack_span_mask(Us, s)))
-            score += evaluate_outposts<Piece, Us>(pos, ei, s);
+        if (Piece == BISHOP || Piece == KNIGHT)
+        {
+            // Bishop and knight outposts squares
+            if (!(pos.pieces(Them, PAWN) & pawn_attack_span(Us, s)))
+                score += evaluate_outposts<Piece, Us>(pos, ei, s);
+
+            // Bishop or knight behind a pawn
+            if (    relative_rank(Us, s) < RANK_5
+                && (pos.pieces(PAWN) & (s + pawn_push(Us))))
+                score += MinorBehindPawn;
+        }
 
         if (  (Piece == ROOK || Piece == QUEEN)
             && relative_rank(Us, s) >= RANK_5)
@@ -632,8 +642,8 @@ Value do_evaluate(const Position& pos, Value& margin) {
                 score += Piece == ROOK ? RookOn7th : QueenOn7th;
 #endif
 
-            // Major piece attacking enemy pawns on the same rank
-            Bitboard pawns = pos.pieces(Them, PAWN) & rank_bb(s);
+            // Major piece attacking enemy pawns on the same rank/file
+            Bitboard pawns = pos.pieces(Them, PAWN) & PseudoAttacks[ROOK][s];
             if (pawns)
                 score += popcount<Max15>(pawns) * (Piece == ROOK ? RookOnPawn : QueenOnPawn);
         }
@@ -701,7 +711,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // and the type of attacked one.
 
   template<Color Us, bool Trace>
-  Score evaluate_threats(const Position& pos, EvalInfo& ei) {
+  Score evaluate_threats(const Position& pos, const EvalInfo& ei) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
@@ -772,7 +782,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // evaluate_king<>() assigns bonuses and penalties to a king of a given color
 
   template<Color Us, bool Trace>
-  Score evaluate_king(const Position& pos, EvalInfo& ei, Value margins[]) {
+  Score evaluate_king(const Position& pos, const EvalInfo& ei, Value margins[]) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
@@ -913,7 +923,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // evaluate_passed_pawns<>() evaluates the passed pawns of the given color
 
   template<Color Us, bool Trace>
-  Score evaluate_passed_pawns(const Position& pos, EvalInfo& ei) {
+  Score evaluate_passed_pawns(const Position& pos, const EvalInfo& ei) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
@@ -951,16 +961,21 @@ Value do_evaluate(const Position& pos, Value& margin) {
             if (pos.is_empty(blockSq))
             {
                 squaresToQueen = forward_bb(Us, s);
-                defendedSquares = squaresToQueen & ei.attackedBy[Us][ALL_PIECES];
 
                 // If there is an enemy rook or queen attacking the pawn from behind,
                 // add all X-ray attacks by the rook or queen. Otherwise consider only
                 // the squares in the pawn's path attacked or occupied by the enemy.
-                if (   (forward_bb(Them, s) & pos.pieces(Them, ROOK, QUEEN))
+                if (    unlikely(forward_bb(Them, s) & pos.pieces(Them, ROOK, QUEEN))
                     && (forward_bb(Them, s) & pos.pieces(Them, ROOK, QUEEN) & pos.attacks_from<ROOK>(s)))
                     unsafeSquares = squaresToQueen;
                 else
                     unsafeSquares = squaresToQueen & (ei.attackedBy[Them][ALL_PIECES] | pos.pieces(Them));
+
+                if (    unlikely(forward_bb(Them, s) & pos.pieces(Us, ROOK, QUEEN))
+                    && (forward_bb(Them, s) & pos.pieces(Us, ROOK, QUEEN) & pos.attacks_from<ROOK>(s)))
+                    defendedSquares = squaresToQueen;
+                else
+                    defendedSquares = squaresToQueen & ei.attackedBy[Us][ALL_PIECES];
 
                 // If there aren't enemy attacks huge bonus, a bit smaller if at
                 // least block square is not attacked, otherwise smallest bonus.
@@ -1015,7 +1030,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // evaluate_unstoppable_pawns() evaluates the unstoppable passed pawns for both sides, this is quite
   // conservative and returns a winning score only when we are very sure that the pawn is winning.
 
-  Score evaluate_unstoppable_pawns(const Position& pos, EvalInfo& ei) {
+  Score evaluate_unstoppable_pawns(const Position& pos, const EvalInfo& ei) {
 
     Bitboard b, b2, blockers, supporters, queeningPath, candidates;
     Square s, blockSq, queeningSquare;
@@ -1125,7 +1140,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             // black pawns: a4, b4 white: b2 then pawn in b4 is giving support.
             if (!opposed)
             {
-                b2 = supporters & in_front_bb(winnerSide, blockSq + pawn_push(winnerSide));
+                b2 = supporters & in_front_bb(winnerSide, rank_of(blockSq + pawn_push(winnerSide)));
 
                 while (b2) // This while-loop could be replaced with LSB/MSB (depending on color)
                 {
@@ -1135,7 +1150,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
             }
 
             // Check pawns that can be sacrificed against the blocking pawn
-            b2 = attack_span_mask(winnerSide, blockSq) & candidates & ~(1ULL << s);
+            b2 = pawn_attack_span(winnerSide, blockSq) & candidates & ~(1ULL << s);
 
             while (b2) // This while-loop could be replaced with LSB/MSB (depending on color)
             {
@@ -1180,7 +1195,7 @@ Value do_evaluate(const Position& pos, Value& margin) {
   // twice. Finally, the space bonus is scaled by a weight taken from the
   // material hash table. The aim is to improve play on game opening.
   template<Color Us>
-  int evaluate_space(const Position& pos, EvalInfo& ei) {
+  int evaluate_space(const Position& pos, const EvalInfo& ei) {
 
     const Color Them = (Us == WHITE ? BLACK : WHITE);
 
@@ -1214,9 +1229,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
     assert(eg_value(v) > -VALUE_INFINITE && eg_value(v) < VALUE_INFINITE);
     assert(ph >= PHASE_ENDGAME && ph <= PHASE_MIDGAME);
 
-    int ev = (eg_value(v) * int(sf)) / SCALE_FACTOR_NORMAL;
-    int result = (mg_value(v) * int(ph) + ev * int(128 - ph)) / 128;
-    return Value((result + GrainSize / 2) & ~(GrainSize - 1));
+    int e = (eg_value(v) * int(sf)) / SCALE_FACTOR_NORMAL;
+    int r = (mg_value(v) * int(ph) + e * int(PHASE_MIDGAME - ph)) / PHASE_MIDGAME;
+    return Value((r / GrainSize) * GrainSize); // Sign independent
   }
 
   // apply_weight() weights score v by score w trying to prevent overflow
@@ -1273,11 +1288,9 @@ Value do_evaluate(const Position& pos, Value& margin) {
 
   std::string Tracing::do_trace(const Position& pos) {
 
-    Search::RootColor = pos.side_to_move();
-
     stream.str("");
     stream << std::showpoint << std::showpos << std::fixed << std::setprecision(2);
-    memset(scores, 0, 2 * (TOTAL + 1) * sizeof(Score));
+    std::memset(scores, 0, 2 * (TOTAL + 1) * sizeof(Score));
 
     Value margin;
     do_evaluate<true>(pos, margin);

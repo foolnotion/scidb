@@ -17,11 +17,11 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#if !defined MOVEPICK_H_INCLUDED
+#ifndef MOVEPICK_H_INCLUDED
 #define MOVEPICK_H_INCLUDED
 
 #include <algorithm> // For std::max
-#include <cstring>   // For memset
+#include <cstring>   // For std::memset
 
 #include "movegen.h"
 #include "position.h"
@@ -43,7 +43,7 @@ struct Stats {
   static const Value Max = Value(2000);
 
   const T* operator[](Piece p) const { return table[p]; }
-  void clear() { memset(table, 0, sizeof(table)); }
+  void clear() { std::memset(table, 0, sizeof(table)); }
 
   void update(Piece p, Square to, Move m) {
 
@@ -86,7 +86,7 @@ class MovePicker {
 public:
   MovePicker(const Position&, Move, Depth, const HistoryStats&, Square);
   MovePicker(const Position&, Move, const HistoryStats&, PieceType);
-  MovePicker(const Position&, Move, Depth, const HistoryStats&, Move*, Search::Stack*, Value);
+  MovePicker(const Position&, Move, Depth, const HistoryStats&, Move*, Search::Stack*);
 
   template<bool SpNode> Move next_move();
 
@@ -100,11 +100,11 @@ private:
   Move* countermoves;
   Depth depth;
   Move ttMove;
-  MoveStack killers[4];
+  ExtMove killers[4];
   Square recaptureSquare;
-  int captureThreshold, phase;
-  MoveStack *cur, *end, *endQuiets, *endBadCaptures;
-  MoveStack moves[MAX_MOVES];
+  int captureThreshold, stage;
+  ExtMove *cur, *end, *endQuiets, *endBadCaptures;
+  ExtMove moves[MAX_MOVES];
 };
 
-#endif // !defined(MOVEPICK_H_INCLUDED)
+#endif // #ifndef MOVEPICK_H_INCLUDED

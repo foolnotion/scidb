@@ -24,17 +24,11 @@
 #include "misc.h"
 #include "thread.h"
 
-#if defined(__hpux)
-#    include <sys/pstat.h>
-#endif
-
 using namespace std;
 
-/// Version number. If Version is left empty, then Tag plus current
-/// date, in the format DD-MM-YY, are used as a version number.
-
-static const string Version = "3";
-static const string Tag = "";
+/// Version number. If Version is left empty, then compile date, in the
+/// format DD-MM-YY, is shown in engine_info.
+static const string Version = "4";
 
 
 /// engine_info() returns the full name of the current Stockfish version. This
@@ -48,37 +42,23 @@ const string engine_info(bool to_uci) {
   string month, day, year;
   stringstream s, date(__DATE__); // From compiler, format is "Sep 21 2008"
 
-  s << "Stockfish " << Version;
+  s << "Stockfish " << Version << setfill('0');
 
   if (Version.empty())
   {
       date >> month >> day >> year;
-
-      s << Tag << string(Tag.empty() ? "" : " ") << setfill('0') << setw(2) << day
-        << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
+      s << setw(2) << day << setw(2) << (1 + months.find(month) / 4) << year.substr(2);
   }
 
-#if 1 // Scidb's extended version
-  s << (Is64Bit ? " 64" : "")
-    << (HasPopCnt ? " SSE4.2" : "")
-	 << (to_uci ? " scidb" : "")
-    << (to_uci ? "\nid author ": " by ")
-    << "Tord Romstad, Marco Costalba and Joona Kiiski";
-#else
+  // Scidb's extended version
+  s << " scidb";
+
   s << (Is64Bit ? " 64" : "")
     << (HasPopCnt ? " SSE4.2" : "")
     << (to_uci ? "\nid author ": " by ")
     << "Tord Romstad, Marco Costalba and Joona Kiiski";
-#endif
 
   return s.str();
-}
-
-
-/// Convert system time to milliseconds. That's all we need.
-
-Time::point Time::now() {
-  sys_time_t t; system_time(&t); return time_to_msec(t);
 }
 
 
@@ -181,37 +161,12 @@ std::ostream& operator<<(std::ostream& os, SyncCout sc) {
 void start_logger(bool b) { Logger::start(b); }
 
 
-/// cpu_count() tries to detect the number of CPU cores
-
-int cpu_count() {
-
-#if defined(_WIN32)
-  SYSTEM_INFO s;
-  GetSystemInfo(&s);
-  return s.dwNumberOfProcessors;
-#else
-
-#  if defined(_SC_NPROCESSORS_ONLN)
-  return sysconf(_SC_NPROCESSORS_ONLN);
-#  elif defined(__hpux)
-  struct pst_dynamic psd;
-  if (pstat_getdynamic(&psd, sizeof(psd), (size_t)1, 0) == -1)
-      return 1;
-  return psd.psd_proc_cnt;
-#  else
-  return 1;
-#  endif
-
-#endif
-}
-
-
 /// timed_wait() waits for msec milliseconds. It is mainly an helper to wrap
 /// conversion from milliseconds to struct timespec, as used by pthreads.
 
 void timed_wait(WaitCondition& sleepCond, Lock& sleepLock, int msec) {
 
-#if defined(_WIN32)
+#ifdef _WIN32
   int tm = msec;
 #else
   timespec ts, *tm = &ts;
@@ -228,7 +183,7 @@ void timed_wait(WaitCondition& sleepCond, Lock& sleepLock, int msec) {
 /// prefetch() preloads the given address in L1/L2 cache. This is a non
 /// blocking function and do not stalls the CPU waiting for data to be
 /// loaded from memory, that can be quite slow.
-#if defined(NO_PREFETCH)
+#ifdef NO_PREFETCH
 
 void prefetch(char*) {}
 
