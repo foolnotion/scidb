@@ -976,7 +976,6 @@ proc DoLayout {position data {context editor} {w {}}} {
 
 #set clock0 [clock milliseconds]
 	foreach node $data {
-puts $node
 		switch [lindex $node 0] {
 			start {
 				$w configure -state normal
