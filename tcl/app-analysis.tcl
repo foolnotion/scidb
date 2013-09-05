@@ -49,6 +49,7 @@ set IllegalPosition			"Illegal position - Cannot analyze"
 set IllegalMoves				"Illegal moves in game - Cannot analyze"
 set DidNotReceivePong		"Engine is not responding to \"ping\" command - Engine aborted"
 set SearchMateNotSupported	"This engine is not supporting search for mate."
+set Stopped						"stopped"
 
 set LinesPerVariation		"Lines per variation"
 set BestFirstOrder			"Use \"best first\" order"
@@ -95,7 +96,7 @@ array set Defaults {
 
 array set Options {
 	font					TkTextFont
-	engine:bestFirst	0
+	engine:bestFirst	1
 	engine:nlines		2
 	engine:multiPV		4
 	engine:delay		250
@@ -205,6 +206,7 @@ proc build {parent width height} {
 	]
 	$tmove tag configure figurine -font $::font::figurine(text:normal)
 	$tmove tag configure center -justify center
+	$tmove tag configure stopped -foreground darkred
 	pack $tmove -padx 2 -pady 2
 
 	set time [tk::frame $info.time \
@@ -705,10 +707,19 @@ proc Display(state) {state} {
 	set Vars(after2) ""
 
 	switch $state {
-		stop		{ set Vars(after2) { after idle [namespace code [list SetState disabled]] } }
-		start		{ SetState normal }
-		pause		{}
-		resume	{ SetState normal }
+		stop	{ set Vars(after2) { after idle [namespace code [list SetState disabled]] } }
+		start	{ SetState normal }
+
+		pause - resume {
+			$Vars(move) configure -state normal
+			$Vars(move) delete 1.0 end
+			if {$state eq "pause"} {
+				$Vars(move) insert end $mc::Stopped {stopped center}
+			} else {
+				SetState normal
+			}
+			$Vars(move) configure -state disabled
+		}
 	}
 }
 
@@ -743,7 +754,7 @@ proc Display(clear) {} {
 		$Vars(tree) item element configure Line$i Moves elemTextFig -text "" -fill black
 	}
 
-	$Vars(tree) activate root
+	$Vars(tree) activate 0
 }
 
 
@@ -1150,8 +1161,9 @@ proc ActivateCurrent {w} {
 	set x [expr {$x - [winfo rootx $w]}]
 	set y [expr {$y - [winfo rooty $w]}]
 	set id [$w identify $x $y]
-	if {[lindex $id 0] eq "item"} { set item [lindex $id 1] } else { set item root }
+	if {[lindex $id 0] eq "item"} { set item [lindex $id 1] } else { set item 0 }
 	$w activate $item
+	set Vars(current:item) $item
 }
 
 

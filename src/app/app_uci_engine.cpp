@@ -376,6 +376,9 @@ uci::Engine::continueAnalysis()
 
 	if (currentGame())
 	{
+		if (m_waitingOn == "setoption")
+			return true;
+
 		send("go infinite");
 		m_isAnalyzing = true;
 		updateState(app::Engine::Resume);
@@ -508,6 +511,7 @@ uci::Engine::processMessage(mstl::string const& message)
 				else if (m_waitingOn == "setoption")
 				{
 					send("setoption name " + m_name + " value " + m_value);
+					m_waitingOn.clear();
 					continueAnalysis();
 				}
 
@@ -876,6 +880,19 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 			mstl::string msg("Illegal move in PV: ");
 			msg.append(s, ::skipNonSpaces(s));
 			error(msg);
+
+			if (moves.isEmpty())
+			{
+				if (isAnalyzing())
+				{
+					// Some engines (e,g. Gaviota) are doing the bestmove,
+					// thus starting from a wrong position in case of restart.
+					// Restart analysis in this case.
+					stopAnalysis(true);
+					startAnalysis(true);
+				}
+			}
+
 			return 0;
 		}
 
@@ -1245,7 +1262,11 @@ uci::Engine::sendHashSize()
 void
 uci::Engine::sendNumberOfVariations()
 {
+#if 0
 	sendOption("MultiPV", ::toStr(numVariations()));
+#else
+	send("setoption name MultiPV value " + ::toStr(numVariations()));
+#endif
 }
 
 
@@ -1268,7 +1289,11 @@ uci::Engine::sendSkillLevel()
 void
 uci::Engine::sendPondering()
 {
+#if 0
 	sendOption("Ponder", ::toBool(pondering()));
+#else
+	send("setoption name Pnder value " + ::toBool(pondering()));
+#endif
 }
 
 

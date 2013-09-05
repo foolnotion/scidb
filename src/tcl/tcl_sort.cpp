@@ -124,14 +124,14 @@ Sort::Element::dictCompDecr(Element* lhs, Element* rhs, bool noCase, bool skipPu
 
 
 int
-Sort::Element::compDecr(Element* lhs, Element* rhs, bool noCase, bool skipPunctuation)
+Sort::Element::compIncr(Element* lhs, Element* rhs, bool noCase, bool skipPunctuation)
 {
 	return ::sys::utf8::latin1::compare(lhs->m_value, rhs->m_value, noCase, skipPunctuation);
 }
 
 
 int
-Sort::Element::compIncr(Element* lhs, Element* rhs, bool noCase, bool skipPunctuation)
+Sort::Element::compDecr(Element* lhs, Element* rhs, bool noCase, bool skipPunctuation)
 {
 	return -::sys::utf8::latin1::compare(lhs->m_value, rhs->m_value, noCase, skipPunctuation);
 }

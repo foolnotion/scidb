@@ -312,6 +312,9 @@ tcl::compare::setAlphabeticList(Tcl_Obj* table)
 	{
 		delete m_lookup;
 		m_lookup = 0;
+
+		for (unsigned i = 0; i < 256; ++i)
+			m_sortOrderTable[i] = i;
 	}
 	else
 	{

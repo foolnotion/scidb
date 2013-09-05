@@ -51,6 +51,10 @@ void TranspositionTable::set_size(size_t mbSize) {
   }
 
   table = (TTEntry*)((uintptr_t(mem) + CACHE_LINE_SIZE - 1) & ~(CACHE_LINE_SIZE - 1));
+ 
+#ifdef HASHFULL
+ 	used = 0;
+#endif
 }
 
 

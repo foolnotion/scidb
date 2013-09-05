@@ -766,7 +766,7 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 
 		set xdgmime [auto_execok xdg-mime]
 
-		foreach filetype {scidb scid3 scid4 chessbase pgn gzpgn} {
+		foreach filetype {scidb scid3 scid4 chessbase chessbasedos pgn gzpgn} {
 			set cmd [list $xdgmime query default application/x-chess-$filetype]
 			set dfltApp ""
 			catch { set dfltApp [exec {*}$cmd] }
@@ -840,6 +840,7 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 			foreach filetype {scidb scid4 scid3 chessbase pgn gzpgn} {
 				if {!$default($filetype) && $Assign_($filetype)} {
 					lappend mimetypes application/x-chess-$filetype
+					if {$filetype eq "chessbase"} { lappend mimetypes application/x-chess-chessbasedos }
 				}
 			}
 		}
@@ -850,19 +851,19 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 			# Unluckely the pipe is swallowing any error, but we have to use pipe 'yes'
 			# because xdg-mime may ask if some files should be set writeable.
 			catch { exec yes | {*}$xdgcmd }
-#			set update_mime_database [auto_execok update-mime-database]
-#			if {[string length $update_mime_database]} {
-#				set xdg_data_home ~/.local/share
-#				if {[info exists ::env(XDG_DATA_HOME)]} {
-#					foreach p [split $::env(XDG_DATA_HOME) :] {
-#						if {[file isdirectory $p/mime]} {
-#							set xdg_data_home $p
-#							break
-#						}
-#					}
-#				}
-#				catch { update-mime-database $xdg_data_home/mime }
-#			}
+			set update_mime_database [auto_execok update-mime-database]
+			if {[string length $update_mime_database]} {
+				set xdg_data_home ~/.local/share
+				if {[info exists ::env(XDG_DATA_HOME)]} {
+					foreach p [split $::env(XDG_DATA_HOME) :] {
+						if {[file isdirectory $p/mime]} {
+							set xdg_data_home $p
+							break
+						}
+					}
+				}
+				catch { update-mime-database $xdg_data_home/mime }
+			}
 			set failed {}
 			set success {}
 			foreach mimetype $mimetypes {

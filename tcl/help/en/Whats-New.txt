@@ -33,7 +33,7 @@ Fourth public preview version
   <li class="space">Language dependent sorting implemented</li>
   <li class="space">New themes added: "Blackjack" and "Country Style" (thanks to José Carlos Martins)</li>
   <li class="space">Problem with slow down in game editor eliminated</li>
-  <li class="space">Upgrade of engine Stockfish to version 3</li>
+  <li class="space">Upgrade of engine Stockfish to version 4</li>
   <li class="space">Session management implemented: now Scidb will intervene if the user is doing a session shutdown while Scidb is writing/updating a database</li>
   <li class="space">Copy game to clipboard implemented</li>
   <li class="space">Export of current game implemented (for example to PGN file)</li>

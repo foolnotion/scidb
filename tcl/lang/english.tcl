@@ -1077,6 +1077,7 @@ ln -sf ../# ====================================================================
 ::application::analysis::mc::IllegalMoves					"Illegal moves in game - Cannot analyze"
 ::application::analysis::mc::DidNotReceivePong			"Engine is not responding to \"ping\" command - Engine aborted"
 ::application::analysis::mc::SearchMateNotSupported	"This engine is not supporting search for mate."
+::application::analysis::mc::Stopped						"stopped"
 
 ::application::analysis::mc::LinesPerVariation			"Lines per variation"
 ::application::analysis::mc::BestFirstOrder				"Sort by evaluation"

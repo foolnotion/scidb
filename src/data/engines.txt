@@ -90,9 +90,11 @@
 =	Betsabé
 =	Betsabe II
 =	Betsabe
-	Betsy									----	----	USA	WB			NF				http://userfs.cec.wustl.edu/~lwr1/
+	Betsy									----	----	USA	WB			N
+	Betsy Fischer						----	2231	USA	WB			NF
 *	BibiChess							1947	2119	FRA	UCI		N				http://www.superchessengine.com/
 *	BigLion								2039	2172	CMR	WB/UCI	NF				http://biglion.110mb.com/
+=	BigLion80
 *	BikJump								2104	2175	NED	UCI		N				http://www.aartbik.com/MISC/chess.html
 	Bionic								----	----	BEL	WB			N
 =	Bionic Impakt
@@ -110,7 +112,7 @@
 	Brama									----	----	ITA	WB			N
 *	BremboCE								----	----	ITA	WB			N				http://web.tiscali.it/BremboCE
 =	Brembo
-	Bright								----	2883	NED	UCI		N				http://members.ziggo.nl/allard.siemelink/bright/
+	Bright								----	2723	NED	UCI		NF				http://members.ziggo.nl/allard.siemelink/bright/
 	Bruja									----	2556	USA	WB			N
  	Brutus Chess						2729	2556	NED	WB/UCI	N
 =	Brutus
@@ -214,7 +216,7 @@
 *	Chezzz								2356	2439	DEN	WB			N			http://www.elektronhjerne.dk/chezzz/index.html
 	Chimp									----	----	GBR	?			N
 *	ChipTest								----	----	---	?			N
-	Chiron								----	2713	ITA	?			N
+	Chiron								----	2713	ITA	?			NF
 	Chispa								2278	2365	ARG	WB/UCI	NF			http://chispachess.blogspot.com/
 	Chompster							----	----	AUS	?			N
 *	Christine_T							----	----	FRA	?			N
@@ -236,7 +238,7 @@
 *	CPW									----	----	USA	UCI		N			http://chessprogramming.wikispaces.com/CPW-Engine
 *	Crafty								2890	2794	USA	WB			N			http://www.craftychess.com/
 *	Cray Blitz							----	----	USA	-			N
-	Critter								3023	2875	SVK	UCI		N			http://www.vlasak.biz/critter/
+	Critter								3023	2875	SVK	UCI		NF			http://www.vlasak.biz/critter/
 *	CTD									----	----	NED	?			N
 *	CuckooChess							----	----	SWE	UCI		N			http://web.comhem.se/petero2home/javachess/index.html
 	Crux									----	----	HUN	WB			N
@@ -245,6 +247,7 @@
 *	Cyclone xTreme						----	2932	USA	UCI		N
 *	Cyclone xTreme Fury				----	2932	USA	UCI		N
 *	Cyclone xTreme Rage				----	2919	USA	UCI		N
+*	Cyclone xTreme Fear				----	2829	USA	UCI		NF
 	Cyclops								----	----	USA	WB			N
 	Cyrano								2647	2680	FRA	WB/UCI	N			http://sites.estvideo.net/tipunch/cyrano/
 	Cyrus									----	----	ENG	?			N
@@ -252,7 +255,7 @@
 ## D #########################################################################################################
 *	Dabbaba								1842	----	DEN	WB			N			http://www.jens-musik.dk/dabbaba.htm
 	Damas									1522	----	BRA	WB			N
-*	DanaSah								2604	2627	ESP	WB			N			http://danasah.googlepages.com/
+*	DanaSah								2604	2627	ESP	WB			NF			http://danasah.googlepages.com/
 *	DanChess								----	----	ETH	WB			N
 *	DarkFUSc#							----	----	GER	UCI		N			http://www.fuschmotor.de.vu/
 *	Deep Rybka							3124	----	USA	UCI		NF			http://www.rybkachess.com
@@ -260,7 +263,7 @@
 *	DarkTemplar							----	----	---	WB			N			https://sites.google.com/site/darktemplarchess/
 *	Darky									1700	----	---	UCI		N			http://chessprograms.260mb.com/
 	Darmenios							2374	----	POL	WB			N			http://darczech.ovh.org/lpps/
-*	Daydreamer							----	2815	USA	UCI		NF			https://github.com/AaronBecker/daydreamer/downloads
+*	Daydreamer							----	2605	USA	UCI		NF			https://github.com/AaronBecker/daydreamer/downloads
 *	DChess								----	----	USA	WB			N			http://www.geocities.com/SiliconValley/Mouse/3246/
 *	Decapod								----	----	AUS	?			N
 =	K9
@@ -270,7 +273,7 @@
 *	Deep Junior							----	2944	ISR	UCI		N
 *	Deep Patzer							----	----	GER	WB			N
 *	Deep Shredder						----	2948	GER	UCI		N			http://www.shredderchess.de/
-* 	Deep Sjeng							----	2915	BEL	WB/UCI	N			http://sjeng.org/index.html
+* 	Deep Sjeng							----	2915	BEL	WB/UCI	NF			http://sjeng.org/index.html
 *	Deep Thought						----	----	USA	-			N
 *	DeepTrouble							----	----	USA	WB			N
 	Delfi									2703	2792	ITA	WB/UCI	N			http://www.msbsoftware.it/delfi/
@@ -339,7 +342,7 @@
 *	EvilKnightIII						----	----	GER	UCI		N
 *	Evolution Chess					----	----	IND	WB			N			http://code.google.com/p/evolchess/
 	Exacto								----	----	USA	WB			N			http://www.freewebs.com/danbo/about.html
-*	ExChess								2258	----	USA	WB			N			http://personal.denison.edu/~homand/EXchess.htm
+*	EXchess								----	2689	USA	WB			NF			http://personal.denison.edu/~homand/EXchess.htm
 	Excelsior							----	----	POL	WB			N			http://wbec-ridderkerk.nl/html/details1/Excelsior.html
 ## F #########################################################################################################
 	Fafis									----	----	MEX	WB/UCI	N			http://fafis.com.mx/fafis/fafis.htm
@@ -368,7 +371,7 @@
 	Freccia								----	----	ITA	?			N
 *	FreeChessII							----	----	RUS	UCI		N			http://urshak2006.narod.ru/
 =	FreeChess
- 	Frenzee								2818	2676	DEN	WB/UCI	NF			http://www.geocities.com/ruleren/
+ 	Frenzee								----	2705	DEN	WB/UCI	NF			http://www.geocities.com/ruleren/
 =	Deep Frenzee
 	Freyr									----	----	ROU	WB			N			http://www.geocities.com/andreifortuna/
 	Frittle								----	----	IND	WB			N			http://sourceforge.net/projects/frittle/
@@ -406,7 +409,8 @@
 *	Glaurung epsilon/5				---	2813	NOR	UCI		NF			http://www.glaurungchess.com/
 *	GLC									----	----	ENG	?			N
 *	Gnd0									----	----	---	?			N
-*	GnuChess								----	----	USA	WB			N			http://www.tim-mann.org/chess.html
+*	GNU Chess							----	2756	USA	WB			NF			http://www.tim-mann.org/chess.html
+=	GnuChess
 *	Go2Chess								----	----	BRA	?			N
 	Golem									----	----	ITA	WB			N			http://www.geocities.com/TimesSquare/Chaos/9481/
 *	Goliath Blitz						----	----	GER	WB			N
@@ -462,7 +466,7 @@
 	Homer									2475	2538	GER	WB/UCI	NF			http://www.homer-chess.com
 	Hopeless								1907	----	POL	WB			N			http://www.hopelesschess.prv.pl/
 	Hoplite								----	----	FIN	WB			N			http://www.hut.fi/~fekman/hoplite/
-	Houdini								----	3252	BEL	UCI		N			http://www.cruxis.com/chess/houdini.htm
+	Houdini								----	3252	BEL	UCI		NF			http://www.cruxis.com/chess/houdini.htm
 	Horizon								2387	2496	USA	WB			N			http://www.horizonchess.com/
 	Hossa									----	----	AUT	?			N
 	Hussar								----	----	HUN	UCI		NF
@@ -559,10 +563,11 @@
 	Lemming								----	2687	---	?			N
 	Lime									----	2282	ENG	WB/UCI	N			http://www.geocities.com/taciturn_lemon/
 	List									----	2721	GER	WB/UCI	NF
- 	Loop									----	2882	GER	WB/UCI	NF
-*	Loop M1-T							----	2872	GER	WB/UCI	NF
-*	LoopList								----	2753	GER	WB/UCI	NF
-*	LoopMP								----	2927	GER	WB/UCI	NF
+ 	Loop									----	2882	GER	WB/UCI	N
+*	Loop for Chess960					----	2754	GER	WB/UCI	F
+*	Loop M1-T							----	2872	GER	WB/UCI	N
+*	LoopList								----	2753	GER	WB/UCI	N
+*	LoopMP								----	2927	GER	WB/UCI	N
 *	Little Goliath						----	----	GER	WB/UCI	N			http://www.borgstaedt.de/
 *	Little Goliath Evolution		----	2609	GER	WB/UCI	N			http://www.borgstaedt.de/
 =	LG Evolution
@@ -570,7 +575,7 @@
 =	LG Nemesis
 *	Little Goliath Revival			----	----	GER	WB/UCI	N			http://www.borgstaedt.de/
 =	LG Revival
-*	Little Thought						2511	2487	AUS	UCI		N			http://members.optusnet.com.au/~nathanthom/
+*	Little Thought						2511	2487	AUS	UCI		NF			http://members.optusnet.com.au/~nathanthom/
 	Lodocase								1735	----	BEL	WB			N			http://users.skynet.be/lodocase/index.html
 *	LoopMP								----	----	GER	UCI		N
 	Lopez									----	----	---	WB			N			https://github.com/flatline/lopez
@@ -733,7 +738,7 @@
 *	Monsoon								----	----	USA	?			N
 *	Mooboo								----	----	GER	WB			N
 	Morphy								----	----	NED	WB			N
-	Movei									2719	2778	ISR	WB/UCI	NF
+	Movei									2719	2570	ISR	WB/UCI	NF
 *	MrChess								----	----	SIN	WB			N
 *	MSCP									----	----	NED	WB			N			http://chess.bitpit.net/mscp/
 *	Murderhole							----	----	USA	?			N			http://www.oldre.com/murderhole/default.aspx
@@ -752,6 +757,7 @@
 	Naruka								----	----	ITA	UCI		N			http://www.miroku79.info/blog/?page_id=88
 	Natwarlal							2224	2409	IND	WB			N			http://www.ironcode.com
 	Naum									3061	3059	CAN	WB/UCI	NF			http://naumchess.brinkster.net/
+	Nebula								----	2606	SRB	UCI		NF			https://sites.google.com/site/nebulachess/
 	Needle								----	----	FIN	WB			N			http://www.math.hut.fi/~mnummeli/needle/
 *	NEG									----	----	NED	WB			N			http://home.hccnet.nl/h.g.muller/dwnldpage.html
 	Nejmet								----	----	FRA	WB/UCI	N			http://membres.lycos.fr/nejmet/
@@ -781,7 +787,7 @@
 	Ocha									----	----	---	?			N
 *	O'Chess								----	----	USA	WB			N			http://olegtrott.com/chess/
 	OBender								----	2289	RUS	WB			N			http://evgeniy-korniloff.narod.ru
-*	Octochess							----	----	USA	UCI		N			http://octochess.org/
+*	Octochess							----	2739	USA	UCI		NF			http://octochess.org/
 *	OldBlindDog							----	----	USA	?			N
 *	OliThink								----	2464	GER	WB			N			http://home.arcor.de/dreamlike/
 *	OliveChess							----	----	---	UCI		N			https://code.google.com/p/olivechess/
@@ -940,7 +946,8 @@
 	Skaki									----	----	GRC	WB			N			http://homepages.tesco.net/henry.ablett/jims.html
 	Slibo									1919	2127	GER	WB			N			http://slibo.sourceforge.net/
 *	Sloppy								2577	2696	FIN	WB			N			http://koti.mbnet.fi/%7Eilaripih/sloppy/index.html
-*	Slow Chess							2662	2743	USA	WB/UCI	N			http://www.3dkingdoms.com/chess/slow.htm
+*	Slow Chess							2662	2743	USA	WB/UCI	NF			http://www.3dkingdoms.com/chess/slow.htm
+=	SlowChess
 =	Slow Chess Blitz
 *	Small-C								----	----	FRA	UCI		N			http://perso.numericable.com/monique.marathee/gibbon_downloads_page.html
 *	Small Potato						----	----	AUS	WB			N			http://smallpotato.sourceforge.net/
@@ -994,7 +1001,7 @@
 	Temible								----	----	---	?			N
 *	Terra									----	----	SWE	WB/UC		N
 	Testina								----	----	ITA	WB			N
-*	The Baron							2842	2700	NED	WB			NF			http://www.xs4all.nl/~rpijl/
+*	The Baron							2842	2548	NED	WB			NF			http://www.xs4all.nl/~rpijl/
 *	The Crazy Bishop					2417	----	FRA	WB			N			http://remi.coulom.free.fr/
 =	Crazy Bishop
 =	TCB

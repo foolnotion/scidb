@@ -35,7 +35,7 @@ Quarta release pubblica
   <li class="space">Ordinamento in base al linguaggio implementato</li>
   <li class="space">Aggiunti nuovi temi: "Blackjack" e "Country Style" (grazie a José Carlos Martins)</li>
   <li class="space">Sistemati problemi con rallentamento dell'editor della partita</li>
-  <li class="space">Aggiornato motore Stockfish alla versione 3</li>
+  <li class="space">Aggiornato motore Stockfish alla versione 4</li>
   <li class="space">Implementato gestore di sessione: ora Scidb interverrà se l'utente sta chiudendo una sessione mentre Scidb sta scrivendo\aggiornando un database</li>
   <li class="space">Implementata copia partita nella clipboard</li>
   <li class="space">Esportazione partita corrente implementata (per esempio in file PGN)</li>

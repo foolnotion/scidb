@@ -33,7 +33,7 @@ Vierte öffentliche Vorschau-Version
   <li class="space">Sprachabhängige Sortierung wurde implemented</li>
   <li class="space">Neue Schachbrettthemen; "Blackjack" und "Country Style" (Dank an José Carlos Martins)</li>
   <li class="space">Problem mit der Verlangsamung im Partieneditor eliminiert</li>
-  <li class="space">Anhebung des Stockfish-Motors auf Version 3</li>
+  <li class="space">Anhebung des Stockfish-Motors auf Version 4</li>
   <li class="space">Sessionmanagement implementiert: nun wird Scidb intervenieren, wenn der Anwender die Sitzung herunterfährt während Datenbanken geschrieben/modifiziert werden</li>
   <li class="space">Partie in die Ablage kopieren</li>
   <li class="space">Export der aktuellen Partie (z.B. in eine PGN-Datei)</li>
