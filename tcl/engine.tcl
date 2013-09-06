@@ -1978,22 +1978,25 @@ proc FilterOptions {protocol options} {
 
 	foreach opt $options {
 		lassign $opt name type value dflt var max
+		set name [string map {" " "" "_" ""} $name]
 		switch $type {
 			spin {
 				switch $name {
-					Hash - Threads - MultiPV - {Skill Level} {}
+					Hash - MultiPV - SkillLevel {}
+					Threads - MinThreads - MinimalThreads - MaxThreads - MaximalThreads {}
 					default { lappend optionList $opt }
 				}
 			}
 			check {
 				switch $name {
-					Ponder {}
+					Ponder - CurrentMoveInfo - HashFullInfo - HashInfo {}
+					CPULoadInfo - DepthInfo - NPSInfo - TBHitInfo {}
 					default { lappend optionList $opt }
 				}
 			}
 			combo {
 				switch $name {
-					{Playing Style} {}
+					PlayingStyle {}
 					default { lappend optionList $opt }
 				}
 			}
@@ -2538,10 +2541,11 @@ proc OpenSetupDialog(Options) {parent} {
 		set sticky w
 
 		if {$protocol eq "UCI" && $type eq "spin" && $max - $var <= 400} { set type slider }
+		set text [string map {_ " "} $name]
 
 		switch $type {
 			spin {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				set n [expr {max(1, max(abs($var), abs($max)))}]
 				set width [expr {int(log10($n)) + 2}]
 				ttk::frame $val -borderwidth 0 -takefocus 0
@@ -2554,7 +2558,7 @@ proc OpenSetupDialog(Options) {parent} {
 				grid columnconfigure $val {1} -minsize $::theme::padx
 			}
 			slider {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				tk::scale $val \
 					-orient horizontal \
 					-from $var \
@@ -2574,7 +2578,7 @@ proc OpenSetupDialog(Options) {parent} {
 				}
 			}
 			check {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				ttk::checkbutton $val \
 					-takefocus 1 \
 					-variable [namespace current]::Option($name) \
@@ -2583,7 +2587,7 @@ proc OpenSetupDialog(Options) {parent} {
 					;
 			}
 			combo {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				ttk::combobox $val \
 					-values [SplitComboEntries $var] \
 					-state readonly \
@@ -2592,12 +2596,12 @@ proc OpenSetupDialog(Options) {parent} {
 					;
 			}
 			string {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				ttk::entry $val -textvar [namespace current]::Option($name) -takefocus 1
 				set sticky ew
 			}
 			file - path {
-				ttk::label $lbl -text $name
+				ttk::label $lbl -text $text
 				ttk::frame $val -borderwidth 0 -takefocus 0
 				set see [ttk::entry $val.e -textvar [namespace current]::Option($name) -takefocus 1]
 				ttk::button $val.b \
@@ -2615,7 +2619,7 @@ proc OpenSetupDialog(Options) {parent} {
 			button {
 				ttk::label $lbl -text ""
 				ttk::button $val \
-					-text $name \
+					-text $text \
 					-takefocus 1 \
 					-command [namespace code [list InvokeButton $name]] \
 					;

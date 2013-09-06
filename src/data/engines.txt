@@ -359,6 +359,7 @@
 *	Fimbulwinter						----	----	USA	WB			N			http://www.shedletsky.com/chess/
 	Firebird								----	----	USA	UCI		N
 	FireFly								2091	2185	HKG	WB/UCI	NF			http://freespace.virgin.net/andrew.fankk/
+*	Firenzina							3029	----	TCH	UCI		N			http://firenzina.wikispaces.com/
 *	Flux									----	2450	SUI	UCI		N
 *	FluxII								2341	----	SUI	UCI		N			http://fluxchess.nonava.com/
 *	Flywheel								----	----	USA	?			N

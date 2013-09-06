@@ -98,6 +98,8 @@ private:
 	mstl::string	m_name;
 	mstl::string	m_value;
 	mstl::string	m_threads;
+	mstl::string	m_minThreads;
+	mstl::string	m_maxThreads;
 	State				m_state;
 	Variant			m_variant;
 	bool				m_uciok;

@@ -160,7 +160,7 @@ isPathOrFile(mstl::string const& s, char const* upper, char const* lower)
 	if (i != mstl::string::npos)
 	{
 		char const* e = s.begin() + i + 4;
-		return *e == '\0' || *e == ' ' || strncmp(s, "name", 4) == 0;
+		return *e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0;
 	}
 
 	i = s.find(lower);
@@ -171,14 +171,28 @@ isPathOrFile(mstl::string const& s, char const* upper, char const* lower)
 	char const* p = s.begin() + i;
 	char const* e = p + 4;
 
-	return (i == 0 || p[-1] == ' ') && ((*e == '\0' || *e == ' ' || strncmp(s, "name", 4) == 0));
+	return (i == 0 || p[-1] == '_') && ((*e == '\0' || *e == '_' || strncmp(s, "name", 4) == 0));
 }
 
 
 static bool
 isPath(mstl::string const& s)
 {
-	return isPathOrFile(s, "Path", "path");
+	if (isPathOrFile(s, "Path", "path"))
+		return true;
+	
+	mstl::string::size_type i = s.find("irectory");
+
+	if (i == 0 || i == mstl::string::npos)
+		return false;
+
+	char const* p = s.begin() + (--i);
+
+	if (toupper(*p) != 'D')
+		return false;
+
+	char const* e = p + 9;
+	return (i == 0 || p[-1] == '_') && (*e == '\0' || *e == '_');
 }
 
 
@@ -197,6 +211,22 @@ setNonZeroValue(mstl::string& s, unsigned value)
 		s.clear();
 		s.format("%u", value);
 	}
+}
+
+
+static mstl::string
+toId(mstl::string const& name)
+{
+	mstl::string id;
+	id.reserve(name.size());
+
+	for (mstl::string::const_iterator i = name.begin(); i != name.end(); ++i)
+	{
+		if (*i != ' ' && *i != '_')
+			id += *i;
+	}
+
+	return id;
 }
 
 
@@ -943,10 +973,12 @@ uci::Engine::parseOption(char const* msg)
 
 	if (name.empty())
 		return;
+	
+	mstl::string id(::toId(name));
 
 	if (::strncmp(name, "UCI_", 4) == 0)
 	{
-		switch (name[4])
+		switch (id[4])
 		{
 			case 'A':
 				if (name == "UCI_AnalyseMode")
@@ -1001,14 +1033,14 @@ uci::Engine::parseOption(char const* msg)
 		if (dflt != "true" && dflt != "false")
 			return;
 
-		if (name == "Ponder")
+		if (id == "Ponder")
 		{
 			// this means that the engine is able to ponder
 			// should be enabled by default?
 			addFeature(app::Engine::Feature_Ponder);
 			return;
 		}
-		if (name == "OwnBook")
+		if (id == "OwnBook")
 		{
 			// this means that the engine has its own book
 			// if this is set, the engine takes care of the opening book and
@@ -1024,32 +1056,51 @@ uci::Engine::parseOption(char const* msg)
 		if (!::isNumeric(dflt) || !::isNumeric(min) || !::isNumeric(max))
 			return;
 
-		if (name == "MultiPV")
+		if (id == "MultiPV")
 		{
 			m_hasMultiPV = true;
 			setMaxMultiPV(mstl::max(1ul, ::strtoul(max, nullptr, 10)));
 			return;
 		}
-		else if (name == "Hash")
+		else if (id == "Hash")
 		{
 			setHashRange(::atoi(min), ::atoi(max));
 		}
-		else if (name == "Threads")
+		else if (id == "Threads")
 		{
 			setThreadRange(::atoi(min), ::atoi(max));
-			m_threads.assign("Threads");
+			m_threads.assign(name);
 		}
-		else if (name == "Cores")
+		else if (id == "MinThreads" || id == "MinimalThreads")
 		{
-			// Some engines are using "Cores" instead of "Threads",
-			// for example Gaviota.
+			// Firenzina is using this instead of "Threads".
+			if (m_threads.empty())
+			{
+				unsigned minThreads = ::atoi(min);
+				setThreadRange(minThreads, mstl::max(maxThreads(), minThreads));
+				m_minThreads.assign(name);
+			}
+		}
+		else if (id == "MaxThreads" || id == "MinimalThreads")
+		{
+			// Firenzina is using this instead of "Threads".
+			if (m_threads.empty())
+			{
+				unsigned maxThreads = ::atoi(max);
+				setThreadRange(mstl::min(minThreads(), maxThreads), maxThreads);
+				m_maxThreads.assign(name);
+			}
+		}
+		else if (id == "Cores")
+		{
+			// Some engines are using "Cores" instead of "Threads", for example Gaviota.
 			if (m_threads.empty())
 			{
 				setThreadRange(::atoi(min), ::atoi(max));
 				m_threads.assign("Cores");
 			}
 		}
-		else if (name == "Skill Level")
+		else if (id == "SkillLevel")
 		{
 			setSkillLevelRange(::atoi(min), ::atoi(max));
 		}
@@ -1084,22 +1135,22 @@ uci::Engine::parseOption(char const* msg)
 		{
 			addOption(name, type, dflt, var);
 
-			if (name == "Playing Style")
+			if (id == "PlayingStyle")
 				setPlayingStyles(var);
 		}
 	}
 	else if (type == "button")
 	{
-		if (name == "Clear Hash")
+		if (id == "ClearHash")
 			addFeature(app::Engine::Feature_Clear_Hash);
 
 		addOption(name, type);
 	}
 	else if (type == "string")
 	{
-		if (::isPath(name))
+		if (::isPath(id))
 			addOption(name, "path", dflt);
-		else if (::isFile(name))
+		else if (::isFile(id))
 			addOption(name, "file", dflt);
 		else
 			addOption(name, type, dflt);
@@ -1112,7 +1163,7 @@ uci::Engine::sendOptions()
 {
 	bool isAnalyzing = this->isAnalyzing();
 
-	if (m_threads.empty())
+	if (m_threads.empty() && (m_minThreads.empty() || m_maxThreads.empty()))
 		m_threads.assign("Threads");
 
 	app::Engine::Options const& opts = options();
@@ -1124,16 +1175,17 @@ uci::Engine::sendOptions()
 	for (app::Engine::Options::const_iterator i = opts.begin(); i != opts.end(); ++i)
 	{
 		app::Engine::Option const& opt = *i;
+		mstl::string id(::toId(opt.name));
 
-		if (opt.name == m_threads)
+		if (opt.name == m_threads || opt.name == m_minThreads || opt.name == m_maxThreads)
 			continue; // should not be sent here
 
 		mstl::string val = opt.val;
 
-		switch (opt.name[0])
+		switch (id[0])
 		{
 			case 'B':
-				if (opt.name == "BookFile")
+				if (id == "BookFile")
 				{
 //					if (m_hasOwnBook)
 					val = "";
@@ -1141,17 +1193,28 @@ uci::Engine::sendOptions()
 				break;
 
 			case 'C':
-				if (opt.name == "Clear Hash")
+				if (id == "ClearHash")
 					continue; // should not be sent here
+				if (id == "CurrentMoveInfo" && opt.type == "check")
+					val = "true";
+				if (id == "CPULoadInfo" && opt.type == "check")
+					val = "false";
+				break;
+
+			case 'D':
+				if (id == "DepthInfo" && opt.type == "check")
+					val = "true";
 				break;
 
 			case 'H':
-				if (opt.name == "Hash")
+				if (id == "Hash")
 					continue; // should not be sent here
+				if ((id == "HashInfo" || id == "HashFullInfo") && opt.type == "check")
+					val = "true";
 				break;
 
 			case 'E':
-				if (opt.name == "Elo")
+				if (id == "Elo")
 				{
 					if (hasFeature(app::Engine::Feature_Limit_Strength))
 						::setNonZeroValue(val, limitedStrength());
@@ -1159,12 +1222,17 @@ uci::Engine::sendOptions()
 				break;
 
 			case 'M':
-				if (opt.name == "MultiPV")
+				if (id == "MultiPV")
 					continue; // // should not be sent here
 				break;
 
+			case 'N':
+				if (id == "NPSInfo" && opt.type == "check")
+					val = "false";
+				break;
+
 			case 'O':
-				if (opt.name == "OwnBook")
+				if (id == "OwnBook")
 				{
 //					if (m_hasOwnBook)
 					val = "false";
@@ -1172,8 +1240,13 @@ uci::Engine::sendOptions()
 				break;
 
 			case 'P':
-				if (opt.name == "Ponder")
+				if (id == "Ponder")
 					continue; // should not be sent here
+				break;
+
+			case 'T':
+				if (id == "TBHitInfo" && opt.type == "check")
+					val = "false";
 				break;
 
 			case 'U':
@@ -1208,7 +1281,17 @@ uci::Engine::sendOptions()
 		send("setoption name Hash value " + ::toStr(hashSize()));
 
 	if (hasFeature(app::Engine::Feature_Threads))
-		send("setoption name " + m_threads + " value " + ::toStr(numThreads()));
+	{
+		if (!m_threads.empty())
+		{
+			send("setoption name " + m_threads + " value " + ::toStr(numThreads()));
+		}
+		else if (!m_minThreads.empty() && !m_maxThreads.empty())
+		{
+			send("setoption name " + m_minThreads + " value " + ::toStr(numThreads()));
+			send("setoption name " + m_maxThreads + " value " + ::toStr(numThreads()));
+		}
+	}
 
 	if (isAnalyzing)
 	{
@@ -1273,9 +1356,20 @@ uci::Engine::sendNumberOfVariations()
 void
 uci::Engine::sendThreads()
 {
-	if (m_threads.empty())
+	if (m_threads.empty() && (m_minThreads.empty() || m_maxThreads.empty()))
 		m_threads.assign("Threads");
-	sendOption(m_threads, ::toStr(numThreads()));
+
+	mstl::string num = ::toStr(numThreads());
+
+	if (!m_threads.empty())
+	{
+		sendOption(m_threads, num);
+	}
+	else if (!m_minThreads.empty() && !m_maxThreads.empty())
+	{
+		sendOption(m_minThreads, num);
+		sendOption(m_maxThreads, num);
+	}
 }
 
 

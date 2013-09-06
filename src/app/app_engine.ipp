@@ -53,6 +53,8 @@ inline unsigned Engine::Concrete::searchTime() const			{ return m_engine->search
 inline unsigned Engine::Concrete::skillLevel() const			{ return m_engine->skillLevel(); }
 inline unsigned Engine::Concrete::limitedStrength() const	{ return m_engine->limitedStrength(); }
 inline unsigned Engine::Concrete::numThreads() const			{ return m_engine->numThreads(); }
+inline unsigned Engine::Concrete::minThreads() const			{ return m_engine->minThreads(); }
+inline unsigned Engine::Concrete::maxThreads() const			{ return m_engine->maxThreads(); }
 inline unsigned Engine::Concrete::numCores() const				{ return m_engine->numCores(); }
 inline unsigned Engine::Concrete::supportedVariants() const	{ return m_engine->supportedVariants(); }
 
