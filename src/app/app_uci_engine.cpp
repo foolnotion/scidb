@@ -226,6 +226,7 @@ toId(mstl::string const& name)
 			id += *i;
 	}
 
+	id.tolower();
 	return id;
 }
 
@@ -247,6 +248,7 @@ uci::Engine::Engine()
 	,m_isChess960(false)
 	,m_sendAnalyseMode(false)
 	,m_usedAnalyseModeBefore(false)
+	,m_clearHashOnTheFly(false)
 {
 }
 
@@ -540,7 +542,11 @@ uci::Engine::processMessage(mstl::string const& message)
 				}
 				else if (m_waitingOn == "setoption")
 				{
-					send("setoption name " + m_name + " value " + m_value);
+					mstl::string str("setoption name ");
+					str += m_name;
+					if (!m_value.empty())
+						(str += " value ") += m_value;
+					send(str);
 					m_waitingOn.clear();
 					continueAnalysis();
 				}
@@ -567,6 +573,8 @@ uci::Engine::processMessage(mstl::string const& message)
 						setIdentifier(identifier);
 						if (isProbing())
 							detectShortName(identifier);
+						// Only a few engines are able to clear hash tables on the fly.
+						m_clearHashOnTheFly = ::strncmp(identifier, "Stockfish ", 10) == 0;
 					}
 					else if (::strncmp(message, "id author ", 10) == 0)
 					{
@@ -885,10 +893,14 @@ uci::Engine::parseCurrentMove(char const* s)
 
 	if (!move.isLegal())
 	{
-		mstl::string msg("Illegal current move: ");
-		msg.append(s, ::skipNonSpaces(s));
-		error(msg);
-		return Move();
+		// Some engines (e.g. Gaviota) are sending SAN (not UCI conform)
+		if (!currentBoard().parseMove(s, move, m_variant))
+		{
+			mstl::string msg("Illegal current move: ");
+			msg.append(s, ::skipNonSpaces(s));
+			error(msg);
+			return Move();
+		}
 	}
 
 	currentBoard().prepareForPrint(move, m_variant, Board::InternalRepresentation);
@@ -978,7 +990,7 @@ uci::Engine::parseOption(char const* msg)
 
 	if (::strncmp(name, "UCI_", 4) == 0)
 	{
-		switch (id[4])
+		switch (name[4])
 		{
 			case 'A':
 				if (name == "UCI_AnalyseMode")
@@ -1033,14 +1045,14 @@ uci::Engine::parseOption(char const* msg)
 		if (dflt != "true" && dflt != "false")
 			return;
 
-		if (id == "Ponder")
+		if (id == "ponder")
 		{
 			// this means that the engine is able to ponder
 			// should be enabled by default?
 			addFeature(app::Engine::Feature_Ponder);
 			return;
 		}
-		if (id == "OwnBook")
+		if (id == "ownbook")
 		{
 			// this means that the engine has its own book
 			// if this is set, the engine takes care of the opening book and
@@ -1056,22 +1068,22 @@ uci::Engine::parseOption(char const* msg)
 		if (!::isNumeric(dflt) || !::isNumeric(min) || !::isNumeric(max))
 			return;
 
-		if (id == "MultiPV")
+		if (id == "multipv")
 		{
 			m_hasMultiPV = true;
 			setMaxMultiPV(mstl::max(1ul, ::strtoul(max, nullptr, 10)));
 			return;
 		}
-		else if (id == "Hash")
+		else if (id == "hash")
 		{
 			setHashRange(::atoi(min), ::atoi(max));
 		}
-		else if (id == "Threads")
+		else if (id == "threads")
 		{
 			setThreadRange(::atoi(min), ::atoi(max));
 			m_threads.assign(name);
 		}
-		else if (id == "MinThreads" || id == "MinimalThreads")
+		else if (id == "minthreads" || id == "minimalthreads")
 		{
 			// Firenzina is using this instead of "Threads".
 			if (m_threads.empty())
@@ -1081,7 +1093,7 @@ uci::Engine::parseOption(char const* msg)
 				m_minThreads.assign(name);
 			}
 		}
-		else if (id == "MaxThreads" || id == "MinimalThreads")
+		else if (id == "maxthreads" || id == "minimalthreads")
 		{
 			// Firenzina is using this instead of "Threads".
 			if (m_threads.empty())
@@ -1091,18 +1103,19 @@ uci::Engine::parseOption(char const* msg)
 				m_maxThreads.assign(name);
 			}
 		}
-		else if (id == "Cores")
+		else if (id == "cores")
 		{
 			// Some engines are using "Cores" instead of "Threads", for example Gaviota.
 			if (m_threads.empty())
 			{
 				setThreadRange(::atoi(min), ::atoi(max));
-				m_threads.assign("Cores");
+				m_threads.assign(name);
 			}
 		}
-		else if (id == "SkillLevel")
+		else if (id == "skilllevel")
 		{
 			setSkillLevelRange(::atoi(min), ::atoi(max));
+			m_skillLevel = name;
 		}
 
 		addOption(name, type, dflt, min, max);
@@ -1135,14 +1148,17 @@ uci::Engine::parseOption(char const* msg)
 		{
 			addOption(name, type, dflt, var);
 
-			if (id == "PlayingStyle")
+			if (id == "playingstyle")
 				setPlayingStyles(var);
 		}
 	}
 	else if (type == "button")
 	{
-		if (id == "ClearHash")
+		if (id == "clearhash")
+		{
 			addFeature(app::Engine::Feature_Clear_Hash);
+			m_clearHash = name;
+		}
 
 		addOption(name, type);
 	}
@@ -1184,72 +1200,72 @@ uci::Engine::sendOptions()
 
 		switch (id[0])
 		{
-			case 'B':
-				if (id == "BookFile")
+			case 'b':
+				if (id == "bookfile")
 				{
 //					if (m_hasOwnBook)
 					val = "";
 				}
 				break;
 
-			case 'C':
-				if (id == "ClearHash")
+			case 'c':
+				if (id == "clearhash")
 					continue; // should not be sent here
-				if (id == "CurrentMoveInfo" && opt.type == "check")
+				if (id == "currentmoveinfo" && opt.type == "check")
 					val = "true";
-				if (id == "CPULoadInfo" && opt.type == "check")
+				if (id == "cpuloadinfo" && opt.type == "check")
 					val = "false";
 				break;
 
-			case 'D':
-				if (id == "DepthInfo" && opt.type == "check")
+			case 'd':
+				if (id == "depthinfo" && opt.type == "check")
 					val = "true";
 				break;
 
-			case 'H':
-				if (id == "Hash")
+			case 'h':
+				if (id == "hash")
 					continue; // should not be sent here
-				if ((id == "HashInfo" || id == "HashFullInfo") && opt.type == "check")
+				if ((id == "hashinfo" || id == "hashfullinfo") && opt.type == "check")
 					val = "true";
 				break;
 
-			case 'E':
-				if (id == "Elo")
+			case 'e':
+				if (id == "elo")
 				{
 					if (hasFeature(app::Engine::Feature_Limit_Strength))
 						::setNonZeroValue(val, limitedStrength());
 				}
 				break;
 
-			case 'M':
-				if (id == "MultiPV")
+			case 'm':
+				if (id == "multipv")
 					continue; // // should not be sent here
 				break;
 
-			case 'N':
-				if (id == "NPSInfo" && opt.type == "check")
+			case 'n':
+				if (id == "npsinfo" && opt.type == "check")
 					val = "false";
 				break;
 
-			case 'O':
-				if (id == "OwnBook")
+			case 'o':
+				if (id == "ownbook")
 				{
 //					if (m_hasOwnBook)
 					val = "false";
 				}
 				break;
 
-			case 'P':
-				if (id == "Ponder")
+			case 'p':
+				if (id == "ponder")
 					continue; // should not be sent here
 				break;
 
-			case 'T':
-				if (id == "TBHitInfo" && opt.type == "check")
+			case 't':
+				if (id == "tbhitinfo" && opt.type == "check")
 					val = "false";
 				break;
 
-			case 'U':
+			case 'u':
 				if (opt.name == "UCI_LimitStrength")
 					val = limitedStrength() ? "true" : "false";
 				else if (opt.name == "UCI_ShowCurrLine")
@@ -1331,7 +1347,7 @@ uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
 void
 uci::Engine::invokeOption(mstl::string const& name)
 {
-	sendOption(name, "");
+	sendOption(name);
 }
 
 
@@ -1376,7 +1392,10 @@ uci::Engine::sendThreads()
 void
 uci::Engine::sendSkillLevel()
 {
-	sendOption("Skill Level", ::toStr(skillLevel()));
+	if (m_skillLevel.empty())
+		m_skillLevel.assign("Skill Level");
+
+	sendOption(m_skillLevel, ::toStr(skillLevel()));
 }
 
 
@@ -1386,7 +1405,7 @@ uci::Engine::sendPondering()
 #if 0
 	sendOption("Ponder", ::toBool(pondering()));
 #else
-	send("setoption name Pnder value " + ::toBool(pondering()));
+	send("setoption name Ponder value " + ::toBool(pondering()));
 #endif
 }
 
@@ -1401,8 +1420,13 @@ uci::Engine::sendStrength()
 void
 uci::Engine::clearHash()
 {
-	// XXX should we stop analysis?
-	send("setoption name Clear Hash");
+	if (m_clearHash.empty())
+		m_clearHash.assign("Clear Hash");
+
+	if (m_clearHashOnTheFly)
+		send("setoption name " + m_clearHash);
+	else
+		sendOption(m_clearHash);
 }
 
 // vi:set ts=3 sw=3:

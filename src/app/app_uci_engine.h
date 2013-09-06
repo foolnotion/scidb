@@ -89,7 +89,7 @@ private:
 	void parseOption(char const* msg);
 	char const* parseMoveList(char const* s, db::Board& board, db::MoveList& moves);
 	void setupPosition(db::Board const& board);
-	void sendOption(mstl::string const& name, mstl::string const& value);
+	void sendOption(mstl::string const& name, mstl::string const& value = mstl::string::empty_string);
 
 	db::Move parseCurrentMove(char const* s);
 
@@ -100,6 +100,8 @@ private:
 	mstl::string	m_threads;
 	mstl::string	m_minThreads;
 	mstl::string	m_maxThreads;
+	mstl::string	m_clearHash;
+	mstl::string	m_skillLevel;
 	State				m_state;
 	Variant			m_variant;
 	bool				m_uciok;
@@ -116,6 +118,7 @@ private:
 	bool				m_isChess960;
 	bool				m_sendAnalyseMode;
 	bool				m_usedAnalyseModeBefore;
+	bool				m_clearHashOnTheFly;
 };
 
 } // namespace uci

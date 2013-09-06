@@ -1663,8 +1663,10 @@ proc SetupClearHash {engineName} {
 
 proc SetTitle {list} {
 	variable Engines
+	variable Vars
 
-	array set engine [lindex $Engines [$list curselection]]
+	set index [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $index]
 	wm title [winfo toplevel $list] [format $mc::SetupEngine $engine(Name)]
 }
 
@@ -1978,25 +1980,25 @@ proc FilterOptions {protocol options} {
 
 	foreach opt $options {
 		lassign $opt name type value dflt var max
-		set name [string map {" " "" "_" ""} $name]
+		set name [string tolower [string map {" " "" "_" ""} $name]]
 		switch $type {
 			spin {
 				switch $name {
-					Hash - MultiPV - SkillLevel {}
-					Threads - MinThreads - MinimalThreads - MaxThreads - MaximalThreads {}
+					hash - multipv - skilllevel {}
+					threads - minthreads - minimalthreads - maxthreads - maximalthreads {}
 					default { lappend optionList $opt }
 				}
 			}
 			check {
 				switch $name {
-					Ponder - CurrentMoveInfo - HashFullInfo - HashInfo {}
-					CPULoadInfo - DepthInfo - NPSInfo - TBHitInfo {}
+					ponder - currentmoveinfo - hashfullinfo - hashinfo {}
+					cpuloadinfo - depthinfo - npsinfo - tbhitinfo {}
 					default { lappend optionList $opt }
 				}
 			}
 			combo {
 				switch $name {
-					PlayingStyle {}
+					playingstyle {}
 					default { lappend optionList $opt }
 				}
 			}
@@ -2540,8 +2542,16 @@ proc OpenSetupDialog(Options) {parent} {
 		set see $val
 		set sticky w
 
-		if {$protocol eq "UCI" && $type eq "spin" && $max - $var <= 400} { set type slider }
+		set id [string map {" " "" "_" ""} $name]
 		set text [string map {_ " "} $name]
+
+		if {$protocol eq "UCI" && $type eq "spin" && $max - $var <= 400} {
+			switch $id {
+				PawnValue - KnightValue - BishopValue - RookValue {}
+				QueenValue - KingValue - BishopPairValue {}
+				default { set type slider }
+			}
+		}
 
 		switch $type {
 			spin {
