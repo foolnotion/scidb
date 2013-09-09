@@ -411,7 +411,6 @@ proc addMove {confirmWindowType san {noMoveCmd {}} {myActions {}} {force no}} {
 	} else {
 		if {!$force} {
 			set moves [::scidb::game::next moves -ascii]
-puts "--> $moves"
 
 			for {set i 0} {$i < [llength $moves]} {incr i} {
 				if {[lindex $moves $i] eq $san} {

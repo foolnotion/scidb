@@ -506,8 +506,9 @@ proc openSetup {parent} {
 	set listheight 7
 
 	### fst panel  ########################################################
-	set list [::tlistbox $lf.list -usescroll yes -height $listheight -minwidth 70]
+	set list [::tlistbox $lf.list -usescroll yes -height $listheight -minwidth 70 -sortable 1]
  	bind $list <<ListboxSelect>> [namespace code [list UseEngine $list %d $Vars(list:profiles)]]
+	bind $list <<ListboxDropRow>> [namespace code { UserSortEngines %W {*}%d }]
 	SetupEngineList
 
 	### snd panel #########################################################
@@ -573,8 +574,15 @@ proc openSetup {parent} {
 	bind $lt.priority <<ComboboxSelected>> [namespace code SetPriority]
 
 	### thd panel #########################################################
-	set prof [::tlistbox $rf.profiles -usescroll yes -height $listheight -minwidth 70]
-	bind $prof <<ListboxSelect>> [namespace code [list UseProfile %d]]
+	set prof [::tlistbox $rf.profiles \
+		-usescroll yes \
+		-height $listheight \
+		-minwidth 70 \
+		-sortable 1 \
+		-dontsort {0} \
+	]
+	bind $prof <<ListboxSelect>> [namespace code { UseProfile %d }]
+	bind $prof <<ListboxDropRow>> [namespace code { UserSortProfiles %W {*}%d }]
 
 	### fth panel #########################################################
 	set rt [::ttk::frame $rf.rt -takefocus 0]
@@ -612,7 +620,7 @@ proc openSetup {parent} {
 	set Vars(widget:new) $rt.new
 	set Vars(widget:delete) $rt.delete
 
-	### gemoetry ##########################################################
+	### geometry ##########################################################
 	grid $lf		-row 1 -column 1 -sticky ns
 	grid $rf		-row 1 -column 3 -sticky ns
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
@@ -2488,6 +2496,7 @@ proc OpenSetupDialog(Options) {parent} {
 #	if {$vertical} { set expand x } else { set expand y }
 #	set scrolled [::scrolledframe $dlg.top -expand $expand]
 	set scrolled [::scrolledframe $dlg.top]
+	::scrolledframe::bindMousewheel $scrolled $dlg
 	pack $dlg.top
 	set top [ttk::frame $scrolled.f -borderwidth 0 -takefocus 0]
 	grid $scrolled.f -sticky nsew
@@ -2904,6 +2913,48 @@ proc UseProfile {item} {
 	foreach op {edit new} {
 		$Vars(widget:$op) configure -state normal
 	}
+}
+
+
+proc UserSortProfiles {list from to} {
+	variable Engines
+	variable Vars
+
+	$list select none
+	set i [FindIndex $Vars(current:name)]
+	array set engine [lindex $Engines $i]
+	set protocol $Vars(current:protocol)
+	set profiles $engine(Profiles:$protocol)
+	set from [expr {2*$from}]
+	set to [expr {2*$to}]
+	set from1 [expr {$from + 1}]
+	set name [lindex $profiles $from]
+	set entry [lindex $profiles $from1]
+	set profiles [lreplace $profiles $from $from1]
+	if {$to > $from} { incr to -2 }
+	set profiles [linsert $profiles $to $name $entry]
+	set engine(Profiles:$protocol) $profiles
+	lset Engines $i [array get engine]
+	SetupProfiles
+	$list select $to
+	::options::hookWriter [namespace current]::WriteEngineOptions engines
+}
+
+
+proc UserSortEngines {list from to} {
+	variable Engines
+
+	set fromIndex [FindIndex [$list get $from name]]
+	set toIndex [FindIndex [$list get $to name]]
+
+	$list select none
+	set entry [lindex $Engines $fromIndex]
+	set Engines [lreplace $Engines $fromIndex $fromIndex]
+	if {$toIndex > $fromIndex} { incr toIndex -1 }
+	set Engines [linsert $Engines $toIndex $entry]
+	SetupEngineList
+	$list select $to
+	::options::hookWriter [namespace current]::WriteEngineOptions engines
 }
 
 

@@ -667,6 +667,8 @@ array set Colors {
 	lite:tlistbox,disabledforeground		black
 	lite:tlistbox,highlightbackground	darkblue
 	lite:tlistbox,highlightforeground	white
+	lite:tlistbox,dropbackground			#dce4e5
+	lite:tlistbox,dropforeground			black
 
 	lite:treetable,background				white
 	lite:treetable,disabledforeground	#999999
@@ -739,6 +741,7 @@ array set Colors {
 	dark:gamebar,background:hilite		#dce4e5
 	dark:scrolledtable,stripes				#dce4e5
 	dark:tlistbox,disabledbackground		#dce4e5
+	dark:tlistbox,dropbackground			#dce4e5
 	dark:save,taglistHighlighting			#dce4e5
 	dark:save,matchlistBackground			#dce4e5
 	dark:encoding,active						#dce4e5

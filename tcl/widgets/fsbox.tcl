@@ -342,6 +342,7 @@ proc fsbox {w type args} {
 	if {$Vars(type) eq "dir"} {
 		set Vars(multiple) 0
 		set lbl [Tr Directory]
+		set Vars(initialfile) $Vars(folder)
 	} elseif {$Vars(multiple)} {
 		set lbl [Tr Filenames]
 	} else {

@@ -544,6 +544,12 @@ uninstall-fonts:
 install-photos:
 	@echo "Install player photos"
 	@install -m 755 -d $(SHAREDIR)/photos
+	@for f in `ls engines/photos/*`; do             \
+		base=`basename $$f`;                         \
+		dir=`echo $$base | cut -b 1`;                \
+		install -m 755 -d $(SHAREDIR)/photos/$$dir;  \
+		install -m 644 $$f $(SHAREDIR)/photos/$$dir; \
+	done
 
 uninstall-photos:
 	@echo "Uninstall player photos"

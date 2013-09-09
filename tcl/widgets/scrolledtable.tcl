@@ -979,7 +979,7 @@ proc TableScrollbar {table state} {
 proc ScanMark {table x y} {
 	variable ${table}::Vars
 
-	lassign [::table::identify $table $x $y] row col
+	lassign [::table::identify $table $x $y] row _
 
 	if {$row >= 0} {
 		set Vars(drag:click:x) $x
@@ -1027,7 +1027,9 @@ proc MoveRow {table x y} {
 	if {$Vars(drag:motion)} {
 		$table.t dragimage configure -visible no
 		$table.t dragimage clear
-		puts "MoveRow" ;# TODO
+
+		lassign [::table::identify $table $x $y] row _
+		event generate [winfo parent $table] <<TableDropRow>> -data [list $Priv(drag:row) $row]
 	}
 
 	array unset Vars drag:*

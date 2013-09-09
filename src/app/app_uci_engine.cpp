@@ -425,7 +425,8 @@ void
 uci::Engine::pause()
 {
 	// XXX only working for analyzing mode
-	send("stop");
+	if (m_state != Stop)
+		send("stop");
 	m_state = Pause;
 	m_stopAnalyzeIsPending = true;
 	updateState(app::Engine::Pause);
@@ -1322,7 +1323,8 @@ uci::Engine::sendOption(mstl::string const& name, mstl::string const& value)
 {
 	if (isAnalyzing())
 	{
-		send("stop");
+		if (m_state != Stop)
+			send("stop");
 		// XXX probably "ucinewgame" is required
 		m_waitingOn = "setoption";
 		m_state = Pause;

@@ -92,6 +92,8 @@ array set Colors {
 	-disabledforeground	tlistbox,disabledforeground
 	-highlightbackground	tlistbox,highlightbackground
 	-highlightforeground	tlistbox,highlightforeground
+	-dropbackground		tlistbox,dropbackground
+	-dropforeground		tlistbox,dropforeground
 }
 
 array set LookupColor {
@@ -103,6 +105,8 @@ array set LookupColor {
 	disabledforeground	black
 	highlightbackground	darkblue
 	highlightforeground	white
+	dropbackground			#ebf4f5
+	dropforeground			dark
 }
 
 proc lookupColor {color} {
@@ -117,31 +121,33 @@ proc Build {w args} {
 	variable Colors
 
 	array set opts {
-		-font						TkTextFont
-		-disabledfont			TkTextFont
-		-highlightfont			TkTextFont
-		-relief					sunken
-		-focusmodel				click
-		-selectmode				single
-		-borderwidth			1
-		-takefocus				{}
-		-showfocus				1
-		-setgrid					0
-		-orientation			horizontal
-		-usescroll				1
-		-padx						2
-		-pady						2
-		-ipady					0
-		-padding					5
-		-height					-1
-		-width					0
-		-minwidth				0
-		-maxwidth				0
-		-linespace				0
-		-skiponeunit			1
-		-columns					1
-		-state					normal
-		-stripes					{}
+		-font				TkTextFont
+		-disabledfont	TkTextFont
+		-highlightfont	TkTextFont
+		-relief			sunken
+		-focusmodel		click
+		-selectmode		single
+		-borderwidth	1
+		-takefocus		{}
+		-showfocus		1
+		-setgrid			0
+		-orientation	horizontal
+		-usescroll		1
+		-padx				2
+		-pady				2
+		-ipady			0
+		-padding			5
+		-height			-1
+		-width			0
+		-minwidth		0
+		-maxwidth		0
+		-linespace		0
+		-skiponeunit	1
+		-columns			1
+		-state			normal
+		-stripes			{}
+		-sortable		0
+		-dontsort		{}
 	}
 	array set opts [array get Colors]
 	array set opts $args
@@ -204,6 +210,16 @@ proc Build {w args} {
 		-width 0                                     \
 		;
 
+	if {$opts(-sortable)} {
+		bind $t <ButtonPress-1>		+[namespace code { ScanMark %W %x %y }]
+		bind $t <Button1-Motion>	+[namespace code { ScanDrag %W %x %y }]
+		bind $t <ButtonRelease-1>	+[namespace code { MoveRow  %W %x %y }]
+
+		$t state define droptarget
+		set Priv(foreground:droptarget) $opts(-dropforeground)
+		set Priv(dontsort) $opts(-dontsort)
+	}
+
 	if {$opts(-width)} { $t configure -width $opts(-width) }
 	if {$opts(-usescroll)} {
 		$t configure -yscrollcommand [list $w.vsb set]
@@ -239,6 +255,9 @@ proc Build {w args} {
 		[lookupColor $opts(-highlightbackground)] {highlight} \
 		[lookupColor $opts(-disabledbackground)] {!enabled} \
 		;
+	if {$opts(-sortable)} {
+		lappend fill [lookupColor $opts(-dropbackground)] {droptarget}
+	}
 #	[lookupColor $opts(-background)] {enabled !highlight}
 	$t element create sel.e  rect -fill $fill -open e  -showfocus $opts(-showfocus)
 	$t element create sel.w  rect -fill $fill -open w  -showfocus $opts(-showfocus)
@@ -1212,7 +1231,7 @@ proc MakeItems {w first last} {
 
 	for {set index $first} {$index <= $last} {incr index} {
 		set item [$t item create]
-		$t item configure $item
+		$t item configure $item -tag $index
 		$t item style set $item {*}$styles
 		$t item lastchild root $item
 	}
@@ -1316,7 +1335,7 @@ proc Down {t} {
 		set active [$t item id active]
 		if {$active <= $Priv(last)} {
 			set first [$t item id {nearest 0 0}]
-			set last [$t item id [list nearest 0 [winfo height $t]]]
+			set last [$t item id [list nearest 0 [expr {[winfo height $t] - 1}]]]
 			if {$first <= $active && $active <= $last} {
 				set cur [expr {$active + 1}]
 			} else {
@@ -1337,7 +1356,7 @@ proc Up {t} {
 
 	if {$Priv(numcolumns) == 1} {
 		set active [$t item id active]
-		set last [$t item id [list nearest 0 [winfo height $t]]]
+		set last [$t item id [list nearest 0 [expr {[winfo height $t] - 1}]]]
 		if {$active > 0} {
 			set first [$t item id {nearest 0 0}]
 			if {$first <= $active && $active <= $last} {
@@ -1379,7 +1398,7 @@ proc Next {t} {
 	variable [namespace current]::${w}::Priv
 
 	set active [$t item id active]
-	set last [$t item id [list nearest 0 [winfo height $t]]]
+	set last [$t item id [list nearest 0 [expr {[winfo height $t] - 1}]]]
 	if {$active == $last} {
 		if {[$t cget -selectmode] eq "browse"} {
 			$t selection clear
@@ -1426,7 +1445,7 @@ proc Prior {t} {
 		}
 		if {$Priv(numcolumns) == 1} {
 			$t yview scroll -1 pages
-			set last [$t item id [list nearest 0 [winfo height $t]]]
+			set last [$t item id [list nearest 0 [expr {[winfo height $t] - 1}]]]
 			if {$first != $last} {
 				$t yview scroll -1 units
 			}
@@ -1484,6 +1503,140 @@ proc SelectActive {t} {
 		}
 		event generate $w <<ListboxSelect>> -data [expr {$active - 1}]
 	}
+}
+
+
+proc ScanMark {table x y} {
+	variable [winfo parent $table]::Priv
+
+	set info [$table identify $x $y]
+	if {[llength $info] == 0} { return }
+	if {[lindex $info 0] ne "item"} { return }
+	set row [$table item tag names [lindex $info 1]]
+	set index [expr {$row - 1}]
+
+	if {$index ni $Priv(dontsort)} {
+		set Priv(drag:click:x) $x
+		set Priv(drag:click:y) $y
+		set Priv(drag:x) [$table canvasx $x]
+		set Priv(drag:y) [$table canvasy $y]
+		set Priv(drag:motion) 0
+		set Priv(drag:drop) {}
+		set Priv(drag:row) $row
+		set Priv(drag:target) {}
+		set Priv(drag:after) {}
+		set Priv(drag:scroll) 0
+	}
+}
+
+
+proc ScanDrag {table x y} {
+	variable [winfo parent $table]::Priv
+
+	if {![info exists Priv(drag:x)]} { return }
+
+	if {!$Priv(drag:motion)} {
+		if {abs($x - $Priv(drag:click:x)) > 4 || abs($y - $Priv(drag:click:y)) > 4} {
+			set Priv(drag:motion) 1
+			set Priv(drag:selection) [$table selection get]
+			$table dragimage clear
+			foreach col $Priv(columns) {
+				catch { $table dragimage add $Priv(drag:row) $col sel }
+			}
+			$table dragimage configure -visible yes
+		}
+	}
+
+	if {$Priv(drag:scroll) != 0} {
+		if {$Priv(drag:scroll) < 0} {
+			set first [$table item id {nearest 0 0}]
+			if {$first > 1} {
+				$table yview scroll -1 units
+				set Priv(drag:y) [expr {$Priv(drag:y) + $Priv(linespace)}]
+			}
+		} else {
+			set last [$table item id [list nearest 0 [expr {[winfo height $table] - 1}]]]
+			if {$last < [$table item count] - 1} {
+				$table yview scroll +1 units
+				set Priv(drag:y) [expr {$Priv(drag:y) - $Priv(linespace)}]
+			}
+		}
+		set x0 [expr {[$table canvasx $x] - $Priv(drag:x)}]
+		set y0 [expr {[$table canvasx $y] - $Priv(drag:y)}]
+		$table dragimage offset $x0 $y0
+		set Priv(drag:scroll) 0
+	}
+
+	if {$Priv(drag:motion)} {
+		set info [$table identify 10 $y]
+		if {[llength $Priv(drag:target)]} {
+			$table item state set $Priv(drag:target) {!droptarget}
+			set Priv(drag:target) {}
+		}
+		if {[llength $info] == 0} {
+			set mid [expr {[winfo height $table]/2}]
+			if {$y < $mid} { set dir -1 } else { set dir +1 }
+			set Priv(drag:scroll:x) $x
+			set Priv(drag:scroll:y) $y
+			if {[llength $Priv(drag:after)] == 0} {
+				set Priv(drag:after) [after 250 [namespace code [list Scroll $table $dir]]]
+			}
+		} else {
+			after cancel $Priv(drag:after)
+			set Priv(drag:after) {}
+			set row [$table item tag names [lindex $info 1]]
+			set index [expr {$row - 1}]
+
+			if {[lindex $info 0] eq "item"} {
+				if {$row ne $Priv(drag:row) && $row ne $Priv(drag:target) && $index ni $Priv(dontsort)} {
+					$table item state set $row {droptarget}
+					set Priv(drag:target) $row
+				}
+			}
+		}
+
+		set x [expr {[$table canvasx $x] - $Priv(drag:x)}]
+		set y [expr {[$table canvasx $y] - $Priv(drag:y)}]
+
+		$table dragimage offset $x $y
+	}
+}
+
+
+proc MoveRow {table x y} {
+	variable [winfo parent $table]::Priv
+
+	if {![info exists Priv(drag:x)]} { return }
+
+	if {$Priv(drag:motion)} {
+		$table dragimage configure -visible no
+		$table dragimage clear
+
+		if {[llength $Priv(drag:target)]} {
+			$table item state set $Priv(drag:target) {!droptarget}
+		}
+
+		set info [$table identify 10 $y]
+		if {[lindex $info 0] eq "item"} {
+			set target [expr {[$table item tag names [lindex $info 1]] - 1}]
+			set source [expr {$Priv(drag:row) - 1}]
+			if {$target ni $Priv(dontsort)} {
+				event generate [winfo parent $table] <<ListboxDropRow>> -data [list $source $target]
+			}
+		}
+	}
+
+	array unset Priv drag:*
+}
+
+
+proc Scroll {table dir} {
+	if {![winfo exists $table]} { return }
+	variable [winfo parent $table]::Priv
+	if {![info exists Priv(drag:x)]} { return }
+	set Priv(drag:scroll) $dir
+	set Priv(drag:after) {}
+	ScanDrag $table $Priv(drag:scroll:x) $Priv(drag:scroll:y)
 }
 
 
