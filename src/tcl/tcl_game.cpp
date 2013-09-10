@@ -3777,7 +3777,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdSwapPositions,	cmdSwapPositions);
 	createCommand(ti, CmdSwitch,			cmdSwitch);
 	createCommand(ti, CmdTags,				cmdTags);
-	createCommand(ti, CmdToPGN,				cmdToPGN);
+	createCommand(ti, CmdToPGN,			cmdToPGN);
 	createCommand(ti, CmdTranspose,		cmdTranspose);
 	createCommand(ti, CmdTrial,			cmdTrial);
 	createCommand(ti, CmdUndoSetup,		cmdUndoSetup);

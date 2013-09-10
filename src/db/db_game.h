@@ -536,6 +536,8 @@ public:
 	void redo();
 	/// Remove all moves; and possibly set new start position.
 	void clear(Board const* startPosition = 0);
+	/// Clear merge results.
+	void clearMergeResults();
 	/// Setup this game.
 	void setup(Board const& startPosition);
 	/// Transpose game.

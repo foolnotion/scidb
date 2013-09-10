@@ -4733,4 +4733,11 @@ Game::swapGameSpecificData(Game& game)
 	mstl::swap(m_editorOptions, game.m_editorOptions);
 }
 
+
+void
+Game::clearMergeResults()
+{
+	m_mergeResults.clear();
+}
+
 // vi:set ts=3 sw=3:

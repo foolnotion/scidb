@@ -696,6 +696,11 @@ proc select {path row} {
 }
 
 
+proc selection {path} {
+	return [::table::selection $path.top.table]
+}
+
+
 proc index {path} {
 	return [::scrolledtable::index $path]
 }

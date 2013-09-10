@@ -272,6 +272,7 @@ proc openDialog {parent primary secondary} {
 		::widget::dialogRaise $dlg
 		::gametable::activate $Priv(table) 0
 		::gametable::focus $Priv(table)
+		set Priv(selection) 0
 
 		after 10 [list gametable::select $Priv(table) 0]
 		after 10 [namespace code [list ShowGame "" "" $number ""]]
@@ -330,7 +331,6 @@ proc alreadyMerged {primary secondary} {
 
 	lassign [::scidb::game::sink? $primary] base variant number
 	set id1 [list $base $variant $number]
-	if {[winfo exists .mergeDialog] && $id1 in $Priv(secondaries)} { return 1 }
 
 	if {$secondary eq "clipbase"} {
 		set base $clipbaseName
@@ -387,7 +387,9 @@ proc Update {path id base variant {view -1} {index -1}} {
 
 	if {$base == $mergebaseName && $variant == $Priv(variant)} {
 		set n [::scidb::view::count games $base $variant $view]
+		set selection [gametable::selection $path]
 		gametable::update $path $base $variant $n
+		gametable::select $path $selection
 	}
 }
 
@@ -466,7 +468,8 @@ proc Save {dlg mode} {
 		set position $Priv(primary)
 	}
 
-	::scidb::game::swap $Priv(pos:$Priv(transposition)) $position
+	::scidb::game::swap $Priv(pos:merge) $position
+	::game::setModified $position
 	::widget::busyCursor off
 
 	destroy $dlg

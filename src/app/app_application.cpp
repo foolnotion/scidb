@@ -3084,6 +3084,8 @@ Application::swapGames(unsigned sourcePosition, unsigned destinationPosition)
 	mstl::swap(src.data.encoding, dst.data.encoding);
 
 	src.data.game->swapGameSpecificData(*dst.data.game);
+	src.data.game->clearMergeResults();
+	dst.data.game->clearMergeResults();
 
 	src.data.game->refreshSubscriber(Game::UpdateAll);
 	dst.data.game->refreshSubscriber(Game::UpdateAll);

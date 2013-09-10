@@ -593,6 +593,7 @@ proc setHeight {table height {cmd {}}} {
 	set oldHeight $Vars(height)
 	set Vars(height) $height
 	set Vars(rows) [min $Vars(rows) $height]
+	set selection $Vars(selection)
 
 	if {$height < $oldHeight} {
 		for {set row $height} {$row < $oldHeight} {incr row} {
@@ -619,6 +620,8 @@ proc setHeight {table height {cmd {}}} {
 	} else {
 		event generate $table <<TableResized>> -data $height
 	}
+
+	select $table $selection
 }
 
 
