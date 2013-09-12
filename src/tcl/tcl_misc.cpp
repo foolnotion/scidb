@@ -1355,7 +1355,7 @@ cmdUrlEscape(ClientData clientData, Tcl_Interp* ti, int objc, Tcl_Obj* const obj
 		uchar code;
 		char const* q = sys::utf8::nextChar(p, code);
 
-		if (code > 127 || !(isalnum(code) || isMark(code) || code == pathDelim))
+		if (code > 127 || !(isprint(code) || isMark(code) || code == pathDelim))
 		{
 			for ( ; p < q; ++p)
 			{

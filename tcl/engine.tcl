@@ -333,8 +333,10 @@ proc openAdmininstration {parent} {
 	::theme::configureSpinbox $setup.frating.sccrl
 	::validate::spinboxInt $setup.frating.selo
 	::validate::spinboxInt $setup.frating.sccrl
-	bind $setup.elogo <FocusOut> [namespace code [list SetLogo $list]]
+	bind $setup.elogo <FocusOut> [namespace code SetLogo]
 
+	set Priv(elogo) $setup.elogo
+	set Priv(list) $list
 	set Priv(countrybox) $setup.ccountry
 
 	grid $setup.frating.lelo	-row 1 -column 1
@@ -1615,7 +1617,7 @@ proc UseEngine {list item profileList} {
 		$Vars(widget:memory) configure -height 0 -state readonly
 		set Vars(current:memory) [expr {min($Vars(current:memory), $max)}]
 		if {[info exists Options($name:memory)]} {
-			set Vars(current:memory) [expr {min($Options($name:memory), $Vars(current:memory))}]
+			set Vars(current:memory) [expr {min($Options($name:memory), $max)}]
 		}
 	} else {
 		$Vars(widget:memory) configure -state disabled
@@ -1753,6 +1755,8 @@ proc Select {list item} {
 		array unset engine
 		array set engine $EmptyEngine
 		array set engine [lindex $Engines $Priv(selection)]
+		set Var(Logo) $engine(Logo)
+		SetLogo
 		set logo $engine(ShortId)
 		if {[info exists Photo($logo)]} {
 			$list set $Priv(selection) [list [lindex $Photo($logo) 1]]
@@ -3615,7 +3619,7 @@ proc ClearLastUsed {list} {
 }
 
 
-proc SetLogo {list} {
+proc SetLogo {} {
 	variable Engines
 	variable EmptyEngine
 	variable Photo
@@ -3648,9 +3652,8 @@ proc SetLogo {list} {
 	}
 
 	set engine(Logo) $Var(Logo)
-	lset Engines $Priv(selection) [array get engine]
-	$list set $Priv(selection) $content
-	$list resize -width
+	$Priv(list) set $Priv(selection) $content
+	$Priv(list) resize -width
 }
 
 
@@ -3683,7 +3686,7 @@ proc GetLogo {parent list} {
 
 	if {[llength $result]} {
 		set Var(Logo) [lindex $result 0]
-		SetLogo $list
+		SetLogo
 	}
 }
 

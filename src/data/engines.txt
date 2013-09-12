@@ -558,7 +558,7 @@
 =	Sinobyl
 	Laurifer								1961	----	POL	WB			N
 *	LChess								----	----	NED	?			N
-	Leonidas 							----	----	NED	WB/UCI	N			http://www.eglebbk.dds.nl/program/chess-download.html
+	Leonidas 							----	----	NED	WB			N			http://www.eglebbk.dds.nl/program/chess-download.html
 *	LearningLemming					2609	----	USA	?			N
 	Leila									2419	----	ITA	WB/UC		N
 	Lemming								----	2687	---	?			N
@@ -769,9 +769,9 @@
 *	NeuroStock							----	----	---	UCI		N			https://github.com/m00natic/neuroStock
 	Neurone								1101	----	ITA	WB			N			http://www.lissandrello.it/?p=524
 	Neurosis								2161	2302	NED	WB			N
-*	Nilatac								----	---	ROU	WB			S			http://voronet.francu.com/
-	Nimrod								2380	----	???	?			N
 *	New Rival							----	----	ENG	WB			N
+*	Nilatac								----	---	ROU	WB			S			http://catalin.francu.com/nilatac/book.php
+	Nimrod								2380	----	???	?			N
 *	Nimzo									----	2612	AUT	WB			N
 *	Nimzo-8								---- -----	AUT	WB			N
 *	Nimzo 2000b							---- -----	AUT	WB			N
@@ -941,7 +941,7 @@
 	Simplex								----	----	ESP	UCI		N			https://sites.google.com/site/barajandotrebejos/
 	Sinapse								----	----	BRA	WB			N
 	Sissa									----	----	FRA	UCI		N
-	Sjaak									----	----	NED	WB/UCI	N			http://www.eglebbk.dds.nl/program/chess-index.html
+	Sjaak									----	----	NED	WB			NF			http://www.eglebbk.dds.nl/program/chess-index.html
 	Sjakk									2012	----	NOR	WB			N			http://www.pvv.ntnu.no/%7Ejacobbl/jacob/Sjakk/Sjakk.htm
 *	Sjeng									----	2858	BEL	WB/UCI	NBCSGL	http://sjeng.org/indexold.html
 	Skaki									----	----	GRC	WB			N			http://homepages.tesco.net/henry.ablett/jims.html

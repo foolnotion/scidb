@@ -327,10 +327,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 	m_isNewGame = isNewGame;
 
 	if (m_stopAnalyzeIsPending)
-	{
-		m_startAnalyzeIsPending = true; // wait on "bestmove"
-		return true;
-	}
+		return m_startAnalyzeIsPending = true; // wait on "bestmove"
 
 	m_startAnalyzeIsPending = false;
 
@@ -364,7 +361,7 @@ uci::Engine::startAnalysis(bool isNewGame)
 	}
 
 	if (isNewGame)
-		send("ucinewgame"); // clear's all states
+		send("ucinewgame"); // clear all states
 
 	m_waitingOn = "position";
 	send("isready");
@@ -521,6 +518,7 @@ uci::Engine::processMessage(mstl::string const& message)
 
 					if (m_variant != currentVariant())
 					{
+						// Currently only variant Three-check Chess is supported in UCI mode.
 						send("setoption name UCI_VariantThreeCheck value " +
 								::toBool(currentVariant() == variant::ThreeCheck));
 						m_variant = currentVariant();
@@ -574,8 +572,10 @@ uci::Engine::processMessage(mstl::string const& message)
 						setIdentifier(identifier);
 						if (isProbing())
 							detectShortName(identifier);
-						// Only a few engines are able to clear hash tables on the fly.
-						m_clearHashOnTheFly = ::strncmp(identifier, "Stockfish ", 10) == 0;
+
+						// Only a few engines are able to clear hash tables on the fly,
+						// currently this is known only for Stockfish.
+						m_clearHashOnTheFly = ::strncmp(identifier, "Stockfish", 9) == 0;
 					}
 					else if (::strncmp(message, "id author ", 10) == 0)
 					{
@@ -902,6 +902,12 @@ uci::Engine::parseCurrentMove(char const* s)
 			error(msg);
 			return Move();
 		}
+
+		if (!move)
+		{
+			// May happen if restart of analysis fails (e.g. Gaviota).
+			return move;
+		}
 	}
 
 	currentBoard().prepareForPrint(move, m_variant, Board::InternalRepresentation);
@@ -928,9 +934,9 @@ uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 			{
 				if (isAnalyzing())
 				{
-					// Some engines (e,g. Gaviota) are doing the bestmove,
-					// thus starting from a wrong position in case of restart.
-					// Restart analysis in this case.
+					// Some engines (e,g. Gaviota) are playing the bestmove
+					// automatically, thus starting from a wrong position in
+					// case of restart. Restart analysis again in this case.
 					stopAnalysis(true);
 					startAnalysis(true);
 				}
@@ -1094,7 +1100,7 @@ uci::Engine::parseOption(char const* msg)
 				m_minThreads.assign(name);
 			}
 		}
-		else if (id == "maxthreads" || id == "minimalthreads")
+		else if (id == "maxthreads" || id == "maximalthreads")
 		{
 			// Firenzina is using this instead of "Threads".
 			if (m_threads.empty())
