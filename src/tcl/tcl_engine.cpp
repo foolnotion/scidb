@@ -51,7 +51,7 @@ using namespace tcl;
 
 
 static char const* CmdActivate		= "::scidb::engine::activate";
-static char const* CmdAnalyize		= "::scidb::engine::analyze";
+static char const* CmdAnalyze			= "::scidb::engine::analyze";
 static char const* CmdBind				= "::scidb::engine::bind";
 static char const* CmdClearHash		= "::scidb::engine::clearHash";
 static char const* CmdCountLines		= "::scidb::engine::countLines";
@@ -998,7 +998,7 @@ cmdAnalyze(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else if (strcmp(cmd, "stop") == 0)
 			setResult(tcl::app::scidb->stopAnalysis(id));
 		else
-			return error(CmdAnalyize, 0, 0, "unknown command '%s'", cmd);
+			return error(CmdAnalyze, 0, 0, "unknown command '%s'", cmd);
 	}
 
 	return TCL_OK;
@@ -1362,11 +1362,11 @@ init(Tcl_Interp* ti)
 {
 	createCommand(ti, CmdActivate,		cmdActivate);
 	createCommand(ti, CmdActive,			cmdActive);
-	createCommand(ti, CmdAnalyize,		cmdAnalyze);
+	createCommand(ti, CmdAnalyze,			cmdAnalyze);
 	createCommand(ti, CmdBind,				cmdBind);
 	createCommand(ti, CmdClearHash,		cmdClearHash);
 	createCommand(ti, CmdCountLines,		cmdCountLines);
-	createCommand(ti, CmdEmpty,				cmdEmpty);
+	createCommand(ti, CmdEmpty,			cmdEmpty);
 	createCommand(ti, CmdInfo,				cmdInfo);
 	createCommand(ti, CmdInvoke,			cmdInvoke);
 	createCommand(ti, CmdKill,				cmdKill);
@@ -1381,7 +1381,7 @@ init(Tcl_Interp* ti)
 	createCommand(ti, CmdStart,			cmdStart);
 	createCommand(ti, CmdSetFeatures,	cmdSetFeatures);
 	createCommand(ti, CmdSetOptions,		cmdSetOptions);
-	createCommand(ti, CmdSnapshot,			cmdSnapshot);
+	createCommand(ti, CmdSnapshot,		cmdSnapshot);
 	createCommand(ti, CmdStop,				cmdStop);
 	createCommand(ti, CmdVariant,			cmdVariant);
 }

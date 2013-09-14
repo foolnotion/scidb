@@ -1419,7 +1419,7 @@ Root::makeList(TagSet const& tags,
 	work.m_termination = termination;
 	work.m_linebreakMaxLineLengthVar = linebreakMaxLineLengthVar;
 	work.m_linebreakMinCommentLength = linebreakMinCommentLength;
-	work.m_isEmpty = node->isEmptyLine();
+	work.m_isEmpty = node->isEmptyLine(); // && !finalBoard.gameIsOver(variant)
 	work.m_displayStyle = displayStyle;
 	work.m_moveInfoTypes = moveInfoTypes;
 

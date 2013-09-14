@@ -158,7 +158,7 @@ set Error(TooFewPromotedPieces)		"Too few pieces marked as promoted."
 set Error(InvalidEnPassant)			"Unreasonable en passant file."
 set Error(MultiPawnCheck)				"Two or more pawns give check."
 set Error(TripleCheck)					"Three or more pieces give check."
-set Error(InvalidStartPosition)		"Castling rights not allowed in start positions which are not Chess 960 positions."
+set Error(IllegalCheckCount)			"Unreasonable check count."
 
 set Warning(TooFewPiecesInHolding)	"Too few pieces in holding. Are you sure that this is ok?"
 set Warning(CastlingWithoutRook)		"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"
@@ -582,7 +582,6 @@ proc open {parent} {
 		::ttk::label $checks.lblb -textvar ::mc::Black
 
 		foreach side {w b} {
-			set Vars(checks:$side) 0
 			::ttk::spinbox $checks.val$side \
 				-from 0 \
 				-to 3 \
@@ -1236,13 +1235,7 @@ proc Update {} {
 		}
 	}
 
-	if {[llength $Vars(idn)] == 0} {
-		set checksW $Vars(checks:w)
-		set checksB $Vars(checks:b)
-	} else {
-		set checksW 0
-		set checksB 0
-	}
+	if {$Vars(checks:w) > 0 || $Vars(checks:b) > 0} { set Vars(idn) "" }
 
 	set holding ""
 	foreach piece {Q R B N P q r b n p} {
@@ -1255,7 +1248,7 @@ proc Update {} {
 	}
 
 	set Vars(fen) [::scidb::board::makeFen $Vars(pos) $Vars(stm) $Vars(ep) $Vars(moveno) \
-		$Vars(halfmoves) $checksW $checksB $holding $promoted $Options(fen:format)]
+		$Vars(halfmoves) $Vars(checks:w) $Vars(checks:b) $holding $promoted $Options(fen:format)]
 
 	if {[string length $castling]} {
 		lset Vars(fen) 2 $castling

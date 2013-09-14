@@ -824,7 +824,7 @@ proc makeFrame {path} {
 	$f.board yview moveto 0
 	pack $f.board -padx $::theme::padx -pady $::theme::pady -fill both -expand yes
 
-	bind $f <Configure> [namespace code ConfigureBoard]
+	bind $f <Configure> [namespace code DelayConfigureBoard]
 	bind $f.board <Configure> [namespace code { DrawBoard %h %w }]
 	bind $f.board <Destroy> [namespace code { array unset Vars widget:* }]
 
@@ -851,23 +851,26 @@ proc openConfigDialog {parent applyProc} {
 	if {$parent ne "."} { set path "$path." }
 	set dlg ${path}boardConfigDialog
 	set Vars(widget:dialog) $dlg
+	set Vars(after) {}
 	tk::toplevel $dlg -class Dialog
 	wm protocol $dlg WM_DELETE_WINDOW [namespace code [list Cancel $dlg $applyProc]]
 	bind $dlg <Escape> [namespace code [list Cancel $dlg $applyProc]]
 	bind $dlg <Destroy> "if {{$dlg} eq {%W}} { array unset [namespace current]::Vars widget:* }"
 	wm withdraw $dlg
+	makeFrame $dlg
+	::widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	wm title $dlg "$::scidb::app: $mc::BoardSetup"
 	wm transient $dlg [winfo toplevel $parent]
 	wm iconname $dlg ""
 	wm resizable $dlg yes no
-	makeFrame $dlg
-	::widget::dialogButtons $dlg {ok cancel apply revert} -default apply
 	$dlg.cancel configure -command [namespace code [list Cancel $dlg $applyProc]]
 	$dlg.ok configure -command "
 		[namespace current]::Apply {$applyProc}
 		destroy $dlg"
 	$dlg.apply configure -command [namespace code [list Apply $applyProc]]
 	$dlg.revert configure -command [namespace code [list Reset $applyProc]]
+	update idletasks
+	wm minsize $dlg [winfo reqwidth $dlg] [winfo reqheight $dlg]
 	wm deiconify $dlg
 }
 
@@ -1455,6 +1458,14 @@ proc RefreshBoard {} {
 	if {[llength $colors(hint,border-color)]} {
 		$Vars(widget:canv:border) configure -background $colors(hint,border-color)
 	}
+}
+
+
+proc DelayConfigureBoard {} {
+	variable Vars
+
+	after cancel $Vars(after)
+	set Vars(after) [after 100 [namespace code ConfigureBoard]]
 }
 
 

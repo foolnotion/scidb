@@ -1467,7 +1467,7 @@ proc InsertMove {context position w level key data} {
 }
 
 
-proc InsertDiagram {position w level key data} {
+proc InsertDiagram {context position w level key data} {
 	variable ::pgn::${context}::Options
 	variable ::pgn::editor::Colors
 	variable Vars

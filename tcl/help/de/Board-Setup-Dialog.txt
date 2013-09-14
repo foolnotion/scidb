@@ -25,6 +25,7 @@ bedienen, deshalb werden nur die Besonderheiten erwähnt.
 
 <ul>
   <li><a href="#PieceSelection">%::board::piece::mc::PieceSelection%</a></li>
+  <li><a href="#Castling">%::setup::board::mc::Castling%</a></li>
   <li><a href="#StartPosition">%::setup::board::mc::StartPosition%</a></li>
   <li><a href="#Crazyhouse">%::mc::VariantName(Crazyhouse)%</a></li>
   <li><a href="#ThreeCheck">%::mc::VariantName(ThreeCheck)%</a></li>
@@ -38,6 +39,16 @@ Cursor die gewählte Figur - dient die mittlere Maustaste, um
 die nächste Figur auszuwählen, und die rechte Maustaste, um die Farbe
 der Figur zu wechseln. Ein Feld wird geleert, indem die vorhandene
 Figur noch einmal auf dieses Feld gesetzt wird.
+</p>
+
+<h2 id="Castling">%::setup::board::mc::Castling%</h2>
+
+<p>
+In Schach-960-Positionen (bzw. Shuffle-Schach-Positionen) kann es bei den
+Rochaderechten zu Mehrdeutigkeiten bezüglich des Rochadeturms kommen. In so
+einem Fall muß zusätzlich die Linie des Rochadeturms ausgewählt werden. Liegt
+eine noch nicht aufgelöste Mehrdeutigkeit vor, dann wird dies beim Speichern
+(mittels der OK-Schaltfläche) automatisch erkannt und als Fehler gemeldet.
 </p>
 
 <h2 id="StartPosition">%::setup::board::mc::StartPosition%</h2>
@@ -95,7 +106,7 @@ wieder zum Bauern.
 <h2 id="ThreeCheck">%::mc::VariantName(ThreeCheck)%</h2>
 
 <p>
-In dieser Schachform gehört zur Positionseingabe das die Schachgebote
+In dieser Schachform gehört zur Stellungseingabe das die Schachgebote
 angegeben werden; wie oft Weiß Schach geboten hat, und wie oft Schwarz
 dies tat.
 </p>

@@ -1528,6 +1528,7 @@
 ::setup::board::mc::Error(InvalidEnPassant)		"Értelmetlen menetközbeni ütés vonal." ;#?
 ::setup::board::mc::Error(MultiPawnCheck)		"Kettő vagy több gyalog ad sakkot."
 ::setup::board::mc::Error(TripleCheck)			"Három vagy több figura ad sakkot."
+::setup::board::mc::Error(IllegalCheckCount)			"Unreasonable check count." ;# NEW (Three-check Chess)
 
 ::setup::board::mc::Warning(TooFewPiecesInHolding)	"Too few pieces marked as promoted. Are you sure that this is ok?" ;# NEW
 ::setup::board::mc::Warning(CastlingWithoutRook)	"You have set castling rights, but at least one rook for castling is missing. This can happen only in handicap games. Are you sure that the castling rights are ok?"

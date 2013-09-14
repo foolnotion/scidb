@@ -47,6 +47,7 @@ bedienen, deshalb werden nur die Besonderheiten erwähnt.
 
 <ul>
   <li><a href="#PieceSelection">Figurenauswahl</a></li>
+  <li><a href="#Castling">Rochade</a></li>
   <li><a href="#StartPosition">Startposition</a></li>
   <li><a href="#Crazyhouse">Einsetzschach</a></li>
   <li><a href="#ThreeCheck">Dreimal-Schach</a></li>
@@ -60,6 +61,16 @@ Cursor die gewählte Figur - dient die mittlere Maustaste, um
 die nächste Figur auszuwählen, und die rechte Maustaste, um die Farbe
 der Figur zu wechseln. Ein Feld wird geleert, indem die vorhandene
 Figur noch einmal auf dieses Feld gesetzt wird.
+</p>
+
+<h2 id="Castling">Rochade</h2>
+
+<p>
+In Schach-960-Positionen (bzw. Shuffle-Schach-Positionen) kann es bei den
+Rochaderechten zu Mehrdeutigkeiten bezüglich des Rochadeturms kommen. In so
+einem Fall muß zusätzlich die Linie des Rochadeturms ausgewählt werden. Liegt
+eine noch nicht aufgelöste Mehrdeutigkeit vor, dann wird dies beim Speichern
+(mittels der OK-Schaltfläche) automatisch erkannt und als Fehler gemeldet.
 </p>
 
 <h2 id="StartPosition">Startposition</h2>
@@ -117,7 +128,7 @@ wieder zum Bauern.
 <h2 id="ThreeCheck">Dreimal-Schach</h2>
 
 <p>
-In dieser Schachform gehört zur Positionseingabe das die Schachgebote
+In dieser Schachform gehört zur Stellungseingabe das die Schachgebote
 angegeben werden; wie oft Weiß Schach geboten hat, und wie oft Schwarz
 dies tat.
 </p>

@@ -134,6 +134,7 @@ public:
 		TooFewPiecesInHolding,		///< too few pieces in holding
 		TooManyPromotedPieces,		///< too many pieces marked as promoted
 		TooFewPromotedPieces,		///< too many pieces marked as promoted
+		IllegalCheckCount,			///< illegal check count
 	};
 
 	enum Representation

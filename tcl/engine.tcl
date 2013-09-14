@@ -1364,7 +1364,7 @@ proc SetFilter {lb} {
 	::util::place $dlg -parent $parent -position center
 	::ttk::grabWindow $dlg
 	wm deiconify $dlg
-	focus $v.chess960
+	focus $v.normal
 	tkwait variable [namespace current]::Reply_
 	::ttk::releaseGrab $dlg
 	destroy $dlg
@@ -1549,7 +1549,8 @@ proc UseEngine {list item profileList} {
 	variable Options
 	variable Vars
 
-	if {[llength $item] == 0} { return }
+	if {[llength $item] == 0} { return [StartEngine $list] }
+
 	set Vars(selection) $item
 	set name [$list get name]
 	set i [FindIndex [$list get name]]

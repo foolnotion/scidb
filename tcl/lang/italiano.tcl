@@ -1530,6 +1530,7 @@
 ::setup::board::mc::Error(InvalidEnPassant)			"Colonna di en passant non ragionevole."
 ::setup::board::mc::Error(MultiPawnCheck)				"Due o più pedoni danno scacco."
 ::setup::board::mc::Error(TripleCheck)					"Tre o più pezzi danno scacco."
+::setup::board::mc::Error(IllegalCheckCount)			"Unreasonable check count." ;# NEW (Three-check Chess)
 
 ::setup::board::mc::Warning(TooFewPiecesInHolding)	"Troppi pochi pezzi segnati come promossi. Sei sicuro che vada bene?"
 ::setup::board::mc::Warning(CastlingWithoutRook)	"Hai segnato il diritto di arroccare, ma almeno una torre di arrocco manca. Questo può succedere solo in partite con handicap. Sei sicuro che ci sia la possibilità di arroccare?"

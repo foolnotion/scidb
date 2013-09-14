@@ -2750,7 +2750,7 @@ switch -- [tk windowingsystem] {
 
 ttk::copyBindings Text Comment
 
-bind Comment <Return>			{ comment::InvokeDefaultButton }
+bind Comment <Return>			{ comment::TextInsert %W \n }
 bind Comment <KeyPress>			{ comment::TextInsert %W %A }
 bind Comment <Shift-Tab>		{ focus [tk_focusPrev %W] }
 bind Comment <Tab>				{ focus [tk_focusNext %W] }

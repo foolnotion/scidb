@@ -2274,6 +2274,18 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 			return TooFewPromotedPieces;
 	}
 
+	if (variant == variant::ThreeCheck)
+	{
+		if (	m_checksGiven[White] > 3
+			|| m_checksGiven[Black] > 3
+			|| (m_checksGiven[White] == 3 && m_checksGiven[Black] == 3)
+			|| (m_checksGiven[White] == 3 && !isInCheck(Black))
+			|| (m_checksGiven[Black] == 3 && !isInCheck(White)))
+		{
+			return IllegalCheckCount;
+		}
+	}
+
 	return Valid;
 }
 

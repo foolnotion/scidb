@@ -1029,7 +1029,7 @@ proc MoveRow {table x y} {
 		$table.t dragimage clear
 
 		lassign [::table::identify $table $x $y] row _
-		event generate [winfo parent $table] <<TableDropRow>> -data [list $Priv(drag:row) $row]
+		event generate [winfo parent $table] <<TableDropRow>> -data [list $Vars(drag:row) $row]
 	}
 
 	array unset Vars drag:*

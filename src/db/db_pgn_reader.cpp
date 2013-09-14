@@ -1745,6 +1745,10 @@ PgnReader::putLastMove()
 				::join(m_comments.begin(), m_comments.end());
 				consumer().putPrecedingComment(m_comments[0], m_annotation, m_marks);
 			}
+			else if (!m_annotation.isEmpty() || !m_marks.isEmpty())
+			{
+				consumer().putPrecedingComment(Comment(), m_annotation, m_marks);
+			}
 		}
 		else if (!m_comments.empty())
 		{

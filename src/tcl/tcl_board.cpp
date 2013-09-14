@@ -127,6 +127,7 @@ toError(db::Board::SetupStatus status)
 		case Board::TooManyPromotedPieces:	return "TooManyPromotedPieces";
 		case Board::TooFewPromotedPieces:	return "TooFewPromotedPieces";
 		case Board::TooFewPiecesInHolding:	return "TooFewPiecesInHolding";
+		case Board::IllegalCheckCount:		return "IllegalCheckCount";
 	}
 
 	return 0; // satisfies the compiler

@@ -109,7 +109,7 @@ array set Vars {
 }
 
 # from Scid
-array set Informant { !? 0.5 ? 1.5 ?? 3.0 ?! 0.5 }
+# array set Informant { !? 0.5 ? 1.5 ?? 3.0 ?! 0.5 }
 
 #                 	   =			+=			+/-		+-
 variable ScoreToEval {	45 10		75 14		175 16	400 18 }
@@ -560,6 +560,15 @@ proc EngineLock {args} {
 }
 
 
+proc ClearLines {w args} {
+	foreach i $args {
+		$w item element configure Line$i Eval  elemTextSym -text "" -fill black
+		$w item element configure Line$i Value elemTextFig -text "" -fill black
+		$w item element configure Line$i Moves elemTextFig -text "" -fill black
+	}
+}
+
+
 proc SetMultiPV {tree} {
 	variable Vars
 	variable Defaults
@@ -603,6 +612,9 @@ proc Layout {tree} {
 	foreach i {1 2 3} {
 		$tree item configure Line$i -visible $visible
 	}
+	if {$Options(engine:multiPV) == 1} {
+		ClearLines $Vars(tree) 1 2 3
+	}
 
 	set theight [expr {$nlines*$pvcount*$Vars(linespace) + $pvcount*4}]
 	set lheight [expr {$nlines*$Vars(linespace)}]
@@ -620,6 +632,7 @@ proc Layout {tree} {
 		set lines $nlines
 		set wrap word
 	}
+
 	foreach i {0 1 2 3} {
 		$tree item element configure Line$i Moves elemTextFig -lines $lines -wrap $wrap
 	}
@@ -746,14 +759,7 @@ proc Display(clear) {} {
 	$Vars(widget:hashfullness) configure -text ""
 	set Vars(maxMoves) 0
 
-	set bg [::colors::lookup $Defaults(background)]
-
-	foreach i {0 1 2 3} {
-		$Vars(tree) item element configure Line$i Eval  elemTextSym -text "" -fill black
-		$Vars(tree) item element configure Line$i Value elemTextFig -text "" -fill black
-		$Vars(tree) item element configure Line$i Moves elemTextFig -text "" -fill black
-	}
-
+	ClearLines $Vars(tree) 0 1 2 3
 	$Vars(tree) activate 0
 }
 

@@ -109,8 +109,8 @@ if {[info exists ::i18n::languages]} {
 	}
 }
 
-set BugTracker					"http://sourceforge.net/tracker/?group_id=307371&atid=1294797"
-set FeatureRequestTracker	"http://sourceforge.net/tracker/?group_id=307371&atid=1294800"
+set BugTracker					"http://sourceforge.net/p/scidb/bugs/"
+set FeatureRequestTracker	"http://sourceforge.net/p/scidb/feature-requests/"
 
 variable Fullscreen			0
 variable HideMenu				0
@@ -798,21 +798,25 @@ if {[tk windowingsystem] eq "x11" && [string length [auto_execok xdg-mime]]} {
 			grid $top.$filetype -row $row -column 1 -sticky w
 			grid $top.${filetype}Icon -row $row -column 3 -sticky w
 			grid $top.${filetype}Descr -row $row -column 5 -sticky w
-			if {!$default($filetype)} {
-				ttk::checkbutton $top.${filetype}Assign \
-					-text $mc::Assign \
-					-variable [namespace current]::Assign_($filetype) \
-					;
-				grid $top.${filetype}Assign -row $row -column 7 -sticky w
+			if {$default($filetype)} {
+				set Assign_($filetype) 1
+				set state disabled
 				incr count
+			} else {
+				set state normal
 			}
+			ttk::checkbutton $top.${filetype}Assign \
+				-text $mc::Assign \
+				-variable [namespace current]::Assign_($filetype) \
+				-state $state \
+				;
+			grid $top.${filetype}Assign -row $row -column 7 -sticky w
 			grid rowconfigure $top [incr row] -minsize $::theme::pady
 			incr row
 		}
 
 		grid rowconfigure $top 0 -minsize $::theme::pady
 		grid columnconfigure $top {0 2 4 6} -minsize $::theme::padx
-		if {$count > 0} { grid columnconfigure $top 8 -minsize $::theme::padx }
 
 		if {$count == 0} {
 			::widget::dialogButtons $dlg {close}

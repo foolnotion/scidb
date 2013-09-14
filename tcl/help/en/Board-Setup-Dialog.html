@@ -47,6 +47,7 @@ use, therefore only the features will be explained.
 
 <ul>
   <li><a href="#PieceSelection">Piece Selection</a></li>
+  <li><a href="#Castling">Castling</a></li>
   <li><a href="#StartPosition">Start position</a></li>
   <li><a href="#Crazyhouse">Crazyhouse Chess</a></li>
   <li><a href="#ThreeCheck">Three-check Chess</a></li>
@@ -59,6 +60,16 @@ If the mouse pointer hovers the board - in this case the cursor is showing
 the selected piece - the middle mouse button will select the next piece,
 and the right mouse button will switch the color of the piece. A square will
 be emptied with setting the same piece on this square.
+</p>
+
+<h2 id="Castling">Castling</h2>
+
+<p>
+In Chess 960 positions (or Shuffle Chess positions) the castling rook may not
+be uniquely defined. In such cases it is obligatory to determine the file of
+the castling rook. If the ambiguity of any castling rook is unresolved while
+saving the position (with OK button), the application will detect this
+automatically, and an error will be reported.
 </p>
 
 <h2 id="StartPosition">Start position</h2>

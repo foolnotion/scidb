@@ -1520,6 +1520,7 @@
 ::setup::board::mc::Error(InvalidEnPassant)			"Ungültige En-Passant-Line."
 ::setup::board::mc::Error(MultiPawnCheck)				"Zwei oder mehr Bauern bieten Schach."
 ::setup::board::mc::Error(TripleCheck)					"Drei oder mehr Figuren bieten Schach."
+::setup::board::mc::Error(IllegalCheckCount)			"Abwegige Schachgebotsangabe."
 
 ::setup::board::mc::Warning(TooFewPiecesInHolding)	"Zuwenige Figuren in der Rückhand. Trotzdem akzeptieren?"
 ::setup::board::mc::Warning(CastlingWithoutRook)	"Ein Rochaderecht wurde gesetzt, aber ein entsprechender Roachadeturm wird vermisst. Sollen die vergebenen Rochaderechte trotzdem akzeptiert werden?"
