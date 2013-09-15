@@ -309,8 +309,8 @@ proc open {parent base variant position {number 0}} {
 	set Priv(black-score) 0
 	set Priv(white-elo) 0
 	set Priv(black-elo) 0
-	set Priv(white-rating) Elo
-	set Priv(black-rating) Elo
+	set Priv(white-rating) DWZ
+	set Priv(black-rating) DWZ
 	set Priv(base) $base
 	set Priv(variant) $variant
 	set Priv(position) $position
@@ -1561,12 +1561,14 @@ proc UpdateRatingTags {top color typeField scoreField} {
 	if {$value == 0} { set value "" }
 	set ratingType $Priv($typeField)
 	set ratingTagName $color$ratingType
-	if {[info exists Lookup($ratingTagName)]} {
-		RemoveTag $t $ratingTagName 1
-		set TagOrder($ratingTagName) 99
-	} elseif {[info exists Lookup($color$Priv($color:ratingType))]} {
-		RemoveTag $t $color$Priv($color:ratingType) 1
-		set TagOrder($color$Priv($color:ratingType) 99
+	if {[llength $value] == 0 || $ratingType ne [$top.$typeField.type get]} {
+		if {[info exists Lookup($ratingTagName)]} {
+			RemoveTag $t $ratingTagName 1
+			set TagOrder($ratingTagName) 99
+		} elseif {[info exists Lookup($color$Priv($color:ratingType))]} {
+			RemoveTag $t $color$Priv($color:ratingType) 1
+			set TagOrder($color$Priv($color:ratingType) 99
+		}
 	}
 	if {[llength $value]} {
 		set TagOrder($ratingTagName) $RatingTagOrder($ratingTagName)
@@ -2458,7 +2460,19 @@ proc SetupTags {top base variant idn position number} {
 		lassign [::scidb::db::get ratingTypes $number $base $variant] ratingType(White) ratingType(Black)
 	}
 
-	foreach rating $::ratingbox::ratings(all) {
+	if {$Priv(characteristics-only)} {
+		set ratings {Elo}
+		set state disabled
+	} else {
+		set ratings $::ratingbox::ratings(all)
+		set state normal
+	}
+	$top.white-rating.type configure -state $state
+	$top.black-rating.type configure -state $state
+	$top.white-rating.score configure -state $state
+	$top.black-rating.score configure -state $state
+
+	foreach rating $ratings {
 		foreach side {White Black} {
 			if {$rating eq "Elo"} {
 				set order $TagOrder($side$rating)
