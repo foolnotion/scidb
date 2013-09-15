@@ -184,7 +184,7 @@ proc build {parent width height} {
 	set Vars(panes) $panes
 	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
 
-	::pgn::setup::setupStyle editor
+	::pgn::setup::setupStyle editor {0 1 2 3 4 5 6 7 8}
 #	::scidb::game::undoSetup 20 9999
 	::scidb::game::undoSetup 200 1
 
@@ -304,14 +304,14 @@ proc refresh {{regardFontSize no}} {
 	variable Vars
 
 	::widget::busyCursor on
-	::pgn::setup::setupStyle editor
 
 	for {set i 0} {$i < 9} {incr i} {
+		::pgn::setup::setupStyle editor $i
 		::pgn::setup::configureText $Vars(frame:$i)
+		::scidb::game::refresh $i
 	}
 
 	set Vars(charwidth) [font measure [$Vars(pgn:0) cget -font] "0"]
-	::scidb::game::refresh -all
 
 	if {$regardFontSize} {
 		if {$Vars(index) >= 0} { ::scidb::game::refresh $Vars(index) -immediate }

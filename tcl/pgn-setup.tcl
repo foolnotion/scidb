@@ -326,13 +326,11 @@ proc configureText {path {fontContext ""}} {
 		$w tag configure circled -font [list {Scidb Circled} [::font::currentFontSize $fontContext]]
 		$w tag configure circled -foreground #008b00
 
-		if {$context ne "merge"} {
-			for {set k 0} {$k <= 10} {incr k} {
-				set margin [expr {$k*$Options(indent:amount)}]
-#				set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
-				set indent $margin
-				$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
-			}
+		for {set k 0} {$k <= 10} {incr k} {
+			set margin [expr {$k*$Options(indent:amount)}]
+#			set indent [expr {$margin + 1.3*$charwidth + $Options(show:varnumbers)*1.5*$charwidth}]
+			set indent $margin
+			$w tag configure indent$k -lmargin1 $margin -lmargin2 $indent
 		}
 	}
 
@@ -357,7 +355,7 @@ proc configureText {path {fontContext ""}} {
 }
 
 
-proc setupStyle {context {position -1}} {
+proc setupStyle {context positionList} {
 	variable [namespace parent]::${context}::Options
 	variable ShowMoveInfo
 
@@ -385,18 +383,20 @@ proc setupStyle {context {position -1}} {
 		}
 	}
 
-	::scidb::game::setupStyle \
-		$position \
-		{*}$thresholds \
-		$Options(style:column) \
-		$Options(style:move) \
-		$paragraphSpacing \
-		$showDiagrams \
-		$showMoveInfo \
-		$showEmoticons \
-		$showVariationNumbers \
-		$discardUnknownResult \
-		;
+	foreach position $positionList {
+		::scidb::game::setupStyle \
+			$position \
+			{*}$thresholds \
+			$Options(style:column) \
+			$Options(style:move) \
+			$paragraphSpacing \
+			$showDiagrams \
+			$showMoveInfo \
+			$showEmoticons \
+			$showVariationNumbers \
+			$discardUnknownResult \
+			;
+	}
 }
 
 
@@ -1563,7 +1563,7 @@ proc SelectionChanged {mw context position tag {blink yes}} {
 	$w tag remove sel 1.0 end
 	$mw raise $Priv(pane:$pane)
 
-	setupStyle $context
+	setupStyle $context $position
 	::scidb::game::switch $position
 	::scidb::game::import $position $data [namespace current]::Trash {}
 	::scidb::game::langSet $position [list {} $langID]

@@ -304,6 +304,7 @@ proc open {parent base variant info view index {fen {}}} {
 	set Vars(next) {}
 	set Vars(next:move) {}
 	set Vars(modified) 0
+	set Vars(setup) 1
 
 	bind $dlg <Alt-Key>					[list tk::AltKeyInDialog $dlg %A]
 	bind $dlg <Return>					[namespace code [list ::widget::dialogButtonInvoke $buttons]]
@@ -447,10 +448,10 @@ proc refresh {{unused -1}} {
 	variable Active
 
 	::widget::busyCursor on
-	::pgn::setup::setupStyle browser
 
 	foreach position [array names Active] {
 		variable ${position}::Vars
+		::pgn::setup::setupStyle browser $pos
 		::pgn::setup::configureText $Vars(frame)
 		::scidb::game::refresh $position -immediate
 	}
@@ -582,17 +583,18 @@ proc SetupStyle {position {refresh yes}} {
 	variable ${position}::Vars
 	variable ::pgn::browser::Colors
 	variable ::pgn::browser::Options
+	variable Active
 
 	if {[llength $Vars(next)]} {
 		$Vars(pgn) tag configure $Vars(next) -background [::colors::lookup $Colors(background)]
 	}
 	if {$Options(style:column)} { set Vars(next) $Vars(next:move) } else { set Vars(next) {} }
 
-	::pgn::setup::setupStyle browser
-	::pgn::setup::configureText $Vars(frame)
-
-	if {$refresh} {
-		::widget::busyOperation { ::scidb::game::refresh $position -immediate }
+	foreach pos [array names Active] {
+		variable ${pos}::Vars
+		::pgn::setup::setupStyle browser $pos
+		::pgn::setup::configureText $Vars(frame)
+		if {$refresh} { ::scidb::game::refresh $pos -immediate }
 	}
 }
 
@@ -750,12 +752,21 @@ proc NextGame {parent position {step 0}} {
 	ConfigureButtons $position
 	SetTitle $position
 	set number [::scidb::db::get gameNumber $Vars(base) $Vars(variant) $index $Vars(view)]
-	::widget::busyOperation { ::game::load $parent $position $Vars(base) \
-		-number $number -variant $Vars(variant) -view $Vars(view) }
+	::widget::busyOperation {
+		::game::load $parent $position $Vars(base) \
+			-number $number \
+			-variant $Vars(variant) \
+			-view $Vars(view) \
+			;
+	}
 	::scidb::game::go $position position $Vars(fen)
 	if {$Vars(modified)} {
 		$Vars(header) configure -background [::colors::lookup $Options(background:header)]
 		set Vars(modified) 0
+	}
+	if {$Vars(setup)} {
+		::pgn::setup::setupStyle browser $position
+		set Vars(setup) 0
 	}
 	::scidb::game::refresh $position -immediate
 	set Vars(link) [lrange [::scidb::game::link? $position] 0 2]
@@ -1832,10 +1843,10 @@ proc WriteOptions {chan} {
 namespace eval pgn {
 namespace eval browser {
 
-proc refresh {regardFontSize}		{ ::browser::refresh $regardFontSize }
-proc resetGoto {w position}		{ ::browser::resetGoto $w $position }
-proc showNext {w position flag}	{ ::browser::showNext $w $position $flag }
-proc doLayout {position data w}	{ ::browser::UpdatePGN $position $data $w }
+proc refresh {regardFontSize}					{ ::browser::refresh $regardFontSize }
+proc resetGoto {w position}					{ ::browser::resetGoto $w $position }
+proc showNext {w position flag}				{ ::browser::showNext $w $position $flag }
+proc doLayout {position data context w}	{ ::browser::UpdatePGN $position $data $w }
 
 } ;# browser
 } ;# pgn
