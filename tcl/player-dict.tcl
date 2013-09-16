@@ -76,11 +76,15 @@ array set Options {
 	stripes			playerdict,stripes
 }
 
-set Priv(receiver) {}
+array set Priv {
+	receiver ""
+	dialog	""
+}
 
 
 proc setReceiver {cmd}	{ set [namespace current]::Priv(receiver) $cmd }
 proc unsetReceiver {}	{ set [namespace current]::Priv(receiver) {} }
+proc dialog {}				{ return [set [namespace current]::Priv(dialog)] }
 
 
 proc open {parent args} {
@@ -91,8 +95,14 @@ proc open {parent args} {
 	variable Columns
 	variable Options
 
+	if {[string length $Priv(dialog)]} {
+		::widget::dialogRaise $Priv(dialog)
+		return
+	}
+
 	if {$parent eq "."} { set dlg .playerDict } else { set dlg $parent.playerDict }
 	if {[winfo exists $dlg]} { return [::widget::dialogRaise $dlg] }
+	set Priv(dialog) $dlg
 
 	array set opts {
 		-federation	""
@@ -108,7 +118,7 @@ proc open {parent args} {
 		set Options(rating1:type) $opts(-rating1)
 	}
 	if {[string length $opts(-rating2)]} {
-		set Options(rating1:type) $opts(-rating2)
+		set Options(rating2:type) $opts(-rating2)
 	}
 
 	array unset opts
@@ -360,6 +370,7 @@ proc open {parent args} {
 proc Destroy {} {
 	variable Priv
 
+	set Priv(dialog) ""
 	::scidb::player::dict close
 	trace remove variable {*}$Priv(search:cmd)
 }
@@ -883,11 +894,12 @@ proc TableFill {table args} {
 
 
 proc TableSelected {table index} {
+	variable Options
 	variable Priv
 
-	if {[llength $Priv(receiver)]} {
-		set info [scidb::player::info $index]
-		{*}$Priv(receiver) [lrange [scidb::player::info $index] 1 2]
+	if {[string length $Priv(receiver)]} {
+		set ratings [list $Options(rating1:type) $Options(rating2:type)]
+		{*}$Priv(receiver) [scidb::player::info $index -ratings $ratings]
 	} else {
 		::scrolledtable::select $table none 
 	}

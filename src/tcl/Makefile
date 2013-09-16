@@ -925,6 +925,10 @@ tcl_engine.o: ../mstl/m_list.h
 tcl_engine.o: ../mstl/m_list_node.h
 tcl_engine.o: ../mstl/m_list_node.ipp
 tcl_engine.o: ../mstl/m_list.ipp
+tcl_engine.o: ../mstl/m_map.h
+tcl_engine.o: ../mstl/m_pair.h
+tcl_engine.o: ../mstl/m_pair.ipp
+tcl_engine.o: ../mstl/m_map.ipp
 tcl_engine.o: ../app/app_engine.ipp
 tcl_engine.o: ../app/app_application.h
 tcl_engine.o: ../app/app_tree_admin.h
@@ -959,8 +963,6 @@ tcl_engine.o: ../db/db_date.h
 tcl_engine.o: ../db/db_date.ipp
 tcl_engine.o: ../db/db_namebase_entry.ipp
 tcl_engine.o: ../db/db_player.h
-tcl_engine.o: ../mstl/m_pair.h
-tcl_engine.o: ../mstl/m_pair.ipp
 tcl_engine.o: ../db/db_player.ipp
 tcl_engine.o: ../mstl/m_chunk_allocator.h
 tcl_engine.o: ../mstl/m_stack.h
@@ -989,8 +991,6 @@ tcl_engine.o: ../db/db_clock.ipp
 tcl_engine.o: ../db/db_move_info.ipp
 tcl_engine.o: ../db/db_move_info_set.ipp
 tcl_engine.o: ../db/db_engine_list.h
-tcl_engine.o: ../mstl/m_map.h
-tcl_engine.o: ../mstl/m_map.ipp
 tcl_engine.o: ../db/db_engine_list.ipp
 tcl_engine.o: ../db/db_time_table.h
 tcl_engine.o: ../db/db_time_table.ipp

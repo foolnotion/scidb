@@ -1826,6 +1826,11 @@
 ::dialog::save::mc::LeaveTrialModeHint			"Prima devi uscire dalla modalità di prova, usa la scorciatoia %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Apri Dizionario Giocatore"
 
+::dialog::save::mc::ConfigureSelection			"Configure Selection..." ;# NEW
+::dialog::save::mc::SecondRating					"Second rating" ;# NEW
+::dialog::save::mc::PlayerSection				"Player Section" ;# NEW
+::dialog::save::mc::EventSection					"Event Section" ;# NEW
+
 ::dialog::save::mc::LocalName						"&Nome locale"
 ::dialog::save::mc::EnglishName					"Nome &Inglese"
 ::dialog::save::mc::ShowRatingType				"Mostra &punteggio"

@@ -148,7 +148,7 @@ struct RayHorizontal
 	}
 
 	Board const&	m_board;
-	List const&			m_designators;
+	List const&		m_designators;
 };
 
 
@@ -251,7 +251,7 @@ struct RayVertical
 	}
 
 	Board const&	m_board;
-	List const&			m_designators;
+	List const&		m_designators;
 };
 
 
@@ -351,7 +351,7 @@ struct RayDiagonal
 	}
 
 	Board const&	m_board;
-	List const&			m_designators;
+	List const&		m_designators;
 };
 
 } // namespace bits

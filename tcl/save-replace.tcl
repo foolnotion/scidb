@@ -58,6 +58,11 @@ set CurrentGameHasTrialMode	"Current game is in trial mode and cannot be saved."
 set LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 set OpenPlayerDictionary		"Open Player Dictionary"
 
+set ConfigureSelection			"Configure Selection..."
+set SecondRating					"Second rating"
+set PlayerSection					"Player Section"
+set EventSection					"Event Section"
+
 set LocalName						"&Local Name"
 set EnglishName					"E&nglish Name"
 set ShowRatingType				"Show &rating"
@@ -69,6 +74,7 @@ set Label(name)					"Name"
 set Label(fideID)					"Fide ID"
 set Label(value)					"Value"
 set Label(title)					"Title"
+set Label(elo)						"Elo" ;# does not need translation
 set Label(rating)					"Rating"
 set Label(federation)			"Federation"
 set Label(country)				"Country"
@@ -413,7 +419,6 @@ proc Build {dlg base variant position number} {
 	variable ::${dlg}::Priv
 	variable Colors
 	variable MaxColumnLength
-	variable Selection
 	variable Options
 
 	switch $Priv(codec) {
@@ -1085,8 +1090,11 @@ proc Build {dlg base variant position number} {
 
 	# Dialog Buttons ##########################################
 	::widget::dialogButtons $dlg {ok cancel}
+	::widget::dialogButtonAdd $dlg configure [namespace current]::mc::ConfigureSelection {} -side right
+	::widget::dialogButtonAddSeparator $dlg -side right
 	$dlg.ok configure -command [namespace code [list Save $top $fields]]
 	$dlg.cancel configure -command [namespace code [list Withdraw $dlg]]
+	$dlg.configure configure -command [namespace code [list ConfigureSelection $dlg]]
 #	bind $dlg.ok <FocusIn> [namespace code [list ClearMatchList $top]]
 #	bind $dlg.cancel <FocusIn> [namespace code [list ClearMatchList $top]]
 	bind $dlg <Escape> [list $dlg.cancel invoke]
@@ -1532,6 +1540,8 @@ proc RemoveTag {t name {showWarning 0}} {
 	variable TagOrder
 	variable Mandatory
 
+	if {![info exists Item($name)]} { return }
+
 	if {$showWarning && !$Mandatory($name,$Priv(twoRatings)) && $TagOrder($name) <= 99} {
 		set msg [format $mc::TagRemoved $name $Lookup($name)]
 		::dialog::info -parent $t -message $msg -title $mc::EditTags]
@@ -1651,9 +1661,7 @@ proc UpdateTagList {t name value} {
 				Date												{ set value "????.??.??" }
 				Result											{ set value "*" }
 
-				default {
-					return [RemoveTag $t $name 1]
-				}
+				default { return [RemoveTag $t $name 1] }
 			}
 		}
 		if {$Lookup($name) ne $value} {
@@ -1754,7 +1762,7 @@ proc ChooseMatch {top index complete} {
 
 	if {$index < [llength $Priv(list)]} {
 		set Priv(focus) $top.$Priv(entry)
-		EnterMatch $top $lb $index $complete
+		EnterMatch $top $index $complete
 	}
 }
 
@@ -2159,15 +2167,14 @@ proc SelectMatch {top lb index complete} {
 	if {[$lb active] eq $index} {
 		set number [$lb get $index number]
 		if {[incr number -1] == -1} { set number 9 }
-		EnterMatch $top $lb $number $complete
+		EnterMatch $top $number $complete
 	}
 }
 
 
-proc EnterMatch {top lb index complete} {
+proc EnterMatch {top index complete} {
 	variable ::[winfo toplevel $top]::Priv
 	variable Attrs
-	variable Selection
 
 	set field $Priv(entry)
 	if {[string length $field] == 0} { return }
@@ -2180,24 +2187,36 @@ proc EnterMatch {top lb index complete} {
 		game-annotator				{ set attr annotator }
 	}
 
+	if {$attr eq "player"} { set which [string range $field 0 4] } else { set which $attr }
 	set data [lindex $Priv(list) $index]
-	set freq [lindex $data 1]
 	set Priv(match:$field) $data
 	set Priv(curr:$attr) 1
-	set attrs $Attrs($attr)
 
-	if {$attr eq "player"} {
+	FillFields $top $which $Attrs($attr) $data $complete
+
+	set Priv(dont-match) 0
+	$Priv(focus) icursor end
+	$Priv(focus) selection clear
+}
+
+
+proc FillFields {top which attrs data complete} {
+	variable ::[winfo toplevel $top]::Priv
+	variable Selection
+
+	set freq [lindex $data 1]
+
+	if {$which eq "white" || $which eq "black"} {
+		set attr player
 		set species [lindex $data [lsearch -exact $attrs species]]
-		set side [string range $field 0 4]
-		set color [string toupper $side 0 0]
-		set list $Priv(select:$side)
+		set color [string toupper $which 0 0]
 		set ratingType [lindex $data [lsearch -exact $attrs rating]]
 		set acceptRating [expr {$ratingType eq "Elo" || $ratingType eq $Priv(ratingType)}]
 	} else {
-		set list $Priv(select:$attr)
+		set attr $which
 	}
 
-	foreach {id type tag field} $list {
+	foreach {id type tag field} $Priv(select:$which) {
 		set value [lindex $data [lsearch -exact $attrs $id]]
 		set widget $top.$field
 
@@ -2229,7 +2248,7 @@ proc EnterMatch {top lb index complete} {
 						ratingbox {
 							if {$freq > 0 && $acceptRating} {
 								$widget set $value
-								UpdateRatingTags $top $color $side-rating $side-score
+								UpdateRatingTags $top $color $which-rating $which-score
 							}
 						}
 
@@ -2239,16 +2258,14 @@ proc EnterMatch {top lb index complete} {
 								if {$tag eq "${color}Elo"} {
 									UpdateTags $top $tag $field
 								} else {
-									UpdateRatingTags $top $color $side-rating $side-score
+									UpdateRatingTags $top $color $which-rating $which-score
 								}
 							}
 						}
 
 						genderbox {
-							if {$Selection(player:sex)} {
-								$widget set $value
-								UpdateSexTag $top $color $field
-							}
+							$widget set $value
+							UpdateSexTag $top $color $field
 						}
 
 						fideidbox {
@@ -2293,7 +2310,7 @@ proc EnterMatch {top lb index complete} {
 						if {$tag eq "${color}Elo"} {
 							UpdateTags $top $tag $field
 						} else {
-							UpdateRatingTags $top $color $side-rating $side-score
+							UpdateRatingTags $top $color $which-rating $which-score
 						}
 					}
 
@@ -2308,10 +2325,6 @@ proc EnterMatch {top lb index complete} {
 			}
 		}
 	}
-
-	set Priv(dont-match) 0
-	$Priv(focus) icursor end
-	$Priv(focus) selection clear
 }
 
 
@@ -2460,25 +2473,9 @@ proc SetupTags {top base variant idn position number} {
 		lassign [::scidb::db::get ratingTypes $number $base $variant] ratingType(White) ratingType(Black)
 	}
 
-	if {$Priv(characteristics-only)} {
-		set ratings {Elo}
-		set state disabled
-	} else {
-		set ratings $::ratingbox::ratings(all)
-		set state normal
-	}
-	$top.white-rating.type configure -state $state
-	$top.black-rating.type configure -state $state
-	$top.white-rating.score configure -state $state
-	$top.black-rating.score configure -state $state
-
-	foreach rating $ratings {
+	foreach rating $::ratingbox::ratings(all) {
 		foreach side {White Black} {
-			if {$rating eq "Elo"} {
-				set order $TagOrder($side$rating)
-			} else {
-				set order 99
-			}
+			if {$rating eq "Elo"} { set order $TagOrder($side$rating) } else { set order 99 }
 			set Priv($side:ratingType) ---
 			if {[info exists Lookup($side$rating)]} {
 				set Priv($side:ratingType) $rating
@@ -3091,19 +3088,93 @@ proc CheckFields {top title fields} {
 
 proc SetPlayerFromDict {dlg side info} {
 	variable ::${dlg}::Priv
-	lassign $info Priv(${side}-name) Priv(${side}-fideID)
+	variable Selection
+	variable Attrs
+
+	lassign $info _ name fideID federation sex elo score titles
+	set data {}
+
+	foreach attr $Attrs(player) {
+		switch $attr {
+			name			{ lappend data $name }
+			fideID		{ lappend data $fideID }
+			species		{ lappend data human }
+			sex			{ lappend data $sex }
+			federation	{ lappend data $federation }
+			title			{ lappend data [lindex $titles 0] }
+			elo			{ lappend data $elo }
+			rating		{ lappend data $Priv(${side}-rating) }
+			score			{ lappend data $score }
+			default		{ lappend data {} }
+		}
+	}
+
+	FillFields $dlg.top $side $Attrs(player) $data no
 	focus -force $dlg.top.$side-name
 	$dlg.top.$side-name icursor end
 	::playerdict::unsetReceiver
-	lower .playerDict
+	lower [::playerdict::dialog]
 	raise $dlg
 }
 
 
 proc GetPlayerFromDict {dlg side} {
 	variable ::${dlg}::Priv
+
 	::playerdict::setReceiver [namespace code [list SetPlayerFromDict $dlg $side]]
 	::playerdict::open . -federation Fide -rating1 Elo -rating2 $Priv(${side}-rating)
+}
+
+
+proc ConfigureSelection {parent} {
+	set dlg [tk::toplevel $parent.configureSelection -class Scidb]
+	set top [ttk::frame $dlg.top -takefocus 0 -borderwidth 0]
+	pack $top -fill both -expand yes
+	wm withdraw $dlg
+	::widget::dialogButtons $dlg {ok}
+	$dlg.ok configure -command [list destroy $dlg]
+
+	set pl [ttk::labelframe $top.player -text $mc::PlayerSection]
+	set row 1
+	foreach attr {elo score title federation sex} {
+		ttk::checkbutton $pl.$attr \
+			-text $mc::Label($attr) \
+			-variable [namespace current]::Selection(player:$attr) \
+			;
+		grid $pl.$attr -column 1 -row $row -sticky ew
+		incr row 2
+	}
+	grid columnconfigure $pl {0 2} -minsize $::theme::padx
+	grid rowconfigure $pl {0 10} -minsize $::theme::pady
+
+	set ev [ttk::labelframe $top.event -text $mc::EventSection]
+	set row 1
+	foreach attr {site country eventDate eventMode eventType timeMode} {
+		ttk::checkbutton $ev.$attr \
+			-text $mc::Label($attr) \
+			-variable [namespace current]::Selection(event:$attr) \
+			;
+		grid $ev.$attr -column 1 -row $row -sticky ew
+		incr row 2
+	}
+	grid columnconfigure $ev {0 2} -minsize $::theme::padx
+	grid rowconfigure $ev {0 12} -minsize $::theme::pady
+
+	grid $pl -row 1 -column 1 -sticky ewns
+	grid $ev -row 1 -column 3 -sticky ewns
+	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
+	grid rowconfigure $top {0 2} -minsize $::theme::pady
+
+	wm title $dlg [lindex [split $mc::ConfigureSelection "..."] 0]
+	wm resizable $dlg no no
+	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	::util::place $dlg -parent $parent -position center
+	wm deiconify $dlg
+	focus $pl.elo
+
+	::ttk::grabWindow $dlg
+	tkwait window $dlg
+	::ttk::releaseGrab $dlg
 }
 
 

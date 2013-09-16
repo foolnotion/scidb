@@ -268,8 +268,8 @@
 ::menu::mc::AssignFileTypes				"&Dateitypen zuordnen"
 
 # Tools
-::menu::mc::OpenEngineDictionary			"Motoren&lexikon öffnen"
-::menu::mc::OpenPlayerDictionary			"Spielerlexikon öffnen"
+::menu::mc::OpenEngineDictionary			"&Motorenlexikon öffnen"
+::menu::mc::OpenPlayerDictionary			"&Spielerlexikon öffnen"
 
 # Setup
 ::menu::mc::Engines							"&Motoren (Schachprogramme)"
@@ -1815,6 +1815,11 @@
 ::dialog::save::mc::CurrentGameHasTrialMode	"Die aktuelle Partie befindet sich im Variantentest und kann nicht gespeichert werden."
 ::dialog::save::mc::LeaveTrialModeHint			"Der Variantentest sollte zuvor verlassen werden, dazu kann das Tastaturkürzel %s verwendet werden."
 ::dialog::save::mc::OpenPlayerDictionary		"Spielerlexikon öffnen"
+
+::dialog::save::mc::ConfigureSelection			"Auswahl konfigurieren..."
+::dialog::save::mc::SecondRating					"Zweite Wertung"
+::dialog::save::mc::PlayerSection				"Spielersektion"
+::dialog::save::mc::EventSection					"Turniersektion"
 
 ::dialog::save::mc::LocalName						"&Heimatl. Name"
 ::dialog::save::mc::EnglishName					"E&nglischer Name"

@@ -20,8 +20,13 @@
 
 # if __WORDSIZE == 32 || !__GNUC_PREREQ(4,4)
 
+__attribute__((init_priority(101)))
 uint128_t const mstl::bitfield<uint128_t>::m_zero(0u);
+
+__attribute__((init_priority(101)))
 uint128_t const mstl::bitfield<uint128_t>::m_one(1u);
+
+__attribute__((init_priority(101)))
 uint128_t const mstl::bitfield<uint128_t>::m_inverse(~uint64_t(0), ~uint64_t(0));
 
 #endif // __WORDSIZE == 32

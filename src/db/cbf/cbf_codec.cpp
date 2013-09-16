@@ -345,15 +345,10 @@ Codec::mapPlayerName(mstl::string& str)
 }
 
 
-void
-Codec::filterTags(TagSet& tags, Section section) const
+tag::TagSet
+Codec::tagFilter(Section, TagSet const&) const
 {
-	tag::TagSet infoTags = m_infoTags;
-
-	if (section == InfoTags)
-		infoTags.flip(0, tag::LastTag);
-
-	tags.remove(infoTags);
+	return m_infoTags;
 }
 
 

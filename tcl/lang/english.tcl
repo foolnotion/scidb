@@ -1815,6 +1815,11 @@ ln -sf ../# ====================================================================
 ::dialog::save::mc::LeaveTrialModeHint			"You have to leave trial mode beforehand, use shortcut %s."
 ::dialog::save::mc::OpenPlayerDictionary		"Open Player Dictionary"
 
+::dialog::save::mc::ConfigureSelection			"Configure Selection..."
+::dialog::save::mc::SecondRating					"Second rating"
+::dialog::save::mc::PlayerSection				"Player Section"
+::dialog::save::mc::EventSection					"Event Section"
+
 ::dialog::save::mc::LocalName						"&Local Name"
 ::dialog::save::mc::EnglishName					"E&nglish Name"
 ::dialog::save::mc::ShowRatingType				"Show &rating"

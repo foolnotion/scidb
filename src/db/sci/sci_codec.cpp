@@ -609,15 +609,10 @@ Codec::setWritable()
 }
 
 
-void
-Codec::filterTags(TagSet& tags, Section section) const
+db::tag::TagSet
+Codec::tagFilter(Section, TagSet const&) const
 {
-	tag::TagSet infoTags = Encoder::infoTags();
-
-	if (section == InfoTags)
-		infoTags.flip(0, tag::LastTag);
-
-	tags.remove(infoTags);
+	return Encoder::infoTags();
 }
 
 

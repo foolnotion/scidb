@@ -451,15 +451,10 @@ Codec::setEncoding(mstl::string const& encoding)
 }
 
 
-void
-Codec::filterTags(TagSet& tags, Section section) const
+db::tag::TagSet
+Codec::tagFilter(Section, TagSet const&) const
 {
-	tag::TagSet infoTags = TagLookup::infoTags();
-
-	if (section == InfoTags)
-		infoTags.flip();
-
-	tags.remove(infoTags);
+	return TagLookup::infoTags();
 }
 
 

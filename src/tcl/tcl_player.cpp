@@ -375,6 +375,9 @@ cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 
 	if (strcmp(cmd, "open") == 0)
 	{
+		if (m_dictionary)
+			return error(CmdDict, nullptr, nullptr, "player dictionary is already open");
+
 		app::PlayerDictionary::Mode mode;
 		char const* modeStr = stringFromObj(objc, objv, 2);
 
@@ -385,7 +388,7 @@ cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 		else if (strcmp(modeStr, "engine") == 0)
 			mode = app::PlayerDictionary::EnginesOnly;
 		else
-			return error(CmdDict, nullptr, nullptr, "Unknown dictionary mode '%s'", modeStr);
+			return error(CmdDict, nullptr, nullptr, "unknown dictionary mode '%s'", modeStr);
 
 		if (m_dictionary == 0)
 		{
@@ -396,12 +399,15 @@ cmdDict(ClientData, Tcl_Interp* ti, int objc, Tcl_Obj* const objv[])
 	}
 	else if (strcmp(cmd, "close") == 0)
 	{
+		if (!m_dictionary)
+			return error(CmdInfo, nullptr, nullptr, "player dictionary is already closed");
+
 		delete m_dictionary;
 		m_dictionary = 0;
 	}
 	else
 	{
-		return error(CmdDict, nullptr, nullptr, "Unknown command '%s'", cmd);
+		return error(CmdDict, nullptr, nullptr, "unknown command '%s'", cmd);
 	}
 
 	return TCL_OK;

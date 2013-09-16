@@ -91,7 +91,7 @@ public:
 	unsigned gameFlags() const override;
 	unsigned blockSize() const;
 
-	void filterTags(TagSet& tags, Section section) const override;
+	db::tag::TagSet tagFilter(Section section, TagSet const& tags) const override;
 	mstl::string const& extension() const override;
 	mstl::string const& encoding() const override;
 

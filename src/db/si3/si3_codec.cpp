@@ -385,18 +385,14 @@ Codec::encoding() const
 }
 
 
-void
-Codec::filterTags(TagSet& tags, Section section) const
+db::tag::TagSet
+Codec::tagFilter(Section section, TagSet const& tags) const
 {
 	tag::TagSet infoTags = Encoder::infoTags();
 
 	infoTags.set(tag::EventDate);
 
-	if (section == InfoTags)
-	{
-		infoTags.flip(0, tag::LastTag);
-	}
-	else if (tags.contains(tag::Date) && tags.contains(tag::EventDate))
+	if (section == GameTags && tags.contains(tag::Date) && tags.contains(tag::EventDate))
 	{
 		unsigned dy = Date(tags.value(tag::Date)).year();
 		unsigned ey = Date(tags.value(tag::EventDate)).year();
@@ -405,7 +401,7 @@ Codec::filterTags(TagSet& tags, Section section) const
 			infoTags.reset(tag::EventDate);
 	}
 
-	tags.remove(infoTags);
+	return infoTags;
 }
 
 

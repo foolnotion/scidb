@@ -297,8 +297,13 @@ proc WidgetProc {w command args} {
 				error "value for \"[lindex $args end]\" missing"
 			}
 			array set opts $args
-			if {[info exists opts(-background)]} {
+			if {[info exists opts(-state)] && $opts(-state) eq "disabled"} {
+				set bg [::ttk::style lookup $::ttk::currentTheme -background]
+				$w.__image__ configure -background $bg
+			} elseif {[info exists opts(-background)]} {
 				$w.__image__ configure -background $opts(-background)
+			} elseif {[info exists opts(-state)]} {
+				$w.__image__ configure -background [$w.__combobox__ cget -background]
 			}
 			foreach opt {-maxwidth -minwidth -width -height} {
 				if {[info exists opts($opt)]} {

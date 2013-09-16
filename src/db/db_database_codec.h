@@ -132,7 +132,7 @@ public:
 	virtual unsigned maxDescriptionLength() const = 0;
 	virtual unsigned gameFlags() const = 0;
 
-	virtual void filterTags(TagSet& tags, Section section) const = 0;
+	virtual tag::TagSet tagFilter(Section section, TagSet const& tags) const = 0;
 	virtual mstl::string const& extension() const = 0;
 	virtual mstl::string const& encoding() const = 0;
 	virtual Time modified() const;

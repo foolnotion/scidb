@@ -439,6 +439,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 		{
 			p = Player::insertPlayer(fideID, name);
 		}
+#if 0
 		else
 		{
 			type = species::Unspecified;
@@ -449,6 +450,7 @@ Namebase::insertPlayer(	mstl::string const& name,
 			if (federation == p->federation())
 				federation = country::Unknown;
 		}
+#endif
 	}
 	else
 	{
@@ -969,7 +971,6 @@ Namebase::update()
 
 	if (used != m_used || maxUsage != m_maxUsage || maxFreq != m_maxFreq)
 		m_isModified = true;
-
 }
 
 

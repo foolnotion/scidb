@@ -346,6 +346,7 @@ private:
 	/// Read the given gzipped PGN file
 	bool open(mstl::string const& name, mstl::fstream& stream);
 
+	void getTags(unsigned index, TagSet& tags, bool invert) const;
 	void setEncodingFailed(bool flag) const;
 	load::State loadGame(unsigned index, Game& game, mstl::string* encoding, mstl::string const* fen);
 

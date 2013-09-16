@@ -71,7 +71,7 @@ public:
 
 	mstl::string const& extension() const override;
 	mstl::string const& encoding() const override;
-	void filterTags(TagSet& tags, Section section) const override;
+	db::tag::TagSet tagFilter(Section section, TagSet const& tags) const override;
 
 	void doOpen(mstl::string const& rootname,
 					mstl::string const& originalSuffix,

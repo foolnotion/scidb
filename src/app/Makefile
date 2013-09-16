@@ -316,6 +316,10 @@ app_cql_engine.o: ../mstl/m_list.h
 app_cql_engine.o: ../mstl/m_list_node.h
 app_cql_engine.o: ../mstl/m_list_node.ipp
 app_cql_engine.o: ../mstl/m_list.ipp
+app_cql_engine.o: ../mstl/m_map.h
+app_cql_engine.o: ../mstl/m_pair.h
+app_cql_engine.o: ../mstl/m_pair.ipp
+app_cql_engine.o: ../mstl/m_map.ipp
 app_cql_engine.o: app_engine.ipp
 app_cql_engine.o: ../mstl/m_stack.h
 app_cql_engine.o: ../mstl/m_stack.ipp
@@ -326,10 +330,6 @@ app_cql_engine.o: ../db/db_game_data.h
 app_cql_engine.o: ../db/db_tag_set.h
 app_cql_engine.o: ../db/db_tag_set.ipp
 app_cql_engine.o: ../db/db_engine_list.h
-app_cql_engine.o: ../mstl/m_map.h
-app_cql_engine.o: ../mstl/m_pair.h
-app_cql_engine.o: ../mstl/m_pair.ipp
-app_cql_engine.o: ../mstl/m_map.ipp
 app_cql_engine.o: ../db/db_engine_list.ipp
 app_cql_engine.o: ../db/db_time_table.h
 app_cql_engine.o: ../db/db_move_info_set.h
@@ -570,6 +570,10 @@ app_engine.o: ../mstl/m_list.h
 app_engine.o: ../mstl/m_list_node.h
 app_engine.o: ../mstl/m_list_node.ipp
 app_engine.o: ../mstl/m_list.ipp
+app_engine.o: ../mstl/m_map.h
+app_engine.o: ../mstl/m_pair.h
+app_engine.o: ../mstl/m_pair.ipp
+app_engine.o: ../mstl/m_map.ipp
 app_engine.o: app_engine.ipp
 app_engine.o: app_uci_engine.h
 app_engine.o: app_winboard_engine.h
@@ -582,10 +586,6 @@ app_engine.o: ../db/db_game_data.h
 app_engine.o: ../db/db_tag_set.h
 app_engine.o: ../db/db_tag_set.ipp
 app_engine.o: ../db/db_engine_list.h
-app_engine.o: ../mstl/m_map.h
-app_engine.o: ../mstl/m_pair.h
-app_engine.o: ../mstl/m_pair.ipp
-app_engine.o: ../mstl/m_map.ipp
 app_engine.o: ../db/db_engine_list.ipp
 app_engine.o: ../db/db_time_table.h
 app_engine.o: ../db/db_move_info_set.h
@@ -1094,6 +1094,10 @@ app_uci_engine.o: ../mstl/m_list.h
 app_uci_engine.o: ../mstl/m_list_node.h
 app_uci_engine.o: ../mstl/m_list_node.ipp
 app_uci_engine.o: ../mstl/m_list.ipp
+app_uci_engine.o: ../mstl/m_map.h
+app_uci_engine.o: ../mstl/m_pair.h
+app_uci_engine.o: ../mstl/m_pair.ipp
+app_uci_engine.o: ../mstl/m_map.ipp
 app_uci_engine.o: app_engine.ipp
 app_uci_engine.o: app_exception.h
 app_uci_engine.o: ../util/u_exception.h
@@ -1104,10 +1108,6 @@ app_uci_engine.o: ../db/db_game_data.h
 app_uci_engine.o: ../db/db_tag_set.h
 app_uci_engine.o: ../db/db_tag_set.ipp
 app_uci_engine.o: ../db/db_engine_list.h
-app_uci_engine.o: ../mstl/m_map.h
-app_uci_engine.o: ../mstl/m_pair.h
-app_uci_engine.o: ../mstl/m_pair.ipp
-app_uci_engine.o: ../mstl/m_map.ipp
 app_uci_engine.o: ../db/db_engine_list.ipp
 app_uci_engine.o: ../db/db_time_table.h
 app_uci_engine.o: ../db/db_move_info_set.h
@@ -1406,6 +1406,10 @@ app_winboard_engine.o: ../mstl/m_list.h
 app_winboard_engine.o: ../mstl/m_list_node.h
 app_winboard_engine.o: ../mstl/m_list_node.ipp
 app_winboard_engine.o: ../mstl/m_list.ipp
+app_winboard_engine.o: ../mstl/m_map.h
+app_winboard_engine.o: ../mstl/m_pair.h
+app_winboard_engine.o: ../mstl/m_pair.ipp
+app_winboard_engine.o: ../mstl/m_map.ipp
 app_winboard_engine.o: app_engine.ipp
 app_winboard_engine.o: ../mstl/m_auto_ptr.h
 app_winboard_engine.o: ../mstl/m_auto_ptr.ipp
@@ -1418,10 +1422,6 @@ app_winboard_engine.o: ../db/db_game_data.h
 app_winboard_engine.o: ../db/db_tag_set.h
 app_winboard_engine.o: ../db/db_tag_set.ipp
 app_winboard_engine.o: ../db/db_engine_list.h
-app_winboard_engine.o: ../mstl/m_map.h
-app_winboard_engine.o: ../mstl/m_pair.h
-app_winboard_engine.o: ../mstl/m_pair.ipp
-app_winboard_engine.o: ../mstl/m_map.ipp
 app_winboard_engine.o: ../db/db_engine_list.ipp
 app_winboard_engine.o: ../db/db_time_table.h
 app_winboard_engine.o: ../db/db_move_info_set.h

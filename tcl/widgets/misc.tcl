@@ -305,11 +305,7 @@ proc dialogButtons {dlg buttons args} {
 
 			help - hlp {
 				set n [llength [pack slaves $dlg.__buttons]]
-				if {$n > 0} {
-					set sep [tk::frame $dlg.sep$n -borderwidth 0 -takefocus 0 -width 10]
-					PackDialogButton $dlg $sep left
-					set Specs(justify:$sep) $opts(-justify)
-				}
+				if {$n > 0} { dialogButtonAddSeparator $dlg }
 				set var [namespace current]::mc::Help
 			}
 
@@ -343,6 +339,25 @@ proc dialogButtonSetIcons {dlg} {
 			if {[llength $icon]} { $w configure -compound $compound -image $icon }
 		}
 	}
+}
+
+
+proc dialogButtonAddSeparator {dlg args} {
+	variable Specs
+
+	array set opts {
+		-justify		center
+		-side			left
+		-position	end
+	}
+	array set opts $args
+
+	if {![winfo exists $dlg.__buttons]} { dialogButtons $dlg {} }
+	set index 0
+	while {[winfo exists $dlg.sep$index]} { incr index }
+	set sep [tk::frame $dlg.sep$index -borderwidth 0 -takefocus 0 -width 10]
+	PackDialogButton $dlg $sep $opts(-side)
+	set Specs(justify:$sep) $opts(-justify)
 }
 
 
