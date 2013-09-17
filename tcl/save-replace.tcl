@@ -2192,7 +2192,7 @@ proc EnterMatch {top index complete} {
 	set Priv(match:$field) $data
 	set Priv(curr:$attr) 1
 
-	FillFields $top $which $Attrs($attr) $data $complete
+	FillFields $top $which $Attrs($attr) $data $Priv(ratingType) $complete
 
 	set Priv(dont-match) 0
 	$Priv(focus) icursor end
@@ -2200,7 +2200,7 @@ proc EnterMatch {top index complete} {
 }
 
 
-proc FillFields {top which attrs data complete} {
+proc FillFields {top which attrs data secondRating complete} {
 	variable ::[winfo toplevel $top]::Priv
 	variable Selection
 
@@ -2211,7 +2211,7 @@ proc FillFields {top which attrs data complete} {
 		set species [lindex $data [lsearch -exact $attrs species]]
 		set color [string toupper $which 0 0]
 		set ratingType [lindex $data [lsearch -exact $attrs rating]]
-		set acceptRating [expr {$ratingType eq "Elo" || $ratingType eq $Priv(ratingType)}]
+		set acceptRating [expr {$ratingType eq "Elo" || $ratingType eq $secondRating}]
 	} else {
 		set attr $which
 	}
@@ -3105,11 +3105,12 @@ proc SetPlayerFromDict {dlg side info} {
 			elo			{ lappend data $elo }
 			rating		{ lappend data $Priv(${side}-rating) }
 			score			{ lappend data $score }
+			freq			{ lappend data 1 }
 			default		{ lappend data {} }
 		}
 	}
 
-	FillFields $dlg.top $side $Attrs(player) $data no
+	FillFields $dlg.top $side $Attrs(player) $data $Priv(${side}-rating) no
 	focus -force $dlg.top.$side-name
 	$dlg.top.$side-name icursor end
 	::playerdict::unsetReceiver
@@ -3149,7 +3150,7 @@ proc ConfigureSelection {parent} {
 
 	set ev [ttk::labelframe $top.event -text $mc::EventSection]
 	set row 1
-	foreach attr {site country eventDate eventMode eventType timeMode} {
+	foreach attr {country eventDate eventMode eventType timeMode} {
 		ttk::checkbutton $ev.$attr \
 			-text $mc::Label($attr) \
 			-variable [namespace current]::Selection(event:$attr) \
@@ -3168,6 +3169,7 @@ proc ConfigureSelection {parent} {
 	wm title $dlg [lindex [split $mc::ConfigureSelection "..."] 0]
 	wm resizable $dlg no no
 	wm protocol $dlg WM_DELETE_WINDOW [list destroy $dlg]
+	wm transient $dlg [winfo toplevel $parent]
 	::util::place $dlg -parent $parent -position center
 	wm deiconify $dlg
 	focus $pl.elo
