@@ -1985,8 +1985,8 @@ proc Parse {file {wantedFile {}} {match {}} {position {}}} {
 					-overrelief raised \
 					-variable [namespace current]::Options(piecelang) \
 					-value $opts(piecelang) \
-					 -text "$opts(text) " \
-					 -command [namespace current]::RefreshPieceLetters \
+					-text "$opts(text) " \
+					-command [namespace current]::RefreshPieceLetters \
 				]
 			}
 			append newcontent "htmlwidget='$btn'"

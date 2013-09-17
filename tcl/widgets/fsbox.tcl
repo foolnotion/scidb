@@ -3909,7 +3909,7 @@ proc FilterFiles {w files} {
 	set filelist {}
 
 	# NOTE: we don't want -dictionary
-	foreach entry [[namespace parent]::mySort -nocase -unique -index 0 $files] {
+	foreach entry [[namespace parent]::mySort -nocase -index 0 $files] {
 		set match 0
 
 		if {[llength $Vars(extensions)] == 0} {

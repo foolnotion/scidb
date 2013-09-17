@@ -368,6 +368,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::Rating, value);
 				}
+				break;
 
 			case tag::BlackRapid:
 				if (uint16_t value = ::getRatingValue(tags, tag))
@@ -377,6 +378,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::Rapid, value);
 				}
+				break;
 
 			case tag::BlackICCF:
 				if (uint16_t value = ::getRatingValue(tags, tag))
@@ -386,6 +388,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::ICCF, value);
 				}
+				break;
 
 			case tag::BlackUSCF:
 				if (uint16_t value = ::getRatingValue(tags, tag))
@@ -395,6 +398,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::USCF, value);
 				}
+				break;
 
 			case tag::BlackDWZ:
 				if (uint16_t value = ::getRatingValue(tags, tag))
@@ -404,6 +408,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::DWZ, value);
 				}
+				break;
 
 			case tag::BlackECF:
 				if (uint16_t value = ::getRatingValue(tags, tag))
@@ -413,6 +418,7 @@ GameInfo::update(	NamebasePlayer* whitePlayer,
 					if (tags.significance(tag))
 						setRating(Black, rating::ECF, value);
 				}
+				break;
 
 			case tag::BlackIPS:
 				if (uint16_t value = ::getRatingValue(tags, tag))

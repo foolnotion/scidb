@@ -619,6 +619,8 @@ uci::Engine::parseBestMove(char const* msg)
 	if (m_state != Start)
 		m_isAnalyzing = false;
 
+	M_ASSERT(!variant::isZhouse(m_variant)); // because parseLAN() is not working
+
 	char const* s = ::skipSpaces(msg);
 	Move move(currentBoard().parseLAN(s));
 
@@ -890,6 +892,8 @@ uci::Engine::parseInfo(char const* s)
 Move
 uci::Engine::parseCurrentMove(char const* s)
 {
+	M_ASSERT(!variant::isZhouse(m_variant)); // because parseLAN() is not working
+
 	Move move = currentBoard().parseLAN(s);
 
 	if (!move.isLegal())
@@ -918,6 +922,8 @@ uci::Engine::parseCurrentMove(char const* s)
 char const*
 uci::Engine::parseMoveList(char const* s, db::Board& board, db::MoveList& moves)
 {
+	M_ASSERT(!variant::isZhouse(m_variant)); // because isLan(), parseLAN() is not working
+
 	while (::isLan(s))
 	{
 		Move move;

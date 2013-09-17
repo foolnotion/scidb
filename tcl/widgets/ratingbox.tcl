@@ -161,6 +161,7 @@ proc WidgetProc {w command args} {
 
 
 proc Select {w key sym var} {
+	if {[winfo class $w] ne "TTCombobox"} { return }
 	if {[$w popdown?]} { return }
 	if {![info exists [winfo parent $w]::Ratings]} { return }
 

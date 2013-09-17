@@ -305,12 +305,13 @@ proc build {tab width height} {
 		-command [namespace code [list SaveChanges $main]] \
 		-state disabled \
 	]
-	set Vars(flag:readonly) 0
+	set var [namespace current]::Vars(flag:readonly)
+	set $var 0
 	set Vars(button:readonly) [::toolbar::add $tbFile checkbutton \
 		-image $::icon::toolbarLock \
 		-tooltipvar [namespace current]::_Readonly \
-		-variable [namespace current]::Vars(flag:readonly) \
-		-command [namespace code ToggleReadOnly] \
+		-variable $var \
+		-command [namespace code [list ToggleReadOnly $var]] \
 	]
 #	::toolbar::add $tbFile button \
 #		-image $::icon::toolbarHelp \
@@ -737,7 +738,7 @@ proc OpenArchive {parent file byUser args} {
 		foreach pair $entry {
 			lassign $pair attr value
 			if {$attr eq "FileName"} {
-				switch [file extension $value] {
+				switch [string tolower [file extension $value]] {
 					.sci - .si3 - .si4 - .cbh - .cbf - .pgn - .pgn.gz - .bpgn - .bpgn.gz {
 						lappend bases $value
 						if {[file exists $value]} { lappend overwrite "\u26ab [file tail $value]" }
@@ -1027,7 +1028,7 @@ proc Switch {filename {variant Undetermined}} {
 		set roState disabled
 		set saveState disabled
 	} else {
-		switch [file extension $filename] {
+		switch [string tolower [file extension $filename]] {
 			.sci - .pgn - .pgn.gz {
 				if {[::scidb::db::get writable? $filename]} {
 					set roState normal
@@ -1402,14 +1403,17 @@ proc PopupMenu {parent x y {base ""}} {
 
 		$menu add separator
 
-		if {!$isClipbase && $ext eq "sci"} {
+		if {!$isClipbase && ($ext eq "sci" || $ext eq "pgn")} {
+			variable ReadOnly_
+			set ReadOnly_ [::scidb::db::get readonly? $base]
 			if {![::scidb::db::get writable? $base]} { set state disabled } else { set state normal }
+			set var [namespace current]::ReadOnly_
 			$menu add checkbutton \
 				-label " $::database::switcher::mc::ReadOnly" \
 				-image $::icon::16x16::lock \
 				-compound left \
-				-command [namespace code ToggleReadOnly] \
-				-variable [namespace current]::Vars(flag:readonly) \
+				-command [namespace code [list ToggleReadOnly $var $base]] \
+				-variable $var \
 				-state $state \
 				;
 			::theme::configureCheckEntry $menu
@@ -1489,26 +1493,28 @@ proc PopupMenu {parent x y {base ""}} {
 }
 
 
-proc ToggleReadOnly {} {
+proc ToggleReadOnly {var {base ""}} {
 	variable Vars
 	variable RecentFiles
 
-	set file [::scidb::db::get name]
+	set readonly [set $var]
+	if {[string length $base] == 0} { set base [::scidb::db::get name] }
 
-	if {![::scidb::db::set readonly $Vars(flag:readonly)]} {
-		set Vars(flag:readonly) [expr {!$Vars(flag:readonly)}]
+	if {![::scidb::db::set readonly $base $readonly]} {
+		set $var [expr {!$readonly}]
 		append msg $mc::ReadWriteFailed " " $::util::mc::IOError(NotOriginalVersion) "."
 		::dialog::error -parent [winfo toplevel $Vars(switcher)] -message $msg
 		return
 	}
 
-	$Vars(switcher) readonly $file $Vars(flag:readonly)
+	if {[::scidb::db::get name] eq $base} { set Vars(flag:readonly) $readonly }
+	$Vars(switcher) readonly $base $readonly
 
-	set k [FindRecentFile $file]
-	if {$k >= 0} { lset RecentFiles $k 3 $Vars(flag:readonly) }
+	set k [FindRecentFile $base]
+	if {$k >= 0} { lset RecentFiles $k 3 $readonly }
 
-	if {$Vars(flag:readonly)} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
-	set [namespace current]::_Readonly [format $str [::util::databaseName $file]]
+	if {$readonly} { set str $mc::SetWriteable } else { set str $mc::SetReadonly }
+	set [namespace current]::_Readonly [format $str [::util::databaseName $base]]
 }
 
 

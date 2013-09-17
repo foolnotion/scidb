@@ -605,7 +605,9 @@ proc open {parent} {
 
 		set Vars(widget:checks:w) $checks.valw
 		set Vars(widget:checks:b) $checks.valb
-	} else {
+	}
+
+	if {![info exists Vars(checks:w)]} {
 		set Vars(checks:w) 0
 		set Vars(checks:b) 0
 	}

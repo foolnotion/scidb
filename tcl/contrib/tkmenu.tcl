@@ -287,6 +287,12 @@ proc ::tk::MbPost {w {x {}} {y {}}} {
     ### FIX end ##################################################################
 
     if {[$w cget -state] eq "disabled" || $w eq $Priv(postedMb)} {
+        ### FEATURE begin ############################################################
+        # give the user the chance to unpost
+        if {[$w cget -state] ne "disabled"} {
+            event generate $w <<MenuAlreadyPosted>>
+        }
+        ### FEATURE end ##############################################################
 	return
     }
 

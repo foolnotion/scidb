@@ -1543,9 +1543,13 @@ Board::setChecksGiven(unsigned white, unsigned black)
 {
 	M_REQUIRE(0 <= white && white <= 3);
 	M_REQUIRE(0 <= black && black <= 3);
+	M_REQUIRE(white < 3 || black < 3);
 
-	m_checksGiven[White] = white;
-	m_checksGiven[Black] = black;
+	hashChecksGiven(White, m_checksGiven[White]);
+	hashChecksGiven(Black, m_checksGiven[Black]);
+
+	hashChecksGiven(White, m_checksGiven[White] = white);
+	hashChecksGiven(Black, m_checksGiven[Black] = black);
 }
 
 
@@ -2273,8 +2277,7 @@ Board::validate(variant::Type variant, Handicap handicap, move::Constraint flag)
 		if (n < 16)
 			return TooFewPromotedPieces;
 	}
-
-	if (variant == variant::ThreeCheck)
+	else if (variant == variant::ThreeCheck)
 	{
 		if (	m_checksGiven[White] > 3
 			|| m_checksGiven[Black] > 3
@@ -2848,7 +2851,7 @@ Board::setup(char const* fen, variant::Type variant)
 	// 3) Crazyhouse: there exists no standard for the content of the holding
 	// ------------------------------------------------------------------------
 	// For case (2) we have our own extension: a trailing " +<n>+<n>" denotes the
-	// numbers of checks given (white/black).
+	// numbers of checks given (white+black).
 	// For case (3) we are using the BPGN definition: a trailing "/<pieces>"
 	// denotes the pieces in holding; for example "/QQRbnp".
 
@@ -3204,7 +3207,7 @@ Board::setup(char const* fen, variant::Type variant)
 		if (!::isdigit(*p))
 			return q;
 
-		m_checksGiven[White] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
+		m_checksGiven[White] = ::strtoul(p, const_cast<char**>(&p), 10);
 
 		if (*p++ != '+')
 		{
@@ -3215,7 +3218,16 @@ Board::setup(char const* fen, variant::Type variant)
 		if (!::isdigit(*p))
 			return q;
 
-		m_checksGiven[Black] = mstl::min(3ul, ::strtoul(p, const_cast<char**>(&p), 10));
+		m_checksGiven[Black] = ::strtoul(p, const_cast<char**>(&p), 10);
+
+		if (	m_checksGiven[White] > 3
+			|| m_checksGiven[Black] > 3
+			|| (m_checksGiven[White] == 3 && m_checksGiven[Black] == 3))
+		{
+			m_checksGiven[White] = m_checksGiven[Black] = 0;
+			return 0;
+		}
+
 		hashChecksGiven(m_checksGiven[White], m_checksGiven[Black]);
 
 		while (*p == ' ')

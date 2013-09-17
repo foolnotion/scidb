@@ -188,6 +188,7 @@ array set DefaultTagOrder {
 	Remark				99
 	Source				99
 	SourceDate			99
+	StartPosition		99
 	SubVariation		99
 	TimeControl			99
 	Variation			99
@@ -1542,16 +1543,19 @@ proc RemoveTag {t name {showWarning 0}} {
 
 	if {![info exists Item($name)]} { return }
 
-	if {$showWarning && !$Mandatory($name,$Priv(twoRatings)) && $TagOrder($name) <= 99} {
-		set msg [format $mc::TagRemoved $name $Lookup($name)]
-		::dialog::info -parent $t -message $msg -title $mc::EditTags]
-	}
-	if {[$t item id active] == [$t item id $Item($name)]} {
-		ChangeCurrentElement $t 0 +1
-	}
-	$t item delete $Item($name)
+	set item $Item($name)
+	set lookup $Lookup($name)
 	unset Item($name)
 	unset Lookup($name)
+
+#	if {$showWarning && !$Mandatory($name,$Priv(twoRatings)) && $TagOrder($name) <= 99} {
+#		set msg [format $mc::TagRemoved $name $lookup]
+#		::dialog::info -parent $t -message $msg -title $mc::EditTags]
+#	}
+	if {[$t item id active] == [$t item id $item]} {
+		ChangeCurrentElement $t 0 +1
+	}
+	$t item delete $item
 	set index [lsearch -exact -index 0 $Priv(tags) $name]
 	set Priv(tags) [lreplace $Priv(tags) $index $index]
 }

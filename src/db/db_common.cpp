@@ -116,7 +116,6 @@ static Pair const NameMap[] =
 	{ "Mode",					Mode },
 	{ "Opening",				Opening },
 	{ "PlyCount",				PlyCount },
-	{ "Position",				Idn },
 	{ "Remark",					Remark },
 	{ "Result",					Result },
 	{ "Round",					Round },
@@ -124,6 +123,7 @@ static Pair const NameMap[] =
 	{ "Site",					Site },
 	{ "Source",					Source },
 	{ "SourceDate",			SourceDate },
+	{ "StartPosition",		Idn },
 	{ "SubVariation",			SubVariation },
 	{ "Termination",			Termination },
 	{ "TimeControl",			TimeControl },
@@ -595,7 +595,7 @@ struct Pair { mstl::string name; Code code; };
 
 static Pair const NameMap[] =
 {
-	// The PGN standard is using the IOC country codes. This is really stupid. The IOC
+	// The PGN standard is using the IOC country codes. This is really stupid, the IOC
 	// country codes has changed many times. ChessBase is using his own set of country
 	// codes. This is more stupid than using the IOC country codes. As a result the
 	// lookup of the country code cannot garantuee the proper country name.
@@ -1837,7 +1837,7 @@ sq::printDescriptive(Square square)
 		"QR", "QN", "QB", "Q", "K", "KB", "KN", "KR",
 	};
 
-	return Squares[square % 8];
+	return Squares[square & 7];
 }
 
 
@@ -2769,10 +2769,9 @@ country::toString(Code code)
 	// the following scheme:
 	//		1. use the current (2009) IOC country code (if exisiting)
 	//		2. use the PGN country code (if exisiting)
-	// 	3. use the country code from ratings_utf8_2010_03_27.ssp (if exisiting)
-	//		4. use the ISO-3166-3 code (as far no clash will occurr)
-	//		5. use the FIPS code (as far no clash will occurr)
-	//		6. use a self-defined code
+	//		3. use the ISO-3166-3 code (as far no clash will occurr)
+	//		4. use the FIPS code (as far no clash will occurr)
+	//		5. use a self-defined code
 
 	switch (code)
 	{
@@ -4312,6 +4311,11 @@ variant::fromString(char const* identifier)
 			}
 			break;
 
+		case 'D':
+			if (::strncasecmp(identifier, "Dreimal", 7) == 0)
+				return ThreeCheck;
+			break;
+
 		case 'F':
 			if (	::strncasecmp(identifier, "FRC", 3) == 0
 				|| ::strncasecmp(identifier, "Fischerandom", 12) == 0
@@ -4354,6 +4358,8 @@ variant::fromString(char const* identifier)
 			{
 				return ThreeCheck;
 			}
+			if (::strncasecmp(identifier, "Tandem", 6) == 0)
+				return Bughouse;
 			break;
 
 		case 'W':

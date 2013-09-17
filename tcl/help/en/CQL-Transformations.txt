@@ -393,7 +393,7 @@ c3 and a black queen on g3, or in which a white rook is on c3 and a black
 queen is on c7.
 </p>
 
-<verb>
+<verb id=":flip">
 (position &R;c3 &q;g3 <keyword>:flip</keyword>)
 </verb>
 

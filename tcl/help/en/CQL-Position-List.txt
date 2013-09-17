@@ -2049,7 +2049,7 @@ or above.
 <h3 id="position:variant">:variant</h3>
 
 <p>
-for a description see identically named keyword <cql>match:variant (match)</cql>
+For a description see identically named keyword <cql>match:variant (match)</cql>
 in match list. This keyword is added for the possibility to distinguish between
 different <a href="Chess-Variants.html">chess variants</a> in each position list.
 </p>

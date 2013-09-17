@@ -1560,18 +1560,18 @@ A special marker is one of:
     <tr>
       <td class="l"><expr>illegalmove</expr></td>
       <td class="m"><img src="../images/gameflag-Illegal-Move.png"/></td>
-      <td class="r">Game contains illegal castling move.</td>
+      <td class="r">Game contains an illegal move.</td>
     </tr>
     <tr>
       <td class="l"><expr>illegalcastling</expr></td>
       <td class="m"><img src="../images/gameflag-Illegal-Castling.png"/></td>
-      <td class="r">Game contains illegal castling.</td>
+      <td class="r">Game contains an illegal castling move.</td>
     </tr>
   </table>
 </div>
 
 <p>
-Note that <expr>illegalmove</expr> is not including illegal castlings.
+Note that <expr>illegalmove</expr> is not including illegal castling moves.
 The CQL editor provides a feature for the input of special markers.
 </p>
 

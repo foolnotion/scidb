@@ -198,6 +198,7 @@ proc grab {args} {
 	# therefore we will kill all shadows as soon as
 	# a grab is released.
 	if {[lindex $args 0] eq "release"} { shadow::kill }
+	if {[llength $args] == 2 && ![winfo exists [lindex $args 1]]} { return }
 
 	return [__grab__shadow {*}$args]
 }
