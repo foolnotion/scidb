@@ -1917,7 +1917,7 @@
 ::game::mc::GameDecodingChanged			"Die Datenbank wurde mit dem Zeichensatz '%base%' geöffnet, aber diese Partie scheint mit dem Zeichensatz '%game%' enkodiert zu sein, deshalb wurde diese Partie mit dem ermittelten Zeichensatz geöffnet."
 ::game::mc::GameDecodingChangedDetail	"Möglicherweise wurde diese Datenbank mit dem falschem Zeichensatz geöffnet. Es ist zu beachten das die automatische Ermittlung des Zeichensatzes nur eingeschränkt funktioniert."
 ::game::mc::VariantHasChanged				"Die Partie kann nicht geöffnet werden weil sich die Schachform der Datenbank geändert hat und nicht mit der Schachform der Partie übereinstimmt."
-::game::mc::RemoveGameFromHistory		"Die Partie aus der Historie entfernen?"
+::game::mc::RemoveGameFromHistory		"Diese Partie aus der Historie entfernen?"
 ::game::mc::GameNumberDoesNotExist		"Die Partie %number existiert nicht in '%base'."
 ::game::mc::ReallyReplaceGame				"Es scheint das die aktuelle Partie #%s im Partieeditor nicht die ursprünglich geladene Partie ist aufgrund von zwischenzeitlichen Datenbankänderungen. Es ist möglich eine andere Partie zu verlieren. Wirklich die Partiedaten überschreiben?"
 ::game::mc::ReallyReplaceGameDetail		"Es wird empfohlen einen Blick auf Partie #%s zu werfen, bevor diese Aktion ausgeführt wird."
