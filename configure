@@ -1892,14 +1892,26 @@ proc writeMakefile {success} {
     } else {
         set dir $configure(prefix)/share
     }
-    set option(DATADIR) $dir/scidb$configure(program-suffix)
+    set tail scidb$configure(program-suffix)
+    set option(DATADIR) $dir/$tail
 
-    if {$tcl_platform(os) eq "Darwin"} {
+    if {[info exists configure(destdir)]} {
+        set dir $configure(destdir)/share/$tail
+    } else {
+        set dir $option(DATADIR)
+    }
+    set option(DESTDIR) $dir
+
+    if {[info exists configure(fontdir)]} {
+        set option(FONTDIR) $configure(fontdir)
+    } elseif {[info exists configure(destdir)]} {
+        set option(FONTDIR) $configure(destdir)/share/fonts/truetype/Scidb
+    } elseif {$tcl_platform(os) eq "Darwin"} {
         set option(FONTDIR) /Library/Fonts/
     } else {
         if {  [string match {/usr/local*} $configure(prefix)]
-           && [file isdirectory /usr/local/share/fonts]
-           && [llength [auto_execok fedora_release]] == 0} {
+            && [file isdirectory /usr/local/share/fonts]
+            && [llength [auto_execok fedora_release]] == 0} {
             # don't use /usr/local/ on Fedora systems
             set prefix /usr/local
         } else {
@@ -2025,6 +2037,10 @@ proc usage {rc} {
     puts "  --datadir=DIR              read-only architecture-independent data \[PREFIX/share\]"
     puts "  --libdir=DIR               object code libraries \[EPREFIX/lib\]"
     puts "  --mandir=DIR               man documentation \[PREFIX/man\]"
+    puts "  --fontdir=DIR              truetype fonts \[PREFIX/share/fonts\]"
+    puts ""
+    puts "Fine tuning of the destination directory (see INSTALL):"
+    puts "  --destdir=DIR              final destination directory \[PREFIX\]"
     puts ""
     puts "Program names:"
     puts "  --program-suffix=SUFFIX    append SUFFIX to installed program names"
@@ -2253,6 +2269,16 @@ if {[string length $gxxVer]} {
         puts "pre-installed Tk library $instableTkLibrary. It is highly recommended to install a stable"
         puts "Tk version (8.6.0, 8.5.11, or 8.5.6) before building Scidb. Read INSTALL for"
         puts "instructions how to use alternative library versions."
+    }
+
+    if {[info exists configure(destdir)]} {
+        set dir [file normalize $configure(destdir)]
+        if {$dir ne [file normalize "/usr"] && $dir ne [file normalize "/usr/local"]} {
+            puts ""
+            puts "WARNING: Given argument '$configure(destdir)' to parameter '--destdir'"
+            puts "seems not to be useful (see INSTALL)."
+        }
+        set suppressInsaneMessage 1
     }
 
     if {!$suppressInsaneMessage && [isInsaneUnixRelease]} {

@@ -7,39 +7,39 @@
 
                        How To Compile
 
-==============================================================================
+===============================================================================
 UNIX
-==============================================================================
+===============================================================================
 Probably you have to install some required packages:
 
 1. Tcl/Tk package
 
-   On Debian/Ubuntu use:
+   On Debian/Ubuntu/Mint use:
       > sudo apt-get install tcl8.6
       > sudo apt-get install tk8.6
 
 2. Freetype development package
    (normally available, but especially missing under Ubuntu)
 
-   On Debian/Ubuntu use:
+   On Debian/Ubuntu/Mint use:
       > sudo apt-get install libfreetype6-dev
 
 3. SM library development package
    (normally available, but especially missing under Ubuntu)
 
-   On Debian/Ubuntu use:
+   On Debian/Ubuntu/Mint use:
       > sudo apt-get install libsm-dev
 
 4. Xcursor development package
    (normally available, but especially missing under Ubuntu)
 
-   On Debian/Ubuntu use:
+   On Debian/Ubuntu/Mint use:
       > sudo apt-get install libxcursor-dev
 
 5. fontconfig development package
    (normally available, but especially missing under Ubuntu)
 
-   On Debian/Ubuntu use:
+   On Debian/Ubuntu/Mint use:
       > sudo apt-get install libfontconfig1-dev
 
 A normal unix installation is made in three steps (after you've unpacked
@@ -61,13 +61,13 @@ Get a full listing of all available configure options by invoking it like:
 If you want to install scidb in a different file hierarchy than /usr/local,
 you need to specify that already when running configure:
 
-   ./configure --prefix=/path/to/scidb/tree
+   ./configure --prefix=/path/to/scidb/tree --exec-prefix=/path/to/scidb/tree
 
 If you happen to have write permission in that directory, you can do "make
 install" without being root. An example of this would be to make a local
 install in your own home directory:
 
-   ./configure --prefix=$HOME
+   ./configure --prefix=$HOME --exec-prefix=$HOME
    make
    make install
 
@@ -89,21 +89,21 @@ will not be found.
 
 Not every GCC compiler version is properly working. The minimum compiler
 version is 3.4, and version 4.6 is excluded because of a compiler bug. It may
-be required to install a proper compiler. For example you decided to version
-4.4: on Debian/Ubuntu use
+be required to install a proper compiler. For example you decided to use
+version 4.4: on Debian/Ubuntu/Mint use
 
    sudo apt-get install gcc-4.4
    sudo apt-get install g++-4.4
    ./configure --gcc-version=4.4
 
 Alternatively the clang compiler may be used. The minimal clang version which
-can be used is 3.1. The newer version 3.3 is also working, but it's not yet sure
-that this version is linking properly. If you want to use clang tell it to the
-configure script in this way:
+can be used is 3.1. The newer version 3.3 is also working, but it's not yet
+sure that this version is linking properly. If you want to use clang tell it
+to the configure script in this way:
 
    ./configure --gcc-version=clang
 
-On Debian/Ubuntu system the usage of newer compilers is a bit problematic,
+On Debian/Ubuntu/Mint system the usage of newer compilers is a bit problematic,
 because Debian has changed some system paths. It may be required to tell
 the configure script the required paths, for example:
 
@@ -122,5 +122,26 @@ paths, but the configure script may give you a hint. If you invoke this script
 
 The latter part of the path (in this example "i386-linux-gnu") is your system
 specific part.
+
+-------------------------------------------------------------------------------
+Important note for built of packages
+-------------------------------------------------------------------------------
+For the built of packages in a temporary directory some fine tuning parameters
+should be used, for example:
+
+   ./configure --prefix=/tempdir --exec-prefix=/tempdir --destdir=/usr
+
+In this example the installation will be done in "/tempdir", but the
+destination directory for the package is determined as "/usr".
+
+Without the --destdir parameter the configure script would choose the path
+"/usr/share/fonts/truetype/Scidb" for the installation of the truetype fonts,
+because in a normal user installation this is the wanted directory, but
+in this example "/tempdir/share/fonts/truetype/Scidb" will be used instead.
+Furthermore --destdir will be used for the determination of Scidb's shared
+directory at run time.
+
+Note that only the directories "/usr" and "/usr/local" are useful as argument
+to --destdir.
 
 = vi:set et sw=3 ts=3: =
