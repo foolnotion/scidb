@@ -495,6 +495,8 @@
 ::application::database::mc::FileIsNotWritable		"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable." ;# NEW
 ::application::database::mc::OverwriteOriginalFile	"Important note: The original file '%s' will be overwritten." ;# NEW
 ::application::database::mc::SetupPgnOptions		"Probably the PGN options should be set before saving." ;# NEW
+::application::database::mc::CloseAllDeletedGames	"Close all deleted games of database '%s'?" ;# NEW
+::application::database::mc::CannotCompactDatabase	"Cannot compact database because the following games belonging to this database are modified:" ;# NEW
 
 ::application::database::mc::RecodingDatabase		"Recoding %s from %s to %s"
 ::application::database::mc::RecodedGames		"%s game(s) recoded"

@@ -495,6 +495,8 @@
 ::application::database::mc::FileIsNotWritable				"Il file '%s' non è scrivibile. Usa la dialog di esportazione se vuoi salvare questo database, o cambia i permessi per questo file."
 ::application::database::mc::OverwriteOriginalFile			"Important note: The original file '%s' will be overwritten." ;# NEW
 ::application::database::mc::SetupPgnOptions					"Probably the PGN options should be set before saving." ;# NEW
+::application::database::mc::CloseAllDeletedGames			"Close all deleted games of database '%s'?" ;# NEW
+::application::database::mc::CannotCompactDatabase			"Cannot compact database because the following games belonging to this database are modified:" ;# NEW
 
 ::application::database::mc::RecodingDatabase				"Registro %base da %from a %to"
 ::application::database::mc::RecodedGames						"%s partite registrate"

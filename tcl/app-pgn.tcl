@@ -350,7 +350,7 @@ proc add {position base variant tags {at -1}} {
 	variable Vars
 
 	if {$at >= 0} {
-		::gamebar::insert $Vars(gamebar) $position $tags $at
+		::gamebar::insert $Vars(gamebar) $at $position $tags
 	} else {
 		::gamebar::add $Vars(gamebar) $position $tags
 	}

@@ -78,6 +78,7 @@ variable Header [list "Backup file for Scidb (UTF-8 encoded; HTML format)" "Vers
 # {<time>
 #	<modified>
 #	<locked>
+#	<frozen>
 #	{<base> <codec> <number> <variant>}
 #	{<crc-index> <crc-moves>}
 #	<tags>
@@ -307,10 +308,9 @@ proc getSourceInfo {position} {
 }
 
 
-proc time? {position} {
-	variable List
-	return [lindex $List $position 0]
-}
+proc time? {position}	{ variable List; return [lindex $List $position 0] }
+proc tags? {position}	{ variable List; return [lindex $List $position 6] }
+proc number? {position}	{ variable List; return [lindex $List $position 4 2] }
 
 
 proc usedPositions? {} {
@@ -506,7 +506,7 @@ proc release {position} {
 	variable List
 	variable Vars
 
-	update ;# fire dangling events
+	update idletasks ;# fire dangling events
 	::scidb::game::release $position
 	lset List $position {{} 0 0 0 {{} {} {} {} {}} {0 0} {} {}}
 	set Vars(lookup:$position) {}
@@ -516,6 +516,20 @@ proc release {position} {
 proc nextGamePosition {} {
 	variable BroserCount
 	return [incr BroserCount]
+}
+
+
+proc gameList {} {
+	variable List
+
+	set list {}
+
+	foreach entry $List {
+		lassign [lindex $entry 4] name _ number variant
+		lappend list [list $name $variant $number]
+	}
+
+	return $list
 }
 
 
@@ -683,7 +697,7 @@ proc releaseAll {parent base {variant ""}} {
 	foreach entry $openGames {
 		set pos [lindex $entry 0]
 		::application::pgn::release $pos
-		::scidb::game::release $pos	;# release scratch game
+		release $pos	;# release scratch game
 	}
 
 	::application::pgn::select
@@ -843,7 +857,7 @@ proc recover {parent} {
 	foreach file $files {
 		if {![::process::testOption dont-recover]} {
 			if {[file readable $file]} {
-				set position [string range $file 5 end-4]
+				set position [string range [file tail $file] 5 end-4]
 				lappend Vars(slots) $position
 				set chan [open $file r]
 				fconfigure $chan -encoding utf-8
@@ -1089,6 +1103,43 @@ proc openGame {parent index} {
 	}
 
 	return [expr {$rc > 0}]
+}
+
+
+proc embedReleaseMessage {positions w infoFont alertFont} {
+	variable ::gamebar::icon::15x15::digit
+	variable List
+
+	set list {}
+	foreach pos $positions {
+		set index [expr {[::gamebar::getIndex [::application::pgn::gamebar] $pos] + 1}]
+		lappend list [list $pos $index]
+	}
+	set list [lsort -index 1 -integer $list]
+
+	set row 0
+	grid columnconfigure $w {1 3} -minsize 5
+
+	foreach entry $list {
+		lassign $entry pos index
+		lassign {"?" "?"} white black
+		foreach pair [::game::tags? $pos] {
+			lassign $pair name value
+			switch $name {
+				White { set white $value }
+				Black { set black $value }
+			}
+		}
+
+		set col(1) "$white \u2013 $black"
+		set col(2) "(#[expr {[::game::number? $pos] + 1}])"
+
+		grid [tk::label $w.line-$row-0 -image $digit($index)] -row $row -column 0 -sticky w
+		grid [tk::label $w.line-$row-1 -text $col(1) -font $infoFont] -row $row -column 2 -sticky w
+		grid [tk::label $w.line-$row-2 -text $col(2) -font $infoFont] -row $row -column 4 -sticky w
+
+		incr row
+	}
 }
 
 

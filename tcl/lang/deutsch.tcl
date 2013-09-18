@@ -494,6 +494,8 @@
 ::application::database::mc::FileIsNotWritable				"Die Datei '%s' ist nicht schreibbar. Um diese Datenbank zu sichern sollte entwerder der Exportdialog verwendet werden, oder aber die Datei sollte schreibbar gesetzt werden."
 ::application::database::mc::OverwriteOriginalFile			"Wichtiger Hinweis: Die Originaldatei '%s' wird dabei überschrieben."
 ::application::database::mc::SetupPgnOptions					"Möglicherweise sollten vor dem Speichern die PGN-Optionen bestimmt werden."
+::application::database::mc::CloseAllDeletedGames			"Alle gelöschte Partien der Datenbank '%s' schliessen?"
+::application::database::mc::CannotCompactDatabase			"Die Datenbank kann nicht kompaktiert werden weil die folgenden Partien dieser Datenbank modifiziert sind:"
 
 ::application::database::mc::RecodingDatabase				"Umkodierung %base von %from nach %to"
 ::application::database::mc::RecodedGames						"%s Partie(n) umkodiert"

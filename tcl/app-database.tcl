@@ -81,6 +81,8 @@ set FileIsRemoved						"File '%s' is removed. Please use the export dialog if yo
 set FileIsNotWritable				"File '%s' is not writeable. Please use the export dialog if you like to save this database, or set this file writeable."
 set OverwriteOriginalFile			"Important note: The original file '%s' will be overwritten."
 set SetupPgnOptions					"Probably the PGN options should be set before saving."
+set CloseAllDeletedGames			"Close all deleted games of database '%s'?"
+set CannotCompactDatabase			"Cannot compact database because the following games belonging to this database are modified:"
 
 set RecodingDatabase					"Recoding %base from %from to %to"
 set RecodedGames						"%s game(s) recoded"
@@ -1310,13 +1312,15 @@ proc PopupMenu {parent x y {base ""}} {
 			if {!$isClipbase} {
 				set state $readonlyState
 				if {![info exists Types($ext)]} { set state disabled }
-				$maint add command \
-					-label " $mc::ChangeIcon..." \
-					-image $::icon::16x16::none \
-					-compound left \
-					-command [namespace code [list ChangeIcon $top $base]] \
-					-state $state \
-					;
+				if {$ext eq "sci" || $ext eq "si3" || $ext eq "si4"} {
+					$maint add command \
+						-label " $mc::ChangeIcon..." \
+						-image $::icon::16x16::none \
+						-compound left \
+						-command [namespace code [list ChangeIcon $top $base]] \
+						-state $state \
+						;
+				}
 				$maint add command \
 					-label " $mc::EditDescription..." \
 					-image $::icon::16x16::edit \
@@ -1385,7 +1389,7 @@ proc PopupMenu {parent x y {base ""}} {
 				;
 		}
 		switch $ext {
-			si3 - si4 - cbh - cbf - pgn - bpgn {
+			si3 - si4 - cbh - cbf - pgn - pgn.gz - bpgn - bpgn.gz {
 				if {[file readable $base] && ![::scidb::db::get unsaved? $base]} {
 					set state normal
 				} else {
@@ -1403,7 +1407,7 @@ proc PopupMenu {parent x y {base ""}} {
 
 		$menu add separator
 
-		if {!$isClipbase && ($ext eq "sci" || $ext eq "pgn")} {
+		if {!$isClipbase && ($ext eq "sci" || $ext eq "pgn" || $ext eq "pgn.gz")} {
 			variable ReadOnly_
 			set ReadOnly_ [::scidb::db::get readonly? $base]
 			if {![::scidb::db::get writable? $base]} { set state disabled } else { set state normal }
@@ -1531,12 +1535,13 @@ proc EmptyClipbase {parent} {
 
 
 proc SaveChanges {parent {base ""}} {
+	set parent [winfo toplevel $parent]
 	if {[string length $base] == 0} { set base [scidb::db::get name] }
 
 	wm withdraw [set dlg [tk::toplevel $parent.save -class Dialog]]
 	pack [set top [ttk::frame $dlg.top]] -fill both
 
-	set text [format $mc::OverwriteOriginalFile [::util::databaseName $base no]]
+	set text [format $mc::OverwriteOriginalFile [file tail $base]]
 	ttk::label $top.warning -wraplength 250 -text $text
 	set font [$top.warning cget -font]
 	if {[string length $font] == 0} { set font TkDefaultFont }
@@ -1544,7 +1549,7 @@ proc SaveChanges {parent {base ""}} {
 	grid $top.warning -row 1 -column 1 -columnspan 3 -sticky w
 	ttk::label $top.options -wraplength 250 -text $mc::SetupPgnOptions
 	set text [::mc::stripAmpersand $::menu::mc::PgnOptions]
-	ttk::button $top.setup -text $text -command [list ::menu::setupPgnOptions $dlg]
+	ttk::button $top.setup -text "$text..." -command [list ::menu::setupPgnOptions $dlg]
 	grid $top.options -row 3 -column 1 -columnspan 3 -sticky w
 	grid $top.setup -row 5 -column 1 -columnspan 3 -sticky we
 	grid columnconfigure $top {0 2 4} -minsize $::theme::padx
@@ -1903,6 +1908,36 @@ proc DoStripPGNTags {dlg file tags} {
 
 
 proc Compact {parent file} {
+	set name [::util::databaseName $file]
+	set title [format $mc::CompactMessage $name]
+
+	set openGames {}
+	set modifiedGames {}
+	set pos 0
+	foreach entry [::game::gameList] {
+		lassign $entry base _ number
+		if {$base eq $file} {
+			if {[::scidb::game::query $pos modified?]} {
+				lappend modifiedGames $pos
+			} else {
+				lappend openGames $pos
+			}
+		}
+		incr pos
+	}
+	if {[llength $modifiedGames]} {
+		set msg [format $mc::CannotCompactDatabase $name]
+		append msg <embed>
+
+		::dialog::error \
+			-parent $parent \
+			-title $title \
+			-message $msg \
+			-embed [namespace code [list ::game::embedReleaseMessage $modifiedGames]] \
+			;
+		return
+	}
+
 	set msg [format $mc::ReallyCompact [::util::databaseName $file]]
 	set n [lindex [::scidb::db::get stats $file] 0]
 	switch $n {
@@ -1918,24 +1953,43 @@ proc Compact {parent file} {
 		-buttons {yes no} \
 		-default no \
 	]
-	if {$reply eq "yes"} {
-		set variant [::scidb::app::variant]
-		::browser::closeAll $file $variant
-		::overview::closeAll $file $variant
-		set cmd [list ::scidb::db::compact $file]
-		set name [::util::databaseName $file]
-		set title [format $mc::CompactMessage $name]
-		set options [list -message $title]
-		::progress::start $parent $cmd {} $options
-		switch $n {
-			0 - 1		{ set info $mc::GamesRemoved($n) }
-			default	{ set info $mc::GamesRemoved(N) }
+	if {$reply eq "no"} { return }
+
+	if {[llength $openGames]} {
+		set msg [format $mc::CloseAllDeletedGames $name]
+		append msg <embed>
+
+		set reply [::dialog::question \
+			-parent $parent \
+			-title $title \
+			-message $msg \
+			-buttons {yes no} \
+			-default yes \
+			-embed [namespace code [list ::game::embedReleaseMessage $openGames]] \
+		]
+
+		if {$reply eq "yes"} {
+			foreach pos $openGames {
+				::application::pgn::release $pos
+				::game::release $pos
+			}
 		}
-		::log::open $mc::Maintenance
-		::log::info $title
-		::log::info $info
-		::log::close
 	}
+
+	set variant [::scidb::app::variant]
+	::browser::closeAll $file $variant
+	::overview::closeAll $file $variant
+	set cmd [list ::scidb::db::compact $file]
+	set options [list -message $title]
+	::progress::start $parent $cmd {} $options
+	switch $n {
+		0 - 1		{ set info $mc::GamesRemoved($n) }
+		default	{ set info $mc::GamesRemoved(N) }
+	}
+	::log::open $mc::Maintenance
+	::log::info $title
+	::log::info $info
+	::log::close
 }
 
 
