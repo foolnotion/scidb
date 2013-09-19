@@ -492,7 +492,8 @@ install-fonts:
 	fi
 
 setup-fonts:
-	@if [ 1 ]; then                                                                   \
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                                        \
+	   echo "Setup fonts";                                                            \
 		if [ "`id -u`" -eq 0 ]; then                                                   \
 			fontdir="$(FONTDIR)";                                                       \
 		else                                                                           \
@@ -510,11 +511,13 @@ setup-fonts:
 				echo "Please contact your system administrator.";                        \
 			fi;                                                                         \
 		fi;                                                                            \
+	else                                                                              \
+		echo "SKIP - Setup fonts";                                                     \
 	fi
 
 uninstall-fonts:
-	@echo "Uninstall fonts"
-	@if [ 1 ]; then                                                 \
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                      \
+	   echo "Uninstall fonts";                                      \
 		if [ "`id -u`" -eq 0 ]; then                                 \
 			fontdir="$(FONTDIR)";                                     \
 		else                                                         \
@@ -539,6 +542,8 @@ uninstall-fonts:
 		if [ "`find $$fontdir -type d -empty`" = "$$fontdir" ]; then \
 			rmdir $$fontdir;                                          \
 		fi;                                                          \
+	else                                                            \
+	   echo "SKIP - Uninstall fonts";                               \
 	fi
 
 install-photos:

@@ -10,7 +10,20 @@
 #   )___(     _(____/____(___ __/____(___/____(___/_
 # ======================================================================
 
+include ../Makefile.in
+
+ifneq ($(XDGDIR),)
+	export XDG_DATA_DIRS=$(XDGDIR)/share
+endif
+
 ### MIME ICONS & TYPES #################################################
+
+prepare-install-mime:
+	@# Without these directories xdg-icon-resource will fail.
+	@if [ "$(SHAREDIR)" != "$(DATADIR)" ]; then         \
+		echo "Create icon directories";                  \
+		install -m 755 -d $(XDGDIR)/share/icons/hicolor; \
+	fi
 
 install-mime-icons:
 	@echo "Install mime type icons"
@@ -32,55 +45,73 @@ install-mime-icons:
 	done
 
 install-mime-types:
-	@echo "Install mime types"
-	@if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then    \
-		mkdir .tmp;                                           \
-		for f in `ls *.xml`; do                               \
-			cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
-			xdg-mime install --mode system .tmp/$$f;           \
-		done;                                                 \
-		rm -rf .tmp;                                          \
-	else                                                     \
-		for f in `ls *.xml`; do                               \
-			xdg-mime install $$f;                              \
-		done;                                                 \
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                  \
+		echo "Install mime types";                               \
+		if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then     \
+			mkdir .tmp;                                           \
+			for f in `ls *.xml`; do                               \
+				cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
+				xdg-mime install --mode system .tmp/$$f;           \
+			done;                                                 \
+			rm -rf .tmp;                                          \
+		else                                                     \
+			for f in `ls *.xml`; do                               \
+				xdg-mime install $$f;                              \
+			done;                                                 \
+		fi;                                                      \
+	else                                                        \
+		echo "SKIP - Install mime types";                        \
 	fi
 
 update-mime-database:
-	@echo "Update mime database"
-	@xdg-icon-resource forceupdate
-	@if [ "`id -u`" -eq 0 ]; then                                     \
-		xdgdir=/usr/share;                                             \
-		if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-				xdgdir=/usr/local/share;                                 \
-			fi;                                                         \
-		else                                                           \
-			for p in ${XDG_DATA_HOME//:/ }; do                          \
-				if [ -d $$p/applications ] ; then                        \
-					xdgdir=$$p;                                           \
-					break;                                                \
-				fi;                                                      \
-			done;                                                       \
-		fi;                                                            \
-	else                                                              \
-		xdgdir=~/.local/share;                                         \
-		if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-			if [ -d $(XDG_DATA_HOME) ]; then                            \
-				xdgdir=$(XDG_DATA_HOME);                                 \
-			fi;                                                         \
-		fi;                                                            \
-	fi;                                                               \
-	if [ -n "$(shell update-mime-database -V 2>/dev/null)" ]; then    \
-		update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null;     \
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+		echo "Update mime database";                                      \
+		xdg-icon-resource forceupdate;                                    \
+		if [ "`id -u`" -eq 0 ]; then                                      \
+			xdgdir=/usr/share;                                             \
+			if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
+				if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+					xdgdir=/usr/local/share;                                 \
+				fi;                                                         \
+			else                                                           \
+				for p in ${XDG_DATA_HOME//:/ }; do                          \
+					if [ -d $$p/applications ] ; then                        \
+						xdgdir=$$p;                                           \
+						break;                                                \
+					fi;                                                      \
+				done;                                                       \
+			fi;                                                            \
+		else                                                              \
+			xdgdir=~/.local/share;                                         \
+			if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+				if [ -d $(XDG_DATA_HOME) ]; then                            \
+					xdgdir=$(XDG_DATA_HOME);                                 \
+				fi;                                                         \
+			fi;                                                            \
+		fi;                                                               \
+		if [ -n "$(shell update-mime-database -V 2>/dev/null)" ]; then    \
+			update-mime-database $$xdgdir/mime >/dev/null 2>/dev/null;     \
+		fi;                                                               \
+	else                                                                 \
+		echo "SKIP - Update mime database";                               \
 	fi
 
-install-mime: install-mime-icons install-mime-types update-mime-database
+install-mime: prepare-install-mime install-mime-icons install-mime-types update-mime-database
 
 uninstall-mime:
 	@# do nothing, because other applications may use these mime types
 
 ### DESKTOP ICONS & MENU ###############################################
+
+prepare-install-desktop:
+	@# Without these directories xdg-xxx will fail.
+	@if [ "$(SHAREDIR)" != "$(DATADIR)" ]; then               \
+		echo "Create desktop directories";                     \
+		install -m 755 -d $(XDGDIR)/share/icons/hicolor;       \
+		install -m 755 -d $(XDGDIR)/share/mime/packages;       \
+		install -m 755 -d $(XDGDIR)/share/applications;        \
+		install -m 755 -d $(XDGDIR)/share/desktop-directories; \
+	fi
 
 install-app-icons:
 	@echo "Install desktop application icons"
@@ -89,7 +120,9 @@ install-app-icons:
 			xdg-icon-resource install --noupdate --novendor --size $$size ./scidb-$$size.png scidb; \
 		fi;                                                                                        \
 	done
-	@xdg-icon-resource forceupdate
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
+		xdg-icon-resource forceupdate;          \
+	fi
 
 uninstall-app-icons:
 	@echo "Uninstall desktop application icons"
@@ -98,75 +131,90 @@ uninstall-app-icons:
 			xdg-icon-resource uninstall --noupdate --size $$size ./scidb-$$size.png scidb; \
 		fi;                                                                               \
 	done
-	@xdg-icon-resource forceupdate
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
+		xdg-icon-resource forceupdate;          \
+	fi
 
 install-desktop-menu-entry:
 	@echo "Install desktop menu"
-	@xdg-desktop-menu install --novendor scidb.desktop
-	@xdg-desktop-menu forceupdate
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                    \
+		xdg-desktop-menu install --novendor scidb.desktop;         \
+		xdg-desktop-menu forceupdate;                              \
+	else                                                          \
+		install -m 644 scidb.desktop $(XDGDIR)/share/applications; \
+	fi
 
 uninstall-desktop-menu-entry:
 	@echo "Uninstall desktop menu"
 	@xdg-desktop-menu uninstall scidb.desktop
-	@xdg-desktop-menu forceupdate
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
+		xdg-desktop-menu forceupdate;           \
+	fi
 
 install-desktop-database:
-	@echo "Update desktop databases"
-	@if [ "`id -u`" -eq 0 ]; then                                     \
-		xdgdir=/usr/share;                                             \
-		if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-				xdgdir=/usr/local/share;                                 \
-			fi;                                                         \
-		else                                                           \
-			for p in ${XDG_DATA_HOME//:/ }; do                          \
-				if [ -d $$p/applications ] ; then                        \
-					xdgdir=$$p;                                           \
-					break;                                                \
-				fi;                                                      \
-			done;                                                       \
-		fi;                                                            \
-	else                                                              \
-		xdgdir=~/.local/share;                                         \
-		if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-			if [ -d $(XDG_DATA_HOME) ]; then                            \
-				xdgdir=$(XDG_DATA_HOME);                                 \
-			fi;                                                         \
-		fi;                                                            \
-	fi;                                                               \
-	appdir=$$xdgdir/applications;                                     \
-	./update-mimeapps.list.tcl add $$appdir/mimeapps.list;            \
-	update-desktop-database $$appdir 2>/dev/null
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+		echo "Update desktop databases";                                  \
+		if [ "`id -u`" -eq 0 ]; then                                      \
+			xdgdir=/usr/share;                                             \
+			if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
+				if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+					xdgdir=/usr/local/share;                                 \
+				fi;                                                         \
+			else                                                           \
+				for p in ${XDG_DATA_HOME//:/ }; do                          \
+					if [ -d $$p/applications ] ; then                        \
+						xdgdir=$$p;                                           \
+						break;                                                \
+					fi;                                                      \
+				done;                                                       \
+			fi;                                                            \
+		else                                                              \
+			xdgdir=~/.local/share;                                         \
+			if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+				if [ -d $(XDG_DATA_HOME) ]; then                            \
+					xdgdir=$(XDG_DATA_HOME);                                 \
+				fi;                                                         \
+			fi;                                                            \
+		fi;                                                               \
+		appdir=$$xdgdir/applications;                                     \
+		./update-mimeapps.list.tcl add $$appdir/mimeapps.list;            \
+		update-desktop-database $$appdir 2>/dev/null;                     \
+	else                                                                 \
+		echo "SKIP - Update desktop databases";                           \
+	fi
 
 uninstall-desktop-database:
-	@echo "Update desktop databases"
-	@if [ "`id -u`" -eq 0 ]; then                                     \
-		xdgdir=/usr/share;                                             \
-		if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
-			if [ -f /usr/local/share/applications/mimeapps.list ]; then \
-				xdgdir=/usr/local/share;                                 \
-			fi;                                                         \
-		else                                                           \
-			for p in ${XDG_DATA_HOME//:/ }; do                          \
-				if [ -d $$p/applications ] ; then                        \
-					xdgdir=$$p;                                           \
-					break;                                                \
-				fi;                                                      \
-			done;                                                       \
-		fi;                                                            \
-	else                                                              \
-		xdgdir=~/.local/share;                                         \
-		if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
-			if [ -d $(XDG_DATA_HOME) ]; then                            \
-				xdgdir=$(XDG_DATA_HOME);                                 \
-			fi;                                                         \
-		fi;                                                            \
-	fi;                                                               \
-	appdir=$$xdgdir/applications;                                     \
-	./update-mimeapps.list.tcl remove $$appdir/mimeapps.list;         \
-	update-desktop-database $$appdir 2>/dev/null
+	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+		echo "Update desktop databases";                                  \
+		if [ "`id -u`" -eq 0 ]; then                                      \
+			xdgdir=/usr/share;                                             \
+			if [ -z "$(XDG_DATA_DIRS)" ]; then                             \
+				if [ -f /usr/local/share/applications/mimeapps.list ]; then \
+					xdgdir=/usr/local/share;                                 \
+				fi;                                                         \
+			else                                                           \
+				for p in ${XDG_DATA_HOME//:/ }; do                          \
+					if [ -d $$p/applications ] ; then                        \
+						xdgdir=$$p;                                           \
+						break;                                                \
+					fi;                                                      \
+				done;                                                       \
+			fi;                                                            \
+		else                                                              \
+			xdgdir=~/.local/share;                                         \
+			if [ ! -z "$(XDG_DATA_HOME)" ]; then                           \
+				if [ -d $(XDG_DATA_HOME) ]; then                            \
+					xdgdir=$(XDG_DATA_HOME);                                 \
+				fi;                                                         \
+			fi;                                                            \
+		fi;                                                               \
+		appdir=$$xdgdir/applications;                                     \
+		./update-mimeapps.list.tcl remove $$appdir/mimeapps.list;         \
+		update-desktop-database $$appdir 2>/dev/null;                     \
+	fi
 
-install-desktop-menu: install-app-icons install-desktop-menu-entry install-desktop-database
+install-desktop-menu: prepare-install-desktop install-app-icons install-desktop-menu-entry \
+	install-desktop-database
 
 uninstall-desktop-menu: uninstall-app-icons uninstall-desktop-menu-entry uninstall-desktop-database
 

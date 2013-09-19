@@ -104,7 +104,7 @@ to the configure script in this way:
    ./configure --gcc-version=clang
 
 On Debian/Ubuntu/Mint system the usage of newer compilers is a bit problematic,
-because Debian has changed some system paths. It may be required to tell
+because Debian has changed some system paths. It may be neccessary to tell
 the configure script the required paths, for example:
 
    ./configure \
@@ -129,15 +129,15 @@ Important note for built of packages
 For the built of packages in a temporary directory some fine tuning parameters
 should be used, for example:
 
-   ./configure --prefix=/tempdir --exec-prefix=/tempdir --destdir=/usr
+   ./configure --prefix=$tempdir/usr --exec-prefix=$tempdir/usr --destdir=/usr
 
-In this example the installation will be done in "/tempdir", but the
+In this example the installation will be done in "$tempdir/usr", but the
 destination directory for the package is determined as "/usr".
 
 Without the --destdir parameter the configure script would choose the path
 "/usr/share/fonts/truetype/Scidb" for the installation of the truetype fonts,
 because in a normal user installation this is the wanted directory, but
-in this example "/tempdir/share/fonts/truetype/Scidb" will be used instead.
+in this example "$tempdir/usr/share/fonts/truetype/Scidb" will be used instead.
 Furthermore --destdir will be used for the determination of Scidb's shared
 directory at run time.
 

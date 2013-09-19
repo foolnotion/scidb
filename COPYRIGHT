@@ -1,20 +1,20 @@
 ** Scidb
-Copyright (C) 2008-2012 by Gregor Cramer
+Copyright (C) 2008-2013 by Gregor Cramer
 
 Except: ********************************
 
 ** treectrl (Scidb version)
-Copyright (C) 2009-2012 Gregor Cramer
+Copyright (C) 2009-2013 Gregor Cramer
 Copyright (C) 2002-2008 Tim Baker
 Copyright (C) 2002-2003 Christian Krone
 Copyright (C) 2003 ActiveState Corporation
 
 ** Tkhtml3 (Scidb version)
-Copyright (C) 2011-2012 Gregor Cramer
+Copyright (C) 2011-2013 Gregor Cramer
 Copyright (C) 2005 Dan Kennedy
 
 ** TkDND (Scidb version)
-Copyright (C) 2011-2012 Gregor Cramer
+Copyright (C) 2011-2013 Gregor Cramer
 Copyright (C) Georgios Petasis, Athens, Greece, <petasisg@yahoo.gr>
 Copyright (C) Laurent Riesterer, Rennes, France, <laurent.riesterer@free.fr>
 Copyright (c) 2009-2010 Kevin Walzer/WordTech Communications LLC
@@ -26,12 +26,12 @@ no copyrights
 Copyright 1993-1998 Lucent Technologies, Inc.
 
 ** libharu (Scidb version)
-Copyright (C) 2011-2012 Gregor Cramer
+Copyright (C) 2011-2013 Gregor Cramer
 Copyright (C) 2007-2008 Antony Dovgal
 Copyright (C) 1999-2006 Takeshi Kanno
 
 ** libhyphenate (Scidb version)
-Copyright (C) 2012 Gregor Cramer
+Copyright (C) 2012-2013 Gregor Cramer
 Copyright (C) 2007 Steve Wolter
 
 ** universalchardet (Scidb version)
@@ -61,11 +61,8 @@ Kris McAulay, Walter van Niftrik, Rogier van Schaijk, Lawrence Sebald
 Matthew P. Smith
 
 ** Stockfish (Scidb version)
-Copyright (C) 2008-2010 Marco Costalba, Joona Kiiski, Tord Romstad
+Copyright (C) 2008-2013 Marco Costalba, Joona Kiiski, Tord Romstad
 Copyright (C) 2004-2008 Tord Romstad (Glaurung author)
 
 ** Sjeng (Scidb version)
 Copyright (C) 2000 Gian-Carlo Pascutto
-
-*** Crafty (Scidb version)
-no copyrights

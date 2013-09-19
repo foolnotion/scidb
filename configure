@@ -1902,10 +1902,14 @@ proc writeMakefile {success} {
     }
     set option(DESTDIR) $dir
 
+    if {[info exists configure(destdir)]} {
+        set option(XDGDIR) $configure(prefix)
+    }
+
     if {[info exists configure(fontdir)]} {
         set option(FONTDIR) $configure(fontdir)
     } elseif {[info exists configure(destdir)]} {
-        set option(FONTDIR) $configure(destdir)/share/fonts/truetype/Scidb
+        set option(FONTDIR) $configure(prefix)/share/fonts/truetype/Scidb
     } elseif {$tcl_platform(os) eq "Darwin"} {
         set option(FONTDIR) /Library/Fonts/
     } else {
