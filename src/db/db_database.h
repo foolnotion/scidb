@@ -167,8 +167,6 @@ public:
 	Time modified() const;
 	/// Returns time of creation.
 	Time created() const;
-	/// Return timestamp of creation.
-	uint32_t creationTimestamp() const;
 	/// Returns statistic of database
 	Statistic const& statistic() const;
 	/// Returh maximal length of description.

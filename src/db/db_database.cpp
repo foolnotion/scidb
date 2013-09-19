@@ -189,7 +189,6 @@ Database::Database(	mstl::string const& name,
 
 	m_memoryOnly = storage == storage::MemoryOnly;
 	m_temporary = false;
-	m_created = sys::time::time();
 	m_readOnly = m_temporary;
 
 	switch (m_codec->format())
@@ -294,7 +293,6 @@ Database::Database(mstl::string const& name, Producer& producer, util::Progress&
 {
 	// NOTE: we assume normalized (unique) file names.
 
-	m_created = sys::time::time();
 	m_codec = DatabaseCodec::makeCodec(name, DatabaseCodec::Existing);
 	M_ASSERT(m_codec->isWritable());
 

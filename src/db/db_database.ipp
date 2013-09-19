@@ -60,7 +60,6 @@ inline TreeCache const& Database::treeCache() const		{ return m_treeCache; }
 inline TreeCache& Database::treeCache()						{ return m_treeCache; }
 inline Namebases& Database::namebases()						{ return m_namebases; }
 inline Time Database::created() const							{ return m_created; }
-inline uint32_t Database::creationTimestamp() const		{ return m_created; }
 inline unsigned Database::size() const							{ return m_size; }
 
 inline void Database::resetInitialSize()						{ resetInitialSize(m_size); }

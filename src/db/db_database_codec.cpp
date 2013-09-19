@@ -744,7 +744,7 @@ Time
 DatabaseCodec::modified() const
 {
 	uint32_t time;
-	sys::file::changed(m_db->m_rootname + "." + extension(), time);
+	sys::file::changed(m_db->m_rootname + "." + m_db->m_suffix, time);
 	return Time(time);
 }
 
