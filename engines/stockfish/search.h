@@ -21,7 +21,6 @@
 #define SEARCH_H_INCLUDED
 
 #include <cstring>
-#include <memory>
 #include <stack>
 #include <vector>
 
