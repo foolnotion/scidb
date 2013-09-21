@@ -10,7 +10,9 @@
 #   )___(     _(____/____(___ __/____(___/____(___/_
 # ======================================================================
 
-include ../Makefile.in
+ifneq ($(wildcard ../Makefile.in),)
+	include ../Makefile.in
+endif
 
 ifneq ($(XDGDIR),)
 	export XDG_DATA_DIRS=$(XDGDIR)/share
@@ -20,9 +22,10 @@ endif
 
 prepare-install-mime:
 	@# Without these directories xdg-icon-resource will fail.
-	@if [ "$(SHAREDIR)" != "$(DATADIR)" ]; then         \
+	@if [ -n "$(XDGDIR)" ]; then                        \
 		echo "Create icon directories";                  \
 		install -m 755 -d $(XDGDIR)/share/icons/hicolor; \
+		install -m 755 -d $(XDGDIR)/share/mime/packages; \
 	fi
 
 install-mime-icons:
@@ -45,26 +48,22 @@ install-mime-icons:
 	done
 
 install-mime-types:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                  \
-		echo "Install mime types";                               \
-		if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then     \
-			mkdir .tmp;                                           \
-			for f in `ls *.xml`; do                               \
-				cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
-				xdg-mime install --mode system .tmp/$$f;           \
-			done;                                                 \
-			rm -rf .tmp;                                          \
-		else                                                     \
-			for f in `ls *.xml`; do                               \
-				xdg-mime install $$f;                              \
-			done;                                                 \
-		fi;                                                      \
-	else                                                        \
-		echo "SKIP - Install mime types";                        \
+	@echo "Install mime types"
+	@if [ "`xdg-mime --version`" = "xdg-mime 1.0" ]; then    \
+		mkdir .tmp;                                           \
+		for f in `ls *.xml`; do                               \
+			cat $$f | grep -v "generic-icon name=" > .tmp/$$f; \
+			xdg-mime install --mode system .tmp/$$f;           \
+		done;                                                 \
+		rm -rf .tmp;                                          \
+	else                                                     \
+		for f in `ls *.xml`; do                               \
+			xdg-mime install $$f;                              \
+		done;                                                 \
 	fi
 
 update-mime-database:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+	@if [ -z "$(XDGDIR)" ]; then                                         \
 		echo "Update mime database";                                      \
 		xdg-icon-resource forceupdate;                                    \
 		if [ "`id -u`" -eq 0 ]; then                                      \
@@ -105,10 +104,9 @@ uninstall-mime:
 
 prepare-install-desktop:
 	@# Without these directories xdg-xxx will fail.
-	@if [ "$(SHAREDIR)" != "$(DATADIR)" ]; then               \
+	@if [ -n "$(XDGDIR)" ]; then                              \
 		echo "Create desktop directories";                     \
 		install -m 755 -d $(XDGDIR)/share/icons/hicolor;       \
-		install -m 755 -d $(XDGDIR)/share/mime/packages;       \
 		install -m 755 -d $(XDGDIR)/share/applications;        \
 		install -m 755 -d $(XDGDIR)/share/desktop-directories; \
 	fi
@@ -120,8 +118,8 @@ install-app-icons:
 			xdg-icon-resource install --noupdate --novendor --size $$size ./scidb-$$size.png scidb; \
 		fi;                                                                                        \
 	done
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
-		xdg-icon-resource forceupdate;          \
+	@if [ -z "$(XDGDIR)" ]; then      \
+		xdg-icon-resource forceupdate; \
 	fi
 
 uninstall-app-icons:
@@ -131,13 +129,13 @@ uninstall-app-icons:
 			xdg-icon-resource uninstall --noupdate --size $$size ./scidb-$$size.png scidb; \
 		fi;                                                                               \
 	done
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
-		xdg-icon-resource forceupdate;          \
+	@if [ -z "$(XDGDIR)" ]; then      \
+		xdg-icon-resource forceupdate; \
 	fi
 
 install-desktop-menu-entry:
 	@echo "Install desktop menu"
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                    \
+	@if [ -z "$(XDGDIR)" ]; then                                  \
 		xdg-desktop-menu install --novendor scidb.desktop;         \
 		xdg-desktop-menu forceupdate;                              \
 	else                                                          \
@@ -147,12 +145,12 @@ install-desktop-menu-entry:
 uninstall-desktop-menu-entry:
 	@echo "Uninstall desktop menu"
 	@xdg-desktop-menu uninstall scidb.desktop
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then \
-		xdg-desktop-menu forceupdate;           \
+	@if [ -z "$(XDGDIR)" ]; then     \
+		xdg-desktop-menu forceupdate; \
 	fi
 
 install-desktop-database:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+	@if [ -z "$(XDGDIR)" ]; then                                         \
 		echo "Update desktop databases";                                  \
 		if [ "`id -u`" -eq 0 ]; then                                      \
 			xdgdir=/usr/share;                                             \
@@ -184,7 +182,7 @@ install-desktop-database:
 	fi
 
 uninstall-desktop-database:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                           \
+	@if [ -z "$(XDGDIR)" ]; then                                         \
 		echo "Update desktop databases";                                  \
 		if [ "`id -u`" -eq 0 ]; then                                      \
 			xdgdir=/usr/share;                                             \

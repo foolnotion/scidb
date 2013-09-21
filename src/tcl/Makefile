@@ -11,6 +11,7 @@
 # ======================================================================
 
 include ../../Makefile.in
+include ../../Makefile.version
 
 .SUFFIXES: .cpp
 .PRECIOUS:

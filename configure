@@ -1936,11 +1936,6 @@ proc writeMakefile {success} {
         }
     }
 
-    if {[catch {set ver [open "Makefile.version" r]}]} {
-       puts "Error opening file for reading: Makefile.version"
-       exit 1
-    }
-
     if {[catch {set from [open "Makefile.conf" r]}]} {
        puts "Error opening file for reading: Makefile.conf"
        exit 1
@@ -1969,12 +1964,6 @@ proc writeMakefile {success} {
                 }
                 set first [string first "@" $line]
             }
-            puts $to $line
-        }
-    }
-
-    while {[gets $ver line] >= 0} {
-        if {[string index $line 1] ne "#"} {
             puts $to $line
         }
     }

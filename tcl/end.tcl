@@ -291,7 +291,32 @@ if {[catch {
 			}
 		}
 
-		if {[::scidb::misc::revision] >= 775} {
+		if {$::scidb::revision < 946} {
+			foreach v {::pgn::browser::Colors ::pgn::editor::Colors} {
+				foreach {f c} {	background				"#ffffff"
+										background:current   "#ffdd76"
+										background:nextmove  "#eeff00"
+										foreground:bracket   "#0000ee"
+										foreground:comment   "#006300"
+										foreground:empty     "#666666"
+										foreground:illegal   "#ee0000"
+										foreground:info      "#b22222"
+										foreground:marks     "#6300c6"
+										foreground:nag       "#ee0000"
+										foreground:nagtext   "#912a2a"
+										foreground:numbering "#aa0acd"
+										foreground:opening   "#000000"
+										foreground:result    "#000000"
+										foreground:variation "#0000ee"
+										hilite:comment       "#7a5807"
+										hilite:info          "#b22222"
+										hilite:move          "#ebf4f5" } {
+					set var ${v}($f)
+					if {[info exists $var]} {
+						if {[set $var] eq $c} { set $var pgn,$f }
+					}
+				}
+			}
 		}
 
 		::scidb::themes::update
