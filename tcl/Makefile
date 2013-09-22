@@ -492,7 +492,7 @@ install-fonts:
 	fi
 
 setup-fonts:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                                        \
+	@if [ -z "$(XDGDIR)" ]; then                                                      \
 	   echo "Setup fonts";                                                            \
 		if [ "`id -u`" -eq 0 ]; then                                                   \
 			fontdir="$(FONTDIR)";                                                       \
@@ -516,7 +516,7 @@ setup-fonts:
 	fi
 
 uninstall-fonts:
-	@if [ "$(SHAREDIR)" = "$(DATADIR)" ]; then                      \
+	@if [ -z "$(XDGDIR)" ]; then                                    \
 	   echo "Uninstall fonts";                                      \
 		if [ "`id -u`" -eq 0 ]; then                                 \
 			fontdir="$(FONTDIR)";                                     \

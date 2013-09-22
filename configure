@@ -160,6 +160,12 @@ array set feature {
     splash-screen   yes
 }
 
+array set force {
+    zlib    no
+    zziplib no
+    expat   no
+}
+
 array set environment {
     CC              gcc
     CFLAGS          "-Wall"
@@ -1028,8 +1034,6 @@ proc SystemHasInotify {} {
 #    Checks whether the system kernel supports inotify.
 #
 proc checkInotify {} {
-    global environment package subdir
-
     puts -nonewline "    Checking if your kernel has inotify support: "
     flush stdout
     switch [SystemHasInotify] {
@@ -1119,7 +1123,7 @@ proc SystemHasFAM {} {
 #    Checks whether libfam is available.
 #
 proc checkFAM {} {
-    global environment package subdir feature
+    global feature
 
     if {$feature(fam)} {
         puts -nonewline "    Checking if your system has libfam: "
@@ -1182,7 +1186,9 @@ fi
 #    the zlib version that comes with Scidb will be used.
 #
 proc SystemHasZlib {} {
-    global TestZlib TestGzOffset environment package compiler
+    global TestZlib TestGzOffset environment package force compiler
+
+    if {$force(zlib)} { return 0 }
 
     set testZlib [regsub -all __CC__ $TestZlib [GetGCC]]
     set testZlib [regsub -all __zlib-inc__ $testZlib $package(zlib-inc)]
@@ -1265,7 +1271,9 @@ fi
 #    the zziplib version that comes with Scidb will be used.
 #
 proc SystemHasZziplib {} {
-    global TestZziplib environment package
+    global TestZziplib environment package force
+
+    if {$force(zziplib)} { return 0 }
 
     set testZziplib [regsub -all __CC__ $TestZziplib [GetGCC]]
     set testZziplib [regsub -all __zziplib-inc__ $testZziplib $package(zziplib-inc)]
@@ -1405,7 +1413,9 @@ fi
 #    the expat version that comes with Scidb will be used.
 #
 proc SystemHasExpat {} {
-    global TestExpat environment package
+    global TestExpat environment package force
+
+    if {$force(expat)} { return 0 }
 
     set testExpat [regsub -all __CC__ $TestExpat [GetGCC]]
     set testExpat [regsub -all __expat-inc__ $testExpat $package(expat-inc)]
@@ -2067,6 +2077,10 @@ proc usage {rc} {
     puts "  --with-expat-inc=DIR       path to Expat XML Parser headers"
     puts "  --with-expat-lib=DIR       link options for Expat XML Parser library"
     puts ""
+    puts "  --force-bundled-zlib       \[default=no\]"
+    puts "  --force-bundled-zziplib    \[default=no\]"
+    puts "  --force-bundled-expat      \[default=no\]"
+    puts ""
     puts "Optional Features:"
     puts "  --disable-FEATURE          do not include FEATURE (same as --enable-FEATURE=no)"
     puts "  --enable-FEATURE\[=ARG\]     include FEATURE \[ARG=yes\]"
@@ -2145,6 +2159,8 @@ foreach arg $argv {
         }
         if {[string match --with-* $arg0]} {
             set package([string range $arg0 7 end]) $arg1
+        } elseif {[string match --force-bundled-* $arg0]} {
+            set force([string range $arg0 16 end]) $arg1
         } elseif {[info exists environment($arg0)]} {
             set environment($arg0) $arg1
         } elseif {[string match --* $arg0]} {

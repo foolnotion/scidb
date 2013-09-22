@@ -2,3 +2,4 @@ fc-cache -f /usr/local/share/fonts/truetype/Scidb
 cd /usr/local/share/scidb-beta/freedesktop.org
 chmod 0555 update-mimeapps.list.tcl
 make -f Makefile install-mime
+make -f Makefile install-desktop-menu
