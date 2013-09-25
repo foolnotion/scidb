@@ -111,7 +111,7 @@ uninstall-xdg:
 			$(MAKE) -C freedesktop.org uninstall-desktop-menu;              \
 		fi;                                                                \
 	else                                                                  \
-		$(MAKE) -C freedesktop.org remove                                  \
+		$(MAKE) -C freedesktop.org remove;                                 \
 	fi;
 
 update-magic:
